@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dimensionador y BOM Huawei — AR · A800 E · NE8000</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;--red:#C7000B;--amber:#A45B00;--green:#1F6B4A;--card:#FFF}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1140px;margin:0 auto;padding:26px 18px 80px}
+.masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0 0 6px}
+h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28px,5.5vw,48px);line-height:.98;text-transform:uppercase;margin:0}
+.sub{color:var(--steel);max-width:64ch;margin:8px 0 0;font-size:14.5px}
+
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--rule);margin-bottom:22px}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:11px 18px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.03em;text-transform:uppercase;color:var(--steel)}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--red)}
+.tabpane[hidden]{display:none}
+
+.ladder{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px 18px 12px;margin-bottom:20px;overflow:hidden}
+.mono-lbl{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:0 0 18px;font-weight:600}
+.track{position:relative;height:110px;margin:0 4px}
+.axis{position:absolute;left:0;right:0;bottom:26px;height:1px;background:var(--rule)}
+.tick{position:absolute;bottom:26px;transform:translateX(-50%);text-align:center}
+.tick i{display:block;width:1px;height:7px;background:var(--rule);margin:0 auto}
+.tick b{font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:500;color:var(--steel);display:block;margin-top:4px;white-space:nowrap}
+.dot{position:absolute;bottom:34px;width:7px;height:7px;border-radius:50%;background:var(--rule);transform:translateX(-50%)}
+.dot.wan{border-radius:1px;transform:translateX(-50%) rotate(45deg)}
+.dot.ok{background:var(--ink)}
+.dot.pick{background:var(--red);width:11px;height:11px;bottom:32px;box-shadow:0 0 0 4px rgba(199,0,11,.14)}
+.need{position:absolute;top:0;bottom:26px;width:2px;background:var(--red);transform:translateX(-50%);transition:left .25s cubic-bezier(.2,.8,.2,1)}
+.need span{position:absolute;top:-2px;left:6px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;color:#fff;background:var(--red);padding:2px 6px;border-radius:2px}
+.need.flip span{left:auto;right:6px}
+.pickLabel{position:absolute;bottom:52px;transform:translateX(-50%);white-space:nowrap;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;text-transform:uppercase}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--steel);letter-spacing:.06em;text-transform:uppercase}
+.legend i{display:inline-block;width:7px;height:7px;background:var(--ink);margin-right:5px;border-radius:50%;vertical-align:middle}
+.legend i.sq{border-radius:1px;transform:rotate(45deg)}
+
+.cols{display:grid;grid-template-columns:minmax(0,325px) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:880px){.cols{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px;margin-bottom:16px}
+.panel h2{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.field{margin-bottom:16px}.field:last-child{margin-bottom:0}
+label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px}
+.hint{font-size:11.5px;color:var(--steel);margin-top:5px;line-height:1.4}
+.row{display:flex;gap:8px}
+input[type=number],select{width:100%;padding:9px 10px;border:1px solid var(--rule);border-radius:2px;background:#fff;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500}
+select{font-family:'Barlow',sans-serif;font-size:13.5px}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+input[type=range]{width:100%;accent-color:var(--red)}
+.seg{display:flex;border:1px solid var(--rule);border-radius:2px;overflow:hidden}
+.seg button{flex:1;padding:8px 4px;border:0;background:#fff;cursor:pointer;font-family:'Barlow',sans-serif;font-size:12px;font-weight:500;color:var(--steel);line-height:1.25}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed=true]{background:var(--ink);color:#fff;font-weight:600}
+.checks{display:grid;gap:7px}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer}
+.check input{margin:3px 0 0;accent-color:var(--red)}
+.hidden{display:none!important}
+
+.verdict{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:22px;margin-bottom:16px}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0}
+.model{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(24px,4.6vw,38px);line-height:1;text-transform:uppercase;margin:6px 0 2px}
+.family{color:var(--steel);font-size:13.5px;margin-bottom:16px}
+.meter{margin-bottom:12px}
+.meter b{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;display:flex;justify-content:space-between;gap:10px;color:var(--steel);margin-bottom:5px}
+.meter b em{font-style:normal;color:var(--ink);font-weight:600;white-space:nowrap}
+.bar{height:7px;background:var(--paper);border-radius:1px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink);transition:width .3s}
+.bar i.tight{background:var(--amber)}.bar i.good{background:var(--green)}
+.why{border-top:1px solid var(--rule);padding-top:14px;font-size:13.5px;margin-top:4px}
+.why ul{margin:8px 0 0;padding-left:18px}.why li{margin-bottom:5px}
+.warn{color:var(--amber)}
+ul.clean{list-style:none;margin:0;padding:0}
+ul.clean li{padding-left:14px;position:relative;margin-bottom:9px;font-size:13.5px}
+ul.clean li:before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;background:var(--rule)}
+ul.clean li.on:before{background:var(--red)}
+.sku{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--steel);display:block;margin-top:2px}
+.req{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 5px;border-radius:2px;background:var(--red);color:#fff;margin-left:6px;vertical-align:1px}
+.req.opt{background:var(--paper);color:var(--steel)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);font-weight:500;padding:0 8px 7px 0;border-bottom:1px solid var(--rule)}
+td{padding:8px 8px 8px 0;border-bottom:1px solid var(--paper);vertical-align:top}
+td.n,code{font-family:'IBM Plex Mono',monospace;font-size:12px}
+code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowrap}
+code.pend{background:transparent;color:var(--amber);border:1px dashed var(--amber);font-size:10.5px;padding:1px 4px}
+tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
+.scroll{overflow-x:auto}
+.pillc{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 4px;border-radius:2px;background:var(--paper);color:var(--steel)}
+.btn{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px;cursor:pointer;white-space:nowrap}
+.btn.ghost{background:#fff;color:var(--ink)}
+.grp{margin-bottom:22px}
+.grp:last-child{margin-bottom:0}
+.grp h3{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin:0 0 4px}
+.grp p.gd{font-size:12.5px;color:var(--steel);margin:0 0 10px}
+.note{margin-top:22px;font-size:12px;color:var(--steel);line-height:1.55;border-top:1px solid var(--rule);padding-top:14px}
+.note b{color:var(--ink)}.note a{color:var(--red)}
+.flag{background:#FFF8EC;border:1px solid #E8D3AC;border-left:3px solid var(--amber);border-radius:2px;padding:12px 14px;font-size:12.5px;line-height:1.5;margin-bottom:18px}
+.flag b{color:var(--amber)}
+#bomOut{width:100%;height:200px;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:10px;border:1px solid var(--rule);border-radius:2px;margin-top:10px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow">Huawei · Preventa WAN · Dimensionamiento y lista de materiales</p>
+  <h1>Dimensionador<br>y BOM NetEngine</h1>
+  <p class="sub">Calcula el caudal real que debe soportar el equipo, selecciona el modelo y despliega la lista completa de componentes: fuentes, ventiladores, tarjetas, ópticas compatibles, licencias y soporte a 12 meses.</p>
+</header>
+
+<div class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-tab="calc">Dimensionar</button>
+  <button role="tab" aria-selected="false" data-tab="bom">Equipo y BOM</button>
+  <button role="tab" aria-selected="false" data-tab="optics">Catálogo de ópticas</button>
+</div>
+
+<!-- ══════════ TAB 1 · CALCULADORA ══════════ -->
+<div class="tabpane" id="pane-calc">
+<section class="ladder">
+  <p class="mono-lbl">Escala de capacidad — throughput publicado vs. requerimiento (logarítmica)</p>
+  <div class="track" id="track"><div class="axis"></div><div class="need" id="need"><span id="needLbl">—</span></div><div class="pickLabel" id="pickLbl" style="display:none"></div></div>
+  <div class="legend">
+    <span><i></i>Serie AR — throughput de servicio</span>
+    <span><i class="sq"></i>A800 E / NE8000 — capacidad de conmutación</span>
+    <span style="color:var(--red)"><i style="background:var(--red)"></i>Elegido</span>
+  </div>
+</section>
+
+<div class="cols">
+<div>
+  <section class="panel">
+    <h2>1 · Cómo se dimensiona</h2>
+    <div class="field">
+      <label>Base de cálculo</label>
+      <div class="seg" id="modeSeg">
+        <button type="button" data-v="link" aria-pressed="true">Enlace<br>único</button>
+        <button type="button" data-v="agg" aria-pressed="false">Agregado<br>multi-sede</button>
+        <button type="button" data-v="core" aria-pressed="false">Nodo de<br>núcleo</button>
+      </div>
+      <p class="hint" id="modeHint">Un solo enlace WAN terminando en el equipo.</p>
+    </div>
+    <div class="field">
+      <label for="bw" id="bwLabel">Ancho de banda contratado</label>
+      <div class="row">
+        <input type="number" id="bw" value="500" min="0" step="any">
+        <select id="unit" style="width:105px"><option value="1">Mbps</option><option value="1000">Gbps</option><option value="1000000">Tbps</option></select>
+      </div>
+    </div>
+    <div id="aggBlock" class="hidden">
+      <div class="field"><label for="sites">Número de sedes que concentra</label><input type="number" id="sites" value="50" min="1" step="1"></div>
+      <div class="field">
+        <label for="conc">Factor de simultaneidad: <span id="concVal" style="font-family:'IBM Plex Mono',monospace">40 %</span></label>
+        <input type="range" id="conc" min="5" max="100" step="5" value="40">
+        <p class="hint">Porcentaje del caudal de sucursal que llega al hub a la vez. Sobresuscribir al 100 % encarece el equipo sin necesidad real.</p>
+      </div>
+    </div>
+    <div class="field">
+      <label>Cómo se mide el ancho de banda</label>
+      <div class="seg" id="dirSeg">
+        <button type="button" data-v="2" aria-pressed="true">Por dirección</button>
+        <button type="button" data-v="1" aria-pressed="false">Total agregado</button>
+      </div>
+      <p class="hint">Huawei publica throughput y capacidad de conmutación como <b>suma bidireccional</b>. 500 Mbps simétricos se dimensionan contra 1 Gbps.</p>
+    </div>
+    <div class="field">
+      <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
+      <input type="range" id="head" min="0" max="100" step="5" value="30">
+    </div>
+    <div class="field">
+      <label for="frame">Tamaño de trama para el cálculo de paquetes</label>
+      <select id="frame">
+        <option value="64">64 bytes — peor caso, voz y señalización</option>
+        <option value="340" selected>IMIX ≈ 340 bytes — mezcla realista</option>
+        <option value="1500">1500 bytes — datos y respaldo</option>
+      </select>
+      <p class="hint">Determina los Mpps exigidos. Es el límite real en nodos de núcleo.</p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>2 · Servicios</h2>
+    <div class="field">
+      <label for="profile">Perfil de tratamiento del tráfico</label>
+      <select id="profile">
+        <option value="fwd">Routing + NAT + ACL + QoS (sin cifrado)</option>
+        <option value="ipsec">IPsec VPN</option>
+        <option value="typ" selected>SD-WAN típico — IPsec + QoS + SA + AppFlow</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Funciones a habilitar</label>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="sSdwan" checked><span>SD-WAN gestionado por iMaster NCE</span></label>
+        <label class="check"><input type="checkbox" id="sUtm"><span>Seguridad UTM: IPS, filtrado URL, antivirus</span></label>
+        <label class="check"><input type="checkbox" id="sSlice"><span>SRv6 / slicing FlexE / EVPN de transporte</span></label>
+        <label class="check"><input type="checkbox" id="rPoe"><span>PoE/PoE++ integrado</span></label>
+        <label class="check"><input type="checkbox" id="rWan"><span>4G/5G integrado como respaldo</span></label>
+        <label class="check"><input type="checkbox" id="rWifi"><span>Wi-Fi integrado</span></label>
+      </div>
+    </div>
+    <div class="field"><label for="lan">Puertos LAN mínimos</label><input type="number" id="lan" value="8" min="0" step="1"></div>
+    <div class="field"><label for="aps">APs gestionados (WAC)</label><input type="number" id="aps" value="0" min="0" step="1"></div>
+  </section>
+
+  <section class="panel">
+    <h2>3 · Soporte a 12 meses</h2>
+    <div class="field">
+      <label for="crit">Criticidad del sitio</label>
+      <select id="crit">
+        <option value="1">Baja — sede pequeña con respaldo móvil</option>
+        <option value="2" selected>Media — sede productiva en horario laboral</option>
+        <option value="3">Alta — operación continua, sin ruta alterna</option>
+        <option value="4">Misión crítica — hub, núcleo o salida de datacenter</option>
+      </select>
+    </div>
+    <div class="field">
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="onsite"><span>Se requiere ingeniero en sitio</span></label>
+        <label class="check"><input type="checkbox" id="remote"><span>Sitio remoto o logística de repuesto lenta</span></label>
+      </div>
+      <p class="hint">La garantía estándar cubre reemplazo de hardware pero <b>no incluye soporte remoto TAC</b>.</p>
+    </div>
+  </section>
+</div>
+
+<div>
+  <div class="verdict" id="verdict"></div>
+  <section class="panel"><h2>Licencias a considerar</h2><ul class="clean" id="licList"></ul></section>
+  <section class="panel"><h2>Soporte recomendado · 12 meses</h2><div id="supBox"></div></section>
+  <section class="panel">
+    <h2>Modelos evaluados</h2>
+    <div class="scroll"><table><thead><tr><th>Modelo</th><th>Serie</th><th>Capacidad</th><th>Mpps</th><th>LAN</th><th>Estado</th></tr></thead><tbody id="tbody"></tbody></table></div>
+  </section>
+</div>
+</div>
+</div>
+
+<!-- ══════════ TAB 2 · BOM ══════════ -->
+<div class="tabpane" id="pane-bom" hidden>
+  <div class="flag">
+    <b>Sobre los códigos.</b> Las designaciones de modelo (<code>AR5710-S8T2X</code>, <code>PAC350S12-CR</code>, <code>OMXD30000</code>) provienen de la documentación oficial de hardware de Huawei y son las que se usan para pedir. Los códigos BOM de 8 dígitos de chasis y tarjetas <b>no están publicados en las páginas de producto</b>: aparecen marcados como <code class="pend">por confirmar</code> y debes obtenerlos del configurador o de tu distribuidor antes de cotizar. Los códigos de ópticas sí están verificados contra las descripciones de hardware, pero su compatibilidad está documentada por plataforma — valida el modelo exacto contra el Hardware Description del equipo y la versión de VRP.
+  </div>
+
+  <section class="panel">
+    <h2>Selecciona el equipo <button class="btn ghost" id="copyBtn" type="button">Copiar BOM</button></h2>
+    <div class="field">
+      <label for="pickModel">Equipo</label>
+      <select id="pickModel"></select>
+    </div>
+    <div class="field">
+      <div class="row" style="gap:14px;flex-wrap:wrap">
+        <div style="flex:1;min-width:150px"><label for="qty">Cantidad de equipos</label><input type="number" id="qty" value="1" min="1" step="1"></div>
+        <div style="flex:1;min-width:150px"><label for="optQty">Ópticas por equipo</label><input type="number" id="optQty" value="2" min="0" step="1"></div>
+      </div>
+    </div>
+  </section>
+
+  <div id="bomBody"></div>
+
+  <section class="panel">
+    <h2>BOM en texto plano</h2>
+    <textarea id="bomOut" readonly></textarea>
+    <p class="hint">Pégalo en la hoja de cotización. Los renglones marcados <code class="pend">POR CONFIRMAR</code> necesitan el código real antes de enviarse al cliente.</p>
+  </section>
+</div>
+
+<!-- ══════════ TAB 3 · ÓPTICAS ══════════ -->
+<div class="tabpane" id="pane-optics" hidden>
+  <div class="flag">
+    <b>Cómo leer esta tabla.</b> Huawei publica más de un código BOM para el mismo módulo según la plataforma y la versión de software. Ambos códigos corresponden al mismo módulo óptico, pero el equipo solo reconoce el que su versión tiene en la base de datos. Confirma el código contra el Hardware Description del chasis destino antes de pedir.
+  </div>
+  <section class="panel">
+    <h2>Módulos ópticos por velocidad</h2>
+    <div id="opticsAll"></div>
+  </section>
+</div>
+
+<p class="note">
+<b>Fuentes oficiales:</b>
+<a href="https://e.huawei.com/en/products/routers/ar5710-s" target="_blank" rel="noopener">AR5710-S</a> ·
+<a href="https://e.huawei.com/en/products/routers/netengine-ar6700" target="_blank" rel="noopener">AR6700</a> ·
+<a href="https://e.huawei.com/en/products/routers/netengine-ar8000" target="_blank" rel="noopener">AR8000</a> ·
+<a href="https://e.huawei.com/en/products/routers/netengine-a800" target="_blank" rel="noopener">A800 E</a> ·
+<a href="https://e.huawei.com/se/products/routers/ne8000" target="_blank" rel="noopener">NE8000</a> ·
+<a href="https://support.huawei.com/enterprise/en/doc/EDOC1100213474/a4a07940/" target="_blank" rel="noopener">NetEngine AR Hardware Description</a> ·
+<a href="https://support.huawei.com/enterprise/en/warranty/ENEWS1000006975" target="_blank" rel="noopener">política de garantía</a>.
+Las cifras de la serie AR son throughput de servicio en IMIX; las de A800 E y NE8000 son capacidad de conmutación y reenvío en Mpps, medidas distintas. En chasis modulares el techo real lo fija la tarjeta de línea. Esto es una preselección de preventa, no una cotización.
+</p>
+</div>
+
+<script>
+/* ════════ CATÁLOGO DE COMPONENTES ════════
+   sku = designación oficial de Huawei · bom = código de 8 dígitos verificado, o null */
+let OPTICS = {};
+let OPTIC_LABEL = {};
+let PARTS = {};
+let MODELS = [];
+
+const PROFILE = {fwd:'Forwarding (NAT+ACL+QoS, IMIX)', ipsec:'IPsec (IMIX)', typ:'SD-WAN típico (IPsec+QoS+SA+AppFlow, IMIX)'};
+let HICARE = {};
+
+const $ = id => document.getElementById(id);
+let dirMult = 2, mode = 'link', lastPick = null;
+
+/* ---- tabs ---- */
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+  ['calc','bom','optics'].forEach(t => $('pane-' + t).hidden = (t !== b.dataset.tab));
+}));
+
+$('modeSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  [...$('modeSeg').children].forEach(x => x.setAttribute('aria-pressed', x === b));
+  mode = b.dataset.v;
+  $('aggBlock').classList.toggle('hidden', mode !== 'agg');
+  $('bwLabel').textContent = mode === 'agg' ? 'Ancho de banda por sede' : mode === 'core' ? 'Tráfico agregado del nodo' : 'Ancho de banda contratado';
+  $('modeHint').textContent = mode === 'agg'
+    ? 'Suma los enlaces de todas las sucursales que terminan en este equipo, aplicando simultaneidad.'
+    : mode === 'core' ? 'Capacidad total que debe conmutar el nodo. Se contrasta contra capacidad de conmutación y Mpps.'
+    : 'Un solo enlace WAN terminando en el equipo.';
+  render();
+});
+$('dirSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  [...$('dirSeg').children].forEach(x => x.setAttribute('aria-pressed', x === b));
+  dirMult = +b.dataset.v; render();
+});
+['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote']
+  .forEach(id => $(id).addEventListener('input', render));
+['pickModel','qty','optQty'].forEach(id => $(id).addEventListener('input', renderBom));
+
+function fmt(m){
+  if(m == null) return '—';
+  if(m >= 1000000) return (m/1000000).toFixed(m % 1000000 ? 2 : 0).replace(/\.00$/,'') + ' Tbps';
+  if(m >= 1000) return (m/1000).toFixed(m % 1000 ? 1 : 0) + ' Gbps';
+  return Math.round(m) + ' Mbps';
+}
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const bomTag = arr => (arr && arr.length)
+  ? arr.map(b => `<code>${b}</code>`).join(' ')
+  : `<code class="pend">por confirmar</code>`;
+
+/* ════════ CALCULADORA ════════ */
+function render(){
+  const raw = (parseFloat($('bw').value) || 0) * (+$('unit').value);
+  const conc = +$('conc').value; $('concVal').textContent = conc + ' %';
+  const head = +$('head').value; $('headVal').textContent = head + ' %';
+  const sites = parseInt($('sites').value) || 1;
+  const base = mode === 'agg' ? raw * sites * conc/100 : raw;
+  const need = base * dirMult * (1 + head/100);
+  const frame = +$('frame').value, needMpps = need / (frame * 8);
+  const pk = $('profile').value;
+  const minLan = parseInt($('lan').value) || 0, aps = parseInt($('aps').value) || 0;
+  const svc = {sdwan:$('sSdwan').checked, utm:$('sUtm').checked, slice:$('sSlice').checked};
+  const want = {poe:$('rPoe').checked, wan:$('rWan').checked, wifi:$('rWifi').checked};
+  const wanOk = (pk === 'fwd') && !svc.sdwan && !svc.utm && aps === 0 && !want.poe && !want.wan && !want.wifi;
+
+  const rows = MODELS.map(m => {
+    const isWan = m.cls === 'WAN', cap = isWan ? m.cap : m[pk], miss = [];
+    if(isWan && !wanOk) miss.push('serie de transporte: no hace SD-WAN, UTM ni WAC');
+    if(cap == null) miss.push('sin cifra publicada para este perfil');
+    else if(cap < need) miss.push('capacidad insuficiente');
+    if(isWan && m.mpps != null && m.mpps < needMpps) miss.push(`límite de paquetes: ${m.mpps} Mpps`);
+    if(want.poe && !m.poe) miss.push('sin PoE');
+    if(want.wan && !m.wan) miss.push('sin 4G/5G integrado');
+    if(want.wifi && !m.wifi) miss.push('sin Wi-Fi');
+    if((m.lan||0) < minLan) miss.push(`${m.lan||0} puertos LAN`);
+    if(!isWan && aps > (m.apsMax||0)) miss.push(`gestiona ${m.apsMax||0} APs`);
+    return {m, cap, miss, isWan};
+  });
+  const fit = rows.filter(r => !r.miss.length).sort((a,b) => a.cap - b.cap);
+  const pick = fit[0] || null, next = fit[1] || null;
+
+  drawLadder(need, pick, pk);
+  drawVerdict(pick, next, {need, needMpps, raw, base, head, conc, sites, frame, pk, rows, wanOk});
+  drawLicenses(pick, {need, aps, svc, pk});
+  drawSupport(pick);
+  $('tbody').innerHTML = rows.map(r => {
+    const sel = pick && pick.m.id === r.m.id;
+    return `<tr class="${sel ? 'sel' : ''}"><td>${r.m.id}</td><td><span class="pillc">${r.m.ser}</span></td>
+      <td class="n">${fmt(r.isWan ? r.m.cap : r.m[pk])}</td><td class="n">${r.m.mpps != null ? r.m.mpps + ' Mpps' : '—'}</td>
+      <td class="n">${r.m.lan || '—'}</td><td>${r.miss.length ? `<span style="color:var(--steel)">${r.miss[0]}</span>` : `<span style="color:var(--green);font-weight:600">Cumple</span>`}</td></tr>`;
+  }).join('');
+
+  if(pick && pick.m.id !== lastPick){ lastPick = pick.m.id; $('pickModel').value = pick.m.id; renderBom(); }
+}
+
+const LO = 100, HI = 700000000;
+const pos = v => Math.max(0, Math.min(100, (Math.log10(Math.max(v, LO)) - Math.log10(LO)) / (Math.log10(HI) - Math.log10(LO)) * 100));
+
+function drawLadder(need, pick, pk){
+  const t = $('track');
+  t.querySelectorAll('.tick,.dot').forEach(n => n.remove());
+  [[100,'100M'],[1000,'1G'],[10000,'10G'],[100000,'100G'],[1000000,'1T'],[10000000,'10T'],[100000000,'100T']].forEach(([v,l]) => {
+    const d = document.createElement('div'); d.className = 'tick'; d.style.left = pos(v) + '%';
+    d.innerHTML = `<i></i><b>${l}</b>`; t.appendChild(d);
+  });
+  MODELS.forEach(m => {
+    const c = m.cls === 'WAN' ? m.cap : m[pk]; if(c == null) return;
+    const d = document.createElement('div');
+    d.className = 'dot' + (m.cls === 'WAN' ? ' wan' : '') + (pick && pick.m.id === m.id ? ' pick' : (c >= need ? ' ok' : ''));
+    d.style.left = pos(c) + '%'; d.title = `${m.id} — ${fmt(c)}`; t.appendChild(d);
+  });
+  const p = pos(need), n = $('need');
+  n.style.left = p + '%'; n.classList.toggle('flip', p > 62);
+  $('needLbl').textContent = 'Requiere ' + fmt(need);
+  const lbl = $('pickLbl');
+  if(pick){
+    lbl.style.display = 'block'; lbl.textContent = pick.m.id;
+    const lp = pos(pick.cap); lbl.style.left = lp + '%';
+    lbl.style.transform = lp > 80 ? 'translateX(-90%)' : (lp < 12 ? 'translateX(-10%)' : 'translateX(-50%)');
+  } else lbl.style.display = 'none';
+}
+
+function drawVerdict(pick, next, c){
+  const v = $('verdict');
+  if(!c.raw){ v.innerHTML = `<p class="tag">Sin datos</p><div class="model">Ingresa un ancho de banda</div><p class="family">Escribe el caudal para empezar.</p>`; return; }
+  if(!pick){
+    const over = c.rows.every(r => r.cap == null || r.cap < c.need);
+    v.innerHTML = `<p class="tag">Sin coincidencias</p><div class="model">${over ? 'Fuera del catálogo' : 'Ajusta los filtros'}</div>
+      <p class="family">${over ? `El requerimiento de ${fmt(c.need)} supera al NE8000 X16. A este nivel se resuelve con varios chasis en paralelo.`
+      : c.wanOk ? 'Ningún modelo cumple capacidad y requisitos a la vez.'
+      : 'Con SD-WAN, UTM o WAC habilitados solo compite la serie AR, y ninguno cubre este caudal. Para transporte puro desmarca esas funciones.'}</p>
+      <div class="why"><b>Requerimiento:</b> ${fmt(c.need)} · ${c.needMpps.toFixed(2)} Mpps a ${c.frame} bytes.</div>`;
+    return;
+  }
+  const m = pick.m, cap = pick.cap, use = Math.min(100, c.need / cap * 100);
+  const cls = use > 85 ? 'tight' : (use < 55 ? 'good' : '');
+  const usePps = (m.mpps != null) ? Math.min(100, c.needMpps / m.mpps * 100) : null;
+  const ppsCls = usePps == null ? '' : (usePps > 85 ? 'tight' : (usePps < 55 ? 'good' : ''));
+  const metric = pick.isWan ? 'Capacidad de conmutación' : PROFILE[c.pk];
+  v.innerHTML = `
+    <p class="tag">Modelo recomendado · serie ${m.ser}</p>
+    <div class="model">${m.id}</div><p class="family">${m.fam}</p>
+    <div class="meter"><b><span>${metric}</span><em>${use.toFixed(0)} % de ${fmt(cap)}</em></b><div class="bar"><i class="${cls}" style="width:${use}%"></i></div></div>
+    ${usePps != null ? `<div class="meter"><b><span>Reenvío a ${c.frame} bytes</span><em>${usePps.toFixed(0)} % de ${m.mpps} Mpps</em></b><div class="bar"><i class="${ppsCls}" style="width:${usePps}%"></i></div></div>` : ''}
+    <div class="why"><b>Cómo se llegó a ${fmt(c.need)}</b><ul>
+      ${mode === 'agg' ? `<li>${c.sites} sedes x ${fmt(c.raw)} x ${c.conc} % de simultaneidad = <b>${fmt(c.base)}</b> agregados.</li>` : `<li>Caudal base: <b>${fmt(c.raw)}</b>.</li>`}
+      ${dirMult === 2 ? `<li>Medido por dirección, se dimensiona contra la suma bidireccional: <b>${fmt(c.base*2)}</b>.</li>` : `<li>Tomado como total agregado, sin duplicar.</li>`}
+      <li>Más ${c.head} % de margen: <b>${fmt(c.need)}</b> · <b>${c.needMpps.toFixed(2)} Mpps</b>.</li>
+      <li>${m.id} publica <b>${fmt(cap)}</b> en ${metric.toLowerCase()}.</li>
+      <li>${m.ports}</li>
+      ${next ? `<li>Siguiente escalón: <b>${next.m.id}</b> con ${fmt(next.cap)}.</li>` : ''}
+      ${use > 85 ? `<li class="warn"><b>Atención:</b> sobre el 85 % de ocupación. Sube el margen o pasa al siguiente modelo.</li>` : ''}
+      ${usePps != null && usePps > 85 ? `<li class="warn"><b>Atención:</b> el cuello de botella son los paquetes por segundo, no los bits.</li>` : ''}
+      ${pick.isWan ? `<li class="warn">La capacidad de conmutación es del sistema completo. El techo real lo fija la tarjeta de línea y la densidad de puertos.</li>` : ''}
+    </ul></div>`;
+}
+
+function licensesFor(pick, c){
+  const m = pick.m, L = [];
+  if(m.boost && c.need > m.boost) L.push({on:1, t:'Licencia de rendimiento (Boost)', d:`Sin ella el ${m.id} entrega ${fmt(m.boost)}. La licencia lo lleva a ${fmt(m.fwd)}.`});
+  if(!pick.isWan){
+    if(c.pk !== 'fwd' || c.svc.sdwan){
+      L.push({on:1, t:'Licencia de función SD-WAN por equipo', d:'Habilita identificación de aplicaciones, selección inteligente de ruta y túneles gestionados.'});
+      L.push({on:1, t:'Suscripción iMaster NCE-WAN — 12 meses', d:'Controlador y gestión del overlay. Se licencia por nodo administrado.'});
+    }
+    if(c.svc.utm){
+      L.push({on:1, t:'Licencia de seguridad: IPS, filtrado URL y antivirus', d:'Funciones licenciadas aparte en la serie AR, no vienen activas.'});
+      L.push({on:1, t:'Suscripción de bases de firmas — 12 meses', d:'Sin firmas vigentes el IPS y el antivirus quedan sin actualizar.'});
+    }
+    if(c.aps > 0){
+      const extra = Math.max(0, c.aps - (m.apsFree||0));
+      L.push({on: extra > 0 ? 1 : 0, t: extra > 0 ? `Licencia de recursos AP — ${extra} APs adicionales` : 'Licencia de recursos AP no requerida',
+        d: extra > 0 ? `El ${m.id} gestiona ${m.apsFree} APs sin costo y llega a ${m.apsMax}.` : `Los ${c.aps} APs caben en los ${m.apsFree} gratuitos.`});
+    }
+  } else {
+    L.push({on:1, t:'Licencia base del sistema VRP por chasis', d:'Habilita el conjunto de funciones de la plataforma.'});
+    L.push({on:1, t:'Licencias de función de transporte: L3VPN, EVPN, SRv6', d:'Se licencian por funcionalidad activada.'});
+    if(c.svc.slice) L.push({on:1, t:'Licencia de slicing FlexE / SRv6', d:'Aislamiento duro de red y ajuste de ancho de banda por rebanada.'});
+    L.push({on:1, t:'Licencia de capacidad por puerto y tarjeta', d:'La capacidad se habilita por incrementos. Cotiza la densidad del año 1 y crece por licencia.'});
+    L.push({on:1, t:'Suscripción iMaster NCE — 12 meses', d:'Gestión, automatización y O&M proactiva del nodo.'});
+  }
+  L.push({on:1, t:'SnS — Software Subscription and Support, 12 meses', d:'Vía para actualizaciones y parches de VRP. Va separada del paquete de hardware.'});
+  L.push({on:0, t:'Registro de ESN', d:'Todas las licencias se emiten contra el ESN del equipo y se descargan del portal ESDP de Huawei.'});
+  return L;
+}
+function drawLicenses(pick, c){
+  const ul = $('licList');
+  if(!pick){ ul.innerHTML = '<li>Selecciona un escenario válido.</li>'; return; }
+  ul.innerHTML = licensesFor(pick, c).map(x =>
+    `<li class="${x.on ? 'on' : ''}"><b>${x.t}</b>${x.on ? '<span class="req">Requerida</span>' : '<span class="req opt">Nota</span>'}<span class="sku">${x.d}</span></li>`).join('');
+}
+
+function supportFor(){
+  const crit = +$('crit').value, onsite = $('onsite').checked, remote = $('remote').checked;
+  let key;
+  if(crit >= 4) key = onsite ? 'onsitePre' : 'premier';
+  else if(crit === 3) key = onsite ? 'onsiteStd' : 'premier';
+  else if(crit === 2) key = onsite ? 'onsiteStd' : 'standard';
+  else key = remote ? 'basic' : 'essential';
+  if(remote && (key === 'essential' || key === 'basic') && crit >= 2) key = 'standard';
+  return {key, s:HICARE[key], alt: key === 'premier' ? HICARE.standard : key === 'onsitePre' ? HICARE.premier : key === 'standard' ? HICARE.premier : HICARE.standard};
+}
+function drawSupport(pick){
+  const box = $('supBox');
+  if(!pick){ box.innerHTML = '<p style="font-size:13.5px;color:var(--steel)">Selecciona un escenario válido.</p>'; return; }
+  const {s, alt} = supportFor();
+  box.innerHTML = `
+    <div class="model" style="font-size:26px;margin-bottom:2px">${s.n}</div>
+    <p class="family" style="margin-bottom:14px"><span class="pillc">${s.sla}</span> · término 12 meses · ${pick.m.id}</p>
+    <p style="font-size:13.5px;margin:0 0 14px">${s.d}</p>
+    <ul class="clean" style="font-size:13.5px">
+      <li class="on"><b>Alternativa a evaluar:</b> ${alt.n} (${alt.sla})<span class="sku">Compara el diferencial contra el costo por hora de indisponibilidad del sitio.</span></li>
+      <li><b>Qué no cubre la garantía estándar</b><span class="sku">Reemplaza hardware defectuoso, pero Huawei gestiona el RMA sin asistencia de troubleshooting, configuración ni instalación.</span></li>
+      <li><b>Alinea las fechas</b><span class="sku">Haz coincidir Hi-Care, SnS, suscripción NCE y bases de firmas en la misma fecha de inicio.</span></li>
+      <li><b>Co-Care como opción de canal</b><span class="sku">Si tu organización entrega el primer nivel, Co-Care traslada nivel 1 y 2 al partner con respaldo de Huawei detrás.</span></li>
+    </ul>`;
+}
+
+/* ════════ BOM ════════ */
+function populatePickModel(){
+  $('pickModel').innerHTML = (() => {
+    const groups = {};
+    MODELS.forEach(m => { (groups[m.ser] = groups[m.ser] || []).push(m); });
+    return Object.entries(groups).map(([g, arr]) =>
+      `<optgroup label="${g}">${arr.map(m => `<option value="${m.id}">${m.id} — ${m.fam}</option>`).join('')}</optgroup>`).join('');
+  })();
+}
+
+function renderBom(){
+  const m = MODELS.find(x => x.id === $('pickModel').value) || MODELS[0];
+  const qty = Math.max(1, parseInt($('qty').value) || 1);
+  const optQty = Math.max(0, parseInt($('optQty').value) || 0);
+  const isWan = m.cls === 'WAN';
+  const pick = {m, isWan, cap: isWan ? m.cap : (m.typ ?? m.ipsec ?? m.fwd)};
+  const lics = licensesFor(pick, {need:0, aps:parseInt($('aps').value)||0, svc:{sdwan:$('sSdwan').checked, utm:$('sUtm').checked, slice:$('sSlice').checked}, pk:$('profile').value});
+  const {s} = supportFor();
+
+  let html = `<section class="panel">
+    <h2>Ficha del equipo</h2>
+    <div class="model" style="font-size:30px">${m.id}</div>
+    <p class="family">${m.fam} · serie ${m.ser}</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Concepto</th><th>Valor</th></tr></thead><tbody>
+      <tr><td>Designación de pedido</td><td><code>${m.id}</code></td></tr>
+      <tr><td>Código BOM del chasis</td><td>${bomTag(null)} <span style="color:var(--steel);font-size:11.5px">— obtener del configurador Huawei o del distribuidor</span></td></tr>
+      <tr><td>${isWan ? 'Capacidad de conmutación' : 'Forwarding (NAT+ACL+QoS, IMIX)'}</td><td class="n">${fmt(isWan ? m.cap : m.fwd)}</td></tr>
+      ${!isWan ? `<tr><td>IPsec (IMIX)</td><td class="n">${fmt(m.ipsec)}</td></tr><tr><td>SD-WAN típico (IMIX)</td><td class="n">${fmt(m.typ)}</td></tr>` : ''}
+      ${m.mpps != null ? `<tr><td>Reenvío de paquetes</td><td class="n">${m.mpps} Mpps</td></tr>` : ''}
+      <tr><td>Puertos y slots</td><td>${m.ports}</td></tr>
+      ${!isWan && m.apsMax ? `<tr><td>Gestión de APs (WAC)</td><td class="n">${m.apsFree} gratuitos / ${m.apsMax} máximo</td></tr>` : ''}
+    </tbody></table></div>
+  </section>`;
+
+  // Componentes de hardware
+  const parts = (m.parts || []).map(k => PARTS[k]).filter(Boolean);
+  if(parts.length){
+    html += `<section class="panel"><h2>Componentes de hardware</h2><div class="scroll"><table>
+      <thead><tr><th>Designación</th><th>Código BOM</th><th>Descripción</th></tr></thead><tbody>
+      ${parts.map(p => `<tr><td><code>${esc(p.sku)}</code></td><td>${bomTag(p.bom)}</td><td>${esc(p.d)}</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="hint">Las fuentes y ventiladores redundantes se piden por separado del chasis. En equipos con esquema 1+1 o N+1 cotiza siempre el módulo de respaldo: es el componente que más falla en campo.</p></section>`;
+  }
+
+  // Ópticas
+  html += `<section class="panel"><h2>Módulos ópticos compatibles</h2>`;
+  (m.optics || []).forEach(k => {
+    html += `<div class="grp"><h3>${OPTIC_LABEL[k]}</h3>
+      <p class="gd">Cantidad estimada: <b>${optQty * qty}</b> módulos (${optQty} por equipo x ${qty}). Recuerda que cada extremo del enlace necesita el suyo.</p>
+      <div class="scroll"><table><thead><tr><th>Designación</th><th>Código BOM</th><th>Descripción</th></tr></thead><tbody>
+      ${OPTICS[k].map(o => `<tr><td><code>${esc(o.sku)}</code></td><td>${bomTag(o.bom)}</td><td>${esc(o.d)}</td></tr>`).join('')}
+      </tbody></table></div></div>`;
+  });
+  html += `<p class="hint">Los módulos bidireccionales (BIDI) se piden en pareja de códigos distintos, uno por extremo. Los puertos combo aceptan óptica o cobre, pero no ambos a la vez.</p></section>`;
+
+  // Licencias
+  html += `<section class="panel"><h2>Licencias y suscripciones</h2><ul class="clean">
+    ${lics.map(x => `<li class="${x.on ? 'on':''}"><b>${x.t}</b>${x.on ? '<span class="req">Requerida</span>':'<span class="req opt">Nota</span>'}<span class="sku">${x.d}</span></li>`).join('')}
+  </ul></section>`;
+
+  // Soporte
+  html += `<section class="panel"><h2>Servicio de soporte</h2><div class="scroll"><table>
+    <thead><tr><th>Servicio</th><th>SLA</th><th>Término</th><th>Cantidad</th></tr></thead><tbody>
+    <tr><td>${s.n}</td><td class="n">${s.sla}</td><td class="n">12 meses</td><td class="n">${qty}</td></tr>
+    <tr><td>SnS — Software Subscription and Support</td><td class="n">Actualizaciones de VRP</td><td class="n">12 meses</td><td class="n">${qty}</td></tr>
+  </tbody></table></div></section>`;
+
+  $('bomBody').innerHTML = html;
+  $('bomOut').value = plainBom(m, qty, optQty, parts, lics, s);
+}
+
+function plainBom(m, qty, optQty, parts, lics, s){
+  const L = [];
+  const pad = t => t;
+  L.push(`LISTA DE MATERIALES — ${m.id}`);
+  L.push(`Serie ${m.ser} · ${m.fam}`);
+  L.push(`Generado como preselección de preventa. Confirmar códigos BOM antes de cotizar.`);
+  L.push('');
+  L.push('EQUIPO');
+  L.push(`  ${qty} x ${m.id}   [BOM: POR CONFIRMAR]`);
+  L.push(`     ${m.ports}`);
+  if(parts.length){
+    L.push('');
+    L.push('COMPONENTES DE HARDWARE');
+    parts.forEach(p => L.push(`  __ x ${p.sku}   [BOM: ${p.bom ? p.bom.join(' / ') : 'POR CONFIRMAR'}]\n     ${p.d}`));
+  }
+  L.push('');
+  L.push(`MODULOS OPTICOS  (${optQty * qty} estimados)`);
+  (m.optics||[]).forEach(k => {
+    L.push(`  -- ${OPTIC_LABEL[k]} --`);
+    OPTICS[k].forEach(o => L.push(`  __ x ${o.sku}   [BOM: ${o.bom.length ? o.bom.join(' / ') : 'POR CONFIRMAR'}]\n     ${o.d}`));
+  });
+  L.push('');
+  L.push('LICENCIAS Y SUSCRIPCIONES');
+  lics.filter(x => x.on).forEach(x => L.push(`  ${qty} x ${x.t}\n     ${x.d}`));
+  L.push('');
+  L.push('SOPORTE — TERMINO 12 MESES');
+  L.push(`  ${qty} x ${s.n}  (${s.sla})`);
+  L.push(`  ${qty} x SnS — Software Subscription and Support`);
+  L.push('');
+  L.push('NOTA: la garantia estandar no incluye soporte remoto TAC de Huawei.');
+  return L.join('\n');
+}
+
+$('copyBtn').addEventListener('click', async () => {
+  const t = $('bomOut'); t.select();
+  try { await navigator.clipboard.writeText(t.value); $('copyBtn').textContent = 'Copiado'; }
+  catch { document.execCommand('copy'); $('copyBtn').textContent = 'Copiado'; }
+  setTimeout(() => $('copyBtn').textContent = 'Copiar BOM', 1600);
+});
+
+/* ════════ CATÁLOGO DE ÓPTICAS ════════ */
+(async function initApp(){
+  const res = await fetch('/api/dimensionador/huawei');
+  const data = await res.json();
+  OPTICS = data.optics;
+  OPTIC_LABEL = data.opticLabel;
+  PARTS = data.parts;
+  MODELS = data.models;
+  HICARE = data.hicare;
+
+  populatePickModel();
+  $('opticsAll').innerHTML = Object.keys(OPTICS).map(k => `
+    <div class="grp"><h3>${OPTIC_LABEL[k]}</h3>
+    <div class="scroll"><table><thead><tr><th>Designación</th><th>Códigos BOM</th><th>Descripción</th></tr></thead><tbody>
+    ${OPTICS[k].map(o => `<tr><td><code>${esc(o.sku)}</code></td><td>${bomTag(o.bom)}</td><td>${esc(o.d)}</td></tr>`).join('')}
+    </tbody></table></div></div>`).join('');
+
+  render();
+  renderBom();
+})();
+</script>
+</body>
+</html>

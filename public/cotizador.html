@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cotizador Multi-fabricante — Portal Presales</title>
+<meta name="description" content="Panel de cotización multi-fabricante. Agrega equipos Huawei, Cisco, Nokia, Fortinet, Juniper y Arista en un BOM unificado exportable a CSV.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;
+  --card:#FFF;--red:#C7000B;--amber:#A45B00;--green:#1F6B4A;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:50;background:var(--ink);border-bottom:3px solid var(--red);padding:0 20px;height:52px;display:flex;align-items:center;gap:16px}
+.tbar-logo{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;color:#fff}
+.tbar-logo span{color:var(--red)}
+.tbar-title{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.tbar-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;padding:6px 14px;border:1px solid;border-radius:2px;cursor:pointer;letter-spacing:.03em;white-space:nowrap;transition:all .15s}
+.btn-primary{background:var(--red);border-color:var(--red);color:#fff}
+.btn-primary:hover{background:#a00009}
+.btn-ghost{background:transparent;border-color:rgba(255,255,255,.3);color:#fff}
+.btn-ghost:hover{border-color:#fff}
+.btn-ink{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn-ink:hover{background:var(--red);border-color:var(--red)}
+.btn-out{background:var(--card);border-color:var(--rule);color:var(--ink)}
+.btn-out:hover{border-color:var(--ink)}
+.back-link{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5);text-decoration:none}
+.back-link:hover{color:#fff}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:340px 1fr;height:calc(100vh - 52px);overflow:hidden}
+@media(max-width:900px){.layout{grid-template-columns:1fr;height:auto;overflow:visible}}
+
+/* LEFT — CATALOG */
+.catalog-pane{background:var(--card);border-right:1px solid var(--rule);display:flex;flex-direction:column;overflow:hidden}
+.pane-head{padding:14px 16px 10px;border-bottom:1px solid var(--rule);flex-shrink:0}
+.pane-head h2{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:0 0 10px;font-weight:600}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap}
+.filter-btn{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:12px;text-transform:uppercase;padding:4px 10px;border-radius:2px;border:1px solid var(--rule);background:var(--paper);color:var(--steel);cursor:pointer;transition:all .12s}
+.filter-btn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.search-box{width:100%;padding:7px 10px;border:1px solid var(--rule);border-radius:2px;font-family:'Barlow',sans-serif;font-size:13px;margin-top:8px}
+.search-box:focus{outline:2px solid var(--red)}
+.catalog-scroll{flex:1;overflow-y:auto;padding:8px 0}
+.catalog-scroll::-webkit-scrollbar{width:3px}
+.catalog-scroll::-webkit-scrollbar-thumb{background:var(--rule)}
+
+/* CATALOG ITEM */
+.cat-group{padding:4px 0}
+.cat-group-head{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(14,26,43,.4);padding:6px 16px 3px;font-weight:600}
+.cat-item{display:flex;align-items:center;gap:10px;padding:7px 16px;cursor:pointer;transition:background .12s}
+.cat-item:hover{background:var(--paper)}
+.cat-item:hover .cat-add{opacity:1}
+.cat-badge{width:34px;height:34px;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;color:#fff}
+.cat-info{flex:1;min-width:0}
+.cat-model{font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat-seg{font-size:11px;color:var(--steel);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat-elp{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--amber);white-space:nowrap}
+.cat-add{opacity:0;background:var(--ink);color:#fff;border:none;border-radius:2px;padding:3px 8px;font-size:11px;font-weight:600;cursor:pointer;transition:all .12s;flex-shrink:0}
+.cat-add:hover{background:var(--red)}
+
+/* RIGHT — QUOTE */
+.quote-pane{display:flex;flex-direction:column;overflow:hidden}
+.quote-head{padding:14px 20px 10px;border-bottom:1px solid var(--rule);background:var(--card);flex-shrink:0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.quote-head h2{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:0 0 2px;font-weight:600}
+.quote-title-input{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;border:none;border-bottom:2px solid var(--rule);padding:2px 0;background:transparent;color:var(--ink);width:260px;outline:none}
+.quote-title-input:focus{border-bottom-color:var(--red)}
+.quote-meta{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.meta-field{display:flex;flex-direction:column;gap:2px}
+.meta-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel)}
+.meta-input{font-size:12.5px;border:1px solid var(--rule);border-radius:2px;padding:4px 8px;width:140px}
+.quote-actions{display:flex;gap:6px;flex-wrap:wrap}
+.quote-scroll{flex:1;overflow-y:auto;padding:0}
+.quote-scroll::-webkit-scrollbar{width:3px}
+.quote-scroll::-webkit-scrollbar-thumb{background:var(--rule)}
+
+/* QUOTE TABLE */
+.q-table-wrap{overflow-x:auto;flex:1}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);font-weight:500;padding:10px 10px 8px;border-bottom:1px solid var(--rule);background:var(--card);position:sticky;top:0;z-index:2;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--paper);transition:background .1s}
+tbody tr:hover{background:rgba(14,26,43,.02)}
+tbody td{padding:8px 10px;vertical-align:middle}
+.td-vendor{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.v-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.td-model{font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600}
+.td-seg{font-size:11.5px;color:var(--steel)}
+.td-spec{font-size:11px;color:var(--steel)}
+.td-elp{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--amber)}
+.td-total{font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600}
+.qty-ctrl{display:flex;align-items:center;gap:4px}
+.qty-btn{width:22px;height:22px;border:1px solid var(--rule);background:var(--paper);border-radius:2px;cursor:pointer;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;color:var(--ink);line-height:1}
+.qty-btn:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.qty-val{font-family:'IBM Plex Mono',monospace;font-size:12px;width:26px;text-align:center;font-weight:600}
+.notes-input{font-size:11.5px;border:1px solid var(--rule);border-radius:2px;padding:3px 6px;width:120px;font-family:'Barlow',sans-serif}
+.del-btn{background:none;border:none;color:var(--rule);cursor:pointer;font-size:16px;padding:2px 4px;line-height:1}
+.del-btn:hover{color:var(--red)}
+
+/* SUMMARY BAR */
+.summary-bar{border-top:2px solid var(--rule);background:var(--card);padding:12px 20px;flex-shrink:0;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.sum-item{display:flex;flex-direction:column}
+.sum-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel)}
+.sum-val{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;line-height:1}
+.sum-disclaimer{font-size:10.5px;color:var(--steel);margin-left:auto;max-width:280px;text-align:right}
+
+/* EMPTY STATE */
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;color:var(--steel);text-align:center;gap:12px}
+.empty-icon{font-size:36px;opacity:.3}
+.empty-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;color:var(--steel)}
+.empty-desc{font-size:13px;max-width:32ch}
+
+/* PRINT */
+@media print{
+  .topbar,.catalog-pane,.pane-head .search-box,.quote-actions,.qty-btn,.del-btn,.notes-input,.filter-row,.cat-add{display:none!important}
+  .layout{grid-template-columns:1fr;height:auto}
+  .quote-pane{overflow:visible}
+  .quote-scroll{overflow:visible}
+  body{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="index.html" class="back-link">&#8592; Portal</a>
+  <div class="tbar-logo">Pre<span>sales</span></div>
+  <div class="tbar-title">Cotizador Multi-fabricante</div>
+  <div class="tbar-right">
+    <button class="btn btn-ghost" onclick="clearQuote()">&#10005; Limpiar</button>
+    <button class="btn btn-ghost" onclick="window.print()">&#9113; Imprimir</button>
+    <button class="btn btn-primary" onclick="exportCSV()">&#8681; Exportar CSV</button>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ══ CATALOG PANE ══ -->
+  <aside class="catalog-pane">
+    <div class="pane-head">
+      <h2>Catálogo de equipos activos</h2>
+      <div class="filter-row" id="filterRow"></div>
+      <input type="text" class="search-box" id="searchBox" placeholder="Buscar modelo o segmento…" oninput="renderCatalog()">
+    </div>
+    <div class="catalog-scroll" id="catalogList"></div>
+  </aside>
+
+  <!-- ══ QUOTE PANE ══ -->
+  <section class="quote-pane">
+    <div class="quote-head">
+      <div>
+        <p class="quote-head h2" style="margin:0 0 4px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600">Nombre del proyecto</p>
+        <input type="text" class="quote-title-input" id="quoteTitle" value="Proyecto de Red" oninput="renderSummary()">
+      </div>
+      <div class="quote-meta">
+        <div class="meta-field">
+          <span class="meta-label">Cliente</span>
+          <input type="text" class="meta-input" id="quoteClient" placeholder="Nombre del cliente">
+        </div>
+        <div class="meta-field">
+          <span class="meta-label">Fecha</span>
+          <input type="date" class="meta-input" id="quoteDate">
+        </div>
+        <div class="meta-field">
+          <span class="meta-label">Responsable</span>
+          <input type="text" class="meta-input" id="quoteOwner" placeholder="Ingeniero / Preventa">
+        </div>
+      </div>
+      <div class="quote-actions">
+        <button class="btn btn-out" onclick="addCustomItem()">+ Línea libre</button>
+      </div>
+    </div>
+    <div class="quote-scroll" id="quoteScroll">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">&#9633;</div>
+        <div class="empty-title">BOM vacío</div>
+        <div class="empty-desc">Selecciona equipos del catálogo o usa "+ Línea libre" para agregar ítems personalizados.</div>
+      </div>
+      <div class="q-table-wrap" id="tableWrap" style="display:none">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:90px">Fabricante</th>
+              <th>Modelo</th>
+              <th>Segmento / Rol</th>
+              <th>Especificaciones</th>
+              <th style="width:80px">Precio ref. USD&#9432;</th>
+              <th style="width:70px;text-align:center">Cant.</th>
+              <th style="width:90px">Total ref.</th>
+              <th style="width:130px">Nota</th>
+              <th style="width:30px"></th>
+            </tr>
+          </thead>
+          <tbody id="bomBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="summary-bar" id="summaryBar" style="display:none">
+      <div class="sum-item"><span class="sum-label">Líneas</span><span class="sum-val" id="sumLines">0</span></div>
+      <div class="sum-item"><span class="sum-label">Unidades</span><span class="sum-val" id="sumUnits">0</span></div>
+      <div class="sum-item"><span class="sum-label">Total ref. USD</span><span class="sum-val" id="sumTotal">—</span></div>
+      <div class="sum-item"><span class="sum-label">Fabricantes</span><span class="sum-val" id="sumVendors">—</span></div>
+      <p class="sum-disclaimer">&#9432; Precios de lista estimados (referencias públicas de mercado). No incluyen descuentos de canal, IVA, licencias ni soporte. Usar referencias públicas.</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════
+   CATALOG DATA — active products only (no EOL/EOS)
+   EOL removed: ISR 4221/4331/4351/4431/4451/4461 (EoS Nov 2023)
+                ASR 1001-X (EoS Ago 2022), ASR 1002-HX (EoS Mar 2025)
+   ══════════════════════════════════════════════ */
+let CATALOG = [];
+
+const VENDORS = ['Todos','Huawei','Cisco','Nokia','Fortinet','Juniper','Arista'];
+let activeVendor = 'Todos';
+let bom = []; // {id, vendor, color, model, seg, spec, elp, elpN, qty, note}
+let nextId = 1;
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+/* ══ INIT ══ */
+(async function init(){
+  const res = await fetch('/api/cotizador/catalog');
+  CATALOG = await res.json();
+  // Set today's date
+  $('quoteDate').value = new Date().toISOString().slice(0,10);
+  // Render filter buttons
+  $('filterRow').innerHTML = VENDORS.map(v=>`
+    <button class="filter-btn${v===activeVendor?' on':''}" data-v="${v}">${v}</button>`).join('');
+  $('filterRow').querySelectorAll('.filter-btn').forEach(b=>{
+    b.addEventListener('click',()=>{
+      activeVendor = b.dataset.v;
+      $('filterRow').querySelectorAll('.filter-btn').forEach(x=>x.classList.toggle('on',x===b));
+      renderCatalog();
+    });
+  });
+  renderCatalog();
+  renderBom();
+})();
+
+/* ══ CATALOG ══ */
+function renderCatalog(){
+  const q = ($('searchBox').value||'').toLowerCase();
+  const items = CATALOG.filter(item=>{
+    const vOk = activeVendor==='Todos' || item.vendor===activeVendor;
+    const sOk = !q || item.model.toLowerCase().includes(q) || item.seg.toLowerCase().includes(q) || item.vendor.toLowerCase().includes(q);
+    return vOk && sOk;
+  });
+
+  // Group by vendor
+  const groups = {};
+  items.forEach(item=>{ (groups[item.vendor]=groups[item.vendor]||[]).push(item); });
+
+  $('catalogList').innerHTML = Object.keys(groups).map(vendor=>`
+    <div class="cat-group">
+      <div class="cat-group-head">${vendor}</div>
+      ${groups[vendor].map((item,i)=>`
+        <div class="cat-item" data-idx="${CATALOG.indexOf(item)}">
+          <div class="cat-badge" style="background:${item.color}">${item.vendor.slice(0,2).toUpperCase()}</div>
+          <div class="cat-info">
+            <div class="cat-model">${esc(item.model)}</div>
+            <div class="cat-seg">${esc(item.seg)}</div>
+            <div class="cat-elp">${item.elp}</div>
+          </div>
+          <button class="cat-add" data-idx="${CATALOG.indexOf(item)}">+ Agregar</button>
+        </div>`).join('')}
+    </div>`).join('');
+
+  $('catalogList').querySelectorAll('.cat-add, .cat-item').forEach(el=>{
+    el.addEventListener('click', e=>{
+      e.stopPropagation();
+      const idx = parseInt(el.closest('[data-idx]').dataset.idx);
+      addItem(CATALOG[idx]);
+    });
+  });
+}
+
+/* ══ ADD / REMOVE ══ */
+function addItem(item){
+  // Check if already in BOM and increment qty instead
+  const existing = bom.find(b=>b.model===item.model && b.vendor===item.vendor);
+  if(existing){ existing.qty++; renderBom(); return; }
+  bom.push({id:nextId++, vendor:item.vendor, color:item.color, model:item.model,
+            seg:item.seg, spec:item.spec, elp:item.elp, elpN:item.elpN, qty:1, note:''});
+  renderBom();
+}
+
+function addCustomItem(){
+  bom.push({id:nextId++, vendor:'—', color:'#5C6E85', model:'Ítem personalizado', seg:'—', spec:'Editar en campo Nota', elp:'—', elpN:0, qty:1, note:''});
+  renderBom();
+}
+
+function removeItem(id){ bom = bom.filter(b=>b.id!==id); renderBom(); }
+function setQty(id, delta){
+  const item = bom.find(b=>b.id===id);
+  if(!item) return;
+  item.qty = Math.max(1, item.qty+delta);
+  renderBom();
+}
+function setNote(id, val){ const item=bom.find(b=>b.id===id); if(item) item.note=val; }
+
+function clearQuote(){
+  if(bom.length && !confirm('¿Limpiar el BOM completo?')) return;
+  bom=[]; renderBom();
+}
+
+/* ══ RENDER BOM ══ */
+function renderBom(){
+  const empty = bom.length===0;
+  $('emptyState').style.display = empty ? 'flex' : 'none';
+  $('tableWrap').style.display = empty ? 'none' : 'block';
+  $('summaryBar').style.display = empty ? 'none' : 'flex';
+
+  if(!empty){
+    $('bomBody').innerHTML = bom.map(item=>`
+      <tr data-id="${item.id}">
+        <td><div class="td-vendor"><span class="v-dot" style="background:${item.color}"></span>${esc(item.vendor)}</div></td>
+        <td><div class="td-model">${esc(item.model)}</div></td>
+        <td><div class="td-seg">${esc(item.seg)}</div></td>
+        <td><div class="td-spec">${esc(item.spec)}</div></td>
+        <td class="td-elp">${esc(item.elp)}</td>
+        <td>
+          <div class="qty-ctrl">
+            <button class="qty-btn" data-act="dec" data-id="${item.id}">−</button>
+            <span class="qty-val">${item.qty}</span>
+            <button class="qty-btn" data-act="inc" data-id="${item.id}">+</button>
+          </div>
+        </td>
+        <td class="td-total">${item.elpN>0 ? fmtUSD(item.elpN*item.qty) : '—'}</td>
+        <td><input type="text" class="notes-input" data-id="${item.id}" placeholder="Nota…" value="${esc(item.note)}"></td>
+        <td><button class="del-btn" data-id="${item.id}" title="Eliminar">&#10005;</button></td>
+      </tr>`).join('');
+
+    // Event listeners
+    $('bomBody').querySelectorAll('.qty-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>{ setQty(+btn.dataset.id, btn.dataset.act==='inc'?1:-1); });
+    });
+    $('bomBody').querySelectorAll('.del-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>removeItem(+btn.dataset.id));
+    });
+    $('bomBody').querySelectorAll('.notes-input').forEach(inp=>{
+      inp.addEventListener('input',()=>setNote(+inp.dataset.id, inp.value));
+    });
+  }
+  renderSummary();
+}
+
+function fmtUSD(n){ return '~ $'+n.toLocaleString('en-US'); }
+
+function renderSummary(){
+  if(bom.length===0) return;
+  const lines = bom.length;
+  const units = bom.reduce((s,b)=>s+b.qty, 0);
+  const total = bom.reduce((s,b)=>s+(b.elpN*b.qty),0);
+  const vendors = [...new Set(bom.map(b=>b.vendor).filter(v=>v!=='—'))];
+  $('sumLines').textContent = lines;
+  $('sumUnits').textContent = units;
+  $('sumTotal').textContent = total>0 ? fmtUSD(total) : '—';
+  $('sumVendors').textContent = vendors.length ? vendors.join(' · ') : '—';
+}
+
+/* ══ EXPORT CSV ══ */
+function exportCSV(){
+  if(!bom.length){ alert('El BOM está vacío.'); return; }
+  const proj = $('quoteTitle').value || 'Proyecto';
+  const client = $('quoteClient').value || '';
+  const date = $('quoteDate').value || '';
+  const owner = $('quoteOwner').value || '';
+
+  const rows = [
+    ['PRESALES — BOM Multi-fabricante'],
+    ['Proyecto','Cliente','Fecha','Responsable'],
+    [proj, client, date, owner],
+    [],
+    ['Fabricante','Modelo','Segmento / Rol','Especificaciones','Precio ref. USD','Cantidad','Total ref. USD','Nota'],
+    ...bom.map(item=>[
+      item.vendor, item.model, item.seg, item.spec,
+      item.elp, item.qty,
+      item.elpN>0?'~ $'+(item.elpN*item.qty).toLocaleString('en-US'):'—',
+      item.note
+    ]),
+    [],
+    ['DISCLAIMER','Precios de lista estimados (referencias públicas de mercado). No incluyen descuentos de canal IVA licencias ni soporte. Verificar con distribuidor autorizado de cada fabricante.'],
+  ];
+
+  const csv = rows.map(r=>r.map(c=>'"'+String(c||'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const d = date || new Date().toISOString().slice(0,10);
+  a.href=url; a.download=`bom-presales-${proj.replace(/\s+/g,'-').toLowerCase()}-${d}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>

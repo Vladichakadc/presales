@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía de Diseño Interactivo de Red — Portal Presales</title>
+<meta name="description" content="Guía interactiva de topologías de red. Selecciona Hub-Spoke, Full-Mesh, SD-WAN, MPLS, Leaf-Spine o SASE y obtén recomendaciones de equipos por fabricante para cada rol.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;
+  --card:#FFF;--red:#C7000B;--amber:#A45B00;--green:#1F6B4A;
+  --hw:#C7000B;--cs:#049FD9;--nk:#124191;--ft:#EE3124;--jn:#84B135;--ar:#4E5B6E;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1260px;margin:0 auto;padding:24px 18px 80px}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);text-decoration:none;margin-bottom:18px}
+.back-link:hover{color:var(--red)}
+.masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:24px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0 0 4px}
+h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(26px,4.5vw,44px);line-height:.98;text-transform:uppercase;margin:0}
+.sub{color:var(--steel);max-width:70ch;margin:8px 0 0;font-size:14.5px}
+
+/* TOPOLOGY SELECTOR */
+.topo-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.topo-tab{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:9px 16px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;text-transform:uppercase;letter-spacing:.04em;color:var(--steel);transition:all .15s;display:flex;align-items:center;gap:8px}
+.topo-tab:hover{border-color:var(--ink);color:var(--ink)}
+.topo-tab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.topo-tab .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+/* MAIN LAYOUT */
+.design-layout{display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start}
+@media(max-width:1000px){.design-layout{grid-template-columns:1fr}}
+
+/* SVG CANVAS */
+.svg-panel{background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:16px;min-height:440px;position:relative}
+.svg-panel h2{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:0 0 12px;font-weight:600}
+#topoSvg{width:100%;height:420px;display:block}
+.svg-hint{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--steel);letter-spacing:.06em;text-transform:uppercase;text-align:center;margin-top:8px}
+
+/* SVG node styles */
+.node-box{cursor:pointer;transition:filter .15s}
+.node-box:hover .node-rect{filter:brightness(.92)}
+.node-box.selected .node-rect{stroke-width:3;stroke:#C7000B}
+.node-label{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;fill:#fff;text-anchor:middle;dominant-baseline:middle;pointer-events:none}
+.node-role{font-family:'Barlow',sans-serif;font-size:10px;fill:rgba(255,255,255,.75);text-anchor:middle;pointer-events:none}
+.link-line{stroke:#C6CFDA;stroke-width:2;fill:none}
+.link-line.active{stroke:#0E1A2B;stroke-width:2.5}
+.link-label{font-family:'IBM Plex Mono',monospace;font-size:9px;fill:var(--steel);text-anchor:middle}
+
+/* RIGHT PANEL */
+.rec-panel{display:flex;flex-direction:column;gap:14px}
+.rec-header{background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:16px}
+.rec-header .role-tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0 0 4px}
+.rec-header h3{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;text-transform:uppercase;margin:0 0 4px}
+.rec-header p{font-size:13px;color:var(--steel);margin:0}
+.rec-empty{text-align:center;padding:30px 16px;color:var(--steel);font-size:13.5px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;border:1px dashed var(--rule);border-radius:4px;background:var(--card)}
+.vendor-rec{background:var(--card);border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.vendor-head{padding:10px 14px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;text-transform:uppercase;letter-spacing:.04em;color:#fff;display:flex;align-items:center;gap:10px}
+.vendor-body{padding:10px 14px}
+.rec-model{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;margin-bottom:2px}
+.rec-spec{font-size:12px;color:var(--steel);margin-bottom:4px}
+.rec-alt{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--steel);padding:6px 10px;background:var(--paper);border-radius:2px;margin-top:6px}
+.rec-alt b{color:var(--ink)}
+.elp-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--amber);display:inline-block;margin-top:4px}
+
+/* INFO PANEL */
+.info-panel{background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:14px}
+.info-panel h4{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:0 0 10px;font-weight:600;border-bottom:1px solid var(--rule);padding-bottom:7px}
+.kv{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--paper);font-size:12.5px;gap:10px}
+.kv:last-child{border-bottom:none}
+.kv .k{color:var(--steel)}
+.kv .v{font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;text-align:right}
+.tag-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:2px;background:var(--paper);color:var(--steel)}
+
+/* DISCLAIMER */
+.disclaimer{margin-top:16px;font-size:11.5px;color:var(--steel);line-height:1.55;border-top:1px solid var(--rule);padding-top:12px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<a href="index.html" class="back-link">&#8592; Volver al Portal Presales</a>
+
+<header class="masthead">
+  <p class="eyebrow">Herramienta interactiva &middot; Diseño de red multi-fabricante</p>
+  <h1>Guía de Diseño<br>de Red Interactiva</h1>
+  <p class="sub">Selecciona una topología, haz clic en un nodo del diagrama y obtén recomendaciones de equipos activos (no EOL/EOS) por fabricante para ese rol específico. Precios de referencia pública con disclaimer.</p>
+</header>
+
+<div class="topo-tabs" id="topoTabs"></div>
+
+<div class="design-layout">
+  <div class="svg-panel">
+    <h2 id="svgTitle">Topología — Hub &amp; Spoke</h2>
+    <svg id="topoSvg" viewBox="0 0 700 420"></svg>
+    <p class="svg-hint">&#9654; Haz clic en cualquier nodo para ver equipos recomendados</p>
+  </div>
+  <div class="rec-panel">
+    <div class="rec-header" id="recHeader">
+      <p class="role-tag">Selecciona un nodo</p>
+      <h3 id="recTitle">—</h3>
+      <p id="recDesc">Haz clic en un equipo del diagrama para ver las recomendaciones multi-fabricante.</p>
+    </div>
+    <div id="recEmpty" class="rec-empty">&#9670; Haz clic en un nodo del diagrama</div>
+    <div id="recVendors"></div>
+  </div>
+</div>
+
+<div class="disclaimer">
+  &#9432; <b>Nota sobre EOL/EOS:</b> Solo se muestran equipos activos verificados a 2025. Cisco ISR 4000 series (EoS Nov 2023), ASR 1001-X (EoS Ago 2022) y ASR 1002-HX (EoS Mar 2025) han sido removidos del catálogo.
+  Los precios de referencia (ELP) son estimados de lista pública — no incluyen descuentos de canal, IVA ni licencias de software. Verificar siempre con el distribuidor autorizado de cada fabricante.
+</div>
+
+</div>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════
+   EQUIPMENT DATABASE (active / non-EOL only)
+   ══════════════════════════════════════════════ */
+let EQ = {};
+
+/* ══════════════════════════════════════════════
+   TOPOLOGY DEFINITIONS
+   ══════════════════════════════════════════════ */
+const TOPOS = [
+  {
+    id:'hubspoke', label:'Hub & Spoke', color:'#C7000B',
+    desc:'Todo el tráfico pasa por un hub central. Ideal para centralizar seguridad e inspección. Alta disponibilidad en hub, spoke más económico.',
+    protocols:['MPLS L3VPN','SD-WAN overlay','IPsec site-to-site'],
+    useCase:'Empresas con sede central y muchas sucursales que requieren políticas unificadas.',
+    pros:['Control centralizado de seguridad','Gestión simple','Costos bajos en spoke'],
+    cons:['Punto único de fallo si hub no es HA','Latencia branch-to-branch alta','Throughput hub dimensionado para tráfico agregado'],
+    nodes:[
+      {id:'hub',   x:350, y:80,  w:120, h:46, label:'HUB',    role:'Hub Router / GW', color:'#0E1A2B', eqRole:'hub_router'},
+      {id:'br1',   x:100, y:280, w:110, h:40, label:'BR 1',   role:'Branch Router',   color:'#5C6E85', eqRole:'branch_router'},
+      {id:'br2',   x:270, y:340, w:110, h:40, label:'BR 2',   role:'Branch Router',   color:'#5C6E85', eqRole:'branch_router'},
+      {id:'br3',   x:460, y:340, w:110, h:40, label:'BR 3',   role:'Branch Router',   color:'#5C6E85', eqRole:'branch_router'},
+      {id:'br4',   x:590, y:280, w:110, h:40, label:'BR 4',   role:'Branch Router',   color:'#5C6E85', eqRole:'branch_router'},
+      {id:'fw',    x:300, y:160, w:100, h:40, label:'FW',     role:'NGFW / Perimeter', color:'#A45B00', eqRole:'fw_ngfw'},
+      {id:'ctrl',  x:430, y:160, w:130, h:40, label:'SD-WAN', role:'Controller / NCE', color:'#1F6B4A', eqRole:'sdwan_controller'},
+    ],
+    links:[
+      {f:'hub',f:'hub',t:'br1',label:'WAN'},{f:'hub',t:'br2',label:'WAN'},
+      {f:'hub',t:'br3',label:'WAN'},{f:'hub',t:'br4',label:'WAN'},
+      {f:'hub',t:'fw',label:''},{f:'hub',t:'ctrl',label:'mgmt'},
+    ]
+  },
+  {
+    id:'sdwan', label:'SD-WAN Overlay', color:'#1F6B4A',
+    desc:'Túneles cifrados sobre Internet y/o MPLS con selección dinámica de path y visibilidad de aplicaciones. ZTP para despliegue masivo.',
+    protocols:['IPsec overlay','VXLAN','AppFlow','BFD path monitoring'],
+    useCase:'Empresas que buscan reducir costos MPLS, agregar LTE/5G de respaldo y mejorar experiencia SaaS.',
+    pros:['Reducción costos MPLS hasta 70%','ZTP — despliegue sin técnico en sitio','Visibilidad de aplicaciones','Failover automático < 1s'],
+    cons:['Calidad depende del underlay','Complejidad del controlador','Requiere criptografía robusta en CPE'],
+    nodes:[
+      {id:'ctrl',  x:290, y:50,  w:140, h:46, label:'CONTROLLER', role:'SD-WAN Orchestrator',color:'#1F6B4A', eqRole:'sdwan_controller'},
+      {id:'inet',  x:520, y:50,  w:120, h:46, label:'INTERNET',    role:'Underlay Public',    color:'#5C6E85', eqRole:null},
+      {id:'mpls',  x:520, y:130, w:120, h:40, label:'MPLS',        role:'Underlay Private',   color:'#5C6E85', eqRole:null},
+      {id:'hub',   x:290, y:190, w:120, h:46, label:'HUB CPE',     role:'Hub Router SD-WAN',  color:'#0E1A2B', eqRole:'hub_router'},
+      {id:'cpe1',  x:80,  y:320, w:120, h:40, label:'CPE 1',       role:'Branch SD-WAN',      color:'#5C6E85', eqRole:'branch_router'},
+      {id:'cpe2',  x:240, y:340, w:120, h:40, label:'CPE 2',       role:'Branch SD-WAN',      color:'#5C6E85', eqRole:'branch_router'},
+      {id:'cpe3',  x:400, y:340, w:120, h:40, label:'CPE 3',       role:'Branch + 5G',        color:'#5C6E85', eqRole:'branch_small'},
+      {id:'fw',    x:160, y:210, w:100, h:40, label:'FW',          role:'NGFW Perimeter',     color:'#A45B00', eqRole:'fw_ngfw'},
+    ],
+    links:[
+      {f:'hub',t:'cpe1',label:'IPsec'},{f:'hub',t:'cpe2',label:'IPsec'},
+      {f:'hub',t:'cpe3',label:'IPsec'},{f:'hub',t:'ctrl',label:'ctrl'},
+      {f:'hub',t:'fw',label:''},{f:'hub',t:'inet',label:'WAN1'},
+      {f:'hub',t:'mpls',label:'WAN2'},{f:'cpe1',t:'inet',label:''},
+      {f:'cpe2',t:'inet',label:''},{f:'cpe3',t:'inet',label:''},
+    ]
+  },
+  {
+    id:'mpls', label:'MPLS L3VPN', color:'#124191',
+    desc:'VPN de capa 3 sobre red MPLS del proveedor. Separación por VRF, QoS garantizado, latencia determinística.',
+    protocols:['BGP/MPLS L3VPN','LDP / RSVP-TE','MP-BGP','OSPF/IS-IS underlay'],
+    useCase:'Operadores y empresas que necesitan SLA garantizado, QoS por clase de servicio y separación de clientes.',
+    pros:['QoS garantizado por SLA','Aislamiento multicliente VRF','Latencia predecible','MPLS TE para ingeniería de tráfico'],
+    cons:['Costo mensual elevado','Dependencia del ISP','Tiempo de aprovisionamiento mayor','Cobertura geográfica limitada'],
+    nodes:[
+      {id:'pe1',   x:180, y:80,  w:110, h:46, label:'PE 1',   role:'Provider Edge',   color:'#124191', eqRole:'pe_router'},
+      {id:'pe2',   x:420, y:80,  w:110, h:46, label:'PE 2',   role:'Provider Edge',   color:'#124191', eqRole:'pe_router'},
+      {id:'p1',    x:300, y:160, w:100, h:46, label:'P Core', role:'Core / LSR',      color:'#0E1A2B', eqRole:'core_router'},
+      {id:'ce1',   x:80,  y:240, w:100, h:40, label:'CE 1',   role:'Customer Edge',   color:'#5C6E85', eqRole:'branch_router'},
+      {id:'ce2',   x:200, y:320, w:100, h:40, label:'CE 2',   role:'Customer Edge',   color:'#5C6E85', eqRole:'branch_router'},
+      {id:'ce3',   x:400, y:240, w:100, h:40, label:'CE 3',   role:'Customer Edge',   color:'#5C6E85', eqRole:'branch_router'},
+      {id:'ce4',   x:530, y:320, w:100, h:40, label:'CE 4',   role:'Customer Edge',   color:'#5C6E85', eqRole:'branch_router'},
+      {id:'agg',   x:300, y:360, w:100, h:36, label:'AGG',    role:'Aggregation',     color:'#A45B00', eqRole:'aggregation'},
+    ],
+    links:[
+      {f:'pe1',t:'p1',label:'LSP'},{f:'pe2',t:'p1',label:'LSP'},
+      {f:'pe1',t:'ce1',label:'VRF A'},{f:'pe1',t:'ce2',label:'VRF B'},
+      {f:'pe2',t:'ce3',label:'VRF A'},{f:'pe2',t:'ce4',label:'VRF B'},
+      {f:'p1',t:'agg',label:''},{f:'ce2',t:'agg',label:''},{f:'ce4',t:'agg',label:''},
+    ]
+  },
+  {
+    id:'leafspine', label:'Leaf-Spine DC', color:'#4E5B6E',
+    desc:'Topología no bloqueante para datacenter. Cada leaf conecta a todos los spines. Latencia predecible, escala horizontal.',
+    protocols:['EVPN-VXLAN','BGP','ECMP 64-way','BFD for BGP'],
+    useCase:'Datacenters modernos que requieren escalabilidad horizontal, EVPN/VXLAN multitenancy y latencia sub-microsegundo.',
+    pros:['No bloqueante — ancho de banda garantizado','Escala horizontal sin cambios en topología','Convergencia rápida con BFD','EVPN-VXLAN multitenancy'],
+    cons:['Alto costo de cableado (n×m cables)','Requiere automatización (AVD/Apstra/NSP)','Planificación IP detallada','Cambio de modelo operativo'],
+    nodes:[
+      {id:'sp1',  x:200, y:80,  w:130, h:46, label:'SPINE 1', role:'Spine Switch',  color:'#0E1A2B', eqRole:'dc_switch_spine'},
+      {id:'sp2',  x:380, y:80,  w:130, h:46, label:'SPINE 2', role:'Spine Switch',  color:'#0E1A2B', eqRole:'dc_switch_spine'},
+      {id:'lf1',  x:80,  y:260, w:110, h:40, label:'LEAF 1', role:'Leaf / ToR',     color:'#4E5B6E', eqRole:'dc_switch_leaf'},
+      {id:'lf2',  x:220, y:260, w:110, h:40, label:'LEAF 2', role:'Leaf / ToR',     color:'#4E5B6E', eqRole:'dc_switch_leaf'},
+      {id:'lf3',  x:360, y:260, w:110, h:40, label:'LEAF 3', role:'Leaf / ToR',     color:'#4E5B6E', eqRole:'dc_switch_leaf'},
+      {id:'lf4',  x:500, y:260, w:110, h:40, label:'LEAF 4', role:'Leaf / ToR',     color:'#4E5B6E', eqRole:'dc_switch_leaf'},
+      {id:'gw',   x:590, y:80,  w:100, h:46, label:'BORDER', role:'DC Gateway/DCI', color:'#A45B00', eqRole:'aggregation'},
+    ],
+    links:[
+      {f:'sp1',t:'lf1',label:'100G'},{f:'sp1',t:'lf2',label:'100G'},
+      {f:'sp1',t:'lf3',label:'100G'},{f:'sp1',t:'lf4',label:'100G'},
+      {f:'sp2',t:'lf1',label:'100G'},{f:'sp2',t:'lf2',label:'100G'},
+      {f:'sp2',t:'lf3',label:'100G'},{f:'sp2',t:'lf4',label:'100G'},
+      {f:'sp2',t:'gw',label:'DCI'},{f:'sp1',t:'gw',label:''},
+    ]
+  },
+  {
+    id:'sase', label:'SASE / SSE', color:'#A45B00',
+    desc:'Seguridad como servicio en la nube. Internet breakout local desde sucursal hacia PoP de SASE para inspección cloud.',
+    protocols:['IPsec/GRE hacia PoP SASE','ZTNA','CASB','SWG cloud'],
+    useCase:'Empresas con usuarios remotos y SaaS masivo (M365, Salesforce) que buscan eliminar el backhauling de Internet.',
+    pros:['Experiencia óptima para SaaS','Elimina backhauling innecesario','Escala según usuarios sin hardware','Seguridad consistente usuario-a-nube'],
+    cons:['Dependencia de conectividad cloud','Latencia variable según PoP SASE','Visibilidad limitada en tráfico cifrado','Compliance con residencia de datos'],
+    nodes:[
+      {id:'sase', x:290, y:50,  w:140, h:46, label:'SASE PoP',  role:'Cloud Security / SASE',color:'#A45B00', eqRole:'sdwan_controller'},
+      {id:'inet', x:490, y:50,  w:120, h:46, label:'INTERNET',  role:'Underlay',              color:'#5C6E85', eqRole:null},
+      {id:'m365', x:560, y:160, w:120, h:40, label:'M365/SaaS', role:'Cloud Apps',            color:'#5C6E85', eqRole:null},
+      {id:'cpe1', x:100, y:200, w:120, h:40, label:'CPE 1',     role:'Branch SASE CPE',       color:'#5C6E85', eqRole:'branch_small'},
+      {id:'cpe2', x:240, y:280, w:120, h:40, label:'CPE 2',     role:'Branch SASE CPE',       color:'#5C6E85', eqRole:'branch_small'},
+      {id:'fw',   x:100, y:310, w:120, h:40, label:'HQ NGFW',   role:'HQ Perimeter NGFW',     color:'#EE3124', eqRole:'fw_ngfw'},
+      {id:'hq',   x:100, y:380, w:120, h:36, label:'HQ LAN',    role:'HQ Campus / DC',        color:'#0E1A2B', eqRole:'aggregation'},
+    ],
+    links:[
+      {f:'cpe1',t:'sase',label:'IPsec'},{f:'cpe2',t:'sase',label:'IPsec'},
+      {f:'sase',t:'inet',label:''},{f:'inet',t:'m365',label:''},
+      {f:'cpe1',t:'inet',label:'breakout'},{f:'cpe2',t:'inet',label:'breakout'},
+      {f:'hq',t:'fw',label:''},{f:'fw',t:'inet',label:''},
+    ]
+  },
+  {
+    id:'fullmesh', label:'Full Mesh', color:'#84B135',
+    desc:'Cada nodo conecta directamente con todos los demás. Máxima resiliencia, mínima latencia entre pares. Costo O(n²).',
+    protocols:['BGP full-mesh iBGP','OSPF/IS-IS','RSVP-TE para FRR','BFD'],
+    useCase:'Backbone de operadoras, redes financieras con baja latencia crítica, o redes de 3–5 nodos que requieren redundancia total.',
+    pros:['Máxima resiliencia — n-1 fallos tolerados','Latencia E2E mínima','Sin punto único de fallo'],
+    cons:['Costo O(n²) — escala mal > 6 nodos','Gestión compleja de rutas BGP','Alto costo de circuitos'],
+    nodes:[
+      {id:'r1', x:300, y:60,  w:100, h:46, label:'R 1', role:'Core Router',  color:'#0E1A2B', eqRole:'core_router'},
+      {id:'r2', x:530, y:170, w:100, h:46, label:'R 2', role:'Core Router',  color:'#0E1A2B', eqRole:'core_router'},
+      {id:'r3', x:460, y:330, w:100, h:46, label:'R 3', role:'Core Router',  color:'#0E1A2B', eqRole:'core_router'},
+      {id:'r4', x:150, y:330, w:100, h:46, label:'R 4', role:'Core Router',  color:'#0E1A2B', eqRole:'core_router'},
+      {id:'r5', x:80,  y:170, w:100, h:46, label:'R 5', role:'Core Router',  color:'#0E1A2B', eqRole:'core_router'},
+      {id:'agg',x:280, y:200, w:110, h:40, label:'AGG', role:'Aggregation',  color:'#A45B00', eqRole:'aggregation'},
+    ],
+    links:[
+      {f:'r1',t:'r2',label:''},{f:'r1',t:'r3',label:''},{f:'r1',t:'r4',label:''},
+      {f:'r1',t:'r5',label:''},{f:'r2',t:'r3',label:''},{f:'r2',t:'r4',label:''},
+      {f:'r2',t:'r5',label:''},{f:'r3',t:'r4',label:''},{f:'r3',t:'r5',label:''},
+      {f:'r4',t:'r5',label:''},{f:'r1',t:'agg',label:''},{f:'agg',t:'r4',label:''},
+    ]
+  },
+];
+
+/* ══════════════════════════════════════════════
+   STATE
+   ══════════════════════════════════════════════ */
+let currentTopo = TOPOS[0];
+let selectedNode = null;
+
+/* ══════════════════════════════════════════════
+   INIT TABS
+   ══════════════════════════════════════════════ */
+function initTabs(){
+  const tabs = document.getElementById('topoTabs');
+  tabs.innerHTML = TOPOS.map(t=>`
+    <button class="topo-tab${t.id===currentTopo.id?' active':''}" data-id="${t.id}">
+      <span class="dot" style="background:${t.color}"></span>${t.label}
+    </button>`).join('');
+  tabs.querySelectorAll('.topo-tab').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      currentTopo = TOPOS.find(t=>t.id===btn.dataset.id);
+      selectedNode = null;
+      tabs.querySelectorAll('.topo-tab').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      drawTopo();
+      clearRec();
+    });
+  });
+}
+
+/* ══════════════════════════════════════════════
+   DRAW SVG
+   ══════════════════════════════════════════════ */
+function nodeById(id){ return currentTopo.nodes.find(n=>n.id===id); }
+function cx(n){ return n.x + n.w/2; }
+function cy(n){ return n.y + n.h/2; }
+
+function drawTopo(){
+  const svg = document.getElementById('topoSvg');
+  const t = currentTopo;
+  document.getElementById('svgTitle').textContent = 'Topología — ' + t.label;
+  let out = '';
+
+  // links
+  const drawnLinks = new Set();
+  t.links.forEach(l=>{
+    const key = [l.f,l.t].sort().join('|');
+    if(drawnLinks.has(key)) return;
+    drawnLinks.add(key);
+    const from = nodeById(l.f), to = nodeById(l.t);
+    if(!from||!to) return;
+    const x1=cx(from),y1=cy(from),x2=cx(to),y2=cy(to);
+    const mx=(x1+x2)/2, my=(y1+y2)/2;
+    out += `<line class="link-line" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+    if(l.label) out += `<text class="link-label" x="${mx}" y="${my-5}">${l.label}</text>`;
+  });
+
+  // nodes
+  t.nodes.forEach(n=>{
+    const selected = selectedNode && selectedNode.id===n.id;
+    const stroke = selected ? '#C7000B' : 'none';
+    const sw = selected ? 3 : 0;
+    out += `<g class="node-box${selected?' selected':''}" data-id="${n.id}">
+      <rect class="node-rect" x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}"
+        rx="4" fill="${n.color}" stroke="${stroke}" stroke-width="${sw}"/>
+      <text class="node-label" x="${cx(n)}" y="${cy(n)-7}">${n.label}</text>
+      <text class="node-role" x="${cx(n)}" y="${cy(n)+8}">${n.role}</text>
+      ${n.eqRole?`<circle cx="${n.x+n.w-8}" cy="${n.y+8}" r="4" fill="rgba(255,255,255,.35)"/>`:''}
+    </g>`;
+  });
+
+  svg.innerHTML = out;
+
+  // click handlers
+  svg.querySelectorAll('.node-box').forEach(g=>{
+    g.addEventListener('click',()=>{
+      const node = nodeById(g.dataset.id);
+      if(!node) return;
+      selectedNode = node;
+      drawTopo(); // redraw to update selection highlight
+      showRec(node);
+    });
+  });
+}
+
+/* ══════════════════════════════════════════════
+   SHOW RECOMMENDATIONS
+   ══════════════════════════════════════════════ */
+function clearRec(){
+  document.getElementById('recTitle').textContent='—';
+  document.getElementById('recDesc').textContent='Haz clic en un nodo del diagrama.';
+  document.querySelector('.role-tag').textContent='Selecciona un nodo';
+  document.getElementById('recEmpty').style.display='block';
+  document.getElementById('recVendors').innerHTML='';
+}
+
+function showRec(node){
+  document.getElementById('recEmpty').style.display='none';
+  document.querySelector('.role-tag').textContent='Rol: '+node.role;
+  document.getElementById('recTitle').textContent=node.label+' — '+node.role;
+  document.getElementById('recDesc').textContent='Equipos activos recomendados (no EOL/EOS) para el rol '+node.role+' en la topología '+currentTopo.label+'.';
+
+  if(!node.eqRole){ 
+    document.getElementById('recVendors').innerHTML=`<div class="rec-empty">Este nodo representa infraestructura del proveedor / cloud.<br>No aplica selección de equipo CPE.</div>`;
+    return;
+  }
+
+  const recs = EQ[node.eqRole]||[];
+  if(!recs.length){
+    document.getElementById('recVendors').innerHTML=`<div class="rec-empty">No hay recomendaciones configuradas para este rol.</div>`;
+    return;
+  }
+
+  document.getElementById('recVendors').innerHTML = recs.map(r=>`
+    <div class="vendor-rec">
+      <div class="vendor-head" style="background:${r.color}">
+        <span style="font-size:13px">${r.v}</span>
+      </div>
+      <div class="vendor-body">
+        <div class="rec-model">${r.model}</div>
+        <div class="rec-spec">${r.spec}</div>
+        <span class="elp-tag">Ref. precio: ${r.elp}</span>
+        <div class="rec-alt"><b>Alternativa:</b> ${r.alt}</div>
+      </div>
+    </div>`).join('');
+}
+
+/* ══════════════════════════════════════════════
+   TOPOLOGY INFO CARDS (auto-rendered below svg)
+   ══════════════════════════════════════════════ */
+function updateInfo(){
+  // nothing extra needed — info is in the topo desc
+}
+
+/* ══════════════════════════════════════════════
+   BOOT
+   ══════════════════════════════════════════════ */
+(async function initApp(){
+  const res = await fetch('/api/guia/roles');
+  EQ = await res.json();
+  initTabs();
+  drawTopo();
+  clearRec();
+})();
+</script>
+</body>
+</html>

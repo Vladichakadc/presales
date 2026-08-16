@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dimensionador y BOM Cisco — ISR · Catalyst 8000 · ASR 1000</title>
+<meta name="description" content="Herramienta de dimensionamiento y lista de materiales para routers Cisco ISR, Catalyst 8000 y ASR 1000. SD-WAN Viptela, licencias DNA, soporte SmartNet.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;--red:#049FD9;--amber:#A45B00;--green:#1F6B4A;--card:#FFF}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1140px;margin:0 auto;padding:26px 18px 80px}
+.masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0 0 6px}
+h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28px,5.5vw,48px);line-height:.98;text-transform:uppercase;margin:0}
+.sub{color:var(--steel);max-width:64ch;margin:8px 0 0;font-size:14.5px}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);text-decoration:none;margin-bottom:18px;transition:color .15s}
+.back-link:hover{color:var(--red)}
+
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--rule);margin-bottom:22px}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:11px 18px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.03em;text-transform:uppercase;color:var(--steel)}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--red)}
+.tabpane[hidden]{display:none}
+
+/* ── LADDER ── */
+.ladder{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px 18px 12px;margin-bottom:20px;overflow:hidden}
+.mono-lbl{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:0 0 18px;font-weight:600}
+.track{position:relative;height:110px;margin:0 4px}
+.axis{position:absolute;left:0;right:0;bottom:26px;height:1px;background:var(--rule)}
+.tick{position:absolute;bottom:26px;transform:translateX(-50%);text-align:center}
+.tick i{display:block;width:1px;height:7px;background:var(--rule);margin:0 auto}
+.tick b{font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:500;color:var(--steel);display:block;margin-top:4px;white-space:nowrap}
+.dot{position:absolute;bottom:34px;width:7px;height:7px;border-radius:50%;background:var(--rule);transform:translateX(-50%)}
+.dot.ok{background:var(--ink)}
+.dot.pick{background:var(--red);width:11px;height:11px;bottom:32px;box-shadow:0 0 0 4px rgba(4,159,217,.18)}
+.need{position:absolute;top:0;bottom:26px;width:2px;background:var(--red);transform:translateX(-50%);transition:left .25s cubic-bezier(.2,.8,.2,1)}
+.need span{position:absolute;top:-2px;left:6px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;color:#fff;background:var(--red);padding:2px 6px;border-radius:2px}
+.need.flip span{left:auto;right:6px}
+.pickLabel{position:absolute;bottom:52px;transform:translateX(-50%);white-space:nowrap;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;text-transform:uppercase}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--steel);letter-spacing:.06em;text-transform:uppercase}
+.legend i{display:inline-block;width:7px;height:7px;background:var(--ink);margin-right:5px;border-radius:50%;vertical-align:middle}
+
+/* ── LAYOUT ── */
+.cols{display:grid;grid-template-columns:minmax(0,330px) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:880px){.cols{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px;margin-bottom:16px}
+.panel h2{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.field{margin-bottom:16px}.field:last-child{margin-bottom:0}
+label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px}
+.hint{font-size:11.5px;color:var(--steel);margin-top:5px;line-height:1.4}
+.row{display:flex;gap:8px}
+input[type=number],select{width:100%;padding:9px 10px;border:1px solid var(--rule);border-radius:2px;background:#fff;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500}
+select{font-family:'Barlow',sans-serif;font-size:13.5px}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+input[type=range]{width:100%;accent-color:var(--red)}
+.seg{display:flex;border:1px solid var(--rule);border-radius:2px;overflow:hidden}
+.seg button{flex:1;padding:8px 4px;border:0;background:#fff;cursor:pointer;font-family:'Barlow',sans-serif;font-size:12px;font-weight:500;color:var(--steel);line-height:1.25}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed=true]{background:var(--ink);color:#fff;font-weight:600}
+.checks{display:grid;gap:7px}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer}
+.check input{margin:3px 0 0;accent-color:var(--red)}
+.hidden{display:none!important}
+
+/* ── VERDICT ── */
+.verdict{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:22px;margin-bottom:16px}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0}
+.model{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(22px,4vw,36px);line-height:1;text-transform:uppercase;margin:6px 0 2px}
+.family{color:var(--steel);font-size:13.5px;margin-bottom:16px}
+.meter{margin-bottom:12px}
+.meter b{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;display:flex;justify-content:space-between;gap:10px;color:var(--steel);margin-bottom:5px}
+.meter b em{font-style:normal;color:var(--ink);font-weight:600;white-space:nowrap}
+.bar{height:7px;background:var(--paper);border-radius:1px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink);transition:width .3s}
+.bar i.tight{background:var(--amber)}.bar i.good{background:var(--green)}
+.why{border-top:1px solid var(--rule);padding-top:14px;font-size:13.5px;margin-top:4px}
+.why ul{margin:8px 0 0;padding-left:18px}.why li{margin-bottom:5px}
+.warn{color:var(--amber)}
+ul.clean{list-style:none;margin:0;padding:0}
+ul.clean li{padding-left:14px;position:relative;margin-bottom:9px;font-size:13.5px}
+ul.clean li:before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;background:var(--rule)}
+ul.clean li.on:before{background:var(--red)}
+.sku{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--steel);display:block;margin-top:2px}
+.req{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 5px;border-radius:2px;background:var(--red);color:#fff;margin-left:6px;vertical-align:1px}
+.req.opt{background:var(--paper);color:var(--steel)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);font-weight:500;padding:0 8px 7px 0;border-bottom:1px solid var(--rule)}
+td{padding:8px 8px 8px 0;border-bottom:1px solid var(--paper);vertical-align:top}
+td.n,code{font-family:'IBM Plex Mono',monospace;font-size:12px}
+code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowrap}
+.scroll{overflow-x:auto}
+.grp{margin-bottom:22px}.grp:last-child{margin-bottom:0}
+.grp h3{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin:0 0 4px}
+.grp p.gd{font-size:12.5px;color:var(--steel);margin:0 0 10px}
+.note{margin-top:22px;font-size:12px;color:var(--steel);line-height:1.55;border-top:1px solid var(--rule);padding-top:14px}
+.note b{color:var(--ink)}.note a{color:var(--red)}
+.flag{background:#EDF5FD;border:1px solid #B3D4EC;border-left:3px solid var(--red);border-radius:2px;padding:12px 14px;font-size:12.5px;line-height:1.5;margin-bottom:18px}
+.flag b{color:#0369a1}
+#bomOut{width:100%;height:200px;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:10px;border:1px solid var(--rule);border-radius:2px;margin-top:10px}
+.btn{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px;cursor:pointer;white-space:nowrap}
+.btn.ghost{background:#fff;color:var(--ink)}
+.pillc{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 4px;border-radius:2px;background:var(--paper);color:var(--steel)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<a href="index.html" class="back-link">&#8592; Volver al Portal Presales</a>
+
+<header class="masthead">
+  <p class="eyebrow">Cisco &middot; Preventa SD-WAN &middot; Dimensionamiento y lista de materiales</p>
+  <h1>Dimensionador<br>y BOM Catalyst 8000 / ISR</h1>
+  <p class="sub">Calcula el throughput requerido, selecciona la plataforma Cisco correcta y obtén la lista completa de componentes: módulos NIM/SM, licencias DNA, ópticas SFP y soporte SmartNet.</p>
+</header>
+
+<div class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-tab="calc">Dimensionar</button>
+  <button role="tab" aria-selected="false" data-tab="bom">Equipo y BOM</button>
+  <button role="tab" aria-selected="false" data-tab="optics">Catálogo de ópticas</button>
+</div>
+
+<!-- ════ TAB 1 · CALCULADORA ════ -->
+<div class="tabpane" id="pane-calc">
+<section class="ladder">
+  <p class="mono-lbl">Escala de capacidad — forwarding publicado vs. requerimiento (logarítmica)</p>
+  <div class="track" id="track"><div class="axis"></div><div class="need" id="need"><span id="needLbl">—</span></div><div class="pickLabel" id="pickLbl" style="display:none"></div></div>
+  <div class="legend">
+    <span><i></i>ISR 1000 / 4000 — forwarding</span>
+    <span><i style="border-radius:1px;transform:rotate(45deg)"></i>Catalyst 8000 — SD-WAN</span>
+    <span><i style="border-radius:1px"></i>ASR 1000 — WAN edge</span>
+    <span style="color:var(--red)"><i style="background:var(--red)"></i>Elegido</span>
+  </div>
+</section>
+
+<div class="cols">
+<div>
+  <section class="panel">
+    <h2>1 · Cómo se dimensiona</h2>
+    <div class="field">
+      <label>Base de cálculo</label>
+      <div class="seg" id="modeSeg">
+        <button type="button" data-v="link" aria-pressed="true">Enlace único</button>
+        <button type="button" data-v="agg" aria-pressed="false">Agregado<br>multi-sede</button>
+        <button type="button" data-v="hub" aria-pressed="false">Hub<br>datacenter</button>
+      </div>
+      <p class="hint" id="modeHint">Un solo enlace WAN terminando en el equipo.</p>
+    </div>
+    <div class="field">
+      <label for="bw" id="bwLabel">Ancho de banda contratado</label>
+      <div class="row">
+        <input type="number" id="bw" value="500" min="0" step="any">
+        <select id="unit" style="width:105px"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
+      </div>
+    </div>
+    <div id="aggBlock" class="hidden">
+      <div class="field"><label for="sites">Número de sucursales que concentra</label><input type="number" id="sites" value="50" min="1"></div>
+      <div class="field">
+        <label for="conc">Factor de simultaneidad: <span id="concVal" style="font-family:'IBM Plex Mono',monospace">40 %</span></label>
+        <input type="range" id="conc" min="5" max="100" step="5" value="40">
+        <p class="hint">Porcentaje del caudal de sucursal que llega al hub a la vez.</p>
+      </div>
+    </div>
+    <div class="field">
+      <label>Medición del ancho de banda</label>
+      <div class="seg" id="dirSeg">
+        <button type="button" data-v="2" aria-pressed="true">Por dirección</button>
+        <button type="button" data-v="1" aria-pressed="false">Total agregado</button>
+      </div>
+      <p class="hint">Cisco publica throughput como <b>suma bidireccional</b>. 500 Mbps simétricos = 1 Gbps bidireccional.</p>
+    </div>
+    <div class="field">
+      <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
+      <input type="range" id="head" min="0" max="100" step="5" value="30">
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>2 · Perfil de servicios</h2>
+    <div class="field">
+      <label for="profile">Perfil de tráfico</label>
+      <select id="profile">
+        <option value="fwd">Routing + NAT + ACL + QoS (sin cifrado)</option>
+        <option value="ipsec">IPsec VPN</option>
+        <option value="sdwan" selected>SD-WAN típico — IPsec + AppFlow + QoS</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Funciones adicionales</label>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="sNgfw"> <span>NGFW / Zone-Based Firewall (ZBF)<span class="sku">Agrega carga de inspección de estado. Para NGFW avanzado considerar Firepower.</span></span></label>
+        <label class="check"><input type="checkbox" id="sVoice"> <span>CUBE — SIP Trunk / Voz IP<span class="sku">Concentrador de sesiones SIP. Incrementa uso de CPU en procesamiento de señalización.</span></span></label>
+        <label class="check"><input type="checkbox" id="sAppx"> <span>Application Visibility (AppX/NBAR)<span class="sku">Clasificación de tráfico en profundidad para QoS y visibilidad SD-WAN.</span></span></label>
+        <label class="check"><input type="checkbox" id="sUmbrella"> <span>Umbrella SIG Connector<span class="sku">Tunneling al cloud de seguridad Umbrella. Sobrecarga de procesamiento de túneles adicional.</span></span></label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="aps">Puntos de acceso Wi-Fi a gestionar (WLC integrado)</label>
+      <input type="number" id="aps" value="0" min="0" step="1">
+      <p class="hint">ISR 4000 y Catalyst 8000 pueden actuar como Wireless LAN Controller. Capacidad máxima varía por modelo.</p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>3 · Criterios de soporte</h2>
+    <div class="field">
+      <label>Criticidad del sitio</label>
+      <div class="seg" id="critSeg">
+        <button type="button" data-v="low" aria-pressed="true">Baja<br>(oficina)</button>
+        <button type="button" data-v="med" aria-pressed="false">Media<br>(sucursal prod.)</button>
+        <button type="button" data-v="high" aria-pressed="false">Alta<br>(hub / DC)</button>
+      </div>
+    </div>
+    <div class="field">
+      <label><input type="checkbox" id="chkRedund"> Fuente de alimentación redundante requerida</label>
+    </div>
+    <div class="field">
+      <label><input type="checkbox" id="chk4g"> Enlace de respaldo 4G/LTE requerido</label>
+    </div>
+  </section>
+</div>
+
+<div>
+  <div class="verdict" id="verdict">
+    <p class="tag">Modelo recomendado</p>
+    <p class="model" id="vModel">—</p>
+    <p class="family" id="vFamily"></p>
+    <div class="meter" id="mFwd">
+      <b>Forwarding (bidireccional) <em id="mFwdVal"></em></b>
+      <div class="bar"><i id="mFwdBar"></i></div>
+    </div>
+    <div class="meter" id="mIpsec">
+      <b>IPsec VPN <em id="mIpsecVal"></em></b>
+      <div class="bar"><i id="mIpsecBar"></i></div>
+    </div>
+    <div class="meter" id="mSdwan">
+      <b>SD-WAN (IPsec + AppFlow) <em id="mSdwanVal"></em></b>
+      <div class="bar"><i id="mSdwanBar"></i></div>
+    </div>
+    <div class="why" id="vWhy"></div>
+  </div>
+
+  <section class="panel" id="suppPanel">
+    <h2>Soporte recomendado (SmartNet)</h2>
+    <div id="suppBox"><p style="font-size:13.5px;color:var(--steel)">Selecciona un escenario válido.</p></div>
+  </section>
+
+  <section class="panel">
+    <h2>Licencias DNA</h2>
+    <div id="licBox"><p style="font-size:13.5px;color:var(--steel)">Selecciona un modelo para ver licencias.</p></div>
+  </section>
+
+  <div class="note">
+    <b>Nota metodológica.</b> El throughput publicado por Cisco corresponde a tráfico enterprise IMIX bidireccional con IOS XE. Los valores de SD-WAN corresponden a Catalyst 8000 con Cisco vManage y IPsec IMIX. Los ISR 4000 con licencia AppX pueden alcanzar el valor máximo publicado en condiciones controladas. <a href="https://www.cisco.com/c/en/us/products/routers/index.html" target="_blank">Cisco Routers Datasheet</a>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ════ TAB 2 · BOM ════ -->
+<div class="tabpane" id="pane-bom" hidden>
+<div class="cols">
+<div>
+  <section class="panel">
+    <h2>Selección de equipo</h2>
+    <div class="field">
+      <label for="pickModel">Modelo</label>
+      <select id="pickModel"></select>
+    </div>
+    <div class="field">
+      <label for="qty">Cantidad de equipos</label>
+      <input type="number" id="qty" value="1" min="1">
+    </div>
+    <div class="field">
+      <label for="nimQty">Módulos NIM adicionales a cotizar</label>
+      <input type="number" id="nimQty" value="0" min="0">
+    </div>
+    <div class="field">
+      <label for="optQty">Módulos ópticos SFP por equipo</label>
+      <input type="number" id="optQty" value="2" min="0">
+    </div>
+    <div class="field">
+      <label for="termYears">Término de soporte</label>
+      <select id="termYears">
+        <option value="1">1 año</option>
+        <option value="3" selected>3 años</option>
+        <option value="5">5 años</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="dnaTier">Nivel de licencia DNA</label>
+      <select id="dnaTier">
+        <option value="ess">DNA Essentials</option>
+        <option value="adv" selected>DNA Advantage</option>
+        <option value="pre">DNA Premier</option>
+      </select>
+    </div>
+  </section>
+
+  <div class="flag">
+    <b>Aviso de preventa:</b> Los códigos PID de Cisco pueden variar por región y canal. Siempre validar con el configurador CCW (Cisco Commerce Workspace) o con el distribuidor autorizado antes de cotizar.
+  </div>
+</div>
+
+<div>
+  <div id="bomBody"></div>
+  <section class="panel" style="margin-top:0">
+    <h2>BOM en texto plano <button class="btn ghost" id="copyBtn" style="font-size:11px;padding:4px 10px">Copiar BOM</button></h2>
+    <textarea id="bomOut" readonly></textarea>
+  </section>
+</div>
+</div>
+</div>
+
+<!-- ════ TAB 3 · ÓPTICAS ════ -->
+<div class="tabpane" id="pane-optics" hidden>
+<section class="panel">
+  <h2>Catálogo de módulos ópticos SFP/QSFP compatibles</h2>
+  <div id="opticsAll"></div>
+  <p class="note"><b>Nota:</b> Los módulos Cisco Genuine SFP son recomendados. Módulos de terceros pueden funcionar con el comando <code>service unsupported-transceiver</code> en IOS XE. Para SD-WAN con vManage, Cisco recomienda ópticas certificadas para evitar alertas en inventario.</p>
+</section>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+'use strict';
+/* ═══════════════════════════════════════
+   DATA
+   ═══════════════════════════════════════ */
+let MODELS = [];
+let OPTICS = {};
+let OPTIC_LABEL = {};
+let PARTS_DESC = {};
+let SMARTNET = {};
+let DNA_DESC = {};
+
+const $ = id => document.getElementById(id);
+let dirMult=2, mode='link', crit='low', lastPick=null;
+
+/* ── Tabs ── */
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x===b));
+  ['calc','bom','optics'].forEach(t => $('pane-'+t).hidden = (t !== b.dataset.tab));
+}));
+
+/* ── Mode ── */
+$('modeSeg').addEventListener('click', e => {
+  const b=e.target.closest('button'); if(!b) return;
+  [...$('modeSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
+  mode=b.dataset.v;
+  $('aggBlock').classList.toggle('hidden', mode!=='agg');
+  $('bwLabel').textContent = mode==='agg' ? 'Ancho de banda por sucursal' : mode==='hub' ? 'Tráfico agregado del hub' : 'Ancho de banda contratado';
+  $('modeHint').textContent = mode==='agg' ? 'Suma los enlaces de todas las sucursales con su factor de simultaneidad.' : mode==='hub' ? 'Capacidad total que debe procesar el hub o DC edge.' : 'Un solo enlace WAN terminando en el equipo.';
+  render();
+});
+$('dirSeg').addEventListener('click', e => {
+  const b=e.target.closest('button'); if(!b) return;
+  [...$('dirSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
+  dirMult=+b.dataset.v; render();
+});
+$('critSeg').addEventListener('click', e => {
+  const b=e.target.closest('button'); if(!b) return;
+  [...$('critSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
+  crit=b.dataset.v; render();
+});
+['bw','unit','sites','conc','head','profile','aps','sNgfw','sVoice','sAppx','sUmbrella','chkRedund','chk4g']
+  .forEach(id => $(id).addEventListener('input', render));
+['pickModel','qty','nimQty','optQty','termYears','dnaTier'].forEach(id => $(id).addEventListener('input', renderBom));
+
+/* ── Helpers ── */
+function fmt(m){
+  if(m==null||m===0) return '—';
+  if(m>=1000000) return (m/1e6).toFixed(1).replace(/\.0$/,'')+' Tbps';
+  if(m>=1000) return (m/1000).toFixed(m%1000?1:0)+' Gbps';
+  return Math.round(m)+' Mbps';
+}
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+/* ── RENDER CALC ── */
+function render(){
+  const bw=parseFloat($('bw').value)||0;
+  const unit=parseFloat($('unit').value);
+  const head=(parseFloat($('head').value)||0)/100;
+  const conc=(parseFloat($('conc').value)||40)/100;
+  const sites=parseInt($('sites').value)||1;
+  const profile=$('profile').value;
+
+  $('headVal').textContent=Math.round(head*100)+' %';
+  $('concVal').textContent=Math.round(conc*100)+' %';
+
+  // base throughput
+  let baseMbps = bw * unit;
+  if(mode==='agg') baseMbps = bw * unit * sites * conc;
+  let needMbps = baseMbps * dirMult * (1+head);
+
+  // service penalties
+  let penalty = 1.0;
+  if($('sNgfw').checked) penalty += 0.15;
+  if($('sVoice').checked) penalty += 0.10;
+  if($('sAppx').checked) penalty += 0.08;
+  if($('sUmbrella').checked) penalty += 0.12;
+  needMbps *= penalty;
+
+  // update needle
+  const allCaps = MODELS.map(m => profile==='ipsec' ? m.ipsec : profile==='sdwan' ? (m.sdwan||m.ipsec) : m.fwd);
+  const maxCap = Math.max(...allCaps);
+  const logP = v => Math.log10(Math.max(v,10));
+  const logMin=Math.log10(10), logMax=logP(maxCap*1.2);
+  const xPct = v => (logP(v)-logMin)/(logMax-logMin)*100;
+  const needPct = Math.min(xPct(needMbps),99);
+  const need=$('need');
+  need.style.left=needPct+'%';
+  $('needLbl').textContent=fmt(needMbps);
+  need.classList.toggle('flip', needPct>60);
+
+  // build track
+  renderTrack(profile, needMbps, xPct, needPct);
+
+  // pick model
+  const candidates = MODELS.filter(m => {
+    const cap = profile==='ipsec' ? m.ipsec : profile==='sdwan' ? (m.sdwan||m.ipsec) : m.fwd;
+    return cap >= needMbps;
+  });
+  const pick = candidates.length ? candidates[0] : null;
+  lastPick = pick;
+
+  const verdict=$('verdict');
+  if(!pick){
+    $('vModel').textContent='Supera el catálogo';
+    $('vFamily').textContent='Considerar ASR 9000 o Catalyst 9800 con capacidad adicional';
+    verdict.style.borderLeftColor='var(--amber)';
+    $('vWhy').innerHTML='<p class="warn">El requerimiento supera la capacidad máxima del catálogo configurado. Escalar a ASR 9000 o consultar solución personalizada.</p>';
+    ['mFwd','mIpsec','mSdwan'].forEach(id => { $('m'+id.slice(1)+'Bar').style.width='0%'; });
+    return;
+  }
+  verdict.style.borderLeftColor='var(--red)';
+  $('vModel').textContent=pick.id;
+  $('vFamily').textContent=pick.fam+' · Serie '+pick.ser;
+  $('pickLbl').textContent=pick.id; $('pickLbl').style.display='block';
+  $('pickLbl').style.left=xPct(profile==='ipsec'?pick.ipsec:profile==='sdwan'?(pick.sdwan||pick.ipsec):pick.fwd)+'%';
+
+  const setPct=(id,val,cap)=>{
+    const pct=cap>0?Math.min(val/cap*100,100):0;
+    const bar=$(id);
+    bar.style.width=pct+'%';
+    bar.className=pct>90?'tight':pct<70?'good':'';
+  };
+  $('mFwdVal').textContent=fmt(needMbps)+' / '+fmt(pick.fwd);
+  setPct('mFwdBar', needMbps, pick.fwd);
+  $('mIpsecVal').textContent=fmt(profile==='ipsec'?needMbps:0)+' / '+fmt(pick.ipsec);
+  setPct('mIpsecBar', profile==='ipsec'?needMbps:0, pick.ipsec);
+  const sdwanCap=pick.sdwan||pick.ipsec;
+  $('mSdwanVal').textContent=fmt(profile==='sdwan'?needMbps:0)+' / '+fmt(sdwanCap);
+  setPct('mSdwanBar', profile==='sdwan'?needMbps:0, sdwanCap);
+
+  const flags=[];
+  if($('sNgfw').checked) flags.push('Zona-Based Firewall añade ~15% de carga de procesamiento.');
+  if($('sVoice').checked) flags.push('CUBE/SIP añade ~10% por procesamiento de señalización de voz.');
+  if($('sAppx').checked) flags.push('NBAR/AppX añade ~8% por clasificación de tráfico.');
+  if($('sUmbrella').checked) flags.push('Umbrella SIG añade ~12% por encapsulación de túneles.');
+  if($('chkRedund').checked && !pick.redund) flags.push('<span class="warn">Este modelo no tiene redundancia de fuente de serie — verificar disponibilidad de kit de expansión.</span>');
+  if($('chk4g').checked && !pick.lte) flags.push('Se requiere módulo NIM LTE adicional (NIM-4G-LTE-LA o similar).');
+
+  const alts = candidates.slice(1,4).map(m=>m.id);
+  $('vWhy').innerHTML = `
+    <ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
+      <li>Requerimiento con margen: <b>${fmt(needMbps)}</b> | Capacidad del equipo: <b>${fmt(profile==='ipsec'?pick.ipsec:profile==='sdwan'?(pick.sdwan||pick.ipsec):pick.fwd)}</b></li>
+      <li>Puertos: ${pick.ports}</li>
+      ${flags.map(f=>`<li>${f}</li>`).join('')}
+      ${alts.length ? '<li>Alternativas a evaluar: <b>'+alts.join(', ')+'</b></li>' : ''}
+    </ul>`;
+
+  // Support
+  const s=SMARTNET[crit];
+  $('suppBox').innerHTML=`
+    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;text-transform:uppercase;margin-bottom:4px">${s.n}</div>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;margin-bottom:10px"><span class="pillc">${s.sla}</span> · término 12 meses · ${pick.id}</p>
+    <p style="font-size:13.5px;margin:0">${s.d}</p>`;
+
+  // DNA
+  $('licBox').innerHTML=`
+    <ul class="clean">
+      <li class="on"><b>${{'ess':'DNA Essentials','adv':'DNA Advantage','pre':'DNA Premier'}[$('dnaTier').value]||'DNA Advantage'}</b><span class="req">Requerida</span><span class="sku">${DNA_DESC[$('dnaTier').value||'adv']}</span></li>
+      <li><b>HSEC (High Security)</b><span class="req opt">Según país</span><span class="sku">Requerida para exportación de criptografía fuerte en países restringidos. Verificar con Cisco GSSO.</span></li>
+      <li><b>IP Base → IP Services (IOS XE)</b><span class="req opt">Nota</span><span class="sku">En ISR 4000 el throughput máximo se alcanza solo con licencia IP Services o AppX habilitada.</span></li>
+    </ul>`;
+}
+
+function renderTrack(profile, needMbps, xPct, needPct){
+  const track=$('track');
+  // clear old dots
+  track.querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
+  const pickLbl=document.createElement('div');
+  pickLbl.className='pickLabel'; pickLbl.id='pickLbl'; pickLbl.style.display='none';
+  track.appendChild(pickLbl);
+  const axis=track.querySelector('.axis');
+
+  const ticks=[10,100,1000,2000,5000,10000,20000,50000,100000];
+  ticks.forEach(v=>{
+    const pct=xPct(v); if(pct<0||pct>100) return;
+    const tick=document.createElement('div'); tick.className='tick';
+    tick.style.left=pct+'%';
+    tick.innerHTML=`<i></i><b>${v>=1000?v/1000+'G':v+'M'}</b>`;
+    track.appendChild(tick);
+  });
+
+  const shapes={isr1000:'dot', isr4000:'dot', cat8000:'dot wan', asr1000:'dot'};
+  MODELS.forEach(m=>{
+    const cap=profile==='ipsec'?m.ipsec:profile==='sdwan'?(m.sdwan||m.ipsec):m.fwd;
+    const pct=xPct(cap); if(pct<0||pct>100) return;
+    const dot=document.createElement('div');
+    const isWan=m.ser.includes('ASR');
+    dot.className='dot'+(isWan?' wan':'')+(cap>=needMbps?' ok':'');
+    if(lastPick&&m.id===lastPick.id) dot.className='dot pick';
+    dot.style.left=pct+'%';
+    dot.title=m.id+': '+fmt(cap);
+    track.appendChild(dot);
+  });
+}
+
+/* ── RENDER BOM ── */
+function renderBom(){
+  const m=MODELS.find(x=>x.id===$('pickModel').value)||MODELS[0];
+  const qty=Math.max(1,parseInt($('qty').value)||1);
+  const nimQty=Math.max(0,parseInt($('nimQty').value)||0);
+  const optQty=Math.max(0,parseInt($('optQty').value)||0);
+  const termYrs=parseInt($('termYears').value)||3;
+  const dnaTier=$('dnaTier').value||'adv';
+
+  let html=`<section class="panel"><h2>Ficha del equipo</h2>
+    <div class="model" style="font-size:28px">${m.id}</div>
+    <p class="family">${m.fam} · Serie ${m.ser}</p>
+    <div class="scroll"><table><thead><tr><th>Concepto</th><th>Valor</th></tr></thead><tbody>
+    <tr><td>Designación de pedido</td><td><code>${esc(m.id)}</code></td></tr>
+    <tr><td>Forwarding (bidireccional IMIX)</td><td class="n">${fmt(m.fwd)}</td></tr>
+    <tr><td>IPsec VPN (IMIX)</td><td class="n">${fmt(m.ipsec)}</td></tr>
+    <tr><td>SD-WAN (IPsec + AppFlow, IMIX)</td><td class="n">${m.sdwan?fmt(m.sdwan):'N/A — usar ISR+DNA Advantage'}</td></tr>
+    <tr><td>Puertos y slots</td><td>${m.ports}</td></tr>
+    <tr><td>Slots NIM disponibles</td><td class="n">${m.nim}</td></tr>
+    <tr><td>Slots SM disponibles</td><td class="n">${m.sm||0}</td></tr>
+    <tr><td>Redundancia de fuente de serie</td><td>${m.redund?'Sí':'No (kit opcional)'}</td></tr>
+    <tr><td>LTE integrado</td><td>${m.lte?'Sí':'No (NIM-4G-LTE-LA)'}</td></tr>
+    </tbody></table></div></section>`;
+
+  // Parts
+  const parts=(m.parts||[]);
+  if(parts.length){
+    html+=`<section class="panel"><h2>Componentes y módulos</h2><div class="scroll"><table>
+    <thead><tr><th>PID / Descripción</th><th>Tipo</th></tr></thead><tbody>
+    ${parts.map(p=>`<tr><td><code>${esc(p)}</code><span class="sku">${PARTS_DESC[p]||''}</span></td>
+    <td>${p.startsWith('LIC')||p.startsWith('DNA')?'Licencia':'Módulo hardware'}</td></tr>`).join('')}
+    </tbody></table></div></section>`;
+  }
+
+  // Optics
+  html+=`<section class="panel"><h2>Módulos ópticos compatibles</h2>`;
+  (m.optics||[]).forEach(k=>{
+    html+=`<div class="grp"><h3>${OPTIC_LABEL[k]}</h3>
+    <p class="gd">Cantidad estimada: <b>${optQty*qty}</b> módulos (${optQty} por equipo × ${qty}).</p>
+    <div class="scroll"><table><thead><tr><th>PID Cisco</th><th>SKU legacy</th><th>Descripción</th></tr></thead><tbody>
+    ${OPTICS[k].map(o=>`<tr><td><code>${esc(o.bom)}</code></td><td><code>${esc(o.sku)}</code></td><td>${esc(o.d)}</td></tr>`).join('')}
+    </tbody></table></div></div>`;
+  });
+  html+=`<p class="hint">Para entornos con SD-WAN y vManage, se recomienda usar únicamente ópticas genuinas Cisco para evitar alertas en inventario y soporte TAC sin restricciones.</p></section>`;
+
+  // Licenses
+  html+=`<section class="panel"><h2>Licencias DNA y suscripciones</h2><ul class="clean">
+    <li class="on"><b>Cisco DNA ${{'ess':'Essentials','adv':'Advantage','pre':'Premier'}[dnaTier]}</b><span class="req">Requerida</span><span class="sku">${DNA_DESC[dnaTier]} · término ${termYrs} años</span></li>
+    <li class="on"><b>IOS XE SD-WAN</b><span class="req">Requerida</span><span class="sku">Sistema operativo base incluido con DNA license. Validar versión mínima para Catalyst 8000: IOS XE 17.x SD-WAN mode.</span></li>
+    <li><b>HSEC — High Security</b><span class="req opt">Según país</span><span class="sku">Requerida para exportaciones a países con control criptográfico. Verificar con Cisco Global Security Sales Operations.</span></li>
+    <li><b>AppX / Application Experience</b><span class="req opt">Opcional</span><span class="sku">Para ISR 4000: habilita NBAR2, PfR, AppFlow y Performance Routing. Incluida en DNA Advantage.</span></li>
+  </ul></section>`;
+
+  // Support
+  const s=SMARTNET['med'];
+  html+=`<section class="panel"><h2>Soporte — SMARTnet</h2><div class="scroll"><table>
+    <thead><tr><th>Servicio</th><th>SLA</th><th>Término</th><th>Cantidad</th></tr></thead><tbody>
+    <tr><td>${s.n}</td><td class="n">${s.sla}</td><td class="n">${termYrs} años</td><td class="n">${qty}</td></tr>
+    <tr><td>SW Support (SWSS)</td><td class="n">Actualizaciones IOS XE</td><td class="n">${termYrs} años</td><td class="n">${qty}</td></tr>
+    </tbody></table></div></section>`;
+
+  $('bomBody').innerHTML=html;
+
+  // Plain BOM
+  const L=[];
+  L.push(`LISTA DE MATERIALES — ${m.id}`);
+  L.push(`Serie ${m.ser} · ${m.fam}`);
+  L.push('Generado como preselección de preventa. Verificar en CCW antes de cotizar.');
+  L.push('');
+  L.push('EQUIPO');
+  L.push(`  ${qty} x ${m.id}`);
+  L.push(`     ${m.ports}`);
+  if(parts.length){
+    L.push('');
+    L.push('MÓDULOS Y LICENCIAS');
+    parts.forEach(p=>L.push(`  ${qty} x ${p}\n     ${PARTS_DESC[p]||''}`));
+  }
+  L.push('');
+  L.push(`ÓPTICOS  (${optQty*qty} estimados)`);
+  (m.optics||[]).forEach(k=>{
+    L.push(`  -- ${OPTIC_LABEL[k]} --`);
+    OPTICS[k].forEach(o=>L.push(`  __ x ${o.bom}   (${o.sku})\n     ${o.d}`));
+  });
+  L.push('');
+  L.push('LICENCIAS');
+  L.push(`  ${qty} x Cisco DNA ${{'ess':'Essentials','adv':'Advantage','pre':'Premier'}[dnaTier]}  (término ${termYrs} años)`);
+  L.push(`  ${qty} x IOS XE SD-WAN Mode`);
+  L.push('');
+  L.push(`SOPORTE — SMARTNET — TÉRMINO ${termYrs} AÑOS`);
+  L.push(`  ${qty} x ${SMARTNET['med'].n}  (${SMARTNET['med'].sla})`);
+  L.push(`  ${qty} x Software Support (SWSS)`);
+  L.push('');
+  L.push('NOTA: precios no incluidos. Usar CCW (Cisco Commerce Workspace) para cotización oficial.');
+  $('bomOut').value=L.join('\n');
+}
+
+// Copy BOM
+$('copyBtn').addEventListener('click', async()=>{
+  const t=$('bomOut'); t.select();
+  try{ await navigator.clipboard.writeText(t.value); $('copyBtn').textContent='Copiado'; }
+  catch{ document.execCommand('copy'); $('copyBtn').textContent='Copiado'; }
+  setTimeout(()=>$('copyBtn').textContent='Copiar BOM',1600);
+});
+
+(async function initApp(){
+  const res = await fetch('/api/dimensionador/cisco');
+  const data = await res.json();
+  MODELS = data.models;
+  OPTICS = data.optics;
+  OPTIC_LABEL = data.opticLabel;
+  PARTS_DESC = data.partsDesc;
+  SMARTNET = data.smartnet;
+  DNA_DESC = data.dnaDesc;
+
+  // Populate BOM model selector
+  $('pickModel').innerHTML = (() => {
+    const groups={};
+    MODELS.forEach(m=>{ (groups[m.ser]=groups[m.ser]||[]).push(m); });
+    return Object.entries(groups).map(([g,arr])=>
+      `<optgroup label="${g}">${arr.map(m=>`<option value="${m.id}">${m.id} — ${m.fam}</option>`).join('')}</optgroup>`).join('');
+  })();
+
+  // Optics catalog
+  $('opticsAll').innerHTML=Object.keys(OPTICS).map(k=>`
+    <div class="grp"><h3>${OPTIC_LABEL[k]}</h3>
+    <div class="scroll"><table><thead><tr><th>PID Cisco</th><th>SKU legacy</th><th>Descripción</th></tr></thead><tbody>
+    ${OPTICS[k].map(o=>`<tr><td><code>${esc(o.bom)}</code></td><td><code>${esc(o.sku)}</code></td><td>${esc(o.d)}</td></tr>`).join('')}
+    </tbody></table></div></div>`).join('');
+
+  render();
+  renderBom();
+})();
+</script>
+</body>
+</html>

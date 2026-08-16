@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Presales — Portal de Preventa y Diseño de Redes</title>
+<meta name="description" content="Portal unificado de herramientas de consultoría, dimensionamiento y diseño de redes multi-fabricante. Huawei, Cisco, Nokia, Fortinet, Juniper, Arista.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   PRESALES — Design System
+   ═══════════════════════════════════════ */
+:root{
+  --paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;
+  --rule:#C6CFDA;--card:#FFF;--red:#C7000B;
+  --amber:#A45B00;--green:#1F6B4A;
+  --sidebar-w:220px;--header-h:60px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+
+/* ── TOPBAR ── */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;height:var(--header-h);background:var(--ink);display:flex;align-items:center;gap:16px;padding:0 20px;border-bottom:3px solid var(--red)}
+.logo{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:26px;text-transform:uppercase;letter-spacing:.04em;color:#fff;white-space:nowrap}
+.logo span{color:var(--red)}
+.tagline{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.38);white-space:nowrap}
+.search-wrap{margin-left:auto;display:flex;align-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:3px;overflow:hidden}
+.search-wrap input{background:transparent;border:none;color:#fff;font-family:'Barlow',sans-serif;font-size:13px;padding:8px 12px;width:200px;outline:none}
+.search-wrap input::placeholder{color:rgba(255,255,255,.32)}
+.search-wrap button{background:var(--red);border:none;color:#fff;padding:8px 12px;cursor:pointer;font-size:15px}
+.menu-toggle{display:none;background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:4px 8px;margin-right:4px}
+
+/* ── SIDEBAR ── */
+.sidebar{position:fixed;top:var(--header-h);left:0;bottom:0;width:var(--sidebar-w);background:var(--ink);overflow-y:auto;z-index:90;padding:10px 0;transition:transform .25s ease}
+.sidebar::-webkit-scrollbar{width:3px}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:2px}
+.sec-title{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.28);font-weight:600;margin:14px 0 5px;padding-left:22px}
+.nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;background:none;border:none;border-radius:3px;color:rgba(255,255,255,.6);cursor:pointer;font-family:'Barlow',sans-serif;font-size:13.5px;font-weight:500;text-align:left;transition:all .14s;white-space:nowrap;margin:1px 0}
+.nav-btn:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav-btn.active{background:rgba(199,0,11,.22);color:#fff;font-weight:600}
+.nav-icon{width:26px;height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;font-family:'Barlow Condensed',sans-serif;letter-spacing:.02em}
+.nav-icon.hw{background:#C7000B;color:#fff}
+.nav-icon.cs{background:#049FD9;color:#fff}
+.nav-icon.nk{background:#124191;color:#fff}
+.nav-icon.ft{background:#EE3124;color:#fff}
+.nav-icon.jn{background:#84B135;color:#fff}
+.nav-icon.ar{background:#4E5B6E;color:#fff}
+.nav-icon.tool{background:rgba(255,255,255,.1);color:var(--red)}
+.nav-badge{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:9px;background:rgba(255,255,255,.08);padding:2px 5px;border-radius:2px;color:rgba(255,255,255,.4)}
+
+/* ── MAIN ── */
+.main{margin-left:var(--sidebar-w);margin-top:var(--header-h);padding:28px 30px 80px;min-height:calc(100vh - var(--header-h))}
+.page{display:none;animation:fadeUp .3s ease}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── PAGE HEADER ── */
+.page-header{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:24px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0 0 4px}
+h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(26px,4.5vw,42px);line-height:.98;text-transform:uppercase;margin:0}
+.sub{color:var(--steel);max-width:64ch;margin:8px 0 0;font-size:14.5px}
+
+/* ── DASHBOARD GRID ── */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px;margin-bottom:30px}
+.vendor-card{background:var(--card);border:1px solid var(--rule);border-radius:4px;overflow:hidden;cursor:pointer;transition:all .2s ease}
+.vendor-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(14,26,43,.1);border-color:var(--ink)}
+.card-accent{height:4px;width:100%}
+.card-body{padding:20px}
+.card-brand{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.card-icon{width:42px;height:42px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;color:#fff}
+.card-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:21px;text-transform:uppercase;letter-spacing:.02em}
+.card-desc{font-size:13px;color:var(--steel);margin-bottom:14px;line-height:1.45}
+.card-stats{display:flex;gap:18px;flex-wrap:wrap}
+.stat{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel)}
+.stat b{display:block;font-size:20px;font-weight:600;color:var(--ink);letter-spacing:0;text-transform:none}
+.card-tools{border-top:1px solid var(--rule);padding:10px 20px;display:flex;gap:8px;flex-wrap:wrap}
+.t-pill{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:3px 7px;border-radius:2px;background:var(--paper);color:var(--steel)}
+.t-pill.live{background:rgba(199,0,11,.08);color:var(--red)}
+
+/* ── TOOL CARDS ── */
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
+.tool-card{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:4px;padding:20px;cursor:pointer;transition:all .2s}
+.tool-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(14,26,43,.08)}
+.tool-card h3{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:17px;text-transform:uppercase;letter-spacing:.03em;margin:0 0 6px}
+.tool-card p{font-size:13px;color:var(--steel);margin:0}
+
+/* ── PANELS & TABLES ── */
+.panel{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:22px;margin-bottom:18px}
+.panel h2{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);font-weight:500;padding:0 10px 8px 0;border-bottom:1px solid var(--rule)}
+td{padding:9px 10px 9px 0;border-bottom:1px solid var(--paper);vertical-align:top}
+td.n,code{font-family:'IBM Plex Mono',monospace;font-size:12px}
+code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowrap}
+tr:hover td{background:rgba(14,26,43,.015)}
+
+/* ── FORMS ── */
+label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px}
+.hint{font-size:11.5px;color:var(--steel);margin-top:5px;line-height:1.4}
+input[type=number],input[type=text],select{width:100%;padding:9px 10px;border:1px solid var(--rule);border-radius:2px;background:#fff;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:13.5px}
+select{font-family:'Barlow',sans-serif}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+.field{margin-bottom:16px}
+.field:last-child{margin-bottom:0}
+.row-f{display:flex;gap:12px;flex-wrap:wrap}
+.row-f>.field{flex:1;min-width:180px}
+.btn{font-family:'Barlow',sans-serif;font-size:12.5px;font-weight:600;padding:8px 16px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px;cursor:pointer;white-space:nowrap;transition:all .15s;text-transform:uppercase;letter-spacing:.04em}
+.btn:hover{background:var(--red);border-color:var(--red)}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn.ghost:hover{background:var(--paper)}
+
+/* ── COMPARATOR ── */
+.compare-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));margin-top:6px}
+.compare-col{background:var(--card);border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.col-head{padding:13px 16px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;text-transform:uppercase;color:#fff;letter-spacing:.03em}
+.col-body{padding:12px 16px}
+.col-row{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--paper);font-size:12.5px;gap:8px}
+.col-row:last-child{border-bottom:none}
+.col-row .lbl{color:var(--steel);flex-shrink:0}
+.col-row .val{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:11.5px;text-align:right}
+
+/* ── BADGES ── */
+.badge{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:2px;vertical-align:1px}
+.badge.live{background:rgba(31,107,74,.1);color:var(--green)}
+.badge.soon{background:rgba(164,91,0,.1);color:var(--amber)}
+
+/* ── CALCULATOR RESULT ── */
+.calc-result{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:22px;margin-top:18px}
+.calc-result .tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0 0 4px}
+.calc-result .big-num{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:34px;line-height:1;margin:0 0 4px}
+
+/* ── TOPOLOGY ── */
+.topo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.topo-card{background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:20px}
+.topo-card h3{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:17px;text-transform:uppercase;margin:0 0 6px}
+.topo-diagram{background:var(--paper);border-radius:3px;padding:16px;margin:10px 0;font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.65;white-space:pre;overflow-x:auto;color:var(--steel)}
+.topo-card p,.topo-card ul{font-size:13px;color:var(--steel);margin:6px 0 0}
+.topo-card li{margin-bottom:4px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .menu-toggle{display:block}
+  .tagline{display:none}
+}
+@media(max-width:600px){
+  .main{padding:18px 14px 60px}
+  .search-wrap{display:none}
+  .dash-grid,.tools-grid,.compare-grid,.topo-grid{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* TABS */
+.tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--rule)}
+.tab-btn{background:none;border:none;padding:8px 16px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:14px;text-transform:uppercase;color:var(--steel);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.2s}
+.tab-btn:hover{color:var(--ink)}
+.tab-btn.active{color:var(--red);border-bottom-color:var(--red)}
+.tab-content{display:none;animation:fadeUp .3s ease}
+.tab-content.active{display:block}
+.fuentes-list{font-size:13.5px;color:var(--steel);padding:0;margin:0 0 0 20px}
+.fuentes-list li{margin-bottom:8px}
+.fuentes-list a{color:var(--ink);text-decoration:none;font-weight:600}
+.fuentes-list a:hover{text-decoration:underline;color:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ TOPBAR ═══════════ -->
+<header class="topbar">
+  <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')" aria-label="Menu">&#9776;</button>
+  <div class="logo">Pre<span>sales</span></div>
+  <div class="tagline">Consultoría &middot; Dimensionamiento &middot; Diseño de Redes</div>
+  <div class="search-wrap">
+    <input type="text" id="globalSearch" placeholder="Buscar equipo o fabricante…" oninput="globalFilter(this.value)">
+    <button aria-label="Buscar">&#9906;</button>
+  </div>
+</header>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<nav class="sidebar" id="sidebar">
+  <div style="padding:0 12px">
+    <div class="sec-title">Portal</div>
+    <button class="nav-btn active" data-page="dashboard" onclick="go('dashboard')">
+      <span class="nav-icon tool">&#8962;</span> Dashboard
+    </button>
+  </div>
+
+  <div style="padding:0 12px">
+    <div class="sec-title">Fabricantes</div>
+    <button class="nav-btn" data-page="huawei" onclick="go('huawei')">
+      <span class="nav-icon hw">HW</span> Huawei <span class="nav-badge">AR&thinsp;&middot;&thinsp;NE</span>
+    </button>
+    <button class="nav-btn" data-page="cisco" onclick="go('cisco')">
+      <span class="nav-icon cs">CS</span> Cisco <span class="nav-badge">ISR&thinsp;&middot;&thinsp;ASR</span>
+    </button>
+    <button class="nav-btn" data-page="nokia" onclick="go('nokia')">
+      <span class="nav-icon nk">NK</span> Nokia <span class="nav-badge">SR&thinsp;&middot;&thinsp;SAS</span>
+    </button>
+    <button class="nav-btn" data-page="fortinet" onclick="go('fortinet')">
+      <span class="nav-icon ft">FT</span> Fortinet <span class="nav-badge">FG</span>
+    </button>
+    <button class="nav-btn" data-page="juniper" onclick="go('juniper')">
+      <span class="nav-icon jn">JN</span> Juniper <span class="nav-badge">MX&thinsp;&middot;&thinsp;SRX</span>
+    </button>
+    <button class="nav-btn" data-page="arista" onclick="go('arista')">
+      <span class="nav-icon ar">AR</span> Arista <span class="nav-badge">7K</span>
+    </button>
+  </div>
+
+  <div style="padding:0 12px">
+    <div class="sec-title">Herramientas</div>
+    <button class="nav-btn" data-page="comparador" onclick="go('comparador')">
+      <span class="nav-icon tool">&#9878;</span> Comparador
+    </button>
+    <button class="nav-btn" data-page="calculadora" onclick="go('calculadora')">
+      <span class="nav-icon tool">&#9633;</span> Calculadora
+    </button>
+    <button class="nav-btn" data-page="guias" onclick="go('guias')">
+      <span class="nav-icon tool">&#9670;</span> Guías de Diseño
+    </button>
+    <button class="nav-btn" onclick="window.open('guia-diseno-interactiva.html','_blank')">
+      <span class="nav-icon tool">&#9672;</span> Diseño Interactivo
+    </button>
+    <button class="nav-btn" onclick="window.open('cotizador.html','_blank')">
+      <span class="nav-icon tool">&#9782;</span> Cotizador BOM
+    </button>
+  </div>
+</nav>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<main class="main">
+
+<!-- ════ DASHBOARD ════ -->
+<div class="page active" id="page-dashboard">
+  <div class="page-header">
+    <p class="eyebrow">Portal de Preventa &middot; Multi-fabricante</p>
+    <h1>Dashboard<br>Presales</h1>
+    <p class="sub">Consulta catálogos de productos, dimensiona equipos, compara modelos entre fabricantes y genera listas de materiales para tus proyectos de red.</p>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+    <a href="guia-diseno-interactiva.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px;background:var(--amber);border-color:var(--amber);color:#fff">&#9672; Guía Interactiva</a>
+    <a href="cotizador.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px">&#9782; Cotizador BOM</a>
+    <a href="dimensionador-fortinet-fortigate.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px;background:#EE3124;border-color:#EE3124;color:#fff">&#10697; BOM FortiGate</a>
+    <a href="dimensionador-cisco-catalyst8k.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px;background:#049FD9;border-color:#049FD9;color:#fff">&#10697; BOM Cisco</a>
+    <a href="dimensionador-bom-huawei-v3_1.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px;background:#C7000B;border-color:#C7000B;color:#fff">&#10697; BOM Huawei</a>
+  </div>
+  <p style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);margin:0 0 10px">Fabricantes</p>
+  <div class="dash-grid" id="dashGrid"></div>
+  <p style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);margin:24px 0 10px">Herramientas Transversales</p>
+  <div class="tools-grid">
+    <div class="tool-card" onclick="go('comparador')">
+      <h3>&#9878; Comparador Multi-fabricante</h3>
+      <p>Selecciona equipos de distintos fabricantes y compáralos lado a lado: throughput, puertos, IPsec, SD-WAN.</p>
+    </div>
+    <div class="tool-card" onclick="go('calculadora')">
+      <h3>&#9633; Calculadora de Throughput</h3>
+      <p>Ingresa los requerimientos de ancho de banda y servicios. Obtén recomendaciones de todos los fabricantes.</p>
+    </div>
+    <div class="tool-card" onclick="go('guias')">
+      <h3>&#9670; Guías de Diseño de Red</h3>
+      <p>Topologías de referencia: hub-spoke, full-mesh, SD-WAN overlay, MPLS, leaf-spine, SASE.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════ HUAWEI ════ -->
+<div class="page" id="page-huawei">
+  <div class="page-header">
+    <p class="eyebrow">Fabricante &middot; Enterprise Networking &amp; WAN</p>
+    <h1>Huawei</h1>
+    <p class="sub">Routers de acceso serie AR, agregación A800 E y core NE8000. SD-WAN con iMaster NCE, SRv6, FlexE y slicing.</p>
+  </div>
+  <div style="margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <a href="dimensionador-bom-huawei-v3_1.html" target="_blank" class="btn" style="text-decoration:none">&#10697; Abrir Dimensionador y BOM Huawei</a>
+    <span class="badge live">Herramienta Activa</span>
+  </div>
+  
+  <div class="tabs">
+    <button class="tab-btn btn-cat active" onclick="switchTab('huawei', 'cat')">Catálogo</button>
+    <button class="tab-btn btn-src" onclick="switchTab('huawei', 'src')">Fuentes y Referencias</button>
+  </div>
+  <div id="tab-cat-huawei" class="tab-content active">
+<div class="panel">
+    <h2>Catálogo — Serie AR (Acceso / SD-WAN)</h2>
+    <div class="scroll"><table id="tbl-hw-ar">
+      <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Forwarding</th><th>IPsec</th><th>SD-WAN</th><th>LAN p.</th><th>Puertos</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+  <div class="panel">
+    <h2>Catálogo — A800 E y NE8000 (WAN / Core)</h2>
+    <div class="scroll"><table id="tbl-hw-wan">
+      <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Capacidad</th><th>Mpps</th><th>Puertos / Tarjetas</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ════ CISCO ════ -->
+  </div>
+  <div id="tab-src-huawei" class="tab-content">
+    <div class="panel">
+      <h2>Fuentes de Información y Precios</h2>
+      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Toda la información técnica y los modelos mostrados en esta plataforma han sido filtrados para excluir equipos EOL/EOS (End of Life), basándonos en los siguientes canales oficiales:</p>
+      <ul class="fuentes-list">
+        <li><b>Datasheets y Especificaciones:</b> <a href="https://e.huawei.com/en/products/enterprise-networking/routers" target="_blank">https://e.huawei.com/en/products/enterprise-networking/routers</a><br>Documentación oficial de Huawei Enterprise para las series AR, NetEngine 8000 y A-Series.</li>
+        <li><b>Listado EOL/EOS:</b> <a href="https://support.huawei.com/enterprise/en/bulletins-lifecycle" target="_blank">https://support.huawei.com/enterprise/en/bulletins-lifecycle</a><br>Avisos oficiales de ciclo de vida (End of Life / End of Sale) para equipos Huawei.</li>
+        <li><b>Precios de Referencia (ELP):</b><br>Estimaciones basadas en lista de precios pública internacional. No incluyen descuentos de partners ni impuestos locales.</li>
+      </ul>
+    </div>
+  </div>
+
+<div class="page" id="page-cisco">
+  <div class="page-header">
+    <p class="eyebrow">Fabricante &middot; Routing &amp; SD-WAN</p>
+    <h1>Cisco</h1>
+    <p class="sub">ISR 1000/4000, ASR 1000, Catalyst 8000. SD-WAN Viptela nativo. DNA Center y Cisco Plus para automatización cloud.</p>
+  </div>
+  <div style="margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <a href="dimensionador-cisco-catalyst8k.html" target="_blank" class="btn" style="text-decoration:none;background:#049FD9;border-color:#049FD9">&#10697; Abrir Dimensionador y BOM Cisco</a>
+    <span class="badge live" style="background:rgba(4,159,217,.1);color:#049FD9">Herramienta Activa</span>
+  </div>
+  
+  <div class="tabs">
+    <button class="tab-btn btn-cat active" onclick="switchTab('cisco', 'cat')">Catálogo</button>
+    <button class="tab-btn btn-src" onclick="switchTab('cisco', 'src')">Fuentes y Referencias</button>
+  </div>
+  <div id="tab-cat-cisco" class="tab-content active">
+<div class="panel">
+    <h2>Catálogo de equipos <span style="font-weight:400;color:var(--steel)">— Precio ref. USD incluido</span></h2>
+    <div class="scroll"><table id="tbl-cisco">
+      <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Forwarding</th><th>IPsec</th><th>Puertos</th><th>SD-WAN</th><th>Precio ref. USD&#9432;</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p style="font-size:11px;color:var(--steel);margin-top:10px">&#9432; Precio de lista estimado (ELP p&#250;blico). No incluye descuentos de canal, licencias DNA ni soporte. Verificar en CCW con distribuidor autorizado.</p>
+    <p style="font-size:11px;color:var(--amber);margin-top:4px"><b>EOL/EOS removidos:</b> ISR 4221/4331/4451/4461 (EoS Nov 2023), ASR 1001-X (EoS Ago 2022), ASR 1002-HX (EoS Mar 2025). Solo se muestran equipos activos.</p>
+  </div>
+</div>
+
+<!-- ════ NOKIA ════ -->
+  </div>
+  <div id="tab-src-cisco" class="tab-content">
+    <div class="panel">
+      <h2>Fuentes de Información y Precios</h2>
+      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Toda la información técnica y los modelos mostrados en esta plataforma han sido filtrados para excluir equipos EOL/EOS (End of Life), basándonos en los siguientes canales oficiales:</p>
+      <ul class="fuentes-list">
+        <li><b>Datasheets y Especificaciones:</b> <a href="https://www.cisco.com/c/en/us/products/routers/index.html" target="_blank">https://www.cisco.com/c/en/us/products/routers/index.html</a><br>Documentación técnica oficial de Cisco para Catalyst 8000, ISR y ASR 1000 series.</li>
+        <li><b>Notificaciones EOL/EOS:</b> <a href="https://www.cisco.com/c/en/us/products/eos-eol-listing.html" target="_blank">https://www.cisco.com/c/en/us/products/eos-eol-listing.html</a><br>Fechas de EoS confirmadas para ISR 4000 (Nov 2023) y modelos antiguos ASR 1000.</li>
+        <li><b>Precios de Referencia (ELP):</b><br>Información extraída del CCW (Cisco Commerce Workspace) y catálogos públicos GPL (Global Price List). No incluye licencias obligatorias DNA ni soporte SmartNet.</li>
+      </ul>
+    </div>
+  </div>
+
+<div class="page" id="page-nokia">
+  <div class="page-header">
+    <p class="eyebrow">Fabricante &middot; Service Provider &amp; IP/MPLS</p>
+    <h1>Nokia</h1>
+    <p class="sub">7750 SR core/edge, 7210 SAS acceso, 7250 IXR datacenter. SR OS con SR-MPLS, SRv6, EVPN y FlexAlgo.</p>
+  </div>
+  
+  <div class="tabs">
+    <button class="tab-btn btn-cat active" onclick="switchTab('nokia', 'cat')">Catálogo</button>
+    <button class="tab-btn btn-src" onclick="switchTab('nokia', 'src')">Fuentes y Referencias</button>
+  </div>
+  <div id="tab-cat-nokia" class="tab-content active">
+<div class="panel">
+    <h2>Catálogo de equipos</h2>
+    <div class="scroll"><table id="tbl-nokia">
+      <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Capacidad</th><th>Puertos / Tarjetas</th><th>Protocolos</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ════ FORTINET ════ -->
+  </div>
+  <div id="tab-src-nokia" class="tab-content">
+    <div class="panel">
+      <h2>Fuentes de Información y Precios</h2>
+      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Toda la información técnica y los modelos mostrados en esta plataforma han sido filtrados para excluir equipos EOL/EOS (End of Life), basándonos en los siguientes canales oficiales:</p>
+      <ul class="fuentes-list">
+        <li><b>Portafolio IP Networks:</b> <a href="https://www.nokia.com/networks/portfolio/ip-networks/" target="_blank">https://www.nokia.com/networks/portfolio/ip-networks/</a><br>Datasheets oficiales de Service Routers (7750 SR, 7250 IXR y 7210 SAS).</li>
+        <li><b>Precios de Referencia:</b><br>Precios de lista orientativos del mercado portador/enterprise. No incluye licencias de features avanzadas.</li>
+      </ul>
+    </div>
+  </div>
+
+<div class="page" id="page-fortinet">
+  <div class="page-header">
+    <p class="eyebrow">Fabricante &middot; Security &amp; SD-WAN</p>
+    <h1>Fortinet</h1>
+    <p class="sub">FortiGate NGFW con SD-WAN integrado. Desde sucursal (40F) hasta datacenter (7000). Security Fabric, FortiOS unificado.</p>
+  </div>
+  <div style="margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <a href="dimensionador-fortinet-fortigate.html" target="_blank" class="btn" style="text-decoration:none;background:#EE3124;border-color:#EE3124">&#10697; Abrir Dimensionador y BOM FortiGate</a>
+    <span class="badge live" style="background:rgba(238,49,36,.1);color:#EE3124">Herramienta Activa</span>
+  </div>
+  
+  <div class="tabs">
+    <button class="tab-btn btn-cat active" onclick="switchTab('fortinet', 'cat')">Catálogo</button>
+    <button class="tab-btn btn-src" onclick="switchTab('fortinet', 'src')">Fuentes y Referencias</button>
+  </div>
+  <div id="tab-cat-fortinet" class="tab-content active">
+<div class="panel">
+    <h2>Catálogo FortiGate — Throughput de referencia <span style="font-weight:400;color:var(--steel)">— Precio ref. USD incluido</span></h2>
+    <div class="scroll"><table id="tbl-fortinet">
+      <thead><tr><th>Modelo</th><th>Segmento</th><th>FW Throughput</th><th>IPS</th><th>NGFW</th><th>IPsec VPN</th><th>Interfaces</th><th>Precio ref. USD&#9432;</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p style="font-size:11px;color:var(--steel);margin-top:10px">&#9432; Precio de lista estimado (ELP p&#250;blico). No incluye licencias FortiGuard ni FortiCare. Verificar con distribuidor Fortinet autorizado.</p>
+  </div>
+</div>
+
+<!-- ════ JUNIPER ════ -->
+  </div>
+  <div id="tab-src-fortinet" class="tab-content">
+    <div class="panel">
+      <h2>Fuentes de Información y Precios</h2>
+      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Toda la información técnica y los modelos mostrados en esta plataforma han sido filtrados para excluir equipos EOL/EOS (End of Life), basándonos en los siguientes canales oficiales:</p>
+      <ul class="fuentes-list">
+        <li><b>Product Matrix:</b> <a href="https://www.fortinet.com/products/next-generation-firewall" target="_blank">https://www.fortinet.com/products/next-generation-firewall</a><br>Tabla oficial de rendimiento y especificaciones de las series FortiGate F-Series.</li>
+        <li><b>Precios de Referencia (ELP):</b><br>Estimación basada en el SKU de hardware base público de Fortinet. No incluye servicios FortiCare ni suscripciones UTP/ATP.</li>
+      </ul>
+    </div>
+  </div>
+
+<div class="page" id="page-juniper">
+  <div class="page-header">
+    <p class="eyebrow">Fabricante &middot; Routing &amp; Security</p>
+    <h1>Juniper</h1>
+    <p class="sub">MX edge/core, SRX NGFW, EX/QFX switching. Junos OS, Mist AI para AIOps. Apstra para intent-based networking DC.</p>
+  </div>
+  
+  <div class="tabs">
+    <button class="tab-btn btn-cat active" onclick="switchTab('juniper', 'cat')">Catálogo</button>
+    <button class="tab-btn btn-src" onclick="switchTab('juniper', 'src')">Fuentes y Referencias</button>
+  </div>
+  <div id="tab-cat-juniper" class="tab-content active">
+<div class="panel">
+    <h2>Catálogo de equipos</h2>
+    <div class="scroll"><table id="tbl-juniper">
+      <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Capacidad</th><th>Puertos</th><th>Caso de uso</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ════ ARISTA ════ -->
+  </div>
+  <div id="tab-src-juniper" class="tab-content">
+    <div class="panel">
+      <h2>Fuentes de Información y Precios</h2>
+      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Toda la información técnica y los modelos mostrados en esta plataforma han sido filtrados para excluir equipos EOL/EOS (End of Life), basándonos en los siguientes canales oficiales:</p>
+      <ul class="fuentes-list">
+        <li><b>Routing & Security:</b> <a href="https://www.juniper.net/us/en/products/routers.html" target="_blank">https://www.juniper.net/us/en/products/routers.html</a><br>Documentación oficial de las familias MX, SRX y QFX.</li>
+        <li><b>Precios de Referencia (ELP):</b><br>Basado en el GPL (Global Price List) estándar de Juniper. Estimación orientativa.</li>
+      </ul>
+    </div>
+  </div>
+
+<div class="page" id="page-arista">
+  <div class="page-header">
+    <p class="eyebrow">Fabricante &middot; Cloud Networking &amp; Datacenter</p>
+    <h1>Arista</h1>
+    <p class="sub">Switches de datacenter y campus: 7050X (leaf), 7280R (edge), 7500R/7800R (core 400G+). EOS + CloudVision + AVD.</p>
+  </div>
+  
+  <div class="tabs">
+    <button class="tab-btn btn-cat active" onclick="switchTab('arista', 'cat')">Catálogo</button>
+    <button class="tab-btn btn-src" onclick="switchTab('arista', 'src')">Fuentes y Referencias</button>
+  </div>
+  <div id="tab-cat-arista" class="tab-content active">
+<div class="panel">
+    <h2>Catálogo de equipos</h2>
+    <div class="scroll"><table id="tbl-arista">
+      <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Capacidad</th><th>Puertos</th><th>Latencia</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ════ COMPARADOR ════ -->
+  </div>
+  <div id="tab-src-arista" class="tab-content">
+    <div class="panel">
+      <h2>Fuentes de Información y Precios</h2>
+      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Toda la información técnica y los modelos mostrados en esta plataforma han sido filtrados para excluir equipos EOL/EOS (End of Life), basándonos en los siguientes canales oficiales:</p>
+      <ul class="fuentes-list">
+        <li><b>Routing Portfolio:</b> <a href="https://www.arista.com/en/products/routing" target="_blank">https://www.arista.com/en/products/routing</a><br>Especificaciones de hardware para Datacenter y Edge (Series 7000 y 7280/7500R).</li>
+        <li><b>Precios de Referencia:</b><br>Estimación MSRP pública. Arista requiere diseño validado para cotización final.</li>
+      </ul>
+    </div>
+  </div>
+
+<div class="page" id="page-comparador">
+  <div class="page-header">
+    <p class="eyebrow">Herramienta &middot; Análisis Multi-fabricante</p>
+    <h1>Comparador<br>de Equipos</h1>
+    <p class="sub">Selecciona entre 2 y 4 equipos de cualquier fabricante y compáralos lado a lado.</p>
+  </div>
+  <div class="panel">
+    <h2>Seleccionar equipos</h2>
+    <div class="row-f">
+      <div class="field"><label for="cmp1">Equipo 1</label><select id="cmp1"></select></div>
+      <div class="field"><label for="cmp2">Equipo 2</label><select id="cmp2"></select></div>
+      <div class="field"><label for="cmp3">Equipo 3 <span style="color:var(--steel);font-weight:400">(opc.)</span></label><select id="cmp3"></select></div>
+      <div class="field"><label for="cmp4">Equipo 4 <span style="color:var(--steel);font-weight:400">(opc.)</span></label><select id="cmp4"></select></div>
+    </div>
+    <button class="btn" onclick="runCompare()">Comparar equipos</button>
+  </div>
+  <div class="compare-grid" id="compareOut"></div>
+</div>
+
+<!-- ════ CALCULADORA ════ -->
+<div class="page" id="page-calculadora">
+  <div class="page-header">
+    <p class="eyebrow">Herramienta &middot; Dimensionamiento Transversal</p>
+    <h1>Calculadora<br>de Throughput</h1>
+    <p class="sub">Ingresa los requerimientos de tu proyecto y obtén una recomendación de equipos que cumplen el perfil.</p>
+  </div>
+  <div class="panel">
+    <h2>Parámetros del requerimiento</h2>
+    <div class="row-f">
+      <div class="field">
+        <label for="calcBw">Ancho de banda requerido</label>
+        <div style="display:flex;gap:8px">
+          <input type="number" id="calcBw" value="1000" min="1" step="any" style="flex:1">
+          <select id="calcUnit" style="width:90px;flex-shrink:0"><option value="1">Mbps</option><option value="1000">Gbps</option><option value="1000000">Tbps</option></select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="calcProfile">Perfil de tráfico</label>
+        <select id="calcProfile">
+          <option value="fwd">Routing + NAT + ACL + QoS</option>
+          <option value="ipsec">IPsec VPN</option>
+          <option value="sdwan" selected>SD-WAN / NGFW típico</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="calcMargin">Margen de crecimiento (%)</label>
+        <input type="number" id="calcMargin" value="30" min="0" max="200">
+      </div>
+    </div>
+    <div class="field" style="max-width:480px">
+      <label for="calcDir">Medición del ancho de banda</label>
+      <select id="calcDir">
+        <option value="2">Por dirección (simétrico — se duplica)</option>
+        <option value="1">Total agregado (ya bidireccional)</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button class="btn" onclick="runCalc()">Calcular y recomendar</button>
+      <button class="btn ghost" id="csvBtn" onclick="exportCSV()" style="display:none">&#8681; Exportar recomendación CSV</button>
+    </div>
+  </div>
+  <div id="calcOut"></div>
+</div>
+
+<!-- ════ GUÍAS ════ -->
+<div class="page" id="page-guias">
+  <div class="page-header">
+    <p class="eyebrow">Referencia &middot; Topologías y Arquitecturas</p>
+    <h1>Guías de<br>Diseño de Red</h1>
+    <p class="sub">Topologías de referencia para WAN, SD-WAN, MPLS, datacenter y seguridad perimetral.</p>
+  </div>
+  <div class="topo-grid">
+    <div class="topo-card">
+      <h3>Hub &amp; Spoke (Estrella)</h3>
+      <div class="topo-diagram">        ┌──────┐
+        │  HUB │
+        └──┬───┘
+     ┌─────┼─────┐
+  ┌──┴──┐┌─┴──┐┌─┴──┐
+  │ BR1 ││BR2 ││BR3 │
+  └─────┘└────┘└────┘</div>
+      <p>Todo el tráfico pasa por el hub central. Ideal para centralizar seguridad e inspección.</p>
+      <ul><li><b>Ventaja:</b> control centralizado, fácil de gestionar</li><li><b>Desventaja:</b> punto único de fallo, latencia branch-to-branch alta</li><li><b>Equipos hub:</b> AR6700/AR8700, Catalyst 8500, FortiGate 600F+</li></ul>
+    </div>
+    <div class="topo-card">
+      <h3>Full Mesh / Parcial Mesh</h3>
+      <div class="topo-diagram">  ┌──────┐   ┌──────┐
+  │  R1  │───│  R2  │
+  └──┬───┘   └──┬───┘
+     │    ╲╱    │
+     │    ╱╲    │
+  ┌──┴───┐   ┌─┴────┐
+  │  R3  │───│  R4  │
+  └──────┘   └──────┘</div>
+      <p>Cada nodo conecta con todos los demás. Máxima resiliencia y mínima latencia.</p>
+      <ul><li><b>Ventaja:</b> redundancia total, baja latencia E2E</li><li><b>Desventaja:</b> costos O(n²) en circuitos, complejidad de gestión</li><li><b>Equipos:</b> NE8000 M4+, ASR 9000, Nokia 7750 SR-s</li></ul>
+    </div>
+    <div class="topo-card">
+      <h3>SD-WAN Overlay</h3>
+      <div class="topo-diagram">  ┌────────────────────┐
+  │   ORQUESTADOR      │
+  └──────┬─────────────┘
+    ┌────┴────┐
+    │UNDERLAY │ MPLS + Internet
+    └────┬────┘
+  ┌──────┼──────┐
+  ┌─┴──┐┌─┴──┐┌─┴──┐
+  │CPE1││CPE2││CPE3│
+  └────┘└────┘└────┘</div>
+      <p>Túneles cifrados sobre Internet y/o MPLS con selección dinámica de path.</p>
+      <ul><li><b>Ventaja:</b> reducción costos MPLS, visibilidad de aplicaciones, ZTP</li><li><b>Desventaja:</b> calidad depende del underlay</li><li><b>CPE:</b> AR5710-S, Catalyst 8200, FortiGate 60F/100F</li></ul>
+    </div>
+    <div class="topo-card">
+      <h3>MPLS L3VPN (PE-CE)</h3>
+      <div class="topo-diagram">CE1──PE1──P──PE2──CE2
+            │
+           PE3
+            │
+           CE3</div>
+      <p>VPN de capa 3 sobre red MPLS del proveedor con separación por VRF.</p>
+      <ul><li><b>Ventaja:</b> QoS garantizado, aislamiento multicliente robusto</li><li><b>Desventaja:</b> costos mensuales, dependencia del ISP</li><li><b>Equipos PE:</b> NE8000 M8+, ASR 9000, Nokia 7750 SR-7s</li></ul>
+    </div>
+    <div class="topo-card">
+      <h3>Internet Breakout + SASE</h3>
+      <div class="topo-diagram">  ┌─────┐    ┌──────────┐
+  │ CPE ├────│ SASE PoP │
+  └──┬──┘    └─────┬────┘
+     │         ┌───┴───┐
+     │         │ CLOUD │
+  ┌──┴──┐     └───────┘
+  │ LAN │
+  └─────┘</div>
+      <p>Tráfico SaaS/cloud directo desde la sucursal, seguridad en la nube (SASE/SSE).</p>
+      <ul><li><b>Ventaja:</b> experiencia óptima para M365, Salesforce, SaaS</li><li><b>Desventaja:</b> requiere seguridad distribuida confiable</li><li><b>Equipos:</b> FortiGate + FortiSASE, Catalyst 8300 + Umbrella</li></ul>
+    </div>
+    <div class="topo-card">
+      <h3>Leaf-Spine (Datacenter)</h3>
+      <div class="topo-diagram">  ┌──────┐  ┌──────┐
+  │SPINE1│  │SPINE2│
+  └─┬┬───┘  └───┬┬─┘
+    │╲╲  ╱╲  ╱╱ │
+    │ ╲╲╱  ╲╱╱  │
+  ┌─┴──┐  ┌──┴─┐
+  │LEAF1│  │LEAF2│
+  └─────┘  └─────┘</div>
+      <p>Topología no bloqueante. Cada leaf conecta a todos los spines, latencia predecible.</p>
+      <ul><li><b>Ventaja:</b> escalabilidad horizontal sin bloqueo</li><li><b>Desventaja:</b> alto cableado, requiere automatización (EVPN-VXLAN)</li><li><b>Spine:</b> Arista 7500R3, QFX10002, NE8000 F8</li></ul>
+    </div>
+  </div>
+</div>
+
+</main><!-- /main -->
+
+<script>
+'use strict';
+/* ═══════════════════════════════════════════
+   DATA
+   ═══════════════════════════════════════════ */
+const VENDORS=[
+  {id:'huawei',name:'Huawei',accent:'#C7000B',icon:'HW',iconCls:'hw',
+   desc:'Routers AR SD-WAN, plataformas A800 E y core NE8000. iMaster NCE, SRv6, FlexE, slicing de red.',
+   series:['AR610','AR650','AR5710-S','AR5710-SE','AR6700-L','AR6700','AR8700','A800 E','NE8000 M','NE8000 F','NE8000 X'],
+   tools:['Dimensionador BOM','Catálogo ópticas'],live:true},
+  {id:'cisco',name:'Cisco',accent:'#049FD9',icon:'CS',iconCls:'cs',
+   desc:'ISR 1000/4000, ASR 1000, Catalyst 8000. SD-WAN Viptela, Meraki, DNA Center automación.',
+   series:['ISR 1000','ISR 4000','ASR 1000','Catalyst 8200','Catalyst 8300','Catalyst 8500'],
+   tools:['Catálogo de equipos','Guía de selección'],live:false},
+  {id:'nokia',name:'Nokia',accent:'#124191',icon:'NK',iconCls:'nk',
+   desc:'7750 SR core/edge, 7210 SAS acceso, 7250 IXR datacenter. SR OS con SR-MPLS, SRv6, EVPN.',
+   series:['7750 SR-s','7750 SR-1','7750 SR-7/12/14','7210 SAS','7250 IXR'],
+   tools:['Catálogo de equipos'],live:false},
+  {id:'fortinet',name:'Fortinet',accent:'#EE3124',icon:'FT',iconCls:'ft',
+   desc:'FortiGate NGFW con SD-WAN integrado. Desde 40F hasta 7000. Security Fabric y FortiOS.',
+   series:['40F–80F','100F–200F','400F–900F','1000F–3000F','4400F–7000F'],
+   tools:['Catálogo de equipos','Sizing NGFW'],live:false},
+  {id:'juniper',name:'Juniper',accent:'#84B135',icon:'JN',iconCls:'jn',
+   desc:'MX edge/core, SRX NGFW, EX/QFX switching. Junos OS, Mist AI, Apstra intent-based networking.',
+   series:['SRX 300','SRX 1500','SRX 4000','MX 204/304','MX 480/960','QFX 5000/10000'],
+   tools:['Catálogo de equipos'],live:false},
+  {id:'arista',name:'Arista',accent:'#4E5B6E',icon:'AR',iconCls:'ar',
+   desc:'7050X leaf/spine, 7280R edge, 7500R/7800R core 400G+. EOS, CloudVision AVD.',
+   series:['7020R','7050X3','7280R3','7500R3','7800R3'],
+   tools:['Catálogo de equipos'],live:false}
+];
+
+let PR = {};
+
+/* ═══════ UNIFIED DEVICE LIST ═══════ */
+const ALL=[];
+function parseCap(s){
+  if(!s) return 0;
+  if(typeof s==='number') return s;
+  const n=parseFloat(s.replace(/[^0-9.]/g,''));
+  if(s.includes('Tbps')) return n*1e6;
+  if(s.includes('Gbps')) return n*1000;
+  return n;
+}
+function parseRange(s){
+  if(!s) return 0;
+  if(typeof s==='number') return s;
+  const parts=String(s).split(/[–\-]/);
+  const last=parts[parts.length-1];
+  const n=parseFloat(last.replace(/[^0-9.]/g,''));
+  if(s.includes('Tbps')) return n*1e6;
+  if(s.includes('Gbps')) return n*1000;
+  if(s.includes('Mbps')) return n;
+  return n;
+}
+function fmtMbps(m){
+  if(!m) return '—';
+  if(m>=1e6) return (m/1e6).toFixed(m%1e6?1:0).replace(/\.0$/,'')+' Tbps';
+  if(m>=1000) return (m/1000).toFixed(m%1000?1:0)+' Gbps';
+  return Math.round(m)+' Mbps';
+}
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+function buildAll(){
+  PR.hw_ar.forEach(p=>ALL.push({vendor:'Huawei',model:p.model,series:p.ser,seg:p.seg,
+    tp:p.fwd||0,tpL:fmtMbps(p.fwd),ipsec:p.ipsec||0,ipsecL:p.ipsec?fmtMbps(p.ipsec):'—',
+    sdwan:p.sdwan,ports:p.ports,color:'#C7000B'}));
+  PR.hw_wan.forEach(p=>ALL.push({vendor:'Huawei',model:p.model,series:p.ser,seg:p.seg,
+    tp:parseCap(p.cap),tpL:p.cap,ipsec:0,ipsecL:'N/A',sdwan:'N/A',ports:p.ports,color:'#C7000B'}));
+  PR.cisco.forEach(p=>ALL.push({vendor:'Cisco',model:p.model,series:p.ser,seg:p.seg,
+    tp:parseRange(p.fwd),tpL:p.fwd,ipsec:parseRange(p.ipsec),ipsecL:p.ipsec,
+    sdwan:p.sdwan,ports:p.ports,color:'#049FD9'}));
+  PR.nokia.forEach(p=>ALL.push({vendor:'Nokia',model:p.model,series:p.ser,seg:p.seg,
+    tp:parseCap(p.cap),tpL:p.cap,ipsec:0,ipsecL:'N/A (SP)',sdwan:'N/A',ports:p.ports,color:'#124191'}));
+  PR.fortinet.forEach(p=>ALL.push({vendor:'Fortinet',model:p.model,series:p.model.match(/\d+/)?p.model.replace(/FortiGate\s+(\d+\w+).*/,'$1 series'):'Fortinet',seg:p.seg,
+    tp:parseRange(p.fw),tpL:'FW: '+p.fw,ipsec:parseRange(p.vpn),ipsecL:p.vpn,
+    sdwan:'Sí (FortiOS nativo)',ports:p.ifaces,color:'#EE3124'}));
+  PR.juniper.forEach(p=>ALL.push({vendor:'Juniper',model:p.model,series:p.ser,seg:p.seg,
+    tp:parseCap(p.cap),tpL:p.cap,ipsec:0,ipsecL:'—',
+    sdwan:p.use.includes('SD-WAN')?'Sí':'—',ports:p.ports,color:'#84B135'}));
+  PR.arista.forEach(p=>ALL.push({vendor:'Arista',model:p.model,series:p.ser,seg:p.seg,
+    tp:parseCap(p.cap),tpL:p.cap,ipsec:0,ipsecL:'N/A (DC)',sdwan:'N/A',ports:p.ports,color:'#4E5B6E'}));
+}
+
+/* ═══════ NAV ═══════ */
+function go(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('page-'+page);
+  if(el) el.classList.add('active');
+  const btn=document.querySelector(`.nav-btn[data-page="${page}"]`);
+  if(btn) btn.classList.add('active');
+  document.getElementById('sidebar').classList.remove('open');
+  window.scrollTo(0,0);
+}
+
+/* ═══════ RENDER DASHBOARD ═══════ */
+
+function switchTab(vendor, tabId) {
+  document.querySelectorAll('#page-'+vendor+' .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#page-'+vendor+' .tab-content').forEach(c=>c.classList.remove('active'));
+  document.querySelector('#page-'+vendor+' .btn-'+tabId).classList.add('active');
+  document.getElementById('tab-'+tabId+'-'+vendor).classList.add('active');
+}
+
+function renderDash(){
+  document.getElementById('dashGrid').innerHTML=VENDORS.map(v=>{
+    const n=v.id==='huawei'
+      ?PR.hw_ar.length+PR.hw_wan.length
+      :(PR[v.id]||[]).length;
+    return `<div class="vendor-card" onclick="go('${v.id}')">
+      <div class="card-accent" style="background:${v.accent}"></div>
+      <div class="card-body">
+        <div class="card-brand">
+          <div class="card-icon" style="background:${v.accent}">${v.icon}</div>
+          <div class="card-name">${v.name}</div>
+        </div>
+        <div class="card-desc">${v.desc}</div>
+        <div class="card-stats">
+          <div class="stat"><b>${n}</b>Equipos</div>
+          <div class="stat"><b>${v.series.length}</b>Series</div>
+          <div class="stat"><b>${v.tools.length}</b>Herram.</div>
+        </div>
+      </div>
+      <div class="card-tools">
+        ${v.tools.map(t=>`<span class="t-pill${v.live?' live':''}">${t}</span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════ RENDER TABLES ═══════ */
+function renderTables(){
+  const q=(id,rows)=>document.querySelector('#'+id+' tbody').innerHTML=rows;
+
+  q('tbl-hw-ar',PR.hw_ar.map(p=>`<tr>
+    <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
+    <td class="n">${fmtMbps(p.fwd)}</td><td class="n">${p.ipsec?fmtMbps(p.ipsec):'—'}</td>
+    <td class="n">${p.sdwan}</td><td class="n">${p.lan}</td><td>${p.ports}</td>
+  </tr>`).join(''));
+
+  q('tbl-hw-wan',PR.hw_wan.map(p=>`<tr>
+    <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
+    <td class="n">${p.cap}</td><td class="n">${p.mpps}</td><td>${p.ports}</td>
+  </tr>`).join(''));
+
+  q('tbl-cisco',PR.cisco.map(p=>`<tr>
+    <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
+    <td class="n">${p.fwd}</td><td class="n">${p.ipsec}</td><td>${p.ports}</td><td>${p.sdwan}</td>
+    <td class="n" style="color:var(--amber);white-space:nowrap">${p.elp||'—'}</td>
+  </tr>`).join(''));
+
+  q('tbl-nokia',PR.nokia.map(p=>`<tr>
+    <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
+    <td class="n">${p.cap}</td><td>${p.ports}</td><td>${p.protos}</td>
+  </tr>`).join(''));
+
+  q('tbl-fortinet',PR.fortinet.map(p=>`<tr>
+    <td><code>${esc(p.model)}</code></td><td>${p.seg}</td>
+    <td class="n">${p.fw}</td><td class="n">${p.ips}</td><td class="n">${p.ngfw}</td>
+    <td class="n">${p.vpn}</td><td>${p.ifaces}</td>
+    <td class="n" style="color:var(--amber);white-space:nowrap">${p.elp||'—'}</td>
+  </tr>`).join(''));
+
+  q('tbl-juniper',PR.juniper.map(p=>`<tr>
+    <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
+    <td class="n">${p.cap}</td><td>${p.ports}</td><td>${p.use}</td>
+  </tr>`).join(''));
+
+  q('tbl-arista',PR.arista.map(p=>`<tr>
+    <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
+    <td class="n">${p.cap}</td><td>${p.ports}</td><td class="n">${p.lat}</td>
+  </tr>`).join(''));
+}
+
+/* ═══════ COMPARATOR ═══════ */
+function populateCmp(){
+  const base='<option value="">— Ninguno —</option>';
+  const opts=VENDORS.map(v=>{
+    const devs=ALL.filter(d=>d.vendor===v.name);
+    return `<optgroup label="${v.name}">`+
+      devs.map((d,i)=>`<option value="${v.id}_${i}">${esc(d.model)} — ${d.seg}</option>`).join('')+
+      '</optgroup>';
+  }).join('');
+  ['cmp1','cmp2','cmp3','cmp4'].forEach((id,i)=>{
+    document.getElementById(id).innerHTML=(i<2?'<option value="">— Seleccionar —</option>':base)+opts;
+  });
+}
+
+function runCompare(){
+  const ids=['cmp1','cmp2','cmp3','cmp4']
+    .map(id=>document.getElementById(id).value).filter(Boolean);
+  if(ids.length<2){alert('Selecciona al menos 2 equipos.');return;}
+  const devs=ids.map(id=>{
+    const[vid,idx]=id.split('_');
+    return ALL.filter(d=>d.vendor===VENDORS.find(v=>v.id===vid).name)[+idx];
+  }).filter(Boolean);
+  document.getElementById('compareOut').innerHTML=devs.map(d=>`
+    <div class="compare-col">
+      <div class="col-head" style="background:${d.color}">${d.vendor} &middot; ${esc(d.model)}</div>
+      <div class="col-body">
+        <div class="col-row"><span class="lbl">Serie</span><span class="val">${d.series||'—'}</span></div>
+        <div class="col-row"><span class="lbl">Segmento</span><span class="val">${d.seg}</span></div>
+        <div class="col-row"><span class="lbl">Throughput</span><span class="val">${d.tpL}</span></div>
+        <div class="col-row"><span class="lbl">IPsec</span><span class="val">${d.ipsecL}</span></div>
+        <div class="col-row"><span class="lbl">SD-WAN</span><span class="val">${d.sdwan}</span></div>
+        <div class="col-row"><span class="lbl">Puertos</span><span class="val">${d.ports}</span></div>
+      </div>
+    </div>`).join('');
+}
+
+/* ═══════ CALCULATOR ═══════ */
+function runCalc(){
+  const bw=parseFloat(document.getElementById('calcBw').value)||0;
+  const unit=parseFloat(document.getElementById('calcUnit').value);
+  const profile=document.getElementById('calcProfile').value;
+  const margin=(parseFloat(document.getElementById('calcMargin').value)||0)/100;
+  const dir=parseFloat(document.getElementById('calcDir').value);
+  const needMbps=bw*unit*dir*(1+margin);
+
+  const profileLabel={fwd:'Forwarding (NAT+ACL+QoS)',ipsec:'IPsec VPN',sdwan:'SD-WAN / NGFW'}[profile];
+
+  const candidates=ALL.filter(d=>{
+    const cap=profile==='ipsec'&&d.ipsec>0?d.ipsec:d.tp;
+    return cap>=needMbps;
+  }).sort((a,b)=>{
+    const ca=profile==='ipsec'&&a.ipsec>0?a.ipsec:a.tp;
+    const cb=profile==='ipsec'&&b.ipsec>0?b.ipsec:b.tp;
+    return ca-cb;
+  });
+
+  const byVendor={};
+  candidates.forEach(d=>{ if(!byVendor[d.vendor]) byVendor[d.vendor]=[]; byVendor[d.vendor].push(d); });
+
+  let html=`<div class="calc-result">
+    <p class="tag">Requerimiento calculado</p>
+    <div class="big-num">${fmtMbps(needMbps)}</div>
+    <p style="color:var(--steel);font-size:13px;margin:4px 0 0">
+      ${fmtMbps(bw*unit)} &times; ${dir===2?'bidireccional (&times;2)':'agregado'} + ${Math.round(margin*100)}% margen · Perfil: ${profileLabel}
+    </p>
+  </div>`;
+
+  if(!Object.keys(byVendor).length){
+    html+='<div class="panel" style="margin-top:16px"><p style="color:var(--amber);font-weight:600">No se encontraron equipos que cumplan este requerimiento en el catálogo actual.</p></div>';
+  }else{
+    html+='<div style="margin-top:16px">';
+    ['Huawei','Cisco','Fortinet','Nokia','Juniper','Arista'].forEach(vName=>{
+      const devs=byVendor[vName]; if(!devs||!devs.length) return;
+      const best=devs[0];
+      const alts=devs.slice(1,4).map(d=>d.model).join(', ');
+      const v=VENDORS.find(x=>x.name===vName);
+      html+=`<div class="panel">
+        <h2><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${v.accent};margin-right:8px;vertical-align:2px"></span>${vName} — Opción recomendada
+          <span class="badge live">Cumple</span>
+        </h2>
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:8px">
+          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;text-transform:uppercase">${esc(best.model)}</span>
+          <span style="color:var(--steel);font-size:13px">${best.series||''} · ${best.seg}</span>
+        </div>
+        <div style="font-size:13px;margin-bottom:4px">
+          <b>Throughput:</b> ${best.tpL} &nbsp;·&nbsp; <b>IPsec:</b> ${best.ipsecL} &nbsp;·&nbsp; <b>SD-WAN:</b> ${best.sdwan}
+        </div>
+        <div style="font-size:12px;color:var(--steel)">${best.ports}</div>
+        ${alts?`<p style="font-size:11.5px;color:var(--steel);margin-top:10px;border-top:1px solid var(--rule);padding-top:8px"><b>Alternativas:</b> ${alts}</p>`:''}
+      </div>`;
+    });
+    html+='</div>';
+  }
+  document.getElementById('calcOut').innerHTML=html;
+  document.getElementById('csvBtn').style.display=Object.keys(byVendor).length?'block':'none';
+}
+
+
+/* ═══════ EXPORT CSV ═══════ */
+function exportCSV(){
+  const rows=[['Fabricante','Modelo','Serie','Segmento','Throughput','IPsec','SD-WAN','Puertos']];
+  // collect visible results from calcOut panels
+  const panels=document.querySelectorAll('#calcOut .panel');
+  panels.forEach(p=>{
+    const header=p.querySelector('h2');
+    if(!header) return;
+    // extract vendor name from h2 — matches "Huawei —", "Cisco —", etc.
+    const vendor=(header.textContent.match(/^([A-Za-z]+)/)||['','?'])[1];
+    // find model name in bold span
+    const modelEl=p.querySelector('span[style*="Barlow Condensed"]');
+    const model=modelEl?modelEl.textContent.trim():'';
+    const lines=p.querySelectorAll('div[style*="font-size:13px"]');
+    let tp='',ipsec='',sdwan='',ports='';
+    lines.forEach(l=>{
+      const t=l.textContent;
+      if(t.includes('Throughput:')) tp=t.split('Throughput:')[1].split('·')[0].trim();
+      if(t.includes('IPsec:')) ipsec=t.split('IPsec:')[1].split('·')[0].trim();
+      if(t.includes('SD-WAN:')) sdwan=t.split('SD-WAN:')[1].split('·')[0].trim();
+    });
+    const portsEl=p.querySelector('div[style*="font-size:12px"]');
+    if(portsEl) ports=portsEl.textContent.trim();
+    const serEl=p.querySelector('span[style*="color:var(--steel)"]');
+    const serText=serEl?serEl.textContent.trim():'';
+    const ser=serText.split('·')[0].trim();
+    const seg=serText.includes('·')?serText.split('·').slice(1).join('·').trim():'';
+    if(model) rows.push([vendor,model,ser,seg,tp,ipsec,sdwan,ports]);
+  });
+  if(rows.length<2){alert('Calcula primero para tener datos que exportar.');return;}
+  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const d=new Date();
+  const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  a.href=url;a.download='presales-recomendacion-'+ds+'.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+/* ═══════ GLOBAL SEARCH ═══════ */
+function globalFilter(q){
+  if(!q||q.length<2) return;
+  q=q.toLowerCase();
+  const match=ALL.find(d=>
+    d.model.toLowerCase().includes(q)||
+    (d.series||'').toLowerCase().includes(q)||
+    d.vendor.toLowerCase().includes(q)||
+    d.seg.toLowerCase().includes(q)
+  );
+  if(match){const v=VENDORS.find(x=>x.name===match.vendor);if(v) go(v.id);}
+}
+/* ═══════ INIT ═══════ */
+(async function initApp(){
+  const res = await fetch('/api/catalog');
+  PR = await res.json();
+  buildAll();
+  renderDash();
+  renderTables();
+  populateCmp();
+})();
+</script>
+</body>
+</html>

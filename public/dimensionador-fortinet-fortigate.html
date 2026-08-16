@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dimensionador y BOM Fortinet — FortiGate NGFW · SD-WAN</title>
+<meta name="description" content="Herramienta de dimensionamiento FortiGate NGFW y SD-WAN. Sizing por usuarios, throughput, inspección SSL, licencias FortiGuard y soporte FortiCare.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;--red:#EE3124;--amber:#A45B00;--green:#1F6B4A;--card:#FFF}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1140px;margin:0 auto;padding:26px 18px 80px}
+.masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0 0 6px}
+h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28px,5.5vw,48px);line-height:.98;text-transform:uppercase;margin:0}
+.sub{color:var(--steel);max-width:64ch;margin:8px 0 0;font-size:14.5px}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);text-decoration:none;margin-bottom:18px;transition:color .15s}
+.back-link:hover{color:var(--red)}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--rule);margin-bottom:22px}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:11px 18px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.03em;text-transform:uppercase;color:var(--steel)}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--red)}
+.tabpane[hidden]{display:none}
+
+/* LADDER */
+.ladder{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px 18px 12px;margin-bottom:20px;overflow:hidden}
+.mono-lbl{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:0 0 18px;font-weight:600}
+.track{position:relative;height:110px;margin:0 4px}
+.axis{position:absolute;left:0;right:0;bottom:26px;height:1px;background:var(--rule)}
+.tick{position:absolute;bottom:26px;transform:translateX(-50%);text-align:center}
+.tick i{display:block;width:1px;height:7px;background:var(--rule);margin:0 auto}
+.tick b{font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:500;color:var(--steel);display:block;margin-top:4px;white-space:nowrap}
+.dot{position:absolute;bottom:34px;width:7px;height:7px;border-radius:50%;background:var(--rule);transform:translateX(-50%)}
+.dot.ok{background:var(--ink)}
+.dot.pick{background:var(--red);width:11px;height:11px;bottom:32px;box-shadow:0 0 0 4px rgba(238,49,36,.18)}
+.need{position:absolute;top:0;bottom:26px;width:2px;background:var(--red);transform:translateX(-50%);transition:left .25s cubic-bezier(.2,.8,.2,1)}
+.need span{position:absolute;top:-2px;left:6px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;color:#fff;background:var(--red);padding:2px 6px;border-radius:2px}
+.need.flip span{left:auto;right:6px}
+.pickLabel{position:absolute;bottom:52px;transform:translateX(-50%);white-space:nowrap;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;text-transform:uppercase}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--steel);letter-spacing:.06em;text-transform:uppercase}
+.legend i{display:inline-block;width:7px;height:7px;background:var(--ink);margin-right:5px;border-radius:50%;vertical-align:middle}
+
+/* LAYOUT */
+.cols{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:880px){.cols{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px;margin-bottom:16px}
+.panel h2{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.field{margin-bottom:16px}.field:last-child{margin-bottom:0}
+label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px}
+.hint{font-size:11.5px;color:var(--steel);margin-top:5px;line-height:1.4}
+.row{display:flex;gap:8px}
+input[type=number],select{width:100%;padding:9px 10px;border:1px solid var(--rule);border-radius:2px;background:#fff;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500}
+select{font-family:'Barlow',sans-serif;font-size:13.5px}
+input:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+input[type=range]{width:100%;accent-color:var(--red)}
+.seg{display:flex;border:1px solid var(--rule);border-radius:2px;overflow:hidden}
+.seg button{flex:1;padding:8px 4px;border:0;background:#fff;cursor:pointer;font-family:'Barlow',sans-serif;font-size:12px;font-weight:500;color:var(--steel);line-height:1.25}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed=true]{background:var(--ink);color:#fff;font-weight:600}
+.checks{display:grid;gap:7px}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer}
+.check input{margin:3px 0 0;accent-color:var(--red)}
+.hidden{display:none!important}
+
+/* VERDICT */
+.verdict{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:22px;margin-bottom:16px}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0}
+.model{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(22px,4vw,36px);line-height:1;text-transform:uppercase;margin:6px 0 2px}
+.family{color:var(--steel);font-size:13.5px;margin-bottom:16px}
+.meter{margin-bottom:12px}
+.meter b{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;display:flex;justify-content:space-between;gap:10px;color:var(--steel);margin-bottom:5px}
+.meter b em{font-style:normal;color:var(--ink);font-weight:600;white-space:nowrap}
+.bar{height:7px;background:var(--paper);border-radius:1px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink);transition:width .3s}
+.bar i.tight{background:var(--amber)}.bar i.good{background:var(--green)}
+.why{border-top:1px solid var(--rule);padding-top:14px;font-size:13.5px;margin-top:4px}
+.warn{color:var(--amber)}
+ul.clean{list-style:none;margin:0;padding:0}
+ul.clean li{padding-left:14px;position:relative;margin-bottom:9px;font-size:13.5px}
+ul.clean li:before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;background:var(--rule)}
+ul.clean li.on:before{background:var(--red)}
+.sku{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--steel);display:block;margin-top:2px}
+.req{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 5px;border-radius:2px;background:var(--red);color:#fff;margin-left:6px;vertical-align:1px}
+.req.opt{background:var(--paper);color:var(--steel)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);font-weight:500;padding:0 8px 7px 0;border-bottom:1px solid var(--rule)}
+td{padding:8px 8px 8px 0;border-bottom:1px solid var(--paper);vertical-align:top}
+td.n,code{font-family:'IBM Plex Mono',monospace;font-size:12px}
+code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowrap}
+.scroll{overflow-x:auto}
+.grp{margin-bottom:22px}.grp:last-child{margin-bottom:0}
+.grp h3{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin:0 0 4px}
+.grp p.gd{font-size:12.5px;color:var(--steel);margin:0 0 10px}
+.note{margin-top:22px;font-size:12px;color:var(--steel);line-height:1.55;border-top:1px solid var(--rule);padding-top:14px}
+.note b{color:var(--ink)}
+.flag-ft{background:#FFF5F5;border:1px solid #FECACA;border-left:3px solid var(--red);border-radius:2px;padding:12px 14px;font-size:12.5px;line-height:1.5;margin-bottom:18px}
+.flag-ft b{color:#991b1b}
+#bomOut{width:100%;height:200px;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:10px;border:1px solid var(--rule);border-radius:2px;margin-top:10px}
+.btn{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px;cursor:pointer}
+.btn.ghost{background:#fff;color:var(--ink)}
+.pillc{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 4px;border-radius:2px;background:var(--paper);color:var(--steel)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<a href="index.html" class="back-link">&#8592; Volver al Portal Presales</a>
+
+<header class="masthead">
+  <p class="eyebrow">Fortinet &middot; Preventa NGFW &amp; SD-WAN &middot; Dimensionamiento y lista de materiales</p>
+  <h1>Dimensionador<br>y BOM FortiGate</h1>
+  <p class="sub">Sizing de NGFW considerando throughput de firewall, IPS, inspección SSL/TLS y perfil SD-WAN. Selecciona el modelo FortiGate óptimo y genera la lista de licencias FortiGuard y soporte FortiCare.</p>
+</header>
+
+<div class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-tab="calc">Dimensionar</button>
+  <button role="tab" aria-selected="false" data-tab="bom">Equipo y BOM</button>
+  <button role="tab" aria-selected="false" data-tab="lic">Licencias</button>
+</div>
+
+<!-- ════ TAB 1 · CALCULADORA ════ -->
+<div class="tabpane" id="pane-calc">
+<section class="ladder">
+  <p class="mono-lbl">Escala de throughput NGFW — capacidad del modelo vs. requerimiento (logarítmica)</p>
+  <div class="track" id="track"><div class="axis"></div><div class="need" id="need"><span id="needLbl">—</span></div><div class="pickLabel" id="pickLbl" style="display:none"></div></div>
+  <div class="legend">
+    <span><i></i>Throughput FW / NGFW publicado</span>
+    <span style="color:var(--red)"><i style="background:var(--red)"></i>Requerimiento calculado</span>
+  </div>
+</section>
+
+<div class="cols">
+<div>
+  <section class="panel">
+    <h2>1 · Tipo de inspección requerida</h2>
+    <div class="field">
+      <label>Perfil de seguridad</label>
+      <div class="seg" id="profileSeg">
+        <button type="button" data-v="fw"    aria-pressed="false">FW<br>puro</button>
+        <button type="button" data-v="ips"   aria-pressed="false">FW +<br>IPS</button>
+        <button type="button" data-v="ngfw"  aria-pressed="true">NGFW<br>(App+IPS)</button>
+        <button type="button" data-v="sdwan" aria-pressed="false">SD-WAN<br>completo</button>
+      </div>
+      <p class="hint" id="profileHint">App Control + IPS habilitados. Valor típico para sucursal corporativa.</p>
+    </div>
+    <div class="field">
+      <label><input type="checkbox" id="chkSsl"> <span>Inspección SSL/TLS requerida<span class="sku" style="display:block;margin-top:2px">Reduce el throughput NGFW hasta un 30–40%. Fortinet publica los valores de SSL Inspection por separado.</span></span></label>
+    </div>
+    <div class="field">
+      <label for="bw">Ancho de banda de Internet / WAN</label>
+      <div class="row">
+        <input type="number" id="bw" value="500" min="1" step="any">
+        <select id="unit" style="width:105px"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
+      </div>
+      <p class="hint">En NGFW/SD-WAN, el throughput relevante es el tráfico que el FortiGate inspecciona, no solo el de WAN.</p>
+    </div>
+    <div class="field">
+      <label for="users">Usuarios / dispositivos concurrentes</label>
+      <input type="number" id="users" value="100" min="1" step="1">
+      <p class="hint">Aproximación: 1–5 Mbps por usuario corporativo activo. Ajustar según perfil de aplicaciones.</p>
+    </div>
+    <div class="field">
+      <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
+      <input type="range" id="head" min="0" max="100" step="5" value="30">
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>2 · Funciones adicionales</h2>
+    <div class="checks">
+      <label class="check"><input type="checkbox" id="chkAv"> <span>Antivirus / Antimalware (FortiGuard AV)<span class="sku">Inspección de archivos en línea. Añade latencia y carga de CPU moderada.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkWeb"> <span>Web Filtering (FortiGuard Web Filter)<span class="sku">Categorización de URLs en tiempo real. Mínima penalización de rendimiento.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkSandbox"> <span>FortiSandbox integrado (CASI / Cloud)<span class="sku">Análisis de archivos sospechosos. Requiere conectividad cloud o appliance local.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkIotDlp"> <span>IoT Detection + DLP<span class="sku">Detección de dispositivos IoT y prevención de pérdida de datos. Carga adicional de procesamiento.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad (HA A-A o A-P)<span class="sku">Se requieren 2 unidades. El modelo seleccionado se debe duplicar en la cotización.</span></span></label>
+    </div>
+    <div class="field" style="margin-top:16px">
+      <label>Redundancia WAN / SD-WAN</label>
+      <div class="seg" id="wanSeg">
+        <button type="button" data-v="single" aria-pressed="true">Un enlace</button>
+        <button type="button" data-v="dual" aria-pressed="false">Dual WAN (LB / failover)</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Segmento de instalación</label>
+      <div class="seg" id="segSeg">
+        <button type="button" data-v="branch" aria-pressed="true">Sucursal</button>
+        <button type="button" data-v="campus" aria-pressed="false">Campus / Hub</button>
+        <button type="button" data-v="dc"     aria-pressed="false">Datacenter / Carrier</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div>
+  <div class="verdict" id="verdict">
+    <p class="tag">Modelo recomendado</p>
+    <p class="model" id="vModel">—</p>
+    <p class="family" id="vFamily"></p>
+    <div class="meter">
+      <b id="mFwLbl">FW Throughput <em id="mFwVal"></em></b>
+      <div class="bar"><i id="mFwBar"></i></div>
+    </div>
+    <div class="meter">
+      <b id="mNgLbl">NGFW Throughput <em id="mNgVal"></em></b>
+      <div class="bar"><i id="mNgBar"></i></div>
+    </div>
+    <div class="meter">
+      <b>IPsec VPN <em id="mVpnVal"></em></b>
+      <div class="bar"><i id="mVpnBar"></i></div>
+    </div>
+    <div class="why" id="vWhy"></div>
+  </div>
+
+  <section class="panel">
+    <h2>Resumen de sizing</h2>
+    <div id="sizingBox"><p style="font-size:13.5px;color:var(--steel)">Completa los parámetros para ver el resumen.</p></div>
+  </section>
+
+  <div class="note">
+    <b>Nota metodológica.</b> Fortinet publica throughput bajo condiciones controladas con tráfico enterprise IMIX. FW puro: paquetes 1518B. NGFW e IPS: tráfico IMIX con firmas activas. SSL Inspection: HTTPS con certificados 2048-bit. Los valores reales varían con el volumen de firmas, sesiones concurrentes y activación de UTM completo. Consultar el <b>FortiGate Datasheet</b> oficial para el modelo seleccionado.
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ════ TAB 2 · BOM ════ -->
+<div class="tabpane" id="pane-bom" hidden>
+<div class="cols">
+<div>
+  <section class="panel">
+    <h2>Selección de equipo</h2>
+    <div class="field">
+      <label for="pickModel">Modelo FortiGate</label>
+      <select id="pickModel"></select>
+    </div>
+    <div class="field">
+      <label for="qty">Cantidad (unidades)</label>
+      <input type="number" id="qty" value="1" min="1">
+    </div>
+    <div class="field">
+      <label for="termYears">Término de licencias y soporte</label>
+      <select id="termYears">
+        <option value="1">1 año</option>
+        <option value="3" selected>3 años</option>
+        <option value="5">5 años</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="licBundle">Bundle de licencias FortiGuard</label>
+      <select id="licBundle">
+        <option value="utp">UTP — Unified Threat Protection (NGFW + AV + Web + IPS)</option>
+        <option value="ent" selected>ENT — Enterprise (UTP + SD-WAN + CASB + NOC)</option>
+        <option value="elite">Elite — (ENT + FortiSandbox Cloud + FortiConverter)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="careLevel">Nivel de soporte FortiCare</label>
+      <select id="careLevel">
+        <option value="fc247">FortiCare 24x7</option>
+        <option value="fcpre" selected>FortiCare Premium (24x7 + TAC prioritario)</option>
+        <option value="fcelite">FortiCare Elite (SLA garantizado + CSE dedicado)</option>
+      </select>
+    </div>
+  </section>
+
+  <div class="flag-ft">
+    <b>Aviso de preventa:</b> Los códigos de licencia Fortinet incluyen el modelo en el SKU (ej. FC-10-F60FT-...). Verificar en el portal de pedidos de Fortinet o con el distribuidor autorizado que el SKU corresponde al modelo exacto y al término seleccionado.
+  </div>
+</div>
+
+<div>
+  <div id="bomBody"></div>
+  <section class="panel">
+    <h2>BOM en texto plano <button class="btn ghost" id="copyBtn" style="font-size:11px;padding:4px 10px">Copiar BOM</button></h2>
+    <textarea id="bomOut" readonly></textarea>
+  </section>
+</div>
+</div>
+</div>
+
+<!-- ════ TAB 3 · LICENCIAS ════ -->
+<div class="tabpane" id="pane-lic" hidden>
+<section class="panel">
+  <h2>Guía de licencias FortiGuard y FortiCare</h2>
+  <div class="grp">
+    <h3>Bundles FortiGuard</h3>
+    <p class="gd">Los bundles incluyen servicios de suscripción activos. Sin licencia vigente, las firmas dejan de actualizarse.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Bundle</th><th>Servicios incluidos</th><th>Caso de uso típico</th></tr></thead>
+      <tbody>
+        <tr><td><b>UTP</b><br><span style="font-family:'IBM Plex Mono',monospace;font-size:10px">Unified Threat Protection</span></td>
+            <td>IPS, App Control, Web Filter, Antivirus, AntiSpam, FortiSandbox Cloud básico</td>
+            <td>Sucursal mediana, PYME, sin requerimientos avanzados de SD-WAN</td></tr>
+        <tr><td><b>ENT</b><br><span style="font-family:'IBM Plex Mono',monospace;font-size:10px">Enterprise Bundle</span></td>
+            <td>Todo UTP + SD-WAN, CASB, NOC Monitoring, FortiConverter, FortiManager Cloud</td>
+            <td>Sucursal corporativa, SD-WAN, cumplimiento, visibilidad cloud SaaS</td></tr>
+        <tr><td><b>Elite</b></td>
+            <td>Todo ENT + FortiSandbox Cloud Premium, FortiConverter, soporte extendido</td>
+            <td>Datacenter edge, regulado (SWIFT, PCI), alta inspección SSL/sandbox</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="grp">
+    <h3>Niveles de soporte FortiCare</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Nivel</th><th>SLA respuesta</th><th>Hardware</th><th>Incluye</th></tr></thead>
+      <tbody>
+        <tr><td><b>FortiCare 24x7</b></td><td class="n">24x7 — 4 horas</td><td>RMA avanzado — siguiente día hábil</td><td>TAC ilimitado, actualizaciones FW, hardware replacement</td></tr>
+        <tr><td><b>FortiCare Premium</b></td><td class="n">24x7 — 2 horas</td><td>Advanced HW Replacement — 4 horas</td><td>TAC prioritario, análisis de configuración, revisiones proactivas</td></tr>
+        <tr><td><b>FortiCare Elite</b></td><td class="n">24x7 — 15 min</td><td>Immediate HW Replacement</td><td>CSE dedicado, SLA contractual, acceso a lab de pruebas, revisión trimestral</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="grp">
+    <h3>Servicios adicionales opcionales</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Servicio</th><th>SKU base</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td>FortiSandbox Cloud</td><td><code>FC-10-FSV...-288</code></td><td>Análisis dinámico de archivos en nube Fortinet. Alternativa al appliance local.</td></tr>
+        <tr><td>FortiClient EMS</td><td><code>FC-10-EMS...-247</code></td><td>Gestión centralizada de FortiClient (ZTNA agent, VPN, compliance)</td></tr>
+        <tr><td>FortiManager</td><td><code>FMG-VM-...</code></td><td>Orquestación centralizada de políticas para múltiples FortiGate. VM o appliance.</td></tr>
+        <tr><td>FortiAnalyzer</td><td><code>FAZ-VM-...</code></td><td>Logs centralizados, reportes de cumplimiento, correlación de eventos SOC.</td></tr>
+        <tr><td>FortiSASE</td><td><code>FC-10-SAP...-...</code></td><td>Solución SASE cloud para internet breakout seguro desde sucursales remotas.</td></tr>
+        <tr><td>FortiConverter</td><td><code>FC-10-CONV...-...</code></td><td>Migración automática de políticas desde Cisco ASA, Check Point, Palo Alto.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+</div>
+
+</div><!-- /wrap -->
+<script>
+'use strict';
+let MODELS = [];
+let BUNDLES = {};
+let CARE = {};
+
+const $=id=>document.getElementById(id);
+let profile='ngfw', wanMode='single', segMode='branch', lastPick=null;
+
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  ['calc','bom','lic'].forEach(t=>$('pane-'+t).hidden=(t!==b.dataset.tab));
+}));
+
+$('profileSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  [...$('profileSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
+  profile=b.dataset.v;
+  const hints={fw:'Throughput de firewall stateful, sin inspección de contenido.',ips:'FW + IPS habilitado sobre tráfico IMIX.',ngfw:'App Control + IPS habilitados. Valor típico para sucursal corporativa.',sdwan:'IPsec SD-WAN + IPS + App Control + QoS. Throughput SD-WAN publicado por Fortinet.'};
+  $('profileHint').textContent=hints[profile];
+  render();
+});
+$('wanSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('wanSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));wanMode=b.dataset.v;render();});
+$('segSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('segSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));segMode=b.dataset.v;render();});
+['bw','unit','users','head','chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa'].forEach(id=>$(id).addEventListener('input',render));
+['pickModel','qty','termYears','licBundle','careLevel'].forEach(id=>$(id).addEventListener('input',renderBom));
+
+function fmt(m){
+  if(!m) return '—';
+  if(m>=1000000)return (m/1e6).toFixed(1).replace(/\.0$/,'')+' Tbps';
+  if(m>=1000)return (m/1000).toFixed(m%1000?1:0)+' Gbps';
+  return Math.round(m)+' Mbps';
+}
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+function render(){
+  const bw=parseFloat($('bw').value)||0;
+  const unit=parseFloat($('unit').value);
+  const users=parseInt($('users').value)||0;
+  const head=(parseFloat($('head').value)||0)/100;
+  $('headVal').textContent=Math.round(head*100)+' %';
+
+  // SSL penalty
+  const sslPenalty=$('chkSsl').checked?0.6:1.0;
+  // extra feature penalties
+  let featurePenalty=1.0;
+  if($('chkAv').checked) featurePenalty+=0.08;
+  if($('chkWeb').checked) featurePenalty+=0.04;
+  if($('chkSandbox').checked) featurePenalty+=0.10;
+  if($('chkIotDlp').checked) featurePenalty+=0.06;
+
+  // base need: max of BW-based and user-based
+  const bwBaseMbps=bw*unit*(1+head)*featurePenalty;
+  const userBaseMbps=users*3*(1+head)*featurePenalty; // 3 Mbps/user avg
+  let needMbps=Math.max(bwBaseMbps,userBaseMbps);
+
+  // if ssl
+  const needDisplay=needMbps;
+  const effectiveNeed=$('chkSsl').checked?needMbps/sslPenalty:needMbps;
+
+  // pick profile cap
+  const capKey={fw:'fw',ips:'ips',ngfw:'ngfw',sdwan:'vpn'}[profile]||'ngfw';
+  const getCap=m=>$('chkSsl').checked?(m.ssl||m.ngfw*0.65):m[capKey];
+
+  // scale
+  const allCaps=MODELS.map(m=>m.fw);
+  const maxCap=Math.max(...allCaps);
+  const logP=v=>Math.log10(Math.max(v,10));
+  const logMin=Math.log10(10),logMax=logP(maxCap*1.2);
+  const xPct=v=>(logP(v)-logMin)/(logMax-logMin)*100;
+  const needPct=Math.min(xPct(effectiveNeed),99);
+
+  const need=$('need');
+  need.style.left=needPct+'%';
+  $('needLbl').textContent=fmt(effectiveNeed);
+  need.classList.toggle('flip',needPct>60);
+
+  // draw track
+  const track=$('track');
+  track.querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
+  const pickLbl=document.createElement('div');
+  pickLbl.className='pickLabel'; pickLbl.id='pickLbl'; pickLbl.style.display='none';
+  track.appendChild(pickLbl);
+  [10,50,100,500,1000,5000,10000,50000,100000,500000,1000000].forEach(v=>{
+    const pct=xPct(v);if(pct<0||pct>100)return;
+    const tick=document.createElement('div');tick.className='tick';tick.style.left=pct+'%';
+    const lbl=v>=1000000?v/1e6+'T':v>=1000?v/1000+'G':v+'M';
+    tick.innerHTML=`<i></i><b>${lbl}</b>`;track.appendChild(tick);
+  });
+  MODELS.forEach(m=>{
+    const cap=getCap(m);const pct=xPct(cap);if(pct<0||pct>100)return;
+    const dot=document.createElement('div');
+    dot.className='dot'+(cap>=effectiveNeed?' ok':'');
+    if(lastPick&&m.id===lastPick.id)dot.className='dot pick';
+    dot.style.left=pct+'%';dot.title=m.id+': '+fmt(cap);
+    track.appendChild(dot);
+  });
+
+  // find candidates
+  const candidates=MODELS.filter(m=>getCap(m)>=effectiveNeed);
+  // filter by segment
+  const segFilter={branch:['SOHO','Sucursal peq','Sucursal med','Sucursal + PoE','Sucursal gde'],campus:['Campus / Agr','Campus / DC edge'],dc:['DC edge','DC / Carrier','Carrier grade','DC core']};
+  let pick=candidates.find(m=>segFilter[segMode]?.includes(m.seg))||candidates[0]||null;
+  lastPick=pick;
+
+  if(!pick){
+    $('vModel').textContent='Supera catálogo';
+    $('vFamily').textContent='Considerar FortiGate 4400F o solución a medida';
+    $('verdict').style.borderLeftColor='var(--amber)';
+    $('vWhy').innerHTML='<p class="warn">El requerimiento supera la capacidad del catálogo configurado.</p>';
+    return;
+  }
+  $('verdict').style.borderLeftColor='var(--red)';
+  $('vModel').textContent=pick.id;
+  $('vFamily').textContent=pick.seg+' · FortiOS Security Fabric';
+  $('pickLbl').textContent=pick.id;$('pickLbl').style.display='block';
+  $('pickLbl').style.left=xPct(getCap(pick))+'%';
+
+  const setPct=(id,val,cap)=>{const pct=cap>0?Math.min(val/cap*100,100):0;const bar=$(id);bar.style.width=pct+'%';bar.className=pct>90?'tight':pct<70?'good':'';};
+  $('mFwVal').textContent=fmt(effectiveNeed)+' / '+fmt(pick.fw);setPct('mFwBar',effectiveNeed,pick.fw);
+  $('mNgVal').textContent=fmt(effectiveNeed)+' / '+fmt(getCap(pick));setPct('mNgBar',effectiveNeed,getCap(pick));
+  $('mVpnVal').textContent='/ '+fmt(pick.vpn);setPct('mVpnBar',0,pick.vpn);
+
+  const flags=[];
+  if($('chkSsl').checked)flags.push('<b>SSL Inspection activa:</b> Throughput degradado ~35-40%. El sizing usa el valor SSL del datasheet.');
+  if($('chkAv').checked)flags.push('Antivirus añade ~8% de carga. Asegúrate de que el modelo tiene ASIC CP9.');
+  if($('chkSandbox').checked)flags.push('FortiSandbox requiere conectividad cloud o appliance local adicional en la cotización.');
+  if($('chkHa').checked)flags.push('<b>HA requerido:</b> Duplicar la cantidad de unidades en el pedido.');
+  if(wanMode==='dual')flags.push('Dual WAN configurado: dos interfaces WAN con load-balancing o failover.');
+  const alts=candidates.filter(m=>m.id!==pick.id).slice(0,3).map(m=>m.id);
+
+  $('vWhy').innerHTML=`<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
+    <li>Requerimiento: <b>${fmt(effectiveNeed)}</b>${$('chkSsl').checked?' (con SSL Inspection)':''} | Capacidad: <b>${fmt(getCap(pick))}</b></li>
+    <li>Sesiones concurrentes disponibles: <b>${(pick.sess/1000).toFixed(0)}K</b></li>
+    <li>IPsec VPN: <b>${fmt(pick.vpn)}</b> | Interfaces: ${pick.ifaces}</li>
+    ${flags.map(f=>`<li>${f}</li>`).join('')}
+    ${alts.length?`<li>Alternativas a evaluar: <b>${alts.join(', ')}</b></li>`:''}
+  </ul>`;
+
+  $('sizingBox').innerHTML=`
+    <table><tbody>
+      <tr><td>Perfil</td><td class="n">${{fw:'FW puro',ips:'FW + IPS',ngfw:'NGFW (App+IPS)',sdwan:'SD-WAN completo'}[profile]}</td></tr>
+      <tr><td>SSL Inspection</td><td class="n">${$('chkSsl').checked?'Sí (factor 0.65)':'No'}</td></tr>
+      <tr><td>Ancho de banda WAN</td><td class="n">${fmt(bw*unit)}</td></tr>
+      <tr><td>Usuarios estimados</td><td class="n">${users}</td></tr>
+      <tr><td>Requerimiento final</td><td class="n"><b>${fmt(effectiveNeed)}</b></td></tr>
+      <tr><td>Headroom disponible</td><td class="n">${Math.round((1-effectiveNeed/getCap(pick))*100)}%</td></tr>
+      <tr><td>HA requerida</td><td class="n">${$('chkHa').checked?'Sí — 2x unidades':'No'}</td></tr>
+    </tbody></table>`;
+}
+
+/* BOM */
+function populatePickModel(){
+  $('pickModel').innerHTML=MODELS.map(m=>`<option value="${m.id}">${m.id} — ${m.seg}</option>`).join('');
+}
+
+function renderBom(){
+  const m=MODELS.find(x=>x.id===$('pickModel').value)||MODELS[0];
+  const qty=Math.max(1,parseInt($('qty').value)||1);
+  const termYrs=parseInt($('termYears').value)||3;
+  const bundle=$('licBundle').value||'ent';
+  const care=$('careLevel').value||'fcpre';
+
+  let html=`<section class="panel"><h2>Ficha del equipo</h2>
+    <div class="model" style="font-size:28px">${m.id}</div>
+    <p class="family">${m.seg} · FortiOS · Security Fabric</p>
+    <div class="scroll"><table><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
+    <tr><td>FW Throughput</td><td class="n">${fmt(m.fw)}</td></tr>
+    <tr><td>IPS Throughput (IMIX)</td><td class="n">${fmt(m.ips)}</td></tr>
+    <tr><td>NGFW Throughput (App+IPS)</td><td class="n">${fmt(m.ngfw)}</td></tr>
+    <tr><td>SSL Inspection Throughput</td><td class="n">${m.ssl?fmt(m.ssl):'Consultar datasheet'}</td></tr>
+    <tr><td>IPsec VPN Throughput</td><td class="n">${fmt(m.vpn)}</td></tr>
+    <tr><td>Sesiones concurrentes</td><td class="n">${(m.sess/1000).toFixed(0)}K</td></tr>
+    <tr><td>Interfaces</td><td>${m.ifaces}</td></tr>
+    </tbody></table></div></section>`;
+
+  html+=`<section class="panel"><h2>Licencias FortiGuard</h2><ul class="clean">
+    <li class="on"><b>${BUNDLES[bundle].n}</b><span class="req">Requerida</span><span class="sku">${BUNDLES[bundle].svcs} · término ${termYrs} años</span></li>
+    <li class="on"><b>FortiGuard IPS</b><span class="req">Incluida en bundle</span><span class="sku">Actualización continua de firmas IPS, exploits y malware.</span></li>
+    <li class="on"><b>FortiGuard App Control</b><span class="req">Incluida en bundle</span><span class="sku">Identificación de más de 5.000 aplicaciones y control de uso.</span></li>
+    <li><b>FortiSandbox Cloud</b><span class="req opt">Opcional</span><span class="sku">Análisis dinámico de archivos zero-day. Incluido en Elite.</span></li>
+    <li><b>FortiClient EMS</b><span class="req opt">Opcional</span><span class="sku">Gestión de endpoints ZTNA + VPN. Licencia por número de usuarios.</span></li>
+  </ul></section>`;
+
+  html+=`<section class="panel"><h2>Soporte FortiCare</h2><div class="scroll"><table>
+    <thead><tr><th>Servicio</th><th>SLA</th><th>Término</th><th>Qty</th></tr></thead><tbody>
+    <tr><td>${CARE[care].n}</td><td class="n">${CARE[care].sla}</td><td class="n">${termYrs} años</td><td class="n">${qty}</td></tr>
+    </tbody></table></div></section>`;
+
+  $('bomBody').innerHTML=html;
+
+  const L=[];
+  L.push(`LISTA DE MATERIALES — ${m.id}`);
+  L.push(`Segmento: ${m.seg} · FortiOS · Security Fabric`);
+  L.push('Generado como preselección de preventa. Verificar SKUs con distribuidor Fortinet.');
+  L.push('');
+  L.push('EQUIPO');
+  L.push(`  ${qty} x ${m.id}   [PID: POR CONFIRMAR CON DISTRIBUIDOR]`);
+  L.push(`     FW: ${fmt(m.fw)} | NGFW: ${fmt(m.ngfw)} | VPN: ${fmt(m.vpn)}`);
+  L.push(`     Interfaces: ${m.ifaces}`);
+  L.push('');
+  L.push('LICENCIAS FORTICUARD');
+  L.push(`  ${qty} x ${BUNDLES[bundle].n}  (${termYrs} años)`);
+  L.push(`     ${BUNDLES[bundle].svcs}`);
+  L.push('');
+  L.push('SOPORTE FORTICARE');
+  L.push(`  ${qty} x ${CARE[care].n}  (${CARE[care].sla} — ${termYrs} años)`);
+  L.push('');
+  L.push('NOTA: precios no incluidos. Consultar lista de precios vigente con distribuidor autorizado.');
+  $('bomOut').value=L.join('\n');
+}
+
+$('copyBtn').addEventListener('click',async()=>{
+  const t=$('bomOut');t.select();
+  try{await navigator.clipboard.writeText(t.value);$('copyBtn').textContent='Copiado';}
+  catch{document.execCommand('copy');$('copyBtn').textContent='Copiado';}
+  setTimeout(()=>$('copyBtn').textContent='Copiar BOM',1600);
+});
+
+(async function initApp(){
+  const res = await fetch('/api/dimensionador/fortinet');
+  const data = await res.json();
+  MODELS = data.models;
+  BUNDLES = data.bundles;
+  CARE = data.care;
+
+  populatePickModel();
+  render();
+  renderBom();
+})();
+</script>
+</body>
+</html>
