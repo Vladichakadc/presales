@@ -138,8 +138,26 @@ function cambiarPassword(actual, nueva) {
 
 // Cookie de sesión sin estado: "expiracion.firma". No lleva datos porque hay un solo
 // usuario; la firma HMAC es lo unico que hace falta validar.
+//
+// La clave de firma se deriva de SESSION_SECRET *y de la credencial vigente*. Es lo que
+// hace que cambiar la contraseña invalide de verdad las sesiones ya emitidas: borrar la
+// cookie solo funciona si el cliente coopera, y un token robado seguiria siendo valido
+// hasta su expiracion. Al mover la clave, todas las firmas anteriores dejan de validar.
+//
+// La huella debe ser determinista, asi que no puede usar hashPassword: ese genera un salt
+// aleatorio en cada llamada y ninguna firma volveria a validar.
+function huellaCredencial() {
+  const estado = leerEstado();
+  const base = (estado && estado.passwordHash) || `semilla:${SEED_PASSWORD}`;
+  return crypto.createHash('sha256').update(base).digest('hex');
+}
+
+function claveSesion() {
+  return crypto.createHmac('sha256', SESSION_SECRET).update(huellaCredencial()).digest();
+}
+
 function firmar(valor) {
-  return crypto.createHmac('sha256', SESSION_SECRET).update(valor).digest('base64url');
+  return crypto.createHmac('sha256', claveSesion()).update(valor).digest('base64url');
 }
 
 function crearToken() {
