@@ -43,7 +43,10 @@ app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'login.html'));
 });
 
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
+  // El retardo va antes de cualquier comprobacion: es lo que frena al atacante que rota
+  // X-Forwarded-For y por tanto se salta el contador por IP.
+  await auth.esperarRetardo();
   if (auth.intentosRestantes(req) <= 0) {
     return res.status(429).json({ error: 'Demasiados intentos fallidos. Espera 15 minutos antes de volver a probar.' });
   }

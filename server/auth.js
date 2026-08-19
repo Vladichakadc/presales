@@ -33,12 +33,27 @@ const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toSt
 const SESSION_HOURS = 12;
 const COOKIE_NAME = 'presales_sesion';
 
-// Fuerza bruta: 8 intentos por IP en 15 minutos. En memoria y por proceso, que es suficiente
-// con una sola instancia. ponytail: si algún día hay varias réplicas, esto debe ir a un store
-// compartido o el atacante multiplica su cuota por el número de instancias.
-const MAX_INTENTOS = 8;
+// Fuerza bruta: dos frenos en capas, porque el conteo por IP no basta.
+//
+// La identidad por IP sale de X-Forwarded-For, cabecera que el cliente puede escribir.
+// Detrás del proxy de Railway no se puede saber con certeza cuántos saltos descartar, y se
+// comprobó en producción que rotando la cabecera se obtenía cuota nueva en cada intento.
+// Por eso el freno que sostiene la defensa no depende de la IP.
+//
+// Se descartó un tope global duro: negaba también el login correcto, así que cualquiera
+// podía dejar al equipo fuera mandando basura cada 15 minutos. En su lugar hay un retardo
+// global progresivo, que nunca niega el acceso a quien tiene la credencial pero vuelve
+// inviable el barrido — con el retardo al máximo quedan menos de dos intentos por segundo
+// contra una contraseña aleatoria de 28 caracteres.
+//
+// ponytail: los contadores son por proceso; con varias réplicas hay que moverlos a un store
+// compartido o cada instancia concede su propia cuota.
+const MAX_INTENTOS = 8;             // por IP, cuando la IP es distinguible
+const RETARDO_DESDE = 10;           // fallos globales recientes a partir de los cuales se frena
+const RETARDO_MAX_MS = 2000;
 const VENTANA_MS = 15 * 60 * 1000;
 const intentos = new Map();
+let globalFallos = { n: 0, hasta: 0 };
 
 /* ── Contraseñas ─────────────────────────────────────────────────────────────── */
 
@@ -218,19 +233,43 @@ function claveCliente(req) {
 }
 
 function intentosRestantes(req) {
+  const ahora = Date.now();
   const reg = intentos.get(claveCliente(req));
-  if (!reg || Date.now() > reg.hasta) return MAX_INTENTOS;
-  return Math.max(0, MAX_INTENTOS - reg.n);
+  return (!reg || ahora > reg.hasta) ? MAX_INTENTOS : Math.max(0, MAX_INTENTOS - reg.n);
 }
+
+// Retardo global: no niega el intento, solo lo encarece. Se aplica antes de comprobar la
+// credencial para que tambien frene al atacante que rota la cabecera X-Forwarded-For.
+function retardoGlobalMs() {
+  if (Date.now() > globalFallos.hasta) return 0;
+  const exceso = globalFallos.n - RETARDO_DESDE;
+  if (exceso <= 0) return 0;
+  return Math.min(RETARDO_MAX_MS, exceso * 150);
+}
+
+const esperarRetardo = () => new Promise((r) => setTimeout(r, retardoGlobalMs()));
 
 function registrarFallo(req) {
+  const ahora = Date.now();
   const k = claveCliente(req);
   const reg = intentos.get(k);
-  if (!reg || Date.now() > reg.hasta) intentos.set(k, { n: 1, hasta: Date.now() + VENTANA_MS });
+  if (!reg || ahora > reg.hasta) intentos.set(k, { n: 1, hasta: ahora + VENTANA_MS });
   else reg.n += 1;
+
+  if (ahora > globalFallos.hasta) globalFallos = { n: 1, hasta: ahora + VENTANA_MS };
+  else globalFallos.n += 1;
+
+  // Deja rastro de la IP que resolvio Express: si en los logs sale siempre la misma o
+  // siempre distinta, se sabe si el limite por IP aporta algo detras de este proxy.
+  console.warn(`[auth] intento fallido · ip=${k} · fallos=${globalFallos.n} · retardo=${retardoGlobalMs()}ms`);
 }
 
-const limpiarIntentos = (req) => intentos.delete(claveCliente(req));
+// El acierto limpia la cuota de esa IP y afloja la global, para que un intento legitimo
+// no quede penalizado por el ruido de fondo de un atacante.
+function limpiarIntentos(req) {
+  intentos.delete(claveCliente(req));
+  globalFallos = { n: 0, hasta: 0 };
+}
 
 // Se purgan las entradas vencidas cada 15 min para que el Map no crezca sin limite bajo
 // un ataque distribuido. unref() evita que este temporizador impida cerrar el proceso.
@@ -243,6 +282,6 @@ module.exports = {
   USER, COOKIE_NAME, MAX_INTENTOS,
   comprobarCredenciales, cambiarPassword, usandoSemilla, hashVigente,
   ponerCookieSesion, borrarCookieSesion, haySesion,
-  intentosRestantes, registrarFallo, limpiarIntentos,
+  intentosRestantes, registrarFallo, limpiarIntentos, esperarRetardo, retardoGlobalMs,
   STATE_FILE,
 };
