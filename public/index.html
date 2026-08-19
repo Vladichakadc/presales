@@ -31,6 +31,8 @@ body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,san
 .search-wrap input{background:transparent;border:none;color:#fff;font-family:'Barlow',sans-serif;font-size:13px;padding:8px 12px;width:200px;outline:none}
 .search-wrap input::placeholder{color:rgba(255,255,255,.32)}
 .search-wrap button{background:var(--red);border:none;color:#fff;padding:8px 12px;cursor:pointer;font-size:15px}
+.sync-btn{background:var(--green);border:none;color:#fff;padding:8px 14px;cursor:pointer;font-size:13px;font-family:'Barlow',sans-serif;font-weight:600;border-radius:3px;transition:background 0.2s}
+.sync-btn:hover{background:#175238}
 .menu-toggle{display:none;background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:4px 8px;margin-right:4px}
 
 /* ── SIDEBAR ── */
@@ -48,6 +50,7 @@ body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,san
 .nav-icon.ft{background:#EE3124;color:#fff}
 .nav-icon.jn{background:#84B135;color:#fff}
 .nav-icon.ar{background:#4E5B6E;color:#fff}
+.nav-icon.mt{background:#C8102E;color:#fff}
 .nav-icon.tool{background:rgba(255,255,255,.1);color:var(--red)}
 .nav-badge{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:9px;background:rgba(255,255,255,.08);padding:2px 5px;border-radius:2px;color:rgba(255,255,255,.4)}
 
@@ -167,6 +170,21 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
 .fuentes-list li{margin-bottom:8px}
 .fuentes-list a{color:var(--ink);text-decoration:none;font-weight:600}
 .fuentes-list a:hover{text-decoration:underline;color:var(--red)}
+
+/* SYNC MODAL */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(14,26,43,0.8);z-index:999;align-items:center;justify-content:center}
+.modal{background:#fff;border-radius:6px;width:90%;max-width:800px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(0,0,0,0.3)}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-size:18px;font-weight:600;margin:0}
+.modal-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--steel)}
+.modal-body{padding:20px;overflow-y:auto;flex:1}
+.modal-footer{padding:16px 20px;border-top:1px solid var(--rule);display:flex;justify-content:flex-end;gap:10px}
+.sync-select{padding:6px;margin-bottom:12px;border:1px solid var(--rule);border-radius:3px}
+.diff-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13.5px}
+.diff-table th,.diff-table td{padding:8px 10px;border:1px solid var(--rule);text-align:left}
+.diff-table th{background:var(--paper)}
+.diff-old{color:var(--red);text-decoration:line-through}
+.diff-new{color:var(--green);font-weight:600}
 </style>
 </head>
 <body>
@@ -180,6 +198,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
     <input type="text" id="globalSearch" placeholder="Buscar equipo o fabricante…" oninput="globalFilter(this.value)">
     <button aria-label="Buscar">&#9906;</button>
   </div>
+  <button class="sync-btn" onclick="openSyncModal()">&#8635; IA Sync</button>
 </header>
 
 <!-- ═══════════ SIDEBAR ═══════════ -->
@@ -210,6 +229,9 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
     </button>
     <button class="nav-btn" data-page="arista" onclick="go('arista')">
       <span class="nav-icon ar">AR</span> Arista <span class="nav-badge">7K</span>
+    </button>
+    <button class="nav-btn" data-page="mikrotik" onclick="go('mikrotik')">
+      <span class="nav-icon mt">MT</span> MikroTik <span class="nav-badge">CCR&thinsp;&middot;&thinsp;RB</span>
     </button>
   </div>
 
@@ -249,6 +271,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
     <a href="dimensionador-fortinet-fortigate.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px;background:#EE3124;border-color:#EE3124;color:#fff">&#10697; BOM FortiGate</a>
     <a href="dimensionador-cisco-catalyst8k.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px;background:#049FD9;border-color:#049FD9;color:#fff">&#10697; BOM Cisco</a>
     <a href="dimensionador-bom-huawei-v3_1.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px;background:#C7000B;border-color:#C7000B;color:#fff">&#10697; BOM Huawei</a>
+    <a href="dimensionador-mikrotik-routeros.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px;background:#C8102E;border-color:#C8102E;color:#fff">&#10697; BOM MikroTik</a>
   </div>
   <p style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);margin:0 0 10px">Fabricantes</p>
   <div class="dash-grid" id="dashGrid"></div>
@@ -424,8 +447,9 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
       <h2>Fuentes de Información y Precios</h2>
       <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Toda la información técnica y los modelos mostrados en esta plataforma han sido filtrados para excluir equipos EOL/EOS (End of Life), basándonos en los siguientes canales oficiales:</p>
       <ul class="fuentes-list">
-        <li><b>Product Matrix:</b> <a href="https://www.fortinet.com/products/next-generation-firewall" target="_blank">https://www.fortinet.com/products/next-generation-firewall</a><br>Tabla oficial de rendimiento y especificaciones de las series FortiGate F-Series.</li>
-        <li><b>Precios de Referencia (ELP):</b><br>Estimación basada en el SKU de hardware base público de Fortinet. No incluye servicios FortiCare ni suscripciones UTP/ATP.</li>
+        <li><b>Fortinet Product Matrix (julio 2026):</b> <a href="https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf" target="_blank">Fortinet_Product_Matrix.pdf</a><br>Fuente oficial de especificaciones y throughput (FW/IPS/NGFW/IPsec VPN/sesiones) de las series FortiGate F y G.</li>
+        <li><b>2026Q3 Main Price list AMER (vigente desde 03-ago-2026):</b><br>Lista de precios oficial Fortinet AMER — fuente de los precios de referencia (ELP) y del estado EOL/End of Order de cada modelo.</li>
+        <li><b>Precios de Referencia (ELP):</b><br>MSRP del SKU de hardware base público de Fortinet. No incluye servicios FortiCare ni suscripciones UTP/ATP.</li>
       </ul>
     </div>
   </div>
@@ -485,7 +509,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
   </div>
 </div>
 
-<!-- ════ COMPARADOR ════ -->
+<!-- ════ MIKROTIK ════ -->
   </div>
   <div id="tab-src-arista" class="tab-content">
     <div class="panel">
@@ -497,6 +521,146 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
       </ul>
     </div>
   </div>
+
+<div class="page" id="page-mikrotik">
+  <div class="page-header">
+    <p class="eyebrow">Fabricante &middot; Routing / SD-WAN / ISP</p>
+    <h1>MikroTik</h1>
+    <p class="sub">RouterOS v7 con WireGuard nativo, MPLS, BGP, OSPF y CAPsMAN WiFi. Desde el hEX SOHO hasta el CCR2216 100G WAN core. Relación precio-rendimiento líder del mercado.</p>
+  </div>
+  <div style="margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <a href="dimensionador-mikrotik-routeros.html" target="_blank" class="btn" style="text-decoration:none;background:#C8102E;border-color:#C8102E">&#10697; Abrir Dimensionador y BOM MikroTik</a>
+    <span class="badge live">Herramienta Activa</span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn btn-cat active" onclick="switchTab('mikrotik', 'cat')">Catálogo</button>
+    <button class="tab-btn btn-topo" onclick="switchTab('mikrotik', 'topo')">RouterOS Features</button>
+    <button class="tab-btn btn-src" onclick="switchTab('mikrotik', 'src')">Fuentes y Referencias</button>
+  </div>
+
+  <div id="tab-cat-mikrotik" class="tab-content active">
+    <div class="panel">
+      <h2>Catálogo de Equipos <span style="font-weight:400;color:var(--steel)">— Precio ref. USD incluido</span></h2>
+      <div class="scroll"><table id="tbl-mikrotik">
+        <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Forwarding</th><th>IPsec</th><th>SD-WAN / VPN</th><th>Puertos</th><th>Precio ref. USD&#9432;</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+      <p style="font-size:11px;color:var(--steel);margin-top:10px">&#9432; Precio de lista orientativo (USD MSRP). No incluye impuestos locales ni soporte de canal. Verificar con distribuidor MikroTik autorizado.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:18px">
+      <div class="panel" style="border-left:4px solid #C8102E;padding:16px 18px">
+        <h2 style="margin-bottom:10px">RouterOS Licencias</h2>
+        <table style="font-size:12px">
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">L4 (perpetua)</td><td>Incluida en hardware. OSPF, BGP, MPLS, WireGuard.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">CHR P-Unlimited</td><td>~ $250 USD. Sin límite de throughput, todos los features.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">CHR P1 / P10</td><td>Tier 1 Gbps (~$45) / 10 Gbps (~$95) perpetua.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">CHR Free 60-day</td><td>Trial sin límite. Producción requiere licencia pagada.</td></tr>
+        </table>
+      </div>
+      <div class="panel" style="border-left:4px solid #C8102E;padding:16px 18px">
+        <h2 style="margin-bottom:10px">Certificaciones MTCNA</h2>
+        <table style="font-size:12px">
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">MTCNA</td><td>Nivel básico. Routing, firewall, VPN, wireless.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">MTCRE</td><td>Routing avanzado: OSPF, BGP, routing policies.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">MTCWE</td><td>Wireless Engineer. 802.11ax, CAPsMAN v2, mesh.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">MTCINE</td><td>Inter-Networking Expert. MPLS, TE, VRF, EVPN.</td></tr>
+        </table>
+      </div>
+      <div class="panel" style="border-left:4px solid #C8102E;padding:16px 18px">
+        <h2 style="margin-bottom:10px">Gestión y Orquestación</h2>
+        <table style="font-size:12px">
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Winbox v3/v4</td><td>GUI nativa. Windows/Wine. SAFE channel cifrado.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">WebFig</td><td>GUI web integrada. HTTPS + HTTP/2.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">The Dude</td><td>NMS gratuito. SNMP, syslog, alertas, mapas.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">REST API / SSH</td><td>Automatización: Ansible, Terraform, scripts RouterOS.</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-topo-mikrotik" class="tab-content">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px">
+      <div class="panel" style="padding:20px">
+        <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 12px">Routing &amp; Switching</h3>
+        <ul style="font-size:13px;color:var(--steel);margin:0;padding-left:18px">
+          <li>OSPFv2/v3, BGP4, RIPv2, IS-IS</li>
+          <li>MPLS / LDP / RSVP-TE (L3VPN, VPLS)</li>
+          <li>VRF / policy routing / ECMP</li>
+          <li>VLAN (802.1Q), Bridge filtering, STP/RSTP/MSTP</li>
+          <li>Bonding LAG/LACP, VXLAN (RouterOS 7.x)</li>
+        </ul>
+      </div>
+      <div class="panel" style="padding:20px">
+        <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 12px">Seguridad / VPN</h3>
+        <ul style="font-size:13px;color:var(--steel);margin:0;padding-left:18px">
+          <li>WireGuard nativo (kernel-level, ~3.1 Gbps en CCR2004)</li>
+          <li>IPsec IKEv2 / IKEv1 — site-to-site y road warrior</li>
+          <li>OpenVPN (TLS), L2TP/IPsec, SSTP, PPPoE</li>
+          <li>Firewall stateful con mangle, NAT, RAW</li>
+          <li>Hotspot gateway, User Manager RADIUS</li>
+        </ul>
+      </div>
+      <div class="panel" style="padding:20px">
+        <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 12px">QoS &amp; Tráfico</h3>
+        <ul style="font-size:13px;color:var(--steel);margin:0;padding-left:18px">
+          <li>Queue Tree / Simple Queue (HTB)</li>
+          <li>Mangle + DSCP marking</li>
+          <li>PCQ (Per Connection Queue) — ISP fair-share</li>
+          <li>Fasttrack (hardware offload) para IPv4/IPv6</li>
+          <li>Torch / Traffic Monitor en tiempo real</li>
+        </ul>
+      </div>
+      <div class="panel" style="padding:20px">
+        <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 12px">Wireless / CAPsMAN</h3>
+        <ul style="font-size:13px;color:var(--steel);margin:0;padding-left:18px">
+          <li>802.11ax Wi-Fi 6 (hAP ax²/ax³, cAP ax)</li>
+          <li>CAPsMAN v2: controlador WiFi centralizado</li>
+          <li>802.11s mesh, channel bonding, Nv2 propietario</li>
+          <li>Spectral scan, Wireless Sniffer</li>
+          <li>RoamingAssist + fast-BSS-transition</li>
+        </ul>
+      </div>
+      <div class="panel" style="padding:20px">
+        <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 12px">Topología típica ISP</h3>
+        <div class="topo-diagram">  CCR2216 (Core 100G)
+       │  BGP upstream
+  ┌────┴────┐
+  CCR2116  CCR2116  (Agregación)
+  ┌──┤      ├──┐
+RB5009  CCR2004  RB5009  (Hub)
+  │              │
+ hEX           hEX  (CPE)</div>
+        <p style="font-size:12px;color:var(--steel);margin:8px 0 0">Stack full-MikroTik: RouterOS en todos los nodos, The Dude para monitoreo, Winbox/REST para automatización.</p>
+      </div>
+      <div class="panel" style="padding:20px">
+        <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 12px">Casos de Uso SD-WAN</h3>
+        <ul style="font-size:13px;color:var(--steel);margin:0;padding-left:18px">
+          <li><b>Dual WAN failover:</b> scripting RouterOS + NetWatch</li>
+          <li><b>WireGuard Hub-Spoke:</b> concentrador CCR2004 + spokes RB5009</li>
+          <li><b>BGP anycast VPN:</b> CHR en cloud + CCR2216 en DC</li>
+          <li><b>Load balancing PCC:</b> Per Connection Classifier ISP multi-homed</li>
+          <li><b>ZeroTier / Tailscale:</b> overlay sobre RouterOS CHR</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-src-mikrotik" class="tab-content">
+    <div class="panel">
+      <h2>Fuentes de Información y Precios</h2>
+      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Información técnica y precios verificados contra documentación oficial MikroTik:</p>
+      <ul class="fuentes-list">
+        <li><b>Productos y Datasheets:</b> <a href="https://mikrotik.com/products" target="_blank">https://mikrotik.com/products</a><br>Catálogo oficial de hardware: CCR2216, CCR2116, CCR2004, RB5009, RB4011, hEX series.</li>
+        <li><b>Wiki RouterOS:</b> <a href="https://wiki.mikrotik.com/wiki/Main_Page" target="_blank">https://wiki.mikrotik.com/wiki/Main_Page</a><br>Documentación técnica oficial de RouterOS 7.x: routing, VPN, QoS, wireless, scripting.</li>
+        <li><b>CHR (Cloud Hosted Router):</b> <a href="https://mikrotik.com/software" target="_blank">https://mikrotik.com/software</a><br>Licencias P1, P10, P-Unlimited para RouterOS virtual en VMware, KVM, AWS, GCP, Azure.</li>
+        <li><b>Certificaciones MTCNA/MTCRE:</b> <a href="https://mikrotik.com/training" target="_blank">https://mikrotik.com/training</a><br>Programa de formación oficial MikroTik: MTCNA, MTCRE, MTCWE, MTCTCE, MTCINE.</li>
+        <li><b>Lista de Precios (ELP):</b><br>Precios MSRP en USD de lista pública. No incluyen impuestos de importación ni márgenes de distribuidor. Verificar disponibilidad con distribuidor autorizado local.</li>
+        <li><b>EOL / Productos descontinuados:</b><br>RouterBOARD legacy (RB2011, RB951) marcados EOL. Solo se muestran equipos con RouterOS 7.x activo y disponibilidad en canal.</li>
+      </ul>
+    </div>
+  </div>
+</div>
 
 <div class="page" id="page-comparador">
   <div class="page-header">
@@ -680,7 +844,11 @@ const VENDORS=[
   {id:'arista',name:'Arista',accent:'#4E5B6E',icon:'AR',iconCls:'ar',
    desc:'7050X leaf/spine, 7280R edge, 7500R/7800R core 400G+. EOS, CloudVision AVD.',
    series:['7020R','7050X3','7280R3','7500R3','7800R3'],
-   tools:['Catálogo de equipos'],live:false}
+   tools:['Catálogo de equipos'],live:false},
+  {id:'mikrotik',name:'MikroTik',accent:'#C8102E',icon:'MT',iconCls:'mt',
+   desc:'RouterOS v7: WireGuard, IPsec, BGP, MPLS, CAPsMAN. hEX SOHO → CCR2216 Core 100G. Precio-rendimiento líder.',
+   series:['hEX','RB4011','RB5009','CCR2004','CCR2116','CCR2216','CHR'],
+   tools:['Catálogo de equipos','RouterOS Features'],live:true}
 ];
 
 let PR = {};
@@ -733,6 +901,9 @@ function buildAll(){
     sdwan:p.use.includes('SD-WAN')?'Sí':'—',ports:p.ports,color:'#84B135'}));
   PR.arista.forEach(p=>ALL.push({vendor:'Arista',model:p.model,series:p.ser,seg:p.seg,
     tp:parseCap(p.cap),tpL:p.cap,ipsec:0,ipsecL:'N/A (DC)',sdwan:'N/A',ports:p.ports,color:'#4E5B6E'}));
+  (PR.mikrotik||[]).forEach(p=>ALL.push({vendor:'MikroTik',model:p.model,series:p.ser,seg:p.seg,
+    tp:p.fwd||0,tpL:fmtMbps(p.fwd),ipsec:p.ipsec||0,ipsecL:p.ipsec?fmtMbps(p.ipsec):'—',
+    sdwan:p.sdwan,ports:p.ports,color:'#C8102E'}));
 }
 
 /* ═══════ NAV ═══════ */
@@ -760,7 +931,7 @@ function renderDash(){
   document.getElementById('dashGrid').innerHTML=VENDORS.map(v=>{
     const n=v.id==='huawei'
       ?PR.hw_ar.length+PR.hw_wan.length
-      :(PR[v.id]||[]).length;
+      :(PR[v.id]||[]).length; // mikrotik → PR.mikrotik.length
     return `<div class="vendor-card" onclick="go('${v.id}')">
       <div class="card-accent" style="background:${v.accent}"></div>
       <div class="card-body">
@@ -824,6 +995,15 @@ function renderTables(){
     <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
     <td class="n">${p.cap}</td><td>${p.ports}</td><td class="n">${p.lat}</td>
   </tr>`).join(''));
+
+  if(PR.mikrotik&&document.querySelector('#tbl-mikrotik tbody')){
+    q('tbl-mikrotik',(PR.mikrotik||[]).map(p=>`<tr>
+      <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
+      <td class="n">${fmtMbps(p.fwd)}</td><td class="n">${p.ipsec?fmtMbps(p.ipsec):'—'}</td>
+      <td>${p.sdwan}</td><td>${p.ports}</td>
+      <td class="n" style="color:var(--amber);white-space:nowrap">${p.elp||'—'}</td>
+    </tr>`).join(''));
+  }
 }
 
 /* ═══════ COMPARATOR ═══════ */
@@ -897,7 +1077,7 @@ function runCalc(){
     html+='<div class="panel" style="margin-top:16px"><p style="color:var(--amber);font-weight:600">No se encontraron equipos que cumplan este requerimiento en el catálogo actual.</p></div>';
   }else{
     html+='<div style="margin-top:16px">';
-    ['Huawei','Cisco','Fortinet','Nokia','Juniper','Arista'].forEach(vName=>{
+    ['Huawei','Cisco','Fortinet','Nokia','Juniper','Arista','MikroTik'].forEach(vName=>{
       const devs=byVendor[vName]; if(!devs||!devs.length) return;
       const best=devs[0];
       const alts=devs.slice(1,4).map(d=>d.model).join(', ');
@@ -976,6 +1156,114 @@ function globalFilter(q){
   );
   if(match){const v=VENDORS.find(x=>x.name===match.vendor);if(v) go(v.id);}
 }
+/* ═══════ AI SYNC ═══════ */
+let pendingChanges = [];
+
+function escapeHtml(v) {
+  return String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function openSyncModal() {
+  document.getElementById('syncModal').style.display = 'flex';
+  document.getElementById('syncResult').innerHTML = '<p>Selecciona un fabricante y haz clic en Analizar.</p>';
+}
+
+function closeSyncModal() {
+  document.getElementById('syncModal').style.display = 'none';
+  pendingChanges = [];
+}
+
+async function analyzeSync() {
+  const vendor = document.getElementById('syncVendor').value;
+  const fileInput = document.getElementById('syncFile');
+  const resultDiv = document.getElementById('syncResult');
+  const btn = document.getElementById('btnApplySync');
+  
+  resultDiv.innerHTML = '<p>Analizando catálogo con IA (esto puede tardar unos segundos o minutos si el archivo es grande)...</p>';
+  btn.style.display = 'none';
+  
+  try {
+    const formData = new FormData();
+    formData.append('vendor', vendor);
+    if (fileInput.files.length > 0) {
+      formData.append('datasheet', fileInput.files[0]);
+    }
+
+    const res = await fetch('/api/sync/analyze', {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (!res.ok) throw new Error('Error en el servidor');
+    const data = await res.json();
+    pendingChanges = data.changes;
+    
+    if (pendingChanges.length === 0) {
+      resultDiv.innerHTML = '<p>El catálogo parece estar actualizado. No se encontraron discrepancias obvias.</p>';
+      return;
+    }
+    
+    const TARGET_LABELS = { product: 'Equipo', license: 'Licencia', supportTier: 'Soporte', part: 'SKU' };
+    let html = '<table class="diff-table"><tr><th>Categoría</th><th>Tipo</th><th>Modelo</th><th>Campo</th><th>Valor Anterior</th><th>Valor Nuevo Propuesto</th><th>Razón</th><th>Fuente</th></tr>';
+    pendingChanges.forEach(c => {
+      const typeBadge = c.type === 'NEW'
+        ? '<span style="background:var(--green);color:#fff;padding:2px 6px;border-radius:3px;font-size:11px">NUEVO</span>'
+        : '<span style="background:var(--steel);color:#fff;padding:2px 6px;border-radius:3px;font-size:11px">UPDATE</span>';
+      const targetLabel = TARGET_LABELS[c.target] || TARGET_LABELS.product;
+
+      // c.* viene del modelo de IA (que puede haber leído un datasheet subido por el usuario) — nunca confiar, siempre escapar antes de insertar en el DOM
+      const isSafeUrl = typeof c.sourceUrl === 'string' && /^https?:\/\//i.test(c.sourceUrl);
+      const sourceLink = isSafeUrl ? `<a href="${escapeHtml(c.sourceUrl)}" target="_blank" rel="noopener noreferrer" style="color:var(--red);text-decoration:underline">Enlace</a>` : 'N/A';
+
+      html += `<tr>
+        <td>${escapeHtml(targetLabel)}</td>
+        <td>${typeBadge}</td>
+        <td><strong>${escapeHtml(c.id)}</strong></td>
+        <td>${escapeHtml(c.field)}</td>
+        <td class="diff-old">${escapeHtml(c.oldValue)}</td>
+        <td class="diff-new">${escapeHtml(c.newValue)}</td>
+        <td>${escapeHtml(c.reason)}</td>
+        <td>${sourceLink}</td>
+      </tr>`;
+    });
+    html += '</table>';
+    
+    resultDiv.innerHTML = html;
+    btn.style.display = 'inline-block';
+  } catch (err) {
+    resultDiv.innerHTML = '<p style="color:var(--red)">Ocurrió un error al analizar el catálogo.</p>';
+  }
+}
+
+async function applySync() {
+  const vendor = document.getElementById('syncVendor').value;
+  const resultDiv = document.getElementById('syncResult');
+  const btn = document.getElementById('btnApplySync');
+  
+  btn.innerHTML = 'Aplicando...';
+  btn.disabled = true;
+  
+  try {
+    const res = await fetch('/api/sync/apply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vendor, changes: pendingChanges })
+    });
+    
+    if (!res.ok) throw new Error('Error aplicando');
+    const data = await res.json();
+
+    const skippedNote = data.skippedCount > 0 ? ` (${data.skippedCount} cambios se saltaron por datos inválidos, ver logs del servidor)` : '';
+    resultDiv.innerHTML = `<p style="color:var(--green);font-weight:600">¡Éxito! Se actualizaron ${data.appliedCount} registros en la base de datos${skippedNote}.</p><p>Recarga la página para ver los cambios.</p>`;
+    btn.style.display = 'none';
+    btn.innerHTML = 'Aprobar e Impactar DB';
+    btn.disabled = false;
+  } catch (err) {
+    resultDiv.innerHTML += '<p style="color:var(--red)">Error al aplicar los cambios.</p>';
+    btn.innerHTML = 'Aprobar e Impactar DB';
+    btn.disabled = false;
+  }
+}
 /* ═══════ INIT ═══════ */
 (async function initApp(){
   const res = await fetch('/api/catalog');
@@ -986,5 +1274,38 @@ function globalFilter(q){
   populateCmp();
 })();
 </script>
+
+<!-- ════ SYNC MODAL ════ -->
+<div class="modal-overlay" id="syncModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">&#8635; Sincronización Inteligente de Catálogo</h3>
+      <button class="modal-close" onclick="closeSyncModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+        <select id="syncVendor" class="sync-select">
+          <option value="fortinet">Fortinet</option>
+          <option value="cisco">Cisco</option>
+          <option value="huawei">Huawei</option>
+          <option value="mikrotik">MikroTik</option>
+        </select>
+        <button class="btn" style="padding:6px 14px;background:var(--ink);color:#fff" onclick="analyzeSync()">Analizar (IA)</button>
+      </div>
+      <div style="margin-bottom:20px;padding:10px;background:var(--bg);border-radius:6px;">
+        <p style="margin:0 0 5px 0;font-size:13px;font-weight:600;">Fuentes y Referencias (Opcional)</p>
+        <p style="margin:0 0 10px 0;font-size:11px;color:var(--steel);">Sube un Datasheet (PDF) o Excel (.xls, .xlsx, .csv) para extraer los valores exactos. Se revisan equipos, precios, licencias, soporte y SKUs.</p>
+        <input type="file" id="syncFile" accept=".pdf,.txt,.xls,.xlsx,.csv" style="font-size:12px;" />
+      </div>
+      <div id="syncResult">
+        <p>Selecciona un fabricante y haz clic en Analizar.</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:#fff;color:var(--ink);border:1px solid var(--rule)" onclick="closeSyncModal()">Cancelar</button>
+      <button id="btnApplySync" class="btn" style="background:var(--green);border:none;color:#fff;display:none" onclick="applySync()">Aprobar e Impactar DB</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

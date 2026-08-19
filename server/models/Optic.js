@@ -6,6 +6,9 @@ const Optic = sequelize.define('Optic', {
   sku: { type: DataTypes.STRING, allowNull: true },
   bomCodes: { type: DataTypes.JSON, allowNull: true, defaultValue: [] },
   description: { type: DataTypes.STRING, allowNull: true },
+  // Solo MikroTik lo pobla por ahora: su BOM cotiza las ópticas como línea propia (un
+  // CCR2216 son 14 jaulas vacías). Huawei/Cisco las listan por SKU sin precio.
+  priceNumeric: { type: DataTypes.FLOAT, allowNull: true },
 });
 
 module.exports = Optic;

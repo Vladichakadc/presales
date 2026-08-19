@@ -2,3 +2,11 @@ node_modules/
 database.sqlite
 .env
 .DS_Store
+
+# Estado local de herramientas de agente (logs de aprendizaje, telemetria de costos,
+# configuracion por maquina). No es codigo de la aplicacion y no aporta al despliegue.
+.claude/
+.cursor/
+.kiro/
+.github/hooks/
+**/.claude/

@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dimensionador y BOM MikroTik — RouterOS · CCR/RB/CHR</title>
+<meta name="description" content="Herramienta de dimensionamiento MikroTik RouterOS. Sizing por forwarding con FastTrack, VPN cifrada IPsec/WireGuard, RAM para BGP full table, nivel de licencia y presupuesto PoE.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;--red:#C8102E;--amber:#A45B00;--green:#1F6B4A;--card:#FFF}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1140px;margin:0 auto;padding:26px 18px 80px}
+.masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0 0 6px}
+h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28px,5.5vw,48px);line-height:.98;text-transform:uppercase;margin:0}
+.sub{color:var(--steel);max-width:64ch;margin:8px 0 0;font-size:14.5px}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);text-decoration:none;margin-bottom:18px;transition:color .15s}
+.back-link:hover{color:var(--red)}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--rule);margin-bottom:22px}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:11px 18px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.03em;text-transform:uppercase;color:var(--steel)}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--red)}
+.tabpane[hidden]{display:none}
+
+/* LADDER */
+.ladder{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px 18px 12px;margin-bottom:20px;overflow:hidden}
+.mono-lbl{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:0 0 18px;font-weight:600}
+.track{position:relative;height:110px;margin:0 4px}
+.axis{position:absolute;left:0;right:0;bottom:26px;height:1px;background:var(--rule)}
+.tick{position:absolute;bottom:26px;transform:translateX(-50%);text-align:center}
+.tick i{display:block;width:1px;height:7px;background:var(--rule);margin:0 auto}
+.tick b{font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:500;color:var(--steel);display:block;margin-top:4px;white-space:nowrap}
+.dot{position:absolute;bottom:34px;width:7px;height:7px;border-radius:50%;background:var(--rule);transform:translateX(-50%);transition:left .3s}
+.dot.ok{background:var(--ink)}
+.dot.pick{background:var(--red);width:11px;height:11px;bottom:32px;box-shadow:0 0 0 4px rgba(200,16,46,.18)}
+.need{position:absolute;top:0;bottom:26px;width:2px;background:var(--red);transform:translateX(-50%);transition:left .25s cubic-bezier(.2,.8,.2,1)}
+.need span{position:absolute;top:-2px;left:6px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;color:#fff;background:var(--red);padding:2px 6px;border-radius:2px}
+.need.flip span{left:auto;right:6px}
+.pickLabel{position:absolute;bottom:52px;transform:translateX(-50%);white-space:nowrap;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;text-transform:uppercase}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--steel);letter-spacing:.06em;text-transform:uppercase}
+.legend i{display:inline-block;width:7px;height:7px;background:var(--ink);margin-right:5px;border-radius:50%;vertical-align:middle}
+
+/* LAYOUT */
+.cols{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:880px){.cols{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px;margin-bottom:16px}
+.panel h2{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.field{margin-bottom:16px}.field:last-child{margin-bottom:0}
+label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px}
+.hint{font-size:11.5px;color:var(--steel);margin-top:5px;line-height:1.4}
+.row{display:flex;gap:8px}
+input[type=number],select{width:100%;padding:9px 10px;border:1px solid var(--rule);border-radius:2px;background:#fff;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500}
+select{font-family:'Barlow',sans-serif;font-size:13.5px}
+input:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+input[type=range]{width:100%;accent-color:var(--red)}
+.seg{display:flex;border:1px solid var(--rule);border-radius:2px;overflow:hidden}
+.seg button{flex:1;padding:8px 4px;border:0;background:#fff;cursor:pointer;font-family:'Barlow',sans-serif;font-size:12px;font-weight:500;color:var(--steel);line-height:1.25}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed=true]{background:var(--ink);color:#fff;font-weight:600}
+.checks{display:grid;gap:7px}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer}
+.check input{margin:3px 0 0;accent-color:var(--red)}
+.sub-field{margin:8px 0 0 22px;padding-left:10px;border-left:2px solid var(--rule)}
+.hidden{display:none!important}
+
+/* VERDICT */
+.verdict{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:22px;margin-bottom:16px}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0}
+.model{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(22px,4vw,36px);line-height:1;text-transform:uppercase;margin:6px 0 2px}
+.family{color:var(--steel);font-size:13.5px;margin-bottom:16px}
+.meter{margin-bottom:12px}
+.meter b{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;display:flex;justify-content:space-between;gap:10px;color:var(--steel);margin-bottom:5px}
+.meter b em{font-style:normal;color:var(--ink);font-weight:600;white-space:nowrap}
+.bar{height:7px;background:var(--paper);border-radius:1px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink);transition:width .3s}
+.bar i.tight{background:var(--amber)}.bar i.good{background:var(--green)}
+.why{border-top:1px solid var(--rule);padding-top:14px;font-size:13.5px;margin-top:4px}
+.warn{color:var(--amber)}
+.bad{color:var(--red)}
+ul.clean{list-style:none;margin:0;padding:0}
+ul.clean li{padding-left:14px;position:relative;margin-bottom:9px;font-size:13.5px}
+ul.clean li:before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;background:var(--rule)}
+ul.clean li.on:before{background:var(--red)}
+.sku{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--steel);display:block;margin-top:2px}
+.req{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 5px;border-radius:2px;background:var(--red);color:#fff;margin-left:6px;vertical-align:1px}
+.req.opt{background:var(--paper);color:var(--steel)}
+.req.warnb{background:var(--amber)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);font-weight:500;padding:0 8px 7px 0;border-bottom:1px solid var(--rule)}
+td{padding:8px 8px 8px 0;border-bottom:1px solid var(--paper);vertical-align:top}
+td.n,code{font-family:'IBM Plex Mono',monospace;font-size:12px}
+td.r{text-align:right}
+code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowrap}
+tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padding-top:10px}
+.scroll{overflow-x:auto}
+.grp{margin-bottom:22px}.grp:last-child{margin-bottom:0}
+.grp h3{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin:0 0 4px}
+.grp p.gd{font-size:12.5px;color:var(--steel);margin:0 0 10px}
+.note{margin-top:22px;font-size:12px;color:var(--steel);line-height:1.55;border-top:1px solid var(--rule);padding-top:14px}
+.note b{color:var(--ink)}
+.flag-ft{background:#FFF5F5;border:1px solid #FECACA;border-left:3px solid var(--red);border-radius:2px;padding:12px 14px;font-size:12.5px;line-height:1.5;margin-bottom:18px}
+.flag-ft b{color:#991b1b}
+.flag-amber{background:#FFFBEB;border:1px solid #FDE68A;border-left:3px solid var(--amber);border-radius:2px;padding:12px 14px;font-size:12.5px;line-height:1.5;margin-bottom:18px}
+#bomOut{width:100%;height:240px;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:10px;border:1px solid var(--rule);border-radius:2px;margin-top:10px}
+.btn{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px;cursor:pointer}
+.btn.ghost{background:#fff;color:var(--ink)}
+.opticRow{display:grid;grid-template-columns:1fr 74px;gap:8px;align-items:end;margin-bottom:10px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<a href="index.html" class="back-link">&#8592; Volver al Portal Presales</a>
+
+<header class="masthead">
+  <p class="eyebrow">MikroTik &middot; Preventa RouterOS &middot; Dimensionamiento y lista de materiales</p>
+  <h1>Dimensionador<br>y BOM MikroTik</h1>
+  <p class="sub">Sizing de RouterOS considerando lo que realmente limita: FastTrack vs. shaping, rendimiento cifrado IPsec frente a WireGuard, RAM disponible para BGP full table y el tope de sesiones del nivel de licencia embebido. Genera el BOM completo con ópticas, APs y soporte.</p>
+</header>
+
+<div class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-tab="calc">Dimensionar</button>
+  <button role="tab" aria-selected="false" data-tab="bom">Equipo y BOM</button>
+  <button role="tab" aria-selected="false" data-tab="lic">Licencias y Soporte</button>
+</div>
+
+<!-- ════ TAB 1 · CALCULADORA ════ -->
+<div class="tabpane" id="pane-calc">
+<section class="ladder">
+  <p class="mono-lbl" id="ladderLbl">Capacidad efectiva del modelo vs. requerimiento (escala logarítmica)</p>
+  <div class="track" id="track"><div class="axis"></div><div class="need" id="need"><span id="needLbl">—</span></div></div>
+  <div class="legend">
+    <span><i></i>Capacidad efectiva del modelo</span>
+    <span style="color:var(--red)"><i style="background:var(--red)"></i>Requerimiento calculado</span>
+  </div>
+</section>
+
+<div class="cols">
+<div>
+  <section class="panel">
+    <h2>1 · Perfil de tráfico</h2>
+    <div class="field">
+      <label>Tipo de tráfico a dimensionar</label>
+      <div class="seg" id="profileSeg">
+        <button type="button" data-v="fwd"   aria-pressed="true">Forwarding<br>/ Routing</button>
+        <button type="button" data-v="ipsec" aria-pressed="false">IPsec<br>(acelerado)</button>
+        <button type="button" data-v="wg"    aria-pressed="false">WireGuard<br>(software)</button>
+      </div>
+      <p class="hint" id="profileHint">Throughput de NAT/ruteo. Las cifras publicadas por MikroTik asumen FastTrack activo y tramas de 1518 B.</p>
+    </div>
+    <div class="field">
+      <label for="bw">Ancho de banda a enrutar</label>
+      <div class="row">
+        <input type="number" id="bw" value="500" min="1" step="any">
+        <select id="unit" style="width:105px"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
+      </div>
+      <p class="hint">Tráfico total que atraviesa el router (WAN agregado o enlace troncal).</p>
+    </div>
+    <div class="field">
+      <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
+      <input type="range" id="head" min="0" max="100" step="5" value="30">
+    </div>
+    <div class="field">
+      <label><input type="checkbox" id="chkVirtual"> <span>Despliegue virtual — CHR (Cloud Hosted Router)<span class="sku" style="display:block;margin-top:2px">Cotiza licencias RouterOS virtuales (VMware, KVM, AWS, GCP, Azure) en lugar de hardware físico.</span></span></label>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>2 · Funcionalidades RouterOS</h2>
+    <div class="checks">
+      <label class="check"><input type="checkbox" id="chkQos"> <span><b>QoS / shaping por conexión</b> (Queue Tree, Simple Queue, PCQ)<span class="sku">Incompatible con FastTrack: el tráfico encolado no puede saltar el conntrack. Reduce la capacidad de forwarding entre un 55 % y un 65 % según arquitectura.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkBgp"> <span><b>BGP full table</b> — feeds completos de upstream<span class="sku">Cada feed IPv4 completo consume ~1.5 GB de RAM en RouterOS 7. Limita por memoria, no por throughput.</span></span></label>
+      <div class="sub-field hidden" id="bgpBox">
+        <label for="bgpFeeds">Cantidad de feeds full table</label>
+        <input type="number" id="bgpFeeds" value="1" min="1" max="20">
+      </div>
+      <label class="check"><input type="checkbox" id="chkPppoe"> <span><b>Concentrador PPPoE / Hotspot</b><span class="sku">El nivel de licencia embebido impone un tope duro de sesiones activas que ninguna cifra de throughput anticipa.</span></span></label>
+      <div class="sub-field hidden" id="pppoeBox">
+        <label for="pppoeSess">Sesiones concurrentes</label>
+        <input type="number" id="pppoeSess" value="150" min="1" step="1">
+      </div>
+      <label class="check"><input type="checkbox" id="chkCapsman"> <span><b>CAPsMAN</b> — controlador WiFi centralizado<span class="sku">Incluido en RouterOS sin licencia adicional. Los APs se agregan al BOM.</span></span></label>
+      <div class="sub-field hidden" id="capsBox">
+        <label for="apCount">Cantidad de APs a gestionar</label>
+        <input type="number" id="apCount" value="4" min="1" step="1">
+        <label style="margin-top:8px"><input type="checkbox" id="chkPoe" style="accent-color:var(--red)"> Alimentar los APs por PoE desde el router</label>
+      </div>
+      <label class="check"><input type="checkbox" id="chkHa"> <span><b>Alta disponibilidad</b> (VRRP — 2 unidades)<span class="sku">RouterOS no comparte licencia entre nodos: cada unidad se cotiza completa.</span></span></label>
+    </div>
+    <div class="field" style="margin-top:16px">
+      <label>Conectividad predominante del sitio</label>
+      <div class="seg" id="mediaSeg">
+        <button type="button" data-v="any"    aria-pressed="true">Indiferente</button>
+        <button type="button" data-v="copper" aria-pressed="false">Cobre GE</button>
+        <button type="button" data-v="fiber"  aria-pressed="false">Fibra SFP+/SFP28</button>
+      </div>
+      <p class="hint">La línea MikroTik se bifurca exactamente aquí: un CCR2004-16G-2S+ y un CCR2004-1G-12S+2XS cuestan casi lo mismo y sirven sitios opuestos.</p>
+    </div>
+  </section>
+</div>
+
+<div>
+  <div class="verdict" id="verdict">
+    <p class="tag">Modelo recomendado</p>
+    <p class="model" id="vModel">—</p>
+    <p class="family" id="vFamily"></p>
+    <div class="meter">
+      <b id="mCapLbl">Capacidad efectiva <em id="mCapVal"></em></b>
+      <div class="bar"><i id="mCapBar"></i></div>
+    </div>
+    <div class="meter">
+      <b>RAM — feeds BGP full table <em id="mRamVal"></em></b>
+      <div class="bar"><i id="mRamBar"></i></div>
+    </div>
+    <div class="meter">
+      <b>Sesiones PPPoE / hotspot (nivel de licencia) <em id="mSessVal"></em></b>
+      <div class="bar"><i id="mSessBar"></i></div>
+    </div>
+    <div class="why" id="vWhy"></div>
+  </div>
+
+  <section class="panel">
+    <h2>Resumen de sizing</h2>
+    <div id="sizingBox"><p style="font-size:13.5px;color:var(--steel)">Completa los parámetros para ver el resumen.</p></div>
+  </section>
+
+  <div class="note">
+    <b>Nota metodológica.</b> Las cifras de forwarding publicadas por MikroTik se miden con <b>FastTrack activo, tramas de 1518 B y configuración mínima</b>. Dos condiciones las degradan de forma severa y esta herramienta modela la primera: (1) cualquier Queue Tree con <code>parent=global</code> o Simple Queue desactiva FastTrack para ese tráfico, forzando el paso por conntrack y firewall completo; (2) con paquetes de 64 B el rendimiento cae aproximadamente un orden de magnitud — relevante en VoIP y bajo DDoS, dimensionar contra la cifra de pps del datasheet en esos casos. El rendimiento de WireGuard se estima en el 45 % del IPsec del mismo equipo porque RouterOS 7 no lo acelera por hardware y lo procesa mayormente en un solo hilo por túnel; sustituir por la cifra publicada del modelo cuando esté disponible.
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ════ TAB 2 · BOM ════ -->
+<div class="tabpane" id="pane-bom" hidden>
+<div class="cols">
+<div>
+  <section class="panel">
+    <h2>Selección de equipo</h2>
+    <div class="field">
+      <label for="pickModel">Modelo MikroTik</label>
+      <select id="pickModel"></select>
+    </div>
+    <div class="field">
+      <label for="qty">Cantidad de routers</label>
+      <input type="number" id="qty" value="1" min="1">
+    </div>
+    <div class="field">
+      <label for="supportTier">Nivel de soporte</label>
+      <select id="supportTier"></select>
+    </div>
+    <div class="field">
+      <label class="check" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="chkTraining" style="margin:3px 0 0;accent-color:var(--red)"> <span>Incluir certificación MTCNA/MTCRE en la propuesta</span></label>
+    </div>
+  </section>
+
+  <section class="panel" id="opticsPanel">
+    <h2>Ópticas y cables</h2>
+    <div id="opticsPicker"></div>
+  </section>
+
+  <section class="panel" id="apPanel">
+    <h2>Puntos de acceso (CAPsMAN)</h2>
+    <div class="field">
+      <label for="bomApModel">Modelo de AP</label>
+      <select id="bomApModel"></select>
+    </div>
+    <div class="field">
+      <label for="bomApQty">Cantidad</label>
+      <input type="number" id="bomApQty" value="0" min="0">
+    </div>
+  </section>
+
+  <div class="flag-ft">
+    <b>Aviso de preventa:</b> precios de lista MSRP público de mikrotik.com. No incluyen impuestos locales, aranceles de importación ni descuento de canal. MikroTik no publica un price list firmado por región — confirmar precio, disponibilidad y SKU exacto de óptica con el distribuidor autorizado antes de cotizar en firme.
+  </div>
+</div>
+
+<div>
+  <div id="bomBody"></div>
+  <section class="panel">
+    <h2>BOM en texto plano <button class="btn ghost" id="copyBtn" style="font-size:11px;padding:4px 10px">Copiar BOM</button></h2>
+    <textarea id="bomOut" readonly></textarea>
+  </section>
+</div>
+</div>
+</div>
+
+<!-- ════ TAB 3 · LICENCIAS Y SOPORTE ════ -->
+<div class="tabpane" id="pane-lic" hidden>
+<section class="panel">
+  <h2>Licenciamiento RouterOS</h2>
+
+  <div class="flag-amber">
+    <b>El nivel de licencia no se puede subir por software.</b> Viene grabado en el hardware que se compra. Un hEX es nivel 4 de por vida: si el diseño crece a más de 200 sesiones PPPoE, el camino es reemplazar el equipo, no comprar una licencia. Verificarlo <em>antes</em> de cerrar la arquitectura es la diferencia entre un proyecto y un retrabajo.
+  </div>
+
+  <div class="grp">
+    <h3>Niveles de licencia y sus topes duros</h3>
+    <p class="gd">Todo equipo físico incluye su licencia perpetua embebida — no hay costo recurrente de software y las actualizaciones dentro de la rama v7.x son gratuitas. Lo que cambia entre niveles es el tope de sesiones y túneles, no las funciones de routing.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Nivel</th><th>Tope de sesiones / túneles</th><th>Equipos de este nivel</th></tr></thead>
+      <tbody id="lvlTable"></tbody>
+    </table></div>
+  </div>
+
+  <div class="grp">
+    <h3>CHR — Cloud Hosted Router (licencia virtual)</h3>
+    <p class="gd">En despliegues virtuales la licencia <em>es</em> el producto: se compra por tope de throughput <b>por interfaz</b>, y los recursos de cómputo (vCPU/RAM) los aporta el hipervisor y se dimensionan aparte. Todas las licencias CHR son nivel 6, sin tope de sesiones.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Tier</th><th>Tope por interfaz</th><th>Precio ref.</th></tr></thead>
+      <tbody id="chrTable"></tbody>
+    </table></div>
+    <p class="gd" style="margin-top:8px">Existe además <b>CHR Free</b>, sin tope y sin costo, limitado a 60 días — apto para laboratorio y pruebas de concepto, no para producción.</p>
+  </div>
+
+  <div class="grp">
+    <h3>Niveles de soporte</h3>
+    <p class="gd">MikroTik no vende soporte directo con SLA: el compromiso de tiempo de respuesta se contrata al canal. Considerarlo al comparar contra Cisco SmartNet o FortiCare, donde el soporte es una línea obligatoria del BOM.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Nivel</th><th>SLA</th><th>Incluye</th></tr></thead>
+      <tbody id="supportTable"></tbody>
+    </table></div>
+  </div>
+
+  <div class="grp">
+    <h3>Certificaciones oficiales</h3>
+    <p class="gd">Programa de formación MikroTik. Recomendable presupuestarlo en proyectos de complejidad media o alta: buena parte del costo total de propiedad de RouterOS es la curva de aprendizaje del equipo que lo opera.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Certificación</th><th>Nivel</th><th>Cubre</th></tr></thead>
+      <tbody>
+        <tr><td><b>MTCNA</b></td><td>Básico</td><td>Routing, firewall, VPN y wireless. Prerrequisito obligatorio del resto del track.</td></tr>
+        <tr><td><b>MTCRE</b></td><td>Intermedio</td><td>Routing avanzado: OSPF, BGP, routing policies, túneles.</td></tr>
+        <tr><td><b>MTCWE</b></td><td>Intermedio</td><td>Wireless Engineer: 802.11ax, CAPsMAN v2, mesh, spectral scan.</td></tr>
+        <tr><td><b>MTCTCE</b></td><td>Intermedio</td><td>Traffic Control: QoS, queue tree, PCQ, mangle, web proxy.</td></tr>
+        <tr><td><b>MTCINE</b></td><td>Experto</td><td>Inter-Networking: MPLS, traffic engineering, VRF, BGP avanzado.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+</div>
+
+<p class="note">
+<b>Fuentes:</b>
+<a href="https://mikrotik.com/products" target="_blank" rel="noopener">mikrotik.com/products</a> — datasheets de hardware y catálogo de ópticas ·
+<a href="https://mikrotik.com/product/chr" target="_blank" rel="noopener">mikrotik.com/product/chr</a> — niveles y topes de licencia CHR ·
+<a href="https://help.mikrotik.com/docs/" target="_blank" rel="noopener">help.mikrotik.com</a> — documentación RouterOS 7.x (FastTrack, IPsec, WireGuard, CAPsMAN) ·
+<a href="https://mikrotik.com/training" target="_blank" rel="noopener">mikrotik.com/training</a> — programa de certificación.
+Precios de referencia MSRP público, sin price list regional firmado — <b>verificar con distribuidor autorizado</b>.
+</p>
+
+</div><!-- /wrap -->
+<script>
+'use strict';
+let MODELS=[], OPTICS={}, OPTIC_LABEL={}, APS=[], SUPPORT={}, SIZING={};
+
+const $=id=>document.getElementById(id);
+let profile='fwd', media='any', lastPick=null;
+
+// RouterOS 7 no acelera WireGuard por hardware y lo procesa mayormente en un hilo por
+// tunel, a diferencia de IPsec que usa el motor criptografico del SoC. Estimacion
+// conservadora hasta tener cifras publicadas por modelo.
+// ponytail: factor unico; reemplazar por campo `wg` por modelo cuando MikroTik lo publique.
+const WG_FACTOR=0.45;
+
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  ['calc','bom','lic'].forEach(t=>$('pane-'+t).hidden=(t!==b.dataset.tab));
+}));
+
+const PROFILE_HINT={
+  fwd:'Throughput de NAT/ruteo. Las cifras publicadas por MikroTik asumen FastTrack activo y tramas de 1518 B.',
+  ipsec:'IPsec AES-128 con el motor criptográfico del SoC. FastTrack no aplica: el tráfico cifrado nunca toma el camino rápido.',
+  wg:'WireGuard es software puro en RouterOS 7 y mayormente single-thread por túnel. Estimado en 45 % del IPsec del mismo equipo.',
+};
+$('profileSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  [...$('profileSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
+  profile=b.dataset.v; $('profileHint').textContent=PROFILE_HINT[profile]; render();
+});
+$('mediaSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  [...$('mediaSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
+  media=b.dataset.v; render();
+});
+// Los sub-campos solo existen mientras su opcion este activa.
+[['chkBgp','bgpBox'],['chkPppoe','pppoeBox'],['chkCapsman','capsBox']].forEach(([chk,box])=>{
+  $(chk).addEventListener('change',()=>$(box).classList.toggle('hidden',!$(chk).checked));
+});
+['bw','unit','head','chkVirtual','chkQos','chkBgp','bgpFeeds','chkPppoe','pppoeSess','chkCapsman','apCount','chkPoe','chkHa']
+  .forEach(id=>$(id).addEventListener('input',render));
+['pickModel','qty','supportTier','chkTraining','bomApModel','bomApQty'].forEach(id=>$(id).addEventListener('input',renderBom));
+
+function fmt(v){
+  if(v==null||v===0) return '—';
+  if(v>=999999) return 'Sin tope';
+  if(v>=1000) return (v/1000).toFixed(v%1000?1:0)+' Gbps';
+  return Math.round(v)+' Mbps';
+}
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const money=n=>n==null?'—':'$'+Number(n).toLocaleString('en-US',{maximumFractionDigits:2});
+
+/* ── Motor de dimensionamiento ─────────────────────────────────────────────── */
+
+// FastTrack solo aplica al forwarding en claro. Habilitar colas lo desactiva y obliga a
+// pasar por conntrack + firewall completo, que es donde se pierde el rendimiento.
+function fastTrackFactor(m){
+  if(!$('chkQos').checked || profile!=='fwd') return 1;
+  return SIZING.fasttrack[m.arch] ?? SIZING.fasttrack.arm;
+}
+function capOf(m){
+  const base = profile==='fwd' ? m.fwd : profile==='ipsec' ? m.ipsec : m.ipsec*WG_FACTOR;
+  return base*fastTrackFactor(m);
+}
+// Feeds BGP full table que caben en RAM. No es lineal: el FIB se comparte entre feeds, así
+// que solo el primero paga el costo completo. CHR (ram null) depende del hipervisor.
+function maxFeeds(m){
+  if(m.ram==null) return Infinity;
+  const {baseMb,firstFeedMb,extraFeedMb}=SIZING.bgpRam;
+  const free=m.ram-baseMb;
+  if(free<firstFeedMb) return 0;
+  return 1+Math.floor((free-firstFeedMb)/extraFeedMb);
+}
+// RAM necesaria para n feeds — para decirle al usuario cuánto le falta, no solo que no cabe.
+function ramForFeeds(n){
+  const {baseMb,firstFeedMb,extraFeedMb}=SIZING.bgpRam;
+  return baseMb+firstFeedMb+Math.max(0,n-1)*extraFeedMb;
+}
+function sessCap(m){
+  const lvl=SIZING.licenseLevels[m.lvl];
+  return lvl && lvl.sess!=null ? lvl.sess : Infinity;
+}
+const fiberCages=m=>Object.values(m.cages||{}).reduce((a,b)=>a+b,0);
+
+function requirements(){
+  const bw=parseFloat($('bw').value)||0;
+  const unit=parseFloat($('unit').value);
+  const head=(parseFloat($('head').value)||0)/100;
+  return {
+    mbps: bw*unit*(1+head),
+    feeds: $('chkBgp').checked ? (parseInt($('bgpFeeds').value)||1) : 0,
+    sess:  $('chkPppoe').checked ? (parseInt($('pppoeSess').value)||0) : 0,
+    aps:   $('chkCapsman').checked ? (parseInt($('apCount').value)||0) : 0,
+    poe:   $('chkCapsman').checked && $('chkPoe').checked,
+  };
+}
+
+// Devuelve los candidatos que cumplen TODAS las restricciones duras, junto con el motivo
+// por el que cada descartado quedo fuera — para poder explicar una lista vacia.
+function selectCandidates(req){
+  const virtual=$('chkVirtual').checked;
+  const apDraw=(APS[0] && APS[0].poeDraw) || 12;
+  const poeNeed=req.poe ? req.aps*apDraw : 0;
+  const reasons={cap:0,ram:0,sess:0,poe:0};
+
+  const ok=MODELS.filter(m=>{
+    if(m.eol||m.legacy) return false;
+    if(virtual !== (m.ser==='CHR')) return false;
+    if(capOf(m) < req.mbps){ reasons.cap++; return false; }
+    if(req.feeds && maxFeeds(m) < req.feeds){ reasons.ram++; return false; }
+    if(req.sess && sessCap(m) < req.sess){ reasons.sess++; return false; }
+    if(poeNeed && !(m.poe>=poeNeed)){ reasons.poe++; return false; }
+    return true;
+  });
+
+  // Right-sizing por costo, no por capacidad: ordenar por capacidad ascendente elegia el
+  // RB4011 ($200 / 5.6 G) antes que el RB5009 ($190 / 8.8 G) — mas caro y mas lento.
+  ok.sort((a,b)=>(a.elpN??Infinity)-(b.elpN??Infinity) || capOf(a)-capOf(b));
+  return {ok,reasons,poeNeed};
+}
+
+function preferByMedia(list){
+  if(media==='any'||!list.length) return list[0];
+  const sorted=[...list].sort((a,b)=>media==='fiber'
+    ? fiberCages(b)-fiberCages(a) || (a.elpN??0)-(b.elpN??0)
+    : fiberCages(a)-fiberCages(b) || (a.elpN??0)-(b.elpN??0));
+  return sorted[0];
+}
+
+function render(){
+  $('headVal').textContent=Math.round((parseFloat($('head').value)||0))+' %';
+  const req=requirements();
+  const {ok,reasons,poeNeed}=selectCandidates(req);
+  const pick=preferByMedia(ok);
+  lastPick=pick;
+
+  // Escala: se excluye el centinela de CHR P-Unlimited para no aplastar el resto.
+  const maxCap=Math.max(...MODELS.filter(m=>m.fwd<999999).map(m=>m.fwd));
+  const logP=v=>Math.log10(Math.max(v,10));
+  const logMin=Math.log10(10),logMax=logP(maxCap*1.2);
+  const xPct=v=>(logP(v)-logMin)/(logMax-logMin)*100;
+
+  $('ladderLbl').textContent=$('chkQos').checked&&profile==='fwd'
+    ? 'Capacidad efectiva SIN FastTrack (shaping activo) vs. requerimiento — escala logarítmica'
+    : 'Capacidad efectiva del modelo vs. requerimiento (escala logarítmica)';
+
+  const need=$('need');
+  need.style.left=Math.min(xPct(req.mbps),99)+'%';
+  $('needLbl').textContent=fmt(req.mbps);
+  need.classList.toggle('flip',xPct(req.mbps)>60);
+
+  const track=$('track');
+  track.querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
+  [10,50,100,500,1000,5000,10000,50000,100000].forEach(v=>{
+    const pct=xPct(v);if(pct<0||pct>100)return;
+    const tick=document.createElement('div');tick.className='tick';tick.style.left=pct+'%';
+    tick.innerHTML=`<i></i><b>${v>=1000?v/1000+'G':v+'M'}</b>`;track.appendChild(tick);
+  });
+  MODELS.filter(m=>!m.legacy).forEach(m=>{
+    const cap=capOf(m);const pct=xPct(cap);if(pct<0||pct>100)return;
+    const dot=document.createElement('div');
+    dot.className='dot'+(pick&&m.id===pick.id?' pick':cap>=req.mbps?' ok':'');
+    dot.style.left=pct+'%';dot.title=m.id+': '+fmt(cap);
+    track.appendChild(dot);
+  });
+
+  if(!pick){
+    $('vModel').textContent='Sin candidato';
+    $('verdict').style.borderLeftColor='var(--amber)';
+    const why=[];
+    if(reasons.cap)  why.push(`<li><b>${reasons.cap}</b> modelo(s) descartado(s) por throughput insuficiente${$('chkQos').checked&&profile==='fwd'?' — el shaping activo reduce la capacidad efectiva':''}.</li>`);
+    if(reasons.ram)  why.push(`<li><b>${reasons.ram}</b> por RAM insuficiente para ${req.feeds} feed(s) BGP full table: harían falta ~${(ramForFeeds(req.feeds)/1024).toFixed(1)} GB. Este límite es de <b>memoria, no de throughput</b> — si el equipo alcanza en Gbps pero no en RAM, el diseño correcto suele ser ruta default o un feed parcial filtrado, no un equipo más grande.</li>`);
+    if(reasons.sess) why.push(`<li><b>${reasons.sess}</b> por el tope de sesiones de su nivel de licencia (necesitas ${req.sess}).</li>`);
+    if(reasons.poe)  why.push(`<li><b>${reasons.poe}</b> por presupuesto PoE insuficiente (${poeNeed} W). Ningún router MikroTik entrega tanto PoE: la solución correcta es un switch PoE dedicado (serie CRS...P) alimentando los APs.</li>`);
+    $('vFamily').textContent='Ningún modelo del catálogo cumple todas las restricciones';
+    $('vWhy').innerHTML=`<p class="warn" style="margin:0 0 8px"><b>Motivo del descarte:</b></p><ul style="margin:0;padding-left:18px;font-size:13.5px">${why.join('')}</ul>`;
+    ['mCapVal','mRamVal','mSessVal'].forEach(id=>$(id).textContent='—');
+    ['mCapBar','mRamBar','mSessBar'].forEach(id=>{$(id).style.width='0%';});
+    $('sizingBox').innerHTML='<p style="font-size:13.5px;color:var(--steel)">Ajusta las restricciones para obtener una recomendación.</p>';
+    return;
+  }
+
+  $('verdict').style.borderLeftColor='var(--red)';
+  $('vModel').textContent=pick.id;
+  $('vFamily').textContent=`${pick.seg} · RouterOS 7.x · licencia nivel ${pick.lvl}${pick.elp?' · '+pick.elp:''}`;
+  const pl=document.createElement('div');
+  pl.className='pickLabel';pl.textContent=pick.id;pl.style.left=xPct(capOf(pick))+'%';
+  track.appendChild(pl);
+
+  const setBar=(id,val,cap)=>{
+    const pct=(cap===Infinity||!cap)?6:Math.min(val/cap*100,100);
+    const bar=$(id);bar.style.width=pct+'%';
+    bar.className=pct>90?'tight':pct<70?'good':'';
+  };
+  $('mCapVal').textContent=fmt(req.mbps)+' / '+fmt(capOf(pick));
+  setBar('mCapBar',req.mbps,capOf(pick));
+  const feeds=maxFeeds(pick);
+  $('mRamVal').textContent=pick.ram==null?'Según hipervisor'
+    :`${req.feeds||0} / ${feeds===Infinity?'∞':feeds} feeds · ${(pick.ram/1024).toFixed(pick.ram<1024?2:0)} GB`;
+  setBar('mRamBar',req.feeds||0,feeds);
+  const sc=sessCap(pick);
+  $('mSessVal').textContent=`${req.sess||0} / ${sc===Infinity?'ilimitadas (nivel 6)':sc}`;
+  setBar('mSessBar',req.sess||0,sc);
+
+  const flags=[];
+  if($('chkQos').checked&&profile==='fwd'){
+    const f=SIZING.fasttrack[pick.arch]??SIZING.fasttrack.arm;
+    flags.push(`<b class="warn">FastTrack desactivado por el shaping:</b> capacidad efectiva ${fmt(capOf(pick))} en lugar de ${fmt(pick.fwd)} publicados (factor ${f} para arquitectura ${pick.arch.toUpperCase()}).`);
+  }
+  if(profile==='wg') flags.push(`<b>WireGuard estimado</b> en ${fmt(capOf(pick))} (45 % del IPsec del equipo). Sin aceleración por hardware y mayormente single-thread por túnel: distribuir en varios túneles para aprovechar los ${pick.cores??'n'} núcleos.`);
+  if(profile==='ipsec'&&pick.cores) flags.push(`IPsec acelerado por el motor criptográfico del SoC (${pick.cpu}, ${pick.cores} núcleo${pick.cores>1?'s':''}).`);
+  if(req.feeds) flags.push(pick.ram==null
+    ? `CHR: dimensionar la instancia con ≥ <b>${(ramForFeeds(req.feeds)/1024).toFixed(1)} GB</b> de RAM para ${req.feeds} feed(s) full table.`
+    : `Soporta hasta <b>${feeds}</b> feed(s) full table con sus ${(pick.ram/1024).toFixed(0)} GB de RAM (el primero cuesta ~${(SIZING.bgpRam.firstFeedMb/1024).toFixed(1)} GB, cada adicional ~${(SIZING.bgpRam.extraFeedMb/1024).toFixed(1)} GB porque el FIB se comparte).`);
+  if(req.sess) flags.push(`Licencia <b>nivel ${pick.lvl}</b>: ${sc===Infinity?'sin tope de sesiones':`tope de ${sc} sesiones`}. ${SIZING.licenseLevels[pick.lvl].d}`);
+  if(req.aps) flags.push(`${req.aps} AP(s) por CAPsMAN — incluidos en el BOM. ${req.poe?`PoE-out del router: ${pick.poe} W disponibles para ${poeNeed} W requeridos.`:'Alimentación de los APs por inyector o switch PoE aparte.'}`);
+  if($('chkHa').checked) flags.push('<b>VRRP:</b> duplicar unidades — cada nodo lleva su propia licencia embebida.');
+  if(pick.note) flags.push(`<span class="warn">${esc(pick.note)}</span>`);
+  const alts=ok.filter(m=>m.id!==pick.id).slice(0,3);
+
+  $('vWhy').innerHTML=`<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
+    <li>Requerimiento <b>${fmt(req.mbps)}</b> (${profile==='fwd'?'forwarding':profile==='ipsec'?'IPsec':'WireGuard'}) contra capacidad efectiva <b>${fmt(capOf(pick))}</b></li>
+    <li>${esc(pick.ports)}</li>
+    ${flags.map(f=>`<li>${f}</li>`).join('')}
+    ${alts.length?`<li>Alternativas que también cumplen: <b>${alts.map(a=>`${a.id} (${a.elp||'s/p'})`).join(', ')}</b></li>`:''}
+  </ul>`;
+
+  $('sizingBox').innerHTML=`
+    <table><tbody>
+      <tr><td>Perfil</td><td class="n r">${profile==='fwd'?'Forwarding / Routing':profile==='ipsec'?'IPsec acelerado':'WireGuard (software)'}</td></tr>
+      <tr><td>Despliegue</td><td class="n r">${$('chkVirtual').checked?'Virtual (CHR)':'Hardware físico'}</td></tr>
+      <tr><td>Requerimiento con margen</td><td class="n r"><b>${fmt(req.mbps)}</b></td></tr>
+      <tr><td>FastTrack</td><td class="n r">${$('chkQos').checked&&profile==='fwd'?'<span class="warn">Desactivado (shaping)</span>':profile==='fwd'?'Activo':'No aplica'}</td></tr>
+      <tr><td>Capacidad efectiva del modelo</td><td class="n r">${fmt(capOf(pick))}</td></tr>
+      <tr><td>Headroom</td><td class="n r">${capOf(pick)>=999999?'—':Math.round((1-req.mbps/capOf(pick))*100)+'%'}</td></tr>
+      <tr><td>CPU / RAM</td><td class="n r">${pick.cores?pick.cores+' núcleos':'—'} / ${pick.ram?(pick.ram/1024).toFixed(pick.ram<1024?2:0)+' GB':'hipervisor'}</td></tr>
+      <tr><td>Nivel de licencia</td><td class="n r">Nivel ${pick.lvl}</td></tr>
+      <tr><td>Unidades a cotizar</td><td class="n r">${$('chkHa').checked?'2 (VRRP)':'1'}</td></tr>
+    </tbody></table>`;
+}
+
+/* ── BOM ───────────────────────────────────────────────────────────────────── */
+function populateSelects(){
+  $('pickModel').innerHTML=MODELS.map(m=>`<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.seg)}${m.eol?' (EOL)':m.legacy?' (legacy)':''}</option>`).join('');
+  $('supportTier').innerHTML=Object.entries(SUPPORT).filter(([c])=>c!=='training')
+    .map(([c,t])=>`<option value="${c}">${esc(t.n)}</option>`).join('');
+  $('bomApModel').innerHTML=APS.map(a=>`<option value="${esc(a.sku)}">${esc(a.sku)} — ${money(a.price)}</option>`).join('');
+}
+
+// Un CCR2216 son 12 jaulas SFP28 + 2 QSFP28 vacias: sin estas lineas el equipo no es
+// instalable. Se reconstruye al cambiar de modelo porque las jaulas cambian con el.
+function renderOpticsPicker(m){
+  const cages=m.cages||{};
+  const codes=Object.keys(cages).filter(c=>OPTICS[c]&&OPTICS[c].length);
+  $('opticsPanel').classList.toggle('hidden',!codes.length);
+  if(!codes.length){$('opticsPicker').innerHTML='';return;}
+  $('opticsPicker').innerHTML=codes.map(c=>`
+    <div class="field">
+      <label>${esc(OPTIC_LABEL[c]||c)} <span style="font-weight:400;color:var(--steel)">— ${cages[c]} jaula${cages[c]>1?'s':''}</span></label>
+      <div class="opticRow">
+        <select class="opticSel" data-cat="${c}">${OPTICS[c].map((o,i)=>`<option value="${i}">${esc(o.sku)} — ${money(o.price)}</option>`).join('')}</select>
+        <input type="number" class="opticQty" data-cat="${c}" value="0" min="0" max="${cages[c]}">
+      </div>
+      <p class="hint">${esc(OPTICS[c][0].d)}</p>
+    </div>`).join('');
+  $('opticsPicker').querySelectorAll('.opticSel,.opticQty').forEach(el=>el.addEventListener('input',renderBom));
+}
+
+function selectedOptics(){
+  return [...document.querySelectorAll('.opticQty')].map(q=>{
+    const cat=q.dataset.cat;
+    const qty=Math.max(0,parseInt(q.value)||0);
+    if(!qty) return null;
+    const sel=document.querySelector(`.opticSel[data-cat="${cat}"]`);
+    const optic=OPTICS[cat][parseInt(sel.value)||0];
+    return {cat,qty,optic};
+  }).filter(Boolean);
+}
+
+function renderBom(){
+  const m=MODELS.find(x=>x.id===$('pickModel').value)||MODELS[0];
+  if(!m) return;
+  if($('pickModel').dataset.built!==m.id){ renderOpticsPicker(m); $('pickModel').dataset.built=m.id; }
+
+  const qty=Math.max(1,parseInt($('qty').value)||1);
+  const support=SUPPORT[$('supportTier').value];
+  const optics=selectedOptics();
+  const apQty=Math.max(0,parseInt($('bomApQty').value)||0);
+  const ap=APS.find(a=>a.sku===$('bomApModel').value)||APS[0];
+  const isChr=m.ser==='CHR';
+  const lvl=SIZING.licenseLevels[m.lvl];
+
+  const lines=[
+    {d:m.id, sub:m.ports, qty, unit:m.elpN, kind:'Equipo'},
+    ...optics.map(o=>({d:o.optic.sku, sub:o.optic.d, qty:o.qty*qty, unit:o.optic.price, kind:'Óptica'})),
+  ];
+  if(apQty&&ap) lines.push({d:ap.sku, sub:ap.d, qty:apQty, unit:ap.price, kind:'AP'});
+  const total=lines.reduce((s,l)=>s+(l.unit!=null?l.unit*l.qty:0),0);
+
+  let html=`<section class="panel"><h2>Ficha del equipo</h2>
+    <div class="model" style="font-size:28px">${esc(m.id)}</div>
+    <p class="family">${esc(m.seg)} · RouterOS 7.x</p>
+    <div class="scroll"><table><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
+    <tr><td>Precio de lista ref.</td><td class="n">${m.elp?esc(m.elp):'Consultar distribuidor'}</td></tr>
+    <tr><td>Forwarding (FastTrack, 1518 B)</td><td class="n">${fmt(m.fwd)}</td></tr>
+    <tr><td>Forwarding con shaping (sin FastTrack)</td><td class="n warn">${fmt(m.fwd*(SIZING.fasttrack[m.arch]??SIZING.fasttrack.arm))}</td></tr>
+    <tr><td>IPsec acelerado</td><td class="n">${fmt(m.ipsec)}</td></tr>
+    <tr><td>WireGuard (estimado)</td><td class="n">${fmt(m.ipsec*WG_FACTOR)}</td></tr>
+    <tr><td>CPU</td><td class="n">${esc(m.cpu||'—')}${m.cores?` · ${m.cores} núcleo${m.cores>1?'s':''}`:''}</td></tr>
+    <tr><td>RAM</td><td class="n">${m.ram?(m.ram/1024).toFixed(m.ram<1024?2:0)+' GB':'Según hipervisor'}</td></tr>
+    <tr><td>BGP full table</td><td class="n">${m.ram==null?'Según RAM de la instancia'
+      :maxFeeds(m)?`hasta ${maxFeeds(m)} feed(s) completos`
+      :'<span class="warn">No sostiene una tabla completa — usar ruta default o feed parcial filtrado</span>'}</td></tr>
+    <tr><td>Nivel de licencia</td><td class="n">Nivel ${m.lvl} — ${lvl.sess==null?'sin tope de sesiones':lvl.sess+' sesiones/túneles'}</td></tr>
+    <tr><td>PoE-out</td><td class="n">${m.poe?m.poe+' W':'No entrega PoE'}</td></tr>
+    <tr><td>Puertos</td><td>${esc(m.ports)}</td></tr>
+    </tbody></table></div>
+    ${m.note?`<p class="hint warn" style="margin-top:10px">${esc(m.note)}</p>`:''}
+    ${m.eol?'<p class="hint bad" style="margin-top:10px">Modelo descontinuado (EOL) — no usar en diseños nuevos.</p>':''}
+    ${m.legacy?'<p class="hint warn" style="margin-top:10px">Modelo legacy — solo para reemplazo de equipos ya instalados.</p>':''}
+    </section>`;
+
+  html+=`<section class="panel"><h2>Lista de materiales <span style="font-weight:400;text-transform:none;letter-spacing:0">${money(total)} total ref.</span></h2><div class="scroll"><table>
+    <thead><tr><th>Tipo</th><th>Ítem</th><th>Cant.</th><th>Precio ref. c/u</th><th>Subtotal</th></tr></thead><tbody>
+    ${lines.map(l=>`<tr><td>${esc(l.kind)}</td><td><b>${esc(l.d)}</b><span class="sku">${esc(l.sub||'')}</span></td><td class="n">${l.qty}</td><td class="n r">${money(l.unit)}</td><td class="n r">${l.unit!=null?money(l.unit*l.qty):'—'}</td></tr>`).join('')}
+    <tr class="total"><td colspan="4">Total de referencia (sin impuestos ni descuento de canal)</td><td class="n r">${money(total)}</td></tr>
+    </tbody></table></div>
+    ${optics.length?'':'<p class="hint warn" style="margin-top:10px">Aún no seleccionaste ópticas. Un equipo con jaulas SFP/QSFP no es instalable sin transceivers o DACs.</p>'}
+    </section>`;
+
+  html+=`<section class="panel"><h2>Licencia y soporte</h2><ul class="clean">
+    ${isChr
+      ?`<li class="on"><b>Licencia CHR ${esc(m.id.replace('CHR ',''))}</b><span class="req">Requerida</span><span class="sku">Tope de ${fmt(m.fwd)} por interfaz. Nivel 6, sin límite de sesiones. Dimensionar vCPU y RAM del hipervisor aparte.</span></li>`
+      :`<li class="on"><b>RouterOS nivel ${m.lvl} — perpetua</b><span class="req">Incluida</span><span class="sku">Embebida en el hardware, sin costo recurrente. ${esc(lvl.d)}</span></li>`}
+    <li><b>CAPsMAN</b><span class="req opt">Incluido</span><span class="sku">Controlador WiFi centralizado, parte de RouterOS — sin licencia adicional.</span></li>
+    <li><b>${esc(support?support.n:'')}</b><span class="req ${support&&support.n.includes('Comunidad')?'opt':''}">Soporte</span><span class="sku">${esc(support?support.sla:'')} — ${esc(support?support.d:'')}</span></li>
+    ${$('chkTraining').checked?`<li><b>${esc(SUPPORT.training.n)}</b><span class="req opt">Capacitación</span><span class="sku">${esc(SUPPORT.training.d)}</span></li>`:''}
+  </ul></section>`;
+
+  $('bomBody').innerHTML=html;
+
+  const L=[];
+  const pad=(s,n)=>String(s).padEnd(n);
+  L.push(`LISTA DE MATERIALES — ${m.id}`);
+  L.push(`${m.seg} · RouterOS 7.x · licencia nivel ${m.lvl}`);
+  L.push('');
+  L.push('EQUIPAMIENTO');
+  lines.forEach(l=>L.push(`  ${pad(l.qty+' x',6)} ${pad(l.d,26)} ${l.unit!=null?money(l.unit)+' c/u   '+money(l.unit*l.qty):'precio a confirmar'}`));
+  L.push(`  ${' '.repeat(6)} ${pad('TOTAL DE REFERENCIA',26)} ${money(total)}`);
+  L.push('');
+  L.push('ESPECIFICACIONES');
+  L.push(`  Forwarding (FastTrack, 1518 B): ${fmt(m.fwd)}`);
+  L.push(`  Forwarding con shaping activo:  ${fmt(m.fwd*(SIZING.fasttrack[m.arch]??SIZING.fasttrack.arm))}  <- FastTrack desactivado por las colas`);
+  L.push(`  IPsec acelerado:                ${fmt(m.ipsec)}`);
+  L.push(`  WireGuard (estimado):           ${fmt(m.ipsec*WG_FACTOR)}`);
+  L.push(`  CPU / RAM:                      ${m.cpu||'—'}${m.cores?' · '+m.cores+' núcleos':''} / ${m.ram?(m.ram/1024).toFixed(m.ram<1024?2:0)+' GB':'según hipervisor'}`);
+  if(m.ram) L.push(`  BGP full table:                 hasta ${maxFeeds(m)} feed(s) completos en RAM`);
+  L.push(`  Puertos:                        ${m.ports}`);
+  L.push('');
+  L.push('LICENCIA');
+  L.push(isChr
+    ? `  Licencia CHR — tope de ${fmt(m.fwd)} por interfaz. Nivel 6, sin tope de sesiones.`
+    : `  RouterOS nivel ${m.lvl} perpetua, embebida en el hardware. Sin costo recurrente.`);
+  L.push(`  ${lvl.d}`);
+  L.push('');
+  L.push('SOPORTE');
+  L.push(`  ${support?support.n:''} — ${support?support.sla:''}`);
+  if($('chkTraining').checked) L.push(`  + ${SUPPORT.training.n} — ${SUPPORT.training.sla}`);
+  L.push('');
+  L.push('NOTAS DE PREVENTA');
+  L.push('  - Precios MSRP publico de mikrotik.com, sin impuestos, aranceles ni descuento de canal.');
+  L.push('  - MikroTik no publica price list regional firmado: confirmar precio y SKU con distribuidor autorizado.');
+  L.push('  - Las cifras de forwarding asumen FastTrack activo; cualquier queue tree o simple queue lo desactiva.');
+  L.push('  - El nivel de licencia viene grabado en el hardware y no se puede subir por software.');
+  $('bomOut').value=L.join('\n');
+}
+
+function renderLicTables(){
+  const byLvl={};
+  MODELS.forEach(m=>{(byLvl[m.lvl]=byLvl[m.lvl]||[]).push(m.id);});
+  $('lvlTable').innerHTML=Object.entries(SIZING.licenseLevels).map(([lvl,v])=>`<tr>
+    <td><b>Nivel ${lvl}</b></td>
+    <td class="n">${v.sess==null?'Sin tope':v.sess+' sesiones / túneles'}</td>
+    <td>${(byLvl[lvl]||[]).map(esc).join(', ')||'—'}</td></tr>`).join('');
+
+  $('chrTable').innerHTML=MODELS.filter(m=>m.ser==='CHR')
+    .sort((a,b)=>a.fwd-b.fwd)
+    .map(m=>`<tr><td><b>${esc(m.id)}</b></td><td class="n">${fmt(m.fwd)}</td><td class="n">${m.elp?esc(m.elp):'—'}</td></tr>`).join('');
+
+  $('supportTable').innerHTML=Object.entries(SUPPORT).filter(([c])=>c!=='training')
+    .map(([,t])=>`<tr><td><b>${esc(t.n)}</b></td><td class="n">${esc(t.sla)}</td><td>${esc(t.d||'')}</td></tr>`).join('');
+}
+
+$('copyBtn').addEventListener('click',async()=>{
+  const t=$('bomOut');t.select();
+  try{await navigator.clipboard.writeText(t.value);$('copyBtn').textContent='Copiado';}
+  catch{document.execCommand('copy');$('copyBtn').textContent='Copiado';}
+  setTimeout(()=>$('copyBtn').textContent='Copiar BOM',1600);
+});
+
+(async function initApp(){
+  const res=await fetch('/api/dimensionador/mikrotik');
+  const data=await res.json();
+  MODELS=data.models; OPTICS=data.optics; OPTIC_LABEL=data.opticLabel;
+  APS=data.accessPoints; SUPPORT=data.support; SIZING=data.sizing;
+
+  populateSelects();
+  renderLicTables();
+  render();
+  renderBom();
+})();
+</script>
+</body>
+</html>

@@ -102,6 +102,18 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 .btn{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px;cursor:pointer}
 .btn.ghost{background:#fff;color:var(--ink)}
 .pillc{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 4px;border-radius:2px;background:var(--paper);color:var(--steel)}
+/* Escalera de capas de inspeccion: hace visible el salto de un orden de magnitud entre
+   el throughput con offload al ASIC y el de inspeccion completa. */
+.tierRow{display:grid;grid-template-columns:112px 1fr 88px;gap:10px;align-items:center;margin-bottom:7px}
+.tierRow .tn{font-size:12px;font-weight:600}
+.tierRow .tv{font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-align:right;color:var(--steel)}
+.tierRow .tb{height:14px;background:var(--paper);border-radius:2px;overflow:hidden}
+.tierRow .tb i{display:block;height:100%;background:#B9C4D2;transition:width .3s}
+.tierRow.on .tn{color:var(--red)}
+.tierRow.on .tb i{background:var(--red)}
+.tierRow.on .tv{color:var(--ink);font-weight:600}
+.tierRow.off .tb i{background:#8FA3B8}
+.tierDrop{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--amber);margin:2px 0 9px 122px}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -138,17 +150,23 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   <section class="panel">
     <h2>1 · Tipo de inspección requerida</h2>
     <div class="field">
-      <label>Perfil de seguridad</label>
+      <label>Capa de inspección a dimensionar</label>
       <div class="seg" id="profileSeg">
-        <button type="button" data-v="fw"    aria-pressed="false">FW<br>puro</button>
-        <button type="button" data-v="ips"   aria-pressed="false">FW +<br>IPS</button>
-        <button type="button" data-v="ngfw"  aria-pressed="true">NGFW<br>(App+IPS)</button>
-        <button type="button" data-v="sdwan" aria-pressed="false">SD-WAN<br>completo</button>
+        <button type="button" data-v="fw"   aria-pressed="false">FW<br>puro</button>
+        <button type="button" data-v="vpn"  aria-pressed="false">IPsec<br>VPN</button>
+        <button type="button" data-v="ips"  aria-pressed="false">IPS</button>
+        <button type="button" data-v="ngfw" aria-pressed="false">NGFW</button>
+        <button type="button" data-v="tp"   aria-pressed="true">Threat<br>Prot.</button>
       </div>
-      <p class="hint" id="profileHint">App Control + IPS habilitados. Valor típico para sucursal corporativa.</p>
+      <p class="hint" id="profileHint">NGFW + antivirus + logging. Es el número realista de una sucursal con el stack de seguridad completo activo — el que se debe usar para dimensionar de verdad.</p>
     </div>
     <div class="field">
-      <label><input type="checkbox" id="chkSsl"> <span>Inspección SSL/TLS requerida<span class="sku" style="display:block;margin-top:2px">Reduce el throughput NGFW hasta un 30–40%. Fortinet publica los valores de SSL Inspection por separado.</span></span></label>
+      <label><input type="checkbox" id="chkSsl"> <span>Inspección profunda SSL/TLS<span class="sku" style="display:block;margin-top:2px">Fuerza el piso a Threat Protection (no se puede inspeccionar TLS sin el stack completo) y aplica un castigo adicional estimado del 35%. Fortinet dejó de publicar una cifra de SSL Inspection por modelo en el Product Matrix.</span></span></label>
+    </div>
+    <div class="field">
+      <label for="sessNeed">Sesiones concurrentes requeridas</label>
+      <input type="number" id="sessNeed" value="0" min="0" step="1000">
+      <p class="hint">Deja 0 para omitir esta restricción. Relevante en CGNAT, hotelería, campus con NAT masivo o entornos con muchas sesiones cortas — ahí el cuello de botella es la tabla de sesiones, no los Gbps.</p>
     </div>
     <div class="field">
       <label for="bw">Ancho de banda de Internet / WAN</label>
@@ -202,19 +220,21 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <p class="model" id="vModel">—</p>
     <p class="family" id="vFamily"></p>
     <div class="meter">
-      <b id="mFwLbl">FW Throughput <em id="mFwVal"></em></b>
-      <div class="bar"><i id="mFwBar"></i></div>
+      <b id="mCapLbl">Capa dimensionada <em id="mCapVal"></em></b>
+      <div class="bar"><i id="mCapBar"></i></div>
     </div>
     <div class="meter">
-      <b id="mNgLbl">NGFW Throughput <em id="mNgVal"></em></b>
-      <div class="bar"><i id="mNgBar"></i></div>
-    </div>
-    <div class="meter">
-      <b>IPsec VPN <em id="mVpnVal"></em></b>
-      <div class="bar"><i id="mVpnBar"></i></div>
+      <b>Sesiones concurrentes <em id="mSessVal"></em></b>
+      <div class="bar"><i id="mSessBar"></i></div>
     </div>
     <div class="why" id="vWhy"></div>
   </div>
+
+  <section class="panel">
+    <h2>Rendimiento por capa de inspección <span id="perfModel" style="font-weight:400;text-transform:none;letter-spacing:0"></span></h2>
+    <div id="perfTiers"></div>
+    <p class="hint" id="perfNote" style="margin-top:12px"></p>
+  </section>
 
   <section class="panel">
     <h2>Resumen de sizing</h2>
@@ -222,7 +242,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   </section>
 
   <div class="note">
-    <b>Nota metodológica.</b> Fortinet publica throughput bajo condiciones controladas con tráfico enterprise IMIX. FW puro: paquetes 1518B. NGFW e IPS: tráfico IMIX con firmas activas. SSL Inspection: HTTPS con certificados 2048-bit. Los valores reales varían con el volumen de firmas, sesiones concurrentes y activación de UTM completo. Consultar el <b>FortiGate Datasheet</b> oficial para el modelo seleccionado.
+    <b>Nota metodológica.</b> Las cinco cifras que publica Fortinet no son escenarios alternativos del mismo número: miden rutas de procesamiento distintas. <b>Firewall</b> (1518 B UDP) e <b>IPsec VPN</b> (512 B) van descargadas al procesador de red del ASIC — la sesión no toca la CPU. En cuanto se aplica cualquier perfil de inspección, la sesión <b>sale del offload</b> y pasa por CPU con asistencia del content processor: ahí viven <b>IPS</b>, <b>NGFW</b> y <b>Threat Protection</b>, todas medidas con Enterprise Mix. Por eso dimensionar una sucursal con UTM completo contra la cifra de firewall puro subdimensiona por un orden de magnitud, y es el error de preventa más frecuente con FortiGate. Para inspección TLS profunda, Fortinet ya no publica un valor por modelo en el Product Matrix: esta herramienta estima un 35% adicional sobre Threat Protection y lo declara como estimación — validar con PoC antes de comprometerlo. Consultar el <b>FortiGate Datasheet</b> del modelo para sesiones nuevas por segundo y detalle de interfaces.
   </div>
 </div>
 </div>
@@ -251,25 +271,25 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       </select>
     </div>
     <div class="field">
-      <label for="licBundle">Bundle de licencias FortiGuard</label>
+      <label for="licBundle">Bundle de protección FortiGuard</label>
       <select id="licBundle">
-        <option value="utp">UTP — Unified Threat Protection (NGFW + AV + Web + IPS)</option>
-        <option value="ent" selected>ENT — Enterprise (UTP + SD-WAN + CASB + NOC)</option>
-        <option value="elite">Elite — (ENT + FortiSandbox Cloud + FortiConverter)</option>
+        <option value="utp">UTP — Unified Threat Protection</option>
+        <option value="ent" selected>Enterprise Protection</option>
+        <option value="atp">ATP — Advanced Threat Protection</option>
       </select>
     </div>
     <div class="field">
       <label for="careLevel">Nivel de soporte FortiCare</label>
       <select id="careLevel">
-        <option value="fc247">FortiCare 24x7</option>
-        <option value="fcpre" selected>FortiCare Premium (24x7 + TAC prioritario)</option>
-        <option value="fcelite">FortiCare Elite (SLA garantizado + CSE dedicado)</option>
+        <option value="fc247">FortiCare Essential</option>
+        <option value="fcpre" selected>FortiCare Premium</option>
+        <option value="fcelite">FortiCare Elite</option>
       </select>
     </div>
   </section>
 
   <div class="flag-ft">
-    <b>Aviso de preventa:</b> Los códigos de licencia Fortinet incluyen el modelo en el SKU (ej. FC-10-F60FT-...). Verificar en el portal de pedidos de Fortinet o con el distribuidor autorizado que el SKU corresponde al modelo exacto y al término seleccionado.
+    <b>Aviso de preventa:</b> SKUs y precios de lista tomados del price list AMER vigente — verificar disponibilidad regional, término contratado y descuentos de canal con el distribuidor Fortinet autorizado antes de cotizar en firme.
   </div>
 </div>
 
@@ -286,52 +306,97 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <!-- ════ TAB 3 · LICENCIAS ════ -->
 <div class="tabpane" id="pane-lic" hidden>
 <section class="panel">
+  <h2>Incluido en FortiOS — sin licencia adicional</h2>
+  <p class="gd" style="font-size:12.5px;color:var(--steel);margin:0 0 12px">Buena parte de lo que otros fabricantes cobran como suscripción por dispositivo viene dentro del sistema operativo. Es el argumento económico más fuerte de Fortinet y donde más se abre la diferencia de TCO a 3–5 años, así que conviene tenerlo explícito al comparar propuestas.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Capacidad</th><th>Incluido en FortiOS</th><th>Cómo se cobra en la competencia</th></tr></thead>
+    <tbody>
+      <tr><td><b>SD-WAN</b></td><td>Selección de camino por SLA, ADVPN para túneles dinámicos spoke-a-spoke, balanceo y failover por aplicación</td><td>Cisco Catalyst SD-WAN y Meraki lo licencian por dispositivo y por término</td></tr>
+      <tr><td><b>ZTNA</b></td><td>Proxy de acceso y etiquetas de postura en el propio FortiGate</td><td>Suele venderse como producto o SKU aparte</td></tr>
+      <tr><td><b>VPN IPsec / SSL</b></td><td>Sin tope de túneles por licencia ni costo por usuario remoto en el gateway</td><td>Frecuentemente licenciado por usuario concurrente</td></tr>
+      <tr><td><b>VDOMs</b></td><td>Cuota base incluida por modelo (ampliable con SKU de VDOM adicionales)</td><td>Contextos virtuales suelen ser licencia aparte</td></tr>
+      <tr><td><b>FortiLink</b></td><td>FortiSwitch y FortiAP se gestionan desde la CLI/GUI del FortiGate, sin controladora ni licencia de gestión por dispositivo</td><td>Cisco DNA Center / Meraki cobran licencia de gestión por switch y por AP</td></tr>
+      <tr><td><b>Security Fabric</b></td><td>Topología, Security Rating y correlación entre productos Fortinet</td><td>Normalmente requiere plataforma de gestión licenciada</td></tr>
+    </tbody>
+  </table></div>
+  <p class="hint" style="margin-top:10px">Lo que sí es suscripción: los servicios de inteligencia de FortiGuard (IPS, antivirus, filtrado web/DNS, DLP, IoT) y el soporte FortiCare. Es decir, se paga la actualización de firmas y el soporte, no las funciones de red.</p>
+</section>
+
+<section class="panel">
+  <h2>Procesadores de seguridad — de dónde sale la ventaja de rendimiento</h2>
+  <p class="gd" style="font-size:12.5px;color:var(--steel);margin:0 0 12px">Fortinet diseña su propio silicio en lugar de correr todo sobre CPU de propósito general. Es lo que explica la relación precio-rendimiento frente a competidores basados solo en x86, y también por qué las cifras del datasheet caen tanto al activar inspección: son rutas de procesamiento distintas, no el mismo camino más lento.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Procesador</th><th>Qué hace</th><th>A qué cifra del datasheet corresponde</th></tr></thead>
+    <tbody>
+      <tr><td><b>NP</b><br><span style="font-family:'IBM Plex Mono',monospace;font-size:10px">NP7 · NP7Lite · NP6XLite</span></td>
+          <td>Procesador de red. Descarga la sesión completa —firewall, NAT, IPsec, VXLAN— sin que el tráfico toque la CPU. Se apoya en el switch fabric integrado para descargar entre cualquier par de puertos.</td>
+          <td><b>Firewall Throughput</b> e <b>IPsec VPN</b></td></tr>
+      <tr><td><b>CP</b><br><span style="font-family:'IBM Plex Mono',monospace;font-size:10px">CP10 · CP9 · CP9XLite</span></td>
+          <td>Procesador de contenido. Coprocesa a la CPU acelerando pattern matching de IPS, identificación de aplicaciones y antivirus. La sesión ya salió del fast path del NP.</td>
+          <td><b>IPS</b>, <b>NGFW</b> y <b>Threat Protection</b></td></tr>
+      <tr><td><b>SoC</b><br><span style="font-family:'IBM Plex Mono',monospace;font-size:10px">SP5/SoC5 · SoC4</span></td>
+          <td>Integra CPU, NP, CP y switch fabric en un solo chip. Es lo que permite llevar aceleración por hardware a equipos de sucursal a un costo y consumo que no se lograría con componentes discretos.</td>
+          <td>Todas — es el equipo completo</td></tr>
+    </tbody>
+  </table></div>
+  <p class="hint" style="margin-top:10px">El ASIC concreto de cada modelo aparece en la ficha del equipo (pestaña "Equipo y BOM"), verificado modelo por modelo contra la guía Hardware Acceleration de FortiOS y, para el 30G/31G, contra la tabla de hardware de su datasheet. Los 58 modelos del catálogo tienen dato verificado. Nótese que el 30G/31G, pese a ser serie G, usa SoC4/SP4 y no el SP5 — deducirlo por nomenclatura habría dado el silicio equivocado.</p>
+</section>
+
+<section class="panel">
   <h2>Guía de licencias FortiGuard y FortiCare</h2>
   <div class="grp">
-    <h3>Bundles FortiGuard</h3>
-    <p class="gd">Los bundles incluyen servicios de suscripción activos. Sin licencia vigente, las firmas dejan de actualizarse.</p>
+    <h3>Bundles de protección FortiGuard</h3>
+    <p class="gd">Los 3 bundles vigentes en el price list AMER — cada uno con SKU y precio propio por modelo y término (ver pestaña "Equipo y BOM"). Los 3 incluyen FortiCare Premium.</p>
     <div class="scroll"><table>
       <thead><tr><th>Bundle</th><th>Servicios incluidos</th><th>Caso de uso típico</th></tr></thead>
       <tbody>
         <tr><td><b>UTP</b><br><span style="font-family:'IBM Plex Mono',monospace;font-size:10px">Unified Threat Protection</span></td>
-            <td>IPS, App Control, Web Filter, Antivirus, AntiSpam, FortiSandbox Cloud básico</td>
-            <td>Sucursal mediana, PYME, sin requerimientos avanzados de SD-WAN</td></tr>
-        <tr><td><b>ENT</b><br><span style="font-family:'IBM Plex Mono',monospace;font-size:10px">Enterprise Bundle</span></td>
-            <td>Todo UTP + SD-WAN, CASB, NOC Monitoring, FortiConverter, FortiManager Cloud</td>
-            <td>Sucursal corporativa, SD-WAN, cumplimiento, visibilidad cloud SaaS</td></tr>
-        <tr><td><b>Elite</b></td>
-            <td>Todo ENT + FortiSandbox Cloud Premium, FortiConverter, soporte extendido</td>
-            <td>Datacenter edge, regulado (SWIFT, PCI), alta inspección SSL/sandbox</td></tr>
+            <td>IPS, Advanced Malware Protection, Application Control, URL/DNS/Video Filtering, Antispam, FortiCare Premium</td>
+            <td>Sucursal, protección estándar sin requerimientos de compliance avanzado</td></tr>
+        <tr><td><b>Enterprise Protection</b></td>
+            <td>Todo UTP + DLP, AI-Based Malware Prevention, FortiConverter, IoT Security, Security Rating</td>
+            <td>Campus/DC, cumplimiento, visibilidad de IoT, migración desde otro fabricante</td></tr>
+        <tr><td><b>ATP</b><br><span style="font-family:'IBM Plex Mono',monospace;font-size:10px">Advanced Threat Protection</span></td>
+            <td>IPS, Advanced Malware Protection Service, Application Control, FortiCare Premium</td>
+            <td>Protección de amenazas sin necesidad de filtrado de contenido/DLP — perímetros DC/carrier</td></tr>
       </tbody>
     </table></div>
   </div>
   <div class="grp">
     <h3>Niveles de soporte FortiCare</h3>
+    <p class="gd">Alcance según Fortinet (price list solo trae SKU/precio, no el texto de nivel de servicio completo — confirmar SLA y tiempos de RMA exactos con Fortinet antes de comprometerlos con el cliente).</p>
     <div class="scroll"><table>
-      <thead><tr><th>Nivel</th><th>SLA respuesta</th><th>Hardware</th><th>Incluye</th></tr></thead>
+      <thead><tr><th>Nivel</th><th>Incluye</th></tr></thead>
       <tbody>
-        <tr><td><b>FortiCare 24x7</b></td><td class="n">24x7 — 4 horas</td><td>RMA avanzado — siguiente día hábil</td><td>TAC ilimitado, actualizaciones FW, hardware replacement</td></tr>
-        <tr><td><b>FortiCare Premium</b></td><td class="n">24x7 — 2 horas</td><td>Advanced HW Replacement — 4 horas</td><td>TAC prioritario, análisis de configuración, revisiones proactivas</td></tr>
-        <tr><td><b>FortiCare Elite</b></td><td class="n">24x7 — 15 min</td><td>Immediate HW Replacement</td><td>CSE dedicado, SLA contractual, acceso a lab de pruebas, revisión trimestral</td></tr>
+        <tr><td><b>FortiCare Essential</b></td><td>Actualizaciones de firmware y portal self-service. Sin TAC 24x7 ni reemplazo de hardware. No disponible en todos los modelos.</td></tr>
+        <tr><td><b>FortiCare Premium</b></td><td>Ticket handling, Advanced Hardware Replacement (NBD), firmware y upgrades generales. Incluido en los 3 bundles de protección.</td></tr>
+        <tr><td><b>FortiCare Elite</b></td><td>FortiCare Premium + atención de tickets con prioridad Elite.</td></tr>
       </tbody>
     </table></div>
   </div>
   <div class="grp">
     <h3>Servicios adicionales opcionales</h3>
+    <p class="gd">SKU y precio de referencia (unidad/tier de entrada) tomados del price list AMER — no escalan con el modelo de FortiGate seleccionado, a diferencia de los bundles y FortiCare.</p>
     <div class="scroll"><table>
-      <thead><tr><th>Servicio</th><th>SKU base</th><th>Descripción</th></tr></thead>
+      <thead><tr><th>Servicio</th><th>SKU de referencia</th><th>Precio ref.</th><th>Descripción</th></tr></thead>
       <tbody>
-        <tr><td>FortiSandbox Cloud</td><td><code>FC-10-FSV...-288</code></td><td>Análisis dinámico de archivos en nube Fortinet. Alternativa al appliance local.</td></tr>
-        <tr><td>FortiClient EMS</td><td><code>FC-10-EMS...-247</code></td><td>Gestión centralizada de FortiClient (ZTNA agent, VPN, compliance)</td></tr>
-        <tr><td>FortiManager</td><td><code>FMG-VM-...</code></td><td>Orquestación centralizada de políticas para múltiples FortiGate. VM o appliance.</td></tr>
-        <tr><td>FortiAnalyzer</td><td><code>FAZ-VM-...</code></td><td>Logs centralizados, reportes de cumplimiento, correlación de eventos SOC.</td></tr>
-        <tr><td>FortiSASE</td><td><code>FC-10-SAP...-...</code></td><td>Solución SASE cloud para internet breakout seguro desde sucursales remotas.</td></tr>
-        <tr><td>FortiConverter</td><td><code>FC-10-CONV...-...</code></td><td>Migración automática de políticas desde Cisco ASA, Check Point, Palo Alto.</td></tr>
+        <tr><td>FortiSandbox</td><td><code>FSA-500G</code></td><td>$30,000</td><td>Appliance de entrada SMB. Sandbox Threat Intelligence (SKU <code>FC-10-FS5HG-499-02-DD</code>) como suscripción aparte.</td></tr>
+        <tr><td>FortiClient EMS</td><td><code>FC1-10-EMS05-428-01-DD</code></td><td>$768 / año</td><td>Licencia VPN/ZTNA Agent para 25 endpoints, EMS hospedado en FortiCloud, incluye FortiCare Premium.</td></tr>
+        <tr><td>FortiManager</td><td><code>FMG-200G</code></td><td>$16,552</td><td>Appliance de entrada — 4x GE RJ45, 8 TB, gestiona hasta 30 dispositivos/VDOMs.</td></tr>
+        <tr><td>FortiAnalyzer</td><td><code>FAZ-150G</code></td><td>$7,278</td><td>Appliance de entrada — 2x GE RJ45, 4 TB, hasta 25 GB/día de logs.</td></tr>
+        <tr><td>FortiSASE</td><td><code>FC2-10-EMS05-547-02-DD</code></td><td>$90 / usuario / año</td><td>Standard Subscription, rango 50–499 usuarios. Incluye SASE, ZTNA, EPP y FortiCare Premium.</td></tr>
+        <tr><td>FortiConverter</td><td>Embebido por modelo</td><td>desde $50 (servicio único)</td><td>Migración de configuración desde Cisco ASA, Check Point, Palo Alto. SKU exacto por modelo en la pestaña "Equipo y BOM".</td></tr>
       </tbody>
     </table></div>
   </div>
 </section>
 </div>
+
+<p class="note">
+<b>Fuentes oficiales:</b>
+<a href="https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf" target="_blank" rel="noopener">Fortinet Product Matrix (julio 2026)</a> — throughput FW/IPS/NGFW/IPsec VPN y sesiones concurrentes de las series FortiGate F y G ·
+2026Q3 Main Price list AMER, vigente desde 03-ago-2026 — precios de referencia (ELP), estado EOL/End of Order, y SKUs/precios de hardware, bundles FortiGuard (UTP/Enterprise/ATP) y soporte FortiCare por modelo y término.
+</p>
 
 </div><!-- /wrap -->
 <script>
@@ -341,7 +406,7 @@ let BUNDLES = {};
 let CARE = {};
 
 const $=id=>document.getElementById(id);
-let profile='ngfw', wanMode='single', segMode='branch', lastPick=null;
+let profile='tp', wanMode='single', segMode='branch', lastPick=null;
 
 document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
@@ -352,13 +417,20 @@ $('profileSeg').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   [...$('profileSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
   profile=b.dataset.v;
-  const hints={fw:'Throughput de firewall stateful, sin inspección de contenido.',ips:'FW + IPS habilitado sobre tráfico IMIX.',ngfw:'App Control + IPS habilitados. Valor típico para sucursal corporativa.',sdwan:'IPsec SD-WAN + IPS + App Control + QoS. Throughput SD-WAN publicado por Fortinet.'};
-  $('profileHint').textContent=hints[profile];
+  $('profileHint').textContent=TIER_BY_K[profile].d;
   render();
 });
 $('wanSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('wanSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));wanMode=b.dataset.v;render();});
 $('segSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('segSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));segMode=b.dataset.v;render();});
-['bw','unit','users','head','chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa'].forEach(id=>$(id).addEventListener('input',render));
+['bw','unit','users','head','sessNeed','chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa'].forEach(id=>$(id).addEventListener('input',render));
+// En HA se compran 2 unidades y cada una lleva su propia suscripcion FortiGuard: enlazar la
+// casilla con la cantidad del BOM evita cotizar un clúster con una sola licencia.
+$('chkHa').addEventListener('change',()=>{
+  const q=$('qty');
+  if($('chkHa').checked){ if((parseInt(q.value)||1)<2) q.value=2; }
+  else if((parseInt(q.value)||1)===2){ q.value=1; }
+  renderBom();
+});
 ['pickModel','qty','termYears','licBundle','careLevel'].forEach(id=>$(id).addEventListener('input',renderBom));
 
 function fmt(m){
@@ -369,6 +441,44 @@ function fmt(m){
 }
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 
+/* ── Motor de dimensionamiento ─────────────────────────────────────────────── */
+
+// Las 5 capas que Fortinet publica, de menor a mayor profundidad de inspección. Elegir la
+// capa correcta ES el dimensionamiento: entre `fw` y `tp` hay un orden de magnitud, porque
+// la primera va descargada al ASIC de red y la última atraviesa el stack completo.
+const TIERS=[
+  {k:'fw',  n:'Firewall',          d:'Firewall stateful, 1518 B UDP. Sesión descargada al ASIC de red (NP7/SP5), sin inspección de contenido.'},
+  {k:'vpn', n:'IPsec VPN',         d:'Túnel IPsec, 512 B. Criptografía descargada al ASIC.'},
+  {k:'ips', n:'IPS',               d:'IPS sobre Enterprise Mix. La sesión sale del offload de red; el content processor (CP9/CP10) asiste el pattern matching.'},
+  {k:'ngfw',n:'NGFW',              d:'IPS + Application Control sobre Enterprise Mix.'},
+  {k:'tp',  n:'Threat Protection', d:'NGFW + antivirus + logging. Stack de seguridad completo — el número realista de una sucursal.'},
+];
+const TIER_BY_K=Object.fromEntries(TIERS.map(t=>[t.k,t]));
+
+// Fortinet dejó de publicar SSL Inspection Throughput por modelo en el Product Matrix.
+// Estimación conservadora sobre Threat Protection, declarada como estimación en la UI.
+// ponytail: factor único; sustituir por cifra por modelo si Fortinet vuelve a publicarla.
+const SSL_DERATE=0.65;
+
+// La inspección TLS profunda exige el stack completo, así que su piso es Threat Protection
+// aunque se haya elegido una capa más liviana. El castigo se aplica UNA vez y sobre la
+// capacidad — antes se aplicaba al requerimiento Y a la capacidad, sobredimensionando.
+function getCap(m){
+  const ssl=$('chkSsl').checked;
+  const base=m[ssl?'tp':profile];
+  const v=base!=null?base:m.ngfw;
+  return ssl?v*SSL_DERATE:v;
+}
+
+// Coincidencia por subcadena en lugar de lista exacta: los `seg` del catálogo son 21 cadenas
+// distintas ('SOHO / Teletrabajo', 'DC edge / Enterprise', 'Hyperscale DC'...) y la lista
+// exacta anterior dejaba fuera toda la serie G de entrada y 8 variantes de datacenter.
+const SEG_MATCH={
+  branch:/SOHO|Sucursal|Teletrabajo/i,
+  campus:/Campus/i,
+  dc:/DC|Carrier|Hyperscale/i,
+};
+
 function render(){
   const bw=parseFloat($('bw').value)||0;
   const unit=parseFloat($('unit').value);
@@ -376,9 +486,6 @@ function render(){
   const head=(parseFloat($('head').value)||0)/100;
   $('headVal').textContent=Math.round(head*100)+' %';
 
-  // SSL penalty
-  const sslPenalty=$('chkSsl').checked?0.6:1.0;
-  // extra feature penalties
   let featurePenalty=1.0;
   if($('chkAv').checked) featurePenalty+=0.08;
   if($('chkWeb').checked) featurePenalty+=0.04;
@@ -388,15 +495,7 @@ function render(){
   // base need: max of BW-based and user-based
   const bwBaseMbps=bw*unit*(1+head)*featurePenalty;
   const userBaseMbps=users*3*(1+head)*featurePenalty; // 3 Mbps/user avg
-  let needMbps=Math.max(bwBaseMbps,userBaseMbps);
-
-  // if ssl
-  const needDisplay=needMbps;
-  const effectiveNeed=$('chkSsl').checked?needMbps/sslPenalty:needMbps;
-
-  // pick profile cap
-  const capKey={fw:'fw',ips:'ips',ngfw:'ngfw',sdwan:'vpn'}[profile]||'ngfw';
-  const getCap=m=>$('chkSsl').checked?(m.ssl||m.ngfw*0.65):m[capKey];
+  const effectiveNeed=Math.max(bwBaseMbps,userBaseMbps);
 
   // scale
   const allCaps=MODELS.map(m=>m.fw);
@@ -432,18 +531,29 @@ function render(){
     track.appendChild(dot);
   });
 
-  // find candidates
-  const candidates=MODELS.filter(m=>getCap(m)>=effectiveNeed);
-  // filter by segment
-  const segFilter={branch:['SOHO','Sucursal peq','Sucursal med','Sucursal + PoE','Sucursal gde'],campus:['Campus / Agr','Campus / DC edge'],dc:['DC edge','DC / Carrier','Carrier grade','DC core']};
-  let pick=candidates.find(m=>segFilter[segMode]?.includes(m.seg))||candidates[0]||null;
+  // Candidatos: modelos vigentes que cumplen throughput Y sesiones concurrentes.
+  const sessNeed=parseInt($('sessNeed').value)||0;
+  let outBySess=0;
+  const candidates=MODELS.filter(m=>{
+    if(m.eol||getCap(m)<effectiveNeed) return false;
+    if(sessNeed&&m.sess<sessNeed){ outBySess++; return false; }
+    return true;
+  }).sort((a,b)=>getCap(a)-getCap(b));
+  const rx=SEG_MATCH[segMode];
+  let pick=(rx&&candidates.find(m=>rx.test(m.seg)))||candidates[0]||null;
   lastPick=pick;
 
   if(!pick){
-    $('vModel').textContent='Supera catálogo';
-    $('vFamily').textContent='Considerar FortiGate 4400F o solución a medida';
+    $('vModel').textContent='Sin candidato';
     $('verdict').style.borderLeftColor='var(--amber)';
-    $('vWhy').innerHTML='<p class="warn">El requerimiento supera la capacidad del catálogo configurado.</p>';
+    const why=[];
+    why.push(`<li>Requerimiento de <b>${fmt(effectiveNeed)}</b> en la capa <b>${TIER_BY_K[profile].n}</b>${$('chkSsl').checked?' con inspección SSL profunda':''}.</li>`);
+    if(outBySess) why.push(`<li><b>${outBySess}</b> modelo(s) descartado(s) por tabla de sesiones: necesitas ${sessNeed.toLocaleString('en-US')} concurrentes.</li>`);
+    if(profile==='tp'||$('chkSsl').checked) why.push('<li>Estás dimensionando contra la capa más exigente. Si el diseño no requiere antivirus en línea sobre todo el tráfico, evaluar la capa <b>NGFW</b> o segmentar por política qué tráfico se inspecciona a fondo — es la palanca que más capacidad libera en FortiGate.</li>');
+    why.push('<li>Por encima del catálogo: evaluar chasis FortiGate 7000F o distribuir la carga en varias unidades.</li>');
+    $('vFamily').textContent='Ningún modelo vigente cumple todas las restricciones';
+    $('vWhy').innerHTML=`<ul style="margin:0;padding-left:18px;font-size:13.5px">${why.join('')}</ul>`;
+    $('perfTiers').innerHTML='';
     return;
   }
   $('verdict').style.borderLeftColor='var(--red)';
@@ -453,41 +563,93 @@ function render(){
   $('pickLbl').style.left=xPct(getCap(pick))+'%';
 
   const setPct=(id,val,cap)=>{const pct=cap>0?Math.min(val/cap*100,100):0;const bar=$(id);bar.style.width=pct+'%';bar.className=pct>90?'tight':pct<70?'good':'';};
-  $('mFwVal').textContent=fmt(effectiveNeed)+' / '+fmt(pick.fw);setPct('mFwBar',effectiveNeed,pick.fw);
-  $('mNgVal').textContent=fmt(effectiveNeed)+' / '+fmt(getCap(pick));setPct('mNgBar',effectiveNeed,getCap(pick));
-  $('mVpnVal').textContent='/ '+fmt(pick.vpn);setPct('mVpnBar',0,pick.vpn);
+  $('mCapLbl').innerHTML=`Capa ${esc(TIER_BY_K[profile].n)}${$('chkSsl').checked?' + SSL':''} <em id="mCapVal"></em>`;
+  $('mCapVal').textContent=fmt(effectiveNeed)+' / '+fmt(getCap(pick));
+  setPct('mCapBar',effectiveNeed,getCap(pick));
+  $('mSessVal').textContent=(sessNeed?sessNeed.toLocaleString('en-US')+' / ':'')+(pick.sess/1000).toFixed(0)+'K';
+  setPct('mSessBar',sessNeed,pick.sess);
+  renderTiers(pick,effectiveNeed);
 
   const flags=[];
-  if($('chkSsl').checked)flags.push('<b>SSL Inspection activa:</b> Throughput degradado ~35-40%. El sizing usa el valor SSL del datasheet.');
-  if($('chkAv').checked)flags.push('Antivirus añade ~8% de carga. Asegúrate de que el modelo tiene ASIC CP9.');
-  if($('chkSandbox').checked)flags.push('FortiSandbox requiere conectividad cloud o appliance local adicional en la cotización.');
-  if($('chkHa').checked)flags.push('<b>HA requerido:</b> Duplicar la cantidad de unidades en el pedido.');
-  if(wanMode==='dual')flags.push('Dual WAN configurado: dos interfaces WAN con load-balancing o failover.');
+  if($('chkSsl').checked)flags.push(`<b class="warn">Inspección SSL profunda:</b> capacidad estimada en ${fmt(getCap(pick))} sobre los ${fmt(pick.tp)} de Threat Protection. Fortinet ya no publica esta cifra por modelo — validar con una PoC antes de comprometerla.`);
+  if($('chkAv').checked)flags.push('Antivirus en línea ya está contemplado dentro de Threat Protection; el content processor (CP9/CP10) asiste la inspección.');
+  if($('chkSandbox').checked)flags.push('FortiSandbox se cotiza aparte (appliance o suscripción cloud) — no consume throughput del FortiGate, pero sí añade latencia al primer encuentro de un archivo.');
+  if($('chkIotDlp').checked)flags.push('IoT Security y DLP requieren el bundle <b>Enterprise Protection</b>: UTP y ATP no los incluyen.');
+  if($('chkHa').checked)flags.push('<b>HA:</b> se cotizan 2 unidades y <b>cada una necesita su propia suscripción FortiGuard</b> — la licencia no se comparte entre nodos del clúster.');
+  if(wanMode==='dual')flags.push('<b>SD-WAN sin costo de licencia:</b> el balanceo por SLA, ADVPN y la selección dinámica de camino vienen en FortiOS. No hay suscripción por dispositivo como en Cisco Catalyst SD-WAN o Meraki.');
   const alts=candidates.filter(m=>m.id!==pick.id).slice(0,3).map(m=>m.id);
 
   $('vWhy').innerHTML=`<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
-    <li>Requerimiento: <b>${fmt(effectiveNeed)}</b>${$('chkSsl').checked?' (con SSL Inspection)':''} | Capacidad: <b>${fmt(getCap(pick))}</b></li>
-    <li>Sesiones concurrentes disponibles: <b>${(pick.sess/1000).toFixed(0)}K</b></li>
-    <li>IPsec VPN: <b>${fmt(pick.vpn)}</b> | Interfaces: ${pick.ifaces}</li>
+    <li>Requerimiento <b>${fmt(effectiveNeed)}</b> en capa <b>${esc(TIER_BY_K[profile].n)}</b> contra capacidad <b>${fmt(getCap(pick))}</b> — headroom ${Math.round((1-effectiveNeed/getCap(pick))*100)}%</li>
+    <li>Sesiones concurrentes: <b>${(pick.sess/1000).toFixed(0)}K</b> | Interfaces: ${esc(pick.ifaces)}</li>
     ${flags.map(f=>`<li>${f}</li>`).join('')}
-    ${alts.length?`<li>Alternativas a evaluar: <b>${alts.join(', ')}</b></li>`:''}
+    ${alts.length?`<li>Alternativas que también cumplen: <b>${alts.join(', ')}</b></li>`:''}
   </ul>`;
 
   $('sizingBox').innerHTML=`
     <table><tbody>
-      <tr><td>Perfil</td><td class="n">${{fw:'FW puro',ips:'FW + IPS',ngfw:'NGFW (App+IPS)',sdwan:'SD-WAN completo'}[profile]}</td></tr>
-      <tr><td>SSL Inspection</td><td class="n">${$('chkSsl').checked?'Sí (factor 0.65)':'No'}</td></tr>
+      <tr><td>Capa dimensionada</td><td class="n">${esc(TIER_BY_K[profile].n)}</td></tr>
+      <tr><td>Inspección SSL profunda</td><td class="n">${$('chkSsl').checked?`Sí — piso Threat Protection x${SSL_DERATE} (estimado)`:'No'}</td></tr>
       <tr><td>Ancho de banda WAN</td><td class="n">${fmt(bw*unit)}</td></tr>
       <tr><td>Usuarios estimados</td><td class="n">${users}</td></tr>
       <tr><td>Requerimiento final</td><td class="n"><b>${fmt(effectiveNeed)}</b></td></tr>
+      <tr><td>Capacidad en esa capa</td><td class="n">${fmt(getCap(pick))}</td></tr>
       <tr><td>Headroom disponible</td><td class="n">${Math.round((1-effectiveNeed/getCap(pick))*100)}%</td></tr>
-      <tr><td>HA requerida</td><td class="n">${$('chkHa').checked?'Sí — 2x unidades':'No'}</td></tr>
+      <tr><td>Sesiones concurrentes</td><td class="n">${sessNeed?sessNeed.toLocaleString('en-US')+' / ':''}${pick.sess.toLocaleString('en-US')}</td></tr>
+      <tr><td>Unidades a cotizar</td><td class="n">${$('chkHa').checked?'2 (HA) — licencia por unidad':'1'}</td></tr>
     </tbody></table>`;
+}
+
+// Escalera de capas: muestra las 5 cifras publicadas del modelo a la vez, en escala relativa
+// al firewall puro. Hace visible de un vistazo el salto de un orden de magnitud entre lo que
+// va descargado al ASIC y lo que atraviesa el stack de inspección — que es exactamente el
+// malentendido que produce los FortiGate subdimensionados.
+function renderTiers(m,need){
+  const ssl=$('chkSsl').checked;
+  const top=m.fw||1;
+  const activeK=ssl?'tp':profile;
+  $('perfModel').textContent='— '+m.id;
+  $('perfTiers').innerHTML=TIERS.map((t,i)=>{
+    const v=m[t.k];
+    if(v==null) return '';
+    const on=t.k===activeK;
+    const prev=i>0?m[TIERS[i-1].k]:null;
+    const drop=prev&&v&&prev>v?Math.round((1-v/prev)*100):0;
+    return `${drop>=50?`<div class="tierDrop">&#8595; ${drop}% al salir del offload de red</div>`:''}
+      <div class="tierRow ${on?'on':'off'}" title="${esc(t.d)}">
+        <span class="tn">${esc(t.n)}</span>
+        <span class="tb"><i style="width:${Math.max(2,v/top*100)}%"></i></span>
+        <span class="tv">${fmt(v)}</span>
+      </div>`;
+  }).join('');
+  if(ssl){
+    const v=m.tp*SSL_DERATE;
+    $('perfTiers').insertAdjacentHTML('beforeend',
+      `<div class="tierRow on" title="Estimación: Fortinet ya no publica SSL Inspection por modelo.">
+        <span class="tn">+ SSL profundo</span>
+        <span class="tb"><i style="width:${Math.max(2,v/top*100)}%"></i></span>
+        <span class="tv">~${fmt(v)}</span>
+      </div>`);
+  }
+  const ratio=m.tp?Math.round(m.fw/m.tp):0;
+  const asic=m.asic
+    ? `Silicio: <b>${esc(m.asic)}</b>. El ${esc(m.np||'procesador de red')} es el que sostiene las dos primeras cifras${m.cp?`; el ${esc(m.cp)} asiste el pattern matching de IPS y antivirus en las tres últimas`:''}.`
+    : `<span class="warn">Fortinet no publica página de fast path architecture para este modelo — sin dato de ASIC verificado.</span>`;
+  $('perfNote').innerHTML=`Del firewall puro a Threat Protection hay un factor <b>${ratio}x</b> en este modelo (${fmt(m.fw)} &rarr; ${fmt(m.tp)}). `+
+    `La cifra de portada solo aplica a sesiones descargadas al procesador de red; cualquier perfil de inspección saca la sesión del fast path. ${asic} Requerimiento actual: <b>${fmt(need)}</b>.`;
 }
 
 /* BOM */
 function populatePickModel(){
-  $('pickModel').innerHTML=MODELS.map(m=>`<option value="${m.id}">${m.id} — ${m.seg}</option>`).join('');
+  $('pickModel').innerHTML=MODELS.map(m=>`<option value="${m.id}">${m.id} — ${m.seg}${m.eol?' (EOL)':''}</option>`).join('');
+}
+
+const CARE_LIC_KEY={fc247:'essential',fcpre:'premium',fcelite:'elite'};
+const money=n=>n==null?null:'$'+n.toLocaleString('en-US',{maximumFractionDigits:2});
+function tierPrice(tier,termYrs){
+  if(!tier) return null;
+  const v=termYrs===1?tier.y1:termYrs===5?tier.y5:tier.y3;
+  return v==null?null:v;
 }
 
 function renderBom(){
@@ -496,53 +658,109 @@ function renderBom(){
   const termYrs=parseInt($('termYears').value)||3;
   const bundle=$('licBundle').value||'ent';
   const care=$('careLevel').value||'fcpre';
+  const lic=m.lic;
+  const licTier=lic?lic[bundle]:null;
+  const careTier=lic?lic.care[CARE_LIC_KEY[care]]:null;
+  const licPrice=tierPrice(licTier,termYrs);
+  const carePrice=tierPrice(careTier,termYrs);
 
   let html=`<section class="panel"><h2>Ficha del equipo</h2>
     <div class="model" style="font-size:28px">${m.id}</div>
     <p class="family">${m.seg} · FortiOS · Security Fabric</p>
     <div class="scroll"><table><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
-    <tr><td>FW Throughput</td><td class="n">${fmt(m.fw)}</td></tr>
-    <tr><td>IPS Throughput (IMIX)</td><td class="n">${fmt(m.ips)}</td></tr>
-    <tr><td>NGFW Throughput (App+IPS)</td><td class="n">${fmt(m.ngfw)}</td></tr>
-    <tr><td>SSL Inspection Throughput</td><td class="n">${m.ssl?fmt(m.ssl):'Consultar datasheet'}</td></tr>
-    <tr><td>IPsec VPN Throughput</td><td class="n">${fmt(m.vpn)}</td></tr>
-    <tr><td>Sesiones concurrentes</td><td class="n">${(m.sess/1000).toFixed(0)}K</td></tr>
+    <tr><td>SKU hardware</td><td class="n">${m.hwSku?`<code>${esc(m.hwSku)}</code>`:'<span class="warn">Descontinuado — sin SKU nuevo vigente</span>'}</td></tr>
+    <tr><td>Precio de lista ref. (equipo)</td><td class="n">${m.elp?esc(m.elp):'Consultar distribuidor'}</td></tr>
+    <tr><td>Firewall (1518 B, offload ASIC)</td><td class="n">${fmt(m.fw)}</td></tr>
+    <tr><td>IPsec VPN (512 B, offload ASIC)</td><td class="n">${fmt(m.vpn)}</td></tr>
+    <tr><td>IPS (Enterprise Mix)</td><td class="n">${fmt(m.ips)}</td></tr>
+    <tr><td>NGFW (IPS + App Control)</td><td class="n">${fmt(m.ngfw)}</td></tr>
+    <tr><td><b>Threat Protection</b> (NGFW + AV + log)</td><td class="n"><b>${m.tp?fmt(m.tp):'Consultar datasheet'}</b>${m.tp&&m.fw?` <span class="warn">(${Math.round(m.fw/m.tp)}x menos que el firewall puro)</span>`:''}</td></tr>
+    <tr><td>Sesiones concurrentes</td><td class="n">${m.sess.toLocaleString('en-US')}</td></tr>
+    <tr><td>Procesadores de seguridad</td><td class="n">${m.asic?`${esc(m.asic)}${m.soc?' <span class="pillc">SoC</span>':''}<span class="sku">${esc(m.asicSrc||'')}</span>`:'<span class="warn">Sin página de fast path architecture publicada</span>'}</td></tr>
     <tr><td>Interfaces</td><td>${m.ifaces}</td></tr>
-    </tbody></table></div></section>`;
+    </tbody></table></div>
+    ${m.eol?'<p class="hint warn" style="margin-top:10px">Modelo descontinuado (EOL) — no disponible para diseños nuevos, solo referencia para equipos ya instalados.</p>':''}
+    </section>`;
 
   html+=`<section class="panel"><h2>Licencias FortiGuard</h2><ul class="clean">
-    <li class="on"><b>${BUNDLES[bundle].n}</b><span class="req">Requerida</span><span class="sku">${BUNDLES[bundle].svcs} · término ${termYrs} años</span></li>
-    <li class="on"><b>FortiGuard IPS</b><span class="req">Incluida en bundle</span><span class="sku">Actualización continua de firmas IPS, exploits y malware.</span></li>
-    <li class="on"><b>FortiGuard App Control</b><span class="req">Incluida en bundle</span><span class="sku">Identificación de más de 5.000 aplicaciones y control de uso.</span></li>
-    <li><b>FortiSandbox Cloud</b><span class="req opt">Opcional</span><span class="sku">Análisis dinámico de archivos zero-day. Incluido en Elite.</span></li>
-    <li><b>FortiClient EMS</b><span class="req opt">Opcional</span><span class="sku">Gestión de endpoints ZTNA + VPN. Licencia por número de usuarios.</span></li>
+    ${licTier?`<li class="on"><b>${BUNDLES[bundle].n}</b><span class="req">Requerida</span><span class="sku">${BUNDLES[bundle].svcs}<br><code>${esc(licTier.sku)}</code> · término ${termYrs} año${termYrs>1?'s':''}${licPrice!=null?' · '+money(licPrice)+' c/u':' · precio no disponible a '+termYrs+' años para este modelo'}</span></li>`
+      :`<li><b>${BUNDLES[bundle].n}</b><span class="req opt">No disponible</span><span class="sku">Este bundle no tiene SKU vigente para ${m.id} en el price list actual${m.eol?' (equipo EOL, sin renovación de Enterprise Protection)':''}.</span></li>`}
+    <li><b>FortiConverter</b><span class="req opt">Opcional</span><span class="sku">${lic&&lic.converter?`Migración de configuración desde Cisco ASA, Check Point, Palo Alto. <code>${esc(lic.converter.sku)}</code> · ${money(lic.converter.fee)} (servicio único)`:'Incluido dentro de Enterprise Protection en modelos vigentes.'}</span></li>
+    <li><b>FortiSandbox</b><span class="req opt">Opcional</span><span class="sku">Análisis dinámico de archivos zero-day (add-on independiente del bundle). SKU de referencia: <code>FC-10-FS5HG-499-02-DD</code>.</span></li>
+    <li><b>FortiClient EMS</b><span class="req opt">Opcional</span><span class="sku">Gestión de endpoints ZTNA + VPN, licenciado por número de endpoints. SKU de referencia (25 endpoints): <code>FC1-10-EMS05-428-01-DD</code>.</span></li>
   </ul></section>`;
 
   html+=`<section class="panel"><h2>Soporte FortiCare</h2><div class="scroll"><table>
-    <thead><tr><th>Servicio</th><th>SLA</th><th>Término</th><th>Qty</th></tr></thead><tbody>
-    <tr><td>${CARE[care].n}</td><td class="n">${CARE[care].sla}</td><td class="n">${termYrs} años</td><td class="n">${qty}</td></tr>
+    <thead><tr><th>Servicio</th><th>SLA</th><th>SKU</th><th>Término</th><th>Precio ref. c/u</th><th>Qty</th></tr></thead><tbody>
+    <tr><td>${CARE[care].n}</td><td class="n">${CARE[care].sla}</td><td class="n">${careTier?`<code>${esc(careTier.sku)}</code>`:'<span class="warn">No disponible para este modelo</span>'}</td><td class="n">${termYrs} años</td><td class="n">${carePrice!=null?money(carePrice):'—'}</td><td class="n">${qty}</td></tr>
     </tbody></table></div></section>`;
+
+  // Resumen economico: hasta ahora la pagina mostraba precios por linea pero nunca el total,
+  // que es justamente lo que se lleva el cliente. En HA cada nodo paga su propia suscripcion,
+  // asi que licencias y soporte multiplican por la cantidad igual que el hardware.
+  const hwUnit=m.elpN!=null?m.elpN:null;
+  const rows=[
+    {c:'Hardware', d:m.id+(m.hwSku?` · ${m.hwSku}`:''), q:qty, u:hwUnit},
+    {c:`FortiGuard ${BUNDLES[bundle].n}`, d:licTier?licTier.sku:'sin SKU vigente', q:qty, u:licPrice},
+    {c:CARE[care].n, d:careTier?careTier.sku:'sin SKU vigente', q:qty, u:carePrice},
+  ];
+  const total=rows.reduce((s,r)=>s+(r.u!=null?r.u*r.q:0),0);
+  const faltantes=rows.filter(r=>r.u==null).length;
+
+  html+=`<section class="panel"><h2>Resumen económico <span style="font-weight:400;text-transform:none;letter-spacing:0">término de ${termYrs} año${termYrs>1?'s':''}</span></h2>
+    <div class="scroll"><table>
+    <thead><tr><th>Concepto</th><th>SKU</th><th>Cant.</th><th>Precio ref. c/u</th><th>Subtotal</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr><td>${esc(r.c)}</td><td class="n">${r.d?`<code>${esc(r.d)}</code>`:'—'}</td><td class="n">${r.q}</td><td class="n" style="text-align:right">${r.u!=null?money(r.u):'<span class="warn">n/d</span>'}</td><td class="n" style="text-align:right">${r.u!=null?money(r.u*r.q):'—'}</td></tr>`).join('')}
+    <tr style="border-top:2px solid var(--ink)"><td colspan="4" style="font-weight:600;padding-top:10px">Total de referencia a ${termYrs} año${termYrs>1?'s':''}</td><td class="n" style="text-align:right;font-weight:600;padding-top:10px">${money(total)}</td></tr>
+    </tbody></table></div>
+    ${faltantes?`<p class="hint warn" style="margin-top:10px">${faltantes} concepto(s) sin precio en el price list vigente — el total está incompleto.</p>`:''}
+    ${qty>1?`<p class="hint" style="margin-top:10px">Clúster de ${qty} unidades: cada nodo lleva su propia suscripción FortiGuard y su propio contrato FortiCare. La licencia no se comparte en HA.</p>`:''}
+    </section>`;
 
   $('bomBody').innerHTML=html;
 
   const L=[];
   L.push(`LISTA DE MATERIALES — ${m.id}`);
   L.push(`Segmento: ${m.seg} · FortiOS · Security Fabric`);
-  L.push('Generado como preselección de preventa. Verificar SKUs con distribuidor Fortinet.');
+  L.push('Generado como preselección de preventa a partir del price list AMER oficial. Verificar disponibilidad regional y descuentos de canal con el distribuidor Fortinet.');
   L.push('');
   L.push('EQUIPO');
-  L.push(`  ${qty} x ${m.id}   [PID: POR CONFIRMAR CON DISTRIBUIDOR]`);
+  L.push(`  ${qty} x ${m.id}   [SKU: ${m.hwSku||'DESCONTINUADO — sin SKU nuevo vigente'}]${m.elp?'   Precio ref.: '+m.elp+' c/u':''}`);
   L.push(`     FW: ${fmt(m.fw)} | NGFW: ${fmt(m.ngfw)} | VPN: ${fmt(m.vpn)}`);
   L.push(`     Interfaces: ${m.ifaces}`);
   L.push('');
-  L.push('LICENCIAS FORTICUARD');
-  L.push(`  ${qty} x ${BUNDLES[bundle].n}  (${termYrs} años)`);
-  L.push(`     ${BUNDLES[bundle].svcs}`);
+  L.push('LICENCIAS FORTIGUARD');
+  if(licTier){
+    L.push(`  ${qty} x ${BUNDLES[bundle].n}  (${termYrs} años)   [SKU: ${licTier.sku}]${licPrice!=null?'   Precio ref.: '+money(licPrice)+' c/u':''}`);
+    L.push(`     ${BUNDLES[bundle].svcs}`);
+  } else {
+    L.push(`  ${BUNDLES[bundle].n}: sin SKU vigente para ${m.id} en el término/modelo seleccionado.`);
+  }
   L.push('');
   L.push('SOPORTE FORTICARE');
-  L.push(`  ${qty} x ${CARE[care].n}  (${CARE[care].sla} — ${termYrs} años)`);
+  if(careTier){
+    L.push(`  ${qty} x ${CARE[care].n}  (${termYrs} años)   [SKU: ${careTier.sku}]${carePrice!=null?'   Precio ref.: '+money(carePrice)+' c/u':''}`);
+    L.push(`     ${CARE[care].sla}`);
+  } else {
+    L.push(`  ${CARE[care].n}: sin SKU vigente para ${m.id}.`);
+  }
   L.push('');
-  L.push('NOTA: precios no incluidos. Consultar lista de precios vigente con distribuidor autorizado.');
+  L.push(`TOTAL DE REFERENCIA (${termYrs} año${termYrs>1?'s':''}): ${money(total)}${faltantes?'   [INCOMPLETO: '+faltantes+' concepto(s) sin precio vigente]':''}`);
+  L.push('');
+  L.push('RENDIMIENTO POR CAPA DE INSPECCION');
+  L.push(`  Firewall (1518 B, offload ASIC):   ${fmt(m.fw)}`);
+  L.push(`  IPsec VPN (512 B, offload ASIC):   ${fmt(m.vpn)}`);
+  L.push(`  IPS (Enterprise Mix):              ${fmt(m.ips)}`);
+  L.push(`  NGFW (IPS + App Control):          ${fmt(m.ngfw)}`);
+  L.push(`  Threat Protection (+ AV + log):    ${fmt(m.tp)}   <- dimensionar con este valor`);
+  L.push(`  Sesiones concurrentes:             ${m.sess.toLocaleString('en-US')}`);
+  L.push(`  Procesadores de seguridad:         ${m.asic||'sin dato publicado por Fortinet'}`);
+  L.push('');
+  L.push('INCLUIDO EN FORTIOS SIN LICENCIA ADICIONAL');
+  L.push('  SD-WAN (seleccion de camino por SLA, ADVPN), ZTNA, IPsec/SSL-VPN, VDOMs base,');
+  L.push('  y gestion de FortiSwitch/FortiAP por FortiLink sin controladora ni licencia por dispositivo.');
+  L.push('');
+  L.push('NOTA: precios de lista (list price) AMER, sin descuentos de canal ni impuestos. Confirmar SKU exacto, término y precio final con el distribuidor Fortinet autorizado antes de cotizar.');
   $('bomOut').value=L.join('\n');
 }
 

@@ -3,6 +3,7 @@ const {
   toDimensionadorHuawei,
   toDimensionadorCisco,
   toDimensionadorFortinet,
+  toDimensionadorMikrotik,
 } = require('../services/catalogProjection');
 
 const router = express.Router();
@@ -11,6 +12,7 @@ const projections = {
   huawei: toDimensionadorHuawei,
   cisco: toDimensionadorCisco,
   fortinet: toDimensionadorFortinet,
+  mikrotik: toDimensionadorMikrotik,
 };
 
 router.get('/dimensionador/:vendor', async (req, res, next) => {

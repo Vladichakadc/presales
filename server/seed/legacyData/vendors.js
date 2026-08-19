@@ -6,4 +6,5 @@ module.exports = [
   { code: 'fortinet', name: 'Fortinet', colorHex: '#EE3124' },
   { code: 'juniper', name: 'Juniper', colorHex: '#84B135' },
   { code: 'arista', name: 'Arista', colorHex: '#4E5B6E' },
+  { code: 'mikrotik', name: 'MikroTik', colorHex: '#C8102E' },
 ];

@@ -258,6 +258,10 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   <div class="note">
     <b>Nota metodológica.</b> El throughput publicado por Cisco corresponde a tráfico enterprise IMIX bidireccional con IOS XE. Los valores de SD-WAN corresponden a Catalyst 8000 con Cisco vManage y IPsec IMIX. Los ISR 4000 con licencia AppX pueden alcanzar el valor máximo publicado en condiciones controladas. <a href="https://www.cisco.com/c/en/us/products/routers/index.html" target="_blank">Cisco Routers Datasheet</a>
   </div>
+
+  <div class="note">
+    <b>Catalyst SD-WAN vs. otros fabricantes (Fortinet, Palo Alto).</b> Catalyst SD-WAN es, en el fondo, un <b>router con funciones de seguridad añadidas</b>; Fortinet y Palo Alto son <b>firewalls con routing añadido</b>. Esa diferencia de arquitectura es la raíz de las quejas más consistentes en reportes de usuarios (PeerSpot, Info-Tech SoftwareReviews): visibilidad de tráfico/aplicaciones más débil que Fortinet, sin base de datos de aplicaciones nativa (requiere más whitelisting manual de IPs), dificultad para entender el balanceo de carga entre enlaces, licenciamiento y configuración más complejos, y un costo percibido más alto — por eso Cisco es visto como la opción "premium" y Fortinet como la más costo-efectiva para desplegar. A favor de Cisco: soporte nativo de <b>Segment Routing sobre IPv6 (SRv6)</b> para ingeniería de tráfico determinística en WANs con múltiples proveedores MPLS — algo que Fortinet, Palo Alto y Aruba no igualan hoy — y una base instalada mucho mayor (+48.000 despliegues, 70% del Fortune 100), lo que pesa en cuentas que ya operan infraestructura Cisco.
+  </div>
 </div>
 </div>
 </div>
@@ -325,6 +329,23 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   <p class="note"><b>Nota:</b> Los módulos Cisco Genuine SFP son recomendados. Módulos de terceros pueden funcionar con el comando <code>service unsupported-transceiver</code> en IOS XE. Para SD-WAN con vManage, Cisco recomienda ópticas certificadas para evitar alertas en inventario.</p>
 </section>
 </div>
+
+<p class="note">
+<b>Cisco Networking Cloud — unificación Meraki/Catalyst.</b> Dos frentes confirmados. <b>Switching:</b> desde IOS XE 17.15+, el Meraki Dashboard también gestiona switches Catalyst 9200/9300/9500 elegibles, reutilizando la licencia DNA ya comprada sin costo Meraki adicional hasta el 1-feb-2029 ("Cloud Entitlement for DNA") — no aplica a los routers de este dimensionador. <b>Routing/SD-WAN (hallazgo confirmado en export real de CCW):</b> el chasis "Secure Router (G2)" que reemplaza al Catalyst 8300/8200 se vende en dos SKUs sobre el mismo hardware — sin sufijo "-MX" corre IOS XE clásico (CCW + DNA), con sufijo "-MX" (<code>C8355-G2-MX</code>, <code>C8455-G2-MX</code>, <code>C8111-G2-MX</code>, <code>C8121-G2-MX</code>) corre Meraki OS gestionado 100% desde el dashboard. La elección IOS XE vs. Meraki ya es una decisión de SKU sobre el mismo fierro, no de plataformas distintas — esto sí es directamente relevante para este dimensionador. Familia 8400 (C8455-G2, sucesor de gama alta): 67 Gbps forwarding, 31 Gbps IPsec, 15.5 Gbps SD-WAN.
+</p>
+
+<p class="note">
+<b>Fuentes oficiales:</b>
+<a href="https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8300-series-edge-platforms/cat-8300-8200-series-edge-plat-og.html" target="_blank" rel="noopener">Catalyst 8300/8200 Series Edge Platforms Ordering Guide</a> ·
+<a href="https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html" target="_blank" rel="noopener">EOL C8300-2N2S-4T2X/6T, C8200-1N-4T/C8200L-1N-4T</a> ·
+<a href="https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500l-8s4x-4t2x-c8300-1n1s-6t-eol.html" target="_blank" rel="noopener">EOL C8500L-8S4X, C8300-1N1S-4T2X/6T</a> ·
+<a href="https://www.cisco.com/c/en/us/products/collateral/software/dna-subscription-routing/guide-c07-740642.html" target="_blank" rel="noopener">Cisco DNA Software for SD-WAN and Routing Ordering Guide</a> ·
+<a href="https://documentation.meraki.com/Platform_Management/Product_Information/Licensing/Meraki_MX_Security_and_SD-WAN_Licensing" target="_blank" rel="noopener">Meraki MX Security and SD-WAN Licensing</a> ·
+<a href="https://documentation.meraki.com/Switching/Cloud_Management_with_IOS_XE/Product_Information/Overviews_and_Datasheets/Cloud_Management_with_IOS_XE_Overview" target="_blank" rel="noopener">Cloud Management with IOS XE</a> ·
+<a href="https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8300-series-secure-routers-ds.html" target="_blank" rel="noopener">Cisco 8300 Series Secure Routers Data Sheet</a> ·
+export de catálogo CCW del usuario (17-ago-2026, precios de lista C8200/C8300/Secure Router G2/Meraki) ·
+comparativa SD-WAN sintetizada de <a href="https://www.peerspot.com/products/comparisons/cisco-catalyst-sd-wan_vs_fortinet-fortigate" target="_blank" rel="noopener">PeerSpot</a> e Info-Tech SoftwareReviews (ago-2026).
+</p>
 
 </div><!-- /wrap -->
 
@@ -484,9 +505,13 @@ function render(){
     <p style="font-size:13.5px;margin:0">${s.d}</p>`;
 
   // DNA
+  const dnaSel=$('dnaTier').value||'adv';
+  const dnaLetter={ess:'E',adv:'A',pre:'P'}[dnaSel];
+  const dnaWarn = (dnaSel==='ess' && pick.id.includes('8500')) ? '<li><span class="warn">Catalyst 8500 no soporta DNA Essentials — requiere Advantage como mínimo.</span></li>' : '';
   $('licBox').innerHTML=`
     <ul class="clean">
-      <li class="on"><b>${{'ess':'DNA Essentials','adv':'DNA Advantage','pre':'DNA Premier'}[$('dnaTier').value]||'DNA Advantage'}</b><span class="req">Requerida</span><span class="sku">${DNA_DESC[$('dnaTier').value||'adv']}</span></li>
+      <li class="on"><b>${{'ess':'DNA Essentials','adv':'DNA Advantage','pre':'DNA Premier'}[dnaSel]}</b><span class="req">Requerida</span><span class="sku">${DNA_DESC[dnaSel]}<br>SKU real: <code>DNA-C-T&lt;n&gt;-${dnaLetter}-${$('termYears')?$('termYears').value:3}Y</code> (n = tier de ancho de banda, confirmar en CCW)</span></li>
+      ${dnaWarn}
       <li><b>HSEC (High Security)</b><span class="req opt">Según país</span><span class="sku">Requerida para exportación de criptografía fuerte en países restringidos. Verificar con Cisco GSSO.</span></li>
       <li><b>IP Base → IP Services (IOS XE)</b><span class="req opt">Nota</span><span class="sku">En ISR 4000 el throughput máximo se alcanza solo con licencia IP Services o AppX habilitada.</span></li>
     </ul>`;
@@ -537,16 +562,19 @@ function renderBom(){
     <div class="model" style="font-size:28px">${m.id}</div>
     <p class="family">${m.fam} · Serie ${m.ser}</p>
     <div class="scroll"><table><thead><tr><th>Concepto</th><th>Valor</th></tr></thead><tbody>
-    <tr><td>Designación de pedido</td><td><code>${esc(m.id)}</code></td></tr>
+    <tr><td>Designación de pedido</td><td><code>${esc(m.id)}</code>${m.hwSku?` <code>${esc(m.hwSku)}</code>`:''}</td></tr>
+    <tr><td>Precio de lista ref. (equipo)</td><td class="n">${m.elp?esc(m.elp)+' (CCW)':'Consultar CCW'}</td></tr>
     <tr><td>Forwarding (bidireccional IMIX)</td><td class="n">${fmt(m.fwd)}</td></tr>
     <tr><td>IPsec VPN (IMIX)</td><td class="n">${fmt(m.ipsec)}</td></tr>
-    <tr><td>SD-WAN (IPsec + AppFlow, IMIX)</td><td class="n">${m.sdwan?fmt(m.sdwan):'N/A — usar ISR+DNA Advantage'}</td></tr>
+    <tr><td>SD-WAN (IPsec + AppFlow, IMIX)</td><td class="n">${m.sdwan?fmt(m.sdwan):(m.ser.includes('ISR')?'N/A — usar ISR+DNA Advantage':fmt(m.ipsec)+' (cifra IPsec — sin throughput SD-WAN diferenciado publicado)')}</td></tr>
     <tr><td>Puertos y slots</td><td>${m.ports}</td></tr>
     <tr><td>Slots NIM disponibles</td><td class="n">${m.nim}</td></tr>
     <tr><td>Slots SM disponibles</td><td class="n">${m.sm||0}</td></tr>
     <tr><td>Redundancia de fuente de serie</td><td>${m.redund?'Sí':'No (kit opcional)'}</td></tr>
     <tr><td>LTE integrado</td><td>${m.lte?'Sí':'No (NIM-4G-LTE-LA)'}</td></tr>
-    </tbody></table></div></section>`;
+    </tbody></table></div>
+    ${m.eolAnnounced?`<p class="hint warn" style="margin-top:10px">Fin de venta anunciado (PID <code>${esc(m.eolAnnounced.pid)}</code>) — último día de pedido: <b>${esc(m.eolAnnounced.lastOrder)}</b>. Sucesor confirmado: <b>Cisco Secure Router (G2)</b> — mismo IOS XE SD-WAN, ver familia "Secure Router (G2)" en el selector de equipo.</p>`:''}
+    </section>`;
 
   // Parts
   const parts=(m.parts||[]);
@@ -570,8 +598,10 @@ function renderBom(){
   html+=`<p class="hint">Para entornos con SD-WAN y vManage, se recomienda usar únicamente ópticas genuinas Cisco para evitar alertas en inventario y soporte TAC sin restricciones.</p></section>`;
 
   // Licenses
+  const dnaLetterBom={ess:'E',adv:'A',pre:'P'}[dnaTier];
   html+=`<section class="panel"><h2>Licencias DNA y suscripciones</h2><ul class="clean">
-    <li class="on"><b>Cisco DNA ${{'ess':'Essentials','adv':'Advantage','pre':'Premier'}[dnaTier]}</b><span class="req">Requerida</span><span class="sku">${DNA_DESC[dnaTier]} · término ${termYrs} años</span></li>
+    <li class="on"><b>Cisco DNA ${{'ess':'Essentials','adv':'Advantage','pre':'Premier'}[dnaTier]}</b><span class="req">Requerida</span><span class="sku">${DNA_DESC[dnaTier]} · término ${termYrs} años<br>SKU real: <code>DNA-C-T&lt;n&gt;-${dnaLetterBom}-${termYrs}Y</code> (n = tier de ancho de banda T0–T3+ según throughput del modelo, confirmar en CCW/ordering guide)</span></li>
+    ${(dnaTier==='ess' && m.id.includes('8500'))?'<li><span class="warn">Catalyst 8500 no soporta DNA Essentials — requiere Advantage como mínimo.</span></li>':''}
     <li class="on"><b>IOS XE SD-WAN</b><span class="req">Requerida</span><span class="sku">Sistema operativo base incluido con DNA license. Validar versión mínima para Catalyst 8000: IOS XE 17.x SD-WAN mode.</span></li>
     <li><b>HSEC — High Security</b><span class="req opt">Según país</span><span class="sku">Requerida para exportaciones a países con control criptográfico. Verificar con Cisco Global Security Sales Operations.</span></li>
     <li><b>AppX / Application Experience</b><span class="req opt">Opcional</span><span class="sku">Para ISR 4000: habilita NBAR2, PfR, AppFlow y Performance Routing. Incluida en DNA Advantage.</span></li>
@@ -594,8 +624,9 @@ function renderBom(){
   L.push('Generado como preselección de preventa. Verificar en CCW antes de cotizar.');
   L.push('');
   L.push('EQUIPO');
-  L.push(`  ${qty} x ${m.id}`);
+  L.push(`  ${qty} x ${m.id}${m.hwSku?'   [PID: '+m.hwSku+']':''}${m.elp?'   Precio ref.: '+m.elp+' c/u (CCW)':''}`);
   L.push(`     ${m.ports}`);
+  if(m.eolAnnounced) L.push(`     AVISO: fin de venta anunciado (${m.eolAnnounced.pid}) — último día de pedido ${m.eolAnnounced.lastOrder}. Sucesor confirmado: Cisco Secure Router (G2), mismo IOS XE SD-WAN.`);
   if(parts.length){
     L.push('');
     L.push('MÓDULOS Y LICENCIAS');
@@ -610,6 +641,8 @@ function renderBom(){
   L.push('');
   L.push('LICENCIAS');
   L.push(`  ${qty} x Cisco DNA ${{'ess':'Essentials','adv':'Advantage','pre':'Premier'}[dnaTier]}  (término ${termYrs} años)`);
+  L.push(`     SKU real: DNA-C-T<n>-${{'ess':'E','adv':'A','pre':'P'}[dnaTier]}-${termYrs}Y (n = tier de ancho de banda T0-T3+, confirmar en CCW según throughput exacto)`);
+  if(dnaTier==='ess' && m.id.includes('8500')) L.push('     AVISO: Catalyst 8500 no soporta DNA Essentials — requiere Advantage como mínimo.');
   L.push(`  ${qty} x IOS XE SD-WAN Mode`);
   L.push('');
   L.push(`SOPORTE — SMARTNET — TÉRMINO ${termYrs} AÑOS`);

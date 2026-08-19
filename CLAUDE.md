@@ -1,3 +1,20 @@
+<!-- claude-skills-manager:installed-skills -->
+## Installed Claude Skills
+
+Claude Code discovers and loads skills under `.claude/skills/` automatically — nothing here needs to be read for that to work. This table is kept up to date purely as a human-readable summary of what's installed and why.
+
+| Skill | Detected via | Description |
+|---|---|---|
+| deployment-practical | `**/*.tf, **/*.bicep, **/azure.yaml, **/azure.yml, **/Dockerfile, **/Dockerfile.*, **/docker-compose*.yml, **/.gitlab-ci.yml, **/azure-pipelines.yml, **/.env*, **/deployment/**` | Deployment-first delivery — concrete architecture and IaC over theoretical advice. Use when deploying, provisioning infra, debugging first-apply failures, or when the user wants advice that works on the first attempt (not hand-wavy theory). Pair with Practical Focus toggle (architecture-first / deploy-ready). |
+| file-style-conventions | `**/*` | Apply two lightweight file-hygiene conventions when writing or editing files - no emoji characters outside Markdown (.md) files, and YAML files (.yml/.yaml) end with exactly one trailing newline. Use whenever creating or editing non-Markdown files that might contain emoji, or any .yml/.yaml file. |
+| self-learning | `**/*` | Maintain a project-local self-learning base of task/command outcomes — record successes and failures with timestamps, durations, and fixes; generate a patterns report (pass rates, recurring errors, known fixes); and surface a learned hint before retrying something that failed before. Use at the start of a session to check learned hints, after running a non-trivial command/skill to record the outcome, when asked "what failed before" or "what did we learn", or to record a manual decision/learning. |
+| skill-creator | `**/*` | Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy. |
+| skill-feedback-adaptation | `**/.claude/learning/skill-feedback.jsonl, **/.claude/learning/task-skill-proposals.json, **/.claude/learning/**` | AUTO-START on new agent session/window (injected by profile-init-watch for Claude, Cursor, Kiro, Copilot) and on new tasks — analyze the prompt and repo, write task-skill-proposals.json, then read top proposed skills before other work. Also register user disagreement into skill-feedback.jsonl when the user says no, not, wrong, stop, or disagrees with agent output. |
+| skill-official-updater | `**/*` | At the start of a new session, do a cheap check for new or updated official Anthropic skills (github.com/anthropics/skills) and automatically add or update them in skills_library/ (no user prompt). Also use on explicit request ("check for official skill updates", "sync official skills"). |
+| skill-usage-insights | `**/.claude/learning/runs.jsonl, **/.claude/skills/**` | Analyze recorded skill usage in this project (.claude/learning/runs.jsonl, written by self-learning) and the skills installed in .claude/skills/ to produce a usage and KPI report - which skills are actively used and reliable, which are failing, and which are unused or low-value, with recommendations on what to add or remove. Use when asked for "skill usage stats", "skill KPIs", "which skills should we add or remove", or "are our installed skills still useful". |
+
+<!-- /claude-skills-manager:installed-skills -->
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
@@ -26,7 +43,8 @@ Single Express process (`server/server.js`) serves both the JSON API (`/api/*`) 
 
 - `server/models/` — Sequelize models. `Product` is the central table: `vendorId`, `model`, `category`, a `specs` JSON column (vendor/category-specific numeric fields — `fwd`, `ipsec`, `mpps`, `poe`, etc. — instead of dozens of nullable columns), `specSummary`, `priceDisplay`/`priceNumeric`, `eol`. `OpticCategory`/`Optic` and `Part` hold Huawei/Cisco optics and BOM parts (joined to `Product` via `ProductOptic`/`ProductPart`); `SupportTier` and `LicenseBundle` hold Hi-Care/SmartNet/FortiCare tiers and Cisco DNA/Fortinet FortiGuard bundles; `RoleRecommendation` backs the design-guide's per-role equipment picks.
 - `server/services/catalogProjection.js` — the only place that shapes DB rows into the JSON each frontend page expects. One function per page (`toIndexPR`, `toCotizadorCatalog`, `toDimensionadorHuawei/Cisco/Fortinet`, `toGuiaRoles`) — this is what lets `public/*.html` stay close to their original static-file logic: each page does one `fetch()` and gets back the exact shape its existing render code already expects.
-- `server/routes/` — thin route handlers that call the projection functions above.
+- `server/routes/` — thin route handlers that call the projection functions above. `sync.js` handles AI synchronization via Anthropic's Claude API, using `multer` to accept multipart/form-data uploads (PDF/Excel datasheets) and `xlsx` for parsing spreadsheet catalogs.
+- `server/services/aiSync.js` — handles the Anthropic API interaction (currently using `claude-3-5-sonnet-20241022`), passing the full database and uploaded documents to Claude for intelligent catalog comparison and updates.
 - `server/seed/legacyData/` — near-verbatim copies of the original hardcoded JS arrays/objects from the pre-migration static files (kept so `seedCatalog.js` transcribes mechanically instead of by hand-retyping). `server/seed/seedCatalog.js` merges these into the normalized schema; see its comments for how overlapping vendor sources (e.g. index.html's `PR` vs a dimensionador's `MODELS`) get reconciled by name-matching, and where that reconciliation is imperfect (disclosed, not silent).
 
 ## Files (public/)
@@ -44,4 +62,6 @@ Single Express process (`server/server.js`) serves both the JSON API (`/api/*`) 
 
 ## Roadmap (see plan history for full detail)
 
-Phase 1 (this migration) transcribed the existing hardcoded data as-is for structural parity. Phase 2 replaces it with data verified against official Huawei/Cisco/Fortinet sources. Phase 3 adds a real "Sincronizar" button (Claude API + web search, review-before-write) — not built yet; `ANTHROPIC_API_KEY` in `.env.example` is reserved for it.
+Phase 1 (this migration) transcribed the existing hardcoded data as-is for structural parity. 
+Phase 2 replaces it with data verified against official Huawei/Cisco/Fortinet sources (e.g. removing EOL ISR 4000 series and replacing with Catalyst 8000). 
+Phase 3 added a real "Sincronizar" button (IA Sync) powered by Anthropic's Claude API (`claude-3-5-sonnet-20241022`). It supports local file uploads (PDF datasheets, Excel matrices) to perform strict, zero-duplication comparisons against the active database and propose structured updates.

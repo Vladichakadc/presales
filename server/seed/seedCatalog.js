@@ -9,9 +9,15 @@ const cotizadorCatalog = require('./legacyData/cotizadorCatalog');
 const huaweiData = require('./legacyData/huawei');
 const ciscoData = require('./legacyData/cisco');
 const fortinetData = require('./legacyData/fortinet');
+const mikrotikData = require('./legacyData/mikrotik');
 const guiaRoles = require('./legacyData/guiaRoles');
 
 const CISCO_EOL_MODELS = new Set(['ISR 4221', 'ISR 4331', 'ISR 4351', 'ISR 4431', 'ISR 4451', 'ISR 4461']);
+// Confirmado contra "2026Q3 Main Price list_AMER_FINAL_EFF 080326.xlsx": FortiGate 200F tiene "End of Order Announcement"
+// explícito (será removido del pricelist 2026 Q3); 100F/600F ya no aparecen en la lista de precios vigente (EOL en un trimestre anterior).
+// FortiGate 70F: sin SKU de hardware nuevo en el price list (solo renovación de servicios UTP/ATP a 1 año) — reemplazado
+// por FortiGate 71F (mismo NP7/SoC + 128GB SSD onboard), que sí tiene SKU de hardware y bundles completos vigentes.
+const FORTINET_EOL_MODELS = new Set(['FortiGate 100F', 'FortiGate 200F', 'FortiGate 600F', 'FortiGate 70F']);
 
 // PR group -> {vendorCode, category}. hw_ar/hw_wan both belong to vendor 'huawei'.
 const PR_GROUPS = {
@@ -22,9 +28,10 @@ const PR_GROUPS = {
   fortinet: { vendorCode: 'fortinet', category: 'firewall' },
   juniper: { vendorCode: 'juniper', category: 'router' },
   arista: { vendorCode: 'arista', category: 'switch' },
+  mikrotik: { vendorCode: 'mikrotik', category: 'router' },
 };
 
-const NAME_PREFIXES = ['NetEngine ', 'Nokia ', 'Juniper ', 'Arista ', 'Catalyst ', 'FortiGate '];
+const NAME_PREFIXES = ['NetEngine ', 'Nokia ', 'Juniper ', 'Arista ', 'Catalyst ', 'FortiGate ', 'MikroTik '];
 
 function normalizeName(model) {
   let s = model.trim();
@@ -125,6 +132,7 @@ async function seedOpticsAndParts(vendorId, OPTICS, PARTS, partsAreDescOnly) {
         sku: o.sku,
         bomCodes: Array.isArray(o.bom) ? o.bom : (o.bom ? [o.bom] : []),
         description: o.d,
+        priceNumeric: o.price != null ? o.price : null,
       });
     }
   }
@@ -167,7 +175,15 @@ async function seedDimensionadorModels(vendorId, models, { opticCategoryIds = {}
     });
     if (!created) {
       const mergedSpecs = { ...(product.specs || {}), ...specs };
-      await product.update({ specs: mergedSpecs, eol: product.eol || eolModels.has(model) });
+      // La categoria tambien se corrige: backfillPricesFromCotizador crea las filas que solo
+      // existen en cotizadorCatalog con category 'router' fijo, y corre antes que esto. Sin
+      // este update, 33 FortiGate quedaban como 'router' y el dimensionador —que filtra por
+      // category 'firewall'— los descartaba en silencio.
+      await product.update({
+        specs: mergedSpecs,
+        category: categoryFn(item),
+        eol: product.eol || eolModels.has(model),
+      });
     }
 
     for (const code of optics || []) {
@@ -256,10 +272,42 @@ async function seedCatalog() {
   await seedLicenseBundles(vendorIds.cisco, ciscoData.DNA_DESC, true);
 
   await seedDimensionadorModels(vendorIds.fortinet, fortinetData.MODELS, {
+    eolModels: FORTINET_EOL_MODELS,
     categoryFn: () => 'firewall',
   });
   await seedSupportTiers(vendorIds.fortinet, fortinetData.CARE);
   await seedLicenseBundles(vendorIds.fortinet, fortinetData.BUNDLES, false);
+
+  // ── MikroTik ──────────────────────────────────────────────────────────────
+  // mikrotik.js manda sobre indexPR.mikrotik: aporta RAM, núcleos, nivel de licencia y
+  // PoE, que es lo que realmente dimensiona en RouterOS. seedDimensionadorModels fusiona
+  // por nombre exacto de modelo sobre las filas que ya creó seedIndexPR.
+  const mt = await seedOpticsAndParts(vendorIds.mikrotik, mikrotikData.OPTICS, null, false);
+  await seedDimensionadorModels(
+    vendorIds.mikrotik,
+    // elp/elpN van a las columnas de precio del Product, no al blob specs.
+    mikrotikData.MODELS.map(({ elp, elpN, ...m }) => m),
+    { opticCategoryIds: mt.opticCategoryIds, categoryFn: () => 'router' },
+  );
+  for (const m of mikrotikData.MODELS) {
+    const product = await Product.findOne({ where: { vendorId: vendorIds.mikrotik, model: m.id } });
+    if (product) await product.update({ priceDisplay: m.elp, priceNumeric: m.elpN });
+  }
+
+  // APs gestionables por CAPsMAN — Products de categoria 'ap' para que el dimensionador
+  // pueda cotizarlos sin confundirlos con los routers que sí se dimensionan por throughput.
+  for (const ap of mikrotikData.ACCESS_POINTS) {
+    await Product.findOrCreate({
+      where: { vendorId: vendorIds.mikrotik, model: ap.sku },
+      defaults: {
+        vendorId: vendorIds.mikrotik, model: ap.sku, category: 'ap',
+        specs: { hwModel: ap.model, poeDraw: ap.poeDraw },
+        specSummary: ap.d, priceDisplay: '~ $' + ap.price, priceNumeric: ap.price,
+      },
+    });
+  }
+
+  await seedSupportTiers(vendorIds.mikrotik, mikrotikData.SUPPORT);
 
   await seedRoleRecommendations(vendorIds);
 

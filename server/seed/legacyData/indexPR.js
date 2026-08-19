@@ -40,10 +40,32 @@ cisco:[
   {model:'Catalyst 8300-2N2S-6T',ser:'Catalyst 8000',seg:'Hub regional',fwd:'10 Gbps',ipsec:'4 Gbps',ports:'6 GE + 2 NIM + 2 SM',sdwan:'Sí',elp:'~ $16,500'},
   {model:'Catalyst 8500-12X4QC',ser:'Catalyst 8000',seg:'Hub datacenter / Agregación',fwd:'20 Gbps',ipsec:'8 Gbps',ports:'12x10GE + 4x40GE',sdwan:'Sí',elp:'~ $58,000'},
   {model:'ASR 1006-X',ser:'ASR 1000',seg:'DC Core',fwd:'100 Gbps',ipsec:'20 Gbps',ports:'6 slots modular · hasta 100GE',sdwan:'Sí',elp:'~ $145,000'},
+  // ISR 1000
+  {model:'ISR 1111-8P',ser:'ISR 1000',seg:'Sucursal muy pequeña',cap:'300 Mbps',ports:'8 GE LAN',protos:'IPSec, HSEC'},
+  {model:'ISR 1111X-8P',ser:'ISR 1000',seg:'Sucursal pequeña',cap:'800 Mbps',ports:'8 GE LAN',protos:'IPSec, HSEC'},
+  {model:'ISR 1116-4P',ser:'ISR 1000',seg:'Sucursal + LTE',cap:'300 Mbps',ports:'LTE integrado',protos:'IPSec'},
+  // Catalyst 8000
+  {model:'Catalyst 8200L',ser:'Catalyst 8000',seg:'Sucursal SD-WAN compacta',cap:'500 Mbps',ports:'4 GE WAN',protos:'SD-WAN, IPSec'},
+  {model:'Catalyst 8200',ser:'Catalyst 8000',seg:'Sucursal SD-WAN estándar',cap:'1 Gbps',ports:'4 GE WAN + NIM',protos:'SD-WAN, IPSec'},
+  {model:'Catalyst 8300-1N1S-6T',ser:'Catalyst 8000',seg:'Hub regional',cap:'2 Gbps',ports:'6 GE + 2 SFP+',protos:'SD-WAN, IPSec'},
+  {model:'Catalyst 8300-2N2S-6T',ser:'Catalyst 8000',seg:'Hub regional doble',cap:'5 Gbps',ports:'6 GE + 2 SFP+',protos:'SD-WAN, IPSec'},
+  {model:'Catalyst 8500-12X4QC',ser:'Catalyst 8000',seg:'Hub DC / Edge',cap:'96 Gbps',ports:'12x10GE SFP+',protos:'SD-WAN, IPSec'},
+  // ASR 1000
+  {model:'ASR 1001-X',ser:'ASR 1000',seg:'WAN Edge compacto',cap:'20 Gbps',ports:'6 GE',protos:'IPSec'},
+  {model:'ASR 1002-HX',ser:'ASR 1000',seg:'WAN Edge',cap:'35 Gbps',ports:'4x10GE',protos:'IPSec'},
+  {model:'ASR 1006-X',ser:'ASR 1000',seg:'Core WAN modular',cap:'200 Gbps',ports:'Modular',protos:'IPSec'},
+  // Meraki
+  {model:'Meraki MX67',ser:'Meraki MX',seg:'Sucursal pequeña',cap:'600 Mbps',ports:'4 GE LAN',protos:'Auto VPN, SD-WAN'},
+  {model:'Meraki MX68',ser:'Meraki MX',seg:'Sucursal pequeña + LTE',cap:'600 Mbps',ports:'10 GE LAN',protos:'Auto VPN, SD-WAN'},
+  {model:'Meraki MX75',ser:'Meraki MX',seg:'Sucursal mediana',cap:'1 Gbps',ports:'12 GE LAN',protos:'Auto VPN, SD-WAN'},
+  {model:'Meraki MX85',ser:'Meraki MX',seg:'Sucursal mediana-grande',cap:'1 Gbps',ports:'8 GE LAN',protos:'Auto VPN, SD-WAN'},
+  {model:'Meraki MX95',ser:'Meraki MX',seg:'Campus',cap:'2 Gbps',ports:'6 GE LAN',protos:'Auto VPN, SD-WAN'},
+  {model:'Meraki MX105',ser:'Meraki MX',seg:'Campus / Hub',cap:'3 Gbps',ports:'8 GE LAN',protos:'Auto VPN, SD-WAN'},
+  {model:'Meraki MX250',ser:'Meraki MX',seg:'Datacenter',cap:'4 Gbps',ports:'8 GE LAN',protos:'Auto VPN, SD-WAN'},
+  {model:'Meraki MX450',ser:'Meraki MX',seg:'Datacenter / Hub',cap:'5 Gbps',ports:'8 GE LAN',protos:'Auto VPN, SD-WAN'},
 ],
 nokia:[
-  {model:'7210 SAS-Sx 1/10GE',ser:'7210 SAS',seg:'Acceso Ethernet',cap:'48 Gbps',ports:'24x1GE + 6x10GE SFP+ · 1U',protos:'MPLS, Eth OAM, Y.1731'},
-  {model:'7210 SAS-Mxp',ser:'7210 SAS',seg:'Acceso / Agregación',cap:'240 Gbps',ports:'48x1GE + 4x10GE + 2x100GE · 1U',protos:'SR-MPLS, EVPN'},
+  {model:'7250 IXR-e',ser:'7250 IXR',seg:'Cell Site / Edge compacto',cap:'300 Gbps',ports:'GE / 10GE',protos:'SR-MPLS, EVPN'},
   {model:'7250 IXR-6e',ser:'7250 IXR',seg:'Leaf datacenter',cap:'6.4 Tbps',ports:'36x100GE o 12x400GE · 1U',protos:'SR Linux, EVPN-VXLAN, ECMP'},
   {model:'7250 IXR-10e',ser:'7250 IXR',seg:'Spine datacenter',cap:'12.8 Tbps',ports:'36x400GE · 1U',protos:'SR Linux, EVPN-VXLAN'},
   {model:'7750 SR-1',ser:'7750 SR',seg:'PE compacto / Edge',cap:'400 Gbps',ports:'36x10GE o 8x100GE · 1U',protos:'SR-MPLS, SRv6, EVPN, FlexAlgo'},
@@ -52,18 +74,32 @@ nokia:[
   {model:'7750 SR-7s',ser:'7750 SR-s',seg:'Core IP/MPLS',cap:'19.2 Tbps',ports:'7 slots IOM · hasta 400GE',protos:'SR-MPLS, SRv6, FlexE, EVPN'},
   {model:'7750 SR-14s',ser:'7750 SR-s',seg:'Core grande',cap:'38.4 Tbps',ports:'14 slots IOM · hasta 400GE',protos:'SR-MPLS, SRv6, FlexE, EVPN'},
 ],
+// elp verificado contra "2026Q3 Main Price list_AMER_FINAL_EFF 080326.xlsx" (Fortinet AMER price list oficial). cotizadorCatalog.js gana en el merge final para modelos que matchean por nombre; se corrige aquí también para no dejar cifras contradictorias entre archivos.
 fortinet:[
-  {model:'FortiGate 40F',seg:'SOHO / Teletrabajo',fw:'5 Gbps',ips:'1 Gbps',ngfw:'800 Mbps',vpn:'4.4 Gbps',ifaces:'5 GE',elp:'~ $420'},
-  {model:'FortiGate 60F',seg:'Sucursal pequeña',fw:'10 Gbps',ips:'1.4 Gbps',ngfw:'1 Gbps',vpn:'6.5 Gbps',ifaces:'10 GE + Wi-Fi opt.',elp:'~ $650'},
-  {model:'FortiGate 80F',seg:'Sucursal + PoE',fw:'10 Gbps',ips:'1.4 Gbps',ngfw:'1 Gbps',vpn:'6.5 Gbps',ifaces:'8 GE + 2 SFP',elp:'~ $850'},
-  {model:'FortiGate 100F',seg:'Sucursal mediana',fw:'20 Gbps',ips:'2.6 Gbps',ngfw:'1.6 Gbps',vpn:'11.5 Gbps',ifaces:'22 GE + 2x10GE',elp:'~ $1,900'},
-  {model:'FortiGate 200F',seg:'Sucursal grande',fw:'27 Gbps',ips:'4.2 Gbps',ngfw:'3 Gbps',vpn:'13 Gbps',ifaces:'16 GE + 4x10GE',elp:'~ $3,200'},
-  {model:'FortiGate 400F',seg:'Campus / Agregación',fw:'40 Gbps',ips:'7.2 Gbps',ngfw:'5.3 Gbps',vpn:'32 Gbps',ifaces:'8 GE + 8 SFP + 8x10GE',elp:'~ $7,500'},
-  {model:'FortiGate 600F',seg:'Campus / DC Edge',fw:'60 Gbps',ips:'11 Gbps',ngfw:'9 Gbps',vpn:'38 Gbps',ifaces:'4x25GE + 16x10GE',elp:'~ $14,000'},
-  {model:'FortiGate 1000F',seg:'DC Edge',fw:'198 Gbps',ips:'26 Gbps',ngfw:'19.5 Gbps',vpn:'55 Gbps',ifaces:'4x100GE + 16x25GE + 16x10GE',elp:'~ $35,000'},
-  {model:'FortiGate 2000F',seg:'DC / Carrier',fw:'310 Gbps',ips:'45 Gbps',ngfw:'30 Gbps',vpn:'100 Gbps',ifaces:'6x100GE + 16x25GE',elp:'~ $65,000'},
-  {model:'FortiGate 3000F',seg:'Carrier grade',fw:'600 Gbps',ips:'62 Gbps',ngfw:'50 Gbps',vpn:'190 Gbps',ifaces:'4x400GE + 4x100GE + 16x25GE',elp:'~ $130,000'},
-  {model:'FortiGate 4400F',seg:'Datacenter core',fw:'800 Gbps',ips:'120 Gbps',ngfw:'70 Gbps',vpn:'300 Gbps',ifaces:'Chasis modular · hasta 400GE',elp:'~ $250,000'},
+  {model:'FortiGate 30G',seg:'SOHO / Teletrabajo',fw:'4 Gbps',ips:'800 Mbps',ngfw:'570 Mbps',vpn:'3.5 Gbps',ifaces:'4 GE',elp:'~ $634'},
+  {model:'FortiGate 50G',seg:'SOHO / Sucursal peq',fw:'5 Gbps',ips:'2.2 Gbps',ngfw:'1.2 Gbps',vpn:'4.5 Gbps',ifaces:'5 GE',elp:'~ $994'},
+  {model:'FortiGate 70G',seg:'Sucursal pequeña',fw:'10 Gbps',ips:'2.5 Gbps',ngfw:'1.5 Gbps',vpn:'7.1 Gbps',ifaces:'8 GE',elp:'~ $1,420'},
+  {model:'FortiGate 90G',seg:'Sucursal mediana',fw:'28 Gbps',ips:'4.5 Gbps',ngfw:'2.5 Gbps',vpn:'25 Gbps',ifaces:'8 GE + 2x10GE',elp:'~ $3,307'},
+  {model:'FortiGate 120G',seg:'Sucursal grande',fw:'39 Gbps',ips:'5.3 Gbps',ngfw:'3.1 Gbps',vpn:'35 Gbps',ifaces:'GE + SFP/SFP+',elp:'~ $4,792'},
+  {model:'FortiGate 200G',seg:'Campus / Agregación',fw:'39 Gbps',ips:'9 Gbps',ngfw:'7 Gbps',vpn:'36 Gbps',ifaces:'10GE + GE SFP + RJ45',elp:'~ $11,477'},
+  {model:'FortiGate 900G',seg:'DC Edge / Enterprise',fw:'164 Gbps',ips:'42 Gbps',ngfw:'31 Gbps',vpn:'55 Gbps',ifaces:'25GE + 10GE + SFP + RJ45',elp:'~ $41,580'},
+  {model:'FortiGate 40F',seg:'SOHO / Teletrabajo',fw:'5 Gbps',ips:'1 Gbps',ngfw:'800 Mbps',vpn:'4.4 Gbps',ifaces:'5 GE',elp:'~ $759'},
+  {model:'FortiGate 60F',seg:'Sucursal pequeña',fw:'10 Gbps',ips:'1.4 Gbps',ngfw:'1 Gbps',vpn:'6.5 Gbps',ifaces:'10 GE + Wi-Fi opt.',elp:'~ $990'},
+  {model:'FortiGate 71F',seg:'Sucursal pequeña',fw:'10 Gbps',ips:'1.4 Gbps',ngfw:'1 Gbps',vpn:'6.1 Gbps',ifaces:'10 GE + 128GB SSD',elp:'~ $1,348'},
+  {model:'FortiGate 80F',seg:'Sucursal + PoE',fw:'10 Gbps',ips:'1.4 Gbps',ngfw:'1 Gbps',vpn:'6.5 Gbps',ifaces:'8 GE + 2 SFP',elp:'~ $1,852'},
+  {model:'FortiGate 100F',seg:'Sucursal mediana',fw:'20 Gbps',ips:'2.6 Gbps',ngfw:'1.6 Gbps',vpn:'11.5 Gbps',ifaces:'22 GE + 2x10GE',elp:'Descontinuado (EOL)'},
+  {model:'FortiGate 200F',seg:'Sucursal grande',fw:'27 Gbps',ips:'4.2 Gbps',ngfw:'3 Gbps',vpn:'13 Gbps',ifaces:'16 GE + 4x10GE',elp:'Descontinuado (EOL)'},
+  {model:'FortiGate 400F',seg:'Campus / Agregación',fw:'80 Gbps',ips:'12 Gbps',ngfw:'10 Gbps',vpn:'55 Gbps',ifaces:'8 GE + 8 SFP + 8x10GE',elp:'~ $17,570'},
+  {model:'FortiGate 600F',seg:'Campus / DC Edge',fw:'139 Gbps',ips:'14 Gbps',ngfw:'11 Gbps',vpn:'55 Gbps',ifaces:'4x25GE + 16x10GE',elp:'Descontinuado (EOL)'},
+  {model:'FortiGate 1000F',seg:'DC Edge',fw:'198 Gbps',ips:'19 Gbps',ngfw:'15 Gbps',vpn:'55 Gbps',ifaces:'4x100GE + 16x25GE + 16x10GE',elp:'~ $61,318'},
+  {model:'FortiGate 1800F',seg:'DC / Enterprise',fw:'198 Gbps',ips:'22 Gbps',ngfw:'17 Gbps',vpn:'55 Gbps',ifaces:'4x100GE + 16x25GE + 16x10GE',elp:'~ $65,843'},
+  {model:'FortiGate 2600F',seg:'DC / Carrier',fw:'198 Gbps',ips:'31 Gbps',ngfw:'27 Gbps',vpn:'55 Gbps',ifaces:'4x100GE + 16x25GE + 16x10GE',elp:'~ $86,420'},
+  {model:'FortiGate 3000F',seg:'Carrier grade',fw:'397 Gbps',ips:'36 Gbps',ngfw:'34 Gbps',vpn:'105 Gbps',ifaces:'4x400GE + 4x100GE + 16x25GE',elp:'~ $129,596'},
+  {model:'FortiGate 3500F',seg:'DC Core',fw:'595 Gbps',ips:'72 Gbps',ngfw:'65 Gbps',vpn:'165 Gbps',ifaces:'Chasis modular',elp:'~ $284,130'},
+  {model:'FortiGate 4400F',seg:'DC Core',fw:'1.1 Tbps',ips:'94 Gbps',ngfw:'82 Gbps',vpn:'310 Gbps',ifaces:'Chasis modular',elp:'~ $417,701'},
+  {model:'FortiGate 4800F',seg:'Hyperscale DC',fw:'3.1 Tbps',ips:'87 Gbps',ngfw:'77 Gbps',vpn:'800 Gbps',ifaces:'Chasis multi-Tbps',elp:'~ $451,440'},
+  {model:'FortiGate 7081F',seg:'Carrier / ISP',fw:'1.89 Tbps',ips:'405 Gbps',ngfw:'330 Gbps',vpn:'378 Gbps',ifaces:'Chasis FPM',elp:'~ $387,090'},
+  {model:'FortiGate 7121F',seg:'Carrier / National',fw:'1.89 Tbps',ips:'675 Gbps',ngfw:'550 Gbps',vpn:'630 Gbps',ifaces:'Chasis FPM',elp:'~ $630,630'},
 ],
 juniper:[
   {model:'SRX 320',ser:'SRX 300',seg:'SOHO / Sucursal',cap:'1 Gbps FW',ports:'8 GE',use:'SD-WAN, UTM, branch routing'},
@@ -86,5 +122,32 @@ arista:[
   {model:'7500R3-36CQ',ser:'7500R3',seg:'Spine / Core chasis',cap:'57.6 Tbps',ports:'36x400GE o 144x100GE por chasis',lat:'< 4 µs'},
   {model:'7500R3-72CQ',ser:'7500R3',seg:'Core DC',cap:'115 Tbps',ports:'72x400GE chasis modular',lat:'< 4 µs'},
   {model:'7800R3-36D',ser:'7800R3',seg:'Core 400G+ hiperescala',cap:'230 Tbps',ports:'36x800GE por LC',lat:'< 5 µs'},
+],
+// ── MikroTik ──────────────────────────────────────────────────────────────────
+// Datos técnicos verificados contra datasheets oficiales mikrotik.com (2024-2025).
+// RouterOS v7.x en todos los equipos actuales. ELP orientativo USD lista pública.
+mikrotik:[
+  // ── hEX / RB (SOHO / Home) ──
+  {model:'hEX RB750Gr3',ser:'hEX',seg:'SOHO / Home',fwd:1000,ipsec:470,sdwan:'CHR/OVPN',ports:'5x GE',elp:'~ $59'},
+  {model:'hEX S RB760iGS',ser:'hEX',seg:'SOHO + SFP',fwd:1000,ipsec:470,sdwan:'CHR/OVPN',ports:'5x GE + 1x SFP',elp:'~ $79'},
+  {model:'hEX lite RB750r2',ser:'hEX',seg:'Hogar / Básico',fwd:100,ipsec:70,sdwan:'—',ports:'5x FE',elp:'~ $29'},
+  {model:'L009UiGS-2HaxD',ser:'L009',seg:'SOHO / Sucursal peq + Wi-Fi 6',fwd:2000,ipsec:900,sdwan:'WireGuard / OVPN',ports:'8x GE + 1x 2.5G + 1x SFP + Wi-Fi 6',elp:'~ $125'},
+  // ── RB4011 (Sucursal Pequeña) ──
+  {model:'RB4011iGS+',ser:'RB4011',seg:'Sucursal pequeña',fwd:5600,ipsec:1800,sdwan:'CHR/OVPN',ports:'10x GE + 1x SFP+',elp:'~ $200'},
+  {model:'RB4011iGS+RM',ser:'RB4011',seg:'Sucursal pequeña rackmount',fwd:5600,ipsec:1800,sdwan:'CHR/OVPN',ports:'10x GE + 1x SFP+',elp:'~ $215'},
+  // ── RB5009 (Sucursal Mediana) ──
+  {model:'RB5009UG+S+IN',ser:'RB5009',seg:'Sucursal mediana',fwd:8800,ipsec:3100,sdwan:'WireGuard nativo',ports:'7x GE + 1x 2.5G + 1x SFP+',elp:'~ $190'},
+  {model:'RB5009UPr+S+IN',ser:'RB5009',seg:'Sucursal mediana + PoE-out',fwd:8800,ipsec:3100,sdwan:'WireGuard nativo',ports:'7x GE PoE-out + 1x 2.5G + 1x SFP+',elp:'~ $239'},
+  // ── CCR2004 (Sucursal Grande / Hub) ──
+  {model:'CCR2004-1G-12S+2XS',ser:'CCR2004',seg:'Sucursal grande / Agregación',fwd:12000,ipsec:4200,sdwan:'WireGuard / OVPN',ports:'1x GE + 12x SFP+ + 2x SFP28 (25G)',elp:'~ $699'},
+  {model:'CCR2004-16G-2S+',ser:'CCR2004',seg:'Hub campus',fwd:12000,ipsec:4200,sdwan:'WireGuard / OVPN',ports:'16x GE + 2x SFP+',elp:'~ $659'},
+  // ── CCR2116 (Hub Regional) ──
+  {model:'CCR2116-12G-4S+',ser:'CCR2116',seg:'Hub regional / DC Edge',fwd:24000,ipsec:6800,sdwan:'WireGuard / OVPN / CAPsMAN',ports:'12x GE + 4x SFP+',elp:'~ $999'},
+  // ── CCR2216 (Core WAN) ──
+  {model:'CCR2216-1G-12XS-2XQ',ser:'CCR2216',seg:'Core WAN / ISP',fwd:100000,ipsec:15000,sdwan:'WireGuard / BGP ECMP',ports:'1x GE mgmt + 12x 25GE (SFP28) + 2x 100GE (QSFP28)',elp:'~ $5,999'},
+  // ── CHR (RouterOS Virtual) ──
+  {model:'CHR P1',ser:'CHR',seg:'Virtual — licencia perpetua 1 Gbps',fwd:1000,ipsec:400,sdwan:'WireGuard / OVPN / L2TP',ports:'ilimitadas vNIC (cap. 1 Gbps)',elp:'~ $45'},
+  {model:'CHR P10',ser:'CHR',seg:'Virtual — licencia perpetua 10 Gbps',fwd:10000,ipsec:3000,sdwan:'WireGuard / OVPN / L2TP',ports:'ilimitadas vNIC (cap. 10 Gbps)',elp:'~ $95'},
+  {model:'CHR P-Unlimited',ser:'CHR',seg:'Virtual — sin límite de throughput',fwd:999999,ipsec:30000,sdwan:'WireGuard / OVPN / L2TP',ports:'ilimitadas vNIC (sin cap.)',elp:'~ $250'},
 ]
 };

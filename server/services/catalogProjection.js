@@ -3,6 +3,7 @@ const {
   SupportTier, LicenseBundle, RoleRecommendation,
 } = require('../models');
 const cotizadorCatalog = require('../seed/legacyData/cotizadorCatalog');
+const mikrotikData = require('../seed/legacyData/mikrotik');
 
 const NAME_PREFIXES = ['NetEngine ', 'Nokia ', 'Juniper ', 'Arista ', 'Catalyst ', 'FortiGate '];
 
@@ -51,11 +52,12 @@ async function getVendorsList() {
   }));
 }
 
-// index.html PR shape: {hw_ar:[...], hw_wan:[...], cisco:[...], nokia:[...], fortinet:[...], juniper:[...], arista:[...]}
+// index.html PR shape: {hw_ar:[...], hw_wan:[...], cisco:[...], nokia:[...], fortinet:[...], juniper:[...], arista:[...], mikrotik:[...]}
 async function toIndexPR() {
   const products = await Product.findAll();
-  const result = { hw_ar: [], hw_wan: [], cisco: [], nokia: [], fortinet: [], juniper: [], arista: [] };
+  const result = { hw_ar: [], hw_wan: [], cisco: [], nokia: [], fortinet: [], juniper: [], arista: [], mikrotik: [] };
   for (const p of products) {
+    if (p.eol) continue;
     const group = p.specs && p.specs.prGroup;
     if (!group || !(group in result)) continue;
     const entry = { model: p.model, ...specWithoutGroup(p.specs) };
@@ -109,6 +111,7 @@ async function dimensionadorOptics(vendorId, { bomAsString = false } = {}) {
       sku: o.sku,
       bom: bomAsString ? (o.bomCodes && o.bomCodes[0]) || '' : (o.bomCodes || []),
       d: o.description,
+      price: o.priceNumeric, // null en Huawei/Cisco; sus paginas no lo leen
     }));
     opticLabel[cat.code] = OPTIC_LABEL[cat.code] || cat.label;
   }
@@ -192,9 +195,65 @@ async function toDimensionadorFortinet() {
   const products = await Product.findAll({ where: { vendorId } });
   const models = products
     .filter((p) => p.specs && p.specs.seg && p.category === 'firewall')
-    .map((p) => ({ id: p.model, ...p.specs }));
+    // elpN habilita el total del BOM: sin el precio numerico la pagina solo puede
+    // mostrar la cadena "~ $4,792" y no sumar hardware + licencias + soporte.
+    .map((p) => ({
+      id: p.model, ...p.specs, eol: p.eol,
+      elp: p.priceDisplay, elpN: p.priceNumeric,
+    }));
 
   return { models, bundles: bundlesOut, care };
+}
+
+// MikroTik: ademas de modelos/opticas/soporte devuelve las constantes de dimensionamiento
+// (FastTrack, RAM por feed BGP, topes de licencia) para que la pagina no las duplique —
+// mikrotik.js es la unica fuente de verdad de la politica de sizing.
+async function toDimensionadorMikrotik() {
+  const vendorIds = await vendorIdMap();
+  const vendorId = vendorIds.mikrotik;
+  const { optics, opticLabel } = await dimensionadorOptics(vendorId);
+
+  const tiers = await SupportTier.findAll({ where: { vendorId } });
+  const support = {};
+  for (const t of tiers) support[t.code] = { n: t.name, sla: t.sla, d: t.description };
+
+  const products = await Product.findAll({
+    where: { vendorId },
+    include: [{ model: OpticCategory }],
+  });
+  const models = products
+    .filter((p) => p.category === 'router' && p.specs && p.specs.ram !== undefined)
+    .map((p) => ({
+      id: p.model,
+      ...specWithoutGroup(p.specs),
+      optics: p.OpticCategories.map((c) => c.code),
+      eol: p.eol,
+      elp: p.priceDisplay,
+      elpN: p.priceNumeric,
+    }));
+
+  const accessPoints = products
+    .filter((p) => p.category === 'ap')
+    .map((p) => ({
+      sku: p.model,
+      hwModel: p.specs && p.specs.hwModel,
+      poeDraw: p.specs && p.specs.poeDraw,
+      d: p.specSummary,
+      price: p.priceNumeric,
+    }));
+
+  return {
+    models,
+    optics,
+    opticLabel,
+    accessPoints,
+    support,
+    sizing: {
+      fasttrack: mikrotikData.FASTTRACK_FACTOR,
+      licenseLevels: mikrotikData.LICENSE_LEVELS,
+      bgpRam: mikrotikData.BGP_RAM,
+    },
+  };
 }
 
 // guia-diseno-interactiva.html EQ shape: {role: [{v,color,model,spec,alt,elp}, ...]}
@@ -225,5 +284,6 @@ module.exports = {
   toDimensionadorHuawei,
   toDimensionadorCisco,
   toDimensionadorFortinet,
+  toDimensionadorMikrotik,
   toGuiaRoles,
 };
