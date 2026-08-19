@@ -209,10 +209,12 @@ const haySesion = (req) => tokenValido(leerCookie(req, COOKIE_NAME));
 
 /* ── Límite de intentos ──────────────────────────────────────────────────────── */
 
+// Se usa req.ip, que Express calcula segun 'trust proxy' tomando el salto no confiable
+// mas cercano al proxy. Leer el primer valor de X-Forwarded-For a mano seria explotable:
+// los proxies AÑADEN a esa cabecera, asi que el primer valor lo pone el cliente y bastaria
+// con rotar cabeceras falsas para tener cuota nueva en cada intento y anular el limite.
 function claveCliente(req) {
-  // Railway va detras de proxy, asi que la IP real llega en X-Forwarded-For.
-  const fwd = (req.headers['x-forwarded-for'] || '').split(',')[0].trim();
-  return fwd || req.socket.remoteAddress || 'desconocido';
+  return req.ip || req.socket.remoteAddress || 'desconocido';
 }
 
 function intentosRestantes(req) {
