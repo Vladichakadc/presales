@@ -5,8 +5,19 @@ database.sqlite
 
 # Estado local de herramientas de agente (logs de aprendizaje, telemetria de costos,
 # configuracion por maquina). No es codigo de la aplicacion y no aporta al despliegue.
-.claude/
 .cursor/
 .kiro/
 .github/hooks/
+
+# De .claude solo se versionan las skills, que si son del proyecto y le sirven al equipo.
+# Queda fuera todo lo demas: learning/ y mcp-usage.jsonl son telemetria, y settings.json
+# acumula rutas absolutas de la maquina de cada quien (cache de npx, scratchpad de sesion),
+# asi que compartirlo genera conflictos en vez de ayudar.
 **/.claude/
+!/.claude/
+/.claude/*
+!/.claude/skills/
+
+# Bytecode de Python (las skills traen scripts .py)
+__pycache__/
+*.pyc
