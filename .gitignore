@@ -21,3 +21,6 @@ database.sqlite
 # Bytecode de Python (las skills traen scripts .py)
 __pycache__/
 *.pyc
+
+# Hash de la contrasena en desarrollo local
+.auth/

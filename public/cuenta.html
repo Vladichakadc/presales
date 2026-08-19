@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Cuenta — Portal Presales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;--red:#C7000B;--amber:#A45B00;--green:#1F6B4A;--card:#FFF}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:520px;margin:0 auto;padding:26px 18px 60px}
+.back{display:inline-flex;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);text-decoration:none;margin-bottom:18px}
+.back:hover{color:var(--red)}
+.masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:22px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:500;margin:0 0 6px}
+h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:34px;line-height:1;text-transform:uppercase;margin:0}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:22px;margin-bottom:16px}
+h2{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--rule)}
+label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px}
+input{width:100%;padding:10px 11px;border:1px solid var(--rule);border-radius:2px;background:#fff;font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--ink)}
+input:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+.field{margin-bottom:16px}
+.hint{font-size:11.5px;color:var(--steel);margin-top:5px}
+.btn{font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;padding:9px 16px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px;cursor:pointer}
+.btn.ghost{background:#fff;color:var(--ink)}
+.msg{border-radius:2px;padding:11px 13px;font-size:13px;margin-bottom:16px;line-height:1.45}
+.msg.err{background:#FFF5F5;border:1px solid #FECACA;border-left:3px solid var(--red);color:#991b1b}
+.msg.ok{background:#F0FDF4;border:1px solid #BBF7D0;border-left:3px solid var(--green);color:#14532d}
+.msg.info{background:#FFFBEB;border:1px solid #FDE68A;border-left:3px solid var(--amber);color:#78350f}
+p.txt{font-size:13.5px;color:var(--steel);margin:0 0 14px;line-height:1.55}
+code{font-family:'IBM Plex Mono',monospace;font-size:11.5px;background:var(--paper);padding:1px 5px;border-radius:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/" class="back">&#8592; Volver al portal</a>
+  <header class="masthead">
+    <p class="eyebrow">Portal de Preventa &middot; Acceso</p>
+    <h1>Cuenta</h1>
+  </header>
+
+  <div id="aviso"></div>
+
+  <section class="card">
+    <h2>Cambiar contraseña</h2>
+    <p class="txt">La credencial es compartida por todo el equipo: al cambiarla, quienes tengan la anterior dejarán de entrar hasta que les pases la nueva.</p>
+    <form id="form">
+      <div class="field">
+        <label for="actual">Contraseña actual</label>
+        <input type="password" id="actual" autocomplete="current-password" required>
+      </div>
+      <div class="field">
+        <label for="nueva">Nueva contraseña</label>
+        <input type="password" id="nueva" autocomplete="new-password" required minlength="12">
+        <p class="hint">Mínimo 12 caracteres. Sin tope superior ni exigencia de símbolos: una frase larga es más segura y más fácil de recordar.</p>
+      </div>
+      <div class="field">
+        <label for="repetir">Repetir la nueva</label>
+        <input type="password" id="repetir" autocomplete="new-password" required minlength="12">
+      </div>
+      <button class="btn" type="submit" id="btn">Guardar</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Sesión</h2>
+    <p class="txt">La sesión caduca sola a las 12 horas. Ciérrala si usaste un equipo compartido.</p>
+    <button class="btn ghost" id="salir">Cerrar sesión</button>
+  </section>
+
+  <section class="card">
+    <h2>Si nadie recuerda la contraseña</h2>
+    <p class="txt">No hay recuperación por correo. Quien administre el despliegue puede reponer el acceso desde Railway de dos maneras: borrando el archivo de credenciales del volumen, con lo que vuelve a regir la contraseña de <code>AUTH_PASSWORD</code>, o fijando un valor nuevo en esa variable y borrando igualmente el archivo.</p>
+  </section>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const aviso = (t, s) => { $('aviso').innerHTML = `<div class="msg ${t}">${s}</div>`; window.scrollTo(0, 0); };
+
+fetch('/api/cuenta/estado').then(r => r.json()).then(d => {
+  if (d && d.usandoSemilla) {
+    aviso('info', 'Sigues usando la contraseña inicial que se configuró al desplegar. Conviene cambiarla ahora.');
+  }
+}).catch(() => {});
+
+$('form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if ($('nueva').value !== $('repetir').value) { aviso('err', 'La nueva contraseña y su repetición no coinciden.'); return; }
+  $('btn').disabled = true; $('btn').textContent = 'Guardando…';
+  try {
+    const res = await fetch('/api/cuenta/password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ actual: $('actual').value, nueva: $('nueva').value }),
+    });
+    const d = await res.json().catch(() => ({}));
+    if (res.ok) { location.href = '/login?m=cambiada'; return; }
+    aviso('err', d.error || 'No se pudo cambiar la contraseña.');
+  } catch {
+    aviso('err', 'No se pudo contactar al servidor.');
+  }
+  $('btn').disabled = false; $('btn').textContent = 'Guardar';
+});
+
+$('salir').addEventListener('click', async () => {
+  await fetch('/logout', { method: 'POST' }).catch(() => {});
+  location.href = '/login?m=salir';
+});
+</script>
+</body>
+</html>

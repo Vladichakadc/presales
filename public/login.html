@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Acceso — Portal Presales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;--red:#C7000B;--amber:#A45B00;--green:#1F6B4A;--card:#FFF}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:3px;width:100%;max-width:400px;padding:32px 30px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:500;margin:0 0 6px}
+h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:32px;line-height:1;text-transform:uppercase;margin:0 0 6px}
+.sub{color:var(--steel);font-size:13.5px;margin:0 0 24px}
+label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px}
+input{width:100%;padding:10px 11px;border:1px solid var(--rule);border-radius:2px;background:#fff;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:14px}
+input:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+.field{margin-bottom:16px}
+.btn{width:100%;font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;padding:11px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px;cursor:pointer;margin-top:4px}
+.btn:hover{background:#1a2b42}
+.msg{border-radius:2px;padding:11px 13px;font-size:13px;margin-bottom:18px;line-height:1.45}
+.msg.err{background:#FFF5F5;border:1px solid #FECACA;border-left:3px solid var(--red);color:#991b1b}
+.msg.ok{background:#F0FDF4;border:1px solid #BBF7D0;border-left:3px solid var(--green);color:#14532d}
+.msg.info{background:#FFFBEB;border:1px solid #FDE68A;border-left:3px solid var(--amber);color:#78350f}
+.foot{border-top:1px solid var(--rule);margin-top:22px;padding-top:16px;font-size:12.5px;color:var(--steel)}
+.foot a{color:var(--ink)}
+details summary{cursor:pointer;font-size:12.5px;color:var(--steel)}
+details p{font-size:12.5px;color:var(--steel);line-height:1.55;margin:10px 0 0}
+code{font-family:'IBM Plex Mono',monospace;font-size:11.5px;background:var(--paper);padding:1px 5px;border-radius:2px}
+</style>
+</head>
+<body>
+<main class="card">
+  <p class="eyebrow">Portal de Preventa</p>
+  <h1>Acceso</h1>
+  <p class="sub">Esta herramienta contiene precios de lista y condiciones comerciales. El acceso es restringido.</p>
+
+  <div id="aviso"></div>
+
+  <form id="form" method="post" action="/login" autocomplete="on">
+    <div class="field">
+      <label for="usuario">Usuario</label>
+      <input type="text" id="usuario" name="usuario" autocomplete="username" required autofocus>
+    </div>
+    <div class="field">
+      <label for="password">Contraseña</label>
+      <input type="password" id="password" name="password" autocomplete="current-password" required>
+    </div>
+    <button class="btn" type="submit" id="btn">Entrar</button>
+  </form>
+
+  <div class="foot">
+    <details>
+      <summary>Olvidé la contraseña</summary>
+      <p>El acceso es una credencial compartida por el equipo, así que no hay recuperación automática por correo. Solicita el restablecimiento a quien administra el despliegue: puede reponer la contraseña inicial borrando el archivo de credenciales del volumen, o fijar una nueva en la variable <code>AUTH_PASSWORD</code> del servicio en Railway.</p>
+      <p>Si ya entraste y solo quieres cambiarla, hazlo desde <a href="/cuenta">Cuenta</a>.</p>
+    </details>
+  </div>
+</main>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+
+function aviso(tipo, texto) {
+  $('aviso').innerHTML = `<div class="msg ${tipo}">${texto}</div>`;
+}
+
+// Mensajes que llegan por query string tras un redirect del servidor.
+const params = new URLSearchParams(location.search);
+if (params.get('m') === 'sesion') aviso('info', 'Tu sesión expiró. Vuelve a entrar.');
+if (params.get('m') === 'salir') aviso('ok', 'Cerraste sesión correctamente.');
+if (params.get('m') === 'cambiada') aviso('ok', 'Contraseña actualizada. Entra con la nueva.');
+
+$('form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $('btn').disabled = true;
+  $('btn').textContent = 'Verificando…';
+  try {
+    const res = await fetch('/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usuario: $('usuario').value, password: $('password').value }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) { location.href = params.get('r') || '/'; return; }
+    aviso('err', data.error || 'No fue posible iniciar sesión.');
+  } catch {
+    aviso('err', 'No se pudo contactar al servidor. Revisa tu conexión.');
+  }
+  $('password').value = '';
+  $('btn').disabled = false;
+  $('btn').textContent = 'Entrar';
+});
+</script>
+</body>
+</html>
