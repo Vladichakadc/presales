@@ -1236,7 +1236,10 @@ async function analyzeSync() {
     resultDiv.innerHTML = html;
     btn.style.display = 'inline-block';
   } catch (err) {
-    resultDiv.innerHTML = '<p style="color:var(--red)">Ocurrió un error al analizar el catálogo.</p>';
+    // Se escapa con el helper que ya usa esta pagina: el mensaje puede venir del servidor,
+    // y concatenarlo crudo en innerHTML seria una via de XSS en cuanto alguien incluya en
+    // un error algun dato de la peticion o del modelo.
+    resultDiv.innerHTML = `<p style="color:var(--red)">${escapeHtml(err.message || 'Ocurrió un error al analizar el catálogo.')}</p>`;
   }
 }
 
@@ -1268,7 +1271,7 @@ async function applySync() {
     btn.innerHTML = 'Aprobar e Impactar DB';
     btn.disabled = false;
   } catch (err) {
-    resultDiv.innerHTML += `<p style="color:var(--red)">${err.message}</p>`;
+    resultDiv.innerHTML += `<p style="color:var(--red)">${escapeHtml(err.message || 'Error al aplicar los cambios.')}</p>`;
     btn.innerHTML = 'Aprobar e Impactar DB';
     btn.disabled = false;
   }
