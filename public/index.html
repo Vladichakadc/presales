@@ -1194,7 +1194,12 @@ async function analyzeSync() {
       body: formData
     });
     
-    if (!res.ok) throw new Error('Error en el servidor');
+    // Se lee el mensaje del servidor en vez de mostrar un error genérico: en producción
+    // esta ruta responde 503 explicando que la sincronización se ejecuta en local.
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Error en el servidor');
+    }
     const data = await res.json();
     pendingChanges = data.changes;
     
@@ -1250,16 +1255,20 @@ async function applySync() {
       body: JSON.stringify({ vendor, changes: pendingChanges })
     });
     
-    if (!res.ok) throw new Error('Error aplicando');
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.error || 'Error aplicando');
+    }
     const data = await res.json();
 
     const skippedNote = data.skippedCount > 0 ? ` (${data.skippedCount} cambios se saltaron por datos inválidos, ver logs del servidor)` : '';
-    resultDiv.innerHTML = `<p style="color:var(--green);font-weight:600">¡Éxito! Se actualizaron ${data.appliedCount} registros en la base de datos${skippedNote}.</p><p>Recarga la página para ver los cambios.</p>`;
+    resultDiv.innerHTML = `<p style="color:var(--green);font-weight:600">Se actualizaron ${data.appliedCount} registros en la base local${skippedNote}.</p>`
+      + '<p style="font-size:13px;color:var(--steel)">Estos cambios viven solo en tu base local. Para que lleguen a producción, trasládalos a los archivos de <code>server/seed/legacyData/</code> y despliega — el catálogo de producción se resiembra desde ahí en cada despliegue.</p>';
     btn.style.display = 'none';
     btn.innerHTML = 'Aprobar e Impactar DB';
     btn.disabled = false;
   } catch (err) {
-    resultDiv.innerHTML += '<p style="color:var(--red)">Error al aplicar los cambios.</p>';
+    resultDiv.innerHTML += `<p style="color:var(--red)">${err.message}</p>`;
     btn.innerHTML = 'Aprobar e Impactar DB';
     btn.disabled = false;
   }
@@ -1283,6 +1292,9 @@ async function applySync() {
       <button class="modal-close" onclick="closeSyncModal()">&times;</button>
     </div>
     <div class="modal-body">
+      <div style="margin-bottom:14px;padding:11px 13px;background:#FFFBEB;border:1px solid #FDE68A;border-left:3px solid var(--amber);border-radius:4px;font-size:12.5px;line-height:1.5;color:#78350f">
+        <b>Esta herramienta se ejecuta en local, no en producción.</b> Lo que apruebes aquí se guarda en tu base local, que es de trabajo. El catálogo de producción se reconstruye desde <code>server/seed/legacyData/</code> en cada despliegue, así que para publicar un cambio hay que llevarlo a esos archivos y hacer push. Ese rodeo es deliberado: obliga a que cada cambio de catálogo pase por un diff revisable antes de llegar a una cotización.
+      </div>
       <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
         <select id="syncVendor" class="sync-select">
           <option value="fortinet">Fortinet</option>

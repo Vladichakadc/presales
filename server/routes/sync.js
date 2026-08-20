@@ -24,7 +24,32 @@ function parseJson(raw, label) {
   }
 }
 
+// La sincronización con IA corre solo en local, a propósito. Dos razones independientes,
+// y cualquiera de las dos bastaría:
+//
+// 1. No serviría de nada. Estas rutas escriben en la base de datos, y la de producción es
+//    efímera: se reconstruye desde server/seed/legacyData/ en cada despliegue. Un cambio
+//    aplicado en producción se perdería en el siguiente deploy, dando una falsa sensación
+//    de haberse guardado. El camino real es analizar en local, llevar las propuestas
+//    aprobadas a los archivos de seed y desplegar — con lo que además cada cambio de
+//    catálogo queda revisado en un diff de git, que es lo que permitió detectar un modelo
+//    inexistente que llevaba tiempo en el catálogo.
+//
+// 2. Sería peligroso. Sin ANTHROPIC_API_KEY, aiSync.js cae en su modo mock y devuelve
+//    propuestas inventadas con apariencia legítima — incluido un producto que no existe,
+//    con precio y specs verosímiles. Aplicarlas corrompería el catálogo con datos falsos.
+function bloqueadoEnProduccion(res) {
+  if (process.env.NODE_ENV !== 'production') return false;
+  res.status(503).json({
+    error: 'La sincronización con IA está deshabilitada en producción. Ejecútala en local, '
+      + 'lleva los cambios aprobados a los archivos de server/seed/legacyData/ y despliega: '
+      + 'el catálogo de producción se resiembra desde ahí en cada despliegue.',
+  });
+  return true;
+}
+
 router.post('/sync/analyze', upload.single('datasheet'), async (req, res) => {
+  if (bloqueadoEnProduccion(res)) return;
   const { vendor } = req.body;
   if (!vendor) return res.status(400).json({ error: 'Vendor requerido' });
 
@@ -126,6 +151,7 @@ async function applyCatalogRecordChange(Model, change, vendorId, buildDefaults) 
 }
 
 router.post('/sync/apply', async (req, res) => {
+  if (bloqueadoEnProduccion(res)) return;
   const { vendor, changes } = req.body;
   if (!changes || !Array.isArray(changes) || !vendor) {
     return res.status(400).json({ error: 'Vendor and Changes array required' });
