@@ -21,13 +21,45 @@ const PORT = process.env.PORT || 4000;
 // proxy y todos los clientes comparten cuota.
 app.set('trust proxy', 1);
 
-app.use(helmet({ contentSecurityPolicy: false }));
+// Content-Security-Policy. Estuvo desactivada mientras las paginas llevaban su JavaScript
+// en bloques <script> en linea y manejadores onclick=, que una politica seria bloquea.
+// Ese codigo se movio a /js/*.js y los manejadores a delegacion de eventos, asi que ya se
+// puede exigir script-src 'self': un <script> inyectado en el HTML deja de ejecutarse.
+//
+// style-src conserva 'unsafe-inline' a proposito. Las paginas llevan su hoja de estilos en
+// un bloque <style> y usan unos 225 atributos style= en linea; extraerlos seria un refactor
+// grande a cambio de poco, porque una inyeccion de CSS es mucho menos peligrosa que una de
+// script. Si algun dia se extraen, basta con quitar ese 'unsafe-inline' de aqui.
+//
+// Los dominios de fabricantes que aparecen en las paginas son enlaces <a href>, no recursos
+// que el navegador descargue, por eso no figuran: solo Google Fonts se carga de fuera.
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: false,
+    directives: {
+      'default-src': ["'self'"],
+      'script-src': ["'self'"],
+      'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      'font-src': ["'self'", 'https://fonts.gstatic.com'],
+      'img-src': ["'self'", 'data:'],
+      'connect-src': ["'self'"],   // todas las llamadas son a /api/* del mismo origen
+      'form-action': ["'self'"],   // el formulario de acceso solo puede enviarse aqui
+      'frame-ancestors': ["'none'"],
+      'base-uri': ["'self'"],
+      'object-src': ["'none'"],
+    },
+  },
+}));
 app.use(express.json({ limit: '1mb' }));
 
 // Se retiro `cors()`: no habia ningun consumidor de otro origen, la API es de mismo origen,
 // y una politica abierta solo agrega superficie de ataque.
 
-const PUBLICO = new Set(['/login', '/login.html', '/favicon.ico']);
+// /js/login.js entra aqui por necesidad: es el script de la propia pagina de acceso, asi que
+// si quedara detras del muro nadie podria iniciar sesion — la peticion se redirigiria al
+// login, el navegador recibiria HTML donde espera JavaScript, y el formulario quedaria
+// inerte. No expone nada: solo envia el formulario y pinta el mensaje de error.
+const PUBLICO = new Set(['/login', '/login.html', '/js/login.js', '/favicon.ico']);
 
 // Muro de autenticacion. Todo lo que no este en PUBLICO exige sesion valida; las peticiones
 // de API responden 401 en JSON y la navegacion se redirige al login conservando el destino.
