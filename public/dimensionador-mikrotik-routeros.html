@@ -283,8 +283,14 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
 <div>
   <div id="bomBody"></div>
   <section class="panel">
-    <h2>BOM en texto plano <button class="btn ghost" id="copyBtn" style="font-size:11px;padding:4px 10px">Copiar BOM</button></h2>
-    <textarea id="bomOut" readonly></textarea>
+    <h2>Lista de materiales
+      <span class="bom-acciones">
+        <button class="btn" id="xlsBtn" style="font-size:11px;padding:5px 11px">Exportar a Excel</button>
+        <button class="btn ghost" id="copyBtn" style="font-size:11px;padding:5px 11px">Copiar como texto</button>
+      </span>
+    </h2>
+    <div id="bomTabla"></div>
+    <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
   </section>
 </div>
 </div>
@@ -354,12 +360,28 @@ Precios de referencia MSRP público, sin price list regional firmado — <b>veri
 </p>
 
 </div><!-- /wrap -->
+<script src="/js/bom.js"></script>
 <script>
 'use strict';
 let MODELS=[], OPTICS={}, OPTIC_LABEL={}, APS=[], SUPPORT={}, SIZING={};
 
 const $=id=>document.getElementById(id);
 let profile='fwd', media='any', lastPick=null;
+let bomFilas=[], bomMeta={};
+
+// El modelo recomendado se lleva solo a la pestaña de BOM, y solo cuando la recomendación
+// CAMBIA: así una elección manual para comparar no se pisa al mover un parámetro.
+let ultimaRecomendacion=null;
+function sincronizarConBom(pick){
+  const id=pick?pick.id:null;
+  if(id===ultimaRecomendacion) return;
+  ultimaRecomendacion=id;
+  if(!id) return;
+  const sel=$('pickModel');
+  if(!sel||sel.value===id) return;
+  sel.value=id;
+  if(sel.value===id) renderBom();
+}
 
 // RouterOS 7 no acelera WireGuard por hardware y lo procesa mayormente en un hilo por
 // tunel, a diferencia de IPsec que usa el motor criptografico del SoC. Estimacion
@@ -487,6 +509,7 @@ function render(){
   const {ok,reasons,poeNeed}=selectCandidates(req);
   const pick=preferByMedia(ok);
   lastPick=pick;
+  sincronizarConBom(pick);
 
   // Escala: se excluye el centinela de CHR P-Unlimited para no aplastar el resto.
   const maxCap=Math.max(...MODELS.filter(m=>m.fwd<999999).map(m=>m.fwd));
@@ -693,40 +716,50 @@ function renderBom(){
 
   $('bomBody').innerHTML=html;
 
-  const L=[];
-  const pad=(s,n)=>String(s).padEnd(n);
-  L.push(`LISTA DE MATERIALES — ${m.id}`);
-  L.push(`${m.seg} · RouterOS 7.x · licencia nivel ${m.lvl}`);
-  L.push('');
-  L.push('EQUIPAMIENTO');
-  lines.forEach(l=>L.push(`  ${pad(l.qty+' x',6)} ${pad(l.d,26)} ${l.unit!=null?money(l.unit)+' c/u   '+money(l.unit*l.qty):'precio a confirmar'}`));
-  L.push(`  ${' '.repeat(6)} ${pad('TOTAL DE REFERENCIA',26)} ${money(total)}`);
-  L.push('');
-  L.push('ESPECIFICACIONES');
-  L.push(`  Forwarding (FastTrack, 1518 B): ${fmt(m.fwd)}`);
-  L.push(`  Forwarding con shaping activo:  ${fmt(m.fwd*(SIZING.fasttrack[m.arch]??SIZING.fasttrack.arm))}  <- FastTrack desactivado por las colas`);
-  L.push(`  IPsec acelerado:                ${fmt(m.ipsec)}`);
-  L.push(`  WireGuard (estimado):           ${fmt(m.ipsec*WG_FACTOR)}`);
-  L.push(`  CPU / RAM:                      ${m.cpu||'—'}${m.cores?' · '+m.cores+' núcleos':''} / ${m.ram?(m.ram/1024).toFixed(m.ram<1024?2:0)+' GB':'según hipervisor'}`);
-  if(m.ram) L.push(`  BGP full table:                 hasta ${maxFeeds(m)} feed(s) completos en RAM`);
-  L.push(`  Puertos:                        ${m.ports}`);
-  L.push('');
-  L.push('LICENCIA');
-  L.push(isChr
-    ? `  Licencia CHR — tope de ${fmt(m.fwd)} por interfaz. Nivel 6, sin tope de sesiones.`
-    : `  RouterOS nivel ${m.lvl} perpetua, embebida en el hardware. Sin costo recurrente.`);
-  L.push(`  ${lvl.d}`);
-  L.push('');
-  L.push('SOPORTE');
-  L.push(`  ${support?support.n:''} — ${support?support.sla:''}`);
-  if($('chkTraining').checked) L.push(`  + ${SUPPORT.training.n} — ${SUPPORT.training.sla}`);
-  L.push('');
-  L.push('NOTAS DE PREVENTA');
-  L.push('  - Precios MSRP publico de mikrotik.com, sin impuestos, aranceles ni descuento de canal.');
-  L.push('  - MikroTik no publica price list regional firmado: confirmar precio y SKU con distribuidor autorizado.');
-  L.push('  - Las cifras de forwarding asumen FastTrack activo; cualquier queue tree o simple queue lo desactiva.');
-  L.push('  - El nivel de licencia viene grabado en el hardware y no se puede subir por software.');
-  $('bomOut').value=L.join('\n');
+  // Filas del BOM en el formato compartido de /js/bom.js. Las opticas multiplican por la
+  // cantidad de routers: cada equipo necesita las suyas.
+  const filas=[
+    {cat:'Equipo', desc:m.id, sku:null, qty, unit:m.elpN!=null?m.elpN:null,
+     nota:`${m.seg} · ${m.ports}${m.eol?' · DESCONTINUADO':''}${m.legacy?' · legacy':''}`},
+  ];
+  optics.forEach(o=>filas.push({cat:'Ópticas y cables', desc:o.optic.sku, sku:o.optic.sku,
+    qty:o.qty*qty, unit:o.optic.price, nota:o.optic.d}));
+  if(apQty&&ap) filas.push({cat:'Puntos de acceso', desc:ap.sku, sku:ap.hwModel||null,
+    qty:apQty, unit:ap.price, nota:ap.d});
+  filas.push({cat:'Licencia', desc:isChr?`Licencia CHR ${m.id.replace('CHR ','')}`:`RouterOS nivel ${m.lvl} — perpetua`,
+    sku:null, qty:isChr?qty:null, unit:null,
+    nota:isChr?`Tope de ${fmt(m.fwd)} por interfaz. Dimensionar vCPU y RAM del hipervisor aparte.`
+              :`Incluida en el hardware, sin costo recurrente. ${lvl.d}`});
+  filas.push({cat:'Soporte', desc:support?support.n:'', sku:null, qty:null, unit:null,
+    nota:support?support.sla:''});
+  if($('chkTraining').checked) filas.push({cat:'Soporte', desc:SUPPORT.training.n, sku:null, qty:null, unit:null,
+    nota:SUPPORT.training.d});
+
+  const meta={
+    titulo:`Lista de materiales — ${m.id}`,
+    subtitulo:`${m.seg} · RouterOS 7.x · licencia nivel ${m.lvl}`,
+    archivo:`BOM_${m.id}`,
+    notas:[
+      '',
+      'ESPECIFICACIONES',
+      `  Forwarding (FastTrack, 1518 B): ${fmt(m.fwd)}`,
+      `  Forwarding con shaping activo:  ${fmt(m.fwd*(SIZING.fasttrack[m.arch]??SIZING.fasttrack.arm))}  <- FastTrack desactivado por las colas`,
+      `  IPsec acelerado:                ${fmt(m.ipsec)}`,
+      `  WireGuard (estimado):           ${fmt(m.ipsec*WG_FACTOR)}`,
+      `  CPU / RAM:                      ${m.cpu||'—'}${m.cores?' · '+m.cores+' nucleos':''} / ${m.ram?(m.ram/1024).toFixed(m.ram<1024?2:0)+' GB':'segun hipervisor'}`,
+      m.ram?`  BGP full table:                 hasta ${maxFeeds(m)} feed(s) completos en RAM`:null,
+      '',
+      'NOTAS DE PREVENTA',
+      '  Precios MSRP publico de mikrotik.com, sin impuestos, aranceles ni descuento de canal.',
+      '  MikroTik no publica price list regional firmado: confirmar con distribuidor autorizado.',
+      '  Las cifras de forwarding asumen FastTrack activo; cualquier queue tree lo desactiva.',
+      '  El nivel de licencia viene grabado en el hardware y no se puede subir por software.',
+    ].filter((n)=>n!==null),
+  };
+
+  $('bomTabla').innerHTML=BOM.renderTabla(filas,{});
+  $('bomOut').value=BOM.comoTexto(filas,meta);
+  bomFilas=filas; bomMeta=meta;
 }
 
 function renderLicTables(){
@@ -746,10 +779,18 @@ function renderLicTables(){
 }
 
 $('copyBtn').addEventListener('click',async()=>{
-  const t=$('bomOut');t.select();
+  const t=$('bomOut');
   try{await navigator.clipboard.writeText(t.value);$('copyBtn').textContent='Copiado';}
-  catch{document.execCommand('copy');$('copyBtn').textContent='Copiado';}
-  setTimeout(()=>$('copyBtn').textContent='Copiar BOM',1600);
+  catch{t.classList.remove('hidden');t.select();document.execCommand('copy');t.classList.add('hidden');$('copyBtn').textContent='Copiado';}
+  setTimeout(()=>$('copyBtn').textContent='Copiar como texto',1600);
+});
+
+$('xlsBtn').addEventListener('click',async()=>{
+  const b=$('xlsBtn');b.disabled=true;b.textContent='Generando…';
+  try{ await BOM.exportarExcel(bomFilas,bomMeta); b.textContent='Exportar a Excel'; }
+  catch(e){ b.textContent='Error al exportar'; console.error(e);
+    setTimeout(()=>b.textContent='Exportar a Excel',2200); }
+  b.disabled=false;
 });
 
 (async function initApp(){

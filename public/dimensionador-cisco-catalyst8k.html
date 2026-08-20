@@ -314,8 +314,14 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <div>
   <div id="bomBody"></div>
   <section class="panel" style="margin-top:0">
-    <h2>BOM en texto plano <button class="btn ghost" id="copyBtn" style="font-size:11px;padding:4px 10px">Copiar BOM</button></h2>
-    <textarea id="bomOut" readonly></textarea>
+    <h2>Lista de materiales
+      <span class="bom-acciones">
+        <button class="btn" id="xlsBtn" style="font-size:11px;padding:5px 11px">Exportar a Excel</button>
+        <button class="btn ghost" id="copyBtn" style="font-size:11px;padding:5px 11px">Copiar como texto</button>
+      </span>
+    </h2>
+    <div id="bomTabla"></div>
+    <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
   </section>
 </div>
 </div>
@@ -349,11 +355,28 @@ comparativa SD-WAN sintetizada de <a href="https://www.peerspot.com/products/com
 
 </div><!-- /wrap -->
 
+<script src="/js/bom.js"></script>
 <script>
 'use strict';
 /* ═══════════════════════════════════════
    DATA
    ═══════════════════════════════════════ */
+let bomFilas=[], bomMeta={};
+
+// El modelo recomendado se lleva solo a la pestana de BOM, y solo cuando la recomendacion
+// CAMBIA: asi una eleccion manual para comparar no se pisa al mover un parametro.
+let ultimaRecomendacion=null;
+function sincronizarConBom(pick){
+  const id=pick?pick.id:null;
+  if(id===ultimaRecomendacion) return;
+  ultimaRecomendacion=id;
+  if(!id) return;
+  const sel=$('pickModel');
+  if(!sel||sel.value===id) return;
+  sel.value=id;
+  if(sel.value===id) renderBom();
+}
+
 let MODELS = [];
 let OPTICS = {};
 let OPTIC_LABEL = {};
@@ -450,6 +473,7 @@ function render(){
   });
   const pick = candidates.length ? candidates[0] : null;
   lastPick = pick;
+  sincronizarConBom(pick);
 
   const verdict=$('verdict');
   if(!pick){
@@ -618,47 +642,62 @@ function renderBom(){
   $('bomBody').innerHTML=html;
 
   // Plain BOM
-  const L=[];
-  L.push(`LISTA DE MATERIALES — ${m.id}`);
-  L.push(`Serie ${m.ser} · ${m.fam}`);
-  L.push('Generado como preselección de preventa. Verificar en CCW antes de cotizar.');
-  L.push('');
-  L.push('EQUIPO');
-  L.push(`  ${qty} x ${m.id}${m.hwSku?'   [PID: '+m.hwSku+']':''}${m.elp?'   Precio ref.: '+m.elp+' c/u (CCW)':''}`);
-  L.push(`     ${m.ports}`);
-  if(m.eolAnnounced) L.push(`     AVISO: fin de venta anunciado (${m.eolAnnounced.pid}) — último día de pedido ${m.eolAnnounced.lastOrder}. Sucesor confirmado: Cisco Secure Router (G2), mismo IOS XE SD-WAN.`);
-  if(parts.length){
-    L.push('');
-    L.push('MÓDULOS Y LICENCIAS');
-    parts.forEach(p=>L.push(`  ${qty} x ${p}\n     ${PARTS_DESC[p]||''}`));
+  // Filas del BOM en el formato compartido de /js/bom.js. Cisco publica PID pero el precio
+  // definitivo vive en CCW, asi que muchas lineas salen deliberadamente sin cotizar.
+  const filas=[
+    {cat:'Equipo', desc:m.id, sku:m.hwSku||null, qty, unit:m.elpN!=null?m.elpN:null,
+     nota:`${m.fam} · Serie ${m.ser} · ${m.ports}${m.eolAnnounced?' · FIN DE VENTA ANUNCIADO':''}`},
+  ];
+  (m.parts||[]).forEach(p=>filas.push({cat:'Módulos', desc:p, sku:p, qty, unit:null,
+    nota:PARTS_DESC[p]||''}));
+  if(optQty>0){
+    (m.optics||[]).forEach(k=>(OPTICS[k]||[]).slice(0,1).forEach(o=>filas.push({
+      cat:'Ópticas', desc:`${OPTIC_LABEL[k]||k} — ${o.sku}`, sku:o.bom||null,
+      qty:optQty*qty, unit:null, nota:o.d})));
   }
-  L.push('');
-  L.push(`ÓPTICOS  (${optQty*qty} estimados)`);
-  (m.optics||[]).forEach(k=>{
-    L.push(`  -- ${OPTIC_LABEL[k]} --`);
-    OPTICS[k].forEach(o=>L.push(`  __ x ${o.bom}   (${o.sku})\n     ${o.d}`));
-  });
-  L.push('');
-  L.push('LICENCIAS');
-  L.push(`  ${qty} x Cisco DNA ${{'ess':'Essentials','adv':'Advantage','pre':'Premier'}[dnaTier]}  (término ${termYrs} años)`);
-  L.push(`     SKU real: DNA-C-T<n>-${{'ess':'E','adv':'A','pre':'P'}[dnaTier]}-${termYrs}Y (n = tier de ancho de banda T0-T3+, confirmar en CCW según throughput exacto)`);
-  if(dnaTier==='ess' && m.id.includes('8500')) L.push('     AVISO: Catalyst 8500 no soporta DNA Essentials — requiere Advantage como mínimo.');
-  L.push(`  ${qty} x IOS XE SD-WAN Mode`);
-  L.push('');
-  L.push(`SOPORTE — SMARTNET — TÉRMINO ${termYrs} AÑOS`);
-  L.push(`  ${qty} x ${SMARTNET['med'].n}  (${SMARTNET['med'].sla})`);
-  L.push(`  ${qty} x Software Support (SWSS)`);
-  L.push('');
-  L.push('NOTA: precios no incluidos. Usar CCW (Cisco Commerce Workspace) para cotización oficial.');
-  $('bomOut').value=L.join('\n');
+  filas.push({cat:'Licencias', desc:`Cisco DNA ${{'ess':'Essentials','adv':'Advantage','pre':'Premier'}[dnaTier]}`,
+    sku:`DNA-C-T<n>-${{'ess':'E','adv':'A','pre':'P'}[dnaTier]}-${termYrs}Y`, qty, unit:null,
+    nota:`Término ${termYrs} años. El tier de ancho de banda (T0-T3+) se confirma en CCW segun throughput.`});
+  filas.push({cat:'Licencias', desc:'IOS XE SD-WAN Mode', sku:null, qty, unit:null,
+    nota:'Modo de operación del router. Alternativa: IOS XE autónomo.'});
+  // La pagina no expone selector de SmartNet: usa el nivel medio como referencia, igual
+  // que la ficha del equipo mas arriba.
+  const sn=SMARTNET['med'];
+  if(sn) filas.push({cat:'Soporte', desc:sn.n, sku:null, qty, unit:null, nota:sn.sla||''});
+
+  const meta={
+    titulo:`Lista de materiales — ${m.id}`,
+    subtitulo:`${m.fam} · Serie ${m.ser} · término ${termYrs} años`,
+    archivo:`BOM_${m.id}`,
+    notas:[
+      '',
+      'NOTAS DE PREVENTA',
+      '  Precios de referencia tomados de exports de CCW. Verificar PID, tier y precio final',
+      '  en Cisco Commerce Workspace antes de cotizar en firme.',
+      m.eolAnnounced?`  AVISO: fin de venta anunciado (${m.eolAnnounced.pid}), ultimo dia de pedido ${m.eolAnnounced.lastOrder}.`:null,
+      m.eolAnnounced?'  Sucesor confirmado: Cisco Secure Router (G2), mismo IOS XE SD-WAN.':null,
+    ].filter((n)=>n!==null),
+  };
+
+  $('bomTabla').innerHTML=BOM.renderTabla(filas,{});
+  $('bomOut').value=BOM.comoTexto(filas,meta);
+  bomFilas=filas; bomMeta=meta;
 }
 
 // Copy BOM
 $('copyBtn').addEventListener('click', async()=>{
-  const t=$('bomOut'); t.select();
+  const t=$('bomOut');
   try{ await navigator.clipboard.writeText(t.value); $('copyBtn').textContent='Copiado'; }
-  catch{ document.execCommand('copy'); $('copyBtn').textContent='Copiado'; }
-  setTimeout(()=>$('copyBtn').textContent='Copiar BOM',1600);
+  catch{ t.classList.remove('hidden'); t.select(); document.execCommand('copy'); t.classList.add('hidden'); $('copyBtn').textContent='Copiado'; }
+  setTimeout(()=>$('copyBtn').textContent='Copiar como texto',1600);
+});
+
+$('xlsBtn').addEventListener('click', async()=>{
+  const b=$('xlsBtn'); b.disabled=true; b.textContent='Generando…';
+  try{ await BOM.exportarExcel(bomFilas,bomMeta); b.textContent='Exportar a Excel'; }
+  catch(e){ b.textContent='Error al exportar'; console.error(e);
+    setTimeout(()=>b.textContent='Exportar a Excel',2200); }
+  b.disabled=false;
 });
 
 (async function initApp(){

@@ -296,8 +296,14 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <div>
   <div id="bomBody"></div>
   <section class="panel">
-    <h2>BOM en texto plano <button class="btn ghost" id="copyBtn" style="font-size:11px;padding:4px 10px">Copiar BOM</button></h2>
-    <textarea id="bomOut" readonly></textarea>
+    <h2>Lista de materiales
+      <span class="bom-acciones">
+        <button class="btn" id="xlsBtn" style="font-size:11px;padding:5px 11px">Exportar a Excel</button>
+        <button class="btn ghost" id="copyBtn" style="font-size:11px;padding:5px 11px">Copiar como texto</button>
+      </span>
+    </h2>
+    <div id="bomTabla"></div>
+    <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
   </section>
 </div>
 </div>
@@ -399,6 +405,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 </p>
 
 </div><!-- /wrap -->
+<script src="/js/bom.js"></script>
 <script>
 'use strict';
 let MODELS = [];
@@ -407,6 +414,22 @@ let CARE = {};
 
 const $=id=>document.getElementById(id);
 let profile='tp', wanMode='single', segMode='branch', lastPick=null;
+let bomFilas=[], bomMeta={};
+
+// El modelo recomendado se lleva solo a la pestaña de BOM. Se sincroniza unicamente cuando
+// la recomendacion CAMBIA, no en cada render: asi, si alguien elige otro modelo a mano para
+// compararlo, no se lo pisamos en cuanto mueva un parametro del dimensionamiento.
+let ultimaRecomendacion=null;
+function sincronizarConBom(pick){
+  const id=pick?pick.id:null;
+  if(id===ultimaRecomendacion) return;
+  ultimaRecomendacion=id;
+  if(!id) return;
+  const sel=$('pickModel');
+  if(!sel||sel.value===id) return;
+  sel.value=id;
+  if(sel.value===id) renderBom(); // solo si el modelo existe en el desplegable
+}
 
 document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
@@ -542,6 +565,7 @@ function render(){
   const rx=SEG_MATCH[segMode];
   let pick=(rx&&candidates.find(m=>rx.test(m.seg)))||candidates[0]||null;
   lastPick=pick;
+  sincronizarConBom(pick);
 
   if(!pick){
     $('vModel').textContent='Sin candidato';
@@ -695,80 +719,71 @@ function renderBom(){
     <tr><td>${CARE[care].n}</td><td class="n">${CARE[care].sla}</td><td class="n">${careTier?`<code>${esc(careTier.sku)}</code>`:'<span class="warn">No disponible para este modelo</span>'}</td><td class="n">${termYrs} años</td><td class="n">${carePrice!=null?money(carePrice):'—'}</td><td class="n">${qty}</td></tr>
     </tbody></table></div></section>`;
 
-  // Resumen economico: hasta ahora la pagina mostraba precios por linea pero nunca el total,
-  // que es justamente lo que se lleva el cliente. En HA cada nodo paga su propia suscripcion,
-  // asi que licencias y soporte multiplican por la cantidad igual que el hardware.
-  const hwUnit=m.elpN!=null?m.elpN:null;
-  const rows=[
-    {c:'Hardware', d:m.id+(m.hwSku?` · ${m.hwSku}`:''), q:qty, u:hwUnit},
-    {c:`FortiGuard ${BUNDLES[bundle].n}`, d:licTier?licTier.sku:'sin SKU vigente', q:qty, u:licPrice},
-    {c:CARE[care].n, d:careTier?careTier.sku:'sin SKU vigente', q:qty, u:carePrice},
-  ];
-  const total=rows.reduce((s,r)=>s+(r.u!=null?r.u*r.q:0),0);
-  const faltantes=rows.filter(r=>r.u==null).length;
-
-  html+=`<section class="panel"><h2>Resumen económico <span style="font-weight:400;text-transform:none;letter-spacing:0">término de ${termYrs} año${termYrs>1?'s':''}</span></h2>
-    <div class="scroll"><table>
-    <thead><tr><th>Concepto</th><th>SKU</th><th>Cant.</th><th>Precio ref. c/u</th><th>Subtotal</th></tr></thead><tbody>
-    ${rows.map(r=>`<tr><td>${esc(r.c)}</td><td class="n">${r.d?`<code>${esc(r.d)}</code>`:'—'}</td><td class="n">${r.q}</td><td class="n" style="text-align:right">${r.u!=null?money(r.u):'<span class="warn">n/d</span>'}</td><td class="n" style="text-align:right">${r.u!=null?money(r.u*r.q):'—'}</td></tr>`).join('')}
-    <tr style="border-top:2px solid var(--ink)"><td colspan="4" style="font-weight:600;padding-top:10px">Total de referencia a ${termYrs} año${termYrs>1?'s':''}</td><td class="n" style="text-align:right;font-weight:600;padding-top:10px">${money(total)}</td></tr>
-    </tbody></table></div>
-    ${faltantes?`<p class="hint warn" style="margin-top:10px">${faltantes} concepto(s) sin precio en el price list vigente — el total está incompleto.</p>`:''}
-    ${qty>1?`<p class="hint" style="margin-top:10px">Clúster de ${qty} unidades: cada nodo lleva su propia suscripción FortiGuard y su propio contrato FortiCare. La licencia no se comparte en HA.</p>`:''}
-    </section>`;
-
   $('bomBody').innerHTML=html;
 
-  const L=[];
-  L.push(`LISTA DE MATERIALES — ${m.id}`);
-  L.push(`Segmento: ${m.seg} · FortiOS · Security Fabric`);
-  L.push('Generado como preselección de preventa a partir del price list AMER oficial. Verificar disponibilidad regional y descuentos de canal con el distribuidor Fortinet.');
-  L.push('');
-  L.push('EQUIPO');
-  L.push(`  ${qty} x ${m.id}   [SKU: ${m.hwSku||'DESCONTINUADO — sin SKU nuevo vigente'}]${m.elp?'   Precio ref.: '+m.elp+' c/u':''}`);
-  L.push(`     FW: ${fmt(m.fw)} | NGFW: ${fmt(m.ngfw)} | VPN: ${fmt(m.vpn)}`);
-  L.push(`     Interfaces: ${m.ifaces}`);
-  L.push('');
-  L.push('LICENCIAS FORTIGUARD');
-  if(licTier){
-    L.push(`  ${qty} x ${BUNDLES[bundle].n}  (${termYrs} años)   [SKU: ${licTier.sku}]${licPrice!=null?'   Precio ref.: '+money(licPrice)+' c/u':''}`);
-    L.push(`     ${BUNDLES[bundle].svcs}`);
-  } else {
-    L.push(`  ${BUNDLES[bundle].n}: sin SKU vigente para ${m.id} en el término/modelo seleccionado.`);
+  // Filas del BOM en el formato compartido de /js/bom.js. En HA cada nodo paga su propia
+  // suscripcion FortiGuard y su propio FortiCare, por eso licencias y soporte multiplican
+  // por la cantidad igual que el hardware.
+  const termino=`término ${termYrs} año${termYrs>1?'s':''}`;
+  const filas=[
+    {cat:'Equipo', desc:m.id, sku:m.hwSku||null, qty, unit:m.elpN!=null?m.elpN:null,
+     nota:`${m.seg} · ${m.ifaces}${m.eol?' · DESCONTINUADO (EOL)':''}`},
+    {cat:'Licencias FortiGuard', desc:BUNDLES[bundle].n, sku:licTier?licTier.sku:null, qty, unit:licPrice,
+     nota:`${termino} · ${BUNDLES[bundle].svcs}`},
+    {cat:'Soporte', desc:CARE[care].n, sku:careTier?careTier.sku:null, qty, unit:carePrice,
+     nota:`${termino} · ${CARE[care].sla}`},
+  ];
+  if(lic&&lic.converter){
+    filas.push({cat:'Servicios opcionales', desc:'FortiConverter — migración de configuración', sku:lic.converter.sku, qty:1, unit:lic.converter.fee,
+      nota:'Servicio único. Migra desde Cisco ASA, Check Point o Palo Alto.'});
   }
-  L.push('');
-  L.push('SOPORTE FORTICARE');
-  if(careTier){
-    L.push(`  ${qty} x ${CARE[care].n}  (${termYrs} años)   [SKU: ${careTier.sku}]${carePrice!=null?'   Precio ref.: '+money(carePrice)+' c/u':''}`);
-    L.push(`     ${CARE[care].sla}`);
-  } else {
-    L.push(`  ${CARE[care].n}: sin SKU vigente para ${m.id}.`);
-  }
-  L.push('');
-  L.push(`TOTAL DE REFERENCIA (${termYrs} año${termYrs>1?'s':''}): ${money(total)}${faltantes?'   [INCOMPLETO: '+faltantes+' concepto(s) sin precio vigente]':''}`);
-  L.push('');
-  L.push('RENDIMIENTO POR CAPA DE INSPECCION');
-  L.push(`  Firewall (1518 B, offload ASIC):   ${fmt(m.fw)}`);
-  L.push(`  IPsec VPN (512 B, offload ASIC):   ${fmt(m.vpn)}`);
-  L.push(`  IPS (Enterprise Mix):              ${fmt(m.ips)}`);
-  L.push(`  NGFW (IPS + App Control):          ${fmt(m.ngfw)}`);
-  L.push(`  Threat Protection (+ AV + log):    ${fmt(m.tp)}   <- dimensionar con este valor`);
-  L.push(`  Sesiones concurrentes:             ${m.sess.toLocaleString('en-US')}`);
-  L.push(`  Procesadores de seguridad:         ${m.asic||'sin dato publicado por Fortinet'}`);
-  L.push('');
-  L.push('INCLUIDO EN FORTIOS SIN LICENCIA ADICIONAL');
-  L.push('  SD-WAN (seleccion de camino por SLA, ADVPN), ZTNA, IPsec/SSL-VPN, VDOMs base,');
-  L.push('  y gestion de FortiSwitch/FortiAP por FortiLink sin controladora ni licencia por dispositivo.');
-  L.push('');
-  L.push('NOTA: precios de lista (list price) AMER, sin descuentos de canal ni impuestos. Confirmar SKU exacto, término y precio final con el distribuidor Fortinet autorizado antes de cotizar.');
-  $('bomOut').value=L.join('\n');
+
+  const meta={
+    titulo:`Lista de materiales — ${m.id}`,
+    subtitulo:`${m.seg} · FortiOS · Security Fabric · ${termino}`,
+    archivo:`BOM_${m.id}`,
+    notas:[
+      '',
+      'RENDIMIENTO POR CAPA DE INSPECCION',
+      `  Firewall (1518 B, offload ASIC): ${fmt(m.fw)}`,
+      `  IPsec VPN (512 B, offload ASIC): ${fmt(m.vpn)}`,
+      `  IPS (Enterprise Mix):            ${fmt(m.ips)}`,
+      `  NGFW (IPS + App Control):        ${fmt(m.ngfw)}`,
+      `  Threat Protection (+ AV + log):  ${fmt(m.tp)}   <- dimensionar con este valor`,
+      `  Sesiones concurrentes:           ${m.sess.toLocaleString('en-US')}`,
+      `  Procesadores de seguridad:       ${m.asic||'sin dato publicado por Fortinet'}`,
+      '',
+      'INCLUIDO EN FORTIOS SIN LICENCIA ADICIONAL',
+      '  SD-WAN (seleccion de camino por SLA, ADVPN), ZTNA, IPsec/SSL-VPN, VDOMs base, y',
+      '  gestion de FortiSwitch/FortiAP por FortiLink sin controladora ni licencia por dispositivo.',
+      '',
+      'Precios de lista (list price) AMER, sin descuentos de canal ni impuestos.',
+      'Confirmar SKU exacto, termino y precio final con el distribuidor Fortinet autorizado.',
+      qty>1?`Cluster de ${qty} unidades: la licencia no se comparte en HA, cada nodo lleva la suya.`:null,
+    ].filter((n)=>n!==null),
+  };
+
+  $('bomTabla').innerHTML=BOM.renderTabla(filas,{
+    aviso:qty>1?'Clúster HA: cada nodo lleva su propia suscripción FortiGuard y su propio contrato FortiCare.':null,
+  });
+  $('bomOut').value=BOM.comoTexto(filas,meta);
+  bomMeta=meta; bomFilas=filas;
+
 }
 
 $('copyBtn').addEventListener('click',async()=>{
-  const t=$('bomOut');t.select();
+  const t=$('bomOut');
   try{await navigator.clipboard.writeText(t.value);$('copyBtn').textContent='Copiado';}
-  catch{document.execCommand('copy');$('copyBtn').textContent='Copiado';}
-  setTimeout(()=>$('copyBtn').textContent='Copiar BOM',1600);
+  catch{t.classList.remove('hidden');t.select();document.execCommand('copy');t.classList.add('hidden');$('copyBtn').textContent='Copiado';}
+  setTimeout(()=>$('copyBtn').textContent='Copiar como texto',1600);
+});
+
+$('xlsBtn').addEventListener('click',async()=>{
+  const b=$('xlsBtn');b.disabled=true;b.textContent='Generando…';
+  try{ await BOM.exportarExcel(bomFilas,bomMeta); b.textContent='Exportar a Excel'; }
+  catch(e){ b.textContent='Error al exportar'; console.error(e);
+    setTimeout(()=>b.textContent='Exportar a Excel',2200); }
+  b.disabled=false;
 });
 
 (async function initApp(){

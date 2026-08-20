@@ -250,7 +250,7 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
   </div>
 
   <section class="panel">
-    <h2>Selecciona el equipo <button class="btn ghost" id="copyBtn" type="button">Copiar BOM</button></h2>
+    <h2>Selecciona el equipo <span class="bom-acciones"><button class="btn" id="xlsBtn" type="button" style="font-size:11px;padding:5px 11px">Exportar a Excel</button><button class="btn ghost" id="copyBtn" type="button" style="font-size:11px;padding:5px 11px">Copiar como texto</button></span></h2>
     <div class="field">
       <label for="pickModel">Equipo</label>
       <select id="pickModel"></select>
@@ -267,7 +267,8 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
 
   <section class="panel">
     <h2>BOM en texto plano</h2>
-    <textarea id="bomOut" readonly></textarea>
+    <div id="bomTabla"></div>
+    <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
     <p class="hint">Pégalo en la hoja de cotización. Los renglones marcados <code class="pend">POR CONFIRMAR</code> necesitan el código real antes de enviarse al cliente.</p>
   </section>
 </div>
@@ -296,6 +297,7 @@ Las cifras de la serie AR son throughput de servicio en IMIX; las de A800 E y NE
 </p>
 </div>
 
+<script src="/js/bom.js"></script>
 <script>
 /* ════════ CATÁLOGO DE COMPONENTES ════════
    sku = designación oficial de Huawei · bom = código de 8 dígitos verificado, o null */
@@ -309,6 +311,7 @@ let HICARE = {};
 
 const $ = id => document.getElementById(id);
 let dirMult = 2, mode = 'link', lastPick = null;
+let bomFilas = [], bomMeta = {};
 
 /* ---- tabs ---- */
 document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
@@ -585,47 +588,65 @@ function renderBom(){
   </tbody></table></div></section>`;
 
   $('bomBody').innerHTML = html;
-  $('bomOut').value = plainBom(m, qty, optQty, parts, lics, s);
+
+  const filas = filasBom(m, qty, optQty, parts, lics, s);
+  const meta = metaBom(m);
+  $('bomTabla').innerHTML = BOM.renderTabla(filas, {});
+  $('bomOut').value = BOM.comoTexto(filas, meta);
+  bomFilas = filas; bomMeta = meta;
 }
 
-function plainBom(m, qty, optQty, parts, lics, s){
-  const L = [];
-  const pad = t => t;
-  L.push(`LISTA DE MATERIALES — ${m.id}`);
-  L.push(`Serie ${m.ser} · ${m.fam}`);
-  L.push(`Generado como preselección de preventa. Confirmar códigos BOM antes de cotizar.`);
-  L.push('');
-  L.push('EQUIPO');
-  L.push(`  ${qty} x ${m.id}   [BOM: POR CONFIRMAR]`);
-  L.push(`     ${m.ports}`);
-  if(parts.length){
-    L.push('');
-    L.push('COMPONENTES DE HARDWARE');
-    parts.forEach(p => L.push(`  __ x ${p.sku}   [BOM: ${p.bom ? p.bom.join(' / ') : 'POR CONFIRMAR'}]\n     ${p.d}`));
+// Filas del BOM en el formato compartido de /js/bom.js. Huawei no publica precios de lista
+// abiertos, asi que casi todas las lineas salen sin cotizar a proposito: el modulo compartido
+// lo detecta y no finge un total.
+function filasBom(m, qty, optQty, parts, lics, s){
+  const filas=[
+    {cat:'Equipo', desc:m.id, sku:null, qty, unit:null, nota:`Serie ${m.ser} · ${m.fam} · ${m.ports}`},
+  ];
+  parts.forEach(p=>filas.push({cat:'Componentes de hardware', desc:p.sku, sku:p.bom||null,
+    qty, unit:null, nota:p.d||''}));
+  if(optQty>0){
+    (m.optics||[]).forEach(k=>(OPTICS[k]||[]).slice(0,1).forEach(o=>filas.push({
+      cat:'Ópticas', desc:`${OPTIC_LABEL[k]||k} — ${o.sku}`,
+      sku:(o.bom&&o.bom.length)?o.bom.join(' / '):null,
+      qty:optQty*qty, unit:null, nota:o.d||''})));
   }
-  L.push('');
-  L.push(`MODULOS OPTICOS  (${optQty * qty} estimados)`);
-  (m.optics||[]).forEach(k => {
-    L.push(`  -- ${OPTIC_LABEL[k]} --`);
-    OPTICS[k].forEach(o => L.push(`  __ x ${o.sku}   [BOM: ${o.bom.length ? o.bom.join(' / ') : 'POR CONFIRMAR'}]\n     ${o.d}`));
-  });
-  L.push('');
-  L.push('LICENCIAS Y SUSCRIPCIONES');
-  lics.filter(x => x.on).forEach(x => L.push(`  ${qty} x ${x.t}\n     ${x.d}`));
-  L.push('');
-  L.push('SOPORTE — TERMINO 12 MESES');
-  L.push(`  ${qty} x ${s.n}  (${s.sla})`);
-  L.push(`  ${qty} x SnS — Software Subscription and Support`);
-  L.push('');
-  L.push('NOTA: la garantia estandar no incluye soporte remoto TAC de Huawei.');
-  return L.join('\n');
+  lics.filter(l=>l.on).forEach(l=>filas.push({cat:'Licencias', desc:l.t, sku:null, qty, unit:null, nota:l.d||''}));
+  filas.push({cat:'Soporte', desc:s.n, sku:null, qty, unit:null, nota:`${s.sla} · 12 meses`});
+  filas.push({cat:'Soporte', desc:'SnS — Software Subscription and Support', sku:null, qty, unit:null,
+    nota:'Actualizaciones y parches de VRP. Va separada del paquete de hardware. 12 meses.'});
+  return filas;
 }
+
+function metaBom(m){
+  return {
+    titulo:`Lista de materiales — ${m.id}`,
+    subtitulo:`Serie ${m.ser} · ${m.fam}`,
+    archivo:`BOM_${m.id}`,
+    notas:[
+      '',
+      'NOTAS DE PREVENTA',
+      '  Generado como preseleccion de preventa. Confirmar los codigos BOM de 8 digitos antes',
+      '  de cotizar: Huawei no publica precios de lista abiertos y el precio final depende del',
+      '  acuerdo de canal.',
+      '  Todas las licencias se emiten contra el ESN del equipo y se descargan del portal ESDP.',
+    ],
+  };
+}
+
+$('xlsBtn').addEventListener('click', async () => {
+  const b = $('xlsBtn'); b.disabled = true; b.textContent = 'Generando…';
+  try { await BOM.exportarExcel(bomFilas, bomMeta); b.textContent = 'Exportar a Excel'; }
+  catch(e){ b.textContent = 'Error al exportar'; console.error(e);
+    setTimeout(() => b.textContent = 'Exportar a Excel', 2200); }
+  b.disabled = false;
+});
 
 $('copyBtn').addEventListener('click', async () => {
   const t = $('bomOut'); t.select();
   try { await navigator.clipboard.writeText(t.value); $('copyBtn').textContent = 'Copiado'; }
   catch { document.execCommand('copy'); $('copyBtn').textContent = 'Copiado'; }
-  setTimeout(() => $('copyBtn').textContent = 'Copiar BOM', 1600);
+  setTimeout(() => $('copyBtn').textContent = 'Copiar como texto', 1600);
 });
 
 /* ════════ CATÁLOGO DE ÓPTICAS ════════ */

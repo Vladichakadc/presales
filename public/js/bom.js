@@ -1,0 +1,224 @@
+// Tabla de BOM y exportación a Excel, compartidas por los cuatro dimensionadores.
+//
+// Cada página construye un array de filas con esta forma y el resto lo resuelve este
+// módulo, para que la tabla y el Excel se vean igual en Huawei, Cisco, Fortinet y MikroTik:
+//
+//   { cat, desc, sku, qty, unit, nota }
+//
+//   cat   Agrupador visible: 'Equipo', 'Óptica', 'Licencia', 'Soporte'...
+//   desc  Qué es la línea, en lenguaje de cotización.
+//   sku   Código de pedido. null cuando el fabricante no lo publica.
+//   qty   Cantidad. Puede ser null en líneas informativas (avisos, notas de licencia).
+//   unit  Precio unitario numérico, o null si hay que consultarlo. El subtotal se calcula.
+//   nota  Detalle secundario: puertos, término, SLA, advertencias.
+//
+// Una fila sin `unit` no rompe el total: se suma lo que tiene precio y se avisa de cuántas
+// líneas quedaron sin cotizar, en vez de mostrar un total que aparenta estar completo.
+
+(function (global) {
+  'use strict';
+
+  // El estilo viaja con el módulo para que cada página solo incluya un archivo. Usa las
+  // variables de color que las cuatro páginas ya declaran en :root, así que cada
+  // dimensionador conserva su acento de fabricante sin configurar nada.
+  const CSS = `
+.bom-tabla{width:100%;border-collapse:collapse;font-size:12.5px}
+.bom-tabla th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);font-weight:500;padding:0 8px 7px 0;border-bottom:1px solid var(--rule);white-space:nowrap}
+.bom-tabla td{padding:8px 8px 8px 0;border-bottom:1px solid var(--paper);vertical-align:top}
+.bom-tabla th.r,.bom-tabla td.r{text-align:right}
+.bom-tabla td.n,.bom-tabla code{font-family:'IBM Plex Mono',monospace;font-size:11.5px}
+.bom-tabla code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowrap}
+.bom-tabla tr.bom-grupo td{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel);font-weight:600;padding-top:14px;border-bottom:0}
+.bom-tabla tr.bom-total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padding-top:10px;font-size:13px}
+.bom-nota{display:block;font-size:11px;color:var(--steel);margin-top:2px;font-family:'Barlow',sans-serif}
+.bom-nd{color:var(--steel)}
+.bom-aviso{font-size:11.5px;color:var(--amber);margin:10px 0 0;line-height:1.45}
+.bom-acciones{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+`;
+
+  if (!document.getElementById('bom-estilos')) {
+    const st = document.createElement('style');
+    st.id = 'bom-estilos';
+    st.textContent = CSS;
+    document.head.appendChild(st);
+  }
+
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+
+  // Los centavos se muestran completos o no se muestran: "$178.2" se lee como un importe
+  // truncado en una cotización.
+  const money = (n) => {
+    if (n == null) return null;
+    const v = Number(n);
+    const dec = Number.isInteger(v) ? 0 : 2;
+    return '$' + v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: 2 });
+  };
+
+  function subtotal(fila) {
+    if (fila.unit == null) return null;
+    return fila.unit * (fila.qty == null ? 1 : fila.qty);
+  }
+
+  function totales(filas) {
+    let suma = 0;
+    let sinPrecio = 0;
+    for (const f of filas) {
+      const s = subtotal(f);
+      if (s == null) sinPrecio++; else suma += s;
+    }
+    return { suma, sinPrecio };
+  }
+
+  // Tabla agrupada por categoría. Se mantiene el orden en que la página añadió las filas:
+  // refleja el orden de lectura de una cotización (equipo, luego accesorios, luego servicios).
+  function renderTabla(filas, opciones) {
+    const o = opciones || {};
+    const { suma, sinPrecio } = totales(filas);
+
+    const grupos = [];
+    for (const f of filas) {
+      const ultimo = grupos[grupos.length - 1];
+      if (ultimo && ultimo.cat === f.cat) ultimo.filas.push(f);
+      else grupos.push({ cat: f.cat, filas: [f] });
+    }
+
+    let html = '<div class="scroll"><table class="bom-tabla">'
+      + '<thead><tr>'
+      + '<th>Descripción</th><th>SKU / Código</th><th class="r">Cant.</th>'
+      + '<th class="r">Precio unit.</th><th class="r">Subtotal</th>'
+      + '</tr></thead><tbody>';
+
+    for (const g of grupos) {
+      html += `<tr class="bom-grupo"><td colspan="5">${esc(g.cat)}</td></tr>`;
+      for (const f of g.filas) {
+        const s = subtotal(f);
+        html += '<tr>'
+          + `<td><b>${esc(f.desc)}</b>${f.nota ? `<span class="bom-nota">${esc(f.nota)}</span>` : ''}</td>`
+          + `<td class="n">${f.sku ? `<code>${esc(f.sku)}</code>` : '<span class="bom-nd">—</span>'}</td>`
+          + `<td class="n r">${f.qty == null ? '—' : f.qty}</td>`
+          + `<td class="n r">${f.unit == null ? '<span class="bom-nd">consultar</span>' : esc(money(f.unit))}</td>`
+          + `<td class="n r">${s == null ? '<span class="bom-nd">—</span>' : esc(money(s))}</td>`
+          + '</tr>';
+      }
+    }
+
+    // Un total con líneas sin cotizar no se presenta como total: se etiqueta como parcial.
+    // Si además falta el precio del propio equipo, la suma restante engaña más de lo que
+    // informa — un BOM cuyo router no tiene precio no "cuesta" lo que sumen sus accesorios.
+    const faltaEquipo = filas.some((f) => f.unit == null && /equipo|hardware|chasis/i.test(f.cat || ''));
+    const etiqueta = sinPrecio === 0 ? 'Total de referencia' : 'Total parcial — faltan líneas por cotizar';
+    html += `<tr class="bom-total"><td colspan="4">${etiqueta}</td>`
+      + `<td class="n r">${faltaEquipo ? '<span class="bom-nd">sin cotizar</span>' : esc(money(suma))}</td></tr>`;
+    html += '</tbody></table></div>';
+
+    if (faltaEquipo) {
+      html += '<p class="bom-aviso">El equipo principal no tiene precio de lista publicado, así que no se'
+        + ' muestra un total: sumar solo los accesorios daría una cifra que parece el costo del BOM y no lo es.'
+        + ' Pide el precio del equipo a tu distribuidor para cerrar la cotización.</p>';
+    } else if (sinPrecio > 0) {
+      html += `<p class="bom-aviso">${sinPrecio} línea(s) sin precio de lista publicado — el total no las incluye.`
+        + ' Complétalas con tu distribuidor antes de cotizar en firme.</p>';
+    }
+    if (o.aviso) html += `<p class="bom-aviso">${esc(o.aviso)}</p>`;
+
+    return html;
+  }
+
+  // SheetJS se carga solo al primer export. Se sirve desde node_modules vía /vendor/xlsx.js,
+  // asi que sigue la version de package.json y no hay copia que se desincronice.
+  let cargando = null;
+  function cargarSheetJS() {
+    if (global.XLSX) return Promise.resolve();
+    if (cargando) return cargando;
+    cargando = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = '/vendor/xlsx.js';
+      s.onload = () => resolve();
+      s.onerror = () => { cargando = null; reject(new Error('No se pudo cargar el componente de Excel.')); };
+      document.head.appendChild(s);
+    });
+    return cargando;
+  }
+
+  // Nombre de archivo seguro: sin separadores de ruta ni caracteres que Excel rechaza.
+  function nombreArchivo(base) {
+    const limpio = String(base || 'BOM').replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, '_').slice(0, 60);
+    const hoy = new Date().toISOString().slice(0, 10);
+    return `${limpio}_${hoy}.xlsx`;
+  }
+
+  async function exportarExcel(filas, meta) {
+    const m = meta || {};
+    await cargarSheetJS();
+    const { suma, sinPrecio } = totales(filas);
+
+    const aoa = [];
+    aoa.push([m.titulo || 'Lista de materiales']);
+    if (m.subtitulo) aoa.push([m.subtitulo]);
+    aoa.push([`Generado ${new Date().toLocaleString('es')}`]);
+    aoa.push([]);
+    aoa.push(['Categoría', 'Descripción', 'SKU / Código', 'Cantidad', 'Precio unit.', 'Subtotal', 'Notas']);
+
+    for (const f of filas) {
+      aoa.push([
+        f.cat || '',
+        f.desc || '',
+        f.sku || '',
+        f.qty == null ? '' : f.qty,
+        f.unit == null ? '' : f.unit,     // numérico: Excel puede sumar y formatear
+        subtotal(f) == null ? '' : subtotal(f),
+        f.nota || '',
+      ]);
+    }
+
+    const faltaEquipoX = filas.some((f) => f.unit == null && /equipo|hardware|chasis/i.test(f.cat || ''));
+    aoa.push([]);
+    aoa.push(['', '', '', '', sinPrecio === 0 ? 'Total de referencia' : 'Total parcial', faltaEquipoX ? 'sin cotizar' : suma, '']);
+    if (faltaEquipoX) {
+      aoa.push(['', 'El equipo principal no tiene precio de lista publicado: la suma de los accesorios no representa el costo del BOM.']);
+    } else if (sinPrecio > 0) {
+      aoa.push(['', `${sinPrecio} linea(s) sin precio de lista publicado — no incluidas en el total.`]);
+    }
+    for (const n of (m.notas || [])) aoa.push(['', n]);
+
+    const hoja = global.XLSX.utils.aoa_to_sheet(aoa);
+    hoja['!cols'] = [{ wch: 14 }, { wch: 46 }, { wch: 26 }, { wch: 9 }, { wch: 14 }, { wch: 14 }, { wch: 52 }];
+    const libro = global.XLSX.utils.book_new();
+    global.XLSX.utils.book_append_sheet(libro, hoja, 'BOM');
+    global.XLSX.writeFile(libro, nombreArchivo(m.archivo || m.titulo));
+  }
+
+  // Texto plano para pegar en un correo o un ticket. Se conserva porque sigue siendo la vía
+  // más rápida de compartir un BOM sin adjuntar nada.
+  function comoTexto(filas, meta) {
+    const m = meta || {};
+    const { suma, sinPrecio } = totales(filas);
+    const pad = (s, n) => String(s ?? '').padEnd(n);
+    const L = [];
+    L.push(m.titulo || 'LISTA DE MATERIALES');
+    if (m.subtitulo) L.push(m.subtitulo);
+    L.push('');
+    let catActual = null;
+    for (const f of filas) {
+      if (f.cat !== catActual) { catActual = f.cat; L.push(String(catActual).toUpperCase()); }
+      const s = subtotal(f);
+      L.push(`  ${pad(f.qty == null ? '' : f.qty + ' x', 6)} ${pad(f.desc, 42)} ${pad(f.sku || '', 26)} ${s == null ? 'consultar' : money(s)}`);
+      if (f.nota) L.push(`         ${f.nota}`);
+    }
+    const faltaEquipoT = filas.some((f) => f.unit == null && /equipo|hardware|chasis/i.test(f.cat || ''));
+    L.push('');
+    if (faltaEquipoT) {
+      L.push('TOTAL: sin cotizar — el equipo principal no tiene precio de lista publicado.');
+      L.push('(sumar solo los accesorios no representa el costo del BOM)');
+    } else {
+      L.push(`${sinPrecio === 0 ? 'TOTAL DE REFERENCIA' : 'TOTAL PARCIAL'}: ${money(suma)}`);
+      if (sinPrecio > 0) L.push(`(${sinPrecio} linea(s) sin precio publicado, no incluidas)`);
+    }
+    for (const n of (m.notas || [])) L.push(n);
+    return L.join('\n');
+  }
+
+  global.BOM = { renderTabla, exportarExcel, comoTexto, money, esc };
+})(window);

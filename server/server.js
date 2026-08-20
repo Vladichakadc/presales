@@ -85,6 +85,14 @@ app.post('/api/cuenta/password', (req, res) => {
   res.json({ ok: true });
 });
 
+// SheetJS para el navegador, servido desde la dependencia que ya usa el sync para leer
+// Excel. Las paginas lo cargan solo al pulsar "Exportar a Excel", asi que no pesa en la
+// carga inicial. Evita duplicar ~900 KB en public/ y que se desincronice de package.json.
+app.get('/vendor/xlsx.js', (req, res) => {
+  res.type('application/javascript');
+  res.sendFile(require.resolve('xlsx/dist/xlsx.full.min.js'));
+});
+
 app.use('/api', catalogRoutes);
 app.use('/api', cotizadorRoutes);
 app.use('/api', dimensionadorRoutes);
