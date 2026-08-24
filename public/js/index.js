@@ -30,7 +30,11 @@ const VENDORS=[
   {id:'mikrotik',name:'MikroTik',accent:'#C8102E',icon:'MT',iconCls:'mt',
    desc:'RouterOS v7: WireGuard, IPsec, BGP, MPLS, CAPsMAN. hEX SOHO → CCR2216 Core 100G. Precio-rendimiento líder.',
    series:['hEX','RB4011','RB5009','CCR2004','CCR2116','CCR2216','CHR'],
-   tools:['Catálogo de equipos','RouterOS Features'],live:true}
+   tools:['Catálogo de equipos','RouterOS Features'],live:true},
+  {id:'aruba',name:'Aruba',accent:'#01A982',icon:'AB',iconCls:'ab',
+   desc:'HPE Aruba Networking: EdgeConnect SD-WAN con Boost (optimización WAN licenciada como pool del fabric) y gateways SD-Branch serie 9000 con Dynamic Segmentation.',
+   series:['EdgeConnect EC-XS/S/M','EdgeConnect EC-L/XL/2XL','EC-V virtual','Serie 9000 SD-Branch'],
+   tools:['Dimensionador y BOM','Guía de licencias'],live:true}
 ];
 
 let PR = {};
@@ -86,6 +90,9 @@ function buildAll(){
   (PR.mikrotik||[]).forEach(p=>ALL.push({vendor:'MikroTik',model:p.model,series:p.ser,seg:p.seg,
     tp:p.fwd||0,tpL:fmtMbps(p.fwd),ipsec:p.ipsec||0,ipsecL:p.ipsec?fmtMbps(p.ipsec):'—',
     sdwan:p.sdwan,ports:p.ports,color:'#C8102E'}));
+  (PR.aruba||[]).forEach(p=>ALL.push({vendor:'Aruba',model:p.model,series:p.ser,seg:p.seg,
+    tp:p.fwd||0,tpL:fmtMbps(p.fwd),ipsec:p.ipsec||0,ipsecL:p.ipsec?fmtMbps(p.ipsec):'—',
+    sdwan:p.sdwan,ports:p.ports,color:'#01A982'}));
 }
 
 /* ═══════ NAV ═══════ */
@@ -180,6 +187,15 @@ function renderTables(){
 
   if(PR.mikrotik&&document.querySelector('#tbl-mikrotik tbody')){
     q('tbl-mikrotik',(PR.mikrotik||[]).map(p=>`<tr>
+      <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
+      <td class="n">${fmtMbps(p.fwd)}</td><td class="n">${p.ipsec?fmtMbps(p.ipsec):'—'}</td>
+      <td>${p.sdwan}</td><td>${p.ports}</td>
+      <td class="n" style="color:var(--amber);white-space:nowrap">${p.elp||'—'}</td>
+    </tr>`).join(''));
+  }
+
+  if(PR.aruba&&document.querySelector('#tbl-aruba tbody')){
+    q('tbl-aruba',(PR.aruba||[]).map(p=>`<tr>
       <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
       <td class="n">${fmtMbps(p.fwd)}</td><td class="n">${p.ipsec?fmtMbps(p.ipsec):'—'}</td>
       <td>${p.sdwan}</td><td>${p.ports}</td>

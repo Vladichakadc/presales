@@ -7,4 +7,7 @@ module.exports = [
   { code: 'juniper', name: 'Juniper', colorHex: '#84B135' },
   { code: 'arista', name: 'Arista', colorHex: '#4E5B6E' },
   { code: 'mikrotik', name: 'MikroTik', colorHex: '#C8102E' },
+  // HPE Aruba Networking: se usa el verde corporativo de HPE y no el naranja histórico
+  // de Aruba, que colisionaba visualmente con el rojo de Fortinet/Huawei en el portal.
+  { code: 'aruba', name: 'Aruba', colorHex: '#01A982' },
 ];

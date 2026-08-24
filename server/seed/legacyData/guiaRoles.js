@@ -5,12 +5,14 @@ module.exports = {
     {v:'Cisco',   color:'#049FD9', model:'Catalyst 8300-2N2S-6T', spec:'Forwarding 10 Gbps · IPsec 4 Gbps · SD-WAN nativo', alt:'Catalyst 8500-12X4QC (20 Gbps)', elp:'~ $16,500'},
     {v:'Fortinet', color:'#EE3124',model:'FortiGate 400F',        spec:'FW 40 Gbps · NGFW 5.3 Gbps · SD-WAN integrado', alt:'FortiGate 600F (60 Gbps FW)', elp:'~ $7,500'},
     {v:'Juniper', color:'#84B135', model:'SRX 1500',              spec:'FW 9 Gbps · 16 GE + 4x10GE', alt:'SRX 4100 (40 Gbps)', elp:'~ $12,000'},
+    {v:'Aruba',   color:'#01A982', model:'EC-XL',                  spec:'SD-WAN 5 Gbps · IPsec 5 Gbps · 2000 túneles de fabric · Boost hasta 1 Gbps', alt:'EC-2XL (10 Gbps, 4000 túneles)', elp:'Consultar'},
   ],
   branch_router: [
     {v:'Huawei',  color:'#C7000B', model:'NetEngine AR5710-S8T2XE', spec:'Forwarding 1.5 Gbps · IPsec 800 Mbps · SD-WAN 720 Mbps', alt:'AR5710-S8T2X (1.3 Gbps)', elp:'~ $4,200'},
     {v:'Cisco',   color:'#049FD9', model:'Catalyst 8200',          spec:'Forwarding 1.5 Gbps · IPsec 1 Gbps · SD-WAN nativo · 2 NIM', alt:'Catalyst 8200L (0.8 Gbps)', elp:'~ $4,500'},
     {v:'Fortinet', color:'#EE3124',model:'FortiGate 100F',         spec:'FW 20 Gbps · NGFW 1.6 Gbps · IPsec 11.5 Gbps', alt:'FortiGate 200F (27 Gbps FW)', elp:'~ $1,900'},
     {v:'Juniper', color:'#84B135', model:'SRX 345',                spec:'FW 5 Gbps · 16 GE + 4 MPIM · NGFW, SD-WAN, IPsec', alt:'SRX 320 (1 Gbps)', elp:'~ $3,500'},
+    {v:'Aruba',   color:'#01A982', model:'EC-M',                    spec:'SD-WAN 1 Gbps · IPsec 1 Gbps · 500 túneles · Boost hasta 200 Mbps', alt:'Gateway 9012 si la sucursal necesita LAN/WLAN integrados', elp:'Consultar'},
   ],
   branch_small: [
     {v:'Huawei',  color:'#C7000B', model:'NetEngine AR5710-S8T2X', spec:'Forwarding 1.3 Gbps · IPsec 800 Mbps · SD-WAN 620 Mbps · 8 GE LAN', alt:'AR651W-8P (2 Gbps FWD)', elp:'~ $2,800'},
@@ -65,5 +67,6 @@ module.exports = {
     {v:'Cisco',   color:'#049FD9', model:'Cisco vManage (SD-WAN)',     spec:'Controlador SD-WAN Viptela nativo en Catalyst 8000 · cloud o on-prem', alt:'Cisco Umbrella SASE (cloud)', elp:'Licencia DNA Advantage'},
     {v:'Fortinet', color:'#EE3124',model:'FortiManager',               spec:'Orquestador SD-WAN y NGFW · gestión centralizada de políticas · VM o appliance', alt:'FortiSASE cloud', elp:'Licencia por dispositivo'},
     {v:'Juniper', color:'#84B135', model:'Mist AI (Session Smart)',    spec:'SD-WAN basado en AI · session smart router · 5G ready', alt:'Apstra para intent-based DC', elp:'Suscripción cloud'},
+    {v:'Aruba',   color:'#01A982', model:'EdgeConnect Orchestrator',   spec:'Orquestador del fabric · Business Intent Overlays · ZTP · reparte el pool de Boost entre sedes', alt:'Aruba Central para la serie 9000 SD-Branch', elp:'Sin licencia por dispositivo gestionado'},
   ],
 };

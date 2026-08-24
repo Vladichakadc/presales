@@ -8,7 +8,7 @@ const { Product, Vendor, LicenseBundle, SupportTier, Part } = require('../models
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
 
 // Categoría por defecto al crear un producto NEW sugerido por IA (no todos los vendors son firewall)
-const DEFAULT_CATEGORY_BY_VENDOR = { huawei: 'router_branch', cisco: 'router', nokia: 'router', fortinet: 'firewall', juniper: 'router', arista: 'switch' };
+const DEFAULT_CATEGORY_BY_VENDOR = { huawei: 'router_branch', cisco: 'router', nokia: 'router', fortinet: 'firewall', juniper: 'router', arista: 'switch', mikrotik: 'router', aruba: 'sdwan' };
 
 async function resolveVendorId(vendorCode) {
   const vendor = await Vendor.findOne({ where: { code: vendorCode.toLowerCase() } });

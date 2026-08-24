@@ -10,6 +10,7 @@ const huaweiData = require('./legacyData/huawei');
 const ciscoData = require('./legacyData/cisco');
 const fortinetData = require('./legacyData/fortinet');
 const mikrotikData = require('./legacyData/mikrotik');
+const arubaData = require('./legacyData/aruba');
 const guiaRoles = require('./legacyData/guiaRoles');
 
 const CISCO_EOL_MODELS = new Set(['ISR 4221', 'ISR 4331', 'ISR 4351', 'ISR 4431', 'ISR 4451', 'ISR 4461']);
@@ -29,9 +30,10 @@ const PR_GROUPS = {
   juniper: { vendorCode: 'juniper', category: 'router' },
   arista: { vendorCode: 'arista', category: 'switch' },
   mikrotik: { vendorCode: 'mikrotik', category: 'router' },
+  aruba: { vendorCode: 'aruba', category: 'sdwan' },
 };
 
-const NAME_PREFIXES = ['NetEngine ', 'Nokia ', 'Juniper ', 'Arista ', 'Catalyst ', 'FortiGate ', 'MikroTik '];
+const NAME_PREFIXES = ['NetEngine ', 'Nokia ', 'Juniper ', 'Arista ', 'Catalyst ', 'FortiGate ', 'MikroTik ', 'Aruba '];
 
 function normalizeName(model) {
   let s = model.trim();
@@ -308,6 +310,25 @@ async function seedCatalog() {
   }
 
   await seedSupportTiers(vendorIds.mikrotik, mikrotikData.SUPPORT);
+
+  // ── HPE Aruba Networking ──────────────────────────────────────────────────
+  // aruba.js manda sobre indexPR.aruba: aporta las capas de throughput (ipsec/fw/boost),
+  // los flujos y —lo que de verdad decide un hub— el número de túneles del fabric.
+  // La categoría separa las dos familias porque no se dimensionan igual: 'sdwan' son los
+  // EdgeConnect (admiten Boost) y 'gateway' los 9000 de SD-Branch (no lo admiten).
+  await seedDimensionadorModels(vendorIds.aruba, arubaData.MODELS, {
+    categoryFn: (item) => (item.fam === 'gw' ? 'gateway' : 'sdwan'),
+  });
+  await seedSupportTiers(vendorIds.aruba, arubaData.CARE);
+  await seedLicenseBundles(vendorIds.aruba, arubaData.BUNDLES, false);
+
+  // Sin price list verificado no hay precio: se fuerza priceNumeric a null para que el BOM
+  // declare la línea "sin cotizar" en vez de sumar el 0 que dejó el cotizador (elpN:0).
+  // Ver la cabecera de server/seed/legacyData/aruba.js.
+  await Product.update(
+    { priceDisplay: 'Consultar', priceNumeric: null },
+    { where: { vendorId: vendorIds.aruba } },
+  );
 
   await seedRoleRecommendations(vendorIds);
 

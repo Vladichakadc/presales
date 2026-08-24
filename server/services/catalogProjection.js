@@ -4,8 +4,9 @@ const {
 } = require('../models');
 const cotizadorCatalog = require('../seed/legacyData/cotizadorCatalog');
 const mikrotikData = require('../seed/legacyData/mikrotik');
+const arubaData = require('../seed/legacyData/aruba');
 
-const NAME_PREFIXES = ['NetEngine ', 'Nokia ', 'Juniper ', 'Arista ', 'Catalyst ', 'FortiGate '];
+const NAME_PREFIXES = ['NetEngine ', 'Nokia ', 'Juniper ', 'Arista ', 'Catalyst ', 'FortiGate ', 'Aruba '];
 
 function normalizeName(model) {
   let s = model.trim();
@@ -52,10 +53,10 @@ async function getVendorsList() {
   }));
 }
 
-// index.html PR shape: {hw_ar:[...], hw_wan:[...], cisco:[...], nokia:[...], fortinet:[...], juniper:[...], arista:[...], mikrotik:[...]}
+// index.html PR shape: {hw_ar:[...], hw_wan:[...], cisco:[...], nokia:[...], fortinet:[...], juniper:[...], arista:[...], mikrotik:[...], aruba:[...]}
 async function toIndexPR() {
   const products = await Product.findAll();
-  const result = { hw_ar: [], hw_wan: [], cisco: [], nokia: [], fortinet: [], juniper: [], arista: [], mikrotik: [] };
+  const result = { hw_ar: [], hw_wan: [], cisco: [], nokia: [], fortinet: [], juniper: [], arista: [], mikrotik: [], aruba: [] };
   for (const p of products) {
     if (p.eol) continue;
     const group = p.specs && p.specs.prGroup;
@@ -256,6 +257,43 @@ async function toDimensionadorMikrotik() {
   };
 }
 
+// Aruba: misma forma que Fortinet (modelos + bundles + soporte) mas lo que en EdgeConnect
+// no depende del modelo sino del sitio — los tiers de ancho de banda de la suscripcion, el
+// pool de Boost y el overhead de Path Conditioning. Van en `sizing` para que aruba.js siga
+// siendo la unica fuente de la politica de dimensionamiento, igual que en MikroTik.
+async function toDimensionadorAruba() {
+  const vendorIds = await vendorIdMap();
+  const vendorId = vendorIds.aruba;
+
+  const bundles = await LicenseBundle.findAll({ where: { vendorId } });
+  const bundlesOut = {};
+  for (const b of bundles) bundlesOut[b.code] = { n: b.name, svcs: b.description };
+
+  const tiers = await SupportTier.findAll({ where: { vendorId } });
+  const care = {};
+  for (const t of tiers) care[t.code] = { n: t.name, sla: t.sla, d: t.description };
+
+  const products = await Product.findAll({ where: { vendorId } });
+  const models = products
+    .filter((p) => p.specs && p.specs.fam && ['sdwan', 'gateway'].includes(p.category))
+    .map((p) => ({
+      id: p.model, ...specWithoutGroup(p.specs), eol: p.eol,
+      elp: p.priceDisplay, elpN: p.priceNumeric,
+    }));
+
+  return {
+    models,
+    bundles: bundlesOut,
+    care,
+    licenses: arubaData.LICENSES,
+    sizing: {
+      bwTiers: arubaData.BW_TIERS,
+      boost: arubaData.BOOST,
+      fec: arubaData.FEC_OVERHEAD,
+    },
+  };
+}
+
 // guia-diseno-interactiva.html EQ shape: {role: [{v,color,model,spec,alt,elp}, ...]}
 async function toGuiaRoles() {
   const recs = await RoleRecommendation.findAll({
@@ -285,5 +323,6 @@ module.exports = {
   toDimensionadorCisco,
   toDimensionadorFortinet,
   toDimensionadorMikrotik,
+  toDimensionadorAruba,
   toGuiaRoles,
 };

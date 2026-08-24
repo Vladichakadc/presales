@@ -51,6 +51,7 @@ body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,san
 .nav-icon.jn{background:#84B135;color:#fff}
 .nav-icon.ar{background:#4E5B6E;color:#fff}
 .nav-icon.mt{background:#C8102E;color:#fff}
+.nav-icon.ab{background:#01A982;color:#fff}
 .nav-icon.tool{background:rgba(255,255,255,.1);color:var(--red)}
 .nav-badge{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:9px;background:rgba(255,255,255,.08);padding:2px 5px;border-radius:2px;color:rgba(255,255,255,.4)}
 
@@ -233,6 +234,9 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
     <button class="nav-btn" data-page="mikrotik" data-ir="mikrotik">
       <span class="nav-icon mt">MT</span> MikroTik <span class="nav-badge">CCR&thinsp;&middot;&thinsp;RB</span>
     </button>
+    <button class="nav-btn" data-page="aruba" data-ir="aruba">
+      <span class="nav-icon ab">AB</span> Aruba <span class="nav-badge">EC&thinsp;&middot;&thinsp;9K</span>
+    </button>
   </div>
 
   <div style="padding:0 12px">
@@ -272,6 +276,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
     <a href="dimensionador-cisco-catalyst8k.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px;background:#049FD9;border-color:#049FD9;color:#fff">&#10697; BOM Cisco</a>
     <a href="dimensionador-bom-huawei-v3_1.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px;background:#C7000B;border-color:#C7000B;color:#fff">&#10697; BOM Huawei</a>
     <a href="dimensionador-mikrotik-routeros.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px;background:#C8102E;border-color:#C8102E;color:#fff">&#10697; BOM MikroTik</a>
+    <a href="dimensionador-aruba-edgeconnect.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px;background:#01A982;border-color:#01A982;color:#fff">&#10697; BOM EdgeConnect</a>
   </div>
   <p style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);margin:0 0 10px">Fabricantes</p>
   <div class="dash-grid" id="dashGrid"></div>
@@ -662,6 +667,95 @@ RB5009  CCR2004  RB5009  (Hub)
   </div>
 </div>
 
+<div class="page" id="page-aruba">
+  <div class="page-header">
+    <p class="eyebrow">Fabricante &middot; SD-WAN / Sucursal / Conectividad</p>
+    <h1>Aruba</h1>
+    <p class="sub">HPE Aruba Networking. EdgeConnect SD-WAN (ex Silver Peak) con Path Conditioning y optimización WAN Boost licenciada como pool del fabric, y gateways SD-Branch de la serie 9000 que unifican WAN, LAN y WLAN con Dynamic Segmentation extremo a extremo.</p>
+  </div>
+  <div style="margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <a href="dimensionador-aruba-edgeconnect.html" target="_blank" class="btn" style="text-decoration:none;background:#01A982;border-color:#01A982">&#10697; Abrir Dimensionador y BOM EdgeConnect</a>
+    <span class="badge live">Herramienta Activa</span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn btn-cat active" data-tabgrupo="aruba" data-tab="cat">Catálogo</button>
+    <button class="tab-btn btn-topo" data-tabgrupo="aruba" data-tab="topo">SD-WAN y Licencias</button>
+    <button class="tab-btn btn-src" data-tabgrupo="aruba" data-tab="src">Fuentes y Referencias</button>
+  </div>
+
+  <div id="tab-cat-aruba" class="tab-content active">
+    <div class="panel">
+      <h2>Catálogo de Equipos <span style="font-weight:400;color:var(--steel)">— EdgeConnect Enterprise y gateways serie 9000</span></h2>
+      <div class="scroll"><table id="tbl-aruba">
+        <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Throughput</th><th>IPsec</th><th>SD-WAN / Licencia</th><th>Puertos</th><th>Precio ref. USD&#9432;</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+      <p style="font-size:11px;color:var(--steel);margin-top:10px">&#9432; Sin price list verificado para Aruba en este catálogo: las cifras salen de datasheet público y no hay SKU ni precio de lista confirmados. Confirmar con el distribuidor HPE autorizado antes de cotizar en firme.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:18px">
+      <div class="panel" style="border-left:4px solid #01A982;padding:16px 18px">
+        <h2 style="margin-bottom:10px">Suscripción EdgeConnect</h2>
+        <table style="font-size:12px">
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Base</td><td>Dynamic Path Control, tunnel bonding, Path Conditioning, firewall de zonas, Orchestrator.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Advanced</td><td>Base + BGP/OSPF, segmentación multi-overlay, breakout con First-packet iQ, service chaining a SSE.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Boost</td><td>Add-on de aceleración: dedup Network Memory, compresión, aceleración TCP.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Eje de cobro</td><td>Por caudal del sitio, no por modelo de appliance. Boost, por pool del fabric.</td></tr>
+        </table>
+      </div>
+      <div class="panel" style="border-left:4px solid #01A982;padding:16px 18px">
+        <h2 style="margin-bottom:10px">Ventajas de conectividad</h2>
+        <table style="font-size:12px">
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Path Conditioning</td><td>FEC reconstruye pérdidas sin retransmisión: habilita sustituir MPLS por banda ancha o 5G.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Tunnel bonding</td><td>Una sesión se reparte entre enlaces paquete a paquete, no por flujo.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Dynamic Segmentation</td><td>El rol de usuario se asigna en el AP o switch CX y viaja hasta el gateway.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Licencia portable</td><td>La misma suscripción vale para appliance físico y para EC-V virtual.</td></tr>
+        </table>
+      </div>
+      <div class="panel" style="border-left:4px solid #01A982;padding:16px 18px">
+        <h2 style="margin-bottom:10px">Gestión y soporte</h2>
+        <table style="font-size:12px">
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Orchestrator</td><td>Gestión del fabric, Business Intent Overlays y ZTP. Sin licencia por dispositivo gestionado.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Aruba Central</td><td>Gestión cloud de la serie 9000 junto con switches CX y APs.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Tech Care</td><td>Basic 9x5 / Essential 24x7 4 h / Critical 24x7 con reparación gestionada.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">ClearPass</td><td>Fuente del rol de usuario que habilita la segmentación extremo a extremo.</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-topo-aruba" class="tab-content">
+    <div class="panel">
+      <h2>Cómo dimensionar EdgeConnect sin equivocarse</h2>
+      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Tres cosas separan un sizing correcto de uno que se cae en la prueba de concepto:</p>
+      <ul class="fuentes-list">
+        <li><b>Proceso y caudal no son el mismo número.</b> El equipo procesa el tráfico de aplicación del lado LAN; los enlaces transportan otra cifra. Path Conditioning la sube, porque la paridad FEC ocupa ancho de banda; Boost la baja, porque deduplica y comprime antes de salir. Lo que se contrata al operador —y lo que fija el tier de la suscripción— es la segunda.</li>
+        <li><b>La cifra que aplica es la de IPsec, no la de portada.</b> En EdgeConnect todo el tráfico del overlay va en túnel: el throughput de sistema sin cifrar es un escenario que no ocurre en producción.</li>
+        <li><b>El límite del hub son los túneles, no los Gbps.</b> Un concentrador de 400 sucursales necesita 400+ túneles del fabric aunque le sobre capacidad. Es el muro que ninguna cifra de throughput anticipa.</li>
+      </ul>
+    </div>
+    <div class="panel" style="margin-top:18px">
+      <h2>Boost — el efecto que se malinterpreta en las dos direcciones</h2>
+      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">La licencia de aceleración baja el techo de proceso del appliance <b>y</b> baja el caudal WAN necesario, a la vez. Quien solo ve lo primero la descarta por "costar rendimiento"; quien solo ve lo segundo promete un ahorro que el equipo no sostiene. Además se licencia como pool agregado del fabric y Orchestrator lo reparte, así que en una red de 60 sucursales donde solo 8 mueven ficheros pesados se licencia para esas 8 — ese es el argumento económico frente a un add-on cobrado por dispositivo.</p>
+      <p style="font-size:13px;color:var(--steel)">El dimensionador calcula los dos efectos juntos y propone el tier de suscripción que corresponde al caudal resultante.</p>
+    </div>
+  </div>
+
+  <div id="tab-src-aruba" class="tab-content">
+    <div class="panel">
+      <h2>Fuentes de Información y estado de verificación</h2>
+      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">A diferencia del catálogo de Fortinet, los datos de Aruba <b>no están verificados contra un price list firmado</b>. Es una diferencia deliberada y declarada, no un descuido:</p>
+      <ul class="fuentes-list">
+        <li><b>Throughput, flujos y túneles:</b> HPE Aruba Networking EdgeConnect Enterprise Data Sheet y documentación de producto de la serie 9000. Sirven para descartar un modelo corto, no para comprometer una cifra con el cliente.</li>
+        <li><b>Estructura de licenciamiento:</b> documentación de EdgeConnect Orchestrator — niveles Base y Advanced, tiers de caudal por sitio y pool de Boost a nivel de fabric.</li>
+        <li><b>SKU y precios:</b> <b>no disponibles</b>. El catálogo los deja en nulo a propósito y el BOM declara esas líneas "sin cotizar", en vez de mostrar un importe verosímil pero inventado.</li>
+        <li><b>Soporte:</b> HPE Pointnext Tech Care (Basic / Essential / Critical), que sustituyó a Foundation Care. SLA orientativos — confirmar cobertura regional y tiempos de RMA con HPE.</li>
+        <li><b>Antes de cotizar en firme:</b> contrastar contra el datasheet vigente y la lista del distribuidor HPE autorizado. El detalle de qué está confirmado y qué no vive en la cabecera de <code>server/seed/legacyData/aruba.js</code>.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
 <div class="page" id="page-comparador">
   <div class="page-header">
     <p class="eyebrow">Herramienta &middot; Análisis Multi-fabricante</p>
@@ -834,6 +928,7 @@ RB5009  CCR2004  RB5009  (Hub)
           <option value="cisco">Cisco</option>
           <option value="huawei">Huawei</option>
           <option value="mikrotik">MikroTik</option>
+          <option value="aruba">Aruba</option>
         </select>
         <button class="btn" style="padding:6px 14px;background:var(--ink);color:#fff" id="btnAnalizarSync">Analizar (IA)</button>
       </div>

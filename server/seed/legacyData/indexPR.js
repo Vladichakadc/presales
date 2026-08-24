@@ -149,5 +149,20 @@ mikrotik:[
   {model:'CHR P1',ser:'CHR',seg:'Virtual — licencia perpetua 1 Gbps',fwd:1000,ipsec:400,sdwan:'WireGuard / OVPN / L2TP',ports:'ilimitadas vNIC (cap. 1 Gbps)',elp:'~ $45'},
   {model:'CHR P10',ser:'CHR',seg:'Virtual — licencia perpetua 10 Gbps',fwd:10000,ipsec:3000,sdwan:'WireGuard / OVPN / L2TP',ports:'ilimitadas vNIC (cap. 10 Gbps)',elp:'~ $95'},
   {model:'CHR P-Unlimited',ser:'CHR',seg:'Virtual — sin límite de throughput',fwd:999999,ipsec:30000,sdwan:'WireGuard / OVPN / L2TP',ports:'ilimitadas vNIC (sin cap.)',elp:'~ $250'},
+],
+aruba:[
+  // ── EdgeConnect Enterprise (SD-WAN + Boost) ──
+  {model:'EC-XS',ser:'EdgeConnect',seg:'Sucursal peq / Teletrabajo',fwd:200,ipsec:200,sdwan:'Base/Advanced + Boost 50M',ports:'4x GE RJ45',elp:'Consultar'},
+  {model:'EC-S',ser:'EdgeConnect',seg:'Sucursal',fwd:500,ipsec:500,sdwan:'Base/Advanced + Boost 100M',ports:'4x GE RJ45 + 2x GE SFP',elp:'Consultar'},
+  {model:'EC-M',ser:'EdgeConnect',seg:'Sucursal med / gde',fwd:1000,ipsec:1000,sdwan:'Base/Advanced + Boost 200M',ports:'6x GE RJ45 + 2x 10GE SFP+',elp:'Consultar'},
+  {model:'EC-L',ser:'EdgeConnect',seg:'Campus / Hub regional',fwd:2000,ipsec:2000,sdwan:'Base/Advanced + Boost 500M',ports:'8x GE RJ45 + 4x 10GE SFP+',elp:'Consultar'},
+  {model:'EC-XL',ser:'EdgeConnect',seg:'Hub / DC edge',fwd:5000,ipsec:5000,sdwan:'Base/Advanced + Boost 1G',ports:'4x 10GE SFP+ + 2x 25GE SFP28',elp:'Consultar'},
+  {model:'EC-2XL',ser:'EdgeConnect',seg:'DC / Head-end de fabric',fwd:10000,ipsec:10000,sdwan:'Base/Advanced + Boost 2G',ports:'8x 10GE SFP+ + 2x 25GE SFP28',elp:'Consultar'},
+  {model:'EC-V',ser:'EdgeConnect',seg:'Virtual / Cloud (IaaS)',fwd:2000,ipsec:2000,sdwan:'Licencia portable a hardware',ports:'vNIC · 4 vCPU de referencia',elp:'Consultar'},
+  // ── Gateways SD-Branch serie 9000 (WAN + LAN + WLAN unificados) ──
+  {model:'Gateway 9004',ser:'Serie 9000',seg:'Sucursal peq',fwd:4000,ipsec:1000,sdwan:'SD-Branch (Aruba Central)',ports:'4x GE RJ45',elp:'Consultar'},
+  {model:'Gateway 9012',ser:'Serie 9000',seg:'Sucursal med',fwd:8000,ipsec:2000,sdwan:'SD-Branch (Aruba Central)',ports:'12x GE RJ45',elp:'Consultar'},
+  {model:'Gateway 9106',ser:'Serie 9000',seg:'Sucursal gde / Campus',fwd:10000,ipsec:4000,sdwan:'SD-Branch (Aruba Central)',ports:'4x GE RJ45 + 2x 10GE SFP+',elp:'Consultar'},
+  {model:'Gateway 9240',ser:'Serie 9000',seg:'Campus / Hub regional',fwd:40000,ipsec:20000,sdwan:'SD-Branch (Aruba Central)',ports:'4x 10GE SFP+ + 4x GE RJ45',elp:'Consultar'},
 ]
 };
