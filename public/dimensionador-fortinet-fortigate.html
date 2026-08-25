@@ -170,17 +170,40 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       <p class="hint">Deja 0 para omitir esta restricción. Relevante en CGNAT, hotelería, campus con NAT masivo o entornos con muchas sesiones cortas — ahí el cuello de botella es la tabla de sesiones, no los Gbps.</p>
     </div>
     <div class="field">
-      <label for="bw">Ancho de banda de Internet / WAN</label>
+      <label>Cómo se declara el caudal</label>
+      <div class="seg" id="modoSeg">
+        <button type="button" data-v="link" aria-pressed="true">Enlace único</button>
+        <button type="button" data-v="agg"  aria-pressed="false">Agregado<br>(varias sedes)</button>
+      </div>
+      <p class="hint" id="modoHint">Un solo caudal, para dimensionar una sede o un perímetro de Internet.</p>
+    </div>
+    <div class="field">
+      <label for="bw"><span id="bwLbl">Ancho de banda de Internet / WAN</span></label>
       <div class="row">
         <input type="number" id="bw" value="500" min="1" step="any">
         <select id="unit" style="width:105px"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
       </div>
       <p class="hint">En NGFW/SD-WAN, el throughput relevante es el tráfico que el FortiGate inspecciona, no solo el de WAN.</p>
     </div>
+    <div class="field" id="fldAgg" hidden>
+      <label for="sites">Número de sedes que concentra</label>
+      <input type="number" id="sites" value="20" min="1" step="1">
+      <p class="hint">Cada sede necesita su propio túnel del overlay. El límite de túneles por modelo hay que confirmarlo en el datasheet: no está en este catálogo.</p>
+    </div>
+    <div class="field" id="fldConc" hidden>
+      <label for="conc">Simultaneidad: <span id="concVal" style="font-family:'IBM Plex Mono',monospace">35 %</span></label>
+      <input type="range" id="conc" min="5" max="100" step="5" value="35">
+      <p class="hint">Qué fracción del caudal de todas las sedes coincide en el pico. Es <b>el</b> parámetro que decide el tamaño de un concentrador: sumarlas linealmente sobredimensiona y encarece la propuesta; usar el caudal de una sola sede la deja corta.</p>
+    </div>
     <div class="field">
       <label for="users">Usuarios / dispositivos concurrentes</label>
       <input type="number" id="users" value="100" min="1" step="1">
-      <p class="hint">Aproximación: 1–5 Mbps por usuario corporativo activo. Ajustar según perfil de aplicaciones.</p>
+      <p class="hint">Se toma el mayor entre esta vía y el caudal declarado arriba, no la suma.</p>
+    </div>
+    <div class="field">
+      <label for="perUser">Mbps por usuario activo</label>
+      <input type="number" id="perUser" value="3" min="0" step="0.1">
+      <p class="hint">Regla habitual: 1–5 Mbps por usuario corporativo. <b>Bájala en campus grandes</b>: 5.000 usuarios a 3 Mbps dan 15 Gbps, cifra que no representa ningún consumo real y que desplaza el dimensionamiento a gama de datacenter. Ponla en 0 para dimensionar solo por el caudal.</p>
     </div>
     <div class="field">
       <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
@@ -195,14 +218,21 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       <label class="check"><input type="checkbox" id="chkWeb"> <span>Web Filtering / Application Control<span class="sku">Eleva el piso a <b>NGFW</b>, que es la cifra que Fortinet mide con IPS + Application Control sobre Enterprise Mix.</span></span></label>
       <label class="check"><input type="checkbox" id="chkSandbox"> <span>FortiSandbox integrado (CASI / Cloud)<span class="sku"><b>No eleva la capa:</b> analiza fuera de banda, así que no consume throughput del FortiGate — solo añade latencia al primer encuentro de un archivo. Se cotiza aparte.</span></span></label>
       <label class="check"><input type="checkbox" id="chkIotDlp"> <span>IoT Detection + DLP<span class="sku">Eleva el piso a <b>Threat Protection</b>: corren sobre el stack completo. Requieren el bundle Enterprise Protection.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad (HA A-A o A-P)<span class="sku">Se requieren 2 unidades. El modelo seleccionado se debe duplicar en la cotización.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad — par en clúster<span class="sku">Se cotizan 2 unidades y cada una lleva su propia suscripción FortiGuard. En <b>activo-pasivo el clúster no suma capacidad</b>: el throughput sigue siendo el de una unidad, así que el dimensionamiento no cambia. En activo-activo hay reparto, pero solo sobre sesiones de inspección y lejos de ser lineal — esta herramienta no lo descuenta.</span></span></label>
     </div>
     <div class="field" style="margin-top:16px">
-      <label>Redundancia WAN / SD-WAN</label>
-      <div class="seg" id="wanSeg">
-        <button type="button" data-v="single" aria-pressed="true">Un enlace</button>
-        <button type="button" data-v="dual" aria-pressed="false">Dual WAN (LB / failover)</button>
+      <label>Rol en la topología SD-WAN</label>
+      <div class="seg" id="rolSeg">
+        <button type="button" data-v="none"  aria-pressed="true">Sin SD-WAN</button>
+        <button type="button" data-v="spoke" aria-pressed="false">Spoke<br>(sucursal)</button>
+        <button type="button" data-v="hub"   aria-pressed="false">Hub<br>(concentrador)</button>
       </div>
+      <p class="hint" id="rolHint">Solo perímetro: el tráfico no viaja por túneles del overlay, así que el techo lo fija únicamente la capa de inspección.</p>
+    </div>
+    <div class="field" id="fldOverlay" hidden>
+      <label for="pctOverlay">Tráfico por el overlay: <span id="pctOverlayVal" style="font-family:'IBM Plex Mono',monospace">100 %</span></label>
+      <input type="range" id="pctOverlay" min="0" max="100" step="5" value="100">
+      <p class="hint">La fracción que va cifrada al fabric. El resto sale por <b>breakout local</b> a Internet y no paga IPsec. Bajarlo es lo que hace que una sucursal con salida directa a SaaS no necesite un equipo mayor.</p>
     </div>
     <div class="field">
       <label>Segmento de instalación</label>

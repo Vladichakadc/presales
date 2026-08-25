@@ -4,7 +4,7 @@ let BUNDLES = {};
 let CARE = {};
 
 const $=id=>document.getElementById(id);
-let profile='tp', wanMode='single', segMode='branch', lastPick=null;
+let profile='tp', modoCaudal='link', rolSdwan='none', segMode='branch', lastPick=null;
 let bomFilas=[], bomMeta={};
 
 // El modelo recomendado se lleva solo a la pestaña de BOM. Se sincroniza unicamente cuando
@@ -38,9 +38,22 @@ $('profileSeg').addEventListener('click',e=>{
   profile=b.dataset.v;
   render();
 });
-$('wanSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('wanSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));wanMode=b.dataset.v;render();});
+$('modoSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('modoSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));modoCaudal=b.dataset.v;render();});
+$('rolSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  [...$('rolSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
+  rolSdwan=b.dataset.v;
+  // Un hub concentra sedes: el modo agregado es el que corresponde, y dejarlo en enlace
+  // unico es justamente como se dimensiona de menos un concentrador.
+  if(rolSdwan==='hub'&&modoCaudal!=='agg'){
+    modoCaudal='agg';
+    [...$('modoSeg').children].forEach(x=>x.setAttribute('aria-pressed',x.dataset.v==='agg'));
+  }
+  render();
+});
 $('segSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('segSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));segMode=b.dataset.v;render();});
-['bw','unit','users','head','sessNeed','chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa'].forEach(id=>$(id).addEventListener('input',render));
+['bw','unit','users','perUser','head','sessNeed','sites','conc','pctOverlay',
+ 'chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa'].forEach(id=>$(id).addEventListener('input',render));
 // En HA se compran 2 unidades y cada una lleva su propia suscripcion FortiGuard: enlazar la
 // casilla con la cantidad del BOM evita cotizar un clúster con una sola licencia.
 $('chkHa').addEventListener('change',()=>{
@@ -77,6 +90,12 @@ const TIER_BY_K=Object.fromEntries(TIERS.map(t=>[t.k,t]));
 // Estimación conservadora sobre Threat Protection, declarada como estimación en la UI.
 // ponytail: factor único; sustituir por cifra por modelo si Fortinet vuelve a publicarla.
 const SSL_DERATE=0.65;
+
+// Sobrecarga de encapsulacion del overlay SD-WAN. Un tunel IPsec anade cabecera ESP, IV,
+// relleno y trailer; con AES-GCM y MTU de 1500 ronda el 5-8%, y sube si el diseno reduce
+// la MTU para evitar fragmentacion. Es un SUPUESTO de esta herramienta, no una cifra que
+// Fortinet publique, y solo se aplica a la fraccion de trafico que va por el overlay.
+const OVERHEAD_ESP=0.06;
 
 // Software del portafolio Fortinet que acompana al FortiGate en una propuesta. Mismos
 // productos y SKU que la tabla de la pestana "Licencias", como datos y no como markup.
@@ -132,10 +151,43 @@ function capaEfectiva(){
 // La inspección TLS profunda exige el stack completo, así que su piso es Threat Protection
 // aunque se haya elegido una capa más liviana. El derate se aplica UNA vez y sobre la
 // capacidad — nunca sobre el requerimiento, que sobredimensionaría.
+// Fraccion del trafico que viaja cifrada por el fabric. 0 sin SD-WAN.
+function fraccionOverlay(){
+  if(rolSdwan==='none') return 0;
+  const nodo=$('pctOverlay');
+  return nodo?Math.max(0,Math.min(100,parseFloat(nodo.value)||0))/100:1;
+}
+
+// En un despliegue SD-WAN el trafico del overlay va DENTRO de tuneles IPsec, asi que hay
+// dos restricciones simultaneas y no una:
+//
+//   1. todo el trafico atraviesa la capa de inspeccion elegida;
+//   2. la fraccion que va por el overlay atraviesa ademas el motor IPsec.
+//
+// La capacidad efectiva es el menor de los dos techos. Con el 100% por el overlay eso
+// equivale a min(inspeccion, IPsec); con breakout local parcial el techo de IPsec se
+// reparte entre menos trafico y deja de ser el limitante — que es exactamente por que una
+// sucursal con salida directa a SaaS no necesita subir de gama.
+//
+// Salvedad de medicion, que conviene decir en una propuesta: Fortinet mide el firewall a
+// 1518 bytes y el IPsec a 512, asi que las dos cifras no son estrictamente comparables.
+// Tomar el minimo es la lectura conservadora.
 function getCap(m){
   const {k}=capaEfectiva();
-  const v=m[k]!=null?m[k]:m.ngfw;
-  return $('chkSsl').checked?v*SSL_DERATE:v;
+  const base=m[k]!=null?m[k]:m.ngfw;
+  const insp=$('chkSsl').checked?base*SSL_DERATE:base;
+  const frac=fraccionOverlay();
+  if(!frac||m.vpn==null) return insp;
+  return Math.min(insp, m.vpn/frac);
+}
+// Cual de las dos restricciones manda en este modelo — para poder explicarlo.
+function techoQueManda(m){
+  const {k}=capaEfectiva();
+  const base=m[k]!=null?m[k]:m.ngfw;
+  const insp=$('chkSsl').checked?base*SSL_DERATE:base;
+  const frac=fraccionOverlay();
+  if(!frac||m.vpn==null) return {cual:'inspeccion', insp, ipsec:null};
+  return {cual:(m.vpn/frac)<insp?'overlay':'inspeccion', insp, ipsec:m.vpn/frac};
 }
 
 // Coincidencia por subcadena en lugar de lista exacta: los `seg` del catálogo son 21 cadenas
@@ -158,6 +210,23 @@ function pintarHintCapa(capa){
     : esc(TIER_BY_K[capa.k].d);
 }
 
+// Los campos que no aplican se ocultan en vez de quedar visibles sin efecto: un control
+// que no hace nada es peor que uno ausente, porque invita a creer que se tuvo en cuenta.
+function pintarControlesTopologia(){
+  const agg=modoCaudal==='agg';
+  $('fldAgg').hidden=!agg; $('fldConc').hidden=!agg;
+  $('bwLbl').textContent=agg?'Caudal por sede':'Ancho de banda de Internet / WAN';
+  $('modoHint').textContent=agg
+    ? 'Caudal de UNA sede por el número de sedes y por el factor de simultaneidad. Es el modo del concentrador.'
+    : 'Un solo caudal, para dimensionar una sede o un perímetro de Internet.';
+  $('fldOverlay').hidden=(rolSdwan==='none');
+  $('rolHint').innerHTML={
+    none:'Solo perímetro: el tráfico no viaja por túneles del overlay, así que el techo lo fija únicamente la capa de inspección.',
+    spoke:'Sucursal del fabric: el tráfico hacia el hub va cifrado, así que el <b>throughput IPsec del modelo también es un techo</b>, no solo la capa de inspección.',
+    hub:'Concentrador: agrega el tráfico de las sedes y termina un túnel por cada una. Se dimensiona con el caudal agregado y con el techo del motor IPsec.',
+  }[rolSdwan];
+}
+
 function render(){
   const bw=parseFloat($('bw').value)||0;
   const unit=parseFloat($('unit').value);
@@ -165,15 +234,31 @@ function render(){
   const head=(parseFloat($('head').value)||0)/100;
   $('headVal').textContent=Math.round(head*100)+' %';
 
+  // Caudal declarado: una sede, o el agregado de varias con su factor de simultaneidad.
+  // Sumar linealmente las sedes de un concentrador sobredimensiona y encarece la
+  // propuesta; tomar el caudal de una sola lo deja corto. El factor es el que decide.
+  const sites=Math.max(1,parseInt($('sites').value)||1);
+  const conc=Math.max(0,Math.min(100,parseFloat($('conc').value)||0))/100;
+  $('concVal').textContent=Math.round(conc*100)+' %';
+  const caudal = modoCaudal==='agg' ? bw*unit*sites*conc : bw*unit;
+
   // Sin recargo por funciones: lo que cambia al activarlas es la CAPA contra la que se
   // compara (ver capaEfectiva), no el requerimiento. Sumar ademas un porcentaje contaria
   // dos veces lo mismo, porque las cifras de Enterprise Mix de Fortinet ya incluyen esas
   // funciones activas. El unico factor de seguridad es el margen de crecimiento.
-  const bwBaseMbps=bw*unit*(1+head);
-  const userBaseMbps=users*3*(1+head); // 3 Mbps/usuario — control visible en el bloque 2
-  const effectiveNeed=Math.max(bwBaseMbps,userBaseMbps);
+  const perUser=Math.max(0,parseFloat($('perUser').value)||0);
+  const bwBaseMbps=caudal*(1+head);
+  const userBaseMbps=users*perUser*(1+head);
+  const baseNeed=Math.max(bwBaseMbps,userBaseMbps);
+
+  // La fraccion que va por el overlay paga la encapsulacion ESP.
+  const frac=fraccionOverlay();
+  $('pctOverlayVal').textContent=Math.round(frac*100)+' %';
+  const effectiveNeed=baseNeed*(1+frac*OVERHEAD_ESP);
+
   const capa=capaEfectiva();
   pintarHintCapa(capa);
+  pintarControlesTopologia();
 
   // scale
   const allCaps=MODELS.map(m=>m.fw);
@@ -255,7 +340,16 @@ function render(){
     if($('chkSandbox').checked)flags.push('FortiSandbox analiza <b>fuera de banda</b>: se cotiza aparte y <b>no consume throughput del FortiGate</b>, solo añade latencia al primer encuentro de un archivo. Por eso no eleva la capa de dimensionamiento.');
     if($('chkIotDlp').checked)flags.push('IoT Security y DLP requieren el bundle <b>Enterprise Protection</b> (UTP y ATP no los incluyen) y elevan el piso a Threat Protection, porque corren sobre el stack completo.');
     if($('chkHa').checked)flags.push('<b>HA:</b> se cotizan 2 unidades y <b>cada una necesita su propia suscripción FortiGuard</b> — la licencia no se comparte entre nodos del clúster.');
-    if(wanMode==='dual')flags.push('<b>SD-WAN sin costo de licencia:</b> el balanceo por SLA, ADVPN y la selección dinámica de camino vienen en FortiOS. No hay suscripción por dispositivo como en Cisco Catalyst SD-WAN o Meraki.');
+    if(rolSdwan!=='none'){
+      const t=techoQueManda(m);
+      flags.push(t.cual==='overlay'
+        ? `<b class="warn">Manda el overlay:</b> con ${Math.round(frac*100)} % del tráfico cifrado, el motor IPsec (${fmt(m.vpn)}) limita antes que la capa de inspección (${fmt(t.insp)}). El techo efectivo es ${fmt(getCap(m))}.`
+        : `El techo lo fija la capa de inspección (${fmt(t.insp)}); el motor IPsec da de sobra para el ${Math.round(frac*100)} % que va cifrado.`);
+      flags.push(`Sobre el requerimiento se suma un ${Math.round(OVERHEAD_ESP*100)} % de encapsulación ESP sobre la fracción del overlay — supuesto de esta herramienta, no una cifra publicada por Fortinet.`);
+      flags.push('<b>SD-WAN sin costo de licencia:</b> el balanceo por SLA, ADVPN y la selección dinámica de camino vienen en FortiOS. No hay suscripción por dispositivo como en Cisco Catalyst SD-WAN o Meraki.');
+    }
+    if(rolSdwan==='hub'&&modoCaudal==='agg') flags.push(`<b>Escala del fabric:</b> ${sites} túnel(es) del overlay a terminar. <b class="warn">El límite de túneles por modelo no está en este catálogo</b> — confirmarlo en el datasheet del ${esc(m.id)} antes de cotizar. Con ADVPN los shortcuts spoke-a-spoke son dinámicos y no cuentan contra el hub.`);
+    if($('chkHa').checked) flags.push('En <b>activo-pasivo el clúster no suma capacidad</b>: el throughput sigue siendo el de una unidad. El par se cotiza por disponibilidad, no por rendimiento.');
     if(m.eol)flags.push('<b class="warn">Modelo descontinuado (EOL)</b> — solo referencia para equipos ya instalados, no para diseños nuevos.');
     return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
       <li>Requerimiento <b>${fmt(effectiveNeed)}</b> en capa <b>${esc(TIER_BY_K[capa.k].n)}</b> contra capacidad <b>${fmt(getCap(m))}</b> — headroom ${Math.round((1-effectiveNeed/getCap(m))*100)}%</li>
@@ -312,10 +406,13 @@ function render(){
         <tr><td><b>Capa efectiva</b></td><td class="n"><b>${esc(TIER_BY_K[capa.k].n)}</b>${capa.elevada?' <span class="warn">(elevada)</span>':''}</td></tr>
         ${capa.elevada?`<tr><td>Motivo de la elevación</td><td class="n">${capa.elevan.map(f=>esc(f.n)).join(', ')}</td></tr>`:''}
         <tr><td>Inspección SSL profunda</td><td class="n">${$('chkSsl').checked?`Sí — piso Threat Protection x${SSL_DERATE} (estimado)`:'No'}</td></tr>
-        <tr><td>Ancho de banda WAN</td><td class="n">${fmt(bw*unit)}</td></tr>
-        <tr><td>Usuarios estimados</td><td class="n">${users}</td></tr>
+        <tr><td>Modo de caudal</td><td class="n">${modoCaudal==='agg'?`Agregado — ${sites} sedes x ${fmt(bw*unit)} x ${Math.round(conc*100)} %`:'Enlace único'}</td></tr>
+        <tr><td>Caudal resultante</td><td class="n">${fmt(caudal)}</td></tr>
+        <tr><td>Usuarios estimados</td><td class="n">${users}${perUser?` x ${perUser} Mbps`:' (sin tráfico por usuario)'}</td></tr>
+        <tr><td>Rol SD-WAN</td><td class="n">${{none:'Sin SD-WAN',spoke:'Spoke (sucursal)',hub:'Hub (concentrador)'}[rolSdwan]}</td></tr>
+        ${frac?`<tr><td>Tráfico por el overlay</td><td class="n">${Math.round(frac*100)} % · +${Math.round(OVERHEAD_ESP*100)} % ESP</td></tr>`:''}
         <tr><td>Requerimiento final</td><td class="n"><b>${fmt(effectiveNeed)}</b></td></tr>
-        <tr><td>Capacidad en esa capa</td><td class="n">${fmt(getCap(m))}</td></tr>
+        <tr><td>Capacidad efectiva</td><td class="n">${fmt(getCap(m))}${rolSdwan!=='none'&&techoQueManda(m).cual==='overlay'?' <span class="warn">(limita el overlay)</span>':''}</td></tr>
         <tr><td>Headroom disponible</td><td class="n">${Math.round((1-effectiveNeed/getCap(m))*100)}%</td></tr>
         <tr><td>Sesiones concurrentes</td><td class="n">${sessNeed?sessNeed.toLocaleString('en-US')+' / ':''}${m.sess.toLocaleString('en-US')}</td></tr>
         <tr><td>Unidades a cotizar</td><td class="n">${$('chkHa').checked?'2 (HA) — licencia por unidad':'1'}</td></tr>
