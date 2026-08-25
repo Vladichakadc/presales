@@ -49,6 +49,10 @@ const DATASHEETS = {
   gw9000:      {n:'Serie 9000 — Branch Gateways, data sheet (PDF)', url:'https://www.arubanetworks.com/assets/ds/DS_9000Series.pdf', file:'serie-9000-branch-gateways.pdf'},
   gw9000Psnow: {n:'Serie 9000 — Branch Gateways (HPE PSNow)',    url:'https://www.hpe.com/psnow/doc/a00067607enw', file:'serie-9000-psnow.pdf'},
   gw9000Spec:  {n:'Serie 9000 — especificaciones (soporte HPE)', url:'https://support.hpe.com/hpesc/public/docDisplay?docId=a00099295en_us&docLocale=en_US', file:'serie-9000-especificaciones.pdf'},
+  gw9100:      {n:'Serie 9100 — Hybrid Gateways, QuickSpecs', url:'https://www.hpe.com/us/en/collaterals/collateral.a50006999enw.html', file:'serie-9100-hybrid-quickspecs.pdf'},
+  gw7000:      {n:'Serie 7000 — Mobility Controllers, especificaciones (soporte HPE)', url:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', file:'serie-7000-especificaciones.pdf'},
+  gw9200Qs:    {n:'Serie 9200 — Campus Gateways, QuickSpecs', url:'https://www.hpe.com/psnow/doc/a50004272enw.html', file:'serie-9200-quickspecs.pdf'},
+  gwSoportados:{n:'Gateways soportados en SD-Branch — enumeración oficial', url:'https://arubanetworking.hpe.com/techdocs/central/latest/content/sd-branch/overview/supported_gateways.htm', file:'gateways-soportados-sd-branch.pdf'},
   gw9200:      {n:'Serie 9200 — Campus Gateways, data sheet',    url:'https://www.hpe.com/psnow/doc/PSN1014459233NGEN', file:'serie-9200-campus-gateways.pdf'},
   gw9200Psnow: {n:'Serie 9200 — Campus Gateway (HPE PSNow)',     url:'https://www.hpe.com/psnow/doc/a00121209enw', file:'serie-9200-psnow.pdf'},
   sdBranchVsg: {n:'SD-Branch Design — Validated Solution Guide (PDF)', url:'https://arubanetworking.hpe.com/techdocs/VSG/docs/070-sd-branch-design/Media/PDF/Aruba_VSG_SD-Branch-Design.pdf', file:'sd-branch-design-vsg.pdf'},
@@ -82,72 +86,166 @@ const DATASHEETS = {
 //          capacidad cerrada en el hardware.
 //   boostMax  Techo de optimización WAN del appliance, en Mbps, cuando se licencia Boost.
 //          null = la plataforma no hace optimización WAN.
+// FAMILIAS Y COMO SE DIMENSIONA CADA UNA
+//   fam  'ec' EdgeConnect SD-WAN — se dimensiona por el RANGO de caudal WAN publicado y
+//             admite Boost.
+//        'gw' Gateway — se dimensiona por throughput de firewall mas capacidad de
+//             clientes y APs. No hace optimizacion WAN.
+//   rol  Para que sirve en el diseno: 'sdwan', 'sucursal' o 'campus'. Es el filtro util
+//        en preventa, mas que la serie comercial.
+//   skus Referencias pedibles del modelo, como DATOS y no como prosa. La revision
+//        anterior las llevaba dentro de un texto libre: no se podian buscar, no salian en
+//        el BOM y en la practica el catalogo mostraba 9 equipos ocultando el doble de
+//        referencias reales.
 const MODELS = [
   // ─── EdgeConnect SD-WAN ────────────────────────────────────────────────────
-  {id:'EC-XS', fam:'ec', seg:'Sucursal peq / Oficina remota',
+  {id:'EC-XS', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal peq / Oficina remota',
    wanMin:2, wanMax:200, boostMax:200,
    ifaces:'4x RJ45 10/100/1000 LAN/WAN + 2x RJ45 10/100/1000 gestión + serie RJ-45',
-   hwSku:null, variantes:'EC-XS · EC-XS-SP · EC-XS-FIPS',
+   hwSku:null, skus:[{sku:null,d:'EC-XS'},{sku:null,d:'EC-XS-SP'},{sku:null,d:'EC-XS-FIPS (validado FIPS 140)'}],
    ds:'https://www.hpe.com/psnow/doc/a00110177enw', dsFile:'edgeconnect-xs-spec-sheet.pdf'},
 
-  {id:'EC-S', fam:'ec', seg:'Sucursal grande / Oficina remota',
+  {id:'EC-S', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal grande / Oficina remota',
    wanMin:10, wanMax:3000, boostMax:3000,
    ifaces:'8x RJ45 10/100/1000 + 4x SFP+ 1/10G',
-   hwSku:'S3N73A', variantes:'EC-S-P (PSU AC: S3N73A · PSU DC: S3N74A) · 2x SSD',
+   hwSku:'S3N73A', skus:[{sku:'S3N73A',d:'EC-S-P · 4x SFP+ · 10x RJ45 · PSU AC · 2x SSD · NAL'},
+                         {sku:'S3N74A',d:'EC-S-P · 4x SFP+ · 10x RJ45 · PSU DC · 2x SSD · NAL'}],
    ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
 
-  {id:'EC-M', fam:'ec', seg:'Hub / Sucursal grande',
+  {id:'EC-M', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Hub / Sucursal grande',
    wanMin:50, wanMax:5000, boostMax:5000,
    ifaces:'8x RJ45 1GbE + 4x SFP+ 1/10G (SR o LR)',
-   hwSku:'JZ872A', variantes:'EC-M-H · EC-M-P-FIPS',
+   hwSku:'JZ872A', skus:[{sku:'JZ872A',d:'EC-M-H · 8x RJ45 10/100/1000 · 4x SFP+ 1/10G'},
+                         {sku:null,d:'EC-M-P-FIPS (validado FIPS 140)'}],
    ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
 
-  {id:'EC-L', fam:'ec', seg:'Datacenter / Hub grande',
+  {id:'EC-L', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Datacenter / Hub grande',
    wanMin:2000, wanMax:10000, boostMax:10000,
    ifaces:'6x SFP+ 10G (SR o LR)',
-   hwSku:'JZ878A', variantes:'EC-L-H',
+   hwSku:'JZ878A', skus:[{sku:'JZ878A',d:'EC-L-H · 6x SFP+ 1/10G'}],
    ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
 
-  {id:'EC-XL', fam:'ec', seg:'Datacenter / Head-end de fabric',
+  {id:'EC-XL', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Datacenter / Head-end de fabric',
    wanMin:2000, wanMax:10000, boostMax:10000,
    ifaces:'hasta 6x SFP+ 10G y/o SFP28 25G · network memory en flash PCIe · PSU y almacenamiento redundantes',
-   hwSku:'S0B67A', variantes:'EC-XL-H-10G (6x SFP+ 1/10G: S0B67A) · EC-XL-H (6x SFP28, 2x NVMe, 2x PSU, 2x SSD: S3N77A) · EC-XL-P-FIPS',
+   hwSku:'S0B67A', skus:[{sku:'S0B67A',d:'EC-XL-H-10G · 6x SFP+ 1/10G'},
+                         {sku:'S3N77A',d:'EC-XL-H · 6x SFP28 · 2x NVMe · 2x PSU · 2x SSD · NAL'},
+                         {sku:null,d:'EC-XL-P-FIPS (validado FIPS 140)'}],
    ds:'https://www.arubanetworks.com/resource/edgeconnect-xl-spec-sheet/', dsFile:'edgeconnect-xl-spec-sheet.pdf'},
 
-  // El mismo software sobre hipervisor o nube pública. La licencia de EdgeConnect es
-  // portable entre appliance físico y virtual, así que se puede arrancar virtual en el
-  // datacenter y migrar a hardware sin recomprar la suscripción.
-  {id:'EC-V', fam:'ec', seg:'Virtual / Cloud (VMware, KVM, Hyper-V, AWS, Azure)',
+  {id:'EC-V', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Virtual / Cloud (VMware, KVM, Hyper-V, AWS, Azure)',
    wanMin:null, wanMax:null, boostMax:null,
    ifaces:'vNIC según hipervisor · dimensionado por vCPU y por el tier de licencia contratado',
-   hwSku:null, variantes:'EC-V',
+   hwSku:null, skus:[{sku:null,d:'EC-V — licencia portable entre appliance fisico y virtual'}],
    ds:'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/deployments/dg_ECV-Azure_latest.pdf', dsFile:'edgeconnect-ecv-azure.pdf'},
 
-  // ─── Gateways SD-Branch serie 9000 ─────────────────────────────────────────
-  // No hacen optimización WAN: su ventaja es la convergencia del acceso — el mismo equipo
-  // termina la WAN, hace de controladora de APs y aplica Dynamic Segmentation con el rol
-  // de usuario que traen el switch CX o el AP.
-  {id:'Gateway 9004', fam:'gwb', seg:'Sucursal peq',
-   fw:4000, clients:2048, aps:32, ipsecSess:2048, greTuns:544, boostMax:null,
-   ifaces:'4x GbE RJ45', hwSku:null, variantes:'9004 · 9004-LTE (LTE integrado como uplink dedicado o redundante)',
+  // ─── Serie 9000 · Branch Gateways (AOS 10, gestionados por Central) ─────────
+  {id:'Gateway 9004', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal peq',
+   fw:4000, clients:2048, aps:32, fwSess:null, ipsecSess:2048, greTuns:544, boostMax:null,
+   ifaces:'4x GbE RJ45', hwSku:null, skus:[{sku:null,d:'9004 (US / RW)'}],
    ds:'https://www.hpe.com/psnow/doc/a00091602enw', dsFile:'gateway-9004.pdf'},
 
-  {id:'Gateway 9012', fam:'gwb', seg:'Sucursal med / gde',
-   fw:6000, clients:2048, aps:32, ipsecSess:2048, greTuns:544, boostMax:null,
-   ifaces:'12x GbE RJ45 (6x PoE+)', hwSku:'R1B31A', variantes:'9012 US: R1B31A · 9012 RW TAA: R1B37A',
+  {id:'Gateway 9004-LTE', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal peq + LTE',
+   fw:4000, clients:2048, aps:32, fwSess:null, ipsecSess:2048, greTuns:544, boostMax:null,
+   ifaces:'4x GbE RJ45 + LTE integrado (uplink dedicado o redundante)', hwSku:null,
+   skus:[{sku:null,d:'9004-LTE'}],
+   ds:'https://www.hpe.com/psnow/doc/a00091602enw', dsFile:'gateway-9004.pdf'},
+
+  {id:'Gateway 9012', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal med / gde',
+   fw:6000, clients:2048, aps:32, fwSess:null, ipsecSess:2048, greTuns:544, boostMax:null,
+   ifaces:'12x GbE RJ45 (6x PoE+)', hwSku:'R1B31A',
+   skus:[{sku:'R1B31A',d:'9012 (US) · 12x GbE · 6x PoE+'},{sku:'R1B37A',d:'9012 (RW) TAA · 12x GbE · 6x PoE+'}],
    ds:'https://www.arubanetworks.com/assets/ds/DS_9000Series.pdf', dsFile:'serie-9000-branch-gateways.pdf'},
 
-  // ─── Gateway de campus serie 9200 ──────────────────────────────────────────
-  // Capacidad escalonada por licencia perpetua sobre el MISMO hardware.
-  {id:'Gateway 9240', fam:'gwc', seg:'Campus / Hub regional',
-   fw:20000, clients:16000, aps:512, ipsecSess:null, greTuns:null, boostMax:null,
+  // ─── Serie 9100 · Hybrid Gateways ──────────────────────────────────────────
+  // Familia que la revision anterior habia ELIMINADO por error, dando por inexistente lo
+  // que solo faltaba en una busqueda. Es el escalon entre la sucursal grande y el campus
+  // pequeno. HPE no publica en las fuentes consultadas su throughput de firewall, asi que
+  // `fw` queda en null y el dimensionador lo dice en vez de inventarlo.
+  {id:'Gateway 9106', fam:'gw', rol:'sucursal', serie:'Serie 9100 Hybrid', seg:'Sucursal gde / Campus peq',
+   fw:null, clients:8000, aps:2000, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   ifaces:'2x SFP+ 10GbE + 2x combo SFP/RJ45 1GbE + 2x RJ45 1GbE con PoE hasta 60W',
+   hwSku:null, skus:[{sku:null,d:'9106 · hasta 2K dispositivos y 8K clientes'}],
+   ds:'https://www.hpe.com/us/en/collaterals/collateral.a50006999enw.html', dsFile:'serie-9100-hybrid-quickspecs.pdf'},
+
+  {id:'Gateway 9114', fam:'gw', rol:'campus', serie:'Serie 9100 Hybrid', seg:'Campus peq / Sucursal grande',
+   fw:null, clients:10000, aps:4000, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   ifaces:'4x SFP+ 10GbE + 4x combo SFP/RJ45 1GbE + 1 slot de expansión',
+   hwSku:'R9M45A', skus:[{sku:'R9M45A',d:'9114 · 4x SFP+ · 4x combo · 1 slot de expansión'}],
+   ds:'https://www.hpe.com/us/en/collaterals/collateral.a50006999enw.html', dsFile:'serie-9100-hybrid-quickspecs.pdf'},
+
+  // ─── Serie 9200 · Campus Gateways ──────────────────────────────────────────
+  {id:'Gateway 9240', fam:'gw', rol:'campus', serie:'Serie 9200', seg:'Campus / Hub regional',
+   fw:20000, clients:16000, aps:512, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
    licCap:[
-     {code:'hw',     n:'Solo hardware',          fw:20000, aps:512,  clients:16000},
+     {code:'hw',     n:'Solo hardware',             fw:20000, aps:512,  clients:16000},
      {code:'silver', n:'+ licencia Silver (perp.)', fw:30000, aps:1000, clients:24000},
      {code:'gold',   n:'+ licencia Gold (perp.)',   fw:40000, aps:2000, clients:32000},
    ],
-   ifaces:'4x SFP28 + 1 slot de expansión · 1U rack', hwSku:'R7H95A', variantes:'9240 US: R7H95A',
+   ifaces:'4x SFP28 + 1 slot de expansión · 1U rack', hwSku:'R7H95A',
+   skus:[{sku:'R7H95A',d:'9240 (US) · 4x SFP28 · 1 slot de expansión'}],
    ds:'https://www.hpe.com/psnow/doc/PSN1014459233NGEN', dsFile:'serie-9200-campus-gateways.pdf'},
+
+  // ─── Serie 7000 · Mobility Controllers de sucursal (AOS 8) ─────────────────
+  // legacy:true — el dimensionador prefiere un equipo de generacion actual cuando ambos
+  // cumplen, y solo propone esta linea si nada mas encaja o si se pide expresamente. Sin
+  // esa preferencia recomendaba un 7005 para una sucursal de 1.5 Gbps por ser el candidato
+  // mas pequeno, que es exactamente el consejo equivocado para un despliegue nuevo.
+  // Linea anterior a los gateways AOS 10, todavia vigente en canal y muy presente en
+  // parque instalado. Se incluye porque una preventa real se cruza con ella
+  // constantemente, y omitirla obligaba a salirse de la herramienta.
+  {id:'7005', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal peq (fanless)',
+   fw:2000, clients:1024, aps:16, fwSess:16384, ipsecSess:null, greTuns:null, boostMax:null,
+   ifaces:'4x RJ45 10/100/1000 · sin ventilador · alimentable por PoE', hwSku:null,
+   skus:[{sku:null,d:'7005 (US / RW)'}],
+   ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
+
+  {id:'7008', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal peq + PoE',
+   fw:2000, clients:1024, aps:16, fwSess:16384, ipsecSess:null, greTuns:null, boostMax:null,
+   ifaces:'8x RJ45 10/100/1000 con PoE y PoE+ integrados · sin ventilador', hwSku:null,
+   skus:[{sku:null,d:'7008 (US / RW)'}],
+   ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
+
+  {id:'7010', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal med',
+   fw:4000, clients:2048, aps:32, fwSess:32768, ipsecSess:null, greTuns:null, boostMax:null,
+   ifaces:'16x RJ45 10/100/1000 + 2x SFP', hwSku:null,
+   skus:[{sku:null,d:'7010 (US / RW)'}],
+   ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
+
+  {id:'7024', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal med · acceso unificado 24p',
+   fw:4000, clients:2048, aps:32, fwSess:32768, ipsecSess:null, greTuns:null, boostMax:null,
+   ifaces:'24x RJ45 10/100/1000 + 2x SFP+ 10G', hwSku:null,
+   skus:[{sku:null,d:'7024 (US / RW)'}],
+   ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
+
+  {id:'7030', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal gde',
+   fw:8000, clients:4096, aps:64, fwSess:65536, ipsecSess:null, greTuns:null, boostMax:null,
+   ifaces:'8x RJ45 10/100/1000 (combo) + puertos 10G', hwSku:null,
+   skus:[{sku:null,d:'7030 (US / RW)'}],
+   ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
+
+  // ─── Serie 7200 · Mobility Controllers de campus (AOS 8) ───────────────────
+  // Sin URL de datasheet oficial confirmada en las fuentes consultadas: `ds` queda en null
+  // y la pagina lo dice, en vez de enlazar una copia de tercero como si fuera oficial.
+  {id:'7205', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus med',
+   fw:15000, clients:8000, aps:256, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   ifaces:'2x 10GBASE-X (SFP+) + 4x dual-media (1000BASE-X o 10/100/1000BASE-T)', hwSku:null,
+   skus:[{sku:null,d:'7205 (US / RW)'}], ds:null, dsFile:null},
+
+  {id:'7210', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus gde',
+   fw:20000, clients:16000, aps:512, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   ifaces:'4x 10GBASE-X (SFP+)', hwSku:null,
+   skus:[{sku:null,d:'7210 (US / RW)'}], ds:null, dsFile:null},
+
+  {id:'7220', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus grande / alta densidad',
+   fw:40000, clients:24000, aps:1024, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   ifaces:'4x 10GBASE-X (SFP+)', hwSku:null,
+   skus:[{sku:null,d:'7220 (US / RW)'}], ds:null, dsFile:null},
+
+  {id:'7240XM', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus máxima escala',
+   fw:40000, clients:32000, aps:2048, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   ifaces:'4x 10GBASE-X (SFP+)', hwSku:null,
+   skus:[{sku:null,d:'7240XM (US / RW)'}], ds:null, dsFile:null},
 ];
 
 // ── Suscripción EdgeConnect ──────────────────────────────────────────────────

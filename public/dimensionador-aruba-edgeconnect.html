@@ -158,10 +158,10 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       <div class="seg" id="famSeg">
         <button type="button" data-v="any" aria-pressed="true">Indiferente</button>
         <button type="button" data-v="ec"  aria-pressed="false">EdgeConnect<br>SD-WAN</button>
-        <button type="button" data-v="gwb" aria-pressed="false">SD-Branch<br>serie 9000</button>
-        <button type="button" data-v="gwc" aria-pressed="false">Campus<br>serie 9200</button>
+        <button type="button" data-v="sucursal" aria-pressed="false">Gateways<br>sucursal</button>
+        <button type="button" data-v="campus" aria-pressed="false">Gateways<br>campus</button>
       </div>
-      <p class="hint">Cada familia se dimensiona con lo que HPE publica para ella: EdgeConnect por <b>rango de caudal WAN</b>, los gateways por <b>throughput de firewall</b> y capacidad de clientes y APs. Solo EdgeConnect hace optimización WAN.</p>
+      <p class="hint">Cada familia se dimensiona con lo que HPE publica para ella: EdgeConnect por <b>rango de caudal WAN</b>, los gateways por <b>throughput de firewall</b> y capacidad de clientes y APs. Solo EdgeConnect hace optimización WAN. Los gateways agrupan las series 9000, 9100 Hybrid, 9200 y las 7000/7200 de la línea anterior.</p>
     </div>
     <div class="field">
       <label><input type="checkbox" id="chkBoost"> <span>Boost activo — optimización WAN<span class="sku" style="display:block;margin-top:2px">Reduce el caudal WAN que hay que contratar y, a cambio, exige más proceso al appliance. Se licencia en bloques de 100 Mbps que forman un pool del fabric.</span></span></label>
