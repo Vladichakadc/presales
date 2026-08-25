@@ -39,6 +39,20 @@ Set `AUTH_PASSWORD` in `.env` before starting, or nobody can log in: locally the
 
 No lint/test tooling is configured yet.
 
+## Deploying
+
+**Standing instruction from the repo owner: work goes to production.** Railway's `presales-web` service (project `Presales`, environment `production`) auto-deploys from `main`, so finishing a change means merging it to `main` and pushing — don't ask first and don't leave completed work parked on a branch. The permission to push `main` is granted; it is the deploy trigger.
+
+What that does *not* license is shipping unverified work. The checks below are exactly what makes an always-deploy default safe rather than reckless, so they stay:
+
+- **Boot with `NODE_ENV=production` before pushing.** Three behaviours exist only in that mode and so are invisible in `npm run dev`: the server refuses to start without `AUTH_PASSWORD` (fail-closed, deliberately), the session cookie gains `Secure`, and both `/api/sync/*` routes return 503.
+- **Drive the changed page in a browser, not just the API.** Every real regression this repo has had was invisible to `curl`: a page whose own script sat behind the auth wall, a stale `onclick` surviving inside a JS template, a gateway filtered out by its hardware-only capacity. Chromium is preinstalled at `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`.
+- **Confirm the deployment after pushing.** A green build is not a running app: check the Railway deployment reaches SUCCESS *and* that its container logs show the `[seed]` line and the `Presales corriendo en` line. Reaching `listen` is also the proof that `AUTH_PASSWORD` is set, since production throws without it.
+
+Two constraints of the sandbox this repo is usually edited from, worth knowing before promising a verification you can't perform: `presales.up.railway.app` is blocked by egress policy, so the live site can only be checked by a human — and HPE/Aruba domains are blocked too, which is why `public/datasheets/` ships empty (see below). A 403 from that proxy is an organization policy denial: report it, don't route around it.
+
+Because `DATABASE_PATH` is unset in production, the catalog database is ephemeral and reseeded from `server/seed/legacyData/` on every deploy. That is what makes catalog changes ship with no migration step — and also why the IA sync is disabled there.
+
 ## Architecture
 
 Single Express process (`server/server.js`) serves both the JSON API (`/api/*`) and the static frontend (`public/`) — one Railway service, no client build, matching chikisdtv/credifuturo's production pattern (though they compile a React client; this project has none). Everything except the login page sits behind an auth middleware: API requests get a 401 JSON, navigations get redirected to `/login` with the original destination preserved.
