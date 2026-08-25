@@ -258,7 +258,7 @@ function render(){
     <li>Interfaces: ${esc(pick.ifaces)}</li>
     ${flags.map(f=>`<li>${f}</li>`).join('')}
     ${alts.length?`<li>Alternativas que también cumplen: <b>${esc(alts.join(', '))}</b></li>`:''}
-    <li><a href="${esc(pick.ds)}" target="_blank" rel="noopener">Datasheet oficial de ${esc(pick.id)}</a> — confirmar la fila exacta antes de cotizar.</li>
+    <li><a href="${esc(pick.dsLocal||pick.ds)}" target="_blank" rel="noopener">Datasheet de ${esc(pick.id)}</a>${pick.dsLocal?' (copia local)':' (hpe.com)'} — confirmar la fila exacta antes de cotizar.</li>
   </ul>`;
 
   $('sizingBox').innerHTML=`
@@ -328,8 +328,15 @@ function populateSelects(){
   $('centralTier').innerHTML=Object.entries(CENTRAL).map(([k,c])=>`<option value="${esc(k)}"${k==='advanced'?' selected':''}>${esc(c.n)}</option>`).join('');
   $('bwTier').addEventListener('change',()=>{$('bwTier').dataset.tocado='1';});
   // Documentos oficiales, para llegar al PDF sin buscarlo.
-  $('dsList').innerHTML=Object.values(DATASHEETS)
-    .map(d=>`<li><a href="${esc(d.url)}" target="_blank" rel="noopener">${esc(d.n)}</a></li>`).join('');
+  // Se prefiere la copia local (servida detras del login, sin depender de que HPE
+  // mantenga la URL) y se cae a la oficial si ese PDF no esta descargado.
+  $('dsList').innerHTML=Object.values(DATASHEETS).map(d=>{
+    const local=!!d.local;
+    return `<li><a href="${esc(local?d.local:d.url)}" target="_blank" rel="noopener">${esc(d.n)}</a>`
+      +(local?' <span class="pillc">copia local</span>'
+             :` <span class="sku" style="display:inline">— <a href="${esc(d.url)}" target="_blank" rel="noopener">en hpe.com</a></span>`)
+      +'</li>';
+  }).join('');
   // Software del portafolio.
   $('swTabla').innerHTML=SOFTWARE.map(s=>`<tr><td><b>${esc(s.id)}</b><br><span class="sku">${esc(s.cat)}</span></td>
     <td>${esc(s.d)}</td><td class="n"><a href="${esc(s.ds)}" target="_blank" rel="noopener">Documento</a></td></tr>`).join('');
@@ -379,7 +386,7 @@ function renderBom(){
     ${m.ipsecSess!=null?`<tr><td>Sesiones IPsec concurrentes</td><td class="n">${miles(m.ipsecSess)}</td></tr>`:''}
     ${m.greTuns!=null?`<tr><td>Túneles GRE</td><td class="n">${miles(m.greTuns)}</td></tr>`:''}`}
     <tr><td>Interfaces</td><td>${esc(m.ifaces)}</td></tr>
-    <tr><td>Datasheet oficial</td><td class="n"><a href="${esc(m.ds)}" target="_blank" rel="noopener">Abrir documento</a></td></tr>
+    <tr><td>Datasheet oficial</td><td class="n"><a href="${esc(m.dsLocal||m.ds)}" target="_blank" rel="noopener">Abrir documento</a>${m.dsLocal?' <span class="pillc">local</span>':''}</td></tr>
     </tbody></table></div></section>`;
 
   if(esGwc&&m.licCap){
@@ -445,6 +452,7 @@ function renderBom(){
       `  Interfaces:           ${m.ifaces}`,
       `  Variantes y SKU:      ${m.variantes||'-'}`,
       `  Datasheet:            ${m.ds}`,
+      m.dsLocal?`  Copia local:          ${m.dsLocal}`:null,
       '',
       esEC?'COMO SE LICENCIA EDGECONNECT':'COMO SE LICENCIA ESTE GATEWAY',
       esEC?'  La suscripcion va por CAUDAL DEL SITIO (100 Mbps, 1 Gbps o ilimitado), no por modelo'

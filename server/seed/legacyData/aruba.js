@@ -31,24 +31,33 @@
 
 // Documentos de referencia del portafolio. Se enlazan desde la página para que el
 // preventa llegue al PDF sin buscarlo.
+//
+// `file` es el nombre con el que ese documento se guarda en public/datasheets/ cuando se
+// ejecuta `npm run datasheets`. Si el archivo está presente, la página enlaza la COPIA
+// LOCAL (servida detrás del muro de autenticación, sin depender de que HPE mantenga la
+// URL); si no está, enlaza la URL oficial. Ese fallback es deliberado: el repositorio
+// sigue siendo utilizable sin los PDF, y los PDF se pueden refrescar sin tocar código.
 const DATASHEETS = {
-  ecHardware:  {n:'EdgeConnect Hardware Reference Guide (PDF)', url:'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/hardware/reference/EdgeConnect-Hardware-Reference_latest.pdf'},
-  ecQuickspecs:{n:'EdgeConnect SD-WAN QuickSpecs',              url:'https://www.hpe.com/us/en/collaterals/collateral.a50004289enw.html'},
-  ecSpecSheet: {n:'EdgeConnect Spec Sheet (US)',                url:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet'},
-  ecOverview:  {n:'EdgeConnect SD-WAN — página de producto',    url:'https://www.hpe.com/us/en/aruba-edgeconnect-sd-wan.html'},
-  ecvAzure:    {n:'EdgeConnect Virtual (EC-V) en Azure — guía de despliegue (PDF)', url:'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/deployments/dg_ECV-Azure_latest.pdf'},
-  gw9000:      {n:'Serie 9000 — Branch Gateways, data sheet (PDF)', url:'https://www.arubanetworks.com/assets/ds/DS_9000Series.pdf'},
-  gw9000Psnow: {n:'Serie 9000 — Branch Gateways (HPE PSNow)',    url:'https://www.hpe.com/psnow/doc/a00067607enw'},
-  gw9000Spec:  {n:'Serie 9000 — especificaciones (soporte HPE)', url:'https://support.hpe.com/hpesc/public/docDisplay?docId=a00099295en_us&docLocale=en_US'},
-  gw9200:      {n:'Serie 9200 — Campus Gateways, data sheet',    url:'https://www.hpe.com/psnow/doc/PSN1014459233NGEN'},
-  gw9200Psnow: {n:'Serie 9200 — Campus Gateway (HPE PSNow)',     url:'https://www.hpe.com/psnow/doc/a00121209enw'},
-  sdBranchVsg: {n:'SD-Branch Design — Validated Solution Guide (PDF)', url:'https://arubanetworking.hpe.com/techdocs/VSG/docs/070-sd-branch-design/Media/PDF/Aruba_VSG_SD-Branch-Design.pdf'},
-  sdwanOrder:  {n:'SD-WAN Gateways — Ordering Guide (PDF)',      url:'https://higherlogicdownload.s3.amazonaws.com/HPE/MigratedAssets/OG_SD-WAN.pdf'},
-  centralLic:  {n:'Central — Licensing Guide (PDF)',             url:'https://arubanetworking.hpe.com/techdocs/central/pdfs/2.5.8/licensing-guide.pdf'},
-  centralSaas: {n:'Central — suscripciones SaaS (Foundation / Advanced)', url:'https://www.hpe.com/psnow/doc/a00125615enw'},
-  foundCare:   {n:'HPE Aruba Networking Foundational Care',      url:'https://www.hpe.com/psnow/doc/a00111733enw'},
-  clearpass:   {n:'ClearPass — Access License, data sheet',      url:'https://www.hpe.com/psnow/doc/PSN1010354100DEEN'},
-  orchDocs:    {n:'EdgeConnect Orchestrator — documentación',    url:'https://arubanetworking.hpe.com/techdocs/sdwan/'},
+  ecHardware:  {n:'EdgeConnect Hardware Reference Guide (PDF)', url:'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/hardware/reference/EdgeConnect-Hardware-Reference_latest.pdf', file:'edgeconnect-hardware-reference.pdf'},
+  ecQuickspecs:{n:'EdgeConnect SD-WAN QuickSpecs',              url:'https://www.hpe.com/us/en/collaterals/collateral.a50004289enw.html', file:'edgeconnect-quickspecs.pdf'},
+  ecSpecSheet: {n:'EdgeConnect Spec Sheet (US)',                url:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', file:'edgeconnect-spec-sheet-us.pdf'},
+  ecOverview:  {n:'EdgeConnect SD-WAN — página de producto',    url:'https://www.hpe.com/us/en/aruba-edgeconnect-sd-wan.html', file:'edgeconnect-overview.pdf'},
+  ecXsSpec:    {n:'EdgeConnect EC-XS — spec sheet',            url:'https://www.hpe.com/psnow/doc/a00110177enw', file:'edgeconnect-xs-spec-sheet.pdf'},
+  ecXlSpec:    {n:'EdgeConnect EC-XL — spec sheet',            url:'https://www.arubanetworks.com/resource/edgeconnect-xl-spec-sheet/', file:'edgeconnect-xl-spec-sheet.pdf'},
+  gw9004:      {n:'Gateway 9004 — Branch Gateway, data sheet', url:'https://www.hpe.com/psnow/doc/a00091602enw', file:'gateway-9004.pdf'},
+  ecvAzure:    {n:'EdgeConnect Virtual (EC-V) en Azure — guía de despliegue (PDF)', url:'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/deployments/dg_ECV-Azure_latest.pdf', file:'edgeconnect-ecv-azure.pdf'},
+  gw9000:      {n:'Serie 9000 — Branch Gateways, data sheet (PDF)', url:'https://www.arubanetworks.com/assets/ds/DS_9000Series.pdf', file:'serie-9000-branch-gateways.pdf'},
+  gw9000Psnow: {n:'Serie 9000 — Branch Gateways (HPE PSNow)',    url:'https://www.hpe.com/psnow/doc/a00067607enw', file:'serie-9000-psnow.pdf'},
+  gw9000Spec:  {n:'Serie 9000 — especificaciones (soporte HPE)', url:'https://support.hpe.com/hpesc/public/docDisplay?docId=a00099295en_us&docLocale=en_US', file:'serie-9000-especificaciones.pdf'},
+  gw9200:      {n:'Serie 9200 — Campus Gateways, data sheet',    url:'https://www.hpe.com/psnow/doc/PSN1014459233NGEN', file:'serie-9200-campus-gateways.pdf'},
+  gw9200Psnow: {n:'Serie 9200 — Campus Gateway (HPE PSNow)',     url:'https://www.hpe.com/psnow/doc/a00121209enw', file:'serie-9200-psnow.pdf'},
+  sdBranchVsg: {n:'SD-Branch Design — Validated Solution Guide (PDF)', url:'https://arubanetworking.hpe.com/techdocs/VSG/docs/070-sd-branch-design/Media/PDF/Aruba_VSG_SD-Branch-Design.pdf', file:'sd-branch-design-vsg.pdf'},
+  sdwanOrder:  {n:'SD-WAN Gateways — Ordering Guide (PDF)',      url:'https://higherlogicdownload.s3.amazonaws.com/HPE/MigratedAssets/OG_SD-WAN.pdf', file:'sd-wan-ordering-guide.pdf'},
+  centralLic:  {n:'Central — Licensing Guide (PDF)',             url:'https://arubanetworking.hpe.com/techdocs/central/pdfs/2.5.8/licensing-guide.pdf', file:'central-licensing-guide.pdf'},
+  centralSaas: {n:'Central — suscripciones SaaS (Foundation / Advanced)', url:'https://www.hpe.com/psnow/doc/a00125615enw', file:'central-suscripciones-saas.pdf'},
+  foundCare:   {n:'HPE Aruba Networking Foundational Care',      url:'https://www.hpe.com/psnow/doc/a00111733enw', file:'foundational-care.pdf'},
+  clearpass:   {n:'ClearPass — Access License, data sheet',      url:'https://www.hpe.com/psnow/doc/PSN1010354100DEEN', file:'clearpass-access-license.pdf'},
+  orchDocs:    {n:'EdgeConnect Orchestrator — documentación',    url:'https://arubanetworking.hpe.com/techdocs/sdwan/', file:'orchestrator-documentacion.pdf'},
 };
 
 // CAMPOS Y CÓMO INTERPRETARLOS
@@ -79,31 +88,31 @@ const MODELS = [
    wanMin:2, wanMax:200, boostMax:200,
    ifaces:'4x RJ45 10/100/1000 LAN/WAN + 2x RJ45 10/100/1000 gestión + serie RJ-45',
    hwSku:null, variantes:'EC-XS · EC-XS-SP · EC-XS-FIPS',
-   ds:'https://www.hpe.com/psnow/doc/a00110177enw'},
+   ds:'https://www.hpe.com/psnow/doc/a00110177enw', dsFile:'edgeconnect-xs-spec-sheet.pdf'},
 
   {id:'EC-S', fam:'ec', seg:'Sucursal grande / Oficina remota',
    wanMin:10, wanMax:3000, boostMax:3000,
    ifaces:'8x RJ45 10/100/1000 + 4x SFP+ 1/10G',
    hwSku:'S3N73A', variantes:'EC-S-P (PSU AC: S3N73A · PSU DC: S3N74A) · 2x SSD',
-   ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet'},
+   ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
 
   {id:'EC-M', fam:'ec', seg:'Hub / Sucursal grande',
    wanMin:50, wanMax:5000, boostMax:5000,
    ifaces:'8x RJ45 1GbE + 4x SFP+ 1/10G (SR o LR)',
    hwSku:'JZ872A', variantes:'EC-M-H · EC-M-P-FIPS',
-   ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet'},
+   ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
 
   {id:'EC-L', fam:'ec', seg:'Datacenter / Hub grande',
    wanMin:2000, wanMax:10000, boostMax:10000,
    ifaces:'6x SFP+ 10G (SR o LR)',
    hwSku:'JZ878A', variantes:'EC-L-H',
-   ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet'},
+   ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
 
   {id:'EC-XL', fam:'ec', seg:'Datacenter / Head-end de fabric',
    wanMin:2000, wanMax:10000, boostMax:10000,
    ifaces:'hasta 6x SFP+ 10G y/o SFP28 25G · network memory en flash PCIe · PSU y almacenamiento redundantes',
    hwSku:'S0B67A', variantes:'EC-XL-H-10G (6x SFP+ 1/10G: S0B67A) · EC-XL-H (6x SFP28, 2x NVMe, 2x PSU, 2x SSD: S3N77A) · EC-XL-P-FIPS',
-   ds:'https://www.arubanetworks.com/resource/edgeconnect-xl-spec-sheet/'},
+   ds:'https://www.arubanetworks.com/resource/edgeconnect-xl-spec-sheet/', dsFile:'edgeconnect-xl-spec-sheet.pdf'},
 
   // El mismo software sobre hipervisor o nube pública. La licencia de EdgeConnect es
   // portable entre appliance físico y virtual, así que se puede arrancar virtual en el
@@ -112,7 +121,7 @@ const MODELS = [
    wanMin:null, wanMax:null, boostMax:null,
    ifaces:'vNIC según hipervisor · dimensionado por vCPU y por el tier de licencia contratado',
    hwSku:null, variantes:'EC-V',
-   ds:'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/deployments/dg_ECV-Azure_latest.pdf'},
+   ds:'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/deployments/dg_ECV-Azure_latest.pdf', dsFile:'edgeconnect-ecv-azure.pdf'},
 
   // ─── Gateways SD-Branch serie 9000 ─────────────────────────────────────────
   // No hacen optimización WAN: su ventaja es la convergencia del acceso — el mismo equipo
@@ -121,12 +130,12 @@ const MODELS = [
   {id:'Gateway 9004', fam:'gwb', seg:'Sucursal peq',
    fw:4000, clients:2048, aps:32, ipsecSess:2048, greTuns:544, boostMax:null,
    ifaces:'4x GbE RJ45', hwSku:null, variantes:'9004 · 9004-LTE (LTE integrado como uplink dedicado o redundante)',
-   ds:'https://www.hpe.com/psnow/doc/a00091602enw'},
+   ds:'https://www.hpe.com/psnow/doc/a00091602enw', dsFile:'gateway-9004.pdf'},
 
   {id:'Gateway 9012', fam:'gwb', seg:'Sucursal med / gde',
    fw:6000, clients:2048, aps:32, ipsecSess:2048, greTuns:544, boostMax:null,
    ifaces:'12x GbE RJ45 (6x PoE+)', hwSku:'R1B31A', variantes:'9012 US: R1B31A · 9012 RW TAA: R1B37A',
-   ds:'https://www.arubanetworks.com/assets/ds/DS_9000Series.pdf'},
+   ds:'https://www.arubanetworks.com/assets/ds/DS_9000Series.pdf', dsFile:'serie-9000-branch-gateways.pdf'},
 
   // ─── Gateway de campus serie 9200 ──────────────────────────────────────────
   // Capacidad escalonada por licencia perpetua sobre el MISMO hardware.
@@ -138,7 +147,7 @@ const MODELS = [
      {code:'gold',   n:'+ licencia Gold (perp.)',   fw:40000, aps:2000, clients:32000},
    ],
    ifaces:'4x SFP28 + 1 slot de expansión · 1U rack', hwSku:'R7H95A', variantes:'9240 US: R7H95A',
-   ds:'https://www.hpe.com/psnow/doc/PSN1014459233NGEN'},
+   ds:'https://www.hpe.com/psnow/doc/PSN1014459233NGEN', dsFile:'serie-9200-campus-gateways.pdf'},
 ];
 
 // ── Suscripción EdgeConnect ──────────────────────────────────────────────────

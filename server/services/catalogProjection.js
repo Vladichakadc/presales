@@ -5,6 +5,20 @@ const {
 const cotizadorCatalog = require('../seed/legacyData/cotizadorCatalog');
 const mikrotikData = require('../seed/legacyData/mikrotik');
 const arubaData = require('../seed/legacyData/aruba');
+const fs = require('fs');
+const pathMod = require('path');
+
+// Datasheets descargados con `npm run datasheets`. Se lee el directorio una vez por
+// peticion (una syscall) en vez de un existsSync por documento, y la ausencia de la
+// carpeta no es un error: la aplicacion funciona igual enlazando las URLs de HPE.
+const DIR_DATASHEETS = pathMod.join(__dirname, '..', '..', 'public', 'datasheets');
+function datasheetsLocales() {
+  try {
+    return new Set(fs.readdirSync(DIR_DATASHEETS).filter((f) => f.toLowerCase().endsWith('.pdf')));
+  } catch {
+    return new Set();
+  }
+}
 
 const NAME_PREFIXES = ['NetEngine ', 'Nokia ', 'Juniper ', 'Arista ', 'Catalyst ', 'FortiGate ', 'Aruba '];
 
@@ -273,13 +287,24 @@ async function toDimensionadorAruba() {
   const care = {};
   for (const t of tiers) care[t.code] = { n: t.name, sla: t.sla, d: t.description };
 
+  const locales = datasheetsLocales();
+  const rutaLocal = (file) => (file && locales.has(file) ? `/datasheets/${file}` : null);
+
   const products = await Product.findAll({ where: { vendorId } });
   const models = products
     .filter((p) => p.specs && p.specs.fam && ['sdwan', 'gateway'].includes(p.category))
     .map((p) => ({
       id: p.model, ...specWithoutGroup(p.specs), eol: p.eol,
       elp: p.priceDisplay, elpN: p.priceNumeric,
+      dsLocal: rutaLocal(p.specs && p.specs.dsFile),
     }));
+
+  // Cada documento lleva su copia local cuando esta descargada; la pagina prefiere esa y
+  // cae a la URL oficial si falta.
+  const datasheets = {};
+  for (const [clave, d] of Object.entries(arubaData.DATASHEETS)) {
+    datasheets[clave] = { ...d, local: rutaLocal(d.file) };
+  }
 
   return {
     models,
@@ -288,7 +313,7 @@ async function toDimensionadorAruba() {
     licenses: arubaData.LICENSES,
     software: arubaData.SOFTWARE,
     centralTiers: arubaData.CENTRAL_TIERS,
-    datasheets: arubaData.DATASHEETS,
+    datasheets,
     sizing: {
       bwTiers: arubaData.BW_TIERS,
       boost: arubaData.BOOST,
