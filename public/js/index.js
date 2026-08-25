@@ -32,8 +32,8 @@ const VENDORS=[
    series:['hEX','RB4011','RB5009','CCR2004','CCR2116','CCR2216','CHR'],
    tools:['Catálogo de equipos','RouterOS Features'],live:true},
   {id:'aruba',name:'Aruba',accent:'#01A982',icon:'AB',iconCls:'ab',
-   desc:'HPE Aruba Networking: EdgeConnect SD-WAN con Boost (optimización WAN licenciada como pool del fabric) y gateways SD-Branch serie 9000 con Dynamic Segmentation.',
-   series:['EdgeConnect EC-XS/S/M','EdgeConnect EC-L/XL/2XL','EC-V virtual','Serie 9000 SD-Branch'],
+   desc:'HPE Aruba Networking: EdgeConnect SD-WAN con Boost (optimización WAN en bloques de 100 Mbps agrupados como pool del fabric), gateways SD-Branch serie 9000 y campus serie 9200 con capacidad escalable por licencia.',
+   series:['EdgeConnect EC-XS/S/M','EdgeConnect EC-L/XL','EC-V virtual','Serie 9000 SD-Branch','Serie 9200 campus'],
    tools:['Dimensionador y BOM','Guía de licencias'],live:true}
 ];
 

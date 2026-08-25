@@ -286,6 +286,9 @@ async function toDimensionadorAruba() {
     bundles: bundlesOut,
     care,
     licenses: arubaData.LICENSES,
+    software: arubaData.SOFTWARE,
+    centralTiers: arubaData.CENTRAL_TIERS,
+    datasheets: arubaData.DATASHEETS,
     sizing: {
       bwTiers: arubaData.BW_TIERS,
       boost: arubaData.BOOST,

@@ -314,10 +314,11 @@ async function seedCatalog() {
   // ── HPE Aruba Networking ──────────────────────────────────────────────────
   // aruba.js manda sobre indexPR.aruba: aporta las capas de throughput (ipsec/fw/boost),
   // los flujos y —lo que de verdad decide un hub— el número de túneles del fabric.
-  // La categoría separa las dos familias porque no se dimensionan igual: 'sdwan' son los
-  // EdgeConnect (admiten Boost) y 'gateway' los 9000 de SD-Branch (no lo admiten).
+  // La categoría separa las familias porque no se dimensionan igual: 'sdwan' son los
+  // EdgeConnect (se dimensionan por caudal WAN y admiten Boost) y 'gateway' los 9000 de
+  // sucursal y el 9240 de campus (se dimensionan por throughput de firewall y clientes).
   await seedDimensionadorModels(vendorIds.aruba, arubaData.MODELS, {
-    categoryFn: (item) => (item.fam === 'gw' ? 'gateway' : 'sdwan'),
+    categoryFn: (item) => (item.fam === 'ec' ? 'sdwan' : 'gateway'),
   });
   await seedSupportTiers(vendorIds.aruba, arubaData.CARE);
   await seedLicenseBundles(vendorIds.aruba, arubaData.BUNDLES, false);

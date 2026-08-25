@@ -110,17 +110,16 @@ module.exports = [
   {vendor:'Arista',  color:'#4E5B6E',model:'Arista 7280R3-96S2C',       seg:'Spine edge',              spec:'6.4 Tbps · 96x10GE + 2x100GE · < 1 µs',                       elp:'~ $48,000',elpN:48000},
   {vendor:'Arista',  color:'#4E5B6E',model:'Arista 7500R3-36CQ',        seg:'Spine / Core chasis',     spec:'57.6 Tbps · 36x400GE o 144x100GE · < 4 µs',                   elp:'~ $180,000',elpN:180000},
   {vendor:'Arista',  color:'#4E5B6E',model:'Arista 7800R3-36D',         seg:'Core 400G+ hiperescala',  spec:'230 Tbps · 36x800GE por LC · < 5 µs',                          elp:'Consultar',elpN:0},
-  // HPE Aruba Networking — sin precio de lista verificado (ver server/seed/legacyData/aruba.js).
-  // elpN:0 sigue la convención ya usada para el Arista 7800R3: la fila existe en el cotizador
-  // pero no aporta importe al total en lugar de aportar una cifra inventada.
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-XS',              seg:'Sucursal peq / Teletrabajo',spec:'SD-WAN 200 Mbps · IPsec 200 Mbps · Boost hasta 50 Mbps · 4x GE',        elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-S',               seg:'Sucursal',                spec:'SD-WAN 500 Mbps · IPsec 500 Mbps · Boost hasta 100 Mbps · 4 GE + 2 SFP',elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-M',               seg:'Sucursal med / gde',      spec:'SD-WAN 1 Gbps · IPsec 1 Gbps · Boost hasta 200 Mbps · 6 GE + 2x10GE',   elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-L',               seg:'Campus / Hub regional',   spec:'SD-WAN 2 Gbps · IPsec 2 Gbps · Boost hasta 500 Mbps · 1000 túneles',    elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-XL',              seg:'Hub / DC edge',           spec:'SD-WAN 5 Gbps · IPsec 5 Gbps · Boost hasta 1 Gbps · 2000 túneles',      elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-2XL',             seg:'DC / Head-end de fabric', spec:'SD-WAN 10 Gbps · IPsec 10 Gbps · Boost hasta 2 Gbps · 4000 túneles',    elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9004',       seg:'Sucursal peq SD-Branch',  spec:'4 Gbps · IPsec 1 Gbps · WAN + LAN + WLAN unificados · 4x GE',          elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9012',       seg:'Sucursal med SD-Branch',  spec:'8 Gbps · IPsec 2 Gbps · Dynamic Segmentation · 12x GE',                elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9106',       seg:'Sucursal gde / Campus',   spec:'10 Gbps · IPsec 4 Gbps · 4x GE + 2x 10GE SFP+',                        elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9240',       seg:'Campus / Hub regional',   spec:'40 Gbps · IPsec 20 Gbps · 4x 10GE SFP+ · controladora de APs',         elp:'Consultar',elpN:0},
+  // HPE Aruba Networking — SKU de hardware reales (buy.hpe.com), sin precio de lista
+  // verificado (ver server/seed/legacyData/aruba.js). elpN:0 sigue la convencion del
+  // Arista 7800R3: la fila existe pero no aporta importe en vez de aportar uno inventado.
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-XS',            seg:'Sucursal peq / Oficina remota',spec:'EdgeConnect SD-WAN · WAN 2-200 Mbps · 4x RJ45 GbE + 2x gestion',            elp:'Consultar',elpN:0},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-S',             seg:'Sucursal grande',        spec:'EdgeConnect SD-WAN · WAN 10 Mbps-3 Gbps · 8x RJ45 + 4x SFP+ · SKU S3N73A',    elp:'Consultar',elpN:0},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-M',             seg:'Hub / Sucursal grande',  spec:'EdgeConnect SD-WAN · WAN 50 Mbps-5 Gbps · 8x RJ45 + 4x SFP+ · SKU JZ872A',    elp:'Consultar',elpN:0},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-L',             seg:'Datacenter / Hub grande',spec:'EdgeConnect SD-WAN · WAN 2-10 Gbps · 6x SFP+ 10G · SKU JZ878A',               elp:'Consultar',elpN:0},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-XL',            seg:'Datacenter / Head-end',  spec:'EdgeConnect SD-WAN · WAN 2-10 Gbps · 6x SFP+/SFP28 · PSU redund. · SKU S0B67A',elp:'Consultar',elpN:0},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-V',             seg:'Virtual / Cloud',        spec:'EdgeConnect virtual · VMware/KVM/Hyper-V/AWS/Azure · licencia portable',      elp:'Consultar',elpN:0},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9004',     seg:'Sucursal peq SD-Branch', spec:'Firewall 4 Gbps · 2.048 clientes · 32 APs · 4x GbE · variante 9004-LTE',      elp:'Consultar',elpN:0},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9012',     seg:'Sucursal med SD-Branch', spec:'Firewall 6 Gbps · 2.048 clientes · 32 APs · 12x GbE 6x PoE+ · SKU R1B31A',    elp:'Consultar',elpN:0},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9240',     seg:'Campus / Hub regional',  spec:'Campus · 20 Gbps hw / 30 Silver / 40 Gold · 4x SFP28 + slot · SKU R7H95A',    elp:'Consultar',elpN:0},
 ];

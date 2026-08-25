@@ -697,10 +697,10 @@ RB5009  CCR2004  RB5009  (Hub)
       <div class="panel" style="border-left:4px solid #01A982;padding:16px 18px">
         <h2 style="margin-bottom:10px">Suscripción EdgeConnect</h2>
         <table style="font-size:12px">
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Base</td><td>Dynamic Path Control, tunnel bonding, Path Conditioning, firewall de zonas, Orchestrator.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Advanced</td><td>Base + BGP/OSPF, segmentación multi-overlay, breakout con First-packet iQ, service chaining a SSE.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Boost</td><td>Add-on de aceleración: dedup Network Memory, compresión, aceleración TCP.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Eje de cobro</td><td>Por caudal del sitio, no por modelo de appliance. Boost, por pool del fabric.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Foundation</td><td>SD-WAN esencial más NGFW avanzado: Dynamic Path Control, tunnel bonding, Path Conditioning, firewall, Orchestrator.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Advanced</td><td>Foundation + routing dinámico, segmentación multi-overlay, breakout con First-packet iQ, service chaining a SSE.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Boost</td><td>Add-on de aceleración en bloques de 100 Mbps agrupables como pool del fabric.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Eje de cobro</td><td>Por caudal del sitio (100 Mbps, 1 Gbps o ilimitado), no por modelo de appliance.</td></tr>
         </table>
       </div>
       <div class="panel" style="border-left:4px solid #01A982;padding:16px 18px">
@@ -717,7 +717,7 @@ RB5009  CCR2004  RB5009  (Hub)
         <table style="font-size:12px">
           <tr><td style="padding:4px 8px 4px 0;font-weight:600">Orchestrator</td><td>Gestión del fabric, Business Intent Overlays y ZTP. Sin licencia por dispositivo gestionado.</td></tr>
           <tr><td style="padding:4px 8px 4px 0;font-weight:600">Aruba Central</td><td>Gestión cloud de la serie 9000 junto con switches CX y APs.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Tech Care</td><td>Basic 9x5 / Essential 24x7 4 h / Critical 24x7 con reparación gestionada.</td></tr>
+          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Foundational Care</td><td>Soporte 24x7 en variantes NBD, in situ y de software.</td></tr>
           <tr><td style="padding:4px 8px 4px 0;font-weight:600">ClearPass</td><td>Fuente del rol de usuario que habilita la segmentación extremo a extremo.</td></tr>
         </table>
       </div>
@@ -731,7 +731,8 @@ RB5009  CCR2004  RB5009  (Hub)
       <ul class="fuentes-list">
         <li><b>Proceso y caudal no son el mismo número.</b> El equipo procesa el tráfico de aplicación del lado LAN; los enlaces transportan otra cifra. Path Conditioning la sube, porque la paridad FEC ocupa ancho de banda; Boost la baja, porque deduplica y comprime antes de salir. Lo que se contrata al operador —y lo que fija el tier de la suscripción— es la segunda.</li>
         <li><b>La cifra que aplica es la de IPsec, no la de portada.</b> En EdgeConnect todo el tráfico del overlay va en túnel: el throughput de sistema sin cifrar es un escenario que no ocurre en producción.</li>
-        <li><b>El límite del hub son los túneles, no los Gbps.</b> Un concentrador de 400 sucursales necesita 400+ túneles del fabric aunque le sobre capacidad. Es el muro que ninguna cifra de throughput anticipa.</li>
+        <li><b>Cada familia se dimensiona con lo que HPE publica para ella.</b> Para EdgeConnect es un <b>rango</b> de caudal WAN por modelo, no un throughput único: quedar por debajo del suelo del rango señala sobredimensionamiento y es tan accionable como pasarse del techo. Para los gateways es el throughput de firewall más la capacidad de clientes y APs.</li>
+        <li><b>En la serie 9200 la capacidad la fija la licencia, no el equipo.</b> El mismo chasis entrega 20 Gbps solo con hardware, 30 con licencia Silver y 40 con Gold, escalando también APs y dispositivos. Crecer no obliga a sustituir el equipo.</li>
       </ul>
     </div>
     <div class="panel" style="margin-top:18px">
@@ -746,10 +747,10 @@ RB5009  CCR2004  RB5009  (Hub)
       <h2>Fuentes de Información y estado de verificación</h2>
       <p style="font-size:13px;color:var(--steel);margin-bottom:12px">A diferencia del catálogo de Fortinet, los datos de Aruba <b>no están verificados contra un price list firmado</b>. Es una diferencia deliberada y declarada, no un descuido:</p>
       <ul class="fuentes-list">
-        <li><b>Throughput, flujos y túneles:</b> HPE Aruba Networking EdgeConnect Enterprise Data Sheet y documentación de producto de la serie 9000. Sirven para descartar un modelo corto, no para comprometer una cifra con el cliente.</li>
-        <li><b>Estructura de licenciamiento:</b> documentación de EdgeConnect Orchestrator — niveles Base y Advanced, tiers de caudal por sitio y pool de Boost a nivel de fabric.</li>
+        <li><b>Capacidad y SKU:</b> páginas de producto y de tienda oficiales de HPE/Aruba. Los SKU de hardware (JZ872A, JZ878A, S3N73A, S0B67A, R1B31A, R7H95A y demás) son reales; el dimensionador enlaza el datasheet de cada modelo.</li>
+        <li><b>Estructura de licenciamiento:</b> niveles Foundation, Advanced y On-Premises; tiers de caudal de 100 Mbps, 1 Gbps e ilimitado; Boost en bloques de 100 Mbps agrupables como pool del fabric.</li>
         <li><b>SKU y precios:</b> <b>no disponibles</b>. El catálogo los deja en nulo a propósito y el BOM declara esas líneas "sin cotizar", en vez de mostrar un importe verosímil pero inventado.</li>
-        <li><b>Soporte:</b> HPE Pointnext Tech Care (Basic / Essential / Critical), que sustituyó a Foundation Care. SLA orientativos — confirmar cobertura regional y tiempos de RMA con HPE.</li>
+        <li><b>Soporte:</b> HPE Aruba Networking Foundational Care, en variantes de hardware (NBD e in situ) y de software. SLA orientativos — confirmar cobertura regional y tiempos de RMA con HPE.</li>
         <li><b>Antes de cotizar en firme:</b> contrastar contra el datasheet vigente y la lista del distribuidor HPE autorizado. El detalle de qué está confirmado y qué no vive en la cabecera de <code>server/seed/legacyData/aruba.js</code>.</li>
       </ul>
     </div>
