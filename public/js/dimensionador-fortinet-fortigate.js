@@ -52,7 +52,7 @@ $('rolSeg').addEventListener('click',e=>{
   render();
 });
 $('segSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('segSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));segMode=b.dataset.v;render();});
-['bw','unit','users','perUser','head','sessNeed','sites','conc','pctOverlay',
+['bw','unit','users','perUser','head','sesUser','sessNeed','sites','conc','pctOverlay',
  'chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa'].forEach(id=>$(id).addEventListener('input',render));
 // En HA se compran 2 unidades y cada una lleva su propia suscripcion FortiGuard: enlazar la
 // casilla con la cantidad del BOM evita cotizar un clúster con una sola licencia.
@@ -295,7 +295,34 @@ function render(){
   });
 
   // Candidatos: modelos vigentes que cumplen throughput Y sesiones concurrentes.
-  const sessNeed=parseInt($('sessNeed').value)||0;
+  // ── SESIONES CONCURRENTES, DERIVADAS DE LOS USUARIOS ──────────────────────
+  //
+  // Pedir un total absoluto era pedir un dato que nadie sabe estimar. Lo que si se estima
+  // es cuantas sesiones abre un usuario, asi que el total se deriva: usuarios x sesiones.
+  // El campo absoluto queda como anulacion para escenarios donde la cifra agregada ya se
+  // conoce (CGNAT, portales cautivos).
+  //
+  // HALLAZGO DE INGENIERIA, contraintuitivo y util: con las densidades de este catalogo
+  // —entre 577 y 2121 sesiones concurrentes por Mbps de Threat Protection— la tabla de
+  // sesiones NO limita nunca antes que el throughput en un perfil de usuario humano. Con
+  // 3 Mbps por usuario harian falta entre 1.700 y 5.500 sesiones POR USUARIO para que
+  // empatara. En 500 usuarios con 20 sesiones el eje de sesiones queda a 300x de
+  // distancia. Solo empieza a competir cuando el ancho de banda por dispositivo es muy
+  // bajo y las sesiones muchas: flotas IoT y CGNAT, a partir de ~50-100 sesiones por
+  // dispositivo con menos de 0,1 Mbps cada uno.
+  //
+  // Lo anterior vale para sesiones CONCURRENTES, que consumen memoria. El eje que si
+  // aprieta en campus grandes es el de sesiones NUEVAS POR SEGUNDO, que consume CPU y se
+  // desploma con inspeccion proxy — y esa cifra no esta en el catalogo (ver hallazgo 05
+  // de la auditoria). Por eso se avisa en vez de omitirlo.
+  const sesUser=Math.max(0,parseInt($('sesUser').value)||0);
+  const sessOverride=parseInt($('sessNeed').value)||0;
+  const sessNeed=sessOverride||Math.round(users*sesUser*(1+head));
+  $('sesCalc').innerHTML=sessOverride
+    ? `Forzado a <b>${sessOverride.toLocaleString('en-US')}</b> sesiones. Se ignora el cálculo por usuario.`
+    : (sesUser&&users
+        ? `Calculado: ${users} usuarios x ${sesUser} sesiones + ${Math.round(head*100)} % de margen = <b>${sessNeed.toLocaleString('en-US')}</b> sesiones concurrentes.`
+        : 'Sin restricción de sesiones: pon un valor por usuario o un total.');
   let outBySess=0;
   const candidates=MODELS.filter(m=>{
     if(m.eol||getCap(m)<effectiveNeed) return false;
@@ -351,6 +378,15 @@ function render(){
     if(rolSdwan==='hub'&&modoCaudal==='agg') flags.push(`<b>Escala del fabric:</b> ${sites} túnel(es) del overlay a terminar. <b class="warn">El límite de túneles por modelo no está en este catálogo</b> — confirmarlo en el datasheet del ${esc(m.id)} antes de cotizar. Con ADVPN los shortcuts spoke-a-spoke son dinámicos y no cuentan contra el hub.`);
     if($('chkHa').checked) flags.push('En <b>activo-pasivo el clúster no suma capacidad</b>: el throughput sigue siendo el de una unidad. El par se cotiza por disponibilidad, no por rendimiento.');
     if(m.eol)flags.push('<b class="warn">Modelo descontinuado (EOL)</b> — solo referencia para equipos ya instalados, no para diseños nuevos.');
+    // Que eje manda, y a que distancia esta el otro: es lo que evita subir de gama por un
+    // limite que en realidad esta a dos ordenes de magnitud.
+    if(sessNeed&&m.sess){
+      const ocupTh=effectiveNeed/getCap(m), ocupSes=sessNeed/m.sess;
+      flags.push(ocupSes>ocupTh
+        ? `<b class="warn">Manda la tabla de sesiones:</b> ${Math.round(ocupSes*100)} % de las ${(m.sess/1e6).toFixed(1)} M sesiones del modelo, frente al ${Math.round(ocupTh*100)} % de throughput. Perfil de muchas sesiones y poco caudal — típico de IoT o CGNAT.`
+        : `El throughput manda con holgura sobre las sesiones: ${Math.round(ocupTh*100)} % de la capa de inspección frente a ${(ocupSes*100).toFixed(2)} % de la tabla de sesiones, que queda a <b>${Math.round(m.sess/sessNeed)}x</b> de distancia. Subir de gama por sesiones concurrentes no se justifica en este perfil.`);
+      flags.push('<b>Lo que sí puede apretar:</b> las <b>sesiones nuevas por segundo</b>, que consumen CPU y caen con inspección proxy. Fortinet publica esa cifra, pero <b>no está en este catálogo</b>: confirmarla en el Product Matrix si el perfil son sesiones cortas y masivas.');
+    }
     return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
       <li>Requerimiento <b>${fmt(effectiveNeed)}</b> en capa <b>${esc(TIER_BY_K[capa.k].n)}</b> contra capacidad <b>${fmt(getCap(m))}</b> — headroom ${Math.round((1-effectiveNeed/getCap(m))*100)}%</li>
       ${capa.elevada?`<li><b class="warn">Capa elevada:</b> elegiste <b>${esc(TIER_BY_K[profile].n)}</b>, pero ${capa.elevan.map(f=>esc(f.n)).join(' y ')} obliga${capa.elevan.length>1?'n':''} a dimensionar contra <b>${esc(TIER_BY_K[capa.k].n)}</b>. Activar inspección saca la sesión del fast path del ASIC: no es un recargo porcentual, es otra cifra del datasheet.</li>`:''}
@@ -414,7 +450,9 @@ function render(){
         <tr><td>Requerimiento final</td><td class="n"><b>${fmt(effectiveNeed)}</b></td></tr>
         <tr><td>Capacidad efectiva</td><td class="n">${fmt(getCap(m))}${rolSdwan!=='none'&&techoQueManda(m).cual==='overlay'?' <span class="warn">(limita el overlay)</span>':''}</td></tr>
         <tr><td>Headroom disponible</td><td class="n">${Math.round((1-effectiveNeed/getCap(m))*100)}%</td></tr>
+        <tr><td>Sesiones por usuario</td><td class="n">${sessOverride?'—  (total forzado)':sesUser||'—'}</td></tr>
         <tr><td>Sesiones concurrentes</td><td class="n">${sessNeed?sessNeed.toLocaleString('en-US')+' / ':''}${m.sess.toLocaleString('en-US')}</td></tr>
+        ${sessNeed&&m.sess?`<tr><td>Eje que limita</td><td class="n">${(sessNeed/m.sess)>(effectiveNeed/getCap(m))?'<b class="warn">Tabla de sesiones</b>':'Throughput'}</td></tr>`:''}
         <tr><td>Unidades a cotizar</td><td class="n">${$('chkHa').checked?'2 (HA) — licencia por unidad':'1'}</td></tr>
       </tbody></table>`;
   };
