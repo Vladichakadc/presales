@@ -150,7 +150,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   <section class="panel">
     <h2>1 · Tipo de inspección requerida</h2>
     <div class="field">
-      <label>Capa de inspección a dimensionar</label>
+      <label>Capa de inspección a dimensionar <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— es el punto de partida: las funciones que actives abajo pueden elevarla</span></label>
       <div class="seg" id="profileSeg">
         <button type="button" data-v="fw"   aria-pressed="false">FW<br>puro</button>
         <button type="button" data-v="vpn"  aria-pressed="false">IPsec<br>VPN</button>
@@ -159,6 +159,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
         <button type="button" data-v="tp"   aria-pressed="true">Threat<br>Prot.</button>
       </div>
       <p class="hint" id="profileHint">NGFW + antivirus + logging. Es el número realista de una sucursal con el stack de seguridad completo activo — el que se debe usar para dimensionar de verdad.</p>
+      <p class="hint" style="margin-top:6px">Las cinco cifras miden rutas de procesamiento distintas, no escenarios del mismo número. Por eso activar una función no aplica un recargo porcentual: <b>cambia la cifra del datasheet que aplica</b>. El motor toma siempre la capa más profunda entre la que elijas aquí y las que obliguen las funciones activas.</p>
     </div>
     <div class="field">
       <label><input type="checkbox" id="chkSsl"> <span>Inspección profunda SSL/TLS<span class="sku" style="display:block;margin-top:2px">Fuerza el piso a Threat Protection (no se puede inspeccionar TLS sin el stack completo) y aplica un castigo adicional estimado del 35%. Fortinet dejó de publicar una cifra de SSL Inspection por modelo en el Product Matrix.</span></span></label>
@@ -190,10 +191,10 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   <section class="panel">
     <h2>2 · Funciones adicionales</h2>
     <div class="checks">
-      <label class="check"><input type="checkbox" id="chkAv"> <span>Antivirus / Antimalware (FortiGuard AV)<span class="sku">Inspección de archivos en línea. Añade latencia y carga de CPU moderada.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkWeb"> <span>Web Filtering (FortiGuard Web Filter)<span class="sku">Categorización de URLs en tiempo real. Mínima penalización de rendimiento.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkSandbox"> <span>FortiSandbox integrado (CASI / Cloud)<span class="sku">Análisis de archivos sospechosos. Requiere conectividad cloud o appliance local.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkIotDlp"> <span>IoT Detection + DLP<span class="sku">Detección de dispositivos IoT y prevención de pérdida de datos. Carga adicional de procesamiento.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkAv"> <span>Antivirus / Antimalware (FortiGuard AV)<span class="sku">Eleva el piso a <b>Threat Protection</b>: la inspección de archivos en línea saca la sesión del fast path del ASIC, y esa es la cifra que pasa a aplicar.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkWeb"> <span>Web Filtering / Application Control<span class="sku">Eleva el piso a <b>NGFW</b>, que es la cifra que Fortinet mide con IPS + Application Control sobre Enterprise Mix.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkSandbox"> <span>FortiSandbox integrado (CASI / Cloud)<span class="sku"><b>No eleva la capa:</b> analiza fuera de banda, así que no consume throughput del FortiGate — solo añade latencia al primer encuentro de un archivo. Se cotiza aparte.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkIotDlp"> <span>IoT Detection + DLP<span class="sku">Eleva el piso a <b>Threat Protection</b>: corren sobre el stack completo. Requieren el bundle Enterprise Protection.</span></span></label>
       <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad (HA A-A o A-P)<span class="sku">Se requieren 2 unidades. El modelo seleccionado se debe duplicar en la cotización.</span></span></label>
     </div>
     <div class="field" style="margin-top:16px">
@@ -230,7 +231,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   </section>
 
   <div class="note">
-    <b>Nota metodológica.</b> Las cinco cifras que publica Fortinet no son escenarios alternativos del mismo número: miden rutas de procesamiento distintas. <b>Firewall</b> (1518 B UDP) e <b>IPsec VPN</b> (512 B) van descargadas al procesador de red del ASIC — la sesión no toca la CPU. En cuanto se aplica cualquier perfil de inspección, la sesión <b>sale del offload</b> y pasa por CPU con asistencia del content processor: ahí viven <b>IPS</b>, <b>NGFW</b> y <b>Threat Protection</b>, todas medidas con Enterprise Mix. Por eso dimensionar una sucursal con UTM completo contra la cifra de firewall puro subdimensiona por un orden de magnitud, y es el error de preventa más frecuente con FortiGate. Para inspección TLS profunda, Fortinet ya no publica un valor por modelo en el Product Matrix: esta herramienta estima un 35% adicional sobre Threat Protection y lo declara como estimación — validar con PoC antes de comprometerlo. Consultar el <b>FortiGate Datasheet</b> del modelo para sesiones nuevas por segundo y detalle de interfaces.
+    <b>Nota metodológica.</b> Las cinco cifras que publica Fortinet no son escenarios alternativos del mismo número: miden rutas de procesamiento distintas. <b>Firewall</b> (1518 B UDP) e <b>IPsec VPN</b> (512 B) van descargadas al procesador de red del ASIC — la sesión no toca la CPU. En cuanto se aplica cualquier perfil de inspección, la sesión <b>sale del offload</b> y pasa por CPU con asistencia del content processor: ahí viven <b>IPS</b>, <b>NGFW</b> y <b>Threat Protection</b>, todas medidas con Enterprise Mix. Por eso dimensionar una sucursal con UTM completo contra la cifra de firewall puro subdimensiona por un orden de magnitud, y es el error de preventa más frecuente con FortiGate. Para inspección TLS profunda, Fortinet ya no publica un valor por modelo en el Product Matrix: esta herramienta aplica un derate estimado del 35% <b>sobre la capacidad</b> de Threat Protection —nunca sobre el requerimiento, que sobredimensionaría— y lo declara como estimación; validar con PoC antes de comprometerlo. Ninguna otra función aplica recargo: lo que hacen es <b>elevar el piso de capa</b>, porque las cifras de Enterprise Mix ya se miden con esas funciones activas y sumarles un porcentaje contaría dos veces lo mismo. Consultar el <b>FortiGate Datasheet</b> del modelo para sesiones nuevas por segundo y detalle de interfaces.
   </div>
 </div>
 </div>

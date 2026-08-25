@@ -36,7 +36,6 @@ $('profileSeg').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   [...$('profileSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
   profile=b.dataset.v;
-  $('profileHint').textContent=TIER_BY_K[profile].d;
   render();
 });
 $('wanSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('wanSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));wanMode=b.dataset.v;render();});
@@ -89,14 +88,54 @@ const SOFTWARE=[
   {n:'FortiSASE', d:'SASE, ZTNA y EPP como servicio, licenciado por usuario.'},
 ];
 
+// ── PISO DE CAPA POR FUNCION ACTIVA ────────────────────────────────────────
+//
+// Activar una funcion de inspeccion NO encarece un porcentaje la capa elegida: cambia la
+// capa que aplica. El antivirus no suma "un 8% al firewall" — saca la sesion del fast path
+// del NP y la cifra que rige pasa a ser Threat Protection, que en gama de sucursal es un
+// orden de magnitud menor (FortiGate 60F: 10 Gbps de firewall frente a 700 Mbps de TP).
+//
+// El motor anterior sumaba recargos al REQUERIMIENTO y dejaba la capa a criterio del
+// usuario. Eso rompia en las dos direcciones: con la capa en "firewall puro" y antivirus
+// marcado declaraba 93% de holgura sobre un equipo que iba al 100% (factor 14,3x), y con
+// la capa ya en Threat Protection contaba dos veces lo mismo, porque TP YA ES
+// NGFW + antivirus + logging medido con Enterprise Mix.
+//
+// Ahora cada funcion impone un PISO y se aplica la capa mas profunda de todas las activas.
+// La eleccion del usuario sigue valiendo como base: puede dimensionar contra una capa mas
+// exigente de la que sus funciones obligan, pero no contra una mas liviana.
+const ORDEN_CAPAS=['fw','vpn','ips','ngfw','tp'];
+const PISO_POR_FUNCION=[
+  {id:'chkAv',     capa:'tp',   n:'Antivirus / Antimalware'},
+  {id:'chkWeb',    capa:'ngfw', n:'Web Filtering / Application Control'},
+  {id:'chkIotDlp', capa:'tp',   n:'IoT Detection + DLP'},
+  {id:'chkSsl',    capa:'tp',   n:'Inspección profunda SSL/TLS'},
+];
+// FortiSandbox no figura arriba a proposito: analiza FUERA DE BANDA. No consume throughput
+// del FortiGate, solo anade latencia al primer encuentro de un archivo. El +10% que se le
+// aplicaba antes no correspondia a ninguna cifra medible.
+
+function capaEfectiva(){
+  const base=ORDEN_CAPAS.indexOf(profile);
+  let idx=base;
+  const elevan=[];
+  for(const f of PISO_POR_FUNCION){
+    const nodo=$(f.id);
+    if(!nodo||!nodo.checked) continue;
+    const i=ORDEN_CAPAS.indexOf(f.capa);
+    if(i>base) elevan.push(f);
+    if(i>idx) idx=i;
+  }
+  return {k:ORDEN_CAPAS[idx], elevan, elevada:idx>base};
+}
+
 // La inspección TLS profunda exige el stack completo, así que su piso es Threat Protection
-// aunque se haya elegido una capa más liviana. El castigo se aplica UNA vez y sobre la
-// capacidad — antes se aplicaba al requerimiento Y a la capacidad, sobredimensionando.
+// aunque se haya elegido una capa más liviana. El derate se aplica UNA vez y sobre la
+// capacidad — nunca sobre el requerimiento, que sobredimensionaría.
 function getCap(m){
-  const ssl=$('chkSsl').checked;
-  const base=m[ssl?'tp':profile];
-  const v=base!=null?base:m.ngfw;
-  return ssl?v*SSL_DERATE:v;
+  const {k}=capaEfectiva();
+  const v=m[k]!=null?m[k]:m.ngfw;
+  return $('chkSsl').checked?v*SSL_DERATE:v;
 }
 
 // Coincidencia por subcadena en lugar de lista exacta: los `seg` del catálogo son 21 cadenas
@@ -108,6 +147,17 @@ const SEG_MATCH={
   dc:/DC|Carrier|Hyperscale/i,
 };
 
+// El texto bajo el selector explica la capa que REALMENTE se va a usar, que no siempre es
+// la que el usuario pulsó: si una función la eleva, hay que decirlo donde se elige.
+function pintarHintCapa(capa){
+  const nodo=$('profileHint');
+  if(!nodo) return;
+  nodo.innerHTML=capa.elevada
+    ? `<b class="warn">Capa elevada a ${esc(TIER_BY_K[capa.k].n)}</b> por ${capa.elevan.map(f=>esc(f.n)).join(', ')}. `
+      + `${esc(TIER_BY_K[capa.k].d)} Elegiste ${esc(TIER_BY_K[profile].n)}, pero activar inspección cambia la cifra del datasheet que aplica, no le suma un porcentaje.`
+    : esc(TIER_BY_K[capa.k].d);
+}
+
 function render(){
   const bw=parseFloat($('bw').value)||0;
   const unit=parseFloat($('unit').value);
@@ -115,16 +165,15 @@ function render(){
   const head=(parseFloat($('head').value)||0)/100;
   $('headVal').textContent=Math.round(head*100)+' %';
 
-  let featurePenalty=1.0;
-  if($('chkAv').checked) featurePenalty+=0.08;
-  if($('chkWeb').checked) featurePenalty+=0.04;
-  if($('chkSandbox').checked) featurePenalty+=0.10;
-  if($('chkIotDlp').checked) featurePenalty+=0.06;
-
-  // base need: max of BW-based and user-based
-  const bwBaseMbps=bw*unit*(1+head)*featurePenalty;
-  const userBaseMbps=users*3*(1+head)*featurePenalty; // 3 Mbps/user avg
+  // Sin recargo por funciones: lo que cambia al activarlas es la CAPA contra la que se
+  // compara (ver capaEfectiva), no el requerimiento. Sumar ademas un porcentaje contaria
+  // dos veces lo mismo, porque las cifras de Enterprise Mix de Fortinet ya incluyen esas
+  // funciones activas. El unico factor de seguridad es el margen de crecimiento.
+  const bwBaseMbps=bw*unit*(1+head);
+  const userBaseMbps=users*3*(1+head); // 3 Mbps/usuario — control visible en el bloque 2
   const effectiveNeed=Math.max(bwBaseMbps,userBaseMbps);
+  const capa=capaEfectiva();
+  pintarHintCapa(capa);
 
   // scale
   const allCaps=MODELS.map(m=>m.fw);
@@ -178,9 +227,10 @@ function render(){
   // la escalera de capas, el resumen y el BOM siguen al equipo ELEGIDO. Ver /js/ficha.js.
   if(!pick){
     const why=[];
-    why.push(`<li>Requerimiento de <b>${fmt(effectiveNeed)}</b> en la capa <b>${TIER_BY_K[profile].n}</b>${$('chkSsl').checked?' con inspección SSL profunda':''}.</li>`);
+    why.push(`<li>Requerimiento de <b>${fmt(effectiveNeed)}</b> en la capa <b>${TIER_BY_K[capa.k].n}</b>${$('chkSsl').checked?' con inspección SSL profunda':''}.</li>`);
+    if(capa.elevada) why.push(`<li>La capa se elevó de <b>${TIER_BY_K[profile].n}</b> a <b>${TIER_BY_K[capa.k].n}</b> por ${capa.elevan.map(f=>esc(f.n)).join(', ')}.</li>`);
     if(outBySess) why.push(`<li><b>${outBySess}</b> modelo(s) descartado(s) por tabla de sesiones: necesitas ${sessNeed.toLocaleString('en-US')} concurrentes.</li>`);
-    if(profile==='tp'||$('chkSsl').checked) why.push('<li>Estás dimensionando contra la capa más exigente. Si el diseño no requiere antivirus en línea sobre todo el tráfico, evaluar la capa <b>NGFW</b> o segmentar por política qué tráfico se inspecciona a fondo — es la palanca que más capacidad libera en FortiGate.</li>');
+    if(capa.k==='tp'||$('chkSsl').checked) why.push('<li>Estás dimensionando contra la capa más exigente. Si el diseño no requiere antivirus en línea sobre todo el tráfico, evaluar la capa <b>NGFW</b> o segmentar por política qué tráfico se inspecciona a fondo — es la palanca que más capacidad libera en FortiGate.</li>');
     why.push('<li>Por encima del catálogo: evaluar chasis FortiGate 7000F o distribuir la carga en varias unidades.</li>');
     FICHA.render({contenedor:'verdict', candidatos:[], recomendado:null,
       vacioTitulo:'Ningún modelo vigente cumple todas las restricciones',
@@ -192,7 +242,7 @@ function render(){
   $('verdict').style.borderLeftColor='var(--red)';
 
   const medidoresDe=m=>[
-    {etq:`Capa ${TIER_BY_K[profile].n}${$('chkSsl').checked?' + SSL':''}`,
+    {etq:`Capa ${TIER_BY_K[capa.k].n}${$('chkSsl').checked?' + SSL':''}`,
      val:effectiveNeed, tope:getCap(m), txt:fmt(effectiveNeed)+' / '+fmt(getCap(m))},
     {etq:'Sesiones concurrentes', val:sessNeed, tope:m.sess,
      txt:(sessNeed?sessNeed.toLocaleString('en-US')+' / ':'')+(m.sess/1000).toFixed(0)+'K'},
@@ -201,14 +251,15 @@ function render(){
   const porQueDe=m=>{
     const flags=[];
     if($('chkSsl').checked)flags.push(`<b class="warn">Inspección SSL profunda:</b> capacidad estimada en ${fmt(getCap(m))} sobre los ${fmt(m.tp)} de Threat Protection. Fortinet ya no publica esta cifra por modelo — validar con una PoC antes de comprometerla.`);
-    if($('chkAv').checked)flags.push('Antivirus en línea ya está contemplado dentro de Threat Protection; el content processor (CP9/CP10) asiste la inspección.');
-    if($('chkSandbox').checked)flags.push('FortiSandbox se cotiza aparte (appliance o suscripción cloud) — no consume throughput del FortiGate, pero sí añade latencia al primer encuentro de un archivo.');
-    if($('chkIotDlp').checked)flags.push('IoT Security y DLP requieren el bundle <b>Enterprise Protection</b>: UTP y ATP no los incluyen.');
+    if($('chkAv').checked)flags.push('El antivirus en línea es lo que fija el piso en Threat Protection: esa cifra ya lo incluye, junto con el logging. El content processor (CP9/CP10) asiste la inspección.');
+    if($('chkSandbox').checked)flags.push('FortiSandbox analiza <b>fuera de banda</b>: se cotiza aparte y <b>no consume throughput del FortiGate</b>, solo añade latencia al primer encuentro de un archivo. Por eso no eleva la capa de dimensionamiento.');
+    if($('chkIotDlp').checked)flags.push('IoT Security y DLP requieren el bundle <b>Enterprise Protection</b> (UTP y ATP no los incluyen) y elevan el piso a Threat Protection, porque corren sobre el stack completo.');
     if($('chkHa').checked)flags.push('<b>HA:</b> se cotizan 2 unidades y <b>cada una necesita su propia suscripción FortiGuard</b> — la licencia no se comparte entre nodos del clúster.');
     if(wanMode==='dual')flags.push('<b>SD-WAN sin costo de licencia:</b> el balanceo por SLA, ADVPN y la selección dinámica de camino vienen en FortiOS. No hay suscripción por dispositivo como en Cisco Catalyst SD-WAN o Meraki.');
     if(m.eol)flags.push('<b class="warn">Modelo descontinuado (EOL)</b> — solo referencia para equipos ya instalados, no para diseños nuevos.');
     return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
-      <li>Requerimiento <b>${fmt(effectiveNeed)}</b> en capa <b>${esc(TIER_BY_K[profile].n)}</b> contra capacidad <b>${fmt(getCap(m))}</b> — headroom ${Math.round((1-effectiveNeed/getCap(m))*100)}%</li>
+      <li>Requerimiento <b>${fmt(effectiveNeed)}</b> en capa <b>${esc(TIER_BY_K[capa.k].n)}</b> contra capacidad <b>${fmt(getCap(m))}</b> — headroom ${Math.round((1-effectiveNeed/getCap(m))*100)}%</li>
+      ${capa.elevada?`<li><b class="warn">Capa elevada:</b> elegiste <b>${esc(TIER_BY_K[profile].n)}</b>, pero ${capa.elevan.map(f=>esc(f.n)).join(' y ')} obliga${capa.elevan.length>1?'n':''} a dimensionar contra <b>${esc(TIER_BY_K[capa.k].n)}</b>. Activar inspección saca la sesión del fast path del ASIC: no es un recargo porcentual, es otra cifra del datasheet.</li>`:''}
       <li>Sesiones concurrentes: <b>${(m.sess/1000).toFixed(0)}K</b> | Interfaces: ${esc(m.ifaces)}</li>
       ${flags.map(f=>`<li>${f}</li>`).join('')}
     </ul>`;
@@ -257,7 +308,9 @@ function render(){
     $('sizingBox').innerHTML=`
       <table><tbody>
         <tr><td>Equipo evaluado</td><td class="n">${esc(m.id)}${m.id===pick.id?'':' (elegido a mano)'}</td></tr>
-        <tr><td>Capa dimensionada</td><td class="n">${esc(TIER_BY_K[profile].n)}</td></tr>
+        <tr><td>Capa seleccionada</td><td class="n">${esc(TIER_BY_K[profile].n)}</td></tr>
+        <tr><td><b>Capa efectiva</b></td><td class="n"><b>${esc(TIER_BY_K[capa.k].n)}</b>${capa.elevada?' <span class="warn">(elevada)</span>':''}</td></tr>
+        ${capa.elevada?`<tr><td>Motivo de la elevación</td><td class="n">${capa.elevan.map(f=>esc(f.n)).join(', ')}</td></tr>`:''}
         <tr><td>Inspección SSL profunda</td><td class="n">${$('chkSsl').checked?`Sí — piso Threat Protection x${SSL_DERATE} (estimado)`:'No'}</td></tr>
         <tr><td>Ancho de banda WAN</td><td class="n">${fmt(bw*unit)}</td></tr>
         <tr><td>Usuarios estimados</td><td class="n">${users}</td></tr>
@@ -298,7 +351,7 @@ function render(){
 function renderTiers(m,need){
   const ssl=$('chkSsl').checked;
   const top=m.fw||1;
-  const activeK=ssl?'tp':profile;
+  const activeK=capaEfectiva().k;
   $('perfModel').textContent='— '+m.id;
   $('perfTiers').innerHTML=TIERS.map((t,i)=>{
     const v=m[t.k];
