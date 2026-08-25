@@ -7,11 +7,16 @@ let bomFilas=[], bomMeta={};
 // El modelo recomendado se lleva solo a la pestana de BOM, y solo cuando la recomendacion
 // CAMBIA: asi una eleccion manual para comparar no se pisa al mover un parametro.
 let ultimaRecomendacion=null;
-function sincronizarConBom(pick){
-  const id=pick?pick.id:null;
+function sincronizarConBom(elegido){
+  const id=elegido?elegido.id:null;
   if(id===ultimaRecomendacion) return;
   ultimaRecomendacion=id;
+  llevarABom(id);
+}
+// Eleccion explicita en el desplegable de equipos: se lleva al BOM siempre.
+function llevarABom(id){
   if(!id) return;
+  ultimaRecomendacion=id;
   const sel=$('pickModel');
   if(!sel||sel.value===id) return;
   sel.value=id;
@@ -116,70 +121,120 @@ function render(){
   lastPick = pick;
   sincronizarConBom(pick);
 
+  // ── Presentacion ──────────────────────────────────────────────────────────
+  // Desplegable con todos los que cumplen; medidores, soporte, licencias y BOM siguen al
+  // equipo ELEGIDO. Ver /js/ficha.js.
   const verdict=$('verdict');
   if(!pick){
-    $('vModel').textContent='Supera el catálogo';
-    $('vFamily').textContent='Considerar ASR 9000 o Catalyst 9800 con capacidad adicional';
+    FICHA.render({contenedor:'verdict', candidatos:[], recomendado:null,
+      vacioTitulo:'Considerar ASR 9000 o Catalyst 9800 con capacidad adicional',
+      vacioDetalle:'<p class="warn">El requerimiento supera la capacidad máxima del catálogo configurado. Escalar a ASR 9000 o consultar solución personalizada.</p>'});
     verdict.style.borderLeftColor='var(--amber)';
-    $('vWhy').innerHTML='<p class="warn">El requerimiento supera la capacidad máxima del catálogo configurado. Escalar a ASR 9000 o consultar solución personalizada.</p>';
-    ['mFwd','mIpsec','mSdwan'].forEach(id => { $('m'+id.slice(1)+'Bar').style.width='0%'; });
     return;
   }
   verdict.style.borderLeftColor='var(--red)';
-  $('vModel').textContent=pick.id;
-  $('vFamily').textContent=pick.fam+' · Serie '+pick.ser;
-  $('pickLbl').textContent=pick.id; $('pickLbl').style.display='block';
-  $('pickLbl').style.left=xPct(profile==='ipsec'?pick.ipsec:profile==='sdwan'?(pick.sdwan||pick.ipsec):pick.fwd)+'%';
 
-  const setPct=(id,val,cap)=>{
-    const pct=cap>0?Math.min(val/cap*100,100):0;
-    const bar=$(id);
-    bar.style.width=pct+'%';
-    bar.className=pct>90?'tight':pct<70?'good':'';
-  };
-  $('mFwdVal').textContent=fmt(needMbps)+' / '+fmt(pick.fwd);
-  setPct('mFwdBar', needMbps, pick.fwd);
-  $('mIpsecVal').textContent=fmt(profile==='ipsec'?needMbps:0)+' / '+fmt(pick.ipsec);
-  setPct('mIpsecBar', profile==='ipsec'?needMbps:0, pick.ipsec);
-  const sdwanCap=pick.sdwan||pick.ipsec;
-  $('mSdwanVal').textContent=fmt(profile==='sdwan'?needMbps:0)+' / '+fmt(sdwanCap);
-  setPct('mSdwanBar', profile==='sdwan'?needMbps:0, sdwanCap);
+  const capDe=m=>profile==='ipsec'?m.ipsec:profile==='sdwan'?(m.sdwan||m.ipsec):m.fwd;
 
-  const flags=[];
-  if($('sNgfw').checked) flags.push('Zona-Based Firewall añade ~15% de carga de procesamiento.');
-  if($('sVoice').checked) flags.push('CUBE/SIP añade ~10% por procesamiento de señalización de voz.');
-  if($('sAppx').checked) flags.push('NBAR/AppX añade ~8% por clasificación de tráfico.');
-  if($('sUmbrella').checked) flags.push('Umbrella SIG añade ~12% por encapsulación de túneles.');
-  if($('chkRedund').checked && !pick.redund) flags.push('<span class="warn">Este modelo no tiene redundancia de fuente de serie — verificar disponibilidad de kit de expansión.</span>');
-  if($('chk4g').checked && !pick.lte) flags.push('Se requiere módulo NIM LTE adicional (NIM-4G-LTE-LA o similar).');
+  const medidoresDe=m=>[
+    {etq:'Forwarding (bidireccional)', val:needMbps, tope:m.fwd, txt:fmt(needMbps)+' / '+fmt(m.fwd)},
+    {etq:'IPsec VPN', val:profile==='ipsec'?needMbps:0, tope:m.ipsec,
+     txt:fmt(profile==='ipsec'?needMbps:0)+' / '+fmt(m.ipsec)},
+    {etq:'SD-WAN (IPsec + AppFlow)', val:profile==='sdwan'?needMbps:0, tope:m.sdwan||m.ipsec,
+     txt:fmt(profile==='sdwan'?needMbps:0)+' / '+fmt(m.sdwan||m.ipsec)},
+  ];
 
-  const alts = candidates.slice(1,4).map(m=>m.id);
-  $('vWhy').innerHTML = `
-    <ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
-      <li>Requerimiento con margen: <b>${fmt(needMbps)}</b> | Capacidad del equipo: <b>${fmt(profile==='ipsec'?pick.ipsec:profile==='sdwan'?(pick.sdwan||pick.ipsec):pick.fwd)}</b></li>
-      <li>Puertos: ${pick.ports}</li>
+  const porQueDe=m=>{
+    const flags=[];
+    if($('sNgfw').checked) flags.push('Zona-Based Firewall añade ~15% de carga de procesamiento.');
+    if($('sVoice').checked) flags.push('CUBE/SIP añade ~10% por procesamiento de señalización de voz.');
+    if($('sAppx').checked) flags.push('NBAR/AppX añade ~8% por clasificación de tráfico.');
+    if($('sUmbrella').checked) flags.push('Umbrella SIG añade ~12% por encapsulación de túneles.');
+    if($('chkRedund').checked && !m.redund) flags.push('<span class="warn">Este modelo no tiene redundancia de fuente de serie — verificar disponibilidad de kit de expansión.</span>');
+    if($('chk4g').checked && !m.lte) flags.push('Se requiere módulo NIM LTE adicional (NIM-4G-LTE-LA o similar).');
+    if(m.eol) flags.push('<span class="warn">Modelo EOL — sigue dimensionable para parque instalado, pero no para diseños nuevos.</span>');
+    return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
+      <li>Requerimiento con margen: <b>${fmt(needMbps)}</b> | Capacidad del equipo: <b>${fmt(capDe(m))}</b></li>
+      <li>Puertos: ${esc(m.ports)}</li>
       ${flags.map(f=>`<li>${f}</li>`).join('')}
-      ${alts.length ? '<li>Alternativas a evaluar: <b>'+alts.join(', ')+'</b></li>' : ''}
     </ul>`;
+  };
 
-  // Support
-  const s=SMARTNET[crit];
-  $('suppBox').innerHTML=`
-    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;text-transform:uppercase;margin-bottom:4px">${s.n}</div>
-    <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;margin-bottom:10px"><span class="pillc">${s.sla}</span> · término 12 meses · ${pick.id}</p>
-    <p style="font-size:13.5px;margin:0">${s.d}</p>`;
+  const seccionesDe=m=>{
+    const dnaSel=$('dnaTier').value||'adv';
+    const dnaNom={ess:'DNA Essentials',adv:'DNA Advantage',pre:'DNA Premier'}[dnaSel];
+    const s=SMARTNET[crit];
+    return [
+      {titulo:'Características del equipo', filas:[
+        ['Familia / Serie', `${esc(m.fam)} · ${esc(m.ser)}`],
+        ['Forwarding (bidireccional)', fmt(m.fwd)],
+        ['IPsec VPN', fmt(m.ipsec)],
+        ['SD-WAN (IPsec + AppFlow)', m.sdwan?fmt(m.sdwan):`${fmt(m.ipsec)} (cifra IPsec — sin throughput SD-WAN diferenciado publicado)`],
+        ['Redundancia de fuente', m.redund?'De serie':'No de serie'],
+        ['LTE integrado', m.lte?'Sí':'Requiere NIM LTE'],
+        ['Puertos', esc(m.ports), true],
+        ['Precio de lista ref.', m.elp?esc(m.elp):'Consultar CCW'],
+      ]},
+      {titulo:'Licenciamiento propuesto', filas:[
+        ['Suscripción DNA', esc(dnaNom)],
+        ['Alcance', esc(DNA_DESC[dnaSel]), true],
+        ['SKU de referencia', `<code>DNA-C-T&lt;n&gt;-${{ess:'E',adv:'A',pre:'P'}[dnaSel]}-${$('termYears')?$('termYears').value:3}Y</code> — n = tier de ancho de banda, confirmar en CCW`, true],
+        ['HSEC (High Security)', 'Requerida para exportación de criptografía fuerte en países restringidos. Verificar con Cisco GSSO.', true],
+        ['Unidades a licenciar', $('chkRedund').checked?'2 — la licencia no se comparte':'1'],
+      ], nota:(dnaSel==='ess'&&m.id.includes('8500'))?'<span class="warn">Catalyst 8500 no soporta DNA Essentials — requiere Advantage como mínimo.</span>':'En Cisco la suscripción DNA va por tier de ancho de banda y término, y es la que habilita SD-WAN.'},
+      {titulo:'Software y gestión', filas:[
+        ['Catalyst SD-WAN Manager (vManage)', 'Controlador SD-WAN, cloud u on-prem', true],
+        ['Cisco DNA Center', 'Automatización y garantía de campus, licenciado por dispositivo', true],
+        ['ThousandEyes', 'Visibilidad de camino y experiencia de aplicación, suscripción aparte', true],
+        ['Umbrella SIG', 'Seguridad DNS y SWG en la nube, licenciada por usuario', true],
+      ]},
+      {titulo:'Soporte', filas:[
+        [esc(s.n), esc(s.sla)],
+        ['Alcance', esc(s.d), true],
+      ], nota:'Término de 12 meses sobre el equipo seleccionado.'},
+    ];
+  };
 
-  // DNA
-  const dnaSel=$('dnaTier').value||'adv';
-  const dnaLetter={ess:'E',adv:'A',pre:'P'}[dnaSel];
-  const dnaWarn = (dnaSel==='ess' && pick.id.includes('8500')) ? '<li><span class="warn">Catalyst 8500 no soporta DNA Essentials — requiere Advantage como mínimo.</span></li>' : '';
-  $('licBox').innerHTML=`
-    <ul class="clean">
-      <li class="on"><b>${{'ess':'DNA Essentials','adv':'DNA Advantage','pre':'DNA Premier'}[dnaSel]}</b><span class="req">Requerida</span><span class="sku">${DNA_DESC[dnaSel]}<br>SKU real: <code>DNA-C-T&lt;n&gt;-${dnaLetter}-${$('termYears')?$('termYears').value:3}Y</code> (n = tier de ancho de banda, confirmar en CCW)</span></li>
-      ${dnaWarn}
-      <li><b>HSEC (High Security)</b><span class="req opt">Según país</span><span class="sku">Requerida para exportación de criptografía fuerte en países restringidos. Verificar con Cisco GSSO.</span></li>
-      <li><b>IP Base → IP Services (IOS XE)</b><span class="req opt">Nota</span><span class="sku">En ISR 4000 el throughput máximo se alcanza solo con licencia IP Services o AppX habilitada.</span></li>
-    </ul>`;
+  const pintarDependientes=m=>{
+    $('pickLbl').textContent=m.id; $('pickLbl').style.display='block';
+    $('pickLbl').style.left=xPct(capDe(m))+'%';
+    const s=SMARTNET[crit];
+    $('suppBox').innerHTML=`
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;text-transform:uppercase;margin-bottom:4px">${esc(s.n)}</div>
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;margin-bottom:10px"><span class="pillc">${esc(s.sla)}</span> · término 12 meses · ${esc(m.id)}</p>
+      <p style="font-size:13.5px;margin:0">${esc(s.d)}</p>`;
+    const dnaSel=$('dnaTier').value||'adv';
+    const dnaLetter={ess:'E',adv:'A',pre:'P'}[dnaSel];
+    const dnaWarn=(dnaSel==='ess'&&m.id.includes('8500'))?'<li><span class="warn">Catalyst 8500 no soporta DNA Essentials — requiere Advantage como mínimo.</span></li>':'';
+    $('licBox').innerHTML=`
+      <ul class="clean">
+        <li class="on"><b>${{'ess':'DNA Essentials','adv':'DNA Advantage','pre':'DNA Premier'}[dnaSel]}</b><span class="req">Requerida</span><span class="sku">${DNA_DESC[dnaSel]}<br>SKU real: <code>DNA-C-T&lt;n&gt;-${dnaLetter}-${$('termYears')?$('termYears').value:3}Y</code> (n = tier de ancho de banda, confirmar en CCW)</span></li>
+        ${dnaWarn}
+        <li><b>HSEC (High Security)</b><span class="req opt">Según país</span><span class="sku">Requerida para exportación de criptografía fuerte en países restringidos. Verificar con Cisco GSSO.</span></li>
+        <li><b>IP Base → IP Services (IOS XE)</b><span class="req opt">Nota</span><span class="sku">En ISR 4000 el throughput máximo se alcanza solo con licencia IP Services o AppX habilitada.</span></li>
+      </ul>`;
+  };
+
+  const elegidoId=FICHA.render({
+    contenedor:'verdict',
+    candidatos:candidates,
+    recomendado:pick.id,
+    etiqueta:m=>`${m.id} — ${m.ser} · ${fmt(capDe(m))}`,
+    titulo:m=>m.id,
+    subtitulo:m=>m.fam+' · Serie '+m.ser,
+    medidores:medidoresDe,
+    porQue:porQueDe,
+    secciones:seccionesDe,
+    alCambiar:id=>{
+      const m=candidates.find(x=>x.id===id);
+      if(!m) return;
+      pintarDependientes(m);
+      llevarABom(m.id);
+    },
+  });
+  const elegido=candidates.find(m=>m.id===elegidoId)||pick;
+  pintarDependientes(elegido);
+  sincronizarConBom(elegido);
 }
 
 function renderTrack(profile, needMbps, xPct, needPct){

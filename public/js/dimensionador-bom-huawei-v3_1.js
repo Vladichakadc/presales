@@ -82,9 +82,46 @@ function render(){
   const pick = fit[0] || null, next = fit[1] || null;
 
   drawLadder(need, pick, pk);
-  drawVerdict(pick, next, {need, needMpps, raw, base, head, conc, sites, frame, pk, rows, wanOk});
-  drawLicenses(pick, {need, aps, svc, pk});
-  drawSupport(pick);
+
+  // ── Presentacion ──────────────────────────────────────────────────────────
+  // El veredicto pasa a ser un desplegable con todos los que cumplen; licencias, soporte
+  // y BOM siguen al equipo ELEGIDO. Ver /js/ficha.js.
+  const ctx = {need, needMpps, raw, base, head, conc, sites, frame, pk, rows, wanOk};
+  const licCtx = {need, aps, svc, pk};
+  if(!raw || !fit.length){
+    drawVerdict(pick, next, ctx);
+    drawLicenses(pick, licCtx);
+    drawSupport(pick);
+  } else {
+    // Se adjunta la capacidad calculada al modelo para que la ficha no recalcule nada.
+    const candidatos = fit.map(r => Object.assign({}, r.m, {__cap:r.cap, __isWan:r.isWan}));
+    const filaDe = id => fit.find(r => r.m.id === id) || pick;
+    const pintarDependientes = m => {
+      const r = filaDe(m.id);
+      drawLicenses(r, licCtx);
+      drawSupport(r);
+      drawLadder(need, r, pk);
+    };
+    const elegidoId = FICHA.render({
+      contenedor:'verdict',
+      candidatos,
+      recomendado: pick.m.id,
+      etiqueta: m => `${m.id} — serie ${m.ser} · ${fmt(m.__cap)}`,
+      titulo: m => m.id,
+      subtitulo: m => `${m.fam} · serie ${m.ser}`,
+      medidores: m => medidoresHuawei(m, ctx),
+      porQue: m => porQueHuawei(m, ctx, next),
+      secciones: m => seccionesHuawei(m, licCtx),
+      alCambiar: id => {
+        const m = candidatos.find(x => x.id === id);
+        if(!m) return;
+        pintarDependientes(m);
+        llevarABom(id);
+      },
+    });
+    const elegido = candidatos.find(m => m.id === elegidoId) || candidatos[0];
+    pintarDependientes(elegido);
+  }
   $('tbody').innerHTML = rows.map(r => {
     const sel = pick && pick.m.id === r.m.id;
     return `<tr class="${sel ? 'sel' : ''}"><td>${r.m.id}</td><td><span class="pillc">${r.m.ser}</span></td>
@@ -92,7 +129,79 @@ function render(){
       <td class="n">${r.m.lan || '—'}</td><td>${r.miss.length ? `<span style="color:var(--steel)">${r.miss[0]}</span>` : `<span style="color:var(--green);font-weight:600">Cumple</span>`}</td></tr>`;
   }).join('');
 
-  if(pick && pick.m.id !== lastPick){ lastPick = pick.m.id; $('pickModel').value = pick.m.id; renderBom(); }
+  if(pick && pick.m.id !== lastPick){ lastPick = pick.m.id; llevarABom(pick.m.id); }
+}
+
+// Eleccion explicita en el desplegable de equipos: se lleva al BOM siempre.
+function llevarABom(id){
+  if(!id) return;
+  lastPick = id;
+  const sel = $('pickModel');
+  if(!sel || sel.value === id) return;
+  sel.value = id;
+  if(sel.value === id) renderBom();
+}
+
+/* ── Ficha del equipo elegido ───────────────────────────────────────────────
+   Las tres funciones alimentan /js/ficha.js: medidores de holgura, el razonamiento del
+   dimensionamiento y la ficha completa con licenciamiento, software y soporte. */
+function medidoresHuawei(m, c){
+  const cap = m.__cap, use = Math.min(100, c.need / cap * 100);
+  const metric = m.__isWan ? 'Capacidad de conmutación' : PROFILE[c.pk];
+  const out = [{etq:metric, val:c.need, tope:cap, txt:`${use.toFixed(0)} % de ${fmt(cap)}`}];
+  if(m.mpps != null) out.push({etq:`Reenvío a ${c.frame} bytes`, val:c.needMpps, tope:m.mpps,
+    txt:`${Math.min(100, c.needMpps / m.mpps * 100).toFixed(0)} % de ${m.mpps} Mpps`});
+  return out;
+}
+
+function porQueHuawei(m, c, next){
+  const cap = m.__cap, use = Math.min(100, c.need / cap * 100);
+  const metric = m.__isWan ? 'Capacidad de conmutación' : PROFILE[c.pk];
+  const usePps = (m.mpps != null) ? Math.min(100, c.needMpps / m.mpps * 100) : null;
+  return `<b>Cómo se llegó a ${fmt(c.need)}</b><ul>
+      ${mode === 'agg' ? `<li>${c.sites} sedes x ${fmt(c.raw)} x ${c.conc} % de simultaneidad = <b>${fmt(c.base)}</b> agregados.</li>` : `<li>Caudal base: <b>${fmt(c.raw)}</b>.</li>`}
+      ${dirMult === 2 ? `<li>Medido por dirección, se dimensiona contra la suma bidireccional: <b>${fmt(c.base*2)}</b>.</li>` : `<li>Tomado como total agregado, sin duplicar.</li>`}
+      <li>Más ${c.head} % de margen: <b>${fmt(c.need)}</b> · <b>${c.needMpps.toFixed(2)} Mpps</b>.</li>
+      <li>${m.id} publica <b>${fmt(cap)}</b> en ${metric.toLowerCase()}.</li>
+      <li>${m.ports}</li>
+      ${next ? `<li>Siguiente escalón: <b>${next.m.id}</b> con ${fmt(next.cap)}.</li>` : ''}
+      ${use > 85 ? `<li class="warn"><b>Atención:</b> sobre el 85 % de ocupación. Sube el margen o pasa al siguiente modelo.</li>` : ''}
+      ${usePps != null && usePps > 85 ? `<li class="warn"><b>Atención:</b> el cuello de botella son los paquetes por segundo, no los bits.</li>` : ''}
+      ${m.__isWan ? `<li class="warn">La capacidad de conmutación es del sistema completo. El techo real lo fija la tarjeta de línea y la densidad de puertos.</li>` : ''}
+    </ul>`;
+}
+
+function seccionesHuawei(m, c){
+  const fila = {m, cap:m.__cap, isWan:m.__isWan};
+  const lic = licensesFor(fila, c).map(x => [x.t, x.d, true]);
+  const {s} = supportFor();
+  const caract = [
+    ['Serie', m.ser],
+    ['Familia', m.fam],
+    ['Capacidad en el perfil', fmt(m.__cap)],
+  ];
+  if(m.mpps != null) caract.push(['Reenvío', m.mpps + ' Mpps']);
+  if(m.boost) caract.push(['Con licencia Boost', `${fmt(m.boost)} sin licencia → ${fmt(m.fwd)} con ella`]);
+  if(!m.__isWan){
+    caract.push(['Puertos LAN', m.lan || '—']);
+    caract.push(['PoE', m.poe ? 'Sí' : 'No']);
+    caract.push(['4G / 5G integrado', m.wan ? 'Sí' : 'No']);
+    caract.push(['Wi-Fi', m.wifi ? 'Sí' : 'No']);
+    if(m.apsMax) caract.push(['APs gestionables', `${m.apsFree || 0} incluidos · hasta ${m.apsMax}`]);
+  }
+  caract.push(['Puertos', m.ports, true]);
+  if(m.elp) caract.push(['Precio de lista ref.', m.elp]);
+  return [
+    {titulo:'Características del equipo', filas:caract},
+    {titulo:'Licenciamiento propuesto', filas:lic,
+     nota:'Todas las licencias se emiten contra el ESN del equipo y se descargan del portal ESDP de Huawei.'},
+    {titulo:'Software y gestión', filas:[
+      ['iMaster NCE-WAN', 'Controlador y gestión del overlay SD-WAN, licenciado por nodo administrado', true],
+      ['iMaster NCE-Campus', 'Automatización y O&M del campus y de los APs gestionados', true],
+      ['eSight / NetEco', 'Gestión de red y monitorización de infraestructura', true],
+    ]},
+    {titulo:'Soporte', filas:[[s.n, s.sla]], nota:s.d},
+  ];
 }
 
 const LO = 100, HI = 700000000;

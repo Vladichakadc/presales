@@ -11,11 +11,16 @@ let bomFilas=[], bomMeta={};
 // la recomendacion CAMBIA, no en cada render: asi, si alguien elige otro modelo a mano para
 // compararlo, no se lo pisamos en cuanto mueva un parametro del dimensionamiento.
 let ultimaRecomendacion=null;
-function sincronizarConBom(pick){
-  const id=pick?pick.id:null;
+function sincronizarConBom(elegido){
+  const id=elegido?elegido.id:null;
   if(id===ultimaRecomendacion) return;
   ultimaRecomendacion=id;
+  llevarABom(id);
+}
+// Eleccion explicita en el desplegable de equipos: se lleva al BOM siempre.
+function llevarABom(id){
   if(!id) return;
+  ultimaRecomendacion=id;
   const sel=$('pickModel');
   if(!sel||sel.value===id) return;
   sel.value=id;
@@ -73,6 +78,16 @@ const TIER_BY_K=Object.fromEntries(TIERS.map(t=>[t.k,t]));
 // Estimación conservadora sobre Threat Protection, declarada como estimación en la UI.
 // ponytail: factor único; sustituir por cifra por modelo si Fortinet vuelve a publicarla.
 const SSL_DERATE=0.65;
+
+// Software del portafolio Fortinet que acompana al FortiGate en una propuesta. Mismos
+// productos y SKU que la tabla de la pestana "Licencias", como datos y no como markup.
+const SOFTWARE=[
+  {n:'FortiManager', d:'Orquestacion de politicas y SD-WAN. Appliance de entrada FMG-200G: hasta 30 dispositivos/VDOMs.'},
+  {n:'FortiAnalyzer', d:'Correlacion y retencion de logs. Appliance de entrada FAZ-150G: hasta 25 GB/dia.'},
+  {n:'FortiSandbox', d:'Analisis dinamico de archivos zero-day. Add-on independiente del bundle.'},
+  {n:'FortiClient EMS', d:'Gestion de endpoints ZTNA + VPN, licenciado por numero de endpoints.'},
+  {n:'FortiSASE', d:'SASE, ZTNA y EPP como servicio, licenciado por usuario.'},
+];
 
 // La inspección TLS profunda exige el stack completo, así que su piso es Threat Protection
 // aunque se haya elegido una capa más liviana. El castigo se aplica UNA vez y sobre la
@@ -158,61 +173,122 @@ function render(){
   lastPick=pick;
   sincronizarConBom(pick);
 
+  // ── Presentacion ──────────────────────────────────────────────────────────
+  // El veredicto pasa de un unico equipo fijo a un desplegable con todos los que cumplen;
+  // la escalera de capas, el resumen y el BOM siguen al equipo ELEGIDO. Ver /js/ficha.js.
   if(!pick){
-    $('vModel').textContent='Sin candidato';
-    $('verdict').style.borderLeftColor='var(--amber)';
     const why=[];
     why.push(`<li>Requerimiento de <b>${fmt(effectiveNeed)}</b> en la capa <b>${TIER_BY_K[profile].n}</b>${$('chkSsl').checked?' con inspección SSL profunda':''}.</li>`);
     if(outBySess) why.push(`<li><b>${outBySess}</b> modelo(s) descartado(s) por tabla de sesiones: necesitas ${sessNeed.toLocaleString('en-US')} concurrentes.</li>`);
     if(profile==='tp'||$('chkSsl').checked) why.push('<li>Estás dimensionando contra la capa más exigente. Si el diseño no requiere antivirus en línea sobre todo el tráfico, evaluar la capa <b>NGFW</b> o segmentar por política qué tráfico se inspecciona a fondo — es la palanca que más capacidad libera en FortiGate.</li>');
     why.push('<li>Por encima del catálogo: evaluar chasis FortiGate 7000F o distribuir la carga en varias unidades.</li>');
-    $('vFamily').textContent='Ningún modelo vigente cumple todas las restricciones';
-    $('vWhy').innerHTML=`<ul style="margin:0;padding-left:18px;font-size:13.5px">${why.join('')}</ul>`;
+    FICHA.render({contenedor:'verdict', candidatos:[], recomendado:null,
+      vacioTitulo:'Ningún modelo vigente cumple todas las restricciones',
+      vacioDetalle:`<ul style="margin:0;padding-left:18px;font-size:13.5px">${why.join('')}</ul>`});
+    $('verdict').style.borderLeftColor='var(--amber)';
     $('perfTiers').innerHTML='';
     return;
   }
   $('verdict').style.borderLeftColor='var(--red)';
-  $('vModel').textContent=pick.id;
-  $('vFamily').textContent=pick.seg+' · FortiOS Security Fabric';
-  $('pickLbl').textContent=pick.id;$('pickLbl').style.display='block';
-  $('pickLbl').style.left=xPct(getCap(pick))+'%';
 
-  const setPct=(id,val,cap)=>{const pct=cap>0?Math.min(val/cap*100,100):0;const bar=$(id);bar.style.width=pct+'%';bar.className=pct>90?'tight':pct<70?'good':'';};
-  $('mCapLbl').innerHTML=`Capa ${esc(TIER_BY_K[profile].n)}${$('chkSsl').checked?' + SSL':''} <em id="mCapVal"></em>`;
-  $('mCapVal').textContent=fmt(effectiveNeed)+' / '+fmt(getCap(pick));
-  setPct('mCapBar',effectiveNeed,getCap(pick));
-  $('mSessVal').textContent=(sessNeed?sessNeed.toLocaleString('en-US')+' / ':'')+(pick.sess/1000).toFixed(0)+'K';
-  setPct('mSessBar',sessNeed,pick.sess);
-  renderTiers(pick,effectiveNeed);
+  const medidoresDe=m=>[
+    {etq:`Capa ${TIER_BY_K[profile].n}${$('chkSsl').checked?' + SSL':''}`,
+     val:effectiveNeed, tope:getCap(m), txt:fmt(effectiveNeed)+' / '+fmt(getCap(m))},
+    {etq:'Sesiones concurrentes', val:sessNeed, tope:m.sess,
+     txt:(sessNeed?sessNeed.toLocaleString('en-US')+' / ':'')+(m.sess/1000).toFixed(0)+'K'},
+  ];
 
-  const flags=[];
-  if($('chkSsl').checked)flags.push(`<b class="warn">Inspección SSL profunda:</b> capacidad estimada en ${fmt(getCap(pick))} sobre los ${fmt(pick.tp)} de Threat Protection. Fortinet ya no publica esta cifra por modelo — validar con una PoC antes de comprometerla.`);
-  if($('chkAv').checked)flags.push('Antivirus en línea ya está contemplado dentro de Threat Protection; el content processor (CP9/CP10) asiste la inspección.');
-  if($('chkSandbox').checked)flags.push('FortiSandbox se cotiza aparte (appliance o suscripción cloud) — no consume throughput del FortiGate, pero sí añade latencia al primer encuentro de un archivo.');
-  if($('chkIotDlp').checked)flags.push('IoT Security y DLP requieren el bundle <b>Enterprise Protection</b>: UTP y ATP no los incluyen.');
-  if($('chkHa').checked)flags.push('<b>HA:</b> se cotizan 2 unidades y <b>cada una necesita su propia suscripción FortiGuard</b> — la licencia no se comparte entre nodos del clúster.');
-  if(wanMode==='dual')flags.push('<b>SD-WAN sin costo de licencia:</b> el balanceo por SLA, ADVPN y la selección dinámica de camino vienen en FortiOS. No hay suscripción por dispositivo como en Cisco Catalyst SD-WAN o Meraki.');
-  const alts=candidates.filter(m=>m.id!==pick.id).slice(0,3).map(m=>m.id);
+  const porQueDe=m=>{
+    const flags=[];
+    if($('chkSsl').checked)flags.push(`<b class="warn">Inspección SSL profunda:</b> capacidad estimada en ${fmt(getCap(m))} sobre los ${fmt(m.tp)} de Threat Protection. Fortinet ya no publica esta cifra por modelo — validar con una PoC antes de comprometerla.`);
+    if($('chkAv').checked)flags.push('Antivirus en línea ya está contemplado dentro de Threat Protection; el content processor (CP9/CP10) asiste la inspección.');
+    if($('chkSandbox').checked)flags.push('FortiSandbox se cotiza aparte (appliance o suscripción cloud) — no consume throughput del FortiGate, pero sí añade latencia al primer encuentro de un archivo.');
+    if($('chkIotDlp').checked)flags.push('IoT Security y DLP requieren el bundle <b>Enterprise Protection</b>: UTP y ATP no los incluyen.');
+    if($('chkHa').checked)flags.push('<b>HA:</b> se cotizan 2 unidades y <b>cada una necesita su propia suscripción FortiGuard</b> — la licencia no se comparte entre nodos del clúster.');
+    if(wanMode==='dual')flags.push('<b>SD-WAN sin costo de licencia:</b> el balanceo por SLA, ADVPN y la selección dinámica de camino vienen en FortiOS. No hay suscripción por dispositivo como en Cisco Catalyst SD-WAN o Meraki.');
+    if(m.eol)flags.push('<b class="warn">Modelo descontinuado (EOL)</b> — solo referencia para equipos ya instalados, no para diseños nuevos.');
+    return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
+      <li>Requerimiento <b>${fmt(effectiveNeed)}</b> en capa <b>${esc(TIER_BY_K[profile].n)}</b> contra capacidad <b>${fmt(getCap(m))}</b> — headroom ${Math.round((1-effectiveNeed/getCap(m))*100)}%</li>
+      <li>Sesiones concurrentes: <b>${(m.sess/1000).toFixed(0)}K</b> | Interfaces: ${esc(m.ifaces)}</li>
+      ${flags.map(f=>`<li>${f}</li>`).join('')}
+    </ul>`;
+  };
 
-  $('vWhy').innerHTML=`<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
-    <li>Requerimiento <b>${fmt(effectiveNeed)}</b> en capa <b>${esc(TIER_BY_K[profile].n)}</b> contra capacidad <b>${fmt(getCap(pick))}</b> — headroom ${Math.round((1-effectiveNeed/getCap(pick))*100)}%</li>
-    <li>Sesiones concurrentes: <b>${(pick.sess/1000).toFixed(0)}K</b> | Interfaces: ${esc(pick.ifaces)}</li>
-    ${flags.map(f=>`<li>${f}</li>`).join('')}
-    ${alts.length?`<li>Alternativas que también cumplen: <b>${alts.join(', ')}</b></li>`:''}
-  </ul>`;
+  const seccionesDe=m=>{
+    const bundle=$('licBundle').value||'ent';
+    const care=$('careLevel').value||'fcpre';
+    const termYrs=parseInt($('termYears').value)||3;
+    const lt=m.lic?m.lic[bundle]:null;
+    const ct=m.lic?m.lic.care[CARE_LIC_KEY[care]]:null;
+    return [
+      {titulo:'Características del equipo', filas:[
+        ['Segmento', esc(m.seg)],
+        ['Firewall (1518 B, offload ASIC)', fmt(m.fw)],
+        ['IPsec VPN (512 B, offload ASIC)', fmt(m.vpn)],
+        ['IPS (Enterprise Mix)', fmt(m.ips)],
+        ['NGFW (IPS + App Control)', fmt(m.ngfw)],
+        ['<b>Threat Protection</b>', m.tp?`<b>${fmt(m.tp)}</b>`:'Consultar datasheet'],
+        ['Sesiones concurrentes', m.sess.toLocaleString('en-US')],
+        ['Procesadores de seguridad', m.asic?esc(m.asic):'<span class="warn">sin dato publicado</span>'],
+        ['Interfaces', esc(m.ifaces), true],
+        ['SKU de hardware', m.hwSku?`<code>${esc(m.hwSku)}</code>`:'<span class="warn">Descontinuado — sin SKU nuevo</span>'],
+        ['Precio de lista ref.', m.elp?esc(m.elp):'Consultar distribuidor'],
+      ]},
+      {titulo:'Licenciamiento propuesto', filas:[
+        ['Bundle FortiGuard', esc(BUNDLES[bundle].n)],
+        ['Servicios incluidos', esc(BUNDLES[bundle].svcs), true],
+        ['SKU del bundle', lt&&lt.sku?`<code>${esc(lt.sku)}</code>`:'<span class="warn">Sin SKU vigente para este modelo</span>'],
+        ['Término', `${termYrs} año${termYrs>1?'s':''}`],
+        ['Unidades a licenciar', $('chkHa').checked?'2 — la licencia no se comparte en HA':'1'],
+      ], nota:'En FortiGate el SKU lleva el código del modelo embebido: la licencia va atada al equipo, no al ancho de banda.'},
+      {titulo:'Software del portafolio', filas:SOFTWARE.map(sw=>[esc(sw.n), esc(sw.d), true]),
+       nota:'SKU y precios de referencia del price list AMER — no escalan con el modelo de FortiGate elegido.'},
+      {titulo:'Soporte', filas:[
+        [esc(CARE[care].n), esc(CARE[care].sla)],
+        ['SKU', ct&&ct.sku?`<code>${esc(ct.sku)}</code>`:'<span class="warn">No disponible para este modelo</span>'],
+      ]},
+    ];
+  };
 
-  $('sizingBox').innerHTML=`
-    <table><tbody>
-      <tr><td>Capa dimensionada</td><td class="n">${esc(TIER_BY_K[profile].n)}</td></tr>
-      <tr><td>Inspección SSL profunda</td><td class="n">${$('chkSsl').checked?`Sí — piso Threat Protection x${SSL_DERATE} (estimado)`:'No'}</td></tr>
-      <tr><td>Ancho de banda WAN</td><td class="n">${fmt(bw*unit)}</td></tr>
-      <tr><td>Usuarios estimados</td><td class="n">${users}</td></tr>
-      <tr><td>Requerimiento final</td><td class="n"><b>${fmt(effectiveNeed)}</b></td></tr>
-      <tr><td>Capacidad en esa capa</td><td class="n">${fmt(getCap(pick))}</td></tr>
-      <tr><td>Headroom disponible</td><td class="n">${Math.round((1-effectiveNeed/getCap(pick))*100)}%</td></tr>
-      <tr><td>Sesiones concurrentes</td><td class="n">${sessNeed?sessNeed.toLocaleString('en-US')+' / ':''}${pick.sess.toLocaleString('en-US')}</td></tr>
-      <tr><td>Unidades a cotizar</td><td class="n">${$('chkHa').checked?'2 (HA) — licencia por unidad':'1'}</td></tr>
-    </tbody></table>`;
+  const pintarDependientes=m=>{
+    $('pickLbl').textContent=m.id;$('pickLbl').style.display='block';
+    $('pickLbl').style.left=xPct(getCap(m))+'%';
+    renderTiers(m,effectiveNeed);
+    $('sizingBox').innerHTML=`
+      <table><tbody>
+        <tr><td>Equipo evaluado</td><td class="n">${esc(m.id)}${m.id===pick.id?'':' (elegido a mano)'}</td></tr>
+        <tr><td>Capa dimensionada</td><td class="n">${esc(TIER_BY_K[profile].n)}</td></tr>
+        <tr><td>Inspección SSL profunda</td><td class="n">${$('chkSsl').checked?`Sí — piso Threat Protection x${SSL_DERATE} (estimado)`:'No'}</td></tr>
+        <tr><td>Ancho de banda WAN</td><td class="n">${fmt(bw*unit)}</td></tr>
+        <tr><td>Usuarios estimados</td><td class="n">${users}</td></tr>
+        <tr><td>Requerimiento final</td><td class="n"><b>${fmt(effectiveNeed)}</b></td></tr>
+        <tr><td>Capacidad en esa capa</td><td class="n">${fmt(getCap(m))}</td></tr>
+        <tr><td>Headroom disponible</td><td class="n">${Math.round((1-effectiveNeed/getCap(m))*100)}%</td></tr>
+        <tr><td>Sesiones concurrentes</td><td class="n">${sessNeed?sessNeed.toLocaleString('en-US')+' / ':''}${m.sess.toLocaleString('en-US')}</td></tr>
+        <tr><td>Unidades a cotizar</td><td class="n">${$('chkHa').checked?'2 (HA) — licencia por unidad':'1'}</td></tr>
+      </tbody></table>`;
+  };
+
+  const elegidoId=FICHA.render({
+    contenedor:'verdict',
+    candidatos:candidates,
+    recomendado:pick.id,
+    etiqueta:m=>`${m.id} — ${m.seg} · ${fmt(getCap(m))}`,
+    titulo:m=>m.id,
+    subtitulo:m=>m.seg+' · FortiOS Security Fabric',
+    medidores:medidoresDe,
+    porQue:porQueDe,
+    secciones:seccionesDe,
+    alCambiar:id=>{
+      const m=candidates.find(x=>x.id===id);
+      if(!m) return;
+      pintarDependientes(m);
+      llevarABom(m.id);
+    },
+  });
+  const elegido=candidates.find(m=>m.id===elegidoId)||pick;
+  pintarDependientes(elegido);
+  sincronizarConBom(elegido);
 }
 
 // Escalera de capas: muestra las 5 cifras publicadas del modelo a la vez, en escala relativa

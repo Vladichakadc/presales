@@ -8,11 +8,16 @@ let bomFilas=[], bomMeta={};
 // El modelo recomendado se lleva solo a la pestaña de BOM, y solo cuando la recomendación
 // CAMBIA: así una elección manual para comparar no se pisa al mover un parámetro.
 let ultimaRecomendacion=null;
-function sincronizarConBom(pick){
-  const id=pick?pick.id:null;
+function sincronizarConBom(elegido){
+  const id=elegido?elegido.id:null;
   if(id===ultimaRecomendacion) return;
   ultimaRecomendacion=id;
+  llevarABom(id);
+}
+// Eleccion explicita en el desplegable de equipos: se lleva al BOM siempre.
+function llevarABom(id){
   if(!id) return;
+  ultimaRecomendacion=id;
   const sel=$('pickModel');
   if(!sel||sel.value===id) return;
   sel.value=id;
@@ -177,79 +182,127 @@ function render(){
     track.appendChild(dot);
   });
 
+  // ── Presentacion ──────────────────────────────────────────────────────────
+  // Desplegable con todos los que cumplen; medidores, resumen y BOM siguen al elegido.
   if(!pick){
-    $('vModel').textContent='Sin candidato';
-    $('verdict').style.borderLeftColor='var(--amber)';
     const why=[];
     if(reasons.cap)  why.push(`<li><b>${reasons.cap}</b> modelo(s) descartado(s) por throughput insuficiente${$('chkQos').checked&&profile==='fwd'?' — el shaping activo reduce la capacidad efectiva':''}.</li>`);
-    if(reasons.ram)  why.push(`<li><b>${reasons.ram}</b> por RAM insuficiente para ${req.feeds} feed(s) BGP full table: harían falta ~${(ramForFeeds(req.feeds)/1024).toFixed(1)} GB. Este límite es de <b>memoria, no de throughput</b> — si el equipo alcanza en Gbps pero no en RAM, el diseño correcto suele ser ruta default o un feed parcial filtrado, no un equipo más grande.</li>`);
+    if(reasons.ram)  why.push(`<li><b>${reasons.ram}</b> por RAM insuficiente para ${req.feeds} feed(s) BGP full table: harían falta ~${(ramForFeeds(req.feeds)/1024).toFixed(1)} GB. Este límite es de <b>memoria, no de throughput</b>.</li>`);
     if(reasons.sess) why.push(`<li><b>${reasons.sess}</b> por el tope de sesiones de su nivel de licencia (necesitas ${req.sess}).</li>`);
-    if(reasons.poe)  why.push(`<li><b>${reasons.poe}</b> por presupuesto PoE insuficiente (${poeNeed} W). Ningún router MikroTik entrega tanto PoE: la solución correcta es un switch PoE dedicado (serie CRS...P) alimentando los APs.</li>`);
-    $('vFamily').textContent='Ningún modelo del catálogo cumple todas las restricciones';
-    $('vWhy').innerHTML=`<p class="warn" style="margin:0 0 8px"><b>Motivo del descarte:</b></p><ul style="margin:0;padding-left:18px;font-size:13.5px">${why.join('')}</ul>`;
-    ['mCapVal','mRamVal','mSessVal'].forEach(id=>$(id).textContent='—');
-    ['mCapBar','mRamBar','mSessBar'].forEach(id=>{$(id).style.width='0%';});
+    if(reasons.poe)  why.push(`<li><b>${reasons.poe}</b> por presupuesto PoE insuficiente (${poeNeed} W). Ningún router MikroTik entrega tanto PoE: la solución correcta es un switch PoE dedicado alimentando los APs.</li>`);
+    FICHA.render({contenedor:'verdict', candidatos:[], recomendado:null,
+      vacioTitulo:'Ningún modelo del catálogo cumple todas las restricciones',
+      vacioDetalle:`<p class="warn" style="margin:0 0 8px"><b>Motivo del descarte:</b></p><ul style="margin:0;padding-left:18px;font-size:13.5px">${why.join('')}</ul>`});
+    $('verdict').style.borderLeftColor='var(--amber)';
     $('sizingBox').innerHTML='<p style="font-size:13.5px;color:var(--steel)">Ajusta las restricciones para obtener una recomendación.</p>';
     return;
   }
-
   $('verdict').style.borderLeftColor='var(--red)';
-  $('vModel').textContent=pick.id;
-  $('vFamily').textContent=`${pick.seg} · RouterOS 7.x · licencia nivel ${pick.lvl}${pick.elp?' · '+pick.elp:''}`;
-  const pl=document.createElement('div');
-  pl.className='pickLabel';pl.textContent=pick.id;pl.style.left=xPct(capOf(pick))+'%';
-  track.appendChild(pl);
 
-  const setBar=(id,val,cap)=>{
-    const pct=(cap===Infinity||!cap)?6:Math.min(val/cap*100,100);
-    const bar=$(id);bar.style.width=pct+'%';
-    bar.className=pct>90?'tight':pct<70?'good':'';
+  const medidoresDe=m=>{
+    const feeds=maxFeeds(m), sc=sessCap(m);
+    return [
+      {etq:'Capacidad efectiva', val:req.mbps, tope:capOf(m), txt:fmt(req.mbps)+' / '+fmt(capOf(m))},
+      {etq:'RAM — feeds BGP full table', val:req.feeds||0, tope:feeds===Infinity?0:feeds,
+       txt:m.ram==null?'Según hipervisor':`${req.feeds||0} / ${feeds===Infinity?'∞':feeds} feeds · ${(m.ram/1024).toFixed(m.ram<1024?2:0)} GB`},
+      {etq:'Sesiones PPPoE / hotspot (nivel de licencia)', val:req.sess||0, tope:sc===Infinity?0:sc,
+       txt:`${req.sess||0} / ${sc===Infinity?'ilimitadas (nivel 6)':sc}`},
+    ];
   };
-  $('mCapVal').textContent=fmt(req.mbps)+' / '+fmt(capOf(pick));
-  setBar('mCapBar',req.mbps,capOf(pick));
-  const feeds=maxFeeds(pick);
-  $('mRamVal').textContent=pick.ram==null?'Según hipervisor'
-    :`${req.feeds||0} / ${feeds===Infinity?'∞':feeds} feeds · ${(pick.ram/1024).toFixed(pick.ram<1024?2:0)} GB`;
-  setBar('mRamBar',req.feeds||0,feeds);
-  const sc=sessCap(pick);
-  $('mSessVal').textContent=`${req.sess||0} / ${sc===Infinity?'ilimitadas (nivel 6)':sc}`;
-  setBar('mSessBar',req.sess||0,sc);
 
-  const flags=[];
-  if($('chkQos').checked&&profile==='fwd'){
-    const f=SIZING.fasttrack[pick.arch]??SIZING.fasttrack.arm;
-    flags.push(`<b class="warn">FastTrack desactivado por el shaping:</b> capacidad efectiva ${fmt(capOf(pick))} en lugar de ${fmt(pick.fwd)} publicados (factor ${f} para arquitectura ${pick.arch.toUpperCase()}).`);
-  }
-  if(profile==='wg') flags.push(`<b>WireGuard estimado</b> en ${fmt(capOf(pick))} (45 % del IPsec del equipo). Sin aceleración por hardware y mayormente single-thread por túnel: distribuir en varios túneles para aprovechar los ${pick.cores??'n'} núcleos.`);
-  if(profile==='ipsec'&&pick.cores) flags.push(`IPsec acelerado por el motor criptográfico del SoC (${pick.cpu}, ${pick.cores} núcleo${pick.cores>1?'s':''}).`);
-  if(req.feeds) flags.push(pick.ram==null
-    ? `CHR: dimensionar la instancia con ≥ <b>${(ramForFeeds(req.feeds)/1024).toFixed(1)} GB</b> de RAM para ${req.feeds} feed(s) full table.`
-    : `Soporta hasta <b>${feeds}</b> feed(s) full table con sus ${(pick.ram/1024).toFixed(0)} GB de RAM (el primero cuesta ~${(SIZING.bgpRam.firstFeedMb/1024).toFixed(1)} GB, cada adicional ~${(SIZING.bgpRam.extraFeedMb/1024).toFixed(1)} GB porque el FIB se comparte).`);
-  if(req.sess) flags.push(`Licencia <b>nivel ${pick.lvl}</b>: ${sc===Infinity?'sin tope de sesiones':`tope de ${sc} sesiones`}. ${SIZING.licenseLevels[pick.lvl].d}`);
-  if(req.aps) flags.push(`${req.aps} AP(s) por CAPsMAN — incluidos en el BOM. ${req.poe?`PoE-out del router: ${pick.poe} W disponibles para ${poeNeed} W requeridos.`:'Alimentación de los APs por inyector o switch PoE aparte.'}`);
-  if($('chkHa').checked) flags.push('<b>VRRP:</b> duplicar unidades — cada nodo lleva su propia licencia embebida.');
-  if(pick.note) flags.push(`<span class="warn">${esc(pick.note)}</span>`);
-  const alts=ok.filter(m=>m.id!==pick.id).slice(0,3);
+  const porQueDe=m=>{
+    const feeds=maxFeeds(m), sc=sessCap(m), flags=[];
+    if($('chkQos').checked&&profile==='fwd'){
+      const f=SIZING.fasttrack[m.arch]??SIZING.fasttrack.arm;
+      flags.push(`<b class="warn">FastTrack desactivado por el shaping:</b> capacidad efectiva ${fmt(capOf(m))} en lugar de ${fmt(m.fwd)} publicados (factor ${f} para arquitectura ${m.arch.toUpperCase()}).`);
+    }
+    if(profile==='wg') flags.push(`<b>WireGuard estimado</b> en ${fmt(capOf(m))} (45 % del IPsec del equipo). Sin aceleración por hardware y mayormente single-thread por túnel: distribuir en varios túneles para aprovechar los ${m.cores??'n'} núcleos.`);
+    if(profile==='ipsec'&&m.cores) flags.push(`IPsec acelerado por el motor criptográfico del SoC (${esc(m.cpu)}, ${m.cores} núcleo${m.cores>1?'s':''}).`);
+    if(req.feeds) flags.push(m.ram==null
+      ? `CHR: dimensionar la instancia con ≥ <b>${(ramForFeeds(req.feeds)/1024).toFixed(1)} GB</b> de RAM para ${req.feeds} feed(s) full table.`
+      : `Soporta hasta <b>${feeds}</b> feed(s) full table con sus ${(m.ram/1024).toFixed(0)} GB de RAM.`);
+    if(req.sess) flags.push(`Licencia <b>nivel ${m.lvl}</b>: ${sc===Infinity?'sin tope de sesiones':`tope de ${sc} sesiones`}. ${SIZING.licenseLevels[m.lvl].d}`);
+    if(req.aps) flags.push(`${req.aps} AP(s) por CAPsMAN — incluidos en el BOM.`);
+    if($('chkHa').checked) flags.push('<b>VRRP:</b> duplicar unidades — cada nodo lleva su propia licencia embebida.');
+    if(m.note) flags.push(`<span class="warn">${esc(m.note)}</span>`);
+    return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
+      <li>Requerimiento <b>${fmt(req.mbps)}</b> (${profile==='fwd'?'forwarding':profile==='ipsec'?'IPsec':'WireGuard'}) contra capacidad efectiva <b>${fmt(capOf(m))}</b></li>
+      <li>${esc(m.ports)}</li>
+      ${flags.map(f=>`<li>${f}</li>`).join('')}
+    </ul>`;
+  };
 
-  $('vWhy').innerHTML=`<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
-    <li>Requerimiento <b>${fmt(req.mbps)}</b> (${profile==='fwd'?'forwarding':profile==='ipsec'?'IPsec':'WireGuard'}) contra capacidad efectiva <b>${fmt(capOf(pick))}</b></li>
-    <li>${esc(pick.ports)}</li>
-    ${flags.map(f=>`<li>${f}</li>`).join('')}
-    ${alts.length?`<li>Alternativas que también cumplen: <b>${alts.map(a=>`${a.id} (${a.elp||'s/p'})`).join(', ')}</b></li>`:''}
-  </ul>`;
+  const seccionesDe=m=>{
+    const sup=SUPPORT[$('supportTier')&&$('supportTier').value?$('supportTier').value:Object.keys(SUPPORT)[0]]||Object.values(SUPPORT)[0];
+    const sc=sessCap(m);
+    return [
+      {titulo:'Características del equipo', filas:[
+        ['Segmento', esc(m.seg)],
+        ['Forwarding (FastTrack, 1518 B)', fmt(m.fwd)],
+        ['IPsec acelerado', m.ipsec?fmt(m.ipsec):'—'],
+        ['Capacidad efectiva en este perfil', fmt(capOf(m))],
+        ['CPU / núcleos', `${esc(m.cpu||'—')}${m.cores?` · ${m.cores} núcleos`:''}`],
+        ['RAM', m.ram?`${(m.ram/1024).toFixed(m.ram<1024?2:0)} GB`:'según hipervisor'],
+        ['PoE-out', m.poe?`${m.poe} W`:'—'],
+        ['Puertos', esc(m.ports), true],
+        ['Precio de lista ref.', m.elp?esc(m.elp):'Consultar distribuidor'],
+      ]},
+      {titulo:'Licenciamiento propuesto', filas:[
+        ['Nivel de licencia RouterOS', `Nivel ${m.lvl} — embebido en el hardware`],
+        ['Tope de sesiones', sc===Infinity?'Sin tope (nivel 6)':`${sc} sesiones PPPoE / hotspot`],
+        ['Alcance del nivel', esc(SIZING.licenseLevels[m.lvl].d), true],
+        ['Unidades a licenciar', $('chkHa').checked?'2 — cada nodo VRRP lleva la suya':'1'],
+      ], nota:'En MikroTik la licencia viene embebida en el equipo: no hay suscripción anual de funciones. En CHR la licencia sí es aparte y fija el tope de throughput.'},
+      {titulo:'Software y gestión', filas:[
+        ['RouterOS 7.x', 'WireGuard, IPsec, BGP, OSPF, MPLS, CAPsMAN', true],
+        ['WinBox / WebFig', 'GUI nativa y GUI web integrada, sin licencia', true],
+        ['The Dude', 'NMS gratuito: SNMP, syslog, alertas y mapas', true],
+        ['REST API / SSH', 'Automatización con Ansible, Terraform o scripts RouterOS', true],
+      ]},
+      {titulo:'Soporte', filas:[[esc(sup.n), esc(sup.sla||'—')]], nota:esc(sup.d||'')},
+    ];
+  };
 
-  $('sizingBox').innerHTML=`
-    <table><tbody>
-      <tr><td>Perfil</td><td class="n r">${profile==='fwd'?'Forwarding / Routing':profile==='ipsec'?'IPsec acelerado':'WireGuard (software)'}</td></tr>
-      <tr><td>Despliegue</td><td class="n r">${$('chkVirtual').checked?'Virtual (CHR)':'Hardware físico'}</td></tr>
-      <tr><td>Requerimiento con margen</td><td class="n r"><b>${fmt(req.mbps)}</b></td></tr>
-      <tr><td>FastTrack</td><td class="n r">${$('chkQos').checked&&profile==='fwd'?'<span class="warn">Desactivado (shaping)</span>':profile==='fwd'?'Activo':'No aplica'}</td></tr>
-      <tr><td>Capacidad efectiva del modelo</td><td class="n r">${fmt(capOf(pick))}</td></tr>
-      <tr><td>Headroom</td><td class="n r">${capOf(pick)>=999999?'—':Math.round((1-req.mbps/capOf(pick))*100)+'%'}</td></tr>
-      <tr><td>CPU / RAM</td><td class="n r">${pick.cores?pick.cores+' núcleos':'—'} / ${pick.ram?(pick.ram/1024).toFixed(pick.ram<1024?2:0)+' GB':'hipervisor'}</td></tr>
-      <tr><td>Nivel de licencia</td><td class="n r">Nivel ${pick.lvl}</td></tr>
-      <tr><td>Unidades a cotizar</td><td class="n r">${$('chkHa').checked?'2 (VRRP)':'1'}</td></tr>
-    </tbody></table>`;
+  const pintarDependientes=m=>{
+    track.querySelectorAll('.pickLabel').forEach(e=>e.remove());
+    const pl=document.createElement('div');
+    pl.className='pickLabel';pl.textContent=m.id;pl.style.left=xPct(capOf(m))+'%';
+    track.appendChild(pl);
+    $('sizingBox').innerHTML=`
+      <table><tbody>
+        <tr><td>Equipo evaluado</td><td class="n r">${esc(m.id)}${m.id===pick.id?'':' (elegido a mano)'}</td></tr>
+        <tr><td>Perfil</td><td class="n r">${profile==='fwd'?'Forwarding / Routing':profile==='ipsec'?'IPsec acelerado':'WireGuard (software)'}</td></tr>
+        <tr><td>Despliegue</td><td class="n r">${$('chkVirtual').checked?'Virtual (CHR)':'Hardware físico'}</td></tr>
+        <tr><td>Requerimiento con margen</td><td class="n r"><b>${fmt(req.mbps)}</b></td></tr>
+        <tr><td>FastTrack</td><td class="n r">${$('chkQos').checked&&profile==='fwd'?'<span class="warn">Desactivado (shaping)</span>':profile==='fwd'?'Activo':'No aplica'}</td></tr>
+        <tr><td>Capacidad efectiva del modelo</td><td class="n r">${fmt(capOf(m))}</td></tr>
+        <tr><td>Headroom</td><td class="n r">${capOf(m)>=999999?'—':Math.round((1-req.mbps/capOf(m))*100)+'%'}</td></tr>
+        <tr><td>CPU / RAM</td><td class="n r">${m.cores?m.cores+' núcleos':'—'} / ${m.ram?(m.ram/1024).toFixed(m.ram<1024?2:0)+' GB':'hipervisor'}</td></tr>
+        <tr><td>Nivel de licencia</td><td class="n r">Nivel ${m.lvl}</td></tr>
+        <tr><td>Unidades a cotizar</td><td class="n r">${$('chkHa').checked?'2 (VRRP)':'1'}</td></tr>
+      </tbody></table>`;
+  };
+
+  const elegidoId=FICHA.render({
+    contenedor:'verdict',
+    candidatos:ok,
+    recomendado:pick.id,
+    etiqueta:m=>`${m.id} — ${m.seg} · ${fmt(capOf(m))}${m.elp?' · '+m.elp:''}`,
+    titulo:m=>m.id,
+    subtitulo:m=>`${m.seg} · RouterOS 7.x · licencia nivel ${m.lvl}${m.elp?' · '+m.elp:''}`,
+    medidores:medidoresDe,
+    porQue:porQueDe,
+    secciones:seccionesDe,
+    alCambiar:id=>{
+      const m=ok.find(x=>x.id===id);
+      if(!m) return;
+      pintarDependientes(m);
+      llevarABom(m.id);
+    },
+  });
+  const elegido=ok.find(m=>m.id===elegidoId)||pick;
+  pintarDependientes(elegido);
+  sincronizarConBom(elegido);
 }
 
 /* ── BOM ───────────────────────────────────────────────────────────────────── */

@@ -226,23 +226,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 </div>
 
 <div>
-  <div class="verdict" id="verdict">
-    <p class="tag">Modelo recomendado</p>
-    <p class="model" id="vModel">—</p>
-    <p class="family" id="vFamily"></p>
-    <div class="meter" id="mFwd">
-      <b>Forwarding (bidireccional) <em id="mFwdVal"></em></b>
-      <div class="bar"><i id="mFwdBar"></i></div>
-    </div>
-    <div class="meter" id="mIpsec">
-      <b>IPsec VPN <em id="mIpsecVal"></em></b>
-      <div class="bar"><i id="mIpsecBar"></i></div>
-    </div>
-    <div class="meter" id="mSdwan">
-      <b>SD-WAN (IPsec + AppFlow) <em id="mSdwanVal"></em></b>
-      <div class="bar"><i id="mSdwanBar"></i></div>
-    </div>
-    <div class="why" id="vWhy"></div>
+  <div class="verdict" id="verdict"></div>
   </div>
 
   <section class="panel" id="suppPanel">
@@ -356,6 +340,7 @@ comparativa SD-WAN sintetizada de <a href="https://www.peerspot.com/products/com
 </div><!-- /wrap -->
 
 <script src="/js/bom.js"></script>
+<script src="/js/ficha.js"></script>
 <script src="/js/dimensionador-cisco-catalyst8k.js"></script>
 </body>
 </html>
