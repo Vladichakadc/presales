@@ -3,11 +3,18 @@
 /* ══════════════════════════════════════════════
    CATALOG DATA — active products only (no EOL/EOS)
    EOL removed: ISR 4221/4331/4351/4431/4451/4461 (EoS Nov 2023)
-                ASR 1001-X (EoS Ago 2022), ASR 1002-HX (EoS Mar 2025)
+                ASR 1001-X (EoS Ago 2022), ASR 1002-HX (EoS Mar 2025),
+                ASR 1006-X (EoS Jul 2026)
+   El criterio de que entra aqui lo aplica el servidor: toCotizadorCatalog() salta los
+   Product con eol. Esta nota queda como registro de que se retiro y cuando.
    ══════════════════════════════════════════════ */
 let CATALOG = [];
 
-const VENDORS = ['Todos','Huawei','Cisco','Nokia','Fortinet','Juniper','Arista'];
+// Los filtros salen del propio catalogo, no de una lista escrita a mano. La lista fija se
+// quedo en seis fabricantes: Aruba y MikroTik aparecian en el listado agrupado —porque eso
+// si se construye con los datos— pero no tenian boton de filtro, asi que en un catalogo de
+// 139 equipos no habia forma de acotar a ellos. Derivarla evita que el proximo fabricante
+// vuelva a entrar a medias.
 let activeVendor = 'Todos';
 let bom = []; // {id, vendor, color, model, seg, spec, elp, elpN, qty, note}
 let nextId = 1;
@@ -19,6 +26,7 @@ const esc=s=>String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt
 (async function init(){
   const res = await fetch('/api/cotizador/catalog');
   CATALOG = await res.json();
+  const VENDORS = ['Todos', ...[...new Set(CATALOG.map(i => i.vendor))].sort((a, b) => a.localeCompare(b, 'es'))];
   // Set today's date
   $('quoteDate').value = new Date().toISOString().slice(0,10);
   // Render filter buttons

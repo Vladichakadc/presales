@@ -31,6 +31,15 @@ let SMARTNET = {};
 let DNA_DESC = {};
 
 const $ = id => document.getElementById(id);
+// Que familia del catalogo pertenece a cada plataforma. Se decide por `ser`, que es el campo
+// que ya trae cada modelo, en vez de anadir una marca nueva al catalogo.
+const PLATAFORMAS = {
+  xe:     m => /Catalyst 8000|Secure Router/.test(m.ser),
+  isr:    m => /ISR 1000/.test(m.ser),
+  meraki: m => /Meraki/.test(m.ser),
+  asr:    m => /ASR 1000/.test(m.ser),
+  all:    () => true,
+};
 // Fin de venta VENCIDO frente a ANUNCIADO lo decide la misma regla que ordena y filtra los
 // candidatos (ficha.js), para que la ficha, el BOM y la exportacion no puedan discrepar de
 // lo que muestra la lista.
@@ -63,7 +72,7 @@ $('critSeg').addEventListener('click', e => {
   [...$('critSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
   crit=b.dataset.v; render();
 });
-['bw','unit','sites','conc','head','profile','aps','sNgfw','sVoice','sAppx','sUmbrella','chkRedund','chk4g']
+['bw','unit','sites','conc','head','profile','plataforma','aps','sNgfw','sVoice','sAppx','sUmbrella','chkRedund','chk4g']
   .forEach(id => $(id).addEventListener('input', render));
 ['pickModel','qty','nimQty','optQty','termYears','dnaTier'].forEach(id => $(id).addEventListener('input', renderBom));
 
@@ -102,7 +111,12 @@ function render(){
   needMbps *= penalty;
 
   // update needle
-  const allCaps = MODELS.map(m => profile==='ipsec' ? m.ipsec : profile==='sdwan' ? (m.sdwan||m.ipsec) : m.fwd);
+  // La escala se calcula sobre la plataforma elegida: con todo el catalogo dentro, el chasis
+  // mas grande aplastaba la aguja contra el extremo izquierdo en cuanto se miraba sucursal.
+  const platEscala = $('plataforma').value;
+  const enPlatEscala = m => PLATAFORMAS[platEscala] ? PLATAFORMAS[platEscala](m) : true;
+  const modelosEscala = MODELS.filter(enPlatEscala).length ? MODELS.filter(enPlatEscala) : MODELS;
+  const allCaps = modelosEscala.map(m => profile==='ipsec' ? m.ipsec : profile==='sdwan' ? (m.sdwan||m.ipsec) : m.fwd);
   const maxCap = Math.max(...allCaps);
   const logP = v => Math.log10(Math.max(v,10));
   const logMin=Math.log10(10), logMax=logP(maxCap*1.2);
@@ -125,14 +139,25 @@ function render(){
   // (ficha.js) los deja visibles pero fuera de la recomendacion. Un fin de venta ANUNCIADO
   // no cuenta como fuera de venta hasta que pasa su fecha de ultimo pedido: hasta entonces
   // se pide con normalidad y solo se marca.
-  // PENDIENTE DE DECISION, NO TOCADO AQUI: a diferencia de los otros cuatro dimensionadores,
-  // esta pagina no elige el mas pequeno que cumple sino el PRIMERO DEL CATALOGO que cumple,
-  // y el catalogo esta ordenado por familia (ISR, Catalyst, Secure Router, ASR, Meraki), no
-  // por tamano. Para 3 Gbps eso propone el chasis 8500-12X4QC de 31,9 Gbps. Ordenar por
-  // capacidad lo corrige, pero entonces la recomendacion cruza de familia —pasa a un Meraki
-  // MX, que es gestion cloud y no IOS XE— y eso ya no es un arreglo tecnico sino una
-  // decision de producto. Se deja el orden actual y se separa la conversacion.
-  const candidates = FICHA.ordenar(MODELS.filter(m => capDe(m) >= needMbps));
+  // DOS COSAS QUE ESTABAN MAL Y SE ARREGLAN JUNTAS, PORQUE POR SEPARADO CADA UNA EMPEORA
+  // LO QUE ARREGLA LA OTRA.
+  //
+  // 1. Esta pagina no elegia el mas pequeno que cumple sino el PRIMERO DEL CATALOGO que
+  //    cumple, y el catalogo esta ordenado por familia, no por tamano. Para una sede de
+  //    3 Gbps proponia el chasis 8500-12X4QC de 31,9 Gbps.
+  // 2. El catalogo mezcla cinco plataformas que NO son intercambiables aunque coincida el
+  //    caudal: IOS XE SD-WAN (Catalyst 8000 y Secure Router G2), ISR 1000, Meraki MX y
+  //    ASR 1000. Cambia el plano de gestion, el licenciamiento y el equipo que opera la
+  //    red. Ordenar por capacidad sin filtrar hacia saltar de un Catalyst a un Meraki por
+  //    unos Mbps, que como propuesta de preventa es peor que el defecto original.
+  //
+  // Asi que primero se acota la plataforma —el criterio que un preventa de Cisco fija ANTES
+  // de mirar caudal— y dentro de ella si se aplica el mas pequeno que cumple, igual que en
+  // los otros cuatro dimensionadores. Por defecto IOS XE, que es de lo que trata la pagina.
+  const plat = $('plataforma').value;
+  const enPlataforma = m => PLATAFORMAS[plat] ? PLATAFORMAS[plat](m) : true;
+  const candidates = FICHA.ordenar(MODELS.filter(m => enPlataforma(m) && capDe(m) >= needMbps),
+    (a, b) => capDe(a) - capDe(b));
   const pick = FICHA.recomendar(candidates);
   lastPick = pick;
   sincronizarConBom(pick);
@@ -142,9 +167,17 @@ function render(){
   // equipo ELEGIDO. Ver /js/ficha.js.
   const verdict=$('verdict');
   if(!pick){
+    // Se distingue "no hay equipo" de "no hay equipo EN ESTA PLATAFORMA", que es una
+    // conclusion muy distinta: la segunda se resuelve cambiando un desplegable.
+    const hayEnOtras = MODELS.some(m => !enPlataforma(m) && capDe(m) >= needMbps && FICHA.recomendable(m));
+    const fueraDeVenta = MODELS.filter(m => enPlataforma(m) && capDe(m) >= needMbps);
     FICHA.render({contenedor:'verdict', candidatos:[], recomendado:null,
-      vacioTitulo:'Considerar ASR 9000 o Catalyst 9800 con capacidad adicional',
-      vacioDetalle:'<p class="warn">El requerimiento supera la capacidad máxima del catálogo configurado. Escalar a ASR 9000 o consultar solución personalizada.</p>'});
+      vacioTitulo: hayEnOtras
+        ? `Ningún equipo vigente de la plataforma elegida llega a ${fmt(needMbps)}`
+        : 'El requerimiento supera la capacidad del catálogo',
+      vacioDetalle: hayEnOtras
+        ? `<p class="warn">Sí hay equipos vigentes que cumplen en <b>otra plataforma</b>. Cambia «Plataforma / modelo operativo» para verlos — pero es una decisión de arquitectura, no de caudal: cambia el plano de gestión, el licenciamiento y quién opera la red.</p>${fueraDeVenta.length?`<p class="warn">Dentro de esta plataforma cumplen ${fueraDeVenta.map(m=>m.id).join(', ')}, pero están fuera de venta: solo sirven como referencia de parque instalado.</p>`:''}`
+        : '<p class="warn">El requerimiento supera la capacidad máxima del catálogo configurado. Escalar a ASR 9000 o Catalyst 9800, o consultar solución personalizada.</p>'});
     verdict.style.borderLeftColor='var(--amber)';
     return;
   }
@@ -232,7 +265,11 @@ function render(){
     contenedor:'verdict',
     candidatos:candidates,
     recomendado:pick.id,
-    etiqueta:m=>`${m.id} — ${m.ser} · ${fmt(capDe(m))}`,
+    // En perfil SD-WAN, un modelo sin cifra propia cae a su numero de IPsec. Son dos
+    // mediciones distintas, asi que la sustitucion se marca aqui y no solo en la ficha: sin
+    // eso, un equipo cuya cifra SD-WAN nadie publico puede aparecer por delante de otro que
+    // si la publica, y en la lista los dos numeros parecen lo mismo.
+    etiqueta:m=>`${m.id} — ${m.ser} · ${fmt(capDe(m))}${profile==='sdwan'&&!m.sdwan&&m.ipsec?' (cifra IPsec)':''}`,
     titulo:m=>m.id,
     subtitulo:m=>m.fam+' · Serie '+m.ser,
     medidores:medidoresDe,

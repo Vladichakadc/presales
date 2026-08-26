@@ -183,6 +183,17 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   <section class="panel">
     <h2>2 · Perfil de servicios</h2>
     <div class="field">
+      <label for="plataforma">Plataforma / modelo operativo</label>
+      <select id="plataforma">
+        <option value="xe" selected>IOS XE SD-WAN — Catalyst 8000 y Secure Router (G2)</option>
+        <option value="isr">ISR 1000 — sucursal pequeña, sin SD-WAN diferenciado</option>
+        <option value="meraki">Meraki MX — gestión cloud (dashboard)</option>
+        <option value="asr">ASR 1000 — agregación clásica (parque instalado)</option>
+        <option value="all">Todas — comparar entre plataformas</option>
+      </select>
+      <p class="hint" id="plataformaHint">Un Catalyst 8000 y un Meraki MX del mismo caudal <b>no son intercambiables</b>: cambian el plano de gestión (Catalyst SD-WAN Manager frente a dashboard cloud), el licenciamiento y el equipo que opera la red. Por eso el dimensionamiento se hace <b>dentro</b> de la plataforma elegida y no saltando entre familias por unos Mbps de diferencia.</p>
+    </div>
+    <div class="field">
       <label for="profile">Perfil de tráfico</label>
       <select id="profile">
         <option value="fwd">Routing + NAT + ACL + QoS (sin cifrado)</option>

@@ -134,4 +134,24 @@ module.exports = [
   {vendor:'Aruba',   color:'#01A982',model:'Aruba 7210',                  seg:'Campus gde',                    spec:'Serie 7200 · FW 20 Gbps · 16.000 clientes · 512 APs',  elp:'Consultar',elpN:0},
   {vendor:'Aruba',   color:'#01A982',model:'Aruba 7220',                  seg:'Campus grande / alta densidad', spec:'Serie 7200 · FW 40 Gbps · 24.000 clientes · 1.024 APs',  elp:'Consultar',elpN:0},
   {vendor:'Aruba',   color:'#01A982',model:'Aruba 7240XM',                seg:'Campus máxima escala',          spec:'Serie 7200 · FW 40 Gbps · 32.000 clientes · 2.048 APs',  elp:'Consultar',elpN:0},
+  // MikroTik. Faltaba entero: era el unico de los ocho fabricantes del portal ausente del
+  // cotizador, pese a ser el que mejor dato tiene —los 15 modelos traen precio de lista y
+  // cifras de forwarding e IPsec verificadas en mikrotik.js— y precisamente el que mas se
+  // cotiza por precio. Las cifras salen de MODELS en legacyData/mikrotik.js: misma fuente,
+  // sin una segunda lista que se desincronice.
+  {vendor:'MikroTik',color:'#C8102E',model:'hEX lite RB750r2',            seg:'Hogar / Básico',                spec:'100 Mbps FWD · IPsec 70 Mbps · 5x FE · línea anterior', elp:'~ $29',    elpN:29},
+  {vendor:'MikroTik',color:'#C8102E',model:'hEX RB750Gr3',                seg:'SOHO / Home',                   spec:'1 Gbps FWD · IPsec 470 Mbps · 5x GE · PoE-out pasivo', elp:'~ $59',    elpN:59},
+  {vendor:'MikroTik',color:'#C8102E',model:'hEX S RB760iGS',              seg:'SOHO + SFP',                    spec:'1 Gbps FWD · IPsec 470 Mbps · 5x GE + 1x SFP',       elp:'~ $79',    elpN:79},
+  {vendor:'MikroTik',color:'#C8102E',model:'L009UiGS-2HaxD',              seg:'Sucursal peq + Wi-Fi 6',        spec:'2 Gbps FWD · IPsec 900 Mbps · 8x GE + 2.5G + SFP · Wi-Fi 6', elp:'~ $125',   elpN:125},
+  {vendor:'MikroTik',color:'#C8102E',model:'RB4011iGS+',                  seg:'Sucursal pequeña',              spec:'5.6 Gbps FWD · IPsec 1.8 Gbps · 10x GE + 1x SFP+',   elp:'~ $200',   elpN:200},
+  {vendor:'MikroTik',color:'#C8102E',model:'RB4011iGS+RM',                seg:'Sucursal pequeña rackmount',    spec:'5.6 Gbps FWD · IPsec 1.8 Gbps · 10x GE + SFP+ · 1U', elp:'~ $215',   elpN:215},
+  {vendor:'MikroTik',color:'#C8102E',model:'RB5009UG+S+IN',               seg:'Sucursal mediana',              spec:'8.8 Gbps FWD · IPsec 2.4 Gbps · 7x GE + 2.5G + SFP+', elp:'~ $190',   elpN:190},
+  {vendor:'MikroTik',color:'#C8102E',model:'RB5009UPr+S+IN',              seg:'Sucursal mediana + PoE-out',    spec:'8.8 Gbps FWD · IPsec 2.4 Gbps · 7x GE PoE-out 802.3af/at', elp:'~ $239',   elpN:239},
+  {vendor:'MikroTik',color:'#C8102E',model:'CCR2004-16G-2S+',             seg:'Hub campus',                    spec:'12 Gbps FWD · IPsec 4.2 Gbps · 16x GE + 2x SFP+ · 4 GB', elp:'~ $659',   elpN:659},
+  {vendor:'MikroTik',color:'#C8102E',model:'CCR2004-1G-12S+2XS',          seg:'Sucursal gde / Agregación',     spec:'12 Gbps FWD · IPsec 4.2 Gbps · 12x SFP+ + 2x 25G · fuente redundante', elp:'~ $699',   elpN:699},
+  {vendor:'MikroTik',color:'#C8102E',model:'CCR2116-12G-4S+',             seg:'Hub regional / DC Edge',        spec:'24 Gbps FWD · IPsec 6.8 Gbps · 12x GE + 4x SFP+ · 16 GB', elp:'~ $999',   elpN:999},
+  {vendor:'MikroTik',color:'#C8102E',model:'CCR2216-1G-12XS-2XQ',         seg:'Core WAN / ISP',                spec:'100 Gbps FWD · IPsec 15 Gbps · 12x 25G + 2x 100G · 16 GB', elp:'~ $5,999', elpN:5999},
+  {vendor:'MikroTik',color:'#C8102E',model:'CHR P1',                      seg:'Virtual — licencia 1 Gbps',     spec:'RouterOS CHR · tope 1 Gbps por interfaz · licencia perpetua', elp:'~ $45',    elpN:45},
+  {vendor:'MikroTik',color:'#C8102E',model:'CHR P10',                     seg:'Virtual — licencia 10 Gbps',    spec:'RouterOS CHR · tope 10 Gbps por interfaz · licencia perpetua', elp:'~ $95',    elpN:95},
+  {vendor:'MikroTik',color:'#C8102E',model:'CHR P-Unlimited',             seg:'Virtual — sin tope',            spec:'RouterOS CHR · sin límite de throughput · licencia perpetua', elp:'~ $250',   elpN:250},
 ];

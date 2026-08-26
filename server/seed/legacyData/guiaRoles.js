@@ -13,12 +13,14 @@ module.exports = {
     {v:'Fortinet', color:'#EE3124',model:'FortiGate 100F',         spec:'FW 20 Gbps · NGFW 1.6 Gbps · IPsec 11.5 Gbps', alt:'FortiGate 200F (27 Gbps FW)', elp:'~ $1,900'},
     {v:'Juniper', color:'#84B135', model:'SRX 345',                spec:'FW 5 Gbps · 16 GE + 4 MPIM · NGFW, SD-WAN, IPsec', alt:'SRX 320 (1 Gbps)', elp:'~ $3,500'},
     {v:'Aruba',   color:'#01A982', model:'EC-M',                    spec:'EdgeConnect · WAN 50 Mbps-5 Gbps · 8x RJ45 + 4x SFP+ 1/10G', alt:'Gateway 9012 si la sucursal necesita LAN/WLAN integrados', elp:'Consultar'},
+    {v:'MikroTik',color:'#C8102E', model:'RB5009UG+S+IN',          spec:'8.8 Gbps FWD · IPsec 2.4 Gbps · 7x GE + 2.5G + SFP+ · RouterOS L5', alt:'RB4011iGS+ (5.6 Gbps) o RB5009UPr+ con PoE-out', elp:'~ $190'},
   ],
   branch_small: [
     {v:'Huawei',  color:'#C7000B', model:'NetEngine AR5710-S8T2X', spec:'Forwarding 1.3 Gbps · IPsec 800 Mbps · SD-WAN 620 Mbps · 8 GE LAN', alt:'AR651W-8P (2 Gbps FWD)', elp:'~ $2,800'},
     {v:'Cisco',   color:'#049FD9', model:'Catalyst 8200L',         spec:'Forwarding 800 Mbps · IPsec 600 Mbps · 4 GE + 1 NIM', alt:'ISR 1111-8P (300 Mbps)', elp:'~ $2,200'},
     {v:'Fortinet', color:'#EE3124',model:'FortiGate 60F',          spec:'FW 10 Gbps · NGFW 1 Gbps · IPsec 6.5 Gbps · 10 GE', alt:'FortiGate 80F', elp:'~ $650'},
     {v:'Juniper', color:'#84B135', model:'SRX 320',                spec:'FW 1 Gbps · 8 GE · SD-WAN, UTM, branch routing', alt:'SRX 345 (5 Gbps)', elp:'~ $1,800'},
+    {v:'MikroTik',color:'#C8102E', model:'hEX RB750Gr3',            spec:'1 Gbps FWD · IPsec 470 Mbps · 5x GE · PoE-out pasivo en ether5', alt:'L009UiGS-2HaxD (2 Gbps + Wi-Fi 6)', elp:'~ $59'},
   ],
   core_router: [
     {v:'Huawei',  color:'#C7000B', model:'NetEngine NE8000 M8',    spec:'4.8 Tbps · 1086 Mpps · 8 tarjetas 400G', alt:'NE8000 M14 (7.2 Tbps)', elp:'~ $180,000'},
@@ -55,12 +57,14 @@ module.exports = {
     {v:'Nokia',   color:'#124191', model:'7750 SR-2s',            spec:'4 Tbps · 144x100GE o 36x400GE · SR-MPLS, SRv6, EVPN', alt:'7750 SR-1s (1.2 Tbps)', elp:'~ $140,000'},
     {v:'Arista',  color:'#4E5B6E', model:'7280R3-48C6',           spec:'4.8 Tbps · 48x100GE + 6x400GE · edge, agregación', alt:'7280R3-96S2C (6.4 Tbps)', elp:'~ $75,000'},
     {v:'Juniper', color:'#84B135', model:'MX304',                 spec:'4.8 Tbps · MPC slots · 100/400GE · MPLS PE, broadband, 5G', alt:'MX480 (7.7 Tbps)', elp:'~ $65,000'},
+    {v:'MikroTik',color:'#C8102E', model:'CCR2216-1G-12XS-2XQ',      spec:'100 Gbps FWD · 12x 25GE + 2x 100GE · 16 GB RAM · fuentes hot-swap', alt:'CCR2004-1G-12S+2XS (12 Gbps, 12x SFP+)', elp:'~ $5,999'},
   ],
   internet_gw: [
     {v:'Cisco',   color:'#049FD9', model:'Catalyst 8500-12X4QC',  spec:'20 Gbps · 12x10GE + 4x40GE · Internet Gateway / Peering', alt:'ASR 1006-X (100 Gbps, disponible hasta Jul 2026)', elp:'~ $58,000'},
     {v:'Nokia',   color:'#124191', model:'7750 SR-1s',            spec:'1.2 Tbps · 36x100GE · border routing, BNG, peering', alt:'7750 SR-2s (4 Tbps)', elp:'~ $85,000'},
     {v:'Juniper', color:'#84B135', model:'MX204',                 spec:'400 Gbps · 4x100GE · 1U · edge, peering, internet GW', alt:'MX304 (4.8 Tbps)', elp:'~ $32,000'},
     {v:'Huawei',  color:'#C7000B', model:'NetEngine NE8000 F1A',  spec:'2.4 Tbps · 1U · alta densidad · 1200 G/U', alt:'NE8000 M4 (2.4 Tbps modular)', elp:'~ $80,000'},
+    {v:'MikroTik',color:'#C8102E', model:'CCR2116-12G-4S+',         spec:'24 Gbps FWD · IPsec 6.8 Gbps · 16 GB RAM para tabla BGP completa · fuente redundante', alt:'CCR2004-16G-2S+ (12 Gbps) para caudales menores', elp:'~ $999'},
   ],
   sdwan_controller: [
     {v:'Huawei',  color:'#C7000B', model:'iMaster NCE (VM/Appliance)', spec:'Orquestador SD-WAN · gestión centralizada · APIs abiertas · intent-based', alt:'NCE-WAN Enterprise Edition', elp:'Licencia por nodo'},
