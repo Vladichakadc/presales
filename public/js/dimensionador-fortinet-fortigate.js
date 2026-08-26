@@ -52,7 +52,7 @@ $('rolSeg').addEventListener('click',e=>{
   render();
 });
 $('segSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('segSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));segMode=b.dataset.v;render();});
-['bw','unit','users','perUser','head','sesUser','sessNeed','sites','conc','pctOverlay',
+['bw','unit','users','perUser','head','sesUser','sessNeed','vidaSes','sites','conc','pctOverlay',
  'chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa'].forEach(id=>$(id).addEventListener('input',render));
 // En HA se compran 2 unidades y cada una lleva su propia suscripcion FortiGuard: enlazar la
 // casilla con la cantidad del BOM evita cotizar un clúster con una sola licencia.
@@ -313,8 +313,8 @@ function render(){
   //
   // Lo anterior vale para sesiones CONCURRENTES, que consumen memoria. El eje que si
   // aprieta en campus grandes es el de sesiones NUEVAS POR SEGUNDO, que consume CPU y se
-  // desploma con inspeccion proxy — y esa cifra no esta en el catalogo (ver hallazgo 05
-  // de la auditoria). Por eso se avisa en vez de omitirlo.
+  // desploma con inspeccion proxy: se dimensiona justo debajo, a partir de estas mismas
+  // sesiones y de su vida media.
   const sesUser=Math.max(0,parseInt($('sesUser').value)||0);
   const sessOverride=parseInt($('sessNeed').value)||0;
   const sessNeed=sessOverride||Math.round(users*sesUser*(1+head));
@@ -323,10 +323,49 @@ function render(){
     : (sesUser&&users
         ? `Calculado: ${users} usuarios x ${sesUser} sesiones + ${Math.round(head*100)} % de margen = <b>${sessNeed.toLocaleString('en-US')}</b> sesiones concurrentes.`
         : 'Sin restricción de sesiones: pon un valor por usuario o un total.');
-  let outBySess=0;
+
+  // ── SESIONES NUEVAS POR SEGUNDO (CPS) ─────────────────────────────────────
+  //
+  // Cierra el hallazgo 05 de la auditoria. Son dos ejes distintos y se confundian en uno:
+  // una sesion ABIERTA cuesta memoria (la mide `sess`), ABRIRLA cuesta CPU (la mide `cps`).
+  // Un perfil puede ir holgado en la tabla de sesiones y estrangulado en el caudal de
+  // sesiones nuevas — es lo que pasa con trafico de APIs, escaneos y portales.
+  //
+  // No se pide como dato suelto: se DERIVA de lo que ya se declaro. Si un usuario sostiene
+  // N sesiones y cada una vive V segundos, en regimen estacionario abre N/V por segundo.
+  // Asi el modelo queda coherente con el eje de concurrentes en vez de pedir dos cifras
+  // que el preventa tendria que inventar por separado.
+  //
+  // La vida media por defecto (30 s) es un supuesto de esta herramienta, no una cifra
+  // publicada, y se declara como tal en la pagina.
+  const vidaSes=Math.max(1,parseInt($('vidaSes').value)||30);
+  const cpsNeed=sessNeed?Math.round(sessNeed/vidaSes):0;
+  $('cpsCalc').innerHTML=cpsNeed
+    ? `${sessNeed.toLocaleString('en-US')} sesiones sostenidas / ${vidaSes} s de vida media = <b>${cpsNeed.toLocaleString('en-US')} sesiones nuevas por segundo</b>. La tabla de sesiones es el eje de memoria; éste es el de CPU.`
+    : 'Sin sesiones declaradas no se puede derivar el caudal de sesiones nuevas por segundo.';
+
+  // Un unico lugar decide que eje limita, para que la ficha, el resumen y la exportacion no
+  // puedan contradecirse. Un eje sin dato en el catalogo no entra: no se puede declarar
+  // ganador ni perdedor a algo que no se midio.
+  const ejesDe=m=>{
+    const e=[{n:'Throughput', frase:'el throughput', o:effectiveNeed/getCap(m)}];
+    if(sessNeed&&m.sess) e.push({n:'Tabla de sesiones', frase:'la tabla de sesiones', o:sessNeed/m.sess});
+    if(cpsNeed&&m.cps!=null) e.push({n:'Sesiones nuevas / s', frase:'las sesiones nuevas por segundo', o:cpsNeed/m.cps});
+    return e;
+  };
+  const ejeQueManda=m=>ejesDe(m).reduce((x,y)=>y.o>x.o?y:x);
+  const ejeQueLimita=m=>{
+    const g=ejeQueManda(m);
+    return g.n==='Throughput'?'Throughput':`<b class="warn">${g.n}</b>`;
+  };
+
+  let outBySess=0, outByCps=0;
   const candidates=MODELS.filter(m=>{
     if(m.eol||getCap(m)<effectiveNeed) return false;
     if(sessNeed&&m.sess<sessNeed){ outBySess++; return false; }
+    // m.cps==null no es "no tiene limite", es "el catalogo no trae el dato": no se filtra
+    // por el, y la ficha del modelo lo declara ausente en vez de dejarlo pasar en silencio.
+    if(cpsNeed&&m.cps!=null&&m.cps<cpsNeed){ outByCps++; return false; }
     return true;
   }).sort((a,b)=>getCap(a)-getCap(b));
   const rx=SEG_MATCH[segMode];
@@ -342,6 +381,7 @@ function render(){
     why.push(`<li>Requerimiento de <b>${fmt(effectiveNeed)}</b> en la capa <b>${TIER_BY_K[capa.k].n}</b>${$('chkSsl').checked?' con inspección SSL profunda':''}.</li>`);
     if(capa.elevada) why.push(`<li>La capa se elevó de <b>${TIER_BY_K[profile].n}</b> a <b>${TIER_BY_K[capa.k].n}</b> por ${capa.elevan.map(f=>esc(f.n)).join(', ')}.</li>`);
     if(outBySess) why.push(`<li><b>${outBySess}</b> modelo(s) descartado(s) por tabla de sesiones: necesitas ${sessNeed.toLocaleString('en-US')} concurrentes.</li>`);
+    if(outByCps) why.push(`<li><b>${outByCps}</b> modelo(s) descartado(s) por sesiones nuevas por segundo: necesitas ${cpsNeed.toLocaleString('en-US')} cps y el catálogo publica esa cifra para ellos.</li>`);
     if(capa.k==='tp'||$('chkSsl').checked) why.push('<li>Estás dimensionando contra la capa más exigente. Si el diseño no requiere antivirus en línea sobre todo el tráfico, evaluar la capa <b>NGFW</b> o segmentar por política qué tráfico se inspecciona a fondo — es la palanca que más capacidad libera en FortiGate.</li>');
     why.push('<li>Por encima del catálogo: evaluar chasis FortiGate 7000F o distribuir la carga en varias unidades.</li>');
     FICHA.render({contenedor:'verdict', candidatos:[], recomendado:null,
@@ -358,7 +398,10 @@ function render(){
      val:effectiveNeed, tope:getCap(m), txt:fmt(effectiveNeed)+' / '+fmt(getCap(m))},
     {etq:'Sesiones concurrentes', val:sessNeed, tope:m.sess,
      txt:(sessNeed?sessNeed.toLocaleString('en-US')+' / ':'')+(m.sess/1000).toFixed(0)+'K'},
-  ];
+  ].concat(m.cps!=null?[
+    {etq:'Sesiones nuevas / s', val:cpsNeed, tope:m.cps,
+     txt:(cpsNeed?cpsNeed.toLocaleString('en-US')+' / ':'')+m.cps.toLocaleString('en-US')},
+  ]:[]);
 
   const porQueDe=m=>{
     const flags=[];
@@ -381,16 +424,24 @@ function render(){
     // Que eje manda, y a que distancia esta el otro: es lo que evita subir de gama por un
     // limite que en realidad esta a dos ordenes de magnitud.
     if(sessNeed&&m.sess){
-      const ocupTh=effectiveNeed/getCap(m), ocupSes=sessNeed/m.sess;
-      flags.push(ocupSes>ocupTh
-        ? `<b class="warn">Manda la tabla de sesiones:</b> ${Math.round(ocupSes*100)} % de las ${(m.sess/1e6).toFixed(1)} M sesiones del modelo, frente al ${Math.round(ocupTh*100)} % de throughput. Perfil de muchas sesiones y poco caudal — típico de IoT o CGNAT.`
-        : `El throughput manda con holgura sobre las sesiones: ${Math.round(ocupTh*100)} % de la capa de inspección frente a ${(ocupSes*100).toFixed(2)} % de la tabla de sesiones, que queda a <b>${Math.round(m.sess/sessNeed)}x</b> de distancia. Subir de gama por sesiones concurrentes no se justifica en este perfil.`);
-      flags.push('<b>Lo que sí puede apretar:</b> las <b>sesiones nuevas por segundo</b>, que consumen CPU y caen con inspección proxy. Fortinet publica esa cifra, pero <b>no está en este catálogo</b>: confirmarla en el Product Matrix si el perfil son sesiones cortas y masivas.');
+      const pc=o=>(o*100)<1?(o*100).toFixed(2)+' %':Math.round(o*100)+' %';
+      // `manda` tiene que salir de ESTE array: si se pide a ejeQueManda() devuelve otro
+      // objeto equivalente y el filtro por identidad deja dentro al propio eje ganador.
+      const ejes=ejesDe(m);
+      const manda=ejes.reduce((x,y)=>y.o>x.o?y:x);
+      const otros=ejes.filter(e=>e!==manda);
+      flags.push(`<b${manda.n==='Throughput'?'':' class="warn"'}>Manda ${manda.frase}</b>: ${pc(manda.o)} de lo que da el modelo.`+
+        (otros.length?` Los demás ejes van en ${otros.map(e=>`${e.frase} ${pc(e.o)}`).join(' y ')} — el más cercano queda a <b>${(manda.o/Math.max(...otros.map(e=>e.o))).toFixed(1)}x</b> del que manda. Subir de gama por un eje que no es el que limita no compra nada.`:''));
+      if(m.cps==null){
+        flags.push(`<b class="warn">Sesiones nuevas por segundo sin dato:</b> el catálogo no trae la cifra del ${esc(m.id)}, así que ese eje <b>no se comprobó</b> para este modelo (se necesitarían ${cpsNeed?cpsNeed.toLocaleString('en-US'):'—'} cps). Es el eje de CPU y es el que aprieta con sesiones cortas y masivas: confirmarlo en el Product Matrix antes de cerrar el diseño.`);
+      }else{
+        flags.push(`Los <b>${m.cps.toLocaleString('en-US')} cps</b> del ${esc(m.id)} son la cifra en <b>modo flow</b>. Con inspección <b>proxy</b> (antivirus en modo proxy, inspección SSL profunda) el caudal de sesiones nuevas cae, y <b>Fortinet no publica cuánto</b>: con este perfil al ${pc(cpsNeed/m.cps)} conviene dejar margen o validar con PoC.`);
+      }
     }
     return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
       <li>Requerimiento <b>${fmt(effectiveNeed)}</b> en capa <b>${esc(TIER_BY_K[capa.k].n)}</b> contra capacidad <b>${fmt(getCap(m))}</b> — headroom ${Math.round((1-effectiveNeed/getCap(m))*100)}%</li>
       ${capa.elevada?`<li><b class="warn">Capa elevada:</b> elegiste <b>${esc(TIER_BY_K[profile].n)}</b>, pero ${capa.elevan.map(f=>esc(f.n)).join(' y ')} obliga${capa.elevan.length>1?'n':''} a dimensionar contra <b>${esc(TIER_BY_K[capa.k].n)}</b>. Activar inspección saca la sesión del fast path del ASIC: no es un recargo porcentual, es otra cifra del datasheet.</li>`:''}
-      <li>Sesiones concurrentes: <b>${(m.sess/1000).toFixed(0)}K</b> | Interfaces: ${esc(m.ifaces)}</li>
+      <li>Sesiones concurrentes: <b>${(m.sess/1000).toFixed(0)}K</b> | Sesiones nuevas/s: <b>${m.cps!=null?m.cps.toLocaleString('en-US'):'<span class="warn">sin dato en el catálogo</span>'}</b> | Interfaces: ${esc(m.ifaces)}</li>
       ${flags.map(f=>`<li>${f}</li>`).join('')}
     </ul>`;
   };
@@ -410,6 +461,7 @@ function render(){
         ['NGFW (IPS + App Control)', fmt(m.ngfw)],
         ['<b>Threat Protection</b>', m.tp?`<b>${fmt(m.tp)}</b>`:'Consultar datasheet'],
         ['Sesiones concurrentes', m.sess.toLocaleString('en-US')],
+        ['Sesiones nuevas / s (TCP)', m.cps!=null?m.cps.toLocaleString('en-US'):'<span class="warn">no está en el catálogo — ver Product Matrix</span>'],
         ['Procesadores de seguridad', m.asic?esc(m.asic):'<span class="warn">sin dato publicado</span>'],
         ['Interfaces', esc(m.ifaces), true],
         ['SKU de hardware', m.hwSku?`<code>${esc(m.hwSku)}</code>`:'<span class="warn">Descontinuado — sin SKU nuevo</span>'],
@@ -452,7 +504,9 @@ function render(){
         <tr><td>Headroom disponible</td><td class="n">${Math.round((1-effectiveNeed/getCap(m))*100)}%</td></tr>
         <tr><td>Sesiones por usuario</td><td class="n">${sessOverride?'—  (total forzado)':sesUser||'—'}</td></tr>
         <tr><td>Sesiones concurrentes</td><td class="n">${sessNeed?sessNeed.toLocaleString('en-US')+' / ':''}${m.sess.toLocaleString('en-US')}</td></tr>
-        ${sessNeed&&m.sess?`<tr><td>Eje que limita</td><td class="n">${(sessNeed/m.sess)>(effectiveNeed/getCap(m))?'<b class="warn">Tabla de sesiones</b>':'Throughput'}</td></tr>`:''}
+        <tr><td>Vida media de sesión</td><td class="n">${vidaSes} s</td></tr>
+        <tr><td>Sesiones nuevas / s</td><td class="n">${cpsNeed?cpsNeed.toLocaleString('en-US')+' / ':''}${m.cps!=null?m.cps.toLocaleString('en-US'):'<span class="warn">sin dato</span>'}</td></tr>
+        ${sessNeed&&m.sess?`<tr><td>Eje que limita</td><td class="n">${ejeQueLimita(m)}</td></tr>`:''}
         <tr><td>Unidades a cotizar</td><td class="n">${$('chkHa').checked?'2 (HA) — licencia por unidad':'1'}</td></tr>
       </tbody></table>`;
   };
@@ -555,6 +609,7 @@ function renderBom(){
     <tr><td>NGFW (IPS + App Control)</td><td class="n">${fmt(m.ngfw)}</td></tr>
     <tr><td><b>Threat Protection</b> (NGFW + AV + log)</td><td class="n"><b>${m.tp?fmt(m.tp):'Consultar datasheet'}</b>${m.tp&&m.fw?` <span class="warn">(${Math.round(m.fw/m.tp)}x menos que el firewall puro)</span>`:''}</td></tr>
     <tr><td>Sesiones concurrentes</td><td class="n">${m.sess.toLocaleString('en-US')}</td></tr>
+    <tr><td>Sesiones nuevas / s (TCP, modo flow)</td><td class="n">${m.cps!=null?m.cps.toLocaleString('en-US'):'<span class="warn">no está en el catálogo</span>'}</td></tr>
     <tr><td>Procesadores de seguridad</td><td class="n">${m.asic?`${esc(m.asic)}${m.soc?' <span class="pillc">SoC</span>':''}<span class="sku">${esc(m.asicSrc||'')}</span>`:'<span class="warn">Sin página de fast path architecture publicada</span>'}</td></tr>
     <tr><td>Interfaces</td><td>${m.ifaces}</td></tr>
     </tbody></table></div>
@@ -606,6 +661,7 @@ function renderBom(){
       `  NGFW (IPS + App Control):        ${fmt(m.ngfw)}`,
       `  Threat Protection (+ AV + log):  ${fmt(m.tp)}   <- dimensionar con este valor`,
       `  Sesiones concurrentes:           ${m.sess.toLocaleString('en-US')}`,
+      `  Sesiones nuevas / s (flow):      ${m.cps!=null?m.cps.toLocaleString('en-US'):'no esta en el catalogo - ver Product Matrix'}`,
       `  Procesadores de seguridad:       ${m.asic||'sin dato publicado por Fortinet'}`,
       '',
       'INCLUIDO EN FORTIOS SIN LICENCIA ADICIONAL',

@@ -176,6 +176,12 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       <p class="hint" id="sesCalc" style="margin-top:6px"></p>
     </div>
     <div class="field">
+      <label for="vidaSes">Vida media de una sesión <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— segundos</span></label>
+      <input type="number" id="vidaSes" value="30" min="1" step="1">
+      <p class="hint">De aquí sale el <b>segundo eje de sesiones</b>, el que de verdad aprieta: las <b>sesiones nuevas por segundo</b>. Si un usuario mantiene N sesiones abiertas y cada una dura V segundos, está abriendo N/V por segundo. 20–60 s es lo típico de navegación web y SaaS; baja a 2–5 s en tráfico de APIs o microservicios, que es donde este eje se dispara.</p>
+      <p class="hint" id="cpsCalc" style="margin-top:6px"></p>
+    </div>
+    <div class="field">
       <label>Cómo se declara el caudal</label>
       <div class="seg" id="modoSeg">
         <button type="button" data-v="link" aria-pressed="true">Enlace único</button>
