@@ -39,9 +39,18 @@
 //
 // `null` SIGNIFICA "EL CATÁLOGO NO TRAE EL DATO", NO "SIN LÍMITE". El motor no filtra por un
 // eje sin dato, y donde la capa que se está dimensionando no tiene cifra el modelo se
-// DESCARTA con su motivo, en vez de colarse con la cifra de otra capa. Completarlo requiere
-// abrir la matriz desde una máquina con acceso a juniper.net y transcribir las filas aquí;
-// todavía no hay un importador como el `npm run cps` de Fortinet (ver PENDIENTES.md).
+// DESCARTA con su motivo, en vez de colarse con la cifra de otra capa.
+//
+// PARA COMPLETARLO HAY `npm run juniper` (scripts/importar-juniper.js), el equivalente del
+// `npm run cps` de Fortinet: se corre desde una máquina con acceso a la matriz, acepta
+// CSV/TSV/XLSX, reconoce las columnas por su cabecera, resuelve Gbps frente a Mbps sin que
+// haya que multiplicar a ojo, y **solo acepta una fila si al menos dos de sus columnas casan
+// con lo que este catálogo ya trae verificado y ninguna lo contradice**. Ese doble anclaje
+// es lo que caza la fila desplazada, que es el modo de fallo real de transcribir 96 números
+// a mano: una cifra suelta siempre parece plausible, el resto de su fila no. Los cuatro
+// modelos que hoy solo tienen `fw` (SRX4300, SRX4700, SRX4100, SRX4200) no llegan a ese
+// anclaje y el importador los aparta hasta que se pasa `--sin-contraste` a propósito.
+// `npm run juniper -- --check` imprime la cobertura casilla por casilla.
 //
 // PRECIOS: TODOS `null`. No hay lista de precios de Juniper en el material disponible. El
 // BOM cuenta las líneas sin cotizar y avisa, en vez de mostrar un total que parece completo.

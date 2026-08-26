@@ -71,13 +71,12 @@ Cobertura actual por herramienta:
    Todo eso está en la **«SRX Series and vSRX Performance and Features Matrix»**
    (`juniper.net/content/dam/www/assets/datasheets/us/en/security/security-products-comparison-chart.pdf`),
    que **no es accesible desde este entorno**: el proxy responde 403 a `juniper.net`, igual
-   que a `fortinet.com`. Se abre desde una máquina con salida y se transcriben las filas a
-   `server/seed/legacyData/juniper.js`.
-6. **Importador `npm run juniper`.** No existe todavía. Sería el equivalente de `npm run cps`
-   para la matriz SRX, con el mismo control cruzado: aceptar una fila solo si más de una
-   columna casa con lo ya verificado. Mientras no esté, completar el catálogo es transcribir
-   a mano, que es justo donde se cuelan las filas desplazadas.
-7. **Dimensionador Nokia.** No es copiar el motor. El catálogo es fabric de datacenter
+   que a `fortinet.com`. Se abre desde una máquina con salida, se copia la tabla a una hoja de
+   cálculo y se aplica con **`npm run juniper -- matriz.xlsx`** (ver `npm run juniper -- --check`
+   para la cobertura actual, casilla por casilla). El importador reconoce las columnas por su
+   cabecera, resuelve Gbps frente a Mbps sin multiplicar a ojo y **rechaza la fila si alguna de
+   sus columnas contradice lo ya verificado**, que es lo que caza una fila desplazada.
+6. **Dimensionador Nokia.** No es copiar el motor. El catálogo es fabric de datacenter
    (7220 IXR sobre SR Linux) y agregación de operador (7250 IXR, 7750 SR): no se dimensiona
    por «ancho de banda WAN» sino por **densidad de puertos, sobresuscripción leaf-spine y
    diseño de fabric**. Necesita un motor propio — número de leafs, uplinks por leaf, factor de
@@ -86,33 +85,33 @@ Cobertura actual por herramienta:
 
 ## Datos por confirmar
 
-8. **Precio de los modelos Juniper y Nokia añadidos en agosto 2026.** Las cifras técnicas
+7. **Precio de los modelos Juniper y Nokia añadidos en agosto 2026.** Las cifras técnicas
    están verificadas contra datasheets oficiales; el precio no, porque no hay lista de precios
    de estos dos fabricantes en el material disponible. Van como `Consultar` con `elpN:0` y el
    BOM los cuenta como sin cotizar, igual que Aruba.
-9. **Ciclo de vida de SRX1500 / SRX4100 / SRX4200.** La generación 2024 los sustituye en
+8. **Ciclo de vida de SRX1500 / SRX4100 / SRX4200.** La generación 2024 los sustituye en
    posicionamiento, pero no se encontró boletín oficial de fin de venta, así que **no se
    marcan**. Confirmarlo en `support.juniper.net/support/eol/product/srx_series/` y, si existe,
    registrarlo — el mecanismo ya está: basta la fecha de último pedido y la regla de
    `ficha.js` hace el resto.
-10. **Cisco `C8355-G2` tiene `sdwan: null`** y por eso cae a su cifra de IPsec (20 Gbps),
+9. **Cisco `C8355-G2` tiene `sdwan: null`** y por eso cae a su cifra de IPsec (20 Gbps),
    mientras el `C8455-G2` sí trae cifra SD-WAN propia (15,5 Gbps). La lista lo marca con
    «(cifra IPsec)», pero hay que confirmar si Cisco publica el número real del 8355.
-11. **Precios de Aruba: todos en `null`.** No existe lista de precios en el material
+10. **Precios de Aruba: todos en `null`.** No existe lista de precios en el material
     disponible.
 
 ## Limpieza
 
-12. **`dimensionador-bom-huawei-v3_1.html`** — el sufijo `-v3_1` es un resto del versionado
+11. **`dimensionador-bom-huawei-v3_1.html`** — el sufijo `-v3_1` es un resto del versionado
     informal previo a git. Renombrarlo exige tocar el HTML, el JS y los enlaces del portal.
-13. **`CISCO_EOL_MODELS` en `seedCatalog.js` está inerte** — la Fase 2 retiró la serie ISR
+12. **`CISCO_EOL_MODELS` en `seedCatalog.js` está inerte** — la Fase 2 retiró la serie ISR
     4000 y ya no coincide con ningún `Product`. Se conserva por si reaparecieran vía
     `cotizadorCatalog`.
-14. **Sin herramientas de lint ni de test.** La verificación es manual: arrancar con
+13. **Sin herramientas de lint ni de test.** La verificación es manual: arrancar con
     `NODE_ENV=production` y recorrer la página en Chromium. Ahora que hay autenticación por
     usuario, un juego mínimo de pruebas sobre `usuarios.js` y la firma de sesión atraparía
     justo la clase de fallo que apareció al construirlo (ver *Cerrado recientemente*).
-15. **Skills instaladas parcialmente.** De `chikisdtv` se copiaron las 20 relevantes para este
+14. **Skills instaladas parcialmente.** De `chikisdtv` se copiaron las 20 relevantes para este
     proyecto (seguridad, revisión, frontend, base de datos, planificación). Se dejaron fuera
     las de marketing, ventas, SEO y ASO —unas 59— porque esta es una herramienta interna
     detrás de un muro de autenticación y no tienen dónde aplicarse. Si alguna hace falta, se
@@ -120,7 +119,7 @@ Cobertura actual por herramienta:
 
 ## Decisiones que necesitan al dueño del producto
 
-16. **El alta de usuarios (punto 1) es la única abierta**, y es una decisión de producto, no
+15. **El alta de usuarios (punto 1) es la única abierta**, y es una decisión de producto, no
     de ingeniería: cómo llega la primera contraseña a la persona nueva. Mientras no se
     resuelva, el endpoint responde 501 y lo explica. Nada más espera respuesta.
 
@@ -128,6 +127,18 @@ Cobertura actual por herramienta:
 
 ## Cerrado recientemente
 
+- **`npm run juniper`: el importador de la matriz SRX ya existe** (`scripts/importar-juniper.js`).
+  Completar el catálogo Juniper era transcribir 96 números a mano, que es exactamente donde se
+  cuela una fila desplazada: una cifra suelta siempre parece plausible, el resto de su fila no.
+  El importador acepta CSV/TSV/XLSX, reconoce las columnas por su cabecera, resuelve Gbps
+  frente a Mbps sin que nadie multiplique por mil a ojo, y **solo se cree una fila si al menos
+  dos de sus columnas casan con lo que el catálogo ya trae verificado y ninguna lo contradice**.
+  Con ese doble anclaje, las casillas en `null` de esa misma fila se pueden dar por buenas.
+  Probado extremo a extremo: fila desplazada rechazada con el motivo, unidades deducidas del
+  propio contraste, escritura sobre el catálogo verificada (`--dry`, `--force`,
+  `--force-partial`, `--sin-contraste`) y el parser de números con 13 casos. Los cuatro
+  modelos que hoy solo tienen `fw` no llegan al anclaje y se apartan a propósito. Falta el
+  dato, no la herramienta: la matriz sigue bloqueada por `juniper.net`.
 - **El router de cliente: medido y descartado, con el problema real arreglado.** El pendiente
   pedía navegación sin recarga. Antes de construirlo se cronometró: una navegación completa
   cuesta **25-95 ms**, así que un router habría ahorrado casi nada a cambio de reescribir las
