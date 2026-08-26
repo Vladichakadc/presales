@@ -48,6 +48,9 @@
 .ficha-nota{font-size:11.5px;color:var(--steel);margin:6px 0 0;line-height:1.45}
 .ficha-vacio{font-size:13.5px;color:var(--steel);margin:0}
 .ficha-rec{background:var(--red);color:#fff;border-radius:2px;padding:1px 6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-left:7px;vertical-align:2px}
+.ficha-ref{border:1px solid var(--rule);color:var(--steel);border-radius:2px;padding:1px 6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-left:7px;vertical-align:2px}
+.ficha-ref.fuera{background:var(--steel);color:var(--paper);border-color:var(--steel)}
+.ficha-aviso{font-size:12.5px;color:var(--steel);border-left:2px solid var(--steel);padding:5px 0 5px 9px;margin:9px 0 0;line-height:1.45}
 `;
   if (!document.getElementById('ficha-estilos')) {
     const st = document.createElement('style');
@@ -58,6 +61,53 @@
 
   const esc = (s) => String(s == null ? '' : s)
     .replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  // ── REGLA TRANSVERSAL: FUERA DE VENTA SE MUESTRA, PERO NO SE RECOMIENDA ─────
+  //
+  // Estaba repartida y era contradictoria. Fortinet y MikroTik BORRABAN de la lista de
+  // candidatos los equipos descontinuados: no se recomendaban, cierto, pero tampoco se
+  // podian consultar, que es justo lo que hace falta cuando se cotiza una ampliacion de un
+  // parque ya instalado. Cisco, en cambio, los dejaba competir de igual a igual y podia
+  // recomendar como respuesta a un diseno nuevo un equipo que ya no se vende. Tres paginas,
+  // tres criterios distintos para la misma pregunta. Aqui queda uno solo:
+  //
+  //   rango 0 · vigente         se recomienda con normalidad
+  //   rango 1 · linea anterior  aparece, y solo se propone si nada vigente cumple
+  //   rango 2 · fuera de venta  aparece marcado, y NUNCA se propone
+  //
+  // Un fin de venta ANUNCIADO no es lo mismo que estar fuera de venta: hasta la fecha de
+  // ultimo pedido el equipo se pide con normalidad, asi que sigue siendo recomendable y
+  // solo se marca con su fecha. Pasada esa fecha cae solo a rango 2, sin que nadie tenga
+  // que acordarse de editar el catalogo — que es como estos avisos se quedan obsoletos.
+  function eosVencido(m) {
+    const f = m && m.eolAnnounced && m.eolAnnounced.lastOrder;
+    if (!f) return false;
+    const t = Date.parse(f);
+    return Number.isFinite(t) && t < Date.now();
+  }
+  function rango(m) {
+    if (!m) return 0;
+    if (m.eol || eosVencido(m)) return 2;
+    if (m.legacy) return 1;
+    return 0;
+  }
+  const recomendable = (m) => rango(m) < 2;
+  function marca(m) {
+    if (!m) return null;
+    if (m.eol) return { t: 'fuera de venta', fuera: true };
+    if (eosVencido(m)) return { t: 'fin de venta vencido', fuera: true };
+    if (m.legacy) return { t: 'línea anterior', fuera: false };
+    if (m.eolAnnounced) return { t: 'fin de venta anunciado', fuera: false };
+    return null;
+  }
+  function avisoDe(m) {
+    const mk = marca(m);
+    if (!mk) return '';
+    if (m.eol) return 'Equipo <b>fuera de venta</b>. Se muestra como referencia para ampliar o reemplazar un parque ya instalado; no se propone para un diseño nuevo y por eso nunca sale recomendado.';
+    if (eosVencido(m)) return `Su <b>fecha de último pedido (${esc(m.eolAnnounced.lastOrder)}) ya pasó</b>: a efectos de un diseño nuevo está fuera de venta. Queda como referencia para el parque instalado.`;
+    if (m.legacy) return 'Pertenece a la <b>línea anterior</b>. Sigue en canal y es la respuesta natural para ampliar un parque instalado, pero solo se recomienda si ningún equipo de la generación actual cumple.';
+    return `<b>Fin de venta anunciado</b> — último día de pedido: <b>${esc(m.eolAnnounced.lastOrder)}</b>. Hasta esa fecha se pide con normalidad; después dejará de proponerse solo.`;
+  }
 
   // Estado por contenedor: permite varias fichas en una pagina sin que se pisen.
   const estado = {};
@@ -98,9 +148,11 @@
 
     const opciones = candidatos.map((m, i) => {
       const txt = cfg.etiqueta ? cfg.etiqueta(m, i) : m.id;
+      const mk = marca(m);
       return `<option value="${esc(m.id)}"${m.id === sel.id ? ' selected' : ''}>`
-        + `${esc(txt)}${m.id === recomendado ? '  ·  recomendado' : ''}</option>`;
+        + `${esc(txt)}${mk ? '  ·  ' + mk.t : ''}${m.id === recomendado ? '  ·  recomendado' : ''}</option>`;
     }).join('');
+    const mkSel = marca(sel);
 
     const medidores = (cfg.medidores ? cfg.medidores(sel) : []).map(medidorHtml).join('');
     const secciones = (cfg.secciones ? cfg.secciones(sel) : []).map(seccionHtml).join('');
@@ -110,8 +162,10 @@
       + `<div class="ficha-sel"><label for="${cid}-sel">Equipo</label>`
       + `<select id="${cid}-sel">${opciones}</select></div>`
       + `<p class="model">${esc(cfg.titulo ? cfg.titulo(sel) : sel.id)}`
-      + `${sel.id === recomendado ? '<span class="ficha-rec">recomendado</span>' : ''}</p>`
+      + `${sel.id === recomendado ? '<span class="ficha-rec">recomendado</span>' : ''}`
+      + `${mkSel ? `<span class="ficha-ref${mkSel.fuera ? ' fuera' : ''}">${esc(mkSel.t)}</span>` : ''}</p>`
       + `<p class="family">${esc(cfg.subtitulo ? cfg.subtitulo(sel) : '')}</p>`
+      + (mkSel ? `<p class="ficha-aviso">${avisoDe(sel)}</p>` : '')
       + medidores
       + (cfg.porQue ? `<div class="why">${cfg.porQue(sel)}</div>` : '')
       + secciones;
@@ -128,6 +182,22 @@
   }
 
   const API = {
+    // La regla se expone para que las cinco paginas ordenen y elijan con el mismo criterio
+    // en vez de reimplementarlo cada una a su manera, que es como se llego a tres.
+    rango,
+    recomendable,
+    marca,
+    // Ordena dejando primero lo vigente y al final lo que esta fuera de venta, conservando
+    // el criterio propio de cada pagina (capacidad, precio, medio) como desempate.
+    ordenar(lista, desempate) {
+      return [...lista].sort((a, b) => rango(a) - rango(b) || (desempate ? desempate(a, b) : 0));
+    },
+    // El recomendado es el primero que se pueda proponer; `preferir` es el criterio de la
+    // pagina (segmento, medio...). Nunca devuelve un equipo fuera de venta.
+    recomendar(lista, preferir) {
+      const vivos = lista.filter(recomendable);
+      return (preferir && vivos.find(preferir)) || vivos[0] || null;
+    },
     render(cfg) {
       const cid = cfg.contenedor;
       const previo = estado[cid];

@@ -121,7 +121,9 @@ function selectCandidates(req){
   const reasons={cap:0,ram:0,sess:0,poe:0};
 
   const ok=MODELS.filter(m=>{
-    if(m.eol||m.legacy) return false;
+    // Descontinuados y legacy ya no se borran: entran, van al final y no pueden salir
+    // recomendados (regla comun en ficha.js). Antes desaparecian de la lista, que es lo
+    // que impedia consultarlos al cotizar el reemplazo de un equipo instalado.
     if(virtual !== (m.ser==='CHR')) return false;
     if(capOf(m) < req.mbps){ reasons.cap++; return false; }
     if(req.feeds && maxFeeds(m) < req.feeds){ reasons.ram++; return false; }
@@ -132,16 +134,19 @@ function selectCandidates(req){
 
   // Right-sizing por costo, no por capacidad: ordenar por capacidad ascendente elegia el
   // RB4011 ($200 / 5.6 G) antes que el RB5009 ($190 / 8.8 G) — mas caro y mas lento.
-  ok.sort((a,b)=>(a.elpN??Infinity)-(b.elpN??Infinity) || capOf(a)-capOf(b));
-  return {ok,reasons,poeNeed};
+  const ordenados=FICHA.ordenar(ok,(a,b)=>(a.elpN??Infinity)-(b.elpN??Infinity) || capOf(a)-capOf(b));
+  return {ok:ordenados,reasons,poeNeed};
 }
 
 function preferByMedia(list){
-  if(media==='any'||!list.length) return list[0];
+  if(!list.length) return null;
+  // El criterio de medio sigue mandando, pero solo entre los que se pueden proponer:
+  // FICHA.recomendar nunca devuelve un equipo fuera de venta.
+  if(media==='any') return FICHA.recomendar(list);
   const sorted=[...list].sort((a,b)=>media==='fiber'
     ? fiberCages(b)-fiberCages(a) || (a.elpN??0)-(b.elpN??0)
     : fiberCages(a)-fiberCages(b) || (a.elpN??0)-(b.elpN??0));
-  return sorted[0];
+  return FICHA.recomendar(sorted);
 }
 
 function render(){

@@ -360,16 +360,19 @@ function render(){
   };
 
   let outBySess=0, outByCps=0;
-  const candidates=MODELS.filter(m=>{
-    if(m.eol||getCap(m)<effectiveNeed) return false;
+  // Los descontinuados YA NO se borran de la lista: antes desaparecian, asi que no habia
+  // forma de consultarlos aqui cuando lo que se cotiza es ampliar un parque instalado.
+  // Ahora entran, van al final y no pueden salir recomendados — ver la regla en ficha.js.
+  const candidates=FICHA.ordenar(MODELS.filter(m=>{
+    if(getCap(m)<effectiveNeed) return false;
     if(sessNeed&&m.sess<sessNeed){ outBySess++; return false; }
     // m.cps==null no es "no tiene limite", es "el catalogo no trae el dato": no se filtra
     // por el, y la ficha del modelo lo declara ausente en vez de dejarlo pasar en silencio.
     if(cpsNeed&&m.cps!=null&&m.cps<cpsNeed){ outByCps++; return false; }
     return true;
-  }).sort((a,b)=>getCap(a)-getCap(b));
+  }), (a,b)=>getCap(a)-getCap(b));
   const rx=SEG_MATCH[segMode];
-  let pick=(rx&&candidates.find(m=>rx.test(m.seg)))||candidates[0]||null;
+  let pick=FICHA.recomendar(candidates, rx?(m=>rx.test(m.seg)):null);
   lastPick=pick;
   sincronizarConBom(pick);
 
@@ -381,6 +384,9 @@ function render(){
     why.push(`<li>Requerimiento de <b>${fmt(effectiveNeed)}</b> en la capa <b>${TIER_BY_K[capa.k].n}</b>${$('chkSsl').checked?' con inspección SSL profunda':''}.</li>`);
     if(capa.elevada) why.push(`<li>La capa se elevó de <b>${TIER_BY_K[profile].n}</b> a <b>${TIER_BY_K[capa.k].n}</b> por ${capa.elevan.map(f=>esc(f.n)).join(', ')}.</li>`);
     if(outBySess) why.push(`<li><b>${outBySess}</b> modelo(s) descartado(s) por tabla de sesiones: necesitas ${sessNeed.toLocaleString('en-US')} concurrentes.</li>`);
+    // Caso raro pero posible: hay equipos que cumplen, pero todos estan fuera de venta.
+    // Decirlo es mas util que decir "ningun modelo cumple", que seria falso.
+    if(candidates.length) why.push(`<li><b>${candidates.length}</b> equipo(s) cumplen las restricciones pero están <b>fuera de venta</b> (${candidates.map(m=>esc(m.id)).join(', ')}): sirven como referencia para un parque ya instalado, no como propuesta para un diseño nuevo.</li>`);
     if(outByCps) why.push(`<li><b>${outByCps}</b> modelo(s) descartado(s) por sesiones nuevas por segundo: necesitas ${cpsNeed.toLocaleString('en-US')} cps y el catálogo publica esa cifra para ellos.</li>`);
     if(capa.k==='tp'||$('chkSsl').checked) why.push('<li>Estás dimensionando contra la capa más exigente. Si el diseño no requiere antivirus en línea sobre todo el tráfico, evaluar la capa <b>NGFW</b> o segmentar por política qué tráfico se inspecciona a fondo — es la palanca que más capacidad libera en FortiGate.</li>');
     why.push('<li>Por encima del catálogo: evaluar chasis FortiGate 7000F o distribuir la carga en varias unidades.</li>');
@@ -420,7 +426,6 @@ function render(){
     }
     if(rolSdwan==='hub'&&modoCaudal==='agg') flags.push(`<b>Escala del fabric:</b> ${sites} túnel(es) del overlay a terminar. <b class="warn">El límite de túneles por modelo no está en este catálogo</b> — confirmarlo en el datasheet del ${esc(m.id)} antes de cotizar. Con ADVPN los shortcuts spoke-a-spoke son dinámicos y no cuentan contra el hub.`);
     if($('chkHa').checked) flags.push('En <b>activo-pasivo el clúster no suma capacidad</b>: el throughput sigue siendo el de una unidad. El par se cotiza por disponibilidad, no por rendimiento.');
-    if(m.eol)flags.push('<b class="warn">Modelo descontinuado (EOL)</b> — solo referencia para equipos ya instalados, no para diseños nuevos.');
     // Que eje manda, y a que distancia esta el otro: es lo que evita subir de gama por un
     // limite que en realidad esta a dos ordenes de magnitud.
     if(sessNeed&&m.sess){

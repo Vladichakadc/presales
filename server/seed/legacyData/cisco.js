@@ -9,11 +9,34 @@
 // Ninguno de los dos boletines especifica un PID de reemplazo directo, PERO se confirmó vía export real de CCW
 // (Products_115951960955347.xlsx, 17-ago-2026) que Cisco ya vende la generación sucesora bajo la marca
 // "Secure Router (G2)" — ver modelo 'Cisco Secure Router C8355-G2' más abajo, sucesor confirmado del 8300 hub.
+//
+// REVISION DE CICLO DE VIDA (ago-2026). La tabla solo cubria los 4 chasis Catalyst 8300/8200,
+// asi que TODA la linea ASR 1000 de este catalogo se ofrecia como si estuviera vigente. No lo
+// esta: los tres chasis tienen boletin oficial de fin de venta y en los tres la fecha de
+// ultimo pedido YA PASO. El 8500-12X4QC tambien tiene boletin, con fecha aun por delante.
+// Se registran con su fecha real en vez de con una marca fija: la regla de ficha.js compara
+// esa fecha contra la de hoy, asi que un equipo deja de proponerse solo el dia que vence su
+// ultimo pedido, sin que nadie tenga que acordarse de volver aqui. `sucesor` es por entrada
+// porque no todos comparten reemplazo — el de los 8300 es el Secure Router G2, el de los ASR
+// no lo nombra el boletin.
 const EOL_ANNOUNCED = {
-  'Catalyst 8200L':            {pid:'C8200L-1N-4T',     lastOrder:'2027-07-31'},
-  'Catalyst 8200':              {pid:'C8200-1N-4T',      lastOrder:'2027-07-31'},
-  'Catalyst 8300-1N1S-6T':      {pid:'C8300-1N1S-6T',    lastOrder:'2027-01-31'},
-  'Catalyst 8300-2N2S-6T':      {pid:'C8300-2N2S-6T',    lastOrder:'2027-07-31'},
+  'Catalyst 8200L':             {pid:'C8200L-1N-4T',  lastOrder:'2027-07-31', sucesor:'Cisco Secure Router (G2)',
+                                 url:'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html'},
+  'Catalyst 8200':              {pid:'C8200-1N-4T',   lastOrder:'2027-07-31', sucesor:'Cisco Secure Router (G2)',
+                                 url:'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html'},
+  'Catalyst 8300-1N1S-6T':      {pid:'C8300-1N1S-6T', lastOrder:'2027-01-31', sucesor:'Cisco Secure Router (G2)',
+                                 url:'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500l-8s4x-4t2x-c8300-1n1s-6t-eol.html'},
+  'Catalyst 8300-2N2S-6T':      {pid:'C8300-2N2S-6T', lastOrder:'2027-07-31', sucesor:'Cisco Secure Router (G2)',
+                                 url:'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html'},
+  // Fin de venta ya vencido: solo referencia para parque instalado.
+  'Catalyst 8500-12X4QC':       {pid:'C8500-12X4QC',  lastOrder:'2027-01-31', sucesor:null,
+                                 url:'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500-12x-c8500-12x4qc-eol.html'},
+  'ASR 1001-X':                 {pid:'ASR1001-X',     lastOrder:'2022-08-01', sucesor:null,
+                                 url:'https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/asr1001-x-1002-x-eol.html'},
+  'ASR 1002-HX':                {pid:'ASR1002-HX',    lastOrder:'2025-03-31', sucesor:null,
+                                 url:'https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/asr1002-hx-asso-part-eol.html'},
+  'ASR 1006-X':                 {pid:'ASR1006-X',     lastOrder:'2026-07-31', sucesor:null,
+                                 url:'https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/asr1006-x-chassis-eol.html'},
 };
 const MODELS = [
   // ISR 1000

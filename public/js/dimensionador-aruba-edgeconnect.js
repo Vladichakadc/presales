@@ -186,7 +186,6 @@ function render(){
 
   let outByBoost=0,outByClients=0,outByAps=0,outBySinDato=0,sobrado=[];
   const candidates=MODELS.filter(m=>{
-    if(m.eol) return false;
     if(!coincideFiltro(m,famMode)) return false;
     if(boost&&m.boostMax==null){ outByBoost++; return false; }
     // EC-V no publica rango: se dimensiona por licencia y vCPU, no por hardware.
@@ -200,10 +199,14 @@ function render(){
     if(cMax!=null&&users&&cMax<users){ outByClients++; return false; }
     if(aMax!=null&&aps&&aMax<aps){ outByAps++; return false; }
     return true;
-    // Generacion actual primero: entre dos que cumplen, la linea AOS 8 (series 7000/7200)
-    // solo se propone si no hay un equivalente vigente. Sigue apareciendo como alternativa
-    // y en el BOM, que es donde tiene sentido para ampliar un parque ya instalado.
-  }).sort((a,b)=>(a.legacy?1:0)-(b.legacy?1:0)||capacidadMax(a)-capacidadMax(b));
+  });
+  // Generacion actual primero: entre dos que cumplen, la linea AOS 8 (series 7000/7200)
+  // solo se propone si no hay un equivalente vigente. Sigue apareciendo como alternativa y
+  // en el BOM, que es donde tiene sentido para ampliar un parque ya instalado. El criterio
+  // pasa a ser el comun de ficha.js, que ademas deja fuera de la recomendacion lo que ya
+  // no se vende, en vez de tener aqui una version propia de la misma regla.
+  const ordenados=FICHA.ordenar(candidates,(a,b)=>capacidadMax(a)-capacidadMax(b));
+  candidates.length=0; candidates.push(...ordenados);
 
   // Sobredimensionamiento: en EdgeConnect el rango publicado tiene suelo, y quedar por
   // debajo significa que hay un modelo mas barato que cumple. Es informacion de preventa
@@ -211,7 +214,7 @@ function render(){
   candidates.forEach(m=>{ if(m.fam==='ec'&&m.wanMin!=null&&wanNeed<m.wanMin) sobrado.push(m.id); });
 
   const rx=SEG_MATCH[segMode];
-  const pick=(rx&&candidates.find(m=>rx.test(m.seg)))||candidates[0]||null;
+  const pick=FICHA.recomendar(candidates, rx?(m=>rx.test(m.seg)):null);
   lastPick=pick;
   sincronizarConBom(pick);
 

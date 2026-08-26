@@ -31,6 +31,10 @@ let SMARTNET = {};
 let DNA_DESC = {};
 
 const $ = id => document.getElementById(id);
+// Fin de venta VENCIDO frente a ANUNCIADO lo decide la misma regla que ordena y filtra los
+// candidatos (ficha.js), para que la ficha, el BOM y la exportacion no puedan discrepar de
+// lo que muestra la lista.
+const vencido = m => !!(m && FICHA.rango(m) === 2);
 let dirMult=2, mode='link', crit='low', lastPick=null;
 
 /* ── Tabs ── */
@@ -113,11 +117,23 @@ function render(){
   renderTrack(profile, needMbps, xPct, needPct);
 
   // pick model
-  const candidates = MODELS.filter(m => {
-    const cap = profile==='ipsec' ? m.ipsec : profile==='sdwan' ? (m.sdwan||m.ipsec) : m.fwd;
-    return cap >= needMbps;
-  });
-  const pick = candidates.length ? candidates[0] : null;
+  // La capacidad depende del perfil elegido (forwarding, IPsec o SD-WAN), asi que se define
+  // una sola vez aqui y la usan tanto el filtro de candidatos como los medidores.
+  const capDe=m=>profile==='ipsec'?m.ipsec:profile==='sdwan'?(m.sdwan||m.ipsec):m.fwd;
+  // Esta pagina dejaba competir de igual a igual a los equipos descontinuados, asi que
+  // podia recomendar para un diseno nuevo un equipo que ya no se vende. La regla comun
+  // (ficha.js) los deja visibles pero fuera de la recomendacion. Un fin de venta ANUNCIADO
+  // no cuenta como fuera de venta hasta que pasa su fecha de ultimo pedido: hasta entonces
+  // se pide con normalidad y solo se marca.
+  // PENDIENTE DE DECISION, NO TOCADO AQUI: a diferencia de los otros cuatro dimensionadores,
+  // esta pagina no elige el mas pequeno que cumple sino el PRIMERO DEL CATALOGO que cumple,
+  // y el catalogo esta ordenado por familia (ISR, Catalyst, Secure Router, ASR, Meraki), no
+  // por tamano. Para 3 Gbps eso propone el chasis 8500-12X4QC de 31,9 Gbps. Ordenar por
+  // capacidad lo corrige, pero entonces la recomendacion cruza de familia —pasa a un Meraki
+  // MX, que es gestion cloud y no IOS XE— y eso ya no es un arreglo tecnico sino una
+  // decision de producto. Se deja el orden actual y se separa la conversacion.
+  const candidates = FICHA.ordenar(MODELS.filter(m => capDe(m) >= needMbps));
+  const pick = FICHA.recomendar(candidates);
   lastPick = pick;
   sincronizarConBom(pick);
 
@@ -133,8 +149,6 @@ function render(){
     return;
   }
   verdict.style.borderLeftColor='var(--red)';
-
-  const capDe=m=>profile==='ipsec'?m.ipsec:profile==='sdwan'?(m.sdwan||m.ipsec):m.fwd;
 
   const medidoresDe=m=>[
     {etq:'Forwarding (bidireccional)', val:needMbps, tope:m.fwd, txt:fmt(needMbps)+' / '+fmt(m.fwd)},
@@ -152,7 +166,6 @@ function render(){
     if($('sUmbrella').checked) flags.push('Umbrella SIG añade ~12% por encapsulación de túneles.');
     if($('chkRedund').checked && !m.redund) flags.push('<span class="warn">Este modelo no tiene redundancia de fuente de serie — verificar disponibilidad de kit de expansión.</span>');
     if($('chk4g').checked && !m.lte) flags.push('Se requiere módulo NIM LTE adicional (NIM-4G-LTE-LA o similar).');
-    if(m.eol) flags.push('<span class="warn">Modelo EOL — sigue dimensionable para parque instalado, pero no para diseños nuevos.</span>');
     return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
       <li>Requerimiento con margen: <b>${fmt(needMbps)}</b> | Capacidad del equipo: <b>${fmt(capDe(m))}</b></li>
       <li>Puertos: ${esc(m.ports)}</li>
@@ -293,7 +306,7 @@ function renderBom(){
     <tr><td>Redundancia de fuente de serie</td><td>${m.redund?'Sí':'No (kit opcional)'}</td></tr>
     <tr><td>LTE integrado</td><td>${m.lte?'Sí':'No (NIM-4G-LTE-LA)'}</td></tr>
     </tbody></table></div>
-    ${m.eolAnnounced?`<p class="hint warn" style="margin-top:10px">Fin de venta anunciado (PID <code>${esc(m.eolAnnounced.pid)}</code>) — último día de pedido: <b>${esc(m.eolAnnounced.lastOrder)}</b>. Sucesor confirmado: <b>Cisco Secure Router (G2)</b> — mismo IOS XE SD-WAN, ver familia "Secure Router (G2)" en el selector de equipo.</p>`:''}
+    ${m.eolAnnounced?`<p class="hint warn" style="margin-top:10px">${vencido(m)?'<b>Fin de venta VENCIDO</b>':'Fin de venta anunciado'} (PID <code>${esc(m.eolAnnounced.pid)}</code>) — último día de pedido: <b>${esc(m.eolAnnounced.lastOrder)}</b>${vencido(m)?', ya pasado: solo referencia para parque instalado':''}.${m.eolAnnounced.sucesor?` Sucesor confirmado: <b>${esc(m.eolAnnounced.sucesor)}</b> — mismo IOS XE SD-WAN, ver esa familia en el selector de equipo.`:' El boletín no nombra un PID de reemplazo directo.'}${m.eolAnnounced.url?` <a href="${esc(m.eolAnnounced.url)}" target="_blank" rel="noopener">Boletín oficial</a>.`:''}</p>`:''}
     </section>`;
 
   // Parts
@@ -342,7 +355,7 @@ function renderBom(){
   // definitivo vive en CCW, asi que muchas lineas salen deliberadamente sin cotizar.
   const filas=[
     {cat:'Equipo', desc:m.id, sku:m.hwSku||null, qty, unit:m.elpN!=null?m.elpN:null,
-     nota:`${m.fam} · Serie ${m.ser} · ${m.ports}${m.eolAnnounced?' · FIN DE VENTA ANUNCIADO':''}`},
+     nota:`${m.fam} · Serie ${m.ser} · ${m.ports}${m.eolAnnounced?(vencido(m)?' · FIN DE VENTA VENCIDO':' · FIN DE VENTA ANUNCIADO'):''}`},
   ];
   (m.parts||[]).forEach(p=>filas.push({cat:'Módulos', desc:p, sku:p, qty, unit:null,
     nota:PARTS_DESC[p]||''}));
@@ -370,8 +383,9 @@ function renderBom(){
       'NOTAS DE PREVENTA',
       '  Precios de referencia tomados de exports de CCW. Verificar PID, tier y precio final',
       '  en Cisco Commerce Workspace antes de cotizar en firme.',
-      m.eolAnnounced?`  AVISO: fin de venta anunciado (${m.eolAnnounced.pid}), ultimo dia de pedido ${m.eolAnnounced.lastOrder}.`:null,
-      m.eolAnnounced?'  Sucesor confirmado: Cisco Secure Router (G2), mismo IOS XE SD-WAN.':null,
+      m.eolAnnounced?`  AVISO: fin de venta ${vencido(m)?'VENCIDO':'anunciado'} (${m.eolAnnounced.pid}), ultimo dia de pedido ${m.eolAnnounced.lastOrder}.`:null,
+      m.eolAnnounced&&vencido(m)?'  Ya pasado: este equipo solo sirve como referencia de parque instalado.':null,
+      m.eolAnnounced&&m.eolAnnounced.sucesor?`  Sucesor confirmado: ${m.eolAnnounced.sucesor}, mismo IOS XE SD-WAN.`:null,
     ].filter((n)=>n!==null),
   };
 

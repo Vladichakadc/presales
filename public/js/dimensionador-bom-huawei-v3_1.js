@@ -78,8 +78,16 @@ function render(){
     if(!isWan && aps > (m.apsMax||0)) miss.push(`gestiona ${m.apsMax||0} APs`);
     return {m, cap, miss, isWan};
   });
-  const fit = rows.filter(r => !r.miss.length).sort((a,b) => a.cap - b.cap);
-  const pick = fit[0] || null, next = fit[1] || null;
+  // Mismo criterio que el resto de dimensionadores (regla comun en ficha.js): lo vigente
+  // primero, lo que este fuera de venta al final y nunca como recomendacion. Hoy ningun
+  // modelo Huawei de este catalogo lleva esa marca; queda aplicado para que marcarlo en
+  // los datos sea suficiente, sin volver a tocar esta pagina.
+  // Se ordena por el rango del MODELO, no de la fila: aqui los candidatos viajan envueltos
+  // en {m, cap, miss}, y pasarle la fila a la regla la dejaria mirando un objeto sin marcas.
+  const fit = rows.filter(r => !r.miss.length)
+    .sort((a, b) => FICHA.rango(a.m) - FICHA.rango(b.m) || a.cap - b.cap);
+  const pick = fit.find(r => FICHA.recomendable(r.m)) || null;
+  const next = fit.filter(r => FICHA.recomendable(r.m))[1] || null;
 
   drawLadder(need, pick, pk);
 
@@ -88,7 +96,7 @@ function render(){
   // y BOM siguen al equipo ELEGIDO. Ver /js/ficha.js.
   const ctx = {need, needMpps, raw, base, head, conc, sites, frame, pk, rows, wanOk};
   const licCtx = {need, aps, svc, pk};
-  if(!raw || !fit.length){
+  if(!raw || !fit.length || !pick){
     drawVerdict(pick, next, ctx);
     drawLicenses(pick, licCtx);
     drawSupport(pick);

@@ -13,6 +13,9 @@ const mikrotikData = require('./legacyData/mikrotik');
 const arubaData = require('./legacyData/aruba');
 const guiaRoles = require('./legacyData/guiaRoles');
 
+// INERTE desde la Fase 2: esa fase retiro la serie ISR 4000 del catalogo, asi que hoy no hay
+// ningun Product cuyo modelo coincida con estos nombres. Se conserva porque volveria a aplicar
+// si reaparecieran por cotizadorCatalog, no porque este marcando algo ahora mismo.
 const CISCO_EOL_MODELS = new Set(['ISR 4221', 'ISR 4331', 'ISR 4351', 'ISR 4431', 'ISR 4451', 'ISR 4461']);
 // Confirmado contra "2026Q3 Main Price list_AMER_FINAL_EFF 080326.xlsx": FortiGate 200F tiene "End of Order Announcement"
 // explícito (será removido del pricelist 2026 Q3); 100F/600F ya no aparecen en la lista de precios vigente (EOL en un trimestre anterior).
