@@ -1,4 +1,6 @@
 'use strict';
+// El atajo del DOM, arriba del todo: lo usan funciones declaradas antes de donde estaba.
+const $ = id => document.getElementById(id);
 /* ═══════════════════════════════════════
    DATA
    ═══════════════════════════════════════ */
@@ -30,7 +32,6 @@ let PARTS_DESC = {};
 let SMARTNET = {};
 let DNA_DESC = {};
 
-const $ = id => document.getElementById(id);
 // Que familia del catalogo pertenece a cada plataforma. Se decide por `ser`, que es el campo
 // que ya trae cada modelo, en vez de anadir una marca nueva al catalogo.
 const PLATAFORMAS = {
@@ -294,7 +295,6 @@ function renderTrack(profile, needMbps, xPct, needPct){
   const pickLbl=document.createElement('div');
   pickLbl.className='pickLabel'; pickLbl.id='pickLbl'; pickLbl.style.display='none';
   track.appendChild(pickLbl);
-  const axis=track.querySelector('.axis');
 
   const ticks=[10,100,1000,2000,5000,10000,20000,50000,100000];
   ticks.forEach(v=>{
@@ -305,7 +305,6 @@ function renderTrack(profile, needMbps, xPct, needPct){
     track.appendChild(tick);
   });
 
-  const shapes={isr1000:'dot', isr4000:'dot', cat8000:'dot wan', asr1000:'dot'};
   MODELS.forEach(m=>{
     const cap=profile==='ipsec'?m.ipsec:profile==='sdwan'?(m.sdwan||m.ipsec):m.fwd;
     const pct=xPct(cap); if(pct<0||pct>100) return;
@@ -396,6 +395,16 @@ function renderBom(){
   ];
   (m.parts||[]).forEach(p=>filas.push({cat:'Módulos', desc:p, sku:p, qty, unit:null,
     nota:PARTS_DESC[p]||''}));
+  // "Módulos NIM adicionales a cotizar" se leia del formulario y no llegaba a ninguna parte:
+  // el usuario escribia 3 y el BOM salia sin ellos. Lo encontro el linter al marcar la
+  // variable como no usada. No se inventa una referencia —el catalogo trae el numero de
+  // slots, no una lista de NIM por modelo—, asi que la linea sale sin SKU y sin precio, que
+  // es como este BOM declara lo que no tiene confirmado: bom.js las cuenta y avisa.
+  if(nimQty>0){
+    filas.push({cat:'Módulos', desc:'Módulos NIM adicionales', sku:null, qty:nimQty*qty, unit:null,
+      nota:`${nimQty} por equipo × ${qty}. El equipo tiene ${m.nim} slot(s) NIM. `
+        +'Referencia y precio a confirmar en CCW segun la interfaz que se necesite.'});
+  }
   if(optQty>0){
     (m.optics||[]).forEach(k=>(OPTICS[k]||[]).slice(0,1).forEach(o=>filas.push({
       cat:'Ópticas', desc:`${OPTIC_LABEL[k]||k} — ${o.sku}`, sku:o.bom||null,
@@ -482,8 +491,10 @@ document.addEventListener('click', (e) => {
   const abrir = e.target.closest('[data-abrir]');
   if (abrir) { window.open(abrir.dataset.abrir, '_blank'); return; }
   const id = e.target.closest('button,[id]')?.id;
-  if (id === 'btnCsv' && typeof exportCSV === 'function') exportCSV();
-  else if (id === 'btnImprimir') window.print();
+  // El boton #btnCsv desaparecio cuando js/bom.js centralizo la exportacion a Excel; la
+  // rama que lo atendia sobrevivio detras de un `typeof ... === 'function'` que jamas era
+  // cierto. La encontro el linter, no la vista: una rama muerta no se nota mirando.
+  if (id === 'btnImprimir') window.print();
 });
 
 /* ══ ESTADO ENLAZABLE Y PERSISTENTE ══

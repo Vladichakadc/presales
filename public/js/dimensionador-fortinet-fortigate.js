@@ -1,4 +1,9 @@
 'use strict';
+// Equivalencia entre el nivel de soporte que elige la pagina y la clave con la que el
+// catalogo guarda su precio. Vivia 120 lineas por debajo de su primer uso: funcionaba
+// porque quien lo lee corre despues, pero es la misma forma del fallo que dejo el
+// dimensionador de Cisco en blanco al usar `capDe` antes de su declaracion.
+const CARE_LIC_KEY={fc247:'essential',fcpre:'premium',fcelite:'elite'};
 let MODELS = [];
 let BUNDLES = {};
 let CARE = {};
@@ -582,7 +587,6 @@ function populatePickModel(){
   $('pickModel').innerHTML=MODELS.map(m=>`<option value="${m.id}">${m.id} — ${m.seg}${m.eol?' (EOL)':''}</option>`).join('');
 }
 
-const CARE_LIC_KEY={fc247:'essential',fcpre:'premium',fcelite:'elite'};
 const money=n=>n==null?null:'$'+n.toLocaleString('en-US',{maximumFractionDigits:2});
 function tierPrice(tier,termYrs){
   if(!tier) return null;
@@ -720,8 +724,10 @@ document.addEventListener('click', (e) => {
   const abrir = e.target.closest('[data-abrir]');
   if (abrir) { window.open(abrir.dataset.abrir, '_blank'); return; }
   const id = e.target.closest('button,[id]')?.id;
-  if (id === 'btnCsv' && typeof exportCSV === 'function') exportCSV();
-  else if (id === 'btnImprimir') window.print();
+  // El boton #btnCsv desaparecio cuando js/bom.js centralizo la exportacion a Excel; la
+  // rama que lo atendia sobrevivio detras de un `typeof ... === 'function'` que jamas era
+  // cierto. La encontro el linter, no la vista: una rama muerta no se nota mirando.
+  if (id === 'btnImprimir') window.print();
 });
 
 /* ══ ESTADO ENLAZABLE Y PERSISTENTE ══

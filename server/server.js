@@ -178,9 +178,24 @@ app.use('/api', dimensionadorRoutes);
 app.use('/api', guiaRoutes);
 app.use('/api', syncRoutes);
 
+// El dimensionador de Huawei se llamaba dimensionador-bom-huawei-v3_1.html: un resto del
+// versionado informal anterior a git. Renombrarlo sin mas romperia los enlaces que ya estan
+// pegados en chats y guardados en marcadores —y esta herramienta existe justo para pasarse
+// escenarios por enlace, asi que romperlos no es un detalle. Se redirige conservando el
+// querystring, que es donde viaja el escenario: sin eso, el enlace llegaria a la pagina
+// correcta con los parametros por defecto, que es peor que un 404 porque no se nota.
+const RENOMBRADAS = new Map([
+  ['/dimensionador-bom-huawei-v3_1.html', '/dimensionador-huawei-netengine.html'],
+  ['/js/dimensionador-bom-huawei-v3_1.js', '/js/dimensionador-huawei-netengine.js'],
+]);
+app.get([...RENOMBRADAS.keys()], (req, res) => {
+  const destino = RENOMBRADAS.get(req.path);
+  const qs = req.originalUrl.slice(req.path.length);
+  res.redirect(301, destino + qs);
+});
+
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ error: 'Error interno del servidor' });

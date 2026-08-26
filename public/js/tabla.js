@@ -27,7 +27,11 @@
     const s = String(txt || '').trim().toLowerCase();
     if (!s || s === '—' || s === '-') return null;
     // Captura el primer número, con separadores de miles o decimales, y su unidad si la hay.
-    const m = s.match(/(-?[\d]+(?:[.,]\d+)?)\s*(k|m|g|t)?(?:bps|b\/s|hz)?/);
+    // La primera alternativa cubre los miles REPETIDOS ("1,400,000"): con un solo grupo, el
+    // patrón se quedaba en "1,400" y esa celda se ordenaba como 1.400 en vez de 1.400.000 —
+    // tres órdenes de magnitud, y hacia abajo, así que el equipo más grande de la tabla
+    // aparecía entre los más pequeños. Lo encontró una prueba, no la vista.
+    const m = s.match(/(-?\d+(?:,\d{3})+(?:\.\d+)?|-?\d+(?:[.,]\d+)?)\s*(k|m|g|t)?(?:bps|b\/s|hz)?/);
     if (!m) return null;
     // Un texto que empieza por letra y solo contiene un número suelto (un modelo como
     // "RB4011iGS+") no es una cantidad: se ordena como texto.

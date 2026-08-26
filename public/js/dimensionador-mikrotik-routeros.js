@@ -505,8 +505,10 @@ document.addEventListener('click', (e) => {
   const abrir = e.target.closest('[data-abrir]');
   if (abrir) { window.open(abrir.dataset.abrir, '_blank'); return; }
   const id = e.target.closest('button,[id]')?.id;
-  if (id === 'btnCsv' && typeof exportCSV === 'function') exportCSV();
-  else if (id === 'btnImprimir') window.print();
+  // El boton #btnCsv desaparecio cuando js/bom.js centralizo la exportacion a Excel; la
+  // rama que lo atendia sobrevivio detras de un `typeof ... === 'function'` que jamas era
+  // cierto. La encontro el linter, no la vista: una rama muerta no se nota mirando.
+  if (id === 'btnImprimir') window.print();
 });
 
 /* ══ ESTADO ENLAZABLE Y PERSISTENTE ══

@@ -102,30 +102,67 @@ Cobertura actual por herramienta:
 
 ## Limpieza
 
-11. **`dimensionador-bom-huawei-v3_1.html`** — el sufijo `-v3_1` es un resto del versionado
-    informal previo a git. Renombrarlo exige tocar el HTML, el JS y los enlaces del portal.
-12. **`CISCO_EOL_MODELS` en `seedCatalog.js` está inerte** — la Fase 2 retiró la serie ISR
-    4000 y ya no coincide con ningún `Product`. Se conserva por si reaparecieran vía
-    `cotizadorCatalog`.
-13. **Sin herramientas de lint ni de test.** La verificación es manual: arrancar con
-    `NODE_ENV=production` y recorrer la página en Chromium. Ahora que hay autenticación por
-    usuario, un juego mínimo de pruebas sobre `usuarios.js` y la firma de sesión atraparía
-    justo la clase de fallo que apareció al construirlo (ver *Cerrado recientemente*).
-14. **Skills instaladas parcialmente.** De `chikisdtv` se copiaron las 20 relevantes para este
-    proyecto (seguridad, revisión, frontend, base de datos, planificación). Se dejaron fuera
-    las de marketing, ventas, SEO y ASO —unas 59— porque esta es una herramienta interna
-    detrás de un muro de autenticación y no tienen dónde aplicarse. Si alguna hace falta, se
-    copia desde `.claude/skills/` del repo hermano.
+11. **Nada abierto.** Los cuatro puntos que vivían aquí (el sufijo `-v3_1`, el conjunto
+    `CISCO_EOL_MODELS` inerte, la falta de lint y pruebas, y las skills a medio instalar) se
+    cerraron en agosto de 2026 — ver *Cerrado recientemente*. Lo que dejó esa limpieza es la
+    forma de que no vuelvan: `npm run verificar` antes de empujar, y un aviso en el arranque
+    cuando un conjunto de fuera de venta deja de casar con el catálogo.
 
 ## Decisiones que necesitan al dueño del producto
 
-15. **El alta de usuarios (punto 1) es la única abierta**, y es una decisión de producto, no
+12. **El alta de usuarios (punto 1) es la única grande**, y es una decisión de producto, no
     de ingeniería: cómo llega la primera contraseña a la persona nueva. Mientras no se
-    resuelva, el endpoint responde 501 y lo explica. Nada más espera respuesta.
-
----
+    resuelva, el endpoint responde 501 y lo explica.
+13. **El nombre de usuario se compara exacto: «PreSales» no entra.** Lo destapó una prueba al
+    escribirla. `mismoUsuario` compara en tiempo constante y sin normalizar, que es correcto
+    de seguridad y áspero de usar: quien teclee la primera en mayúscula recibe el mismo error
+    que quien se equivoca de contraseña, y con el freno de fuerza bruta contando. Normalizar
+    (minúsculas y sin espacios alrededor) es lo habitual y aquí no tiene contraindicación real
+    —los nombres son ASCII y el alta de usuarios ni siquiera existe todavía—, pero es un
+    cambio de comportamiento en la autenticación y no se hace de tapadillo dentro de una tarea
+    de limpieza. La prueba fija el comportamiento actual para que cambiarlo sea deliberado.
 
 ## Cerrado recientemente
+
+- **Limpieza de agosto de 2026: cuatro puntos cerrados, y tres fallos reales que aparecieron
+  al cerrarlos.** La limpieza en sí era cosmética; lo que valió fue lo que destapó.
+  - **El dimensionador Huawei ya no se llama `-v3_1`.** Es `dimensionador-huawei-netengine`,
+    y la ruta vieja **redirige conservando el querystring** — sin eso, un enlace compartido
+    habría llegado a la página correcta con los parámetros por defecto, que es peor que un
+    404 porque no se nota. La clave de `localStorage` conserva el nombre viejo a propósito:
+    es la identidad bajo la que la gente ya tiene escenarios guardados.
+  - **`CISCO_EOL_MODELS` fuera, y el mecanismo ahora avisa.** Listaba la serie ISR 4000 que
+    la Fase 2 había retirado: llevaba meses sin marcar nada y nadie se enteró, porque un
+    conjunto inerte se comporta igual que uno que funciona. `seedDimensionadorModels` avisa
+    cuando una entrada no casa con ningún modelo. La razón que lo mantenía vivo («volvería a
+    aplicar vía `cotizadorCatalog`») era además falsa: esa ruta no consulta estos conjuntos.
+  - **`npm run verificar`: lint y 59 pruebas, sin dependencias nuevas salvo ESLint.** Las
+    pruebas cubren lo que ya falló —la migración de usuarios que se rehacía en cada lectura e
+    invalidaba la sesión recién creada, la regla única de fin de venta, el orden de columnas,
+    el casado de nombres entre catálogos, el parser del importador Juniper— y la coherencia
+    del catálogo (IMIX nunca por encima de paquetes grandes, ATP nunca por encima de IPS,
+    ningún precio inventado donde no hay lista). El lint no es un manual de estilo: cada
+    regla corresponde a un fallo que este repo tuvo (`no-undef` habría cazado el
+    `BOM is not defined`; `no-use-before-define`, el TDZ de `capDe`).
+  - **La tabla de skills de `CLAUDE.md` decía 8 y había 27**, y dos de ellas
+    (`data-viz-charts`, `web-page-builder`) describían el stack de `chikisdtv` —React, Vite,
+    Tailwind, Recharts— que aquí no existe. Una skill que miente sobre el stack se dispara
+    sola y empuja el trabajo hacia una arquitectura que este proyecto no tiene: retiradas.
+
+  **Los tres fallos que destapó**, ninguno visible mirando el código:
+  1. **El cotizador Cisco descartaba en silencio un campo del formulario.** «Módulos NIM
+     adicionales a cotizar» se leía, disparaba el repintado y no llegaba al BOM: escribías 3
+     y salía sin ellos. Lo marcó el linter como variable sin usar. Ahora sale una línea con
+     la cantidad, **sin SKU y sin precio** —el catálogo trae el número de slots, no una lista
+     de NIM por modelo— porque inventar una referencia es lo que este catálogo tiene prohibido.
+  2. **El orden por columna se equivocaba con los miles repetidos.** `1,400,000` se leía como
+     1.400: el patrón capturaba un solo grupo de miles. Tres órdenes de magnitud y hacia
+     abajo, así que el equipo más grande de una tabla aparecía entre los más pequeños, y la
+     celda se veía perfectamente bien. Lo encontró una prueba.
+  3. **Cinco páginas tenían una rama muerta de exportación a CSV**, escondida tras un
+     `typeof exportCSV === 'function'` que nunca era cierto desde que `js/bom.js` centralizó
+     la exportación a Excel. Y el diagrama de la guía tenía una clave duplicada
+     (`{f:'hub',f:'hub',...}`) que silenciosamente descartaba una de las dos.
 
 - **`npm run juniper`: el importador de la matriz SRX ya existe** (`scripts/importar-juniper.js`).
   Completar el catálogo Juniper era transcribir 96 números a mano, que es exactamente donde se

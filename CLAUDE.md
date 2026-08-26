@@ -1,19 +1,43 @@
 <!-- claude-skills-manager:installed-skills -->
-## Installed Claude Skills
+## Skills instaladas
 
-Claude Code discovers and loads skills under `.claude/skills/` automatically — nothing here needs to be read for that to work. This table is kept up to date purely as a human-readable summary of what's installed and why.
+Claude Code descubre y carga solo lo que hay en `.claude/skills/` — nada de esta tabla hace
+falta para que funcione. Es un resumen legible de qué está instalado y para qué sirve **en
+este repositorio**, que es la parte que se desincroniza: la tabla anterior listaba 8 skills
+cuando había 27 instaladas, y dos de ellas (`data-viz-charts`, `web-page-builder`) describían
+el stack de `chikisdtv` —React, Vite, Tailwind, Recharts— que aquí no existe. Una skill que
+miente sobre el stack es peor que una que falta: se dispara sola y empuja el trabajo hacia
+una arquitectura que este proyecto no tiene. Se retiraron; si alguna vez hacen falta, se
+copian otra vez desde `.claude/skills/` del repo hermano.
 
-| Skill | Detected via | Description |
-|---|---|---|
-| deployment-practical | `**/*.tf, **/*.bicep, **/azure.yaml, **/azure.yml, **/Dockerfile, **/Dockerfile.*, **/docker-compose*.yml, **/.gitlab-ci.yml, **/azure-pipelines.yml, **/.env*, **/deployment/**` | Deployment-first delivery — concrete architecture and IaC over theoretical advice. Use when deploying, provisioning infra, debugging first-apply failures, or when the user wants advice that works on the first attempt (not hand-wavy theory). Pair with Practical Focus toggle (architecture-first / deploy-ready). |
-| file-style-conventions | `**/*` | Apply two lightweight file-hygiene conventions when writing or editing files - no emoji characters outside Markdown (.md) files, and YAML files (.yml/.yaml) end with exactly one trailing newline. Use whenever creating or editing non-Markdown files that might contain emoji, or any .yml/.yaml file. |
-| self-learning | `**/*` | Maintain a project-local self-learning base of task/command outcomes — record successes and failures with timestamps, durations, and fixes; generate a patterns report (pass rates, recurring errors, known fixes); and surface a learned hint before retrying something that failed before. Use at the start of a session to check learned hints, after running a non-trivial command/skill to record the outcome, when asked "what failed before" or "what did we learn", or to record a manual decision/learning. |
-| skill-creator | `**/*` | Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy. |
-| skill-feedback-adaptation | `**/.claude/learning/skill-feedback.jsonl, **/.claude/learning/task-skill-proposals.json, **/.claude/learning/**` | AUTO-START on new agent session/window (injected by profile-init-watch for Claude, Cursor, Kiro, Copilot) and on new tasks — analyze the prompt and repo, write task-skill-proposals.json, then read top proposed skills before other work. Also register user disagreement into skill-feedback.jsonl when the user says no, not, wrong, stop, or disagrees with agent output. |
-| skill-official-updater | `**/*` | At the start of a new session, do a cheap check for new or updated official Anthropic skills (github.com/anthropics/skills) and automatically add or update them in skills_library/ (no user prompt). Also use on explicit request ("check for official skill updates", "sync official skills"). |
-| skill-usage-insights | `**/.claude/learning/runs.jsonl, **/.claude/skills/**` | Analyze recorded skill usage in this project (.claude/learning/runs.jsonl, written by self-learning) and the skills installed in .claude/skills/ to produce a usage and KPI report - which skills are actively used and reliable, which are failing, and which are unused or low-value, with recommendations on what to add or remove. Use when asked for "skill usage stats", "skill KPIs", "which skills should we add or remove", or "are our installed skills still useful". |
+| Skill | Para qué sirve aquí |
+|---|---|
+| **Entrega y despliegue** | |
+| `deployment-practical` | Arquitectura e IaC concretas antes que consejo teórico. Es la que aplica al ciclo Railway de este repo. |
+| `file-style-conventions` | Sin emoji fuera de `.md`; los `.yml`/`.yaml` terminan con un solo salto de línea. |
+| **Seguridad** | |
+| `vibesec` | Guía de código seguro para aplicaciones web. La base del trabajo sobre el muro de acceso. |
+| `insecure-defaults` | Valores por defecto que fallan abiertos (secretos en el código, auth débil). Justo lo contrario de lo que hace este servidor al negarse a arrancar sin `AUTH_PASSWORD`. |
+| `sharp-edges` | APIs y configuraciones fáciles de usar mal. |
+| `supply-chain-risk-auditor` | Riesgo de las dependencias. |
+| `codeql` · `semgrep` · `semgrep-rule-creator` · `sarif-parsing` | Análisis estático y sus resultados. |
+| `variant-analysis` · `fp-check` · `audit-context-building` | Buscar variantes de un fallo, descartar falsos positivos y construir contexto antes de auditar. |
+| **Revisión de código** | |
+| `differential-review` | Revisión de un diff con foco en seguridad. |
+| `code-review-guide` | Cómo usar `/review` y `/ultrareview`. |
+| **Diseño y planificación** | |
+| `frontend-design` | Interfaz de calidad de producción. Aplica a las páginas de `public/`, que son HTML y JS a mano sin build. |
+| `feature-planning` | Convierte una petición vaga en un plan a nivel de archivo. |
+| `project-kickoff` | Preguntas de arranque cuando algo empieza de cero. |
+| `database-designer` | Esquemas, migraciones y consultas. Aplica al modelo Sequelize de `server/models/`. |
+| **Sobre las propias skills** | |
+| `skill-creator` | Crear, editar y medir skills. |
+| `skill-usage-insights` · `skill-feedback-adaptation` · `skill-official-updater` | Qué skills se usan de verdad, registrar desacuerdos y sincronizar las oficiales. |
+| `self-learning` | Registro de resultados de tareas y comandos, con los fallos y su arreglo. |
+| `context-mode` | Modos de gestión de contexto. |
 
-<!-- /claude-skills-manager:installed-skills -->
+Las de marketing, ventas, SEO y ASO de `chikisdtv` —unas 59— siguen fuera a propósito: esta
+es una herramienta interna detrás de un muro de acceso y no tienen dónde aplicarse.
 
 # CLAUDE.md
 
@@ -46,7 +70,26 @@ No build step for the frontend — `public/*.html` and `public/js/*.js` are serv
 
 Set `AUTH_PASSWORD` in `.env` before starting, or nobody can log in: locally the server only warns, but with `NODE_ENV=production` it refuses to boot rather than serving prices to the open web. The other auth variables (`AUTH_USER`, `SESSION_SECRET`, `AUTH_STATE_DIR`) are documented in `.env.example`.
 
-No lint/test tooling is configured yet.
+```
+npm run verificar   # lint + pruebas, lo que hay que pasar antes de empujar
+npm test            # node --test, sin dependencias
+npm run lint        # eslint
+```
+
+**Las pruebas cubren lo que ya falló, no lo que es fácil de probar.** 59 casos sobre la
+identidad y la firma de sesión (la migración que se rehacía en cada lectura e invalidaba la
+sesión recién creada), la regla única de fin de venta de `ficha.js`, el orden de columnas
+(donde 5.999 dólares valían menos que 29), el casado de nombres entre dimensionador y
+cotizador, el parser del importador Juniper y la coherencia del catálogo. `test/ayuda/navegador.js`
+carga los módulos de `public/js/` en Node con un doble mínimo de `document`: son IIFE sin
+sistema de módulos, y traer jsdom para probar funciones puras sería una dependencia grande
+para nada.
+
+**El lint no es un manual de estilo: cada regla activada corresponde a un fallo que este
+repositorio ya tuvo.** `no-undef` habría cazado el `BOM is not defined` del cotizador,
+`no-use-before-define` el TDZ de `capDe` en la página de Cisco, y `no-eval`/`no-new-func`
+existen porque la CSP de este sitio los haría fallar solo en producción. No se activa nada de
+formato: reformatear produciría un diff enorme sin arreglar nada.
 
 ## Deploying
 
@@ -83,7 +126,7 @@ Each page is an HTML file plus a same-named script in `public/js/` — the marku
 
 - `index.html` + `js/index.js` — hub/portal. SPA-style routing via CSS class toggling (`.page` / `.page.active`, driven by `go(pageId)`). Fetches `/api/catalog` on load (was a hardcoded `PR` object) into the per-vendor arrays it renders from, plus the Comparador, the Throughput Calculator and the IA-sync panel (`/api/sync/*`). The per-vendor presentation metadata (`VENDORS`: accent colour, blurb, series list) is still hardcoded here, not in the DB.
 - `cotizador.html` + `js/cotizador.js` — multi-vendor BOM/quote builder. Fetches `/api/cotizador/catalog` (was `CATALOG`). The quote/BOM table itself is unchanged, in-memory client state.
-- `dimensionador-bom-huawei-v3_1.html`, `dimensionador-cisco-catalyst8k.html`, `dimensionador-fortinet-fortigate.html`, `dimensionador-mikrotik-routeros.html`, `dimensionador-aruba-edgeconnect.html` (+ their `js/` counterparts) — per-vendor sizing + BOM calculators. Each fetches `/api/dimensionador/<vendor>` for its models/optics/parts/support-tier data (was several hardcoded consts per file).
+- `dimensionador-huawei-netengine.html`, `dimensionador-cisco-catalyst8k.html`, `dimensionador-fortinet-fortigate.html`, `dimensionador-mikrotik-routeros.html`, `dimensionador-aruba-edgeconnect.html` (+ their `js/` counterparts) — per-vendor sizing + BOM calculators. Each fetches `/api/dimensionador/<vendor>` for its models/optics/parts/support-tier data (was several hardcoded consts per file).
 - The Aruba page borrows the Fortinet page's layout but not its sizing model, because HPE doesn't publish the same kind of figures. EdgeConnect is sized against the **published WAN bandwidth range** per model (a range, not a single throughput — falling below its floor flags oversizing just as exceeding its ceiling flags undersizing); the 9000/9200 gateways are sized against firewall throughput plus client and AP capacity. The page also separates what the appliance **processes** from what the WAN links **carry**, because Path Conditioning's FEC parity adds to the second while Boost subtracts from it and raises the first. Two Aruba-specific quirks the engine models: Boost is licensed in 100 Mbps blocks pooled fabric-wide (so it appears once in the BOM regardless of unit count), and the 9200's capacity — throughput, APs *and* clients — is gated by a perpetual licence tier on identical hardware, so candidate filtering must compare against the top tier and then report which licence is required.
 - `public/datasheets/` — official HPE datasheet PDFs, fetched by `npm run datasheets` (`scripts/descargar-datasheets.js`) from the `DATASHEETS` manifest in `aruba.js`, so there is no second list to drift. The directory ships empty on purpose: the environment this catalog was built in has HPE's domains blocked by egress policy, so the download has to run from a machine with internet. When a PDF is present the Aruba page links the local copy (served behind the auth wall); when it isn't, it links HPE's URL — the tool works either way, and `catalogProjection.js` decides per request by reading the directory once. Committing the PDFs is what makes production serve them, since the Railway container is rebuilt from git on every deploy; `public/datasheets/LEEME.md` covers the trade-offs (repo weight, and a stale local copy being worse than a live link in a quoting tool).
 - `js/ficha.js` — the candidate picker and full spec sheet, shared by the five dimensionadores. The "Modelo recomendado" block is no longer a single fixed model: it is a `<select>` listing **every** model that meets the constraints, and choosing one re-renders the meters, the reasoning, the sizing summary, the licensing/support panels and the BOM tab for that model. Each page supplies a descriptor (`medidores`, `porQue`, `secciones`, `alCambiar`) built from its own vendor data — the module never computes a figure, it only presents. Sections are consistent across vendors: características, licenciamiento propuesto, software y soporte. A manual choice survives parameter changes as long as that model still qualifies; when it stops qualifying the panel falls back to the recommended one rather than leaving a sheet on screen for a model that no longer fits.
@@ -115,8 +158,8 @@ Each page is an HTML file plus a same-named script in `public/js/` — the marku
 - Price fields use `elp` (display string) paired with `elpN` (numeric) — prices exclude channel discounts, taxes, and licensing/support costs.
 - **Fuera de venta se muestra, pero no se recomienda — y la regla vive en un solo sitio.** `eol: true` on a `Product` hides it from `cotizador.html`/`index.html`; inside a dimensionador it stays visible, because ampliar un parque instalado es justo cuando hace falta consultarlo. Lo que no puede es salir recomendado. `FICHA.rango()` en `public/js/ficha.js` es la única implementación: **0** vigente, **1** línea anterior (`legacy` — se propone solo si nada vigente cumple), **2** fuera de venta (`eol`, o `eolAnnounced` con la fecha de último pedido ya pasada) — nunca se propone. Las cinco páginas ordenan con `FICHA.ordenar(lista, desempate)` y eligen con `FICHA.recomendar(lista, preferir)`; ninguna vuelve a decidirlo por su cuenta. Antes había tres criterios distintos: Fortinet y MikroTik **borraban** los descontinuados de la lista (ni recomendados ni consultables), Cisco los dejaba competir de igual a igual y podía proponerlos para un diseño nuevo, y Aruba tenía el suyo propio para `legacy`.
 - **Un fin de venta anunciado no es lo mismo que estar fuera de venta.** `eolAnnounced: {pid, lastOrder, sucesor, url}` describe el boletín; hasta `lastOrder` el equipo se pide con normalidad, así que se marca pero sigue siendo recomendable, y **pasada esa fecha cae solo a rango 2** sin que nadie tenga que editar el catálogo — que es como estos avisos se quedan obsoletos. En Cisco están registrados los 4 chasis Catalyst 8300/8200, el 8500-12X4QC y los tres ASR 1000 (1001-X, 1002-HX y 1006-X), cuyas fechas de último pedido ya pasaron: hasta agosto de 2026 toda la línea ASR se ofrecía como si estuviera vigente.
-- `CISCO_EOL_MODELS` en `seedCatalog.js` sigue listando la serie ISR 4000, pero la Fase 2 la retiró del catálogo: hoy no existe ningún `Product` que coincida, así que el conjunto está inerte. Se conserva porque volvería a aplicar si esos modelos reaparecieran por `cotizadorCatalog`.
-- The Huawei dimensionador file's `-v3_1` filename suffix is a leftover from the pre-migration static-file era (informal versioning before git existed in this repo) — no longer load-bearing, safe to rename in a future cleanup.
+- **Un conjunto de fuera de venta que no marca nada avisa.** `CISCO_EOL_MODELS` vivió meses en `seedCatalog.js` listando la serie ISR 4000 que la Fase 2 ya había retirado: no marcaba nada y nadie se enteró, porque un conjunto inerte se comporta igual que uno que funciona. Se borró, y `seedDimensionadorModels` ahora avisa por consola cuando una entrada de `eolModels` no casa con ningún modelo, para que `FORTINET_EOL_MODELS` no se pudra igual. La justificación que lo mantenía vivo («volvería a aplicar si reaparecieran por `cotizadorCatalog`») era además falsa: esa ruta crea sus filas en `backfillPricesFromCotizador`, que no consulta estos conjuntos.
+- **Renombrar una página pública exige redirigir la anterior.** El dimensionador Huawei se llamaba `dimensionador-bom-huawei-v3_1.html` (versionado informal previo a git) y hoy es `dimensionador-huawei-netengine.html`; `RENOMBRADAS` en `server.js` redirige la ruta vieja **conservando el querystring**, que es donde viaja el escenario compartido — sin eso el enlace llegaría a la página correcta con los parámetros por defecto, que es peor que un 404 porque no se nota. La clave de `localStorage` conserva a propósito el nombre viejo: es la identidad bajo la que la gente ya tiene escenarios guardados, no el nombre del archivo.
 
 ## Roadmap (see plan history for full detail)
 

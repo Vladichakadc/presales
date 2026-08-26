@@ -18,7 +18,7 @@ async function resolveVendorId(vendorCode) {
 function parseJson(raw, label) {
   try {
     return typeof raw === 'string' ? JSON.parse(raw) : raw;
-  } catch (e) {
+  } catch {
     console.warn(`[Sync Apply] Saltando "${label}": newValue no es JSON válido`);
     return null;
   }

@@ -14,10 +14,18 @@ const mikrotikData = require('./legacyData/mikrotik');
 const arubaData = require('./legacyData/aruba');
 const guiaRoles = require('./legacyData/guiaRoles');
 
-// INERTE desde la Fase 2: esa fase retiro la serie ISR 4000 del catalogo, asi que hoy no hay
-// ningun Product cuyo modelo coincida con estos nombres. Se conserva porque volveria a aplicar
-// si reaparecieran por cotizadorCatalog, no porque este marcando algo ahora mismo.
-const CISCO_EOL_MODELS = new Set(['ISR 4221', 'ISR 4331', 'ISR 4351', 'ISR 4431', 'ISR 4451', 'ISR 4461']);
+// eolModels: modelos que el catalogo lista pero que ya no se venden. Marca `eol` sobre el
+// Product y ahi acaba: cotizador.html e index.html los ocultan, el dimensionador los sigue
+// mostrando como referencia (ampliar un parque instalado es justo cuando hace falta
+// consultarlos) y FICHA.rango() impide proponerlos. La regla vive en public/js/ficha.js.
+//
+// El conjunto de Cisco vivio aqui hasta agosto de 2026 con la serie ISR 4000, que la Fase 2
+// habia retirado del catalogo: llevaba meses sin coincidir con ningun modelo y nadie se
+// entero, porque un conjunto que no marca nada se comporta igual que uno que funciona. Se
+// borro, y para que no vuelva a pasar en silencio seedDimensionadorModels avisa cuando una
+// entrada no casa con nada. La justificacion que lo mantenia vivo ("volveria a aplicar si
+// reaparecieran por cotizadorCatalog") ademas era falsa: esa ruta crea sus filas en
+// backfillPricesFromCotizador, que no consulta estos conjuntos.
 // Confirmado contra "2026Q3 Main Price list_AMER_FINAL_EFF 080326.xlsx": FortiGate 200F tiene "End of Order Announcement"
 // explícito (será removido del pricelist 2026 Q3); 100F/600F ya no aparecen en la lista de precios vigente (EOL en un trimestre anterior).
 // FortiGate 70F: sin SKU de hardware nuevo en el price list (solo renovación de servicios UTP/ATP a 1 año) — reemplazado
@@ -164,9 +172,11 @@ async function seedOpticsAndParts(vendorId, OPTICS, PARTS, partsAreDescOnly) {
 // Huawei AR-series models), or creates a new row when it doesn't — a real naming
 // drift between the two legacy files (e.g. Huawei WAN-series id sets differ),
 // disclosed and left for Phase 2's research pass to fully reconcile.
-async function seedDimensionadorModels(vendorId, models, { opticCategoryIds = {}, partIds = {}, eolModels = new Set(), categoryFn }) {
+async function seedDimensionadorModels(vendorId, models, { opticCategoryIds = {}, partIds = {}, eolModels = new Set(), etiqueta = 'sin etiqueta', categoryFn }) {
+  const casados = new Set();
   for (const item of models) {
     const { id: model, optics, parts, ...specs } = item;
+    if (eolModels.has(model)) casados.add(model);
     const [product, created] = await Product.findOrCreate({
       where: { vendorId, model },
       defaults: {
@@ -201,6 +211,16 @@ async function seedDimensionadorModels(vendorId, models, { opticCategoryIds = {}
       if (!partId) continue;
       await ProductPart.findOrCreate({ where: { productId: product.id, partId } });
     }
+  }
+
+  // Una entrada de eolModels que no casa con ningun modelo no marca nada, y calladamente
+  // parece que si. Asi es como el conjunto de Cisco sobrevivio inerte a la Fase 2. Ahora se
+  // dice en el arranque, que es donde alguien lo va a leer.
+  const huerfanos = [...eolModels].filter((m) => !casados.has(m));
+  if (huerfanos.length) {
+    console.warn(`[seed] ${etiqueta}: ${huerfanos.length} modelo(s) marcados como fuera de venta `
+      + `no existen en el catalogo y no marcan nada: ${huerfanos.join(', ')}. `
+      + 'Quitalos del conjunto o comprueba el nombre.');
   }
 }
 
@@ -270,7 +290,6 @@ async function seedCatalog() {
   await seedDimensionadorModels(vendorIds.cisco, ciscoData.MODELS, {
     opticCategoryIds: cs.opticCategoryIds,
     partIds: cs.partIds,
-    eolModels: CISCO_EOL_MODELS,
     categoryFn: (item) => (item.ser === 'ASR 1000' ? 'router_wan' : 'router_branch'),
   });
   await seedSupportTiers(vendorIds.cisco, ciscoData.SMARTNET);
@@ -278,6 +297,7 @@ async function seedCatalog() {
 
   await seedDimensionadorModels(vendorIds.fortinet, fortinetData.MODELS, {
     eolModels: FORTINET_EOL_MODELS,
+    etiqueta: 'Fortinet',
     categoryFn: () => 'firewall',
   });
   await seedSupportTiers(vendorIds.fortinet, fortinetData.CARE);

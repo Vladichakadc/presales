@@ -26,7 +26,7 @@ const TOPOS = [
       {id:'ctrl',  x:430, y:160, w:130, h:40, label:'SD-WAN', role:'Controller / NCE', color:'#1F6B4A', eqRole:'sdwan_controller'},
     ],
     links:[
-      {f:'hub',f:'hub',t:'br1',label:'WAN'},{f:'hub',t:'br2',label:'WAN'},
+      {f:'hub',t:'br1',label:'WAN'},{f:'hub',t:'br2',label:'WAN'},
       {f:'hub',t:'br3',label:'WAN'},{f:'hub',t:'br4',label:'WAN'},
       {f:'hub',t:'fw',label:''},{f:'hub',t:'ctrl',label:'mgmt'},
     ]
@@ -278,10 +278,6 @@ function showRec(node){
 /* ══════════════════════════════════════════════
    TOPOLOGY INFO CARDS (auto-rendered below svg)
    ══════════════════════════════════════════════ */
-function updateInfo(){
-  // nothing extra needed — info is in the topo desc
-}
-
 /* ══════════════════════════════════════════════
    BOOT
    ══════════════════════════════════════════════ */
@@ -299,6 +295,8 @@ document.addEventListener('click', (e) => {
   const abrir = e.target.closest('[data-abrir]');
   if (abrir) { window.open(abrir.dataset.abrir, '_blank'); return; }
   const id = e.target.closest('button,[id]')?.id;
-  if (id === 'btnCsv' && typeof exportCSV === 'function') exportCSV();
-  else if (id === 'btnImprimir') window.print();
+  // El boton #btnCsv desaparecio cuando js/bom.js centralizo la exportacion a Excel; la
+  // rama que lo atendia sobrevivio detras de un `typeof ... === 'function'` que jamas era
+  // cierto. La encontro el linter, no la vista: una rama muerta no se nota mirando.
+  if (id === 'btnImprimir') window.print();
 });

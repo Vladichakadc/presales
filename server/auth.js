@@ -22,11 +22,9 @@
 // firmada sin estado evita además tener que montar un almacén de sesiones.
 
 const crypto = require('crypto');
-const path = require('path');
 
 const usuarios = require('./usuarios');
 
-const STATE_DIR = process.env.AUTH_STATE_DIR || path.join(__dirname, '..', '.auth');
 const STATE_FILE = usuarios.USERS_FILE;
 
 const USER = process.env.AUTH_USER || 'presales';

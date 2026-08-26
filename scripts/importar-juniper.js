@@ -92,7 +92,6 @@ const CAMPOS = [
   {campo:'vpn',     tipo:'tput',  et:'IPsec VPN',               re:(c) => /ipsec|vpn/.test(c)},
   {campo:'fw',      tipo:'tput',  et:'Firewall',                re:(c) => /firewall|throughput|rendimiento/.test(c)},
 ];
-const CAMPOS_POR_NOMBRE = new Map(CAMPOS.map((c) => [c.campo, c]));
 
 // "Juniper SRX 380" / "SRX-380" / "srx380" -> "SRX380". vSRX y las virtuales no estan en
 // este catalogo: devuelven null y la fila se ignora diciendolo.

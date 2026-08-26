@@ -492,8 +492,10 @@ document.addEventListener('click', (e) => {
   const abrir = e.target.closest('[data-abrir]');
   if (abrir) { window.open(abrir.dataset.abrir, '_blank'); return; }
   const id = e.target.closest('button,[id]')?.id;
-  if (id === 'btnCsv' && typeof exportCSV === 'function') exportCSV();
-  else if (id === 'btnImprimir') window.print();
+  // El boton #btnCsv desaparecio cuando js/bom.js centralizo la exportacion a Excel; la
+  // rama que lo atendia sobrevivio detras de un `typeof ... === 'function'` que jamas era
+  // cierto. La encontro el linter, no la vista: una rama muerta no se nota mirando.
+  if (id === 'btnImprimir') window.print();
 });
 
 /* ══ ESTADO ENLAZABLE Y PERSISTENTE ══
@@ -501,6 +503,10 @@ document.addEventListener('click', (e) => {
    otra recomendacion. Ahora el escenario viaja en la URL y sobrevive a una recarga. Ver
    /js/estado.js para por que hacen falta la URL Y el almacenamiento local, y no uno solo. */
 document.addEventListener('DOMContentLoaded', () => {
+  // La clave conserva el nombre viejo del archivo A PROPOSITO. No es el nombre de la pagina:
+  // es la identidad bajo la que ya hay escenarios guardados en el navegador de quien usa
+  // esto. Renombrarla por coherencia cosmetica le borraria el trabajo guardado a cambio de
+  // nada, porque nadie ve esta cadena. El archivo se llama dimensionador-huawei-netengine.
   const st = ESTADO.vincular({ clave: 'dimensionador-bom-huawei-v3_1', campos: ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','dirSeg','modeSeg','verdict-sel'] });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
