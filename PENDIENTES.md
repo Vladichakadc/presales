@@ -108,11 +108,19 @@ Cobertura actual por herramienta:
 13. **`CISCO_EOL_MODELS` en `seedCatalog.js` está inerte** — la Fase 2 retiró la serie ISR
     4000 y ya no coincide con ningún `Product`. Se conserva por si reaparecieran vía
     `cotizadorCatalog`.
-14. **Sin herramientas de lint ni de test.** La verificación es manual: arrancar con
+14. **Navegación entre herramientas con recarga completa.** Cada herramienta es una página
+    propia y pasar de una a otra recarga todo. Es lo que queda para que se sienta del todo
+    como una aplicación, y es la pieza cara: un enrutador de cliente obligaría a repensar las
+    ocho páginas y el modelo de despliegue sin build. No urge —el estado ya sobrevive a la
+    navegación— pero es el siguiente escalón si se quiere.
+15. **El cotizador no comparte estado con los dimensionadores.** Dimensionas un FortiGate y
+    luego lo buscas a mano en el cotizador. Ahora que el estado vive en la URL, pasar el
+    equipo elegido de una herramienta a otra es la integración de más valor pendiente.
+16. **Sin herramientas de lint ni de test.** La verificación es manual: arrancar con
     `NODE_ENV=production` y recorrer la página en Chromium. Ahora que hay autenticación por
     usuario, un juego mínimo de pruebas sobre `usuarios.js` y la firma de sesión atraparía
     justo la clase de fallo que apareció al construirlo (ver *Cerrado recientemente*).
-15. **Skills instaladas parcialmente.** De `chikisdtv` se copiaron las 20 relevantes para este
+17. **Skills instaladas parcialmente.** De `chikisdtv` se copiaron las 20 relevantes para este
     proyecto (seguridad, revisión, frontend, base de datos, planificación). Se dejaron fuera
     las de marketing, ventas, SEO y ASO —unas 59— porque esta es una herramienta interna
     detrás de un muro de autenticación y no tienen dónde aplicarse. Si alguna hace falta, se
@@ -120,12 +128,18 @@ Cobertura actual por herramienta:
 
 ## Decisiones que necesitan al dueño del producto
 
-16. Ninguna abierta ahora mismo.
+18. Ninguna abierta ahora mismo.
 
 ---
 
 ## Cerrado recientemente
 
+- **De documentos sueltos a aplicación** — la aplicación nunca fue estática (servidor, API,
+  base de datos, sesión), pero se comportaba como un juego de documentos: recargar perdía el
+  trabajo y no había forma de pasarle un dimensionamiento a un compañero. Ahora el escenario
+  viaja en la URL y sobrevive a la recarga (`js/estado.js`), el BOM del cotizador se recupera
+  con aviso y botón de «empezar una nueva», y las tablas del portal se ordenan por columna
+  (`js/tabla.js`). Sin reescritura: se integró con el motor existente en vez de sustituirlo.
 - **Dimensionador Juniper** — sexta herramienta de sizing, con dos plataformas separadas:
   SRX por capa de inspección y Session Smart Router para SD-WAN. El principio que la hace
   útil es el mismo que salió de la auditoría FortiGate: la cifra de portada (firewall con

@@ -40,7 +40,26 @@ const esc=s=>String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt
     });
   });
   renderCatalog();
+
+  // Se restaura ANTES del primer renderBom para que la tabla salga ya con el trabajo previo.
+  const guardado = restaurarBom();
   renderBom();
+  if(guardado){
+    const host = document.getElementById('bomAviso') || $('sumVendors') && $('sumVendors').closest('section');
+    const p = document.createElement('p');
+    p.className = 'hint';
+    p.style.cssText = 'margin:10px 0 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap';
+    const cuando = typeof guardado === 'string'
+      ? new Date(guardado).toLocaleString('es', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})
+      : null;
+    p.innerHTML = `<span>Se recuperaron <b>${bom.length}</b> línea(s) de tu cotización anterior${cuando ? ` (${cuando})` : ''}.</span>`;
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'btn ghost'; b.textContent = 'Empezar una nueva';
+    b.style.cssText = 'font-size:11px;padding:4px 10px';
+    b.addEventListener('click', () => { vaciarBom(); p.remove(); });
+    p.appendChild(b);
+    if(host) host.appendChild(p);
+  }
 })();
 
 /* ══ CATALOG ══ */
@@ -110,7 +129,45 @@ function clearQuote(){
 }
 
 /* ══ RENDER BOM ══ */
+/* ══ EL BOM SOBREVIVE A UNA RECARGA ══
+   Medido antes de escribir esto: se anadian equipos, se recargaba la pagina y el BOM volvia
+   a cero. En una herramienta de cotizacion eso es perder trabajo por un F5 o por un cierre
+   accidental de pestana. Se guarda en el navegador —no en el servidor— porque un BOM a medias
+   es un borrador personal, no un documento compartido: subirlo al servidor obligaria a
+   decidir de quien es, quien lo ve y cuando caduca, que es otro proyecto. */
+const BOM_CLAVE = 'presales:cotizador:bom';
+
+function guardarBom(){
+  try{
+    localStorage.setItem(BOM_CLAVE, JSON.stringify({
+      bom, nextId,
+      cliente: $('quoteClient') ? $('quoteClient').value : '',
+      fecha: $('quoteDate') ? $('quoteDate').value : '',
+      guardado: new Date().toISOString(),
+    }));
+  }catch{ /* sin espacio o almacenamiento deshabilitado: no es motivo para romper la pagina */ }
+}
+
+function restaurarBom(){
+  let d;
+  try{ d = JSON.parse(localStorage.getItem(BOM_CLAVE) || 'null'); }catch{ return null; }
+  if(!d || !Array.isArray(d.bom) || !d.bom.length) return null;
+  bom = d.bom;
+  // nextId tiene que quedar por encima de todos los ids restaurados o dos lineas distintas
+  // compartirian id y borrar una borraria la otra.
+  nextId = Math.max(d.nextId || 0, ...bom.map(x => (x.id || 0) + 1), 1);
+  if(d.cliente && $('quoteClient')) $('quoteClient').value = d.cliente;
+  return d.guardado || true;
+}
+
+function vaciarBom(){
+  bom = [];
+  try{ localStorage.removeItem(BOM_CLAVE); }catch{ /* ignorado */ }
+  renderBom();
+}
+
 function renderBom(){
+  guardarBom();
   const empty = bom.length===0;
   $('emptyState').style.display = empty ? 'flex' : 'none';
   $('tableWrap').style.display = empty ? 'none' : 'block';

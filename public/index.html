@@ -373,7 +373,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
   <div id="tab-cat-cisco" class="tab-content active">
 <div class="panel">
     <h2>Catálogo Cisco — Throughput de referencia <span style="font-weight:400;color:var(--steel)">— Precio ref. USD incluido</span></h2>
-    <div class="scroll"><table id="tbl-cisco">
+    <div class="scroll"><table data-ordenable id="tbl-cisco">
       <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Forwarding</th><th>IPsec</th><th>Puertos</th><th>SD-WAN</th><th>Precio ref. USD&#9432;</th></tr></thead>
       <tbody></tbody>
     </table></div>
@@ -410,7 +410,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
   <div id="tab-cat-nokia" class="tab-content active">
 <div class="panel">
     <h2>Catálogo Nokia — Capacidad de referencia</h2>
-    <div class="scroll"><table id="tbl-nokia">
+    <div class="scroll"><table data-ordenable id="tbl-nokia">
       <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Capacidad</th><th>Puertos / Tarjetas</th><th>Protocolos</th></tr></thead>
       <tbody></tbody>
     </table></div>
@@ -448,7 +448,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
   <div id="tab-cat-fortinet" class="tab-content active">
 <div class="panel">
     <h2>Catálogo FortiGate — Throughput de referencia <span style="font-weight:400;color:var(--steel)">— Precio ref. USD incluido</span></h2>
-    <div class="scroll"><table id="tbl-fortinet">
+    <div class="scroll"><table data-ordenable id="tbl-fortinet">
       <thead><tr><th>Modelo</th><th>Segmento</th><th>FW Throughput</th><th>IPS</th><th>NGFW</th><th>IPsec VPN</th><th>Interfaces</th><th>Precio ref. USD&#9432;</th></tr></thead>
       <tbody></tbody>
     </table></div>
@@ -484,7 +484,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
   <div id="tab-cat-juniper" class="tab-content active">
 <div class="panel">
     <h2>Catálogo Juniper — Capacidad de referencia</h2>
-    <div class="scroll"><table id="tbl-juniper">
+    <div class="scroll"><table data-ordenable id="tbl-juniper">
       <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Capacidad</th><th>Puertos</th><th>Caso de uso</th></tr></thead>
       <tbody></tbody>
     </table></div>
@@ -526,7 +526,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
   <div id="tab-cat-mikrotik" class="tab-content active">
     <div class="panel">
       <h2>Catálogo MikroTik — Throughput de referencia <span style="font-weight:400;color:var(--steel)">— Precio ref. USD incluido</span></h2>
-      <div class="scroll"><table id="tbl-mikrotik">
+      <div class="scroll"><table data-ordenable id="tbl-mikrotik">
         <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Forwarding</th><th>IPsec</th><th>SD-WAN / VPN</th><th>Puertos</th><th>Precio ref. USD&#9432;</th></tr></thead>
         <tbody></tbody>
       </table></div>
@@ -666,7 +666,7 @@ RB5009  CCR2004  RB5009  (Hub)
   <div id="tab-cat-aruba" class="tab-content active">
     <div class="panel">
       <h2>Catálogo Aruba — Throughput de referencia <span style="font-weight:400;color:var(--steel)">— EdgeConnect Enterprise y gateways serie 9000</span></h2>
-      <div class="scroll"><table id="tbl-aruba">
+      <div class="scroll"><table data-ordenable id="tbl-aruba">
         <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Throughput</th><th>IPsec</th><th>SD-WAN / Licencia</th><th>Puertos</th><th>Precio ref. USD&#9432;</th></tr></thead>
         <tbody></tbody>
       </table></div>
@@ -889,6 +889,8 @@ RB5009  CCR2004  RB5009  (Hub)
 
 </main><!-- /main -->
 
+<script src="/js/estado.js"></script>
+<script src="/js/tabla.js"></script>
 <script src="/js/index.js"></script>
 
 <!-- ════ SYNC MODAL ════ -->

@@ -723,3 +723,20 @@ document.addEventListener('click', (e) => {
   if (id === 'btnCsv' && typeof exportCSV === 'function') exportCSV();
   else if (id === 'btnImprimir') window.print();
 });
+
+/* ══ ESTADO ENLAZABLE Y PERSISTENTE ══
+   Antes, poner 2.500 Mbps y copiar la URL no servia de nada: quien la abria veia 500 Mbps y
+   otra recomendacion. Ahora el escenario viaja en la URL y sobrevive a una recarga. Ver
+   /js/estado.js para por que hacen falta la URL Y el almacenamiento local, y no uno solo. */
+document.addEventListener('DOMContentLoaded', () => {
+  const st = ESTADO.vincular({ clave: 'dimensionador-fortinet-fortigate', campos: ['bw','unit','users','perUser','head','sesUser','sessNeed','vidaSes','sites','conc','pctOverlay','chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa','modoSeg','profileSeg','rolSeg','segSeg','verdict-sel'] });
+  const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
+  if (anclaje && anclaje.parentNode) {
+    const caja = document.createElement('div');
+    caja.className = 'estado-barra';
+    caja.style.cssText = 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px';
+    anclaje.parentNode.insertBefore(caja, anclaje.nextSibling);
+    ESTADO.botonEnlace(caja);
+    ESTADO.avisoOrigen(caja, st.origen);
+  }
+});
