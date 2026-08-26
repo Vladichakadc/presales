@@ -20,7 +20,7 @@ function datasheetsLocales() {
   }
 }
 
-const NAME_PREFIXES = ['NetEngine ', 'Nokia ', 'Juniper ', 'Arista ', 'Catalyst ', 'FortiGate ', 'Aruba '];
+const NAME_PREFIXES = ['NetEngine ', 'Nokia ', 'Juniper ', 'Catalyst ', 'FortiGate ', 'Aruba '];
 
 function normalizeName(model) {
   let s = model.trim();
@@ -67,10 +67,10 @@ async function getVendorsList() {
   }));
 }
 
-// index.html PR shape: {hw_ar:[...], hw_wan:[...], cisco:[...], nokia:[...], fortinet:[...], juniper:[...], arista:[...], mikrotik:[...], aruba:[...]}
+// index.html PR shape: {hw_ar:[...], hw_wan:[...], cisco:[...], nokia:[...], fortinet:[...], juniper:[...], mikrotik:[...], aruba:[...]}
 async function toIndexPR() {
   const products = await Product.findAll();
-  const result = { hw_ar: [], hw_wan: [], cisco: [], nokia: [], fortinet: [], juniper: [], arista: [], mikrotik: [], aruba: [] };
+  const result = { hw_ar: [], hw_wan: [], cisco: [], nokia: [], fortinet: [], juniper: [], mikrotik: [], aruba: [] };
   for (const p of products) {
     if (p.eol) continue;
     const group = p.specs && p.specs.prGroup;

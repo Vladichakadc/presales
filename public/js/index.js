@@ -23,10 +23,6 @@ const VENDORS=[
    desc:'MX edge/core, SRX NGFW, EX/QFX switching. Junos OS, Mist AI, Apstra intent-based networking.',
    series:['SRX 300','SRX 1500','SRX 4000','MX 204/304','MX 480/960','QFX 5000/10000'],
    tools:['Catálogo de equipos'],live:false},
-  {id:'arista',name:'Arista',accent:'#4E5B6E',icon:'AR',iconCls:'ar',
-   desc:'7050X leaf/spine, 7280R edge, 7500R/7800R core 400G+. EOS, CloudVision AVD.',
-   series:['7020R','7050X3','7280R3','7500R3','7800R3'],
-   tools:['Catálogo de equipos'],live:false},
   {id:'mikrotik',name:'MikroTik',accent:'#C8102E',icon:'MT',iconCls:'mt',
    desc:'RouterOS v7: WireGuard, IPsec, BGP, MPLS, CAPsMAN. hEX SOHO → CCR2216 Core 100G. Precio-rendimiento líder.',
    series:['hEX','RB4011','RB5009','CCR2004','CCR2116','CCR2216','CHR'],
@@ -85,8 +81,6 @@ function buildAll(){
   PR.juniper.forEach(p=>ALL.push({vendor:'Juniper',model:p.model,series:p.ser,seg:p.seg,
     tp:parseCap(p.cap),tpL:p.cap,ipsec:0,ipsecL:'—',
     sdwan:p.use.includes('SD-WAN')?'Sí':'—',ports:p.ports,color:'#84B135'}));
-  PR.arista.forEach(p=>ALL.push({vendor:'Arista',model:p.model,series:p.ser,seg:p.seg,
-    tp:parseCap(p.cap),tpL:p.cap,ipsec:0,ipsecL:'N/A (DC)',sdwan:'N/A',ports:p.ports,color:'#4E5B6E'}));
   (PR.mikrotik||[]).forEach(p=>ALL.push({vendor:'MikroTik',model:p.model,series:p.ser,seg:p.seg,
     tp:p.fwd||0,tpL:fmtMbps(p.fwd),ipsec:p.ipsec||0,ipsecL:p.ipsec?fmtMbps(p.ipsec):'—',
     sdwan:p.sdwan,ports:p.ports,color:'#C8102E'}));
@@ -180,11 +174,6 @@ function renderTables(){
     <td class="n">${p.cap}</td><td>${p.ports}</td><td>${p.use}</td>
   </tr>`).join(''));
 
-  q('tbl-arista',PR.arista.map(p=>`<tr>
-    <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
-    <td class="n">${p.cap}</td><td>${p.ports}</td><td class="n">${p.lat}</td>
-  </tr>`).join(''));
-
   if(PR.mikrotik&&document.querySelector('#tbl-mikrotik tbody')){
     q('tbl-mikrotik',(PR.mikrotik||[]).map(p=>`<tr>
       <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
@@ -275,7 +264,7 @@ function runCalc(){
     html+='<div class="panel" style="margin-top:16px"><p style="color:var(--amber);font-weight:600">No se encontraron equipos que cumplan este requerimiento en el catálogo actual.</p></div>';
   }else{
     html+='<div style="margin-top:16px">';
-    ['Huawei','Cisco','Fortinet','Nokia','Juniper','Arista','MikroTik'].forEach(vName=>{
+    ['Huawei','Cisco','Fortinet','Nokia','Juniper','MikroTik','Aruba'].forEach(vName=>{
       const devs=byVendor[vName]; if(!devs||!devs.length) return;
       const best=devs[0];
       const alts=devs.slice(1,4).map(d=>d.model).join(', ');
@@ -515,3 +504,11 @@ document.addEventListener('input', (e) => {
   const fn = e.target.dataset && e.target.dataset.oninput;
   if (fn === 'globalFilter') globalFilter(e.target.value);
 });
+
+/* ══ ACCESO ══
+   El enlace de administracion aparece segun el permiso que informa el servidor. No decide
+   nada: /usuarios exige el permiso en la ruta y responde 403 a quien no lo tenga. */
+fetch('/api/cuenta/estado')
+  .then(r => r.ok ? r.json() : null)
+  .then(d => { if (d && d.puedeUsuarios) document.getElementById('navUsuarios').style.display = ''; })
+  .catch(() => {});

@@ -31,12 +31,11 @@ const PR_GROUPS = {
   nokia: { vendorCode: 'nokia', category: 'router' },
   fortinet: { vendorCode: 'fortinet', category: 'firewall' },
   juniper: { vendorCode: 'juniper', category: 'router' },
-  arista: { vendorCode: 'arista', category: 'switch' },
   mikrotik: { vendorCode: 'mikrotik', category: 'router' },
   aruba: { vendorCode: 'aruba', category: 'sdwan' },
 };
 
-const NAME_PREFIXES = ['NetEngine ', 'Nokia ', 'Juniper ', 'Arista ', 'Catalyst ', 'FortiGate ', 'MikroTik ', 'Aruba '];
+const NAME_PREFIXES = ['NetEngine ', 'Nokia ', 'Juniper ', 'Catalyst ', 'FortiGate ', 'MikroTik ', 'Aruba '];
 
 function normalizeName(model) {
   let s = model.trim();

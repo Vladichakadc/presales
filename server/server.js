@@ -64,11 +64,23 @@ const PUBLICO = new Set(['/login', '/login.html', '/js/login.js', '/favicon.ico'
 // Muro de autenticacion. Todo lo que no este en PUBLICO exige sesion valida; las peticiones
 // de API responden 401 en JSON y la navegacion se redirige al login conservando el destino.
 app.use((req, res, next) => {
-  if (PUBLICO.has(req.path) || auth.haySesion(req)) return next();
+  if (PUBLICO.has(req.path)) return next();
+  // El usuario se resuelve UNA vez y viaja en req.usuario: si cada ruta volviera a mirar la
+  // cookie, tarde o temprano una se olvidaria de hacerlo.
+  const usuario = auth.usuarioDeSesion(req);
+  if (usuario) { req.usuario = usuario; return next(); }
   if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Sesión requerida' });
   const destino = encodeURIComponent(req.originalUrl);
   return res.redirect(`/login?m=sesion&r=${destino}`);
 });
+
+// Autorizacion por permiso, declarada en usuarios.js. Va aqui y no dentro de cada ruta para
+// que anadir una pantalla protegida sea anadir una linea, no recordar un patron.
+const exige = (permiso) => (req, res, next) => {
+  if (auth.permiso(req.usuario, permiso)) return next();
+  if (req.path.startsWith('/api/')) return res.status(403).json({ error: 'No tienes permiso para esta operación.' });
+  return res.redirect('/?m=sinpermiso');
+};
 
 app.get('/login', (req, res) => {
   if (auth.haySesion(req)) return res.redirect('/');
@@ -86,7 +98,8 @@ app.post('/login', async (req, res) => {
   if (typeof usuario !== 'string' || typeof password !== 'string') {
     return res.status(400).json({ error: 'Faltan credenciales.' });
   }
-  if (!auth.comprobarCredenciales(usuario, password)) {
+  const autenticado = auth.comprobarCredenciales(usuario, password);
+  if (!autenticado) {
     auth.registrarFallo(req);
     const quedan = auth.intentosRestantes(req);
     // Un solo mensaje para usuario y contrasena erroneos: distinguirlos permitiria
@@ -96,7 +109,8 @@ app.post('/login', async (req, res) => {
     });
   }
   auth.limpiarIntentos(req);
-  auth.ponerCookieSesion(res);
+  auth.ponerCookieSesion(res, autenticado);
+  console.log(`[auth] acceso concedido · usuario=${autenticado.usuario} · rol=${autenticado.rol}`);
   res.json({ ok: true });
 });
 
@@ -107,15 +121,45 @@ app.post('/logout', (req, res) => {
 
 app.get('/cuenta', (req, res) => res.sendFile(path.join(__dirname, '..', 'public', 'cuenta.html')));
 
-app.get('/api/cuenta/estado', (req, res) => res.json({ usuario: auth.USER, usandoSemilla: auth.usandoSemilla() }));
+app.get('/api/cuenta/estado', (req, res) => res.json({
+  usuario: req.usuario.usuario,
+  nombre: req.usuario.nombre,
+  rol: req.usuario.rol,
+  rolNombre: (auth.ROLES[req.usuario.rol] || {}).n || req.usuario.rol,
+  puedeUsuarios: auth.permiso(req.usuario, 'usuarios'),
+  usandoSemilla: !!req.usuario.desdeSemilla,
+}));
 
 app.post('/api/cuenta/password', (req, res) => {
   const { actual, nueva } = req.body || {};
-  const r = auth.cambiarPassword(actual, nueva);
+  // Solo la propia: no hay ruta para que un usuario cambie la contrasena de otro, ni
+  // siquiera un administrador. Restablecer a otra persona se hace borrando el archivo de
+  // estado, que es una accion con acceso al servidor y deja rastro.
+  const r = auth.cambiarPassword(req.usuario.id, actual, nueva);
   if (!r.ok) return res.status(400).json({ error: r.error });
   auth.borrarCookieSesion(res); // cambiar la clave cierra la sesion: obliga a reautenticarse
   res.json({ ok: true });
 });
+
+/* ── Usuarios (solo administrador) ───────────────────────────────────────────── */
+
+app.get('/usuarios', exige('usuarios'), (req, res) =>
+  res.sendFile(path.join(__dirname, '..', 'public', 'usuarios.html')));
+
+app.get('/api/usuarios', exige('usuarios'), (req, res) => res.json({
+  usuarios: auth.listarUsuarios(),   // sin hashes: usuarios.js nunca los deja salir
+  roles: auth.ROLES,
+  yo: req.usuario.id,
+}));
+
+// Alta de usuarios: pendiente a peticion del dueno del repo — por ahora solo se usa el
+// administrador. Responde 501 en vez de 404 para que quede claro que la ruta esta prevista
+// y sin implementar, no que se equivocaron de direccion. Lo que falta no es el formulario
+// sino decidir el flujo de la primera contrasena: enviarla por fuera, forzar el cambio en
+// el primer acceso, o un enlace de alta con caducidad.
+app.post('/api/usuarios', exige('usuarios'), (req, res) => res.status(501).json({
+  error: 'La creación de usuarios está pendiente. Hoy la herramienta opera con el usuario administrador.',
+}));
 
 // SheetJS para el navegador, servido desde la dependencia que ya usa el sync para leer
 // Excel. Las paginas lo cargan solo al pulsar "Exportar a Excel", asi que no pesa en la
@@ -145,7 +189,7 @@ async function start() {
   // Sin contrasena no se puede autenticar a nadie: se falla cerrado en produccion en lugar
   // de arrancar un sitio con precios abierto al publico.
   if (!auth.hashVigente()) {
-    const msg = 'AUTH_PASSWORD sin configurar: nadie podra iniciar sesion.';
+    const msg = 'Sin administrador utilizable (falta AUTH_PASSWORD o el archivo de usuarios): nadie podra iniciar sesion.';
     if (process.env.NODE_ENV === 'production') throw new Error(msg);
     console.warn(`[aviso] ${msg}`);
   }

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Usuarios — Portal Presales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;--red:#C7000B;--amber:#A45B00;--green:#1F6B4A;--card:#FFF}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:26px 18px 60px}
+.back{display:inline-flex;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);text-decoration:none;margin-bottom:18px}
+.back:hover{color:var(--red)}
+.masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:22px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:500;margin:0 0 6px}
+h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:34px;line-height:1;text-transform:uppercase;margin:0}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:22px;margin-bottom:16px}
+h2{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--rule)}
+p.txt{font-size:13.5px;color:var(--steel);margin:0 0 14px;line-height:1.55}
+code{font-family:'IBM Plex Mono',monospace;font-size:11.5px;background:var(--paper);padding:1px 5px;border-radius:2px}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel);font-weight:600;text-align:left;padding:0 10px 7px 0;border-bottom:1px solid var(--rule);white-space:nowrap}
+td{padding:9px 10px 9px 0;border-bottom:1px solid var(--paper);vertical-align:top}
+td.mono{font-family:'IBM Plex Mono',monospace;font-size:12.5px}
+.pill{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:2px;background:var(--ink);color:#fff}
+.pill.consulta{background:var(--steel)}
+.pill.tu{background:var(--green)}
+.pill.off{background:#fff;color:var(--steel);border:1px solid var(--rule)}
+.msg{border-radius:2px;padding:11px 13px;font-size:13px;margin-bottom:16px;line-height:1.45}
+.msg.err{background:#FFF5F5;border:1px solid #FECACA;border-left:3px solid var(--red);color:#991b1b}
+.msg.info{background:#FFFBEB;border:1px solid #FDE68A;border-left:3px solid var(--amber);color:#78350f}
+.roles{display:grid;gap:10px;margin-top:4px}
+.rol{border:1px solid var(--rule);border-radius:2px;padding:12px 14px}
+.rol b{display:block;font-size:13.5px;margin-bottom:3px}
+.rol span{font-size:12.5px;color:var(--steel)}
+.perm{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--steel);margin-top:7px}
+.pendiente{border-left:3px solid var(--amber);padding-left:14px}
+.btn{font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;padding:9px 16px;border:1px solid var(--rule);background:var(--paper);color:var(--steel);border-radius:2px;cursor:not-allowed}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/" class="back">&#8592; Volver al portal</a>
+  <header class="masthead">
+    <p class="eyebrow">Portal de Preventa &middot; Administración</p>
+    <h1>Usuarios</h1>
+  </header>
+
+  <div id="aviso"></div>
+
+  <section class="card">
+    <h2>Usuarios registrados</h2>
+    <div class="scroll"><table>
+      <thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Estado</th><th>Alta</th><th>Último cambio</th></tr></thead>
+      <tbody id="filas"><tr><td colspan="6" class="txt">Cargando…</td></tr></tbody>
+    </table></div>
+    <p class="txt" style="margin:14px 0 0">Cada usuario solo puede cambiar su propia contraseña, desde <a href="/cuenta">Cuenta</a>. No existe ninguna ruta para que un administrador cambie la de otra persona: reponer un acceso perdido se hace desde el servidor, borrando el archivo de credenciales del volumen, y eso deja rastro.</p>
+  </section>
+
+  <section class="card">
+    <h2>Roles y permisos</h2>
+    <p class="txt">Los permisos se declaran uno a uno en <code>server/usuarios.js</code>, no se deducen del nombre del rol: saber qué puede hacer cada uno no debería obligar a leer el código que lo comprueba.</p>
+    <div class="roles" id="roles"></div>
+  </section>
+
+  <section class="card">
+    <h2>Alta de usuarios</h2>
+    <div class="pendiente">
+      <p class="txt"><b>Pendiente a propósito.</b> Por ahora la herramienta opera con el usuario administrador. El backend ya distingue identidad y rol —la sesión dice quién eres y cada pantalla protegida exige su permiso—, así que lo que falta no es el formulario.</p>
+      <p class="txt">Lo que falta es decidir <b>cómo llega la primera contraseña</b> a la persona nueva, que es donde estos módulos se vuelven inseguros: comunicarla por un canal aparte, forzar el cambio en el primer acceso, o generar un enlace de alta con caducidad. Hasta que eso esté resuelto, el endpoint responde <code>501</code> y lo dice, en vez de crear cuentas con una clave provisional que nadie rota.</p>
+      <button class="btn" type="button" disabled title="Pendiente: ver la nota de arriba">Crear usuario</button>
+    </div>
+  </section>
+</div>
+
+<script src="/js/usuarios.js"></script>
+</body>
+</html>

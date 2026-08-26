@@ -47,8 +47,19 @@ code{font-family:'IBM Plex Mono',monospace;font-size:11.5px;background:var(--pap
   <div id="aviso"></div>
 
   <section class="card">
+    <h2>Tu acceso</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:13.5px">
+      <tbody>
+        <tr><td style="color:var(--steel);padding:4px 0">Usuario</td><td style="text-align:right;font-family:'IBM Plex Mono',monospace" id="miUsuario">—</td></tr>
+        <tr><td style="color:var(--steel);padding:4px 0">Rol</td><td style="text-align:right;font-family:'IBM Plex Mono',monospace" id="miRol">—</td></tr>
+      </tbody>
+    </table>
+    <p class="txt" id="enlaceAdmin" style="margin:14px 0 0;display:none"><a href="/usuarios">Gestionar usuarios &#8594;</a></p>
+  </section>
+
+  <section class="card">
     <h2>Cambiar contraseña</h2>
-    <p class="txt">La credencial es compartida por todo el equipo: al cambiarla, quienes tengan la anterior dejarán de entrar hasta que les pases la nueva.</p>
+    <p class="txt">Cambias <b>tu</b> contraseña, no la de nadie más: al guardarla se cierra tu sesión y tendrás que volver a entrar. Las sesiones de los demás usuarios no se ven afectadas.</p>
     <form id="form">
       <div class="field">
         <label for="actual">Contraseña actual</label>
@@ -75,7 +86,7 @@ code{font-family:'IBM Plex Mono',monospace;font-size:11.5px;background:var(--pap
 
   <section class="card">
     <h2>Si nadie recuerda la contraseña</h2>
-    <p class="txt">No hay recuperación por correo. Quien administre el despliegue puede reponer el acceso desde Railway de dos maneras: borrando el archivo de credenciales del volumen, con lo que vuelve a regir la contraseña de <code>AUTH_PASSWORD</code>, o fijando un valor nuevo en esa variable y borrando igualmente el archivo.</p>
+    <p class="txt">No hay recuperación por correo, y ningún administrador puede cambiar la contraseña de otra persona desde la aplicación — esa ruta no existe a propósito. Quien administre el despliegue repone el acceso desde Railway borrando el archivo <code>usuarios.json</code> del volumen: al no existir, el almacén se reconstruye desde <code>AUTH_PASSWORD</code> con un único administrador. Fijar antes un valor nuevo en esa variable cambia también la contraseña con la que se reconstruye.</p>
   </section>
 </div>
 

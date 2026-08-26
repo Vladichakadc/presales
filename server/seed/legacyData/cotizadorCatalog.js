@@ -103,13 +103,6 @@ module.exports = [
   {vendor:'Juniper', color:'#84B135',model:'Juniper MX304',             seg:'Edge / Agregación',       spec:'4.8 Tbps · MPC slots · 100/400GE · MPLS PE, broadband',        elp:'~ $65,000',elpN:65000},
   {vendor:'Juniper', color:'#84B135',model:'Juniper MX480',             seg:'Core / Edge',             spec:'7.7 Tbps · 6 MPC slots · core IP, LSR, peering, BNG',          elp:'~ $95,000',elpN:95000},
   {vendor:'Juniper', color:'#84B135',model:'Juniper MX960',             seg:'Core grande',             spec:'19.2 Tbps · 12 MPC slots · ISP peering, backbone',             elp:'~ $180,000',elpN:180000},
-  {vendor:'Arista',  color:'#4E5B6E',model:'Arista 7020R-48L4S',        seg:'Campus leaf / Acceso',    spec:'240 Gbps · 48x1GE + 4x10GE · < 4 µs',                         elp:'~ $12,000',elpN:12000},
-  {vendor:'Arista',  color:'#4E5B6E',model:'Arista 7050X3-48YC12',      seg:'Leaf / ToR',              spec:'3.6 Tbps · 48x25GE + 12x100GE · < 450 ns',                    elp:'~ $28,000',elpN:28000},
-  {vendor:'Arista',  color:'#4E5B6E',model:'Arista 7050X3-48YC8',       seg:'Leaf compacto',           spec:'3.2 Tbps · 48x25GE + 8x100GE · < 450 ns',                     elp:'~ $22,000',elpN:22000},
-  {vendor:'Arista',  color:'#4E5B6E',model:'Arista 7280R3-48C6',        seg:'Leaf / Edge',             spec:'4.8 Tbps · 48x100GE + 6x400GE · < 1 µs',                      elp:'~ $75,000',elpN:75000},
-  {vendor:'Arista',  color:'#4E5B6E',model:'Arista 7280R3-96S2C',       seg:'Spine edge',              spec:'6.4 Tbps · 96x10GE + 2x100GE · < 1 µs',                       elp:'~ $48,000',elpN:48000},
-  {vendor:'Arista',  color:'#4E5B6E',model:'Arista 7500R3-36CQ',        seg:'Spine / Core chasis',     spec:'57.6 Tbps · 36x400GE o 144x100GE · < 4 µs',                   elp:'~ $180,000',elpN:180000},
-  {vendor:'Arista',  color:'#4E5B6E',model:'Arista 7800R3-36D',         seg:'Core 400G+ hiperescala',  spec:'230 Tbps · 36x800GE por LC · < 5 µs',                          elp:'Consultar',elpN:0},
   // HPE Aruba Networking — SKU de hardware reales (buy.hpe.com), sin precio de lista
   // verificado (ver server/seed/legacyData/aruba.js). Filas generadas desde MODELS de
   // ese archivo, para que el cotizador no sea un segundo listado que se desincronice.
@@ -134,6 +127,34 @@ module.exports = [
   {vendor:'Aruba',   color:'#01A982',model:'Aruba 7210',                  seg:'Campus gde',                    spec:'Serie 7200 · FW 20 Gbps · 16.000 clientes · 512 APs',  elp:'Consultar',elpN:0},
   {vendor:'Aruba',   color:'#01A982',model:'Aruba 7220',                  seg:'Campus grande / alta densidad', spec:'Serie 7200 · FW 40 Gbps · 24.000 clientes · 1.024 APs',  elp:'Consultar',elpN:0},
   {vendor:'Aruba',   color:'#01A982',model:'Aruba 7240XM',                seg:'Campus máxima escala',          spec:'Serie 7200 · FW 40 Gbps · 32.000 clientes · 2.048 APs',  elp:'Consultar',elpN:0},
+  // Ampliacion Juniper y Nokia (ago-2026), tomada de datasheets oficiales — ver la cabecera
+  // de cada bloque en legacyData/indexPR.js para las URLs. Las cifras tecnicas estan
+  // verificadas; el PRECIO NO: no hay lista de precios de estos dos fabricantes en el
+  // material disponible, asi que van como 'Consultar' con elpN:0 y el BOM las cuenta como
+  // sin cotizar, igual que Aruba. Inventar un precio plausible es el fallo que este
+  // catalogo ya cometio una vez.
+  {vendor:'Juniper', color:'#84B135',model:'Juniper SRX300',              seg:'SOHO / Teletrabajo',      spec:'FW 1 Gbps · IPsec 300 Mbps · 8 GE',                           elp:'Consultar',elpN:0},
+  {vendor:'Juniper', color:'#84B135',model:'Juniper SRX340',              seg:'Sucursal mediana',        spec:'FW 4.7 Gbps · IPsec 733 Mbps · 16 GE + 4 MPIM',               elp:'Consultar',elpN:0},
+  {vendor:'Juniper', color:'#84B135',model:'Juniper SRX380',              seg:'Sucursal grande / PoE',   spec:'FW 20 Gbps · IPsec 4.4 Gbps · 16x1GE PoE+ + 4x10GE',          elp:'Consultar',elpN:0},
+  {vendor:'Juniper', color:'#84B135',model:'Juniper SRX1600',             seg:'Campus / DC empresarial', spec:'FW 24 Gbps · 25GE · MACsec a velocidad de línea · 1U',        elp:'Consultar',elpN:0},
+  {vendor:'Juniper', color:'#84B135',model:'Juniper SRX2300',             seg:'Campus grande / DC',      spec:'FW 39 Gbps · 100GE · MACsec a velocidad de línea · 1U',       elp:'Consultar',elpN:0},
+  {vendor:'Juniper', color:'#84B135',model:'Juniper SRX4300',             seg:'DC Edge',                 spec:'FW 90 Gbps · 100GE · MACsec a velocidad de línea · 1U',       elp:'Consultar',elpN:0},
+  {vendor:'Juniper', color:'#84B135',model:'Juniper SRX4700',            seg:'Cloud / Service Provider', spec:'FW 1.4 Tbps · 400GE · MACsec a velocidad de línea · 1U',      elp:'Consultar',elpN:0},
+  {vendor:'Juniper', color:'#84B135',model:'Juniper SSR120',              seg:'Sucursal pequeña SD-WAN', spec:'1.5 Gbps · SD-WAN sin túneles · gestión Mist',                elp:'Consultar',elpN:0},
+  {vendor:'Juniper', color:'#84B135',model:'Juniper SSR130',              seg:'Sucursal mediana SD-WAN', spec:'2 Gbps · SD-WAN sin túneles · gestión Mist',                  elp:'Consultar',elpN:0},
+  {vendor:'Juniper', color:'#84B135',model:'Juniper SSR1200',             seg:'Sucursal gde / DC peq',   spec:'10 Gbps · SD-WAN sin túneles · hub de sucursales',            elp:'Consultar',elpN:0},
+  {vendor:'Juniper', color:'#84B135',model:'Juniper SSR1300',             seg:'DC / Campus mediano',     spec:'20 Gbps · SD-WAN sin túneles · concentrador',                 elp:'Consultar',elpN:0},
+  {vendor:'Juniper', color:'#84B135',model:'Juniper SSR1400',             seg:'DC / Campus grande',      spec:'40 Gbps · SD-WAN sin túneles · hub regional',                 elp:'Consultar',elpN:0},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7220 IXR-D1',           seg:'Acceso / Gestión DC',     spec:'88 Gbps · 48x1GE RJ45 + 4x SFP+ · SR Linux · 1U',             elp:'Consultar',elpN:0},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7220 IXR-D2L',          seg:'Leaf datacenter',         spec:'4 Tbps · 48x25GE + 8x100GE + 2x10GE · SR Linux · 1U',         elp:'Consultar',elpN:0},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7220 IXR-D3L',          seg:'Leaf / Spine compacto',   spec:'6.4 Tbps · 32x100GE QSFP28 + 2x SFP+ · SR Linux · 1U',        elp:'Consultar',elpN:0},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7220 IXR-D5',           seg:'Spine datacenter 400G',   spec:'12.8 Tbps · 32x400GE QSFP-DD + 2x SFP+ · SR Linux · 1U',      elp:'Consultar',elpN:0},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7250 IXR-e2',           seg:'Cell site / Acceso',      spec:'800 Gbps · GE/10GE/25GE · SR-MPLS, SRv6, EVPN',               elp:'Consultar',elpN:0},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7250 IXR-X1b',          seg:'Agregación / Edge',       spec:'7.2 Tbps · 24x100GE + 12x400GE · SR Linux · 1U',              elp:'Consultar',elpN:0},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7250 IXR-X3b',          seg:'Spine / Core DC',         spec:'14.4 Tbps · 36x400GE QSFP-DD · SR Linux · 1U',                elp:'Consultar',elpN:0},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7250 IXR-R6dl',         seg:'Agregación modular',      spec:'2.4 Tbps · 6 slots · 4x400GE · interfaces TDM heredadas · 7U', elp:'Consultar',elpN:0},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-1x-48D',        seg:'PE / Edge alta densidad', spec:'6 Tbps · 48x400GE QSFP-DD o 192x100GE · 2U',                  elp:'Consultar',elpN:0},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-1x-92S',        seg:'PE / Edge multiservicio', spec:'6 Tbps · 12x400GE + 80x100GE SFP-DD · 2U',                    elp:'Consultar',elpN:0},
   // MikroTik. Faltaba entero: era el unico de los ocho fabricantes del portal ausente del
   // cotizador, pese a ser el que mejor dato tiene —los 15 modelos traen precio de lista y
   // cifras de forwarding e IPsec verificadas en mikrotik.js— y precisamente el que mas se

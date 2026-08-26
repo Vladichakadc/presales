@@ -73,6 +73,23 @@ nokia:[
   {model:'7750 SR-2s',ser:'7750 SR-s',seg:'Edge / Agregación',cap:'4 Tbps',ports:'144x100GE o 36x400GE · 4U',protos:'SR-MPLS, SRv6, EVPN'},
   {model:'7750 SR-7s',ser:'7750 SR-s',seg:'Core IP/MPLS',cap:'19.2 Tbps',ports:'7 slots IOM · hasta 400GE',protos:'SR-MPLS, SRv6, FlexE, EVPN'},
   {model:'7750 SR-14s',ser:'7750 SR-s',seg:'Core grande',cap:'38.4 Tbps',ports:'14 slots IOM · hasta 400GE',protos:'SR-MPLS, SRv6, FlexE, EVPN'},
+  // ── 7220 IXR: fabric de datacenter sobre SR Linux ─────────────────────────
+  // nokia.com/data-center-networks/data-center-fabric/7220-interconnect-router/
+  // Capacidad de sistema segun datasheet de las series 7220 IXR-D y 7220 IXR-H.
+  {model:'7220 IXR-D1',ser:'7220 IXR',seg:'Acceso / Gestion DC',cap:'88 Gbps',ports:'48x1GE RJ45 + 4x SFP+ · 1U',protos:'SR Linux, EVPN-VXLAN'},
+  {model:'7220 IXR-D2L',ser:'7220 IXR',seg:'Leaf datacenter',cap:'4 Tbps',ports:'48x25GE SFP28 + 8x100GE QSFP28 + 2x10GE · 1U',protos:'SR Linux, EVPN-VXLAN'},
+  {model:'7220 IXR-D3L',ser:'7220 IXR',seg:'Leaf / Spine compacto',cap:'6.4 Tbps',ports:'32x100GE QSFP28 + 2x SFP+ · 1U',protos:'SR Linux, EVPN-VXLAN'},
+  {model:'7220 IXR-D5',ser:'7220 IXR',seg:'Spine datacenter 400G',cap:'12.8 Tbps',ports:'32x400GE QSFP-DD + 2x SFP+ · 1U',protos:'SR Linux, EVPN-VXLAN'},
+  // ── 7250 IXR: agregacion y transporte IP ──────────────────────────────────
+  // Datasheets: nokia.com/asset/206825 (IXR-e/e2) y nokia.com/asset/214173 (IXR-X)
+  {model:'7250 IXR-e2',ser:'7250 IXR',seg:'Cell site / Acceso',cap:'800 Gbps',ports:'GE / 10GE / 25GE',protos:'SR-MPLS, SRv6, EVPN'},
+  {model:'7250 IXR-X1b',ser:'7250 IXR-X',seg:'Agregacion / Edge',cap:'7.2 Tbps',ports:'24x100GE QSFP28 + 12x400GE QSFP-DD · 1U',protos:'SR Linux, SR-MPLS, EVPN'},
+  {model:'7250 IXR-X3b',ser:'7250 IXR-X',seg:'Spine / Core DC',cap:'14.4 Tbps',ports:'36x400GE QSFP-DD · 1U',protos:'SR Linux, SR-MPLS, EVPN'},
+  {model:'7250 IXR-R6dl',ser:'7250 IXR-R',seg:'Agregacion modular',cap:'2.4 Tbps',ports:'6 slots · 4x400GE QSFP-DD · 7U',protos:'SR-MPLS, SRv6, EVPN, interfaces TDM heredadas'},
+  // ── 7750 SR-1x: servicio de borde de alta densidad ────────────────────────
+  // Datasheet: nokia.com/asset/212738
+  {model:'7750 SR-1x-48D',ser:'7750 SR-1x',seg:'PE / Edge alta densidad',cap:'6 Tbps',ports:'48x400GE QSFP-DD o 192x100GE · 2U',protos:'SR-MPLS, SRv6, EVPN, FlexE'},
+  {model:'7750 SR-1x-92S',ser:'7750 SR-1x',seg:'PE / Edge multiservicio',cap:'6 Tbps',ports:'12x400GE + 80x100GE SFP-DD · 2U',protos:'SR-MPLS, SRv6, EVPN, FlexE'},
 ],
 // elp verificado contra "2026Q3 Main Price list_AMER_FINAL_EFF 080326.xlsx" (Fortinet AMER price list oficial). cotizadorCatalog.js gana en el merge final para modelos que matchean por nombre; se corrige aquí también para no dejar cifras contradictorias entre archivos.
 fortinet:[
@@ -112,16 +129,29 @@ juniper:[
   {model:'MX480',ser:'MX',seg:'Core / Edge',cap:'7.7 Tbps',ports:'6 MPC slots',use:'Core IP, LSR, peering, BNG'},
   {model:'MX960',ser:'MX',seg:'Core grande',cap:'19.2 Tbps',ports:'12 MPC slots',use:'ISP peering, backbone'},
   {model:'MX10008',ser:'MX',seg:'Core máxima capacidad',cap:'115 Tbps',ports:'8 LCC slots',use:'Hyperscale core, 400GE'},
-],
-arista:[
-  {model:'7020R-48L4S',ser:'7020R',seg:'Campus leaf / Acceso',cap:'240 Gbps',ports:'48x1GE + 4x10GE',lat:'< 4 µs'},
-  {model:'7050X3-48YC12',ser:'7050X3',seg:'Leaf / ToR',cap:'3.6 Tbps',ports:'48x25GE + 12x100GE',lat:'< 450 ns'},
-  {model:'7050X3-48YC8',ser:'7050X3',seg:'Leaf compacto',cap:'3.2 Tbps',ports:'48x25GE + 8x100GE',lat:'< 450 ns'},
-  {model:'7280R3-48C6',ser:'7280R3',seg:'Leaf / Edge',cap:'4.8 Tbps',ports:'48x100GE + 6x400GE',lat:'< 1 µs'},
-  {model:'7280R3-96S2C',ser:'7280R3',seg:'Spine edge',cap:'6.4 Tbps',ports:'96x10GE + 2x100GE',lat:'< 1 µs'},
-  {model:'7500R3-36CQ',ser:'7500R3',seg:'Spine / Core chasis',cap:'57.6 Tbps',ports:'36x400GE o 144x100GE por chasis',lat:'< 4 µs'},
-  {model:'7500R3-72CQ',ser:'7500R3',seg:'Core DC',cap:'115 Tbps',ports:'72x400GE chasis modular',lat:'< 4 µs'},
-  {model:'7800R3-36D',ser:'7800R3',seg:'Core 400G+ hiperescala',cap:'230 Tbps',ports:'36x800GE por LC',lat:'< 5 µs'},
+  // ── Linea SRX de sucursal (SRX300) ────────────────────────────────────────
+  // Cifras de firewall e IPsec del datasheet oficial "SRX300 Line of Firewalls for the
+  // Branch": juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html
+  {model:'SRX300',ser:'SRX 300',seg:'SOHO / Teletrabajo',cap:'1 Gbps FW',ports:'8 GE',use:'FW 1 Gbps · IPsec 300 Mbps · sucursal pequena'},
+  {model:'SRX340',ser:'SRX 300',seg:'Sucursal mediana',cap:'4.7 Gbps FW',ports:'16 GE + 4 MPIM',use:'FW 4.7 Gbps · IPsec 733 Mbps · switching y WAN integrados'},
+  {model:'SRX380',ser:'SRX 300',seg:'Sucursal grande / PoE',cap:'20 Gbps FW',ports:'16x1GE PoE+ + 4x10GE · fuente redundante',use:'FW 20 Gbps · IPsec 4.4 Gbps · mayor densidad de la linea 300'},
+  // ── Generacion SRX 2024 (SRX1600 / 2300 / 4300 / 4700) ────────────────────
+  // Anuncio oficial: juniper.net/us/en/the-feed/topics/security/introducing-new-srxs-srx1600-srx2300-srx4300-srx4700.html
+  // Todas 1U con MACsec a velocidad de linea. Sustituyen en posicionamiento a SRX1500/4100/4200,
+  // pero Juniper no publica (a la fecha de esta revision) boletin de fin de venta de aquellas,
+  // asi que se mantienen en el catalogo sin marcar. Ver PENDIENTES.md.
+  {model:'SRX1600',ser:'SRX 1600',seg:'Campus / DC empresarial',cap:'24 Gbps FW',ports:'25GE · MACsec a velocidad de linea · 1U',use:'NGFW, campus edge, MACsec'},
+  {model:'SRX2300',ser:'SRX 2300',seg:'Campus grande / DC',cap:'39 Gbps FW',ports:'100GE · MACsec a velocidad de linea · 1U',use:'NGFW, agregacion de seguridad'},
+  {model:'SRX4300',ser:'SRX 4000',seg:'DC Edge',cap:'90 Gbps FW',ports:'100GE · MACsec a velocidad de linea · 1U',use:'NGFW, concentrador IPsec, DC edge'},
+  {model:'SRX4700',ser:'SRX 4000',seg:'Cloud / Service Provider',cap:'1.4 Tbps FW',ports:'400GE · MACsec a velocidad de linea · 1U',use:'NGFW de maxima densidad por unidad de rack'},
+  // ── Session Smart Router (SD-WAN sin tuneles) ─────────────────────────────
+  // Es la respuesta SD-WAN vigente de Juniper, gestionada desde Mist: no usa tuneles, enruta
+  // por sesion. Datasheet: juniper.net/us/en/products/routers/session-smart-router.html
+  {model:'SSR120',ser:'SSR 100',seg:'Sucursal pequena SD-WAN',cap:'1.5 Gbps',ports:'GE',use:'SD-WAN sin tuneles, gestion Mist'},
+  {model:'SSR130',ser:'SSR 100',seg:'Sucursal mediana SD-WAN',cap:'2 Gbps',ports:'GE a velocidad de linea',use:'SD-WAN sin tuneles, gestion Mist'},
+  {model:'SSR1200',ser:'SSR 1000',seg:'Sucursal grande / DC pequeno',cap:'10 Gbps',ports:'GE / 10GE',use:'SD-WAN sin tuneles, hub de sucursales'},
+  {model:'SSR1300',ser:'SSR 1000',seg:'DC / Campus mediano',cap:'20 Gbps',ports:'10GE en NIC',use:'SD-WAN sin tuneles, concentrador'},
+  {model:'SSR1400',ser:'SSR 1000',seg:'DC / Campus grande',cap:'40 Gbps',ports:'10/25GE en NIC',use:'SD-WAN sin tuneles, hub regional'},
 ],
 // ── MikroTik ──────────────────────────────────────────────────────────────────
 // Datos técnicos verificados contra datasheets oficiales mikrotik.com (2024-2025).

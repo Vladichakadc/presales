@@ -1,29 +1,35 @@
-// Autenticación de la herramienta: un único usuario compartido, con sesión por cookie.
+// Autenticación de la herramienta: sesión firmada por cookie, con usuarios y roles.
 //
-// POR QUÉ UN SOLO USUARIO. Lo que se protege es que precios, SKUs y márgenes no queden
-// legibles en la web abierta, no quién del equipo consultó qué. Es control de perímetro,
-// no de identidad. La contrapartida, asumida a conciencia: no hay trazabilidad por persona
-// y dar de baja a alguien obliga a rotar la contraseña de todas. Si eso deja de ser
-// aceptable, el cambio es introducir una tabla de usuarios y autorización por rol.
+// DE PERÍMETRO A IDENTIDAD. Durante la primera etapa hubo una sola credencial compartida:
+// lo que se protegía era que precios, SKUs y márgenes no quedaran legibles en la web
+// abierta, no quién del equipo consultó qué. La cabecera de este archivo declaraba la
+// contrapartida —sin trazabilidad por persona, y dar de baja a alguien obligaba a rotar la
+// contraseña de todos— y decía cuál sería el cambio: usuarios y autorización por rol. Es
+// esto. El almacén vive en server/usuarios.js; aquí queda la sesión y el freno a la fuerza
+// bruta.
 //
-// DÓNDE VIVE LA CONTRASEÑA. En un archivo JSON dentro de AUTH_STATE_DIR (un volumen
-// persistente en Railway). Si ese archivo no existe, se cae a la semilla de AUTH_PASSWORD,
-// que es también el mecanismo de restablecimiento por administrador: borrar el archivo
-// devuelve el acceso a la contraseña de la variable de entorno. La base del catálogo sigue
-// siendo efímera y en otra ruta, para que cada despliegue la resiembre desde los seeds.
+// LA SESIÓN AHORA DICE QUIÉN. El token pasa de "expiración.firma" a "expiración.id.firma",
+// y la clave con la que se firma se deriva de la credencial DE ESE USUARIO. Dos
+// consecuencias buscadas: la petición sabe qué usuario y qué rol tiene delante, y cambiar
+// una contraseña invalida solo las sesiones de esa persona, no las del resto.
+//
+// DÓNDE VIVEN LAS CREDENCIALES. En AUTH_STATE_DIR, un volumen persistente en Railway — no
+// en la base SQLite, que es efímera y se resiembra en cada despliegue. Borrar ese archivo
+// sigue siendo el restablecimiento por administrador: al no existir, el almacén se
+// reconstruye desde AUTH_PASSWORD.
 //
 // SIN DEPENDENCIAS NUEVAS. scrypt y HMAC vienen en el módulo `crypto` de Node; una sesión
 // firmada sin estado evita además tener que montar un almacén de sesiones.
 
 const crypto = require('crypto');
-const fs = require('fs');
 const path = require('path');
 
+const usuarios = require('./usuarios');
+
 const STATE_DIR = process.env.AUTH_STATE_DIR || path.join(__dirname, '..', '.auth');
-const STATE_FILE = path.join(STATE_DIR, 'credentials.json');
+const STATE_FILE = usuarios.USERS_FILE;
 
 const USER = process.env.AUTH_USER || 'presales';
-const SEED_PASSWORD = process.env.AUTH_PASSWORD || '';
 
 // Si no se fija SESSION_SECRET, se genera uno al arrancar: las sesiones no sobreviven a un
 // reinicio, lo cual es una molestia menor y no un problema de seguridad. Fijarlo en Railway
@@ -55,140 +61,68 @@ const VENTANA_MS = 15 * 60 * 1000;
 const intentos = new Map();
 let globalFallos = { n: 0, hasta: 0 };
 
-/* ── Contraseñas ─────────────────────────────────────────────────────────────── */
+/* ── Credenciales ────────────────────────────────────────────────────────────── */
 
-// Parámetros de scrypt recomendados por OWASP (N=2^15, r=8, p=1). Se definen una sola vez
-// porque cifrar y verificar con parámetros distintos produce hashes que nunca coinciden.
-// maxmem es obligatorio: scrypt necesita ~128*N*r = 32 MB y el techo por defecto de Node es
-// justo 32 MB, así que sin subirlo lanza ERR_CRYPTO_INVALID_SCRYPT_PARAMS.
-const SCRYPT = { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
-const KEYLEN = 64;
+// El hashing, el almacén y la verificación viven en usuarios.js. Aquí quedan solo los
+// envoltorios que usa el resto del servidor, para no tener dos sitios que sepan comparar
+// una contraseña — que es como acaban divergiendo.
 
-// Devuelve "salt:hash" en hexadecimal.
-function hashPassword(password) {
-  const salt = crypto.randomBytes(16);
-  const hash = crypto.scryptSync(String(password), salt, KEYLEN, SCRYPT);
-  return `${salt.toString('hex')}:${hash.toString('hex')}`;
-}
-
-function verifyPassword(password, stored) {
-  if (!stored || !stored.includes(':')) return false;
-  const [saltHex, hashHex] = stored.split(':');
-  let esperado;
-  try {
-    esperado = Buffer.from(hashHex, 'hex');
-  } catch {
-    return false;
-  }
-  if (esperado.length !== KEYLEN) return false;
-  const calculado = crypto.scryptSync(String(password), Buffer.from(saltHex, 'hex'), KEYLEN, SCRYPT);
-  return crypto.timingSafeEqual(calculado, esperado);
-}
-
-function leerEstado() {
-  try {
-    return JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
-  } catch {
-    return null; // no existe todavia, o quedo ilegible: se usa la semilla
-  }
-}
-
-function guardarEstado(estado) {
-  fs.mkdirSync(STATE_DIR, { recursive: true });
-  // mode 0600: el archivo guarda el hash de la contrasena, no debe ser legible por otros.
-  fs.writeFileSync(STATE_FILE, JSON.stringify(estado, null, 2), { mode: 0o600 });
-}
-
-// El hash vigente: el del archivo si existe, o el derivado de la semilla si no.
-function hashVigente() {
-  const estado = leerEstado();
-  if (estado && estado.passwordHash) return estado.passwordHash;
-  return SEED_PASSWORD ? hashPassword(SEED_PASSWORD) : null;
-}
-
-// Indica si sigue en uso la contrasena semilla (para avisar en la UI que conviene cambiarla).
-function usandoSemilla() {
-  const estado = leerEstado();
-  return !(estado && estado.passwordHash);
-}
-
+// Devuelve el usuario autenticado, o null. No lanza: un login fallido no es un error.
 function comprobarCredenciales(usuario, password) {
-  const estado = leerEstado();
-  const hash = estado && estado.passwordHash;
-
-  if (hash) {
-    // Se comparan ambos factores siempre, sin cortocircuito, para no filtrar por tiempo
-    // si el usuario existe o no.
-    const usuarioOk = crypto.timingSafeEqual(
-      crypto.createHash('sha256').update(String(usuario)).digest(),
-      crypto.createHash('sha256').update(USER).digest(),
-    );
-    const passOk = verifyPassword(password, hash);
-    return usuarioOk && passOk;
-  }
-
-  if (!SEED_PASSWORD) return false;
-  const usuarioOk = crypto.timingSafeEqual(
-    crypto.createHash('sha256').update(String(usuario)).digest(),
-    crypto.createHash('sha256').update(USER).digest(),
-  );
-  const passOk = crypto.timingSafeEqual(
-    crypto.createHash('sha256').update(String(password)).digest(),
-    crypto.createHash('sha256').update(SEED_PASSWORD).digest(),
-  );
-  return usuarioOk && passOk;
+  if (typeof usuario !== 'string' || typeof password !== 'string') return null;
+  return usuarios.verificar(usuario, password);
 }
 
-function cambiarPassword(actual, nueva) {
-  if (!comprobarCredenciales(USER, actual)) return { ok: false, error: 'La contraseña actual no es correcta.' };
-  if (typeof nueva !== 'string' || nueva.length < 12) {
-    return { ok: false, error: 'La nueva contraseña debe tener al menos 12 caracteres.' };
-  }
-  if (nueva.length > 200) return { ok: false, error: 'La contraseña es demasiado larga.' };
-  guardarEstado({ passwordHash: hashPassword(nueva), actualizada: new Date().toISOString() });
-  return { ok: true };
+// Hay con qué autenticar a alguien. Es la comprobación de arranque: en producción el
+// servidor se niega a levantarse si esto es falso, en vez de servir precios sin puerta.
+const hashVigente = () => usuarios.hayAdministrador();
+
+// Sigue en uso la contraseña semilla de AUTH_PASSWORD (para avisarlo en la UI).
+function usandoSemilla() {
+  return usuarios.listar().some((u) => u.desdeSemilla);
 }
+
+const cambiarPassword = (id, actual, nueva) => usuarios.cambiarPassword(id, actual, nueva);
 
 /* ── Sesión ──────────────────────────────────────────────────────────────────── */
 
-// Cookie de sesión sin estado: "expiracion.firma". No lleva datos porque hay un solo
-// usuario; la firma HMAC es lo unico que hace falta validar.
+// Cookie de sesión sin estado: "expiracion.id.firma". Antes no llevaba datos porque había
+// un solo usuario; ahora lleva a quién pertenece, que es lo que permite autorizar por rol
+// sin montar un almacén de sesiones.
 //
-// La clave de firma se deriva de SESSION_SECRET *y de la credencial vigente*. Es lo que
-// hace que cambiar la contraseña invalide de verdad las sesiones ya emitidas: borrar la
-// cookie solo funciona si el cliente coopera, y un token robado seguiria siendo valido
-// hasta su expiracion. Al mover la clave, todas las firmas anteriores dejan de validar.
-//
-// La huella debe ser determinista, asi que no puede usar hashPassword: ese genera un salt
-// aleatorio en cada llamada y ninguna firma volveria a validar.
-function huellaCredencial() {
-  const estado = leerEstado();
-  const base = (estado && estado.passwordHash) || `semilla:${SEED_PASSWORD}`;
-  return crypto.createHash('sha256').update(base).digest('hex');
+// La clave de firma se deriva de SESSION_SECRET *y de la credencial de ese usuario*. Es lo
+// que hace que cambiar una contraseña invalide de verdad sus sesiones: borrar la cookie
+// solo funciona si el cliente coopera, y un token robado seguiría siendo válido hasta
+// expirar. Al moverse la huella, sus firmas anteriores dejan de validar — y solo las suyas,
+// las de los demás usuarios siguen en pie.
+function claveSesion(usuario) {
+  return crypto.createHmac('sha256', SESSION_SECRET).update(usuarios.huella(usuario)).digest();
 }
 
-function claveSesion() {
-  return crypto.createHmac('sha256', SESSION_SECRET).update(huellaCredencial()).digest();
+function firmar(valor, usuario) {
+  return crypto.createHmac('sha256', claveSesion(usuario)).update(valor).digest('base64url');
 }
 
-function firmar(valor) {
-  return crypto.createHmac('sha256', claveSesion()).update(valor).digest('base64url');
+function crearToken(usuario) {
+  const cuerpo = `${Date.now() + SESSION_HOURS * 3600 * 1000}.${usuario.id}`;
+  return `${cuerpo}.${firmar(cuerpo, usuario)}`;
 }
 
-function crearToken() {
-  const exp = String(Date.now() + SESSION_HOURS * 3600 * 1000);
-  return `${exp}.${firmar(exp)}`;
-}
-
-function tokenValido(token) {
-  if (typeof token !== 'string' || !token.includes('.')) return false;
-  const i = token.lastIndexOf('.');
-  const exp = token.slice(0, i);
-  const firma = token.slice(i + 1);
-  const esperada = firmar(exp);
-  if (firma.length !== esperada.length) return false;
-  if (!crypto.timingSafeEqual(Buffer.from(firma), Buffer.from(esperada))) return false;
-  return Number(exp) > Date.now();
+// Devuelve el usuario del token, o null. Se valida en este orden a propósito: primero que
+// el id exista, después la firma, y solo al final la expiración — así una firma inválida
+// nunca llega a tratarse como sesión, ni siquiera vencida.
+function usuarioDeToken(token) {
+  if (typeof token !== 'string') return null;
+  const partes = token.split('.');
+  if (partes.length !== 3) return null;
+  const [exp, id, firma] = partes;
+  const usuario = usuarios.porId(id);
+  if (!usuario || usuario.activo === false) return null;
+  const esperada = firmar(`${exp}.${id}`, usuario);
+  if (firma.length !== esperada.length) return null;
+  if (!crypto.timingSafeEqual(Buffer.from(firma), Buffer.from(esperada))) return null;
+  if (!(Number(exp) > Date.now())) return null;
+  return usuario;
 }
 
 function leerCookie(req, nombre) {
@@ -202,9 +136,9 @@ function leerCookie(req, nombre) {
   return null;
 }
 
-function ponerCookieSesion(res) {
+function ponerCookieSesion(res, usuario) {
   const attrs = [
-    `${COOKIE_NAME}=${crearToken()}`,
+    `${COOKIE_NAME}=${crearToken(usuario)}`,
     'Path=/',
     'HttpOnly',                       // inaccesible desde JavaScript: acota el impacto de un XSS
     'SameSite=Strict',                // el navegador no la envia desde otro sitio: cubre CSRF
@@ -220,7 +154,11 @@ function borrarCookieSesion(res) {
   res.append('Set-Cookie', attrs.join('; '));
 }
 
-const haySesion = (req) => tokenValido(leerCookie(req, COOKIE_NAME));
+// Quien viene en esta peticion, o null. El muro de auth de server.js lo cuelga en req.usuario
+// para que ninguna ruta tenga que volver a mirar la cookie.
+const usuarioDeSesion = (req) => usuarioDeToken(leerCookie(req, COOKIE_NAME));
+
+const haySesion = (req) => usuarioDeSesion(req) !== null;
 
 /* ── Límite de intentos ──────────────────────────────────────────────────────── */
 
@@ -281,7 +219,8 @@ setInterval(() => {
 module.exports = {
   USER, COOKIE_NAME, MAX_INTENTOS,
   comprobarCredenciales, cambiarPassword, usandoSemilla, hashVigente,
-  ponerCookieSesion, borrarCookieSesion, haySesion,
+  ponerCookieSesion, borrarCookieSesion, haySesion, usuarioDeSesion,
+  ROLES: usuarios.ROLES, listarUsuarios: usuarios.listar, permiso: usuarios.permiso,
   intentosRestantes, registrarFallo, limpiarIntentos, esperarRetardo, retardoGlobalMs,
   STATE_FILE,
 };

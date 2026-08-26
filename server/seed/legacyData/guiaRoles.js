@@ -35,13 +35,11 @@ module.exports = {
     {v:'Cisco',   color:'#049FD9', model:'Catalyst 8500-12X4QC',   spec:'20 Gbps · hub DC / PE compacto · SD-WAN', alt:'ASR 1006-X (100 Gbps)', elp:'~ $58,000'},
   ],
   dc_switch_leaf: [
-    {v:'Arista',  color:'#4E5B6E', model:'7050X3-48YC12',         spec:'3.6 Tbps · 48x25GE + 12x100GE · latencia < 450 ns', alt:'7050X3-48YC8 (3.2 Tbps)', elp:'~ $28,000'},
     {v:'Nokia',   color:'#124191', model:'7250 IXR-6e',           spec:'6.4 Tbps · 36x100GE o 12x400GE · SR Linux, EVPN-VXLAN', alt:'7250 IXR-10e (12.8 Tbps)', elp:'~ $48,000'},
     {v:'Juniper', color:'#84B135', model:'QFX 5100-48S-6Q',       spec:'1.44 Tbps · 48x10GE + 6x40GE · EVPN, VXLAN', alt:'QFX 5120-32C (12.8 Tbps)', elp:'~ $22,000'},
     {v:'Huawei',  color:'#C7000B', model:'CloudEngine 6870',      spec:'12.8 Tbps · 48x100GE + 6x400GE · EVPN-VXLAN, MPLS', alt:'CE8850 (6.4 Tbps)', elp:'~ $35,000'},
   ],
   dc_switch_spine: [
-    {v:'Arista',  color:'#4E5B6E', model:'7500R3-36CQ',           spec:'57.6 Tbps · 36x400GE por chasis · < 4 µs', alt:'7500R3-72CQ (115 Tbps)', elp:'~ $180,000'},
     {v:'Nokia',   color:'#124191', model:'7250 IXR-10e',          spec:'12.8 Tbps · 36x400GE · SR Linux, EVPN-VXLAN, spine', alt:'7250 IXR-6e (6.4 Tbps)', elp:'~ $85,000'},
     {v:'Juniper', color:'#84B135', model:'QFX 10002-36Q',         spec:'4 Tbps · 36x40GE o 9x100GE · spine no bloqueante', alt:'QFX 10008 (160 Tbps)', elp:'~ $55,000'},
     {v:'Huawei',  color:'#C7000B', model:'CloudEngine 9860',      spec:'48 Tbps · 48x400GE · EVPN-VXLAN, CloudFabric DC', alt:'CE9800 (19.2 Tbps)', elp:'~ $95,000'},
@@ -55,7 +53,6 @@ module.exports = {
   aggregation: [
     {v:'Huawei',  color:'#C7000B', model:'NetEngine NE8000 M4',   spec:'2.4 Tbps · 405 Mpps · 4 tarjetas 400G · 2U', alt:'NE8000 M6 (320 Gbps compacto)', elp:'~ $95,000'},
     {v:'Nokia',   color:'#124191', model:'7750 SR-2s',            spec:'4 Tbps · 144x100GE o 36x400GE · SR-MPLS, SRv6, EVPN', alt:'7750 SR-1s (1.2 Tbps)', elp:'~ $140,000'},
-    {v:'Arista',  color:'#4E5B6E', model:'7280R3-48C6',           spec:'4.8 Tbps · 48x100GE + 6x400GE · edge, agregación', alt:'7280R3-96S2C (6.4 Tbps)', elp:'~ $75,000'},
     {v:'Juniper', color:'#84B135', model:'MX304',                 spec:'4.8 Tbps · MPC slots · 100/400GE · MPLS PE, broadband, 5G', alt:'MX480 (7.7 Tbps)', elp:'~ $65,000'},
     {v:'MikroTik',color:'#C8102E', model:'CCR2216-1G-12XS-2XQ',      spec:'100 Gbps FWD · 12x 25GE + 2x 100GE · 16 GB RAM · fuentes hot-swap', alt:'CCR2004-1G-12S+2XS (12 Gbps, 12x SFP+)', elp:'~ $5,999'},
   ],

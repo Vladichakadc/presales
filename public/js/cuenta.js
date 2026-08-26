@@ -3,8 +3,14 @@ const $ = (id) => document.getElementById(id);
 const aviso = (t, s) => { $('aviso').innerHTML = `<div class="msg ${t}">${s}</div>`; window.scrollTo(0, 0); };
 
 fetch('/api/cuenta/estado').then(r => r.json()).then(d => {
-  if (d && d.usandoSemilla) {
-    aviso('info', 'Sigues usando la contraseña inicial que se configuró al desplegar. Conviene cambiarla ahora.');
+  if (!d) return;
+  $('miUsuario').textContent = d.usuario || '—';
+  $('miRol').textContent = d.rolNombre || d.rol || '—';
+  // El enlace se muestra segun el permiso que informa el servidor. Ocultarlo es comodidad:
+  // quien lo teclee sin permiso se topa igualmente con el 403 de la ruta.
+  if (d.puedeUsuarios) $('enlaceAdmin').style.display = '';
+  if (d.usandoSemilla) {
+    aviso('info', 'Sigues usando la contraseña inicial que se configuró al desplegar. La conoce cualquiera con acceso a las variables del despliegue: conviene cambiarla ahora.');
   }
 }).catch(() => {});
 
