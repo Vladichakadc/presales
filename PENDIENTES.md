@@ -120,7 +120,9 @@ Cobertura actual por herramienta:
 
 ## Decisiones que necesitan al dueño del producto
 
-16. Ninguna abierta ahora mismo.
+16. **El alta de usuarios (punto 1) es la única abierta**, y es una decisión de producto, no
+    de ingeniería: cómo llega la primera contraseña a la persona nueva. Mientras no se
+    resuelva, el endpoint responde 501 y lo explica. Nada más espera respuesta.
 
 ---
 
