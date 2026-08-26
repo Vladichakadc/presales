@@ -3,6 +3,7 @@ const {
   toDimensionadorHuawei,
   toDimensionadorCisco,
   toDimensionadorFortinet,
+  toDimensionadorJuniper,
   toDimensionadorMikrotik,
   toDimensionadorAruba,
 } = require('../services/catalogProjection');
@@ -13,6 +14,7 @@ const projections = {
   huawei: toDimensionadorHuawei,
   cisco: toDimensionadorCisco,
   fortinet: toDimensionadorFortinet,
+  juniper: toDimensionadorJuniper,
   mikrotik: toDimensionadorMikrotik,
   aruba: toDimensionadorAruba,
 };

@@ -9,6 +9,7 @@ const cotizadorCatalog = require('./legacyData/cotizadorCatalog');
 const huaweiData = require('./legacyData/huawei');
 const ciscoData = require('./legacyData/cisco');
 const fortinetData = require('./legacyData/fortinet');
+const juniperData = require('./legacyData/juniper');
 const mikrotikData = require('./legacyData/mikrotik');
 const arubaData = require('./legacyData/aruba');
 const guiaRoles = require('./legacyData/guiaRoles');
@@ -281,6 +282,20 @@ async function seedCatalog() {
   });
   await seedSupportTiers(vendorIds.fortinet, fortinetData.CARE);
   await seedLicenseBundles(vendorIds.fortinet, fortinetData.BUNDLES, false);
+
+  // ── Juniper ───────────────────────────────────────────────────────────────
+  // juniper.js manda sobre indexPR.juniper: aporta las cifras POR BASE DE MEDICION
+  // (paquetes grandes, IMIX, IPS, ATP), que es lo unico con lo que se puede dimensionar de
+  // verdad. Los SSR van con categoria propia porque no son firewalls y no se comparan con
+  // los SRX en la misma lista.
+  await seedDimensionadorModels(vendorIds.juniper, juniperData.MODELS, {
+    categoryFn: () => 'firewall',
+  });
+  await seedDimensionadorModels(vendorIds.juniper, juniperData.SDWAN, {
+    categoryFn: () => 'sdwan',
+  });
+  await seedSupportTiers(vendorIds.juniper, juniperData.CARE);
+  await seedLicenseBundles(vendorIds.juniper, juniperData.BUNDLES, false);
 
   // ── MikroTik ──────────────────────────────────────────────────────────────
   // mikrotik.js manda sobre indexPR.mikrotik: aporta RAM, núcleos, nivel de licencia y

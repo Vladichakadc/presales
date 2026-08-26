@@ -271,6 +271,38 @@ async function toDimensionadorMikrotik() {
   };
 }
 
+// Juniper: modelos SRX (firewall, por capa de inspeccion) y SSR (SD-WAN, una sola cifra)
+// separados a proposito. Mezclarlos en una lista invitaria a comparar por Mbps dos productos
+// que resuelven cosas distintas — el mismo error que se corrigio en el dimensionador de
+// Cisco con el selector de plataforma.
+async function toDimensionadorJuniper() {
+  const vendorIds = await vendorIdMap();
+  const vendorId = vendorIds.juniper;
+
+  const bundles = await LicenseBundle.findAll({ where: { vendorId } });
+  const bundlesOut = {};
+  for (const b of bundles) bundlesOut[b.code] = { n: b.name, svcs: b.description };
+
+  const tiers = await SupportTier.findAll({ where: { vendorId } });
+  const care = {};
+  for (const t of tiers) care[t.code] = { n: t.name, sla: t.sla };
+
+  const products = await Product.findAll({ where: { vendorId } });
+  const deSpecs = (p) => ({
+    id: p.model, ...p.specs, eol: p.eol, elp: p.priceDisplay, elpN: p.priceNumeric,
+  });
+  // `fwImix` distingue una fila del catalogo del dimensionador de una fila que solo viene
+  // del listado del portal: sin ese campo el modelo no se puede dimensionar.
+  const models = products
+    .filter((p) => p.category === 'firewall' && p.specs && p.specs.fw != null)
+    .map(deSpecs);
+  const sdwan = products
+    .filter((p) => p.category === 'sdwan' && p.specs && p.specs.cap != null)
+    .map(deSpecs);
+
+  return { models, sdwan, bundles: bundlesOut, care };
+}
+
 // Aruba: misma forma que Fortinet (modelos + bundles + soporte) mas lo que en EdgeConnect
 // no depende del modelo sino del sitio — los tiers de ancho de banda de la suscripcion, el
 // pool de Boost y el overhead de Path Conditioning. Van en `sizing` para que aruba.js siga
@@ -350,6 +382,7 @@ module.exports = {
   toDimensionadorHuawei,
   toDimensionadorCisco,
   toDimensionadorFortinet,
+  toDimensionadorJuniper,
   toDimensionadorMikrotik,
   toDimensionadorAruba,
   toGuiaRoles,

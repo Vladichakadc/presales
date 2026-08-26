@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dimensionador y BOM Juniper SRX — Presales</title>
+<meta name="description" content="Dimensionador Juniper: SRX por capa de inspección (IMIX, IPS, Threat Prevention) y Session Smart Router para SD-WAN, con lista de materiales.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;--red:#EE3124;--amber:#A45B00;--green:#1F6B4A;--card:#FFF}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1140px;margin:0 auto;padding:26px 18px 80px}
+.masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0 0 6px}
+h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28px,5.5vw,48px);line-height:.98;text-transform:uppercase;margin:0}
+.sub{color:var(--steel);max-width:64ch;margin:8px 0 0;font-size:14.5px}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);text-decoration:none;margin-bottom:18px;transition:color .15s}
+.back-link:hover{color:var(--red)}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--rule);margin-bottom:22px}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:11px 18px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.03em;text-transform:uppercase;color:var(--steel)}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--red)}
+.tabpane[hidden]{display:none}
+
+/* LADDER */
+.ladder{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px 18px 12px;margin-bottom:20px;overflow:hidden}
+.mono-lbl{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:0 0 18px;font-weight:600}
+.track{position:relative;height:110px;margin:0 4px}
+.axis{position:absolute;left:0;right:0;bottom:26px;height:1px;background:var(--rule)}
+.tick{position:absolute;bottom:26px;transform:translateX(-50%);text-align:center}
+.tick i{display:block;width:1px;height:7px;background:var(--rule);margin:0 auto}
+.tick b{font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:500;color:var(--steel);display:block;margin-top:4px;white-space:nowrap}
+.dot{position:absolute;bottom:34px;width:7px;height:7px;border-radius:50%;background:var(--rule);transform:translateX(-50%)}
+.dot.ok{background:var(--ink)}
+.dot.pick{background:var(--red);width:11px;height:11px;bottom:32px;box-shadow:0 0 0 4px rgba(238,49,36,.18)}
+.need{position:absolute;top:0;bottom:26px;width:2px;background:var(--red);transform:translateX(-50%);transition:left .25s cubic-bezier(.2,.8,.2,1)}
+.need span{position:absolute;top:-2px;left:6px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;color:#fff;background:var(--red);padding:2px 6px;border-radius:2px}
+.need.flip span{left:auto;right:6px}
+.pickLabel{position:absolute;bottom:52px;transform:translateX(-50%);white-space:nowrap;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;text-transform:uppercase}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--steel);letter-spacing:.06em;text-transform:uppercase}
+.legend i{display:inline-block;width:7px;height:7px;background:var(--ink);margin-right:5px;border-radius:50%;vertical-align:middle}
+
+/* LAYOUT */
+.cols{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:880px){.cols{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px;margin-bottom:16px}
+.panel h2{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.field{margin-bottom:16px}.field:last-child{margin-bottom:0}
+label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px}
+.hint{font-size:11.5px;color:var(--steel);margin-top:5px;line-height:1.4}
+.row{display:flex;gap:8px}
+input[type=number],select{width:100%;padding:9px 10px;border:1px solid var(--rule);border-radius:2px;background:#fff;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500}
+select{font-family:'Barlow',sans-serif;font-size:13.5px}
+input:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+input[type=range]{width:100%;accent-color:var(--red)}
+.seg{display:flex;border:1px solid var(--rule);border-radius:2px;overflow:hidden}
+.seg button{flex:1;padding:8px 4px;border:0;background:#fff;cursor:pointer;font-family:'Barlow',sans-serif;font-size:12px;font-weight:500;color:var(--steel);line-height:1.25}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed=true]{background:var(--ink);color:#fff;font-weight:600}
+.checks{display:grid;gap:7px}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer}
+.check input{margin:3px 0 0;accent-color:var(--red)}
+.hidden{display:none!important}
+
+/* VERDICT */
+.verdict{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:22px;margin-bottom:16px}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0}
+.model{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(22px,4vw,36px);line-height:1;text-transform:uppercase;margin:6px 0 2px}
+.family{color:var(--steel);font-size:13.5px;margin-bottom:16px}
+.meter{margin-bottom:12px}
+.meter b{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;display:flex;justify-content:space-between;gap:10px;color:var(--steel);margin-bottom:5px}
+.meter b em{font-style:normal;color:var(--ink);font-weight:600;white-space:nowrap}
+.bar{height:7px;background:var(--paper);border-radius:1px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink);transition:width .3s}
+.bar i.tight{background:var(--amber)}.bar i.good{background:var(--green)}
+.why{border-top:1px solid var(--rule);padding-top:14px;font-size:13.5px;margin-top:4px}
+.warn{color:var(--amber)}
+ul.clean{list-style:none;margin:0;padding:0}
+ul.clean li{padding-left:14px;position:relative;margin-bottom:9px;font-size:13.5px}
+ul.clean li:before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;background:var(--rule)}
+ul.clean li.on:before{background:var(--red)}
+.sku{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--steel);display:block;margin-top:2px}
+.req{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 5px;border-radius:2px;background:var(--red);color:#fff;margin-left:6px;vertical-align:1px}
+.req.opt{background:var(--paper);color:var(--steel)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);font-weight:500;padding:0 8px 7px 0;border-bottom:1px solid var(--rule)}
+td{padding:8px 8px 8px 0;border-bottom:1px solid var(--paper);vertical-align:top}
+td.n,code{font-family:'IBM Plex Mono',monospace;font-size:12px}
+code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowrap}
+.scroll{overflow-x:auto}
+.grp{margin-bottom:22px}.grp:last-child{margin-bottom:0}
+.grp h3{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin:0 0 4px}
+.grp p.gd{font-size:12.5px;color:var(--steel);margin:0 0 10px}
+.note{margin-top:22px;font-size:12px;color:var(--steel);line-height:1.55;border-top:1px solid var(--rule);padding-top:14px}
+.note b{color:var(--ink)}
+.flag-ft{background:#FFF5F5;border:1px solid #FECACA;border-left:3px solid var(--red);border-radius:2px;padding:12px 14px;font-size:12.5px;line-height:1.5;margin-bottom:18px}
+.flag-ft b{color:#991b1b}
+#bomOut{width:100%;height:200px;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:10px;border:1px solid var(--rule);border-radius:2px;margin-top:10px}
+.btn{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px;cursor:pointer}
+.btn.ghost{background:#fff;color:var(--ink)}
+.pillc{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 4px;border-radius:2px;background:var(--paper);color:var(--steel)}
+/* Escalera de capas de inspeccion: hace visible el salto de un orden de magnitud entre
+   el throughput con offload al ASIC y el de inspeccion completa. */
+.tierRow{display:grid;grid-template-columns:112px 1fr 88px;gap:10px;align-items:center;margin-bottom:7px}
+.tierRow .tn{font-size:12px;font-weight:600}
+.tierRow .tv{font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-align:right;color:var(--steel)}
+.tierRow .tb{height:14px;background:var(--paper);border-radius:2px;overflow:hidden}
+.tierRow .tb i{display:block;height:100%;background:#B9C4D2;transition:width .3s}
+.tierRow.on .tn{color:var(--red)}
+.tierRow.on .tb i{background:var(--red)}
+.tierRow.on .tv{color:var(--ink);font-weight:600}
+.tierRow.off .tb i{background:#8FA3B8}
+.tierDrop{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--amber);margin:2px 0 9px 122px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<body>
+<div class="wrap">
+
+<a href="index.html" class="back-link">&#8592; Volver al Portal Presales</a>
+
+<header class="masthead">
+  <p class="eyebrow">Juniper &middot; Preventa SRX &amp; Session Smart Router &middot; Dimensionamiento y lista de materiales</p>
+  <h1>Dimensionador<br>y BOM Juniper</h1>
+  <p class="sub">Sizing de SRX por <b>capa de inspección</b> —la cifra de portada no sirve para dimensionar— y de Session Smart Router para SD-WAN sin túneles. Genera la lista de materiales con el nivel de suscripción propuesto.</p>
+</header>
+
+<div class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-tab="calc">Dimensionar</button>
+  <button role="tab" aria-selected="false" data-tab="bom">Equipo y BOM</button>
+</div>
+
+<!-- ════ TAB 1 · DIMENSIONAR ════ -->
+<div class="tabpane" id="pane-calc">
+
+<div class="grid">
+  <section class="panel">
+    <h2>1 &middot; Plataforma</h2>
+    <div class="field">
+      <label>Qué se está dimensionando</label>
+      <div class="seg" id="platSeg">
+        <button type="button" data-v="srx" aria-pressed="true">SRX<br>seguridad</button>
+        <button type="button" data-v="ssr" aria-pressed="false">SSR<br>SD-WAN</button>
+      </div>
+      <p class="hint" id="platHint">SRX es el cortafuegos: se dimensiona por capa de inspección. El Session Smart Router enruta por sesión <b>sin túneles</b> y no hace inspección avanzada, así que no se comparan por Mbps — son respuestas a preguntas distintas y por eso están separados.</p>
+    </div>
+
+    <div class="field">
+      <label for="bw">Ancho de banda a proteger</label>
+      <div class="row">
+        <input type="number" id="bw" value="500" min="1" step="any">
+        <select id="unit" style="width:105px"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
+      <input type="range" id="head" min="0" max="100" step="5" value="30" style="width:100%">
+      <p class="hint">Único factor de seguridad que aplica la herramienta. No hay recargos porcentuales por función: activar inspección <b>cambia la cifra que aplica</b>, no la encarece un tanto por ciento.</p>
+    </div>
+  </section>
+
+  <section class="panel" id="panelSrx">
+    <h2>2 &middot; Perfil de inspección</h2>
+    <div class="field">
+      <label>Capa contra la que se dimensiona</label>
+      <div class="seg" id="capaSeg">
+        <button type="button" data-v="fwImix" aria-pressed="false">Firewall<br>(IMIX)</button>
+        <button type="button" data-v="vpn"    aria-pressed="false">IPsec<br>VPN</button>
+        <button type="button" data-v="ips"    aria-pressed="true">IPS</button>
+        <button type="button" data-v="atp"    aria-pressed="false">Threat<br>Prevention</button>
+      </div>
+      <p class="hint" id="capaHint"></p>
+      <p class="hint" style="margin-top:6px"><b class="warn">La cifra de portada no está aquí a propósito.</b> Juniper publica el firewall con paquetes grandes —es la que aparece en el material comercial— y también con IMIX, que se parece al tráfico real. En el SRX380 son 20 Gbps frente a 6,5. Dimensionar con la primera es el error más caro de esta gama, así que la herramienta la muestra como referencia pero nunca la usa para elegir.</p>
+    </div>
+    <div class="field">
+      <label>Funciones activas</label>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="chkIps"> <span>IPS / AppSecure<span class="sku">Fija el piso en la capa IPS.</span></span></label>
+        <label class="check"><input type="checkbox" id="chkAtp"> <span>ATP Cloud, antivirus o URL Filtering<span class="sku">Fija el piso en Threat Prevention: es el stack completo.</span></span></label>
+        <label class="check"><input type="checkbox" id="chkVpn"> <span>Túnel IPsec de sede a sede<span class="sku">Fija el piso en la capa IPsec VPN.</span></span></label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="users">Usuarios de la sede <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— opcional, para el eje de sesiones</span></label>
+      <input type="number" id="users" value="0" min="0" step="10">
+      <input type="number" id="sesUser" value="20" min="0" step="1" style="margin-top:8px">
+      <p class="hint">El segundo campo son las sesiones concurrentes por usuario (15&ndash;30 en un puesto corporativo). El eje solo se comprueba en los modelos cuyo catálogo trae la cifra de sesiones; en el resto se declara sin comprobar.</p>
+    </div>
+  </section>
+
+  <section class="panel" id="panelSsr" style="display:none">
+    <h2>2 &middot; Session Smart Router</h2>
+    <p class="hint">El SSR se dimensiona por caudal agregado del sitio. No aplica capa de inspección: el enrutado por sesión no inspecciona contenido, y si el diseño necesita IPS o antivirus, eso va en un SRX aparte o en el servicio cloud. La gestión es desde Mist.</p>
+  </section>
+</div>
+
+<div>
+  <div class="verdict" id="verdict"></div>
+
+  <section class="panel">
+    <h2>Rendimiento por capa <span id="perfModel" style="font-weight:400;text-transform:none;letter-spacing:0"></span></h2>
+    <div id="perfTiers"></div>
+    <p class="hint" id="perfNote" style="margin-top:12px"></p>
+  </section>
+
+  <section class="panel">
+    <h2>Resumen de sizing</h2>
+    <div id="sizingBox"><p style="font-size:13.5px;color:var(--steel)">Completa los parámetros para ver el resumen.</p></div>
+  </section>
+</div>
+
+</div>
+
+<!-- ════ TAB 2 · BOM ════ -->
+<div class="tabpane" id="pane-bom" hidden>
+  <section class="panel">
+    <h2>Equipo</h2>
+    <div class="grid2">
+      <div class="field">
+        <label for="pickModel">Modelo</label>
+        <select id="pickModel"></select>
+      </div>
+      <div class="field">
+        <label for="qty">Cantidad</label>
+        <input type="number" id="qty" value="1" min="1">
+      </div>
+      <div class="field">
+        <label for="licTier">Suscripción de seguridad</label>
+        <select id="licTier"></select>
+      </div>
+      <div class="field">
+        <label for="termYears">Término</label>
+        <select id="termYears">
+          <option value="1">1 año</option>
+          <option value="3" selected>3 años</option>
+          <option value="5">5 años</option>
+        </select>
+      </div>
+    </div>
+    <label style="display:block;margin-top:10px"><input type="checkbox" id="chkHa"> Par en alta disponibilidad (2 unidades)</label>
+  </section>
+  <section class="panel">
+    <h2>Lista de materiales
+      <span class="bom-acciones">
+        <button class="btn" id="xlsBtn" style="font-size:11px;padding:5px 11px">Exportar a Excel</button>
+        <button class="btn ghost" id="copyBtn" style="font-size:11px;padding:5px 11px">Copiar como texto</button>
+      </span>
+    </h2>
+    <div id="bomTabla"></div>
+    <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
+  </section>
+</div>
+
+</div>
+
+<script src="/js/bom.js"></script>
+<script src="/js/ficha.js"></script>
+<script src="/js/dimensionador-juniper-srx.js"></script>
+</body>
+</html>
