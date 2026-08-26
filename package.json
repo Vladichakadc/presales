@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "nodemon server/server.js",
-    "datasheets": "node scripts/descargar-datasheets.js"
+    "datasheets": "node scripts/descargar-datasheets.js",
+    "cps": "node scripts/importar-cps.js"
   },
   "engines": {
     "node": ">=20"
