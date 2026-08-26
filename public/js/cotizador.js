@@ -41,8 +41,30 @@ const esc=s=>String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt
   });
   renderCatalog();
 
+  // Equipos que llegan de un dimensionador. El dimensionador solo dice QUE equipo; el
+  // precio, el fabricante y el texto salen de CATALOG, que es la fuente de verdad de esta
+  // pantalla. Si el nombre no casa con nada se dice — no se inventa una linea.
+  const entrantes = BOM.recogerEntrada();
+  const noEncontrados = [];
+  for(const e of entrantes){
+    const item = CATALOG.find(x => BOM.normalizar(x.model) === BOM.normalizar(e.modelo));
+    if(!item){ noEncontrados.push(e.modelo); continue; }
+    const ya = bom.find(b2 => b2.model === item.model && b2.vendor === item.vendor);
+    if(ya){ ya.qty += (e.qty || 1); continue; }
+    bom.push({id: nextId++, vendor: item.vendor, color: item.color, model: item.model,
+      seg: item.seg, spec: item.spec, elp: item.elp, elpN: item.elpN,
+      qty: e.qty || 1, note: e.de ? `Dimensionado en ${e.de}` : ''});
+  }
+
   // Se restaura ANTES del primer renderBom para que la tabla salga ya con el trabajo previo.
+  // Si llegaron equipos de un dimensionador, se suman a lo que ya hubiera guardado en vez
+  // de sustituirlo: entrar desde el dimensionador no debe borrar el BOM en curso.
+  const traidos = bom.slice();
   const guardado = restaurarBom();
+  for(const t of traidos){
+    const ya = bom.find(b2 => b2.model === t.model && b2.vendor === t.vendor);
+    if(ya) ya.qty += t.qty; else { t.id = nextId++; bom.push(t); }
+  }
   renderBom();
   if(guardado){
     const host = document.getElementById('bomAviso') || $('sumVendors') && $('sumVendors').closest('section');
@@ -59,6 +81,22 @@ const esc=s=>String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt
     b.addEventListener('click', () => { vaciarBom(); p.remove(); });
     p.appendChild(b);
     if(host) host.appendChild(p);
+  }
+
+  if(entrantes.length || noEncontrados.length){
+    const host = $('sumVendors') && $('sumVendors').closest('section');
+    const av = document.createElement('p');
+    av.className = 'hint';
+    av.style.cssText = 'margin:10px 0 0';
+    const ok = entrantes.length - noEncontrados.length;
+    av.innerHTML = (ok ? `Se añadió <b>${ok}</b> equipo(s) desde el dimensionador. ` : '')
+      + (noEncontrados.length
+        ? `<span class="warn">No está en el catálogo del cotizador: <b>${noEncontrados.map(esc).join(', ')}</b>.</span> `
+          + 'La causa más probable es que esté <b>fuera de venta</b>: el cotizador solo lista lo vigente, '
+          + 'mientras que el dimensionador sí lo muestra como referencia para ampliar un parque instalado. '
+          + 'Si el diseño es nuevo, elige el sucesor; si es una ampliación, añádelo a mano.'
+        : '');
+    if(host) host.appendChild(av);
   }
 })();
 

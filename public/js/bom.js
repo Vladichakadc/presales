@@ -220,5 +220,69 @@
     return L.join('\n');
   }
 
-  global.BOM = { renderTabla, exportarExcel, comoTexto, money, esc };
+  // ── TRASPASO AL COTIZADOR ────────────────────────────────────────────────
+  //
+  // El hueco que cierra: dimensionabas un FortiGate 200G y luego lo buscabas A MANO entre
+  // los 154 equipos del cotizador. Dos herramientas que trabajan sobre el mismo equipo y no
+  // se hablaban.
+  //
+  // EL DIMENSIONADOR NO CONSTRUYE LA LINEA DEL COTIZADOR, SOLO DICE QUE EQUIPO. El precio,
+  // el color del fabricante y el texto comercial viven en el catalogo del cotizador, que es
+  // su fuente de verdad. Si el dimensionador los rellenara, habria dos sitios con el mismo
+  // dato y el dia que cambie un precio solo se actualizaria uno.
+  const ENTRADA = 'presales:cotizador:entrada';
+
+  // Los dos catalogos nombran los equipos distinto: el dimensionador de Juniper dice
+  // "SRX320" y el cotizador "Juniper SRX 320"; Aruba dice "EC-XS" y el cotizador
+  // "Aruba EC-XS". Se normaliza quitando espacios, guiones y el prefijo del fabricante, en
+  // vez de mantener a mano una tabla de equivalencias que se desincronizaria.
+  const PREFIJOS = /^(juniper|aruba|netengine|cisco|fortinet|mikrotik|nokia|huawei)/;
+  function normalizar(nombre) {
+    const s = String(nombre || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    return s.replace(PREFIJOS, '') || s;
+  }
+
+  function enviarACotizador(item) {
+    try {
+      const cola = JSON.parse(localStorage.getItem(ENTRADA) || '[]');
+      cola.push({ modelo: item.modelo, qty: item.qty || 1, nota: item.nota || '', de: item.de || '' });
+      localStorage.setItem(ENTRADA, JSON.stringify(cola));
+      return true;
+    } catch {
+      return false; // almacenamiento deshabilitado: se avisa, no se finge que funciono
+    }
+  }
+
+  function recogerEntrada() {
+    try {
+      const cola = JSON.parse(localStorage.getItem(ENTRADA) || '[]');
+      localStorage.removeItem(ENTRADA);
+      return Array.isArray(cola) ? cola : [];
+    } catch {
+      return [];
+    }
+  }
+
+  // Inyecta el boton en la barra de acciones del BOM que las seis paginas ya comparten.
+  // `obtener` lo aporta cada pagina porque solo ella sabe que equipo esta elegido ahora.
+  function montarBotonCotizador(obtener) {
+    const barra = document.querySelector('.bom-acciones');
+    if (!barra || barra.querySelector('.btn-cotizador')) return;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'btn ghost btn-cotizador';
+    b.style.cssText = 'font-size:11px;padding:5px 11px';
+    b.textContent = 'Enviar al cotizador';
+    b.addEventListener('click', () => {
+      const item = obtener();
+      if (!item || !item.modelo) { b.textContent = 'Sin equipo elegido'; setTimeout(() => { b.textContent = 'Enviar al cotizador'; }, 1800); return; }
+      b.textContent = enviarACotizador(item) ? 'Enviado — abriendo…' : 'No se pudo guardar';
+      if (b.textContent.startsWith('Enviado')) setTimeout(() => { location.href = '/cotizador.html'; }, 500);
+      else setTimeout(() => { b.textContent = 'Enviar al cotizador'; }, 2200);
+    });
+    barra.appendChild(b);
+  }
+
+  global.BOM = { renderTabla, exportarExcel, comoTexto, money, esc,
+    enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar };
 })(window);

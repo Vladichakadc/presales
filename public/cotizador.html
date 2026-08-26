@@ -7,7 +7,7 @@
 <meta name="description" content="Panel de cotización multi-fabricante. Agrega equipos Huawei, Cisco, Nokia, Fortinet, Juniper, MikroTik y Aruba en un BOM unificado exportable a CSV.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" data-fuente>
 <style>
 :root{
   --paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;
@@ -126,6 +126,7 @@ tbody td{padding:8px 10px;vertical-align:middle}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
+<script src="/js/fuentes.js" defer></script>
 </head>
 <body>
 
@@ -213,6 +214,7 @@ tbody td{padding:8px 10px;vertical-align:middle}
 
 </div>
 
+<script src="/js/bom.js"></script>
 <script src="/js/estado.js"></script>
 <script src="/js/tabla.js"></script>
 <script src="/js/cotizador.js"></script>

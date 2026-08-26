@@ -59,7 +59,10 @@ app.use(express.json({ limit: '1mb' }));
 // si quedara detras del muro nadie podria iniciar sesion — la peticion se redirigiria al
 // login, el navegador recibiria HTML donde espera JavaScript, y el formulario quedaria
 // inerte. No expone nada: solo envia el formulario y pinta el mensaje de error.
-const PUBLICO = new Set(['/login', '/login.html', '/js/login.js', '/favicon.ico']);
+// /js/fuentes.js tambien: la pagina de acceso usa las mismas tipografias, y si queda detras
+// del muro el navegador recibe HTML donde espera JavaScript y lo rechaza por MIME. No expone
+// nada — solo devuelve a `all` una hoja de estilos marcada como `print`.
+const PUBLICO = new Set(['/login', '/login.html', '/js/login.js', '/js/fuentes.js', '/favicon.ico']);
 
 // Muro de autenticacion. Todo lo que no este en PUBLICO exige sesion valida; las peticiones
 // de API responden 401 en JSON y la navegacion se redirige al login conservando el destino.

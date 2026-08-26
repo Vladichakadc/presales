@@ -502,3 +502,17 @@ document.addEventListener('DOMContentLoaded', () => {
     ESTADO.avisoOrigen(caja, st.origen);
   }
 });
+
+/* ══ ENVIAR AL COTIZADOR ══
+   Solo esta pagina sabe que equipo esta elegido ahora mismo; el cotizador pone el precio y
+   el resto de la linea desde su propio catalogo. Ver bom.js. */
+document.addEventListener('DOMContentLoaded', () => {
+  BOM.montarBotonCotizador(() => {
+    const sel = document.getElementById('verdict-sel');
+    const elegido = (sel && sel.value) || (lastPick && lastPick.id) || null;
+    if (!elegido) return null;
+    const cant = document.getElementById('qty');
+    return { modelo: elegido, qty: Math.max(1, parseInt(cant && cant.value, 10) || 1),
+             de: document.title.split('—')[0].trim() };
+  });
+});

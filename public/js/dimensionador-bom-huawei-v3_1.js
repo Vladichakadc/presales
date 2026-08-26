@@ -512,3 +512,18 @@ document.addEventListener('DOMContentLoaded', () => {
     ESTADO.avisoOrigen(caja, st.origen);
   }
 });
+
+/* ══ ENVIAR AL COTIZADOR ══
+   Ojo: aqui `lastPick` es una CADENA con el id del equipo, no un objeto como en las otras
+   paginas. Leerlo con .id devolveria undefined y el boton diria "sin equipo elegido" con un
+   equipo elegido en pantalla. */
+document.addEventListener('DOMContentLoaded', () => {
+  BOM.montarBotonCotizador(() => {
+    const sel = document.getElementById('verdict-sel');
+    const elegido = (sel && sel.value) || lastPick || null;
+    if (!elegido) return null;
+    const cant = document.getElementById('qty');
+    return { modelo: elegido, qty: Math.max(1, parseInt(cant && cant.value, 10) || 1),
+             de: document.title.split('—')[0].trim() };
+  });
+});
