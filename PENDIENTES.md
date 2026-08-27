@@ -29,6 +29,9 @@ Nada de esto es trabajo de ingeniería pendiente: el código está hecho y proba
 dato. El proxy de egreso de la organización responde **403** a estos dominios, y un 403 de
 política se reporta, no se rodea.
 
+El procedimiento completo —incluido qué viaja de local a producción y por qué no es la base
+de datos— está en [`IMPORTAR-CATALOGO.md`](IMPORTAR-CATALOGO.md).
+
 | # | Qué falta | Cómo se cierra | Bloqueo |
 |---|---|---|---|
 | 2 | **`cps` en 37 de los 58 FortiGate.** El motor ya usa las sesiones nuevas por segundo como tercer eje; los 21 verificados funcionan, los 37 en `null` no se filtran por ese eje y la ficha lo declara. | `npm run cps -- --check`, copiar tres columnas del Product Matrix a CSV/XLSX, `npm run cps -- matrix.xlsx`. Rechaza filas cuya columna de sesiones concurrentes no case con el `sess` verificado. | `fortinet.com` |
