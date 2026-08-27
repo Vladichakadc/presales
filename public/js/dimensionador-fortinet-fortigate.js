@@ -11,6 +11,12 @@ let CARE = {};
 const $=id=>document.getElementById(id);
 let profile='tp', modoCaudal='link', rolSdwan='none', segMode='branch', lastPick=null;
 let bomFilas=[], bomMeta={};
+// Si el dimensionamiento se queda sin candidatos, el BOM conservaba intacta la cotizacion
+// del ultimo equipo que si cumplia: el veredicto decia "Sin candidato" y la pestana de BOM
+// seguia ofreciendo un FortiGate 60F completo, exportable a Excel. El BOM no se vacia —se
+// puede querer cotizar cualquier equipo a mano— pero tiene que DECIR que ya no corresponde
+// a lo que salio del dimensionamiento.
+let hayCandidato=true;
 
 // El modelo recomendado se lleva solo a la pestaña de BOM. Se sincroniza unicamente cuando
 // la recomendacion CAMBIA, no en cada render: asi, si alguien elige otro modelo a mano para
@@ -379,7 +385,15 @@ function render(){
   const rx=SEG_MATCH[segMode];
   let pick=FICHA.recomendar(candidates, rx?(m=>rx.test(m.seg)):null);
   lastPick=pick;
-  sincronizarConBom(pick);
+  // El BOM se sincroniza UNA vez, al final, con el equipo ELEGIDO. Aqui habia una segunda
+  // llamada con el recomendado: repintaba el BOM entero con un equipo y acto seguido lo
+  // repintaba con otro en cada pulsacion de tecla.
+  //
+  // El aviso de desajuste solo aparece si el BOM se vuelve a pintar, y quedarse sin
+  // candidatos no cambia el modelo cotizado — asi que hay que forzarlo en la transicion.
+  const habiaCandidato=hayCandidato;
+  hayCandidato=!!pick;
+  if(habiaCandidato!==hayCandidato) renderBom();
 
   // ── Presentacion ──────────────────────────────────────────────────────────
   // El veredicto pasa de un unico equipo fijo a un desplegable con todos los que cumplen;
@@ -606,9 +620,24 @@ function renderBom(){
   const licPrice=tierPrice(licTier,termYrs);
   const carePrice=tierPrice(careTier,termYrs);
 
+  // Coherencia con el dimensionamiento, declarada en vez de supuesta. Son dos desajustes
+  // distintos y conviene no confundirlos: que el dimensionamiento no tenga candidato, y que
+  // este cotizando un equipo distinto del que hay elegido en la pestana de calculo.
+  const elegidoFicha=FICHA.elegido('verdict');
+  let aviso='';
+  if(!hayCandidato){
+    aviso=`<p class="bom-desvio"><b class="warn">Este BOM no corresponde al dimensionamiento.</b> `
+      +`Con los parámetros actuales <b>ningún modelo cumple</b> las restricciones, así que esta `
+      +`cotización es la del último equipo que sí cumplía. Revisa la pestaña de cálculo antes de exportar.</p>`;
+  } else if(elegidoFicha&&elegidoFicha!==m.id){
+    aviso=`<p class="bom-desvio">Estás cotizando el <b>${esc(m.id)}</b>, pero en el dimensionamiento `
+      +`tienes elegido el <b>${esc(elegidoFicha)}</b>. Es legítimo —el desplegable de arriba cotiza `
+      +`cualquier equipo— pero no es lo que salió del cálculo.</p>`;
+  }
+
   let html=`<section class="panel"><h2>Ficha del equipo</h2>
     <div class="model" style="font-size:28px">${m.id}</div>
-    <p class="family">${m.seg} · FortiOS · Security Fabric</p>
+    <p class="family">${m.seg} · FortiOS · Security Fabric</p>${aviso}
     <div class="scroll"><table><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
     <tr><td>SKU hardware</td><td class="n">${m.hwSku?`<code>${esc(m.hwSku)}</code>`:'<span class="warn">Descontinuado — sin SKU nuevo vigente</span>'}</td></tr>
     <tr><td>Precio de lista ref. (equipo)</td><td class="n">${m.elp?esc(m.elp):'Consultar distribuidor'}</td></tr>

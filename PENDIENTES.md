@@ -128,6 +128,42 @@ Cobertura actual por herramienta:
 
 ## Cerrado recientemente
 
+### El dimensionador de Fortinet mostraba siempre el mismo equipo (2026-08-27)
+
+Reportado por el dueño del repo y **reproducido en el navegador antes de tocar nada**. Eran
+dos defectos distintos y solo uno estaba en la página de Fortinet.
+
+**El trinquete de la selección** (`public/js/ficha.js`, las seis páginas a la vez). La regla
+era «conservar la selección mientras ese equipo siga cumpliendo». Como cumplir es
+capacidad ≥ requerimiento, un equipo grande cumple para *todo* requerimiento menor: se
+elegía un 7121F a 20 Gbps, se bajaba a 50 Mbps y seguía el 7121F con el 30G como
+recomendado. La selección solo subía. Lo grave no era la elección manual sino que no se
+distinguía de la **heredada** —la que el propio módulo había dejado en el render anterior—,
+así que el recomendado solo salía en el primer render de la página: en un barrido limpio de
+caudal el equipo ya aparecía desalineado en la primera lectura. Corregido distinguiendo
+deliberada de heredada; lo heredado sigue siempre al recomendado, lo deliberado se marca en
+pantalla y tiene botón «Volver al recomendado».
+
+**El BOM no avisaba de quedarse descolgado.** Con un caudal que ningún modelo cubre, el
+veredicto decía «Sin candidato» y la pestaña de BOM conservaba intacta la cotización del
+último equipo que sí cumplía — exportable a Excel sin ninguna señal. No se vacía, porque ahí
+se puede querer cotizar cualquier equipo a mano, pero ahora declara el desajuste. Igual
+cuando el modelo cotizado no es el elegido en el dimensionamiento.
+
+**El motor NO estaba mal, y conviene que quede escrito.** Se comprobó eje por eje con cargas
+limpias: 100 usuarios x 3 Mbps no mueven un requerimiento de 500 Mbps, pero 2.000 usuarios lo
+llevan de 650 Mbps a 7,8 Gbps; el perfil IoT (20.000 dispositivos a 0,05 Mbps con 100
+sesiones) hace que mande la tabla de sesiones, exactamente como predicen los comentarios del
+código; y bajar la vida media de sesión a 2 s multiplica por 15 las sesiones nuevas por
+segundo. La relación entre ancho de banda, usuarios, sesiones y cps estaba bien modelada —
+lo que la ocultaba era que el equipo mostrado no cambiaba.
+
+También se quitó un doble render del BOM por cada pulsación de tecla (se sincronizaba una vez
+con el recomendado y acto seguido con el elegido). Siete pruebas nuevas en
+`test/ficha-seleccion.test.js` fijan la regla: 66 casos en total.
+
+
+
 - **Limpieza de agosto de 2026: cuatro puntos cerrados, y tres fallos reales que aparecieron
   al cerrarlos.** La limpieza en sí era cosmética; lo que valió fue lo que destapó.
   - **El dimensionador Huawei ya no se llama `-v3_1`.** Es `dimensionador-huawei-netengine`,

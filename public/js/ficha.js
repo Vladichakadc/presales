@@ -38,6 +38,10 @@
 .ficha-sel select{flex:1;min-width:220px;padding:7px 9px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink);font-family:'Barlow',sans-serif;font-size:13.5px}
 .ficha-sel select:focus{outline:2px solid var(--red);outline-offset:1px}
 .ficha-cuenta{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--steel)}
+.ficha-volver{flex:none;padding:7px 11px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.ficha-volver:hover{border-color:var(--red);color:var(--red)}
+.ficha-volver:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+.ficha-desvio{font-size:12px;color:var(--steel);margin:0 0 10px;line-height:1.45}
 .ficha-sec{margin-top:14px}
 .ficha-sec h3{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 6px;padding-top:10px;border-top:1px solid var(--rule)}
 .ficha-tabla{width:100%;border-collapse:collapse;font-size:13px}
@@ -157,10 +161,21 @@
     const medidores = (cfg.medidores ? cfg.medidores(sel) : []).map(medidorHtml).join('');
     const secciones = (cfg.secciones ? cfg.secciones(sel) : []).map(seccionHtml).join('');
 
+    // Apartarse del recomendado es legitimo y por eso existe el desplegable, pero tiene que
+    // VERSE: la queja que destapo el trinquete era justamente que la pagina mostraba
+    // siempre el mismo equipo sin decir que ya no era el que salia del dimensionamiento.
+    const desviado = cfg.deliberada && recomendado && sel.id !== recomendado;
+
     cont.innerHTML = `<p class="tag">Equipos que cumplen`
       + `<span class="ficha-cuenta"> · ${candidatos.length}</span></p>`
       + `<div class="ficha-sel"><label for="${cid}-sel">Equipo</label>`
-      + `<select id="${cid}-sel">${opciones}</select></div>`
+      + `<select id="${cid}-sel">${opciones}</select>`
+      + (desviado ? `<button type="button" class="ficha-volver" id="${cid}-volver">`
+        + `Volver al recomendado</button>` : '')
+      + '</div>'
+      + (desviado ? `<p class="ficha-desvio">Estás viendo un equipo <b>elegido a mano</b>. `
+        + `El dimensionamiento propone el <b>${esc(recomendado)}</b>; toda la ficha, el `
+        + `resumen y el BOM siguen al que tienes elegido.</p>` : '')
       + `<p class="model">${esc(cfg.titulo ? cfg.titulo(sel) : sel.id)}`
       + `${sel.id === recomendado ? '<span class="ficha-rec">recomendado</span>' : ''}`
       + `${mkSel ? `<span class="ficha-ref${mkSel.fuera ? ' fuera' : ''}">${esc(mkSel.t)}</span>` : ''}</p>`
@@ -175,8 +190,23 @@
     if (nodo) {
       nodo.addEventListener('change', () => {
         cfg.seleccionado = nodo.value;
+        // Tocar el desplegable es lo unico que convierte una seleccion en deliberada. Ver
+        // el comentario de render(): sin esta marca la seleccion heredada se reciclaba y el
+        // recomendado no volvia nunca.
+        cfg.deliberada = true;
         pintar(cid);
         if (cfg.alCambiar) cfg.alCambiar(nodo.value);
+      });
+    }
+    // Salida del modo manual. Sin esto, apartarse del recomendado era una puerta de un solo
+    // sentido: habia que acordarse de cual era y volver a buscarlo en una lista de 58.
+    const btn = document.getElementById(cid + '-volver');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        cfg.seleccionado = recomendado;
+        cfg.deliberada = false;
+        pintar(cid);
+        if (cfg.alCambiar) cfg.alCambiar(recomendado);
       });
     }
   }
@@ -201,12 +231,44 @@
     render(cfg) {
       const cid = cfg.contenedor;
       const previo = estado[cid];
-      // Se conserva la eleccion manual mientras ese equipo siga cumpliendo. Si deja de
-      // cumplir al mover un parametro, se vuelve al recomendado en vez de mostrar la ficha
-      // de un equipo que ya no sirve.
-      let sel = cfg.seleccionado || (previo && previo.seleccionado) || cfg.recomendado;
-      if (!cfg.candidatos.some((m) => m.id === sel)) sel = cfg.recomendado;
-      estado[cid] = Object.assign({}, cfg, { seleccionado: sel });
+      // ── ELEGIDO A MANO NO ES LO MISMO QUE HEREDADO ────────────────────────
+      //
+      // Aqui vivia un trinquete. La regla era "conservar la seleccion mientras ese equipo
+      // siga cumpliendo", y como cumplir es capacidad >= requerimiento, un equipo grande
+      // cumple para TODO requerimiento menor. Resultado medido en el navegador: eliges un
+      // 7121F a 20 Gbps, bajas a 50 Mbps y sigue proponiendo el 7121F mientras el
+      // recomendado es un 30G. La seleccion solo podia subir, nunca bajar.
+      //
+      // Y lo peor no era la eleccion manual: era que NO SE DISTINGUIA de la heredada. La
+      // seleccion que el propio modulo habia dejado en el render anterior se reciclaba con
+      // el mismo criterio, asi que el recomendado solo aparecia en el primerisimo render de
+      // la pagina. En un barrido limpio de caudal el equipo ya salia desalineado en la
+      // primera lectura. Es exactamente el sintoma de "siempre muestra el mismo equipo".
+      //
+      // La distincion es la correccion: solo persiste lo que alguien eligio de verdad —el
+      // desplegable, o una reposicion desde la URL o el almacenamiento, que tambien es una
+      // eleccion de alguien—. Lo heredado sigue siempre al recomendado. La funcion que
+      // justificaba conservar la eleccion (comparar el que cumple justo con el siguiente
+      // escalon) se mantiene intacta, y ahora tiene salida: `ficha-volver`.
+      let sel;
+      let deliberada;
+      if (cfg.seleccionado) {
+        sel = cfg.seleccionado;
+        deliberada = true;
+      } else if (previo && previo.deliberada) {
+        sel = previo.seleccionado;
+        deliberada = true;
+      } else {
+        sel = cfg.recomendado;
+        deliberada = false;
+      }
+      // Si deja de cumplir al mover un parametro se vuelve al recomendado, en vez de dejar
+      // en pantalla la ficha de un equipo que ya no sirve.
+      if (!cfg.candidatos.some((m) => m.id === sel)) {
+        sel = cfg.recomendado;
+        deliberada = false;
+      }
+      estado[cid] = Object.assign({}, cfg, { seleccionado: sel, deliberada });
       pintar(cid);
       return sel;
     },
