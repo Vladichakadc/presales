@@ -12,7 +12,8 @@
     "verificar": "npm run lint && npm test",
     "datasheets": "node scripts/descargar-datasheets.js",
     "cps": "node scripts/importar-cps.js",
-    "juniper": "node scripts/importar-juniper.js"
+    "juniper": "node scripts/importar-juniper.js",
+    "manual": "node scripts/generar-manual-usuario.js"
   },
   "engines": {
     "node": ">=20"

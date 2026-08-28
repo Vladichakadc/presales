@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Manual de uso — Dimensionadores y BOM</title>
+<link href="fonts/local.css" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EDF0F4; --ink:#0E1A2B; --steel:#5C6E85; --rule:#C6CFDA;
+    --red:#EE3124; --amber:#A45B00; --green:#1F6B4A; --card:#FFF;
+    --amber-bg:#FBF1E4; --green-bg:#E9F4EE; --steel-bg:#EEF1F5; --red-bg:#FDEBE9;
+  }
+  *{box-sizing:border-box}
+  @page{ size:A4; margin:0; }
+  html,body{margin:0;padding:0;background:var(--card);color:var(--ink);
+    font-family:'Barlow',ui-sans-serif,sans-serif;font-size:10.6pt;line-height:1.5;}
+  .page{ width:210mm; padding:16mm 17mm 18mm; position:relative; background:var(--card); }
+  /* Solo se fuerza salto de pagina donde de verdad hace falta: portada -> indice ->
+     primer contenido. El resto de las secciones fluye con naturalidad para que un
+     parrafo de mas no deje media hoja en blanco antes de la siguiente seccion. */
+  .cover, .page.toc{ page-break-after:always }
+  .page.first-sec{ page-break-before:always }
+  .page.tinted{background:var(--paper)}
+
+  h1,h2,h3,h4{font-family:'Barlow Condensed',ui-sans-serif,sans-serif;font-weight:700;
+    letter-spacing:.01em;color:var(--ink);margin:0 0 4mm;text-wrap:balance;
+    page-break-after:avoid}
+  h1{font-size:24pt;line-height:1.08}
+  h2{font-size:16pt;border-bottom:1.4pt solid var(--ink);padding-bottom:2mm;margin-bottom:5mm}
+  h3{font-size:12.5pt;color:var(--ink);margin-top:6mm}
+  h4{font-size:10.5pt;text-transform:uppercase;letter-spacing:.06em;color:var(--steel);
+    font-weight:600;margin:5mm 0 2mm}
+  p{margin:0 0 3mm}
+  strong{font-weight:600}
+  a{color:var(--red)}
+  ul,ol{margin:0 0 3mm;padding-left:5mm}
+  li{margin-bottom:1.4mm}
+  code,.mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:9pt}
+
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:8.5pt;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:3mm}
+  .kicker{font-family:'Barlow Condensed',sans-serif;font-size:13pt;color:var(--steel);
+    font-weight:600;margin:1mm 0 8mm}
+
+  /* ── Portada ── */
+  .cover{display:flex;flex-direction:column;min-height:297mm;padding:0}
+  .cover-top{background:var(--ink);color:#fff;padding:22mm 17mm 16mm;flex:none}
+  .cover-top .eyebrow{color:#FF8A7E}
+  .cover-top h1{color:#fff;font-size:34pt;margin-bottom:3mm}
+  .cover-top .sub{font-size:12.5pt;color:#B9C4D4;max-width:120mm}
+  .cover-mid{flex:1;padding:14mm 17mm;display:flex;flex-direction:column;justify-content:center;gap:6mm}
+  .cover-vendors{display:flex;flex-wrap:wrap;gap:2.4mm}
+  .vchip{font-family:'IBM Plex Mono',monospace;font-size:8.6pt;letter-spacing:.03em;
+    border:1pt solid var(--rule);border-radius:2pt;padding:1.6mm 3mm;color:var(--steel)}
+  .cover-foot{padding:10mm 17mm 14mm;border-top:1pt solid var(--rule);
+    display:flex;justify-content:space-between;align-items:flex-end;font-size:9pt;color:var(--steel)}
+  .cover-foot .mono{color:var(--ink)}
+
+  /* ── Indice ── */
+  .toc-list{list-style:none;padding:0;margin:0}
+  .toc-list li{display:flex;align-items:baseline;gap:2.5mm;padding:2.6mm 0;
+    border-bottom:0.6pt solid var(--rule)}
+  .toc-num{font-family:'IBM Plex Mono',monospace;color:var(--red);font-weight:600;
+    font-size:9.5pt;width:7mm;flex:none}
+  .toc-title{font-weight:600;font-size:11pt;flex:none}
+  .toc-dash{flex:1;border-bottom:1pt dotted var(--rule);margin:0 0 1mm}
+  .toc-sub{font-size:9pt;color:var(--steel);width:100%;padding-left:9.5mm;margin-top:-1mm}
+
+  /* ── Recuadros ── */
+  .box{border-radius:2pt;padding:4mm 5mm;margin:0 0 4mm;border-left:2.6pt solid var(--rule);
+    page-break-inside:avoid}
+  .box p:last-child,.box ul:last-child{margin-bottom:0}
+  .box-tip{background:var(--steel-bg);border-left-color:var(--steel)}
+  .box-warn{background:var(--amber-bg);border-left-color:var(--amber)}
+  .box-ok{background:var(--green-bg);border-left-color:var(--green)}
+  .box-step{background:var(--card);border:1pt solid var(--rule);border-left:2.6pt solid var(--red)}
+  .box h4{margin-top:0}
+  .box-label{font-family:'IBM Plex Mono',monospace;font-size:8.4pt;font-weight:600;
+    letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.4mm;display:block}
+  .box-warn .box-label{color:var(--amber)}
+  .box-ok .box-label{color:var(--green)}
+  .box-tip .box-label{color:var(--steel)}
+
+  /* ── Pasos numerados ── */
+  .steps{counter-reset:paso;margin:0 0 4mm}
+  .step{position:relative;padding:0 0 4mm 9mm;border-left:1pt solid var(--rule);margin-left:3.2mm;
+    page-break-inside:avoid}
+  .step:last-child{border-left-color:transparent;padding-bottom:0}
+  .step::before{counter-increment:paso;content:counter(paso);position:absolute;left:-3.2mm;top:0;
+    width:6.4mm;height:6.4mm;border-radius:50%;background:var(--ink);color:#fff;
+    font-family:'IBM Plex Mono',monospace;font-size:8.4pt;font-weight:600;
+    display:flex;align-items:center;justify-content:center}
+  .step h4{margin-top:0;text-transform:none;letter-spacing:0;font-size:11pt;color:var(--ink)}
+
+  /* ── Insignias / badges (igual que en la app) ── */
+  .badge{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:8pt;
+    font-weight:600;letter-spacing:.05em;text-transform:uppercase;border-radius:2pt;
+    padding:1mm 2.2mm;vertical-align:1pt}
+  .badge-rec{background:var(--red);color:#fff}
+  .badge-ref{border:1pt solid var(--rule);color:var(--steel)}
+  .badge-fuera{background:var(--steel);color:#fff}
+
+  /* ── Tabla de glosario / vendors ── */
+  table{width:100%;border-collapse:collapse;margin:0 0 4mm;font-size:9.4pt}
+  th,td{text-align:left;padding:2.2mm 2.6mm;border-bottom:0.6pt solid var(--rule);vertical-align:top}
+  tr{page-break-inside:avoid}
+  thead th{font-family:'IBM Plex Mono',monospace;font-size:8pt;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--steel);background:var(--steel-bg);font-weight:600}
+  tbody tr:last-child td{border-bottom:none}
+  td.tag{width:1%;white-space:nowrap}
+
+  /* ── Tarjetas de fabricante ── */
+  .vendor-card{border:1pt solid var(--rule);border-radius:2pt;padding:4.5mm 5mm;margin-bottom:3.5mm;
+    border-top:2.4pt solid var(--accent, var(--red));page-break-inside:avoid}
+  .vendor-card h3{margin:0 0 1mm;display:flex;align-items:baseline;gap:2.4mm}
+  .vendor-card .archivo{font-family:'IBM Plex Mono',monospace;font-size:8pt;color:var(--steel);font-weight:400}
+  .vendor-card .eje{font-size:9.6pt;color:var(--steel);margin-bottom:2mm;font-style:italic}
+  .vendor-card p{font-size:9.7pt}
+
+  /* ── Encabezado de seccion con numero grande ── */
+  .sec-head{display:flex;align-items:baseline;gap:5mm;margin-bottom:7mm}
+  .sec-num{font-family:'IBM Plex Mono',monospace;font-size:30pt;font-weight:600;color:var(--rule);
+    line-height:1}
+  .sec-head h1{margin-bottom:1mm}
+  .sec-head-txt .kicker{margin:0}
+
+  /* ── Pie de pagina ── */
+  .foot{position:absolute;left:17mm;right:17mm;bottom:9mm;display:flex;justify-content:space-between;
+    font-family:'IBM Plex Mono',monospace;font-size:7.6pt;color:var(--steel);
+    border-top:0.6pt solid var(--rule);padding-top:2mm}
+
+  .cols2{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
+  .imgband{display:flex;gap:1.6mm;flex-wrap:wrap;margin:2mm 0 4mm}
+  .imgband span{font-family:'IBM Plex Mono',monospace;font-size:8pt;background:var(--ink);color:#fff;
+    padding:1mm 2.2mm;border-radius:2pt}
+</style>
+</head>
+<body>
+
+<!-- ═════════════════════════ PORTADA ═════════════════════════ -->
+<section class="page cover">
+  <div class="cover-top">
+    <div class="eyebrow">Manual de uso · Presales</div>
+    <h1>Dimensionadores<br>y generador de BOM</h1>
+    <p class="sub">Cómo calcular el equipo correcto para un diseño, leer su ficha completa
+      y llevarlo a una cotización — para Huawei, Cisco, Fortinet, MikroTik, Aruba y Juniper.</p>
+  </div>
+  <div class="cover-mid">
+    <h4 style="margin-top:0">Cubre las seis herramientas de sizing</h4>
+    <div class="cover-vendors">
+      <span class="vchip">Huawei NetEngine / AR</span>
+      <span class="vchip">Cisco Catalyst 8000 / ISR</span>
+      <span class="vchip">Fortinet FortiGate</span>
+      <span class="vchip">MikroTik RouterOS</span>
+      <span class="vchip">HPE Aruba EdgeConnect</span>
+      <span class="vchip">Juniper SRX / SSR</span>
+    </div>
+    <p style="max-width:130mm;color:var(--steel)">Las seis páginas comparten el mismo recorrido:
+      completar el tráfico, elegir un equipo de la lista de los que cumplen, revisar su ficha y
+      licenciamiento, y armar el BOM. Este manual explica ese recorrido una sola vez y después
+      lo que cambia en cada fabricante.</p>
+  </div>
+  <div class="cover-foot">
+    <div>Herramienta interna de preventa<br>Acceso restringido con usuario y contraseña</div>
+    <div style="text-align:right">Guía del usuario final<br><span class="mono">v1 · 2026-08-27</span></div>
+  </div>
+</section>
+
+<!-- ═════════════════════════ INDICE ═════════════════════════ -->
+<section class="page toc">
+  <div class="eyebrow">Contenido</div>
+  <h1 style="margin-bottom:8mm">Índice</h1>
+  <ul class="toc-list">
+    <li><span class="toc-num">01</span><span class="toc-title">Entrar a la herramienta</span><span class="toc-dash"></span></li>
+    <li><span class="toc-num">02</span><span class="toc-title">El recorrido de un dimensionador</span><span class="toc-dash"></span>
+      <div class="toc-sub">Completar el tráfico · elegir el perfil · leer el equipo recomendado</div></li>
+    <li><span class="toc-num">03</span><span class="toc-title">El equipo recomendado, a fondo</span><span class="toc-dash"></span>
+      <div class="toc-sub">El desplegable, las insignias, elegir a mano y volver al recomendado</div></li>
+    <li><span class="toc-num">04</span><span class="toc-title">La pestaña Equipo y BOM</span><span class="toc-dash"></span>
+      <div class="toc-sub">Cantidad, licencias, exportar a Excel, enviar al cotizador</div></li>
+    <li><span class="toc-num">05</span><span class="toc-title">Compartir un escenario</span><span class="toc-dash"></span>
+      <div class="toc-sub">El enlace que reproduce exactamente lo que estás viendo</div></li>
+    <li><span class="toc-num">06</span><span class="toc-title">Los seis dimensionadores</span><span class="toc-dash"></span>
+      <div class="toc-sub">Qué es distinto en cada fabricante y por qué</div></li>
+    <li><span class="toc-num">07</span><span class="toc-title">El cotizador multi-fabricante</span><span class="toc-dash"></span></li>
+    <li><span class="toc-num">08</span><span class="toc-title">Guía de diseño interactiva</span><span class="toc-dash"></span></li>
+    <li><span class="toc-num">09</span><span class="toc-title">Tu cuenta y tu contraseña</span><span class="toc-dash"></span></li>
+    <li><span class="toc-num">10</span><span class="toc-title">Glosario de insignias y avisos</span><span class="toc-dash"></span></li>
+    <li><span class="toc-num">11</span><span class="toc-title">Preguntas frecuentes</span><span class="toc-dash"></span></li>
+  </ul>
+  <div class="box box-tip" style="margin-top:9mm">
+    <span class="box-label">Cómo leer este manual</span>
+    <p>Las secciones 2 a 5 aplican <strong>por igual a las seis páginas</strong> — léelas primero,
+      son el 80 % de lo que hace falta saber. La sección 6 solo señala lo que cada fabricante
+      añade o cambia, sin repetir lo común.</p>
+  </div>
+</section>
+
+<!-- ═════════════════════════ 01 · ENTRAR ═════════════════════════ -->
+<section class="page first-sec">
+  <div class="sec-head">
+    <div class="sec-num">01</div>
+    <div class="sec-head-txt"><h1>Entrar a la herramienta</h1>
+      <p class="kicker">Usuario, contraseña y qué hacer si no la recuerdas</p></div>
+  </div>
+
+  <p>La herramienta vive detrás de una pantalla de acceso: sin usuario y contraseña válidos no se
+    ve ninguna página, ni siquiera para consultar precios. Entra con las credenciales que te haya
+    entregado quien administra la herramienta.</p>
+
+  <div class="steps">
+    <div class="step"><h4>Abre la dirección de la herramienta</h4>
+      <p>Te llevará primero a la pantalla de acceso si no habías iniciado sesión.</p></div>
+    <div class="step"><h4>Escribe tu usuario y tu contraseña</h4>
+      <p>Si te equivocas varias veces seguidas, la propia herramienta introduce una espera antes
+        de dejarte intentar de nuevo — es una protección contra adivinar contraseñas, no un
+        error de la página. Espera unos segundos y vuelve a intentar.</p></div>
+    <div class="step"><h4>Llegas al portal</h4>
+      <p>Desde ahí, el menú de la izquierda abre cada dimensionador, el cotizador y la guía de
+        diseño.</p></div>
+  </div>
+
+  <div class="box box-tip">
+    <span class="box-label">Si te llegó un enlace directo</span>
+    <p>Alguien puede compartirte un enlace que apunta directo a un dimensionador con un
+      escenario ya cargado (ver sección 5). Si no habías iniciado sesión, la herramienta te pide
+      usuario y contraseña primero y, en cuanto entras, te lleva exactamente a esa pantalla — no
+      hace falta volver a pegar el enlace.</p>
+  </div>
+
+  <div class="box box-warn">
+    <span class="box-label">Si no recuerdas tu contraseña</span>
+    <p>Nadie puede cambiar la contraseña de otra persona, ni siquiera un administrador — esa
+      función no existe a propósito, por seguridad. Si perdiste tu acceso, pide a quien administra
+      el servidor que restablezca el usuario y te entregue uno nuevo.</p>
+  </div>
+
+  <h3>Tu propia contraseña</h3>
+  <p>Una vez dentro, en <strong>Cuenta</strong> (menú lateral) puedes cambiar tu propia
+    contraseña en cualquier momento — no afecta a las demás personas que usan la herramienta.
+    Ver sección 9.</p>
+</section>
+
+<!-- ═════════════════════════ 02 · RECORRIDO COMUN ═════════════════════════ -->
+<section class="page">
+  <div class="sec-head">
+    <div class="sec-num">02</div>
+    <div class="sec-head-txt"><h1>El recorrido de un dimensionador</h1>
+      <p class="kicker">Las tres pestañas que comparten las seis páginas</p></div>
+  </div>
+
+  <p>Entra a cualquier dimensionador — por ejemplo, FortiGate — y vas a ver siempre la misma
+    estructura arriba de la pantalla: tres pestañas.</p>
+
+  <table>
+    <thead><tr><th>Pestaña</th><th>Para qué es</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Dimensionar</strong></td><td>Donde escribes el tráfico, los usuarios y el
+        perfil de uso. Aquí es donde el motor calcula qué equipos cumplen.</td></tr>
+      <tr><td><strong>Equipo y BOM</strong></td><td>La ficha completa del equipo que tienes
+        elegido, más la tabla de materiales lista para exportar.</td></tr>
+      <tr><td><strong>Licencias</strong></td><td>El licenciamiento y soporte propuestos para ese
+        mismo equipo, con sus términos y niveles.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Paso 1 · Completa el tráfico</h3>
+  <p>El primer campo, siempre en la parte de arriba, es el <strong>ancho de banda</strong> a
+    dimensionar — en Mbps o Gbps según el selector de al lado. A partir de ahí cada página pide
+    algunos datos propios (usuarios, sedes, sesiones, puntos de acceso...); todos tienen una
+    etiqueta que dice exactamente qué es y, cuando hace falta, una nota debajo explicando de
+    dónde sale el número.</p>
+
+  <div class="box box-tip">
+    <span class="box-label">No hace falta un botón "Calcular"</span>
+    <p>Todo se recalcula solo, en el momento en que cambias cualquier campo. El equipo
+      recomendado, la ficha, el licenciamiento y el BOM se actualizan juntos y siempre entre sí,
+      sin que tengas que confirmar nada.</p>
+  </div>
+
+  <h3>Paso 2 · Elige el perfil de uso</h3>
+  <p>Debajo del tráfico hay uno o más grupos de botones — por ejemplo, en FortiGate: <em>FW
+    puro / IPsec VPN / IPS / NGFW / Threat Prot.</em> Ahí declaras qué va a hacer realmente el
+    equipo, porque el mismo tráfico exige un equipo distinto según cuánta inspección de
+    seguridad tiene que aplicar. La sección 6 explica el criterio propio de cada fabricante.</p>
+
+  <h3>Paso 3 · Lee el equipo recomendado</h3>
+  <p>Con esos datos, la herramienta filtra el catálogo completo del fabricante y te muestra el
+    equipo recomendado en un recuadro destacado, con un desplegable que lista <strong>todos</strong>
+    los equipos que cumplen — no solo el primero. Es el corazón de la herramienta y tiene su
+    propia sección a continuación porque hay varias insignias y un botón que conviene saber leer.</p>
+</section>
+
+<!-- ═════════════════════════ 03 · EQUIPO RECOMENDADO ═════════════════════════ -->
+<section class="page">
+  <div class="sec-head">
+    <div class="sec-num">03</div>
+    <div class="sec-head-txt"><h1>El equipo recomendado, a fondo</h1>
+      <p class="kicker">El desplegable, las insignias y cómo comparar equipos</p></div>
+  </div>
+
+  <p>El recuadro de veredicto tiene siempre la misma anatomía, la muestre el fabricante que
+    la muestre:</p>
+
+  <div class="box box-step">
+    <span class="box-label">Anatomía del recuadro</span>
+    <ul>
+      <li><strong>«Equipos que cumplen · N»</strong> — cuántos modelos del catálogo satisfacen
+        lo que pediste.</li>
+      <li>Un <strong>desplegable</strong> con esos N equipos, ordenado del más pequeño al más
+        grande que alcanza.</li>
+      <li>El <strong>nombre del equipo elegido</strong>, con su insignia
+        <span class="badge badge-rec">recomendado</span> si es el que propone el motor.</li>
+      <li>Las <strong>barras de holgura</strong>: cada eje que se comprobó (caudal, sesiones,
+        sesiones nuevas por segundo, según el fabricante) contra el tope del equipo.</li>
+      <li>El <strong>razonamiento</strong>: por qué se eligió esa capa de inspección, qué otros
+        equipos quedaron descartados y por qué.</li>
+    </ul>
+  </div>
+
+  <h3>Comparar un equipo con el siguiente escalón</h3>
+  <p>El desplegable existe para esto: casi nunca en preventa se cotiza a ciegas el primero que
+    cumple. Ábrelo y elige cualquier otro modelo de la lista — toda la ficha, el resumen de
+    dimensionamiento y el BOM se vuelven a pintar para ese equipo. Es la forma normal de
+    comparar "¿y si cotizamos un escalón arriba, por margen de crecimiento?".</p>
+
+  <div class="box box-warn">
+    <span class="box-label">Estás viendo un equipo elegido a mano</span>
+    <p>En cuanto eliges un equipo distinto del recomendado, aparece este aviso, con el nombre
+      del que sí recomienda el motor. Es información, no un error: te dice que lo que ves en
+      pantalla ya no es lo que salió del cálculo, para que no se te olvide antes de cerrar la
+      propuesta.</p>
+  </div>
+
+  <h3>Volver al recomendado</h3>
+  <p>Junto al desplegable aparece el botón <strong>«Volver al recomendado»</strong> en cuanto te
+    apartas de él. Un clic y quedas otra vez sobre el equipo que el motor propone para el
+    tráfico actual — sin tener que volver a buscarlo en una lista que puede tener más de 50
+    equipos.</p>
+
+  <div class="box box-ok">
+    <span class="box-label">Lo que hace la herramienta por ti</span>
+    <p>Si cambias el ancho de banda, los usuarios o el perfil y el equipo que tenías elegido a
+      mano <strong>deja de cumplir</strong>, la herramienta vuelve sola al recomendado — nunca te
+      deja mirando la ficha de un equipo que ya no sirve para lo que acabas de pedir.</p>
+  </div>
+
+  <h3>Insignias que puede traer un equipo</h3>
+  <table>
+    <thead><tr><th>Insignia</th><th>Qué significa</th></tr></thead>
+    <tbody>
+      <tr><td class="tag"><span class="badge badge-rec">recomendado</span></td>
+        <td>El motor lo propone para el tráfico que declaraste ahora mismo.</td></tr>
+      <tr><td class="tag"><span class="badge badge-ref">línea anterior</span></td>
+        <td>Generación previa, todavía en canal. Solo se recomienda si ningún equipo de la
+          generación actual cumple — pero puedes elegirlo a mano en cualquier momento, por
+          ejemplo para ampliar un parque ya instalado con ese modelo.</td></tr>
+      <tr><td class="tag"><span class="badge badge-ref">fin de venta anunciado</span></td>
+        <td>Fabricante ya avisó una fecha de último pedido. Hasta esa fecha se compra con
+          normalidad y sigue siendo recomendable; la ficha muestra la fecha exacta.</td></tr>
+      <tr><td class="tag"><span class="badge badge-ref badge-fuera">fuera de venta</span></td>
+        <td>Ya no se puede pedir. Se muestra igual porque sirve como referencia para ampliar un
+          parque ya instalado, pero <strong>nunca</strong> sale como recomendado para un diseño
+          nuevo.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box box-tip">
+    <span class="box-label">Cuando ningún equipo cumple</span>
+    <p>Si el tráfico pedido supera lo que da el catálogo completo, el recuadro lo dice sin
+      rodeos y explica el motivo más probable (por ejemplo, que estás exigiendo la capa de
+      inspección más alta). Ahí conviene revisar si de verdad hace falta esa capa para todo el
+      tráfico, o si conviene distribuir la carga en más de un equipo.</p>
+  </div>
+</section>
+
+<!-- ═════════════════════════ 04 · BOM ═════════════════════════ -->
+<section class="page">
+  <div class="sec-head">
+    <div class="sec-num">04</div>
+    <div class="sec-head-txt"><h1>La pestaña Equipo y BOM</h1>
+      <p class="kicker">Cantidad, licencias, exportar y enviar al cotizador</p></div>
+  </div>
+
+  <p>Abre la pestaña <strong>«Equipo y BOM»</strong> y vas a ver la ficha completa del equipo que
+    tienes elegido en «Dimensionar» — arrancan sincronizados y se mantienen así mientras no
+    cambies el modelo en ninguna de las dos pestañas.</p>
+
+  <h3>Ficha del equipo</h3>
+  <p>SKU de hardware, capacidad por capa, puertos, consumo y todo el detalle publicado del
+    modelo. Cuando un dato no está confirmado, la ficha lo dice — nunca se rellena un número que
+    no se pueda respaldar.</p>
+
+  <div class="box box-warn">
+    <span class="box-label">Este BOM no corresponde al dimensionamiento</span>
+    <p>Puede pasar de dos formas: eligiendo a mano en el BOM un modelo distinto del que tienes en
+      «Dimensionar», o quedándote sin ningún candidato tras cambiar el tráfico. En ambos casos la
+      pestaña lo avisa arriba de la ficha — es información para que no exportes por error una
+      cotización que ya no responde al diseño actual, no algo que tengas que corregir si en
+      efecto quieres cotizar ese equipo.</p>
+  </div>
+
+  <h3>Cantidad, término y licenciamiento</h3>
+  <ul>
+    <li><strong>Cantidad de equipos</strong> — multiplica el precio y las licencias, que se
+      cotizan por unidad.</li>
+    <li><strong>Término de soporte / licencias</strong> — normalmente 1, 3 o 5 años; el precio
+      del bundle cambia según el plazo.</li>
+    <li><strong>Nivel de licencia y de soporte</strong> — selector propio de cada fabricante
+      (ver sección 6): el bundle de protección de FortiGate, el DNA de Cisco, la suscripción
+      EdgeConnect de Aruba, etc.</li>
+  </ul>
+
+  <div class="box box-tip">
+    <span class="box-label">Cuando un precio dice «sin cotizar»</span>
+    <p>Es una posición intencional del catálogo: antes que inventar un precio, la línea se marca
+      como pendiente. El total de la cotización también se marca como <strong>parcial</strong>
+      en vez de mostrar una suma que aparenta estar completa cuando en realidad le falta un
+      componente.</p>
+  </div>
+
+  <h3>Exportar a Excel</h3>
+  <p>El botón <strong>«Exportar a Excel»</strong> descarga el BOM completo en una hoja de
+    cálculo lista para adjuntar a una propuesta: cada línea con categoría, descripción, SKU,
+    cantidad, precio unitario y el total (marcado como parcial si corresponde).</p>
+
+  <h3>Enviar al cotizador</h3>
+  <p>El botón <strong>«Enviar al cotizador»</strong> añade el equipo que tienes elegido a la
+    cotización multi-fabricante y te lleva directo ahí (sección 7). Es la forma normal de armar
+    un diseño con equipos de varios fabricantes: dimensionas cada pieza por separado y las vas
+    sumando al mismo cotizador.</p>
+
+  <div class="box box-ok">
+    <span class="box-label">Lo que ya trae calculado</span>
+    <p>No hace falta volver a buscar el modelo a mano entre el resto del catálogo: el precio, el
+      fabricante y el texto comercial de la línea salen automáticamente del cotizador, que es
+      quien lleva esos datos.</p>
+  </div>
+
+  <div class="box box-warn">
+    <span class="box-label">Si el equipo no aparece en el cotizador</span>
+    <p>La causa casi siempre es que está <strong>fuera de venta</strong>: el cotizador solo
+      ofrece equipos vigentes, mientras el dimensionador sí los sigue mostrando como referencia
+      para un parque ya instalado. Revisa la insignia del equipo antes de insistir.</p>
+  </div>
+</section>
+
+<!-- ═════════════════════════ 05 · COMPARTIR ═════════════════════════ -->
+<section class="page">
+  <div class="sec-head">
+    <div class="sec-num">05</div>
+    <div class="sec-head-txt"><h1>Compartir un escenario</h1>
+      <p class="kicker">El enlace que reproduce exactamente lo que estás viendo</p></div>
+  </div>
+
+  <p>Cada dimensionador recuerda dos cosas por separado, y las dos existen porque resuelven
+    problemas distintos.</p>
+
+  <div class="cols2">
+    <div class="box box-step">
+      <span class="box-label">Tu navegador recuerda</span>
+      <p>Vuelves mañana a la misma página y aparece el último escenario que estabas armando,
+        con el mismo equipo elegido — no arranca en blanco. Esto es <strong>local de tu
+        computadora</strong>: nadie más lo ve.</p>
+    </div>
+    <div class="box box-step">
+      <span class="box-label">Un enlace transporta</span>
+      <p>El botón <strong>«Copiar enlace de este escenario»</strong> genera una URL que lleva
+        adentro los valores que cambiaste — tráfico, usuarios, perfil y el equipo que tienes
+        elegido. Quien la abre ve exactamente lo mismo que tú, incluido el equipo, aunque nunca
+        haya usado la herramienta.</p>
+    </div>
+  </div>
+
+  <h3>Cuándo se usa cada una</h3>
+  <p>Si abres la página sin ningún enlace especial, se restaura tu último escenario guardado. Si
+    abres un enlace que alguien te compartió, <strong>ese enlace manda</strong> sobre lo que
+    tuvieras guardado — es lo que corresponde cuando alguien te pasó un caso concreto para
+    revisar.</p>
+
+  <div class="box box-tip">
+    <span class="box-label">El enlace se puede leer y editar a mano</span>
+    <p>No es un código sin sentido: solo lleva los valores que cambiaste respecto al valor por
+      defecto, así que un enlace típico es corto —por ejemplo, ancho de banda y perfil de
+      inspección— y se puede ajustar directamente en la barra de direcciones si hace falta un
+      cambio rápido antes de reenviarlo.</p>
+  </div>
+
+  <div class="box box-ok">
+    <span class="box-label">Funciona incluso sin sesión iniciada</span>
+    <p>Si compartes un enlace con alguien que no había entrado a la herramienta, primero le pide
+      usuario y contraseña como siempre, y en cuanto inicia sesión lo lleva directo al escenario
+      del enlace, sin que tenga que pegarlo de nuevo.</p>
+  </div>
+</section>
+
+<!-- ═════════════════════════ 06 · POR FABRICANTE ═════════════════════════ -->
+<section class="page">
+  <div class="sec-head">
+    <div class="sec-num">06</div>
+    <div class="sec-head-txt"><h1>Los seis dimensionadores</h1>
+      <p class="kicker">Qué es distinto en cada fabricante, y por qué</p></div>
+  </div>
+  <p style="margin-bottom:5mm">Todo lo de las secciones 2 a 5 aplica igual en las seis páginas.
+    Esto es solo lo particular de cada una.</p>
+
+  <div class="vendor-card" style="--accent:var(--red)">
+    <h3>Fortinet FortiGate <span class="archivo">dimensionador-fortinet-fortigate.html</span></h3>
+    <p class="eje">Se comprueban tres ejes a la vez, no solo el caudal.</p>
+    <p>Además del ancho de banda, la herramienta compara las <strong>sesiones concurrentes</strong>
+      (se calculan solas a partir de usuarios × sesiones por usuario) y las
+      <strong>sesiones nuevas por segundo</strong> (se derivan de esas mismas sesiones y de
+      cuánto dura en promedio cada una). El resumen dice cuál de los tres ejes es el que
+      realmente limita al equipo elegido — casi siempre es el caudal, y la herramienta lo hace
+      explícito para que no se sobredimensione por un eje que en la práctica sobra.</p>
+  </div>
+
+  <div class="vendor-card" style="--accent:#1F6B4A">
+    <h3>Cisco Catalyst 8000 / ISR <span class="archivo">dimensionador-cisco-catalyst8k.html</span></h3>
+    <p class="eje">Primero se elige la plataforma, después el tamaño.</p>
+    <p>El catálogo mezcla líneas que no son intercambiables aunque compartan Mbps — Catalyst
+      SD-WAN, ISR, Meraki MX, ASR — porque cambian el plano de gestión y el licenciamiento. El
+      selector de <strong>plataforma</strong> acota primero la familia correcta para el proyecto;
+      recién ahí se busca el modelo más pequeño que cumple dentro de esa familia.</p>
+  </div>
+
+  <div class="vendor-card" style="--accent:#0E1A2B">
+    <h3>Huawei NetEngine / AR <span class="archivo">dimensionador-huawei-netengine.html</span></h3>
+    <p class="eje">El tamaño del paquete importa tanto como los Mbps.</p>
+    <p>El <strong>tamaño de trama</strong> que elijas cambia cuántos paquetes por segundo
+      representa el mismo caudal — un equipo puede sobrar en Mbps y quedarse corto en paquetes
+      pequeños. El <strong>perfil de tratamiento del tráfico</strong> (SD-WAN, UTM, WAC) también
+      acota qué familia compite, igual que la plataforma en Cisco.</p>
+  </div>
+
+  <div class="vendor-card" style="--accent:#5C6E85">
+    <h3>MikroTik RouterOS <span class="archivo">dimensionador-mikrotik-routeros.html</span></h3>
+    <p class="eje">El modo de forwarding cambia el techo de capacidad del mismo equipo.</p>
+    <p><em>Forwarding/Routing</em>, <em>IPsec acelerado</em> y <em>WireGuard software</em> no
+      rinden igual en el mismo hardware — elegir el modo correcto es tan importante como el
+      caudal declarado. La cantidad de <strong>feeds de tabla completa</strong> importa aparte
+      porque consume memoria, no procesamiento.</p>
+  </div>
+
+  <div class="vendor-card" style="--accent:#A45B00">
+    <h3>HPE Aruba EdgeConnect <span class="archivo">dimensionador-aruba-edgeconnect.html</span></h3>
+    <p class="eje">Se dimensiona contra un rango de ancho de banda WAN, no una sola cifra.</p>
+    <p>El <strong>Path Conditioning (FEC)</strong> añade tráfico a lo que viaja por el enlace,
+      mientras <strong>Boost</strong> —licenciado en bloques de 100 Mbps y compartido entre todos
+      los equipos del sitio— le resta. La herramienta separa lo que el equipo procesa de lo que
+      el enlace WAN transporta porque ambos se mueven en direcciones opuestas.</p>
+  </div>
+
+  <div class="vendor-card" style="--accent:#EE3124">
+    <h3>Juniper SRX / SSR <span class="archivo">dimensionador-juniper-srx.html</span></h3>
+    <p class="eje">La cifra de portada no es la que dimensiona.</p>
+    <p>Juniper publica el firewall en <strong>paquetes grandes</strong> (la cifra comercial) y en
+      <strong>IMIX</strong> (tráfico mixto, más realista); puede haber un salto de un orden de
+      magnitud entre las dos. La herramienta dimensiona siempre con la cifra IMIX y la del perfil
+      de seguridad que elijas (IPS, Threat Prevention), nunca con la de portada. También separa
+      <strong>SRX</strong> (cortafuegos) de <strong>SSR</strong> (SD-WAN sin túneles) porque no
+      son comparables entre sí.</p>
+  </div>
+</section>
+
+<!-- ═════════════════════════ 07-08 · COTIZADOR Y GUIA ═════════════════════════ -->
+<section class="page">
+  <div class="sec-head">
+    <div class="sec-num">07</div>
+    <div class="sec-head-txt"><h1>El cotizador multi-fabricante</h1>
+      <p class="kicker">cotizador.html</p></div>
+  </div>
+
+  <p>Es la cotización que junta equipos de <strong>cualquier</strong> fabricante en una sola
+    tabla — a diferencia de cada dimensionador, que solo conoce el catálogo de su propia marca.</p>
+
+  <div class="steps">
+    <div class="step"><h4>Filtra por fabricante o busca por nombre</h4>
+      <p>Los botones de filtro arriba del catálogo salen de lo que hay cargado en ese momento —
+        no es una lista fija, así que si un fabricante no tiene botón es porque no tiene equipos
+        vigentes para mostrar.</p></div>
+    <div class="step"><h4>Agrega líneas</h4>
+      <p>A mano desde el catálogo, con «Enviar al cotizador» desde cualquier dimensionador
+        (sección 4), o con <strong>«+ Línea libre»</strong> para un ítem que no está en ningún
+        catálogo — un servicio, una obra civil, un tercero.</p></div>
+    <div class="step"><h4>Ajusta cantidades y notas</h4>
+      <p>Cada línea tiene su cantidad y un campo de notas libre para aclaraciones comerciales.</p></div>
+    <div class="step"><h4>Exporta o imprime</h4>
+      <p><strong>«Exportar CSV»</strong> descarga la tabla completa; <strong>«Imprimir»</strong>
+        prepara una vista limpia, sin los controles de edición, lista para guardar como PDF desde
+        el propio navegador.</p></div>
+  </div>
+
+  <div class="box box-tip">
+    <span class="box-label">«Limpiar»</span>
+    <p>Vacía la cotización actual. Es local del navegador — no hay una copia en el servidor que
+      recuperar después, así que exporta antes de limpiar si quieres conservarla.</p>
+  </div>
+
+  <div class="sec-head" style="margin-top:11mm">
+    <div class="sec-num">08</div>
+    <div class="sec-head-txt"><h1>Guía de diseño interactiva</h1>
+      <p class="kicker">guia-diseno-interactiva.html</p></div>
+  </div>
+  <p>Diagramas de topología por rol de red (sucursal, campus, datacenter...) con el equipo
+    recomendado para cada punto de la red, útiles como referencia rápida antes de entrar al
+    detalle de un dimensionador — o para explicarle el diseño a alguien que no va a operar la
+    herramienta.</p>
+</section>
+
+<!-- ═════════════════════════ 09 · CUENTA ═════════════════════════ -->
+<section class="page">
+  <div class="sec-head">
+    <div class="sec-num">09</div>
+    <div class="sec-head-txt"><h1>Tu cuenta y tu contraseña</h1>
+      <p class="kicker">cuenta.html</p></div>
+  </div>
+
+  <p>Desde el menú lateral, <strong>Cuenta</strong> muestra tu usuario y tu rol, y es el único
+    lugar donde puedes cambiar tu propia contraseña.</p>
+
+  <div class="steps">
+    <div class="step"><h4>Contraseña actual</h4>
+      <p>La que usas hoy para entrar.</p></div>
+    <div class="step"><h4>Nueva contraseña</h4>
+      <p>La que vas a usar a partir de ahora.</p></div>
+    <div class="step"><h4>Repetir la nueva</h4>
+      <p>Confirmación — evita guardar una contraseña mal escrita por error.</p></div>
+  </div>
+
+  <div class="box box-warn">
+    <span class="box-label">Cambiar tu contraseña cierra tus otras sesiones</span>
+    <p>Si tenías la herramienta abierta en otro equipo o navegador, ese acceso deja de ser válido
+      y va a pedir la contraseña nueva la próxima vez. Es intencional: es lo que hace que cambiar
+      la contraseña sirva de algo. No afecta a nadie más — cada persona invalida solo sus propias
+      sesiones al cambiar la suya.</p>
+  </div>
+
+  <p>Si el servidor te avisa que sigues con la <strong>contraseña semilla</strong> (la que se usó
+    para crear tu usuario), es una sugerencia para que la cambies por una propia — no un
+    requisito bloqueante.</p>
+
+  <p>El enlace a <strong>Usuarios</strong> —administración de cuentas y roles— solo aparece si tu
+    perfil tiene ese permiso.</p>
+</section>
+
+<!-- ═════════════════════════ 10 · GLOSARIO ═════════════════════════ -->
+<section class="page">
+  <div class="sec-head">
+    <div class="sec-num">10</div>
+    <div class="sec-head-txt"><h1>Glosario de insignias y avisos</h1>
+      <p class="kicker">Todo lo que vas a ver marcado, en un solo lugar</p></div>
+  </div>
+
+  <table>
+    <thead><tr><th>Lo que ves</th><th>Qué significa</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-rec">recomendado</span></td>
+        <td>El equipo que el motor propone para el escenario actual.</td></tr>
+      <tr><td>«Estás viendo un equipo elegido a mano»</td>
+        <td>Te apartaste del recomendado. Sigue siendo válido, pero ya no es lo que salió del
+          cálculo — el aviso lo deja explícito.</td></tr>
+      <tr><td>«Volver al recomendado»</td>
+        <td>Botón que regresa en un clic al equipo que el motor propone ahora mismo.</td></tr>
+      <tr><td><span class="badge badge-ref">línea anterior</span></td>
+        <td>Generación previa, en canal. Solo se recomienda si nada de la generación actual
+          cumple.</td></tr>
+      <tr><td>«fin de venta anunciado»</td>
+        <td>El fabricante ya fijó una fecha de último pedido. Hasta esa fecha se compra
+          normalmente.</td></tr>
+      <tr><td><span class="badge badge-ref badge-fuera">fuera de venta</span></td>
+        <td>Ya no se puede pedir. Visible como referencia; nunca se recomienda para un diseño
+          nuevo.</td></tr>
+      <tr><td>«sin cotizar»</td>
+        <td>El fabricante no publica un precio de lista confirmado para esa línea. No es un
+          error de la herramienta — se declara así antes que inventar una cifra.</td></tr>
+      <tr><td>«Total parcial»</td>
+        <td>La suma del BOM no incluye alguna línea marcada «sin cotizar». Se distingue del total
+          completo para que nunca se lea como una cifra cerrada.</td></tr>
+      <tr><td>«Este BOM no corresponde al dimensionamiento»</td>
+        <td>El modelo que estás cotizando en la pestaña BOM no es el que tienes elegido en
+          «Dimensionar», o el escenario actual se quedó sin ningún candidato. Revisa antes de
+          exportar.</td></tr>
+      <tr><td>«cifra IPsec» (Cisco, perfil SD-WAN)</td>
+        <td>El equipo no publica una cifra propia de SD-WAN, así que se usa su cifra de IPsec
+          como aproximación — y se marca, porque son dos mediciones distintas.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═════════════════════════ 11 · FAQ ═════════════════════════ -->
+<section class="page">
+  <div class="sec-head">
+    <div class="sec-num">11</div>
+    <div class="sec-head-txt"><h1>Preguntas frecuentes</h1>
+      <p class="kicker">Lo que más se pregunta al empezar a usar la herramienta</p></div>
+  </div>
+
+  <h3>¿Por qué el equipo que tenía elegido cambió solo al mover el ancho de banda?</h3>
+  <p>Solo pasa si no lo habías elegido a mano: mientras no toques el desplegable, la herramienta
+    siempre te muestra el recomendado <strong>actual</strong>, y ese cambia con el tráfico. Si
+    quieres que un equipo se quede fijo mientras pruebas distintos escenarios, elígelo en el
+    desplegable — así queda marcado como elección tuya y no se mueve mientras siga cumpliendo.</p>
+
+  <h3>¿Por qué no aparece ningún fabricante en el filtro del cotizador?</h3>
+  <p>Los botones de filtro se generan a partir de lo que hay cargado en el catálogo — si un
+    fabricante no tiene equipos vigentes en ese momento, no tiene botón. No es una lista fija que
+    haya que editar aparte.</p>
+
+  <h3>¿Puedo cotizar un equipo fuera de venta?</h3>
+  <p>En el dimensionador sí, eligiéndolo a mano — sirve para ampliar un parque ya instalado. En
+    el cotizador no aparece, porque ese catálogo solo lista equipos vigentes.</p>
+
+  <h3>¿Se guarda mi trabajo si cierro el navegador?</h3>
+  <p>Sí, cada dimensionador recuerda tu último escenario en tu propio navegador. Lo que no se
+    guarda solo es el cotizador multi-fabricante si usas «Limpiar» sin haber exportado antes.</p>
+
+  <h3>¿Por qué un precio dice «sin cotizar» en vez de un número?</h3>
+  <p>Porque ese fabricante no tiene un precio de lista confirmado para ese modelo o esa licencia
+    todavía. Antes que mostrar un número inventado, la herramienta lo declara pendiente.</p>
+
+  <h3>A quién preguntar</h3>
+  <p>Para dudas sobre una cifra técnica del catálogo (un dato que falta, un modelo que no
+    aparece) o sobre tu acceso, contacta a quien administra la herramienta en tu organización.</p>
+</section>
+
+</body>
+</html>

@@ -141,6 +141,10 @@ Each page is an HTML file plus a same-named script in `public/js/` — the marku
 - `cuenta.html` + `js/cuenta.js` — identidad (usuario y rol), cambio de la **propia** contraseña y cierre de sesión, sobre `/api/cuenta/*` y `/logout`. Avisa mientras siga en uso la contraseña semilla, y muestra el enlace a `/usuarios` solo si el servidor informa ese permiso.
 - `usuarios.html` + `js/usuarios.js` — panel de administración: usuarios registrados, roles con sus permisos y cuántos usuarios usa cada uno. **El alta está pendiente a propósito** y `POST /api/usuarios` responde 501 diciéndolo. Lo que falta no es el formulario sino decidir cómo llega la primera contraseña a la persona nueva —canal aparte, cambio forzado en el primer acceso, o enlace de alta con caducidad—, que es justo donde estos módulos se vuelven inseguros.
 
+## Manual de usuario
+
+`docs/manual-usuario/` — el manual para quien usa la herramienta, no para quien la mantiene: el recorrido de los seis dimensionadores, la selección de equipo a fondo (el desplegable, las insignias, «Volver al recomendado»), la pestaña de BOM, compartir un escenario y el cotizador. `manual.html` es la fuente, con la misma paleta y tipografías de la propia aplicación; `npm run manual` (`scripts/generar-manual-usuario.js`) lo imprime a PDF con Chromium sin cabeza. Las tipografías están vendidas en `fonts/` en vez de traerse de Google Fonts en cada corrida: el Chromium de este entorno no confía en el certificado del proxy de salida aunque `curl` sí, así que la generación no depende de la red. Playwright queda **fuera** de `package.json` a propósito — es una dependencia pesada para una tarea que se corre pocas veces al año; el script la busca donde ya vive en el entorno de trabajo habitual y dice exactamente qué instalar si no la encuentra.
+
 ## Conventions
 
 - **No inline JavaScript.** The CSP is `script-src 'self'`, so an inline `<script>` block or an `onclick=` attribute simply won't run: put behaviour in `public/js/` and wire handlers through the existing click delegation. Inline `style=` attributes are fine — `style-src` deliberately keeps `'unsafe-inline'`.
