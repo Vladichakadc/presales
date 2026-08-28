@@ -172,6 +172,14 @@ app.get('/vendor/xlsx.js', (req, res) => {
   res.sendFile(require.resolve('xlsx/dist/xlsx.full.min.js'));
 });
 
+// headroom.js: oculta/muestra un encabezado fijo segun el sentido del scroll. Mismo patron
+// que xlsx.js — se sirve desde la dependencia instalada en vez de duplicar el archivo en
+// public/, asi que la version vive en un solo sitio (package.json).
+app.get('/vendor/headroom.js', (req, res) => {
+  res.type('application/javascript');
+  res.sendFile(require.resolve('headroom.js/dist/headroom.js'));
+});
+
 app.use('/api', catalogRoutes);
 app.use('/api', cotizadorRoutes);
 app.use('/api', dimensionadorRoutes);
