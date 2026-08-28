@@ -114,6 +114,29 @@ Cobertura actual por herramienta:
     este repo sabe pedir todavía. Cerrarlo del todo es fabricante por fabricante y modelo por
     modelo, no un solo documento.
 
+    **Fortinet, con pistas concretas ya buscadas (28-08-2026).** `WebSearch` sí funciona en
+    este entorno, pero `WebFetch` está bloqueado **para todo**, no solo para Fortinet —
+    denegado por igual contra `fortinet.com`, `docs.fortinet.com`, `community.fortinet.com`,
+    un mirror del datasheet en `enbitcon.de`, una ficha de reventa en `corporatearmor.com` e
+    incluso `en.wikipedia.org`. Con eso, lo que sigue son **fragmentos de búsqueda sin
+    confirmar por lectura directa** — pistas para verificar, no datos para copiar al
+    catálogo:
+
+    | Modelo | Indicio | Fuente | Confianza |
+    |---|---|---|---|
+    | FortiGate 100F | «Dual built-in non-hot swappable power supplies» | [Technical Tip: Checking FortiGate-100F series power supply](https://community.fortinet.com/t5/FortiGate/Technical-Tip-Checking-FortiGate-100F-series-power-supply/ta-p/267021) | Media |
+    | FortiGate 200F | SKU de repuesto oficial `SP-FDD200F-PS` — "hot-plug / redundant" | [ficha de reventa](https://www.corporatearmor.com/product/fortinet-power-supply-hot-plug-redundant-sp-fdd200f-ps/) | Media |
+    | FortiGate 400F | SKU de repuesto oficial `SP-FAD400F-PS` — "power supply redundant" | [ficha de reventa](https://www.corporatearmor.com/product/fortinet-power-supply-redundant-sp-fad400f-ps/) | Media |
+    | FortiGate 7081F | Hasta 6 fuentes AC de 2500 W en caliente, redundancia añadible | [System Guide — AC PSUs](https://docs.fortinet.com/document/fortigate-7000/hardware/fortigate-7081f-system-guide/12189/ac-psus-and-supplying-ac-power-to-the-chassis) | Media-alta |
+    | FortiGate 7121F | Hasta 8 fuentes hot-swap; SKU de repuesto oficial `FG-7121F-PS-2KAC` (2 kW) | [System Guide — Hot Swapping an AC PSU](https://docs.fortinet.com/document/fortigate-7000/hardware/fortigate-7121f-system-guide/410545/hot-swapping-an-ac-psu) · [SKU en reventa](https://www.corporatearmor.com/product/fortinet-power-supply-hot-plug-redundant-2-kw-fg-7121f-ps-2kac/) | Media-alta |
+    | FortiGate 60F / 90G / 91G (y por extensión 30-121G, 40-91F) | Un solo adaptador externo 12 V DC (SKU `SP-FG60E-PDC`), sin bahía para segunda fuente — indicio de **fuente única**, no doble | [Technical Tip: FortiGate-100/101E y 200/201E power supply](https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-check-power-supply-details-for-FortiGate/ta-p/193557) | Media-alta |
+
+    Sin ningún indicio, ni a favor ni en contra: 400G/401G, 600F, 700G/701G, 900G/901G,
+    1000F/1001F, 1800F/1801F, 2600F/2601F y toda la línea 3000-4800 (F y G) — 45 de los 58
+    modelos. Cómo cerrarlo: desde una máquina con acceso, abrir las URL de arriba, confirmar
+    el texto exacto y transcribirlo a `redund`/`psu` en `fortinet.js` con el mismo cuidado que
+    Huawei — cita literal, nunca inferido del tamaño o la gama del equipo.
+
 ## Limpieza
 
 11. **Nada abierto.** Los cuatro puntos que vivían aquí (el sufijo `-v3_1`, el conjunto
