@@ -75,7 +75,8 @@ const MODELS = [
    ifaces:'16x GE + 4 ranuras MPIM'},
   {id:'SRX380', ser:'SRX 300', seg:'Sucursal grande / PoE',
    fw:20000, fwImix:6500, vpn:4400, vpnImix:1400, ips:2000, atp:null, sess:null, cps:null,
-   ifaces:'16x GE PoE+ + 4x 10GE SFP+ · fuente redundante'},
+   ifaces:'16x GE PoE+ + 4x 10GE SFP+ · fuente redundante',
+   redund:true, psu:{texto:'Fuente redundante, según el datasheet Juniper del SRX380.'}},
 
   // ── SRX1500: el único modelo con la fila completa, ATP incluida ────────────
   {id:'SRX1500', ser:'SRX 1500', seg:'Campus / DC pequeño',

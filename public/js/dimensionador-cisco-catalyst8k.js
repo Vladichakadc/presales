@@ -217,11 +217,11 @@ function render(){
         ['Forwarding (bidireccional)', fmt(m.fwd)],
         ['IPsec VPN', fmt(m.ipsec)],
         ['SD-WAN (IPsec + AppFlow)', m.sdwan?fmt(m.sdwan):`${fmt(m.ipsec)} (cifra IPsec — sin throughput SD-WAN diferenciado publicado)`],
-        ['Redundancia de fuente', m.redund?'De serie':'No de serie'],
         ['LTE integrado', m.lte?'Sí':'Requiere NIM LTE'],
         ['Puertos', esc(m.ports), true],
         ['Precio de lista ref.', m.elp?esc(m.elp):'Consultar CCW'],
       ]},
+      FICHA.seccionAlimentacion(m),
       {titulo:'Licenciamiento propuesto', filas:[
         ['Suscripción DNA', esc(dnaNom)],
         ['Alcance', esc(DNA_DESC[dnaSel]), true],

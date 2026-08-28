@@ -252,6 +252,7 @@ function render(){
         ['Puertos', esc(m.ports), true],
         ['Precio de lista ref.', m.elp?esc(m.elp):'Consultar distribuidor'],
       ]},
+      FICHA.seccionAlimentacion(m),
       {titulo:'Licenciamiento propuesto', filas:[
         ['Nivel de licencia RouterOS', `Nivel ${m.lvl} — embebido en el hardware`],
         ['Tope de sesiones', sc===Infinity?'Sin tope (nivel 6)':`${sc} sesiones PPPoE / hotspot`],

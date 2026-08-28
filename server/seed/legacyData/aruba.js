@@ -110,6 +110,7 @@ const MODELS = [
    ifaces:'8x RJ45 10/100/1000 + 4x SFP+ 1/10G',
    hwSku:'S3N73A', skus:[{sku:'S3N73A',d:'EC-S-P · 4x SFP+ · 10x RJ45 · PSU AC · 2x SSD · NAL'},
                          {sku:'S3N74A',d:'EC-S-P · 4x SFP+ · 10x RJ45 · PSU DC · 2x SSD · NAL'}],
+   psu:{tipo:'AC (S3N73A) o DC (S3N74A) — se elige al pedir', texto:'El SKU fija el tipo de fuente; el catálogo no menciona una segunda fuente por unidad.'},
    ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
 
   {id:'EC-M', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Hub / Sucursal grande',
@@ -131,6 +132,7 @@ const MODELS = [
    hwSku:'S0B67A', skus:[{sku:'S0B67A',d:'EC-XL-H-10G · 6x SFP+ 1/10G'},
                          {sku:'S3N77A',d:'EC-XL-H · 6x SFP28 · 2x NVMe · 2x PSU · 2x SSD · NAL'},
                          {sku:null,d:'EC-XL-P-FIPS (validado FIPS 140)'}],
+   redund:true, psu:{texto:'PSU y almacenamiento redundantes — el SKU S3N77A lista explícitamente 2x PSU.'},
    ds:'https://www.arubanetworks.com/resource/edgeconnect-xl-spec-sheet/', dsFile:'edgeconnect-xl-spec-sheet.pdf'},
 
   {id:'EC-V', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Virtual / Cloud (VMware, KVM, Hyper-V, AWS, Azure)',

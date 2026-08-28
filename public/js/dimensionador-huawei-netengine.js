@@ -201,6 +201,7 @@ function seccionesHuawei(m, c){
   if(m.elp) caract.push(['Precio de lista ref.', m.elp]);
   return [
     {titulo:'Características del equipo', filas:caract},
+    FICHA.seccionAlimentacion(m),
     {titulo:'Licenciamiento propuesto', filas:lic,
      nota:'Todas las licencias se emiten contra el ESN del equipo y se descargan del portal ESDP de Huawei.'},
     {titulo:'Software y gestión', filas:[

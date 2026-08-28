@@ -232,6 +232,7 @@ function seccionesDe(m) {
         ['Interfaces', esc(m.ifaces), true],
         ['Precio de lista ref.', '<span class="warn">sin lista de precios Juniper</span>'],
       ] },
+    FICHA.seccionAlimentacion(m),
     { titulo: 'Licenciamiento propuesto',
       filas: [[esc(b.n || tier), esc(b.svcs || '')]],
       nota: 'Los niveles de suscripción están verificados por nombre; el desglose exacto de servicios de los niveles Advanced no se pudo confirmar y se declara como tal en vez de repartirlo a ojo. Sin SKU ni precio: no hay lista de precios de Juniper en el material disponible.' },
@@ -300,7 +301,8 @@ function renderSsr(need) {
     secciones: (m) => [{ titulo: 'Características',
       filas: [['Serie', esc(m.ser)], ['Segmento', esc(m.seg)], ['Caudal', fmt(m.cap)],
         ['Interfaces', esc(m.ifaces), true],
-        ['Precio de lista ref.', '<span class="warn">sin lista de precios Juniper</span>']] }],
+        ['Precio de lista ref.', '<span class="warn">sin lista de precios Juniper</span>']] },
+      FICHA.seccionAlimentacion(m)],
     alCambiar: (id) => { $('pickModel').value = id; renderBom(); },
   });
   const m = SDWAN.find((x) => x.id === FICHA.elegido('verdict')) || pick;

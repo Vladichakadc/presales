@@ -491,6 +491,7 @@ function render(){
         ['SKU de hardware', m.hwSku?`<code>${esc(m.hwSku)}</code>`:'<span class="warn">Descontinuado — sin SKU nuevo</span>'],
         ['Precio de lista ref.', m.elp?esc(m.elp):'Consultar distribuidor'],
       ]},
+      FICHA.seccionAlimentacion(m),
       {titulo:'Licenciamiento propuesto', filas:[
         ['Bundle FortiGuard', esc(BUNDLES[bundle].n)],
         ['Servicios incluidos', esc(BUNDLES[bundle].svcs), true],

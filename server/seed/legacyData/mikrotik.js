@@ -83,11 +83,14 @@ const MODELS = [
   {id:'CCR2004-16G-2S+', ser:'CCR2004', seg:'Hub campus', fwd:12000, ipsec:4200, cores:4, cpu:'AL32400 1.7 GHz', arch:'arm', ram:4096, lvl:6, poe:null,
    ports:'16x GE + 2x SFP+', cages:{sfp10:2}, optics:['sfp10'], elp:'~ $659', elpN:659},
   {id:'CCR2004-1G-12S+2XS', ser:'CCR2004', seg:'Sucursal grande / Agregación', fwd:12000, ipsec:4200, cores:4, cpu:'AL32400 1.7 GHz', arch:'arm', ram:4096, lvl:6, poe:null,
-   ports:'1x GE + 12x SFP+ + 2x SFP28 (25G) · fuente redundante', cages:{sfp10:12, sfp25:2}, optics:['sfp10','sfp25'], elp:'~ $699', elpN:699},
+   ports:'1x GE + 12x SFP+ + 2x SFP28 (25G) · fuente redundante', cages:{sfp10:12, sfp25:2}, optics:['sfp10','sfp25'], elp:'~ $699', elpN:699,
+   redund:true, psu:{texto:'Fuente redundante, según el datasheet MikroTik del CCR2004.'}},
   {id:'CCR2116-12G-4S+', ser:'CCR2116', seg:'Hub regional / DC Edge', fwd:24000, ipsec:6800, cores:16, cpu:'AL73400 2 GHz', arch:'arm', ram:16384, lvl:6, poe:null,
-   ports:'12x GE + 4x SFP+ · fuente redundante', cages:{sfp10:4}, optics:['sfp10'], elp:'~ $999', elpN:999},
+   ports:'12x GE + 4x SFP+ · fuente redundante', cages:{sfp10:4}, optics:['sfp10'], elp:'~ $999', elpN:999,
+   redund:true, psu:{texto:'Fuente redundante, según el datasheet MikroTik del CCR2116.'}},
   {id:'CCR2216-1G-12XS-2XQ', ser:'CCR2216', seg:'Core WAN / ISP', fwd:100000, ipsec:15000, cores:16, cpu:'AL73400 2 GHz', arch:'arm', ram:16384, lvl:6, poe:null,
-   ports:'1x GE mgmt + 12x 25GE (SFP28) + 2x 100GE (QSFP28) · fuente hot-swap redundante', cages:{sfp25:12, qsfp100:2}, optics:['sfp25','qsfp100'], elp:'~ $5,999', elpN:5999},
+   ports:'1x GE mgmt + 12x 25GE (SFP28) + 2x 100GE (QSFP28) · fuente hot-swap redundante', cages:{sfp25:12, qsfp100:2}, optics:['sfp25','qsfp100'], elp:'~ $5,999', elpN:5999,
+   redund:true, psu:{texto:'Fuente hot-swap redundante, según el datasheet MikroTik del CCR2216.'}},
 
   // ── CHR — RouterOS virtual ───────────────────────────────────────────────────
   // El "hardware" aquí es la licencia: el tope de throughput es por interfaz, y los recursos

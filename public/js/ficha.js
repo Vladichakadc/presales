@@ -211,12 +211,50 @@
     }
   }
 
+  // ── ALIMENTACION ELECTRICA: SI ES DE DOBLE FUENTE Y SUS CARACTERISTICAS ────────────────
+  //
+  // `m.redund` es el mismo campo que Cisco ya traia (true/false, 100% de su catalogo
+  // verificado): se extiende aqui a los otros cinco fabricantes, pero solo donde el propio
+  // catalogo lo dice explicitamente — nunca se deduce del tamano o la gama del equipo. Es
+  // tres estados, no dos: true (doble fuente confirmada), false (fuente unica confirmada,
+  // como en el ISR 1000 o el Catalyst 8200), y ausente/null (el catalogo no lo dice, que es
+  // la mayoria de los 190 y tantos modelos de este catalogo). Tratar "no lo dice" como "no
+  // tiene" seria inventar un dato negativo, que es tan falso como inventar uno positivo.
+  //
+  // `m.psu` es opcional y solo aparece donde el catalogo trae ademas la cifra: consumo en
+  // vatios, tipo de fuente (AC/DC) o el rango de entrada. Ahora mismo eso es sobre todo
+  // Huawei (los "fuentes 1+1 · N W tipicos" de la serie NE8000 y AR8700, transcritos tal
+  // cual del propio catalogo) y puntualmente Aruba. El resto queda `null`: no hay una hoja
+  // de consumo electrico publicada en el Product Matrix de Fortinet, el datasheet abreviado
+  // de MikroTik ni el material de Juniper que ya usa este catalogo — completar esto pediria
+  // el datasheet mecanico de cada modelo, no una tabla como las que resuelven npm run cps o
+  // npm run juniper.
+  function seccionAlimentacion(m) {
+    if (!m) return { titulo: 'Alimentación eléctrica', filas: [] };
+    const redund = m.redund;
+    const psu = m.psu || {};
+    const filas = [
+      ['Fuente redundante (doble fuente)', redund == null
+        ? '<span class="warn">el catálogo no lo especifica</span>'
+        : (redund ? 'Sí — de serie' : 'No — fuente única')],
+    ];
+    if (psu.watts != null) filas.push(['Consumo típico', `${psu.watts} W`]);
+    if (psu.tipo) filas.push(['Tipo de fuente', esc(psu.tipo)]);
+    if (psu.volts) filas.push(['Rango de entrada', esc(psu.volts)]);
+    if (psu.amps) filas.push(['Salida', esc(psu.amps)]);
+    const nota = psu.texto
+      ? esc(psu.texto)
+      : (redund == null ? 'Confirmar en el datasheet del fabricante antes de comprometerlo en la propuesta.' : undefined);
+    return { titulo: 'Alimentación eléctrica', filas, nota };
+  }
+
   const API = {
     // La regla se expone para que las cinco paginas ordenen y elijan con el mismo criterio
     // en vez de reimplementarlo cada una a su manera, que es como se llego a tres.
     rango,
     recomendable,
     marca,
+    seccionAlimentacion,
     // Ordena dejando primero lo vigente y al final lo que esta fuera de venta, conservando
     // el criterio propio de cada pagina (capacidad, precio, medio) como desempate.
     ordenar(lista, desempate) {

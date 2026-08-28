@@ -103,6 +103,16 @@ Cobertura actual por herramienta:
    «(cifra IPsec)», pero hay que confirmar si Cisco publica el número real del 8355.
 10. **Precios de Aruba: todos en `null`.** No existe lista de precios en el material
     disponible.
+15. **Alimentación eléctrica: cobertura real, no completa.** La nueva sección «Alimentación
+    eléctrica» de la ficha (agosto 2026) solo tiene dato donde el propio catálogo ya traía
+    una frase publicada — Cisco 21/21 (ya existía), Huawei 17/40, MikroTik 3/15, Aruba 2/21,
+    Juniper 1/12 SRX, **Fortinet 0/58**. El resto queda `null` y la ficha lo declara sin
+    rodeos. Esto **no es lo mismo** que los bloqueados por egreso de más arriba: el Product
+    Matrix de Fortinet, el material de Juniper y el datasheet abreviado de MikroTik que este
+    catálogo ya usa **no traen** consumo eléctrico por modelo — no es una tabla que falte
+    copiar, es una hoja mecánica/eléctrica aparte por cada modelo, que ningún importador de
+    este repo sabe pedir todavía. Cerrarlo del todo es fabricante por fabricante y modelo por
+    modelo, no un solo documento.
 
 ## Limpieza
 
@@ -127,6 +137,34 @@ Cobertura actual por herramienta:
     de limpieza. La prueba fija el comportamiento actual para que cambiarlo sea deliberado.
 
 ## Cerrado recientemente
+
+### Alimentación eléctrica en la ficha: doble fuente y sus características (2026-08-28)
+
+Petición del dueño del repo. Antes de escribir código se auditaron los seis catálogos
+buscando qué dato eléctrico ya existía —y apareció uno que no se sabía que estaba: Cisco ya
+traía `redund: true/false` al 100 % de sus 21 modelos, mostrado dentro de «Características
+del equipo». Los otros cinco fabricantes no tenían nada estructurado, pero sí frases sueltas
+ya publicadas («fuentes 1+1 · 205.8 W típicos», «doble fuente 350 W», «PSU y almacenamiento
+redundantes») escondidas en el campo `ports`/`ifaces` de texto libre.
+
+**La regla que sostiene todo esto**: `redund` es de tres estados, no dos. `true` y `false` son
+hechos verificados (Cisco los tiene los 21); `undefined` es «el catálogo no lo dice», y
+tratarlo como `false` habría inventado un dato negativo — exactamente lo que este catálogo
+evita en todo lo demás. `FICHA.seccionAlimentacion(m)` en `ficha.js` centraliza esa distinción
+una sola vez para las seis páginas, en vez de que cada una la reimplemente con su propio
+riesgo de leer `undefined` como «no».
+
+Se transcribieron a `redund`/`psu` estructurados los datos que el catálogo ya tenía publicados
+en prosa — nunca se dedujo nada del tamaño o la gama del equipo. Cobertura resultante: Cisco
+21/21 (ya existía), Huawei 17/40 (serie NE8000 y AR8140, con vatios), MikroTik 3/15, Aruba
+2/21, Juniper 1/12 SRX, Fortinet 0/58 — el Product Matrix no publica esta cifra. El hueco
+restante queda como pendiente 15, con la aclaración de que no es un simple bloqueo de egreso:
+ninguna de las fuentes que este catálogo ya usa trae consumo eléctrico por modelo.
+
+Verificado: 8 pruebas nuevas en `test/ficha-alimentacion.test.js` (76 en total), conducido en
+Chromium contra un servidor con `NODE_ENV=production` en las seis páginas — sección presente,
+sin fila duplicada en Cisco, sin errores de consola, y el aviso «el catálogo no lo especifica»
+en vez de un «No» falso donde el dato no existe.
 
 ### El dimensionador de Fortinet mostraba siempre el mismo equipo (2026-08-27)
 

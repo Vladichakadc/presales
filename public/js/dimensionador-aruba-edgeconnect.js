@@ -318,6 +318,7 @@ function render(){
 
     return [
       {titulo:'Características del equipo', filas:caract},
+      FICHA.seccionAlimentacion(m),
       {titulo:'Licenciamiento propuesto', filas:lic,
        nota:m.fam==='ec'?'La suscripción de EdgeConnect va por <b>caudal del sitio</b>, no por modelo de appliance.'
                         :'Los gateways se gestionan por suscripción de Central; la serie 9200 escala su capacidad por licencia perpetua sobre el mismo hardware.'},
