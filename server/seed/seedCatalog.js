@@ -12,6 +12,7 @@ const fortinetData = require('./legacyData/fortinet');
 const juniperData = require('./legacyData/juniper');
 const mikrotikData = require('./legacyData/mikrotik');
 const arubaData = require('./legacyData/aruba');
+const nokiaData = require('./legacyData/nokia');
 const guiaRoles = require('./legacyData/guiaRoles');
 
 // eolModels: modelos que el catalogo lista pero que ya no se venden. Marca `eol` sobre el
@@ -367,6 +368,17 @@ async function seedCatalog() {
     { priceDisplay: 'Consultar', priceNumeric: null },
     { where: { vendorId: vendorIds.aruba } },
   );
+
+  // ── Nokia (fabric de datacenter, 7220 IXR) ─────────────────────────────────
+  // nokia.js manda sobre indexPR.nokia: aporta los puertos estructurados (cantidad, velocidad,
+  // uso en el fabric) que un motor de sizing leaf-spine necesita, y que indexPR/cotizadorCatalog
+  // solo tenían como texto libre. Categoría propia ('switch_fabric') porque no se dimensiona
+  // igual que un firewall o un router de borde: el dimensionador elige un LEAF y un SPINE con
+  // sus cantidades, no un único equipo. Los 14 modelos Nokia restantes (7250 IXR, 7750 SR) no
+  // llevan datos aquí a propósito — ver la cabecera de legacyData/nokia.js y PENDIENTES.md.
+  await seedDimensionadorModels(vendorIds.nokia, nokiaData.MODELS, {
+    categoryFn: () => 'switch_fabric',
+  });
 
   await seedRoleRecommendations(vendorIds);
 

@@ -49,15 +49,19 @@ dominios.** La primera corrida del vigía leyó las seis fuentes con URL sin un 
 (Cisco 173.913 bytes, Juniper 392.019, MikroTik 459.308, HPE 333.670, Nokia 307.119). No pasan
 por el proxy de la organización. Eso **no** convierte los pendientes de abajo en automáticos
 —descargar un PDF y leer una tabla sin equivocarse de fila son cosas distintas, y este
-repositorio no automatiza la segunda a propósito— pero sí abre una vía que no existía: el
-pendiente 3 ya se cierra desde ahí (`datasheets-aruba.yml`), y el pendiente 2 (Fortinet `cps`)
-también, con el mismo patrón — un workflow (`traer-fortinet-matrix.yml`) baja el documento a
-una rama de transporte que se lee y se descarta, nunca a `main` ni a un PR, porque no es un
-activo de la aplicación. Juniper podría cerrarse igual si alguien dispara ese workflow — pero
-**Huawei no**: investigado el 2026-09-02 (ver *Cerrado recientemente*), `e.huawei.com` y
-`support.huawei.com` bloquean el navegador automatizado con un "Access Denied" propio del
-fabricante (Akamai), categoría distinta de un 403 de proxy y que este repositorio no intenta
-evadir. El pendiente 14 sigue necesitando una persona con navegador real.
+repositorio no automatiza la segunda a propósito—, y **tampoco significa que cada dominio se
+comporte igual bajo carga real**: el vigía solo pide una URL por fabricante; pedir 24 seguidas
+(el caso de Aruba) puede toparse con límites que una sola petición no revela. El pendiente 2
+(Fortinet `cps`) sí se cerró desde aquí — un workflow (`traer-fortinet-matrix.yml`) baja el
+documento a una rama de transporte que se lee y se descarta, nunca a `main` ni a un PR, porque
+no es un activo de la aplicación. Juniper podría cerrarse igual si alguien dispara ese
+workflow. **Aruba y Huawei no**: investigados el 2026-09-02 (ver *Cerrado recientemente*).
+Huawei bloquea el navegador automatizado con un "Access Denied" propio del fabricante
+(Akamai), categoría distinta de un 403 de proxy y que este repositorio no intenta evadir.
+Aruba, al pedir sus 24 datasheets en una sola corrida, tropezó con 403/timeout en 21 de
+ellos — y aparte, el permiso de GitHub para que Actions abra PRs está desactivado en este
+repositorio, un ajuste independiente del bloqueo de HPE. Los pendientes 3 y 14 siguen
+necesitando una persona con navegador real.
 
 El procedimiento completo —incluido qué viaja de local a producción y por qué no es la base
 de datos— está en [`IMPORTAR-CATALOGO.md`](IMPORTAR-CATALOGO.md).
@@ -65,7 +69,7 @@ de datos— está en [`IMPORTAR-CATALOGO.md`](IMPORTAR-CATALOGO.md).
 | # | Qué falta | Cómo se cierra | Bloqueo |
 |---|---|---|---|
 | ~~2~~ | ~~`cps` en 37 de los 58 FortiGate~~ **Resuelto (2026-09-02)** — ver *Cerrado recientemente*. Quedan 5 modelos en `null` (100F/200F/400F/401F/600F) que no están en el documento, no un bloqueo de acceso. | — | resuelto vía Actions |
-| 3 | **PDFs de datasheets de Aruba.** `public/datasheets/` va vacío a propósito; la página enlaza la URL de HPE mientras no esté el archivo local. | **Ya no hace falta una máquina propia**: el workflow `datasheets-aruba.yml` se dispara a mano en GitHub Actions y deja un PR con los PDF y su peso medido. Merge o no, es decisión de peso del repo (ver `public/datasheets/LEEME.md`). | resuelto vía Actions |
+| 3 | **PDFs de datasheets de Aruba.** `public/datasheets/` va vacío a propósito; la página enlaza la URL de HPE mientras no esté el archivo local. **Ejecutado por primera vez el 2026-09-02** (ver *Cerrado recientemente* — «investigado», no «cerrado»): de 24 documentos, HPE devolvió 21 fallos (403 o timeout) al ejecutor de GitHub Actions y solo 1 PDF de bajo valor se descargó — un bloqueo del lado de HPE, distinto del de este entorno. Y aunque hubiera bajado los 24, el paso de abrir el PR falló aparte: este repositorio tiene desactivado el permiso «Allow GitHub Actions to create pull requests» (ajuste de GitHub, no de este workflow). | El workflow (`datasheets-aruba.yml`) está listo y el permiso de PR se activa en un clic (Settings → Actions → General → Workflow permissions), pero incluso con eso resuelto, HPE sigue bloqueando casi todo el lote — hace falta una máquina con navegador real, igual que Huawei. | HPE bloquea/limita al ejecutor de GitHub Actions (403/timeout en la mayoría de las URL); el repositorio no permite que Actions abra PRs |
 | 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ` y las 23 AR no traen `mpps`. El motor no inventa: muestra lo que hay. | **El importador ya existe**: `npm run huawei -- --check` para ver los huecos, `npm run huawei -- specs.xlsx` para las cifras y `npm run huawei -- eox.csv --eol` para el fin de venta. Falta el dato, no la herramienta — **y, a diferencia de Fortinet/Aruba, esta vez no se cierra vía Actions** (ver *Cerrado recientemente*, investigación 2026-09-02): hace falta una persona con navegador real, y sesión de Huawei si hace falta el detalle fino de Info-Finder. | `e.huawei.com`, `support.huawei.com` bloquean el navegador automatizado (Akamai); `info.support.huawei.com` exige sesión |
 | 4 | **Comprobar el sitio en vivo tras desplegar.** Se verifica que el deploy llegue a SUCCESS y que los logs muestren `[seed]` y `Presales corriendo en`, pero la página en producción solo puede abrirla una persona. | Abrir `presales.up.railway.app` y revisar la pantalla tocada. | `presales.up.railway.app` |
 
@@ -81,7 +85,7 @@ Cobertura actual por herramienta:
 | MikroTik | sí | sí | sí | sí |
 | Aruba | sí | sí | sí | sí |
 | **Juniper** | sí (22 modelos) | sí (21) | sí | **sí** (nuevo) |
-| **Nokia** | sí (18 modelos) | sí (18) | sí | **no** |
+| **Nokia** | sí (18 modelos) | sí (18) | sí | **parcial** (4/18 — fabric 7220 IXR) |
 | ~~Arista~~ | retirado | retirado | retirado | — |
 
 5. **Completar el catálogo del dimensionador Juniper — parcialmente resuelto (2026-09-02),
@@ -108,12 +112,13 @@ Cobertura actual por herramienta:
    para la cobertura casilla por casilla) sigue siendo la vía: reconoce las columnas por su
    cabecera, resuelve Gbps frente a Mbps sin multiplicar a ojo y **rechaza la fila si alguna de
    sus columnas contradice lo ya verificado**, que es lo que caza una fila desplazada.
-6. **Dimensionador Nokia.** No es copiar el motor. El catálogo es fabric de datacenter
-   (7220 IXR sobre SR Linux) y agregación de operador (7250 IXR, 7750 SR): no se dimensiona
-   por «ancho de banda WAN» sino por **densidad de puertos, sobresuscripción leaf-spine y
-   diseño de fabric**. Necesita un motor propio — número de leafs, uplinks por leaf, factor de
-   sobresuscripción, puertos de acceso por velocidad. Es la pieza más grande de esta lista y
-   conviene tratarla como un proyecto aparte.
+6. **Dimensionador Nokia — parcial (2026-09-02), ver *Cerrado recientemente*.** La línea
+   **7220 IXR** (4 modelos, fabric de datacenter puro) ya tiene motor propio — leafs, spines,
+   uplinks por leaf y sobresuscripción, sobre `dimensionador-nokia-7220ixr.html`. Lo que sigue
+   sin cubrir es la **agregación de operador** (7250 IXR, 7750 SR — 14 modelos): esos no se
+   dimensionan como fabric leaf-spine sino por capacidad y densidad de puertos de un único
+   equipo, el motor que ya usan los otros seis fabricantes — necesita su propio proyecto
+   (motor + página), no una extensión del de fabric.
 
 ## Datos por confirmar
 
@@ -179,6 +184,63 @@ Cobertura actual por herramienta:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Dimensionador Nokia — pendiente 6, primera entrega: fabric 7220 IXR (2026-09-02)
+
+Primera entrega del pendiente que el propio registro marcaba como «la pieza más grande de
+esta lista»: un motor de sizing **distinto** al de los otros seis fabricantes, porque un
+fabric de datacenter no se resuelve con «un equipo cumple un requerimiento» — se resuelve con
+un LEAF y un SPINE, cada uno con su cantidad.
+
+**Alcance, recortado a propósito**: de los 18 modelos Nokia del portal, esta entrega cubre los
+4 de la línea **7220 IXR** (D1/D2L/D3L/D5) — la única con puertos de una sola velocidad, sin
+modos de breakout, y que Nokia posiciona sin ambigüedad como fabric de datacenter (acceso,
+leaf, spine). Los 14 restantes (7250 IXR de agregación/edge, 7750 SR de core IP-MPLS) se
+dimensionan por capacidad y densidad de puertos de un único equipo — el motor de los otros
+seis fabricantes, no el de fabric — y quedan como fase 2, documentados, no silenciados.
+
+**El motor**: un diseño Clos de dos capas en malla completa (cada leaf conecta un puerto a
+*cada* spine, para ECMP). A partir de servidores a conectar, velocidad de acceso y
+sobresuscripción deseada: puertos de acceso necesarios → leafs necesarios → uplinks por leaf
+→ spines necesarios (= uplinks por leaf) → spine con puertos suficientes para todos los
+leafs. El D3L («Leaf / Spine compacto», puertos uniformes que sirven para lo uno o lo otro)
+necesitó una segunda rama del motor: reparte su propio pool de puertos entre acceso y subida
+en vez de sumar dos grupos separados.
+
+Un caso queda deliberadamente sin resultado: acceso a 1 GbE (D1) no tiene con qué spine
+conectar dentro de esta línea — sus uplinks son de 10 GbE y ningún otro modelo de la 7220 IXR
+tiene puertos de spine a esa velocidad. Se reporta el hueco, no se inventa un intermedio.
+
+Archivos nuevos: `legacyData/nokia.js` (los 4 modelos, puertos estructurados a partir del
+mismo texto ya verificado en `indexPR.js`, sin inventar ni corregir ningún dato — solo
+estructurado), `dimensionador-nokia-7220ixr.html`/`.js` (no reutiliza `js/ficha.js`, que
+asume un único equipo elegible; sí reutiliza `js/bom.js` y `js/estado.js`). Verificado con el
+servidor real en `NODE_ENV=production` y Chromium: tres escenarios (25 GbE, 100 GbE, 1 GbE
+sin diseño posible), enlace desde el portal, pestaña BOM con 2 líneas. 129 pruebas.
+
+### Investigado el pendiente 3 (Aruba): ejecutado por primera vez, y no se completó (2026-09-02)
+
+Primera corrida real de `datasheets-aruba.yml`, que llevaba desde agosto marcado «resuelto vía
+Actions» sin haberse disparado nunca — la marca era una expectativa razonable por el patrón
+que sí funcionó con Fortinet, no una medición. Al correrlo de verdad:
+
+- **HPE bloqueó la mayoría del lote**: de 24 documentos, 9 devolvieron 403, 12 agotaron el
+  tiempo de espera y 2 resultaron ser páginas de aterrizaje en vez de un PDF directo. Solo
+  **1 PDF** (`sd-wan-ordering-guide.pdf`, 123 KB) se descargó limpio. El vigía había leído sin
+  problema la página de HPE que `FUENTES.aruba` registra — pero esa es una sola petición; pedir
+  24 documentos distintos de HPE en la misma corrida topó con límites que una petición sola no
+  revela. Bloqueo real del lado de HPE, no de este entorno.
+- **Y aparte, el paso de abrir el PR falló por un motivo independiente**: este repositorio
+  tiene desactivado el permiso de GitHub «Allow GitHub Actions to create pull requests»
+  (Settings → Actions → General → Workflow permissions). No es algo que el workflow pueda
+  resolver solo, y no se intentó rodear activando nada por cuenta propia — es una decisión de
+  configuración del repositorio, no de este workflow.
+
+La rama `datasheets/aruba` quedó publicada con el único PDF descargado; no vale la pena un PR
+para un solo documento de bajo valor, así que no se abrió a mano. `PENDIENTES.md` deja de
+marcar el pendiente 3 como resuelto — el importador está listo, el hallazgo de HPE bloqueando
+un lote grande es nuevo y queda documentado, y sigue haciendo falta una persona con navegador
+real, igual que Huawei.
 
 ### Pendiente 5 (Juniper SRX): la matriz oficial corrigió datos que la reconstrucción por búsqueda había adivinado mal (2026-09-02)
 

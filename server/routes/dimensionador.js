@@ -6,6 +6,7 @@ const {
   toDimensionadorJuniper,
   toDimensionadorMikrotik,
   toDimensionadorAruba,
+  toDimensionadorNokia,
 } = require('../services/catalogProjection');
 
 const router = express.Router();
@@ -17,6 +18,7 @@ const projections = {
   juniper: toDimensionadorJuniper,
   mikrotik: toDimensionadorMikrotik,
   aruba: toDimensionadorAruba,
+  nokia: toDimensionadorNokia,
 };
 
 router.get('/dimensionador/:vendor', async (req, res, next) => {

@@ -367,6 +367,25 @@ async function toDimensionadorAruba() {
   };
 }
 
+// Nokia: fabric de datacenter (7220 IXR). Distinto de los otros seis — no hay un solo
+// "modelo elegido", el dimensionador arma un diseño con un LEAF y un SPINE y sus cantidades,
+// así que aquí solo se entrega el catálogo de modelos con sus puertos estructurados; el
+// motor de sizing (leafsNecesarios/spineNecesario) vive en public/js/dimensionador-nokia-7220ixr.js,
+// igual que las otras páginas calculan del lado del cliente sobre el catálogo servido.
+async function toDimensionadorNokia() {
+  const vendorIds = await vendorIdMap();
+  const vendorId = vendorIds.nokia;
+
+  const products = await Product.findAll({ where: { vendorId, category: 'switch_fabric' } });
+  const models = products
+    .filter((p) => p.specs && Array.isArray(p.specs.puertos))
+    .map((p) => ({
+      id: p.model, ...p.specs, eol: p.eol, elp: p.priceDisplay, elpN: p.priceNumeric,
+    }));
+
+  return { models };
+}
+
 // guia-diseno-interactiva.html EQ shape: {role: [{v,color,model,spec,alt,elp}, ...]}
 async function toGuiaRoles() {
   const recs = await RoleRecommendation.findAll({
@@ -399,5 +418,6 @@ module.exports = {
   toDimensionadorJuniper,
   toDimensionadorMikrotik,
   toDimensionadorAruba,
+  toDimensionadorNokia,
   toGuiaRoles,
 };

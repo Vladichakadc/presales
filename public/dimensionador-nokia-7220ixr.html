@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dimensionador y BOM Nokia — Fabric de datacenter 7220 IXR</title>
+<meta name="description" content="Dimensionamiento de fabric leaf-spine con Nokia 7220 IXR: puertos de acceso, sobresuscripción y diseño Clos de dos capas. Genera el BOM de leafs y spines.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" data-fuente>
+<style>
+:root{--paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;--red:#124191;--amber:#A45B00;--green:#1F6B4A;--card:#FFF}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1140px;margin:0 auto;padding:26px 18px 80px}
+.masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0 0 6px}
+h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28px,5.5vw,48px);line-height:.98;text-transform:uppercase;margin:0}
+.sub{color:var(--steel);max-width:64ch;margin:8px 0 0;font-size:14.5px}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);text-decoration:none;margin-bottom:18px;transition:color .15s}
+.back-link:hover{color:var(--red)}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--rule);margin-bottom:22px}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:11px 18px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.03em;text-transform:uppercase;color:var(--steel)}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--red)}
+.tabpane[hidden]{display:none}
+
+.cols{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:880px){.cols{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px;margin-bottom:16px}
+.panel h2{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.field{margin-bottom:16px}.field:last-child{margin-bottom:0}
+label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px}
+.hint{font-size:11.5px;color:var(--steel);margin-top:5px;line-height:1.4}
+.row{display:flex;gap:8px}
+input[type=number],select{width:100%;padding:9px 10px;border:1px solid var(--rule);border-radius:2px;background:#fff;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500}
+select{font-family:'Barlow',sans-serif;font-size:13.5px}
+input:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer}
+.check input{margin:3px 0 0;accent-color:var(--red)}
+
+.diseno{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+@media(max-width:520px){.diseno{grid-template-columns:1fr}}
+.rolCard{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:18px}
+.rolCard h3{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0 0 8px}
+.rolCard .modelo{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:24px;text-transform:uppercase;margin:0 0 2px;line-height:1.05}
+.rolCard .cant{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--steel);margin-bottom:10px}
+.rolCard .cant b{color:var(--ink);font-weight:700;font-size:16px}
+.rolCard ul{list-style:none;margin:0;padding:0;font-size:12.5px}
+.rolCard li{padding:4px 0;border-top:1px solid var(--paper);display:flex;justify-content:space-between;gap:10px}
+.rolCard li:first-child{border-top:0}
+.rolCard li b{font-family:'IBM Plex Mono',monospace;font-weight:600}
+
+.verdict{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px;margin-bottom:16px}
+.verdict .tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 8px}
+.verdict .cifra{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(20px,3.6vw,30px);margin:0}
+.verdict .cifra em{font-style:normal;color:var(--red)}
+.verdict p{font-size:13px;color:var(--steel);margin:8px 0 0}
+.warn{color:var(--amber)}
+.bad{color:#C8102E}
+.flag-ft{background:#FFF5F5;border:1px solid #FECACA;border-left:3px solid #C8102E;border-radius:2px;padding:12px 14px;font-size:12.5px;line-height:1.5;margin-bottom:18px}
+.flag-ft b{color:#991b1b}
+.flag-amber{background:#FFFBEB;border:1px solid #FDE68A;border-left:3px solid var(--amber);border-radius:2px;padding:12px 14px;font-size:12.5px;line-height:1.5;margin-bottom:18px}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);font-weight:500;padding:0 8px 7px 0;border-bottom:1px solid var(--rule)}
+td{padding:8px 8px 8px 0;border-bottom:1px solid var(--paper);vertical-align:top}
+td.n,code{font-family:'IBM Plex Mono',monospace;font-size:12px}
+td.r{text-align:right}
+code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowrap}
+.scroll{overflow-x:auto}
+.note{margin-top:22px;font-size:12px;color:var(--steel);line-height:1.55;border-top:1px solid var(--rule);padding-top:14px}
+.note b{color:var(--ink)}
+#bomOut{width:100%;height:240px;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:10px;border:1px solid var(--rule);border-radius:2px;margin-top:10px}
+.btn{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px;cursor:pointer}
+.btn.ghost{background:#fff;color:var(--ink)}
+.hidden{display:none!important}
+</style>
+<script src="/js/fuentes.js" defer></script>
+</head>
+<body>
+<div class="wrap">
+
+<a href="index.html" class="back-link">&#8592; Volver al Portal Presales</a>
+
+<header class="masthead">
+  <p class="eyebrow">Nokia &middot; Fabric de datacenter &middot; 7220 IXR sobre SR Linux</p>
+  <h1>Dimensionador<br>Fabric Nokia 7220 IXR</h1>
+  <p class="sub">Diseño Clos de dos capas (leaf-spine): a partir de los servidores a conectar, la velocidad de acceso y la sobresuscripción deseada, calcula cuántos leafs y cuántos spines hacen falta — no un único equipo, como en los demás dimensionadores de este portal. Cubre la línea 7220 IXR (acceso, leaf y spine de datacenter); la 7250 IXR y la 7750 SR (agregación/core IP-MPLS) se dimensionan distinto y no están todavía — ver la nota al final de la página.</p>
+</header>
+
+<div class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-tab="calc">Dimensionar</button>
+  <button role="tab" aria-selected="false" data-tab="bom">Equipo y BOM</button>
+</div>
+
+<!-- ════ TAB 1 · CALCULADORA ════ -->
+<div class="tabpane" id="pane-calc">
+<div class="cols">
+<div>
+  <section class="panel">
+    <h2>1 · Servidores a conectar</h2>
+    <div class="field">
+      <label for="servers">Cantidad de servidores / hosts</label>
+      <input type="number" id="servers" value="96" min="1" step="1">
+    </div>
+    <div class="field">
+      <label for="accesoVel">Velocidad de puerto por servidor</label>
+      <select id="accesoVel">
+        <option value="1">1 GbE</option>
+        <option value="25" selected>25 GbE</option>
+        <option value="100">100 GbE</option>
+      </select>
+      <p class="hint">Solo se listan las velocidades de acceso que la línea 7220 IXR realmente publica.</p>
+    </div>
+    <div class="field">
+      <label class="check"><input type="checkbox" id="chkDual"> <span>Doble homing — cada servidor conecta a 2 leafs<span class="hint" style="display:block;margin-top:2px">Duplica los puertos de acceso necesarios; es lo que evita que un solo leaf caído deje un servidor sin red.</span></span></label>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>2 · Diseño de fabric</h2>
+    <div class="field">
+      <label for="oversub">Sobresuscripción acceso : fabric</label>
+      <select id="oversub">
+        <option value="1">1:1 — sin bloqueo</option>
+        <option value="2">2:1</option>
+        <option value="3" selected>3:1 — habitual en DC</option>
+        <option value="4">4:1</option>
+        <option value="6">6:1</option>
+      </select>
+      <p class="hint">Cuánta capacidad de acceso comparte cada Gbps de subida al spine. 3:1 es un punto de partida típico; 1:1 exige más puertos de fabric por leaf.</p>
+    </div>
+  </section>
+</div>
+
+<div>
+  <div class="verdict" id="verdict"></div>
+  <div class="diseno" id="disenoBox"></div>
+
+  <section class="panel">
+    <h2>Resumen de sizing</h2>
+    <div id="sizingBox"><p style="font-size:13.5px;color:var(--steel)">Completa los parámetros para ver el resumen.</p></div>
+  </section>
+
+  <div class="note">
+    <b>Nota metodológica.</b> El diseño es un Clos de dos capas de malla completa: cada leaf conecta un puerto a <em>cada</em> spine (ECMP), así que el número de spines es exactamente el número de uplinks que necesita un leaf, y cada spine necesita un puerto por cada leaf del fabric. No modela breakout de puertos (dividir un puerto de mayor velocidad en varios de menor) ni redundancia N+1 de spines más allá de la que ya aporta la malla completa — para eso, súmalo a mano sobre el resultado. Los 14 modelos Nokia restantes (7250 IXR de agregación/edge, 7750 SR de core IP-MPLS) no se dimensionan como fabric leaf-spine y no están cubiertos por esta calculadora todavía.
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ════ TAB 2 · BOM ════ -->
+<div class="tabpane" id="pane-bom" hidden>
+<div class="cols">
+<div>
+  <div class="flag-ft">
+    <b>Aviso de preventa:</b> no hay lista de precios de Nokia en el material disponible para este catálogo. Todas las líneas de equipo van «Consultar» y el BOM las cuenta como sin cotizar — confirma precio y disponibilidad con el distribuidor autorizado.
+  </div>
+  <div class="flag-amber">
+    Este BOM cubre <b>leafs y spines</b> únicamente. Cableado (DAC/AOC/transceptores), cables de gestión y montaje en rack se cotizan aparte: sus part numbers dependen del alcance físico exacto del rack, que esta calculadora no conoce.
+  </div>
+</div>
+
+<div>
+  <div id="bomBody"></div>
+  <section class="panel">
+    <h2>Lista de materiales
+      <span class="bom-acciones">
+        <button class="btn" id="xlsBtn" style="font-size:11px;padding:5px 11px">Exportar a Excel</button>
+        <button class="btn ghost" id="copyBtn" style="font-size:11px;padding:5px 11px">Copiar como texto</button>
+        <button class="btn ghost" id="cotizarBtn" style="font-size:11px;padding:5px 11px">Enviar al cotizador</button>
+      </span>
+    </h2>
+    <div id="bomTabla"></div>
+    <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
+  </section>
+</div>
+</div>
+</div>
+
+<p class="note">
+<b>Fuentes:</b> <a href="https://www.nokia.com/data-center-networks/data-center-fabric/7220-interconnect-router/" target="_blank" rel="noopener">nokia.com/data-center-networks/data-center-fabric/7220-interconnect-router</a> — capacidad de conmutación y puertos de las series 7220 IXR-D. Precios: sin lista pública verificada, todas las líneas de equipo van «Consultar».
+</p>
+
+</div><!-- /wrap -->
+<script src="/js/bom.js"></script>
+<script src="/js/estado.js"></script>
+<script src="/js/dimensionador-nokia-7220ixr.js"></script>
+</body>
+</html>
