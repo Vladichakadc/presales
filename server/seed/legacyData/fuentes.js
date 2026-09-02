@@ -72,8 +72,16 @@ const FUENTES = {
   juniper: [
     { documento: 'SRX Series and vSRX Performance and Features Matrix',
       url: 'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/security-products-comparison-chart.pdf', estable: true,
-      fecha: '2026-08', hash: null, cubre: 'firewall por base de medicion, IPsec, IPS y ATP de la linea SRX',
-      nota: 'NO accesible desde este entorno (403 a juniper.net). Las cifras se reconstruyeron por busqueda y solo se aceptaron cuando formaban una serie internamente coherente a lo largo de la linea; donde no hubo serie, el campo quedo en null. Se completa con `npm run juniper`.' },
+      fecha: '2020-08', hash: null, cubre: 'firewall por base de medicion, IPsec, IPS y ATP de las lineas SRX300/1500/4100/4200/4600/5000 y vSRX',
+      nota: '2026-09-02: traido via GitHub Actions (mismo patron que Fortinet). El documento en si es de agosto de 2020 (pie de pagina "1000265-021-EN Aug 2020") — la fecha "2026-08" que llevaba este registro era una suposicion de cuando no se podia leer el documento, no una medicion; corregida. Sigue siendo el que sirve la URL oficial de Juniper hoy.' },
+    { documento: 'SRX300 Line of Services Gateways Datasheet',
+      url: 'https://www.juniper.net/assets/us/en/local/pdf/datasheets/1000550-en.pdf', estable: true,
+      fecha: null, hash: null, cubre: 'ficha individual de la linea SRX300 (300/320/340/345/380)',
+      nota: 'Enlazado desde la propia Security Products Comparison Chart como la ficha vigente de esta linea. Se usa para contrastar cifras que difieran entre esa tabla y este documento.' },
+    { documento: 'SRX1500 Services Gateway Datasheet',
+      url: 'https://www.juniper.net/assets/us/en/local/pdf/datasheets/1000551-en.pdf', estable: true,
+      fecha: null, hash: null, cubre: 'ficha individual del SRX1500',
+      nota: 'Enlazado desde la propia Security Products Comparison Chart como la ficha vigente de este modelo.' },
   ],
 
   huawei: [

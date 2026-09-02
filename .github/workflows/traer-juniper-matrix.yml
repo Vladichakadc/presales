@@ -29,28 +29,36 @@ jobs:
         with:
           node-version: 20
 
-      # La URL sale de FUENTES (server/seed/legacyData/fuentes.js), la misma que usa
-      # npm run vigia: no hay una segunda lista de URLs que se pueda desincronizar.
-      - name: Descargar el documento
+      # Las URL salen de FUENTES (server/seed/legacyData/fuentes.js), las mismas que usa
+      # npm run vigia: no hay una segunda lista de URLs que se pueda desincronizar. Ademas de
+      # la matriz comparativa, trae las dos fichas individuales que esa misma matriz enlaza
+      # como vigentes (SRX300 y SRX1500), para contrastar cualquier cifra que no case.
+      - name: Descargar los documentos
         run: |
           node -e "
             const fs = require('fs');
             const { FUENTES } = require('./server/seed/legacyData/fuentes');
-            const fuente = FUENTES.juniper.find((f) => /Performance and Features Matrix/i.test(f.documento));
-            if (!fuente || !fuente.url) { console.error('No se encontro la URL en FUENTES.'); process.exit(1); }
-            fetch(fuente.url, { headers: { 'User-Agent': 'presales-traer-fuente/1.0' } })
-              .then(async (res) => {
-                if (!res.ok) { console.error('HTTP ' + res.status); process.exit(1); }
+            const objetivo = [
+              { re: /Performance and Features Matrix/i, archivo: 'SRX_Performance_Matrix.pdf' },
+              { re: /SRX300 Line/i, archivo: 'SRX300_Datasheet.pdf' },
+              { re: /SRX1500 Services Gateway/i, archivo: 'SRX1500_Datasheet.pdf' },
+            ];
+            (async () => {
+              fs.mkdirSync('fuente-juniper', { recursive: true });
+              for (const { re, archivo } of objetivo) {
+                const fuente = FUENTES.juniper.find((f) => re.test(f.documento));
+                if (!fuente || !fuente.url) { console.error('No se encontro ' + archivo + ' en FUENTES.'); process.exit(1); }
+                const res = await fetch(fuente.url, { headers: { 'User-Agent': 'presales-traer-fuente/1.0' } });
+                if (!res.ok) { console.error(archivo + ': HTTP ' + res.status); process.exit(1); }
                 const buf = Buffer.from(await res.arrayBuffer());
                 if (buf.subarray(0, 4).toString() !== '%PDF') {
-                  console.error('El contenido descargado no empieza con %PDF (firma: ' + buf.subarray(0, 8).toString('hex') + ').');
+                  console.error(archivo + ': el contenido no empieza con %PDF (firma: ' + buf.subarray(0, 8).toString('hex') + ').');
                   process.exit(1);
                 }
-                fs.mkdirSync('fuente-juniper', { recursive: true });
-                fs.writeFileSync('fuente-juniper/SRX_Performance_Matrix.pdf', buf);
-                console.log('Descargado: ' + buf.length + ' bytes, firma %PDF confirmada.');
-              })
-              .catch((e) => { console.error(e); process.exit(1); });
+                fs.writeFileSync('fuente-juniper/' + archivo, buf);
+                console.log(archivo + ': ' + buf.length + ' bytes, firma %PDF confirmada.');
+              }
+            })().catch((e) => { console.error(e); process.exit(1); });
           "
 
       - name: Publicar en la rama de transporte
@@ -58,8 +66,8 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git checkout -B fuente/juniper-srx-matrix
-          git add fuente-juniper/SRX_Performance_Matrix.pdf
-          git commit -m "SRX Performance Matrix descargado $(date -u +%Y-%m-%d)"
+          git add fuente-juniper
+          git commit -m "Documentos SRX descargados $(date -u +%Y-%m-%d)"
           git push --force origin fuente/juniper-srx-matrix
 
       - name: Resumen
