@@ -1,0 +1,80 @@
+name: traer-fortinet-matrix
+
+# Baja el Fortinet Product Matrix a una rama de transporte, para leerlo desde una sesion que
+# no tiene salida a fortinet.com. NO extrae la tabla: eso sigue siendo `npm run cps`, con su
+# doble anclaje, sobre un CSV que alguien transcribe a mano tras leer el documento de verdad
+# -exactamente lo que este repositorio exige para no colarse una fila desplazada.
+#
+# POR QUE UNA RAMA Y NO main NI UN PR. Este PDF no es un activo de la aplicacion (a
+# diferencia de los datasheets de Aruba, que la pagina sirve a quien la usa): es material de
+# trabajo para completar `cps` en fortinet.js, y una vez transcrito no hace falta conservarlo
+# commiteado. Una rama de transporte se puede traer con `git fetch` y no exige revision de
+# nadie para existir, ni deja un PR con un PDF de terceros pidiendo mergearse a main.
+#
+# POR QUE EN GITHUB ACTIONS. El proxy de egreso del entorno donde se edita este repositorio
+# responde 403 a fortinet.com (ver PENDIENTES.md e IMPORTAR-CATALOGO.md). Los ejecutores de
+# GitHub no pasan por ese proxy -confirmado el 2026-09-02 por npm run vigia, que leyo este
+# mismo documento sin bloqueo-, asi que este workflow reutiliza esa misma via ya aprobada
+# para este repositorio en vez de pedir que alguien lo baje de una maquina propia.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  traer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      # La URL sale de FUENTES (server/seed/legacyData/fuentes.js), la misma que usa
+      # npm run vigia: no hay una segunda lista de URLs que se pueda desincronizar.
+      - name: Descargar el documento
+        run: |
+          node -e "
+            const fs = require('fs');
+            const { FUENTES } = require('./server/seed/legacyData/fuentes');
+            const fuente = FUENTES.fortinet.find((f) => /Product Matrix/i.test(f.documento));
+            if (!fuente || !fuente.url) { console.error('No se encontro la URL en FUENTES.'); process.exit(1); }
+            fetch(fuente.url, { headers: { 'User-Agent': 'presales-traer-fuente/1.0' } })
+              .then(async (res) => {
+                if (!res.ok) { console.error('HTTP ' + res.status); process.exit(1); }
+                const buf = Buffer.from(await res.arrayBuffer());
+                if (buf.subarray(0, 4).toString() !== '%PDF') {
+                  console.error('El contenido descargado no empieza con %PDF (firma: ' + buf.subarray(0, 8).toString('hex') + ').');
+                  process.exit(1);
+                }
+                fs.mkdirSync('fuente-fortinet', { recursive: true });
+                fs.writeFileSync('fuente-fortinet/Fortinet_Product_Matrix.pdf', buf);
+                console.log('Descargado: ' + buf.length + ' bytes, firma %PDF confirmada.');
+              })
+              .catch((e) => { console.error(e); process.exit(1); });
+          "
+
+      - name: Publicar en la rama de transporte
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout -B fuente/fortinet-product-matrix
+          git add fuente-fortinet/Fortinet_Product_Matrix.pdf
+          git commit -m "Fortinet Product Matrix descargado $(date -u +%Y-%m-%d)"
+          git push --force origin fuente/fortinet-product-matrix
+
+      - name: Resumen
+        run: |
+          {
+            echo '## Fortinet Product Matrix descargado'
+            echo ''
+            echo "Rama \`fuente/fortinet-product-matrix\`. Traerlo con:"
+            echo '```'
+            echo 'git fetch origin fuente/fortinet-product-matrix'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
