@@ -1,0 +1,122 @@
+name: vigia-fuentes
+
+# Vigila los documentos oficiales de los que sale el catalogo y abre un issue cuando alguno
+# cambia. Corre en GitHub Actions y no en el entorno donde se edita el repositorio porque
+# alli el proxy de egreso de la organizacion responde 403 a fortinet.com, juniper.net y a los
+# dominios de HPE y Huawei; los ejecutores de GitHub no pasan por ese proxy.
+#
+# SI TAMPOCO DESDE AQUI SE ALCANZAN, el informe lo dira con el codigo exacto y el issue lo
+# recogera. Eso es un resultado valido: significa que el pendiente vuelve a la ruta A de
+# IMPORTAR-CATALOGO.md (correrlo desde una maquina propia). No se intenta ninguna otra salida.
+#
+# NO EXTRAE DATOS. Compara hashes y avisa. La lectura del documento sigue siendo humana y el
+# dato entra por npm run cps / juniper / huawei, que contrastan antes de escribir: extraer
+# una tabla de un PDF automaticamente es justo donde se cuelan las filas desplazadas.
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  vigilar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Revisar las fuentes
+        id: vigia
+        run: |
+          node scripts/vigia-fuentes.js --json > vigia.json
+          node scripts/vigia-fuentes.js | tee resumen.txt
+          node -e "
+            const d = require('./vigia.json');
+            const fs = require('fs');
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'cambiados=' + d.cambiados.length + '\n');
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'inalcanzables=' + d.inalcanzables.length + '\n');
+          "
+
+      - name: Publicar el resumen en la corrida
+        run: |
+          {
+            echo '## Vigia de fuentes'
+            echo '```'
+            cat resumen.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Solo se abre issue cuando hay algo que hacer. Un documento sin cambios no merece
+      # ruido semanal: el resumen de la corrida ya deja constancia de que se miro.
+      - name: Abrir issue si alguna fuente cambio o no se pudo leer
+        if: steps.vigia.outputs.cambiados != '0' || steps.vigia.outputs.inalcanzables != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const d = JSON.parse(fs.readFileSync('vigia.json', 'utf8'));
+            const lineas = [];
+
+            if (d.cambiados.length) {
+              lineas.push('## Fuentes que cambiaron', '');
+              lineas.push('El documento oficial ya no es el mismo que se uso para verificar el catalogo.');
+              lineas.push('Abrirlo, leerlo y aplicar el dato con el importador que corresponda');
+              lineas.push('(`npm run cps`, `npm run juniper`, `npm run huawei`), que contrasta antes de escribir.', '');
+              for (const r of d.cambiados) {
+                lineas.push(`- **${r.vendor}** — ${r.documento}`);
+                lineas.push(`  - ${r.url}`);
+                lineas.push(`  - medido antes: \`${(r.hashPrevio || '').slice(0, 16)}\` el ${r.medidoAntes || 'desconocido'}`);
+                lineas.push(`  - ahora: \`${r.hash.slice(0, 16)}\` (${r.bytes} bytes)`);
+              }
+              lineas.push('');
+            }
+
+            if (d.inalcanzables.length) {
+              lineas.push('## Fuentes que no se pudieron leer', '');
+              lineas.push('Esto **no** es "sin cambios": es que no se pudo comprobar. Un 403 es politica de');
+              lineas.push('egreso y se reporta, no se rodea — en ese caso el pendiente vuelve a la ruta A de');
+              lineas.push('`IMPORTAR-CATALOGO.md`, correrlo desde una maquina propia.', '');
+              for (const r of d.inalcanzables) {
+                lineas.push(`- **${r.vendor}** — ${r.documento}: ${r.detalle}`);
+                lineas.push(`  - ${r.url}`);
+              }
+              lineas.push('');
+            }
+
+            lineas.push('---');
+            lineas.push('_Generado por [Claude Code](https://claude.ai/code)_');
+
+            const titulo = d.cambiados.length
+              ? `Fuentes del catalogo: ${d.cambiados.length} cambiaron`
+              : `Fuentes del catalogo: ${d.inalcanzables.length} no se pudieron leer`;
+
+            // Se reutiliza el issue abierto si ya existe, para no acumular uno por semana.
+            const abiertos = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'vigia-fuentes',
+            });
+            const cuerpo = lineas.join('\n');
+            if (abiertos.data.length) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: abiertos.data[0].number, body: cuerpo,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title: titulo, body: cuerpo, labels: ['vigia-fuentes'],
+              });
+            }

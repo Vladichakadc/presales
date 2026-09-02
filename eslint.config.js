@@ -23,6 +23,9 @@ const globalsNode = {
   __dirname: 'readonly', __filename: 'readonly', console: 'readonly', Buffer: 'readonly',
   setTimeout: 'readonly', clearTimeout: 'readonly', setInterval: 'readonly',
   clearInterval: 'readonly', URL: 'readonly', URLSearchParams: 'readonly', fetch: 'readonly',
+  // AbortController lo usa el vigia de fuentes para no quedarse colgado esperando a un
+  // servidor de fabricante que no responde.
+  AbortController: 'readonly',
 };
 
 const globalsNavegador = {

@@ -19,7 +19,7 @@ a producción. El plan completo, con el diagnóstico y la evidencia de cada hall
 | 0 | Permiso `sync` exigido en la ruta, sin simulacro sin clave, firma del adjunto, `xlsx` al espejo mantenido, `cors` fuera, `sqlite3` 6 | **hecha** |
 | 1 | CI en GitHub Actions, `/salud` como healthcheck, Railway espera a CI, Dependabot | **hecha** |
 | 2 | `FUENTES` por fabricante, `npm run catalogo`, importador de propuestas de la IA, salida estructurada, importador Huawei | **hecha** |
-| 3 | Vigía de fuentes semanal fuera del proxy de egreso | en curso |
+| 3 | Vigía de fuentes semanal fuera del proxy de egreso | **hecha** |
 
 ---
 
