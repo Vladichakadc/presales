@@ -5,6 +5,7 @@ const {
 const cotizadorCatalog = require('../seed/legacyData/cotizadorCatalog');
 const mikrotikData = require('../seed/legacyData/mikrotik');
 const arubaData = require('../seed/legacyData/aruba');
+const { fuentesDe } = require('../seed/legacyData/fuentes');
 const fs = require('fs');
 const pathMod = require('path');
 
@@ -65,6 +66,18 @@ async function getVendorsList() {
     lastSyncedAt: v.lastSyncedAt,
     lastSyncStatus: v.lastSyncStatus,
   }));
+}
+
+// Procedencia por fabricante, para que el portal pueda decir de que documento y de que fecha
+// salen las cifras que alguien esta a punto de citar en una propuesta. Sale de
+// legacyData/fuentes.js, que transcribe lo que ya estaba en las cabeceras de cada catalogo.
+async function toFuentes() {
+  const vendors = await Vendor.findAll({ order: [['name', 'ASC']] });
+  const out = {};
+  for (const v of vendors) {
+    out[v.code] = { nombre: v.name, colorHex: v.colorHex, fuentes: fuentesDe(v.code) };
+  }
+  return out;
 }
 
 // index.html PR shape: {hw_ar:[...], hw_wan:[...], cisco:[...], nokia:[...], fortinet:[...], juniper:[...], mikrotik:[...], aruba:[...]}
@@ -378,6 +391,7 @@ async function toGuiaRoles() {
 module.exports = {
   getVendorsList,
   toIndexPR,
+  toFuentes,
   toCotizadorCatalog,
   toDimensionadorHuawei,
   toDimensionadorCisco,

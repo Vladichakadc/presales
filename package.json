@@ -10,6 +10,7 @@
     "test": "node --test test/*.test.js",
     "lint": "eslint .",
     "verificar": "npm run lint && npm test",
+    "catalogo": "node scripts/catalogo-check.js",
     "datasheets": "node scripts/descargar-datasheets.js",
     "cps": "node scripts/importar-cps.js",
     "juniper": "node scripts/importar-juniper.js",

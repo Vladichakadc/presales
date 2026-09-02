@@ -463,6 +463,58 @@ async function applySync() {
     btn.disabled = false;
   }
 }
+/* ══════ PROCEDENCIA DEL CATALOGO ══════
+   De que documento y de que fecha salen las cifras de cada fabricante. Vive en
+   server/seed/legacyData/fuentes.js, que transcribe lo que ya estaba escrito en las
+   cabeceras de cada catalogo, y llega por /api/fuentes.
+
+   POR QUE MERECE ESTAR EN PANTALLA. Esto es una herramienta de preventa: quien arma una
+   propuesta esta a punto de citar una cifra delante de un cliente, y hasta ahora no habia
+   forma de saber si esa cifra es de julio o de hace tres anos sin abrir el codigo. Una
+   fuente sin fecha se declara como tal en vez de aparentar estar al dia — el mismo criterio
+   que el catalogo aplica a los precios de Aruba o al `cps` de Fortinet. */
+const ESTADO_FUENTE = {
+  vigente:     { etiqueta: 'Vigente',    color: 'var(--green)' },
+  vieja:       { etiqueta: 'Conviene revisar', color: 'var(--amber)' },
+  'sin fecha': { etiqueta: 'Sin fecha',  color: 'var(--amber)' },
+};
+
+function filaProcedencia(f) {
+  const est = ESTADO_FUENTE[f.estado] || ESTADO_FUENTE['sin fecha'];
+  const antiguedad = f.meses === null ? '—' : `${f.meses} mes(es)`;
+  const enlace = /^https?:\/\//i.test(f.url || '')
+    ? `<a href="${escapeHtml(f.url)}" target="_blank" rel="noopener noreferrer" style="color:var(--red)">${escapeHtml(f.documento)}</a>`
+    : escapeHtml(f.documento);
+  return `<tr>
+    <td>${enlace}</td>
+    <td style="white-space:nowrap">${escapeHtml(f.fecha || 'sin fecha')}</td>
+    <td style="white-space:nowrap">${escapeHtml(antiguedad)}</td>
+    <td style="color:${est.color};font-weight:600;white-space:nowrap">${escapeHtml(est.etiqueta)}</td>
+    <td>${escapeHtml(f.cubre || '')}</td>
+  </tr>${f.nota ? `<tr><td colspan="5" style="color:var(--steel);font-size:12px;padding-top:0">${escapeHtml(f.nota)}</td></tr>` : ''}`;
+}
+
+async function renderProcedencia() {
+  const cajas = document.querySelectorAll('[data-procedencia]');
+  if (!cajas.length) return;
+  let datos;
+  try {
+    const res = await fetch('/api/fuentes');
+    if (!res.ok) throw new Error('respuesta no válida');
+    datos = await res.json();
+  } catch {
+    cajas.forEach((c) => { c.textContent = 'No se pudo cargar la procedencia del catálogo.'; });
+    return;
+  }
+  cajas.forEach((caja) => {
+    const v = datos[caja.dataset.procedencia];
+    if (!v || !v.fuentes.length) { caja.textContent = 'Sin procedencia registrada para este fabricante.'; return; }
+    caja.innerHTML = `<table><thead><tr>
+        <th>Documento</th><th>Fecha</th><th>Antigüedad</th><th>Estado</th><th>Qué cubre</th>
+      </tr></thead><tbody>${v.fuentes.map(filaProcedencia).join('')}</tbody></table>`;
+  });
+}
+
 /* ═══════ INIT ═══════ */
 (async function initApp(){
   const res = await fetch('/api/catalog');
@@ -471,6 +523,7 @@ async function applySync() {
   renderDash();
   renderTables();
   populateCmp();
+  renderProcedencia();
 })();
 
 /* ══════ ENLACE DE EVENTOS ══════

@@ -7,6 +7,7 @@ const helmet = require('helmet');
 const auth = require('./auth');
 const { sequelize, Vendor, Product } = require('./models');
 const seedCatalog = require('./seed/seedCatalog');
+const { fuentesQueAvisan } = require('./seed/legacyData/fuentes');
 
 const catalogRoutes = require('./routes/catalog');
 const cotizadorRoutes = require('./routes/cotizador');
@@ -104,7 +105,7 @@ app.get('/salud', async (req, res) => {
       return res.status(503).json({ ok: false, error: 'catálogo vacío', fabricantes, modelos });
     }
     res.json({ ok: true, fabricantes, modelos });
-  } catch (err) {
+  } catch {
     // La base no responde: 503 y no 500, que es lo que hace que Railway retire este
     // contenedor del balanceo en vez de mandarle trafico.
     res.status(503).json({ ok: false, error: 'base de datos no disponible' });
@@ -240,9 +241,26 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Error interno del servidor' });
 });
 
+// Aviso de fuentes viejas o sin fechar. Va en el arranque y no en la siembra porque la
+// siembra solo corre con la base vacia, y la pregunta "de cuando son estas cifras" hay que
+// hacersela en cada despliegue. Es un aviso, nunca un fallo: un catalogo con una fuente de
+// hace ocho meses sigue sirviendo, solo conviene saberlo antes de citarlo en una propuesta.
+function avisarDeFuentes() {
+  const avisos = fuentesQueAvisan();
+  if (!avisos.length) return;
+  for (const a of avisos) {
+    const cuando = a.estado === 'sin fecha'
+      ? 'sin fecha en el catálogo'
+      : `${a.meses} meses`;
+    console.warn(`[fuentes] ${a.vendor}: "${a.documento}" — ${cuando}. ${a.nota || ''}`.trim());
+  }
+  console.warn(`[fuentes] ${avisos.length} fuente(s) piden revisión. Detalle por fabricante en /api/fuentes.`);
+}
+
 async function start() {
   await sequelize.sync();
   await seedCatalog();
+  avisarDeFuentes();
   // Sin contrasena no se puede autenticar a nadie: se falla cerrado en produccion en lugar
   // de arrancar un sitio con precios abierto al publico.
   if (!auth.hashVigente()) {
