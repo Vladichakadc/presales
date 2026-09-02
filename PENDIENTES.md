@@ -84,30 +84,28 @@ Cobertura actual por herramienta:
 | **Nokia** | sí (18 modelos) | sí (18) | sí | **no** |
 | ~~Arista~~ | retirado | retirado | retirado | — |
 
-5. **Completar el catálogo del dimensionador Juniper.** El dimensionador ya está en
-   producción y el motor es correcto, pero el catálogo tiene huecos y el motor los declara en
-   vez de rellenarlos. Lo que falta, por orden de impacto:
+5. **Completar el catálogo del dimensionador Juniper — parcialmente resuelto (2026-09-02),
+   ver *Cerrado recientemente*.** La «SRX Series and vSRX Performance and Features Matrix» se
+   trajo vía GitHub Actions (mismo patrón que cerró el pendiente 2 de Fortinet) y corrigió
+   `fwImix`/`vpn`/`sess` de varios modelos que la reconstrucción por búsqueda había adivinado
+   mal, además de completar `sess`/`cps`/`atp` donde faltaban. Lo que sigue abierto:
 
-   - **Threat Prevention (`atp`) solo en el SRX1500.** Es la capa con la que hay que
-     dimensionar de verdad una sucursal con seguridad avanzada, así que al marcar «ATP Cloud»
-     hoy solo queda un candidato. Sin esa cifra la línea de sucursal no se puede proponer
-     para ese perfil.
-   - **Sesiones concurrentes de la línea SRX300.** Aparecieron 380.000 y 4.000.000 para el
-     SRX380; el segundo es implausible frente a los 512.000 del SRX1500, muy superior. Ambos
-     quedaron descartados.
+   - **SRX380: fw/fwImix/vpn en disputa, sin resolver a propósito.** El documento trae una fila
+     para este modelo que contradice lo ya guardado (10/4/3,5 Gbps frente a 20/6,5/4,4), pero
+     solo `ips` de esa fila coincide — un único anclaje, por debajo del doble anclaje que este
+     catálogo exige antes de pisar un dato existente. Corregirlo exige `--sin-contraste` bajo
+     responsabilidad de quien decide; documentado en la cabecera de `juniper.js` y junto al
+     propio modelo.
    - **IPS y ATP de la generación 2024** (SRX1600/2300/4300/4700) y de SRX4100/4200. Para el
      SRX1600 apareció «21 Gbps de IPS» sobre un firewall de 24 Gbps, lo que contradice que
-     inspeccionar cueste capacidad: no se registró.
+     inspeccionar cueste capacidad: no se registró. La matriz de 2020 no cubre esta generación
+     (es posterior a esa fecha), así que sigue haciendo falta un documento distinto.
    - **Precios y SKU**: no hay lista de precios de Juniper, todo va sin cotizar.
    - **Niveles de Juniper Care**: nombres y SLA sin verificar. Antes que inventar una tabla
      de SLA en una herramienta de preventa, hay un único nivel declarado como no verificado.
 
-   Todo eso está en la **«SRX Series and vSRX Performance and Features Matrix»**
-   (`juniper.net/content/dam/www/assets/datasheets/us/en/security/security-products-comparison-chart.pdf`),
-   que **no es accesible desde este entorno**: el proxy responde 403 a `juniper.net`, igual
-   que a `fortinet.com`. Se abre desde una máquina con salida, se copia la tabla a una hoja de
-   cálculo y se aplica con **`npm run juniper -- matriz.xlsx`** (ver `npm run juniper -- --check`
-   para la cobertura actual, casilla por casilla). El importador reconoce las columnas por su
+   Para lo que sigue abierto, `npm run juniper -- matriz.xlsx` (ver `npm run juniper -- --check`
+   para la cobertura casilla por casilla) sigue siendo la vía: reconoce las columnas por su
    cabecera, resuelve Gbps frente a Mbps sin multiplicar a ojo y **rechaza la fila si alguna de
    sus columnas contradice lo ya verificado**, que es lo que caza una fila desplazada.
 6. **Dimensionador Nokia.** No es copiar el motor. El catálogo es fabric de datacenter
@@ -181,6 +179,43 @@ Cobertura actual por herramienta:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Pendiente 5 (Juniper SRX): la matriz oficial corrigió datos que la reconstrucción por búsqueda había adivinado mal (2026-09-02)
+
+Mismo patrón que cerró el pendiente 2 de Fortinet: `.github/workflows/traer-juniper-matrix.yml`
+trajo la «SRX Series and vSRX Performance and Features Matrix» a la rama de transporte
+`fuente/juniper-srx-matrix` (los ejecutores de GitHub Actions no pasan por el proxy que
+responde 403 a `juniper.net` en este entorno). El documento resultó ser de **agosto de 2020**
+(pie de página «1000265-021-EN Aug 2020») — la fecha «2026-08» que llevaba el registro en
+`FUENTES.juniper` era una suposición de cuando no se podía leer el documento, no una medición;
+corregida.
+
+Con el documento real en mano, la reconstrucción por búsqueda que llevaba meses en el catálogo
+resultó acertada en unos campos y **equivocada en otros** — una serie internamente coherente
+no garantiza ser la serie correcta, solo que es plausible:
+
+- `fw`/`vpn`/`ips` de la línea SRX300 (300/320/340/345) ya estaban bien.
+- `fwImix` de esa misma línea **no**: corregido de 600/600/1.100/1.500 a los 500/500/1.000/1.700
+  Mbps reales, anclado por los tres campos anteriores ya coincidentes.
+- El SRX1500 —documentado hasta hoy como «el único modelo con la fila completa»— tenía `vpn` y
+  `sess` equivocados: 3.000 Mbps / 512.000 sesiones reconstruidos frente a los 1.300 Mbps /
+  2.000.000 reales, anclados por `fw`/`fwImix`/`ips`/`atp` ya coincidentes.
+- `sess` y `cps` de la línea SRX300 completa más el SRX1500 no existían en ninguna
+  reconstrucción previa: los trae el documento y se aplicaron sin conflicto.
+
+**El SRX380 queda a propósito sin tocar** en `fw`/`fwImix`/`vpn`: el documento también trae su
+fila (10/4/3,5 Gbps, no los 20/6,5/4,4 ya guardados) pero de esos campos solo `ips` coincide —
+un único anclaje, por debajo del doble que este catálogo exige antes de pisar un dato
+existente. Corregirlo exigiría `--sin-contraste` bajo responsabilidad de quien decide, así que
+queda documentado —en la cabecera de `juniper.js` y junto al modelo— para resolverse a
+propósito en vez de colarse sin que nadie lo note.
+
+Se intentó además traer las fichas individuales por modelo que la propia matriz enlaza (p.3,
+SRX300 y SRX1500) para contrastar con una segunda fuente, pero sus URL de 2020 ya no resuelven
+a un PDF (Juniper reorganizó su sitio desde entonces) — no se agregan a `FUENTES` sin una URL
+vigente confirmada. 17 valores escritos con `npm run juniper -- --force` (nunca menos de 2
+anclas por fila), verificado con el servidor real en `NODE_ENV=production` y Chromium contra
+`/api/dimensionador/juniper`. 129 pruebas.
 
 ### Investigado el pendiente 14 (Huawei): no se cierra vía Actions, y ahora se sabe por qué (2026-09-02)
 
