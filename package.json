@@ -19,12 +19,12 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.68.0",
+    "@anthropic-ai/sdk": "^0.122.0",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "headroom.js": "^0.12.0",
     "helmet": "^8.1.0",
-    "multer": "^2.2.0",
+    "multer": "^2.3.0",
     "sequelize": "^6.37.7",
     "sqlite3": "^6.0.1",
     "xlsx": "npm:@e965/xlsx@^0.20.3"
