@@ -38,62 +38,6 @@ a producción. El plan completo, con el diagnóstico y la evidencia de cada hall
    crear cuentas con una clave provisional que nadie rota. El rol `consulta` ya existe con
    sus permisos declarados y sin ningún usuario: dar de alta al primero será añadir una fila.
 
-## Decisión pendiente: `omniroute` en `package.json`
-
-16. **`omniroute` tiene la producción parada desde el 1 de septiembre de 2026. Hay que
-    decidir si se queda, y mientras se quede no hay despliegue posible.**
-
-    El commit `187a4dd` («Instalar Skill omniroute en presales») añadió `omniroute: ^1.0.0`
-    a `package.json`. Dos despliegues han muerto por él, por dos causas distintas:
-
-    - **`e7192063` (1-sep)**: se añadió a `package.json` **sin tocar `package-lock.json`**,
-      y `npm ci` falla cerrado cuando los dos no coinciden. Murió en `BUILD_IMAGE`.
-    - **`d7d0c445` (2-sep)**, ya con el lockfile sincronizado: `npm install` muere con
-      **código 139, una segmentation fault**, dentro del `postinstall` del propio paquete:
-
-      ```
-      npm error code 139
-      npm error path /app/node_modules/omniroute
-      npm error command sh -c node scripts/postinstall.mjs
-      npm error    Rebuilding better-sqlite3 for linux-x64...
-      npm error Segmentation fault
-      ```
-
-    Esto **no se arregla desde este repositorio**: el script de instalación del paquete se
-    cae solo en la máquina de build de Railway. Mientras `omniroute` siga en `package.json`,
-    producción seguirá sirviendo el contenedor del 28 de agosto y ningún cambio nuevo podrá
-    desplegarse — ni las fases de este plan ni nada más.
-
-    **Nada de este repositorio lo requiere** (`grep -rn omniroute` solo lo encuentra en
-    `package.json`) y lo que cuesta está medido:
-
-    | | Sin `omniroute` | Con `omniroute` |
-    |---|---|---|
-    | Paquetes en el árbol | 282 | 560 |
-    | `node_modules` | ~120 MB | 771 MB |
-    | Avisos de `npm audit` | 2 moderados | 5 moderados |
-    | Paquetes con script de instalación | 1 (`sqlite3`) | 6 |
-
-    Tres cosas que conviene mirar antes de decidir:
-
-    - **No es una skill de Claude Code.** Las skills viven en `.claude/skills/` y son
-      carpetas con un `SKILL.md`, no paquetes de npm. El `omniroute` de npm es otra cosa:
-      «Unified AI router with 352 providers, desktop, PWA», una aplicación Next.js/Electron
-      de un tercero (`diegosouza.pw`), no una biblioteca para importar desde un servidor
-      Express. Es muy probable que el nombre coincidiera y el paquete no sea el que se
-      buscaba.
-    - **Trae `postinstall`**, que ejecuta código en la máquina de build de Railway en cada
-      despliegue, y arrastra `better-sqlite3`, `@swc/core` y `@parcel/watcher`, que compilan
-      binarios nativos.
-    - **Aparece en el propio informe de vulnerabilidades**, por su cadena
-      `monaco-editor` → `dompurify` (18 avisos de XSS).
-
-    Quitarlo es una línea (`npm uninstall omniroute`) y devuelve el árbol a 282 paquetes,
-    2 avisos y un despliegue que funciona. **No se hizo por cuenta propia porque el paquete
-    lo añadió el dueño del repo a propósito**; la decisión es suya. Si lo que se quería era
-    la skill, el camino es copiar su carpeta a `.claude/skills/`, que no toca `package.json`
-    en absoluto y por tanto no puede romper un despliegue.
-
 ## Bloqueado por acceso — necesita una máquina fuera de este entorno
 
 Nada de esto es trabajo de ingeniería pendiente: el código está hecho y probado, falta el
@@ -231,6 +175,33 @@ Cobertura actual por herramienta:
     de limpieza. La prueba fija el comportamiento actual para que cambiarlo sea deliberado.
 
 ## Cerrado recientemente
+
+### `omniroute` fuera: tenía la producción parada desde el 1 de septiembre (2026-09-02)
+
+Retirado con autorización expresa del dueño del repo, que fue quien lo había añadido. El
+commit `187a4dd` («Instalar Skill omniroute en presales») metió `omniroute: ^1.0.0` en
+`package.json` y **tumbó dos despliegues seguidos, por dos causas distintas**:
+
+- `e7192063` (1-sep): entró sin tocar `package-lock.json`, y `npm ci` falla cerrado cuando
+  los dos no coinciden. Murió en `BUILD_IMAGE`.
+- `d7d0c445` (2-sep), ya con el lockfile sincronizado: `npm install` murió con **código 139,
+  una segmentation fault**, dentro del `postinstall` del propio paquete, al recompilar
+  `better-sqlite3` para linux-x64. Eso no se arregla desde este repositorio.
+
+Durante esos dos días producción siguió sirviendo el contenedor del 28 de agosto y **ningún
+cambio podía desplegarse**. Nadie se enteró hasta el día siguiente, que es justamente el
+agujero que cierra la Fase 1.
+
+Nada del repositorio lo importaba (`grep -rn omniroute` solo lo encontraba en
+`package.json`). Al quitarlo el árbol vuelve de 560 a 283 paquetes, `npm audit` de 5 avisos
+moderados a 2, y los paquetes con script de instalación de 6 a 2 (`sqlite3` y `fsevents`,
+que en Linux no hace nada).
+
+**Lo que conviene recordar**: el `omniroute` de npm no es una skill de Claude Code. Las
+skills son carpetas con un `SKILL.md` dentro de `.claude/skills/` y no tocan `package.json`,
+así que no pueden romper un despliegue. El paquete de npm con ese nombre es otra cosa —
+«Unified AI router with 352 providers, desktop, PWA», una aplicación Next.js/Electron de un
+tercero (`diegosouza.pw`)—, y muy probablemente no era lo que se buscaba.
 
 ### Fase 1 del plan de sincronismo: el ciclo de despliegue se cierra solo (2026-09-02)
 
