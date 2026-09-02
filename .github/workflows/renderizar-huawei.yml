@@ -1,0 +1,91 @@
+name: renderizar-huawei
+
+# Tercer paso de la sonda de Huawei (ver sonda-huawei.yml y explorar-huawei.yml). El HTML
+# crudo de e.huawei.com y support.huawei.com resulto ser el cascaron vacio de una aplicacion
+# Vue/Nuxt (`<div id="__nuxt"></div>` sin contenido, con el listado real cargado por JS
+# despues de arrancar) — un fetch() normal no ve el dato, aunque el dominio responda 200. Este
+# workflow renderiza esas paginas con un navegador de verdad (Playwright + Chromium) para ver
+# si el contenido real aparece una vez que el JS corre, antes de decidir si vale la pena
+# construir un raspador completo para los 40 modelos del pendiente 14.
+#
+# No aplica nada al catalogo. Publica el texto visible renderizado en la rama de transporte
+# `fuente/huawei-render` para leerlo desde la sesion de edicion.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  renderizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      - name: Instalar Playwright y Chromium
+        run: |
+          npm init -y >/dev/null
+          npm install --no-save playwright@1.48.0
+          npx playwright install --with-deps chromium
+
+      - name: Renderizar las paginas de interes
+        run: |
+          node -e "
+            const { chromium } = require('playwright');
+            const fs = require('fs');
+            const paginas = {
+              'ar-router-listado.txt': 'https://e.huawei.com/en/products/routers/ar-router',
+              'info-finder-ar.txt': 'https://info.support.huawei.com/info-finder/encyclopedia/en/AR.html',
+              'support-index.txt': 'https://support.huawei.com/enterprise/en/index.html',
+            };
+            (async () => {
+              const browser = await chromium.launch();
+              fs.mkdirSync('huawei-render', { recursive: true });
+              for (const [archivo, url] of Object.entries(paginas)) {
+                const page = await browser.newPage();
+                try {
+                  await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+                  await page.waitForTimeout(2000);
+                  const texto = await page.evaluate(() => document.body.innerText);
+                  const enlaces = await page.evaluate(() =>
+                    Array.from(document.querySelectorAll('a[href]')).map((a) => a.href));
+                  fs.writeFileSync('huawei-render/' + archivo, texto);
+                  fs.writeFileSync('huawei-render/' + archivo.replace('.txt', '-enlaces.txt'), enlaces.join('\n'));
+                  console.log(archivo + ': ' + texto.length + ' caracteres de texto, ' + enlaces.length + ' enlaces');
+                } catch (e) {
+                  console.log(archivo + ': ERROR ' + String(e.message || e));
+                  fs.writeFileSync('huawei-render/' + archivo, 'ERROR: ' + String(e.message || e));
+                } finally {
+                  await page.close();
+                }
+              }
+              await browser.close();
+            })();
+          "
+
+      - name: Publicar en la rama de transporte
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout -B fuente/huawei-render
+          git add huawei-render
+          git commit -m "Renderizado de paginas de Huawei $(date -u +%Y-%m-%d)"
+          git push --force origin fuente/huawei-render
+
+      - name: Resumen
+        run: |
+          {
+            echo '## Renderizado de paginas de Huawei'
+            echo ''
+            echo "Rama \`fuente/huawei-render\`. Traerla con:"
+            echo '```'
+            echo 'git fetch origin fuente/huawei-render'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
