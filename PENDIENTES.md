@@ -53,8 +53,11 @@ repositorio no automatiza la segunda a propósito— pero sí abre una vía que 
 pendiente 3 ya se cierra desde ahí (`datasheets-aruba.yml`), y el pendiente 2 (Fortinet `cps`)
 también, con el mismo patrón — un workflow (`traer-fortinet-matrix.yml`) baja el documento a
 una rama de transporte que se lee y se descarta, nunca a `main` ni a un PR, porque no es un
-activo de la aplicación. Juniper y Huawei podrían cerrarse igual si alguien dispara sus
-workflows.
+activo de la aplicación. Juniper podría cerrarse igual si alguien dispara ese workflow — pero
+**Huawei no**: investigado el 2026-09-02 (ver *Cerrado recientemente*), `e.huawei.com` y
+`support.huawei.com` bloquean el navegador automatizado con un "Access Denied" propio del
+fabricante (Akamai), categoría distinta de un 403 de proxy y que este repositorio no intenta
+evadir. El pendiente 14 sigue necesitando una persona con navegador real.
 
 El procedimiento completo —incluido qué viaja de local a producción y por qué no es la base
 de datos— está en [`IMPORTAR-CATALOGO.md`](IMPORTAR-CATALOGO.md).
@@ -63,7 +66,7 @@ de datos— está en [`IMPORTAR-CATALOGO.md`](IMPORTAR-CATALOGO.md).
 |---|---|---|---|
 | ~~2~~ | ~~`cps` en 37 de los 58 FortiGate~~ **Resuelto (2026-09-02)** — ver *Cerrado recientemente*. Quedan 5 modelos en `null` (100F/200F/400F/401F/600F) que no están en el documento, no un bloqueo de acceso. | — | resuelto vía Actions |
 | 3 | **PDFs de datasheets de Aruba.** `public/datasheets/` va vacío a propósito; la página enlaza la URL de HPE mientras no esté el archivo local. | **Ya no hace falta una máquina propia**: el workflow `datasheets-aruba.yml` se dispara a mano en GitHub Actions y deja un PR con los PDF y su peso medido. Merge o no, es decisión de peso del repo (ver `public/datasheets/LEEME.md`). | resuelto vía Actions |
-| 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ` y las 23 AR no traen `mpps`. El motor no inventa: muestra lo que hay. | **El importador ya existe**: `npm run huawei -- --check` para ver los huecos, `npm run huawei -- specs.xlsx` para las cifras y `npm run huawei -- eox.csv --eol` para el fin de venta. Falta el dato, no la herramienta. | `e.huawei.com`, `support.huawei.com`, `info.support.huawei.com` |
+| 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ` y las 23 AR no traen `mpps`. El motor no inventa: muestra lo que hay. | **El importador ya existe**: `npm run huawei -- --check` para ver los huecos, `npm run huawei -- specs.xlsx` para las cifras y `npm run huawei -- eox.csv --eol` para el fin de venta. Falta el dato, no la herramienta — **y, a diferencia de Fortinet/Aruba, esta vez no se cierra vía Actions** (ver *Cerrado recientemente*, investigación 2026-09-02): hace falta una persona con navegador real, y sesión de Huawei si hace falta el detalle fino de Info-Finder. | `e.huawei.com`, `support.huawei.com` bloquean el navegador automatizado (Akamai); `info.support.huawei.com` exige sesión |
 | 4 | **Comprobar el sitio en vivo tras desplegar.** Se verifica que el deploy llegue a SUCCESS y que los logs muestren `[seed]` y `Presales corriendo en`, pero la página en producción solo puede abrirla una persona. | Abrir `presales.up.railway.app` y revisar la pantalla tocada. | `presales.up.railway.app` |
 
 ## Fabricantes sin dimensionador
@@ -178,6 +181,42 @@ Cobertura actual por herramienta:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Investigado el pendiente 14 (Huawei): no se cierra vía Actions, y ahora se sabe por qué (2026-09-02)
+
+Tras cerrar el 2 y el 3 con el mismo truco (bajar el documento desde un ejecutor de GitHub
+Actions, que no pasa por el proxy de este entorno), tocaba probar si Huawei se cerraba igual.
+No se cierra, y la investigación deja documentado un motivo distinto y más duro que un 403 de
+proxy — importa saberlo antes de que alguien reintente la misma vía.
+
+Tres sondas sucesivas, cada una construida sobre lo que dejó la anterior:
+
+1. **Alcance de red**: `e.huawei.com`, `support.huawei.com` e `info.support.huawei.com`
+   responden **200** desde un ejecutor de Actions. La red sí llega, igual que a Fortinet.
+2. **Contenido del HTML crudo**: un `fetch()` normal a `e.huawei.com` y `support.huawei.com`
+   solo trae el cascarón vacío de una aplicación Vue/Nuxt (`<div id="__nuxt"></div>` sin nada
+   dentro) — el catálogo real se carga por JavaScript después de arrancar, así que ni con red
+   ni sin bloqueo hay dato que leer sin ejecutar ese JS.
+3. **Navegador real (Playwright + Chromium)**: al renderizar de verdad, `e.huawei.com` y
+   `support.huawei.com` devuelven un **"Access Denied" de Akamai** — el borde del propio
+   Huawei bloqueando la huella de un navegador automatizado, no el proxy de este entorno ni
+   una política de egreso. `info.support.huawei.com` sí renderiza, pero resultó ser el
+   glosario de términos de Info-Finder (AAA, ACL, Antivirus…), no una base de ciclo de vida
+   por modelo, y su propio texto confirma el login: *"Log in to obtain more information."*
+
+No se intentó nada para evadir el bloqueo de Akamai (huellas de navegador falsas, proxies
+residenciales, credenciales de Huawei): es una defensa deliberada del fabricante contra
+automatización, categoría distinta de un 403 de política de egreso que sí es razonable
+recorrer con Actions. Se reporta, no se rodea — el mismo principio que ya rige los 403 de este
+entorno, aplicado también al borde de Huawei.
+
+**Conclusión para quien retome el pendiente 14**: `npm run huawei` sigue siendo la herramienta
+correcta y está lista; lo que falta es que una persona con navegador real (y sesión de Huawei
+si hace falta el detalle de Info-Finder) copie las cifras a un CSV/XLSX, igual que antes de
+esta investigación. Los tres workflows de sonda (`sonda-huawei.yml`, `explorar-huawei.yml`,
+`renderizar-huawei.yml`) se retiraron tras dejar su hallazgo documentado aquí: dejarlos vivos
+sin ningún dato que produzcan sería el mismo error que ya tuvo `CISCO_EOL_MODELS` de
+`seedCatalog.js` — un artefacto inerte que no dice nada.
 
 ### `cps` de FortiGate: de 21 a 53 de 58 modelos (2026-09-02)
 
