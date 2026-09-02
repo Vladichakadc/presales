@@ -54,6 +54,21 @@ test('un host que no responde tampoco se da por bueno', async () => {
   assert.ok(r.detalle, 'dice por qué no se pudo leer');
 });
 
+test('solo los documentos estables se vigilan por hash; las paginas no dan alarma', () => {
+  // Medido, no supuesto: dos corridas con minutos de diferencia dieron tamanos distintos
+  // para las paginas HTML (Cisco 173.913 -> 173.905, Aruba 333.670 -> 333.667) y el mismo
+  // para el PDF de Juniper. Marcar la diferencia es lo que evita una alarma semanal en
+  // falso, y un vigia que avisa en falso se ignora.
+  const { FUENTES } = require('../server/seed/legacyData/fuentes');
+  const conUrl = Object.values(FUENTES).flat().filter((f) => f.url);
+  for (const f of conUrl) {
+    assert.strictEqual(typeof f.estable, 'boolean', `${f.documento} declara si es estable`);
+  }
+  const pdf = conUrl.filter((f) => /\.pdf$/i.test(f.url));
+  assert.ok(pdf.length > 0);
+  for (const f of pdf) assert.strictEqual(f.estable, true, `${f.documento} es un PDF publicado`);
+});
+
 test('la clave identifica al documento y no a su posicion en la lista', () => {
   // Reordenar FUENTES no debe perder el historial de hashes.
   assert.strictEqual(claveDe('fortinet', { url: 'https://x/y.pdf' }), 'fortinet::https://x/y.pdf');

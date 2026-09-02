@@ -25,6 +25,18 @@
 // nadie lo haya calculado: el proxy de egreso de este entorno responde 403 a los dominios de
 // los cuatro fabricantes, asi que se rellena la primera vez que `npm run vigia` corre desde
 // fuera. `null` significa "todavia no se ha medido", nunca "no ha cambiado".
+//
+// EL CAMPO `estable`, Y POR QUE HIZO FALTA
+// Se midio, no se supuso: dos corridas del vigia con minutos de diferencia dieron tamanos
+// distintos para las paginas HTML (Cisco 173.913 -> 173.905 bytes, Aruba 333.670 -> 333.667,
+// Nokia 307.119 -> 307.115) y EXACTAMENTE el mismo para el PDF de Juniper. Una pagina de
+// producto lleva marcas de tiempo, identificadores de sesion y banners rotatorios: su hash
+// cambia en cada peticion sin que el dato haya cambiado.
+//
+// Un vigia que avisa en falso todas las semanas se acaba ignorando, y entonces no avisa de
+// nada. Asi que `estable: true` marca los documentos cuyo hash SI significa algo (un PDF
+// publicado, un boletin), y solo esos abren un issue. Las paginas siguen midiendose y su
+// variacion sale en el informe, pero como observacion y no como alarma.
 
 // A partir de cuantos meses una fuente se considera vieja y el arranque lo dice. Seis meses
 // es medio ciclo de refresco de catalogo de estos fabricantes: lo bastante largo para no
@@ -36,7 +48,7 @@ const ANTIGUEDAD_AVISO_MESES = 6;
 const FUENTES = {
   fortinet: [
     { documento: 'Fortinet Product Matrix',
-      url: 'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf',
+      url: 'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf', estable: true,
       fecha: '2026-07', hash: null, cubre: 'throughput por capa, sesiones, cps',
       nota: 'Fuente oficial. `cps` solo esta en 21 de los 58 modelos: el resto no es accesible desde este entorno (403 a fortinet.com).' },
     { documento: '2026Q3 Main Price list_AMER_FINAL_EFF 080326.xlsx',
@@ -49,7 +61,7 @@ const FUENTES = {
       url: null, fecha: '2026-08', hash: null, cubre: 'cifras tecnicas de Catalyst 8000, ISR 1000, Meraki MX y ASR 1000',
       nota: 'Verificacion de la Fase 2.' },
     { documento: 'Boletines oficiales de fin de venta (EOL)',
-      url: 'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html',
+      url: 'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html', estable: true,
       fecha: '2026-07-27', hash: null, cubre: 'fechas de ultimo pedido de los chasis Catalyst 8300/8200, 8500-12X4QC y la linea ASR 1000',
       nota: 'La regla de ficha.js compara la fecha de ultimo pedido contra la de hoy, asi que un equipo deja de proponerse solo el dia que vence.' },
     { documento: 'Export de CCW (Products_115951960955347.xlsx)',
@@ -59,7 +71,7 @@ const FUENTES = {
 
   juniper: [
     { documento: 'SRX Series and vSRX Performance and Features Matrix',
-      url: 'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/security-products-comparison-chart.pdf',
+      url: 'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/security-products-comparison-chart.pdf', estable: true,
       fecha: '2026-08', hash: null, cubre: 'firewall por base de medicion, IPsec, IPS y ATP de la linea SRX',
       nota: 'NO accesible desde este entorno (403 a juniper.net). Las cifras se reconstruyeron por busqueda y solo se aceptaron cuando formaban una serie internamente coherente a lo largo de la linea; donde no hubo serie, el campo quedo en null. Se completa con `npm run juniper`.' },
   ],
@@ -72,21 +84,21 @@ const FUENTES = {
 
   mikrotik: [
     { documento: 'Datasheets publicos y MSRP de mikrotik.com',
-      url: 'https://mikrotik.com/products', fecha: null, hash: null,
+      url: 'https://mikrotik.com/products', estable: false, fecha: null, hash: null,
       cubre: 'forwarding con FastTrack, IPsec, RAM, nucleos y nivel de licencia',
       nota: 'SIN FECHA en la cabecera del catalogo, y sin price list firmada a diferencia de Fortinet. Confirmar contra distribuidor autorizado antes de cotizar en firme.' },
   ],
 
   aruba: [
     { documento: 'Paginas de producto y tienda oficiales de HPE/Aruba',
-      url: 'https://www.hpe.com/us/en/networking.html', fecha: null, hash: null,
+      url: 'https://www.hpe.com/us/en/networking.html', estable: false, fecha: null, hash: null,
       cubre: 'modelos EdgeConnect, gateways 9000/9200, software y SKUs de hardware',
       nota: 'SIN FECHA en la cabecera del catalogo. Los PDF no pudieron abrirse (bloqueo de egreso a los dominios de HPE): las cifras salen de las descripciones publicadas en esas paginas, no de la lectura integra del datasheet. SIN PRICE LIST: todos los precios van en null y el BOM los declara sin cotizar.' },
   ],
 
   nokia: [
     { documento: 'Datasheets oficiales de producto',
-      url: 'https://www.nokia.com/networks/ip-networks/', fecha: '2026-08', hash: null,
+      url: 'https://www.nokia.com/networks/ip-networks/', estable: false, fecha: '2026-08', hash: null,
       cubre: 'lineas 7220 IXR, 7250 IXR y 7750 SR',
       nota: 'Cifras tecnicas verificadas; el PRECIO no, porque no hay lista de precios de Nokia en el material disponible. Van como Consultar y el BOM los cuenta sin cotizar.' },
   ],

@@ -98,10 +98,19 @@ async function correr() {
     const r = await revisar(p.vendor, p.f);
     const clave = claveDe(p.vendor, p.f);
     const previo = lock.documentos[clave];
+    r.estable = p.f.estable !== false;
     if (r.estado === 'leido') {
       if (!previo) r.cambio = 'primera medición';
       else if (previo.hash === r.hash) r.cambio = 'sin cambios';
-      else { r.cambio = 'CAMBIÓ'; r.hashPrevio = previo.hash; r.medidoAntes = previo.medido; }
+      else {
+        // Una pagina de producto cambia de hash en cada peticion por marcas de tiempo y
+        // banners rotatorios, sin que el dato haya cambiado. Se mide igual y se reporta,
+        // pero no dispara alarma: un vigia que avisa en falso cada semana se ignora, y
+        // entonces no avisa de nada.
+        r.cambio = r.estable ? 'CAMBIÓ' : 'varió (página dinámica)';
+        r.hashPrevio = previo.hash;
+        r.medidoAntes = previo.medido;
+      }
     }
     resultados.push(r);
   }
@@ -129,7 +138,8 @@ async function correr() {
 function imprimir(d) {
   console.log('\n== VIGIA DE FUENTES ==\n');
   for (const r of d.resultados) {
-    const marca = r.estado === 'leido' ? (r.cambio === 'CAMBIÓ' ? '[CAMBIO]' : '[  ok  ]') : '[ ---- ]';
+    const marca = r.estado !== 'leido' ? '[ ---- ]'
+      : (r.cambio === 'CAMBIÓ' ? '[CAMBIO]' : (r.cambio === 'varió (página dinámica)' ? '[ nota ]' : '[  ok  ]'));
     const cola = r.estado === 'leido'
       ? `${r.cambio}${r.bytes ? ` · ${r.bytes} bytes` : ''}`
       : (r.estado === 'sin url' ? 'sin URL que vigilar' : `inalcanzable: ${r.detalle}`);
