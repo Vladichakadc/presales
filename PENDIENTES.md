@@ -4,7 +4,22 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-08-26.
+Última revisión: 2026-09-02.
+
+---
+
+## En curso: plan de sincronismo y actualización continua (2026-09-02)
+
+Aprobado por el dueño del repo con la instrucción de avanzar con todas las fases y subirlas
+a producción. El plan completo, con el diagnóstico y la evidencia de cada hallazgo, está en
+<https://claude.ai/code/artifact/68c7ff3f-e0f0-4c3d-9448-3911c342283f>.
+
+| Fase | Qué cierra | Estado |
+|---|---|---|
+| 0 | Permiso `sync` exigido en la ruta, sin simulacro sin clave, firma del adjunto, `xlsx` al espejo mantenido, `cors` fuera, `sqlite3` 6 | **hecha** |
+| 1 | CI en GitHub Actions, `/salud` como healthcheck, Railway espera a CI, Dependabot | pendiente |
+| 2 | `FUENTES` por fabricante, `npm run catalogo -- --check`, importador de propuestas de la IA, salida estructurada, importador Huawei | pendiente |
+| 3 | Vigía de fuentes semanal fuera del proxy de egreso | pendiente |
 
 ---
 
@@ -160,6 +175,31 @@ Cobertura actual por herramienta:
     de limpieza. La prueba fija el comportamiento actual para que cambiarlo sea deliberado.
 
 ## Cerrado recientemente
+
+### Fase 0 del plan de sincronismo: la sincronización dejaba de fallar abierta (2026-09-02)
+
+Tres defensas que parecían serlo y no lo eran, encontradas al auditar el módulo de
+sincronización con `insecure-defaults` y `vibesec` antes de tocar nada:
+
+- **El permiso `sync` no se exigía en ninguna ruta.** Estaba en `ROLES` desde que hubo roles
+  y `grep exige('sync')` devolvía cero. Ahora va delante del router de `/api/sync/*`, y al
+  montarlo apareció un segundo fallo: `exige` miraba `req.path`, que Express recorta al
+  prefijo de montaje, así que en vez del 403 la API redirigía al portal y el navegador veía
+  un 200. Lo cazó la prueba nueva que arranca el servidor real.
+- **Sin `ANTHROPIC_API_KEY` el servicio devolvía propuestas inventadas** con apariencia
+  legítima — un «FortiGate 9000F» con precio. Retirado; ahora responde 503 explicando que
+  falta la clave, el mismo fallo cerrado que aplica `AUTH_PASSWORD`.
+- **El tipo del adjunto se tomaba del mimetype que declara el navegador.** Ahora lo decide
+  la firma del contenido (`services/firmaArchivo.js`), con el mismo criterio que
+  `descargar-datasheets.js` ya aplicaba a lo que baja; lo que no es PDF, XLSX ni texto recibe
+  415.
+
+Dependencias: `xlsx` pasa al espejo mantenido `@e965/xlsx` 0.20.3 (el de npm quedó
+abandonado con una vulnerabilidad alta sin arreglo; mismo `dist/xlsx.full.min.js`, verificado
+exportando un BOM a Excel en Chromium), `cors` fuera de `package.json` (nadie lo requería) y
+`sqlite3` a la 6, que dejó de arrastrar la cadena de build con el `tar` crítico. `npm audit`
+pasa de 10 avisos a 2 moderados (`sequelize` por `uuid`, sin arreglo sin saltar a Sequelize
+7). Ocho pruebas nuevas, 84 en total.
 
 ### Alimentación eléctrica en la ficha: doble fuente y sus características (2026-08-28)
 

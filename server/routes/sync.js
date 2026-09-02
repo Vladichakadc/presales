@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { analyzeCatalog } = require('../services/aiSync');
+const { analyzeCatalog, SinClave } = require('../services/aiSync');
+const { tipoPorFirma } = require('../services/firmaArchivo');
 const { Product, Vendor, LicenseBundle, SupportTier, Part } = require('../models');
 
 // Configure multer for memory storage
@@ -53,6 +54,17 @@ router.post('/sync/analyze', upload.single('datasheet'), async (req, res) => {
   const { vendor } = req.body;
   if (!vendor) return res.status(400).json({ error: 'Vendor requerido' });
 
+  // El tipo del adjunto se decide por su firma, no por el mimetype del navegador.
+  if (req.file) {
+    const tipo = tipoPorFirma(req.file.buffer, req.file.originalname);
+    if (!tipo) {
+      return res.status(415).json({
+        error: 'El archivo no es un PDF, un XLSX ni un texto CSV/TXT reconocible. Se comprueba el contenido, no la extensión.',
+      });
+    }
+    req.file.tipo = tipo;
+  }
+
   try {
     const vendorId = await resolveVendorId(vendor);
     if (!vendorId) return res.status(400).json({ error: 'Vendor inválido' });
@@ -79,6 +91,7 @@ router.post('/sync/analyze', upload.single('datasheet'), async (req, res) => {
     const changes = await analyzeCatalog(vendor, catalogData, req.file);
     res.json({ changes });
   } catch (err) {
+    if (err instanceof SinClave) return res.status(503).json({ error: err.message });
     console.error('[Sync Route Error]', err);
     res.status(500).json({ error: 'Error analizando con IA' });
   }

@@ -1,67 +1,30 @@
 const { Anthropic } = require('@anthropic-ai/sdk');
 const xlsx = require('xlsx');
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || 'dummy_key',
-});
+// Sin clave no hay analisis: se falla cerrado, igual que el servidor con AUTH_PASSWORD.
+//
+// Aqui vivio un simulacro que, sin ANTHROPIC_API_KEY, devolvia propuestas inventadas con
+// apariencia legitima — incluido un "FortiGate 9000F" que no existe, con precio y specs
+// verosimiles. Servia para ver el panel funcionando sin pagar la API, y era exactamente el
+// modo de fallo que este catalogo tiene prohibido: un dato falso con pinta de verdadero.
+// Se retiro. La ausencia de clave se declara con un error propio para que la ruta responda
+// 503 explicandolo, en vez de 500 generico.
+class SinClave extends Error {
+  constructor() {
+    super('Falta ANTHROPIC_API_KEY: la sincronización con IA no puede analizar nada sin ella.');
+    this.code = 'SIN_CLAVE';
+  }
+}
 
-// Función mock para simular la respuesta si no hay llave (para desarrollo local rápido)
-const mockAnalyze = async (vendor, catalogData) => {
-  const eq0 = catalogData.equipment[0] || {};
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const changes = [
-        {
-          target: 'product',
-          type: 'UPDATE',
-          id: eq0.id,
-          field: 'fw',
-          oldValue: eq0.fw ?? eq0.fwd ?? 'N/A',
-          newValue: '500 Gbps (Mock Update)',
-          reason: 'Datasheet actualizado en 2026',
-          sourceUrl: 'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-mock.pdf'
-        },
-        {
-          target: 'product',
-          type: 'UPDATE',
-          id: eq0.id,
-          field: 'price',
-          oldValue: eq0.priceDisplay || 'N/A',
-          newValue: '{"priceDisplay":"~ $1,850","priceNumeric":1850}',
-          reason: 'Ajuste de lista de precios 2026',
-          sourceUrl: 'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-mock.pdf'
-        },
-        {
-          target: 'product',
-          type: 'NEW',
-          id: 'FortiGate 9000F',
-          field: 'N/A',
-          oldValue: 'N/A',
-          newValue: '{"seg":"Hyperscale DC","fw":"4 Tbps","ips":"200 Gbps","priceDisplay":"~ $900,000","priceNumeric":900000}',
-          reason: 'Modelo de altísima gama recién lanzado',
-          sourceUrl: 'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-9000f.pdf'
-        },
-        {
-          target: 'license',
-          type: 'NEW',
-          id: 'FGD-UTP-MOCK',
-          field: 'N/A',
-          oldValue: 'N/A',
-          newValue: '{"name":"FortiGuard UTP Bundle (Mock)","description":"AV + Web Filtering + App Control + IPS"}',
-          reason: 'Bundle de licencia recién publicado',
-          sourceUrl: 'https://www.fortinet.com/products/next-generation-firewall/fortiguard-security-services'
-        }
-      ];
-      resolve(changes);
-    }, 2000);
-  });
-};
+let cliente = null;
+function anthropicCliente() {
+  if (!process.env.ANTHROPIC_API_KEY) throw new SinClave();
+  if (!cliente) cliente = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  return cliente;
+}
 
 async function analyzeCatalog(vendor, catalogData, file) {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.log('[AI Sync] Usando Mock (No hay ANTHROPIC_API_KEY)');
-    return mockAnalyze(vendor, catalogData);
-  }
+  const anthropic = anthropicCliente();
 
   const { equipment, licenses, supportTiers, parts } = catalogData;
 
@@ -122,8 +85,9 @@ ${JSON.stringify({ equipos: equipment, licencias: licenses, soporte: supportTier
     const messages = [];
 
     if (file) {
-      const mime = file.mimetype.toLowerCase();
-      const isExcel = mime.includes('excel') || mime.includes('spreadsheetml') || mime.includes('csv');
+      // `file.tipo` lo decide la ruta leyendo la firma del contenido (%PDF, PK..), no el
+      // mimetype que declara el navegador: ese lo controla quien sube el archivo.
+      const isExcel = file.tipo === 'xlsx' || file.tipo === 'csv';
 
       if (isExcel) {
         // Parse excel to CSV text
@@ -134,9 +98,7 @@ ${JSON.stringify({ equipos: equipment, licencias: licenses, soporte: supportTier
         prompt = `CONTENIDO DEL EXCEL / CSV ADJUNTO:\n${csvText}\n\n` + prompt;
         messages.push({ role: 'user', content: prompt });
       } else {
-        // Assume PDF or similar binary document for Claude
-        let media_type = 'application/pdf';
-        if (mime === 'text/plain') media_type = 'text/plain';
+        const media_type = file.tipo === 'txt' ? 'text/plain' : 'application/pdf';
 
         messages.push({
           role: 'user',
@@ -185,4 +147,4 @@ ${JSON.stringify({ equipos: equipment, licencias: licenses, soporte: supportTier
   }
 }
 
-module.exports = { analyzeCatalog };
+module.exports = { analyzeCatalog, SinClave };

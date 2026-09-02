@@ -81,7 +81,11 @@ app.use((req, res, next) => {
 // que anadir una pantalla protegida sea anadir una linea, no recordar un patron.
 const exige = (permiso) => (req, res, next) => {
   if (auth.permiso(req.usuario, permiso)) return next();
-  if (req.path.startsWith('/api/')) return res.status(403).json({ error: 'No tienes permiso para esta operación.' });
+  // baseUrl + path, no solo path: montado con app.use('/api/sync', ...) Express recorta el
+  // prefijo y req.path vale '/analyze'. Solo con req.path la API se redirigia al portal y
+  // el navegador veia un 200 — lo encontro la prueba de servidor al exigir el 403.
+  const ruta = (req.baseUrl || '') + req.path;
+  if (ruta.startsWith('/api/')) return res.status(403).json({ error: 'No tienes permiso para esta operación.' });
   return res.redirect('/?m=sinpermiso');
 };
 
@@ -184,6 +188,11 @@ app.use('/api', catalogRoutes);
 app.use('/api', cotizadorRoutes);
 app.use('/api', dimensionadorRoutes);
 app.use('/api', guiaRoutes);
+// El permiso `sync` existia en ROLES desde que hubo roles, pero ninguna ruta lo exigia: un
+// permiso que no se comprueba es un permiso que no existe, igual que el conjunto inerte de
+// fuera de venta que ya se retiro. Va aqui, delante del router, para que ninguna ruta nueva
+// de /api/sync/* pueda olvidarlo.
+app.use('/api/sync', exige('sync'));
 app.use('/api', syncRoutes);
 
 // El dimensionador de Huawei se llamaba dimensionador-bom-huawei-v3_1.html: un resto del

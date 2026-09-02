@@ -1,0 +1,122 @@
+'use strict';
+// Arranca el servidor de verdad con NODE_ENV=production y lo interroga por HTTP.
+//
+// Es la unica prueba que cruza todas las capas, y existe porque las tres cosas que solo
+// pasan en produccion (arranque cerrado sin AUTH_PASSWORD, cookie Secure, sync en 503) eran
+// invisibles para el resto de la bateria — y porque la autorizacion por permiso solo se
+// puede probar donde se aplica: en la ruta. Tarda unos segundos por la siembra del catalogo
+// en una base temporal; es el precio de no fingir el servidor.
+const test = require('node:test');
+const assert = require('node:assert');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { spawn } = require('child_process');
+
+const RAIZ = path.join(__dirname, '..');
+const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'presales-servidor-'));
+process.env.AUTH_STATE_DIR = dir;
+const usuariosMod = require('../server/usuarios');
+
+fs.writeFileSync(path.join(dir, 'usuarios.json'), JSON.stringify({
+  version: 1,
+  usuarios: [
+    { id: 'u1', usuario: 'ana', nombre: 'Ana', rol: 'admin', activo: true,
+      passwordHash: usuariosMod.hashPassword('contrasena-de-ana-larga') },
+    { id: 'u2', usuario: 'bruno', nombre: 'Bruno', rol: 'consulta', activo: true,
+      passwordHash: usuariosMod.hashPassword('contrasena-de-bruno-larga') },
+  ],
+}));
+
+const PORT = 4300 + Math.floor(Math.random() * 500);
+const BASE = `http://127.0.0.1:${PORT}`;
+let servidor;
+let salida = '';
+
+function arrancar() {
+  return new Promise((resolve, reject) => {
+    servidor = spawn(process.execPath, ['server/server.js'], {
+      cwd: RAIZ,
+      env: {
+        ...process.env,
+        NODE_ENV: 'production',
+        PORT: String(PORT),
+        AUTH_PASSWORD: 'no-se-usa-porque-hay-usuarios',
+        AUTH_STATE_DIR: dir,
+        DATABASE_PATH: path.join(dir, 'catalogo.sqlite'),
+        SESSION_SECRET: 'secreto-de-prueba',
+        ANTHROPIC_API_KEY: '',
+      },
+    });
+    const temporizador = setTimeout(() => reject(new Error(`el servidor no arranco en 60 s:\n${salida}`)), 60000);
+    const escuchar = (chunk) => {
+      salida += chunk;
+      if (salida.includes('Presales corriendo en')) { clearTimeout(temporizador); resolve(); }
+    };
+    servidor.stdout.on('data', escuchar);
+    servidor.stderr.on('data', escuchar);
+    servidor.on('exit', (code) => { clearTimeout(temporizador); reject(new Error(`el servidor salio con ${code}:\n${salida}`)); });
+  });
+}
+
+async function sesionDe(usuario, password) {
+  const res = await fetch(`${BASE}/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ usuario, password }),
+  });
+  assert.strictEqual(res.status, 200, `login de ${usuario}`);
+  const cookie = res.headers.get('set-cookie');
+  assert.ok(cookie, 'el login pone cookie');
+  // En produccion la cookie de sesion lleva Secure: es uno de los tres comportamientos
+  // que solo existen en ese modo.
+  assert.match(cookie, /Secure/);
+  return cookie.split(';')[0];
+}
+
+test.before(arrancar);
+test.after(() => { if (servidor) servidor.kill(); });
+
+test('el arranque en produccion siembra el catalogo y llega a escuchar', () => {
+  assert.match(salida, /\[seed\]/);
+  assert.match(salida, /Presales corriendo en/);
+});
+
+test('sin sesion, la API responde 401 y la navegacion redirige al login', async () => {
+  const api = await fetch(`${BASE}/api/sync/analyze`, { method: 'POST' });
+  assert.strictEqual(api.status, 401);
+  const pagina = await fetch(`${BASE}/cotizador.html`, { redirect: 'manual' });
+  assert.strictEqual(pagina.status, 302);
+  assert.match(pagina.headers.get('location'), /^\/login\?m=sesion&r=/);
+});
+
+test('el permiso sync se exige en la ruta: consulta recibe 403, administrador pasa', async () => {
+  const bruno = await sesionDe('bruno', 'contrasena-de-bruno-larga');
+  const negado = await fetch(`${BASE}/api/sync/analyze`, { method: 'POST', headers: { cookie: bruno } });
+  assert.strictEqual(negado.status, 403);
+
+  const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
+  const admin = await fetch(`${BASE}/api/sync/analyze`, { method: 'POST', headers: { cookie: ana } });
+  // Pasa la autorizacion y choca con el bloqueo de produccion, que es el siguiente muro.
+  assert.strictEqual(admin.status, 503);
+  const cuerpo = await admin.json();
+  assert.match(cuerpo.error, /producci/);
+});
+
+test('las cabeceras de seguridad estan puestas', async () => {
+  const res = await fetch(`${BASE}/login`);
+  assert.match(res.headers.get('content-security-policy'), /script-src 'self'/);
+  assert.match(res.headers.get('strict-transport-security'), /max-age=\d+/);
+  assert.strictEqual(res.headers.get('x-content-type-options'), 'nosniff');
+});
+
+test('/vendor/xlsx.js sirve SheetJS desde la dependencia y detras del muro', async () => {
+  const sinSesion = await fetch(`${BASE}/vendor/xlsx.js`, { redirect: 'manual' });
+  assert.strictEqual(sinSesion.status, 302);
+  const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
+  const res = await fetch(`${BASE}/vendor/xlsx.js`, { headers: { cookie: ana } });
+  assert.strictEqual(res.status, 200);
+  assert.match(res.headers.get('content-type'), /javascript/);
+  const cuerpo = await res.text();
+  assert.match(cuerpo, /SheetJS/);
+});
