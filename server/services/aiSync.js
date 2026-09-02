@@ -1,3 +1,4 @@
+'use strict';
 const { Anthropic } = require('@anthropic-ai/sdk');
 const xlsx = require('xlsx');
 
@@ -16,6 +17,9 @@ class SinClave extends Error {
   }
 }
 
+const MODELO = 'claude-opus-5';
+const MAX_TOKENS = 32000;
+
 let cliente = null;
 function anthropicCliente() {
   if (!process.env.ANTHROPIC_API_KEY) throw new SinClave();
@@ -23,128 +27,147 @@ function anthropicCliente() {
   return cliente;
 }
 
+// ESQUEMA DE SALIDA. Antes la respuesta se sacaba con `content.match(/\[[\s\S]*\]/)` sobre
+// texto libre: bastaba que el modelo escribiera una frase con un corchete para romper el
+// analisis entero, y no habia nada que garantizara que los campos fueran los esperados. Con
+// output_config.format la API obliga al modelo a devolver exactamente esta forma, asi que el
+// parser deja de ser una heuristica.
+//
+// `additionalProperties: false` y `required` completos van a proposito: un cambio con un
+// campo de mas o de menos es un cambio que el importador no sabria aplicar, y es mejor que
+// falle la peticion a que llegue a medias.
+const ESQUEMA_CAMBIOS = {
+  type: 'object',
+  properties: {
+    cambios: {
+      type: 'array',
+      description: 'Cambios propuestos. Vacío si el catálogo ya está al día.',
+      items: {
+        type: 'object',
+        properties: {
+          target: { type: 'string', enum: ['product', 'license', 'supportTier', 'part'] },
+          type: { type: 'string', enum: ['UPDATE', 'NEW'] },
+          id: { type: 'string', description: 'Modelo exacto (target=product) o código exacto (resto).' },
+          field: { type: 'string', description: "Campo a actualizar; 'price' para el precio de un equipo. 'N/A' si type=NEW." },
+          oldValue: { type: 'string', description: "Valor actual del catálogo. 'N/A' si type=NEW." },
+          newValue: { type: 'string', description: 'Valor nuevo. Objeto JSON serializado cuando el destino lo requiere (precio, alta de registro).' },
+          reason: { type: 'string', description: 'Por qué se propone, citando el documento.' },
+          sourceUrl: { type: 'string', description: 'URL oficial de la fuente, o cadena vacía si no la hay.' },
+        },
+        required: ['target', 'type', 'id', 'field', 'oldValue', 'newValue', 'reason', 'sourceUrl'],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ['cambios'],
+  additionalProperties: false,
+};
+
+// Las instrucciones son estables entre llamadas, asi que van en `system` y se cachean: el
+// orden de render es tools -> system -> messages, y cachear un prefijo estable solo sirve si
+// va delante. El catalogo (estable por fabricante) va al principio del primer mensaje, con
+// su propio punto de cache; el documento adjunto y la pregunta van despues, porque cambian
+// en cada llamada y invalidarian el prefijo si fueran antes.
+const SISTEMA = `Eres un experto en preventa de redes e infraestructura. Revisas un catálogo interno de equipos de red y propones correcciones.
+
+QUÉ BUSCAR
+1. Equipos: modelos cuyas métricas técnicas (fw, ips, vpn, ipsec, etc.) estén desactualizadas frente a la hoja de datos oficial, y modelos importantes que falten.
+2. Precios desactualizados frente a la lista de precios o el documento adjunto.
+3. Bundles de licencia, niveles de soporte y SKUs de partes desactualizados o ausentes.
+
+REGLAS QUE NO SE NEGOCIAN
+- CERO DUPLICADOS: si el valor que ibas a proponer ya coincide semánticamente con el del catálogo, no lo devuelvas. Compara el valor, no el formato del texto.
+- NUNCA INVENTES. Si no tienes una fuente para un dato, no lo propongas. Un SKU o un precio verosímil pero inventado es el peor resultado posible: este catálogo ya tuvo una vez un modelo inexistente con precio y specs creíbles, y por eso existe esta regla.
+- Usa la misma unidad y formato que ya usa el campo (no mezcles Gbps con Mbps).
+- Si no hay ningún cambio real, devuelve la lista vacía.
+
+CÓMO SE ESTRUCTURA newValue
+- UPDATE de un campo simple de equipo: el valor escalar nuevo, como texto.
+- UPDATE de precio (field='price'): objeto JSON serializado {"priceDisplay":"~ $1,800","priceNumeric":1800}.
+- NEW de equipo: objeto JSON serializado con las specs base y, si las hay, priceDisplay/priceNumeric.
+- NEW de licencia: {"name":...,"description":...}. NEW de soporte: {"name":...,"sla":...,"description":...}. NEW de parte: {"sku":...,"description":...}.
+- UPDATE de licencia, soporte o parte: el valor escalar nuevo.`;
+
+function textoDelAdjunto(file) {
+  // `file.tipo` lo decide la ruta leyendo la firma del contenido (%PDF, PK..), no el
+  // mimetype que declara el navegador: ese lo controla quien sube el archivo.
+  if (file.tipo === 'xlsx' || file.tipo === 'csv') {
+    const libro = xlsx.read(file.buffer, { type: 'buffer' });
+    return xlsx.utils.sheet_to_csv(libro.Sheets[libro.SheetNames[0]]);
+  }
+  return null;
+}
+
 async function analyzeCatalog(vendor, catalogData, file) {
   const anthropic = anthropicCliente();
-
   const { equipment, licenses, supportTiers, parts } = catalogData;
 
-  let prompt = `
-Eres un experto en preventa de redes e infraestructura, especializado en ${vendor}.
-Tu misión es realizar una revisión exhaustiva del catálogo completo (equipos, precios, licencias, soporte y SKUs) y actuar con conocimiento profundo.
-1. Equipos: identifica modelos existentes cuyas métricas técnicas (fw, ips, vpn, etc.) estén desactualizadas según las hojas de datos oficiales más recientes, y modelos IMPORTANTES que falten por completo en el catálogo.
-2. Precios: identifica precios de equipos existentes que estén desactualizados según listas de precio o el documento adjunto.
-3. Licencias/software: identifica bundles de licencia (ej. FortiGuard) desactualizados o faltantes.
-4. Soporte: identifica niveles de soporte (ej. FortiCare) desactualizados o faltantes.
-5. SKUs/partes: identifica SKUs de partes/accesorios desactualizados o faltantes.
+  const catalogo = JSON.stringify(
+    { equipos: equipment, licencias: licenses, soporte: supportTiers, skus: parts }, null, 2,
+  );
 
-Al proponer un valor numérico para un campo que ya existe en el catálogo, usa el mismo formato/unidad que ya usa ese campo (no mezcles "Gbps" con Mbps, por ejemplo). Al decidir si algo es un cambio real, compara el valor semántico, no el formato exacto del texto.
-`;
+  // Primero lo estable (y cacheado), despues lo que cambia en cada llamada.
+  const contenido = [
+    {
+      type: 'text',
+      text: `Catálogo actual de ${vendor}:\n${catalogo}`,
+      cache_control: { type: 'ephemeral' },
+    },
+  ];
 
   if (file) {
-    prompt += `
-[ATENCIÓN: Se ha proporcionado un archivo adjunto (Datasheet, Excel o Referencia).
-DA PRIORIDAD ABSOLUTA a extraer la información exacta de las especificaciones y los modelos presentes en el documento adjunto.
-Ignora tu conocimiento previo si contradice al documento.]
-`;
+    const hoja = textoDelAdjunto(file);
+    if (hoja !== null) {
+      contenido.push({ type: 'text', text: `CONTENIDO DEL EXCEL/CSV ADJUNTO:\n${hoja}` });
+    } else {
+      contenido.push({
+        type: 'document',
+        source: {
+          type: 'base64',
+          media_type: file.tipo === 'txt' ? 'text/plain' : 'application/pdf',
+          data: file.buffer.toString('base64'),
+        },
+      });
+    }
+    contenido.push({
+      type: 'text',
+      text: 'Hay un documento adjunto. Tiene prioridad absoluta sobre tu conocimiento previo: si lo contradice, manda el documento. Extrae de él las especificaciones exactas.',
+    });
   }
 
-  prompt += `
-REGLA CRÍTICA DE CERO DUPLICADOS:
-- Compara los valores que vas a sugerir con el "Catálogo Actual" proveído más abajo.
-- Si el valor que propones para un registro ya es EXACTAMENTE IGUAL (en valor semántico) al que tiene el Catálogo Actual, **NO LO DEVUELVAS**.
-- Solo devuelve un objeto si representa un cambio real (UPDATE) o un registro que definitivamente NO existe en el catálogo actual (NEW).
-- Si no hay diferencias reales, devuelve un arreglo vacío: []
-
-Devuelve EXCLUSIVAMENTE un JSON con un array de objetos con esta estructura exacta:
-[
-  {
-    "target": "product" | "license" | "supportTier" | "part",
-    "type": "UPDATE", // o "NEW" si el registro no existe
-    "id": "Modelo exacto del equipo (target=product) o código exacto (target=license/supportTier/part)",
-    "field": "Nombre del campo a actualizar si type=UPDATE ('price' para precio de un equipo, o el nombre del campo del specs/registro). Si type=NEW, pon 'N/A'",
-    "oldValue": "Valor viejo (si es NEW, pon 'N/A')",
-    "newValue": "Valor nuevo. Estructura según el caso:
-      - UPDATE de un campo simple de equipo (target=product, field distinto de 'price'): el valor escalar nuevo.
-      - UPDATE de precio de equipo (target=product, field='price'): objeto JSON stringificado {\\"priceDisplay\\":\\"~ $1,800\\",\\"priceNumeric\\":1800}.
-      - NEW de equipo (target=product): objeto JSON stringificado con specs base (fw, ips, seg, etc.) y opcionalmente priceDisplay/priceNumeric.
-      - NEW de licencia (target=license): objeto JSON stringificado {\\"name\\":...,\\"description\\":...}.
-      - NEW de soporte (target=supportTier): objeto JSON stringificado {\\"name\\":...,\\"sla\\":...,\\"description\\":...}.
-      - NEW de SKU/parte (target=part): objeto JSON stringificado {\\"sku\\":...,\\"description\\":...}.
-      - UPDATE de licencia/soporte/parte: el valor escalar nuevo para el campo indicado en 'field'.",
-    "reason": "Por qué se sugiere este cambio",
-    "sourceUrl": "https://www.ejemplo.com/datasheet.pdf (URL oficial de donde sacaste la info)"
-  }
-]
-No devuelvas texto fuera del JSON. Si no encuentras mejoras, devuelve [].
-
-Catálogo Actual:
-${JSON.stringify({ equipos: equipment, licencias: licenses, soporte: supportTiers, skus: parts }, null, 2)}
-`;
+  contenido.push({ type: 'text', text: `Revisa el catálogo de ${vendor} y devuelve solo los cambios reales.` });
 
   try {
-    const messages = [];
-
-    if (file) {
-      // `file.tipo` lo decide la ruta leyendo la firma del contenido (%PDF, PK..), no el
-      // mimetype que declara el navegador: ese lo controla quien sube el archivo.
-      const isExcel = file.tipo === 'xlsx' || file.tipo === 'csv';
-
-      if (isExcel) {
-        // Parse excel to CSV text
-        const workbook = xlsx.read(file.buffer, { type: 'buffer' });
-        const firstSheetName = workbook.SheetNames[0];
-        const csvText = xlsx.utils.sheet_to_csv(workbook.Sheets[firstSheetName]);
-
-        prompt = `CONTENIDO DEL EXCEL / CSV ADJUNTO:\n${csvText}\n\n` + prompt;
-        messages.push({ role: 'user', content: prompt });
-      } else {
-        const media_type = file.tipo === 'txt' ? 'text/plain' : 'application/pdf';
-
-        messages.push({
-          role: 'user',
-          content: [
-            {
-              type: 'document',
-              source: {
-                type: 'base64',
-                media_type: media_type,
-                data: file.buffer.toString('base64')
-              }
-            },
-            {
-              type: 'text',
-              text: prompt
-            }
-          ]
-        });
-      }
-    } else {
-      messages.push({ role: 'user', content: prompt });
-    }
-
-    const response = await anthropic.messages.create({
-      model: 'claude-opus-5',
-      max_tokens: 8192,
-      messages: messages,
+    // Streaming porque un Product Matrix completo con max_tokens alto puede pasarse del
+    // tiempo limite de una peticion normal. `finalMessage()` espera al mensaje completo.
+    const stream = anthropic.messages.stream({
+      model: MODELO,
+      max_tokens: MAX_TOKENS,
+      system: [{ type: 'text', text: SISTEMA, cache_control: { type: 'ephemeral' } }],
+      messages: [{ role: 'user', content: contenido }],
+      output_config: {
+        format: { type: 'json_schema', schema: ESQUEMA_CAMBIOS },
+      },
     });
+    const response = await stream.finalMessage();
 
     if (response.stop_reason === 'refusal') {
-      console.warn('[AI Sync] Claude rechazó la solicitud (stop_reason: refusal)');
+      const motivo = response.stop_details && response.stop_details.category;
+      console.warn(`[AI Sync] Claude declinó la solicitud${motivo ? ` (${motivo})` : ''}`);
       return [];
     }
 
-    // response.content puede incluir bloques 'thinking' antes del texto (Opus 5 piensa por defecto) — buscar el bloque de texto en vez de asumir que es el primero
-    const textBlock = response.content.find((b) => b.type === 'text');
-    const content = textBlock ? textBlock.text : '';
-    const jsonMatch = content.match(/\[[\s\S]*\]/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
-    return [];
+    // Con output_config el bloque de texto ya es el JSON del esquema. Se sigue buscando el
+    // bloque por tipo y no por posicion porque Opus 5 piensa por defecto y puede emitir
+    // bloques `thinking` antes del texto.
+    const bloque = response.content.find((b) => b.type === 'text');
+    if (!bloque) return [];
+    const datos = JSON.parse(bloque.text);
+    return Array.isArray(datos.cambios) ? datos.cambios : [];
   } catch (err) {
     console.error('[AI Sync] Error llamando a Claude:', err);
     throw new Error('No se pudo analizar el catálogo con IA.');
   }
 }
 
-module.exports = { analyzeCatalog, SinClave };
+module.exports = { analyzeCatalog, SinClave, ESQUEMA_CAMBIOS };

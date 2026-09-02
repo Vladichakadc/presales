@@ -14,13 +14,14 @@
     "datasheets": "node scripts/descargar-datasheets.js",
     "cps": "node scripts/importar-cps.js",
     "juniper": "node scripts/importar-juniper.js",
+    "propuesta": "node scripts/importar-propuesta.js",
     "manual": "node scripts/generar-manual-usuario.js"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.68.0",
+    "@anthropic-ai/sdk": "^0.123.0",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "headroom.js": "^0.12.0",
