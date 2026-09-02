@@ -18,8 +18,8 @@ a producción. El plan completo, con el diagnóstico y la evidencia de cada hall
 |---|---|---|
 | 0 | Permiso `sync` exigido en la ruta, sin simulacro sin clave, firma del adjunto, `xlsx` al espejo mantenido, `cors` fuera, `sqlite3` 6 | **hecha** |
 | 1 | CI en GitHub Actions, `/salud` como healthcheck, Railway espera a CI, Dependabot | **hecha** |
-| 2 | `FUENTES` por fabricante, `npm run catalogo -- --check`, importador de propuestas de la IA, salida estructurada, importador Huawei | pendiente |
-| 3 | Vigía de fuentes semanal fuera del proxy de egreso | pendiente |
+| 2 | `FUENTES` por fabricante, `npm run catalogo`, importador de propuestas de la IA, salida estructurada, importador Huawei | **hecha** |
+| 3 | Vigía de fuentes semanal fuera del proxy de egreso | en curso |
 
 ---
 
@@ -51,7 +51,7 @@ de datos— está en [`IMPORTAR-CATALOGO.md`](IMPORTAR-CATALOGO.md).
 |---|---|---|---|
 | 2 | **`cps` en 37 de los 58 FortiGate.** El motor ya usa las sesiones nuevas por segundo como tercer eje; los 21 verificados funcionan, los 37 en `null` no se filtran por ese eje y la ficha lo declara. | `npm run cps -- --check`, copiar tres columnas del Product Matrix a CSV/XLSX, `npm run cps -- matrix.xlsx`. Rechaza filas cuya columna de sesiones concurrentes no case con el `sess` verificado. | `fortinet.com` |
 | 3 | **PDFs de datasheets de Aruba.** `public/datasheets/` va vacío a propósito; la página enlaza la URL de HPE mientras no esté el archivo local. | `npm run datasheets` desde una máquina con salida, y commitear los PDF. | dominios de HPE |
-| 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `ipsec` ni `typ` y las 23 AR no traen `mpps`. El motor no inventa: muestra lo que hay. | Huawei Info-Finder o el capítulo «Specifications» de la documentación de producto, más los boletines EOX. Falta el importador, equivalente a `npm run cps`. | `e.huawei.com`, `support.huawei.com`, `info.support.huawei.com` |
+| 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ` y las 23 AR no traen `mpps`. El motor no inventa: muestra lo que hay. | **El importador ya existe**: `npm run huawei -- --check` para ver los huecos, `npm run huawei -- specs.xlsx` para las cifras y `npm run huawei -- eox.csv --eol` para el fin de venta. Falta el dato, no la herramienta. | `e.huawei.com`, `support.huawei.com`, `info.support.huawei.com` |
 | 4 | **Comprobar el sitio en vivo tras desplegar.** Se verifica que el deploy llegue a SUCCESS y que los logs muestren `[seed]` y `Presales corriendo en`, pero la página en producción solo puede abrirla una persona. | Abrir `presales.up.railway.app` y revisar la pantalla tocada. | `presales.up.railway.app` |
 
 ## Fabricantes sin dimensionador

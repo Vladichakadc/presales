@@ -13,6 +13,7 @@
     "catalogo": "node scripts/catalogo-check.js",
     "datasheets": "node scripts/descargar-datasheets.js",
     "cps": "node scripts/importar-cps.js",
+    "huawei": "node scripts/importar-huawei.js",
     "juniper": "node scripts/importar-juniper.js",
     "propuesta": "node scripts/importar-propuesta.js",
     "manual": "node scripts/generar-manual-usuario.js"
