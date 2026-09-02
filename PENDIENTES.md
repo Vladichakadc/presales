@@ -50,15 +50,18 @@ dominios.** La primera corrida del vigía leyó las seis fuentes con URL sin un 
 por el proxy de la organización. Eso **no** convierte los pendientes de abajo en automáticos
 —descargar un PDF y leer una tabla sin equivocarse de fila son cosas distintas, y este
 repositorio no automatiza la segunda a propósito— pero sí abre una vía que no existía: el
-pendiente 3 ya se cierra desde ahí (`datasheets-aruba.yml`), y los importadores de Fortinet,
-Juniper y Huawei podrían correrse igual si alguien sube el documento al workflow.
+pendiente 3 ya se cierra desde ahí (`datasheets-aruba.yml`), y el pendiente 2 (Fortinet `cps`)
+también, con el mismo patrón — un workflow (`traer-fortinet-matrix.yml`) baja el documento a
+una rama de transporte que se lee y se descarta, nunca a `main` ni a un PR, porque no es un
+activo de la aplicación. Juniper y Huawei podrían cerrarse igual si alguien dispara sus
+workflows.
 
 El procedimiento completo —incluido qué viaja de local a producción y por qué no es la base
 de datos— está en [`IMPORTAR-CATALOGO.md`](IMPORTAR-CATALOGO.md).
 
 | # | Qué falta | Cómo se cierra | Bloqueo |
 |---|---|---|---|
-| 2 | **`cps` en 37 de los 58 FortiGate.** El motor ya usa las sesiones nuevas por segundo como tercer eje; los 21 verificados funcionan, los 37 en `null` no se filtran por ese eje y la ficha lo declara. | `npm run cps -- --check`, copiar tres columnas del Product Matrix a CSV/XLSX, `npm run cps -- matrix.xlsx`. Rechaza filas cuya columna de sesiones concurrentes no case con el `sess` verificado. | `fortinet.com` |
+| ~~2~~ | ~~`cps` en 37 de los 58 FortiGate~~ **Resuelto (2026-09-02)** — ver *Cerrado recientemente*. Quedan 5 modelos en `null` (100F/200F/400F/401F/600F) que no están en el documento, no un bloqueo de acceso. | — | resuelto vía Actions |
 | 3 | **PDFs de datasheets de Aruba.** `public/datasheets/` va vacío a propósito; la página enlaza la URL de HPE mientras no esté el archivo local. | **Ya no hace falta una máquina propia**: el workflow `datasheets-aruba.yml` se dispara a mano en GitHub Actions y deja un PR con los PDF y su peso medido. Merge o no, es decisión de peso del repo (ver `public/datasheets/LEEME.md`). | resuelto vía Actions |
 | 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ` y las 23 AR no traen `mpps`. El motor no inventa: muestra lo que hay. | **El importador ya existe**: `npm run huawei -- --check` para ver los huecos, `npm run huawei -- specs.xlsx` para las cifras y `npm run huawei -- eox.csv --eol` para el fin de venta. Falta el dato, no la herramienta. | `e.huawei.com`, `support.huawei.com`, `info.support.huawei.com` |
 | 4 | **Comprobar el sitio en vivo tras desplegar.** Se verifica que el deploy llegue a SUCCESS y que los logs muestren `[seed]` y `Presales corriendo en`, pero la página en producción solo puede abrirla una persona. | Abrir `presales.up.railway.app` y revisar la pantalla tocada. | `presales.up.railway.app` |
@@ -175,6 +178,29 @@ Cobertura actual por herramienta:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### `cps` de FortiGate: de 21 a 53 de 58 modelos (2026-09-02)
+
+Pendiente 2, cerrado con el mismo hallazgo que ya había cerrado el 3 (los ejecutores de
+GitHub Actions llegan a `fortinet.com` aunque este entorno no): `.github/workflows/
+traer-fortinet-matrix.yml` bajó el Product Matrix real y lo publicó en la rama de transporte
+`fuente/fortinet-product-matrix` — nunca `main` ni un PR, porque el PDF no es un activo de la
+aplicación, solo material de trabajo que se trae con `git fetch` y se descarta después de
+transcribirlo.
+
+El documento se leyó página por página en su versión renderizada, nunca con un extractor
+automático de tablas — es exactamente el mecanismo que este catálogo ya sufrió una vez (fila
+desplazada = número plausible de otro equipo). Los 32 valores transcritos a un CSV pasaron
+por `npm run cps`, que los contrastó contra el `sess` ya verificado del catálogo: pasaron los
+32, sin un solo rechazo, lo que confirma que la lectura no se desplazó de fila. Donde el
+documento publica un segundo valor con licencia Hyperscale (nota⁶: 2600F, 3000F/G, 3500F/G,
+3800G, 4200F, 4400F, 4800F), se transcribió siempre el valor base.
+
+Quedan 5 modelos en `null` (100F, 200F, 400F, 401F, 600F): no es un bloqueo de acceso, es que
+el Product Matrix es un "Top Selling Models Matrix" — un subconjunto curado — y esos SKUs no
+están en ninguna de sus páginas. Verificado con el servidor real en `NODE_ENV=production` (API
+sirviendo los `cps` nuevos, sibling de SSD propagando en vivo, los 5 restantes en `null`,
+dimensionador cargando sin errores en Chromium) antes de desplegar. 129 pruebas.
 
 ### El nombre de usuario ya no distingue mayúsculas ni espacios alrededor (2026-09-02)
 

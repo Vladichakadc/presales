@@ -50,7 +50,7 @@ const FUENTES = {
     { documento: 'Fortinet Product Matrix',
       url: 'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf', estable: true,
       fecha: '2026-07', hash: null, cubre: 'throughput por capa, sesiones, cps',
-      nota: 'Fuente oficial. `cps` solo esta en 21 de los 58 modelos: el resto no es accesible desde este entorno (403 a fortinet.com).' },
+      nota: 'Fuente oficial. `cps` esta en 53 de los 58 modelos (2026-09-02, traido via GitHub Actions a la rama fuente/fortinet-product-matrix y leido pagina por pagina). Los 5 restantes (100F/200F/400F/401F/600F) no aparecen en este documento: es un "Top Selling Models Matrix", subconjunto curado del catalogo completo.' },
     { documento: '2026Q3 Main Price list_AMER_FINAL_EFF 080326.xlsx',
       url: null, fecha: '2026-08-03', hash: null, cubre: 'precios de hardware, licencias FortiGuard y soporte FortiCare',
       nota: 'Lista de precios AMER oficial, vigente desde el 3 de agosto de 2026. Es el unico fabricante de este catalogo con precios verificados contra una lista firmada.' },

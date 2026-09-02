@@ -22,19 +22,31 @@
 // PROCEDENCIA DE `cps` — leer antes de completar los que faltan.
 // El Product Matrix no es accesible desde el entorno donde se edita este catalogo: el proxy
 // de egreso responde 403 a fortinet.com y a los espejos del PDF (politica de la organizacion,
-// no un fallo de red). Los 21 modelos que llevan cifra se reconstruyeron por busqueda web y
-// solo se aceptaron con dos filtros simultaneos:
-//   1. la misma cifra repetida en dos consultas formuladas de forma independiente, y
-//   2. que la fila trajera ademas un valor de Concurrent Sessions coincidente con el `sess`
-//      ya verificado de este catalogo — que es lo que demuestra que la fuente esta leyendo la
-//      fila correcta y no desplazada.
-// Ese segundo filtro descarto varias respuestas: un 70G con 35.000 cps venia con 700.000
-// sesiones concurrentes (las del 60F), y un 80F con 85.000 venia con 720.000 (las del 50G).
-// Los 37 modelos restantes quedan en null porque no superaron los dos filtros — entre ellos
-// 100F/200F/400F/600F y toda la gama de datacenter. null no es "no tiene limite": la pagina
-// lo declara como dato ausente y no lo usa para filtrar. Completarlos requiere abrir el
-// Product Matrix desde una maquina con salida a fortinet.com, igual que `npm run datasheets`
-// para los PDF de Aruba.
+// no un fallo de red). Los 21 modelos originales se reconstruyeron por busqueda web y solo se
+// aceptaron con dos filtros simultaneos: la misma cifra repetida en dos consultas formuladas
+// de forma independiente, y que la fila trajera ademas un valor de Concurrent Sessions
+// coincidente con el `sess` ya verificado de este catalogo. Ese segundo filtro descarto varias
+// respuestas: un 70G con 35.000 cps venia con 700.000 sesiones concurrentes (las del 60F), y
+// un 80F con 85.000 venia con 720.000 (las del 50G).
+//
+// 2026-09-02: 32 modelos mas. `npm run vigia` confirmo que los ejecutores de GitHub Actions
+// (a diferencia de este entorno) llegan a fortinet.com, asi que
+// .github/workflows/traer-fortinet-matrix.yml bajo el PDF real y lo publico en la rama de
+// transporte `fuente/fortinet-product-matrix` (no un activo de la app: se trae con `git fetch`,
+// se lee y se descarta). El documento se leyo pagina por pagina, en su version renderizada
+// -nunca con un extractor automatico de tablas de PDF, que es exactamente el mecanismo que
+// desplaza filas-, y cada fila se transcribio a mano a un CSV que paso por `npm run cps`. Ese
+// mismo contraste de `sess` sirvio de doble anclaje: los 32 valores casaron con el `sess` ya
+// verificado en su primer intento, sin ningun rechazo. Donde el Product Matrix publica un
+// segundo valor con nota⁶ ("Requires Hyperscale license": 2600F, 3000F/G, 3500F/G, 3800G,
+// 4200F, 4400F, 4800F), se transcribio el valor BASE — el mismo criterio que ya usa `sess`,
+// documentado arriba — nunca el que exige licencia adicional.
+//
+// Los 5 modelos restantes (100F, 200F, 400F, 401F, 600F) quedan en null porque no estan en
+// este documento: el Product Matrix es un "Top Selling Models Matrix", un subconjunto
+// curado del catalogo completo, y esos cuatro SKUs no aparecen en ninguna de sus paginas
+// (ver la nota de la linea 44 mas abajo). null no es "no tiene limite": la pagina lo declara
+// como dato ausente y no lo usa para filtrar.
 // RAM por modelo NO existe en el Product Matrix: ese documento publica throughput por capa,
 // sesiones, cps, interfaces y consumo, no memoria. Fortinet no publica la RAM como
 // especificacion de dimensionamiento — el proxy de la capacidad de memoria es `sess`.
@@ -83,24 +95,24 @@ const MODELS=[
   {id:'FortiGate 200G', seg:'Campus / Agr', fw:39000, ips:9000, ngfw:7000, tp:6000, vpn:36000, sess:11000000, cps:400000, ifaces:'10GE SFP+ + GE SFP + GE RJ45'},
   {id:'FortiGate 201G', seg:'Campus / Agr', fw:39000, ips:9000, ngfw:7000, tp:6000, vpn:36000, sess:11000000, cps:400000, ifaces:'10GE SFP+ + GE SFP + GE RJ45 + 480GB SSD onboard'},
   // ─── Serie G — Alta gama / Datacenter / Carrier ────────────────
-  {id:'FortiGate 400G', seg:'Campus / DC edge', fw:164000, ips:25000, ngfw:14000, tp:13000, vpn:55000, sess:28000000, cps:null, ifaces:'4x25GE SFP28 + 16x GE SFP + 5x GE RJ45'},
-  {id:'FortiGate 401G', seg:'Campus / DC edge', fw:164000, ips:25000, ngfw:14000, tp:13000, vpn:55000, sess:28000000, cps:null, ifaces:'4x25GE SFP28 + 16x GE SFP + 5x GE RJ45 + 960GB SSD onboard'},
-  {id:'FortiGate 700G', seg:'DC edge / Enterprise', fw:164000, ips:38000, ngfw:29000, tp:26000, vpn:55000, sess:28000000, cps:null, ifaces:'4x25GE SFP28 + 16x GE SFP + 5x GE RJ45'},
-  {id:'FortiGate 701G', seg:'DC edge / Enterprise', fw:164000, ips:38000, ngfw:29000, tp:26000, vpn:55000, sess:28000000, cps:null, ifaces:'4x25GE SFP28 + 16x GE SFP + 5x GE RJ45 + 960GB SSD onboard'},
-  {id:'FortiGate 900G', seg:'DC Edge / Enterprise', fw:164000, ips:42000, ngfw:31000, tp:30000, vpn:55000, sess:28000000, cps:null, ifaces:'4x25GE SFP28 + 8 GE SFP + 17 GE RJ45'},
-  {id:'FortiGate 901G', seg:'DC Edge / Enterprise', fw:164000, ips:42000, ngfw:31000, tp:30000, vpn:55000, sess:28000000, cps:null, ifaces:'4x25GE SFP28 + 8 GE SFP + 17 GE RJ45 + 2x 480GB SSD onboard'},
-  {id:'FortiGate 3000G', seg:'Carrier grade / DC core', fw:397000, ips:90000, ngfw:85000, tp:80000, vpn:105000, sess:88000000, cps:null, ifaces:'6x100GE QSFP28/40GE + 16x25GE SFP28 + 18x10GE RJ45'},
-  {id:'FortiGate 3001G', seg:'Carrier grade / DC core', fw:397000, ips:90000, ngfw:85000, tp:80000, vpn:105000, sess:88000000, cps:null, ifaces:'6x100GE QSFP28/40GE + 16x25GE SFP28 + 18x10GE RJ45 + 2TB SSD onboard'},
-  {id:'FortiGate 3500G', seg:'DC core', fw:595000, ips:125000, ngfw:115000, tp:105000, vpn:163000, sess:179000000, cps:null, ifaces:'2x400GE QSFP-DD + 4x100GE QSFP28 + 30x25GE SFP28'},
-  {id:'FortiGate 3501G', seg:'DC core', fw:595000, ips:125000, ngfw:115000, tp:105000, vpn:163000, sess:179000000, cps:null, ifaces:'2x400GE QSFP-DD + 4x100GE QSFP28 + 30x25GE SFP28 + 2x 1.92TB SSD onboard'},
-  {id:'FortiGate 3800G', seg:'DC core / Carrier', fw:795000, ips:250000, ngfw:210000, tp:200000, vpn:210000, sess:210000000, cps:null, ifaces:'4x400GE + 6x200GE QSFP56 + 18x10GE SFP56'},
-  {id:'FortiGate 3801G', seg:'DC core / Carrier', fw:795000, ips:250000, ngfw:210000, tp:200000, vpn:210000, sess:210000000, cps:null, ifaces:'4x400GE + 6x200GE QSFP56 + 18x10GE SFP56 + 2x 1.92TB SSD onboard'},
+  {id:'FortiGate 400G', seg:'Campus / DC edge', fw:164000, ips:25000, ngfw:14000, tp:13000, vpn:55000, sess:28000000, cps:580000, ifaces:'4x25GE SFP28 + 16x GE SFP + 5x GE RJ45'},
+  {id:'FortiGate 401G', seg:'Campus / DC edge', fw:164000, ips:25000, ngfw:14000, tp:13000, vpn:55000, sess:28000000, cps:580000, ifaces:'4x25GE SFP28 + 16x GE SFP + 5x GE RJ45 + 960GB SSD onboard'},
+  {id:'FortiGate 700G', seg:'DC edge / Enterprise', fw:164000, ips:38000, ngfw:29000, tp:26000, vpn:55000, sess:28000000, cps:700000, ifaces:'4x25GE SFP28 + 16x GE SFP + 5x GE RJ45'},
+  {id:'FortiGate 701G', seg:'DC edge / Enterprise', fw:164000, ips:38000, ngfw:29000, tp:26000, vpn:55000, sess:28000000, cps:700000, ifaces:'4x25GE SFP28 + 16x GE SFP + 5x GE RJ45 + 960GB SSD onboard'},
+  {id:'FortiGate 900G', seg:'DC Edge / Enterprise', fw:164000, ips:42000, ngfw:31000, tp:30000, vpn:55000, sess:28000000, cps:720000, ifaces:'4x25GE SFP28 + 8 GE SFP + 17 GE RJ45'},
+  {id:'FortiGate 901G', seg:'DC Edge / Enterprise', fw:164000, ips:42000, ngfw:31000, tp:30000, vpn:55000, sess:28000000, cps:720000, ifaces:'4x25GE SFP28 + 8 GE SFP + 17 GE RJ45 + 2x 480GB SSD onboard'},
+  {id:'FortiGate 3000G', seg:'Carrier grade / DC core', fw:397000, ips:90000, ngfw:85000, tp:80000, vpn:105000, sess:88000000, cps:1100000, ifaces:'6x100GE QSFP28/40GE + 16x25GE SFP28 + 18x10GE RJ45'},
+  {id:'FortiGate 3001G', seg:'Carrier grade / DC core', fw:397000, ips:90000, ngfw:85000, tp:80000, vpn:105000, sess:88000000, cps:1100000, ifaces:'6x100GE QSFP28/40GE + 16x25GE SFP28 + 18x10GE RJ45 + 2TB SSD onboard'},
+  {id:'FortiGate 3500G', seg:'DC core', fw:595000, ips:125000, ngfw:115000, tp:105000, vpn:163000, sess:179000000, cps:1100000, ifaces:'2x400GE QSFP-DD + 4x100GE QSFP28 + 30x25GE SFP28'},
+  {id:'FortiGate 3501G', seg:'DC core', fw:595000, ips:125000, ngfw:115000, tp:105000, vpn:163000, sess:179000000, cps:1100000, ifaces:'2x400GE QSFP-DD + 4x100GE QSFP28 + 30x25GE SFP28 + 2x 1.92TB SSD onboard'},
+  {id:'FortiGate 3800G', seg:'DC core / Carrier', fw:795000, ips:250000, ngfw:210000, tp:200000, vpn:210000, sess:210000000, cps:1100000, ifaces:'4x400GE + 6x200GE QSFP56 + 18x10GE SFP56'},
+  {id:'FortiGate 3801G', seg:'DC core / Carrier', fw:795000, ips:250000, ngfw:210000, tp:200000, vpn:210000, sess:210000000, cps:1100000, ifaces:'4x400GE + 6x200GE QSFP56 + 18x10GE SFP56 + 2x 1.92TB SSD onboard'},
   // ─── Serie F (generación actual) ───────────────────────────────
   {id:'FortiGate 40F', seg:'SOHO', fw:5000, ips:1000, ngfw:800, tp:600, vpn:4400, sess:700000, cps:35000, ifaces:'5 GE'},
   {id:'FortiGate 60F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:700, vpn:6500, sess:700000, cps:35000, ifaces:'10 GE + Wi-Fi opcional'},
   {id:'FortiGate 61F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:700, vpn:6500, sess:700000, cps:35000, ifaces:'10 GE + Wi-Fi opcional + 128GB SSD onboard'},
-  {id:'FortiGate 70F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:800, vpn:6100, sess:1500000, cps:null, ifaces:'10 GE RJ45'},
-  {id:'FortiGate 71F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:800, vpn:6100, sess:1500000, cps:null, ifaces:'10 GE RJ45 + 128GB SSD onboard'},
+  {id:'FortiGate 70F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:800, vpn:6100, sess:1500000, cps:35000, ifaces:'10 GE RJ45'},
+  {id:'FortiGate 71F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:800, vpn:6100, sess:1500000, cps:35000, ifaces:'10 GE RJ45 + 128GB SSD onboard'},
   {id:'FortiGate 80F', seg:'Sucursal + PoE', fw:10000, ips:1400, ngfw:1000, tp:900, vpn:6500, sess:1500000, cps:45000, ifaces:'8 GE + 2 SFP'},
   {id:'FortiGate 81F', seg:'Sucursal + PoE', fw:10000, ips:1400, ngfw:1000, tp:900, vpn:6500, sess:1500000, cps:45000, ifaces:'8 GE + 2 SFP + 128GB SSD onboard'},
   {id:'FortiGate 100F', seg:'Sucursal med', fw:20000, ips:2600, ngfw:1600, tp:1000, vpn:11500, sess:1500000, cps:null, ifaces:'22 GE + 2x10GE SFP+'},
@@ -113,24 +125,24 @@ const MODELS=[
   // ─── Serie F — Alta gama / Datacenter / Carrier ────────────────
   {id:'FortiGate 1800F', seg:'DC / Enterprise', fw:198000, ips:22000, ngfw:17000, tp:15000, vpn:55000, sess:12000000, cps:750000, ifaces:'2x100GE QSFP28 + 12x25GE SFP28 + 8x10GE RJ45'},
   {id:'FortiGate 1801F', seg:'DC / Enterprise', fw:198000, ips:22000, ngfw:17000, tp:15000, vpn:55000, sess:12000000, cps:750000, ifaces:'2x100GE QSFP28 + 12x25GE SFP28 + 8x10GE RJ45 + 2x 960GB SSD onboard'},
-  {id:'FortiGate 2600F', seg:'DC / Carrier', fw:198000, ips:31000, ngfw:27000, tp:25000, vpn:55000, sess:24000000, cps:null, ifaces:'4x100GE QSFP28/40GE + 16x25GE SFP28 + 16x10GE SFP+'},
-  {id:'FortiGate 2601F', seg:'DC / Carrier', fw:198000, ips:31000, ngfw:27000, tp:25000, vpn:55000, sess:24000000, cps:null, ifaces:'4x100GE QSFP28/40GE + 16x25GE SFP28 + 16x10GE SFP+ + 2x 960GB SSD onboard'},
-  {id:'FortiGate 3000F', seg:'Carrier grade', fw:397000, ips:36000, ngfw:34000, tp:33000, vpn:105000, sess:70000000, cps:null, ifaces:'6x100GE QSFP28/40GE + 18x10GE RJ45'},
-  {id:'FortiGate 3001F', seg:'Carrier grade', fw:397000, ips:36000, ngfw:34000, tp:33000, vpn:105000, sess:70000000, cps:null, ifaces:'6x100GE QSFP28/40GE + 18x10GE RJ45 + 2x 960GB SSD onboard'},
-  {id:'FortiGate 3200F', seg:'Carrier grade', fw:387000, ips:63000, ngfw:47000, tp:45000, vpn:105000, sess:70000000, cps:null, ifaces:'4x400GE QSFP-DD + 12x50GE SFP28 + 4x25GE SFP28'},
-  {id:'FortiGate 3201F', seg:'Carrier grade', fw:387000, ips:63000, ngfw:47000, tp:45000, vpn:105000, sess:70000000, cps:null, ifaces:'4x400GE QSFP-DD + 12x50GE SFP28 + 4x25GE SFP28 + 2x 960GB SSD onboard'},
-  {id:'FortiGate 3500F', seg:'DC core', fw:595000, ips:72000, ngfw:65000, tp:63000, vpn:165000, sess:140000000, cps:null, ifaces:'6x100GE QSFP28/40GE + 32x25GE SFP28'},
-  {id:'FortiGate 3501F', seg:'DC core', fw:595000, ips:72000, ngfw:65000, tp:63000, vpn:165000, sess:140000000, cps:null, ifaces:'6x100GE QSFP28/40GE + 32x25GE SFP28 + 2x 1.92TB SSD onboard'},
-  {id:'FortiGate 3700F', seg:'DC core', fw:589000, ips:86000, ngfw:80000, tp:75000, vpn:160000, sess:140000000, cps:null, ifaces:'4x400GE QSFP-DD + 4x25GE SFP28 ULL + 20x50GE SFP56'},
-  {id:'FortiGate 3701F', seg:'DC core', fw:589000, ips:86000, ngfw:80000, tp:75000, vpn:160000, sess:140000000, cps:null, ifaces:'4x400GE QSFP-DD + 4x25GE SFP28 ULL + 20x50GE SFP56 + 2x 1.92TB SSD onboard'},
-  {id:'FortiGate 4200F', seg:'DC core', fw:800000, ips:52000, ngfw:47000, tp:45000, vpn:210000, sess:210000000, cps:null, ifaces:'8x100GE QSFP28/40GE + 18x25GE SFP28'},
-  {id:'FortiGate 4201F', seg:'DC core', fw:800000, ips:52000, ngfw:47000, tp:45000, vpn:210000, sess:210000000, cps:null, ifaces:'8x100GE QSFP28/40GE + 18x25GE SFP28 + 2x 1.92TB SSD onboard'},
-  {id:'FortiGate 4400F', seg:'DC core', fw:1150000, ips:94000, ngfw:82000, tp:75000, vpn:310000, sess:210000000, cps:null, ifaces:'12x100GE QSFP28/40GE + 20x25GE SFP28'},
-  {id:'FortiGate 4401F', seg:'DC core', fw:1150000, ips:94000, ngfw:82000, tp:75000, vpn:310000, sess:210000000, cps:null, ifaces:'12x100GE QSFP28/40GE + 20x25GE SFP28 + 2x 1.92TB SSD onboard'},
-  {id:'FortiGate 4800F', seg:'Hyperscale DC', fw:3100000, ips:87000, ngfw:77000, tp:75000, vpn:800000, sess:280000000, cps:null, ifaces:'8x400GE + 12x50GE SFP56'},
-  {id:'FortiGate 4801F', seg:'Hyperscale DC', fw:3100000, ips:87000, ngfw:77000, tp:75000, vpn:800000, sess:280000000, cps:null, ifaces:'8x400GE + 12x50GE SFP56 + 2x 1.92TB SSD onboard'},
-  {id:'FortiGate 7081F', seg:'Carrier / ISP', fw:1890000, ips:405000, ngfw:330000, tp:312000, vpn:378000, sess:600000000, cps:null, ifaces:'Chasis modular FPM (interfaces variables)'},
-  {id:'FortiGate 7121F', seg:'Carrier / National', fw:1890000, ips:675000, ngfw:550000, tp:520000, vpn:630000, sess:1000000000, cps:null, ifaces:'Chasis modular FPM (interfaces variables)'},
+  {id:'FortiGate 2600F', seg:'DC / Carrier', fw:198000, ips:31000, ngfw:27000, tp:25000, vpn:55000, sess:24000000, cps:1000000, ifaces:'4x100GE QSFP28/40GE + 16x25GE SFP28 + 16x10GE SFP+'},
+  {id:'FortiGate 2601F', seg:'DC / Carrier', fw:198000, ips:31000, ngfw:27000, tp:25000, vpn:55000, sess:24000000, cps:1000000, ifaces:'4x100GE QSFP28/40GE + 16x25GE SFP28 + 16x10GE SFP+ + 2x 960GB SSD onboard'},
+  {id:'FortiGate 3000F', seg:'Carrier grade', fw:397000, ips:36000, ngfw:34000, tp:33000, vpn:105000, sess:70000000, cps:870000, ifaces:'6x100GE QSFP28/40GE + 18x10GE RJ45'},
+  {id:'FortiGate 3001F', seg:'Carrier grade', fw:397000, ips:36000, ngfw:34000, tp:33000, vpn:105000, sess:70000000, cps:870000, ifaces:'6x100GE QSFP28/40GE + 18x10GE RJ45 + 2x 960GB SSD onboard'},
+  {id:'FortiGate 3200F', seg:'Carrier grade', fw:387000, ips:63000, ngfw:47000, tp:45000, vpn:105000, sess:70000000, cps:800000, ifaces:'4x400GE QSFP-DD + 12x50GE SFP28 + 4x25GE SFP28'},
+  {id:'FortiGate 3201F', seg:'Carrier grade', fw:387000, ips:63000, ngfw:47000, tp:45000, vpn:105000, sess:70000000, cps:800000, ifaces:'4x400GE QSFP-DD + 12x50GE SFP28 + 4x25GE SFP28 + 2x 960GB SSD onboard'},
+  {id:'FortiGate 3500F', seg:'DC core', fw:595000, ips:72000, ngfw:65000, tp:63000, vpn:165000, sess:140000000, cps:1000000, ifaces:'6x100GE QSFP28/40GE + 32x25GE SFP28'},
+  {id:'FortiGate 3501F', seg:'DC core', fw:595000, ips:72000, ngfw:65000, tp:63000, vpn:165000, sess:140000000, cps:1000000, ifaces:'6x100GE QSFP28/40GE + 32x25GE SFP28 + 2x 1.92TB SSD onboard'},
+  {id:'FortiGate 3700F', seg:'DC core', fw:589000, ips:86000, ngfw:80000, tp:75000, vpn:160000, sess:140000000, cps:930000, ifaces:'4x400GE QSFP-DD + 4x25GE SFP28 ULL + 20x50GE SFP56'},
+  {id:'FortiGate 3701F', seg:'DC core', fw:589000, ips:86000, ngfw:80000, tp:75000, vpn:160000, sess:140000000, cps:930000, ifaces:'4x400GE QSFP-DD + 4x25GE SFP28 ULL + 20x50GE SFP56 + 2x 1.92TB SSD onboard'},
+  {id:'FortiGate 4200F', seg:'DC core', fw:800000, ips:52000, ngfw:47000, tp:45000, vpn:210000, sess:210000000, cps:1000000, ifaces:'8x100GE QSFP28/40GE + 18x25GE SFP28'},
+  {id:'FortiGate 4201F', seg:'DC core', fw:800000, ips:52000, ngfw:47000, tp:45000, vpn:210000, sess:210000000, cps:1000000, ifaces:'8x100GE QSFP28/40GE + 18x25GE SFP28 + 2x 1.92TB SSD onboard'},
+  {id:'FortiGate 4400F', seg:'DC core', fw:1150000, ips:94000, ngfw:82000, tp:75000, vpn:310000, sess:210000000, cps:1000000, ifaces:'12x100GE QSFP28/40GE + 20x25GE SFP28'},
+  {id:'FortiGate 4401F', seg:'DC core', fw:1150000, ips:94000, ngfw:82000, tp:75000, vpn:310000, sess:210000000, cps:1000000, ifaces:'12x100GE QSFP28/40GE + 20x25GE SFP28 + 2x 1.92TB SSD onboard'},
+  {id:'FortiGate 4800F', seg:'Hyperscale DC', fw:3100000, ips:87000, ngfw:77000, tp:75000, vpn:800000, sess:280000000, cps:915000, ifaces:'8x400GE + 12x50GE SFP56'},
+  {id:'FortiGate 4801F', seg:'Hyperscale DC', fw:3100000, ips:87000, ngfw:77000, tp:75000, vpn:800000, sess:280000000, cps:915000, ifaces:'8x400GE + 12x50GE SFP56 + 2x 1.92TB SSD onboard'},
+  {id:'FortiGate 7081F', seg:'Carrier / ISP', fw:1890000, ips:405000, ngfw:330000, tp:312000, vpn:378000, sess:600000000, cps:5400000, ifaces:'Chasis modular FPM (interfaces variables)'},
+  {id:'FortiGate 7121F', seg:'Carrier / National', fw:1890000, ips:675000, ngfw:550000, tp:520000, vpn:630000, sess:1000000000, cps:9000000, ifaces:'Chasis modular FPM (interfaces variables)'},
 ];
 
 // SKU de hardware base (columna UNIT/SKU de la hoja "FortiGate"/"FortiGate Chassis Platforms").

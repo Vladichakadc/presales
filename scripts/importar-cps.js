@@ -3,12 +3,15 @@
 // Completa el campo `cps` (New Sessions/Sec) del catalogo FortiGate desde el Product Matrix.
 //
 // POR QUE EXISTE ESTE SCRIPT
-// El dimensionador de Fortinet ya usa `cps` como tercer eje de dimensionamiento, pero el
-// catalogo solo lo trae en 21 de los 58 modelos. Los otros 37 estan en null porque el
-// entorno donde se edita este repositorio tiene bloqueado el egreso hacia fortinet.com y
-// hacia los espejos del PDF (denegacion 403 de la politica de la organizacion), asi que la
-// cifra no se pudo traer alli sin inventarla. Este script deja la operacion en un solo
-// comando desde cualquier maquina que si tenga acceso al documento:
+// El dimensionador de Fortinet ya usa `cps` como tercer eje de dimensionamiento. El catalogo
+// lo trae en 53 de los 58 modelos (los 5 restantes — 100F/200F/400F/401F/600F — no aparecen
+// en el Product Matrix, que es un "Top Selling Models Matrix" y no cubre el catalogo
+// completo). El entorno donde se edita este repositorio tiene bloqueado el egreso hacia
+// fortinet.com y hacia los espejos del PDF (denegacion 403 de la politica de la
+// organizacion): los 53 se completaron desde otra maquina, incluidos 32 via el PDF real
+// bajado por .github/workflows/traer-fortinet-matrix.yml (ver la cabecera de
+// legacyData/fortinet.js). Este script deja la operacion en un solo comando desde cualquier
+// maquina que si tenga acceso al documento:
 //
 //     npm run cps -- --check              cuantos hay, cuantos faltan y cuales
 //     npm run cps -- matrix.csv           aplica lo que traiga el archivo
