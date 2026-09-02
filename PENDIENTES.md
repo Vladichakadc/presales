@@ -17,7 +17,7 @@ a producción. El plan completo, con el diagnóstico y la evidencia de cada hall
 | Fase | Qué cierra | Estado |
 |---|---|---|
 | 0 | Permiso `sync` exigido en la ruta, sin simulacro sin clave, firma del adjunto, `xlsx` al espejo mantenido, `cors` fuera, `sqlite3` 6 | **hecha** |
-| 1 | CI en GitHub Actions, `/salud` como healthcheck, Railway espera a CI, Dependabot | pendiente |
+| 1 | CI en GitHub Actions, `/salud` como healthcheck, Railway espera a CI, Dependabot | **hecha** |
 | 2 | `FUENTES` por fabricante, `npm run catalogo -- --check`, importador de propuestas de la IA, salida estructurada, importador Huawei | pendiente |
 | 3 | Vigía de fuentes semanal fuera del proxy de egreso | pendiente |
 
@@ -40,14 +40,32 @@ a producción. El plan completo, con el diagnóstico y la evidencia de cada hall
 
 ## Decisión pendiente: `omniroute` en `package.json`
 
-16. **`omniroute` entró como dependencia el 1 de septiembre de 2026 y tumbó el despliegue.**
+16. **`omniroute` tiene la producción parada desde el 1 de septiembre de 2026. Hay que
+    decidir si se queda, y mientras se quede no hay despliegue posible.**
+
     El commit `187a4dd` («Instalar Skill omniroute en presales») añadió `omniroute: ^1.0.0`
-    a `package.json` **sin tocar `package-lock.json`**, y `npm ci` falla cerrado cuando los
-    dos no coinciden: el despliegue `e7192063` murió en `BUILD_IMAGE` y producción se quedó
-    sirviendo el contenedor del 28 de agosto. El lockfile ya está sincronizado, así que el
-    build vuelve a funcionar — pero conviene decidir si el paquete se queda, porque **nada de
-    este repositorio lo requiere** (`grep -rn omniroute` solo lo encuentra en `package.json`)
-    y lo que cuesta está medido:
+    a `package.json`. Dos despliegues han muerto por él, por dos causas distintas:
+
+    - **`e7192063` (1-sep)**: se añadió a `package.json` **sin tocar `package-lock.json`**,
+      y `npm ci` falla cerrado cuando los dos no coinciden. Murió en `BUILD_IMAGE`.
+    - **`d7d0c445` (2-sep)**, ya con el lockfile sincronizado: `npm install` muere con
+      **código 139, una segmentation fault**, dentro del `postinstall` del propio paquete:
+
+      ```
+      npm error code 139
+      npm error path /app/node_modules/omniroute
+      npm error command sh -c node scripts/postinstall.mjs
+      npm error    Rebuilding better-sqlite3 for linux-x64...
+      npm error Segmentation fault
+      ```
+
+    Esto **no se arregla desde este repositorio**: el script de instalación del paquete se
+    cae solo en la máquina de build de Railway. Mientras `omniroute` siga en `package.json`,
+    producción seguirá sirviendo el contenedor del 28 de agosto y ningún cambio nuevo podrá
+    desplegarse — ni las fases de este plan ni nada más.
+
+    **Nada de este repositorio lo requiere** (`grep -rn omniroute` solo lo encuentra en
+    `package.json`) y lo que cuesta está medido:
 
     | | Sin `omniroute` | Con `omniroute` |
     |---|---|---|
@@ -70,10 +88,11 @@ a producción. El plan completo, con el diagnóstico y la evidencia de cada hall
     - **Aparece en el propio informe de vulnerabilidades**, por su cadena
       `monaco-editor` → `dompurify` (18 avisos de XSS).
 
-    Quitarlo es una línea (`npm uninstall omniroute`) y devuelve el árbol a 282 paquetes y
-    2 avisos. **No se hizo por cuenta propia porque el paquete lo añadió el dueño del repo a
-    propósito**; la decisión es suya. Si lo que se quería era la skill, el camino es copiar
-    su carpeta a `.claude/skills/`, que no toca `package.json` en absoluto.
+    Quitarlo es una línea (`npm uninstall omniroute`) y devuelve el árbol a 282 paquetes,
+    2 avisos y un despliegue que funciona. **No se hizo por cuenta propia porque el paquete
+    lo añadió el dueño del repo a propósito**; la decisión es suya. Si lo que se quería era
+    la skill, el camino es copiar su carpeta a `.claude/skills/`, que no toca `package.json`
+    en absoluto y por tanto no puede romper un despliegue.
 
 ## Bloqueado por acceso — necesita una máquina fuera de este entorno
 
@@ -212,6 +231,27 @@ Cobertura actual por herramienta:
     de limpieza. La prueba fija el comportamiento actual para que cambiarlo sea deliberado.
 
 ## Cerrado recientemente
+
+### Fase 1 del plan de sincronismo: el ciclo de despliegue se cierra solo (2026-09-02)
+
+Hasta ahora, entre `git push` y producción no había ninguna comprobación: Railway construía
+cada push a `main` aunque las pruebas fallaran, y el servicio no tenía healthcheck, así que
+un contenedor que muriera al arrancar sustituía al que funcionaba. La prueba de que eso no
+era teórico la dio el propio repositorio dos días antes: el despliegue del 1 de septiembre
+murió en `BUILD_IMAGE` y nadie se enteró hasta el día siguiente.
+
+- **`.github/workflows/verificar.yml`** corre en cada push y cada PR: `npm ci`, lint, las 85
+  pruebas, y un arranque de verdad con `NODE_ENV=production` que exige ver `[seed]`, la línea
+  de `listen` y un `/salud` que responda `ok`. La auditoría de dependencias va informativa,
+  no bloqueante: la Fase 0 dejó el árbol en avisos que hoy no se pueden cerrar sin saltar a
+  Sequelize 7, y bloquear por eso pararía cada push por algo que no tiene arreglo todavía.
+- **Railway espera a esas comprobaciones** (`checkSuites`) y usa **`/salud`** como
+  `healthcheckPath`. La ruta es pública a propósito —el healthcheck no tiene sesión, y detrás
+  del muro recibiría un 302 que Railway leería como «sano»— y cuenta el catálogo en vez de
+  devolver un `{ok:true}` fijo, que estaría igual de verde con la base sin sembrar. Devuelve
+  503 si la base está vacía o no responde, que es lo que retira el contenedor del balanceo.
+- **Dependabot** abre PR semanales de parches y menores, agrupados, que pasan por el mismo
+  workflow. Las mayores se revisan a mano: en este repositorio ya costaron caro dos de ellas.
 
 ### Fase 0 del plan de sincronismo: la sincronización dejaba de fallar abierta (2026-09-02)
 

@@ -82,6 +82,21 @@ test('el arranque en produccion siembra el catalogo y llega a escuchar', () => {
   assert.match(salida, /Presales corriendo en/);
 });
 
+test('/salud responde sin sesion y cuenta el catalogo sembrado', async () => {
+  // Sin sesion a proposito: el healthcheck de Railway no tiene cookie, y si esta ruta
+  // quedara detras del muro recibiria un 302 que Railway leeria como "sano".
+  const res = await fetch(`${BASE}/salud`, { redirect: 'manual' });
+  assert.strictEqual(res.status, 200);
+  const cuerpo = await res.json();
+  assert.strictEqual(cuerpo.ok, true);
+  // Contar el catalogo es lo que distingue "el proceso responde" de "el proceso sirve":
+  // un {ok:true} fijo estaria igual de verde con la base vacia.
+  assert.ok(cuerpo.fabricantes > 0, 'hay fabricantes sembrados');
+  assert.ok(cuerpo.modelos > 0, 'hay modelos sembrados');
+  // Y no filtra nada: solo cuantos, ni cuales ni a que precio.
+  assert.deepStrictEqual(Object.keys(cuerpo).sort(), ['fabricantes', 'modelos', 'ok']);
+});
+
 test('sin sesion, la API responde 401 y la navegacion redirige al login', async () => {
   const api = await fetch(`${BASE}/api/sync/analyze`, { method: 'POST' });
   assert.strictEqual(api.status, 401);

@@ -5,7 +5,7 @@ const express = require('express');
 const helmet = require('helmet');
 
 const auth = require('./auth');
-const { sequelize } = require('./models');
+const { sequelize, Vendor, Product } = require('./models');
 const seedCatalog = require('./seed/seedCatalog');
 
 const catalogRoutes = require('./routes/catalog');
@@ -62,7 +62,10 @@ app.use(express.json({ limit: '1mb' }));
 // /js/fuentes.js tambien: la pagina de acceso usa las mismas tipografias, y si queda detras
 // del muro el navegador recibe HTML donde espera JavaScript y lo rechaza por MIME. No expone
 // nada — solo devuelve a `all` una hoja de estilos marcada como `print`.
-const PUBLICO = new Set(['/login', '/login.html', '/js/login.js', '/js/fuentes.js', '/favicon.ico']);
+// /salud entra aqui porque el healthcheck de Railway no tiene sesion: si quedara detras del
+// muro recibiria un 302 al login y Railway leeria "sano" en una redireccion, que es
+// exactamente el falso positivo que un healthcheck no puede permitirse.
+const PUBLICO = new Set(['/login', '/login.html', '/js/login.js', '/js/fuentes.js', '/favicon.ico', '/salud']);
 
 // Muro de autenticacion. Todo lo que no este en PUBLICO exige sesion valida; las peticiones
 // de API responden 401 en JSON y la navegacion se redirige al login conservando el destino.
@@ -88,6 +91,25 @@ const exige = (permiso) => (req, res, next) => {
   if (ruta.startsWith('/api/')) return res.status(403).json({ error: 'No tienes permiso para esta operación.' });
   return res.redirect('/?m=sinpermiso');
 };
+
+// Estado del servicio, para el healthcheck de Railway. Un build verde no es una aplicacion
+// corriendo: lo que prueba que este contenedor sirve es que la base este sembrada, asi que
+// se cuenta el catalogo en vez de devolver un {ok:true} que estaria igual de verde con la
+// base vacia. Sin sesion a proposito (ver PUBLICO), y sin datos sensibles: cuantos, no
+// cuales ni a que precio.
+app.get('/salud', async (req, res) => {
+  try {
+    const [fabricantes, modelos] = await Promise.all([Vendor.count(), Product.count()]);
+    if (!fabricantes || !modelos) {
+      return res.status(503).json({ ok: false, error: 'catálogo vacío', fabricantes, modelos });
+    }
+    res.json({ ok: true, fabricantes, modelos });
+  } catch (err) {
+    // La base no responde: 503 y no 500, que es lo que hace que Railway retire este
+    // contenedor del balanceo en vez de mandarle trafico.
+    res.status(503).json({ ok: false, error: 'base de datos no disponible' });
+  }
+});
 
 app.get('/login', (req, res) => {
   if (auth.haySesion(req)) return res.redirect('/');

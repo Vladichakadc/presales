@@ -1,0 +1,42 @@
+version: 2
+
+# Mantener las dependencias al dia sin que nadie tenga que acordarse. Cada PR que abra
+# Dependabot pasa por .github/workflows/verificar.yml, asi que una actualizacion que rompa
+# una prueba se ve en el PR y no llega a main — que es lo que hace seguro tenerlo activado
+# en un repositorio que despliega solo desde main.
+#
+# Solo parches y menores en automatico. Las mayores se revisan a mano: en este repositorio
+# ya costaron caro dos de ellas (sqlite3 5 arrastraba una cadena de build vulnerable, y el
+# xlsx de npm quedo abandonado con una vulnerabilidad sin arreglo), y ninguna de las dos se
+# resuelve sola.
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    groups:
+      produccion:
+        applies-to: version-updates
+        dependency-type: production
+        update-types: [minor, patch]
+      desarrollo:
+        applies-to: version-updates
+        dependency-type: development
+        update-types: [minor, patch]
+    ignore:
+      - dependency-name: "*"
+        update-types: [version-update:semver-major]
+    commit-message:
+      prefix: deps
+      include: scope
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 2
+    commit-message:
+      prefix: ci

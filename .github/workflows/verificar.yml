@@ -1,0 +1,73 @@
+name: verificar
+
+# Railway despliega solo desde main, asi que hasta ahora un push con las pruebas rotas
+# llegaba a produccion igual. Este workflow es lo que convierte la instruccion permanente
+# de "todo va a produccion" en algo seguro por construccion en vez de por disciplina:
+# Railway espera a que estas comprobaciones pasen antes de construir.
+#
+# Corre lo mismo que `npm run verificar` en local, mas el arranque en modo produccion, que
+# es donde viven tres comportamientos invisibles en `npm run dev`: el servidor se niega a
+# arrancar sin AUTH_PASSWORD, la cookie gana el atributo Secure, y /api/sync/* responde 503.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      # npm ci falla cerrado si package.json y package-lock.json no coinciden. Eso es una
+      # virtud, no un estorbo: es exactamente el desajuste que tumbo el despliegue del 1 de
+      # septiembre, y aqui se ve en un PR en vez de en produccion.
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Pruebas
+        run: npm test
+
+      # El arranque real, con la base sembrada desde cero y las variables que exige
+      # produccion. Si el contenedor no llega a `listen`, aqui se ve.
+      - name: Arranque en modo produccion y comprobacion de salud
+        env:
+          NODE_ENV: production
+          PORT: 4000
+          AUTH_USER: verificacion
+          AUTH_PASSWORD: contrasena-solo-de-esta-corrida
+          SESSION_SECRET: secreto-solo-de-esta-corrida
+          AUTH_STATE_DIR: ./.auth-ci
+          DATABASE_PATH: ./ci.sqlite
+        run: |
+          npm start > arranque.log 2>&1 &
+          for i in $(seq 1 60); do
+            grep -q 'Presales corriendo en' arranque.log && break
+            sleep 1
+          done
+          grep -q '\[seed\]' arranque.log || { echo 'FALTA la linea [seed]'; cat arranque.log; exit 1; }
+          grep -q 'Presales corriendo en' arranque.log || { echo 'el servidor no llego a escuchar'; cat arranque.log; exit 1; }
+          curl -fsS --retry 5 --retry-connrefused http://127.0.0.1:4000/salud | tee salud.json
+          grep -q '"ok":true' salud.json || { echo '/salud no responde ok'; exit 1; }
+
+      # Informativo por ahora. La Fase 0 dejo el arbol en 2 avisos moderados (sequelize por
+      # uuid, sin arreglo sin saltar a Sequelize 7), asi que exigir cero aqui bloquearia
+      # cada push por algo que no se puede cerrar todavia.
+      - name: Auditoria de dependencias (informativa)
+        continue-on-error: true
+        run: npm audit --audit-level=high
