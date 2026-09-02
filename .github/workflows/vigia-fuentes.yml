@@ -19,7 +19,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   issues: write
 
 jobs:
@@ -38,10 +38,13 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      # --escribir actualiza fuentes.lock.json con lo medido. Sin eso el vigia compararia
+      # siempre contra un lock vacio, reportaria "primera medicion" cada semana y no
+      # detectaria un cambio jamas — un vigia que no recuerda no vigila.
       - name: Revisar las fuentes
         id: vigia
         run: |
-          node scripts/vigia-fuentes.js --json > vigia.json
+          node scripts/vigia-fuentes.js --json --escribir > vigia.json
           node scripts/vigia-fuentes.js | tee resumen.txt
           node -e "
             const d = require('./vigia.json');
@@ -49,6 +52,21 @@ jobs:
             fs.appendFileSync(process.env.GITHUB_OUTPUT, 'cambiados=' + d.cambiados.length + '\n');
             fs.appendFileSync(process.env.GITHUB_OUTPUT, 'inalcanzables=' + d.inalcanzables.length + '\n');
           "
+
+      # El lock es el recuerdo del vigia y pertenece al repositorio, junto al catalogo cuya
+      # procedencia describe. Se commitea solo cuando cambia de verdad, asi que el despliegue
+      # que dispara es proporcional a los cambios reales de los fabricantes.
+      - name: Guardar lo medido
+        run: |
+          if git diff --quiet -- server/seed/legacyData/fuentes.lock.json; then
+            echo 'El lock no cambio; no hay nada que guardar.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add server/seed/legacyData/fuentes.lock.json
+          git commit -m 'vigia: actualiza el hash de las fuentes medidas'
+          git push origin HEAD:main
 
       - name: Publicar el resumen en la corrida
         run: |

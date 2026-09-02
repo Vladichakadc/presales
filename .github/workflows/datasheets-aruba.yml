@@ -1,0 +1,83 @@
+name: datasheets-aruba
+
+# Baja los PDF de datasheet de HPE Aruba y abre un PR con ellos (pendiente 3).
+#
+# POR QUE EN UN WORKFLOW Y NO A MANO
+# `public/datasheets/` va vacio porque el entorno donde se edita este repositorio tiene
+# bloqueados los dominios de HPE por politica de egreso. La corrida del vigia del 2 de
+# septiembre de 2026 demostro que los ejecutores de GitHub SI los alcanzan (las seis fuentes
+# se leyeron sin un solo 403), asi que la descarga se puede hacer aqui.
+#
+# POR QUE UN PR Y NO UN COMMIT DIRECTO
+# `public/datasheets/LEEME.md` avisa de que commitear estos PDF engorda el repositorio de
+# forma permanente, y que conviene mirar el tamano total antes. Esa es una decision del dueno
+# del repo, no del workflow: se deja el PR preparado con el peso medido en la descripcion y
+# se merge o no. Lo que si es cierto es que sin commitearlos produccion no los sirve, porque
+# el contenedor de Railway se reconstruye desde git en cada despliegue.
+#
+# Manual a proposito: no tiene schedule. Los datasheets no cambian cada semana, y el vigia ya
+# avisa cuando la pagina de HPE cambia.
+
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Volver a bajar los que ya estan presentes
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  descargar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # El script comprueba la firma %PDF del contenido y reporta aparte las URL que
+      # devuelven una pagina de aterrizaje, en vez de guardar un HTML con extension .pdf.
+      - name: Descargar los datasheets
+        id: bajar
+        run: |
+          node scripts/descargar-datasheets.js ${{ inputs.force && '--force' || '' }} | tee descarga.txt
+          echo "peso=$(du -sh public/datasheets | cut -f1)" >> "$GITHUB_OUTPUT"
+          echo "cuantos=$(find public/datasheets -name '*.pdf' | wc -l)" >> "$GITHUB_OUTPUT"
+
+      - name: Abrir el PR
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: datasheets/aruba
+          title: 'Datasheets de Aruba descargados (pendiente 3)'
+          commit-message: 'Anade los PDF de datasheet de HPE Aruba'
+          add-paths: public/datasheets
+          body: |
+            Cierra el **pendiente 3**: `public/datasheets/` iba vacío porque los dominios de
+            HPE están bloqueados por la política de egreso del entorno donde se edita este
+            repositorio. Los ejecutores de GitHub sí los alcanzan.
+
+            - **${{ steps.bajar.outputs.cuantos }} PDF**, **${{ steps.bajar.outputs.peso }}** en total.
+
+            Antes de mergear, lo que avisa `public/datasheets/LEEME.md`: estos documentos
+            engordan el repositorio de forma permanente. La contrapartida es que **sin
+            commitearlos producción no los sirve**, porque el contenedor de Railway se
+            reconstruye desde git en cada despliegue; mientras no estén, la página enlaza la
+            URL de HPE y la herramienta funciona igual.
+
+            La lista de documentos sale de `DATASHEETS` en `server/seed/legacyData/aruba.js`,
+            la misma fuente que consume la aplicación: no hay un segundo listado que se
+            desincronice.
+
+            ---
+            _Generado por [Claude Code](https://claude.ai/code)_

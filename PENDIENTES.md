@@ -44,13 +44,22 @@ Nada de esto es trabajo de ingeniería pendiente: el código está hecho y proba
 dato. El proxy de egreso de la organización responde **403** a estos dominios, y un 403 de
 política se reporta, no se rodea.
 
+**Hallazgo del 2 de septiembre de 2026: los ejecutores de GitHub Actions sí alcanzan estos
+dominios.** La primera corrida del vigía leyó las seis fuentes con URL sin un solo 403
+(Cisco 173.913 bytes, Juniper 392.019, MikroTik 459.308, HPE 333.670, Nokia 307.119). No pasan
+por el proxy de la organización. Eso **no** convierte los pendientes de abajo en automáticos
+—descargar un PDF y leer una tabla sin equivocarse de fila son cosas distintas, y este
+repositorio no automatiza la segunda a propósito— pero sí abre una vía que no existía: el
+pendiente 3 ya se cierra desde ahí (`datasheets-aruba.yml`), y los importadores de Fortinet,
+Juniper y Huawei podrían correrse igual si alguien sube el documento al workflow.
+
 El procedimiento completo —incluido qué viaja de local a producción y por qué no es la base
 de datos— está en [`IMPORTAR-CATALOGO.md`](IMPORTAR-CATALOGO.md).
 
 | # | Qué falta | Cómo se cierra | Bloqueo |
 |---|---|---|---|
 | 2 | **`cps` en 37 de los 58 FortiGate.** El motor ya usa las sesiones nuevas por segundo como tercer eje; los 21 verificados funcionan, los 37 en `null` no se filtran por ese eje y la ficha lo declara. | `npm run cps -- --check`, copiar tres columnas del Product Matrix a CSV/XLSX, `npm run cps -- matrix.xlsx`. Rechaza filas cuya columna de sesiones concurrentes no case con el `sess` verificado. | `fortinet.com` |
-| 3 | **PDFs de datasheets de Aruba.** `public/datasheets/` va vacío a propósito; la página enlaza la URL de HPE mientras no esté el archivo local. | `npm run datasheets` desde una máquina con salida, y commitear los PDF. | dominios de HPE |
+| 3 | **PDFs de datasheets de Aruba.** `public/datasheets/` va vacío a propósito; la página enlaza la URL de HPE mientras no esté el archivo local. | **Ya no hace falta una máquina propia**: el workflow `datasheets-aruba.yml` se dispara a mano en GitHub Actions y deja un PR con los PDF y su peso medido. Merge o no, es decisión de peso del repo (ver `public/datasheets/LEEME.md`). | resuelto vía Actions |
 | 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ` y las 23 AR no traen `mpps`. El motor no inventa: muestra lo que hay. | **El importador ya existe**: `npm run huawei -- --check` para ver los huecos, `npm run huawei -- specs.xlsx` para las cifras y `npm run huawei -- eox.csv --eol` para el fin de venta. Falta el dato, no la herramienta. | `e.huawei.com`, `support.huawei.com`, `info.support.huawei.com` |
 | 4 | **Comprobar el sitio en vivo tras desplegar.** Se verifica que el deploy llegue a SUCCESS y que los logs muestren `[seed]` y `Presales corriendo en`, pero la página en producción solo puede abrirla una persona. | Abrir `presales.up.railway.app` y revisar la pantalla tocada. | `presales.up.railway.app` |
 
@@ -175,6 +184,34 @@ Cobertura actual por herramienta:
     de limpieza. La prueba fija el comportamiento actual para que cambiarlo sea deliberado.
 
 ## Cerrado recientemente
+
+### Fases 2 y 3 del plan de sincronismo: el catálogo dice de dónde sale y avisa cuando cambia (2026-09-02)
+
+**El problema medido**: el catálogo se verifica contra documentos que los fabricantes
+actualizan sin avisar, y esa procedencia vivía en comentarios de cabecera — invisible para la
+aplicación, para cualquier comprobación automática y para quien está a punto de citar una
+cifra delante de un cliente.
+
+- **`legacyData/fuentes.js`** estructura esa información transcrita de cada cabecera, sin
+  inventar nada. Donde la cabecera no da fecha (MikroTik y Aruba), queda en `null` y se
+  declara: **una fuente sin fecha no es una fuente reciente**, el mismo tercer estado que
+  protege `redund`. Se proyecta en `/api/fuentes`, el portal la pinta por fabricante y el
+  arranque avisa de lo que pasa de seis meses o no tiene fecha.
+- **`npm run catalogo`** generaliza a los seis catálogos lo que solo hacían `cps --check` y
+  `juniper --check`. Los precios se cuentan sobre `cotizadorCatalog.js`: contarlos sobre los
+  `MODELS` daba «Fortinet 0/58 sin cotizar» justo del único fabricante con lista firmada.
+- **La IA propone con esquema y `npm run propuesta` aplica con anclaje.** La respuesta salía
+  de una expresión regular sobre texto libre; ahora va con `output_config.format`. Y el
+  importador escribe sobre `legacyData/` para que lo revisable sea un diff de git, aceptando
+  solo lo que ancla: *si la IA se equivoca sobre lo que el catálogo dice hoy, no hay razón
+  para creerle lo que dice que debería decir*. Las altas se reportan, nunca se aplican solas.
+- **`npm run huawei`** cierra el pendiente 14 por el lado de la herramienta, con modo `--eol`
+  para cargar los boletines con su fecha real.
+- **`npm run vigia`** compara el SHA-256 de cada fuente y el workflow semanal abre un issue
+  cuando algo cambia o no se pudo leer. **Un documento inalcanzable no es un documento sin
+  cambios**, y el informe los distingue.
+
+De 76 pruebas a 113.
 
 ### `omniroute` fuera: tenía la producción parada desde el 1 de septiembre (2026-09-02)
 
