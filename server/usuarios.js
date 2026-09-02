@@ -64,6 +64,19 @@ function hashPassword(password) {
   return `${salt.toString('hex')}:${hash.toString('hex')}`;
 }
 
+// Contraseña temporal para un alta: 24 caracteres de un alfabeto sin 0/O/1/l/I ni símbolos,
+// para que se pueda leer y transcribir en voz alta sin ambigüedad si hace falta. La entropía
+// (24 caracteres de un alfabeto de 54) sobra de sobra frente a las 8 letras mínimas que ya
+// exige cambiarPassword — no es la contraseña definitiva, es la que se cambia en el primer
+// acceso y que mientras tanto solo debe conocer quien la generó y a quien se le comunique.
+const ALFABETO_TEMPORAL = 'abcdefghjkmnpqrstuvwxyzACDEFGHJKMNPQRSTUVWXYZ23456789';
+function generarPasswordTemporal() {
+  const bytes = crypto.randomBytes(24);
+  let out = '';
+  for (let i = 0; i < bytes.length; i++) out += ALFABETO_TEMPORAL[bytes[i] % ALFABETO_TEMPORAL.length];
+  return out;
+}
+
 function verifyPassword(password, stored) {
   if (!stored || !stored.includes(':')) return false;
   const [saltHex, hashHex] = stored.split(':');
@@ -165,6 +178,10 @@ function publico(u) {
     rolNombre: (ROLES[u.rol] || {}).n || u.rol,
     activo: u.activo !== false,
     desdeSemilla: !!u.desdeSemilla,
+    // A diferencia de desdeSemilla (aviso blando: el admin migrado puede seguir trabajando),
+    // debeCambiar lo hace cumplir el muro de auth — ver exige() en server.js. Se lo lleva la
+    // lista para que el administrador vea quién no ha completado su primer acceso todavía.
+    debeCambiar: !!u.debeCambiar,
     creado: u.creado || null,
     actualizado: u.actualizado || null,
   };
@@ -216,9 +233,61 @@ function cambiarPassword(id, actual, nueva) {
   if (nueva === actual) return { ok: false, error: 'La nueva contraseña debe ser distinta de la actual.' };
   u.passwordHash = hashPassword(nueva);
   u.desdeSemilla = false;
+  u.debeCambiar = false; // cambiarla de verdad es lo que levanta el muro del primer acceso
   u.actualizado = new Date().toISOString();
   guardar(e);
   return { ok: true };
+}
+
+// Alta de un usuario, con contraseña temporal generada por el servidor.
+//
+// LA DECISIÓN QUE PENDIENTES.md DEJABA ABIERTA era cómo llega la primera contraseña a la
+// persona nueva. Se resuelve así: el servidor la genera, la devuelve UNA VEZ en la respuesta
+// de esta llamada —nunca queda en un log ni se puede volver a pedir— para que el
+// administrador la comunique por un canal distinto a este panel, y la cuenta nace con
+// `debeCambiar: true`. Ese campo no es un aviso: el muro de autenticación de server.js le
+// impide usar cualquier pantalla que no sea cambiar su propia contraseña hasta que lo haga,
+// así que la clave provisional nunca llega a ser la clave con la que esa persona trabaja.
+//
+// Validación deliberadamente estricta y sin normalizar el nombre de usuario: el punto 13 de
+// PENDIENTES.md ya registra que la comparación exacta (`PreSales` ≠ `presales`) es una
+// decisión abierta aparte, y esta función no la toca de tapadillo — usa la misma unicidad
+// exacta que ya rige el login.
+function crear({ usuario, nombre, rol }) {
+  if (typeof usuario !== 'string' || !usuario.trim()) return { ok: false, error: 'Falta el nombre de usuario.' };
+  if (typeof nombre !== 'string' || !nombre.trim()) return { ok: false, error: 'Falta el nombre para mostrar.' };
+  const u = usuario.trim();
+  const n = nombre.trim();
+  if (u.length < 3 || u.length > 60) return { ok: false, error: 'El usuario debe tener entre 3 y 60 caracteres.' };
+  if (n.length > 120) return { ok: false, error: 'El nombre es demasiado largo.' };
+  if (/\s/.test(u) || [...u].some((c) => c.charCodeAt(0) < 32 || c.charCodeAt(0) === 127)) {
+    return { ok: false, error: 'El usuario no puede tener espacios ni caracteres de control.' };
+  }
+  const rolFinal = rol || ROL_POR_DEFECTO;
+  if (!ROLES[rolFinal]) return { ok: false, error: `Rol desconocido: "${rolFinal}".` };
+
+  const e = estado();
+  if (!e) return { ok: false, error: 'No hay almacén de usuarios inicializado.' };
+  if (e.usuarios.some((x) => x.usuario === u)) {
+    return { ok: false, error: `Ya existe un usuario "${u}".` };
+  }
+
+  const passwordTemporal = generarPasswordTemporal();
+  const nuevo = {
+    id: `u_${crypto.randomBytes(6).toString('hex')}`,
+    usuario: u,
+    nombre: n,
+    rol: rolFinal,
+    passwordHash: hashPassword(passwordTemporal),
+    desdeSemilla: false,
+    debeCambiar: true,
+    activo: true,
+    creado: new Date().toISOString(),
+    actualizado: null,
+  };
+  e.usuarios.push(nuevo);
+  guardar(e);
+  return { ok: true, usuario: publico(nuevo), passwordTemporal };
 }
 
 // Huella determinista de la credencial de un usuario. auth.js deriva de aquí la clave con
@@ -242,6 +311,6 @@ function hayAdministrador() {
 
 module.exports = {
   ROLES, ROL_POR_DEFECTO, USERS_FILE,
-  listar, porId, verificar, cambiarPassword, huella, permiso, hayAdministrador,
+  listar, porId, verificar, cambiarPassword, crear, huella, permiso, hayAdministrador,
   hashPassword, verifyPassword,
 };

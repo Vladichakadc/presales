@@ -81,6 +81,21 @@ app.use((req, res, next) => {
   return res.redirect(`/login?m=sesion&r=${destino}`);
 });
 
+// Muro del primer acceso. Un usuario dado de alta por un administrador nace con
+// debeCambiar:true y una contrasena temporal que el propio administrador acaba de leer en
+// pantalla: eso no es un aviso que se pueda descartar (como desdeSemilla, para la cuenta
+// migrada), es una condicion que hay que cumplir antes de tocar nada mas. Solo se deja pasar
+// lo imprescindible para cambiar la propia contrasena y cerrar sesion; todo lo demas redirige
+// a /cuenta (navegacion) o responde 403 explicando por que (API).
+const PERMITIDO_CON_CAMBIO_PENDIENTE = new Set(['/cuenta', '/js/cuenta.js', '/api/cuenta/estado', '/api/cuenta/password', '/logout']);
+app.use((req, res, next) => {
+  if (!req.usuario || !req.usuario.debeCambiar || PERMITIDO_CON_CAMBIO_PENDIENTE.has(req.path)) return next();
+  if (req.path.startsWith('/api/')) {
+    return res.status(403).json({ error: 'Debes cambiar la contraseña temporal antes de continuar.', debeCambiar: true });
+  }
+  return res.redirect('/cuenta?m=forzado');
+});
+
 // Autorizacion por permiso, declarada en usuarios.js. Va aqui y no dentro de cada ruta para
 // que anadir una pantalla protegida sea anadir una linea, no recordar un patron.
 const exige = (permiso) => (req, res, next) => {
@@ -158,6 +173,7 @@ app.get('/api/cuenta/estado', (req, res) => res.json({
   rolNombre: (auth.ROLES[req.usuario.rol] || {}).n || req.usuario.rol,
   puedeUsuarios: auth.permiso(req.usuario, 'usuarios'),
   usandoSemilla: !!req.usuario.desdeSemilla,
+  debeCambiar: !!req.usuario.debeCambiar,
 }));
 
 app.post('/api/cuenta/password', (req, res) => {
@@ -182,14 +198,17 @@ app.get('/api/usuarios', exige('usuarios'), (req, res) => res.json({
   yo: req.usuario.id,
 }));
 
-// Alta de usuarios: pendiente a peticion del dueno del repo — por ahora solo se usa el
-// administrador. Responde 501 en vez de 404 para que quede claro que la ruta esta prevista
-// y sin implementar, no que se equivocaron de direccion. Lo que falta no es el formulario
-// sino decidir el flujo de la primera contrasena: enviarla por fuera, forzar el cambio en
-// el primer acceso, o un enlace de alta con caducidad.
-app.post('/api/usuarios', exige('usuarios'), (req, res) => res.status(501).json({
-  error: 'La creación de usuarios está pendiente. Hoy la herramienta opera con el usuario administrador.',
-}));
+// Alta de usuarios. La contrasena la genera el servidor y se devuelve UNA sola vez en esta
+// respuesta — nunca se guarda en claro ni se registra en el log — para que el administrador
+// la comunique por un canal distinto a este panel. La cuenta nace con debeCambiar:true, y el
+// muro de arriba le impide usar cualquier otra pantalla hasta que la cambie de verdad.
+app.post('/api/usuarios', exige('usuarios'), (req, res) => {
+  const { usuario, nombre, rol } = req.body || {};
+  const r = auth.crearUsuario({ usuario, nombre, rol });
+  if (!r.ok) return res.status(400).json({ error: r.error });
+  console.log(`[usuarios] alta · usuario=${r.usuario.usuario} · rol=${r.usuario.rol} · por=${req.usuario.usuario}`);
+  res.status(201).json({ ok: true, usuario: r.usuario, passwordTemporal: r.passwordTemporal });
+});
 
 // SheetJS para el navegador, servido desde la dependencia que ya usa el sync para leer
 // Excel. Las paginas lo cargan solo al pulsar "Exportar a Excel", asi que no pesa en la

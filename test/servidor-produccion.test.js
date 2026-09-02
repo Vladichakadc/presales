@@ -135,3 +135,72 @@ test('/vendor/xlsx.js sirve SheetJS desde la dependencia y detras del muro', asy
   const cuerpo = await res.text();
   assert.match(cuerpo, /SheetJS/);
 });
+
+// De extremo a extremo: un administrador da de alta a alguien, esa cuenta queda encerrada en
+// /cuenta hasta que cambia la clave temporal de verdad, y solo entonces recupera el portal.
+// Es el flujo completo que server.js, usuarios.js y las dos paginas tienen que sostener entre
+// los tres — la pieza que faltaba del pendiente 1 de PENDIENTES.md.
+test('alta de usuario: la cuenta nueva queda encerrada hasta cambiar la clave temporal', async () => {
+  const ana = await sesionDe('ana', 'contrasena-de-ana-larga'); // admin
+
+  const alta = await fetch(`${BASE}/api/usuarios`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', cookie: ana },
+    body: JSON.stringify({ usuario: 'recien.llegada', nombre: 'Recién Llegada', rol: 'consulta' }),
+  });
+  assert.strictEqual(alta.status, 201);
+  const cuerpoAlta = await alta.json();
+  assert.strictEqual(cuerpoAlta.ok, true);
+  assert.ok(cuerpoAlta.passwordTemporal, 'la clave se devuelve una vez en esta respuesta');
+  assert.strictEqual(cuerpoAlta.usuario.debeCambiar, true);
+
+  const nueva = await sesionDe('recien.llegada', cuerpoAlta.passwordTemporal);
+
+  // Con debeCambiar en true, cualquier otra pantalla (API o navegacion) redirige a /cuenta.
+  const catalogo = await fetch(`${BASE}/api/catalog`, { headers: { cookie: nueva } });
+  assert.strictEqual(catalogo.status, 403);
+  const errCatalogo = await catalogo.json();
+  assert.strictEqual(errCatalogo.debeCambiar, true);
+
+  const portal = await fetch(`${BASE}/`, { headers: { cookie: nueva }, redirect: 'manual' });
+  assert.strictEqual(portal.status, 302);
+  assert.match(portal.headers.get('location'), /^\/cuenta/);
+
+  // Pero /cuenta y su propio ciclo de cambio de clave siguen abiertos: si tambien
+  // redirigieran, nadie podria salir nunca del encierro.
+  const cuentaEstado = await fetch(`${BASE}/api/cuenta/estado`, { headers: { cookie: nueva } });
+  assert.strictEqual(cuentaEstado.status, 200);
+  const estadoCuenta = await cuentaEstado.json();
+  assert.strictEqual(estadoCuenta.debeCambiar, true);
+
+  const cambio = await fetch(`${BASE}/api/cuenta/password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', cookie: nueva },
+    body: JSON.stringify({ actual: cuerpoAlta.passwordTemporal, nueva: 'la-clave-que-ella-eligio-de-verdad' }),
+  });
+  assert.strictEqual(cambio.status, 200);
+
+  // Cambiar la clave invalida la sesion (misma regla que cualquier otro cambio de clave):
+  // hay que volver a entrar, y esta vez sin bloqueo.
+  const otraVez = await sesionDe('recien.llegada', 'la-clave-que-ella-eligio-de-verdad');
+  const catalogoLibre = await fetch(`${BASE}/api/catalog`, { headers: { cookie: otraVez } });
+  assert.strictEqual(catalogoLibre.status, 200);
+});
+
+test('el alta rechaza un rol invalido y no exige el permiso a quien no lo tiene', async () => {
+  const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
+  const rolMalo = await fetch(`${BASE}/api/usuarios`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', cookie: ana },
+    body: JSON.stringify({ usuario: 'rolmalo.e2e', nombre: 'X', rol: 'superadmin' }),
+  });
+  assert.strictEqual(rolMalo.status, 400);
+
+  const bruno = await sesionDe('bruno', 'contrasena-de-bruno-larga'); // consulta
+  const negado = await fetch(`${BASE}/api/usuarios`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', cookie: bruno },
+    body: JSON.stringify({ usuario: 'intento.e2e', nombre: 'X', rol: 'consulta' }),
+  });
+  assert.strictEqual(negado.status, 403);
+});

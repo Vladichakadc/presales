@@ -41,7 +41,16 @@ td.mono{font-family:'IBM Plex Mono',monospace;font-size:12.5px}
 .rol span{font-size:12.5px;color:var(--steel)}
 .perm{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--steel);margin-top:7px}
 .pendiente{border-left:3px solid var(--amber);padding-left:14px}
-.btn{font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;padding:9px 16px;border:1px solid var(--rule);background:var(--paper);color:var(--steel);border-radius:2px;cursor:not-allowed}
+label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px}
+input,select{width:100%;padding:10px 11px;border:1px solid var(--rule);border-radius:2px;background:#fff;font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--ink)}
+input:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+.campo{margin-bottom:14px}
+.btn{font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;padding:9px 16px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px;cursor:pointer}
+.btn:disabled{cursor:not-allowed;opacity:.6}
+.revelado{border:1px solid var(--green);background:#F0FDF4;border-radius:3px;padding:16px;margin-top:16px}
+.revelado .clave{display:flex;align-items:center;gap:8px;margin-top:8px}
+.revelado code{flex:1;font-size:16px;padding:8px 10px;background:#fff;border:1px solid var(--rule);border-radius:2px;user-select:all;word-break:break-all}
+.revelado .btn{padding:8px 12px;font-size:12px}
 </style>
 <script src="/js/fuentes.js" defer></script>
 </head>
@@ -72,11 +81,23 @@ td.mono{font-family:'IBM Plex Mono',monospace;font-size:12.5px}
 
   <section class="card">
     <h2>Alta de usuarios</h2>
-    <div class="pendiente">
-      <p class="txt"><b>Pendiente a propósito.</b> Por ahora la herramienta opera con el usuario administrador. El backend ya distingue identidad y rol —la sesión dice quién eres y cada pantalla protegida exige su permiso—, así que lo que falta no es el formulario.</p>
-      <p class="txt">Lo que falta es decidir <b>cómo llega la primera contraseña</b> a la persona nueva, que es donde estos módulos se vuelven inseguros: comunicarla por un canal aparte, forzar el cambio en el primer acceso, o generar un enlace de alta con caducidad. Hasta que eso esté resuelto, el endpoint responde <code>501</code> y lo dice, en vez de crear cuentas con una clave provisional que nadie rota.</p>
-      <button class="btn" type="button" disabled title="Pendiente: ver la nota de arriba">Crear usuario</button>
-    </div>
+    <p class="txt">La contraseña la genera este servidor y se muestra <b>una sola vez</b>, justo debajo del formulario: no queda guardada en ningún sitio ni se puede volver a pedir. Cópiala y comunícala por un canal distinto a este panel — un chat, una llamada — nunca dejándola escrita donde otra persona con acceso al panel pueda leerla después. La cuenta nace obligada a cambiarla: no podrá usar ninguna otra pantalla hasta que lo haga.</p>
+    <form id="formAlta">
+      <div class="campo">
+        <label for="altaUsuario">Usuario</label>
+        <input id="altaUsuario" name="usuario" type="text" autocomplete="off" required minlength="3" maxlength="60" placeholder="p.ej. jmartinez">
+      </div>
+      <div class="campo">
+        <label for="altaNombre">Nombre para mostrar</label>
+        <input id="altaNombre" name="nombre" type="text" autocomplete="off" required maxlength="120" placeholder="p.ej. Juana Martínez">
+      </div>
+      <div class="campo">
+        <label for="altaRol">Rol</label>
+        <select id="altaRol" name="rol"></select>
+      </div>
+      <button class="btn" id="btnAlta" type="submit">Crear usuario</button>
+    </form>
+    <div id="resultadoAlta"></div>
   </section>
 </div>
 

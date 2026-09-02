@@ -23,20 +23,20 @@ a producción. El plan completo, con el diagnóstico y la evidencia de cada hall
 
 ---
 
-## Lo primero: el alta de usuarios
+## Lo primero: el alta de usuarios — cerrado
 
-1. **Crear usuarios queda pendiente por decisión del dueño del repo** — por ahora la
-   herramienta opera solo con el administrador. El backend ya distingue identidad y rol: la
-   sesión dice quién eres, `exige('usuarios')` protege la ruta y el panel `/usuarios` lista
-   usuarios y permisos. Lo que falta **no es el formulario**, es decidir cómo llega la
-   primera contraseña a la persona nueva, que es donde estos módulos se vuelven inseguros:
-
-   - comunicarla por un canal aparte y forzar el cambio en el primer acceso,
-   - o generar un enlace de alta con caducidad y que la elija la propia persona.
-
-   Hasta que eso esté resuelto, `POST /api/usuarios` responde **501** y lo explica, en vez de
-   crear cuentas con una clave provisional que nadie rota. El rol `consulta` ya existe con
-   sus permisos declarados y sin ningún usuario: dar de alta al primero será añadir una fila.
+1. **~~Crear usuarios queda pendiente~~ Resuelto (2026-09-02), a petición del dueño del
+   repo.** `POST /api/usuarios` (protegido con `exige('usuarios')`) genera la contraseña
+   temporal en el servidor y la devuelve **una sola vez** en la respuesta —nunca se guarda
+   en claro ni se registra en el log— para que el administrador la comunique por un canal
+   distinto al panel. La cuenta nace con `debeCambiar: true`, y un middleware nuevo en
+   `server.js` (justo detrás del muro de sesión) le bloquea cualquier pantalla que no sea
+   `/cuenta` hasta que cambie la clave de verdad — no es un aviso descartable como
+   `desdeSemilla`, es una condición que hay que cumplir. El panel `/usuarios` tiene el
+   formulario, el revelado con botón de copiar y una insignia «cambio pendiente» en la lista
+   para quien todavía no completó su primer acceso. Verificado de extremo a extremo en
+   Chromium: alta → login con la clave temporal → intento de ir al portal rebotado a
+   `/cuenta` → cambio de clave → acceso liberado. Ver *Cerrado recientemente*.
 
 ## Bloqueado por acceso — necesita una máquina fuera de este entorno
 
@@ -171,17 +171,17 @@ Cobertura actual por herramienta:
 
 ## Decisiones que necesitan al dueño del producto
 
-12. **El alta de usuarios (punto 1) es la única grande**, y es una decisión de producto, no
-    de ingeniería: cómo llega la primera contraseña a la persona nueva. Mientras no se
-    resuelva, el endpoint responde 501 y lo explica.
 13. **El nombre de usuario se compara exacto: «PreSales» no entra.** Lo destapó una prueba al
     escribirla. `mismoUsuario` compara en tiempo constante y sin normalizar, que es correcto
     de seguridad y áspero de usar: quien teclee la primera en mayúscula recibe el mismo error
     que quien se equivoca de contraseña, y con el freno de fuerza bruta contando. Normalizar
     (minúsculas y sin espacios alrededor) es lo habitual y aquí no tiene contraindicación real
-    —los nombres son ASCII y el alta de usuarios ni siquiera existe todavía—, pero es un
-    cambio de comportamiento en la autenticación y no se hace de tapadillo dentro de una tarea
-    de limpieza. La prueba fija el comportamiento actual para que cambiarlo sea deliberado.
+    —los nombres son ASCII—, pero es un cambio de comportamiento en la autenticación y no se
+    hace de tapadillo. **Ahora sí importa de verdad**: con el alta de usuarios en producción,
+    quien cree una cuenta puede teclear el nombre con una mayúscula distinta a la que use la
+    persona al entrar, y las pruebas de `usuarios.crear()` fijan a propósito que hoy son
+    cuentas *distintas* (`duplicado2` y `Duplicado2` conviven) para que normalizar sea una
+    decisión deliberada y no un efecto secundario de esta entrega.
 
 ## Cerrado recientemente
 
@@ -212,6 +212,35 @@ cifra delante de un cliente.
   cambios**, y el informe los distingue.
 
 De 76 pruebas a 113.
+
+### Alta de usuarios: la contraseña la genera el servidor, el primer acceso queda encerrado (2026-09-02)
+
+Petición del dueño del repo. La decisión que quedaba abierta era cómo llega la primera
+contraseña a la persona nueva; se resolvió con la primera opción que el propio pendiente ya
+apuntaba: **el servidor la genera y la muestra una sola vez**, en vez de un enlace de alta
+con caducidad (más superficie: página nueva, tokens, expiración, y nada que este catálogo ya
+necesitara para otra cosa).
+
+- **`usuarios.crear({ usuario, nombre, rol })`** valida (usuario 3-60 caracteres sin espacios
+  ni control, nombre no vacío, rol conocido, sin duplicados exactos — sin tocar la
+  normalización, que sigue siendo el punto 13 aparte), genera una contraseña de 24 caracteres
+  en un alfabeto sin `0/O/1/l/I` (se puede leer en voz alta sin ambigüedad) y devuelve
+  `{ usuario, passwordTemporal }`. La cuenta nace con `debeCambiar: true`.
+- **`debeCambiar` no es un aviso, es un candado.** A diferencia de `desdeSemilla` (blando: el
+  admin migrado puede seguir trabajando con la contraseña compartida), un middleware nuevo en
+  `server.js` —justo detrás del muro de sesión, antes de `exige()`— bloquea cualquier
+  pantalla que no sea `/cuenta` mientras `debeCambiar` siga en `true`: 403 explicando por qué
+  en la API, redirect a `/cuenta?m=forzado` en la navegación. `cambiarPassword()` lo libera
+  en el mismo momento en que ya libera `desdeSemilla`.
+- **El panel `/usuarios`** tiene el formulario de alta, el revelado de la clave con botón de
+  copiar (con reserva seleccionable por si el portapapeles falla), y una insignia «cambio
+  pendiente» en la lista para las cuentas que aún no completaron su primer acceso.
+
+Verificado de extremo a extremo en Chromium contra un servidor con `NODE_ENV=production`:
+alta de un usuario, cierre de sesión, entrada con la clave temporal, intento de llegar al
+portal rebotado a `/cuenta`, cambio de clave, y segunda entrada con acceso normal — sin un
+solo error de consola propio de la app. 14 pruebas nuevas de `usuarios.crear()` más 2 de
+extremo a extremo, 127 en total.
 
 ### `omniroute` fuera: tenía la producción parada desde el 1 de septiembre (2026-09-02)
 

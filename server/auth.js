@@ -81,6 +81,7 @@ function usandoSemilla() {
 }
 
 const cambiarPassword = (id, actual, nueva) => usuarios.cambiarPassword(id, actual, nueva);
+const crearUsuario = (datos) => usuarios.crear(datos);
 
 /* ── Sesión ──────────────────────────────────────────────────────────────────── */
 
@@ -216,7 +217,7 @@ setInterval(() => {
 
 module.exports = {
   USER, COOKIE_NAME, MAX_INTENTOS,
-  comprobarCredenciales, cambiarPassword, usandoSemilla, hashVigente,
+  comprobarCredenciales, cambiarPassword, crearUsuario, usandoSemilla, hashVigente,
   ponerCookieSesion, borrarCookieSesion, haySesion, usuarioDeSesion,
   ROLES: usuarios.ROLES, listarUsuarios: usuarios.listar, permiso: usuarios.permiso,
   intentosRestantes, registrarFallo, limpiarIntentos, esperarRetardo, retardoGlobalMs,
