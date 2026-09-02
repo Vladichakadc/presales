@@ -71,7 +71,7 @@ de datos— está en [`IMPORTAR-CATALOGO.md`](IMPORTAR-CATALOGO.md).
 | ~~2~~ | ~~`cps` en 37 de los 58 FortiGate~~ **Resuelto (2026-09-02)** — ver *Cerrado recientemente*. Quedan 5 modelos en `null` (100F/200F/400F/401F/600F) que no están en el documento, no un bloqueo de acceso. | — | resuelto vía Actions |
 | 3 | **PDFs de datasheets de Aruba.** `public/datasheets/` va vacío a propósito; la página enlaza la URL de HPE mientras no esté el archivo local. **Ejecutado por primera vez el 2026-09-02** (ver *Cerrado recientemente* — «investigado», no «cerrado»): de 24 documentos, HPE devolvió 21 fallos (403 o timeout) al ejecutor de GitHub Actions y solo 1 PDF de bajo valor se descargó — un bloqueo del lado de HPE, distinto del de este entorno. Y aunque hubiera bajado los 24, el paso de abrir el PR falló aparte: este repositorio tiene desactivado el permiso «Allow GitHub Actions to create pull requests» (ajuste de GitHub, no de este workflow). | El workflow (`datasheets-aruba.yml`) está listo y el permiso de PR se activa en un clic (Settings → Actions → General → Workflow permissions), pero incluso con eso resuelto, HPE sigue bloqueando casi todo el lote — hace falta una máquina con navegador real, igual que Huawei. | HPE bloquea/limita al ejecutor de GitHub Actions (403/timeout en la mayoría de las URL); el repositorio no permite que Actions abra PRs |
 | 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ` y las 23 AR no traen `mpps`. El motor no inventa: muestra lo que hay. | **El importador ya existe**: `npm run huawei -- --check` para ver los huecos, `npm run huawei -- specs.xlsx` para las cifras y `npm run huawei -- eox.csv --eol` para el fin de venta. Falta el dato, no la herramienta — **y, a diferencia de Fortinet/Aruba, esta vez no se cierra vía Actions** (ver *Cerrado recientemente*, investigación 2026-09-02): hace falta una persona con navegador real, y sesión de Huawei si hace falta el detalle fino de Info-Finder. | `e.huawei.com`, `support.huawei.com` bloquean el navegador automatizado (Akamai); `info.support.huawei.com` exige sesión |
-| 4 | **Comprobar el sitio en vivo tras desplegar.** Se verifica que el deploy llegue a SUCCESS y que los logs muestren `[seed]` y `Presales corriendo en`, pero la página en producción solo puede abrirla una persona. | Abrir `presales.up.railway.app` y revisar la pantalla tocada. | `presales.up.railway.app` |
+| 4 | **Comprobar el sitio en vivo tras desplegar — parcial (2026-09-02), ver *Cerrado recientemente*.** Se verifica que el deploy llegue a SUCCESS y que los logs muestren `[seed]` y `Presales corriendo en`; ahora además `.github/workflows/sonda-produccion.yml` confirma desde fuera de este entorno que el dominio público responde de verdad (`/salud` y `/login`, sin sesión). Lo que sigue sin cubrirse es la revisión visual de la pantalla tocada: sin la contraseña real de producción, ningún workflow puede entrar más allá de esas dos rutas públicas. | Disparar `sonda-produccion.yml` a mano para la confirmación externa; abrir `presales.up.railway.app` con sesión y revisar la pantalla tocada sigue siendo de una persona. | `presales.up.railway.app` (bloqueado solo desde este entorno de edición, no desde GitHub Actions) |
 
 ## Fabricantes sin dimensionador
 
@@ -184,6 +184,34 @@ Cobertura actual por herramienta:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Pendiente 4, parcial: confirmación externa de que el sitio en vivo responde (2026-09-02)
+
+El bloqueo documentado (`presales.up.railway.app` no se puede pedir desde este entorno de
+edición) seguía siendo cierto la primera vez que se probó de nuevo:
+
+```
+curl https://presales.up.railway.app/salud
+curl: (56) CONNECT tunnel failed, response 403
+```
+
+Mismo patrón que ya cerró varios pendientes de datos este mismo día: los ejecutores de GitHub
+Actions no pasan por ese proxy. `.github/workflows/sonda-produccion.yml` pide `/salud` y
+`/login` —las dos únicas rutas públicas, sin sesión— desde ahí. Primera corrida:
+
+```json
+[
+  { "ruta": "/salud", "status": 200, "bytes": 41, "cuerpo": "{\"ok\":true,\"fabricantes\":7,\"modelos\":224}" },
+  { "ruta": "/login", "status": 200, "bytes": 4230 }
+]
+```
+
+Es una confirmación **distinta** a la que ya daba la API de Railway (que solo dice que el
+contenedor arrancó): esta viene de pedirle el dominio público de verdad desde fuera, con DNS,
+TLS y el edge de Railway de por medio. **No inicia sesión a propósito** — eso exigiría la
+contraseña real de producción, que este workflow no tiene ni debe tener — así que confirma que
+el sitio está vivo, no que cada pantalla funcione. Revisar la pantalla tocada tras un deploy
+sigue siendo de una persona, exactamente como ya decía este pendiente.
 
 ### Dimensionador Nokia — pendiente 6, primera entrega: fabric 7220 IXR (2026-09-02)
 
