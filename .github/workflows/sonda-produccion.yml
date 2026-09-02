@@ -1,0 +1,59 @@
+name: sonda-produccion
+
+# Comprueba que el sitio en produccion (presales.up.railway.app) responde de verdad desde
+# fuera de este entorno de edicion (pendiente 4 de PENDIENTES.md). El proxy de egreso de la
+# sesion donde se edita este repositorio bloquea ese dominio con un 403 de politica -no es que
+# el sitio este caido, es que esta sesion no puede pedirselo-, asi que hasta ahora la unica
+# confirmacion disponible era la propia API de Railway diciendo que el build llego a SUCCESS.
+# Eso confirma que el contenedor arranco, pero no que el dominio publico responda de verdad
+# (DNS, TLS, el edge de Railway, el healthcheck). Este workflow pide la URL publica real desde
+# un ejecutor de GitHub Actions, que no pasa por ese proxy.
+#
+# Solo toca rutas PUBLICAS, sin sesion: /salud (declarada publica en server.js, responde
+# {ok,fabricantes,modelos} o 503 si la base esta vacia) y /login (la unica pagina fuera del
+# muro de autenticacion). No inicia sesion -eso exigiria la contraseña real de produccion, que
+# este workflow no tiene ni debe tener- asi que confirma que el sitio responde de verdad, no
+# que cada pantalla funcione: esa comprobacion visual sigue necesitando a una persona, como ya
+# documentaba el pendiente 4.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sondear:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Pedir /salud y /login de verdad
+        run: |
+          node -e "
+            (async () => {
+              const base = 'https://presales.up.railway.app';
+              const resultados = [];
+              for (const ruta of ['/salud', '/login']) {
+                try {
+                  const r = await fetch(base + ruta, { redirect: 'manual' });
+                  const texto = await r.text();
+                  resultados.push({ ruta, status: r.status, bytes: texto.length, cuerpo: ruta === '/salud' ? texto.slice(0, 300) : undefined });
+                } catch (e) {
+                  resultados.push({ ruta, error: String(e.message || e) });
+                }
+              }
+              console.log(JSON.stringify(resultados, null, 2));
+              require('fs').writeFileSync('sonda-resultado.json', JSON.stringify(resultados, null, 2));
+              const salud = resultados.find((r) => r.ruta === '/salud');
+              if (!salud || salud.status !== 200) { console.error('El sitio publico no respondio 200 en /salud.'); process.exit(1); }
+            })();
+          "
+
+      - name: Resumen
+        if: always()
+        run: |
+          {
+            echo '## Sonda de produccion (presales.up.railway.app)'
+            echo ''
+            echo '```json'
+            cat sonda-resultado.json 2>/dev/null || echo '(sin resultado: revisar el paso anterior)'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
