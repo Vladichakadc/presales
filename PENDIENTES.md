@@ -38,6 +38,43 @@ a producción. El plan completo, con el diagnóstico y la evidencia de cada hall
    crear cuentas con una clave provisional que nadie rota. El rol `consulta` ya existe con
    sus permisos declarados y sin ningún usuario: dar de alta al primero será añadir una fila.
 
+## Decisión pendiente: `omniroute` en `package.json`
+
+16. **`omniroute` entró como dependencia el 1 de septiembre de 2026 y tumbó el despliegue.**
+    El commit `187a4dd` («Instalar Skill omniroute en presales») añadió `omniroute: ^1.0.0`
+    a `package.json` **sin tocar `package-lock.json`**, y `npm ci` falla cerrado cuando los
+    dos no coinciden: el despliegue `e7192063` murió en `BUILD_IMAGE` y producción se quedó
+    sirviendo el contenedor del 28 de agosto. El lockfile ya está sincronizado, así que el
+    build vuelve a funcionar — pero conviene decidir si el paquete se queda, porque **nada de
+    este repositorio lo requiere** (`grep -rn omniroute` solo lo encuentra en `package.json`)
+    y lo que cuesta está medido:
+
+    | | Sin `omniroute` | Con `omniroute` |
+    |---|---|---|
+    | Paquetes en el árbol | 282 | 560 |
+    | `node_modules` | ~120 MB | 771 MB |
+    | Avisos de `npm audit` | 2 moderados | 5 moderados |
+    | Paquetes con script de instalación | 1 (`sqlite3`) | 6 |
+
+    Tres cosas que conviene mirar antes de decidir:
+
+    - **No es una skill de Claude Code.** Las skills viven en `.claude/skills/` y son
+      carpetas con un `SKILL.md`, no paquetes de npm. El `omniroute` de npm es otra cosa:
+      «Unified AI router with 352 providers, desktop, PWA», una aplicación Next.js/Electron
+      de un tercero (`diegosouza.pw`), no una biblioteca para importar desde un servidor
+      Express. Es muy probable que el nombre coincidiera y el paquete no sea el que se
+      buscaba.
+    - **Trae `postinstall`**, que ejecuta código en la máquina de build de Railway en cada
+      despliegue, y arrastra `better-sqlite3`, `@swc/core` y `@parcel/watcher`, que compilan
+      binarios nativos.
+    - **Aparece en el propio informe de vulnerabilidades**, por su cadena
+      `monaco-editor` → `dompurify` (18 avisos de XSS).
+
+    Quitarlo es una línea (`npm uninstall omniroute`) y devuelve el árbol a 282 paquetes y
+    2 avisos. **No se hizo por cuenta propia porque el paquete lo añadió el dueño del repo a
+    propósito**; la decisión es suya. Si lo que se quería era la skill, el camino es copiar
+    su carpeta a `.claude/skills/`, que no toca `package.json` en absoluto.
+
 ## Bloqueado por acceso — necesita una máquina fuera de este entorno
 
 Nada de esto es trabajo de ingeniería pendiente: el código está hecho y probado, falta el
