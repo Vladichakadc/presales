@@ -56,15 +56,20 @@ jobs:
       # El lock es el recuerdo del vigia y pertenece al repositorio, junto al catalogo cuya
       # procedencia describe. Se commitea solo cuando cambia de verdad, asi que el despliegue
       # que dispara es proporcional a los cambios reales de los fabricantes.
+      # Se hace `git add` ANTES de comprobar si hay cambios: `git diff` no ve un archivo sin
+      # seguimiento, asi que en la primera corrida —justo cuando el lock todavia no existe y
+      # es cuando mas importa guardarlo— habria dicho "sin cambios" y no habria guardado
+      # nada. Con el archivo en el indice, `git diff --cached` lo ve tanto si es nuevo como
+      # si cambio.
       - name: Guardar lo medido
         run: |
-          if git diff --quiet -- server/seed/legacyData/fuentes.lock.json; then
+          git add -- server/seed/legacyData/fuentes.lock.json
+          if git diff --cached --quiet -- server/seed/legacyData/fuentes.lock.json; then
             echo 'El lock no cambio; no hay nada que guardar.'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add server/seed/legacyData/fuentes.lock.json
           git commit -m 'vigia: actualiza el hash de las fuentes medidas'
           git push origin HEAD:main
 
