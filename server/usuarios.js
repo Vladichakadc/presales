@@ -193,11 +193,22 @@ function porId(id) {
   return listaCruda().find((u) => u.id === id) || null;
 }
 
-// Comparación del nombre en tiempo constante y sin cortocircuito: comparar con === filtra
-// por tiempo si el usuario existe, que es medio paso hacia enumerarlos.
+// Forma canónica de un nombre de usuario: minúsculas y sin espacios alrededor. Hasta
+// 2026-09-02 el login comparaba tal cual («PreSales» no entraba, ver PENDIENTES.md #13,
+// ahora cerrado) — decisión correcta de seguridad pero áspera de usar, y una prueba fijó ese
+// comportamiento a propósito para que cambiarlo fuera deliberado. Esto es ese cambio
+// deliberado: los nombres siguen siendo ASCII en este catálogo, así que `toLowerCase()` no
+// tiene el problema de mayúsculas dependientes de idioma (la Ⅰ turca, el ß alemán) que sí
+// tendría con nombres arbitrarios.
+function normalizarUsuario(s) {
+  return String(s == null ? '' : s).trim().toLowerCase();
+}
+
+// Comparación del nombre, normalizado, en tiempo constante y sin cortocircuito: comparar con
+// === filtra por tiempo si el usuario existe, que es medio paso hacia enumerarlos.
 function mismoUsuario(a, b) {
-  const ha = crypto.createHash('sha256').update(String(a)).digest();
-  const hb = crypto.createHash('sha256').update(String(b)).digest();
+  const ha = crypto.createHash('sha256').update(normalizarUsuario(a)).digest();
+  const hb = crypto.createHash('sha256').update(normalizarUsuario(b)).digest();
   return crypto.timingSafeEqual(ha, hb);
 }
 
@@ -249,14 +260,15 @@ function cambiarPassword(id, actual, nueva) {
 // impide usar cualquier pantalla que no sea cambiar su propia contraseña hasta que lo haga,
 // así que la clave provisional nunca llega a ser la clave con la que esa persona trabaja.
 //
-// Validación deliberadamente estricta y sin normalizar el nombre de usuario: el punto 13 de
-// PENDIENTES.md ya registra que la comparación exacta (`PreSales` ≠ `presales`) es una
-// decisión abierta aparte, y esta función no la toca de tapadillo — usa la misma unicidad
-// exacta que ya rige el login.
+// El nombre de usuario se guarda ya normalizado (minúsculas, sin espacios alrededor): es la
+// misma forma canónica que mismoUsuario() usa para el login, así que «JMartinez» y
+// «jmartinez» son, a propósito, la MISMA cuenta — no se puede dar de alta la segunda si ya
+// existe la primera. Validación estricta ademas: el `nombre` (para mostrar) sí conserva la
+// capitalización tal como se escribió, porque ese campo nunca se usa para autenticar.
 function crear({ usuario, nombre, rol }) {
   if (typeof usuario !== 'string' || !usuario.trim()) return { ok: false, error: 'Falta el nombre de usuario.' };
   if (typeof nombre !== 'string' || !nombre.trim()) return { ok: false, error: 'Falta el nombre para mostrar.' };
-  const u = usuario.trim();
+  const u = normalizarUsuario(usuario);
   const n = nombre.trim();
   if (u.length < 3 || u.length > 60) return { ok: false, error: 'El usuario debe tener entre 3 y 60 caracteres.' };
   if (n.length > 120) return { ok: false, error: 'El nombre es demasiado largo.' };
@@ -268,7 +280,7 @@ function crear({ usuario, nombre, rol }) {
 
   const e = estado();
   if (!e) return { ok: false, error: 'No hay almacén de usuarios inicializado.' };
-  if (e.usuarios.some((x) => x.usuario === u)) {
+  if (e.usuarios.some((x) => normalizarUsuario(x.usuario) === u)) {
     return { ok: false, error: `Ya existe un usuario "${u}".` };
   }
 
@@ -312,5 +324,5 @@ function hayAdministrador() {
 module.exports = {
   ROLES, ROL_POR_DEFECTO, USERS_FILE,
   listar, porId, verificar, cambiarPassword, crear, huella, permiso, hayAdministrador,
-  hashPassword, verifyPassword,
+  hashPassword, verifyPassword, normalizarUsuario,
 };

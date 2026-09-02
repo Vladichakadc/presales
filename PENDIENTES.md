@@ -171,19 +171,28 @@ Cobertura actual por herramienta:
 
 ## Decisiones que necesitan al dueño del producto
 
-13. **El nombre de usuario se compara exacto: «PreSales» no entra.** Lo destapó una prueba al
-    escribirla. `mismoUsuario` compara en tiempo constante y sin normalizar, que es correcto
-    de seguridad y áspero de usar: quien teclee la primera en mayúscula recibe el mismo error
-    que quien se equivoca de contraseña, y con el freno de fuerza bruta contando. Normalizar
-    (minúsculas y sin espacios alrededor) es lo habitual y aquí no tiene contraindicación real
-    —los nombres son ASCII—, pero es un cambio de comportamiento en la autenticación y no se
-    hace de tapadillo. **Ahora sí importa de verdad**: con el alta de usuarios en producción,
-    quien cree una cuenta puede teclear el nombre con una mayúscula distinta a la que use la
-    persona al entrar, y las pruebas de `usuarios.crear()` fijan a propósito que hoy son
-    cuentas *distintas* (`duplicado2` y `Duplicado2` conviven) para que normalizar sea una
-    decisión deliberada y no un efecto secundario de esta entrega.
+14. **Nada abierto por ahora.** El único punto que vivía aquí (el nombre de usuario sin
+    normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### El nombre de usuario ya no distingue mayúsculas ni espacios alrededor (2026-09-02)
+
+Punto 13, cerrado a petición del dueño del repo tras el alta de usuarios: con cuentas
+creadas por un administrador, la mayúscula que use quien las crea y la que use quien entra
+ya no tenían por qué coincidir, y eso lo volvía un problema real y no solo áspero.
+
+`usuarios.normalizarUsuario(s)` — minúsculas, recortado por los bordes, nunca el espacio
+interior — es ahora la forma canónica: `mismoUsuario()` (el login) normaliza los dos lados
+antes de comparar, y `crear()` guarda el usuario ya normalizado y comprueba duplicados sobre
+esa misma forma, así que «JMartinez» y «jmartinez» son la misma cuenta tanto para entrar como
+para darse de alta. El campo `nombre` (el que se muestra) no se toca: conserva la
+capitalización tal como se escribió, porque nunca se usa para autenticar. No hay migración
+de datos — el único usuario ya existente (`presales`) ya estaba en minúsculas.
+
+6 pruebas nuevas o reescritas, incluida la que antes fijaba a propósito el comportamiento
+contrario: ahora fija el nuevo, con el mismo espíritu de que un cambio de autenticación sea
+deliberado y quede escrito.
 
 ### Fases 2 y 3 del plan de sincronismo: el catálogo dice de dónde sale y avisa cuando cambia (2026-09-02)
 

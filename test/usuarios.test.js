@@ -50,14 +50,26 @@ test('un usuario que no existe se rechaza igual que una contrasena mala', () => 
   assert.strictEqual(usuarios.verificar('nadie', 'semilla-de-prueba-larga'), null);
 });
 
-test('el nombre de usuario se compara EXACTO, mayusculas incluidas', () => {
-  // Comportamiento actual, fijado aqui a proposito para que un cambio sea deliberado. La
-  // comparacion es en tiempo constante y sin normalizar, asi que "PreSales" no entra. Es
-  // correcto de seguridad y aspero de usar: anotado en PENDIENTES.md como decision abierta,
-  // no cambiado de tapadillo en una tarea de limpieza.
-  assert.strictEqual(usuarios.verificar('PreSales', 'semilla-de-prueba-larga'), null);
-  assert.strictEqual(usuarios.verificar(' presales', 'semilla-de-prueba-larga'), null);
+test('el nombre de usuario se compara normalizado: minusculas y sin espacios alrededor', () => {
+  // Cambio deliberado del 2026-09-02 (PENDIENTES.md #13, ahora cerrado). Antes "PreSales" no
+  // entraba: correcto de seguridad, aspero de usar. La prueba anterior fijaba ese
+  // comportamiento a proposito para que cambiarlo fuera una decision explicita — esta es esa
+  // decision. Se normaliza SOLO mayusculas/minusculas y espacio alrededor, nunca el interior:
+  // "pre sales" sigue sin ser "presales".
+  assert.ok(usuarios.verificar('PreSales', 'semilla-de-prueba-larga'), 'mayusculas ya no importan');
+  assert.ok(usuarios.verificar(' presales', 'semilla-de-prueba-larga'), 'espacio alrededor se recorta');
+  assert.ok(usuarios.verificar('presales ', 'semilla-de-prueba-larga'));
+  assert.ok(usuarios.verificar('PRESALES', 'semilla-de-prueba-larga'));
   assert.ok(usuarios.verificar('presales', 'semilla-de-prueba-larga'));
+  assert.strictEqual(usuarios.verificar('pre sales', 'semilla-de-prueba-larga'), null,
+    'el espacio INTERNO si distingue: no es la misma normalizacion que trim');
+});
+
+test('normalizarUsuario es la forma canonica: minusculas, trim, nunca null/undefined', () => {
+  assert.strictEqual(usuarios.normalizarUsuario('PreSales'), 'presales');
+  assert.strictEqual(usuarios.normalizarUsuario('  Ana  '), 'ana');
+  assert.strictEqual(usuarios.normalizarUsuario(null), '');
+  assert.strictEqual(usuarios.normalizarUsuario(undefined), '');
 });
 
 test('los permisos se declaran por rol, no se deducen del nombre', () => {
@@ -169,14 +181,24 @@ test('crear() no permite dos usuarios con el mismo nombre exacto', () => {
   assert.match(segundo.error, /ya existe/i);
 });
 
-test('crear() no toca la unicidad exacta: sigue sin normalizar mayusculas (punto 13, aparte)', () => {
-  // La comparacion exacta del login es una decision abierta distinta (PENDIENTES.md #13) y
-  // esta funcion no la cambia de tapadillo: "Duplicado2" y "duplicado2" son usuarios
-  // DISTINTOS para crear(), igual que ya lo son para verificar().
+test('crear() normaliza: "Duplicado2" y "duplicado2" son la MISMA cuenta (punto 13, cerrado 2026-09-02)', () => {
+  // Antes de cerrar el punto 13 esto habria creado dos cuentas distintas; ahora se rechaza,
+  // porque mismoUsuario() -el que usa el login- las trataria como la misma persona.
   const a = usuarios.crear({ usuario: 'duplicado2', nombre: 'A', rol: 'consulta' });
-  const b = usuarios.crear({ usuario: 'Duplicado2', nombre: 'B', rol: 'consulta' });
   assert.strictEqual(a.ok, true);
-  assert.strictEqual(b.ok, true);
+  const b = usuarios.crear({ usuario: 'Duplicado2', nombre: 'B', rol: 'consulta' });
+  assert.strictEqual(b.ok, false);
+  assert.match(b.error, /ya existe/i);
+  const c = usuarios.crear({ usuario: '  DUPLICADO2  ', nombre: 'C', rol: 'consulta' });
+  assert.strictEqual(c.ok, false, 'tambien con mayusculas y espacio alrededor a la vez');
+});
+
+test('crear() guarda el usuario ya normalizado, pero conserva el nombre para mostrar tal cual', () => {
+  const r = usuarios.crear({ usuario: '  CVargas  ', nombre: '  Carla Vargas  ', rol: 'consulta' });
+  assert.strictEqual(r.ok, true);
+  assert.strictEqual(r.usuario.usuario, 'cvargas', 'el usuario se guarda normalizado');
+  assert.strictEqual(r.usuario.nombre, 'Carla Vargas', 'el nombre visible conserva su capitalizacion');
+  assert.ok(usuarios.verificar('CVargas', r.passwordTemporal), 'y se puede entrar con la forma original');
 });
 
 test('dos contrasenas temporales generadas seguidas no coinciden', () => {
