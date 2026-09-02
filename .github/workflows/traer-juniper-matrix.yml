@@ -1,0 +1,74 @@
+name: traer-juniper-matrix
+
+# Baja la SRX Series and vSRX Performance and Features Matrix a una rama de transporte, para
+# leerla desde una sesion que no tiene salida a juniper.net. NO extrae la tabla: eso sigue
+# siendo `npm run juniper`, con su doble anclaje, sobre un CSV que alguien transcribe a mano
+# tras leer el documento de verdad -exactamente lo que este repositorio exige para no colarse
+# una fila desplazada. Mismo patron que traer-fortinet-matrix.yml (pendiente 2, cerrado el
+# 2026-09-02): el proxy de egreso de este entorno responde 403 a juniper.net, pero los
+# ejecutores de GitHub Actions no pasan por ese proxy.
+#
+# POR QUE UNA RAMA Y NO main NI UN PR. El PDF no es un activo de la aplicacion: es material de
+# trabajo para completar juniper.js, y una vez transcrito no hace falta conservarlo commiteado.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  traer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      # La URL sale de FUENTES (server/seed/legacyData/fuentes.js), la misma que usa
+      # npm run vigia: no hay una segunda lista de URLs que se pueda desincronizar.
+      - name: Descargar el documento
+        run: |
+          node -e "
+            const fs = require('fs');
+            const { FUENTES } = require('./server/seed/legacyData/fuentes');
+            const fuente = FUENTES.juniper.find((f) => /Performance and Features Matrix/i.test(f.documento));
+            if (!fuente || !fuente.url) { console.error('No se encontro la URL en FUENTES.'); process.exit(1); }
+            fetch(fuente.url, { headers: { 'User-Agent': 'presales-traer-fuente/1.0' } })
+              .then(async (res) => {
+                if (!res.ok) { console.error('HTTP ' + res.status); process.exit(1); }
+                const buf = Buffer.from(await res.arrayBuffer());
+                if (buf.subarray(0, 4).toString() !== '%PDF') {
+                  console.error('El contenido descargado no empieza con %PDF (firma: ' + buf.subarray(0, 8).toString('hex') + ').');
+                  process.exit(1);
+                }
+                fs.mkdirSync('fuente-juniper', { recursive: true });
+                fs.writeFileSync('fuente-juniper/SRX_Performance_Matrix.pdf', buf);
+                console.log('Descargado: ' + buf.length + ' bytes, firma %PDF confirmada.');
+              })
+              .catch((e) => { console.error(e); process.exit(1); });
+          "
+
+      - name: Publicar en la rama de transporte
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout -B fuente/juniper-srx-matrix
+          git add fuente-juniper/SRX_Performance_Matrix.pdf
+          git commit -m "SRX Performance Matrix descargado $(date -u +%Y-%m-%d)"
+          git push --force origin fuente/juniper-srx-matrix
+
+      - name: Resumen
+        run: |
+          {
+            echo '## SRX Performance Matrix descargado'
+            echo ''
+            echo "Rama \`fuente/juniper-srx-matrix\`. Traerlo con:"
+            echo '```'
+            echo 'git fetch origin fuente/juniper-srx-matrix'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
