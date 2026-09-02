@@ -1,0 +1,41 @@
+{
+  "documentos": {
+    "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf": {
+      "documento": "Fortinet Product Matrix",
+      "hash": "bef873612306e9a985e1a900dbb836119a1be8793d6bede1475f8fee4cde3f8f",
+      "bytes": 109483,
+      "medido": "2026-09-02T11:40:08.599Z"
+    },
+    "cisco::https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html": {
+      "documento": "Boletines oficiales de fin de venta (EOL)",
+      "hash": "48829947e3e1599312a2d056a460fce096ec3fb636f4a5cbb67661b6215f7df9",
+      "bytes": 173905,
+      "medido": "2026-09-02T11:40:08.599Z"
+    },
+    "juniper::https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/security-products-comparison-chart.pdf": {
+      "documento": "SRX Series and vSRX Performance and Features Matrix",
+      "hash": "ac24c11aae0cf0ef594227b1ebfd4d4a335969f34f2e8a3c8da118af1bb9d5e0",
+      "bytes": 392019,
+      "medido": "2026-09-02T11:40:08.599Z"
+    },
+    "mikrotik::https://mikrotik.com/products": {
+      "documento": "Datasheets publicos y MSRP de mikrotik.com",
+      "hash": "39215277b4b245ab3236668dceb138de4096273b7ae22b82d37851a23fb842ed",
+      "bytes": 459308,
+      "medido": "2026-09-02T11:40:08.599Z"
+    },
+    "aruba::https://www.hpe.com/us/en/networking.html": {
+      "documento": "Paginas de producto y tienda oficiales de HPE/Aruba",
+      "hash": "5b93e2d19b0aba1cccd4e1b65344906e9fdc6c4331f8c7a86b8b3dcae5c2cc00",
+      "bytes": 333667,
+      "medido": "2026-09-02T11:40:08.599Z"
+    },
+    "nokia::https://www.nokia.com/networks/ip-networks/": {
+      "documento": "Datasheets oficiales de producto",
+      "hash": "12d933ff044d5d3da2ea71559c80327c076b9aed554f1a7dc75d27fe171ae7cb",
+      "bytes": 307115,
+      "medido": "2026-09-02T11:40:08.599Z"
+    }
+  },
+  "revisado": "2026-09-02T11:40:08.599Z"
+}
