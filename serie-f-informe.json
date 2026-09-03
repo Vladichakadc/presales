@@ -1,0 +1,74 @@
+[
+  {
+    "serie": "70f",
+    "status": 200,
+    "bytes": 5051488,
+    "esPdf": true
+  },
+  {
+    "serie": "100f",
+    "status": 404,
+    "bytes": 227526,
+    "esPdf": false
+  },
+  {
+    "serie": "200f",
+    "status": 404,
+    "bytes": 227526,
+    "esPdf": false
+  },
+  {
+    "serie": "1800f",
+    "status": 200,
+    "bytes": 6158682,
+    "esPdf": true
+  },
+  {
+    "serie": "2600f",
+    "status": 200,
+    "bytes": 5755884,
+    "esPdf": true
+  },
+  {
+    "serie": "3000f",
+    "status": 200,
+    "bytes": 5352680,
+    "esPdf": true
+  },
+  {
+    "serie": "3200f",
+    "status": 200,
+    "bytes": 7276323,
+    "esPdf": true
+  },
+  {
+    "serie": "3500f",
+    "status": 200,
+    "bytes": 1906904,
+    "esPdf": true
+  },
+  {
+    "serie": "3700f",
+    "status": 200,
+    "bytes": 7047406,
+    "esPdf": true
+  },
+  {
+    "serie": "4200f",
+    "status": 200,
+    "bytes": 6661808,
+    "esPdf": true
+  },
+  {
+    "serie": "4400f",
+    "status": 200,
+    "bytes": 7225965,
+    "esPdf": true
+  },
+  {
+    "serie": "4800f",
+    "status": 200,
+    "bytes": 9249585,
+    "esPdf": true
+  }
+]
