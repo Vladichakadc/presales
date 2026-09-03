@@ -166,7 +166,9 @@ Cobertura actual por herramienta:
 15. **Alimentación eléctrica: cobertura real, no completa.** La nueva sección «Alimentación
     eléctrica» de la ficha (agosto 2026) solo tiene dato donde el propio catálogo ya traía
     una frase publicada — Cisco 21/21 (ya existía), Huawei 17/40, MikroTik 3/15, Aruba 2/21,
-    Juniper 1/12 SRX, **Fortinet 0/58**. El resto queda `null` y la ficha lo declara sin
+    Juniper 1/12 SRX, **Fortinet 3/58** (100F, 7081F y 7121F, leídos el 2026-09-03 de
+    documentos oficiales traídos vía Actions — ver *Cerrado recientemente*). El resto queda
+    `null` y la ficha lo declara sin
     rodeos. Esto **no es lo mismo** que los bloqueados por egreso de más arriba: el Product
     Matrix de Fortinet, el material de Juniper y el datasheet abreviado de MikroTik que este
     catálogo ya usa **no traen** consumo eléctrico por modelo — no es una tabla que falte
@@ -184,12 +186,12 @@ Cobertura actual por herramienta:
 
     | Modelo | Indicio | Fuente | Confianza |
     |---|---|---|---|
-    | FortiGate 100F | «Dual built-in non-hot swappable power supplies» | [Technical Tip: Checking FortiGate-100F series power supply](https://community.fortinet.com/t5/FortiGate/Technical-Tip-Checking-FortiGate-100F-series-power-supply/ta-p/267021) | Media |
+    | ~~FortiGate 100F~~ **Confirmado y aplicado (2026-09-03)** | Leído directo: «the device has two power supplies that can be connected to different power sources». `redund: true` en el catálogo | [Technical Tip: Checking FortiGate-100F series power supply](https://community.fortinet.com/t5/FortiGate/Technical-Tip-Checking-FortiGate-100F-series-power-supply/ta-p/267021) | **verificado** |
     | FortiGate 200F | SKU de repuesto oficial `SP-FDD200F-PS` — "hot-plug / redundant" | [ficha de reventa](https://www.corporatearmor.com/product/fortinet-power-supply-hot-plug-redundant-sp-fdd200f-ps/) | Media |
     | FortiGate 400F | SKU de repuesto oficial `SP-FAD400F-PS` — "power supply redundant" | [ficha de reventa](https://www.corporatearmor.com/product/fortinet-power-supply-redundant-sp-fad400f-ps/) | Media |
-    | FortiGate 7081F | Hasta 6 fuentes AC de 2500 W en caliente, redundancia añadible | [System Guide — AC PSUs](https://docs.fortinet.com/document/fortigate-7000/hardware/fortigate-7081f-system-guide/12189/ac-psus-and-supplying-ac-power-to-the-chassis) | Media-alta |
-    | FortiGate 7121F | Hasta 8 fuentes hot-swap; SKU de repuesto oficial `FG-7121F-PS-2KAC` (2 kW) | [System Guide — Hot Swapping an AC PSU](https://docs.fortinet.com/document/fortigate-7000/hardware/fortigate-7121f-system-guide/410545/hot-swapping-an-ac-psu) · [SKU en reventa](https://www.corporatearmor.com/product/fortinet-power-supply-hot-plug-redundant-2-kw-fg-7121f-ps-2kac/) | Media-alta |
-    | FortiGate 60F / 90G / 91G (y por extensión 30-121G, 40-91F) | Un solo adaptador externo 12 V DC (SKU `SP-FG60E-PDC`), sin bahía para segunda fuente — indicio de **fuente única**, no doble | [Technical Tip: FortiGate-100/101E y 200/201E power supply](https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-check-power-supply-details-for-FortiGate/ta-p/193557) | Media-alta |
+    | ~~FortiGate 7081F~~ **Confirmado y aplicado (2026-09-03)** | Leído directo: «up to six hot swappable 200-277V, 16A AC PSUs. The capacity of each PSU is 2500W» + «You can add extra PSUs to provide redundancy». Los 2.500 W son capacidad por fuente, **no** consumo: van en el texto, no en `psu.watts` | [System Guide — AC PSUs](https://docs.fortinet.com/document/fortigate-7000/hardware/fortigate-7081f-system-guide/12189/ac-psus-and-supplying-ac-power-to-the-chassis) | **verificado** |
+    | ~~FortiGate 7121F~~ **Confirmado en parte y aplicado (2026-09-03)** | Leído directo: se cambia una fuente en caliente «as long as four PSUs are connected to power and operating normally». El **número máximo** de fuentes (el «hasta 8» que decía esta tabla) **no** aparece en ese documento, así que no se registró | [System Guide — Hot Swapping an AC PSU](https://docs.fortinet.com/document/fortigate-7000/hardware/fortigate-7121f-system-guide/410545/hot-swapping-an-ac-psu) | **verificado en parte** |
+    | ~~FortiGate 60F / 90G / 91G~~ | **Atribución retirada (2026-09-03).** Al leer el documento de verdad resultó tratar de las series 100/101E y 200/201E —que no están en este catálogo— y no dice nada de los 60F/90G/91G. Era una cita mal asignada, del tipo que este registro existe para no propagar. | — | retirada |
 
     Sin ningún indicio, ni a favor ni en contra: 400G/401G, 600F, 700G/701G, 900G/901G,
     1000F/1001F, 1800F/1801F, 2600F/2601F y toda la línea 3000-4800 (F y G) — 45 de los 58
@@ -211,6 +213,36 @@ Cobertura actual por herramienta:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Fortinet sí se deja leer, y el pendiente 15 arranca: 3 de 58 (2026-09-03)
+
+El mismo día en que HPE y Huawei quedaron confirmados como pared de Akamai, Fortinet demostró
+ser lo contrario: `.github/workflows/traer-fortinet-psu.yml` pidió cuatro documentos oficiales
+desde un ejecutor de Actions y los cuatro respondieron **200 con contenido real**, sin rastro
+de bloqueo. Eso convierte en dato verificado lo que esta misma lista tenía como «fragmentos de
+búsqueda sin confirmar por lectura directa» — que era la única razón por la que Fortinet iba
+0 de 58 en alimentación eléctrica pese a tener las URL ya localizadas.
+
+Leído a mano y transcrito literal, tres modelos:
+
+- **100F** — «the device has two power supplies that can be connected to different power
+  sources». `redund: true`. El documento no publica consumo, así que `watts` se queda fuera.
+- **7081F** — «up to six hot swappable 200-277V, 16A AC PSUs. The capacity of each PSU is
+  2500W», más «You can add extra PSUs to provide redundancy».
+- **7121F** — se cambia una fuente en caliente «as long as four PSUs are connected to power
+  and operating normally».
+
+**Un detalle que valía la lectura**: los 2.500 W del 7081F son la *capacidad de cada fuente*,
+no el consumo del equipo — y `ficha.js` rotula `psu.watts` como «Consumo típico». Meterlos ahí
+habría producido una cifra falsa con apariencia perfectamente correcta, en la pantalla que
+alguien enseña a un cliente. Van en el texto, que es donde se puede decir qué miden.
+
+**Y una corrección**: la tabla de pistas atribuía a los 60F/90G/91G un artículo que, leído de
+verdad, trata de las series 100/101E y 200/201E — modelos que ni siquiera están en este
+catálogo. Cita mal asignada, retirada. Del «hasta 8 fuentes» del 7121F tampoco hay rastro en
+el documento citado, así que no se registró el número máximo.
+
+Los otros 55 modelos siguen en `undefined` («el catálogo no lo dice»), nunca en `false`.
 
 ### HPE también es Akamai, y Firecrawl no es la salida (2026-09-03)
 

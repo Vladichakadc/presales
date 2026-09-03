@@ -50,6 +50,23 @@
 // RAM por modelo NO existe en el Product Matrix: ese documento publica throughput por capa,
 // sesiones, cps, interfaces y consumo, no memoria. Fortinet no publica la RAM como
 // especificacion de dimensionamiento — el proxy de la capacidad de memoria es `sess`.
+//
+// PROCEDENCIA DE `redund` / `psu` (pendiente 15) — 2026-09-03, 3 de 58 modelos.
+// El Product Matrix no publica alimentacion por modelo, asi que este dato vive en documentos
+// aparte del fabricante. `.github/workflows/traer-fortinet-psu.yml` los trajo desde un
+// ejecutor de Actions -fortinet.com no responde 403 al ejecutor, a diferencia de HPE y Huawei,
+// que devuelven un "Access Denied" de Akamai- y se leyeron a mano:
+//   · 100F  — «the device has two power supplies that can be connected to different power
+//     sources» (community.fortinet.com, "Checking FortiGate-100F series power supply").
+//   · 7081F — «up to six hot swappable 200-277V, 16A AC PSUs. The capacity of each PSU is
+//     2500W» + «You can add extra PSUs to provide redundancy» (7081F System Guide).
+//   · 7121F — «You can hot swap a PSU without powering down [...] as long as four PSUs are
+//     connected to power and operating normally» (7121F System Guide).
+// Los 2.500 W del 7081F son CAPACIDAD de cada fuente, no consumo del equipo, y por eso NO van
+// en `psu.watts`: la ficha rotula ese campo «Consumo tipico», asi que ponerlo ahi seria una
+// cifra falsa con apariencia correcta. Va en el texto, que es donde se puede decir que mide.
+// Los otros 55 modelos siguen sin dato y en `undefined` -«el catalogo no lo dice»-, nunca en
+// `false`, que seria inventar un dato negativo.
 // El salto fw -> tp es de un orden de magnitud (ej. 90G: 28 Gbps -> 2.2 Gbps). Ahí está el
 // error de preventa más común con FortiGate.
 // Corrige varios valores que no coincidían con el datasheet oficial (incl. 3000F y 7081F, que tenían ips/ngfw/ssl/vpn de otro modelo — 3200F y 7121F respectivamente — copiados por error) y agrega los modelos del datasheet que faltaban en el catálogo (700G, 3000G, 3500G, 3800G, 70F, 3200F, 3700F, 4200F).
@@ -115,7 +132,12 @@ const MODELS=[
   {id:'FortiGate 71F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:800, vpn:6100, sess:1500000, cps:35000, ifaces:'10 GE RJ45 + 128GB SSD onboard'},
   {id:'FortiGate 80F', seg:'Sucursal + PoE', fw:10000, ips:1400, ngfw:1000, tp:900, vpn:6500, sess:1500000, cps:45000, ifaces:'8 GE + 2 SFP'},
   {id:'FortiGate 81F', seg:'Sucursal + PoE', fw:10000, ips:1400, ngfw:1000, tp:900, vpn:6500, sess:1500000, cps:45000, ifaces:'8 GE + 2 SFP + 128GB SSD onboard'},
-  {id:'FortiGate 100F', seg:'Sucursal med', fw:20000, ips:2600, ngfw:1600, tp:1000, vpn:11500, sess:1500000, cps:null, ifaces:'22 GE + 2x10GE SFP+'},
+  // redund/psu leidos el 2026-09-03 del articulo oficial «Technical Tip: Checking
+  // FortiGate-100F series power supply» (community.fortinet.com), traido con
+  // .github/workflows/traer-fortinet-psu.yml. Frase literal: «the device has two power
+  // supplies that can be connected to different power sources». El documento no publica
+  // consumo, asi que `watts` se queda fuera en vez de rellenarse a ojo.
+  {id:'FortiGate 100F', seg:'Sucursal med', fw:20000, ips:2600, ngfw:1600, tp:1000, vpn:11500, sess:1500000, cps:null, ifaces:'22 GE + 2x10GE SFP+', redund:true, psu:{tipo:'dos fuentes internas', texto:'Dos fuentes que se pueden conectar a tomas de energía distintas, para que el equipo siga en línea si una falla. Fortinet no publica el consumo de este modelo.'}},
   {id:'FortiGate 200F', seg:'Sucursal gde', fw:27000, ips:5000, ngfw:3500, tp:3000, vpn:13000, sess:3000000, cps:null, ifaces:'16 GE + 4x10GE + 4 SFP'},
   {id:'FortiGate 400F', seg:'Campus / Agr', fw:80000, ips:12000, ngfw:10000, tp:9000, vpn:55000, sess:7800000, cps:null, ifaces:'8 GE + 8 SFP + 8x10GE'},
   {id:'FortiGate 401F', seg:'Campus / Agr', fw:80000, ips:12000, ngfw:10000, tp:9000, vpn:55000, sess:7800000, cps:null, ifaces:'8 GE + 8 SFP + 8x10GE + 960GB SSD onboard'},
@@ -141,8 +163,12 @@ const MODELS=[
   {id:'FortiGate 4401F', seg:'DC core', fw:1150000, ips:94000, ngfw:82000, tp:75000, vpn:310000, sess:210000000, cps:1000000, ifaces:'12x100GE QSFP28/40GE + 20x25GE SFP28 + 2x 1.92TB SSD onboard'},
   {id:'FortiGate 4800F', seg:'Hyperscale DC', fw:3100000, ips:87000, ngfw:77000, tp:75000, vpn:800000, sess:280000000, cps:915000, ifaces:'8x400GE + 12x50GE SFP56'},
   {id:'FortiGate 4801F', seg:'Hyperscale DC', fw:3100000, ips:87000, ngfw:77000, tp:75000, vpn:800000, sess:280000000, cps:915000, ifaces:'8x400GE + 12x50GE SFP56 + 2x 1.92TB SSD onboard'},
-  {id:'FortiGate 7081F', seg:'Carrier / ISP', fw:1890000, ips:405000, ngfw:330000, tp:312000, vpn:378000, sess:600000000, cps:5400000, ifaces:'Chasis modular FPM (interfaces variables)'},
-  {id:'FortiGate 7121F', seg:'Carrier / National', fw:1890000, ips:675000, ngfw:550000, tp:520000, vpn:630000, sess:1000000000, cps:9000000, ifaces:'Chasis modular FPM (interfaces variables)'},
+  // Los dos chasis, leidos el 2026-09-03 de sus System Guide oficiales (docs.fortinet.com).
+  // Los 2.500 W del 7081F son la CAPACIDAD de cada fuente, no el consumo del equipo, asi que
+  // no van en `watts` -que la ficha rotula «Consumo tipico»- sino en el texto: seria una cifra
+  // falsa con apariencia correcta, justo el error que este catalogo evita.
+  {id:'FortiGate 7081F', seg:'Carrier / ISP', fw:1890000, ips:405000, ngfw:330000, tp:312000, vpn:378000, sess:600000000, cps:5400000, ifaces:'Chasis modular FPM (interfaces variables)', redund:true, psu:{tipo:'hasta 6 fuentes AC intercambiables en caliente', volts:'200-277 V, 16 A', texto:'Hasta seis fuentes AC de 2.500 W de capacidad cada una, intercambiables en caliente. Cuántas hacen falta depende de los módulos FIM y FPM instalados; se pueden añadir fuentes extra para redundancia y conectar cada una a una toma distinta.'}},
+  {id:'FortiGate 7121F', seg:'Carrier / National', fw:1890000, ips:675000, ngfw:550000, tp:520000, vpn:630000, sess:1000000000, cps:9000000, ifaces:'Chasis modular FPM (interfaces variables)', redund:true, psu:{tipo:'fuentes AC intercambiables en caliente', texto:'Se puede cambiar una fuente sin apagar el equipo mientras queden cuatro conectadas y funcionando; por debajo de cuatro, el chasis empieza a apagar módulos FPM. El documento leído no publica el número máximo de fuentes.'}},
 ];
 
 // SKU de hardware base (columna UNIT/SKU de la hoja "FortiGate"/"FortiGate Chassis Platforms").

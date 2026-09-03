@@ -79,8 +79,26 @@ test('Cisco: redund sigue con cobertura completa (no se toco el dato, solo se mo
   assert.strictEqual(MODELS.filter((m) => m.redund === undefined).length, 0);
 });
 
-test('Fortinet: ningun modelo tiene redund ni psu — el Product Matrix no lo publica', () => {
+// Esta prueba fijaba «ningun modelo Fortinet tiene redund ni psu» porque el Product Matrix
+// no publica alimentacion. Eso seguia siendo cierto del Product Matrix, pero no del
+// fabricante: el 2026-09-03 se leyeron tres documentos oficiales aparte (community y
+// docs.fortinet.com) y tres modelos pasaron a tener dato verificado. Lo que la prueba fija
+// ahora no es el numero -que crecera segun se lean mas documentos- sino la regla que importa:
+// el que no tiene dato se queda en `undefined`, nunca en `false`, y ningun `psu` declara
+// consumo que la fuente no publique.
+test('Fortinet: solo tienen alimentacion los modelos leidos de un documento oficial', () => {
   const { MODELS } = require('../server/seed/legacyData/fortinet.js');
-  assert.strictEqual(MODELS.filter((m) => m.redund !== undefined).length, 0);
-  assert.strictEqual(MODELS.filter((m) => m.psu !== undefined).length, 0);
+  const conDato = MODELS.filter((m) => m.redund !== undefined).map((m) => m.id);
+  assert.deepStrictEqual(conDato.sort(),
+    ['FortiGate 100F', 'FortiGate 7081F', 'FortiGate 7121F']);
+
+  // El resto en `undefined`: «el catalogo no lo dice» nunca se degrada a un «no» inventado.
+  assert.strictEqual(MODELS.filter((m) => m.redund === false).length, 0);
+
+  // Ninguno de los tres declara consumo: los 2500 W del 7081F son capacidad por fuente, y
+  // `psu.watts` lo rotula la ficha como «Consumo tipico». Confundirlos seria una cifra falsa
+  // con apariencia correcta, que es justo lo que este catalogo evita.
+  for (const m of MODELS.filter((x) => x.psu)) {
+    assert.strictEqual(m.psu.watts, undefined, `${m.id}: no hay consumo publicado que declarar`);
+  }
 });
