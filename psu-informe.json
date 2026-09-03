@@ -1,0 +1,30 @@
+[
+  {
+    "archivo": "fg-100f-psu.html",
+    "status": 200,
+    "bytes": 799067,
+    "accesoDenegado": false,
+    "mencionaFuente": true
+  },
+  {
+    "archivo": "fg-100e-200e-psu.html",
+    "status": 200,
+    "bytes": 905842,
+    "accesoDenegado": false,
+    "mencionaFuente": true
+  },
+  {
+    "archivo": "fg-7081f-psu.html",
+    "status": 200,
+    "bytes": 499421,
+    "accesoDenegado": false,
+    "mencionaFuente": true
+  },
+  {
+    "archivo": "fg-7121f-psu.html",
+    "status": 200,
+    "bytes": 504284,
+    "accesoDenegado": false,
+    "mencionaFuente": true
+  }
+]
