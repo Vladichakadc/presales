@@ -142,6 +142,10 @@
       diseno.innerHTML = '';
       sizing.innerHTML = '<p style="font-size:13.5px;color:var(--steel)">Ajusta los parámetros para ver un diseño de fabric.</p>';
       window.__nokiaResultado = null;
+      // El BOM tambien tiene que enterarse: sin esto se quedaba mostrando los leafs y spines
+      // del ultimo diseño que si salio, que es una lista de materiales exportable de un
+      // diseño que ya no existe.
+      $('bomTabla').innerHTML = BOM.avisoDesvio({ hayCandidato: false });
       return;
     }
 

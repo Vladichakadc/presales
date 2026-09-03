@@ -21,21 +21,15 @@ let hayCandidato=true;
 // El modelo recomendado se lleva solo a la pestaña de BOM. Se sincroniza unicamente cuando
 // la recomendacion CAMBIA, no en cada render: asi, si alguien elige otro modelo a mano para
 // compararlo, no se lo pisamos en cuanto mueva un parametro del dimensionamiento.
-let ultimaRecomendacion=null;
+// El equipo del dimensionamiento se lleva solo al BOM. La regla vive en js/bom.js —
+// `BOM.sincronizar` distingue lo heredado de lo elegido a mano y repinta siempre, para
+// que un cambio de escenario no deje el BOM cotizando el equipo anterior.
 function sincronizarConBom(elegido){
-  const id=elegido?elegido.id:null;
-  if(id===ultimaRecomendacion) return;
-  ultimaRecomendacion=id;
-  llevarABom(id);
+  BOM.sincronizar({elegido:elegido?elegido.id:null, render:renderBom});
 }
 // Eleccion explicita en el desplegable de equipos: se lleva al BOM siempre.
 function llevarABom(id){
-  if(!id) return;
-  ultimaRecomendacion=id;
-  const sel=$('pickModel');
-  if(!sel||sel.value===id) return;
-  sel.value=id;
-  if(sel.value===id) renderBom(); // solo si el modelo existe en el desplegable
+  BOM.sincronizar({elegido:id||null, render:renderBom});
 }
 
 document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
@@ -624,17 +618,10 @@ function renderBom(){
   // Coherencia con el dimensionamiento, declarada en vez de supuesta. Son dos desajustes
   // distintos y conviene no confundirlos: que el dimensionamiento no tenga candidato, y que
   // este cotizando un equipo distinto del que hay elegido en la pestana de calculo.
-  const elegidoFicha=FICHA.elegido('verdict');
-  let aviso='';
-  if(!hayCandidato){
-    aviso=`<p class="bom-desvio"><b class="warn">Este BOM no corresponde al dimensionamiento.</b> `
-      +`Con los parámetros actuales <b>ningún modelo cumple</b> las restricciones, así que esta `
-      +`cotización es la del último equipo que sí cumplía. Revisa la pestaña de cálculo antes de exportar.</p>`;
-  } else if(elegidoFicha&&elegidoFicha!==m.id){
-    aviso=`<p class="bom-desvio">Estás cotizando el <b>${esc(m.id)}</b>, pero en el dimensionamiento `
-      +`tienes elegido el <b>${esc(elegidoFicha)}</b>. Es legítimo —el desplegable de arriba cotiza `
-      +`cualquier equipo— pero no es lo que salió del cálculo.</p>`;
-  }
+  // El aviso de desvio ya no se escribe aqui: lo da js/bom.js, para que los siete
+  // fabricantes digan lo mismo con las mismas palabras.
+  const aviso=BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato});
+
 
   let html=`<section class="panel"><h2>Ficha del equipo</h2>
     <div class="model" style="font-size:28px">${m.id}</div>

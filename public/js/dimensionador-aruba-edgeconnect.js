@@ -11,24 +11,18 @@ let MODELS = [], BUNDLES = {}, CARE = {}, LICENSES = {}, SIZING = {},
 
 const $=id=>document.getElementById(id);
 let famMode='any', segMode='branch', lastPick=null;
+let hayCandidato=true;
 let bomFilas=[], bomMeta={};
 
-let ultimaRecomendacion=null;
+// El equipo del dimensionamiento se lleva solo al BOM. La regla vive en js/bom.js —
+// `BOM.sincronizar` distingue lo heredado de lo elegido a mano y repinta siempre, para
+// que un cambio de escenario no deje el BOM cotizando el equipo anterior.
 function sincronizarConBom(elegido){
-  const id=elegido?elegido.id:null;
-  if(id===ultimaRecomendacion) return;
-  ultimaRecomendacion=id;
-  llevarABom(id);
+  BOM.sincronizar({elegido:elegido?elegido.id:null, render:renderBom});
 }
-// Eleccion explicita en el desplegable: se lleva al BOM siempre, sin el filtro de "solo
-// si cambio la recomendacion" — aqui el usuario ya dijo que quiere ver ese equipo.
+// Eleccion explicita en el desplegable: se lleva al BOM siempre.
 function llevarABom(id){
-  if(!id) return;
-  ultimaRecomendacion=id;
-  const sel=$('pickModel');
-  if(!sel||sel.value===id) return;
-  sel.value=id;
-  if(sel.value===id) renderBom();
+  BOM.sincronizar({elegido:id||null, render:renderBom});
 }
 
 document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
@@ -216,6 +210,7 @@ function render(){
   const rx=SEG_MATCH[segMode];
   const pick=FICHA.recomendar(candidates, rx?(m=>rx.test(m.seg)):null);
   lastPick=pick;
+  hayCandidato=!!pick;
   sincronizarConBom(pick);
 
   const tier=tierParaCaudal(wanNeed);
@@ -475,7 +470,7 @@ function renderBom(){
   const termino=`término ${termYrs} año${termYrs>1?'s':''}`;
   const capTier=esGwc&&m.licCap?(m.licCap.find(t=>t.code===capTierCode)||m.licCap[0]):null;
 
-  let html=`<section class="panel"><h2>Ficha del equipo</h2>
+  let html=`${BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato})}<section class="panel"><h2>Ficha del equipo</h2>
     <div class="model" style="font-size:28px">${esc(m.id)}</div>
     <p class="family">${esc(m.seg)} · ${esc(famLabel(m))}</p>
     <div class="scroll"><table><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>

@@ -152,6 +152,36 @@ Cobertura actual por herramienta:
    `dimensionador-nokia-7750sr.html`. Nokia es ahora el único fabricante del portal con dos
    dimensionadores.
 
+## Cerrado: el BOM se quedaba atrás del dimensionamiento (2026-09-03)
+
+A petición del dueño del repo. **Se midió antes de tocar nada**, conduciendo las ocho páginas
+en Chromium, y el resultado fue que había *tres* comportamientos distintos para la misma
+pregunta:
+
+| Página | Antes |
+|---|---|
+| Fortinet, MikroTik, Aruba | el BOM seguía al dimensionamiento |
+| **Cisco, Huawei** | **se quedaban cotizando el equipo anterior** |
+| **Juniper** | solo repintaba el BOM al abrir su pestaña |
+| Nokia (×2) | sin desplegable propio, pero sin aviso al quedarse sin diseño |
+
+**La causa era una sola línea, repetida en seis copias.** `llevarABom(id)` empezaba con
+`if(!id) return;`, así que el caso que más importa —que el dimensionamiento se quede **sin
+candidato**— nunca llegaba al BOM. Medido: en Cisco a 20 Gbps ningún equipo cumple y el BOM
+seguía mostrando un **Catalyst 8200L de 1 Gbps**, exportable, sin una palabra de aviso.
+
+La regla pasa a `js/bom.js` (`BOM.sincronizar` y `BOM.avisoDesvio`), igual que la de fin de
+venta vive solo en `ficha.js`. Repinta siempre —no solo cuando cambia el modelo—, distingue lo
+**elegido a mano** de lo **heredado** (una elección manual en el BOM no se pisa; una heredada
+sigue al cálculo) y declara los dos desajustes, que no son el mismo: «no hay candidato» y
+«estás cotizando otro equipo». Ese aviso existía solo en Fortinet; ahora lo dan los siete.
+
+Verificado en las ocho páginas: el BOM sigue al cambio de escenario, respeta la elección
+manual, declara el desvío y declara el «sin candidato» —incluido el fabric 7220 IXR, donde se
+provocó a propósito un diseño imposible. Sin errores de consola. 156 pruebas (eran 148), ocho
+de ellas nuevas, y una comprueba en el propio código fuente que **ninguna página vuelva a
+guardarse su copia de la regla**.
+
 ## Conflictos abiertos entre el catálogo y una ficha oficial (2026-09-03)
 
 **Ninguno de estos se corrigió: pisar un dato existente es decisión del dueño del catálogo,

@@ -3,25 +3,18 @@ let MODELS=[], OPTICS={}, OPTIC_LABEL={}, APS=[], SUPPORT={}, SIZING={};
 
 const $=id=>document.getElementById(id);
 let profile='fwd', media='any', lastPick=null;
+let hayCandidato=true;
 let bomFilas=[], bomMeta={};
 
-// El modelo recomendado se lleva solo a la pestaña de BOM, y solo cuando la recomendación
-// CAMBIA: así una elección manual para comparar no se pisa al mover un parámetro.
-let ultimaRecomendacion=null;
+// El equipo del dimensionamiento se lleva solo al BOM. La regla vive en js/bom.js —
+// `BOM.sincronizar` distingue lo heredado de lo elegido a mano y repinta siempre, para
+// que un cambio de escenario no deje el BOM cotizando el equipo anterior.
 function sincronizarConBom(elegido){
-  const id=elegido?elegido.id:null;
-  if(id===ultimaRecomendacion) return;
-  ultimaRecomendacion=id;
-  llevarABom(id);
+  BOM.sincronizar({elegido:elegido?elegido.id:null, render:renderBom});
 }
 // Eleccion explicita en el desplegable de equipos: se lleva al BOM siempre.
 function llevarABom(id){
-  if(!id) return;
-  ultimaRecomendacion=id;
-  const sel=$('pickModel');
-  if(!sel||sel.value===id) return;
-  sel.value=id;
-  if(sel.value===id) renderBom();
+  BOM.sincronizar({elegido:id||null, render:renderBom});
 }
 
 // RouterOS 7 no acelera WireGuard por hardware y lo procesa mayormente en un hilo por
@@ -155,6 +148,7 @@ function render(){
   const {ok,reasons,poeNeed}=selectCandidates(req);
   const pick=preferByMedia(ok);
   lastPick=pick;
+  hayCandidato=!!pick;
   sincronizarConBom(pick);
 
   // Escala: se excluye el centinela de CHR P-Unlimited para no aplastar el resto.
@@ -369,7 +363,7 @@ function renderBom(){
   if(apQty&&ap) lines.push({d:ap.sku, sub:ap.d, qty:apQty, unit:ap.price, kind:'AP'});
   const total=lines.reduce((s,l)=>s+(l.unit!=null?l.unit*l.qty:0),0);
 
-  let html=`<section class="panel"><h2>Ficha del equipo</h2>
+  let html=`${BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato})}<section class="panel"><h2>Ficha del equipo</h2>
     <div class="model" style="font-size:28px">${esc(m.id)}</div>
     <p class="family">${esc(m.seg)} · RouterOS 7.x</p>
     <div class="scroll"><table><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>

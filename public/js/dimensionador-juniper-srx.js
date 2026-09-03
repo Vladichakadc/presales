@@ -24,6 +24,9 @@ const miles = (n) => (n == null ? 'sin dato' : n.toLocaleString('en-US'));
 
 let MODELS = [], SDWAN = [], BUNDLES = {}, CARE = {};
 let plat = 'srx', capa = 'ips', lastPick = null;
+// Si el dimensionamiento se queda sin candidato, el BOM tiene que DECIRLO en vez de seguir
+// mostrando el ultimo equipo que si cumplia.
+let hayCandidato = true;
 let bomFilas = [], bomMeta = {};
 
 // Orden de profundidad creciente de inspección y throughput decreciente. `fw` (paquetes
@@ -96,10 +99,18 @@ $('capaSeg').addEventListener('click', (e) => {
   .forEach((id) => $(id).addEventListener('input', render));
 ['pickModel', 'qty', 'licTier', 'termYears', 'chkHa'].forEach((id) => $(id).addEventListener('input', renderBom));
 
+// La lista SI se reconstruye aqui, y solo aqui: cambia con la plataforma (los SRX y los
+// Session Smart Router son catalogos distintos). Lo que ya no se decide aqui es a que equipo
+// apunta — de eso se encarga `BOM.sincronizar`, igual que en los otros cinco dimensionadores.
 function sincronizarConBom(m) {
-  if (!m) return;
   const lista = plat === 'srx' ? MODELS : SDWAN;
-  $('pickModel').innerHTML = lista.map((x) => `<option value="${esc(x.id)}"${x.id === m.id ? ' selected' : ''}>${esc(x.id)} — ${esc(x.seg)}</option>`).join('');
+  const sel = $('pickModel');
+  const antes = sel.value;
+  sel.innerHTML = lista.map((x) => `<option value="${esc(x.id)}">${esc(x.id)} — ${esc(x.seg)}</option>`).join('');
+  // Al reconstruir la lista se pierde el valor: se repone si ese equipo sigue existiendo en
+  // la plataforma actual, para no tirar una eleccion manual al mover cualquier parametro.
+  if (antes && lista.some((x) => x.id === antes)) sel.value = antes;
+  BOM.sincronizar({ elegido: m ? m.id : null, render: renderBom });
 }
 
 /* ══ Motor ══ */
@@ -132,6 +143,7 @@ function render() {
   const ordenados = FICHA.ordenar(candidatos, (a, b) => a[ef.k] - b[ef.k]);
   const pick = FICHA.recomendar(ordenados);
   lastPick = pick;
+  hayCandidato = !!pick;
   sincronizarConBom(pick);
 
   if (!pick) {
@@ -276,6 +288,7 @@ function renderSsr(need) {
   const ordenados = FICHA.ordenar(SDWAN.filter((m) => m.cap >= need), (a, b) => a.cap - b.cap);
   const pick = FICHA.recomendar(ordenados);
   lastPick = pick;
+  hayCandidato = !!pick;
   sincronizarConBom(pick);
   $('perfTiers').innerHTML = '';
   $('perfModel').textContent = '';
@@ -318,7 +331,11 @@ function renderBom() {
   const lista = plat === 'srx' ? MODELS : SDWAN;
   const id = $('pickModel').value || (lastPick && lastPick.id);
   const m = lista.find((x) => x.id === id) || lastPick;
-  if (!m) return;
+  if (!m) {
+    $('bomTabla').innerHTML = BOM.avisoDesvio({ hayCandidato: false })
+      || '<p class="bom-desvio">Sin equipo elegido.</p>';
+    return;
+  }
   const qty = Math.max(1, parseInt($('qty').value, 10) || 1) * ($('chkHa').checked ? 2 : 1);
   const tier = $('licTier').value || Object.keys(BUNDLES)[0];
   const term = $('termYears').value;
@@ -349,9 +366,10 @@ function renderBom() {
       '  Las cifras de rendimiento son por capa de inspeccion: la de portada (paquetes',
       '  grandes) no sirve para dimensionar.'],
   };
-  $('bomTabla').innerHTML = BOM.renderTabla(filas, {
-    aviso: qty > 1 ? 'Par en HA: cada nodo lleva su propia suscripción y su propio contrato de soporte.' : null,
-  });
+  $('bomTabla').innerHTML = BOM.avisoDesvio({ elegido: FICHA.elegido('verdict'), enBom: m.id, hayCandidato })
+    + BOM.renderTabla(filas, {
+      aviso: qty > 1 ? 'Par en HA: cada nodo lleva su propia suscripción y su propio contrato de soporte.' : null,
+    });
   $('bomOut').value = BOM.comoTexto(filas, meta);
   bomFilas = filas; bomMeta = meta;
 }

@@ -34,6 +34,8 @@
 .bom-nd{color:var(--steel)}
 .bom-aviso{font-size:11.5px;color:var(--amber);margin:10px 0 0;line-height:1.45}
 .bom-acciones{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bom-desvio{font-size:12.5px;line-height:1.5;color:var(--steel);border-left:2px solid var(--amber);padding:6px 0 6px 10px;margin:0 0 12px}
+.bom-desvio b.warn{color:var(--amber)}
 `;
 
   if (!document.getElementById('bom-estilos')) {
@@ -263,6 +265,72 @@
     }
   }
 
+  /* ── Sincronizacion con el dimensionamiento ────────────────────────────────
+     POR QUE ESTO VIVE AQUI Y NO EN CADA PAGINA. Cada dimensionador tenia su propia copia de
+     `llevarABom`, y las copias se comportaban distinto: medido en el navegador el 2026-09-03,
+     Fortinet, MikroTik y Aruba seguian al dimensionamiento, pero Cisco y Huawei se quedaban
+     cotizando el equipo anterior y Juniper solo repintaba su BOM al abrir la pestaña. Tres
+     comportamientos para la misma pregunta.
+
+     LA CAUSA ERA UNA SOLA, y estaba en la copia: `llevarABom(id)` empezaba con
+     `if(!id) return;`, asi que cuando el dimensionamiento se quedaba SIN CANDIDATO —el caso
+     que mas importa— el BOM no se enteraba de nada y seguia mostrando el ultimo equipo que si
+     cumplia. Medido: en Cisco a 20 Gbps no hay candidato y el BOM seguia cotizando un
+     Catalyst 8200L de 1 Gbps, en silencio. Eso es una cotizacion exportable que no
+     corresponde al diseño.
+
+     ELEGIDO A MANO Y HEREDADO NO SON LO MISMO, la misma distincion que `ficha.js` hace con el
+     equipo recomendado. El desplegable del BOM cotiza CUALQUIER equipo a proposito —para eso
+     esta—, asi que si alguien lo toca, su eleccion manda y no se le pisa. Lo que no puede
+     pasar es que una eleccion HEREDADA (la que dejo el render anterior) se quede fija: esa
+     sigue siempre al dimensionamiento. Se distinguen por el evento `change`, que solo dispara
+     la interaccion humana y nunca una asignacion por codigo. */
+
+  function sincronizar(cfg) {
+    const c = cfg || {};
+    const sel = document.getElementById(c.selector || 'pickModel');
+    if (typeof c.render !== 'function') return;
+    if (!sel) { c.render(); return; }
+
+    if (!sel.dataset.bomVigilado) {
+      sel.dataset.bomVigilado = '1';
+      sel.addEventListener('change', () => { sel.dataset.bomManual = '1'; });
+    }
+
+    const id = c.elegido || null;
+    if (id && sel.dataset.bomManual !== '1' && sel.value !== id
+        && Array.prototype.some.call(sel.options, (o) => o.value === id)) {
+      sel.value = id;
+    }
+    // Se repinta SIEMPRE, tambien cuando el modelo no cambia: el aviso de desvio, el de "sin
+    // candidato" y todo lo que el BOM derive del escenario dependen de mas cosas que el id.
+    c.render();
+  }
+
+  // Suelta la eleccion manual: la usa el boton de volver al recomendado de cada pagina, y
+  // hace falta al recargar un escenario desde la URL, porque reponer no es elegir.
+  function soltarManual(selector) {
+    const sel = document.getElementById(selector || 'pickModel');
+    if (sel) delete sel.dataset.bomManual;
+  }
+
+  // El aviso que declara que el BOM no corresponde al dimensionamiento. Existia solo en la
+  // pagina de Fortinet; al vivir aqui lo heredan los siete fabricantes.
+  function avisoDesvio(cfg) {
+    const c = cfg || {};
+    if (c.hayCandidato === false) {
+      return '<p class="bom-desvio"><b class="warn">Este BOM no corresponde al dimensionamiento.</b> '
+        + 'Con los parámetros actuales <b>ningún modelo cumple</b> las restricciones, así que esta '
+        + 'cotización es la del último equipo que sí cumplía. Revisa la pestaña de cálculo antes de exportar.</p>';
+    }
+    if (c.elegido && c.enBom && c.elegido !== c.enBom) {
+      return `<p class="bom-desvio">Estás cotizando el <b>${esc(c.enBom)}</b>, pero en el dimensionamiento `
+        + `tienes elegido el <b>${esc(c.elegido)}</b>. Es legítimo —el desplegable de arriba cotiza `
+        + 'cualquier equipo— pero no es lo que salió del cálculo.</p>';
+    }
+    return '';
+  }
+
   // Inyecta el boton en la barra de acciones del BOM que las seis paginas ya comparten.
   // `obtener` lo aporta cada pagina porque solo ella sabe que equipo esta elegido ahora.
   function montarBotonCotizador(obtener) {
@@ -284,5 +352,6 @@
   }
 
   global.BOM = { renderTabla, exportarExcel, comoTexto, money, esc,
-    enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar };
+    enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar,
+    sincronizar, soltarManual, avisoDesvio };
 })(window);

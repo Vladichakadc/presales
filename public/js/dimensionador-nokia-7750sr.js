@@ -235,7 +235,10 @@
 
   // ── BOM ──────────────────────────────────────────────────────────────────────
   function renderBom(m) {
-    if (!m) { $('bomTabla').innerHTML = '<p style="font-size:13px;color:var(--steel)">Sin equipo elegido.</p>'; return; }
+    // Esta pagina no tiene desplegable propio en el BOM —cotiza siempre el equipo elegido en
+    // el dimensionamiento— asi que no puede desviarse. Lo que si puede es quedarse sin
+    // candidato, y eso se dice con las mismas palabras que en los otros seis.
+    if (!m) { $('bomTabla').innerHTML = BOM.avisoDesvio({ hayCandidato: false }); return; }
     const qty = $('chkHa').checked ? 2 : 1;
     const filas = [
       { cat: 'Equipo', desc: `Nokia ${m.id} — ${m.seg}`, sku: null, qty, unit: m.elpN || null, nota: m.ifaces },

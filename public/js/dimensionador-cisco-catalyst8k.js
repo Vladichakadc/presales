@@ -6,23 +6,15 @@ const $ = id => document.getElementById(id);
    ═══════════════════════════════════════ */
 let bomFilas=[], bomMeta={};
 
-// El modelo recomendado se lleva solo a la pestana de BOM, y solo cuando la recomendacion
-// CAMBIA: asi una eleccion manual para comparar no se pisa al mover un parametro.
-let ultimaRecomendacion=null;
+// El equipo del dimensionamiento se lleva solo al BOM. La regla vive en js/bom.js —
+// `BOM.sincronizar` distingue lo heredado de lo elegido a mano y repinta siempre, para
+// que un cambio de escenario no deje el BOM cotizando el equipo anterior.
 function sincronizarConBom(elegido){
-  const id=elegido?elegido.id:null;
-  if(id===ultimaRecomendacion) return;
-  ultimaRecomendacion=id;
-  llevarABom(id);
+  BOM.sincronizar({elegido:elegido?elegido.id:null, render:renderBom});
 }
 // Eleccion explicita en el desplegable de equipos: se lleva al BOM siempre.
 function llevarABom(id){
-  if(!id) return;
-  ultimaRecomendacion=id;
-  const sel=$('pickModel');
-  if(!sel||sel.value===id) return;
-  sel.value=id;
-  if(sel.value===id) renderBom();
+  BOM.sincronizar({elegido:id||null, render:renderBom});
 }
 
 let MODELS = [];
@@ -46,6 +38,9 @@ const PLATAFORMAS = {
 // lo que muestra la lista.
 const vencido = m => !!(m && FICHA.rango(m) === 2);
 let dirMult=2, mode='link', crit='low', lastPick=null;
+// Si el dimensionamiento se quedo sin candidato, el BOM tiene que DECIRLO: hasta ahora
+// seguia cotizando el ultimo equipo que si cumplia, en silencio.
+let hayCandidato=true;
 
 /* ── Tabs ── */
 document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
@@ -161,6 +156,7 @@ function render(){
     (a, b) => capDe(a) - capDe(b));
   const pick = FICHA.recomendar(candidates);
   lastPick = pick;
+  hayCandidato = !!pick;
   sincronizarConBom(pick);
 
   // ── Presentacion ──────────────────────────────────────────────────────────
@@ -338,7 +334,7 @@ function renderBom(){
   const termYrs=parseInt($('termYears').value)||3;
   const dnaTier=$('dnaTier').value||'adv';
 
-  let html=`<section class="panel"><h2>Ficha del equipo</h2>
+  let html=`${BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato})}<section class="panel"><h2>Ficha del equipo</h2>
     <div class="model" style="font-size:28px">${m.id}</div>
     <p class="family">${m.fam} · Serie ${m.ser}</p>
     <div class="scroll"><table><thead><tr><th>Concepto</th><th>Valor</th></tr></thead><tbody>

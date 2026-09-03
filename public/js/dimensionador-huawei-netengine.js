@@ -10,6 +10,8 @@ let HICARE = {};
 
 const $ = id => document.getElementById(id);
 let dirMult = 2, mode = 'link', lastPick = null;
+// Si el dimensionamiento se quedo sin candidato, el BOM tiene que DECIRLO.
+let hayCandidato = true;
 let bomFilas = [], bomMeta = {};
 
 /* ---- tabs ---- */
@@ -137,17 +139,15 @@ function render(){
       <td class="n">${r.m.lan || '—'}</td><td>${r.miss.length ? `<span style="color:var(--steel)">${r.miss[0]}</span>` : `<span style="color:var(--green);font-weight:600">Cumple</span>`}</td></tr>`;
   }).join('');
 
-  if(pick && pick.m.id !== lastPick){ lastPick = pick.m.id; llevarABom(pick.m.id); }
+  hayCandidato = !!pick;
+  llevarABom(pick ? pick.m.id : null);
 }
 
-// Eleccion explicita en el desplegable de equipos: se lleva al BOM siempre.
+// El equipo del dimensionamiento se lleva solo al BOM. La regla vive en js/bom.js —
+// `BOM.sincronizar` distingue lo heredado de lo elegido a mano y repinta siempre.
 function llevarABom(id){
-  if(!id) return;
-  lastPick = id;
-  const sel = $('pickModel');
-  if(!sel || sel.value === id) return;
-  sel.value = id;
-  if(sel.value === id) renderBom();
+  if(id) lastPick = id;
+  BOM.sincronizar({elegido:id||null, render:renderBom});
 }
 
 /* ── Ficha del equipo elegido ───────────────────────────────────────────────
@@ -355,7 +355,7 @@ function renderBom(){
   const lics = licensesFor(pick, {need:0, aps:parseInt($('aps').value)||0, svc:{sdwan:$('sSdwan').checked, utm:$('sUtm').checked, slice:$('sSlice').checked}, pk:$('profile').value});
   const {s} = supportFor();
 
-  let html = `<section class="panel">
+  let html = `${BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato})}<section class="panel">
     <h2>Ficha del equipo</h2>
     <div class="model" style="font-size:30px">${m.id}</div>
     <p class="family">${m.fam} · serie ${m.ser}</p>
