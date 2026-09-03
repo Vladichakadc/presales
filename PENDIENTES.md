@@ -63,13 +63,40 @@ ellos — y aparte, el permiso de GitHub para que Actions abra PRs está desacti
 repositorio, un ajuste independiente del bloqueo de HPE. Los pendientes 3 y 14 siguen
 necesitando una persona con navegador real.
 
+**Y el 3 de septiembre de 2026 se supo que HPE es el mismo caso que Huawei, no uno más
+suave.** Se pidió `buy.hpe.com` desde un ejecutor de Actions —que no pasa por el proxy de
+esta sesión— y respondió **403 con un "Access Denied" de Akamai** (`errors.edgesuite.net`
+en el cuerpo). No es límite de ritmo ni política de egreso: es la defensa anti-automatización
+del propio fabricante, la misma categoría que este repositorio no intenta evadir. Los 403 y
+timeouts que `npm run datasheets` ve desde cualquier máquina son la misma pared, y espaciar
+las peticiones la ablanda pero no la abre. Para HPE, igual que para Huawei: **una persona con
+navegador real**.
+
+**Firecrawl no es la salida, y conviene saberlo antes de intentarlo (2026-09-03).** Se instaló
+el servidor MCP de Firecrawl —un servicio de scraping alojado— pensando que sus servidores
+leerían por nosotros lo que este entorno no alcanza. No funciona desde aquí, y no por la clave
+ni por HPE: el servidor MCP corre **dentro** de este sandbox (`npx firecrawl-mcp`), así que sus
+llamadas salen por el mismo proxy, y ese proxy deniega el dominio del propio Firecrawl. Medido
+con una URL de control (`example.com`) que falló igual, y confirmado por el propio proxy:
+
+```
+"kind": "connect_rejected",
+"detail": "gateway answered 403 to CONNECT (policy denial or upstream failure)",
+"host": "api.firecrawl.dev:443"
+```
+
+`mcp.firecrawl.dev` y `firecrawl.dev` están denegados igual. La configuración queda en
+`.mcp.json` a propósito —sin clave, solo la referencia `${FIRECRAWL_API_KEY}`— porque **sí
+sirve desde una máquina que no esté detrás de este proxy**, que es donde tiene sentido usarla.
+Desde esta sesión, la vía que sí funciona sigue siendo GitHub Actions.
+
 El procedimiento completo —incluido qué viaja de local a producción y por qué no es la base
 de datos— está en [`IMPORTAR-CATALOGO.md`](IMPORTAR-CATALOGO.md).
 
 | # | Qué falta | Cómo se cierra | Bloqueo |
 |---|---|---|---|
 | ~~2~~ | ~~`cps` en 37 de los 58 FortiGate~~ **Resuelto (2026-09-02)** — ver *Cerrado recientemente*. Quedan 5 modelos en `null` (100F/200F/400F/401F/600F) que no están en el documento, no un bloqueo de acceso. | — | resuelto vía Actions |
-| 3 | **PDFs de datasheets de Aruba.** `public/datasheets/` va vacío a propósito; la página enlaza la URL de HPE mientras no esté el archivo local. **Ejecutado por primera vez el 2026-09-02** (ver *Cerrado recientemente* — «investigado», no «cerrado»): de 24 documentos, HPE devolvió 21 fallos (403 o timeout) al ejecutor de GitHub Actions y solo 1 PDF de bajo valor se descargó — un bloqueo del lado de HPE, distinto del de este entorno. **Ese único PDF (`sd-wan-ordering-guide.pdf`) ya está commiteado** (2026-09-02): se había quedado fuera de git, en un clon suelto, así que producción seguía enlazando la URL de HPE aunque el archivo existiera en disco. Cobertura local real: **1 de 24**; los otros 23 siguen enlazando a HPE. Y aunque hubiera bajado los 24, el paso de abrir el PR falló aparte: este repositorio tiene desactivado el permiso «Allow GitHub Actions to create pull requests» (ajuste de GitHub, no de este workflow). | El workflow (`datasheets-aruba.yml`) está listo y el permiso de PR se activa en un clic (Settings → Actions → General → Workflow permissions), pero incluso con eso resuelto, HPE sigue bloqueando casi todo el lote — hace falta una máquina con navegador real, igual que Huawei. | HPE bloquea/limita al ejecutor de GitHub Actions (403/timeout en la mayoría de las URL); el repositorio no permite que Actions abra PRs |
+| 3 | **PDFs de datasheets de Aruba.** `public/datasheets/` va vacío a propósito; la página enlaza la URL de HPE mientras no esté el archivo local. **Ejecutado por primera vez el 2026-09-02** (ver *Cerrado recientemente* — «investigado», no «cerrado»): de 24 documentos, HPE devolvió 21 fallos (403 o timeout) al ejecutor de GitHub Actions y solo 1 PDF de bajo valor se descargó — un bloqueo del lado de HPE, distinto del de este entorno. **Ese único PDF (`sd-wan-ordering-guide.pdf`) ya está commiteado** (2026-09-02): se había quedado fuera de git, en un clon suelto, así que producción seguía enlazando la URL de HPE aunque el archivo existiera en disco. Cobertura local real: **1 de 24**; los otros 23 siguen enlazando a HPE. Y aunque hubiera bajado los 24, el paso de abrir el PR falló aparte: este repositorio tiene desactivado el permiso «Allow GitHub Actions to create pull requests» (ajuste de GitHub, no de este workflow). | El workflow (`datasheets-aruba.yml`) está listo y el permiso de PR se activa en un clic (Settings → Actions → General → Workflow permissions), pero incluso con eso resuelto, HPE sigue bloqueando casi todo el lote — hace falta una máquina con navegador real, igual que Huawei. **2026-09-03: se supo por qué** — `buy.hpe.com` devuelve un "Access Denied" de **Akamai** al ejecutor de Actions (ver *Cerrado recientemente*), así que no es límite de ritmo sino la defensa anti-automatización del fabricante. Espaciar las peticiones en `descargar-datasheets.js` la ablanda, no la abre. | HPE bloquea con Akamai (defensa del fabricante, no del proxy de este entorno); el repositorio tampoco permite que Actions abra PRs |
 | 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ` y las 23 AR no traen `mpps`. El motor no inventa: muestra lo que hay. | **El importador ya existe**: `npm run huawei -- --check` para ver los huecos, `npm run huawei -- specs.xlsx` para las cifras y `npm run huawei -- eox.csv --eol` para el fin de venta. Falta el dato, no la herramienta — **y, a diferencia de Fortinet/Aruba, esta vez no se cierra vía Actions** (ver *Cerrado recientemente*, investigación 2026-09-02): hace falta una persona con navegador real, y sesión de Huawei si hace falta el detalle fino de Info-Finder. | `e.huawei.com`, `support.huawei.com` bloquean el navegador automatizado (Akamai); `info.support.huawei.com` exige sesión |
 | 4 | **Comprobar el sitio en vivo tras desplegar — parcial (2026-09-02), ver *Cerrado recientemente*.** Se verifica que el deploy llegue a SUCCESS y que los logs muestren `[seed]` y `Presales corriendo en`; ahora además `.github/workflows/sonda-produccion.yml` confirma desde fuera de este entorno que el dominio público responde de verdad (`/salud` y `/login`, sin sesión). Lo que sigue sin cubrirse es la revisión visual de la pantalla tocada: sin la contraseña real de producción, ningún workflow puede entrar más allá de esas dos rutas públicas. | Disparar `sonda-produccion.yml` a mano para la confirmación externa; abrir `presales.up.railway.app` con sesión y revisar la pantalla tocada sigue siendo de una persona. | `presales.up.railway.app` (bloqueado solo desde este entorno de edición, no desde GitHub Actions) |
 
@@ -184,6 +211,38 @@ Cobertura actual por herramienta:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### HPE también es Akamai, y Firecrawl no es la salida (2026-09-03)
+
+Dos intentos de abrir por fin las fuentes de HPE, los dos cerrados con una medición en vez de
+una suposición. Vale la pena leerlos antes de reintentar cualquiera de las dos vías.
+
+**1. Firecrawl, descartado por política de egreso.** Se instaló su servidor MCP creyendo que
+sus servidores leerían por nosotros lo que este entorno no alcanza. Falla — y no por la clave
+(verificada: 35 caracteres, prefijo correcto, sin espacios, y no es la que se filtró) ni por
+HPE. El servidor MCP corre **dentro** de este sandbox (`npx firecrawl-mcp`), así que sus
+llamadas salen por el mismo proxy, que deniega el dominio de Firecrawl. Lo delató una URL de
+control: `example.com` falló idéntico. El propio proxy lo confirma —
+`connect_rejected · gateway answered 403 to CONNECT · api.firecrawl.dev:443` — y
+`mcp.firecrawl.dev` y `firecrawl.dev` están igual. La configuración se queda en `.mcp.json`
+(sin clave, solo `${FIRECRAWL_API_KEY}`) porque **sí sirve desde una máquina fuera de este
+proxy**; desde aquí, no.
+
+**2. `buy.hpe.com`, denegado por el propio HPE.** Se pidió desde un ejecutor de GitHub
+Actions —que no pasa por el proxy de esta sesión, y que ya trajo Fortinet y Juniper sin
+problema— con cabeceras de navegador completas. Respondió **403 con un "Access Denied" de
+Akamai**, con `errors.edgesuite.net` en el cuerpo: la misma pared que Huawei, no un límite de
+ritmo. Eso reencuadra el pendiente 3 entero — los 403/timeout que `npm run datasheets` ve
+desde cualquier máquina no son mala suerte ni ráfaga excesiva, son esta misma defensa. No se
+intentó nada para evadirla (ni el modo *stealth* de Firecrawl, que existe justo para eso):
+es una decisión deliberada del fabricante, categoría distinta de un 403 de política de egreso,
+y aquí se reporta, no se rodea.
+
+La sonda (`traer-hpe-routers.yml`) se retiró tras dejar el hallazgo escrito, igual que las
+tres de Huawei: un workflow que ya sabe que nunca va a producir dato es un artefacto inerte,
+el mismo error que tuvo `CISCO_EOL_MODELS`. Quedó publicada la rama `fuente/hpe-routers` con
+la respuesta de Akamai — el proxy git de este entorno no deja borrar ramas remotas, así que
+se borra desde GitHub o desde una máquina con acceso.
 
 ### Pendiente 4, parcial: confirmación externa de que el sitio en vivo responde (2026-09-02)
 
