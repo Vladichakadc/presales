@@ -1,0 +1,105 @@
+name: traer-aruba-y-juniper
+
+# Dos pendientes en una corrida, los dos abiertos por el mismo hallazgo del 2026-09-03: un
+# fabricante no es un bloque, y conviene medir dominio por dominio antes de darlo por perdido.
+#
+# 1. PENDIENTE 3 (datasheets de Aruba). La corrida de agosto pidio los 24 documentos del
+#    manifiesto de golpe y HPE devolvio 403 o timeout en 21. Pero de los cinco dominios que usa
+#    ese manifiesto, `arubanetworking.hpe.com` -la documentacion tecnica- SI responde: entrego
+#    el EdgeConnect Hardware Reference entero. Aqui se piden solo los suyos, espaciados. Los
+#    que bajen se COMMITEAN a public/datasheets/, porque el contenedor de Railway se
+#    reconstruye desde git y es lo unico que hace que produccion los sirva.
+#
+# 2. PENDIENTE 15 (alimentacion de Juniper, hoy 1 de 12). Los datasheets comerciales dan
+#    rendimiento; las "hardware guides" dan la seccion de especificaciones electricas, que es
+#    lo que hace falta. Las URL de la SRX300 y la SRX4100 estan confirmadas por busqueda; el
+#    resto sigue el patron del sitio y el 404 se reporta, no se da por bueno.
+#
+# La firma `%PDF-` es obligatoria: lo que no la trae no se guarda. No se extrae nada -la
+# lectura de las tablas sigue siendo humana, pagina por pagina.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  traer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bajar Aruba y Juniper
+        run: |
+          node -e "
+            const fs = require('fs');
+            const jd = 'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/';
+            const jh = 'https://www.juniper.net/documentation/us/en/hardware/';
+            const objetivos = [
+              // --- Aruba: solo el dominio que responde (pendiente 3) ---
+              { d: 'aruba', f: 'edgeconnect-hardware-reference.pdf', u: 'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/hardware/reference/EdgeConnect-Hardware-Reference_latest.pdf' },
+              { d: 'aruba', f: 'edgeconnect-ecv-azure.pdf', u: 'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/deployments/dg_ECV-Azure_latest.pdf' },
+              { d: 'aruba', f: 'sd-branch-design-vsg.pdf', u: 'https://arubanetworking.hpe.com/techdocs/VSG/docs/070-sd-branch-design/Media/PDF/Aruba_VSG_SD-Branch-Design.pdf' },
+              { d: 'aruba', f: 'central-licensing-guide.pdf', u: 'https://arubanetworking.hpe.com/techdocs/central/pdfs/2.5.8/licensing-guide.pdf' },
+              // --- Juniper: fichas comerciales (confirmadas) y guias de hardware (patron) ---
+              { d: 'juniper', f: 'srx300-line-datasheet.pdf', u: jd + 'srx300-line-firewalls-branch-datasheet.pdf' },
+              { d: 'juniper', f: 'srx4100-4200-datasheet.pdf', u: jd + 'srx4100-srx4200-firewall-datasheet.pdf' },
+              { d: 'juniper', f: 'hw-srx300.pdf', u: jh + 'srx300/srx300.pdf' },
+              { d: 'juniper', f: 'hw-srx1500.pdf', u: jh + 'srx1500/srx1500.pdf' },
+              { d: 'juniper', f: 'hw-srx4100.pdf', u: jh + 'srx4100/srx4100.pdf' },
+              { d: 'juniper', f: 'hw-srx1600.pdf', u: jh + 'srx1600/srx1600.pdf' },
+              { d: 'juniper', f: 'hw-srx2300.pdf', u: jh + 'srx2300/srx2300.pdf' },
+              { d: 'juniper', f: 'hw-srx4300.pdf', u: jh + 'srx4300/srx4300.pdf' },
+            ];
+            const espera = (ms) => new Promise((r) => setTimeout(r, ms));
+            (async () => {
+              const informe = [];
+              for (const o of objetivos) {
+                try {
+                  const r = await fetch(o.u, {
+                    headers: {
+                      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+                      Accept: 'application/pdf,*/*',
+                      'Accept-Language': 'en-US,en;q=0.9',
+                    },
+                  });
+                  const buf = Buffer.from(await r.arrayBuffer());
+                  const esPdf = buf.length > 4 && buf.subarray(0, 5).toString('latin1') === '%PDF-';
+                  if (esPdf) fs.writeFileSync(o.d + '--' + o.f, buf);
+                  informe.push({ fabricante: o.d, archivo: o.f, status: r.status, kb: Math.round(buf.length / 1024), esPdf });
+                  console.log(o.d, o.f, r.status, esPdf ? 'PDF' : 'no-pdf');
+                } catch (e) {
+                  informe.push({ fabricante: o.d, archivo: o.f, error: String(e.message || e) });
+                  console.log(o.d, o.f, 'ERROR');
+                }
+                await espera(3000 + Math.random() * 2000);
+              }
+              console.log(JSON.stringify(informe, null, 2));
+              fs.writeFileSync('informe.json', JSON.stringify(informe, null, 2));
+            })();
+          "
+
+      - name: Publicar en la rama de transporte
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout --orphan fuente/aruba-juniper
+          git rm -rf --cached . >/dev/null 2>&1 || true
+          git add -f informe.json
+          git add -f ./*.pdf 2>/dev/null || true
+          git commit -q -m 'Documentos de Aruba y Juniper, material de trabajo'
+          git push -f origin fuente/aruba-juniper
+
+      - name: Resumen
+        if: always()
+        run: |
+          {
+            echo '## Aruba (pendiente 3) y Juniper (pendiente 15)'
+            echo ''
+            echo '```json'
+            cat informe.json 2>/dev/null || echo '(sin resultado)'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
