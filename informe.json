@@ -1,0 +1,82 @@
+[
+  {
+    "fabricante": "aruba",
+    "archivo": "edgeconnect-hardware-reference.pdf",
+    "status": 200,
+    "kb": 17340,
+    "esPdf": true
+  },
+  {
+    "fabricante": "aruba",
+    "archivo": "edgeconnect-ecv-azure.pdf",
+    "status": 200,
+    "kb": 3913,
+    "esPdf": true
+  },
+  {
+    "fabricante": "aruba",
+    "archivo": "sd-branch-design-vsg.pdf",
+    "status": 200,
+    "kb": 17184,
+    "esPdf": true
+  },
+  {
+    "fabricante": "aruba",
+    "archivo": "central-licensing-guide.pdf",
+    "status": 200,
+    "kb": 831,
+    "esPdf": true
+  },
+  {
+    "fabricante": "juniper",
+    "archivo": "srx300-line-datasheet.pdf",
+    "error": "fetch failed"
+  },
+  {
+    "fabricante": "juniper",
+    "archivo": "srx4100-4200-datasheet.pdf",
+    "error": "fetch failed"
+  },
+  {
+    "fabricante": "juniper",
+    "archivo": "hw-srx300.pdf",
+    "status": 200,
+    "kb": 2222,
+    "esPdf": true
+  },
+  {
+    "fabricante": "juniper",
+    "archivo": "hw-srx1500.pdf",
+    "status": 200,
+    "kb": 1367,
+    "esPdf": true
+  },
+  {
+    "fabricante": "juniper",
+    "archivo": "hw-srx4100.pdf",
+    "status": 200,
+    "kb": 1957,
+    "esPdf": true
+  },
+  {
+    "fabricante": "juniper",
+    "archivo": "hw-srx1600.pdf",
+    "status": 200,
+    "kb": 4213,
+    "esPdf": true
+  },
+  {
+    "fabricante": "juniper",
+    "archivo": "hw-srx2300.pdf",
+    "status": 200,
+    "kb": 4745,
+    "esPdf": true
+  },
+  {
+    "fabricante": "juniper",
+    "archivo": "hw-srx4300.pdf",
+    "status": 200,
+    "kb": 5265,
+    "esPdf": true
+  }
+]
