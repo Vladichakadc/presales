@@ -259,6 +259,16 @@ publica «AC Power Consumption (Average)», que es justo lo que la ficha rotula.
 
 Los otros 52 modelos siguen en `undefined` («el catálogo no lo dice»), nunca en `false`.
 
+Las dos sondas (`traer-fortinet-psu.yml` y `traer-fortinet-datasheets.yml`) se retiraron tras
+dejar el dato aplicado, igual que las de Huawei y HPE: un workflow que ya cumplió su encargo
+es un artefacto inerte, el error que tuvo `CISCO_EOL_MODELS`. **Lo que sí conviene recordar es
+el patrón**, porque funciona y es repetible: localizar la URL con `WebSearch` (que sí opera en
+este entorno, al revés que `WebFetch`), bajar el documento desde un ejecutor de Actions,
+publicarlo en una rama de transporte, leerlo a mano —renderizado, nunca con extractor de
+tablas— y aplicarlo con el importador que contrasta. Quedan publicadas las ramas
+`fuente/fortinet-psu` y `fuente/fortinet-datasheets`; el proxy git de este entorno no deja
+borrar ramas remotas.
+
 ### HPE también es Akamai, y Firecrawl no es la salida (2026-09-03)
 
 Dos intentos de abrir por fin las fuentes de HPE, los dos cerrados con una medición en vez de
