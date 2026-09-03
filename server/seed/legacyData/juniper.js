@@ -79,7 +79,7 @@
 // BOM cuenta las líneas sin cotizar y avisa, en vez de mostrar un total que parece completo.
 // Inventar un precio plausible es el fallo que este catálogo ya cometió una vez con Aruba.
 
-// PROCEDENCIA DE `redund` / `psu` (pendiente 15) — 2026-09-03, 7 de 12 modelos.
+// PROCEDENCIA DE `redund` / `psu` (pendiente 15) — 2026-09-03, los 12 de 12 modelos.
 // El material comercial de Juniper publica rendimiento, no alimentacion. Lo electrico esta en
 // las "hardware guides" de juniper.net -una por modelo-, traidas via GitHub Actions y leidas a
 // mano. Se comprobo modelo por modelo que cada guia habla SOLO de su equipo antes de aplicar
@@ -96,6 +96,48 @@
 // SRX4300 327 W). El SRX4100 publica un «Maximum System Power Requirement» de 440 W: es un
 // maximo, y la ficha rotula ese campo «Consumo tipico», asi que va en el texto y no en `watts`
 // -el mismo criterio que dejo fuera los 2.500 W de capacidad por fuente del FortiGate 7081F.
+//
+// SEGUNDA TANDA, 2026-09-03: los cinco que faltaban (SRX320, SRX340, SRX345, SRX4200 y
+// SRX4700), con sus cinco guias de hardware traidas por el mismo camino. No cambian la regla,
+// pero anaden dos casos que merecen quedar escritos:
+//
+//   - El SRX345 es el quinto 'opcional': se vende con una fuente o con dos (RE-SRX345-DUAL-AC),
+//     y con las dos instaladas la que queda asume la carga sin interrupcion. El SRX340, en
+//     cambio, es `false` duro: su fuente va FIJA en el chasis, no es reemplazable en campo y
+//     tiene una sola entrada AC. Dos modelos consecutivos de la misma serie, respuestas
+//     opuestas: por eso esto se lee modelo por modelo y no se deduce de la gama.
+//   - El SRX320 se queda SIN `watts` aunque su guia si publique consumo medio, porque publica
+//     DOS: 46 W el modelo sin PoE y 221 W el modelo PoE, un factor 4,8. Este catalogo tiene una
+//     sola entrada 'SRX320', asi que elegir una de las dos cifras seria correcto para la mitad
+//     de los pedidos y falso para la otra mitad. Las dos van en el texto y `watts` queda vacio:
+//     el mismo tercer estado que protege a `redund` y a las fuentes sin fecha.
+//
+// SRX4200 y SRX4700 son `true` sin matices -«shipped with two AC or two DC power supply units
+// preinstalled» y «ships with two AC or two DC PSUs (1+1 redundancy) preinstalled»-, y ninguno
+// de los dos lleva `watts`: los 650 W y los 2200 W que publican son capacidad POR FUENTE, no
+// consumo, y sus tablas ambientales no traen ni consumo medio ni disipacion.
+//
+// FIN DE VENTA (pendiente 8) — 2026-09-03, de la tabla oficial «SRX Series Hardware Dates &
+// Milestones» (support.juniper.net/support/eol/product/srx_series/), traida por el mismo
+// camino. De los 12 modelos, exactamente DOS tienen fin de venta del propio equipo: el SRX1500
+// (TSB101240) y el SRX4100 (TSB101895), ambos con ultimo pedido el 2026-04-15 -ya vencido- y
+// soporte hasta 2031-04-15. Se marcan con `eolAnnounced` y `FICHA.rango()` los degrada solo,
+// sin que nadie tenga que volver a editar el catalogo.
+//
+// LO QUE COSTO TRABAJO FUE NO MARCAR DE MAS. Esa tabla mezcla en las mismas filas el fin de
+// vida de PAQUETES DE SOFTWARE (S-SRX1500DP-A1-7 y companyia, «7-year security software
+// bundles») con el del hardware, y varios modelos aparecen solo por ahi. Retirar un paquete de
+// licencias no retira el equipo: aplicar esas filas habria sacado de la recomendacion a
+// aparatos que Juniper sigue vendiendo. El criterio que se uso es el SKU: solo cuenta la fila
+// que lista el chasis o el sistema del propio modelo -SRX1500-CHAS, SRX1500-SYS-JB-AC,
+// SRX4100-CHAS, SRX4100-SYS-JB-AC-, y con ese filtro los 12 modelos dan exactamente 2. El
+// SRX4200 es el caso que mejor lo ilustra: SI aparece en la tabla, pero su unica fila es la del
+// kit de rack SRX4200-RMK2, y un accesorio retirado no retira el equipo.
+//
+// `sucesor` va VACIO en los dos. El SRX1600 y el SRX4300 son los reemplazos evidentes por
+// posicionamiento, pero la tabla de hitos no nombra ninguno, y «evidente» es exactamente como
+// entro el FortiGate 2000F inexistente que este catalogo ya sufrio. La ficha ya dice «el
+// boletin no nombra un PID de reemplazo directo» cuando el campo falta.
 
 const MODELS = [
   // ── Línea SRX300: sucursal ────────────────────────────────────────────────
@@ -106,13 +148,13 @@ const MODELS = [
   {id:'SRX300', redund:false, psu:{tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50-60 Hz', amps:'1 A máximo (pico de arranque 7 A a 220 V)', texto:'Se alimenta con el adaptador que viene con el equipo, sin opción de una segunda fuente. La guía de hardware no publica consumo para este modelo.'}, ser:'SRX 300', seg:'SOHO / Teletrabajo',
    fw:1000, fwImix:500, vpn:300, vpnImix:116, ips:200, atp:null, sess:64000, cps:5000,
    ifaces:'8x GE (6 RJ45 + 2 SFP)'},
-  {id:'SRX320', ser:'SRX 300', seg:'Sucursal pequeña',
+  {id:'SRX320', redund:false, psu:{tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50-60 Hz', amps:'1,3 A máximo (modelo sin PoE) o 3,25 A (modelo PoE)', texto:'Adaptador externo, sin opción de una segunda fuente. La guía publica dos consumos medios según la variante — 46 W sin PoE y 221 W con PoE — y como este catálogo tiene una sola entrada SRX320 no se declara ninguno como el consumo típico del modelo.'}, ser:'SRX 300', seg:'Sucursal pequeña',
    fw:1000, fwImix:500, vpn:300, vpnImix:116, ips:200, atp:null, sess:64000, cps:5000,
    ifaces:'8x GE + 2 ranuras MPIM'},
-  {id:'SRX340', ser:'SRX 300', seg:'Sucursal mediana',
+  {id:'SRX340', redund:false, psu:{watts:122, tipo:'fuente interna fija, única, no reemplazable en campo', volts:'100-240 V AC, 50-60 Hz, 1 a 1,5 A', texto:'Consumo medio 122 W. La fuente va fija en el chasis con una sola entrada AC, así que no admite una segunda.'}, ser:'SRX 300', seg:'Sucursal mediana',
    fw:3000, fwImix:1000, vpn:600, vpnImix:239, ips:400, atp:180, sess:256000, cps:10000,
    ifaces:'16x GE + 4 ranuras MPIM'},
-  {id:'SRX345', ser:'SRX 300', seg:'Sucursal grande',
+  {id:'SRX345', redund:'opcional', psu:{watts:122, tipo:'una fuente AC de serie, admite dos (RE-SRX345-DUAL-AC)', volts:'100-240 V AC, 50-60 Hz, 1 a 1,5 A', texto:'Consumo medio 122 W. Se vende con una sola fuente o con dos; con las dos instaladas, si una falla la otra asume la carga sin interrupción.'}, ser:'SRX 300', seg:'Sucursal grande',
    fw:5000, fwImix:1700, vpn:800, vpnImix:325, ips:600, atp:230, sess:375000, cps:15000,
    ifaces:'16x GE + 4 ranuras MPIM'},
   // fw/fwImix/vpn EN DISPUTA (ver PROCEDENCIA): el documento real de 2026-09-02 trae
@@ -128,6 +170,7 @@ const MODELS = [
   // ── SRX1500: fw/fwImix/ips/atp ya verificados; vpn y sess corregidos 2026-09-02 ──
   {id:'SRX1500', redund:'opcional', psu:{tipo:'una fuente instalada, admite una segunda (AC o DC)', volts:'100-127 V AC (2,5 A) o 200-240 V AC (1,3 A), 47-63 Hz', texto:'La segunda fuente es opcional y solo con las dos instaladas se pueden cambiar en caliente. La guía de hardware no publica consumo para este modelo.'}, ser:'SRX 1500', seg:'Campus / DC pequeño',
    fw:9000, fwImix:5000, vpn:1300, vpnImix:null, ips:3000, atp:1600, sess:2000000, cps:90000,
+   eolAnnounced:{pid:'SRX1500-SYS-JB-AC', lastOrder:'2026-04-15', url:'https://supportportal.juniper.net/s/article/End-Of-Life-Notification-SRX1500-Transform'},
    ifaces:'16x GE + 4x 10GE SFP+ · 1U'},
 
   // ── Generación 2024 ───────────────────────────────────────────────────────
@@ -145,17 +188,19 @@ const MODELS = [
   {id:'SRX4300', redund:'opcional', psu:{watts:327, tipo:'una fuente de serie, ranura libre para la segunda (1+1)', volts:'100-127 V AC (10,52 A) o 200-240 V AC (5,26 A), 50/60 Hz', texto:'Consumo típico 327 W y máximo 393 W, sobre fuentes de 850 W. Se envía con una sola fuente; la segunda se pide aparte y cada una necesita un interruptor de 16 A.'}, ser:'SRX 4000', seg:'DC Edge',
    fw:90000, fwImix:null, vpn:null, vpnImix:null, ips:null, atp:null, sess:null, cps:null,
    ifaces:'100GE · MACsec a velocidad de línea · 1U'},
-  {id:'SRX4700', ser:'SRX 4000', seg:'Cloud / Service Provider',
+  {id:'SRX4700', redund:true, psu:{tipo:'dos fuentes de serie (AC o DC) preinstaladas en 1+1', texto:'Sale de fábrica con las dos fuentes en las ranuras 0 y 1, intercambiables en caliente, y cada una necesita su propia alimentación e interruptor (se recomienda 16 A). Las fuentes son de 2200 W — es capacidad, no consumo, y la guía no publica un consumo típico.'}, ser:'SRX 4000', seg:'Cloud / Service Provider',
    fw:1400000, fwImix:null, vpn:null, vpnImix:null, ips:null, atp:null, sess:null, cps:null,
    ifaces:'400GE · MACsec a velocidad de línea · 1U'},
 
   // ── Generación anterior de datacenter ─────────────────────────────────────
-  // Siguen en catálogo: la generación 2024 los sustituye en POSICIONAMIENTO, pero no se
-  // encontró boletín oficial de fin de venta, así que no se marcan (ver PENDIENTES.md).
+  // El SRX4100 SÍ tiene boletín (TSB101895) y queda marcado abajo. El SRX4200 no: en la
+  // tabla oficial de hitos su única fila es la del kit de rack SRX4200-RMK2, no el equipo,
+  // y un accesorio retirado no retira el chasis — así que se deja sin marcar a propósito.
   {id:'SRX4100', redund:true, psu:{tipo:'dos fuentes de serie (AC o DC), intercambiables en caliente', volts:'100-127 V AC o 200-240 V AC, 50-60 Hz', texto:'Sale de fábrica con las dos fuentes instaladas. El requerimiento máximo del sistema es de 440 W — es un máximo, no un consumo típico, así que no se declara como tal.'}, ser:'SRX 4000', seg:'DC Edge',
    fw:40000, fwImix:null, vpn:null, vpnImix:null, ips:null, atp:null, sess:null, cps:null,
+   eolAnnounced:{pid:'SRX4100-SYS-JB-AC', lastOrder:'2026-04-15', url:'https://supportportal.juniper.net/s/article/End-Of-Life-Notification-SRX4100-Transform'},
    ifaces:'8x 10GE + 2x 40GE'},
-  {id:'SRX4200', ser:'SRX 4000', seg:'DC Edge grande',
+  {id:'SRX4200', redund:true, psu:{tipo:'dos fuentes de serie (AC o DC) preinstaladas, intercambiables en caliente', volts:'100-127 V AC o 200-240 V AC, 50-60 Hz', texto:'Sale de fábrica con las dos fuentes instaladas y si una falla la otra reparte la carga sin interrupción. Cada fuente entrega 650 W — es capacidad, no consumo, y la guía no publica un consumo típico.'}, ser:'SRX 4000', seg:'DC Edge grande',
    fw:80000, fwImix:null, vpn:null, vpnImix:null, ips:null, atp:null, sess:null, cps:null,
    ifaces:'16x 10GE + 4x 40GE'},
 ];

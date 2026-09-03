@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-02.
+Última revisión: 2026-09-03.
 
 ---
 
@@ -153,22 +153,18 @@ Cobertura actual por herramienta:
    están verificadas contra datasheets oficiales; el precio no, porque no hay lista de precios
    de estos dos fabricantes en el material disponible. Van como `Consultar` con `elpN:0` y el
    BOM los cuenta como sin cotizar, igual que Aruba.
-8. **Ciclo de vida de SRX1500 / SRX4100 / SRX4200.** La generación 2024 los sustituye en
-   posicionamiento, pero no se encontró boletín oficial de fin de venta, así que **no se
-   marcan**. Confirmarlo en `support.juniper.net/support/eol/product/srx_series/` y, si existe,
-   registrarlo — el mecanismo ya está: basta la fecha de último pedido y la regla de
-   `ficha.js` hace el resto.
-9. **Cisco `C8355-G2` tiene `sdwan: null`** y por eso cae a su cifra de IPsec (20 Gbps),
-   mientras el `C8455-G2` sí trae cifra SD-WAN propia (15,5 Gbps). La lista lo marca con
-   «(cifra IPsec)», pero hay que confirmar si Cisco publica el número real del 8355.
+8. **~~Ciclo de vida de SRX1500 / SRX4100 / SRX4200~~ Resuelto (2026-09-03)**, ver *Cerrado
+   recientemente*. El SRX1500 y el SRX4100 **sí** tienen boletín y su último pedido ya venció;
+   el SRX4200 no lo tiene y se queda sin marcar a propósito.
+9. **~~Cisco `C8355-G2` tiene `sdwan: null`~~ Resuelto (2026-09-03)**, ver *Cerrado
+   recientemente*. Cisco sí lo publica: 8,7 Gbps.
 10. **Precios de Aruba: todos en `null`.** No existe lista de precios en el material
     disponible.
 15. **Alimentación eléctrica: cobertura real, no completa.** La nueva sección «Alimentación
     eléctrica» de la ficha (agosto 2026) solo tiene dato donde el propio catálogo ya traía
-    una frase publicada — Cisco 21/21 (ya existía), Huawei 17/40, MikroTik 3/15, Aruba 2/21,
-    Juniper 1/12 SRX, **Fortinet 37/58** (2026-09-03, leyendo 16 fichas por serie más los
-    System Guide de los chasis — ver *Cerrado recientemente*). El resto queda `null` y la
-    ficha lo declara sin
+    una frase publicada — Cisco 21/21 (ya existía), Huawei 17/40, MikroTik 14/15, Aruba 6/21,
+    **Juniper 12/12 SRX** (2026-09-03, completo: ver *Cerrado recientemente*), **Fortinet
+    56/58**. El resto queda `null` y la ficha lo declara sin
     rodeos. Esto **no es lo mismo** que los bloqueados por egreso de más arriba: el Product
     Matrix de Fortinet, el material de Juniper y el datasheet abreviado de MikroTik que este
     catálogo ya usa **no traen** consumo eléctrico por modelo — no es una tabla que falte
@@ -213,6 +209,72 @@ Cobertura actual por herramienta:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Juniper 12/12, dos SRX que ya no se piden, y una etiqueta que decía lo contrario (2026-09-03)
+
+Una sola corrida de Actions trajo los siete documentos que faltaban para cerrar tres
+pendientes — cinco *hardware guides* de Juniper, la tabla oficial de fin de vida de la serie
+SRX y la ficha de la serie Cisco 8300 — y los tres se cerraron. Lo interesante no fue el
+volumen sino que **cada uno enseñó algo distinto sobre cómo se lee una fuente**.
+
+**Pendiente 15, Juniper pasa de 7/12 a 12/12.** SRX320, SRX340, SRX345, SRX4200 y SRX4700.
+Dos casos merecen quedar escritos:
+
+1. **El SRX340 y el SRX345 son modelos consecutivos de la misma serie con respuestas
+   opuestas.** El 345 se vende con una fuente o con dos (`RE-SRX345-DUAL-AC`) y con las dos
+   instaladas la que queda asume la carga sin interrupción — es el **quinto** `'opcional'`.
+   El 340 lleva la suya **fija en el chasis**, no reemplazable en campo y con una sola entrada
+   AC: `false` duro. Deducir uno del otro por la gama habría acertado en ninguno de los dos.
+2. **El SRX320 se queda sin `watts` aunque su guía sí publique consumo medio**, porque publica
+   **dos**: 46 W el modelo sin PoE y 221 W el modelo PoE, un factor 4,8. Este catálogo tiene
+   una sola entrada `SRX320`, así que elegir una de las dos cifras sería correcto para la
+   mitad de los pedidos y falso para la otra mitad. Las dos van en el texto y `watts` queda
+   vacío — el mismo tercer estado que ya protege a `redund` y a las fuentes sin fecha.
+
+El SRX4200 y el SRX4700 son `true` sin matices, y ninguno lleva `watts`: los 650 W y los
+2.200 W que publican son capacidad **por fuente**, no consumo. Su dato queda registrado pero
+**hoy no se ve en pantalla**, porque los dos solo traen `fw` y el motor descarta con su motivo
+a los modelos sin cifra en la capa efectiva — se verá el día que se complete su `fwImix`.
+
+**Pendiente 8: dos de los doce SRX ya no se piden, y lo difícil fue no marcar de más.** La
+tabla oficial de hitos mezcla en las mismas filas el fin de vida de **paquetes de software**
+(`S-SRX1500DP-A1-7` y compañía, «7-year security software bundles») con el del hardware, y
+varios modelos aparecen **solo** por ahí. Retirar un paquete de licencias no retira el equipo:
+aplicar esas filas habría sacado de la recomendación a aparatos que Juniper sigue vendiendo.
+El criterio que se usó es el SKU — solo cuenta la fila que lista el chasis o el sistema del
+propio modelo (`SRX1500-CHAS`, `SRX1500-SYS-JB-AC`, `SRX4100-CHAS`, `SRX4100-SYS-JB-AC`) — y
+con ese filtro los doce modelos dan **exactamente dos**: SRX1500 (TSB101240) y SRX4100
+(TSB101895), ambos con último pedido el **2026-04-15**, ya vencido, y soporte hasta 2031.
+El **SRX4200 es el caso que mejor lo ilustra**: sí aparece en la tabla, pero su única fila es
+la del kit de rack `SRX4200-RMK2`, y un accesorio retirado no retira el equipo.
+
+Verificado en el navegador: el SRX1500 ahora se muestra con «fin de venta vencido» y deja de
+ser el recomendado. `sucesor` va **vacío** en los dos: el SRX1600 y el SRX4300 son los
+reemplazos evidentes por posicionamiento, pero la tabla no nombra ninguno, y «evidente» es
+exactamente como entró el FortiGate 2000F inexistente que este catálogo ya sufrió.
+
+**Pendiente 9: Cisco sí publica el SD-WAN del C8355-G2, y son 8,7 Gbps.** Mientras estuvo en
+`null`, la página lo dimensionaba con sus 20 Gbps de IPsec marcándolos «(cifra IPsec)»:
+**2,3 veces por encima** de lo que el equipo hace en SD-WAN, en el único perfil en el que ese
+equipo se vende. La fila entró con doble anclaje — su forwarding de 38 Gbps y su IPsec de
+20 Gbps ya coincidían con el catálogo — y de paso la misma ficha corrigió otras dos cosas del
+mismo modelo: su `redund` estaba en `false` y el equipo trae **entrada de alimentación doble
+con dos fuentes por defecto**, y sus 45 W son de las pocas cifras que Cisco publica como
+*típica* y no como máximo, así que sí entran en `psu.watts`.
+
+**Y una etiqueta que decía lo contrario de lo que mostraba.** Al revisar cómo se pintaba lo
+anterior apareció que la fila `psu.amps` de la ficha se llamaba **«Salida»**, y era falso en
+**22 de las 24 filas del catálogo**: en Fortinet y en Juniper lo que se guarda ahí es la
+corriente que el equipo **toma de la red** («12 A @100 V · 9 A @240 V»), que es justo el dato
+con el que se dimensiona un UPS o un circuito — llamarlo salida invitaba a leerlo al revés.
+Ahora se llama «Corriente», y las dos únicas filas que **sí** son una salida (el módulo
+PAC350S12-CR de Huawei) lo dicen en el propio valor. De paso, su decimal pasó a coma, que es
+la convención de este catálogo.
+
+Las tres fuentes quedan registradas en `fuentes.js` — incluidas las *hardware guides* de
+Juniper, que se habían usado el mismo día para los primeros siete modelos **sin registrarse**.
+138 pruebas (eran 135), arranque real con `NODE_ENV=production` y las dos páginas conducidas en
+Chromium sin un solo error de consola.
 
 ### Juniper 7/12 y un defecto de Cisco que decía dos cosas a la vez (2026-09-03)
 

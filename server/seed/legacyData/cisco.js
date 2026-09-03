@@ -64,13 +64,21 @@ const MODELS = [
   // sufijo corre IOS XE clásico (CCW+DNA), con sufijo "-MX" corre Meraki OS (dashboard) — ver nota de unificación.
   // C8355-G2 (familia 8300, sucesor directo del Catalyst 8300): 38 Gbps forwarding, 20 Gbps IPsec, 3.9 Gbps
   // threat protection NGFW/IPS/URL/AMP. Precio real de CCW.
+  // 2026-09-03, ficha oficial «Cisco 8300 Series Secure Routers» (tabla 6, Performance and Scale):
+  // su SD-WAN SÍ está publicado y son 8,7 Gbps — antes iba en null y la página caía a la cifra de
+  // IPsec marcándola «(cifra IPsec)», que para el perfil SD-WAN sobreestimaba el equipo 2,3 veces.
+  // La fila entra con doble anclaje: forwarding 38 Gbps e IPsec 20 Gbps coinciden con lo ya guardado.
+  // De la misma ficha (tabla 5) sale la corrección de `redund`: estaba en false y el equipo trae
+  // entrada de alimentación doble con dos fuentes por defecto. El consumo típico, 45 W, es de las
+  // pocas cifras que Cisco publica como típica y no como máximo, así que sí va en psu.watts.
   // C8455-G2 (familia 8400, datasheet oficial "8400 Series Secure Routers"): 67 Gbps forwarding, 31 Gbps
   // IPsec, 15.5 Gbps SD-WAN; la variante -MX agrega threat management hasta 8 Gbps y firewall L3/7 hasta
   // 20 Gbps. Existe además un hermano mayor C8475-G2 (8x1GE+8x10GE+4x25GE) sin throughput публicado — no
   // modelado. Precio de hardware sin confirmar en CCW (solo se vio el SKU de licencia+soporte EAB-C8455-SDW-
   // 3Y/5Y/7Y = $60,197/$100,329/$140,461); licencia real del C8121-G2-MX (branch): EAB-C8121-SDW-3Y/5Y/7Y =
   // $6,182/$10,304/$14,426.
-  {id:'Cisco Secure Router C8355-G2', ser:'Secure Router (G2)', fam:'Hub regional SD-WAN — sucesor del Catalyst 8300', fwd:38000, ipsec:20000, sdwan:null, aps:500, redund:false, lte:false,
+  {id:'Cisco Secure Router C8355-G2', ser:'Secure Router (G2)', fam:'Hub regional SD-WAN — sucesor del Catalyst 8300', fwd:38000, ipsec:20000, sdwan:8700, aps:500, redund:true, lte:false,
+   psu:{watts:45, tipo:'entrada de alimentación doble; de serie dos adaptadores externos de 110 W AC', texto:'Consumo típico 45 W con la fuente por defecto y sin módulos. La ficha técnica rotula la fila como «Power Supply (Default - Dual PSU)» y el panel del equipo trae entrada doble. Como mejora se ofrecen fuentes de 230 W AC con PoE (presupuesto PoE 120 W).'},
    ports:'4x10G SFP/SFP+ + 4x5G mGig RJ45 + 2x1G RJ45 · 16GB RAM', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:['DNA-ADVANTAGE'], elp:'$15,552.28', elpN:15552.28},
   {id:'Cisco Secure Router C8455-G2', ser:'Secure Router (G2)', fam:'Internet edge / campus de alto rendimiento — familia 8400', fwd:67000, ipsec:31000, sdwan:15500, aps:1000, redund:false, lte:false,
    ports:'8x1GE + 2x10GE + 2x25GE · 32GB RAM · hasta 2TB storage', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:['DNA-ADVANTAGE']},

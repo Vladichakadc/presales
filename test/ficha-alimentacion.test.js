@@ -42,7 +42,26 @@ test('psu.watts/tipo/volts/amps solo aparecen cuando estan presentes', () => {
   // contenido sea igual.
   const claves = Array.prototype.map.call(sec.filas, (f) => f[0]);
   assert.strictEqual(JSON.stringify(claves), JSON.stringify(
-    ['Fuente redundante (doble fuente)', 'Consumo típico', 'Tipo de fuente', 'Rango de entrada', 'Salida']));
+    ['Fuente redundante (doble fuente)', 'Consumo típico', 'Tipo de fuente', 'Rango de entrada', 'Corriente']));
+});
+
+test('la fila de corriente no promete que el valor sea una salida', () => {
+  // Se llamaba «Salida», y era falso en 22 de las 24 filas del catalogo: en Fortinet y en
+  // Juniper lo que se guarda ahi es la corriente que el equipo TOMA de la red -«12 A @100 V ·
+  // 9 A @240 V»-, que es justo el dato con el que se dimensiona un UPS o un circuito.
+  // Llamarlo salida invitaba a leerlo al reves. Solo las dos filas de Huawei son de verdad una
+  // salida (la del modulo PAC350S12-CR) y lo dicen en el propio valor.
+  const { MODELS: FTNT } = require('../server/seed/legacyData/fortinet.js');
+  const { MODELS: HW } = require('../server/seed/legacyData/huawei.js');
+  const conAmps = (l) => l.filter((m) => m.psu && m.psu.amps);
+
+  assert.ok(conAmps(FTNT).length > 0);
+  for (const m of conAmps(FTNT)) {
+    assert.ok(!/salida/i.test(m.psu.amps), `${m.id} no declara una salida`);
+  }
+  for (const m of conAmps(HW)) {
+    assert.match(m.psu.amps, /^salida /, `${m.id} si es una salida y lo dice`);
+  }
 });
 
 test('sin psu.watts no aparece la fila de consumo (no se rellena con 0)', () => {
@@ -207,24 +226,88 @@ test('Cisco: la pagina no reafirma la redundancia por su cuenta ni inventa opcio
   assert.ok(sinSlots.every((m) => m.redund !== undefined), 'Cisco sigue con cobertura completa');
 });
 
-test('Juniper: cuatro SRX se envian con una fuente y admiten la segunda', () => {
+test('Juniper: la cobertura de alimentacion esta completa y distingue los cinco estados', () => {
   const { MODELS } = require('../server/seed/legacyData/juniper.js');
-  assert.strictEqual(MODELS.filter((m) => m.redund !== undefined).length, 7);
+  assert.strictEqual(MODELS.filter((m) => m.redund !== undefined).length, MODELS.length);
 
   // Las hardware guides lo dicen sin ambiguedad: «We ship the SRX1600 with only one power
   // supply unit (PSU). You can order the [second]». Marcarlos `true` prometeria una
   // redundancia que no viene en la caja, que es justo por lo que existe el cuarto estado.
   const opcionales = MODELS.filter((m) => m.redund === 'opcional').map((m) => m.id);
-  assert.deepStrictEqual(opcionales.sort(), ['SRX1500', 'SRX1600', 'SRX2300', 'SRX4300']);
+  assert.deepStrictEqual(opcionales.sort(), ['SRX1500', 'SRX1600', 'SRX2300', 'SRX345', 'SRX4300']);
 
-  // El SRX4100 si sale con las dos: «shipped with two AC or two DC power supply units
+  // Dos modelos consecutivos de la misma serie con respuestas opuestas: el SRX345 se vende
+  // con una fuente o con dos, y el SRX340 lleva la suya FIJA en el chasis, no reemplazable en
+  // campo y con una sola entrada AC. Por eso esto se lee modelo por modelo.
+  assert.strictEqual(MODELS.find((m) => m.id === 'SRX340').redund, false);
+
+  // Los de datacenter si salen con las dos: «shipped with two AC or two DC power supply units
   // preinstalled». Y el SRX300 se alimenta con un adaptador externo, sin segunda opcion.
-  assert.strictEqual(MODELS.find((m) => m.id === 'SRX4100').redund, true);
+  for (const id of ['SRX4100', 'SRX4200', 'SRX4700']) {
+    assert.strictEqual(MODELS.find((m) => m.id === id).redund, true, id);
+  }
   assert.strictEqual(MODELS.find((m) => m.id === 'SRX300').redund, false);
 
-  // `watts` solo donde la guia publica un consumo MEDIO o TIPICO. El SRX4100 publica un
-  // «Maximum System Power Requirement» de 440 W: es un maximo, y la ficha rotula ese campo
-  // «Consumo tipico», asi que no entra.
+  // `watts` solo donde la guia publica un consumo MEDIO o TIPICO. Los tres que lo omiten lo
+  // hacen por motivos distintos y los tres importan: el SRX4100 publica un «Maximum System
+  // Power Requirement» (un maximo), el SRX4200 y el SRX4700 publican 650 W y 2200 W POR
+  // FUENTE (capacidad), y el SRX320 publica dos consumos medios para una sola entrada de
+  // catalogo -46 W sin PoE y 221 W con PoE-, asi que elegir uno seria falso para la mitad de
+  // los pedidos. La ficha rotula el campo «Consumo tipico»: lo que no lo sea, no entra.
   assert.strictEqual(MODELS.find((m) => m.id === 'SRX4300').psu.watts, 327);
-  assert.strictEqual(MODELS.find((m) => m.id === 'SRX4100').psu.watts, undefined);
+  assert.strictEqual(MODELS.find((m) => m.id === 'SRX345').psu.watts, 122);
+  for (const id of ['SRX4100', 'SRX4200', 'SRX4700', 'SRX320']) {
+    assert.strictEqual(MODELS.find((m) => m.id === id).psu.watts, undefined, id);
+  }
+  // Pero las dos cifras si se declaran, en el texto, en vez de perderse.
+  const t320 = MODELS.find((m) => m.id === 'SRX320').psu.texto;
+  assert.match(t320, /46 W/);
+  assert.match(t320, /221 W/);
+});
+
+test('Juniper: solo el fin de venta del propio equipo degrada, no el de un paquete de software', () => {
+  const { MODELS } = require('../server/seed/legacyData/juniper.js');
+
+  // La tabla oficial de hitos mezcla en las mismas filas el fin de vida de bundles de
+  // licencias (S-SRX1500DP-A1-7 y companyia) con el del hardware. Retirar un paquete de
+  // licencias no retira el equipo: si se aplicaran esas filas, saldrian de la recomendacion
+  // aparatos que Juniper sigue vendiendo. Solo cuentan las filas cuyo SKU es el chasis o el
+  // sistema del propio modelo, y con ese filtro son exactamente dos.
+  const conEol = MODELS.filter((m) => m.eolAnnounced).map((m) => m.id);
+  assert.deepStrictEqual(conEol.sort(), ['SRX1500', 'SRX4100']);
+
+  for (const id of conEol) {
+    const e = MODELS.find((m) => m.id === id).eolAnnounced;
+    assert.strictEqual(e.lastOrder, '2026-04-15');
+    assert.ok(e.url && e.url.startsWith('https://'), `${id} cita su boletin`);
+    // `sucesor` va vacio a proposito: el SRX1600 y el SRX4300 son los reemplazos evidentes
+    // por posicionamiento, pero la tabla de hitos no nombra ninguno, y «evidente» es como
+    // entro el FortiGate 2000F inexistente que este catalogo ya sufrio.
+    assert.strictEqual(e.sucesor, undefined, `${id} no inventa un sucesor`);
+  }
+
+  // El SRX4200 SI aparece en esa tabla, pero su unica fila es la del kit de rack
+  // SRX4200-RMK2. Un accesorio retirado no retira el equipo.
+  assert.strictEqual(MODELS.find((m) => m.id === 'SRX4200').eolAnnounced, undefined);
+});
+
+test('Cisco: el C8355-G2 ya no cae a su cifra de IPsec en perfil SD-WAN', () => {
+  const { MODELS } = require('../server/seed/legacyData/cisco.js');
+  const m = MODELS.find((x) => /C8355-G2/.test(x.id));
+
+  // La ficha oficial de la serie 8300 SI publica un SD-WAN propio para este modelo. Mientras
+  // estuvo en null, la pagina lo dimensionaba con los 20 Gbps de IPsec marcandolos «(cifra
+  // IPsec)»: 2,3 veces por encima de lo que el equipo hace en SD-WAN, en el unico perfil
+  // donde ese equipo se vende. Los dos campos que anclaron la fila siguen fijados aqui,
+  // porque si alguno cambiara, la cifra que entro con ellos dejaria de estar respaldada.
+  assert.strictEqual(m.sdwan, 8700);
+  assert.strictEqual(m.fwd, 38000);
+  assert.strictEqual(m.ipsec, 20000);
+  assert.ok(m.sdwan < m.ipsec, 'inspeccionar cuesta capacidad: el SD-WAN no puede superar al IPsec');
+
+  // Y su alimentacion: la ficha rotula la fila «Power Supply (Default - Dual PSU)» y el panel
+  // trae entrada doble, asi que el `false` que este catalogo traia era falso. Los 45 W si son
+  // un «Typical Power Consumption», que es lo unico que admite psu.watts.
+  assert.strictEqual(m.redund, true);
+  assert.strictEqual(m.psu.watts, 45);
 });

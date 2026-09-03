@@ -256,7 +256,7 @@
     if (psu.watts != null) filas.push(['Consumo típico', `${psu.watts} W`]);
     if (psu.tipo) filas.push(['Tipo de fuente', esc(psu.tipo)]);
     if (psu.volts) filas.push(['Rango de entrada', esc(psu.volts)]);
-    if (psu.amps) filas.push(['Salida', esc(psu.amps)]);
+    if (psu.amps) filas.push(['Corriente', esc(psu.amps)]);
     const nota = psu.texto
       ? esc(psu.texto)
       : (redund == null ? 'Confirmar en el datasheet del fabricante antes de comprometerlo en la propuesta.' : undefined);
