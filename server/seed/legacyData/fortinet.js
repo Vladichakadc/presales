@@ -42,16 +42,22 @@
 // 4200F, 4400F, 4800F), se transcribio el valor BASE — el mismo criterio que ya usa `sess`,
 // documentado arriba — nunca el que exige licencia adicional.
 //
-// Los 5 modelos restantes (100F, 200F, 400F, 401F, 600F) quedan en null porque no estan en
-// este documento: el Product Matrix es un "Top Selling Models Matrix", un subconjunto
-// curado del catalogo completo, y esos cuatro SKUs no aparecen en ninguna de sus paginas
-// (ver la nota de la linea 44 mas abajo). null no es "no tiene limite": la pagina lo declara
-// como dato ausente y no lo usa para filtrar.
+// 2026-09-03: 3 modelos mas, de 53 a 56 de 58. Los 5 que faltaban no estaban en el Product
+// Matrix -que es un "Top Selling Models Matrix", un subconjunto curado-, pero SI en las fichas
+// por serie. `.github/workflows/traer-fortinet-datasheets.yml` bajo las de 400F y 600F (URL
+// confirmadas por busqueda; las de 100F y 200F se probaron por patron y dieron 404, reportado
+// y no dado por bueno), se leyeron a mano en su version renderizada y pasaron por
+// `npm run cps`: 400F/401F 500.000 y 600F 550.000, todas con su Concurrent Sessions casando
+// con el `sess` ya verificado -7,8 M y 8 M- ademas de ips, ngfw, tp y vpn. Sin un rechazo.
+//
+// Quedan 100F y 200F en null: no es bloqueo de acceso ni falta de documento, es que su ficha
+// por serie no esta en la URL que sigue el patron del resto. null no es "no tiene limite": la
+// pagina lo declara como dato ausente y no lo usa para filtrar.
 // RAM por modelo NO existe en el Product Matrix: ese documento publica throughput por capa,
 // sesiones, cps, interfaces y consumo, no memoria. Fortinet no publica la RAM como
 // especificacion de dimensionamiento — el proxy de la capacidad de memoria es `sess`.
 //
-// PROCEDENCIA DE `redund` / `psu` (pendiente 15) — 2026-09-03, 3 de 58 modelos.
+// PROCEDENCIA DE `redund` / `psu` (pendiente 15) — 2026-09-03, 6 de 58 modelos.
 // El Product Matrix no publica alimentacion por modelo, asi que este dato vive en documentos
 // aparte del fabricante. `.github/workflows/traer-fortinet-psu.yml` los trajo desde un
 // ejecutor de Actions -fortinet.com no responde 403 al ejecutor, a diferencia de HPE y Huawei,
@@ -65,7 +71,18 @@
 // Los 2.500 W del 7081F son CAPACIDAD de cada fuente, no consumo del equipo, y por eso NO van
 // en `psu.watts`: la ficha rotula ese campo «Consumo tipico», asi que ponerlo ahi seria una
 // cifra falsa con apariencia correcta. Va en el texto, que es donde se puede decir que mide.
-// Los otros 55 modelos siguen sin dato y en `undefined` -«el catalogo no lo dice»-, nunca en
+// Y las fichas por serie de 400F y 600F, bajadas el mismo dia para completar `cps`, traian
+// ademas la tabla "Dimensions and Power" entera:
+//   · 400F  — «Redundant Power Supplies (Hot Swappable): Default dual AC PSU for 1+1
+//     Redundancy», consumo medio 154,8 W (maximo 189,2 W), 100-240 V AC, 6 A.
+//   · 401F  — lo mismo, con 161,1 W / 196,9 W: algo mas por el SSD.
+//   · 600F  — «Redundant Power Supplies (Hot Swappable): Yes (comes with 2PSU default)»,
+//     consumo medio 169 W (maximo 255 W), 100-240 V AC, 6 A a 100 V.
+// En estos tres `watts` SI es consumo -el documento publica "AC Power Consumption (Average)",
+// que es justo lo que la ficha rotula- a diferencia del 7081F, donde la unica cifra en vatios
+// es capacidad por fuente.
+//
+// Los otros 52 modelos siguen sin dato y en `undefined` -«el catalogo no lo dice»-, nunca en
 // `false`, que seria inventar un dato negativo.
 // El salto fw -> tp es de un orden de magnitud (ej. 90G: 28 Gbps -> 2.2 Gbps). Ahí está el
 // error de preventa más común con FortiGate.
@@ -137,11 +154,14 @@ const MODELS=[
   // .github/workflows/traer-fortinet-psu.yml. Frase literal: «the device has two power
   // supplies that can be connected to different power sources». El documento no publica
   // consumo, asi que `watts` se queda fuera en vez de rellenarse a ojo.
-  {id:'FortiGate 100F', seg:'Sucursal med', fw:20000, ips:2600, ngfw:1600, tp:1000, vpn:11500, sess:1500000, cps:null, ifaces:'22 GE + 2x10GE SFP+', redund:true, psu:{tipo:'dos fuentes internas', texto:'Dos fuentes que se pueden conectar a tomas de energía distintas, para que el equipo siga en línea si una falla. Fortinet no publica el consumo de este modelo.'}},
+  {id:'FortiGate 100F', seg:'Sucursal med', fw:20000, ips:2600, ngfw:1600, tp:1000, vpn:11500, sess:1500000, cps:null, ifaces:'22 GE + 2x10GE SFP+', redund:true, psu:{tipo:'dos fuentes internas', texto:'Dos fuentes que se pueden conectar a tomas de energía distintas, para que el equipo siga en línea si una falla. El articulo leido no trae consumo; su datasheet por serie no se pudo abrir (la URL probada dio 404), asi que el dato queda pendiente, no descartado.'}},
   {id:'FortiGate 200F', seg:'Sucursal gde', fw:27000, ips:5000, ngfw:3500, tp:3000, vpn:13000, sess:3000000, cps:null, ifaces:'16 GE + 4x10GE + 4 SFP'},
-  {id:'FortiGate 400F', seg:'Campus / Agr', fw:80000, ips:12000, ngfw:10000, tp:9000, vpn:55000, sess:7800000, cps:null, ifaces:'8 GE + 8 SFP + 8x10GE'},
-  {id:'FortiGate 401F', seg:'Campus / Agr', fw:80000, ips:12000, ngfw:10000, tp:9000, vpn:55000, sess:7800000, cps:null, ifaces:'8 GE + 8 SFP + 8x10GE + 960GB SSD onboard'},
-  {id:'FortiGate 600F', seg:'Campus / DC edge', fw:139000, ips:14000, ngfw:11500, tp:10500, vpn:55000, sess:8000000, cps:null, ifaces:'4x25GE + 16x10GE'},
+  // Los tres siguientes, leidos de sus datasheets por serie (2026-09-03). Aqui `watts` SI es
+  // consumo: el documento publica "AC Power Consumption (Average / Maximum)", que es lo que la
+  // ficha rotula «Consumo tipico» -a diferencia de los 2.500 W del 7081F, que son capacidad.
+  {id:'FortiGate 400F', seg:'Campus / Agr', fw:80000, ips:12000, ngfw:10000, tp:9000, vpn:55000, sess:7800000, cps:500000, ifaces:'8 GE + 8 SFP + 8x10GE', redund:true, psu:{watts:154.8, tipo:'doble fuente AC de serie, intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'6 A maximo', texto:'Consumo medio 154,8 W y maximo 189,2 W. Hay variante DC (48-60 V, 12 A).'}},
+  {id:'FortiGate 401F', seg:'Campus / Agr', fw:80000, ips:12000, ngfw:10000, tp:9000, vpn:55000, sess:7800000, cps:500000, ifaces:'8 GE + 8 SFP + 8x10GE + 960GB SSD onboard', redund:true, psu:{watts:161.1, tipo:'doble fuente AC de serie, intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'6 A maximo', texto:'Consumo medio 161,1 W y maximo 196,9 W — algo por encima del 400F por el SSD. Hay variante DC (48-60 V, 12 A).'}},
+  {id:'FortiGate 600F', seg:'Campus / DC edge', fw:139000, ips:14000, ngfw:11500, tp:10500, vpn:55000, sess:8000000, cps:550000, ifaces:'4x25GE + 16x10GE', redund:true, psu:{watts:169, tipo:'doble fuente intercambiable en caliente (2 PSU de serie)', volts:'100-240 V AC, 50/60 Hz', amps:'6 A a 100 V', texto:'Consumo medio 169 W y maximo 255 W.'}},
   {id:'FortiGate 1000F', seg:'DC edge', fw:198000, ips:19000, ngfw:15000, tp:13000, vpn:55000, sess:7500000, cps:650000, ifaces:'4x100GE + 16x25GE + 16x10GE'},
   {id:'FortiGate 1001F', seg:'DC edge', fw:198000, ips:19000, ngfw:15000, tp:13000, vpn:55000, sess:7500000, cps:650000, ifaces:'4x100GE + 16x25GE + 16x10GE + 960GB SSD onboard'},
   // ─── Serie F — Alta gama / Datacenter / Carrier ────────────────

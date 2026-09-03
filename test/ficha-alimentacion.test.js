@@ -90,15 +90,21 @@ test('Fortinet: solo tienen alimentacion los modelos leidos de un documento ofic
   const { MODELS } = require('../server/seed/legacyData/fortinet.js');
   const conDato = MODELS.filter((m) => m.redund !== undefined).map((m) => m.id);
   assert.deepStrictEqual(conDato.sort(),
-    ['FortiGate 100F', 'FortiGate 7081F', 'FortiGate 7121F']);
+    ['FortiGate 100F', 'FortiGate 400F', 'FortiGate 401F', 'FortiGate 600F',
+      'FortiGate 7081F', 'FortiGate 7121F']);
 
   // El resto en `undefined`: «el catalogo no lo dice» nunca se degrada a un «no» inventado.
   assert.strictEqual(MODELS.filter((m) => m.redund === false).length, 0);
 
-  // Ninguno de los tres declara consumo: los 2500 W del 7081F son capacidad por fuente, y
-  // `psu.watts` lo rotula la ficha como «Consumo tipico». Confundirlos seria una cifra falsa
-  // con apariencia correcta, que es justo lo que este catalogo evita.
-  for (const m of MODELS.filter((x) => x.psu)) {
-    assert.strictEqual(m.psu.watts, undefined, `${m.id}: no hay consumo publicado que declarar`);
+  // `psu.watts` solo donde la fuente publica CONSUMO. Los 2.500 W del 7081F son capacidad por
+  // fuente y la ficha rotula ese campo «Consumo tipico»: confundirlos seria una cifra falsa con
+  // apariencia correcta. Los datasheets por serie si publican "AC Power Consumption (Average)",
+  // y esos si entran.
+  const conWatts = MODELS.filter((m) => m.psu && m.psu.watts != null).map((m) => m.id);
+  assert.deepStrictEqual(conWatts.sort(),
+    ['FortiGate 400F', 'FortiGate 401F', 'FortiGate 600F']);
+  for (const id of ['FortiGate 7081F', 'FortiGate 7121F', 'FortiGate 100F']) {
+    const m = MODELS.find((x) => x.id === id);
+    assert.strictEqual(m.psu.watts, undefined, `${id}: su fuente no publica consumo, no se declara`);
   }
 });

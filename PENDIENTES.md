@@ -95,7 +95,7 @@ de datos— está en [`IMPORTAR-CATALOGO.md`](IMPORTAR-CATALOGO.md).
 
 | # | Qué falta | Cómo se cierra | Bloqueo |
 |---|---|---|---|
-| ~~2~~ | ~~`cps` en 37 de los 58 FortiGate~~ **Resuelto (2026-09-02)** — ver *Cerrado recientemente*. Quedan 5 modelos en `null` (100F/200F/400F/401F/600F) que no están en el documento, no un bloqueo de acceso. | — | resuelto vía Actions |
+| ~~2~~ | ~~`cps` en 37 de los 58 FortiGate~~ **Resuelto (2026-09-02)**, y ampliado el 2026-09-03 de 53 a **56 de 58** leyendo las fichas por serie de 400F y 600F. Quedan 100F y 200F, cuyas fichas no están en la URL que sigue el patrón del resto (404, reportado). | — | resuelto vía Actions |
 | 3 | **PDFs de datasheets de Aruba.** `public/datasheets/` va vacío a propósito; la página enlaza la URL de HPE mientras no esté el archivo local. **Ejecutado por primera vez el 2026-09-02** (ver *Cerrado recientemente* — «investigado», no «cerrado»): de 24 documentos, HPE devolvió 21 fallos (403 o timeout) al ejecutor de GitHub Actions y solo 1 PDF de bajo valor se descargó — un bloqueo del lado de HPE, distinto del de este entorno. **Ese único PDF (`sd-wan-ordering-guide.pdf`) ya está commiteado** (2026-09-02): se había quedado fuera de git, en un clon suelto, así que producción seguía enlazando la URL de HPE aunque el archivo existiera en disco. Cobertura local real: **1 de 24**; los otros 23 siguen enlazando a HPE. Y aunque hubiera bajado los 24, el paso de abrir el PR falló aparte: este repositorio tiene desactivado el permiso «Allow GitHub Actions to create pull requests» (ajuste de GitHub, no de este workflow). | El workflow (`datasheets-aruba.yml`) está listo y el permiso de PR se activa en un clic (Settings → Actions → General → Workflow permissions), pero incluso con eso resuelto, HPE sigue bloqueando casi todo el lote — hace falta una máquina con navegador real, igual que Huawei. **2026-09-03: se supo por qué** — `buy.hpe.com` devuelve un "Access Denied" de **Akamai** al ejecutor de Actions (ver *Cerrado recientemente*), así que no es límite de ritmo sino la defensa anti-automatización del fabricante. Espaciar las peticiones en `descargar-datasheets.js` la ablanda, no la abre. | HPE bloquea con Akamai (defensa del fabricante, no del proxy de este entorno); el repositorio tampoco permite que Actions abra PRs |
 | 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ` y las 23 AR no traen `mpps`. El motor no inventa: muestra lo que hay. | **El importador ya existe**: `npm run huawei -- --check` para ver los huecos, `npm run huawei -- specs.xlsx` para las cifras y `npm run huawei -- eox.csv --eol` para el fin de venta. Falta el dato, no la herramienta — **y, a diferencia de Fortinet/Aruba, esta vez no se cierra vía Actions** (ver *Cerrado recientemente*, investigación 2026-09-02): hace falta una persona con navegador real, y sesión de Huawei si hace falta el detalle fino de Info-Finder. | `e.huawei.com`, `support.huawei.com` bloquean el navegador automatizado (Akamai); `info.support.huawei.com` exige sesión |
 | 4 | **Comprobar el sitio en vivo tras desplegar — parcial (2026-09-02), ver *Cerrado recientemente*.** Se verifica que el deploy llegue a SUCCESS y que los logs muestren `[seed]` y `Presales corriendo en`; ahora además `.github/workflows/sonda-produccion.yml` confirma desde fuera de este entorno que el dominio público responde de verdad (`/salud` y `/login`, sin sesión). Lo que sigue sin cubrirse es la revisión visual de la pantalla tocada: sin la contraseña real de producción, ningún workflow puede entrar más allá de esas dos rutas públicas. | Disparar `sonda-produccion.yml` a mano para la confirmación externa; abrir `presales.up.railway.app` con sesión y revisar la pantalla tocada sigue siendo de una persona. | `presales.up.railway.app` (bloqueado solo desde este entorno de edición, no desde GitHub Actions) |
@@ -166,9 +166,9 @@ Cobertura actual por herramienta:
 15. **Alimentación eléctrica: cobertura real, no completa.** La nueva sección «Alimentación
     eléctrica» de la ficha (agosto 2026) solo tiene dato donde el propio catálogo ya traía
     una frase publicada — Cisco 21/21 (ya existía), Huawei 17/40, MikroTik 3/15, Aruba 2/21,
-    Juniper 1/12 SRX, **Fortinet 3/58** (100F, 7081F y 7121F, leídos el 2026-09-03 de
-    documentos oficiales traídos vía Actions — ver *Cerrado recientemente*). El resto queda
-    `null` y la ficha lo declara sin
+    Juniper 1/12 SRX, **Fortinet 6/58** (100F, 400F, 401F, 600F, 7081F y 7121F, leídos el
+    2026-09-03 de documentos oficiales traídos vía Actions — ver *Cerrado recientemente*). El
+    resto queda `null` y la ficha lo declara sin
     rodeos. Esto **no es lo mismo** que los bloqueados por egreso de más arriba: el Product
     Matrix de Fortinet, el material de Juniper y el datasheet abreviado de MikroTik que este
     catálogo ya usa **no traen** consumo eléctrico por modelo — no es una tabla que falte
@@ -214,7 +214,7 @@ Cobertura actual por herramienta:
 
 ## Cerrado recientemente
 
-### Fortinet sí se deja leer, y el pendiente 15 arranca: 3 de 58 (2026-09-03)
+### Fortinet sí se deja leer: `cps` a 56/58 y alimentación a 6/58 (2026-09-03)
 
 El mismo día en que HPE y Huawei quedaron confirmados como pared de Akamai, Fortinet demostró
 ser lo contrario: `.github/workflows/traer-fortinet-psu.yml` pidió cuatro documentos oficiales
@@ -242,7 +242,22 @@ verdad, trata de las series 100/101E y 200/201E — modelos que ni siquiera est�
 catálogo. Cita mal asignada, retirada. Del «hasta 8 fuentes» del 7121F tampoco hay rastro en
 el documento citado, así que no se registró el número máximo.
 
-Los otros 55 modelos siguen en `undefined` («el catálogo no lo dice»), nunca en `false`.
+**Y de paso cayó el pendiente 2 casi entero.** Los 5 modelos sin `cps` no estaban en el
+Product Matrix, pero sí en las fichas por serie: `traer-fortinet-datasheets.yml` bajó las de
+400F y 600F (URL confirmadas por búsqueda) y ahí estaba «New Sessions/Second (TCP)» — 500.000
+para 400F/401F y 550.000 para el 600F. Pasaron por `npm run cps` sin un solo rechazo, con
+`sess` (7,8 M y 8 M), `ips`, `ngfw`, `tp` y `vpn` casando todos. **53 → 56 de 58.**
+
+Las URL de 100F y 200F se probaron siguiendo el patrón del sitio y devolvieron **404** — y eso
+es exactamente lo que el workflow marcaba como «no confirmada»: se reportó y no se guardó nada,
+en vez de dar por bueno un HTML con extensión `.pdf`. Esos dos siguen en `null`.
+
+Esas mismas fichas traían la tabla «Dimensions and Power» completa, así que la alimentación
+subió a 6 de 58: 400F (154,8 W medios, doble fuente AC 1+1), 401F (161,1 W, algo más por el
+SSD) y 600F (169 W, dos fuentes de serie). Aquí `watts` **sí** es consumo — el documento
+publica «AC Power Consumption (Average)», que es justo lo que la ficha rotula.
+
+Los otros 52 modelos siguen en `undefined` («el catálogo no lo dice»), nunca en `false`.
 
 ### HPE también es Akamai, y Firecrawl no es la salida (2026-09-03)
 
