@@ -1,0 +1,91 @@
+[
+  {
+    "archivo": "ds-srx1600.pdf",
+    "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx1600-firewall-datasheet.pdf",
+    "status": 200,
+    "kb": 473,
+    "esPdf": true
+  },
+  {
+    "archivo": "ds-srx2300.pdf",
+    "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx2300-firewall-datasheet.pdf",
+    "status": 200,
+    "kb": 482,
+    "esPdf": true
+  },
+  {
+    "archivo": "ds-srx4300.pdf",
+    "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx4300-firewall-datasheet.pdf",
+    "status": 200,
+    "kb": 470,
+    "esPdf": true
+  },
+  {
+    "archivo": "ds-srx4700.pdf",
+    "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx4700-firewall-datasheet.pdf",
+    "error": "fetch failed"
+  },
+  {
+    "archivo": "ds-srx4100.pdf",
+    "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx4100-firewall-datasheet.pdf",
+    "status": 404,
+    "kb": 685,
+    "esPdf": false
+  },
+  {
+    "archivo": "ds-srx4200.pdf",
+    "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx4200-firewall-datasheet.pdf",
+    "status": 404,
+    "kb": 685,
+    "esPdf": false
+  },
+  {
+    "archivo": "ds-srx300-line.pdf",
+    "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx300-line-firewall-datasheet.pdf",
+    "status": 404,
+    "kb": 685,
+    "esPdf": false
+  },
+  {
+    "archivo": "nokia-7220-ixr-d.pdf",
+    "url": "https://www.nokia.com/asset/f/207599/",
+    "status": 200,
+    "kb": 799,
+    "esPdf": true
+  },
+  {
+    "archivo": "nokia-7220-ixr-d-alt.pdf",
+    "url": "https://www.nokia.com/asset/207599/",
+    "status": 200,
+    "kb": 13,
+    "esPdf": false
+  },
+  {
+    "archivo": "nokia-7750-sr-1x.pdf",
+    "url": "https://www.nokia.com/asset/f/212738/",
+    "status": 200,
+    "kb": 987,
+    "esPdf": true
+  },
+  {
+    "archivo": "nokia-7750-sr-s.pdf",
+    "url": "https://www.nokia.com/asset/f/205421/",
+    "status": 200,
+    "kb": 1409,
+    "esPdf": true
+  },
+  {
+    "archivo": "nokia-7250-ixr-e.pdf",
+    "url": "https://www.nokia.com/asset/f/206825/",
+    "status": 200,
+    "kb": 903,
+    "esPdf": true
+  },
+  {
+    "archivo": "nokia-7250-ixr.pdf",
+    "url": "https://www.nokia.com/asset/f/214227/",
+    "status": 200,
+    "kb": 308,
+    "esPdf": true
+  }
+]
