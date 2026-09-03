@@ -166,9 +166,9 @@ Cobertura actual por herramienta:
 15. **Alimentación eléctrica: cobertura real, no completa.** La nueva sección «Alimentación
     eléctrica» de la ficha (agosto 2026) solo tiene dato donde el propio catálogo ya traía
     una frase publicada — Cisco 21/21 (ya existía), Huawei 17/40, MikroTik 3/15, Aruba 2/21,
-    Juniper 1/12 SRX, **Fortinet 6/58** (100F, 400F, 401F, 600F, 7081F y 7121F, leídos el
-    2026-09-03 de documentos oficiales traídos vía Actions — ver *Cerrado recientemente*). El
-    resto queda `null` y la ficha lo declara sin
+    Juniper 1/12 SRX, **Fortinet 37/58** (2026-09-03, leyendo 16 fichas por serie más los
+    System Guide de los chasis — ver *Cerrado recientemente*). El resto queda `null` y la
+    ficha lo declara sin
     rodeos. Esto **no es lo mismo** que los bloqueados por egreso de más arriba: el Product
     Matrix de Fortinet, el material de Juniper y el datasheet abreviado de MikroTik que este
     catálogo ya usa **no traen** consumo eléctrico por modelo — no es una tabla que falte
@@ -213,6 +213,38 @@ Cobertura actual por herramienta:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Pendiente 15: Fortinet de 6 a 37 de 58, y un cuarto estado que faltaba (2026-09-03)
+
+Segunda tanda del mismo día, con el patrón ya probado: `WebSearch` localizó el nombre real de
+las fichas —Fortinet usa **dos** convenciones, `fortigate-<serie>-series.pdf` y
+`fortigate-fortiwifi-<serie>-series.pdf`, y cuál toca no se adivina—, un workflow probó las dos
+por serie desde un ejecutor de Actions, y las 16 que existen se leyeron **página por página en
+su versión renderizada**. 31 modelos nuevos con dato.
+
+**Lo que apareció leyendo, y que ninguna búsqueda habría dado:**
+
+- **`redund` necesitaba un cuarto estado.** El 80F y el 90G publican «Powered by up to 2
+  External DC Power Adapters (**1 adapter included**)»: salen de fábrica con una fuente y
+  admiten la segunda. `true` habría prometido algo que no viene en la caja y `false` habría
+  negado una redundancia que el equipo sí soporta — las dos etiquetas mentían. `ficha.js` gana
+  `'opcional'` («Opcional — admite una segunda fuente, no viene de serie»), por el mismo motivo
+  por el que ya existía el tercer estado. Reparto final: 24 `true`, 4 `'opcional'`, 9 `false`.
+- **«Doble fuente» no significa lo mismo en toda la línea.** El 200G, el 400G y el 700G traen
+  las dos de serie pero **no se cambian en caliente**; el 900G, el 1000F, el 3000G y el 3500G
+  sí. En una propuesta con SLA de disponibilidad eso no es un detalle.
+- **El 3800G exige 200-240 V** y no arranca a 100 V como el resto de la línea. Es una condición
+  de instalación que se descubre en obra si no está en la ficha.
+
+**Y dos defectos propios, corregidos antes de desplegar**: la nota escribía «19,9 W» mientras
+la fila de arriba pintaba «19.9 W» —dos separadores decimales en el mismo panel—, y «1.496 W»
+era directamente ambiguo en un catálogo que declara el punto como decimal (se leería 1,496 W).
+La prosa va ahora sin separador de millares, igual que la fila.
+
+Los 21 restantes (70F, 200F, 1800F, 2600F, 3000F, 3200F, 3500F, 3700F, 4200F, 4400F, 4800F y
+sus variantes con SSD) siguen en `undefined`: sus fichas devolvieron **404 en las dos formas de
+URL**, así que falta el documento, no la voluntad de leerlo. La sonda se retiró tras aplicar el
+dato; queda publicada la rama `fuente/fortinet-serie`.
 
 ### Fortinet sí se deja leer: `cps` a 56/58 y alimentación a 6/58 (2026-09-03)
 

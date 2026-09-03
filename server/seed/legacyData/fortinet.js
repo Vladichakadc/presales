@@ -57,7 +57,7 @@
 // sesiones, cps, interfaces y consumo, no memoria. Fortinet no publica la RAM como
 // especificacion de dimensionamiento — el proxy de la capacidad de memoria es `sess`.
 //
-// PROCEDENCIA DE `redund` / `psu` (pendiente 15) — 2026-09-03, 6 de 58 modelos.
+// PROCEDENCIA DE `redund` / `psu` (pendiente 15) — 2026-09-03, 37 de 58 modelos.
 // El Product Matrix no publica alimentacion por modelo, asi que este dato vive en documentos
 // aparte del fabricante. `.github/workflows/traer-fortinet-psu.yml` los trajo desde un
 // ejecutor de Actions -fortinet.com no responde 403 al ejecutor, a diferencia de HPE y Huawei,
@@ -74,16 +74,36 @@
 // Y las fichas por serie de 400F y 600F, bajadas el mismo dia para completar `cps`, traian
 // ademas la tabla "Dimensions and Power" entera:
 //   · 400F  — «Redundant Power Supplies (Hot Swappable): Default dual AC PSU for 1+1
-//     Redundancy», consumo medio 154,8 W (maximo 189,2 W), 100-240 V AC, 6 A.
-//   · 401F  — lo mismo, con 161,1 W / 196,9 W: algo mas por el SSD.
+//     Redundancy», consumo medio 154.8 W (maximo 189.2 W), 100-240 V AC, 6 A.
+//   · 401F  — lo mismo, con 161.1 W / 196.9 W: algo mas por el SSD.
 //   · 600F  — «Redundant Power Supplies (Hot Swappable): Yes (comes with 2PSU default)»,
 //     consumo medio 169 W (maximo 255 W), 100-240 V AC, 6 A a 100 V.
 // En estos tres `watts` SI es consumo -el documento publica "AC Power Consumption (Average)",
 // que es justo lo que la ficha rotula- a diferencia del 7081F, donde la unica cifra en vatios
 // es capacidad por fuente.
 //
-// Los otros 52 modelos siguen sin dato y en `undefined` -«el catalogo no lo dice»-, nunca en
-// `false`, que seria inventar un dato negativo.
+// Y despues se leyeron 16 fichas por serie mas (`traer-fortinet-serie.yml`, retirada tras
+// aplicar el dato), que subieron la cobertura de 6 a 37. La tabla "Dimensions and Power" de
+// cada ficha trae "AC Power Consumption (Average / Maximum)" -consumo real, asi que va en
+// `watts`- mas el rango de entrada, la corriente maxima y la linea de fuentes redundantes.
+//
+// EL CUARTO ESTADO DE `redund` SALIO DE AQUI. Leyendo estas fichas aparecio un caso que los
+// tres anteriores no sabian decir: el 80F y el 90G publican «Powered by up to 2 External DC
+// Power Adapters (1 adapter included)» -salen de fabrica con una fuente y admiten la segunda-.
+// `true` habria prometido algo que no viene en la caja y `false` habria negado una redundancia
+// que el equipo si soporta, asi que `ficha.js` gano el valor 'opcional', por el mismo motivo
+// por el que ya tenia el «no lo dice». Reparto: 24 en `true`, 4 en 'opcional' (80F, 81F, 90G,
+// 91G) y 9 en `false` (los de sobremesa con adaptador unico, que el documento declara sin
+// segunda fuente -eso es un hecho leido, no una ausencia de dato).
+//
+// Detalles que solo aparecen leyendo, y que cambian una instalacion: el 3800G exige 200-240 V
+// y no arranca a 100 V como el resto de la linea; el 200G, el 400G y el 700G traen las dos
+// fuentes de serie pero NO se cambian en caliente, al contrario que el 900G o el 3000G.
+//
+// Los 21 modelos restantes (70F/71F, 200F, 1800F, 2600F, 3000F, 3200F, 3500F, 3700F, 4200F,
+// 4400F, 4800F y sus variantes con SSD) siguen en `undefined` -«el catalogo no lo dice»-,
+// nunca en `false`: sus fichas por serie devolvieron 404 en las dos formas de URL que usa el
+// sitio, asi que falta el documento, no la voluntad de leerlo.
 // El salto fw -> tp es de un orden de magnitud (ej. 90G: 28 Gbps -> 2.2 Gbps). Ahí está el
 // error de preventa más común con FortiGate.
 // Corrige varios valores que no coincidían con el datasheet oficial (incl. 3000F y 7081F, que tenían ips/ngfw/ssl/vpn de otro modelo — 3200F y 7121F respectivamente — copiados por error) y agrega los modelos del datasheet que faltaban en el catálogo (700G, 3000G, 3500G, 3800G, 70F, 3200F, 3700F, 4200F).
@@ -116,39 +136,39 @@
 // exacto (ej. 128GB, 2x 960GB, 2x 1.92TB) queda documentado en el campo ifaces de cada modelo.
 const MODELS=[
   // ─── Serie G (nueva generación SP5 ASIC) ───────────────────────
-  {id:'FortiGate 30G', seg:'SOHO / Teletrabajo', fw:4000, ips:800, ngfw:570, tp:500, vpn:3500, sess:600000, cps:30000, ifaces:'4 GE RJ45'},
-  {id:'FortiGate 31G', seg:'SOHO / Teletrabajo', fw:4000, ips:800, ngfw:570, tp:500, vpn:3500, sess:600000, cps:30000, ifaces:'4 GE RJ45 + 30GB SSD onboard'},
-  {id:'FortiGate 50G', seg:'SOHO / Sucursal peq', fw:5000, ips:2250, ngfw:1250, tp:1100, vpn:4500, sess:720000, cps:85000, ifaces:'5 GE + variantes SFP/5G'},
-  {id:'FortiGate 51G', seg:'SOHO / Sucursal peq', fw:5000, ips:2250, ngfw:1250, tp:1100, vpn:4500, sess:720000, cps:85000, ifaces:'5 GE + variantes SFP/5G + 64GB SSD onboard'},
-  {id:'FortiGate 70G', seg:'Sucursal peq', fw:10000, ips:2500, ngfw:1500, tp:1300, vpn:7100, sess:1400000, cps:100000, ifaces:'8 GE + variantes Wi-Fi/5G'},
-  {id:'FortiGate 71G', seg:'Sucursal peq', fw:10000, ips:2500, ngfw:1500, tp:1300, vpn:7100, sess:1400000, cps:100000, ifaces:'8 GE + variantes Wi-Fi/5G + 64GB SSD onboard'},
-  {id:'FortiGate 90G', seg:'Sucursal med', fw:28000, ips:4500, ngfw:2500, tp:2200, vpn:25000, sess:3000000, cps:124000, ifaces:'8 GE + 2x10GE SFP+'},
-  {id:'FortiGate 91G', seg:'Sucursal med', fw:28000, ips:4500, ngfw:2500, tp:2200, vpn:25000, sess:3000000, cps:124000, ifaces:'8 GE + 2x10GE SFP+ + 120GB SSD onboard'},
-  {id:'FortiGate 120G', seg:'Sucursal gde', fw:39000, ips:5300, ngfw:3100, tp:2800, vpn:35000, sess:3000000, cps:140000, ifaces:'GE + SFP/SFP+ (alta densidad)'},
-  {id:'FortiGate 121G', seg:'Sucursal gde', fw:39000, ips:5300, ngfw:3100, tp:2800, vpn:35000, sess:3000000, cps:140000, ifaces:'GE + SFP/SFP+ (alta densidad) + 480GB SSD onboard'},
-  {id:'FortiGate 200G', seg:'Campus / Agr', fw:39000, ips:9000, ngfw:7000, tp:6000, vpn:36000, sess:11000000, cps:400000, ifaces:'10GE SFP+ + GE SFP + GE RJ45'},
-  {id:'FortiGate 201G', seg:'Campus / Agr', fw:39000, ips:9000, ngfw:7000, tp:6000, vpn:36000, sess:11000000, cps:400000, ifaces:'10GE SFP+ + GE SFP + GE RJ45 + 480GB SSD onboard'},
+  {id:'FortiGate 30G', seg:'SOHO / Teletrabajo', fw:4000, ips:800, ngfw:570, tp:500, vpn:3500, sess:600000, cps:30000, ifaces:'4 GE RJ45', redund:false, psu:{watts:6.8, tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50/60 Hz', amps:'0,11 A @100 V · 0,055 A @240 V', texto:'Consumo medio 6.8 W y máximo 8.2 W. El datasheet no menciona una segunda fuente para este modelo.'}},
+  {id:'FortiGate 31G', seg:'SOHO / Teletrabajo', fw:4000, ips:800, ngfw:570, tp:500, vpn:3500, sess:600000, cps:30000, ifaces:'4 GE RJ45 + 30GB SSD onboard', redund:false, psu:{watts:8.1, tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50/60 Hz', amps:'0,17 A @110 V · 0,085 A @240 V', texto:'Consumo medio 8.1 W y máximo 9.3 W. El datasheet no menciona una segunda fuente para este modelo.'}},
+  {id:'FortiGate 50G', seg:'SOHO / Sucursal peq', fw:5000, ips:2250, ngfw:1250, tp:1100, vpn:4500, sess:720000, cps:85000, ifaces:'5 GE + variantes SFP/5G', redund:false, psu:{watts:8.3, tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50/60 Hz', amps:'0,4 A @100 V · 0,2 A @240 V', texto:'Consumo medio 8.3 W y máximo 8.9 W. El datasheet no menciona una segunda fuente para este modelo.'}},
+  {id:'FortiGate 51G', seg:'SOHO / Sucursal peq', fw:5000, ips:2250, ngfw:1250, tp:1100, vpn:4500, sess:720000, cps:85000, ifaces:'5 GE + variantes SFP/5G + 64GB SSD onboard', redund:false, psu:{watts:8.3, tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50/60 Hz', amps:'0,4 A @100 V · 0,2 A @240 V', texto:'Consumo medio 8.3 W y máximo 8.9 W. El datasheet no menciona una segunda fuente para este modelo.'}},
+  {id:'FortiGate 70G', seg:'Sucursal peq', fw:10000, ips:2500, ngfw:1500, tp:1300, vpn:7100, sess:1400000, cps:100000, ifaces:'8 GE + variantes Wi-Fi/5G', redund:false, psu:{watts:12.3, tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50/60 Hz', amps:'0,4 A @100 V · 0,2 A @240 V', texto:'Consumo medio 12.3 W y máximo 12.8 W. El datasheet no menciona una segunda fuente para este modelo.'}},
+  {id:'FortiGate 71G', seg:'Sucursal peq', fw:10000, ips:2500, ngfw:1500, tp:1300, vpn:7100, sess:1400000, cps:100000, ifaces:'8 GE + variantes Wi-Fi/5G + 64GB SSD onboard', redund:false, psu:{watts:13.4, tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50/60 Hz', amps:'0,4 A @100 V · 0,2 A @240 V', texto:'Consumo medio 13.4 W y máximo 14.1 W. El datasheet no menciona una segunda fuente para este modelo.'}},
+  {id:'FortiGate 90G', seg:'Sucursal med', fw:28000, ips:4500, ngfw:2500, tp:2200, vpn:25000, sess:3000000, cps:124000, ifaces:'8 GE + 2x10GE SFP+', redund:'opcional', psu:{watts:19.9, tipo:'hasta dos adaptadores externos (viene uno)', volts:'100-240 V AC, 50/60 Hz', amps:'0,4 A @115 V · 0,2 A @230 V', texto:'Consumo medio 19.9 W y máximo 20.53 W. Admite un segundo adaptador para redundancia, que no viene incluido.'}},
+  {id:'FortiGate 91G', seg:'Sucursal med', fw:28000, ips:4500, ngfw:2500, tp:2200, vpn:25000, sess:3000000, cps:124000, ifaces:'8 GE + 2x10GE SFP+ + 120GB SSD onboard', redund:'opcional', psu:{watts:22.4, tipo:'hasta dos adaptadores externos (viene uno)', volts:'100-240 V AC, 50/60 Hz', amps:'0,4 A @115 V · 0,2 A @230 V', texto:'Consumo medio 22.4 W y máximo 23.5 W. Admite un segundo adaptador para redundancia, que no viene incluido.'}},
+  {id:'FortiGate 120G', seg:'Sucursal gde', fw:39000, ips:5300, ngfw:3100, tp:2800, vpn:35000, sess:3000000, cps:140000, ifaces:'GE + SFP/SFP+ (alta densidad)', redund:true, psu:{watts:38, tipo:'doble fuente AC de serie, no intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'1,0 A @100 V · 0,5 A @240 V', texto:'Consumo medio 38 W y máximo 40 W. Las dos fuentes vienen de serie, pero no se cambian en caliente.'}},
+  {id:'FortiGate 121G', seg:'Sucursal gde', fw:39000, ips:5300, ngfw:3100, tp:2800, vpn:35000, sess:3000000, cps:140000, ifaces:'GE + SFP/SFP+ (alta densidad) + 480GB SSD onboard', redund:true, psu:{watts:43, tipo:'doble fuente AC de serie, no intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'1,0 A @100 V · 0,5 A @240 V', texto:'Consumo medio 43 W y máximo 47 W. Las dos fuentes vienen de serie, pero no se cambian en caliente.'}},
+  {id:'FortiGate 200G', seg:'Campus / Agr', fw:39000, ips:9000, ngfw:7000, tp:6000, vpn:36000, sess:11000000, cps:400000, ifaces:'10GE SFP+ + GE SFP + GE RJ45', redund:true, psu:{watts:145, tipo:'doble fuente AC de serie, no intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'2 A @100 V · 1,2 A @240 V', texto:'Consumo medio 145 W y máximo 175 W. Las dos fuentes vienen de serie, pero no se cambian en caliente.'}},
+  {id:'FortiGate 201G', seg:'Campus / Agr', fw:39000, ips:9000, ngfw:7000, tp:6000, vpn:36000, sess:11000000, cps:400000, ifaces:'10GE SFP+ + GE SFP + GE RJ45 + 480GB SSD onboard', redund:true, psu:{watts:145, tipo:'doble fuente AC de serie, no intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'2 A @100 V · 1,2 A @240 V', texto:'Consumo medio 145 W y máximo 176 W. Las dos fuentes vienen de serie, pero no se cambian en caliente.'}},
   // ─── Serie G — Alta gama / Datacenter / Carrier ────────────────
-  {id:'FortiGate 400G', seg:'Campus / DC edge', fw:164000, ips:25000, ngfw:14000, tp:13000, vpn:55000, sess:28000000, cps:580000, ifaces:'4x25GE SFP28 + 16x GE SFP + 5x GE RJ45'},
-  {id:'FortiGate 401G', seg:'Campus / DC edge', fw:164000, ips:25000, ngfw:14000, tp:13000, vpn:55000, sess:28000000, cps:580000, ifaces:'4x25GE SFP28 + 16x GE SFP + 5x GE RJ45 + 960GB SSD onboard'},
-  {id:'FortiGate 700G', seg:'DC edge / Enterprise', fw:164000, ips:38000, ngfw:29000, tp:26000, vpn:55000, sess:28000000, cps:700000, ifaces:'4x25GE SFP28 + 16x GE SFP + 5x GE RJ45'},
-  {id:'FortiGate 701G', seg:'DC edge / Enterprise', fw:164000, ips:38000, ngfw:29000, tp:26000, vpn:55000, sess:28000000, cps:700000, ifaces:'4x25GE SFP28 + 16x GE SFP + 5x GE RJ45 + 960GB SSD onboard'},
-  {id:'FortiGate 900G', seg:'DC Edge / Enterprise', fw:164000, ips:42000, ngfw:31000, tp:30000, vpn:55000, sess:28000000, cps:720000, ifaces:'4x25GE SFP28 + 8 GE SFP + 17 GE RJ45'},
-  {id:'FortiGate 901G', seg:'DC Edge / Enterprise', fw:164000, ips:42000, ngfw:31000, tp:30000, vpn:55000, sess:28000000, cps:720000, ifaces:'4x25GE SFP28 + 8 GE SFP + 17 GE RJ45 + 2x 480GB SSD onboard'},
-  {id:'FortiGate 3000G', seg:'Carrier grade / DC core', fw:397000, ips:90000, ngfw:85000, tp:80000, vpn:105000, sess:88000000, cps:1100000, ifaces:'6x100GE QSFP28/40GE + 16x25GE SFP28 + 18x10GE RJ45'},
-  {id:'FortiGate 3001G', seg:'Carrier grade / DC core', fw:397000, ips:90000, ngfw:85000, tp:80000, vpn:105000, sess:88000000, cps:1100000, ifaces:'6x100GE QSFP28/40GE + 16x25GE SFP28 + 18x10GE RJ45 + 2TB SSD onboard'},
-  {id:'FortiGate 3500G', seg:'DC core', fw:595000, ips:125000, ngfw:115000, tp:105000, vpn:163000, sess:179000000, cps:1100000, ifaces:'2x400GE QSFP-DD + 4x100GE QSFP28 + 30x25GE SFP28'},
-  {id:'FortiGate 3501G', seg:'DC core', fw:595000, ips:125000, ngfw:115000, tp:105000, vpn:163000, sess:179000000, cps:1100000, ifaces:'2x400GE QSFP-DD + 4x100GE QSFP28 + 30x25GE SFP28 + 2x 1.92TB SSD onboard'},
-  {id:'FortiGate 3800G', seg:'DC core / Carrier', fw:795000, ips:250000, ngfw:210000, tp:200000, vpn:210000, sess:210000000, cps:1100000, ifaces:'4x400GE + 6x200GE QSFP56 + 18x10GE SFP56'},
-  {id:'FortiGate 3801G', seg:'DC core / Carrier', fw:795000, ips:250000, ngfw:210000, tp:200000, vpn:210000, sess:210000000, cps:1100000, ifaces:'4x400GE + 6x200GE QSFP56 + 18x10GE SFP56 + 2x 1.92TB SSD onboard'},
+  {id:'FortiGate 400G', seg:'Campus / DC edge', fw:164000, ips:25000, ngfw:14000, tp:13000, vpn:55000, sess:28000000, cps:580000, ifaces:'4x25GE SFP28 + 16x GE SFP + 5x GE RJ45', redund:true, psu:{watts:230, tipo:'doble fuente AC de serie, no intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'6 A @100 V', texto:'Consumo medio 230 W y máximo 283 W. Las dos fuentes vienen de serie, pero no se cambian en caliente.'}},
+  {id:'FortiGate 401G', seg:'Campus / DC edge', fw:164000, ips:25000, ngfw:14000, tp:13000, vpn:55000, sess:28000000, cps:580000, ifaces:'4x25GE SFP28 + 16x GE SFP + 5x GE RJ45 + 960GB SSD onboard', redund:true, psu:{watts:240, tipo:'doble fuente AC de serie, no intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'6 A @100 V', texto:'Consumo medio 240 W y máximo 295 W. Las dos fuentes vienen de serie, pero no se cambian en caliente.'}},
+  {id:'FortiGate 700G', seg:'DC edge / Enterprise', fw:164000, ips:38000, ngfw:29000, tp:26000, vpn:55000, sess:28000000, cps:700000, ifaces:'4x25GE SFP28 + 16x GE SFP + 5x GE RJ45', redund:true, psu:{watts:230, tipo:'doble fuente AC de serie, no intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'6 A @100 V', texto:'Consumo medio 230 W y máximo 283 W. Las dos fuentes vienen de serie, pero no se cambian en caliente.'}},
+  {id:'FortiGate 701G', seg:'DC edge / Enterprise', fw:164000, ips:38000, ngfw:29000, tp:26000, vpn:55000, sess:28000000, cps:700000, ifaces:'4x25GE SFP28 + 16x GE SFP + 5x GE RJ45 + 960GB SSD onboard', redund:true, psu:{watts:240, tipo:'doble fuente AC de serie, no intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'6 A @100 V', texto:'Consumo medio 240 W y máximo 295 W. Las dos fuentes vienen de serie, pero no se cambian en caliente.'}},
+  {id:'FortiGate 900G', seg:'DC Edge / Enterprise', fw:164000, ips:42000, ngfw:31000, tp:30000, vpn:55000, sess:28000000, cps:720000, ifaces:'4x25GE SFP28 + 8 GE SFP + 17 GE RJ45', redund:true, psu:{watts:170, tipo:'doble fuente de serie, intercambiable en caliente', volts:'100-240 V AC, 50/60 Hz', amps:'6 A @100 V', texto:'Consumo medio 170 W y máximo 313 W. Hay variante DC (48-60 V, 7 A @48 V).'}},
+  {id:'FortiGate 901G', seg:'DC Edge / Enterprise', fw:164000, ips:42000, ngfw:31000, tp:30000, vpn:55000, sess:28000000, cps:720000, ifaces:'4x25GE SFP28 + 8 GE SFP + 17 GE RJ45 + 2x 480GB SSD onboard', redund:true, psu:{watts:184, tipo:'doble fuente de serie, intercambiable en caliente', volts:'100-240 V AC, 50/60 Hz', amps:'6 A @100 V', texto:'Consumo medio 184 W y máximo 323 W. Hay variante DC (48-60 V, 7 A @48 V).'}},
+  {id:'FortiGate 3000G', seg:'Carrier grade / DC core', fw:397000, ips:90000, ngfw:85000, tp:80000, vpn:105000, sess:88000000, cps:1100000, ifaces:'6x100GE QSFP28/40GE + 16x25GE SFP28 + 18x10GE RJ45', redund:true, psu:{watts:550, tipo:'doble fuente de serie, intercambiable en caliente', volts:'100-240 V AC, 50/60 Hz', amps:'12 A @100 V · 9 A @240 V', texto:'Consumo medio 550 W y máximo 808 W. Configuración 2+2.'}},
+  {id:'FortiGate 3001G', seg:'Carrier grade / DC core', fw:397000, ips:90000, ngfw:85000, tp:80000, vpn:105000, sess:88000000, cps:1100000, ifaces:'6x100GE QSFP28/40GE + 16x25GE SFP28 + 18x10GE RJ45 + 2TB SSD onboard', redund:true, psu:{watts:560, tipo:'doble fuente de serie, intercambiable en caliente', volts:'100-240 V AC, 50/60 Hz', amps:'12 A @100 V · 9 A @240 V', texto:'Consumo medio 560 W y máximo 828 W. Configuración 2+2.'}},
+  {id:'FortiGate 3500G', seg:'DC core', fw:595000, ips:125000, ngfw:115000, tp:105000, vpn:163000, sess:179000000, cps:1100000, ifaces:'2x400GE QSFP-DD + 4x100GE QSFP28 + 30x25GE SFP28', redund:true, psu:{watts:678, tipo:'doble fuente de serie, intercambiable en caliente', volts:'100-240 V AC, 50/60 Hz', amps:'12 A @100 V · 9 A @240 V', texto:'Consumo medio 678 W y máximo 973 W. Doble fuente AC de serie para redundancia 1+1.'}},
+  {id:'FortiGate 3501G', seg:'DC core', fw:595000, ips:125000, ngfw:115000, tp:105000, vpn:163000, sess:179000000, cps:1100000, ifaces:'2x400GE QSFP-DD + 4x100GE QSFP28 + 30x25GE SFP28 + 2x 1.92TB SSD onboard', redund:true, psu:{watts:688, tipo:'doble fuente de serie, intercambiable en caliente', volts:'100-240 V AC, 50/60 Hz', amps:'12 A @100 V · 9 A @240 V', texto:'Consumo medio 688 W y máximo 993 W. Doble fuente AC de serie para redundancia 1+1.'}},
+  {id:'FortiGate 3800G', seg:'DC core / Carrier', fw:795000, ips:250000, ngfw:210000, tp:200000, vpn:210000, sess:210000000, cps:1100000, ifaces:'4x400GE + 6x200GE QSFP56 + 18x10GE SFP56', redund:true, psu:{watts:1496, tipo:'fuentes 2+2 intercambiables en caliente (bandeja de ventiladores también)', volts:'200-240 V AC, 50/60 Hz', amps:'10 A @200-240 V', texto:'Consumo medio 1496 W y máximo 1950 W. Exige alimentación de 200-240 V: no admite 100 V como el resto de la línea. Hay variante DC (-48 a -60 V, 23 A).'}},
+  {id:'FortiGate 3801G', seg:'DC core / Carrier', fw:795000, ips:250000, ngfw:210000, tp:200000, vpn:210000, sess:210000000, cps:1100000, ifaces:'4x400GE + 6x200GE QSFP56 + 18x10GE SFP56 + 2x 1.92TB SSD onboard', redund:true, psu:{watts:1496, tipo:'fuentes 2+2 intercambiables en caliente (bandeja de ventiladores también)', volts:'200-240 V AC, 50/60 Hz', amps:'10 A @200-240 V', texto:'Consumo medio 1496 W y máximo 1950 W. Exige alimentación de 200-240 V: no admite 100 V como el resto de la línea. Hay variante DC (-48 a -60 V, 23 A).'}},
   // ─── Serie F (generación actual) ───────────────────────────────
-  {id:'FortiGate 40F', seg:'SOHO', fw:5000, ips:1000, ngfw:800, tp:600, vpn:4400, sess:700000, cps:35000, ifaces:'5 GE'},
-  {id:'FortiGate 60F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:700, vpn:6500, sess:700000, cps:35000, ifaces:'10 GE + Wi-Fi opcional'},
-  {id:'FortiGate 61F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:700, vpn:6500, sess:700000, cps:35000, ifaces:'10 GE + Wi-Fi opcional + 128GB SSD onboard'},
+  {id:'FortiGate 40F', seg:'SOHO', fw:5000, ips:1000, ngfw:800, tp:600, vpn:4400, sess:700000, cps:35000, ifaces:'5 GE', redund:false, psu:{watts:7.74, tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50/60 Hz', amps:'0,2 A @100 V · 0,1 A @240 V', texto:'Consumo medio 7.74 W y máximo 9.46 W. El datasheet no menciona una segunda fuente para este modelo.'}},
+  {id:'FortiGate 60F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:700, vpn:6500, sess:700000, cps:35000, ifaces:'10 GE + Wi-Fi opcional', redund:false, psu:{watts:10.17, tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50/60 Hz', amps:'1,0 A @100 V · 0,6 A @240 V', texto:'Consumo medio 10.17 W y máximo 12.43 W. El datasheet no menciona una segunda fuente para este modelo.'}},
+  {id:'FortiGate 61F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:700, vpn:6500, sess:700000, cps:35000, ifaces:'10 GE + Wi-Fi opcional + 128GB SSD onboard', redund:false, psu:{watts:17.2, tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50/60 Hz', amps:'1,0 A @100 V · 0,6 A @240 V', texto:'Consumo medio 17.2 W y máximo 18.7 W. El datasheet no menciona una segunda fuente para este modelo.'}},
   {id:'FortiGate 70F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:800, vpn:6100, sess:1500000, cps:35000, ifaces:'10 GE RJ45'},
   {id:'FortiGate 71F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:800, vpn:6100, sess:1500000, cps:35000, ifaces:'10 GE RJ45 + 128GB SSD onboard'},
-  {id:'FortiGate 80F', seg:'Sucursal + PoE', fw:10000, ips:1400, ngfw:1000, tp:900, vpn:6500, sess:1500000, cps:45000, ifaces:'8 GE + 2 SFP'},
-  {id:'FortiGate 81F', seg:'Sucursal + PoE', fw:10000, ips:1400, ngfw:1000, tp:900, vpn:6500, sess:1500000, cps:45000, ifaces:'8 GE + 2 SFP + 128GB SSD onboard'},
+  {id:'FortiGate 80F', seg:'Sucursal + PoE', fw:10000, ips:1400, ngfw:1000, tp:900, vpn:6500, sess:1500000, cps:45000, ifaces:'8 GE + 2 SFP', redund:'opcional', psu:{watts:12.69, tipo:'hasta dos adaptadores externos (viene uno)', volts:'100-240 V AC, 50/60 Hz', amps:'0,4 A @115 V · 0,2 A @230 V', texto:'Consumo medio 12.69 W y máximo 15.51 W. Admite un segundo adaptador para redundancia, que no viene incluido.'}},
+  {id:'FortiGate 81F', seg:'Sucursal + PoE', fw:10000, ips:1400, ngfw:1000, tp:900, vpn:6500, sess:1500000, cps:45000, ifaces:'8 GE + 2 SFP + 128GB SSD onboard', redund:'opcional', psu:{watts:13.5, tipo:'hasta dos adaptadores externos (viene uno)', volts:'100-240 V AC, 50/60 Hz', amps:'0,4 A @115 V · 0,2 A @230 V', texto:'Consumo medio 13.5 W y máximo 16.5 W. Admite un segundo adaptador para redundancia, que no viene incluido.'}},
   // redund/psu leidos el 2026-09-03 del articulo oficial «Technical Tip: Checking
   // FortiGate-100F series power supply» (community.fortinet.com), traido con
   // .github/workflows/traer-fortinet-psu.yml. Frase literal: «the device has two power
@@ -159,11 +179,11 @@ const MODELS=[
   // Los tres siguientes, leidos de sus datasheets por serie (2026-09-03). Aqui `watts` SI es
   // consumo: el documento publica "AC Power Consumption (Average / Maximum)", que es lo que la
   // ficha rotula «Consumo tipico» -a diferencia de los 2.500 W del 7081F, que son capacidad.
-  {id:'FortiGate 400F', seg:'Campus / Agr', fw:80000, ips:12000, ngfw:10000, tp:9000, vpn:55000, sess:7800000, cps:500000, ifaces:'8 GE + 8 SFP + 8x10GE', redund:true, psu:{watts:154.8, tipo:'doble fuente AC de serie, intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'6 A maximo', texto:'Consumo medio 154,8 W y maximo 189,2 W. Hay variante DC (48-60 V, 12 A).'}},
-  {id:'FortiGate 401F', seg:'Campus / Agr', fw:80000, ips:12000, ngfw:10000, tp:9000, vpn:55000, sess:7800000, cps:500000, ifaces:'8 GE + 8 SFP + 8x10GE + 960GB SSD onboard', redund:true, psu:{watts:161.1, tipo:'doble fuente AC de serie, intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'6 A maximo', texto:'Consumo medio 161,1 W y maximo 196,9 W — algo por encima del 400F por el SSD. Hay variante DC (48-60 V, 12 A).'}},
-  {id:'FortiGate 600F', seg:'Campus / DC edge', fw:139000, ips:14000, ngfw:11500, tp:10500, vpn:55000, sess:8000000, cps:550000, ifaces:'4x25GE + 16x10GE', redund:true, psu:{watts:169, tipo:'doble fuente intercambiable en caliente (2 PSU de serie)', volts:'100-240 V AC, 50/60 Hz', amps:'6 A a 100 V', texto:'Consumo medio 169 W y maximo 255 W.'}},
-  {id:'FortiGate 1000F', seg:'DC edge', fw:198000, ips:19000, ngfw:15000, tp:13000, vpn:55000, sess:7500000, cps:650000, ifaces:'4x100GE + 16x25GE + 16x10GE'},
-  {id:'FortiGate 1001F', seg:'DC edge', fw:198000, ips:19000, ngfw:15000, tp:13000, vpn:55000, sess:7500000, cps:650000, ifaces:'4x100GE + 16x25GE + 16x10GE + 960GB SSD onboard'},
+  {id:'FortiGate 400F', seg:'Campus / Agr', fw:80000, ips:12000, ngfw:10000, tp:9000, vpn:55000, sess:7800000, cps:500000, ifaces:'8 GE + 8 SFP + 8x10GE', redund:true, psu:{watts:154.8, tipo:'doble fuente AC de serie, intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'6 A maximo', texto:'Consumo medio 154.8 W y máximo 189.2 W. Hay variante DC (48-60 V, 12 A).'}},
+  {id:'FortiGate 401F', seg:'Campus / Agr', fw:80000, ips:12000, ngfw:10000, tp:9000, vpn:55000, sess:7800000, cps:500000, ifaces:'8 GE + 8 SFP + 8x10GE + 960GB SSD onboard', redund:true, psu:{watts:161.1, tipo:'doble fuente AC de serie, intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'6 A maximo', texto:'Consumo medio 161.1 W y máximo 196.9 W — algo por encima del 400F por el SSD. Hay variante DC (48-60 V, 12 A).'}},
+  {id:'FortiGate 600F', seg:'Campus / DC edge', fw:139000, ips:14000, ngfw:11500, tp:10500, vpn:55000, sess:8000000, cps:550000, ifaces:'4x25GE + 16x10GE', redund:true, psu:{watts:169, tipo:'doble fuente intercambiable en caliente (2 PSU de serie)', volts:'100-240 V AC, 50/60 Hz', amps:'6 A a 100 V', texto:'Consumo medio 169 W y máximo 255 W.'}},
+  {id:'FortiGate 1000F', seg:'DC edge', fw:198000, ips:19000, ngfw:15000, tp:13000, vpn:55000, sess:7500000, cps:650000, ifaces:'4x100GE + 16x25GE + 16x10GE', redund:true, psu:{watts:210, tipo:'doble fuente de serie, intercambiable en caliente', volts:'100-240 V AC, 50/60 Hz', amps:'6 A @120 V · 3 A @240 V', texto:'Consumo medio 210 W y máximo 408 W.'}},
+  {id:'FortiGate 1001F', seg:'DC edge', fw:198000, ips:19000, ngfw:15000, tp:13000, vpn:55000, sess:7500000, cps:650000, ifaces:'4x100GE + 16x25GE + 16x10GE + 960GB SSD onboard', redund:true, psu:{watts:215, tipo:'doble fuente de serie, intercambiable en caliente', volts:'100-240 V AC, 50/60 Hz', amps:'6 A @120 V · 3 A @240 V', texto:'Consumo medio 215 W y máximo 415 W.'}},
   // ─── Serie F — Alta gama / Datacenter / Carrier ────────────────
   {id:'FortiGate 1800F', seg:'DC / Enterprise', fw:198000, ips:22000, ngfw:17000, tp:15000, vpn:55000, sess:12000000, cps:750000, ifaces:'2x100GE QSFP28 + 12x25GE SFP28 + 8x10GE RJ45'},
   {id:'FortiGate 1801F', seg:'DC / Enterprise', fw:198000, ips:22000, ngfw:17000, tp:15000, vpn:55000, sess:12000000, cps:750000, ifaces:'2x100GE QSFP28 + 12x25GE SFP28 + 8x10GE RJ45 + 2x 960GB SSD onboard'},

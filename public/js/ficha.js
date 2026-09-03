@@ -233,10 +233,19 @@
     if (!m) return { titulo: 'Alimentación eléctrica', filas: [] };
     const redund = m.redund;
     const psu = m.psu || {};
+    // Cuatro estados, no dos. A los tres que ya habia -si, no, y «no lo dice»- se suma
+    // 'opcional' (2026-09-03), que aparecio leyendo los datasheets de FortiGate: el 80F y el
+    // 90G dicen «Powered by up to 2 External DC Power Adapters (1 adapter included)», o sea
+    // que salen de fabrica con una sola fuente pero admiten la segunda. Ninguna de las dos
+    // etiquetas anteriores era cierta ahi: «Sí — de serie» promete algo que no viene en la
+    // caja, y «No — fuente única» niega una redundancia que el equipo si soporta. Es el mismo
+    // motivo por el que existe el tercer estado, aplicado a un caso nuevo.
     const filas = [
       ['Fuente redundante (doble fuente)', redund == null
         ? '<span class="warn">el catálogo no lo especifica</span>'
-        : (redund ? 'Sí — de serie' : 'No — fuente única')],
+        : (redund === 'opcional'
+          ? 'Opcional — admite una segunda fuente, no viene de serie'
+          : (redund ? 'Sí — de serie' : 'No — fuente única'))],
     ];
     if (psu.watts != null) filas.push(['Consumo típico', `${psu.watts} W`]);
     if (psu.tipo) filas.push(['Tipo de fuente', esc(psu.tipo)]);

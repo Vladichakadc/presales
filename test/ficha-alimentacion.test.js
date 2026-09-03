@@ -81,30 +81,48 @@ test('Cisco: redund sigue con cobertura completa (no se toco el dato, solo se mo
 
 // Esta prueba fijaba «ningun modelo Fortinet tiene redund ni psu» porque el Product Matrix
 // no publica alimentacion. Eso seguia siendo cierto del Product Matrix, pero no del
-// fabricante: el 2026-09-03 se leyeron tres documentos oficiales aparte (community y
-// docs.fortinet.com) y tres modelos pasaron a tener dato verificado. Lo que la prueba fija
-// ahora no es el numero -que crecera segun se lean mas documentos- sino la regla que importa:
-// el que no tiene dato se queda en `undefined`, nunca en `false`, y ningun `psu` declara
-// consumo que la fuente no publique.
-test('Fortinet: solo tienen alimentacion los modelos leidos de un documento oficial', () => {
+// fabricante: las fichas por serie si la publican, y al leerlas (2026-09-03) la cobertura
+// paso de 0 a 37 de 58. Lo que la prueba fija no es el numero -que crecera segun se lean mas
+// documentos- sino las tres reglas que importan.
+test('Fortinet: alimentacion solo donde se leyo un documento, y con los cuatro estados bien', () => {
   const { MODELS } = require('../server/seed/legacyData/fortinet.js');
-  const conDato = MODELS.filter((m) => m.redund !== undefined).map((m) => m.id);
-  assert.deepStrictEqual(conDato.sort(),
-    ['FortiGate 100F', 'FortiGate 400F', 'FortiGate 401F', 'FortiGate 600F',
-      'FortiGate 7081F', 'FortiGate 7121F']);
+  const con = MODELS.filter((m) => m.redund !== undefined);
+  assert.strictEqual(con.length, 37, 'cobertura leida de fichas por serie y System Guides');
 
-  // El resto en `undefined`: «el catalogo no lo dice» nunca se degrada a un «no» inventado.
-  assert.strictEqual(MODELS.filter((m) => m.redund === false).length, 0);
+  // 1. El que no tiene dato se queda en `undefined`. Nunca en `false`, que seria inventar un
+  //    dato negativo, y nunca en `null`.
+  assert.strictEqual(MODELS.filter((m) => m.redund === null).length, 0);
+  const sinDato = MODELS.filter((m) => m.redund === undefined);
+  assert.strictEqual(sinDato.length, 21, 'las series F cuya ficha no se pudo abrir');
+  assert.ok(sinDato.every((m) => m.psu === undefined), 'sin redund tampoco hay psu');
 
-  // `psu.watts` solo donde la fuente publica CONSUMO. Los 2.500 W del 7081F son capacidad por
-  // fuente y la ficha rotula ese campo «Consumo tipico»: confundirlos seria una cifra falsa con
-  // apariencia correcta. Los datasheets por serie si publican "AC Power Consumption (Average)",
-  // y esos si entran.
-  const conWatts = MODELS.filter((m) => m.psu && m.psu.watts != null).map((m) => m.id);
-  assert.deepStrictEqual(conWatts.sort(),
-    ['FortiGate 400F', 'FortiGate 401F', 'FortiGate 600F']);
+  // 2. `false` es un hecho leido («Powered by External DC Power Adapter», sin segunda fuente),
+  //    no una ausencia de dato, y 'opcional' es el cuarto estado: sale con una fuente pero
+  //    admite la segunda («up to 2 adapters, 1 adapter included»).
+  const opcionales = MODELS.filter((m) => m.redund === 'opcional').map((m) => m.id);
+  assert.deepStrictEqual(opcionales.sort(),
+    ['FortiGate 80F', 'FortiGate 81F', 'FortiGate 90G', 'FortiGate 91G']);
+
+  // 3. `psu.watts` solo donde la fuente publica CONSUMO. Los 2.500 W del 7081F son capacidad
+  //    por fuente y la ficha rotula ese campo «Consumo tipico»: confundirlos seria una cifra
+  //    falsa con apariencia correcta.
   for (const id of ['FortiGate 7081F', 'FortiGate 7121F', 'FortiGate 100F']) {
     const m = MODELS.find((x) => x.id === id);
     assert.strictEqual(m.psu.watts, undefined, `${id}: su fuente no publica consumo, no se declara`);
   }
+  // Y donde si lo publica, es un numero positivo y plausible: el 3800G consume 1.496 W y el
+  // 30G 6,8 W, tres ordenes de magnitud de diferencia entre sobremesa y chasis de 3 RU.
+  for (const m of MODELS.filter((x) => x.psu && x.psu.watts != null)) {
+    assert.ok(m.psu.watts > 0 && m.psu.watts < 5000, `${m.id}: consumo fuera de rango`);
+  }
+});
+
+test('el cuarto estado se pinta distinto de si, de no y de «no lo dice»', () => {
+  const opc = FICHA.seccionAlimentacion({ id: 'X', redund: 'opcional' });
+  assert.match(opc.filas[0][1], /Opcional/);
+  // Ni la afirmacion de `true` ni la negacion de `false`: se comprueban las dos etiquetas
+  // exactas, no la subcadena «de serie» -que aparece a proposito dentro de «no viene de
+  // serie», y prohibirla obligaria a escribir peor la frase que se le ensena al cliente.
+  assert.doesNotMatch(opc.filas[0][1], /Sí — de serie/, 'no puede prometer lo que no viene en la caja');
+  assert.doesNotMatch(opc.filas[0][1], /No — fuente única/, 'ni negar una redundancia que si soporta');
 });
