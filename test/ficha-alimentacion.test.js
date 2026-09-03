@@ -123,6 +123,13 @@ test('Fortinet: alimentacion solo donde se leyo un documento, y con los cuatro e
   }
 });
 
+test('el quinto estado dice que la pregunta no aplica, no que falte el dato', () => {
+  const na = FICHA.seccionAlimentacion({ id: 'CHR', redund: 'no-aplica' });
+  assert.match(na.filas[0][1], /No aplica/);
+  assert.doesNotMatch(na.filas[0][1], /no lo especifica/, 'no es un dato que falte');
+  assert.doesNotMatch(na.filas[0][1], /fuente única/, 'ni una fuente unica: no tiene ninguna');
+});
+
 test('el cuarto estado se pinta distinto de si, de no y de «no lo dice»', () => {
   const opc = FICHA.seccionAlimentacion({ id: 'X', redund: 'opcional' });
   assert.match(opc.filas[0][1], /Opcional/);
@@ -131,4 +138,51 @@ test('el cuarto estado se pinta distinto de si, de no y de «no lo dice»', () =
   // serie», y prohibirla obligaria a escribir peor la frase que se le ensena al cliente.
   assert.doesNotMatch(opc.filas[0][1], /Sí — de serie/, 'no puede prometer lo que no viene en la caja');
   assert.doesNotMatch(opc.filas[0][1], /No — fuente única/, 'ni negar una redundancia que si soporta');
+});
+
+// ── MikroTik y Aruba (2026-09-03) ────────────────────────────────────────────────────────
+// Dos casos que obligaron a mirar mas alla del si/no, ademas de los cuatro estados que ya
+// existian.
+test('MikroTik: varias entradas de alimentacion no son doble fuente, y el CHR no tiene ninguna', () => {
+  const { MODELS } = require('../server/seed/legacyData/mikrotik.js');
+  assert.strictEqual(MODELS.filter((m) => m.redund !== undefined).length, 14);
+
+  // El RB5009 tiene TRES entradas (jack, PoE-IN, terminal) sobre UNA fuente interna: eso
+  // permite alimentar desde dos tomas, pero no es doble fuente y no puede marcarse `true`.
+  const rb5009 = MODELS.find((m) => m.id === 'RB5009UG+S+IN');
+  assert.strictEqual(rb5009.redund, false);
+  assert.match(rb5009.psu.tipo, /3 entradas/);
+
+  // El unico MikroTik de esta tanda con doble fuente de verdad: 2 ranuras de PSU.
+  assert.strictEqual(MODELS.find((m) => m.id === 'CCR2004-16G-2S+').redund, true);
+
+  // Las licencias CHR son software sobre un hipervisor: no tienen fuente, y decir «el
+  // catalogo no lo especifica» seria esperar un dato que no existe.
+  for (const id of ['CHR P1', 'CHR P10', 'CHR P-Unlimited']) {
+    assert.strictEqual(MODELS.find((m) => m.id === id).redund, 'no-aplica');
+  }
+
+  // MikroTik publica maximos, no consumos tipicos, asi que ninguno declara `watts` -la ficha
+  // rotula ese campo «Consumo tipico»-: las cifras van en el texto, diciendo que miden.
+  for (const m of MODELS.filter((x) => x.psu)) {
+    assert.strictEqual(m.psu.watts, undefined, `${m.id}: MikroTik publica maximos, no tipicos`);
+  }
+});
+
+test('Aruba: el EdgeConnect Hardware Reference separa adaptador, fuente unica y 1+1', () => {
+  const { MODELS } = require('../server/seed/legacyData/aruba.js');
+  assert.strictEqual(MODELS.filter((m) => m.redund !== undefined).length, 6);
+  assert.strictEqual(MODELS.find((m) => m.id === 'EC-XS').redund, false);
+  assert.strictEqual(MODELS.find((m) => m.id === 'EC-S').redund, false);
+  assert.strictEqual(MODELS.find((m) => m.id === 'EC-M').redund, true);
+  assert.strictEqual(MODELS.find((m) => m.id === 'EC-V').redund, 'no-aplica', 'es un appliance virtual');
+
+  // El dato no puede colgar de una referencia de pedido: al aplicarlo por primera vez se
+  // inserto dentro del array `skus` de EC-S y EC-M, y el objeto seguia siendo valido -solo
+  // la cobertura lo delato-. Esta comprobacion fija que no vuelva a pasar.
+  for (const m of MODELS) {
+    for (const s of m.skus || []) {
+      assert.ok(!('redund' in s) && !('psu' in s), `${m.id}: la alimentacion es del equipo, no del SKU`);
+    }
+  }
 });

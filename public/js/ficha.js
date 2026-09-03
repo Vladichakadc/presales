@@ -240,12 +240,18 @@
     // etiquetas anteriores era cierta ahi: «Sí — de serie» promete algo que no viene en la
     // caja, y «No — fuente única» niega una redundancia que el equipo si soporta. Es el mismo
     // motivo por el que existe el tercer estado, aplicado a un caso nuevo.
+    // Y 'no-aplica' para lo que no es un equipo: las licencias CHR de MikroTik son software
+    // sobre un hipervisor, asi que no tienen fuente ninguna. Dejarlas en «el catalogo no lo
+    // especifica» diria que falta un dato que no existe, y es tan enganoso como leer
+    // `undefined` como «No»: quien mira la ficha se queda esperando una respuesta.
     const filas = [
       ['Fuente redundante (doble fuente)', redund == null
         ? '<span class="warn">el catálogo no lo especifica</span>'
-        : (redund === 'opcional'
-          ? 'Opcional — admite una segunda fuente, no viene de serie'
-          : (redund ? 'Sí — de serie' : 'No — fuente única'))],
+        : (redund === 'no-aplica'
+          ? 'No aplica — es software, la alimentación es la del servidor anfitrión'
+          : (redund === 'opcional'
+            ? 'Opcional — admite una segunda fuente, no viene de serie'
+            : (redund ? 'Sí — de serie' : 'No — fuente única')))],
     ];
     if (psu.watts != null) filas.push(['Consumo típico', `${psu.watts} W`]);
     if (psu.tipo) filas.push(['Tipo de fuente', esc(psu.tipo)]);

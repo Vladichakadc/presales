@@ -214,6 +214,45 @@ Cobertura actual por herramienta:
 
 ## Cerrado recientemente
 
+### Pendiente 15: MikroTik 14/15 y Aruba 6/21, y un quinto estado (2026-09-03)
+
+MikroTik se dejó leer sin resistencia —su sitio ya respondía al vigía— y cada ficha de
+producto publica «Max power consumption» y el modo de alimentación. Aruba era la duda, y la
+respuesta resultó **más matizada que «HPE es Akamai»**: de los tres dominios que usa su
+manifiesto, `arubanetworking.hpe.com` (documentación técnica) **sí responde** y entregó el
+*EdgeConnect Hardware Reference* completo, 170 páginas; `arubanetworks.com` devuelve Akamai y
+`hpe.com/psnow` agota el tiempo. Medirlo por dominio en vez de dar el fabricante por perdido
+es lo que abrió esta puerta.
+
+**Dos distinciones que el campo no sabía decir:**
+
+- **Varias entradas de alimentación no son doble fuente.** El RB5009 tiene *tres* (jack DC,
+  PoE-IN y terminal de 2 pines) sobre **una sola fuente interna**: permite alimentar desde dos
+  tomas distintas, que es información útil, pero marcarlo `true` sería prometer una redundancia
+  de fuente que no existe. Va en `false` con la explicación en el texto. El único MikroTik de
+  esta tanda con doble fuente real es el CCR2004-16G-2S+, que declara **2 ranuras de PSU**.
+- **Quinto estado, `'no-aplica'`.** Las licencias CHR de MikroTik y el EdgeConnect virtual son
+  software sobre un hipervisor: no tienen fuente ninguna. Dejarlos en «el catálogo no lo
+  especifica» haría esperar un dato que no existe.
+
+**Ni MikroTik ni HPE publican un consumo típico**: MikroTik da máximos («Max power
+consumption» y «sin accesorios») y HPE un «Power Requirement». Como la ficha rotula
+`psu.watts` como «Consumo típico», esas cifras van en el texto diciendo qué miden — el mismo
+criterio que dejó fuera los 2.500 W del FortiGate 7081F, que eran capacidad por fuente.
+
+**Un fallo propio, encontrado y corregido**: la primera aplicación insertó `redund`/`psu`
+**dentro del array `skus`** de EC-S y EC-M, colgando la alimentación de una referencia de
+pedido en vez del equipo. El objeto seguía siendo válido y el arranque no se quejaba; solo lo
+delató contar la cobertura. Se revirtió, se rehízo anclando la inserción al `id`, y hay una
+prueba nueva que fija que ningún SKU lleve esos campos. El linter cazó además un `psu`
+duplicado en EC-S —`no-dupe-keys`, la regla que existe por el `{f:'hub',f:'hub'}` de la guía—
+y los dos se fusionaron conservando lo que el catálogo ya decía.
+
+Quedan sin dato el RB4011iGS+ sin RM (MikroTik no publica ficha propia de esa versión; la de
+`rb4011igs_rm` es explícitamente del RM, y aplicarla habría sido el mismo error que el 70F) y
+los 15 equipos AOS de Aruba —gateways 9000 y controladoras 7000—, que viven en los dominios
+que sí bloquean.
+
 ### Pendiente 15: Fortinet de 6 a 56 de 58, y un cuarto estado que faltaba (2026-09-03)
 
 Segunda tanda del mismo día, con el patrón ya probado: `WebSearch` localizó el nombre real de

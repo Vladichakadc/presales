@@ -99,28 +99,27 @@ const DATASHEETS = {
 //        referencias reales.
 const MODELS = [
   // ─── EdgeConnect SD-WAN ────────────────────────────────────────────────────
-  {id:'EC-XS', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal peq / Oficina remota',
+  {id:'EC-XS', redund:false, psu:{tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 23 W en la primera revisión de hardware y 34 W en las posteriores — HPE publica el requerimiento, no un consumo típico. Fuente única mediante adaptador externo, sin opción de segunda.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal peq / Oficina remota',
    wanMin:2, wanMax:200, boostMax:200,
    ifaces:'4x RJ45 10/100/1000 LAN/WAN + 2x RJ45 10/100/1000 gestión + serie RJ-45',
    hwSku:null, skus:[{sku:null,d:'EC-XS'},{sku:null,d:'EC-XS-SP'},{sku:null,d:'EC-XS-FIPS (validado FIPS 140)'}],
    ds:'https://www.hpe.com/psnow/doc/a00110177enw', dsFile:'edgeconnect-xs-spec-sheet.pdf'},
 
-  {id:'EC-S', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal grande / Oficina remota',
+  {id:'EC-S', redund:false, psu:{tipo:'fuente única interna, AC (S3N73A) o DC (S3N74A) según el SKU', volts:'100-240 V AC, 47-63 Hz', texto:'Requerimiento de alimentación 100 W — HPE publica el requerimiento, no un consumo típico. El EdgeConnect Hardware Reference confirma lo que el catálogo ya decía: una sola fuente por unidad. Las variantes EC-S-P sí traen 1+1 redundante (111 W en AC, 103 W en DC).'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal grande / Oficina remota',
    wanMin:10, wanMax:3000, boostMax:3000,
    ifaces:'8x RJ45 10/100/1000 + 4x SFP+ 1/10G',
    hwSku:'S3N73A', skus:[{sku:'S3N73A',d:'EC-S-P · 4x SFP+ · 10x RJ45 · PSU AC · 2x SSD · NAL'},
                          {sku:'S3N74A',d:'EC-S-P · 4x SFP+ · 10x RJ45 · PSU DC · 2x SSD · NAL'}],
-   psu:{tipo:'AC (S3N73A) o DC (S3N74A) — se elige al pedir', texto:'El SKU fija el tipo de fuente; el catálogo no menciona una segunda fuente por unidad.'},
    ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
 
-  {id:'EC-M', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Hub / Sucursal grande',
+  {id:'EC-M', redund:true, psu:{tipo:'1+1 redundante, sustituible e intercambiable en caliente', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 126 W — HPE publica el requerimiento, no un consumo típico.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Hub / Sucursal grande',
    wanMin:50, wanMax:5000, boostMax:5000,
    ifaces:'8x RJ45 1GbE + 4x SFP+ 1/10G (SR o LR)',
    hwSku:'JZ872A', skus:[{sku:'JZ872A',d:'EC-M-H · 8x RJ45 10/100/1000 · 4x SFP+ 1/10G'},
                          {sku:null,d:'EC-M-P-FIPS (validado FIPS 140)'}],
    ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
 
-  {id:'EC-L', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Datacenter / Hub grande',
+  {id:'EC-L', redund:true, psu:{tipo:'1+1 redundante, sustituible e intercambiable en caliente', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 401 W — HPE publica el requerimiento, no un consumo típico.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Datacenter / Hub grande',
    wanMin:2000, wanMax:10000, boostMax:10000,
    ifaces:'6x SFP+ 10G (SR o LR)',
    hwSku:'JZ878A', skus:[{sku:'JZ878A',d:'EC-L-H · 6x SFP+ 1/10G'}],
@@ -132,10 +131,10 @@ const MODELS = [
    hwSku:'S0B67A', skus:[{sku:'S0B67A',d:'EC-XL-H-10G · 6x SFP+ 1/10G'},
                          {sku:'S3N77A',d:'EC-XL-H · 6x SFP28 · 2x NVMe · 2x PSU · 2x SSD · NAL'},
                          {sku:null,d:'EC-XL-P-FIPS (validado FIPS 140)'}],
-   redund:true, psu:{texto:'PSU y almacenamiento redundantes — el SKU S3N77A lista explícitamente 2x PSU.'},
+   redund:true, psu:{tipo:'1+1 redundante, sustituible e intercambiable en caliente', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 474 W — HPE publica el requerimiento, no un consumo típico. El EdgeConnect Hardware Reference confirma la doble fuente que el catálogo ya deducía del SKU S3N77A.'},
    ds:'https://www.arubanetworks.com/resource/edgeconnect-xl-spec-sheet/', dsFile:'edgeconnect-xl-spec-sheet.pdf'},
 
-  {id:'EC-V', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Virtual / Cloud (VMware, KVM, Hyper-V, AWS, Azure)',
+  {id:'EC-V', redund:'no-aplica', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Virtual / Cloud (VMware, KVM, Hyper-V, AWS, Azure)',
    wanMin:null, wanMax:null, boostMax:null,
    ifaces:'vNIC según hipervisor · dimensionado por vCPU y por el tier de licencia contratado',
    hwSku:null, skus:[{sku:null,d:'EC-V — licencia portable entre appliance fisico y virtual'}],
