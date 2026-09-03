@@ -1,0 +1,446 @@
+[
+  {
+    "serie": "30g",
+    "guardado": "fortigate-fortiwifi-30g-series.pdf",
+    "intentos": [
+      {
+        "nombre": "fortigate-30g-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      },
+      {
+        "nombre": "fortigate-fortiwifi-30g-series.pdf",
+        "status": 200,
+        "bytes": 5939170,
+        "esPdf": true
+      }
+    ]
+  },
+  {
+    "serie": "50g",
+    "guardado": "fortigate-fortiwifi-50g-series.pdf",
+    "intentos": [
+      {
+        "nombre": "fortigate-50g-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      },
+      {
+        "nombre": "fortigate-fortiwifi-50g-series.pdf",
+        "status": 200,
+        "bytes": 7223036,
+        "esPdf": true
+      }
+    ]
+  },
+  {
+    "serie": "70g",
+    "guardado": "fortigate-fortiwifi-70g-series.pdf",
+    "intentos": [
+      {
+        "nombre": "fortigate-70g-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      },
+      {
+        "nombre": "fortigate-fortiwifi-70g-series.pdf",
+        "status": 200,
+        "bytes": 5934950,
+        "esPdf": true
+      }
+    ]
+  },
+  {
+    "serie": "90g",
+    "guardado": "fortigate-90g-series.pdf",
+    "intentos": [
+      {
+        "nombre": "fortigate-90g-series.pdf",
+        "status": 200,
+        "bytes": 1577603,
+        "esPdf": true
+      }
+    ]
+  },
+  {
+    "serie": "120g",
+    "guardado": "fortigate-120g-series.pdf",
+    "intentos": [
+      {
+        "nombre": "fortigate-120g-series.pdf",
+        "status": 200,
+        "bytes": 5729891,
+        "esPdf": true
+      }
+    ]
+  },
+  {
+    "serie": "200g",
+    "guardado": "fortigate-200g-series.pdf",
+    "intentos": [
+      {
+        "nombre": "fortigate-200g-series.pdf",
+        "status": 200,
+        "bytes": 5525401,
+        "esPdf": true
+      }
+    ]
+  },
+  {
+    "serie": "400g",
+    "guardado": "fortigate-400g-series.pdf",
+    "intentos": [
+      {
+        "nombre": "fortigate-400g-series.pdf",
+        "status": 200,
+        "bytes": 6401167,
+        "esPdf": true
+      }
+    ]
+  },
+  {
+    "serie": "700g",
+    "guardado": "fortigate-700g-series.pdf",
+    "intentos": [
+      {
+        "nombre": "fortigate-700g-series.pdf",
+        "status": 200,
+        "bytes": 6395240,
+        "esPdf": true
+      }
+    ]
+  },
+  {
+    "serie": "900g",
+    "guardado": "fortigate-900g-series.pdf",
+    "intentos": [
+      {
+        "nombre": "fortigate-900g-series.pdf",
+        "status": 200,
+        "bytes": 6241583,
+        "esPdf": true
+      }
+    ]
+  },
+  {
+    "serie": "3000g",
+    "guardado": "fortigate-3000g-series.pdf",
+    "intentos": [
+      {
+        "nombre": "fortigate-3000g-series.pdf",
+        "status": 200,
+        "bytes": 6610118,
+        "esPdf": true
+      }
+    ]
+  },
+  {
+    "serie": "3500g",
+    "guardado": "fortigate-3500g-series.pdf",
+    "intentos": [
+      {
+        "nombre": "fortigate-3500g-series.pdf",
+        "status": 200,
+        "bytes": 7247645,
+        "esPdf": true
+      }
+    ]
+  },
+  {
+    "serie": "3800g",
+    "guardado": "fortigate-3800g-series.pdf",
+    "intentos": [
+      {
+        "nombre": "fortigate-3800g-series.pdf",
+        "status": 200,
+        "bytes": 9537494,
+        "esPdf": true
+      }
+    ]
+  },
+  {
+    "serie": "40f",
+    "guardado": "fortigate-fortiwifi-40f-series.pdf",
+    "intentos": [
+      {
+        "nombre": "fortigate-40f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      },
+      {
+        "nombre": "fortigate-fortiwifi-40f-series.pdf",
+        "status": 200,
+        "bytes": 5290460,
+        "esPdf": true
+      }
+    ]
+  },
+  {
+    "serie": "60f",
+    "guardado": "fortigate-fortiwifi-60f-series.pdf",
+    "intentos": [
+      {
+        "nombre": "fortigate-60f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      },
+      {
+        "nombre": "fortigate-fortiwifi-60f-series.pdf",
+        "status": 200,
+        "bytes": 5145086,
+        "esPdf": true
+      }
+    ]
+  },
+  {
+    "serie": "70f",
+    "guardado": null,
+    "intentos": [
+      {
+        "nombre": "fortigate-70f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      },
+      {
+        "nombre": "fortigate-fortiwifi-70f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      }
+    ]
+  },
+  {
+    "serie": "80f",
+    "guardado": "fortigate-fortiwifi-80f-series.pdf",
+    "intentos": [
+      {
+        "nombre": "fortigate-80f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      },
+      {
+        "nombre": "fortigate-fortiwifi-80f-series.pdf",
+        "status": 200,
+        "bytes": 5496847,
+        "esPdf": true
+      }
+    ]
+  },
+  {
+    "serie": "100f",
+    "guardado": null,
+    "intentos": [
+      {
+        "nombre": "fortigate-100f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      },
+      {
+        "nombre": "fortigate-fortiwifi-100f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      }
+    ]
+  },
+  {
+    "serie": "200f",
+    "guardado": null,
+    "intentos": [
+      {
+        "nombre": "fortigate-200f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      },
+      {
+        "nombre": "fortigate-fortiwifi-200f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      }
+    ]
+  },
+  {
+    "serie": "1000f",
+    "guardado": "fortigate-1000f-series.pdf",
+    "intentos": [
+      {
+        "nombre": "fortigate-1000f-series.pdf",
+        "status": 200,
+        "bytes": 6901208,
+        "esPdf": true
+      }
+    ]
+  },
+  {
+    "serie": "1800f",
+    "guardado": null,
+    "intentos": [
+      {
+        "nombre": "fortigate-1800f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      },
+      {
+        "nombre": "fortigate-fortiwifi-1800f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      }
+    ]
+  },
+  {
+    "serie": "2600f",
+    "guardado": null,
+    "intentos": [
+      {
+        "nombre": "fortigate-2600f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      },
+      {
+        "nombre": "fortigate-fortiwifi-2600f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      }
+    ]
+  },
+  {
+    "serie": "3000f",
+    "guardado": null,
+    "intentos": [
+      {
+        "nombre": "fortigate-3000f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      },
+      {
+        "nombre": "fortigate-fortiwifi-3000f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      }
+    ]
+  },
+  {
+    "serie": "3200f",
+    "guardado": null,
+    "intentos": [
+      {
+        "nombre": "fortigate-3200f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      },
+      {
+        "nombre": "fortigate-fortiwifi-3200f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      }
+    ]
+  },
+  {
+    "serie": "3500f",
+    "guardado": null,
+    "intentos": [
+      {
+        "nombre": "fortigate-3500f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      },
+      {
+        "nombre": "fortigate-fortiwifi-3500f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      }
+    ]
+  },
+  {
+    "serie": "3700f",
+    "guardado": null,
+    "intentos": [
+      {
+        "nombre": "fortigate-3700f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      },
+      {
+        "nombre": "fortigate-fortiwifi-3700f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      }
+    ]
+  },
+  {
+    "serie": "4200f",
+    "guardado": null,
+    "intentos": [
+      {
+        "nombre": "fortigate-4200f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      },
+      {
+        "nombre": "fortigate-fortiwifi-4200f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      }
+    ]
+  },
+  {
+    "serie": "4400f",
+    "guardado": null,
+    "intentos": [
+      {
+        "nombre": "fortigate-4400f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      },
+      {
+        "nombre": "fortigate-fortiwifi-4400f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      }
+    ]
+  },
+  {
+    "serie": "4800f",
+    "guardado": null,
+    "intentos": [
+      {
+        "nombre": "fortigate-4800f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      },
+      {
+        "nombre": "fortigate-fortiwifi-4800f-series.pdf",
+        "status": 404,
+        "bytes": 227526,
+        "esPdf": false
+      }
+    ]
+  }
+]
