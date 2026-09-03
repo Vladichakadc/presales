@@ -1,0 +1,30 @@
+[
+  {
+    "archivo": "fortigate-400f-series.pdf",
+    "urlConfirmadaPorBusqueda": true,
+    "status": 200,
+    "bytes": 5620226,
+    "esPdf": true
+  },
+  {
+    "archivo": "fortigate-600f-series.pdf",
+    "urlConfirmadaPorBusqueda": true,
+    "status": 200,
+    "bytes": 5900657,
+    "esPdf": true
+  },
+  {
+    "archivo": "fortigate-100f-series.pdf",
+    "urlConfirmadaPorBusqueda": false,
+    "status": 404,
+    "bytes": 227526,
+    "esPdf": false
+  },
+  {
+    "archivo": "fortigate-200f-series.pdf",
+    "urlConfirmadaPorBusqueda": false,
+    "status": 404,
+    "bytes": 227526,
+    "esPdf": false
+  }
+]
