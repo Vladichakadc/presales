@@ -214,7 +214,7 @@ Cobertura actual por herramienta:
 
 ## Cerrado recientemente
 
-### Pendiente 15: Fortinet de 6 a 37 de 58, y un cuarto estado que faltaba (2026-09-03)
+### Pendiente 15: Fortinet de 6 a 56 de 58, y un cuarto estado que faltaba (2026-09-03)
 
 Segunda tanda del mismo día, con el patrón ya probado: `WebSearch` localizó el nombre real de
 las fichas —Fortinet usa **dos** convenciones, `fortigate-<serie>-series.pdf` y
@@ -241,10 +241,20 @@ la fila de arriba pintaba «19.9 W» —dos separadores decimales en el mismo pa
 era directamente ambiguo en un catálogo que declara el punto como decimal (se leería 1,496 W).
 La prosa va ahora sin separador de millares, igual que la fila.
 
-Los 21 restantes (70F, 200F, 1800F, 2600F, 3000F, 3200F, 3500F, 3700F, 4200F, 4400F, 4800F y
-sus variantes con SSD) siguen en `undefined`: sus fichas devolvieron **404 en las dos formas de
-URL**, así que falta el documento, no la voluntad de leerlo. La sonda se retiró tras aplicar el
-dato; queda publicada la rama `fuente/fortinet-serie`.
+**Y esos 404 resultaron ser la pista, no el final.** Fortinet sirve las fichas nuevas en
+`/assets/data-sheets/pdf/<archivo>` y las de la generación F antigua en
+`/assets/data-sheets/<archivo>` — un subdirectorio de diferencia. Con la ruta corta bajaron 10
+de 12 y entraron **19 modelos más**: toda la línea 1800F a 4800F. Justo por esto la sonda
+reportaba los 404 en vez de darlos por buenos.
+
+**Una trampa que conviene recordar**: `fortigate-70f-series.pdf` **no es la ficha del 70F**. Es
+la del 71F —su portada lo dice y el 70F no aparece ni una sola vez en el documento—, así que
+aplicarle esas cifras habría sido creerle al nombre del archivo en vez de a su contenido. El
+70F se queda sin dato a propósito.
+
+Quedan **2 de 58** sin dato: el 70F por lo anterior y el 200F porque su ficha da 404 en las dos
+rutas. Las sondas se retiraron tras aplicar el dato; quedan publicadas las ramas
+`fuente/fortinet-serie` y `fuente/fortinet-serie-f`.
 
 ### Fortinet sí se deja leer: `cps` a 56/58 y alimentación a 6/58 (2026-09-03)
 

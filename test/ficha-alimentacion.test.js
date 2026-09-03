@@ -87,14 +87,20 @@ test('Cisco: redund sigue con cobertura completa (no se toco el dato, solo se mo
 test('Fortinet: alimentacion solo donde se leyo un documento, y con los cuatro estados bien', () => {
   const { MODELS } = require('../server/seed/legacyData/fortinet.js');
   const con = MODELS.filter((m) => m.redund !== undefined);
-  assert.strictEqual(con.length, 37, 'cobertura leida de fichas por serie y System Guides');
+  assert.strictEqual(con.length, 56, 'cobertura leida de fichas por serie y System Guides');
 
   // 1. El que no tiene dato se queda en `undefined`. Nunca en `false`, que seria inventar un
   //    dato negativo, y nunca en `null`.
   assert.strictEqual(MODELS.filter((m) => m.redund === null).length, 0);
-  const sinDato = MODELS.filter((m) => m.redund === undefined);
-  assert.strictEqual(sinDato.length, 21, 'las series F cuya ficha no se pudo abrir');
-  assert.ok(sinDato.every((m) => m.psu === undefined), 'sin redund tampoco hay psu');
+  // Solo dos sin dato, y por motivos distintos: la ficha del 200F da 404 en las dos rutas
+  // que usa el sitio, y el archivo `fortigate-70f-series.pdf` resulto ser el datasheet del
+  // 71F -el 70F no aparece ni una vez en el-, asi que aplicarle esas cifras habria sido
+  // creerle al nombre del archivo en vez de a su contenido.
+  const sinDato = MODELS.filter((m) => m.redund === undefined).map((m) => m.id);
+  assert.deepStrictEqual(sinDato.sort(), ['FortiGate 200F', 'FortiGate 70F']);
+  for (const id of sinDato) {
+    assert.strictEqual(MODELS.find((m) => m.id === id).psu, undefined, `${id}: sin redund tampoco hay psu`);
+  }
 
   // 2. `false` es un hecho leido («Powered by External DC Power Adapter», sin segunda fuente),
   //    no una ausencia de dato, y 'opcional' es el cuarto estado: sale con una fuente pero
