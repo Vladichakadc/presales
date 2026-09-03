@@ -1,0 +1,42 @@
+[
+  {
+    "archivo": "hex.html",
+    "status": 200,
+    "bytes": 347684,
+    "esPdf": false,
+    "util": true,
+    "akamai": false
+  },
+  {
+    "archivo": "hex-lite.html",
+    "status": 200,
+    "bytes": 325156,
+    "esPdf": false,
+    "util": true,
+    "akamai": false
+  },
+  {
+    "archivo": "aruba-ec-hardware.pdf",
+    "status": 200,
+    "bytes": 17756193,
+    "esPdf": true,
+    "util": true,
+    "akamai": false
+  },
+  {
+    "archivo": "aruba-ec-spec.html",
+    "status": 403,
+    "bytes": 423,
+    "esPdf": false,
+    "util": false,
+    "akamai": true
+  },
+  {
+    "archivo": "aruba-ec-xs.html",
+    "error": "fetch failed"
+  },
+  {
+    "archivo": "aruba-9200.html",
+    "error": "fetch failed"
+  }
+]
