@@ -1,14 +1,33 @@
 # Datasheets oficiales de HPE Aruba Networking
 
-Los PDF de esta carpeta **no están en el repositorio todavía**: hay que descargarlos con
+**3 de los 24 documentos ya están aquí** (2026-09-03); el resto sigue enlazando la URL de
+HPE. Para traer más:
 
 ```
 npm run datasheets
 ```
 
-desde una máquina con salida a internet. El entorno donde se construyó el catálogo de
-Aruba tiene bloqueado el egreso hacia los dominios de HPE por política de la organización,
-así que la descarga quedó pendiente de ejecutarse fuera.
+desde una máquina con salida a internet.
+
+## Por qué solo 3, y cuáles
+
+HPE no se comporta igual en todos sus dominios, y eso decide qué se puede bajar sin un
+navegador humano detrás:
+
+| Dominio | Respuesta | Documentos del manifiesto |
+|---|---|---|
+| `arubanetworking.hpe.com` | **responde** | 6 |
+| `www.arubanetworks.com` | 403 de Akamai | 3 |
+| `www.hpe.com` | agota el tiempo | 12 |
+| `support.hpe.com` y otros | sin probar | 3 |
+
+De los 6 alcanzables se bajaron 4 y se commitearon **los dos que sirven para cotizar**: el
+*EdgeConnect Hardware Reference* (las especificaciones eléctricas y la tabla de fuentes por
+modelo) y la guía de licenciamiento de Central. Los otros dos —diseño SD-Branch y despliegue
+en Azure— son documentos de arquitectura, no de cotización, y habrían sumado 21 MB más.
+
+El `sd-wan-ordering-guide.pdf` venía de antes: fue el único que sobrevivió a la tanda de 24
+peticiones seguidas de agosto.
 
 ## Cómo funciona
 

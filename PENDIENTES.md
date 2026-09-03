@@ -240,10 +240,17 @@ pedido afirmados como hechos sobre equipos que no los admiten.
 3. **Y en dos sitios más se ofrecía una NIM de LTE a equipos con `nim: 0`** — los Meraki no
    tienen ranuras. Ahora los avisos distinguen si el equipo admite la ampliación o no.
 
-**Pendiente 3**: con el hallazgo de que `arubanetworking.hpe.com` sí responde, se bajaron
-**4 de 4** documentos de ese dominio (37 MB en total). Commitearlos es lo único que hace que
-producción los sirva, pero `public/datasheets/LEEME.md` advierte que engordan el repositorio de
-forma permanente — decisión del dueño del repo, no aplicada por cuenta propia.
+**Pendiente 3, avanzado de verdad**: con el hallazgo de que `arubanetworking.hpe.com` sí
+responde, se bajaron **4 de 4** documentos de ese dominio y, por decisión del dueño del repo, se
+commitearon **los dos que sirven para cotizar** — el *EdgeConnect Hardware Reference* (17 MB,
+el de las especificaciones eléctricas) y la guía de licenciamiento (0,8 MB). Los otros dos son
+documentos de arquitectura y habrían sumado 21 MB permanentes al historial sin aportar a una
+propuesta. **De 1 a 3 de 24 con copia local.** Verificado en Chromium: con sesión el PDF llega
+como `application/pdf` con su firma `%PDF-`; sin sesión redirige al login, que es como debe
+estar detrás del muro.
+
+Los 21 restantes viven en los dominios que devuelven Akamai o agotan el tiempo. `LEEME.md`
+recoge ahora la tabla por dominio, para que nadie vuelva a pedir los 24 de golpe.
 
 ### Pendiente 15: MikroTik 14/15 y Aruba 6/21, y un quinto estado (2026-09-03)
 
