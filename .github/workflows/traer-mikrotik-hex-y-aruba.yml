@@ -1,0 +1,95 @@
+name: traer-mikrotik-hex-y-aruba
+
+# Dos cosas en una corrida, porque son dos preguntas cortas:
+#
+# 1. LOS DOS hEX QUE FALTABAN. La sonda anterior los pidio en minusculas y devolvieron 404;
+#    el sitio de MikroTik distingue mayusculas y las fichas viven en /product/RB750Gr3 y
+#    /product/RB750r2. Confirmado por busqueda, no adivinado.
+#
+# 2. ¿ARUBA SE PUEDE LEER, O ES AKAMAI COMO EL RESTO DE HPE? El 2026-09-03 se comprobo que
+#    buy.hpe.com devuelve un "Access Denied" de Akamai al ejecutor de Actions. Pero el
+#    manifiesto DATASHEETS reparte sus 24 documentos entre TRES dominios distintos
+#    -arubanetworking.hpe.com, hpe.com y arubanetworks.com- y el vigia si leia uno de ellos.
+#    Aqui se piden cuatro, uno por dominio y bien espaciados, para medirlo en vez de suponerlo:
+#    la tanda de 24 seguidas ya se probo en agosto y fallo, asi que no se repite.
+#
+# No extrae nada: publica lo que baje en una rama de transporte para lectura humana.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  traer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pedir las fichas
+        run: |
+          node -e "
+            const fs = require('fs');
+            const objetivos = [
+              { archivo: 'hex.html', url: 'https://mikrotik.com/product/RB750Gr3', senal: /power consumption/i },
+              { archivo: 'hex-lite.html', url: 'https://mikrotik.com/product/RB750r2', senal: /power consumption/i },
+              { archivo: 'aruba-ec-hardware.pdf', url: 'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/hardware/reference/EdgeConnect-Hardware-Reference_latest.pdf', senal: null },
+              { archivo: 'aruba-ec-spec.html', url: 'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', senal: /power|watt/i },
+              { archivo: 'aruba-ec-xs.html', url: 'https://www.hpe.com/psnow/doc/a00110177enw', senal: /power|watt/i },
+              { archivo: 'aruba-9200.html', url: 'https://www.hpe.com/psnow/doc/a50003977enw', senal: /power|watt/i },
+            ];
+            const espera = (ms) => new Promise((r) => setTimeout(r, ms));
+            (async () => {
+              const informe = [];
+              for (const o of objetivos) {
+                try {
+                  const r = await fetch(o.url, {
+                    headers: {
+                      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+                      'Accept-Language': 'en-US,en;q=0.9',
+                      Accept: 'text/html,application/pdf,*/*',
+                    },
+                  });
+                  const buf = Buffer.from(await r.arrayBuffer());
+                  const esPdf = buf.length > 4 && buf.subarray(0, 5).toString('latin1') === '%PDF-';
+                  const texto = esPdf ? '' : buf.toString('utf8');
+                  const util = r.status === 200 && (esPdf || (o.senal ? o.senal.test(texto) : false));
+                  // Akamai se declara en el cuerpo: se reporta como lo que es, igual que en HPE.
+                  const akamai = /access denied|edgesuite|reference #/i.test(texto);
+                  if (util) fs.writeFileSync(o.archivo, buf);
+                  informe.push({ archivo: o.archivo, status: r.status, bytes: buf.length, esPdf, util, akamai });
+                  console.log(o.archivo, r.status, util ? 'OK' : (akamai ? 'AKAMAI' : 'sin senal'));
+                } catch (e) {
+                  informe.push({ archivo: o.archivo, error: String(e.message || e) });
+                  console.log(o.archivo, 'ERROR', e.message);
+                }
+                await espera(4000 + Math.random() * 3000);
+              }
+              fs.writeFileSync('informe.json', JSON.stringify(informe, null, 2));
+            })();
+          "
+
+      - name: Publicar en la rama de transporte
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout --orphan fuente/mikrotik-hex-aruba
+          git rm -rf --cached . >/dev/null 2>&1 || true
+          git add -f informe.json
+          git add -f ./*.html ./*.pdf 2>/dev/null || true
+          git commit -q -m 'Fichas de hEX y sonda de Aruba, material de trabajo'
+          git push -f origin fuente/mikrotik-hex-aruba
+
+      - name: Resumen
+        if: always()
+        run: |
+          {
+            echo '## hEX que faltaban + medicion de Aruba'
+            echo ''
+            echo '```json'
+            cat informe.json 2>/dev/null || echo '(sin resultado)'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
