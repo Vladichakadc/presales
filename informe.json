@@ -1,0 +1,51 @@
+[
+  {
+    "archivo": "hw-srx320.pdf",
+    "status": 200,
+    "kb": 2363,
+    "esPdf": true,
+    "util": true
+  },
+  {
+    "archivo": "hw-srx340.pdf",
+    "status": 200,
+    "kb": 2295,
+    "esPdf": true,
+    "util": true
+  },
+  {
+    "archivo": "hw-srx345.pdf",
+    "status": 200,
+    "kb": 2953,
+    "esPdf": true,
+    "util": true
+  },
+  {
+    "archivo": "hw-srx4200.pdf",
+    "status": 200,
+    "kb": 1954,
+    "esPdf": true,
+    "util": true
+  },
+  {
+    "archivo": "hw-srx4700.pdf",
+    "status": 200,
+    "kb": 10821,
+    "esPdf": true,
+    "util": true
+  },
+  {
+    "archivo": "juniper-eol-srx.html",
+    "status": 200,
+    "kb": 102,
+    "esPdf": false,
+    "util": true
+  },
+  {
+    "archivo": "cisco-8300-ds.pdf",
+    "status": 200,
+    "kb": 785,
+    "esPdf": true,
+    "util": true
+  }
+]
