@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dimensionador y BOM Nokia — Fabric de datacenter 7220 IXR</title>
-<meta name="description" content="Dimensionamiento de fabric leaf-spine con Nokia 7220 IXR: puertos de acceso, sobresuscripción y diseño Clos de dos capas. Genera el BOM de leafs y spines.">
+<title>Dimensionador y BOM Nokia — Agregación y core IP/MPLS (7250 IXR y 7750 SR)</title>
+<meta name="description" content="Dimensionamiento por capacidad de un equipo para Nokia 7250 IXR, 7250 IXR-X, 7250 IXR-R y 7750 SR: caudal del enlace, densidad de puertos y familia de plataforma. Genera el BOM.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" data-fuente>
@@ -38,24 +38,11 @@ select{font-family:'Barlow',sans-serif;font-size:13.5px}
 input:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:1px}
 .check{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer}
 .check input{margin:3px 0 0;accent-color:var(--red)}
-
-.diseno{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
-@media(max-width:520px){.diseno{grid-template-columns:1fr}}
-.rolCard{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:18px}
-.rolCard h3{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0 0 8px}
-.rolCard .modelo{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:24px;text-transform:uppercase;margin:0 0 2px;line-height:1.05}
-.rolCard .cant{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--steel);margin-bottom:10px}
-.rolCard .cant b{color:var(--ink);font-weight:700;font-size:16px}
-.rolCard ul{list-style:none;margin:0;padding:0;font-size:12.5px}
-.rolCard li{padding:4px 0;border-top:1px solid var(--paper);display:flex;justify-content:space-between;gap:10px}
-.rolCard li:first-child{border-top:0}
-.rolCard li b{font-family:'IBM Plex Mono',monospace;font-weight:600}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{flex:1 1 auto;padding:8px 10px;border:1px solid var(--rule);background:#fff;color:var(--steel);border-radius:2px;cursor:pointer;font-family:'Barlow',sans-serif;font-size:12.5px;font-weight:600}
+.seg button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}
 
 .verdict{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px;margin-bottom:16px}
-.verdict .tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 8px}
-.verdict .cifra{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(20px,3.6vw,30px);margin:0}
-.verdict .cifra em{font-style:normal;color:var(--red)}
-.verdict p{font-size:13px;color:var(--steel);margin:8px 0 0}
 .warn{color:var(--amber)}
 .bad{color:#C8102E}
 .flag-ft{background:#FFF5F5;border:1px solid #FECACA;border-left:3px solid #C8102E;border-radius:2px;padding:12px 14px;font-size:12.5px;line-height:1.5;margin-bottom:18px}
@@ -84,9 +71,9 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <a href="index.html" class="back-link">&#8592; Volver al Portal Presales</a>
 
 <header class="masthead">
-  <p class="eyebrow">Nokia &middot; Fabric de datacenter &middot; 7220 IXR sobre SR Linux</p>
-  <h1>Dimensionador<br>Fabric Nokia 7220 IXR</h1>
-  <p class="sub">Diseño Clos de dos capas (leaf-spine): a partir de los servidores a conectar, la velocidad de acceso y la sobresuscripción deseada, calcula cuántos leafs y cuántos spines hacen falta — no un único equipo, como en los demás dimensionadores de este portal. Cubre la línea 7220 IXR (acceso, leaf y spine de datacenter); la 7250 IXR y la 7750 SR (agregación y core IP-MPLS) se dimensionan por capacidad de un equipo y tienen <a href="dimensionador-nokia-7750sr.html">su propio dimensionador</a>.</p>
+  <p class="eyebrow">Nokia &middot; Agregaci&oacute;n, borde y core IP/MPLS</p>
+  <h1>Dimensionador<br>Nokia 7250 IXR y 7750 SR</h1>
+  <p class="sub">Los catorce modelos Nokia que <em>no</em> son fabric de datacenter. Aqu&iacute; la pregunta es cu&aacute;l aguanta el caudal del enlace y trae los puertos que hacen falta &mdash; un equipo, como en los otros cinco dimensionadores. Para dise&ntilde;ar un fabric leaf-spine con la l&iacute;nea 7220 IXR, usa <a href="dimensionador-nokia-7220ixr.html">el dimensionador de fabric</a>, que responde otra pregunta.</p>
 </header>
 
 <div class="tabs" role="tablist">
@@ -99,52 +86,82 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <div class="cols">
 <div>
   <section class="panel">
-    <h2>1 · Servidores a conectar</h2>
+    <h2>1 · Plataforma</h2>
     <div class="field">
-      <label for="servers">Cantidad de servidores / hosts</label>
-      <input type="number" id="servers" value="96" min="1" step="1">
-    </div>
-    <div class="field">
-      <label for="accesoVel">Velocidad de puerto por servidor</label>
-      <select id="accesoVel">
-        <option value="1">1 GbE</option>
-        <option value="25" selected>25 GbE</option>
-        <option value="100">100 GbE</option>
-      </select>
-      <p class="hint">Solo se listan las velocidades de acceso que la línea 7220 IXR realmente publica.</p>
-    </div>
-    <div class="field">
-      <label class="check"><input type="checkbox" id="chkDual"> <span>Doble homing — cada servidor conecta a 2 leafs<span class="hint" style="display:block;margin-top:2px">Duplica los puertos de acceso necesarios; es lo que evita que un solo leaf caído deje un servidor sin red.</span></span></label>
+      <label>Familia</label>
+      <div class="seg" id="platSeg">
+        <button data-v="all" aria-pressed="true">Todas</button>
+        <button data-v="ixr" aria-pressed="false">7250 IXR</button>
+        <button data-v="ixrx" aria-pressed="false">7250 IXR-X</button>
+        <button data-v="ixrr" aria-pressed="false">7250 IXR-R</button>
+        <button data-v="sr" aria-pressed="false">7750 SR</button>
+        <button data-v="sr1x" aria-pressed="false">7750 SR-1x</button>
+      </div>
+      <p class="hint" id="platHint"></p>
     </div>
   </section>
 
   <section class="panel">
-    <h2>2 · Diseño de fabric</h2>
+    <h2>2 · Caudal del enlace</h2>
     <div class="field">
-      <label for="oversub">Sobresuscripción acceso : fabric</label>
-      <select id="oversub">
-        <option value="1">1:1 — sin bloqueo</option>
-        <option value="2">2:1</option>
-        <option value="3" selected>3:1 — habitual en DC</option>
-        <option value="4">4:1</option>
-        <option value="6">6:1</option>
+      <label for="bw">Tráfico a cursar</label>
+      <div class="row">
+        <input type="number" id="bw" value="400" min="1" step="any">
+        <select id="unit" style="max-width:110px">
+          <option value="1" selected>Gbps</option>
+          <option value="1000">Tbps</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="head">Margen de crecimiento</label>
+      <select id="head">
+        <option value="0">Sin margen</option>
+        <option value="20">20 %</option>
+        <option value="30" selected>30 %</option>
+        <option value="50">50 %</option>
+        <option value="100">100 % — duplicar</option>
       </select>
-      <p class="hint">Cuánta capacidad de acceso comparte cada Gbps de subida al spine. 3:1 es un punto de partida típico; 1:1 exige más puertos de fabric por leaf.</p>
+      <p class="hint">Se aplica sobre el caudal antes de comparar con la capacidad de conmutación del equipo.</p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>3 · Puertos que necesita el enlace</h2>
+    <div class="field">
+      <label for="portQty">Cantidad de puertos</label>
+      <div class="row">
+        <input type="number" id="portQty" value="0" min="0" step="1">
+        <select id="portVel" style="max-width:120px">
+          <option value="10">10GE</option>
+          <option value="25">25GE</option>
+          <option value="100" selected>100GE</option>
+          <option value="400">400GE</option>
+        </select>
+      </div>
+      <p class="hint">Déjalo en 0 para dimensionar solo por caudal. Los chasis modulares (7750 SR-7s/14s y el 7250 IXR-R6dl) no publican densidad de puertos: si pides una cantidad, se dicen aparte en vez de descartarse en silencio.</p>
+    </div>
+    <div class="field">
+      <label class="check"><input type="checkbox" id="chkHa"> <span>Par redundante &mdash; cotizar dos equipos<span class="hint" style="display:block;margin-top:2px">No cambia el modelo elegido: duplica la cantidad en el BOM.</span></span></label>
     </div>
   </section>
 </div>
 
 <div>
   <div class="verdict" id="verdict"></div>
-  <div class="diseno" id="disenoBox"></div>
 
   <section class="panel">
     <h2>Resumen de sizing</h2>
     <div id="sizingBox"><p style="font-size:13.5px;color:var(--steel)">Completa los parámetros para ver el resumen.</p></div>
   </section>
 
+  <section class="panel">
+    <h2>Equipos que no se pudieron comprobar por puertos</h2>
+    <div id="sinDensidad"></div>
+  </section>
+
   <div class="note">
-    <b>Nota metodológica.</b> El diseño es un Clos de dos capas de malla completa: cada leaf conecta un puerto a <em>cada</em> spine (ECMP), así que el número de spines es exactamente el número de uplinks que necesita un leaf, y cada spine necesita un puerto por cada leaf del fabric. No modela breakout de puertos (dividir un puerto de mayor velocidad en varios de menor) ni redundancia N+1 de spines más allá de la que ya aporta la malla completa — para eso, súmalo a mano sobre el resultado. Los otros 14 modelos Nokia (7250 IXR de agregación/edge, 7750 SR de core IP-MPLS) no se dimensionan como fabric leaf-spine: la pregunta ahí es qué equipo aguanta el enlace, no cuántos leafs y spines hacen falta, y por eso viven en <a href="dimensionador-nokia-7750sr.html">una página aparte</a>.
+    <b>Nota metodológica.</b> <b>La plataforma se elige antes que el caudal.</b> Estas cinco familias no son intercambiables aunque coincidan en Tbps: un router de cell site, un agregador de datacenter y un PE de core IP/MPLS cambian el sistema operativo, el papel en la red y quién la opera. Con «Todas» seleccionado se listan las cinco juntas, que sirve para comparar pero no para decidir. <b>La capacidad es la de conmutación del equipo</b>, no un caudal con servicios activos: Nokia no publica para esta línea el desglose por función que sí publican los firewalls de este catálogo, así que aquí no hay capas de inspección que aplicar. <b>Las configuraciones de puertos son alternativas, no acumulables:</b> un 7250 IXR-6e da 36 puertos de 100GE <em>o</em> 12 de 400GE, nunca las dos cosas, y el motor comprueba si alguna configuración cumple. Los chasis modulares se dimensionan solo por caudal y lo declaran.
   </div>
 </div>
 </div>
@@ -158,7 +175,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <b>Aviso de preventa:</b> no hay lista de precios de Nokia en el material disponible para este catálogo. Todas las líneas de equipo van «Consultar» y el BOM las cuenta como sin cotizar — confirma precio y disponibilidad con el distribuidor autorizado.
   </div>
   <div class="flag-amber">
-    Este BOM cubre <b>leafs y spines</b> únicamente. Cableado (DAC/AOC/transceptores), cables de gestión y montaje en rack se cotizan aparte: sus part numbers dependen del alcance físico exacto del rack, que esta calculadora no conoce.
+    Este BOM cubre <b>el chasis</b>. Transceptores, tarjetas IOM de los chasis modulares, licencias de software y soporte se cotizan aparte: dependen de la configuración exacta, que esta calculadora no conoce.
   </div>
 </div>
 
@@ -180,12 +197,13 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 </div>
 
 <p class="note">
-<b>Fuentes:</b> <a href="https://www.nokia.com/data-center-networks/data-center-fabric/7220-interconnect-router/" target="_blank" rel="noopener">nokia.com/data-center-networks/data-center-fabric/7220-interconnect-router</a> — capacidad de conmutación y puertos de las series 7220 IXR-D. Precios: sin lista pública verificada, todas las líneas de equipo van «Consultar».
+<b>Fuentes:</b> capacidad de conmutación y puertos de <a href="https://www.nokia.com/ip-networks/routers/" target="_blank" rel="noopener">nokia.com/ip-networks/routers</a>, ya verificados en el catálogo del portal y aquí solo estructurados en campos numéricos. Precios: sin lista pública verificada, todas las líneas de equipo van «Consultar».
 </p>
 
 </div><!-- /wrap -->
+<script src="/js/ficha.js"></script>
 <script src="/js/bom.js"></script>
 <script src="/js/estado.js"></script>
-<script src="/js/dimensionador-nokia-7220ixr.js"></script>
+<script src="/js/dimensionador-nokia-7750sr.js"></script>
 </body>
 </html>

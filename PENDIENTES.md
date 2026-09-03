@@ -139,13 +139,12 @@ Cobertura actual por herramienta:
    para la cobertura casilla por casilla) sigue siendo la vía: reconoce las columnas por su
    cabecera, resuelve Gbps frente a Mbps sin multiplicar a ojo y **rechaza la fila si alguna de
    sus columnas contradice lo ya verificado**, que es lo que caza una fila desplazada.
-6. **Dimensionador Nokia — parcial (2026-09-02), ver *Cerrado recientemente*.** La línea
-   **7220 IXR** (4 modelos, fabric de datacenter puro) ya tiene motor propio — leafs, spines,
-   uplinks por leaf y sobresuscripción, sobre `dimensionador-nokia-7220ixr.html`. Lo que sigue
-   sin cubrir es la **agregación de operador** (7250 IXR, 7750 SR — 14 modelos): esos no se
-   dimensionan como fabric leaf-spine sino por capacidad y densidad de puertos de un único
-   equipo, el motor que ya usan los otros seis fabricantes — necesita su propio proyecto
-   (motor + página), no una extensión del de fabric.
+6. **~~Dimensionador Nokia~~ Resuelto (2026-09-03)**, ver *Cerrado recientemente*. Los 18
+   modelos están cubiertos por dos páginas, porque son dos preguntas: la **7220 IXR** (4
+   modelos) como fabric leaf-spine, y los otros **14** (7250 IXR, 7250 IXR-X, 7250 IXR-R,
+   7750 SR/SR-s/SR-1x) por capacidad de un único equipo, en
+   `dimensionador-nokia-7750sr.html`. Nokia es ahora el único fabricante del portal con dos
+   dimensionadores.
 
 ## Datos por confirmar
 
@@ -209,6 +208,56 @@ Cobertura actual por herramienta:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Nokia, los 18 modelos cubiertos: un segundo dimensionador para lo que no es fabric (2026-09-03)
+
+Cierra el pendiente 6. Los 14 modelos que la fase 1 dejó fuera —7250 IXR, 7250 IXR-X,
+7250 IXR-R y 7750 SR/SR-s/SR-1x— ya se dimensionan, en `dimensionador-nokia-7750sr.html`.
+
+**Son dos páginas porque son dos preguntas.** El dimensionador 7220 IXR responde «cuántos
+leafs y cuántos spines», y su resultado son dos equipos con sus cantidades. Aquí la pregunta
+es «cuál de estos catorce aguanta el enlace», y el resultado es **un** equipo — así que esta
+página sí reutiliza `js/ficha.js`, con su desplegable de candidatos, su ficha completa y su
+sección de alimentación, igual que los otros cinco dimensionadores. Nokia es ahora el único
+fabricante del portal con dos.
+
+**No hizo falta ningún documento externo, y eso era el hallazgo.** La capacidad y los puertos
+de los catorce ya estaban verificados en `indexPR.js`, pero como **texto libre**: `"6.4 Tbps"`,
+`"36x100GE o 12x400GE · 1U"`. Todo el trabajo fue estructurarlos en campos que un motor pueda
+usar, sin añadir, corregir ni completar una sola cifra. Y estructurar obligó a decidir tres
+cosas que el texto libre escondía:
+
+1. **«36x100GE o 12x400GE» son dos configuraciones alternativas, no la suma de las dos.** Un
+   7250 IXR-6e da 36 puertos de 100GE **o** 12 de 400GE, nunca ambos. Por eso `configs` es una
+   lista de opciones y el motor comprueba si *alguna* cumple: sumarlas habría prometido 48
+   interfaces donde hay 36. Medido en el navegador: pidiendo 40 puertos de 400GE, el único
+   candidato es el 7750 SR-1x-48D, y el SR-1x-92S —que trae 12x400GE **más** 80x100GE— queda
+   fuera correctamente, porque sus puertos de 100GE no completan los de 400GE.
+2. **Un chasis modular no tiene densidad publicada, y eso no es lo mismo que no tener
+   puertos.** «7 slots IOM · hasta 400GE» dice cuántas tarjetas caben, no cuántos puertos
+   salen: depende de qué IOM se pida, y este catálogo no tiene el catálogo de IOM. Los cinco
+   modelos así (7750 SR-7s, SR-14s, 7250 IXR-R6dl, IXR-e, IXR-e2) se dimensionan por caudal y
+   **se apartan con su motivo** en una sección propia cuando se pide una densidad concreta.
+   Descartarlos en silencio los haría parecer insuficientes; colarlos con una densidad
+   inventada sería peor. Es el mismo trato que `ficha.js` da a una capa sin cifra.
+3. **La capacidad va en Gbps aunque el material comercial la cite en Tbps.** 6,4 Tbps son
+   6400. Con las dos unidades mezcladas, un equipo de 6,4 Tbps habría perdido al ordenar
+   contra uno de 300 Gbps — el mismo fallo que `tabla.js` ya tuvo cuando 5.999 dólares valían
+   menos que 29.
+
+**La plataforma se elige antes que el caudal**, la misma regla que ya gobierna el dimensionador
+Cisco. Estas cinco familias no son intercambiables aunque coincidan en Tbps: un router de cell
+site, un agregador de datacenter y un PE de core IP/MPLS cambian el sistema operativo, el papel
+en la red y quién la opera. Verificado en el navegador: a 520 Gbps, sin acotar sale un
+7250 IXR-e2 de cell site; acotando a la familia 7750 SR sale un SR-1s. Son respuestas distintas
+a preguntas distintas, y ordenar por capacidad sin acotar la familia daría la primera cuando se
+buscaba la segunda.
+
+Seis pruebas nuevas (144 en total, eran 138) sobre el motor puro, que se expone como
+`window.NOKIA_SR` igual que `BOM`, `FICHA` y `ESTADO` exponen el suyo: cubren las
+configuraciones como alternativas, el apartado de los modulares, el acotado por familia y que
+pedir más que el modelo más grande no devuelva el mayor «por aproximación». Arranque real con
+`NODE_ENV=production` y la página conducida en Chromium sin errores de consola.
 
 ### Juniper 12/12, dos SRX que ya no se piden, y una etiqueta que decía lo contrario (2026-09-03)
 

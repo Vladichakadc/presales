@@ -5,6 +5,7 @@ const {
 const cotizadorCatalog = require('../seed/legacyData/cotizadorCatalog');
 const mikrotikData = require('../seed/legacyData/mikrotik');
 const arubaData = require('../seed/legacyData/aruba');
+const nokiaData = require('../seed/legacyData/nokia');
 const { fuentesDe } = require('../seed/legacyData/fuentes');
 const fs = require('fs');
 const pathMod = require('path');
@@ -386,6 +387,24 @@ async function toDimensionadorNokia() {
   return { models };
 }
 
+// Nokia fase 2: los 14 que NO son fabric. Aqui si hay "un modelo elegido", asi que la pagina
+// usa `js/ficha.js` como los otros cinco dimensionadores. Se entregan tambien las familias,
+// porque la plataforma se acota antes que el caudal (misma regla que Cisco).
+async function toDimensionadorNokiaRouter() {
+  const vendorIds = await vendorIdMap();
+  const products = await Product.findAll({
+    where: { vendorId: vendorIds.nokia, category: 'router_core' },
+  });
+  const models = products
+    .filter((p) => p.specs && typeof p.specs.cap === 'number')
+    .map((p) => ({
+      id: p.model, ...p.specs, eol: p.eol, elp: p.priceDisplay, elpN: p.priceNumeric,
+    }))
+    .sort((a, b) => a.cap - b.cap);
+
+  return { models, plataformas: nokiaData.PLATAFORMAS };
+}
+
 // guia-diseno-interactiva.html EQ shape: {role: [{v,color,model,spec,alt,elp}, ...]}
 async function toGuiaRoles() {
   const recs = await RoleRecommendation.findAll({
@@ -408,6 +427,7 @@ async function toGuiaRoles() {
 }
 
 module.exports = {
+  toDimensionadorNokiaRouter,
   getVendorsList,
   toIndexPR,
   toFuentes,

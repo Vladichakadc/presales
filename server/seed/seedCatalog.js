@@ -374,10 +374,17 @@ async function seedCatalog() {
   // uso en el fabric) que un motor de sizing leaf-spine necesita, y que indexPR/cotizadorCatalog
   // solo tenían como texto libre. Categoría propia ('switch_fabric') porque no se dimensiona
   // igual que un firewall o un router de borde: el dimensionador elige un LEAF y un SPINE con
-  // sus cantidades, no un único equipo. Los 14 modelos Nokia restantes (7250 IXR, 7750 SR) no
-  // llevan datos aquí a propósito — ver la cabecera de legacyData/nokia.js y PENDIENTES.md.
+  // sus cantidades, no un único equipo. Los otros 14 (7250 IXR, 7750 SR) van justo debajo, en
+  // su propia categoría — ver la cabecera de legacyData/nokia.js.
   await seedDimensionadorModels(vendorIds.nokia, nokiaData.MODELS, {
     categoryFn: () => 'switch_fabric',
+  });
+
+  // Fase 2: los otros 14 (7250 IXR, 7250 IXR-X, 7250 IXR-R, 7750 SR/SR-s/SR-1x). Categoria
+  // distinta ('router_core') porque se dimensionan por capacidad de UN equipo, no como fabric,
+  // y cada proyeccion filtra por la suya — asi las dos paginas Nokia no se pisan.
+  await seedDimensionadorModels(vendorIds.nokia, nokiaData.MODELS_ROUTER, {
+    categoryFn: () => 'router_core',
   });
 
   await seedRoleRecommendations(vendorIds);
