@@ -34,15 +34,23 @@ const FORCE = args.includes('--force');
 const LIST = args.includes('--list');
 const MAX_REDIRECTS = 5;
 const TIMEOUT_MS = 45000;
+const REINTENTOS = 2;
+
+const espera = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function descargar(url, redirects = 0) {
   return new Promise((resolve, reject) => {
     if (redirects > MAX_REDIRECTS) return reject(new Error('demasiados redirects'));
     const req = https.get(url, {
       headers: {
-        // Sin User-Agent varios CDN de HPE responden 403 a un cliente sin identificar.
-        'User-Agent': 'Mozilla/5.0 (compatible; presales-datasheets/1.0)',
-        Accept: 'application/pdf,*/*',
+        // Cabeceras de un navegador real: HPE frena en seco una rafaga de peticiones que
+        // solo llevan User-Agent y nada mas -eso es lo que distingue a un scraper de una
+        // persona navegando, mas que la propia identidad del cliente.
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+          + '(KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+        Accept: 'application/pdf,text/html,*/*',
+        'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+        Referer: 'https://www.hpe.com/us/en/aruba-networking.html',
       },
       timeout: TIMEOUT_MS,
     }, (res) => {
@@ -70,6 +78,21 @@ function descargar(url, redirects = 0) {
 // pagina de aterrizaje servida con la cabecera equivocada.
 const esPdf = (buf) => buf.length > 4 && buf.subarray(0, 5).toString('latin1') === '%PDF-';
 
+// Un timeout o un 403 sueltos, en medio de una tanda de 24 peticiones seguidas, son la firma
+// de un limite de ritmo -no de que el documento no exista-, asi que valen un reintento con
+// espera creciente antes de darse por vencido. Un 404 no se reintenta: ese es un error real.
+async function descargarConReintentos(url) {
+  for (let intento = 0; ; intento++) {
+    try {
+      return await descargar(url);
+    } catch (err) {
+      const esTransitorio = /timeout|HTTP 403|HTTP 429|HTTP 5\d\d|ECONNRESET/.test(err.message);
+      if (!esTransitorio || intento >= REINTENTOS) throw err;
+      await espera(3000 * (intento + 1) + Math.random() * 2000);
+    }
+  }
+}
+
 async function main() {
   const docs = Object.entries(DATASHEETS);
   if (!fs.existsSync(DESTINO)) fs.mkdirSync(DESTINO, { recursive: true });
@@ -96,7 +119,7 @@ async function main() {
     }
     process.stdout.write(`↓ ${d.file} … `);
     try {
-      const { buf, tipo } = await descargar(d.url);
+      const { buf, tipo } = await descargarConReintentos(d.url);
       if (!esPdf(buf)) {
         noPdf.push({ clave, file: d.file, url: d.url, tipo });
         console.log(`no es un PDF directo (${tipo.split(';')[0] || 'sin tipo'}) — se omite`);
@@ -109,6 +132,10 @@ async function main() {
       fallidos.push({ clave, file: d.file, url: d.url, motivo: err.message });
       console.log(`ERROR: ${err.message}`);
     }
+    // Pausa entre documentos, no solo entre reintentos: 24 peticiones seguidas sin respiro
+    // es justo el patron que un limite de ritmo detecta, aunque cada una individualmente
+    // luzca como un navegador.
+    await espera(1500 + Math.random() * 1500);
   }
 
   console.log('\n─────────────────────────────────────────────');
