@@ -38,6 +38,18 @@ const CAMPOS = {
   mikrotik: { mod: 'mikrotik', lista: 'MODELS', campos: ['fwd', 'ipsec', 'ram', 'cores', 'redund'] },
   aruba: { mod: 'aruba', lista: 'MODELS', campos: ['redund'] },
   juniper: { mod: 'juniper', lista: 'MODELS', campos: ['fw', 'fwImix', 'vpn', 'ips', 'atp', 'sess', 'redund'] },
+  // Nokia faltaba entero hasta el 2026-09-03: este informe contaba SEIS fabricantes de siete,
+  // asi que sus 18 modelos no aparecian ni como hueco. Un informe que omite un fabricante es
+  // peor que no tenerlo, que es la misma razon por la que los precios se cuentan sobre
+  // cotizadorCatalog y no sobre los MODELS de cada uno.
+  //
+  // Va en dos filas porque son dos catalogos con dos motores: `MODELS` es el fabric 7220 IXR
+  // y `MODELS_ROUTER` la agregacion y el core. Se cuentan `cap` y `redund` y NADA MAS: en la
+  // lista de routers, `configs` en null NO es un hueco -son los chasis modulares, que no
+  // publican densidad y lo declaran-, asi que contarlo diria "9 de 14" e inventaria cinco
+  // ausencias que no existen. Justo el informe que miente del que avisa la cabecera.
+  'nokia (fabric)': { mod: 'nokia', lista: 'MODELS', campos: ['cap', 'redund'] },
+  'nokia (agregacion/core)': { mod: 'nokia', lista: 'MODELS_ROUTER', campos: ['cap', 'redund'] },
 };
 
 function cargar(nombre) {

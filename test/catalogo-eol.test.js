@@ -87,3 +87,38 @@ test('un hueco del catalogo es null, nunca 0 ni una cadena vacia', () => {
     }
   }
 });
+
+test('el inventario cubre a los SIETE fabricantes, no a seis', () => {
+  // Nokia falto entero en `npm run catalogo` hasta el 2026-09-03: el informe contaba seis
+  // fabricantes de siete, asi que sus 18 modelos no salian ni como hueco. Un fabricante que
+  // no se inventaria se comporta igual que uno sin huecos — el mismo modo de fallo que el
+  // conjunto inerte de CISCO_EOL_MODELS, y la razon por la que los precios se cuentan sobre
+  // cotizadorCatalog. Esta prueba fija la cobertura del INFORME, no la del catalogo.
+  const fuente = require('node:fs').readFileSync(
+    require('node:path').join(__dirname, '..', 'scripts', 'catalogo-check.js'), 'utf8');
+  const vendors = require('../server/seed/legacyData/vendors');
+
+  const nombres = Array.isArray(vendors) ? vendors.map((v) => v.code || v.name || v)
+    : Object.keys(vendors);
+  for (const v of nombres) {
+    const codigo = String(v).toLowerCase();
+    if (codigo === 'arista') continue; // retirado del catalogo a proposito
+    assert.ok(new RegExp(`'?${codigo}[' (]`, 'i').test(fuente),
+      `${codigo} aparece en el inventario de scripts/catalogo-check.js`);
+  }
+});
+
+test('el inventario no cuenta como hueco un campo que se declara inexistente', () => {
+  // `configs` en null NO es un dato que falte: son los chasis modulares Nokia, que no publican
+  // densidad de puertos y lo dicen. Contarlo en la cobertura diria "9 de 14" e inventaria
+  // cinco ausencias, que es exactamente el informe que miente del que avisa la cabecera del
+  // script. Solo se cuentan `cap` y `redund`.
+  const fuente = require('node:fs').readFileSync(
+    require('node:path').join(__dirname, '..', 'scripts', 'catalogo-check.js'), 'utf8');
+  const lineaNokia = fuente.split('\n').filter((l) => /nokia \(/.test(l) && /campos:/.test(l));
+  assert.strictEqual(lineaNokia.length, 2, 'Nokia va en dos filas: fabric y agregacion/core');
+  for (const l of lineaNokia) {
+    assert.ok(!/'configs'/.test(l), 'configs no se cuenta como cobertura');
+    assert.ok(!/'puertos'/.test(l), 'puertos tampoco: en el fabric describe el rol, no un hueco');
+  }
+});

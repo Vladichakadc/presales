@@ -112,7 +112,7 @@ Cobertura actual por herramienta:
 | MikroTik | sí | sí | sí | sí |
 | Aruba | sí | sí | sí | sí |
 | **Juniper** | sí (22 modelos) | sí (21) | sí | **sí** (nuevo) |
-| **Nokia** | sí (18 modelos) | sí (18) | sí | **parcial** (4/18 — fabric 7220 IXR) |
+| **Nokia** | sí (18 modelos) | sí (18) | sí | **sí, dos** (18/18 — fabric 7220 IXR + agregación/core) |
 | ~~Arista~~ | retirado | retirado | retirado | — |
 
 5. **Completar el catálogo del dimensionador Juniper — parcialmente resuelto (2026-09-02),
@@ -163,8 +163,14 @@ Cobertura actual por herramienta:
     eléctrica» de la ficha (agosto 2026) solo tiene dato donde el propio catálogo ya traía
     una frase publicada — Cisco 21/21 (ya existía), Huawei 17/40, MikroTik 14/15, Aruba 6/21,
     **Juniper 12/12 SRX** (2026-09-03, completo: ver *Cerrado recientemente*), **Fortinet
-    56/58**. El resto queda `null` y la ficha lo declara sin
-    rodeos. Esto **no es lo mismo** que los bloqueados por egreso de más arriba: el Product
+    56/58** y **Nokia 0/18**. El resto queda `null` y la ficha lo declara sin
+    rodeos.
+
+    **Nokia no figuraba en esta lista hasta el 2026-09-03**, y ese es un fallo del registro,
+    no del catálogo: contaba seis fabricantes de siete, así que sus 18 modelos no aparecían
+    ni como hueco. Un pendiente que no se lista se comporta igual que uno que no existe — el
+    mismo modo de fallo que el conjunto inerte de `CISCO_EOL_MODELS`. Sus fichas están en
+    `nokia.com/asset/<id>`, dominio que **sí** responde desde Actions. Esto **no es lo mismo** que los bloqueados por egreso de más arriba: el Product
     Matrix de Fortinet, el material de Juniper y el datasheet abreviado de MikroTik que este
     catálogo ya usa **no traen** consumo eléctrico por modelo — no es una tabla que falte
     copiar, es una hoja mecánica/eléctrica aparte por cada modelo, que ningún importador de
