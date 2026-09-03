@@ -118,3 +118,30 @@ test('la capacidad esta en Gbps aunque el material comercial la cite en Tbps', (
   assert.strictEqual(de('7250 IXR-e').cap, 300);
   assert.ok(MODELS_ROUTER.every((m) => Number.isInteger(m.cap) && m.cap >= 300));
 });
+
+test('Nokia: la alimentacion entra solo donde la ficha lo dice por modelo', () => {
+  const { MODELS, MODELS_ROUTER } = require('../server/seed/legacyData/nokia.js');
+  const todos = [...MODELS, ...MODELS_ROUTER];
+
+  // 6 de 18, y los seis con una frase literal de una ficha oficial de Nokia: «1+1 redundant»
+  // en la tabla del 7220 IXR-D, «1+1 PSU redundancy» en la del 7750 SR-1x.
+  const con = todos.filter((m) => m.redund !== undefined).map((m) => m.id).sort();
+  assert.strictEqual(JSON.stringify(con), JSON.stringify(
+    ['7220 IXR-D1', '7220 IXR-D2L', '7220 IXR-D3L', '7220 IXR-D5',
+      '7750 SR-1x-48D', '7750 SR-1x-92S']));
+
+  // Ninguno lleva `watts`. Los vatios que publica el 7220 IXR-D son de la FUENTE, no del
+  // equipo, y lo prueba el propio documento: el D2L y el D3L declaran los mismos 650 W con
+  // capacidades distintas (2,0 frente a 3,2 Tb/s). Si fuera consumo, no coincidirian.
+  for (const m of todos.filter((x) => x.psu)) {
+    assert.strictEqual(m.psu.watts, undefined, `${m.id} no declara consumo tipico`);
+    assert.ok(m.psu.texto && m.psu.texto.length > 20, `${m.id} explica que publica`);
+  }
+
+  // Los 7250 IXR-e se quedan sin dato a proposito: su ficha describe variantes redundantes y
+  // no redundantes del mismo modelo, y este catalogo tiene una sola entrada — el mismo caso
+  // que el SRX320 con sus dos consumos. Elegir una seria falso para la mitad de los pedidos.
+  for (const id of ['7250 IXR-e', '7250 IXR-e2']) {
+    assert.strictEqual(todos.find((m) => m.id === id).redund, undefined, id);
+  }
+});

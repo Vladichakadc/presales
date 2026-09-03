@@ -60,6 +60,45 @@
 // como sess/atp/cps de esa fila dependen del mismo anclaje de fw/fwImix/vpn, quedan igual sin
 // aplicar hasta que se resuelva junto con el resto de la fila.
 //
+// LA GENERACIÓN 2024, Y EL MÉTODO DE MEDIDA QUE LO EXPLICABA TODO (2026-09-03)
+// SRX1600, SRX2300 y SRX4300 se habían quedado solo con `fw` porque la matriz de 2020 no
+// alcanza esa generación. Sus fichas POR MODELO sí las publican, y traídas vía Actions
+// completaron fwImix, ips y atp en los tres.
+//
+// Y de paso resolvieron el enigma que esta cabecera llevaba anotado como dato imposible: el
+// «21 Gbps de IPS sobre un firewall de 24 Gbps» del SRX1600, que parecía contradecir que
+// inspeccionar cueste capacidad. No lo contradecía: **son dos métodos de medida distintos**,
+// y la propia ficha los define al pie —
+//   #TPS Method: Throughput performance of average HTTP sessions
+//   **CPS Method: Short-lived sessions
+// El SRX1600 da 19 Gbps de NGFW por TPS y 4,5 por CPS. Las dos cifras son reales; miden cosas
+// distintas. **Se transcribe SIEMPRE el método CPS**, y no por prudencia sino porque es el
+// único en el que Juniper publica también las capas profundas: «Secure Web Access Firewall» y
+// «Advanced Threat» vienen solo en CPS. Mezclar los dos daría una escalera que no compara.
+//
+// El mapeo a los campos de este catálogo sale de las notas al pie de la propia ficha:
+//   ips  <- «Next-generation firewall»  (nota 3: firewall + application security + IPS)
+//   atp  <- «Advanced Threat»           (nota 5: lo anterior + SecIntel + URL filtering +
+//                                        malware protection) — el stack completo
+// Comprobación de coherencia que pasaron los tres: fw > fwImix > ips > atp, monótona.
+//
+// ANCLAJE: los tres entraron por campos que YA coincidían — SRX1600 (fw 24, vpn 18, sess 2M),
+// SRX2300 (fw 39, vpn 36, sess 5M). El SRX4300 no tenía con qué anclar (solo traía `fw`), pero
+// aquí el doble anclaje no aplica igual: **es una ficha de UN SOLO MODELO, no una matriz**, y
+// el modo de fallo que ese anclaje protege —la fila desplazada— no existe cuando el documento
+// no tiene filas de otros equipos. Se comprobó igualmente la identidad del documento por tres
+// sitios (banda de cabecera, columna de la tabla y título de la Tabla 1), que es la lección
+// del `fortigate-70f-series.pdf` que resultó ser la ficha del 71F.
+//
+// LO QUE NO SE TOCÓ, Y ES DELIBERADO. Las fichas contradicen cuatro valores ya guardados:
+// `vpnImix` y `cps` del SRX1600 (5.500 y 95.000 frente a 8.000 y 170.000), `cps` del SRX2300
+// (320.000 frente a 450.000) y `fw` del SRX4300 (90.000 frente a 98.000). Pisar un dato
+// existente es decisión de quien lleva el catálogo, igual que en el SRX380 — y lo que hace que
+// puedan esperar es que **los cuatro están fuera de la escala de dimensionamiento**: `fw` está
+// deliberadamente fuera de `CAPAS`, y ni `vpnImix` ni `cps` filtran en la página Juniper.
+// `sess`, que sí filtra, coincide en los tres modelos. Ver PENDIENTES.md, sección «Conflictos
+// abiertos».
+//
 // `null` SIGNIFICA "EL CATÁLOGO NO TRAE EL DATO", NO "SIN LÍMITE". El motor no filtra por un
 // eje sin dato, y donde la capa que se está dimensionando no tiene cifra el modelo se
 // DESCARTA con su motivo, en vez de colarse con la cifra de otra capa.
@@ -180,13 +219,13 @@ const MODELS = [
   // que inspeccionar cuesta capacidad. Un dato que se contradice con la física del producto
   // no se registra: queda en null y el motor lo declara sin comprobar.
   {id:'SRX1600', redund:'opcional', psu:{watts:137, tipo:'una fuente de serie, admite una segunda (1+1)', volts:'100-127 V AC (5,5 A) o 200-240 V AC (3 A), 50-60 Hz', texto:'Consumo medio 137 W y máximo 162 W, sobre fuentes de 450 W. Juniper lo envía con una sola fuente y la segunda se pide aparte. Cada fuente necesita su propio interruptor.'}, ser:'SRX 1600', seg:'Campus / DC empresarial',
-   fw:24000, fwImix:null, vpn:18000, vpnImix:5500, ips:null, atp:null, sess:2000000, cps:95000,
+   fw:24000, fwImix:12000, vpn:18000, vpnImix:5500, ips:4500, atp:2000, sess:2000000, cps:95000,
    ifaces:'25GE · MACsec a velocidad de línea · 1U'},
   {id:'SRX2300', redund:'opcional', psu:{watts:186, tipo:'una fuente de serie, ranura libre para la segunda (1+1)', volts:'100-127 V AC (5,5 A) o 200-240 V AC (3 A), 50-60 Hz', texto:'Consumo medio 186 W y máximo 229 W, sobre fuentes de 450 W. Se envía con una sola fuente y la ranura de la segunda va vacía.'}, ser:'SRX 2300', seg:'Campus grande / DC',
-   fw:39000, fwImix:null, vpn:36000, vpnImix:null, ips:null, atp:null, sess:5000000, cps:320000,
+   fw:39000, fwImix:28000, vpn:36000, vpnImix:18000, ips:12000, atp:6000, sess:5000000, cps:320000,
    ifaces:'100GE · MACsec a velocidad de línea · 1U'},
   {id:'SRX4300', redund:'opcional', psu:{watts:327, tipo:'una fuente de serie, ranura libre para la segunda (1+1)', volts:'100-127 V AC (10,52 A) o 200-240 V AC (5,26 A), 50/60 Hz', texto:'Consumo típico 327 W y máximo 393 W, sobre fuentes de 850 W. Se envía con una sola fuente; la segunda se pide aparte y cada una necesita un interruptor de 16 A.'}, ser:'SRX 4000', seg:'DC Edge',
-   fw:90000, fwImix:null, vpn:null, vpnImix:null, ips:null, atp:null, sess:null, cps:null,
+   fw:90000, fwImix:70000, vpn:94000, vpnImix:40000, ips:24000, atp:11000, sess:10000000, cps:800000,
    ifaces:'100GE · MACsec a velocidad de línea · 1U'},
   {id:'SRX4700', redund:true, psu:{tipo:'dos fuentes de serie (AC o DC) preinstaladas en 1+1', texto:'Sale de fábrica con las dos fuentes en las ranuras 0 y 1, intercambiables en caliente, y cada una necesita su propia alimentación e interruptor (se recomienda 16 A). Las fuentes son de 2200 W — es capacidad, no consumo, y la guía no publica un consumo típico.'}, ser:'SRX 4000', seg:'Cloud / Service Provider',
    fw:1400000, fwImix:null, vpn:null, vpnImix:null, ips:null, atp:null, sess:null, cps:null,

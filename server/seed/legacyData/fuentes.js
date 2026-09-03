@@ -82,6 +82,10 @@ const FUENTES = {
       url: 'https://www.juniper.net/documentation/us/en/hardware/', estable: true,
       fecha: '2026-09-03', hash: null, cubre: 'alimentacion, redundancia de fuente y consumo medio de los 12 modelos SRX',
       nota: 'Una guia por modelo, traidas via GitHub Actions y leidas a mano. El material comercial de Juniper publica rendimiento pero NO alimentacion: esto es lo unico que la trae. Se comprobo que cada guia hable solo de su equipo antes de aplicar nada. La URL es la del indice; cada documento vive en <modelo>/<modelo>.pdf bajo esa ruta.' },
+    { documento: 'Fichas por modelo de la generacion 2024 (SRX1600, SRX2300, SRX4300)',
+      url: 'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/', estable: true,
+      fecha: '2026-09-03', hash: null, cubre: 'fwImix, IPS y ATP de la generacion que la matriz de 2020 no alcanza',
+      nota: 'Traidas via GitHub Actions. Publican el rendimiento en DOS metodos y confundirlos es el error que este catalogo persigue: «TPS Method: throughput of average HTTP sessions» da 19 Gbps de NGFW en el SRX1600 sobre un firewall de 24, mientras «CPS Method: short-lived sessions» da 4,5. Se transcribe siempre CPS, el unico metodo en el que Juniper publica tambien las capas profundas. Cada fila entro con triple anclaje (fw, vpn y sess ya coincidian). La URL es la del directorio; cada ficha vive en srx<modelo>-firewall-datasheet.pdf. El SRX4100, el SRX4200 y la linea SRX300 dan 404 en ese patron, y el SRX4700 fallo la conexion: reportado, no dado por bueno.' },
     { documento: 'SRX Series Hardware Dates & Milestones',
       url: 'https://support.juniper.net/support/eol/product/srx_series/', estable: false,
       fecha: '2026-09-03', hash: null, cubre: 'fin de venta del SRX1500 (TSB101240) y el SRX4100 (TSB101895), ambos con ultimo pedido 2026-04-15',
@@ -109,6 +113,10 @@ const FUENTES = {
   ],
 
   nokia: [
+    { documento: 'Fichas de serie de Nokia (7220 IXR-D, 7750 SR-1x, 7750 SR-s, 7250 IXR-e)',
+      url: 'https://www.nokia.com/asset/f/207599/', estable: true,
+      fecha: '2026-09-03', hash: null, cubre: 'alimentacion de los 7220 IXR-D y los 7750 SR-1x, y las capacidades publicadas de las series',
+      nota: 'Traidas via GitHub Actions desde nokia.com/asset/f/<id>, que es la URL oficial; no se usan los espejos de terceros que devolvio la busqueda. Aportan `redund` en 6 de los 18 modelos. Los vatios que publican NO son consumo: el 7220 IXR-D2L y el D3L declaran los mismos 650 W con capacidades distintas, asi que es la potencia de la fuente. Estas fichas ademas CONTRADICEN las capacidades del catalogo en seis modelos — ver PENDIENTES.md, no se corrigieron aqui.' },
     { documento: 'Datasheets oficiales de producto',
       url: 'https://www.nokia.com/networks/ip-networks/', estable: false, fecha: '2026-08', hash: null,
       cubre: 'lineas 7220 IXR, 7250 IXR y 7750 SR',

@@ -311,3 +311,33 @@ test('Cisco: el C8355-G2 ya no cae a su cifra de IPsec en perfil SD-WAN', () => 
   assert.strictEqual(m.redund, true);
   assert.strictEqual(m.psu.watts, 45);
 });
+
+test('Juniper: la generacion 2024 entra con la escalera de inspeccion monotona', () => {
+  const { MODELS } = require('../server/seed/legacyData/juniper.js');
+
+  // La ficha por modelo publica el rendimiento en DOS metodos, y confundirlos es justo el
+  // error que este catalogo persigue: «TPS Method: throughput of average HTTP sessions» da
+  // 19 Gbps de NGFW en el SRX1600 —sobre un firewall de 24— mientras «CPS Method: short-lived
+  // sessions» da 4,5. La cabecera de juniper.js llevaba anotado ese «21 Gbps de IPS» como
+  // dato que contradecia la fisica del producto; no la contradecia, era el otro metodo.
+  // Se transcribe SIEMPRE el metodo CPS, porque es el unico en el que Juniper publica tambien
+  // las capas profundas —Secure Web Access y Advanced Threat solo traen CPS—, asi que es el
+  // unico que da una escalera comparable de principio a fin.
+  for (const id of ['SRX1600', 'SRX2300', 'SRX4300']) {
+    const m = MODELS.find((x) => x.id === id);
+    assert.ok(m.fw > m.fwImix, `${id}: IMIX por debajo de paquetes grandes`);
+    assert.ok(m.fwImix > m.ips, `${id}: inspeccionar cuesta capacidad`);
+    assert.ok(m.ips > m.atp, `${id}: el stack completo cuesta mas que solo IPS`);
+  }
+
+  // Cifras exactas de las fichas oficiales de 2026, para que un cambio se note.
+  const srx1600 = MODELS.find((x) => x.id === 'SRX1600');
+  assert.strictEqual(srx1600.fwImix, 12000);
+  assert.strictEqual(srx1600.ips, 4500);
+  assert.strictEqual(srx1600.atp, 2000);
+  // Y los anclajes que confirmaron que se leia el modelo correcto siguen fijados: si alguno
+  // cambiara, las cifras que entraron con ellos dejarian de estar respaldadas.
+  assert.strictEqual(srx1600.fw, 24000);
+  assert.strictEqual(srx1600.vpn, 18000);
+  assert.strictEqual(srx1600.sess, 2000000);
+});

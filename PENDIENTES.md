@@ -127,10 +127,16 @@ Cobertura actual por herramienta:
      catálogo exige antes de pisar un dato existente. Corregirlo exige `--sin-contraste` bajo
      responsabilidad de quien decide; documentado en la cabecera de `juniper.js` y junto al
      propio modelo.
-   - **IPS y ATP de la generación 2024** (SRX1600/2300/4300/4700) y de SRX4100/4200. Para el
-     SRX1600 apareció «21 Gbps de IPS» sobre un firewall de 24 Gbps, lo que contradice que
-     inspeccionar cueste capacidad: no se registró. La matriz de 2020 no cubre esta generación
-     (es posterior a esa fecha), así que sigue haciendo falta un documento distinto.
+   - **~~IPS y ATP de la generación 2024~~ Resuelto para SRX1600, SRX2300 y SRX4300
+     (2026-09-03)**, con la ficha oficial por modelo — el documento distinto que hacía falta.
+     **Y resolvió el enigma que bloqueaba esto**: aquel «21 Gbps de IPS sobre un firewall de
+     24 Gbps» no contradecía que inspeccionar cueste capacidad, era el **otro método de
+     medida**. La ficha publica dos («TPS: average HTTP sessions» y «CPS: short-lived
+     sessions») y el SRX1600 da 19 Gbps por TPS y 4,5 por CPS. Se transcribió siempre CPS, el
+     único método en el que Juniper publica también las capas profundas. Siguen abiertos el
+     **SRX4700** (la conexión falló, merece un reintento) y el **SRX4100/SRX4200**, cuyas
+     fichas dan 404 en ese patrón de URL — son de una generación anterior y probablemente se
+     llamen de otra forma.
    - **Precios y SKU**: no hay lista de precios de Juniper, todo va sin cotizar.
    - **Niveles de Juniper Care**: nombres y SLA sin verificar. Antes que inventar una tabla
      de SLA en una herramienta de preventa, hay un único nivel declarado como no verificado.
@@ -145,6 +151,53 @@ Cobertura actual por herramienta:
    7750 SR/SR-s/SR-1x) por capacidad de un único equipo, en
    `dimensionador-nokia-7750sr.html`. Nokia es ahora el único fabricante del portal con dos
    dimensionadores.
+
+## Conflictos abiertos entre el catálogo y una ficha oficial (2026-09-03)
+
+**Ninguno de estos se corrigió: pisar un dato existente es decisión del dueño del catálogo,
+igual que el SRX380.** Todos salieron de comparar el catálogo contra la ficha oficial por
+modelo del propio fabricante, traída vía Actions el 2026-09-03. Se listan con las dos cifras
+para que la decisión se tome mirando, no recordando.
+
+**Juniper — cuatro campos, los cuatro fuera de la escala de dimensionamiento.** Es lo que hace
+que puedan esperar: `fw` está deliberadamente fuera de `CAPAS`, y `vpnImix` y `cps` no filtran
+en la página Juniper (`sess` sí, y ese coincide en los tres modelos).
+
+| Modelo | Campo | Catálogo | Ficha oficial |
+|---|---|---|---|
+| SRX1600 | `vpnImix` | 5.500 | **8.000** |
+| SRX1600 | `cps` | 95.000 | **170.000** |
+| SRX2300 | `cps` | 320.000 | **450.000** |
+| SRX4300 | `fw` | 90.000 | **98.000** |
+
+**Nokia — seis capacidades, y estas sí dimensionan.** Más serio que lo anterior, y con dos
+direcciones distintas de error:
+
+| Modelo | Catálogo | Ficha oficial | Efecto |
+|---|---|---|---|
+| 7220 IXR-D2L | 4 Tb/s | **2,0 Tb/s** | el catálogo promete el **doble** |
+| 7220 IXR-D3L | 6,4 Tb/s | **3,2 Tb/s** | el catálogo promete el **doble** |
+| 7750 SR-1s | 1,2 Tb/s | 4,8 Tb/s | sobredimensiona |
+| 7750 SR-2s | 4 Tb/s | 9,6 Tb/s | sobredimensiona |
+| 7750 SR-7s | 19,2 Tb/s | 108 Tb/s | sobredimensiona |
+| 7750 SR-14s | 38,4 Tb/s | 216 Tb/s | sobredimensiona |
+
+Dos cosas que ayudan a decidir:
+
+1. **El caso 7220 es el urgente, aunque parezca el pequeño**, porque es el único que va en la
+   dirección peligrosa: el catálogo promete el doble de lo que el equipo hace. Y no hace falta
+   creerle a la ficha para verlo — **sumar los puertos del propio catálogo da la razón a la
+   ficha**: el D2L son 48×25G + 8×100G = 2.000 Gb/s, y el D3L 32×100G = 3.200. Además el
+   catálogo es **incoherente consigo mismo**: el D1 (88 Gb/s) y el D5 (12,8 Tb/s) sí coinciden
+   con la suma de sus puertos, solo el D2L y el D3L van al doble. Atenuante: el dimensionador
+   de fabric **no usa `cap`** —dimensiona por puertos—, así que hoy esa cifra solo se muestra
+   en el portal y en el comparador.
+2. **El caso 7750 SR-s es ambiguo de verdad y por eso no se tocó.** Esa ficha publica *tres*
+   métricas distintas de capacidad, y el valor del catálogo coincide **exactamente** con una
+   de ellas: los 19,2 Tb/s del SR-7s son su «IA slot forwarding (FD)», una cifra **por slot**.
+   O sea que no parece un error de transcripción sino la elección de otra métrica — puede que
+   deliberada. Quien decida tiene que elegir qué métrica quiere que dimensione, y **eso sí
+   afecta**: el dimensionador nuevo de agregación/core sí ordena por `cap`.
 
 ## Datos por confirmar
 
@@ -163,14 +216,19 @@ Cobertura actual por herramienta:
     eléctrica» de la ficha (agosto 2026) solo tiene dato donde el propio catálogo ya traía
     una frase publicada — Cisco 21/21 (ya existía), Huawei 17/40, MikroTik 14/15, Aruba 6/21,
     **Juniper 12/12 SRX** (2026-09-03, completo: ver *Cerrado recientemente*), **Fortinet
-    56/58** y **Nokia 0/18**. El resto queda `null` y la ficha lo declara sin
+    56/58** y **Nokia 6/18** (2026-09-03). El resto queda `null` y la ficha lo declara sin
     rodeos.
 
-    **Nokia no figuraba en esta lista hasta el 2026-09-03**, y ese es un fallo del registro,
+    **Nokia no figuraba en esta lista hasta el 2026-09-03**, y ese era un fallo del registro,
     no del catálogo: contaba seis fabricantes de siete, así que sus 18 modelos no aparecían
-    ni como hueco. Un pendiente que no se lista se comporta igual que uno que no existe — el
-    mismo modo de fallo que el conjunto inerte de `CISCO_EOL_MODELS`. Sus fichas están en
-    `nokia.com/asset/<id>`, dominio que **sí** responde desde Actions. Esto **no es lo mismo** que los bloqueados por egreso de más arriba: el Product
+    ni como hueco — ni ahí ni en `npm run catalogo`, que tenía el mismo punto ciego. Un
+    pendiente que no se lista se comporta igual que uno que no existe, el mismo modo de fallo
+    que el conjunto inerte de `CISCO_EOL_MODELS`. Ya listado y ya parcialmente cerrado: **6 de
+    18** con las fichas de serie de nokia.com. Los 12 restantes no salen de ahí — el 7250
+    IXR-e publica variantes redundantes y no redundantes del **mismo** modelo, y este catálogo
+    tiene una sola entrada, así que elegir una sería falso para la mitad de los pedidos (el
+    caso del SRX320); y de las familias 7250 IXR-6e/10e, IXR-X, IXR-R y 7750 SR-1 no se
+    localizó ficha oficial en esta corrida. Esto **no es lo mismo** que los bloqueados por egreso de más arriba: el Product
     Matrix de Fortinet, el material de Juniper y el datasheet abreviado de MikroTik que este
     catálogo ya usa **no traen** consumo eléctrico por modelo — no es una tabla que falte
     copiar, es una hoja mecánica/eléctrica aparte por cada modelo, que ningún importador de

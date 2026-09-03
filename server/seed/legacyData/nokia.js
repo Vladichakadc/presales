@@ -31,16 +31,16 @@
 //               leaf, o de downlink si se usa como spine).
 //   'gestion' — fuera de la escala de fabric (gestión, OOB): el motor no los cuenta.
 const MODELS = [
-  {id:'7220 IXR-D1', ser:'7220 IXR', seg:'Acceso / Gestión DC', rol:['acceso'],
+  {id:'7220 IXR-D1', redund:true, psu:{tipo:'1+1 redundante, AC o DC, intercambiable en caliente', volts:'AC 100-240 V · DC -48 a -60 V', texto:'Fuentes de 240 W AC y 550 W DC — es la potencia de la fuente, no el consumo del equipo, asi que no se declara como consumo tipico.'}, ser:'7220 IXR', seg:'Acceso / Gestión DC', rol:['acceso'],
    puertos:[{cantidad:48, veloc:1, uso:'acceso'}, {cantidad:4, veloc:10, uso:'fabric'}],
    cap:88, ifaces:'48x1GE RJ45 + 4x SFP+ · 1U'},
-  {id:'7220 IXR-D2L', ser:'7220 IXR', seg:'Leaf datacenter', rol:['leaf'],
+  {id:'7220 IXR-D2L', redund:true, psu:{tipo:'1+1 redundante, AC, DC o HVDC, intercambiable en caliente', volts:'AC 100-240 V · DC -48 a -60 V · HVDC 190-310 V', texto:'Fuentes de 650 W AC y 650 W DC. Es potencia de fuente y no consumo: el D3L, con 3,2 Tb/s frente a los 2,0 de este, declara exactamente la misma cifra.'}, ser:'7220 IXR', seg:'Leaf datacenter', rol:['leaf'],
    puertos:[{cantidad:48, veloc:25, uso:'acceso'}, {cantidad:8, veloc:100, uso:'fabric'}, {cantidad:2, veloc:10, uso:'gestion'}],
    cap:4000, ifaces:'48x25GE SFP28 + 8x100GE QSFP28 + 2x10GE · 1U'},
-  {id:'7220 IXR-D3L', ser:'7220 IXR', seg:'Leaf / Spine compacto', rol:['leaf', 'spine'],
+  {id:'7220 IXR-D3L', redund:true, psu:{tipo:'1+1 redundante, AC, DC o HVDC, intercambiable en caliente', volts:'AC 100-240 V · DC -48 a -60 V · HVDC 190-310 V', texto:'Fuentes de 650 W AC y 650 W DC — la misma cifra que el D2L pese a tener mas capacidad, lo que confirma que es potencia de fuente y no consumo.'}, ser:'7220 IXR', seg:'Leaf / Spine compacto', rol:['leaf', 'spine'],
    puertos:[{cantidad:32, veloc:100, uso:'ambos'}, {cantidad:2, veloc:10, uso:'gestion'}],
    cap:6400, ifaces:'32x100GE QSFP28 + 2x SFP+ · 1U'},
-  {id:'7220 IXR-D5', ser:'7220 IXR', seg:'Spine datacenter 400G', rol:['spine'],
+  {id:'7220 IXR-D5', redund:true, psu:{tipo:'1+1 redundante, AC o DC, intercambiable en caliente', volts:'AC 100-240 V · DC -48 a -60 V', texto:'Fuentes de 1500 W AC y 1600 W DC — potencia de fuente, no consumo del equipo.'}, ser:'7220 IXR', seg:'Spine datacenter 400G', rol:['spine'],
    puertos:[{cantidad:32, veloc:400, uso:'fabric'}, {cantidad:2, veloc:10, uso:'gestion'}],
    cap:12800, ifaces:'32x400GE QSFP-DD + 2x SFP+ · 1U'},
 ];
@@ -168,13 +168,13 @@ const MODELS_ROUTER = [
    ifaces:'14 slots IOM · hasta 400GE'},
 
   // ── 7750 SR-1x ──
-  {id:'7750 SR-1x-48D', plat:'sr1x', ser:'7750 SR-1x', seg:'PE / Edge alta densidad', cap:6000,
+  {id:'7750 SR-1x-48D', redund:true, psu:{tipo:'1+1 redundante en AC y en DC, con redundancia tambien de acometida', volts:'AC 180-264 V, 50/60 Hz (20 A max por acometida) · DC -40 a -72 V (80 A max por acometida)', texto:'La ficha declara 1+1 de fuente y redundancia de acometida en las dos alimentaciones. No publica consumo tipico.'}, plat:'sr1x', ser:'7750 SR-1x', seg:'PE / Edge alta densidad', cap:6000,
    configs:[{n:'48x400GE', puertos:[{cantidad:48, veloc:400}]},
             {n:'192x100GE', puertos:[{cantidad:192, veloc:100}]}],
    slots:null, ru:2, velocidades:[100, 400],
    protos:'SR-MPLS, SRv6, EVPN, FlexE', notaPuertos:null,
    ifaces:'48x400GE QSFP-DD o 192x100GE · 2U'},
-  {id:'7750 SR-1x-92S', plat:'sr1x', ser:'7750 SR-1x', seg:'PE / Edge multiservicio', cap:6000,
+  {id:'7750 SR-1x-92S', redund:true, psu:{tipo:'1+1 redundante en AC y en DC, con redundancia tambien de acometida', volts:'AC 180-264 V, 50/60 Hz (20 A max por acometida) · DC -40 a -72 V (80 A max por acometida)', texto:'La ficha declara 1+1 de fuente y redundancia de acometida en las dos alimentaciones. No publica consumo tipico.'}, plat:'sr1x', ser:'7750 SR-1x', seg:'PE / Edge multiservicio', cap:6000,
    configs:[{n:'12x400GE + 80x100GE', puertos:[{cantidad:12, veloc:400}, {cantidad:80, veloc:100}]}],
    slots:null, ru:2, velocidades:[100, 400],
    protos:'SR-MPLS, SRv6, EVPN, FlexE', notaPuertos:null,
