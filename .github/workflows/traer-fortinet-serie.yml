@@ -1,0 +1,104 @@
+name: traer-fortinet-serie
+
+# Baja las fichas por serie de FortiGate para completar la alimentacion electrica de los 52
+# modelos que siguen sin dato (pendiente 15), y de paso el `cps` de 100F y 200F.
+#
+# POR QUE SE PRUEBAN DOS PATRONES DE URL
+# Fortinet no nombra todas sus fichas igual: las series con variante FortiWiFi viven en
+# `fortigate-fortiwifi-<serie>-series.pdf` y el resto en `fortigate-<serie>-series.pdf`. Se
+# confirmo con dos busquedas -el 90G usa el primero y el 200G y el 900G el segundo-, asi que
+# aqui se prueba el patron llano primero y solo si da 404 el de FortiWiFi. Probar una URL y
+# reportar el 404 no es adivinar un dato: lo que este repositorio prohibe es dar por buena una
+# cifra sin leerla, no comprobar si un documento existe.
+#
+# LA FIRMA MANDA SOBRE EL CONTENT-TYPE
+# Se exige `%PDF-` en los primeros bytes. Lo que no lo trae se reporta y NO se guarda, en vez
+# de dejar un HTML con extension .pdf -que es como entraron a FUENTES dos fichas de Juniper
+# que ya no existian.
+#
+# NO EXTRAE NADA. Publica los PDF en una rama de transporte para que una persona lea la pagina
+# de "Specifications" renderizada y transcriba a mano. La tabla "Dimensions and Power" trae
+# "AC Power Consumption (Average / Maximum)" y "Redundant Power Supplies (Hot Swappable)", que
+# es exactamente lo que `redund` y `psu` necesitan, con la frase del fabricante detras.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  traer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bajar las fichas por serie
+        run: |
+          node -e "
+            const fs = require('fs');
+            const base = 'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/';
+            const series = [
+              '30g', '50g', '70g', '90g', '120g', '200g', '400g', '700g', '900g',
+              '3000g', '3500g', '3800g',
+              '40f', '60f', '70f', '80f', '100f', '200f', '1000f', '1800f', '2600f',
+              '3000f', '3200f', '3500f', '3700f', '4200f', '4400f', '4800f',
+            ];
+            const espera = (ms) => new Promise((r) => setTimeout(r, ms));
+            const cabeceras = {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+              Accept: 'application/pdf,*/*',
+            };
+            (async () => {
+              const informe = [];
+              for (const s of series) {
+                const candidatas = [
+                  \`fortigate-\${s}-series.pdf\`,
+                  \`fortigate-fortiwifi-\${s}-series.pdf\`,
+                ];
+                let guardado = null;
+                const intentos = [];
+                for (const nombre of candidatas) {
+                  try {
+                    const r = await fetch(base + nombre, { headers: cabeceras });
+                    const buf = Buffer.from(await r.arrayBuffer());
+                    const esPdf = buf.length > 4 && buf.subarray(0, 5).toString('latin1') === '%PDF-';
+                    intentos.push({ nombre, status: r.status, bytes: buf.length, esPdf });
+                    if (esPdf) { fs.writeFileSync(nombre, buf); guardado = nombre; break; }
+                  } catch (e) {
+                    intentos.push({ nombre, error: String(e.message || e) });
+                  }
+                  await espera(1500 + Math.random() * 1500);
+                }
+                informe.push({ serie: s, guardado, intentos });
+                console.log(s, guardado ? 'OK ' + guardado : 'sin ficha');
+                await espera(1500 + Math.random() * 1500);
+              }
+              const con = informe.filter((x) => x.guardado).length;
+              console.log(\`\n\${con} de \${series.length} series con ficha descargada.\`);
+              fs.writeFileSync('serie-informe.json', JSON.stringify(informe, null, 2));
+            })();
+          "
+
+      - name: Publicar en la rama de transporte
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout --orphan fuente/fortinet-serie
+          git rm -rf --cached . >/dev/null 2>&1 || true
+          git add -f ./*.pdf serie-informe.json
+          git commit -q -m 'Fichas por serie de FortiGate, material de trabajo'
+          git push -f origin fuente/fortinet-serie
+
+      - name: Resumen
+        if: always()
+        run: |
+          {
+            echo '## FortiGate — fichas por serie'
+            echo ''
+            echo '```json'
+            cat serie-informe.json 2>/dev/null || echo '(sin resultado: revisar el paso anterior)'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
