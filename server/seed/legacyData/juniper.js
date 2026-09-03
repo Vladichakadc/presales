@@ -79,13 +79,31 @@
 // BOM cuenta las líneas sin cotizar y avisa, en vez de mostrar un total que parece completo.
 // Inventar un precio plausible es el fallo que este catálogo ya cometió una vez con Aruba.
 
+// PROCEDENCIA DE `redund` / `psu` (pendiente 15) — 2026-09-03, 7 de 12 modelos.
+// El material comercial de Juniper publica rendimiento, no alimentacion. Lo electrico esta en
+// las "hardware guides" de juniper.net -una por modelo-, traidas via GitHub Actions y leidas a
+// mano. Se comprobo modelo por modelo que cada guia habla SOLO de su equipo antes de aplicar
+// nada: la de la SRX300 no cubre al 320/340/345, igual que el archivo `70f-series` de Fortinet
+// resulto ser la ficha del 71F.
+//
+// CUATRO DE LOS SEIS SON 'opcional', el cuarto estado de `redund`. Juniper es explicito: «We
+// ship the SRX1600 with only one power supply unit (PSU). You can order the second». El
+// SRX1500, el SRX1600, el SRX2300 y el SRX4300 salen con UNA fuente y la segunda se pide
+// aparte; marcarlos `true` prometeria una redundancia que no viene en la caja. El SRX4100 si
+// sale con las dos preinstaladas, y el SRX300 se alimenta con un adaptador externo.
+//
+// `watts` solo donde la guia publica un consumo MEDIO o TIPICO (SRX1600 137 W, SRX2300 186 W,
+// SRX4300 327 W). El SRX4100 publica un «Maximum System Power Requirement» de 440 W: es un
+// maximo, y la ficha rotula ese campo «Consumo tipico», asi que va en el texto y no en `watts`
+// -el mismo criterio que dejo fuera los 2.500 W de capacidad por fuente del FortiGate 7081F.
+
 const MODELS = [
   // ── Línea SRX300: sucursal ────────────────────────────────────────────────
   // 300/320/340/345 verificados contra el documento real 2026-09-02 (ver PROCEDENCIA):
   // fw/vpn/ips ya estaban bien, fwImix se corrigió y sess/cps/atp se completaron. El SRX380
   // de esta misma línea SÍ tiene fila en el documento pero queda sin tocar: ver la nota de
   // PROCEDENCIA sobre por qué su fw/fwImix/vpn no supera el doble anclaje.
-  {id:'SRX300', ser:'SRX 300', seg:'SOHO / Teletrabajo',
+  {id:'SRX300', redund:false, psu:{tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50-60 Hz', amps:'1 A máximo (pico de arranque 7 A a 220 V)', texto:'Se alimenta con el adaptador que viene con el equipo, sin opción de una segunda fuente. La guía de hardware no publica consumo para este modelo.'}, ser:'SRX 300', seg:'SOHO / Teletrabajo',
    fw:1000, fwImix:500, vpn:300, vpnImix:116, ips:200, atp:null, sess:64000, cps:5000,
    ifaces:'8x GE (6 RJ45 + 2 SFP)'},
   {id:'SRX320', ser:'SRX 300', seg:'Sucursal pequeña',
@@ -108,7 +126,7 @@ const MODELS = [
    redund:true, psu:{texto:'Fuente redundante, según el datasheet Juniper del SRX380.'}},
 
   // ── SRX1500: fw/fwImix/ips/atp ya verificados; vpn y sess corregidos 2026-09-02 ──
-  {id:'SRX1500', ser:'SRX 1500', seg:'Campus / DC pequeño',
+  {id:'SRX1500', redund:'opcional', psu:{tipo:'una fuente instalada, admite una segunda (AC o DC)', volts:'100-127 V AC (2,5 A) o 200-240 V AC (1,3 A), 47-63 Hz', texto:'La segunda fuente es opcional y solo con las dos instaladas se pueden cambiar en caliente. La guía de hardware no publica consumo para este modelo.'}, ser:'SRX 1500', seg:'Campus / DC pequeño',
    fw:9000, fwImix:5000, vpn:1300, vpnImix:null, ips:3000, atp:1600, sess:2000000, cps:90000,
    ifaces:'16x GE + 4x 10GE SFP+ · 1U'},
 
@@ -118,13 +136,13 @@ const MODELS = [
   // "21 Gbps de IPS" sobre un firewall de 24 Gbps, lo que contradice de plano la premisa de
   // que inspeccionar cuesta capacidad. Un dato que se contradice con la física del producto
   // no se registra: queda en null y el motor lo declara sin comprobar.
-  {id:'SRX1600', ser:'SRX 1600', seg:'Campus / DC empresarial',
+  {id:'SRX1600', redund:'opcional', psu:{watts:137, tipo:'una fuente de serie, admite una segunda (1+1)', volts:'100-127 V AC (5,5 A) o 200-240 V AC (3 A), 50-60 Hz', texto:'Consumo medio 137 W y máximo 162 W, sobre fuentes de 450 W. Juniper lo envía con una sola fuente y la segunda se pide aparte. Cada fuente necesita su propio interruptor.'}, ser:'SRX 1600', seg:'Campus / DC empresarial',
    fw:24000, fwImix:null, vpn:18000, vpnImix:5500, ips:null, atp:null, sess:2000000, cps:95000,
    ifaces:'25GE · MACsec a velocidad de línea · 1U'},
-  {id:'SRX2300', ser:'SRX 2300', seg:'Campus grande / DC',
+  {id:'SRX2300', redund:'opcional', psu:{watts:186, tipo:'una fuente de serie, ranura libre para la segunda (1+1)', volts:'100-127 V AC (5,5 A) o 200-240 V AC (3 A), 50-60 Hz', texto:'Consumo medio 186 W y máximo 229 W, sobre fuentes de 450 W. Se envía con una sola fuente y la ranura de la segunda va vacía.'}, ser:'SRX 2300', seg:'Campus grande / DC',
    fw:39000, fwImix:null, vpn:36000, vpnImix:null, ips:null, atp:null, sess:5000000, cps:320000,
    ifaces:'100GE · MACsec a velocidad de línea · 1U'},
-  {id:'SRX4300', ser:'SRX 4000', seg:'DC Edge',
+  {id:'SRX4300', redund:'opcional', psu:{watts:327, tipo:'una fuente de serie, ranura libre para la segunda (1+1)', volts:'100-127 V AC (10,52 A) o 200-240 V AC (5,26 A), 50/60 Hz', texto:'Consumo típico 327 W y máximo 393 W, sobre fuentes de 850 W. Se envía con una sola fuente; la segunda se pide aparte y cada una necesita un interruptor de 16 A.'}, ser:'SRX 4000', seg:'DC Edge',
    fw:90000, fwImix:null, vpn:null, vpnImix:null, ips:null, atp:null, sess:null, cps:null,
    ifaces:'100GE · MACsec a velocidad de línea · 1U'},
   {id:'SRX4700', ser:'SRX 4000', seg:'Cloud / Service Provider',
@@ -134,7 +152,7 @@ const MODELS = [
   // ── Generación anterior de datacenter ─────────────────────────────────────
   // Siguen en catálogo: la generación 2024 los sustituye en POSICIONAMIENTO, pero no se
   // encontró boletín oficial de fin de venta, así que no se marcan (ver PENDIENTES.md).
-  {id:'SRX4100', ser:'SRX 4000', seg:'DC Edge',
+  {id:'SRX4100', redund:true, psu:{tipo:'dos fuentes de serie (AC o DC), intercambiables en caliente', volts:'100-127 V AC o 200-240 V AC, 50-60 Hz', texto:'Sale de fábrica con las dos fuentes instaladas. El requerimiento máximo del sistema es de 440 W — es un máximo, no un consumo típico, así que no se declara como tal.'}, ser:'SRX 4000', seg:'DC Edge',
    fw:40000, fwImix:null, vpn:null, vpnImix:null, ips:null, atp:null, sess:null, cps:null,
    ifaces:'8x 10GE + 2x 40GE'},
   {id:'SRX4200', ser:'SRX 4000', seg:'DC Edge grande',

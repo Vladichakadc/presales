@@ -214,6 +214,37 @@ Cobertura actual por herramienta:
 
 ## Cerrado recientemente
 
+### Juniper 7/12 y un defecto de Cisco que decía dos cosas a la vez (2026-09-03)
+
+**Juniper** (pendiente 15): su material comercial publica rendimiento, no alimentación — lo
+eléctrico vive en las *hardware guides*, una por modelo. Se bajaron seis y se comprobó modelo
+por modelo que **cada guía habla solo de su equipo** antes de aplicar nada; la lección del
+`70f-series.pdf` de Fortinet, que resultó ser la ficha del 71F, ya está incorporada. De 1 a 7
+de 12.
+
+**Cuatro de los seis son `'opcional'`**, y Juniper lo dice sin rodeos: *«We ship the SRX1600
+with only one power supply unit (PSU). You can order the second»*. El SRX1500, el SRX1600, el
+SRX2300 y el SRX4300 salen con una fuente y la segunda se pide aparte. Es la segunda vez en el
+mismo día que ese cuarto estado evita una promesa falsa — nació con el FortiGate 80F/90G.
+
+**Cisco, revisado como pedía el encargo, y aparecieron tres defectos del mismo tipo**: datos de
+pedido afirmados como hechos sobre equipos que no los admiten.
+
+1. **La misma pantalla decía dos cosas sobre el mismo campo.** La tabla de ficha tenía su
+   propia fila «Redundancia de fuente de serie» pintando «No (kit opcional)», mientras la
+   sección de alimentación que esa misma página ya renderiza con `FICHA.seccionAlimentacion`
+   decía «No — fuente única». La fila se retiró: la regla vive en un solo sitio.
+2. **Ese «(kit opcional)» afirmaba que existe un kit de redundancia** para los **once** modelos
+   con `redund:false`, entre ellos cuatro Meraki MX de sobremesa. Inventar una opción de pedido
+   es el mismo fallo que el `FortiGate 2000F` y el `EC-2XL`.
+3. **Y en dos sitios más se ofrecía una NIM de LTE a equipos con `nim: 0`** — los Meraki no
+   tienen ranuras. Ahora los avisos distinguen si el equipo admite la ampliación o no.
+
+**Pendiente 3**: con el hallazgo de que `arubanetworking.hpe.com` sí responde, se bajaron
+**4 de 4** documentos de ese dominio (37 MB en total). Commitearlos es lo único que hace que
+producción los sirva, pero `public/datasheets/LEEME.md` advierte que engordan el repositorio de
+forma permanente — decisión del dueño del repo, no aplicada por cuenta propia.
+
 ### Pendiente 15: MikroTik 14/15 y Aruba 6/21, y un quinto estado (2026-09-03)
 
 MikroTik se dejó leer sin resistencia —su sitio ya respondía al vigía— y cada ficha de

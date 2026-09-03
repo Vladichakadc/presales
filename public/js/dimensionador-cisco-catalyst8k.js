@@ -198,8 +198,16 @@ function render(){
     if($('sVoice').checked) flags.push('CUBE/SIP añade ~10% por procesamiento de señalización de voz.');
     if($('sAppx').checked) flags.push('NBAR/AppX añade ~8% por clasificación de tráfico.');
     if($('sUmbrella').checked) flags.push('Umbrella SIG añade ~12% por encapsulación de túneles.');
-    if($('chkRedund').checked && !m.redund) flags.push('<span class="warn">Este modelo no tiene redundancia de fuente de serie — verificar disponibilidad de kit de expansión.</span>');
-    if($('chk4g').checked && !m.lte) flags.push('Se requiere módulo NIM LTE adicional (NIM-4G-LTE-LA o similar).');
+    // Los dos avisos distinguen si el equipo ADMITE la ampliacion o no. Antes daban por hecho
+    // que si -uno hablaba de «kit de expansion» y el otro mandaba pedir una NIM LTE- incluso
+    // para los Meraki MX, que tienen `nim: 0` y son de sobremesa: una referencia de pedido
+    // para un equipo que no la acepta es dato inventado, igual que un SKU que no existe.
+    if($('chkRedund').checked && !m.redund) flags.push(m.nim>0
+      ? '<span class="warn">Este modelo no trae doble fuente de serie — confirmar en el datasheet si admite una segunda.</span>'
+      : '<span class="warn">Este modelo no trae doble fuente de serie y es de fuente fija: si la redundancia es un requisito, hay que subir de gama.</span>');
+    if($('chk4g').checked && !m.lte) flags.push(m.nim>0
+      ? 'Se requiere una NIM de LTE adicional — confirmar el PID vigente en CCW.'
+      : 'Este modelo no lleva LTE integrado y no admite NIM: la conectividad celular tendría que ser externa.');
     return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
       <li>Requerimiento con margen: <b>${fmt(needMbps)}</b> | Capacidad del equipo: <b>${fmt(capDe(m))}</b></li>
       <li>Puertos: ${esc(m.ports)}</li>
@@ -217,7 +225,10 @@ function render(){
         ['Forwarding (bidireccional)', fmt(m.fwd)],
         ['IPsec VPN', fmt(m.ipsec)],
         ['SD-WAN (IPsec + AppFlow)', m.sdwan?fmt(m.sdwan):`${fmt(m.ipsec)} (cifra IPsec — sin throughput SD-WAN diferenciado publicado)`],
-        ['LTE integrado', m.lte?'Sí':'Requiere NIM LTE'],
+        // Tercera aparicion del mismo error: «Requiere NIM LTE» tambien se lo decia a los
+        // Meraki MX, que tienen `nim: 0`. Un equipo sin ranuras no admite ese modulo, y
+        // ofrecerlo igualmente manda a alguien a cotizar una pieza que no encaja.
+        ['LTE integrado', m.lte?'Sí':(m.nim>0?'No — requiere una NIM de LTE':'No — y no admite NIM')],
         ['Puertos', esc(m.ports), true],
         ['Precio de lista ref.', m.elp?esc(m.elp):'Consultar CCW'],
       ]},
@@ -339,8 +350,15 @@ function renderBom(){
     <tr><td>Puertos y slots</td><td>${m.ports}</td></tr>
     <tr><td>Slots NIM disponibles</td><td class="n">${m.nim}</td></tr>
     <tr><td>Slots SM disponibles</td><td class="n">${m.sm||0}</td></tr>
-    <tr><td>Redundancia de fuente de serie</td><td>${m.redund?'Sí':'No (kit opcional)'}</td></tr>
-    <tr><td>LTE integrado</td><td>${m.lte?'Sí':'No (NIM-4G-LTE-LA)'}</td></tr>
+    <!-- La fila de redundancia de fuente se quito el 2026-09-03: decia dos cosas distintas
+         sobre el mismo campo en la MISMA pantalla. Aqui afirmaba que existia un kit de redundancia y la
+         seccion «Alimentacion electrica» de FICHA.seccionAlimentacion -que esta pagina ya
+         pinta, mas abajo- decia «No — fuente unica». Ademas lo afirmaba
+         como un hecho, para los ONCE modelos con redund:false,
+         entre ellos los Meraki MX67/68/75/85, que son de sobremesa. Inventar una opcion de
+         pedido es el mismo fallo que el FortiGate 2000F y el EC-2XL de Aruba. La regla vive
+         en un solo sitio: ficha.js. -->
+    <tr><td>LTE integrado</td><td>${m.lte?'Sí':(m.nim>0?'No — se añade con una NIM de LTE (confirmar el PID vigente en CCW)':'No')}</td></tr>
     </tbody></table></div>
     ${m.eolAnnounced?`<p class="hint warn" style="margin-top:10px">${vencido(m)?'<b>Fin de venta VENCIDO</b>':'Fin de venta anunciado'} (PID <code>${esc(m.eolAnnounced.pid)}</code>) — último día de pedido: <b>${esc(m.eolAnnounced.lastOrder)}</b>${vencido(m)?', ya pasado: solo referencia para parque instalado':''}.${m.eolAnnounced.sucesor?` Sucesor confirmado: <b>${esc(m.eolAnnounced.sucesor)}</b> — mismo IOS XE SD-WAN, ver esa familia en el selector de equipo.`:' El boletín no nombra un PID de reemplazo directo.'}${m.eolAnnounced.url?` <a href="${esc(m.eolAnnounced.url)}" target="_blank" rel="noopener">Boletín oficial</a>.`:''}</p>`:''}
     </section>`;

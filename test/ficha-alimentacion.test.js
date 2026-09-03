@@ -186,3 +186,45 @@ test('Aruba: el EdgeConnect Hardware Reference separa adaptador, fuente unica y 
     }
   }
 });
+
+// ── Cisco: la pagina decia dos cosas sobre el mismo campo (2026-09-03) ────────────────────
+// Su tabla de ficha tenia una fila propia de «Redundancia de fuente de serie» que pintaba
+// «No (kit opcional)», mientras la seccion de alimentacion que la misma pagina ya renderiza
+// con FICHA.seccionAlimentacion decia «No — fuente unica». Dos afirmaciones distintas sobre
+// el mismo dato, en la misma pantalla. Y el «(kit opcional)» ademas daba por hecho que existe
+// un kit para los ONCE modelos con redund:false, entre ellos cuatro Meraki de sobremesa.
+test('Cisco: la pagina no reafirma la redundancia por su cuenta ni inventa opciones de pedido', () => {
+  const fs = require('node:fs');
+  const src = fs.readFileSync('public/js/dimensionador-cisco-catalyst8k.js', 'utf8');
+  assert.doesNotMatch(src, /kit opcional/, 'la regla vive en ficha.js, no repetida aqui');
+  assert.doesNotMatch(src, /NIM-4G-LTE-LA/,
+    'no se nombra una NIM concreta: los Meraki tienen nim:0 y no la admiten');
+
+  // Y los modelos que no admiten NIM no pueden recibir un consejo de ampliacion por modulo.
+  const { MODELS } = require('../server/seed/legacyData/cisco.js');
+  const sinSlots = MODELS.filter((m) => !m.nim);
+  assert.ok(sinSlots.length >= 4, 'los Meraki MX estan en el catalogo con nim 0');
+  assert.ok(sinSlots.every((m) => m.redund !== undefined), 'Cisco sigue con cobertura completa');
+});
+
+test('Juniper: cuatro SRX se envian con una fuente y admiten la segunda', () => {
+  const { MODELS } = require('../server/seed/legacyData/juniper.js');
+  assert.strictEqual(MODELS.filter((m) => m.redund !== undefined).length, 7);
+
+  // Las hardware guides lo dicen sin ambiguedad: «We ship the SRX1600 with only one power
+  // supply unit (PSU). You can order the [second]». Marcarlos `true` prometeria una
+  // redundancia que no viene en la caja, que es justo por lo que existe el cuarto estado.
+  const opcionales = MODELS.filter((m) => m.redund === 'opcional').map((m) => m.id);
+  assert.deepStrictEqual(opcionales.sort(), ['SRX1500', 'SRX1600', 'SRX2300', 'SRX4300']);
+
+  // El SRX4100 si sale con las dos: «shipped with two AC or two DC power supply units
+  // preinstalled». Y el SRX300 se alimenta con un adaptador externo, sin segunda opcion.
+  assert.strictEqual(MODELS.find((m) => m.id === 'SRX4100').redund, true);
+  assert.strictEqual(MODELS.find((m) => m.id === 'SRX300').redund, false);
+
+  // `watts` solo donde la guia publica un consumo MEDIO o TIPICO. El SRX4100 publica un
+  // «Maximum System Power Requirement» de 440 W: es un maximo, y la ficha rotula ese campo
+  // «Consumo tipico», asi que no entra.
+  assert.strictEqual(MODELS.find((m) => m.id === 'SRX4300').psu.watts, 327);
+  assert.strictEqual(MODELS.find((m) => m.id === 'SRX4100').psu.watts, undefined);
+});
