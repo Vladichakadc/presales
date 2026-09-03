@@ -1,0 +1,116 @@
+[
+  {
+    "modelo": "hex-lite",
+    "guardado": null,
+    "intentos": [
+      {
+        "slug": "rb750r2",
+        "status": 404,
+        "bytes": 13239,
+        "util": false
+      },
+      {
+        "slug": "hex_lite",
+        "status": 404,
+        "bytes": 13239,
+        "util": false
+      }
+    ]
+  },
+  {
+    "modelo": "hex",
+    "guardado": null,
+    "intentos": [
+      {
+        "slug": "hex",
+        "status": 404,
+        "bytes": 13239,
+        "util": false
+      },
+      {
+        "slug": "rb750gr3",
+        "status": 404,
+        "bytes": 13239,
+        "util": false
+      }
+    ]
+  },
+  {
+    "modelo": "hex-s",
+    "guardado": "hex_s",
+    "intentos": [
+      {
+        "slug": "hex_s",
+        "status": 200,
+        "bytes": 361385,
+        "util": true
+      }
+    ]
+  },
+  {
+    "modelo": "l009",
+    "guardado": "l009uigs_2haxd_in",
+    "intentos": [
+      {
+        "slug": "l009uigs_2haxd_in",
+        "status": 200,
+        "bytes": 373829,
+        "util": true
+      }
+    ]
+  },
+  {
+    "modelo": "rb4011",
+    "guardado": "rb4011igs_rm",
+    "intentos": [
+      {
+        "slug": "rb4011igs_rm",
+        "status": 200,
+        "bytes": 375192,
+        "util": true
+      }
+    ]
+  },
+  {
+    "modelo": "rb5009",
+    "guardado": "rb5009ug_s_in",
+    "intentos": [
+      {
+        "slug": "rb5009ug_s_in",
+        "status": 200,
+        "bytes": 377851,
+        "util": true
+      }
+    ]
+  },
+  {
+    "modelo": "rb5009upr",
+    "guardado": "rb5009upr_s_in",
+    "intentos": [
+      {
+        "slug": "rb5009upr_s_in",
+        "status": 200,
+        "bytes": 385026,
+        "util": true
+      }
+    ]
+  },
+  {
+    "modelo": "ccr2004-16g",
+    "guardado": "ccr2004_16g_2splus",
+    "intentos": [
+      {
+        "slug": "ccr2004_16g_2s_plus",
+        "status": 404,
+        "bytes": 13239,
+        "util": false
+      },
+      {
+        "slug": "ccr2004_16g_2splus",
+        "status": 200,
+        "bytes": 359319,
+        "util": true
+      }
+    ]
+  }
+]
