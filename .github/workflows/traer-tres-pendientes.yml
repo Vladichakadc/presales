@@ -1,0 +1,100 @@
+name: traer-tres-pendientes
+
+# Tres pendientes cortos en una corrida, los tres en dominios que ya se sabe que responden.
+#
+# 1. PENDIENTE 15 (Juniper, 7 de 12). Faltan las guias de hardware de la linea SRX300 de
+#    sucursal -320, 340, 345, confirmadas por busqueda- y se prueban ademas SRX4200 y SRX4700
+#    por patron. El 404 se reporta, no se da por bueno.
+#
+# 2. PENDIENTE 8 (fin de venta de la linea SRX). Hoy NINGUNO de los 12 SRX tiene `eol` ni
+#    `eolAnnounced`, asi que el dimensionador puede recomendar un equipo que ya no se pide.
+#    La pagina oficial de hitos de la serie es HTML, no PDF: se comprueba que traiga fechas.
+#
+# 3. PENDIENTE 9 (Cisco C8355-G2 con `sdwan: null`). Hoy cae a su cifra de IPsec y la lista lo
+#    marca «(cifra IPsec)»; el datasheet de la serie 8300 diria si Cisco publica una cifra
+#    SD-WAN propia. Si no la publica, eso tambien es una respuesta: se documenta y el campo
+#    se queda en null.
+#
+# Como siempre: firma `%PDF-` obligatoria en lo que dice ser PDF, y no se extrae nada -la
+# lectura de las tablas sigue siendo humana.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  traer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pedir los documentos
+        run: |
+          node -e "
+            const fs = require('fs');
+            const jh = 'https://www.juniper.net/documentation/us/en/hardware/';
+            const objetivos = [
+              { f: 'hw-srx320.pdf', u: jh + 'srx320/srx320.pdf', pdf: true },
+              { f: 'hw-srx340.pdf', u: jh + 'srx340/srx340.pdf', pdf: true },
+              { f: 'hw-srx345.pdf', u: jh + 'srx345/srx345.pdf', pdf: true },
+              { f: 'hw-srx4200.pdf', u: jh + 'srx4200/srx4200.pdf', pdf: true },
+              { f: 'hw-srx4700.pdf', u: jh + 'srx4700/srx4700.pdf', pdf: true },
+              { f: 'juniper-eol-srx.html', u: 'https://support.juniper.net/support/eol/product/srx_series/', pdf: false },
+              { f: 'cisco-8300-ds.pdf', u: 'https://www.cisco.com/c/dam/en/us/products/collateral/routers/secure-routers/8300-series-secure-routers-ds.pdf', pdf: true },
+            ];
+            const espera = (ms) => new Promise((r) => setTimeout(r, ms));
+            (async () => {
+              const informe = [];
+              for (const o of objetivos) {
+                try {
+                  const r = await fetch(o.u, {
+                    headers: {
+                      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+                      Accept: 'application/pdf,text/html,*/*',
+                      'Accept-Language': 'en-US,en;q=0.9',
+                    },
+                  });
+                  const buf = Buffer.from(await r.arrayBuffer());
+                  const esPdf = buf.length > 4 && buf.subarray(0, 5).toString('latin1') === '%PDF-';
+                  const texto = esPdf ? '' : buf.toString('utf8');
+                  // Para la pagina de fin de vida, la senal util es que traiga fechas.
+                  const util = o.pdf ? esPdf : (r.status === 200 && /20[0-9]{2}/.test(texto) && /end of|last order|milestone/i.test(texto));
+                  if (util) fs.writeFileSync(o.f, buf);
+                  informe.push({ archivo: o.f, status: r.status, kb: Math.round(buf.length / 1024), esPdf, util });
+                  console.log(o.f, r.status, util ? 'OK' : 'sin senal');
+                } catch (e) {
+                  informe.push({ archivo: o.f, error: String(e.message || e) });
+                  console.log(o.f, 'ERROR', e.message);
+                }
+                await espera(3000 + Math.random() * 2000);
+              }
+              fs.writeFileSync('informe.json', JSON.stringify(informe, null, 2));
+              console.log(JSON.stringify(informe, null, 2));
+            })();
+          "
+
+      - name: Publicar en la rama de transporte
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout --orphan fuente/tres-pendientes
+          git rm -rf --cached . >/dev/null 2>&1 || true
+          git add -f informe.json
+          git add -f ./*.pdf ./*.html 2>/dev/null || true
+          git commit -q -m 'Guias SRX, fin de vida Juniper y datasheet 8300, material de trabajo'
+          git push -f origin fuente/tres-pendientes
+
+      - name: Resumen
+        if: always()
+        run: |
+          {
+            echo '## Tres pendientes cortos: Juniper 15 y 8, Cisco 9'
+            echo ''
+            echo '```json'
+            cat informe.json 2>/dev/null || echo '(sin resultado)'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
