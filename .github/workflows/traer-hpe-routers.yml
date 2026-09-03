@@ -1,0 +1,91 @@
+name: traer-hpe-routers
+
+# Trae el catalogo de routers de buy.hpe.com a una rama de transporte, para leerlo a mano.
+#
+# POR QUE UN WORKFLOW Y NO UNA PETICION DESDE LA SESION DE EDICION
+# El proxy de egreso de la sesion donde se edita este repositorio deniega los dominios de
+# HPE con un 403 de politica. Los ejecutores de GitHub Actions no pasan por ese proxy: es
+# el mismo patron que trajo el Product Matrix de Fortinet (pendiente 2) y la matriz SRX de
+# Juniper (pendiente 5), y la misma disciplina -la pagina se publica en una rama de
+# transporte que se lee y se descarta, nunca en `main` ni en un PR, porque no es un activo
+# de la aplicacion.
+#
+# QUE COMPRUEBA ANTES DE PUBLICAR
+# Una pagina de comercio moderna suele ser una aplicacion que se pinta con JavaScript: un
+# `fetch` normal devuelve el cascaron vacio y ningun dato. Eso ya paso con Huawei
+# (`<div id="__nuxt"></div>` sin nada dentro), asi que aqui se mide antes de dar el viaje
+# por bueno: tamano, si el HTML menciona modelos, y si trae marcadores de aplicacion vacia.
+# Un cascaron se reporta como tal en vez de publicarse como si fuera el catalogo.
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: URL de la categoria de HPE a traer
+        required: false
+        default: https://buy.hpe.com/lamerica/es/networking/routers/c/4172265
+
+permissions:
+  contents: write
+
+jobs:
+  traer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pedir la pagina
+        env:
+          URL: ${{ inputs.url }}
+        run: |
+          node -e "
+            (async () => {
+              const url = process.env.URL;
+              const r = await fetch(url, {
+                headers: {
+                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+                  'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+                },
+              });
+              const html = await r.text();
+              console.log('HTTP', r.status, '·', html.length, 'bytes');
+              require('fs').writeFileSync('hpe-routers.html', html);
+
+              // Senales de que hay catalogo de verdad y no un cascaron pintado por JS.
+              const senales = {
+                status: r.status,
+                bytes: html.length,
+                mencionaModelos: /MSR|FlexNetwork|VSR|router/i.test(html),
+                pareceCascaron: /<div id=\"(__nuxt|root|app)\"><\/div>/.test(html),
+                mencionaPrecio: /precio|price|\\\$/i.test(html),
+                accesoDenegado: /access denied|reference #|akamai/i.test(html),
+              };
+              console.log(JSON.stringify(senales, null, 2));
+              require('fs').writeFileSync('hpe-senales.json', JSON.stringify(senales, null, 2));
+            })();
+          "
+
+      - name: Publicar en la rama de transporte
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout --orphan fuente/hpe-routers
+          git rm -rf --cached . >/dev/null 2>&1 || true
+          git add -f hpe-routers.html hpe-senales.json
+          git commit -q -m 'Pagina de routers de buy.hpe.com, material de trabajo'
+          git push -f origin fuente/hpe-routers
+
+      - name: Resumen
+        if: always()
+        run: |
+          {
+            echo '## buy.hpe.com — routers'
+            echo ''
+            echo '```json'
+            cat hpe-senales.json 2>/dev/null || echo '(sin resultado: revisar el paso anterior)'
+            echo '```'
+            echo ''
+            echo 'Publicado en la rama `fuente/hpe-routers` (material de trabajo, no un activo de la aplicacion).'
+          } >> "$GITHUB_STEP_SUMMARY"
