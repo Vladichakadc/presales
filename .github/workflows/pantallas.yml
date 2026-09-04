@@ -1,0 +1,121 @@
+name: pantallas
+
+# Conduce TODAS las pantallas en un navegador de verdad, detras del muro de acceso, y sube
+# una captura de cada una. Es la mitad del pendiente 4 que faltaba.
+#
+# POR QUE AQUI Y NO CONTRA UN SITIO DESPLEGADO. `DATABASE_PATH` va sin definir en produccion,
+# asi que la base es efimera y se resiembra desde `server/seed/legacyData/` en CADA
+# despliegue: lo que pinta una pantalla es funcion del commit, no del entorno. Este job
+# arranca ESE MISMO COMMIT con NODE_ENV=production, asi que renderiza exactamente los mismos
+# datos que produccion. La alternativa que se estudio -un entorno de staging en Railway- habria
+# anadido una segunda copia publica del catalogo de PRECIOS, tras una contrasena guardada en
+# los secretos del repositorio (legibles por cualquiera que pueda empujar un workflow), para no
+# ver nada que no se vea aqui. Aqui la clave la genera el propio job y muere con el.
+#
+# Lo que este workflow NO cubre -que el dominio publico este vivo: DNS, TLS, el edge de
+# Railway- lo cubre `sonda-produccion.yml`. Son las dos mitades, y ninguna sustituye a la otra.
+#
+# ESTE CHECK FRENA EL DESPLIEGUE, a proposito: Railway espera a las comprobaciones de CI, y
+# una pantalla rota no deberia llegar a produccion. Si alguna vez estorbara mas de lo que
+# ayuda, la valvula es anadir `continue-on-error: true` al job -- se sigue viendo el rojo y las
+# capturas, pero deja de bloquear.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pantallas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # Playwright va con --no-save a proposito, igual que para `npm run manual`: un Chromium
+      # descargado pesa cientos de MB y no tiene por que bajarse en cada `npm install` de este
+      # repositorio, que no lo necesita para nada mas.
+      - name: Traer Playwright y Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Arrancar el servidor en modo produccion
+        env:
+          NODE_ENV: production
+          PORT: 4000
+          AUTH_USER: verificacion
+          SESSION_SECRET: secreto-solo-de-esta-corrida
+          AUTH_STATE_DIR: ./.auth-pantallas
+          DATABASE_PATH: ./pantallas.sqlite
+        run: |
+          # La contrasena se genera aqui y no sale del ejecutor: nunca es un secreto del
+          # repositorio ni una credencial que abra nada mas que este proceso efimero.
+          AUTH_PASSWORD="$(head -c 32 /dev/urandom | base64 | tr -d '/+=' | head -c 24)"
+          echo "::add-mask::$AUTH_PASSWORD"
+          echo "AUTH_PASSWORD=$AUTH_PASSWORD" >> "$GITHUB_ENV"
+          AUTH_PASSWORD="$AUTH_PASSWORD" npm start > arranque.log 2>&1 &
+          for i in $(seq 1 60); do
+            grep -q 'Presales corriendo en' arranque.log && break
+            sleep 1
+          done
+          grep -q '\[seed\]' arranque.log || { echo 'FALTA la linea [seed]'; cat arranque.log; exit 1; }
+          grep -q 'Presales corriendo en' arranque.log || { echo 'el servidor no llego a escuchar'; cat arranque.log; exit 1; }
+
+      - name: Conducir las pantallas
+        env:
+          AUTH_USER: verificacion
+        run: npm run pantallas -- --base=http://127.0.0.1:4000 --salida=./capturas
+
+      - name: Capturas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pantallas-${{ github.sha }}
+          path: capturas/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Resumen
+        if: always()
+        run: |
+          {
+            echo '## Pantallas conducidas en un navegador'
+            echo ''
+            echo 'Las capturas de cada pantalla van como artefacto de esta corrida.'
+            echo ''
+            if [ -f capturas/informe.json ]; then
+              node -e "
+                const f = require('./capturas/informe.json');
+                console.log('| Pantalla | ms | Estado |');
+                console.log('|---|---:|---|');
+                for (const r of f) {
+                  const mal = r.error || r.problemas.length;
+                  const detalle = r.error ? r.error : (r.problemas.join(' · ') || 'sin novedad');
+                  console.log(\`| \${r.pantalla} | \${r.ms} | \${mal ? 'ROTA — ' : 'ok — '}\${detalle.replace(/\|/g, '/')} |\`);
+                }
+              "
+            else
+              echo '(sin informe: el servidor o el navegador no llegaron a arrancar; revisa los pasos anteriores)'
+            fi
+            echo ''
+            echo '_El servidor corre en el propio ejecutor con `NODE_ENV=production` y la base sembrada desde `legacyData/`, que es exactamente lo que sirve produccion: la base alli es efimera y se resiembra en cada despliegue._'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Log del servidor si algo fallo
+        if: failure()
+        run: cat arranque.log

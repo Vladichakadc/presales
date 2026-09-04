@@ -24,3 +24,11 @@ __pycache__/
 
 # Hash de la contrasena en desarrollo local
 .auth/
+
+# Salida de `npm run pantallas`: capturas e informe de la corrida. Son un artefacto de
+# verificacion, no del producto — en CI viajan como artefacto del workflow, que es donde
+# sirven; commitearlas engordaria el repositorio con una imagen por pantalla y por cambio.
+.capturas/
+capturas/
+pantallas.sqlite
+.auth-pantallas/

@@ -98,7 +98,7 @@ de datos— está en [`IMPORTAR-CATALOGO.md`](IMPORTAR-CATALOGO.md).
 | ~~2~~ | ~~`cps` en 37 de los 58 FortiGate~~ **Resuelto (2026-09-02)**, y ampliado el 2026-09-03 de 53 a **56 de 58** leyendo las fichas por serie de 400F y 600F. Quedan 100F y 200F, cuyas fichas no están en la URL que sigue el patrón del resto (404, reportado). | — | resuelto vía Actions |
 | 3 | **PDFs de datasheets de Aruba.** `public/datasheets/` va vacío a propósito; la página enlaza la URL de HPE mientras no esté el archivo local. **Ejecutado por primera vez el 2026-09-02** (ver *Cerrado recientemente* — «investigado», no «cerrado»): de 24 documentos, HPE devolvió 21 fallos (403 o timeout) al ejecutor de GitHub Actions y solo 1 PDF de bajo valor se descargó — un bloqueo del lado de HPE, distinto del de este entorno. **Ese único PDF (`sd-wan-ordering-guide.pdf`) ya está commiteado** (2026-09-02): se había quedado fuera de git, en un clon suelto, así que producción seguía enlazando la URL de HPE aunque el archivo existiera en disco. Cobertura local real: **1 de 24**; los otros 23 siguen enlazando a HPE. Y aunque hubiera bajado los 24, el paso de abrir el PR falló aparte: este repositorio tiene desactivado el permiso «Allow GitHub Actions to create pull requests» (ajuste de GitHub, no de este workflow). | El workflow (`datasheets-aruba.yml`) está listo y el permiso de PR se activa en un clic (Settings → Actions → General → Workflow permissions), pero incluso con eso resuelto, HPE sigue bloqueando casi todo el lote — hace falta una máquina con navegador real, igual que Huawei. **2026-09-03: se supo por qué** — `buy.hpe.com` devuelve un "Access Denied" de **Akamai** al ejecutor de Actions (ver *Cerrado recientemente*), así que no es límite de ritmo sino la defensa anti-automatización del fabricante. Espaciar las peticiones en `descargar-datasheets.js` la ablanda, no la abre. | HPE bloquea con Akamai (defensa del fabricante, no del proxy de este entorno); el repositorio tampoco permite que Actions abra PRs |
 | 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ` y las 23 AR no traen `mpps`. El motor no inventa: muestra lo que hay. | **El importador ya existe**: `npm run huawei -- --check` para ver los huecos, `npm run huawei -- specs.xlsx` para las cifras y `npm run huawei -- eox.csv --eol` para el fin de venta. Falta el dato, no la herramienta — **y, a diferencia de Fortinet/Aruba, esta vez no se cierra vía Actions** (ver *Cerrado recientemente*, investigación 2026-09-02): hace falta una persona con navegador real, y sesión de Huawei si hace falta el detalle fino de Info-Finder. | `e.huawei.com`, `support.huawei.com` bloquean el navegador automatizado (Akamai); `info.support.huawei.com` exige sesión |
-| 4 | **Comprobar el sitio en vivo tras desplegar — parcial (2026-09-02), ver *Cerrado recientemente*.** Se verifica que el deploy llegue a SUCCESS y que los logs muestren `[seed]` y `Presales corriendo en`; ahora además `.github/workflows/sonda-produccion.yml` confirma desde fuera de este entorno que el dominio público responde de verdad (`/salud` y `/login`, sin sesión). Lo que sigue sin cubrirse es la revisión visual de la pantalla tocada: sin la contraseña real de producción, ningún workflow puede entrar más allá de esas dos rutas públicas. | Disparar `sonda-produccion.yml` a mano para la confirmación externa; abrir `presales.up.railway.app` con sesión y revisar la pantalla tocada sigue siendo de una persona. | `presales.up.railway.app` (bloqueado solo desde este entorno de edición, no desde GitHub Actions) |
+| 4 | **~~Comprobar el sitio en vivo tras desplegar~~ Cerrado (2026-09-04)**, ver *Cerrado recientemente*. Eran dos preguntas distintas y ahora las cubren dos workflows: `sonda-produccion.yml` confirma desde fuera de este entorno que el dominio público responde de verdad (`/salud` y `/login`, sin sesión), y **`pantallas.yml`** conduce las 15 pantallas detrás del muro en un Chromium de verdad y sube una captura de cada una. No hace falta producción para lo segundo: la base es efímera y se resiembra desde `legacyData/` en cada despliegue, así que lo que pinta una pantalla es función del commit. | Nada pendiente de ingeniería. Queda el **juicio**: mirar las capturas del artefacto y decidir si la pantalla dice lo que se le quiere decir a un cliente. | — |
 
 ## Fabricantes sin dimensionador
 
@@ -335,6 +335,58 @@ Dos cosas que ayudan a decidir:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### El pendiente 4, cerrado: las pantallas se conducen solas en cada push (2026-09-04)
+
+Faltaba la mitad visual: `sonda-produccion.yml` confirmaba que el dominio público responde,
+pero nunca inicia sesión —no tiene por qué guardar la contraseña real de producción—, así que
+«¿esta pantalla funciona?» seguía dependiendo de que una persona abriera el sitio.
+
+**Se estudió montar un entorno de staging en Railway y se descartó por seguridad, no por
+coste.** Habría añadido una **segunda copia pública del catálogo de precios**, tras una
+contraseña guardada en los secretos del repositorio — y los secretos de Actions los puede leer
+cualquiera que sepa empujar un workflow. Y a cambio de esa exposición no se veía nada nuevo:
+`DATABASE_PATH` va sin definir en producción, la base es **efímera** y se resiembra desde
+`server/seed/legacyData/` en **cada** despliegue, así que lo que pinta una pantalla es función
+del *commit*, no del entorno. Un arranque de ese mismo commit en el ejecutor de Actions —que
+`verificar.yml` ya hacía para comprobar `/salud`— renderiza exactamente los mismos datos.
+
+Así que la verificación vive donde ya estaba el servidor. `npm run pantallas`
+(`scripts/verificar-pantallas.js`) entra por el muro y conduce **15 pantallas**: las once
+secciones del portal, el comparador, las cinco capas de la calculadora, los ocho
+dimensionadores —moviendo el caudal y abriendo la pestaña de BOM en cada uno—, el cotizador,
+la guía, cuenta y usuarios. `.github/workflows/pantallas.yml` lo corre en cada push y sube las
+capturas como artefacto, con una tabla de resultados en el resumen de la corrida. La
+contraseña la genera el propio job y muere con él: no es un secreto del repositorio ni abre
+nada más.
+
+**Falla ante lo que de verdad rompe una pantalla:** un error de consola, una excepción, una
+petición fallida **al propio origen** o un contenedor que se queda vacío —el síntoma de un
+`fetch` que falló en silencio, que es el modo más callado que tiene esta aplicación, porque
+cada pantalla se pinta desde una sola llamada—. Las peticiones a terceros se ignoran a
+propósito: las tipografías de Google se cargan sin bloquear (`js/fuentes.js`) y desde este
+entorno ni siquiera resuelven, y un verificador que se pone rojo por un CDN ajeno se acaba
+ignorando.
+
+**Y se comprobó que detecta, no solo que pasa.** Con todo en su sitio da 15/15; quitando
+`public/js/comparador.js` cae a 12/15 con código de salida 1, y el informe dice
+«`#compareOut` se quedó vacío» además de reproducir la firma histórica exacta —«Refused to
+execute script… MIME type (`text/html`)»—, que es literalmente el fallo del script que quedó
+detrás del muro de auth que CLAUDE.md lleva documentado. Dos fallos de la primera versión, los
+dos míos y no de la aplicación, se arreglaron antes de subirla: esperaba **visibilidad** de
+controles que viven en una `.page` inactiva del portal (es `attached` lo que hay que esperar),
+y contaba como error de la aplicación el `ERR_CONNECTION_RESET` de Google Fonts.
+
+**Lo que sigue sin automatizarse, y no se puede:** el juicio de si la pantalla dice lo que se
+le quiere decir a un cliente. Pero eso ahora se hace con las capturas delante en cada push, no
+teniendo que acordarse de abrir el sitio. Lo que **no** se comprueba es ninguna cifra del
+catálogo: para eso están las 181 pruebas, y una aserción sobre «3,1 Gbps» se rompería en cada
+cambio de catálogo, que es como se enseña a la gente a ignorar un rojo.
+
+**Este check frena el despliegue a propósito** —Railway espera a las comprobaciones de CI y una
+pantalla rota no debería llegar a producción—. Si alguna vez estorbara más de lo que ayuda, la
+válvula está escrita en la cabecera del workflow: `continue-on-error: true` en el job deja el
+rojo y las capturas pero desbloquea.
 
 ### La calculadora de throughput dimensionaba con la cifra de portada (2026-09-04)
 
