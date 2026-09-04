@@ -204,3 +204,60 @@ test('el alta rechaza un rol invalido y no exige el permiso a quien no lo tiene'
   });
   assert.strictEqual(negado.status, 403);
 });
+
+test('la calculadora no aparta un fabricante por un dato que el catálogo SI publica', async () => {
+  // POR QUE AQUI Y NO EN test/calculadora.test.js. El mapa de capas de public/js/calculadora.js
+  // se escribio contra `legacyData/indexPR.js`, donde el campo `sdwan` de Cisco es el texto
+  // «Sí» — y apartaba los 19 modelos de Cisco del perfil SD-WAN por un dato que si estaba.
+  // Lo que sirve la aplicacion es OTRA cosa: `seedCatalog.js` funde en la misma fila el
+  // catalogo del portal y el del dimensionador de ese fabricante, asi que en /api/catalog el
+  // `sdwan` de Cisco es un numero. Un «sin dato» falso es del peor tipo de error de este
+  // repositorio: no rompe nada, solo miente — el mismo que el comparador cometio diciendo
+  // «IPS: no aplica» de un Catalyst 8300. Solo se caza contra el servidor de verdad.
+  const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
+  const res = await fetch(`${BASE}/api/catalog`, { headers: { cookie: ana } });
+  assert.strictEqual(res.status, 200);
+  const PR = await res.json();
+
+  const { cargar } = require('./ayuda/navegador.js');
+  const { CALC } = cargar('public/js/calculadora.js');
+  const devs = Object.keys(PR).flatMap((g) => PR[g].map((p) => ({ grupo: g, raw: p, model: p.model, vendor: g })));
+  assert.ok(devs.length > 100, 'el catalogo llego entero');
+
+  // Un modelo se aparta SOLO si el campo del que sale esa capa esta vacio en su fila. Si
+  // trae el dato y aun asi se aparta, el mapa esta mirando el campo equivocado.
+  const CAMPOS = {
+    fwd: { hw_ar: ['fwd'], hw_wan: ['cap'], cisco: ['fwd', 'cap'], nokia: ['cap'], fortinet: ['fw'], juniper: ['fw', 'cap'], mikrotik: ['fwd'], aruba: ['fw', 'fwd'] },
+    ipsec: { hw_ar: ['ipsec'], cisco: ['ipsec'], fortinet: ['vpn'], juniper: ['vpn'], mikrotik: ['ipsec'], aruba: ['ipsec'] },
+    sdwan: { hw_ar: ['sdwan'], cisco: ['sdwan'], aruba: ['wanMax'] },
+    ngfw: { fortinet: ['ngfw'], juniper: ['ips'] },
+    tp: { fortinet: ['tp'], juniper: ['atp'] },
+  };
+  for (const perfil of Object.keys(CALC.PERFILES)) {
+    for (const a of CALC.evaluar(devs, perfil, 1).apartados) {
+      const campos = (CAMPOS[perfil] || {})[a.d.grupo];
+      if (!campos) continue; // ese catalogo no publica esa capa para nadie
+      const traeDato = campos.some((c) => CALC.mbps(a.d.raw[c]) !== null);
+      // Los SSR de Juniper leen `cap` en el perfil SD-WAN aunque el resto de la serie no.
+      if (perfil === 'sdwan' && a.d.grupo === 'juniper') continue;
+      assert.ok(!traeDato,
+        `${perfil}: ${a.d.model} se aparta pero su fila trae ${campos.join('/')} = ${campos.map((c) => a.d.raw[c]).join('/')}`);
+    }
+  }
+
+  // Y al reves: en cada capa que algun catalogo publica, alguien tiene que llegar a
+  // comprobarse. Un perfil que aparta el catalogo entero seria un mapa roto, no un hueco.
+  for (const perfil of Object.keys(CALC.PERFILES)) {
+    const r = CALC.evaluar(devs, perfil, 1);
+    assert.ok(r.candidatos.length > 0, `el perfil ${perfil} comprueba algun equipo`);
+  }
+
+  // Los tres fabricantes cuyo dato solo aparece tras la fusion de la siembra: si alguien
+  // vuelve a escribir el mapa contra indexPR.js, esto lo dice.
+  const conCifra = (perfil, grupo) => CALC.evaluar(devs, perfil, 1).candidatos
+    .filter((f) => f.d.grupo === grupo).length;
+  assert.ok(conCifra('sdwan', 'cisco') >= 10, 'Cisco publica SD-WAN por modelo');
+  assert.ok(conCifra('ipsec', 'juniper') >= 5, 'los SRX de 2024 publican IPsec');
+  assert.ok(conCifra('ngfw', 'juniper') >= 5, 'y su cifra de IPS');
+  assert.ok(conCifra('sdwan', 'aruba') >= 5, 'EdgeConnect publica su rango de ancho de banda WAN');
+});

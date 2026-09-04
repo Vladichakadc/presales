@@ -264,98 +264,115 @@ function runCompare(){
 }
 
 /* ═══════ CALCULATOR ═══════ */
-function runCalc(){
+/* La lógica —qué capa mide cada perfil, y qué se hace con los modelos cuya cifra
+   de esa capa el catálogo no publica— vive en js/calculadora.js. Aquí solo se
+   pinta. El motivo está escrito en la cabecera de ese módulo: esta pantalla
+   dimensionaba el perfil «SD-WAN / NGFW» con la cifra de firewall. */
+let ultimoCalculo=null;
+
+function ctxCalculo(){
   const bw=parseFloat(document.getElementById('calcBw').value)||0;
   const unit=parseFloat(document.getElementById('calcUnit').value);
-  const profile=document.getElementById('calcProfile').value;
-  const margin=(parseFloat(document.getElementById('calcMargin').value)||0)/100;
+  const perfil=document.getElementById('calcProfile').value;
+  const margin=parseFloat(document.getElementById('calcMargin').value)||0;
   const dir=parseFloat(document.getElementById('calcDir').value);
-  const needMbps=bw*unit*dir*(1+margin);
+  return {bw,unit,perfil,margin,dir,need:CALC.requerimiento({bw,unit,dir,margin})};
+}
 
-  const profileLabel={fwd:'Forwarding (NAT+ACL+QoS)',ipsec:'IPsec VPN',sdwan:'SD-WAN / NGFW'}[profile];
+function calcFila(f,recomendada){
+  const h=f.holgura===null?'—':`${f.holgura>=0?'+':''}${Math.round(f.holgura*100)}%`;
+  const sobra=f.holgura!==null&&f.holgura>2;
+  return `<tr${recomendada?' class="calc-rec"':''}>
+    <th scope="row">
+      <span class="calc-modelo">${esc(f.d.model)}</span>${recomendada?'<span class="calc-marca">el más pequeño que cumple</span>':''}
+      <span class="calc-sub">${esc([f.d.series,f.d.seg].filter(Boolean).join(' · '))}</span>
+      ${f.d.ports?`<span class="calc-sub">${esc(f.d.ports)}</span>`:''}
+    </th>
+    <td><span class="calc-cifra">${CALC.fmt(f.mbps)}</span><span class="calc-sub">${esc(f.capa)}</span></td>
+    <td class="calc-holgura">${h}${sobra?'<span class="calc-sub">muy por encima</span>':''}</td>
+  </tr>`;
+}
 
-  const candidates=ALL.filter(d=>{
-    const cap=profile==='ipsec'&&d.ipsec>0?d.ipsec:d.tp;
-    return cap>=needMbps;
-  }).sort((a,b)=>{
-    const ca=profile==='ipsec'&&a.ipsec>0?a.ipsec:a.tp;
-    const cb=profile==='ipsec'&&b.ipsec>0?b.ipsec:b.tp;
-    return ca-cb;
-  });
+function calcPanelFabricante(g,total){
+  const filas=g.filas.slice(0,5);
+  const resto=g.filas.length-filas.length;
+  return `<div class="panel">
+    <h2><span class="calc-punto" style="background:${g.color}"></span>${esc(g.vendor)}
+      <span class="badge live">${g.filas.length} de ${total[g.vendor]||g.filas.length} cumplen</span></h2>
+    <div class="calc-scroll"><table class="calc-tabla">
+      <thead><tr><th scope="col">Modelo</th><th scope="col">Cifra dimensionada</th><th scope="col">Holgura</th></tr></thead>
+      <tbody>${filas.map((f,i)=>calcFila(f,i===0)).join('')}</tbody>
+    </table></div>
+    ${resto>0?`<p class="calc-resto">Y ${resto} modelo${resto===1?'':'s'} más de ${esc(g.vendor)} que también cumplen, con más holgura.</p>`:''}
+  </div>`;
+}
 
-  const byVendor={};
-  candidates.forEach(d=>{ if(!byVendor[d.vendor]) byVendor[d.vendor]=[]; byVendor[d.vendor].push(d); });
+function runCalc(){
+  const ctx=ctxCalculo();
+  const perfil=CALC.PERFILES[ctx.perfil];
+  const res=CALC.evaluar(ALL,ctx.perfil,ctx.need);
+  const detalle=`${fmtMbps(ctx.bw*ctx.unit)} × ${ctx.dir===2?'bidireccional (×2)':'agregado'} + ${Math.round(ctx.margin)}% de margen`;
+  ultimoCalculo={res,ctx,detalle};
+
+  // Cuántos modelos de cada fabricante SÍ traían cifra de esta capa: sin ese
+  // denominador, «3 cumplen» no dice si se comprobaron 3 o 24.
+  const comprobados={};
+  for(const f of res.candidatos.concat(res.cortos)) comprobados[f.d.vendor]=(comprobados[f.d.vendor]||0)+1;
 
   let html=`<div class="calc-result">
     <p class="tag">Requerimiento calculado</p>
-    <div class="big-num">${fmtMbps(needMbps)}</div>
-    <p style="color:var(--steel);font-size:13px;margin:4px 0 0">
-      ${fmtMbps(bw*unit)} &times; ${dir===2?'bidireccional (&times;2)':'agregado'} + ${Math.round(margin*100)}% margen · Perfil: ${profileLabel}
-    </p>
+    <div class="big-num">${fmtMbps(ctx.need)}</div>
+    <p class="calc-detalle">${detalle}</p>
+    <p class="calc-capa"><b>Se dimensiona contra la capa «${esc(perfil.etq)}».</b> ${esc(perfil.mide)}</p>
   </div>`;
 
-  if(!Object.keys(byVendor).length){
-    html+='<div class="panel" style="margin-top:16px"><p style="color:var(--amber);font-weight:600">No se encontraron equipos que cumplan este requerimiento en el catálogo actual.</p></div>';
+  if(res.candidatos.length){
+    const aviso=CALC.avisoBases(res.candidatos);
+    if(aviso) html+=`<p class="cmp-aviso">${esc(aviso).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}</p>`;
+    html+='<div style="margin-top:16px">'
+      +CALC.porFabricante(res.candidatos).map(g=>calcPanelFabricante(g,comprobados)).join('')
+      +'</div>';
   }else{
-    html+='<div style="margin-top:16px">';
-    ['Huawei','Cisco','Fortinet','Nokia','Juniper','MikroTik','Aruba'].forEach(vName=>{
-      const devs=byVendor[vName]; if(!devs||!devs.length) return;
-      const best=devs[0];
-      const alts=devs.slice(1,4).map(d=>d.model).join(', ');
-      const v=VENDORS.find(x=>x.name===vName);
-      html+=`<div class="panel">
-        <h2><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${v.accent};margin-right:8px;vertical-align:2px"></span>${vName} — Opción recomendada
-          <span class="badge live">Cumple</span>
-        </h2>
-        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:8px">
-          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;text-transform:uppercase">${esc(best.model)}</span>
-          <span style="color:var(--steel);font-size:13px">${best.series||''} · ${best.seg}</span>
-        </div>
-        <div style="font-size:13px;margin-bottom:4px">
-          <b>Throughput:</b> ${best.tpL} &nbsp;·&nbsp; <b>IPsec:</b> ${best.ipsecL} &nbsp;·&nbsp; <b>SD-WAN:</b> ${best.sdwan}
-        </div>
-        <div style="font-size:12px;color:var(--steel)">${best.ports}</div>
-        ${alts?`<p style="font-size:11.5px;color:var(--steel);margin-top:10px;border-top:1px solid var(--rule);padding-top:8px"><b>Alternativas:</b> ${alts}</p>`:''}
-      </div>`;
-    });
+    html+='<div class="panel" style="margin-top:16px"><p style="color:var(--amber);font-weight:600;margin:0 0 8px">Ningún equipo del catálogo alcanza esa cifra en esta capa.</p>';
+    if(res.cortos.length){
+      // Decir cuánto falta es más útil que un «no hay»: separar el tráfico entre
+      // varios equipos es una decisión de diseño, y para tomarla hace falta saber
+      // por cuánto se queda corto el mayor.
+      const top=res.cortos.slice(0,3).map(f=>`<li><b>${esc(f.d.vendor)} ${esc(f.d.model)}</b> — ${CALC.fmt(f.mbps)} de ${esc(f.capa)}, se queda al ${Math.round(f.mbps/ctx.need*100)}% de lo pedido.</li>`).join('');
+      html+=`<p class="calc-resto">Lo más grande que hay en esta capa:</p><ul class="calc-lista">${top}</ul>
+        <p class="calc-resto">Por encima del mayor del catálogo no se redondea hacia abajo: repartir el tráfico entre varios equipos es una decisión de diseño, no una recomendación automática.</p>`;
+    }
     html+='</div>';
   }
+
+  // Lo que NO se pudo comprobar se dice siempre, también cuando hay candidatos:
+  // una lista corta sin explicar por qué es corta se lee como catálogo completo.
+  const apartados=CALC.apartadosPorFabricante(res.apartados);
+  if(apartados.length){
+    html+=`<div class="panel calc-apartados">
+      <h2>Sin cifra de esta capa en el catálogo <span class="badge soon">${res.apartados.length} modelos</span></h2>
+      <p class="calc-resto">Estos modelos <b>no se han comprobado</b> contra el requerimiento. No se dimensionan con la cifra de otra capa: sustituirla es exactamente lo que produce propuestas cortas por un orden de magnitud.</p>
+      <ul class="calc-lista">${apartados.map(a=>`<li>
+        <span class="calc-punto" style="background:${a.color}"></span><b>${esc(a.vendor)}</b> — ${a.n} modelo${a.n===1?'':'s'} · ${esc(a.motivo)}.
+        ${a.tool?`<a href="${a.tool.url}">Ir al ${esc(a.tool.txt)}</a>`:''}
+      </li>`).join('')}</ul>
+    </div>`;
+  }
+
   document.getElementById('calcOut').innerHTML=html;
-  document.getElementById('csvBtn').style.display=Object.keys(byVendor).length?'block':'none';
+  document.getElementById('csvBtn').style.display=res.candidatos.length?'block':'none';
 }
 
 
 /* ═══════ EXPORT CSV ═══════ */
+/* Se arma con los datos del último cálculo, no rascando el HTML ya pintado: la
+   versión anterior leía los `<div style="font-size:13px">` de la pantalla, así
+   que perdía la capa dimensionada —el dato que da sentido a la cifra— y se
+   rompía al tocar el maquetado. */
 function exportCSV(){
-  const rows=[['Fabricante','Modelo','Serie','Segmento','Throughput','IPsec','SD-WAN','Puertos']];
-  // collect visible results from calcOut panels
-  const panels=document.querySelectorAll('#calcOut .panel');
-  panels.forEach(p=>{
-    const header=p.querySelector('h2');
-    if(!header) return;
-    // extract vendor name from h2 — matches "Huawei —", "Cisco —", etc.
-    const vendor=(header.textContent.match(/^([A-Za-z]+)/)||['','?'])[1];
-    // find model name in bold span
-    const modelEl=p.querySelector('span[style*="Barlow Condensed"]');
-    const model=modelEl?modelEl.textContent.trim():'';
-    const lines=p.querySelectorAll('div[style*="font-size:13px"]');
-    let tp='',ipsec='',sdwan='',ports='';
-    lines.forEach(l=>{
-      const t=l.textContent;
-      if(t.includes('Throughput:')) tp=t.split('Throughput:')[1].split('·')[0].trim();
-      if(t.includes('IPsec:')) ipsec=t.split('IPsec:')[1].split('·')[0].trim();
-      if(t.includes('SD-WAN:')) sdwan=t.split('SD-WAN:')[1].split('·')[0].trim();
-    });
-    const portsEl=p.querySelector('div[style*="font-size:12px"]');
-    if(portsEl) ports=portsEl.textContent.trim();
-    const serEl=p.querySelector('span[style*="color:var(--steel)"]');
-    const serText=serEl?serEl.textContent.trim():'';
-    const ser=serText.split('·')[0].trim();
-    const seg=serText.includes('·')?serText.split('·').slice(1).join('·').trim():'';
-    if(model) rows.push([vendor,model,ser,seg,tp,ipsec,sdwan,ports]);
-  });
-  if(rows.length<2){alert('Calcula primero para tener datos que exportar.');return;}
-  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  if(!ultimoCalculo||!ultimoCalculo.res.candidatos.length){alert('Calcula primero para tener datos que exportar.');return;}
+  const {res,ctx,detalle}=ultimoCalculo;
+  const csv=CALC.csv(res,{perfil:CALC.PERFILES[ctx.perfil].etq,need:ctx.need,detalle});
   const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -599,6 +616,13 @@ document.addEventListener('input', (e) => {
 document.addEventListener('change', (e) => {
   if (['cmp1', 'cmp2', 'cmp3', 'cmp4', 'cmpSoloDif'].indexOf(e.target.id) >= 0) {
     if (document.getElementById('compareOut').innerHTML.trim()) runCompare();
+  }
+  // La calculadora, por el mismo motivo: cambiar el perfil de trafico y seguir
+  // viendo la recomendacion del perfil anterior es leer una respuesta a otra
+  // pregunta. Solo se repinta si ya se habia calculado una vez; el boton sigue
+  // siendo la llamada a la accion de la primera.
+  if (['calcBw', 'calcUnit', 'calcProfile', 'calcMargin', 'calcDir'].indexOf(e.target.id) >= 0) {
+    if (ultimoCalculo) runCalc();
   }
 });
 

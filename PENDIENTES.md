@@ -336,6 +336,60 @@ Dos cosas que ayudan a decidir:
 
 ## Cerrado recientemente
 
+### La calculadora de throughput dimensionaba con la cifra de portada (2026-09-04)
+
+La pantalla elegía equipo con una sola línea:
+
+```js
+const cap = profile === 'ipsec' && d.ipsec > 0 ? d.ipsec : d.tp;
+```
+
+`d.tp` es la cifra de **portada** de cada catálogo —firewall en Fortinet, forwarding en
+Huawei, capacidad de conmutación en Nokia—, así que de ahí salían tres fallos, y los tres
+daban una respuesta con pinta de correcta:
+
+1. **El perfil «SD-WAN / NGFW» no miraba la cifra de NGFW ni una sola vez.** Medido en el
+   navegador con los valores por defecto de la pantalla (1 Gbps, bidireccional, 30 % de
+   margen = 2,6 Gbps): proponía un **FortiGate 30G**, que hace 4 Gbps de firewall y **570 Mbps
+   de NGFW**. Factor **4,6x por debajo** de lo pedido. El que cumple de verdad es el
+   FortiGate 120G, cuatro escalones de gama más arriba. Es el mismo modo de fallo que la
+   auditoría de FortiGate documentó (14,3x) y que el SRX380 repite (10x).
+2. **Un equipo sin cifra de IPsec se juzgaba por su forwarding.** Para 2,6 Gbps de IPsec
+   proponía un **Nokia 7220 IXR-D1** —un leaf de fabric de datacenter— porque conmuta
+   88 Gbps, y un **Aruba EC-S** cuyo IPsec en este catálogo es `0`.
+3. **Comparaba las siete cifras de portada entre sí sin decirlo**, mientras el comparador de
+   la pantalla de al lado avisa exactamente de eso.
+
+**La regla ahora vive en `public/js/calculadora.js`** (el pintado sigue en `js/index.js`,
+mismo reparto que el comparador): se dimensiona con la cifra de la capa que pide el perfil, y
+si el catálogo no la trae para ese modelo, **el modelo se aparta con su motivo** — nunca se
+sustituye por la de otra capa. El panel de apartados los cuenta por fabricante, dice por qué
+y enlaza al dimensionador de ese fabricante, así que una lista corta se explica en vez de
+leerse como catálogo completo. El perfil de tráfico pasó de tres opciones a **cinco capas**
+(reenvío/firewall, IPsec, SD-WAN, con inspección NGFW/IPS, e inspección completa
+Threat Protection/ATP), que son cinco preguntas distintas sobre el mismo equipo: en un
+FortiGate 120G son 39, 35, — , 3,1 y 2,8 Gbps.
+
+**El error que cometí a mitad, y cómo se cazó.** Escribí el mapa de capas contra
+`legacyData/indexPR.js`, y lo que sirve la aplicación es otra cosa: `seedCatalog.js` funde en
+la misma fila el catálogo del portal y el del dimensionador de ese fabricante. En
+`indexPR.js` el `sdwan` de Cisco es el texto «Sí»; en `/api/catalog` es un **número**. Con el
+mapa mal escrito, la pantalla apartaba los 19 modelos de Cisco «porque el catálogo no publica
+su cifra de SD-WAN» — un «sin dato» falso, del mismo tipo que el «IPS: no aplica» de un
+Catalyst 8300 que el comparador llegó a mostrar. Apareció al mirar la API real en el
+navegador, no en las pruebas, porque las pruebas leían el mismo fichero equivocado. La
+corrección trajo además a Juniper (los SRX de 2024 publican `vpn`, `ips` y `atp`) y a
+EdgeConnect (su rango de ancho de banda WAN). La guarda está en
+`test/servidor-produccion.test.js`, que interroga al servidor de verdad: un modelo solo puede
+apartarse si el campo del que sale esa capa está vacío **en su fila**.
+
+Otros dos arreglos de la misma pantalla: la exportación CSV se armaba rascando el HTML ya
+pintado —perdía la capa dimensionada y se rompía al tocar el maquetado—, y ahora sale de los
+datos, con la capa, la holgura y los apartados con su motivo; y la lista de fabricantes se
+deriva del catálogo en vez de un `['Huawei','Cisco',...]` escrito a mano, que es lo que dejó
+a Aruba y MikroTik sin botón en los filtros del cotizador. Verificado en Chromium con los
+cinco perfiles, sin errores de consola. 16 pruebas nuevas (181 en total).
+
 ### Nokia, los 18 modelos cubiertos: un segundo dimensionador para lo que no es fabric (2026-09-03)
 
 Cierra el pendiente 6. Los 14 modelos que la fase 1 dejó fuera —7250 IXR, 7250 IXR-X,

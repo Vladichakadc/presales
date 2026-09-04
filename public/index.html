@@ -152,6 +152,27 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
 .calc-result{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:22px;margin-top:18px}
 .calc-result .tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0 0 4px}
 .calc-result .big-num{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:34px;line-height:1;margin:0 0 4px}
+.calc-detalle{color:var(--steel);font-size:13px;margin:4px 0 0}
+.calc-capa{margin:12px 0 0;padding-top:11px;border-top:1px solid var(--rule);font-size:12.5px;line-height:1.6;color:var(--ink)}
+.calc-punto{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:8px;vertical-align:1px}
+.calc-scroll{overflow-x:auto}
+.calc-tabla{width:100%;border-collapse:collapse;font-size:12.5px}
+.calc-tabla th,.calc-tabla td{padding:10px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--paper)}
+.calc-tabla thead th{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--steel);font-weight:600;border-bottom:2px solid var(--ink)}
+.calc-tabla tbody th{font-weight:400;font-family:inherit;font-size:12.5px;letter-spacing:0;text-transform:none;color:var(--ink)}
+.calc-tabla tbody tr:last-child th,.calc-tabla tbody tr:last-child td{border-bottom:none}
+.calc-rec{background:rgba(31,107,74,.05)}
+.calc-modelo{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;text-transform:uppercase;line-height:1.15}
+.calc-marca{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--green);background:rgba(31,107,74,.1);padding:2px 6px;border-radius:2px;margin-left:8px;vertical-align:2px}
+.calc-sub{display:block;font-family:'Barlow',system-ui,sans-serif;font-size:11.5px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--steel);line-height:1.45;margin-top:2px}
+.calc-cifra{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;white-space:nowrap}
+.calc-holgura{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;white-space:nowrap}
+.calc-resto{font-size:11.5px;color:var(--steel);line-height:1.6;margin:10px 0 0}
+.calc-lista{margin:8px 0 0;padding-left:0;list-style:none;font-size:12.5px;line-height:1.7}
+.calc-lista li{padding:5px 0;border-bottom:1px solid var(--paper)}
+.calc-lista li:last-child{border-bottom:none}
+.calc-lista a{color:var(--red);font-size:11.5px;white-space:nowrap}
+.calc-apartados{margin-top:16px;border-left:3px solid var(--amber)}
 
 /* ── TOPOLOGY ── */
 .topo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
@@ -820,7 +841,7 @@ RB5009  CCR2004  RB5009  (Hub)
   <div class="page-header">
     <p class="eyebrow">Herramienta &middot; Dimensionamiento Transversal</p>
     <h1>Calculadora<br>de Throughput</h1>
-    <p class="sub">Ingresa los requerimientos de tu proyecto y obtén una recomendación de equipos que cumplen el perfil.</p>
+    <p class="sub">Ingresa los requerimientos de tu proyecto y obtén los equipos que cumplen <b>en la capa que elijas</b>. Lo que el catálogo no publica para esa capa se aparta con su motivo: nunca se sustituye por la cifra de otra.</p>
   </div>
   <div class="panel">
     <h2>Parámetros del requerimiento</h2>
@@ -833,11 +854,13 @@ RB5009  CCR2004  RB5009  (Hub)
         </div>
       </div>
       <div class="field">
-        <label for="calcProfile">Perfil de tráfico</label>
+        <label for="calcProfile">Capa que se dimensiona</label>
         <select id="calcProfile">
-          <option value="fwd">Routing + NAT + ACL + QoS</option>
+          <option value="fwd">Reenvío / firewall (paquetes grandes)</option>
           <option value="ipsec">IPsec VPN</option>
-          <option value="sdwan" selected>SD-WAN / NGFW típico</option>
+          <option value="sdwan">SD-WAN (overlay)</option>
+          <option value="ngfw" selected>Con inspección (NGFW / IPS)</option>
+          <option value="tp">Inspección completa (Threat Protection / ATP)</option>
         </select>
       </div>
       <div class="field">
@@ -952,6 +975,7 @@ RB5009  CCR2004  RB5009  (Hub)
 <script src="/js/estado.js"></script>
 <script src="/js/tabla.js"></script>
 <script src="/js/comparador.js"></script>
+<script src="/js/calculadora.js"></script>
 <script src="/js/index.js"></script>
 
 <!-- ════ SYNC MODAL ════ -->

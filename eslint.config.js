@@ -38,7 +38,7 @@ const globalsNavegador = {
   requestAnimationFrame: 'readonly', getComputedStyle: 'readonly', alert: 'readonly',
   confirm: 'readonly', XLSX: 'readonly',
   // APIs que las paginas se pasan entre si por `window`, ya que no hay sistema de modulos.
-  FICHA: 'readonly', BOM: 'readonly', ESTADO: 'readonly', TABLA: 'readonly', COMPARADOR: 'readonly',
+  FICHA: 'readonly', BOM: 'readonly', ESTADO: 'readonly', TABLA: 'readonly', COMPARADOR: 'readonly', CALC: 'readonly',
 };
 
 const reglas = {
