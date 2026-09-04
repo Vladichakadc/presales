@@ -127,9 +127,8 @@
         hw_ar: (d) => ({ n: 'IPsec', v: d.ipsec }),
         cisco: (d) => ({ n: 'IPsec', v: d.ipsec }),
         fortinet: (d) => ({ n: 'IPsec VPN', v: d.vpn }),
-        // Solo los SRX de la generación que trae cifra propia. Un SRX sin `vpn`
-        // no se dimensiona con su firewall: en el SRX345 son 5 Gbps frente a 1,7
-        // de IPS, un orden de magnitud de diferencia.
+        // Solo los SRX que traen cifra propia. Uno sin `vpn` no se dimensiona con
+        // su firewall: en el SRX380 son 20 Gbps de firewall frente a 4,4 de IPsec.
         juniper: (d) => ({ n: 'IPsec VPN', v: d.vpn }),
         mikrotik: (d) => ({ n: 'IPsec (AES-CBC)', v: d.ipsec }),
         aruba: (d) => ({ n: 'IPsec', v: d.ipsec }),
