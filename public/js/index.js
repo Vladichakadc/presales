@@ -65,26 +65,26 @@ function fmtMbps(m){
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 
 function buildAll(){
-  PR.hw_ar.forEach(p=>ALL.push({vendor:'Huawei',model:p.model,series:p.ser,seg:p.seg,
+  PR.hw_ar.forEach(p=>ALL.push({grupo:'hw_ar',raw:p,vendor:'Huawei',model:p.model,series:p.ser,seg:p.seg,
     tp:p.fwd||0,tpL:fmtMbps(p.fwd),ipsec:p.ipsec||0,ipsecL:p.ipsec?fmtMbps(p.ipsec):'—',
     sdwan:p.sdwan,ports:p.ports,color:'#C7000B'}));
-  PR.hw_wan.forEach(p=>ALL.push({vendor:'Huawei',model:p.model,series:p.ser,seg:p.seg,
+  PR.hw_wan.forEach(p=>ALL.push({grupo:'hw_wan',raw:p,vendor:'Huawei',model:p.model,series:p.ser,seg:p.seg,
     tp:parseCap(p.cap),tpL:p.cap,ipsec:0,ipsecL:'N/A',sdwan:'N/A',ports:p.ports,color:'#C7000B'}));
-  PR.cisco.forEach(p=>ALL.push({vendor:'Cisco',model:p.model,series:p.ser,seg:p.seg,
+  PR.cisco.forEach(p=>ALL.push({grupo:'cisco',raw:p,vendor:'Cisco',model:p.model,series:p.ser,seg:p.seg,
     tp:parseRange(p.fwd),tpL:p.fwd,ipsec:parseRange(p.ipsec),ipsecL:p.ipsec,
     sdwan:p.sdwan,ports:p.ports,color:'#049FD9'}));
-  PR.nokia.forEach(p=>ALL.push({vendor:'Nokia',model:p.model,series:p.ser,seg:p.seg,
+  PR.nokia.forEach(p=>ALL.push({grupo:'nokia',raw:p,vendor:'Nokia',model:p.model,series:p.ser,seg:p.seg,
     tp:parseCap(p.cap),tpL:p.cap,ipsec:0,ipsecL:'N/A (SP)',sdwan:'N/A',ports:p.ports,color:'#124191'}));
-  PR.fortinet.forEach(p=>ALL.push({vendor:'Fortinet',model:p.model,series:p.model.match(/\d+/)?p.model.replace(/FortiGate\s+(\d+\w+).*/,'$1 series'):'Fortinet',seg:p.seg,
+  PR.fortinet.forEach(p=>ALL.push({grupo:'fortinet',raw:p,vendor:'Fortinet',model:p.model,series:p.model.match(/\d+/)?p.model.replace(/FortiGate\s+(\d+\w+).*/,'$1 series'):'Fortinet',seg:p.seg,
     tp:parseRange(p.fw),tpL:'FW: '+p.fw,ipsec:parseRange(p.vpn),ipsecL:p.vpn,
     sdwan:'Sí (FortiOS nativo)',ports:p.ifaces,color:'#EE3124'}));
-  PR.juniper.forEach(p=>ALL.push({vendor:'Juniper',model:p.model,series:p.ser,seg:p.seg,
+  PR.juniper.forEach(p=>ALL.push({grupo:'juniper',raw:p,vendor:'Juniper',model:p.model,series:p.ser,seg:p.seg,
     tp:parseCap(p.cap),tpL:p.cap,ipsec:0,ipsecL:'—',
     sdwan:p.use.includes('SD-WAN')?'Sí':'—',ports:p.ports,color:'#84B135'}));
-  (PR.mikrotik||[]).forEach(p=>ALL.push({vendor:'MikroTik',model:p.model,series:p.ser,seg:p.seg,
+  (PR.mikrotik||[]).forEach(p=>ALL.push({grupo:'mikrotik',raw:p,vendor:'MikroTik',model:p.model,series:p.ser,seg:p.seg,
     tp:p.fwd||0,tpL:fmtMbps(p.fwd),ipsec:p.ipsec||0,ipsecL:p.ipsec?fmtMbps(p.ipsec):'—',
     sdwan:p.sdwan,ports:p.ports,color:'#C8102E'}));
-  (PR.aruba||[]).forEach(p=>ALL.push({vendor:'Aruba',model:p.model,series:p.ser,seg:p.seg,
+  (PR.aruba||[]).forEach(p=>ALL.push({grupo:'aruba',raw:p,vendor:'Aruba',model:p.model,series:p.ser,seg:p.seg,
     tp:p.fwd||0,tpL:fmtMbps(p.fwd),ipsec:p.ipsec||0,ipsecL:p.ipsec?fmtMbps(p.ipsec):'—',
     sdwan:p.sdwan,ports:p.ports,color:'#01A982'}));
 }
@@ -207,26 +207,60 @@ function populateCmp(){
   });
 }
 
+function devsSeleccionados(){
+  return ['cmp1','cmp2','cmp3','cmp4']
+    .map(id=>document.getElementById(id).value).filter(Boolean)
+    .map(id=>{
+      const[vid,idx]=id.split('_');
+      const v=VENDORS.find(x=>x.id===vid);
+      return v?ALL.filter(d=>d.vendor===v.name)[+idx]:null;
+    }).filter(Boolean)
+    // La serie de Fortinet no viene en el catálogo: `buildAll` la deduce del nombre del
+    // modelo. Sin este relleno el comparador la daría por «sin dato» teniéndola calculada,
+    // que es decir que falta un dato que sí hay.
+    .map(d=>Object.assign({},d,{raw:Object.assign({ser:d.series},d.raw)}));
+}
+
+/* Se pinta como MATRIZ —una fila por atributo, una columna por equipo— y no como una
+   tarjeta por equipo. Con tarjetas, comparar un dato obligaba a buscarlo en cuatro sitios
+   y compararlo de memoria, que es justo lo que un comparador tiene que ahorrar. */
 function runCompare(){
-  const ids=['cmp1','cmp2','cmp3','cmp4']
-    .map(id=>document.getElementById(id).value).filter(Boolean);
-  if(ids.length<2){alert('Selecciona al menos 2 equipos.');return;}
-  const devs=ids.map(id=>{
-    const[vid,idx]=id.split('_');
-    return ALL.filter(d=>d.vendor===VENDORS.find(v=>v.id===vid).name)[+idx];
-  }).filter(Boolean);
-  document.getElementById('compareOut').innerHTML=devs.map(d=>`
-    <div class="compare-col">
-      <div class="col-head" style="background:${d.color}">${d.vendor} &middot; ${esc(d.model)}</div>
-      <div class="col-body">
-        <div class="col-row"><span class="lbl">Serie</span><span class="val">${d.series||'—'}</span></div>
-        <div class="col-row"><span class="lbl">Segmento</span><span class="val">${d.seg}</span></div>
-        <div class="col-row"><span class="lbl">Throughput</span><span class="val">${d.tpL}</span></div>
-        <div class="col-row"><span class="lbl">IPsec</span><span class="val">${d.ipsecL}</span></div>
-        <div class="col-row"><span class="lbl">SD-WAN</span><span class="val">${d.sdwan}</span></div>
-        <div class="col-row"><span class="lbl">Puertos</span><span class="val">${d.ports}</span></div>
-      </div>
-    </div>`).join('');
+  const devs=devsSeleccionados();
+  const out=document.getElementById('compareOut');
+  if(devs.length<2){
+    out.innerHTML='<p class="cmp-vacio">Selecciona al menos dos equipos para compararlos.</p>';
+    return;
+  }
+  const soloDif=document.getElementById('cmpSoloDif').checked;
+  const secciones=COMPARADOR.filasVisibles(devs,soloDif);
+
+  const aviso=COMPARADOR.avisoBases(devs);
+  const cabeceras=devs.map(d=>`<th scope="col" class="cmp-dev" style="--acento:${d.color}">
+      <span class="cmp-fab">${esc(d.vendor)}</span><span class="cmp-mod">${esc(d.model)}</span></th>`).join('');
+
+  let filas='';
+  for(const sec of secciones){
+    filas+=`<tr class="cmp-sec"><th scope="rowgroup" colspan="${devs.length+1}">${esc(sec.titulo)}`
+      +(sec.nota?`<span class="cmp-secnota">${esc(sec.nota)}</span>`:'')+'</th></tr>';
+    for(const f of sec.filas){
+      const mejores=COMPARADOR.mejores(f,devs);
+      const celdas=devs.map((d,i)=>{
+        const c=COMPARADOR.celda(f,d);
+        if(c.estado==='sinDato') return '<td class="cmp-hueco">sin dato</td>';
+        if(c.estado==='noAplica') return `<td class="cmp-na">no aplica${c.txt?`<span class="cmp-namotivo">${esc(c.txt)}</span>`:''}</td>`;
+        return `<td class="${mejores.indexOf(i)>=0?'cmp-top':''}">${esc(c.txt)}</td>`;
+      }).join('');
+      filas+=`<tr><th scope="row">${esc(f.n)}`
+        +(f.nota?`<span class="cmp-ayuda" title="${esc(f.nota)}">?</span>`:'')
+        +`</th>${celdas}</tr>`;
+    }
+  }
+  if(!filas) filas=`<tr><td colspan="${devs.length+1}" class="cmp-hueco">Estos equipos no se diferencian en ningún dato publicado.</td></tr>`;
+
+  out.innerHTML=(aviso?`<p class="cmp-aviso">${aviso.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}</p>`:'')
+    +`<div class="cmp-scroll"><table class="cmp-tabla"><thead><tr><th scope="col" class="cmp-esq">Característica</th>${cabeceras}</tr></thead>`
+    +`<tbody>${filas}</tbody></table></div>`
+    +`<p class="cmp-pie"><b>sin dato</b> es que el catálogo no publica esa cifra para ese modelo; <b>no aplica</b> es que la pregunta no va con ese tipo de equipo. No son lo mismo y por eso se dicen distinto.</p>`;
 }
 
 /* ═══════ CALCULATOR ═══════ */
@@ -556,6 +590,16 @@ document.addEventListener('click', (e) => {
 document.addEventListener('input', (e) => {
   const fn = e.target.dataset && e.target.dataset.oninput;
   if (fn === 'globalFilter') globalFilter(e.target.value);
+});
+
+// El comparador se repinta al cambiar cualquiera de sus controles, sin volver a pulsar el
+// boton: si alguien cambia un equipo y la tabla sigue mostrando el anterior, esta leyendo
+// una comparacion que ya no corresponde a lo que tiene seleccionado. El boton se queda
+// porque es la llamada a la accion de la primera vez, cuando aun no hay nada que repintar.
+document.addEventListener('change', (e) => {
+  if (['cmp1', 'cmp2', 'cmp3', 'cmp4', 'cmpSoloDif'].indexOf(e.target.id) >= 0) {
+    if (document.getElementById('compareOut').innerHTML.trim()) runCompare();
+  }
 });
 
 /* ══ ACCESO ══

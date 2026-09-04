@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-03.
+Última revisión: 2026-09-04.
 
 ---
 
@@ -181,6 +181,39 @@ manual, declara el desvío y declara el «sin candidato» —incluido el fabric 
 provocó a propósito un diseño imposible. Sin errores de consola. 156 pruebas (eran 148), ocho
 de ellas nuevas, y una comprueba en el propio código fuente que **ninguna página vuelva a
 guardarse su copia de la regla**.
+
+## Cerrado: el Comparador de Equipos mostraba seis filas de treinta posibles (2026-09-04)
+
+A petición del dueño del repo, con el motivo que dieron los usuarios: «la información es muy
+poca». Lo era, y **el dato no faltaba**: `/api/catalog` entrega entre 15 y 29 campos por
+fabricante y `buildAll()` los tiraba al normalizar los ocho catálogos a una forma común
+mínima de seis. La corrección es casi toda de frontend; el backend ya servía todo.
+
+**Ahora son ~30 filas en siete secciones** —identidad, rendimiento, escala, interfaces,
+plataforma, alimentación y ciclo de vida/comercial— y en **matriz** en vez de una tarjeta por
+equipo: con tarjetas, comparar un atributo obligaba a buscarlo en cuatro sitios y compararlo
+de memoria.
+
+**Dos defectos propios, encontrados al conducir la pantalla y corregidos antes de entregar.**
+Los dos son del tipo que no rompe nada y solo miente:
+
+1. **Decía «IPS: no aplica» de un Catalyst 8300**, que hace IPS con Snort desde IOS XE. La
+   primera versión deducía la inaplicabilidad de que al fabricante le faltara el campo, y eso
+   confunde «no lo tiene» con «no lo tenemos apuntado». Ahora `noAplica` se declara a mano y
+   con motivo —un router de transporte Nokia no tiene sesiones concurrentes porque no es un
+   cortafuegos con estado— y todo lo demás que falte es `sinDato`, que habla del catálogo y no
+   del equipo. En un comparador el error era peor que en una ficha: descarta un equipo por
+   algo que sí sabe hacer.
+2. **Coronaba un ganador entre cifras que no se miden igual**, marcando los 24 Gbps de
+   firewall de un SRX por encima de los 5 Gbps de forwarding de un Cisco — justo debajo del
+   aviso que dice que esas cifras no son comparables. Las filas de rendimiento llevan ahora
+   `mismaBase` y solo se marcan dentro de un mismo fabricante. Las que no dependen de la base
+   —sesiones, APs, vatios— se siguen comparando entre fabricantes, porque ahí sí procede.
+
+Se retiran cinco clases CSS que quedaron muertas al cambiar de tarjetas a matriz. 165 pruebas
+(eran 156), nueve nuevas sobre las reglas del módulo. Verificado en Chromium: matriz de tres
+fabricantes, aviso de bases, interruptor de «solo diferencias» que oculta exactamente las
+filas idénticas, y repintado al cambiar cualquier control sin volver a pulsar el botón.
 
 ## Conflictos abiertos entre el catálogo y una ficha oficial (2026-09-03)
 
