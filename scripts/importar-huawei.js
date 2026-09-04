@@ -44,6 +44,7 @@ const DRY = args.includes('--dry');
 const FORCE = args.includes('--force');
 const EOL = args.includes('--eol');
 const SIN_CONTRASTE = args.includes('--sin-contraste');
+const PLANTILLA = args.includes('--plantilla');
 const entrada = args.find((a) => !a.startsWith('--'));
 
 const ANCLAS_MINIMAS = 2;
@@ -164,6 +165,8 @@ function informeCobertura() {
     console.log('   descatalogado se cae en la mesa del cliente.');
     console.log('   Se carga con:  npm run huawei -- eox.csv --eol');
   }
+  console.log('\nPara llenarlo:  npm run huawei -- --plantilla');
+  console.log('   escribe huawei-specs.csv y huawei-eox.csv ya con los modelos, listos para pegar cifras.');
   console.log('\nFuentes (bloqueadas por egreso desde este entorno):');
   console.log('   Info-Finder            https://info.support.huawei.com/  (requiere Huawei ID)');
   console.log('   Boletines de fin de vida  https://support.huawei.com/enterprise/en/bulletins-lifecycle\n');
@@ -303,7 +306,49 @@ function aplicarCifras(filas) {
   console.log(`\nEscritos ${escritos} campo(s) en huawei.js. Revisa el diff y pasa \`npm run verificar\`.\n`);
 }
 
+// ── Plantilla ───────────────────────────────────────────────────────────────
+// Escribe dos CSV con los modelos que HOY tienen huecos, una fila por modelo y las columnas
+// vacias, para que quien tenga acceso a Info-Finder solo pegue cifras en vez de construir la
+// hoja. Se GENERA en vez de vivir commiteada a proposito: una plantilla guardada se queda
+// con los modelos de ayer, y en un catalogo que cambia eso significa pedir datos de equipos
+// que ya no estan y no pedir los de los que entraron. Las cabeceras son las que el propio
+// importador reconoce, asi que el archivo vuelve tal cual y no hay que renombrar nada.
+function escribirPlantillas() {
+  const salida = process.cwd();
+  const filas = [];
+  for (const m of MODELS) {
+    const faltan = ['fwd', 'typ', 'ipsec', 'mpps'].filter((c) => m[c] == null);
+    if (faltan.length) filas.push({ m, faltan });
+  }
+  // Una sola hoja para los dos grupos: el importador case por nombre de modelo, no por orden,
+  // y partirla en dos invita a pegar la columna en la mitad equivocada.
+  const csv = [['Modelo', 'Forwarding (Mbps)', 'Typical IMIX (Mbps)', 'IPsec VPN (Mbps)', 'Mpps', 'Falta hoy']];
+  for (const { m, faltan } of filas) {
+    csv.push([m.id, m.fwd == null ? '' : m.fwd, m.typ == null ? '' : m.typ,
+      m.ipsec == null ? '' : m.ipsec, m.mpps == null ? '' : m.mpps, faltan.join(' ')]);
+  }
+  const eox = [['Modelo', 'Last Order (AAAA-MM-DD)', 'Sucesor', 'URL del boletin']];
+  for (const m of MODELS) eox.push([m.id, '', '', '']);
+
+  const escribir = (nombre, tabla) => {
+    const texto = tabla.map((f) => f.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n') + '\n';
+    fs.writeFileSync(path.join(salida, nombre), texto);
+    return path.join(salida, nombre);
+  };
+  const a = escribir('huawei-specs.csv', csv);
+  const b = escribir('huawei-eox.csv', eox);
+
+  console.log(`\nPlantillas escritas:\n   ${a}   ${filas.length} modelos con algun hueco`);
+  console.log(`   ${b}   los ${MODELS.length} modelos, para el ciclo de vida\n`);
+  console.log('Las celdas que YA traen cifra son las verificadas: no se tocan, y son las que');
+  console.log('el doble anclaje usa para detectar una fila desplazada. Deja en blanco lo que no');
+  console.log('encuentres — un hueco declarado es correcto; una cifra inventada, no.\n');
+  console.log('Cuando esten llenas:\n   npm run huawei -- huawei-specs.csv --dry   (ensayo, no escribe)');
+  console.log('   npm run huawei -- huawei-specs.csv\n   npm run huawei -- huawei-eox.csv --eol\n');
+}
+
 if (require.main === module) {
+  if (PLANTILLA) { escribirPlantillas(); process.exit(0); }
   if (CHECK || !entrada) {
     informeCobertura();
     if (!entrada && !CHECK) process.exit(1);
