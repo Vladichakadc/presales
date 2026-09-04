@@ -107,6 +107,8 @@ test('`0` en el catalogo es «no hay dato», nunca «vale cero»', () => {
   assert.strictEqual(CALC.mbps(undefined), null);
   assert.strictEqual(CALC.mbps('—'), null);
   assert.strictEqual(CALC.mbps('N/A'), null);
+  assert.strictEqual(CALC.mbps('Consultar'), null, 'sin un digito no hay cifra');
+  assert.strictEqual(CALC.mbps(''), null);
   assert.strictEqual(CALC.capaDe(AR651, 'sdwan').mbps, null, 'su SD-WAN es «—»');
   assert.ok(CALC.capaDe(AR651, 'fwd').mbps > 0, 'y su forwarding si esta');
 });

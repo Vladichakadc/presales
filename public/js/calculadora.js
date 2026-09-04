@@ -40,8 +40,10 @@
   function mbps(v) {
     if (v === null || v === undefined) return null;
     if (typeof v === 'number') return v > 0 ? v : null;
+    // Sin un dígito no hay cifra: «—», «N/A», «Consultar» y el vacío son las
+    // formas en que este catálogo dice que no lo publica.
     const s = String(v).trim();
-    if (!s || /^[—–\-N/A.\s]*$/i.test(s)) return null;
+    if (!/[0-9]/.test(s)) return null;
     const n = parseFloat(s.replace(/[^0-9.]/g, ''));
     if (!isFinite(n) || n <= 0) return null;
     if (/Tbps/i.test(s)) return n * 1e6;
