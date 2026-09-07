@@ -4,38 +4,56 @@
       "documento": "Fortinet Product Matrix",
       "hash": "bef873612306e9a985e1a900dbb836119a1be8793d6bede1475f8fee4cde3f8f",
       "bytes": 109483,
-      "medido": "2026-09-02T11:40:08.599Z"
+      "medido": "2026-09-07T11:59:03.463Z"
     },
     "cisco::https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html": {
       "documento": "Boletines oficiales de fin de venta (EOL)",
-      "hash": "48829947e3e1599312a2d056a460fce096ec3fb636f4a5cbb67661b6215f7df9",
-      "bytes": 173905,
-      "medido": "2026-09-02T11:40:08.599Z"
+      "hash": "4734ea1e140ad43444ce44805f9b758700abdde5c2c2a4db930fdf6d1820a825",
+      "bytes": 173913,
+      "medido": "2026-09-07T11:59:03.463Z"
     },
     "juniper::https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/security-products-comparison-chart.pdf": {
       "documento": "SRX Series and vSRX Performance and Features Matrix",
       "hash": "ac24c11aae0cf0ef594227b1ebfd4d4a335969f34f2e8a3c8da118af1bb9d5e0",
       "bytes": 392019,
-      "medido": "2026-09-02T11:40:08.599Z"
+      "medido": "2026-09-07T11:59:03.463Z"
     },
     "mikrotik::https://mikrotik.com/products": {
       "documento": "Datasheets publicos y MSRP de mikrotik.com",
-      "hash": "39215277b4b245ab3236668dceb138de4096273b7ae22b82d37851a23fb842ed",
-      "bytes": 459308,
-      "medido": "2026-09-02T11:40:08.599Z"
+      "hash": "dce6d145ef117fb7879dd42472341de608aece9e964d3480daf4a73019f51189",
+      "bytes": 449636,
+      "medido": "2026-09-07T11:59:03.463Z"
     },
     "aruba::https://www.hpe.com/us/en/networking.html": {
       "documento": "Paginas de producto y tienda oficiales de HPE/Aruba",
-      "hash": "5b93e2d19b0aba1cccd4e1b65344906e9fdc6c4331f8c7a86b8b3dcae5c2cc00",
-      "bytes": 333667,
-      "medido": "2026-09-02T11:40:08.599Z"
+      "hash": "580d2a25f5a07c42be959ba3a665baa223f8d034f2ad2c3d12b4860da6d938f6",
+      "bytes": 333694,
+      "medido": "2026-09-07T11:59:03.463Z"
     },
     "nokia::https://www.nokia.com/networks/ip-networks/": {
       "documento": "Datasheets oficiales de producto",
-      "hash": "12d933ff044d5d3da2ea71559c80327c076b9aed554f1a7dc75d27fe171ae7cb",
-      "bytes": 307115,
-      "medido": "2026-09-02T11:40:08.599Z"
+      "hash": "9c69065a45723d897b7f4056f0a6c39270732b432dfeb2fb32193f49c6c670df",
+      "bytes": 314859,
+      "medido": "2026-09-07T11:59:03.463Z"
+    },
+    "cisco::https://www.cisco.com/c/dam/en/us/products/collateral/routers/secure-routers/8300-series-secure-routers-ds.pdf": {
+      "documento": "Cisco 8300 Series Secure Routers Data Sheet",
+      "hash": "815494c6a4b7c876ff28b501a539424c5ec78c7995b8e471602837023359374e",
+      "bytes": 804120,
+      "medido": "2026-09-07T11:59:03.463Z"
+    },
+    "juniper::https://support.juniper.net/support/eol/product/srx_series/": {
+      "documento": "SRX Series Hardware Dates & Milestones",
+      "hash": "952616d47a5380276cf99869c91b51e5aec86b35776c2aaf10c2062b1d6e7142",
+      "bytes": 104377,
+      "medido": "2026-09-07T11:59:03.463Z"
+    },
+    "nokia::https://www.nokia.com/asset/f/207599/": {
+      "documento": "Fichas de serie de Nokia (7220 IXR-D, 7750 SR-1x, 7750 SR-s, 7250 IXR-e)",
+      "hash": "8294ee4f52397023cd63c0a4912a4a12ac907f5cac05946f7c7ccb97645df71d",
+      "bytes": 818294,
+      "medido": "2026-09-07T11:59:03.463Z"
     }
   },
-  "revisado": "2026-09-02T11:40:08.599Z"
+  "revisado": "2026-09-07T11:59:03.463Z"
 }
