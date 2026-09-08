@@ -45,7 +45,13 @@
     ipsecvpn: 'vpn', vpnipsec: 'vpn', ipsec: 'ipsec', vpn: 'vpn',
     ngfwthroughput: 'ngfw', ngfw: 'ngfw', ips: 'ips', 'ipsthroughput': 'ips',
     threatprotection: 'tp', 'newsessionssec': 'cps', 'newsessionspersecond': 'cps',
-    concurrentsessions: 'sess', sesiones: 'sess', mpps: 'mpps', precio: 'price', price: 'price',
+    concurrentsessions: 'sess', sesiones: 'sess', mpps: 'mpps',
+    // El precio se llama `elp` en este catálogo, no `price`. Estos alias apuntaron a `price`
+    // hasta el 2026-09-08 y por eso **una columna de precio se ignoraba siempre**: `campoDe`
+    // solo acepta un alias cuyo campo destino exista, y `price` no existe en ninguna fila. Un
+    // alias a un campo inexistente no falla, no avisa, y simplemente no hace nada.
+    precio: 'elp', price: 'elp', listprice: 'elp', msrp: 'elp', unitprice: 'elp',
+    preciodelista: 'elp', preciolista: 'elp',
   };
   const normCab = (s) => String(s == null ? '' : s).toLowerCase().replace(/[\s_\-./()]+/g, '');
 
@@ -68,6 +74,14 @@
 
   const idDe = (m) => m.model || m.id;
 
+  // Cómo se identifica cada fila del documento. Son DOS documentos distintos y por eso hay dos
+  // claves: una hoja de especificaciones nombra el equipo («FortiGate 30G»), y una lista de
+  // precios lo nombra por su referencia de pedido («FG-30G») — que en este catálogo es `hwSku`.
+  // Sin la segunda, subir la lista de precios de Fortinet daba «no se encontró una columna de
+  // modelo» y no validaba nada, aunque el documento fuera exactamente el correcto.
+  const COL_MODELO = /^(model|modelo|producto|equipo|nombre)$/;
+  const COL_SKU = /^(sku|partnumber|partno|pn|referencia|codigo|productcode|orderingcode)$/;
+
   // El contraste. Devuelve cuatro montones, porque son cuatro cosas distintas:
   //   cambios          — el modelo existe y una columna reconocida trae un valor distinto
   //   altas            — el documento trae un modelo que no está en el catálogo (se reporta)
@@ -78,12 +92,31 @@
       return { error: 'No hay filas que contrastar.' };
     }
     const campos = camposDelCatalogo(modelos);
-    const porModelo = new Map();
-    for (const m of modelos) porModelo.set(normalizarModelo(idDe(m)), m);
 
     const cabeceras = Object.keys(filas[0]);
-    const colModelo = cabeceras.find((c) => /^(model|modelo|producto|equipo|nombre)$/i.test(normCab(c)));
-    if (!colModelo) return { error: 'No se encontró una columna de modelo en el documento.' };
+    // Se prefiere el nombre del modelo cuando está: identifica el equipo sin ambigüedad. El SKU
+    // es el plan B, y el que hace legible una lista de precios.
+    let colModelo = cabeceras.find((c) => COL_MODELO.test(normCab(c)));
+    let modo = 'modelo';
+    if (!colModelo) {
+      colModelo = cabeceras.find((c) => COL_SKU.test(normCab(c)));
+      modo = 'sku';
+    }
+    if (!colModelo) {
+      return { error: 'El documento no trae ni una columna de modelo ni una de SKU, así que no hay forma de saber a qué equipo se refiere cada fila' };
+    }
+
+    const porModelo = new Map();
+    for (const m of modelos) {
+      if (modo === 'sku') {
+        if (m.hwSku) porModelo.set(normalizarModelo(m.hwSku), m);
+      } else {
+        porModelo.set(normalizarModelo(idDe(m)), m);
+      }
+    }
+    if (!porModelo.size) {
+      return { error: 'Este fabricante no tiene SKU de hardware en el catálogo, así que no se puede casar una lista de precios contra él' };
+    }
 
     // Columnas de datos reconocidas (cabecera -> campo del catálogo) y las que se ignoran.
     const usadas = [];
@@ -98,12 +131,19 @@
     const cambios = [];
     const altas = [];
     let sinCambio = 0;
+    let sinCasar = 0;
     for (const fila of filas) {
       const nombre = fila[colModelo];
       if (vacio(nombre)) continue;
       const modelo = porModelo.get(normalizarModelo(nombre));
       if (!modelo) {
-        // Alta: se reporta, nunca se aplica sola (misma regla que el importador).
+        // UNA FILA QUE NO CASA SIGNIFICA COSAS DISTINTAS SEGUN LA CLAVE, y tratarlas igual haría
+        // ilegible justo el documento que motivó esto. Por NOMBRE, un modelo que no está en el
+        // catálogo es un alta candidata y merece reportarse. Por SKU, no: una lista de precios
+        // trae miles de referencias de licencias, soporte y accesorios que no son equipos, y
+        // listarlas como «altas» sepultaría los pocos cambios reales bajo miles de líneas de
+        // ruido. Ahí solo se cuentan, y la ventana dice cuántas fueron.
+        if (modo === 'sku') { sinCasar += 1; continue; }
         const traidos = {};
         for (const { cabecera, campo } of usadas) if (!vacio(fila[cabecera])) traidos[campo] = fila[cabecera];
         altas.push({ id: String(nombre).trim(), campos: traidos });
@@ -123,7 +163,8 @@
       }
     }
     return {
-      cambios, altas, sinCambio, columnasIgnoradas, columnasUsadas: usadas.map((u) => u.cabecera),
+      cambios, altas, sinCambio, sinCasar, modo, columnaClave: colModelo,
+      columnasIgnoradas, columnasUsadas: usadas.map((u) => u.cabecera),
     };
   }
 

@@ -69,7 +69,16 @@ function registrar(vendor, { originalname, buffer, tipo, usuario } = {}) {
     usuario: usuario || null,
   };
   const m = leerManifiesto();
-  m[v] = [entrada, ...(m[v] || [])].slice(0, MAX_POR_FABRICANTE);
+  // UNA VIGENTE POR FABRICANTE (decisión del dueño del repo, 2026-09-08). Antes esto acumulaba,
+  // así que subir la lista de precios del trimestre nuevo dejaba dos filas «Cargada» iguales sin
+  // decir cuál manda — que es exactamente lo que se detectó con la price list de Fortinet.
+  //
+  // Las anteriores NO se borran: pasan a histórico y su archivo sigue disponible. Reemplazar no
+  // es destruir, y la versión anterior de una lista de precios es justo lo que hace falta para
+  // explicar por qué una cotización de hace un mes decía otra cifra. Para borrarlas de verdad
+  // está el botón Borrar, que es una acción deliberada y con confirmación.
+  const previas = (m[v] || []).map((e) => ({ ...e, vigente: false }));
+  m[v] = [{ ...entrada, vigente: true }, ...previas].slice(0, MAX_POR_FABRICANTE);
   escribirManifiesto(m);
   return entrada;
 }
@@ -108,25 +117,43 @@ function eliminar(vendor, id) {
   const ruta = path.join(FUENTES_DIR, path.basename(String(entrada.archivo)));
   try { fs.unlinkSync(ruta); } catch { /* ya no estaba: la entrada se retira igual */ }
 
-  m[v] = lista.filter((e) => e.id !== id);
+  const quedan = lista.filter((e) => e.id !== id);
+  // Si se borró la vigente, la más reciente de las que quedan pasa a serlo: un fabricante con
+  // documentos cargados pero ninguno vigente sería un estado que la pestaña no sabría explicar.
+  if (quedan.length && !quedan.some((e) => e.vigente)) quedan[0] = { ...quedan[0], vigente: true };
+  m[v] = quedan;
   escribirManifiesto(m);
   return entrada;
+}
+
+// Cuál es la vigente. Un manifiesto escrito antes de que existiera la marca no tiene `vigente`
+// en ninguna entrada; ahí manda la más reciente, que es la primera de la lista.
+function idVigente(lista) {
+  const marcada = lista.find((e) => e.vigente);
+  return marcada ? marcada.id : (lista[0] ? lista[0].id : null);
 }
 
 // La procedencia subida, en la MISMA forma que fuentesDe() de legacyData, para que el portal
 // la pinte igual — pero con estado propio `cargada` y sin fingir antigüedad: `meses` va en
 // null y la nota deja claro que actualiza la procedencia, no las cifras.
 function comoProcedencia(vendor) {
-  return listar(vendor).map((e) => ({
+  const lista = listar(vendor);
+  const vigenteId = idVigente(lista);
+  return lista.map((e) => ({
     documento: e.documento,
+    // `vigente` es la que manda para ese fabricante; las demás son versiones anteriores que se
+    // conservan para poder consultarlas (la lista de precios del trimestre pasado explica por
+    // qué una cotización de entonces decía otra cifra). La interfaz las pliega.
+    vigente: e.id === vigenteId,
     // El id viaja explícito (además de dentro de la url) porque es lo que la interfaz necesita
     // para poder borrar esta fuente sin tener que despiezar una ruta con una expresión regular.
     id: e.id,
     url: `/api/fuentes/${String(vendor).toLowerCase()}/documento/${e.id}`,
     fecha: e.fecha.slice(0, 10),
     meses: null,
-    estado: 'cargada',
-    cubre: `Documento oficial cargado (${Math.round(e.bytes / 1024)} KB · ${e.tipo.toUpperCase()})`,
+    estado: e.id === vigenteId ? 'cargada' : 'historico',
+    cubre: `Documento oficial cargado (${Math.round(e.bytes / 1024)} KB · ${e.tipo.toUpperCase()})`
+      + (e.id === vigenteId ? '' : ' — versión anterior, sustituida por la vigente'),
     nota: 'Subido a mano como fuente oficial: actualiza la procedencia y queda disponible para '
       + 'consultar. No reescribe por sí mismo las cifras del catálogo — eso lo hace el importador '
       + '(con contraste) o la sincronización con IA.',

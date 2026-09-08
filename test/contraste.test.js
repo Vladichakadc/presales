@@ -105,6 +105,62 @@ test('sin columna de modelo devuelve error, no adivina', () => {
   assert.ok(r.error);
 });
 
+/* ── Listas de precios: se casan por SKU ──────────────────────────────────────
+   Los dos fallos que motivaron esto, encontrados subiendo la lista de precios real de Fortinet
+   («2026Q3 Main Price list_AMER…xlsx»), y los dos del tipo que no rompe nada y solo calla:
+     1. Una lista de precios no tiene columna «model» sino SKU/Description/Price, asi que el
+        contraste devolvia «no se encontro una columna de modelo» y no validaba nada.
+     2. El alias de precio apuntaba a un campo `price` que NO EXISTE en este catalogo (se llama
+        `elp`), y `campoDe` solo acepta un alias cuyo destino exista: la columna de precio se
+        ignoraba siempre, en silencio. */
+const conSku = [
+  { model: 'FortiGate 30G', hwSku: 'FG-30G', fw: 4000, elp: '~ $525' },
+  { model: 'FortiGate 50G', hwSku: 'FG-50G', fw: 5000, elp: '~ $800' },
+];
+
+test('una lista de precios se casa por SKU cuando no hay columna de modelo', () => {
+  const r = CONTRASTE.contrastar({
+    modelos: conSku,
+    filas: [{ SKU: 'FG-30G', Description: 'FortiGate 30G', 'List Price': 600 }],
+  });
+  assert.ok(!r.error, r.error);
+  assert.strictEqual(r.modo, 'sku');
+  assert.strictEqual(r.cambios.length, 1);
+  // El id es el MODELO del catalogo, no el SKU: es lo que el importador sabe localizar.
+  assert.strictEqual(r.cambios[0].id, 'FortiGate 30G');
+  assert.strictEqual(r.cambios[0].field, 'elp');
+  assert.strictEqual(r.cambios[0].newValue, 600);
+});
+
+test('el precio se reconoce: el alias apunta a `elp`, que es como se llama aqui', () => {
+  const r = CONTRASTE.contrastar({ modelos: conSku, filas: [{ model: 'FortiGate 30G', precio: 600 }] });
+  assert.strictEqual(r.cambios.length, 1, 'la columna de precio ya no se ignora');
+  assert.strictEqual(r.cambios[0].field, 'elp');
+  // Y el mismo precio con otro formato no es un cambio: «~ $525» y «525» son el mismo dato.
+  const igual = CONTRASTE.contrastar({ modelos: conSku, filas: [{ model: 'FortiGate 30G', precio: '$525' }] });
+  assert.strictEqual(igual.cambios.length, 0);
+  assert.strictEqual(igual.sinCambio, 1);
+});
+
+test('en modo SKU las filas que no casan se cuentan, no se listan como altas', () => {
+  // Una price list AMER trae miles de referencias de licencias, soporte y accesorios. Listarlas
+  // como «altas» sepultaria los pocos cambios reales bajo miles de lineas de ruido.
+  const filas = [
+    { SKU: 'FG-30G', 'List Price': 600 },
+    { SKU: 'FC-10-0030G-950-02-12', 'List Price': 200 }, // licencia FortiGuard
+    { SKU: 'SP-FG30G-PSU', 'List Price': 45 }, // accesorio
+  ];
+  const r = CONTRASTE.contrastar({ modelos: conSku, filas });
+  assert.strictEqual(r.cambios.length, 1);
+  assert.strictEqual(r.altas.length, 0, 'nada de altas en modo SKU');
+  assert.strictEqual(r.sinCasar, 2, 'las otras dos se cuentan');
+});
+
+test('sin columna de modelo NI de SKU se explica, en vez de callar', () => {
+  const r = CONTRASTE.contrastar({ modelos: conSku, filas: [{ foo: 1, bar: 2 }] });
+  assert.match(r.error, /ni una columna de modelo ni una de SKU/i);
+});
+
 test('comoPropuesta emite la forma del importador y excluye las altas', () => {
   const cambios = [{ id: 'AR650', field: 'fwd', oldValue: 620, newValue: 700 }];
   const p = CONTRASTE.comoPropuesta('huawei', cambios, 'https://e.huawei.com/x');

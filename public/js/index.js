@@ -574,6 +574,9 @@ const ESTADO_FUENTE = {
   vieja:       { etiqueta: 'Conviene revisar', color: 'var(--amber)' },
   'sin fecha': { etiqueta: 'Sin fecha',  color: 'var(--amber)' },
   cargada:     { etiqueta: 'Cargada',    color: 'var(--green)' },
+  // Una versión anterior de un documento cargado. No es un problema ni una fuente vieja del
+  // catálogo: es la que se sustituyó al subir una nueva, y se conserva para poder consultarla.
+  historico:   { etiqueta: 'Sustituida', color: 'var(--steel)' },
 };
 
 // Lo informa el servidor (/api/cuenta/estado). Gobierna solo si se muestra el control de
@@ -624,12 +627,26 @@ async function renderProcedencia() {
   cajas.forEach((caja) => {
     const code = caja.dataset.procedencia;
     const v = datos[code];
-    const tabla = (v && v.fuentes.length)
-      ? `<table><thead><tr>
+    const todas = (v && v.fuentes) || [];
+    // Las versiones sustituidas se pliegan: siguen consultables pero no compiten visualmente
+    // con la vigente, que es el problema que tenía acumularlas todas en la misma tabla.
+    const activas = todas.filter((f) => f.estado !== 'historico');
+    const historicas = todas.filter((f) => f.estado === 'historico');
+    const cab = `<thead><tr>
           <th>Documento</th><th>Fecha</th><th>Antigüedad</th><th>Estado</th><th>Qué cubre</th>${puedeSync ? '<th style="text-align:center">Acciones</th>' : ''}
-        </tr></thead><tbody>${v.fuentes.map((f) => filaProcedencia(f, code)).join('')}</tbody></table>`
+        </tr></thead>`;
+    const tabla = activas.length
+      ? `<table>${cab}<tbody>${activas.map((f) => filaProcedencia(f, code)).join('')}</tbody></table>`
       : '<p style="color:var(--steel);font-size:13px">Sin procedencia registrada para este fabricante.</p>';
-    caja.innerHTML = barraProcedencia(code) + tabla + (puedeSync ? controlCargaFuente(code) : '');
+    // <details> es HTML nativo: pliega sin una línea de JavaScript, que es lo que pide una CSP
+    // sin script en línea.
+    const previas = historicas.length
+      ? `<details style="margin-top:10px">
+          <summary style="cursor:pointer;font-size:12.5px;color:var(--steel)">${historicas.length} versión(es) anterior(es) de documentos cargados</summary>
+          <table style="margin-top:8px">${cab}<tbody>${historicas.map((f) => filaProcedencia(f, code)).join('')}</tbody></table>
+        </details>`
+      : '';
+    caja.innerHTML = barraProcedencia(code) + tabla + previas + (puedeSync ? controlCargaFuente(code) : '');
   });
 }
 
@@ -810,10 +827,26 @@ function renderContraste() {
   const fuente = document.getElementById('contrasteFuente');
   const btnDesc = document.getElementById('btnDescargarContraste');
 
-  resumen.innerHTML = `<b>${escapeHtml(r.documento)}</b> — ${r.cambios.length} cambio(s), ${r.altas.length} alta(s), ${r.sinCambio} sin cambio. `
-    + `Columnas reconocidas: ${r.columnasUsadas.length ? r.columnasUsadas.map(escapeHtml).join(', ') : '—'}.`;
+  // Se dice por qué columna se casó cada fila: no es lo mismo haber identificado el equipo por
+  // su nombre que por su referencia de pedido, y en una lista de precios importa saberlo.
+  const porSku = r.modo === 'sku';
+  const clave = porSku
+    ? `casado por SKU (columna «${escapeHtml(r.columnaClave)}») contra el SKU de hardware del catálogo`
+    : `casado por nombre de modelo (columna «${escapeHtml(r.columnaClave)}»)`;
+  resumen.innerHTML = `<b>${escapeHtml(r.documento)}</b> — ${r.cambios.length} cambio(s), `
+    + `${porSku ? `${r.sinCasar} fila(s) sin equivalencia` : `${r.altas.length} alta(s)`}, ${r.sinCambio} sin cambio. `
+    + `${clave}. Columnas reconocidas: ${r.columnasUsadas.length ? r.columnasUsadas.map(escapeHtml).join(', ') : '—'}.`;
 
   let html = '';
+
+  // Los precios se muestran para revisar, pero NO se publican por esta vía: viven en
+  // cotizadorCatalog.js y el importador los aparta a propósito. Decirlo aquí evita que alguien
+  // descargue una propuesta de precios y crea que el PR los va a aplicar.
+  if (r.cambios.some((c) => c.field === 'elp')) {
+    html += '<div style="margin:0 0 10px;padding:9px 11px;background:#FFFBEB;border:1px solid #FDE68A;border-left:3px solid var(--amber);border-radius:4px;font-size:12px;line-height:1.5;color:#78350f">'
+      + '<b>Los cambios de precio se listan para revisar, no se publican por aquí.</b> Los precios viven en <code>cotizadorCatalog.js</code>, no en los ficheros de especificaciones, y <code>npm run propuesta</code> los aparta a propósito. Sirven para ver qué se movió respecto a la lista vigente; llevarlos al catálogo sigue siendo un cambio a mano.'
+      + '</div>';
+  }
   if (r.cambios.length) {
     html += '<h4 style="margin:12px 0 6px;font-size:14px">Cambios propuestos</h4>';
     html += '<table class="diff-table"><tr><th><input type="checkbox" id="contrasteTodos" checked></th><th>Modelo</th><th>Campo</th><th>Valor actual</th><th>Valor del documento</th></tr>';
@@ -835,6 +868,12 @@ function renderContraste() {
     html += '<h4 style="margin:16px 0 6px;font-size:14px">Modelos no encontrados en el catálogo</h4>';
     html += '<p style="font-size:12px;color:var(--steel);margin:0 0 6px">Se reportan pero <b>nunca</b> se aplican solos: dar de alta un modelo se hace a mano, porque es justo donde entra un dato inventado.</p>';
     html += '<ul style="margin:0;padding-left:20px;font-size:13px">' + r.altas.map((a) => `<li>${escapeHtml(a.id)}</li>`).join('') + '</ul>';
+  }
+  // En modo SKU no se listan: una lista de precios trae miles de referencias de licencias,
+  // soporte y accesorios que no son equipos del catálogo. Se cuentan, que es la información
+  // útil («de 5.000 filas, 46 son equipos nuestros»), sin sepultar los cambios reales.
+  if (porSku && r.sinCasar) {
+    html += `<p style="margin:16px 0 0;font-size:12px;color:var(--steel)"><b>${r.sinCasar} fila(s) del documento no corresponden a ningún equipo del catálogo</b> y no se listan: en una lista de precios son licencias, soporte y accesorios. Solo se contrastan las referencias que casan con el SKU de hardware de un equipo.</p>`;
   }
 
   if (r.columnasIgnoradas.length) {

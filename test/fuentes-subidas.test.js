@@ -64,6 +64,38 @@ test('rutaArchivo valida el id antes de tocar el disco y no cruza de fabricante'
   assert.strictEqual(subidas.rutaArchivo('fortinet', e.id), null, 'no se sirve el de otro fabricante');
 });
 
+test('subir de nuevo deja UNA vigente y manda la anterior al historico, sin borrarla', () => {
+  // Decision del dueno del repo (2026-09-08): antes esto acumulaba, asi que subir la lista de
+  // precios del trimestre nuevo dejaba dos filas «Cargada» iguales sin decir cual manda.
+  const v1 = subidas.registrar('fortinet', { originalname: '2026Q2.xlsx', buffer: Buffer.from('PKq2'), tipo: 'xlsx' });
+  const v2 = subidas.registrar('fortinet', { originalname: '2026Q3.xlsx', buffer: Buffer.from('PKq3'), tipo: 'xlsx' });
+
+  const proc = subidas.comoProcedencia('fortinet');
+  const vigentes = proc.filter((f) => f.vigente);
+  assert.strictEqual(vigentes.length, 1, 'exactamente una vigente');
+  assert.strictEqual(vigentes[0].id, v2.id, 'la vigente es la ultima subida');
+  assert.strictEqual(vigentes[0].estado, 'cargada');
+
+  const vieja = proc.find((f) => f.id === v1.id);
+  assert.strictEqual(vieja.estado, 'historico', 'la anterior queda como sustituida');
+  assert.match(vieja.cubre, /versi[oó]n anterior/i);
+  // Reemplazar NO es destruir: el archivo anterior sigue consultable.
+  assert.ok(subidas.rutaArchivo('fortinet', v1.id), 'la version anterior se conserva');
+});
+
+test('si se borra la vigente, la mas reciente que queda pasa a serlo', () => {
+  // Un fabricante con documentos cargados pero ninguno vigente seria un estado que la pestana
+  // no sabria explicar.
+  const a = subidas.registrar('aruba', { originalname: 'a.txt', buffer: Buffer.from('uno'), tipo: 'txt' });
+  const b = subidas.registrar('aruba', { originalname: 'b.txt', buffer: Buffer.from('dos'), tipo: 'txt' });
+  assert.ok(subidas.comoProcedencia('aruba').find((f) => f.id === b.id).vigente);
+
+  subidas.eliminar('aruba', b.id);
+  const proc = subidas.comoProcedencia('aruba');
+  assert.strictEqual(proc.filter((f) => f.vigente).length, 1, 'sigue habiendo exactamente una');
+  assert.ok(proc.find((f) => f.id === a.id).vigente, 'la anterior fue promovida');
+});
+
 test('eliminar borra el archivo del volumen y su fila de procedencia', () => {
   const e = subidas.registrar('juniper', { originalname: 'srx.csv', buffer: Buffer.from('a,b\n1,2\n'), tipo: 'csv' });
   const p = path.join(dir, 'fuentes', e.archivo);
