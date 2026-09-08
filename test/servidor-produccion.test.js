@@ -334,4 +334,27 @@ test('carga de fuente oficial: exige permiso sync, valida el tipo y aparece en /
   // Bajo /api/ el muro responde 401 JSON (no 302): es una ruta de API, no una navegación.
   const sinSesion = await fetch(`${BASE}${cargada.url}`);
   assert.strictEqual(sinSesion.status, 401);
+
+  // ── Borrado ──────────────────────────────────────────────────────────────────
+  // Quitar la procedencia de un fabricante es mantenimiento, no consulta: mismo permiso que
+  // subirla. Ocultar el boton a quien no lo tenga es comodidad; esto es el control.
+  const borrar = (cookie, v, id) => fetch(`${BASE}/api/fuentes/${v}/documento/${id}`, { method: 'DELETE', headers: { cookie } });
+
+  assert.strictEqual((await borrar(bruno, 'fortinet', entrada.id)).status, 403, 'consulta no borra');
+  assert.strictEqual((await borrar(ana, 'fortinet', 'c'.repeat(16))).status, 404, 'id inexistente');
+  assert.strictEqual((await borrar(ana, 'marte', entrada.id)).status, 400, 'fabricante invalido');
+  // Un id valido pero de OTRO fabricante no debe borrar nada: el 404 protege al de al lado.
+  assert.strictEqual((await borrar(ana, 'cisco', entrada.id)).status, 404, 'no cruza de fabricante');
+
+  // Y tras esos cuatro intentos el documento sigue sirviendose.
+  assert.strictEqual((await fetch(`${BASE}${cargada.url}`, { headers: { cookie: ana } })).status, 200);
+
+  // El admin si lo borra: desaparece de /api/fuentes y deja de servirse.
+  assert.strictEqual((await borrar(ana, 'fortinet', entrada.id)).status, 200);
+  const tras = await (await fetch(`${BASE}/api/fuentes`, { headers: { cookie: ana } })).json();
+  assert.ok(!tras.fortinet.fuentes.some((f) => f.id === entrada.id), 'sale de la proyeccion');
+  assert.strictEqual((await fetch(`${BASE}${cargada.url}`, { headers: { cookie: ana } })).status, 404);
+  // Pero la procedencia del CATALOGO (legacyData/fuentes.js) sigue intacta: eso no se borra
+  // desde la interfaz, se quita con un commit.
+  assert.ok(tras.fortinet.fuentes.length >= 1, 'las fuentes del codigo no se tocan');
 });

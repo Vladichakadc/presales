@@ -269,6 +269,19 @@ app.get('/api/fuentes/:vendor/documento/:id', (req, res) => {
   res.sendFile(encontrado.ruta);
 });
 
+// Borrar una fuente CARGADA. Exige `sync` igual que subirla: quitar la procedencia de un
+// fabricante es mantenimiento del catálogo, no consulta. Ocultar el botón a quien no lo tenga
+// es comodidad; esto es el control. Solo alcanza a los documentos subidos — los de
+// legacyData/fuentes.js no pasan por aquí y se quitan con un commit, que deja diff.
+app.delete('/api/fuentes/:vendor/documento/:id', exige('sync'), (req, res) => {
+  const { vendor, id } = req.params;
+  if (!fuentesSubidas.esVendor(vendor)) return res.status(400).json({ error: 'Fabricante no válido' });
+  const entrada = fuentesSubidas.eliminar(vendor, id);
+  if (!entrada) return res.status(404).json({ error: 'Documento no encontrado' });
+  console.log(`[fuentes] borrado · fabricante=${vendor} · ${entrada.documento} · por=${req.usuario.usuario}`);
+  res.json({ ok: true, entrada });
+});
+
 app.use('/api', catalogRoutes);
 app.use('/api', cotizadorRoutes);
 app.use('/api', dimensionadorRoutes);

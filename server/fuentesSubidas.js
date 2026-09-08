@@ -84,12 +84,44 @@ function rutaArchivo(vendor, id) {
   return fs.existsSync(ruta) ? { ruta, entrada } : null;
 }
 
+// Borra un documento subido: el archivo del disco y su entrada del manifiesto. Devuelve la
+// entrada borrada, o null si no existe (que es lo que la ruta convierte en 404).
+//
+// SOLO BORRA LO SUBIDO. Las fuentes de legacyData/fuentes.js no pasan por aquí y no son
+// borrables desde la interfaz a propósito: viven en el código y se quitan con un commit, que
+// deja diff y revisión. Un botón que borrara la procedencia del catálogo sin dejar rastro es
+// justo lo contrario de lo que esta pantalla existe para dar.
+//
+// EL ARCHIVO PUEDE NO ESTAR Y LA ENTRADA SE RETIRA IGUAL. Si alguien borró el fichero del
+// volumen a mano, dejar su fila en el manifiesto haría que la pestaña siguiera anunciando una
+// fuente que ya no se puede abrir — un enlace roto presentado como procedencia.
+function eliminar(vendor, id) {
+  if (!esVendor(vendor) || !/^[0-9a-f]{16}$/.test(String(id))) return null;
+  const v = String(vendor).toLowerCase();
+  const m = leerManifiesto();
+  const lista = m[v] || [];
+  const entrada = lista.find((e) => e.id === id);
+  if (!entrada) return null;
+
+  // El nombre en disco lo generó `registrar`, pero se vuelve a acotar al directorio de fuentes
+  // antes de borrar: un manifiesto manipulado a mano no debe poder apuntar fuera de él.
+  const ruta = path.join(FUENTES_DIR, path.basename(String(entrada.archivo)));
+  try { fs.unlinkSync(ruta); } catch { /* ya no estaba: la entrada se retira igual */ }
+
+  m[v] = lista.filter((e) => e.id !== id);
+  escribirManifiesto(m);
+  return entrada;
+}
+
 // La procedencia subida, en la MISMA forma que fuentesDe() de legacyData, para que el portal
 // la pinte igual — pero con estado propio `cargada` y sin fingir antigüedad: `meses` va en
 // null y la nota deja claro que actualiza la procedencia, no las cifras.
 function comoProcedencia(vendor) {
   return listar(vendor).map((e) => ({
     documento: e.documento,
+    // El id viaja explícito (además de dentro de la url) porque es lo que la interfaz necesita
+    // para poder borrar esta fuente sin tener que despiezar una ruta con una expresión regular.
+    id: e.id,
     url: `/api/fuentes/${String(vendor).toLowerCase()}/documento/${e.id}`,
     fecha: e.fecha.slice(0, 10),
     meses: null,
@@ -104,5 +136,5 @@ function comoProcedencia(vendor) {
 }
 
 module.exports = {
-  listar, registrar, rutaArchivo, comoProcedencia, esVendor, VENDORS,
+  listar, registrar, eliminar, rutaArchivo, comoProcedencia, esVendor, VENDORS,
 };

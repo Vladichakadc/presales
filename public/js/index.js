@@ -580,7 +580,12 @@ const ESTADO_FUENTE = {
 // carga; la ruta exige el permiso de todas formas.
 let puedeSync = false;
 
-function filaProcedencia(f) {
+// Una fila de procedencia. `code` es el fabricante, que hace falta para la acción de borrar.
+// La columna de acciones solo existe para quien tiene el permiso `sync` (de ahí el colspan
+// variable de la nota); y dentro de ella, **solo las fuentes cargadas se pueden borrar**: las
+// que vienen de legacyData/fuentes.js viven en el código y se quitan con un commit, que deja
+// diff y revisión. Decirlo en la celda es más honesto que enseñar un botón que daría error.
+function filaProcedencia(f, code) {
   const est = ESTADO_FUENTE[f.estado] || ESTADO_FUENTE['sin fecha'];
   const antiguedad = f.meses === null ? '—' : `${f.meses} mes(es)`;
   // Enlace tanto a una URL oficial (http/https) como al documento subido, que es una ruta
@@ -588,13 +593,20 @@ function filaProcedencia(f) {
   const enlace = /^(https?:\/\/|\/)/i.test(f.url || '')
     ? `<a href="${escapeHtml(f.url)}" target="_blank" rel="noopener noreferrer" style="color:var(--red)">${escapeHtml(f.documento)}</a>`
     : escapeHtml(f.documento);
+  const accion = f.subida && f.id
+    ? `<button class="btn" style="padding:3px 9px;font-size:11px;background:#fff;color:var(--red);border:1px solid var(--rule)"
+         data-borrar-fuente="${escapeHtml(code)}" data-fuente-id="${escapeHtml(f.id)}"
+         title="Borra este documento cargado y su fila de procedencia">Borrar</button>`
+    : '<span style="color:var(--steel);font-size:11px" title="Esta fuente viene del catálogo (server/seed/legacyData/fuentes.js): se quita con un commit, no desde aquí">en el código</span>';
+  const cols = puedeSync ? 6 : 5;
   return `<tr>
     <td>${enlace}</td>
     <td style="white-space:nowrap">${escapeHtml(f.fecha || 'sin fecha')}</td>
     <td style="white-space:nowrap">${escapeHtml(antiguedad)}</td>
     <td style="color:${est.color};font-weight:600;white-space:nowrap">${escapeHtml(est.etiqueta)}</td>
     <td>${escapeHtml(f.cubre || '')}</td>
-  </tr>${f.nota ? `<tr><td colspan="5" style="color:var(--steel);font-size:12px;padding-top:0">${escapeHtml(f.nota)}</td></tr>` : ''}`;
+    ${puedeSync ? `<td style="white-space:nowrap;text-align:center">${accion}</td>` : ''}
+  </tr>${f.nota ? `<tr><td colspan="${cols}" style="color:var(--steel);font-size:12px;padding-top:0">${escapeHtml(f.nota)}</td></tr>` : ''}`;
 }
 
 async function renderProcedencia() {
@@ -614,11 +626,59 @@ async function renderProcedencia() {
     const v = datos[code];
     const tabla = (v && v.fuentes.length)
       ? `<table><thead><tr>
-          <th>Documento</th><th>Fecha</th><th>Antigüedad</th><th>Estado</th><th>Qué cubre</th>
-        </tr></thead><tbody>${v.fuentes.map(filaProcedencia).join('')}</tbody></table>`
+          <th>Documento</th><th>Fecha</th><th>Antigüedad</th><th>Estado</th><th>Qué cubre</th>${puedeSync ? '<th style="text-align:center">Acciones</th>' : ''}
+        </tr></thead><tbody>${v.fuentes.map((f) => filaProcedencia(f, code)).join('')}</tbody></table>`
       : '<p style="color:var(--steel);font-size:13px">Sin procedencia registrada para este fabricante.</p>';
-    caja.innerHTML = tabla + (puedeSync ? controlCargaFuente(code) : '');
+    caja.innerHTML = barraProcedencia(code) + tabla + (puedeSync ? controlCargaFuente(code) : '');
   });
+}
+
+// Barra de acciones de la pestaña, la misma en los siete fabricantes. «Actualizar» vuelve a
+// pedir /api/fuentes y repinta: hace falta porque esta pantalla se pinta una vez al cargar el
+// portal, así que un documento subido desde otra pestaña —o borrado por otra persona— no se
+// veía aquí hasta recargar la página entera. Va sin permiso: releer no cambia nada.
+function barraProcedencia(code) {
+  return `<div style="display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-bottom:8px">
+    <span id="refresco-${escapeHtml(code)}" style="font-size:11.5px;color:var(--steel)"></span>
+    <button class="btn" style="padding:5px 12px;font-size:12px;background:#fff;color:var(--ink);border:1px solid var(--rule)"
+      data-refrescar-fuentes="${escapeHtml(code)}" title="Vuelve a leer la procedencia del servidor y repinta la tabla">&#8635; Actualizar</button>
+  </div>`;
+}
+
+// Repinta la procedencia y deja constancia de a qué hora. El acuse va DESPUES del repintado
+// porque `renderProcedencia` reconstruye la caja entera —incluida esta barra—, así que un
+// mensaje escrito antes se perdería con el innerHTML.
+async function refrescarFuentes(code) {
+  const antes = document.getElementById(`refresco-${code}`);
+  if (antes) antes.textContent = 'Actualizando…';
+  await renderProcedencia();
+  const span = document.getElementById(`refresco-${code}`);
+  if (span) {
+    const h = new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    span.textContent = `Actualizado a las ${h}`;
+  }
+}
+
+// Borra una fuente CARGADA. Se confirma antes porque es destructivo y no tiene deshacer: el
+// archivo sale del volumen. El botón solo aparece con permiso `sync`, pero quien decide es la
+// ruta, que responde 403 sin él.
+async function borrarFuente(code, id) {
+  const span = document.getElementById(`refresco-${code}`);
+  if (!confirm('¿Borrar este documento cargado?\n\nSe elimina el archivo del servidor y su fila de procedencia. No se puede deshacer.')) return;
+  if (span) { span.style.color = 'var(--steel)'; span.textContent = 'Borrando…'; }
+  try {
+    const res = await fetch(`/api/fuentes/${encodeURIComponent(code)}/documento/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'No se pudo borrar el documento');
+    }
+    await renderProcedencia();
+    const s2 = document.getElementById(`refresco-${code}`);
+    if (s2) { s2.style.color = 'var(--steel)'; s2.textContent = 'Documento borrado.'; }
+  } catch (err) {
+    const s2 = document.getElementById(`refresco-${code}`);
+    if (s2) { s2.style.color = 'var(--red)'; s2.textContent = err.message; }
+  }
 }
 
 // Control de carga de la fuente oficial de un fabricante. Solo se pinta a quien tiene el
@@ -844,6 +904,12 @@ document.addEventListener('click', (e) => {
 
   const subir = e.target.closest('[data-subir-fuente]');
   if (subir) { subirFuenteOficial(subir.dataset.subirFuente); return; }
+
+  const refrescar = e.target.closest('[data-refrescar-fuentes]');
+  if (refrescar) { refrescarFuentes(refrescar.dataset.refrescarFuentes); return; }
+
+  const borrar = e.target.closest('[data-borrar-fuente]');
+  if (borrar) { borrarFuente(borrar.dataset.borrarFuente, borrar.dataset.fuenteId); return; }
 
   const id = e.target.closest('button,[id]')?.id;
   if (id === 'menuToggle') document.getElementById('sidebar').classList.toggle('open');

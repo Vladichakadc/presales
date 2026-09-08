@@ -408,9 +408,26 @@ la ventana lo dice y remite a la IA o a los importadores. La regla vive en
 `public/js/contraste.js` (`window.CONTRASTE`); el parseo (SheetJS cargado bajo demanda, para no
 pesar ~900 KB en cada visita al portal) y el pintado, en `js/index.js`.
 
-203 pruebas (12 nuevas sobre `contraste.js`: mapeo por valor no por formato, columna no
+**Borrar una fuente y actualizar la pestaña (tercera petición del mismo día).** Cada fila trae
+ahora, para quien tiene `sync`, una columna **Acciones**:
+
+- **Borrar** solo en las fuentes **cargadas** — quita el archivo del volumen y su fila, con
+  confirmación porque no hay deshacer. Las del catálogo (`legacyData/fuentes.js`) muestran en su
+  lugar **«en el código»**: se quitan con un commit, que deja diff y revisión. Un botón que
+  borrara la procedencia del catálogo sin rastro sería justo lo contrario de lo que esta pestaña
+  da. La ruta `DELETE` exige el permiso (403 sin él) y responde **404 a un id de otro
+  fabricante**, así que borrar uno no puede alcanzar al de al lado. Y la entrada se retira
+  **aunque el archivo ya no esté** en el volumen: una fila que anuncia un documento que no se
+  puede abrir es un enlace roto presentado como procedencia.
+- **Actualizar** en los **siete** fabricantes — vuelve a pedir `/api/fuentes` y repinta, con la
+  hora del último refresco. El portal pinta esta pantalla una sola vez al cargarse, así que un
+  documento subido desde otra pestaña, o borrado por otra persona, no se veía hasta recargar la
+  página entera. Va sin permiso: releer no cambia nada.
+
+206 pruebas (12 nuevas sobre `contraste.js`: mapeo por valor no por formato, columna no
 reconocida que se ignora, alias solo si el campo existe, alta nunca aplicada, celda vacía que no
-propone borrar, casado de nombre con prefijo de fabricante, y la forma de `comoPropuesta`).
+propone borrar, casado de nombre con prefijo de fabricante, y la forma de `comoPropuesta`; más 3
+sobre `eliminar` y el e2e de borrado contra el servidor real).
 Verificado de extremo a extremo en Chromium: login → pestaña de fuentes de Huawei → subir un CSV
 → la ventana detecta el cambio de un AR611 (fwd 300→700), reporta el alta y la columna ignorada,
 el botón de descargar propuesta aparece y la procedencia muestra la fuente «Cargada». Sin errores

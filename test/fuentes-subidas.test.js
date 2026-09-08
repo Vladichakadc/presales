@@ -64,6 +64,38 @@ test('rutaArchivo valida el id antes de tocar el disco y no cruza de fabricante'
   assert.strictEqual(subidas.rutaArchivo('fortinet', e.id), null, 'no se sirve el de otro fabricante');
 });
 
+test('eliminar borra el archivo del volumen y su fila de procedencia', () => {
+  const e = subidas.registrar('juniper', { originalname: 'srx.csv', buffer: Buffer.from('a,b\n1,2\n'), tipo: 'csv' });
+  const p = path.join(dir, 'fuentes', e.archivo);
+  assert.ok(fs.existsSync(p));
+
+  const borrada = subidas.eliminar('juniper', e.id);
+  assert.strictEqual(borrada.id, e.id);
+  assert.ok(!fs.existsSync(p), 'el archivo sale del volumen, no solo del manifiesto');
+  assert.ok(!subidas.listar('juniper').some((x) => x.id === e.id));
+  assert.ok(!subidas.comoProcedencia('juniper').some((x) => x.id === e.id));
+});
+
+test('eliminar valida el id y no cruza de fabricante', () => {
+  const e = subidas.registrar('mikrotik', { originalname: 'ccr.txt', buffer: Buffer.from('texto'), tipo: 'txt' });
+  // Un id de otro fabricante no borra el de este, ni al reves: el 404 protege el de al lado.
+  assert.strictEqual(subidas.eliminar('aruba', e.id), null, 'no borra el de otro fabricante');
+  assert.strictEqual(subidas.eliminar('mikrotik', 'no-hex'), null, 'id con forma invalida');
+  assert.strictEqual(subidas.eliminar('../etc', e.id), null, 'fabricante fuera de la lista');
+  assert.strictEqual(subidas.eliminar('mikrotik', 'b'.repeat(16)), null, 'id inexistente');
+  // Y tras esos cuatro intentos el documento sigue ahi.
+  assert.ok(subidas.rutaArchivo('mikrotik', e.id), 'el documento no se toco');
+});
+
+test('si el archivo ya no esta, la entrada se retira igual', () => {
+  // Un enlace roto presentado como procedencia es peor que no tener la fila: la pestaña
+  // anunciaria un documento oficial que no se puede abrir.
+  const e = subidas.registrar('huawei', { originalname: 'ar.csv', buffer: Buffer.from('a\n1\n'), tipo: 'csv' });
+  fs.unlinkSync(path.join(dir, 'fuentes', e.archivo));
+  assert.strictEqual(subidas.eliminar('huawei', e.id).id, e.id);
+  assert.ok(!subidas.listar('huawei').some((x) => x.id === e.id));
+});
+
 test('un tipo no admitido o un buffer vacio se rechazan', () => {
   assert.throws(() => subidas.registrar('aruba', { originalname: 'x.exe', buffer: pdf(), tipo: 'exe' }));
   assert.throws(() => subidas.registrar('aruba', { originalname: 'x.pdf', buffer: Buffer.alloc(0), tipo: 'pdf' }));

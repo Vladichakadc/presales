@@ -127,8 +127,24 @@ repositorio no automatiza—: la ventana lo dice y remite al análisis por IA o 
 Así los documentos subidos sobreviven a un deploy. El nombre en disco lo genera el servidor
 (`<fabricante>-<id>.<ext>`), nunca el del archivo subido, y el tipo se decide por la firma del
 contenido (415 si no es PDF/XLSX/CSV/TXT). `server/fuentesSubidas.js` es el módulo; las rutas
-son `POST /api/fuentes/:vendor` (permiso `sync`) y `GET /api/fuentes/:vendor/documento/:id`
-(sesión válida).
+son `POST /api/fuentes/:vendor` (permiso `sync`), `GET /api/fuentes/:vendor/documento/:id`
+(sesión válida) y `DELETE /api/fuentes/:vendor/documento/:id` (permiso `sync`).
+
+### Borrar una fuente, y actualizar la pestaña
+
+Cada fila de la tabla trae, para quien tiene el permiso `sync`, una columna **Acciones**:
+
+- **Borrar** — solo en las fuentes **cargadas**. Elimina el archivo del volumen y su fila de
+  procedencia; se confirma antes porque no hay deshacer. Las fuentes que vienen del catálogo
+  (`server/seed/legacyData/fuentes.js`) muestran en su lugar la marca **«en el código»**: viven
+  en el repositorio y se quitan con un commit, que deja diff y revisión. Un botón que borrara la
+  procedencia del catálogo sin dejar rastro sería lo contrario de lo que esta pestaña existe
+  para dar. La ruta protege lo mismo que la interfaz insinúa: un `DELETE` sin permiso responde
+  403, con un id de otro fabricante responde 404.
+- **Actualizar** — vuelve a pedir `/api/fuentes` y repinta, en los **siete** fabricantes. Hace
+  falta porque el portal pinta esta pantalla una vez al cargarse: un documento subido desde otra
+  pestaña, o borrado por otra persona, no se veía aquí hasta recargar la página entera. Va sin
+  permiso, porque releer no cambia nada, y deja la hora del último refresco a la vista.
 
 ## Documentos que acepta
 
