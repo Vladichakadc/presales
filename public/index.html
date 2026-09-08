@@ -986,8 +986,8 @@ RB5009  CCR2004  RB5009  (Hub)
       <button class="modal-close" data-cerrar-sync>&times;</button>
     </div>
     <div class="modal-body">
-      <div style="margin-bottom:14px;padding:11px 13px;background:#FFFBEB;border:1px solid #FDE68A;border-left:3px solid var(--amber);border-radius:4px;font-size:12.5px;line-height:1.5;color:#78350f">
-        <b>Esta herramienta se ejecuta en local, no en producción.</b> Lo que apruebes aquí se guarda en tu base local, que es de trabajo. El catálogo de producción se reconstruye desde <code>server/seed/legacyData/</code> en cada despliegue, así que para publicar un cambio hay que llevarlo a esos archivos y hacer push. Ese rodeo es deliberado: obliga a que cada cambio de catálogo pase por un diff revisable antes de llegar a una cotización.
+      <div id="syncEntorno" style="margin-bottom:14px;padding:11px 13px;background:#FFFBEB;border:1px solid #FDE68A;border-left:3px solid var(--amber);border-radius:4px;font-size:12.5px;line-height:1.5;color:#78350f">
+        El análisis lee el catálogo vigente y propone cambios; <b>no</b> escribe en producción. Para publicar un cambio se descarga la propuesta y el workflow <code>aplicar-propuesta</code> la aplica sobre <code>server/seed/legacyData/</code> y abre un PR — así cada cambio pasa por un diff revisable antes de llegar a una cotización. Ver <code>docs/sincronizacion.md</code>.
       </div>
       <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
         <select id="syncVendor" class="sync-select">
@@ -996,13 +996,15 @@ RB5009  CCR2004  RB5009  (Hub)
           <option value="huawei">Huawei</option>
           <option value="mikrotik">MikroTik</option>
           <option value="aruba">Aruba</option>
+          <option value="juniper">Juniper</option>
+          <option value="nokia">Nokia</option>
         </select>
         <button class="btn" style="padding:6px 14px;background:var(--ink);color:#fff" id="btnAnalizarSync">Analizar (IA)</button>
       </div>
       <div style="margin-bottom:20px;padding:10px;background:var(--bg);border-radius:6px;">
-        <p style="margin:0 0 5px 0;font-size:13px;font-weight:600;">Fuentes y Referencias (Opcional)</p>
-        <p style="margin:0 0 10px 0;font-size:11px;color:var(--steel);">Sube un Datasheet (PDF) o Excel (.xls, .xlsx, .csv) para extraer los valores exactos. Se revisan equipos, precios, licencias, soporte y SKUs.</p>
-        <input type="file" id="syncFile" accept=".pdf,.txt,.xls,.xlsx,.csv" style="font-size:12px;" />
+        <p style="margin:0 0 5px 0;font-size:13px;font-weight:600;">Documento de referencia (opcional)</p>
+        <p style="margin:0 0 10px 0;font-size:11px;color:var(--steel);">Sube un datasheet <b>PDF</b>, una hoja <b>Excel/CSV</b> (.xlsx, .csv) o un <b>texto</b> (.txt) para extraer los valores exactos; si lo subes, manda sobre el conocimiento previo. El tipo se decide por el contenido del archivo, no por su extensión. Se revisan equipos, precios, licencias, soporte y SKUs.</p>
+        <input type="file" id="syncFile" accept=".pdf,.txt,.xlsx,.csv,.tsv" style="font-size:12px;" />
       </div>
       <div id="syncResult">
         <p>Selecciona un fabricante y haz clic en Analizar.</p>
@@ -1010,7 +1012,8 @@ RB5009  CCR2004  RB5009  (Hub)
     </div>
     <div class="modal-footer">
       <button class="btn" style="background:#fff;color:var(--ink);border:1px solid var(--rule)" data-cerrar-sync>Cancelar</button>
-      <button id="btnApplySync" class="btn" style="background:var(--green);border:none;color:#fff;display:none" >Aprobar e Impactar DB</button>
+      <button id="btnDescargarPropuesta" class="btn" style="background:var(--ink);border:none;color:#fff;display:none">&#8681; Descargar propuesta (para PR)</button>
+      <button id="btnApplySync" class="btn" style="background:var(--green);border:none;color:#fff;display:none">Aplicar a base local</button>
     </div>
   </div>
 </div>

@@ -8,7 +8,7 @@
 // sustituir, mucho menos.
 const test = require('node:test');
 const assert = require('node:assert');
-const { anclar, mismoValor, escribirCampo } = require('../scripts/importar-propuesta');
+const { anclar, mismoValor, escribirCampo, literalJs } = require('../scripts/importar-propuesta');
 
 const MODELOS = [
   { id: 'FortiGate 60F', fw: 10, tp: 0.7, cps: null },
@@ -78,4 +78,27 @@ test('escribirCampo cambia solo el campo pedido del modelo pedido', () => {
   // Un campo que no esta en el bloque devuelve null en vez de escribir donde no debe.
   assert.strictEqual(escribirCampo(texto, 'A1', 'noExiste', 1), null);
   assert.strictEqual(escribirCampo(texto, 'NoEsta', 'fw', 1), null);
+});
+
+test('un newValue hostil se guarda como dato, nunca como codigo', () => {
+  // POR QUE. `newValue` puede venir de un datasheet subido por cualquiera y pasar por la IA,
+  // asi que no es una cadena de confianza. La primera version escapaba la comilla pero no la
+  // barra invertida: un valor acabado en `\` cerraba la cadena antes de tiempo y el resto se
+  // leia como codigo — corrompiendo el archivo y dejando el servidor sin arrancar.
+  const texto = "const MODELS = [\n{id:'A1', seg:'Sucursal'}\n];\nmodule.exports={MODELS};\n";
+  const hostil = "x\\', evil:(()=>{throw new Error('ejecutado')})(), y:'";
+  const salida = escribirCampo(texto, 'A1', 'seg', hostil);
+
+  // El archivo resultante es JS valido y, al evaluarlo, el valor vuelve intacto y no se
+  // ejecuta nada. Function() en vez de require() para no depender del disco en la prueba.
+  const modulo = { exports: {} };
+  // eslint-disable-next-line no-new-func
+  new Function('module', 'exports', salida)(modulo, modulo.exports);
+  assert.strictEqual(modulo.exports.MODELS[0].seg, hostil);
+
+  // La barra, la comilla y el salto de linea se escapan; un numero va sin comillas.
+  assert.strictEqual(literalJs('a\\b'), "'a\\\\b'");
+  assert.strictEqual(literalJs("d'e"), "'d\\'e'");
+  assert.strictEqual(literalJs('f\ng'), "'f\\ng'");
+  assert.strictEqual(literalJs(20), '20');
 });

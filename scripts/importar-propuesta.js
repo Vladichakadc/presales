@@ -35,13 +35,29 @@ const path = require('path');
 
 const ARCHIVOS = {
   huawei: 'huawei.js', cisco: 'cisco.js', fortinet: 'fortinet.js',
-  mikrotik: 'mikrotik.js', aruba: 'aruba.js', juniper: 'juniper.js',
+  mikrotik: 'mikrotik.js', aruba: 'aruba.js', juniper: 'juniper.js', nokia: 'nokia.js',
 };
 const DIR = path.join(__dirname, '..', 'server', 'seed', 'legacyData');
 
 const args = process.argv.slice(2);
 const APLICAR = args.includes('--aplicar');
 const entrada = args.find((a) => !a.startsWith('--'));
+
+// Convierte un valor en el literal JS que se escribe en el archivo de catalogo. Los numeros
+// van tal cual; el resto entre comillas simples CON ESCAPADO COMPLETO. El orden importa: la
+// barra invertida se escapa PRIMERO, si no, escapar la comilla mete una barra que el paso de
+// la barra volveria a duplicar mal. Sin esto, un newValue acabado en `\` (o con un salto de
+// linea, o una comilla) rompia el archivo entero y el servidor no arrancaba — y el newValue
+// puede venir de un datasheet subido por quien sea, asi que no es una cadena de confianza.
+function literalJs(valor) {
+  if (typeof valor === 'number') return String(valor);
+  const escapado = String(valor)
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r');
+  return `'${escapado}'`;
+}
 
 // Mismo mecanismo de escritura que importar-juniper.js: se edita el texto del archivo en el
 // sitio, para que el diff sea de una linea y no una reescritura del catalogo entero.
@@ -54,8 +70,7 @@ function escribirCampo(texto, id, campo, valor) {
   const bloque = texto.slice(inicio, fin);
   const re = new RegExp(`((?<![A-Za-z])${campo}:)(null|'[^']*'|[\\d.]+)`);
   if (!re.test(bloque)) return null;
-  const literal = typeof valor === 'number' ? String(valor) : `'${String(valor).replace(/'/g, "\\'")}'`;
-  return texto.slice(0, inicio) + bloque.replace(re, `$1${literal}`) + texto.slice(fin);
+  return texto.slice(0, inicio) + bloque.replace(re, `$1${literalJs(valor)}`) + texto.slice(fin);
 }
 
 // Comparacion por valor, no por formato: "20" y "20 Gbps" y 20 son el mismo dato escrito de
@@ -190,4 +205,4 @@ reportan pero nunca se escriben solas.`);
   aplicar(entrada);
 }
 
-module.exports = { anclar, mismoValor, escribirCampo };
+module.exports = { anclar, mismoValor, escribirCampo, literalJs };

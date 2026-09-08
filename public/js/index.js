@@ -401,9 +401,31 @@ function escapeHtml(v) {
   return String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
 
-function openSyncModal() {
+// El entorno lo informa el servidor (/api/sync/estado): no se puede deducir en el cliente, y
+// de el dependen dos cosas — que «aplicar a base local» solo aparezca en local (en produccion
+// esa escritura no persiste), y que se avise si falta la clave antes de gastar un analisis.
+let syncEstado = { produccion: false, tieneClave: true };
+
+async function openSyncModal() {
   document.getElementById('syncModal').style.display = 'flex';
   document.getElementById('syncResult').innerHTML = '<p>Selecciona un fabricante y haz clic en Analizar.</p>';
+  document.getElementById('btnApplySync').style.display = 'none';
+  document.getElementById('btnDescargarPropuesta').style.display = 'none';
+  try {
+    const res = await fetch('/api/sync/estado');
+    if (res.ok) syncEstado = await res.json();
+  } catch { /* si no se puede leer, se asume local: el peor caso es ofrecer un boton de mas */ }
+
+  const analizar = document.getElementById('btnAnalizarSync');
+  if (!syncEstado.tieneClave) {
+    // Sin clave el analisis falla cerrado con 503; se dice antes en vez de dejar pulsar.
+    analizar.disabled = true;
+    document.getElementById('syncResult').innerHTML = '<p style="color:var(--amber);font-weight:600">'
+      + 'Falta <code>ANTHROPIC_API_KEY</code> en este servidor, así que el análisis con IA no puede correr aquí. '
+      + 'Pídele al administrador que la configure, o ejecuta la sincronización en local.</p>';
+  } else {
+    analizar.disabled = false;
+  }
 }
 
 function closeSyncModal() {
@@ -411,14 +433,34 @@ function closeSyncModal() {
   pendingChanges = [];
 }
 
+// Descarga la propuesta con la forma exacta que espera `npm run propuesta` y el workflow
+// aplicar-propuesta: {vendor, cambios:[...]}. El navegador ya tiene los cambios en memoria,
+// asi que esto es puro cliente y funciona igual en produccion — el archivo es lo que viaja
+// al PR, no una escritura contra este servicio.
+function descargarPropuesta() {
+  const vendor = document.getElementById('syncVendor').value;
+  const propuesta = { vendor, generado: new Date().toISOString(), cambios: pendingChanges };
+  const blob = new Blob([JSON.stringify(propuesta, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `propuesta-${vendor}-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 async function analyzeSync() {
   const vendor = document.getElementById('syncVendor').value;
   const fileInput = document.getElementById('syncFile');
   const resultDiv = document.getElementById('syncResult');
   const btn = document.getElementById('btnApplySync');
-  
+  const btnDesc = document.getElementById('btnDescargarPropuesta');
+
   resultDiv.innerHTML = '<p>Analizando catálogo con IA (esto puede tardar unos segundos o minutos si el archivo es grande)...</p>';
   btn.style.display = 'none';
+  btnDesc.style.display = 'none';
   
   try {
     const formData = new FormData();
@@ -470,9 +512,12 @@ async function analyzeSync() {
       </tr>`;
     });
     html += '</table>';
-    
+
     resultDiv.innerHTML = html;
-    btn.style.display = 'inline-block';
+    // Descargar la propuesta es el camino durable y va siempre. Aplicar a la base local solo
+    // se ofrece fuera de produccion, donde esa escritura si sirve para iterar.
+    btnDesc.style.display = 'inline-block';
+    btn.style.display = syncEstado.produccion ? 'none' : 'inline-block';
   } catch (err) {
     // Se escapa con el helper que ya usa esta pagina: el mensaje puede venir del servidor,
     // y concatenarlo crudo en innerHTML seria una via de XSS en cuanto alguien incluya en
@@ -599,6 +644,7 @@ document.addEventListener('click', (e) => {
   else if (id === 'btnAbrirSync') openSyncModal();
   else if (id === 'btnAnalizarSync') analyzeSync();
   else if (id === 'btnApplySync') applySync();
+  else if (id === 'btnDescargarPropuesta') descargarPropuesta();
   else if (id === 'btnComparar') runCompare();
   else if (id === 'btnCalcular') runCalc();
   else if (id === 'csvBtn') exportCSV();

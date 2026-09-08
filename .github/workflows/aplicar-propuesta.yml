@@ -1,0 +1,124 @@
+name: aplicar-propuesta
+
+# Aplica una propuesta de la Sincronización Inteligente sobre server/seed/legacyData/ y abre
+# un PR. Es la mitad que hace durable lo que el panel analiza: en producción el análisis lee
+# el catálogo y devuelve cambios, pero escribir en su base no persiste (se resiembra en cada
+# deploy). El camino real es este — y el token con permiso de escritura al repo vive AQUÍ, en
+# Actions, nunca en el servicio que sirve los precios.
+#
+# CÓMO SE USA (también desde el móvil, en la app de GitHub):
+#   1. En el panel «Sincronización Inteligente», Analizar y luego «Descargar propuesta».
+#   2. Actions -> aplicar-propuesta -> Run workflow, y pega el contenido del JSON descargado.
+#   3. El workflow aplica solo lo que ancla (ver scripts/importar-propuesta.js), corre
+#      `npm run verificar`, y si todo pasa abre un PR. Nada llega a main sin esa revisión.
+#
+# POR QUÉ ANCLAJE Y NO CONFIANZA. La propuesta la genera una IA que pudo leer un documento
+# subido por cualquiera. El importador solo acepta un UPDATE cuyo oldValue coincide de verdad
+# con lo que el catálogo dice hoy, sobre un modelo que existe, con URL de fuente oficial; las
+# altas se reportan pero nunca se aplican solas. Y `npm run verificar` es el segundo muro: si
+# la escritura dejara el archivo inválido, las pruebas no pasan y el PR no se abre.
+
+on:
+  workflow_dispatch:
+    inputs:
+      propuesta:
+        description: 'Pega aquí el JSON descargado del panel (incluye vendor y cambios).'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  aplicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Escribir la propuesta a un archivo
+        env:
+          PROPUESTA: ${{ inputs.propuesta }}
+        run: |
+          printf '%s' "$PROPUESTA" > propuesta.json
+          # Falla temprano y claro si lo pegado no es JSON, en vez de arrastrar el error.
+          node -e "JSON.parse(require('fs').readFileSync('propuesta.json','utf8'))" \
+            || { echo 'Lo pegado no es JSON válido.'; exit 1; }
+          VENDOR=$(node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync('propuesta.json','utf8')).vendor||''))")
+          if [ -z "$VENDOR" ]; then echo 'La propuesta no trae "vendor".'; exit 1; fi
+          echo "VENDOR=$VENDOR" >> "$GITHUB_ENV"
+
+      - name: Aplicar con anclaje
+        run: |
+          # El importador escribe solo lo que ancla y reporta el resto. Guardamos su salida
+          # para el cuerpo del PR: es la lista de qué se aplicó y qué se apartó y por qué.
+          node scripts/importar-propuesta.js propuesta.json --aplicar | tee informe.txt
+
+      - name: ¿Cambió algo?
+        id: cambio
+        run: |
+          if git diff --quiet -- server/seed/legacyData/; then
+            echo "hay=0" >> "$GITHUB_OUTPUT"
+            echo 'La propuesta no dejó ningún cambio anclado. No se abre PR.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "hay=1" >> "$GITHUB_OUTPUT"
+          fi
+
+      # El segundo muro: si la escritura dejó el catálogo inválido, esto falla y no hay PR.
+      - name: Verificar (lint + pruebas)
+        if: steps.cambio.outputs.hay == '1'
+        run: npm run verificar
+
+      - name: Abrir PR
+        if: steps.cambio.outputs.hay == '1'
+        env:
+          VENDOR: ${{ env.VENDOR }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const { execSync } = require('child_process');
+            const vendor = process.env.VENDOR;
+            const rama = `propuesta/${vendor}-${context.runId}`;
+            const informe = fs.readFileSync('informe.txt', 'utf8');
+
+            execSync('git config user.name "github-actions[bot]"');
+            execSync('git config user.email "github-actions[bot]@users.noreply.github.com"');
+            execSync(`git checkout -B ${rama}`);
+            execSync('git add server/seed/legacyData/');
+            execSync(`git commit -m ${JSON.stringify(`Sincronización IA: catálogo ${vendor}`)}`);
+            execSync(`git push --force origin ${rama}`);
+
+            const cuerpo = [
+              `Propuesta de la Sincronización Inteligente para **${vendor}**, aplicada por el`,
+              'importador con anclaje (`scripts/importar-propuesta.js`). Revísala como cualquier',
+              'cambio de catálogo: el diff es la fuente de verdad.',
+              '',
+              '```',
+              informe.trim(),
+              '```',
+              '',
+              '---',
+              '_Generado por [Claude Code](https://claude.ai/code)_',
+            ].join('\n');
+
+            const pr = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: rama,
+              base: 'main',
+              title: `Sincronización IA: catálogo ${vendor}`,
+              body: cuerpo,
+            });
+            core.summary.addRaw(`PR abierto: #${pr.data.number} — ${pr.data.html_url}`);
+            await core.summary.write();

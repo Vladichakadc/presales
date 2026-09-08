@@ -25,32 +25,46 @@ function parseJson(raw, label) {
   }
 }
 
-// La sincronización con IA corre solo en local, a propósito. Dos razones independientes,
-// y cualquiera de las dos bastaría:
+// ANALIZAR corre en cualquier entorno; ESCRIBIR EN LA BASE, solo en local.
 //
-// 1. No serviría de nada. Estas rutas escriben en la base de datos, y la de producción es
-//    efímera: se reconstruye desde server/seed/legacyData/ en cada despliegue. Un cambio
-//    aplicado en producción se perdería en el siguiente deploy, dando una falsa sensación
-//    de haberse guardado. El camino real es analizar en local, llevar las propuestas
-//    aprobadas a los archivos de seed y desplegar — con lo que además cada cambio de
-//    catálogo queda revisado en un diff de git, que es lo que permitió detectar un modelo
-//    inexistente que llevaba tiempo en el catálogo.
+// Antes las dos rutas estaban bloqueadas en producción bajo un mismo motivo, pero no eran el
+// mismo problema, y meterlas en el mismo saco impedía justo lo que esta herramienta tiene que
+// hacer: revisar el catálogo que se está sirviendo. Ahora se separan.
 //
-// 2. Sería peligroso. Sin ANTHROPIC_API_KEY, aiSync.js cae en su modo mock y devuelve
-//    propuestas inventadas con apariencia legítima — incluido un producto que no existe,
-//    con precio y specs verosímiles. Aplicarlas corrompería el catálogo con datos falsos.
+// - `analyze` LEE el catálogo y llama a la IA. En producción es seguro y además útil: la base
+//   de producción se resiembra desde server/seed/legacyData/ en cada despliegue, así que
+//   analizarla es analizar exactamente lo vigente. Falla cerrado sin ANTHROPIC_API_KEY
+//   (aiSync lanza SinClave -> 503): ya no existe el mock que inventaba propuestas, así que no
+//   hay forma de que devuelva un dato falso por no tener clave.
+//
+// - `apply` ESCRIBE en la base, y esa escritura no tiene sentido en producción: la base es
+//   efímera y el cambio se perdería en el siguiente deploy, dando una falsa sensación de
+//   haberse guardado. El camino durable es otro y no pasa por aquí: se descarga la propuesta
+//   y `.github/workflows/aplicar-propuesta.yml` la aplica sobre legacyData/ con anclaje y
+//   abre un PR — el token de escritura vive en Actions, nunca en este servicio, que es el que
+//   sirve los precios. Cada cambio de catálogo queda así en un diff revisable, que es lo que
+//   una vez cazó un modelo inexistente que llevaba tiempo dentro. Ver docs/sincronizacion.md.
 function bloqueadoEnProduccion(res) {
   if (process.env.NODE_ENV !== 'production') return false;
   res.status(503).json({
-    error: 'La sincronización con IA está deshabilitada en producción. Ejecútala en local, '
-      + 'lleva los cambios aprobados a los archivos de server/seed/legacyData/ y despliega: '
-      + 'el catálogo de producción se resiembra desde ahí en cada despliegue.',
+    error: 'Aplicar a la base solo tiene sentido en local (la de producción es efímera). '
+      + 'Para publicar un cambio: descarga la propuesta y ejecuta el workflow '
+      + '«aplicar-propuesta» en GitHub, que la aplica sobre server/seed/legacyData/ y abre un PR.',
   });
   return true;
 }
 
+// La UI necesita saber en qué entorno está y si hay clave, para no ofrecer un botón que va a
+// fallar: en producción no se muestra «aplicar a base local», y sin clave se avisa antes de
+// gastar una llamada. Va bajo el permiso `sync` como el resto del router.
+router.get('/sync/estado', (req, res) => {
+  res.json({
+    produccion: process.env.NODE_ENV === 'production',
+    tieneClave: !!process.env.ANTHROPIC_API_KEY,
+  });
+});
+
 router.post('/sync/analyze', upload.single('datasheet'), async (req, res) => {
-  if (bloqueadoEnProduccion(res)) return;
   const { vendor } = req.body;
   if (!vendor) return res.status(400).json({ error: 'Vendor requerido' });
 

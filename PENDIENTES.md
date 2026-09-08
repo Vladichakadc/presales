@@ -336,6 +336,45 @@ Dos cosas que ayudan a decidir:
 
 ## Cerrado recientemente
 
+### Sincronización Inteligente replanteada: analiza en producción, publica por PR (2026-09-08)
+
+El módulo estaba bloqueado entero en producción bajo un solo motivo, pero eran dos problemas
+distintos metidos en el mismo saco, y juntarlos impedía justo lo que la herramienta tiene que
+hacer — revisar el catálogo que se está sirviendo.
+
+- **Analizar** ahora corre en cualquier entorno. Lee el catálogo vigente (que en producción es
+  exactamente lo sembrado desde `legacyData/`) y devuelve cambios sin escribir nada. Falla
+  cerrado sin `ANTHROPIC_API_KEY` — el mock que inventaba propuestas ya no existe, así que no
+  hay forma de que devuelva un dato falso por no tener clave.
+- **Escribir en la base** sigue bloqueado en producción, y con razón: esa base es efímera. Ese
+  muro se queda.
+- **La escritura durable** no pasa por el servidor: se descarga la propuesta y
+  `.github/workflows/aplicar-propuesta.yml` la aplica sobre `legacyData/` con el anclaje de
+  `npm run propuesta`, corre `npm run verificar` y abre un PR. **El token de escritura vive en
+  Actions, nunca en el servicio que sirve los precios** — esa fue la decisión de diseño frente
+  a poner un token de GitHub en Railway.
+
+Excel, CSV y txt ya se subían; ahora la UI lo dice con claridad y el tipo se decide por la
+firma del contenido, no por la extensión. Se añadieron Juniper y Nokia al selector. `GET
+/api/sync/estado` informa a la UI del entorno y de si hay clave, para no ofrecer un botón que
+va a fallar. Documentación oficial del módulo en **`docs/sincronizacion.md`**.
+
+**Un fallo encontrado y cerrado de paso:** `escribirCampo` en `importar-propuesta.js` escapaba
+la comilla pero no la barra invertida, así que un `newValue` acabado en `\` cerraba la cadena
+antes de tiempo y el resto se leía como código — corrompiendo el archivo de catálogo y dejando
+el servidor sin arrancar. El `newValue` puede venir de un documento subido por cualquiera, así
+que no es una cadena de confianza. Ahora se escapa por completo (barra, comilla, saltos) y hay
+una prueba que reproduce el ataque y confirma que el valor vuelve como dato, nunca como código.
+
+**Para que Analizar funcione en el sitio desplegado hace falta definir `ANTHROPIC_API_KEY` en
+Railway.** Sin ella el panel lo dice y no deja pulsar Analizar. Es lo único que queda por hacer
+del lado de operación, y es una variable de entorno, no código.
+
+184 pruebas (eran 181). Verificado en Chromium en modo producción: el panel abre, sin clave
+avisa y deshabilita Analizar, `/estado` responde `{produccion:true, tieneClave:false}`, y la
+descarga produce el JSON con la forma exacta que consume el importador. Sin errores de consola.
+
+
 ### El pendiente 4, cerrado: las pantallas se conducen solas en cada push (2026-09-04)
 
 Faltaba la mitad visual: `sonda-produccion.yml` confirmaba que el dominio público responde,

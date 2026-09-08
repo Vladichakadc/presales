@@ -7,7 +7,7 @@ name: verificar
 #
 # Corre lo mismo que `npm run verificar` en local, mas el arranque en modo produccion, que
 # es donde viven tres comportamientos invisibles en `npm run dev`: el servidor se niega a
-# arrancar sin AUTH_PASSWORD, la cookie gana el atributo Secure, y /api/sync/* responde 503.
+# arrancar sin AUTH_PASSWORD, la cookie gana el atributo Secure, y /api/sync/apply responde 503.
 
 on:
   push:

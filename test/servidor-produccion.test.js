@@ -111,11 +111,42 @@ test('el permiso sync se exige en la ruta: consulta recibe 403, administrador pa
   assert.strictEqual(negado.status, 403);
 
   const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
-  const admin = await fetch(`${BASE}/api/sync/analyze`, { method: 'POST', headers: { cookie: ana } });
-  // Pasa la autorizacion y choca con el bloqueo de produccion, que es el siguiente muro.
+  // Analizar SÍ corre en producción (a diferencia de antes). El siguiente muro es la clave:
+  // sin ANTHROPIC_API_KEY falla cerrado con SinClave, nunca con un dato inventado. El servidor
+  // de esta prueba arranca con la clave vacía a propósito.
+  const admin = await fetch(`${BASE}/api/sync/analyze`, {
+    method: 'POST',
+    headers: { cookie: ana, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ vendor: 'fortinet' }),
+  });
   assert.strictEqual(admin.status, 503);
   const cuerpo = await admin.json();
-  assert.match(cuerpo.error, /producci/);
+  assert.match(cuerpo.error, /ANTHROPIC_API_KEY/);
+});
+
+test('aplicar a la base sí sigue bloqueado en producción: la base es efímera', async () => {
+  // La escritura a la base no tiene sentido en producción y ese muro se queda. El camino
+  // durable es descargar la propuesta y abrir el PR desde el workflow.
+  const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
+  const res = await fetch(`${BASE}/api/sync/apply`, {
+    method: 'POST',
+    headers: { cookie: ana, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ vendor: 'fortinet', changes: [] }),
+  });
+  assert.strictEqual(res.status, 503);
+  assert.match((await res.json()).error, /aplicar-propuesta|efímera|PR/i);
+});
+
+test('/api/sync/estado informa entorno y presencia de clave, bajo el permiso sync', async () => {
+  const bruno = await sesionDe('bruno', 'contrasena-de-bruno-larga');
+  assert.strictEqual((await fetch(`${BASE}/api/sync/estado`, { headers: { cookie: bruno } })).status, 403);
+
+  const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
+  const res = await fetch(`${BASE}/api/sync/estado`, { headers: { cookie: ana } });
+  assert.strictEqual(res.status, 200);
+  const estado = await res.json();
+  assert.strictEqual(estado.produccion, true);
+  assert.strictEqual(estado.tieneClave, false); // la prueba arranca con la clave vacía
 });
 
 test('las cabeceras de seguridad estan puestas', async () => {
