@@ -117,7 +117,8 @@ catálogo cuando el problema es la clave:
 | Mensaje | HTTP | Causa | Qué hacer |
 |---|---|---|---|
 | «Falta `ANTHROPIC_API_KEY`…» | 503 | La variable no está en el entorno | Definirla en Railway |
-| «La `ANTHROPIC_API_KEY` configurada no es válida (401)…» | 503 | La variable está pero la API la rechaza | Revisar el valor: clave de API vigente (`sk-ant-api…`), sin espacios ni saltos de línea al pegarla, del mismo espacio de trabajo y con saldo |
+| «La `ANTHROPIC_API_KEY` configurada no es válida (401)…» | 503 | La variable está pero la API la rechaza | Revisar el valor: clave de API vigente (`sk-ant-api…`), sin espacios ni saltos de línea al pegarla, del mismo espacio de trabajo |
+| «La cuenta de la API de IA no tiene saldo suficiente…» | 503 | La clave es válida pero la cuenta no tiene crédito (400 «credit balance is too low») | Añadir créditos en la consola de Anthropic (Plans & Billing) |
 | «…límite de uso (429)…» | 429 | Límite transitorio de la API | Esperar unos segundos y reintentar |
 | «Error analizando con IA» | 500 | Cualquier otra cosa | Revisar los logs del servidor (`[AI Sync] Error llamando a Claude`) |
 

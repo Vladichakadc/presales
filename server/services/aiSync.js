@@ -39,13 +39,38 @@ class LimiteIA extends Error {
   }
 }
 
+// La clave es válida pero la cuenta no tiene saldo: la API devuelve un 400 con «credit balance
+// is too low». Es un caso de facturación, distinto de una petición mal formada (también 400),
+// y se separa para no mandar a revisar el catálogo cuando lo que falta es cargar créditos.
+class SinSaldo extends Error {
+  constructor() {
+    super('La cuenta de la API de IA no tiene saldo suficiente (crédito insuficiente). '
+      + 'Añade créditos o revisa la facturación en la consola de Anthropic (Plans & Billing).');
+    this.code = 'SIN_SALDO';
+  }
+}
+
+// Reúne el texto útil del error del SDK para poder distinguir un 400 de facturación de uno de
+// petición inválida. El cuerpo puede venir en `.error`, `.body` o solo en `.message`.
+function textoError(err) {
+  if (!err) return '';
+  const partes = [err.message];
+  try { partes.push(JSON.stringify(err.error || err.body || {})); } catch { /* cuerpo no serializable */ }
+  return partes.filter(Boolean).join(' ');
+}
+
 // Traduce el error crudo del SDK al error propio que la ruta sabe convertir en un HTTP claro.
-// Se decide por el código de estado y no por `instanceof`, que es frágil a través de la
-// frontera del módulo (la clase concreta del SDK puede variar entre versiones/envoltorios).
+// Se decide por el código de estado (y, para el 400, por el texto) y no por `instanceof`, que
+// es frágil a través de la frontera del módulo (la clase concreta del SDK puede variar entre
+// versiones/envoltorios).
 function errorDeIA(err) {
   const status = err && err.status;
   if (status === 401 || status === 403) return new ClaveInvalida();
   if (status === 429) return new LimiteIA();
+  // No todo 400 es de saldo: solo el que lo dice. El resto son peticiones inválidas de verdad.
+  if (status === 400 && /credit balance|too low|billing|insufficient/i.test(textoError(err))) {
+    return new SinSaldo();
+  }
   return new Error('No se pudo analizar el catálogo con IA.');
 }
 
@@ -202,4 +227,4 @@ async function analyzeCatalog(vendor, catalogData, file) {
   }
 }
 
-module.exports = { analyzeCatalog, SinClave, ClaveInvalida, LimiteIA, errorDeIA, ESQUEMA_CAMBIOS };
+module.exports = { analyzeCatalog, SinClave, ClaveInvalida, LimiteIA, SinSaldo, errorDeIA, ESQUEMA_CAMBIOS };

@@ -16,7 +16,7 @@ delete process.env.ANTHROPIC_API_KEY;
 const { ROLES } = require('../server/usuarios');
 const { tipoPorFirma } = require('../server/services/firmaArchivo');
 const {
-  analyzeCatalog, SinClave, ClaveInvalida, LimiteIA, errorDeIA,
+  analyzeCatalog, SinClave, ClaveInvalida, LimiteIA, SinSaldo, errorDeIA,
 } = require('../server/services/aiSync');
 
 test('el rol consulta no tiene el permiso sync y el administrador si', () => {
@@ -39,9 +39,18 @@ test('un 401 de la API se traduce a «clave inválida», no a un 500 genérico',
   assert.ok(errorDeIA({ status: 403 }) instanceof ClaveInvalida, '403 -> clave invalida');
   assert.match(errorDeIA({ status: 401 }).message, /no es válida/);
   assert.ok(errorDeIA({ status: 429 }) instanceof LimiteIA, '429 -> limite transitorio');
+
+  // Sin saldo: la clave es valida pero la cuenta no tiene credito. La API lo manda como un 400
+  // con «credit balance is too low», que no es lo mismo que una peticion mal formada.
+  const saldo = errorDeIA({ status: 400, error: { error: { message: 'Your credit balance is too low to access the Anthropic API.' } } });
+  assert.ok(saldo instanceof SinSaldo, '400 de credito -> sin saldo');
+  assert.match(saldo.message, /saldo/);
+  // Un 400 que NO habla de saldo es una peticion invalida de verdad: no se disfraza de billing.
+  assert.ok(!(errorDeIA({ status: 400, message: 'invalid field foo' }) instanceof SinSaldo));
+
   // Lo desconocido no se disfraza de config: sigue siendo el error generico.
   const otro = errorDeIA({ status: 500 });
-  assert.ok(!(otro instanceof ClaveInvalida) && !(otro instanceof LimiteIA));
+  assert.ok(!(otro instanceof ClaveInvalida) && !(otro instanceof LimiteIA) && !(otro instanceof SinSaldo));
   assert.ok(errorDeIA(new Error('boom')) instanceof Error);
 });
 
