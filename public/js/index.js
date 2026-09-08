@@ -638,10 +638,11 @@ async function subirFuenteOficial(code) {
   const input = document.getElementById(`file-fuente-${code}`);
   const estado = document.getElementById(`estado-fuente-${code}`);
   if (!input || !input.files.length) { if (estado) estado.textContent = 'Elige un archivo primero.'; return; }
+  const archivo = input.files[0];
   if (estado) { estado.style.color = 'var(--steel)'; estado.textContent = 'Subiendo…'; }
   try {
     const fd = new FormData();
-    fd.append('documento', input.files[0]);
+    fd.append('documento', archivo);
     const res = await fetch(`/api/fuentes/${encodeURIComponent(code)}`, { method: 'POST', body: fd });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -649,9 +650,167 @@ async function subirFuenteOficial(code) {
     }
     // Se repinta toda la procedencia: la fuente recién subida aparece ya en la tabla.
     await renderProcedencia();
+    const estado2 = document.getElementById(`estado-fuente-${code}`);
+    if (estado2) { estado2.style.color = 'var(--green)'; estado2.textContent = 'Fuente cargada.'; }
+    // Y en el acto se contrasta el documento con el catálogo vigente, que es lo que pidió el
+    // dueño del repo: subir una fuente abre una ventana enseñando qué trae de nuevo.
+    await mostrarContraste(code, archivo);
   } catch (err) {
-    if (estado) { estado.style.color = 'var(--red)'; estado.textContent = escapeHtml(err.message); }
+    if (estado) { estado.style.color = 'var(--red)'; estado.textContent = err.message; }
   }
+}
+
+/* ══════ CONTRASTE DEL DOCUMENTO CARGADO ══════
+   La regla de qué cuenta como cambio vive en js/contraste.js (window.CONTRASTE); aquí está el
+   parseo del archivo y el pintado. Es determinista y sin IA: reconoce una columna solo si su
+   cabecera casa con un campo real del catálogo, y todo lo que no reconoce lo LISTA, no lo
+   adivina. Es una vista previa — no escribe el catálogo; el camino durable es descargar la
+   propuesta y aplicarla por PR (aplicar-propuesta.yml). */
+let contrasteActual = null;
+
+// SheetJS ya se sirve en /vendor/xlsx.js, pero son ~900 KB: no se cargan en cada visita al
+// portal, sino la primera vez que hace falta leer una hoja. Un <script> con src del propio
+// origen es válido bajo la CSP (script-src 'self'); un bloque en línea no lo sería.
+let xlsxPromesa = null;
+function cargarXLSX() {
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  if (xlsxPromesa) return xlsxPromesa;
+  xlsxPromesa = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = '/vendor/xlsx.js';
+    s.onload = () => (window.XLSX ? resolve(window.XLSX) : reject(new Error('El lector de hojas no se inicializó.')));
+    s.onerror = () => reject(new Error('No se pudo cargar el lector de hojas de cálculo.'));
+    document.head.appendChild(s);
+  });
+  return xlsxPromesa;
+}
+
+// Excel/CSV/TSV/TXT tabular → filas como objetos {cabecera: valor}. SheetJS parsea las cuatro
+// formas; un CSV con «5,999» entre comillas no se parte mal, que es justo donde un split a mano
+// falla. Un TXT que no sea una tabla devuelve filas sin columna de modelo, y de eso se encarga
+// `contrastar` con su mensaje.
+async function parsearTabular(archivo) {
+  const XLSX = await cargarXLSX();
+  const buf = await archivo.arrayBuffer();
+  const wb = XLSX.read(buf, { type: 'array' });
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  if (!ws) return [];
+  return XLSX.utils.sheet_to_json(ws, { defval: '' });
+}
+
+// Los modelos del catálogo de ese fabricante, como los sirve /api/catalog. Huawei son dos
+// grupos (AR y WAN); el resto, uno. Son los objetos crudos con `model` y sus campos de spec.
+function modelosDeVendor(code) {
+  if (code === 'huawei') return [...(PR.hw_ar || []), ...(PR.hw_wan || [])];
+  return PR[code] || [];
+}
+
+function mensajeNoTabular(motivo) {
+  return `<div style="padding:12px;background:var(--bg);border-radius:6px;font-size:13px;line-height:1.6">
+    <p style="margin:0 0 6px"><b>${escapeHtml(motivo)}.</b> El contraste automático necesita una tabla (Excel/CSV) con una columna de modelo y cabeceras que casen con los campos del catálogo.</p>
+    <p style="margin:0;color:var(--steel)">La fuente quedó registrada en la procedencia. Para convertir un PDF o un texto libre en cambios está el <b>análisis por IA</b> (botón «Sincronizar») o los importadores (<code>npm run cps / juniper / huawei / propuesta</code>), que contrastan con doble anclaje antes de escribir.</p>
+  </div>`;
+}
+
+async function mostrarContraste(code, archivo) {
+  const modal = document.getElementById('contrasteModal');
+  const resumen = document.getElementById('contrasteResumen');
+  const result = document.getElementById('contrasteResult');
+  const fuente = document.getElementById('contrasteFuente');
+  const btnDesc = document.getElementById('btnDescargarContraste');
+  contrasteActual = null;
+  btnDesc.style.display = 'none';
+  fuente.style.display = 'none';
+  resumen.innerHTML = '';
+  result.innerHTML = '<p>Contrastando el documento con el catálogo…</p>';
+  modal.style.display = 'flex';
+
+  const nombre = archivo.name || 'documento';
+  // Un PDF no se parsea a tabla: extraer una tabla de un PDF sin equivocar de fila es justo lo
+  // que este repositorio no automatiza. Se dice, y la fuente igualmente quedó registrada.
+  if (/\.pdf$/i.test(nombre)) { result.innerHTML = mensajeNoTabular('Es un PDF'); return; }
+
+  let filas;
+  try {
+    filas = await parsearTabular(archivo);
+  } catch (err) {
+    result.innerHTML = `<p style="color:var(--red)">${escapeHtml(err.message)}</p>`;
+    return;
+  }
+  const r = CONTRASTE.contrastar({ modelos: modelosDeVendor(code), filas });
+  if (r.error) { result.innerHTML = mensajeNoTabular(r.error); return; }
+  contrasteActual = Object.assign({ vendor: code, documento: nombre }, r);
+  renderContraste();
+}
+
+function renderContraste() {
+  const r = contrasteActual;
+  const resumen = document.getElementById('contrasteResumen');
+  const result = document.getElementById('contrasteResult');
+  const fuente = document.getElementById('contrasteFuente');
+  const btnDesc = document.getElementById('btnDescargarContraste');
+
+  resumen.innerHTML = `<b>${escapeHtml(r.documento)}</b> — ${r.cambios.length} cambio(s), ${r.altas.length} alta(s), ${r.sinCambio} sin cambio. `
+    + `Columnas reconocidas: ${r.columnasUsadas.length ? r.columnasUsadas.map(escapeHtml).join(', ') : '—'}.`;
+
+  let html = '';
+  if (r.cambios.length) {
+    html += '<h4 style="margin:12px 0 6px;font-size:14px">Cambios propuestos</h4>';
+    html += '<table class="diff-table"><tr><th><input type="checkbox" id="contrasteTodos" checked></th><th>Modelo</th><th>Campo</th><th>Valor actual</th><th>Valor del documento</th></tr>';
+    r.cambios.forEach((c, i) => {
+      html += `<tr>
+        <td style="text-align:center"><input type="checkbox" class="contraste-check" data-idx="${i}" checked></td>
+        <td><strong>${escapeHtml(c.id)}</strong></td>
+        <td>${escapeHtml(c.field)}</td>
+        <td class="diff-old">${escapeHtml(c.oldValue === null ? 'N/A' : c.oldValue)}</td>
+        <td class="diff-new">${escapeHtml(c.newValue)}</td>
+      </tr>`;
+    });
+    html += '</table>';
+  } else {
+    html += '<p style="color:var(--steel)">El documento no trae ningún valor distinto del catálogo vigente en las columnas reconocidas.</p>';
+  }
+
+  if (r.altas.length) {
+    html += '<h4 style="margin:16px 0 6px;font-size:14px">Modelos no encontrados en el catálogo</h4>';
+    html += '<p style="font-size:12px;color:var(--steel);margin:0 0 6px">Se reportan pero <b>nunca</b> se aplican solos: dar de alta un modelo se hace a mano, porque es justo donde entra un dato inventado.</p>';
+    html += '<ul style="margin:0;padding-left:20px;font-size:13px">' + r.altas.map((a) => `<li>${escapeHtml(a.id)}</li>`).join('') + '</ul>';
+  }
+
+  if (r.columnasIgnoradas.length) {
+    html += `<p style="margin:16px 0 0;font-size:12px;color:var(--steel)"><b>Columnas ignoradas</b> (no casan con ningún campo del catálogo): ${r.columnasIgnoradas.map(escapeHtml).join(', ')}.</p>`;
+  }
+
+  result.innerHTML = html;
+  fuente.style.display = r.cambios.length ? 'block' : 'none';
+  btnDesc.style.display = r.cambios.length ? 'inline-block' : 'none';
+}
+
+function closeContrasteModal() {
+  document.getElementById('contrasteModal').style.display = 'none';
+  contrasteActual = null;
+}
+
+// Descarga la propuesta con la forma que consume `npm run propuesta` y aplicar-propuesta.yml,
+// solo con los cambios marcados. Las altas nunca entran (las aplica una persona). La URL de
+// fuente la exige el importador, así que se pasa tal cual la escribió quien contrasta.
+function descargarContraste() {
+  if (!contrasteActual) return;
+  const url = document.getElementById('contrasteUrl').value.trim();
+  const elegidos = [];
+  document.querySelectorAll('#contrasteResult .contraste-check').forEach((ch) => {
+    if (ch.checked) elegidos.push(contrasteActual.cambios[Number(ch.dataset.idx)]);
+  });
+  if (!elegidos.length) { alert('Marca al menos un cambio para descargar.'); return; }
+  const propuesta = CONTRASTE.comoPropuesta(contrasteActual.vendor, elegidos, url);
+  const blob = new Blob([JSON.stringify(propuesta, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `propuesta-${contrasteActual.vendor}-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
 }
 
 /* ═══════ INIT ═══════ */
@@ -681,6 +840,7 @@ document.addEventListener('click', (e) => {
   if (abrir) { window.open(abrir.dataset.abrir, '_blank'); return; }
 
   if (e.target.closest('[data-cerrar-sync]')) { closeSyncModal(); return; }
+  if (e.target.closest('[data-cerrar-contraste]')) { closeContrasteModal(); return; }
 
   const subir = e.target.closest('[data-subir-fuente]');
   if (subir) { subirFuenteOficial(subir.dataset.subirFuente); return; }
@@ -691,6 +851,7 @@ document.addEventListener('click', (e) => {
   else if (id === 'btnAnalizarSync') analyzeSync();
   else if (id === 'btnApplySync') applySync();
   else if (id === 'btnDescargarPropuesta') descargarPropuesta();
+  else if (id === 'btnDescargarContraste') descargarContraste();
   else if (id === 'btnComparar') runCompare();
   else if (id === 'btnCalcular') runCalc();
   else if (id === 'csvBtn') exportCSV();
@@ -706,6 +867,11 @@ document.addEventListener('input', (e) => {
 // una comparacion que ya no corresponde a lo que tiene seleccionado. El boton se queda
 // porque es la llamada a la accion de la primera vez, cuando aun no hay nada que repintar.
 document.addEventListener('change', (e) => {
+  // La casilla maestra del contraste marca/desmarca todos los cambios de golpe.
+  if (e.target.id === 'contrasteTodos') {
+    document.querySelectorAll('#contrasteResult .contraste-check').forEach((ch) => { ch.checked = e.target.checked; });
+    return;
+  }
   if (['cmp1', 'cmp2', 'cmp3', 'cmp4', 'cmpSoloDif'].indexOf(e.target.id) >= 0) {
     if (document.getElementById('compareOut').innerHTML.trim()) runCompare();
   }

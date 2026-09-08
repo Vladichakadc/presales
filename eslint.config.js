@@ -41,6 +41,7 @@ const globalsNavegador = {
   confirm: 'readonly', XLSX: 'readonly',
   // APIs que las paginas se pasan entre si por `window`, ya que no hay sistema de modulos.
   FICHA: 'readonly', BOM: 'readonly', ESTADO: 'readonly', TABLA: 'readonly', COMPARADOR: 'readonly', CALC: 'readonly',
+  CONTRASTE: 'readonly',
 };
 
 const reglas = {

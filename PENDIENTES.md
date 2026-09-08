@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-04.
+Última revisión: 2026-09-08.
 
 ---
 
@@ -374,6 +374,51 @@ del lado de operación, y es una variable de entorno, no código.
 avisa y deshabilita Analizar, `/estado` responde `{produccion:true, tieneClave:false}`, y la
 descarga produce el JSON con la forma exacta que consume el importador. Sin errores de consola.
 
+### Carga de fuente por fabricante, y una ventana que contrasta el documento con el catálogo (2026-09-08)
+
+A petición del dueño del repo, en dos pasos: primero *«un botón para subir documentos por
+fabricante que actualice las fuentes automáticamente apenas se suba»*, y después *«al subir,
+generar una ventana interactiva que contraste el documento con el actual y muestre lo nuevo
+que se va a actualizar»*.
+
+**La carga sin IA y sin crédito.** Cada fabricante tiene en su pestaña «Fuentes y Referencias»
+un control «Cargar fuente oficial» (permiso `sync`). Sube el datasheet o la lista de precios
+(PDF/XLSX/CSV/TXT, tipo decidido por la firma del contenido, no por la extensión) y **la
+procedencia de ese fabricante se actualiza al instante**: aparece como fuente «Cargada» con
+fecha, hash SHA-256 y enlace. Los archivos viven en el volumen persistente
+(`AUTH_STATE_DIR/fuentes/`), como `usuarios.json`, no en la base efímera, así que sobreviven a
+un deploy; el nombre en disco lo genera el servidor, nunca el del archivo subido, y `rutaArchivo`
+valida el formato del id antes de tocar disco (defensa de path traversal). `server/fuentesSubidas.js`
+es el módulo; rutas `POST /api/fuentes/:vendor` y `GET /api/fuentes/:vendor/documento/:id`.
+**Actualiza la procedencia, no reescribe las cifras** — subir no es contrastar, y estampar
+«verificado» sobre números que nadie comparó es la mentira que este catálogo prohíbe.
+
+**La ventana de contraste (Excel/CSV), determinista y en el navegador.** Al subir una fuente
+tabular se abre en el acto una ventana que la compara con el catálogo vigente **sin IA**:
+reconoce una columna solo si su cabecera casa con un campo real del catálogo (o un alias
+explícito cuyo campo existe para ese fabricante), y lo que no reconoce lo **lista** en vez de
+adivinar. Devuelve cuatro montones: **cambios** (modelo que existe con un valor distinto,
+comparado por valor y no por formato), **altas** (modelo que no está — se reportan pero nunca
+se aplican solas, la regla del importador), **sin cambio** (se cuentan) y **columnas
+ignoradas**. Es una vista previa: no escribe nada. Desde ahí se marcan los cambios y se
+**descarga la propuesta** con la forma que consumen `npm run propuesta` y `aplicar-propuesta.yml`,
+así el cambio pasa por el mismo anclaje y por un PR revisable. Un **PDF** no se contrasta aquí
+—extraer una tabla de un PDF sin equivocar de fila es lo que este repositorio no automatiza—:
+la ventana lo dice y remite a la IA o a los importadores. La regla vive en
+`public/js/contraste.js` (`window.CONTRASTE`); el parseo (SheetJS cargado bajo demanda, para no
+pesar ~900 KB en cada visita al portal) y el pintado, en `js/index.js`.
+
+203 pruebas (12 nuevas sobre `contraste.js`: mapeo por valor no por formato, columna no
+reconocida que se ignora, alias solo si el campo existe, alta nunca aplicada, celda vacía que no
+propone borrar, casado de nombre con prefijo de fabricante, y la forma de `comoPropuesta`).
+Verificado de extremo a extremo en Chromium: login → pestaña de fuentes de Huawei → subir un CSV
+→ la ventana detecta el cambio de un AR611 (fwd 300→700), reporta el alta y la columna ignorada,
+el botón de descargar propuesta aparece y la procedencia muestra la fuente «Cargada». Sin errores
+de consola (salvo las tipografías de Google, bloqueadas por egreso en este entorno).
+
+**Lo único pendiente de operación** sigue siendo definir `ANTHROPIC_API_KEY` con saldo en
+Railway para que el *análisis por IA* funcione; la carga de fuentes y el contraste tabular no lo
+necesitan.
 
 ### El pendiente 4, cerrado: las pantallas se conducen solas en cada push (2026-09-04)
 

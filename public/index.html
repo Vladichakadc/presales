@@ -976,6 +976,7 @@ RB5009  CCR2004  RB5009  (Hub)
 <script src="/js/tabla.js"></script>
 <script src="/js/comparador.js"></script>
 <script src="/js/calculadora.js"></script>
+<script src="/js/contraste.js"></script>
 <script src="/js/index.js"></script>
 
 <!-- ════ SYNC MODAL ════ -->
@@ -1014,6 +1015,35 @@ RB5009  CCR2004  RB5009  (Hub)
       <button class="btn" style="background:#fff;color:var(--ink);border:1px solid var(--rule)" data-cerrar-sync>Cancelar</button>
       <button id="btnDescargarPropuesta" class="btn" style="background:var(--ink);border:none;color:#fff;display:none">&#8681; Descargar propuesta (para PR)</button>
       <button id="btnApplySync" class="btn" style="background:var(--green);border:none;color:#fff;display:none">Aplicar a base local</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ CONTRASTE MODAL ════
+     Se abre al subir una fuente tabular (Excel/CSV): contrasta el documento contra el catálogo
+     vigente en el navegador, sin IA y sin crédito, y enseña qué cambiaría. Nada se escribe aquí:
+     el camino durable sigue siendo descargar la propuesta y aplicarla por PR (aplicar-propuesta). -->
+<div class="modal-overlay" id="contrasteModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">&#9878; Contraste del documento con el catálogo</h3>
+      <button class="modal-close" data-cerrar-contraste>&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:14px;padding:11px 13px;background:#F0F9FF;border:1px solid #BAE6FD;border-left:3px solid var(--steel);border-radius:4px;font-size:12.5px;line-height:1.5;color:#0c4a6e">
+        Esto compara el documento que subiste con el catálogo vigente <b>sin IA y en el navegador</b>: reconoce una columna solo si su cabecera casa con un campo real del catálogo, y lo que no reconoce lo <b>lista</b> en vez de adivinar. Es una vista previa: <b>no</b> reescribe el catálogo. Para publicar los cambios se descarga la propuesta y el workflow <code>aplicar-propuesta</code> la aplica sobre <code>legacyData/</code> con anclaje y abre un PR revisable.
+      </div>
+      <div id="contrasteResumen" style="font-size:13px;margin-bottom:12px;"></div>
+      <div id="contrasteResult"></div>
+      <div id="contrasteFuente" style="margin-top:16px;display:none">
+        <p style="margin:0 0 5px 0;font-size:12.5px;font-weight:600;">URL de la fuente oficial (obligatoria para el PR)</p>
+        <p style="margin:0 0 8px 0;font-size:11px;color:var(--steel);">El importador solo acepta un cambio con URL de fuente oficial (<code>https://…</code>) y si su valor anterior casa con lo que el catálogo dice hoy. Sin ella, la descarga sirve para revisar pero el workflow la rechazará.</p>
+        <input type="url" id="contrasteUrl" placeholder="https://…" style="width:100%;box-sizing:border-box;padding:7px 9px;font-size:12.5px;border:1px solid var(--rule);border-radius:5px" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:#fff;color:var(--ink);border:1px solid var(--rule)" data-cerrar-contraste>Cerrar</button>
+      <button id="btnDescargarContraste" class="btn" style="background:var(--ink);border:none;color:#fff;display:none">&#8681; Descargar propuesta (para PR)</button>
     </div>
   </div>
 </div>

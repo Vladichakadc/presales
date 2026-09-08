@@ -98,6 +98,30 @@ fuente **«Cargada»**, con su fecha, su hash SHA-256 y un enlace para consultar
   prohíbe. Convertir el documento en cambios sigue siendo del importador (`npm run …`, con
   contraste, gratis) o del análisis con IA (crédito).
 
+### La ventana de contraste (Excel/CSV)
+
+Al subir una fuente **tabular** (Excel, CSV, TSV o TXT con tabla), en el acto se abre una
+ventana que **contrasta el documento con el catálogo vigente en el navegador, sin IA y sin
+crédito**, y enseña qué trae de nuevo. La regla vive en `public/js/contraste.js`
+(`window.CONTRASTE`); el parseo (SheetJS, cargado bajo demanda) y el pintado, en
+`public/js/index.js`. Devuelve cuatro montones, porque son cuatro cosas distintas:
+
+- **Cambios** — el modelo existe y una columna reconocida trae un valor **distinto** (comparado
+  por valor, no por formato: «300» y «300 Mbps» no son un cambio).
+- **Altas** — el documento trae un modelo que **no** está en el catálogo. Se reportan, y por la
+  misma regla de siempre **nunca** se aplican solas: dar de alta un modelo se hace a mano.
+- **Sin cambio** — coincidencias que ya están al día (solo se cuentan).
+- **Columnas ignoradas** — cabeceras que no casan con ningún campo del catálogo. Se **listan**,
+  no se adivinan: reconoce una columna solo si su cabecera es un campo real (o un alias
+  explícito, y solo si ese campo existe para ese fabricante). Nunca inventa un mapeo.
+
+Es una **vista previa**, no el importador: no escribe nada. Desde la ventana se marcan los
+cambios y se **descarga la propuesta** con la forma exacta que consume `npm run propuesta` y
+`aplicar-propuesta.yml` — así el cambio pasa por el mismo anclaje (`oldValue` que casa con el
+catálogo de hoy, URL de fuente oficial) y por un PR revisable. Un **PDF** o un texto libre no
+se contrastan aquí —extraer una tabla de un PDF sin equivocar de fila es justo lo que este
+repositorio no automatiza—: la ventana lo dice y remite al análisis por IA o a los importadores.
+
 **Dónde viven los archivos.** En el volumen persistente (`AUTH_STATE_DIR/fuentes/`), igual que
 `usuarios.json` — no en la base de catálogo, que es efímera y se resiembra en cada despliegue.
 Así los documentos subidos sobreviven a un deploy. El nombre en disco lo genera el servidor
