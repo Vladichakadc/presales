@@ -7,6 +7,7 @@ const mikrotikData = require('../seed/legacyData/mikrotik');
 const arubaData = require('../seed/legacyData/aruba');
 const nokiaData = require('../seed/legacyData/nokia');
 const { fuentesDe } = require('../seed/legacyData/fuentes');
+const fuentesSubidas = require('../fuentesSubidas');
 const fs = require('fs');
 const pathMod = require('path');
 
@@ -76,7 +77,11 @@ async function toFuentes() {
   const vendors = await Vendor.findAll({ order: [['name', 'ASC']] });
   const out = {};
   for (const v of vendors) {
-    out[v.code] = { nombre: v.name, colorHex: v.colorHex, fuentes: fuentesDe(v.code) };
+    // Las subidas a mano van PRIMERO (son lo más reciente que alguien aportó) y antes que la
+    // procedencia transcrita del catálogo. Con el manifiesto vacío esto no añade nada, así que
+    // el comportamiento por defecto no cambia.
+    const cargadas = fuentesSubidas.comoProcedencia(v.code);
+    out[v.code] = { nombre: v.name, colorHex: v.colorHex, fuentes: [...cargadas, ...fuentesDe(v.code)] };
   }
   return out;
 }

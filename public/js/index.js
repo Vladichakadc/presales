@@ -573,12 +573,19 @@ const ESTADO_FUENTE = {
   vigente:     { etiqueta: 'Vigente',    color: 'var(--green)' },
   vieja:       { etiqueta: 'Conviene revisar', color: 'var(--amber)' },
   'sin fecha': { etiqueta: 'Sin fecha',  color: 'var(--amber)' },
+  cargada:     { etiqueta: 'Cargada',    color: 'var(--green)' },
 };
+
+// Lo informa el servidor (/api/cuenta/estado). Gobierna solo si se muestra el control de
+// carga; la ruta exige el permiso de todas formas.
+let puedeSync = false;
 
 function filaProcedencia(f) {
   const est = ESTADO_FUENTE[f.estado] || ESTADO_FUENTE['sin fecha'];
   const antiguedad = f.meses === null ? '—' : `${f.meses} mes(es)`;
-  const enlace = /^https?:\/\//i.test(f.url || '')
+  // Enlace tanto a una URL oficial (http/https) como al documento subido, que es una ruta
+  // relativa del propio sitio (/api/fuentes/…/documento/…). Un texto sin URL queda como texto.
+  const enlace = /^(https?:\/\/|\/)/i.test(f.url || '')
     ? `<a href="${escapeHtml(f.url)}" target="_blank" rel="noopener noreferrer" style="color:var(--red)">${escapeHtml(f.documento)}</a>`
     : escapeHtml(f.documento);
   return `<tr>
@@ -603,12 +610,48 @@ async function renderProcedencia() {
     return;
   }
   cajas.forEach((caja) => {
-    const v = datos[caja.dataset.procedencia];
-    if (!v || !v.fuentes.length) { caja.textContent = 'Sin procedencia registrada para este fabricante.'; return; }
-    caja.innerHTML = `<table><thead><tr>
-        <th>Documento</th><th>Fecha</th><th>Antigüedad</th><th>Estado</th><th>Qué cubre</th>
-      </tr></thead><tbody>${v.fuentes.map(filaProcedencia).join('')}</tbody></table>`;
+    const code = caja.dataset.procedencia;
+    const v = datos[code];
+    const tabla = (v && v.fuentes.length)
+      ? `<table><thead><tr>
+          <th>Documento</th><th>Fecha</th><th>Antigüedad</th><th>Estado</th><th>Qué cubre</th>
+        </tr></thead><tbody>${v.fuentes.map(filaProcedencia).join('')}</tbody></table>`
+      : '<p style="color:var(--steel);font-size:13px">Sin procedencia registrada para este fabricante.</p>';
+    caja.innerHTML = tabla + (puedeSync ? controlCargaFuente(code) : '');
   });
+}
+
+// Control de carga de la fuente oficial de un fabricante. Solo se pinta a quien tiene el
+// permiso `sync`. El input y el botón se cablean por delegación (la CSP prohíbe onclick).
+function controlCargaFuente(code) {
+  return `<div class="carga-fuente" style="margin-top:12px;padding:11px 13px;background:var(--bg);border:1px dashed var(--rule);border-radius:6px">
+    <p style="margin:0 0 8px;font-size:12.5px;color:var(--ink)"><b>Cargar fuente oficial</b> (PDF, Excel/CSV o texto). Actualiza la procedencia de este fabricante al instante; no reescribe las cifras del catálogo.</p>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input type="file" id="file-fuente-${escapeHtml(code)}" accept=".pdf,.xlsx,.csv,.tsv,.txt" style="font-size:12px">
+      <button class="btn" style="padding:6px 14px;background:var(--ink);color:#fff" data-subir-fuente="${escapeHtml(code)}">Subir</button>
+      <span id="estado-fuente-${escapeHtml(code)}" style="font-size:12px;color:var(--steel)"></span>
+    </div>
+  </div>`;
+}
+
+async function subirFuenteOficial(code) {
+  const input = document.getElementById(`file-fuente-${code}`);
+  const estado = document.getElementById(`estado-fuente-${code}`);
+  if (!input || !input.files.length) { if (estado) estado.textContent = 'Elige un archivo primero.'; return; }
+  if (estado) { estado.style.color = 'var(--steel)'; estado.textContent = 'Subiendo…'; }
+  try {
+    const fd = new FormData();
+    fd.append('documento', input.files[0]);
+    const res = await fetch(`/api/fuentes/${encodeURIComponent(code)}`, { method: 'POST', body: fd });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'No se pudo subir el documento');
+    }
+    // Se repinta toda la procedencia: la fuente recién subida aparece ya en la tabla.
+    await renderProcedencia();
+  } catch (err) {
+    if (estado) { estado.style.color = 'var(--red)'; estado.textContent = escapeHtml(err.message); }
+  }
 }
 
 /* ═══════ INIT ═══════ */
@@ -638,6 +681,9 @@ document.addEventListener('click', (e) => {
   if (abrir) { window.open(abrir.dataset.abrir, '_blank'); return; }
 
   if (e.target.closest('[data-cerrar-sync]')) { closeSyncModal(); return; }
+
+  const subir = e.target.closest('[data-subir-fuente]');
+  if (subir) { subirFuenteOficial(subir.dataset.subirFuente); return; }
 
   const id = e.target.closest('button,[id]')?.id;
   if (id === 'menuToggle') document.getElementById('sidebar').classList.toggle('open');
@@ -677,5 +723,11 @@ document.addEventListener('change', (e) => {
    nada: /usuarios exige el permiso en la ruta y responde 403 a quien no lo tenga. */
 fetch('/api/cuenta/estado')
   .then(r => r.ok ? r.json() : null)
-  .then(d => { if (d && d.puedeUsuarios) document.getElementById('navUsuarios').style.display = ''; })
+  .then(d => {
+    if (!d) return;
+    if (d.puedeUsuarios) document.getElementById('navUsuarios').style.display = '';
+    // Quien tiene el permiso `sync` ve el control para cargar la fuente oficial de cada
+    // fabricante. Es comodidad, no control: la ruta exige el permiso igualmente (403 sin él).
+    if (d.puedeSync) { puedeSync = true; renderProcedencia(); }
+  })
   .catch(() => {});

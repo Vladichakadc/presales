@@ -81,6 +81,31 @@ valor que va a sustituir, mucho menos.
 Y `npm run verificar` dentro del workflow es el segundo muro: si la escritura dejara un archivo
 inválido, las pruebas no pasan y el PR no se abre.
 
+## Cargar la fuente oficial sin IA (por fabricante)
+
+Aparte del análisis con IA, cada fabricante tiene en su pestaña **«Fuentes y Referencias»** un
+control **«Cargar fuente oficial»** (visible para quien tiene el permiso `sync`). Sube el
+datasheet o la lista de precios (PDF, Excel/CSV o texto) y **la procedencia de ese fabricante
+se actualiza al instante**, sin gastar crédito de IA: la pestaña muestra el documento como
+fuente **«Cargada»**, con su fecha, su hash SHA-256 y un enlace para consultarlo.
+
+**Qué hace y qué no** — la distinción es la misma regla de siempre:
+
+- **Sí:** registra qué documento oficial hay, de qué fecha, y guarda el archivo para poder
+  abrirlo. Es conciencia de la fuente sin coste.
+- **No:** *no* reescribe las cifras del catálogo. Subir un documento no es haberlo contrastado;
+  estampar «verificado hoy» sobre números que nadie comparó sería la mentira que este catálogo
+  prohíbe. Convertir el documento en cambios sigue siendo del importador (`npm run …`, con
+  contraste, gratis) o del análisis con IA (crédito).
+
+**Dónde viven los archivos.** En el volumen persistente (`AUTH_STATE_DIR/fuentes/`), igual que
+`usuarios.json` — no en la base de catálogo, que es efímera y se resiembra en cada despliegue.
+Así los documentos subidos sobreviven a un deploy. El nombre en disco lo genera el servidor
+(`<fabricante>-<id>.<ext>`), nunca el del archivo subido, y el tipo se decide por la firma del
+contenido (415 si no es PDF/XLSX/CSV/TXT). `server/fuentesSubidas.js` es el módulo; las rutas
+son `POST /api/fuentes/:vendor` (permiso `sync`) y `GET /api/fuentes/:vendor/documento/:id`
+(sesión válida).
+
 ## Documentos que acepta
 
 El tipo se decide **leyendo la firma del contenido** (`server/services/firmaArchivo.js`), no la

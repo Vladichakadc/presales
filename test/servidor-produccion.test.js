@@ -292,3 +292,46 @@ test('la calculadora no aparta un fabricante por un dato que el catálogo SI pub
   assert.ok(conCifra('ngfw', 'juniper') >= 5, 'y su cifra de IPS');
   assert.ok(conCifra('sdwan', 'aruba') >= 5, 'EdgeConnect publica su rango de ancho de banda WAN');
 });
+
+test('carga de fuente oficial: exige permiso sync, valida el tipo y aparece en /api/fuentes', async () => {
+  // Credito-cero: subir el documento actualiza la PROCEDENCIA del fabricante al instante, sin
+  // tocar la IA. Se prueba de punta a punta contra el servidor real porque cruza permiso,
+  // validacion por firma, escritura en el volumen y la proyeccion de /api/fuentes.
+  const bruno = await sesionDe('bruno', 'contrasena-de-bruno-larga'); // consulta, sin sync
+  const ana = await sesionDe('ana', 'contrasena-de-ana-larga'); // admin, con sync
+
+  const pdf = () => new Blob([Buffer.concat([Buffer.from('%PDF-1.7\n'), Buffer.alloc(64, 7)])], { type: 'application/octet-stream' });
+  const conArchivo = (blob, nombre) => { const fd = new FormData(); fd.append('documento', blob, nombre); return fd; };
+
+  // consulta no puede: el permiso se exige en la ruta, no se oculta solo en la interfaz.
+  const negado = await fetch(`${BASE}/api/fuentes/fortinet`, { method: 'POST', headers: { cookie: bruno }, body: conArchivo(pdf(), 'x.pdf') });
+  assert.strictEqual(negado.status, 403);
+
+  // Lo que no es PDF/XLSX/CSV/TXT por su CONTENIDO recibe 415, aunque la extension diga .pdf.
+  const falso = new Blob([Buffer.from([0, 1, 2, 3, 4, 5])], { type: 'application/pdf' });
+  const rechazado = await fetch(`${BASE}/api/fuentes/fortinet`, { method: 'POST', headers: { cookie: ana }, body: conArchivo(falso, 'trampa.pdf') });
+  assert.strictEqual(rechazado.status, 415);
+
+  // Un fabricante inexistente no crea nada.
+  const malVendor = await fetch(`${BASE}/api/fuentes/marte`, { method: 'POST', headers: { cookie: ana }, body: conArchivo(pdf(), 'x.pdf') });
+  assert.strictEqual(malVendor.status, 400);
+
+  // El admin sube un PDF de verdad.
+  const ok = await fetch(`${BASE}/api/fuentes/fortinet`, { method: 'POST', headers: { cookie: ana }, body: conArchivo(pdf(), 'matrix.pdf') });
+  assert.strictEqual(ok.status, 201);
+  const { entrada } = await ok.json();
+  assert.match(entrada.id, /^[0-9a-f]{16}$/);
+
+  // Aparece YA en /api/fuentes, como fuente «cargada» y la primera de la lista del fabricante.
+  const fuentes = await (await fetch(`${BASE}/api/fuentes`, { headers: { cookie: ana } })).json();
+  const cargada = fuentes.fortinet.fuentes.find((f) => f.subida);
+  assert.ok(cargada, 'la fuente subida sale en la proyeccion');
+  assert.strictEqual(cargada.estado, 'cargada');
+
+  // Y el documento se puede consultar (detras del muro de sesion), pero no sin sesion.
+  const doc = await fetch(`${BASE}${cargada.url}`, { headers: { cookie: ana }, redirect: 'manual' });
+  assert.strictEqual(doc.status, 200);
+  // Bajo /api/ el muro responde 401 JSON (no 302): es una ruta de API, no una navegación.
+  const sinSesion = await fetch(`${BASE}${cargada.url}`);
+  assert.strictEqual(sinSesion.status, 401);
+});

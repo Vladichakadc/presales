@@ -14,6 +14,9 @@ const cotizadorRoutes = require('./routes/cotizador');
 const dimensionadorRoutes = require('./routes/dimensionador');
 const guiaRoutes = require('./routes/guia');
 const syncRoutes = require('./routes/sync');
+const multer = require('multer');
+const fuentesSubidas = require('./fuentesSubidas');
+const { tipoPorFirma } = require('./services/firmaArchivo');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -172,6 +175,7 @@ app.get('/api/cuenta/estado', (req, res) => res.json({
   rol: req.usuario.rol,
   rolNombre: (auth.ROLES[req.usuario.rol] || {}).n || req.usuario.rol,
   puedeUsuarios: auth.permiso(req.usuario, 'usuarios'),
+  puedeSync: auth.permiso(req.usuario, 'sync'),
   usandoSemilla: !!req.usuario.desdeSemilla,
   debeCambiar: !!req.usuario.debeCambiar,
 }));
@@ -224,6 +228,45 @@ app.get('/vendor/xlsx.js', (req, res) => {
 app.get('/vendor/headroom.js', (req, res) => {
   res.type('application/javascript');
   res.sendFile(require.resolve('headroom.js/dist/headroom.js'));
+});
+
+// ── Fuentes oficiales subidas a mano, por fabricante ──────────────────────────
+// Sube el documento oficial (datasheet, lista de precios) de un fabricante y la pestaña
+// «Fuentes y Referencias» de ese fabricante lo refleja al instante: sin IA y sin crédito.
+// Actualiza la PROCEDENCIA (qué documento hay, de qué fecha, su hash) y guarda el archivo
+// para consultarlo — no reescribe las cifras del catálogo (ver server/fuentesSubidas.js).
+// Los documentos viven en el volumen persistente, no en la base efímera, así que sobreviven
+// a un despliegue. El registro va con el permiso `sync`, como el resto de mantenimiento del
+// catálogo; consultarlos, con sesión válida basta.
+const subirFuente = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+
+app.post('/api/fuentes/:vendor', exige('sync'), subirFuente.single('documento'), (req, res) => {
+  const { vendor } = req.params;
+  if (!fuentesSubidas.esVendor(vendor)) return res.status(400).json({ error: 'Fabricante no válido' });
+  if (!req.file) return res.status(400).json({ error: 'Falta el documento' });
+
+  // El tipo lo decide la firma del contenido, no la extensión del navegador — mismo criterio
+  // que el sync con IA. Lo que no sea PDF, XLSX, CSV o TXT no se guarda.
+  const tipo = tipoPorFirma(req.file.buffer, req.file.originalname);
+  if (!tipo) {
+    return res.status(415).json({ error: 'El archivo no es un PDF, XLSX ni un texto CSV/TXT reconocible. Se comprueba el contenido, no la extensión.' });
+  }
+  try {
+    const entrada = fuentesSubidas.registrar(vendor, {
+      originalname: req.file.originalname, buffer: req.file.buffer, tipo, usuario: req.usuario.usuario,
+    });
+    console.log(`[fuentes] carga · fabricante=${vendor} · ${entrada.documento} · ${entrada.bytes}B · por=${req.usuario.usuario}`);
+    res.status(201).json({ ok: true, entrada });
+  } catch (err) {
+    console.error('[fuentes] error al registrar:', err.message);
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.get('/api/fuentes/:vendor/documento/:id', (req, res) => {
+  const encontrado = fuentesSubidas.rutaArchivo(req.params.vendor, req.params.id);
+  if (!encontrado) return res.status(404).json({ error: 'Documento no encontrado' });
+  res.sendFile(encontrado.ruta);
 });
 
 app.use('/api', catalogRoutes);

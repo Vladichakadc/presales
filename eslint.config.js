@@ -26,6 +26,8 @@ const globalsNode = {
   // AbortController lo usa el vigia de fuentes para no quedarse colgado esperando a un
   // servidor de fabricante que no responde.
   AbortController: 'readonly',
+  // Globales de Node 20+ que usan las pruebas para subir archivos por HTTP (multipart).
+  FormData: 'readonly', Blob: 'readonly',
 };
 
 const globalsNavegador = {
