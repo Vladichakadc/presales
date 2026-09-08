@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { analyzeCatalog, SinClave } = require('../services/aiSync');
+const { analyzeCatalog, SinClave, ClaveInvalida, LimiteIA } = require('../services/aiSync');
 const { tipoPorFirma } = require('../services/firmaArchivo');
 const { Product, Vendor, LicenseBundle, SupportTier, Part } = require('../models');
 
@@ -105,7 +105,14 @@ router.post('/sync/analyze', upload.single('datasheet'), async (req, res) => {
     const changes = await analyzeCatalog(vendor, catalogData, req.file);
     res.json({ changes });
   } catch (err) {
-    if (err instanceof SinClave) return res.status(503).json({ error: err.message });
+    // Errores propios de aiSync, cada uno con su HTTP: config (503) frente a transitorio (429)
+    // frente a lo desconocido (500). Antes todo lo que no fuera SinClave caía en el 500
+    // genérico, y un 401 por clave inválida se leía como «Error analizando con IA» — sin pista
+    // de que el problema era la clave. instanceof funciona aquí: misma instancia del módulo.
+    if (err instanceof SinClave || err instanceof ClaveInvalida) {
+      return res.status(503).json({ error: err.message });
+    }
+    if (err instanceof LimiteIA) return res.status(429).json({ error: err.message });
     console.error('[Sync Route Error]', err);
     res.status(500).json({ error: 'Error analizando con IA' });
   }

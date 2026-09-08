@@ -17,6 +17,38 @@ class SinClave extends Error {
   }
 }
 
+// La clave ESTÁ puesta pero la API la rechaza (401/403). Es un caso distinto de SinClave y
+// merece su propio error: sin esto, un `invalid x-api-key` se disfrazaba de «Error analizando
+// con IA» genérico (500) y quien lo veía no tenía forma de saber que el problema es la clave,
+// no el catálogo ni el documento. Mismo espíritu que SinClave: fallar cerrado y DECIR por qué.
+class ClaveInvalida extends Error {
+  constructor() {
+    super('La ANTHROPIC_API_KEY configurada no es válida (la API respondió 401). '
+      + 'Revísala en las variables del servicio: que sea una clave de API vigente (sk-ant-api…), '
+      + 'sin espacios ni saltos de línea al copiarla, y del mismo espacio de trabajo con saldo.');
+    this.code = 'CLAVE_INVALIDA';
+  }
+}
+
+// La API respondió con límite de uso (429). Es transitorio, no un error de configuración, así
+// que se distingue para que la ruta devuelva 429 y quien lo vea sepa que basta reintentar.
+class LimiteIA extends Error {
+  constructor() {
+    super('La API de IA respondió con límite de uso (429). Espera unos segundos y reintenta.');
+    this.code = 'LIMITE_IA';
+  }
+}
+
+// Traduce el error crudo del SDK al error propio que la ruta sabe convertir en un HTTP claro.
+// Se decide por el código de estado y no por `instanceof`, que es frágil a través de la
+// frontera del módulo (la clase concreta del SDK puede variar entre versiones/envoltorios).
+function errorDeIA(err) {
+  const status = err && err.status;
+  if (status === 401 || status === 403) return new ClaveInvalida();
+  if (status === 429) return new LimiteIA();
+  return new Error('No se pudo analizar el catálogo con IA.');
+}
+
 const MODELO = 'claude-opus-5';
 const MAX_TOKENS = 32000;
 
@@ -166,8 +198,8 @@ async function analyzeCatalog(vendor, catalogData, file) {
     return Array.isArray(datos.cambios) ? datos.cambios : [];
   } catch (err) {
     console.error('[AI Sync] Error llamando a Claude:', err);
-    throw new Error('No se pudo analizar el catálogo con IA.');
+    throw errorDeIA(err);
   }
 }
 
-module.exports = { analyzeCatalog, SinClave, ESQUEMA_CAMBIOS };
+module.exports = { analyzeCatalog, SinClave, ClaveInvalida, LimiteIA, errorDeIA, ESQUEMA_CAMBIOS };

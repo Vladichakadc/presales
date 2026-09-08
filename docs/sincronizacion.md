@@ -106,4 +106,20 @@ La propuesta es lo que descarga el panel, o un `{ "vendor": "...", "cambios": [ 
 Para que **Analizar** funcione en el servicio desplegado hay que definir `ANTHROPIC_API_KEY` en
 las variables de Railway. Sin ella, el panel lo dice y no deja pulsar Analizar (el servidor
 respondería 503). El permiso `sync` (hoy solo el rol administrador) es lo que da acceso al panel
-y a estas rutas.
+y a estas rutas. **Una variable nueva solo la toma el proceso tras un arranque nuevo**: Railway
+redespliega al guardarla, así que espera a que el deploy llegue a SUCCESS antes de probar.
+
+### Qué dice cada error del panel
+
+El mensaje que ves viene del servidor y distingue la causa, para no mandarte a revisar el
+catálogo cuando el problema es la clave:
+
+| Mensaje | HTTP | Causa | Qué hacer |
+|---|---|---|---|
+| «Falta `ANTHROPIC_API_KEY`…» | 503 | La variable no está en el entorno | Definirla en Railway |
+| «La `ANTHROPIC_API_KEY` configurada no es válida (401)…» | 503 | La variable está pero la API la rechaza | Revisar el valor: clave de API vigente (`sk-ant-api…`), sin espacios ni saltos de línea al pegarla, del mismo espacio de trabajo y con saldo |
+| «…límite de uso (429)…» | 429 | Límite transitorio de la API | Esperar unos segundos y reintentar |
+| «Error analizando con IA» | 500 | Cualquier otra cosa | Revisar los logs del servidor (`[AI Sync] Error llamando a Claude`) |
+
+El detalle completo del fallo siempre queda en los logs del contenedor con el prefijo
+`[AI Sync]`, aunque al usuario se le muestre el mensaje corto.
