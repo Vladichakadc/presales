@@ -37,6 +37,17 @@ function cargar(...relativos) {
   global.setTimeout = setTimeout;
   global.CSS = { escape: (s) => String(s) };
   global.MutationObserver = class { observe() {} disconnect() {} };
+  // localStorage y location: los usa bom.js para guardar las referencias anadidas a mano, que
+  // viven por pagina. Un doble en memoria basta — lo que se prueba es la regla (sumar cantidad
+  // en vez de duplicar linea, quitar por clave), no el almacenamiento del navegador.
+  const almacen = new Map();
+  global.localStorage = {
+    getItem: (k) => (almacen.has(k) ? almacen.get(k) : null),
+    setItem: (k, v) => almacen.set(k, String(v)),
+    removeItem: (k) => almacen.delete(k),
+    clear: () => almacen.clear(),
+  };
+  global.location = { pathname: '/prueba.html', href: '' };
   const ctx = vm.createContext(global);
   for (const rel of relativos) {
     const archivo = path.join(__dirname, '..', '..', rel);

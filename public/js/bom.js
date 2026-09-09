@@ -32,6 +32,8 @@
 .bom-tabla tr.bom-total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padding-top:10px;font-size:13px}
 .bom-nota{display:block;font-size:11px;color:var(--steel);margin-top:2px;font-family:'Barlow',sans-serif}
 .bom-nd{color:var(--steel)}
+.bom-quitar{margin-left:6px;border:1px solid var(--rule);background:var(--card);color:var(--steel);border-radius:3px;cursor:pointer;font-size:12px;line-height:1;padding:1px 5px}
+.bom-quitar:hover{border-color:var(--red);color:var(--red)}
 .bom-aviso{font-size:11.5px;color:var(--amber);margin:10px 0 0;line-height:1.45}
 .bom-acciones{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .bom-desvio{font-size:12.5px;line-height:1.5;color:var(--steel);border-left:2px solid var(--amber);padding:6px 0 6px 10px;margin:0 0 12px}
@@ -75,8 +77,71 @@
 
   // Tabla agrupada por categoría. Se mantiene el orden en que la página añadió las filas:
   // refleja el orden de lectura de una cotización (equipo, luego accesorios, luego servicios).
-  function renderTabla(filas, opciones) {
+  /* ── REFERENCIAS ANADIDAS A MANO ───────────────────────────────────────────
+     La ficha lista todas las referencias de pedido de un equipo (bundles de soporte,
+     licencias, accesorios). Verlas no basta: lo que hace falta es poder meter UNA concreta en
+     la cotizacion — un FortiGate se vende casi siempre con su bundle de FortiCare, y hasta
+     ahora esa linea habia que teclearla a mano en el cotizador.
+
+     POR QUE VIVEN AQUI Y NO EN CADA PAGINA. `renderTabla` es el punto unico por el que pasan
+     los siete dimensionadores, asi que gestionarlas en este modulo las da a las siete sin
+     tocar ninguna — la misma razon por la que `sincronizar` y `avisoDesvio` acabaron aqui.
+
+     SOBREVIVEN AL REPINTADO, QUE ES TODO EL PUNTO. El BOM se repinta cada vez que cambia el
+     dimensionamiento; si las referencias anadidas vivieran en el array de filas que la pagina
+     construye, el siguiente movimiento del caudal las borraria sin avisar. Se guardan aparte,
+     por pagina, y se vuelven a pegar en cada render. */
+  const CLAVE_REFS = 'presales-bom-refs:' + (global.location ? global.location.pathname : '');
+  let repintar = null; // lo deja `sincronizar`: es como se refresca el BOM tras anadir o quitar
+
+  function refsExtra() {
+    try {
+      const v = JSON.parse(localStorage.getItem(CLAVE_REFS) || '[]');
+      return Array.isArray(v) ? v : [];
+    } catch { return []; }
+  }
+  function guardarRefs(lista) {
+    try { localStorage.setItem(CLAVE_REFS, JSON.stringify(lista)); } catch { /* almacenamiento off */ }
+  }
+
+  // Anade una referencia. Si ya estaba, SUMA cantidad en vez de duplicar la linea: pedir dos
+  // veces el mismo bundle es pedir dos unidades, no dos renglones iguales.
+  function agregarRef(ref) {
+    if (!ref || (!ref.sku && !ref.d)) return false;
+    const lista = refsExtra();
+    const clave = ref.sku || ref.d;
+    const ya = lista.find((x) => (x.sku || x.d) === clave);
+    if (ya) ya.qty = (ya.qty || 1) + 1;
+    else lista.push({ sku: ref.sku || null, d: ref.d || '', p: (ref.p == null ? null : ref.p), qty: 1, de: ref.de || '', v: ref.v || '' });
+    guardarRefs(lista);
+    if (repintar) repintar();
+    return true;
+  }
+
+  function quitarRef(clave) {
+    guardarRefs(refsExtra().filter((x) => (x.sku || x.d) !== clave));
+    if (repintar) repintar();
+  }
+
+  // Las referencias como filas de BOM, en su propio grupo.
+  function filasDeRefs() {
+    return refsExtra().map((r) => ({
+      cat: 'Referencias añadidas',
+      desc: r.d || r.sku,
+      sku: r.sku || null,
+      qty: r.qty || 1,
+      unit: r.p == null ? null : r.p,
+      nota: r.de ? `Añadida desde la ficha de ${r.de}` : 'Añadida desde la ficha del equipo',
+      _ref: r.sku || r.d,
+    }));
+  }
+
+  function renderTabla(filasBase, opciones) {
     const o = opciones || {};
+    // Las referencias anadidas se pegan aqui, no en la pagina, y entran ANTES de los totales:
+    // un bundle en la cotizacion que no sume al total seria un numero que no corresponde a lo
+    // que la cotizacion lleva dentro.
+    const filas = (filasBase || []).concat(filasDeRefs());
     const { suma, sinPrecio } = totales(filas);
 
     const grupos = [];
@@ -101,7 +166,11 @@
           + `<td class="n">${f.sku ? `<code>${esc(f.sku)}</code>` : '<span class="bom-nd">—</span>'}</td>`
           + `<td class="n r">${f.qty == null ? '—' : f.qty}</td>`
           + `<td class="n r">${f.unit == null ? '<span class="bom-nd">consultar</span>' : esc(money(f.unit))}</td>`
-          + `<td class="n r">${s == null ? '<span class="bom-nd">—</span>' : esc(money(s))}</td>`
+          + `<td class="n r">${s == null ? '<span class="bom-nd">—</span>' : esc(money(s))}`
+          // Lo que se anade a mano se tiene que poder quitar a mano: sin salida, anadir una
+          // referencia por error obligaria a vaciar el almacenamiento del navegador.
+          + (f._ref ? ` <button type="button" class="bom-quitar" data-bom-quitar="${esc(f._ref)}" title="Quitar de la cotización">&times;</button>` : '')
+          + '</td>'
           + '</tr>';
       }
     }
@@ -244,10 +313,21 @@
     return s.replace(PREFIJOS, '') || s;
   }
 
+  // Manda al cotizador el equipo y, con el, las referencias anadidas a mano.
+  //
+  // LAS DOS COSAS VIAJAN DISTINTO A PROPOSITO. El EQUIPO viaja solo como nombre: el precio y
+  // el texto comercial los pone `CATALOG`, que es la fuente de verdad del cotizador — si los
+  // mandara el dimensionador habria dos sitios con el mismo dato. Una REFERENCIA no puede
+  // hacer eso porque no esta en `CATALOG` (son 6.849 solo de Fortinet, frente a sus 54
+  // equipos), asi que viaja con su SKU, su descripcion y su precio, y la fuente de verdad de
+  // esos tres es la price list de la que se extrajeron.
   function enviarACotizador(item) {
     try {
       const cola = JSON.parse(localStorage.getItem(ENTRADA) || '[]');
       cola.push({ modelo: item.modelo, qty: item.qty || 1, nota: item.nota || '', de: item.de || '' });
+      for (const r of refsExtra()) {
+        cola.push({ ref: { sku: r.sku, d: r.d, p: r.p, v: r.v || '' }, qty: r.qty || 1, de: item.de || '' });
+      }
       localStorage.setItem(ENTRADA, JSON.stringify(cola));
       return true;
     } catch {
@@ -290,6 +370,9 @@
     const c = cfg || {};
     const sel = document.getElementById(c.selector || 'pickModel');
     if (typeof c.render !== 'function') return;
+    // Se recuerda como repinta esta pagina su BOM: es lo que permite que anadir o quitar una
+    // referencia se vea al instante sin que cada pagina tenga que cablear nada.
+    repintar = c.render;
     if (!sel) { c.render(); return; }
 
     if (!sel.dataset.bomVigilado) {
@@ -351,7 +434,18 @@
     barra.appendChild(b);
   }
 
+  // Delegacion en document y no en la tabla: el BOM se repinta entero en cada cambio de
+  // escenario, asi que un listener colgado del nodo moriria con el primer repintado.
+  if (global.document && !global.document.__bomQuitarCableado) {
+    global.document.__bomQuitarCableado = true;
+    global.document.addEventListener('click', (e) => {
+      const b = e.target.closest && e.target.closest('[data-bom-quitar]');
+      if (b) quitarRef(b.dataset.bomQuitar);
+    });
+  }
+
   global.BOM = { renderTabla, exportarExcel, comoTexto, money, esc,
     enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar,
-    sincronizar, soltarManual, avisoDesvio };
+    sincronizar, soltarManual, avisoDesvio,
+    agregarRef, quitarRef, refsExtra };
 })(window);

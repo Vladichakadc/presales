@@ -47,6 +47,28 @@ const esc=s=>String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt
   const entrantes = BOM.recogerEntrada();
   const noEncontrados = [];
   for(const e of entrantes){
+    // Una REFERENCIA (bundle de soporte, licencia, accesorio) no esta en CATALOG y no puede
+    // estarlo: son 6.849 solo de Fortinet frente a sus 54 equipos. Viaja con su SKU, su
+    // descripcion y su precio, que salen de la misma price list que respalda los precios de
+    // esta pantalla, y se marca como tal para que se vea de donde vino.
+    if(e.ref){
+      const r = e.ref;
+      const clave = r.sku || r.d;
+      const yaRef = bom.find(b2 => b2.refSku === clave);
+      if(yaRef){ yaRef.qty += (e.qty || 1); continue; }
+      // El fabricante viaja con la referencia y su color sale de CATALOG. Fijarlos aqui
+      // habria pintado de Fortinet una referencia de Aruba — un dato inventado, y de los que
+      // no fallan: solo mienten.
+      const vend = r.v || 'Referencia';
+      const hermano = CATALOG.find(x => BOM.normalizar(x.vendor) === BOM.normalizar(vend));
+      bom.push({id: nextId++, vendor: hermano ? hermano.vendor : vend,
+        color: hermano ? hermano.color : 'var(--steel)', model: r.d || r.sku,
+        seg: 'Referencia de pedido', spec: r.sku || '', refSku: clave,
+        elp: r.p == null ? 'Consultar' : ('~ $' + Number(r.p).toLocaleString('en-US')),
+        elpN: r.p == null ? 0 : r.p,
+        qty: e.qty || 1, note: e.de ? `Añadida desde la ficha de ${e.de}` : 'Añadida desde la ficha del equipo'});
+      continue;
+    }
     const item = CATALOG.find(x => BOM.normalizar(x.model) === BOM.normalizar(e.modelo));
     if(!item){ noEncontrados.push(e.modelo); continue; }
     const ya = bom.find(b2 => b2.model === item.model && b2.vendor === item.vendor);

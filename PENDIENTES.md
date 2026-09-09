@@ -374,6 +374,35 @@ del lado de operación, y es una variable de entorno, no código.
 avisa y deshabilita Analizar, `/estado` responde `{produccion:true, tieneClave:false}`, y la
 descarga produce el JSON con la forma exacta que consume el importador. Sin errores de consola.
 
+### Las referencias llegan al BOM y al cotizador: añadir un bundle, no solo verlo (2026-09-09)
+
+Continuación directa de lo anterior, a petición del dueño del repo. Ver las referencias no
+servía de mucho: un FortiGate se vende casi siempre con su bundle de FortiCare, y esa línea
+había que teclearla a mano en el cotizador.
+
+Ahora cada fila de la sección trae un botón **«Añadir»**, la referencia aparece en el BOM bajo
+**«Referencias añadidas»** con su SKU y su precio, **suma al total**, y «Enviar al cotizador» se
+la lleva junto al equipo. Se quita con la × de su propia fila.
+
+**Viven en `bom.js`, no en cada página.** `renderTabla` es el punto único por el que pasan los
+siete dimensionadores, así que gestionarlas ahí las da a los siete sin tocar ninguno — la misma
+razón por la que `sincronizar` y `avisoDesvio` acabaron en ese módulo.
+
+**Sobreviven al repintado, y ese es todo el punto.** El BOM se repinta en cada cambio de
+escenario; una referencia guardada en el array de filas que construye la página se habría
+borrado al mover el caudal, en silencio — el mismo modo de fallo que ya tuvo `llevarABom`. Se
+guardan aparte, por página, y se vuelven a pegar en cada render. Verificado moviendo el caudal a
+3.000 Mbps con el bundle puesto.
+
+**Un fallo propio, corregido antes de entregar:** la primera versión fijaba `vendor:'Fortinet'`
+al construir la línea en el cotizador, lo que habría pintado de Fortinet una referencia de
+Aruba. Ahora el fabricante viaja con la referencia y el color sale de `CATALOG` buscando ese
+fabricante real. Es un dato inventado de los que no rompen nada y solo mienten.
+
+224 pruebas (eran 219). Verificado en Chromium el ciclo entero: añadir → aparece en el BOM →
+sobrevive al cambio de escenario → llega al cotizador marcado como referencia de pedido →
+persiste tras recargar → la × lo quita.
+
 ### Referencias de pedido en la ficha: 6.849 SKU de Fortinet, y lo que cada fabricante sí tiene (2026-09-09)
 
 A petición del dueño del repo: «mostrar todos los SKU con la descripción relacionados a los

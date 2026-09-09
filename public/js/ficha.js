@@ -70,6 +70,8 @@
 .ficha-refs tbody tr:last-child td{border-bottom:0}
 .ficha-refs .sku{font-family:'IBM Plex Mono',monospace;font-size:11.5px;white-space:nowrap;color:var(--ink)}
 .ficha-refs .pre{text-align:right;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:11.5px}
+.ficha-refs-add{border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:3px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 7px;white-space:nowrap}
+.ficha-refs-add:hover{border-color:var(--red);color:var(--red)}
 .ficha-refs .vacio{padding:10px;color:var(--steel);font-size:12.5px}
 `;
   if (!document.getElementById('ficha-estilos')) {
@@ -165,12 +167,17 @@
   const fmtPrecio = (p) => (p == null ? '—' : '$' + Number(p).toLocaleString('en-US'));
 
   function refsHtml(cid, datos, filtro, tipo) {
+    // Solo donde hay un BOM que reciba la linea. En una pagina sin bom.js el boton prometeria
+    // algo que no existe.
+    const puedeAnadir = !!(global.BOM && global.BOM.agregarRef);
     const q = (filtro || '').trim().toLowerCase();
     const lista = datos.refs.filter((r) => {
       if (tipo && r.t !== tipo) return false;
       if (!q) return true;
       return (r.sku || '').toLowerCase().includes(q) || (r.d || '').toLowerCase().includes(q);
     });
+
+    if (estado[cid]) estado[cid]._refVisibles = lista;
 
     // Los tipos salen de los datos, no de una lista escrita a mano: si el documento trae una
     // categoria nueva aparece sola, en vez de quedarse invisible por no estar prevista.
@@ -183,10 +190,15 @@
     const cuerpo = lista.length
       ? `<div class="ficha-refs-caja"><table><thead><tr>`
         + `<th>SKU</th><th>Descripción</th><th style="text-align:right">Precio de lista</th>`
-        + `</tr></thead><tbody>${lista.map((r) => `<tr>`
+        + `${puedeAnadir ? '<th></th>' : ''}`
+        + `</tr></thead><tbody>${lista.map((r, i) => `<tr>`
           + `<td class="sku">${r.sku ? esc(r.sku) : '<span style="color:var(--steel)">sin número de parte</span>'}</td>`
           + `<td>${esc(r.d || '')}</td>`
-          + `<td class="pre">${fmtPrecio(r.p)}</td></tr>`).join('')}</tbody></table></div>`
+          + `<td class="pre">${fmtPrecio(r.p)}</td>`
+          // Ver la referencia no basta: lo que hace falta es poder meterla en la cotizacion.
+          // El indice viaja en el boton porque el SKU puede ser null (las variantes de Aruba).
+          + `${puedeAnadir ? `<td class="pre"><button type="button" class="ficha-refs-add" data-ficha-add="${i}">Añadir</button></td>` : ''}`
+          + `</tr>`).join('')}</tbody></table></div>`
       : `<p class="vacio">Ninguna referencia coincide con la búsqueda.</p>`;
 
     return `<h3>Referencias de pedido<span class="ficha-cuenta"> · ${lista.length}`
@@ -212,6 +224,19 @@
       return;
     }
     caja.innerHTML = refsHtml(cid, datos, cfg._refFiltro, cfg._refTipo);
+    // El boton indexa sobre la lista VISIBLE (ya filtrada), asi que se guarda esa misma: usar
+    // la completa haria que con el buscador puesto se anadiera una referencia distinta de la
+    // que se pulso.
+    const visibles = cfg._refVisibles || [];
+    caja.querySelectorAll('[data-ficha-add]').forEach((b) => {
+      b.addEventListener('click', () => {
+        const r = visibles[Number(b.dataset.fichaAdd)];
+        if (!r || !global.BOM || !global.BOM.agregarRef) return;
+        global.BOM.agregarRef({ sku: r.sku, d: r.d, p: r.p, de: cfg.seleccionado, v: cfg.vendor });
+        b.textContent = 'Añadida';
+        setTimeout(() => { b.textContent = 'Añadir'; }, 1400);
+      });
+    });
     const inp = document.getElementById(cid + '-refq');
     if (inp) {
       inp.addEventListener('input', () => {
