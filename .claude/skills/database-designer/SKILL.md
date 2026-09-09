@@ -1,3 +1,7 @@
+---
+name: database-designer
+description: database-designer
+---
 ﻿---
 name: "database-designer"
 description: "Use when the user asks to design database schemas, plan data migrations, optimize queries, choose between SQL and NoSQL, or model data relationships."

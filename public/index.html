@@ -288,9 +288,6 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
     <button class="nav-btn" data-abrir="guia-diseno-interactiva.html">
       <span class="nav-icon tool">&#9672;</span> Diseño Interactivo
     </button>
-    <button class="nav-btn" data-abrir="dimensionador-juniper-srx.html">
-      <span class="nav-icon jn">JN</span> Dimensionador Juniper
-    </button>
     <button class="nav-btn" data-abrir="cotizador.html">
       <span class="nav-icon tool">&#9782;</span> Cotizador BOM
     </button>
@@ -319,13 +316,14 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
     <p class="sub">Consulta catálogos de productos, dimensiona equipos, compara modelos entre fabricantes y genera listas de materiales para tus proyectos de red.</p>
   </div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
-    <a href="guia-diseno-interactiva.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px;background:var(--amber);border-color:var(--amber);color:#fff">&#9672; Guía Interactiva</a>
-    <a href="cotizador.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px">&#9782; Cotizador BOM</a>
-    <a href="dimensionador-fortinet-fortigate.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px;background:#EE3124;border-color:#EE3124;color:#fff">&#10697; BOM FortiGate</a>
-    <a href="dimensionador-cisco-catalyst8k.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px;background:#049FD9;border-color:#049FD9;color:#fff">&#10697; BOM Cisco</a>
-    <a href="dimensionador-huawei-netengine.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px;background:#C7000B;border-color:#C7000B;color:#fff">&#10697; BOM Huawei</a>
-    <a href="dimensionador-mikrotik-routeros.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px;background:#C8102E;border-color:#C8102E;color:#fff">&#10697; BOM MikroTik</a>
-    <a href="dimensionador-aruba-edgeconnect.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px;background:#01A982;border-color:#01A982;color:#fff">&#10697; BOM EdgeConnect</a>
+    <a href="guia-diseno-interactiva.html" class="btn" style="text-decoration:none;font-size:12px;background:var(--amber);border-color:var(--amber);color:#fff">&#9672; Guía Interactiva</a>
+    <a href="cotizador.html" class="btn" style="text-decoration:none;font-size:12px">&#9782; Cotizador BOM</a>
+    <a href="dimensionador-fortinet-fortigate.html" class="btn" style="text-decoration:none;font-size:12px;background:#EE3124;border-color:#EE3124;color:#fff">&#10697; BOM FortiGate</a>
+    <a href="dimensionador-cisco-catalyst8k.html" class="btn" style="text-decoration:none;font-size:12px;background:#049FD9;border-color:#049FD9;color:#fff">&#10697; BOM Cisco</a>
+    <a href="dimensionador-huawei-netengine.html" class="btn" style="text-decoration:none;font-size:12px;background:#C7000B;border-color:#C7000B;color:#fff">&#10697; BOM Huawei</a>
+    <a href="dimensionador-juniper-srx.html" class="btn" style="text-decoration:none;font-size:12px;background:#84B135;border-color:#84B135;color:#fff">&#10697; BOM Juniper</a>
+    <a href="dimensionador-mikrotik-routeros.html" class="btn" style="text-decoration:none;font-size:12px;background:#C8102E;border-color:#C8102E;color:#fff">&#10697; BOM MikroTik</a>
+    <a href="dimensionador-aruba-edgeconnect.html" class="btn" style="text-decoration:none;font-size:12px;background:#01A982;border-color:#01A982;color:#fff">&#10697; BOM EdgeConnect</a>
   </div>
   <p style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);margin:0 0 10px">Fabricantes</p>
   <div class="dash-grid" id="dashGrid"></div>
@@ -354,7 +352,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
     <p class="sub">Routers de acceso serie AR, agregación A800 E y core NE8000. SD-WAN con iMaster NCE, SRv6, FlexE y slicing.</p>
   </div>
   <div style="margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <a href="dimensionador-huawei-netengine.html" target="_blank" class="btn" style="text-decoration:none">&#10697; Abrir Dimensionador y BOM Huawei</a>
+    <a href="dimensionador-huawei-netengine.html" class="btn" style="text-decoration:none">&#10697; Abrir Dimensionador y BOM Huawei</a>
     <span class="badge live">Herramienta Activa</span>
   </div>
   
@@ -405,7 +403,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
     <p class="sub">ISR 1000/4000, ASR 1000, Catalyst 8000. SD-WAN Viptela nativo. DNA Center y Cisco Plus para automatización cloud.</p>
   </div>
   <div style="margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <a href="dimensionador-cisco-catalyst8k.html" target="_blank" class="btn" style="text-decoration:none;background:#049FD9;border-color:#049FD9">&#10697; Abrir Dimensionador y BOM Cisco</a>
+    <a href="dimensionador-cisco-catalyst8k.html" class="btn" style="text-decoration:none;background:#049FD9;border-color:#049FD9">&#10697; Abrir Dimensionador y BOM Cisco</a>
     <span class="badge live" style="background:rgba(4,159,217,.1);color:#049FD9">Herramienta Activa</span>
   </div>
   
@@ -451,8 +449,8 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
     <p class="sub">7750 SR core/edge, 7210 SAS acceso, 7250 IXR datacenter. SR OS con SR-MPLS, SRv6, EVPN y FlexAlgo.</p>
   </div>
   <div style="margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <a href="dimensionador-nokia-7220ixr.html" target="_blank" class="btn" style="text-decoration:none;background:#124191;border-color:#124191">&#10697; Abrir Dimensionador Fabric 7220 IXR</a>
-    <a href="dimensionador-nokia-7750sr.html" target="_blank" class="btn" style="text-decoration:none;background:#124191;border-color:#124191">&#10697; Abrir Dimensionador 7250 IXR / 7750 SR</a>
+    <a href="dimensionador-nokia-7220ixr.html" class="btn" style="text-decoration:none;background:#124191;border-color:#124191">&#10697; Abrir Dimensionador Fabric 7220 IXR</a>
+    <a href="dimensionador-nokia-7750sr.html" class="btn" style="text-decoration:none;background:#124191;border-color:#124191">&#10697; Abrir Dimensionador 7250 IXR / 7750 SR</a>
     <span class="badge live">Herramienta Activa</span>
   </div>
 
@@ -500,8 +498,14 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
     <p class="sub">MX edge/core, SRX NGFW, EX/QFX switching. Junos OS, Mist AI para AIOps. Apstra para intent-based networking DC.</p>
   </div>
   
+  <div style="margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <a href="dimensionador-juniper-srx.html" class="btn" style="text-decoration:none;background:#84B135;border-color:#84B135">&#10697; Abrir Dimensionador y BOM Juniper</a>
+    <span class="badge live" style="background:rgba(132,177,53,.1);color:#84B135">Herramienta Activa</span>
+  </div>
+  
   <div class="tabs">
     <button class="tab-btn btn-cat active" data-tabgrupo="juniper" data-tab="cat">Catálogo</button>
+    <a href="dimensionador-juniper-srx.html" class="tab-btn" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px">&#10697; Dimensionador y BOM</a>
     <button class="tab-btn btn-src" data-tabgrupo="juniper" data-tab="src">Fuentes y Referencias</button>
   </div>
   <div id="tab-cat-juniper" class="tab-content active">
@@ -541,7 +545,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
     <p class="sub">RouterOS v7 con WireGuard nativo, MPLS, BGP, OSPF y CAPsMAN WiFi. Desde el hEX SOHO hasta el CCR2216 100G WAN core. Relación precio-rendimiento líder del mercado.</p>
   </div>
   <div style="margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <a href="dimensionador-mikrotik-routeros.html" target="_blank" class="btn" style="text-decoration:none;background:#C8102E;border-color:#C8102E">&#10697; Abrir Dimensionador y BOM MikroTik</a>
+    <a href="dimensionador-mikrotik-routeros.html" class="btn" style="text-decoration:none;background:#C8102E;border-color:#C8102E">&#10697; Abrir Dimensionador y BOM MikroTik</a>
     <span class="badge live">Herramienta Activa</span>
   </div>
 
@@ -686,7 +690,7 @@ RB5009  CCR2004  RB5009  (Hub)
     <p class="sub">HPE Aruba Networking. EdgeConnect SD-WAN (ex Silver Peak) con Path Conditioning y optimización WAN Boost licenciada como pool del fabric, y gateways SD-Branch de la serie 9000 que unifican WAN, LAN y WLAN con Dynamic Segmentation extremo a extremo.</p>
   </div>
   <div style="margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <a href="dimensionador-aruba-edgeconnect.html" target="_blank" class="btn" style="text-decoration:none;background:#01A982;border-color:#01A982">&#10697; Abrir Dimensionador y BOM EdgeConnect</a>
+    <a href="dimensionador-aruba-edgeconnect.html" class="btn" style="text-decoration:none;background:#01A982;border-color:#01A982">&#10697; Abrir Dimensionador y BOM EdgeConnect</a>
     <span class="badge live">Herramienta Activa</span>
   </div>
 
@@ -939,7 +943,7 @@ RB5009  CCR2004  RB5009  (Hub)
 <script src="/js/contraste.js"></script>
 <script src="/js/procedencia.js"></script>
 <script src="/js/index.js"></script>
-<script src="/js/navegacion.js"></script>
+
 
 <!-- ════ SYNC MODAL ════ -->
 <div class="modal-overlay" id="syncModal">
