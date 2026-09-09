@@ -34,8 +34,24 @@ function llevarABom(id){
 
 document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
-  ['calc','bom','lic'].forEach(t=>$('pane-'+t).hidden=(t!==b.dataset.tab));
+  ['calc','bom','lic','cat','src'].forEach(t=>$('pane-'+t).hidden=(t!==b.dataset.tab));
 }));
+
+// Catálogo FortiGate, con la misma tabla que antes vivía en la vista de Fortinet del portal
+// (ver CLAUDE.md, 2026-09-09): se pinta desde MODELS, ya cargado para el propio
+// dimensionador, en vez de repetir el fetch a /api/catalog para mostrar lo mismo dos veces.
+// Se incluyen los modelos fuera de venta (con su marca), a diferencia del portal, que los
+// oculta del todo: aquí la filosofía es la de FICHA.rango — se muestran, no se recomiendan.
+function renderCatalogo(){
+  const tbody=document.querySelector('#tbl-fortinet-cat tbody');
+  if(!tbody) return;
+  tbody.innerHTML=MODELS.map(m=>`<tr>
+    <td><code>${m.id}</code>${m.eol?' <span class="pillc" style="color:var(--red)">Fuera de venta</span>':''}</td><td>${m.seg}</td>
+    <td class="n">${m.fw}</td><td class="n">${m.ips}</td><td class="n">${m.ngfw}</td>
+    <td class="n">${m.vpn}</td><td>${m.ifaces}</td>
+    <td class="n" style="color:var(--amber);white-space:nowrap">${m.elp||'—'}</td>
+  </tr>`).join('');
+}
 
 $('profileSeg').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
@@ -733,6 +749,10 @@ $('xlsBtn').addEventListener('click',async()=>{
   populatePickModel();
   render();
   renderBom();
+  renderCatalogo();
+  // El contraste al subir una fuente oficial (pestaña "Fuentes", js/procedencia.js) necesita
+  // saber de dónde sacar los modelos de este fabricante para comparar.
+  PROCEDENCIA.registrarModelos('fortinet', () => MODELS.map(m => ({ model: m.id, ...m })));
 })();
 
 /* Enlace de eventos movido desde onclick= en el HTML, para permitir una CSP con

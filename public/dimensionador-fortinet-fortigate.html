@@ -116,6 +116,10 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 .tierDrop{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--amber);margin:2px 0 9px 122px}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 .bom-desvio{font-size:12.5px;line-height:1.5;color:var(--steel);border-left:2px solid var(--amber);padding:6px 0 6px 10px;margin:8px 0 0}
+.fuentes-list{font-size:13.5px;color:var(--steel);padding:0;margin:0 0 0 20px}
+.fuentes-list li{margin-bottom:8px}
+.fuentes-list a{color:var(--ink);text-decoration:none;font-weight:600}
+.fuentes-list a:hover{text-decoration:underline;color:var(--red)}
 </style>
 <script src="/js/fuentes.js" defer></script>
 </head>
@@ -134,6 +138,8 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   <button role="tab" aria-selected="true" data-tab="calc">Dimensionar</button>
   <button role="tab" aria-selected="false" data-tab="bom">Equipo y BOM</button>
   <button role="tab" aria-selected="false" data-tab="lic">Licencias</button>
+  <button role="tab" aria-selected="false" data-tab="cat">Catálogo</button>
+  <button role="tab" aria-selected="false" data-tab="src">Fuentes</button>
 </div>
 
 <!-- ════ TAB 1 · CALCULADORA ════ -->
@@ -431,6 +437,36 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 </section>
 </div>
 
+<!-- ════ TAB 4 · CATÁLOGO ════ -->
+<div class="tabpane" id="pane-cat" hidden>
+<section class="panel">
+  <h2>Catálogo FortiGate — Throughput de referencia <span style="font-weight:400;color:var(--steel)">— Precio ref. USD incluido</span></h2>
+  <div class="scroll"><table data-ordenable id="tbl-fortinet-cat">
+    <thead><tr><th>Modelo</th><th>Segmento</th><th>FW Throughput</th><th>IPS</th><th>NGFW</th><th>IPsec VPN</th><th>Interfaces</th><th>Precio ref. USD&#9432;</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <p style="font-size:11px;color:var(--steel);margin-top:10px">&#9432; Precio de lista estimado (ELP p&#250;blico). No incluye licencias FortiGuard ni FortiCare. Verificar con distribuidor Fortinet autorizado. Los modelos fuera de venta se muestran igual, marcados, porque ampliar un parque instalado es justo cuando hace falta consultarlos.</p>
+</section>
+</div>
+
+<!-- ════ TAB 5 · FUENTES ════ -->
+<div class="tabpane" id="pane-src" hidden>
+<section class="panel">
+  <h2>Procedencia verificada</h2>
+  <p style="font-size:13px;color:var(--steel);margin-bottom:12px">De qué documento y de qué fecha salen las cifras de este catálogo. Se llena desde <code>/api/fuentes</code>; una fuente sin fecha o de más de seis meses se marca.</p>
+  <div data-procedencia="fortinet">Cargando…</div>
+</section>
+<section class="panel">
+  <h2>Fuentes de Información y Precios</h2>
+  <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Toda la información técnica y los modelos mostrados en esta plataforma han sido filtrados para excluir equipos EOL/EOS (End of Life), basándonos en los siguientes canales oficiales:</p>
+  <ul class="fuentes-list">
+    <li><b>Fortinet Product Matrix (julio 2026):</b> <a href="https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf" target="_blank">Fortinet_Product_Matrix.pdf</a><br>Fuente oficial de especificaciones y throughput (FW/IPS/NGFW/IPsec VPN/sesiones) de las series FortiGate F y G.</li>
+    <li><b>2026Q3 Main Price list AMER (vigente desde 03-ago-2026):</b><br>Lista de precios oficial Fortinet AMER — fuente de los precios de referencia (ELP) y del estado EOL/End of Order de cada modelo.</li>
+    <li><b>Precios de Referencia (ELP):</b><br>MSRP del SKU de hardware base público de Fortinet. No incluye servicios FortiCare ni suscripciones UTP/ATP.</li>
+  </ul>
+</section>
+</div>
+
 <p class="note">
 <b>Fuentes oficiales:</b>
 <a href="https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf" target="_blank" rel="noopener">Fortinet Product Matrix (julio 2026)</a> — throughput FW/IPS/NGFW/IPsec VPN y sesiones concurrentes de las series FortiGate F y G ·
@@ -442,6 +478,8 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <script src="/js/ficha.js"></script>
 <script src="/js/estado.js"></script>
 <script src="/js/tabla.js"></script>
+<script src="/js/contraste.js"></script>
+<script src="/js/procedencia.js"></script>
 <script src="/js/dimensionador-fortinet-fortigate.js"></script>
 <script src="/js/navegacion.js"></script>
 </body>

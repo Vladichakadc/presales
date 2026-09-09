@@ -162,13 +162,6 @@ function renderTables(){
     <td class="n">${p.cap}</td><td>${p.ports}</td><td>${p.protos}</td>
   </tr>`).join(''));
 
-  q('tbl-fortinet',PR.fortinet.map(p=>`<tr>
-    <td><code>${esc(p.model)}</code></td><td>${p.seg}</td>
-    <td class="n">${p.fw}</td><td class="n">${p.ips}</td><td class="n">${p.ngfw}</td>
-    <td class="n">${p.vpn}</td><td>${p.ifaces}</td>
-    <td class="n" style="color:var(--amber);white-space:nowrap">${p.elp||'—'}</td>
-  </tr>`).join(''));
-
   q('tbl-juniper',PR.juniper.map(p=>`<tr>
     <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
     <td class="n">${p.cap}</td><td>${p.ports}</td><td>${p.use}</td>
@@ -559,358 +552,6 @@ async function applySync() {
     btn.disabled = false;
   }
 }
-/* ══════ PROCEDENCIA DEL CATALOGO ══════
-   De que documento y de que fecha salen las cifras de cada fabricante. Vive en
-   server/seed/legacyData/fuentes.js, que transcribe lo que ya estaba escrito en las
-   cabeceras de cada catalogo, y llega por /api/fuentes.
-
-   POR QUE MERECE ESTAR EN PANTALLA. Esto es una herramienta de preventa: quien arma una
-   propuesta esta a punto de citar una cifra delante de un cliente, y hasta ahora no habia
-   forma de saber si esa cifra es de julio o de hace tres anos sin abrir el codigo. Una
-   fuente sin fecha se declara como tal en vez de aparentar estar al dia — el mismo criterio
-   que el catalogo aplica a los precios de Aruba o al `cps` de Fortinet. */
-const ESTADO_FUENTE = {
-  vigente:     { etiqueta: 'Vigente',    color: 'var(--green)' },
-  vieja:       { etiqueta: 'Conviene revisar', color: 'var(--amber)' },
-  'sin fecha': { etiqueta: 'Sin fecha',  color: 'var(--amber)' },
-  cargada:     { etiqueta: 'Cargada',    color: 'var(--green)' },
-  // Una versión anterior de un documento cargado. No es un problema ni una fuente vieja del
-  // catálogo: es la que se sustituyó al subir una nueva, y se conserva para poder consultarla.
-  historico:   { etiqueta: 'Sustituida', color: 'var(--steel)' },
-};
-
-// Lo informa el servidor (/api/cuenta/estado). Gobierna solo si se muestra el control de
-// carga; la ruta exige el permiso de todas formas.
-let puedeSync = false;
-
-// Una fila de procedencia. `code` es el fabricante, que hace falta para la acción de borrar.
-// La columna de acciones solo existe para quien tiene el permiso `sync` (de ahí el colspan
-// variable de la nota); y dentro de ella, **solo las fuentes cargadas se pueden borrar**: las
-// que vienen de legacyData/fuentes.js viven en el código y se quitan con un commit, que deja
-// diff y revisión. Decirlo en la celda es más honesto que enseñar un botón que daría error.
-function filaProcedencia(f, code) {
-  const est = ESTADO_FUENTE[f.estado] || ESTADO_FUENTE['sin fecha'];
-  const antiguedad = f.meses === null ? '—' : `${f.meses} mes(es)`;
-  // Enlace tanto a una URL oficial (http/https) como al documento subido, que es una ruta
-  // relativa del propio sitio (/api/fuentes/…/documento/…). Un texto sin URL queda como texto.
-  const enlace = /^(https?:\/\/|\/)/i.test(f.url || '')
-    ? `<a href="${escapeHtml(f.url)}" target="_blank" rel="noopener noreferrer" style="color:var(--red)">${escapeHtml(f.documento)}</a>`
-    : escapeHtml(f.documento);
-  const accion = f.subida && f.id
-    ? `<button class="btn" style="padding:3px 9px;font-size:11px;background:#fff;color:var(--red);border:1px solid var(--rule)"
-         data-borrar-fuente="${escapeHtml(code)}" data-fuente-id="${escapeHtml(f.id)}"
-         title="Borra este documento cargado y su fila de procedencia">Borrar</button>`
-    : '<span style="color:var(--steel);font-size:11px" title="Esta fuente viene del catálogo (server/seed/legacyData/fuentes.js): se quita con un commit, no desde aquí">en el código</span>';
-  const cols = puedeSync ? 6 : 5;
-  return `<tr>
-    <td>${enlace}</td>
-    <td style="white-space:nowrap">${escapeHtml(f.fecha || 'sin fecha')}</td>
-    <td style="white-space:nowrap">${escapeHtml(antiguedad)}</td>
-    <td style="color:${est.color};font-weight:600;white-space:nowrap">${escapeHtml(est.etiqueta)}</td>
-    <td>${escapeHtml(f.cubre || '')}</td>
-    ${puedeSync ? `<td style="white-space:nowrap;text-align:center">${accion}</td>` : ''}
-  </tr>${f.nota ? `<tr><td colspan="${cols}" style="color:var(--steel);font-size:12px;padding-top:0">${escapeHtml(f.nota)}</td></tr>` : ''}`;
-}
-
-async function renderProcedencia() {
-  const cajas = document.querySelectorAll('[data-procedencia]');
-  if (!cajas.length) return;
-  let datos;
-  try {
-    const res = await fetch('/api/fuentes');
-    if (!res.ok) throw new Error('respuesta no válida');
-    datos = await res.json();
-  } catch {
-    cajas.forEach((c) => { c.textContent = 'No se pudo cargar la procedencia del catálogo.'; });
-    return;
-  }
-  cajas.forEach((caja) => {
-    const code = caja.dataset.procedencia;
-    const v = datos[code];
-    const todas = (v && v.fuentes) || [];
-    // Las versiones sustituidas se pliegan: siguen consultables pero no compiten visualmente
-    // con la vigente, que es el problema que tenía acumularlas todas en la misma tabla.
-    const activas = todas.filter((f) => f.estado !== 'historico');
-    const historicas = todas.filter((f) => f.estado === 'historico');
-    const cab = `<thead><tr>
-          <th>Documento</th><th>Fecha</th><th>Antigüedad</th><th>Estado</th><th>Qué cubre</th>${puedeSync ? '<th style="text-align:center">Acciones</th>' : ''}
-        </tr></thead>`;
-    const tabla = activas.length
-      ? `<table>${cab}<tbody>${activas.map((f) => filaProcedencia(f, code)).join('')}</tbody></table>`
-      : '<p style="color:var(--steel);font-size:13px">Sin procedencia registrada para este fabricante.</p>';
-    // <details> es HTML nativo: pliega sin una línea de JavaScript, que es lo que pide una CSP
-    // sin script en línea.
-    const previas = historicas.length
-      ? `<details style="margin-top:10px">
-          <summary style="cursor:pointer;font-size:12.5px;color:var(--steel)">${historicas.length} versión(es) anterior(es) de documentos cargados</summary>
-          <table style="margin-top:8px">${cab}<tbody>${historicas.map((f) => filaProcedencia(f, code)).join('')}</tbody></table>
-        </details>`
-      : '';
-    caja.innerHTML = barraProcedencia(code) + tabla + previas + (puedeSync ? controlCargaFuente(code) : '');
-  });
-}
-
-// Barra de acciones de la pestaña, la misma en los siete fabricantes. «Actualizar» vuelve a
-// pedir /api/fuentes y repinta: hace falta porque esta pantalla se pinta una vez al cargar el
-// portal, así que un documento subido desde otra pestaña —o borrado por otra persona— no se
-// veía aquí hasta recargar la página entera. Va sin permiso: releer no cambia nada.
-function barraProcedencia(code) {
-  return `<div style="display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-bottom:8px">
-    <span id="refresco-${escapeHtml(code)}" style="font-size:11.5px;color:var(--steel)"></span>
-    <button class="btn" style="padding:5px 12px;font-size:12px;background:#fff;color:var(--ink);border:1px solid var(--rule)"
-      data-refrescar-fuentes="${escapeHtml(code)}" title="Vuelve a leer la procedencia del servidor y repinta la tabla">&#8635; Actualizar</button>
-  </div>`;
-}
-
-// Repinta la procedencia y deja constancia de a qué hora. El acuse va DESPUES del repintado
-// porque `renderProcedencia` reconstruye la caja entera —incluida esta barra—, así que un
-// mensaje escrito antes se perdería con el innerHTML.
-async function refrescarFuentes(code) {
-  const antes = document.getElementById(`refresco-${code}`);
-  if (antes) antes.textContent = 'Actualizando…';
-  await renderProcedencia();
-  const span = document.getElementById(`refresco-${code}`);
-  if (span) {
-    const h = new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    span.textContent = `Actualizado a las ${h}`;
-  }
-}
-
-// Borra una fuente CARGADA. Se confirma antes porque es destructivo y no tiene deshacer: el
-// archivo sale del volumen. El botón solo aparece con permiso `sync`, pero quien decide es la
-// ruta, que responde 403 sin él.
-async function borrarFuente(code, id) {
-  const span = document.getElementById(`refresco-${code}`);
-  if (!confirm('¿Borrar este documento cargado?\n\nSe elimina el archivo del servidor y su fila de procedencia. No se puede deshacer.')) return;
-  if (span) { span.style.color = 'var(--steel)'; span.textContent = 'Borrando…'; }
-  try {
-    const res = await fetch(`/api/fuentes/${encodeURIComponent(code)}/documento/${encodeURIComponent(id)}`, { method: 'DELETE' });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || 'No se pudo borrar el documento');
-    }
-    await renderProcedencia();
-    const s2 = document.getElementById(`refresco-${code}`);
-    if (s2) { s2.style.color = 'var(--steel)'; s2.textContent = 'Documento borrado.'; }
-  } catch (err) {
-    const s2 = document.getElementById(`refresco-${code}`);
-    if (s2) { s2.style.color = 'var(--red)'; s2.textContent = err.message; }
-  }
-}
-
-// Control de carga de la fuente oficial de un fabricante. Solo se pinta a quien tiene el
-// permiso `sync`. El input y el botón se cablean por delegación (la CSP prohíbe onclick).
-function controlCargaFuente(code) {
-  return `<div class="carga-fuente" style="margin-top:12px;padding:11px 13px;background:var(--bg);border:1px dashed var(--rule);border-radius:6px">
-    <p style="margin:0 0 8px;font-size:12.5px;color:var(--ink)"><b>Cargar fuente oficial</b> (PDF, Excel/CSV o texto). Actualiza la procedencia de este fabricante al instante; no reescribe las cifras del catálogo.</p>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <input type="file" id="file-fuente-${escapeHtml(code)}" accept=".pdf,.xlsx,.csv,.tsv,.txt" style="font-size:12px">
-      <button class="btn" style="padding:6px 14px;background:var(--ink);color:#fff" data-subir-fuente="${escapeHtml(code)}">Subir</button>
-      <span id="estado-fuente-${escapeHtml(code)}" style="font-size:12px;color:var(--steel)"></span>
-    </div>
-  </div>`;
-}
-
-async function subirFuenteOficial(code) {
-  const input = document.getElementById(`file-fuente-${code}`);
-  const estado = document.getElementById(`estado-fuente-${code}`);
-  if (!input || !input.files.length) { if (estado) estado.textContent = 'Elige un archivo primero.'; return; }
-  const archivo = input.files[0];
-  if (estado) { estado.style.color = 'var(--steel)'; estado.textContent = 'Subiendo…'; }
-  try {
-    const fd = new FormData();
-    fd.append('documento', archivo);
-    const res = await fetch(`/api/fuentes/${encodeURIComponent(code)}`, { method: 'POST', body: fd });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || 'No se pudo subir el documento');
-    }
-    // Se repinta toda la procedencia: la fuente recién subida aparece ya en la tabla.
-    await renderProcedencia();
-    const estado2 = document.getElementById(`estado-fuente-${code}`);
-    if (estado2) { estado2.style.color = 'var(--green)'; estado2.textContent = 'Fuente cargada.'; }
-    // Y en el acto se contrasta el documento con el catálogo vigente, que es lo que pidió el
-    // dueño del repo: subir una fuente abre una ventana enseñando qué trae de nuevo.
-    await mostrarContraste(code, archivo);
-  } catch (err) {
-    if (estado) { estado.style.color = 'var(--red)'; estado.textContent = err.message; }
-  }
-}
-
-/* ══════ CONTRASTE DEL DOCUMENTO CARGADO ══════
-   La regla de qué cuenta como cambio vive en js/contraste.js (window.CONTRASTE); aquí está el
-   parseo del archivo y el pintado. Es determinista y sin IA: reconoce una columna solo si su
-   cabecera casa con un campo real del catálogo, y todo lo que no reconoce lo LISTA, no lo
-   adivina. Es una vista previa — no escribe el catálogo; el camino durable es descargar la
-   propuesta y aplicarla por PR (aplicar-propuesta.yml). */
-let contrasteActual = null;
-
-// SheetJS ya se sirve en /vendor/xlsx.js, pero son ~900 KB: no se cargan en cada visita al
-// portal, sino la primera vez que hace falta leer una hoja. Un <script> con src del propio
-// origen es válido bajo la CSP (script-src 'self'); un bloque en línea no lo sería.
-let xlsxPromesa = null;
-function cargarXLSX() {
-  if (window.XLSX) return Promise.resolve(window.XLSX);
-  if (xlsxPromesa) return xlsxPromesa;
-  xlsxPromesa = new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = '/vendor/xlsx.js';
-    s.onload = () => (window.XLSX ? resolve(window.XLSX) : reject(new Error('El lector de hojas no se inicializó.')));
-    s.onerror = () => reject(new Error('No se pudo cargar el lector de hojas de cálculo.'));
-    document.head.appendChild(s);
-  });
-  return xlsxPromesa;
-}
-
-// Excel/CSV/TSV/TXT tabular → filas como objetos {cabecera: valor}. SheetJS parsea las cuatro
-// formas; un CSV con «5,999» entre comillas no se parte mal, que es justo donde un split a mano
-// falla. Un TXT que no sea una tabla devuelve filas sin columna de modelo, y de eso se encarga
-// `contrastar` con su mensaje.
-async function parsearTabular(archivo) {
-  const XLSX = await cargarXLSX();
-  const buf = await archivo.arrayBuffer();
-  const wb = XLSX.read(buf, { type: 'array' });
-  const ws = wb.Sheets[wb.SheetNames[0]];
-  if (!ws) return [];
-  return XLSX.utils.sheet_to_json(ws, { defval: '' });
-}
-
-// Los modelos del catálogo de ese fabricante, como los sirve /api/catalog. Huawei son dos
-// grupos (AR y WAN); el resto, uno. Son los objetos crudos con `model` y sus campos de spec.
-function modelosDeVendor(code) {
-  if (code === 'huawei') return [...(PR.hw_ar || []), ...(PR.hw_wan || [])];
-  return PR[code] || [];
-}
-
-function mensajeNoTabular(motivo) {
-  return `<div style="padding:12px;background:var(--bg);border-radius:6px;font-size:13px;line-height:1.6">
-    <p style="margin:0 0 6px"><b>${escapeHtml(motivo)}.</b> El contraste automático necesita una tabla (Excel/CSV) con una columna de modelo y cabeceras que casen con los campos del catálogo.</p>
-    <p style="margin:0;color:var(--steel)">La fuente quedó registrada en la procedencia. Para convertir un PDF o un texto libre en cambios está el <b>análisis por IA</b> (botón «Sincronizar») o los importadores (<code>npm run cps / juniper / huawei / propuesta</code>), que contrastan con doble anclaje antes de escribir.</p>
-  </div>`;
-}
-
-async function mostrarContraste(code, archivo) {
-  const modal = document.getElementById('contrasteModal');
-  const resumen = document.getElementById('contrasteResumen');
-  const result = document.getElementById('contrasteResult');
-  const fuente = document.getElementById('contrasteFuente');
-  const btnDesc = document.getElementById('btnDescargarContraste');
-  contrasteActual = null;
-  btnDesc.style.display = 'none';
-  fuente.style.display = 'none';
-  resumen.innerHTML = '';
-  result.innerHTML = '<p>Contrastando el documento con el catálogo…</p>';
-  modal.style.display = 'flex';
-
-  const nombre = archivo.name || 'documento';
-  // Un PDF no se parsea a tabla: extraer una tabla de un PDF sin equivocar de fila es justo lo
-  // que este repositorio no automatiza. Se dice, y la fuente igualmente quedó registrada.
-  if (/\.pdf$/i.test(nombre)) { result.innerHTML = mensajeNoTabular('Es un PDF'); return; }
-
-  let filas;
-  try {
-    filas = await parsearTabular(archivo);
-  } catch (err) {
-    result.innerHTML = `<p style="color:var(--red)">${escapeHtml(err.message)}</p>`;
-    return;
-  }
-  const r = CONTRASTE.contrastar({ modelos: modelosDeVendor(code), filas });
-  if (r.error) { result.innerHTML = mensajeNoTabular(r.error); return; }
-  contrasteActual = Object.assign({ vendor: code, documento: nombre }, r);
-  renderContraste();
-}
-
-function renderContraste() {
-  const r = contrasteActual;
-  const resumen = document.getElementById('contrasteResumen');
-  const result = document.getElementById('contrasteResult');
-  const fuente = document.getElementById('contrasteFuente');
-  const btnDesc = document.getElementById('btnDescargarContraste');
-
-  // Se dice por qué columna se casó cada fila: no es lo mismo haber identificado el equipo por
-  // su nombre que por su referencia de pedido, y en una lista de precios importa saberlo.
-  const porSku = r.modo === 'sku';
-  const clave = porSku
-    ? `casado por SKU (columna «${escapeHtml(r.columnaClave)}») contra el SKU de hardware del catálogo`
-    : `casado por nombre de modelo (columna «${escapeHtml(r.columnaClave)}»)`;
-  resumen.innerHTML = `<b>${escapeHtml(r.documento)}</b> — ${r.cambios.length} cambio(s), `
-    + `${porSku ? `${r.sinCasar} fila(s) sin equivalencia` : `${r.altas.length} alta(s)`}, ${r.sinCambio} sin cambio. `
-    + `${clave}. Columnas reconocidas: ${r.columnasUsadas.length ? r.columnasUsadas.map(escapeHtml).join(', ') : '—'}.`;
-
-  let html = '';
-
-  // Los precios se muestran para revisar, pero NO se publican por esta vía: viven en
-  // cotizadorCatalog.js y el importador los aparta a propósito. Decirlo aquí evita que alguien
-  // descargue una propuesta de precios y crea que el PR los va a aplicar.
-  if (r.cambios.some((c) => c.field === 'elp')) {
-    html += '<div style="margin:0 0 10px;padding:9px 11px;background:#FFFBEB;border:1px solid #FDE68A;border-left:3px solid var(--amber);border-radius:4px;font-size:12px;line-height:1.5;color:#78350f">'
-      + '<b>Los cambios de precio se listan para revisar, no se publican por aquí.</b> Los precios viven en <code>cotizadorCatalog.js</code>, no en los ficheros de especificaciones, y <code>npm run propuesta</code> los aparta a propósito. Sirven para ver qué se movió respecto a la lista vigente; llevarlos al catálogo sigue siendo un cambio a mano.'
-      + '</div>';
-  }
-  if (r.cambios.length) {
-    html += '<h4 style="margin:12px 0 6px;font-size:14px">Cambios propuestos</h4>';
-    html += '<table class="diff-table"><tr><th><input type="checkbox" id="contrasteTodos" checked></th><th>Modelo</th><th>Campo</th><th>Valor actual</th><th>Valor del documento</th></tr>';
-    r.cambios.forEach((c, i) => {
-      html += `<tr>
-        <td style="text-align:center"><input type="checkbox" class="contraste-check" data-idx="${i}" checked></td>
-        <td><strong>${escapeHtml(c.id)}</strong></td>
-        <td>${escapeHtml(c.field)}</td>
-        <td class="diff-old">${escapeHtml(c.oldValue === null ? 'N/A' : c.oldValue)}</td>
-        <td class="diff-new">${escapeHtml(c.newValue)}</td>
-      </tr>`;
-    });
-    html += '</table>';
-  } else {
-    html += '<p style="color:var(--steel)">El documento no trae ningún valor distinto del catálogo vigente en las columnas reconocidas.</p>';
-  }
-
-  if (r.altas.length) {
-    html += '<h4 style="margin:16px 0 6px;font-size:14px">Modelos no encontrados en el catálogo</h4>';
-    html += '<p style="font-size:12px;color:var(--steel);margin:0 0 6px">Se reportan pero <b>nunca</b> se aplican solos: dar de alta un modelo se hace a mano, porque es justo donde entra un dato inventado.</p>';
-    html += '<ul style="margin:0;padding-left:20px;font-size:13px">' + r.altas.map((a) => `<li>${escapeHtml(a.id)}</li>`).join('') + '</ul>';
-  }
-  // En modo SKU no se listan: una lista de precios trae miles de referencias de licencias,
-  // soporte y accesorios que no son equipos del catálogo. Se cuentan, que es la información
-  // útil («de 5.000 filas, 46 son equipos nuestros»), sin sepultar los cambios reales.
-  if (porSku && r.sinCasar) {
-    html += `<p style="margin:16px 0 0;font-size:12px;color:var(--steel)"><b>${r.sinCasar} fila(s) del documento no corresponden a ningún equipo del catálogo</b> y no se listan: en una lista de precios son licencias, soporte y accesorios. Solo se contrastan las referencias que casan con el SKU de hardware de un equipo.</p>`;
-  }
-
-  if (r.columnasIgnoradas.length) {
-    html += `<p style="margin:16px 0 0;font-size:12px;color:var(--steel)"><b>Columnas ignoradas</b> (no casan con ningún campo del catálogo): ${r.columnasIgnoradas.map(escapeHtml).join(', ')}.</p>`;
-  }
-
-  result.innerHTML = html;
-  fuente.style.display = r.cambios.length ? 'block' : 'none';
-  btnDesc.style.display = r.cambios.length ? 'inline-block' : 'none';
-}
-
-function closeContrasteModal() {
-  document.getElementById('contrasteModal').style.display = 'none';
-  contrasteActual = null;
-}
-
-// Descarga la propuesta con la forma que consume `npm run propuesta` y aplicar-propuesta.yml,
-// solo con los cambios marcados. Las altas nunca entran (las aplica una persona). La URL de
-// fuente la exige el importador, así que se pasa tal cual la escribió quien contrasta.
-function descargarContraste() {
-  if (!contrasteActual) return;
-  const url = document.getElementById('contrasteUrl').value.trim();
-  const elegidos = [];
-  document.querySelectorAll('#contrasteResult .contraste-check').forEach((ch) => {
-    if (ch.checked) elegidos.push(contrasteActual.cambios[Number(ch.dataset.idx)]);
-  });
-  if (!elegidos.length) { alert('Marca al menos un cambio para descargar.'); return; }
-  const propuesta = CONTRASTE.comoPropuesta(contrasteActual.vendor, elegidos, url);
-  const blob = new Blob([JSON.stringify(propuesta, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `propuesta-${contrasteActual.vendor}-${new Date().toISOString().slice(0, 10)}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(a.href);
-}
 
 /* ═══════ INIT ═══════ */
 (async function initApp(){
@@ -920,7 +561,16 @@ function descargarContraste() {
   renderDash();
   renderTables();
   populateCmp();
-  renderProcedencia();
+  // El contraste al subir una fuente oficial (js/procedencia.js) necesita saber de dónde
+  // sacar los modelos de cada fabricante para comparar: Huawei es dos catálogos (AR+WAN),
+  // el resto uno solo. Fortinet no se registra aquí — su pestaña "Fuentes" vive en su propio
+  // dimensionador, que se registra con sus propios MODELS.
+  PROCEDENCIA.registrarModelos('huawei', () => [...(PR.hw_ar || []), ...(PR.hw_wan || [])]);
+  PROCEDENCIA.registrarModelos('cisco', () => PR.cisco || []);
+  PROCEDENCIA.registrarModelos('nokia', () => PR.nokia || []);
+  PROCEDENCIA.registrarModelos('juniper', () => PR.juniper || []);
+  PROCEDENCIA.registrarModelos('mikrotik', () => PR.mikrotik || []);
+  PROCEDENCIA.registrarModelos('aruba', () => PR.aruba || []);
 })();
 
 /* ══════ ENLACE DE EVENTOS ══════
@@ -930,7 +580,14 @@ function descargarContraste() {
    un listener por boton, para que los elementos que se pintan despues tambien funcionen. */
 document.addEventListener('click', (e) => {
   const ir = e.target.closest('[data-ir]');
-  if (ir) { go(ir.dataset.ir); return; }
+  if (ir) {
+    // Fortinet ya no tiene vista propia en el portal: su catálogo y sus fuentes viven como
+    // pestañas de su dimensionador, que pasó a ser su página principal. El mapa queda listo
+    // para sumar los otros fabricantes si el mismo cambio se extiende más adelante.
+    const directo = { fortinet: 'dimensionador-fortinet-fortigate.html' }[ir.dataset.ir];
+    if (directo) { location.href = directo; return; }
+    go(ir.dataset.ir); return;
+  }
 
   const tab = e.target.closest('[data-tabgrupo]');
   if (tab) { switchTab(tab.dataset.tabgrupo, tab.dataset.tab); return; }
@@ -939,16 +596,6 @@ document.addEventListener('click', (e) => {
   if (abrir) { window.open(abrir.dataset.abrir, '_blank'); return; }
 
   if (e.target.closest('[data-cerrar-sync]')) { closeSyncModal(); return; }
-  if (e.target.closest('[data-cerrar-contraste]')) { closeContrasteModal(); return; }
-
-  const subir = e.target.closest('[data-subir-fuente]');
-  if (subir) { subirFuenteOficial(subir.dataset.subirFuente); return; }
-
-  const refrescar = e.target.closest('[data-refrescar-fuentes]');
-  if (refrescar) { refrescarFuentes(refrescar.dataset.refrescarFuentes); return; }
-
-  const borrar = e.target.closest('[data-borrar-fuente]');
-  if (borrar) { borrarFuente(borrar.dataset.borrarFuente, borrar.dataset.fuenteId); return; }
 
   const id = e.target.closest('button,[id]')?.id;
   if (id === 'menuToggle') document.getElementById('sidebar').classList.toggle('open');
@@ -956,7 +603,6 @@ document.addEventListener('click', (e) => {
   else if (id === 'btnAnalizarSync') analyzeSync();
   else if (id === 'btnApplySync') applySync();
   else if (id === 'btnDescargarPropuesta') descargarPropuesta();
-  else if (id === 'btnDescargarContraste') descargarContraste();
   else if (id === 'btnComparar') runCompare();
   else if (id === 'btnCalcular') runCalc();
   else if (id === 'csvBtn') exportCSV();
@@ -972,11 +618,6 @@ document.addEventListener('input', (e) => {
 // una comparacion que ya no corresponde a lo que tiene seleccionado. El boton se queda
 // porque es la llamada a la accion de la primera vez, cuando aun no hay nada que repintar.
 document.addEventListener('change', (e) => {
-  // La casilla maestra del contraste marca/desmarca todos los cambios de golpe.
-  if (e.target.id === 'contrasteTodos') {
-    document.querySelectorAll('#contrasteResult .contraste-check').forEach((ch) => { ch.checked = e.target.checked; });
-    return;
-  }
   if (['cmp1', 'cmp2', 'cmp3', 'cmp4', 'cmpSoloDif'].indexOf(e.target.id) >= 0) {
     if (document.getElementById('compareOut').innerHTML.trim()) runCompare();
   }
@@ -997,8 +638,7 @@ fetch('/api/cuenta/estado')
   .then(d => {
     if (!d) return;
     if (d.puedeUsuarios) document.getElementById('navUsuarios').style.display = '';
-    // Quien tiene el permiso `sync` ve el control para cargar la fuente oficial de cada
-    // fabricante. Es comodidad, no control: la ruta exige el permiso igualmente (403 sin él).
-    if (d.puedeSync) { puedeSync = true; renderProcedencia(); }
+    // El control para cargar la fuente oficial de cada fabricante (permiso `sync`) lo
+    // gobierna js/procedencia.js con su propia lectura de este mismo endpoint.
   })
   .catch(() => {});

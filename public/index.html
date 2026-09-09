@@ -488,50 +488,10 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
     </div>
   </div>
 
-<div class="page" id="page-fortinet">
-  <div class="page-header">
-    <p class="eyebrow">Fabricante &middot; Security &amp; SD-WAN</p>
-    <h1>Fortinet</h1>
-    <p class="sub">FortiGate NGFW con SD-WAN integrado. Desde sucursal (40F) hasta datacenter (7000). Security Fabric, FortiOS unificado.</p>
-  </div>
-  <div style="margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <a href="dimensionador-fortinet-fortigate.html" target="_blank" class="btn" style="text-decoration:none;background:#EE3124;border-color:#EE3124">&#10697; Abrir Dimensionador y BOM FortiGate</a>
-    <span class="badge live" style="background:rgba(238,49,36,.1);color:#EE3124">Herramienta Activa</span>
-  </div>
-  
-  <div class="tabs">
-    <button class="tab-btn btn-cat active" data-tabgrupo="fortinet" data-tab="cat">Catálogo</button>
-    <button class="tab-btn btn-src" data-tabgrupo="fortinet" data-tab="src">Fuentes y Referencias</button>
-  </div>
-  <div id="tab-cat-fortinet" class="tab-content active">
-<div class="panel">
-    <h2>Catálogo FortiGate — Throughput de referencia <span style="font-weight:400;color:var(--steel)">— Precio ref. USD incluido</span></h2>
-    <div class="scroll"><table data-ordenable id="tbl-fortinet">
-      <thead><tr><th>Modelo</th><th>Segmento</th><th>FW Throughput</th><th>IPS</th><th>NGFW</th><th>IPsec VPN</th><th>Interfaces</th><th>Precio ref. USD&#9432;</th></tr></thead>
-      <tbody></tbody>
-    </table></div>
-    <p style="font-size:11px;color:var(--steel);margin-top:10px">&#9432; Precio de lista estimado (ELP p&#250;blico). No incluye licencias FortiGuard ni FortiCare. Verificar con distribuidor Fortinet autorizado.</p>
-  </div>
-</div>
-
-<!-- ════ JUNIPER ════ -->
-  </div>
-  <div id="tab-src-fortinet" class="tab-content">
-    <div class="panel">
-      <h2>Procedencia verificada</h2>
-      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">De qué documento y de qué fecha salen las cifras de este catálogo. Se llena desde <code>/api/fuentes</code>; una fuente sin fecha o de más de seis meses se marca.</p>
-      <div data-procedencia="fortinet">Cargando…</div>
-    </div>
-    <div class="panel">
-      <h2>Fuentes de Información y Precios</h2>
-      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Toda la información técnica y los modelos mostrados en esta plataforma han sido filtrados para excluir equipos EOL/EOS (End of Life), basándonos en los siguientes canales oficiales:</p>
-      <ul class="fuentes-list">
-        <li><b>Fortinet Product Matrix (julio 2026):</b> <a href="https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf" target="_blank">Fortinet_Product_Matrix.pdf</a><br>Fuente oficial de especificaciones y throughput (FW/IPS/NGFW/IPsec VPN/sesiones) de las series FortiGate F y G.</li>
-        <li><b>2026Q3 Main Price list AMER (vigente desde 03-ago-2026):</b><br>Lista de precios oficial Fortinet AMER — fuente de los precios de referencia (ELP) y del estado EOL/End of Order de cada modelo.</li>
-        <li><b>Precios de Referencia (ELP):</b><br>MSRP del SKU de hardware base público de Fortinet. No incluye servicios FortiCare ni suscripciones UTP/ATP.</li>
-      </ul>
-    </div>
-  </div>
+<!-- Fortinet ya no tiene página propia en el portal: su catálogo y sus fuentes viven como
+     pestañas de dimensionador-fortinet-fortigate.html, que pasó a ser su página principal
+     (2026-09-09). El botón "Fortinet" del dashboard y de la barra lateral abre esa página
+     directamente (ver el mapa `directo` en la delegación de clicks de este archivo). -->
 
 <div class="page" id="page-juniper">
   <div class="page-header">
@@ -977,6 +937,7 @@ RB5009  CCR2004  RB5009  (Hub)
 <script src="/js/comparador.js"></script>
 <script src="/js/calculadora.js"></script>
 <script src="/js/contraste.js"></script>
+<script src="/js/procedencia.js"></script>
 <script src="/js/index.js"></script>
 <script src="/js/navegacion.js"></script>
 
@@ -1020,33 +981,9 @@ RB5009  CCR2004  RB5009  (Hub)
   </div>
 </div>
 
-<!-- ════ CONTRASTE MODAL ════
-     Se abre al subir una fuente tabular (Excel/CSV): contrasta el documento contra el catálogo
-     vigente en el navegador, sin IA y sin crédito, y enseña qué cambiaría. Nada se escribe aquí:
-     el camino durable sigue siendo descargar la propuesta y aplicarla por PR (aplicar-propuesta). -->
-<div class="modal-overlay" id="contrasteModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h3 class="modal-title">&#9878; Contraste del documento con el catálogo</h3>
-      <button class="modal-close" data-cerrar-contraste>&times;</button>
-    </div>
-    <div class="modal-body">
-      <div style="margin-bottom:14px;padding:11px 13px;background:#F0F9FF;border:1px solid #BAE6FD;border-left:3px solid var(--steel);border-radius:4px;font-size:12.5px;line-height:1.5;color:#0c4a6e">
-        Esto compara el documento que subiste con el catálogo vigente <b>sin IA y en el navegador</b>: reconoce una columna solo si su cabecera casa con un campo real del catálogo, y lo que no reconoce lo <b>lista</b> en vez de adivinar. Es una vista previa: <b>no</b> reescribe el catálogo. Para publicar los cambios se descarga la propuesta y el workflow <code>aplicar-propuesta</code> la aplica sobre <code>legacyData/</code> con anclaje y abre un PR revisable.
-      </div>
-      <div id="contrasteResumen" style="font-size:13px;margin-bottom:12px;"></div>
-      <div id="contrasteResult"></div>
-      <div id="contrasteFuente" style="margin-top:16px;display:none">
-        <p style="margin:0 0 5px 0;font-size:12.5px;font-weight:600;">URL de la fuente oficial (obligatoria para el PR)</p>
-        <p style="margin:0 0 8px 0;font-size:11px;color:var(--steel);">El importador solo acepta un cambio con URL de fuente oficial (<code>https://…</code>) y si su valor anterior casa con lo que el catálogo dice hoy. Sin ella, la descarga sirve para revisar pero el workflow la rechazará.</p>
-        <input type="url" id="contrasteUrl" placeholder="https://…" style="width:100%;box-sizing:border-box;padding:7px 9px;font-size:12.5px;border:1px solid var(--rule);border-radius:5px" />
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" style="background:#fff;color:var(--ink);border:1px solid var(--rule)" data-cerrar-contraste>Cerrar</button>
-      <button id="btnDescargarContraste" class="btn" style="background:var(--ink);border:none;color:#fff;display:none">&#8681; Descargar propuesta (para PR)</button>
-    </div>
-  </div>
-</div>
+<!-- El modal de contraste (se abre al subir una fuente tabular) ya no vive aquí como marcado
+     estático: js/procedencia.js lo inyecta él mismo, porque el dimensionador de Fortinet
+     también lo necesita para su pestaña "Fuentes" y duplicar el HTML lo habría hecho
+     divergir del portal. -->
 </body>
 </html>
