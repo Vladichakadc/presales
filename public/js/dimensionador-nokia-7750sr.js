@@ -107,7 +107,7 @@
     renderApartados(apartados, portQty, portVel);
 
     if (!pick) {
-      FICHA.render({
+      FICHA.render({vendor:'nokia', 
         contenedor: 'verdict',
         candidatos: [],
         recomendado: null,
@@ -119,7 +119,7 @@
       return;
     }
 
-    FICHA.render({
+    FICHA.render({vendor:'nokia', 
       contenedor: 'verdict',
       candidatos: ordenados,
       recomendado: pick.id,

@@ -153,7 +153,7 @@ function render() {
     if (sinCifra) why.push(`<li><b>${sinCifra}</b> modelo(s) quedaron fuera porque <b>el catálogo no publica su cifra en esta capa</b>. No se sustituye por la de otra capa: son mediciones distintas y hacerlo es lo que produce propuestas que se quedan cortas por un orden de magnitud. Se pueden consultar en la pestaña de BOM.</li>`);
     if (outBySess) why.push(`<li><b>${outBySess}</b> modelo(s) descartado(s) por sesiones concurrentes: hacen falta ${miles(sessNeed)}.</li>`);
     why.push('<li>Si el diseño no exige inspección avanzada sobre todo el tráfico, evaluar una capa menos profunda o segmentar qué tráfico se inspecciona — es la palanca que más capacidad libera.</li>');
-    FICHA.render({
+    FICHA.render({vendor:'juniper', 
       contenedor: 'verdict', candidatos: [], recomendado: null,
       vacioTitulo: 'Ningún modelo del catálogo cumple en esta capa',
       vacioDetalle: `<ul style="margin:0;padding-left:18px;font-size:13.5px">${why.join('')}</ul>`,
@@ -163,7 +163,7 @@ function render() {
     return;
   }
 
-  FICHA.render({
+  FICHA.render({vendor:'juniper', 
     contenedor: 'verdict',
     candidatos: ordenados,
     recomendado: pick.id,
@@ -293,13 +293,13 @@ function renderSsr(need) {
   $('perfTiers').innerHTML = '';
   $('perfModel').textContent = '';
   if (!pick) {
-    FICHA.render({ contenedor: 'verdict', candidatos: [], recomendado: null,
+    FICHA.render({vendor:'juniper',  contenedor: 'verdict', candidatos: [], recomendado: null,
       vacioTitulo: `Ningún Session Smart Router del catálogo llega a ${fmt(need)}`,
       vacioDetalle: '<p class="warn">Por encima del SSR1400 (40 Gbps) hay que evaluar varias unidades o la versión virtual sobre servidor.</p>' });
     $('sizingBox').innerHTML = '<p style="font-size:13.5px;color:var(--steel)">Sin candidato.</p>';
     return;
   }
-  FICHA.render({
+  FICHA.render({vendor:'juniper', 
     contenedor: 'verdict', candidatos: ordenados, recomendado: pick.id,
     etiqueta: (m) => `${m.id} — ${m.seg} · ${fmt(m.cap)}`,
     titulo: (m) => m.id,

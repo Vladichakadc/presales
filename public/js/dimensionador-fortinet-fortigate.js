@@ -403,7 +403,7 @@ function render(){
     if(outByCps) why.push(`<li><b>${outByCps}</b> modelo(s) descartado(s) por sesiones nuevas por segundo: necesitas ${cpsNeed.toLocaleString('en-US')} cps y el catálogo publica esa cifra para ellos.</li>`);
     if(capa.k==='tp'||$('chkSsl').checked) why.push('<li>Estás dimensionando contra la capa más exigente. Si el diseño no requiere antivirus en línea sobre todo el tráfico, evaluar la capa <b>NGFW</b> o segmentar por política qué tráfico se inspecciona a fondo — es la palanca que más capacidad libera en FortiGate.</li>');
     why.push('<li>Por encima del catálogo: evaluar chasis FortiGate 7000F o distribuir la carga en varias unidades.</li>');
-    FICHA.render({contenedor:'verdict', candidatos:[], recomendado:null,
+    FICHA.render({vendor:'fortinet', contenedor:'verdict', candidatos:[], recomendado:null,
       vacioTitulo:'Ningún modelo vigente cumple todas las restricciones',
       vacioDetalle:`<ul style="margin:0;padding-left:18px;font-size:13.5px">${why.join('')}</ul>`});
     $('verdict').style.borderLeftColor='var(--amber)';
@@ -530,7 +530,7 @@ function render(){
       </tbody></table>`;
   };
 
-  const elegidoId=FICHA.render({
+  const elegidoId=FICHA.render({vendor:'fortinet', 
     contenedor:'verdict',
     candidatos:candidates,
     recomendado:pick.id,

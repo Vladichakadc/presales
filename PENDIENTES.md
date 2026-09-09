@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-08.
+Última revisión: 2026-09-09.
 
 ---
 
@@ -373,6 +373,42 @@ del lado de operación, y es una variable de entorno, no código.
 184 pruebas (eran 181). Verificado en Chromium en modo producción: el panel abre, sin clave
 avisa y deshabilita Analizar, `/estado` responde `{produccion:true, tieneClave:false}`, y la
 descarga produce el JSON con la forma exacta que consume el importador. Sin errores de consola.
+
+### Referencias de pedido en la ficha: 6.849 SKU de Fortinet, y lo que cada fabricante sí tiene (2026-09-09)
+
+A petición del dueño del repo: «mostrar todos los SKU con la descripción relacionados a los
+equipos, para que los usuarios vean la mayor cantidad de información asociada».
+
+**El hueco era real y más grande de lo que parecía.** `ficha.js` no mostraba **ningún** SKU —ni
+siquiera el `hwSku` que ya estaba en el catálogo—, así que quien armaba una propuesta tenía el
+modelo y luego iba a buscar el número de parte a otro sitio. Y las **28 referencias que Aruba ya
+traía estructuradas** desde la fase 6c no se veían en ninguna pantalla: el dato estaba guardado y
+nadie podía leerlo.
+
+**Fortinet aporta 6.849 referencias** —hardware, bundles de FortiCare/FortiGuard, licencias y
+SaaS— con descripción y precio de lista, extraídas con `npm run skus` de la misma price list que
+respalda los precios. El importador **ancla cada bloque** contra el `hwSku` y el precio ya
+verificados antes de aceptarlo: 54 de 54 modelos entraron, cero rechazos. El casado va anclado al
+nombre (`FortiGate-30G` sin que le siga letra o dígito), no por substring suelto: hoy no hay
+arrastre —se midió— pero un futuro `FortiGate-30G2` lo habría producido en silencio.
+
+**Van bajo demanda y por modelo**, y esa fue la decisión de arquitectura: 774 KB en el payload
+del dimensionador cargaría todo eso en cada visita para mostrar, como mucho, las de un equipo.
+`GET /api/referencias/:vendor/:modelo` sirve unos 12 KB, desde `legacyData` sin pasar por la base
+—precedente de `toFuentes`—, y una prueba e2e falla si ese payload por equipo supera los 120 KB.
+
+**Lo que cada fabricante tiene es distinto, y se dice.** Aruba trae variantes **sin número de
+parte** (HPE no lo publica, igual que no publica precios) y se presentan como variantes, no como
+referencias de pedido; Cisco solo el SKU de cabecera de 8 de sus 21 modelos; Huawei, MikroTik,
+Juniper y Nokia no traen ninguna y la sección **lo declara**, en vez de dejar un hueco mudo que
+se lee como «este equipo no necesita nada» — el mismo criterio que «el catálogo no lo especifica»
+de la sección de alimentación.
+
+219 pruebas (eran 212). Verificado en Chromium: el buscador filtra sin perder el foco, los chips
+acotan por tipo, y al cambiar de equipo **los SKU cambian**. Esa última aserción se reforzó a
+propósito: la primera versión comprobaba el conteo, y el conteo no prueba nada —el 60F y el 61F
+traen 79 referencias cada uno—, así que ahora compara los SKU, que es lo que distingue «la tabla
+siguió al equipo» de «se quedó con la del anterior».
 
 ### Carga de fuente por fabricante, y una ventana que contrasta el documento con el catálogo (2026-09-08)
 

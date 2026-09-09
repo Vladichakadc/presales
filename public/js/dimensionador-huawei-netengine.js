@@ -112,7 +112,7 @@ function render(){
       drawSupport(r);
       drawLadder(need, r, pk);
     };
-    const elegidoId = FICHA.render({
+    const elegidoId = FICHA.render({vendor:'huawei', 
       contenedor:'verdict',
       candidatos,
       recomendado: pick.m.id,

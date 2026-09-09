@@ -293,6 +293,39 @@ test('la calculadora no aparta un fabricante por un dato que el catálogo SI pub
   assert.ok(conCifra('sdwan', 'aruba') >= 5, 'EdgeConnect publica su rango de ancho de banda WAN');
 });
 
+test('referencias de pedido: bajo demanda, tras el muro y sin cruzar de fabricante', async () => {
+  // Van por modelo a proposito: las 6.849 de Fortinet pesan 774 KB y no caben en el payload
+  // del dimensionador. Se interroga al servidor real porque cruza muro de sesion, ruta y
+  // servicio.
+  const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
+
+  // Sin sesion, 401 JSON: es una ruta de API, no una navegacion.
+  const sin = await fetch(`${BASE}/api/referencias/fortinet/FortiGate%20120G`);
+  assert.strictEqual(sin.status, 401);
+
+  const res = await fetch(`${BASE}/api/referencias/fortinet/FortiGate%20120G`, { headers: { cookie: ana } });
+  assert.strictEqual(res.status, 200);
+  const d = await res.json();
+  assert.ok(d.refs.length > 10, 'devuelve las referencias del equipo');
+  assert.ok(d.refs.some((r) => r.sku === 'FG-120G'), 'incluye su SKU de hardware');
+
+  // El payload por modelo tiene que seguir siendo pequenyo: si un dia alguien mete aqui el
+  // catalogo entero, esta asercion lo dice antes de que llegue a produccion.
+  const kb = Buffer.byteLength(JSON.stringify(d)) / 1024;
+  assert.ok(kb < 120, `el payload de un equipo son ${kb.toFixed(0)} KB`);
+
+  // Un fabricante inventado no devuelve un objeto vacio que parezca valido.
+  const malo = await fetch(`${BASE}/api/referencias/marte/x`, { headers: { cookie: ana } });
+  assert.strictEqual(malo.status, 400);
+
+  // Un fabricante sin referencias responde 200 explicando por que, no un 404 mudo.
+  const hw = await fetch(`${BASE}/api/referencias/huawei/AR611`, { headers: { cookie: ana } });
+  assert.strictEqual(hw.status, 200);
+  const dh = await hw.json();
+  assert.strictEqual(dh.refs.length, 0);
+  assert.ok(dh.nota, 'y lo declara');
+});
+
 test('carga de fuente oficial: exige permiso sync, valida el tipo y aparece en /api/fuentes', async () => {
   // Credito-cero: subir el documento actualiza la PROCEDENCIA del fabricante al instante, sin
   // tocar la IA. Se prueba de punta a punta contra el servidor real porque cruza permiso,

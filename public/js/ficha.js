@@ -21,6 +21,7 @@
 //     etiqueta: (m,i) => 'texto',   // texto de cada opcion del desplegable
 //     medidores: m => [{etq, val, tope, txt}],   // barras de holgura del modelo elegido
 //     secciones: m => [{titulo, filas:[[clave, valorHTML]], nota}],
+//     vendor: 'fortinet',           // fabricante, para pedir sus referencias de pedido
 //     alCambiar: id => {},          // se avisa a la pagina para sincronizar el BOM
 //   })
 //
@@ -55,6 +56,21 @@
 .ficha-ref{border:1px solid var(--rule);color:var(--steel);border-radius:2px;padding:1px 6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-left:7px;vertical-align:2px}
 .ficha-ref.fuera{background:var(--steel);color:var(--paper);border-color:var(--steel)}
 .ficha-aviso{font-size:12.5px;color:var(--steel);border-left:2px solid var(--steel);padding:5px 0 5px 9px;margin:9px 0 0;line-height:1.45}
+.ficha-refs{margin-top:18px}
+.ficha-refs h3{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 8px}
+.ficha-refs-barra{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.ficha-refs-barra input{flex:1;min-width:170px;padding:6px 9px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink);font-family:'Barlow',sans-serif;font-size:12.5px}
+.ficha-refs-barra input:focus{outline:2px solid var(--red);outline-offset:1px}
+.ficha-refs-chip{padding:4px 10px;border:1px solid var(--rule);border-radius:11px;background:var(--card);color:var(--steel);font-family:'IBM Plex Mono',monospace;font-size:10.5px;cursor:pointer}
+.ficha-refs-chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.ficha-refs-caja{max-height:420px;overflow:auto;border:1px solid var(--rule);border-radius:4px}
+.ficha-refs table{width:100%;border-collapse:collapse;font-size:12.5px}
+.ficha-refs thead th{position:sticky;top:0;background:var(--bg);text-align:left;padding:6px 9px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);border-bottom:1px solid var(--rule);z-index:1}
+.ficha-refs tbody td{padding:5px 9px;border-bottom:1px solid var(--rule);vertical-align:top}
+.ficha-refs tbody tr:last-child td{border-bottom:0}
+.ficha-refs .sku{font-family:'IBM Plex Mono',monospace;font-size:11.5px;white-space:nowrap;color:var(--ink)}
+.ficha-refs .pre{text-align:right;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:11.5px}
+.ficha-refs .vacio{padding:10px;color:var(--steel);font-size:12.5px}
 `;
   if (!document.getElementById('ficha-estilos')) {
     const st = document.createElement('style');
@@ -133,6 +149,108 @@
       + '</div>';
   }
 
+  // ── REFERENCIAS DE PEDIDO ──────────────────────────────────────────────────────────────
+  // Que hay que PEDIR, no solo que equipo elegir. La ficha mostraba el rendimiento y ni un
+  // solo numero de parte, asi que quien armaba una propuesta tenia el modelo y luego tenia
+  // que ir a buscar el SKU a otro sitio.
+  //
+  // SE PIDE POR MODELO Y BAJO DEMANDA. Las referencias de Fortinet son 6.849 (774 KB): meterlas
+  // en el payload del dimensionador cargaria todo eso en cada visita para mostrar, como mucho,
+  // las de un equipo. Por modelo son unos 12 KB.
+  //
+  // SE CACHEA POR equipo porque cambiar de modelo y volver es el gesto normal de comparar dos
+  // candidatos, y repetir la peticion cada vez haria parpadear la tabla sin motivo.
+  const cacheRefs = new Map();
+
+  const fmtPrecio = (p) => (p == null ? '—' : '$' + Number(p).toLocaleString('en-US'));
+
+  function refsHtml(cid, datos, filtro, tipo) {
+    const q = (filtro || '').trim().toLowerCase();
+    const lista = datos.refs.filter((r) => {
+      if (tipo && r.t !== tipo) return false;
+      if (!q) return true;
+      return (r.sku || '').toLowerCase().includes(q) || (r.d || '').toLowerCase().includes(q);
+    });
+
+    // Los tipos salen de los datos, no de una lista escrita a mano: si el documento trae una
+    // categoria nueva aparece sola, en vez de quedarse invisible por no estar prevista.
+    const tipos = [...new Set(datos.refs.map((r) => r.t).filter(Boolean))];
+    const chips = tipos.length > 1
+      ? tipos.map((t) => `<button type="button" class="ficha-refs-chip${tipo === t ? ' on' : ''}" data-ficha-tipo="${esc(t)}">${esc(t)}</button>`).join('')
+        + `<button type="button" class="ficha-refs-chip${tipo ? '' : ' on'}" data-ficha-tipo="">Todas</button>`
+      : '';
+
+    const cuerpo = lista.length
+      ? `<div class="ficha-refs-caja"><table><thead><tr>`
+        + `<th>SKU</th><th>Descripción</th><th style="text-align:right">Precio de lista</th>`
+        + `</tr></thead><tbody>${lista.map((r) => `<tr>`
+          + `<td class="sku">${r.sku ? esc(r.sku) : '<span style="color:var(--steel)">sin número de parte</span>'}</td>`
+          + `<td>${esc(r.d || '')}</td>`
+          + `<td class="pre">${fmtPrecio(r.p)}</td></tr>`).join('')}</tbody></table></div>`
+      : `<p class="vacio">Ninguna referencia coincide con la búsqueda.</p>`;
+
+    return `<h3>Referencias de pedido<span class="ficha-cuenta"> · ${lista.length}`
+      + `${lista.length !== datos.refs.length ? ` de ${datos.refs.length}` : ''}</span></h3>`
+      + `<div class="ficha-refs-barra">`
+      + `<input type="search" id="${cid}-refq" placeholder="Buscar SKU o descripción…" value="${esc(filtro || '')}">`
+      + chips + '</div>'
+      + cuerpo
+      + (datos.nota ? `<p class="ficha-nota">${esc(datos.nota)}` + (datos.fuente ? ` Fuente: ${esc(datos.fuente)}.` : '') + '</p>' : '');
+  }
+
+  function pintarRefs(cid) {
+    const cfg = estado[cid];
+    const caja = document.getElementById(cid + '-refs');
+    if (!cfg || !caja) return;
+    const datos = cfg._refs;
+    if (!datos) return;
+    if (!datos.refs.length) {
+      // Un fabricante sin referencias lo DICE, en vez de dejar un hueco que se lee como si la
+      // pantalla estuviera rota. Es el mismo criterio que «el catalogo no lo especifica».
+      caja.innerHTML = '<h3>Referencias de pedido</h3>'
+        + `<p class="ficha-nota">${esc(datos.nota || 'El catálogo no trae referencias de pedido para este equipo.')}</p>`;
+      return;
+    }
+    caja.innerHTML = refsHtml(cid, datos, cfg._refFiltro, cfg._refTipo);
+    const inp = document.getElementById(cid + '-refq');
+    if (inp) {
+      inp.addEventListener('input', () => {
+        cfg._refFiltro = inp.value;
+        pintarRefs(cid);
+        // Reponer el foco y el cursor: repintar la tabla no debe echar a quien esta escribiendo.
+        const n = document.getElementById(cid + '-refq');
+        if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); }
+      });
+    }
+    caja.querySelectorAll('[data-ficha-tipo]').forEach((b) => {
+      b.addEventListener('click', () => { cfg._refTipo = b.dataset.fichaTipo || null; pintarRefs(cid); });
+    });
+  }
+
+  function cargarRefs(cid, vendor, modelo) {
+    const cfg = estado[cid];
+    if (!cfg || !vendor || !modelo) return;
+    const clave = vendor + '|' + modelo;
+    // Cambiar de equipo limpia el buscador y el filtro de tipo: heredarlos haria que la
+    // tabla del equipo nuevo apareciera recortada por una busqueda que era del anterior.
+    if (cfg._refClave !== clave) { cfg._refFiltro = ''; cfg._refTipo = null; cfg._refClave = clave; }
+    if (cacheRefs.has(clave)) { cfg._refs = cacheRefs.get(clave); pintarRefs(cid); return; }
+    const caja = document.getElementById(cid + '-refs');
+    if (caja) caja.innerHTML = '<h3>Referencias de pedido</h3><p class="ficha-nota">Cargando…</p>';
+    fetch(`/api/referencias/${encodeURIComponent(vendor)}/${encodeURIComponent(modelo)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d) throw new Error('respuesta no válida');
+        cacheRefs.set(clave, d);
+        // Puede haber cambiado de equipo mientras llegaba: solo se pinta si sigue siendo el suyo.
+        if (estado[cid] && estado[cid].seleccionado === modelo) { estado[cid]._refs = d; pintarRefs(cid); }
+      })
+      .catch(() => {
+        const c = document.getElementById(cid + '-refs');
+        if (c) c.innerHTML = '<h3>Referencias de pedido</h3><p class="ficha-nota">No se pudieron cargar las referencias de este equipo.</p>';
+      });
+  }
+
   function pintar(cid) {
     const cfg = estado[cid];
     const cont = document.getElementById(cid);
@@ -183,7 +301,8 @@
       + (mkSel ? `<p class="ficha-aviso">${avisoDe(sel)}</p>` : '')
       + medidores
       + (cfg.porQue ? `<div class="why">${cfg.porQue(sel)}</div>` : '')
-      + secciones;
+      + secciones
+      + `<div class="ficha-refs" id="${cid}-refs"></div>`;
 
     // Sin onchange= en linea: la CSP del sitio prohibe todo codigo inline.
     const nodo = document.getElementById(cid + '-sel');
@@ -209,6 +328,10 @@
         if (cfg.alCambiar) cfg.alCambiar(recomendado);
       });
     }
+
+    // Las referencias del equipo elegido. Solo si la pagina declara su fabricante: sin el no
+    // hay a quien preguntar, y es preferible no pintar la seccion a pintarla vacia.
+    if (cfg.vendor) cargarRefs(cid, cfg.vendor, sel.id);
   }
 
   // ── ALIMENTACION ELECTRICA: SI ES DE DOBLE FUENTE Y SUS CARACTERISTICAS ────────────────

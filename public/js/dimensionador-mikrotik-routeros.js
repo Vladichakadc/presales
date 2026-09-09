@@ -189,7 +189,7 @@ function render(){
     if(reasons.ram)  why.push(`<li><b>${reasons.ram}</b> por RAM insuficiente para ${req.feeds} feed(s) BGP full table: harían falta ~${(ramForFeeds(req.feeds)/1024).toFixed(1)} GB. Este límite es de <b>memoria, no de throughput</b>.</li>`);
     if(reasons.sess) why.push(`<li><b>${reasons.sess}</b> por el tope de sesiones de su nivel de licencia (necesitas ${req.sess}).</li>`);
     if(reasons.poe)  why.push(`<li><b>${reasons.poe}</b> por presupuesto PoE insuficiente (${poeNeed} W). Ningún router MikroTik entrega tanto PoE: la solución correcta es un switch PoE dedicado alimentando los APs.</li>`);
-    FICHA.render({contenedor:'verdict', candidatos:[], recomendado:null,
+    FICHA.render({vendor:'mikrotik', contenedor:'verdict', candidatos:[], recomendado:null,
       vacioTitulo:'Ningún modelo del catálogo cumple todas las restricciones',
       vacioDetalle:`<p class="warn" style="margin:0 0 8px"><b>Motivo del descarte:</b></p><ul style="margin:0;padding-left:18px;font-size:13.5px">${why.join('')}</ul>`});
     $('verdict').style.borderLeftColor='var(--amber)';
@@ -283,7 +283,7 @@ function render(){
       </tbody></table>`;
   };
 
-  const elegidoId=FICHA.render({
+  const elegidoId=FICHA.render({vendor:'mikrotik', 
     contenedor:'verdict',
     candidatos:ok,
     recomendado:pick.id,

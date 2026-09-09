@@ -16,6 +16,7 @@ const guiaRoutes = require('./routes/guia');
 const syncRoutes = require('./routes/sync');
 const multer = require('multer');
 const fuentesSubidas = require('./fuentesSubidas');
+const { referenciasDe } = require('./services/referencias');
 const { tipoPorFirma } = require('./services/firmaArchivo');
 
 const app = express();
@@ -280,6 +281,17 @@ app.delete('/api/fuentes/:vendor/documento/:id', exige('sync'), (req, res) => {
   if (!entrada) return res.status(404).json({ error: 'Documento no encontrado' });
   console.log(`[fuentes] borrado · fabricante=${vendor} · ${entrada.documento} · por=${req.usuario.usuario}`);
   res.json({ ok: true, entrada });
+});
+
+// ── Referencias de pedido de un equipo ────────────────────────────────────────
+// Que hay que PEDIR, no solo que equipo elegir. Va bajo demanda y por modelo a proposito: las
+// 6.849 referencias de Fortinet pesan 774 KB, y meterlas en el payload del dimensionador
+// cargaria eso en cada visita a la pagina para mostrar como mucho las de un equipo. Por modelo
+// son unos 12 KB. Detras del muro de sesion, como el resto del catalogo.
+app.get('/api/referencias/:vendor/:modelo', (req, res) => {
+  const r = referenciasDe(req.params.vendor, req.params.modelo);
+  if (!r) return res.status(400).json({ error: 'Fabricante no válido' });
+  res.json(r);
 });
 
 app.use('/api', catalogRoutes);

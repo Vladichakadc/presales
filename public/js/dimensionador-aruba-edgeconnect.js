@@ -228,7 +228,7 @@ function render(){
     if(outByAps) why.push(`<li><b>${outByAps}</b> gateway(s) descartado(s) por número de APs: hacen falta ${miles(aps)}.</li>`);
     if(outBySinDato) why.push(`<li><b>${outBySinDato}</b> modelo(s) sin cifra de throughput publicada en las fuentes consultadas (serie 9100). Aparecen en la pestaña "Equipo y BOM" y su capacidad hay que confirmarla en las QuickSpecs.</li>`);
     why.push('<li>Por encima del catálogo: repartir el fabric en varios head-ends, o escalar en el datacenter con EC-V, cuyo caudal lo fija la licencia y los vCPU asignados y no el hardware.</li>');
-    FICHA.render({contenedor:'verdict', candidatos:[], recomendado:null,
+    FICHA.render({vendor:'aruba', contenedor:'verdict', candidatos:[], recomendado:null,
       vacioTitulo:'Ningún modelo cumple todas las restricciones',
       vacioDetalle:`<ul style="margin:0;padding-left:18px;font-size:13.5px">${why.join('')}</ul>`});
     $('verdict').style.borderLeftColor='var(--amber)';
@@ -346,7 +346,7 @@ function render(){
       </tbody></table>`;
   };
 
-  const elegidoId=FICHA.render({
+  const elegidoId=FICHA.render({vendor:'aruba', 
     contenedor:'verdict',
     candidatos:candidates,
     recomendado:pick.id,

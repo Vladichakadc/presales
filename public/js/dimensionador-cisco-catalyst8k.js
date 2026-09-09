@@ -168,7 +168,7 @@ function render(){
     // conclusion muy distinta: la segunda se resuelve cambiando un desplegable.
     const hayEnOtras = MODELS.some(m => !enPlataforma(m) && capDe(m) >= needMbps && FICHA.recomendable(m));
     const fueraDeVenta = MODELS.filter(m => enPlataforma(m) && capDe(m) >= needMbps);
-    FICHA.render({contenedor:'verdict', candidatos:[], recomendado:null,
+    FICHA.render({vendor:'cisco', contenedor:'verdict', candidatos:[], recomendado:null,
       vacioTitulo: hayEnOtras
         ? `Ningún equipo vigente de la plataforma elegida llega a ${fmt(needMbps)}`
         : 'El requerimiento supera la capacidad del catálogo',
@@ -269,7 +269,7 @@ function render(){
       </ul>`;
   };
 
-  const elegidoId=FICHA.render({
+  const elegidoId=FICHA.render({vendor:'cisco', 
     contenedor:'verdict',
     candidatos:candidates,
     recomendado:pick.id,
