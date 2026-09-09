@@ -59,6 +59,13 @@ test('un modelo que no existe, un campo que no existe y un precio se apartan', (
   assert.match(anclar({ ...base, id: 'FortiGate 9999Z' }, MODELOS).motivo, /no está en el catálogo/);
   assert.match(anclar({ ...base, field: 'inventado' }, MODELOS).motivo, /no existe en ese modelo/);
   assert.match(anclar({ ...base, field: 'price' }, MODELOS).motivo, /cotizadorCatalog/);
+  // Los TRES nombres del precio. `elp`/`elpN` es como se llama en este catalogo y es lo que
+  // emite la ventana de contraste desde que lee listas de precios; hasta el 2026-09-09 esta
+  // guarda solo miraba `price`, asi que un cambio de `elp` se rechazaba por accidente (no
+  // esta en los MODELS de legacyData) y con el motivo equivocado. Una proteccion que funciona
+  // por un efecto lateral deja de funcionar el dia que ese efecto cambia, en silencio.
+  assert.match(anclar({ ...base, field: 'elp' }, MODELOS).motivo, /cotizadorCatalog/);
+  assert.match(anclar({ ...base, field: 'elpN' }, MODELOS).motivo, /cotizadorCatalog/);
 });
 
 test('sin URL de fuente oficial no se aplica', () => {

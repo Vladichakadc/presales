@@ -103,7 +103,14 @@ function anclar(cambio, modelos) {
   }
   const modelo = modelos.find((m) => m.id === cambio.id);
   if (!modelo) return { ok: false, motivo: `el modelo "${cambio.id}" no está en el catálogo` };
-  if (cambio.field === 'price') {
+  // LOS TRES NOMBRES DEL PRECIO, y no por gusto. `price` es como lo llama la IA; `elp`/`elpN`
+  // es como se llama de verdad en este catalogo, y es lo que emite la ventana de contraste
+  // desde que lee listas de precios. Hasta el 2026-09-09 esta guarda solo miraba `price`: un
+  // cambio de `elp` se rechazaba igual, pero por accidente —porque `elp` no esta en los MODELS
+  // de legacyData, sino que se rellena desde cotizadorCatalog— y con el motivo equivocado. Una
+  // proteccion que funciona por un efecto lateral deja de funcionar el dia que ese efecto
+  // cambia, en silencio: el mismo modo de fallo que el conjunto inerte CISCO_EOL_MODELS.
+  if (['price', 'elp', 'elpN'].includes(cambio.field)) {
     return { ok: false, motivo: 'los precios viven en cotizadorCatalog.js, no en este archivo' };
   }
   if (!(cambio.field in modelo)) {
