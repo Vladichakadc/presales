@@ -255,6 +255,10 @@
   function cargarRefs(cid, vendor, modelo) {
     const cfg = estado[cid];
     if (!cfg || !vendor || !modelo) return;
+    // El BOM guarda las referencias de los siete fabricantes en una sola lista, y necesita
+    // saber cual es el de esta pagina para pintar solo las suyas. Se lo decimos aqui porque es
+    // el unico sitio que ya conoce el fabricante sin que las siete paginas tengan que cablearlo.
+    if (global.BOM && global.BOM.fijarVendor) global.BOM.fijarVendor(vendor);
     const clave = vendor + '|' + modelo;
     // Cambiar de equipo limpia el buscador y el filtro de tipo: heredarlos haria que la
     // tabla del equipo nuevo apareciera recortada por una busqueda que era del anterior.

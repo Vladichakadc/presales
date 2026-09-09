@@ -374,6 +374,33 @@ del lado de operación, y es una variable de entorno, no código.
 avisa y deshabilita Analizar, `/estado` responde `{produccion:true, tieneClave:false}`, y la
 descarga produce el JSON con la forma exacta que consume el importador. Sin errores de consola.
 
+### Las referencias añadidas dejan de perderse entre fabricantes (2026-09-09)
+
+Ejecución de la mejora propuesta al cerrar la entrega anterior, aprobada por el dueño del repo.
+
+**El fallo, que era de pérdida de datos y silencioso.** Las referencias se guardaban en
+`presales-bom-refs:<pathname>`, una clave por página. Así que añadías un bundle de Fortinet,
+te ibas a Aruba, enviabas al cotizador desde allí — y el de Fortinet se quedaba atrás sin un
+aviso. Justo en la pantalla que existe para armar una cotización **multi**-fabricante.
+
+**La corrección.** Una sola clave para los siete, y el fabricante que cada referencia ya llevaba
+dentro es lo que las separa: el BOM de cada dimensionador muestra **solo las suyas** —una
+referencia de Aruba en el BOM de un FortiGate no corresponde a ese equipo— pero
+`enviarACotizador` manda **todas**. `ficha.js` informa el fabricante de la página con
+`BOM.fijarVendor`, así que las siete páginas siguen sin tocarse.
+
+**Dos detalles que evitan reemplazar un fallo por otro:**
+
+- **La clave de una referencia es `fabricante|sku`, no el sku suelto.** Con una lista compartida,
+  dos fabricantes pueden traer el mismo código, y quitar uno habría quitado el otro.
+- **La clave vieja se migra** en la primera lectura y luego se borra. Sin eso, quien ya tuviera
+  referencias guardadas las habría visto desaparecer al desplegar — la misma pérdida silenciosa
+  que este cambio venía a evitar, reintroducida por la propia corrección.
+
+228 pruebas (eran 224). Verificado en Chromium el caso exacto: añadir en Fortinet → el BOM de
+Aruba **no** la muestra → añadir una de Aruba → enviar al cotizador **desde Aruba** → llegan las
+dos.
+
 ### Las referencias llegan al BOM y al cotizador: añadir un bundle, no solo verlo (2026-09-09)
 
 Continuación directa de lo anterior, a petición del dueño del repo. Ver las referencias no

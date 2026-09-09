@@ -89,14 +89,30 @@
 
      SOBREVIVEN AL REPINTADO, QUE ES TODO EL PUNTO. El BOM se repinta cada vez que cambia el
      dimensionamiento; si las referencias anadidas vivieran en el array de filas que la pagina
-     construye, el siguiente movimiento del caudal las borraria sin avisar. Se guardan aparte,
-     por pagina, y se vuelven a pegar en cada render. */
-  const CLAVE_REFS = 'presales-bom-refs:' + (global.location ? global.location.pathname : '');
-  let repintar = null; // lo deja `sincronizar`: es como se refresca el BOM tras anadir o quitar
+     construye, el siguiente movimiento del caudal las borraria sin avisar. Se guardan aparte y
+     se vuelven a pegar en cada render.
 
-  function refsExtra() {
+     UNA SOLA CLAVE PARA LOS SIETE, Y NO UNA POR PAGINA (2026-09-09). La primera version
+     guardaba en `presales-bom-refs:<pathname>`, asi que cada dimensionador solo veia lo suyo:
+     anadias un bundle de Fortinet, ibas a Aruba, y al enviar al cotizador desde alli el de
+     Fortinet se quedaba atras — una perdida silenciosa, justo en la pantalla que existe para
+     armar una cotizacion MULTI-fabricante. Ahora la clave es unica y el fabricante que cada
+     referencia ya llevaba dentro (`v`) es lo que las separa: el BOM de cada dimensionador
+     muestra SOLO las de su fabricante —las de otro no corresponden a ese equipo— pero
+     `enviarACotizador` manda TODAS, porque el cotizador si es multi-fabricante.
+
+     LA CLAVE DE UNA REFERENCIA ES `fabricante|sku`, no el sku suelto: con una sola lista
+     compartida, dos fabricantes podrian traer el mismo codigo y quitar uno habria quitado el
+     otro. */
+  const CLAVE_REFS = 'presales-bom-refs';
+  let repintar = null;   // lo deja `sincronizar`: es como se refresca el BOM tras anadir o quitar
+  let vendorPagina = ''; // lo deja `ficha.js`: de que fabricante es la pagina que se esta viendo
+
+  const claveDe = (r) => `${(r.v || '').toLowerCase()}|${r.sku || r.d || ''}`;
+
+  function leerCrudo(k) {
     try {
-      const v = JSON.parse(localStorage.getItem(CLAVE_REFS) || '[]');
+      const v = JSON.parse(localStorage.getItem(k) || '[]');
       return Array.isArray(v) ? v : [];
     } catch { return []; }
   }
@@ -104,35 +120,73 @@
     try { localStorage.setItem(CLAVE_REFS, JSON.stringify(lista)); } catch { /* almacenamiento off */ }
   }
 
+  // MIGRACION DE LA CLAVE VIEJA. Quien ya tuviera referencias guardadas bajo
+  // `presales-bom-refs:<pathname>` las veria desaparecer al desplegar esto — una perdida de
+  // datos silenciosa, que es el fallo que este cambio venia justamente a evitar. Se leen una
+  // vez, se funden con las nuevas y la clave vieja se borra.
+  let migrado = false;
+  function migrar() {
+    if (migrado || !global.location) return;
+    migrado = true;
+    const vieja = 'presales-bom-refs:' + global.location.pathname;
+    const previas = leerCrudo(vieja);
+    if (!previas.length) return;
+    const lista = leerCrudo(CLAVE_REFS);
+    for (const r of previas) {
+      const ya = lista.find((x) => claveDe(x) === claveDe(r));
+      if (ya) ya.qty = (ya.qty || 1) + (r.qty || 1);
+      else lista.push(r);
+    }
+    guardarRefs(lista);
+    try { localStorage.removeItem(vieja); } catch { /* almacenamiento off */ }
+  }
+
+  // TODAS las referencias, de cualquier fabricante. Es lo que viaja al cotizador.
+  function refsExtra() {
+    migrar();
+    return leerCrudo(CLAVE_REFS);
+  }
+
+  // Solo las del fabricante de esta pagina. Es lo que se pinta en su BOM: una referencia de
+  // Aruba en el BOM de un FortiGate no corresponde a ese equipo. Mientras la pagina no declare
+  // fabricante se muestran todas, que es como se comportaba antes de existir el filtro.
+  function refsDeLaPagina() {
+    const refs = refsExtra();
+    if (!vendorPagina) return refs;
+    return refs.filter((r) => !r.v || String(r.v).toLowerCase() === vendorPagina);
+  }
+
+  function fijarVendor(v) { vendorPagina = String(v || '').toLowerCase(); }
+
   // Anade una referencia. Si ya estaba, SUMA cantidad en vez de duplicar la linea: pedir dos
   // veces el mismo bundle es pedir dos unidades, no dos renglones iguales.
   function agregarRef(ref) {
     if (!ref || (!ref.sku && !ref.d)) return false;
     const lista = refsExtra();
-    const clave = ref.sku || ref.d;
-    const ya = lista.find((x) => (x.sku || x.d) === clave);
+    const nueva = { sku: ref.sku || null, d: ref.d || '', p: (ref.p == null ? null : ref.p), qty: 1, de: ref.de || '', v: ref.v || '' };
+    const ya = lista.find((x) => claveDe(x) === claveDe(nueva));
     if (ya) ya.qty = (ya.qty || 1) + 1;
-    else lista.push({ sku: ref.sku || null, d: ref.d || '', p: (ref.p == null ? null : ref.p), qty: 1, de: ref.de || '', v: ref.v || '' });
+    else lista.push(nueva);
     guardarRefs(lista);
     if (repintar) repintar();
     return true;
   }
 
   function quitarRef(clave) {
-    guardarRefs(refsExtra().filter((x) => (x.sku || x.d) !== clave));
+    guardarRefs(refsExtra().filter((x) => claveDe(x) !== clave));
     if (repintar) repintar();
   }
 
-  // Las referencias como filas de BOM, en su propio grupo.
+  // Las referencias de ESTA pagina como filas de BOM, en su propio grupo.
   function filasDeRefs() {
-    return refsExtra().map((r) => ({
+    return refsDeLaPagina().map((r) => ({
       cat: 'Referencias añadidas',
       desc: r.d || r.sku,
       sku: r.sku || null,
       qty: r.qty || 1,
       unit: r.p == null ? null : r.p,
       nota: r.de ? `Añadida desde la ficha de ${r.de}` : 'Añadida desde la ficha del equipo',
-      _ref: r.sku || r.d,
+      _ref: claveDe(r),
     }));
   }
 
@@ -447,5 +501,5 @@
   global.BOM = { renderTabla, exportarExcel, comoTexto, money, esc,
     enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar,
     sincronizar, soltarManual, avisoDesvio,
-    agregarRef, quitarRef, refsExtra };
+    agregarRef, quitarRef, refsExtra, fijarVendor };
 })(window);

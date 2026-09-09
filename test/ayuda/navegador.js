@@ -29,7 +29,13 @@ function documentoFalso() {
 }
 
 // Devuelve el objeto global tras ejecutar los ficheros indicados, en orden.
+// `previo` precarga el localStorage del realm ANTES de ejecutar nada: hace falta para probar
+// una migracion, que por definicion corre una sola vez y sobre datos que ya estaban.
 function cargar(...relativos) {
+  return cargarCon(null, ...relativos);
+}
+
+function cargarCon(previo, ...relativos) {
   const global = {};
   global.window = global;
   global.document = documentoFalso();
@@ -40,7 +46,7 @@ function cargar(...relativos) {
   // localStorage y location: los usa bom.js para guardar las referencias anadidas a mano, que
   // viven por pagina. Un doble en memoria basta — lo que se prueba es la regla (sumar cantidad
   // en vez de duplicar linea, quitar por clave), no el almacenamiento del navegador.
-  const almacen = new Map();
+  const almacen = new Map(Object.entries(previo || {}));
   global.localStorage = {
     getItem: (k) => (almacen.has(k) ? almacen.get(k) : null),
     setItem: (k, v) => almacen.set(k, String(v)),
@@ -64,4 +70,4 @@ function estadoLimpio(nombre) {
   return dir;
 }
 
-module.exports = { cargar, estadoLimpio };
+module.exports = { cargar, cargarCon, estadoLimpio };
