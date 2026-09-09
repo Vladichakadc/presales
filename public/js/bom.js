@@ -32,6 +32,8 @@
 .bom-tabla tr.bom-total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padding-top:10px;font-size:13px}
 .bom-nota{display:block;font-size:11px;color:var(--steel);margin-top:2px;font-family:'Barlow',sans-serif}
 .bom-nd{color:var(--steel)}
+.bom-cant{width:58px;padding:2px 4px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-align:right}
+.bom-cant:focus{outline:2px solid var(--red);outline-offset:1px}
 .bom-quitar{margin-left:6px;border:1px solid var(--rule);background:var(--card);color:var(--steel);border-radius:3px;cursor:pointer;font-size:12px;line-height:1;padding:1px 5px}
 .bom-quitar:hover{border-color:var(--red);color:var(--red)}
 .bom-aviso{font-size:11.5px;color:var(--amber);margin:10px 0 0;line-height:1.45}
@@ -172,6 +174,19 @@
     return true;
   }
 
+  // Fija la cantidad de una referencia. Menos de 1 no es una cantidad: se trata como quitarla,
+  // que es lo que alguien quiere decir al escribir 0.
+  function cantidadRef(clave, n) {
+    const q = Math.floor(Number(n));
+    if (!Number.isFinite(q) || q < 1) { quitarRef(clave); return; }
+    const lista = refsExtra();
+    const ya = lista.find((x) => claveDe(x) === clave);
+    if (!ya) return;
+    ya.qty = q;
+    guardarRefs(lista);
+    if (repintar) repintar();
+  }
+
   function quitarRef(clave) {
     guardarRefs(refsExtra().filter((x) => claveDe(x) !== clave));
     if (repintar) repintar();
@@ -218,7 +233,13 @@
         html += '<tr>'
           + `<td><b>${esc(f.desc)}</b>${f.nota ? `<span class="bom-nota">${esc(f.nota)}</span>` : ''}</td>`
           + `<td class="n">${f.sku ? `<code>${esc(f.sku)}</code>` : '<span class="bom-nd">—</span>'}</td>`
-          + `<td class="n r">${f.qty == null ? '—' : f.qty}</td>`
+          // La cantidad se edita SOLO en lo que se anadio a mano: las filas que calcula el
+          // dimensionador (unidades, opticas, licencias) salen del motor de la pagina, y
+          // dejarlas editables invitaria a cambiar a mano una cifra que el proximo repintado
+          // va a pisar sin avisar.
+          + `<td class="n r">${f._ref
+            ? `<input type="number" class="bom-cant" min="1" step="1" value="${Number(f.qty) || 1}" data-bom-cant="${esc(f._ref)}" aria-label="Cantidad">`
+            : (f.qty == null ? '—' : f.qty)}</td>`
           + `<td class="n r">${f.unit == null ? '<span class="bom-nd">consultar</span>' : esc(money(f.unit))}</td>`
           + `<td class="n r">${s == null ? '<span class="bom-nd">—</span>' : esc(money(s))}`
           // Lo que se anade a mano se tiene que poder quitar a mano: sin salida, anadir una
@@ -496,10 +517,17 @@
       const b = e.target.closest && e.target.closest('[data-bom-quitar]');
       if (b) quitarRef(b.dataset.bomQuitar);
     });
+    // `change` y NO `input`: guardar repinta la tabla entera, asi que reaccionar a cada
+    // pulsacion destruiria el campo a medio teclear — escribir «12» pasa por «1», y con
+    // `input` esa cantidad intermedia ya se habria guardado y el foco perdido.
+    global.document.addEventListener('change', (e) => {
+      const c = e.target.closest && e.target.closest('[data-bom-cant]');
+      if (c) cantidadRef(c.dataset.bomCant, c.value);
+    });
   }
 
   global.BOM = { renderTabla, exportarExcel, comoTexto, money, esc,
     enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar,
     sincronizar, soltarManual, avisoDesvio,
-    agregarRef, quitarRef, refsExtra, fijarVendor };
+    agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor };
 })(window);

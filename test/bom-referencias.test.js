@@ -143,3 +143,44 @@ test('migra lo guardado bajo la clave vieja y no lo pierde', () => {
   assert.strictEqual(realm.localStorage.getItem('presales-bom-refs:/prueba.html'), null,
     'y la clave vieja se limpia, para no migrar dos veces');
 });
+
+/* ── CANTIDAD EDITABLE ─────────────────────────────────────────────────────── */
+
+test('la cantidad se puede fijar, y el subtotal la sigue', () => {
+  limpiar();
+  BOM.agregarRef({ sku: 'FC-10-UTP-36', d: 'UTP 3 años', p: 250, v: 'fortinet' });
+  BOM.fijarVendor('fortinet');
+  BOM.cantidadRef('fortinet|FC-10-UTP-36', 4);
+  assert.strictEqual(BOM.refsExtra()[0].qty, 4);
+  const html = BOM.renderTabla([], {});
+  assert.ok(html.includes('1,000'), 'el subtotal es 4 x 250 = 1.000');
+  limpiar();
+});
+
+test('una cantidad menor que 1 quita la linea, que es lo que significa escribir 0', () => {
+  limpiar();
+  BOM.agregarRef({ sku: 'A-9', d: 'algo', p: 10, v: 'fortinet' });
+  BOM.cantidadRef('fortinet|A-9', 0);
+  assert.strictEqual(BOM.refsExtra().length, 0);
+  limpiar();
+});
+
+test('una cantidad no numerica no corrompe la linea', () => {
+  limpiar();
+  BOM.agregarRef({ sku: 'A-8', d: 'algo', p: 10, v: 'fortinet' });
+  BOM.cantidadRef('fortinet|A-8', 'abc');
+  // NaN no es una cantidad: se trata como quitarla, nunca se guarda un qty invalido que
+  // haria que el subtotal saliera NaN en una cotizacion.
+  assert.strictEqual(BOM.refsExtra().length, 0);
+  limpiar();
+});
+
+test('solo las referencias anadidas traen campo de cantidad, no las que calcula la pagina', () => {
+  limpiar();
+  BOM.fijarVendor('fortinet');
+  BOM.agregarRef({ sku: 'B-1', d: 'bundle', p: 5, v: 'fortinet' });
+  const html = BOM.renderTabla([{ cat: 'Equipo', desc: 'FortiGate 60F', sku: 'FG-60F', qty: 2, unit: 1000 }], {});
+  const campos = (html.match(/data-bom-cant/g) || []).length;
+  assert.strictEqual(campos, 1, 'solo la referencia anadida es editable');
+  limpiar();
+});

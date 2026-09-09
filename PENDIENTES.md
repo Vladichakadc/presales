@@ -374,6 +374,41 @@ del lado de operación, y es una variable de entorno, no código.
 avisa y deshabilita Analizar, `/estado` responde `{produccion:true, tieneClave:false}`, y la
 descarga produce el JSON con la forma exacta que consume el importador. Sin errores de consola.
 
+### Navegación por fabricante, y cantidad editable en las referencias (2026-09-09)
+
+Dos peticiones del dueño del repo en la misma entrega.
+
+**Cantidad editable** (la mejora propuesta al cerrar la anterior). «Añadir» sumaba de uno en
+uno: cotizar 10 licencias eran diez clics y bajar de 3 a 2 no se podía. Ahora la fila del BOM
+trae el campo, **solo en lo añadido a mano** —las filas que calcula el dimensionador salen de su
+motor, y editarlas invitaría a cambiar una cifra que el próximo repintado pisa—, escribiendo con
+`change` y no con `input`: guardar repinta la tabla, así que reaccionar a cada pulsación
+destruiría el campo a medio teclear. Menos de 1 quita la línea, que es lo que significa escribir 0.
+
+**La barra de fabricante** (`js/navegacion.js`), en el portal y en los ocho dimensionadores:
+← anterior / siguiente → con el nombre del destino a la vista, el paso actual marcado, «3 / 7» y
+`Alt`+flechas. **Conserva el paso**: desde el dimensionador de Fortinet, «siguiente» lleva al
+dimensionador de Juniper, no a su portada — eso la convierte en un recorrido y no en un menú.
+
+**Lo que NO se hizo, y por qué.** La petición literal era fusionar catálogo, fuentes,
+dimensionador, BOM y licencias en una sola página. Los ocho dimensionadores tienen cada uno un
+`#bw`, un `#verdict` y un `#pane-bom`: juntarlos habría metido ocho motores en el mismo espacio
+de identificadores y el mismo estado global, para ganar una continuidad que es de **navegación**
+y no de archivo. Con la barra, el riesgo es que se pinte mal una barra; con la fusión, que
+calcule mal un dimensionador. **Dentro de cada dimensionador ya hay pestañas**
+(Dimensionar · Equipo y BOM · Licencias), así que lo que faltaba era moverse entre fabricantes,
+que es justo lo que se añadió.
+
+**Un fallo propio, cazado al mirar la prueba en vez de su resultado:** la primera versión
+necesitaba que la prueba llamara a `pintar()` a mano, porque el portal cambia de sección sin
+recargar y la barra no se enteraba — para un usuario real no habría aparecido nunca. Se corrigió
+observando la clase de las secciones (`MutationObserver`), y la prueba se endureció para navegar
+como un usuario, pulsando la barra lateral.
+
+232 pruebas (eran 228). **15/15 pantallas** en Chromium, y la captura del dimensionador de
+Fortinet revisada a ojo: la barra queda discreta, con el acento del fabricante y el paso actual
+marcado.
+
 ### Las referencias añadidas dejan de perderse entre fabricantes (2026-09-09)
 
 Ejecución de la mejora propuesta al cerrar la entrega anterior, aprobada por el dueño del repo.
