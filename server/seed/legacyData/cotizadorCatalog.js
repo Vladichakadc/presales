@@ -33,16 +33,23 @@ module.exports = [
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-2s',          seg:'Edge / Agregación',       spec:'4 Tbps · 144x100GE o 36x400GE · SR-MPLS, SRv6',              elp:'~ $140,000',elpN:140000},
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-7s',          seg:'Core IP/MPLS',            spec:'19.2 Tbps · 7 slots IOM · SR-MPLS, SRv6, FlexE',              elp:'~ $220,000',elpN:220000},
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-14s',         seg:'Core grande',             spec:'38.4 Tbps · 14 slots IOM · SR-MPLS, SRv6',                    elp:'~ $380,000',elpN:380000},
-  // Precios verificados contra "2026Q3 Main Price list_AMER_FINAL_EFF 080326.xlsx" (Fortinet AMER price list oficial, vigente desde 03-ago-2026)
+  // Precios verificados contra "2026Q3 Mid Price list_AMER_FINAL_EFF 090726.xlsx" (Fortinet AMER price list
+  // oficial, vigente desde 07-sep-2026). Sucede a la "Main" del 03-ago-2026, que era la fuente anterior: el
+  // propio documento lo declara en su Cover Sheet ("Previous Version: Aug 3, 2026" -> "Current Version: Sep 7, 2026").
+  // Contrastada el 2026-09-09 casando los 54 equipos por su SKU de hardware (hwSku de fortinet.js) contra la hoja
+  // DataSet: 54/54 casaron, 41 sin cambio y 13 con subida de +10 % o +15 % exacto. Cada uno de esos 13 se aplico
+  // ANCLADO — solo si el elpN que tenia el catalogo coincidia con el "precio anterior" que la hoja Changes del
+  // propio documento declara — y las tres fuentes (DataSet, Changes y este catalogo) coincidieron en los 13.
+  // Que 41 precios queden identicos es la prueba de que este catalogo venia bien alineado con la Main.
   // elpN = precio de lista MSRP de la unidad de hardware base (hoja "FortiGate", columna Price), sin bundles de licencia/soporte.
   // FortiGate 100F/200F/600F no tienen precio en esta lista (200F con "End of Order Announcement" explícito; 100F/600F ya ausentes) — ver eol:true en seedCatalog.js.
   // FortiGate 70F: sin SKU de hardware nuevo vigente (solo renovación de servicios UTP/ATP a 1 año) — reemplazado por
   // FortiGate 71F, que sí tiene SKU FG-71F y bundles completos. 70F queda eol:true en seedCatalog.js; 71F es el modelo cotizable.
-  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 30G', seg:'SOHO / Teletrabajo', spec:'FW 4 Gbps · NGFW 0.6 Gbps · IPsec 3.5 Gbps · 4 GE RJ45', elp:'~ $634', elpN:634},
-  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 50G', seg:'SOHO / Sucursal peq', spec:'FW 5 Gbps · NGFW 1.3 Gbps · IPsec 4.5 Gbps · 5 GE + variantes SFP/5G', elp:'~ $994', elpN:994},
-  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 70G', seg:'Sucursal peq', spec:'FW 10 Gbps · NGFW 1.5 Gbps · IPsec 7.1 Gbps · 8 GE + variantes Wi-Fi/5G', elp:'~ $1,420', elpN:1420},
-  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 90G', seg:'Sucursal med', spec:'FW 28 Gbps · NGFW 2.5 Gbps · IPsec 25 Gbps · 8 GE + 2x10GE SFP+', elp:'~ $3,307', elpN:3307},
-  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 120G', seg:'Sucursal gde', spec:'FW 39 Gbps · NGFW 3.1 Gbps · IPsec 35 Gbps · GE + SFP/SFP+ (alta densidad)', elp:'~ $4,792', elpN:4792},
+  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 30G', seg:'SOHO / Teletrabajo', spec:'FW 4 Gbps · NGFW 0.6 Gbps · IPsec 3.5 Gbps · 4 GE RJ45', elp:'~ $697', elpN:697},
+  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 50G', seg:'SOHO / Sucursal peq', spec:'FW 5 Gbps · NGFW 1.3 Gbps · IPsec 4.5 Gbps · 5 GE + variantes SFP/5G', elp:'~ $1,093', elpN:1093},
+  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 70G', seg:'Sucursal peq', spec:'FW 10 Gbps · NGFW 1.5 Gbps · IPsec 7.1 Gbps · 8 GE + variantes Wi-Fi/5G', elp:'~ $1,562', elpN:1562},
+  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 90G', seg:'Sucursal med', spec:'FW 28 Gbps · NGFW 2.5 Gbps · IPsec 25 Gbps · 8 GE + 2x10GE SFP+', elp:'~ $3,638', elpN:3638},
+  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 120G', seg:'Sucursal gde', spec:'FW 39 Gbps · NGFW 3.1 Gbps · IPsec 35 Gbps · GE + SFP/SFP+ (alta densidad)', elp:'~ $5,511', elpN:5511},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 200G', seg:'Campus / Agr', spec:'FW 39 Gbps · NGFW 7 Gbps · IPsec 36 Gbps · 10GE SFP+ + GE SFP + GE RJ45', elp:'~ $11,477', elpN:11477},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 400G', seg:'Campus / DC edge', spec:'FW 164 Gbps · NGFW 14 Gbps · IPsec 55 Gbps · 4x25GE SFP28 + 16x GE SFP + 5x GE RJ45', elp:'~ $24,696', elpN:24696},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 700G', seg:'DC edge / Enterprise', spec:'FW 164 Gbps · NGFW 29 Gbps · IPsec 55 Gbps · 4x25GE SFP28 + 16x GE SFP + 5x GE RJ45', elp:'~ $35,066', elpN:35066},
@@ -50,7 +57,7 @@ module.exports = [
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 3000G', seg:'Carrier grade / DC core', spec:'FW 397 Gbps · NGFW 85 Gbps · IPsec 105 Gbps · 6x100GE QSFP28/40GE + 16x25GE SFP28 + 18x10GE RJ45', elp:'~ $197,789', elpN:197789},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 3500G', seg:'DC core', spec:'FW 595 Gbps · NGFW 115 Gbps · IPsec 163 Gbps · 2x400GE QSFP-DD + 4x100GE QSFP28 + 30x25GE SFP28', elp:'~ $302,702', elpN:302702},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 3800G', seg:'DC core / Carrier', spec:'FW 795 Gbps · NGFW 210 Gbps · IPsec 210 Gbps · 4x400GE + 6x200GE QSFP56 + 18x10GE SFP56', elp:'~ $494,471', elpN:494471},
-  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 40F', seg:'SOHO', spec:'FW 5 Gbps · NGFW 0.8 Gbps · IPsec 4.4 Gbps · 5 GE', elp:'~ $759', elpN:759},
+  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 40F', seg:'SOHO', spec:'FW 5 Gbps · NGFW 0.8 Gbps · IPsec 4.4 Gbps · 5 GE', elp:'~ $873', elpN:873},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 60F', seg:'Sucursal peq', spec:'FW 10 Gbps · NGFW 1 Gbps · IPsec 6.5 Gbps · 10 GE + Wi-Fi opcional', elp:'~ $990', elpN:990},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 71F', seg:'Sucursal peq', spec:'FW 10 Gbps · NGFW 1 Gbps · IPsec 6.1 Gbps · 10 GE RJ45 + 128GB SSD onboard', elp:'~ $1,348', elpN:1348},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 80F', seg:'Sucursal + PoE', spec:'FW 10 Gbps · NGFW 1 Gbps · IPsec 6.5 Gbps · 8 GE + 2 SFP', elp:'~ $1,852', elpN:1852},
@@ -65,15 +72,15 @@ module.exports = [
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 4200F', seg:'DC core', spec:'FW 800 Gbps · NGFW 47 Gbps · IPsec 210 Gbps · 8x100GE QSFP28/40GE + 18x25GE SFP28', elp:'~ $321,568', elpN:321568},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 4400F', seg:'DC core', spec:'FW 1.1 Tbps · NGFW 82 Gbps · IPsec 310 Gbps · 12x100GE QSFP28/40GE + 20x25GE SFP28', elp:'~ $417,701', elpN:417701},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 4800F', seg:'Hyperscale DC', spec:'FW 3.1 Tbps · NGFW 77 Gbps · IPsec 800 Gbps · 8x400GE + 12x50GE SFP56', elp:'~ $451,440', elpN:451440},
-  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 7081F', seg:'Carrier / ISP', spec:'FW 1.9 Tbps · NGFW 330 Gbps · IPsec 378 Gbps · Chasis modular FPM (interfaces variables)', elp:'~ $387,090', elpN:387090},
-  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 7121F', seg:'Carrier / National', spec:'FW 1.9 Tbps · NGFW 550 Gbps · IPsec 630 Gbps · Chasis modular FPM (interfaces variables)', elp:'~ $630,630', elpN:630630},
+  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 7081F', seg:'Carrier / ISP', spec:'FW 1.9 Tbps · NGFW 330 Gbps · IPsec 378 Gbps · Chasis modular FPM (interfaces variables)', elp:'~ $445,154', elpN:445154},
+  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 7121F', seg:'Carrier / National', spec:'FW 1.9 Tbps · NGFW 550 Gbps · IPsec 630 Gbps · Chasis modular FPM (interfaces variables)', elp:'~ $725,225', elpN:725225},
   // Variantes con SSD onboard (mismo ASIC/throughput que su modelo base, ver comentario en fortinet.js) —
   // agregadas tras validar contra el price list que 25 de los 33 modelos base tienen un SKU hermano activo.
-  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 31G', seg:'SOHO / Teletrabajo', spec:'FW 4 Gbps · NGFW 570 Mbps · IPsec 3.5 Gbps · 4 GE RJ45 + 30GB SSD onboard', elp:'~ $796', elpN:796},
-  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 51G', seg:'SOHO / Sucursal peq', spec:'FW 5 Gbps · NGFW 1.3 Gbps · IPsec 4.5 Gbps · 5 GE + variantes SFP/5G + 64GB SSD onboard', elp:'~ $1,133', elpN:1133},
-  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 71G', seg:'Sucursal peq', spec:'FW 10 Gbps · NGFW 1.5 Gbps · IPsec 7.1 Gbps · 8 GE + variantes Wi-Fi/5G + 64GB SSD onboard', elp:'~ $1,657', elpN:1657},
-  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 91G', seg:'Sucursal med', spec:'FW 28 Gbps · NGFW 2.5 Gbps · IPsec 25 Gbps · 8 GE + 2x10GE SFP+ + 120GB SSD onboard', elp:'~ $3,922', elpN:3922},
-  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 121G', seg:'Sucursal gde', spec:'FW 39 Gbps · NGFW 3.1 Gbps · IPsec 35 Gbps · GE + SFP/SFP+ (alta densidad) + 480GB SSD onboard', elp:'~ $5,510', elpN:5510},
+  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 31G', seg:'SOHO / Teletrabajo', spec:'FW 4 Gbps · NGFW 570 Mbps · IPsec 3.5 Gbps · 4 GE RJ45 + 30GB SSD onboard', elp:'~ $876', elpN:876},
+  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 51G', seg:'SOHO / Sucursal peq', spec:'FW 5 Gbps · NGFW 1.3 Gbps · IPsec 4.5 Gbps · 5 GE + variantes SFP/5G + 64GB SSD onboard', elp:'~ $1,246', elpN:1246},
+  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 71G', seg:'Sucursal peq', spec:'FW 10 Gbps · NGFW 1.5 Gbps · IPsec 7.1 Gbps · 8 GE + variantes Wi-Fi/5G + 64GB SSD onboard', elp:'~ $1,823', elpN:1823},
+  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 91G', seg:'Sucursal med', spec:'FW 28 Gbps · NGFW 2.5 Gbps · IPsec 25 Gbps · 8 GE + 2x10GE SFP+ + 120GB SSD onboard', elp:'~ $4,314', elpN:4314},
+  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 121G', seg:'Sucursal gde', spec:'FW 39 Gbps · NGFW 3.1 Gbps · IPsec 35 Gbps · GE + SFP/SFP+ (alta densidad) + 480GB SSD onboard', elp:'~ $6,337', elpN:6337},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 201G', seg:'Campus / Agr', spec:'FW 39 Gbps · NGFW 7 Gbps · IPsec 36 Gbps · 10GE SFP+ + GE SFP + GE RJ45 + 480GB SSD onboard', elp:'~ $12,693', elpN:12693},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 401G', seg:'Campus / DC edge', spec:'FW 164 Gbps · NGFW 14 Gbps · IPsec 55 Gbps · 4x25GE SFP28 + 16x GE SFP + 5x GE RJ45 + 960GB SSD onboard', elp:'~ $27,773', elpN:27773},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 701G', seg:'DC edge / Enterprise', spec:'FW 164 Gbps · NGFW 29 Gbps · IPsec 55 Gbps · 4x25GE SFP28 + 16x GE SFP + 5x GE RJ45 + 960GB SSD onboard', elp:'~ $38,254', elpN:38254},
