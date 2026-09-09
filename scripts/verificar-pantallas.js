@@ -110,10 +110,23 @@ const PANTALLAS = [
     titulo: 'Portal — las once secciones',
     listo: '.nav-btn[data-page="dashboard"]',
     async acciones(page) {
+      // Fortinet ya no tiene seccion propia dentro del portal: su boton navega directo al
+      // dimensionador, que paso a ser su pagina principal (mismo mapa `directo` que
+      // public/js/index.js). Se comprueba la navegacion en vez de una clase .active, y se
+      // vuelve al portal para seguir con el resto de secciones.
+      const navegaDirecto = { fortinet: 'dimensionador-fortinet-fortigate.html' };
       const secciones = await page.$$eval('.nav-btn[data-page]', (bs) => bs.map((b) => b.dataset.page));
       for (const s of secciones) {
         await page.click(`.nav-btn[data-page="${s}"]`);
         await espera(page, 250);
+        if (navegaDirecto[s]) {
+          if (!page.url().endsWith(navegaDirecto[s])) {
+            throw new Error(`la seccion "${s}" no navego a ${navegaDirecto[s]}`);
+          }
+          await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
+          await espera(page, 250);
+          continue;
+        }
         // Una seccion que no se activa deja al usuario mirando la anterior sin saberlo.
         const activa = await page.$eval(`#page-${s}`, (el) => el.classList.contains('active')).catch(() => false);
         if (!activa) throw new Error(`la seccion "${s}" no se activo al pulsar su boton`);
