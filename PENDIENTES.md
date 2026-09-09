@@ -336,6 +336,58 @@ Dos cosas que ayudan a decidir:
 
 ## Cerrado recientemente
 
+### Fortinet: el dimensionador pasa a ser su página principal — piloto (2026-09-09)
+
+A petición del dueño del repo, con la instrucción explícita de hacerlo primero solo para
+Fortinet y decidir después si se replica a los otros seis fabricantes.
+
+**Antes**, el botón «Fortinet» del dashboard y de la barra lateral llevaba a una vista de
+catálogo dentro del portal, con un botón aparte para abrir el dimensionador en otra pestaña —
+dos pantallas para una sola herramienta activa. **Ahora** el botón navega directo al
+dimensionador, que suma dos pestañas (**Catálogo**, **Fuentes**) a las tres que ya tenía
+(Dimensionar, Equipo y BOM, Licencias). El catálogo se pinta desde `MODELS`, ya cargado para el
+propio dimensionador — no se repite el fetch a `/api/catalog` para mostrar lo mismo dos veces —
+e incluye los modelos fuera de venta marcados, a diferencia del portal, que los ocultaba del todo
+(criterio de `FICHA.rango`: se muestran, no se recomiendan).
+
+**La vista de catálogo/fuentes de Fortinet en el portal se retiró.** Su lógica de
+procedencia, carga de fuente oficial y contraste en el acto contra el catálogo —que usan
+también los otros seis fabricantes— se extrajo de `index.js` a **`public/js/procedencia.js`**,
+un módulo compartido (mismo patrón que `bom.js`/`ficha.js`/`estado.js`) que ambas páginas
+cargan: evita duplicar ~300 líneas y que el dimensionador y el portal diverjan en esa pestaña.
+El modal de contraste, antes marcado a mano en `index.html`, ahora lo inyecta ese módulo la
+primera vez que hace falta — así una página nueva solo necesita la caja `[data-procedencia]`
+y el `<script>`, sin copiar marcado.
+
+**Divergencia detectada y resuelta antes de publicar.** Mientras se trabajaba, `origin/main`
+avanzó con un commit ajeno a esta tarea (activó el dimensionador de Juniper y quitó
+`target="_blank"` de la navegación del portal) que tocaba los mismos tres archivos. Se fusionó
+a mano conservando ambos cambios y se reverificó completo (lint, 232 pruebas, Chromium).
+
+**Un fallo propio, cazado por `pantallas.yml` y no por mí.** El primer push rompió
+`npm run pantallas`: el chequeo «Portal — las once secciones» esperaba que el botón de
+Fortinet activara `#page-fortinet`, que ya no existe. Corregido en `scripts/verificar-pantallas.js`
+para reconocer que Fortinet ahora **navega** en vez de activar una sección, y volver al portal
+antes de seguir con el resto. Es exactamente para lo que ese workflow existe: cazó una
+regresión real de mi propio cambio antes de que Railway la sirviera — el primer despliegue del
+push quedó marcado `REMOVED` sin llegar a `SUCCESS` (ver `git log`, deploy `f4c19549`).
+
+Verificado en Chromium (tarjeta y barra lateral → dimensionador; pestañas Catálogo/Fuentes con
+el control de carga completo para el rol con permiso `sync`) y en producción tras el despliegue:
+`/salud` responde `ok` y los logs muestran `[seed]` y `Presales corriendo en`. Sin
+tocar los otros seis fabricantes — el piloto queda ahí hasta que se decida replicarlo.
+
+**Mejora propuesta al cerrar esta entrega:** el mapa `directo` que decide qué fabricante
+navega en vez de abrir su sección vive duplicado en dos sitios — `public/js/index.js` (el
+click del portal) y `scripts/verificar-pantallas.js` (la prueba) — con la misma entrada
+`{fortinet: 'dimensionador-fortinet-fortigate.html'}` escrita dos veces. Con un solo
+fabricante no pesa, pero si el piloto se replica a los otros seis, esa lista crecerá en
+ambos archivos a la vez y en algún push alguien va a actualizar uno y olvidar el otro —el
+mismo modo de fallo que ya tuvo `CISCO_EOL_MODELS` al vivir sin nada que lo comprobara. El
+costo de evitarlo hoy es bajo (un JSON compartido que ambos archivos importen) pero es
+trabajo especulativo mientras el mapa tenga una sola entrada; conviene hacerlo en el mismo
+cambio que añada el segundo fabricante, no antes.
+
 ### Sincronización Inteligente replanteada: analiza en producción, publica por PR (2026-09-08)
 
 El módulo estaba bloqueado entero en producción bajo un solo motivo, pero eran dos problemas
