@@ -157,6 +157,12 @@
   }
 
   function montar() {
+    // En el portal la navegación por fabricante la cubre el sidebar; la barra aquí solo
+    // añade un scroll horizontal sin sentido. Se monta únicamente en los dimensionadores.
+    const ruta = (global.location.pathname || '').replace(/^\//, '');
+    const enPortal = !ruta || /^index\.html$/.test(ruta);
+    if (enPortal) return;
+
     if (!document.getElementById('navfab')) {
       const host = document.createElement('div');
       host.id = 'navfab';

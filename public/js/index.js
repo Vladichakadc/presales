@@ -22,7 +22,7 @@ const VENDORS=[
   {id:'juniper',name:'Juniper',accent:'#84B135',icon:'JN',iconCls:'jn',
    desc:'MX edge/core, SRX NGFW, EX/QFX switching. Junos OS, Mist AI, Apstra intent-based networking.',
    series:['SRX 300','SRX 1500','SRX 4000','MX 204/304','MX 480/960','QFX 5000/10000'],
-   tools:['Catálogo de equipos'],live:false},
+   tools:['Dimensionador y BOM','Catálogo de equipos'],live:true},
   {id:'mikrotik',name:'MikroTik',accent:'#C8102E',icon:'MT',iconCls:'mt',
    desc:'RouterOS v7: WireGuard, IPsec, BGP, MPLS, CAPsMAN. hEX SOHO → CCR2216 Core 100G. Precio-rendimiento líder.',
    series:['hEX','RB4011','RB5009','CCR2004','CCR2116','CCR2216','CHR'],
@@ -936,7 +936,7 @@ document.addEventListener('click', (e) => {
   if (tab) { switchTab(tab.dataset.tabgrupo, tab.dataset.tab); return; }
 
   const abrir = e.target.closest('[data-abrir]');
-  if (abrir) { window.open(abrir.dataset.abrir, '_blank'); return; }
+  if (abrir) { window.location.href = abrir.dataset.abrir; return; }
 
   if (e.target.closest('[data-cerrar-sync]')) { closeSyncModal(); return; }
   if (e.target.closest('[data-cerrar-contraste]')) { closeContrasteModal(); return; }
