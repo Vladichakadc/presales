@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-09.
+Última revisión: 2026-09-10.
 
 ---
 
@@ -336,6 +336,64 @@ Dos cosas que ayudan a decidir:
 
 ## Cerrado recientemente
 
+### El piloto de Fortinet se replica a los otros seis fabricantes (2026-09-10)
+
+A petición del dueño del repo, decidiendo el punto que el piloto había dejado abierto
+(«decidir después si se replica a los otros seis»). Huawei, Cisco, Nokia, Juniper, MikroTik y
+Aruba pasan a navegar directo a su dimensionador igual que Fortinet, que suma dos pestañas
+propias («Catálogo», «Fuentes») con la tabla de modelos y la procedencia verificada. Las seis
+secciones que esas pestañas tenían en el portal se retiraron.
+
+**Decisión de diseño resuelta con el dueño del repo: Nokia tiene dos dimensionadores, no
+uno.** El botón «Nokia» navega al **7750 SR** (14 de los 18 modelos, el caso de un solo equipo
+elegido); el fabric 7220 IXR sigue accesible por el paso «extra» de la barra de fabricante, que
+`navegacion.js` ya traía preparado para esto desde el propio piloto.
+
+**Un bug ya en producción, encontrado al explorar el código para replicar el patrón, y
+corregido en el mismo cambio.** Las pastillas «Catálogo»/«Fuentes» de la barra de fabricante
+(`navegacion.js`) seguían redirigiendo a `/index.html?fab=<id>&paso=cat`, una URL que ya no
+hacía nada desde que la sección de Fortinet se quitó del portal — ese clic dejaba a quien lo
+usara varado en el dashboard, en silencio. Replicar el patrón a seis fabricantes más sin
+arreglarlo habría repetido el mismo bug seis veces. Ahora, si el destino es la página en la que
+ya se está, cambia de pestaña en el sitio (dispara un click real sobre el botón de esa pestaña,
+reutilizando el listener que la página ya tiene); si es otro fabricante, navega pidiendo esa
+pestaña por la URL (`?tab=cat`), y la página la abre sola al montar la barra.
+
+**La mejora que el propio piloto dejó anotada, resuelta — y mejor de lo propuesto.** El mapa
+fabricante → dimensionador vivía duplicado en `public/js/index.js` y en
+`scripts/verificar-pantallas.js`. La propuesta original era un JSON compartido nuevo; resultó
+innecesaria porque `navegacion.js` ya mantenía ese mismo mapa completo (`FABRICANTES`, con los
+siete) para su propia barra. Ambos sitios pasan a leerlo de ahí —`window.NAVFAB.FABRICANTES`,
+cargando `navegacion.js` también en el portal, donde no pinta nada pero expone el dato— en vez
+de mantener una segunda copia. Cero archivos nuevos.
+
+**Lo que cada dimensionador ya tenía se preservó, no se rediseñó.** MikroTik y Aruba tenían una
+tercera pestaña propia en el portal («RouterOS Features», «SD-WAN y Licencias») que se llevó
+tal cual. Un hallazgo cambió el plan sobre la marcha: la pestaña «SD-WAN y Licencias» de Aruba
+resultó ser **redundante** con contenido que su dimensionador ya tenía en su propia pestaña de
+licencias (la misma nota metodológica proceso-vs-caudal, la misma tabla de Boost como pool) —
+así que no se duplicó, y Aruba solo sumó «Catálogo» y una «Fuentes» liviana que remite a esa
+pestaña para el detalle por producto. Huawei aporta sus dos tablas (AR y NetEngine) desde el
+mismo `MODELS` que ya carga su dimensionador —los 40 modelos traen el campo `cls` que las
+distingue—, sin repetir el fetch. Juniper separa SRX y Session Smart Router en dos tablas, la
+misma regla de «no se comparan entre sí» que ya aplica en el resto de esa página. Aruba declara
+en la columna «Capacidad» si es rango WAN (EdgeConnect) o firewall (gateways), en vez de fundir
+dos medidas distintas en un solo número.
+
+Verificado en Chromium en las 7 páginas: navegación directa desde sidebar y dashboard, tablas
+de catálogo con la cuenta de modelos esperada, pestaña de Fuentes con procedencia en vivo, y el
+caso que antes fallaba (pastilla «Fuentes» de la barra inferior) cambiando de pestaña en el
+sitio en vez de navegar. Sin errores de consola en ninguna. 232 pruebas (sin cambios: todo el
+trabajo es de frontend, sin tocar servidor ni API).
+
+**Mejora propuesta al cerrar esta entrega:** `scripts/verificar-pantallas.js` mueve el caudal y
+abre la pestaña de BOM en los 7 dimensionadores, pero nunca visita sus pestañas nuevas de
+«Catálogo»/«Fuentes» — una regresión ahí (por ejemplo, `renderCatalogo()` rompiéndose el día que
+cambie la forma de `MODELS`) pasaría los 15/15 sin que nadie se entere hasta que alguien abra la
+pestaña a mano. El costo de cerrarlo es bajo (dos clics más por dimensionador en la función que
+ya conduce las 7 páginas) pero no se hizo en este cambio para no mezclar la replicación con una
+ampliación del verificador.
+
 ### Fortinet: el dimensionador pasa a ser su página principal — piloto (2026-09-09)
 
 A petición del dueño del repo, con la instrucción explícita de hacerlo primero solo para
@@ -377,7 +435,8 @@ el control de carga completo para el rol con permiso `sync`) y en producción tr
 `/salud` responde `ok` y los logs muestran `[seed]` y `Presales corriendo en`. Sin
 tocar los otros seis fabricantes — el piloto queda ahí hasta que se decida replicarlo.
 
-**Mejora propuesta al cerrar esta entrega:** el mapa `directo` que decide qué fabricante
+**Mejora propuesta al cerrar esta entrega — resuelta (2026-09-10)**, ver la entrada de arriba:
+el mapa `directo` que decide qué fabricante
 navega en vez de abrir su sección vive duplicado en dos sitios — `public/js/index.js` (el
 click del portal) y `scripts/verificar-pantallas.js` (la prueba) — con la misma entrada
 `{fortinet: 'dimensionador-fortinet-fortigate.html'}` escrita dos veces. Con un solo

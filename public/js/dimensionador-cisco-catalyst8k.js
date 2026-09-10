@@ -45,7 +45,7 @@ let hayCandidato=true;
 /* ── Tabs ── */
 document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
   document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x===b));
-  ['calc','bom','optics'].forEach(t => $('pane-'+t).hidden = (t !== b.dataset.tab));
+  ['calc','bom','optics','cat','src'].forEach(t => $('pane-'+t).hidden = (t !== b.dataset.tab));
 }));
 
 /* ── Mode ── */
@@ -80,6 +80,26 @@ function fmt(m){
   return Math.round(m)+' Mbps';
 }
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+// Catálogo Cisco, con la misma tabla que antes vivía en la vista de Cisco del portal (ver
+// CLAUDE.md, 2026-09-10): se pinta desde MODELS, ya cargado para el propio dimensionador.
+// Se incluyen los modelos fuera de venta o de línea anterior (con su marca, misma regla de
+// FICHA.rango que ya usa esta página para vencido()), a diferencia del portal, que los ocultaba.
+function renderCatalogo(){
+  const tbody=document.querySelector('#tbl-cisco-cat tbody');
+  if(!tbody) return;
+  tbody.innerHTML=MODELS.map(m=>{
+    const r=FICHA.rango(m);
+    const marca=r===2?' <span class="pillc" style="color:var(--red)">Fuera de venta</span>'
+      :r===1?' <span class="pillc">Línea anterior</span>':'';
+    return `<tr>
+    <td><code>${esc(m.id)}</code>${marca}</td><td>${esc(m.ser)}</td><td>${esc(m.fam)}</td>
+    <td class="n">${fmt(m.fwd)}</td><td class="n">${fmt(m.ipsec)}</td><td>${esc(m.ports)}</td>
+    <td>${m.sdwan?fmt(m.sdwan):'—'}</td>
+    <td class="n" style="color:var(--amber);white-space:nowrap">${m.elp?esc(m.elp):'Consultar CCW'}</td>
+  </tr>`;
+  }).join('');
+}
 
 /* ── RENDER CALC ── */
 function render(){
@@ -497,6 +517,8 @@ $('xlsBtn').addEventListener('click', async()=>{
 
   render();
   renderBom();
+  renderCatalogo();
+  PROCEDENCIA.registrarModelos('cisco', () => MODELS.map(m => ({ model: m.id, ...m })));
 })();
 
 /* Enlace de eventos movido desde onclick= en el HTML, para permitir una CSP con

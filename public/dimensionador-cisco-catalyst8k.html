@@ -105,6 +105,10 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 .btn{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px;cursor:pointer;white-space:nowrap}
 .btn.ghost{background:#fff;color:var(--ink)}
 .pillc{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 4px;border-radius:2px;background:var(--paper);color:var(--steel)}
+.fuentes-list{font-size:13.5px;color:var(--steel);padding:0;margin:0 0 0 20px}
+.fuentes-list li{margin-bottom:8px}
+.fuentes-list a{color:var(--ink);text-decoration:none;font-weight:600}
+.fuentes-list a:hover{text-decoration:underline;color:var(--red)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <script src="/js/fuentes.js" defer></script>
@@ -124,6 +128,8 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   <button role="tab" aria-selected="true" data-tab="calc">Dimensionar</button>
   <button role="tab" aria-selected="false" data-tab="bom">Equipo y BOM</button>
   <button role="tab" aria-selected="false" data-tab="optics">Catálogo de ópticas</button>
+  <button role="tab" aria-selected="false" data-tab="cat">Catálogo</button>
+  <button role="tab" aria-selected="false" data-tab="src">Fuentes</button>
 </div>
 
 <!-- ════ TAB 1 · CALCULADORA ════ -->
@@ -332,6 +338,36 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 </section>
 </div>
 
+<!-- ════ TAB · CATÁLOGO ════ -->
+<div class="tabpane" id="pane-cat" hidden>
+<section class="panel">
+  <h2>Catálogo Cisco — Throughput de referencia <span style="font-weight:400;color:var(--steel)">— Precio ref. USD incluido</span></h2>
+  <div class="scroll"><table data-ordenable id="tbl-cisco-cat">
+    <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Forwarding</th><th>IPsec</th><th>Puertos</th><th>SD-WAN</th><th>Precio ref. USD&#9432;</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <p style="font-size:11px;color:var(--steel);margin-top:10px">&#9432; Precio de lista estimado (ELP p&#250;blico). No incluye descuentos de canal, licencias DNA ni soporte. Verificar en CCW con distribuidor autorizado. Los modelos fuera de venta se muestran igual, marcados, porque ampliar un parque instalado es justo cuando hace falta consultarlos.</p>
+</section>
+</div>
+
+<!-- ════ TAB · FUENTES ════ -->
+<div class="tabpane" id="pane-src" hidden>
+<section class="panel">
+  <h2>Procedencia verificada</h2>
+  <p style="font-size:13px;color:var(--steel);margin-bottom:12px">De qué documento y de qué fecha salen las cifras de este catálogo. Se llena desde <code>/api/fuentes</code>; una fuente sin fecha o de más de seis meses se marca.</p>
+  <div data-procedencia="cisco">Cargando…</div>
+</section>
+<section class="panel">
+  <h2>Fuentes de Información y Precios</h2>
+  <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Toda la información técnica y los modelos mostrados en esta plataforma han sido filtrados para excluir equipos EOL/EOS (End of Life), basándonos en los siguientes canales oficiales:</p>
+  <ul class="fuentes-list">
+    <li><b>Datasheets y Especificaciones:</b> <a href="https://www.cisco.com/c/en/us/products/routers/index.html" target="_blank">https://www.cisco.com/c/en/us/products/routers/index.html</a><br>Documentación técnica oficial de Cisco para Catalyst 8000, ISR y ASR 1000 series.</li>
+    <li><b>Notificaciones EOL/EOS:</b> <a href="https://www.cisco.com/c/en/us/products/eos-eol-listing.html" target="_blank">https://www.cisco.com/c/en/us/products/eos-eol-listing.html</a><br>Fechas de EoS confirmadas para ISR 4000 (Nov 2023) y modelos antiguos ASR 1000.</li>
+    <li><b>Precios de Referencia (ELP):</b><br>Información extraída del CCW (Cisco Commerce Workspace) y catálogos públicos GPL (Global Price List). No incluye licencias obligatorias DNA ni soporte SmartNet.</li>
+  </ul>
+</section>
+</div>
+
 <p class="note">
 <b>Cisco Networking Cloud — unificación Meraki/Catalyst.</b> Dos frentes confirmados. <b>Switching:</b> desde IOS XE 17.15+, el Meraki Dashboard también gestiona switches Catalyst 9200/9300/9500 elegibles, reutilizando la licencia DNA ya comprada sin costo Meraki adicional hasta el 1-feb-2029 ("Cloud Entitlement for DNA") — no aplica a los routers de este dimensionador. <b>Routing/SD-WAN (hallazgo confirmado en export real de CCW):</b> el chasis "Secure Router (G2)" que reemplaza al Catalyst 8300/8200 se vende en dos SKUs sobre el mismo hardware — sin sufijo "-MX" corre IOS XE clásico (CCW + DNA), con sufijo "-MX" (<code>C8355-G2-MX</code>, <code>C8455-G2-MX</code>, <code>C8111-G2-MX</code>, <code>C8121-G2-MX</code>) corre Meraki OS gestionado 100% desde el dashboard. La elección IOS XE vs. Meraki ya es una decisión de SKU sobre el mismo fierro, no de plataformas distintas — esto sí es directamente relevante para este dimensionador. Familia 8400 (C8455-G2, sucesor de gama alta): 67 Gbps forwarding, 31 Gbps IPsec, 15.5 Gbps SD-WAN.
 </p>
@@ -355,6 +391,8 @@ comparativa SD-WAN sintetizada de <a href="https://www.peerspot.com/products/com
 <script src="/js/ficha.js"></script>
 <script src="/js/estado.js"></script>
 <script src="/js/tabla.js"></script>
+<script src="/js/contraste.js"></script>
+<script src="/js/procedencia.js"></script>
 <script src="/js/dimensionador-cisco-catalyst8k.js"></script>
 <script src="/js/navegacion.js"></script>
 </body>

@@ -103,13 +103,6 @@ function go(page){
 
 /* ═══════ RENDER DASHBOARD ═══════ */
 
-function switchTab(vendor, tabId) {
-  document.querySelectorAll('#page-'+vendor+' .tab-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('#page-'+vendor+' .tab-content').forEach(c=>c.classList.remove('active'));
-  document.querySelector('#page-'+vendor+' .btn-'+tabId).classList.add('active');
-  document.getElementById('tab-'+tabId+'-'+vendor).classList.add('active');
-}
-
 function renderDash(){
   document.getElementById('dashGrid').innerHTML=VENDORS.map(v=>{
     const n=v.id==='huawei'
@@ -134,56 +127,6 @@ function renderDash(){
       </div>
     </div>`;
   }).join('');
-}
-
-/* ═══════ RENDER TABLES ═══════ */
-function renderTables(){
-  const q=(id,rows)=>document.querySelector('#'+id+' tbody').innerHTML=rows;
-
-  q('tbl-hw-ar',PR.hw_ar.map(p=>`<tr>
-    <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
-    <td class="n">${fmtMbps(p.fwd)}</td><td class="n">${p.ipsec?fmtMbps(p.ipsec):'—'}</td>
-    <td class="n">${p.sdwan}</td><td class="n">${p.lan}</td><td>${p.ports}</td>
-  </tr>`).join(''));
-
-  q('tbl-hw-wan',PR.hw_wan.map(p=>`<tr>
-    <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
-    <td class="n">${p.cap}</td><td class="n">${p.mpps}</td><td>${p.ports}</td>
-  </tr>`).join(''));
-
-  q('tbl-cisco',PR.cisco.map(p=>`<tr>
-    <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
-    <td class="n">${p.fwd}</td><td class="n">${p.ipsec}</td><td>${p.ports}</td><td>${p.sdwan}</td>
-    <td class="n" style="color:var(--amber);white-space:nowrap">${p.elp||'—'}</td>
-  </tr>`).join(''));
-
-  q('tbl-nokia',PR.nokia.map(p=>`<tr>
-    <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
-    <td class="n">${p.cap}</td><td>${p.ports}</td><td>${p.protos}</td>
-  </tr>`).join(''));
-
-  q('tbl-juniper',PR.juniper.map(p=>`<tr>
-    <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
-    <td class="n">${p.cap}</td><td>${p.ports}</td><td>${p.use}</td>
-  </tr>`).join(''));
-
-  if(PR.mikrotik&&document.querySelector('#tbl-mikrotik tbody')){
-    q('tbl-mikrotik',(PR.mikrotik||[]).map(p=>`<tr>
-      <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
-      <td class="n">${fmtMbps(p.fwd)}</td><td class="n">${p.ipsec?fmtMbps(p.ipsec):'—'}</td>
-      <td>${p.sdwan}</td><td>${p.ports}</td>
-      <td class="n" style="color:var(--amber);white-space:nowrap">${p.elp||'—'}</td>
-    </tr>`).join(''));
-  }
-
-  if(PR.aruba&&document.querySelector('#tbl-aruba tbody')){
-    q('tbl-aruba',(PR.aruba||[]).map(p=>`<tr>
-      <td><code>${esc(p.model)}</code></td><td>${p.ser}</td><td>${p.seg}</td>
-      <td class="n">${fmtMbps(p.fwd)}</td><td class="n">${p.ipsec?fmtMbps(p.ipsec):'—'}</td>
-      <td>${p.sdwan}</td><td>${p.ports}</td>
-      <td class="n" style="color:var(--amber);white-space:nowrap">${p.elp||'—'}</td>
-    </tr>`).join(''));
-  }
 }
 
 /* ═══════ COMPARATOR ═══════ */
@@ -559,18 +502,9 @@ async function applySync() {
   PR = await res.json();
   buildAll();
   renderDash();
-  renderTables();
   populateCmp();
-  // El contraste al subir una fuente oficial (js/procedencia.js) necesita saber de dónde
-  // sacar los modelos de cada fabricante para comparar: Huawei es dos catálogos (AR+WAN),
-  // el resto uno solo. Fortinet no se registra aquí — su pestaña "Fuentes" vive en su propio
-  // dimensionador, que se registra con sus propios MODELS.
-  PROCEDENCIA.registrarModelos('huawei', () => [...(PR.hw_ar || []), ...(PR.hw_wan || [])]);
-  PROCEDENCIA.registrarModelos('cisco', () => PR.cisco || []);
-  PROCEDENCIA.registrarModelos('nokia', () => PR.nokia || []);
-  PROCEDENCIA.registrarModelos('juniper', () => PR.juniper || []);
-  PROCEDENCIA.registrarModelos('mikrotik', () => PR.mikrotik || []);
-  PROCEDENCIA.registrarModelos('aruba', () => PR.aruba || []);
+  // Ningún fabricante registra su procedencia aquí: la pestaña "Fuentes" de cada uno vive
+  // en su propio dimensionador, que se registra con sus propios MODELS/CATALOGO.
 })();
 
 /* ══════ ENLACE DE EVENTOS ══════
@@ -581,16 +515,14 @@ async function applySync() {
 document.addEventListener('click', (e) => {
   const ir = e.target.closest('[data-ir]');
   if (ir) {
-    // Fortinet ya no tiene vista propia en el portal: su catálogo y sus fuentes viven como
-    // pestañas de su dimensionador, que pasó a ser su página principal. El mapa queda listo
-    // para sumar los otros fabricantes si el mismo cambio se extiende más adelante.
-    const directo = { fortinet: 'dimensionador-fortinet-fortigate.html' }[ir.dataset.ir];
-    if (directo) { location.href = directo; return; }
+    // Ningún fabricante tiene ya vista propia en el portal: su catálogo y sus fuentes viven
+    // como pestañas de su dimensionador, que pasó a ser su página principal. El mapa
+    // fabricante -> dimensionador vive una sola vez, en navegacion.js (window.NAVFAB), para
+    // no mantener la misma lista duplicada aquí.
+    const fab = (window.NAVFAB && window.NAVFAB.FABRICANTES || []).find((f) => f.id === ir.dataset.ir);
+    if (fab && fab.dim) { location.href = fab.dim; return; }
     go(ir.dataset.ir); return;
   }
-
-  const tab = e.target.closest('[data-tabgrupo]');
-  if (tab) { switchTab(tab.dataset.tabgrupo, tab.dataset.tab); return; }
 
   const abrir = e.target.closest('[data-abrir]');
   if (abrir) { window.location.href = abrir.dataset.abrir; return; }

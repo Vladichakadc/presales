@@ -146,14 +146,20 @@
       global.location.href = '/index.html#' + destino.id;
       return;
     }
-    // Catálogo o fuentes: viven en el portal.
-    if (enPortal && typeof global.go === 'function') {
-      global.go(destino.id);
-      if (typeof global.switchTab === 'function') global.switchTab(destino.id, p === 'src' ? 'src' : 'cat');
-      pintar();
+    // Catálogo y fuentes viven ahora como pestañas del propio dimensionador (mismo dato que
+    // `dim`): si el destino es la página en la que ya estás, cambia de pestaña en el sitio
+    // disparando un click real sobre su propio botón (reutiliza el listener que esa página
+    // ya tiene, sin exponer nada nuevo). Si el destino es otro fabricante, se navega pidiendo
+    // esa pestaña por la URL.
+    if (destino.dim) {
+      if (!enPortal && situacion().fab === destino) {
+        document.querySelector(`.tabs button[data-tab="${p}"]`)?.click();
+        return;
+      }
+      global.location.href = `/${destino.dim}?tab=${encodeURIComponent(p)}`;
       return;
     }
-    global.location.href = `/index.html?fab=${encodeURIComponent(destino.id)}&paso=${encodeURIComponent(p)}`;
+    global.location.href = `/index.html#${destino.id}`;
   }
 
   function montar() {
@@ -175,6 +181,11 @@
     estilo.textContent = CSS;
     document.head.appendChild(estilo);
     pintar();
+
+    // Llegar con ?tab=cat|src desde el fabricante anterior: abre esa pestaña de una,
+    // mismo patrón que js/estado.js repone escenario desde la URL.
+    const tabQ = new URLSearchParams(global.location.search).get('tab');
+    if (tabQ) document.querySelector(`.tabs button[data-tab="${tabQ}"]`)?.click();
 
     document.addEventListener('click', (e) => {
       const f = e.target.closest && e.target.closest('[data-navfab-ir]');

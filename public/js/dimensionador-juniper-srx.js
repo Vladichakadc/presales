@@ -23,6 +23,23 @@ const fmt = (m) => (m == null ? 'sin dato' : (m >= 1000 ? `${(m / 1000).toFixed(
 const miles = (n) => (n == null ? 'sin dato' : n.toLocaleString('en-US'));
 
 let MODELS = [], SDWAN = [], BUNDLES = {}, CARE = {};
+
+// Catálogo Juniper, con la misma tabla que antes vivía en la vista de Juniper del portal
+// (ver CLAUDE.md, 2026-09-10): SRX y SD-WAN son dos productos que no se comparan entre sí
+// (misma regla que el resto de la página), así que se listan en tablas separadas.
+function renderCatalogo() {
+  const tbodySrx = document.querySelector('#tbl-juniper-srx-cat tbody');
+  const tbodySdwan = document.querySelector('#tbl-juniper-sdwan-cat tbody');
+  if (!tbodySrx || !tbodySdwan) return;
+  tbodySrx.innerHTML = MODELS.map((m) => `<tr>
+    <td><code>${esc(m.id)}</code></td><td>${esc(m.ser)}</td><td>${esc(m.seg)}</td>
+    <td class="n">${fmt(m.fw)}</td><td>${esc(m.ifaces)}</td>
+  </tr>`).join('');
+  tbodySdwan.innerHTML = SDWAN.map((m) => `<tr>
+    <td><code>${esc(m.id)}</code></td><td>${esc(m.ser)}</td><td>${esc(m.seg)}</td>
+    <td class="n">${fmt(m.cap)}</td><td>${esc(m.ifaces)}</td>
+  </tr>`).join('');
+}
 let plat = 'srx', capa = 'ips', lastPick = null;
 // Si el dimensionamiento se queda sin candidato, el BOM tiene que DECIRLO en vez de seguir
 // mostrando el ultimo equipo que si cumplia.
@@ -74,6 +91,8 @@ function capaEfectiva() {
   $('licTier').innerHTML = Object.keys(BUNDLES)
     .map((k, i) => `<option value="${esc(k)}"${i === Object.keys(BUNDLES).length - 1 ? ' selected' : ''}>${esc(BUNDLES[k].n)}</option>`).join('');
   render();
+  renderCatalogo();
+  PROCEDENCIA.registrarModelos('juniper', () => [...MODELS, ...SDWAN].map((m) => ({ model: m.id, ...m })));
 }());
 
 /* ══ Controles ══ */

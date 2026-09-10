@@ -62,6 +62,11 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 .btn{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px;cursor:pointer}
 .btn.ghost{background:#fff;color:var(--ink)}
 .hidden{display:none!important}
+.pillc{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 4px;border-radius:2px;background:var(--paper);color:var(--steel)}
+.fuentes-list{font-size:13.5px;color:var(--steel);padding:0;margin:0 0 0 20px}
+.fuentes-list li{margin-bottom:8px}
+.fuentes-list a{color:var(--ink);text-decoration:none;font-weight:600}
+.fuentes-list a:hover{text-decoration:underline;color:var(--red)}
 </style>
 <script src="/js/fuentes.js" defer></script>
 </head>
@@ -79,6 +84,8 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <div class="tabs" role="tablist">
   <button role="tab" aria-selected="true" data-tab="calc">Dimensionar</button>
   <button role="tab" aria-selected="false" data-tab="bom">Equipo y BOM</button>
+  <button role="tab" aria-selected="false" data-tab="cat">Catálogo</button>
+  <button role="tab" aria-selected="false" data-tab="src">Fuentes</button>
 </div>
 
 <!-- ════ TAB 1 · CALCULADORA ════ -->
@@ -196,6 +203,35 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 </div>
 </div>
 
+<!-- ════ TAB · CATÁLOGO ════ -->
+<div class="tabpane" id="pane-cat" hidden>
+<section class="panel">
+  <h2>Catálogo Nokia — Capacidad de referencia</h2>
+  <div class="scroll"><table data-ordenable id="tbl-nokia-cat">
+    <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Capacidad</th><th>Interfaces</th><th>Protocolos</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <p style="font-size:11px;color:var(--steel);margin-top:10px">Sin lista de precios de Nokia en el material disponible: todas las líneas van «Consultar».</p>
+</section>
+</div>
+
+<!-- ════ TAB · FUENTES ════ -->
+<div class="tabpane" id="pane-src" hidden>
+<section class="panel">
+  <h2>Procedencia verificada</h2>
+  <p style="font-size:13px;color:var(--steel);margin-bottom:12px">De qué documento y de qué fecha salen las cifras de este catálogo. Se llena desde <code>/api/fuentes</code>; una fuente sin fecha o de más de seis meses se marca.</p>
+  <div data-procedencia="nokia">Cargando…</div>
+</section>
+<section class="panel">
+  <h2>Fuentes de Información y Precios</h2>
+  <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Toda la información técnica y los modelos mostrados en esta plataforma han sido filtrados para excluir equipos EOL/EOS (End of Life), basándonos en los siguientes canales oficiales:</p>
+  <ul class="fuentes-list">
+    <li><b>Portafolio IP Networks:</b> <a href="https://www.nokia.com/networks/portfolio/ip-networks/" target="_blank">https://www.nokia.com/networks/portfolio/ip-networks/</a><br>Datasheets oficiales de Service Routers (7750 SR, 7250 IXR y 7210 SAS).</li>
+    <li><b>Precios de Referencia:</b><br>Precios de lista orientativos del mercado portador/enterprise. No incluye licencias de features avanzadas.</li>
+  </ul>
+</section>
+</div>
+
 <p class="note">
 <b>Fuentes:</b> capacidad de conmutación y puertos de <a href="https://www.nokia.com/ip-networks/routers/" target="_blank" rel="noopener">nokia.com/ip-networks/routers</a>, ya verificados en el catálogo del portal y aquí solo estructurados en campos numéricos. Precios: sin lista pública verificada, todas las líneas de equipo van «Consultar».
 </p>
@@ -204,6 +240,9 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <script src="/js/ficha.js"></script>
 <script src="/js/bom.js"></script>
 <script src="/js/estado.js"></script>
+<script src="/js/tabla.js"></script>
+<script src="/js/contraste.js"></script>
+<script src="/js/procedencia.js"></script>
 <script src="/js/dimensionador-nokia-7750sr.js"></script>
 <script src="/js/navegacion.js"></script>
 </body>

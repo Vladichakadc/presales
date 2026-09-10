@@ -114,6 +114,10 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 .tierRow.on .tv{color:var(--ink);font-weight:600}
 .tierRow.off .tb i{background:#8FA3B8}
 .tierDrop{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--amber);margin:2px 0 9px 122px}
+.fuentes-list{font-size:13.5px;color:var(--steel);padding:0;margin:0 0 0 20px}
+.fuentes-list li{margin-bottom:8px}
+.fuentes-list a{color:var(--ink);text-decoration:none;font-weight:600}
+.fuentes-list a:hover{text-decoration:underline;color:var(--red)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <body>
@@ -130,6 +134,8 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <div class="tabs" role="tablist">
   <button role="tab" aria-selected="true" data-tab="calc">Dimensionar</button>
   <button role="tab" aria-selected="false" data-tab="bom">Equipo y BOM</button>
+  <button role="tab" aria-selected="false" data-tab="cat">Catálogo</button>
+  <button role="tab" aria-selected="false" data-tab="src">Fuentes</button>
 </div>
 
 <!-- ════ TAB 1 · DIMENSIONAR ════ -->
@@ -254,12 +260,50 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   </section>
 </div>
 
+<!-- ════ TAB · CATÁLOGO ════ -->
+<div class="tabpane" id="pane-cat" hidden>
+<section class="panel">
+  <h2>Catálogo Juniper SRX — Capacidad de referencia</h2>
+  <div class="scroll"><table data-ordenable id="tbl-juniper-srx-cat">
+    <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Firewall</th><th>Interfaces</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</section>
+<section class="panel">
+  <h2>Catálogo Juniper Session Smart Router — Capacidad de referencia</h2>
+  <div class="scroll"><table data-ordenable id="tbl-juniper-sdwan-cat">
+    <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Capacidad</th><th>Interfaces</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <p style="font-size:11px;color:var(--steel);margin-top:10px">SRX y Session Smart Router no se comparan entre sí: son plataformas distintas, la misma regla que aplica en el resto de esta página.</p>
+</section>
+</div>
+
+<!-- ════ TAB · FUENTES ════ -->
+<div class="tabpane" id="pane-src" hidden>
+<section class="panel">
+  <h2>Procedencia verificada</h2>
+  <p style="font-size:13px;color:var(--steel);margin-bottom:12px">De qué documento y de qué fecha salen las cifras de este catálogo. Se llena desde <code>/api/fuentes</code>; una fuente sin fecha o de más de seis meses se marca.</p>
+  <div data-procedencia="juniper">Cargando…</div>
+</section>
+<section class="panel">
+  <h2>Fuentes de Información y Precios</h2>
+  <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Toda la información técnica y los modelos mostrados en esta plataforma han sido filtrados para excluir equipos EOL/EOS (End of Life), basándonos en los siguientes canales oficiales:</p>
+  <ul class="fuentes-list">
+    <li><b>Routing &amp; Security:</b> <a href="https://www.juniper.net/us/en/products/routers.html" target="_blank">https://www.juniper.net/us/en/products/routers.html</a><br>Documentación oficial de las familias MX, SRX y QFX.</li>
+    <li><b>Precios de Referencia (ELP):</b><br>Basado en el GPL (Global Price List) estándar de Juniper. Estimación orientativa.</li>
+  </ul>
+</section>
+</div>
+
 </div>
 
 <script src="/js/bom.js"></script>
 <script src="/js/ficha.js"></script>
 <script src="/js/estado.js"></script>
 <script src="/js/tabla.js"></script>
+<script src="/js/contraste.js"></script>
+<script src="/js/procedencia.js"></script>
 <script src="/js/dimensionador-juniper-srx.js"></script>
 <script src="/js/navegacion.js"></script>
 </body>

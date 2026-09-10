@@ -38,6 +38,18 @@
 
   const fmt = (g) => (g >= 1000 ? `${(g / 1000).toFixed(g % 1000 === 0 ? 0 : 1)} Tbps` : `${g} Gbps`);
 
+  // Catálogo Nokia, con la misma tabla que antes vivía en la vista de Nokia del portal (ver
+  // CLAUDE.md, 2026-09-10): se pinta desde CATALOGO.models, ya cargado para el propio
+  // dimensionador (los 14 modelos de esta página; el fabric 7220 IXR tiene su propia página).
+  function renderCatalogo() {
+    const tbody = document.querySelector('#tbl-nokia-cat tbody');
+    if (!tbody) return;
+    tbody.innerHTML = CATALOGO.models.map((m) => `<tr>
+      <td><code>${esc(m.id)}</code></td><td>${esc(m.ser)}</td><td>${esc(m.seg)}</td>
+      <td class="n">${fmt(m.cap)}</td><td>${esc(m.ifaces || 'sin densidad publicada')}</td><td>${esc(m.protos)}</td>
+    </tr>`).join('');
+  }
+
   // ── Motor puro ──────────────────────────────────────────────────────────────
   // Sin estado ni DOM: recibe todo por parametro y se expone abajo como `window.NOKIA_SR`
   // para poder probarlo, igual que BOM, FICHA y ESTADO exponen el suyo.
@@ -288,6 +300,8 @@
     montarSeg();
     const res = await fetch('/api/dimensionador/nokia-sr');
     CATALOGO = await res.json();
+    renderCatalogo();
+    PROCEDENCIA.registrarModelos('nokia', () => CATALOGO.models.map((m) => ({ model: m.id, ...m })));
 
     ['bw', 'unit', 'head', 'portQty', 'portVel'].forEach((id) => $(id).addEventListener('input', render));
     $('chkHa').addEventListener('change', render);

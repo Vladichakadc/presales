@@ -17,7 +17,7 @@ let bomFilas = [], bomMeta = {};
 /* ---- tabs ---- */
 document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
   document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
-  ['calc','bom','optics'].forEach(t => $('pane-' + t).hidden = (t !== b.dataset.tab));
+  ['calc','bom','optics','cat','src'].forEach(t => $('pane-' + t).hidden = (t !== b.dataset.tab));
 }));
 
 $('modeSeg').addEventListener('click', e => {
@@ -48,6 +48,31 @@ function fmt(m){
   return Math.round(m) + ' Mbps';
 }
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+// Catálogo Huawei, con las mismas dos tablas que antes vivían en la vista de Huawei del
+// portal (ver CLAUDE.md, 2026-09-10): se pintan desde MODELS, ya cargado para el propio
+// dimensionador — los 40 modelos traen `cls` ('AR' o 'WAN'), así que un solo fetch cubre
+// las dos tablas que el portal mostraba por separado.
+function renderCatalogo(){
+  const tbodyAr = document.querySelector('#tbl-hw-ar-cat tbody');
+  const tbodyWan = document.querySelector('#tbl-hw-wan-cat tbody');
+  if (!tbodyAr || !tbodyWan) return;
+  const marca = m => {
+    const r = FICHA.rango(m);
+    return r === 2 ? ' <span class="pillc" style="color:var(--red)">Fuera de venta</span>'
+      : r === 1 ? ' <span class="pillc">Línea anterior</span>' : '';
+  };
+  tbodyAr.innerHTML = MODELS.filter(m => m.cls === 'AR').map(m => `<tr>
+    <td><code>${esc(m.id)}</code>${marca(m)}</td><td>${esc(m.ser)}</td><td>${esc(m.fam)}</td>
+    <td class="n">${fmt(m.fwd)}</td><td class="n">${m.ipsec ? fmt(m.ipsec) : '—'}</td>
+    <td class="n">${m.lan}</td><td>${esc(m.ports)}</td>
+  </tr>`).join('');
+  tbodyWan.innerHTML = MODELS.filter(m => m.cls === 'WAN').map(m => `<tr>
+    <td><code>${esc(m.id)}</code>${marca(m)}</td><td>${esc(m.ser)}</td><td>${esc(m.fam)}</td>
+    <td class="n">${fmt(m.cap)}</td><td class="n">${m.mpps ?? '—'}</td><td>${esc(m.ports)}</td>
+  </tr>`).join('');
+}
+
 const bomTag = arr => (arr && arr.length)
   ? arr.map(b => `<code>${b}</code>`).join(' ')
   : `<code class="pend">por confirmar</code>`;
@@ -485,6 +510,8 @@ $('copyBtn').addEventListener('click', async () => {
 
   render();
   renderBom();
+  renderCatalogo();
+  PROCEDENCIA.registrarModelos('huawei', () => MODELS.map(m => ({ model: m.id, ...m })));
 })();
 
 /* Enlace de eventos movido desde onclick= en el HTML, para permitir una CSP con

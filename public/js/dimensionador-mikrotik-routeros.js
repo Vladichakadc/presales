@@ -25,7 +25,7 @@ const WG_FACTOR=0.45;
 
 document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
-  ['calc','bom','lic'].forEach(t=>$('pane-'+t).hidden=(t!==b.dataset.tab));
+  ['calc','bom','lic','topo','cat','src'].forEach(t=>$('pane-'+t).hidden=(t!==b.dataset.tab));
 }));
 
 const PROFILE_HINT={
@@ -59,6 +59,24 @@ function fmt(v){
 }
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const money=n=>n==null?'—':'$'+Number(n).toLocaleString('en-US',{maximumFractionDigits:2});
+
+// Catálogo MikroTik, con la misma tabla que antes vivía en la vista de MikroTik del portal
+// (ver CLAUDE.md, 2026-09-10): se pinta desde MODELS, ya cargado para el propio dimensionador.
+function renderCatalogo(){
+  const tbody=document.querySelector('#tbl-mikrotik-cat tbody');
+  if(!tbody) return;
+  tbody.innerHTML=MODELS.map(m=>{
+    const r=FICHA.rango(m);
+    const marca=r===2?' <span class="pillc" style="color:var(--red)">Fuera de venta</span>'
+      :r===1?' <span class="pillc">Línea anterior</span>':'';
+    return `<tr>
+    <td><code>${esc(m.id)}</code>${marca}</td><td>${esc(m.ser)}</td><td>${esc(m.seg)}</td>
+    <td class="n">${fmt(m.fwd)}</td><td class="n">${m.ipsec?fmt(m.ipsec):'—'}</td>
+    <td>${esc(m.ports)}</td>
+    <td class="n" style="color:var(--amber);white-space:nowrap">${m.elp?esc(m.elp):'Consultar'}</td>
+  </tr>`;
+  }).join('');
+}
 
 /* ── Motor de dimensionamiento ─────────────────────────────────────────────── */
 
@@ -492,6 +510,8 @@ $('xlsBtn').addEventListener('click',async()=>{
   renderLicTables();
   render();
   renderBom();
+  renderCatalogo();
+  PROCEDENCIA.registrarModelos('mikrotik', () => MODELS.map(m => ({ model: m.id, ...m })));
 })();
 
 /* Enlace de eventos movido desde onclick= en el HTML, para permitir una CSP con

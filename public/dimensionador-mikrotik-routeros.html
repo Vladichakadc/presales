@@ -108,6 +108,12 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
 .btn{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px;cursor:pointer}
 .btn.ghost{background:#fff;color:var(--ink)}
 .opticRow{display:grid;grid-template-columns:1fr 74px;gap:8px;align-items:end;margin-bottom:10px}
+.topo-diagram{background:var(--paper);border-radius:3px;padding:16px;margin:10px 0;font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.65;white-space:pre;overflow-x:auto;color:var(--steel)}
+.pillc{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 4px;border-radius:2px;background:var(--paper);color:var(--steel)}
+.fuentes-list{font-size:13.5px;color:var(--steel);padding:0;margin:0 0 0 20px}
+.fuentes-list li{margin-bottom:8px}
+.fuentes-list a{color:var(--ink);text-decoration:none;font-weight:600}
+.fuentes-list a:hover{text-decoration:underline;color:var(--red)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <script src="/js/fuentes.js" defer></script>
@@ -127,6 +133,9 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
   <button role="tab" aria-selected="true" data-tab="calc">Dimensionar</button>
   <button role="tab" aria-selected="false" data-tab="bom">Equipo y BOM</button>
   <button role="tab" aria-selected="false" data-tab="lic">Licencias y Soporte</button>
+  <button role="tab" aria-selected="false" data-tab="topo">RouterOS Features</button>
+  <button role="tab" aria-selected="false" data-tab="cat">Catálogo</button>
+  <button role="tab" aria-selected="false" data-tab="src">Fuentes</button>
 </div>
 
 <!-- ════ TAB 1 · CALCULADORA ════ -->
@@ -335,6 +344,107 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
 </section>
 </div>
 
+<!-- ════ TAB · ROUTEROS FEATURES ════ -->
+<div class="tabpane" id="pane-topo" hidden>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px">
+    <div class="panel" style="padding:20px">
+      <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 12px">Routing &amp; Switching</h3>
+      <ul style="font-size:13px;color:var(--steel);margin:0;padding-left:18px">
+        <li>OSPFv2/v3, BGP4, RIPv2, IS-IS</li>
+        <li>MPLS / LDP / RSVP-TE (L3VPN, VPLS)</li>
+        <li>VRF / policy routing / ECMP</li>
+        <li>VLAN (802.1Q), Bridge filtering, STP/RSTP/MSTP</li>
+        <li>Bonding LAG/LACP, VXLAN (RouterOS 7.x)</li>
+      </ul>
+    </div>
+    <div class="panel" style="padding:20px">
+      <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 12px">Seguridad / VPN</h3>
+      <ul style="font-size:13px;color:var(--steel);margin:0;padding-left:18px">
+        <li>WireGuard nativo (kernel-level, ~3.1 Gbps en CCR2004)</li>
+        <li>IPsec IKEv2 / IKEv1 — site-to-site y road warrior</li>
+        <li>OpenVPN (TLS), L2TP/IPsec, SSTP, PPPoE</li>
+        <li>Firewall stateful con mangle, NAT, RAW</li>
+        <li>Hotspot gateway, User Manager RADIUS</li>
+      </ul>
+    </div>
+    <div class="panel" style="padding:20px">
+      <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 12px">QoS &amp; Tráfico</h3>
+      <ul style="font-size:13px;color:var(--steel);margin:0;padding-left:18px">
+        <li>Queue Tree / Simple Queue (HTB)</li>
+        <li>Mangle + DSCP marking</li>
+        <li>PCQ (Per Connection Queue) — ISP fair-share</li>
+        <li>Fasttrack (hardware offload) para IPv4/IPv6</li>
+        <li>Torch / Traffic Monitor en tiempo real</li>
+      </ul>
+    </div>
+    <div class="panel" style="padding:20px">
+      <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 12px">Wireless / CAPsMAN</h3>
+      <ul style="font-size:13px;color:var(--steel);margin:0;padding-left:18px">
+        <li>802.11ax Wi-Fi 6 (hAP ax²/ax³, cAP ax)</li>
+        <li>CAPsMAN v2: controlador WiFi centralizado</li>
+        <li>802.11s mesh, channel bonding, Nv2 propietario</li>
+        <li>Spectral scan, Wireless Sniffer</li>
+        <li>RoamingAssist + fast-BSS-transition</li>
+      </ul>
+    </div>
+    <div class="panel" style="padding:20px">
+      <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 12px">Topología típica ISP</h3>
+      <div class="topo-diagram">  CCR2216 (Core 100G)
+     │  BGP upstream
+┌────┴────┐
+CCR2116  CCR2116  (Agregación)
+┌──┤      ├──┐
+RB5009  CCR2004  RB5009  (Hub)
+│              │
+hEX           hEX  (CPE)</div>
+      <p style="font-size:12px;color:var(--steel);margin:8px 0 0">Stack full-MikroTik: RouterOS en todos los nodos, The Dude para monitoreo, Winbox/REST para automatización.</p>
+    </div>
+    <div class="panel" style="padding:20px">
+      <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 12px">Casos de Uso SD-WAN</h3>
+      <ul style="font-size:13px;color:var(--steel);margin:0;padding-left:18px">
+        <li><b>Dual WAN failover:</b> scripting RouterOS + NetWatch</li>
+        <li><b>WireGuard Hub-Spoke:</b> concentrador CCR2004 + spokes RB5009</li>
+        <li><b>BGP anycast VPN:</b> CHR en cloud + CCR2216 en DC</li>
+        <li><b>Load balancing PCC:</b> Per Connection Classifier ISP multi-homed</li>
+        <li><b>ZeroTier / Tailscale:</b> overlay sobre RouterOS CHR</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TAB · CATÁLOGO ════ -->
+<div class="tabpane" id="pane-cat" hidden>
+<section class="panel">
+  <h2>Catálogo MikroTik — Throughput de referencia <span style="font-weight:400;color:var(--steel)">— Precio ref. USD incluido</span></h2>
+  <div class="scroll"><table data-ordenable id="tbl-mikrotik-cat">
+    <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Forwarding</th><th>IPsec</th><th>Puertos</th><th>Precio ref. USD&#9432;</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <p style="font-size:11px;color:var(--steel);margin-top:10px">&#9432; Precio de lista orientativo (USD MSRP). No incluye impuestos locales ni soporte de canal. Verificar con distribuidor MikroTik autorizado. Los modelos fuera de venta o de línea anterior se muestran igual, marcados.</p>
+</section>
+</div>
+
+<!-- ════ TAB · FUENTES ════ -->
+<div class="tabpane" id="pane-src" hidden>
+<section class="panel">
+  <h2>Procedencia verificada</h2>
+  <p style="font-size:13px;color:var(--steel);margin-bottom:12px">De qué documento y de qué fecha salen las cifras de este catálogo. Se llena desde <code>/api/fuentes</code>; una fuente sin fecha o de más de seis meses se marca.</p>
+  <div data-procedencia="mikrotik">Cargando…</div>
+</section>
+<section class="panel">
+  <h2>Fuentes de Información y Precios</h2>
+  <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Información técnica y precios verificados contra documentación oficial MikroTik:</p>
+  <ul class="fuentes-list">
+    <li><b>Productos y Datasheets:</b> <a href="https://mikrotik.com/products" target="_blank">https://mikrotik.com/products</a><br>Catálogo oficial de hardware: CCR2216, CCR2116, CCR2004, RB5009, RB4011, hEX series.</li>
+    <li><b>Wiki RouterOS:</b> <a href="https://wiki.mikrotik.com/wiki/Main_Page" target="_blank">https://wiki.mikrotik.com/wiki/Main_Page</a><br>Documentación técnica oficial de RouterOS 7.x: routing, VPN, QoS, wireless, scripting.</li>
+    <li><b>CHR (Cloud Hosted Router):</b> <a href="https://mikrotik.com/software" target="_blank">https://mikrotik.com/software</a><br>Licencias P1, P10, P-Unlimited para RouterOS virtual en VMware, KVM, AWS, GCP, Azure.</li>
+    <li><b>Certificaciones MTCNA/MTCRE:</b> <a href="https://mikrotik.com/training" target="_blank">https://mikrotik.com/training</a><br>Programa de formación oficial MikroTik: MTCNA, MTCRE, MTCWE, MTCTCE, MTCINE.</li>
+    <li><b>Lista de Precios (ELP):</b><br>Precios MSRP en USD de lista pública. No incluyen impuestos de importación ni márgenes de distribuidor. Verificar disponibilidad con distribuidor autorizado local.</li>
+    <li><b>EOL / Productos descontinuados:</b><br>RouterBOARD legacy (RB2011, RB951) marcados EOL. Solo se muestran equipos con RouterOS 7.x activo y disponibilidad en canal.</li>
+  </ul>
+</section>
+</div>
+
 <p class="note">
 <b>Fuentes:</b>
 <a href="https://mikrotik.com/products" target="_blank" rel="noopener">mikrotik.com/products</a> — datasheets de hardware y catálogo de ópticas ·
@@ -349,6 +459,8 @@ Precios de referencia MSRP público, sin price list regional firmado — <b>veri
 <script src="/js/ficha.js"></script>
 <script src="/js/estado.js"></script>
 <script src="/js/tabla.js"></script>
+<script src="/js/contraste.js"></script>
+<script src="/js/procedencia.js"></script>
 <script src="/js/dimensionador-mikrotik-routeros.js"></script>
 <script src="/js/navegacion.js"></script>
 </body>

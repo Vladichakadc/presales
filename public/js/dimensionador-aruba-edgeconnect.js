@@ -27,7 +27,7 @@ function llevarABom(id){
 
 document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
-  ['calc','bom','lic'].forEach(t=>$('pane-'+t).hidden=(t!==b.dataset.tab));
+  ['calc','bom','lic','cat','src'].forEach(t=>$('pane-'+t).hidden=(t!==b.dataset.tab));
 }));
 
 $('famSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('famSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));famMode=b.dataset.v;render();});
@@ -59,6 +59,25 @@ function fmt(m){
 }
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const miles=n=>n==null?'—':n.toLocaleString('en-US');
+
+// Catálogo Aruba, con la misma tabla que antes vivía en la vista de Aruba del portal (ver
+// CLAUDE.md, 2026-09-10): se pinta desde MODELS, ya cargado para el propio dimensionador.
+// EdgeConnect (rol sdwan) publica un RANGO de caudal WAN, no una cifra única; los gateways
+// (sucursal/campus) publican throughput de firewall — son dos medidas distintas, así que la
+// columna "Capacidad" declara cuál está mostrando en vez de fundirlas en un solo número.
+function renderCatalogo(){
+  const tbody=document.querySelector('#tbl-aruba-cat tbody');
+  if(!tbody) return;
+  tbody.innerHTML=MODELS.map(m=>{
+    const cap=m.rol==='sdwan'
+      ? `${fmt(m.wanMin)} – ${fmt(m.wanMax)} (rango WAN)`
+      : `${fmt(m.fw)} (firewall)`;
+    return `<tr>
+    <td><code>${esc(m.id)}</code></td><td>${esc(m.serie)}</td><td>${esc(m.seg)}</td>
+    <td class="n">${cap}</td><td>${esc(m.ifaces)}</td>
+  </tr>`;
+  }).join('');
+}
 
 // La etiqueta de familia sale de la serie comercial, que es como el cliente nombra el
 // equipo; `rol` es lo que de verdad filtra en preventa.
@@ -607,6 +626,8 @@ $('xlsBtn').addEventListener('click',async()=>{
   populateSelects();
   render();
   renderBom();
+  renderCatalogo();
+  PROCEDENCIA.registrarModelos('aruba', () => MODELS.map(m => ({ model: m.id, ...m })));
 })();
 
 /* Enlace de eventos movido desde onclick= en el HTML, para permitir una CSP con

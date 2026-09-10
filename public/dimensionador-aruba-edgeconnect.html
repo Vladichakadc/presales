@@ -137,6 +137,8 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   <button role="tab" aria-selected="true" data-tab="calc">Dimensionar</button>
   <button role="tab" aria-selected="false" data-tab="bom">Equipo y BOM</button>
   <button role="tab" aria-selected="false" data-tab="lic">Licencias, software y fuentes</button>
+  <button role="tab" aria-selected="false" data-tab="cat">Catálogo</button>
+  <button role="tab" aria-selected="false" data-tab="src">Fuentes</button>
 </div>
 
 <!-- ════ TAB 1 · CALCULADORA ════ -->
@@ -436,6 +438,27 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 </section>
 </div>
 
+<!-- ════ TAB · CATÁLOGO ════ -->
+<div class="tabpane" id="pane-cat" hidden>
+<section class="panel">
+  <h2>Catálogo Aruba — Throughput de referencia <span style="font-weight:400;color:var(--steel)">— EdgeConnect Enterprise y gateways serie 9000</span></h2>
+  <div class="scroll"><table data-ordenable id="tbl-aruba-cat">
+    <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Capacidad</th><th>Puertos</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <p style="font-size:11px;color:var(--steel);margin-top:10px">Sin price list verificado para Aruba en este catálogo: las cifras salen de datasheet público y no hay SKU ni precio de lista confirmados. Confirmar con el distribuidor HPE autorizado antes de cotizar en firme.</p>
+</section>
+</div>
+
+<!-- ════ TAB · FUENTES ════ -->
+<div class="tabpane" id="pane-src" hidden>
+<section class="panel">
+  <h2>Procedencia verificada</h2>
+  <p style="font-size:13px;color:var(--steel);margin-bottom:12px">De qué documento y de qué fecha salen las cifras de este catálogo. Se llena desde <code>/api/fuentes</code>; una fuente sin fecha o de más de seis meses se marca. Los datasheets por modelo están en la pestaña «Licencias, software y fuentes».</p>
+  <div data-procedencia="aruba">Cargando…</div>
+</section>
+</div>
+
 <p class="note">
 <b>Fuentes y estado de verificación:</b> cifras y SKU tomados de páginas de producto y de tienda oficiales de HPE y Aruba —hpe.com, buy.hpe.com, arubanetworks.com y arubanetworking.hpe.com—, enlazadas una a una en la pestaña de licencias.
 <b>Sin price list firmado</b>: no hay precios de lista verificados, a diferencia del catálogo de Fortinet. Los porcentajes de overhead de FEC y los factores de reducción de Boost son supuestos de trabajo de esta herramienta, no cifras publicadas por HPE, y así se declaran donde se usan.
@@ -446,6 +469,8 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <script src="/js/ficha.js"></script>
 <script src="/js/estado.js"></script>
 <script src="/js/tabla.js"></script>
+<script src="/js/contraste.js"></script>
+<script src="/js/procedencia.js"></script>
 <script src="/js/dimensionador-aruba-edgeconnect.js"></script>
 <script src="/js/navegacion.js"></script>
 </body>

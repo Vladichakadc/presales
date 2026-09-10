@@ -203,18 +203,6 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
-/* TABS */
-.tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--rule)}
-.tab-btn{background:none;border:none;padding:8px 16px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:14px;text-transform:uppercase;color:var(--steel);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.2s}
-.tab-btn:hover{color:var(--ink)}
-.tab-btn.active{color:var(--red);border-bottom-color:var(--red)}
-.tab-content{display:none;animation:fadeUp .3s ease}
-.tab-content.active{display:block}
-.fuentes-list{font-size:13.5px;color:var(--steel);padding:0;margin:0 0 0 20px}
-.fuentes-list li{margin-bottom:8px}
-.fuentes-list a{color:var(--ink);text-decoration:none;font-weight:600}
-.fuentes-list a:hover{text-decoration:underline;color:var(--red)}
-
 /* SYNC MODAL */
 .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(14,26,43,0.8);z-index:999;align-items:center;justify-content:center}
 .modal{background:#fff;border-radius:6px;width:90%;max-width:800px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(0,0,0,0.3)}
@@ -257,25 +245,25 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
 
   <div style="padding:0 12px">
     <div class="sec-title">Fabricantes</div>
-    <button class="nav-btn" data-page="huawei" data-ir="huawei">
+    <button class="nav-btn" data-ir="huawei">
       <span class="nav-icon hw">HW</span> Huawei <span class="nav-badge">AR&thinsp;&middot;&thinsp;NE</span>
     </button>
-    <button class="nav-btn" data-page="cisco" data-ir="cisco">
+    <button class="nav-btn" data-ir="cisco">
       <span class="nav-icon cs">CS</span> Cisco <span class="nav-badge">ISR&thinsp;&middot;&thinsp;ASR</span>
     </button>
-    <button class="nav-btn" data-page="nokia" data-ir="nokia">
+    <button class="nav-btn" data-ir="nokia">
       <span class="nav-icon nk">NK</span> Nokia <span class="nav-badge">SR&thinsp;&middot;&thinsp;SAS</span>
     </button>
     <button class="nav-btn" data-page="fortinet" data-ir="fortinet">
       <span class="nav-icon ft">FT</span> Fortinet <span class="nav-badge">FG</span>
     </button>
-    <button class="nav-btn" data-page="juniper" data-ir="juniper">
+    <button class="nav-btn" data-ir="juniper">
       <span class="nav-icon jn">JN</span> Juniper <span class="nav-badge">MX&thinsp;&middot;&thinsp;SRX</span>
     </button>
-    <button class="nav-btn" data-page="mikrotik" data-ir="mikrotik">
+    <button class="nav-btn" data-ir="mikrotik">
       <span class="nav-icon mt">MT</span> MikroTik <span class="nav-badge">CCR&thinsp;&middot;&thinsp;RB</span>
     </button>
-    <button class="nav-btn" data-page="aruba" data-ir="aruba">
+    <button class="nav-btn" data-ir="aruba">
       <span class="nav-icon ab">AB</span> Aruba <span class="nav-badge">EC&thinsp;&middot;&thinsp;9K</span>
     </button>
   </div>
@@ -357,439 +345,14 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
   </div>
 </div>
 
-<!-- ════ HUAWEI ════ -->
-<div class="page" id="page-huawei">
-  <div class="page-header">
-    <p class="eyebrow">Fabricante &middot; Enterprise Networking &amp; WAN</p>
-    <h1>Huawei</h1>
-    <p class="sub">Routers de acceso serie AR, agregación A800 E y core NE8000. SD-WAN con iMaster NCE, SRv6, FlexE y slicing.</p>
-  </div>
-  <div style="margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <a href="dimensionador-huawei-netengine.html" class="btn" style="text-decoration:none">&#10697; Abrir Dimensionador y BOM Huawei</a>
-    <span class="badge live">Herramienta Activa</span>
-  </div>
-  
-  <div class="tabs">
-    <button class="tab-btn btn-cat active" data-tabgrupo="huawei" data-tab="cat">Catálogo</button>
-    <button class="tab-btn btn-src" data-tabgrupo="huawei" data-tab="src">Fuentes y Referencias</button>
-  </div>
-  <div id="tab-cat-huawei" class="tab-content active">
-<div class="panel">
-    <h2>Catálogo Huawei AR — Throughput de referencia</h2>
-    <div class="scroll"><table id="tbl-hw-ar">
-      <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Forwarding</th><th>IPsec</th><th>SD-WAN</th><th>LAN p.</th><th>Puertos</th></tr></thead>
-      <tbody></tbody>
-    </table></div>
-  </div>
-  <div class="panel">
-    <h2>Catálogo Huawei WAN / Core — Capacidad de referencia</h2>
-    <div class="scroll"><table id="tbl-hw-wan">
-      <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Capacidad</th><th>Mpps</th><th>Puertos / Tarjetas</th></tr></thead>
-      <tbody></tbody>
-    </table></div>
-  </div>
-</div>
-
-<!-- ════ CISCO ════ -->
-  </div>
-  <div id="tab-src-huawei" class="tab-content">
-    <div class="panel">
-      <h2>Procedencia verificada</h2>
-      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">De qué documento y de qué fecha salen las cifras de este catálogo. Se llena desde <code>/api/fuentes</code>; una fuente sin fecha o de más de seis meses se marca.</p>
-      <div data-procedencia="huawei">Cargando…</div>
-    </div>
-    <div class="panel">
-      <h2>Fuentes de Información y Precios</h2>
-      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Toda la información técnica y los modelos mostrados en esta plataforma han sido filtrados para excluir equipos EOL/EOS (End of Life), basándonos en los siguientes canales oficiales:</p>
-      <ul class="fuentes-list">
-        <li><b>Datasheets y Especificaciones:</b> <a href="https://e.huawei.com/en/products/enterprise-networking/routers" target="_blank">https://e.huawei.com/en/products/enterprise-networking/routers</a><br>Documentación oficial de Huawei Enterprise para las series AR, NetEngine 8000 y A-Series.</li>
-        <li><b>Listado EOL/EOS:</b> <a href="https://support.huawei.com/enterprise/en/bulletins-lifecycle" target="_blank">https://support.huawei.com/enterprise/en/bulletins-lifecycle</a><br>Avisos oficiales de ciclo de vida (End of Life / End of Sale) para equipos Huawei.</li>
-        <li><b>Precios de Referencia (ELP):</b><br>Estimaciones basadas en lista de precios pública internacional. No incluyen descuentos de partners ni impuestos locales.</li>
-      </ul>
-    </div>
-  </div>
-
-<div class="page" id="page-cisco">
-  <div class="page-header">
-    <p class="eyebrow">Fabricante &middot; Routing &amp; SD-WAN</p>
-    <h1>Cisco</h1>
-    <p class="sub">ISR 1000/4000, ASR 1000, Catalyst 8000. SD-WAN Viptela nativo. DNA Center y Cisco Plus para automatización cloud.</p>
-  </div>
-  <div style="margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <a href="dimensionador-cisco-catalyst8k.html" class="btn" style="text-decoration:none;background:#049FD9;border-color:#049FD9">&#10697; Abrir Dimensionador y BOM Cisco</a>
-    <span class="badge live" style="background:rgba(4,159,217,.1);color:#049FD9">Herramienta Activa</span>
-  </div>
-  
-  <div class="tabs">
-    <button class="tab-btn btn-cat active" data-tabgrupo="cisco" data-tab="cat">Catálogo</button>
-    <button class="tab-btn btn-src" data-tabgrupo="cisco" data-tab="src">Fuentes y Referencias</button>
-  </div>
-  <div id="tab-cat-cisco" class="tab-content active">
-<div class="panel">
-    <h2>Catálogo Cisco — Throughput de referencia <span style="font-weight:400;color:var(--steel)">— Precio ref. USD incluido</span></h2>
-    <div class="scroll"><table data-ordenable id="tbl-cisco">
-      <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Forwarding</th><th>IPsec</th><th>Puertos</th><th>SD-WAN</th><th>Precio ref. USD&#9432;</th></tr></thead>
-      <tbody></tbody>
-    </table></div>
-    <p style="font-size:11px;color:var(--steel);margin-top:10px">&#9432; Precio de lista estimado (ELP p&#250;blico). No incluye descuentos de canal, licencias DNA ni soporte. Verificar en CCW con distribuidor autorizado.</p>
-    <p style="font-size:11px;color:var(--amber);margin-top:4px"><b>EOL/EOS removidos:</b> ISR 4221/4331/4451/4461 (EoS Nov 2023), ASR 1001-X (EoS Ago 2022), ASR 1002-HX (EoS Mar 2025). Solo se muestran equipos activos.</p>
-  </div>
-</div>
-
-<!-- ════ NOKIA ════ -->
-  </div>
-  <div id="tab-src-cisco" class="tab-content">
-    <div class="panel">
-      <h2>Procedencia verificada</h2>
-      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">De qué documento y de qué fecha salen las cifras de este catálogo. Se llena desde <code>/api/fuentes</code>; una fuente sin fecha o de más de seis meses se marca.</p>
-      <div data-procedencia="cisco">Cargando…</div>
-    </div>
-    <div class="panel">
-      <h2>Fuentes de Información y Precios</h2>
-      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Toda la información técnica y los modelos mostrados en esta plataforma han sido filtrados para excluir equipos EOL/EOS (End of Life), basándonos en los siguientes canales oficiales:</p>
-      <ul class="fuentes-list">
-        <li><b>Datasheets y Especificaciones:</b> <a href="https://www.cisco.com/c/en/us/products/routers/index.html" target="_blank">https://www.cisco.com/c/en/us/products/routers/index.html</a><br>Documentación técnica oficial de Cisco para Catalyst 8000, ISR y ASR 1000 series.</li>
-        <li><b>Notificaciones EOL/EOS:</b> <a href="https://www.cisco.com/c/en/us/products/eos-eol-listing.html" target="_blank">https://www.cisco.com/c/en/us/products/eos-eol-listing.html</a><br>Fechas de EoS confirmadas para ISR 4000 (Nov 2023) y modelos antiguos ASR 1000.</li>
-        <li><b>Precios de Referencia (ELP):</b><br>Información extraída del CCW (Cisco Commerce Workspace) y catálogos públicos GPL (Global Price List). No incluye licencias obligatorias DNA ni soporte SmartNet.</li>
-      </ul>
-    </div>
-  </div>
-
-<div class="page" id="page-nokia">
-  <div class="page-header">
-    <p class="eyebrow">Fabricante &middot; Service Provider &amp; IP/MPLS</p>
-    <h1>Nokia</h1>
-    <p class="sub">7750 SR core/edge, 7210 SAS acceso, 7250 IXR datacenter. SR OS con SR-MPLS, SRv6, EVPN y FlexAlgo.</p>
-  </div>
-  <div style="margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <a href="dimensionador-nokia-7220ixr.html" class="btn" style="text-decoration:none;background:#124191;border-color:#124191">&#10697; Abrir Dimensionador Fabric 7220 IXR</a>
-    <a href="dimensionador-nokia-7750sr.html" class="btn" style="text-decoration:none;background:#124191;border-color:#124191">&#10697; Abrir Dimensionador 7250 IXR / 7750 SR</a>
-    <span class="badge live">Herramienta Activa</span>
-  </div>
-
-  <div class="tabs">
-    <button class="tab-btn btn-cat active" data-tabgrupo="nokia" data-tab="cat">Catálogo</button>
-    <button class="tab-btn btn-src" data-tabgrupo="nokia" data-tab="src">Fuentes y Referencias</button>
-  </div>
-  <div id="tab-cat-nokia" class="tab-content active">
-<div class="panel">
-    <h2>Catálogo Nokia — Capacidad de referencia</h2>
-    <div class="scroll"><table data-ordenable id="tbl-nokia">
-      <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Capacidad</th><th>Puertos / Tarjetas</th><th>Protocolos</th></tr></thead>
-      <tbody></tbody>
-    </table></div>
-  </div>
-</div>
-
-<!-- ════ FORTINET ════ -->
-  </div>
-  <div id="tab-src-nokia" class="tab-content">
-    <div class="panel">
-      <h2>Procedencia verificada</h2>
-      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">De qué documento y de qué fecha salen las cifras de este catálogo. Se llena desde <code>/api/fuentes</code>; una fuente sin fecha o de más de seis meses se marca.</p>
-      <div data-procedencia="nokia">Cargando…</div>
-    </div>
-    <div class="panel">
-      <h2>Fuentes de Información y Precios</h2>
-      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Toda la información técnica y los modelos mostrados en esta plataforma han sido filtrados para excluir equipos EOL/EOS (End of Life), basándonos en los siguientes canales oficiales:</p>
-      <ul class="fuentes-list">
-        <li><b>Portafolio IP Networks:</b> <a href="https://www.nokia.com/networks/portfolio/ip-networks/" target="_blank">https://www.nokia.com/networks/portfolio/ip-networks/</a><br>Datasheets oficiales de Service Routers (7750 SR, 7250 IXR y 7210 SAS).</li>
-        <li><b>Precios de Referencia:</b><br>Precios de lista orientativos del mercado portador/enterprise. No incluye licencias de features avanzadas.</li>
-      </ul>
-    </div>
-  </div>
-
-<!-- Fortinet ya no tiene página propia en el portal: su catálogo y sus fuentes viven como
-     pestañas de dimensionador-fortinet-fortigate.html, que pasó a ser su página principal
-     (2026-09-09). El botón "Fortinet" del dashboard y de la barra lateral abre esa página
-     directamente (ver el mapa `directo` en la delegación de clicks de este archivo). -->
-
-<div class="page" id="page-juniper">
-  <div class="page-header">
-    <p class="eyebrow">Fabricante &middot; Routing &amp; Security</p>
-    <h1>Juniper</h1>
-    <p class="sub">MX edge/core, SRX NGFW, EX/QFX switching. Junos OS, Mist AI para AIOps. Apstra para intent-based networking DC.</p>
-  </div>
-  
-  <div style="margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <a href="dimensionador-juniper-srx.html" class="btn" style="text-decoration:none;background:#84B135;border-color:#84B135">&#10697; Abrir Dimensionador y BOM Juniper</a>
-    <span class="badge live" style="background:rgba(132,177,53,.1);color:#84B135">Herramienta Activa</span>
-  </div>
-  
-  <div class="tabs">
-    <button class="tab-btn btn-cat active" data-tabgrupo="juniper" data-tab="cat">Catálogo</button>
-    <a href="dimensionador-juniper-srx.html" class="tab-btn" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px">&#10697; Dimensionador y BOM</a>
-    <button class="tab-btn btn-src" data-tabgrupo="juniper" data-tab="src">Fuentes y Referencias</button>
-  </div>
-  <div id="tab-cat-juniper" class="tab-content active">
-<div class="panel">
-    <h2>Catálogo Juniper — Capacidad de referencia</h2>
-    <div class="scroll"><table data-ordenable id="tbl-juniper">
-      <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Capacidad</th><th>Puertos</th><th>Caso de uso</th></tr></thead>
-      <tbody></tbody>
-    </table></div>
-  </div>
-</div>
-
-  </div>
-  <div id="tab-src-juniper" class="tab-content">
-    <div class="panel">
-      <h2>Procedencia verificada</h2>
-      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">De qué documento y de qué fecha salen las cifras de este catálogo. Se llena desde <code>/api/fuentes</code>; una fuente sin fecha o de más de seis meses se marca.</p>
-      <div data-procedencia="juniper">Cargando…</div>
-    </div>
-    <div class="panel">
-      <h2>Fuentes de Información y Precios</h2>
-      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Toda la información técnica y los modelos mostrados en esta plataforma han sido filtrados para excluir equipos EOL/EOS (End of Life), basándonos en los siguientes canales oficiales:</p>
-      <ul class="fuentes-list">
-        <li><b>Routing & Security:</b> <a href="https://www.juniper.net/us/en/products/routers.html" target="_blank">https://www.juniper.net/us/en/products/routers.html</a><br>Documentación oficial de las familias MX, SRX y QFX.</li>
-        <li><b>Precios de Referencia (ELP):</b><br>Basado en el GPL (Global Price List) estándar de Juniper. Estimación orientativa.</li>
-      </ul>
-    </div>
-  </div>
-
-<!-- ════ MIKROTIK ════ -->
-  </div>
-
-<div class="page" id="page-mikrotik">
-  <div class="page-header">
-    <p class="eyebrow">Fabricante &middot; Routing / SD-WAN / ISP</p>
-    <h1>MikroTik</h1>
-    <p class="sub">RouterOS v7 con WireGuard nativo, MPLS, BGP, OSPF y CAPsMAN WiFi. Desde el hEX SOHO hasta el CCR2216 100G WAN core. Relación precio-rendimiento líder del mercado.</p>
-  </div>
-  <div style="margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <a href="dimensionador-mikrotik-routeros.html" class="btn" style="text-decoration:none;background:#C8102E;border-color:#C8102E">&#10697; Abrir Dimensionador y BOM MikroTik</a>
-    <span class="badge live">Herramienta Activa</span>
-  </div>
-
-  <div class="tabs">
-    <button class="tab-btn btn-cat active" data-tabgrupo="mikrotik" data-tab="cat">Catálogo</button>
-    <button class="tab-btn btn-topo" data-tabgrupo="mikrotik" data-tab="topo">RouterOS Features</button>
-    <button class="tab-btn btn-src" data-tabgrupo="mikrotik" data-tab="src">Fuentes y Referencias</button>
-  </div>
-
-  <div id="tab-cat-mikrotik" class="tab-content active">
-    <div class="panel">
-      <h2>Catálogo MikroTik — Throughput de referencia <span style="font-weight:400;color:var(--steel)">— Precio ref. USD incluido</span></h2>
-      <div class="scroll"><table data-ordenable id="tbl-mikrotik">
-        <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Forwarding</th><th>IPsec</th><th>SD-WAN / VPN</th><th>Puertos</th><th>Precio ref. USD&#9432;</th></tr></thead>
-        <tbody></tbody>
-      </table></div>
-      <p style="font-size:11px;color:var(--steel);margin-top:10px">&#9432; Precio de lista orientativo (USD MSRP). No incluye impuestos locales ni soporte de canal. Verificar con distribuidor MikroTik autorizado.</p>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:18px">
-      <div class="panel" style="border-left:4px solid #C8102E;padding:16px 18px">
-        <h2 style="margin-bottom:10px">RouterOS Licencias</h2>
-        <table style="font-size:12px">
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">L4 (perpetua)</td><td>Incluida en hardware. OSPF, BGP, MPLS, WireGuard.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">CHR P-Unlimited</td><td>~ $250 USD. Sin límite de throughput, todos los features.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">CHR P1 / P10</td><td>Tier 1 Gbps (~$45) / 10 Gbps (~$95) perpetua.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">CHR Free 60-day</td><td>Trial sin límite. Producción requiere licencia pagada.</td></tr>
-        </table>
-      </div>
-      <div class="panel" style="border-left:4px solid #C8102E;padding:16px 18px">
-        <h2 style="margin-bottom:10px">Certificaciones MTCNA</h2>
-        <table style="font-size:12px">
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">MTCNA</td><td>Nivel básico. Routing, firewall, VPN, wireless.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">MTCRE</td><td>Routing avanzado: OSPF, BGP, routing policies.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">MTCWE</td><td>Wireless Engineer. 802.11ax, CAPsMAN v2, mesh.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">MTCINE</td><td>Inter-Networking Expert. MPLS, TE, VRF, EVPN.</td></tr>
-        </table>
-      </div>
-      <div class="panel" style="border-left:4px solid #C8102E;padding:16px 18px">
-        <h2 style="margin-bottom:10px">Gestión y Orquestación</h2>
-        <table style="font-size:12px">
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Winbox v3/v4</td><td>GUI nativa. Windows/Wine. SAFE channel cifrado.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">WebFig</td><td>GUI web integrada. HTTPS + HTTP/2.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">The Dude</td><td>NMS gratuito. SNMP, syslog, alertas, mapas.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">REST API / SSH</td><td>Automatización: Ansible, Terraform, scripts RouterOS.</td></tr>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div id="tab-topo-mikrotik" class="tab-content">
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px">
-      <div class="panel" style="padding:20px">
-        <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 12px">Routing &amp; Switching</h3>
-        <ul style="font-size:13px;color:var(--steel);margin:0;padding-left:18px">
-          <li>OSPFv2/v3, BGP4, RIPv2, IS-IS</li>
-          <li>MPLS / LDP / RSVP-TE (L3VPN, VPLS)</li>
-          <li>VRF / policy routing / ECMP</li>
-          <li>VLAN (802.1Q), Bridge filtering, STP/RSTP/MSTP</li>
-          <li>Bonding LAG/LACP, VXLAN (RouterOS 7.x)</li>
-        </ul>
-      </div>
-      <div class="panel" style="padding:20px">
-        <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 12px">Seguridad / VPN</h3>
-        <ul style="font-size:13px;color:var(--steel);margin:0;padding-left:18px">
-          <li>WireGuard nativo (kernel-level, ~3.1 Gbps en CCR2004)</li>
-          <li>IPsec IKEv2 / IKEv1 — site-to-site y road warrior</li>
-          <li>OpenVPN (TLS), L2TP/IPsec, SSTP, PPPoE</li>
-          <li>Firewall stateful con mangle, NAT, RAW</li>
-          <li>Hotspot gateway, User Manager RADIUS</li>
-        </ul>
-      </div>
-      <div class="panel" style="padding:20px">
-        <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 12px">QoS &amp; Tráfico</h3>
-        <ul style="font-size:13px;color:var(--steel);margin:0;padding-left:18px">
-          <li>Queue Tree / Simple Queue (HTB)</li>
-          <li>Mangle + DSCP marking</li>
-          <li>PCQ (Per Connection Queue) — ISP fair-share</li>
-          <li>Fasttrack (hardware offload) para IPv4/IPv6</li>
-          <li>Torch / Traffic Monitor en tiempo real</li>
-        </ul>
-      </div>
-      <div class="panel" style="padding:20px">
-        <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 12px">Wireless / CAPsMAN</h3>
-        <ul style="font-size:13px;color:var(--steel);margin:0;padding-left:18px">
-          <li>802.11ax Wi-Fi 6 (hAP ax²/ax³, cAP ax)</li>
-          <li>CAPsMAN v2: controlador WiFi centralizado</li>
-          <li>802.11s mesh, channel bonding, Nv2 propietario</li>
-          <li>Spectral scan, Wireless Sniffer</li>
-          <li>RoamingAssist + fast-BSS-transition</li>
-        </ul>
-      </div>
-      <div class="panel" style="padding:20px">
-        <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 12px">Topología típica ISP</h3>
-        <div class="topo-diagram">  CCR2216 (Core 100G)
-       │  BGP upstream
-  ┌────┴────┐
-  CCR2116  CCR2116  (Agregación)
-  ┌──┤      ├──┐
-RB5009  CCR2004  RB5009  (Hub)
-  │              │
- hEX           hEX  (CPE)</div>
-        <p style="font-size:12px;color:var(--steel);margin:8px 0 0">Stack full-MikroTik: RouterOS en todos los nodos, The Dude para monitoreo, Winbox/REST para automatización.</p>
-      </div>
-      <div class="panel" style="padding:20px">
-        <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 12px">Casos de Uso SD-WAN</h3>
-        <ul style="font-size:13px;color:var(--steel);margin:0;padding-left:18px">
-          <li><b>Dual WAN failover:</b> scripting RouterOS + NetWatch</li>
-          <li><b>WireGuard Hub-Spoke:</b> concentrador CCR2004 + spokes RB5009</li>
-          <li><b>BGP anycast VPN:</b> CHR en cloud + CCR2216 en DC</li>
-          <li><b>Load balancing PCC:</b> Per Connection Classifier ISP multi-homed</li>
-          <li><b>ZeroTier / Tailscale:</b> overlay sobre RouterOS CHR</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <div id="tab-src-mikrotik" class="tab-content">
-    <div class="panel">
-      <h2>Procedencia verificada</h2>
-      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">De qué documento y de qué fecha salen las cifras de este catálogo. Se llena desde <code>/api/fuentes</code>; una fuente sin fecha o de más de seis meses se marca.</p>
-      <div data-procedencia="mikrotik">Cargando…</div>
-    </div>
-    <div class="panel">
-      <h2>Fuentes de Información y Precios</h2>
-      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Información técnica y precios verificados contra documentación oficial MikroTik:</p>
-      <ul class="fuentes-list">
-        <li><b>Productos y Datasheets:</b> <a href="https://mikrotik.com/products" target="_blank">https://mikrotik.com/products</a><br>Catálogo oficial de hardware: CCR2216, CCR2116, CCR2004, RB5009, RB4011, hEX series.</li>
-        <li><b>Wiki RouterOS:</b> <a href="https://wiki.mikrotik.com/wiki/Main_Page" target="_blank">https://wiki.mikrotik.com/wiki/Main_Page</a><br>Documentación técnica oficial de RouterOS 7.x: routing, VPN, QoS, wireless, scripting.</li>
-        <li><b>CHR (Cloud Hosted Router):</b> <a href="https://mikrotik.com/software" target="_blank">https://mikrotik.com/software</a><br>Licencias P1, P10, P-Unlimited para RouterOS virtual en VMware, KVM, AWS, GCP, Azure.</li>
-        <li><b>Certificaciones MTCNA/MTCRE:</b> <a href="https://mikrotik.com/training" target="_blank">https://mikrotik.com/training</a><br>Programa de formación oficial MikroTik: MTCNA, MTCRE, MTCWE, MTCTCE, MTCINE.</li>
-        <li><b>Lista de Precios (ELP):</b><br>Precios MSRP en USD de lista pública. No incluyen impuestos de importación ni márgenes de distribuidor. Verificar disponibilidad con distribuidor autorizado local.</li>
-        <li><b>EOL / Productos descontinuados:</b><br>RouterBOARD legacy (RB2011, RB951) marcados EOL. Solo se muestran equipos con RouterOS 7.x activo y disponibilidad en canal.</li>
-      </ul>
-    </div>
-  </div>
-</div>
-
-<div class="page" id="page-aruba">
-  <div class="page-header">
-    <p class="eyebrow">Fabricante &middot; SD-WAN / Sucursal / Conectividad</p>
-    <h1>Aruba</h1>
-    <p class="sub">HPE Aruba Networking. EdgeConnect SD-WAN (ex Silver Peak) con Path Conditioning y optimización WAN Boost licenciada como pool del fabric, y gateways SD-Branch de la serie 9000 que unifican WAN, LAN y WLAN con Dynamic Segmentation extremo a extremo.</p>
-  </div>
-  <div style="margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <a href="dimensionador-aruba-edgeconnect.html" class="btn" style="text-decoration:none;background:#01A982;border-color:#01A982">&#10697; Abrir Dimensionador y BOM EdgeConnect</a>
-    <span class="badge live">Herramienta Activa</span>
-  </div>
-
-  <div class="tabs">
-    <button class="tab-btn btn-cat active" data-tabgrupo="aruba" data-tab="cat">Catálogo</button>
-    <button class="tab-btn btn-topo" data-tabgrupo="aruba" data-tab="topo">SD-WAN y Licencias</button>
-    <button class="tab-btn btn-src" data-tabgrupo="aruba" data-tab="src">Fuentes y Referencias</button>
-  </div>
-
-  <div id="tab-cat-aruba" class="tab-content active">
-    <div class="panel">
-      <h2>Catálogo Aruba — Throughput de referencia <span style="font-weight:400;color:var(--steel)">— EdgeConnect Enterprise y gateways serie 9000</span></h2>
-      <div class="scroll"><table data-ordenable id="tbl-aruba">
-        <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Throughput</th><th>IPsec</th><th>SD-WAN / Licencia</th><th>Puertos</th><th>Precio ref. USD&#9432;</th></tr></thead>
-        <tbody></tbody>
-      </table></div>
-      <p style="font-size:11px;color:var(--steel);margin-top:10px">&#9432; Sin price list verificado para Aruba en este catálogo: las cifras salen de datasheet público y no hay SKU ni precio de lista confirmados. Confirmar con el distribuidor HPE autorizado antes de cotizar en firme.</p>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:18px">
-      <div class="panel" style="border-left:4px solid #01A982;padding:16px 18px">
-        <h2 style="margin-bottom:10px">Suscripción EdgeConnect</h2>
-        <table style="font-size:12px">
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Foundation</td><td>SD-WAN esencial más NGFW avanzado: Dynamic Path Control, tunnel bonding, Path Conditioning, firewall, Orchestrator.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Advanced</td><td>Foundation + routing dinámico, segmentación multi-overlay, breakout con First-packet iQ, service chaining a SSE.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Boost</td><td>Add-on de aceleración en bloques de 100 Mbps agrupables como pool del fabric.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Eje de cobro</td><td>Por caudal del sitio (100 Mbps, 1 Gbps o ilimitado), no por modelo de appliance.</td></tr>
-        </table>
-      </div>
-      <div class="panel" style="border-left:4px solid #01A982;padding:16px 18px">
-        <h2 style="margin-bottom:10px">Ventajas de conectividad</h2>
-        <table style="font-size:12px">
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Path Conditioning</td><td>FEC reconstruye pérdidas sin retransmisión: habilita sustituir MPLS por banda ancha o 5G.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Tunnel bonding</td><td>Una sesión se reparte entre enlaces paquete a paquete, no por flujo.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Dynamic Segmentation</td><td>El rol de usuario se asigna en el AP o switch CX y viaja hasta el gateway.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Licencia portable</td><td>La misma suscripción vale para appliance físico y para EC-V virtual.</td></tr>
-        </table>
-      </div>
-      <div class="panel" style="border-left:4px solid #01A982;padding:16px 18px">
-        <h2 style="margin-bottom:10px">Gestión y soporte</h2>
-        <table style="font-size:12px">
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Orchestrator</td><td>Gestión del fabric, Business Intent Overlays y ZTP. Sin licencia por dispositivo gestionado.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Aruba Central</td><td>Gestión cloud de la serie 9000 junto con switches CX y APs.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">Foundational Care</td><td>Soporte 24x7 en variantes NBD, in situ y de software.</td></tr>
-          <tr><td style="padding:4px 8px 4px 0;font-weight:600">ClearPass</td><td>Fuente del rol de usuario que habilita la segmentación extremo a extremo.</td></tr>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div id="tab-topo-aruba" class="tab-content">
-    <div class="panel">
-      <h2>Cómo dimensionar EdgeConnect sin equivocarse</h2>
-      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Tres cosas separan un sizing correcto de uno que se cae en la prueba de concepto:</p>
-      <ul class="fuentes-list">
-        <li><b>Proceso y caudal no son el mismo número.</b> El equipo procesa el tráfico de aplicación del lado LAN; los enlaces transportan otra cifra. Path Conditioning la sube, porque la paridad FEC ocupa ancho de banda; Boost la baja, porque deduplica y comprime antes de salir. Lo que se contrata al operador —y lo que fija el tier de la suscripción— es la segunda.</li>
-        <li><b>La cifra que aplica es la de IPsec, no la de portada.</b> En EdgeConnect todo el tráfico del overlay va en túnel: el throughput de sistema sin cifrar es un escenario que no ocurre en producción.</li>
-        <li><b>Cada familia se dimensiona con lo que HPE publica para ella.</b> Para EdgeConnect es un <b>rango</b> de caudal WAN por modelo, no un throughput único: quedar por debajo del suelo del rango señala sobredimensionamiento y es tan accionable como pasarse del techo. Para los gateways es el throughput de firewall más la capacidad de clientes y APs.</li>
-        <li><b>En la serie 9200 la capacidad la fija la licencia, no el equipo.</b> El mismo chasis entrega 20 Gbps solo con hardware, 30 con licencia Silver y 40 con Gold, escalando también APs y dispositivos. Crecer no obliga a sustituir el equipo.</li>
-      </ul>
-    </div>
-    <div class="panel" style="margin-top:18px">
-      <h2>Boost — el efecto que se malinterpreta en las dos direcciones</h2>
-      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">La licencia de aceleración baja el techo de proceso del appliance <b>y</b> baja el caudal WAN necesario, a la vez. Quien solo ve lo primero la descarta por "costar rendimiento"; quien solo ve lo segundo promete un ahorro que el equipo no sostiene. Además se licencia como pool agregado del fabric y Orchestrator lo reparte, así que en una red de 60 sucursales donde solo 8 mueven ficheros pesados se licencia para esas 8 — ese es el argumento económico frente a un add-on cobrado por dispositivo.</p>
-      <p style="font-size:13px;color:var(--steel)">El dimensionador calcula los dos efectos juntos y propone el tier de suscripción que corresponde al caudal resultante.</p>
-    </div>
-  </div>
-
-  <div id="tab-src-aruba" class="tab-content">
-    <div class="panel">
-      <h2>Procedencia verificada</h2>
-      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">De qué documento y de qué fecha salen las cifras de este catálogo. Se llena desde <code>/api/fuentes</code>; una fuente sin fecha o de más de seis meses se marca.</p>
-      <div data-procedencia="aruba">Cargando…</div>
-    </div>
-    <div class="panel">
-      <h2>Fuentes de Información y estado de verificación</h2>
-      <p style="font-size:13px;color:var(--steel);margin-bottom:12px">A diferencia del catálogo de Fortinet, los datos de Aruba <b>no están verificados contra un price list firmado</b>. Es una diferencia deliberada y declarada, no un descuido:</p>
-      <ul class="fuentes-list">
-        <li><b>Capacidad y SKU:</b> páginas de producto y de tienda oficiales de HPE/Aruba. Los SKU de hardware (JZ872A, JZ878A, S3N73A, S0B67A, R1B31A, R7H95A y demás) son reales; el dimensionador enlaza el datasheet de cada modelo.</li>
-        <li><b>Estructura de licenciamiento:</b> niveles Foundation, Advanced y On-Premises; tiers de caudal de 100 Mbps, 1 Gbps e ilimitado; Boost en bloques de 100 Mbps agrupables como pool del fabric.</li>
-        <li><b>SKU y precios:</b> <b>no disponibles</b>. El catálogo los deja en nulo a propósito y el BOM declara esas líneas "sin cotizar", en vez de mostrar un importe verosímil pero inventado.</li>
-        <li><b>Soporte:</b> HPE Aruba Networking Foundational Care, en variantes de hardware (NBD e in situ) y de software. SLA orientativos — confirmar cobertura regional y tiempos de RMA con HPE.</li>
-        <li><b>Antes de cotizar en firme:</b> contrastar contra el datasheet vigente y la lista del distribuidor HPE autorizado. El detalle de qué está confirmado y qué no vive en la cabecera de <code>server/seed/legacyData/aruba.js</code>.</li>
-      </ul>
-    </div>
-  </div>
-</div>
+<!-- Huawei, Cisco, Nokia, Juniper, MikroTik y Aruba ya no tienen página propia en el
+     portal: su catálogo y sus fuentes viven como pestañas de su propio dimensionador
+     (mismo patrón que Fortinet, 2026-09-09, replicado a los 6 restantes 2026-09-10).
+     El botón de cada fabricante en el dashboard y la barra lateral abre esa página
+     directamente (ver `window.NAVFAB.FABRICANTES`, cargado por navegacion.js, que
+     resuelve el mapa fabricante → dimensionador para la delegación de clicks de
+     este archivo). Nokia navega a dimensionador-nokia-7750sr.html; el fabric 7220 IXR
+     sigue accesible como paso "extra" de la barra de fabricante. -->
 
 <div class="page" id="page-comparador">
   <div class="page-header">
@@ -955,6 +518,10 @@ RB5009  CCR2004  RB5009  (Hub)
 <script src="/js/calculadora.js"></script>
 <script src="/js/contraste.js"></script>
 <script src="/js/procedencia.js"></script>
+<!-- No pinta nada en el portal (montar() corta antes por enPortal), pero expone
+     window.NAVFAB.FABRICANTES: la misma fuente que usan la delegación de clicks
+     de abajo y scripts/verificar-pantallas.js para el mapa fabricante -> dimensionador. -->
+<script src="/js/navegacion.js"></script>
 <script src="/js/index.js"></script>
 
 

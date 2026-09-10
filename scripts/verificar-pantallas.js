@@ -110,14 +110,19 @@ const PANTALLAS = [
     titulo: 'Portal — las once secciones',
     listo: '.nav-btn[data-page="dashboard"]',
     async acciones(page) {
-      // Fortinet ya no tiene seccion propia dentro del portal: su boton navega directo al
-      // dimensionador, que paso a ser su pagina principal (mismo mapa `directo` que
-      // public/js/index.js). Se comprueba la navegacion en vez de una clase .active, y se
-      // vuelve al portal para seguir con el resto de secciones.
-      const navegaDirecto = { fortinet: 'dimensionador-fortinet-fortigate.html' };
-      const secciones = await page.$$eval('.nav-btn[data-page]', (bs) => bs.map((b) => b.dataset.page));
+      // Los siete fabricantes ya no tienen seccion propia dentro del portal: su boton navega
+      // directo a su dimensionador, que paso a ser su pagina principal (2026-09-09 para
+      // Fortinet, replicado a los otros seis 2026-09-10). El mapa fabricante -> dimensionador
+      // se lee en vivo de window.NAVFAB.FABRICANTES (navegacion.js, cargado tambien en el
+      // portal) en vez de mantener aqui una segunda copia que se desincroniza con
+      // public/js/index.js — la misma duplicacion que ya se detecto con el piloto de Fortinet.
+      const navegaDirecto = Object.fromEntries(
+        // eslint-disable-next-line no-undef -- corre dentro de la pagina, no en Node
+        await page.evaluate(() => (window.NAVFAB ? window.NAVFAB.FABRICANTES : []).map((f) => [f.id, f.dim])),
+      );
+      const secciones = await page.$$eval('.nav-btn[data-ir]', (bs) => bs.map((b) => b.dataset.ir));
       for (const s of secciones) {
-        await page.click(`.nav-btn[data-page="${s}"]`);
+        await page.click(`.nav-btn[data-ir="${s}"]`);
         await espera(page, 250);
         if (navegaDirecto[s]) {
           if (!page.url().endsWith(navegaDirecto[s])) {
