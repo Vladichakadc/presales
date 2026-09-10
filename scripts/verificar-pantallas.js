@@ -122,16 +122,24 @@ const PANTALLAS = [
       );
       const secciones = await page.$$eval('.nav-btn[data-ir]', (bs) => bs.map((b) => b.dataset.ir));
       for (const s of secciones) {
-        await page.click(`.nav-btn[data-ir="${s}"]`);
-        await espera(page, 250);
         if (navegaDirecto[s]) {
-          if (!page.url().endsWith(navegaDirecto[s])) {
+          // Espera de verdad a que la URL cambie, en vez de un timeout fijo: con siete
+          // fabricantes navegando en la misma prueba (antes solo era uno), un runner de CI
+          // cargado puede tardar mas de 250ms en completar la navegacion.
+          try {
+            await Promise.all([
+              page.waitForURL((u) => u.pathname.endsWith(navegaDirecto[s]), { timeout: 5000 }),
+              page.click(`.nav-btn[data-ir="${s}"]`),
+            ]);
+          } catch {
             throw new Error(`la seccion "${s}" no navego a ${navegaDirecto[s]}`);
           }
           await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
           await espera(page, 250);
           continue;
         }
+        await page.click(`.nav-btn[data-ir="${s}"]`);
+        await espera(page, 250);
         // Una seccion que no se activa deja al usuario mirando la anterior sin saberlo.
         const activa = await page.$eval(`#page-${s}`, (el) => el.classList.contains('active')).catch(() => false);
         if (!activa) throw new Error(`la seccion "${s}" no se activo al pulsar su boton`);
