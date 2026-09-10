@@ -600,6 +600,7 @@ document.addEventListener('click', (e) => {
   const id = e.target.closest('button,[id]')?.id;
   if (id === 'menuToggle') document.getElementById('sidebar').classList.toggle('open');
   else if (id === 'btnAbrirSync') openSyncModal();
+  else if (id === 'navLogout') logout();
   else if (id === 'btnAnalizarSync') analyzeSync();
   else if (id === 'btnApplySync') applySync();
   else if (id === 'btnDescargarPropuesta') descargarPropuesta();
@@ -640,5 +641,17 @@ fetch('/api/cuenta/estado')
     if (d.puedeUsuarios) document.getElementById('navUsuarios').style.display = '';
     // El control para cargar la fuente oficial de cada fabricante (permiso `sync`) lo
     // gobierna js/procedencia.js con su propia lectura de este mismo endpoint.
+    document.getElementById('navAccountName').textContent = d.nombre || d.usuario || 'Cuenta activa';
+    document.getElementById('navAccountRole').textContent = d.rolNombre || d.rol || 'Sesión iniciada';
+    document.getElementById('navAccountSummary').style.display = 'block';
   })
   .catch(() => {});
+
+async function logout() {
+  const button = document.getElementById('navLogout');
+  if (!button || button.disabled) return;
+  button.disabled = true;
+  button.setAttribute('aria-busy', 'true');
+  try { await fetch('/logout', { method: 'POST' }); }
+  finally { window.location.href = '/login?m=salir'; }
+}

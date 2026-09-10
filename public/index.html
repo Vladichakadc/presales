@@ -43,6 +43,12 @@ body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,san
 .nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;background:none;border:none;border-radius:3px;color:rgba(255,255,255,.6);cursor:pointer;font-family:'Barlow',sans-serif;font-size:13.5px;font-weight:500;text-align:left;transition:all .14s;white-space:nowrap;margin:1px 0}
 .nav-btn:hover{background:rgba(255,255,255,.06);color:#fff}
 .nav-btn.active{background:rgba(199,0,11,.22);color:#fff;font-weight:600}
+.access-summary{display:none;margin:10px 12px 6px;padding:10px 10px 9px;border:1px solid rgba(255,255,255,.1);border-left:2px solid var(--red);background:rgba(255,255,255,.035)}
+.access-summary strong{display:block;color:#fff;font-size:12.5px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.access-summary span{display:block;margin-top:3px;color:rgba(255,255,255,.38);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase}
+.nav-btn.nav-logout{margin-top:7px;border-top:1px solid rgba(255,255,255,.1);border-radius:0;padding-top:11px;color:rgba(255,255,255,.45)}
+.nav-btn.nav-logout .nav-icon{background:rgba(199,0,11,.16);color:#ff8d93}
+.nav-btn.nav-logout:hover{background:rgba(199,0,11,.14);color:#fff}
 .nav-icon{width:26px;height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;font-family:'Barlow Condensed',sans-serif;letter-spacing:.02em}
 .nav-icon.hw{background:#C7000B;color:#fff}
 .nav-icon.cs{background:#049FD9;color:#fff}
@@ -294,6 +300,10 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
   </div>
   <div style="padding:0 12px">
     <div class="sec-title">Acceso</div>
+    <div class="access-summary" id="navAccountSummary" aria-live="polite">
+      <strong id="navAccountName">Cuenta activa</strong>
+      <span id="navAccountRole">Sesión iniciada</span>
+    </div>
     <button class="nav-btn" data-abrir="cuenta.html">
       <span class="nav-icon tool">&#9679;</span> Mi cuenta
     </button>
@@ -301,6 +311,9 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
          el permiso en el servidor y devuelve 403 a quien la teclee sin tenerlo. -->
     <button class="nav-btn" data-abrir="usuarios.html" id="navUsuarios" style="display:none">
       <span class="nav-icon tool">&#9673;</span> Usuarios
+    </button>
+    <button class="nav-btn nav-logout" id="navLogout" type="button">
+      <span class="nav-icon">&#8594;</span> Cerrar sesión
     </button>
   </div>
 </nav>
