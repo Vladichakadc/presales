@@ -639,10 +639,10 @@ document.addEventListener('click', (e) => {
 
 /* ══ ESTADO ENLAZABLE Y PERSISTENTE ══
    Antes, poner 2.500 Mbps y copiar la URL no servia de nada: quien la abria veia 500 Mbps y
-   otra recomendacion. Ahora el escenario viaja en la URL y sobrevive a una recarga. Ver
-   /js/estado.js para por que hacen falta la URL Y el almacenamiento local, y no uno solo. */
+   otra recomendacion. Ahora el escenario viaja en la URL; ya no se guarda entre sesiones
+   (ver /js/estado.js). */
 document.addEventListener('DOMContentLoaded', () => {
-  const st = ESTADO.vincular({ clave: 'dimensionador-aruba-edgeconnect', campos: ['bw','unit','users','aps','perUser','head','fecMode','boostProfile','chkBoost','chkBreakout','chkHa','famSeg','segSeg','verdict-sel'] });
+  const st = ESTADO.vincular({ campos: ['bw','unit','users','aps','perUser','head','fecMode','boostProfile','chkBoost','chkBreakout','chkHa','famSeg','segSeg','verdict-sel'] });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');

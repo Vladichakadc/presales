@@ -307,7 +307,6 @@
     $('chkHa').addEventListener('change', render);
 
     const st = ESTADO.vincular({
-      clave: 'dimensionador-nokia-7750sr',
       campos: ['bw', 'unit', 'head', 'portQty', 'portVel', 'chkHa', 'platSeg', 'verdict-sel'],
     });
     const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');

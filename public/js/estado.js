@@ -1,20 +1,13 @@
 'use strict';
-// Estado de pantalla: enlazable, restaurable y que sobrevive a una recarga.
+// Estado de pantalla: enlazable por URL, sin persistencia entre sesiones.
 //
-// EL PROBLEMA QUE RESUELVE, MEDIDO ANTES DE ESCRIBIRLO
-// La aplicación nunca fue estática —hay servidor, API, base de datos y sesión—, pero se
-// comportaba como un juego de documentos sueltos: al recargar el cotizador, un BOM con
-// equipos dentro volvía a cero; y al poner 2.500 Mbps en el dimensionador de Fortinet y
-// copiar la URL, quien la abría veía 500 Mbps y otra recomendación. En una herramienta de
-// preventa eso es grave por dos motivos distintos: se pierde trabajo, y no se puede pasar un
-// dimensionamiento a un compañero, que es literalmente el gesto más frecuente ("mírate este
-// sizing").
-//
-// POR QUÉ LA URL Y NO SOLO EL ALMACENAMIENTO LOCAL
-// localStorage recupera TU trabajo en TU navegador; la URL lo hace COMPARTIBLE. Hacen falta
-// los dos y resuelven cosas distintas, así que este módulo escribe en ambos: la URL manda
-// cuando trae parámetros (alguien te pasó un enlace) y el almacenamiento local cubre el resto
-// (vuelves a la pestaña de ayer).
+// EL PROBLEMA QUE RESUELVE
+// Al poner 2.500 Mbps en el dimensionador de Fortinet y copiar la URL, quien la abría veía
+// 500 Mbps y otra recomendación — no se podía pasar un dimensionamiento a un compañero, que es
+// el gesto más frecuente ("mírate este sizing"). Este módulo escribe cada campo en la URL para
+// que un enlace compartido reproduzca el mismo escenario. A petición del dueño del repo
+// (2026-09-10) ya no guarda nada en localStorage: cada inicio de sesión arranca en blanco,
+// salvo que la URL traiga parámetros.
 //
 // POR QUÉ UN QUERYSTRING CORTO Y NO JSON EN BASE64
 // Estos enlaces se pegan en un chat. Un `?bw=2500&head=30` se lee, se edita a mano y no lo
@@ -29,8 +22,6 @@
 
 (function (global) {
   'use strict';
-
-  const PREFIJO = 'presales:';
 
   // Lee el valor de un control, sea del tipo que sea. Los grupos .seg no son controles de
   // formulario: son botones con aria-pressed, y el "valor" es el data-v del que está activo.
@@ -61,7 +52,6 @@
 
   function vincular(cfg) {
     const campos = cfg.campos || [];
-    const clave = PREFIJO + (cfg.clave || location.pathname);
     const segs = campos.filter((id) => {
       const n = document.getElementById(id);
       return n && n.classList && n.classList.contains('seg');
@@ -75,19 +65,14 @@
     for (const id of campos) defectos[id] = leer(document.getElementById(id));
 
     // ── Restaurar ───────────────────────────────────────────────────────────
-    // La URL gana sobre el almacenamiento local: si alguien te pasó un enlace, quieres ver
-    // SU escenario, no el que dejaste a medias la semana pasada.
+    // Solo se repone lo que trae la URL (un enlace que alguien compartió). Ya no se guarda
+    // ni se repone nada entre sesiones: cada inicio de sesión arranca en blanco.
     const params = new URLSearchParams(location.search);
     let origen = null;
     let guardado = {};
     if ([...params.keys()].some((k) => campos.includes(k))) {
       origen = 'enlace';
       for (const id of campos) if (params.has(id)) guardado[id] = params.get(id);
-    } else {
-      try {
-        const crudo = localStorage.getItem(clave);
-        if (crudo) { guardado = JSON.parse(crudo) || {}; origen = 'sesión anterior'; }
-      } catch { /* almacenamiento deshabilitado o lleno: se sigue sin estado previo */ }
     }
 
     const pendientesSeg = [];
@@ -150,7 +135,6 @@
         datos[id] = v;
         qs.set(id, v);
       }
-      try { localStorage.setItem(clave, JSON.stringify(datos)); } catch { /* sin sitio: no es motivo para romper la página */ }
       // replaceState y no pushState: cada tecleo no debe crear una entrada en el historial,
       // o el botón "atrás" dejaría de servir para volver al portal.
       history.replaceState(null, '', qs.toString() ? `${location.pathname}?${qs}` : location.pathname);
@@ -214,5 +198,5 @@
     host.appendChild(p);
   }
 
-  global.ESTADO = { vincular, botonEnlace, avisoOrigen, PREFIJO };
+  global.ESTADO = { vincular, botonEnlace, avisoOrigen };
 }(window));

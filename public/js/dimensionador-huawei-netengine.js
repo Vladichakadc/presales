@@ -528,14 +528,14 @@ document.addEventListener('click', (e) => {
 
 /* ══ ESTADO ENLAZABLE Y PERSISTENTE ══
    Antes, poner 2.500 Mbps y copiar la URL no servia de nada: quien la abria veia 500 Mbps y
-   otra recomendacion. Ahora el escenario viaja en la URL y sobrevive a una recarga. Ver
-   /js/estado.js para por que hacen falta la URL Y el almacenamiento local, y no uno solo. */
+   otra recomendacion. Ahora el escenario viaja en la URL; ya no se guarda entre sesiones
+   (ver /js/estado.js). */
 document.addEventListener('DOMContentLoaded', () => {
   // La clave conserva el nombre viejo del archivo A PROPOSITO. No es el nombre de la pagina:
   // es la identidad bajo la que ya hay escenarios guardados en el navegador de quien usa
   // esto. Renombrarla por coherencia cosmetica le borraria el trabajo guardado a cambio de
   // nada, porque nadie ve esta cadena. El archivo se llama dimensionador-huawei-netengine.
-  const st = ESTADO.vincular({ clave: 'dimensionador-bom-huawei-v3_1', campos: ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','dirSeg','modeSeg','verdict-sel'] });
+  const st = ESTADO.vincular({ campos: ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','dirSeg','modeSeg','verdict-sel'] });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');

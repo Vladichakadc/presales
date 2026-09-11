@@ -238,7 +238,7 @@
     ['servers', 'accesoVel', 'oversub'].forEach((id) => $(id).addEventListener('input', render));
     $('chkDual').addEventListener('change', render);
 
-    const st = ESTADO.vincular({ clave: 'dimensionador-nokia-7220ixr', campos: ['servers', 'accesoVel', 'oversub', 'chkDual'] });
+    const st = ESTADO.vincular({ campos: ['servers', 'accesoVel', 'oversub', 'chkDual'] });
     const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
     if (anclaje && anclaje.parentNode) {
       const caja = document.createElement('div');
