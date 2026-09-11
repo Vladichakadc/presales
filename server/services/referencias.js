@@ -7,9 +7,11 @@
 // FortiGuard, licencias y SaaS); solo faltaba traerlo y mostrarlo.
 //
 // LO QUE CADA FABRICANTE TIENE ES DISTINTO, Y SE DICE. Fortinet trae 6.849 referencias con
-// precio; Aruba trae variantes de producto SIN numero de parte (HPE no lo publica en el
-// material disponible, igual que no publica precios); Cisco trae el SKU de cabecera de 8 de sus
-// 21 modelos; Huawei, MikroTik, Juniper y Nokia no traen ninguna. Un fabricante sin referencias
+// precio; Aruba trae variantes de producto SIN numero de parte para la mayoria (HPE no lo
+// publica en el material disponible), pero el SKU de cabecera de 15 modelos (EdgeConnect y
+// gateway) SI trae List Price real desde el 2026-09-10 (ver ARUBA_LIST_PRICE, mas abajo);
+// Cisco trae el SKU de cabecera de 8 de sus 21 modelos; Huawei, MikroTik, Juniper y Nokia no
+// traen ninguna. Un fabricante sin referencias
 // lo declara — nunca se rellena con un numero de parte plausible, que es exactamente como entro
 // el "FortiGate 2000F" inexistente que este catalogo ya sufrio.
 //
@@ -26,6 +28,17 @@ const modelosDe = (archivo) => {
 };
 
 const VENDORS = new Set(['fortinet', 'aruba', 'cisco', 'huawei', 'mikrotik', 'juniper', 'nokia']);
+
+// List Price de HPE por SKU, extraído el 2026-09-10 de un export de lista de precios de un
+// distribuidor autorizado (ver public/datasheets/aruba-lista-precios-hpe.csv) — SOLO el List
+// Price y su vigencia, nunca el nombre del distribuidor ni su % de descuento. Cubre el
+// hardware EdgeConnect y gateway con SKU confirmado; lo que sigue sin SKU (EC-XS-SP,
+// EC-XS-FIPS, EC-V, la serie 7000/7200) sigue sin precio.
+const ARUBA_LIST_PRICE = {
+  JM962A: 2752, R9D72A: 1546, S0E22A: 4318, S0E23A: 5588, S3N73A: 13479,
+  JZ872A: 21323, JZ878A: 34592, S0B67A: 46664, S2N65A: 47304,
+  R1B20A: 2505, R3V91A: 3247, R1B31A: 4441, S5H02A: 9228, R9M45A: 19944, R7H95A: 37614,
+};
 
 const SIN_REFERENCIAS = {
   huawei: 'El catálogo de Huawei no trae referencias de pedido: sus cifras salen del portafolio comercial, que publica rendimiento y no números de parte.',
@@ -54,16 +67,22 @@ function referenciasDe(vendor, modeloId) {
 
   if (v === 'aruba') {
     const m = modelosDe('aruba').find((x) => x.id === id);
-    const refs = ((m && m.skus) || []).map((s) => ({ sku: s.sku || null, d: s.d || '', p: null, t: s.sku ? 'HW' : null }));
-    if (m && m.hwSku && !refs.some((r) => r.sku === m.hwSku)) refs.unshift({ sku: m.hwSku, d: `${id} (referencia de cabecera)`, p: null, t: 'HW' });
+    const precio = ARUBA_LIST_PRICE[(m && m.hwSku) || ''] ?? null;
+    const refs = ((m && m.skus) || [])
+      .map((s) => ({ sku: s.sku || null, d: s.d || '', p: s.sku ? (ARUBA_LIST_PRICE[s.sku] ?? null) : null, t: s.sku ? 'HW' : null }));
+    if (m && m.hwSku && !refs.some((r) => r.sku === m.hwSku)) refs.unshift({ sku: m.hwSku, d: `${id} (referencia de cabecera)`, p: precio, t: 'HW' });
     return {
       vendor: v,
       modelo: id,
       refs,
-      fuente: 'Páginas de producto y tienda oficiales de HPE/Aruba',
+      fuente: precio != null
+        ? 'Páginas de producto y tienda oficiales de HPE/Aruba; List Price de export de distribuidor HPE (public/datasheets/aruba-lista-precios-hpe.csv)'
+        : 'Páginas de producto y tienda oficiales de HPE/Aruba',
       // Se dice lo que son: variantes publicadas, no numeros de parte, porque la mayoria va con
       // `sku: null`. Presentarlas como referencias de pedido prometeria un dato que no existe.
-      nota: 'HPE no publica número de parte ni precio para la mayoría de estas variantes en el material disponible: se listan como referencias de producto, y hay que confirmarlas con el distribuidor antes de cotizar.',
+      // El SKU de cabecera SI trae List Price cuando este catalogo lo tiene confirmado (2026-09-10,
+      // ver ARUBA_LIST_PRICE) — es el precio de lista de HPE, sin el descuento del distribuidor.
+      nota: 'HPE no publica número de parte para la mayoría de estas variantes en el material disponible: se listan como referencias de producto. El SKU de cabecera trae List Price de HPE cuando está confirmado; no es precio neto (sin descuento de distribuidor) — confirmar con el distribuidor antes de cotizar.',
     };
   }
 

@@ -120,6 +120,16 @@ async function backfillPricesFromCotizador(vendorIds) {
     } else {
       // No matching Product from PR — insert the cotizador-only row so cotizador.html
       // still has full parity even where PR didn't already list this device.
+      //
+      // OJO (encontrado el 2026-09-10, ver EC-10104/106/108/150 en aruba.js): esto guarda
+      // `row.model` TAL CUAL, con el prefijo de fabricante que trae cotizadorCatalog.js
+      // ("Aruba EC-10104") — a proposito, porque no todos los legacyData usan un `id` sin
+      // prefijo (Fortinet SI lleva "FortiGate " en su propio id, Cisco SI lleva "Catalyst "
+      // en la familia 8000; solo Aruba/Huawei/MikroTik/Nokia/Juniper lo omiten). Pelarlo aqui
+      // de forma generica romperia a esos dos: creaba una fila fantasma con nombre distinto al
+      // que el legacyData del vendor usa. La solucion correcta para un modelo nuevo que solo
+      // vive en cotizadorCatalog.js sin fila de PR (como paso con estos 4) es sumarlo a
+      // indexPR.js con el `id` bare que el vendor realmente usa, no tocar esta rama generica.
       await Product.findOrCreate({
         where: { vendorId, model: row.model },
         defaults: {
@@ -361,12 +371,29 @@ async function seedCatalog() {
   await seedSupportTiers(vendorIds.aruba, arubaData.CARE);
   await seedLicenseBundles(vendorIds.aruba, arubaData.BUNDLES, false);
 
-  // Sin price list verificado no hay precio: se fuerza priceNumeric a null para que el BOM
-  // declare la línea "sin cotizar" en vez de sumar el 0 que dejó el cotizador (elpN:0).
-  // Ver la cabecera de server/seed/legacyData/aruba.js.
+  // Limpieza de una vez (2026-09-10): estos 4 modelos se agregaron a aruba.js en la sesion
+  // anterior SIN sumarlos tambien a indexPR.js — a diferencia de los otros 11 modelos Aruba,
+  // no tenian fila de PR previa que backfillPricesFromCotizador pudiera igualar por nombre, asi
+  // que su rama de "sin match" (ver el comentario ahi arriba) les creo una fila fantasma con el
+  // nombre completo de cotizadorCatalog.js ("Aruba EC-10104"), coexistiendo con la fila real que
+  // crea seedDimensionadorModels ("EC-10104"). Corregido sumando los 4 a indexPR.js (mismo `id`
+  // bare que ya usan en aruba.js), asi backfill encuentra la fila real directamente y no cae en
+  // esa rama. `findOrCreate` nunca iba a limpiar la fantasma sola: se borra explicitamente aqui.
+  await Product.destroy({
+    where: {
+      vendorId: vendorIds.aruba,
+      model: ['Aruba EC-10104', 'Aruba EC-10106', 'Aruba EC-10108', 'Aruba EC-10150'],
+    },
+  });
+
+  // Sin price list verificado no hay precio para la mayoria de Aruba: se fuerza priceNumeric a
+  // null (no el 0 que dejó backfillPricesFromCotizador) para que el BOM declare esas líneas
+  // "sin cotizar" en vez de sumar un 0 como si fuera un precio real. Filtrado a priceNumeric:0
+  // para no pisar los 15 modelos con List Price real desde el 2026-09-10 (ver la cabecera de
+  // DATASHEETS.priceList en server/seed/legacyData/aruba.js).
   await Product.update(
     { priceDisplay: 'Consultar', priceNumeric: null },
-    { where: { vendorId: vendorIds.aruba } },
+    { where: { vendorId: vendorIds.aruba, priceNumeric: 0 } },
   );
 
   // ── Nokia (fabric de datacenter, 7220 IXR) ─────────────────────────────────

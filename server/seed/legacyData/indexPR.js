@@ -182,6 +182,14 @@ mikrotik:[
 ],
 aruba:[
   {model:'EC-XS',ser:'EdgeConnect',seg:'Sucursal peq / Oficina remota',fwd:200,ipsec:0,sdwan:'Foundation/Advanced + Boost',ports:'4x RJ45 10/100/1000 LAN/WAN + 2x RJ45 10/100/1000 gestión + serie RJ-45',elp:'Consultar'},
+  // Los 4 siguientes se sumaron el 2026-09-10 junto con la fila homonima en aruba.js — sin
+  // esto backfillPricesFromCotizador no tenia fila de PR que igualar por nombre y creaba una
+  // fila fantasma con el nombre completo de cotizadorCatalog.js ("Aruba EC-10104") en vez de
+  // encontrar/actualizar la real (ver el comentario en seedCatalog.js, backfillPricesFromCotizador).
+  {model:'EC-10104',ser:'EdgeConnect',seg:'Sucursal peq / oficina en casa',fwd:500,ipsec:0,sdwan:'Foundation/Advanced + Boost',ports:'4x RJ45 10/100/1000',elp:'Consultar'},
+  {model:'EC-10106',ser:'EdgeConnect',seg:'Sucursal pequeña',fwd:1000,ipsec:0,sdwan:'Foundation/Advanced + Boost',ports:'2x SFP+ 1/10G + 2x Combo (SFP/1GbE) + 2x GbE PoE+',elp:'Consultar'},
+  {model:'EC-10108',ser:'EdgeConnect',seg:'Sucursal mediana',fwd:2000,ipsec:0,sdwan:'Foundation/Advanced + Boost',ports:'2x SFP+ 1/10G + 2x Combo (SFP/1GbE) + 2x GbE PoE+',elp:'Consultar'},
+  {model:'EC-10150',ser:'EdgeConnect',seg:'Datacenter / Hub grande',fwd:12000,ipsec:0,sdwan:'Foundation/Advanced + Boost',ports:'2x RJ45 10/100/1000 gestión + 8x SFP28 1/10/25G · 2x PSU',elp:'Consultar'},
   {model:'EC-S',ser:'EdgeConnect',seg:'Sucursal grande / Oficina remota',fwd:3000,ipsec:0,sdwan:'Foundation/Advanced + Boost',ports:'8x RJ45 10/100/1000 + 4x SFP+ 1/10G',elp:'Consultar'},
   {model:'EC-M',ser:'EdgeConnect',seg:'Hub / Sucursal grande',fwd:5000,ipsec:0,sdwan:'Foundation/Advanced + Boost',ports:'8x RJ45 1GbE + 4x SFP+ 1/10G (SR o LR)',elp:'Consultar'},
   {model:'EC-L',ser:'EdgeConnect',seg:'Datacenter / Hub grande',fwd:10000,ipsec:0,sdwan:'Foundation/Advanced + Boost',ports:'6x SFP+ 10G (SR o LR)',elp:'Consultar'},

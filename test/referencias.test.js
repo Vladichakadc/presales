@@ -50,7 +50,18 @@ test('Aruba no presenta como numero de parte lo que HPE no publica', () => {
   // La mayoria va con sku null: son variantes de producto, no referencias de pedido.
   assert.ok(r.refs.some((x) => x.sku === null), 'las variantes sin numero de parte se conservan como tales');
   assert.match(r.nota, /no publica n[uú]mero de parte/i, 'y la nota lo dice');
-  assert.ok(r.refs.every((x) => x.p === null), 'sin precio: Aruba no tiene lista de precios');
+  // EC-XS-SP y EC-XS-FIPS no tienen SKU propio confirmado, asi que tampoco tienen precio.
+  assert.ok(r.refs.filter((x) => x.sku === null).every((x) => x.p === null), 'sin SKU no hay precio que atarle');
+});
+
+test('Aruba SI trae List Price (sin descuento de distribuidor) para el SKU de cabecera confirmado', () => {
+  // Desde el 2026-09-10 hay List Price real de HPE para 15 modelos (ver ARUBA_LIST_PRICE en
+  // referencias.js); antes esta linea era el caso contrario ('Aruba no tiene lista de precios').
+  const r = referenciasDe('aruba', 'EC-XS');
+  const hw = r.refs.find((x) => x.sku === 'JM962A');
+  assert.ok(hw, 'incluye el SKU de cabecera de EC-XS');
+  assert.strictEqual(hw.p, 2752, 'con su List Price de HPE');
+  assert.match(r.fuente, /distribuidor/i, 'la fuente distingue que ese precio no viene de la pagina de producto');
 });
 
 test('un fabricante sin referencias lo declara, no devuelve un hueco mudo', () => {

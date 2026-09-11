@@ -110,7 +110,10 @@ const FUENTES = {
     { documento: 'Paginas de producto y tienda oficiales de HPE/Aruba',
       url: 'https://www.hpe.com/us/en/networking.html', estable: false, fecha: null, hash: null,
       cubre: 'modelos EdgeConnect, gateways 9000/9200, software y SKUs de hardware',
-      nota: 'SIN FECHA en la cabecera del catalogo. Los PDF no pudieron abrirse (bloqueo de egreso a los dominios de HPE): las cifras salen de las descripciones publicadas en esas paginas, no de la lectura integra del datasheet. SIN PRICE LIST: todos los precios van en null y el BOM los declara sin cotizar.' },
+      nota: 'SIN FECHA en la cabecera del catalogo. Los PDF no pudieron abrirse (bloqueo de egreso a los dominios de HPE): las cifras salen de las descripciones publicadas en esas paginas, no de la lectura integra del datasheet. Los precios de la mayoria de las lineas (licencias, soporte, modelos sin SKU) van en null y el BOM las declara sin cotizar.' },
+    { documento: 'Lista de precios de un distribuidor autorizado de HPE (export interno, no publico)',
+      url: null, fecha: '2026-09-10', hash: null, cubre: 'List Price de HPE para 15 modelos EdgeConnect/gateway con SKU confirmado',
+      nota: 'Extracto elaborado por este catalogo el 2026-09-10: se guardo SOLO el SKU, la descripcion, el List Price y su vigencia (public/datasheets/aruba-lista-precios-hpe.csv); el nombre del distribuidor y su % de descuento negociado NO se incorporan, por ser su dato confidencial. Es precio de lista, no neto -- no reemplaza confirmar con el distribuidor antes de cotizar en firme. Senal sin confirmar detectada en el mismo export: EC-XL (SKU S0B67A) aparece con estado "End of Sale" vigencia 2026-06-30 en su fila sin sufijo de pais, pero "GA" en todas sus variantes localizadas -- no se marca como descontinuado hasta confirmarlo (ver el comentario junto a EC-XL en MODELS).' },
   ],
 
   nokia: [

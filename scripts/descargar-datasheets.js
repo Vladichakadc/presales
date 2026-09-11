@@ -103,7 +103,7 @@ async function main() {
       const destino = path.join(DESTINO, d.file);
       const estado = fs.existsSync(destino) ? 'ya presente' : 'falta';
       console.log(`  ${clave.padEnd(14)} ${d.file.padEnd(38)} ${estado}`);
-      console.log(`  ${''.padEnd(14)} ${d.url}`);
+      console.log(`  ${''.padEnd(14)} ${d.url || '(sin URL — fuente elaborada localmente)'}`);
     }
     return 0;
   }
@@ -112,6 +112,13 @@ async function main() {
 
   for (const [clave, d] of docs) {
     const destino = path.join(DESTINO, d.file);
+    // Sin `url` no es un PDF de HPE que bajar: es una fuente que este catálogo elaboró a
+    // mano (ver DATASHEETS.priceList en aruba.js) y que ya vive en el repo.
+    if (!d.url) {
+      omitidos.push(d.file);
+      console.log(`· ${d.file} — sin URL (fuente elaborada localmente), se omite`);
+      continue;
+    }
     if (!FORCE && fs.existsSync(destino)) {
       omitidos.push(d.file);
       console.log(`· ${d.file} — ya presente, se omite (--force para rebajarlo)`);

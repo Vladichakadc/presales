@@ -17,7 +17,9 @@ const pathMod = require('path');
 const DIR_DATASHEETS = pathMod.join(__dirname, '..', '..', 'public', 'datasheets');
 function datasheetsLocales() {
   try {
-    return new Set(fs.readdirSync(DIR_DATASHEETS).filter((f) => f.toLowerCase().endsWith('.pdf')));
+    // .csv se suma junto a .pdf para las fuentes que este catálogo elaboró (no son un PDF
+    // oficial de HPE que descargar): ver DATASHEETS.priceList en aruba.js.
+    return new Set(fs.readdirSync(DIR_DATASHEETS).filter((f) => /\.(pdf|csv)$/i.test(f)));
   } catch {
     return new Set();
   }

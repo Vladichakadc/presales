@@ -271,6 +271,14 @@ antes de pisar un dato existente — así que se deja sin tocar.
 |---|---|---|---|
 | EC-XS | `wanMax` | 200 Mbps | **1.000 Mbps** |
 
+**Aruba — EC-XL, un conflicto de ciclo de vida y no de capacidad, encontrado el 2026-09-10 al
+extraer List Price** (ver *Cerrado recientemente*). En el export de lista de precios de un
+distribuidor, el SKU de EC-XL (S0B67A) aparece con estado PLC **"End of Sale" vigencia
+2026-06-30** en su fila sin sufijo de país, pero **"GA"** en las ~20 variantes localizadas
+(US, EU, BR...) del mismo SKU — el propio documento se contradice. No se marca EC-XL como
+descontinuado hasta confirmarlo con HPE o el distribuidor: es la misma regla de doble anclaje
+que el resto de esta tabla, aplicada a una señal de ciclo de vida en vez de una cifra.
+
 ## Datos por confirmar
 
 7. **Precio de los modelos Juniper y Nokia añadidos en agosto 2026.** Las cifras técnicas
@@ -344,6 +352,74 @@ antes de pisar un dato existente — así que se deja sin tocar.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Aruba: List Price real para 15 modelos EdgeConnect/gateway (2026-09-10)
+
+A petición del dueño del repo, que dejó en `public/Precios Aruba.txt` (82.546 líneas, 16,6 MB)
+un export de lista de precios de HPE con la instrucción de sumarlo como fuente y sacar lo más
+importante para dimensionar equipos.
+
+**El archivo NO era una fuente pública genérica: era una lista de precios de un distribuidor
+autorizado** (nombre del partner y PA number visibles, con su % de descuento negociado), y
+mezclaba TODO el portafolio de HPE (servers, storage, Synergy...) con Aruba como una porción.
+Consultado el alcance con el dueño del repo antes de tocar nada: se descartó commitear el
+archivo completo y se optó por extraer solo lo útil — SKU, descripción, List Price y su
+vigencia — sin el nombre del distribuidor ni su descuento, que es la parte confidencial y no
+aporta nada para dimensionar un equipo. El archivo original se movió fuera de `public/` (que
+Express sirve, aunque detrás del muro de sesión) a `privado/`, agregado a `.gitignore`.
+
+**Lo extraído:** `public/datasheets/aruba-lista-precios-hpe.csv`, 15 filas (los EdgeConnect y
+gateways con SKU confirmado en el catálogo: EC-XS, EC-S/M/L/XL, EC-10104/106/108/150, Gateway
+9004/9004-LTE/9012/9106/9114/9240). Se agregó como entrada `DATASHEETS.priceList` en aruba.js
+(sin `url` pública, con `local` — la página no muestra el enlace "en hpe.com" para esta,
+porque no existe uno legítimo que ofrecer). El SKU de EC-XS (JM962A) también se completó en
+`aruba.js`: el QuickSpecs no lo publica, este export sí.
+
+**Se conectó el precio real donde antes decía "Consultar":** `cotizadorCatalog.js` (15 filas,
+antes `elp:'Consultar',elpN:0`), la ficha de "Referencias de pedido" (`referencias.js`, nueva
+tabla `ARUBA_LIST_PRICE`), el BOM del dimensionador (ya leía `priceNumeric` del Product, solo
+faltaba que existiera) y los tres avisos de "sin price list" del HTML, corregidos para decir
+lo que hoy es cierto: 15 modelos tienen List Price de HPE (sin el descuento del distribuidor,
+no una cotización firme); el resto del catálogo sigue sin precio.
+
+**Un bug real, encontrado al verificar y no al buscarlo.** Con el precio en cero, un defecto
+de `backfillPricesFromCotizador` (server/seed/seedCatalog.js) era invisible: los 4 modelos
+EdgeConnect 10104/106/108/150 (sumados a `aruba.js` en la sesión anterior sin sumarlos también
+a `indexPR.js`) no tenían fila de PR previa que igualar por nombre, así que su rama de "sin
+match" les creaba una fila fantasma con el nombre completo de `cotizadorCatalog.js` ("Aruba
+EC-10104") en vez de encontrar la fila real ("EC-10104") que `seedDimensionadorModels` crea
+después — dos filas por modelo, y cuál de las dos terminaba con el precio dependía del orden
+de `Product.findAll()`, no del código. Con precio real de por medio dejó de ser invisible: los
+4 modelos seguían mostrando "Consultar" pese a tener fila en el CSV. Corregido sumando los 4 a
+`indexPR.js` (mismo patrón que los otros 11 modelos Aruba) y con una limpieza de una vez de las
+4 filas fantasma ya sembradas. **Intento de arreglo descartado a tiempo:** la primera solución
+probada — pelar el prefijo de fabricante también en la rama de creación de
+`backfillPricesFromCotizador` — parecía correcta pero rompía a Fortinet y a la familia Catalyst
+8000 de Cisco, que SÍ llevan el prefijo como parte de su `id` real (a diferencia de
+Aruba/Huawei/MikroTik/Nokia/Juniper, que no); se detectó comparando el conteo de `Product` de
+un arranque limpio contra un worktree del commit anterior antes de darlo por bueno (232 → 261
+en vez de la baja esperada), y se revirtió por la vía correcta: sumar la fila de PR que
+faltaba, no tocar una función compartida por los 7 fabricantes.
+
+**Señal sin confirmar, dejada así a propósito:** en el mismo export, el SKU de EC-XL (S0B67A)
+aparece con estado PLC "End of Sale" (vigencia 2026-06-30) en su fila sin sufijo de país, pero
+"GA" en las ~20 variantes por país del mismo SKU. Un solo documento, contradictorio consigo
+mismo, no alcanza para marcar EC-XL como descontinuado — comentario junto al modelo en
+`aruba.js` y fila en "Conflictos abiertos" más abajo.
+
+Verificado: 233 pruebas (232 + 1 nueva sobre `referencias.js`), Chromium autenticado (BOM con
+el subtotal real de EC-10106, ficha con "Precio de lista: ~ $4.318", pestaña Fuentes con el
+CSV sirviendo detrás del login, catálogo/cotizador con los 15 precios), sin errores de
+consola. `npm run pantallas` no corrió (falta `playwright` instalado en este entorno).
+
+**Mejora propuesta al cerrar esta entrega:** este mismo bug (una fila de PR faltante creando
+una fila fantasma en `backfillPricesFromCotizador`) puede repetirse en cualquier fabricante
+cada vez que se agregue un modelo nuevo directo a su `legacyData` sin sumarlo también a
+`indexPR.js` — pasó una vez en silencio (con precio en 0 no se notaba) y podría volver a pasar.
+Un aviso de arranque tipo el que ya existe para `eolModels` huérfanos (`seedDimensionadorModels`
+avisa si una entrada no casa con nada) que compare los `model` de `cotizadorCatalog.js` contra
+los `Product` ya sembrados y señale cuáles cayeron en la rama de creación, cerraría esto de raíz
+en vez de depender de que alguien lo note contando filas a mano.
 
 ### Los dimensionadores dejan de recordar la sesión anterior (2026-09-10)
 

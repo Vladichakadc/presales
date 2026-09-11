@@ -3,6 +3,12 @@ database.sqlite
 .env
 .DS_Store
 
+# Exportes de lista de precios de un distribuidor (nombre de partner, % de descuento
+# negociado, net price): confidenciales, no van al repo. Lo que se usa del contenido se
+# extrae a mano a public/datasheets/ sin esos campos — ver PENDIENTES.md, "Aruba: List
+# Price real...".
+/privado/
+
 # Estado local de herramientas de agente (logs de aprendizaje, telemetria de costos,
 # configuracion por maquina). No es codigo de la aplicacion y no aporta al despliegue.
 .cursor/

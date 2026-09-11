@@ -16,9 +16,14 @@
 // íntegra del datasheet. Sirven para elegir modelo y armar el alcance; antes de emitir una
 // propuesta hay que abrir el PDF enlazado y confirmar la fila exacta.
 //
-// SIN PRICE LIST. Sigue sin haber lista de precios verificada, a diferencia de Fortinet.
-// Los SKU de hardware que aparecen SÍ son reales (tomados de buy.hpe.com); los precios
-// quedan en null y el BOM declara esas líneas "sin cotizar" en vez de inventar un importe.
+// LIST PRICE (2026-09-10). Los 15 modelos EdgeConnect/gateway con SKU confirmado (ver
+// `hwSku` en cada fila) tienen List Price real de HPE, extraído de un export de lista de
+// precios de un distribuidor autorizado — ver DATASHEETS.priceList y
+// public/datasheets/aruba-lista-precios-hpe.csv. Es precio de lista, no neto: no incluye el
+// % de descuento del distribuidor (deliberadamente fuera de este catálogo, es su dato
+// confidencial) ni impuestos ni promoción. Lo que sigue sin SKU (EC-XS-SP, EC-XS-FIPS, EC-V,
+// la serie 7000/7200) sigue sin precio, y el BOM declara esas líneas "sin cotizar" en vez de
+// inventar un importe.
 //
 // CORRECCIONES RESPECTO A LA PRIMERA VERSIÓN DE ESTE ARCHIVO (documentadas a propósito):
 //   · Se elimina "EC-2XL": no existe en el portafolio. La gama va XS → S → M → L → XL.
@@ -65,6 +70,14 @@ const DATASHEETS = {
   foundCare:   {n:'HPE Aruba Networking Foundational Care',      url:'https://www.hpe.com/psnow/doc/a00111733enw', file:'foundational-care.pdf'},
   clearpass:   {n:'ClearPass — Access License, data sheet',      url:'https://www.hpe.com/psnow/doc/PSN1010354100DEEN', file:'clearpass-access-license.pdf'},
   orchDocs:    {n:'EdgeConnect Orchestrator — documentación',    url:'https://arubanetworking.hpe.com/techdocs/sdwan/', file:'orchestrator-documentacion.pdf'},
+  // A diferencia de las filas de arriba, esto NO es un documento público de HPE: es un
+  // extracto que este catálogo elaboró (2026-09-10) a partir de un export de lista de
+  // precios de un distribuidor autorizado de HPE. Se guardaron SOLO el SKU, la descripción,
+  // el List Price de HPE y su vigencia — nunca el nombre del distribuidor ni su % de
+  // descuento negociado, que es la parte confidencial de ese documento y no le sirve a
+  // nadie para dimensionar un equipo. Por eso no hay `url` pública: no existe, y no se
+  // inventa una. Ver PENDIENTES.md, "Aruba: List Price real para EdgeConnect y gateways".
+  priceList:   {n:'Lista de precios de referencia — List Price HPE (sin descuento de distribuidor)', file:'aruba-lista-precios-hpe.csv'},
 };
 
 // CAMPOS Y CÓMO INTERPRETARLOS
@@ -111,7 +124,10 @@ const MODELS = [
   {id:'EC-XS', redund:false, psu:{tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 23 W en la primera revisión de hardware y 34 W en las posteriores — HPE publica el requerimiento, no un consumo típico. Fuente única mediante adaptador externo, sin opción de segunda.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal peq / Oficina remota',
    wanMin:2, wanMax:200, boostMax:200,
    ifaces:'4x RJ45 10/100/1000 LAN/WAN + 2x RJ45 10/100/1000 gestión + serie RJ-45',
-   hwSku:null, skus:[{sku:null,d:'EC-XS'},{sku:null,d:'EC-XS-SP'},{sku:null,d:'EC-XS-FIPS (validado FIPS 140)'}],
+   // hwSku de la variante base completado el 2026-09-10 desde DATASHEETS.priceList (el
+   // QuickSpecs no lo publica); EC-XS-SP y EC-XS-FIPS no aparecen como SKU propio en esa
+   // fuente tampoco, así que siguen sin confirmar.
+   hwSku:'JM962A', skus:[{sku:'JM962A',d:'EC-XS'},{sku:null,d:'EC-XS-SP'},{sku:null,d:'EC-XS-FIPS (validado FIPS 140)'}],
    ds:'https://www.hpe.com/psnow/doc/a00110177enw', dsFile:'edgeconnect-xs-spec-sheet.pdf'},
 
   // Los tres siguientes (EdgeConnect 10104/10106/10108) no estaban en el catálogo: se
@@ -162,6 +178,14 @@ const MODELS = [
    hwSku:'JZ878A', skus:[{sku:'JZ878A',d:'EC-L-H · 6x SFP+ 1/10G'}],
    ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
 
+  // SEÑAL SIN CONFIRMAR (2026-09-10): en el export de lista de precios del distribuidor (ver
+  // DATASHEETS.priceList), la fila de S0B67A SIN sufijo de país marca estado PLC "ES" (End of
+  // Sale) con vigencia 2026-06-30, mientras que las ~20 filas por país del mismo SKU (US, EU,
+  // BR...) marcan "GA". No se sabe si la fila sin sufijo es la maestra (y EC-XL ya estaría en
+  // salida) o un residuo desactualizado — un solo documento, y contradictorio consigo mismo,
+  // no alcanza para tocar nada (misma regla que el conflicto de wanMax de EC-XS). Se deja sin
+  // marcar como EOL; confirmar con HPE/el distribuidor antes de cotizar EC-XL en una propuesta
+  // nueva. Ver PENDIENTES.md, "Aruba: List Price real para EdgeConnect y gateways".
   {id:'EC-XL', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Datacenter / Head-end de fabric',
    wanMin:2000, wanMax:10000, boostMax:10000,
    ifaces:'hasta 6x SFP+ 10G y/o SFP28 25G · network memory en flash PCIe · PSU y almacenamiento redundantes',

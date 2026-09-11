@@ -130,7 +130,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 </header>
 
 <div class="flag-ft">
-  <b>Estado de los datos.</b> Las cifras provienen de páginas de producto y de tienda oficiales de HPE/Aruba, y los <b>SKU de hardware son reales</b> (buy.hpe.com). Cada modelo enlaza su datasheet oficial. Dos límites que conviene tener presentes: los PDF no se abrieron íntegramente al recopilar —conviene confirmar la fila exacta antes de cotizar— y <b>no hay price list verificado</b>, por lo que el BOM deja las líneas "sin cotizar" en vez de mostrar un importe inventado.
+  <b>Estado de los datos.</b> Las cifras provienen de páginas de producto y de tienda oficiales de HPE/Aruba, y los <b>SKU de hardware son reales</b> (buy.hpe.com). Cada modelo enlaza su datasheet oficial. <b>15 modelos EdgeConnect/gateway tienen List Price real de HPE</b> (export de lista de precios de un distribuidor, sin su descuento negociado — ver pestaña Fuentes); el resto sigue "sin cotizar". Dos límites que conviene tener presentes: los PDF no se abrieron íntegramente al recopilar —conviene confirmar la fila exacta antes de cotizar— y el List Price no es precio neto ni cotización firme.
 </div>
 
 <div class="tabs" role="tablist">
@@ -316,7 +316,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   </section>
 
   <div class="flag-ft">
-    <b>Aviso de preventa:</b> las líneas de suscripción y soporte salen sin importe a propósito — no hay price list verificado para Aruba en este catálogo. Los SKU de hardware sí provienen de la tienda oficial de HPE. Detalle en la cabecera de <code>server/seed/legacyData/aruba.js</code>.
+    <b>Aviso de preventa:</b> las líneas de suscripción y soporte salen sin importe a propósito — no hay price list verificado para esas líneas. El equipo sí trae List Price de HPE cuando el modelo tiene SKU confirmado (15 de los EdgeConnect/gateway); es precio de lista sin el descuento del distribuidor, no una cotización firme. Detalle en la cabecera de <code>server/seed/legacyData/aruba.js</code>.
   </div>
 </div>
 
@@ -440,7 +440,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Capacidad</th><th>Puertos</th></tr></thead>
     <tbody></tbody>
   </table></div>
-  <p style="font-size:11px;color:var(--steel);margin-top:10px">Sin price list verificado para Aruba en este catálogo: las cifras salen de datasheet público y no hay SKU ni precio de lista confirmados. Confirmar con el distribuidor HPE autorizado antes de cotizar en firme.</p>
+  <p style="font-size:11px;color:var(--steel);margin-top:10px">Las cifras de capacidad salen de datasheet público. 15 modelos tienen SKU y List Price de HPE confirmados (sin el descuento del distribuidor); el resto sigue sin precio. Confirmar con el distribuidor HPE autorizado antes de cotizar en firme.</p>
 </section>
 </div>
 
@@ -460,7 +460,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 
 <p class="note">
 <b>Fuentes y estado de verificación:</b> cifras y SKU tomados de páginas de producto y de tienda oficiales de HPE y Aruba —hpe.com, buy.hpe.com, arubanetworks.com y arubanetworking.hpe.com—, enlazadas una a una en la pestaña de fuentes.
-<b>Sin price list firmado</b>: no hay precios de lista verificados, a diferencia del catálogo de Fortinet. Los porcentajes de overhead de FEC y los factores de reducción de Boost son supuestos de trabajo de esta herramienta, no cifras publicadas por HPE, y así se declaran donde se usan.
+<b>List Price, no price list firmado</b>: 15 modelos EdgeConnect/gateway tienen precio de lista de HPE (export de distribuidor, sin su descuento negociado ni impuestos ni promoción — no es una cotización firme); el resto del catálogo sigue sin precio, a diferencia de Fortinet, que sí tiene lista de precios verificada completa. Los porcentajes de overhead de FEC y los factores de reducción de Boost son supuestos de trabajo de esta herramienta, no cifras publicadas por HPE, y así se declaran donde se usan.
 </p>
 
 </div><!-- /wrap -->
