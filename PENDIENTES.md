@@ -345,6 +345,36 @@ antes de pisar un dato existente — así que se deja sin tocar.
 
 ## Cerrado recientemente
 
+### Los dimensionadores dejan de recordar la sesión anterior (2026-09-10)
+
+A petición del dueño del repo («cada vez que se inicie sesión limpia todos los campos de
+los dimensionadores que estén vacíos y no guarde valores como ahora»). `js/estado.js`
+guardaba cada campo en `localStorage` y lo reponía en la siguiente visita — pensado para no
+perder un dimensionamiento a medio hacer, documentado así en el propio módulo — pero eso
+significaba que cada inicio de sesión arrancaba con los valores de la vez anterior en vez de
+en blanco. Consultado el alcance con el dueño del repo (¿limpiar solo al hacer login, o
+sacar el guardado por completo?): eligió lo segundo.
+
+**Se quitó la lectura y la escritura en `localStorage` de `js/estado.js`.** Lo único que se
+conserva es reponer desde la URL — el enlace compartido («mírate este sizing») sigue
+reproduciendo el mismo escenario a quien lo abre, que es el caso de uso real de compartir un
+dimensionamiento con un compañero. El botón "Copiar enlace de este escenario" no cambió. El
+aviso "se restauraron los parámetros de tu última visita" deja de aparecer (el de "estás
+viendo un escenario recibido por enlace" sigue igual). Las 7 páginas dejaron de pasar
+`clave: '<nombre>'` a `ESTADO.vincular()` porque esa clave solo existía para nombrar la
+entrada de `localStorage` que ya no se escribe.
+
+**Lo que NO se tocó, a propósito, por estar fuera de lo pedido:** el BOM del cotizador
+(`js/cotizador.js`) y las referencias de pedido (`js/bom.js`) también usan `localStorage`,
+pero guardan listas de equipos y referencias añadidas —perderlas al iniciar sesión sería una
+regresión real, no una limpieza—, y el pedido fue específicamente sobre "los campos de los
+dimensionadores", no sobre el BOM ni el cotizador.
+
+Verificado en Chromium autenticado: se cambia el caudal de un dimensionador (queda en la
+URL), se recarga sin parámetros y el campo vuelve al valor por defecto, sin el aviso de
+sesión anterior. Sin errores de consola. 232 pruebas sin cambios (no hay pruebas de este
+módulo de frontend).
+
 ### Aruba: la pestaña de Fuentes ya no está duplicada (2026-09-10)
 
 A petición del dueño del repo («unifica en aruba la opción de fuentes, está duplicado»).
