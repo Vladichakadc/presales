@@ -1,7 +1,7 @@
 # Datasheets oficiales de HPE Aruba Networking
 
-**3 de los 24 documentos ya están aquí** (2026-09-03); el resto sigue enlazando la URL de
-HPE. Para traer más:
+**18 de los 24 documentos ya están aquí** (2026-09-11); el resto sigue enlazando la URL de
+HPE. Para traer más o refrescar versiones:
 
 ```
 npm run datasheets
@@ -9,25 +9,43 @@ npm run datasheets
 
 desde una máquina con salida a internet.
 
-## Por qué solo 3, y cuáles
+## Por qué 18 y no 24
+
+De los 6 que faltan, **4 nunca fueron PDFs** (`ecOverview`, `gw7000`, `gwSoportados` y
+`orchDocs` son páginas de documentación en vivo, tal como las describe el manifiesto), **1
+URL murió** (`ecSpecSheet`, 404 genuino: hay que buscar el reemplazo) y **1 exige cuenta de
+soporte HPE** (`gw9000Spec`: `support.hpe.com/hpesc/public/docDisplay?docId=a00099295en_us`
+se abre en el navegador pero no ofrece descarga sin login).
+
+## Cómo se bajaron los difíciles (2026-09-10 y 2026-09-11)
 
 HPE no se comporta igual en todos sus dominios, y eso decide qué se puede bajar sin un
-navegador humano detrás:
+navegador detrás:
 
-| Dominio | Respuesta | Documentos del manifiesto |
+| Dominio | `curl` / script | Chrome real |
 |---|---|---|
-| `arubanetworking.hpe.com` | **responde** | 6 |
-| `www.arubanetworks.com` | 403 de Akamai | 3 |
-| `www.hpe.com` | agota el tiempo | 12 |
-| `support.hpe.com` y otros | sin probar | 3 |
+| `arubanetworking.hpe.com` | responde | responde |
+| `www.arubanetworks.com` | 403 de Akamai | **responde** |
+| `www.hpe.com` | agota el tiempo | **responde** |
+| `support.hpe.com` | sin probar | pide cuenta |
 
-De los 6 alcanzables se bajaron 4 y se commitearon **los dos que sirven para cotizar**: el
-*EdgeConnect Hardware Reference* (las especificaciones eléctricas y la tabla de fuentes por
-modelo) y la guía de licenciamiento de Central. Los otros dos —diseño SD-Branch y despliegue
-en Azure— son documentos de arquitectura, no de cotización, y habrían sumado 21 MB más.
+Las dos tandas que faltaban se hicieron con un Chrome real (2026-09-10, 9 documentos;
+2026-09-11, los 6 que quedaban). La lección de método, para la próxima refrescada:
 
-El `sd-wan-ordering-guide.pdf` venía de antes: fue el único que sobrevivió a la tanda de 24
-peticiones seguidas de agosto.
+- **Akamai distingue la página de la petición.** `curl`, el `ctx.request` de Playwright y
+  hasta un `fetch` cross-origin reciben 403 o timeout; la navegación de página pasa el
+  reto JavaScript y hereda las cookies. Todo PDF hay que pedirlo *desde* la página.
+- **Los QuickSpecs de HPE no se descargan: se ven.** `psnow/doc/<id>.pdf` sirve una carcasa
+  HTML con el visor Adobe, y es el visor quien pide el PDF de verdad a
+  `psnow/downloadDoc/<titulo>-<id>.pdf?id=<id>...`. El método que funciona: abrir la
+  carcasa, escuchar la respuesta `application/pdf` a `downloadDoc` y repetir esa misma URL
+  con un `fetch` desde la página (mismo origen, mismas cookies).
+- **`psnow/downloadDoc` limita por sesión/IP.** En la tanda del 2026-09-10 respondió 503
+  tras 9 descargas y ni 2 minutos de espera lo levantaron; al día siguiente, en sesión
+  nueva, respondió 200 a la primera. Si vuelve a pasar: esperar horas, no insistir.
+- **`www.arubanetworks.com/assets/ds/DS_9000Series.pdf` ya no es un PDF**: redirige al
+  visor `psnow/doc/a00067608enw` («HPE Aruba Networking 9000 Series Gateway»). Ojo, es un
+  documento distinto del `a00067607enw` que ya estaba (`serie-9000-psnow.pdf`).
 
 ## Cómo funciona
 
@@ -43,7 +61,10 @@ peticiones seguidas de agosto.
 Para que producción los sirva **tienen que estar commiteados**: el contenedor de Railway se
 reconstruye desde git en cada despliegue y no conserva nada escrito en disco fuera del
 volumen. Conviene mirar el tamaño total antes (`du -sh public/datasheets`): son documentos
-de fabricante y engordan el repositorio de forma permanente.
+de fabricante y engordan el repositorio de forma permanente. La tanda del 2026-09-11 suma
+~21 MB, de los cuales 17,6 MB son el *SD-Branch Design VSG* (132 páginas): si el peso
+molesta, ese es el primero a retirar — es un documento de arquitectura, no de cotización,
+y el método de arriba lo vuelve a bajar en minutos.
 
 Dos cosas a tener en cuenta al hacerlo:
 

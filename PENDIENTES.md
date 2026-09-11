@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-10.
+Última revisión: 2026-09-11.
 
 ---
 
@@ -96,7 +96,7 @@ de datos— está en [`IMPORTAR-CATALOGO.md`](IMPORTAR-CATALOGO.md).
 | # | Qué falta | Cómo se cierra | Bloqueo |
 |---|---|---|---|
 | ~~2~~ | ~~`cps` en 37 de los 58 FortiGate~~ **Resuelto (2026-09-02)**, y ampliado el 2026-09-03 de 53 a **56 de 58** leyendo las fichas por serie de 400F y 600F. Quedan 100F y 200F, cuyas fichas no están en la URL que sigue el patrón del resto (404, reportado). | — | resuelto vía Actions |
-| 3 | **PDFs de datasheets de Aruba — de 3/24 a 12/24 (2026-09-10), ver *Cerrado recientemente*.** El bloqueo documentado desde agosto era contra el ejecutor de GitHub Actions (Akamai) y contra `curl`/Playwright desde este entorno; un **Chrome real** (vía la extensión, no automatización headless) sí llega a `hpe.com` y `arubanetworking.hpe.com` sin que Akamai lo detenga — primer avance real desde que se abrió el pendiente. **Causa confirmada de los 7 restantes que no bajaron (2026-09-10, segundo intento): no es la automatización.** `psnow/downloadDoc` —el endpoint real detrás del botón "Download", visto con `read_network_requests`— responde **503** para las peticiones que fallan, y tras una espera de 2 minutos siguió en 503 incluso para `a00110177enw` (EC-XS), el mismo documento que sí se había descargado minutos antes en la misma sesión. Es un límite de sesión/IP del propio servicio de HPE, agotado por las 9 descargas ya hechas, no algo específico de esos 7 documentos ni de ningún método de clic — **4 no son PDFs y nunca lo fueron** (`ecOverview`, `gw7000`, `gwSoportados`, `orchDocs` son páginas de documentación en vivo, tal como ya los describía el manifiesto) y **1 URL murió** (`ecSpecSheet`, 404 genuino, hay que buscar el reemplazo). | Reintentar los 7 atascados (`ecQuickspecs`, `ecXlSpec`, `gw9000`, `gw9100`, `gw9200Qs`, `sdBranchVsg`, y `gw9000Spec` que además exige cuenta HPE) **en una sesión nueva, no en la misma** — 2 minutos de espera no bastó, hace falta una ventana más larga (probar al día siguiente) para no seguir golpeando un servicio que ya está limitando. El PR automático desde Actions sigue sin poder abrirse solo (permiso de GitHub desactivado), pero ya no es el paso que bloquea: el archivo se puede commitear a mano como se hizo aquí. | Cuota de `psnow/downloadDoc` agotada para esta sesión/IP — esperar y reintentar en una sesión distinta, no insistir en la misma |
+| ~~3~~ | **~~PDFs de datasheets de Aruba~~ Resuelto (2026-09-11): 18/24, ver *Cerrado recientemente*.** Los 6 que quedaban atascados bajaron en sesión nueva con Chrome real: `ecQuickspecs`, `ecXlSpec`, `gw9000`, `gw9100`, `gw9200Qs` y `sdBranchVsg`. La cuota de `psnow/downloadDoc` efectivamente se había reseteado al día siguiente. De los 6 que faltan: 4 nunca fueron PDFs (páginas de documentación en vivo), 1 URL murió (`ecSpecSheet`, 404 genuino, hay que buscar el reemplazo) y 1 exige cuenta de soporte HPE (`gw9000Spec`). El método completo quedó documentado en `public/datasheets/LEEME.md`. | Nada pendiente salvo decidir el reemplazo de `ecSpecSheet` y conseguir una cuenta HPE para `gw9000Spec`. | — |
 | 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ` y las 23 AR no traen `mpps`. El motor no inventa: muestra lo que hay. | **El importador ya existe, y desde el 2026-09-04 también la plantilla**: `npm run huawei -- --check` inventaría los huecos y `npm run huawei -- --plantilla` escribe `huawei-specs.csv` y `huawei-eox.csv` ya con los 40 modelos y las cabeceras que el importador reconoce, así que el trabajo en la página se reduce a pegar cifras. Luego `npm run huawei -- huawei-specs.csv --dry` para el ensayo, sin `--dry` para aplicar, y `npm run huawei -- huawei-eox.csv --eol` para el fin de venta. **2026-09-10: el bloqueo de Akamai no es contra todo navegador** — con Chrome real (no Playwright/Actions) `support.huawei.com/enterprise/en/bulletins/` carga completo y sin captcha, con buscador por modelo (`AR6700` → 11 avisos con fecha real). Dos obstáculos nuevos, distintos del bloqueo anterior: el **contenido** de cada aviso exige cuenta Huawei (candado visible, no se intentó sortear), y lo que se ve en la lista son ciclos de vida de **versiones de software** (`V600R023C00`…), no de hardware — puede que ni sea la categoría correcta para lo que el catálogo modela (fin de venta del equipo físico). "PCN" (Product Change Notice) sí es a nivel de hardware pero no lista una categoría de routers en este momento. | Cuenta Huawei para leer el contenido de cada aviso (no se intentó); y aclarar primero si "Life Cycle Notices" es la categoría correcta antes de pedir esa cuenta |
 | 4 | **~~Comprobar el sitio en vivo tras desplegar~~ Cerrado (2026-09-04)**, ver *Cerrado recientemente*. Eran dos preguntas distintas y ahora las cubren dos workflows: `sonda-produccion.yml` confirma desde fuera de este entorno que el dominio público responde de verdad (`/salud` y `/login`, sin sesión), y **`pantallas.yml`** conduce las 15 pantallas detrás del muro en un Chromium de verdad y sube una captura de cada una. No hace falta producción para lo segundo: la base es efímera y se resiembra desde `legacyData/` en cada despliegue, así que lo que pinta una pantalla es función del commit. | Nada pendiente de ingeniería. Queda el **juicio**: mirar las capturas del artefacto y decidir si la pantalla dice lo que se le quiere decir a un cliente. | — |
 
@@ -215,26 +215,27 @@ Se retiran cinco clases CSS que quedaron muertas al cambiar de tarjetas a matriz
 fabricantes, aviso de bases, interruptor de «solo diferencias» que oculta exactamente las
 filas idénticas, y repintado al cambiar cualquier control sin volver a pulsar el botón.
 
-## Conflictos abiertos entre el catálogo y una ficha oficial (2026-09-03)
+## Conflictos entre el catálogo y una ficha oficial — Juniper y Nokia resueltos (2026-09-11)
 
-**Ninguno de estos se corrigió: pisar un dato existente es decisión del dueño del catálogo,
-igual que el SRX380.** Todos salieron de comparar el catálogo contra la ficha oficial por
-modelo del propio fabricante, traída vía Actions el 2026-09-03. Se listan con las dos cifras
-para que la decisión se tome mirando, no recordando.
+**~~Ninguno de estos se corrigió~~ Juniper y Nokia se resolvieron el 2026-09-11, por
+decisión del dueño del catálogo** (ver *Cerrado recientemente*). Quedan abiertos solo los
+dos de Aruba, que siguen por debajo del doble anclaje. El registro original se conserva
+abajo para memoria.
 
-**Juniper — cuatro campos, los cuatro fuera de la escala de dimensionamiento.** Es lo que hace
-que puedan esperar: `fw` está deliberadamente fuera de `CAPAS`, y `vpnImix` y `cps` no filtran
-en la página Juniper (`sess` sí, y ese coincide en los tres modelos).
+**~~Juniper — cuatro campos~~ Resuelto (2026-09-11).** El catálogo guardaba cifras de una
+revisión vieja de las fichas y Juniper re-evaluó al alza; cada valor nuevo quedó confirmado
+por dos fuentes oficiales (ficha vigente + Pathfinder HCT) y se transcribió:
 
-| Modelo | Campo | Catálogo | Ficha oficial |
+| Modelo | Campo | Catálogo (antes) | Ficha oficial (aplicada) |
 |---|---|---|---|
 | SRX1600 | `vpnImix` | 5.500 | **8.000** |
 | SRX1600 | `cps` | 95.000 | **170.000** |
 | SRX2300 | `cps` | 320.000 | **450.000** |
 | SRX4300 | `fw` | 90.000 | **98.000** |
 
-**Nokia — seis capacidades, y estas sí dimensionan.** Más serio que lo anterior, y con dos
-direcciones distintas de error:
+**~~Nokia — seis capacidades~~ Resuelto (2026-09-11).** Los 7220 eran un error real (el
+catálogo prometía el doble) y los 7750 SR-s una elección de métrica: se adoptó «System
+capacity (FD; max)», documentada en la cabecera de `nokia.js`:
 
 | Modelo | Catálogo | Ficha oficial | Efecto |
 |---|---|---|---|
@@ -245,22 +246,19 @@ direcciones distintas de error:
 | 7750 SR-7s | 19,2 Tb/s | 108 Tb/s | sobredimensiona |
 | 7750 SR-14s | 38,4 Tb/s | 216 Tb/s | sobredimensiona |
 
-Dos cosas que ayudan a decidir:
+Cómo se decidió (registro del razonamiento original):
 
-1. **El caso 7220 es el urgente, aunque parezca el pequeño**, porque es el único que va en la
-   dirección peligrosa: el catálogo promete el doble de lo que el equipo hace. Y no hace falta
-   creerle a la ficha para verlo — **sumar los puertos del propio catálogo da la razón a la
-   ficha**: el D2L son 48×25G + 8×100G = 2.000 Gb/s, y el D3L 32×100G = 3.200. Además el
-   catálogo es **incoherente consigo mismo**: el D1 (88 Gb/s) y el D5 (12,8 Tb/s) sí coinciden
-   con la suma de sus puertos, solo el D2L y el D3L van al doble. Atenuante: el dimensionador
-   de fabric **no usa `cap`** —dimensiona por puertos—, así que hoy esa cifra solo se muestra
-   en el portal y en el comparador.
-2. **El caso 7750 SR-s es ambiguo de verdad y por eso no se tocó.** Esa ficha publica *tres*
-   métricas distintas de capacidad, y el valor del catálogo coincide **exactamente** con una
-   de ellas: los 19,2 Tb/s del SR-7s son su «IA slot forwarding (FD)», una cifra **por slot**.
-   O sea que no parece un error de transcripción sino la elección de otra métrica — puede que
-   deliberada. Quien decida tiene que elegir qué métrica quiere que dimensione, y **eso sí
-   afecta**: el dimensionador nuevo de agregación/core sí ordena por `cap`.
+1. **El caso 7220 era el urgente, aunque pareciera el pequeño**, porque era el único que iba
+   en la dirección peligrosa: el catálogo prometía el doble de lo que el equipo hace. Y no
+   hizo falta creerle a la ficha para verlo — **sumar los puertos del propio catálogo dio la
+   razón a la ficha**: el D2L son 48×25G + 8×100G = 2.000 Gb/s, y el D3L 32×100G = 3.200.
+   Además el catálogo era **incoherente consigo mismo**: el D1 (88 Gb/s) y el D5 (12,8 Tb/s)
+   sí coincidían con la suma de sus puertos, solo el D2L y el D3L iban al doble.
+2. **El caso 7750 SR-s era ambiguo de verdad: elección de métrica.** La ficha publica *tres*
+   métricas distintas de capacidad, y el valor viejo del catálogo coincidía con una de ellas
+   por slot. La decisión tomada: **«System capacity (FD; max)»**, porque el dimensionador de
+   agregación/core ordena por `cap` y la «Interface capacity» es agregación estadística
+   sobresuscrita. Quedó documentada en la cabecera de `nokia.js`.
 
 **Aruba — un campo, encontrado el 2026-09-10 al ampliar el catálogo EdgeConnect** (ver
 *Cerrado recientemente*). El QuickSpecs oficial vigente (v18, 06-jul-2026) contradice el
@@ -296,8 +294,9 @@ que el resto de esta tabla, aplicada a una señal de ciclo de vida en vez de una
     eléctrica» de la ficha (agosto 2026) solo tiene dato donde el propio catálogo ya traía
     una frase publicada — Cisco 21/21 (ya existía), Huawei 17/40, MikroTik 14/15, Aruba 6/21,
     **Juniper 12/12 SRX** (2026-09-03, completo: ver *Cerrado recientemente*), **Fortinet
-    56/58** y **Nokia 6/18** (2026-09-03). El resto queda `null` y la ficha lo declara sin
-    rodeos.
+    58/58** (2026-09-11, completo: 70F, 100F y 200F cerrados — solo 7081F y 7121F quedan
+    sin `watts` porque sus guías solo publican capacidad por fuente, decisión documentada)
+    y **Nokia 6/18** (2026-09-03). El resto queda `null` y la ficha lo declara sin rodeos.
 
     **Nokia no figuraba en esta lista hasta el 2026-09-03**, y ese era un fallo del registro,
     no del catálogo: contaba seis fabricantes de siete, así que sus 18 modelos no aparecían
@@ -352,6 +351,54 @@ que el resto de esta tabla, aplicada a una señal de ciclo de vida en vez de una
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Nokia: las 6 capacidades en conflicto, corregidas contra la ficha oficial (2026-09-11)
+
+Por decisión del dueño del catálogo. Los **7220 IXR-D2L/D3L** eran un error real: el catálogo
+prometía el doble (4 y 6,4 Tb/s) de lo que la ficha oficial (`nokia.com/asset/f/207599`) y la
+suma de puertos del propio catálogo confirman (2,0 y 3,2 Tb/s FD). Los **7750 SR-s** eran una
+elección de métrica: se adoptó «System capacity (FD; max)» —SR-1s 4,8; SR-2s 9,6; SR-7s 108;
+SR-14s 216 Tb/s— porque el dimensionador de agregación/core ordena por `cap` y la «Interface
+capacity» es agregación estadística sobresuscrita. La decisión quedó documentada en la
+cabecera de `nokia.js`, y se actualizaron portal, cotizador, guía de roles y el test de
+agregación (el techo del catálogo ya no es 38,4 sino 216 Tb/s).
+
+### Juniper: 4 conflictos resueltos, 3 modelos completados y Juniper Care verificado (2026-09-11)
+
+Los 4 «conflictos» eran cifras de una revisión vieja de las fichas: Juniper re-evaluó al alza
+con Junos más reciente. Cada valor nuevo confirmado por **dos fuentes oficiales** (ficha
+vigente en juniper.net + Pathfinder HCT): SRX1600 `vpnImix` 5.500→8.000 y `cps` 95.000→170.000,
+SRX2300 `cps` 320.000→450.000, SRX4300 `fw` 90.000→98.000. Completados los huecos de
+**SRX4700** (con la regla de la casa: `ips` transcribe el método CPS, 60 Gbps, no el TPS de
+100 que titula la ficha; `atp` en `null` porque Juniper no publica Advanced Threat para ese
+modelo), **SRX4100** y **SRX4200** (donde Pathfinder dice 18 Gbps de NGFW y la ficha fechada
+16: se transcribió la ficha y la discrepancia quedó anotada). **Juniper Care** deja de ser un
+nivel «sin verificar»: los tres niveles (Care, Advanced Care, Premium Care) transcritos de
+juniper.net con alcance y tiempos de respuesta.
+
+### Fortinet: alimentación 58/58 — 70F, 100F y 200F cerrados (2026-09-11)
+
+El **70F** se cerró con la ficha combinada auténtica 70F/71F (`FG-70F-DAT-R02-20221028`:
+10,17 W medio / 12,43 W máx, adaptador externo 12VDC 3A único), validando primero la identidad
+del documento: su columna 71F coincide cifra a cifra con la ficha oficial del 71F — la trampa
+del `fortigate-70f-series.pdf` (que es solo del 71F) sigue documentada. El **200F**
+(`FG-200F-DAT-R28-20250407`: 101,92/118,90 W, doble fuente AC de serie no intercambiable en
+caliente, 1+1) y el consumo del **100F** (`FG-100F-DAT-R42-20250407`: 26,5/29,5 W — Fortinet
+lo re-evaluó a la baja desde los 35,1/38,7 W de la revisión de 2021) salieron de espejos del
+PDF oficial, verificando el código de revisión impreso en el documento, porque fortinet.com
+responde con reto JavaScript de Akamai en esas rutas. Sin `watts` quedan solo 7081F y 7121F,
+cuyas guías solo publican capacidad por fuente: decisión ya documentada.
+
+### Aruba: los 6 PDFs que faltaban, descargados — pendiente 3 cerrado (2026-09-11)
+
+En sesión nueva (la cuota de `psnow/downloadDoc` se había reseteado) y con Chrome real
+bajaron los 6 que quedaban: QuickSpecs de EdgeConnect (47 págs), spec sheet EC-XL, data sheet
+Serie 9000, QuickSpecs 9100 y 9200, y el SD-Branch Design VSG (132 págs, 17,6 MB). Tres
+métodos, todos documentados en `public/datasheets/LEEME.md` para la próxima refrescada:
+enlace `downloadDoc` en la página, el visor de Chromium con `fetch(location.href)`, y la
+carcasa del visor Adobe de los QuickSpecs (se escucha la respuesta `application/pdf` a
+`downloadDoc` y se repite con `fetch` desde la página). Cobertura final: **18/24**; de los 6
+restantes, 4 nunca fueron PDFs, 1 URL murió (`ecSpecSheet`) y 1 exige cuenta HPE (`gw9000Spec`).
 
 ### Aruba: List Price real para 15 modelos EdgeConnect/gateway (2026-09-10)
 
