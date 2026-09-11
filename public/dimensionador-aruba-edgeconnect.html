@@ -136,7 +136,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <div class="tabs" role="tablist">
   <button role="tab" aria-selected="true" data-tab="calc">Dimensionar</button>
   <button role="tab" aria-selected="false" data-tab="bom">Equipo y BOM</button>
-  <button role="tab" aria-selected="false" data-tab="lic">Licencias, software y fuentes</button>
+  <button role="tab" aria-selected="false" data-tab="lic">Licencias y software</button>
   <button role="tab" aria-selected="false" data-tab="cat">Catálogo</button>
   <button role="tab" aria-selected="false" data-tab="src">Fuentes</button>
 </div>
@@ -430,12 +430,6 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     </tbody>
   </table></div>
 </section>
-
-<section class="panel">
-  <h2>Datasheets y documentación oficial</h2>
-  <p class="gd">Documentos de HPE/Aruba en los que se apoya este catálogo. Conviene abrir el que corresponda y confirmar la fila exacta antes de emitir una propuesta.</p>
-  <ul class="fuentes-list" id="dsList"></ul>
-</section>
 </div>
 
 <!-- ════ TAB · CATÁLOGO ════ -->
@@ -454,13 +448,18 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <div class="tabpane" id="pane-src" hidden>
 <section class="panel">
   <h2>Procedencia verificada</h2>
-  <p style="font-size:13px;color:var(--steel);margin-bottom:12px">De qué documento y de qué fecha salen las cifras de este catálogo. Se llena desde <code>/api/fuentes</code>; una fuente sin fecha o de más de seis meses se marca. Los datasheets por modelo están en la pestaña «Licencias, software y fuentes».</p>
+  <p style="font-size:13px;color:var(--steel);margin-bottom:12px">De qué documento y de qué fecha salen las cifras de este catálogo. Se llena desde <code>/api/fuentes</code>; una fuente sin fecha o de más de seis meses se marca.</p>
   <div data-procedencia="aruba">Cargando…</div>
+</section>
+<section class="panel">
+  <h2>Datasheets y documentación oficial</h2>
+  <p class="gd">Documentos de HPE/Aruba en los que se apoya este catálogo. Conviene abrir el que corresponda y confirmar la fila exacta antes de emitir una propuesta.</p>
+  <ul class="fuentes-list" id="dsList"></ul>
 </section>
 </div>
 
 <p class="note">
-<b>Fuentes y estado de verificación:</b> cifras y SKU tomados de páginas de producto y de tienda oficiales de HPE y Aruba —hpe.com, buy.hpe.com, arubanetworks.com y arubanetworking.hpe.com—, enlazadas una a una en la pestaña de licencias.
+<b>Fuentes y estado de verificación:</b> cifras y SKU tomados de páginas de producto y de tienda oficiales de HPE y Aruba —hpe.com, buy.hpe.com, arubanetworks.com y arubanetworking.hpe.com—, enlazadas una a una en la pestaña de fuentes.
 <b>Sin price list firmado</b>: no hay precios de lista verificados, a diferencia del catálogo de Fortinet. Los porcentajes de overhead de FEC y los factores de reducción de Boost son supuestos de trabajo de esta herramienta, no cifras publicadas por HPE, y así se declaran donde se usan.
 </p>
 
