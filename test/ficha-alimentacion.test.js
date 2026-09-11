@@ -101,22 +101,22 @@ test('Cisco: redund sigue con cobertura completa (no se toco el dato, solo se mo
 // Esta prueba fijaba «ningun modelo Fortinet tiene redund ni psu» porque el Product Matrix
 // no publica alimentacion. Eso seguia siendo cierto del Product Matrix, pero no del
 // fabricante: las fichas por serie si la publican, y al leerlas (2026-09-03) la cobertura
-// paso de 0 a 37 de 58. Lo que la prueba fija no es el numero -que crecera segun se lean mas
-// documentos- sino las tres reglas que importan.
+// paso de 0 a 37 de 58. El 2026-09-11 se cerraron los dos ultimos huecos: el 70F con la
+// ficha combinada autentica 70F/71F (FG-70F-DAT-R02-20221028, validada porque su columna
+// 71F coincide cifra a cifra con la ficha oficial del 71F -el `fortigate-70f-series.pdf`
+// de fortinet.com es solo del 71F, la trampa documentada en legacyData-), y el 200F con la
+// revision FG-200F-DAT-R28-20250407. Lo que la prueba fija no es el numero -que crecera
+// segun se lean mas documentos- sino las tres reglas que importan.
 test('Fortinet: alimentacion solo donde se leyo un documento, y con los cuatro estados bien', () => {
   const { MODELS } = require('../server/seed/legacyData/fortinet.js');
   const con = MODELS.filter((m) => m.redund !== undefined);
-  assert.strictEqual(con.length, 56, 'cobertura leida de fichas por serie y System Guides');
+  assert.strictEqual(con.length, 58, 'cobertura leida de fichas por serie y System Guides');
 
   // 1. El que no tiene dato se queda en `undefined`. Nunca en `false`, que seria inventar un
-  //    dato negativo, y nunca en `null`.
+  //    dato negativo, y nunca en `null`. Desde el 2026-09-11 ya no queda ninguno sin dato.
   assert.strictEqual(MODELS.filter((m) => m.redund === null).length, 0);
-  // Solo dos sin dato, y por motivos distintos: la ficha del 200F da 404 en las dos rutas
-  // que usa el sitio, y el archivo `fortigate-70f-series.pdf` resulto ser el datasheet del
-  // 71F -el 70F no aparece ni una vez en el-, asi que aplicarle esas cifras habria sido
-  // creerle al nombre del archivo en vez de a su contenido.
   const sinDato = MODELS.filter((m) => m.redund === undefined).map((m) => m.id);
-  assert.deepStrictEqual(sinDato.sort(), ['FortiGate 200F', 'FortiGate 70F']);
+  assert.deepStrictEqual(sinDato.sort(), []);
   for (const id of sinDato) {
     assert.strictEqual(MODELS.find((m) => m.id === id).psu, undefined, `${id}: sin redund tampoco hay psu`);
   }
@@ -130,8 +130,9 @@ test('Fortinet: alimentacion solo donde se leyo un documento, y con los cuatro e
 
   // 3. `psu.watts` solo donde la fuente publica CONSUMO. Los 2.500 W del 7081F son capacidad
   //    por fuente y la ficha rotula ese campo «Consumo tipico»: confundirlos seria una cifra
-  //    falsa con apariencia correcta.
-  for (const id of ['FortiGate 7081F', 'FortiGate 7121F', 'FortiGate 100F']) {
+  //    falsa con apariencia correcta. El 100F salio de esta lista el 2026-09-11: la revision
+  //    FG-100F-DAT-R42-20250407 si publica consumo (26.5 W / 29.5 W).
+  for (const id of ['FortiGate 7081F', 'FortiGate 7121F']) {
     const m = MODELS.find((x) => x.id === id);
     assert.strictEqual(m.psu.watts, undefined, `${id}: su fuente no publica consumo, no se declara`);
   }

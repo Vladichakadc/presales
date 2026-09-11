@@ -107,13 +107,25 @@
 // 3200F, 3500F, 3700F, 4200F, 4400F, 4800F y sus variantes, mas el 71F). El 4800F comparte
 // con el 3800G la exigencia de 200-240 V.
 //
-// UNA TRAMPA QUE VALE LA PENA RECORDAR: el archivo `fortigate-70f-series.pdf` NO es la ficha
-// del 70F. Es la del 71F -su portada lo dice y el 70F no aparece ni una sola vez en el
-// documento-, asi que aplicarle esas cifras habria sido creerle al nombre del archivo en vez
-// de a su contenido. El 70F se queda sin dato a proposito.
+// UNA TRAMPA QUE VALE LA PENA RECORDAR: el archivo `fortigate-70f-series.pdf` que sirve
+// fortinet.com NO es la ficha del 70F. Es la del 71F -su portada lo dice y el 70F no aparece
+// ni una sola vez en el documento-, asi que aplicarle esas cifras habria sido creerle al
+// nombre del archivo en vez de a su contenido.
+// RESUELTO el 2026-09-11 (decision del duenyo): la ficha combinada autentica 70F/71F SI
+// existe -revision FG-70F-DAT-R02-20221028- y su columna 70F ya esta transcrita (10.17 W /
+// 12.43 W, adaptador externo 12VDC 3A, sin segunda fuente). Antes de copiar nada se valido
+// la identidad del documento: su columna 71F (17.2 W / 18.7 W, 63.8 BTU/hr, 12VDC 3A)
+// coincide cifra a cifra con la ficha oficial del 71F servida por fortinet.com.
+// El mismo dia se completo el 200F (FG-200F-DAT-R28-20250407: 101.92 W / 118.90 W, doble
+// fuente AC de serie NO intercambiable en caliente, 1+1) y el consumo del 100F
+// (FG-100F-DAT-R42-20250407: 26.5 W / 29.5 W -Fortinet lo re-evaluo a la baja: la revision
+// R20-20210311 publicaba 35.1 W / 38.7 W-). fortinet.com responde con un reto JavaScript de
+// Akamai en las rutas de 100F y 200F, asi que se usaron espejos del PDF oficial y se
+// verifico el codigo de revision impreso en el propio documento.
 //
-// Quedan solo 2 modelos en `undefined` -«el catalogo no lo dice»-, nunca en `false`: el 70F
-// por lo anterior, y el 200F porque su ficha da 404 en las dos rutas.
+// Ya ningun modelo esta en `undefined` por alimentacion. Solo 2 quedan sin `watts` -el
+// 7081F y el 7121F, chassis cuyas guias solo publican CAPACIDAD por fuente, no consumo del
+// equipo (ver mas arriba)-, y eso es un hecho leido, no una ausencia de dato.
 // El salto fw -> tp es de un orden de magnitud (ej. 90G: 28 Gbps -> 2.2 Gbps). Ahí está el
 // error de preventa más común con FortiGate.
 // Corrige varios valores que no coincidían con el datasheet oficial (incl. 3000F y 7081F, que tenían ips/ngfw/ssl/vpn de otro modelo — 3200F y 7121F respectivamente — copiados por error) y agrega los modelos del datasheet que faltaban en el catálogo (700G, 3000G, 3500G, 3800G, 70F, 3200F, 3700F, 4200F).
@@ -175,7 +187,7 @@ const MODELS=[
   {id:'FortiGate 40F', seg:'SOHO', fw:5000, ips:1000, ngfw:800, tp:600, vpn:4400, sess:700000, cps:35000, ifaces:'5 GE', redund:false, psu:{watts:7.74, tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50/60 Hz', amps:'0,2 A @100 V · 0,1 A @240 V', texto:'Consumo medio 7.74 W y máximo 9.46 W. El datasheet no menciona una segunda fuente para este modelo.'}},
   {id:'FortiGate 60F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:700, vpn:6500, sess:700000, cps:35000, ifaces:'10 GE + Wi-Fi opcional', redund:false, psu:{watts:10.17, tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50/60 Hz', amps:'1,0 A @100 V · 0,6 A @240 V', texto:'Consumo medio 10.17 W y máximo 12.43 W. El datasheet no menciona una segunda fuente para este modelo.'}},
   {id:'FortiGate 61F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:700, vpn:6500, sess:700000, cps:35000, ifaces:'10 GE + Wi-Fi opcional + 128GB SSD onboard', redund:false, psu:{watts:17.2, tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50/60 Hz', amps:'1,0 A @100 V · 0,6 A @240 V', texto:'Consumo medio 17.2 W y máximo 18.7 W. El datasheet no menciona una segunda fuente para este modelo.'}},
-  {id:'FortiGate 70F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:800, vpn:6100, sess:1500000, cps:35000, ifaces:'10 GE RJ45'},
+  {id:'FortiGate 70F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:800, vpn:6100, sess:1500000, cps:35000, ifaces:'10 GE RJ45', redund:false, psu:{watts:10.17, tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50/60 Hz', amps:'1,0 A @100 V · 0,6 A @240 V', texto:'Consumo medio 10.17 W y máximo 12.43 W. El datasheet no menciona una segunda fuente para este modelo.'}},
   {id:'FortiGate 71F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:800, vpn:6100, sess:1500000, cps:35000, ifaces:'10 GE RJ45 + 128GB SSD onboard', redund:false, psu:{watts:17.2, tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50/60 Hz', amps:'1,0 A @100 V · 0,6 A @240 V', texto:'Consumo medio 17.2 W y máximo 18.7 W. El datasheet no menciona una segunda fuente para este modelo.'}},
   {id:'FortiGate 80F', seg:'Sucursal + PoE', fw:10000, ips:1400, ngfw:1000, tp:900, vpn:6500, sess:1500000, cps:45000, ifaces:'8 GE + 2 SFP', redund:'opcional', psu:{watts:12.69, tipo:'hasta dos adaptadores externos (viene uno)', volts:'100-240 V AC, 50/60 Hz', amps:'0,4 A @115 V · 0,2 A @230 V', texto:'Consumo medio 12.69 W y máximo 15.51 W. Admite un segundo adaptador para redundancia, que no viene incluido.'}},
   {id:'FortiGate 81F', seg:'Sucursal + PoE', fw:10000, ips:1400, ngfw:1000, tp:900, vpn:6500, sess:1500000, cps:45000, ifaces:'8 GE + 2 SFP + 128GB SSD onboard', redund:'opcional', psu:{watts:13.5, tipo:'hasta dos adaptadores externos (viene uno)', volts:'100-240 V AC, 50/60 Hz', amps:'0,4 A @115 V · 0,2 A @230 V', texto:'Consumo medio 13.5 W y máximo 16.5 W. Admite un segundo adaptador para redundancia, que no viene incluido.'}},
@@ -184,8 +196,8 @@ const MODELS=[
   // .github/workflows/traer-fortinet-psu.yml. Frase literal: «the device has two power
   // supplies that can be connected to different power sources». El documento no publica
   // consumo, asi que `watts` se queda fuera en vez de rellenarse a ojo.
-  {id:'FortiGate 100F', seg:'Sucursal med', fw:20000, ips:2600, ngfw:1600, tp:1000, vpn:11500, sess:1500000, cps:null, ifaces:'22 GE + 2x10GE SFP+', redund:true, psu:{tipo:'dos fuentes internas', texto:'Dos fuentes que se pueden conectar a tomas de energía distintas, para que el equipo siga en línea si una falla. El articulo leido no trae consumo; su datasheet por serie no se pudo abrir (la URL probada dio 404), asi que el dato queda pendiente, no descartado.'}},
-  {id:'FortiGate 200F', seg:'Sucursal gde', fw:27000, ips:5000, ngfw:3500, tp:3000, vpn:13000, sess:3000000, cps:null, ifaces:'16 GE + 4x10GE + 4 SFP'},
+  {id:'FortiGate 100F', seg:'Sucursal med', fw:20000, ips:2600, ngfw:1600, tp:1000, vpn:11500, sess:1500000, cps:null, ifaces:'22 GE + 2x10GE SFP+', redund:true, psu:{watts:26.5, tipo:'doble fuente AC de serie, no intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'1,0 A @100 V · 0,5 A @240 V', texto:'Consumo medio 26.5 W y máximo 29.5 W. Las dos fuentes vienen de serie, pero no se cambian en caliente.'}},
+  {id:'FortiGate 200F', seg:'Sucursal gde', fw:27000, ips:5000, ngfw:3500, tp:3000, vpn:13000, sess:3000000, cps:null, ifaces:'16 GE + 4x10GE + 4 SFP', redund:true, psu:{watts:101.92, tipo:'doble fuente AC de serie, no intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'2 A @100 V · 1,2 A @240 V', texto:'Consumo medio 101.92 W y máximo 118.90 W. Las dos fuentes vienen de serie, pero no se cambian en caliente.'}},
   // Los tres siguientes, leidos de sus datasheets por serie (2026-09-03). Aqui `watts` SI es
   // consumo: el documento publica "AC Power Consumption (Average / Maximum)", que es lo que la
   // ficha rotula «Consumo tipico» -a diferencia de los 2.500 W del 7081F, que son capacidad.
