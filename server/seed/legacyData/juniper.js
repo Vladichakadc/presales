@@ -90,14 +90,13 @@
 // sitios (banda de cabecera, columna de la tabla y título de la Tabla 1), que es la lección
 // del `fortigate-70f-series.pdf` que resultó ser la ficha del 71F.
 //
-// LO QUE NO SE TOCÓ, Y ES DELIBERADO. Las fichas contradicen cuatro valores ya guardados:
-// `vpnImix` y `cps` del SRX1600 (5.500 y 95.000 frente a 8.000 y 170.000), `cps` del SRX2300
-// (320.000 frente a 450.000) y `fw` del SRX4300 (90.000 frente a 98.000). Pisar un dato
-// existente es decisión de quien lleva el catálogo, igual que en el SRX380 — y lo que hace que
-// puedan esperar es que **los cuatro están fuera de la escala de dimensionamiento**: `fw` está
-// deliberadamente fuera de `CAPAS`, y ni `vpnImix` ni `cps` filtran en la página Juniper.
-// `sess`, que sí filtra, coincide en los tres modelos. Ver PENDIENTES.md, sección «Conflictos
-// abiertos».
+// LOS CUATRO CONFLICTOS QUE ESTAS FICHAS ABRIERON SE RESOLVIERON EL 2026-09-11 (decision
+// del duenyo). El catalogo guardaba cifras de una REVISION VIEJA de las fichas y Juniper
+// re-evaluo al alza con Junos mas reciente: `vpnImix` y `cps` del SRX1600 (5.500 -> 8.000
+// y 95.000 -> 170.000), `cps` del SRX2300 (320.000 -> 450.000) y `fw` del SRX4300
+// (90.000 -> 98.000). Cada valor nuevo quedo confirmado por dos fuentes oficiales (la
+// ficha vigente en juniper.net + Pathfinder HCT), asi que se transcribio. El mismo dia se
+// completaron los huecos del SRX4700, SRX4100 y SRX4200 con esas mismas dos fuentes.
 //
 // `null` SIGNIFICA "EL CATÁLOGO NO TRAE EL DATO", NO "SIN LÍMITE". El motor no filtra por un
 // eje sin dato, y donde la capa que se está dimensionando no tiene cifra el modelo se
@@ -219,16 +218,19 @@ const MODELS = [
   // que inspeccionar cuesta capacidad. Un dato que se contradice con la física del producto
   // no se registra: queda en null y el motor lo declara sin comprobar.
   {id:'SRX1600', redund:'opcional', psu:{watts:137, tipo:'una fuente de serie, admite una segunda (1+1)', volts:'100-127 V AC (5,5 A) o 200-240 V AC (3 A), 50-60 Hz', texto:'Consumo medio 137 W y máximo 162 W, sobre fuentes de 450 W. Juniper lo envía con una sola fuente y la segunda se pide aparte. Cada fuente necesita su propio interruptor.'}, ser:'SRX 1600', seg:'Campus / DC empresarial',
-   fw:24000, fwImix:12000, vpn:18000, vpnImix:5500, ips:4500, atp:2000, sess:2000000, cps:95000,
+   fw:24000, fwImix:12000, vpn:18000, vpnImix:8000, ips:4500, atp:2000, sess:2000000, cps:170000,
    ifaces:'25GE · MACsec a velocidad de línea · 1U'},
   {id:'SRX2300', redund:'opcional', psu:{watts:186, tipo:'una fuente de serie, ranura libre para la segunda (1+1)', volts:'100-127 V AC (5,5 A) o 200-240 V AC (3 A), 50-60 Hz', texto:'Consumo medio 186 W y máximo 229 W, sobre fuentes de 450 W. Se envía con una sola fuente y la ranura de la segunda va vacía.'}, ser:'SRX 2300', seg:'Campus grande / DC',
-   fw:39000, fwImix:28000, vpn:36000, vpnImix:18000, ips:12000, atp:6000, sess:5000000, cps:320000,
+   fw:39000, fwImix:28000, vpn:36000, vpnImix:18000, ips:12000, atp:6000, sess:5000000, cps:450000,
    ifaces:'100GE · MACsec a velocidad de línea · 1U'},
   {id:'SRX4300', redund:'opcional', psu:{watts:327, tipo:'una fuente de serie, ranura libre para la segunda (1+1)', volts:'100-127 V AC (10,52 A) o 200-240 V AC (5,26 A), 50/60 Hz', texto:'Consumo típico 327 W y máximo 393 W, sobre fuentes de 850 W. Se envía con una sola fuente; la segunda se pide aparte y cada una necesita un interruptor de 16 A.'}, ser:'SRX 4000', seg:'DC Edge',
-   fw:90000, fwImix:70000, vpn:94000, vpnImix:40000, ips:24000, atp:11000, sess:10000000, cps:800000,
+   fw:98000, fwImix:70000, vpn:94000, vpnImix:40000, ips:24000, atp:11000, sess:10000000, cps:800000,
    ifaces:'100GE · MACsec a velocidad de línea · 1U'},
   {id:'SRX4700', redund:true, psu:{tipo:'dos fuentes de serie (AC o DC) preinstaladas en 1+1', texto:'Sale de fábrica con las dos fuentes en las ranuras 0 y 1, intercambiables en caliente, y cada una necesita su propia alimentación e interruptor (se recomienda 16 A). Las fuentes son de 2200 W — es capacidad, no consumo, y la guía no publica un consumo típico.'}, ser:'SRX 4000', seg:'Cloud / Service Provider',
-   fw:1400000, fwImix:null, vpn:null, vpnImix:null, ips:null, atp:null, sess:null, cps:null,
+   fw:1400000, fwImix:1400000, vpn:170000, vpnImix:90000, ips:60000, atp:null, sess:60000000, cps:600000,
+   // 2026-09-11: ficha actual + Pathfinder HCT. `ips` transcribe el metodo CPS (60 Gbps), no
+   // el TPS (100) que titula la ficha -regla de la casa: siempre CPS en `ips`/`atp`-. `atp`
+   // queda en null porque Juniper no publica Advanced Threat para este modelo.
    ifaces:'400GE · MACsec a velocidad de línea · 1U'},
 
   // ── Generación anterior de datacenter ─────────────────────────────────────
@@ -236,12 +238,14 @@ const MODELS = [
   // tabla oficial de hitos su única fila es la del kit de rack SRX4200-RMK2, no el equipo,
   // y un accesorio retirado no retira el chasis — así que se deja sin marcar a propósito.
   {id:'SRX4100', redund:true, psu:{tipo:'dos fuentes de serie (AC o DC), intercambiables en caliente', volts:'100-127 V AC o 200-240 V AC, 50-60 Hz', texto:'Sale de fábrica con las dos fuentes instaladas. El requerimiento máximo del sistema es de 440 W — es un máximo, no un consumo típico, así que no se declara como tal.'}, ser:'SRX 4000', seg:'DC Edge',
-   fw:40000, fwImix:null, vpn:null, vpnImix:null, ips:null, atp:null, sess:null, cps:null,
+   fw:40000, fwImix:25000, vpn:17500, vpnImix:13000, ips:8000, atp:3500, sess:5000000, cps:275000,
    eolAnnounced:{pid:'SRX4100-SYS-JB-AC', lastOrder:'2026-04-15', url:'https://supportportal.juniper.net/s/article/End-Of-Life-Notification-SRX4100-Transform'},
-   ifaces:'8x 10GE + 2x 40GE'},
+   ifaces:'8x 10GE + 2x 10GE (HA)'},
   {id:'SRX4200', redund:true, psu:{tipo:'dos fuentes de serie (AC o DC) preinstaladas, intercambiables en caliente', volts:'100-127 V AC o 200-240 V AC, 50-60 Hz', texto:'Sale de fábrica con las dos fuentes instaladas y si una falla la otra reparte la carga sin interrupción. Cada fuente entrega 650 W — es capacidad, no consumo, y la guía no publica un consumo típico.'}, ser:'SRX 4000', seg:'DC Edge grande',
-   fw:80000, fwImix:null, vpn:null, vpnImix:null, ips:null, atp:null, sess:null, cps:null,
-   ifaces:'16x 10GE + 4x 40GE'},
+   fw:80000, fwImix:50000, vpn:35000, vpnImix:26000, ips:16000, atp:7500, sess:10000000, cps:550000,
+   // 2026-09-11: Pathfinder lista 18 Gbps de NGFW (CPS) pero la ficha 1000600-024-EN (oct
+   // 2024) dice 16; se transcribe la ficha fechada y la discrepancia queda anotada aqui.
+   ifaces:'8x 10GE + 2x 10GE (HA)'},
 ];
 
 // Session Smart Router: la respuesta SD-WAN vigente de Juniper. Se dimensiona por una sola
@@ -267,12 +271,13 @@ const BUNDLES = {
   pre2: {n:'Premium 2',  svcs:'AppSecure (visibilidad y control de aplicaciones), IPS, AI-Predictive Threat Prevention, antivirus avanzado, Security Intelligence, URL Filtering, ATP Cloud, DNS Security, Encrypted Traffic Insights y Advanced Threat Profiling.'},
 };
 
-// Soporte. Juniper Care existe como programa, pero los nombres y el alcance de cada nivel no
-// se pudieron verificar contra material oficial desde este entorno. Se deja un único nivel
-// declarado como "sin verificar" antes que inventar una tabla de SLA: una cifra de SLA
-// inventada en una herramienta de preventa es peor que no tenerla.
+// Soporte. Los tres niveles se verificaron el 2026-09-11 contra las páginas oficiales de
+// Juniper Care (juniper.net/us/en/support/juniper-care y las fichas de Advanced/Premium
+// Care): alcance y tiempos de respuesta transcritos, no inferidos.
 const CARE = {
-  jcare: {n:'Juniper Care', sla:'Niveles y SLA sin verificar — confirmar con el distribuidor antes de cotizar.'},
+  jcare:    {n:'Juniper Care', sla:'JTAC 24x7, actualizaciones de software y opciones de reemplazo de hardware (Core, Core Plus, Next-Day, Same-Day). Support Insights incluido.'},
+  jcareAdv: {n:'Juniper Advanced Care', sla:'Todo lo de Juniper Care + acceso experto a experto, gestión de escalado e informes a medida. Respuesta: P1/P2 en 30 min, P3/P4 en 4 h.'},
+  jcarePre: {n:'Juniper Premium Care', sla:'Todo lo de Advanced Care + service manager asignado (8x5). Respuesta: P1 en 15 min, P2 en 30 min, P3 en 2 h, P4 en 4 h.'},
 };
 
 module.exports = { MODELS, SDWAN, BUNDLES, CARE };
