@@ -69,16 +69,16 @@ nokia:[
   {model:'7250 IXR-6e',ser:'7250 IXR',seg:'Leaf datacenter',cap:'6.4 Tbps',ports:'36x100GE o 12x400GE · 1U',protos:'SR Linux, EVPN-VXLAN, ECMP'},
   {model:'7250 IXR-10e',ser:'7250 IXR',seg:'Spine datacenter',cap:'12.8 Tbps',ports:'36x400GE · 1U',protos:'SR Linux, EVPN-VXLAN'},
   {model:'7750 SR-1',ser:'7750 SR',seg:'PE compacto / Edge',cap:'400 Gbps',ports:'36x10GE o 8x100GE · 1U',protos:'SR-MPLS, SRv6, EVPN, FlexAlgo'},
-  {model:'7750 SR-1s',ser:'7750 SR-s',seg:'PE / Edge',cap:'1.2 Tbps',ports:'36x100GE o 12x400GE · 2U',protos:'SR-MPLS, SRv6, EVPN, FlexE'},
-  {model:'7750 SR-2s',ser:'7750 SR-s',seg:'Edge / Agregación',cap:'4 Tbps',ports:'144x100GE o 36x400GE · 4U',protos:'SR-MPLS, SRv6, EVPN'},
-  {model:'7750 SR-7s',ser:'7750 SR-s',seg:'Core IP/MPLS',cap:'19.2 Tbps',ports:'7 slots IOM · hasta 400GE',protos:'SR-MPLS, SRv6, FlexE, EVPN'},
-  {model:'7750 SR-14s',ser:'7750 SR-s',seg:'Core grande',cap:'38.4 Tbps',ports:'14 slots IOM · hasta 400GE',protos:'SR-MPLS, SRv6, FlexE, EVPN'},
+  {model:'7750 SR-1s',ser:'7750 SR-s',seg:'PE / Edge',cap:'4.8 Tbps',ports:'36x100GE o 12x400GE · 2U',protos:'SR-MPLS, SRv6, EVPN, FlexE'},
+  {model:'7750 SR-2s',ser:'7750 SR-s',seg:'Edge / Agregación',cap:'9.6 Tbps',ports:'144x100GE o 36x400GE · 4U',protos:'SR-MPLS, SRv6, EVPN'},
+  {model:'7750 SR-7s',ser:'7750 SR-s',seg:'Core IP/MPLS',cap:'108 Tbps',ports:'7 slots IOM · hasta 400GE',protos:'SR-MPLS, SRv6, FlexE, EVPN'},
+  {model:'7750 SR-14s',ser:'7750 SR-s',seg:'Core grande',cap:'216 Tbps',ports:'14 slots IOM · hasta 400GE',protos:'SR-MPLS, SRv6, FlexE, EVPN'},
   // ── 7220 IXR: fabric de datacenter sobre SR Linux ─────────────────────────
   // nokia.com/data-center-networks/data-center-fabric/7220-interconnect-router/
   // Capacidad de sistema segun datasheet de las series 7220 IXR-D y 7220 IXR-H.
   {model:'7220 IXR-D1',ser:'7220 IXR',seg:'Acceso / Gestion DC',cap:'88 Gbps',ports:'48x1GE RJ45 + 4x SFP+ · 1U',protos:'SR Linux, EVPN-VXLAN'},
-  {model:'7220 IXR-D2L',ser:'7220 IXR',seg:'Leaf datacenter',cap:'4 Tbps',ports:'48x25GE SFP28 + 8x100GE QSFP28 + 2x10GE · 1U',protos:'SR Linux, EVPN-VXLAN'},
-  {model:'7220 IXR-D3L',ser:'7220 IXR',seg:'Leaf / Spine compacto',cap:'6.4 Tbps',ports:'32x100GE QSFP28 + 2x SFP+ · 1U',protos:'SR Linux, EVPN-VXLAN'},
+  {model:'7220 IXR-D2L',ser:'7220 IXR',seg:'Leaf datacenter',cap:'2 Tbps',ports:'48x25GE SFP28 + 8x100GE QSFP28 + 2x10GE · 1U',protos:'SR Linux, EVPN-VXLAN'},
+  {model:'7220 IXR-D3L',ser:'7220 IXR',seg:'Leaf / Spine compacto',cap:'3.2 Tbps',ports:'32x100GE QSFP28 + 2x SFP+ · 1U',protos:'SR Linux, EVPN-VXLAN'},
   {model:'7220 IXR-D5',ser:'7220 IXR',seg:'Spine datacenter 400G',cap:'12.8 Tbps',ports:'32x400GE QSFP-DD + 2x SFP+ · 1U',protos:'SR Linux, EVPN-VXLAN'},
   // ── 7250 IXR: agregacion y transporte IP ──────────────────────────────────
   // Datasheets: nokia.com/asset/206825 (IXR-e/e2) y nokia.com/asset/214173 (IXR-X)

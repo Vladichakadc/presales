@@ -120,7 +120,7 @@ const FUENTES = {
     { documento: 'Fichas de serie de Nokia (7220 IXR-D, 7750 SR-1x, 7750 SR-s, 7250 IXR-e)',
       url: 'https://www.nokia.com/asset/f/207599/', estable: true,
       fecha: '2026-09-03', hash: null, cubre: 'alimentacion de los 7220 IXR-D y los 7750 SR-1x, y las capacidades publicadas de las series',
-      nota: 'Traidas via GitHub Actions desde nokia.com/asset/f/<id>, que es la URL oficial; no se usan los espejos de terceros que devolvio la busqueda. Aportan `redund` en 6 de los 18 modelos. Los vatios que publican NO son consumo: el 7220 IXR-D2L y el D3L declaran los mismos 650 W con capacidades distintas, asi que es la potencia de la fuente. Estas fichas ademas CONTRADICEN las capacidades del catalogo en seis modelos — ver PENDIENTES.md, no se corrigieron aqui.' },
+      nota: 'Traidas via GitHub Actions desde nokia.com/asset/f/<id>, que es la URL oficial; no se usan los espejos de terceros que devolvio la busqueda. Aportan `redund` en 6 de los 18 modelos. Los vatios que publican NO son consumo: el 7220 IXR-D2L y el D3L declaran los mismos 650 W con capacidades distintas, asi que es la potencia de la fuente. Estas fichas ademas CONTRADECIAN las capacidades del catalogo en seis modelos — se RESOLVIO el 2026-09-11 (decision del duenyo): los 7220 IXR-D2L/D3L contaban el caudal dos veces y los 7750 SR-s adoptan «System capacity (FD; max)» como metrica de `cap`. Ver el comentario de metrica en nokia.js.' },
     { documento: 'Datasheets oficiales de producto',
       url: 'https://www.nokia.com/networks/ip-networks/', estable: false, fecha: '2026-08', hash: null,
       cubre: 'lineas 7220 IXR, 7250 IXR y 7750 SR',

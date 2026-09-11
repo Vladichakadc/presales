@@ -29,10 +29,10 @@ module.exports = [
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7210 SAS-Mxp',        seg:'Acceso / Agregación',     spec:'240 Gbps · 48x1GE + 4x10GE + 2x100GE · SR-MPLS',             elp:'~ $22,000',elpN:22000},
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7250 IXR-6e',         seg:'Leaf datacenter',         spec:'6.4 Tbps · 36x100GE o 12x400GE · SR Linux, EVPN-VXLAN',       elp:'~ $48,000',elpN:48000},
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7250 IXR-10e',        seg:'Spine datacenter',        spec:'12.8 Tbps · 36x400GE · SR Linux, EVPN-VXLAN',                 elp:'~ $85,000',elpN:85000},
-  {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-1s',          seg:'PE / Edge 2U',            spec:'1.2 Tbps · 36x100GE o 12x400GE · SR-MPLS, SRv6, FlexE',      elp:'~ $85,000',elpN:85000},
-  {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-2s',          seg:'Edge / Agregación',       spec:'4 Tbps · 144x100GE o 36x400GE · SR-MPLS, SRv6',              elp:'~ $140,000',elpN:140000},
-  {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-7s',          seg:'Core IP/MPLS',            spec:'19.2 Tbps · 7 slots IOM · SR-MPLS, SRv6, FlexE',              elp:'~ $220,000',elpN:220000},
-  {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-14s',         seg:'Core grande',             spec:'38.4 Tbps · 14 slots IOM · SR-MPLS, SRv6',                    elp:'~ $380,000',elpN:380000},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-1s',          seg:'PE / Edge 2U',            spec:'4.8 Tbps · 36x100GE o 12x400GE · SR-MPLS, SRv6, FlexE',      elp:'~ $85,000',elpN:85000},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-2s',          seg:'Edge / Agregación',       spec:'9.6 Tbps · 144x100GE o 36x400GE · SR-MPLS, SRv6',              elp:'~ $140,000',elpN:140000},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-7s',          seg:'Core IP/MPLS',            spec:'108 Tbps · 7 slots IOM · SR-MPLS, SRv6, FlexE',              elp:'~ $220,000',elpN:220000},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-14s',         seg:'Core grande',             spec:'216 Tbps · 14 slots IOM · SR-MPLS, SRv6',                    elp:'~ $380,000',elpN:380000},
   // Precios verificados contra "2026Q3 Mid Price list_AMER_FINAL_EFF 090726.xlsx" (Fortinet AMER price list
   // oficial, vigente desde 07-sep-2026). Sucede a la "Main" del 03-ago-2026, que era la fuente anterior: el
   // propio documento lo declara en su Cover Sheet ("Previous Version: Aug 3, 2026" -> "Current Version: Sep 7, 2026").
@@ -161,8 +161,8 @@ module.exports = [
   {vendor:'Juniper', color:'#84B135',model:'Juniper SSR1300',             seg:'DC / Campus mediano',     spec:'20 Gbps · SD-WAN sin túneles · concentrador',                 elp:'Consultar',elpN:0},
   {vendor:'Juniper', color:'#84B135',model:'Juniper SSR1400',             seg:'DC / Campus grande',      spec:'40 Gbps · SD-WAN sin túneles · hub regional',                 elp:'Consultar',elpN:0},
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7220 IXR-D1',           seg:'Acceso / Gestión DC',     spec:'88 Gbps · 48x1GE RJ45 + 4x SFP+ · SR Linux · 1U',             elp:'Consultar',elpN:0},
-  {vendor:'Nokia',  color:'#124191', model:'Nokia 7220 IXR-D2L',          seg:'Leaf datacenter',         spec:'4 Tbps · 48x25GE + 8x100GE + 2x10GE · SR Linux · 1U',         elp:'Consultar',elpN:0},
-  {vendor:'Nokia',  color:'#124191', model:'Nokia 7220 IXR-D3L',          seg:'Leaf / Spine compacto',   spec:'6.4 Tbps · 32x100GE QSFP28 + 2x SFP+ · SR Linux · 1U',        elp:'Consultar',elpN:0},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7220 IXR-D2L',          seg:'Leaf datacenter',         spec:'2 Tbps · 48x25GE + 8x100GE + 2x10GE · SR Linux · 1U',         elp:'Consultar',elpN:0},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7220 IXR-D3L',          seg:'Leaf / Spine compacto',   spec:'3.2 Tbps · 32x100GE QSFP28 + 2x SFP+ · SR Linux · 1U',        elp:'Consultar',elpN:0},
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7220 IXR-D5',           seg:'Spine datacenter 400G',   spec:'12.8 Tbps · 32x400GE QSFP-DD + 2x SFP+ · SR Linux · 1U',      elp:'Consultar',elpN:0},
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7250 IXR-e2',           seg:'Cell site / Acceso',      spec:'800 Gbps · GE/10GE/25GE · SR-MPLS, SRv6, EVPN',               elp:'Consultar',elpN:0},
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7250 IXR-X1b',          seg:'Agregación / Edge',       spec:'7.2 Tbps · 24x100GE + 12x400GE · SR Linux · 1U',              elp:'Consultar',elpN:0},
