@@ -165,14 +165,14 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
     <div class="field">
       <label for="bw">Ancho de banda a enrutar</label>
       <div class="row">
-        <input type="number" id="bw" value="500" min="1" step="any">
+        <input type="number" id="bw" min="1" step="any" autocomplete="off">
         <select id="unit" style="width:105px"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
       </div>
       <p class="hint">Tráfico total que atraviesa el router (WAN agregado o enlace troncal).</p>
     </div>
     <div class="field">
       <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
-      <input type="range" id="head" min="0" max="100" step="5" value="30">
+      <input type="range" id="head" min="0" max="100" step="5" value="30" autocomplete="off">
     </div>
     <div class="field">
       <label><input type="checkbox" id="chkVirtual"> <span>Despliegue virtual — CHR (Cloud Hosted Router)<span class="sku" style="display:block;margin-top:2px">Cotiza licencias RouterOS virtuales (VMware, KVM, AWS, GCP, Azure) en lugar de hardware físico.</span></span></label>
@@ -186,17 +186,17 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
       <label class="check"><input type="checkbox" id="chkBgp"> <span><b>BGP full table</b> — feeds completos de upstream<span class="sku">Cada feed IPv4 completo consume ~1.5 GB de RAM en RouterOS 7. Limita por memoria, no por throughput.</span></span></label>
       <div class="sub-field hidden" id="bgpBox">
         <label for="bgpFeeds">Cantidad de feeds full table</label>
-        <input type="number" id="bgpFeeds" value="1" min="1" max="20">
+        <input type="number" id="bgpFeeds" min="1" max="20" autocomplete="off">
       </div>
       <label class="check"><input type="checkbox" id="chkPppoe"> <span><b>Concentrador PPPoE / Hotspot</b><span class="sku">El nivel de licencia embebido impone un tope duro de sesiones activas que ninguna cifra de throughput anticipa.</span></span></label>
       <div class="sub-field hidden" id="pppoeBox">
         <label for="pppoeSess">Sesiones concurrentes</label>
-        <input type="number" id="pppoeSess" value="150" min="1" step="1">
+        <input type="number" id="pppoeSess" min="1" step="1" autocomplete="off">
       </div>
       <label class="check"><input type="checkbox" id="chkCapsman"> <span><b>CAPsMAN</b> — controlador WiFi centralizado<span class="sku">Incluido en RouterOS sin licencia adicional. Los APs se agregan al BOM.</span></span></label>
       <div class="sub-field hidden" id="capsBox">
         <label for="apCount">Cantidad de APs a gestionar</label>
-        <input type="number" id="apCount" value="4" min="1" step="1">
+        <input type="number" id="apCount" min="1" step="1" autocomplete="off">
         <label style="margin-top:8px"><input type="checkbox" id="chkPoe" style="accent-color:var(--red)"> Alimentar los APs por PoE desde el router</label>
       </div>
       <label class="check"><input type="checkbox" id="chkHa"> <span><b>Alta disponibilidad</b> (VRRP — 2 unidades)<span class="sku">RouterOS no comparte licencia entre nodos: cada unidad se cotiza completa.</span></span></label>
@@ -241,7 +241,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
     </div>
     <div class="field">
       <label for="qty">Cantidad de routers</label>
-      <input type="number" id="qty" value="1" min="1">
+      <input type="number" id="qty" min="1" autocomplete="off">
     </div>
     <div class="field">
       <label for="supportTier">Nivel de soporte</label>
@@ -265,7 +265,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
     </div>
     <div class="field">
       <label for="bomApQty">Cantidad</label>
-      <input type="number" id="bomApQty" value="0" min="0">
+      <input type="number" id="bomApQty" min="0" autocomplete="off">
     </div>
   </section>
 

@@ -113,7 +113,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <div class="field">
       <label for="bw">Tráfico a cursar</label>
       <div class="row">
-        <input type="number" id="bw" value="400" min="1" step="any">
+        <input type="number" id="bw" min="1" step="any" autocomplete="off">
         <select id="unit" style="max-width:110px">
           <option value="1" selected>Gbps</option>
           <option value="1000">Tbps</option>
@@ -138,7 +138,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <div class="field">
       <label for="portQty">Cantidad de puertos</label>
       <div class="row">
-        <input type="number" id="portQty" value="0" min="0" step="1">
+        <input type="number" id="portQty" min="0" step="1" autocomplete="off">
         <select id="portVel" style="max-width:120px">
           <option value="10">10GE</option>
           <option value="25">25GE</option>

@@ -159,15 +159,15 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
     <div class="field">
       <label for="bw" id="bwLabel">Ancho de banda contratado</label>
       <div class="row">
-        <input type="number" id="bw" value="500" min="0" step="any">
+        <input type="number" id="bw" min="0" step="any" autocomplete="off">
         <select id="unit" style="width:105px"><option value="1">Mbps</option><option value="1000">Gbps</option><option value="1000000">Tbps</option></select>
       </div>
     </div>
     <div id="aggBlock" class="hidden">
-      <div class="field"><label for="sites">Número de sedes que concentra</label><input type="number" id="sites" value="50" min="1" step="1"></div>
+      <div class="field"><label for="sites">Número de sedes que concentra</label><input type="number" id="sites" min="1" step="1" autocomplete="off"></div>
       <div class="field">
         <label for="conc">Factor de simultaneidad: <span id="concVal" style="font-family:'IBM Plex Mono',monospace">40 %</span></label>
-        <input type="range" id="conc" min="5" max="100" step="5" value="40">
+        <input type="range" id="conc" min="5" max="100" step="5" value="40" autocomplete="off">
         <p class="hint">Porcentaje del caudal de sucursal que llega al hub a la vez. Sobresuscribir al 100 % encarece el equipo sin necesidad real.</p>
       </div>
     </div>
@@ -181,7 +181,7 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
     </div>
     <div class="field">
       <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
-      <input type="range" id="head" min="0" max="100" step="5" value="30">
+      <input type="range" id="head" min="0" max="100" step="5" value="30" autocomplete="off">
     </div>
     <div class="field">
       <label for="frame">Tamaño de trama para el cálculo de paquetes</label>
@@ -215,8 +215,8 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
         <label class="check"><input type="checkbox" id="rWifi"><span>Wi-Fi integrado</span></label>
       </div>
     </div>
-    <div class="field"><label for="lan">Puertos LAN mínimos</label><input type="number" id="lan" value="8" min="0" step="1"></div>
-    <div class="field"><label for="aps">APs gestionados (WAC)</label><input type="number" id="aps" value="0" min="0" step="1"></div>
+    <div class="field"><label for="lan">Puertos LAN mínimos</label><input type="number" id="lan" min="0" step="1" autocomplete="off"></div>
+    <div class="field"><label for="aps">APs gestionados (WAC)</label><input type="number" id="aps" min="0" step="1" autocomplete="off"></div>
   </section>
 
   <section class="panel">
@@ -266,8 +266,8 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
     </div>
     <div class="field">
       <div class="row" style="gap:14px;flex-wrap:wrap">
-        <div style="flex:1;min-width:150px"><label for="qty">Cantidad de equipos</label><input type="number" id="qty" value="1" min="1" step="1"></div>
-        <div style="flex:1;min-width:150px"><label for="optQty">Ópticas por equipo</label><input type="number" id="optQty" value="2" min="0" step="1"></div>
+        <div style="flex:1;min-width:150px"><label for="qty">Cantidad de equipos</label><input type="number" id="qty" min="1" step="1" autocomplete="off"></div>
+        <div style="flex:1;min-width:150px"><label for="optQty">Ópticas por equipo</label><input type="number" id="optQty" min="0" step="1" autocomplete="off"></div>
       </div>
     </div>
   </section>

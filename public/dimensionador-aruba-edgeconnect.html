@@ -185,24 +185,24 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <div class="field">
       <label for="bw">Ancho de banda de aplicación</label>
       <div class="row">
-        <input type="number" id="bw" value="500" min="1" step="any">
+        <input type="number" id="bw" min="1" step="any" autocomplete="off">
         <select id="unit" style="width:105px"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
       </div>
       <p class="hint">Tráfico del lado LAN que el equipo debe procesar. No es lo mismo que el caudal WAN a contratar: FEC lo sube y Boost lo baja.</p>
     </div>
     <div class="field">
       <label for="users">Usuarios / dispositivos concurrentes</label>
-      <input type="number" id="users" value="100" min="1" step="1">
+      <input type="number" id="users" min="1" step="1" autocomplete="off">
       <p class="hint">En los gateways esta cifra es además una <b>restricción dura de capacidad</b>: la serie 9000 soporta 2.048 clientes y la 9200 hasta 32.000 con licencia Gold.</p>
     </div>
     <div class="field">
       <label for="perUser">Mbps por usuario activo</label>
-      <input type="number" id="perUser" value="3" min="0" step="0.1">
+      <input type="number" id="perUser" min="0" step="0.1" autocomplete="off">
       <p class="hint">Regla habitual: 1–5 Mbps por usuario corporativo. <b>Bájala en campus grandes</b>: 20.000 dispositivos no generan 20.000 x 3 Mbps simultáneos, y aplicar la regla tal cual dispara el requerimiento a cifras que ningún equipo cumple. Ponla en 0 para dimensionar solo por el ancho de banda declarado arriba.</p>
     </div>
     <div class="field">
       <label for="aps">Puntos de acceso a gestionar</label>
-      <input type="number" id="aps" value="0" min="0" step="1">
+      <input type="number" id="aps" min="0" step="1" autocomplete="off">
       <p class="hint">Deja 0 para omitirlo. Solo aplica a los gateways, que hacen de controladora: la serie 9000 soporta hasta 32 APs y la 9200 hasta 2.000 con licencia Gold.</p>
     </div>
     <div class="field">
@@ -216,7 +216,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     </div>
     <div class="field">
       <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
-      <input type="range" id="head" min="0" max="100" step="5" value="30">
+      <input type="range" id="head" min="0" max="100" step="5" value="30" autocomplete="off">
     </div>
   </section>
 
@@ -272,7 +272,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     </div>
     <div class="field">
       <label for="qty">Cantidad (unidades)</label>
-      <input type="number" id="qty" value="1" min="1">
+      <input type="number" id="qty" min="1" autocomplete="off">
     </div>
     <div class="field">
       <label for="termYears">Término de suscripción y soporte</label>
@@ -293,7 +293,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     </div>
     <div class="field" id="fldBoost">
       <label for="boostBlocks">Bloques de Boost (100 Mbps cada uno)</label>
-      <input type="number" id="boostBlocks" value="0" min="0" step="1">
+      <input type="number" id="boostBlocks" min="0" step="1" autocomplete="off">
       <p class="hint">Se licencia una vez para todo el fabric y Orchestrator lo reparte entre las sedes que lo aprovechan. Por eso figura con cantidad 1 en el BOM aunque se coticen varias unidades.</p>
     </div>
     <div class="field" id="fldCentral" hidden>

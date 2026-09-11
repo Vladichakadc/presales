@@ -9,6 +9,16 @@
 // (2026-09-10) ya no guarda nada en localStorage: cada inicio de sesión arranca en blanco,
 // salvo que la URL traiga parámetros.
 //
+// CAMPOS VACÍOS AL ENTRAR (decisión del dueño, 2026-09-12)
+// Los dimensionadores ya no traen valores de ejemplo precargados: los <input type="number">
+// del HTML van sin atributo value para que el usuario ingrese sus propias cifras desde cero.
+// Los motores ya toleran el vacío (parseFloat(...)||0), así que un campo sin rellenar cuenta
+// como 0 y el escenario simplemente no produce candidatos hasta que se teclea algo. Los
+// deslizadores (headroom, concurrencia...) sí conservan su posición inicial porque un slider
+// no puede estar "vacío". Además, este módulo borra los campos tecleables al cargar cuando la
+// URL no trae parámetros: es la red de seguridad contra el navegador, que repone lo último
+// tecleado al recargar o al volver con el botón atrás (bfcache) aunque no haya localStorage.
+//
 // POR QUÉ UN QUERYSTRING CORTO Y NO JSON EN BASE64
 // Estos enlaces se pegan en un chat. Un `?bw=2500&head=30` se lee, se edita a mano y no lo
 // parte ningún cliente de correo; un blob opaco de 400 caracteres, ninguna de las tres cosas.
@@ -73,6 +83,32 @@
     if ([...params.keys()].some((k) => campos.includes(k))) {
       origen = 'enlace';
       for (const id of campos) if (params.has(id)) guardado[id] = params.get(id);
+    }
+
+    // ── Arranque en blanco ──────────────────────────────────────────────────
+    // Sin parámetros en la URL no hay nada que restaurar: se vacían los campos tecleables
+    // (números y texto) por si el navegador repuso lo último tecleado — lo hace al recargar
+    // y al volver con atrás/adelante (bfcache), sin pasar por localStorage. Los deslizadores,
+    // casillas, selects y grupos .seg conservan su posición inicial: no son campos "vaciables".
+    // El evento input avisa al motor de la página para que repinte con el escenario vacío.
+    function limpiarCamposTecleables() {
+      for (const id of campos) {
+        const nodo = document.getElementById(id);
+        if (!nodo || !nodo.tagName) continue;
+        if (nodo.tagName !== 'INPUT') continue;
+        if (nodo.type !== 'number' && nodo.type !== 'text') continue;
+        if (nodo.value === '') continue;
+        nodo.value = '';
+        nodo.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }
+    if (!origen) {
+      limpiarCamposTecleables();
+      // Con bfcache la página vuelve tal cual se dejó, sin recargar scripts: hay que limpiar
+      // en el pageshow, que es el único evento que sí se dispara al volver.
+      window.addEventListener('pageshow', (e) => {
+        if (e.persisted && !new URLSearchParams(location.search).toString()) limpiarCamposTecleables();
+      });
     }
 
     const pendientesSeg = [];

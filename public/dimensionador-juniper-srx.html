@@ -156,14 +156,14 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <div class="field">
       <label for="bw">Ancho de banda a proteger</label>
       <div class="row">
-        <input type="number" id="bw" value="500" min="1" step="any">
+        <input type="number" id="bw" min="1" step="any" autocomplete="off">
         <select id="unit" style="width:105px"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
       </div>
     </div>
 
     <div class="field">
       <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
-      <input type="range" id="head" min="0" max="100" step="5" value="30" style="width:100%">
+      <input type="range" id="head" min="0" max="100" step="5" value="30" style="width:100%" autocomplete="off">
       <p class="hint">Único factor de seguridad que aplica la herramienta. No hay recargos porcentuales por función: activar inspección <b>cambia la cifra que aplica</b>, no la encarece un tanto por ciento.</p>
     </div>
   </section>
@@ -191,8 +191,8 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     </div>
     <div class="field">
       <label for="users">Usuarios de la sede <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— opcional, para el eje de sesiones</span></label>
-      <input type="number" id="users" value="0" min="0" step="10">
-      <input type="number" id="sesUser" value="20" min="0" step="1" style="margin-top:8px">
+      <input type="number" id="users" min="0" step="10" autocomplete="off">
+      <input type="number" id="sesUser" min="0" step="1" style="margin-top:8px" autocomplete="off">
       <p class="hint">El segundo campo son las sesiones concurrentes por usuario (15&ndash;30 en un puesto corporativo). El eje solo se comprueba en los modelos cuyo catálogo trae la cifra de sesiones; en el resto se declara sin comprobar.</p>
     </div>
   </section>
@@ -231,7 +231,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       </div>
       <div class="field">
         <label for="qty">Cantidad</label>
-        <input type="number" id="qty" value="1" min="1">
+        <input type="number" id="qty" min="1" autocomplete="off">
       </div>
       <div class="field">
         <label for="licTier">Suscripción de seguridad</label>

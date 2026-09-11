@@ -174,18 +174,18 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     </div>
     <div class="field">
       <label for="sesUser">Sesiones concurrentes por usuario</label>
-      <input type="number" id="sesUser" value="20" min="0" step="1">
+      <input type="number" id="sesUser" min="0" step="1" autocomplete="off">
       <p class="hint">Nadie sabe estimar «cuántas sesiones concurrentes necesito», pero todo el mundo puede estimar cuántas abre un usuario: 15–30 en un puesto corporativo, 50–100 con muchas apps SaaS y móviles, 5–10 en un dispositivo IoT. El total se calcula solo.</p>
     </div>
     <div class="field">
       <label for="sessNeed">Total de sesiones concurrentes <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— opcional, para forzar un valor</span></label>
-      <input type="number" id="sessNeed" value="0" min="0" step="1000">
+      <input type="number" id="sessNeed" min="0" step="1000" autocomplete="off">
       <p class="hint">Deja 0 y se toma <b>usuarios x sesiones por usuario</b>. Ponle un valor solo si ya conoces la cifra agregada — típico en CGNAT o portales, donde se cuenta por suscriptor y no por usuario.</p>
       <p class="hint" id="sesCalc" style="margin-top:6px"></p>
     </div>
     <div class="field">
       <label for="vidaSes">Vida media de una sesión <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— segundos</span></label>
-      <input type="number" id="vidaSes" value="30" min="1" step="1">
+      <input type="number" id="vidaSes" min="1" step="1" autocomplete="off">
       <p class="hint">De aquí sale el <b>segundo eje de sesiones</b>, el que de verdad aprieta: las <b>sesiones nuevas por segundo</b>. Si un usuario mantiene N sesiones abiertas y cada una dura V segundos, está abriendo N/V por segundo. 20–60 s es lo típico de navegación web y SaaS; baja a 2–5 s en tráfico de APIs o microservicios, que es donde este eje se dispara.</p>
       <p class="hint" id="cpsCalc" style="margin-top:6px"></p>
     </div>
@@ -200,34 +200,34 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <div class="field">
       <label for="bw"><span id="bwLbl">Ancho de banda de Internet / WAN</span></label>
       <div class="row">
-        <input type="number" id="bw" value="500" min="1" step="any">
+        <input type="number" id="bw" min="1" step="any" autocomplete="off">
         <select id="unit" style="width:105px"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
       </div>
       <p class="hint">En NGFW/SD-WAN, el throughput relevante es el tráfico que el FortiGate inspecciona, no solo el de WAN.</p>
     </div>
     <div class="field" id="fldAgg" hidden>
       <label for="sites">Número de sedes que concentra</label>
-      <input type="number" id="sites" value="20" min="1" step="1">
+      <input type="number" id="sites" min="1" step="1" autocomplete="off">
       <p class="hint">Cada sede necesita su propio túnel del overlay. El límite de túneles por modelo hay que confirmarlo en el datasheet: no está en este catálogo.</p>
     </div>
     <div class="field" id="fldConc" hidden>
       <label for="conc">Simultaneidad: <span id="concVal" style="font-family:'IBM Plex Mono',monospace">35 %</span></label>
-      <input type="range" id="conc" min="5" max="100" step="5" value="35">
+      <input type="range" id="conc" min="5" max="100" step="5" value="35" autocomplete="off">
       <p class="hint">Qué fracción del caudal de todas las sedes coincide en el pico. Es <b>el</b> parámetro que decide el tamaño de un concentrador: sumarlas linealmente sobredimensiona y encarece la propuesta; usar el caudal de una sola sede la deja corta.</p>
     </div>
     <div class="field">
       <label for="users">Usuarios / dispositivos concurrentes</label>
-      <input type="number" id="users" value="100" min="1" step="1">
+      <input type="number" id="users" min="1" step="1" autocomplete="off">
       <p class="hint">Se toma el mayor entre esta vía y el caudal declarado arriba, no la suma.</p>
     </div>
     <div class="field">
       <label for="perUser">Mbps por usuario activo</label>
-      <input type="number" id="perUser" value="3" min="0" step="0.1">
+      <input type="number" id="perUser" min="0" step="0.1" autocomplete="off">
       <p class="hint">Regla habitual: 1–5 Mbps por usuario corporativo. <b>Bájala en campus grandes</b>: 5.000 usuarios a 3 Mbps dan 15 Gbps, cifra que no representa ningún consumo real y que desplaza el dimensionamiento a gama de datacenter. Ponla en 0 para dimensionar solo por el caudal.</p>
     </div>
     <div class="field">
       <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
-      <input type="range" id="head" min="0" max="100" step="5" value="30">
+      <input type="range" id="head" min="0" max="100" step="5" value="30" autocomplete="off">
     </div>
   </section>
 
@@ -251,7 +251,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     </div>
     <div class="field" id="fldOverlay" hidden>
       <label for="pctOverlay">Tráfico por el overlay: <span id="pctOverlayVal" style="font-family:'IBM Plex Mono',monospace">100 %</span></label>
-      <input type="range" id="pctOverlay" min="0" max="100" step="5" value="100">
+      <input type="range" id="pctOverlay" min="0" max="100" step="5" value="100" autocomplete="off">
       <p class="hint">La fracción que va cifrada al fabric. El resto sale por <b>breakout local</b> a Internet y no paga IPsec. Bajarlo es lo que hace que una sucursal con salida directa a SaaS no necesite un equipo mayor.</p>
     </div>
     <div class="field">
@@ -299,7 +299,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     </div>
     <div class="field">
       <label for="qty">Cantidad (unidades)</label>
-      <input type="number" id="qty" value="1" min="1">
+      <input type="number" id="qty" min="1" autocomplete="off">
     </div>
     <div class="field">
       <label for="termYears">Término de licencias y soporte</label>

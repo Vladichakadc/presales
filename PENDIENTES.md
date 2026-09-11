@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-11.
+Última revisión: 2026-09-12.
 
 ---
 
@@ -351,6 +351,23 @@ que el resto de esta tabla, aplicada a una señal de ciclo de vida en vez de una
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Dimensionadores: los campos arrancan vacíos en cada sesión (2026-09-12)
+
+A petición del dueño del repo: los valores de ejemplo que traían precargados los ocho
+dimensionadores (bw 500, usuarios 100, sucursales 20/50...) desaparecieron — cada inicio de
+sesión encuentra los campos **vacíos** para que el usuario ingrese sus propias cifras. Tres
+capas: (1) los `<input type="number">` del HTML ya no llevan atributo `value` (los
+deslizadores sí conservan su posición: un slider no puede estar «vacío»); (2)
+`autocomplete="off"` en todos ellos, porque lo que «guardaba los valores» ya no era la
+aplicación —el localStorage se quitó el 2026-09-10— sino el navegador, que repone lo último
+tecleado al recargar o al volver con atrás; (3) red de seguridad en `estado.js`: si la URL no
+trae parámetros, vacía los campos tecleables al cargar y en el `pageshow` del bfcache. Los
+motores ya toleraban el vacío (`parseFloat(...)||0` → el escenario sin cifras no produce
+candidatos). Lo que **no** cambió: un enlace compartido (`?bw=2500&users=800`) sigue
+restaurando el escenario completo — es la función para la que existe el módulo. Verificado de
+extremo a extremo en Chromium tras login: las 8 páginas entran en blanco, teclear 2.500 Mbps
+sigue recomendando el FortiGate 200G y el enlace compartido sigue restaurando. 233/233 tests.
 
 ### Nokia: las 6 capacidades en conflicto, corregidas contra la ficha oficial (2026-09-11)
 
