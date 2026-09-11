@@ -345,6 +345,36 @@ antes de pisar un dato existente — así que se deja sin tocar.
 
 ## Cerrado recientemente
 
+### Aruba: la pestaña de Fuentes ya no está duplicada (2026-09-10)
+
+A petición del dueño del repo («unifica en aruba la opción de fuentes, está duplicado»).
+Al replicar el patrón de Fortinet a Aruba (entrada anterior de este mismo día), se había
+dejado una división a medias: la pestaña «Licencias, software y fuentes» seguía con su
+propio listado de datasheets, y la pestaña nueva «Fuentes» solo mostraba la procedencia
+verificada y remitía a la otra pestaña para el detalle por producto — dos lugares para lo
+mismo, y el propio dueño lo notó de inmediato al usar la página.
+
+**Ahora todo lo de fuentes vive en un solo lugar.** La pestaña se renombra a «Licencias y
+software» (ya sin mención a fuentes) y pierde la sección de datasheets; esa sección se
+mueve a la pestaña «Fuentes», justo debajo de «Procedencia verificada». Se quitó la frase
+que remitía de una pestaña a la otra (ya no hace falta) y se corrigió la nota de cierre de
+la página, que citaba la pestaña de licencias como destino de los enlaces. Cambio solo de
+`public/dimensionador-aruba-edgeconnect.html`; el JS no se tocó — pinta el listado por id
+(`dsList`), sin importar en qué pestaña viva el `<ul>`.
+
+Verificado en Chromium autenticado: «Fuentes» muestra procedencia y datasheets juntos;
+«Licencias y software» termina en la tabla de soporte, sin el listado. Sin errores de
+consola. 232 pruebas sin cambios (edición solo de HTML).
+
+**Mejora propuesta al cerrar esta entrega:** la entrada de arriba («El piloto de Fortinet
+se replica...») ya documentaba esta división como decisión deliberada («Aruba solo sumó
+"Catálogo" y una "Fuentes" liviana que remite a esa pestaña») — es decir, el propio informe
+de cierre describió como intencional lo que el dueño del repo vio como un defecto de UX en
+cuanto abrió la página. La revisión de cada entrega debería incluir, además de Chromium y
+las pruebas automáticas, una relectura rápida desde la perspectiva de quien usa la página
+por primera vez — no solo confirmar que el código hace lo que el texto dice, sino que lo
+que el texto llama "resuelto" de verdad se siente resuelto.
+
 ### Chrome real destraba 9 PDFs más de Aruba; Huawei sigue bloqueado, pero por otra razón (2026-09-10)
 
 A petición del dueño del repo, siguiendo la mejora propuesta al cerrar la entrega anterior:
@@ -489,8 +519,9 @@ tercera pestaña propia en el portal («RouterOS Features», «SD-WAN y Licencia
 tal cual. Un hallazgo cambió el plan sobre la marcha: la pestaña «SD-WAN y Licencias» de Aruba
 resultó ser **redundante** con contenido que su dimensionador ya tenía en su propia pestaña de
 licencias (la misma nota metodológica proceso-vs-caudal, la misma tabla de Boost como pool) —
-así que no se duplicó, y Aruba solo sumó «Catálogo» y una «Fuentes» liviana que remite a esa
-pestaña para el detalle por producto. Huawei aporta sus dos tablas (AR y NetEngine) desde el
+así que no se duplicó, y Aruba solo sumó «Catálogo» y una «Fuentes» liviana que remitía a esa
+pestaña para el detalle por producto — división que el dueño del repo pidió unificar el mismo
+día (ver *Aruba: la pestaña de Fuentes ya no está duplicada*, más abajo). Huawei aporta sus dos tablas (AR y NetEngine) desde el
 mismo `MODELS` que ya carga su dimensionador —los 40 modelos traen el campo `cls` que las
 distingue—, sin repetir el fetch. Juniper separa SRX y Session Smart Router en dos tablas, la
 misma regla de «no se comparan entre sí» que ya aplica en el resto de esa página. Aruba declara
