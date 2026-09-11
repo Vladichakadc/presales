@@ -96,8 +96,8 @@ de datos— está en [`IMPORTAR-CATALOGO.md`](IMPORTAR-CATALOGO.md).
 | # | Qué falta | Cómo se cierra | Bloqueo |
 |---|---|---|---|
 | ~~2~~ | ~~`cps` en 37 de los 58 FortiGate~~ **Resuelto (2026-09-02)**, y ampliado el 2026-09-03 de 53 a **56 de 58** leyendo las fichas por serie de 400F y 600F. Quedan 100F y 200F, cuyas fichas no están en la URL que sigue el patrón del resto (404, reportado). | — | resuelto vía Actions |
-| 3 | **PDFs de datasheets de Aruba.** `public/datasheets/` va vacío a propósito; la página enlaza la URL de HPE mientras no esté el archivo local. **Ejecutado por primera vez el 2026-09-02** (ver *Cerrado recientemente* — «investigado», no «cerrado»): de 24 documentos, HPE devolvió 21 fallos (403 o timeout) al ejecutor de GitHub Actions y solo 1 PDF de bajo valor se descargó — un bloqueo del lado de HPE, distinto del de este entorno. **Ese único PDF (`sd-wan-ordering-guide.pdf`) ya está commiteado** (2026-09-02): se había quedado fuera de git, en un clon suelto, así que producción seguía enlazando la URL de HPE aunque el archivo existiera en disco. Cobertura local real: **1 de 24**; los otros 23 siguen enlazando a HPE. Y aunque hubiera bajado los 24, el paso de abrir el PR falló aparte: este repositorio tiene desactivado el permiso «Allow GitHub Actions to create pull requests» (ajuste de GitHub, no de este workflow). | El workflow (`datasheets-aruba.yml`) está listo y el permiso de PR se activa en un clic (Settings → Actions → General → Workflow permissions), pero incluso con eso resuelto, HPE sigue bloqueando casi todo el lote — hace falta una máquina con navegador real, igual que Huawei. **2026-09-03: se supo por qué** — `buy.hpe.com` devuelve un "Access Denied" de **Akamai** al ejecutor de Actions (ver *Cerrado recientemente*), así que no es límite de ritmo sino la defensa anti-automatización del fabricante. Espaciar las peticiones en `descargar-datasheets.js` la ablanda, no la abre. | HPE bloquea con Akamai (defensa del fabricante, no del proxy de este entorno); el repositorio tampoco permite que Actions abra PRs |
-| 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ` y las 23 AR no traen `mpps`. El motor no inventa: muestra lo que hay. | **El importador ya existe, y desde el 2026-09-04 también la plantilla**: `npm run huawei -- --check` inventaría los huecos y `npm run huawei -- --plantilla` escribe `huawei-specs.csv` y `huawei-eox.csv` ya con los 40 modelos y las cabeceras que el importador reconoce, así que el trabajo en la página se reduce a pegar cifras. Luego `npm run huawei -- huawei-specs.csv --dry` para el ensayo, sin `--dry` para aplicar, y `npm run huawei -- huawei-eox.csv --eol` para el fin de venta. Falta el dato, no la herramienta — **y, a diferencia de Fortinet/Aruba, esta vez no se cierra vía Actions** (ver *Cerrado recientemente*, investigación 2026-09-02): hace falta una persona con navegador real, y sesión de Huawei si hace falta el detalle fino de Info-Finder. | `e.huawei.com`, `support.huawei.com` bloquean el navegador automatizado (Akamai); `info.support.huawei.com` exige sesión |
+| 3 | **PDFs de datasheets de Aruba — de 3/24 a 12/24 (2026-09-10), ver *Cerrado recientemente*.** El bloqueo documentado desde agosto era contra el ejecutor de GitHub Actions (Akamai) y contra `curl`/Playwright desde este entorno; un **Chrome real** (vía la extensión, no automatización headless) sí llega a `hpe.com` y `arubanetworking.hpe.com` sin que Akamai lo detenga — primer avance real desde que se abrió el pendiente. Quedan **7 documentos genuinamente atascados** (el botón de descarga de HPE no dispara en las fichas tipo QuickSpecs/BTO largas — `ecQuickspecs`, `ecXlSpec`, `gw9000`, `gw9100`, `gw9200Qs`, `sdBranchVsg` — y `gw9000Spec` exige cuenta HPE, igual que Huawei), **4 no son PDFs y nunca lo fueron** (`ecOverview`, `gw7000`, `gwSoportados`, `orchDocs` son páginas de documentación en vivo — el propio manifiesto ya los describía así) y **1 URL murió** (`ecSpecSheet`, 404 genuino, hay que buscar el reemplazo). | Reintentar los 7 atascados con Chrome real es el camino que ya funcionó para los otros 9 — puede ser un límite de tamaño/tipo de documento en vez de un bloqueo real, no distinguido todavía. El PR automático desde Actions sigue sin poder abrirse solo (permiso de GitHub desactivado), pero ya no es el paso que bloquea: el archivo se puede commitear a mano como se hizo aquí. | Ninguno de los 12 nuevos vino de Actions ni de este sandbox — hace falta Chrome real en una sesión con la extensión conectada |
+| 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ` y las 23 AR no traen `mpps`. El motor no inventa: muestra lo que hay. | **El importador ya existe, y desde el 2026-09-04 también la plantilla**: `npm run huawei -- --check` inventaría los huecos y `npm run huawei -- --plantilla` escribe `huawei-specs.csv` y `huawei-eox.csv` ya con los 40 modelos y las cabeceras que el importador reconoce, así que el trabajo en la página se reduce a pegar cifras. Luego `npm run huawei -- huawei-specs.csv --dry` para el ensayo, sin `--dry` para aplicar, y `npm run huawei -- huawei-eox.csv --eol` para el fin de venta. **2026-09-10: el bloqueo de Akamai no es contra todo navegador** — con Chrome real (no Playwright/Actions) `support.huawei.com/enterprise/en/bulletins/` carga completo y sin captcha, con buscador por modelo (`AR6700` → 11 avisos con fecha real). Dos obstáculos nuevos, distintos del bloqueo anterior: el **contenido** de cada aviso exige cuenta Huawei (candado visible, no se intentó sortear), y lo que se ve en la lista son ciclos de vida de **versiones de software** (`V600R023C00`…), no de hardware — puede que ni sea la categoría correcta para lo que el catálogo modela (fin de venta del equipo físico). "PCN" (Product Change Notice) sí es a nivel de hardware pero no lista una categoría de routers en este momento. | Cuenta Huawei para leer el contenido de cada aviso (no se intentó); y aclarar primero si "Life Cycle Notices" es la categoría correcta antes de pedir esa cuenta |
 | 4 | **~~Comprobar el sitio en vivo tras desplegar~~ Cerrado (2026-09-04)**, ver *Cerrado recientemente*. Eran dos preguntas distintas y ahora las cubren dos workflows: `sonda-produccion.yml` confirma desde fuera de este entorno que el dominio público responde de verdad (`/salud` y `/login`, sin sesión), y **`pantallas.yml`** conduce las 15 pantallas detrás del muro en un Chromium de verdad y sube una captura de cada una. No hace falta producción para lo segundo: la base es efímera y se resiembra desde `legacyData/` en cada despliegue, así que lo que pinta una pantalla es función del commit. | Nada pendiente de ingeniería. Queda el **juicio**: mirar las capturas del artefacto y decidir si la pantalla dice lo que se le quiere decir a un cliente. | — |
 
 ## Fabricantes sin dimensionador
@@ -344,6 +344,53 @@ antes de pisar un dato existente — así que se deja sin tocar.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Chrome real destraba 9 PDFs más de Aruba; Huawei sigue bloqueado, pero por otra razón (2026-09-10)
+
+A petición del dueño del repo, siguiendo la mejora propuesta al cerrar la entrega anterior:
+reintentar los pendientes 3 (PDFs de Aruba) y 14 (ciclo de vida Huawei) ahora que Agent Reach
+estaba instalado. El resultado fue desigual entre los dos, y vale la pena registrar el porqué
+para no repetir el mismo camino sin salida.
+
+**Aruba: 9 documentos nuevos, de 3/24 a 12/24.** Jina Reader (usado en la entrega anterior)
+solo entrega texto, nunca el binario del PDF — no servía para este pendiente. Lo que sí
+funcionó fue **Chrome real vía la extensión**, en vez del Playwright/Actions que Akamai
+bloqueaba: `hpe.com` y `arubanetworking.hpe.com` cargan completos y sin captcha. Se descargaron
+y commitearon `edgeconnect-xs-spec-sheet.pdf`, `gateway-9004.pdf`, `serie-9000-psnow.pdf`,
+`serie-9200-campus-gateways.pdf`, `serie-9200-psnow.pdf`, `central-suscripciones-saas.pdf`,
+`foundational-care.pdf`, `clearpass-access-license.pdf` y `edgeconnect-ecv-azure.pdf` (128
+páginas). Quedan 12 sin resolver, en tres categorías distintas — ver la fila actualizada del
+pendiente 3 — y siete de ellas comparten un patrón: son fichas largas tipo QuickSpecs/BTO
+(EdgeConnect QuickSpecs, EC-XL-H, Gateway 9000/9100/9200 QuickSpecs, SD-Branch Design de 132
+páginas) donde el botón "Download" de HPE, con clic simulado o disparado por JS, simplemente no
+inicia la descarga — a diferencia de las fichas de producto cortas (4-24 páginas), que
+funcionaron sin excepción. No se identificó la causa exacta; podría ser tamaño, tipo de
+documento, o un detalle del propio botón en esas páginas.
+
+**Huawei: el bloqueo de Akamai no es el obstáculo real.** Con Chrome real,
+`support.huawei.com/enterprise/en/bulletins/` — "Life Cycle Notices" — carga completo, con
+buscador por modelo y resultados reales (`AR6700` dio 11 avisos con fecha). Pero dos hallazgos
+cierran el camino de todos modos, y son motivos nuevos y más precisos que "Akamai bloquea todo":
+
+1. **El contenido de cada aviso está tras una cuenta Huawei** (candado visible en cada fila).
+   No se intentó iniciar sesión ni crear una cuenta — sigue siendo la barrera real.
+2. **Puede que ni sea la categoría correcta.** Lo que se ve ahí son ciclos de vida de
+   **versiones de software** (`V600R023C00`, `V200R024C10`…), no del hardware — un dato
+   distinto de lo que este catálogo modela (`eolAnnounced`: fin de venta del equipo físico,
+   con última fecha de pedido y sucesor, al estilo de la serie ISR 4000 de Cisco). La categoría
+   "PCN" (Product Change Notice) sí es a nivel de hardware, pero no lista routers/NetEngine
+   entre sus categorías visibles ahora mismo.
+
+Ninguna cifra de Huawei se agregó al catálogo: no hay dato verificado que trasladar todavía, y
+este catálogo no adivina desde un título de aviso. 232 pruebas sin cambios — todo lo aplicado es
+un asset binario nuevo, sin tocar código.
+
+**Mejora propuesta al cerrar esta entrega:** de los 12 documentos Aruba que faltan, 7
+comparten el mismo síntoma (botón de descarga inerte en fichas largas) y uno más exige cuenta
+HPE — vale la pena que alguien con paciencia reintente esos 7 a mano una vez (confirmar si es
+realmente un límite de tamaño/tipo o solo falta de reintentos) antes de darlos por imposibles;
+los otros 5 (una URL muerta y cuatro páginas que nunca fueron PDF) no necesitan reintento, solo
+que alguien busque el reemplazo de la URL muerta si le importa esa ficha en particular.
 
 ### Catálogo Aruba ampliado: 4 EdgeConnect nuevos y SKUs reales completados (2026-09-10)
 
