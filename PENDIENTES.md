@@ -262,6 +262,15 @@ Dos cosas que ayudan a decidir:
    deliberada. Quien decida tiene que elegir qué métrica quiere que dimensione, y **eso sí
    afecta**: el dimensionador nuevo de agregación/core sí ordena por `cap`.
 
+**Aruba — un campo, encontrado el 2026-09-10 al ampliar el catálogo EdgeConnect** (ver
+*Cerrado recientemente*). El QuickSpecs oficial vigente (v18, 06-jul-2026) contradice el
+`wanMax` de EC-XS con un solo documento — por debajo del doble anclaje que esta tabla exige
+antes de pisar un dato existente — así que se deja sin tocar.
+
+| Modelo | Campo | Catálogo | Ficha oficial |
+|---|---|---|---|
+| EC-XS | `wanMax` | 200 Mbps | **1.000 Mbps** |
+
 ## Datos por confirmar
 
 7. **Precio de los modelos Juniper y Nokia añadidos en agosto 2026.** Las cifras técnicas
@@ -335,6 +344,63 @@ Dos cosas que ayudan a decidir:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Catálogo Aruba ampliado: 4 EdgeConnect nuevos y SKUs reales completados (2026-09-10)
+
+A petición del dueño del repo: buscar más equipos Aruba en fuentes oficiales para alimentar
+el dimensionador. El bloqueo de egreso a HPE que este repositorio lleva documentado desde
+agosto (Akamai contra automatización) resultó ser **contra ciertos clientes HTTP, no contra
+toda automatización**: `curl` directo sigue bloqueado, pero **Jina Reader** (`r.jina.ai`,
+recién instalado como parte de Agent Reach) sí atraviesa, y **Exa** (búsqueda semántica, misma
+instalación) encontró los documentos oficiales exactos a buscar. Es el primer cierre real de
+ese bloqueo desde que se abrió.
+
+**Cuatro modelos EdgeConnect que no existían en el catálogo**, todos del QuickSpecs oficial
+vigente de HPE (`a50004289enw`, versión 18, 06-jul-2026 — el propio documento con su changelog
+de 18 versiones, así que es la fuente activa, no una copia vieja): **EC-10104** (2-500 Mbps),
+**EC-10106** (2-1 Gbps), **EC-10108** (2-2 Gbps) y **EC-10150** (hasta 12 Gbps, el tope de la
+línea EdgeConnect — sin mínimo publicado, a diferencia del resto de la serie). Los tres
+primeros llenan justo el hueco entre EC-XS y EC-S que antes no tenía escalones intermedios.
+SKU reales de la misma ficha (R9D72A, S0E22A, S0E23A, S2N65A, más sus variantes TAA/NAL).
+
+**El motor de dimensionamiento no necesitó ningún cambio de lógica** para aceptarlos — ya
+generalizaba por `fam`/`wanMin`/`wanMax`, y el único ajuste fue de texto: el mensaje que
+mostraba «según licencia y vCPU» cuando `wanMin` es `null` asumía que esa era siempre la razón
+(cierta para EC-V, un appliance virtual) y ahora dice «sin mínimo publicado», que es lo que de
+verdad pasa con el EC-10150 — HPE no publica un piso para ese modelo y no hay por qué inventar
+una razón que no aplica.
+
+**De paso, tres huecos cerrados con la misma fuente ya citada en esas filas**, sin necesidad de
+un documento nuevo: `hwSku` de Gateway 9004 (R1B20A) y 9004-LTE (R3V91A) estaban en `null`
+pudiendo no estarlo, y Gateway 9106/9114 no tenían `fw`/`fwSess`/`ipsecSess` — con esos tres
+campos vacíos, la serie 9100 Hybrid era invisible para cualquier requerimiento dimensionado por
+throughput de firewall. Los tres coinciden exactamente con los datos ya verificados del
+catálogo (clientes, APs) donde se pudo contrastar, lo que da confianza en el resto de la ficha.
+Se corrigió además una nota de cabecera de `aruba.js` que decía «se retiran 9106/9114, no
+aparecen en el portafolio publicado» — la nota estaba desactualizada, no el catálogo: las filas
+de esos dos modelos siempre estuvieron ahí.
+
+**Un conflicto se encontró y se dejó sin resolver a propósito**: el mismo QuickSpecs dice que
+EC-XS llega a 1.000 Mbps, el doble del `wanMax:200` que ya tenía el catálogo. Un solo documento
+no supera el doble anclaje que esta tabla exige antes de pisar un dato existente — mismo criterio
+que el SRX380 de Juniper — así que queda anotado en *Conflictos abiertos* para que lo decida
+el dueño del catálogo, no tocado en este cambio.
+
+Los 4 modelos nuevos se sumaron también a `cotizadorCatalog.js` (si no, «Enviar al cotizador»
+desde el dimensionador habría fallado con «modelo no encontrado en el catálogo del cotizador»,
+el mismo síntoma que ya documenta ese botón para un equipo fuera de venta). 232 pruebas (una
+ampliada, no una nueva: el conteo de modelos Aruba con `redund` documentado subió de 6 a 10).
+Verificado en Chromium de extremo a extremo: EC-10106 recomendado en vivo para 715 Mbps, las
+cuatro filas nuevas en la pestaña Catálogo con su SKU, la ficha de EC-10150 mostrando «sin
+mínimo publicado» y su redundancia real, y «Enviar al cotizador» llevándolo correctamente al
+cotizador multi-fabricante. Sin errores de consola.
+
+**Mejora propuesta al cerrar esta entrega:** ahora que Jina Reader/Exa demostraron que
+atraviesan el bloqueo de HPE, los pendientes 3 (23 datasheets PDF de Aruba sin descargar) y 14
+(ciclo de vida de Huawei, bloqueado por Akamai contra Huawei específicamente, no HPE) merecen
+un reintento con la misma herramienta antes de seguir dándolos por bloqueados sin remedio desde
+este entorno — el costo es bajo (ya está instalada) y el pendiente 3 lleva desde agosto sin
+avanzar por creerlo imposible desde aquí.
 
 ### El piloto de Fortinet se replica a los otros seis fabricantes (2026-09-10)
 

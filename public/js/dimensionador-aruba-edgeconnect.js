@@ -264,7 +264,7 @@ function render(){
     if(m.clients!=null) out.push({etq:'Clientes soportados', val:users, tope:clientesMax(m)||0,
       txt:(users?miles(users)+' / ':'')+miles(clientesMax(m))});
     else out.push({etq:'Suelo del rango publicado', val:m.wanMin||0, tope:cap||0,
-      txt:m.wanMin!=null?fmt(m.wanMin)+' mínimo':'según licencia'});
+      txt:m.wanMin!=null?fmt(m.wanMin)+' mínimo':'sin mínimo publicado'});
     return out;
   };
 
@@ -299,7 +299,7 @@ function render(){
       ['Segmento', esc(m.seg)],
     ];
     if(m.fam==='ec'){
-      caract.push(['Rango de caudal WAN', m.wanMin!=null?`${fmt(m.wanMin)} – ${fmt(m.wanMax)}`:'según licencia y vCPU']);
+      caract.push(['Rango de caudal WAN', m.wanMin!=null?`${fmt(m.wanMin)} – ${fmt(m.wanMax)}`:'sin mínimo publicado']);
       caract.push(['Optimización WAN (Boost)', m.boostMax!=null?`hasta ${fmt(m.boostMax)}`:'—']);
     }else{
       caract.push(['Throughput de firewall', m.fw!=null?fmt(m.fw):'<span class="warn">no publicado</span>']);
@@ -496,7 +496,7 @@ function renderBom(){
     <tr><td>SKU de hardware</td><td class="n">${m.hwSku?`<code>${esc(m.hwSku)}</code>`:'<span class="warn">Sin SKU confirmado — ver variantes</span>'}</td></tr>
     <tr><td>Referencias pedibles</td><td>${(m.skus||[]).map(r=>`${r.sku?`<code>${esc(r.sku)}</code>`:'<span class="bom-nd">sin SKU confirmado</span>'} — ${esc(r.d)}`).join('<br>')||'—'}</td></tr>
     <tr><td>Precio de lista ref.</td><td class="n">${m.elpN!=null?esc(m.elp):'Consultar distribuidor'}</td></tr>
-    ${esEC?`<tr><td><b>Rango de caudal WAN publicado</b></td><td class="n"><b>${m.wanMin!=null?fmt(m.wanMin)+' – '+fmt(m.wanMax):'según licencia y vCPU'}</b></td></tr>
+    ${esEC?`<tr><td><b>Rango de caudal WAN publicado</b></td><td class="n"><b>${m.wanMin!=null?fmt(m.wanMin)+' – '+fmt(m.wanMax):'sin mínimo publicado'}</b></td></tr>
     <tr><td>Optimización WAN (Boost)</td><td class="n">${m.boostMax!=null?'Soportada · bloques de '+SIZING.boost.bloque+' Mbps':'—'}</td></tr>`
     :`<tr><td><b>Throughput de firewall</b></td><td class="n">${m.fw!=null?`<b>${fmt(m.fw)}</b>${esGwc?' (solo hardware)':''}`:'<span class="warn">No publicado en las fuentes consultadas</span>'}</td></tr>
     ${m.fwSess!=null?`<tr><td>Sesiones de firewall activas</td><td class="n">${miles(m.fwSess)}</td></tr>`:''}
@@ -562,7 +562,7 @@ function renderBom(){
     notas:[
       '',
       'CAPACIDAD PUBLICADA POR HPE',
-      esEC?`  Rango de caudal WAN:  ${m.wanMin!=null?fmt(m.wanMin)+' - '+fmt(m.wanMax):'segun licencia y vCPU'}`
+      esEC?`  Rango de caudal WAN:  ${m.wanMin!=null?fmt(m.wanMin)+' - '+fmt(m.wanMax):'sin minimo publicado'}`
           :`  Throughput firewall:  ${m.fw!=null?fmt(m.fw):'no publicado en las fuentes consultadas'}`,
       m.clients!=null?`  Clientes / APs:       ${miles(m.clients)} / ${miles(m.aps)}`:null,
       m.ipsecSess!=null?`  Sesiones IPsec:       ${miles(m.ipsecSess)}`:null,

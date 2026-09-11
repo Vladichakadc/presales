@@ -190,11 +190,19 @@ test('MikroTik: varias entradas de alimentacion no son doble fuente, y el CHR no
 
 test('Aruba: el EdgeConnect Hardware Reference separa adaptador, fuente unica y 1+1', () => {
   const { MODELS } = require('../server/seed/legacyData/aruba.js');
-  assert.strictEqual(MODELS.filter((m) => m.redund !== undefined).length, 6);
+  assert.strictEqual(MODELS.filter((m) => m.redund !== undefined).length, 10);
   assert.strictEqual(MODELS.find((m) => m.id === 'EC-XS').redund, false);
   assert.strictEqual(MODELS.find((m) => m.id === 'EC-S').redund, false);
   assert.strictEqual(MODELS.find((m) => m.id === 'EC-M').redund, true);
   assert.strictEqual(MODELS.find((m) => m.id === 'EC-V').redund, 'no-aplica', 'es un appliance virtual');
+
+  // EdgeConnect 10104/10106/10108/10150, sumados el 2026-09-10 desde el QuickSpecs oficial:
+  // los tres primeros son de fuente unica (misma tabla "Redundancy/FRUs: No"), el 10150 es el
+  // unico de la serie con 2x PSU.
+  for (const id of ['EC-10104', 'EC-10106', 'EC-10108']) {
+    assert.strictEqual(MODELS.find((m) => m.id === id).redund, false, id);
+  }
+  assert.strictEqual(MODELS.find((m) => m.id === 'EC-10150').redund, true);
 
   // El dato no puede colgar de una referencia de pedido: al aplicarlo por primera vez se
   // inserto dentro del array `skus` de EC-S y EC-M, y el objeto seguia siendo valido -solo

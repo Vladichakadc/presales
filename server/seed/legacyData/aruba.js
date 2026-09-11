@@ -27,7 +27,10 @@
 //   · El soporte no es "Pointnext Tech Care" sino HPE Aruba Networking Foundational Care.
 //   · El 9240 no es un gateway de sucursal sino de campus (serie 9200), y su capacidad la
 //     fija la licencia perpetua, no el hardware.
-//   · Se retiran los modelos 9106/9114, que no aparecen en el portafolio publicado.
+//   · Corregido (2026-09-10): esta nota decía que se retiraban 9106/9114 por no aparecer en
+//     el portafolio publicado, pero las filas de abajo siempre los tuvieron. Confirmados
+//     como vigentes contra el QuickSpecs oficial de la Serie 9100 Hybrid — la nota estaba
+//     desactualizada, no el catálogo.
 
 // Documentos de referencia del portafolio. Se enlazan desde la página para que el
 // preventa llegue al PDF sin buscarlo.
@@ -99,11 +102,45 @@ const DATASHEETS = {
 //        referencias reales.
 const MODELS = [
   // ─── EdgeConnect SD-WAN ────────────────────────────────────────────────────
+  // CONFLICTO SIN RESOLVER (2026-09-10): el QuickSpecs oficial de abajo (v18, 06-jul-2026)
+  // publica el rango de EC-XS como 2-1000 Mbps, el doble del wanMax:200 de esta fila. Un solo
+  // documento contradice lo ya verificado — por debajo del doble anclaje que este catálogo
+  // exige antes de pisar un dato existente (misma regla que el SRX380 de Juniper) — así que
+  // se deja sin tocar. Ver PENDIENTES.md, "Conflictos abiertos entre el catálogo y una ficha
+  // oficial", para la decisión pendiente del dueño del catálogo.
   {id:'EC-XS', redund:false, psu:{tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 23 W en la primera revisión de hardware y 34 W en las posteriores — HPE publica el requerimiento, no un consumo típico. Fuente única mediante adaptador externo, sin opción de segunda.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal peq / Oficina remota',
    wanMin:2, wanMax:200, boostMax:200,
    ifaces:'4x RJ45 10/100/1000 LAN/WAN + 2x RJ45 10/100/1000 gestión + serie RJ-45',
    hwSku:null, skus:[{sku:null,d:'EC-XS'},{sku:null,d:'EC-XS-SP'},{sku:null,d:'EC-XS-FIPS (validado FIPS 140)'}],
    ds:'https://www.hpe.com/psnow/doc/a00110177enw', dsFile:'edgeconnect-xs-spec-sheet.pdf'},
+
+  // Los tres siguientes (EdgeConnect 10104/10106/10108) no estaban en el catálogo: se
+  // incorporan el 2026-09-10 desde el QuickSpecs oficial HPE (v18, 06-jul-2026, ver `ds`),
+  // leído completo vía Jina Reader — el bloqueo de egreso documentado en la cabecera de este
+  // archivo (2026-09) resultó ser del lado de HPE/Akamai contra ciertos clientes HTTP, no
+  // contra toda automatización; Jina sí atravesó. SKU y cifras de capacidad son literales del
+  // documento (tabla "Comparison" + fichas por modelo); ninguno trae voltaje/consumo publicado.
+  {id:'EC-10104', redund:false, psu:{tipo:'adaptador externo, único', texto:'Fuente única — el QuickSpecs confirma que no hay segunda fuente pero no publica voltaje ni consumo.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal peq / oficina en casa',
+   wanMin:2, wanMax:500, boostMax:500,
+   ifaces:'4x RJ45 10/100/1000',
+   hwSku:'R9D72A', skus:[{sku:'R9D72A',d:'EdgeConnect 10104 · 4x RJ45 10/100/1000'},
+                         {sku:'S3N78A',d:'EdgeConnect 10104 TAA · 4x RJ45'},
+                         {sku:'S3N69A',d:'EdgeConnect 10104 NAL · 4x RJ45'}],
+   ds:'https://www.hpe.com/us/en/collaterals/collateral.a50004289enw.html', dsFile:null},
+
+  {id:'EC-10106', redund:false, psu:{tipo:'adaptador externo, único (54 V)', texto:'Fuente única — el QuickSpecs confirma que no hay segunda fuente pero no publica el consumo.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal pequeña',
+   wanMin:2, wanMax:1000, boostMax:1000,
+   ifaces:'2x SFP+ 1/10G + 2x Combo (SFP/1GbE) + 2x GbE PoE+',
+   hwSku:'S0E22A', skus:[{sku:'S0E22A',d:'EdgeConnect 10106 · 2x SFP+ · 2x Combo · 2x GbE PoE+'},
+                         {sku:'S3N71A',d:'EdgeConnect 10106 NAL · 2x SFP+ · 2x Combo · 2x GbE PoE+'}],
+   ds:'https://www.hpe.com/us/en/collaterals/collateral.a50004289enw.html', dsFile:null},
+
+  {id:'EC-10108', redund:false, psu:{tipo:'adaptador externo, único (54 V)', texto:'Fuente única — el QuickSpecs confirma que no hay segunda fuente pero no publica el consumo.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal mediana',
+   wanMin:2, wanMax:2000, boostMax:2000,
+   ifaces:'2x SFP+ 1/10G + 2x Combo (SFP/1GbE) + 2x GbE PoE+',
+   hwSku:'S0E23A', skus:[{sku:'S0E23A',d:'EdgeConnect 10108 · 2x SFP+ · 2x Combo · 2x GbE PoE+'},
+                         {sku:'S3N72A',d:'EdgeConnect 10108 NAL · 2x SFP+ · 2x Combo · 2x GbE PoE+'}],
+   ds:'https://www.hpe.com/us/en/collaterals/collateral.a50004289enw.html', dsFile:null},
 
   {id:'EC-S', redund:false, psu:{tipo:'fuente única interna, AC (S3N73A) o DC (S3N74A) según el SKU', volts:'100-240 V AC, 47-63 Hz', texto:'Requerimiento de alimentación 100 W — HPE publica el requerimiento, no un consumo típico. El EdgeConnect Hardware Reference confirma lo que el catálogo ya decía: una sola fuente por unidad. Las variantes EC-S-P sí traen 1+1 redundante (111 W en AC, 103 W en DC).'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal grande / Oficina remota',
    wanMin:10, wanMax:3000, boostMax:3000,
@@ -134,6 +171,17 @@ const MODELS = [
    redund:true, psu:{tipo:'1+1 redundante, sustituible e intercambiable en caliente', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 474 W — HPE publica el requerimiento, no un consumo típico. El EdgeConnect Hardware Reference confirma la doble fuente que el catálogo ya deducía del SKU S3N77A.'},
    ds:'https://www.arubanetworks.com/resource/edgeconnect-xl-spec-sheet/', dsFile:'edgeconnect-xl-spec-sheet.pdf'},
 
+  // No estaba en el catálogo: incorporado el 2026-09-10 desde el mismo QuickSpecs oficial que
+  // los EC-10104/10106/10108 (ver comentario más arriba). HPE no publica un mínimo de rango
+  // WAN para este modelo (solo "hasta 12 Gbps") — a diferencia de los demás EdgeConnect, que
+  // sí traen piso y techo — así que `wanMin` queda en null en vez de inventar un suelo; el
+  // motor de dimensionamiento ya trata ese caso (lo mismo que EC-V) sin marcar sobredimensionado.
+  {id:'EC-10150', redund:true, psu:{tipo:'1+1 redundante (2x PSU)', texto:'Dos fuentes redundantes y dos SSD NVMe de sistema — el QuickSpecs confirma la redundancia pero no publica voltaje ni consumo.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Datacenter / Hub grande',
+   wanMin:null, wanMax:12000, boostMax:12000,
+   ifaces:'2x RJ45 10/100/1000 gestión + 8x SFP28 1/10/25G · 2x PSU',
+   hwSku:'S2N65A', skus:[{sku:'S2N65A',d:'EdgeConnect 10150 · 8x SFP28 · 2x RJ45 · 2x PSU'}],
+   ds:'https://www.hpe.com/us/en/collaterals/collateral.a50004289enw.html', dsFile:null},
+
   {id:'EC-V', redund:'no-aplica', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Virtual / Cloud (VMware, KVM, Hyper-V, AWS, Azure)',
    wanMin:null, wanMax:null, boostMax:null,
    ifaces:'vNIC según hipervisor · dimensionado por vCPU y por el tier de licencia contratado',
@@ -141,15 +189,17 @@ const MODELS = [
    ds:'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/deployments/dg_ECV-Azure_latest.pdf', dsFile:'edgeconnect-ecv-azure.pdf'},
 
   // ─── Serie 9000 · Branch Gateways (AOS 10, gestionados por Central) ─────────
+  // hwSku completado el 2026-09-10 desde el QuickSpecs de la serie (SKU (US) base; el
+  // documento trae ademas variantes RW/JP/IL/EG y TAA, no listadas por brevedad).
   {id:'Gateway 9004', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal peq',
    fw:4000, clients:2048, aps:32, fwSess:null, ipsecSess:2048, greTuns:544, boostMax:null,
-   ifaces:'4x GbE RJ45', hwSku:null, skus:[{sku:null,d:'9004 (US / RW)'}],
+   ifaces:'4x GbE RJ45', hwSku:'R1B20A', skus:[{sku:'R1B20A',d:'9004 (US) · 4x GbE RJ45'}],
    ds:'https://www.hpe.com/psnow/doc/a00091602enw', dsFile:'gateway-9004.pdf'},
 
   {id:'Gateway 9004-LTE', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal peq + LTE',
    fw:4000, clients:2048, aps:32, fwSess:null, ipsecSess:2048, greTuns:544, boostMax:null,
-   ifaces:'4x GbE RJ45 + LTE integrado (uplink dedicado o redundante)', hwSku:null,
-   skus:[{sku:null,d:'9004-LTE'}],
+   ifaces:'4x GbE RJ45 + LTE integrado (uplink dedicado o redundante)', hwSku:'R3V91A',
+   skus:[{sku:'R3V91A',d:'9004-LTE (US) · 4x GbE RJ45 + LTE'}],
    ds:'https://www.hpe.com/psnow/doc/a00091602enw', dsFile:'gateway-9004.pdf'},
 
   {id:'Gateway 9012', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal med / gde',
@@ -163,14 +213,19 @@ const MODELS = [
   // que solo faltaba en una busqueda. Es el escalon entre la sucursal grande y el campus
   // pequeno. HPE no publica en las fuentes consultadas su throughput de firewall, asi que
   // `fw` queda en null y el dimensionador lo dice en vez de inventarlo.
+  // fw/fwSess/ipsecSess completados el 2026-09-10 desde la misma ficha ya citada en `ds`
+  // (tabla "Performance and Capacity" y "AOS-10 Specifications", arquitectura que gestiona
+  // Central — la que aplica a este catálogo, no la fila separada "AOS-8" del mismo documento).
+  // `greTuns` se deja en null a propósito: esa tabla no publica un tunel GRE aparte para
+  // AOS-10, solo lo hace la sección AOS-8 (8K, solo 9106) que es otra arquitectura de gestión.
   {id:'Gateway 9106', fam:'gw', rol:'sucursal', serie:'Serie 9100 Hybrid', seg:'Sucursal gde / Campus peq',
-   fw:null, clients:8000, aps:2000, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   fw:10000, clients:8000, aps:2000, fwSess:2000000, ipsecSess:16000, greTuns:null, boostMax:null,
    ifaces:'2x SFP+ 10GbE + 2x combo SFP/RJ45 1GbE + 2x RJ45 1GbE con PoE hasta 60W',
-   hwSku:null, skus:[{sku:null,d:'9106 · hasta 2K dispositivos y 8K clientes'}],
+   hwSku:'S5H02A', skus:[{sku:'S5H02A',d:'9106 (US) · 2x SFP+ · 2x Combo · 2x PoE'}],
    ds:'https://www.hpe.com/us/en/collaterals/collateral.a50006999enw.html', dsFile:'serie-9100-hybrid-quickspecs.pdf'},
 
   {id:'Gateway 9114', fam:'gw', rol:'campus', serie:'Serie 9100 Hybrid', seg:'Campus peq / Sucursal grande',
-   fw:null, clients:10000, aps:4000, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   fw:20000, clients:10000, aps:4000, fwSess:2000000, ipsecSess:32000, greTuns:null, boostMax:null,
    ifaces:'4x SFP+ 10GbE + 4x combo SFP/RJ45 1GbE + 1 slot de expansión',
    hwSku:'R9M45A', skus:[{sku:'R9M45A',d:'9114 · 4x SFP+ · 4x combo · 1 slot de expansión'}],
    ds:'https://www.hpe.com/us/en/collaterals/collateral.a50006999enw.html', dsFile:'serie-9100-hybrid-quickspecs.pdf'},
