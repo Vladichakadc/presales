@@ -143,10 +143,14 @@
 
   function seccionHtml(sec) {
     const filas = (sec.filas || []).filter((f) => f && f.length);
-    if (!filas.length && !sec.nota) return '';
+    if (!filas.length && !sec.nota && !sec.html) return '';
+    // `sec.html` (opt-in, 2026-09-13): bloque libre de la pagina — p.ej. la escalera de
+    // capacidad publicada de Aruba, que no cabe en una tabla clave/valor. Lo emite la
+    // pagina ya saneado; este modulo no lo toca. Va entre la tabla y la nota.
     return `<div class="ficha-sec"><h3>${esc(sec.titulo)}</h3>`
       + (filas.length ? `<table class="ficha-tabla"><tbody>${filas.map(([k, v, libre]) =>
         `<tr><td>${esc(k)}</td><td class="${libre ? 'libre' : ''}">${v == null ? '—' : v}</td></tr>`).join('')}</tbody></table>` : '')
+      + (sec.html || '')
       + (sec.nota ? `<p class="ficha-nota">${sec.nota}</p>` : '')
       + '</div>';
   }

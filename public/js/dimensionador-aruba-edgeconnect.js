@@ -29,7 +29,6 @@ const QMODEL_URL=new URLSearchParams(location.search).get('pickModel');
 
 const $=id=>document.getElementById(id);
 let famMode='any', segMode='branch', lastPick=null;
-let hayCandidato=true;
 let bomFilas=[], bomMeta={};
 
 // El equipo del dimensionamiento se lleva solo al BOM. La regla vive en js/bom.js —
@@ -67,8 +66,12 @@ $('chkHa').addEventListener('change',()=>{
   else if((parseInt(q.value)||1)===2){ q.value=1; }
   renderBom();
 });
+// Estos campos disparan render() y no solo renderBom: con la unificacion de 2026-09-13 la
+// ficha misma muestra la suscripcion, las licencias y el soporte elegidos (incluidos los
+// «No incluir»), asi que hay que repintarla entera, no solo la lista de materiales. El tier
+// manual se conserva: render solo lo propone si el campo no esta «tocado».
 ['qty','termYears','licBundle','bwTier','boostBlocks','careLevel','centralTier','licCapTier']
-  .forEach(id=>$(id).addEventListener('input',renderBom));
+  .forEach(id=>$(id).addEventListener('input',render));
 // El modelo es el selector UNICO de la pagina: cambiarlo a mano mueve ficha, resumen,
 // escalera y BOM, no solo la lista. La marca de eleccion manual se fija ANTES de render,
 // porque render podria reponer el recomendado si la tomara por heredada.
@@ -150,6 +153,42 @@ function tierParaCaudal(mbps){
   for(const t of tiers){ if(t.mbps!=null&&t.mbps>=mbps) return t; }
   return tiers[tiers.length-1]||null;
 }
+// Ficha técnica de datasheet (campo `spec` del catálogo, 2026-09-13): pares clave →
+// etiqueta en el orden en que deben aparecer. Claves ausentes = HPE no publica el dato
+// para ese modelo y la fila simplemente no se pinta (nunca se inventa un valor).
+const SPEC_LABELS=[
+  ['conexiones','Conexiones simultáneas'],
+  ['boostRec','Boost recomendado por HPE'],
+  ['idsips','IDS/IPS integrado'],
+  ['encTput','Throughput cifrado'],
+  ['ssl','Sesiones SSL concurrentes'],
+  ['tuneles','Túneles / puertos tunelizados'],
+  ['peers','Peers de fabric máx.'],
+  ['prefijos','Prefijos de ruteo'],
+  ['vlanMax','VLANs máx.'],
+  ['ospf','Rutas OSPF'],
+  ['acls','ACLs'],
+  ['dhcp','Clientes DHCP'],
+  ['bridge','Tabla de bridge'],
+  ['cps','Sesiones nuevas por segundo'],
+  ['cluster','Clustering'],
+  ['aps10','APs máx. (AOS 10)'],
+  ['lte','Módem LTE integrado'],
+  ['ram','Memoria RAM'],
+  ['disco','Almacenamiento'],
+  ['fru','Componentes reemplazables en campo (FRU)'],
+  ['certs','Certificaciones'],
+  ['mtbf','MTBF'],
+  ['watts','Alimentación / consumo'],
+  ['btu','Disipación térmica'],
+  ['ruido','Ruido acústico'],
+  ['dims','Dimensiones (Al × An × Pr)'],
+  ['peso','Peso'],
+  ['extra','Notas del datasheet'],
+];
+// Condiciones ambientales de TODA la línea EdgeConnect (Hardware Reference p.33): no se
+// repiten en cada modelo porque el documento las declara a nivel de línea.
+const EC_AMBIENTE='Operación 0 – 40 °C · almacenamiento -40 – 65 °C · altitud 3.048 m operando / 12.192 m almacenado · humedad 5 – 95 % sin condensar';
 // Boost se licencia en bloques de 100 Mbps que forman un pool del fabric.
 function bloquesBoost(mbps){
   const b=(SIZING.boost&&SIZING.boost.bloque)||100;
@@ -165,7 +204,7 @@ function render(){
   // el dato mínimo del dimensionamiento; sin él la página pide valores en vez de proponer
   // un equipo a ciegas.
   if(bw<=0){
-    lastPick=null; hayCandidato=false; sincronizarConBom(null);
+    lastPick=null; sincronizarConBom(null);
     poblarPickModel([], null);
     const need=$('need'); need.style.left='0%'; $('needLbl').textContent='—';
     $('track').querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
@@ -173,8 +212,6 @@ function render(){
       vacioTitulo:'Ingrese valores para recomendar un equipo',
       vacioDetalle:'<p style="margin:0;font-size:13.5px">Escriba el <b>ancho de banda</b> del sitio (y si aplica, usuarios y APs) para que el dimensionador proponga los modelos que cumplen.</p>'});
     $('verdict').style.borderLeftColor='var(--steel)';
-    $('perfTiers').innerHTML=''; $('perfNote').textContent='';
-    $('sizingBox').innerHTML='<p style="font-size:13.5px;color:var(--steel)">Ingrese valores para recomendar un equipo.</p>';
     return;
   }
   // Mbps por usuario: es un supuesto, no un dato, y en campus grandes la regla de 3 Mbps
@@ -267,7 +304,7 @@ function render(){
   const rx=SEG_MATCH[segMode];
   const pick=FICHA.recomendar(candidates, rx?(m=>rx.test(m.seg)):null);
   lastPick=pick;
-  hayCandidato=!!pick;
+
   sincronizarConBom(pick);
 
   const tier=tierParaCaudal(wanNeed);
@@ -290,8 +327,6 @@ function render(){
       vacioTitulo:'Ningún modelo cumple todas las restricciones',
       vacioDetalle:`<ul style="margin:0;padding-left:18px;font-size:13.5px">${why.join('')}</ul>`});
     $('verdict').style.borderLeftColor='var(--amber)';
-    $('perfTiers').innerHTML=''; $('perfNote').textContent='';
-    $('sizingBox').innerHTML='<p style="font-size:13.5px;color:var(--steel)">Sin candidato para los parámetros actuales.</p>';
     return;
   }
   $('verdict').style.borderLeftColor='var(--red)';
@@ -300,10 +335,11 @@ function render(){
     const cap=capacidadMax(m), req=needDe(m), out=[];
     out.push({etq:(m.fam==='ec'?'Caudal WAN vs. rango publicado':'Throughput de firewall'),
       val:req, tope:cap||0, txt:fmt(req)+' / '+fmt(cap)});
+    // El suelo del rango ya no va aqui: vive en la escalera de «Capacidad publicada» de la
+    // propia ficha (2026-09-13, unificacion), y repetirlo era la redundancia que se vino a
+    // cerrar. Clientes si se queda: es requerimiento contra tope, no un escalon publicado.
     if(m.clients!=null) out.push({etq:'Clientes soportados', val:users, tope:clientesMax(m)||0,
       txt:(users?miles(users)+' / ':'')+miles(clientesMax(m))});
-    else out.push({etq:'Suelo del rango publicado', val:m.wanMin||0, tope:cap||0,
-      txt:m.wanMin!=null?fmt(m.wanMin)+' mínimo':'sin mínimo publicado'});
     return out;
   };
 
@@ -327,26 +363,74 @@ function render(){
     </ul>`;
   };
 
-  // Ficha completa del equipo elegido: caracteristicas, licenciamiento propuesto para el
-  // dimensionamiento actual, software del portafolio y soporte.
+  // Escalera de capacidad publicada del modelo elegido, con las cifras que HPE realmente
+  // publica para su familia. Antes era un panel aparte («Capacidad publicada») y repetia en
+  // barras lo que la ficha ya decia en texto; desde 2026-09-13 vive DENTRO de la ficha como
+  // seccion propia, y las filas de texto que lo duplicaban salieron de «Caracteristicas».
+  // No se fuerza una escalera comun: cada familia se describe con lo suyo.
+  const capacidadPublicadaDe=m=>{
+    const barra=(etq,val,tope,activo)=>`<div class="tierRow ${activo?'on':'off'}">
+        <span class="tn">${esc(etq)}</span>
+        <span class="tb"><i style="width:${Math.max(2,Math.min(100,val/tope*100))}%"></i></span>
+        <span class="tv">${fmt(val)}</span></div>`;
+    let html='', nota='';
+    if(m.fam==='ec'){
+      const tope=m.wanMax||1;
+      html+=barra('Suelo del rango',m.wanMin,tope,false);
+      html+=barra('Techo del rango',m.wanMax,tope,true);
+      if(m.boostMax!=null) html+=barra('Con Boost (máx.)',m.boostMax,tope,boost);
+      nota='HPE publica para EdgeConnect un <b>rango de caudal WAN</b>, no un throughput único: por eso el dimensionamiento usa ese rango. '
+        + 'Quedar por debajo del suelo indica sobredimensionamiento, y es tan accionable como pasarse del techo.';
+    }else if(m.licCap){
+      // En la 9200 la «escalera» es la tabla de niveles: misma cifra que antes pintaba un
+      // panel aparte de bomBody, ahora dentro de la ficha. Se marca el nivel elegido en el
+      // panel 4, que es el que se cotiza.
+      const marcado=$('licCapTier').value;
+      html+=`<div class="scroll"><table><thead><tr><th>Nivel</th><th>Throughput</th><th>APs</th><th>Dispositivos</th></tr></thead><tbody>`
+        +m.licCap.map(t=>`<tr${t.code===marcado?' style="font-weight:600"':''}><td>${esc(t.n)}</td><td class="n">${fmt(t.fw)}</td><td class="n">${miles(t.aps)}</td><td class="n">${miles(t.clients)}</td></tr>`).join('')
+        +`</tbody></table></div>`;
+      nota='La capacidad de este equipo la fija la <b>licencia perpetua</b>, no el hardware: el mismo chasis entrega 20, 30 o 40 Gbps según el nivel (en negrita, el elegido para cotizar). '
+        + 'En una comparativa contra un competidor que vende la capacidad cerrada en el equipo, esto es lo que hay que poner sobre la mesa.';
+    }else if(m.fw!=null){
+      html+=barra('Firewall',m.fw,m.fw,true);
+      nota='Gateway de sucursal: termina la WAN y hace de controladora de APs en el mismo equipo. No hace optimización WAN.';
+    }else{
+      html+='<div class="tierRow off"><span class="tn">Firewall</span><span class="tb"></span>'
+        +'<span class="tv">no publicado</span></div>';
+      nota='HPE no publica el throughput de firewall de esta serie en las fuentes consultadas, asi que no se dimensiona por capacidad: hay que confirmarlo en las QuickSpecs enlazadas.';
+    }
+    return {titulo:'Capacidad publicada', html, nota};
+  };
+
+  // Ficha completa del equipo elegido: capacidad publicada, caracteristicas, ficha tecnica
+  // profunda, alimentacion, suscripcion y licencias, software del portafolio y soporte.
+  // UNIFICACION 2026-09-13 (peticion del dueno): lo que antes pintaba bomBody en paneles
+  // aparte —«Ficha del equipo», «Capacidad por nivel de licencia», «Suscripcion» y
+  // «Soporte HPE»— vive ahora AQUI, una sola tarjeta sin cifras repetidas. Y la ficha
+  // refleja el estado REAL de los selectores del panel 4, incluidos los «No incluir»:
+  // antes proponia un licenciamiento que el detalle de abajo declaraba excluido.
   const seccionesDe=m=>{
-    const req=needDe(m), nivel=nivelLicenciaNecesario(m,req,users,aps);
-    const nivelSub=($('chkSeg').checked||$('chkBreakout').checked)?'advanced':'foundation';
+    const esEC=m.fam==='ec', esGwc=!!m.licCap;
     const unidades=$('chkHa').checked?2:1;
+    const bundle=$('licBundle').value, care=$('careLevel').value, central=$('centralTier').value;
+    const termYrs=parseInt($('termYears').value)||3;
+    const termino=`término ${termYrs} año${termYrs>1?'s':''}`;
+    const bwTier=(SIZING.bwTiers||[]).find(t=>t.code===$('bwTier').value)||null;
+    const bloques=bundle?Math.max(0,parseInt($('boostBlocks').value)||0):0;
+    const capTier=esGwc&&m.licCap?(m.licCap.find(t=>t.code===$('licCapTier').value)||m.licCap[0]):null;
+
     const caract=[
       ['Serie', esc(m.serie)],
       ['Segmento', esc(m.seg)],
     ];
-    if(m.fam==='ec'){
-      caract.push(['Rango de caudal WAN', m.wanMin!=null?`${fmt(m.wanMin)} – ${fmt(m.wanMax)}`:'sin mínimo publicado']);
-      caract.push(['Optimización WAN (Boost)', m.boostMax!=null?`hasta ${fmt(m.boostMax)}`:'—']);
-    }else{
-      caract.push(['Throughput de firewall', m.fw!=null?fmt(m.fw):'<span class="warn">no publicado</span>']);
+    // Las cifras de capacidad (rango WAN, Boost, throughput) NO van como texto: las pinta
+    // la escalera de «Capacidad publicada» de arriba. Aqui solo lo que la escalera no dice.
+    if(!esEC){
       if(m.clients!=null) caract.push(['Clientes / APs', `${miles(m.clients)} / ${miles(m.aps)}`]);
       if(m.fwSess!=null) caract.push(['Sesiones de firewall', miles(m.fwSess)]);
-      if(m.ipsecSess!=null) caract.push(['Sesiones IPsec', miles(m.ipsecSess)]);
-      if(m.greTuns!=null) caract.push(['Túneles GRE', miles(m.greTuns)]);
     }
+    if(m.ipsecSess!=null) caract.push(['Sesiones IPsec', miles(m.ipsecSess)]);
+    if(m.greTuns!=null) caract.push(['Túneles GRE', miles(m.greTuns)]);
     caract.push(['Interfaces', esc(m.ifaces), true]);
     // Las referencias de pedido NO van en la ficha: están integradas en la lista de
     // materiales (pestaña Equipo y BOM), única fuente de SKU de la página (2026-09-13).
@@ -355,53 +439,54 @@ function render(){
       :'<span class="warn">Sin URL oficial confirmada</span>', true]);
     caract.push(['Precio de lista', m.elpN!=null?esc(m.elp):'Consultar distribuidor']);
 
-    const lic=[];
-    if(m.fam==='ec'){
-      lic.push(['Nivel de suscripción', esc(BUNDLES[nivelSub].n)]);
-      lic.push(['Tier de caudal del sitio', tier?esc(tier.n):'—']);
-      lic.push(['Boost', boost?`${bloquesBoost(needProc)} bloque(s) de ${SIZING.boost.bloque} Mbps (pool del fabric)`:'No incluido']);
-    }else{
-      lic.push(['Suscripción de gestión', esc(CENTRAL.advanced?CENTRAL.advanced.n:'Central')]);
-      if(m.licCap) lic.push(['Licencia perpetua de capacidad', nivel?esc(nivel.n):'—']);
-    }
-    lic.push(['Unidades a licenciar', unidades===2?'2 — cada nodo del par lleva la suya':'1']);
+    // Ficha tecnica profunda: las cifras del datasheet (SPEC_LABELS). El consumo electrico
+    // se salta cuando la seccion de alimentacion ya lo da (m.psu.watts), para no repetirlo.
+    const tecnica=SPEC_LABELS
+      .filter(([k])=>m.spec&&m.spec[k]!=null&&!(k==='watts'&&m.psu&&m.psu.watts!=null))
+      .map(([k,label])=>[label, esc(m.spec[k])]);
+    if(esEC) tecnica.push(['Condiciones ambientales (línea EdgeConnect)', esc(EC_AMBIENTE), true]);
+
+    // Suscripcion y licencias con sus estados reales (Requerida / Opcional / No incluida).
+    // Orchestrator NO se repite aqui: ya figura en «Software del portafolio» de abajo.
+    const licUl=esEC
+      ?(bundle
+        ?`<li class="on"><b>${esc(BUNDLES[bundle].n)}</b><span class="req">Requerida</span><span class="sku">${esc(BUNDLES[bundle].svcs)}<br>Tier de caudal: <b>${bwTier?esc(bwTier.n):'—'}</b> · ${termino}</span></li>`
+          +`<li${bloques?' class="on"':''}><b>${esc(SIZING.boost.n)}</b><span class="req${bloques?'':' opt'}">${bloques?'Incluido':'Opcional'}</span><span class="sku">${esc(SIZING.boost.svcs)}${bloques?`<br>Pool: <b>${bloques} bloque(s) de ${SIZING.boost.bloque} Mbps = ${fmt(bloques*SIZING.boost.bloque)}</b> — se licencia una vez para todo el fabric, no por sede.`:''}</span></li>`
+        :`<li><b>Suscripción EdgeConnect</b><span class="req opt">No incluida</span><span class="sku">Sin suscripción el equipo no se incorpora al fabric gestionado por Orchestrator: queda standalone, sin Business Intent Overlays ni ZTP. Actívala eligiendo un nivel.<br>Boost es un add-on de la suscripción — sin ella tampoco se licencia.</span></li>`)
+      :(central
+        ?`<li class="on"><b>${esc(CENTRAL[central].n)}</b><span class="req">Requerida</span><span class="sku">${esc(CENTRAL[central].d)} · suscripción por dispositivo · ${termino}</span></li>`
+        :`<li><b>HPE Aruba Networking Central</b><span class="req opt">No incluida</span><span class="sku">Sin suscripción de Central el gateway se queda en gestión local, sin la nube de HPE ni apertura de casos. Actívala eligiendo un nivel.</span></li>`)
+      +(capTier&&capTier.code!=='hw'
+        ?`<li class="on"><b>Licencia perpetua ${esc(capTier.n)}</b><span class="req">Requerida</span><span class="sku">Amplía el mismo hardware a ${fmt(capTier.fw)}, ${miles(capTier.aps)} APs y ${miles(capTier.clients)} dispositivos.</span></li>`
+        :'');
 
     const soft=(SOFTWARE||[]).map(sw=>[esc(sw.id), esc(sw.cat)]);
-    const care=CARE[$('careLevel')&&$('careLevel').value?$('careLevel').value:'fc247']||Object.values(CARE)[0];
+
+    const soporte=care
+      ?{titulo:'Soporte', filas:[[esc(CARE[care].n), esc(CARE[care].sla)]],
+        nota:`${esc(CARE[care].d)} ${termino} · ${unidades===2?'2 unidades (par HA)':'1 unidad'}. Su SKU y su precio están integrados en la lista de materiales.`}
+      :{titulo:'Soporte', filas:[],
+        nota:'<b>No incluido.</b> Sin soporte activo no hay repuestos con SLA ni acceso al TAC de HPE — elige un nivel para añadirlo a la lista de materiales.'};
 
     return [
+      capacidadPublicadaDe(m),
       {titulo:'Características del equipo', filas:caract},
+      {titulo:'Ficha técnica', filas:tecnica},
       FICHA.seccionAlimentacion(m),
-      {titulo:'Licenciamiento propuesto', filas:lic,
-       nota:m.fam==='ec'?'La suscripción de EdgeConnect va por <b>caudal del sitio</b>, no por modelo de appliance.'
-                        :'Los gateways se gestionan por suscripción de Central; la serie 9200 escala su capacidad por licencia perpetua sobre el mismo hardware.'},
+      {titulo:'Suscripción y licencias',
+       filas:[['Unidades a licenciar', unidades===2?'2 — cada nodo del par lleva la suya':'1']],
+       html:`<ul class="clean">${licUl}</ul>`,
+       nota:esEC?'La suscripción de EdgeConnect va por <b>caudal del sitio</b>, no por modelo de appliance.'
+                :'Los gateways se gestionan por suscripción de Central; la serie 9200 escala su capacidad por licencia perpetua sobre el mismo hardware.'},
       {titulo:'Software del portafolio', filas:soft,
        nota:'Orchestrator no se licencia por dispositivo gestionado.'},
-      {titulo:'Soporte', filas:[[esc(care.n), esc(care.sla)]], nota:esc(care.d)},
+      soporte,
     ];
   };
 
   const pintarDependientes=m=>{
-    const req=needDe(m), nivel=nivelLicenciaNecesario(m,req,users,aps);
     $('pickLbl').textContent=m.id; $('pickLbl').style.display='block';
     $('pickLbl').style.left=xPct(capacidadMax(m))+'%';
-    renderFicha(m,req,users,aps);
-    $('sizingBox').innerHTML=`
-      <table><tbody>
-        <tr><td>Equipo evaluado</td><td class="n">${esc(m.id)}${m.id===pick.id?'':' (elegido a mano)'}</td></tr>
-        <tr><td>Familia</td><td class="n">${esc(famLabel(m))}</td></tr>
-        <tr><td>Optimización WAN (Boost)</td><td class="n">${boost?`Activa — reducción ${perfil.factor}:1 (${esc(perfil.n)})`:'No'}</td></tr>
-        <tr><td>Path Conditioning (FEC)</td><td class="n">${esc(fec.n)}${fec.pct?` — +${Math.round(fec.pct*100)}%`:''}</td></tr>
-        <tr><td>Ancho de banda de aplicación</td><td class="n">${fmt(bw*unit)}</td></tr>
-        <tr><td>Usuarios / dispositivos</td><td class="n">${miles(users)}${perUser?` x ${perUser} Mbps`:' (sin tráfico por usuario)'}</td></tr>
-        ${aps?`<tr><td>APs a gestionar</td><td class="n">${miles(aps)}</td></tr>`:''}
-        <tr><td><b>Proceso requerido en el equipo</b></td><td class="n"><b>${fmt(needProc)}</b></td></tr>
-        <tr><td><b>Caudal WAN a contratar</b></td><td class="n"><b>${fmt(wanNeed)}</b></td></tr>
-        ${m.fam==='ec'?`<tr><td>Tier de suscripción</td><td class="n">${tier?esc(tier.n):'—'}</td></tr>`:''}
-        ${boost?`<tr><td>Bloques de Boost para esta sede</td><td class="n">${bloquesBoost(needProc)} x ${SIZING.boost.bloque} Mbps</td></tr>`:''}
-        ${nivel?`<tr><td>Nivel de licencia perpetua</td><td class="n">${esc(nivel.n)}</td></tr>`:''}
-        <tr><td>Unidades a cotizar</td><td class="n">${$('chkHa').checked?'2 (HA) — licencia por unidad':'1'}</td></tr>
-      </tbody></table>`;
   };
 
   // El selector unico (pickModel) manda sobre la ficha: una eleccion manual se le pasa
@@ -436,52 +521,6 @@ function render(){
   const elegido=candidates.find(m=>m.id===elegidoId)||mManual||pick;
   pintarDependientes(elegido);
   sincronizarConBom(elegido);
-}
-
-// Ficha de capacidad del modelo elegido, con las cifras que HPE realmente publica para su
-// familia. No se fuerza una escalera comun: cada familia se describe con lo suyo.
-function renderFicha(m,need,users,aps){
-  $('perfModel').textContent='— '+m.id;
-  let filas='';
-  const barra=(etq,val,tope,activo)=>`<div class="tierRow ${activo?'on':'off'}">
-      <span class="tn">${esc(etq)}</span>
-      <span class="tb"><i style="width:${Math.max(2,Math.min(100,val/tope*100))}%"></i></span>
-      <span class="tv">${fmt(val)}</span></div>`;
-
-  if(m.fam==='ec'){
-    const tope=m.wanMax||1;
-    filas+=barra('Suelo del rango',m.wanMin,tope,false);
-    filas+=barra('Techo del rango',m.wanMax,tope,true);
-    if(m.boostMax!=null) filas+=barra('Con Boost (máx.)',m.boostMax,tope,$('chkBoost').checked);
-  }else if(m.licCap){
-    const tope=m.licCap[m.licCap.length-1].fw;
-    const nivel=nivelLicenciaNecesario(m,need,users,aps);
-    m.licCap.forEach(t=>{ filas+=barra(t.n,t.fw,tope,nivel&&t.code===nivel.code); });
-  }else if(m.fw!=null){
-    filas+=barra('Firewall',m.fw,m.fw,true);
-  }else{
-    filas+='<div class="tierRow off"><span class="tn">Firewall</span><span class="tb"></span>'
-      +'<span class="tv">no publicado</span></div>';
-  }
-  $('perfTiers').innerHTML=filas;
-
-  const extra=[];
-  if(m.clients!=null) extra.push(`${miles(m.clients)} clientes`);
-  if(m.aps!=null) extra.push(`${miles(m.aps)} APs`);
-  if(m.ipsecSess!=null) extra.push(`${miles(m.ipsecSess)} sesiones IPsec`);
-  if(m.greTuns!=null) extra.push(`${miles(m.greTuns)} túneles GRE`);
-
-  $('perfNote').innerHTML=(m.fam==='ec'
-    ? 'HPE publica para EdgeConnect un <b>rango de caudal WAN</b>, no un throughput único: por eso el dimensionamiento usa ese rango. '
-      + 'Quedar por debajo del suelo indica sobredimensionamiento, y es tan accionable como pasarse del techo. '
-    : m.licCap
-      ? 'La capacidad de este equipo la fija la <b>licencia perpetua</b>, no el hardware: el mismo chasis entrega 20, 30 o 40 Gbps según el nivel. '
-        + 'En una comparativa contra un competidor que vende la capacidad cerrada en el equipo, esto es lo que hay que poner sobre la mesa. '
-      : m.fw==null
-        ? 'HPE no publica el throughput de firewall de esta serie en las fuentes consultadas, asi que no se dimensiona por capacidad: hay que confirmarlo en las QuickSpecs enlazadas. '
-        : 'Gateway de sucursal: termina la WAN y hace de controladora de APs en el mismo equipo. No hace optimización WAN. ')
-    + (extra.length?`Capacidad publicada: ${extra.join(' · ')}. `:'')
-    + `Requerimiento actual: <b>${fmt(need)}</b>.`;
 }
 
 /* BOM */
@@ -540,47 +579,6 @@ function populateSelects(){
 }
 
 const money=n=>n==null?null:'$'+n.toLocaleString('en-US',{maximumFractionDigits:2});
-// Ficha técnica de datasheet (campo `spec` del catálogo, 2026-09-13): pares clave →
-// etiqueta en el orden en que deben aparecer. Claves ausentes = HPE no publica el dato
-// para ese modelo y la fila simplemente no se pinta (nunca se inventa un valor).
-const SPEC_LABELS=[
-  ['conexiones','Conexiones simultáneas'],
-  ['boostRec','Boost recomendado por HPE'],
-  ['idsips','IDS/IPS integrado'],
-  ['encTput','Throughput cifrado'],
-  ['ssl','Sesiones SSL concurrentes'],
-  ['tuneles','Túneles / puertos tunelizados'],
-  ['peers','Peers de fabric máx.'],
-  ['prefijos','Prefijos de ruteo'],
-  ['vlanMax','VLANs máx.'],
-  ['ospf','Rutas OSPF'],
-  ['acls','ACLs'],
-  ['dhcp','Clientes DHCP'],
-  ['bridge','Tabla de bridge'],
-  ['cps','Sesiones nuevas por segundo'],
-  ['cluster','Clustering'],
-  ['aps10','APs máx. (AOS 10)'],
-  ['lte','Módem LTE integrado'],
-  ['ram','Memoria RAM'],
-  ['disco','Almacenamiento'],
-  ['fru','Componentes reemplazables en campo (FRU)'],
-  ['certs','Certificaciones'],
-  ['mtbf','MTBF'],
-  ['watts','Alimentación / consumo'],
-  ['btu','Disipación térmica'],
-  ['ruido','Ruido acústico'],
-  ['dims','Dimensiones (Al × An × Pr)'],
-  ['peso','Peso'],
-  ['extra','Notas del datasheet'],
-];
-function specRows(m){
-  if(!m.spec) return '';
-  return SPEC_LABELS.filter(([k])=>m.spec[k]!=null)
-    .map(([k,label])=>`<tr><td>${label}</td><td class="n">${esc(m.spec[k])}</td></tr>`).join('');
-}
-// Condiciones ambientales de TODA la línea EdgeConnect (Hardware Reference p.33): no se
-// repiten en cada modelo porque el documento las declara a nivel de línea.
-const EC_AMBIENTE='Operación 0 – 40 °C · almacenamiento -40 – 65 °C · altitud 3.048 m operando / 12.192 m almacenado · humedad 5 – 95 % sin condensar';
 function tierPrice(t,y){ if(!t) return null; const v=y===1?t.y1:y===5?t.y5:t.y3; return v==null?null:v; }
 // El SKU de una suscripción depende de la duración (1/3/5 años): desde el 2026-09-13
 // `sku` puede ser un objeto {y1,y3,y5}. Se acepta también la forma plana por compatibilidad.
@@ -624,57 +622,10 @@ function renderBom(){
   const termino=`término ${termYrs} año${termYrs>1?'s':''}`;
   const capTier=esGwc&&m.licCap?(m.licCap.find(t=>t.code===capTierCode)||m.licCap[0]):null;
 
-  let html=`${BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato})}<section class="panel"><h2>Ficha del equipo</h2>
-    <div class="model" style="font-size:28px">${esc(m.id)}</div>
-    <p class="family">${esc(m.seg)} · ${esc(famLabel(m))}</p>
-    <div class="scroll"><table><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
-    ${/* La ficha es solo técnica: SKU, variantes y precio de lista están integrados en la
-          lista de materiales — repetirlos aquí era la redundancia señalada (2026-09-13). */''}
-    ${esEC?`<tr><td><b>Rango de caudal WAN publicado</b></td><td class="n"><b>${m.wanMin!=null?fmt(m.wanMin)+' – '+fmt(m.wanMax):'sin mínimo publicado'}</b></td></tr>
-    <tr><td>Optimización WAN (Boost)</td><td class="n">${m.boostMax!=null?'Soportada · bloques de '+SIZING.boost.bloque+' Mbps':'—'}</td></tr>`
-    :`<tr><td><b>Throughput de firewall</b></td><td class="n">${m.fw!=null?`<b>${fmt(m.fw)}</b>${esGwc?' (solo hardware)':''}`:'<span class="warn">No publicado en las fuentes consultadas</span>'}</td></tr>
-    ${m.fwSess!=null?`<tr><td>Sesiones de firewall activas</td><td class="n">${miles(m.fwSess)}</td></tr>`:''}
-    <tr><td>Clientes / APs</td><td class="n">${miles(m.clients)} / ${miles(m.aps)}</td></tr>
-    ${m.ipsecSess!=null?`<tr><td>Sesiones IPsec concurrentes</td><td class="n">${miles(m.ipsecSess)}</td></tr>`:''}
-    ${m.greTuns!=null?`<tr><td>Túneles GRE</td><td class="n">${miles(m.greTuns)}</td></tr>`:''}`}
-    <tr><td>Interfaces</td><td>${esc(m.ifaces)}</td></tr>
-    ${specRows(m)}
-    ${esEC?`<tr><td>Condiciones ambientales (línea EdgeConnect)</td><td class="n">${EC_AMBIENTE}</td></tr>`:''}
-    <tr><td>Datasheet oficial</td><td class="n">${(m.dsLocal||m.ds)?`<a href="${esc(m.dsLocal||m.ds)}" target="_blank" rel="noopener">Abrir documento</a>${m.dsLocal?' <span class="pillc">local</span>':''}`:'<span class="warn">Sin URL oficial confirmada</span>'}</td></tr>
-    </tbody></table></div></section>`;
-
-  if(esGwc&&m.licCap){
-    html+=`<section class="panel"><h2>Capacidad por nivel de licencia</h2>
-      <p class="hint" style="margin:0 0 10px">El mismo hardware entrega tres capacidades distintas según la licencia perpetua. Ampliar no exige cambiar el equipo.</p>
-      <div class="scroll"><table><thead><tr><th>Nivel</th><th>Throughput</th><th>APs</th><th>Dispositivos</th></tr></thead><tbody>
-      ${m.licCap.map(t=>`<tr${capTier&&t.code===capTier.code?' style="font-weight:600"':''}><td>${esc(t.n)}</td><td class="n">${fmt(t.fw)}</td><td class="n">${miles(t.aps)}</td><td class="n">${miles(t.clients)}</td></tr>`).join('')}
-      </tbody></table></div></section>`;
-  }
-
-  // Este panel explica QUÉ se licencia y por qué; el SKU de pedido y el List Price de cada
-  // línea NO se repiten aquí: están integrados en la lista de materiales, única fuente de
-  // referencias de pedido de la página (2026-09-13, decisión del dueño).
-  html+=`<section class="panel"><h2>${esEC?'Suscripción EdgeConnect':'Suscripción y licencias'}</h2><ul class="clean">
-    ${esEC
-      ?(bundle
-        ?`<li class="on"><b>${esc(BUNDLES[bundle].n)}</b><span class="req">Requerida</span><span class="sku">${esc(BUNDLES[bundle].svcs)}<br>Tier de caudal: <b>${bwTier?esc(bwTier.n):'—'}</b> · ${termino}</span></li>
-    <li${bloques?' class="on"':''}><b>${esc(SIZING.boost.n)}</b><span class="req${bloques?'':' opt'}">${bloques?'Incluido':'Opcional'}</span><span class="sku">${esc(SIZING.boost.svcs)}${bloques?`<br>Pool: <b>${bloques} bloque(s) de ${SIZING.boost.bloque} Mbps = ${fmt(bloques*SIZING.boost.bloque)}</b> — se licencia una vez para todo el fabric, no por sede.`:''}</span></li>`
-        :`<li><b>Suscripción EdgeConnect</b><span class="req opt">No incluida</span><span class="sku">Sin suscripción el equipo no se incorpora al fabric gestionado por Orchestrator: queda standalone, sin Business Intent Overlays ni ZTP. Actívala eligiendo un nivel.<br>Boost es un add-on de la suscripción — sin ella tampoco se licencia.</span></li>`)
-      :(central
-        ?`<li class="on"><b>${esc(CENTRAL[central].n)}</b><span class="req">Requerida</span><span class="sku">${esc(CENTRAL[central].d)} · suscripción por dispositivo · ${termino}</span></li>`
-        :`<li><b>HPE Aruba Networking Central</b><span class="req opt">No incluida</span><span class="sku">Sin suscripción de Central el gateway se queda en gestión local, sin la nube de HPE ni apertura de casos. Actívala eligiendo un nivel.</span></li>`)
-      +`${capTier&&capTier.code!=='hw'?`<li class="on"><b>Licencia perpetua ${esc(capTier.n)}</b><span class="req">Requerida</span><span class="sku">Amplía el mismo hardware a ${fmt(capTier.fw)}, ${miles(capTier.aps)} APs y ${miles(capTier.clients)} dispositivos.</span></li>`:''}`}
-    <li><b>EdgeConnect Orchestrator</b><span class="req opt">Incluido</span><span class="sku">Gestión del fabric, Business Intent Overlays y ZTP. No se licencia por dispositivo gestionado.</span></li>
-  </ul><p class="hint" style="margin:8px 0 0">El SKU de pedido y el List Price de cada línea están integrados en la <b>lista de materiales</b>, junto con todo el catálogo pedible de Aruba.</p></section>`;
-
-  html+=care
-    ?`<section class="panel"><h2>Soporte HPE</h2><div class="scroll"><table>
-    <thead><tr><th>Servicio</th><th>SLA</th><th>Término</th><th>Qty</th></tr></thead><tbody>
-    <tr><td>${esc(CARE[care].n)}</td><td class="n">${esc(CARE[care].sla)}</td><td class="n">${termYrs} años</td><td class="n">${qty}</td></tr>
-    </tbody></table></div><p class="hint" style="margin-top:8px">${esc(CARE[care].d)} Su SKU y su precio están integrados en la lista de materiales.</p></section>`
-    :`<section class="panel"><h2>Soporte HPE</h2><p class="hint" style="margin:0"><b>No incluido.</b> Sin soporte activo no hay repuestos con SLA ni acceso al TAC de HPE — elige un nivel para añadirlo a la lista de materiales.</p></section>`;
-
-  $('bomBody').innerHTML=html;
+  // Los paneles de detalle del equipo («Ficha del equipo», «Capacidad por nivel», «Suscripción»
+  // y «Soporte HPE») ya NO se pintan aquí: desde 2026-09-13 viven unificados en la ficha del
+  // dimensionador (seccionesDe), una sola tarjeta sin cifras repetidas. Esta función solo
+  // mantiene la visibilidad de los campos y construye las filas de la lista de materiales.
 
   // El pool de Boost NO multiplica por unidad: es un caudal agregado del fabric.
   const filas=[
@@ -742,7 +693,12 @@ function renderBom(){
     ].filter(n=>n!==null&&n!==''),
   };
 
-  $('bomTabla').innerHTML=BOM.renderTabla(filas,{
+  // El aviso de desvío vive sobre la lista: con la ficha unificada (2026-09-13) ya no hay
+  // paneles de detalle en «Dimensionar» donde pintarlo, y su sitio natural es la cotización
+  // misma — si la lista cotiza un equipo distinto del elegido, o ya ninguno cumple, es aquí
+  // donde quien exporta tiene que verlo.
+  $('bomTabla').innerHTML=BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato:!!lastPick})
+    +BOM.renderTabla(filas,{
     aviso:'List Price de HPE (sin descuento de distribuidor) — hardware, suscripciones EdgeConnect/Boost/Central y licencias perpetuas 9240 verificados el 2026-09-13 (ver aruba-lista-precios-hpe.csv). Lo que no tiene precio verificado figura en "consultar" a propósito.',
   });
   $('bomOut').value=BOM.comoTexto(filas,meta);

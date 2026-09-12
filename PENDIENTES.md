@@ -368,6 +368,54 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
 
 ## Cerrado recientemente
 
+### Layout reparado, ficha técnica unificada y lista de materiales centrada — Aruba (2026-09-13)
+
+Petición del dueño: la página se había ido toda a la columna izquierda; unificar «ficha
+técnica» con «características del equipo» para que no hubiera información redundante;
+quitar el «Resumen de sizing»; y centrar en pantalla los cuadros de la pestaña Lista de
+materiales, con uniformidad de diseño en toda la página.
+
+**El roto del layout (causa real).** Al mover paneles en la unificación anterior quedó el
+grid de dos columnas desbalanceado: la columna derecha se cerraba tras el veredicto y
+«Capacidad publicada», «Resumen de sizing», el detalle del equipo y la nota quedaban
+sueltos como hijos directos del grid, con un `</div>` de más descompensando el documento —
+el navegador lo recuperaba apilándolo todo a la izquierda. En «Lista de materiales», el
+grid de dos columnas envolvía UNA sola columna, así que ambos cuadros quedaban estrechos
+(340 px) y arrinconados a la izquierda.
+
+**La reparación estructural.** «Dimensionar» vuelve a un grid sano de dos columnas:
+izquierda (340 px) los tres paneles de entrada del dimensionamiento (Plataforma, Tráfico,
+Funciones); derecha (fluida) «4 · Equipo y cotización», la ficha unificada y la nota
+metodológica. «Lista de materiales» deja el grid y pasa a un contenedor centrado propio
+(`.pane-centro`, 960 px, márgenes automáticos simétricos): «Añadir a la lista de
+materiales» y «Lista de materiales» van al centro de la pantalla y al mismo ancho.
+
+**La unificación de la ficha (sin redundancia).** Había TRES sitios repitiendo las mismas
+cifras: la tarjeta del veredicto (con su sección «Características del equipo»), el panel
+«Capacidad publicada» y los paneles de detalle que pintaba `bomBody` («Ficha del equipo»,
+«Capacidad por nivel de licencia», «Suscripción», «Soporte HPE»). Ahora vive todo en UNA
+tarjeta, la ficha del dimensionador, con siete secciones sin repetición: «Capacidad
+publicada» (escalera de rangos en EdgeConnect; tabla de niveles Silver/Gold en la 9200,
+con el nivel elegido en negrita), «Características del equipo» (solo lo que la escalera no
+dice), «Ficha técnica» (las cifras profundas del datasheet que antes estaban en bomBody:
+conexiones, MTBF, consumo, ruido, peso, condiciones ambientales…), «Alimentación
+eléctrica», «Suscripción y licencias» (con los estados reales Requerida/Opcional/No
+incluida del panel 4 — antes la ficha proponía una suscripción que el detalle declaraba
+excluida, inconsistencia cerrada de paso), «Software del portafolio» y «Soporte» (que
+también declara «No incluido» cuando aplica). Interfaces y Datasheet aparecen exactamente
+una vez. El «Resumen de sizing» se eliminó: no decía nada que no dijeran ya los medidores,
+el «por qué» y la sección de licenciamiento. El aviso de desvío de `bomBody` se mudó sobre
+la lista de materiales, su sitio natural (con selector único, ficha y lista nunca
+divergen; el aviso solo queda para «ningún modelo cumple»). ficha.js ganó la opción
+opt-in `sec.html` (bloque libre por sección) — los demás fabricantes no cambian.
+
+**Verificación.** 233/233 pruebas y eslint verdes; E2E en Chromium: grid 340+744 px,
+ficha con las siete secciones, «No incluir» reflejado en la ficha al instante (los
+selectores de licenciamiento ahora disparan `render()` completo, con el tier manual
+protegido por su marca «tocado»), selección manual no candidata con desvío y «Volver al
+recomendado», 9240 con tabla de niveles, lista centrada 960 px con márgenes de 240 px,
+catálogo de 90 SKU en 10 grupos intacto, humo de Fortinet sin efectos.
+
 ### Selección de equipo unificada en «Dimensionar» y líneas excluibles — Aruba (2026-09-13)
 
 Petición del dueño: unificar la sección de equipo en la pestaña Dimensionar, dejando en la

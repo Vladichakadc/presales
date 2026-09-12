@@ -46,6 +46,9 @@ h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28p
 /* LAYOUT */
 .cols{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
 @media(max-width:880px){.cols{grid-template-columns:1fr}}
+/* Lista de materiales: una sola columna centrada, no el grid de dos del dimensionador —
+   los dos cuadros (añadir y lista) van al centro de la pantalla y al mismo ancho (2026-09-13). */
+.pane-centro{max-width:960px;margin:0 auto}
 .panel{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px;margin-bottom:16px}
 .panel h2{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .field{margin-bottom:16px}.field:last-child{margin-bottom:0}
@@ -258,6 +261,9 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     </div>
   </section>
 
+</div>
+
+<div>
   <section class="panel">
     <h2>4 · Equipo y cotización</h2>
     <div class="field">
@@ -309,25 +315,8 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       <select id="careLevel"></select>
     </div>
   </section>
-</div>
 
-
-<div>
   <div class="verdict" id="verdict"></div>
-  </div>
-
-  <section class="panel">
-    <h2>Capacidad publicada <span id="perfModel" style="font-weight:400;text-transform:none;letter-spacing:0"></span></h2>
-    <div id="perfTiers"></div>
-    <p class="hint" id="perfNote" style="margin-top:12px"></p>
-  </section>
-
-  <section class="panel">
-    <h2>Resumen de sizing</h2>
-    <div id="sizingBox"><p style="font-size:13.5px;color:var(--steel)">Completa los parámetros para ver el resumen.</p></div>
-  </section>
-
-  <div id="bomBody"></div>
 
   <div class="note">
     <b>Nota metodológica.</b> El dimensionamiento separa dos números que otras plataformas funden en uno: lo que el <b>equipo procesa</b> (tráfico de aplicación, lado LAN) y lo que los <b>enlaces transportan</b> (caudal WAN, que es lo que se contrata al operador y lo que fija el tier de la suscripción). Path Conditioning sube el segundo —el FEC envía paquetes de paridad para reconstruir pérdidas sin esperar retransmisión, y esa paridad ocupa ancho de banda—, mientras que Boost lo baja, porque deduplica y comprime antes de que el tráfico salga. Boost, a cambio, exige más proceso al equipo. Por eso una sede con tráfico repetitivo puede justificar un appliance mayor y aun así salir más barata, si el ahorro de caudal contratado durante tres años supera la diferencia de hardware. Para EdgeConnect, HPE publica un <b>rango</b> de caudal por modelo y no un throughput único: quedar por debajo del suelo del rango señala sobredimensionamiento, y es tan accionable como pasarse del techo.
@@ -338,8 +327,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 
 <!-- ════ TAB 2 · BOM ════ -->
 <div class="tabpane" id="pane-bom" hidden>
-<div class="cols">
-<div>
+<div class="pane-centro">
   <section class="panel" id="skuPanel">
     <h2>Añadir a la lista de materiales</h2>
     <p class="hint" style="margin:0 0 10px">Todo el catálogo pedible de Aruba con su SKU y su List Price: hardware, remanufacturados, suscripciones EdgeConnect, Boost, Central y licencias perpetuas. Lo que añadas queda integrado en la lista de materiales —con stepper de cantidad y botón de quitar— y viaja con ella al Excel y al cotizador.</p>
@@ -359,7 +347,6 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   <div class="flag-ft">
     <b>Aviso de preventa:</b> el hardware y las suscripciones EdgeConnect/Boost/Central traen List Price de HPE verificado el 2026-09-13 (69 SKU, ver <code>public/datasheets/aruba-lista-precios-hpe.csv</code>); es precio de lista sin el descuento del distribuidor, no una cotización firme. Lo que sigue sin precio verificado —Foundational Care por variante, EC-V— figura en «consultar» a propósito. Detalle en la cabecera de <code>server/seed/legacyData/aruba.js</code>.
   </div>
-</div>
 </div>
 </div>
 
