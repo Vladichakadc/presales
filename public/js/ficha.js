@@ -280,6 +280,17 @@
       });
   }
 
+  // Una pagina con selector de equipo EXTERNO (Aruba, 2026-09-13) puede pedir que la
+  // ficha muestre un equipo que NO esta entre los candidatos: elegirlo a mano para
+  // cotizarlo es legitimo, y la alternativa —que la ficha salte al recomendado mientras
+  // el selector dice otra cosa— es justo el desajuste que este modulo existe para evitar.
+  // `incluir` lo mete en la lista como eleccion deliberada, con su aviso de desvio.
+  const conIncluir = (cfg) => (
+    cfg.incluir && !(cfg.candidatos || []).some((m) => m.id === cfg.incluir.id)
+      ? [cfg.incluir, ...(cfg.candidatos || [])]
+      : (cfg.candidatos || [])
+  );
+
   function pintar(cid) {
     const cfg = estado[cid];
     const cont = document.getElementById(cid);
@@ -294,10 +305,11 @@
       return;
     }
 
-    const sel = candidatos.find((m) => m.id === cfg.seleccionado) || candidatos[0];
+    const lista = conIncluir(cfg);
+    const sel = lista.find((m) => m.id === cfg.seleccionado) || lista[0];
     cfg.seleccionado = sel.id;
 
-    const opciones = candidatos.map((m, i) => {
+    const opciones = lista.map((m, i) => {
       const txt = cfg.etiqueta ? cfg.etiqueta(m, i) : m.id;
       const mk = marca(m);
       return `<option value="${esc(m.id)}"${m.id === sel.id ? ' selected' : ''}>`
@@ -313,16 +325,21 @@
     // siempre el mismo equipo sin decir que ya no era el que salia del dimensionamiento.
     const desviado = cfg.deliberada && recomendado && sel.id !== recomendado;
 
+    // `selector:false` (opt-in): la pagina tiene su propio selector de equipo fuera de la
+    // ficha — pintar otro aqui seria la duplicacion que la unificacion de Aruba vino a
+    // cerrar. El boton de volver al recomendado se mantiene, dentro del aviso de desvio.
+    const btnVolver = `<button type="button" class="ficha-volver" id="${cid}-volver">Volver al recomendado</button>`;
     cont.innerHTML = `<p class="tag">Equipos que cumplen`
       + `<span class="ficha-cuenta"> · ${candidatos.length}</span></p>`
-      + `<div class="ficha-sel"><label for="${cid}-sel">Equipo</label>`
-      + `<select id="${cid}-sel">${opciones}</select>`
-      + (desviado ? `<button type="button" class="ficha-volver" id="${cid}-volver">`
-        + `Volver al recomendado</button>` : '')
-      + '</div>'
+      + (cfg.selector === false ? '' :
+        `<div class="ficha-sel"><label for="${cid}-sel">Equipo</label>`
+        + `<select id="${cid}-sel">${opciones}</select>`
+        + (desviado ? btnVolver : '')
+        + '</div>')
       + (desviado ? `<p class="ficha-desvio">Estás viendo un equipo <b>elegido a mano</b>. `
         + `El dimensionamiento propone el <b>${esc(recomendado)}</b>; toda la ficha, el `
-        + `resumen y el BOM siguen al que tienes elegido.</p>` : '')
+        + `resumen y el BOM siguen al que tienes elegido. `
+        + (cfg.selector === false ? btnVolver : '') + '</p>' : '')
       + `<p class="model">${esc(cfg.titulo ? cfg.titulo(sel) : sel.id)}`
       + `${sel.id === recomendado ? '<span class="ficha-rec">recomendado</span>' : ''}`
       + `${mkSel ? `<span class="ficha-ref${mkSel.fuera ? ' fuera' : ''}">${esc(mkSel.t)}</span>` : ''}</p>`
@@ -475,8 +492,9 @@
         deliberada = false;
       }
       // Si deja de cumplir al mover un parametro se vuelve al recomendado, en vez de dejar
-      // en pantalla la ficha de un equipo que ya no sirve.
-      if (!cfg.candidatos.some((m) => m.id === sel)) {
+      // en pantalla la ficha de un equipo que ya no sirve. La lista de la pagina puede
+      // incluir un elegido a mano fuera de los candidatos (`incluir`): ese si se conserva.
+      if (!conIncluir(cfg).some((m) => m.id === sel)) {
         sel = cfg.recomendado;
         deliberada = false;
       }

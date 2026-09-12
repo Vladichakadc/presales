@@ -15,6 +15,18 @@ let MODELS = [], BUNDLES = {}, CARE = {}, LICENSES = {}, SIZING = {},
 let SKU_CAT = [];        // [{sku, d, p, vig, plc, cat}]
 let skuFiltro = '', skuCatActiva = null;
 
+// Config comun de la ficha en esta pagina (ficha.js la REEMPLAZA entera en cada render,
+// asi que hay que pasarla siempre): sin selector propio —el unico es pickModel, unificado
+// 2026-09-13— y sin tabla de referencias —integradas en la lista de materiales—.
+const FICHA_CFG={vendor:'aruba', refs:false, selector:false,
+  refsNota:'Las referencias de pedido de este equipo —y de todo el catálogo de Aruba: hardware, remanufacturados, suscripciones EdgeConnect, Boost, Central y licencias perpetuas— están integradas en la lista de materiales. Allí se añaden y se quitan con su SKU y su List Price.'};
+
+// El modelo viaja en la URL como parte del escenario compartible, pero ESTADO reescribe el
+// querystring al vincular —cuando el desplegable aun no tiene opciones y no puede
+// reponerlo— y el parametro se pierde. Se captura aqui, al cargar el script (antes de que
+// ESTADO corra en DOMContentLoaded), y se reaplica en initApp con el catalogo ya puesto.
+const QMODEL_URL=new URLSearchParams(location.search).get('pickModel');
+
 const $=id=>document.getElementById(id);
 let famMode='any', segMode='branch', lastPick=null;
 let hayCandidato=true;
@@ -55,8 +67,12 @@ $('chkHa').addEventListener('change',()=>{
   else if((parseInt(q.value)||1)===2){ q.value=1; }
   renderBom();
 });
-['pickModel','qty','termYears','licBundle','bwTier','boostBlocks','careLevel','centralTier','licCapTier']
+['qty','termYears','licBundle','bwTier','boostBlocks','careLevel','centralTier','licCapTier']
   .forEach(id=>$(id).addEventListener('input',renderBom));
+// El modelo es el selector UNICO de la pagina: cambiarlo a mano mueve ficha, resumen,
+// escalera y BOM, no solo la lista. La marca de eleccion manual se fija ANTES de render,
+// porque render podria reponer el recomendado si la tomara por heredada.
+$('pickModel').addEventListener('change',()=>{ $('pickModel').dataset.bomManual='1'; render(); });
 
 function fmt(m){
   if(m==null) return '—';
@@ -150,9 +166,10 @@ function render(){
   // un equipo a ciegas.
   if(bw<=0){
     lastPick=null; hayCandidato=false; sincronizarConBom(null);
+    poblarPickModel([], null);
     const need=$('need'); need.style.left='0%'; $('needLbl').textContent='—';
     $('track').querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
-    FICHA.render({vendor:'aruba', contenedor:'verdict', candidatos:[], recomendado:null,
+    FICHA.render({...FICHA_CFG, contenedor:'verdict', candidatos:[], recomendado:null,
       vacioTitulo:'Ingrese valores para recomendar un equipo',
       vacioDetalle:'<p style="margin:0;font-size:13.5px">Escriba el <b>ancho de banda</b> del sitio (y si aplica, usuarios y APs) para que el dimensionador proponga los modelos que cumplen.</p>'});
     $('verdict').style.borderLeftColor='var(--steel)';
@@ -268,7 +285,8 @@ function render(){
     if(outByAps) why.push(`<li><b>${outByAps}</b> gateway(s) descartado(s) por número de APs: hacen falta ${miles(aps)}.</li>`);
     if(outBySinDato) why.push(`<li><b>${outBySinDato}</b> modelo(s) sin cifra de throughput publicada en las fuentes consultadas (serie 9100). Aparecen en la pestaña "Equipo y BOM" y su capacidad hay que confirmarla en las QuickSpecs.</li>`);
     why.push('<li>Por encima del catálogo: repartir el fabric en varios head-ends, o escalar en el datacenter con EC-V, cuyo caudal lo fija la licencia y los vCPU asignados y no el hardware.</li>');
-    FICHA.render({vendor:'aruba', contenedor:'verdict', candidatos:[], recomendado:null,
+    poblarPickModel([], null);
+    FICHA.render({...FICHA_CFG, contenedor:'verdict', candidatos:[], recomendado:null,
       vacioTitulo:'Ningún modelo cumple todas las restricciones',
       vacioDetalle:`<ul style="margin:0;padding-left:18px;font-size:13.5px">${why.join('')}</ul>`});
     $('verdict').style.borderLeftColor='var(--amber)';
@@ -386,15 +404,18 @@ function render(){
       </tbody></table>`;
   };
 
-  const elegidoId=FICHA.render({vendor:'aruba',
-    // Las referencias de pedido ya no se muestran en la ficha: viven integradas en la lista
-    // de materiales (pestaña Equipo y BOM), que es la única fuente de SKU de la página.
-    // Duplicarlas aquí era justo la redundancia que este rediseño elimina (2026-09-13).
-    refs:false,
-    refsNota:'Las referencias de pedido de este equipo —y de todo el catálogo de Aruba: hardware, remanufacturados, suscripciones EdgeConnect, Boost, Central y licencias perpetuas— están integradas en la lista de materiales, en la pestaña «Equipo y BOM». Allí se añaden y se quitan con su SKU y su List Price.',
+  // El selector unico (pickModel) manda sobre la ficha: una eleccion manual se le pasa
+  // como deliberada y, si no esta entre los candidatos, se incluye con el aviso de desvio
+  // en vez de dejar que la ficha salte al recomendado mientras el selector dice otra cosa.
+  poblarPickModel(candidates, pick.id);
+  const mManual=$('pickModel').dataset.bomManual==='1'
+    ?(MODELS.find(x=>x.id===$('pickModel').value)||null):null;
+  const elegidoId=FICHA.render({...FICHA_CFG,
     contenedor:'verdict',
     candidatos:candidates,
     recomendado:pick.id,
+    seleccionado:mManual?mManual.id:undefined,
+    incluir:mManual||undefined,
     etiqueta:m=>`${m.id} — ${m.serie} · ${fmt(capacidadMax(m))}`,
     titulo:m=>m.id,
     subtitulo:m=>m.seg+' · '+famLabel(m),
@@ -402,13 +423,17 @@ function render(){
     porQue:porQueDe,
     secciones:seccionesDe,
     alCambiar:id=>{
-      const m=candidates.find(x=>x.id===id);
+      // Con el selector fuera de la ficha, esto solo puede ser «Volver al recomendado»:
+      // se suelta la eleccion manual y toda la pagina vuelve a seguir al dimensionamiento.
+      BOM.soltarManual('pickModel');
+      if($('pickModel').value!==id) $('pickModel').value=id;
+      const m=MODELS.find(x=>x.id===id);
       if(!m) return;
       pintarDependientes(m);
       llevarABom(m.id);
     },
   });
-  const elegido=candidates.find(m=>m.id===elegidoId)||pick;
+  const elegido=candidates.find(m=>m.id===elegidoId)||mManual||pick;
   pintarDependientes(elegido);
   sincronizarConBom(elegido);
 }
@@ -460,7 +485,14 @@ function renderFicha(m,need,users,aps){
 }
 
 /* BOM */
-function populateSelects(){
+// El selector de equipo es UNICO en toda la pagina (2026-09-13, unificacion pedida por el
+// dueno): la ficha ya no pinta el suyo. Marca los modelos que cumplen el dimensionamiento
+// y el recomendado, y se reconstruye en cada render para que esas marcas sigan al calculo
+// sin soltar la seleccion que hubiera.
+function poblarPickModel(cumplen, recomendado){
+  const sel=$('pickModel'); if(!sel) return;
+  const actual=sel.value;
+  const ids=new Set((cumplen||[]).map(m=>m.id));
   // Orden determinista por capacidad (wanMax en EdgeConnect, fw en gateways): la API
   // puede servir el catalogo en cualquier orden y el combo no puede depender de eso.
   // Series por su modelo de entrada; dentro de cada serie, de menor a mayor. Sin cifra
@@ -472,13 +504,25 @@ function populateSelects(){
     const cb=Math.min(...MODELS.filter(m=>m.serie===b).map(m=>capDe(m)===Infinity?0:capDe(m)));
     return ca-cb;
   });
-  $('pickModel').innerHTML=series.map(se=>`<optgroup label="${esc(se)}">`
-    +MODELS.filter(m=>m.serie===se).sort((a,b)=>capDe(a)-capDe(b)).map(m=>`<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.seg)}</option>`).join('')
-    +'</optgroup>').join('');
+  sel.innerHTML=series.map(se=>`<optgroup label="${esc(se)}">`
+    +MODELS.filter(m=>m.serie===se).sort((a,b)=>capDe(a)-capDe(b)).map(m=>{
+      const marca=m.id===recomendado?' · recomendado':(ids.has(m.id)?' · cumple':'');
+      return `<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.seg)}${marca}</option>`;
+    }).join('')+'</optgroup>').join('');
+  if(actual&&[...sel.options].some(o=>o.value===actual)) sel.value=actual;
+}
+
+function populateSelects(){
+  poblarPickModel([], null);
   $('bwTier').innerHTML=(SIZING.bwTiers||[]).map(t=>`<option value="${esc(t.code)}">${esc(t.n)}</option>`).join('');
-  $('licBundle').innerHTML=Object.entries(BUNDLES).map(([k,b])=>`<option value="${esc(k)}"${k==='advanced'?' selected':''}>${esc(b.n)}</option>`).join('');
-  $('careLevel').innerHTML=Object.entries(CARE).map(([k,c])=>`<option value="${esc(k)}"${k==='fc247'?' selected':''}>${esc(c.n)}</option>`).join('');
-  $('centralTier').innerHTML=Object.entries(CENTRAL).map(([k,c])=>`<option value="${esc(k)}"${k==='advanced'?' selected':''}>${esc(c.n)}</option>`).join('');
+  // «No incluir» (2026-09-13, peticion del dueno): cualquier linea de la cotizacion se
+  // puede excluir — la lista de materiales declara entonces su estado, no la inventa.
+  // El tier de caudal NO tiene «No incluir»: la suscripcion no tiene SKU sin tier, asi
+  // que excluir la suscripcion (nivel vacio) es lo que oculta tier y Boost — Boost es
+  // un add-on de la suscripcion EdgeConnect y sin ella no se licencia.
+  $('licBundle').innerHTML='<option value="">No incluir</option>'+Object.entries(BUNDLES).map(([k,b])=>`<option value="${esc(k)}"${k==='advanced'?' selected':''}>${esc(b.n)}</option>`).join('');
+  $('careLevel').innerHTML='<option value="">No incluir</option>'+Object.entries(CARE).map(([k,c])=>`<option value="${esc(k)}"${k==='fc247'?' selected':''}>${esc(c.n)}</option>`).join('');
+  $('centralTier').innerHTML='<option value="">No incluir</option>'+Object.entries(CENTRAL).map(([k,c])=>`<option value="${esc(k)}"${k==='advanced'?' selected':''}>${esc(c.n)}</option>`).join('');
   $('bwTier').addEventListener('change',()=>{$('bwTier').dataset.tocado='1';});
   // Documentos oficiales, para llegar al PDF sin buscarlo.
   // Se prefiere la copia local (servida detras del login, sin depender de que HPE
@@ -547,23 +591,27 @@ function renderBom(){
   if(!m) return;
   const qty=Math.max(1,parseInt($('qty').value)||1);
   const termYrs=parseInt($('termYears').value)||3;
-  const bundle=$('licBundle').value||'advanced';
-  const care=$('careLevel').value||'fc247';
-  const central=$('centralTier').value||'advanced';
+  // '' = «No incluir» (2026-09-13, peticion del dueno): la linea se excluye de la lista y
+  // su panel declara el estado en vez de inventarla. Sin suscripcion EdgeConnect tampoco
+  // hay Boost: es un add-on suyo, no un producto independiente.
+  const bundle=$('licBundle').value;
+  const care=$('careLevel').value;
+  const central=$('centralTier').value;
   const bwCode=$('bwTier').value;
   const bwTier=(SIZING.bwTiers||[]).find(t=>t.code===bwCode)||null;
-  const bloques=Math.max(0,parseInt($('boostBlocks').value)||0);
+  const bloques=bundle?Math.max(0,parseInt($('boostBlocks').value)||0):0;
   const capTierCode=$('licCapTier').value;
 
   const esEC=m.fam==='ec', esGwc=!!m.licCap;
   // Los controles que no aplican a la familia elegida se ocultan, en vez de dejar que
-  // alguien cotice un pool de Boost sobre un gateway que no lo soporta.
-  $('fldBw').hidden=!esEC; $('fldBundle').hidden=!esEC; $('fldBoost').hidden=!esEC;
+  // alguien cotice un pool de Boost sobre un gateway que no lo soporta. Y con la
+  // suscripcion excluida se ocultan tier y Boost, que dependen de ella.
+  $('fldBw').hidden=!esEC||!bundle; $('fldBundle').hidden=!esEC; $('fldBoost').hidden=!esEC||!bundle;
   $('fldCentral').hidden=esEC; $('fldCapTier').hidden=!esGwc;
 
   const lic=LICENSES[bwCode]||null;
-  const licTier=lic?lic[bundle]:null;
-  const careTier=lic?lic.care[care]:null;
+  const licTier=lic&&bundle?(lic[bundle]||null):null;
+  const careTier=lic&&care?(lic.care[care]||null):null;
   const licPrice=tierPrice(licTier,termYrs);
   const carePrice=tierPrice(careTier,termYrs);
   // Boost se licencia como SaaS sobre Foundation/Advanced y como E-STU sobre On-Premises:
@@ -607,17 +655,24 @@ function renderBom(){
   // línea NO se repiten aquí: están integrados en la lista de materiales, única fuente de
   // referencias de pedido de la página (2026-09-13, decisión del dueño).
   html+=`<section class="panel"><h2>${esEC?'Suscripción EdgeConnect':'Suscripción y licencias'}</h2><ul class="clean">
-    ${esEC?`<li class="on"><b>${esc(BUNDLES[bundle].n)}</b><span class="req">Requerida</span><span class="sku">${esc(BUNDLES[bundle].svcs)}<br>Tier de caudal: <b>${bwTier?esc(bwTier.n):'—'}</b> · ${termino}</span></li>
+    ${esEC
+      ?(bundle
+        ?`<li class="on"><b>${esc(BUNDLES[bundle].n)}</b><span class="req">Requerida</span><span class="sku">${esc(BUNDLES[bundle].svcs)}<br>Tier de caudal: <b>${bwTier?esc(bwTier.n):'—'}</b> · ${termino}</span></li>
     <li${bloques?' class="on"':''}><b>${esc(SIZING.boost.n)}</b><span class="req${bloques?'':' opt'}">${bloques?'Incluido':'Opcional'}</span><span class="sku">${esc(SIZING.boost.svcs)}${bloques?`<br>Pool: <b>${bloques} bloque(s) de ${SIZING.boost.bloque} Mbps = ${fmt(bloques*SIZING.boost.bloque)}</b> — se licencia una vez para todo el fabric, no por sede.`:''}</span></li>`
-    :`<li class="on"><b>${esc(CENTRAL[central].n)}</b><span class="req">Requerida</span><span class="sku">${esc(CENTRAL[central].d)} · suscripción por dispositivo · ${termino}</span></li>
-    ${capTier&&capTier.code!=='hw'?`<li class="on"><b>Licencia perpetua ${esc(capTier.n)}</b><span class="req">Requerida</span><span class="sku">Amplía el mismo hardware a ${fmt(capTier.fw)}, ${miles(capTier.aps)} APs y ${miles(capTier.clients)} dispositivos.</span></li>`:''}`}
+        :`<li><b>Suscripción EdgeConnect</b><span class="req opt">No incluida</span><span class="sku">Sin suscripción el equipo no se incorpora al fabric gestionado por Orchestrator: queda standalone, sin Business Intent Overlays ni ZTP. Actívala eligiendo un nivel.<br>Boost es un add-on de la suscripción — sin ella tampoco se licencia.</span></li>`)
+      :(central
+        ?`<li class="on"><b>${esc(CENTRAL[central].n)}</b><span class="req">Requerida</span><span class="sku">${esc(CENTRAL[central].d)} · suscripción por dispositivo · ${termino}</span></li>`
+        :`<li><b>HPE Aruba Networking Central</b><span class="req opt">No incluida</span><span class="sku">Sin suscripción de Central el gateway se queda en gestión local, sin la nube de HPE ni apertura de casos. Actívala eligiendo un nivel.</span></li>`)
+      +`${capTier&&capTier.code!=='hw'?`<li class="on"><b>Licencia perpetua ${esc(capTier.n)}</b><span class="req">Requerida</span><span class="sku">Amplía el mismo hardware a ${fmt(capTier.fw)}, ${miles(capTier.aps)} APs y ${miles(capTier.clients)} dispositivos.</span></li>`:''}`}
     <li><b>EdgeConnect Orchestrator</b><span class="req opt">Incluido</span><span class="sku">Gestión del fabric, Business Intent Overlays y ZTP. No se licencia por dispositivo gestionado.</span></li>
   </ul><p class="hint" style="margin:8px 0 0">El SKU de pedido y el List Price de cada línea están integrados en la <b>lista de materiales</b>, junto con todo el catálogo pedible de Aruba.</p></section>`;
 
-  html+=`<section class="panel"><h2>Soporte HPE</h2><div class="scroll"><table>
+  html+=care
+    ?`<section class="panel"><h2>Soporte HPE</h2><div class="scroll"><table>
     <thead><tr><th>Servicio</th><th>SLA</th><th>Término</th><th>Qty</th></tr></thead><tbody>
     <tr><td>${esc(CARE[care].n)}</td><td class="n">${esc(CARE[care].sla)}</td><td class="n">${termYrs} años</td><td class="n">${qty}</td></tr>
-    </tbody></table></div><p class="hint" style="margin-top:8px">${esc(CARE[care].d)} Su SKU y su precio están integrados en la lista de materiales.</p></section>`;
+    </tbody></table></div><p class="hint" style="margin-top:8px">${esc(CARE[care].d)} Su SKU y su precio están integrados en la lista de materiales.</p></section>`
+    :`<section class="panel"><h2>Soporte HPE</h2><p class="hint" style="margin:0"><b>No incluido.</b> Sin soporte activo no hay repuestos con SLA ni acceso al TAC de HPE — elige un nivel para añadirlo a la lista de materiales.</p></section>`;
 
   $('bomBody').innerHTML=html;
 
@@ -627,24 +682,30 @@ function renderBom(){
      nota:`${m.seg} · ${famLabel(m)} · ${m.ifaces}`},
   ];
   if(esEC){
-    filas.push({cat:'Suscripción SD-WAN', desc:`${BUNDLES[bundle].n} — ${bwTier?bwTier.n:'tier por definir'}`,
-      sku:tierSku(licTier,termYrs), qty, unit:licPrice,
-      nota:`${termino} · suscripción por caudal del sitio, no por modelo de appliance`});
-    if(bloques){
-      filas.push({cat:'Aceleración', desc:`${SIZING.boost.n} — bloque de ${SIZING.boost.bloque} Mbps`,
-        sku:tierSku(boostBlk,termYrs), qty:bloques, unit:boostPrice,
-        nota:`Pool agregado del fabric (${fmt(bloques*SIZING.boost.bloque)}). Orchestrator lo reparte entre sedes; no multiplica por unidad.`});
+    if(bundle){
+      filas.push({cat:'Suscripción SD-WAN', desc:`${BUNDLES[bundle].n} — ${bwTier?bwTier.n:'tier por definir'}`,
+        sku:tierSku(licTier,termYrs), qty, unit:licPrice,
+        nota:`${termino} · suscripción por caudal del sitio, no por modelo de appliance`});
+      if(bloques){
+        filas.push({cat:'Aceleración', desc:`${SIZING.boost.n} — bloque de ${SIZING.boost.bloque} Mbps`,
+          sku:tierSku(boostBlk,termYrs), qty:bloques, unit:boostPrice,
+          nota:`Pool agregado del fabric (${fmt(bloques*SIZING.boost.bloque)}). Orchestrator lo reparte entre sedes; no multiplica por unidad.`});
+      }
     }
   }else{
-    filas.push({cat:'Suscripción de gestión', desc:CENTRAL[central].n, sku:tierSku(centralTier,termYrs), qty, unit:centralPrice,
-      nota:`${termino} · HPE Aruba Networking Central, suscripción por dispositivo`});
+    if(central){
+      filas.push({cat:'Suscripción de gestión', desc:CENTRAL[central].n, sku:tierSku(centralTier,termYrs), qty, unit:centralPrice,
+        nota:`${termino} · HPE Aruba Networking Central, suscripción por dispositivo`});
+    }
     if(capTier&&capTier.code!=='hw'){
       filas.push({cat:'Licencia perpetua', desc:`Capacidad ${capTier.n}`, sku:capTier.sku||null, qty, unit:capTier.elp!=null?capTier.elp:null,
         nota:`Amplía el mismo hardware a ${fmt(capTier.fw)} · ${miles(capTier.aps)} APs · ${miles(capTier.clients)} dispositivos`});
     }
   }
-  filas.push({cat:'Soporte', desc:CARE[care].n, sku:tierSku(careTier,termYrs), qty, unit:carePrice,
-    nota:`${termino} · ${CARE[care].sla}`});
+  if(care){
+    filas.push({cat:'Soporte', desc:CARE[care].n, sku:tierSku(careTier,termYrs), qty, unit:carePrice,
+      nota:`${termino} · ${CARE[care].sla}`});
+  }
 
   const meta={
     titulo:`Lista de materiales — ${m.id}`,
@@ -817,6 +878,12 @@ $('xlsBtn').addEventListener('click',async()=>{
   // declara aquí: es lo que permite que la lista de materiales muestre solo lo de Aruba.
   if(BOM.fijarVendor) BOM.fijarVendor('aruba');
   populateSelects();
+  // Reponer desde un enlace ES elegir: queda como seleccion manual, igual que hacia el
+  // antiguo desplegable de la ficha (capturado al cargar el script, ver QMODEL_URL).
+  if(QMODEL_URL&&[...$('pickModel').options].some(o=>o.value===QMODEL_URL)){
+    $('pickModel').value=QMODEL_URL;
+    $('pickModel').dataset.bomManual='1';
+  }
   render();
   renderBom();
   renderCatalogo();
@@ -836,7 +903,7 @@ document.addEventListener('click', (e) => {
    otra recomendacion. Ahora el escenario viaja en la URL; ya no se guarda entre sesiones
    (ver /js/estado.js). */
 document.addEventListener('DOMContentLoaded', () => {
-  const st = ESTADO.vincular({ campos: ['bw','unit','users','aps','perUser','head','fecMode','boostProfile','chkBoost','chkBreakout','chkHa','famSeg','segSeg','verdict-sel'] });
+  const st = ESTADO.vincular({ campos: ['bw','unit','users','aps','perUser','head','fecMode','boostProfile','chkBoost','chkBreakout','chkHa','famSeg','segSeg','pickModel'] });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');
@@ -853,8 +920,7 @@ document.addEventListener('DOMContentLoaded', () => {
    el resto de la linea desde su propio catalogo. Ver bom.js. */
 document.addEventListener('DOMContentLoaded', () => {
   BOM.montarBotonCotizador(() => {
-    const sel = document.getElementById('verdict-sel');
-    const elegido = (sel && sel.value) || (lastPick && lastPick.id) || null;
+    const elegido = ($('pickModel') && $('pickModel').value) || (lastPick && lastPick.id) || null;
     if (!elegido) return null;
     const cant = document.getElementById('qty');
     return { modelo: elegido, qty: Math.max(1, parseInt(cant && cant.value, 10) || 1),

@@ -368,6 +368,47 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
 
 ## Cerrado recientemente
 
+### Selección de equipo unificada en «Dimensionar» y líneas excluibles — Aruba (2026-09-13)
+
+Petición del dueño: unificar la sección de equipo en la pestaña Dimensionar, dejando en la
+pestaña de BOM solo «Añadir a la lista de materiales» y «Lista de materiales»; sin campos
+duplicados; todo sincronizado con el dimensionador; opción «No incluir» en los selects; y
+analizar si hacía falta un botón de sincronizar. Aruba es el piloto — los demás
+fabricantes NO se tocan hasta nueva orden (en ficha.js solo se añadieron opciones opt-in
+que no cambian su comportamiento).
+
+**La unificación.** La pestaña BOM tenía el panel «Selección de equipo» (modelo, cantidad,
+término, suscripción, tier, Boost, Central, capacidad 9240 y soporte) y la ficha técnica;
+la pestaña Dimensionar tenía el selector de candidatos de la ficha. Dos selectores de
+modelo en la misma página era la duplicación a cerrar. Ahora hay UN SOLO selector
+(`pickModel`, todos los modelos por serie con marcas «· cumple» y «· recomendado») en el
+panel nuevo «4 · Equipo y cotización» de Dimensionar; la ficha ya no pinta el suyo
+(`selector:false`, opción nueva de ficha.js) y muestra el elegido aunque no sea candidato
+(`incluir`, otra opción) con el aviso de desvío y «Volver al recomendado». La ficha
+técnica (`bomBody`) también vive en Dimensionar. La pestaña de BOM se renombra «Lista de
+materiales» y contiene solo el catálogo de SKU y la lista, con el aviso de preventa.
+
+**Sincronización (respuesta al botón pedido: NO hace falta).** La página ya es reactiva de
+extremo a extremo: cada cambio de parámetro recalcula y el selector sigue al recomendado;
+cambiarlo a mano mueve ficha, resumen, escalera y BOM; «Volver al recomendado» suelta la
+elección manual. Un botón de sincronizar duplicaría lo que ya ocurre solo. El enlace
+compartible lleva el modelo (`pickModel` sustituye a `verdict-sel` en ESTADO) y reponerlo
+desde la URL queda como elección manual, igual que hacía la ficha — con la captura del
+parámetro al cargar el script, porque ESTADO reescribe el querystring antes de que el
+desplegable tenga opciones.
+
+**«No incluir».** Suscripción EdgeConnect, Central y soporte admiten quedar vacíos: la
+línea desaparece de la lista y su panel declara el estado («Sin suscripción el equipo
+queda standalone…», «Sin soporte no hay repuestos ni TAC…»). El tier de caudal no tiene
+«No incluir» porque la suscripción no tiene SKU sin tier: excluir la suscripción oculta
+tier y Boost — Boost es un add-on de la suscripción, criterio de licenciamiento HPE. La
+licencia perpetua 9240 ya tenía «Solo hardware».
+
+Verificado E2E en Chromium: un solo selector, sigue al dimensionador (500→EC-10106,
+900→EC-10108), manual candidato y no candidato con aviso, volver resincroniza, las tres
+exclusiones y su reactivación, URL con modelo, catálogo SKU intacto (90 referencias),
+Fortinet/Cisco sin regresión. 233/233 pruebas y eslint en verde.
+
 ### Referencias de pedido integradas en la lista de materiales de Aruba (2026-09-13)
 
 Petición del dueño: las referencias de pedido y la lista de materiales duplicaban valores y
