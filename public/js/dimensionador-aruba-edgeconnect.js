@@ -139,6 +139,21 @@ function render(){
   const unit=parseFloat($('unit').value);
   const users=parseInt($('users').value)||0;
   const aps=parseInt($('aps').value)||0;
+  // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): el campo es
+  // el dato mínimo del dimensionamiento; sin él la página pide valores en vez de proponer
+  // un equipo a ciegas.
+  if(bw<=0){
+    lastPick=null; hayCandidato=false; sincronizarConBom(null);
+    const need=$('need'); need.style.left='0%'; $('needLbl').textContent='—';
+    $('track').querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
+    FICHA.render({vendor:'aruba', contenedor:'verdict', candidatos:[], recomendado:null,
+      vacioTitulo:'Ingrese valores para recomendar un equipo',
+      vacioDetalle:'<p style="margin:0;font-size:13.5px">Escriba el <b>ancho de banda</b> del sitio (y si aplica, usuarios y APs) para que el dimensionador proponga los modelos que cumplen.</p>'});
+    $('verdict').style.borderLeftColor='var(--steel)';
+    $('perfTiers').innerHTML=''; $('perfNote').textContent='';
+    $('sizingBox').innerHTML='<p style="font-size:13.5px;color:var(--steel)">Ingrese valores para recomendar un equipo.</p>';
+    return;
+  }
   // Mbps por usuario: es un supuesto, no un dato, y en campus grandes la regla de 3 Mbps
   // aplicada a decenas de miles de dispositivos da cifras que ningun equipo cumple. Por eso
   // es un control visible y no una constante escondida.
@@ -435,9 +450,19 @@ function renderFicha(m,need,users,aps){
 
 /* BOM */
 function populateSelects(){
+  // Orden determinista por capacidad (wanMax en EdgeConnect, fw en gateways): la API
+  // puede servir el catalogo en cualquier orden y el combo no puede depender de eso.
+  // Series por su modelo de entrada; dentro de cada serie, de menor a mayor. Sin cifra
+  // publicada (EC-V, que se dimensiona por licencia y vCPU) va al final de su serie.
+  const capDe=m=>m.wanMax!=null?m.wanMax:(m.fw!=null?m.fw:Infinity);
   const series=[...new Set(MODELS.map(m=>m.serie))];
+  series.sort((a,b)=>{
+    const ca=Math.min(...MODELS.filter(m=>m.serie===a).map(m=>capDe(m)===Infinity?0:capDe(m)));
+    const cb=Math.min(...MODELS.filter(m=>m.serie===b).map(m=>capDe(m)===Infinity?0:capDe(m)));
+    return ca-cb;
+  });
   $('pickModel').innerHTML=series.map(se=>`<optgroup label="${esc(se)}">`
-    +MODELS.filter(m=>m.serie===se).map(m=>`<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.seg)}</option>`).join('')
+    +MODELS.filter(m=>m.serie===se).sort((a,b)=>capDe(a)-capDe(b)).map(m=>`<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.seg)}</option>`).join('')
     +'</optgroup>').join('');
   $('bwTier').innerHTML=(SIZING.bwTiers||[]).map(t=>`<option value="${esc(t.code)}">${esc(t.n)}</option>`).join('');
   $('licBundle').innerHTML=Object.entries(BUNDLES).map(([k,b])=>`<option value="${esc(k)}"${k==='advanced'?' selected':''}>${esc(b.n)}</option>`).join('');
@@ -460,6 +485,47 @@ function populateSelects(){
 }
 
 const money=n=>n==null?null:'$'+n.toLocaleString('en-US',{maximumFractionDigits:2});
+// Ficha técnica de datasheet (campo `spec` del catálogo, 2026-09-13): pares clave →
+// etiqueta en el orden en que deben aparecer. Claves ausentes = HPE no publica el dato
+// para ese modelo y la fila simplemente no se pinta (nunca se inventa un valor).
+const SPEC_LABELS=[
+  ['conexiones','Conexiones simultáneas'],
+  ['boostRec','Boost recomendado por HPE'],
+  ['idsips','IDS/IPS integrado'],
+  ['encTput','Throughput cifrado'],
+  ['ssl','Sesiones SSL concurrentes'],
+  ['tuneles','Túneles / puertos tunelizados'],
+  ['peers','Peers de fabric máx.'],
+  ['prefijos','Prefijos de ruteo'],
+  ['vlanMax','VLANs máx.'],
+  ['ospf','Rutas OSPF'],
+  ['acls','ACLs'],
+  ['dhcp','Clientes DHCP'],
+  ['bridge','Tabla de bridge'],
+  ['cps','Sesiones nuevas por segundo'],
+  ['cluster','Clustering'],
+  ['aps10','APs máx. (AOS 10)'],
+  ['lte','Módem LTE integrado'],
+  ['ram','Memoria RAM'],
+  ['disco','Almacenamiento'],
+  ['fru','Componentes reemplazables en campo (FRU)'],
+  ['certs','Certificaciones'],
+  ['mtbf','MTBF'],
+  ['watts','Alimentación / consumo'],
+  ['btu','Disipación térmica'],
+  ['ruido','Ruido acústico'],
+  ['dims','Dimensiones (Al × An × Pr)'],
+  ['peso','Peso'],
+  ['extra','Notas del datasheet'],
+];
+function specRows(m){
+  if(!m.spec) return '';
+  return SPEC_LABELS.filter(([k])=>m.spec[k]!=null)
+    .map(([k,label])=>`<tr><td>${label}</td><td class="n">${esc(m.spec[k])}</td></tr>`).join('');
+}
+// Condiciones ambientales de TODA la línea EdgeConnect (Hardware Reference p.33): no se
+// repiten en cada modelo porque el documento las declara a nivel de línea.
+const EC_AMBIENTE='Operación 0 – 40 °C · almacenamiento -40 – 65 °C · altitud 3.048 m operando / 12.192 m almacenado · humedad 5 – 95 % sin condensar';
 function tierPrice(t,y){ if(!t) return null; const v=y===1?t.y1:y===5?t.y5:t.y3; return v==null?null:v; }
 // El SKU de una suscripción depende de la duración (1/3/5 años): desde el 2026-09-13
 // `sku` puede ser un objeto {y1,y3,y5}. Se acepta también la forma plana por compatibilidad.
@@ -514,6 +580,8 @@ function renderBom(){
     ${m.ipsecSess!=null?`<tr><td>Sesiones IPsec concurrentes</td><td class="n">${miles(m.ipsecSess)}</td></tr>`:''}
     ${m.greTuns!=null?`<tr><td>Túneles GRE</td><td class="n">${miles(m.greTuns)}</td></tr>`:''}`}
     <tr><td>Interfaces</td><td>${esc(m.ifaces)}</td></tr>
+    ${specRows(m)}
+    ${esEC?`<tr><td>Condiciones ambientales (línea EdgeConnect)</td><td class="n">${EC_AMBIENTE}</td></tr>`:''}
     <tr><td>Datasheet oficial</td><td class="n">${(m.dsLocal||m.ds)?`<a href="${esc(m.dsLocal||m.ds)}" target="_blank" rel="noopener">Abrir documento</a>${m.dsLocal?' <span class="pillc">local</span>':''}`:'<span class="warn">Sin URL oficial confirmada</span>'}</td></tr>
     </tbody></table></div></section>`;
 

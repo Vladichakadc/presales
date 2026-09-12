@@ -134,9 +134,31 @@ const MODELS = [
   // exige antes de pisar un dato existente (misma regla que el SRX380 de Juniper) — así que
   // se deja sin tocar. Ver PENDIENTES.md, "Conflictos abiertos entre el catálogo y una ficha
   // oficial", para la decisión pendiente del dueño del catálogo.
+  // ── Campo `spec` (2026-09-13) ─────────────────────────────────────────────
+  // Características técnicas adicionales leídas de los datasheets oficiales, literales:
+  // · EdgeConnect: QuickSpecs HPE a50004289enw (tabla "Comparison" p.30 + fichas por
+  //   modelo) y EdgeConnect Hardware Reference (tablas de alimentación/físico pp.20-26,
+  //   ambiental p.33, ruido p.35) — copias locales en public/datasheets/.
+  // · Serie 9000: DS_9000Series (serie-9000-branch-gateways.pdf pp.5-7).
+  // · Serie 9100: QuickSpecs a50006999enw (serie-9100-hybrid-quickspecs.pdf pp.14-16).
+  // · Serie 9200: QuickSpecs serie 9200 (serie-9200-campus-gateways.pdf pp.9-11).
+  // · Series 7000/7200: DS_7000Series y DS_7200Series oficiales de Aruba (doble ancla:
+  //   dos copias independientes del mismo documento consultadas el 2026-09-13).
+  // `spec` NO sobrescribe ningún campo existente: solo añade lo que la ficha no tenía.
+  // Conflictos detectados y NO aplicados (quedan documentados en PENDIENTES.md):
+  // · 7010: el DS actual declara 8 Gbps de firewall y 64K sesiones; el catálogo conserva
+  //   4 Gbps / 32K del DS anterior (decisión del dueño: no tocar sin confirmación).
+  // · 7205: el DS declara 12 Gbps de firewall; el catálogo conserva 15 Gbps.
+  // · 7030: el DS declara 8x combo 1G (sin 10G); el texto de `ifaces` del catálogo
+  //   menciona "puertos 10G" — pendiente de corrección por el dueño.
+  // · EC-L: psu.texto cita 401 W; el QuickSpecs por modelo declara 404 W y el Hardware
+  //   Reference 440 W para la variante EC-L-P — se muestran ambos en spec.watts.
   {id:'EC-XS', redund:false, psu:{tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 23 W en la primera revisión de hardware y 34 W en las posteriores — HPE publica el requerimiento, no un consumo típico. Fuente única mediante adaptador externo, sin opción de segunda.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal peq / Oficina remota',
    wanMin:2, wanMax:200, boostMax:200,
    ifaces:'4x RJ45 10/100/1000 LAN/WAN + 2x RJ45 10/100/1000 gestión + serie RJ-45',
+   spec:{conexiones:'256.000', boostRec:'250 Mbps', idsips:'Sí', fru:'Ninguna',
+     mtbf:'162.171 h (18,5 años)', watts:'23 W (primera revisión HW) / 34 W (posteriores) — requerimiento de alimentación', btu:'116 BTU/h',
+     ruido:'40 dBA', peso:'1,59 kg (3,5 lb)'},
    // hwSku de la variante base completado el 2026-09-10 desde DATASHEETS.priceList (el
    // QuickSpecs no lo publica); EC-XS-SP y EC-XS-FIPS no aparecen como SKU propio en esa
    // fuente tampoco, así que siguen sin confirmar.
@@ -152,6 +174,11 @@ const MODELS = [
   {id:'EC-10104', redund:false, psu:{tipo:'adaptador externo, único', texto:'Fuente única — el QuickSpecs confirma que no hay segunda fuente pero no publica voltaje ni consumo.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal peq / oficina en casa',
    wanMin:2, wanMax:500, boostMax:500,
    ifaces:'4x RJ45 10/100/1000',
+   spec:{conexiones:'256.000', boostRec:'200 Mbps', idsips:'Sí', fru:'Ninguna',
+     ram:'ECC (HPE no publica la capacidad)', mtbf:'63 años',
+     watts:'48 W', btu:'163,78 BTU/h', ruido:'Sin ventilador (0 dBA)',
+     dims:'3,8 × 19,8 × 15,3 cm (1,50 × 7,81 × 6,03 in)', peso:'1,14 kg (2,52 lb)',
+     certs:'Cifrado de disco AES-128 · IPsec AES-256'},
    hwSku:'R9D72A', skus:[{sku:'R9D72A',d:'EdgeConnect 10104 · 4x RJ45 10/100/1000'},
                          {sku:'S3N78A',d:'EdgeConnect 10104 TAA · 4x RJ45'},
                          {sku:'S3N69A',d:'EdgeConnect 10104 NAL · 4x RJ45'}],
@@ -160,6 +187,9 @@ const MODELS = [
   {id:'EC-10106', redund:false, psu:{tipo:'adaptador externo, único (54 V)', texto:'Fuente única — el QuickSpecs confirma que no hay segunda fuente pero no publica el consumo.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal pequeña',
    wanMin:2, wanMax:1000, boostMax:1000,
    ifaces:'2x SFP+ 1/10G + 2x Combo (SFP/1GbE) + 2x GbE PoE+',
+   spec:{conexiones:'256.000', boostRec:'250 Mbps', idsips:'Sí', fru:'Ninguna',
+     ram:'16 GB ECC', mtbf:'125.075 h', watts:'165 W', btu:'563 BTU/h',
+     ruido:'42 dBA', peso:'2,30 kg (5,08 lb)'},
    hwSku:'S0E22A', skus:[{sku:'S0E22A',d:'EdgeConnect 10106 · 2x SFP+ · 2x Combo · 2x GbE PoE+'},
                          {sku:'S3N71A',d:'EdgeConnect 10106 NAL · 2x SFP+ · 2x Combo · 2x GbE PoE+'}],
    ds:'https://www.hpe.com/us/en/collaterals/collateral.a50004289enw.html', dsFile:null},
@@ -167,6 +197,9 @@ const MODELS = [
   {id:'EC-10108', redund:false, psu:{tipo:'adaptador externo, único (54 V)', texto:'Fuente única — el QuickSpecs confirma que no hay segunda fuente pero no publica el consumo.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal mediana',
    wanMin:2, wanMax:2000, boostMax:2000,
    ifaces:'2x SFP+ 1/10G + 2x Combo (SFP/1GbE) + 2x GbE PoE+',
+   spec:{conexiones:'256.000', boostRec:'500 Mbps', idsips:'Sí', fru:'Ninguna',
+     ram:'32 GB ECC', mtbf:'125.452 h', watts:'165 W', vlanMax:'128',
+     ruido:'42 dBA'},
    hwSku:'S0E23A', skus:[{sku:'S0E23A',d:'EdgeConnect 10108 · 2x SFP+ · 2x Combo · 2x GbE PoE+'},
                          {sku:'S3N72A',d:'EdgeConnect 10108 NAL · 2x SFP+ · 2x Combo · 2x GbE PoE+'}],
    ds:'https://www.hpe.com/us/en/collaterals/collateral.a50004289enw.html', dsFile:null},
@@ -174,6 +207,10 @@ const MODELS = [
   {id:'EC-S', redund:false, psu:{tipo:'fuente única interna, AC (S3N73A) o DC (S3N74A) según el SKU', volts:'100-240 V AC, 47-63 Hz', texto:'Requerimiento de alimentación 100 W — HPE publica el requerimiento, no un consumo típico. El EdgeConnect Hardware Reference confirma lo que el catálogo ya decía: una sola fuente por unidad. Las variantes EC-S-P sí traen 1+1 redundante (111 W en AC, 103 W en DC).'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal grande / Oficina remota',
    wanMin:10, wanMax:3000, boostMax:3000,
    ifaces:'8x RJ45 10/100/1000 + 4x SFP+ 1/10G',
+   spec:{conexiones:'256.000', boostRec:'500 Mbps', idsips:'Sí',
+     fru:'SSD y fuente de poder (variantes EC-S-P)', disco:'2x SSD (variantes EC-S-P)',
+     mtbf:'177.726 h (20 años)', watts:'100 W (EC-S, fuente única) · 111 W AC / 103 W DC a -48 V (EC-S-P, 1+1)',
+     ruido:'40 dBA', peso:'8,23 kg (18,14 lb)'},
    hwSku:'S3N73A', skus:[{sku:'S3N73A',d:'EC-S-P · 4x SFP+ · 10x RJ45 · PSU AC · 2x SSD · NAL'},
                          {sku:'S3N74A',d:'EC-S-P · 4x SFP+ · 10x RJ45 · PSU DC · 2x SSD · NAL'}],
    ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
@@ -181,6 +218,10 @@ const MODELS = [
   {id:'EC-M', redund:true, psu:{tipo:'1+1 redundante, sustituible e intercambiable en caliente', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 126 W — HPE publica el requerimiento, no un consumo típico.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Hub / Sucursal grande',
    wanMin:50, wanMax:5000, boostMax:5000,
    ifaces:'8x RJ45 1GbE + 4x SFP+ 1/10G (SR o LR)',
+   spec:{conexiones:'2.000.000', boostRec:'1 Gbps', idsips:'Sí',
+     fru:'SSD y fuente de poder', disco:'960 GB SSD',
+     mtbf:'15 años', watts:'153 W (1+1)', btu:'522 BTU/h',
+     ruido:'44,3 dBA', peso:'8,21 kg (18,1 lb)'},
    hwSku:'JZ872A', skus:[{sku:'JZ872A',d:'EC-M-H · 8x RJ45 10/100/1000 · 4x SFP+ 1/10G'},
                          {sku:null,d:'EC-M-P-FIPS (validado FIPS 140)'}],
    ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
@@ -188,6 +229,10 @@ const MODELS = [
   {id:'EC-L', redund:true, psu:{tipo:'1+1 redundante, sustituible e intercambiable en caliente', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 401 W — HPE publica el requerimiento, no un consumo típico.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Datacenter / Hub grande',
    wanMin:2000, wanMax:10000, boostMax:10000,
    ifaces:'6x SFP+ 10G (SR o LR)',
+   spec:{conexiones:'2.000.000', boostRec:'1 Gbps', idsips:'Sí',
+     fru:'SSD y fuente de poder', disco:'960 GB SSD',
+     mtbf:'> 10 años', watts:'404 W (EC-L-H, QuickSpecs) · 440 W (EC-L-P, Hardware Reference)', btu:'1.379 BTU/h',
+     peso:'14,5 kg (32 lb)'},
    hwSku:'JZ878A', skus:[{sku:'JZ878A',d:'EC-L-H · 6x SFP+ 1/10G'}],
    ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
 
@@ -202,6 +247,10 @@ const MODELS = [
   {id:'EC-XL', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Datacenter / Head-end de fabric',
    wanMin:2000, wanMax:10000, boostMax:10000,
    ifaces:'hasta 6x SFP+ 10G y/o SFP28 25G · network memory en flash PCIe · PSU y almacenamiento redundantes',
+   spec:{conexiones:'2.000.000', boostRec:'5 Gbps', idsips:'Sí',
+     fru:'SSD, NVMe y fuente de poder', disco:'960 GB SSD (ECOS) + 3,2 TB NVMe (Network Memory)',
+     mtbf:'> 10 años', watts:'438 – 480 W según variante (Hardware Reference)',
+     peso:'15,2 kg (33,5 lb)'},
    hwSku:'S0B67A', skus:[{sku:'S0B67A',d:'EC-XL-H-10G · 6x SFP+ 1/10G'},
                          {sku:'S3N77A',d:'EC-XL-H · 6x SFP28 · 2x NVMe · 2x PSU · 2x SSD · NAL'},
                          {sku:null,d:'EC-XL-P-FIPS (validado FIPS 140)'}],
@@ -216,6 +265,11 @@ const MODELS = [
   {id:'EC-10150', redund:true, psu:{tipo:'1+1 redundante (2x PSU)', texto:'Dos fuentes redundantes y dos SSD NVMe de sistema — el QuickSpecs confirma la redundancia pero no publica voltaje ni consumo.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Datacenter / Hub grande',
    wanMin:null, wanMax:12000, boostMax:12000,
    ifaces:'2x RJ45 10/100/1000 gestión + 8x SFP28 1/10/25G · 2x PSU',
+   spec:{conexiones:'2.000.000', boostRec:'8 Gbps', idsips:'Sí',
+     fru:'SSD, NVMe y fuente de poder', tuneles:'10.000 túneles IPsec', peers:'4.096 peers de fabric',
+     prefijos:'60.000 IPv4 / 30.000 IPv6', certs:'FIPS 140-2 Nivel 1 · NDcPP v2.2e · TPM 2.0',
+     mtbf:'300.236 h (sin almacenamiento)', watts:'423 W típico / 456 W máx. · PSU 800 W (1+1)',
+     ruido:'71,5 dBA', peso:'14,7 kg (32,4 lb)'},
    hwSku:'S2N65A', skus:[{sku:'S2N65A',d:'EdgeConnect 10150 · 8x SFP28 · 2x RJ45 · 2x PSU'}],
    ds:'https://www.hpe.com/us/en/collaterals/collateral.a50004289enw.html', dsFile:null},
 
@@ -228,21 +282,35 @@ const MODELS = [
   // ─── Serie 9000 · Branch Gateways (AOS 10, gestionados por Central) ─────────
   // hwSku completado el 2026-09-10 desde el QuickSpecs de la serie (SKU (US) base; el
   // documento trae ademas variantes RW/JP/IL/EG y TAA, no listadas por brevedad).
+  // fwSess completado el 2026-09-13 desde el DS de la serie 9000 (tabla AOS 10: 128K
+  // sesiones de firewall). El `aps:32` del catálogo es la cifra AOS 8 (campus APs); la
+  // tabla AOS 10 declara 128/256 "devices" por gateway — distinta arquitectura de gestión,
+  // se muestra en spec.aps10 sin tocar el campo existente (ver PENDIENTES.md).
   {id:'Gateway 9004', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal peq',
-   fw:4000, clients:2048, aps:32, fwSess:null, ipsecSess:2048, greTuns:544, boostMax:null,
+   fw:4000, clients:2048, aps:32, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
    ifaces:'4x GbE RJ45', hwSku:'R1B20A', skus:[{sku:'R1B20A',d:'9004 (US) · 4x GbE RJ45'}],
+   spec:{aps10:'128', cps:'130.000 sesiones nuevas/s', cluster:'Hasta 4 gateways por cluster · 8.192 clientes por cluster (AOS 10)',
+     vlanMax:'4.094', ospf:'8.000 rutas', acls:'2.678 entradas', dhcp:'4.000 clientes', bridge:'64.000 entradas',
+     ruido:'0 dBA (sin ventilador)', watts:'25 W máx.', dims:'3,82 × 19,85 × 15,31 cm', peso:'1,143 kg'},
    ds:'https://www.hpe.com/psnow/doc/a00091602enw', dsFile:'gateway-9004.pdf'},
 
   {id:'Gateway 9004-LTE', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal peq + LTE',
-   fw:4000, clients:2048, aps:32, fwSess:null, ipsecSess:2048, greTuns:544, boostMax:null,
+   fw:4000, clients:2048, aps:32, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
    ifaces:'4x GbE RJ45 + LTE integrado (uplink dedicado o redundante)', hwSku:'R3V91A',
    skus:[{sku:'R3V91A',d:'9004-LTE (US) · 4x GbE RJ45 + LTE'}],
+   spec:{aps10:'128', cps:'130.000 sesiones nuevas/s', cluster:'Hasta 4 gateways por cluster · 8.192 clientes por cluster (AOS 10)',
+     vlanMax:'4.094', ospf:'8.000 rutas', acls:'2.678 entradas', dhcp:'4.000 clientes', bridge:'64.000 entradas',
+     lte:'Cat 12 · hasta 600 Mbps de bajada / 150 Mbps de subida',
+     ruido:'0 dBA (sin ventilador)', watts:'25 W máx.', dims:'3,82 × 19,85 × 15,31 cm', peso:'1,143 kg'},
    ds:'https://www.hpe.com/psnow/doc/a00091602enw', dsFile:'gateway-9004.pdf'},
 
   {id:'Gateway 9012', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal med / gde',
-   fw:6000, clients:2048, aps:32, fwSess:null, ipsecSess:2048, greTuns:544, boostMax:null,
+   fw:6000, clients:2048, aps:32, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
    ifaces:'12x GbE RJ45 (6x PoE+)', hwSku:'R1B31A',
    skus:[{sku:'R1B31A',d:'9012 (US) · 12x GbE · 6x PoE+'},{sku:'R1B37A',d:'9012 (RW) TAA · 12x GbE · 6x PoE+'}],
+   spec:{aps10:'256', cps:'130.000 sesiones nuevas/s', cluster:'Hasta 4 gateways por cluster · 8.192 clientes por cluster (AOS 10)',
+     vlanMax:'4.094', ospf:'8.000 rutas', acls:'2.678 entradas', dhcp:'4.000 clientes', bridge:'64.000 entradas',
+     ruido:'29,1 – 63,5 dBA', watts:'160 W máx. (incluye 120 W de presupuesto PoE)', dims:'4,37 × 39,5 × 26 cm', peso:'3,42 kg'},
    ds:'https://www.arubanetworks.com/assets/ds/DS_9000Series.pdf', dsFile:'serie-9000-branch-gateways.pdf'},
 
   // ─── Serie 9100 · Hybrid Gateways ──────────────────────────────────────────
@@ -258,12 +326,20 @@ const MODELS = [
   {id:'Gateway 9106', fam:'gw', rol:'sucursal', serie:'Serie 9100 Hybrid', seg:'Sucursal gde / Campus peq',
    fw:10000, clients:8000, aps:2000, fwSess:2000000, ipsecSess:16000, greTuns:null, boostMax:null,
    ifaces:'2x SFP+ 10GbE + 2x combo SFP/RJ45 1GbE + 2x RJ45 1GbE con PoE hasta 60W',
+   spec:{cluster:'Hasta 6 gateways por cluster (AOS 10)', tuneles:'20.000 túneles totales (AOS 10)',
+     encTput:'GRE / AES-CBC-128/256 / AES-GCM-128/256: 10 Gbps (a velocidad de línea)',
+     mtbf:'236.076 h', watts:'150 W', btu:'290 BTU/h', ruido:'54,6 dBA', peso:'2,305 kg',
+     extra:'Formato desktop · PoE hasta 60 W'},
    hwSku:'S5H02A', skus:[{sku:'S5H02A',d:'9106 (US) · 2x SFP+ · 2x Combo · 2x PoE'}],
    ds:'https://www.hpe.com/us/en/collaterals/collateral.a50006999enw.html', dsFile:'serie-9100-hybrid-quickspecs.pdf'},
 
   {id:'Gateway 9114', fam:'gw', rol:'campus', serie:'Serie 9100 Hybrid', seg:'Campus peq / Sucursal grande',
    fw:20000, clients:10000, aps:4000, fwSess:2000000, ipsecSess:32000, greTuns:null, boostMax:null,
    ifaces:'4x SFP+ 10GbE + 4x combo SFP/RJ45 1GbE + 1 slot de expansión',
+   spec:{cluster:'Hasta 6 gateways por cluster (AOS 10)', tuneles:'40.000 túneles totales (AOS 10)',
+     encTput:'GRE / AES-CBC-128/256 / AES-GCM-128/256: 20 Gbps (a velocidad de línea)',
+     mtbf:'280.165 h', watts:'185 W', btu:'631 BTU/h', ruido:'69 dBA', peso:'6,2 kg',
+     extra:'1U rack · 1 slot de expansión'},
    hwSku:'R9M45A', skus:[{sku:'R9M45A',d:'9114 · 4x SFP+ · 4x combo · 1 slot de expansión'}],
    ds:'https://www.hpe.com/us/en/collaterals/collateral.a50006999enw.html', dsFile:'serie-9100-hybrid-quickspecs.pdf'},
 
@@ -280,6 +356,13 @@ const MODELS = [
    ],
    ifaces:'4x SFP28 + 1 slot de expansión · 1U rack', hwSku:'R7H95A',
    skus:[{sku:'R7H95A',d:'9240 (US) · 4x SFP28 · 1 slot de expansión'}],
+   // clients/aps de licCap son las cifras AOS 8; la tabla AOS 10 del QuickSpecs declara
+   // otras (32K/48K/64K clientes, 4K/8K/16K APs) — se muestran en spec.extra sin tocar
+   // los campos existentes (misma regla que la serie 9000, ver PENDIENTES.md).
+   spec:{encTput:'AES-CCM: 20 / 28 / 30 Gbps según licencia Base / Silver / Gold',
+     ospf:'57.000 rutas', mtbf:'185.301 h', watts:'190 W máx. · PSU 550 W (ranuras 1+1)',
+     btu:'648 BTU/h', ruido:'65,2 dBA', peso:'8,2 kg (18,08 lb)',
+     extra:'AOS 10 por licencia (Base/Silver/Gold): 32K/48K/64K clientes · 4K/8K/16K APs · 4M sesiones · 32K/64K/128K IPsec · 40K/80K/160K túneles. Consola USB-C + RJ45 · OOBM RJ45 · 2x USB · 5 bandejas de ventilador.'},
    ds:'https://www.hpe.com/psnow/doc/PSN1014459233NGEN', dsFile:'serie-9200-campus-gateways.pdf'},
 
   // ─── Serie 7000 · Mobility Controllers de sucursal (AOS 8) ─────────────────
@@ -293,6 +376,9 @@ const MODELS = [
   {id:'7005', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal peq (fanless)',
    fw:2000, clients:1024, aps:16, fwSess:16384, ipsecSess:null, greTuns:null, boostMax:null,
    ifaces:'4x RJ45 10/100/1000 · sin ventilador · alimentable por PoE', hwSku:null,
+   spec:{encTput:'3DES/AES-CBC: 1,2 Gbps · AES-CCM: 1,6 Gbps',
+     ruido:'0 dBA (sin ventilador)', watts:'16,6 W máx. (con USB) · PoE PD (puerto 0) o adaptador 12 V 30 W',
+     btu:'51,18 BTU/h', dims:'4,1 × 20 × 20 cm', peso:'0,92 kg'},
    // Remanufacturado HPE (2026-09-13, lista del distribuidor): la unidad nueva no está en
    // la lista; el SKU reman sí, con List Price — ver cotizadorCatalog.js.
    skus:[{sku:null,d:'7005 (US / RW)'},{sku:'JW633AR',d:'7005 remanufacturado HPE (Reman)'}],
@@ -301,48 +387,89 @@ const MODELS = [
   {id:'7008', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal peq + PoE',
    fw:2000, clients:1024, aps:16, fwSess:16384, ipsecSess:null, greTuns:null, boostMax:null,
    ifaces:'8x RJ45 10/100/1000 con PoE y PoE+ integrados · sin ventilador', hwSku:null,
+   spec:{encTput:'3DES/AES-CBC: 1,2 Gbps · AES-CCM: 1,6 Gbps',
+     ruido:'0 dBA (sin ventilador)', watts:'126 W máx. con PoE (26 W sin PoE) · fuente 150 W · PoE+ 100 W (8 puertos)',
+     btu:'430 BTU/h', dims:'4,2 × 20,52 × 20,32 cm', peso:'1,0 kg'},
    skus:[{sku:null,d:'7008 (US / RW)'},{sku:'JX927AR',d:'7008 remanufacturado HPE (Reman)'}],
    ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
 
+  // ipsecSess/greTuns completados el 2026-09-13 desde el DS oficial de la serie 7000
+  // (tabla "Performance and capacity": 2.048 IPsec, 512 GRE, 2.048 SSL, 4.096 VLANs).
+  // Ese mismo DS declara 8 Gbps de firewall y 64K sesiones — conflicto con el fw:4000 /
+  // fwSess:32768 del catálogo (DS anterior): NO se sobrescribe, queda en PENDIENTES.md.
   {id:'7010', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal med',
-   fw:4000, clients:2048, aps:32, fwSess:32768, ipsecSess:null, greTuns:null, boostMax:null,
+   fw:4000, clients:2048, aps:32, fwSess:32768, ipsecSess:2048, greTuns:512, boostMax:null,
    ifaces:'16x RJ45 10/100/1000 + 2x SFP', hwSku:null,
+   spec:{encTput:'3DES: 2,4 Gbps · AES-CBC-256: 2,6 Gbps · AES-CCM: 3,4 Gbps · AES-GCM-256: 3,3 Gbps',
+     vlanMax:'4.096', ssl:'2.048 sesiones SSL', mtbf:'232.843 h',
+     watts:'190 W máx. (con PoE) · fuente interna · PoE+ 150 W (12 puertos)',
+     btu:'300 BTU/h', ruido:'39,8 – 58,6 dBA', dims:'4,42 × 31,75 × 33,7 cm', peso:'3,4 kg'},
    skus:[{sku:null,d:'7010 (US / RW)'},{sku:'JW678AR',d:'7010 remanufacturado HPE (Reman)'}],
    ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
 
   {id:'7024', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal med · acceso unificado 24p',
    fw:4000, clients:2048, aps:32, fwSess:32768, ipsecSess:null, greTuns:null, boostMax:null,
    ifaces:'24x RJ45 10/100/1000 + 2x SFP+ 10G', hwSku:null,
+   spec:{encTput:'3DES/AES-CBC: 2,4 Gbps · AES-CCM: 3,4 Gbps', mtbf:'311.901 h',
+     watts:'450 W máx. (con PoE) · fuente interna · PoE+ 400 W (24 puertos)',
+     btu:'1.842 BTU/h', ruido:'34,3 – 71,2 dBA', dims:'4,37 × 44,2 × 31,3 cm', peso:'5,13 kg'},
    skus:[{sku:null,d:'7024 (US / RW)'}],
    ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
 
+  // ipsecSess/greTuns completados el 2026-09-13 desde el DS oficial de la serie 7000
+  // (4.096 IPsec, 1.024 GRE, 4.096 SSL, 4.096 VLANs). El DS declara 8x combo 1G sin
+  // puertos 10G — el `ifaces` del catálogo dice lo contrario: NO se toca, PENDIENTES.md.
   {id:'7030', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal gde',
-   fw:8000, clients:4096, aps:64, fwSess:65536, ipsecSess:null, greTuns:null, boostMax:null,
+   fw:8000, clients:4096, aps:64, fwSess:65536, ipsecSess:4096, greTuns:1024, boostMax:null,
    ifaces:'8x RJ45 10/100/1000 (combo) + puertos 10G', hwSku:null,
+   spec:{encTput:'3DES: 2,4 Gbps · AES-CBC-256: 2,6 Gbps · AES-CCM: 4,0 Gbps · AES-GCM-256: 3,4 Gbps',
+     vlanMax:'4.096', ssl:'4.096 sesiones SSL', mtbf:'390.679 h',
+     watts:'55 W máx. · fuente interna',
+     btu:'168 BTU/h', ruido:'29,1 – 57,4 dBA', dims:'4,4 × 30,5 × 21,1 cm', peso:'2,06 kg'},
    skus:[{sku:null,d:'7030 (US / RW)'},{sku:'JW686AR',d:'7030 remanufacturado HPE (Reman)'}],
    ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
 
   // ─── Serie 7200 · Mobility Controllers de campus (AOS 8) ───────────────────
   // Sin URL de datasheet oficial confirmada en las fuentes consultadas: `ds` queda en null
   // y la pagina lo dice, en vez de enlazar una copia de tercero como si fuera oficial.
+  // fwSess/ipsecSess/greTuns y `spec` completados el 2026-09-13 desde el DS oficial
+  // DS_7200Series (tabla "Performance and capacity" + físico/ambiental), obtenido en dos
+  // copias independientes del mismo documento (doble ancla). Conflicto NO aplicado: el DS
+  // declara 12 Gbps de firewall para el 7205 y el catálogo conserva 15 Gbps (PENDIENTES.md).
   {id:'7205', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus med',
-   fw:15000, clients:8000, aps:256, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   fw:15000, clients:8000, aps:256, fwSess:1000000, ipsecSess:8192, greTuns:4096, boostMax:null,
    ifaces:'2x 10GBASE-X (SFP+) + 4x dual-media (1000BASE-X o 10/100/1000BASE-T)', hwSku:null,
+   spec:{encTput:'3DES / AES-CBC-256 / AES-CCM / AES-GCM-256: 5 Gbps',
+     vlanMax:'4.096', ssl:'4.096 sesiones SSL', tuneles:'4.096 puertos tunelizados',
+     mtbf:'129.597 h @ 40 °C', watts:'75,2 W máx. · PSU 350 W AC', ruido:'49,0 dBA',
+     dims:'4,4 × 44,2 × 33,4 cm', peso:'4,95 kg'},
    skus:[{sku:null,d:'7205 (US / RW)'},{sku:'JW735AR',d:'7205 remanufacturado HPE (Reman)'}], ds:null, dsFile:null},
 
   {id:'7210', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus gde',
-   fw:20000, clients:16000, aps:512, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   fw:20000, clients:16000, aps:512, fwSess:2015291, ipsecSess:16384, greTuns:8192, boostMax:null,
    ifaces:'4x 10GBASE-X (SFP+)', hwSku:null,
+   spec:{encTput:'3DES: 7 Gbps · AES-CBC-256: 7 Gbps · AES-CCM: 6 Gbps · AES-GCM-256: 7 Gbps',
+     vlanMax:'4.096', ssl:'8.192 sesiones SSL', tuneles:'8.192 puertos tunelizados',
+     mtbf:'106.536 h @ 40 °C', watts:'110 W máx. · PSU 350 W AC', ruido:'46,9 dBA',
+     dims:'4,4 × 44,5 × 44,5 cm', peso:'7,45 kg'},
    skus:[{sku:null,d:'7210 (US / RW)'},{sku:'JW743AR',d:'7210 remanufacturado HPE (Reman)'}], ds:null, dsFile:null},
 
   {id:'7220', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus grande / alta densidad',
-   fw:40000, clients:24000, aps:1024, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   fw:40000, clients:24000, aps:1024, fwSess:2015291, ipsecSess:24576, greTuns:16384, boostMax:null,
    ifaces:'4x 10GBASE-X (SFP+)', hwSku:null,
+   spec:{encTput:'3DES: 27 Gbps · AES-CBC-256: 24 Gbps · AES-CCM: 22 Gbps · AES-GCM-256: 26 Gbps',
+     vlanMax:'4.096', ssl:'8.192 sesiones SSL', tuneles:'12.288 puertos tunelizados',
+     mtbf:'113.751 h @ 40 °C', watts:'125 W máx. · PSU 350 W AC', ruido:'46,9 dBA',
+     dims:'4,4 × 44,2 × 40,1 cm', peso:'7,9 kg'},
    skus:[{sku:null,d:'7220 (US / RW)'},{sku:'JW751AR',d:'7220 remanufacturado HPE (Reman)'}], ds:null, dsFile:null},
 
   {id:'7240XM', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus máxima escala',
-   fw:40000, clients:32000, aps:2048, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   fw:40000, clients:32000, aps:2048, fwSess:2015291, ipsecSess:32768, greTuns:32768, boostMax:null,
    ifaces:'4x 10GBASE-X (SFP+)', hwSku:null,
+   spec:{encTput:'3DES: 29 Gbps · AES-CBC-256: 31 Gbps · AES-CCM: 29 Gbps · AES-GCM-256: 35 Gbps',
+     vlanMax:'4.096', ssl:'8.192 sesiones SSL', tuneles:'16.384 puertos tunelizados',
+     mtbf:'116.590 h @ 40 °C', watts:'165 W máx. · PSU 350 W AC', ruido:'54,7 dBA',
+     dims:'4,4 × 44,5 × 44,5 cm', peso:'7,45 kg'},
    skus:[{sku:null,d:'7240XM (US / RW)'}], ds:null, dsFile:null},
 ];
 

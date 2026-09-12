@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-12.
+Última revisión: 2026-09-13.
 
 ---
 
@@ -277,6 +277,19 @@ distribuidor, el SKU de EC-XL (S0B67A) aparece con estado PLC **"End of Sale" vi
 descontinuado hasta confirmarlo con HPE o el distribuidor: es la misma regla de doble anclaje
 que el resto de esta tabla, aplicada a una señal de ciclo de vida en vez de una cifra.
 
+**Aruba — cuatro conflictos más, encontrados el 2026-09-13 al incorporar las fichas
+técnicas completas de los datasheets** (ver *Cerrado recientemente*). Misma regla: dos
+documentos oficiales por dato y la decisión final es del dueño del catálogo; mientras
+tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el existente.
+
+| Modelo | Campo | Catálogo | Ficha oficial |
+|---|---|---|---|
+| 7010 | `fw` / `fwSess` | 4 Gbps / 32.768 | **8 Gbps / 65.536** (DS serie 7000 vigente) |
+| 7205 | `fw` | 15 Gbps | **12 Gbps** (DS serie 7200) |
+| 7030 | `ifaces` | «8x combo + puertos 10G» | **8x combo 1G, sin 10G** (DS serie 7000) |
+| EC-L | `psu.texto` watts | 401 W | **404 W** (QuickSpecs) / **440 W** (Hardware Ref., EC-L-P) |
+| Gateway 9004/9012 | `aps` | 32 (AOS 8) | **128 / 256 "devices" (AOS 10)** — arquitecturas distintas |
+
 ## Datos por confirmar
 
 7. **Precio de los modelos Juniper y Nokia añadidos en agosto 2026.** Las cifras técnicas
@@ -354,6 +367,38 @@ que el resto de esta tabla, aplicada a una señal de ciclo de vida en vez de una
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Combos por familia, ficha técnica completa de Aruba y guarda de ancho de banda (2026-09-13)
+
+Tres peticiones del dueño en una sola entrega:
+
+1. **Combos de equipos organizados por serie/familia en los seis dimensionadores.** Los
+   combos de Fortinet, MikroTik y Juniper eran listas planas en el orden (alfabético) en
+   que la API servía el catálogo; Aruba, Cisco y Huawei ya agrupaban pero heredaban ese
+   mismo orden. Ahora los seis usan `<optgroup>` por familia —Fortinet deriva la familia
+   del propio id (G sucursal / G DC / F sucursal / F gama alta / F chasis)— con orden
+   determinista por capacidad dentro de cada familia y entre familias, sin depender del
+   orden en que llegue el catálogo. Lo virtual (CHR de MikroTik, EC-V de Aruba) va al
+   final de su grupo.
+2. **Ficha técnica completa de Aruba.** Nuevo campo `spec` por modelo (24 de 25; EC-V es
+   virtual) con las características de los datasheets oficiales que la ficha no mostraba:
+   conexiones simultáneas, Boost recomendado, IDS/IPS, throughput cifrado por cifrado,
+   VLANs, túneles, SSL, clustering, RAM, almacenamiento, FRU, certificaciones, MTBF,
+   alimentación/consumo, BTU, ruido, dimensiones y peso. Procedencia literal en la
+   cabecera de `aruba.js`: QuickSpecs EdgeConnect a50004289enw + Hardware Reference,
+   DS_9000/9100/9200 y DS_7000/7200 (estas dos con doble ancla de dos copias del mismo
+   documento). También se rellenaron `fwSess`/`ipsecSess`/`greTuns` que estaban en null
+   (series 9000, 7000 y 7200). Los conflictos detectados contra datos existentes NO se
+   aplicaron: quedan en la tabla de conflictos de este archivo.
+3. **Sin ancho de banda no hay recomendación.** Los seis dimensionadores (Aruba, Cisco,
+   Fortinet, Huawei, Juniper, MikroTik) muestran «Ingrese valores para recomendar un
+   equipo» y limpian veredicto, escala, resumen y BOM cuando el campo de ancho de banda
+   está vacío; al escribir un valor vuelve la recomendación normal. Nokia ya pedía
+   valores por sí solo.
+
+Verificado: `npm run verificar` (233/233) y E2E en Chromium — combos agrupados y ordenados
+en los seis, mensaje de vacío y recomendación al ingresar caudal, y las nuevas filas de
+la ficha (EC-10104, Gateway 9240, 7010) pintadas desde el `spec`.
 
 ### Aruba: catálogo de suscripciones y servicios con SKU y List Price (2026-09-13)
 

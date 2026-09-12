@@ -163,6 +163,20 @@ function preferByMedia(list){
 function render(){
   $('headVal').textContent=Math.round((parseFloat($('head').value)||0))+' %';
   const req=requirements();
+  // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): es el dato
+  // mínimo del dimensionamiento; sin él la página pide valores en vez de proponer un
+  // equipo a ciegas.
+  if(req.mbps<=0){
+    lastPick=null; hayCandidato=false; sincronizarConBom(null);
+    const need=$('need'); need.style.left='0%'; $('needLbl').textContent='—';
+    $('track').querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
+    FICHA.render({vendor:'mikrotik', contenedor:'verdict', candidatos:[], recomendado:null,
+      vacioTitulo:'Ingrese valores para recomendar un equipo',
+      vacioDetalle:'<p style="margin:0;font-size:13.5px">Escriba el <b>ancho de banda</b> del sitio (y si aplica, los servicios BGP/PPPoE/CAPsMAN) para que el dimensionador proponga los modelos que cumplen.</p>'});
+    $('verdict').style.borderLeftColor='var(--steel)';
+    $('sizingBox').innerHTML='<p style="font-size:13.5px;color:var(--steel)">Ingrese valores para recomendar un equipo.</p>';
+    return;
+  }
   const {ok,reasons,poeNeed}=selectCandidates(req);
   const pick=preferByMedia(ok);
   lastPick=pick;
@@ -325,7 +339,27 @@ function render(){
 
 /* ── BOM ───────────────────────────────────────────────────────────────────── */
 function populateSelects(){
-  $('pickModel').innerHTML=MODELS.map(m=>`<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.seg)}${m.eol?' (EOL)':m.legacy?' (legacy)':''}</option>`).join('');
+  // Combo agrupado por familia (ser): hEX, L009, RB4011, RB5009, CCR2004, CCR2116, CCR2216, CHR.
+  // Orden determinista por capacidad (fwd): la API puede servir el catalogo en cualquier
+  // orden y el combo no puede depender de eso. Familias por su modelo de entrada; dentro
+  // de cada familia, de menor a mayor. Lo virtual (CHR) va al final, no por capacidad
+  // sino por naturaleza: es la opcion cuando no se compra hardware.
+  const grupos=new Map();
+  for(const m of MODELS){
+    const g=m.ser||'Otros';
+    if(!grupos.has(g)) grupos.set(g,[]);
+    grupos.get(g).push(m);
+  }
+  const ordenados=[...grupos.entries()];
+  for(const [,ms] of ordenados) ms.sort((a,b)=>(a.fwd||0)-(b.fwd||0));
+  ordenados.sort((a,b)=>{
+    const ca=a[0]==='CHR'?Infinity:Math.min(...a[1].map(m=>m.fwd||0));
+    const cb=b[0]==='CHR'?Infinity:Math.min(...b[1].map(m=>m.fwd||0));
+    return ca-cb;
+  });
+  $('pickModel').innerHTML=ordenados.map(([g,ms])=>
+    `<optgroup label="${esc(g)}">`+ms.map(m=>`<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.seg)}${m.eol?' (EOL)':m.legacy?' (legacy)':''}</option>`).join('')+`</optgroup>`
+  ).join('');
   $('supportTier').innerHTML=Object.entries(SUPPORT).filter(([c])=>c!=='training')
     .map(([c,t])=>`<option value="${c}">${esc(t.n)}</option>`).join('');
   $('bomApModel').innerHTML=APS.map(a=>`<option value="${esc(a.sku)}">${esc(a.sku)} — ${money(a.price)}</option>`).join('');

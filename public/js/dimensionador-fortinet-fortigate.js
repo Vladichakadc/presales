@@ -255,6 +255,27 @@ function render(){
   const head=(parseFloat($('head').value)||0)/100;
   $('headVal').textContent=Math.round(head*100)+' %';
 
+  // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): es el dato
+  // mínimo del dimensionamiento; sin él la página pide valores en vez de proponer un
+  // equipo a ciegas.
+  if(bw<=0){
+    lastPick=null;
+    const habiaCandidato=hayCandidato;
+    hayCandidato=false;
+    if(habiaCandidato!==hayCandidato) renderBom();
+    const need=$('need'); need.style.left='0%'; $('needLbl').textContent='—';
+    $('track').querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
+    FICHA.render({vendor:'fortinet', contenedor:'verdict', candidatos:[], recomendado:null,
+      vacioTitulo:'Ingrese valores para recomendar un equipo',
+      vacioDetalle:'<p style="margin:0;font-size:13.5px">Escriba el <b>ancho de banda</b> del sitio (y si aplica, usuarios y sesiones) para que el dimensionador proponga los modelos que cumplen.</p>'});
+    $('verdict').style.borderLeftColor='var(--steel)';
+    $('perfTiers').innerHTML='';
+    $('perfNote').textContent='';
+    $('sesCalc').textContent='';
+    $('cpsCalc').textContent='';
+    return;
+  }
+
   // Caudal declarado: una sede, o el agregado de varias con su factor de simultaneidad.
   // Sumar linealmente las sedes de un concentrador sobredimensiona y encarece la
   // propuesta; tomar el caudal de una sola lo deja corto. El factor es el que decide.
@@ -608,8 +629,36 @@ function renderTiers(m,need){
 }
 
 /* BOM */
+// El catalogo Fortinet no tiene campo de serie: se deriva del propio id
+// ("FortiGate 120G" -> familia G, numero 120). Los cortes por numero siguen el
+// posicionamiento de Fortinet: G/F de 2-3 cifras son sucursal, F de 4 cifras es
+// gama alta/DC y 7xxxF es chasis de operador.
+function serieFortinet(id){
+  const mm=/(\d+)([GF])/.exec(id);
+  if(!mm) return 'Otros';
+  const n=parseInt(mm[1]), fam=mm[2];
+  if(fam==='G') return n>=1000 ? 'FortiGate G — Data Center / Operador' : 'FortiGate G — Sucursal / SOHO';
+  if(n>=7000) return 'FortiGate F — Chasis / Operador';
+  return n>=1000 ? 'FortiGate F — Gama alta / Data Center' : 'FortiGate F — Sucursal / Mediana empresa';
+}
 function populatePickModel(){
-  $('pickModel').innerHTML=MODELS.map(m=>`<option value="${m.id}">${m.id} — ${m.seg}${m.eol?' (EOL)':''}</option>`).join('');
+  // Orden fijo de familia y de modelo dentro de la familia (numerico por el id): la API
+  // puede servir el catalogo en cualquier orden y el combo no puede depender de eso.
+  const ORDEN=['FortiGate G — Sucursal / SOHO','FortiGate G — Data Center / Operador',
+    'FortiGate F — Sucursal / Mediana empresa','FortiGate F — Gama alta / Data Center',
+    'FortiGate F — Chasis / Operador','Otros'];
+  const numDe=id=>{const mm=/(\d+)/.exec(id);return mm?parseInt(mm[1]):0;};
+  const grupos=new Map();
+  for(const m of MODELS){
+    const g=serieFortinet(m.id);
+    if(!grupos.has(g)) grupos.set(g,[]);
+    grupos.get(g).push(m);
+  }
+  const ordenados=[...grupos.entries()].sort((a,b)=>ORDEN.indexOf(a[0])-ORDEN.indexOf(b[0]));
+  for(const [,ms] of ordenados) ms.sort((a,b)=>numDe(a.id)-numDe(b.id));
+  $('pickModel').innerHTML=ordenados.map(([g,ms])=>
+    `<optgroup label="${g}">`+ms.map(m=>`<option value="${m.id}">${m.id} — ${m.seg}${m.eol?' (EOL)':''}</option>`).join('')+`</optgroup>`
+  ).join('');
 }
 
 const money=n=>n==null?null:'$'+n.toLocaleString('en-US',{maximumFractionDigits:2});

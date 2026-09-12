@@ -113,6 +113,20 @@ function render(){
   $('headVal').textContent=Math.round(head*100)+' %';
   $('concVal').textContent=Math.round(conc*100)+' %';
 
+  // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): es el dato
+  // mínimo del dimensionamiento; sin él la página pide valores en vez de proponer un
+  // equipo a ciegas.
+  if(bw<=0){
+    lastPick=null; hayCandidato=false; sincronizarConBom(null);
+    const need=$('need'); need.style.left='0%'; $('needLbl').textContent='—';
+    $('track').querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
+    FICHA.render({vendor:'cisco', contenedor:'verdict', candidatos:[], recomendado:null,
+      vacioTitulo:'Ingrese valores para recomendar un equipo',
+      vacioDetalle:'<p style="margin:0;font-size:13.5px">Escriba el <b>ancho de banda</b> del sitio para que el dimensionador proponga los modelos que cumplen.</p>'});
+    $('verdict').style.borderLeftColor='var(--steel)';
+    return;
+  }
+
   // base throughput
   let baseMbps = bw * unit;
   if(mode==='agg') baseMbps = bw * unit * sites * conc;
@@ -500,11 +514,17 @@ $('xlsBtn').addEventListener('click', async()=>{
   SMARTNET = data.smartnet;
   DNA_DESC = data.dnaDesc;
 
-  // Populate BOM model selector
+  // Populate BOM model selector — orden determinista por capacidad (fwd): la API puede
+  // servir el catalogo en cualquier orden y el combo no puede depender de eso. Series por
+  // su modelo de entrada; dentro de cada serie, de menor a mayor.
   $('pickModel').innerHTML = (() => {
+    const capDe=m=>m.fwd||m.ipsec||0;
     const groups={};
     MODELS.forEach(m=>{ (groups[m.ser]=groups[m.ser]||[]).push(m); });
-    return Object.entries(groups).map(([g,arr])=>
+    const ordenadas=Object.entries(groups);
+    for(const [,arr] of ordenadas) arr.sort((a,b)=>capDe(a)-capDe(b));
+    ordenadas.sort((a,b)=>Math.min(...a[1].map(capDe))-Math.min(...b[1].map(capDe)));
+    return ordenadas.map(([g,arr])=>
       `<optgroup label="${g}">${arr.map(m=>`<option value="${m.id}">${m.id} — ${m.fam}</option>`).join('')}</optgroup>`).join('');
   })();
 
