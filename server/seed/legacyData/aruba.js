@@ -25,6 +25,19 @@
 // la serie 7000/7200) sigue sin precio, y el BOM declara esas líneas "sin cotizar" en vez de
 // inventar un importe.
 //
+// LIST PRICE DE SUSCRIPCIONES Y SERVICIOS (2026-09-13). LICENSES, BOOST, CENTRAL_TIERS y
+// las licencias perpetuas del 9240 llevan ahora SKU y List Price 1/3/5 años. Doble fuente:
+//   1. QuickSpecs oficial EdgeConnect SD-WAN (v18, 06-jul-2026 — DATASHEETS.ecQuickspecs)
+//      para la correspondencia SKU↔descripción, verificada además contra la copia publicada
+//      en hpe.com (a50004289enw) el mismo día.
+//   2. El mismo export de lista de precios del distribuidor ya descrito arriba para el
+//      List Price (solo SKU, descripción, List Price y vigencia — nunca el distribuidor
+//      ni su descuento). Punto de control externo: JZ118AAE aparece en tienda pública con
+//      LIST PRICE $1,260.00, idéntico al de la lista.
+// Lo que la lista no cubre sigue en null y se declara: EC-V, EC-XS-SP, Dynamic Threat
+// Defense, el Orchestrator cloud-hosted y los SKU de Foundational Care (van por VARIANTE
+// de hardware — H43W0E, H44Z4E... — y se consultan en HPE SSC, no por tier de caudal).
+//
 // CORRECCIONES RESPECTO A LA PRIMERA VERSIÓN DE ESTE ARCHIVO (documentadas a propósito):
 //   · Se elimina "EC-2XL": no existe en el portafolio. La gama va XS → S → M → L → XL.
 //   · Los niveles de suscripción no son "Base/Advanced" sino Foundation / Advanced /
@@ -257,10 +270,13 @@ const MODELS = [
   // ─── Serie 9200 · Campus Gateways ──────────────────────────────────────────
   {id:'Gateway 9240', fam:'gw', rol:'campus', serie:'Serie 9200', seg:'Campus / Hub regional',
    fw:20000, clients:16000, aps:512, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   // SKU y List Price de las licencias perpetuas (2026-09-13, lista del distribuidor):
+   // variante AOS-10, la arquitectura que gestiona Central y la que usa este catálogo.
+   // Existen las equivalentes AOS-8 (R8R13AAE/R8R14AAE) — no aplican aquí.
    licCap:[
      {code:'hw',     n:'Solo hardware',             fw:20000, aps:512,  clients:16000},
-     {code:'silver', n:'+ licencia Silver (perp.)', fw:30000, aps:1000, clients:24000},
-     {code:'gold',   n:'+ licencia Gold (perp.)',   fw:40000, aps:2000, clients:32000},
+     {code:'silver', n:'+ licencia Silver (perp.)', fw:30000, aps:1000, clients:24000, sku:'R8R41AAE', elp:9995},
+     {code:'gold',   n:'+ licencia Gold (perp.)',   fw:40000, aps:2000, clients:32000, sku:'R8R42AAE', elp:19995},
    ],
    ifaces:'4x SFP28 + 1 slot de expansión · 1U rack', hwSku:'R7H95A',
    skus:[{sku:'R7H95A',d:'9240 (US) · 4x SFP28 · 1 slot de expansión'}],
@@ -277,19 +293,21 @@ const MODELS = [
   {id:'7005', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal peq (fanless)',
    fw:2000, clients:1024, aps:16, fwSess:16384, ipsecSess:null, greTuns:null, boostMax:null,
    ifaces:'4x RJ45 10/100/1000 · sin ventilador · alimentable por PoE', hwSku:null,
-   skus:[{sku:null,d:'7005 (US / RW)'}],
+   // Remanufacturado HPE (2026-09-13, lista del distribuidor): la unidad nueva no está en
+   // la lista; el SKU reman sí, con List Price — ver cotizadorCatalog.js.
+   skus:[{sku:null,d:'7005 (US / RW)'},{sku:'JW633AR',d:'7005 remanufacturado HPE (Reman)'}],
    ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
 
   {id:'7008', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal peq + PoE',
    fw:2000, clients:1024, aps:16, fwSess:16384, ipsecSess:null, greTuns:null, boostMax:null,
    ifaces:'8x RJ45 10/100/1000 con PoE y PoE+ integrados · sin ventilador', hwSku:null,
-   skus:[{sku:null,d:'7008 (US / RW)'}],
+   skus:[{sku:null,d:'7008 (US / RW)'},{sku:'JX927AR',d:'7008 remanufacturado HPE (Reman)'}],
    ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
 
   {id:'7010', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal med',
    fw:4000, clients:2048, aps:32, fwSess:32768, ipsecSess:null, greTuns:null, boostMax:null,
    ifaces:'16x RJ45 10/100/1000 + 2x SFP', hwSku:null,
-   skus:[{sku:null,d:'7010 (US / RW)'}],
+   skus:[{sku:null,d:'7010 (US / RW)'},{sku:'JW678AR',d:'7010 remanufacturado HPE (Reman)'}],
    ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
 
   {id:'7024', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal med · acceso unificado 24p',
@@ -301,7 +319,7 @@ const MODELS = [
   {id:'7030', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal gde',
    fw:8000, clients:4096, aps:64, fwSess:65536, ipsecSess:null, greTuns:null, boostMax:null,
    ifaces:'8x RJ45 10/100/1000 (combo) + puertos 10G', hwSku:null,
-   skus:[{sku:null,d:'7030 (US / RW)'}],
+   skus:[{sku:null,d:'7030 (US / RW)'},{sku:'JW686AR',d:'7030 remanufacturado HPE (Reman)'}],
    ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
 
   // ─── Serie 7200 · Mobility Controllers de campus (AOS 8) ───────────────────
@@ -310,17 +328,17 @@ const MODELS = [
   {id:'7205', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus med',
    fw:15000, clients:8000, aps:256, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
    ifaces:'2x 10GBASE-X (SFP+) + 4x dual-media (1000BASE-X o 10/100/1000BASE-T)', hwSku:null,
-   skus:[{sku:null,d:'7205 (US / RW)'}], ds:null, dsFile:null},
+   skus:[{sku:null,d:'7205 (US / RW)'},{sku:'JW735AR',d:'7205 remanufacturado HPE (Reman)'}], ds:null, dsFile:null},
 
   {id:'7210', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus gde',
    fw:20000, clients:16000, aps:512, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
    ifaces:'4x 10GBASE-X (SFP+)', hwSku:null,
-   skus:[{sku:null,d:'7210 (US / RW)'}], ds:null, dsFile:null},
+   skus:[{sku:null,d:'7210 (US / RW)'},{sku:'JW743AR',d:'7210 remanufacturado HPE (Reman)'}], ds:null, dsFile:null},
 
   {id:'7220', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus grande / alta densidad',
    fw:40000, clients:24000, aps:1024, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
    ifaces:'4x 10GBASE-X (SFP+)', hwSku:null,
-   skus:[{sku:null,d:'7220 (US / RW)'}], ds:null, dsFile:null},
+   skus:[{sku:null,d:'7220 (US / RW)'},{sku:'JW751AR',d:'7220 remanufacturado HPE (Reman)'}], ds:null, dsFile:null},
 
   {id:'7240XM', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus máxima escala',
    fw:40000, clients:32000, aps:2048, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
@@ -395,6 +413,18 @@ const BOOST = {
     oficina:  {n:'Ficheros de oficina y correo interno',  factor:2.0},
     repetido: {n:'Réplicas, backups, VDI, CIFS/SMB',      factor:3.5},
   },
+  // SKU y List Price por bloque (2026-09-13 — doble fuente como LICENSES: QuickSpecs v18
+  // para SKU↔descripción, lista del distribuidor para el precio). El dimensionador consume
+  // el bloque de 100 Mbps; el de 10 Gbps existe para hubs grandes y se deja documentado.
+  // `saas` acompaña a Foundation/Advanced; `onprem` a la suscripción On-Premises.
+  saas: {
+    bloque100: {sku:{y1:'S0Z71AAS', y3:'S0Z73AAS', y5:'S0Z75AAS'}, y1:6552,   y3:19656,  y5:32760},
+    bloque10g: {sku:{y1:'S0Z85AAS', y3:'S0Z87AAS', y5:'S0Z89AAS'}, y1:327600, y3:982800, y5:1638000},
+  },
+  onprem: {
+    bloque100: {sku:{y1:'S0Z99AAS', y3:'S1A01AAS', y5:'S1A03AAS'}, y1:6552,   y3:19656,  y5:32760},
+    bloque10g: {sku:{y1:'S0Z23AAS', y3:'S0Z25AAS', y5:'S0Z27AAS'}, y1:327600, y3:982800, y5:1638000},
+  },
 };
 
 // Path Conditioning: el FEC envía paquetes de paridad para reconstruir pérdidas sin esperar
@@ -422,9 +452,20 @@ const SOFTWARE = [
 ];
 
 // Niveles de suscripción de Central aplicables a los gateways.
+// SKU y List Price 1/3/5 años (2026-09-13, lista del distribuidor + SD-WAN Gateways
+// Ordering Guide — DATASHEETS.sdwanOrder). Los SKU cargados son los de gateway 70xx/90xx,
+// la línea SD-Branch que dimensiona esta herramienta. Variantes documentadas, no cargadas:
+//   · 72xx Foundation: JZ195AAE/JZ196AAE/JZ197AAE ($9,450/$18,900/$28,350).
+//   · 9004/9012 Foundation Base: JZ124AAE/JZ125AAE/JZ126AAE ($473/$945/$1,418).
+//   · Foundation+Security 90xx: R4D98AAE/R4D99AAE/R4E00AAE ($1,680/$3,360/$5,040);
+//     Foundation Base+Security: R4D93AAE/R4D94AAE/R4D95AAE ($893/$1,785/$2,678);
+//     Advanced+Security: R4E03AAE/R4E04AAE/R4E05AAE ($2,310/$4,620/$6,930).
+//   · Gateway virtual (vGW) 500M/2G/4G: R0X97-99AAE, R3V73-75AAE, R3V76-78AAE.
 const CENTRAL_TIERS = {
-  foundation: {n:'Central Foundation', d:'Gestión, monitorización y configuración del dispositivo.'},
-  advanced:   {n:'Central Advanced',   d:'Añade analítica avanzada, AIOps y las capacidades de seguridad del nivel superior.'},
+  foundation: {n:'Central Foundation', d:'Gestión, monitorización y configuración del dispositivo.',
+    sku:{y1:'JZ118AAE', y3:'JZ119AAE', y5:'JZ120AAE'}, y1:1260, y3:2520, y5:3780},
+  advanced:   {n:'Central Advanced',   d:'Añade analítica avanzada, AIOps y las capacidades de seguridad del nivel superior.',
+    sku:{y1:'JZ121AAE', y3:'JZ122AAE', y5:'JZ123AAE'}, y1:1890, y3:3780, y5:5670},
 };
 
 // ── Servicios de soporte ─────────────────────────────────────────────────────
@@ -439,21 +480,38 @@ const CARE = {
           d:'Soporte técnico remoto y acceso a actualizaciones y parches para el software. Se contrata junto al de hardware.'},
 };
 
-// Licencias por tier de caudal. sku/precio en null: sin price list verificado (ver cabecera).
-// La estructura queda lista para rellenarse con la lista del distribuidor sin tocar la
-// página ni la proyección.
+// Licencias por tier de caudal (2026-09-13). Cada suscripción tiene un SKU DISTINTO por
+// duración (1/3/5 años), así que `sku` va desglosado igual que el precio. Doble fuente,
+// ver cabecera: QuickSpecs oficial v18 para SKU↔descripción (verificado contra hpe.com),
+// lista del distribuidor para el List Price. La lista también publica SKU de 7 años, por
+// suscripción purga y de alta disponibilidad — no los consume el dimensionador.
+//
+// `care` sigue en null a propósito: los SKU de Foundational Care (H43W0E, H44Z4E, H07BKE…)
+// van atados a la VARIANTE de hardware (sufijos B/P/H/NM/SP/TAA/OS), no al tier de caudal,
+// y se resuelven en HPE SSC equipo a equipo. Mapearlos aquí sería inventar la estructura.
 function tierVacio() {
   return {sku:null, y1:null, y3:null, y5:null};
 }
-const LICENSES = {};
-for (const t of BW_TIERS) {
-  LICENSES[t.code] = {
-    foundation: tierVacio(),
-    advanced: tierVacio(),
-    onprem: tierVacio(),
+const LICENSES = {
+  bw100: {
+    foundation: {sku:{y1:'S1C49AAS', y3:'S1C51AAS', y5:'S1C53AAS'}, y1:900,  y3:2700,  y5:4500},
+    advanced:   {sku:{y1:'S1B34AAS', y3:'S1B36AAS', y5:'S1B38AAS'}, y1:1848, y3:5544,  y5:9240},
+    onprem:     {sku:{y1:'S1B99AAS', y3:'S1C01AAS', y5:'S1C03AAS'}, y1:1932, y3:5796,  y5:9660},
     care: {fcnbd: tierVacio(), fc247: tierVacio(), fcsw: tierVacio()},
-  };
-}
+  },
+  bw1g: {
+    foundation: {sku:{y1:'S1A22AAS', y3:'S1A24AAS', y5:'S1A26AAS'}, y1:1680, y3:5040,  y5:8400},
+    advanced:   {sku:{y1:'S1B77AAS', y3:'S1B79AAS', y5:'S1B81AAS'}, y1:6540, y3:19620, y5:32700},
+    onprem:     {sku:{y1:'S0Y07AAS', y3:'S0Y09AAS', y5:'S0Y11AAS'}, y1:6864, y3:20592, y5:34320},
+    care: {fcnbd: tierVacio(), fc247: tierVacio(), fcsw: tierVacio()},
+  },
+  bwunl: {
+    foundation: {sku:{y1:'S1A36AAS', y3:'S1A38AAS', y5:'S1A40AAS'}, y1:7848,  y3:23544, y5:39240},
+    advanced:   {sku:{y1:'S1C35AAS', y3:'S1C37AAS', y5:'S1C39AAS'}, y1:23580, y3:70740, y5:117900},
+    onprem:     {sku:{y1:'S0Z57AAS', y3:'S0Z59AAS', y5:'S0Z61AAS'}, y1:24744, y3:74232, y5:123720},
+    care: {fcnbd: tierVacio(), fc247: tierVacio(), fcsw: tierVacio()},
+  },
+};
 
 module.exports = {
   MODELS, BUNDLES, CARE, LICENSES, BW_TIERS, BOOST, FEC_OVERHEAD,

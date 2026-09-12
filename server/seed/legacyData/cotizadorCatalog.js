@@ -133,14 +133,18 @@ module.exports = [
   {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9106',          seg:'Sucursal gde / Campus peq',     spec:'Serie 9100 Hybrid · FW 10 Gbps · 8.000 clientes · 2.000 APs · SKU S5H02A',  elp:'~ $9,228', elpN:9228},
   {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9114',          seg:'Campus peq / Sucursal grande',  spec:'Serie 9100 Hybrid · FW 20 Gbps · 10.000 clientes · 4.000 APs · SKU R9M45A',  elp:'~ $19,944',elpN:19944},
   {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9240',          seg:'Campus / Hub regional',         spec:'Serie 9200 · FW 20 Gbps · 16.000 clientes · 512 APs · SKU R7H95A',  elp:'~ $37,614',elpN:37614},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7005',                  seg:'Sucursal peq (fanless)',        spec:'Serie 7000 · FW 2 Gbps · 1.024 clientes · 16 APs',  elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7008',                  seg:'Sucursal peq + PoE',            spec:'Serie 7000 · FW 2 Gbps · 1.024 clientes · 16 APs',  elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7010',                  seg:'Sucursal med',                  spec:'Serie 7000 · FW 4 Gbps · 2.048 clientes · 32 APs',  elp:'Consultar',elpN:0},
+  // Serie 7000/7200 (2026-09-13): la unidad NUEVA no esta en la lista del distribuidor;
+  // lo que tiene List Price es la unidad remanufacturada HPE (sufijo AR). Se cotiza esa y
+  // se declara "(Reman)" en la fila — ver aruba.js, skus de cada modelo. 7024 y 7240XM no
+  // tienen ni una ni otra en la lista: siguen en Consultar.
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7005',                  seg:'Sucursal peq (fanless)',        spec:'Serie 7000 · FW 2 Gbps · 1.024 clientes · 16 APs · SKU JW633AR (Reman)',  elp:'~ $1,567', elpN:1567},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7008',                  seg:'Sucursal peq + PoE',            spec:'Serie 7000 · FW 2 Gbps · 1.024 clientes · 16 APs · SKU JX927AR (Reman)',  elp:'~ $2,718', elpN:2718},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7010',                  seg:'Sucursal med',                  spec:'Serie 7000 · FW 4 Gbps · 2.048 clientes · 32 APs · SKU JW678AR (Reman)',  elp:'~ $4,185', elpN:4185},
   {vendor:'Aruba',   color:'#01A982',model:'Aruba 7024',                  seg:'Sucursal med · acceso unificado 24p', spec:'Serie 7000 · FW 4 Gbps · 2.048 clientes · 32 APs',  elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7030',                  seg:'Sucursal gde',                  spec:'Serie 7000 · FW 8 Gbps · 4.096 clientes · 64 APs',  elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7205',                  seg:'Campus med',                    spec:'Serie 7200 · FW 15 Gbps · 8.000 clientes · 256 APs',  elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7210',                  seg:'Campus gde',                    spec:'Serie 7200 · FW 20 Gbps · 16.000 clientes · 512 APs',  elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7220',                  seg:'Campus grande / alta densidad', spec:'Serie 7200 · FW 40 Gbps · 24.000 clientes · 1.024 APs',  elp:'Consultar',elpN:0},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7030',                  seg:'Sucursal gde',                  spec:'Serie 7000 · FW 8 Gbps · 4.096 clientes · 64 APs · SKU JW686AR (Reman)',  elp:'~ $7,326', elpN:7326},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7205',                  seg:'Campus med',                    spec:'Serie 7200 · FW 15 Gbps · 8.000 clientes · 256 APs · SKU JW735AR (Reman)',  elp:'~ $13,609',elpN:13609},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7210',                  seg:'Campus gde',                    spec:'Serie 7200 · FW 20 Gbps · 16.000 clientes · 512 APs · SKU JW743AR (Reman)',  elp:'~ $17,798',elpN:17798},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7220',                  seg:'Campus grande / alta densidad', spec:'Serie 7200 · FW 40 Gbps · 24.000 clientes · 1.024 APs · SKU JW751AR (Reman)',  elp:'~ $26,699',elpN:26699},
   {vendor:'Aruba',   color:'#01A982',model:'Aruba 7240XM',                seg:'Campus máxima escala',          spec:'Serie 7200 · FW 40 Gbps · 32.000 clientes · 2.048 APs',  elp:'Consultar',elpN:0},
   // Ampliacion Juniper y Nokia (ago-2026), tomada de datasheets oficiales — ver la cabecera
   // de cada bloque en legacyData/indexPR.js para las URLs. Las cifras tecnicas estan

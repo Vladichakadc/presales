@@ -461,6 +461,9 @@ function populateSelects(){
 
 const money=n=>n==null?null:'$'+n.toLocaleString('en-US',{maximumFractionDigits:2});
 function tierPrice(t,y){ if(!t) return null; const v=y===1?t.y1:y===5?t.y5:t.y3; return v==null?null:v; }
+// El SKU de una suscripción depende de la duración (1/3/5 años): desde el 2026-09-13
+// `sku` puede ser un objeto {y1,y3,y5}. Se acepta también la forma plana por compatibilidad.
+function tierSku(t,y){ if(!t||t.sku==null) return null; if(typeof t.sku==='string') return t.sku; const v=y===1?t.sku.y1:y===5?t.sku.y5:t.sku.y3; return v||null; }
 
 function renderBom(){
   const m=MODELS.find(x=>x.id===$('pickModel').value)||MODELS[0];
@@ -486,6 +489,13 @@ function renderBom(){
   const careTier=lic?lic.care[care]:null;
   const licPrice=tierPrice(licTier,termYrs);
   const carePrice=tierPrice(careTier,termYrs);
+  // Boost se licencia como SaaS sobre Foundation/Advanced y como E-STU sobre On-Premises:
+  // cada modalidad tiene su propio juego de SKUs (2026-09-13, ver aruba.js).
+  const boostCfg=bloques&&SIZING.boost?(bundle==='onprem'?SIZING.boost.onprem:SIZING.boost.saas):null;
+  const boostBlk=boostCfg?boostCfg.bloque100:null;
+  const boostPrice=tierPrice(boostBlk,termYrs);
+  const centralTier=CENTRAL[central]||null;
+  const centralPrice=tierPrice(centralTier,termYrs);
   const termino=`término ${termYrs} año${termYrs>1?'s':''}`;
   const capTier=esGwc&&m.licCap?(m.licCap.find(t=>t.code===capTierCode)||m.licCap[0]):null;
 
@@ -517,15 +527,15 @@ function renderBom(){
 
   html+=`<section class="panel"><h2>${esEC?'Suscripción EdgeConnect':'Suscripción y licencias'}</h2><ul class="clean">
     ${esEC?`<li class="on"><b>${esc(BUNDLES[bundle].n)}</b><span class="req">Requerida</span><span class="sku">${esc(BUNDLES[bundle].svcs)}<br>Tier de caudal: <b>${bwTier?esc(bwTier.n):'—'}</b> · ${termino}${licPrice!=null?' · '+money(licPrice):' · <span class="warn">precio no verificado</span>'}</span></li>
-    <li${bloques?' class="on"':''}><b>${esc(SIZING.boost.n)}</b><span class="req${bloques?'':' opt'}">${bloques?'Incluido':'Opcional'}</span><span class="sku">${esc(SIZING.boost.svcs)}${bloques?`<br>Pool: <b>${bloques} bloque(s) de ${SIZING.boost.bloque} Mbps = ${fmt(bloques*SIZING.boost.bloque)}</b> — se licencia una vez para todo el fabric, no por sede.`:''}</span></li>`
-    :`<li class="on"><b>${esc(CENTRAL[central].n)}</b><span class="req">Requerida</span><span class="sku">${esc(CENTRAL[central].d)} · suscripción por dispositivo · ${termino}</span></li>
-    ${capTier&&capTier.code!=='hw'?`<li class="on"><b>Licencia perpetua ${esc(capTier.n)}</b><span class="req">Requerida</span><span class="sku">Amplía el mismo hardware a ${fmt(capTier.fw)}, ${miles(capTier.aps)} APs y ${miles(capTier.clients)} dispositivos.</span></li>`:''}`}
+    <li${bloques?' class="on"':''}><b>${esc(SIZING.boost.n)}</b><span class="req${bloques?'':' opt'}">${bloques?'Incluido':'Opcional'}</span><span class="sku">${esc(SIZING.boost.svcs)}${bloques?`<br>Pool: <b>${bloques} bloque(s) de ${SIZING.boost.bloque} Mbps = ${fmt(bloques*SIZING.boost.bloque)}</b> — se licencia una vez para todo el fabric, no por sede.${tierSku(boostBlk,termYrs)?`<br>SKU por bloque: <code>${esc(tierSku(boostBlk,termYrs))}</code>${boostPrice!=null?' · '+money(boostPrice)+' / bloque':''} · ${termino}`:''}`:''}</span></li>`
+    :`<li class="on"><b>${esc(CENTRAL[central].n)}</b><span class="req">Requerida</span><span class="sku">${esc(CENTRAL[central].d)} · suscripción por dispositivo · ${termino}${tierSku(centralTier,termYrs)?`<br>SKU: <code>${esc(tierSku(centralTier,termYrs))}</code>${centralPrice!=null?' · '+money(centralPrice):''}`:''}</span></li>
+    ${capTier&&capTier.code!=='hw'?`<li class="on"><b>Licencia perpetua ${esc(capTier.n)}</b><span class="req">Requerida</span><span class="sku">Amplía el mismo hardware a ${fmt(capTier.fw)}, ${miles(capTier.aps)} APs y ${miles(capTier.clients)} dispositivos.${capTier.sku?`<br>SKU: <code>${esc(capTier.sku)}</code>${capTier.elp!=null?' · '+money(capTier.elp)+' (perpetua)':''}`:''}</span></li>`:''}`}
     <li><b>EdgeConnect Orchestrator</b><span class="req opt">Incluido</span><span class="sku">Gestión del fabric, Business Intent Overlays y ZTP. No se licencia por dispositivo gestionado.</span></li>
   </ul></section>`;
 
   html+=`<section class="panel"><h2>Soporte HPE</h2><div class="scroll"><table>
     <thead><tr><th>Servicio</th><th>SLA</th><th>SKU</th><th>Término</th><th>Precio ref.</th><th>Qty</th></tr></thead><tbody>
-    <tr><td>${esc(CARE[care].n)}</td><td class="n">${esc(CARE[care].sla)}</td><td class="n">${careTier&&careTier.sku?`<code>${esc(careTier.sku)}</code>`:'<span class="warn">Sin SKU verificado</span>'}</td><td class="n">${termYrs} años</td><td class="n">${carePrice!=null?money(carePrice):'—'}</td><td class="n">${qty}</td></tr>
+    <tr><td>${esc(CARE[care].n)}</td><td class="n">${esc(CARE[care].sla)}</td><td class="n">${tierSku(careTier,termYrs)?`<code>${esc(tierSku(careTier,termYrs))}</code>`:'<span class="warn">Sin SKU verificado</span>'}</td><td class="n">${termYrs} años</td><td class="n">${carePrice!=null?money(carePrice):'—'}</td><td class="n">${qty}</td></tr>
     </tbody></table></div><p class="hint" style="margin-top:8px">${esc(CARE[care].d)}</p></section>`;
 
   $('bomBody').innerHTML=html;
@@ -537,22 +547,22 @@ function renderBom(){
   ];
   if(esEC){
     filas.push({cat:'Suscripción SD-WAN', desc:`${BUNDLES[bundle].n} — ${bwTier?bwTier.n:'tier por definir'}`,
-      sku:licTier&&licTier.sku?licTier.sku:null, qty, unit:licPrice,
+      sku:tierSku(licTier,termYrs), qty, unit:licPrice,
       nota:`${termino} · suscripción por caudal del sitio, no por modelo de appliance`});
     if(bloques){
-      filas.push({cat:'Aceleración', desc:`${SIZING.boost.n} — ${bloques} bloque(s) de ${SIZING.boost.bloque} Mbps`,
-        sku:null, qty:1, unit:null,
+      filas.push({cat:'Aceleración', desc:`${SIZING.boost.n} — bloque de ${SIZING.boost.bloque} Mbps`,
+        sku:tierSku(boostBlk,termYrs), qty:bloques, unit:boostPrice,
         nota:`Pool agregado del fabric (${fmt(bloques*SIZING.boost.bloque)}). Orchestrator lo reparte entre sedes; no multiplica por unidad.`});
     }
   }else{
-    filas.push({cat:'Suscripción de gestión', desc:CENTRAL[central].n, sku:null, qty, unit:null,
+    filas.push({cat:'Suscripción de gestión', desc:CENTRAL[central].n, sku:tierSku(centralTier,termYrs), qty, unit:centralPrice,
       nota:`${termino} · HPE Aruba Networking Central, suscripción por dispositivo`});
     if(capTier&&capTier.code!=='hw'){
-      filas.push({cat:'Licencia perpetua', desc:`Capacidad ${capTier.n}`, sku:null, qty, unit:null,
+      filas.push({cat:'Licencia perpetua', desc:`Capacidad ${capTier.n}`, sku:capTier.sku||null, qty, unit:capTier.elp!=null?capTier.elp:null,
         nota:`Amplía el mismo hardware a ${fmt(capTier.fw)} · ${miles(capTier.aps)} APs · ${miles(capTier.clients)} dispositivos`});
     }
   }
-  filas.push({cat:'Soporte', desc:CARE[care].n, sku:careTier&&careTier.sku?careTier.sku:null, qty, unit:carePrice,
+  filas.push({cat:'Soporte', desc:CARE[care].n, sku:tierSku(careTier,termYrs), qty, unit:carePrice,
     nota:`${termino} · ${CARE[care].sla}`});
 
   const meta={
@@ -582,15 +592,16 @@ function renderBom(){
       esEC?'  repartido por Orchestrator, asi que se compra solo para las sedes que lo aprovechan.':'',
       '',
       'ADVERTENCIA DE DATOS',
-      '  Cifras tomadas de paginas de producto y tienda oficiales de HPE/Aruba. Los SKU de',
-      '  hardware son reales; NO hay price list verificado, por eso las lineas van sin importe.',
-      '  Abrir el datasheet enlazado y confirmar la fila exacta antes de emitir la propuesta.',
+      '  List Price de HPE (sin descuento de distribuidor) para hardware y suscripciones,',
+      '  tomado del export de lista de precios documentado en aruba-lista-precios-hpe.csv.',
+      '  Lo que sigue sin precio (Foundational Care por variante, EC-V, DTD) va en consultar',
+      '  a proposito. Confirmar la fila exacta del datasheet antes de emitir la propuesta.',
       qty>1?`  Par de ${qty} unidades: la suscripcion de sitio no se comparte, cada nodo lleva la suya.`:null,
     ].filter(n=>n!==null&&n!==''),
   };
 
   $('bomTabla').innerHTML=BOM.renderTabla(filas,{
-    aviso:'Precios de Aruba pendientes de verificación contra price list — las líneas figuran sin cotizar a propósito. Los SKU de hardware sí están tomados de la tienda oficial de HPE.',
+    aviso:'List Price de HPE (sin descuento de distribuidor) — hardware, suscripciones EdgeConnect/Boost/Central y licencias perpetuas 9240 verificados el 2026-09-13 (ver aruba-lista-precios-hpe.csv). Lo que no tiene precio verificado figura en "consultar" a propósito.',
   });
   $('bomOut').value=BOM.comoTexto(filas,meta);
   bomMeta=meta; bomFilas=filas;

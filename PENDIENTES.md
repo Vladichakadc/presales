@@ -288,8 +288,11 @@ que el resto de esta tabla, aplicada a una señal de ciclo de vida en vez de una
    el SRX4200 no lo tiene y se queda sin marcar a propósito.
 9. **~~Cisco `C8355-G2` tiene `sdwan: null`~~ Resuelto (2026-09-03)**, ver *Cerrado
    recientemente*. Cisco sí lo publica: 8,7 Gbps.
-10. **Precios de Aruba: todos en `null`.** No existe lista de precios en el material
-    disponible.
+10. **~~Precios de Aruba: todos en `null`~~ Resuelto (2026-09-13)**, ver *Cerrado
+    recientemente*. Suscripciones EdgeConnect, Boost, Central, licencias perpetuas del
+    9240 y remanufacturados 7000/7200 ya llevan SKU y List Price. Siguen en `null` a
+    propósito: Foundational Care (SKU por variante de hardware, se resuelve en HPE SSC),
+    EC-V, EC-XS-SP y Dynamic Threat Defense (no están en la lista del distribuidor).
 15. **Alimentación eléctrica: cobertura real, no completa.** La nueva sección «Alimentación
     eléctrica» de la ficha (agosto 2026) solo tiene dato donde el propio catálogo ya traía
     una frase publicada — Cisco 21/21 (ya existía), Huawei 17/40, MikroTik 14/15, Aruba 6/21,
@@ -351,6 +354,42 @@ que el resto de esta tabla, aplicada a una señal de ciclo de vida en vez de una
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Aruba: catálogo de suscripciones y servicios con SKU y List Price (2026-09-13)
+
+El pendiente 10 («Precios de Aruba: todos en `null`») se cierra casi entero. El export de
+lista de precios del distribuidor (el mismo del 2026-09-10, re-subido por el dueño) cubre
+mucho más que hardware: se extrajo el List Price de **todas** las líneas que el
+dimensionador consume, y la correspondencia SKU↔descripción se verificó contra el QuickSpecs
+oficial EdgeConnect SD-WAN (v18, 06-jul-2026) publicado en hpe.com, con punto de control
+externo en una tienda pública (JZ118AAE, LIST $1,260.00 — idéntico al de la lista).
+
+Lo que se cargó (solo SKU, descripción, List Price y vigencia — nunca el distribuidor ni su
+descuento, que es su dato confidencial):
+
+- **LICENSES** (`aruba.js`): los 9 combos tier×bundle (Foundation/Advanced/On-Premises ×
+  100 Mbps/1 Gbps/ilimitado) con un SKU distinto por duración — el `sku` ahora va desglosado
+  `{y1,y3,y5}` igual que el precio, y el motor (`tierSku`) elige el del término elegido.
+- **BOOST**: bloque de 100 Mbps y de 10 Gbps, en modalidad SaaS (sobre Foundation/Advanced)
+  y On-Premises (E-STU). El BOM ya muestra SKU y precio por bloque con su cantidad.
+- **CENTRAL_TIERS**: Foundation (JZ118-120AAE) y Advanced (JZ121-123AAE) de gateway
+  70xx/90xx. Las variantes (72xx, Foundation Base 9004/9012, +Security, vGW) quedan
+  documentadas en comentario con sus precios, sin cargar, porque el dimensionador no las
+  elige todavía.
+- **9240**: licencias perpetuas Silver (R8R41AAE, $9,995) y Gold (R8R42AAE, $19,995) en
+  variante AOS-10 — la arquitectura que gestiona Central, que es la que usa este catálogo.
+- **Serie 7000/7200**: la unidad nueva no está en la lista; la **remanufacturada HPE**
+  (sufijo AR) sí — 7005/7008/7010/7030/7205/7210/7220 con SKU y List Price, declarados
+  «(Reman)» en el cotizador y en `referencias.js`. 7024 y 7240XM no tienen ni una ni otra:
+  siguen en «Consultar».
+
+Lo que **sigue en `null` a propósito**: Foundational Care (sus SKU — H43W0E, H44Z4E… — van
+por variante de hardware y se resuelven en HPE SSC equipo a equipo; mapearlos a un tier de
+caudal sería inventar la estructura), EC-V, EC-XS-SP y Dynamic Threat Defense (ausentes de
+la lista). El CSV público (`aruba-lista-precios-hpe.csv`) pasa de 15 a 69 filas. Verificado
+con `npm run verificar` (233/233) y E2E en Chromium: EC-S con Advanced 1G/3a + 2 bloques
+Boost ($72,411 parcial), 9012 con Central Foundation 5a (JZ120AAE) y 9240 Gold + Central
+Advanced 3a ($61,389 parcial).
 
 ### Dimensionadores: los campos arrancan vacíos en cada sesión (2026-09-12)
 
