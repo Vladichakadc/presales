@@ -295,9 +295,12 @@
     return `${limpio}_${hoy}.xlsx`;
   }
 
-  async function exportarExcel(filas, meta) {
+  async function exportarExcel(filasBase, meta) {
     const m = meta || {};
     await cargarSheetJS();
+    // Igual que en renderTabla: lo anadido a mano tambien viaja al Excel. Exportar sin esas
+    // lineas daria un documento que no corresponde a lo que se ve en pantalla (2026-09-13).
+    const filas = (filasBase || []).concat(filasDeRefs());
     const { suma, sinPrecio } = totales(filas);
 
     const aoa = [];
@@ -338,8 +341,11 @@
 
   // Texto plano para pegar en un correo o un ticket. Se conserva porque sigue siendo la vía
   // más rápida de compartir un BOM sin adjuntar nada.
-  function comoTexto(filas, meta) {
+  function comoTexto(filasBase, meta) {
     const m = meta || {};
+    // Mismo criterio que exportarExcel: las referencias anadidas a mano son parte del BOM
+    // y tienen que salir en el texto, no solo en la tabla pintada.
+    const filas = (filasBase || []).concat(filasDeRefs());
     const { suma, sinPrecio } = totales(filas);
     const pad = (s, n) => String(s ?? '').padEnd(n);
     const L = [];

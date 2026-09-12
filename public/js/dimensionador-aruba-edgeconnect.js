@@ -9,6 +9,12 @@
 let MODELS = [], BUNDLES = {}, CARE = {}, LICENSES = {}, SIZING = {},
     SOFTWARE = [], CENTRAL = {}, DATASHEETS = {};
 
+// Catálogo pedible completo (hardware, remanufacturados, suscripciones, servicios) cargado
+// del CSV público de lista de precios. Es la fuente del panel "Añadir a la lista de
+// materiales": todas las referencias de pedido de la página viven integradas en el BOM.
+let SKU_CAT = [];        // [{sku, d, p, vig, plc, cat}]
+let skuFiltro = '', skuCatActiva = null;
+
 const $=id=>document.getElementById(id);
 let famMode='any', segMode='branch', lastPick=null;
 let hayCandidato=true;
@@ -324,8 +330,8 @@ function render(){
       if(m.greTuns!=null) caract.push(['Túneles GRE', miles(m.greTuns)]);
     }
     caract.push(['Interfaces', esc(m.ifaces), true]);
-    caract.push(['Referencias pedibles',
-      (m.skus||[]).map(r=>`${r.sku?`<code>${esc(r.sku)}</code>`:'<span class="bom-nd">sin SKU</span>'} ${esc(r.d)}`).join('<br>')||'—', true]);
+    // Las referencias de pedido NO van en la ficha: están integradas en la lista de
+    // materiales (pestaña Equipo y BOM), única fuente de SKU de la página (2026-09-13).
     caract.push(['Datasheet', (m.dsLocal||m.ds)
       ?`<a href="${esc(m.dsLocal||m.ds)}" target="_blank" rel="noopener">Abrir documento</a>${m.dsLocal?' (copia local)':''}`
       :'<span class="warn">Sin URL oficial confirmada</span>', true]);
@@ -380,7 +386,12 @@ function render(){
       </tbody></table>`;
   };
 
-  const elegidoId=FICHA.render({vendor:'aruba', 
+  const elegidoId=FICHA.render({vendor:'aruba',
+    // Las referencias de pedido ya no se muestran en la ficha: viven integradas en la lista
+    // de materiales (pestaña Equipo y BOM), que es la única fuente de SKU de la página.
+    // Duplicarlas aquí era justo la redundancia que este rediseño elimina (2026-09-13).
+    refs:false,
+    refsNota:'Las referencias de pedido de este equipo —y de todo el catálogo de Aruba: hardware, remanufacturados, suscripciones EdgeConnect, Boost, Central y licencias perpetuas— están integradas en la lista de materiales, en la pestaña «Equipo y BOM». Allí se añaden y se quitan con su SKU y su List Price.',
     contenedor:'verdict',
     candidatos:candidates,
     recomendado:pick.id,
@@ -445,7 +456,7 @@ function renderFicha(m,need,users,aps){
         ? 'HPE no publica el throughput de firewall de esta serie en las fuentes consultadas, asi que no se dimensiona por capacidad: hay que confirmarlo en las QuickSpecs enlazadas. '
         : 'Gateway de sucursal: termina la WAN y hace de controladora de APs en el mismo equipo. No hace optimización WAN. ')
     + (extra.length?`Capacidad publicada: ${extra.join(' · ')}. `:'')
-    + `Referencias: ${esc((m.skus||[]).map(r=>r.sku||r.d).join(' · ')||'—')}. Requerimiento actual: <b>${fmt(need)}</b>.`;
+    + `Requerimiento actual: <b>${fmt(need)}</b>.`;
 }
 
 /* BOM */
@@ -569,9 +580,8 @@ function renderBom(){
     <div class="model" style="font-size:28px">${esc(m.id)}</div>
     <p class="family">${esc(m.seg)} · ${esc(famLabel(m))}</p>
     <div class="scroll"><table><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
-    <tr><td>SKU de hardware</td><td class="n">${m.hwSku?`<code>${esc(m.hwSku)}</code>`:'<span class="warn">Sin SKU confirmado — ver variantes</span>'}</td></tr>
-    <tr><td>Referencias pedibles</td><td>${(m.skus||[]).map(r=>`${r.sku?`<code>${esc(r.sku)}</code>`:'<span class="bom-nd">sin SKU confirmado</span>'} — ${esc(r.d)}`).join('<br>')||'—'}</td></tr>
-    <tr><td>Precio de lista ref.</td><td class="n">${m.elpN!=null?esc(m.elp):'Consultar distribuidor'}</td></tr>
+    ${/* La ficha es solo técnica: SKU, variantes y precio de lista están integrados en la
+          lista de materiales — repetirlos aquí era la redundancia señalada (2026-09-13). */''}
     ${esEC?`<tr><td><b>Rango de caudal WAN publicado</b></td><td class="n"><b>${m.wanMin!=null?fmt(m.wanMin)+' – '+fmt(m.wanMax):'sin mínimo publicado'}</b></td></tr>
     <tr><td>Optimización WAN (Boost)</td><td class="n">${m.boostMax!=null?'Soportada · bloques de '+SIZING.boost.bloque+' Mbps':'—'}</td></tr>`
     :`<tr><td><b>Throughput de firewall</b></td><td class="n">${m.fw!=null?`<b>${fmt(m.fw)}</b>${esGwc?' (solo hardware)':''}`:'<span class="warn">No publicado en las fuentes consultadas</span>'}</td></tr>
@@ -593,18 +603,21 @@ function renderBom(){
       </tbody></table></div></section>`;
   }
 
+  // Este panel explica QUÉ se licencia y por qué; el SKU de pedido y el List Price de cada
+  // línea NO se repiten aquí: están integrados en la lista de materiales, única fuente de
+  // referencias de pedido de la página (2026-09-13, decisión del dueño).
   html+=`<section class="panel"><h2>${esEC?'Suscripción EdgeConnect':'Suscripción y licencias'}</h2><ul class="clean">
-    ${esEC?`<li class="on"><b>${esc(BUNDLES[bundle].n)}</b><span class="req">Requerida</span><span class="sku">${esc(BUNDLES[bundle].svcs)}<br>Tier de caudal: <b>${bwTier?esc(bwTier.n):'—'}</b> · ${termino}${licPrice!=null?' · '+money(licPrice):' · <span class="warn">precio no verificado</span>'}</span></li>
-    <li${bloques?' class="on"':''}><b>${esc(SIZING.boost.n)}</b><span class="req${bloques?'':' opt'}">${bloques?'Incluido':'Opcional'}</span><span class="sku">${esc(SIZING.boost.svcs)}${bloques?`<br>Pool: <b>${bloques} bloque(s) de ${SIZING.boost.bloque} Mbps = ${fmt(bloques*SIZING.boost.bloque)}</b> — se licencia una vez para todo el fabric, no por sede.${tierSku(boostBlk,termYrs)?`<br>SKU por bloque: <code>${esc(tierSku(boostBlk,termYrs))}</code>${boostPrice!=null?' · '+money(boostPrice)+' / bloque':''} · ${termino}`:''}`:''}</span></li>`
-    :`<li class="on"><b>${esc(CENTRAL[central].n)}</b><span class="req">Requerida</span><span class="sku">${esc(CENTRAL[central].d)} · suscripción por dispositivo · ${termino}${tierSku(centralTier,termYrs)?`<br>SKU: <code>${esc(tierSku(centralTier,termYrs))}</code>${centralPrice!=null?' · '+money(centralPrice):''}`:''}</span></li>
-    ${capTier&&capTier.code!=='hw'?`<li class="on"><b>Licencia perpetua ${esc(capTier.n)}</b><span class="req">Requerida</span><span class="sku">Amplía el mismo hardware a ${fmt(capTier.fw)}, ${miles(capTier.aps)} APs y ${miles(capTier.clients)} dispositivos.${capTier.sku?`<br>SKU: <code>${esc(capTier.sku)}</code>${capTier.elp!=null?' · '+money(capTier.elp)+' (perpetua)':''}`:''}</span></li>`:''}`}
+    ${esEC?`<li class="on"><b>${esc(BUNDLES[bundle].n)}</b><span class="req">Requerida</span><span class="sku">${esc(BUNDLES[bundle].svcs)}<br>Tier de caudal: <b>${bwTier?esc(bwTier.n):'—'}</b> · ${termino}</span></li>
+    <li${bloques?' class="on"':''}><b>${esc(SIZING.boost.n)}</b><span class="req${bloques?'':' opt'}">${bloques?'Incluido':'Opcional'}</span><span class="sku">${esc(SIZING.boost.svcs)}${bloques?`<br>Pool: <b>${bloques} bloque(s) de ${SIZING.boost.bloque} Mbps = ${fmt(bloques*SIZING.boost.bloque)}</b> — se licencia una vez para todo el fabric, no por sede.`:''}</span></li>`
+    :`<li class="on"><b>${esc(CENTRAL[central].n)}</b><span class="req">Requerida</span><span class="sku">${esc(CENTRAL[central].d)} · suscripción por dispositivo · ${termino}</span></li>
+    ${capTier&&capTier.code!=='hw'?`<li class="on"><b>Licencia perpetua ${esc(capTier.n)}</b><span class="req">Requerida</span><span class="sku">Amplía el mismo hardware a ${fmt(capTier.fw)}, ${miles(capTier.aps)} APs y ${miles(capTier.clients)} dispositivos.</span></li>`:''}`}
     <li><b>EdgeConnect Orchestrator</b><span class="req opt">Incluido</span><span class="sku">Gestión del fabric, Business Intent Overlays y ZTP. No se licencia por dispositivo gestionado.</span></li>
-  </ul></section>`;
+  </ul><p class="hint" style="margin:8px 0 0">El SKU de pedido y el List Price de cada línea están integrados en la <b>lista de materiales</b>, junto con todo el catálogo pedible de Aruba.</p></section>`;
 
   html+=`<section class="panel"><h2>Soporte HPE</h2><div class="scroll"><table>
-    <thead><tr><th>Servicio</th><th>SLA</th><th>SKU</th><th>Término</th><th>Precio ref.</th><th>Qty</th></tr></thead><tbody>
-    <tr><td>${esc(CARE[care].n)}</td><td class="n">${esc(CARE[care].sla)}</td><td class="n">${tierSku(careTier,termYrs)?`<code>${esc(tierSku(careTier,termYrs))}</code>`:'<span class="warn">Sin SKU verificado</span>'}</td><td class="n">${termYrs} años</td><td class="n">${carePrice!=null?money(carePrice):'—'}</td><td class="n">${qty}</td></tr>
-    </tbody></table></div><p class="hint" style="margin-top:8px">${esc(CARE[care].d)}</p></section>`;
+    <thead><tr><th>Servicio</th><th>SLA</th><th>Término</th><th>Qty</th></tr></thead><tbody>
+    <tr><td>${esc(CARE[care].n)}</td><td class="n">${esc(CARE[care].sla)}</td><td class="n">${termYrs} años</td><td class="n">${qty}</td></tr>
+    </tbody></table></div><p class="hint" style="margin-top:8px">${esc(CARE[care].d)} Su SKU y su precio están integrados en la lista de materiales.</p></section>`;
 
   $('bomBody').innerHTML=html;
 
@@ -673,7 +686,105 @@ function renderBom(){
   });
   $('bomOut').value=BOM.comoTexto(filas,meta);
   bomMeta=meta; bomFilas=filas;
+  // Las marcas "En el BOM" del catálogo dependen de lo que el motor acaba de poner en la
+  // lista: se repinta con cada cambio de modelo, término o tier.
+  pintarCatalogoSku();
 }
+
+/* ══ CATÁLOGO PEDIBLE → LISTA DE MATERIALES ══
+   Toda referencia de pedido de Aruba vive en UN sitio: la lista de materiales. Este panel
+   es la puerta de entrada — busca en los 69 SKU de la lista de precios pública
+   (public/datasheets/aruba-lista-precios-hpe.csv: hardware, remanufacturados, suscripciones
+   EdgeConnect/Boost/Central y licencias perpetuas 9240) más las variantes de hardware sin
+   precio (TAA/NAL/FIPS) que el catálogo declara por modelo. Añadir mete la línea en el BOM
+   (BOM.agregarRef la guarda, la pinta con stepper de cantidad y botón de quitar, la exporta
+   al Excel y la manda al cotizador); las que el motor ya puso en el BOM se marcan
+   "En el BOM" para no meter dos veces la misma línea. */
+
+// La categoría sale de las propias columnas del CSV, no de una lista de SKU escrita a mano:
+// si la lista de precios trae una familia nueva, aparece sola en el panel.
+function categoriaDeFilaCsv(mod, sku){
+  if(/^Suscripcion EdgeConnect/.test(mod)) return mod.replace(/^Suscripcion/,'Suscripción');
+  if(/^Boost EdgeConnect/.test(mod)) return mod;
+  if(/^Central/.test(mod)) return 'HPE Aruba Networking Central';
+  if(/AR$/.test(sku)) return 'Hardware remanufacturado (serie 7000/7200)';
+  if(/AAE$/.test(sku)) return 'Licencias perpetuas 9240';
+  return 'Hardware — EdgeConnect y gateways';
+}
+const SKU_CAT_ORDEN=['Hardware — EdgeConnect y gateways','Hardware remanufacturado (serie 7000/7200)',
+  'Otras variantes de hardware','Suscripción EdgeConnect Foundation','Suscripción EdgeConnect Advanced',
+  'Suscripción EdgeConnect On-Premises','Boost EdgeConnect (SaaS)','Boost EdgeConnect (On-Premises)',
+  'HPE Aruba Networking Central','Licencias perpetuas 9240'];
+
+// El CSV no trae campos entrecomillados ni comas dentro de los valores (verificado
+// 2026-09-13), así que basta split — un parser completo no añadiría nada.
+function parseCsvCatalogo(txt){
+  return txt.trim().split(/\r?\n/).slice(1).map(l=>l.split(',')).filter(c=>c.length>=6&&c[0])
+    .map(c=>({sku:c[0], d:c[2], p:c[3]===''?null:Number(c[3]), vig:c[4], plc:c[5],
+      cat:categoriaDeFilaCsv(c[1]||'', c[0]||'')}));
+}
+
+async function cargarCatalogoSku(){
+  const caja=$('skuCatalogo'); if(!caja) return;
+  try{
+    const res=await fetch('/datasheets/aruba-lista-precios-hpe.csv');
+    if(!res.ok) throw new Error('http '+res.status);
+    SKU_CAT=parseCsvCatalogo(await res.text());
+    // Variantes de hardware que el catálogo declara por modelo y no están en la lista de
+    // precios (TAA/NAL/FIPS y las que siguen sin SKU confirmado): se pueden añadir igual.
+    const enCsv=new Set(SKU_CAT.map(x=>x.sku));
+    for(const m of MODELS){
+      for(const s of (m.skus||[])){
+        if(s.sku&&enCsv.has(s.sku)) continue;
+        SKU_CAT.push({sku:s.sku||null, d:`${s.d} — variante de ${m.id}`, p:null, vig:null, plc:null, cat:'Otras variantes de hardware'});
+        if(s.sku) enCsv.add(s.sku);
+      }
+    }
+    pintarCatalogoSku();
+  }catch(e){
+    caja.innerHTML='<p class="hint">No se pudo cargar el catálogo de SKUs (lista de precios). La lista de materiales sigue disponible.</p>';
+  }
+}
+
+// SKUs que el motor ya puso en el BOM: señalarlos evita meter dos veces la misma línea.
+function skusAutoEnBom(){ return new Set((bomFilas||[]).map(f=>f.sku).filter(Boolean)); }
+
+function pintarCatalogoSku(){
+  const caja=$('skuCatalogo'); if(!caja||!SKU_CAT.length) return;
+  const q=skuFiltro.trim().toLowerCase();
+  const auto=skusAutoEnBom();
+  const cats=SKU_CAT_ORDEN.map(c=>[c,SKU_CAT.filter(x=>x.cat===c)]).filter(([,l])=>l.length);
+  const chips=cats.map(([c,l])=>`<button type="button" class="sku-chip${skuCatActiva===c?' on':''}" data-sku-cat="${esc(c)}">${esc(c)} <span class="sku-chip-n">${l.length}</span></button>`).join('');
+  let body='';
+  for(const [c,lista] of cats){
+    if(skuCatActiva&&skuCatActiva!==c) continue;
+    const filas=lista.filter(x=>!q||(x.sku||'').toLowerCase().includes(q)||(x.d||'').toLowerCase().includes(q));
+    if(!filas.length) continue;
+    body+=`<div class="sku-grupo">${esc(c)}</div>`+filas.map(x=>{
+      const ya=x.sku&&auto.has(x.sku);
+      return `<div class="sku-fila${ya?' ya':''}">`
+        +`<span class="sku-fila-sku">${x.sku?`<code>${esc(x.sku)}</code>`:'<span class="bom-nd">sin SKU confirmado</span>'}</span>`
+        +`<span class="sku-fila-d">${esc(x.d)}${x.vig?`<span class="sku-fila-meta">List Price vigente ${esc(x.vig)}${x.plc?` · ${esc(x.plc)}`:''}</span>`:''}</span>`
+        +`<span class="sku-fila-p">${x.p!=null?esc(money(x.p)):'<span class="bom-nd">consultar</span>'}</span>`
+        +`<span class="sku-fila-a">${ya?'<span class="sku-enbom">En el BOM</span>'
+          :`<button type="button" class="sku-add" data-sku-add="${esc(x.sku||x.d)}">Añadir</button>`}</span></div>`;
+    }).join('');
+  }
+  caja.innerHTML=`<div class="sku-chips">${chips}</div>`
+    +(body?`<div class="sku-lista">${body}</div>`:'<p class="hint" style="margin:8px 0 0">Ninguna referencia coincide con la búsqueda.</p>');
+  caja.querySelectorAll('[data-sku-cat]').forEach(b=>b.addEventListener('click',()=>{
+    skuCatActiva=skuCatActiva===b.dataset.skuCat?null:b.dataset.skuCat; pintarCatalogoSku();
+  }));
+  caja.querySelectorAll('[data-sku-add]').forEach(b=>b.addEventListener('click',()=>{
+    const x=SKU_CAT.find(y=>(y.sku||y.d)===b.dataset.skuAdd);
+    if(!x) return;
+    // agregarRef repinta el BOM (repintar=renderBom), y renderBom repinta este panel con
+    // las marcas "En el BOM" ya actualizadas — no hace falta tocar nada más aquí.
+    BOM.agregarRef({sku:x.sku, d:x.d, p:x.p, de:'catálogo de precios Aruba', v:'aruba'});
+  }));
+}
+
+$('skuBuscar').addEventListener('input',e=>{ skuFiltro=e.target.value; pintarCatalogoSku(); });
 
 $('copyBtn').addEventListener('click',async()=>{
   const t=$('bomOut');
@@ -702,10 +813,14 @@ $('xlsBtn').addEventListener('click',async()=>{
   CENTRAL = data.centralTiers || {};
   DATASHEETS = data.datasheets || {};
 
+  // La ficha ya no pide referencias (van integradas en el BOM), así que el fabricante se
+  // declara aquí: es lo que permite que la lista de materiales muestre solo lo de Aruba.
+  if(BOM.fijarVendor) BOM.fijarVendor('aruba');
   populateSelects();
   render();
   renderBom();
   renderCatalogo();
+  cargarCatalogoSku();
   PROCEDENCIA.registrarModelos('aruba', () => MODELS.map(m => ({ model: m.id, ...m })));
 })();
 

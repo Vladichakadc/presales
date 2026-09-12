@@ -368,6 +368,41 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
 
 ## Cerrado recientemente
 
+### Referencias de pedido integradas en la lista de materiales de Aruba (2026-09-13)
+
+Petición del dueño: las referencias de pedido y la lista de materiales duplicaban valores y
+eran redundantes — había que integrarlas rediseñando el dimensionador de Aruba para que
+TODOS los SKU del archivo de precios se puedan añadir y quitar (hardware, software,
+servicios) de forma dinámica e interactiva.
+
+**La duplicación eliminada.** El mismo SKU llegaba a verse en cuatro sitios: la ficha del
+equipo (filas «SKU de hardware» y «Referencias pedibles»), los paneles de suscripción y
+soporte (SKU y precio en línea), la tabla de referencias de la ficha de cálculo y la propia
+lista de materiales. Ahora la lista de materiales es la ÚNICA fuente de referencias de
+pedido de la página: la ficha queda solo técnica (capacidad, interfaces, specs de
+datasheet), los paneles explican QUÉ se licencia sin repetir SKU ni precio, y la ficha de
+cálculo muestra una nota que apunta a la pestaña «Equipo y BOM» (opción genérica
+`refs:false`/`refsNota` nueva en `ficha.js`, disponible para los demás fabricantes).
+
+**El panel «Añadir a la lista de materiales».** Carga el CSV público de lista de precios
+(`public/datasheets/aruba-lista-precios-hpe.csv`, 69 SKU) y lo categoriza con las propias
+columnas del archivo —hardware, remanufacturados (sufijo AR), suscripciones EdgeConnect
+Foundation/Advanced/On-Premises, Boost SaaS/On-Premises, Central y licencias perpetuas
+9240— más las variantes de hardware sin precio (TAA/NAL/FIPS) que el catálogo declara por
+modelo: 90 referencias en 10 grupos. Buscador por SKU o descripción, chips de categoría con
+conteo, List Price con su vigencia y estado PLC, y marca «En el BOM» en las líneas que el
+motor ya puso en la lista para no meterlas dos veces.
+
+**La lista de materiales queda como el componente integrado.** Añadir mete la línea con
+`BOM.agregarRef` (persistente en localStorage, sobrevive a recargas y a cambios de modelo),
+con stepper de cantidad y botón de quitar que ya existían en `bom.js`. Y dos huecos
+cerrados en `bom.js` para los SIETE dimensionadores: `exportarExcel` y `comoTexto` ahora
+incluyen las referencias añadidas a mano — antes solo se veían en pantalla y se perdían al
+exportar. Verificado de extremo a extremo en Chromium: añadir Boost S0Z73AAS → subtotal y
+total actualizados ($47.608 con cantidad 2), quitar, persistencia tras recarga, chips,
+buscador, texto plano con el SKU, y humo en Fortinet/Cisco sin regresiones. 233/233
+pruebas y eslint en verde.
+
 ### Combos por familia, ficha técnica completa de Aruba y guarda de ancho de banda (2026-09-13)
 
 Tres peticiones del dueño en una sola entrega:

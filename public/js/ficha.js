@@ -360,7 +360,14 @@
 
     // Las referencias del equipo elegido. Solo si la pagina declara su fabricante: sin el no
     // hay a quien preguntar, y es preferible no pintar la seccion a pintarla vacia.
-    if (cfg.vendor) cargarRefs(cid, cfg.vendor, sel.id);
+    // Una pagina puede tener sus referencias integradas en otro componente (Aruba las lleva
+    // en la lista de materiales, 2026-09-13): con `refs:false` no se piden, y `refsNota`
+    // deja el cartel que dice donde estan, para que la seccion no desaparezca sin explicacion.
+    if (cfg.vendor && cfg.refs !== false) cargarRefs(cid, cfg.vendor, sel.id);
+    else if (cfg.refsNota) {
+      const cajaRefs = document.getElementById(cid + '-refs');
+      if (cajaRefs) cajaRefs.innerHTML = '<h3>Referencias de pedido</h3><p class="ficha-nota">' + esc(cfg.refsNota) + '</p>';
+    }
   }
 
   // ── ALIMENTACION ELECTRICA: SI ES DE DOBLE FUENTE Y SUS CARACTERISTICAS ────────────────

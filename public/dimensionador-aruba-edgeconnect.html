@@ -99,6 +99,27 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 .flag-ft{background:#FFF5F5;border:1px solid #FECACA;border-left:3px solid var(--red);border-radius:2px;padding:12px 14px;font-size:12.5px;line-height:1.5;margin-bottom:18px}
 .flag-ft b{color:#991b1b}
 #bomOut{width:100%;height:200px;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:10px;border:1px solid var(--rule);border-radius:2px;margin-top:10px}
+/* Catálogo pedible → lista de materiales (2026-09-13) */
+#skuBuscar{width:100%;padding:7px 10px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink);font-family:'Barlow',sans-serif;font-size:13px;margin-bottom:8px}
+#skuBuscar:focus{outline:2px solid var(--red);outline-offset:1px}
+.sku-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.sku-chip{padding:3px 9px;border:1px solid var(--rule);border-radius:11px;background:var(--card);color:var(--steel);font-family:'IBM Plex Mono',monospace;font-size:10px;cursor:pointer}
+.sku-chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.sku-chip-n{opacity:.65}
+.sku-lista{max-height:380px;overflow:auto;border:1px solid var(--rule);border-radius:4px}
+.sku-grupo{position:sticky;top:0;background:var(--bg);font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel);font-weight:600;padding:7px 9px 5px;border-bottom:1px solid var(--rule);z-index:1}
+.sku-fila{display:flex;gap:10px;align-items:baseline;padding:6px 9px;border-bottom:1px solid var(--paper);font-size:12.5px}
+.sku-fila:hover{background:var(--paper)}
+.sku-fila-sku{flex:0 0 96px}
+.sku-fila-sku code{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowrap}
+.sku-fila-d{flex:1;min-width:0}
+.sku-fila-meta{display:block;font-size:10.5px;color:var(--steel)}
+.sku-fila-p{flex:0 0 88px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11.5px}
+.sku-fila-a{flex:0 0 80px;text-align:right}
+.sku-add{border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:3px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 8px}
+.sku-add:hover{border-color:var(--red);color:var(--red)}
+.sku-enbom{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--amber);letter-spacing:.06em}
+.sku-fila.ya{opacity:.72}
 .btn{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px;cursor:pointer}
 .btn.ghost{background:#fff;color:var(--ink)}
 .pillc{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 4px;border-radius:2px;background:var(--paper);color:var(--steel)}
@@ -316,12 +337,18 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   </section>
 
   <div class="flag-ft">
-    <b>Aviso de preventa:</b> las líneas de suscripción y soporte salen sin importe a propósito — no hay price list verificado para esas líneas. El equipo sí trae List Price de HPE cuando el modelo tiene SKU confirmado (15 de los EdgeConnect/gateway); es precio de lista sin el descuento del distribuidor, no una cotización firme. Detalle en la cabecera de <code>server/seed/legacyData/aruba.js</code>.
+    <b>Aviso de preventa:</b> el hardware y las suscripciones EdgeConnect/Boost/Central traen List Price de HPE verificado el 2026-09-13 (69 SKU, ver <code>public/datasheets/aruba-lista-precios-hpe.csv</code>); es precio de lista sin el descuento del distribuidor, no una cotización firme. Lo que sigue sin precio verificado —Foundational Care por variante, EC-V— figura en «consultar» a propósito. Detalle en la cabecera de <code>server/seed/legacyData/aruba.js</code>.
   </div>
 </div>
 
 <div>
   <div id="bomBody"></div>
+  <section class="panel" id="skuPanel">
+    <h2>Añadir a la lista de materiales</h2>
+    <p class="hint" style="margin:0 0 10px">Todo el catálogo pedible de Aruba con su SKU y su List Price: hardware, remanufacturados, suscripciones EdgeConnect, Boost, Central y licencias perpetuas. Lo que añadas queda integrado en la lista de materiales —con stepper de cantidad y botón de quitar— y viaja con ella al Excel y al cotizador.</p>
+    <input type="search" id="skuBuscar" placeholder="Buscar por SKU o descripción…" aria-label="Buscar referencia por SKU o descripción">
+    <div id="skuCatalogo"><p class="hint">Cargando catálogo de SKUs…</p></div>
+  </section>
   <section class="panel">
     <h2>Lista de materiales
       <span class="bom-acciones">
