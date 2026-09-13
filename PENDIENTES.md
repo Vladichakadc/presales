@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-13.
+Última revisión: 2026-09-13 (fase 12 + fase 11 E5).
 
 ---
 
@@ -372,6 +372,39 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     distribuidor si existe SKU E-STU HA; si existe, se mapea en `LICENSES_HA.onprem`, se
     ajusta el test de cobertura (hoy exige exactamente bw100/bw1g/bwunl) y el motor lo usa
     solo.
+18. **Segunda PSU del Gateway 9240: R1C72A o R7J63A (2026-09-13, fase 12).** El brief del
+    dueño declara **R1C72A** «9240 550W Secondary AC Power Supply» ($890 List) en el
+    catálogo maestro de accesorios, y es el que gobierna la herramienta. La investigación
+    de la fase 11 había anclado **R7J63A** ($721, partner autorizado) como PSU de repuesto
+    del 9240. Pueden ser dos SKU válidos (AC secundaria vs. repuesto) o uno solo con
+    precio distinto — no hay documento público que lo desempate. Cómo se cierra: preguntar
+    al distribuidor cuál de los dos aplica al pedido del 9240 y a qué precio; si solo
+    aplica uno, se corrige `ARUBA_ACCESSORY_CATALOG` y el test de integridad.
+19. **Precios de accesorios: el catálogo maestro gobierna sobre el partner (2026-09-13,
+    fase 12).** Los List Price del brief sustituyeron a los de partner autorizado de la
+    fase 11, que eran provisionales (HPE no publica List oficial de transceptores).
+    Discrepancias documentadas en `aruba.js`: J4858D $271 vs $480 · J9150D $859 vs $1.454
+    · J9281D $115 vs $164. Si el distribuidor confirma otra cifra, se actualiza una sola
+    fuente (`ARUBA_ACCESSORY_CATALOG`) y la página la hereda.
+20. **Compatibilidades de accesorios por inferencia de familia (2026-09-13, fase 12).**
+    Ancladas al VSG oficial: 1G fibra solo EC-10106; 10G/DAC en EC-10106/10108/10150;
+    EC-10104 sin SFP; 9240 = 4x SFP28. Por inferencia declarada (comentario en
+    `aruba.js`): J4860D, JL745A/JL746A y S3R03A siguen la regla 1G; J9153D, JL747A/JL748A
+    y J9285D la regla 10G. Cómo se cierra: confirmar la matriz completa contra el VSG
+    vigente o el distribuidor; el test «las ópticas 1G de fibra solo se certifican en
+    EC-10106» obliga a revisarla entera si cambia.
+21. **EC-XS/S/M/L/XL sin matriz de ópticas en el catálogo maestro (2026-09-13, fase 12).**
+    El brief solo declara accesorios para EC-10106/10108/10150 y gateways 9004/9012/9240;
+    el resto de EdgeConnect ofrece solo el cable de consola JW084A con nota «confirmar
+    transceptores con el distribuidor». Sus kits NVMe de Boost (los EC-S/M/L/XL usan otro
+    kit distinto del S2N67A) y sus ópticas quedan fuera hasta que el dueño los declare en
+    el catálogo maestro.
+22. **VSG inalcanzable en el chequeo de salud desde el sandbox (2026-09-13, fase 11 E5).**
+    El nuevo endpoint `GET /api/fuentes/:vendor/salud` y el botón «Comprobar salud de las
+    fuentes» funcionan, pero desde este entorno la URL del VSG SD-Branch responde
+    inalcanzable (bloqueo de egreso a dominios HPE ya conocido — las GitHub Actions sí la
+    alcanzan). No es un fallo del vigía: verificar desde la red del cliente antes de dar
+    una fuente por caída.
 
 ## Limpieza
 
@@ -387,6 +420,63 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Catálogo maestro de accesorios ARUBA_ACCESSORY_CATALOG y sincronización Boost → NVMe (fase 12, 2026-09-13)
+
+Instrucción del dueño: «Ejecuta el prompt adjunto» — brief de Ingeniería Principal /
+Arquitecto Senior HPE Aruba Networking cuya sección 1.1 declara el
+`ARUBA_ACCESSORY_CATALOG` verbatim (26 SKUs: transceptores 1G/10G/25G, DAC, kit NVMe
+Boost, PSU, racks y consola, con List Price HPE) como «modelo de datos centralizado» que
+gobierna compatibilidad y cotización.
+
+**Qué se construyó.** El catálogo verbatim vive en `server/seed/legacyData/aruba.js` con
+la matriz `ACCESSORY_COMPAT` (modelo → accesorios ofertables) anclada al VSG oficial —
+1G fibra solo EC-10106; 10G/DAC en EC-10106/10108/10150; EC-10104 sin SFP; 9240 = 4x
+SFP28 — y a lo declarado en el brief (25G → EC-10150/9240, R1C72A → 9240, racks
+9004/9012, NVMe Boost → S2N67A). La proyección sirve `accessories` y `accessoryCompat`
+al dimensionador: la página ya no mantiene precios ni matriz propios — el modal de
+accesorios de la fase 11 se refactorizó para consumir el maestro con descripciones
+oficiales literales, etiquetas velocidad/medio/alcance y destacado TAA. Los precios del
+brief sustituyen a los provisionales de partner de la fase 11 (discrepancias
+documentadas en el código y en *Datos por confirmar* #18/#19).
+
+**Sincronización Boost → NVMe.** La optimización con deduplicación exige almacenamiento
+local: con Boost activo en EC-10106/10108 el kit S2N67A se añade solo al BOM (mínimo 1,
+no baja mientras Boost siga, marcado «añadido automáticamente») y se retira al apagar
+Boost o cambiar de modelo; el EC-10150 declara sus 2 SSD NVMe de fábrica y no lo ofrece.
+
+**Verificación.** 254/254 pruebas (248 + 6 nuevas de integridad del catálogo: 26 SKUs
+verbatim, precios positivos, matriz referenciando solo SKUs/modelos reales, S2N67A solo
+donde aplica, regla VSG 1G, PSU/racks en su gateway) y eslint verde. E2E en Chromium:
+NVMe auto con Boost ON en EC-10106, bloqueo del mínimo, retirada al apagar Boost,
+ausencia en EC-10150, 16/15/9 items por modelo, TAA visible.
+
+### Madurez del catálogo: semáforo de ciclo de vida, matriz de SO, salud de fuentes y delta de precios (fase 11, E5, 2026-09-13)
+
+**Semáforo de ciclo de vida** en la tabla del catálogo: verde = generación actual,
+naranja = línea anterior (AOS 8, QuickSpecs RETIRED) con sucesor natural etiquetado como
+«inferencia por capacidad, sin doc oficial» (mapa `SUCESORES` en `aruba.js`, decisión del
+dueño), rojo = fin de venta anunciado con fecha de último pedido.
+
+**Matriz de versiones mínimas de SO** (`OS_MATRIX`): ECOS mínimo por plataforma
+EdgeConnect (8.3.1.0 → 9.5.3.0 con notas de tren y PIDs) y trenes AOS 8/10 por serie de
+gateway (7000/7200 alcanzan 10.3.1.1 SSR aunque estén RETIRED; 9200 → 10.4.0.0 LSR;
+9100 → 10.5/10.6/10.7 según modelo). Proyectada al dimensionador y pintada en la pestaña
+«Fuentes».
+
+**Salud de las fuentes bajo demanda**: endpoint `GET /api/fuentes/:vendor/salud` que
+re-corre el vigía contra cada URL pública y botón en «Fuentes» que lo pinta (leído /
+inalcanzable / sin URL). No corre solo: cada revisión pega contra los servidores del
+fabricante.
+
+**Delta de precios**: sube una lista CSV nueva y la compara en memoria contra la vigente
+(alzas, bajas, SKUs nuevos, desaparecidos, PLC → ES) sin persistir nada — la decisión de
+actualizar la lista gobernante queda en manos del dueño.
+
+**Verificación.** 248/248 pruebas y eslint verde. E2E en Chromium: semáforo 15 verde /
+9 naranja / 1 rojo, OS matrix con ambas tablas, delta detectando alza +9,9 %, baja −5,0 %,
+SKU nuevo, 90 desaparecidos y PLC → ES en una lista de prueba, endpoint de salud
+respondiendo por las 3 fuentes de Aruba.
 
 ### Sincronización total del módulo Aruba: revisión de diseño automática (fase 10, 2026-09-13)
 
