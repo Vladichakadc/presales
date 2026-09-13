@@ -42,7 +42,9 @@
 // CORRECCIONES RESPECTO A LA PRIMERA VERSIÓN DE ESTE ARCHIVO (documentadas a propósito):
 //   · Se elimina "EC-2XL": no existe en el portafolio. La gama va XS → S → M → L → XL.
 //   · Los niveles de suscripción no son "Base/Advanced" sino Foundation / Advanced /
-//     On-Premises, y los tiers de caudal publicados son 100 Mbps, 1 Gbps e ilimitado.
+//     On-Premises. Los tiers de caudal eran 100 Mbps, 1 Gbps e ilimitado; la revisión
+//     del 2026-09-13 de la lista oficial amplía Advanced y On-Premises a ocho niveles
+//     (20M→2G e ilimitado, ver BW_TIERS) — Foundation sigue en sus tres tiers.
 //   · El soporte no es "Pointnext Tech Care" sino HPE Aruba Networking Foundational Care.
 //   · El 9240 no es un gateway de sucursal sino de campus (serie 9200), y su capacidad la
 //     fija la licencia perpetua, no el hardware.
@@ -594,10 +596,21 @@ const BUNDLES = {
   },
 };
 
-// Tiers de caudal publicados. Son tres, no una escalera fina: 100 Mbps, 1 Gbps e ilimitado.
+// Tiers de caudal publicados (ampliado 2026-09-13). La lista de precios oficial publica
+// ocho niveles para Advanced y On-Premises: 20/50/100/200/500 Mbps, 1/2 Gbps e ilimitado
+// (verificado literal contra el export, filas «EC Adv 20Mb…», «EC ONP 20M…», etc.).
+// OJO: Foundation NO sigue esta escalera — la lista solo lo publica en 100 Mbps, 1 Gbps
+// e ilimitado (restricción oficial verificada el mismo día: no existe ninguna fila
+// «EC Fnd 20M/50M/200M/500M/2G»). LICENSES lo refleja y el motor debe bloquear los
+// tiers intermedios cuando el nivel es Foundation — no es un hueco de datos, es la oferta.
 const BW_TIERS = [
+  {code:'bw20',  n:'20 Mbps',             mbps:20},
+  {code:'bw50',  n:'50 Mbps',             mbps:50},
   {code:'bw100', n:'100 Mbps',            mbps:100},
+  {code:'bw200', n:'200 Mbps',            mbps:200},
+  {code:'bw500', n:'500 Mbps',            mbps:500},
   {code:'bw1g',  n:'1 Gbps',              mbps:1000},
+  {code:'bw2g',  n:'2 Gbps',              mbps:2000},
   {code:'bwunl', n:'Sin límite de caudal', mbps:null},
 ];
 
@@ -764,16 +777,39 @@ const CARE_SKU = {
 // El soporte NO va aquí: los SKU de Foundational Care (H43W0E, H44Z4E, H07BKE…) van
 // atados a la VARIANTE de hardware, no al tier de caudal — viven en CARE_SKU por modelo
 // (2026-09-13, ver su comentario para fuente y correspondencias).
+// Foundation no tiene tiers intermedios; el motor debe bloquearlos (restricción oficial
+// verificada en la lista 2026-09-13: solo existen filas Foundation de 100 Mbps, 1 Gbps
+// e ilimitado — ver el comentario de BW_TIERS). Advanced y On-Premises cubren los 8.
 const LICENSES = {
+  bw20: {
+    advanced:   {sku:{y1:'S1B06AAS', y3:'S1B08AAS', y5:'S1B10AAS'}, y1:900,  y3:2700,  y5:4500},
+    onprem:     {sku:{y1:'S1A80AAS', y3:'S1A82AAS', y5:'S1A84AAS'}, y1:948,  y3:2844,  y5:4740},
+  },
+  bw50: {
+    advanced:   {sku:{y1:'S1B20AAS', y3:'S1B22AAS', y5:'S1B24AAS'}, y1:1296, y3:3888,  y5:6480},
+    onprem:     {sku:{y1:'S1A94AAS', y3:'S1A96AAS', y5:'S1A98AAS'}, y1:1356, y3:4068,  y5:6780},
+  },
   bw100: {
     foundation: {sku:{y1:'S1C49AAS', y3:'S1C51AAS', y5:'S1C53AAS'}, y1:900,  y3:2700,  y5:4500},
     advanced:   {sku:{y1:'S1B34AAS', y3:'S1B36AAS', y5:'S1B38AAS'}, y1:1848, y3:5544,  y5:9240},
     onprem:     {sku:{y1:'S1B99AAS', y3:'S1C01AAS', y5:'S1C03AAS'}, y1:1932, y3:5796,  y5:9660},
   },
+  bw200: {
+    advanced:   {sku:{y1:'S1B48AAS', y3:'S1B50AAS', y5:'S1B52AAS'}, y1:2604, y3:7812,  y5:13020},
+    onprem:     {sku:{y1:'S1C13AAS', y3:'S1C15AAS', y5:'S1C17AAS'}, y1:2736, y3:8208,  y5:13680},
+  },
+  bw500: {
+    advanced:   {sku:{y1:'S1B62AAS', y3:'S1B64AAS', y5:'S1B67AAS'}, y1:4572, y3:13716, y5:22860},
+    onprem:     {sku:{y1:'S0X93AAS', y3:'S0X95AAS', y5:'S0X97AAS'}, y1:4788, y3:14364, y5:23940},
+  },
   bw1g: {
     foundation: {sku:{y1:'S1A22AAS', y3:'S1A24AAS', y5:'S1A26AAS'}, y1:1680, y3:5040,  y5:8400},
     advanced:   {sku:{y1:'S1B77AAS', y3:'S1B79AAS', y5:'S1B81AAS'}, y1:6540, y3:19620, y5:32700},
     onprem:     {sku:{y1:'S0Y07AAS', y3:'S0Y09AAS', y5:'S0Y11AAS'}, y1:6864, y3:20592, y5:34320},
+  },
+  bw2g: {
+    advanced:   {sku:{y1:'S1B91AAS', y3:'S1B93AAS', y5:'S1B95AAS'}, y1:9384, y3:28152, y5:46920},
+    onprem:     {sku:{y1:'S0Y21AAS', y3:'S0Z45AAS', y5:'S0Z47AAS'}, y1:9864, y3:29592, y5:49320},
   },
   bwunl: {
     foundation: {sku:{y1:'S1A36AAS', y3:'S1A38AAS', y5:'S1A40AAS'}, y1:7848,  y3:23544, y5:39240},
@@ -787,26 +823,58 @@ const LICENSES = {
 // notación «HA» del QuickSpecs (p.21-24: «Foundation High Availability 1Gbps… SaaS»).
 // El par se cotiza 1× suscripción estándar (LICENSES) + 1× suscripción HA (esta tabla).
 // Dato que conviene saber: el precio HA es IDÉNTICO al estándar, tier a tier y año a
-// año — lo que cambia es el SKU de pedido, no el importe. Verificado literal contra el
-// export de lista de precios del distribuidor (misma fuente y misma regla de extracción
-// que LICENSES: solo SKU, descripción, List Price y vigencia 2026-06-01, PLC GA).
+// año — lo que cambia es el SKU de pedido, no el importe. Invariante verificada literal
+// contra el export de lista de precios del distribuidor (misma fuente y misma regla de
+// extracción que LICENSES: solo SKU, descripción, List Price y vigencia 2026-06-01,
+// PLC GA) y extendida el 2026-09-13 a los 8 tiers de Advanced (20M→2G, filas
+// «EC Adv HA 20Mb…» … «EC Adv HA 2Gb…»).
+// Foundation HA mantiene solo sus 3 tiers (100 Mbps, 1 Gbps e ilimitado): la lista no
+// publica Foundation en los tiers intermedios, ni estándar ni HA (ver BW_TIERS).
 // On-Premises NO se mapea: la lista trae SKU HA E-STU de la línea antigua EC-BW
 // (JM075AAS…) pero ninguna fuente consultada declara su equivalencia con los niveles
 // Foundation/Advanced, así que el par on-prem se cotiza 2× estándar y se declara.
 const LICENSES_HA = {
+  bw20: {
+    advanced:   {sku:{y1:'S1B13AAS', y3:'S1B15AAS', y5:'S1B17AAS'}, y1:900,  y3:2700,  y5:4500},
+  },
+  bw50: {
+    advanced:   {sku:{y1:'S1B27AAS', y3:'S1B29AAS', y5:'S1B31AAS'}, y1:1296, y3:3888,  y5:6480},
+  },
   bw100: {
     foundation: {sku:{y1:'S1C56AAS', y3:'S1A17AAS', y5:'S1A19AAS'}, y1:900,  y3:2700,  y5:4500},
     advanced:   {sku:{y1:'S1B41AAS', y3:'S1B43AAS', y5:'S1B45AAS'}, y1:1848, y3:5544,  y5:9240},
   },
+  bw200: {
+    advanced:   {sku:{y1:'S1B55AAS', y3:'S1B57AAS', y5:'S1B59AAS'}, y1:2604, y3:7812,  y5:13020},
+  },
+  bw500: {
+    advanced:   {sku:{y1:'S1B70AAS', y3:'S1B72AAS', y5:'S1B74AAS'}, y1:4572, y3:13716, y5:22860},
+  },
   bw1g: {
     foundation: {sku:{y1:'S1A29AAS', y3:'S1A31AAS', y5:'S1A33AAS'}, y1:1680, y3:5040,  y5:8400},
     advanced:   {sku:{y1:'S1B84AAS', y3:'S1B86AAS', y5:'S1B88AAS'}, y1:6540, y3:19620, y5:32700},
+  },
+  bw2g: {
+    advanced:   {sku:{y1:'S1C28AAS', y3:'S1C30AAS', y5:'S1C32AAS'}, y1:9384, y3:28152, y5:46920},
   },
   bwunl: {
     foundation: {sku:{y1:'S1A43AAS', y3:'S1A45AAS', y5:'S1A77AAS'}, y1:7848,  y3:23544, y5:39240},
     advanced:   {sku:{y1:'S1C42AAS', y3:'S1C44AAS', y5:'S1C46AAS'}, y1:23580, y3:70740, y5:117900},
   },
 };
+
+// ── SSE (Secure Service Edge) y umbrales Microbranch (2026-09-13) ────────────
+// SSE es la línea «consultar» del portafolio: el SKU existe en el catálogo HPE pero NO
+// figura en la lista de precios vigente (verificado 2026-09-13: ninguna fila R8M36AAE
+// en el export). Regla de gobierno: precio null = «la lista no tiene el dato» — la
+// interfaz muestra «consultar» y jamás un importe inventado.
+const ARUBA_SSE = { sku: 'R8M36AAE', desc: 'HPE Aruba Networking SSE Complete Edition, per-user SaaS', precio: null, nota: 'No figura en la lista de precios vigente: línea «consultar», nunca precio inventado.' };
+
+// Umbrales del aviso Microbranch del dimensionador: sede pequeña (≤10 usuarios y
+// ≤50 Mbps de caudal) y, además, sin MPLS (MPLS == 0) — el caso en que un AP con
+// Microbranch puede sustituir al appliance dedicado. Son umbrales de trabajo de esta
+// herramienta (decisión de diseño 2026-09-13), no cifras publicadas por HPE.
+const MICROBRANCH_UMBRALES = { usuarios: 10, caudalMbps: 50 }; // banner si además MPLS == 0
 
 // ── Catálogo maestro de accesorios (fase 12, corregido 2026-09-13) ───────────
 // FUENTE OFICIAL: la lista de precios del distribuidor subida por el dueño — su
@@ -996,5 +1064,5 @@ const ACCESSORY_COMPAT = {
 module.exports = {
   MODELS, BUNDLES, CARE, CARE_SKU, LICENSES, LICENSES_HA, BW_TIERS, BOOST, FEC_OVERHEAD,
   SOFTWARE, CENTRAL_TIERS, DATASHEETS, EOL_ANNOUNCED, OS_MATRIX,
-  ARUBA_ACCESSORY_CATALOG, ACCESSORY_COMPAT,
+  ARUBA_ACCESSORY_CATALOG, ACCESSORY_COMPAT, ARUBA_SSE, MICROBRANCH_UMBRALES,
 };

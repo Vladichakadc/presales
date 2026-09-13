@@ -377,6 +377,10 @@ async function toDimensionadorAruba() {
     osMatrix: arubaData.OS_MATRIX || null,
     accessories: arubaData.ARUBA_ACCESSORY_CATALOG || {},
     accessoryCompat: arubaData.ACCESSORY_COMPAT || {},
+    // SSE va siempre en «consultar» (precio null: la lista vigente no lo trae) y
+    // microbranch son los umbrales del aviso de sede pequeña (2026-09-13).
+    sse: arubaData.ARUBA_SSE,
+    microbranch: arubaData.MICROBRANCH_UMBRALES,
   };
 }
 

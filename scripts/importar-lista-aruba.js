@@ -133,6 +133,9 @@ function construirRoster(arubaData) {
   for (const [nivel, familia] of Object.entries(FAM_LIC)) {
     for (const bw of Object.values(arubaData.LICENSES)) {
       const t = bw[nivel];
+      // Foundation no existe en los tiers intermedios (restricción oficial 2026-09-13):
+      // el nivel ausente se omite, no es un error de datos.
+      if (!t) continue;
       for (const y of ['y1', 'y3', 'y5']) push(t.sku[y], familia, t[y], 'licencia');
     }
   }
@@ -144,6 +147,8 @@ function construirRoster(arubaData) {
   for (const [nivel, familia] of Object.entries(FAM_HA)) {
     for (const bw of Object.values(arubaData.LICENSES_HA)) {
       const t = bw[nivel];
+      // Foundation HA solo tiene 3 tiers (misma restricción que LICENSES): se omite.
+      if (!t) continue;
       for (const y of ['y1', 'y3', 'y5']) push(t.sku[y], familia, t[y], 'licencia-ha');
     }
   }
