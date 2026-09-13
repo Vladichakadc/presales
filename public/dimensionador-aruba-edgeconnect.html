@@ -55,6 +55,17 @@ h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28p
 label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px}
 .hint{font-size:11.5px;color:var(--steel);margin-top:5px;line-height:1.4}
 .row{display:flex;gap:8px}
+/* Widget de barras WAN: contratado / util tras FEC / equivalente Boost (fase 11, 2026-09-13).
+   Paleta sobria acorde a la casa: acero, ambar y verde de baja saturacion. */
+.bw-row{display:grid;grid-template-columns:150px 1fr 74px;gap:10px;align-items:center;margin-bottom:8px}
+.bw-row:last-child{margin-bottom:0}
+.bw-lbl{font-size:11.5px;font-weight:600;color:var(--ink);line-height:1.25}
+.bw-track{height:14px;background:#efede9;border:1px solid var(--rule);border-radius:2px;overflow:hidden}
+.bw-track i{display:block;height:100%;border-radius:1px;transition:width .25s ease}
+.bw-val{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--steel);text-align:right;white-space:nowrap}
+.b1 i{background:#6b7f8f}
+.b2 i{background:#b98a3e}
+.b3 i{background:#5e8a68}
 input[type=number],select{width:100%;padding:9px 10px;border:1px solid var(--rule);border-radius:2px;background:#fff;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500}
 select{font-family:'Barlow',sans-serif;font-size:13.5px}
 input:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:1px}
@@ -193,6 +204,17 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
   <section class="panel">
     <h2>1 · Plataforma</h2>
     <div class="field">
+      <label>Arquetipo de sede (persona Aruba)</label>
+      <div class="seg" id="personaSeg">
+        <button type="button" data-v="auto" aria-pressed="true">Libre</button>
+        <button type="button" data-v="micro" aria-pressed="false">Micro-Sucursal / Teletrabajador</button>
+        <button type="button" data-v="peq" aria-pressed="false">Sucursal pequeña / Retail</button>
+        <button type="button" data-v="med" aria-pressed="false">Sucursal mediana / Regional</button>
+        <button type="button" data-v="campus" aria-pressed="false">Campus / DC Hub</button>
+      </div>
+      <p class="hint" id="personaHint">Sin arquetipo: el dimensionador recorre todo el catálogo y manda el cálculo.</p>
+    </div>
+    <div class="field">
       <label>Tipo de despliegue</label>
       <div class="seg" id="famSeg">
         <button type="button" data-v="any" aria-pressed="true">Indiferente</button>
@@ -235,6 +257,35 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
       <p class="hint">Tráfico del lado LAN que el equipo debe procesar. No es lo mismo que el caudal WAN a contratar: FEC lo sube y Boost lo baja.</p>
     </div>
     <div class="field">
+      <label>Transporte WAN del sitio (underlay)</label>
+      <div class="row" style="margin-bottom:8px">
+        <select id="mplsType" style="width:46%">
+          <option value="none" selected>Sin MPLS</option>
+          <option value="l3">MPLS L3 (eBGP con el carrier)</option>
+          <option value="l2">MPLS L2 / Metro-E / VPLS / EVPN</option>
+        </select>
+        <input type="number" id="bwMpls" min="0" step="any" placeholder="Mbps MPLS" autocomplete="off">
+      </div>
+      <div class="row">
+        <select id="inetType" style="width:46%">
+          <option value="none" selected>Sin Internet</option>
+          <option value="dia">Internet dedicado (DIA)</option>
+          <option value="bb">Banda ancha</option>
+          <option value="lte">4G/5G/Satelital</option>
+        </select>
+        <input type="number" id="bwInet" min="0" step="any" placeholder="Mbps Internet" autocomplete="off">
+      </div>
+      <p class="hint">La suscripción EdgeConnect se licencia por el <b>caudal WAN agregado del sitio</b> (MPLS + Internet — VSG oficial). Si dejas ambos en 0, el tier se deriva del tráfico de aplicación declarado arriba.</p>
+    </div>
+    <div class="field">
+      <label class="check"><input type="checkbox" id="chkBreakout" checked> <span>Local Breakout — salida directa a Internet para SaaS/invitados<span class="sku">Regla de diseño del arquitecto (sin fuente oficial): con DIA disponible, ~70 % del tráfico de aplicación sale local por Internet y ~30 % sigue tunelizado al DC por MPLS. Reduce el caudal MPLS a contratar.</span></span></label>
+      <p class="hint" id="breakoutAhorro"></p>
+    </div>
+    <div class="field" id="fldBarras" hidden>
+      <label>Caudal contratado vs. rendimiento efectivo</label>
+      <div id="barrasWan"></div>
+    </div>
+    <div class="field">
       <label for="users">Usuarios / dispositivos concurrentes</label>
       <input type="number" id="users" min="1" step="1" autocomplete="off">
       <p class="hint">En los gateways esta cifra es además una <b>restricción dura de capacidad</b>: la serie 9000 soporta 2.048 clientes y la 9200 hasta 32.000 con licencia Gold.</p>
@@ -242,10 +293,10 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
     <div class="field">
       <label for="perfilEntorno">Perfil de entorno — flujos simultáneos</label>
       <select id="perfilEntorno">
-        <option value="estandar" selected>Estándar — ~100 flujos por usuario/dispositivo</option>
-        <option value="intensivo">Intensivo (apps SaaS concurrentes, video, VoIP) — ~200 flujos por usuario</option>
+        <option value="estandar" selected>Estándar — ~80 flujos por usuario/dispositivo</option>
+        <option value="intensivo">Intensivo (apps SaaS concurrentes, video, VoIP) — ~150 flujos por usuario</option>
       </select>
-      <p class="hint">El SD-WAN de Aruba se dimensiona por <b>flujos simultáneos</b>, no por túneles IPsec estáticos (el orquestador los gestiona dinámicamente según los overlays). Regla de trabajo declarada: 80–100 flujos/usuario en entorno estándar y 150–200 en intensivo; la herramienta calcula con el tope del rango, así que la holgura ya va dentro. El chasis recomendado soporta los flujos calculados con holgura.</p>
+      <p class="hint">El SD-WAN de Aruba se dimensiona por <b>flujos simultáneos</b>, no por túneles IPsec estáticos (el orquestador los gestiona dinámicamente según los overlays). Regla de trabajo declarada (brief del dueño, 2026-09-13): 80 flujos/usuario en entorno estándar y 150 en intensivo — punto medio del rango 80–100 / 150–200 documentado en fase 9; no existe cifra oficial HPE (SIN FUENTE, regla de preventa). Además, la capacidad de cada chasis se evalúa con un factor IMIX del 70 % sobre el throughput nominal (regla de trabajo del dueño — HPE no publica el delta entre tráfico UDP de laboratorio y mezcla real de Internet), así que la holgura ya va dentro.</p>
     </div>
     <div class="field">
       <label for="perUser">Mbps por usuario activo</label>
@@ -278,7 +329,17 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
     <div class="checks">
       <label class="check"><input type="checkbox" id="chkSeg"> <span>Segmentación multi-overlay (más de 3 BIOs / VRFs)<span class="sku">Requiere EdgeConnect <b>Advanced</b>: Foundation se queda en 3 Business Intent Overlays y 2 VRF (default y guest) frente a 7 BIOs y 64 VRFs (QuickSpecs/VSG). Aísla invitados, IoT, PCI o filiales en overlays separados sobre el mismo transporte. En gateways deduce <b>Central Advanced</b> (segmentación de extremo a extremo / NetConductor).</span></span></label>
       <label class="check"><input type="checkbox" id="chkTopo"> <span>Topología ilimitada (mesh o más de 4 hubs por región)<span class="sku">Requiere EdgeConnect <b>Advanced</b>: Foundation es hub-and-spoke con un máximo de 4 hubs por región (QuickSpecs). En gateways no cambia el nivel de Central.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkDtd"> <span>Inspección avanzada de seguridad — IDS/IPS, DDoS, clasificación web<span class="sku">Es la licencia opcional <b>Dynamic Threat Defense</b> de EdgeConnect, aparte de Foundation y Advanced (QuickSpecs p.32): entra en la lista como «consultar» porque no está en la lista de precios. Es función EdgeConnect — marcarla mueve el filtro de familia; no aplica a gateways.</span></span></label>
+    </div>
+    <div class="field" style="margin-top:14px">
+      <label>Estrategia de seguridad (inspección avanzada)</label>
+      <div class="seg" id="secSeg">
+        <button type="button" data-v="ninguna" aria-pressed="true">Sin inspección extra</button>
+        <button type="button" data-v="sse" aria-pressed="false">En la nube — HPE Aruba SSE</button>
+        <button type="button" data-v="dtd" aria-pressed="false">En el chasis — Dynamic Threat Defense</button>
+      </div>
+      <p class="hint" id="secHint">El NGFW y la clasificación de aplicaciones (AppRF, ~3.500 apps) ya van en Foundation. Activa una estrategia solo si el diseño exige IDS/IPS o inspección en la nube.</p>
+    </div>
+    <div class="checks" style="margin-top:14px">
       <label class="check"><input type="checkbox" id="chkAiops"> <span>Analítica de experiencia y AIOps<span class="sku">Requiere <b>Advanced</b>: la retención ampliada de datos es del nivel Advanced de EdgeConnect (QuickSpecs p.31), y en Central los AI Insights ampliados de WAN y la visibilidad UCC son del nivel Advanced (la retención de datos de Central es la misma en ambos niveles — tabla oficial).</span></span></label>
       <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad (HA 1+1)<span class="sku">Se cotizan 2 unidades. En modalidad SaaS el segundo nodo lleva el SKU de alta disponibilidad del QuickSpecs —mismo tier, caudal y término (VSG)— que la lista de precios documentada tarifa igual que el estándar; en On-Premises, 2× estándar.</span></span></label>
     </div>

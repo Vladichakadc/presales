@@ -1,43 +1,71 @@
-# Plan — Fase 10: sincronización total del módulo Aruba (reglas de diseño de arquitecto)
+# Plan — Fase 11: suite integral de diseño, dimensionamiento y cotización Aruba
 
-Instrucción del dueño (2026-09-13): «Analiza como un arquitecto en networking de Aruba e
-integra tus observaciones en el dimensionador con el objetivo de ser lo más acertado y
-preciso; todo el módulo de Aruba debe estar sincronizado para que cada función que se
-active llame la licencia y calcule automáticamente; valida por web los ajustes necesarios
-a nivel de diseño». Skill: vibecoding-general-swarm, Modo B. Aruba sigue siendo el piloto.
+Brief del dueño (2026-09-13, segundo documento): «Ingeniero Principal Full-Stack y
+Arquitecto Senior HPE Aruba (ESP, EdgeConnect, SD-Branch, Central, SASE/SSE)» — refactor
+integral del módulo en 6 secciones + aplicar la mejora propuesta de la fase 10 (matriz de
+funciones por modelo). Skill: vibecoding-general-swarm, Modo B. Aruba sigue de piloto.
+Regla de oro heredada: COMMIT TRAS CADA ETAPA ESTABLE (el /tmp se borra entre turnos).
 
-## Hipótesis de diseño a validar por web (F1) y luego codificar (F2-F3)
+## Alcance por secciones del brief
 
-Cada función activable del formulario debe (a) llamar su licencia/SKU, (b) calcular su
-cantidad, y (c) excluir o advertir combinaciones imposibles — sin intervención manual:
+### 1. Pestaña DIMENSIONAR
+- 1.1 YA HECHO (fase 9): sin throughput firewall ni túneles IPsec; TAA tras toggle.
+- 1.2 Selector de arquetipo de sede (personas): Micro-Sucursal/Teletrabajador (EdgeConnect
+  Microbranch — AP 500H/600H con SD-WAN por Central, declarado, sin gateway), Sucursal
+  Pequeña (9004/EC-10104), Mediana (9012/EC-10106/10108), Campus/DC (9240, EC-10150, EC-V).
+- 1.3 Transporte dual: Enlace 1 MPLS [Ninguno/L3 eBGP/L2 Metro-E/VPLS/EVPN] + Mbps;
+  Enlace 2 Internet [Ninguno/DIA/Banda ancha/4G-5G-Satelital] + Mbps. Checkbox Local
+  Breakout (DIA+FPiQ) activo por defecto: 70% del tráfico sale local, 30% al DC por túnel;
+  muestra el ahorro de MPLS evitado. Licencia EdgeConnect = agregado MPLS+Internet (VSG).
+- 1.4 Flujos: 80/usuario estándar, 150/usuario intensivo (NUEVA cifra del dueño — sustituye
+  la regla 100/200 de la fase 9, se documenta el cambio). Filtro de chasis por flujos.
+  Degradación IMIX 30% sobre throughput nominal (~570 bytes): capacidad efectiva = 0,70×.
+- 1.5 Widget 3 barras: físico contratado / útil tras FEC (BW/(1+FEC)) / equivalente Boost.
+- 1.6 Estrategia de seguridad (radio): SSE por usuario (agrega suscripción por usuario al
+  BOM, «consultar» si no hay precio) vs DTD en chasis (+35% carga CPU al dimensionar).
+- 1.7 Multi-sede: perfiles de sitio guardables («Tienda ×50») y BOM global consolidado.
 
-1. Boost es ADD-ON de la suscripción EdgeConnect: «no incluir suscripción» o «solo
-   hardware» deben retirar Boost del BOM con aviso (hoy queda huérfano).
-2. Dynamic Threat Defense (IDS/IPS) también es add-on de la suscripción: misma regla.
-3. On-Premises (E-STU) exige Orchestrator auto-alojado: línea/nota «consultar» en el BOM.
-4. On-Premises debe cambiar Boost a su variante on-prem (verificar que el motor ya lo hace).
-5. HA 1+1 exige pareja idéntica: activar HA debería fijar qty=2 (o avisar si qty≠2).
-6. EC-V es virtual: sin SKU de hardware ni Foundational Care HW — ocultar/declarar.
-7. Tier de licencia por caudal del sitio (ya) — validar que nunca supere la capacidad del
-   chasis recomendado (el filtro de candidatos ya descarta, pero el tier se calcula de
-   needProc; confirmar coherencia).
-8. Central de gateways: regla de deducción Foundation/Advanced documentada (hoy
-   nivelAutoCentral — revisar su criterio contra la fuente oficial).
-9. 9240: licencias perpetuas AAE — confirmar modelo de licenciamiento (¿lleva Central?).
-10. Regla del 30% de Boost y tasas de flujos (80-100/150-200): contrastar con guías
-    oficiales si existen; si no, quedan como regla de trabajo declarada del arquitecto.
-11. SEMÁFORO DE DISEÑO en el BOM: sección «Revisión del diseño» con reglas declarativas
-    (REGLAS_DISENO) verde/ámbar/rojo — el portal actúa de par técnico.
+### 2. Pestaña BOM
+- 2.1 Modal de accesorios al meter chasis con SFP/SFP+: J4858D, J4859D, J9150D, J9151E,
+  J9281D/J9283D DAC + segunda PSU y cables. Precios: lista documentada o «consultar».
+- 2.2 Co-terming estricto: YA HECHO (selector único 1/3/5).
+- 2.3 Simulador de netos: [List 0%, BP 35%, Silver 45%, Gold 50%, Platinum 55%, OPG %]
+  con columnas paralelas LIST/NET en el BOM.
+- 2.4 CAPEX (hardware+accesorios) vs OPEX (suscripciones+soporte) y TCO 1/3/5 años.
 
-## Etapas
-- F1 Investigación web (3 agentes paralelos): (A) EdgeConnect — Boost, DTD, Orchestrator
-  on-prem, HA 1+1 oficial; (B) SD-Branch/Central — tiers Foundation/Advanced de gateway,
-  AppRF, 9240 AAE; (C) sizing — flujos por usuario, headroom, Boost 30%, FEC overhead.
-  Salida: brief validado con URLs oficiales; lo que no tenga fuente se declara «regla de
-  trabajo del arquitecto».
-- F2 Diseño de REGLAS_DISENO (declarativo, testeable) + mapa función→licencia→cálculo.
-- F3 Implementación motor + BOM (semáforo) + auto-exclusiones + autosync HA/qty/EC-V.
-- F4 Tests nuevos (reglas de sincronía + semáforo).
-- F5 Verificación: npm run verificar, E2E Chromium, cero errores consola, humo Fortinet.
-- F6 Cierre: COMMIT TEMPRANO tras verificar, push, Railway /salud ×3, PENDIENTES.md,
-  bundle v10, informe con pendientes + mejora.
+### 3. Pestaña LICENCIAS
+- 3.1 Motor automático: YA HECHO (fases 9-10, con correcciones oficiales: DPS es Foundation).
+- 3.2 Calculadora de pool Boost: sedes con latencia/transferencias masivas → bloques 100M.
+- 3.3 Sección SASE/SSE: tiers Essential/Advanced/Complete por usuario + integración EC.
+
+### 4. Pestaña CATÁLOGO
+- 4.1 Semáforo de ciclo de vida: verde 9000/9100/9200/EC; naranja legacy 7000/7200.
+- 4.2 Tech Refresh: 7005/7008→9004, 7030→9012, 7210/7220→9240.
+- 4.3 Specs canónicas: WAN bidireccional, max flows, IPsec IMIX, SSD Boost, RU, watts.
+
+### 5. Pestaña FUENTES
+- 5.1 Price Delta Viewer: importar CSV nuevo → resalta subidas/bajadas/nuevos/ES.
+- 5.2 Matriz de SO mínimo: ECOS por hardware EC; AOS-8 vs AOS-10 en gateways.
+- 5.3 Link Health Check: endpoint servidor que verifica HTTP 200 de las URLs oficiales.
+
+### 6. Nuevas pestañas
+- 6.1 «Arquitectura y Topología»: diagrama SVG (spokes, hubs, MPLS, Internet, SSE) + PNG/SVG.
+- 6.2 «Generador de Propuesta Técnica»: informe formal descargable (justificación, BOM,
+  TCO, alcance de soporte) — texto estructurado + impresión a PDF.
+
+### 7. Mejora propuesta fase 10 (aprobada): matriz FUNCIONES_POR_MODELO en la ficha
+- Filas: Boost, DTD/IDS-IPS, Segmentación >3 BIOs, HA 1+1, FEC/POC, SSE.
+- Celdas: Soportada / Exige Advanced / No soportada (ámbar, con motivo oficial).
+- Mapa declarativo en el seed + test.
+
+## Etapas de ejecución (commit tras cada una)
+- E1 Investigación web (3 agentes): (a) Microbranch 500H/600H + ECOS mínimas + AOS-8/10 +
+  EoS 7000/7200; (b) SSE tiers/SKUs + accesorios (transceivers/PSU/cables) con precios
+  citables; (c) validar IMIX 30%, split 70/30, DTD +35% CPU.
+- E2 Motor DIMENSIONAR (1.2-1.6) + tests.
+- E3 BOM financiero (2.1, 2.3, 2.4) + tests.
+- E4 Multi-sede (1.7) + calculadora pool Boost (3.2).
+- E5 Catálogo + Fuentes (4.x, 5.x).
+- E6 Nuevas pestañas (6.1, 6.2).
+- E7 Matriz FUNCIONES_POR_MODELO (mejora propuesta).
+- E8 Verificación integral, E2E, PENDIENTES, bundle v11, informe.

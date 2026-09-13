@@ -30,7 +30,42 @@ const QMODEL_URL=new URLSearchParams(location.search).get('pickModel');
 
 const $=id=>document.getElementById(id);
 let famMode='any', segMode='branch', destMode='hibrido', lastPick=null;
+// Fase 11 (2026-09-13): arquetipo de sede y estrategia de seguridad pasan a ser
+// variables de estado del dimensionador — restringen el catalogo y alimentan el BOM.
+let personaMode='auto', secMode='ninguna';
 let bomFilas=[], bomMeta={};
+
+// Arquetipos de sede (personas Aruba, brief del duenyo 2026-09-13): restringen el
+// catalogo a los modelos que el VSG posiciona para ese tamanyo de sitio. Libre = el
+// calculo manda sobre todo el catalogo, como hasta ahora.
+const PERSONA_MODELOS={
+  peq:['Gateway 9004','EC-10104'],
+  med:['Gateway 9012','EC-10106','EC-10108'],
+  campus:['Gateway 9240','EC-10150','EC-V'],
+};
+const PERSONA_HINT={
+  auto:'Sin arquetipo: el dimensionador recorre todo el catálogo y manda el cálculo.',
+  micro:'Micro-Sucursal / teletrabajador: la respuesta Aruba es EdgeConnect Microbranch — el túnel IPsec corre en el propio AP AOS-10 (series 50x/51x/53x/55x/6xx; los 500H/600R son los posicionados para teletrabajo), sin appliance dedicado en el sitio. Va incluido en la licencia Central del AP y exige un VPNC headend. Se declara la arquitectura; no hay chasis que recomendar aquí.',
+  peq:'Sucursal pequeña / retail: Gateway 9004 o EdgeConnect 10104 — hasta ~1 Gbps agregado, PoE en el 10108 si se sube un escalón.',
+  med:'Sucursal mediana / regional: Gateway 9012 o EdgeConnect 10106/10108 — 1-2 Gbps agregado con SFP+ 10G en los EdgeConnect.',
+  campus:'Campus / DC Hub: Gateway 9240 o EdgeConnect 10150/EC-V — 4-40 Gbps con licencias de capacidad o por vCPU.',
+};
+// Estrategia de seguridad (fase 11): sustituye a la casilla DTD. SSE = inspeccion en la
+// nube (suscripcion por usuario); DTD = IDS/IPS en el propio chasis EdgeConnect, con un
+// sobrecoste de proceso que el dimensionador descuenta de la capacidad.
+const SEC_HINT={
+  ninguna:'El NGFW y la clasificación de aplicaciones (AppRF, ~3.500 apps) ya van en Foundation. Activa una estrategia solo si el diseño exige IDS/IPS o inspección en la nube.',
+  sse:'HPE Aruba Networking SSE (ex-Axis): ZTNA, SWG, CASB y DEM en suscripción POR USUARIO — paquetes oficiales Foundation ZTNA / Foundation SWG / Foundation Plus / Advanced / Advanced Plus (QuickSpecs SSE a50009212enw). EdgeConnect monta los túneles IPsec orquestados y AppExpress elige el mejor PoP. Entra en la lista como «consultar»: HPE no publica List Price de SSE.',
+  dtd:'Dynamic Threat Defense: IDS/IPS, DDoS adaptativo y clasificación web EN el chasis EdgeConnect — licencia opcional aparte de Foundation/Advanced (QuickSpecs p.32), sin SKU en la lista de precios («consultar»). Regla de dimensionado del arquitecto (SIN FUENTE oficial): reserva un 35 % adicional de capacidad de proceso para la inspección. No corre en EC-XS (doc oficial) y exige familia EdgeConnect.',
+};
+// Factor IMIX (brief del duenyo 2026-09-13, SIN FUENTE oficial): el throughput nominal de
+// datasheet se mide en laboratorio (UDP de paquete grande); con mezcla real de Internet
+// (IMIX) la capacidad efectiva baja. La investigacion web de 2026-09-13 no encontro delta
+// oficial HPE (referencias de industria: ~40 % en Cisco Cat 8500; HPE solo publica cifras
+// IDS/IPS ya medidas con iMix) — se adopta el 70 % como regla de trabajo declarada del
+// duenyo. El filtro de candidatos compara el requerimiento contra la capacidad ya
+// degradada, asi la holgura va dentro del modelo.
+const IMIX_FACTOR=0.70;
 
 // Texto del destino de tráfico (2026-09-13, refactor arquitectónico): la estrategia de
 // aplicaciones sustituye a los campos abstractos. Cloud-First usa First-packet iQ para
@@ -60,7 +95,32 @@ document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',
 $('famSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('famSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));famMode=b.dataset.v;render();});
 $('segSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('segSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));segMode=b.dataset.v;render();});
 $('destSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('destSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));destMode=b.dataset.v;$('destHint').textContent=DEST_HINT[destMode]||'';render();});
-['bw','unit','users','aps','perUser','head','fecMode','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkDtd','chkAiops','chkHa'].forEach(id=>$(id).addEventListener('input',render));
+['bw','unit','users','aps','perUser','head','fecMode','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','mplsType','bwMpls','inetType','bwInet','chkBreakout'].forEach(id=>$(id).addEventListener('input',render));
+
+// Arquetipo de sede (fase 11): restringe el catalogo a los modelos del VSG para ese
+// tamanyo de sitio; el hint declara que hace cada persona.
+$('personaSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  [...$('personaSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
+  personaMode=b.dataset.v;
+  $('personaHint').textContent=PERSONA_HINT[personaMode]||PERSONA_HINT.auto;
+  render();
+});
+// Estrategia de seguridad (fase 11): sustituye a la casilla DTD. DTD es funcion
+// EdgeConnect (QuickSpecs p.32), no de los gateways: elegirla mueve el filtro de familia,
+// igual que Boost. SSE no mueve el filtro: es suscripcion por usuario independiente del
+// chasis, y el tunnel IPsec orquestado lo montan tanto EdgeConnect como los gateways.
+$('secSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  [...$('secSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
+  secMode=b.dataset.v;
+  $('secHint').innerHTML=SEC_HINT[secMode]||SEC_HINT.ninguna;
+  if(secMode==='dtd'&&famMode!=='ec'&&famMode!=='any'){
+    famMode='ec';
+    [...$('famSeg').children].forEach(x=>x.setAttribute('aria-pressed',x.dataset.v==='ec'));
+  }
+  render();
+});
 
 // Boost solo existe en EdgeConnect: pedirlo con el filtro en gateways daria una lista
 // vacia sin explicar por que, asi que se mueve el filtro tambien.
@@ -71,16 +131,8 @@ $('chkBoost').addEventListener('change',()=>{
   }
   render();
 });
-// Dynamic Threat Defense tambien es funcion EdgeConnect (QuickSpecs p.32), no de los
-// gateways: misma regla que Boost — pedirlo con el filtro en gateways moveria a una
-// lista vacia, asi que el filtro acompaña a la funcion.
-$('chkDtd').addEventListener('change',()=>{
-  if($('chkDtd').checked&&famMode!=='ec'&&famMode!=='any'){
-    famMode='ec';
-    [...$('famSeg').children].forEach(x=>x.setAttribute('aria-pressed',x.dataset.v==='ec'));
-  }
-  render();
-});
+// Dynamic Threat Defense vive ahora en el radio de estrategia de seguridad (secSeg,
+// fase 11): el movimiento del filtro de familia se hace en su listener de arriba.
 $('chkHa').addEventListener('change',()=>{
   const q=$('qty');
   if($('chkHa').checked){ if((parseInt(q.value)||1)<2) q.value=2; }
@@ -242,10 +294,11 @@ function flujosDe(m){
   }
   return m.fwSess!=null?m.fwSess:null;
 }
-// Tasa de flujos por usuario según el perfil de entorno. La arquitectura declara el rango
-// (80–100 estándar, 150–200 intensivo) y la herramienta dimensiona con el TOPE: la
-// holgura queda incorporada en la propia tasa. Regla de trabajo declarada, no cifra HPE.
-const FLUJOS_POR_USUARIO={estandar:100, intensivo:200};
+// Tasa de flujos por usuario según el perfil de entorno. Brief del duenyo 2026-09-13
+// (fase 11): 80 estandar / 150 intensivo — punto medio del rango 80-100 / 150-200 que la
+// arquitectura declaro en fase 9. SIN FUENTE oficial: HPE no publica flujos por usuario;
+// es regla de trabajo de preventa, declarada como tal en la interfaz.
+const FLUJOS_POR_USUARIO={estandar:80, intensivo:150};
 
 // Nivel de suscripción DEDUCIDO de las funciones elegidas (matriz oficial QuickSpecs v18
 // p.31, transcrita en aruba.js): Advanced solo si el diseño pide segmentación
@@ -278,11 +331,12 @@ function porqueNivelEC(nivel){
 // campo localizada, no oficial, sugiere 40 %: queda documentada la discrepancia y manda
 // la regla declarada del dueño). Como tráfico WAN privado se toma el caudal que los
 // enlaces transportan ANTES de la reducción de Boost —que es el tráfico que el motor de
-// optimización procesa—: needProc con la paridad FEC. En Cloud-First no se modela el % de
-// salida local DIA (la herramienta no inventa el reparto): aplicar el 30 % sobre ese
-// mismo total es conservador y así se declara.
-function boostMbpsAuto(needProc,fec){
-  return Math.round(0.30*needProc*(1+(fec?fec.pct:0)));
+// optimización procesa—: needProc con la paridad FEC. Desde fase 11 se multiplica por la
+// cuota privada del Local Breakout (privateShare): con DIA y breakout activo solo el
+// 30 % del tráfico sigue tunelizado al DC (regla 70/30 del brief del duenyo, SIN FUENTE
+// oficial — la literatura de partners apunta mas bien a 80/20; queda documentado).
+function boostMbpsAuto(needProc,fec,share){
+  return Math.round(0.30*needProc*(1+(fec?fec.pct:0))*(share!=null?share:1));
 }
 
 // Estado derivado del escenario (2026-09-13, refactor arquitectónico): el caudal de
@@ -303,12 +357,29 @@ function estadoDerivado(){
   // Cloud-First hereda el coste de proceso que antes llevaba la casilla de breakout:
   // clasificar cada primer paquete para decidir DIA/SSE es trabajo del appliance.
   if(destMode==='cloud') featurePenalty+=0.05;
+  // Dynamic Threat Defense (fase 11): IDS/IPS en el chasis reserva capacidad de proceso.
+  // Regla de trabajo del duenyo: +35 % (SIN FUENTE oficial para EdgeConnect — en gateways
+  // SD-Branch HPE publica throughput IDS/IPS de solo el 17-30 % del de firewall, medido
+  // con iMix; la revision del diseno lo declara como aviso para no prometer de mas).
+  if(secMode==='dtd') featurePenalty+=0.35;
   const bwBase=bw*unit*(1+head)*featurePenalty;
   const userBase=users*perUser*(1+head)*featurePenalty;
   const needProc=Math.max(bwBase,userBase);
   const fec=SIZING.fec[$('fecMode').value]||SIZING.fec.auto;
   const perfil=SIZING.boost.reduccion[$('boostProfile').value]||SIZING.boost.reduccion.generico;
-  const wanNeed=needProc*(1+fec.pct)/(boost?perfil.factor:1);
+  // Transporte WAN dual (fase 11): si el preventa declara los enlaces del sitio, el tier
+  // de suscripcion se licencia por el caudal WAN AGREGADO (MPLS + Internet — VSG oficial)
+  // y ese es el caudal que el chasis debe sostener. Si ambos quedan en 0, se deriva del
+  // trafico de aplicacion como hasta ahora (con FEC y la reduccion de Boost).
+  const mplsMbps=$('mplsType').value!=='none'?(parseFloat($('bwMpls').value)||0):0;
+  const inetMbps=$('inetType').value!=='none'?(parseFloat($('bwInet').value)||0):0;
+  const underlay=mplsMbps+inetMbps;
+  const breakout=$('chkBreakout').checked;
+  // Local Breakout (regla 70/30 del brief del duenyo, SIN FUENTE oficial): con DIA
+  // disponible, ~70 % del trafico de aplicacion sale local y ~30 % sigue tunelizado al
+  // DC. La cuota privada reduce lo que Boost debe optimizar y lo que el MPLS sostiene.
+  const privateShare=(breakout&&inetMbps>0)?0.30:1;
+  const wanNeed=underlay>0?underlay:needProc*(1+fec.pct)/(boost?perfil.factor:1);
   const tasaFlujos=FLUJOS_POR_USUARIO[$('perfilEntorno').value]||FLUJOS_POR_USUARIO.estandar;
   const flujosReq=users>0?users*tasaFlujos:0;
   const tier=tierParaCaudal(wanNeed);
@@ -324,9 +395,10 @@ function estadoDerivado(){
   const qty=Math.max(1,parseInt($('qty').value)||1);
   // Boost auto-dimensionado: 30 % del tráfico WAN privado, en bloques de 100 Mbps.
   // Sin suscripción no hay Boost (es un add-on suyo, no un producto independiente).
-  const bloques=(boost&&bundle)?bloquesBoost(boostMbpsAuto(needProc,fec)):0;
+  const bloques=(boost&&bundle)?bloquesBoost(boostMbpsAuto(needProc,fec,privateShare)):0;
   return {bw,unit,users,aps,perUser,head,boost,fec,perfil,needProc,wanNeed,
-    tasaFlujos,flujosReq,tier,onprem,bundle,central,termYrs,care,qty,bloques};
+    tasaFlujos,flujosReq,tier,onprem,bundle,central,termYrs,care,qty,bloques,
+    mplsMbps,inetMbps,underlay,breakout,privateShare};
 }
 
 /* ══ REVISIÓN DEL DISEÑO (par técnico automático, 2026-09-13 fase 10) ══
@@ -348,12 +420,29 @@ const REGLAS_DISENO=[
   // IDS/IPS no corre en EC-XS (doc oficial Orchestrator/IDS: PN 200889/200900 sin soporte;
   // en EC-V exige min. 4 vCPU y 16 GB RAM). Marcar DTD con un EC-XS seleccionado es un
   // diseno imposible — hay que subir de modelo o quitar la funcion.
-  {nivel:'rojo', cuando:(D,m)=>m.id==='EC-XS'&&$('chkDtd').checked,
-   texto:()=>'Dynamic Threat Defense (IDS/IPS) NO corre en EC-XS segun la documentacion oficial de HPE: sube de modelo (EC-10104 en adelante) o desmarca la inspeccion avanzada.'},
+  {nivel:'rojo', cuando:(D,m)=>m.id==='EC-XS'&&secMode==='dtd',
+   texto:()=>'Dynamic Threat Defense (IDS/IPS) NO corre en EC-XS segun la documentacion oficial de HPE: sube de modelo (EC-10104 en adelante) o cambia la estrategia de seguridad.'},
   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&D.boost&&!D.bundle,
    texto:()=>'Boost marcado pero EXCLUIDO: es un add-on de la suscripcion EdgeConnect — sin ella no hay fabric que optimizar.'},
-  {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&$('chkDtd').checked&&!D.bundle,
-   texto:()=>'Dynamic Threat Defense marcado pero EXCLUIDO: es licencia aparte, pero DE la suscripcion — sin ella no se licencia.'},
+  {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&secMode==='dtd'&&!D.bundle,
+   texto:()=>'Dynamic Threat Defense elegido pero suscripcion EXCLUIDA: es licencia aparte, pero DE la suscripcion — sin ella no se licencia.'},
+  // Fase 11: la regla de trabajo del duenyo reserva +35 % de proceso para DTD, pero HPE
+  // publica para los gateways SD-Branch un throughput IDS/IPS de solo el 17-30 % del de
+  // firewall (datasheet oficial, medido con iMix). En EdgeConnect no hay cifra oficial:
+  // el dimensionado ya va cargado con el 35 %, y este aviso pide no prometer de mas.
+  {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&secMode==='dtd',
+   texto:()=>'DTD dimensionado con +35 % de proceso (regla de trabajo declarada). Ojo: en gateways SD-Branch HPE publica throughput IDS/IPS de solo el 17-30 % del nominal de firewall; en EdgeConnect no hay cifra oficial — si la inspeccion sera intensiva, considera un escalon mas de chasis.'},
+  // Local Breakout sin Internet es una incoherencia de diseno: no hay salida local.
+  {nivel:'aviso', cuando:(D,m)=>D.breakout&&D.inetMbps<=0&&D.underlay>0,
+   texto:()=>'Local Breakout activo pero el sitio no tiene enlace de Internet declarado: no hay salida local para el trafico SaaS — declara un DIA/banda ancha o desmarca el breakout.'},
+  // SSE con todo el trafico tunelizado al DC: el breakout es precisamente lo que da
+  // sentido a la inspeccion en la nube (el trafico sale local hacia el PoP SSE).
+  {nivel:'aviso', cuando:(D,m)=>secMode==='sse'&&!(D.breakout&&D.inetMbps>0),
+   texto:()=>'SSE sin Local Breakout con Internet: la inspeccion en la nube rinde cuando el trafico de Internet sale LOCAL hacia el PoP SSE (tunel IPsec orquestado). Con full backhaul al DC la salida la inspeccionaria el DC, no el SSE.'},
+  // El underlay declarado por debajo del trafico de aplicacion: el enlace no sostiene lo
+  // que la LAN quiere enviar — hay que subir el caudal contratado o revisar el trafico.
+  {nivel:'aviso', cuando:(D,m)=>D.underlay>0&&D.underlay<D.needProc,
+   texto:(D,m)=>`El underlay declarado (${fmt(D.underlay)}) queda por debajo del trafico de aplicacion estimado (${fmt(D.needProc)}): el enlace contratado no sostiene la demanda — sube el caudal o revisa la estimacion.`},
   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&D.bundle==='onprem',
    texto:()=>'Modalidad On-Premises: el software de Orchestrator va incluido en la suscripcion, pero el ALOJAMIENTO (VM, uptime, backup y upgrades) corre por cuenta del cliente — dimensionarlo en la propuesta.'},
   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&D.onprem&&$('chkHa').checked&&D.qty===2,
@@ -370,15 +459,49 @@ function revisionDiseno(D,m){
   return h;
 }
 
+/* ══ Widget de barras WAN (fase 11, 2026-09-13) ══
+   Tres barras: caudal contratado (underlay declarado o derivado), caudal util tras la
+   paridad FEC, y —con Boost— el caudal de aplicacion equivalente que se percibe tras la
+   reduccion. Se pinta solo cuando hay cifras que mostrar. */
+function pintarBarrasWan(D){
+  const fld=$('fldBarras'), box=$('barrasWan');
+  // Ahorro MPLS por Local Breakout: el hint vive siempre bajo la casilla.
+  const ah=$('breakoutAhorro');
+  if(D.breakout&&D.inetMbps>0&&D.needProc>0){
+    ah.innerHTML=`Con Local Breakout, ~70 % del tráfico de aplicación (≈<b>${fmt(0.70*D.needProc)}</b>) sale directo por Internet; el túnel al DC/MPLS sostiene ≈<b>${fmt(0.30*D.needProc)}</b> (regla 70/30 declarada, sin fuente oficial).`;
+  }else if(D.breakout&&D.inetMbps<=0){
+    ah.textContent='Breakout activo pero sin enlace de Internet declarado: no hay salida local — declara un DIA/banda ancha arriba.';
+  }else{
+    ah.textContent='Breakout desactivado: todo el tráfico se tuneliza al datacenter (full backhaul).';
+  }
+  const fisico=D.underlay>0?D.underlay:D.wanNeed;
+  if(fisico<=0){ fld.hidden=true; box.innerHTML=''; return; }
+  const util=fisico/(1+D.fec.pct);
+  const filas=[
+    {cls:'b1', lbl:'Caudal WAN contratado'+(D.underlay>0?' (MPLS + Internet)':' (derivado del tráfico)'), val:fisico},
+    {cls:'b2', lbl:`Útil tras FEC (${Math.round(D.fec.pct*100)} % paridad)`, val:util},
+  ];
+  if(D.boost) filas.push({cls:'b3', lbl:`Equivalente percibido con Boost (${D.perfil.factor}:1)`, val:util*D.perfil.factor});
+  const max=Math.max(...filas.map(f=>f.val));
+  box.innerHTML=filas.map(f=>
+    `<div class="bw-row ${f.cls}"><span class="bw-lbl">${f.lbl}</span>`
+    +`<span class="bw-track"><i style="width:${Math.max(2,Math.round(f.val/max*100))}%"></i></span>`
+    +`<span class="bw-val">${fmt(f.val)}</span></div>`).join('');
+  fld.hidden=false;
+}
+
 function render(){
   // Todo lo calculable sale del estado derivado: una sola fuente para el dimensionador,
   // la ficha y el BOM (2026-09-13, refactor arquitectónico).
   const D=estadoDerivado();
   const {bw,users,aps,head,boost,fec,perfil,needProc,wanNeed,tasaFlujos,flujosReq,tier}=D;
-  // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): el campo es
-  // el dato mínimo del dimensionamiento; sin él la página pide valores en vez de proponer
-  // un equipo a ciegas.
-  if(bw<=0){
+  // Widget de barras WAN + hint de ahorro por breakout (fase 11): se pinta siempre que
+  // haya cifras, y se oculta solo cuando no hay nada que mostrar.
+  pintarBarrasWan(D);
+  // Sin ancho de banda Y sin enlaces declarados no hay recomendación (regla de preventa
+  // 2026-09-13, ampliada en fase 11): el tráfico de aplicación o el underlay WAN son el
+  // dato mínimo; sin ninguno de los dos la página pide valores en vez de proponer a ciegas.
+  if(bw<=0&&D.underlay<=0){
     lastPick=null; sincronizarConBom(null);
     poblarPickModel([], null);
     const need=$('need'); need.style.left='0%'; $('needLbl').textContent='—';
@@ -387,6 +510,29 @@ function render(){
       vacioTitulo:'Ingrese valores para recomendar un equipo',
       vacioDetalle:'<p style="margin:0;font-size:13.5px">Escriba el <b>ancho de banda</b> del sitio (y si aplica, usuarios y APs) para que el dimensionador proponga los modelos que cumplen.</p>'});
     $('verdict').style.borderLeftColor='var(--steel)';
+    return;
+  }
+  // Arquetipo Micro-Sucursal (fase 11): la respuesta Aruba es EdgeConnect Microbranch —
+  // SD-WAN-lite en el propio AP AOS-10, sin appliance dedicado (VSG SD-Branch y doc de
+  // personas de Central). No hay chasis que recomendar: se declara la arquitectura y lo
+  // que hay que cotizar (AP + licencia Central + VPNC headend).
+  if(personaMode==='micro'){
+    lastPick=null; sincronizarConBom(null);
+    poblarPickModel([], null);
+    const need=$('need'); need.style.left='0%'; $('needLbl').textContent='—';
+    $('track').querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
+    FICHA.render({...FICHA_CFG, contenedor:'verdict', candidatos:[], recomendado:null,
+      vacioTitulo:'Micro-Sucursal: EdgeConnect Microbranch (SD-WAN en el propio AP)',
+      vacioDetalle:`<div style="font-size:13.5px;line-height:1.55">
+        <p style="margin:0 0 8px">Para una micro-sucursal o teletrabajador, Aruba no propone un appliance: el <b>túnel IPsec corre en el punto de acceso</b> (persona Microbranch de AOS-10 — cualquier AP de las series 50x/51x/53x/55x/6xx; los 500H/600R son los posicionados para teletrabajo). El AP-505H, referencia hospitality, publica 500 Mbps de IPsec.</p>
+        <ul style="margin:0;padding-left:18px">
+          <li><b>Sin appliance dedicado en el sitio:</b> el AP construye el túnel IPsec a un <b>VPNC headend</b> (gateway 72xx/9xxx/91xx/92xx, vGW o EdgeConnect vía Unified Fabric) — dimensiona ese headend con el arquetipo «Campus / DC Hub».</li>
+          <li><b>Licenciamiento:</b> Microbranch va incluido en la suscripción Central del AP — Foundation ya trae túneles L2/L3, redundancia de DC/WAN y monitorización Microbranch; Advanced añade visibilidad de salud WAN y Cloud Connect (doc oficial de licenciamiento Central).</li>
+          <li><b>Solo AOS-10:</b> la persona Microbranch no existe en AOS-8.</li>
+        </ul>
+        <p style="margin:8px 0 0">Si prefieres forzar un appliance en el sitio, cambia el arquetipo a «Libre» o «Sucursal pequeña».</p>
+      </div>`});
+    $('verdict').style.borderLeftColor='var(--red)';
     return;
   }
   $('headVal').textContent=Math.round(head*100)+' %';
@@ -419,15 +565,19 @@ function render(){
     const cap=capacidadMax(m);if(cap==null)return;
     const pct=xPct(cap);if(pct<0||pct>100)return;
     const dot=document.createElement('div');
-    dot.className='dot'+(cap>=needDe(m)?' ok':'');
+    dot.className='dot'+(cap*IMIX_FACTOR>=needDe(m)?' ok':'');
     if(lastPick&&m.id===lastPick.id)dot.className='dot pick';
     dot.style.left=pct+'%';dot.title=m.id+': '+fmt(cap);
     track.appendChild(dot);
   });
 
-  let outByBoost=0,outByClients=0,outByAps=0,outBySinDato=0,outByFlujos=0,sobrado=[];
+  let outByBoost=0,outByClients=0,outByAps=0,outBySinDato=0,outByFlujos=0,outByPersona=0,sobrado=[];
   const candidates=MODELS.filter(m=>{
     if(!coincideFiltro(m,famMode)) return false;
+    // Arquetipo de sede (fase 11): restringe el catalogo a los modelos que el VSG
+    // posiciona para ese tamanyo de sitio. Libre = no restringe.
+    if(personaMode!=='auto'&&personaMode!=='micro'&&PERSONA_MODELOS[personaMode]
+      &&!PERSONA_MODELOS[personaMode].includes(m.id)){ outByPersona++; return false; }
     if(boost&&m.boostMax==null){ outByBoost++; return false; }
     // EC-V no publica rango: se dimensiona por licencia y vCPU, no por hardware.
     if(m.fam==='ec'&&m.wanMax==null) return false;
@@ -435,7 +585,10 @@ function render(){
     // Sin cifra publicada no se puede afirmar que cumpla: se descarta y se explica, en
     // vez de colarlo con un numero inventado o de omitirlo en silencio.
     if(cap==null){ outBySinDato++; return false; }
-    if(cap<needDe(m)) return false;
+    // Factor IMIX (fase 11, regla de trabajo del duenyo): la capacidad efectiva con
+    // mezcla real de trafico es el 70 % del nominal de laboratorio — el requerimiento se
+    // compara contra la cifra ya degradada y la holgura queda dentro del modelo.
+    if(cap*IMIX_FACTOR<needDe(m)) return false;
     const cMax=clientesMax(m), aMax=apsMax(m);
     if(cMax!=null&&users&&cMax<users){ outByClients++; return false; }
     if(aMax!=null&&aps&&aMax<aps){ outByAps++; return false; }
@@ -476,6 +629,7 @@ function render(){
     // Se nombra y se deja como referencia, no se cuela como propuesta.
     const eolQueCumplen=candidates.filter(m=>FICHA.recomendable&&!FICHA.recomendable(m));
     if(eolQueCumplen.length) why.push(`<li><b>${eolQueCumplen.map(m=>m.id).join(', ')}</b> cumple${eolQueCumplen.length>1?'n':''} por capacidad pero está${eolQueCumplen.length>1?'n':''} <b>fuera de venta</b> (último pedido ${eolQueCumplen.map(m=>m.eolAnnounced&&m.eolAnnounced.lastOrder?m.eolAnnounced.lastOrder:'declarado').join(', ')}). Queda en el selector como referencia para parque instalado; la notificación oficial de fin de venta nombra el reemplazo — confirmarlo con el distribuidor.</li>`);
+    if(outByPersona) why.push(`<li><b>${outByPersona}</b> modelo(s) fuera del arquetipo de sede elegido: el VSG posiciona otros modelos para este tamaño de sitio. Cambia el arquetipo a «Libre» para recorrer todo el catálogo.</li>`);
     if(outByBoost) why.push(`<li><b>${outByBoost}</b> modelo(s) descartado(s) por pedir Boost: la optimización WAN es exclusiva de EdgeConnect, los gateways de las series 9000, 9100 y 9200 no la hacen.</li>`);
     if(outByClients) why.push(`<li><b>${outByClients}</b> gateway(s) descartado(s) por capacidad de clientes: hacen falta ${miles(users)}.</li>`);
     if(outByAps) why.push(`<li><b>${outByAps}</b> gateway(s) descartado(s) por número de APs: hacen falta ${miles(aps)}.</li>`);
@@ -513,7 +667,7 @@ function render(){
     const cap=capacidadMax(m), req=needDe(m), nivel=nivelLicenciaNecesario(m,req,users,aps), flags=[];
     if(m.fam==='ec'){
       flags.push(`<b>Caudal WAN a contratar:</b> ${fmt(wanNeed)}${fec.pct?` (incluye ${Math.round(fec.pct*100)}% de paridad FEC)`:''}${boost?` tras la reducción ${perfil.factor}:1 de Boost sobre ${esc(perfil.n.toLowerCase())}`:''}. Tier de suscripción: <b>${tier?esc(tier.n):'—'}</b>.`);
-      if(boost&&D.bloques) flags.push(`<b>Boost auto-dimensionado:</b> el enlace transporta ${fmt(wanNeed)} en vez de ${fmt(needProc*(1+fec.pct))}. Se licencia el 30 % del tráfico WAN privado estimado (${fmt(boostMbpsAuto(needProc,fec))}) en bloques de ${SIZING.boost.bloque} Mbps que forman un pool del fabric — para esta sede, <b>${D.bloques} bloque(s)</b>.`);
+      if(boost&&D.bloques) flags.push(`<b>Boost auto-dimensionado:</b> el enlace transporta ${fmt(wanNeed)} en vez de ${fmt(needProc*(1+fec.pct))}. Se licencia el 30 % del tráfico WAN privado estimado (${fmt(boostMbpsAuto(needProc,fec,D.privateShare))}${D.privateShare<1?' — ya descontada la salida local del breakout (cuota privada 30 %)':''}) en bloques de ${SIZING.boost.bloque} Mbps que forman un pool del fabric — para esta sede, <b>${D.bloques} bloque(s)</b>.`);
       else if(!boost) flags.push('Admite Boost. Merece evaluarse si el tráfico es repetitivo (réplicas, backups, VDI, CIFS/SMB): reduce el caudal contratado, que a 3–5 años suele pesar más en el TCO que el propio equipo.');
       if(sobrado.includes(m.id)) flags.push(`<b class="warn">Sobredimensionado:</b> el requerimiento (${fmt(wanNeed)}) queda por debajo del suelo del rango publicado (${fmt(m.wanMin)}). Revisar el escalón inferior antes de cotizar.`);
       // Nivel deducido de las funciones marcadas (matriz oficial QuickSpecs p.31): se
@@ -527,7 +681,9 @@ function render(){
         :`<b>Flujos simultáneos:</b> el perfil estima ${miles(flujosReq)} flujos activos, pero HPE no publica la cifra para este modelo — confirmarla en las QuickSpecs antes de comprometer el diseño.`);
     }
     if(destMode==='cloud') flags.push('<b>Cloud-First/SaaS:</b> First-packet iQ clasifica la aplicación en el primer paquete y rompe al Internet local o a la nube SSE; el túnel cifrado al datacenter se reserva para el tráfico privado. Son capacidades de plataforma — no fuerzan el nivel de suscripción.');
-    if($('chkDtd').checked) flags.push('<b>Dynamic Threat Defense:</b> IDS/IPS, DDoS adaptativo y clasificación web son una licencia opcional APARTE de Foundation y Advanced (QuickSpecs p.32). Entra en la lista de materiales como «consultar»: no está en la lista de precios.');
+    if(secMode==='dtd') flags.push('<b>Dynamic Threat Defense:</b> IDS/IPS, DDoS adaptativo y clasificación web son una licencia opcional APARTE de Foundation y Advanced (QuickSpecs p.32). Entra en la lista de materiales como «consultar»: no está en la lista de precios. El dimensionado reserva un 35 % adicional de proceso para la inspección (regla de trabajo declarada — ver la revisión del diseño).');
+    if(secMode==='sse') flags.push('<b>HPE Aruba Networking SSE:</b> la inspección se hace en la nube — ZTNA, SWG, CASB y DEM en suscripción <b>por usuario</b> (paquetes oficiales Foundation ZTNA / Foundation SWG / Foundation Plus / Advanced / Advanced Plus, QuickSpecs SSE a50009212enw). El appliance monta los túneles IPsec orquestados hacia el SSE y AppExpress elige el mejor PoP. Entra en la lista como «consultar»: HPE no publica List Price de SSE.');
+    if(cap!=null) flags.push(`<b>Capacidad efectiva (IMIX):</b> el dimensionador exige que el requerimiento quepa en el 70 % del throughput nominal (regla de trabajo declarada — HPE no publica el delta entre laboratorio y mezcla real de Internet). Este modelo queda al ${Math.round(req/(cap*IMIX_FACTOR)*100)} % de su capacidad efectiva.`);
     if(m.legacy) flags.push('<b class="warn">Línea anterior (AOS 8):</b> las series 7000 y 7200 siguen en canal y son la respuesta natural para <b>ampliar un parque ya instalado</b>, pero para un despliegue nuevo conviene contrastar con la generación actual (series 9000/9100/9200 sobre AOS 10).');
     if(m.fam==='gw'&&m.rol==='sucursal'&&!m.legacy) flags.push(`<b>Sucursal:</b> el mismo equipo termina la WAN y hace de controladora de APs (hasta ${miles(m.aps)}), aplicando Dynamic Segmentation con el rol que traen el switch CX o el AP. No hace optimización WAN.`);
     if(m.fam==='gw') flags.push(`<b>Central ${nivelAutoCentral()==='advanced'?'Advanced':'Foundation'}:</b> ${nivelAutoCentral()==='advanced'?'deducido de las funciones marcadas (segmentación de extremo a extremo o AIOps ampliada)':'gestión SD-Branch completa — firewall, VPN y políticas por aplicación ya son Foundation, sin funciones que fuercen el nivel superior'}.`);
@@ -815,7 +971,7 @@ function renderBom(){
         +`<br><span class="lic-auto-porque">${bundle==='onprem'
             ?'modalidad On-Premises (E-STU) elegida en opciones avanzadas: el Orchestrator vive en la infraestructura del cliente'
             :esc(porqueNivelEC(nivelAutoEC()))}</span>`
-        +(bloques?`<br>Boost: <b>${bloques} bloque(s) de ${SIZING.boost.bloque} Mbps</b> = 30 % del tráfico WAN privado estimado (${fmt(boostMbpsAuto(D.needProc,D.fec))})`:'')
+        +(bloques?`<br>Boost: <b>${bloques} bloque(s) de ${SIZING.boost.bloque} Mbps</b> = 30 % del tráfico WAN privado estimado (${fmt(boostMbpsAuto(D.needProc,D.fec,D.privateShare))})`:'')
       :'<b>Suscripción excluida</b><br><span class="lic-auto-porque">El equipo queda standalone, sin fabric gestionado ni ZTP — y tampoco se licencia Boost, que es un add-on de la suscripción.</span>';
   }else{
     $('centralAutoTxt').innerHTML=central
@@ -890,7 +1046,7 @@ function renderBom(){
       }
       // Dynamic Threat Defense: licencia opcional APARTE de Foundation y Advanced
       // (QuickSpecs p.32). Sin SKU en la lista de precios: entra como «consultar».
-      if($('chkDtd').checked){
+      if(secMode==='dtd'){
         filas.push({cat:'Seguridad', desc:'Dynamic Threat Defense — IDS/IPS, DDoS adaptativo, clasificación web',
           sku:null, qty, unit:null,
           nota:`${termino} · licencia opcional aparte de Foundation/Advanced (QuickSpecs p.32) · sin SKU en la lista de precios — consultar`});
@@ -914,6 +1070,16 @@ function renderBom(){
       filas.push({cat:'Licencia perpetua', desc:`Capacidad ${capTier.n}`, sku:capTier.sku||null, qty, unit:capTier.elp!=null?capTier.elp:null,
         nota:`Amplía el mismo hardware a ${fmt(capTier.fw)} · ${miles(capTier.aps)} APs · ${miles(capTier.clients)} dispositivos`});
     }
+  }
+  // HPE Aruba Networking SSE (fase 11): suscripcion POR USUARIO (ZTNA, SWG, CASB, DEM —
+  // paquetes oficiales Foundation ZTNA / Foundation SWG / Foundation Plus / Advanced /
+  // Advanced Plus, QuickSpecs SSE a50009212enw). HPE no publica List Price de SSE: entra
+  // como «consultar». Es independiente del chasis — el tunel IPsec orquestado lo montan
+  // tanto EdgeConnect como los gateways SD-Branch.
+  if(secMode==='sse'){
+    filas.push({cat:'Seguridad SASE', desc:'HPE Aruba Networking SSE — suscripción por usuario (ZTNA, SWG, CASB, DEM)',
+      sku:null, qty:Math.max(1,D.users||1), unit:null,
+      nota:`${termino} · por usuario (${miles(Math.max(1,D.users||1))} usuarios) · paquetes Foundation ZTNA / Foundation SWG / Foundation Plus / Advanced / Advanced Plus (QuickSpecs SSE) · HPE no publica List Price — consultar`});
   }
   if(care&&!esVirtual){
     filas.push({cat:'Soporte', desc:CARE[care].n, sku:tierSku(careTier,termYrs), qty, unit:carePrice,
@@ -949,6 +1115,13 @@ function renderBom(){
       `  Referencias:          ${(m.skus||[]).map(r=>(r.sku||'sin SKU')+' '+r.d).join(' | ')||'-'}`,
       `  Datasheet:            ${m.ds||'sin URL oficial confirmada'}`,
       m.dsLocal?`  Copia local:          ${m.dsLocal}`:null,
+      // Transporte WAN del sitio (fase 11): cuando el preventa declara los enlaces, el
+      // tier se licencia por el caudal agregado y la exportacion lo documenta.
+      D.underlay>0?'':'',
+      D.underlay>0?'TRANSPORTE WAN DEL SITIO (tier licenciado por caudal agregado — VSG)':null,
+      D.underlay>0?`  MPLS:     ${D.mplsMbps>0?fmt(D.mplsMbps)+' ('+$('mplsType').selectedOptions[0].text+')':'sin MPLS'}`:null,
+      D.underlay>0?`  Internet: ${D.inetMbps>0?fmt(D.inetMbps)+' ('+$('inetType').selectedOptions[0].text+')':'sin Internet'}`:null,
+      D.underlay>0?`  Agregado: ${fmt(D.underlay)} · Local Breakout ${D.breakout?'ACTIVO'+' (cuota privada ~30 % — regla 70/30 declarada)':'desactivado (full backhaul)'}`:null,
       '',
       esEC?'COMO SE LICENCIA EDGECONNECT':'COMO SE LICENCIA ESTE GATEWAY',
       esEC?'  Nivel (Foundation/Advanced) DEDUCIDO de las funciones del diseno segun la'
@@ -1161,7 +1334,7 @@ document.addEventListener('click', (e) => {
    otra recomendacion. Ahora el escenario viaja en la URL; ya no se guarda entre sesiones
    (ver /js/estado.js). */
 document.addEventListener('DOMContentLoaded', () => {
-  const st = ESTADO.vincular({ campos: ['bw','unit','users','aps','perUser','head','fecMode','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkDtd','chkAiops','chkHa','famSeg','segSeg','destSeg','pickModel'] });
+  const st = ESTADO.vincular({ campos: ['bw','unit','users','aps','perUser','head','fecMode','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','famSeg','segSeg','destSeg','pickModel','personaSeg','secSeg','mplsType','bwMpls','inetType','bwInet','chkBreakout'] });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');
