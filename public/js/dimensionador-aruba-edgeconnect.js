@@ -8,6 +8,13 @@
 // escalera de capas homogenea.
 let MODELS = [], BUNDLES = {}, CARE = {}, CARE_SKU = {}, LICENSES = {}, LICENSES_HA = {},
     SIZING = {}, SOFTWARE = [], CENTRAL = {}, DATASHEETS = {}, OS_MATRIX = null;
+// SPEC parte B (2026-09-13): el frente DATOS añade `sse` ({sku:'R8M36AAE', precio:null,
+// nota}) y `microbranch` ({usuarios:10, caudalMbps:50}) a la respuesta del API. Se leen
+// DINÁMICAMENTE y se tolera su ausencia con fallback — la página no debe romper antes del
+// merge de DATOS: SSE null (la línea entra en «consultar» con el SKU documentado en el
+// contrato) y umbrales Microbranch 10 usuarios / 50 Mbps.
+let SSE = null;
+let MICROBRANCH = { usuarios: 10, caudalMbps: 50 };
 
 // Catálogo pedible completo (hardware, remanufacturados, suscripciones, servicios) cargado
 // del CSV público de lista de precios. Es la fuente del panel "Añadir a la lista de
@@ -30,14 +37,121 @@ const QMODEL_URL=new URLSearchParams(location.search).get('pickModel');
 
 const $=id=>document.getElementById(id);
 // Campos del escenario: la misma lista que persiste ESTADO y que capturan los perfiles
-// multi-sede (fase 11) para poder restaurar un escenario guardado.
-const CAMPOS_ESCENARIO=['bw','unit','users','aps','perUser','head','fecMode','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','famSeg','segSeg','destSeg','pickModel','personaSeg','secSeg','mplsType','bwMpls','inetType','bwInet','chkBreakout','dtoSeg','dtoCustom'];
+// multi-sede para poder restaurar un escenario guardado.
+// ESTADO V2 (SPEC parte B, 2026-09-13): los inputs WAN estáticos (bw/unit/mplsType/bwMpls/
+// inetType/bwInet) salen del flujo y los sustituye el Multi-Underlay Builder — los enlaces
+// viajan serializados como JSON {v:2, wanLinks:[...]} en el input oculto #wanLinksData.
+// La migración v1→v2 de enlaces antiguos vive en migrarEstadoV1().
+const CAMPOS_ESCENARIO=['wanLinksData','users','aps','perUser','head','fecMode','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','famSeg','segSeg','destSeg','pickModel','personaSeg','selSeguridad','selTier','chkBreakout','selDescuento','dtoCustom'];
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let famMode='any', segMode='branch', destMode='hibrido', lastPick=null;
-// Fase 11 (2026-09-13): arquetipo de sede y estrategia de seguridad pasan a ser
-// variables de estado del dimensionador — restringen el catalogo y alimentan el BOM.
-let personaMode='auto', secMode='ninguna';
+// Arquetipo de sede y estrategia de seguridad como variables de estado del dimensionador
+// — restringen el catalogo y alimentan el BOM. La estrategia pasa a ser un <select>
+// (#selSeguridad, SPEC parte B) con valores none/dtd/sse.
+let personaMode='auto', secMode='none';
 let bomFilas=[], bomMeta={};
+
+/* ══ M1 · MULTI-UNDERLAY BUILDER (SPEC parte B, 2026-09-13) ══
+   Los enlaces WAN del sitio se declaran como filas dinámicas (.wan-fila) con cuatro
+   controles data-campo: tipo de transporte, medio del puerto y caudal down/up (Mbps).
+   El array estado.wanLinks = [{id, tipo, medio, down, up}] es la fuente del motor
+   (caudalTotal, mplsMbps, inetMbps) y de la auditoría de puertos del chasis. */
+const TIPOS_WAN=['MPLS L3','MPLS L2','DIA','Banda Ancha','4G/5G'];
+const MEDIOS_WAN=['RJ45','SFP 1G','SFP+ 10G'];
+let wanSeq=0; // ids únicos de fila dentro de la sesión
+// Lee las filas del builder tal como están pintadas: es la única fuente de wanLinks,
+// así el motor, la serialización y los perfiles ven exactamente lo mismo.
+function leerWanLinks(){
+  return [...document.querySelectorAll('#wanBuilderFilas .wan-fila')].map(f=>({
+    id:parseInt(f.dataset.id)||0,
+    tipo:f.querySelector('[data-campo=tipo]').value,
+    medio:f.querySelector('[data-campo=medio]').value,
+    down:Math.max(0,parseFloat(f.querySelector('[data-campo=down]').value)||0),
+    up:Math.max(0,parseFloat(f.querySelector('[data-campo=up]').value)||0),
+  }));
+}
+function wanFilaHtml(l){
+  const ops=(lista,v)=>lista.map(x=>`<option value="${esc(x)}"${x===v?' selected':''}>${esc(x)}</option>`).join('');
+  return `<div class="wan-fila" data-id="${l.id}">`
+    +`<select data-campo="tipo" aria-label="Tipo de transporte WAN">${ops(TIPOS_WAN,l.tipo)}</select>`
+    +`<select data-campo="medio" aria-label="Medio del puerto">${ops(MEDIOS_WAN,l.medio)}</select>`
+    +`<input type="number" data-campo="down" min="0" step="any" placeholder="↓ Mbps" value="${l.down||''}" aria-label="Caudal de bajada (Mbps)" autocomplete="off">`
+    +`<input type="number" data-campo="up" min="0" step="any" placeholder="↑ Mbps" value="${l.up||''}" aria-label="Caudal de subida (Mbps)" autocomplete="off">`
+    +`<button type="button" class="wan-quitar" data-wan-quitar="${l.id}" title="Quitar este enlace" aria-label="Quitar este enlace">&times;</button>`
+    +`</div>`;
+}
+function pintarWanFilas(links){
+  $('wanBuilderFilas').innerHTML=links.map(wanFilaHtml).join('');
+}
+// Serialización v2: el escenario viaja en la URL como JSON {v:2, wanLinks:[...]} dentro
+// del input oculto #wanLinksData (que ESTADO persiste como un campo más). El evento
+// input despierta el volcado de ESTADO para que el enlace compartible se actualice solo.
+function sincronizarWanHidden(){
+  const h=$('wanLinksData');
+  h.value=JSON.stringify({v:2, wanLinks:leerWanLinks()});
+  h.dispatchEvent(new Event('input',{bubbles:true}));
+}
+// Reconstruye las filas desde el input oculto (restauración de enlace o de perfil).
+// Tolerante con JSON roto o v1: cae a una fila DIA vacía en vez de romper la página.
+function reconstruirWanDesdeHidden(){
+  let links=null;
+  try{
+    const d=JSON.parse($('wanLinksData').value||'null');
+    if(d&&Array.isArray(d.wanLinks)&&d.wanLinks.length) links=d.wanLinks;
+  }catch{ links=null; }
+  if(!links) links=[{id:++wanSeq, tipo:'DIA', medio:'RJ45', down:0, up:0}];
+  links.forEach(l=>{ if(!l.id) l.id=++wanSeq; wanSeq=Math.max(wanSeq,l.id); });
+  pintarWanFilas(links);
+}
+// Migración v1→v2 (SPEC B.1): un enlace antiguo (?bw=…&mplsType=…&bwMpls=…&inetType=…&
+// bwInet=…) se convierte en 1-2 filas equivalentes del builder y se avisa por consola.
+// Devuelve true si migró algo.
+function migrarEstadoV1(){
+  const p=new URLSearchParams(location.search);
+  if(p.has('wanLinksData')) return false; // ya es v2
+  const legacy=['bw','unit','mplsType','bwMpls','inetType','bwInet'];
+  if(!legacy.some(k=>p.has(k))) return false;
+  const links=[];
+  const bwM=parseFloat(p.get('bwMpls'))||0, bwI=parseFloat(p.get('bwInet'))||0;
+  const mplsT=p.get('mplsType')||'none', inetT=p.get('inetType')||'none';
+  if(mplsT!=='none'&&bwM>0) links.push({id:++wanSeq, tipo:mplsT==='l2'?'MPLS L2':'MPLS L3', medio:'RJ45', down:bwM, up:bwM});
+  if(inetT!=='none'&&bwI>0) links.push({id:++wanSeq, tipo:inetT==='bb'?'Banda Ancha':inetT==='lte'?'4G/5G':'DIA', medio:inetT==='lte'?'RJ45':'RJ45', down:bwI, up:bwI});
+  // El antiguo «ancho de banda de aplicación» (bw) sin enlaces declarados se conserva
+  // como un acceso DIA del mismo caudal: es la lectura más fiel del escenario v1.
+  if(!links.length){
+    const bw=(parseFloat(p.get('bw'))||0)*(parseFloat(p.get('unit'))||1);
+    if(bw>0) links.push({id:++wanSeq, tipo:'DIA', medio:'RJ45', down:bw, up:bw});
+  }
+  if(!links.length) return false;
+  console.warn('[dimensionador-aruba] Migración de estado v1→v2: los parámetros WAN estáticos'
+    +' (bw/mplsType/bwMpls/inetType/bwInet) se convirtieron en', links.length,
+    'fila(s) del Multi-Underlay Builder.', links);
+  $('wanLinksData').value=JSON.stringify({v:2, wanLinks:links});
+  return true;
+}
+$('btnAddWan').addEventListener('click',()=>{
+  const links=leerWanLinks();
+  links.push({id:++wanSeq, tipo:'DIA', medio:'RJ45', down:0, up:0});
+  pintarWanFilas(links);
+  sincronizarWanHidden();
+  render();
+});
+// Delegación: cualquier cambio en una fila (tipo, medio, down, up) o su botón de quitar
+// reserializa el estado v2 y repinta. La última fila no se quita: se queda vacía.
+$('wanBuilder').addEventListener('input',e=>{
+  if(!e.target.dataset||!e.target.dataset.campo) return;
+  sincronizarWanHidden();
+  render();
+});
+$('wanBuilder').addEventListener('click',e=>{
+  const b=e.target.closest('[data-wan-quitar]');
+  if(!b) return;
+  let links=leerWanLinks().filter(l=>l.id!==parseInt(b.dataset.wanQuitar));
+  if(!links.length) links=[{id:++wanSeq, tipo:'DIA', medio:'RJ45', down:0, up:0}];
+  pintarWanFilas(links);
+  sincronizarWanHidden();
+  render();
+});
 
 // Arquetipos de sede (personas Aruba, brief del duenyo 2026-09-13): restringen el
 // catalogo a los modelos que el VSG posiciona para ese tamanyo de sitio. Libre = el
@@ -54,11 +168,13 @@ const PERSONA_HINT={
   med:'Sucursal mediana / regional: Gateway 9012 o EdgeConnect 10106/10108 — 1-2 Gbps agregado con SFP+ 10G en los EdgeConnect.',
   campus:'Campus / DC Hub: Gateway 9240 o EdgeConnect 10150/EC-V — 4-40 Gbps con licencias de capacidad o por vCPU.',
 };
-// Estrategia de seguridad (fase 11): sustituye a la casilla DTD. SSE = inspeccion en la
+// Estrategia de seguridad (selector #selSeguridad, SPEC parte B): SSE = inspeccion en la
 // nube (suscripcion por usuario); DTD = IDS/IPS en el propio chasis EdgeConnect, con un
 // sobrecoste de proceso que el dimensionador descuenta de la capacidad.
+// DTD NO fuerza Advanced: es licencia opcional APARTE de Foundation y Advanced
+// (QuickSpecs p.32) — no alimenta la deducción de nivel de nivelAutoEC().
 const SEC_HINT={
-  ninguna:'El NGFW y la clasificación de aplicaciones (AppRF, ~3.500 apps) ya van en Foundation. Activa una estrategia solo si el diseño exige IDS/IPS o inspección en la nube.',
+  none:'El NGFW y la clasificación de aplicaciones (AppRF, ~3.500 apps) ya van en Foundation. Activa una estrategia solo si el diseño exige IDS/IPS o inspección en la nube.',
   sse:'HPE Aruba Networking SSE (ex-Axis): ZTNA, SWG, CASB y DEM en suscripción POR USUARIO — paquetes oficiales Foundation ZTNA / Foundation SWG / Foundation Plus / Advanced / Advanced Plus (QuickSpecs SSE a50009212enw). EdgeConnect monta los túneles IPsec orquestados y AppExpress elige el mejor PoP. Entra en la lista como «consultar»: HPE no publica List Price de SSE.',
   dtd:'Dynamic Threat Defense: IDS/IPS, DDoS adaptativo y clasificación web EN el chasis EdgeConnect — licencia opcional aparte de Foundation/Advanced (QuickSpecs p.32), sin SKU en la lista de precios («consultar»). Regla de dimensionado del arquitecto (SIN FUENTE oficial): reserva un 35 % adicional de capacidad de proceso para la inspección. No corre en EC-XS (doc oficial) y exige familia EdgeConnect.',
 };
@@ -126,22 +242,23 @@ $('accLista').addEventListener('input',e=>{
   if(n>0) accesoriosElegidos[sku]=n; else delete accesoriosElegidos[sku];
   renderBom();
 });
-// Simulador de precio neto (fase 11): niveles de trabajo del equipo de preventa — los
-// descuentos del programa de canal de HPE NO son públicos, asi que se declaran como
+// Simulador de precio neto (#selDescuento, SPEC B.7): «Simulador genérico de tramos
+// partner — no refleja el descuento real del distribuidor» (texto fijo en la interfaz).
+// Los descuentos del programa de canal de HPE NO son públicos, asi que se declaran como
 // supuesto configurable y la cotizacion firme queda en el distribuidor.
 function dtoActual(){
-  const v=$('dtoSeg').value;
+  const v=$('selDescuento').value;
   if(v==='opg') return Math.min(0.9,Math.max(0,(parseFloat($('dtoCustom').value)||0)/100));
   return parseFloat(v)||0;
 }
 function dtoEtiqueta(){
-  const v=$('dtoSeg').value;
-  if(v==='opg') return `OPG personalizado (${(dtoActual()*100).toFixed(1)} %)`;
-  const opt=$('dtoSeg').selectedOptions[0];
+  const v=$('selDescuento').value;
+  if(v==='opg') return `Personalizado (${(dtoActual()*100).toFixed(1)} %)`;
+  const opt=$('selDescuento').selectedOptions[0];
   return opt?opt.textContent.trim():'Lista (0 %)';
 }
-$('dtoSeg').addEventListener('input',()=>{
-  $('dtoCustom').hidden=$('dtoSeg').value!=='opg';
+$('selDescuento').addEventListener('input',()=>{
+  $('dtoCustom').hidden=$('selDescuento').value!=='opg';
   renderBom();
 });
 $('dtoCustom').addEventListener('input',renderBom);
@@ -169,18 +286,22 @@ function pintarPoolBoost(){
 }
 $('poolSedes').addEventListener('input',pintarPoolBoost);
 
-/* ══ PERFILES MULTI-SEDE (fase 11, §1.7) ══
-   «Tienda x50»: el escenario actual se guarda con su número de sedes idénticas y el BOM
-   global consolida todos los perfiles — equipo y suscripciones multiplican por sede, el
-   pool de Boost agrega en una sola línea del fabric y el Orchestrator va una sola vez.
-   Los perfiles viven en localStorage con los precios del día en que se guardaron. */
-const PERFILES_KEY='presales:aruba:perfiles';
+/* ══ M6 · PERFILES MULTI-SEDE (SPEC B.7) ══
+   «Tienda x50»: el escenario actual se guarda como {nombre, sedes, estado v2} con su
+   número de sedes idénticas, y el botón «Consolidar» abre el BOM agregado
+   Σ(BOM del perfil × sedes) en #modalConsolidado — equipo y suscripciones multiplican
+   por sede, el pool de Boost agrega en una sola línea del fabric y el Orchestrator va
+   una sola vez. Los perfiles viven en localStorage (clave arubaPerfilesV1) y conservan
+   los precios del día en que se guardaron (snapshot de filas, para que el consolidado
+   no cambie si la lista de precios se actualiza después). */
+const PERFILES_KEY='arubaPerfilesV1';
 function cargarPerfiles(){
   try{ const v=JSON.parse(localStorage.getItem(PERFILES_KEY)||'[]'); return Array.isArray(v)?v:[]; }
   catch{ return []; }
 }
 function guardarPerfiles(l){ localStorage.setItem(PERFILES_KEY,JSON.stringify(l)); }
 // Captura/restauracion de campos del escenario (la misma lista que persiste ESTADO).
+// #wanLinksData viaja como un campo más: es la serialización v2 de los enlaces WAN.
 function capturarCampos(){
   const v={};
   CAMPOS_ESCENARIO.forEach(id=>{
@@ -200,33 +321,38 @@ function aplicarCampos(v){
     }else if(n.type==='checkbox'){ n.checked=!!v[id]; }
     else n.value=v[id];
   });
+  // Las filas del builder se reconstruyen desde la serialización v2 ya aplicada.
+  reconstruirWanDesdeHidden();
+  // El select de seguridad guarda su valor en una variable del motor, no solo en el DOM.
+  secMode=$('selSeguridad').value||'none';
+  $('secHint').innerHTML=SEC_HINT[secMode]||SEC_HINT.none;
   render();
 }
-$('perfilGuardar').addEventListener('click',()=>{
-  const nombre=$('perfilNombre').value.trim();
+$('btnGuardarPerfil').addEventListener('click',()=>{
+  const nombre=$('nombrePerfil').value.trim();
   const sedes=Math.max(0,parseInt($('perfilSedes').value)||0);
-  if(!nombre||!sedes){ $('perfilNombre').focus(); return; }
+  if(!nombre||!sedes){ $('nombrePerfil').focus(); return; }
   const m=MODELS.find(x=>x.id===$('pickModel').value);
   if(!m||!bomFilas.length) return;
   const l=cargarPerfiles();
   l.push({nombre, sedes, modelo:m.id, fecha:new Date().toISOString().slice(0,10),
-    campos:capturarCampos(), filas:JSON.parse(JSON.stringify(bomFilas))});
+    version:2, campos:capturarCampos(), filas:JSON.parse(JSON.stringify(bomFilas))});
   guardarPerfiles(l);
-  $('perfilNombre').value=''; $('perfilSedes').value='';
+  $('nombrePerfil').value=''; $('perfilSedes').value='';
   pintarPerfiles();
 });
 function pintarPerfiles(){
   const l=cargarPerfiles();
-  $('perfilLista').innerHTML=l.length
+  $('listaPerfiles').innerHTML=l.length
     ?`<table class="tco-tabla"><thead><tr><th>Perfil</th><th>Sedes</th><th>Modelo</th><th>Guardado</th><th></th></tr></thead><tbody>`
       +l.map((p,i)=>`<tr><td><b>${esc(p.nombre)}</b></td><td>${p.sedes}</td><td>${esc(p.modelo)}</td><td>${p.fecha||'—'}</td>`
         +`<td><button type="button" class="btn ghost" data-perfil-cargar="${i}" style="font-size:10px;padding:3px 8px">Cargar</button> `
         +`<button type="button" class="btn ghost" data-perfil-borrar="${i}" style="font-size:10px;padding:3px 8px">Eliminar</button></td></tr>`).join('')
       +'</tbody></table>'
     :'<p class="hint">Sin perfiles guardados todavía.</p>';
-  pintarBomGlobal();
+  $('btnConsolidar').disabled=!l.length;
 }
-$('perfilLista').addEventListener('click',e=>{
+$('listaPerfiles').addEventListener('click',e=>{
   const b=e.target.closest('button'); if(!b) return;
   const l=cargarPerfiles();
   if(b.dataset.perfilCargar!=null){
@@ -237,12 +363,11 @@ $('perfilLista').addEventListener('click',e=>{
     guardarPerfiles(l); pintarPerfiles();
   }
 });
-// BOM global consolidado: suma linea a linea (cat+desc+sku) con qty × sedes. Excepciones
-// del fabric: el pool de Boost agrega en UNA linea y el Orchestrator on-prem va una vez.
-function pintarBomGlobal(){
+// BOM global consolidado Σ(BOM del perfil × sedes): suma linea a linea (cat+desc+sku)
+// con qty × sedes. Excepciones del fabric: el pool de Boost agrega en UNA linea y el
+// Orchestrator on-prem va una vez. Se pinta dentro de #modalConsolidado (SPEC B.7).
+function consolidarPerfiles(){
   const l=cargarPerfiles();
-  const box=$('bomGlobal');
-  if(!l.length){ box.innerHTML=''; return; }
   const acum=new Map(); let boost=null;
   let totalSedes=0;
   for(const p of l){
@@ -271,7 +396,7 @@ function pintarBomGlobal(){
     subtitulo:l.map(p=>`${p.nombre} ×${p.sedes} (${p.modelo})`).join(' · '),
     archivo:'BOM_global_aruba', sinRefs:true,
     notas:[
-      'REGLAS DE CONSOLIDACION (fase 11):',
+      'REGLAS DE CONSOLIDACION (SPEC parte B, M6):',
       '  Equipo, suscripciones y soporte: cantidad por sede x numero de sedes del perfil.',
       '  Pool de Boost: UNA sola linea del fabric con la suma de bloques por sede.',
       '  Orchestrator on-prem: una sola instancia por fabric, no por sede.',
@@ -280,11 +405,18 @@ function pintarBomGlobal(){
     ],
   };
   if(dto>0){ meta.dto=dto; meta.dtoEtq=dtoEtiqueta(); }
-  box.innerHTML=`<h3 style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin:16px 0 8px">BOM global consolidado — ${totalSedes} sedes</h3>`
-    +BOM.renderTabla(filas,{dto, sinRefs:true})
-    +`<div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="btn" id="xlsGlobalBtn" style="font-size:11px;padding:5px 11px">Exportar BOM global a Excel</button></div>`;
-  $('xlsGlobalBtn').addEventListener('click',()=>BOM.exportarExcel(filas,meta));
+  return {filas, meta, totalSedes};
 }
+$('btnConsolidar').addEventListener('click',()=>{
+  const {filas, meta, totalSedes}=consolidarPerfiles();
+  if(!totalSedes) return;
+  $('consolidadoSub').textContent=meta.subtitulo+` — ${totalSedes} sedes en total`;
+  $('consolidadoTabla').innerHTML=BOM.renderTabla(filas,{dto:dtoActual(), sinRefs:true});
+  $('modalConsolidado').hidden=false;
+  $('xlsConsolidadoBtn').onclick=()=>BOM.exportarExcel(filas,meta);
+});
+$('consolidadoCerrar').addEventListener('click',()=>{ $('modalConsolidado').hidden=true; });
+$('modalConsolidado').addEventListener('click',e=>{ if(e.target===$('modalConsolidado')) $('modalConsolidado').hidden=true; });
 
 // Texto del destino de tráfico (2026-09-13, refactor arquitectónico): la estrategia de
 // aplicaciones sustituye a los campos abstractos. Cloud-First usa First-packet iQ para
@@ -314,7 +446,7 @@ document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',
 $('famSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('famSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));famMode=b.dataset.v;render();});
 $('segSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('segSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));segMode=b.dataset.v;render();});
 $('destSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('destSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));destMode=b.dataset.v;$('destHint').textContent=DEST_HINT[destMode]||'';render();});
-['bw','unit','users','aps','perUser','head','fecMode','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','mplsType','bwMpls','inetType','bwInet','chkBreakout'].forEach(id=>$(id).addEventListener('input',render));
+['users','aps','perUser','head','fecMode','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','chkBreakout','selTier'].forEach(id=>$(id).addEventListener('input',render));
 
 // Arquetipo de sede (fase 11): restringe el catalogo a los modelos del VSG para ese
 // tamanyo de sitio; el hint declara que hace cada persona.
@@ -325,15 +457,13 @@ $('personaSeg').addEventListener('click',e=>{
   $('personaHint').textContent=PERSONA_HINT[personaMode]||PERSONA_HINT.auto;
   render();
 });
-// Estrategia de seguridad (fase 11): sustituye a la casilla DTD. DTD es funcion
+// Estrategia de seguridad (#selSeguridad, SPEC B.4): select none/dtd/sse. DTD es funcion
 // EdgeConnect (QuickSpecs p.32), no de los gateways: elegirla mueve el filtro de familia,
 // igual que Boost. SSE no mueve el filtro: es suscripcion por usuario independiente del
 // chasis, y el tunnel IPsec orquestado lo montan tanto EdgeConnect como los gateways.
-$('secSeg').addEventListener('click',e=>{
-  const b=e.target.closest('button');if(!b)return;
-  [...$('secSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
-  secMode=b.dataset.v;
-  $('secHint').innerHTML=SEC_HINT[secMode]||SEC_HINT.ninguna;
+$('selSeguridad').addEventListener('change',()=>{
+  secMode=$('selSeguridad').value||'none';
+  $('secHint').innerHTML=SEC_HINT[secMode]||SEC_HINT.none;
   if(secMode==='dtd'&&famMode!=='ec'&&famMode!=='any'){
     famMode='ec';
     [...$('famSeg').children].forEach(x=>x.setAttribute('aria-pressed',x.dataset.v==='ec'));
@@ -350,8 +480,8 @@ $('chkBoost').addEventListener('change',()=>{
   }
   render();
 });
-// Dynamic Threat Defense vive ahora en el radio de estrategia de seguridad (secSeg,
-// fase 11): el movimiento del filtro de familia se hace en su listener de arriba.
+// Dynamic Threat Defense vive en el selector de estrategia de seguridad (#selSeguridad,
+// SPEC B.4): el movimiento del filtro de familia se hace en su listener de arriba.
 $('chkHa').addEventListener('change',()=>{
   const q=$('qty');
   if($('chkHa').checked){ if((parseInt(q.value)||1)<2) q.value=2; }
@@ -562,22 +692,38 @@ function porqueNivelEC(nivel){
 // campo localizada, no oficial, sugiere 40 %: queda documentada la discrepancia y manda
 // la regla declarada del dueño). Como tráfico WAN privado se toma el caudal que los
 // enlaces transportan ANTES de la reducción de Boost —que es el tráfico que el motor de
-// optimización procesa—: needProc con la paridad FEC. Desde fase 11 se multiplica por la
-// cuota privada del Local Breakout (privateShare): con DIA y breakout activo solo el
-// 30 % del tráfico sigue tunelizado al DC (regla 70/30 del brief del duenyo, SIN FUENTE
-// oficial — la literatura de partners apunta mas bien a 80/20; queda documentado).
+// optimización procesa—: needProc con la paridad FEC. Con Local Breakout se multiplica
+// por la cuota que sigue en el overlay (share = caudalEfectivo/caudalTotal — regla 70/30
+// del brief del duenyo, SIN FUENTE oficial; queda documentado).
 function boostMbpsAuto(needProc,fec,share){
   return Math.round(0.30*needProc*(1+(fec?fec.pct:0))*(share!=null?share:1));
 }
 
-// Estado derivado del escenario (2026-09-13, refactor arquitectónico): el caudal de
+/* ══ M2 · AUDITORÍA DE PUERTOS (SPEC B.3) ══
+   Cada enlace WAN declarado ocupa un puerto del chasis y el appliance necesita además
+   2 puertos LAN. El EC-10104 tiene 4 puertos RJ-45 y NINGÚN SFP (VSG oficial): si los
+   enlaces no caben o alguno es óptico, el modelo queda descartado y el dimensionador
+   escala al escalón superior (#alertaEscalado). Para el resto de chasis la densidad de
+   ópticas tiene límite de jaulas: aviso si se supera (no descarte — hay DAC y RJ-45). */
+function auditarPuertos(modelo, wanLinks){
+  const enlaces=(wanLinks||[]).filter(l=>l.down>0||l.up>0);
+  const sfp=enlaces.filter(l=>/^SFP/.test(l.medio)).length;
+  return {
+    puertosNecesarios:enlaces.length+2, // +2 puertos LAN
+    hayFibra:sfp>0,
+    sfp,
+  };
+}
+// Límite de jaulas SFP por chasis para el aviso de densidad (SPEC B.3): EC-10106/10108
+// (2 jaulas SFP+), EC-10150 (8 jaulas SFP+/SFP28) y Gateway 9240 (4 jaulas SFP28).
+const SFP_DENSIDAD={'EC-10106':2,'EC-10108':2,'EC-10150':8,'Gateway 9240':4};
+
+// Estado derivado del escenario (refactor SPEC parte B, 2026-09-13): el caudal de
 // proceso, el de WAN, el tier de suscripción, el nivel de licencia y los bloques de
-// Boost se DEDUCEN del formulario — ya no hay selectores manuales para ellos. Es una
-// función pura de los campos: render(), la ficha (seccionesDe) y el BOM (renderBom) la
-// llaman por separado y ven exactamente lo mismo, sin pasarse variables.
+// Boost se DEDUCEN del formulario. Es una función pura de los campos: render(), la
+// ficha (seccionesDe) y el BOM (renderBom) la llaman por separado y ven exactamente lo
+// mismo, sin pasarse variables.
 function estadoDerivado(){
-  const bw=parseFloat($('bw').value)||0;
-  const unit=parseFloat($('unit').value);
   const users=parseInt($('users').value)||0;
   const aps=parseInt($('aps').value)||0;
   const perUser=Math.max(0,parseFloat($('perUser').value)||0);
@@ -588,32 +734,36 @@ function estadoDerivado(){
   // Cloud-First hereda el coste de proceso que antes llevaba la casilla de breakout:
   // clasificar cada primer paquete para decidir DIA/SSE es trabajo del appliance.
   if(destMode==='cloud') featurePenalty+=0.05;
-  // Dynamic Threat Defense (fase 11): IDS/IPS en el chasis reserva capacidad de proceso.
+  // Dynamic Threat Defense: IDS/IPS en el chasis reserva capacidad de proceso.
   // Regla de trabajo del duenyo: +35 % (SIN FUENTE oficial para EdgeConnect — en gateways
   // SD-Branch HPE publica throughput IDS/IPS de solo el 17-30 % del de firewall, medido
   // con iMix; la revision del diseno lo declara como aviso para no prometer de mas).
   if(secMode==='dtd') featurePenalty+=0.35;
-  const bwBase=bw*unit*(1+head)*featurePenalty;
+  // M2 · motor multi-underlay (SPEC B.3): los enlaces del builder son la fuente del
+  // caudal. caudalTotal = Σ down; mplsMbps = Σ down de los transportes MPLS; el resto
+  // es Internet. Con Local Breakout, el ~30 % del tráfico de Internet se descarga del
+  // overlay (regla 70/30 declarada, SIN FUENTE oficial): caudalEfectivo = MPLS + 0,70×Inet.
+  const wanLinks=leerWanLinks();
+  const caudalTotal=wanLinks.reduce((s,l)=>s+l.down,0);
+  const mplsMbps=wanLinks.filter(l=>/^MPLS/.test(l.tipo)).reduce((s,l)=>s+l.down,0);
+  const inetMbps=caudalTotal-mplsMbps;
+  const breakout=$('chkBreakout').checked;
+  const caudalEfectivo=breakout?mplsMbps+inetMbps*0.70:caudalTotal;
+  const caudalBase=caudalTotal*(1+head)*featurePenalty;
   const userBase=users*perUser*(1+head)*featurePenalty;
-  const needProc=Math.max(bwBase,userBase);
+  const needProc=Math.max(caudalBase,userBase);
   const fec=SIZING.fec[$('fecMode').value]||SIZING.fec.auto;
   const perfil=SIZING.boost.reduccion[$('boostProfile').value]||SIZING.boost.reduccion.generico;
-  // Transporte WAN dual (fase 11): si el preventa declara los enlaces del sitio, el tier
-  // de suscripcion se licencia por el caudal WAN AGREGADO (MPLS + Internet — VSG oficial)
-  // y ese es el caudal que el chasis debe sostener. Si ambos quedan en 0, se deriva del
-  // trafico de aplicacion como hasta ahora (con FEC y la reduccion de Boost).
-  const mplsMbps=$('mplsType').value!=='none'?(parseFloat($('bwMpls').value)||0):0;
-  const inetMbps=$('inetType').value!=='none'?(parseFloat($('bwInet').value)||0):0;
-  const underlay=mplsMbps+inetMbps;
-  const breakout=$('chkBreakout').checked;
-  // Local Breakout (regla 70/30 del brief del duenyo, SIN FUENTE oficial): con DIA
-  // disponible, ~70 % del trafico de aplicacion sale local y ~30 % sigue tunelizado al
-  // DC. La cuota privada reduce lo que Boost debe optimizar y lo que el MPLS sostiene.
-  const privateShare=(breakout&&inetMbps>0)?0.30:1;
-  const wanNeed=underlay>0?underlay:needProc*(1+fec.pct)/(boost?perfil.factor:1);
+  // Con enlaces declarados, el APPLIANCE se dimensiona por el caudal AGREGADO del sitio
+  // (regla oficial VSG: el chasis sostiene todo el underlay, también lo que el breakout
+  // descarga del overlay — la descarga alivia el túnel, no el hardware). Sin enlaces, se
+  // deriva del tráfico estimado con la paridad FEC y la reducción de Boost, como siempre.
+  const wanNeed=caudalTotal>0?caudalTotal:needProc*(1+fec.pct)/(boost?perfil.factor:1);
+  // El TIER de suscripción se licencia por el caudal del sitio (VSG): con breakout, por
+  // el efectivo que queda en el overlay; sin enlaces declarados, por el derivado.
+  const tierCaudal=caudalTotal>0?caudalEfectivo:wanNeed;
   const tasaFlujos=FLUJOS_POR_USUARIO[$('perfilEntorno').value]||FLUJOS_POR_USUARIO.estandar;
   const flujosReq=users>0?users*tasaFlujos:0;
-  const tier=tierParaCaudal(wanNeed);
   // Licenciamiento 100 % automático: el nivel sale de las funciones marcadas (matriz
   // oficial QuickSpecs p.31) y la modalidad On-Premises del menú avanzado. Los «No
   // incluir» (chkNoSub/chkNoCentral/chkSoloHw) son la exclusión explícita que el dueño
@@ -621,15 +771,25 @@ function estadoDerivado(){
   const onprem=$('chkOnprem').checked;
   const bundle=$('chkNoSub').checked?'':(onprem?'onprem':nivelAutoEC());
   const central=$('chkNoCentral').checked?'':nivelAutoCentral();
+  // M3 · tier: «Automático» lo deduce del caudal; una elección manual en #selTier manda,
+  // pero solo si el tier existe para el nivel deducido — con Foundation los intermedios
+  // no existen en la lista oficial (restricción declarada en el propio select, que los
+  // bloquea con title explicativo). Se lee DINÁMICAMENTE de LICENSES: cuando DATOS
+  // amplíe la lista a 8 tiers, el filtro se actualiza solo.
+  const tierAuto=tierParaCaudal(tierCaudal);
+  const nivelTier=bundle==='onprem'?'onprem':nivelAutoEC();
+  const tManual=(SIZING.bwTiers||[]).find(t=>t.code===$('selTier').value);
+  const tier=(tManual&&(!LICENSES[tManual.code]||LICENSES[tManual.code][nivelTier]))?tManual:tierAuto;
   const termYrs=parseInt($('termYears').value)||3;
   const care=$('careLevel').value;
   const qty=Math.max(1,parseInt($('qty').value)||1);
   // Boost auto-dimensionado: 30 % del tráfico WAN privado, en bloques de 100 Mbps.
   // Sin suscripción no hay Boost (es un add-on suyo, no un producto independiente).
-  const bloques=(boost&&bundle)?bloquesBoost(boostMbpsAuto(needProc,fec,privateShare)):0;
-  return {bw,unit,users,aps,perUser,head,boost,fec,perfil,needProc,wanNeed,
-    tasaFlujos,flujosReq,tier,onprem,bundle,central,termYrs,care,qty,bloques,
-    mplsMbps,inetMbps,underlay,breakout,privateShare};
+  const share=(caudalTotal>0&&breakout)?caudalEfectivo/caudalTotal:1;
+  const bloques=(boost&&bundle)?bloquesBoost(boostMbpsAuto(needProc,fec,share)):0;
+  return {users,aps,perUser,head,boost,fec,perfil,needProc,wanNeed,tierCaudal,
+    tasaFlujos,flujosReq,tier,tierAuto,onprem,bundle,central,termYrs,care,qty,bloques,
+    wanLinks,caudalTotal,mplsMbps,inetMbps,breakout,caudalEfectivo,share};
 }
 
 /* ══ REVISIÓN DEL DISEÑO (par técnico automático, 2026-09-13 fase 10) ══
@@ -664,7 +824,7 @@ const REGLAS_DISENO=[
   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&secMode==='dtd',
    texto:()=>'DTD dimensionado con +35 % de proceso (regla de trabajo declarada). Ojo: en gateways SD-Branch HPE publica throughput IDS/IPS de solo el 17-30 % del nominal de firewall; en EdgeConnect no hay cifra oficial — si la inspeccion sera intensiva, considera un escalon mas de chasis.'},
   // Local Breakout sin Internet es una incoherencia de diseno: no hay salida local.
-  {nivel:'aviso', cuando:(D,m)=>D.breakout&&D.inetMbps<=0&&D.underlay>0,
+  {nivel:'aviso', cuando:(D,m)=>D.breakout&&D.inetMbps<=0&&D.caudalTotal>0,
    texto:()=>'Local Breakout activo pero el sitio no tiene enlace de Internet declarado: no hay salida local para el trafico SaaS — declara un DIA/banda ancha o desmarca el breakout.'},
   // SSE con todo el trafico tunelizado al DC: el breakout es precisamente lo que da
   // sentido a la inspeccion en la nube (el trafico sale local hacia el PoP SSE).
@@ -672,8 +832,13 @@ const REGLAS_DISENO=[
    texto:()=>'SSE sin Local Breakout con Internet: la inspeccion en la nube rinde cuando el trafico de Internet sale LOCAL hacia el PoP SSE (tunel IPsec orquestado). Con full backhaul al DC la salida la inspeccionaria el DC, no el SSE.'},
   // El underlay declarado por debajo del trafico de aplicacion: el enlace no sostiene lo
   // que la LAN quiere enviar — hay que subir el caudal contratado o revisar el trafico.
-  {nivel:'aviso', cuando:(D,m)=>D.underlay>0&&D.underlay<D.needProc,
-   texto:(D,m)=>`El underlay declarado (${fmt(D.underlay)}) queda por debajo del trafico de aplicacion estimado (${fmt(D.needProc)}): el enlace contratado no sostiene la demanda — sube el caudal o revisa la estimacion.`},
+  {nivel:'aviso', cuando:(D,m)=>D.caudalTotal>0&&D.caudalTotal<D.needProc,
+   texto:(D,m)=>`El underlay declarado (${fmt(D.caudalTotal)}) queda por debajo del trafico de aplicacion estimado (${fmt(D.needProc)}): el enlace contratado no sostiene la demanda — sube el caudal o revisa la estimacion.`},
+  // M2 · Avisos de densidad de ópticas (SPEC B.3): superar las jaulas SFP del chasis no
+  // descarta el modelo (siempre se puede recablear un enlace a RJ-45 o DAC), pero hay que
+  // verlo antes de cotizar las ópticas.
+  {nivel:'aviso', cuando:(D,m)=>SFP_DENSIDAD[m.id]!=null&&auditarPuertos(m,D.wanLinks).sfp>SFP_DENSIDAD[m.id],
+   texto:(D,m)=>`Densidad de ópticas: el escenario declara ${auditarPuertos(m,D.wanLinks).sfp} enlaces SFP y ${m.id} tiene ${SFP_DENSIDAD[m.id]} jaulas — recablea algún enlace a RJ-45/DAC o revisa el medio declarado en el builder.`},
   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&D.bundle==='onprem',
    texto:()=>'Modalidad On-Premises: el software de Orchestrator va incluido en la suscripcion, pero el ALOJAMIENTO (VM, uptime, backup y upgrades) corre por cuenta del cliente — dimensionarlo en la propuesta.'},
   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&D.onprem&&$('chkHa').checked&&D.qty===2,
@@ -690,34 +855,53 @@ function revisionDiseno(D,m){
   return h;
 }
 
-/* ══ Widget de barras WAN (fase 11, 2026-09-13) ══
-   Tres barras: caudal contratado (underlay declarado o derivado), caudal util tras la
-   paridad FEC, y —con Boost— el caudal de aplicacion equivalente que se percibe tras la
-   reduccion. Se pinta solo cuando hay cifras que mostrar. */
-function pintarBarrasWan(D){
-  const fld=$('fldBarras'), box=$('barrasWan');
-  // Ahorro MPLS por Local Breakout: el hint vive siempre bajo la casilla.
-  const ah=$('breakoutAhorro');
-  if(D.breakout&&D.inetMbps>0&&D.needProc>0){
-    ah.innerHTML=`Con Local Breakout, ~70 % del tráfico de aplicación (≈<b>${fmt(0.70*D.needProc)}</b>) sale directo por Internet; el túnel al DC/MPLS sostiene ≈<b>${fmt(0.30*D.needProc)}</b> (regla 70/30 declarada, sin fuente oficial).`;
-  }else if(D.breakout&&D.inetMbps<=0){
-    ah.textContent='Breakout activo pero sin enlace de Internet declarado: no hay salida local — declara un DIA/banda ancha arriba.';
+/* ══ M5 · WIDGET DE RENDIMIENTO #widgetPerf (SPEC B.6) ══
+   Tres barras a escala común con etiquetas en Mbps: «Capacidad física» (caudalTotal de
+   los enlaces declarados), «Útil tras overhead» (la paridad FEC descuenta transporte) y
+   —con Boost— «Percibida con Boost» (útil × factor del perfil de datos). Los factores se
+   leen de SIZING.boost.reduccion (1,3 genérico / 2,0 oficina / 1,8 repetido): el ×3,5 del
+   brief quedó REFUTADO por el caso oficial HPE (Universal Health Services: ~1,8:1 para
+   Veeam/CIFS) — ver el comentario de `reduccion` en aruba.js. */
+function pintarWidgetPerf(D){
+  const fld=$('widgetPerf'), box=$('widgetPerfBarras');
+  // Ahorro del overlay por Local Breakout (M2): el hint vive siempre bajo la casilla.
+  const ah=$('ahorroMpls');
+  if(D.breakout&&D.inetMbps>0&&D.caudalTotal>0){
+    ah.innerHTML=`El breakout local descarga <b>${fmt(D.inetMbps*0.30)}</b> del overlay (el ~30 % del tráfico de Internet sale directo); el túnel al DC sostiene ≈<b>${fmt(D.caudalEfectivo)}</b> — regla 70/30 declarada, sin fuente oficial.`;
+  }else if(D.breakout&&D.inetMbps<=0&&D.caudalTotal>0){
+    ah.textContent='Breakout activo pero sin enlace de Internet declarado: no hay salida local — añade un DIA/banda ancha en el builder.';
   }else{
     ah.textContent='Breakout desactivado: todo el tráfico se tuneliza al datacenter (full backhaul).';
   }
-  const fisico=D.underlay>0?D.underlay:D.wanNeed;
-  if(fisico<=0){ fld.hidden=true; box.innerHTML=''; return; }
-  const util=fisico/(1+D.fec.pct);
+  // Banner Microbranch (M1): sitio pequeño sin MPLS → la respuesta Aruba puede ser
+  // Central + AP/9004 (persona Microbranch de AOS-10) en vez de un EdgeConnect dedicado.
+  // Umbrales del global `microbranch` del API, con fallback 10 usuarios / 50 Mbps.
+  const mb=MICROBRANCH||{usuarios:10, caudalMbps:50};
+  $('bannerMicrobranch').hidden=!(D.users>0&&D.users<=mb.usuarios
+    &&D.caudalTotal>0&&D.caudalTotal<=mb.caudalMbps&&D.mplsMbps===0);
+  const fisico=D.caudalTotal;
+  if(fisico<=0){ fld.hidden=true; box.innerHTML=''; $('widgetPerfImix').textContent=''; return; }
+  const fecActivo=D.fec.pct>0;
+  const util=fecActivo?fisico/(1+D.fec.pct):fisico;
   const filas=[
-    {cls:'b1', lbl:'Caudal WAN contratado'+(D.underlay>0?' (MPLS + Internet)':' (derivado del tráfico)'), val:fisico},
-    {cls:'b2', lbl:`Útil tras FEC (${Math.round(D.fec.pct*100)} % paridad)`, val:util},
+    {cls:'b1', lbl:'Capacidad física (enlaces declarados)', val:fisico},
+    {cls:'b2', lbl:fecActivo?`Útil tras overhead FEC (${Math.round(D.fec.pct*100)} % paridad)`:'Útil tras overhead (FEC desactivado)', val:util},
   ];
-  if(D.boost) filas.push({cls:'b3', lbl:`Equivalente percibido con Boost (${D.perfil.factor}:1)`, val:util*D.perfil.factor});
+  if(D.boost) filas.push({cls:'b3', lbl:`Percibida con Boost (${D.perfil.factor}:1 — ${D.perfil.n.toLowerCase()})`, val:util*D.perfil.factor});
   const max=Math.max(...filas.map(f=>f.val));
   box.innerHTML=filas.map(f=>
     `<div class="bw-row ${f.cls}"><span class="bw-lbl">${f.lbl}</span>`
     +`<span class="bw-track"><i style="width:${Math.max(2,Math.round(f.val/max*100))}%"></i></span>`
     +`<span class="bw-val">${fmt(f.val)}</span></div>`).join('');
+  // Fórmula IMIX del widget (SPEC B.3): capacidad que el chasis debe sostener en la
+  // práctica = (caudal/0,70) × (1+0,15 si FEC) × 1,20.
+  // DESVIACIÓN DOCUMENTADA: el motor principal conserva los anchors del repo — FEC auto
+  // 10 % / agresivo 25 % (VSG) y headroom por SLA de enlace al 75 % (guía SD-Branch)— y
+  // NO se tocan; el widget usa los coeficientes del brief (0,70 IMIX, 0,15 FEC, 1,20 de
+  // margen) como estimación rápida de preventa. Ambas cifras se declaran donde se usan.
+  const imix=(fisico/0.70)*(fecActivo?1.15:1)*1.20;
+  $('widgetPerfImix').innerHTML=`Estimación IMIX de preventa: el chasis debería sostener ≈<b>${fmt(imix)}</b> `
+    +`(caudal/0,70 × ${fecActivo?'1,15 FEC':'1 (sin FEC)'} × 1,20 de margen — coeficientes del brief; el motor dimensiona con los anchors oficiales: IMIX 70 %, FEC 10/25 % y SLA de enlace 75 %).`;
   fld.hidden=false;
 }
 
@@ -725,21 +909,22 @@ function render(){
   // Todo lo calculable sale del estado derivado: una sola fuente para el dimensionador,
   // la ficha y el BOM (2026-09-13, refactor arquitectónico).
   const D=estadoDerivado();
-  const {bw,users,aps,head,boost,fec,perfil,needProc,wanNeed,tasaFlujos,flujosReq,tier}=D;
-  // Widget de barras WAN + hint de ahorro por breakout (fase 11): se pinta siempre que
-  // haya cifras, y se oculta solo cuando no hay nada que mostrar.
-  pintarBarrasWan(D);
-  // Sin ancho de banda Y sin enlaces declarados no hay recomendación (regla de preventa
-  // 2026-09-13, ampliada en fase 11): el tráfico de aplicación o el underlay WAN son el
-  // dato mínimo; sin ninguno de los dos la página pide valores en vez de proponer a ciegas.
-  if(bw<=0&&D.underlay<=0){
+  const {users,aps,head,boost,fec,perfil,needProc,wanNeed,tasaFlujos,flujosReq,tier}=D;
+  // M5 · Widget de rendimiento + hint de ahorro por breakout + banner Microbranch: se
+  // pinta siempre que haya cifras, y se oculta solo cuando no hay nada que mostrar.
+  pintarWidgetPerf(D);
+  // Sin enlaces declarados Y sin estimación por usuarios no hay recomendación (regla de
+  // preventa): el underlay WAN o el tráfico estimado son el dato mínimo; sin ninguno de
+  // los dos la página pide valores en vez de proponer a ciegas.
+  if(D.caudalTotal<=0&&needProc<=0){
     lastPick=null; sincronizarConBom(null);
     poblarPickModel([], null);
+    $('alertaEscalado').hidden=true;
     const need=$('need'); need.style.left='0%'; $('needLbl').textContent='—';
     $('track').querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
     FICHA.render({...FICHA_CFG, contenedor:'verdict', candidatos:[], recomendado:null,
       vacioTitulo:'Ingrese valores para recomendar un equipo',
-      vacioDetalle:'<p style="margin:0;font-size:13.5px">Escriba el <b>ancho de banda</b> del sitio (y si aplica, usuarios y APs) para que el dimensionador proponga los modelos que cumplen.</p>'});
+      vacioDetalle:'<p style="margin:0;font-size:13.5px">Declare los <b>enlaces WAN</b> del sitio en el builder (y si aplica, usuarios y APs) para que el dimensionador proponga los modelos que cumplen.</p>'});
     $('verdict').style.borderLeftColor='var(--steel)';
     return;
   }
@@ -802,7 +987,11 @@ function render(){
     track.appendChild(dot);
   });
 
-  let outByBoost=0,outByClients=0,outByAps=0,outBySinDato=0,outByFlujos=0,outByPersona=0,sobrado=[];
+  let outByBoost=0,outByClients=0,outByAps=0,outBySinDato=0,outByFlujos=0,outByPersona=0,outByPuertos=0,sobrado=[];
+  // M2 · Auditoría de puertos (SPEC B.3): el EC-10104 (4× RJ-45, sin SFP) queda descartado
+  // si los enlaces declarados no caben en sus puertos o alguno es óptico. Se anota si el
+  // modelo habría sido candidato sin esta regla: es lo que dispara #alertaEscalado.
+  let ec10104Descartado=false;
   const candidates=MODELS.filter(m=>{
     if(!coincideFiltro(m,famMode)) return false;
     // Arquetipo de sede (fase 11): restringe el catalogo a los modelos que el VSG
@@ -827,6 +1016,13 @@ function render(){
     // null (EC-V, 9240) = la fuente no publica el dato: no descarta, se declara.
     const fl=flujosDe(m);
     if(flujosReq>0&&fl!=null&&fl<flujosReq){ outByFlujos++; return false; }
+    // Auditoría de puertos EC-10104: la regla se evalúa AL FINAL para saber si el modelo
+    // habría cumplido todo lo demás (y por tanto el dimensionador está escalando por
+    // densidad de puertos u ópticas, no por capacidad).
+    if(m.id==='EC-10104'){
+      const a=auditarPuertos(m,D.wanLinks);
+      if(a.puertosNecesarios>4||a.hayFibra){ outByPuertos++; ec10104Descartado=true; return false; }
+    }
     return true;
   });
   // Generacion actual primero: entre dos que cumplen, la linea AOS 8 (series 7000/7200)
@@ -865,6 +1061,7 @@ function render(){
     if(outByClients) why.push(`<li><b>${outByClients}</b> gateway(s) descartado(s) por capacidad de clientes: hacen falta ${miles(users)}.</li>`);
     if(outByAps) why.push(`<li><b>${outByAps}</b> gateway(s) descartado(s) por número de APs: hacen falta ${miles(aps)}.</li>`);
     if(outByFlujos) why.push(`<li><b>${outByFlujos}</b> modelo(s) descartado(s) por flujos simultáneos: el perfil de entorno estima ${miles(flujosReq)} flujos activos (${miles(users)} usuarios × ${tasaFlujos}/usuario). Bajar el perfil o repartir la carga entre dos sitios son las salidas.</li>`);
+    if(outByPuertos) why.push(`<li><b>EC-10104</b> descartado por la auditoría de puertos: los enlaces declarados necesitan más de 4 puertos o alguno es óptico (SFP) y el 10104 solo trae 4× RJ-45. El escalón superior (EC-10106) ya añade jaulas SFP+.</li>`);
     if(outBySinDato) why.push(`<li><b>${outBySinDato}</b> modelo(s) sin cifra de throughput publicada en las fuentes consultadas (serie 9100). Aparecen en la pestaña "Equipo y BOM" y su capacidad hay que confirmarla en las QuickSpecs.</li>`);
     why.push('<li>Por encima del catálogo: repartir el fabric en varios head-ends, o escalar en el datacenter con EC-V, cuyo caudal lo fija la licencia y los vCPU asignados y no el hardware.</li>');
     poblarPickModel(candidates, null);
@@ -898,7 +1095,7 @@ function render(){
     const cap=capacidadMax(m), req=needDe(m), nivel=nivelLicenciaNecesario(m,req,users,aps), flags=[];
     if(m.fam==='ec'){
       flags.push(`<b>Caudal WAN a contratar:</b> ${fmt(wanNeed)}${fec.pct?` (incluye ${Math.round(fec.pct*100)}% de paridad FEC)`:''}${boost?` tras la reducción ${perfil.factor}:1 de Boost sobre ${esc(perfil.n.toLowerCase())}`:''}. Tier de suscripción: <b>${tier?esc(tier.n):'—'}</b>.`);
-      if(boost&&D.bloques) flags.push(`<b>Boost auto-dimensionado:</b> el enlace transporta ${fmt(wanNeed)} en vez de ${fmt(needProc*(1+fec.pct))}. Se licencia el 30 % del tráfico WAN privado estimado (${fmt(boostMbpsAuto(needProc,fec,D.privateShare))}${D.privateShare<1?' — ya descontada la salida local del breakout (cuota privada 30 %)':''}) en bloques de ${SIZING.boost.bloque} Mbps que forman un pool del fabric — para esta sede, <b>${D.bloques} bloque(s)</b>.`);
+      if(boost&&D.bloques) flags.push(`<b>Boost auto-dimensionado:</b> el enlace transporta ${fmt(wanNeed)} en vez de ${fmt(needProc*(1+fec.pct))}. Se licencia el 30 % del tráfico WAN privado estimado (${fmt(boostMbpsAuto(needProc,fec,D.share))}${D.share<1?' — ya descontada la descarga del breakout (regla 70/30: el 30 % del tráfico de Internet sale local)':''}) en bloques de ${SIZING.boost.bloque} Mbps que forman un pool del fabric — para esta sede, <b>${D.bloques} bloque(s)</b>.`);
       else if(!boost) flags.push('Admite Boost. Merece evaluarse si el tráfico es repetitivo (réplicas, backups, VDI, CIFS/SMB): reduce el caudal contratado, que a 3–5 años suele pesar más en el TCO que el propio equipo.');
       if(sobrado.includes(m.id)) flags.push(`<b class="warn">Sobredimensionado:</b> el requerimiento (${fmt(wanNeed)}) queda por debajo del suelo del rango publicado (${fmt(m.wanMin)}). Revisar el escalón inferior antes de cotizar.`);
       // Nivel deducido de las funciones marcadas (matriz oficial QuickSpecs p.31): se
@@ -919,6 +1116,14 @@ function render(){
     if(m.fam==='gw'&&m.rol==='sucursal'&&!m.legacy) flags.push(`<b>Sucursal:</b> el mismo equipo termina la WAN y hace de controladora de APs (hasta ${miles(m.aps)}), aplicando Dynamic Segmentation con el rol que traen el switch CX o el AP. No hace optimización WAN.`);
     if(m.fam==='gw') flags.push(`<b>Central ${nivelAutoCentral()==='advanced'?'Advanced':'Foundation'}:</b> ${nivelAutoCentral()==='advanced'?'deducido de las funciones marcadas (segmentación de extremo a extremo o AIOps ampliada)':'gestión SD-Branch completa — firewall, VPN y políticas por aplicación ya son Foundation, sin funciones que fuercen el nivel superior'}.`);
     if(m.licCap&&nivel) flags.push(`<b>Capacidad por licencia:</b> escala sin cambiar de hardware. Para ${fmt(req)} hace falta el nivel <b>${esc(nivel.n)}</b> (${fmt(nivel.fw)}, ${miles(nivel.aps)} APs, ${miles(nivel.clients)} dispositivos).`);
+    // M2 · Aviso de densidad de ópticas (SPEC B.3), visible en la ficha — la misma regla
+    // va además a la «revisión del diseño» de la exportación (REGLAS_DISENO).
+    const sfpN=auditarPuertos(m,D.wanLinks).sfp;
+    if(SFP_DENSIDAD[m.id]!=null&&sfpN>SFP_DENSIDAD[m.id])
+      flags.push(`<b class="warn">Densidad de ópticas:</b> el escenario declara ${sfpN} enlaces SFP y ${m.id} tiene ${SFP_DENSIDAD[m.id]} jaulas — recablea algún enlace a RJ-45/DAC o revisa el medio declarado en el builder.`);
+    // M4 · EC-10150: doble PSU de fábrica (texto informativo, SPEC B.5) — no hay segunda
+    // fuente que cotizar, a diferencia del Gateway 9240, que sí la ofrece (#chkDualPsu).
+    if(m.id==='EC-10150') flags.push('<b>Alimentación:</b> el EC-10150 lleva <b>doble PSU redundante de fábrica</b> — no hay segunda fuente que cotizar. Lo que sí puede necesitar es el kit Network Memory S2N67A si se licencia Boost por encima de 1 Gbps (el motor lo añade solo).');
     if($('chkHa').checked) flags.push(m.fam==='ec'&&!D.onprem
       ?'<b>HA 1+1:</b> el par se cotiza 1× suscripción estándar + 1× suscripción de alta disponibilidad para el segundo nodo (SKU «HA» propio del QuickSpecs; la lista de precios documentada lo tarifa igual que el estándar).'
       :'<b>HA:</b> se cotizan 2 unidades y cada una lleva su propia suscripción de sitio.');
@@ -1073,8 +1278,26 @@ function render(){
   // como deliberada y, si no esta entre los candidatos, se incluye con el aviso de desvio
   // en vez de dejar que la ficha salte al recomendado mientras el selector dice otra cosa.
   poblarPickModel(candidates, pick.id);
-  const mManual=$('pickModel').dataset.bomManual==='1'
+  let mManual=$('pickModel').dataset.bomManual==='1'
     ?(MODELS.find(x=>x.id===$('pickModel').value)||null):null;
+  // M2 · Escalado por auditoría de puertos (SPEC B.3): si el EC-10104 habría cumplido por
+  // capacidad pero los enlaces no le caben, el dimensionador escala al escalón superior.
+  // La alerta solo se muestra cuando el escalado es real: el 10104 era la elección manual
+  // o habría sido el recomendado (no hay candidato de menor capacidad que cumpla). Si era
+  // la elección manual, se suelta y el selector sigue al nuevo recomendado.
+  const cap10104=(()=>{ const x=MODELS.find(m=>m.id==='EC-10104'); return x?capacidadMax(x):null; })();
+  const hayMenorQueCumple=cap10104!=null&&candidates.some(m=>capacidadMax(m)<cap10104);
+  if(ec10104Descartado&&((mManual&&mManual.id==='EC-10104')||!hayMenorQueCumple)){
+    $('alertaEscalado').hidden=false;
+    if(mManual&&mManual.id==='EC-10104'){
+      BOM.soltarManual('pickModel');
+      delete $('pickModel').dataset.bomManual;
+      $('pickModel').value=pick.id;
+      mManual=null;
+    }
+  }else{
+    $('alertaEscalado').hidden=true;
+  }
   const elegidoId=FICHA.render({...FICHA_CFG,
     contenedor:'verdict',
     candidatos:candidates,
@@ -1142,6 +1365,11 @@ function populateSelects(){
   // siendo elección comercial es el nivel de soporte (y los «No incluir», que viven
   // como casillas junto a cada deducción del panel 4).
   $('careLevel').innerHTML='<option value="">No incluir</option>'+Object.entries(CARE).map(([k,c])=>`<option value="${esc(k)}"${k==='fc247'?' selected':''}>${esc(c.n)}</option>`).join('');
+  // M3 · Selector de tier (SPEC B.4): se puebla DINÁMICAMENTE de SIZING.bwTiers — nunca
+  // una lista escrita a mano—, así los 8 niveles que añade el frente DATOS aparecen solos.
+  // «Automático» deja el tier al motor (deducido del caudal WAN agregado del sitio).
+  $('selTier').innerHTML='<option value="auto" selected>Automático — deducido del caudal del sitio</option>'
+    +(SIZING.bwTiers||[]).map(t=>`<option value="${esc(t.code)}">${esc(t.n)}</option>`).join('');
   // Documentos oficiales, para llegar al PDF sin buscarlo.
   // Se prefiere la copia local (servida detras del login, sin depender de que HPE
   // mantenga la URL) y se cae a la oficial si ese PDF no esta descargado.
@@ -1158,6 +1386,23 @@ function populateSelects(){
 }
 
 const money=n=>n==null?null:'$'+n.toLocaleString('en-US',{maximumFractionDigits:2});
+/* ══ M4 · INYECCIÓN AUTOMÁTICA DE HARDWARE (SPEC B.5) ══
+   Accesorios que el diseño exige por regla de fábrica, no por elección en el modal:
+   · Boost > 0 en EC-10150 → kit Network Memory S2N67A, qty mínima 1. De fábrica el
+     EC-10150 rinde 1 Gbps de Boost sin el kit; con él llega a 8 Gbps (QuickSpecs).
+     La línea la pone el motor y NO es removible desde el modal: solo desaparece si
+     Boost vuelve a 0 (es la condición que la genera).
+   · #chkDualPsu en Gateway 9240 → segunda PSU 550W AC R7J63A, qty 1.
+   Los precios salen SIEMPRE del ACCESSORY_CATALOG del servidor (S2N67A $9.096,
+   R7J63A $747 en la lista oficial del distribuidor). */
+function accesoriosInyectados(m,D){
+  const out=[];
+  if(m.id==='EC-10150'&&D.bloques>0) out.push({sku:'S2N67A', qty:1,
+    nota:'Requerido para Boost > 1 Gbps (de fábrica el EC-10150 rinde 1 Gbps sin el kit) — auto-añadido por el motor; removible solo si Boost vuelve a 0. List Price del catálogo maestro de accesorios.'});
+  if(m.id==='Gateway 9240'&&$('chkDualPsu').checked) out.push({sku:'R7J63A', qty:1,
+    nota:'Segunda fuente de alimentación 550W AC para el Gateway 9240 (alimentación 1+1) — opción de diseño marcada en el panel 4. List Price del catálogo maestro de accesorios.'});
+  return out;
+}
 function tierPrice(t,y){ if(!t) return null; const v=y===1?t.y1:y===5?t.y5:t.y3; return v==null?null:v; }
 // El SKU de una suscripción depende de la duración (1/3/5 años): desde el 2026-09-13
 // `sku` puede ser un objeto {y1,y3,y5}. Se acepta también la forma plana por compatibilidad.
@@ -1188,6 +1433,30 @@ function renderBom(){
   // de dejar que alguien cotice una suscripción EdgeConnect sobre un gateway.
   $('fldSub').hidden=!esEC; $('fldCentral').hidden=esEC; $('fldCapTier').hidden=!esGwc;
   $('fldCare').hidden=esVirtual;
+  // M4 · Segunda PSU del Gateway 9240 (SPEC B.5): la casilla solo se ofrece con ese
+  // chasis (el EC-10150 lleva doble PSU de fábrica — no hay nada que cotizar).
+  $('fldDualPsu').hidden=m.id!=='Gateway 9240';
+  // M3 · Badge Advanced (SPEC B.4): visible cuando el motor DEDUCE Advanced de las
+  // funciones marcadas (segmentación >3 BIOs/VRFs, topología ilimitada/Dynamic Mesh o
+  // retención ampliada — reglas existentes de nivelAutoEC, matriz QuickSpecs p.31).
+  $('badgeAdvanced').hidden=!(esEC&&nivelAutoEC()==='advanced');
+  // M3 · Selector de tier filtrado por nivel (SPEC B.4): con Foundation, los tiers
+  // intermedios quedan disabled con title explicativo — la lista oficial solo publica
+  // 100 Mbps / 1 Gbps / ilimitado para Foundation. Se evalúa dinámicamente contra
+  // LICENSES, así la ampliación de DATOS (8 tiers en advanced/onprem) se refleja sola.
+  {
+    const nivelSel=D.bundle==='onprem'?'onprem':nivelAutoEC();
+    let resetear=false;
+    [...$('selTier').options].forEach(o=>{
+      if(o.value==='auto'){ o.disabled=false; o.title=''; return; }
+      const lic=LICENSES[o.value];
+      const ok=!lic||!!lic[nivelSel];
+      o.disabled=!ok;
+      o.title=ok?'':'Foundation solo ofrece 100M/1G/UL — restricción oficial de la lista';
+      if(!ok&&o.selected) resetear=true;
+    });
+    if(resetear){ $('selTier').value='auto'; renderBom(); return; }
+  }
 
   const termino=`término ${termYrs} año${termYrs>1?'s':''}`;
   const capTier=esGwc&&m.licCap
@@ -1202,7 +1471,7 @@ function renderBom(){
         +`<br><span class="lic-auto-porque">${bundle==='onprem'
             ?'modalidad On-Premises (E-STU) elegida en opciones avanzadas: el Orchestrator vive en la infraestructura del cliente'
             :esc(porqueNivelEC(nivelAutoEC()))}</span>`
-        +(bloques?`<br>Boost: <b>${bloques} bloque(s) de ${SIZING.boost.bloque} Mbps</b> = 30 % del tráfico WAN privado estimado (${fmt(boostMbpsAuto(D.needProc,D.fec,D.privateShare))})`:'')
+        +(bloques?`<br>Boost: <b>${bloques} bloque(s) de ${SIZING.boost.bloque} Mbps</b> = 30 % del tráfico WAN privado estimado (${fmt(boostMbpsAuto(D.needProc,D.fec,D.share))})`:'')
       :'<b>Suscripción excluida</b><br><span class="lic-auto-porque">El equipo queda standalone, sin fabric gestionado ni ZTP — y tampoco se licencia Boost, que es un add-on de la suscripción.</span>';
   }else{
     $('centralAutoTxt').innerHTML=central
@@ -1267,6 +1536,18 @@ function renderBom(){
     filas.push({cat:'Accesorios', desc:a.name, sku, qty:n, unit:a.listPrice!=null?a.listPrice:null,
       nota:'List Price de la lista oficial del distribuidor (vigencia '+(a.vigencia||'s/f')+') — catálogo maestro de accesorios; confirmar precio firme antes de cotizar'});
   });
+  // M4 · Inyección automática de hardware (SPEC B.5): accesorios que el DISEÑO exige y
+  // que no dependen de la selección manual del modal. El precio sale del catálogo maestro
+  // (ACCESSORY_CATALOG: S2N67A $9.096, R7J63A $747 — lista oficial del distribuidor).
+  const inyectados=accesoriosInyectados(m,D);
+  inyectados.forEach(({sku,qty:qIny,nota})=>{
+    // Si además se eligió a mano en el modal, la línea inyectada manda y la manual se
+    // suelta: duplicar el kit en la cotización sería un error de pedido.
+    if(accesoriosElegidos[sku]) delete accesoriosElegidos[sku];
+    const a=ACCESSORY_CATALOG[sku]||null;
+    filas.push({cat:'Accesorios', desc:a?a.name:sku, sku, qty:qIny,
+      unit:a&&a.listPrice!=null?a.listPrice:null, nota});
+  });
   if(esEC){
     if(bundle){
       if(licHa){
@@ -1316,15 +1597,18 @@ function renderBom(){
         nota:`Amplía el mismo hardware a ${fmt(capTier.fw)} · ${miles(capTier.aps)} APs · ${miles(capTier.clients)} dispositivos`});
     }
   }
-  // HPE Aruba Networking SSE (fase 11): suscripcion POR USUARIO (ZTNA, SWG, CASB, DEM —
+  // HPE Aruba Networking SSE (SPEC B.4): suscripcion POR USUARIO (ZTNA, SWG, CASB, DEM —
   // paquetes oficiales Foundation ZTNA / Foundation SWG / Foundation Plus / Advanced /
-  // Advanced Plus, QuickSpecs SSE a50009212enw). HPE no publica List Price de SSE: entra
-  // como «consultar». Es independiente del chasis — el tunel IPsec orquestado lo montan
-  // tanto EdgeConnect como los gateways SD-Branch.
+  // Advanced Plus, QuickSpecs SSE a50009212enw). SKU y precio del global `sse` del API
+  // (R8M36AAE, precio null → «consultar», EXCLUIDA de los totales con nota al pie);
+  // co-terminada con la suscripción del sitio (mismo término). Si el frente DATOS aún no
+  // sirve el global, la línea entra igualmente con el SKU del contrato y «consultar».
   if(secMode==='sse'){
+    const sseSku=(SSE&&SSE.sku)||'R8M36AAE';
+    const ssePrecio=SSE&&SSE.precio!=null?SSE.precio:null;
     filas.push({cat:'Seguridad SASE', desc:'HPE Aruba Networking SSE — suscripción por usuario (ZTNA, SWG, CASB, DEM)',
-      sku:null, qty:Math.max(1,D.users||1), unit:null,
-      nota:`${termino} · por usuario (${miles(Math.max(1,D.users||1))} usuarios) · paquetes Foundation ZTNA / Foundation SWG / Foundation Plus / Advanced / Advanced Plus (QuickSpecs SSE) · HPE no publica List Price — consultar`});
+      sku:sseSku, qty:Math.max(1,D.users||1), unit:ssePrecio,
+      nota:`${termino} · co-terminada con la suscripción del sitio · por usuario (${miles(Math.max(1,D.users||1))} usuarios) · paquetes Foundation ZTNA / Foundation SWG / Foundation Plus / Advanced / Advanced Plus (QuickSpecs SSE)${SSE&&SSE.nota?' · '+SSE.nota:''} · HPE no publica List Price — consultar`});
   }
   if(care&&!esVirtual){
     filas.push({cat:'Soporte', desc:CARE[care].n, sku:tierSku(careTier,termYrs), qty, unit:carePrice,
@@ -1360,13 +1644,14 @@ function renderBom(){
       `  Referencias:          ${(m.skus||[]).map(r=>(r.sku||'sin SKU')+' '+r.d).join(' | ')||'-'}`,
       `  Datasheet:            ${m.ds||'sin URL oficial confirmada'}`,
       m.dsLocal?`  Copia local:          ${m.dsLocal}`:null,
-      // Transporte WAN del sitio (fase 11): cuando el preventa declara los enlaces, el
-      // tier se licencia por el caudal agregado y la exportacion lo documenta.
-      D.underlay>0?'':'',
-      D.underlay>0?'TRANSPORTE WAN DEL SITIO (tier licenciado por caudal agregado — VSG)':null,
-      D.underlay>0?`  MPLS:     ${D.mplsMbps>0?fmt(D.mplsMbps)+' ('+$('mplsType').selectedOptions[0].text+')':'sin MPLS'}`:null,
-      D.underlay>0?`  Internet: ${D.inetMbps>0?fmt(D.inetMbps)+' ('+$('inetType').selectedOptions[0].text+')':'sin Internet'}`:null,
-      D.underlay>0?`  Agregado: ${fmt(D.underlay)} · Local Breakout ${D.breakout?'ACTIVO'+' (cuota privada ~30 % — regla 70/30 declarada)':'desactivado (full backhaul)'}`:null,
+      // Transporte WAN del sitio (M1/M2, estado v2): cuando el preventa declara los
+      // enlaces en el builder, la exportacion los documenta uno a uno; el appliance se
+      // dimensiona por el caudal agregado y el tier por el efectivo tras el breakout.
+      D.caudalTotal>0?'':'',
+      D.caudalTotal>0?'TRANSPORTE WAN DEL SITIO (multi-underlay, estado v2)':null,
+      ...D.wanLinks.filter(l=>l.down>0||l.up>0).map((l,i)=>
+        `  Enlace ${i+1}:  ${l.tipo} · ${l.medio} · ${fmt(l.down)} down / ${fmt(l.up)} up`),
+      D.caudalTotal>0?`  Agregado: ${fmt(D.caudalTotal)} (MPLS ${fmt(D.mplsMbps)} + Internet ${fmt(D.inetMbps)}) · Local Breakout ${D.breakout?'ACTIVO — caudal efectivo del overlay '+fmt(D.caudalEfectivo)+' (regla 70/30 declarada)':'desactivado (full backhaul)'}`:null,
       '',
       esEC?'COMO SE LICENCIA EDGECONNECT':'COMO SE LICENCIA ESTE GATEWAY',
       esEC?'  Nivel (Foundation/Advanced) DEDUCIDO de las funciones del diseno segun la'
@@ -1415,14 +1700,23 @@ function renderBom(){
   });
   $('bomOut').value=BOM.comoTexto(filas,meta);
   bomMeta=meta; bomFilas=filas;
+  // SPEC B.4: la línea SSE de la tabla lleva el id de contrato #filaSse (la tabla la
+  // genera bom.js, que no pone ids — se etiqueta aquí tras el repintado).
+  if(secMode==='sse'){
+    const sseSku=(SSE&&SSE.sku)||'R8M36AAE';
+    const tr=[...document.querySelectorAll('#bomTabla tr')].find(x=>x.textContent.includes(sseSku));
+    if(tr) tr.id='filaSse';
+  }
 
-  /* ══ CAPEX / OPEX / TCO (fase 11, 2026-09-13) ══
-     Criterio declarado: CAPEX = hardware + accesorios + licencia perpetua de capacidad;
-     OPEX = suscripciones (EdgeConnect/Boost/Central) + soporte CARE del término. Las
-     líneas «consultar» (DTD, SSE, EC-V, FC de gateways) no entran en la suma — se
-     declara. El TCO se calcula a 1/3/5 años con el precio de cada término. */
+  /* ══ M6 · CAPEX / OPEX ANUAL / TCO (SPEC B.7) ══
+     Criterio declarado: CAPEX = hardware + accesorios (incluidos los inyectados por el
+     motor: S2N67A, R7J63A) + licencia perpetua de capacidad — todo one-time; OPEX ANUAL
+     = (suscripciones EdgeConnect/Boost/Central + soporte CARE del término) ÷ años del
+     término; TCO = CAPEX + OPEX anual × años. Las líneas «consultar» (DTD, SSE con
+     precio null, EC-V, FC de gateways) NO entran en la suma — se declara al pie. */
   const capexList=(m.elpN!=null?m.elpN*qty:0)
     +Object.entries(accesoriosElegidos).reduce((s,[sku,n])=>s+(ACCESSORY_CATALOG[sku]&&ACCESSORY_CATALOG[sku].listPrice!=null?ACCESSORY_CATALOG[sku].listPrice*n:0),0)
+    +inyectados.reduce((s,{sku,qty:qIny})=>s+(ACCESSORY_CATALOG[sku]&&ACCESSORY_CATALOG[sku].listPrice!=null?ACCESSORY_CATALOG[sku].listPrice*qIny:0),0)
     +(capTier&&capTier.code!=='hw'&&capTier.elp!=null?capTier.elp*qty:0);
   const opexDe=t=>{
     let s=0;
@@ -1435,14 +1729,17 @@ function renderBom(){
     if(care&&!esVirtual) s+=(tierPrice(careTier,t)||0)*qty;
     return s;
   };
+  const opexTermino=opexDe(termYrs);
+  const opexAnual=termYrs>0?opexTermino/termYrs:0;
+  const tco=capexList+opexAnual*termYrs;
   const hayPrecios=capexList>0||[1,3,5].some(t=>opexDe(t)>0);
+  const celdaNet=v=>dto>0?`<td><b>${BOM.money(v*(1-dto))}</b></td>`:'';
   $('tcoFin').innerHTML=hayPrecios
-    ?`<table class="tco-tabla"><thead><tr><th>TCO del sitio</th><th>CAPEX</th><th>OPEX</th><th>TCO LIST</th>${dto>0?'<th>TCO NET</th>':''}</tr></thead><tbody>`
-      +[1,3,5].map(t=>{
-        const op=opexDe(t), tot=capexList+op;
-        return `<tr><td><b>${t} año${t>1?'s':''}</b></td><td>${BOM.money(capexList)}</td><td>${BOM.money(op)}</td><td><b>${BOM.money(tot)}</b></td>${dto>0?`<td><b>${BOM.money(tot*(1-dto))}</b></td>`:''}</tr>`;
-      }).join('')
-      +`</tbody></table><p class="hint" style="margin-top:8px">CAPEX = hardware + accesorios + licencia perpetua de capacidad (criterio declarado); OPEX = suscripciones y soporte del término. Las líneas en «consultar» (DTD, SSE, EC-V, FC de gateways) no entran en la suma. Los precios de suscripción de la lista son lineales al término (3 años = 3 × 1 año), así que el TCO a 5 años usa el SKU quinquenal.</p>`
+    ?`<table class="tco-tabla"><thead><tr><th>Pie de la lista de materiales</th><th>Subtotal Lista</th>${dto>0?'<th>Subtotal Neto</th>':''}</tr></thead><tbody>`
+      +`<tr><td><b>CAPEX</b> — hardware + accesorios + licencia perpetua (one-time)</td><td>${BOM.money(capexList)}</td>${celdaNet(capexList)}</tr>`
+      +`<tr><td><b>OPEX anual</b> — suscripciones y soporte del término ÷ ${termYrs} año${termYrs>1?'s':''}</td><td>${BOM.money(opexAnual)}</td>${celdaNet(opexAnual)}</tr>`
+      +`<tr><td><b>TCO a ${termYrs} año${termYrs>1?'s':''}</b> — CAPEX + OPEX anual × ${termYrs}</td><td><b>${BOM.money(tco)}</b></td>${celdaNet(tco)}</tr>`
+      +`</tbody></table><p class="hint" style="margin-top:8px">CAPEX = hardware + accesorios + licencia perpetua de capacidad (criterio declarado); OPEX anual = suscripciones y soporte del término prorrateados. Las líneas en «consultar» no entran en la suma: Dynamic Threat Defense, <b>HPE Aruba SSE (precio null — suscripción por usuario a cotizar)</b>, EC-V y Foundational Care de gateways. Los precios de suscripción de la lista son lineales al término (3 años = 3 × 1 año). El neto es un <b>simulador genérico de tramos partner — no refleja el descuento real del distribuidor</b>.</p>`
     :'<p class="hint">Sin precios suficientes para calcular el TCO: el equipo o las suscripciones están en «consultar».</p>';
   // La calculadora de pool Boost (tab de licencias) proyecta los bloques del escenario:
   // se repinta con cada cambio para no quedarse con cifras de un escenario anterior.
@@ -1722,6 +2019,11 @@ async function compararListaPrecios(archivo){
   OS_MATRIX = data.osMatrix || null;
   ACCESSORY_CATALOG = data.accessories || {};
   ACCESSORY_COMPAT = data.accessoryCompat || {};
+  // SPEC parte B: globals nuevos del frente DATOS, con fallback para no romper antes del
+  // merge — SSE null (la línea entra en «consultar» con el SKU del contrato) y umbrales
+  // Microbranch 10 usuarios / 50 Mbps.
+  SSE = data.sse || null;
+  MICROBRANCH = data.microbranch || { usuarios: 10, caudalMbps: 50 };
 
   // La ficha ya no pide referencias (van integradas en el BOM), así que el fabricante se
   // declara aquí: es lo que permite que la lista de materiales muestre solo lo de Aruba.
@@ -1764,7 +2066,21 @@ document.addEventListener('click', (e) => {
    otra recomendacion. Ahora el escenario viaja en la URL; ya no se guarda entre sesiones
    (ver /js/estado.js). */
 document.addEventListener('DOMContentLoaded', () => {
+  // Estado v2 (SPEC B.1): primero se deja el builder con su fila por defecto; ESTADO
+  // restaura #wanLinksData si el enlace es v2; si el enlace es v1 (bw/mplsType/inetType…)
+  // se migra a filas equivalentes con aviso por consola; y al final se reconstruyen las
+  // filas desde la serialización que haya quedado.
+  reconstruirWanDesdeHidden();
   const st = ESTADO.vincular({ campos: CAMPOS_ESCENARIO });
+  // Migración v1→v2: migrarEstadoV1 escribe la serialización en el input oculto; hay que
+  // reconstruir las filas DESPUÉS y entonces avisar a ESTADO (sincronizarWanHidden leería
+  // las filas viejas y pisaría lo migrado — orden importa).
+  if (migrarEstadoV1()) {
+    reconstruirWanDesdeHidden();
+    $('wanLinksData').dispatchEvent(new Event('input', { bubbles: true }));
+  } else {
+    reconstruirWanDesdeHidden();
+  }
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');
@@ -1774,8 +2090,12 @@ document.addEventListener('DOMContentLoaded', () => {
     ESTADO.botonEnlace(caja);
     ESTADO.avisoOrigen(caja, st.origen);
   }
-  // Perfiles multi-sede guardados en este navegador (fase 11): se pintan al arrancar.
+  // Perfiles multi-sede guardados en este navegador (arubaPerfilesV1): se pintan al arrancar.
   pintarPerfiles();
+  // Si el fetch del catálogo llegó ANTES que DOMContentLoaded, initApp ya pintó con el
+  // builder vacío: se repinta con las filas restauradas/migradas. Si llegó después, el
+  // render de initApp ya lee las filas correctas y esta llamada no cambia nada.
+  if (MODELS.length) render();
 });
 
 /* ══ ENVIAR AL COTIZADOR ══
