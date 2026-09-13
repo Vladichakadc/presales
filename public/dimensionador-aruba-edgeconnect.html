@@ -66,6 +66,20 @@ label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px}
 .b1 i{background:#6b7f8f}
 .b2 i{background:#b98a3e}
 .b3 i{background:#5e8a68}
+/* Modal de accesorios y bloque TCO (fase 11, 2026-09-13) */
+#accModal{position:fixed;inset:0;background:rgba(28,25,23,.45);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
+#accModal[hidden]{display:none}
+.acc-caja{background:var(--card);border:1px solid var(--rule);border-radius:3px;max-width:640px;width:100%;max-height:86vh;overflow:auto;padding:20px}
+.acc-caja h3{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin:0 0 8px}
+.acc-fila{display:grid;grid-template-columns:1fr 96px 70px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--rule)}
+.acc-fila:last-child{border-bottom:0}
+.acc-fila .acc-d{font-size:12.5px}.acc-fila .acc-d code{font-size:11px}
+.acc-fila .acc-p{font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-align:right;color:var(--steel)}
+.acc-fila input[type=number]{padding:5px 6px;font-size:12.5px}
+.tco-tabla{width:100%;border-collapse:collapse;margin-top:6px}
+.tco-tabla th,.tco-tabla td{font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--rule);text-align:right}
+.tco-tabla th:first-child,.tco-tabla td:first-child{text-align:left}
+.tco-tabla thead th{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel)}
 input[type=number],select{width:100%;padding:9px 10px;border:1px solid var(--rule);border-radius:2px;background:#fff;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500}
 select{font-family:'Barlow',sans-serif;font-size:13.5px}
 input:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:1px}
@@ -422,8 +436,28 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
     <div id="skuCatalogo"><p class="hint">Cargando catálogo de SKUs…</p></div>
   </section>
   <section class="panel">
+    <h2>Precio neto y TCO del sitio</h2>
+    <div class="field">
+      <label for="dtoSeg">Nivel de descuento sobre List Price</label>
+      <div class="row">
+        <select id="dtoSeg" style="width:60%">
+          <option value="0" selected>Lista (0 %) — precio de referencia HPE</option>
+          <option value="0.35">Business Partner (35 %)</option>
+          <option value="0.45">Silver (45 %)</option>
+          <option value="0.50">Gold (50 %)</option>
+          <option value="0.55">Platinum (55 %)</option>
+          <option value="opg">OPG / acuerdo personalizado…</option>
+        </select>
+        <input type="number" id="dtoCustom" min="0" max="90" step="0.5" placeholder="% OPG" hidden autocomplete="off">
+      </div>
+      <p class="hint">Niveles de trabajo del equipo de preventa (<b>no son cifras publicadas por HPE</b>: los descuentos del programa de canal no son públicos). El simulador muestra las columnas LIST y NET en paralelo y las lleva al Excel; la cotización firme la cierra tu distribuidor.</p>
+    </div>
+    <div id="tcoFin"></div>
+  </section>
+  <section class="panel">
     <h2>Lista de materiales
       <span class="bom-acciones">
+        <button class="btn ghost" id="accBtn" style="font-size:11px;padding:5px 11px" hidden>Ópticas y accesorios</button>
         <button class="btn" id="xlsBtn" style="font-size:11px;padding:5px 11px">Exportar a Excel</button>
         <button class="btn ghost" id="copyBtn" style="font-size:11px;padding:5px 11px">Copiar como texto</button>
       </span>
@@ -568,6 +602,22 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
 </p>
 
 </div><!-- /wrap -->
+
+<!-- Modal de ópticas y accesorios (fase 11, 2026-09-13): compatibilidad validada contra
+     la tabla oficial del VSG EdgeConnect y el Hardware Reference; para el 9240, contra el
+     listado de partner autorizado (HPE no publica matriz pública para SFP28). -->
+<div id="accModal" hidden>
+  <div class="acc-caja">
+    <h3>Ópticas y accesorios — <span id="accModelo"></span></h3>
+    <p class="hint" id="accHint"></p>
+    <div id="accLista"></div>
+    <p class="hint" style="margin-top:10px">Precios «List Price» de partner autorizado HPE (securewirelessworks, 2026-09-13) — HPE no publica List oficial de transceptores; los partners discrepan entre sí, así que la cifra firme la cierra tu distribuidor. El cordón de alimentación localizado va <b>incluido por defecto</b> en el equipo (la opción #AC3 «NoLoc» es la que lo excluye — QuickSpecs).</p>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+      <button type="button" class="btn ghost" id="accCerrar" style="font-size:11px;padding:6px 12px">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <script src="/js/bom.js"></script>
 <script src="/js/ficha.js"></script>
 <script src="/js/estado.js"></script>

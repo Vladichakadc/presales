@@ -67,6 +67,86 @@ const SEC_HINT={
 // degradada, asi la holgura va dentro del modelo.
 const IMIX_FACTOR=0.70;
 
+/* ══ ÓPTICAS Y ACCESORIOS (fase 11, 2026-09-13) ══
+   Compatibilidad validada contra la tabla oficial del VSG EdgeConnect («certified to
+   operate with the following transceivers») y el Hardware Reference (DAC); para el 9240,
+   contra el listado de partner autorizado (HPE no publica matriz pública para sus SFP28).
+   Precios: «List Price» de partner autorizado (securewirelessworks, 2026-09-13) — HPE no
+   publica List oficial de transceptores y los partners discrepan entre sí (documentado en
+   la investigacion); la cifra firme la cierra el distribuidor. null = consultar. */
+const ACCESORIOS={
+  J4858D:{d:'Transceptor 1G SFP LC SX — 500 m OM2 MMF', p:480},
+  J4859D:{d:'Transceptor 1G SFP LC LX — 10 km SMF', p:1016},
+  J9150D:{d:'Transceptor 10G SFP+ LC SR — 300 m OM3 MMF', p:1454},
+  J9151E:{d:'Transceptor 10G SFP+ LC LR — 10 km SMF', p:4078},
+  J9281D:{d:'Cable DAC 10G SFP+ a SFP+ — 1 m', p:164},
+  J9283D:{d:'Cable DAC 10G SFP+ a SFP+ — 3 m', p:215},
+  R7J63A:{d:'Fuente de alimentación 550 W AC de repuesto (2ª PSU)', p:721},
+};
+// Matriz modelo → accesorios ofertables. EC-10104 no tiene ranuras SFP (4x RJ45 — VSG);
+// EC-10150 incluye 2 PSU de fábrica (no necesita 2ª); EC-XS/10104/10106/10108 llevan
+// fuente externa única sin opción de redundancia (Hardware Reference).
+const ACCESORIOS_POR_MODELO={
+  'EC-10106':{items:['J4858D','J4859D','J9150D','J9151E','J9281D','J9283D'],
+    nota:'2 ranuras SFP+ 1/10G (VSG). Fuente externa única: sin opción de 2ª PSU.'},
+  'EC-10108':{items:['J9150D','J9151E','J9281D','J9283D'],
+    nota:'2 ranuras SFP+ 1/10G (VSG) — la tabla oficial NO certifica ópticas 1G en este modelo. Fuente externa única: sin opción de 2ª PSU.'},
+  'EC-10150':{items:['J9150D','J9151E','J9281D','J9283D'],
+    nota:'8 ranuras SFP+/SFP28 1/10/25G (VSG). Lleva 2 PSU redundantes de fábrica: no necesita 2ª fuente.'},
+  'Gateway 9240':{items:['J9150D','J9151E','J9281D','J9283D','R7J63A'],
+    nota:'4 ranuras SFP28 1/10/25G (datasheet); compatibilidad de ópticas vía listado de partner autorizado (HPE no publica matriz pública). 1+1 PSU: la 2ª fuente es la R7J63A.'},
+};
+// Selección viva del modal: sku → cantidad. Se depura al cambiar de modelo para no
+// cotizar una óptica incompatible con el equipo elegido.
+let accesoriosElegidos={};
+function pintarAccModal(m){
+  const cfg=ACCESORIOS_POR_MODELO[m.id];
+  if(!cfg) return;
+  $('accModelo').textContent=m.id;
+  $('accHint').textContent=cfg.nota;
+  $('accLista').innerHTML=cfg.items.map(sku=>{
+    const a=ACCESORIOS[sku];
+    const qty=accesoriosElegidos[sku]||0;
+    return `<div class="acc-fila"><span class="acc-d"><code>${sku}</code> — ${a.d}</span>`
+      +`<span class="acc-p">${a.p!=null?('$ '+a.p.toLocaleString('en-US')):'consultar'}</span>`
+      +`<input type="number" min="0" step="1" value="${qty}" data-acc="${sku}" aria-label="Cantidad ${sku}"></div>`;
+  }).join('');
+}
+$('accBtn').addEventListener('click',()=>{
+  const m=MODELS.find(x=>x.id===$('pickModel').value);
+  if(!m||!ACCESORIOS_POR_MODELO[m.id]) return;
+  pintarAccModal(m);
+  $('accModal').hidden=false;
+});
+$('accCerrar').addEventListener('click',()=>{ $('accModal').hidden=true; });
+$('accModal').addEventListener('click',e=>{ if(e.target===$('accModal')) $('accModal').hidden=true; });
+$('accLista').addEventListener('input',e=>{
+  const sku=e.target.dataset&&e.target.dataset.acc;
+  if(!sku) return;
+  const n=Math.max(0,parseInt(e.target.value)||0);
+  if(n>0) accesoriosElegidos[sku]=n; else delete accesoriosElegidos[sku];
+  renderBom();
+});
+// Simulador de precio neto (fase 11): niveles de trabajo del equipo de preventa — los
+// descuentos del programa de canal de HPE NO son públicos, asi que se declaran como
+// supuesto configurable y la cotizacion firme queda en el distribuidor.
+function dtoActual(){
+  const v=$('dtoSeg').value;
+  if(v==='opg') return Math.min(0.9,Math.max(0,(parseFloat($('dtoCustom').value)||0)/100));
+  return parseFloat(v)||0;
+}
+function dtoEtiqueta(){
+  const v=$('dtoSeg').value;
+  if(v==='opg') return `OPG personalizado (${(dtoActual()*100).toFixed(1)} %)`;
+  const opt=$('dtoSeg').selectedOptions[0];
+  return opt?opt.textContent.trim():'Lista (0 %)';
+}
+$('dtoSeg').addEventListener('input',()=>{
+  $('dtoCustom').hidden=$('dtoSeg').value!=='opg';
+  renderBom();
+});
+$('dtoCustom').addEventListener('input',renderBom);
+
 // Texto del destino de tráfico (2026-09-13, refactor arquitectónico): la estrategia de
 // aplicaciones sustituye a los campos abstractos. Cloud-First usa First-packet iQ para
 // sacar el tráfico SaaS de confianza directo a Internet o al SSE; Híbrido concentra el
@@ -1022,6 +1102,19 @@ function renderBom(){
     {cat:'Equipo', desc:m.id, sku:m.hwSku||null, qty, unit:m.elpN!=null?m.elpN:null,
      nota:`${m.seg} · ${famLabel(m)} · ${m.ifaces}`},
   ];
+  // Ópticas y accesorios (fase 11): solo los compatibles con el modelo elegido — la
+  // seleccion se depura al cambiar de equipo para no cotizar una optica incompatible.
+  const cfgAcc=ACCESORIOS_POR_MODELO[m.id]||null;
+  Object.keys(accesoriosElegidos).forEach(sku=>{
+    if(!cfgAcc||!cfgAcc.items.includes(sku)) delete accesoriosElegidos[sku];
+  });
+  $('accBtn').hidden=!cfgAcc;
+  Object.entries(accesoriosElegidos).forEach(([sku,n])=>{
+    const a=ACCESORIOS[sku];
+    if(!a||n<=0) return;
+    filas.push({cat:'Accesorios', desc:a.d, sku, qty:n, unit:a.p!=null?a.p:null,
+      nota:'List Price de partner autorizado HPE (2026-09-13) — HPE no publica List oficial de transceptores; confirmar precio firme con el distribuidor'});
+  });
   if(esEC){
     if(bundle){
       if(licHa){
@@ -1159,12 +1252,46 @@ function renderBom(){
   const avisoEs=enEs.length
     ?`<p class="bom-eos"><b>Fin de venta.</b> ${enEs.map(f=>`<b>${esc(f.sku)}</b>`).join(', ')} figura${enEs.length>1?'n':''} en la lista de precios con estado PLC «ES» (End of Sale): HPE ya no lo vende y el soporte deja de contratarse años antes de que acabe el plazo. Confirma el sucesor antes de emitir la propuesta.</p>`
     :'';
+  // Simulador de precio neto (fase 11): las columnas NET van en paralelo a las LIST, en
+  // la tabla, en el texto y en el Excel.
+  const dto=dtoActual();
+  if(dto>0){ meta.dto=dto; meta.dtoEtq=dtoEtiqueta(); }
   $('bomTabla').innerHTML=avisoEs+BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato:!!lastPick})
     +BOM.renderTabla(filas,{
     aviso:'List Price de HPE (sin descuento de distribuidor) — hardware, suscripciones EdgeConnect/Boost/Central, licencias perpetuas 9240 y Foundational Care de EdgeConnect verificados el 2026-09-13 (ver aruba-lista-precios-hpe.csv y CARE_SKU en aruba.js). Lo que no tiene precio verificado figura en "consultar" a propósito.',
+    dto,
   });
   $('bomOut').value=BOM.comoTexto(filas,meta);
   bomMeta=meta; bomFilas=filas;
+
+  /* ══ CAPEX / OPEX / TCO (fase 11, 2026-09-13) ══
+     Criterio declarado: CAPEX = hardware + accesorios + licencia perpetua de capacidad;
+     OPEX = suscripciones (EdgeConnect/Boost/Central) + soporte CARE del término. Las
+     líneas «consultar» (DTD, SSE, EC-V, FC de gateways) no entran en la suma — se
+     declara. El TCO se calcula a 1/3/5 años con el precio de cada término. */
+  const capexList=(m.elpN!=null?m.elpN*qty:0)
+    +Object.entries(accesoriosElegidos).reduce((s,[sku,n])=>s+(ACCESORIOS[sku]&&ACCESORIOS[sku].p!=null?ACCESORIOS[sku].p*n:0),0)
+    +(capTier&&capTier.code!=='hw'&&capTier.elp!=null?capTier.elp*qty:0);
+  const opexDe=t=>{
+    let s=0;
+    if(esEC&&bundle){
+      if(licHa) s+=(tierPrice(licTier,t)||0)+(tierPrice(licHa,t)||0);
+      else s+=(tierPrice(licTier,t)||0)*qty;
+      if(bloques) s+=(tierPrice(boostBlk,t)||0)*bloques;
+    }
+    if(!esEC&&central) s+=(tierPrice(centralTier,t)||0)*qty;
+    if(care&&!esVirtual) s+=(tierPrice(careTier,t)||0)*qty;
+    return s;
+  };
+  const hayPrecios=capexList>0||[1,3,5].some(t=>opexDe(t)>0);
+  $('tcoFin').innerHTML=hayPrecios
+    ?`<table class="tco-tabla"><thead><tr><th>TCO del sitio</th><th>CAPEX</th><th>OPEX</th><th>TCO LIST</th>${dto>0?'<th>TCO NET</th>':''}</tr></thead><tbody>`
+      +[1,3,5].map(t=>{
+        const op=opexDe(t), tot=capexList+op;
+        return `<tr><td><b>${t} año${t>1?'s':''}</b></td><td>${BOM.money(capexList)}</td><td>${BOM.money(op)}</td><td><b>${BOM.money(tot)}</b></td>${dto>0?`<td><b>${BOM.money(tot*(1-dto))}</b></td>`:''}</tr>`;
+      }).join('')
+      +`</tbody></table><p class="hint" style="margin-top:8px">CAPEX = hardware + accesorios + licencia perpetua de capacidad (criterio declarado); OPEX = suscripciones y soporte del término. Las líneas en «consultar» (DTD, SSE, EC-V, FC de gateways) no entran en la suma. Los precios de suscripción de la lista son lineales al término (3 años = 3 × 1 año), así que el TCO a 5 años usa el SKU quinquenal.</p>`
+    :'<p class="hint">Sin precios suficientes para calcular el TCO: el equipo o las suscripciones están en «consultar».</p>';
   // Las marcas "En el BOM" del catálogo dependen de lo que el motor acaba de poner en la
   // lista: se repinta con cada cambio de modelo, término o tier.
   pintarCatalogoSku();
@@ -1334,7 +1461,7 @@ document.addEventListener('click', (e) => {
    otra recomendacion. Ahora el escenario viaja en la URL; ya no se guarda entre sesiones
    (ver /js/estado.js). */
 document.addEventListener('DOMContentLoaded', () => {
-  const st = ESTADO.vincular({ campos: ['bw','unit','users','aps','perUser','head','fecMode','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','famSeg','segSeg','destSeg','pickModel','personaSeg','secSeg','mplsType','bwMpls','inetType','bwInet','chkBreakout'] });
+  const st = ESTADO.vincular({ campos: ['bw','unit','users','aps','perUser','head','fecMode','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','famSeg','segSeg','destSeg','pickModel','personaSeg','secSeg','mplsType','bwMpls','inetType','bwInet','chkBreakout','dtoSeg','dtoCustom'] });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');

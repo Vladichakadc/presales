@@ -220,14 +220,20 @@
       else grupos.push({ cat: f.cat, filas: [f] });
     }
 
+    // Simulador de precio neto (2026-09-13, fase 11 — opt-in): si la pagina pasa
+    // `o.dto` (0..1), la tabla muestra en paralelo las columnas NET (unit y subtotal con
+    // el descuento aplicado). Las paginas que no lo pasan ven exactamente lo de siempre.
+    const dto = (o.dto != null && o.dto > 0 && o.dto < 1) ? o.dto : 0;
+    const nCols = dto > 0 ? 7 : 5;
     let html = '<div class="scroll"><table class="bom-tabla">'
       + '<thead><tr>'
       + '<th>Descripción</th><th>SKU / Código</th><th class="r">Cant.</th>'
-      + '<th class="r">Precio unit.</th><th class="r">Subtotal</th>'
+      + '<th class="r">Precio unit.</th><th class="r">Subtotal LIST</th>'
+      + (dto > 0 ? '<th class="r">Unit. NET</th><th class="r">Subtotal NET</th>' : '')
       + '</tr></thead><tbody>';
 
     for (const g of grupos) {
-      html += `<tr class="bom-grupo"><td colspan="5">${esc(g.cat)}</td></tr>`;
+      html += `<tr class="bom-grupo"><td colspan="${nCols}">${esc(g.cat)}</td></tr>`;
       for (const f of g.filas) {
         const s = subtotal(f);
         html += '<tr>'
@@ -242,6 +248,10 @@
             : (f.qty == null ? '—' : f.qty)}</td>`
           + `<td class="n r">${f.unit == null ? '<span class="bom-nd">consultar</span>' : esc(money(f.unit))}</td>`
           + `<td class="n r">${s == null ? '<span class="bom-nd">—</span>' : esc(money(s))}`
+          + (dto > 0
+            ? `<td class="n r">${f.unit == null ? '<span class="bom-nd">—</span>' : esc(money(f.unit * (1 - dto)))}</td>`
+              + `<td class="n r">${s == null ? '<span class="bom-nd">—</span>' : esc(money(s * (1 - dto)))}</td>`
+            : '')
           // Lo que se anade a mano se tiene que poder quitar a mano: sin salida, anadir una
           // referencia por error obligaria a vaciar el almacenamiento del navegador.
           + (f._ref ? ` <button type="button" class="bom-quitar" data-bom-quitar="${esc(f._ref)}" title="Quitar de la cotización">&times;</button>` : '')
@@ -256,7 +266,9 @@
     const faltaEquipo = filas.some((f) => f.unit == null && /equipo|hardware|chasis/i.test(f.cat || ''));
     const etiqueta = sinPrecio === 0 ? 'Total de referencia' : 'Total parcial — faltan líneas por cotizar';
     html += `<tr class="bom-total"><td colspan="4">${etiqueta}</td>`
-      + `<td class="n r">${faltaEquipo ? '<span class="bom-nd">sin cotizar</span>' : esc(money(suma))}</td></tr>`;
+      + `<td class="n r">${faltaEquipo ? '<span class="bom-nd">sin cotizar</span>' : esc(money(suma))}</td>`
+      + (dto > 0 ? `<td class="n r"></td><td class="n r">${faltaEquipo ? '<span class="bom-nd">—</span>' : esc(money(suma * (1 - dto)))}</td>` : '')
+      + '</tr>';
     html += '</tbody></table></div>';
 
     if (faltaEquipo) {
@@ -303,28 +315,42 @@
     const filas = (filasBase || []).concat(filasDeRefs());
     const { suma, sinPrecio } = totales(filas);
 
+    // Simulador de precio neto (fase 11, opt-in via meta.dto): columnas NET en paralelo.
+    const dtoX = (m.dto != null && m.dto > 0 && m.dto < 1) ? m.dto : 0;
     const aoa = [];
     aoa.push([m.titulo || 'Lista de materiales']);
     if (m.subtitulo) aoa.push([m.subtitulo]);
     aoa.push([`Generado ${new Date().toLocaleString('es')}`]);
+    if (dtoX > 0 && m.dtoEtq) aoa.push([`Precio neto simulado: ${m.dtoEtq}`]);
     aoa.push([]);
-    aoa.push(['Categoría', 'Descripción', 'SKU / Código', 'Cantidad', 'Precio unit.', 'Subtotal', 'Notas']);
+    aoa.push(dtoX > 0
+      ? ['Categoría', 'Descripción', 'SKU / Código', 'Cantidad', 'Precio unit. LIST', 'Subtotal LIST', 'Unit. NET', 'Subtotal NET', 'Notas']
+      : ['Categoría', 'Descripción', 'SKU / Código', 'Cantidad', 'Precio unit.', 'Subtotal', 'Notas']);
 
     for (const f of filas) {
-      aoa.push([
+      const base = [
         f.cat || '',
         f.desc || '',
         f.sku || '',
         f.qty == null ? '' : f.qty,
         f.unit == null ? '' : f.unit,     // numérico: Excel puede sumar y formatear
         subtotal(f) == null ? '' : subtotal(f),
-        f.nota || '',
-      ]);
+      ];
+      if (dtoX > 0) {
+        base.push(f.unit == null ? '' : Math.round(f.unit * (1 - dtoX) * 100) / 100);
+        base.push(subtotal(f) == null ? '' : Math.round(subtotal(f) * (1 - dtoX) * 100) / 100);
+      }
+      base.push(f.nota || '');
+      aoa.push(base);
     }
 
     const faltaEquipoX = filas.some((f) => f.unit == null && /equipo|hardware|chasis/i.test(f.cat || ''));
     aoa.push([]);
-    aoa.push(['', '', '', '', sinPrecio === 0 ? 'Total de referencia' : 'Total parcial', faltaEquipoX ? 'sin cotizar' : suma, '']);
+    if (dtoX > 0) {
+      aoa.push(['', '', '', '', sinPrecio === 0 ? 'Total LIST de referencia' : 'Total LIST parcial', faltaEquipoX ? 'sin cotizar' : suma, sinPrecio === 0 ? 'Total NET' : 'Total NET parcial', faltaEquipoX ? 'sin cotizar' : Math.round(suma * (1 - dtoX) * 100) / 100, '']);
+    } else {
+      aoa.push(['', '', '', '', sinPrecio === 0 ? 'Total de referencia' : 'Total parcial', faltaEquipoX ? 'sin cotizar' : suma, '']);
+    }
     if (faltaEquipoX) {
       aoa.push(['', 'El equipo principal no tiene precio de lista publicado: la suma de los accesorios no representa el costo del BOM.']);
     } else if (sinPrecio > 0) {
@@ -333,7 +359,9 @@
     for (const n of (m.notas || [])) aoa.push(['', n]);
 
     const hoja = global.XLSX.utils.aoa_to_sheet(aoa);
-    hoja['!cols'] = [{ wch: 14 }, { wch: 46 }, { wch: 26 }, { wch: 9 }, { wch: 14 }, { wch: 14 }, { wch: 52 }];
+    hoja['!cols'] = dtoX > 0
+      ? [{ wch: 14 }, { wch: 46 }, { wch: 26 }, { wch: 9 }, { wch: 14 }, { wch: 14 }, { wch: 13 }, { wch: 14 }, { wch: 52 }]
+      : [{ wch: 14 }, { wch: 46 }, { wch: 26 }, { wch: 9 }, { wch: 14 }, { wch: 14 }, { wch: 52 }];
     const libro = global.XLSX.utils.book_new();
     global.XLSX.utils.book_append_sheet(libro, hoja, 'BOM');
     global.XLSX.writeFile(libro, nombreArchivo(m.archivo || m.titulo));
@@ -367,6 +395,10 @@
     } else {
       L.push(`${sinPrecio === 0 ? 'TOTAL DE REFERENCIA' : 'TOTAL PARCIAL'}: ${money(suma)}`);
       if (sinPrecio > 0) L.push(`(${sinPrecio} linea(s) sin precio publicado, no incluidas)`);
+      // Simulador de precio neto (fase 11, opt-in via meta.dto): total NET en paralelo.
+      if (m.dto != null && m.dto > 0 && m.dto < 1) {
+        L.push(`${sinPrecio === 0 ? 'TOTAL NET SIMULADO' : 'TOTAL NET PARCIAL'}${m.dtoEtq ? ' (' + m.dtoEtq + ')' : ''}: ${money(suma * (1 - m.dto))}`);
+      }
     }
     for (const n of (m.notas || [])) L.push(n);
     return L.join('\n');
