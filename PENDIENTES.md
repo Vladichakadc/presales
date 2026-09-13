@@ -287,6 +287,7 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
 | 7030 | `ifaces` | «8x combo + puertos 10G» | **8x combo 1G, sin 10G** (DS serie 7000) |
 | EC-L | `psu.texto` watts | 401 W | **404 W** (QuickSpecs) / **440 W** (Hardware Ref., EC-L-P) |
 | Gateway 9004/9012 | `aps` | 32 (AOS 8) | **128 / 256 "devices" (AOS 10)** — arquitecturas distintas |
+| Gateway 9004/9012 | `fwSess` | 128.000 (datasheet AOS 10) | **64.000 en modo SD-WAN** (doc oficial a00099294en_us, validado 2026-09-13) — expuesto en `spec.fwSessSdwan` sin pisar el dato; si el dueño decide que el filtro de flujos use la cifra SD-WAN conservadora, se cambia `fwSess` y se ajusta el test de flujos |
 
 ## Datos por confirmar
 
@@ -386,6 +387,50 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Sincronización total del módulo Aruba: revisión de diseño automática (fase 10, 2026-09-13)
+
+Instrucción del dueño: «analiza como un arquitecto en networking de Aruba e integra tus
+observaciones en el dimensionador… todo el módulo debe estar sincronizado para que cada
+función que se active llame la licencia y calcule automáticamente; valida por web los
+ajustes necesarios a nivel de diseño». Tres investigadores validaron cada regla contra
+fuentes oficiales (VSG SD-Branch, data sheet de suscripciones a50010073enw, QuickSpecs
+a50004289enw, Orchestrator Docs, tabla de licenciamiento de Central) antes de tocar código.
+
+**Revisión del diseño (par técnico automático).** Nueva sección del BOM con reglas
+declarativas (`REGLAS_DISENO`) y semáforo: ROJO = incoherencia que hay que corregir
+(modelo elegido por debajo de los flujos o del caudal estimado, HA con cantidad ≠ 2,
+**DTD en EC-XS** — la doc oficial de IDS/IPS confirma que no corre ahí); AVISO = decisión
+que hay que saber defender (Boost/DTD huérfanos sin suscripción, HA on-prem 2× declarado,
+EC-V virtual, sobredimensionamiento bajo el suelo del rango publicado); OK = diseño
+coherente. El portal ya no solo cotiza: revisa el diseño antes de que salga al cliente.
+
+**Sincronía función → licencia → cálculo.** DTD fuerza el filtro de familia a EdgeConnect
+(es licencia EC, QuickSpecs p.32) y sale de la deducción de Central; EC-V oculta el nivel
+CARE (appliance virtual: el soporte de hardware no aplica, la ficha lo declara);
+On-Premises agrega la fila de Orchestrator auto-alojado — el data sheet oficial confirma
+que el software va **incluido** en la suscripción E-STU y lo que cotiza el cliente es el
+alojamiento (VM, uptime, backup, upgrades).
+
+**Precisiones oficiales integradas.** Foundation = exactamente 2 VRF (default y guest) y
+AppExpress solo monitor; Advanced = AppExpress con steering; On-Prem existe solo como
+«Advanced On-Prem»; Central Advanced = segmentación de extremo a extremo / AIOps ampliada
+(la retención de Central es la misma en ambos niveles — corregido); FEC anclado a los
+ratios oficiales 1:8 (12,5 %) y 1:4 (25 %) con FEC adaptativo; headroom con ancla en el
+SLA DPS del 75 % de la guía de diseño; flujos por modelo (256.000/2.000.000) y tier por
+caudal agregado del sitio, ambos confirmados por el VSG. Atribución corregida: la paridad
+de precio de los SKU HA sale de la **lista de precios documentada** (HPE no publica
+precios); la existencia del SKU y la regla «match tier, bandwidth, term» salen del
+QuickSpecs/VSG. Lo que quedó **sin fuente** se declara como regla de trabajo del
+arquitecto: flujos por usuario (80-100/150-200) y Boost = 30 % del WAN privado (la única
+regla de campo localizada, no oficial, dice 40 % — discrepancia documentada en el motor).
+
+**Verificación.** 248/248 pruebas (2 nuevas: EC-V sin CARE_SKU, overhead FEC anclado a
+los ratios oficiales) y eslint verde. E2E en Chromium: semáforo OK en diseño coherente,
+ROJO por flujos+caudal al forzar EC-10104 bajo, ROJO DTD+EC-XS, AVISO Boost huérfano (y
+Boost fuera del BOM), EC-V sin fila de soporte, fila Orchestrator on-prem, DTD moviendo
+el filtro de familia, Central Foundation/Advanced con el texto corregido, ficha 9004 con
+las sesiones SD-WAN, humo Fortinet 60F, cero errores de consola.
 
 ### Refactor del Dimensionador y BOM Aruba: SD-WAN por flujos + licenciamiento 100% automático (2026-09-13)
 
