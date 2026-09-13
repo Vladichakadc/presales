@@ -237,14 +237,17 @@ const MODELS = [
    hwSku:'JZ878A', skus:[{sku:'JZ878A',d:'EC-L-H · 6x SFP+ 1/10G'}],
    ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
 
-  // SEÑAL SIN CONFIRMAR (2026-09-10): en el export de lista de precios del distribuidor (ver
-  // DATASHEETS.priceList), la fila de S0B67A SIN sufijo de país marca estado PLC "ES" (End of
-  // Sale) con vigencia 2026-06-30, mientras que las ~20 filas por país del mismo SKU (US, EU,
-  // BR...) marcan "GA". No se sabe si la fila sin sufijo es la maestra (y EC-XL ya estaría en
-  // salida) o un residuo desactualizado — un solo documento, y contradictorio consigo mismo,
-  // no alcanza para tocar nada (misma regla que el conflicto de wanMax de EC-XS). Se deja sin
-  // marcar como EOL; confirmar con HPE/el distribuidor antes de cotizar EC-XL en una propuesta
-  // nueva. Ver PENDIENTES.md, "Aruba: List Price real para EdgeConnect y gateways".
+  // SEÑAL CONFIRMADA (2026-09-13): la fila de S0B67A sin sufijo de país marcaba PLC "ES" con
+  // vigencia 2026-06-30 en el export del distribuidor (las ~20 filas por país, "GA"); la
+  // variante NAL S3N77A llegó con PLC "ES" en el export del 2026-09-13; y la Product
+  // Lifecycle Policy OFICIAL de EdgeConnect (arubanetworking.hpe.com/techdocs,
+  // EC_LifecyclePolicy_latest.pdf) confirma "EC-XL-H end of sale announcement June 2025" —
+  // fin de venta 2025-09-30 según el ciclo publicado (anuncio +3 meses). El hecho está
+  // confirmado; lo que falta es la DECISIÓN DEL DUEÑO: marcar eolAnnounced lastOrder
+  // 2025-09-30 (patrón Cisco) haría que el EC-XL dejara de salir recomendado — y hoy es el
+  // ÚNICO candidato por encima de 5 Gbps, así que esos escenarios quedarían sin propuesta
+  // hasta modelar el sucesor (¿EC-10150 con Boost?). Mientras tanto, la página avisa en
+  // ámbar cualquier línea cotizada con PLC "ES" (fase 7: PLC_POR_SKU + bom-eos).
   {id:'EC-XL', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Datacenter / Head-end de fabric',
    wanMin:2000, wanMax:10000, boostMax:10000,
    ifaces:'hasta 6x SFP+ 10G y/o SFP28 25G · network memory en flash PCIe · PSU y almacenamiento redundantes',

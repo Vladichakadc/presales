@@ -13,6 +13,7 @@ let MODELS = [], BUNDLES = {}, CARE = {}, CARE_SKU = {}, LICENSES = {}, SIZING =
 // del CSV público de lista de precios. Es la fuente del panel "Añadir a la lista de
 // materiales": todas las referencias de pedido de la página viven integradas en el BOM.
 let SKU_CAT = [];        // [{sku, d, p, vig, plc, cat}]
+let PLC_POR_SKU = {};    // sku → estado PLC del export (GA/ES); lo usa el aviso de fin de venta
 let skuFiltro = '', skuCatActiva = null;
 
 // Config comun de la ficha en esta pagina (ficha.js la REEMPLAZA entera en cada render,
@@ -662,11 +663,22 @@ function renderBom(){
       nota:`${termino} · ${CARE[care].sla}`});
   }
 
+  // Fin de venta: cualquier línea cuyo SKU figure en la lista con PLC «ES» (End of Sale)
+  // se declara aquí y en la exportación — tanto las que pone el motor como las añadidas a
+  // mano desde el catálogo (viven en BOM.refsExtra, filtradas al fabricante de la página).
+  // Cotizar hardware en fin de venta deja al cliente sin contrato de soporte vendible
+  // antes de que acabe el plazo — hay que verlo, no descubrirlo en la entrega.
+  const refsPagina=(BOM.refsExtra?BOM.refsExtra():[]).filter(r=>!r.v||String(r.v).toLowerCase()==='aruba');
+  const enEs=[...filas.map(f=>({sku:f.sku,desc:f.desc})), ...refsPagina.map(r=>({sku:r.sku,desc:r.d}))]
+    .filter((x,i,l)=>x.sku&&PLC_POR_SKU[x.sku]==='ES'&&l.findIndex(y=>y.sku===x.sku)===i);
+
   const meta={
     titulo:`Lista de materiales — ${m.id}`,
     subtitulo:`${m.seg} · ${famLabel(m)} · ${termino}`,
     archivo:`BOM_${m.id}`,
     notas:[
+      enEs.length?'FIN DE VENTA (estado PLC «ES» en la lista de precios):':null,
+      ...enEs.map(f=>`  ${f.sku} — ${f.desc}. HPE ya no lo vende: confirmar el sucesor antes de cotizar.`),
       '',
       'CAPACIDAD PUBLICADA POR HPE',
       esEC?`  Rango de caudal WAN:  ${m.wanMin!=null?fmt(m.wanMin)+' - '+fmt(m.wanMax):'sin minimo publicado'}`
@@ -702,7 +714,10 @@ function renderBom(){
   // paneles de detalle en «Dimensionar» donde pintarlo, y su sitio natural es la cotización
   // misma — si la lista cotiza un equipo distinto del elegido, o ya ninguno cumple, es aquí
   // donde quien exporta tiene que verlo.
-  $('bomTabla').innerHTML=BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato:!!lastPick})
+  const avisoEs=enEs.length
+    ?`<p class="bom-eos"><b>Fin de venta.</b> ${enEs.map(f=>`<b>${esc(f.sku)}</b>`).join(', ')} figura${enEs.length>1?'n':''} en la lista de precios con estado PLC «ES» (End of Sale): HPE ya no lo vende y el soporte deja de contratarse años antes de que acabe el plazo. Confirma el sucesor antes de emitir la propuesta.</p>`
+    :'';
+  $('bomTabla').innerHTML=avisoEs+BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato:!!lastPick})
     +BOM.renderTabla(filas,{
     aviso:'List Price de HPE (sin descuento de distribuidor) — hardware, suscripciones EdgeConnect/Boost/Central, licencias perpetuas 9240 y Foundational Care de EdgeConnect verificados el 2026-09-13 (ver aruba-lista-precios-hpe.csv y CARE_SKU en aruba.js). Lo que no tiene precio verificado figura en "consultar" a propósito.',
   });
@@ -754,7 +769,13 @@ async function cargarCatalogoSku(){
     const res=await fetch('/datasheets/aruba-lista-precios-hpe.csv');
     if(!res.ok) throw new Error('http '+res.status);
     SKU_CAT=parseCsvCatalogo(await res.text());
+    // Estado del ciclo de vida por SKU (columna PLC del export): «ES» = End of Sale —
+    // HPE ya no lo vende. Lo cruzan el panel (chip ámbar) y el BOM (aviso de fin de venta).
+    PLC_POR_SKU={}; for(const x of SKU_CAT) if(x.sku&&x.plc) PLC_POR_SKU[x.sku]=x.plc;
     pintarCatalogoSku();
+    // El BOM se pintó antes de que llegara el CSV: se repinta para que el aviso de fin de
+    // venta aparezca sin que quien opera tenga que tocar nada.
+    renderBom();
   }catch(e){
     caja.innerHTML='<p class="hint">No se pudo cargar el catálogo de SKUs (lista de precios). La lista de materiales sigue disponible.</p>';
   }
@@ -776,9 +797,9 @@ function pintarCatalogoSku(){
     if(!filas.length) continue;
     body+=`<div class="sku-grupo">${esc(c)}</div>`+filas.map(x=>{
       const ya=x.sku&&auto.has(x.sku);
-      return `<div class="sku-fila${ya?' ya':''}">`
+      return `<div class="sku-fila${ya?' ya':''}${x.plc==='ES'?' es':''}">`
         +`<span class="sku-fila-sku">${x.sku?`<code>${esc(x.sku)}</code>`:'<span class="bom-nd">sin SKU confirmado</span>'}</span>`
-        +`<span class="sku-fila-d">${esc(x.d)}${x.vig?`<span class="sku-fila-meta">List Price vigente ${esc(x.vig)}${x.plc?` · ${esc(x.plc)}`:''}</span>`:''}</span>`
+        +`<span class="sku-fila-d">${esc(x.d)}${x.vig?`<span class="sku-fila-meta">List Price vigente ${esc(x.vig)}${x.plc==='ES'?` · <span class="sku-plc-es">ES · fin de venta</span>`:x.plc?` · ${esc(x.plc)}`:''}</span>`:''}</span>`
         +`<span class="sku-fila-p">${x.p!=null?esc(money(x.p)):'<span class="bom-nd">consultar</span>'}</span>`
         +`<span class="sku-fila-a">${ya?'<span class="sku-enbom">En el BOM</span>'
           :`<button type="button" class="sku-add" data-sku-add="${esc(x.sku||x.d)}">Añadir</button>`}</span></div>`;

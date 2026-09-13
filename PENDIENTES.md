@@ -368,6 +368,44 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
 
 ## Cerrado recientemente
 
+### Guardarraíl de integridad de precios y alerta de fin de venta (PLC «ES») — Aruba (2026-09-13)
+
+Aprobado por el dueño al cierre de la fase anterior: implementar las dos mejoras
+propuestas, con búsqueda web para ajustar la página como experto.
+
+**Guardarraíl anti-regresión (`test/aruba-integridad-precios.test.js`, 9 pruebas).** El
+bug del «SKU sin valor» llegó a producción porque nada cruzaba catálogo, lista de precios
+y servicios. Ahora falla el CI si: un modelo con `hwSku` no está en el CSV con precio; un
+modelo sin `hwSku` no está declarado a propósito (EC-V + serie 7000/7200, que se pide
+remanufacturada); hay SKU duplicados o filas sin precio en el CSV; un
+`modelo_dimensionador` no cuelga de modelo ni familia; aparece un estado PLC que la página
+no sabe pintar (hoy GA/ES); los SKU de suscripción/Boost/Central del seed no están en el
+CSV con el mismo precio; o `CARE_SKU` tiene modelos/niveles inexistentes, términos
+incompletos o choques con el CSV.
+
+**Alerta de fin de venta (mejora de consultoría).** La lista ya traía `estado_plc` y se
+mostraba como texto plano. Ahora: las filas con PLC «ES» del panel de añadir van con fondo
+y chip ámbar «ES · fin de venta», y si cualquier línea del BOM —del motor o añadida a
+mano— tiene PLC «ES», salta un aviso ámbar sobre la tabla («HPE ya no lo vende y el
+soporte deja de contratarse años antes de que acabe el plazo») y una nota «FIN DE VENTA»
+en la exportación Excel/texto. De paso se define el CSS `.bom-desvio` que faltaba en esta
+página (el aviso de desvío se pintaba sin estilo, solo Fortinet lo tenía).
+
+**La búsqueda web confirmó el fin de venta del EC-XL** (era «señal sin confirmar» desde
+el 2026-09-10): la Product Lifecycle Policy oficial de EdgeConnect
+(arubanetworking.hpe.com/techdocs, `EC_LifecyclePolicy_latest.pdf`) declara «EC-XL-H end
+of sale announcement June 2025» — fin de venta 2025-09-30 según el ciclo publicado
+(anuncio +3 meses), y la variante NAL S3N77A ya vino con PLC «ES» en el export. **Queda
+PENDIENTE la decisión del dueño**: marcar `eolAnnounced lastOrder 2025-09-30` (patrón
+Cisco) para que deje de salir recomendado — con el matiz de que hoy es el único candidato
+por encima de 5 Gbps y excluirlo dejaría esos escenarios sin propuesta hasta modelar el
+sucesor. Comentarios actualizados junto a EC-XL en `aruba.js` y en `fuentes.js`.
+
+**Verificación.** 242/242 pruebas (233 + 9 nuevas) y eslint verdes; E2E en Chromium: fila
+S3N77A con chip ámbar, aviso «Fin de venta» sobre el BOM al añadirla, nota en la
+exportación, ausencia del aviso sin líneas ES, humo de Fortinet sin efectos. Grep de
+privacidad limpio.
+
 ### Catálogo SKU sin duplicados ni filas sin valor, Foundational Care con precio y panel 4 bajo el 3 — Aruba (2026-09-13)
 
 Petición del dueño (con captura del panel «Añadir» y el export de lista de precios):
