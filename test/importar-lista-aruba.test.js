@@ -69,7 +69,7 @@ test('construirRoster cubre exactamente los SKU del CSV vigente', () => {
   const roster = construirRoster(arubaData);
   const enRoster = new Set(roster.map((r) => r.sku));
   const csv = parsearCsv(path.join(__dirname, '..', 'public', 'datasheets', 'aruba-lista-precios-hpe.csv'));
-  assert.strictEqual(csv.length, 134, 'el CSV vigente tiene 134 filas de datos');
+  assert.strictEqual(csv.length, 147, 'el CSV vigente tiene 147 filas de datos (134 + 13 accesorios del cruce 2026-09-13)');
   for (const fila of csv) {
     assert.ok(enRoster.has(fila.sku), `${fila.sku} del CSV debe estar declarado en el roster`);
   }

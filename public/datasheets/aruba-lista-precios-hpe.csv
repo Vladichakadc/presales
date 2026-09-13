@@ -5,14 +5,14 @@ S0E22A,EC-10106,Aruba EC-10106 SD-WAN Gateway,4318.00,2026-06-01,GA
 S0E23A,EC-10108,HPE ANW EC 10108 SD-WAN Gateway,5588.00,2026-03-01,GA
 S3N73A,EC-S,HPE ANW EC S-P AC NAL SD-WAN GW,13479.00,2026-06-01,GA
 JZ872A,EC-M,Aruba EC-M-H SD-WAN Gateway,21323.00,2026-06-01,GA
-JZ878A,EC-L,Aruba EC-L-H SD-WAN Gateway,34592.00,2022-05-12,GA
-S0B67A,EC-XL,Aruba EC-XL-H-10G SD-WAN Gateway,46664.00,2022-10-03,GA
+JZ878A,EC-L,Aruba EC-L-H SD-WAN Gateway,34592.00,2025-06-01,GA
+S0B67A,EC-XL,Aruba EC-XL-H-10G SD-WAN Gateway,46664.00,2025-06-01,ES
 S2N65A,EC-10150,HPE ANW EC 10150 SD-WAN GW,47304.00,2026-06-01,GA
 R1B20A,Gateway 9004,Aruba 9004 (US) Gateway,2505.00,2026-07-01,GA
 R3V91A,Gateway 9004-LTE,Aruba 9004 (US) LTE Branch Gateway,3247.00,2026-07-01,GA
 R1B31A,Gateway 9012,Aruba 9012 (US) Branch Gateway,4441.00,2026-07-01,GA
 S5H02A,Gateway 9106,HPE ANW 9106 (US) Hybrid Gateway,9228.00,2025-07-07,GA
-R9M45A,Gateway 9114,HPE ANW 9114 Hybrid Gateway (US),19944.00,2023-11-06,GA
+R9M45A,Gateway 9114,HPE ANW 9114 Hybrid Gateway,19944.00,2023-11-06,GA
 R7H95A,Gateway 9240,Aruba 9240 (US) Campus Gateway,37614.00,2022-11-01,GA
 S3N78A,EC-10104,HPE ANW EC 10104 TAA SD-WAN GW,1930.00,2026-03-01,GA
 S3N69A,EC-10104,HPE ANW EC 10104 NAL SD-WAN GW,1685.00,2026-06-01,GA
@@ -39,24 +39,6 @@ S1B81AAS,Suscripcion EdgeConnect Advanced,HPE ANW EC Adv 1Gb 5yr Sub SaaS,32700.
 S1C35AAS,Suscripcion EdgeConnect Advanced,HPE ANW EC ADV AAS UL 1y Sub SaaS,23580.00,2026-06-01,GA
 S1C37AAS,Suscripcion EdgeConnect Advanced,HPE ANW EC Adv UL 3y Sub SaaS,70740.00,2026-06-01,GA
 S1C39AAS,Suscripcion EdgeConnect Advanced,HPE ANW EC Adv UL 5y Sub SaaS,117900.00,2026-06-01,GA
-S1C56AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 100M 1y Sub SaaS,900.00,2026-06-01,GA
-S1A17AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 100Mb 3yr Sub SaaS,2700.00,2026-06-01,GA
-S1A19AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 100Mb 5yr Sub SaaS,4500.00,2026-06-01,GA
-S1A29AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 1Gb 1yr Sub SaaS,1680.00,2026-06-01,GA
-S1A31AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 1Gb 3yr Sub SaaS,5040.00,2026-06-01,GA
-S1A33AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 1Gb 5yr Sub SaaS,8400.00,2026-06-01,GA
-S1A43AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA UL 1yr Sub SaaS,7848.00,2026-06-01,GA
-S1A45AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA UL 3yr Sub SaaS,23544.00,2026-06-01,GA
-S1A77AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA UL 5yr Sub SaaS,39240.00,2026-06-01,GA
-S1B41AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 100M 1y Sub SaaS,1848.00,2026-06-01,GA
-S1B43AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 100Mb 3yr Sub SaaS,5544.00,2026-06-01,GA
-S1B45AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 100Mb 5yr Sub SaaS,9240.00,2026-06-01,GA
-S1B84AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 1Gb 1yr Sub SaaS,6540.00,2026-06-01,GA
-S1B86AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 1Gb 3yr Sub SaaS,19620.00,2026-06-01,GA
-S1B88AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 1Gb 5yr Sub SaaS,32700.00,2026-06-01,GA
-S1C42AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA UL 1yr Sub SaaS,23580.00,2026-06-01,GA
-S1C44AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA UL 3yr Sub SaaS,70740.00,2026-06-01,GA
-S1C46AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA UL 5yr Sub SaaS,117900.00,2026-06-01,GA
 S1B99AAS,Suscripcion EdgeConnect On-Premises,HPE ANW EC ONP 100M 1y E-STU,1932.00,2026-06-01,GA
 S1C01AAS,Suscripcion EdgeConnect On-Premises,HPE ANW EC ONP 100M 3y E-STU,5796.00,2026-06-01,GA
 S1C03AAS,Suscripcion EdgeConnect On-Premises,HPE ANW EC ONP 100M 5y E-STU,9660.00,2026-06-01,GA
@@ -66,6 +48,24 @@ S0Y11AAS,Suscripcion EdgeConnect On-Premises,HPE ANW EC ONP 1Gb 5yr Sub E-STU,34
 S0Z57AAS,Suscripcion EdgeConnect On-Premises,HPE ANW EC ONP UL 1y E-STU,24744.00,2026-06-01,GA
 S0Z59AAS,Suscripcion EdgeConnect On-Premises,HPE ANW EC ONP UL 3y E-STU,74232.00,2026-06-01,GA
 S0Z61AAS,Suscripcion EdgeConnect On-Premises,HPE ANW EC ONP UL 5y E-STU,123720.00,2026-06-01,GA
+S1C56AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 100Mb 1yr Sub SaaS,900.00,2026-06-01,GA
+S1A17AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 100Mb 3yr Sub SaaS,2700.00,2026-06-01,GA
+S1A19AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 100Mb 5yr Sub SaaS,4500.00,2026-06-01,GA
+S1A29AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 1Gb 1yr Sub SaaS,1680.00,2026-06-01,GA
+S1A31AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 1Gb 3yr Sub SaaS,5040.00,2026-06-01,GA
+S1A33AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 1Gb 5yr Sub SaaS,8400.00,2026-06-01,GA
+S1A43AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA UL 1yr Sub SaaS,7848.00,2026-06-01,GA
+S1A45AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA UL 3yr Sub SaaS,23544.00,2026-06-01,GA
+S1A77AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA UL 5yr Sub SaaS,39240.00,2026-06-01,GA
+S1B41AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 100Mb 1yr Sub SaaS,1848.00,2026-06-01,GA
+S1B43AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 100Mb 3yr Sub SaaS,5544.00,2026-06-01,GA
+S1B45AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 100Mb 5yr Sub SaaS,9240.00,2026-06-01,GA
+S1B84AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 1Gb 1yr Sub SaaS,6540.00,2026-06-01,GA
+S1B86AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 1Gb 3yr Sub SaaS,19620.00,2026-06-01,GA
+S1B88AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 1Gb 5yr Sub SaaS,32700.00,2026-06-01,GA
+S1C42AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA UL 1yr Sub SaaS,23580.00,2026-06-01,GA
+S1C44AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA UL 3yr Sub SaaS,70740.00,2026-06-01,GA
+S1C46AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA UL 5yr Sub SaaS,117900.00,2026-06-01,GA
 S0Z71AAS,Boost EdgeConnect (SaaS),HPE ANW EC Boost AAS 100M 1y Sub SaaS,6552.00,2026-06-01,GA
 S0Z73AAS,Boost EdgeConnect (SaaS),HPE ANW EC Boost 100Mb 3yr Sub SaaS,19656.00,2026-06-01,GA
 S0Z75AAS,Boost EdgeConnect (SaaS),HPE ANW EC Boost 100Mb 5yr Sub SaaS,32760.00,2026-06-01,GA
@@ -108,13 +108,22 @@ JL748A,Accesorios EdgeConnect y gateways,Aruba 10G SFP+ LC SR 300m MMF TAA XCVR,
 J9281D,Accesorios EdgeConnect y gateways,Aruba 10G SFP+ to SFP+ 1m DAC Cable,262.00,2023-04-01,GA
 J9283D,Accesorios EdgeConnect y gateways,Aruba 10G SFP+ to SFP+ 3m DAC Cable,359.00,2022-11-01,GA
 J9285D,Accesorios EdgeConnect y gateways,Aruba 10G SFP+ to SFP+ 7m DAC Cable,490.00,2022-11-01,GA
+JM534A,Accesorios EdgeConnect y gateways,Aruba EC-SFP-LR Single Mode SFP+,980.00,2025-06-01,GA
+JM535A,Accesorios EdgeConnect y gateways,Aruba EC-SFP-SR Multi Mode SFP+,657.00,2025-06-01,GA
+JL563C,Accesorios EdgeConnect y gateways,HPE ANW 10GBASE-T SFP+ RJ45 30m XCVR,1982.00,2024-05-06,GA
+JL749A,Accesorios EdgeConnect y gateways,Aruba 10G SFP+ LC LR 10km SMF TAA XCVR,7318.00,2022-11-01,GA
 JL484A,Accesorios EdgeConnect y gateways,Aruba 25G SFP28 LC SR 100m MMF XCVR,1846.00,2022-11-01,GA
 JL485A,Accesorios EdgeConnect y gateways,Aruba 25G SFP28 LC eSR 400m MMF XCVR,2245.00,2023-04-01,GA
 JL486A,Accesorios EdgeConnect y gateways,Aruba 25G SFP28 LC LR 10km SMF XCVR,5927.00,2022-11-01,GA
 JL487A,Accesorios EdgeConnect y gateways,Aruba 25G SFP28 to SFP28 0.65m DAC Cable,329.00,2022-11-01,GA
 JL488A,Accesorios EdgeConnect y gateways,Aruba 25G SFP28 to SFP28 3m DAC Cable,466.00,2022-11-01,GA
 JL489A,Accesorios EdgeConnect y gateways,Aruba 25G SFP28 to SFP28 5m DAC Cable,614.00,2022-11-01,GA
+JM532A,Accesorios EdgeConnect y gateways,Aruba EC-SFP28-25G-LR Single Mode SFP28,2608.00,2025-06-01,GA
+JM533A,Accesorios EdgeConnect y gateways,Aruba EC-SFP28-25G-SR Multi Mode SFP28,1471.00,2025-06-01,GA
+S2N63A,Accesorios EdgeConnect y gateways,HPE ANW 25G LR SFP28 LC 10km TAA XCVR,10259.00,2024-04-01,GA
 S2N67A,Accesorios EdgeConnect y gateways,HPE ANW EC 10150/10170 NM,9096.00,2025-05-05,GA
+S3R70A,Accesorios EdgeConnect y gateways,HPE ANW EC 10010 1.6TB NM Spare Drive,4668.00,2025-05-05,GA
+S3P35A,Accesorios EdgeConnect y gateways,HPE ANW EC 10012 480GB NVMe Boot Drv Kit,6463.00,2025-05-05,GA
 JZ889A,Accesorios EdgeConnect y gateways,Aruba EC-L/XL-H SSD,1207.00,2025-06-01,GA
 R7J63A,Accesorios EdgeConnect y gateways,9240 550W AC Power supply,747.00,2023-04-01,GA
 JM779A,Accesorios EdgeConnect y gateways,Aruba EC-S-P AC PSU,1100.00,2025-06-01,GA
@@ -125,6 +134,10 @@ R4X13A,Accesorios EdgeConnect y gateways,Aruba 9012-MNT-19 Spare Rack Mount Kit,
 JZ888A,Accesorios EdgeConnect y gateways,Aruba EC-L/XL-H Center Mount Kit,1043.00,2025-06-01,GA
 JZ893A,Accesorios EdgeConnect y gateways,Aruba EC-S-P Accesssory Kit,296.00,2025-06-01,GA
 JZ894A,Accesorios EdgeConnect y gateways,Aruba EC-M-H Accessory Kit,296.00,2025-06-01,GA
+S2D96A,Accesorios EdgeConnect y gateways,HPE ANW EC-10108/EC-10106 Accessory Kit,120.00,2025-06-01,GA
+S2D95A,Accesorios EdgeConnect y gateways,HPE ANW EC-10108/EC-10106 54V PA,345.00,2025-06-01,GA
+JM965A,Accesorios EdgeConnect y gateways,Aruba EC-XS A1 Accessory Kit,365.00,2025-06-01,GA
+JM996A,Accesorios EdgeConnect y gateways,Aruba EC-XS A1 Power Adapter,296.00,2025-06-01,GA
 S2N64A,Accesorios EdgeConnect y gateways,HPE ANW 9114 Spare Fan Tray,182.00,2024-04-01,GA
 JY728A,Accesorios EdgeConnect y gateways,AP-CBL-SERU Console Adapter Cable,36.00,2022-11-01,GA
 S1H24AR,Accesorios EdgeConnect y gateways,Aruba 9240 1G SFP RJ45 T 100m Reman XCVR,353.00,2026-05-11,GA

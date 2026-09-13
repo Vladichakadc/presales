@@ -234,14 +234,15 @@ test('el overhead FEC esta anclado a los ratios oficiales del VSG (1:8 y 1:4)', 
 // SKU en fin de venta (PLC «ES») ofertado, o una discrepancia de precio entre el
 // catálogo maestro y el CSV del cotizador (dos vistas de la MISMA fuente).
 
-test('el catálogo maestro cubre los 40 accesorios extraídos de la lista oficial', () => {
+test('el catálogo maestro cubre los 53 accesorios extraídos de la lista oficial', () => {
   const skus = Object.keys(ARUBA_ACCESSORY_CATALOG);
-  assert.strictEqual(skus.length, 40, `se esperaban 40 SKUs de la lista oficial, hay ${skus.length}`);
+  assert.strictEqual(skus.length, 53, `se esperaban 53 SKUs de la lista oficial, hay ${skus.length}`);
   for (const obligatorio of ['S3R03A', 'J4858D', 'J4859D', 'J4860D', 'JL745A', 'JL746A',
     'JL747A', 'JL747B', 'J9150D', 'J9151E', 'J9153D', 'JL748A', 'J9281D', 'J9283D', 'J9285D',
-    'JL484A', 'JL485A', 'JL486A', 'JL487A', 'JL488A', 'JL489A',
-    'S2N67A', 'JZ889A', 'R7J63A', 'JM779A', 'JZ955A', 'R1B30A', 'R3W17A', 'R4X13A',
-    'JZ888A', 'JZ893A', 'JZ894A', 'S2N64A', 'JY728A', 'S1H24AR',
+    'JM534A', 'JM535A', 'JL563C', 'JL749A',
+    'JL484A', 'JL485A', 'JL486A', 'JL487A', 'JL488A', 'JL489A', 'JM532A', 'JM533A', 'S2N63A',
+    'S2N67A', 'S3R70A', 'S3P35A', 'JZ889A', 'R7J63A', 'JM779A', 'JZ955A', 'R1B30A', 'R3W17A', 'R4X13A',
+    'JZ888A', 'JZ893A', 'JZ894A', 'S2D96A', 'S2D95A', 'JM965A', 'JM996A', 'S2N64A', 'JY728A', 'S1H24AR',
     'JW084A', 'JX934A', 'JW085A', 'JW086A', 'JW107A']) {
     assert.ok(ARUBA_ACCESSORY_CATALOG[obligatorio], `falta el SKU ${obligatorio} de la lista oficial`);
   }
@@ -279,30 +280,61 @@ test('ningún SKU en fin de venta (PLC «ES») se oferta en la matriz', () => {
   }
 });
 
-test('el módulo S2N67A («EC 10150/10170 NM») solo se ofrece en EC-10150', () => {
-  // La lista oficial lo describe como módulo del 10150/10170 y el 10170 no está en
-  // este catálogo. EC-10106/10108 no tienen kit de almacenamiento en la lista — el
-  // requisito de Boost en esos modelos queda en PENDIENTES.md, no se inventa un SKU.
-  for (const [modelo, cfg] of Object.entries(ACCESSORY_COMPAT)) {
-    assert.strictEqual(cfg.items.includes('S2N67A'), modelo === 'EC-10150',
-      `S2N67A en ${modelo}: la lista oficial dice «EC 10150/10170 NM»`);
+test('el tren Network Memory del EC-10150 (S2N67A y sus repuestos) solo se ofrece ahí', () => {
+  // QuickSpecs EC v18 + Install Guide: S2N67A es el «10150/10170 1.6TB Network Memory
+  // Drive Kit» (Boost hasta 8 Gbps con él) y S3R70A/S3P35A sus repuestos; el 10170 no
+  // está en este catálogo. EC-10106/10108 NO tienen slot (HRG Rev S: SSD interno de
+  // 120 GB no reemplazable) — no existe kit para ellos y no se inventa.
+  for (const sku of ['S2N67A', 'S3R70A', 'S3P35A']) {
+    for (const [modelo, cfg] of Object.entries(ACCESSORY_COMPAT)) {
+      assert.strictEqual(cfg.items.includes(sku), modelo === 'EC-10150',
+        `${sku} en ${modelo}: el tren Network Memory es específico del EC-10150/10170`);
+    }
   }
 });
 
-test('las ópticas 1G solo se certifican en EC-10106 (regla VSG), salvo la del 9240', () => {
-  // VSG EdgeConnect oficial (fase 11): 1G solo EC-10106. Las variantes de la lista
-  // (J4860D, TAA JL745A/JL746A/JL747B, cobre S3R03A) siguen la misma regla por
-  // inferencia declarada. Única excepción: S1H24AR, cobre 1G ESPECÍFICO del 9240
-  // (su descripción oficial lo dice) — va solo al 9240.
-  const g1 = ['S3R03A', 'J4858D', 'J4859D', 'J4860D', 'JL745A', 'JL746A', 'JL747B'];
-  for (const [modelo, cfg] of Object.entries(ACCESSORY_COMPAT)) {
-    for (const sku of g1) {
-      assert.strictEqual(cfg.items.includes(sku), modelo === 'EC-10106',
-        `${sku} en ${modelo}: la regla VSG 1G dice solo EC-10106`);
+test('la matriz de ópticas reproduce la compatibilidad oficial citada (2026-09-13)', () => {
+  // Codifica la matriz del bloque de comentarios de ACCESSORY_COMPAT: VSG SD-Branch,
+  // HRG Rev S, QuickSpecs EC v18 y 9200 v14. Cada SKU va EXACTAMENTE donde la fuente
+  // oficial lo certifica — ni una plataforma más (inferencia) ni una menos.
+  const matriz = {
+    S3R03A: ['EC-10106'],                                  // 1G cobre EC (VSG/HRG)
+    J4858D: ['EC-10106', 'Gateway 9240'],                  // 1G SX (VSG/HRG + QS 9200)
+    J4859D: ['EC-10106', 'Gateway 9240'],                  // 1G LX (ídem)
+    J4860D: [],                                            // sin matriz oficial: no se oferta
+    JL745A: ['EC-10106', 'EC-M', 'EC-L', 'EC-XL', 'Gateway 9240'],   // 1G SX TAA (HRG + QS 9200)
+    JL746A: ['EC-10106', 'EC-M', 'EC-L', 'EC-XL', 'Gateway 9240'],   // 1G LX TAA (ídem)
+    JL747B: [],                                            // HRG: NO soportado en toda la línea EC
+    S1H24AR: ['Gateway 9240'],                             // cobre 1G específico del 9240
+    J9150D: ['EC-10106', 'EC-10108', 'EC-10150', 'EC-L', 'EC-XL', 'Gateway 9240'],
+    J9151E: ['EC-10106', 'EC-10108', 'EC-10150', 'EC-L', 'EC-XL', 'Gateway 9240'],
+    J9153D: ['EC-10106', 'Gateway 9240'],                  // VSG: NO en EC-10108/10150
+    JL748A: ['EC-10106', 'EC-10108', 'EC-10150', 'EC-S', 'EC-M', 'EC-L', 'EC-XL'], // 10G SR TAA (HRG); 9240 sin confirmar
+    JL749A: ['EC-10108', 'EC-10150', 'EC-S', 'EC-M', 'EC-L', 'EC-XL', 'Gateway 9240'], // 10G LR TAA (HRG + QS 9200)
+    J9281D: ['EC-10106', 'EC-10108', 'EC-10150', 'Gateway 9240'],    // DAC 10G 1m (HRG + QS 9200)
+    J9283D: ['EC-10106', 'EC-10108', 'EC-10150', 'Gateway 9240'],    // DAC 10G 3m (ídem)
+    J9285D: ['Gateway 9240'],                              // DAC 10G 7m: solo 9200 lo certifica
+    JL563C: ['EC-10108', 'EC-10150'],                      // 10GBASE-T (VSG)
+    JM534A: ['EC-S', 'EC-M', 'EC-L', 'EC-XL'],             // EC-SFP-LR línea anterior (HRG/QS)
+    JM535A: ['EC-S', 'EC-M', 'EC-L', 'EC-XL'],             // EC-SFP-SR línea anterior (ídem)
+    JL484A: ['EC-10108', 'EC-10150', 'Gateway 9240'],      // 25G SR (VSG + QS 9200)
+    JL485A: ['Gateway 9240'],                              // 25G eSR: solo 9200 confirmado
+    JL486A: ['EC-10108', 'EC-10150', 'Gateway 9240'],      // 25G LR (VSG + QS 9200)
+    JL487A: ['Gateway 9240'],                              // DAC 25G 0,65m: solo 9200 confirmado
+    JL488A: ['Gateway 9240'],                              // DAC 25G 3m: ídem
+    JL489A: ['EC-10108', 'EC-10150', 'Gateway 9240'],      // DAC 25G 5m (VSG + QS 9200)
+    JM532A: ['EC-10150'],                                  // EC-SFP28-25G-LR (QS hub)
+    JM533A: ['EC-10150'],                                  // EC-SFP28-25G-SR (ídem)
+    S2N63A: ['EC-10150'],                                  // 25G LR TAA (HRG)
+  };
+  const modelos = new Set(Object.keys(ACCESSORY_COMPAT));
+  for (const [sku, esperados] of Object.entries(matriz)) {
+    for (const modelo of modelos) {
+      assert.strictEqual(cfg_items(modelo).includes(sku), esperados.includes(modelo),
+        `${sku} en ${modelo}: la matriz oficial dice ${esperados.includes(modelo) ? 'SÍ' : 'NO'} (certificados: ${esperados.join(', ') || 'ninguno'})`);
     }
-    assert.strictEqual(cfg.items.includes('S1H24AR'), modelo === 'Gateway 9240',
-      `S1H24AR en ${modelo}: es específico del 9240 según la lista oficial`);
   }
+  function cfg_items(modelo) { return ACCESSORY_COMPAT[modelo].items; }
 });
 
 test('PSU, racks y fan tray van solo a su equipo (lista oficial)', () => {
@@ -314,12 +346,21 @@ test('PSU, racks y fan tray van solo a su equipo (lista oficial)', () => {
     S2N64A: 'Gateway 9114',   // 9114 Spare Fan Tray
     JM779A: 'EC-S',           // EC-S-P AC PSU
     JZ955A: 'EC-M',           // EC-M-H PSU
+    JM965A: 'EC-XS',          // EC-XS A1 Accessory Kit
+    JM996A: 'EC-XS',          // EC-XS A1 Power Adapter
     JW084A: '7005', JX934A: '7008', JW085A: '7010', JW086A: '7030',
   };
   for (const [sku, dueno] of Object.entries(exclusivos)) {
     for (const [modelo, cfg] of Object.entries(ACCESSORY_COMPAT)) {
       assert.strictEqual(cfg.items.includes(sku), modelo === dueno,
         `${sku} en ${modelo}: la lista oficial lo ata a ${dueno}`);
+    }
+  }
+  // Compartidos EC-10106/10108 (QuickSpecs EC v18 + Accessories Guide Rev F):
+  for (const sku of ['S2D96A', 'S2D95A']) {
+    for (const [modelo, cfg] of Object.entries(ACCESSORY_COMPAT)) {
+      assert.strictEqual(cfg.items.includes(sku), ['EC-10106', 'EC-10108'].includes(modelo),
+        `${sku} en ${modelo}: la fuente oficial lo ata a EC-10106/10108`);
     }
   }
   // Compartidos declarados: JZ889A/JZ888A (EC-L y EC-XL) y JW107A (serie 7200).

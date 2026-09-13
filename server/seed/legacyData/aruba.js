@@ -851,6 +851,14 @@ const ARUBA_ACCESSORY_CATALOG = {
   J9281D: { name: 'Aruba 10G SFP+ to SFP+ 1m DAC Cable', speed: '10G', media: 'DAC', reach: '1m', listPrice: 262, vigencia: '2023-04-01', plc: 'GA' },
   J9283D: { name: 'Aruba 10G SFP+ to SFP+ 3m DAC Cable', speed: '10G', media: 'DAC', reach: '3m', listPrice: 359, vigencia: '2022-11-01', plc: 'GA' },
   J9285D: { name: 'Aruba 10G SFP+ to SFP+ 7m DAC Cable', speed: '10G', media: 'DAC', reach: '7m', listPrice: 490, vigencia: '2022-11-01', plc: 'GA' },
+  // Ópticas marca EdgeConnect (línea anterior EC-S/M/L/XL) y 10G cobre/TAA — añadidas
+  // 2026-09-13 tras cruzar la matriz oficial (HRG Rev S + QuickSpecs EC v18) con la
+  // lista: JM534A/JM535A son los «EC-SFP-LR/SR» del Hardware Reference; JL563C es el
+  // 10GBASE-T que el VSG certifica en EC-10108/10150; JL749A es el LR TAA del 9200.
+  JM534A: { name: 'Aruba EC-SFP-LR Single Mode SFP+', speed: '10G', media: 'SMF', reach: '10km', listPrice: 980, vigencia: '2025-06-01', plc: 'GA' },
+  JM535A: { name: 'Aruba EC-SFP-SR Multi Mode SFP+', speed: '10G', media: 'MMF', reach: '300m', listPrice: 657, vigencia: '2025-06-01', plc: 'GA' },
+  JL563C: { name: 'HPE ANW 10GBASE-T SFP+ RJ45 30m XCVR', speed: '10G', media: 'COPPER', reach: '30m', listPrice: 1982, vigencia: '2024-05-06', plc: 'GA' },
+  JL749A: { name: 'Aruba 10G SFP+ LC LR 10km SMF TAA XCVR', speed: '10G', media: 'SMF_TAA', reach: '10km', listPrice: 7318, vigencia: '2022-11-01', plc: 'GA' },
   // ── Transceptores y DAC 25G SFP28 (EC-10150 y Gateway 9240) ──
   JL484A: { name: 'Aruba 25G SFP28 LC SR 100m MMF XCVR', speed: '25G', media: 'MMF', reach: '100m', listPrice: 1846, vigencia: '2022-11-01', plc: 'GA' },
   JL485A: { name: 'Aruba 25G SFP28 LC eSR 400m MMF XCVR', speed: '25G', media: 'MMF', reach: '400m', listPrice: 2245, vigencia: '2023-04-01', plc: 'GA' },
@@ -858,8 +866,24 @@ const ARUBA_ACCESSORY_CATALOG = {
   JL487A: { name: 'Aruba 25G SFP28 to SFP28 0.65m DAC Cable', speed: '25G', media: 'DAC', reach: '0.65m', listPrice: 329, vigencia: '2022-11-01', plc: 'GA' },
   JL488A: { name: 'Aruba 25G SFP28 to SFP28 3m DAC Cable', speed: '25G', media: 'DAC', reach: '3m', listPrice: 466, vigencia: '2022-11-01', plc: 'GA' },
   JL489A: { name: 'Aruba 25G SFP28 to SFP28 5m DAC Cable', speed: '25G', media: 'DAC', reach: '5m', listPrice: 614, vigencia: '2022-11-01', plc: 'GA' },
+  // 25G marca EdgeConnect (EC-XL-H y hubs EC-10150) y TAA — cruce 2026-09-13:
+  // JM532A/JM533A son los «EC-SFP28-25G-LR/SR» del QuickSpecs EC (Hub Gateways
+  // Options); S2N63A es el 25G LR TAA de la matriz HRG Rev S.
+  JM532A: { name: 'Aruba EC-SFP28-25G-LR Single Mode SFP28', speed: '25G', media: 'SMF', reach: '10km', listPrice: 2608, vigencia: '2025-06-01', plc: 'GA' },
+  JM533A: { name: 'Aruba EC-SFP28-25G-SR Multi Mode SFP28', speed: '25G', media: 'MMF', reach: '100m', listPrice: 1471, vigencia: '2025-06-01', plc: 'GA' },
+  S2N63A: { name: 'HPE ANW 25G LR SFP28 LC 10km TAA XCVR', speed: '25G', media: 'SMF_TAA', reach: '10km', listPrice: 10259, vigencia: '2024-04-01', plc: 'GA' },
   // ── Almacenamiento, fuentes, montaje y consola ──
-  S2N67A: { name: 'HPE ANW EC 10150/10170 NM', category: 'MODULE', listPrice: 9096, vigencia: '2025-05-05', plc: 'GA' },
+  // S2N67A: «NM» = NETWORK MEMORY, no «network module». El QuickSpecs EC v18 y la
+  // Install Guide del EC-10150 lo describen como «EdgeConnect 10150/10170 1.6TB
+  // Network Memory Drive Kit» (2x SSD NVMe): con él, WAN Optimization (Boost) llega
+  // a 8 Gbps en el EC-10150; sin él, 1 Gbps. Corregido 2026-09-13 — la lectura
+  // anterior («módulo de red») era una inferencia refutada por la fuente oficial.
+  S2N67A: { name: 'HPE ANW EC 10150/10170 NM', category: 'STORAGE', listPrice: 9096, vigencia: '2025-05-05', plc: 'GA' },
+  // Repuestos del tren de almacenamiento del EC-10150/10170 (misma fuente y cruce):
+  // S3R70A es el disco Network Memory de repuesto del kit S2N67A; S3P35A es el NVMe
+  // de arranque del EC-10012. Se ofertan solo en EC-10150.
+  S3R70A: { name: 'HPE ANW EC 10010 1.6TB NM Spare Drive', category: 'STORAGE', listPrice: 4668, vigencia: '2025-05-05', plc: 'GA' },
+  S3P35A: { name: 'HPE ANW EC 10012 480GB NVMe Boot Drv Kit', category: 'STORAGE', listPrice: 6463, vigencia: '2025-05-05', plc: 'GA' },
   JZ889A: { name: 'Aruba EC-L/XL-H SSD', category: 'STORAGE', listPrice: 1207, vigencia: '2025-06-01', plc: 'GA' },
   R7J63A: { name: '9240 550W AC Power supply', category: 'PSU', listPrice: 747, vigencia: '2023-04-01', plc: 'GA' },
   JM779A: { name: 'Aruba EC-S-P AC PSU', category: 'PSU', listPrice: 1100, vigencia: '2025-06-01', plc: 'GA' },
@@ -870,6 +894,14 @@ const ARUBA_ACCESSORY_CATALOG = {
   JZ888A: { name: 'Aruba EC-L/XL-H Center Mount Kit', category: 'MOUNT', listPrice: 1043, vigencia: '2025-06-01', plc: 'GA' },
   JZ893A: { name: 'Aruba EC-S-P Accesssory Kit', category: 'KIT', listPrice: 296, vigencia: '2025-06-01', plc: 'GA' },
   JZ894A: { name: 'Aruba EC-M-H Accessory Kit', category: 'KIT', listPrice: 296, vigencia: '2025-06-01', plc: 'GA' },
+  // EC-10106/10108 y EC-XS (cruce 2026-09-13, QuickSpecs EC v18 + Hardware
+  // Accessories Guide PN 201911 Rev F): kit de accesorios (rack, pared y cables)
+  // y adaptador de corriente de repuesto. Cierran el pendiente de accesorios
+  // propios del EC-XS y de fuente/kit de la línea 101xx pequeña.
+  S2D96A: { name: 'HPE ANW EC-10108/EC-10106 Accessory Kit', category: 'KIT', listPrice: 120, vigencia: '2025-06-01', plc: 'GA' },
+  S2D95A: { name: 'HPE ANW EC-10108/EC-10106 54V PA', category: 'PSU', listPrice: 345, vigencia: '2025-06-01', plc: 'GA' },
+  JM965A: { name: 'Aruba EC-XS A1 Accessory Kit', category: 'KIT', listPrice: 365, vigencia: '2025-06-01', plc: 'GA' },
+  JM996A: { name: 'Aruba EC-XS A1 Power Adapter', category: 'PSU', listPrice: 296, vigencia: '2025-06-01', plc: 'GA' },
   S2N64A: { name: 'HPE ANW 9114 Spare Fan Tray', category: 'FAN', listPrice: 182, vigencia: '2024-04-01', plc: 'GA' },
   JY728A: { name: 'AP-CBL-SERU Console Adapter Cable', category: 'CABLE', listPrice: 36, vigencia: '2022-11-01', plc: 'GA' },
   S1H24AR: { name: 'Aruba 9240 1G SFP RJ45 T 100m Reman XCVR', speed: '1G', media: 'COPPER', reach: '100m', listPrice: 353, vigencia: '2026-05-11', plc: 'GA' },
@@ -881,43 +913,63 @@ const ARUBA_ACCESSORY_CATALOG = {
   JW107A: { name: 'Aruba SPR-RK-MNT 7200/S3500 Rk Mount', category: 'MOUNT', listPrice: 106, vigencia: '2022-11-01', plc: 'GA' },
 };
 
-// Matriz modelo → accesorios ofertables. Procedencia de cada regla:
-//   · VSG EdgeConnect oficial (fase 11): las ópticas 1G (fibra y cobre) solo se
-//     certifican en EC-10106; 10G (J9150D/J9151E) y DAC 10G (J9281D/J9283D) en
-//     EC-10106/10108/10150; EC-10104 no tiene ranuras SFP; 9240 = 4x SFP28.
-//   · Lista de precios oficial (2026-09-13): existencia, descripción, List Price,
-//     vigencia y PLC de cada SKU — y de ella salen los accesorios de EC-S/M/L/XL,
-//     los racks 9004/9004-LTE/9012 y el fan tray del 9114 (ampliación pedida por
-//     el dueño: «amplía el catálogo maestro con lo declarado anteriormente»).
-//   · Inferencia por familia (marcada): J4860D y las TAA (JL745A/JL746A/JL747B) van
-//     donde van los 1G; J9153D, JL748A y J9285D donde van los 10G. Confirmar con
-//     el distribuidor.
+// Matriz modelo → accesorios ofertables. REESCRITA 2026-09-13 contra la matriz
+// oficial de transceptores, cruzada con la lista de precios (pedido del dueño:
+// «busca en la web los accesorios y compáralo con los SKU de la lista de precios»).
+// Fuentes oficiales citadas (todas HPE/Aruba, consultadas 2026-09-13):
+//   · VSG SD-Branch — Reference Architecture EdgeConnect (tabla de transceptores).
+//   · EdgeConnect Hardware Reference Guide Rev S (dic-2025), cap. «Pluggable
+//     Transceivers in EdgeConnect» — matriz por plataforma, incl. TAA y DAC.
+//   · EdgeConnect SD-WAN QuickSpecs v18 y 9200 Series Gateways QuickSpecs v14.
+//   · EC-10150 Install Guide (8 jaulas «1G SFP o 10G SFP+ o 25G SFP28»).
+//   · EdgeConnect Hardware Accessories Guide PN 201911 Rev F (kits y PSU).
+// Reglas que quedaron REFUTADAS por la fuente oficial y se corrigen aquí:
+//   · JL747B (1G cobre TAA): el HRG lo marca NO soportado en TODA la línea EC —
+//     sale de la matriz (queda en catálogo para trazabilidad, como JL747A).
+//   · J4860D (1G LH 70km) y J9285D (DAC 10G 7m): no aparecen en NINGUNA matriz EC
+//     — salen de la oferta EdgeConnect (J9285D sí está certificado en el 9240).
+//   · J9153D (10G ER 40km): el VSG lo certifica en EC-10106 pero NO en
+//     EC-10108/10150 — se retira de esos dos modelos.
+//   · JL485A/JL487A/JL488A (25G eSR y DAC 0,65/3 m): sin confirmación oficial en
+//     EC-10150 — se retiran de ese modelo (siguen certificados en el 9240).
+// Confirmaciones nuevas que AMPLÍAN la oferta:
+//   · EC-10108 sí acepta 25G (VSG: JL484A/JL486A/JL489A) y 10G cobre (JL563C).
+//   · EC-10150: JM532A/JM533A (EC-SFP28-25G), S2N63A (25G TAA) y JL563C (VSG/HRG).
+//   · Línea anterior: JM534A/JM535A (EC-SFP-LR/SR) en EC-S/M/L/XL; JL745A/JL746A/
+//     JL748A/JL749A según columna HRG (EC-M-H, EC-L-H, EC-XL-H-10G; en EC-S-P solo
+//     las 10G TAA). EC-XS no tiene ranuras de fibra (HRG) — solo kit y adaptador.
+//   · 9240: las ópticas 1G/10G del QuickSpecs 9200 v14 se añaden a las 25G y a la
+//     PSU que ya estaban (S1H24AR sigue siendo el cobre 1G específico).
+//   · S2N67A es el Network Memory Drive Kit del EC-10150 (Boost hasta 8 Gbps con
+//     él; 1 Gbps sin él — QuickSpecs v18 + Install Guide). S3R70A/S3P35A son sus
+//     repuestos oficiales. EC-10106/10108 NO tienen slot de almacenamiento
+//     (HRG Rev S: SSD interno de 120 GB no reemplazable) — Boost corre sobre el
+//     SSD interno hasta 250/500 Mbps; no existe kit y no se inventa.
+//   · 1G en EC-10108/10150: CONFLICTO documental oficial (VSG dice NO; HRG Rev S
+//     e Install Guide dicen SÍ con restricciones de puerto). Decisión de la casa:
+//     no se ofertan hasta que el distribuidor/HPE desempate — queda en PENDIENTES.
 //   · Un SKU en PLC «ES» NUNCA entra en la matriz (JL747A queda solo en catálogo).
-//   · S2N67A solo en EC-10150: la lista lo describe como «EC 10150/10170 NM» y el
-//     10170 no está en este catálogo. EC-10106/10108 no tienen kit de almacenamiento
-//     en la lista — el requisito de Boost en esos modelos queda en PENDIENTES.md.
 //   · Consola JY728A (AP-CBL-SERU) en el hardware de generación actual; los legacy
-//     7000/7200 solo ofrecen su rack de parque instalado (su consola RJ45-DB9 no
-//     está validada para este catálogo).
+//     7000/7200 solo ofrecen su rack de parque instalado.
 const ACCESSORY_COMPAT = {
   'EC-10104': { items: ['JY728A'],
-    nota: 'Sin ranuras SFP (4x RJ45 — VSG). Solo cable de consola.' },
-  'EC-10106': { items: ['S3R03A','J4858D','J4859D','J4860D','JL745A','JL746A','JL747B','J9150D','J9151E','J9153D','JL748A','J9281D','J9283D','J9285D','JY728A'],
-    nota: '2 ranuras SFP 1G + 2 SFP+ 10G (VSG). Fuente externa única: sin opción de 2ª PSU.' },
-  'EC-10108': { items: ['J9150D','J9151E','J9153D','JL748A','J9281D','J9283D','J9285D','JY728A'],
-    nota: '4 ranuras SFP+ 10G (VSG) — la tabla oficial NO certifica ópticas 1G en este modelo. Fuente externa única: sin opción de 2ª PSU.' },
-  'EC-10150': { items: ['J9150D','J9151E','J9153D','JL748A','J9281D','J9283D','J9285D','JL484A','JL485A','JL486A','JL487A','JL488A','JL489A','S2N67A','JY728A'],
-    nota: '8 ranuras SFP+/SFP28 1/10/25G (VSG). Lleva 2 PSU redundantes y 2 SSD NVMe de sistema de fábrica; el módulo S2N67A («EC 10150/10170 NM») es la ampliación oficial.' },
-  'EC-XS': { items: ['JY728A'],
-    nota: 'Sin accesorios propios en la lista de precios oficial — solo cable de consola. Confirmar transceptores con el distribuidor.' },
-  'EC-S': { items: ['JM779A','JZ893A','JY728A'],
-    nota: 'Sin matriz de ópticas validada. JM779A es la PSU AC de la variante EC-S-P (1+1); JZ893A es su kit de accesorios oficial.' },
-  'EC-M': { items: ['JZ955A','JZ894A','JY728A'],
-    nota: 'Sin matriz de ópticas validada. JZ955A es la PSU de la variante EC-M-H; JZ894A su kit de accesorios oficial.' },
-  'EC-L': { items: ['JZ889A','JZ888A','JY728A'],
-    nota: 'Sin matriz de ópticas validada. JZ889A es el SSD oficial de la variante EC-L-H (almacén Boost); JZ888A su kit de montaje central.' },
-  'EC-XL': { items: ['JZ889A','JZ888A','JY728A'],
-    nota: 'FIN DE VENTA (último pedido 2026-03-31) — accesorios de parque instalado: SSD JZ889A y montaje central JZ888A de la variante EC-XL-H.' },
+    nota: 'Sin ranuras SFP (4x RJ45 — VSG y HRG Rev S). Solo cable de consola.' },
+  'EC-10106': { items: ['S3R03A','J4858D','J4859D','JL745A','JL746A','J9150D','J9151E','J9153D','JL748A','J9281D','J9283D','S2D96A','S2D95A','JY728A'],
+    nota: '2x SFP+ 1/10G + 2x combo (VSG/HRG; 1G solo en wan0/wan1). S2D96A es su kit oficial (rack/pared/cables) y S2D95A su adaptador 54 V de repuesto. Sin slot de almacenamiento: Boost corre sobre el SSD interno (hasta 250 Mbps).' },
+  'EC-10108': { items: ['J9150D','J9151E','JL748A','JL749A','J9281D','J9283D','JL484A','JL486A','JL489A','JL563C','S2D96A','S2D95A','JY728A'],
+    nota: '2x SFP+ 1/10G + 2x combo (VSG/HRG). El VSG certifica 25G (JL484A/JL486A/JL489A) y 10G cobre (JL563C); 1G está en conflicto documental (VSG no, HRG sí con restricciones) — no se oferta. S2D96A/S2D95A: kit y adaptador oficiales. Boost sobre SSD interno (hasta 500 Mbps).' },
+  'EC-10150': { items: ['J9150D','J9151E','JL748A','JL749A','J9281D','J9283D','JL484A','JL486A','JL489A','JL563C','JM532A','JM533A','S2N63A','S2N67A','S3R70A','S3P35A','JY728A'],
+    nota: '8 jaulas SFP+/SFP28 10/25G (Install Guide; 1G en conflicto documental — no se oferta). S2N67A es el Network Memory Drive Kit: con él Boost llega a 8 Gbps (1 Gbps sin él); S3R70A/S3P35A son sus repuestos. 2 PSU redundantes de fábrica.' },
+  'EC-XS': { items: ['JM965A','JM996A','JY728A'],
+    nota: 'Sin ranuras de fibra (HRG Rev S). JM965A es su kit oficial (adaptador, orejas de rack y cables — las orejas ya van en caja) y JM996A su adaptador de corriente externo de repuesto.' },
+  'EC-S': { items: ['JM779A','JZ893A','JM534A','JM535A','JL748A','JL749A','JY728A'],
+    nota: 'EC-S-P: 4x SFP+ 1/10G. Ópticas oficiales EC-SFP-SR/LR (JM535A/JM534A) y 10G TAA (JL748A/JL749A — HRG); las 1G TAA NO aplican en este modelo. JM779A: PSU AC (1+1); JZ893A: kit de accesorios.' },
+  'EC-M': { items: ['JZ955A','JZ894A','JM534A','JM535A','JL745A','JL746A','JL748A','JL749A','JY728A'],
+    nota: 'EC-M-H: 4x SFP+ 1/10G. Ópticas EC-SFP-SR/LR (JM535A/JM534A) y TAA 1G/10G (JL745A/JL746A/JL748A/JL749A — columna EC-M-P/EC-M-H del HRG). JZ955A: PSU; JZ894A: kit de accesorios.' },
+  'EC-L': { items: ['JZ889A','JZ888A','JM534A','JM535A','J9150D','J9151E','JL745A','JL746A','JL748A','JL749A','JY728A'],
+    nota: 'EC-L-H: 6x SFP+ 1/10G (HRG: no soporta SFP28). Ópticas EC-SFP-SR/LR, Aruba 10G SR/LR (J9150D/J9151E — QuickSpecs hub) y TAA 1G/10G. JZ889A: SSD oficial (Network Memory de Boost); JZ888A: montaje central.' },
+  'EC-XL': { items: ['JZ889A','JZ888A','JM534A','JM535A','J9150D','J9151E','JL745A','JL746A','JL748A','JL749A','JY728A'],
+    nota: 'EC-XL-H-10G: 6x SFP+ 1/10G, misma matriz HRG que EC-L-H. FIN DE VENTA (PLC «ES» del SKU base S0B67A en la lista oficial, vigencia 2025-06-01) — accesorios para parque instalado.' },
   'Gateway 9004': { items: ['R1B30A','JY728A'],
     nota: 'Sin ranuras SFP. Kit de rack 19" oficial R1B30A.' },
   'Gateway 9004-LTE': { items: ['R3W17A','JY728A'],
@@ -928,8 +980,8 @@ const ACCESSORY_COMPAT = {
     nota: 'Sin accesorios propios en la lista de precios oficial — solo cable de consola.' },
   'Gateway 9114': { items: ['S2N64A','JY728A'],
     nota: 'Bandeja de ventiladores de repuesto oficial S2N64A.' },
-  'Gateway 9240': { items: ['S1H24AR','JL484A','JL485A','JL486A','JL487A','JL488A','JL489A','R7J63A','JY728A'],
-    nota: '4 ranuras SFP28 1/10/25G (datasheet). 1+1 PSU: la 2ª fuente es la R7J63A (550 W). El cobre 1G S1H24A nuevo no figura en la lista — se ofrece el reman S1H24AR.' },
+  'Gateway 9240': { items: ['S1H24AR','J4858D','J4859D','JL745A','JL746A','J9150D','J9151E','J9153D','JL749A','J9281D','J9283D','J9285D','JL484A','JL485A','JL486A','JL487A','JL488A','JL489A','R7J63A','JY728A'],
+    nota: '4x SFP28 1/10/25G (QuickSpecs 9200 v14: acepta SFP/SFP+/SFP28). 1+1 PSU: la 2ª fuente es la R7J63A (550 W). El cobre 1G S1H24A nuevo no figura en la lista — se ofrece el reman S1H24AR.' },
   // Línea anterior (parque instalado): solo su kit de rack oficial.
   '7005': { items: ['JW084A'], nota: 'Parque instalado: kit de rack 19" oficial.' },
   '7008': { items: ['JX934A'], nota: 'Parque instalado: kit de rack 19" oficial.' },
