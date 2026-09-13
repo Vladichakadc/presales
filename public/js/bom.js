@@ -302,6 +302,88 @@
     return { filas, totalSedes, perfiles: (lista || []).length, fabricantes: [...fabricantes] };
   }
 
+  /* ══ SIMULADOR DE PRECIO NETO ══════════════════════════════════════════════════
+     Los tramos del programa de canal NO son publicos: son niveles de trabajo del equipo de
+     preventa, y la pantalla lo declara. El calculo es puro —lee un select y un numero— asi
+     que no depende de ningun fabricante, y `renderTabla`/`exportarExcel` ya saben pintar las
+     columnas NET en paralelo con `o.dto`.
+
+     EL CONTROL SE CONSTRUYE AQUI, NO SE COPIA EN CADA HTML. Es la misma decision que
+     `ESTADO.botonEnlace`: anadirlo a una pantalla nueva tiene que ser una linea, no doce de
+     marcado repetido en siete archivos que luego divergen. Los ids se conservan
+     (`selDescuento`, `dtoCustom`) porque `estado.js` ya los serializa en el enlace
+     compartido. */
+  const TRAMOS_DTO = [
+    { v: '0', etq: 'Lista (0 %) — precio de referencia del fabricante' },
+    { v: '0.35', etq: 'Business Partner (35 %)' },
+    { v: '0.45', etq: 'Silver (45 %)' },
+    { v: '0.50', etq: 'Gold (50 %)' },
+    { v: '0.55', etq: 'Platinum (55 %)' },
+    { v: 'opg', etq: 'Personalizado…' },
+  ];
+  const AVISO_DTO = '<b>Simulador genérico de tramos partner — no refleja el descuento real '
+    + 'del distribuidor.</b> Los descuentos del programa de canal no son públicos: estos tramos '
+    + 'son niveles de trabajo del equipo de preventa. Se muestran las columnas Subtotal Lista y '
+    + 'Subtotal Neto en paralelo y se llevan al Excel; la cotización firme la cierra tu distribuidor.';
+
+  function simuladorDescuento(contenedor, alCambiar) {
+    const host = typeof contenedor === 'string' ? document.getElementById(contenedor) : contenedor;
+    if (!host) return null;
+    host.innerHTML = '<label for="selDescuento">Nivel de descuento sobre List Price</label>'
+      + '<div class="row">'
+      + `<select id="selDescuento" style="width:60%">${TRAMOS_DTO.map((x) => `<option value="${x.v}">${esc(x.etq)}</option>`).join('')}</select>`
+      + '<input type="number" id="dtoCustom" min="0" max="90" step="0.5" placeholder="% personalizado" hidden autocomplete="off">'
+      + `</div><p class="hint">${AVISO_DTO}</p>`;
+    const sel = host.querySelector('#selDescuento');
+    const custom = host.querySelector('#dtoCustom');
+    // Un descuento fuera de [0,90] no es un descuento: por encima regalaria el equipo y por
+    // debajo subiria el precio de lista, que no es lo que este control significa.
+    const valor = () => {
+      if (sel.value === 'opg') return Math.min(0.9, Math.max(0, (parseFloat(custom.value) || 0) / 100));
+      return parseFloat(sel.value) || 0;
+    };
+    const etiqueta = () => {
+      if (sel.value === 'opg') return `Personalizado (${(valor() * 100).toFixed(1)} %)`;
+      const opt = sel.selectedOptions[0];
+      return opt ? opt.textContent.trim() : 'Lista (0 %)';
+    };
+    sel.addEventListener('input', () => {
+      custom.hidden = sel.value !== 'opg';
+      if (alCambiar) alCambiar();
+    });
+    custom.addEventListener('input', () => { if (alCambiar) alCambiar(); });
+    return { valor, etiqueta };
+  }
+
+  /* ══ CAPEX / OPEX ANUAL / TCO ══════════════════════════════════════════════════
+     Se calcula sobre las FILAS del BOM, que ya son la forma neutra que los siete comparten
+     —no sobre los objetos de licenciamiento de ningun fabricante, que es lo que ataba este
+     calculo a una sola pagina.
+
+     QUE ES OPEX LO DECLARA LA PAGINA, por la misma razon que las reglas de agregacion: que
+     una suscripcion sea recurrente y una licencia perpetua no lo sea es el modelo COMERCIAL
+     de cada fabricante, no una propiedad de la fila. Sin declarar nada, todo es CAPEX — que
+     es lo correcto para un catalogo que solo vende hardware.
+
+     Las lineas sin precio NO se reparten ni se estiman: se cuentan y se declaran, igual que
+     hace `renderTabla` con su total parcial. Un TCO que aparenta estar completo es peor que
+     uno que dice cuanto le falta. */
+  function tco(filas, opciones) {
+    const o = opciones || {};
+    const cats = (o.opex || []).map((c) => String(c));
+    const anios = Math.max(1, parseInt(o.anios, 10) || 1);
+    let capex = 0;
+    let opexTermino = 0;
+    let sinPrecio = 0;
+    for (const f of (filas || [])) {
+      const s = subtotal(f);
+      if (s == null) { sinPrecio++; continue; }
+      if (cats.includes(f.cat)) opexTermino += s; else capex += s;
+    }
+    const opexAnual = opexTermino / anios;
+    return { capex, opexTermino, opexAnual, tco: capex + opexAnual * anios, anios, sinPrecio };
+  }
+
   function filasDeRefs() {
     return refsDeLaPagina().map((r) => ({
       cat: 'Referencias añadidas',
@@ -680,5 +762,6 @@
     enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar,
     sincronizar, soltarManual, avisoDesvio,
     agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor,
-    perfiles, perfilesDe, guardarPerfil, quitarPerfil, consolidar };
+    perfiles, perfilesDe, guardarPerfil, quitarPerfil, consolidar,
+    simuladorDescuento, tco };
 })(window);

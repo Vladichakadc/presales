@@ -158,6 +158,19 @@ function precios() {
 // viva sobre un control que ya no existia. Una excepcion que no sabe caducar tapa exactamente
 // lo que este comprobador existe para encontrar, que es el conjunto inerte de siempre.
 const TARDIOS = {
+  // El simulador de precio neto lo construye `bom.js` (2026-09-13): sus tramos no dependen de
+  // ningun fabricante, asi que copiar doce lineas de marcado en siete HTML era el patron que
+  // este repositorio ya pago con `llevarABom`. Las anclas son el marcado completo del control.
+  selDescuento: {
+    modulo: 'public/js/bom.js',
+    ancla: '<select id="selDescuento"',
+    porque: 'lo construye BOM.simuladorDescuento en la caja que la pagina declara',
+  },
+  dtoCustom: {
+    modulo: 'public/js/bom.js',
+    ancla: 'id="dtoCustom"',
+    porque: 'lo construye BOM.simuladorDescuento junto al selector de tramo',
+  },
   'verdict-sel': {
     modulo: 'public/js/ficha.js',
     // El ancla lleva `${cid}` a proposito: es el TEXTO FUENTE de la plantilla de ficha.js,

@@ -247,26 +247,13 @@ $('accLista').addEventListener('input',e=>{
   if(n>0) accesoriosElegidos[sku]=n; else delete accesoriosElegidos[sku];
   renderBom();
 });
-// Simulador de precio neto (#selDescuento, SPEC B.7): «Simulador genérico de tramos
-// partner — no refleja el descuento real del distribuidor» (texto fijo en la interfaz).
-// Los descuentos del programa de canal de HPE NO son públicos, asi que se declaran como
-// supuesto configurable y la cotizacion firme queda en el distribuidor.
-function dtoActual(){
-  const v=$('selDescuento').value;
-  if(v==='opg') return Math.min(0.9,Math.max(0,(parseFloat($('dtoCustom').value)||0)/100));
-  return parseFloat(v)||0;
-}
-function dtoEtiqueta(){
-  const v=$('selDescuento').value;
-  if(v==='opg') return `Personalizado (${(dtoActual()*100).toFixed(1)} %)`;
-  const opt=$('selDescuento').selectedOptions[0];
-  return opt?opt.textContent.trim():'Lista (0 %)';
-}
-$('selDescuento').addEventListener('input',()=>{
-  $('dtoCustom').hidden=$('selDescuento').value!=='opg';
-  renderBom();
-});
-$('dtoCustom').addEventListener('input',renderBom);
+// SIMULADOR DE PRECIO NETO. El control y sus tramos los construye `BOM.simuladorDescuento`:
+// no dependen de ningun dato de fabricante, asi que copiarlos en cada pagina era exactamente
+// el patron que este repositorio ya pago con `llevarABom` en seis copias. Aqui solo se dice
+// donde va y que hacer cuando cambia.
+const DTO=BOM.simuladorDescuento('cajaDescuento',()=>renderBom());
+const dtoActual=()=>DTO?DTO.valor():0;
+const dtoEtiqueta=()=>DTO?DTO.etiqueta():'Lista (0 %)';
 
 /* ══ CALCULADORA DE POOL BOOST (fase 11, §3.2) ══
    Proyecta los bloques por sede del dimensionador al fabric: el pool se licencia una
@@ -1718,31 +1705,25 @@ function renderBom(){
     if(tr) tr.id='filaSse';
   }
 
-  /* ══ M6 · CAPEX / OPEX ANUAL / TCO (SPEC B.7) ══
-     Criterio declarado: CAPEX = hardware + accesorios (incluidos los inyectados por el
-     motor: S2N67A, R7J63A) + licencia perpetua de capacidad — todo one-time; OPEX ANUAL
-     = (suscripciones EdgeConnect/Boost/Central + soporte CARE del término) ÷ años del
-     término; TCO = CAPEX + OPEX anual × años. Las líneas «consultar» (DTD, SSE con
-     precio null, EC-V, FC de gateways) NO entran en la suma — se declara al pie. */
-  const capexList=(m.elpN!=null?m.elpN*qty:0)
-    +Object.entries(accesoriosElegidos).reduce((s,[sku,n])=>s+(ACCESSORY_CATALOG[sku]&&ACCESSORY_CATALOG[sku].listPrice!=null?ACCESSORY_CATALOG[sku].listPrice*n:0),0)
-    +inyectados.reduce((s,{sku,qty:qIny})=>s+(ACCESSORY_CATALOG[sku]&&ACCESSORY_CATALOG[sku].listPrice!=null?ACCESSORY_CATALOG[sku].listPrice*qIny:0),0)
-    +(capTier&&capTier.code!=='hw'&&capTier.elp!=null?capTier.elp*qty:0);
-  const opexDe=t=>{
-    let s=0;
-    if(esEC&&bundle){
-      if(licHa) s+=(tierPrice(licTier,t)||0)+(tierPrice(licHa,t)||0);
-      else s+=(tierPrice(licTier,t)||0)*qty;
-      if(bloques) s+=(tierPrice(boostBlk,t)||0)*bloques;
-    }
-    if(!esEC&&central) s+=(tierPrice(centralTier,t)||0)*qty;
-    if(care&&!esVirtual) s+=(tierPrice(careTier,t)||0)*qty;
-    return s;
-  };
-  const opexTermino=opexDe(termYrs);
-  const opexAnual=termYrs>0?opexTermino/termYrs:0;
-  const tco=capexList+opexAnual*termYrs;
-  const hayPrecios=capexList>0||[1,3,5].some(t=>opexDe(t)>0);
+  /* ══ M6 · CAPEX / OPEX ANUAL / TCO ══
+     La matematica vive en `BOM.tco` y se calcula sobre las FILAS del BOM, que ya son la forma
+     neutra que los siete fabricantes comparten. Antes se calculaba aqui a partir de los objetos
+     de licenciamiento de Aruba (`capTier`, `licHa`, `boostBlk`, `tierPrice`...), y eso era lo
+     que ataba el calculo a esta unica pagina.
+
+     LO QUE ESTA PAGINA DECLARA ES QUE CUENTA COMO OPEX, no como se suma: que una suscripcion
+     sea recurrente y una licencia perpetua no lo sea es el modelo COMERCIAL de Aruba, no una
+     propiedad de la fila. Un catalogo que solo venda hardware no declara nada y todo es CAPEX.
+     Criterio, el mismo de siempre: CAPEX = hardware + accesorios + licencia perpetua (one-time);
+     OPEX = suscripciones (SD-WAN, gestion, Boost, seguridad) + soporte del termino, prorrateado.
+
+     Se comprobo contra el calculo anterior antes de cambiarlo, en siete escenarios —incluidos
+     Boost y DTD, que son los que traen las categorias del camino largo— y las tres cifras
+     coincidieron en todos. */
+  const OPEX_ARUBA=['Suscripción SD-WAN','Suscripción de gestión','Soporte','Aceleración','Seguridad','Seguridad SASE'];
+  const fin=BOM.tco(filas,{opex:OPEX_ARUBA, anios:termYrs});
+  const capexList=fin.capex, opexAnual=fin.opexAnual, tco=fin.tco;
+  const hayPrecios=capexList>0||fin.opexTermino>0;
   const celdaNet=v=>dto>0?`<td><b>${BOM.money(v*(1-dto))}</b></td>`:'';
   $('tcoFin').innerHTML=hayPrecios
     ?`<table class="tco-tabla"><thead><tr><th>Pie de la lista de materiales</th><th>Subtotal Lista</th>${dto>0?'<th>Subtotal Neto</th>':''}</tr></thead><tbody>`

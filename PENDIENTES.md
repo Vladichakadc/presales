@@ -509,6 +509,40 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
 
 ## Cerrado recientemente
 
+### La capa comercial sale del archivo de Aruba (2026-09-13)
+
+Paso 1 del orden de [`docs/portabilidad-aruba.md`](docs/portabilidad-aruba.md), aprobado por el
+dueño. Mientras TCO y simulador de descuento vivieran dentro de las 2.117 líneas de Aruba,
+portarlos a los otros siete significaba copiarlos siete veces — el fallo de `llevarABom` en seis
+copias con más superficie.
+
+- **`BOM.simuladorDescuento()`**: el control se **construye** en el módulo, con sus tramos y su
+  aviso de «simulador genérico, no el descuento real del distribuidor». Es la decisión de
+  `ESTADO.botonEnlace` — añadirlo a otra pantalla es una línea, no doce de marcado repetido.
+  Conserva los ids `selDescuento`/`dtoCustom` porque `estado.js` los serializa en el enlace
+  compartido, y por eso quedan declarados en `TARDIOS`.
+- **`BOM.tco()`**: se calcula sobre las **filas del BOM**, que ya son la forma neutra. Antes
+  salía de los objetos de licenciamiento de Aruba, y eso era lo que lo ataba a una sola página.
+  **Qué cuenta como OPEX lo declara la página**, por lo mismo que las reglas de agregación.
+
+**Medido antes de cambiarlo, no supuesto.** Siete escenarios en el navegador con las tres cifras
+(CAPEX, OPEX anual, TCO) idénticas a las del cálculo anterior. El primer contraste solo cubría el
+camino fácil —sin Boost ni seguridad— así que se repitió activando Boost y DTD, que son los que
+traen las categorías del camino largo; sin eso la clasificación habría quedado verificada a
+medias.
+
+**Y el comprobador de ayer se ganó el sueldo:** al sacar el marcado del HTML, `npm run catalogo`
+reportó en el acto «selDescuento: no existe ningún control con ese id». La prueba que lo guarda
+también se rompió, pero por un motivo distinto y peor: exigía que la única excepción fuera
+`verdict-sel`, codificando el estado de ese día en vez de la regla. Corregida para afirmar lo que
+importa — que las excepciones se usan y ninguna ha caducado.
+
+**Lo que NO subió**: la matriz de accesorios. Solo Aruba tiene compatibilidad declarada, y
+construir la pantalla antes que el dato produce seis paneles vacíos — es el paso 4 del orden, y
+está bloqueado por dato, no por código.
+
+287/287 pruebas, lint limpio y 16/16 pantallas.
+
 ### Los perfiles multi-sede dejan de ser de un solo fabricante (2026-09-13)
 
 Sale de la **revisión de arquitectura** que pidió el dueño sobre lo que dejó el otro motor de IA
