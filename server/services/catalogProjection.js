@@ -363,6 +363,7 @@ async function toDimensionadorAruba() {
     models,
     bundles: bundlesOut,
     care,
+    careSkus: arubaData.CARE_SKU,
     licenses: arubaData.LICENSES,
     software: arubaData.SOFTWARE,
     centralTiers: arubaData.CENTRAL_TIERS,

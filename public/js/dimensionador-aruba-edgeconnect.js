@@ -6,7 +6,7 @@
 // gateways de las series 9000/9200 es el THROUGHPUT DE FIREWALL mas la capacidad de
 // clientes y APs. Se dimensiona con lo que existe publicado en vez de inventar una
 // escalera de capas homogenea.
-let MODELS = [], BUNDLES = {}, CARE = {}, LICENSES = {}, SIZING = {},
+let MODELS = [], BUNDLES = {}, CARE = {}, CARE_SKU = {}, LICENSES = {}, SIZING = {},
     SOFTWARE = [], CENTRAL = {}, DATASHEETS = {};
 
 // Catálogo pedible completo (hardware, remanufacturados, suscripciones, servicios) cargado
@@ -609,7 +609,11 @@ function renderBom(){
 
   const lic=LICENSES[bwCode]||null;
   const licTier=lic&&bundle?(lic[bundle]||null):null;
-  const careTier=lic&&care?(lic.care[care]||null):null;
+  // El soporte se cotiza por MODELO (CARE_SKU, servicio atado a la variante de hardware),
+  // no por tier de caudal — desde 2026-09-13 sale de la lista de precios documentada en
+  // aruba.js. Lo que la lista no cubre (fcsw, gateways, 4HR del 10150) sigue en consultar.
+  const cs=care&&CARE_SKU[m.id]?CARE_SKU[m.id][care]:null;
+  const careTier=cs?{sku:{y1:cs.y1[0],y3:cs.y3[0],y5:cs.y5[0]},y1:cs.y1[1],y3:cs.y3[1],y5:cs.y5[1]}:null;
   const licPrice=tierPrice(licTier,termYrs);
   const carePrice=tierPrice(careTier,termYrs);
   // Boost se licencia como SaaS sobre Foundation/Advanced y como E-STU sobre On-Premises:
@@ -687,7 +691,8 @@ function renderBom(){
       'ADVERTENCIA DE DATOS',
       '  List Price de HPE (sin descuento de distribuidor) para hardware y suscripciones,',
       '  tomado del export de lista de precios documentado en aruba-lista-precios-hpe.csv.',
-      '  Lo que sigue sin precio (Foundational Care por variante, EC-V, DTD) va en consultar',
+      '  El soporte Foundational Care se cotiza por modelo (CARE_SKU en aruba.js). Lo que',
+      '  sigue sin precio (EC-V, DTD, FC de software y FC de gateways) va en consultar',
       '  a proposito. Confirmar la fila exacta del datasheet antes de emitir la propuesta.',
       qty>1?`  Par de ${qty} unidades: la suscripcion de sitio no se comparte, cada nodo lleva la suya.`:null,
     ].filter(n=>n!==null&&n!==''),
@@ -699,7 +704,7 @@ function renderBom(){
   // donde quien exporta tiene que verlo.
   $('bomTabla').innerHTML=BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato:!!lastPick})
     +BOM.renderTabla(filas,{
-    aviso:'List Price de HPE (sin descuento de distribuidor) — hardware, suscripciones EdgeConnect/Boost/Central y licencias perpetuas 9240 verificados el 2026-09-13 (ver aruba-lista-precios-hpe.csv). Lo que no tiene precio verificado figura en "consultar" a propósito.',
+    aviso:'List Price de HPE (sin descuento de distribuidor) — hardware, suscripciones EdgeConnect/Boost/Central, licencias perpetuas 9240 y Foundational Care de EdgeConnect verificados el 2026-09-13 (ver aruba-lista-precios-hpe.csv y CARE_SKU en aruba.js). Lo que no tiene precio verificado figura en "consultar" a propósito.',
   });
   $('bomOut').value=BOM.comoTexto(filas,meta);
   bomMeta=meta; bomFilas=filas;
@@ -710,13 +715,15 @@ function renderBom(){
 
 /* ══ CATÁLOGO PEDIBLE → LISTA DE MATERIALES ══
    Toda referencia de pedido de Aruba vive en UN sitio: la lista de materiales. Este panel
-   es la puerta de entrada — busca en los 69 SKU de la lista de precios pública
-   (public/datasheets/aruba-lista-precios-hpe.csv: hardware, remanufacturados, suscripciones
-   EdgeConnect/Boost/Central y licencias perpetuas 9240) más las variantes de hardware sin
-   precio (TAA/NAL/FIPS) que el catálogo declara por modelo. Añadir mete la línea en el BOM
-   (BOM.agregarRef la guarda, la pinta con stepper de cantidad y botón de quitar, la exporta
-   al Excel y la manda al cotizador); las que el motor ya puso en el BOM se marcan
-   "En el BOM" para no meter dos veces la misma línea. */
+   es la puerta de entrada — busca en los 76 SKU de la lista de precios pública
+   (public/datasheets/aruba-lista-precios-hpe.csv: hardware y sus variantes TAA/NAL,
+   remanufacturados, suscripciones EdgeConnect/Boost/Central y licencias perpetuas 9240).
+   Añadir mete la línea en el BOM (BOM.agregarRef la guarda, la pinta con stepper de
+   cantidad y botón de quitar, la exporta al Excel y la manda al cotizador); las que el
+   motor ya puso en el BOM se marcan "En el BOM" para no meter dos veces la misma línea.
+   2026-09-13: ya NO se mezclan las variantes declaradas en el catálogo (m.skus) — las 7
+   que tienen SKU y precio están en el CSV y las 14 sin SKU confirmado eran ruido
+   inpedible ("sin número de parte" / "consultar" duplicado). */
 
 // La categoría sale de las propias columnas del CSV, no de una lista de SKU escrita a mano:
 // si la lista de precios trae una familia nueva, aparece sola en el panel.
@@ -729,7 +736,7 @@ function categoriaDeFilaCsv(mod, sku){
   return 'Hardware — EdgeConnect y gateways';
 }
 const SKU_CAT_ORDEN=['Hardware — EdgeConnect y gateways','Hardware remanufacturado (serie 7000/7200)',
-  'Otras variantes de hardware','Suscripción EdgeConnect Foundation','Suscripción EdgeConnect Advanced',
+  'Suscripción EdgeConnect Foundation','Suscripción EdgeConnect Advanced',
   'Suscripción EdgeConnect On-Premises','Boost EdgeConnect (SaaS)','Boost EdgeConnect (On-Premises)',
   'HPE Aruba Networking Central','Licencias perpetuas 9240'];
 
@@ -747,16 +754,6 @@ async function cargarCatalogoSku(){
     const res=await fetch('/datasheets/aruba-lista-precios-hpe.csv');
     if(!res.ok) throw new Error('http '+res.status);
     SKU_CAT=parseCsvCatalogo(await res.text());
-    // Variantes de hardware que el catálogo declara por modelo y no están en la lista de
-    // precios (TAA/NAL/FIPS y las que siguen sin SKU confirmado): se pueden añadir igual.
-    const enCsv=new Set(SKU_CAT.map(x=>x.sku));
-    for(const m of MODELS){
-      for(const s of (m.skus||[])){
-        if(s.sku&&enCsv.has(s.sku)) continue;
-        SKU_CAT.push({sku:s.sku||null, d:`${s.d} — variante de ${m.id}`, p:null, vig:null, plc:null, cat:'Otras variantes de hardware'});
-        if(s.sku) enCsv.add(s.sku);
-      }
-    }
     pintarCatalogoSku();
   }catch(e){
     caja.innerHTML='<p class="hint">No se pudo cargar el catálogo de SKUs (lista de precios). La lista de materiales sigue disponible.</p>';
@@ -824,6 +821,7 @@ $('xlsBtn').addEventListener('click',async()=>{
   MODELS = data.models;
   BUNDLES = data.bundles;
   CARE = data.care;
+  CARE_SKU = data.careSkus || {};
   LICENSES = data.licenses;
   SIZING = data.sizing;
   SOFTWARE = data.software || [];

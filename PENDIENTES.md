@@ -368,6 +368,48 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
 
 ## Cerrado recientemente
 
+### Catálogo SKU sin duplicados ni filas sin valor, Foundational Care con precio y panel 4 bajo el 3 — Aruba (2026-09-13)
+
+Petición del dueño (con captura del panel «Añadir» y el export de lista de precios):
+en la lista de materiales se duplicaban números de parte y había SKU sin valor —analizar
+de dónde salen—; el soporte «Foundational Care 24x7 / NBD HW» salía «— / consultar» y
+debía buscarse su SKU y valor en el txt; y «4 · Equipo y cotización» debía volver a la
+columna izquierda, debajo de «3 · Funciones adicionales».
+
+**De dónde salía el SKU sin valor (la respuesta al análisis).** `cargarCatalogoSku()`
+mezclaba al CSV de precios las variantes de hardware declaradas en el catálogo de modelos
+(`m.skus`) que no estaban en la lista: formaban el grupo «Otras variantes de hardware»,
+siempre a «consultar» y duplicando visualmente al modelo base (el S3N71A «variante de
+EC-10106» junto al S0E22A). Al cruzarlas con el export completo del distribuidor resultó
+que las 29 variantes CON número de parte tienen precio publicado (22 ya estaban en el CSV
+y 7 faltaban), y las 14 sin número de parte eran ruido inpedible. Fix: las 7 variantes
+que faltaban entran al CSV con su fila literal del txt (S3N78A, S3N69A, S3N71A, S3N72A,
+S3N74A, S3N77A —PLC «ES», ojo— y R1B37A; 69→76 SKU), se elimina el merge de `m.skus` y
+con él el grupo «Otras variantes»: el panel queda sin duplicados, sin «sin número de
+parte» y sin «consultar».
+
+**Foundational Care con SKU y List Price.** El servicio se vende atado a la VARIANTE de
+hardware, no al tier de caudal: nueva tabla `CARE_SKU` en `aruba.js` por modelo con las
+filas literales del PL «SD-WAN Support» del txt —fcnbd ↔ «FC NBD Exch», fc247 ↔ «FC 4HR
+Onsite», correspondencia documentada en el comentario— para los 9 EdgeConnect (51 SKU,
+1/3/5 años, verificados uno a uno contra el txt). Lo que la lista no cubre sigue en
+«consultar» declarado: FC de software (no hay filas), FC de gateways (va por sub-variante
+de pedido que la app no modela) y el 4HR del EC-10150 (solo publica NBD). La estructura
+`care` en null dentro de LICENSES se retira: era el callejón sin salida que mostraba
+«— / consultar». `catalogProjection` expone `careSkus` y el BOM cotiza el soporte del
+modelo elegido (E2E: EC-10106 NBD 1 año = H45D0E $446; 4HR 3 años = H46F4E $1.432).
+
+**Layout.** «4 · Equipo y cotización» vuelve a la columna izquierda bajo «3 · Funciones
+adicionales»; la derecha queda para la ficha unificada y la nota metodológica. Avisos de
+la página actualizados al nuevo estado de datos (76 SKU + CARE_SKU; ya no se declara FC
+entero como sin precio).
+
+**Verificación.** 233/233 pruebas y eslint verdes; E2E en Chromium: panel de añadir sin
+grupo «Otras variantes», sin «sin número de parte» ni «consultar», S3N71A con $4.318 y
+botón «Añadir», soporte con SKU/precio en el BOM, paneles 1-4 en la columna izquierda en
+orden, humo de Fortinet sin efectos. Privacidad: grep sin nombre del distribuidor, PA ni
+Net Prices en el repo; el txt sigue en `privado/` gitignored.
+
 ### Layout reparado, ficha técnica unificada y lista de materiales centrada — Aruba (2026-09-13)
 
 Petición del dueño: la página se había ido toda a la columna izquierda; unificar «ficha

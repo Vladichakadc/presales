@@ -154,7 +154,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 </header>
 
 <div class="flag-ft">
-  <b>Estado de los datos.</b> Las cifras provienen de páginas de producto y de tienda oficiales de HPE/Aruba, y los <b>SKU de hardware son reales</b> (buy.hpe.com). Cada modelo enlaza su datasheet oficial. <b>15 modelos EdgeConnect/gateway tienen List Price real de HPE</b> (export de lista de precios de un distribuidor, sin su descuento negociado — ver pestaña Fuentes); el resto sigue "sin cotizar". Dos límites que conviene tener presentes: los PDF no se abrieron íntegramente al recopilar —conviene confirmar la fila exacta antes de cotizar— y el List Price no es precio neto ni cotización firme.
+  <b>Estado de los datos.</b> Las cifras provienen de páginas de producto y de tienda oficiales de HPE/Aruba, y los <b>SKU de hardware son reales</b> (buy.hpe.com). Cada modelo enlaza su datasheet oficial. <b>15 modelos EdgeConnect/gateway, 7 variantes TAA/NAL y el Foundational Care de los 9 EdgeConnect tienen List Price real de HPE</b> (export de lista de precios de un distribuidor, sin su descuento negociado — ver pestaña Fuentes); el resto sigue "sin cotizar". Dos límites que conviene tener presentes: los PDF no se abrieron íntegramente al recopilar —conviene confirmar la fila exacta antes de cotizar— y el List Price no es precio neto ni cotización firme.
 </div>
 
 <div class="tabs" role="tablist">
@@ -261,9 +261,6 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     </div>
   </section>
 
-</div>
-
-<div>
   <section class="panel">
     <h2>4 · Equipo y cotización</h2>
     <div class="field">
@@ -316,6 +313,9 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     </div>
   </section>
 
+</div>
+
+<div>
   <div class="verdict" id="verdict"></div>
 
   <div class="note">
@@ -345,7 +345,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
   </section>
   <div class="flag-ft">
-    <b>Aviso de preventa:</b> el hardware y las suscripciones EdgeConnect/Boost/Central traen List Price de HPE verificado el 2026-09-13 (69 SKU, ver <code>public/datasheets/aruba-lista-precios-hpe.csv</code>); es precio de lista sin el descuento del distribuidor, no una cotización firme. Lo que sigue sin precio verificado —Foundational Care por variante, EC-V— figura en «consultar» a propósito. Detalle en la cabecera de <code>server/seed/legacyData/aruba.js</code>.
+    <b>Aviso de preventa:</b> el hardware, las suscripciones EdgeConnect/Boost/Central y el soporte Foundational Care de los EdgeConnect traen List Price de HPE verificado el 2026-09-13 (76 SKU en <code>public/datasheets/aruba-lista-precios-hpe.csv</code> más los SKU de servicio por modelo en <code>server/seed/legacyData/aruba.js</code>); es precio de lista sin el descuento del distribuidor, no una cotización firme. Lo que sigue sin precio verificado —EC-V, FC de software y FC de gateways— figura en «consultar» a propósito.
   </div>
 </div>
 </div>

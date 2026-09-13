@@ -35,8 +35,9 @@
 //      ni su descuento). Punto de control externo: JZ118AAE aparece en tienda pública con
 //      LIST PRICE $1,260.00, idéntico al de la lista.
 // Lo que la lista no cubre sigue en null y se declara: EC-V, EC-XS-SP, Dynamic Threat
-// Defense, el Orchestrator cloud-hosted y los SKU de Foundational Care (van por VARIANTE
-// de hardware — H43W0E, H44Z4E... — y se consultan en HPE SSC, no por tier de caudal).
+// Defense y el Orchestrator cloud-hosted. Los SKU de Foundational Care SÍ salen de la
+// lista — van por VARIANTE de hardware, no por tier de caudal — y viven en CARE_SKU
+// (ver su comentario para la correspondencia fcnbd↔"NBD Exch" / fc247↔"4HR Onsite").
 //
 // CORRECCIONES RESPECTO A LA PRIMERA VERSIÓN DE ESTE ARCHIVO (documentadas a propósito):
 //   · Se elimina "EC-2XL": no existe en el portafolio. La gama va XS → S → M → L → XL.
@@ -607,40 +608,75 @@ const CARE = {
           d:'Soporte técnico remoto y acceso a actualizaciones y parches para el software. Se contrata junto al de hardware.'},
 };
 
+// ── SKU de Foundational Care por modelo (2026-09-13) ─────────────────────────
+// El servicio se vende atado a la VARIANTE de hardware, no al tier de caudal: cada modelo
+// tiene su propio juego de SKU por nivel y por duración (1/3/5 años). Fuente: el mismo
+// export de lista de precios del distribuidor ya descrito en la cabecera (solo SKU,
+// descripción, List Price y vigencia — nunca el distribuidor ni su descuento), filas
+// literales del PL "SD-WAN Support".
+//
+// Correspondencia con los niveles CARE de la app (decisión documentada, 2026-09-13):
+//   · fcnbd («24x7 / NBD HW — repuesto al siguiente día hábil») ↔ filas "FC NBD Exch"
+//     (Next Business Day Exchange: reemplazo de hardware al siguiente día hábil).
+//   · fc247 («24x7 HW — reparación in situ») ↔ filas "FC 4HR Onsite" (ingeniero en sitio
+//     en 4 horas). La app lo describe como reparación in situ; es la variante con onsite
+//     que publica la lista para estos modelos.
+// Lo que la lista NO cubre sigue en "consultar" a propósito:
+//   · fcsw: la lista no trae SKU de soporte de SOFTWARE para los EdgeConnect.
+//   · Gateways (9004/9012/9106/9114/9240): sus SKU de FC van por sub-variante de pedido
+//     (p. ej. 9240C vs 9240TAAC) y la app no modela esa sub-variante — mapear uno sería
+//     inventar la correspondencia.
+//   · EC-10150 fc247: la lista solo publica NBD Exch para el 10150 (no hay fila 4HR).
+// Estructura: [SKU, List Price USD] por duración; la descripción literal de cada fila es
+// "<Aruba|HPE ANW> <1Y|3Y|5Y> FC <NBD Exch|4HR Onsite> <variante> SVC".
+const CARE_SKU = {
+  'EC-XS':    {fcnbd:{y1:['H43W0E',277],  y3:['H43W1E',832],   y5:['H43W3E',1386]},
+               fc247:{y1:['H46D5E',454],  y3:['H46D6E',1227],  y5:['H46D7E',1931]}},
+  'EC-10104': {fcnbd:{y1:['H44Z4E',159],  y3:['H44Z5E',476],   y5:['H44Z7E',794]},
+               fc247:{y1:['H46E7E',225],  y3:['H46E8E',609],   y5:['H46E9E',958]}},
+  'EC-10106': {fcnbd:{y1:['H45D0E',446],  y3:['H45D1E',1339],  y5:['H45D3E',2231]},
+               fc247:{y1:['H46F3E',530],  y3:['H46F4E',1432],  y5:['H46F5E',2253]}},
+  'EC-10108': {fcnbd:{y1:['H45D4E',577],  y3:['H45D5E',1731],  y5:['H45D7E',2884]},
+               fc247:{y1:['H46F6E',831],  y3:['H46F7E',2245],  y5:['H46F8E',3533]}},
+  'EC-S':     {fcnbd:{y1:['H43N2E',1390], y3:['H43N3E',4170],  y5:['H43N5E',6950]},
+               fc247:{y1:['H46C9E',1675], y3:['H46D0E',4522],  y5:['H46D1E',7118]}},
+  'EC-M':     {fcnbd:{y1:['H43V0E',2197], y3:['H43V1E',6589],  y5:['H44F1E',10983]},
+               fc247:{y1:['H46D8E',2622], y3:['H46D9E',7078],  y5:['H46E0E',11142]}},
+  'EC-L':     {fcnbd:{y1:['H44F6E',3591], y3:['H44F7E',10773], y5:['H44E3E',17955]},
+               fc247:{y1:['H46E1E',5796], y3:['H46E2E',15648], y5:['H46E3E',24631]}},
+  'EC-XL':    {fcnbd:{y1:['H44Z0E',4813], y3:['H44Z1E',14440], y5:['H44Z3E',24066]},
+               fc247:{y1:['H46F0E',7811], y3:['H46F1E',21090], y5:['H46F2E',33197]}},
+  'EC-10150': {fcnbd:{y1:['H07BKE',4647], y3:['H07BLE',13942], y5:['H07BME',23238]}},
+};
+
 // Licencias por tier de caudal (2026-09-13). Cada suscripción tiene un SKU DISTINTO por
 // duración (1/3/5 años), así que `sku` va desglosado igual que el precio. Doble fuente,
 // ver cabecera: QuickSpecs oficial v18 para SKU↔descripción (verificado contra hpe.com),
 // lista del distribuidor para el List Price. La lista también publica SKU de 7 años, por
 // suscripción purga y de alta disponibilidad — no los consume el dimensionador.
 //
-// `care` sigue en null a propósito: los SKU de Foundational Care (H43W0E, H44Z4E, H07BKE…)
-// van atados a la VARIANTE de hardware (sufijos B/P/H/NM/SP/TAA/OS), no al tier de caudal,
-// y se resuelven en HPE SSC equipo a equipo. Mapearlos aquí sería inventar la estructura.
-function tierVacio() {
-  return {sku:null, y1:null, y3:null, y5:null};
-}
+// El soporte NO va aquí: los SKU de Foundational Care (H43W0E, H44Z4E, H07BKE…) van
+// atados a la VARIANTE de hardware, no al tier de caudal — viven en CARE_SKU por modelo
+// (2026-09-13, ver su comentario para fuente y correspondencias).
 const LICENSES = {
   bw100: {
     foundation: {sku:{y1:'S1C49AAS', y3:'S1C51AAS', y5:'S1C53AAS'}, y1:900,  y3:2700,  y5:4500},
     advanced:   {sku:{y1:'S1B34AAS', y3:'S1B36AAS', y5:'S1B38AAS'}, y1:1848, y3:5544,  y5:9240},
     onprem:     {sku:{y1:'S1B99AAS', y3:'S1C01AAS', y5:'S1C03AAS'}, y1:1932, y3:5796,  y5:9660},
-    care: {fcnbd: tierVacio(), fc247: tierVacio(), fcsw: tierVacio()},
   },
   bw1g: {
     foundation: {sku:{y1:'S1A22AAS', y3:'S1A24AAS', y5:'S1A26AAS'}, y1:1680, y3:5040,  y5:8400},
     advanced:   {sku:{y1:'S1B77AAS', y3:'S1B79AAS', y5:'S1B81AAS'}, y1:6540, y3:19620, y5:32700},
     onprem:     {sku:{y1:'S0Y07AAS', y3:'S0Y09AAS', y5:'S0Y11AAS'}, y1:6864, y3:20592, y5:34320},
-    care: {fcnbd: tierVacio(), fc247: tierVacio(), fcsw: tierVacio()},
   },
   bwunl: {
     foundation: {sku:{y1:'S1A36AAS', y3:'S1A38AAS', y5:'S1A40AAS'}, y1:7848,  y3:23544, y5:39240},
     advanced:   {sku:{y1:'S1C35AAS', y3:'S1C37AAS', y5:'S1C39AAS'}, y1:23580, y3:70740, y5:117900},
     onprem:     {sku:{y1:'S0Z57AAS', y3:'S0Z59AAS', y5:'S0Z61AAS'}, y1:24744, y3:74232, y5:123720},
-    care: {fcnbd: tierVacio(), fc247: tierVacio(), fcsw: tierVacio()},
   },
 };
 
 module.exports = {
-  MODELS, BUNDLES, CARE, LICENSES, BW_TIERS, BOOST, FEC_OVERHEAD,
+  MODELS, BUNDLES, CARE, CARE_SKU, LICENSES, BW_TIERS, BOOST, FEC_OVERHEAD,
   SOFTWARE, CENTRAL_TIERS, DATASHEETS,
 };
