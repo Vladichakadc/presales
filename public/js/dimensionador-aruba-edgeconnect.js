@@ -82,50 +82,33 @@ let ACCESSORY_CATALOG={}, ACCESSORY_COMPAT={};
 // Selección viva del modal: sku → cantidad. Se depura al cambiar de modelo para no
 // cotizar una óptica incompatible con el equipo elegido.
 let accesoriosElegidos={};
-// Marca de la línea NVMe puesta por el sincronizador Boost (no por el usuario): solo
-// esa se retira sola al apagar Boost o cambiar de modelo.
-let nvmeAutoActivo=false;
-const MODELOS_NVME_BOOST=['EC-10106','EC-10108'];
 function modeloActual(){ return MODELS.find(x=>x.id===$('pickModel').value)||null; }
-function boostActivo(){ const c=$('chkBoost'); return !!(c&&c.checked); }
-// Sincronización Boost → NVMe (fase 12): la optimización con deduplicación exige
-// almacenamiento local — en EC-10106/10108 el kit S2N67A es obligatorio con Boost
-// activo; el EC-10150 ya lleva 2 SSD NVMe de sistema de fábrica (QuickSpecs).
-function sincronizarNvmeBoost(){
-  const m=modeloActual();
-  const exige=!!(m&&boostActivo()&&MODELOS_NVME_BOOST.includes(m.id));
-  if(exige){
-    if(!accesoriosElegidos.S2N67A){ accesoriosElegidos.S2N67A=1; nvmeAutoActivo=true; }
-  }else if(nvmeAutoActivo){
-    delete accesoriosElegidos.S2N67A; nvmeAutoActivo=false;
-  }
-}
 // Etiquetas técnicas del accesorio: velocidad · medio · alcance, o su categoría
-// funcional (NVMe Boost, 2ª PSU, rack, consola). TAA se destaca porque condiciona la
-// compra pública (Trade Agreements Act).
+// funcional (módulo, SSD, 2ª PSU, rack, consola). TAA se destaca porque condiciona la
+// compra pública (Trade Agreements Act); un PLC «ES» se marca aunque la matriz ya los
+// excluye — defensa en profundidad.
 function accEtiquetas(a){
   const t=[];
   if(a.speed) t.push(a.speed);
   if(a.media){ t.push(a.media.replace('_TAA','')); if(a.media.endsWith('_TAA')) t.push('TAA'); }
   if(a.reach) t.push(a.reach);
-  if(a.category) t.push({STORAGE_BOOST:'NVMe Boost',PSU:'2ª PSU',MOUNT:'rack 19"',CABLE:'consola'}[a.category]||a.category);
+  if(a.category) t.push({MODULE:'módulo',STORAGE:'SSD',PSU:'2ª PSU',MOUNT:'rack 19"',KIT:'kit accesorios',FAN:'ventilador',CABLE:'consola'}[a.category]||a.category);
+  if(a.plc==='ES') t.push('FIN DE VENTA');
   return t.join(' · ');
 }
 function pintarAccModal(m){
   const cfg=ACCESSORY_COMPAT[m.id];
   if(!cfg) return;
-  const exigeNvme=boostActivo()&&MODELOS_NVME_BOOST.includes(m.id);
   $('accModelo').textContent=m.id;
-  $('accHint').textContent=cfg.nota+(exigeNvme?' Boost está activo: el kit NVMe S2N67A es obligatorio (mínimo 1).':'');
+  $('accHint').textContent=cfg.nota;
   $('accLista').innerHTML=cfg.items.map(sku=>{
     const a=ACCESSORY_CATALOG[sku];
     if(!a) return '';
     const qty=accesoriosElegidos[sku]||0;
-    const forzado=sku==='S2N67A'&&exigeNvme;
     return `<div class="acc-fila"><span class="acc-d"><code>${sku}</code> — ${esc(a.name)}`
-      +`<span class="sku" style="display:block;margin-top:2px">${esc(accEtiquetas(a))}${forzado?' · <b>requerido por Boost</b>':''}</span></span>`
+      +`<span class="sku" style="display:block;margin-top:2px">${esc(accEtiquetas(a))}</span></span>`
       +`<span class="acc-p">${a.listPrice!=null?('$ '+a.listPrice.toLocaleString('en-US')):'consultar'}</span>`
-      +`<input type="number" min="${forzado?1:0}" step="1" value="${forzado?Math.max(1,qty):qty}" data-acc="${sku}" aria-label="Cantidad ${sku}"></div>`;
+      +`<input type="number" min="0" step="1" value="${qty}" data-acc="${sku}" aria-label="Cantidad ${sku}"></div>`;
   }).join('');
 }
 $('accBtn').addEventListener('click',()=>{
@@ -139,9 +122,7 @@ $('accModal').addEventListener('click',e=>{ if(e.target===$('accModal')) $('accM
 $('accLista').addEventListener('input',e=>{
   const sku=e.target.dataset&&e.target.dataset.acc;
   if(!sku) return;
-  let n=Math.max(0,parseInt(e.target.value)||0);
-  // La línea NVMe forzada por Boost no baja de 1 mientras Boost siga activo.
-  if(sku==='S2N67A'&&nvmeAutoActivo&&n<1){ n=1; e.target.value='1'; }
+  const n=Math.max(0,parseInt(e.target.value)||0);
   if(n>0) accesoriosElegidos[sku]=n; else delete accesoriosElegidos[sku];
   renderBom();
 });
@@ -1272,21 +1253,19 @@ function renderBom(){
     {cat:'Equipo', desc:m.id, sku:m.hwSku||null, qty, unit:m.elpN!=null?m.elpN:null,
      nota:`${m.seg} · ${famLabel(m)} · ${m.ifaces}`},
   ];
-  // Ópticas y accesorios (fase 12): catálogo maestro del servidor; solo los compatibles
-  // con el modelo elegido — la selección se depura al cambiar de equipo para no cotizar
-  // una óptica incompatible. Después se sincroniza el kit NVMe que Boost exige.
+  // Ópticas y accesorios (fase 12): catálogo maestro del servidor, con precios de la
+  // lista oficial del distribuidor; solo los compatibles con el modelo elegido — la
+  // selección se depura al cambiar de equipo para no cotizar una óptica incompatible.
   const cfgAcc=ACCESSORY_COMPAT[m.id]||null;
   Object.keys(accesoriosElegidos).forEach(sku=>{
     if(!cfgAcc||!cfgAcc.items.includes(sku)) delete accesoriosElegidos[sku];
   });
-  sincronizarNvmeBoost();
   $('accBtn').hidden=!cfgAcc;
   Object.entries(accesoriosElegidos).forEach(([sku,n])=>{
     const a=ACCESSORY_CATALOG[sku];
     if(!a||n<=0) return;
     filas.push({cat:'Accesorios', desc:a.name, sku, qty:n, unit:a.listPrice!=null?a.listPrice:null,
-      nota:(sku==='S2N67A'&&nvmeAutoActivo?'Kit NVMe obligatorio para Boost (almacén de deduplicación) — añadido automáticamente. ':'')
-        +'List Price HPE — catálogo maestro de accesorios (2026-09-13); confirmar precio firme con el distribuidor'});
+      nota:'List Price de la lista oficial del distribuidor (vigencia '+(a.vigencia||'s/f')+') — catálogo maestro de accesorios; confirmar precio firme antes de cotizar'});
   });
   if(esEC){
     if(bundle){

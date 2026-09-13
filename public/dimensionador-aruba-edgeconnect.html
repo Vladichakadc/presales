@@ -652,16 +652,16 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
 
 </div><!-- /wrap -->
 
-<!-- Modal de ópticas y accesorios (fase 12, 2026-09-13): catálogo maestro del dueño
-     (ARUBA_ACCESSORY_CATALOG) servido por el servidor; compatibilidad anclada al VSG
-     oficial EdgeConnect y a lo declarado en el brief (25G → EC-10150/9240, NVMe Boost,
-     PSU R1C72A, racks 9004/9012). -->
+<!-- Modal de ópticas y accesorios (fase 12, corregido 2026-09-13): catálogo maestro
+     servido por el servidor con SKU, descripción, List Price, vigencia y PLC de la
+     lista de precios oficial del distribuidor; compatibilidad anclada al VSG oficial
+     EdgeConnect. Un SKU en PLC «ES» nunca se oferta. -->
 <div id="accModal" hidden>
   <div class="acc-caja">
     <h3>Ópticas y accesorios — <span id="accModelo"></span></h3>
     <p class="hint" id="accHint"></p>
     <div id="accLista"></div>
-    <p class="hint" style="margin-top:10px">Precios «List Price» HPE del catálogo maestro de accesorios (2026-09-13) — la cifra firme la cierra tu distribuidor. Las variantes <b>TAA</b> cumplen el Trade Agreements Act (compra pública de EE.&nbsp;UU.). El cordón de alimentación localizado va <b>incluido por defecto</b> en el equipo (la opción #AC3 «NoLoc» es la que lo excluye — QuickSpecs).</p>
+    <p class="hint" style="margin-top:10px">SKU, descripción y «List Price» de la lista de precios oficial del distribuidor (2026-09-13) — la cifra firme la cierra tu distribuidor. Las variantes <b>TAA</b> cumplen el Trade Agreements Act (compra pública de EE.&nbsp;UU.). El cordón de alimentación localizado va <b>incluido por defecto</b> en el equipo (la opción #AC3 «NoLoc» es la que lo excluye — QuickSpecs).</p>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
       <button type="button" class="btn ghost" id="accCerrar" style="font-size:11px;padding:6px 12px">Cerrar</button>
     </div>

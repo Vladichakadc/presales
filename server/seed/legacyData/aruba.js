@@ -808,81 +808,138 @@ const LICENSES_HA = {
   },
 };
 
-// ── Catálogo maestro de accesorios (fase 12, 2026-09-13) ─────────────────────
-// Transcrito VERBATIM del brief del dueño («Actúa como un Ingeniero Principal de
-// Software Full-Stack…», sección 1.1 ARUBA_ACCESSORY_CATALOG). Es la fuente que
-// GOBIERNA la compatibilidad y la cotización de accesorios — sustituye a los precios
-// de partner autorizado usados en la fase 11 (E3), que eran provisionales porque HPE
-// no publica List oficial de transceptores. Discrepancias documentadas (partner →
-// dueño): J4858D $480 → $271 · J9150D $1.454 → $859 · J9281D $164 → $115 · la 2ª PSU
-// del 9240 pasa de R7J63A ($721) a R1C72A ($890), que es el SKU que el dueño declara.
-// Queda en PENDIENTES.md confirmar con el distribuidor cuál de las dos PSU aplica.
+// ── Catálogo maestro de accesorios (fase 12, corregido 2026-09-13) ───────────
+// FUENTE OFICIAL: la lista de precios del distribuidor subida por el dueño — su
+// instrucción literal: «debes basarte en la lista de precios que te subí, esa es la
+// fuente oficial de los SKU y precios de lista». De ella se extraen ÚNICAMENTE
+// Product Number, Short Description, List Price, List Price Effective Date y PLC
+// Status (la regla de confidencialidad del repo prohíbe el resto de columnas).
+//
+// Esta lista CORRIGE al brief de la fase 12 en cuatro SKU y en todos los precios
+// (los del brief eran ~40-60 % más bajos — parecían precio neto o de otra fuente):
+//   · R1C72A es «AP-MNT-MP10-E» (montaje de APs, $415) — NO la PSU del 9240. La PSU
+//     real del 9240 es R7J63A «9240 550W AC Power supply» ($747).
+//   · R1B23A/R1B24A son gateways 9004 regionales (IL/EG, $2.505) — NO kits de rack.
+//     Los racks reales son R1B30A (9004) y R4X13A (9012).
+//   · JW084A es «7005-MNT-19» (rack del 7005, $282) — NO un cable de consola. La
+//     consola AP-CBL-SERU real es JY728A ($36).
+//   · JL747A es «1G SFP RJ45 T 100m Cat5e TAA» ($854) en estado ES — NO un 10G SR.
+//     Su sucesor GA es JL747B. Un SKU en ES no se oferta: queda en el catálogo para
+//     trazabilidad pero fuera de toda matriz de compatibilidad.
+//   · S2N67A es «EC 10150/10170 NM» ($9.096) — módulo del EC-10150/10170, NO un kit
+//     «EC 10010». La lista NO tiene kit de almacenamiento para EC-10106/10108, así
+//     que la sincronización Boost → NVMe de esos modelos se retira (PENDIENTES.md).
+//   · S1H24A (9240 1G cobre, nuevo) no figura en la lista; sí el reman S1H24AR.
+// Campos: name = Short Description literal de la lista; speed/media/reach cuando la
+// propia descripción los declara; category funcional en el resto; listPrice y
+// vigencia = List Price y su Effective Date; plc = PLC Status (GA / ES).
 const ARUBA_ACCESSORY_CATALOG = {
-  // Transceptores 1G SFP (Cobre y Fibra)
-  "S3R03A": { name: "HPE Aruba Networking EdgeConnect 1G SFP RJ45 100m Cat5e XCVR", speed: "1G", media: "COPPER", reach: "100m", listPrice: 260.00 },
-  "S1H24A": { name: "HPE Aruba Networking 9240 1G SFP RJ45 T 100m Cat5e XCVR", speed: "1G", media: "COPPER", reach: "100m", listPrice: 260.00 },
-  "J4858D": { name: "HPE Aruba Networking 1G SFP LC SX 500m OM2 MMF XCVR", speed: "1G", media: "MMF", reach: "500m", listPrice: 271.00 },
-  "J4859D": { name: "HPE Aruba Networking 1G SFP LC LX 10km SMF XCVR", speed: "1G", media: "SMF", reach: "10km", listPrice: 419.00 },
-  "J4860D": { name: "HPE Aruba Networking 1G SFP LC LH 70km SMF XCVR", speed: "1G", media: "SMF", reach: "70km", listPrice: 1250.00 },
-  "JL745A": { name: "HPE Aruba Networking 1G SFP LC SX 500m MMF TAA XCVR", speed: "1G", media: "MMF_TAA", reach: "500m", listPrice: 315.00 },
-  "JL746A": { name: "HPE Aruba Networking 1G SFP LC LX 10km SMF TAA XCVR", speed: "1G", media: "SMF_TAA", reach: "10km", listPrice: 480.00 },
-  // Transceptores y Cables Twinax 10G SFP+
-  "J9150D": { name: "HPE Aruba Networking 10G SFP+ LC SR 300m OM3 MMF XCVR", speed: "10G", media: "MMF", reach: "300m", listPrice: 859.00 },
-  "J9151E": { name: "HPE Aruba Networking 10G SFP+ LC LR 10km SMF XCVR", speed: "10G", media: "SMF", reach: "10km", listPrice: 1981.00 },
-  "J9153D": { name: "HPE Aruba Networking 10G SFP+ LC ER 40km SMF XCVR", speed: "10G", media: "SMF", reach: "40km", listPrice: 3850.00 },
-  "JL747A": { name: "HPE Aruba Networking 10G SFP+ LC SR 300m OM3 MMF TAA XCVR", speed: "10G", media: "MMF_TAA", reach: "300m", listPrice: 990.00 },
-  "JL748A": { name: "HPE Aruba Networking 10G SFP+ LC LR 10km SMF TAA XCVR", speed: "10G", media: "SMF_TAA", reach: "10km", listPrice: 2280.00 },
-  "J9281D": { name: "HPE Aruba Networking 10G SFP+ to SFP+ 1m DAC Cable", speed: "10G", media: "DAC", reach: "1m", listPrice: 115.00 },
-  "J9283D": { name: "HPE Aruba Networking 10G SFP+ to SFP+ 3m DAC Cable", speed: "10G", media: "DAC", reach: "3m", listPrice: 163.00 },
-  "J9285D": { name: "HPE Aruba Networking 10G SFP+ to SFP+ 7m DAC Cable", speed: "10G", media: "DAC", reach: "7m", listPrice: 249.00 },
-  // Transceptores y DACs 25G SFP28 (EC-10150 y Gateway 9240)
-  "JL484A": { name: "HPE Aruba Networking 25G SFP28 LC SR 100m MMF XCVR", speed: "25G", media: "MMF", reach: "100m", listPrice: 1299.00 },
-  "JL485A": { name: "HPE Aruba Networking 25G SFP28 LC eSR 400m MMF XCVR", speed: "25G", media: "MMF", reach: "400m", listPrice: 1650.00 },
-  "JL486A": { name: "HPE Aruba Networking 25G SFP28 LC LR 10km SMF XCVR", speed: "25G", media: "SMF", reach: "10km", listPrice: 2600.00 },
-  "JL487A": { name: "HPE Aruba Networking 25G SFP28 to SFP28 0.65m DAC Cable", speed: "25G", media: "DAC", reach: "0.65m", listPrice: 120.00 },
-  "JL488A": { name: "HPE Aruba Networking 25G SFP28 to SFP28 3m DAC Cable", speed: "25G", media: "DAC", reach: "3m", listPrice: 190.00 },
-  "JL489A": { name: "HPE Aruba Networking 25G SFP28 to SFP28 5m DAC Cable", speed: "25G", media: "DAC", reach: "5m", listPrice: 260.00 },
-  // Almacenamiento NVMe Boost, Fuentes Redundantes y Racks
-  "S2N67A": { name: "HPE Aruba Networking EC 10010 NM Drive Kit (2x 1.6TB NVMe)", category: "STORAGE_BOOST", listPrice: 7146.00 },
-  "R1C72A": { name: "HPE Aruba Networking 9240 550W Secondary AC Power Supply", category: "PSU", listPrice: 890.00 },
-  "R1B23A": { name: "Aruba 9004-MNT-19 19-inch Rack Mount Kit", category: "MOUNT", listPrice: 120.00 },
-  "R1B24A": { name: "Aruba 9012-MNT-19 19-inch Rack Mount Kit", category: "MOUNT", listPrice: 140.00 },
-  "JW084A": { name: "Aruba AP-CBL-SERU Micro-USB/USB-C to RJ45 Console Cable", category: "CABLE", listPrice: 45.00 }
+  // ── Transceptores 1G SFP (cobre y fibra) ──
+  S3R03A: { name: 'HPE ANW EC 1G SFP RJ45 100m XCVR', speed: '1G', media: 'COPPER', reach: '100m', listPrice: 497, vigencia: '2025-06-01', plc: 'GA' },
+  J4858D: { name: 'Aruba 1G SFP LC SX 500m MMF XCVR', speed: '1G', media: 'MMF', reach: '500m', listPrice: 569, vigencia: '2023-04-01', plc: 'GA' },
+  J4859D: { name: 'Aruba 1G SFP LC LX 10km SMF XCVR', speed: '1G', media: 'SMF', reach: '10km', listPrice: 1184, vigencia: '2023-04-01', plc: 'GA' },
+  J4860D: { name: 'Aruba 1G SFP LC LH 70km SMF XCVR', speed: '1G', media: 'SMF', reach: '70km', listPrice: 5266, vigencia: '2022-11-01', plc: 'GA' },
+  JL745A: { name: 'Aruba 1G SFP LC SX 500m MMF TAA XCVR', speed: '1G', media: 'MMF_TAA', reach: '500m', listPrice: 842, vigencia: '2022-11-01', plc: 'GA' },
+  JL746A: { name: 'Aruba 1G SFP LC LX 10km SMF TAA XCVR', speed: '1G', media: 'SMF_TAA', reach: '10km', listPrice: 1789, vigencia: '2022-11-01', plc: 'GA' },
+  JL747A: { name: 'Aruba 1G SFP RJ45 T 100m Cat5e TAA XCVR', speed: '1G', media: 'COPPER_TAA', reach: '100m', listPrice: 854, vigencia: '2022-11-01', plc: 'ES' },
+  JL747B: { name: 'HPE ANW 1G SFP RJ45 100m TAA XCVR', speed: '1G', media: 'COPPER_TAA', reach: '100m', listPrice: 854, vigencia: '2024-05-06', plc: 'GA' },
+  // ── Transceptores y DAC 10G SFP+ ──
+  J9150D: { name: 'Aruba 10G SFP+ LC SR 300m MMF XCVR', speed: '10G', media: 'MMF', reach: '300m', listPrice: 2017, vigencia: '2023-04-01', plc: 'GA' },
+  J9151E: { name: 'Aruba 10G SFP+ LC LR 10km SMF XCVR', speed: '10G', media: 'SMF', reach: '10km', listPrice: 4878, vigencia: '2022-11-01', plc: 'GA' },
+  J9153D: { name: 'Aruba 10G SFP+ LC ER 40km SMF XCVR', speed: '10G', media: 'SMF', reach: '40km', listPrice: 11855, vigencia: '2022-11-01', plc: 'GA' },
+  JL748A: { name: 'Aruba 10G SFP+ LC SR 300m MMF TAA XCVR', speed: '10G', media: 'MMF_TAA', reach: '300m', listPrice: 3008, vigencia: '2022-11-01', plc: 'GA' },
+  J9281D: { name: 'Aruba 10G SFP+ to SFP+ 1m DAC Cable', speed: '10G', media: 'DAC', reach: '1m', listPrice: 262, vigencia: '2023-04-01', plc: 'GA' },
+  J9283D: { name: 'Aruba 10G SFP+ to SFP+ 3m DAC Cable', speed: '10G', media: 'DAC', reach: '3m', listPrice: 359, vigencia: '2022-11-01', plc: 'GA' },
+  J9285D: { name: 'Aruba 10G SFP+ to SFP+ 7m DAC Cable', speed: '10G', media: 'DAC', reach: '7m', listPrice: 490, vigencia: '2022-11-01', plc: 'GA' },
+  // ── Transceptores y DAC 25G SFP28 (EC-10150 y Gateway 9240) ──
+  JL484A: { name: 'Aruba 25G SFP28 LC SR 100m MMF XCVR', speed: '25G', media: 'MMF', reach: '100m', listPrice: 1846, vigencia: '2022-11-01', plc: 'GA' },
+  JL485A: { name: 'Aruba 25G SFP28 LC eSR 400m MMF XCVR', speed: '25G', media: 'MMF', reach: '400m', listPrice: 2245, vigencia: '2023-04-01', plc: 'GA' },
+  JL486A: { name: 'Aruba 25G SFP28 LC LR 10km SMF XCVR', speed: '25G', media: 'SMF', reach: '10km', listPrice: 5927, vigencia: '2022-11-01', plc: 'GA' },
+  JL487A: { name: 'Aruba 25G SFP28 to SFP28 0.65m DAC Cable', speed: '25G', media: 'DAC', reach: '0.65m', listPrice: 329, vigencia: '2022-11-01', plc: 'GA' },
+  JL488A: { name: 'Aruba 25G SFP28 to SFP28 3m DAC Cable', speed: '25G', media: 'DAC', reach: '3m', listPrice: 466, vigencia: '2022-11-01', plc: 'GA' },
+  JL489A: { name: 'Aruba 25G SFP28 to SFP28 5m DAC Cable', speed: '25G', media: 'DAC', reach: '5m', listPrice: 614, vigencia: '2022-11-01', plc: 'GA' },
+  // ── Almacenamiento, fuentes, montaje y consola ──
+  S2N67A: { name: 'HPE ANW EC 10150/10170 NM', category: 'MODULE', listPrice: 9096, vigencia: '2025-05-05', plc: 'GA' },
+  JZ889A: { name: 'Aruba EC-L/XL-H SSD', category: 'STORAGE', listPrice: 1207, vigencia: '2025-06-01', plc: 'GA' },
+  R7J63A: { name: '9240 550W AC Power supply', category: 'PSU', listPrice: 747, vigencia: '2023-04-01', plc: 'GA' },
+  JM779A: { name: 'Aruba EC-S-P AC PSU', category: 'PSU', listPrice: 1100, vigencia: '2025-06-01', plc: 'GA' },
+  JZ955A: { name: 'Aruba EC-M-H PSU', category: 'PSU', listPrice: 1097, vigencia: '2025-06-01', plc: 'GA' },
+  R1B30A: { name: 'Aruba 9004-MNT-19 Rack Mount Kit', category: 'MOUNT', listPrice: 282, vigencia: '2022-11-01', plc: 'GA' },
+  R3W17A: { name: 'Aruba 9004-LTE-MNT-19 Rack Mount Kit', category: 'MOUNT', listPrice: 282, vigencia: '2022-11-01', plc: 'GA' },
+  R4X13A: { name: 'Aruba 9012-MNT-19 Spare Rack Mount Kit', category: 'MOUNT', listPrice: 71, vigencia: '2022-11-01', plc: 'GA' },
+  JZ888A: { name: 'Aruba EC-L/XL-H Center Mount Kit', category: 'MOUNT', listPrice: 1043, vigencia: '2025-06-01', plc: 'GA' },
+  JZ893A: { name: 'Aruba EC-S-P Accesssory Kit', category: 'KIT', listPrice: 296, vigencia: '2025-06-01', plc: 'GA' },
+  JZ894A: { name: 'Aruba EC-M-H Accessory Kit', category: 'KIT', listPrice: 296, vigencia: '2025-06-01', plc: 'GA' },
+  S2N64A: { name: 'HPE ANW 9114 Spare Fan Tray', category: 'FAN', listPrice: 182, vigencia: '2024-04-01', plc: 'GA' },
+  JY728A: { name: 'AP-CBL-SERU Console Adapter Cable', category: 'CABLE', listPrice: 36, vigencia: '2022-11-01', plc: 'GA' },
+  S1H24AR: { name: 'Aruba 9240 1G SFP RJ45 T 100m Reman XCVR', speed: '1G', media: 'COPPER', reach: '100m', listPrice: 353, vigencia: '2026-05-11', plc: 'GA' },
+  // ── Racks de la línea anterior 7000/7200 (parque instalado) ──
+  JW084A: { name: 'Aruba 7005-MNT-19 7005 Rack Mnt', category: 'MOUNT', listPrice: 282, vigencia: '2022-11-01', plc: 'GA' },
+  JX934A: { name: 'Aruba 7008-MNT-19 7008 Rack Mnt', category: 'MOUNT', listPrice: 492, vigencia: '2022-11-01', plc: 'GA' },
+  JW085A: { name: 'Aruba 7010-MNT-19 7010 Rack Mnt', category: 'MOUNT', listPrice: 106, vigencia: '2022-11-01', plc: 'GA' },
+  JW086A: { name: 'Aruba 7030-MNT-19 7030 Rack Mnt', category: 'MOUNT', listPrice: 106, vigencia: '2022-11-01', plc: 'GA' },
+  JW107A: { name: 'Aruba SPR-RK-MNT 7200/S3500 Rk Mount', category: 'MOUNT', listPrice: 106, vigencia: '2022-11-01', plc: 'GA' },
 };
 
 // Matriz modelo → accesorios ofertables. Procedencia de cada regla:
-//   · VSG EdgeConnect oficial (fase 11): las ópticas 1G de fibra (J4858D/J4859D) solo se
+//   · VSG EdgeConnect oficial (fase 11): las ópticas 1G (fibra y cobre) solo se
 //     certifican en EC-10106; 10G (J9150D/J9151E) y DAC 10G (J9281D/J9283D) en
 //     EC-10106/10108/10150; EC-10104 no tiene ranuras SFP; 9240 = 4x SFP28.
-//   · Brief del dueño (fase 12): 25G SFP28 → «EC-10150 y Gateway 9240»; S1H24A → 9240;
-//     R1C72A → 9240; R1B23A → 9004; R1B24A → 9012; S2N67A → kit NVMe Boost.
-//   · Inferencia por familia (marcada): J4860D y las variantes TAA (JL745A/JL746A) van
-//     donde van los 1G; J9153D, JL747A/JL748A y J9285D donde van los 10G; S3R03A (1G
-//     cobre EdgeConnect) sigue la regla 1G del VSG. Confirmar con el distribuidor.
-//   · S2N67A solo en EC-10106/10108: el EC-10150 ya lleva 2 SSD NVMe de sistema de
-//     fábrica (QuickSpecs) y los EC-XS/S/M/L/XL usan otro kit fuera de este catálogo.
-//   · JW084A (consola) se ofrece en todo el hardware; el EC-V es virtual.
+//   · Lista de precios oficial (2026-09-13): existencia, descripción, List Price,
+//     vigencia y PLC de cada SKU — y de ella salen los accesorios de EC-S/M/L/XL,
+//     los racks 9004/9004-LTE/9012 y el fan tray del 9114 (ampliación pedida por
+//     el dueño: «amplía el catálogo maestro con lo declarado anteriormente»).
+//   · Inferencia por familia (marcada): J4860D y las TAA (JL745A/JL746A/JL747B) van
+//     donde van los 1G; J9153D, JL748A y J9285D donde van los 10G. Confirmar con
+//     el distribuidor.
+//   · Un SKU en PLC «ES» NUNCA entra en la matriz (JL747A queda solo en catálogo).
+//   · S2N67A solo en EC-10150: la lista lo describe como «EC 10150/10170 NM» y el
+//     10170 no está en este catálogo. EC-10106/10108 no tienen kit de almacenamiento
+//     en la lista — el requisito de Boost en esos modelos queda en PENDIENTES.md.
+//   · Consola JY728A (AP-CBL-SERU) en el hardware de generación actual; los legacy
+//     7000/7200 solo ofrecen su rack de parque instalado (su consola RJ45-DB9 no
+//     está validada para este catálogo).
 const ACCESSORY_COMPAT = {
-  'EC-10106': { items: ['S3R03A','J4858D','J4859D','J4860D','JL745A','JL746A','J9150D','J9151E','J9153D','JL747A','JL748A','J9281D','J9283D','J9285D','S2N67A','JW084A'],
-    nota: '2 ranuras SFP 1G + 2 SFP+ 10G (VSG). Fuente externa única: sin opción de 2ª PSU. Boost exige el kit NVMe S2N67A.' },
-  'EC-10108': { items: ['J9150D','J9151E','J9153D','JL747A','JL748A','J9281D','J9283D','J9285D','S2N67A','JW084A'],
-    nota: '4 ranuras SFP+ 10G (VSG) — la tabla oficial NO certifica ópticas 1G en este modelo. Fuente externa única: sin opción de 2ª PSU. Boost exige el kit NVMe S2N67A.' },
-  'EC-10150': { items: ['J9150D','J9151E','J9153D','JL747A','JL748A','J9281D','J9283D','J9285D','JL484A','JL485A','JL486A','JL487A','JL488A','JL489A','JW084A'],
-    nota: '8 ranuras SFP+/SFP28 1/10/25G (VSG). Lleva 2 PSU redundantes y 2 SSD NVMe de sistema de fábrica: ni 2ª fuente ni kit Boost.' },
-  'Gateway 9004': { items: ['R1B23A','JW084A'],
-    nota: 'Sin ranuras SFP. Kit de rack 19" R1B23A.' },
-  'Gateway 9012': { items: ['R1B24A','JW084A'],
-    nota: 'Sin ranuras SFP. Kit de rack 19" R1B24A.' },
-  'Gateway 9240': { items: ['S1H24A','JL484A','JL485A','JL486A','JL487A','JL488A','JL489A','R1C72A','JW084A'],
-    nota: '4 ranuras SFP28 1/10/25G (datasheet). 1+1 PSU: la 2ª fuente es la R1C72A (550 W). Ópticas 25G y cobre 1G S1H24A según catálogo maestro.' },
+  'EC-10104': { items: ['JY728A'],
+    nota: 'Sin ranuras SFP (4x RJ45 — VSG). Solo cable de consola.' },
+  'EC-10106': { items: ['S3R03A','J4858D','J4859D','J4860D','JL745A','JL746A','JL747B','J9150D','J9151E','J9153D','JL748A','J9281D','J9283D','J9285D','JY728A'],
+    nota: '2 ranuras SFP 1G + 2 SFP+ 10G (VSG). Fuente externa única: sin opción de 2ª PSU.' },
+  'EC-10108': { items: ['J9150D','J9151E','J9153D','JL748A','J9281D','J9283D','J9285D','JY728A'],
+    nota: '4 ranuras SFP+ 10G (VSG) — la tabla oficial NO certifica ópticas 1G en este modelo. Fuente externa única: sin opción de 2ª PSU.' },
+  'EC-10150': { items: ['J9150D','J9151E','J9153D','JL748A','J9281D','J9283D','J9285D','JL484A','JL485A','JL486A','JL487A','JL488A','JL489A','S2N67A','JY728A'],
+    nota: '8 ranuras SFP+/SFP28 1/10/25G (VSG). Lleva 2 PSU redundantes y 2 SSD NVMe de sistema de fábrica; el módulo S2N67A («EC 10150/10170 NM») es la ampliación oficial.' },
+  'EC-XS': { items: ['JY728A'],
+    nota: 'Sin accesorios propios en la lista de precios oficial — solo cable de consola. Confirmar transceptores con el distribuidor.' },
+  'EC-S': { items: ['JM779A','JZ893A','JY728A'],
+    nota: 'Sin matriz de ópticas validada. JM779A es la PSU AC de la variante EC-S-P (1+1); JZ893A es su kit de accesorios oficial.' },
+  'EC-M': { items: ['JZ955A','JZ894A','JY728A'],
+    nota: 'Sin matriz de ópticas validada. JZ955A es la PSU de la variante EC-M-H; JZ894A su kit de accesorios oficial.' },
+  'EC-L': { items: ['JZ889A','JZ888A','JY728A'],
+    nota: 'Sin matriz de ópticas validada. JZ889A es el SSD oficial de la variante EC-L-H (almacén Boost); JZ888A su kit de montaje central.' },
+  'EC-XL': { items: ['JZ889A','JZ888A','JY728A'],
+    nota: 'FIN DE VENTA (último pedido 2026-03-31) — accesorios de parque instalado: SSD JZ889A y montaje central JZ888A de la variante EC-XL-H.' },
+  'Gateway 9004': { items: ['R1B30A','JY728A'],
+    nota: 'Sin ranuras SFP. Kit de rack 19" oficial R1B30A.' },
+  'Gateway 9004-LTE': { items: ['R3W17A','JY728A'],
+    nota: 'Sin ranuras SFP. Kit de rack 19" oficial R3W17A (variante LTE).' },
+  'Gateway 9012': { items: ['R4X13A','JY728A'],
+    nota: 'Sin ranuras SFP. Kit de rack 19" oficial R4X13A.' },
+  'Gateway 9106': { items: ['JY728A'],
+    nota: 'Sin accesorios propios en la lista de precios oficial — solo cable de consola.' },
+  'Gateway 9114': { items: ['S2N64A','JY728A'],
+    nota: 'Bandeja de ventiladores de repuesto oficial S2N64A.' },
+  'Gateway 9240': { items: ['S1H24AR','JL484A','JL485A','JL486A','JL487A','JL488A','JL489A','R7J63A','JY728A'],
+    nota: '4 ranuras SFP28 1/10/25G (datasheet). 1+1 PSU: la 2ª fuente es la R7J63A (550 W). El cobre 1G S1H24A nuevo no figura en la lista — se ofrece el reman S1H24AR.' },
+  // Línea anterior (parque instalado): solo su kit de rack oficial.
+  '7005': { items: ['JW084A'], nota: 'Parque instalado: kit de rack 19" oficial.' },
+  '7008': { items: ['JX934A'], nota: 'Parque instalado: kit de rack 19" oficial.' },
+  '7010': { items: ['JW085A'], nota: 'Parque instalado: kit de rack 19" oficial.' },
+  '7030': { items: ['JW086A'], nota: 'Parque instalado: kit de rack 19" oficial.' },
+  '7205': { items: ['JW107A'], nota: 'Parque instalado: kit de rack oficial (SPR-RK-MNT).' },
+  '7210': { items: ['JW107A'], nota: 'Parque instalado: kit de rack oficial (SPR-RK-MNT).' },
+  '7220': { items: ['JW107A'], nota: 'Parque instalado: kit de rack oficial (SPR-RK-MNT).' },
+  '7240XM': { items: ['JW107A'], nota: 'Parque instalado: kit de rack oficial (SPR-RK-MNT).' },
 };
-// Consola universal: todo el hardware que no tiene regla propia la ofrece (el EC-V es
-// virtual y no la necesita). Los legacy 7000/7200 quedan fuera: usan otro cable.
-for (const m of MODELS) {
-  if (!ACCESSORY_COMPAT[m.id] && m.fam === 'ec' && m.id !== 'EC-V') {
-    ACCESSORY_COMPAT[m.id] = { items: ['JW084A'], nota: 'Sin matriz de ópticas en el catálogo maestro para este modelo — solo cable de consola. Confirmar transceptores con el distribuidor.' };
-  }
-}
 
 module.exports = {
   MODELS, BUNDLES, CARE, CARE_SKU, LICENSES, LICENSES_HA, BW_TIERS, BOOST, FEC_OVERHEAD,

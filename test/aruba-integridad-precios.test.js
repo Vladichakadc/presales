@@ -18,7 +18,7 @@ const { MODELS, CARE, CARE_SKU, LICENSES, LICENSES_HA, CENTRAL_TIERS, BOOST, FEC
 
 const csvFilas = fs.readFileSync(path.join(__dirname, '..', 'public', 'datasheets', 'aruba-lista-precios-hpe.csv'), 'utf8')
   .trim().split(/\r?\n/).slice(1).map((l) => l.split(','));
-const porSku = new Map(csvFilas.map((c) => [c[0], { mod: c[1], p: c[3] === '' ? null : Number(c[3]), plc: c[5] }]));
+const porSku = new Map(csvFilas.map((c) => [c[0], { mod: c[1], p: c[3] === '' ? null : Number(c[3]), vig: c[4], plc: c[5] }]));
 
 // Modelos sin SKU base pedible, declarados a proposito: EC-V es virtual (se cotiza por
 // suscripcion) y la serie 7000/7200 se pide remanufacturada (filas …R del CSV). Si un
@@ -31,6 +31,7 @@ const FAMILIAS_CSV = new Set([
   'Suscripcion EdgeConnect Foundation HA', 'Suscripcion EdgeConnect Advanced HA',
   'Suscripcion EdgeConnect On-Premises',
   'Boost EdgeConnect (SaaS)', 'Boost EdgeConnect (On-Premises)', 'Central (gateways 70xx/90xx)',
+  'Accesorios EdgeConnect y gateways',
 ]);
 
 // Estados del ciclo de vida que la pagina sabe pintar (columna PLC Status del export):
@@ -225,27 +226,33 @@ test('el overhead FEC esta anclado a los ratios oficiales del VSG (1:8 y 1:4)', 
   assert.strictEqual(FEC_OVERHEAD.alto.pct, 0.25, 'agresivo debe clavar el ratio oficial 1:4 (25%)');
 });
 
-// ── Catálogo maestro de accesorios (fase 12, 2026-09-13) ─────────────────────
-// El brief del dueño declara 26 SKUs verbatim que gobiernan compatibilidad y cotización.
-// Estas reglas convierten en ruido de CI: un SKU de la matriz que no exista en el
-// catálogo, un accesorio sin List Price, una compatibilidad colgada de un modelo
-// inexistente o el kit NVMe de Boost ofrecido donde no aplica.
+// ── Catálogo maestro de accesorios (fase 12, corregido 2026-09-13) ───────────
+// La fuente oficial es la lista de precios del distribuidor subida por el dueño («esa
+// es la fuente oficial de los SKU y precios de lista»). Estas reglas convierten en
+// ruido de CI: un SKU de la matriz que no exista en el catálogo, un accesorio sin
+// List Price o sin vigencia, una compatibilidad colgada de un modelo inexistente, un
+// SKU en fin de venta (PLC «ES») ofertado, o una discrepancia de precio entre el
+// catálogo maestro y el CSV del cotizador (dos vistas de la MISMA fuente).
 
-test('el catálogo maestro de accesorios tiene exactamente los 26 SKUs del brief', () => {
+test('el catálogo maestro cubre los 40 accesorios extraídos de la lista oficial', () => {
   const skus = Object.keys(ARUBA_ACCESSORY_CATALOG);
-  assert.strictEqual(skus.length, 26, `se esperaban 26 SKUs verbatim del brief, hay ${skus.length}`);
-  for (const obligatorio of ['S2N67A', 'R1C72A', 'R1B23A', 'R1B24A', 'JW084A',
-    'S3R03A', 'S1H24A', 'J4858D', 'J4859D', 'J4860D', 'JL745A', 'JL746A',
-    'J9150D', 'J9151E', 'J9153D', 'JL747A', 'JL748A', 'J9281D', 'J9283D', 'J9285D',
-    'JL484A', 'JL485A', 'JL486A', 'JL487A', 'JL488A', 'JL489A']) {
-    assert.ok(ARUBA_ACCESSORY_CATALOG[obligatorio], `falta el SKU ${obligatorio} del brief`);
+  assert.strictEqual(skus.length, 40, `se esperaban 40 SKUs de la lista oficial, hay ${skus.length}`);
+  for (const obligatorio of ['S3R03A', 'J4858D', 'J4859D', 'J4860D', 'JL745A', 'JL746A',
+    'JL747A', 'JL747B', 'J9150D', 'J9151E', 'J9153D', 'JL748A', 'J9281D', 'J9283D', 'J9285D',
+    'JL484A', 'JL485A', 'JL486A', 'JL487A', 'JL488A', 'JL489A',
+    'S2N67A', 'JZ889A', 'R7J63A', 'JM779A', 'JZ955A', 'R1B30A', 'R3W17A', 'R4X13A',
+    'JZ888A', 'JZ893A', 'JZ894A', 'S2N64A', 'JY728A', 'S1H24AR',
+    'JW084A', 'JX934A', 'JW085A', 'JW086A', 'JW107A']) {
+    assert.ok(ARUBA_ACCESSORY_CATALOG[obligatorio], `falta el SKU ${obligatorio} de la lista oficial`);
   }
 });
 
-test('todo accesorio del catálogo tiene nombre y List Price positivo', () => {
+test('todo accesorio tiene descripción oficial, List Price, vigencia y PLC conocido', () => {
   for (const [sku, a] of Object.entries(ARUBA_ACCESSORY_CATALOG)) {
-    assert.ok(a.name && a.name.length > 10, `${sku}: falta la descripción oficial HPE`);
+    assert.ok(a.name && a.name.length > 10, `${sku}: falta la descripción oficial de la lista`);
     assert.ok(typeof a.listPrice === 'number' && a.listPrice > 0, `${sku}: List Price inválido (${a.listPrice})`);
+    assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(a.vigencia || ''), `${sku}: vigencia List Price inválida (${a.vigencia})`);
+    assert.ok(PLC_CONOCIDOS.has(a.plc), `${sku}: PLC desconocido (${a.plc}) — decidir cómo se pinta antes de aceptarlo`);
     assert.ok(a.speed || a.category, `${sku}: debe declarar speed (transceptor/DAC) o category (funcional)`);
   }
 });
@@ -261,37 +268,85 @@ test('la matriz de compatibilidad solo referencia SKUs y modelos que existen', (
   }
 });
 
-test('el kit NVMe de Boost (S2N67A) solo se ofrece en EC-10106 y EC-10108', () => {
-  // El EC-10150 lleva 2 SSD NVMe de sistema de fábrica (QuickSpecs) y el resto de
-  // EdgeConnect usa otro kit fuera del catálogo maestro; ofrecerlo ahí sería cotizar
-  // hardware redundante o incompatible.
-  for (const [modelo, cfg] of Object.entries(ACCESSORY_COMPAT)) {
-    const tiene = cfg.items.includes('S2N67A');
-    const debe = ['EC-10106', 'EC-10108'].includes(modelo);
-    assert.strictEqual(tiene, debe, `${modelo}: S2N67A ${tiene ? 'ofrecido' : 'ausente'} y ${debe ? 'debía' : 'no debía'}`);
+test('ningún SKU en fin de venta (PLC «ES») se oferta en la matriz', () => {
+  // Regla de la casa: un SKU en ES queda en el catálogo para trazabilidad pero nunca
+  // se ofrece — JL747A (1G cobre TAA, ES) es el caso vivo; su sucesor GA es JL747B.
+  for (const [sku, a] of Object.entries(ARUBA_ACCESSORY_CATALOG)) {
+    if (a.plc !== 'ES') continue;
+    for (const [modelo, cfg] of Object.entries(ACCESSORY_COMPAT)) {
+      assert.ok(!cfg.items.includes(sku), `${sku} está en ES y se oferta en ${modelo}`);
+    }
   }
 });
 
-test('las ópticas 1G de fibra solo se certifican en EC-10106 (regla VSG)', () => {
-  // VSG EdgeConnect oficial (fase 11): J4858D/J4859D solo EC-10106. Las variantes del
-  // brief (J4860D, JL745A/JL746A, S3R03A cobre) siguen la misma regla por inferencia
-  // declarada — si el VSG cambia, este test obliga a revisar la matriz entera.
-  const g1 = ['S3R03A', 'J4858D', 'J4859D', 'J4860D', 'JL745A', 'JL746A'];
+test('el módulo S2N67A («EC 10150/10170 NM») solo se ofrece en EC-10150', () => {
+  // La lista oficial lo describe como módulo del 10150/10170 y el 10170 no está en
+  // este catálogo. EC-10106/10108 no tienen kit de almacenamiento en la lista — el
+  // requisito de Boost en esos modelos queda en PENDIENTES.md, no se inventa un SKU.
+  for (const [modelo, cfg] of Object.entries(ACCESSORY_COMPAT)) {
+    assert.strictEqual(cfg.items.includes('S2N67A'), modelo === 'EC-10150',
+      `S2N67A en ${modelo}: la lista oficial dice «EC 10150/10170 NM»`);
+  }
+});
+
+test('las ópticas 1G solo se certifican en EC-10106 (regla VSG), salvo la del 9240', () => {
+  // VSG EdgeConnect oficial (fase 11): 1G solo EC-10106. Las variantes de la lista
+  // (J4860D, TAA JL745A/JL746A/JL747B, cobre S3R03A) siguen la misma regla por
+  // inferencia declarada. Única excepción: S1H24AR, cobre 1G ESPECÍFICO del 9240
+  // (su descripción oficial lo dice) — va solo al 9240.
+  const g1 = ['S3R03A', 'J4858D', 'J4859D', 'J4860D', 'JL745A', 'JL746A', 'JL747B'];
   for (const [modelo, cfg] of Object.entries(ACCESSORY_COMPAT)) {
     for (const sku of g1) {
       assert.strictEqual(cfg.items.includes(sku), modelo === 'EC-10106',
         `${sku} en ${modelo}: la regla VSG 1G dice solo EC-10106`);
     }
+    assert.strictEqual(cfg.items.includes('S1H24AR'), modelo === 'Gateway 9240',
+      `S1H24AR en ${modelo}: es específico del 9240 según la lista oficial`);
   }
 });
 
-test('la PSU R1C72A y los racks R1B23A/R1B24A van solo a su gateway', () => {
-  assert.ok(ACCESSORY_COMPAT['Gateway 9240'].items.includes('R1C72A'), '9240 debe ofrecer su 2ª PSU');
-  assert.ok(ACCESSORY_COMPAT['Gateway 9004'].items.includes('R1B23A'), '9004 debe ofrecer su rack');
-  assert.ok(ACCESSORY_COMPAT['Gateway 9012'].items.includes('R1B24A'), '9012 debe ofrecer su rack');
+test('PSU, racks y fan tray van solo a su equipo (lista oficial)', () => {
+  const exclusivos = {
+    R7J63A: 'Gateway 9240',   // 9240 550W AC Power supply
+    R1B30A: 'Gateway 9004',   // 9004-MNT-19
+    R3W17A: 'Gateway 9004-LTE', // 9004-LTE-MNT-19
+    R4X13A: 'Gateway 9012',   // 9012-MNT-19
+    S2N64A: 'Gateway 9114',   // 9114 Spare Fan Tray
+    JM779A: 'EC-S',           // EC-S-P AC PSU
+    JZ955A: 'EC-M',           // EC-M-H PSU
+    JW084A: '7005', JX934A: '7008', JW085A: '7010', JW086A: '7030',
+  };
+  for (const [sku, dueno] of Object.entries(exclusivos)) {
+    for (const [modelo, cfg] of Object.entries(ACCESSORY_COMPAT)) {
+      assert.strictEqual(cfg.items.includes(sku), modelo === dueno,
+        `${sku} en ${modelo}: la lista oficial lo ata a ${dueno}`);
+    }
+  }
+  // Compartidos declarados: JZ889A/JZ888A (EC-L y EC-XL) y JW107A (serie 7200).
+  for (const sku of ['JZ889A', 'JZ888A']) {
+    for (const [modelo, cfg] of Object.entries(ACCESSORY_COMPAT)) {
+      assert.strictEqual(cfg.items.includes(sku), ['EC-L', 'EC-XL'].includes(modelo),
+        `${sku} en ${modelo}: la lista lo ata a EC-L/XL-H`);
+    }
+  }
   for (const [modelo, cfg] of Object.entries(ACCESSORY_COMPAT)) {
-    if (modelo !== 'Gateway 9240') assert.ok(!cfg.items.includes('R1C72A'), `R1C72A colada en ${modelo}`);
-    if (modelo !== 'Gateway 9004') assert.ok(!cfg.items.includes('R1B23A'), `R1B23A colada en ${modelo}`);
-    if (modelo !== 'Gateway 9012') assert.ok(!cfg.items.includes('R1B24A'), `R1B24A colada en ${modelo}`);
+    assert.strictEqual(cfg.items.includes('JW107A'), ['7205', '7210', '7220', '7240XM'].includes(modelo),
+      `JW107A en ${modelo}: la lista lo ata a la serie 7200`);
+  }
+});
+
+test('el catálogo maestro y el CSV del cotizador dicen lo mismo (misma fuente)', () => {
+  // El CSV es la otra vista de la lista oficial: todo accesorio del catálogo maestro
+  // debe estar en el CSV, con el mismo List Price, vigencia y PLC. Una discrepancia
+  // aquí significa que una de las dos vistas se editó a mano — y eso es exactamente
+  // lo que esta prueba existe para impedir.
+  for (const [sku, a] of Object.entries(ARUBA_ACCESSORY_CATALOG)) {
+    const fila = porSku.get(sku);
+    assert.ok(fila, `${sku}: está en el catálogo maestro pero no en el CSV del cotizador`);
+    assert.strictEqual(fila.mod, 'Accesorios EdgeConnect y gateways',
+      `${sku}: familia CSV «${fila.mod}» en vez de «Accesorios EdgeConnect y gateways»`);
+    assert.strictEqual(fila.p, a.listPrice, `${sku}: CSV $${fila.p} vs catálogo $${a.listPrice}`);
+    assert.strictEqual(fila.vig, a.vigencia, `${sku}: vigencia CSV «${fila.vig}» vs catálogo «${a.vigencia}»`);
+    assert.strictEqual(fila.plc, a.plc, `${sku}: PLC CSV «${fila.plc}» vs catálogo «${a.plc}»`);
   }
 });
