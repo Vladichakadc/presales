@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-13 (refactor integral del dimensionador Aruba — 7 módulos).
+Última revisión: 2026-09-13 (verificador de pantallas reparado tras el refactor de Aruba).
 
 ---
 
@@ -464,6 +464,16 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     LIST/NET» (archivo compartido por los 7 fabricantes — no se tocó para no romper a los
     demás). Unificar criterio cuando se aplique el patrón Aruba al resto de fabricantes.
 
+33. **Railway no espera a `pantallas`, solo a `verificar` (2026-09-13).** Medido, no supuesto:
+    el commit `7fe786e` desplegó con estado SUCCESS teniendo la comprobación de navegador en
+    rojo desde hacía cuatro días — el dimensionador Aruba llevaba ese tiempo sin que nadie lo
+    condujera. La cabecera de `.github/workflows/pantallas.yml` afirma «ESTE CHECK FRENA EL
+    DESPLIEGUE, a proposito» y **no es cierto**, así que la red es más fina de lo que el propio
+    repositorio cree. Un documento que promete una protección que no existe es peor que no
+    prometer nada. **Decisión del dueño:** convertir `pantallas` en *required check* de la rama
+    `main` (ajuste de GitHub, no de código) y corregir esa cabecera, o aceptar que solo frena
+    `verificar` y decirlo en los dos sitios. `CLAUDE.md` ya lo declara como está hoy.
+
 ## Limpieza
 
 11. **Nada abierto.** Los cuatro puntos que vivían aquí (el sufijo `-v3_1`, el conjunto
@@ -479,9 +489,58 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
 
 ## Cerrado recientemente
 
+### El verificador de pantallas vuelve a conducir Aruba, y ahora dice qué le falta (2026-09-13)
+
+`pantallas.yml` llevaba **cuatro días en rojo** sobre `main`. El refactor del dimensionador
+Aruba sustituyó su campo `#bw` por el Multi-Underlay Builder, y `scripts/verificar-pantallas.js`
+seguía rellenando `#bw` en las ocho páginas: `page.fill: Timeout 30000ms exceeded`, 14/15. La
+pantalla que más cambió —1.702 líneas— se quedó sin la única comprobación que la conduce en un
+navegador, que es justo la clase de fallo que este repositorio documenta como invisible a `curl`.
+
+**Se midió antes de tocar nada, y la conclusión importa: la página funciona.** Conducida a mano
+en Chromium, 13 equipos cumplen a 2,5 Gbps, EC-M sale recomendado, el builder responde y el BOM
+pinta 20 KB; los únicos errores de consola son los ambientales de siempre (Google Fonts y el
+favicon) y no hay una sola petición fallida al propio origen. El rojo era del verificador.
+
+Qué cambió, y por qué cada cosa:
+
+- **`caudal(page)` es ahora un gancho opcional por página.** El defecto de fondo no era el
+  selector: era asumir una sola forma para ocho páginas. Siete siguen entrando con una línea
+  (el `#bw` por defecto) y Aruba declara el suyo sobre las filas del builder.
+- **Un control ausente falla en el acto y con su nombre**, no con treinta segundos de espera.
+  Un rojo que tarda medio minuto en decir «ese campo ya no existe» se lee como lentitud del
+  ejecutor, y así es como se acaba ignorando.
+- **La ficha tiene que repintarse al mover el caudal.** El comentario del script lo prometía
+  desde que se escribió; nadie lo comprobaba.
+- **El E2E del refactor vuelve al repositorio.** El que declaró la entrega anterior (11/11)
+  vivía en `/tmp/e2e-refactor.js` y murió con su sesión: 1.702 líneas nuevas sin una sola
+  comprobación repetible. Ahora corre en cada push: segunda fila WAN, y el banner Microbranch
+  apareciendo y **retirándose** en sus umbrales.
+- **Pantalla nueva: el enlace compartido v1.** `migrarEstadoV1()` estaba bien escrita y nunca se
+  había ejecutado en un navegador. Verificada a mano en los tres casos —`?bw=2500&unit=1`,
+  `?bw=2.5&unit=1000` (multiplica bien) y MPLS+Internet, que da dos filas— y fijada como
+  pantalla propia. Un enlace viejo que aterriza con los valores por defecto es **peor que un
+  404 porque no se nota**: el receptor ve otra recomendación y no tiene cómo saberlo.
+- **La navegación del portal deja de esperar al evento `load`.** Medido desde este entorno: las
+  siete navegaciones alternaban 90 ms y **12.100 ms**, y esos 12 segundos son el mismo bloqueo
+  de Google Fonts que `js/fuentes.js` documenta. Lo que se afirma ahí es que el botón *navega*,
+  así que se espera a `commit` más `domcontentloaded`. Los `ERR_ABORTED` de la vuelta al portal
+  se descuentan por **el momento** en que ocurren y no por su nombre: fuera de esa ventana, un
+  script cancelado sigue siendo un fallo.
+
+**Se comprobó que detecta, no solo que pasa**, con tres sabotajes: renombrando `data-campo=down`
+dice que falta ese control; con el banner forzado a oculto lo declara; y desactivando
+`migrarEstadoV1()` reporta la fila DIA vacía, que es exactamente su fallo silencioso.
+
+16/16 pantallas y 266/266 pruebas. De aquí sale el pendiente **33**: Railway desplegó ese commit
+con SUCCESS pese al rojo, así que `pantallas` no frena un despliegue aunque su cabecera diga que
+sí. También se archivaron `SPEC.md` y `plan.md` —artefactos de proceso de otro motor, con rutas
+`/mnt/agents/output/` que no existen aquí— en `docs/refactor-aruba-2026-09-13/`, y se reconcilió
+`CLAUDE.md`, que tras 54 commits solo había cambiado tres líneas.
+
 ### Refactor integral del dimensionador Aruba en 7 módulos (2026-09-13)
 
-Brief del dueño ejecutado con orquestación multi-agente (SPEC.md como contrato, dos
+Brief del dueño ejecutado con orquestación multi-agente (`docs/refactor-aruba-2026-09-13/SPEC.md` como contrato, dos
 frentes —datos y motor/UI— integrados por bundles). Todo lo que el brief contradecía a
 la fuente oficial quedó resuelto a favor de la fuente oficial y documentado (pendientes
 28-32): S2N67A a $9.096 (no $7.146), PSU del 9240 = R7J63A $747 (no R1C72A, que es un

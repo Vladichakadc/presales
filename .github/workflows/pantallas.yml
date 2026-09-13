@@ -15,10 +15,13 @@ name: pantallas
 # Lo que este workflow NO cubre -que el dominio publico este vivo: DNS, TLS, el edge de
 # Railway- lo cubre `sonda-produccion.yml`. Son las dos mitades, y ninguna sustituye a la otra.
 #
-# ESTE CHECK FRENA EL DESPLIEGUE, a proposito: Railway espera a las comprobaciones de CI, y
-# una pantalla rota no deberia llegar a produccion. Si alguna vez estorbara mas de lo que
-# ayuda, la valvula es anadir `continue-on-error: true` al job -- se sigue viendo el rojo y las
-# capturas, pero deja de bloquear.
+# ESTE CHECK NO FRENA EL DESPLIEGUE, aunque esta cabecera lo afirmo hasta el 2026-09-13.
+# Medido ese dia: el commit 7fe786e desplego en Railway con estado SUCCESS teniendo este job en
+# rojo desde hacia cuatro dias -- Railway espera a `verificar` y no a este. Se deja escrito
+# porque una cabecera que promete una proteccion inexistente es peor que no prometer nada: haria
+# leer un rojo de aqui como «ya esta contenido, no llega a produccion», y si llega. Convertirlo
+# en required check de `main` es un ajuste de GitHub, no de este archivo, y esta abierto como
+# punto 33 de PENDIENTES.md.
 
 on:
   push:

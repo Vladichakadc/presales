@@ -25,7 +25,7 @@
 // QUE CUENTA COMO FALLO. Errores de consola, excepciones de pagina, peticiones fallidas al
 // propio origen (un `<script>` que devuelve 404 o HTML) y contenedores que se quedan vacios
 // —el sintoma de un `fetch` que fallo en silencio—. NO se comprueba ninguna cifra del
-// catalogo: para eso estan las 181 pruebas, y una asercion sobre «3,1 Gbps» aqui se rompería
+// catalogo: para eso estan las 266 pruebas, y una asercion sobre «3,1 Gbps» aqui se rompería
 // cada vez que el catalogo cambie, que es como se enseña a la gente a ignorar un rojo.
 //
 // COMO SE USA
