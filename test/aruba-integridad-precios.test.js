@@ -14,7 +14,7 @@ const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 
-const { MODELS, CARE, CARE_SKU, LICENSES, LICENSES_HA, CENTRAL_TIERS, BOOST, FEC_OVERHEAD, ARUBA_ACCESSORY_CATALOG, ACCESSORY_COMPAT } = require('../server/seed/legacyData/aruba');
+const { MODELS, CARE, CARE_SKU, LICENSES, LICENSES_HA, CENTRAL_TIERS, BOOST, FEC_OVERHEAD, ARUBA_ACCESSORY_CATALOG, ACCESSORY_COMPAT, ARUBA_SSE } = require('../server/seed/legacyData/aruba');
 
 const csvFilas = fs.readFileSync(path.join(__dirname, '..', 'public', 'datasheets', 'aruba-lista-precios-hpe.csv'), 'utf8')
   .trim().split(/\r?\n/).slice(1).map((l) => l.split(','));
@@ -151,14 +151,19 @@ test('los SKU de servicio de CARE_SKU no chocan con la lista de precios', () => 
   assert.deepStrictEqual(choques, [], 'el mismo SKU no puede vivir en dos fuentes con dos precios');
 });
 
-test('LICENSES_HA cubre los 3 tiers x 2 niveles x 3 terminos, con precios positivos', () => {
-  // On-Premises NO esta mapeado a proposito: HPE no publica equivalencia E-STU de HA para
-  // el segundo nodo on-prem, asi que el motor cotiza 2x estandar con declaracion (decision
-  // del duenyo, 2026-09-13). Si algun dia se confirma, se mapea aqui y se ajusta el BOM.
-  assert.deepStrictEqual(Object.keys(LICENSES_HA).sort(), ['bw100', 'bw1g', 'bwunl']);
+test('LICENSES_HA cubre los 8 tiers en advanced y los 3 de foundation, con precios positivos', () => {
+  // 2026-09-13: Advanced HA crece de 3 a 8 tiers (20M-2G, verificado en la lista oficial).
+  // Foundation HA se queda en bw100/bw1g/bwunl: la lista no publica Foundation en los
+  // tiers intermedios, ni estandar ni HA. On-Premises NO esta mapeado a proposito: HPE
+  // no publica equivalencia E-STU de HA para el segundo nodo on-prem, asi que el motor
+  // cotiza 2x estandar con declaracion (decision del duenyo, 2026-09-13). Si algun dia
+  // se confirma, se mapea aqui y se ajusta el BOM.
+  assert.deepStrictEqual(Object.keys(LICENSES_HA).sort(),
+    ['bw100', 'bw1g', 'bw20', 'bw200', 'bw2g', 'bw50', 'bw500', 'bwunl']);
   const mal = [];
   for (const [bw, lic] of Object.entries(LICENSES_HA)) {
-    for (const nivel of ['foundation', 'advanced']) {
+    const niveles = ['bw100', 'bw1g', 'bwunl'].includes(bw) ? ['foundation', 'advanced'] : ['advanced'];
+    for (const nivel of niveles) {
       const t = lic[nivel];
       if (!t) { mal.push(`${bw}/${nivel}: falta el nivel`); continue; }
       for (const term of ['y1', 'y3', 'y5']) {
@@ -186,6 +191,62 @@ test('el precio HA es identico al estandar, tier a tier y anyo a anyo (invariant
     }
   }
   assert.deepStrictEqual(mal, []);
+});
+
+// ── Tiers 20M-2G, restriccion Foundation y SSE (2026-09-13) ──────────────────
+// La lista oficial amplio Advanced y On-Premises a ocho tiers de caudal; Foundation
+// NO los tiene (restriccion oficial, no hueco de datos) y SSE quedo en «consultar».
+// Estas tres reglas convierten en ruido de CI: un tier Foundation colado de contrabando,
+// un par HA que deje de costar lo mismo que el estandar, o un precio inventado para SSE.
+
+test('Foundation (y Foundation HA) solo tienen bw100/bw1g/bwunl; advanced/onprem tienen los 8 tiers', () => {
+  // Restriccion oficial verificada en la lista 2026-09-13: no existe ninguna fila
+  // Foundation de 20/50/200/500 Mbps ni 2 Gbps. El motor debe bloquear esos tiers
+  // cuando el nivel es Foundation — si aparecen aqui, alguien los invento.
+  const TIERS_8 = ['bw20', 'bw50', 'bw100', 'bw200', 'bw500', 'bw1g', 'bw2g', 'bwunl'];
+  const TIERS_FND = ['bw100', 'bw1g', 'bwunl'];
+  assert.deepStrictEqual(Object.keys(LICENSES).sort(), [...TIERS_8].sort());
+  assert.deepStrictEqual(Object.keys(LICENSES_HA).sort(), [...TIERS_8].sort());
+  for (const bw of TIERS_8) {
+    for (const nivel of ['advanced', 'onprem']) {
+      const t = LICENSES[bw][nivel];
+      assert.ok(t, `LICENSES ${bw}/${nivel}: falta el nivel`);
+      for (const term of ['y1', 'y3', 'y5']) {
+        assert.ok(t.sku && t.sku[term], `LICENSES ${bw}/${nivel}/${term}: falta SKU`);
+        assert.ok(t[term] > 0, `LICENSES ${bw}/${nivel}/${term}: precio no positivo`);
+      }
+    }
+    assert.ok(LICENSES_HA[bw].advanced, `LICENSES_HA ${bw}/advanced: falta el nivel`);
+    if (TIERS_FND.includes(bw)) {
+      assert.ok(LICENSES[bw].foundation, `LICENSES ${bw}/foundation: falta el nivel`);
+      assert.ok(LICENSES_HA[bw].foundation, `LICENSES_HA ${bw}/foundation: falta el nivel`);
+    } else {
+      assert.ok(!LICENSES[bw].foundation, `LICENSES ${bw}/foundation: tier intermedio inventado`);
+      assert.ok(!LICENSES_HA[bw].foundation, `LICENSES_HA ${bw}/foundation: tier intermedio inventado`);
+    }
+  }
+});
+
+test('invariante HA == estandar en los 8 tiers de advanced', () => {
+  // Misma invariante QuickSpecs del test historico, extendida 2026-09-13 a los ocho
+  // tiers de Advanced: el SKU HA del segundo nodo cuesta EXACTAMENTE lo mismo que el
+  // estandar — solo cambia el numero de parte.
+  for (const bw of ['bw20', 'bw50', 'bw100', 'bw200', 'bw500', 'bw1g', 'bw2g', 'bwunl']) {
+    const ha = (LICENSES_HA[bw] || {}).advanced;
+    const std = (LICENSES[bw] || {}).advanced;
+    assert.ok(ha && std, `${bw}/advanced: falta el par HA o el estandar`);
+    for (const term of ['y1', 'y3', 'y5']) {
+      assert.strictEqual(ha[term], std[term], `${bw}/advanced/${term}: HA=${ha[term]} estandar=${std[term]}`);
+    }
+  }
+});
+
+test('ARUBA_SSE va siempre sin precio: linea «consultar», nunca importe inventado', () => {
+  // R8M36AAE existe en el catalogo HPE pero NO figura en la lista de precios vigente
+  // (verificado 2026-09-13). Regla de gobierno: null = «la lista no tiene el dato».
+  assert.strictEqual(ARUBA_SSE.sku, 'R8M36AAE');
+  assert.strictEqual(ARUBA_SSE.precio, null, 'SSE no tiene precio en la lista: debe quedar en «consultar»');
+  assert.ok(!porSku.has('R8M36AAE'), 'R8M36AAE no puede tener fila con precio en el CSV del cotizador');
 });
 
 test('todo modelo publica sus flujos simultaneos o declara por que no', () => {

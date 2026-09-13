@@ -69,7 +69,10 @@ test('construirRoster cubre exactamente los SKU del CSV vigente', () => {
   const roster = construirRoster(arubaData);
   const enRoster = new Set(roster.map((r) => r.sku));
   const csv = parsearCsv(path.join(__dirname, '..', 'public', 'datasheets', 'aruba-lista-precios-hpe.csv'));
-  assert.strictEqual(csv.length, 147, 'el CSV vigente tiene 147 filas de datos (134 + 13 accesorios del cruce 2026-09-13)');
+  // 2026-09-13: 147 → 192 filas. Los 45 SKU nuevos son los tiers 20M/50M/200M/500M/2G
+  // de Advanced y On-Premises (5 tiers × 3 términos × 2 niveles = 30) y de Advanced HA
+  // (5 × 3 = 15). Foundation NO crece: la lista oficial no publica esos tiers para él.
+  assert.strictEqual(csv.length, 192, 'el CSV vigente tiene 192 filas de datos (147 + 45 de los tiers 20M-2G del 2026-09-13)');
   for (const fila of csv) {
     assert.ok(enRoster.has(fila.sku), `${fila.sku} del CSV debe estar declarado en el roster`);
   }
