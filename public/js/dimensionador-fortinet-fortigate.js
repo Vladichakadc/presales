@@ -829,7 +829,7 @@ document.addEventListener('DOMContentLoaded', () => {
     caja.style.cssText = 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px';
     anclaje.parentNode.insertBefore(caja, anclaje.nextSibling);
     ESTADO.botonEnlace(caja);
-    ESTADO.avisoOrigen(caja, st.origen);
+    ESTADO.avisoOrigen(caja, st);
   }
 });
 

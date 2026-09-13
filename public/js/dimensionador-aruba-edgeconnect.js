@@ -103,14 +103,19 @@ function reconstruirWanDesdeHidden(){
   links.forEach(l=>{ if(!l.id) l.id=++wanSeq; wanSeq=Math.max(wanSeq,l.id); });
   pintarWanFilas(links);
 }
+// Los parámetros del escenario ANTERIOR al Multi-Underlay Builder. Viven en una sola
+// constante porque los usan dos cosas distintas: `migrarEstadoV1()` para convertirlos, y
+// `ESTADO.vincular({migrados})` para NO denunciarlos como parámetros que esta pantalla no
+// entiende. Dos listas iguales en dos sitios es como se desincronizan — el mismo error que
+// `llevarABom` tuvo en seis copias.
+const PARAMS_V1=['bw','unit','mplsType','bwMpls','inetType','bwInet'];
 // Migración v1→v2 (SPEC B.1): un enlace antiguo (?bw=…&mplsType=…&bwMpls=…&inetType=…&
 // bwInet=…) se convierte en 1-2 filas equivalentes del builder y se avisa por consola.
 // Devuelve true si migró algo.
 function migrarEstadoV1(){
   const p=new URLSearchParams(location.search);
   if(p.has('wanLinksData')) return false; // ya es v2
-  const legacy=['bw','unit','mplsType','bwMpls','inetType','bwInet'];
-  if(!legacy.some(k=>p.has(k))) return false;
+  if(!PARAMS_V1.some(k=>p.has(k))) return false;
   const links=[];
   const bwM=parseFloat(p.get('bwMpls'))||0, bwI=parseFloat(p.get('bwInet'))||0;
   const mplsT=p.get('mplsType')||'none', inetT=p.get('inetType')||'none';
@@ -2071,7 +2076,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // se migra a filas equivalentes con aviso por consola; y al final se reconstruyen las
   // filas desde la serialización que haya quedado.
   reconstruirWanDesdeHidden();
-  const st = ESTADO.vincular({ campos: CAMPOS_ESCENARIO });
+  const st = ESTADO.vincular({ campos: CAMPOS_ESCENARIO, migrados: PARAMS_V1 });
   // Migración v1→v2: migrarEstadoV1 escribe la serialización en el input oculto; hay que
   // reconstruir las filas DESPUÉS y entonces avisar a ESTADO (sincronizarWanHidden leería
   // las filas viejas y pisaría lo migrado — orden importa).
@@ -2088,7 +2093,7 @@ document.addEventListener('DOMContentLoaded', () => {
     caja.style.cssText = 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px';
     anclaje.parentNode.insertBefore(caja, anclaje.nextSibling);
     ESTADO.botonEnlace(caja);
-    ESTADO.avisoOrigen(caja, st.origen);
+    ESTADO.avisoOrigen(caja, st);
   }
   // Perfiles multi-sede guardados en este navegador (arubaPerfilesV1): se pintan al arrancar.
   pintarPerfiles();

@@ -298,6 +298,15 @@ const PANTALLAS = [
         throw new Error(`el enlace v1 no migro al builder: se esperaba ${JSON.stringify(esperado)} y hay ${JSON.stringify(filas)}`);
       }
       await this.exigeConTexto(page, '#verdict', 'tras migrar el enlace v1');
+      // Y NO puede avisar de que esos parametros se perdieron, porque no se perdieron: esta
+      // pagina los migra. `estado.js` avisa desde el 2026-09-13 cuando un enlace trae algo
+      // que la pantalla ya no entiende, y un aviso que salta cuando SI se entendio es peor
+      // que no tenerlo — enseña a ignorarlo, que es como se ignoraria el caso real.
+      const falso = await page.$('.estado-ignorados');
+      if (falso) {
+        const txt = await falso.textContent();
+        throw new Error(`aviso falso de parametros perdidos en un enlace que SI se migra: ${txt.trim().slice(0, 120)}`);
+      }
     },
   },
   {

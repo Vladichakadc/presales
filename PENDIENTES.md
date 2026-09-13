@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-13 (verificador de pantallas reparado tras el refactor de Aruba).
+Última revisión: 2026-09-13 (aviso de parámetros que una pantalla ya no entiende).
 
 ---
 
@@ -488,6 +488,36 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Un enlace compartido ya no se pierde en silencio (2026-09-13)
+
+Mejora propuesta al cerrar la entrega anterior y aprobada por el dueño. Sale de lo que se
+acababa de tocar: `migrarEstadoV1()` salvó los enlaces de Aruba cuando esa pantalla retiró su
+campo `#bw`, pero **solo porque alguien se acordó de escribirla para esa página**. La regla
+general no existía, así que cualquier otra pantalla que renombre un control seguiría dejando
+al receptor viendo otro escenario sin una sola señal — el mismo modo de fallo que
+`RENOMBRADAS` evita para el nombre del archivo, y que nadie cubría para los parámetros.
+
+`ESTADO.vincular()` devuelve ahora `ignorados` y `ESTADO.avisoOrigen()` los **nombra** en
+pantalla, en los ocho dimensionadores a la vez porque el módulo es compartido. Tres decisiones
+son lo que separa un aviso útil de un ruido que se aprende a ignorar:
+
+- **Se avisa aunque el enlace no traiga ningún campo reconocible.** Es el caso peor: la
+  pantalla sale entera en blanco, y sin el aviso no habría absolutamente nada que explicara
+  por qué. Es justo el caso que un `if (!origen) return` habría dejado fuera.
+- **No se denuncia lo que la página sabe migrar.** Se declara en `cfg.migrados`, y Aruba pasa
+  `PARAMS_V1` — la misma constante que usa `migrarEstadoV1()`, extraída para que no haya dos
+  listas iguales en dos sitios, que es como se desincronizan.
+- **Tampoco las marcas de campaña** (`utm_*`, `gclid`, `fbclid`…), que nunca fueron escenario.
+
+Los nombres se escapan antes de pintarse —la URL la escribe quien manda el enlace, y confiar
+eso a la CSP sería dejar la corrección de una pantalla en manos de una cabecera de otra capa—
+y la lista se acota a seis, porque un párrafo que nadie lee no avisa.
+
+Verificado en Chromium en seis escenarios, incluidos los dos que importan: un enlace v1 de
+Aruba **no** dispara el aviso (se migró de verdad) y uno de Cisco con solo parámetros viejos
+**sí** lo dispara. `npm run pantallas` guarda el falso positivo: quitando `migrados` de Aruba,
+el informe lo reporta. 276/276 pruebas (10 nuevas) y 16/16 pantallas.
 
 ### El verificador de pantallas vuelve a conducir Aruba, y ahora dice qué le falta (2026-09-13)
 
