@@ -7,7 +7,7 @@ const helmet = require('helmet');
 const auth = require('./auth');
 const { sequelize, Vendor, Product } = require('./models');
 const seedCatalog = require('./seed/seedCatalog');
-const { fuentesQueAvisan } = require('./seed/legacyData/fuentes');
+const { fuentesQueAvisan, FUENTES } = require('./seed/legacyData/fuentes');
 
 const catalogRoutes = require('./routes/catalog');
 const cotizadorRoutes = require('./routes/cotizador');
@@ -268,6 +268,23 @@ app.get('/api/fuentes/:vendor/documento/:id', (req, res) => {
   const encontrado = fuentesSubidas.rutaArchivo(req.params.vendor, req.params.id);
   if (!encontrado) return res.status(404).json({ error: 'Documento no encontrado' });
   res.sendFile(encontrado.ruta);
+});
+
+// Salud de las fuentes del fabricante: re-corre el vigía contra cada URL pública y
+// devuelve el estado por documento (leído / inalcanzable / sin-url). Consulta
+// explícita del usuario desde la pestaña «Fuentes» — no corre sola en segundo plano
+// porque cada revisión pega contra los servidores del fabricante.
+app.get('/api/fuentes/:vendor/salud', async (req, res) => {
+  const { vendor } = req.params;
+  const lista = FUENTES[vendor];
+  if (!lista) return res.status(400).json({ error: 'Fabricante no válido' });
+  const { revisar } = require('../scripts/vigia-fuentes');
+  const salida = [];
+  for (const f of lista) {
+    if (!f.url) { salida.push({ vendor, documento: f.documento, url: null, estado: 'sin-url', detalle: 'fuente interna sin URL pública — se vigila por commit' }); continue; }
+    salida.push(await revisar(vendor, f));
+  }
+  res.json({ vendor, revisadoEn: new Date().toISOString(), fuentes: salida });
 });
 
 // Borrar una fuente CARGADA. Exige `sync` igual que subirla: quitar la procedencia de un

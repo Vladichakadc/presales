@@ -7,7 +7,7 @@
 // clientes y APs. Se dimensiona con lo que existe publicado en vez de inventar una
 // escalera de capas homogenea.
 let MODELS = [], BUNDLES = {}, CARE = {}, CARE_SKU = {}, LICENSES = {}, LICENSES_HA = {},
-    SIZING = {}, SOFTWARE = [], CENTRAL = {}, DATASHEETS = {};
+    SIZING = {}, SOFTWARE = [], CENTRAL = {}, DATASHEETS = {}, OS_MATRIX = null;
 
 // Catálogo pedible completo (hardware, remanufacturados, suscripciones, servicios) cargado
 // del CSV público de lista de precios. Es la fuente del panel "Añadir a la lista de
@@ -391,6 +391,18 @@ const miles=n=>n==null?'—':n.toLocaleString('en-US');
 // EdgeConnect (rol sdwan) publica un RANGO de caudal WAN, no una cifra única; los gateways
 // (sucursal/campus) publican throughput de firewall — son dos medidas distintas, así que la
 // columna "Capacidad" declara cuál está mostrando en vez de fundirlas en un solo número.
+// Semáforo de ciclo de vida (fase 11, E5): verde = generación actual, naranja = línea
+// anterior con sucesor inferido (etiquetado como inferencia, sin doc oficial), rojo = fin
+// de venta anunciado con fecha de último pedido.
+function semaforoCiclo(m){
+  if(m.eolAnnounced&&m.eolAnnounced.lastOrder)
+    return `<span class="sem-dot sem-rojo"></span>Fin de venta — último pedido ${esc(m.eolAnnounced.lastOrder)}`;
+  if(m.legacy)
+    return `<span class="sem-dot sem-naranja"></span>Línea anterior (AOS 8) — QuickSpecs RETIRED`
+      +(m.sucesor?`<span class="sem-suc"> → sucesor natural: <b>${esc(m.sucesor)}</b> (inferencia por capacidad, sin doc oficial)</span>`:'');
+  return '<span class="sem-dot sem-verde"></span>Generación actual';
+}
+
 function renderCatalogo(){
   const tbody=document.querySelector('#tbl-aruba-cat tbody');
   if(!tbody) return;
@@ -401,6 +413,7 @@ function renderCatalogo(){
     return `<tr>
     <td><code>${esc(m.id)}</code></td><td>${esc(m.serie)}</td><td>${esc(m.seg)}</td>
     <td class="n">${cap}</td><td>${esc(m.ifaces)}</td>
+    <td class="sem-cel">${semaforoCiclo(m)}</td>
   </tr>`;
   }).join('');
 }
@@ -1564,6 +1577,139 @@ $('xlsBtn').addEventListener('click',async()=>{
   b.disabled=false;
 });
 
+/* ══ FASE 11 · E5 — madurez del catálogo ══
+   Tres utilidades de la pestaña «Fuentes»: matriz de versiones mínimas de SO, salud de
+   las fuentes (vigía bajo demanda) y delta de precios contra una lista nueva. */
+
+// Matriz de versiones mínimas: dos tablas (ECOS para EdgeConnect, AOS 8/10 para gateways).
+// El dato llega del servidor (OS_MATRIX en aruba.js) — la página solo lo pinta.
+function pintarOsMatrix(){
+  const caja=$('osMatrix');
+  if(!caja) return;
+  if(!OS_MATRIX){ caja.innerHTML='<p class="hint">La matriz de versiones no llegó del servidor.</p>'; return; }
+  const filasEcos=Object.entries(OS_MATRIX.ecos||{}).map(([plataforma,v])=>
+    `<tr><td><code>${esc(plataforma)}</code></td><td class="n">${v.min?esc(v.min):'—'}</td><td>${esc(v.nota||'')}</td></tr>`).join('');
+  const filasAos=Object.entries(OS_MATRIX.aos||{}).map(([serie,v])=>
+    `<tr><td><code>${esc(serie)}</code></td><td class="n">${esc(v.a8||'—')}</td><td class="n">${esc(v.a10||'—')}</td></tr>`).join('');
+  caja.innerHTML=`
+  <h3 style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin:14px 0 6px">EdgeConnect — ECOS mínimo</h3>
+  <div class="scroll"><table class="tco-tabla"><thead><tr><th>Plataforma</th><th>ECOS mínimo</th><th>Notas de tren</th></tr></thead><tbody>${filasEcos}</tbody></table></div>
+  <h3 style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin:14px 0 6px">Gateways — trenes AOS soportados</h3>
+  <div class="scroll"><table class="tco-tabla"><thead><tr><th>Serie</th><th>AOS 8</th><th>AOS 10</th></tr></thead><tbody>${filasAos}</tbody></table></div>
+  <p class="hint" style="margin-top:8px">SSR = tren de soporte estándar · LSR = tren de soporte largo. Las series 7000/7200 están RETIRED pero alcanzan AOS 10.3.1.1 — un tech refresh no las obliga a quedarse en AOS 8, aunque la recomendación de preventa sigue siendo la generación actual.</p>`;
+}
+
+// Salud de las fuentes: corre el vigía contra cada URL pública y pinta el resultado.
+// Es bajo demanda (botón) porque cada revisión pega contra los servidores del fabricante.
+async function comprobarSaludFuentes(){
+  const btn=$('saludBtn'), out=$('saludOut');
+  if(!btn||!out) return;
+  btn.disabled=true;
+  out.innerHTML='<p class="hint">Comprobando fuentes una a una…</p>';
+  try{
+    const res=await fetch('/api/fuentes/aruba/salud');
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error||'error del servidor');
+    const filas=(data.fuentes||[]).map(f=>{
+      let clase='salud-na', texto=f.estado;
+      if(f.estado==='leido'){ clase='salud-ok'; texto=`leído · ${f.bytes?miles(f.bytes)+' bytes':''}${f.tipo?' · '+esc(f.tipo):''}`; }
+      else if(f.estado==='inalcanzable'){ clase='salud-mal'; texto=`inalcanzable${f.detalle?' — '+esc(f.detalle):''}`; }
+      else if(f.estado==='sin-url'){ texto='sin URL pública — se vigila por commit'; }
+      return `<tr><td>${esc(f.documento)}</td><td class="${clase}">${texto}</td></tr>`;
+    }).join('');
+    out.innerHTML=`<table class="tco-tabla"><thead><tr><th>Documento</th><th>Estado (revisado ${esc((data.revisadoEn||'').slice(0,19).replace('T',' '))} UTC)</th></tr></thead><tbody>${filas}</tbody></table>`;
+  }catch(err){
+    out.innerHTML=`<p class="hint salud-mal">No se pudo comprobar la salud: ${esc(err.message)}</p>`;
+  }finally{
+    btn.disabled=false;
+  }
+}
+
+// Parser CSV mínimo con soporte de campos entrecomillados (comas y comillas dobles).
+function parseCsv(texto){
+  const filas=[];
+  let campo='', fila=[], enComillas=false;
+  for(let i=0;i<texto.length;i++){
+    const c=texto[i];
+    if(enComillas){
+      if(c==='"'){ if(texto[i+1]==='"'){ campo+='"'; i++; } else enComillas=false; }
+      else campo+=c;
+    }else if(c==='"'){ enComillas=true; }
+    else if(c===','){ fila.push(campo); campo=''; }
+    else if(c==='\n'||c==='\r'){
+      if(c==='\r'&&texto[i+1]==='\n') i++;
+      fila.push(campo); campo='';
+      if(fila.length>1||fila[0]!=='') filas.push(fila);
+      fila=[];
+    }else campo+=c;
+  }
+  if(campo!==''||fila.length){ fila.push(campo); filas.push(fila); }
+  return filas;
+}
+
+function csvAPrecios(texto){
+  const filas=parseCsv(texto);
+  const mapa={};
+  for(let i=1;i<filas.length;i++){
+    const [sku,,desc,precio,vigencia,plc]=filas[i];
+    if(!sku) continue;
+    mapa[sku.trim()]={ desc:(desc||'').trim(), precio:parseFloat(precio)||0, vigencia:(vigencia||'').trim(), plc:(plc||'').trim() };
+  }
+  return mapa;
+}
+
+// Delta de precios: compara una lista subida contra la vigente. Nada se persiste — es
+// una comparación en memoria para decidir si conviene actualizar la lista gobernante.
+async function compararListaPrecios(archivo){
+  const out=$('deltaOut');
+  if(!out) return;
+  out.innerHTML='<p class="hint">Comparando contra la lista vigente…</p>';
+  try{
+    const [nueva, vigenteRes]=await Promise.all([
+      archivo.text(),
+      fetch('/datasheets/aruba-lista-precios-hpe.csv'),
+    ]);
+    if(!vigenteRes.ok) throw new Error('no se pudo leer la lista vigente del servidor');
+    const mapaNueva=csvAPrecios(nueva);
+    const mapaVigente=csvAPrecios(await vigenteRes.text());
+    const alzas=[], bajas=[], nuevos=[], desaparecidos=[], plcEs=[];
+    for(const [sku,n] of Object.entries(mapaNueva)){
+      const v=mapaVigente[sku];
+      if(!v){ nuevos.push({sku,n}); continue; }
+      if(n.precio>v.precio) alzas.push({sku,v,n,delta:(n.precio-v.precio)/v.precio});
+      else if(n.precio<v.precio) bajas.push({sku,v,n,delta:(n.precio-v.precio)/v.precio});
+      if(v.plc!=='ES'&&n.plc==='ES') plcEs.push({sku,n});
+    }
+    for(const [sku,v] of Object.entries(mapaVigente)){
+      if(!mapaNueva[sku]) desaparecidos.push({sku,v});
+    }
+    const dinero=x=>BOM.money?BOM.money(x):('$ '+miles(Math.round(x)));
+    const cabecera=(titulo,n)=>`<h3 style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin:14px 0 6px">${titulo} (${n})</h3>`;
+    const tabla=(thead,filas)=>`<div class="scroll"><table class="tco-tabla"><thead>${thead}</thead><tbody>${filas}</tbody></table></div>`;
+    const filaCambio=(e,clase)=>`<tr><td><code>${esc(e.sku)}</code></td><td>${esc(e.n.desc||e.v.desc)}</td><td class="n">${dinero(e.v.precio)}</td><td class="n">${dinero(e.n.precio)}</td><td class="n ${clase}">${e.delta>0?'+':''}${(e.delta*100).toFixed(1)}%</td></tr>`;
+    const theadCambio='<tr><th>SKU</th><th>Descripción</th><th>Vigente</th><th>Nueva</th><th>Δ</th></tr>';
+    let html=`<p class="hint">Lista nueva: <b>${Object.keys(mapaNueva).length}</b> SKUs · lista vigente: <b>${Object.keys(mapaVigente).length}</b> SKUs. Comparación solo en memoria — nada se ha guardado.</p>`;
+    if(alzas.length)
+      html+=cabecera('Subidas de precio',alzas.length)+tabla(theadCambio,alzas.sort((a,b)=>b.delta-a.delta).map(e=>filaCambio(e,'delta-alza')).join(''));
+    if(bajas.length)
+      html+=cabecera('Bajadas de precio',bajas.length)+tabla(theadCambio,bajas.sort((a,b)=>a.delta-b.delta).map(e=>filaCambio(e,'delta-baja')).join(''));
+    if(nuevos.length)
+      html+=cabecera('SKUs nuevos',nuevos.length)+tabla('<tr><th>SKU</th><th>Descripción</th><th>Precio</th><th></th></tr>',
+        nuevos.map(e=>`<tr><td><code>${esc(e.sku)}</code></td><td>${esc(e.n.desc)}</td><td class="n delta-nuevo">${dinero(e.n.precio)}</td><td class="delta-nuevo">nuevo</td></tr>`).join(''));
+    if(desaparecidos.length)
+      html+=cabecera('SKUs que desaparecen',desaparecidos.length)+tabla('<tr><th>SKU</th><th>Descripción</th><th>Vigente</th><th></th></tr>',
+        desaparecidos.map(e=>`<tr><td><code>${esc(e.sku)}</code></td><td>${esc(e.v.desc)}</td><td class="n">${dinero(e.v.precio)}</td><td class="salud-mal">ya no está</td></tr>`).join(''));
+    if(plcEs.length)
+      html+=cabecera('Pasan a End of Sale (PLC → ES)',plcEs.length)+tabla('<tr><th>SKU</th><th>Descripción</th><th></th><th></th></tr>',
+        plcEs.map(e=>`<tr><td><code>${esc(e.sku)}</code></td><td>${esc(e.n.desc)}</td><td></td><td class="salud-mal">PLC → ES</td></tr>`).join(''));
+    if(!alzas.length&&!bajas.length&&!nuevos.length&&!desaparecidos.length&&!plcEs.length)
+      html+='<p class="hint salud-ok">Sin diferencias: la lista nueva coincide con la vigente en SKUs, precios y estados PLC.</p>';
+    out.innerHTML=html;
+  }catch(err){
+    out.innerHTML=`<p class="hint salud-mal">No se pudo comparar: ${esc(err.message)}</p>`;
+  }
+}
+
 (async function initApp(){
   const res = await fetch('/api/dimensionador/aruba');
   const data = await res.json();
@@ -1577,6 +1723,7 @@ $('xlsBtn').addEventListener('click',async()=>{
   SOFTWARE = data.software || [];
   CENTRAL = data.centralTiers || {};
   DATASHEETS = data.datasheets || {};
+  OS_MATRIX = data.osMatrix || null;
 
   // La ficha ya no pide referencias (van integradas en el BOM), así que el fabricante se
   // declara aquí: es lo que permite que la lista de materiales muestre solo lo de Aruba.
@@ -1592,8 +1739,20 @@ $('xlsBtn').addEventListener('click',async()=>{
   renderBom();
   renderCatalogo();
   cargarCatalogoSku();
+  pintarOsMatrix();
   PROCEDENCIA.registrarModelos('aruba', () => MODELS.map(m => ({ model: m.id, ...m })));
 })();
+
+// E5: salud de fuentes y delta de precios (pestaña «Fuentes»). Se enlazan aquí y no con
+// onclick= en el HTML por la misma CSP que el resto de la página.
+document.addEventListener('DOMContentLoaded', () => {
+  const salud=$('saludBtn');
+  if(salud) salud.addEventListener('click', comprobarSaludFuentes);
+  const delta=$('deltaCsv');
+  if(delta) delta.addEventListener('change', () => {
+    if(delta.files&&delta.files[0]) compararListaPrecios(delta.files[0]);
+  });
+});
 
 /* Enlace de eventos movido desde onclick= en el HTML, para permitir una CSP con
    script-src 'self' que bloquea todo codigo en linea. */

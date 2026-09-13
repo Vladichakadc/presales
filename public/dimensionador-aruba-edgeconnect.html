@@ -80,6 +80,20 @@ label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px}
 .tco-tabla th,.tco-tabla td{font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--rule);text-align:right}
 .tco-tabla th:first-child,.tco-tabla td:first-child{text-align:left}
 .tco-tabla thead th{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel)}
+/* Semáforo de ciclo de vida en el catálogo (fase 11, E5) */
+.sem-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.sem-verde{background:#5e8a68}
+.sem-naranja{background:#b98a3e}
+.sem-rojo{background:#a4544e}
+.sem-cel{font-size:11.5px;line-height:1.4}
+.sem-suc{display:block;color:var(--steel);font-size:10.5px;margin-top:2px}
+/* Delta de precios y salud de fuentes (fase 11, E5) */
+.delta-alza{color:#a4544e;font-weight:600}
+.delta-baja{color:#5e8a68;font-weight:600}
+.delta-nuevo{color:#6b7f8f;font-weight:600}
+.salud-ok{color:#5e8a68;font-weight:600}
+.salud-mal{color:#a4544e;font-weight:600}
+.salud-na{color:var(--steel)}
 input[type=number],select{width:100%;padding:9px 10px;border:1px solid var(--rule);border-radius:2px;background:#fff;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500}
 select{font-family:'Barlow',sans-serif;font-size:13.5px}
 input:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:1px}
@@ -594,7 +608,7 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
 <section class="panel">
   <h2>Catálogo Aruba — Throughput de referencia <span style="font-weight:400;color:var(--steel)">— EdgeConnect Enterprise y gateways serie 9000</span></h2>
   <div class="scroll"><table data-ordenable id="tbl-aruba-cat">
-    <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Capacidad</th><th>Puertos</th></tr></thead>
+    <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Capacidad</th><th>Puertos</th><th>Ciclo de vida</th></tr></thead>
     <tbody></tbody>
   </table></div>
   <p style="font-size:11px;color:var(--steel);margin-top:10px">Las cifras de capacidad salen de datasheet público. 15 modelos tienen SKU y List Price de HPE confirmados (sin el descuento del distribuidor); el resto sigue sin precio. Confirmar con el distribuidor HPE autorizado antes de cotizar en firme.</p>
@@ -612,6 +626,22 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
   <h2>Datasheets y documentación oficial</h2>
   <p class="gd">Documentos de HPE/Aruba en los que se apoya este catálogo. Conviene abrir el que corresponda y confirmar la fila exacta antes de emitir una propuesta.</p>
   <ul class="fuentes-list" id="dsList"></ul>
+  <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <button type="button" class="btn ghost" id="saludBtn" style="font-size:11px;padding:6px 12px">Comprobar salud de las fuentes</button>
+    <span class="hint">Re-corre el vigía contra cada URL pública ahora mismo (puede tardar ~45 s por fuente caída).</span>
+  </div>
+  <div id="saludOut" style="margin-top:10px"></div>
+</section>
+<section class="panel">
+  <h2>Versiones mínimas de sistema operativo</h2>
+  <p class="gd">Versión mínima de ECOS / AOS que soporta cada plataforma, según release notes y matrices de compatibilidad oficiales. Clave al planear un tech refresh o al mezclar hardware de distinta antigüedad bajo el mismo Orchestrator.</p>
+  <div id="osMatrix"></div>
+</section>
+<section class="panel">
+  <h2>Delta de precios — comparar una lista nueva</h2>
+  <p class="gd">Sube una lista de precios nueva (CSV con el mismo formato que la lista vigente: <code>sku,modelo_dimensionador,descripcion_hpe,list_price_usd,vigencia_list_price,estado_plc</code>) y compárala contra la que gobierna hoy el catálogo. Nada se persiste: es una comparación en memoria para decidir si conviene actualizar.</p>
+  <input type="file" id="deltaCsv" accept=".csv,text/csv" style="max-width:420px">
+  <div id="deltaOut" style="margin-top:10px"></div>
 </section>
 </div>
 

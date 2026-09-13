@@ -497,6 +497,50 @@ for (const m of MODELS) {
   m.eolAnnounced = EOL_ANNOUNCED[m.id] || null;
 }
 
+// Sucesor natural de cada gateway legacy (series 7000/7200) para el semáforo de ciclo de
+// vida del catálogo (fase 11, E5). INFERENCIA POR CAPACIDAD — no existe documento oficial
+// de tech-refresh que nombre el reemplazo de cada modelo; la página lo etiqueta como
+// «inferencia por capacidad, sin doc oficial» junto al dato. Decisión del dueño
+// (2026-09-13): mostrar la inferencia marcada vale más que no mostrar nada.
+const SUCESORES = {
+  '7005': 'Gateway 9004',
+  '7008': 'Gateway 9004',
+  '7030': 'Gateway 9012',
+  '7210': 'Gateway 9240',
+  '7220': 'Gateway 9240',
+};
+for (const m of MODELS) {
+  m.sucesor = SUCESORES[m.id] || null;
+}
+
+// ── Matriz de versiones mínimas de sistema operativo (fase 11, E5) ───────────
+// Versión mínima de ECOS / AOS que soporta cada plataforma. Fuentes oficiales
+// (2026-09-13): release notes de ECOS 8.3/9.x y matriz de compatibilidad AOS 10
+// (10.3.1.1 SSR para 7000/7200/9000, 10.4.0.0 LSR para 9200, 10.5/10.6/10.7 para 9100).
+// `min: null` = la matriz de hardware no aplica (EC-V sigue el tren ECOS con matriz
+// propia de hipervisores).
+const OS_MATRIX = {
+  ecos: {
+    'EC-XS':   { min: '8.3.1.0', nota: 'PIDs 4 GB (200889/200900): N/A en 9.5+ · Next Gen 201694-001: mín. 8.3.4.0' },
+    'EC-10104':{ min: '9.1.3.0', nota: '9.2.3.0 en el tren 9.2 · N/A en 9.0/8.3' },
+    'EC-10106':{ min: '9.3.2.0', nota: '9.4.2.0 en el tren 9.4 · N/A en 9.2 y anteriores' },
+    'EC-10108':{ min: '9.3.4.0', nota: '9.4.3.0 / 9.5.1.0 en trenes posteriores · secure boot' },
+    'EC-10150':{ min: '9.5.3.0', nota: 'default shipping 9.5.3.2 · N/A en 9.4 y anteriores' },
+    'EC-S':    { min: '8.3.1.0', nota: 'EC-S-P: 8.3.1.5 / 8.3.2.1 / 8.3.3.0 (9.0.2.0 en tren 9.0)' },
+    'EC-M':    { min: '8.3.1.0', nota: 'EC-M-H: mín. 8.3.4.0' },
+    'EC-L':    { min: '8.3.1.0', nota: 'EC-L-H: mín. 8.3.4.0' },
+    'EC-XL':   { min: '8.3.1.0', nota: 'EC-XL-H: 8.3.4.0 · EC-XL-H-10G: 8.3.7.0' },
+    'EC-V':    { min: null,      nota: 'no aplica en la matriz de hardware: sigue el tren ECOS con matriz propia de hipervisores' },
+  },
+  aos: {
+    'Serie 7000': { a8: '8.0+ (máx. 8.13)', a10: '10.3.1.1+ (SSR)' },
+    'Serie 7200': { a8: '8.0+ (7280: 8.3+) · máx. 8.13', a10: '10.3.1.1+ (SSR)' },
+    'Serie 9000': { a8: '8.5+ (9004) · 8.7+ (9012)', a10: '10.3.1.1+ (SSR)' },
+    'Serie 9100': { a8: '8.13.1+ (9106 recientes)', a10: '10.5.0.1+ (9114) · 10.6.0.1+ (9106; SKUs S5Hxx: 10.7.2.0)' },
+    'Serie 9200': { a8: '8.10+ (9240)', a10: '10.4.0.0+ (LSR)' },
+  },
+};
+
 // ── Suscripción EdgeConnect ──────────────────────────────────────────────────
 //
 // DIFERENCIA ESTRUCTURAL CON FORTINET: en FortiGate la licencia va atada al MODELO (cada
@@ -766,5 +810,5 @@ const LICENSES_HA = {
 
 module.exports = {
   MODELS, BUNDLES, CARE, CARE_SKU, LICENSES, LICENSES_HA, BW_TIERS, BOOST, FEC_OVERHEAD,
-  SOFTWARE, CENTRAL_TIERS, DATASHEETS, EOL_ANNOUNCED,
+  SOFTWARE, CENTRAL_TIERS, DATASHEETS, EOL_ANNOUNCED, OS_MATRIX,
 };

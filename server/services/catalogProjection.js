@@ -374,6 +374,7 @@ async function toDimensionadorAruba() {
       boost: arubaData.BOOST,
       fec: arubaData.FEC_OVERHEAD,
     },
+    osMatrix: arubaData.OS_MATRIX || null,
   };
 }
 
