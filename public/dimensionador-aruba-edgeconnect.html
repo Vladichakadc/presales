@@ -189,6 +189,27 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
 .tierRow.on .tv{color:var(--ink);font-weight:600}
 .tierRow.off .tb i{background:#8FA3B8}
 .tierDrop{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--amber);margin:2px 0 9px 122px}
+/* ══ Refactor SPEC parte B (2026-09-13): multi-underlay builder, alertas del motor,
+   badge de nivel y modal del consolidado multi-sede. Misma paleta y lenguaje visual de
+   la página — sin frameworks nuevos. ══ */
+/* M1 · Multi-Underlay Builder: una fila por enlace WAN (transporte · medio · down/up · quitar) */
+.wan-fila{display:grid;grid-template-columns:1.2fr 1fr .7fr .7fr 30px;gap:6px;align-items:center;margin-bottom:6px}
+.wan-fila select,.wan-fila input{padding:7px 8px;font-size:12px}
+.wan-fila input{font-family:'IBM Plex Mono',monospace;font-size:12.5px}
+.wan-quitar{border:1px solid var(--rule);background:var(--card);color:var(--steel);border-radius:2px;cursor:pointer;font-size:14px;line-height:1;padding:6px 0}
+.wan-quitar:hover{border-color:var(--red);color:var(--red)}
+@media(max-width:560px){.wan-fila{grid-template-columns:1fr 1fr 30px}.wan-fila select[data-campo=tipo]{grid-column:1/-1}}
+/* Banner Microbranch (M1): sugiere la arquitectura sin appliance cuando el sitio es pequeño */
+.banner-micro{border:1px solid var(--rule);border-left:3px solid var(--amber);background:#FDF6EC;border-radius:2px;padding:10px 12px;font-size:12.5px;line-height:1.5;margin-bottom:16px}
+/* Alerta de escalado de hardware (M2 · auditoría de puertos EC-10104) */
+.alerta-escalado{border:1px solid #FECACA;border-left:3px solid var(--red);background:#FFF5F5;border-radius:2px;padding:10px 12px;font-size:12.5px;line-height:1.5;margin-bottom:16px}
+.alerta-escalado b{color:#991b1b}
+/* Badge de nivel Advanced deducido (M3) */
+.badge-adv{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:2px;background:var(--amber);color:#fff;margin-left:8px;vertical-align:1px;font-weight:600}
+.badge-adv[hidden]{display:none}
+/* Modal del consolidado multi-sede (M6): reutiliza el patrón del modal de accesorios */
+#modalConsolidado{position:fixed;inset:0;background:rgba(28,25,23,.45);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
+#modalConsolidado[hidden]{display:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <script src="/js/fuentes.js" defer></script>
@@ -276,42 +297,30 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
 
   <section class="panel">
     <h2>2 · Tráfico y capacidad</h2>
+    <!-- M1 · Multi-Underlay Builder (refactor 2026-09-13, SPEC parte B): los enlaces WAN
+         del sitio se declaran como FILAS DINÁMICAS (tipo de transporte, medio del puerto y
+         caudal down/up) en vez de los antiguos inputs estáticos MPLS/Internet. El estado
+         viaja serializado (versión 2) en el input oculto #wanLinksData. -->
     <div class="field">
-      <label for="bw">Ancho de banda de aplicación</label>
-      <div class="row">
-        <input type="number" id="bw" min="1" step="any" autocomplete="off">
-        <select id="unit" style="width:105px"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
+      <label>Enlaces WAN del sitio (underlay)</label>
+      <div id="wanBuilder">
+        <div id="wanBuilderFilas"></div>
+        <button type="button" class="btn ghost" id="btnAddWan" style="font-size:11px;padding:5px 11px;margin-top:8px">+ Añadir enlace WAN</button>
       </div>
-      <p class="hint">Tráfico del lado LAN que el equipo debe procesar. No es lo mismo que el caudal WAN a contratar: FEC lo sube y Boost lo baja.</p>
+      <input type="hidden" id="wanLinksData">
+      <p class="hint">Cada enlace declara su transporte, el <b>medio del puerto</b> (RJ-45 u óptica SFP — alimenta la auditoría de puertos del chasis) y su caudal. La suscripción EdgeConnect se licencia por el <b>caudal WAN agregado del sitio</b> (MPLS + Internet — VSG oficial) y el appliance se dimensiona por ese agregado. Sin enlaces declarados, el tier se deriva del tráfico estimado (usuarios × Mbps/usuario).</p>
+    </div>
+    <div id="bannerMicrobranch" class="banner-micro" hidden>
+      <b>Perfil Microbranch:</b> considera Aruba Central + AP/9004 en vez de EdgeConnect dedicado — el túnel IPsec corre en el propio AP AOS-10 (persona Microbranch), sin appliance en el sitio.
     </div>
     <div class="field">
-      <label>Transporte WAN del sitio (underlay)</label>
-      <div class="row" style="margin-bottom:8px">
-        <select id="mplsType" style="width:46%">
-          <option value="none" selected>Sin MPLS</option>
-          <option value="l3">MPLS L3 (eBGP con el carrier)</option>
-          <option value="l2">MPLS L2 / Metro-E / VPLS / EVPN</option>
-        </select>
-        <input type="number" id="bwMpls" min="0" step="any" placeholder="Mbps MPLS" autocomplete="off">
-      </div>
-      <div class="row">
-        <select id="inetType" style="width:46%">
-          <option value="none" selected>Sin Internet</option>
-          <option value="dia">Internet dedicado (DIA)</option>
-          <option value="bb">Banda ancha</option>
-          <option value="lte">4G/5G/Satelital</option>
-        </select>
-        <input type="number" id="bwInet" min="0" step="any" placeholder="Mbps Internet" autocomplete="off">
-      </div>
-      <p class="hint">La suscripción EdgeConnect se licencia por el <b>caudal WAN agregado del sitio</b> (MPLS + Internet — VSG oficial). Si dejas ambos en 0, el tier se deriva del tráfico de aplicación declarado arriba.</p>
+      <label class="check"><input type="checkbox" id="chkBreakout" checked> <span>Local Breakout (internet local)<span class="sku">Regla de diseño del arquitecto (sin fuente oficial): con salida local activa, el ~30 % del tráfico de Internet se descarga del overlay (SaaS e invitados salen directos). El appliance se dimensiona igualmente por el caudal agregado — regla oficial.</span></span></label>
+      <p class="hint" id="ahorroMpls"></p>
     </div>
-    <div class="field">
-      <label class="check"><input type="checkbox" id="chkBreakout" checked> <span>Local Breakout — salida directa a Internet para SaaS/invitados<span class="sku">Regla de diseño del arquitecto (sin fuente oficial): con DIA disponible, ~70 % del tráfico de aplicación sale local por Internet y ~30 % sigue tunelizado al DC por MPLS. Reduce el caudal MPLS a contratar.</span></span></label>
-      <p class="hint" id="breakoutAhorro"></p>
-    </div>
-    <div class="field" id="fldBarras" hidden>
+    <div class="field" id="widgetPerf" hidden>
       <label>Caudal contratado vs. rendimiento efectivo</label>
-      <div id="barrasWan"></div>
+      <div id="widgetPerfBarras"></div>
+      <p class="hint" id="widgetPerfImix" style="margin-top:8px"></p>
     </div>
     <div class="field">
       <label for="users">Usuarios / dispositivos concurrentes</label>
@@ -359,12 +368,12 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
       <label class="check"><input type="checkbox" id="chkTopo"> <span>Topología ilimitada (mesh o más de 4 hubs por región)<span class="sku">Requiere EdgeConnect <b>Advanced</b>: Foundation es hub-and-spoke con un máximo de 4 hubs por región (QuickSpecs). En gateways no cambia el nivel de Central.</span></span></label>
     </div>
     <div class="field" style="margin-top:14px">
-      <label>Estrategia de seguridad (inspección avanzada)</label>
-      <div class="seg" id="secSeg">
-        <button type="button" data-v="ninguna" aria-pressed="true">Sin inspección extra</button>
-        <button type="button" data-v="sse" aria-pressed="false">En la nube — HPE Aruba SSE</button>
-        <button type="button" data-v="dtd" aria-pressed="false">En el chasis — Dynamic Threat Defense</button>
-      </div>
+      <label for="selSeguridad">Estrategia de seguridad (inspección avanzada)</label>
+      <select id="selSeguridad">
+        <option value="none" selected>Sin inspección extra</option>
+        <option value="sse">En la nube — HPE Aruba SSE</option>
+        <option value="dtd">En el chasis — Dynamic Threat Defense</option>
+      </select>
       <p class="hint" id="secHint">El NGFW y la clasificación de aplicaciones (AppRF, ~3.500 apps) ya van en Foundation. Activa una estrategia solo si el diseño exige IDS/IPS o inspección en la nube.</p>
     </div>
     <div class="checks" style="margin-top:14px">
@@ -384,6 +393,9 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
 
   <section class="panel">
     <h2>4 · Equipo y cotización</h2>
+    <div id="alertaEscalado" class="alerta-escalado" hidden>
+      <b>Hardware escalado</b> debido a requerimiento de densidad de puertos o interfaces ópticas SFP — el EC-10104 (4 puertos RJ-45, sin SFP) no cubre los enlaces declarados y el dimensionador propone el escalón superior.
+    </div>
     <div class="field">
       <label for="pickModel">Modelo</label>
       <select id="pickModel"></select>
@@ -402,9 +414,17 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
       </select>
     </div>
     <div class="field" id="fldSub">
-      <label>Suscripción EdgeConnect — asignada automáticamente</label>
+      <label>Suscripción EdgeConnect — asignada automáticamente <span id="badgeAdvanced" class="badge-adv" hidden>Licencia Advanced requerida por especificación oficial</span></label>
       <div class="lic-auto" id="licAutoTxt"></div>
+      <div style="margin-top:10px">
+        <label for="selTier" style="font-size:12px">Tier de caudal de la suscripción</label>
+        <select id="selTier"></select>
+        <p class="hint">En «Automático» el tier sale del caudal WAN agregado del sitio. Los tiers intermedios solo existen en <b>Advanced</b>: con Foundation quedan bloqueados (restricción oficial de la lista de precios).</p>
+      </div>
       <label class="check" style="margin-top:8px"><input type="checkbox" id="chkNoSub"> <span class="sku">No incluir la suscripción: el equipo queda standalone, sin fabric gestionado ni ZTP — y tampoco se licencia Boost, que es un add-on de la suscripción.</span></label>
+    </div>
+    <div class="field" id="fldDualPsu" hidden>
+      <label class="check"><input type="checkbox" id="chkDualPsu"> <span>Segunda fuente de alimentación (PSU redundante)<span class="sku">Añade la PSU 550W AC R7J63A al Gateway 9240 para alimentación 1+1. En el EC-10150 no aplica: lleva doble PSU de fábrica.</span></span></label>
     </div>
     <div class="field" id="fldCentral" hidden>
       <label>Suscripción HPE Aruba Networking Central — asignada automáticamente</label>
@@ -452,19 +472,19 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
   <section class="panel">
     <h2>Precio neto y TCO del sitio</h2>
     <div class="field">
-      <label for="dtoSeg">Nivel de descuento sobre List Price</label>
+      <label for="selDescuento">Nivel de descuento sobre List Price</label>
       <div class="row">
-        <select id="dtoSeg" style="width:60%">
+        <select id="selDescuento" style="width:60%">
           <option value="0" selected>Lista (0 %) — precio de referencia HPE</option>
           <option value="0.35">Business Partner (35 %)</option>
           <option value="0.45">Silver (45 %)</option>
           <option value="0.50">Gold (50 %)</option>
           <option value="0.55">Platinum (55 %)</option>
-          <option value="opg">OPG / acuerdo personalizado…</option>
+          <option value="opg">Personalizado…</option>
         </select>
-        <input type="number" id="dtoCustom" min="0" max="90" step="0.5" placeholder="% OPG" hidden autocomplete="off">
+        <input type="number" id="dtoCustom" min="0" max="90" step="0.5" placeholder="% personalizado" hidden autocomplete="off">
       </div>
-      <p class="hint">Niveles de trabajo del equipo de preventa (<b>no son cifras publicadas por HPE</b>: los descuentos del programa de canal no son públicos). El simulador muestra las columnas LIST y NET en paralelo y las lleva al Excel; la cotización firme la cierra tu distribuidor.</p>
+      <p class="hint"><b>Simulador genérico de tramos partner — no refleja el descuento real del distribuidor.</b> Los descuentos del programa de canal de HPE no son públicos: estos tramos son niveles de trabajo del equipo de preventa. El simulador muestra las columnas Subtotal Lista y Subtotal Neto en paralelo y las lleva al Excel; la cotización firme la cierra tu distribuidor.</p>
     </div>
     <div id="tcoFin"></div>
   </section>
@@ -472,12 +492,15 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
     <h2>Perfiles multi-sede</h2>
     <p class="hint" style="margin:0 0 10px">Guarda el escenario actual como perfil («Tienda», «Oficina regional»…) con su número de sedes idénticas. El <b>BOM global consolidado</b> suma las líneas de todos los perfiles —equipo y suscripciones por sede, pool de Boost agregado del fabric, Orchestrator una sola vez— y se exporta aparte. Los perfiles viven en este navegador (localStorage) y conservan los precios del día en que se guardaron.</p>
     <div class="row" style="margin-bottom:10px">
-      <input type="text" id="perfilNombre" placeholder="Nombre del perfil — p. ej. Tienda" autocomplete="off">
+      <input type="text" id="nombrePerfil" placeholder="Nombre del perfil — p. ej. Tienda" autocomplete="off">
       <input type="number" id="perfilSedes" min="1" step="1" placeholder="Nº sedes" style="width:100px" autocomplete="off">
-      <button type="button" class="btn" id="perfilGuardar" style="font-size:11px;padding:6px 12px;white-space:nowrap">Guardar perfil</button>
+      <button type="button" class="btn" id="btnGuardarPerfil" style="font-size:11px;padding:6px 12px;white-space:nowrap">Guardar perfil</button>
     </div>
-    <div id="perfilLista"></div>
-    <div id="bomGlobal"></div>
+    <div id="listaPerfiles"></div>
+    <div style="margin-top:10px">
+      <button type="button" class="btn" id="btnConsolidar" style="font-size:11px;padding:6px 12px" disabled>Consolidar BOM global</button>
+      <p class="hint" style="margin-top:6px">Abre el BOM agregado Σ(BOM del perfil × sedes) en una ventana aparte, con su exportación a Excel.</p>
+    </div>
   </section>
   <section class="panel">
     <h2>Lista de materiales
@@ -664,6 +687,22 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
     <p class="hint" style="margin-top:10px">SKU, descripción y «List Price» de la lista de precios oficial del distribuidor (2026-09-13) — la cifra firme la cierra tu distribuidor. Las variantes <b>TAA</b> cumplen el Trade Agreements Act (compra pública de EE.&nbsp;UU.). El cordón de alimentación localizado va <b>incluido por defecto</b> en el equipo (la opción #AC3 «NoLoc» es la que lo excluye — QuickSpecs).</p>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
       <button type="button" class="btn ghost" id="accCerrar" style="font-size:11px;padding:6px 12px">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal del BOM global consolidado (M6, SPEC parte B): agrega Σ(BOM del perfil × sedes)
+     de los perfiles multi-sede guardados en localStorage (arubaPerfilesV1), con las mismas
+     reglas del fabric que ya tenía el consolidado en línea — pool de Boost en una línea y
+     Orchestrator una sola vez — y exportación a Excel por el mecanismo XLSX común. -->
+<div id="modalConsolidado" hidden>
+  <div class="acc-caja" style="max-width:860px">
+    <h3>BOM global consolidado — perfiles multi-sede</h3>
+    <p class="hint" id="consolidadoSub"></p>
+    <div id="consolidadoTabla"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+      <button type="button" class="btn" id="xlsConsolidadoBtn" style="font-size:11px;padding:6px 12px">Exportar consolidado a Excel</button>
+      <button type="button" class="btn ghost" id="consolidadoCerrar" style="font-size:11px;padding:6px 12px">Cerrar</button>
     </div>
   </div>
 </div>
