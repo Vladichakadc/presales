@@ -582,14 +582,20 @@ const BOOST = {
     + 'Add-on sobre Foundation o Advanced, licenciado en bloques de 100 Mbps que forman un pool del fabric '
     + 'y que Orchestrator reparte entre los sitios que lo aprovechan. Disponible como servicio (Boost-aaS) '
     + 'o como suscripción on-premises.',
-  // Reducción de tráfico WAN según el perfil de datos. Rango deliberadamente conservador:
-  // el ahorro real depende de cuánto se repita el contenido y solo una prueba con el
-  // tráfico del cliente lo confirma. NO es una cifra publicada por HPE: es un supuesto de
-  // trabajo de esta herramienta, y así se declara en la interfaz.
+  // Reducción de tráfico WAN según el perfil de datos. Ancla oficial localizada
+  // 2026-09-13 (caso de estudio HPE Aruba — Universal Health Services): con Boost,
+  // reducción de ~85 % para Microsoft 365 (≈6,7:1), ~45 % para Veeam (≈1,8:1) y ~40 %
+  // para CIFS (≈1,7:1). El technical paper oficial de WAN Optimization (a00110933enw)
+  // no publica ratios típicos y el «up to 99 %» del marketing histórico es un máximo,
+  // no un típico. Por eso `repetido` queda en 1,8 (el ancla oficial para CIFS/backups):
+  // el 3,5:1 anterior era un supuesto sin ancla que el caso oficial REFUTA para esas
+  // cargas. `generico` y `oficina` siguen siendo supuestos conservadores de trabajo.
+  // El ahorro real depende de cuánto se repita el contenido y solo una prueba con el
+  // tráfico del cliente lo confirma — así se declara en la interfaz.
   reduccion: {
     generico: {n:'Tráfico genérico mixto (web, SaaS)',    factor:1.3},
     oficina:  {n:'Ficheros de oficina y correo interno',  factor:2.0},
-    repetido: {n:'Réplicas, backups, VDI, CIFS/SMB',      factor:3.5},
+    repetido: {n:'Réplicas, backups, VDI, CIFS/SMB',      factor:1.8},
   },
   // SKU y List Price por bloque (2026-09-13 — doble fuente como LICENSES: QuickSpecs v18
   // para SKU↔descripción, lista del distribuidor para el precio). El dimensionador consume
