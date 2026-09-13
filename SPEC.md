@@ -59,3 +59,14 @@ Regenerar con `node scripts/importar-lista-aruba.js --aplicar` (el roster crece 
 ## Verificación
 
 `node --test test/aruba-integridad-precios.test.js test/importar-lista-aruba.test.js` en verde, luego `npm run verificar` completo en verde. Commit en español en `feature/datos-tiers`: «feat(aruba): tiers de licencias 20M-2G (Advanced/OnPrem/HA), SSE consultar y umbrales Microbranch».
+
+---
+
+## PARTE B — Motor/UI (frente feature/motor-ui)
+
+El contrato íntegro de la PARTE B (estado v2 con wanLinks, Multi-Underlay Builder,
+motor 70/30, auditoría de puertos, tiers filtrados, SSE «consultar», inyección
+S2N67A/R7J63A, widget de rendimiento, simulador de descuento genérico y perfiles
+multi-sede, IDs B.9) se entregó al frente MOTOR por mensaje del orquestador y se
+integra desde /mnt/agents/output/feature-motor-ui.bundle. Desviaciones brief vs
+oficial documentadas en PARTE A y en los comentarios del código.
