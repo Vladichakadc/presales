@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-13 (importador gobernado + matriz de accesorios oficial).
+Última revisión: 2026-09-13 (refactor integral del dimensionador Aruba — 7 módulos).
 
 ---
 
@@ -439,6 +439,30 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     PLC SA), **JM538AR** (reman, $11.457) y **JM962AR** (EC-XS reman, PLC ES). También
     documentó que el EC-10170 (hermano del 10150 en el kit S2N67A) no está catalogado.
     No entran solos: ampliar el surtido de modelos es decisión del dueño.
+28. **Suscripciones a 7 años: la lista las tiene, el dimensionador no (2026-09-13).** Al
+    ampliar los tiers de licencias (20M-2G) se verificó que la lista oficial trae términos
+    de 1, 3, 5 **y 7 años** para Advanced, On-Prem y Advanced HA; el dimensionador modela
+    solo 1/3/5 (co-terming incluido). Añadir el término de 7 años es un cambio acotado
+    (un nivel más en `sku` y un valor más en el selector), pero multiplica filas del BOM:
+    entra cuando el dueño lo pida.
+29. **SSE (R8M36AAE) sin List Price — seguir «consultar» (2026-09-13).** La línea SSE ya
+    se inyecta por usuario y co-terminada, pero con precio `null` porque el SKU no figura
+    en la lista del distribuidor. Si HPE publica precio o el distribuidor lo añade a la
+    lista, el importador lo detectará como candidato y entra por gobierno.
+30. **Fórmula IMIX del widget: coeficientes del brief, no oficiales (2026-09-13).** El
+    widget de rendimiento estima `(caudal/0,70) × (1+0,15 FEC) × 1,20` tal como pedía el
+    brief; el motor principal conserva los anchors oficiales (IMIX 70 %, FEC auto 10 % /
+    agresivo 25 % según VSG, headroom SLA de enlace 75 %). La desviación está documentada
+    en el código; si el dueño quiere una sola regla, decidir cuál manda.
+31. **DTD no fuerza Advanced — conflicto brief vs QuickSpecs (2026-09-13).** El brief
+    pedía forzar Advanced con Dynamic Threat Defense; el QuickSpecs (p.32) lo define como
+    licencia opcional independiente del tier. Mandó la fuente oficial: DTD se ofrece como
+    estrategia de seguridad aparte y no cambia el nivel. Si el dueño tiene evidencia
+    comercial de lo contrario, se revisa.
+32. **Títulos de columna del BOM: «LIST/NET» vs «Lista/Neto» (2026-09-13, menor).** El
+    pie del TCO usa «Subtotal Lista/Neto» pero `bom.js` titula las columnas «Subtotal
+    LIST/NET» (archivo compartido por los 7 fabricantes — no se tocó para no romper a los
+    demás). Unificar criterio cuando se aplique el patrón Aruba al resto de fabricantes.
 
 ## Limpieza
 
@@ -454,6 +478,43 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Refactor integral del dimensionador Aruba en 7 módulos (2026-09-13)
+
+Brief del dueño ejecutado con orquestación multi-agente (SPEC.md como contrato, dos
+frentes —datos y motor/UI— integrados por bundles). Todo lo que el brief contradecía a
+la fuente oficial quedó resuelto a favor de la fuente oficial y documentado (pendientes
+28-32): S2N67A a $9.096 (no $7.146), PSU del 9240 = R7J63A $747 (no R1C72A, que es un
+kit de APs), Boost con factores oficiales 1,3/2,0/1,8 (no ×3,5), DTD sin forzar
+Advanced (QuickSpecs p.32) y SSE «consultar» (R8M36AAE no está en la lista).
+
+1. **Multi-Underlay Builder + banner Microbranch**: filas WAN dinámicas
+   (tipo MPLS L3/L2, DIA, banda ancha, 4G/5G × medio RJ45/SFP 1G/SFP+ 10G × down/up),
+   estado v2 con migración desde la serialización v1, y banner Microbranch con umbrales
+   gobernados por el API (≤10 usuarios, ≤50 Mbps, sin MPLS).
+2. **Motor 70/30 y auditoría de puertos**: con Local Breakout el ~30 % del tráfico de
+   Internet se declara descargado del overlay (el appliance se sigue dimensionando por
+   el caudal total, regla oficial); auditoría de puertos que descarta el EC-10104 con
+   >4 puertos o fibra (escalado con alerta) y avisa de densidad SFP en 10106/10108 (>2),
+   10150 (>8) y 9240 (>4).
+3. **Licenciamiento calibrado**: tiers 20M/50M/200M/500M/2G añadidos a Advanced, On-Prem
+   y Advanced HA con los SKU y precios literales de la lista (45 filas nuevas en el CSV,
+   147→192, diff del importador en 0); Foundation restringido a 100M/1G/UL con bloqueo
+   en el selector (restricción oficial verificada); badge «Advanced requerida por
+   especificación oficial»; SSE inyectada por usuario, co-terminada, «consultar».
+4. **Inyección de hardware**: Boost>0 en EC-10150 añade S2N67A (qty mín 1, nota de
+   fábrica «Boost >1 Gbps requiere el kit»); EC-10150 declara doble PSU de fábrica;
+   checkbox Dual PSU en Gateway 9240 → R7J63A.
+5. **Widget de rendimiento**: 3 barras (física / útil tras FEC / percibida con Boost
+   por perfil) + estimación IMIX del brief con desviación documentada (pendiente 30).
+6. **TCO y multi-sede**: simulador genérico de descuento partner (0/35/45/50/55 %/
+   personalizado — declarado como NO el descuento real del distribuidor), columnas
+   Lista/Neto, pie CAPEX/OPEX-anual/TCO, y perfiles multi-sede en localStorage con
+   consolidado Σ(BOM×sedes) y export Excel.
+7. **Ciclo de vida, delta viewer y OS matrix**: ya existían; verificados intactos.
+
+Verificación: 266/266 tests (`npm run verificar`), E2E Chromium 11/11 (builder,
+escalado EC-10104, banner, 70/30, tiers filtrados, SSE, S2N67A, widget, TCO, perfiles).
 
 ### Importador gobernado de lista de precios + matriz de accesorios contra la compatibilidad oficial (2026-09-13)
 
