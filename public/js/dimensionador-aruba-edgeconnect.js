@@ -92,7 +92,7 @@ function accEtiquetas(a){
   if(a.speed) t.push(a.speed);
   if(a.media){ t.push(a.media.replace('_TAA','')); if(a.media.endsWith('_TAA')) t.push('TAA'); }
   if(a.reach) t.push(a.reach);
-  if(a.category) t.push({MODULE:'módulo',STORAGE:'SSD',PSU:'2ª PSU',MOUNT:'rack 19"',KIT:'kit accesorios',FAN:'ventilador',CABLE:'consola'}[a.category]||a.category);
+  if(a.category) t.push({MODULE:'módulo',STORAGE:'SSD',PSU:'fuente / adaptador',MOUNT:'rack 19"',KIT:'kit accesorios',FAN:'ventilador',CABLE:'consola'}[a.category]||a.category);
   if(a.plc==='ES') t.push('FIN DE VENTA');
   return t.join(' · ');
 }

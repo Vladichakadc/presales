@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-13 (fase 12 + fase 11 E5).
+Última revisión: 2026-09-13 (importador gobernado + matriz de accesorios oficial).
 
 ---
 
@@ -357,12 +357,15 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     (JZ878A, EoS 2025-12-31)** y **EC-XS (JM962A, EoS 2026-01-31)**. Ninguna de las dos
     está confirmada por un documento oficial de HPE — la Product Lifecycle Policy
     consultada solo nombra al EC-XL-H — así que NO se marcan: misma regla de doble
-    anclaje que el EC-XL en su momento. La señal del EC-XS tiene un indicio a favor: su
-    SKU (JM962A) ya no aparece en el export de lista de precios vigente del distribuidor,
-    coherente con un fin de venta reciente. Cómo se cierra: conseguir el boletín o la
-    tabla de ciclo de vida oficial de HPE que nombre a los dos modelos (una persona con
-    navegador real en arubanetworking.hpe.com, o preguntar al distribuidor), y entonces
-    replicar el patrón `EOL_ANNOUNCED` del EC-XL.
+    anclaje que el EC-XL en su momento. **Indicios oficiales acumulados (importador,
+    2026-09-13):** el SKU pelado JM962A está AUSENTE de la lista vigente (solo quedan
+    variantes localizadas JM962A#xx y el reman JM962AR ya en PLC «ES») — coherente con
+    un fin de venta reciente del EC-XS; y JZ878A (EC-L-H) renovó vigencia de List Price
+    a 2025-06-01 con PLC GA, señal a favor de seguir vivo. El S0B67A (EC-XL-H-10G) sí
+    pasó a PLC «ES» en la lista — coherente con su EOL_ANNOUNCED ya marcado. Cómo se
+    cierra: conseguir el boletín o la tabla de ciclo de vida oficial de HPE que nombre a
+    EC-L-H y EC-XS (una persona con navegador real en arubanetworking.hpe.com, o
+    preguntar al distribuidor), y entonces replicar el patrón `EOL_ANNOUNCED` del EC-XL.
 17. **Equivalencia E-STU de HA para suscripciones On-Premises (2026-09-13).** HPE publica
     SKU «HA» propios del segundo nodo para las suscripciones SaaS (Foundation/Advanced ×
     100M/1G/ilimitado × 1/3/5 años, ya en `LICENSES_HA` con precio idéntico al estándar),
@@ -379,33 +382,63 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     *Cerrado recientemente*. Todos los precios de accesorios salen ahora de la lista
     oficial del distribuidor, con vigencia y PLC — el brief de la fase 12 quedó
     corregido por ella (sus cifras eran ~40-60 % más bajas, parecían precio neto).
-20. **Compatibilidades de accesorios por inferencia de familia (2026-09-13, fase 12).**
-    Ancladas al VSG oficial: 1G solo EC-10106; 10G/DAC en EC-10106/10108/10150;
-    EC-10104 sin SFP; 9240 = 4x SFP28. Por inferencia declarada (comentario en
-    `aruba.js`): J4860D, JL745A/JL746A/JL747B y S3R03A siguen la regla 1G; J9153D,
-    JL748A y J9285D la regla 10G. Cómo se cierra: confirmar la matriz completa contra
-    el VSG vigente o el distribuidor; el test «las ópticas 1G solo se certifican en
-    EC-10106» obliga a revisarla entera si cambia.
-21. **~~EC-XS/S/M/L/XL sin accesorios en el catálogo maestro~~ Resuelto en gran parte
-    (2026-09-13)**, ver *Cerrado recientemente*. La lista oficial aporta PSU y kit de
-    accesorios para EC-S-P y EC-M-H, SSD y montaje central para EC-L/XL-H. Lo que
-    sigue abierto: **EC-XS no tiene ningún accesorio propio en la lista** (solo el
-    gateway y servicios) y **ningún EC de la línea anterior tiene matriz de ópticas
-    validada** — sus transceptores quedan en «confirmar con el distribuidor».
+20. **~~Compatibilidades de accesorios por inferencia de familia~~ Resuelto
+    (2026-09-13)**, ver *Cerrado recientemente* («Matriz de accesorios reescrita contra
+    la compatibilidad oficial»). La matriz completa salió del VSG SD-Branch, el Hardware
+    Reference Guide Rev S, los QuickSpecs EC v18 y 9200 v14 y la Install Guide del
+    EC-10150, cruzada con la lista: las inferencias quedaron confirmadas o refutadas una
+    a una (JL747B no soportado en toda la línea EC; J4860D/J9285D sin matriz EC; J9153D
+    fuera de EC-10108/10150; 25G confirmado en EC-10108; matriz legacy EC-S/M/L/XL
+    validada). El test de integridad codifica ahora la matriz oficial SKU por SKU.
+21. **~~EC-XS/S/M/L/XL sin accesorios en el catálogo maestro~~ Resuelto (2026-09-13)**,
+    ver *Cerrado recientemente*. El EC-XS tiene ya su kit oficial (JM965A, $365) y su
+    adaptador de corriente externo (JM996A, $296) — el Accessories Guide PN 201911 Rev F
+    confirma que no existe rack kit separado (las orejas van en caja) — y la línea
+    anterior tiene su matriz de ópticas validada (JM534A/JM535A + TAA según columna HRG).
 22. **VSG inalcanzable en el chequeo de salud desde el sandbox (2026-09-13, fase 11 E5).**
     El nuevo endpoint `GET /api/fuentes/:vendor/salud` y el botón «Comprobar salud de las
     fuentes» funcionan, pero desde este entorno la URL del VSG SD-Branch responde
     inalcanzable (bloqueo de egreso a dominios HPE ya conocido — las GitHub Actions sí la
     alcanzan). No es un fallo del vigía: verificar desde la red del cliente antes de dar
     una fuente por caída.
-23. **Requisito de almacenamiento Boost en EC-10106/10108 (2026-09-13, fase 12).** El
-    brief de la fase 12 describía S2N67A como «EC 10010 NM Drive Kit» y la herramienta
-    lo sincronizaba con Boost en esos modelos; la lista oficial lo corrige: S2N67A es
-    «EC 10150/10170 NM» y **no existe kit de almacenamiento para EC-10106/10108 en la
-    lista**. La sincronización se retiró. Queda por confirmar con HPE o el distribuidor
-    si Boost en EC-10106/10108 trabaja solo con el almacenamiento interno (el QuickSpecs
-    no declara kit opcional para ellos) o si hay un SKU fuera de la lista — si aparece,
-    se añade al catálogo maestro y se reactiva la sincronización.
+23. **~~Requisito de almacenamiento Boost en EC-10106/10108~~ Resuelto (2026-09-13)**,
+    ver *Cerrado recientemente*. Respuesta oficial del Hardware Reference Guide Rev S:
+    EC-10106/10108 llevan un SSD interno de 120 GB **no reemplazable por el usuario** y
+    **no tienen slot** de ampliación — no existe kit y no puede existir. Boost corre
+    sobre ese SSD interno (hasta 250 Mbps en el 10106 y 500 en el 10108, según los
+    datasheets oficiales). Y la lectura anterior de S2N67A quedó corregida del todo:
+    «NM» = **Network Memory** — es el «10150/10170 1.6TB Network Memory Drive Kit» del
+    QuickSpecs v18 (con él, Boost llega a 8 Gbps en el EC-10150; 1 Gbps sin él), con
+    S3R70A/S3P35A como repuestos oficiales. Reclasificado a STORAGE en el catálogo.
+24. **1G en EC-10108 y EC-10150: conflicto documental oficial (2026-09-13).** El VSG
+    SD-Branch dice NO; el Hardware Reference Guide Rev S y la Install Guide del 10150
+    dicen SÍ con restricciones de puerto (solo wan0/wan1). Decisión de la casa: no se
+    ofertan ópticas 1G en esos modelos hasta que el distribuidor o HPE TAC desempate —
+    ofertar en conflicto documental es apostar el pedido. Cómo se cierra: una respuesta
+    escrita del distribuidor/HPE; entonces se añaden las 1G al modelo que proceda y se
+    ajusta el test de la matriz.
+25. **Transceptores ANW genéricos y EC-SFP-1000BT en la lista, sin matriz para nuestros
+    modelos (2026-09-13).** El cruce lista ∩ compatibilidad localizó: **J8177E** «HPE
+    ANW 1G SFP RJ45 100m» ($473) y **J9153E** «HPE ANW 10G ER SFP+ 40km» ($11.855 —
+    mismo precio que J9153D, vigencia 2026: probable rebranding ANW del mismo
+    transceptor), y **R9Y49A** «EC-SFP-1000BT» ($650, 1G cobre marca EdgeConnect,
+    confirmado por el VSG solo en EC-M-P — variante que no está en este catálogo; el
+    EC-M-H queda sin confirmar). Ninguno entra al catálogo maestro hasta tener plataforma
+    confirmada: la regla de la casa es cita literal, no parecido. Cómo se cierra:
+    preguntar al distribuidor si J9153E sustituye a J9153D (y J8177E a S3R03A) en las
+    matrices EC/9200, y si R9Y49A aplica al EC-M-H.
+26. **S0W40A «EC-NX-SSD-A2» no está en la lista del distribuidor (2026-09-13).** El
+    Accessories Guide Rev F lo da como repuesto SSD actual de la línea -H (EC-M/L/L-H/
+    XL/XL-H, 480 GB), pero no tiene fila en la lista — el catálogo sigue ofertando
+    JZ889A (que sí está, $1.207). Si el distribuidor confirma que S0W40A sustituye a
+    JZ889A, se añade con el importador y se ajusta la matriz.
+27. **Variantes de modelo detectadas por el importador — decisión de surtido del dueño
+    (2026-09-13).** El primer dry-run del importador encontró en la lista, fuera del
+    roster: **JM538A** «EC-S-P SD-WAN Gateway» ($13.479, la variante base no-NAL del
+    EC-S), **JM769A** «EC-S-P-DC» ($15.510), **JM778A** «EC-S-P-NFR» (not-for-resale,
+    PLC SA), **JM538AR** (reman, $11.457) y **JM962AR** (EC-XS reman, PLC ES). También
+    documentó que el EC-10170 (hermano del 10150 en el kit S2N67A) no está catalogado.
+    No entran solos: ampliar el surtido de modelos es decisión del dueño.
 
 ## Limpieza
 
@@ -421,6 +454,58 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Importador gobernado de lista de precios + matriz de accesorios contra la compatibilidad oficial (2026-09-13)
+
+Instrucción del dueño: «Aplica como un arquitecto la mejora propuesta. Con respecto a
+los pendientes busca en la web los accesorios y compáralo con los SKU de la lista de
+precios — los accesorios como transceptores están en esta lista, debes cruzarlos —
+busca como un experto».
+
+**El importador gobernado (`scripts/importar-lista-aruba.js`).** Convierte la
+actualización de precios en un proceso: lee el txt del distribuidor extrayendo
+ÚNICAMENTE las 5 columnas permitidas (SKU, descripción, List Price, vigencia, PLC) con
+validación literal de cabecera (un cambio de formato aborta, no adivina), dedup por
+vigencia reciente, y confronta tres estados: la lista oficial, la declaración del repo
+(qué SKU se cotizan — 147 en el roster) y el CSV vigente. Emite el diff en cinco
+canales (precios repo≠lista, filas CSV que cambian, transiciones PLC, ausentes de la
+lista, candidatos nuevos por cubos edgeconnect/ópticas/gateways) para aprobación
+humana. Dry-run por defecto; `--aplicar` reescribe SOLO el CSV del cotizador; jamás
+toca `aruba.js` (el commit gobernado es del humano, y el test de coherencia dual rompe
+la build hasta que lo haga). Guardarraíl de confidencialidad: ninguna salida puede
+contener el separador de la lista ni rastro de las columnas prohibidas. 7 tests con
+fixtures sintéticos. Primer dry-run real: precios del repo 100 % conformes; detectó la
+transición S0B67A (EC-XL) GA→ES, la renovación de vigencia de JZ878A y la ausencia del
+SKU pelado JM962A.
+
+**La matriz de accesorios, reescrita contra la compatibilidad oficial.** Dos
+investigadores con fuentes oficiales HPE/Aruba (VSG SD-Branch, Hardware Reference
+Guide Rev S dic-2025, QuickSpecs EC v18 y 9200 v14, Install Guide EC-10150, Hardware
+Accessories Guide PN 201911 Rev F) produjeron la matriz por plataforma; el cruce con
+la lista confirmó que TODOS los SKU necesarios existen en ella. Refutaciones
+aplicadas: JL747B fuera (el HRG lo marca no soportado en toda la línea EC), J4860D y
+J9285D fuera de EdgeConnect (sin matriz; J9285D sí en 9240), J9153D fuera de
+EC-10108/10150 (el VSG no lo certifica ahí), JL485A/JL487A/JL488A fuera del EC-10150
+(sin confirmar; siguen en 9240). Ampliaciones confirmadas: EC-10108 gana 25G
+(JL484A/JL486A/JL489A) y 10G cobre (JL563C); EC-10150 gana JM532A/JM533A, S2N63A,
+JL563C, JL749A y el tren Network Memory completo; la línea anterior gana
+JM534A/JM535A (EC-SFP-LR/SR) y las TAA 1G/10G por columna HRG; EC-XS gana su kit
+JM965A y su adaptador JM996A; EC-10106/10108 ganan el kit S2D96A y el adaptador
+S2D95A; el 9240 gana las ópticas 1G/10G del QuickSpecs 9200. Catálogo: 40 → 53 SKU;
+CSV: 135 → 148 filas (regenerado con el propio importador). **S2N67A reclasificado**:
+«NM» = Network Memory (no network module) — kit de 2× NVMe 1,6 TB del EC-10150/10170;
+con él Boost llega a 8 Gbps en el 10150 (1 Gbps sin él). Pendientes cerrados: #20
+(matriz sin inferencias), #21 (EC-XS y legacy), #23 (EC-10106/10108 no tienen slot —
+SSD interno 120 GB no reemplazable; Boost corre sobre él hasta 250/500 Mbps). Nuevos
+pendientes: #24 (1G en 10108/10150, conflicto VSG vs HRG), #25 (J8177E/J9153E/R9Y49A
+sin matriz para nuestros modelos), #26 (S0W40A ausente de la lista), #27 (variantes de
+modelo detectadas — decisión de surtido).
+
+**Verificación.** 263/263 pruebas (el test de integridad codifica ahora la matriz
+oficial SKU por SKU y plataforma) y eslint verde. E2E en Chromium: EC-10106 con 14
+accesorios sin los refutados, EC-10108 con 25G, EC-10150 con el tren Network Memory
+(S2N67A $9.096 + repuestos), EC-XS con kit y adaptador, EC-S/EC-L con ópticas
+oficiales, 9240 con 20 accesorios 1G/10G/25G.
 
 ### Catálogo de accesorios corregido y ampliado contra la lista de precios oficial (fase 12, 2026-09-13)
 
