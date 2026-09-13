@@ -355,7 +355,7 @@ const REGLAS_DISENO=[
   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&$('chkDtd').checked&&!D.bundle,
    texto:()=>'Dynamic Threat Defense marcado pero EXCLUIDO: es licencia aparte, pero DE la suscripcion — sin ella no se licencia.'},
   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&D.bundle==='onprem',
-   texto:()=>'Modalidad On-Premises: requiere Unity Orchestrator auto-alojado (VM del cliente) — sin SKU en la lista de precios: consultar.'},
+   texto:()=>'Modalidad On-Premises: el software de Orchestrator va incluido en la suscripcion, pero el ALOJAMIENTO (VM, uptime, backup y upgrades) corre por cuenta del cliente — dimensionarlo en la propuesta.'},
   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&D.onprem&&$('chkHa').checked&&D.qty===2,
    texto:()=>'Par HA on-prem cotizado 2x estandar: la equivalencia de los SKU HA E-STU no esta confirmada en las fuentes consultadas (PENDIENTES #17).'},
   {nivel:'aviso', cuando:(D,m)=>m.id==='EC-V',
