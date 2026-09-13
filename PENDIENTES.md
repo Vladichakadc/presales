@@ -372,39 +372,40 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     distribuidor si existe SKU E-STU HA; si existe, se mapea en `LICENSES_HA.onprem`, se
     ajusta el test de cobertura (hoy exige exactamente bw100/bw1g/bwunl) y el motor lo usa
     solo.
-18. **Segunda PSU del Gateway 9240: R1C72A o R7J63A (2026-09-13, fase 12).** El brief del
-    dueño declara **R1C72A** «9240 550W Secondary AC Power Supply» ($890 List) en el
-    catálogo maestro de accesorios, y es el que gobierna la herramienta. La investigación
-    de la fase 11 había anclado **R7J63A** ($721, partner autorizado) como PSU de repuesto
-    del 9240. Pueden ser dos SKU válidos (AC secundaria vs. repuesto) o uno solo con
-    precio distinto — no hay documento público que lo desempate. Cómo se cierra: preguntar
-    al distribuidor cuál de los dos aplica al pedido del 9240 y a qué precio; si solo
-    aplica uno, se corrige `ARUBA_ACCESSORY_CATALOG` y el test de integridad.
-19. **Precios de accesorios: el catálogo maestro gobierna sobre el partner (2026-09-13,
-    fase 12).** Los List Price del brief sustituyeron a los de partner autorizado de la
-    fase 11, que eran provisionales (HPE no publica List oficial de transceptores).
-    Discrepancias documentadas en `aruba.js`: J4858D $271 vs $480 · J9150D $859 vs $1.454
-    · J9281D $115 vs $164. Si el distribuidor confirma otra cifra, se actualiza una sola
-    fuente (`ARUBA_ACCESSORY_CATALOG`) y la página la hereda.
+18. **~~Segunda PSU del Gateway 9240: R1C72A o R7J63A~~ Resuelto (2026-09-13)**, ver
+    *Cerrado recientemente*. La lista oficial del distribuidor desempata: R1C72A es un
+    kit de montaje de APs ($415) y la PSU del 9240 es **R7J63A** ($747 List).
+19. **~~Precios de accesorios: catálogo maestro vs partner~~ Resuelto (2026-09-13)**, ver
+    *Cerrado recientemente*. Todos los precios de accesorios salen ahora de la lista
+    oficial del distribuidor, con vigencia y PLC — el brief de la fase 12 quedó
+    corregido por ella (sus cifras eran ~40-60 % más bajas, parecían precio neto).
 20. **Compatibilidades de accesorios por inferencia de familia (2026-09-13, fase 12).**
-    Ancladas al VSG oficial: 1G fibra solo EC-10106; 10G/DAC en EC-10106/10108/10150;
+    Ancladas al VSG oficial: 1G solo EC-10106; 10G/DAC en EC-10106/10108/10150;
     EC-10104 sin SFP; 9240 = 4x SFP28. Por inferencia declarada (comentario en
-    `aruba.js`): J4860D, JL745A/JL746A y S3R03A siguen la regla 1G; J9153D, JL747A/JL748A
-    y J9285D la regla 10G. Cómo se cierra: confirmar la matriz completa contra el VSG
-    vigente o el distribuidor; el test «las ópticas 1G de fibra solo se certifican en
+    `aruba.js`): J4860D, JL745A/JL746A/JL747B y S3R03A siguen la regla 1G; J9153D,
+    JL748A y J9285D la regla 10G. Cómo se cierra: confirmar la matriz completa contra
+    el VSG vigente o el distribuidor; el test «las ópticas 1G solo se certifican en
     EC-10106» obliga a revisarla entera si cambia.
-21. **EC-XS/S/M/L/XL sin matriz de ópticas en el catálogo maestro (2026-09-13, fase 12).**
-    El brief solo declara accesorios para EC-10106/10108/10150 y gateways 9004/9012/9240;
-    el resto de EdgeConnect ofrece solo el cable de consola JW084A con nota «confirmar
-    transceptores con el distribuidor». Sus kits NVMe de Boost (los EC-S/M/L/XL usan otro
-    kit distinto del S2N67A) y sus ópticas quedan fuera hasta que el dueño los declare en
-    el catálogo maestro.
+21. **~~EC-XS/S/M/L/XL sin accesorios en el catálogo maestro~~ Resuelto en gran parte
+    (2026-09-13)**, ver *Cerrado recientemente*. La lista oficial aporta PSU y kit de
+    accesorios para EC-S-P y EC-M-H, SSD y montaje central para EC-L/XL-H. Lo que
+    sigue abierto: **EC-XS no tiene ningún accesorio propio en la lista** (solo el
+    gateway y servicios) y **ningún EC de la línea anterior tiene matriz de ópticas
+    validada** — sus transceptores quedan en «confirmar con el distribuidor».
 22. **VSG inalcanzable en el chequeo de salud desde el sandbox (2026-09-13, fase 11 E5).**
     El nuevo endpoint `GET /api/fuentes/:vendor/salud` y el botón «Comprobar salud de las
     fuentes» funcionan, pero desde este entorno la URL del VSG SD-Branch responde
     inalcanzable (bloqueo de egreso a dominios HPE ya conocido — las GitHub Actions sí la
     alcanzan). No es un fallo del vigía: verificar desde la red del cliente antes de dar
     una fuente por caída.
+23. **Requisito de almacenamiento Boost en EC-10106/10108 (2026-09-13, fase 12).** El
+    brief de la fase 12 describía S2N67A como «EC 10010 NM Drive Kit» y la herramienta
+    lo sincronizaba con Boost en esos modelos; la lista oficial lo corrige: S2N67A es
+    «EC 10150/10170 NM» y **no existe kit de almacenamiento para EC-10106/10108 en la
+    lista**. La sincronización se retiró. Queda por confirmar con HPE o el distribuidor
+    si Boost en EC-10106/10108 trabaja solo con el almacenamiento interno (el QuickSpecs
+    no declara kit opcional para ellos) o si hay un SKU fuera de la lista — si aparece,
+    se añade al catálogo maestro y se reactiva la sincronización.
 
 ## Limpieza
 
@@ -420,6 +421,53 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Catálogo de accesorios corregido y ampliado contra la lista de precios oficial (fase 12, 2026-09-13)
+
+Instrucción del dueño: «Vamos a corregir los pendientes — debes basarte en la lista de
+precios que te subí, esa es la fuente oficial de los SKU y precios de lista. Amplía el
+catálogo maestro con lo declarado anteriormente». Se extrajeron de la lista ÚNICAMENTE
+Product Number, Short Description, List Price, List Price Effective Date y PLC Status
+(la regla de confidencialidad del repo prohíbe el resto de columnas).
+
+**Correcciones que la lista oficial hace al brief de la fase 12.** Cuatro SKU estaban
+mal descritos: **R1C72A** es un kit de montaje de APs ($415), no la PSU del 9240 — la
+PSU real es **R7J63A** «9240 550W AC Power supply» ($747); **R1B23A/R1B24A** son
+gateways 9004 regionales (IL/EG, $2.505), no kits de rack — los racks reales son
+**R1B30A** (9004, $282) y **R4X13A** (9012, $71); **JW084A** es el rack del 7005
+($282), no un cable de consola — la consola AP-CBL-SERU real es **JY728A** ($36);
+**JL747A** es 1G cobre TAA en estado **ES** ($854), no un 10G SR — su sucesor GA es
+**JL747B**. Y todos los precios del brief eran ~40-60 % más bajos que el List oficial
+(parecían precio neto): corregidos uno a uno con su vigencia y PLC.
+
+**S2N67A y la sincronización Boost → NVMe.** La lista describe S2N67A como «EC
+10150/10170 NM» ($9.096) — módulo del EC-10150, no un kit «EC 10010». Como la lista no
+tiene kit de almacenamiento para EC-10106/10108, la sincronización automática
+Boost → NVMe de esos modelos se retira (el requisito queda documentado en *Datos por
+confirmar* #23) y S2N67A se ofrece solo en EC-10150.
+
+**Ampliación con lo declarado.** 40 SKUs en el catálogo maestro: los transceptores y
+DAC 1G/10G/25G corregidos, más lo que la lista aporta para los modelos que no tenían
+nada — EC-S (PSU JM779A, kit JZ893A), EC-M (PSU JZ955A, kit JZ894A), EC-L/XL (SSD
+JZ889A, montaje central JZ888A), Gateway 9114 (fan tray S2N64A), 9004-LTE (rack
+R3W17A) y los racks de la línea anterior 7000/7200 (JW084A, JX934A, JW085A, JW086A,
+JW107A). El cobre 1G del 9240 se ofrece como reman S1H24AR ($353) porque el SKU nuevo
+no figura en la lista. Regla nueva: un SKU en PLC «ES» nunca entra en la matriz de
+compatibilidad — queda en el catálogo solo para trazabilidad.
+
+**Doble vista, una fuente.** El CSV del cotizador
+(`aruba-lista-precios-hpe.csv`, 95 → 135 filas) gana la familia «Accesorios
+EdgeConnect y gateways», y un test nuevo exige que catálogo maestro y CSV digan lo
+mismo SKU a SKU (precio, vigencia y PLC) — las dos vistas de la misma fuente no pueden
+divergir sin romper la build.
+
+**Verificación.** 256/256 pruebas (9 de integridad de accesorios: cobertura de los 40,
+campos obligatorios, matriz referenciando solo lo existente, ES fuera de la matriz,
+S2N67A solo en 10150, regla VSG 1G con la excepción declarada del 9240, exclusividad de
+PSU/racks/fan, coherencia catálogo ↔ CSV) y eslint verde. E2E en Chromium: EC-10106 con
+15 items a precios oficiales y sin S2N67A (con Boost ON tampoco), EC-10150 con el
+módulo a $9.096, 9240 con R7J63A $747 y S1H24AR $353, EC-S/EC-L/7005/9114 con sus
+accesorios oficiales.
 
 ### Catálogo maestro de accesorios ARUBA_ACCESSORY_CATALOG y sincronización Boost → NVMe (fase 12, 2026-09-13)
 
