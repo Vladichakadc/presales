@@ -209,8 +209,9 @@
     const o = opciones || {};
     // Las referencias anadidas se pegan aqui, no en la pagina, y entran ANTES de los totales:
     // un bundle en la cotizacion que no sume al total seria un numero que no corresponde a lo
-    // que la cotizacion lleva dentro.
-    const filas = (filasBase || []).concat(filasDeRefs());
+    // que la cotizacion lleva dentro. `o.sinRefs` (fase 11) las omite: el BOM global
+    // consolidado de perfiles multi-sede no debe arrastrar las refs manuales de la pagina.
+    const filas = (filasBase || []).concat(o.sinRefs ? [] : filasDeRefs());
     const { suma, sinPrecio } = totales(filas);
 
     const grupos = [];
@@ -312,7 +313,8 @@
     await cargarSheetJS();
     // Igual que en renderTabla: lo anadido a mano tambien viaja al Excel. Exportar sin esas
     // lineas daria un documento que no corresponde a lo que se ve en pantalla (2026-09-13).
-    const filas = (filasBase || []).concat(filasDeRefs());
+    // `meta.sinRefs` (fase 11) las omite para el BOM global consolidado de perfiles.
+    const filas = (filasBase || []).concat(m.sinRefs ? [] : filasDeRefs());
     const { suma, sinPrecio } = totales(filas);
 
     // Simulador de precio neto (fase 11, opt-in via meta.dto): columnas NET en paralelo.
@@ -373,7 +375,8 @@
     const m = meta || {};
     // Mismo criterio que exportarExcel: las referencias anadidas a mano son parte del BOM
     // y tienen que salir en el texto, no solo en la tabla pintada.
-    const filas = (filasBase || []).concat(filasDeRefs());
+    // `meta.sinRefs` (fase 11) las omite para el BOM global consolidado de perfiles.
+    const filas = (filasBase || []).concat(m.sinRefs ? [] : filasDeRefs());
     const { suma, sinPrecio } = totales(filas);
     const pad = (s, n) => String(s ?? '').padEnd(n);
     const L = [];

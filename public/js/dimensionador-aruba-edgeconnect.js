@@ -29,6 +29,10 @@ const FICHA_CFG={vendor:'aruba', refs:false, selector:false,
 const QMODEL_URL=new URLSearchParams(location.search).get('pickModel');
 
 const $=id=>document.getElementById(id);
+// Campos del escenario: la misma lista que persiste ESTADO y que capturan los perfiles
+// multi-sede (fase 11) para poder restaurar un escenario guardado.
+const CAMPOS_ESCENARIO=['bw','unit','users','aps','perUser','head','fecMode','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','famSeg','segSeg','destSeg','pickModel','personaSeg','secSeg','mplsType','bwMpls','inetType','bwInet','chkBreakout','dtoSeg','dtoCustom'];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let famMode='any', segMode='branch', destMode='hibrido', lastPick=null;
 // Fase 11 (2026-09-13): arquetipo de sede y estrategia de seguridad pasan a ser
 // variables de estado del dimensionador — restringen el catalogo y alimentan el BOM.
@@ -147,6 +151,146 @@ $('dtoSeg').addEventListener('input',()=>{
 });
 $('dtoCustom').addEventListener('input',renderBom);
 
+/* ══ CALCULADORA DE POOL BOOST (fase 11, §3.2) ══
+   Proyecta los bloques por sede del dimensionador al fabric: el pool se licencia una
+   sola vez y Orchestrator lo reparte entre las sedes que lo aprovechan. */
+function pintarPoolBoost(){
+  const n=Math.max(0,parseInt($('poolSedes').value)||0);
+  const D=estadoDerivado();
+  const out=$('poolOut');
+  if(!n){ out.innerHTML=''; return; }
+  if(!D.bloques){
+    out.innerHTML='<p class="hint">El escenario actual no licencia Boost (no está marcado o la suscripción está excluida): marca Boost en el dimensionador para proyectar el pool.</p>';
+    return;
+  }
+  const cfg=D.bundle==='onprem'?SIZING.boost.onprem:SIZING.boost.saas;
+  const blk=cfg?cfg.bloque100:null;
+  const totalBloques=D.bloques*n, totalMbps=totalBloques*SIZING.boost.bloque;
+  const precio=tierPrice(blk,D.termYrs);
+  out.innerHTML=`<table class="tco-tabla"><thead><tr><th>Pool del fabric</th><th>Por sede</th><th>× ${n} sedes</th><th>Total</th></tr></thead><tbody>`
+    +`<tr><td><b>Bloques de ${SIZING.boost.bloque} Mbps</b></td><td>${D.bloques}</td><td>${totalBloques}</td><td><b>${totalMbps.toLocaleString('en-US')} Mbps</b></td></tr>`
+    +(blk?`<tr><td>SKU (término ${D.termYrs} años)</td><td colspan="2"><code>${tierSku(blk,D.termYrs)||'—'}</code></td><td><b>${precio!=null?BOM.money(precio*totalBloques):'consultar'}</b> LIST</td></tr>`:'')
+    +`</tbody></table><p class="hint">Es un pool único del fabric: no multiplica por unidad ni por appliance, y Orchestrator lo reasigna entre sedes sin tocar hardware. Misma línea que el BOM global consolidado agrega por perfil.</p>`;
+}
+$('poolSedes').addEventListener('input',pintarPoolBoost);
+
+/* ══ PERFILES MULTI-SEDE (fase 11, §1.7) ══
+   «Tienda x50»: el escenario actual se guarda con su número de sedes idénticas y el BOM
+   global consolida todos los perfiles — equipo y suscripciones multiplican por sede, el
+   pool de Boost agrega en una sola línea del fabric y el Orchestrator va una sola vez.
+   Los perfiles viven en localStorage con los precios del día en que se guardaron. */
+const PERFILES_KEY='presales:aruba:perfiles';
+function cargarPerfiles(){
+  try{ const v=JSON.parse(localStorage.getItem(PERFILES_KEY)||'[]'); return Array.isArray(v)?v:[]; }
+  catch{ return []; }
+}
+function guardarPerfiles(l){ localStorage.setItem(PERFILES_KEY,JSON.stringify(l)); }
+// Captura/restauracion de campos del escenario (la misma lista que persiste ESTADO).
+function capturarCampos(){
+  const v={};
+  CAMPOS_ESCENARIO.forEach(id=>{
+    const n=$(id); if(!n) return;
+    if(n.classList&&n.classList.contains('seg')){
+      const a=n.querySelector('[aria-pressed="true"]'); v[id]=a?a.dataset.v:null;
+    }else if(n.type==='checkbox'){ v[id]=n.checked; }
+    else v[id]=n.value;
+  });
+  return v;
+}
+function aplicarCampos(v){
+  CAMPOS_ESCENARIO.forEach(id=>{
+    const n=$(id); if(!n||v[id]==null) return;
+    if(n.classList&&n.classList.contains('seg')){
+      const b=[...n.children].find(x=>x.dataset.v===v[id]); if(b) b.click();
+    }else if(n.type==='checkbox'){ n.checked=!!v[id]; }
+    else n.value=v[id];
+  });
+  render();
+}
+$('perfilGuardar').addEventListener('click',()=>{
+  const nombre=$('perfilNombre').value.trim();
+  const sedes=Math.max(0,parseInt($('perfilSedes').value)||0);
+  if(!nombre||!sedes){ $('perfilNombre').focus(); return; }
+  const m=MODELS.find(x=>x.id===$('pickModel').value);
+  if(!m||!bomFilas.length) return;
+  const l=cargarPerfiles();
+  l.push({nombre, sedes, modelo:m.id, fecha:new Date().toISOString().slice(0,10),
+    campos:capturarCampos(), filas:JSON.parse(JSON.stringify(bomFilas))});
+  guardarPerfiles(l);
+  $('perfilNombre').value=''; $('perfilSedes').value='';
+  pintarPerfiles();
+});
+function pintarPerfiles(){
+  const l=cargarPerfiles();
+  $('perfilLista').innerHTML=l.length
+    ?`<table class="tco-tabla"><thead><tr><th>Perfil</th><th>Sedes</th><th>Modelo</th><th>Guardado</th><th></th></tr></thead><tbody>`
+      +l.map((p,i)=>`<tr><td><b>${esc(p.nombre)}</b></td><td>${p.sedes}</td><td>${esc(p.modelo)}</td><td>${p.fecha||'—'}</td>`
+        +`<td><button type="button" class="btn ghost" data-perfil-cargar="${i}" style="font-size:10px;padding:3px 8px">Cargar</button> `
+        +`<button type="button" class="btn ghost" data-perfil-borrar="${i}" style="font-size:10px;padding:3px 8px">Eliminar</button></td></tr>`).join('')
+      +'</tbody></table>'
+    :'<p class="hint">Sin perfiles guardados todavía.</p>';
+  pintarBomGlobal();
+}
+$('perfilLista').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  const l=cargarPerfiles();
+  if(b.dataset.perfilCargar!=null){
+    const p=l[parseInt(b.dataset.perfilCargar)];
+    if(p&&p.campos) aplicarCampos(p.campos);
+  }else if(b.dataset.perfilBorrar!=null){
+    l.splice(parseInt(b.dataset.perfilBorrar),1);
+    guardarPerfiles(l); pintarPerfiles();
+  }
+});
+// BOM global consolidado: suma linea a linea (cat+desc+sku) con qty × sedes. Excepciones
+// del fabric: el pool de Boost agrega en UNA linea y el Orchestrator on-prem va una vez.
+function pintarBomGlobal(){
+  const l=cargarPerfiles();
+  const box=$('bomGlobal');
+  if(!l.length){ box.innerHTML=''; return; }
+  const acum=new Map(); let boost=null;
+  let totalSedes=0;
+  for(const p of l){
+    totalSedes+=p.sedes;
+    for(const f of (p.filas||[])){
+      if(f.cat==='Aceleración'){
+        if(!boost) boost={cat:f.cat, desc:f.desc, sku:f.sku, unit:f.unit, qty:0,
+          nota:'Pool agregado del fabric: suma de los bloques por sede de cada perfil × sus sedes. Orchestrator lo reparte y lo reasigna sin tocar hardware.'};
+        boost.qty+=(f.qty||0)*p.sedes; continue;
+      }
+      if(f.cat==='Orquestación'){
+        if(!acum.has('ORCH')) acum.set('ORCH',{...f, qty:1,
+          nota:(f.nota||'')+' · una sola instancia por fabric, no por sede'});
+        continue;
+      }
+      const k=[f.cat,f.desc,f.sku||''].join('|');
+      if(!acum.has(k)) acum.set(k,{...f, qty:0});
+      acum.get(k).qty+=(f.qty||1)*p.sedes;
+    }
+  }
+  const filas=[...acum.values()];
+  if(boost&&boost.qty>0) filas.push(boost);
+  const dto=dtoActual();
+  const meta={
+    titulo:`BOM global consolidado — ${l.length} perfil(es), ${totalSedes} sedes`,
+    subtitulo:l.map(p=>`${p.nombre} ×${p.sedes} (${p.modelo})`).join(' · '),
+    archivo:'BOM_global_aruba', sinRefs:true,
+    notas:[
+      'REGLAS DE CONSOLIDACION (fase 11):',
+      '  Equipo, suscripciones y soporte: cantidad por sede x numero de sedes del perfil.',
+      '  Pool de Boost: UNA sola linea del fabric con la suma de bloques por sede.',
+      '  Orchestrator on-prem: una sola instancia por fabric, no por sede.',
+      '  Precios: los vigentes el dia en que se guardo cada perfil (declarado en cada uno).',
+      '  Lineas «consultar» (DTD, SSE, EC-V): se consolidan en cantidad, sin precio.',
+    ],
+  };
+  if(dto>0){ meta.dto=dto; meta.dtoEtq=dtoEtiqueta(); }
+  box.innerHTML=`<h3 style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin:16px 0 8px">BOM global consolidado — ${totalSedes} sedes</h3>`
+    +BOM.renderTabla(filas,{dto, sinRefs:true})
+    +`<div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="btn" id="xlsGlobalBtn" style="font-size:11px;padding:5px 11px">Exportar BOM global a Excel</button></div>`;
+  $('xlsGlobalBtn').addEventListener('click',()=>BOM.exportarExcel(filas,meta));
+}
+
 // Texto del destino de tráfico (2026-09-13, refactor arquitectónico): la estrategia de
 // aplicaciones sustituye a los campos abstractos. Cloud-First usa First-packet iQ para
 // sacar el tráfico SaaS de confianza directo a Internet o al SSE; Híbrido concentra el
@@ -240,7 +384,6 @@ function fmt(m){
   if(m>=1000)return (m/1000).toFixed(m%1000?1:0)+' Gbps';
   return Math.round(m)+' Mbps';
 }
-const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const miles=n=>n==null?'—':n.toLocaleString('en-US');
 
 // Catálogo Aruba, con la misma tabla que antes vivía en la vista de Aruba del portal (ver
@@ -1292,6 +1435,9 @@ function renderBom(){
       }).join('')
       +`</tbody></table><p class="hint" style="margin-top:8px">CAPEX = hardware + accesorios + licencia perpetua de capacidad (criterio declarado); OPEX = suscripciones y soporte del término. Las líneas en «consultar» (DTD, SSE, EC-V, FC de gateways) no entran en la suma. Los precios de suscripción de la lista son lineales al término (3 años = 3 × 1 año), así que el TCO a 5 años usa el SKU quinquenal.</p>`
     :'<p class="hint">Sin precios suficientes para calcular el TCO: el equipo o las suscripciones están en «consultar».</p>';
+  // La calculadora de pool Boost (tab de licencias) proyecta los bloques del escenario:
+  // se repinta con cada cambio para no quedarse con cifras de un escenario anterior.
+  pintarPoolBoost();
   // Las marcas "En el BOM" del catálogo dependen de lo que el motor acaba de poner en la
   // lista: se repinta con cada cambio de modelo, término o tier.
   pintarCatalogoSku();
@@ -1461,7 +1607,7 @@ document.addEventListener('click', (e) => {
    otra recomendacion. Ahora el escenario viaja en la URL; ya no se guarda entre sesiones
    (ver /js/estado.js). */
 document.addEventListener('DOMContentLoaded', () => {
-  const st = ESTADO.vincular({ campos: ['bw','unit','users','aps','perUser','head','fecMode','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','famSeg','segSeg','destSeg','pickModel','personaSeg','secSeg','mplsType','bwMpls','inetType','bwInet','chkBreakout','dtoSeg','dtoCustom'] });
+  const st = ESTADO.vincular({ campos: CAMPOS_ESCENARIO });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');
@@ -1471,6 +1617,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ESTADO.botonEnlace(caja);
     ESTADO.avisoOrigen(caja, st.origen);
   }
+  // Perfiles multi-sede guardados en este navegador (fase 11): se pintan al arrancar.
+  pintarPerfiles();
 });
 
 /* ══ ENVIAR AL COTIZADOR ══

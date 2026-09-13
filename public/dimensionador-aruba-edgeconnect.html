@@ -455,6 +455,17 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
     <div id="tcoFin"></div>
   </section>
   <section class="panel">
+    <h2>Perfiles multi-sede</h2>
+    <p class="hint" style="margin:0 0 10px">Guarda el escenario actual como perfil («Tienda», «Oficina regional»…) con su número de sedes idénticas. El <b>BOM global consolidado</b> suma las líneas de todos los perfiles —equipo y suscripciones por sede, pool de Boost agregado del fabric, Orchestrator una sola vez— y se exporta aparte. Los perfiles viven en este navegador (localStorage) y conservan los precios del día en que se guardaron.</p>
+    <div class="row" style="margin-bottom:10px">
+      <input type="text" id="perfilNombre" placeholder="Nombre del perfil — p. ej. Tienda" autocomplete="off">
+      <input type="number" id="perfilSedes" min="1" step="1" placeholder="Nº sedes" style="width:100px" autocomplete="off">
+      <button type="button" class="btn" id="perfilGuardar" style="font-size:11px;padding:6px 12px;white-space:nowrap">Guardar perfil</button>
+    </div>
+    <div id="perfilLista"></div>
+    <div id="bomGlobal"></div>
+  </section>
+  <section class="panel">
     <h2>Lista de materiales
       <span class="bom-acciones">
         <button class="btn ghost" id="accBtn" style="font-size:11px;padding:5px 11px" hidden>Ópticas y accesorios</button>
@@ -515,6 +526,14 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
           <td>En una red de 60 sucursales donde solo 8 mueven ficheros pesados, se licencia para esas 8 — no para 60. Es el argumento económico central frente a un add-on por dispositivo</td></tr>
     </tbody>
   </table></div>
+  <div class="field" style="margin-top:14px">
+    <label for="poolSedes">Calculadora de pool — sedes que aprovechan Boost</label>
+    <div class="row">
+      <input type="number" id="poolSedes" min="1" step="1" placeholder="Nº de sedes" autocomplete="off">
+    </div>
+    <p class="hint">Toma los bloques por sede que el dimensionador acaba de calcular (30 % del tráfico WAN privado, en bloques de 100 Mbps) y los proyecta al fabric: el pool se licencia una vez y Orchestrator lo reparte.</p>
+    <div id="poolOut"></div>
+  </div>
 </section>
 
 <section class="panel">
