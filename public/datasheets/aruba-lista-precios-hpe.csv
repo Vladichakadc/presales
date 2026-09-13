@@ -39,6 +39,24 @@ S1B81AAS,Suscripcion EdgeConnect Advanced,HPE ANW EC Adv 1Gb 5yr Sub SaaS,32700.
 S1C35AAS,Suscripcion EdgeConnect Advanced,HPE ANW EC ADV AAS UL 1y Sub SaaS,23580.00,2026-06-01,GA
 S1C37AAS,Suscripcion EdgeConnect Advanced,HPE ANW EC Adv UL 3y Sub SaaS,70740.00,2026-06-01,GA
 S1C39AAS,Suscripcion EdgeConnect Advanced,HPE ANW EC Adv UL 5y Sub SaaS,117900.00,2026-06-01,GA
+S1C56AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 100M 1y Sub SaaS,900.00,2026-06-01,GA
+S1A17AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 100Mb 3yr Sub SaaS,2700.00,2026-06-01,GA
+S1A19AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 100Mb 5yr Sub SaaS,4500.00,2026-06-01,GA
+S1A29AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 1Gb 1yr Sub SaaS,1680.00,2026-06-01,GA
+S1A31AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 1Gb 3yr Sub SaaS,5040.00,2026-06-01,GA
+S1A33AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 1Gb 5yr Sub SaaS,8400.00,2026-06-01,GA
+S1A43AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA UL 1yr Sub SaaS,7848.00,2026-06-01,GA
+S1A45AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA UL 3yr Sub SaaS,23544.00,2026-06-01,GA
+S1A77AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA UL 5yr Sub SaaS,39240.00,2026-06-01,GA
+S1B41AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 100M 1y Sub SaaS,1848.00,2026-06-01,GA
+S1B43AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 100Mb 3yr Sub SaaS,5544.00,2026-06-01,GA
+S1B45AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 100Mb 5yr Sub SaaS,9240.00,2026-06-01,GA
+S1B84AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 1Gb 1yr Sub SaaS,6540.00,2026-06-01,GA
+S1B86AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 1Gb 3yr Sub SaaS,19620.00,2026-06-01,GA
+S1B88AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 1Gb 5yr Sub SaaS,32700.00,2026-06-01,GA
+S1C42AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA UL 1yr Sub SaaS,23580.00,2026-06-01,GA
+S1C44AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA UL 3yr Sub SaaS,70740.00,2026-06-01,GA
+S1C46AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA UL 5yr Sub SaaS,117900.00,2026-06-01,GA
 S1B99AAS,Suscripcion EdgeConnect On-Premises,HPE ANW EC ONP 100M 1y E-STU,1932.00,2026-06-01,GA
 S1C01AAS,Suscripcion EdgeConnect On-Premises,HPE ANW EC ONP 100M 3y E-STU,5796.00,2026-06-01,GA
 S1C03AAS,Suscripcion EdgeConnect On-Premises,HPE ANW EC ONP 100M 5y E-STU,9660.00,2026-06-01,GA

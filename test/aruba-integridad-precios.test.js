@@ -14,7 +14,7 @@ const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 
-const { MODELS, CARE, CARE_SKU, LICENSES, CENTRAL_TIERS, BOOST } = require('../server/seed/legacyData/aruba');
+const { MODELS, CARE, CARE_SKU, LICENSES, LICENSES_HA, CENTRAL_TIERS, BOOST } = require('../server/seed/legacyData/aruba');
 
 const csvFilas = fs.readFileSync(path.join(__dirname, '..', 'public', 'datasheets', 'aruba-lista-precios-hpe.csv'), 'utf8')
   .trim().split(/\r?\n/).slice(1).map((l) => l.split(','));
@@ -27,7 +27,9 @@ const SIN_HW_SKU_DECLARADO = new Set(['EC-V', '7005', '7008', '7010', '7024', '7
 
 // `modelo_dimensionador` del CSV que no es un modelo: son las familias de servicio.
 const FAMILIAS_CSV = new Set([
-  'Suscripcion EdgeConnect Foundation', 'Suscripcion EdgeConnect Advanced', 'Suscripcion EdgeConnect On-Premises',
+  'Suscripcion EdgeConnect Foundation', 'Suscripcion EdgeConnect Advanced',
+  'Suscripcion EdgeConnect Foundation HA', 'Suscripcion EdgeConnect Advanced HA',
+  'Suscripcion EdgeConnect On-Premises',
   'Boost EdgeConnect (SaaS)', 'Boost EdgeConnect (On-Premises)', 'Central (gateways 70xx/90xx)',
 ]);
 
@@ -82,6 +84,11 @@ test('los SKU de suscripcion, Boost y Central del seed estan en el CSV con el mi
   for (const [bw, lic] of Object.entries(LICENSES)) {
     for (const [nivel, t] of Object.entries(lic)) {
       for (const [term, sku] of Object.entries(t.sku || {})) cruza(`${bw}/${nivel}/${term}`, sku, t[term]);
+    }
+  }
+  for (const [bw, lic] of Object.entries(LICENSES_HA)) {
+    for (const [nivel, t] of Object.entries(lic)) {
+      for (const [term, sku] of Object.entries(t.sku || {})) cruza(`HA ${bw}/${nivel}/${term}`, sku, t[term]);
     }
   }
   for (const [k, t] of Object.entries(CENTRAL_TIERS)) {
@@ -141,4 +148,60 @@ test('los SKU de servicio de CARE_SKU no chocan con la lista de precios', () => 
     }
   }
   assert.deepStrictEqual(choques, [], 'el mismo SKU no puede vivir en dos fuentes con dos precios');
+});
+
+test('LICENSES_HA cubre los 3 tiers x 2 niveles x 3 terminos, con precios positivos', () => {
+  // On-Premises NO esta mapeado a proposito: HPE no publica equivalencia E-STU de HA para
+  // el segundo nodo on-prem, asi que el motor cotiza 2x estandar con declaracion (decision
+  // del duenyo, 2026-09-13). Si algun dia se confirma, se mapea aqui y se ajusta el BOM.
+  assert.deepStrictEqual(Object.keys(LICENSES_HA).sort(), ['bw100', 'bw1g', 'bwunl']);
+  const mal = [];
+  for (const [bw, lic] of Object.entries(LICENSES_HA)) {
+    for (const nivel of ['foundation', 'advanced']) {
+      const t = lic[nivel];
+      if (!t) { mal.push(`${bw}/${nivel}: falta el nivel`); continue; }
+      for (const term of ['y1', 'y3', 'y5']) {
+        if (!t.sku || !t.sku[term]) mal.push(`${bw}/${nivel}/${term}: falta SKU`);
+        if (!(t[term] > 0)) mal.push(`${bw}/${nivel}/${term}: precio no positivo`);
+      }
+    }
+  }
+  assert.deepStrictEqual(mal, []);
+});
+
+test('el precio HA es identico al estandar, tier a tier y anyo a anyo (invariante QuickSpecs)', () => {
+  // QuickSpecs EdgeConnect Enterprise: el SKU de alta disponibilidad del segundo nodo
+  // cuesta EXACTAMENTE lo mismo que el estandar del mismo tier/nivel/termino — solo
+  // cambia el numero de parte. Si esto se rompe, la lista de precios cambio y hay que
+  // revisar la invariante antes de cotizar pares HA.
+  const mal = [];
+  for (const [bw, lic] of Object.entries(LICENSES_HA)) {
+    for (const [nivel, t] of Object.entries(lic)) {
+      const std = (LICENSES[bw] || {})[nivel];
+      if (!std) { mal.push(`${bw}/${nivel}: sin par estandar`); continue; }
+      for (const term of ['y1', 'y3', 'y5']) {
+        if (t[term] !== std[term]) mal.push(`${bw}/${nivel}/${term}: HA=${t[term]} estandar=${std[term]}`);
+      }
+    }
+  }
+  assert.deepStrictEqual(mal, []);
+});
+
+test('todo modelo publica sus flujos simultaneos o declara por que no', () => {
+  // El dimensionador filtra por flujos simultaneos (Simultaneous Flows), no por tuneles
+  // IPsec: un modelo sin dato de flujos no puede validarse y pasaria de contrabando.
+  // EC-V es virtual (depende del hipervisor) y el Gateway 9240 no publica sesiones de
+  // firewall en su QuickSpecs — ambos declarados a proposito.
+  const SIN_FLUJOS_DECLARADO = new Set(['EC-V', 'Gateway 9240']);
+  const mal = [];
+  for (const m of MODELS) {
+    if (SIN_FLUJOS_DECLARADO.has(m.id)) continue;
+    if (m.fam === 'ec') {
+      const digitos = String(((m.spec || {}).conexiones) || '').replace(/[^\d]/g, '');
+      if (!digitos) mal.push(`${m.id}: spec.conexiones ausente o sin cifra`);
+    } else if (!(m.fwSess > 0)) {
+      mal.push(`${m.id}: fwSess ausente sin declarar`);
+    }
+  }
+  assert.deepStrictEqual(mal, []);
 });

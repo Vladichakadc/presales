@@ -6,15 +6,15 @@
 // gateways de las series 9000/9200 es el THROUGHPUT DE FIREWALL mas la capacidad de
 // clientes y APs. Se dimensiona con lo que existe publicado en vez de inventar una
 // escalera de capas homogenea.
-let MODELS = [], BUNDLES = {}, CARE = {}, CARE_SKU = {}, LICENSES = {}, SIZING = {},
-    SOFTWARE = [], CENTRAL = {}, DATASHEETS = {};
+let MODELS = [], BUNDLES = {}, CARE = {}, CARE_SKU = {}, LICENSES = {}, LICENSES_HA = {},
+    SIZING = {}, SOFTWARE = [], CENTRAL = {}, DATASHEETS = {};
 
 // Catálogo pedible completo (hardware, remanufacturados, suscripciones, servicios) cargado
 // del CSV público de lista de precios. Es la fuente del panel "Añadir a la lista de
 // materiales": todas las referencias de pedido de la página viven integradas en el BOM.
 let SKU_CAT = [];        // [{sku, d, p, vig, plc, cat}]
 let PLC_POR_SKU = {};    // sku → estado PLC del export (GA/ES); lo usa el aviso de fin de venta
-let skuFiltro = '', skuCatActiva = null;
+let skuFiltro = '', skuCatActiva = null, skuTaaOn = false;
 
 // Config comun de la ficha en esta pagina (ficha.js la REEMPLAZA entera en cada render,
 // asi que hay que pasarla siempre): sin selector propio —el unico es pickModel, unificado
@@ -29,8 +29,17 @@ const FICHA_CFG={vendor:'aruba', refs:false, selector:false,
 const QMODEL_URL=new URLSearchParams(location.search).get('pickModel');
 
 const $=id=>document.getElementById(id);
-let famMode='any', segMode='branch', lastPick=null;
+let famMode='any', segMode='branch', destMode='hibrido', lastPick=null;
 let bomFilas=[], bomMeta={};
+
+// Texto del destino de tráfico (2026-09-13, refactor arquitectónico): la estrategia de
+// aplicaciones sustituye a los campos abstractos. Cloud-First usa First-packet iQ para
+// sacar el tráfico SaaS de confianza directo a Internet o al SSE; Híbrido concentra el
+// tráfico en los overlays con Path Conditioning hacia el datacenter privado.
+const DEST_HINT={
+  hibrido:'Tráfico intensivo en túneles del fabric hacia el datacenter propio, con Path Conditioning (FEC y corrección de orden de paquetes) sosteniendo el SLA de aplicación.',
+  cloud:'Office 365, Teams, Salesforce y web salen directos a Internet (DIA) o hacia la nube SSE: First-packet iQ clasifica la aplicación en el primer paquete y decide el breakout. Menos carga cifrada en el túnel corporativo.',
+};
 
 // El equipo del dimensionamiento se lleva solo al BOM. La regla vive en js/bom.js —
 // `BOM.sincronizar` distingue lo heredado de lo elegido a mano y repinta siempre, para
@@ -50,7 +59,8 @@ document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',
 
 $('famSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('famSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));famMode=b.dataset.v;render();});
 $('segSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('segSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));segMode=b.dataset.v;render();});
-['bw','unit','users','aps','perUser','head','fecMode','boostProfile','chkBoost','chkSeg','chkBreakout','chkHa'].forEach(id=>$(id).addEventListener('input',render));
+$('destSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('destSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));destMode=b.dataset.v;$('destHint').textContent=DEST_HINT[destMode]||'';render();});
+['bw','unit','users','aps','perUser','head','fecMode','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkDtd','chkAiops','chkHa'].forEach(id=>$(id).addEventListener('input',render));
 
 // Boost solo existe en EdgeConnect: pedirlo con el filtro en gateways daria una lista
 // vacia sin explicar por que, asi que se mueve el filtro tambien.
@@ -65,13 +75,18 @@ $('chkHa').addEventListener('change',()=>{
   const q=$('qty');
   if($('chkHa').checked){ if((parseInt(q.value)||1)<2) q.value=2; }
   else if((parseInt(q.value)||1)===2){ q.value=1; }
-  renderBom();
+  // render() entero: la ficha declara el par HA en «Unidades a licenciar» y el BOM
+  // parte la suscripción en 1× estándar + 1× SKU de alta disponibilidad (2026-09-13).
+  render();
 });
 // Estos campos disparan render() y no solo renderBom: con la unificacion de 2026-09-13 la
 // ficha misma muestra la suscripcion, las licencias y el soporte elegidos (incluidos los
-// «No incluir»), asi que hay que repintarla entera, no solo la lista de materiales. El tier
-// manual se conserva: render solo lo propone si el campo no esta «tocado».
-['qty','termYears','licBundle','bwTier','boostBlocks','careLevel','centralTier','licCapTier']
+// «No incluir»), asi que hay que repintarla entera, no solo la lista de materiales.
+// Desde el refactor de 2026-09-13 el nivel de suscripcion, el tier de caudal, los bloques
+// de Boost y el nivel de capacidad del 9240 se DEDUCEN (no hay selectores manuales): lo
+// que queda aqui es el termino, el soporte y las exclusiones («No incluir», pedido
+// explicito del dueno que se conserva) mas la modalidad On-Premises del menu avanzado.
+['qty','termYears','careLevel','chkNoSub','chkNoCentral','chkSoloHw','chkOnprem']
   .forEach(id=>$(id).addEventListener('input',render));
 // El modelo es el selector UNICO de la pagina: cambiarlo a mano mueve ficha, resumen,
 // escalera y BOM, no solo la lista. La marca de eleccion manual se fija ANTES de render,
@@ -163,7 +178,8 @@ const SPEC_LABELS=[
   ['idsips','IDS/IPS integrado'],
   ['encTput','Throughput cifrado'],
   ['ssl','Sesiones SSL concurrentes'],
-  ['tuneles','Túneles / puertos tunelizados'],
+  // 'tuneles' se retira de la ficha (2026-09-13, refactor arquitectónico): los túneles
+  // los gestiona el orquestador dinámicamente y no son métrica de dimensionamiento.
   ['peers','Peers de fabric máx.'],
   ['prefijos','Prefijos de ruteo'],
   ['vlanMax','VLANs máx.'],
@@ -196,11 +212,112 @@ function bloquesBoost(mbps){
   return Math.max(1,Math.ceil(mbps/b));
 }
 
-function render(){
+/* ══ REFACTOR ARQUITECTÓNICO 2026-09-13 (petición del dueño, documento «Actúa como un
+   Arquitecto de Soluciones de Redes») ══
+   SD-WAN de Aruba no se rige por túneles IPsec estáticos (el orquestador los gestiona
+   dinámicamente según los overlays) sino por FLUJOS SIMULTÁNEOS y la clasificación de
+   aplicaciones (First-packet iQ / Business Intent Overlays). De aquí salen tres piezas:
+   el cálculo de flujos, la deducción del nivel de licencia y el Boost auto-dimensionado. */
+
+// Flujos simultáneos que publica cada fuente: EdgeConnect los da como «conexiones
+// simultáneas» del datasheet (spec.conexiones, texto con miles); los gateways como
+// sesiones de firewall (fwSess, ya numérico). null = la fuente no lo publica para ese
+// modelo (EC-V, 9240) y el motor lo declara en vez de inventarlo.
+function flujosDe(m){
+  if(m.fam==='ec'){
+    const s=m.spec&&m.spec.conexiones;
+    const n=s?parseInt(String(s).replace(/\D/g,''),10):NaN;
+    return Number.isFinite(n)?n:null;
+  }
+  return m.fwSess!=null?m.fwSess:null;
+}
+// Tasa de flujos por usuario según el perfil de entorno. La arquitectura declara el rango
+// (80–100 estándar, 150–200 intensivo) y la herramienta dimensiona con el TOPE: la
+// holgura queda incorporada en la propia tasa. Regla de trabajo declarada, no cifra HPE.
+const FLUJOS_POR_USUARIO={estandar:100, intensivo:200};
+
+// Nivel de suscripción DEDUCIDO de las funciones elegidas (matriz oficial QuickSpecs v18
+// p.31, transcrita en aruba.js): Advanced solo si el diseño pide segmentación
+// multi-overlay (>3 BIOs / VRFs), topología ilimitada o retención ampliada de datos.
+// El steering por SLA y las funciones NGFW ya son de Foundation — no fuerzan el nivel.
+function nivelAutoEC(){
+  return ($('chkSeg').checked||$('chkTopo').checked||$('chkAiops').checked)?'advanced':'foundation';
+}
+// En gateways el nivel lo fija Central: Advanced añade analítica/AIOps y las capacidades
+// de seguridad del nivel superior (SD-WAN Gateways Ordering Guide, ver CENTRAL_TIERS).
+function nivelAutoCentral(){
+  return ($('chkSeg').checked||$('chkAiops').checked||$('chkDtd').checked)?'advanced':'foundation';
+}
+// Por qué se dedujo ese nivel, en lenguaje de preventa (lo muestra el panel 4 y la ficha).
+function porqueNivelEC(nivel){
+  const f=[];
+  if($('chkSeg').checked) f.push('segmentación multi-overlay (>3 BIOs / VRFs)');
+  if($('chkTopo').checked) f.push('topología ilimitada');
+  if($('chkAiops').checked) f.push('retención ampliada de datos / analítica');
+  return f.length
+    ?`deducido de las funciones marcadas: ${f.join(' · ')}`
+    :'sin funciones avanzadas marcadas: gestión centralizada, monitorización e interconexión SD-WAN con SLA — Foundation basta';
+}
+
+// Mbps de Boost necesarios: el 30 % del tráfico WAN PRIVADO (regla de preventa declarada
+// por la arquitectura, 2026-09-13). Como tráfico WAN privado se toma el caudal que los
+// enlaces transportan ANTES de la reducción de Boost —que es el tráfico que el motor de
+// optimización procesa—: needProc con la paridad FEC. En Cloud-First no se modela el % de
+// salida local DIA (la herramienta no inventa el reparto): aplicar el 30 % sobre ese
+// mismo total es conservador y así se declara.
+function boostMbpsAuto(needProc,fec){
+  return Math.round(0.30*needProc*(1+(fec?fec.pct:0)));
+}
+
+// Estado derivado del escenario (2026-09-13, refactor arquitectónico): el caudal de
+// proceso, el de WAN, el tier de suscripción, el nivel de licencia y los bloques de
+// Boost se DEDUCEN del formulario — ya no hay selectores manuales para ellos. Es una
+// función pura de los campos: render(), la ficha (seccionesDe) y el BOM (renderBom) la
+// llaman por separado y ven exactamente lo mismo, sin pasarse variables.
+function estadoDerivado(){
   const bw=parseFloat($('bw').value)||0;
   const unit=parseFloat($('unit').value);
   const users=parseInt($('users').value)||0;
   const aps=parseInt($('aps').value)||0;
+  const perUser=Math.max(0,parseFloat($('perUser').value)||0);
+  const head=(parseFloat($('head').value)||0)/100;
+  const boost=$('chkBoost').checked;
+  let featurePenalty=1.0;
+  if($('chkSeg').checked) featurePenalty+=0.05;
+  // Cloud-First hereda el coste de proceso que antes llevaba la casilla de breakout:
+  // clasificar cada primer paquete para decidir DIA/SSE es trabajo del appliance.
+  if(destMode==='cloud') featurePenalty+=0.05;
+  const bwBase=bw*unit*(1+head)*featurePenalty;
+  const userBase=users*perUser*(1+head)*featurePenalty;
+  const needProc=Math.max(bwBase,userBase);
+  const fec=SIZING.fec[$('fecMode').value]||SIZING.fec.auto;
+  const perfil=SIZING.boost.reduccion[$('boostProfile').value]||SIZING.boost.reduccion.generico;
+  const wanNeed=needProc*(1+fec.pct)/(boost?perfil.factor:1);
+  const tasaFlujos=FLUJOS_POR_USUARIO[$('perfilEntorno').value]||FLUJOS_POR_USUARIO.estandar;
+  const flujosReq=users>0?users*tasaFlujos:0;
+  const tier=tierParaCaudal(wanNeed);
+  // Licenciamiento 100 % automático: el nivel sale de las funciones marcadas (matriz
+  // oficial QuickSpecs p.31) y la modalidad On-Premises del menú avanzado. Los «No
+  // incluir» (chkNoSub/chkNoCentral/chkSoloHw) son la exclusión explícita que el dueño
+  // pidió conservar: '' = la línea se excluye y el panel declara el estado.
+  const onprem=$('chkOnprem').checked;
+  const bundle=$('chkNoSub').checked?'':(onprem?'onprem':nivelAutoEC());
+  const central=$('chkNoCentral').checked?'':nivelAutoCentral();
+  const termYrs=parseInt($('termYears').value)||3;
+  const care=$('careLevel').value;
+  const qty=Math.max(1,parseInt($('qty').value)||1);
+  // Boost auto-dimensionado: 30 % del tráfico WAN privado, en bloques de 100 Mbps.
+  // Sin suscripción no hay Boost (es un add-on suyo, no un producto independiente).
+  const bloques=(boost&&bundle)?bloquesBoost(boostMbpsAuto(needProc,fec)):0;
+  return {bw,unit,users,aps,perUser,head,boost,fec,perfil,needProc,wanNeed,
+    tasaFlujos,flujosReq,tier,onprem,bundle,central,termYrs,care,qty,bloques};
+}
+
+function render(){
+  // Todo lo calculable sale del estado derivado: una sola fuente para el dimensionador,
+  // la ficha y el BOM (2026-09-13, refactor arquitectónico).
+  const D=estadoDerivado();
+  const {bw,users,aps,head,boost,fec,perfil,needProc,wanNeed,tasaFlujos,flujosReq,tier}=D;
   // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): el campo es
   // el dato mínimo del dimensionamiento; sin él la página pide valores en vez de proponer
   // un equipo a ciegas.
@@ -215,29 +332,7 @@ function render(){
     $('verdict').style.borderLeftColor='var(--steel)';
     return;
   }
-  // Mbps por usuario: es un supuesto, no un dato, y en campus grandes la regla de 3 Mbps
-  // aplicada a decenas de miles de dispositivos da cifras que ningun equipo cumple. Por eso
-  // es un control visible y no una constante escondida.
-  const perUser=Math.max(0,parseFloat($('perUser').value)||0);
-  const head=(parseFloat($('head').value)||0)/100;
-  const boost=$('chkBoost').checked;
   $('headVal').textContent=Math.round(head*100)+' %';
-
-  let featurePenalty=1.0;
-  if($('chkSeg').checked) featurePenalty+=0.05;
-  if($('chkBreakout').checked) featurePenalty+=0.05;
-
-  // needProc: lo que el equipo PROCESA (trafico de aplicacion, lado LAN).
-  // wanNeed:  lo que los enlaces TRANSPORTAN, que es lo que se contrata al operador y lo
-  //           que fija el tier de suscripcion. Path Conditioning lo sube (la paridad FEC
-  //           ocupa ancho de banda) y Boost lo baja (deduplica antes de salir).
-  const bwBase=bw*unit*(1+head)*featurePenalty;
-  const userBase=users*perUser*(1+head)*featurePenalty;
-  const needProc=Math.max(bwBase,userBase);
-
-  const fec=SIZING.fec[$('fecMode').value]||SIZING.fec.auto;
-  const perfil=SIZING.boost.reduccion[$('boostProfile').value]||SIZING.boost.reduccion.generico;
-  const wanNeed=needProc*(1+fec.pct)/(boost?perfil.factor:1);
   $('fecHint').textContent=fec.d;
 
   // La unidad en la que se compara depende de la familia, asi que el requerimiento tambien.
@@ -273,7 +368,7 @@ function render(){
     track.appendChild(dot);
   });
 
-  let outByBoost=0,outByClients=0,outByAps=0,outBySinDato=0,sobrado=[];
+  let outByBoost=0,outByClients=0,outByAps=0,outBySinDato=0,outByFlujos=0,sobrado=[];
   const candidates=MODELS.filter(m=>{
     if(!coincideFiltro(m,famMode)) return false;
     if(boost&&m.boostMax==null){ outByBoost++; return false; }
@@ -287,6 +382,10 @@ function render(){
     const cMax=clientesMax(m), aMax=apsMax(m);
     if(cMax!=null&&users&&cMax<users){ outByClients++; return false; }
     if(aMax!=null&&aps&&aMax<aps){ outByAps++; return false; }
+    // Flujos simultáneos: el chasis debe soportar con holgura los flujos calculados.
+    // null (EC-V, 9240) = la fuente no publica el dato: no descarta, se declara.
+    const fl=flujosDe(m);
+    if(flujosReq>0&&fl!=null&&fl<flujosReq){ outByFlujos++; return false; }
     return true;
   });
   // Generacion actual primero: entre dos que cumplen, la linea AOS 8 (series 7000/7200)
@@ -308,9 +407,6 @@ function render(){
 
   sincronizarConBom(pick);
 
-  const tier=tierParaCaudal(wanNeed);
-  if(tier&&!$('bwTier').dataset.tocado) $('bwTier').value=tier.code;
-
   // ── Presentacion ──────────────────────────────────────────────────────────
   // El veredicto deja de ser un unico equipo fijo y pasa a ser un desplegable con TODOS
   // los que cumplen. Todo lo que se pinta debajo —medidores, escalera de capacidad,
@@ -326,6 +422,7 @@ function render(){
     if(outByBoost) why.push(`<li><b>${outByBoost}</b> modelo(s) descartado(s) por pedir Boost: la optimización WAN es exclusiva de EdgeConnect, los gateways de las series 9000, 9100 y 9200 no la hacen.</li>`);
     if(outByClients) why.push(`<li><b>${outByClients}</b> gateway(s) descartado(s) por capacidad de clientes: hacen falta ${miles(users)}.</li>`);
     if(outByAps) why.push(`<li><b>${outByAps}</b> gateway(s) descartado(s) por número de APs: hacen falta ${miles(aps)}.</li>`);
+    if(outByFlujos) why.push(`<li><b>${outByFlujos}</b> modelo(s) descartado(s) por flujos simultáneos: el perfil de entorno estima ${miles(flujosReq)} flujos activos (${miles(users)} usuarios × ${tasaFlujos}/usuario). Bajar el perfil o repartir la carga entre dos sitios son las salidas.</li>`);
     if(outBySinDato) why.push(`<li><b>${outBySinDato}</b> modelo(s) sin cifra de throughput publicada en las fuentes consultadas (serie 9100). Aparecen en la pestaña "Equipo y BOM" y su capacidad hay que confirmarla en las QuickSpecs.</li>`);
     why.push('<li>Por encima del catálogo: repartir el fabric en varios head-ends, o escalar en el datacenter con EC-V, cuyo caudal lo fija la licencia y los vCPU asignados y no el hardware.</li>');
     poblarPickModel(candidates, null);
@@ -346,6 +443,12 @@ function render(){
     // cerrar. Clientes si se queda: es requerimiento contra tope, no un escalon publicado.
     if(m.clients!=null) out.push({etq:'Clientes soportados', val:users, tope:clientesMax(m)||0,
       txt:(users?miles(users)+' / ':'')+miles(clientesMax(m))});
+    // Flujos simultáneos: la métrica que de verdad gobierna el SD-WAN de Aruba (refactor
+    // arquitectónico 2026-09-13). null en la fuente (EC-V, 9240) = no se pinta el medidor,
+    // se declara en el «por qué» en vez de inventar la cifra.
+    const fl=flujosDe(m);
+    if(flujosReq>0&&fl!=null) out.push({etq:'Flujos simultáneos', val:flujosReq, tope:fl,
+      txt:miles(flujosReq)+' / '+miles(fl)});
     return out;
   };
 
@@ -353,16 +456,28 @@ function render(){
     const cap=capacidadMax(m), req=needDe(m), nivel=nivelLicenciaNecesario(m,req,users,aps), flags=[];
     if(m.fam==='ec'){
       flags.push(`<b>Caudal WAN a contratar:</b> ${fmt(wanNeed)}${fec.pct?` (incluye ${Math.round(fec.pct*100)}% de paridad FEC)`:''}${boost?` tras la reducción ${perfil.factor}:1 de Boost sobre ${esc(perfil.n.toLowerCase())}`:''}. Tier de suscripción: <b>${tier?esc(tier.n):'—'}</b>.`);
-      if(boost) flags.push(`<b>Boost:</b> el enlace transporta ${fmt(wanNeed)} en vez de ${fmt(needProc*(1+fec.pct))}. Se licencia en bloques de ${SIZING.boost.bloque} Mbps que forman un pool del fabric — para esta sede, <b>${bloquesBoost(needProc)} bloque(s)</b>.`);
-      else flags.push('Admite Boost. Merece evaluarse si el tráfico es repetitivo (réplicas, backups, VDI, CIFS/SMB): reduce el caudal contratado, que a 3–5 años suele pesar más en el TCO que el propio equipo.');
+      if(boost&&D.bloques) flags.push(`<b>Boost auto-dimensionado:</b> el enlace transporta ${fmt(wanNeed)} en vez de ${fmt(needProc*(1+fec.pct))}. Se licencia el 30 % del tráfico WAN privado estimado (${fmt(boostMbpsAuto(needProc,fec))}) en bloques de ${SIZING.boost.bloque} Mbps que forman un pool del fabric — para esta sede, <b>${D.bloques} bloque(s)</b>.`);
+      else if(!boost) flags.push('Admite Boost. Merece evaluarse si el tráfico es repetitivo (réplicas, backups, VDI, CIFS/SMB): reduce el caudal contratado, que a 3–5 años suele pesar más en el TCO que el propio equipo.');
       if(sobrado.includes(m.id)) flags.push(`<b class="warn">Sobredimensionado:</b> el requerimiento (${fmt(wanNeed)}) queda por debajo del suelo del rango publicado (${fmt(m.wanMin)}). Revisar el escalón inferior antes de cotizar.`);
+      // Nivel deducido de las funciones marcadas (matriz oficial QuickSpecs p.31): se
+      // declara el porqué para que la propuesta sea defendible ante el cliente.
+      flags.push(`<b>Suscripción ${nivelAutoEC()==='advanced'?'Advanced':'Foundation'}:</b> ${porqueNivelEC(nivelAutoEC())}.`);
     }
+    if(flujosReq>0){
+      const fl=flujosDe(m);
+      flags.push(fl!=null
+        ?`<b>Flujos simultáneos:</b> el perfil de entorno estima ${miles(flujosReq)} flujos activos (${miles(users)} usuarios × ${tasaFlujos}/usuario) contra los ${miles(fl)} que publica la ficha — el chasis los soporta con holgura.`
+        :`<b>Flujos simultáneos:</b> el perfil estima ${miles(flujosReq)} flujos activos, pero HPE no publica la cifra para este modelo — confirmarla en las QuickSpecs antes de comprometer el diseño.`);
+    }
+    if(destMode==='cloud') flags.push('<b>Cloud-First/SaaS:</b> First-packet iQ clasifica la aplicación en el primer paquete y rompe al Internet local o a la nube SSE; el túnel cifrado al datacenter se reserva para el tráfico privado. Son capacidades de plataforma — no fuerzan el nivel de suscripción.');
+    if($('chkDtd').checked) flags.push('<b>Dynamic Threat Defense:</b> IDS/IPS, DDoS adaptativo y clasificación web son una licencia opcional APARTE de Foundation y Advanced (QuickSpecs p.32). Entra en la lista de materiales como «consultar»: no está en la lista de precios.');
     if(m.legacy) flags.push('<b class="warn">Línea anterior (AOS 8):</b> las series 7000 y 7200 siguen en canal y son la respuesta natural para <b>ampliar un parque ya instalado</b>, pero para un despliegue nuevo conviene contrastar con la generación actual (series 9000/9100/9200 sobre AOS 10).');
     if(m.fam==='gw'&&m.rol==='sucursal'&&!m.legacy) flags.push(`<b>Sucursal:</b> el mismo equipo termina la WAN y hace de controladora de APs (hasta ${miles(m.aps)}), aplicando Dynamic Segmentation con el rol que traen el switch CX o el AP. No hace optimización WAN.`);
+    if(m.fam==='gw') flags.push(`<b>Central ${nivelAutoCentral()==='advanced'?'Advanced':'Foundation'}:</b> ${nivelAutoCentral()==='advanced'?'deducido de las funciones marcadas (segmentación, AIOps o inspección avanzada)':'gestión, monitorización y configuración — sin funciones que fuercen el nivel superior'}.`);
     if(m.licCap&&nivel) flags.push(`<b>Capacidad por licencia:</b> escala sin cambiar de hardware. Para ${fmt(req)} hace falta el nivel <b>${esc(nivel.n)}</b> (${fmt(nivel.fw)}, ${miles(nivel.aps)} APs, ${miles(nivel.clients)} dispositivos).`);
-    if($('chkSeg').checked) flags.push('La segmentación multi-overlay requiere <b>EdgeConnect Advanced</b>: Foundation no la incluye.');
-    if($('chkBreakout').checked) flags.push('La salida directa a Internet con First-packet iQ y el service chaining hacia un SSE también son de <b>Advanced</b>.');
-    if($('chkHa').checked) flags.push('<b>HA:</b> se cotizan 2 unidades y cada una lleva su propia suscripción de sitio.');
+    if($('chkHa').checked) flags.push(m.fam==='ec'&&!D.onprem
+      ?'<b>HA 1+1:</b> el par se cotiza 1× suscripción estándar + 1× suscripción de alta disponibilidad para el segundo nodo (SKU «HA» propio, mismo precio — QuickSpecs).'
+      :'<b>HA:</b> se cotizan 2 unidades y cada una lleva su propia suscripción de sitio.');
     return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
       <li>Requerimiento <b>${fmt(req)}</b> contra capacidad <b>${fmt(cap)}</b> — headroom ${Math.round((1-req/cap)*100)}%</li>
       ${flags.map(f=>`<li>${f}</li>`).join('')}
@@ -389,9 +504,9 @@ function render(){
         + 'Quedar por debajo del suelo indica sobredimensionamiento, y es tan accionable como pasarse del techo.';
     }else if(m.licCap){
       // En la 9200 la «escalera» es la tabla de niveles: misma cifra que antes pintaba un
-      // panel aparte de bomBody, ahora dentro de la ficha. Se marca el nivel elegido en el
-      // panel 4, que es el que se cotiza.
-      const marcado=$('licCapTier').value;
+      // panel aparte de bomBody, ahora dentro de la ficha. Se marca el nivel DEDUCIDO del
+      // dimensionamiento (o «solo hardware» si se pidió cotizar sin licencia de capacidad).
+      const marcado=$('chkSoloHw').checked?'hw':(nivelLicenciaNecesario(m,needProc,users,aps)||m.licCap[0]).code;
       html+=`<div class="scroll"><table><thead><tr><th>Nivel</th><th>Throughput</th><th>APs</th><th>Dispositivos</th></tr></thead><tbody>`
         +m.licCap.map(t=>`<tr${t.code===marcado?' style="font-weight:600"':''}><td>${esc(t.n)}</td><td class="n">${fmt(t.fw)}</td><td class="n">${miles(t.aps)}</td><td class="n">${miles(t.clients)}</td></tr>`).join('')
         +`</tbody></table></div>`;
@@ -418,12 +533,16 @@ function render(){
   const seccionesDe=m=>{
     const esEC=m.fam==='ec', esGwc=!!m.licCap;
     const unidades=$('chkHa').checked?2:1;
-    const bundle=$('licBundle').value, care=$('careLevel').value, central=$('centralTier').value;
-    const termYrs=parseInt($('termYears').value)||3;
+    // Suscripción, tier, Boost y nivel de capacidad: DEDUCIDOS (estadoDerivado), no
+    // elegidos a mano — el panel 4 muestra la deducción y su porqué (2026-09-13).
+    const bundle=D.bundle, care=D.care, central=D.central;
+    const termYrs=D.termYrs;
     const termino=`término ${termYrs} año${termYrs>1?'s':''}`;
-    const bwTier=(SIZING.bwTiers||[]).find(t=>t.code===$('bwTier').value)||null;
-    const bloques=bundle?Math.max(0,parseInt($('boostBlocks').value)||0):0;
-    const capTier=esGwc&&m.licCap?(m.licCap.find(t=>t.code===$('licCapTier').value)||m.licCap[0]):null;
+    const bwTier=D.tier;
+    const bloques=D.bloques;
+    const capTier=esGwc&&m.licCap
+      ?($('chkSoloHw').checked?m.licCap[0]:(nivelLicenciaNecesario(m,needProc,users,aps)||m.licCap[0]))
+      :null;
 
     const caract=[
       ['Serie', esc(m.serie)],
@@ -435,8 +554,10 @@ function render(){
       if(m.clients!=null) caract.push(['Clientes / APs', `${miles(m.clients)} / ${miles(m.aps)}`]);
       if(m.fwSess!=null) caract.push(['Sesiones de firewall', miles(m.fwSess)]);
     }
-    if(m.ipsecSess!=null) caract.push(['Sesiones IPsec', miles(m.ipsecSess)]);
-    if(m.greTuns!=null) caract.push(['Túneles GRE', miles(m.greTuns)]);
+    // Sesiones IPsec y túneles GRE salen de la ficha (2026-09-13, refactor arquitectónico):
+    // el SD-WAN de Aruba no se rige por túneles estáticos — el orquestador los gestiona
+    // dinámicamente según los overlays— y mostrarlos como métrica de dimensionamiento
+    // inducía el error conceptual que este refactor cierra. El dato sigue en el catálogo.
     caract.push(['Interfaces', esc(m.ifaces), true]);
     // Las referencias de pedido NO van en la ficha: están integradas en la lista de
     // materiales (pestaña Equipo y BOM), única fuente de SKU de la página (2026-09-13).
@@ -480,7 +601,11 @@ function render(){
       {titulo:'Ficha técnica', filas:tecnica},
       FICHA.seccionAlimentacion(m),
       {titulo:'Suscripción y licencias',
-       filas:[['Unidades a licenciar', unidades===2?'2 — cada nodo del par lleva la suya':'1']],
+       filas:[['Unidades a licenciar', unidades===2
+         ?(esEC&&!D.onprem
+           ?'2 — 1× suscripción estándar + 1× SKU de alta disponibilidad para el segundo nodo (mismo precio, QuickSpecs)'
+           :'2 — cada nodo del par lleva la suya')
+         :'1']],
        html:`<ul class="clean">${licUl}</ul>`,
        nota:esEC?'La suscripción de EdgeConnect va por <b>caudal del sitio</b>, no por modelo de appliance.'
                 :'Los gateways se gestionan por suscripción de Central; la serie 9200 escala su capacidad por licencia perpetua sobre el mismo hardware.'},
@@ -562,16 +687,12 @@ function poblarPickModel(cumplen, recomendado){
 
 function populateSelects(){
   poblarPickModel([], null);
-  $('bwTier').innerHTML=(SIZING.bwTiers||[]).map(t=>`<option value="${esc(t.code)}">${esc(t.n)}</option>`).join('');
-  // «No incluir» (2026-09-13, peticion del dueno): cualquier linea de la cotizacion se
-  // puede excluir — la lista de materiales declara entonces su estado, no la inventa.
-  // El tier de caudal NO tiene «No incluir»: la suscripcion no tiene SKU sin tier, asi
-  // que excluir la suscripcion (nivel vacio) es lo que oculta tier y Boost — Boost es
-  // un add-on de la suscripcion EdgeConnect y sin ella no se licencia.
-  $('licBundle').innerHTML='<option value="">No incluir</option>'+Object.entries(BUNDLES).map(([k,b])=>`<option value="${esc(k)}"${k==='advanced'?' selected':''}>${esc(b.n)}</option>`).join('');
+  // Licenciamiento 100 % automático (2026-09-13, refactor arquitectónico): nivel de
+  // suscripción, tier de caudal, bloques de Boost y nivel de capacidad del 9240 se
+  // DEDUCEN — ya no hay selectores manuales que poblar para ellos. Lo único que sigue
+  // siendo elección comercial es el nivel de soporte (y los «No incluir», que viven
+  // como casillas junto a cada deducción del panel 4).
   $('careLevel').innerHTML='<option value="">No incluir</option>'+Object.entries(CARE).map(([k,c])=>`<option value="${esc(k)}"${k==='fc247'?' selected':''}>${esc(c.n)}</option>`).join('');
-  $('centralTier').innerHTML='<option value="">No incluir</option>'+Object.entries(CENTRAL).map(([k,c])=>`<option value="${esc(k)}"${k==='advanced'?' selected':''}>${esc(c.n)}</option>`).join('');
-  $('bwTier').addEventListener('change',()=>{$('bwTier').dataset.tocado='1';});
   // Documentos oficiales, para llegar al PDF sin buscarlo.
   // Se prefiere la copia local (servida detras del login, sin depender de que HPE
   // mantenga la URL) y se cae a la oficial si ese PDF no esta descargado.
@@ -596,34 +717,69 @@ function tierSku(t,y){ if(!t||t.sku==null) return null; if(typeof t.sku==='strin
 function renderBom(){
   const m=MODELS.find(x=>x.id===$('pickModel').value)||MODELS[0];
   if(!m) return;
-  const qty=Math.max(1,parseInt($('qty').value)||1);
-  const termYrs=parseInt($('termYears').value)||3;
-  // '' = «No incluir» (2026-09-13, peticion del dueno): la linea se excluye de la lista y
-  // su panel declara el estado en vez de inventarla. Sin suscripcion EdgeConnect tampoco
-  // hay Boost: es un add-on suyo, no un producto independiente.
-  const bundle=$('licBundle').value;
-  const care=$('careLevel').value;
-  const central=$('centralTier').value;
-  const bwCode=$('bwTier').value;
-  const bwTier=(SIZING.bwTiers||[]).find(t=>t.code===bwCode)||null;
-  const bloques=bundle?Math.max(0,parseInt($('boostBlocks').value)||0):0;
-  const capTierCode=$('licCapTier').value;
+  // Licenciamiento 100 % automático (2026-09-13, refactor arquitectónico): nivel de
+  // suscripción, tier de caudal, bloques de Boost y nivel de capacidad se DEDUCEN del
+  // escenario — estadoDerivado es la misma fuente que alimenta el dimensionador y la
+  // ficha, así que la lista de materiales nunca diverge de lo dimensionado.
+  const D=estadoDerivado();
+  const qty=D.qty, termYrs=D.termYrs;
+  // '' = «No incluir» (peticion del dueno, conservada): la linea se excluye de la lista
+  // y su panel declara el estado en vez de inventarla. Sin suscripcion EdgeConnect
+  // tampoco hay Boost: es un add-on suyo, no un producto independiente.
+  const bundle=D.bundle, care=D.care, central=D.central;
+  const bwTier=D.tier, bwCode=bwTier?bwTier.code:null;
+  const bloques=D.bloques;
 
   const esEC=m.fam==='ec', esGwc=!!m.licCap;
-  // Los controles que no aplican a la familia elegida se ocultan, en vez de dejar que
-  // alguien cotice un pool de Boost sobre un gateway que no lo soporta. Y con la
-  // suscripcion excluida se ocultan tier y Boost, que dependen de ella.
-  $('fldBw').hidden=!esEC||!bundle; $('fldBundle').hidden=!esEC; $('fldBoost').hidden=!esEC||!bundle;
-  $('fldCentral').hidden=esEC; $('fldCapTier').hidden=!esGwc;
+  // Los paneles de licenciamiento que no aplican a la familia elegida se ocultan, en vez
+  // de dejar que alguien cotice una suscripción EdgeConnect sobre un gateway.
+  $('fldSub').hidden=!esEC; $('fldCentral').hidden=esEC; $('fldCapTier').hidden=!esGwc;
+
+  const termino=`término ${termYrs} año${termYrs>1?'s':''}`;
+  const capTier=esGwc&&m.licCap
+    ?($('chkSoloHw').checked?m.licCap[0]:(nivelLicenciaNecesario(m,D.needProc,D.users,D.aps)||m.licCap[0]))
+    :null;
+
+  // Panel 4: la deducción se MUESTRA con su porqué — la propuesta tiene que ser
+  // defendible ante el cliente sin que el preventa rehaga el razonamiento a mano.
+  if(esEC){
+    $('licAutoTxt').innerHTML=bundle
+      ?`<b>${esc(BUNDLES[bundle].n)}</b> — tier <b>${bwTier?esc(bwTier.n):'—'}</b> · ${termino}`
+        +`<br><span class="lic-auto-porque">${bundle==='onprem'
+            ?'modalidad On-Premises (E-STU) elegida en opciones avanzadas: el Orchestrator vive en la infraestructura del cliente'
+            :esc(porqueNivelEC(nivelAutoEC()))}</span>`
+        +(bloques?`<br>Boost: <b>${bloques} bloque(s) de ${SIZING.boost.bloque} Mbps</b> = 30 % del tráfico WAN privado estimado (${fmt(boostMbpsAuto(D.needProc,D.fec))})`:'')
+      :'<b>Suscripción excluida</b><br><span class="lic-auto-porque">El equipo queda standalone, sin fabric gestionado ni ZTP — y tampoco se licencia Boost, que es un add-on de la suscripción.</span>';
+  }else{
+    $('centralAutoTxt').innerHTML=central
+      ?`<b>${esc(CENTRAL[central].n)}</b> · ${termino}`
+        +`<br><span class="lic-auto-porque">${central==='advanced'
+            ?'deducido de las funciones marcadas: segmentación, analítica/AIOps o inspección avanzada de seguridad'
+            :'gestión, monitorización y configuración del dispositivo — sin funciones que fuercen el nivel superior'}</span>`
+      :'<b>Central excluido</b><br><span class="lic-auto-porque">El gateway se queda en gestión local, sin la nube de HPE ni apertura de casos.</span>';
+  }
+  if(esGwc){
+    $('capAutoTxt').innerHTML=capTier&&capTier.code!=='hw'
+      ?`<b>${esc(capTier.n)}</b><br><span class="lic-auto-porque">deducido del dimensionamiento: ${fmt(D.needProc)} de proceso, ${miles(D.users)} dispositivos y ${miles(D.aps)} APs — el nivel ${esc(capTier.n)} es el primero que cubre las tres cifras</span>`
+      :'<b>Solo hardware (20 Gbps)</b><br><span class="lic-auto-porque">sin licencia de capacidad: la serie 9200 entrega 20 Gbps, 512 APs y 16.000 dispositivos sin ella</span>';
+  }
 
   const lic=LICENSES[bwCode]||null;
   const licTier=lic&&bundle?(lic[bundle]||null):null;
+  // Par HA 1+1: HPE publica un juego de SKU propio para el SEGUNDO nodo (LICENSES_HA),
+  // con el mismo precio que el estándar — lo que cambia es el SKU de pedido. Solo aplica
+  // a la modalidad SaaS: la equivalencia de los SKU HA E-STU (on-prem) no está confirmada
+  // en las fuentes consultadas, así que el par on-prem se cotiza 2× estándar y se declara.
+  const haPar=esEC&&$('chkHa').checked&&qty===2;
+  const licHa=haPar&&!D.onprem&&bundle&&bundle!=='onprem'
+    ?((LICENSES_HA[bwCode]||{})[bundle]||null):null;
   // El soporte se cotiza por MODELO (CARE_SKU, servicio atado a la variante de hardware),
   // no por tier de caudal — desde 2026-09-13 sale de la lista de precios documentada en
   // aruba.js. Lo que la lista no cubre (fcsw, gateways, 4HR del 10150) sigue en consultar.
   const cs=care&&CARE_SKU[m.id]?CARE_SKU[m.id][care]:null;
   const careTier=cs?{sku:{y1:cs.y1[0],y3:cs.y3[0],y5:cs.y5[0]},y1:cs.y1[1],y3:cs.y3[1],y5:cs.y5[1]}:null;
   const licPrice=tierPrice(licTier,termYrs);
+  const licHaPrice=tierPrice(licHa,termYrs);
   const carePrice=tierPrice(careTier,termYrs);
   // Boost se licencia como SaaS sobre Foundation/Advanced y como E-STU sobre On-Premises:
   // cada modalidad tiene su propio juego de SKUs (2026-09-13, ver aruba.js).
@@ -632,8 +788,6 @@ function renderBom(){
   const boostPrice=tierPrice(boostBlk,termYrs);
   const centralTier=CENTRAL[central]||null;
   const centralPrice=tierPrice(centralTier,termYrs);
-  const termino=`término ${termYrs} año${termYrs>1?'s':''}`;
-  const capTier=esGwc&&m.licCap?(m.licCap.find(t=>t.code===capTierCode)||m.licCap[0]):null;
 
   // Los paneles de detalle del equipo («Ficha del equipo», «Capacidad por nivel», «Suscripción»
   // y «Soporte HPE») ya NO se pintan aquí: desde 2026-09-13 viven unificados en la ficha del
@@ -647,13 +801,32 @@ function renderBom(){
   ];
   if(esEC){
     if(bundle){
-      filas.push({cat:'Suscripción SD-WAN', desc:`${BUNDLES[bundle].n} — ${bwTier?bwTier.n:'tier por definir'}`,
-        sku:tierSku(licTier,termYrs), qty, unit:licPrice,
-        nota:`${termino} · suscripción por caudal del sitio, no por modelo de appliance`});
+      if(licHa){
+        // Par HA 1+1 en modalidad SaaS: 1× suscripción estándar (nodo primario) + 1×
+        // suscripción de alta disponibilidad (segundo nodo, SKU «HA» del QuickSpecs).
+        filas.push({cat:'Suscripción SD-WAN', desc:`${BUNDLES[bundle].n} — ${bwTier?bwTier.n:'tier por definir'} · nodo primario`,
+          sku:tierSku(licTier,termYrs), qty:1, unit:licPrice,
+          nota:`${termino} · suscripción por caudal del sitio, no por modelo de appliance`});
+        filas.push({cat:'Suscripción SD-WAN', desc:`${BUNDLES[bundle].n} HA — ${bwTier?bwTier.n:'tier por definir'} · segundo nodo del par 1+1`,
+          sku:tierSku(licHa,termYrs), qty:1, unit:licHaPrice,
+          nota:`${termino} · SKU de alta disponibilidad del QuickSpecs: mismo precio que el estándar, lo que cambia es la referencia de pedido`});
+      }else{
+        filas.push({cat:'Suscripción SD-WAN', desc:`${BUNDLES[bundle].n} — ${bwTier?bwTier.n:'tier por definir'}`,
+          sku:tierSku(licTier,termYrs), qty, unit:licPrice,
+          nota:`${termino} · suscripción por caudal del sitio, no por modelo de appliance`
+            +(haPar&&D.onprem?' · par HA on-prem cotizado 2× estándar: la equivalencia de los SKU HA E-STU no está confirmada en las fuentes consultadas':'')});
+      }
       if(bloques){
         filas.push({cat:'Aceleración', desc:`${SIZING.boost.n} — bloque de ${SIZING.boost.bloque} Mbps`,
           sku:tierSku(boostBlk,termYrs), qty:bloques, unit:boostPrice,
-          nota:`Pool agregado del fabric (${fmt(bloques*SIZING.boost.bloque)}). Orchestrator lo reparte entre sedes; no multiplica por unidad.`});
+          nota:`Pool agregado del fabric (${fmt(bloques*SIZING.boost.bloque)} = 30 % del tráfico WAN privado estimado). Orchestrator lo reparte entre sedes; no multiplica por unidad.`});
+      }
+      // Dynamic Threat Defense: licencia opcional APARTE de Foundation y Advanced
+      // (QuickSpecs p.32). Sin SKU en la lista de precios: entra como «consultar».
+      if($('chkDtd').checked){
+        filas.push({cat:'Seguridad', desc:'Dynamic Threat Defense — IDS/IPS, DDoS adaptativo, clasificación web',
+          sku:null, qty, unit:null,
+          nota:`${termino} · licencia opcional aparte de Foundation/Advanced (QuickSpecs p.32) · sin SKU en la lista de precios — consultar`});
       }
     }
   }else{
@@ -692,21 +865,24 @@ function renderBom(){
       esEC?`  Rango de caudal WAN:  ${m.wanMin!=null?fmt(m.wanMin)+' - '+fmt(m.wanMax):'sin minimo publicado'}`
           :`  Throughput firewall:  ${m.fw!=null?fmt(m.fw):'no publicado en las fuentes consultadas'}`,
       m.clients!=null?`  Clientes / APs:       ${miles(m.clients)} / ${miles(m.aps)}`:null,
-      m.ipsecSess!=null?`  Sesiones IPsec:       ${miles(m.ipsecSess)}`:null,
-      m.greTuns!=null?`  Tuneles GRE:          ${miles(m.greTuns)}`:null,
+      // Sesiones IPsec y tuneles GRE salen de la exportacion (2026-09-13, refactor
+      // arquitectonico): el orquestador gestiona los tuneles dinamicamente y no son
+      // metrica de dimensionamiento. Los flujos simultaneos si lo son.
+      flujosDe(m)!=null?`  Flujos simultaneos:   ${miles(flujosDe(m))}`:null,
       `  Interfaces:           ${m.ifaces}`,
       `  Referencias:          ${(m.skus||[]).map(r=>(r.sku||'sin SKU')+' '+r.d).join(' | ')||'-'}`,
       `  Datasheet:            ${m.ds||'sin URL oficial confirmada'}`,
       m.dsLocal?`  Copia local:          ${m.dsLocal}`:null,
       '',
       esEC?'COMO SE LICENCIA EDGECONNECT':'COMO SE LICENCIA ESTE GATEWAY',
-      esEC?'  La suscripcion va por CAUDAL DEL SITIO (100 Mbps, 1 Gbps o ilimitado), no por modelo'
-          :'  Gestion por suscripcion de Central (Foundation o Advanced) por dispositivo.',
-      esEC?'  de appliance: subir de caudal no obliga a cambiar el hardware mientras el equipo de'
-          :(esGwc?'  En la serie 9200 la CAPACIDAD la fija la licencia perpetua (Silver/Gold) sobre el':'  La serie 9000 no hace optimizacion WAN: su ventaja es unificar WAN, LAN y WLAN.'),
-      esEC?'  la talla. Boost es un add-on en bloques de 100 Mbps que forman un POOL del fabric,'
-          :(esGwc?'  mismo hardware, sin cambiar de equipo.':''),
-      esEC?'  repartido por Orchestrator, asi que se compra solo para las sedes que lo aprovechan.':'',
+      esEC?'  Nivel (Foundation/Advanced) DEDUCIDO de las funciones del diseno segun la'
+          :'  Gestion por suscripcion de Central (Foundation o Advanced) por dispositivo,',
+      esEC?'  matriz oficial (QuickSpecs p.31); el tier va por CAUDAL DEL SITIO (100 Mbps,'
+          :(esGwc?'  con el nivel deducido de las funciones marcadas. En la serie 9200 la':''),
+      esEC?'  1 Gbps o ilimitado), no por modelo de appliance. Boost es un add-on en'
+          :(esGwc?'  CAPACIDAD la fija la licencia perpetua (Silver/Gold) sobre el mismo':''),
+      esEC?'  bloques de 100 Mbps = 30% del trafico WAN privado, en POOL del fabric.'
+          :(esGwc?'  hardware, sin cambiar de equipo.':'  La serie 9000 no hace optimizacion WAN: unifica WAN, LAN y WLAN.'),
       '',
       'ADVERTENCIA DE DATOS',
       '  List Price de HPE (sin descuento de distribuidor) para hardware y suscripciones,',
@@ -714,7 +890,11 @@ function renderBom(){
       '  El soporte Foundational Care se cotiza por modelo (CARE_SKU en aruba.js). Lo que',
       '  sigue sin precio (EC-V, DTD, FC de software y FC de gateways) va en consultar',
       '  a proposito. Confirmar la fila exacta del datasheet antes de emitir la propuesta.',
-      qty>1?`  Par de ${qty} unidades: la suscripcion de sitio no se comparte, cada nodo lleva la suya.`:null,
+      licHa?'  Par HA 1+1: 1x suscripcion estandar (nodo primario) + 1x suscripcion de'
+          :null,
+      licHa?'  alta disponibilidad (segundo nodo, SKU «HA» del QuickSpecs, mismo precio).'
+          :null,
+      qty>1&&!licHa?`  Par de ${qty} unidades: la suscripcion de sitio no se comparte, cada nodo lleva la suya.`:null,
     ].filter(n=>n!==null&&n!==''),
   };
 
@@ -738,9 +918,10 @@ function renderBom(){
 
 /* ══ CATÁLOGO PEDIBLE → LISTA DE MATERIALES ══
    Toda referencia de pedido de Aruba vive en UN sitio: la lista de materiales. Este panel
-   es la puerta de entrada — busca en los 76 SKU de la lista de precios pública
+   es la puerta de entrada — busca en los 94 SKU de la lista de precios pública
    (public/datasheets/aruba-lista-precios-hpe.csv: hardware y sus variantes TAA/NAL,
-   remanufacturados, suscripciones EdgeConnect/Boost/Central y licencias perpetuas 9240).
+   remanufacturados, suscripciones EdgeConnect/Boost/Central —incluidos los SKU de alta
+   disponibilidad del segundo nodo— y licencias perpetuas 9240).
    Añadir mete la línea en el BOM (BOM.agregarRef la guarda, la pinta con stepper de
    cantidad y botón de quitar, la exporta al Excel y la manda al cotizador); las que el
    motor ya puso en el BOM se marcan "En el BOM" para no meter dos veces la misma línea.
@@ -760,8 +941,12 @@ function categoriaDeFilaCsv(mod, sku){
 }
 const SKU_CAT_ORDEN=['Hardware — EdgeConnect y gateways','Hardware remanufacturado (serie 7000/7200)',
   'Suscripción EdgeConnect Foundation','Suscripción EdgeConnect Advanced',
+  'Suscripción EdgeConnect Foundation HA','Suscripción EdgeConnect Advanced HA',
   'Suscripción EdgeConnect On-Premises','Boost EdgeConnect (SaaS)','Boost EdgeConnect (On-Premises)',
   'HPE Aruba Networking Central','Licencias perpetuas 9240'];
+// Variantes gubernamentales (TAA / NAL / FIPS): se ocultan por defecto y se muestran solo
+// cuando quien cotiza las pide con el botón «Variantes gubernamentales» del panel.
+const TAA_RE=/\b(TAA|NAL|FIPS)\b/;
 
 // El CSV no trae campos entrecomillados ni comas dentro de los valores (verificado
 // 2026-09-13), así que basta split — un parser completo no añadiría nada.
@@ -796,7 +981,8 @@ function pintarCatalogoSku(){
   const caja=$('skuCatalogo'); if(!caja||!SKU_CAT.length) return;
   const q=skuFiltro.trim().toLowerCase();
   const auto=skusAutoEnBom();
-  const cats=SKU_CAT_ORDEN.map(c=>[c,SKU_CAT.filter(x=>x.cat===c)]).filter(([,l])=>l.length);
+  const visibles=SKU_CAT.filter(x=>skuTaaOn||!TAA_RE.test(x.d||''));
+  const cats=SKU_CAT_ORDEN.map(c=>[c,visibles.filter(x=>x.cat===c)]).filter(([,l])=>l.length);
   const chips=cats.map(([c,l])=>`<button type="button" class="sku-chip${skuCatActiva===c?' on':''}" data-sku-cat="${esc(c)}">${esc(c)} <span class="sku-chip-n">${l.length}</span></button>`).join('');
   let body='';
   for(const [c,lista] of cats){
@@ -829,6 +1015,13 @@ function pintarCatalogoSku(){
 
 $('skuBuscar').addEventListener('input',e=>{ skuFiltro=e.target.value; pintarCatalogoSku(); });
 
+$('skuTaa').addEventListener('click',()=>{
+  skuTaaOn=!skuTaaOn;
+  $('skuTaa').setAttribute('aria-pressed',String(skuTaaOn));
+  $('skuTaa').textContent=`Variantes gubernamentales (TAA / NAL) · ${skuTaaOn?'ocultar':'mostrar'}`;
+  pintarCatalogoSku();
+});
+
 $('copyBtn').addEventListener('click',async()=>{
   const t=$('bomOut');
   try{await navigator.clipboard.writeText(t.value);$('copyBtn').textContent='Copiado';}
@@ -852,6 +1045,7 @@ $('xlsBtn').addEventListener('click',async()=>{
   CARE = data.care;
   CARE_SKU = data.careSkus || {};
   LICENSES = data.licenses;
+  LICENSES_HA = data.licensesHa || {};
   SIZING = data.sizing;
   SOFTWARE = data.software || [];
   CENTRAL = data.centralTiers || {};
@@ -886,7 +1080,7 @@ document.addEventListener('click', (e) => {
    otra recomendacion. Ahora el escenario viaja en la URL; ya no se guarda entre sesiones
    (ver /js/estado.js). */
 document.addEventListener('DOMContentLoaded', () => {
-  const st = ESTADO.vincular({ campos: ['bw','unit','users','aps','perUser','head','fecMode','boostProfile','chkBoost','chkBreakout','chkHa','famSeg','segSeg','pickModel'] });
+  const st = ESTADO.vincular({ campos: ['bw','unit','users','aps','perUser','head','fecMode','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkDtd','chkAiops','chkHa','famSeg','segSeg','destSeg','pickModel'] });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');

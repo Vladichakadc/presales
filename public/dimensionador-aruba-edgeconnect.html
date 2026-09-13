@@ -105,6 +105,14 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 /* Catálogo pedible → lista de materiales (2026-09-13) */
 #skuBuscar{width:100%;padding:7px 10px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink);font-family:'Barlow',sans-serif;font-size:13px;margin-bottom:8px}
 #skuBuscar:focus{outline:2px solid var(--red);outline-offset:1px}
+/* Licenciamiento automático (2026-09-13, refactor arquitectónico): el nivel deducido se
+   muestra con su porqué, en vez de pedirse en un selector manual. */
+.lic-auto{border:1px solid var(--rule);border-left:3px solid var(--red);background:#FAF7F2;padding:9px 12px;font-size:13px;line-height:1.55}
+.lic-auto b{font-weight:600}
+.lic-auto .lic-auto-porque{color:var(--steel);font-size:12px}
+details.adv{margin-top:14px;border-top:1px dashed var(--rule);padding-top:10px}
+details.adv summary{cursor:pointer;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);font-weight:600}
+details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .sku-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
 .sku-chip{padding:3px 9px;border:1px solid var(--rule);border-radius:11px;background:var(--card);color:var(--steel);font-family:'IBM Plex Mono',monospace;font-size:10px;cursor:pointer}
 .sku-chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -195,7 +203,15 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       <p class="hint">Cada familia se dimensiona con lo que HPE publica para ella: EdgeConnect por <b>rango de caudal WAN</b>, los gateways por <b>throughput de firewall</b> y capacidad de clientes y APs. Solo EdgeConnect hace optimización WAN. Los gateways agrupan las series 9000, 9100 Hybrid, 9200 y las 7000/7200 de la línea anterior.</p>
     </div>
     <div class="field">
-      <label><input type="checkbox" id="chkBoost"> <span>Boost activo — optimización WAN<span class="sku" style="display:block;margin-top:2px">Reduce el caudal WAN que hay que contratar y, a cambio, exige más proceso al appliance. Se licencia en bloques de 100 Mbps que forman un pool del fabric.</span></span></label>
+      <label>Destino del tráfico</label>
+      <div class="seg" id="destSeg">
+        <button type="button" data-v="hibrido" aria-pressed="true">Híbrido / DC privado</button>
+        <button type="button" data-v="cloud" aria-pressed="false">Cloud-First / SaaS</button>
+      </div>
+      <p class="hint" id="destHint">Tráfico intensivo en túneles del fabric hacia el datacenter propio, con Path Conditioning (FEC y corrección de orden de paquetes) sosteniendo el SLA de aplicación.</p>
+    </div>
+    <div class="field">
+      <label><input type="checkbox" id="chkBoost"> <span>Optimización y deduplicación de datos (Aruba Boost)<span class="sku" style="display:block;margin-top:2px">¿Aplicaciones con datos repetitivos —CIFS/SMB, transferencias masivas, réplicas— o enlaces de alta latencia / satelitales? Boost reduce el caudal WAN a contratar y, a cambio, exige más proceso al appliance. Los Mbps de Boost se calculan solos: el 30 % del tráfico WAN privado (regla de preventa declarada), licenciados en bloques de 100 Mbps que forman un pool del fabric.</span></span></label>
     </div>
     <div class="field">
       <label for="boostProfile">Perfil de datos (factor de reducción de Boost)</label>
@@ -222,6 +238,14 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       <label for="users">Usuarios / dispositivos concurrentes</label>
       <input type="number" id="users" min="1" step="1" autocomplete="off">
       <p class="hint">En los gateways esta cifra es además una <b>restricción dura de capacidad</b>: la serie 9000 soporta 2.048 clientes y la 9200 hasta 32.000 con licencia Gold.</p>
+    </div>
+    <div class="field">
+      <label for="perfilEntorno">Perfil de entorno — flujos simultáneos</label>
+      <select id="perfilEntorno">
+        <option value="estandar" selected>Estándar — ~100 flujos por usuario/dispositivo</option>
+        <option value="intensivo">Intensivo (apps SaaS concurrentes, video, VoIP) — ~200 flujos por usuario</option>
+      </select>
+      <p class="hint">El SD-WAN de Aruba se dimensiona por <b>flujos simultáneos</b>, no por túneles IPsec estáticos (el orquestador los gestiona dinámicamente según los overlays). Regla de trabajo declarada: 80–100 flujos/usuario en entorno estándar y 150–200 en intensivo; la herramienta calcula con el tope del rango, así que la holgura ya va dentro. El chasis recomendado soporta los flujos calculados con holgura.</p>
     </div>
     <div class="field">
       <label for="perUser">Mbps por usuario activo</label>
@@ -251,10 +275,13 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   <section class="panel">
     <h2>3 · Funciones adicionales</h2>
     <div class="checks">
-      <label class="check"><input type="checkbox" id="chkSeg"> <span>Segmentación multi-overlay<span class="sku">Requiere EdgeConnect Advanced. Aísla invitados, IoT, PCI o filiales en overlays separados sobre el mismo transporte.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkBreakout"> <span>Salida directa a Internet + service chaining a SSE<span class="sku">First-packet iQ identifica la aplicación en el primer paquete y decide breakout local o reenvío al SSE. Requiere Advanced.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad (par de equipos)<span class="sku">Se requieren 2 unidades y cada una lleva su propia suscripción de sitio.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkSeg"> <span>Segmentación multi-overlay (más de 3 BIOs / VRFs)<span class="sku">Requiere EdgeConnect <b>Advanced</b>: Foundation se queda en 3 Business Intent Overlays y un número limitado de VRFs (QuickSpecs). Aísla invitados, IoT, PCI o filiales en overlays separados sobre el mismo transporte.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkTopo"> <span>Topología ilimitada (mesh o más de 4 hubs por región)<span class="sku">Requiere EdgeConnect <b>Advanced</b>: Foundation es hub-and-spoke con un máximo de 4 hubs por región (QuickSpecs). En gateways no cambia el nivel de Central.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkDtd"> <span>Inspección avanzada de seguridad — IDS/IPS, DDoS, clasificación web<span class="sku">En EdgeConnect es la licencia opcional <b>Dynamic Threat Defense</b>, aparte de Foundation y Advanced (QuickSpecs): entra en la lista como «consultar» porque no está en la lista de precios. En gateways fuerza <b>Central Advanced</b>.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkAiops"> <span>Analítica de experiencia y AIOps<span class="sku">Requiere <b>Advanced</b>: la retención ampliada de datos es del nivel Advanced de EdgeConnect, y en Central la analítica avanzada y AIOps son del nivel Advanced.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad (HA 1+1)<span class="sku">Se cotizan 2 unidades. En modalidad SaaS el segundo nodo lleva el SKU de alta disponibilidad del QuickSpecs (mismo precio que el estándar); en On-Premises, 2× estándar.</span></span></label>
     </div>
+    <p class="hint" style="margin-top:10px">El steering dinámico por SLA de aplicación (Dynamic Path Control) y las funciones NGFW ya los incluye <b>Foundation</b> — no obligan a subir de nivel (QuickSpecs v18, p.31).</p>
     <div class="field" style="margin-top:16px">
       <label>Segmento de instalación</label>
       <div class="seg" id="segSeg">
@@ -284,37 +311,30 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
         <option value="5">5 años</option>
       </select>
     </div>
-    <div class="field" id="fldBundle">
-      <label for="licBundle">Nivel de suscripción EdgeConnect</label>
-      <select id="licBundle"></select>
-    </div>
-    <div class="field" id="fldBw">
-      <label for="bwTier">Tier de caudal del sitio</label>
-      <select id="bwTier"></select>
-      <p class="hint">La suscripción de EdgeConnect va por <b>caudal del sitio</b>, no por modelo de appliance. El dimensionador propone el tier según el caudal calculado; al cambiarlo a mano deja de proponerlo.</p>
-    </div>
-    <div class="field" id="fldBoost">
-      <label for="boostBlocks">Bloques de Boost (100 Mbps cada uno)</label>
-      <input type="number" id="boostBlocks" min="0" step="1" autocomplete="off">
-      <p class="hint">Se licencia una vez para todo el fabric y Orchestrator lo reparte entre las sedes que lo aprovechan. Por eso figura con cantidad 1 en el BOM aunque se coticen varias unidades.</p>
+    <div class="field" id="fldSub">
+      <label>Suscripción EdgeConnect — asignada automáticamente</label>
+      <div class="lic-auto" id="licAutoTxt"></div>
+      <label class="check" style="margin-top:8px"><input type="checkbox" id="chkNoSub"> <span class="sku">No incluir la suscripción: el equipo queda standalone, sin fabric gestionado ni ZTP — y tampoco se licencia Boost, que es un add-on de la suscripción.</span></label>
     </div>
     <div class="field" id="fldCentral" hidden>
-      <label for="centralTier">Suscripción HPE Aruba Networking Central</label>
-      <select id="centralTier"></select>
+      <label>Suscripción HPE Aruba Networking Central — asignada automáticamente</label>
+      <div class="lic-auto" id="centralAutoTxt"></div>
+      <label class="check" style="margin-top:8px"><input type="checkbox" id="chkNoCentral"> <span class="sku">No incluir Central: el gateway se queda en gestión local, sin la nube de HPE ni apertura de casos.</span></label>
     </div>
     <div class="field" id="fldCapTier" hidden>
-      <label for="licCapTier">Nivel de capacidad (licencia perpetua)</label>
-      <select id="licCapTier">
-        <option value="hw" selected>Solo hardware</option>
-        <option value="silver">Silver</option>
-        <option value="gold">Gold</option>
-      </select>
-      <p class="hint">En la serie 9200 la capacidad la fija la licencia, no el equipo: el mismo chasis entrega 20, 30 o 40 Gbps.</p>
+      <label>Nivel de capacidad (licencia perpetua) — asignado automáticamente</label>
+      <div class="lic-auto" id="capAutoTxt"></div>
+      <label class="check" style="margin-top:8px"><input type="checkbox" id="chkSoloHw"> <span class="sku">Cotizar solo hardware, sin la licencia de capacidad (la serie 9200 entrega 20 Gbps sin ella).</span></label>
     </div>
     <div class="field">
       <label for="careLevel">Nivel de soporte HPE</label>
       <select id="careLevel"></select>
     </div>
+    <details class="adv">
+      <summary>Opciones avanzadas</summary>
+      <label class="check" style="margin-top:8px"><input type="checkbox" id="chkOnprem"> <span>Modalidad On-Premises (E-STU)<span class="sku">El Orchestrator vive en la infraestructura del cliente en vez de consumirse como servicio: cambia el juego de SKU de la suscripción y de Boost. En HA, el par on-prem se cotiza 2× estándar — la equivalencia de los SKU HA E-STU de la línea antigua no está confirmada en las fuentes consultadas.</span></span></label>
+      <p class="hint">Las variantes gubernamentales (TAA / NAL) no estorban en el catálogo: se ofrecen en la pestaña <b>Lista de materiales</b>, tras su propio conmutador.</p>
+    </details>
   </section>
 
 </div>
@@ -336,6 +356,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <h2>Añadir a la lista de materiales</h2>
     <p class="hint" style="margin:0 0 10px">Todo el catálogo pedible de Aruba con su SKU y su List Price: hardware, remanufacturados, suscripciones EdgeConnect, Boost, Central y licencias perpetuas. Lo que añadas queda integrado en la lista de materiales —con stepper de cantidad y botón de quitar— y viaja con ella al Excel y al cotizador.</p>
     <input type="search" id="skuBuscar" placeholder="Buscar por SKU o descripción…" aria-label="Buscar referencia por SKU o descripción">
+    <button type="button" id="skuTaa" class="btn ghost" style="font-size:11px;padding:5px 11px;margin:8px 0 0" aria-pressed="false">Variantes gubernamentales (TAA / NAL) · mostrar</button>
     <div id="skuCatalogo"><p class="hint">Cargando catálogo de SKUs…</p></div>
   </section>
   <section class="panel">
@@ -349,7 +370,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
   </section>
   <div class="flag-ft">
-    <b>Aviso de preventa:</b> el hardware, las suscripciones EdgeConnect/Boost/Central y el soporte Foundational Care de los EdgeConnect traen List Price de HPE verificado el 2026-09-13 (76 SKU en <code>public/datasheets/aruba-lista-precios-hpe.csv</code> más los SKU de servicio por modelo en <code>server/seed/legacyData/aruba.js</code>); es precio de lista sin el descuento del distribuidor, no una cotización firme. Lo que sigue sin precio verificado —EC-V, FC de software y FC de gateways— figura en «consultar» a propósito.
+    <b>Aviso de preventa:</b> el hardware, las suscripciones EdgeConnect/Boost/Central (incluidos los SKU de alta disponibilidad del segundo nodo) y el soporte Foundational Care de los EdgeConnect traen List Price de HPE verificado el 2026-09-13 (94 SKU en <code>public/datasheets/aruba-lista-precios-hpe.csv</code> más los SKU de servicio por modelo en <code>server/seed/legacyData/aruba.js</code>); es precio de lista sin el descuento del distribuidor, no una cotización firme. Lo que sigue sin precio verificado —EC-V, Dynamic Threat Defense, FC de software y FC de gateways— figura en «consultar» a propósito.
   </div>
 </div>
 </div>
@@ -363,20 +384,23 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <thead><tr><th>Nivel</th><th>Qué incluye</th><th>Cuándo se necesita</th></tr></thead>
     <tbody>
       <tr><td><b>Foundation</b></td>
-          <td>Funciones SD-WAN esenciales más las capacidades NGFW avanzadas: Dynamic Path Control por SLA, tunnel bonding, Path Conditioning (FEC y corrección de orden), firewall con estado y Orchestrator</td>
-          <td>Sucursal que sustituye MPLS por banda ancha y necesita SLA de aplicación, sin segmentación ni breakout con service chaining</td></tr>
+          <td>Funciones SD-WAN esenciales más <b>todas</b> las capacidades NGFW avanzadas: steering dinámico por SLA (Dynamic Path Control), tunnel bonding, Path Conditioning (FEC y corrección de orden), firewall con estado y Orchestrator cloud (Foundation OaaS). Hasta 3 Business Intent Overlays, número limitado de VRFs, topología hub-and-spoke (4 hubs por región), QoS esencial y retención fundamental de datos</td>
+          <td>Sucursal que sustituye MPLS por banda ancha y necesita SLA de aplicación: el steering por SLA y el NGFW <b>ya están aquí</b> — no son motivo para subir de nivel (matriz oficial QuickSpecs v18, p.31)</td></tr>
       <tr><td><b>Advanced</b></td>
-          <td>Todo Foundation + routing dinámico, segmentación multi-overlay, salida directa a Internet con First-packet iQ y service chaining hacia SSE/SASE de terceros</td>
-          <td>La mayoría de despliegues reales: en cuanto hay VRF, BGP con el operador o integración con un SSE, Foundation se queda corto</td></tr>
+          <td>Todo Foundation más topología ilimitada, 64 VRFs y hasta 7 Business Intent Overlays (segmentación multi-overlay real), QoS avanzada, retención ampliada de datos y Orchestrator cloud (Advanced OaaS). Tiers más finos: 20/50/100/200/500 Mbps, 1/2 Gbps e ilimitado</td>
+          <td>Segmentación multi-overlay con más de 3 BIOs, topologías mesh o con más de 4 hubs por región, o analítica con retención ampliada. OJO: HPE no admite mezclar niveles en un mismo fabric</td></tr>
       <tr><td><b>On-Premises</b></td>
           <td>Variante para despliegues donde el Orchestrator vive en la infraestructura del cliente en lugar de consumirse como servicio</td>
           <td>Sectores con requisitos de soberanía del dato o de operación sin dependencia de un SaaS</td></tr>
+      <tr><td><b>Dynamic Threat Defense</b><br><span style="font-family:'IBM Plex Mono',monospace;font-size:10px">licencia opcional aparte</span></td>
+          <td>Añade IDS/IPS, DDoS adaptativo (Adaptive DDoS, Smart SYN cookie) y clasificación web (Secure web service). Licencia separada de Foundation y Advanced (QuickSpecs p.32)</td>
+          <td>Cuando el diseño pide inspección avanzada de seguridad en el propio appliance. Sin SKU en la lista de precios: «consultar»</td></tr>
       <tr><td><b>Boost</b><br><span style="font-family:'IBM Plex Mono',monospace;font-size:10px">add-on de aceleración</span></td>
           <td>Optimización WAN: deduplicación Network Memory, compresión y aceleración TCP y de protocolos. Bloques de 100 Mbps agrupables como pool del fabric, como servicio (Boost-aaS) o suscripción on-premises</td>
-          <td>Sedes con tráfico repetitivo — réplicas, backups, VDI, ficheros compartidos</td></tr>
+          <td>Sedes con tráfico repetitivo — réplicas, backups, VDI, CIFS/SMB — o enlaces de alta latencia. El dimensionador lo auto-calcula: 30 % del tráfico WAN privado</td></tr>
     </tbody>
   </table></div>
-  <p class="hint" style="margin-top:10px">Orchestrator no se licencia por dispositivo gestionado, a diferencia de las plataformas de gestión que sí cobran por elemento.</p>
+  <p class="hint" style="margin-top:10px">El soporte (TAC 24/7 y actualizaciones de software) va <b>incluido en la suscripción</b>, y HPE no admite mezclar niveles Foundation/Advanced en un mismo fabric (QuickSpecs p.31, literal). Orchestrator no se licencia por dispositivo gestionado, a diferencia de las plataformas de gestión que sí cobran por elemento.</p>
 </section>
 
 <section class="panel">

@@ -362,6 +362,15 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     tabla de ciclo de vida oficial de HPE que nombre a los dos modelos (una persona con
     navegador real en arubanetworking.hpe.com, o preguntar al distribuidor), y entonces
     replicar el patrón `EOL_ANNOUNCED` del EC-XL.
+17. **Equivalencia E-STU de HA para suscripciones On-Premises (2026-09-13).** HPE publica
+    SKU «HA» propios del segundo nodo para las suscripciones SaaS (Foundation/Advanced ×
+    100M/1G/ilimitado × 1/3/5 años, ya en `LICENSES_HA` con precio idéntico al estándar),
+    pero **no** una equivalencia E-STU de alta disponibilidad para On-Premises en el
+    QuickSpecs v18 consultado. Mientras tanto, un par HA 1+1 on-prem cotiza 2× la
+    suscripción estándar y el BOM lo declara. Cómo se cierra: confirmar con HPE o el
+    distribuidor si existe SKU E-STU HA; si existe, se mapea en `LICENSES_HA.onprem`, se
+    ajusta el test de cobertura (hoy exige exactamente bw100/bw1g/bwunl) y el motor lo usa
+    solo.
 
 ## Limpieza
 
@@ -377,6 +386,58 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Refactor del Dimensionador y BOM Aruba: SD-WAN por flujos + licenciamiento 100% automático (2026-09-13)
+
+Disparado por el brief del dueño («Actúa como un Arquitecto de Soluciones de Redes
+especializado en HPE Aruba Networking — EdgeConnect Enterprise y SD-Branch»): la SD-WAN de
+Aruba no se rige por túneles IPsec estáticos sino por Business Intent Overlays (BIO),
+flujos simultáneos y First-packet iQ (10.000+ apps; AppRF 3.500+ en SD-Branch). Aruba es el
+piloto — los demás fabricantes no se tocan hasta que el dueño lo diga.
+
+**Depuración de parámetros.** Fuera el campo «Túneles IPSec» (de las etiquetas, del «por
+qué» y de las características); fuera el input manual de throughput de firewall; las
+variantes gubernamentales (TAA/NAL/FIPS) se ocultan del catálogo pedible tras un botón
+«Variantes gubernamentales · mostrar/ocultar» (86 visibles ↔ 94 totales), y las opciones
+avanzadas (On-Premises, puntero TAA) viven en un `<details>` del panel 4.
+
+**Dimensionamiento por flujos y aplicaciones.** Nuevo selector de perfil de entorno
+(estándar ~100 / intensivo ~200 flujos por usuario — se usa el extremo alto como headroom
+incorporado) y `estadoDerivado()` calcula `flujosReq = usuarios × tasa`: los candidatos que
+no los soportan quedan descartados con su motivo («600.000 flujos req > 256.000 pub») y un
+medidor nuevo lo pinta. Nuevo selector de estrategia de aplicaciones: Híbrido/DC privado
+(Path Conditioning FEC/POC) ↔ Cloud-First/SaaS (First-packet iQ para DIA/SSE), con hint
+dinámico y narrativa en el «por qué». La pregunta Boost (CIFS/SMB, transferencias masivas,
+satelitales) auto-calcula Boost = 30% del tráfico WAN privado (`needProc × (1+FEC)`) y
+mete sus bloques de 100 Mbps y SKU sin tocar nada más.
+
+**Motor de licenciamiento 100% automático.** Se eliminó la selección manual de licencia:
+el nivel (Foundation/Advanced) se deduce de las funciones del diseño según la matriz
+oficial del QuickSpecs v18 p.31, y el SKU sale de la familia/tier de hardware + ancho de
+banda + término. Co-terminación real: un único selector [1,3,5 años] gobierna licencias,
+Central y soportes. HA 1+1 (qty=2 en EdgeConnect): el BOM parte la suscripción en 1×
+estándar (nodo primario) + 1× SKU «HA» del segundo nodo — HPE publica juego propio de 18
+SKU con precio idéntico tier a tier y año a año (invariante guardada por test). Lo manual
+que queda es opt-out declarado: «no incluir suscripción», «solo hardware», «sin Central».
+
+**Correcciones del brief contra la fuente oficial (decisiones documentadas).** El brief
+proponía deducir Advanced de «DPS por SLA de aplicación, NGFW/IDS/IPS o AIOps»; el
+QuickSpecs v18 p.31-32 dice otra cosa y manda la fuente: Dynamic Path Steering y el NGFW
+completo son **Foundation**; IDS/IPS no es tier sino la licencia opcional aparte **Dynamic
+Threat Defense** (p.32, sin precio publicado → línea «consultar» en el BOM); DIA /
+First-packet iQ / encadenamiento SSE son funciones de plataforma, así que Cloud-First **no
+fuerza** Advanced. Advanced se deduce de: más de 3 BIOs / VRFs avanzadas, topología fuera
+de hub-and-spoke, o AIOps/retención ampliada. Equivalencia E-STU de HA on-premises **no
+confirmada** por HPE → on-prem HA cotiza 2× estándar con declaración (pendiente abajo).
+
+**Verificación.** 246/246 pruebas (243 + 3 nuevas: cobertura LICENSES_HA 3×2×3 sin
+on-prem a propósito, invariante precio HA == estándar, todo modelo publica flujos o
+declara por qué no — EC-V y «Gateway 9240» declarados) y eslint verde. E2E en Chromium:
+deducción Foundation/Advanced con sus motivos, filtro de flujos (600k descarta EC-10106 →
+EC-M), Boost 30% auto (3 bloques a 751 Mbps, 5 a 1.500), split HA (1× S1B79AAS + 1×
+S1B86AAS, ambos $19.620), línea DTD «consultar», toggle TAA 86↔94, categorías HA 9+9,
+Central Advanced en Gateway 9004, tier Gold automático en 9240, humo Fortinet 60F sin
+cambios, cero errores de consola.
 
 ### EC-XL marcado fin de venta con fechas oficiales — Aruba (2026-09-13)
 

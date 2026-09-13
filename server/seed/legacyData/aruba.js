@@ -501,18 +501,35 @@ for (const m of MODELS) {
 // SKU lleva el código del equipo embebido). En EdgeConnect va atada al CAUDAL del sitio,
 // así que dos sedes con el mismo appliance pueden llevar suscripciones distintas y subir
 // de caudal no obliga a cambiar el hardware mientras el equipo dé la talla.
+// La matriz que gobierna el licenciamiento automático (2026-09-13, refactor arquitectónico
+// pedido por el dueño — documento «Actúa como un Arquitecto de Soluciones de Redes») es la
+// oficial del QuickSpecs EdgeConnect SD-WAN v18, p.31, transcrita literal. Tres correcciones
+// a lo que la arquitectura proponía como disparadores de Advanced, documentadas porque la
+// fuente oficial manda:
+//   · El steering dinámico por SLA de aplicación (Dynamic Path Control) y TODAS las
+//     capacidades NGFW son de FOUNDATION («essential SD-WAN features and all of the
+//     advanced NGFW features», p.31): no fuerzan Advanced. La matriz los lista en ambos.
+//   · IDS/IPS NO va en ninguno de los dos niveles: es la licencia opcional aparte
+//     Dynamic Threat Defense (QuickSpecs p.32: «adds IDS/IPS, Adaptive DDoS, Smart SYN
+//     cookie and Secure web service»), sin SKU en la lista del distribuidor — consultar.
+//   · La salida directa a Internet con First-packet iQ y el service chaining a SSE son
+//     capacidades de PLATAFORMA (QuickSpecs p.4 y p.12), no un distintivo de nivel: la
+//     matriz oficial no los vincula a Advanced. Se retira esa afirmación del texto.
 const BUNDLES = {
   foundation: {
     n: 'EdgeConnect Foundation',
-    svcs: 'Funciones SD-WAN esenciales más las capacidades NGFW avanzadas: Dynamic Path Control por SLA, '
-      + 'tunnel bonding de los enlaces WAN, Path Conditioning (FEC y corrección de orden de paquetes), '
-      + 'firewall con estado y orquestación centralizada desde EdgeConnect Orchestrator.',
+    svcs: 'Funciones SD-WAN esenciales más TODAS las capacidades NGFW avanzadas: steering dinámico por SLA '
+      + '(Dynamic Path Control), tunnel bonding, Path Conditioning (FEC y corrección de orden), firewall '
+      + 'con estado y Orchestrator cloud (Foundation OaaS). Hasta 3 Business Intent Overlays, número '
+      + 'limitado de VRFs, topología hub-and-spoke (4 hubs por región), QoS esencial y retención '
+      + 'fundamental de datos. Tiers: 100 Mbps, 1 Gbps e ilimitado.',
   },
   advanced: {
     n: 'EdgeConnect Advanced',
-    svcs: 'Todo Foundation más routing dinámico, segmentación multi-overlay, salida directa a Internet con '
-      + 'First-packet iQ, service chaining hacia SSE/SASE de terceros y las funciones avanzadas de seguridad. '
-      + 'Es el nivel que pide un despliegue con segmentación real o integrado con un SSE.',
+    svcs: 'Todo Foundation más las funciones SD-WAN avanzadas: topología ilimitada, 64 VRFs y hasta 7 '
+      + 'Business Intent Overlays (segmentación multi-overlay real), QoS avanzada, retención ampliada '
+      + 'de datos y Orchestrator cloud (Advanced OaaS). Tiers más finos: 20/50/100/200/500 Mbps, '
+      + '1/2 Gbps e ilimitado. OJO: HPE no admite mezclar niveles en un mismo fabric.',
   },
   onprem: {
     n: 'EdgeConnect On-Premises',
@@ -697,7 +714,33 @@ const LICENSES = {
   },
 };
 
+// ── SKU de suscripción de ALTA DISPONIBILIDAD (2026-09-13) ───────────────────
+// Para un par HA 1+1, HPE publica un juego de SKU propio para el SEGUNDO nodo: la
+// notación «HA» del QuickSpecs (p.21-24: «Foundation High Availability 1Gbps… SaaS»).
+// El par se cotiza 1× suscripción estándar (LICENSES) + 1× suscripción HA (esta tabla).
+// Dato que conviene saber: el precio HA es IDÉNTICO al estándar, tier a tier y año a
+// año — lo que cambia es el SKU de pedido, no el importe. Verificado literal contra el
+// export de lista de precios del distribuidor (misma fuente y misma regla de extracción
+// que LICENSES: solo SKU, descripción, List Price y vigencia 2026-06-01, PLC GA).
+// On-Premises NO se mapea: la lista trae SKU HA E-STU de la línea antigua EC-BW
+// (JM075AAS…) pero ninguna fuente consultada declara su equivalencia con los niveles
+// Foundation/Advanced, así que el par on-prem se cotiza 2× estándar y se declara.
+const LICENSES_HA = {
+  bw100: {
+    foundation: {sku:{y1:'S1C56AAS', y3:'S1A17AAS', y5:'S1A19AAS'}, y1:900,  y3:2700,  y5:4500},
+    advanced:   {sku:{y1:'S1B41AAS', y3:'S1B43AAS', y5:'S1B45AAS'}, y1:1848, y3:5544,  y5:9240},
+  },
+  bw1g: {
+    foundation: {sku:{y1:'S1A29AAS', y3:'S1A31AAS', y5:'S1A33AAS'}, y1:1680, y3:5040,  y5:8400},
+    advanced:   {sku:{y1:'S1B84AAS', y3:'S1B86AAS', y5:'S1B88AAS'}, y1:6540, y3:19620, y5:32700},
+  },
+  bwunl: {
+    foundation: {sku:{y1:'S1A43AAS', y3:'S1A45AAS', y5:'S1A77AAS'}, y1:7848,  y3:23544, y5:39240},
+    advanced:   {sku:{y1:'S1C42AAS', y3:'S1C44AAS', y5:'S1C46AAS'}, y1:23580, y3:70740, y5:117900},
+  },
+};
+
 module.exports = {
-  MODELS, BUNDLES, CARE, CARE_SKU, LICENSES, BW_TIERS, BOOST, FEC_OVERHEAD,
+  MODELS, BUNDLES, CARE, CARE_SKU, LICENSES, LICENSES_HA, BW_TIERS, BOOST, FEC_OVERHEAD,
   SOFTWARE, CENTRAL_TIERS, DATASHEETS, EOL_ANNOUNCED,
 };
