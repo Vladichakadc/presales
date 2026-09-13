@@ -22,6 +22,8 @@
 // un porcentaje sea bajo no es un fallo del codigo, es un hueco del catalogo — y saber
 // exactamente cual es el punto de este comando.
 
+const fs = require('fs');
+const path = require('path');
 const { fuentesDe, ANTIGUEDAD_AVISO_MESES } = require('../server/seed/legacyData/fuentes');
 const vendors = require('../server/seed/legacyData/vendors');
 
@@ -124,13 +126,103 @@ function precios() {
     .sort((a, b) => a.vendor.localeCompare(b.vendor));
 }
 
+/* ── PANTALLAS: un campo declarado que ya no existe ───────────────────────────
+   QUE COMPRUEBA. Cada dimensionador le pasa a `ESTADO.vincular({campos})` la lista de ids
+   cuyo valor viaja en el enlace compartido. Si alguien renombra o retira un control y no
+   toca esa lista, el campo deja de reponerse: quien abre el enlace ve otro escenario. Aqui
+   se cruza la lista declarada contra el `id=` del HTML de esa misma pagina.
+
+   POR QUE HACIA FALTA. Los dos fallos del 2026-09-13 fueron de esta clase y el inventario
+   no miraba nada de la capa de presentacion: el refactor de Aruba retiro `#bw` y dejo
+   `pantallas.yml` en rojo cuatro dias, y la lista de parametros v1 solo la declaraba una
+   pagina. Este informe mira el catalogo; esto mira que la pantalla y su estado sigan
+   hablando del mismo control.
+
+   POR QUE SE PARSEA Y NO SE EJECUTA. En `dimensionador-nokia-7220ixr.js` la llamada vive
+   detras de un `await fetch(...)`, asi que cargar el modulo exigiria doblar la red y el DOM
+   para leer un array literal. Se extrae el texto, y cuando `campos:` es un identificador —el
+   `CAMPOS_ESCENARIO` de Aruba— se resuelve su declaracion en el mismo archivo.
+
+   Y SI NO SE PUEDE LEER, SE DICE. Una pagina que no se sabe parsear se reporta como error,
+   nunca se salta en silencio: un comprobador que no comprueba se porta igual que uno que
+   pasa, que es como `CISCO_EOL_MODELS` vivio meses sin marcar nada. */
+
+// Ids que NO estan en el HTML a proposito porque los crea un modulo compartido en tiempo de
+// ejecucion. Cada excepcion trae el modulo y el ancla que debe seguir existiendo en el: si
+// `ficha.js` dejara de construir ese `<select>`, la excepcion caducaria y este informe lo
+// dice, en vez de seguir tapando un campo que ya no existe en ninguna parte.
+//
+// EL ANCLA VA COMPLETA, Y ESO SE APRENDIO SABOTEANDO. La primera version anclaba en
+// `${cid}-sel`; al renombrar el control a `${cid}-selector` para comprobar que saltaba, NO
+// salto — el ancla corta seguia siendo subcadena de la larga, asi que la excepcion se daba por
+// viva sobre un control que ya no existia. Una excepcion que no sabe caducar tapa exactamente
+// lo que este comprobador existe para encontrar, que es el conjunto inerte de siempre.
+const TARDIOS = {
+  'verdict-sel': {
+    modulo: 'public/js/ficha.js',
+    // El ancla lleva `${cid}` a proposito: es el TEXTO FUENTE de la plantilla de ficha.js,
+    // no una interpolacion que se olvido de escribir con backticks.
+    // eslint-disable-next-line no-template-curly-in-string
+    ancla: '<select id="${cid}-sel">',
+    porque: 'lo pinta ficha.js despues del primer render (el desplegable de equipo)',
+  },
+};
+
+function camposDeclarados(src) {
+  const m = src.match(/ESTADO\.vincular\(\s*\{[\s\S]{0,160}?campos:\s*(\[[\s\S]*?\]|[A-Za-z_$][\w$]*)/);
+  if (!m) return { error: 'no se encontro la llamada a ESTADO.vincular({campos:...})' };
+  let bruto = m[1];
+  if (!bruto.startsWith('[')) {
+    const decl = src.match(new RegExp(`(?:const|let|var)\\s+${bruto}\\s*=\\s*(\\[[\\s\\S]*?\\])\\s*;`));
+    if (!decl) return { error: `campos apunta a "${bruto}" y no se encontro su declaracion en el mismo archivo` };
+    bruto = decl[1];
+  }
+  const ids = [...bruto.matchAll(/['"]([^'"]+)['"]/g)].map((x) => x[1]);
+  if (!ids.length) return { error: 'la lista de campos se leyo vacia' };
+  return { ids };
+}
+
+function pantallas() {
+  const dirPublic = path.join(__dirname, '..', 'public');
+  const archivos = fs.readdirSync(path.join(dirPublic, 'js'))
+    .filter((f) => f.startsWith('dimensionador-') && f.endsWith('.js'))
+    .sort();
+  const filas = [];
+  for (const archivo of archivos) {
+    const pagina = archivo.replace(/\.js$/, '.html');
+    const rutaHtml = path.join(dirPublic, pagina);
+    if (!fs.existsSync(rutaHtml)) { filas.push({ pagina, error: 'no existe su HTML' }); continue; }
+    const { ids, error } = camposDeclarados(fs.readFileSync(path.join(dirPublic, 'js', archivo), 'utf8'));
+    if (error) { filas.push({ pagina, error }); continue; }
+    const html = fs.readFileSync(rutaHtml, 'utf8');
+    const enHtml = (id) => new RegExp(`id=["']${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`).test(html);
+    const faltan = [];
+    const tardios = [];
+    for (const id of ids) {
+      if (enHtml(id)) continue;
+      const t = TARDIOS[id];
+      if (!t) { faltan.push({ id, motivo: 'no existe ningun control con ese id' }); continue; }
+      // La excepcion solo vale mientras su modulo siga creando el control.
+      const mod = path.join(__dirname, '..', t.modulo);
+      const vivo = fs.existsSync(mod) && fs.readFileSync(mod, 'utf8').includes(t.ancla);
+      if (vivo) tardios.push(id);
+      else faltan.push({ id, motivo: `se exceptuaba porque ${t.porque}, pero ${t.modulo} ya no lo crea` });
+    }
+    filas.push({ pagina, campos: ids.length, faltan, tardios });
+  }
+  return filas;
+}
+
 function procedencia() {
   const ahora = new Date();
   return vendors.map((v) => ({ vendor: v.code, fuentes: fuentesDe(v.code, ahora) }));
 }
 
 function informe() {
-  return { cobertura: cobertura(), cicloDeVida: cicloDeVida(), precios: precios(), procedencia: procedencia() };
+  return {
+    cobertura: cobertura(), cicloDeVida: cicloDeVida(), precios: precios(),
+    pantallas: pantallas(), procedencia: procedencia(),
+  };
 }
 
 function barra(pct) {
@@ -160,6 +252,19 @@ function imprimir(d) {
     for (const f of d.precios) {
       console.log(`${f.vendor.padEnd(10)} ${f.con}/${f.de} con precio, ${f.sinCotizar} sin cotizar`);
     }
+    console.log('\n== PANTALLAS: campos declarados que no existen ==');
+    console.log('   Cada dimensionador declara en ESTADO.vincular({campos}) los ids que viajan en el');
+    console.log('   enlace compartido. Uno que ya no exista deja de reponerse, y el enlace llega mudo.\n');
+    let rotos = 0;
+    for (const f of d.pantallas) {
+      if (f.error) { rotos++; console.log(`[ERROR] ${f.pagina}  ${f.error}`); continue; }
+      const tardios = f.tardios.length ? `  (${f.tardios.length} lo pinta un modulo)` : '';
+      if (!f.faltan.length) { console.log(`[ok   ] ${f.pagina.padEnd(38)} ${String(f.campos).padStart(2)} campos${tardios}`); continue; }
+      rotos++;
+      console.log(`[ROTO ] ${f.pagina.padEnd(38)} ${String(f.campos).padStart(2)} campos${tardios}`);
+      for (const x of f.faltan) console.log(`         ${x.id}: ${x.motivo}`);
+    }
+    console.log(rotos ? `\n${rotos} pantalla(s) con un campo declarado que no existe.` : '\nNinguna pantalla declara un campo que no exista.');
   }
 
   console.log('\n== PROCEDENCIA ==');
@@ -182,4 +287,4 @@ if (require.main === module) {
   else imprimir(d);
 }
 
-module.exports = { informe, cobertura, cicloDeVida, precios, procedencia };
+module.exports = { informe, cobertura, cicloDeVida, precios, pantallas, procedencia };

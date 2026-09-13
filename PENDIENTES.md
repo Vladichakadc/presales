@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-13 (aviso de parámetros que una pantalla ya no entiende).
+Última revisión: 2026-09-13 (el inventario cruza cada pantalla con su estado).
 
 ---
 
@@ -488,6 +488,43 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Una pantalla y su estado ya no se desincronizan en silencio (2026-09-13)
+
+Mejora propuesta al cerrar la entrega anterior y aprobada por el dueño. Sale de mirar los dos
+fallos del día y ver que eran **el mismo**: el refactor de Aruba retiró `#bw` y ninguna
+comprobación cruzó ese cambio con la lista de campos que el enlace compartido repone. El
+inventario miraba el catálogo —cobertura, ciclo de vida, precios, procedencia— y **nada** de
+la capa de presentación.
+
+`npm run catalogo` gana la sección «PANTALLAS»: cruza los `campos` que cada dimensionador
+declara en `ESTADO.vincular()` contra los `id=` de su propio HTML. Hoy salen las ocho en
+verde, 124 campos en total.
+
+Cuatro decisiones, cada una contra un modo de fallo concreto:
+
+- **Se parsea, no se ejecuta.** En `dimensionador-nokia-7220ixr.js` la llamada vive tras un
+  `await fetch(...)`, así que cargar el módulo exigiría doblar la red y el DOM para leer un
+  array literal. Cuando `campos:` es un identificador —el `CAMPOS_ESCENARIO` de Aruba— se
+  resuelve su declaración en el mismo archivo.
+- **Una página que no se sepa leer es un error, no un salto.** Un comprobador que no
+  comprueba se porta igual que uno que pasa: es `CISCO_EOL_MODELS` otra vez.
+- **Las excepciones caducan solas.** `verdict-sel` no está en ningún HTML porque lo construye
+  `ficha.js`; la excepción declara el módulo **y el ancla que debe seguir existiendo en él**.
+- **También se comprueba que se miran las ocho páginas.** Un parser que devolviera lista vacía
+  dejaría todo en verde sin haber mirado nada.
+
+**Y el ancla se aprendió saboteando, no razonando.** La primera versión anclaba en
+`${cid}-sel`; al renombrar el control a `${cid}-selector` para ver si saltaba, **no saltó** —
+el ancla corta seguía siendo subcadena de la larga, así que la excepción se daba por viva
+sobre un control que ya no existía. Con el ancla completa (`<select id="${cid}-sel">`) sí
+salta. Los otros tres sabotajes —renombrar un `id` del HTML, romper la forma de la llamada y
+quitar un dimensionador— se detectaron a la primera.
+
+La regla vive en `scripts/catalogo-check.js` y `test/pantallas-campos.test.js` solo la afirma,
+una sola implementación como `FICHA.rango()` con el fin de venta. Está en las pruebas y no
+solo en el inventario porque `npm run catalogo` se corre cuando alguien se acuerda, y
+`npm run verificar` corre en cada push. 279/279 pruebas (3 nuevas) y 16/16 pantallas.
 
 ### Un enlace compartido ya no se pierde en silencio (2026-09-13)
 
