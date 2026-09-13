@@ -71,54 +71,66 @@ const SEC_HINT={
 // degradada, asi la holgura va dentro del modelo.
 const IMIX_FACTOR=0.70;
 
-/* ══ ÓPTICAS Y ACCESORIOS (fase 11, 2026-09-13) ══
-   Compatibilidad validada contra la tabla oficial del VSG EdgeConnect («certified to
-   operate with the following transceivers») y el Hardware Reference (DAC); para el 9240,
-   contra el listado de partner autorizado (HPE no publica matriz pública para sus SFP28).
-   Precios: «List Price» de partner autorizado (securewirelessworks, 2026-09-13) — HPE no
-   publica List oficial de transceptores y los partners discrepan entre sí (documentado en
-   la investigacion); la cifra firme la cierra el distribuidor. null = consultar. */
-const ACCESORIOS={
-  J4858D:{d:'Transceptor 1G SFP LC SX — 500 m OM2 MMF', p:480},
-  J4859D:{d:'Transceptor 1G SFP LC LX — 10 km SMF', p:1016},
-  J9150D:{d:'Transceptor 10G SFP+ LC SR — 300 m OM3 MMF', p:1454},
-  J9151E:{d:'Transceptor 10G SFP+ LC LR — 10 km SMF', p:4078},
-  J9281D:{d:'Cable DAC 10G SFP+ a SFP+ — 1 m', p:164},
-  J9283D:{d:'Cable DAC 10G SFP+ a SFP+ — 3 m', p:215},
-  R7J63A:{d:'Fuente de alimentación 550 W AC de repuesto (2ª PSU)', p:721},
-};
-// Matriz modelo → accesorios ofertables. EC-10104 no tiene ranuras SFP (4x RJ45 — VSG);
-// EC-10150 incluye 2 PSU de fábrica (no necesita 2ª); EC-XS/10104/10106/10108 llevan
-// fuente externa única sin opción de redundancia (Hardware Reference).
-const ACCESORIOS_POR_MODELO={
-  'EC-10106':{items:['J4858D','J4859D','J9150D','J9151E','J9281D','J9283D'],
-    nota:'2 ranuras SFP+ 1/10G (VSG). Fuente externa única: sin opción de 2ª PSU.'},
-  'EC-10108':{items:['J9150D','J9151E','J9281D','J9283D'],
-    nota:'2 ranuras SFP+ 1/10G (VSG) — la tabla oficial NO certifica ópticas 1G en este modelo. Fuente externa única: sin opción de 2ª PSU.'},
-  'EC-10150':{items:['J9150D','J9151E','J9281D','J9283D'],
-    nota:'8 ranuras SFP+/SFP28 1/10/25G (VSG). Lleva 2 PSU redundantes de fábrica: no necesita 2ª fuente.'},
-  'Gateway 9240':{items:['J9150D','J9151E','J9281D','J9283D','R7J63A'],
-    nota:'4 ranuras SFP28 1/10/25G (datasheet); compatibilidad de ópticas vía listado de partner autorizado (HPE no publica matriz pública). 1+1 PSU: la 2ª fuente es la R7J63A.'},
-};
+/* ══ ÓPTICAS Y ACCESORIOS (fase 12, 2026-09-13) ══
+   Catálogo MAESTRO del dueño (ARUBA_ACCESSORY_CATALOG + ACCESSORY_COMPAT en aruba.js),
+   servido por la proyección del dimensionador — la página ya no mantiene precios ni
+   matriz propios. La compatibilidad sigue anclada al VSG oficial (1G solo EC-10106;
+   10G/DAC en 10106/10108/10150; EC-10104 sin SFP; 9240 = 4x SFP28) y a lo declarado en
+   el brief (25G → EC-10150/9240; NVMe Boost → S2N67A; PSU 9240 → R1C72A; racks 9004/
+   9012). Sustituye a los precios provisionales de partner de la fase 11 (E3). */
+let ACCESSORY_CATALOG={}, ACCESSORY_COMPAT={};
 // Selección viva del modal: sku → cantidad. Se depura al cambiar de modelo para no
 // cotizar una óptica incompatible con el equipo elegido.
 let accesoriosElegidos={};
+// Marca de la línea NVMe puesta por el sincronizador Boost (no por el usuario): solo
+// esa se retira sola al apagar Boost o cambiar de modelo.
+let nvmeAutoActivo=false;
+const MODELOS_NVME_BOOST=['EC-10106','EC-10108'];
+function modeloActual(){ return MODELS.find(x=>x.id===$('pickModel').value)||null; }
+function boostActivo(){ const c=$('chkBoost'); return !!(c&&c.checked); }
+// Sincronización Boost → NVMe (fase 12): la optimización con deduplicación exige
+// almacenamiento local — en EC-10106/10108 el kit S2N67A es obligatorio con Boost
+// activo; el EC-10150 ya lleva 2 SSD NVMe de sistema de fábrica (QuickSpecs).
+function sincronizarNvmeBoost(){
+  const m=modeloActual();
+  const exige=!!(m&&boostActivo()&&MODELOS_NVME_BOOST.includes(m.id));
+  if(exige){
+    if(!accesoriosElegidos.S2N67A){ accesoriosElegidos.S2N67A=1; nvmeAutoActivo=true; }
+  }else if(nvmeAutoActivo){
+    delete accesoriosElegidos.S2N67A; nvmeAutoActivo=false;
+  }
+}
+// Etiquetas técnicas del accesorio: velocidad · medio · alcance, o su categoría
+// funcional (NVMe Boost, 2ª PSU, rack, consola). TAA se destaca porque condiciona la
+// compra pública (Trade Agreements Act).
+function accEtiquetas(a){
+  const t=[];
+  if(a.speed) t.push(a.speed);
+  if(a.media){ t.push(a.media.replace('_TAA','')); if(a.media.endsWith('_TAA')) t.push('TAA'); }
+  if(a.reach) t.push(a.reach);
+  if(a.category) t.push({STORAGE_BOOST:'NVMe Boost',PSU:'2ª PSU',MOUNT:'rack 19"',CABLE:'consola'}[a.category]||a.category);
+  return t.join(' · ');
+}
 function pintarAccModal(m){
-  const cfg=ACCESORIOS_POR_MODELO[m.id];
+  const cfg=ACCESSORY_COMPAT[m.id];
   if(!cfg) return;
+  const exigeNvme=boostActivo()&&MODELOS_NVME_BOOST.includes(m.id);
   $('accModelo').textContent=m.id;
-  $('accHint').textContent=cfg.nota;
+  $('accHint').textContent=cfg.nota+(exigeNvme?' Boost está activo: el kit NVMe S2N67A es obligatorio (mínimo 1).':'');
   $('accLista').innerHTML=cfg.items.map(sku=>{
-    const a=ACCESORIOS[sku];
+    const a=ACCESSORY_CATALOG[sku];
+    if(!a) return '';
     const qty=accesoriosElegidos[sku]||0;
-    return `<div class="acc-fila"><span class="acc-d"><code>${sku}</code> — ${a.d}</span>`
-      +`<span class="acc-p">${a.p!=null?('$ '+a.p.toLocaleString('en-US')):'consultar'}</span>`
-      +`<input type="number" min="0" step="1" value="${qty}" data-acc="${sku}" aria-label="Cantidad ${sku}"></div>`;
+    const forzado=sku==='S2N67A'&&exigeNvme;
+    return `<div class="acc-fila"><span class="acc-d"><code>${sku}</code> — ${esc(a.name)}`
+      +`<span class="sku" style="display:block;margin-top:2px">${esc(accEtiquetas(a))}${forzado?' · <b>requerido por Boost</b>':''}</span></span>`
+      +`<span class="acc-p">${a.listPrice!=null?('$ '+a.listPrice.toLocaleString('en-US')):'consultar'}</span>`
+      +`<input type="number" min="${forzado?1:0}" step="1" value="${forzado?Math.max(1,qty):qty}" data-acc="${sku}" aria-label="Cantidad ${sku}"></div>`;
   }).join('');
 }
 $('accBtn').addEventListener('click',()=>{
-  const m=MODELS.find(x=>x.id===$('pickModel').value);
-  if(!m||!ACCESORIOS_POR_MODELO[m.id]) return;
+  const m=modeloActual();
+  if(!m||!ACCESSORY_COMPAT[m.id]) return;
   pintarAccModal(m);
   $('accModal').hidden=false;
 });
@@ -127,7 +139,9 @@ $('accModal').addEventListener('click',e=>{ if(e.target===$('accModal')) $('accM
 $('accLista').addEventListener('input',e=>{
   const sku=e.target.dataset&&e.target.dataset.acc;
   if(!sku) return;
-  const n=Math.max(0,parseInt(e.target.value)||0);
+  let n=Math.max(0,parseInt(e.target.value)||0);
+  // La línea NVMe forzada por Boost no baja de 1 mientras Boost siga activo.
+  if(sku==='S2N67A'&&nvmeAutoActivo&&n<1){ n=1; e.target.value='1'; }
   if(n>0) accesoriosElegidos[sku]=n; else delete accesoriosElegidos[sku];
   renderBom();
 });
@@ -1258,18 +1272,21 @@ function renderBom(){
     {cat:'Equipo', desc:m.id, sku:m.hwSku||null, qty, unit:m.elpN!=null?m.elpN:null,
      nota:`${m.seg} · ${famLabel(m)} · ${m.ifaces}`},
   ];
-  // Ópticas y accesorios (fase 11): solo los compatibles con el modelo elegido — la
-  // seleccion se depura al cambiar de equipo para no cotizar una optica incompatible.
-  const cfgAcc=ACCESORIOS_POR_MODELO[m.id]||null;
+  // Ópticas y accesorios (fase 12): catálogo maestro del servidor; solo los compatibles
+  // con el modelo elegido — la selección se depura al cambiar de equipo para no cotizar
+  // una óptica incompatible. Después se sincroniza el kit NVMe que Boost exige.
+  const cfgAcc=ACCESSORY_COMPAT[m.id]||null;
   Object.keys(accesoriosElegidos).forEach(sku=>{
     if(!cfgAcc||!cfgAcc.items.includes(sku)) delete accesoriosElegidos[sku];
   });
+  sincronizarNvmeBoost();
   $('accBtn').hidden=!cfgAcc;
   Object.entries(accesoriosElegidos).forEach(([sku,n])=>{
-    const a=ACCESORIOS[sku];
+    const a=ACCESSORY_CATALOG[sku];
     if(!a||n<=0) return;
-    filas.push({cat:'Accesorios', desc:a.d, sku, qty:n, unit:a.p!=null?a.p:null,
-      nota:'List Price de partner autorizado HPE (2026-09-13) — HPE no publica List oficial de transceptores; confirmar precio firme con el distribuidor'});
+    filas.push({cat:'Accesorios', desc:a.name, sku, qty:n, unit:a.listPrice!=null?a.listPrice:null,
+      nota:(sku==='S2N67A'&&nvmeAutoActivo?'Kit NVMe obligatorio para Boost (almacén de deduplicación) — añadido automáticamente. ':'')
+        +'List Price HPE — catálogo maestro de accesorios (2026-09-13); confirmar precio firme con el distribuidor'});
   });
   if(esEC){
     if(bundle){
@@ -1426,7 +1443,7 @@ function renderBom(){
      líneas «consultar» (DTD, SSE, EC-V, FC de gateways) no entran en la suma — se
      declara. El TCO se calcula a 1/3/5 años con el precio de cada término. */
   const capexList=(m.elpN!=null?m.elpN*qty:0)
-    +Object.entries(accesoriosElegidos).reduce((s,[sku,n])=>s+(ACCESORIOS[sku]&&ACCESORIOS[sku].p!=null?ACCESORIOS[sku].p*n:0),0)
+    +Object.entries(accesoriosElegidos).reduce((s,[sku,n])=>s+(ACCESSORY_CATALOG[sku]&&ACCESSORY_CATALOG[sku].listPrice!=null?ACCESSORY_CATALOG[sku].listPrice*n:0),0)
     +(capTier&&capTier.code!=='hw'&&capTier.elp!=null?capTier.elp*qty:0);
   const opexDe=t=>{
     let s=0;
@@ -1724,6 +1741,8 @@ async function compararListaPrecios(archivo){
   CENTRAL = data.centralTiers || {};
   DATASHEETS = data.datasheets || {};
   OS_MATRIX = data.osMatrix || null;
+  ACCESSORY_CATALOG = data.accessories || {};
+  ACCESSORY_COMPAT = data.accessoryCompat || {};
 
   // La ficha ya no pide referencias (van integradas en el BOM), así que el fabricante se
   // declara aquí: es lo que permite que la lista de materiales muestre solo lo de Aruba.

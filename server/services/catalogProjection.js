@@ -375,6 +375,8 @@ async function toDimensionadorAruba() {
       fec: arubaData.FEC_OVERHEAD,
     },
     osMatrix: arubaData.OS_MATRIX || null,
+    accessories: arubaData.ARUBA_ACCESSORY_CATALOG || {},
+    accessoryCompat: arubaData.ACCESSORY_COMPAT || {},
   };
 }
 

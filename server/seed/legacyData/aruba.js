@@ -808,7 +808,84 @@ const LICENSES_HA = {
   },
 };
 
+// ── Catálogo maestro de accesorios (fase 12, 2026-09-13) ─────────────────────
+// Transcrito VERBATIM del brief del dueño («Actúa como un Ingeniero Principal de
+// Software Full-Stack…», sección 1.1 ARUBA_ACCESSORY_CATALOG). Es la fuente que
+// GOBIERNA la compatibilidad y la cotización de accesorios — sustituye a los precios
+// de partner autorizado usados en la fase 11 (E3), que eran provisionales porque HPE
+// no publica List oficial de transceptores. Discrepancias documentadas (partner →
+// dueño): J4858D $480 → $271 · J9150D $1.454 → $859 · J9281D $164 → $115 · la 2ª PSU
+// del 9240 pasa de R7J63A ($721) a R1C72A ($890), que es el SKU que el dueño declara.
+// Queda en PENDIENTES.md confirmar con el distribuidor cuál de las dos PSU aplica.
+const ARUBA_ACCESSORY_CATALOG = {
+  // Transceptores 1G SFP (Cobre y Fibra)
+  "S3R03A": { name: "HPE Aruba Networking EdgeConnect 1G SFP RJ45 100m Cat5e XCVR", speed: "1G", media: "COPPER", reach: "100m", listPrice: 260.00 },
+  "S1H24A": { name: "HPE Aruba Networking 9240 1G SFP RJ45 T 100m Cat5e XCVR", speed: "1G", media: "COPPER", reach: "100m", listPrice: 260.00 },
+  "J4858D": { name: "HPE Aruba Networking 1G SFP LC SX 500m OM2 MMF XCVR", speed: "1G", media: "MMF", reach: "500m", listPrice: 271.00 },
+  "J4859D": { name: "HPE Aruba Networking 1G SFP LC LX 10km SMF XCVR", speed: "1G", media: "SMF", reach: "10km", listPrice: 419.00 },
+  "J4860D": { name: "HPE Aruba Networking 1G SFP LC LH 70km SMF XCVR", speed: "1G", media: "SMF", reach: "70km", listPrice: 1250.00 },
+  "JL745A": { name: "HPE Aruba Networking 1G SFP LC SX 500m MMF TAA XCVR", speed: "1G", media: "MMF_TAA", reach: "500m", listPrice: 315.00 },
+  "JL746A": { name: "HPE Aruba Networking 1G SFP LC LX 10km SMF TAA XCVR", speed: "1G", media: "SMF_TAA", reach: "10km", listPrice: 480.00 },
+  // Transceptores y Cables Twinax 10G SFP+
+  "J9150D": { name: "HPE Aruba Networking 10G SFP+ LC SR 300m OM3 MMF XCVR", speed: "10G", media: "MMF", reach: "300m", listPrice: 859.00 },
+  "J9151E": { name: "HPE Aruba Networking 10G SFP+ LC LR 10km SMF XCVR", speed: "10G", media: "SMF", reach: "10km", listPrice: 1981.00 },
+  "J9153D": { name: "HPE Aruba Networking 10G SFP+ LC ER 40km SMF XCVR", speed: "10G", media: "SMF", reach: "40km", listPrice: 3850.00 },
+  "JL747A": { name: "HPE Aruba Networking 10G SFP+ LC SR 300m OM3 MMF TAA XCVR", speed: "10G", media: "MMF_TAA", reach: "300m", listPrice: 990.00 },
+  "JL748A": { name: "HPE Aruba Networking 10G SFP+ LC LR 10km SMF TAA XCVR", speed: "10G", media: "SMF_TAA", reach: "10km", listPrice: 2280.00 },
+  "J9281D": { name: "HPE Aruba Networking 10G SFP+ to SFP+ 1m DAC Cable", speed: "10G", media: "DAC", reach: "1m", listPrice: 115.00 },
+  "J9283D": { name: "HPE Aruba Networking 10G SFP+ to SFP+ 3m DAC Cable", speed: "10G", media: "DAC", reach: "3m", listPrice: 163.00 },
+  "J9285D": { name: "HPE Aruba Networking 10G SFP+ to SFP+ 7m DAC Cable", speed: "10G", media: "DAC", reach: "7m", listPrice: 249.00 },
+  // Transceptores y DACs 25G SFP28 (EC-10150 y Gateway 9240)
+  "JL484A": { name: "HPE Aruba Networking 25G SFP28 LC SR 100m MMF XCVR", speed: "25G", media: "MMF", reach: "100m", listPrice: 1299.00 },
+  "JL485A": { name: "HPE Aruba Networking 25G SFP28 LC eSR 400m MMF XCVR", speed: "25G", media: "MMF", reach: "400m", listPrice: 1650.00 },
+  "JL486A": { name: "HPE Aruba Networking 25G SFP28 LC LR 10km SMF XCVR", speed: "25G", media: "SMF", reach: "10km", listPrice: 2600.00 },
+  "JL487A": { name: "HPE Aruba Networking 25G SFP28 to SFP28 0.65m DAC Cable", speed: "25G", media: "DAC", reach: "0.65m", listPrice: 120.00 },
+  "JL488A": { name: "HPE Aruba Networking 25G SFP28 to SFP28 3m DAC Cable", speed: "25G", media: "DAC", reach: "3m", listPrice: 190.00 },
+  "JL489A": { name: "HPE Aruba Networking 25G SFP28 to SFP28 5m DAC Cable", speed: "25G", media: "DAC", reach: "5m", listPrice: 260.00 },
+  // Almacenamiento NVMe Boost, Fuentes Redundantes y Racks
+  "S2N67A": { name: "HPE Aruba Networking EC 10010 NM Drive Kit (2x 1.6TB NVMe)", category: "STORAGE_BOOST", listPrice: 7146.00 },
+  "R1C72A": { name: "HPE Aruba Networking 9240 550W Secondary AC Power Supply", category: "PSU", listPrice: 890.00 },
+  "R1B23A": { name: "Aruba 9004-MNT-19 19-inch Rack Mount Kit", category: "MOUNT", listPrice: 120.00 },
+  "R1B24A": { name: "Aruba 9012-MNT-19 19-inch Rack Mount Kit", category: "MOUNT", listPrice: 140.00 },
+  "JW084A": { name: "Aruba AP-CBL-SERU Micro-USB/USB-C to RJ45 Console Cable", category: "CABLE", listPrice: 45.00 }
+};
+
+// Matriz modelo → accesorios ofertables. Procedencia de cada regla:
+//   · VSG EdgeConnect oficial (fase 11): las ópticas 1G de fibra (J4858D/J4859D) solo se
+//     certifican en EC-10106; 10G (J9150D/J9151E) y DAC 10G (J9281D/J9283D) en
+//     EC-10106/10108/10150; EC-10104 no tiene ranuras SFP; 9240 = 4x SFP28.
+//   · Brief del dueño (fase 12): 25G SFP28 → «EC-10150 y Gateway 9240»; S1H24A → 9240;
+//     R1C72A → 9240; R1B23A → 9004; R1B24A → 9012; S2N67A → kit NVMe Boost.
+//   · Inferencia por familia (marcada): J4860D y las variantes TAA (JL745A/JL746A) van
+//     donde van los 1G; J9153D, JL747A/JL748A y J9285D donde van los 10G; S3R03A (1G
+//     cobre EdgeConnect) sigue la regla 1G del VSG. Confirmar con el distribuidor.
+//   · S2N67A solo en EC-10106/10108: el EC-10150 ya lleva 2 SSD NVMe de sistema de
+//     fábrica (QuickSpecs) y los EC-XS/S/M/L/XL usan otro kit fuera de este catálogo.
+//   · JW084A (consola) se ofrece en todo el hardware; el EC-V es virtual.
+const ACCESSORY_COMPAT = {
+  'EC-10106': { items: ['S3R03A','J4858D','J4859D','J4860D','JL745A','JL746A','J9150D','J9151E','J9153D','JL747A','JL748A','J9281D','J9283D','J9285D','S2N67A','JW084A'],
+    nota: '2 ranuras SFP 1G + 2 SFP+ 10G (VSG). Fuente externa única: sin opción de 2ª PSU. Boost exige el kit NVMe S2N67A.' },
+  'EC-10108': { items: ['J9150D','J9151E','J9153D','JL747A','JL748A','J9281D','J9283D','J9285D','S2N67A','JW084A'],
+    nota: '4 ranuras SFP+ 10G (VSG) — la tabla oficial NO certifica ópticas 1G en este modelo. Fuente externa única: sin opción de 2ª PSU. Boost exige el kit NVMe S2N67A.' },
+  'EC-10150': { items: ['J9150D','J9151E','J9153D','JL747A','JL748A','J9281D','J9283D','J9285D','JL484A','JL485A','JL486A','JL487A','JL488A','JL489A','JW084A'],
+    nota: '8 ranuras SFP+/SFP28 1/10/25G (VSG). Lleva 2 PSU redundantes y 2 SSD NVMe de sistema de fábrica: ni 2ª fuente ni kit Boost.' },
+  'Gateway 9004': { items: ['R1B23A','JW084A'],
+    nota: 'Sin ranuras SFP. Kit de rack 19" R1B23A.' },
+  'Gateway 9012': { items: ['R1B24A','JW084A'],
+    nota: 'Sin ranuras SFP. Kit de rack 19" R1B24A.' },
+  'Gateway 9240': { items: ['S1H24A','JL484A','JL485A','JL486A','JL487A','JL488A','JL489A','R1C72A','JW084A'],
+    nota: '4 ranuras SFP28 1/10/25G (datasheet). 1+1 PSU: la 2ª fuente es la R1C72A (550 W). Ópticas 25G y cobre 1G S1H24A según catálogo maestro.' },
+};
+// Consola universal: todo el hardware que no tiene regla propia la ofrece (el EC-V es
+// virtual y no la necesita). Los legacy 7000/7200 quedan fuera: usan otro cable.
+for (const m of MODELS) {
+  if (!ACCESSORY_COMPAT[m.id] && m.fam === 'ec' && m.id !== 'EC-V') {
+    ACCESSORY_COMPAT[m.id] = { items: ['JW084A'], nota: 'Sin matriz de ópticas en el catálogo maestro para este modelo — solo cable de consola. Confirmar transceptores con el distribuidor.' };
+  }
+}
+
 module.exports = {
   MODELS, BUNDLES, CARE, CARE_SKU, LICENSES, LICENSES_HA, BW_TIERS, BOOST, FEC_OVERHEAD,
   SOFTWARE, CENTRAL_TIERS, DATASHEETS, EOL_ANNOUNCED, OS_MATRIX,
+  ARUBA_ACCESSORY_CATALOG, ACCESSORY_COMPAT,
 };
