@@ -290,6 +290,7 @@ const MODELS = [
    ifaces:'4x GbE RJ45', hwSku:'R1B20A', skus:[{sku:'R1B20A',d:'9004 (US) · 4x GbE RJ45'}],
    spec:{aps10:'128', cps:'130.000 sesiones nuevas/s', cluster:'Hasta 4 gateways por cluster · 8.192 clientes por cluster (AOS 10)',
      vlanMax:'4.094', ospf:'8.000 rutas', acls:'2.678 entradas', dhcp:'4.000 clientes', bridge:'64.000 entradas',
+     fwSessSdwan:'64.000 sesiones activas de firewall en modo SD-WAN (doc oficial HPE a00099294en_us) — en conflicto con las 128.000 del datasheet AOS 10, ver PENDIENTES',
      ruido:'0 dBA (sin ventilador)', watts:'25 W máx.', dims:'3,82 × 19,85 × 15,31 cm', peso:'1,143 kg'},
    ds:'https://www.hpe.com/psnow/doc/a00091602enw', dsFile:'gateway-9004.pdf'},
 
@@ -309,6 +310,7 @@ const MODELS = [
    skus:[{sku:'R1B31A',d:'9012 (US) · 12x GbE · 6x PoE+'},{sku:'R1B37A',d:'9012 (RW) TAA · 12x GbE · 6x PoE+'}],
    spec:{aps10:'256', cps:'130.000 sesiones nuevas/s', cluster:'Hasta 4 gateways por cluster · 8.192 clientes por cluster (AOS 10)',
      vlanMax:'4.094', ospf:'8.000 rutas', acls:'2.678 entradas', dhcp:'4.000 clientes', bridge:'64.000 entradas',
+     fwSessSdwan:'64.000 sesiones activas de firewall en modo SD-WAN (doc oficial HPE a00099294en_us) — en conflicto con las 128.000 del datasheet AOS 10, ver PENDIENTES',
      ruido:'29,1 – 63,5 dBA', watts:'160 W máx. (incluye 120 W de presupuesto PoE)', dims:'4,37 × 39,5 × 26 cm', peso:'3,42 kg'},
    ds:'https://www.arubanetworks.com/assets/ds/DS_9000Series.pdf', dsFile:'serie-9000-branch-gateways.pdf'},
 
@@ -515,26 +517,36 @@ for (const m of MODELS) {
 //   · La salida directa a Internet con First-packet iQ y el service chaining a SSE son
 //     capacidades de PLATAFORMA (QuickSpecs p.4 y p.12), no un distintivo de nivel: la
 //     matriz oficial no los vincula a Advanced. Se retira esa afirmación del texto.
+//   Precisiones VSG/data sheet de suscripciones (validadas 2026-09-13, fase 10):
+//   · Foundation son exactamente 2 VRF (default y guest), no «un número limitado».
+//   · AppExpress: Foundation solo MONITORA; el steering de aplicaciones por AppExpress
+//     es Advanced/On-Prem. El steering básico por BIO (tunnel bonding/DPC) sí es común
+//     a todos los niveles — por eso DPC no fuerza Advanced.
+//   · On-Prem solo existe como «Advanced On-Prem» (no hay Foundation On-Prem) e INCLUYE
+//     el software de Orchestrator on-prem; el cliente aporta el alojamiento (VM, uptime,
+//     backup y actualizaciones) — data sheet a50010073enw.
 const BUNDLES = {
   foundation: {
     n: 'EdgeConnect Foundation',
     svcs: 'Funciones SD-WAN esenciales más TODAS las capacidades NGFW avanzadas: steering dinámico por SLA '
       + '(Dynamic Path Control), tunnel bonding, Path Conditioning (FEC y corrección de orden), firewall '
-      + 'con estado y Orchestrator cloud (Foundation OaaS). Hasta 3 Business Intent Overlays, número '
-      + 'limitado de VRFs, topología hub-and-spoke (4 hubs por región), QoS esencial y retención '
-      + 'fundamental de datos. Tiers: 100 Mbps, 1 Gbps e ilimitado.',
+      + 'con estado y Orchestrator cloud (Foundation OaaS). Hasta 3 Business Intent Overlays, 2 VRF '
+      + '(default y guest), topología hub-and-spoke (4 hubs por región), QoS esencial y retención '
+      + 'fundamental de datos. AppExpress en modo solo monitor. Tiers: 100 Mbps, 1 Gbps e ilimitado.',
   },
   advanced: {
     n: 'EdgeConnect Advanced',
     svcs: 'Todo Foundation más las funciones SD-WAN avanzadas: topología ilimitada, 64 VRFs y hasta 7 '
       + 'Business Intent Overlays (segmentación multi-overlay real), QoS avanzada, retención ampliada '
-      + 'de datos y Orchestrator cloud (Advanced OaaS). Tiers más finos: 20/50/100/200/500 Mbps, '
-      + '1/2 Gbps e ilimitado. OJO: HPE no admite mezclar niveles en un mismo fabric.',
+      + 'de datos, AppExpress con steering de aplicaciones y Orchestrator cloud (Advanced OaaS). '
+      + 'Tiers más finos: 20/50/100/200/500 Mbps, 1/2 Gbps e ilimitado. OJO: HPE no admite mezclar '
+      + 'niveles en un mismo fabric.',
   },
   onprem: {
     n: 'EdgeConnect On-Premises',
-    svcs: 'Variante para despliegues donde el Orchestrator vive en la infraestructura del cliente en lugar '
-      + 'de consumirse como servicio. Mismo alcance funcional; cambia el modelo de entrega y de consumo.',
+    svcs: 'Existe solo como «Advanced On-Prem» (no hay Foundation On-Prem): mismo alcance funcional '
+      + 'que Advanced e INCLUYE el software de Orchestrator on-prem; el cliente aporta el alojamiento '
+      + '(VM, disponibilidad, backup y actualizaciones). Cambia el modelo de entrega y de consumo.',
   },
 };
 
@@ -597,10 +609,16 @@ const BOOST = {
 // retransmisión, que es lo que permite sustituir MPLS por banda ancha o 5G manteniendo SLA
 // de aplicación. Cuesta ancho de banda: se suma al caudal, no se descuenta.
 // Los porcentajes son supuestos de trabajo de esta herramienta, no cifras publicadas.
+// Overhead de Path Conditioning (FEC). Anclas oficiales del VSG SD-Branch de HPE
+// (validadas 2026-09-13): ratio 1:8 = 12,5 % para aplicaciones en tiempo real y 1:4 = 25 %
+// para VoIP; el FEC de EdgeConnect es ADAPTATIVO — sin pérdida medida no genera overhead—,
+// y la política HA (1:1 = 50 % de caudal efectivo) NO se ofrece aquí porque la propia guía
+// la reserva para tráfico estrictamente de tiempo real. Satélite Starlink/LEO es transporte
+// soportado según la misma guía.
 const FEC_OVERHEAD = {
-  off:  {n:'Desactivado', pct:0,    d:'Enlaces limpios: MPLS dedicado o fibra sin pérdida medida.'},
-  auto: {n:'Automático',  pct:0.10, d:'Orchestrator ajusta la paridad según la pérdida medida. Es el modo habitual.'},
-  alto: {n:'Agresivo',    pct:0.25, d:'Enlaces con pérdida alta o variable: LTE/5G, satelital, banda ancha residencial.'},
+  off:  {n:'Desactivado', pct:0,    d:'Enlaces limpios: MPLS dedicado o fibra sin pérdida medida. Con FEC adaptativo, un enlace sin pérdida tampoco genera overhead.'},
+  auto: {n:'Automático',  pct:0.10, d:'Orchestrator ajusta la paridad según la pérdida medida. Es el modo habitual. Ancla oficial: ratio 1:8 = 12,5 % (VSG); el motor estima 10 % como caso típico.'},
+  alto: {n:'Agresivo',    pct:0.25, d:'Enlaces con pérdida alta o variable: LTE/5G, satelital (Starlink/LEO soportado según el VSG), banda ancha residencial. Ancla oficial: ratio 1:4 = 25 % para VoIP.'},
 };
 
 // ── Software del portafolio ──────────────────────────────────────────────────

@@ -71,6 +71,16 @@ $('chkBoost').addEventListener('change',()=>{
   }
   render();
 });
+// Dynamic Threat Defense tambien es funcion EdgeConnect (QuickSpecs p.32), no de los
+// gateways: misma regla que Boost — pedirlo con el filtro en gateways moveria a una
+// lista vacia, asi que el filtro acompaña a la funcion.
+$('chkDtd').addEventListener('change',()=>{
+  if($('chkDtd').checked&&famMode!=='ec'&&famMode!=='any'){
+    famMode='ec';
+    [...$('famSeg').children].forEach(x=>x.setAttribute('aria-pressed',x.dataset.v==='ec'));
+  }
+  render();
+});
 $('chkHa').addEventListener('change',()=>{
   const q=$('qty');
   if($('chkHa').checked){ if((parseInt(q.value)||1)<2) q.value=2; }
@@ -188,6 +198,7 @@ const SPEC_LABELS=[
   ['dhcp','Clientes DHCP'],
   ['bridge','Tabla de bridge'],
   ['cps','Sesiones nuevas por segundo'],
+  ['fwSessSdwan','Sesiones de firewall en modo SD-WAN'],
   ['cluster','Clustering'],
   ['aps10','APs máx. (AOS 10)'],
   ['lte','Módem LTE integrado'],
@@ -243,10 +254,13 @@ const FLUJOS_POR_USUARIO={estandar:100, intensivo:200};
 function nivelAutoEC(){
   return ($('chkSeg').checked||$('chkTopo').checked||$('chkAiops').checked)?'advanced':'foundation';
 }
-// En gateways el nivel lo fija Central: Advanced añade analítica/AIOps y las capacidades
-// de seguridad del nivel superior (SD-WAN Gateways Ordering Guide, ver CENTRAL_TIERS).
+// En gateways el nivel lo fija Central: Advanced añade analítica/AIOps y retención
+// ampliada sobre la gestión completa que ya trae Foundation (SD-WAN Gateways Ordering
+// Guide, ver CENTRAL_TIERS). Dynamic Threat Defense NO alimenta esta deducción desde
+// 2026-09-13 (fase 10): es una licencia EdgeConnect (QuickSpecs p.32), no de gateway —
+// marcarla mueve el filtro de familia a EdgeConnect.
 function nivelAutoCentral(){
-  return ($('chkSeg').checked||$('chkAiops').checked||$('chkDtd').checked)?'advanced':'foundation';
+  return ($('chkSeg').checked||$('chkAiops').checked)?'advanced':'foundation';
 }
 // Por qué se dedujo ese nivel, en lenguaje de preventa (lo muestra el panel 4 y la ficha).
 function porqueNivelEC(nivel){
@@ -260,7 +274,9 @@ function porqueNivelEC(nivel){
 }
 
 // Mbps de Boost necesarios: el 30 % del tráfico WAN PRIVADO (regla de preventa declarada
-// por la arquitectura, 2026-09-13). Como tráfico WAN privado se toma el caudal que los
+// por la arquitectura, 2026-09-13 — HPE no publica porcentaje guía; la única regla de
+// campo localizada, no oficial, sugiere 40 %: queda documentada la discrepancia y manda
+// la regla declarada del dueño). Como tráfico WAN privado se toma el caudal que los
 // enlaces transportan ANTES de la reducción de Boost —que es el tráfico que el motor de
 // optimización procesa—: needProc con la paridad FEC. En Cloud-First no se modela el % de
 // salida local DIA (la herramienta no inventa el reparto): aplicar el 30 % sobre ese
@@ -311,6 +327,47 @@ function estadoDerivado(){
   const bloques=(boost&&bundle)?bloquesBoost(boostMbpsAuto(needProc,fec)):0;
   return {bw,unit,users,aps,perUser,head,boost,fec,perfil,needProc,wanNeed,
     tasaFlujos,flujosReq,tier,onprem,bundle,central,termYrs,care,qty,bloques};
+}
+
+/* ══ REVISIÓN DEL DISEÑO (par técnico automático, 2026-09-13 fase 10) ══
+   Reglas declarativas de coherencia: cada función activable del formulario llama su
+   licencia y su cálculo, y las combinaciones imposibles o que hay que saber defender se
+   declaran en la lista de materiales — el portal no solo cotiza, revisa el diseño como
+   lo haría un arquitecto de soluciones antes de que la propuesta salga al cliente.
+   ROJO = incoherencia que hay que corregir; AVISO = decisión legítima que hay que poder
+   defender; si no hay hallazgos, el diseño se declara coherente. */
+const REGLAS_DISENO=[
+  {nivel:'rojo', cuando:(D,m)=>m.fam==='ec'&&D.flujosReq>0&&flujosDe(m)!=null&&flujosDe(m)<D.flujosReq,
+   texto:(D,m)=>`Flujos insuficientes: ${m.id} publica ${miles(flujosDe(m))} flujos simultaneos y el escenario estima ${miles(D.flujosReq)} (${miles(D.users)} usuarios x ${D.tasaFlujos}/usuario). El recomendado del dimensionador si los cumple.`},
+  {nivel:'rojo', cuando:(D,m)=>m.fam==='ec'&&m.wanMax!=null&&D.wanNeed>m.wanMax,
+   texto:(D,m)=>`Caudal WAN insuficiente: ${m.id} publica hasta ${fmt(m.wanMax)} y los enlaces necesitan ${fmt(D.wanNeed)}.`},
+  {nivel:'rojo', cuando:(D,m)=>m.fam!=='ec'&&m.fw!=null&&D.needProc>m.fw,
+   texto:(D,m)=>`Proceso insuficiente: ${m.id} publica ${fmt(m.fw)} de firewall y el escenario necesita ${fmt(D.needProc)}.`},
+  {nivel:'rojo', cuando:(D,m)=>m.fam==='ec'&&$('chkHa').checked&&D.qty!==2,
+   texto:(D,m)=>`HA 1+1 exige exactamente 2 unidades identicas y la cantidad es ${D.qty}: ajusta la cantidad o desmarca HA.`},
+  // IDS/IPS no corre en EC-XS (doc oficial Orchestrator/IDS: PN 200889/200900 sin soporte;
+  // en EC-V exige min. 4 vCPU y 16 GB RAM). Marcar DTD con un EC-XS seleccionado es un
+  // diseno imposible — hay que subir de modelo o quitar la funcion.
+  {nivel:'rojo', cuando:(D,m)=>m.id==='EC-XS'&&$('chkDtd').checked,
+   texto:()=>'Dynamic Threat Defense (IDS/IPS) NO corre en EC-XS segun la documentacion oficial de HPE: sube de modelo (EC-10104 en adelante) o desmarca la inspeccion avanzada.'},
+  {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&D.boost&&!D.bundle,
+   texto:()=>'Boost marcado pero EXCLUIDO: es un add-on de la suscripcion EdgeConnect — sin ella no hay fabric que optimizar.'},
+  {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&$('chkDtd').checked&&!D.bundle,
+   texto:()=>'Dynamic Threat Defense marcado pero EXCLUIDO: es licencia aparte, pero DE la suscripcion — sin ella no se licencia.'},
+  {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&D.bundle==='onprem',
+   texto:()=>'Modalidad On-Premises: requiere Unity Orchestrator auto-alojado (VM del cliente) — sin SKU en la lista de precios: consultar.'},
+  {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&D.onprem&&$('chkHa').checked&&D.qty===2,
+   texto:()=>'Par HA on-prem cotizado 2x estandar: la equivalencia de los SKU HA E-STU no esta confirmada en las fuentes consultadas (PENDIENTES #17).'},
+  {nivel:'aviso', cuando:(D,m)=>m.id==='EC-V',
+   texto:()=>'EC-V es un appliance virtual: sin soporte de hardware (el hipervisor corre por cuenta del cliente) y su caudal lo fijan la licencia y los vCPU asignados.'},
+  {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&m.wanMin!=null&&D.wanNeed>0&&D.wanNeed<m.wanMin,
+   texto:(D,m)=>`Sobredimensionamiento: ${m.id} publica un suelo de ${fmt(m.wanMin)} y los enlaces solo necesitan ${fmt(D.wanNeed)} — un modelo menor sostiene el sitio y baja el tier de la suscripcion.`},
+];
+function revisionDiseno(D,m){
+  const h=REGLAS_DISENO.filter(r=>r.cuando(D,m)).map(r=>({nivel:r.nivel,texto:r.texto(D,m)}));
+  h.sort((a,b)=>(a.nivel==='rojo'?0:1)-(b.nivel==='rojo'?0:1));
+  if(!h.length) h.push({nivel:'ok',texto:'Diseno coherente: cada funcion activada tiene su licencia y su calculo, y el modelo cubre el caudal y los flujos estimados.'});
+  return h;
 }
 
 function render(){
@@ -473,10 +530,10 @@ function render(){
     if($('chkDtd').checked) flags.push('<b>Dynamic Threat Defense:</b> IDS/IPS, DDoS adaptativo y clasificación web son una licencia opcional APARTE de Foundation y Advanced (QuickSpecs p.32). Entra en la lista de materiales como «consultar»: no está en la lista de precios.');
     if(m.legacy) flags.push('<b class="warn">Línea anterior (AOS 8):</b> las series 7000 y 7200 siguen en canal y son la respuesta natural para <b>ampliar un parque ya instalado</b>, pero para un despliegue nuevo conviene contrastar con la generación actual (series 9000/9100/9200 sobre AOS 10).');
     if(m.fam==='gw'&&m.rol==='sucursal'&&!m.legacy) flags.push(`<b>Sucursal:</b> el mismo equipo termina la WAN y hace de controladora de APs (hasta ${miles(m.aps)}), aplicando Dynamic Segmentation con el rol que traen el switch CX o el AP. No hace optimización WAN.`);
-    if(m.fam==='gw') flags.push(`<b>Central ${nivelAutoCentral()==='advanced'?'Advanced':'Foundation'}:</b> ${nivelAutoCentral()==='advanced'?'deducido de las funciones marcadas (segmentación, AIOps o inspección avanzada)':'gestión, monitorización y configuración — sin funciones que fuercen el nivel superior'}.`);
+    if(m.fam==='gw') flags.push(`<b>Central ${nivelAutoCentral()==='advanced'?'Advanced':'Foundation'}:</b> ${nivelAutoCentral()==='advanced'?'deducido de las funciones marcadas (segmentación de extremo a extremo o AIOps ampliada)':'gestión SD-Branch completa — firewall, VPN y políticas por aplicación ya son Foundation, sin funciones que fuercen el nivel superior'}.`);
     if(m.licCap&&nivel) flags.push(`<b>Capacidad por licencia:</b> escala sin cambiar de hardware. Para ${fmt(req)} hace falta el nivel <b>${esc(nivel.n)}</b> (${fmt(nivel.fw)}, ${miles(nivel.aps)} APs, ${miles(nivel.clients)} dispositivos).`);
     if($('chkHa').checked) flags.push(m.fam==='ec'&&!D.onprem
-      ?'<b>HA 1+1:</b> el par se cotiza 1× suscripción estándar + 1× suscripción de alta disponibilidad para el segundo nodo (SKU «HA» propio, mismo precio — QuickSpecs).'
+      ?'<b>HA 1+1:</b> el par se cotiza 1× suscripción estándar + 1× suscripción de alta disponibilidad para el segundo nodo (SKU «HA» propio del QuickSpecs; la lista de precios documentada lo tarifa igual que el estándar).'
       :'<b>HA:</b> se cotizan 2 unidades y cada una lleva su propia suscripción de sitio.');
     return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
       <li>Requerimiento <b>${fmt(req)}</b> contra capacidad <b>${fmt(cap)}</b> — headroom ${Math.round((1-req/cap)*100)}%</li>
@@ -589,11 +646,16 @@ function render(){
 
     const soft=(SOFTWARE||[]).map(sw=>[esc(sw.id), esc(sw.cat)]);
 
-    const soporte=care
-      ?{titulo:'Soporte', filas:[[esc(CARE[care].n), esc(CARE[care].sla)]],
-        nota:`${esc(CARE[care].d)} ${termino} · ${unidades===2?'2 unidades (par HA)':'1 unidad'}. Su SKU y su precio están integrados en la lista de materiales.`}
-      :{titulo:'Soporte', filas:[],
-        nota:'<b>No incluido.</b> Sin soporte activo no hay repuestos con SLA ni acceso al TAC de HPE — elige un nivel para añadirlo a la lista de materiales.'};
+    // EC-V es virtual (fase 10): el soporte de hardware no aplica — la suscripción ya
+    // incluye el soporte de software y el hipervisor corre por cuenta del cliente.
+    const soporte=m.id==='EC-V'
+      ?{titulo:'Soporte', filas:[],
+        nota:'<b>No aplica el soporte de hardware.</b> EC-V es un appliance virtual: la suscripción incluye el soporte de software (TAC y actualizaciones) y el hipervisor corre por cuenta del cliente.'}
+      :(care
+        ?{titulo:'Soporte', filas:[[esc(CARE[care].n), esc(CARE[care].sla)]],
+          nota:`${esc(CARE[care].d)} ${termino} · ${unidades===2?'2 unidades (par HA)':'1 unidad'}. Su SKU y su precio están integrados en la lista de materiales.`}
+        :{titulo:'Soporte', filas:[],
+          nota:'<b>No incluido.</b> Sin soporte activo no hay repuestos con SLA ni acceso al TAC de HPE — elige un nivel para añadirlo a la lista de materiales.'});
 
     return [
       capacidadPublicadaDe(m),
@@ -603,7 +665,7 @@ function render(){
       {titulo:'Suscripción y licencias',
        filas:[['Unidades a licenciar', unidades===2
          ?(esEC&&!D.onprem
-           ?'2 — 1× suscripción estándar + 1× SKU de alta disponibilidad para el segundo nodo (mismo precio, QuickSpecs)'
+           ?'2 — 1× suscripción estándar + 1× SKU de alta disponibilidad para el segundo nodo (la lista de precios documentada lo tarifa igual que el estándar)'
            :'2 — cada nodo del par lleva la suya')
          :'1']],
        html:`<ul class="clean">${licUl}</ul>`,
@@ -731,9 +793,14 @@ function renderBom(){
   const bloques=D.bloques;
 
   const esEC=m.fam==='ec', esGwc=!!m.licCap;
+  // EC-V es un appliance virtual (2026-09-13, fase 10): el soporte de hardware no aplica
+  // —el hipervisor corre por cuenta del cliente y la suscripción ya incluye el soporte de
+  // software—, así que el nivel CARE se oculta y su fila no entra en la lista.
+  const esVirtual=m.id==='EC-V';
   // Los paneles de licenciamiento que no aplican a la familia elegida se ocultan, en vez
   // de dejar que alguien cotice una suscripción EdgeConnect sobre un gateway.
   $('fldSub').hidden=!esEC; $('fldCentral').hidden=esEC; $('fldCapTier').hidden=!esGwc;
+  $('fldCare').hidden=esVirtual;
 
   const termino=`término ${termYrs} año${termYrs>1?'s':''}`;
   const capTier=esGwc&&m.licCap
@@ -754,8 +821,8 @@ function renderBom(){
     $('centralAutoTxt').innerHTML=central
       ?`<b>${esc(CENTRAL[central].n)}</b> · ${termino}`
         +`<br><span class="lic-auto-porque">${central==='advanced'
-            ?'deducido de las funciones marcadas: segmentación, analítica/AIOps o inspección avanzada de seguridad'
-            :'gestión, monitorización y configuración del dispositivo — sin funciones que fuercen el nivel superior'}</span>`
+            ?'deducido de las funciones marcadas: segmentación de extremo a extremo o analítica/AIOps ampliada (la retención de datos es la misma en ambos niveles — tabla oficial de Central)'
+            :'gestión completa SD-Branch: firewall, VPN, orquestación y políticas por aplicación ya son Foundation — sin funciones que fuercen el nivel superior'}</span>`
       :'<b>Central excluido</b><br><span class="lic-auto-porque">El gateway se queda en gestión local, sin la nube de HPE ni apertura de casos.</span>';
   }
   if(esGwc){
@@ -809,7 +876,7 @@ function renderBom(){
           nota:`${termino} · suscripción por caudal del sitio, no por modelo de appliance`});
         filas.push({cat:'Suscripción SD-WAN', desc:`${BUNDLES[bundle].n} HA — ${bwTier?bwTier.n:'tier por definir'} · segundo nodo del par 1+1`,
           sku:tierSku(licHa,termYrs), qty:1, unit:licHaPrice,
-          nota:`${termino} · SKU de alta disponibilidad del QuickSpecs: mismo precio que el estándar, lo que cambia es la referencia de pedido`});
+          nota:`${termino} · SKU de alta disponibilidad del QuickSpecs (existencia y regla «match tier, bandwidth, term»); la lista de precios documentada lo tarifa igual que el estándar`});
       }else{
         filas.push({cat:'Suscripción SD-WAN', desc:`${BUNDLES[bundle].n} — ${bwTier?bwTier.n:'tier por definir'}`,
           sku:tierSku(licTier,termYrs), qty, unit:licPrice,
@@ -828,6 +895,15 @@ function renderBom(){
           sku:null, qty, unit:null,
           nota:`${termino} · licencia opcional aparte de Foundation/Advanced (QuickSpecs p.32) · sin SKU en la lista de precios — consultar`});
       }
+      // Modalidad On-Premises (E-STU): la suscripcion INCLUYE el software de Orchestrator
+      // on-prem (data sheet oficial a50010073enw); lo que corre por cuenta del cliente es
+      // el ALOJAMIENTO — VM, disponibilidad, backup y actualizaciones. La linea lo declara
+      // para que la propuesta no olvide dimensionar esa infraestructura (2026-09-13, fase 10).
+      if(D.onprem){
+        filas.push({cat:'Orquestación', desc:'Orchestrator auto-alojado — software incluido en la suscripción On-Premises',
+          sku:null, qty:1, unit:null,
+          nota:'Sin coste de licencia (incluido en E-STU) · el alojamiento —VM, uptime, backup y upgrades— corre por cuenta del cliente'});
+      }
     }
   }else{
     if(central){
@@ -839,7 +915,7 @@ function renderBom(){
         nota:`Amplía el mismo hardware a ${fmt(capTier.fw)} · ${miles(capTier.aps)} APs · ${miles(capTier.clients)} dispositivos`});
     }
   }
-  if(care){
+  if(care&&!esVirtual){
     filas.push({cat:'Soporte', desc:CARE[care].n, sku:tierSku(careTier,termYrs), qty, unit:carePrice,
       nota:`${termino} · ${CARE[care].sla}`});
   }
@@ -890,9 +966,14 @@ function renderBom(){
       '  El soporte Foundational Care se cotiza por modelo (CARE_SKU en aruba.js). Lo que',
       '  sigue sin precio (EC-V, DTD, FC de software y FC de gateways) va en consultar',
       '  a proposito. Confirmar la fila exacta del datasheet antes de emitir la propuesta.',
+      '',
+      'REVISION DEL DISENO (par tecnico automatico)',
+      ...revisionDiseno(D,m).map(h=>`  [${h.nivel==='rojo'?'ROJO':h.nivel==='aviso'?'AVISO':'OK'}] ${h.texto}`),
       licHa?'  Par HA 1+1: 1x suscripcion estandar (nodo primario) + 1x suscripcion de'
           :null,
-      licHa?'  alta disponibilidad (segundo nodo, SKU «HA» del QuickSpecs, mismo precio).'
+      licHa?'  alta disponibilidad (segundo nodo, SKU «HA» del QuickSpecs; la lista de'
+          :null,
+      licHa?'  precios documentada lo tarifa igual que el estandar).'
           :null,
       qty>1&&!licHa?`  Par de ${qty} unidades: la suscripcion de sitio no se comparte, cada nodo lleva la suya.`:null,
     ].filter(n=>n!==null&&n!==''),

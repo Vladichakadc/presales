@@ -14,7 +14,7 @@ const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 
-const { MODELS, CARE, CARE_SKU, LICENSES, LICENSES_HA, CENTRAL_TIERS, BOOST } = require('../server/seed/legacyData/aruba');
+const { MODELS, CARE, CARE_SKU, LICENSES, LICENSES_HA, CENTRAL_TIERS, BOOST, FEC_OVERHEAD } = require('../server/seed/legacyData/aruba');
 
 const csvFilas = fs.readFileSync(path.join(__dirname, '..', 'public', 'datasheets', 'aruba-lista-precios-hpe.csv'), 'utf8')
   .trim().split(/\r?\n/).slice(1).map((l) => l.split(','));
@@ -204,4 +204,23 @@ test('todo modelo publica sus flujos simultaneos o declara por que no', () => {
     }
   }
   assert.deepStrictEqual(mal, []);
+});
+
+test('EC-V no tiene CARE_SKU: appliance virtual, el soporte de hardware no aplica', () => {
+  // Regla de diseno (fase 10, 2026-09-13): EC-V corre sobre el hipervisor del cliente, asi
+  // que el Foundational Care de hardware no tiene sentido — la suscripcion ya incluye el
+  // soporte de software. El BOM oculta el nivel CARE para EC-V y la ficha lo declara; este
+  // test cierra la puerta a que alguien le cuelgue un SKU de soporte HW por error.
+  assert.ok(!CARE_SKU['EC-V'], 'EC-V no debe tener soporte de hardware cotizable');
+});
+
+test('el overhead FEC esta anclado a los ratios oficiales del VSG (1:8 y 1:4)', () => {
+  // VSG SD-Branch de HPE (validado 2026-09-13): ratio 1:8 = 12,5% para apps en tiempo
+  // real, 1:4 = 25% para VoIP, y FEC adaptativo = 0% sin perdida medida. El modo auto del
+  // motor no puede superar el ancla 1:8 y el agresivo clava el 1:4; la politica HA (1:1,
+  // 50%) no se ofrece a proposito.
+  assert.strictEqual(FEC_OVERHEAD.off.pct, 0);
+  assert.ok(FEC_OVERHEAD.auto.pct > 0 && FEC_OVERHEAD.auto.pct <= 0.125,
+    `auto (${FEC_OVERHEAD.auto.pct}) no puede superar el ratio oficial 1:8 (12,5%)`);
+  assert.strictEqual(FEC_OVERHEAD.alto.pct, 0.25, 'agresivo debe clavar el ratio oficial 1:4 (25%)');
 });

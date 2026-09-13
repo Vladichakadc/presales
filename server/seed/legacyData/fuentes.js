@@ -107,6 +107,10 @@ const FUENTES = {
   ],
 
   aruba: [
+    { documento: 'Validated Solution Guide SD-Branch y data sheet de suscripciones EdgeConnect (HPE, oficiales)',
+      url: 'https://arubanetworking.hpe.com/techdocs/VSG/docs/070-sd-branch-design/', estable: false, fecha: '2026-09-13', hash: null,
+      cubre: 'reglas de diseno validadas en la fase 10: Boost como add-on en bloques de 100 Mbps de pool del fabric; DTD por appliance y como add-on de la suscripcion; On-Prem solo como Advanced On-Prem con software de Orchestrator incluido (alojamiento del cliente); SKU HA del segundo nodo con regla "match tier, bandwidth, term"; Foundation = 3 BIOs y 2 VRF (default+guest) vs Advanced = 7 BIOs y 64 VRFs; AppExpress monitor-only en Foundation; NGFW completo y DPC en Foundation; ratios FEC 1:8 (12,5%) y 1:4 (25%); SLA DPS de utilizacion de enlace al 75%; flujos por modelo (256.000 / 2.000.000); tier de suscripcion por caudal WAN agregado del sitio; AppRF/Qosmos ~3.500 apps en SD-Branch; Boost solo EdgeConnect (no gateways); Central de gateway por dispositivo y termino con co-terminacion oficial en SaaS',
+      nota: 'Validacion web de la fase 10 (2026-09-13) con citas literales: VSG SD-Branch (arubanetworking.hpe.com/techdocs/VSG), data sheet de suscripciones a50010073enw (hpe.com), QuickSpecs a50004289enw, Orchestrator Docs (arubanetworks.com/techdocs/sdwan) y tabla oficial de licenciamiento de Central. SIN FUENTE y declarados como regla de trabajo del arquitecto: flujos por usuario (80-100/150-200), headroom del 25-30% (ancla parcial: SLA DPS 75%) y Boost = 30% del trafico WAN privado (la unica regla de campo localizada, no oficial, dice 40% — discrepancia documentada en el motor). IDS/IPS no corre en EC-XS (doc oficial IDS); la paridad de precio de los SKU HA sale de la lista del distribuidor, no de HPE (HPE no publica precios).' },
     { documento: 'Paginas de producto y tienda oficiales de HPE/Aruba',
       url: 'https://www.hpe.com/us/en/networking.html', estable: false, fecha: null, hash: null,
       cubre: 'modelos EdgeConnect, gateways 9000/9200, software y SKUs de hardware',

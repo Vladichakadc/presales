@@ -269,17 +269,18 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
     <div class="field">
       <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
       <input type="range" id="head" min="0" max="100" step="5" value="30" autocomplete="off">
+      <p class="hint">Ancla oficial: la guía de diseño SD-Branch de HPE fija el SLA de utilización de enlace en <b>75 %</b> para las políticas DPS — operar por encima degrada voz y video. Un margen del 25-30 % deja el diseño en esa zona segura.</p>
     </div>
   </section>
 
   <section class="panel">
     <h2>3 · Funciones adicionales</h2>
     <div class="checks">
-      <label class="check"><input type="checkbox" id="chkSeg"> <span>Segmentación multi-overlay (más de 3 BIOs / VRFs)<span class="sku">Requiere EdgeConnect <b>Advanced</b>: Foundation se queda en 3 Business Intent Overlays y un número limitado de VRFs (QuickSpecs). Aísla invitados, IoT, PCI o filiales en overlays separados sobre el mismo transporte.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkSeg"> <span>Segmentación multi-overlay (más de 3 BIOs / VRFs)<span class="sku">Requiere EdgeConnect <b>Advanced</b>: Foundation se queda en 3 Business Intent Overlays y 2 VRF (default y guest) frente a 7 BIOs y 64 VRFs (QuickSpecs/VSG). Aísla invitados, IoT, PCI o filiales en overlays separados sobre el mismo transporte. En gateways deduce <b>Central Advanced</b> (segmentación de extremo a extremo / NetConductor).</span></span></label>
       <label class="check"><input type="checkbox" id="chkTopo"> <span>Topología ilimitada (mesh o más de 4 hubs por región)<span class="sku">Requiere EdgeConnect <b>Advanced</b>: Foundation es hub-and-spoke con un máximo de 4 hubs por región (QuickSpecs). En gateways no cambia el nivel de Central.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkDtd"> <span>Inspección avanzada de seguridad — IDS/IPS, DDoS, clasificación web<span class="sku">En EdgeConnect es la licencia opcional <b>Dynamic Threat Defense</b>, aparte de Foundation y Advanced (QuickSpecs): entra en la lista como «consultar» porque no está en la lista de precios. En gateways fuerza <b>Central Advanced</b>.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkAiops"> <span>Analítica de experiencia y AIOps<span class="sku">Requiere <b>Advanced</b>: la retención ampliada de datos es del nivel Advanced de EdgeConnect, y en Central la analítica avanzada y AIOps son del nivel Advanced.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad (HA 1+1)<span class="sku">Se cotizan 2 unidades. En modalidad SaaS el segundo nodo lleva el SKU de alta disponibilidad del QuickSpecs (mismo precio que el estándar); en On-Premises, 2× estándar.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkDtd"> <span>Inspección avanzada de seguridad — IDS/IPS, DDoS, clasificación web<span class="sku">Es la licencia opcional <b>Dynamic Threat Defense</b> de EdgeConnect, aparte de Foundation y Advanced (QuickSpecs p.32): entra en la lista como «consultar» porque no está en la lista de precios. Es función EdgeConnect — marcarla mueve el filtro de familia; no aplica a gateways.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkAiops"> <span>Analítica de experiencia y AIOps<span class="sku">Requiere <b>Advanced</b>: la retención ampliada de datos es del nivel Advanced de EdgeConnect (QuickSpecs p.31), y en Central los AI Insights ampliados de WAN y la visibilidad UCC son del nivel Advanced (la retención de datos de Central es la misma en ambos niveles — tabla oficial).</span></span></label>
+      <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad (HA 1+1)<span class="sku">Se cotizan 2 unidades. En modalidad SaaS el segundo nodo lleva el SKU de alta disponibilidad del QuickSpecs —mismo tier, caudal y término (VSG)— que la lista de precios documentada tarifa igual que el estándar; en On-Premises, 2× estándar.</span></span></label>
     </div>
     <p class="hint" style="margin-top:10px">El steering dinámico por SLA de aplicación (Dynamic Path Control) y las funciones NGFW ya los incluye <b>Foundation</b> — no obligan a subir de nivel (QuickSpecs v18, p.31).</p>
     <div class="field" style="margin-top:16px">
@@ -326,7 +327,7 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
       <div class="lic-auto" id="capAutoTxt"></div>
       <label class="check" style="margin-top:8px"><input type="checkbox" id="chkSoloHw"> <span class="sku">Cotizar solo hardware, sin la licencia de capacidad (la serie 9200 entrega 20 Gbps sin ella).</span></label>
     </div>
-    <div class="field">
+    <div class="field" id="fldCare">
       <label for="careLevel">Nivel de soporte HPE</label>
       <select id="careLevel"></select>
     </div>
@@ -384,13 +385,13 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
     <thead><tr><th>Nivel</th><th>Qué incluye</th><th>Cuándo se necesita</th></tr></thead>
     <tbody>
       <tr><td><b>Foundation</b></td>
-          <td>Funciones SD-WAN esenciales más <b>todas</b> las capacidades NGFW avanzadas: steering dinámico por SLA (Dynamic Path Control), tunnel bonding, Path Conditioning (FEC y corrección de orden), firewall con estado y Orchestrator cloud (Foundation OaaS). Hasta 3 Business Intent Overlays, número limitado de VRFs, topología hub-and-spoke (4 hubs por región), QoS esencial y retención fundamental de datos</td>
+          <td>Funciones SD-WAN esenciales más <b>todas</b> las capacidades NGFW avanzadas: steering dinámico por SLA (Dynamic Path Control), tunnel bonding, Path Conditioning (FEC y corrección de orden), firewall con estado y Orchestrator cloud (Foundation OaaS). Hasta 3 Business Intent Overlays, 2 VRF (default y guest), topología hub-and-spoke (4 hubs por región), QoS esencial, retención fundamental de datos y AppExpress en modo solo monitor</td>
           <td>Sucursal que sustituye MPLS por banda ancha y necesita SLA de aplicación: el steering por SLA y el NGFW <b>ya están aquí</b> — no son motivo para subir de nivel (matriz oficial QuickSpecs v18, p.31)</td></tr>
       <tr><td><b>Advanced</b></td>
-          <td>Todo Foundation más topología ilimitada, 64 VRFs y hasta 7 Business Intent Overlays (segmentación multi-overlay real), QoS avanzada, retención ampliada de datos y Orchestrator cloud (Advanced OaaS). Tiers más finos: 20/50/100/200/500 Mbps, 1/2 Gbps e ilimitado</td>
+          <td>Todo Foundation más topología ilimitada, 64 VRFs y hasta 7 Business Intent Overlays (segmentación multi-overlay real), QoS avanzada, retención ampliada de datos, AppExpress con steering de aplicaciones y Orchestrator cloud (Advanced OaaS). Tiers más finos: 20/50/100/200/500 Mbps, 1/2 Gbps e ilimitado</td>
           <td>Segmentación multi-overlay con más de 3 BIOs, topologías mesh o con más de 4 hubs por región, o analítica con retención ampliada. OJO: HPE no admite mezclar niveles en un mismo fabric</td></tr>
       <tr><td><b>On-Premises</b></td>
-          <td>Variante para despliegues donde el Orchestrator vive en la infraestructura del cliente en lugar de consumirse como servicio</td>
+          <td>Existe solo como «Advanced On-Prem» (no hay Foundation On-Prem): mismo alcance funcional que Advanced e <b>incluye el software de Orchestrator on-prem</b>; el cliente aporta el alojamiento —VM, disponibilidad, backup y actualizaciones (data sheet oficial)</td>
           <td>Sectores con requisitos de soberanía del dato o de operación sin dependencia de un SaaS</td></tr>
       <tr><td><b>Dynamic Threat Defense</b><br><span style="font-family:'IBM Plex Mono',monospace;font-size:10px">licencia opcional aparte</span></td>
           <td>Añade IDS/IPS, DDoS adaptativo (Adaptive DDoS, Smart SYN cookie) y clasificación web (Secure web service). Licencia separada de Foundation y Advanced (QuickSpecs p.32)</td>
