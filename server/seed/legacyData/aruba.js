@@ -237,17 +237,12 @@ const MODELS = [
    hwSku:'JZ878A', skus:[{sku:'JZ878A',d:'EC-L-H · 6x SFP+ 1/10G'}],
    ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
 
-  // SEÑAL CONFIRMADA (2026-09-13): la fila de S0B67A sin sufijo de país marcaba PLC "ES" con
-  // vigencia 2026-06-30 en el export del distribuidor (las ~20 filas por país, "GA"); la
-  // variante NAL S3N77A llegó con PLC "ES" en el export del 2026-09-13; y la Product
-  // Lifecycle Policy OFICIAL de EdgeConnect (arubanetworking.hpe.com/techdocs,
-  // EC_LifecyclePolicy_latest.pdf) confirma "EC-XL-H end of sale announcement June 2025" —
-  // fin de venta 2025-09-30 según el ciclo publicado (anuncio +3 meses). El hecho está
-  // confirmado; lo que falta es la DECISIÓN DEL DUEÑO: marcar eolAnnounced lastOrder
-  // 2025-09-30 (patrón Cisco) haría que el EC-XL dejara de salir recomendado — y hoy es el
-  // ÚNICO candidato por encima de 5 Gbps, así que esos escenarios quedarían sin propuesta
-  // hasta modelar el sucesor (¿EC-10150 con Boost?). Mientras tanto, la página avisa en
-  // ámbar cualquier línea cotizada con PLC "ES" (fase 7: PLC_POR_SKU + bom-eos).
+  // FIN DE VENTA CONFIRMADO Y MARCADO (2026-09-13, decisión del dueño): ver EOL_ANNOUNCED
+  // al final de MODELS. La pista fue la fila de S0B67A sin sufijo de país con PLC "ES" en
+  // el export del distribuidor; la confirmación, la Product Lifecycle Policy oficial de
+  // EdgeConnect. Desde la marca, el EC-XL nunca sale recomendado para diseño nuevo (cae
+  // solo a rango 2 por fecha vencida, patrón ficha.js) y la página avisa en ámbar
+  // cualquier línea cotizada con PLC "ES" (fase 7: PLC_POR_SKU + bom-eos).
   {id:'EC-XL', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Datacenter / Head-end de fabric',
    wanMin:2000, wanMax:10000, boostMax:10000,
    ifaces:'hasta 6x SFP+ 10G y/o SFP28 25G · network memory en flash PCIe · PSU y almacenamiento redundantes',
@@ -477,6 +472,29 @@ const MODELS = [
    skus:[{sku:null,d:'7240XM (US / RW)'}], ds:null, dsFile:null},
 ];
 
+// ── Fin de venta confirmado (mismo patrón que Cisco) ─────────────────────────
+// Fuente OFICIAL: Product Lifecycle Policy de EdgeConnect (arubanetworking.hpe.com/
+// techdocs, EC_LifecyclePolicy_latest.pdf), consultada el 2026-09-13:
+//   · "EC-XL-H end of sale announcement. June 2025" (los agregadores la fijan el 30-jun).
+//   · "EC-XL-H end of sale (EoS). Mar 31, 2026" — último día de pedido. OJO: los
+//     checkers de terceros (router-switch, layer23) dicen 30-sep-2025; se usa la fecha
+//     del documento oficial, y ambas están ya vencidas a la fecha de la marca.
+//   · "Last date to renew HW Maintenance. Mar 31, 2030" (+4 años tras el EoS, renovación
+//     limitada a término de 1 año) y End of Support +7 años tras el EoS → 31-mar-2033.
+// El sucesor NO se declara: la política dice que la notificación nombra el reemplazo,
+// pero esa notificación no está publicada en las fuentes abiertas consultadas — poner
+// "EC-10150" sería inferirlo. Confirmar con el distribuidor (ver PENDIENTES.md).
+// Señales de terceros SIN confirmar por fuente oficial (quedan pendientes): EC-L-H
+// (JZ878A, EoS 31-dic-2025) y EC-XS (JM962A, EoS 31-ene-2026) según router-switch.
+const EOL_ANNOUNCED = {
+  'EC-XL': {pid:'S0B67A', lastOrder:'2026-03-31', sucesor:null,
+            endOfSupport:'2033-03-31',
+            url:'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/docs/eula/EC_LifecyclePolicy_latest.pdf'},
+};
+for (const m of MODELS) {
+  m.eolAnnounced = EOL_ANNOUNCED[m.id] || null;
+}
+
 // ── Suscripción EdgeConnect ──────────────────────────────────────────────────
 //
 // DIFERENCIA ESTRUCTURAL CON FORTINET: en FortiGate la licencia va atada al MODELO (cada
@@ -681,5 +699,5 @@ const LICENSES = {
 
 module.exports = {
   MODELS, BUNDLES, CARE, CARE_SKU, LICENSES, BW_TIERS, BOOST, FEC_OVERHEAD,
-  SOFTWARE, CENTRAL_TIERS, DATASHEETS,
+  SOFTWARE, CENTRAL_TIERS, DATASHEETS, EOL_ANNOUNCED,
 };

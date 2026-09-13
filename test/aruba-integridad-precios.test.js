@@ -113,6 +113,24 @@ test('CARE_SKU cuelga de modelos y niveles reales, con los tres terminos complet
   assert.deepStrictEqual(mal, [], 'un CARE_SKU incompleto vuelve a mostrar «— / consultar» en el BOM');
 });
 
+test('el fin de venta declarado tiene fechas de verdad y coherentes', () => {
+  // Misma regla que catalogo-eol.test.js para Cisco/Fortinet: una fecha ilegible deja al
+  // equipo recomendandose solo (ficha.js eosVencido parsea lastOrder en el navegador), y
+  // el fin de soporte no puede ser anterior al ultimo pedido.
+  const mal = [];
+  for (const m of MODELS.filter((x) => x.eolAnnounced)) {
+    const { lastOrder, endOfSupport } = m.eolAnnounced;
+    if (!Number.isFinite(Date.parse(lastOrder))) mal.push(`${m.id}: lastOrder ilegible (${lastOrder})`);
+    if (endOfSupport != null) {
+      if (!Number.isFinite(Date.parse(endOfSupport))) mal.push(`${m.id}: endOfSupport ilegible (${endOfSupport})`);
+      else if (Number.isFinite(Date.parse(lastOrder)) && Date.parse(endOfSupport) <= Date.parse(lastOrder)) {
+        mal.push(`${m.id}: el fin de soporte (${endOfSupport}) no puede ser anterior al ultimo pedido (${lastOrder})`);
+      }
+    }
+  }
+  assert.deepStrictEqual(mal, []);
+});
+
 test('los SKU de servicio de CARE_SKU no chocan con la lista de precios', () => {
   const choques = [];
   for (const [modelo, porNivel] of Object.entries(CARE_SKU)) {

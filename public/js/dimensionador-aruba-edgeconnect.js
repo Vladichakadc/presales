@@ -318,12 +318,17 @@ function render(){
   // cotiza el primero de la lista a ciegas, se compara con el escalon siguiente.
   if(!pick){
     const why=[`<li>Caudal WAN requerido <b>${fmt(wanNeed)}</b> · proceso requerido <b>${fmt(needProc)}</b>.</li>`];
+    // Cumplir por capacidad no basta si el equipo ya no se puede pedir: es el caso del
+    // EC-XL (fin de venta 2026-03-31, política oficial de ciclo de vida de EdgeConnect).
+    // Se nombra y se deja como referencia, no se cuela como propuesta.
+    const eolQueCumplen=candidates.filter(m=>FICHA.recomendable&&!FICHA.recomendable(m));
+    if(eolQueCumplen.length) why.push(`<li><b>${eolQueCumplen.map(m=>m.id).join(', ')}</b> cumple${eolQueCumplen.length>1?'n':''} por capacidad pero está${eolQueCumplen.length>1?'n':''} <b>fuera de venta</b> (último pedido ${eolQueCumplen.map(m=>m.eolAnnounced&&m.eolAnnounced.lastOrder?m.eolAnnounced.lastOrder:'declarado').join(', ')}). Queda en el selector como referencia para parque instalado; la notificación oficial de fin de venta nombra el reemplazo — confirmarlo con el distribuidor.</li>`);
     if(outByBoost) why.push(`<li><b>${outByBoost}</b> modelo(s) descartado(s) por pedir Boost: la optimización WAN es exclusiva de EdgeConnect, los gateways de las series 9000, 9100 y 9200 no la hacen.</li>`);
     if(outByClients) why.push(`<li><b>${outByClients}</b> gateway(s) descartado(s) por capacidad de clientes: hacen falta ${miles(users)}.</li>`);
     if(outByAps) why.push(`<li><b>${outByAps}</b> gateway(s) descartado(s) por número de APs: hacen falta ${miles(aps)}.</li>`);
     if(outBySinDato) why.push(`<li><b>${outBySinDato}</b> modelo(s) sin cifra de throughput publicada en las fuentes consultadas (serie 9100). Aparecen en la pestaña "Equipo y BOM" y su capacidad hay que confirmarla en las QuickSpecs.</li>`);
     why.push('<li>Por encima del catálogo: repartir el fabric en varios head-ends, o escalar en el datacenter con EC-V, cuyo caudal lo fija la licencia y los vCPU asignados y no el hardware.</li>');
-    poblarPickModel([], null);
+    poblarPickModel(candidates, null);
     FICHA.render({...FICHA_CFG, contenedor:'verdict', candidatos:[], recomendado:null,
       vacioTitulo:'Ningún modelo cumple todas las restricciones',
       vacioDetalle:`<ul style="margin:0;padding-left:18px;font-size:13.5px">${why.join('')}</ul>`});
@@ -546,7 +551,10 @@ function poblarPickModel(cumplen, recomendado){
   });
   sel.innerHTML=series.map(se=>`<optgroup label="${esc(se)}">`
     +MODELS.filter(m=>m.serie===se).sort((a,b)=>capDe(a)-capDe(b)).map(m=>{
-      const marca=m.id===recomendado?' · recomendado':(ids.has(m.id)?' · cumple':'');
+      // Fuera de venta se nombra como tal en el combo (2026-09-13, EC-XL): «cumple» por
+      // capacidad no es proponible si ya no se puede pedir.
+      const mc=FICHA.marca?FICHA.marca(m):null;
+      const marca=mc&&mc.fuera?' · fin de venta':m.id===recomendado?' · recomendado':(ids.has(m.id)?' · cumple':'');
       return `<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.seg)}${marca}</option>`;
     }).join('')+'</optgroup>').join('');
   if(actual&&[...sel.options].some(o=>o.value===actual)) sel.value=actual;

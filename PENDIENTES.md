@@ -269,13 +269,11 @@ antes de pisar un dato existente — así que se deja sin tocar.
 |---|---|---|---|
 | EC-XS | `wanMax` | 200 Mbps | **1.000 Mbps** |
 
-**Aruba — EC-XL, un conflicto de ciclo de vida y no de capacidad, encontrado el 2026-09-10 al
-extraer List Price** (ver *Cerrado recientemente*). En el export de lista de precios de un
-distribuidor, el SKU de EC-XL (S0B67A) aparece con estado PLC **"End of Sale" vigencia
-2026-06-30** en su fila sin sufijo de país, pero **"GA"** en las ~20 variantes localizadas
-(US, EU, BR...) del mismo SKU — el propio documento se contradice. No se marca EC-XL como
-descontinuado hasta confirmarlo con HPE o el distribuidor: es la misma regla de doble anclaje
-que el resto de esta tabla, aplicada a una señal de ciclo de vida en vez de una cifra.
+**~~Aruba — EC-XL, un conflicto de ciclo de vida y no de capacidad, encontrado el 2026-09-10 al
+extraer List Price~~ Resuelto (2026-09-13)**, ver *Cerrado recientemente* («EC-XL marcado fin
+de venta con fechas oficiales»). La Product Lifecycle Policy oficial de EdgeConnect confirmó la
+señal del export del distribuidor y el dueño aprobó marcarlo: `eolAnnounced` con anuncio
+jun-2025, último pedido 2026-03-31 y fin de soporte 2033-03-31.
 
 **Aruba — cuatro conflictos más, encontrados el 2026-09-13 al incorporar las fichas
 técnicas completas de los datasheets** (ver *Cerrado recientemente*). Misma regla: dos
@@ -352,6 +350,18 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     modelos. Cómo cerrarlo: desde una máquina con acceso, abrir las URL de arriba, confirmar
     el texto exacto y transcribirlo a `redund`/`psu` en `fortinet.js` con el mismo cuidado que
     Huawei — cita literal, nunca inferido del tamaño o la gama del equipo.
+16. **Señales de fin de venta de terceros en EC-L-H y EC-XS (2026-09-13).** Al verificar
+    las fechas oficiales del EC-XL, los verificadores de ciclo de vida de terceros
+    (router-switch.com, layer23-switch.com) daban también fin de venta a **EC-L-H
+    (JZ878A, EoS 2025-12-31)** y **EC-XS (JM962A, EoS 2026-01-31)**. Ninguna de las dos
+    está confirmada por un documento oficial de HPE — la Product Lifecycle Policy
+    consultada solo nombra al EC-XL-H — así que NO se marcan: misma regla de doble
+    anclaje que el EC-XL en su momento. La señal del EC-XS tiene un indicio a favor: su
+    SKU (JM962A) ya no aparece en el export de lista de precios vigente del distribuidor,
+    coherente con un fin de venta reciente. Cómo se cierra: conseguir el boletín o la
+    tabla de ciclo de vida oficial de HPE que nombre a los dos modelos (una persona con
+    navegador real en arubanetworking.hpe.com, o preguntar al distribuidor), y entonces
+    replicar el patrón `EOL_ANNOUNCED` del EC-XL.
 
 ## Limpieza
 
@@ -367,6 +377,53 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### EC-XL marcado fin de venta con fechas oficiales — Aruba (2026-09-13)
+
+Aprobado por el dueño al cierre de la fase anterior: marcar el EC-XL como fin de venta,
+buscando en la web la fecha de anuncio de EoS, la fecha efectiva de EoS y el fin de
+soporte.
+
+**Las tres fechas, de la fuente oficial.** La Product Lifecycle Policy de EdgeConnect
+publicada por HPE (`arubanetworking.hpe.com/techdocs/sdwan-PDFs/docs/eula/EC_LifecyclePolicy_latest.pdf`)
+declara literalmente: anuncio de fin de venta **junio 2025**, fin de venta efectivo
+(último pedido) **2026-03-31**, y como regla de la política «End of Support +7 years
+after End of Sale» → fin de soporte **2033-03-31** (la renovación de mantenimiento de
+hardware cierra antes, 2030-03-31, también literal del documento). Los verificadores de
+terceros (router-switch, layer23-switch) dan fechas distintas —EOL 2025-06-30, EoS
+2025-09-30, EOSL 2030-09-30— pero la discrepancia quedó documentada en el comentario de
+`aruba.js` y **manda el documento oficial del fabricante**. Ambas fechas de venta ya
+pasaron respecto a hoy, así que el equipo queda «FIN DE VENTA VENCIDO».
+
+**Cómo se marcó (patrón Cisco, opt-in).** Nuevo mapa `EOL_ANNOUNCED` en
+`server/seed/legacyData/aruba.js` con `pid` (S0B67A), `lastOrder`, `endOfSupport` y la
+URL de la política; un bucle tras `MODELS` lo adjunta como `m.eolAnnounced`, que fluye
+por `specs` hasta la página igual que en Cisco. `sucesor` quedó en `null` a propósito:
+declarar EC-10150 como sucesor sería inferirlo — HPE no lo dice en ningún documento
+consultado. En `ficha.js`, la rama de fin de venta vencido suma una frase opt-in: «El
+parque instalado conserva soporte del fabricante hasta el <fecha>» solo cuando el modelo
+trae `endOfSupport` (los Cisco sin ese campo no cambian). En el dimensionador, el
+selector de equipo marca «· fin de venta» junto a «· recomendado»/«· cumple», y cuando
+ningún candidato cumple el «por qué» nombra los equipos que cumplirían si no estuvieran
+fuera de venta, con su fecha de último pedido.
+
+**El matiz que preocupaba en la fase anterior resultó no existir.** Se temía que excluir
+al EC-XL dejara los escenarios >5 Gbps sin propuesta, pero el EC-10150 (hasta 12 Gbps,
+añadido al catálogo el 2026-09-10) cubre todo lo que el EC-XL cubría: a 6 Gbps recomienda
+EC-L, a 8 Gbps recomienda EC-10150, y el EC-XL nunca sale propuesto — solo seleccionable
+a mano, declarado como referencia del parque instalado.
+
+**Verificación.** 243/243 pruebas (242 + 1 nueva: las fechas declaradas parsean y
+`endOfSupport` es posterior a `lastOrder`) y eslint verde (salvo el aviso preexistente de
+siempre). E2E en Chromium: selector con «EC-XL · fin de venta», ficha con chip «FIN DE
+VENTA VENCIDO» y ambas fechas, recomendación EC-L a 6 Gbps y EC-10150 a 8, «EQUIPOS QUE
+CUMPLEN · 3» sin proponer nunca el EC-XL.
+
+**Señales de terceros que quedan PENDIENTES de fuente oficial** (registradas también en
+*Datos por confirmar*): los mismos verificadores de terceros dan fin de venta a **EC-L-H
+(JZ878A, EoS 2025-12-31)** y **EC-XS (JM962A, EoS 2026-01-31)** — esta última explicaría
+por qué el SKU de EC-XS ya no aparece en el export de lista de precios vigente. Sin
+documento oficial de HPE no se marcan: misma regla de doble anclaje de siempre.
 
 ### Guardarraíl de integridad de precios y alerta de fin de venta (PLC «ES») — Aruba (2026-09-13)
 
@@ -394,12 +451,11 @@ página (el aviso de desvío se pintaba sin estilo, solo Fortinet lo tenía).
 **La búsqueda web confirmó el fin de venta del EC-XL** (era «señal sin confirmar» desde
 el 2026-09-10): la Product Lifecycle Policy oficial de EdgeConnect
 (arubanetworking.hpe.com/techdocs, `EC_LifecyclePolicy_latest.pdf`) declara «EC-XL-H end
-of sale announcement June 2025» — fin de venta 2025-09-30 según el ciclo publicado
-(anuncio +3 meses), y la variante NAL S3N77A ya vino con PLC «ES» en el export. **Queda
-PENDIENTE la decisión del dueño**: marcar `eolAnnounced lastOrder 2025-09-30` (patrón
-Cisco) para que deje de salir recomendado — con el matiz de que hoy es el único candidato
-por encima de 5 Gbps y excluirlo dejaría esos escenarios sin propuesta hasta modelar el
-sucesor. Comentarios actualizados junto a EC-XL en `aruba.js` y en `fuentes.js`.
+of sale announcement June 2025» y «EC-XL-H end of sale (EoS) Mar 31, 2026», y la variante
+NAL S3N77A ya vino con PLC «ES» en el export. **La decisión del dueño llegó el mismo día
+(2026-09-13): marcarlo** — ver la entrada «EC-XL marcado fin de venta con fechas
+oficiales» más arriba. Comentarios actualizados junto a EC-XL en `aruba.js` y en
+`fuentes.js`.
 
 **Verificación.** 242/242 pruebas (233 + 9 nuevas) y eslint verdes; E2E en Chromium: fila
 S3N77A con chip ámbar, aviso «Fin de venta» sobre el BOM al añadirla, nota en la

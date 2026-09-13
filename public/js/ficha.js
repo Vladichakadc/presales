@@ -126,7 +126,11 @@
     const mk = marca(m);
     if (!mk) return '';
     if (m.eol) return 'Equipo <b>fuera de venta</b>. Se muestra como referencia para ampliar o reemplazar un parque ya instalado; no se propone para un diseño nuevo y por eso nunca sale recomendado.';
-    if (eosVencido(m)) return `Su <b>fecha de último pedido (${esc(m.eolAnnounced.lastOrder)}) ya pasó</b>: a efectos de un diseño nuevo está fuera de venta. Queda como referencia para el parque instalado.`;
+    if (eosVencido(m)) return `Su <b>fecha de último pedido (${esc(m.eolAnnounced.lastOrder)}) ya pasó</b>: a efectos de un diseño nuevo está fuera de venta. Queda como referencia para el parque instalado.`
+      // endOfSupport es opt-in (2026-09-13, Aruba EC-XL): si el catálogo declara hasta
+      // cuándo hay soporte, la ficha lo dice — es el dato que salva la renovación del
+      // parque ya instalado. Los modelos sin el campo no cambian.
+      + (m.eolAnnounced.endOfSupport ? ` El parque instalado conserva soporte del fabricante hasta el <b>${esc(m.eolAnnounced.endOfSupport)}</b>.` : '');
     if (m.legacy) return 'Pertenece a la <b>línea anterior</b>. Sigue en canal y es la respuesta natural para ampliar un parque instalado, pero solo se recomienda si ningún equipo de la generación actual cumple.';
     return `<b>Fin de venta anunciado</b> — último día de pedido: <b>${esc(m.eolAnnounced.lastOrder)}</b>. Hasta esa fecha se pide con normalidad; después dejará de proponerse solo.`;
   }
