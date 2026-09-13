@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-13 (el inventario cruza cada pantalla con su estado).
+Última revisión: 2026-09-13 (revisión de portabilidad del módulo Aruba a los otros siete).
 
 ---
 
@@ -474,6 +474,26 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     `main` (ajuste de GitHub, no de código) y corregir esa cabecera, o aceptar que solo frena
     `verificar` y decirlo en los dos sitios. `CLAUDE.md` ya lo declara como está hoy.
 
+34. **El semáforo de ciclo de vida pintaría verde falso sobre 131 modelos (2026-09-13).**
+    Sale de la revisión de portabilidad (`docs/portabilidad-aruba.md`). Solo Cisco (8/21),
+    Juniper (2/12) y Aruba (1/25) tienen boletín de fin de venta **con fecha**. Huawei,
+    MikroTik y Nokia tienen cero, y Fortinet marca cuatro modelos como `eol` **binario** en
+    `FORTINET_EOL_MODELS`, sin fecha: nunca encendería el naranja de «fin de venta anunciado».
+    Portar el semáforo tal cual afirmaría «vigente» sobre 131 modelos que nadie ha comprobado
+    —el mismo error que el «IPS: no aplica» del Catalyst 8300, y más caro, porque lo que se
+    afirma es que un equipo se puede pedir. **Regla al portarlo:** se enciende solo donde hay
+    `eolAnnounced` con fecha; donde no, declara «el catálogo no trae el ciclo de vida», que es
+    el tercer estado que ya protege `redund`. Cerrarlo de verdad exige cargar los boletines,
+    y para Huawei eso es el pendiente 14, bloqueado por Akamai.
+
+35. **La auditoría de puertos de Nokia es la mejor de las ocho y no se ve (2026-09-13).**
+    También de la revisión de portabilidad. `legacyData/nokia.js` ya modela las configuraciones
+    de puertos como **alternativas y no acumulables** —«36x100GE o 12x400GE» nunca son 48
+    interfaces— y aparta los chasis modulares que no publican densidad. Es más rica que la que
+    el refactor estrenó en Aruba, y no está en ninguna pantalla. El flujo no es «Aruba enseña a
+    los siete»: la capa común es algo a lo que cada fabricante aporta lo que ya resolvió.
+    Coste bajo, no toca ningún motor de cálculo.
+
 ## Limpieza
 
 11. **Nada abierto.** Los cuatro puntos que vivían aquí (el sufijo `-v3_1`, el conjunto
@@ -488,6 +508,50 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Los perfiles multi-sede dejan de ser de un solo fabricante (2026-09-13)
+
+Sale de la **revisión de arquitectura** que pidió el dueño sobre lo que dejó el otro motor de IA
+—«valida la estructura de los fabricantes que faltan, no la forma como se calcula el
+dimensionamiento, porque se dimensionan de diferente manera»—. El informe completo está en
+[`docs/portabilidad-aruba.md`](docs/portabilidad-aruba.md), y de él salen también los pendientes
+34 y 35.
+
+**El defecto.** Los perfiles nacieron en `arubaPerfilesV1`, una clave por fabricante. Un perfil
+multi-sede es *por definición* el caso de las 50 sucursales, y un despliegue real de 50 sedes
+**mezcla marcas**: spokes Fortinet contra un core Nokia, EdgeConnect en sucursal con Catalyst en
+el datacenter. Con una clave por página, el consolidado de cada fabricante ignoraba al resto en
+silencio — el mismo fallo que `presales-bom-refs:<pathname>` ya tuvo y que se corrigió el
+2026-09-09. Se arregló **antes** de portar la función a los otros siete, porque después costaba
+siete veces.
+
+- **Una sola clave** (`presales-perfiles`) en `bom.js`, copiando el patrón que ese archivo ya usa
+  para las referencias: cada perfil lleva su `vendor` dentro, y la clave vieja **se migra** en la
+  primera lectura y se borra. Sin eso, quien ya tuviera perfiles los vería desaparecer al
+  desplegar — justo la pérdida que el cambio venía a evitar.
+- **Cargar es del fabricante; consolidar no.** `campos` son los ids del formulario de *esa*
+  página, así que aplicar un perfil de Fortinet al de Aruba no significa nada y no se ofrece. Pero
+  `filas` es la forma neutra que los siete comparten, y el BOM global suma **todos**: ese es el
+  valor real, y es la distinción que hace correcto el cambio.
+- **Se borra por id, no por índice.** En una lista compartida el índice deja de ser estable en
+  cuanto otro dimensionador guarda algo, y borrar por posición borraría el perfil del vecino.
+- **Las reglas de agregación las declara la página.** El pool de Boost en una línea y el
+  Orchestrator único por fabric son el modelo **comercial de Aruba**, no una regla universal:
+  dejarlas a fuego en el módulo compartido haría que cualquier fabricante que use esos nombres de
+  categoría heredara la semántica de precios de Aruba sin que nadie lo decidiera. Quien no declare
+  nada multiplica todo por sedes.
+- **Y si el consolidado mezcla marcas se dice en pantalla**, no solo en el Excel: leer las reglas
+  de Aruba como si aplicaran a las líneas de otro fabricante es exactamente lo que un aviso
+  ausente invita a hacer.
+
+**Comprobado que las pruebas detectan, no solo que pasan:** desactivando la migración reportan
+los perfiles perdidos; devolviendo las reglas a fuego, el fabricante que no las declara hereda la
+semántica de Aruba y la prueba lo dice.
+
+Conducido en Chromium de extremo a extremo: tres perfiles guardados, uno de Fortinet sembrado a
+mano que **no** aparece en la lista de Aruba pero **sí** entra en el consolidado, supervivencia a
+la recarga, borrado del perfil del medio sin tocar al vecino, y una cotización de **52 sedes con
+FortiGate 60F ×40 y EC-M ×12 juntos**. 287/287 pruebas (8 nuevas) y 16/16 pantallas.
 
 ### Una pantalla y su estado ya no se desincronizan en silencio (2026-09-13)
 
