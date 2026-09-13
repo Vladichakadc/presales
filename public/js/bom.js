@@ -193,6 +193,115 @@
   }
 
   // Las referencias de ESTA pagina como filas de BOM, en su propio grupo.
+  /* ══ PERFILES MULTI-SEDE ═══════════════════════════════════════════════════════
+     Un perfil guarda un escenario completo (los campos del formulario mas una foto de las
+     filas del BOM) y CUANTAS SEDES identicas se cotizan con el. Es la funcion que existe para
+     armar la cotizacion de un despliegue de 50 sucursales.
+
+     POR QUE UNA SOLA CLAVE Y NO UNA POR FABRICANTE. Nacieron en `arubaPerfilesV1`, y un
+     despliegue real de 50 sedes MEZCLA fabricantes: spokes Fortinet contra un core Nokia,
+     EdgeConnect en sucursal con Catalyst en el datacenter. Con una clave por pagina, el
+     consolidado de cada fabricante ignoraria al resto en silencio — exactamente el fallo que
+     `presales-bom-refs:<pathname>` ya tuvo aqui arriba y que se corrigio el 2026-09-09. Se
+     arregla ANTES de portar la funcion a los otros siete, porque despues cuesta siete veces.
+
+     CARGAR ES DEL FABRICANTE; CONSOLIDAR NO. `campos` son los ids del formulario de ESA
+     pagina, asi que aplicar un perfil de Fortinet al de Aruba no significa nada: la lista de
+     cada dimensionador muestra solo los suyos. Pero `filas` es la forma neutra que los siete
+     comparten, asi que el BOM global suma todos. */
+  const CLAVE_PERFILES = 'presales-perfiles';
+  const CLAVE_PERFILES_VIEJA = 'arubaPerfilesV1';
+
+  function guardarLista(lista) {
+    try { localStorage.setItem(CLAVE_PERFILES, JSON.stringify(lista)); } catch { /* almacenamiento off */ }
+  }
+
+  // Id propio y no la posicion en el array: en una lista compartida entre fabricantes el
+  // indice deja de ser estable, y borrar por indice borraria el perfil del vecino.
+  let seq = 0;
+  function nuevoId() { seq += 1; return `p${Date.now().toString(36)}${seq}`; }
+
+  // Misma migracion que la de las referencias, y por el mismo motivo: quien ya tuviera
+  // perfiles guardados los veria desaparecer al desplegar esto. Se leen una vez, se les
+  // estampa el fabricante y un id, y la clave vieja se borra.
+  let perfilesMigrados = false;
+  function migrarPerfiles() {
+    if (perfilesMigrados) return;
+    perfilesMigrados = true;
+    const previos = leerCrudo(CLAVE_PERFILES_VIEJA);
+    if (!previos.length) return;
+    const lista = leerCrudo(CLAVE_PERFILES);
+    for (const p of previos) lista.push({ ...p, vendor: p.vendor || 'aruba', id: p.id || nuevoId() });
+    guardarLista(lista);
+    try { localStorage.removeItem(CLAVE_PERFILES_VIEJA); } catch { /* almacenamiento off */ }
+  }
+
+  function perfiles() { migrarPerfiles(); return leerCrudo(CLAVE_PERFILES); }
+  function perfilesDe(vendor) {
+    const v = String(vendor || '').toLowerCase();
+    if (!v) return perfiles();
+    return perfiles().filter((p) => String(p.vendor || '').toLowerCase() === v);
+  }
+  function guardarPerfil(perfil) {
+    if (!perfil || !perfil.nombre || !perfil.sedes) return null;
+    const lista = perfiles();
+    const nuevo = { ...perfil, id: perfil.id || nuevoId(), vendor: String(perfil.vendor || vendorPagina || '').toLowerCase() };
+    lista.push(nuevo);
+    guardarLista(lista);
+    return nuevo;
+  }
+  function quitarPerfil(id) {
+    guardarLista(perfiles().filter((p) => p.id !== id));
+  }
+
+  /* CONSOLIDADO Σ(BOM del perfil × sedes), sobre TODOS los perfiles guardados.
+
+     LAS EXCEPCIONES DE AGREGACION LAS DECLARA LA PAGINA, no este modulo. Aruba agrega el pool
+     de Boost en una sola linea (`agregadas`) y deja el Orchestrator en cantidad 1 por fabric
+     (`unicas`), pero eso es su modelo COMERCIAL, no una regla universal: escribirlo aqui a
+     fuego haria que cualquier fabricante que algun dia use esos nombres de categoria heredara
+     la semantica de precios de Aruba sin que nadie lo decidiera — el mismo error que el
+     `noAplica` deducido del comparador, que llego a decir «IPS: no aplica» de un Catalyst 8300.
+     Quien no declare nada multiplica todo por sedes, que es el comportamiento correcto.
+
+     Y SE AGRUPA POR FABRICANTE ADEMAS DE POR SKU: con una sola lista compartida, dos marcas
+     podrian traer el mismo codigo y agrupar solo por cat+desc+sku las fundiria en un renglon.
+     Es la misma razon por la que la clave de una referencia es `fabricante|sku`. */
+  function consolidar(lista, opciones) {
+    const o = opciones || {};
+    const agregadas = (o.agregadas || []).map((c) => String(c));
+    const unicas = (o.unicas || []).map((c) => String(c));
+    const acum = new Map();
+    const pools = new Map();
+    let totalSedes = 0;
+    const fabricantes = new Set();
+    for (const p of (lista || [])) {
+      const sedes = Math.max(0, parseInt(p.sedes, 10) || 0);
+      totalSedes += sedes;
+      const v = String(p.vendor || '').toLowerCase();
+      if (v) fabricantes.add(v);
+      for (const f of (p.filas || [])) {
+        if (agregadas.includes(f.cat)) {
+          const k = `${v}|${f.cat}`;
+          if (!pools.has(k)) pools.set(k, { ...f, v, qty: 0, nota: o.notaAgregada || f.nota });
+          pools.get(k).qty += (f.qty || 0) * sedes;
+          continue;
+        }
+        if (unicas.includes(f.cat)) {
+          const k = `${v}|UNICA|${f.cat}|${f.sku || f.desc}`;
+          if (!acum.has(k)) acum.set(k, { ...f, v, qty: 1, nota: o.notaUnica || f.nota });
+          continue;
+        }
+        const k = [v, f.cat, f.desc, f.sku || ''].join('|');
+        if (!acum.has(k)) acum.set(k, { ...f, v, qty: 0 });
+        acum.get(k).qty += (f.qty || 1) * sedes;
+      }
+    }
+    const filas = [...acum.values()];
+    for (const pool of pools.values()) if (pool.qty > 0) filas.push(pool);
+    return { filas, totalSedes, perfiles: (lista || []).length, fabricantes: [...fabricantes] };
+  }
+
   function filasDeRefs() {
     return refsDeLaPagina().map((r) => ({
       cat: 'Referencias añadidas',
@@ -570,5 +679,6 @@
   global.BOM = { renderTabla, exportarExcel, comoTexto, money, esc,
     enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar,
     sincronizar, soltarManual, avisoDesvio,
-    agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor };
+    agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor,
+    perfiles, perfilesDe, guardarPerfil, quitarPerfil, consolidar };
 })(window);

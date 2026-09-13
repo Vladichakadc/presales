@@ -299,12 +299,17 @@ $('poolSedes').addEventListener('input',pintarPoolBoost);
    una sola vez. Los perfiles viven en localStorage (clave arubaPerfilesV1) y conservan
    los precios del día en que se guardaron (snapshot de filas, para que el consolidado
    no cambie si la lista de precios se actualiza después). */
-const PERFILES_KEY='arubaPerfilesV1';
-function cargarPerfiles(){
-  try{ const v=JSON.parse(localStorage.getItem(PERFILES_KEY)||'[]'); return Array.isArray(v)?v:[]; }
-  catch{ return []; }
-}
-function guardarPerfiles(l){ localStorage.setItem(PERFILES_KEY,JSON.stringify(l)); }
+// EL ALMACEN VIVE EN bom.js, NO AQUI (2026-09-13). Nacio como `arubaPerfilesV1`, una clave
+// por fabricante, y un despliegue real de 50 sedes MEZCLA fabricantes — spokes Fortinet contra
+// un core Nokia. Con una clave por pagina, el consolidado de cada fabricante ignoraria al resto
+// en silencio: el mismo fallo que ya tuvo `presales-bom-refs:<pathname>`. `BOM` migra lo que
+// hubiera guardado bajo la clave vieja y lo estampa como de Aruba.
+//
+// Cargar es del fabricante (los `campos` son los ids de ESTA pagina, aplicar un perfil de
+// Fortinet aqui no significa nada) pero consolidar cruza fabricantes, porque `filas` es la
+// forma neutra que los siete comparten.
+const VENDOR='aruba';
+const cargarPerfiles=()=>BOM.perfilesDe(VENDOR);
 // Captura/restauracion de campos del escenario (la misma lista que persiste ESTADO).
 // #wanLinksData viaja como un campo más: es la serialización v2 de los enlaces WAN.
 function capturarCampos(){
@@ -339,10 +344,9 @@ $('btnGuardarPerfil').addEventListener('click',()=>{
   if(!nombre||!sedes){ $('nombrePerfil').focus(); return; }
   const m=MODELS.find(x=>x.id===$('pickModel').value);
   if(!m||!bomFilas.length) return;
-  const l=cargarPerfiles();
-  l.push({nombre, sedes, modelo:m.id, fecha:new Date().toISOString().slice(0,10),
+  BOM.guardarPerfil({nombre, sedes, modelo:m.id, vendor:VENDOR,
+    fecha:new Date().toISOString().slice(0,10),
     version:2, campos:capturarCampos(), filas:JSON.parse(JSON.stringify(bomFilas))});
-  guardarPerfiles(l);
   $('nombrePerfil').value=''; $('perfilSedes').value='';
   pintarPerfiles();
 });
@@ -350,56 +354,44 @@ function pintarPerfiles(){
   const l=cargarPerfiles();
   $('listaPerfiles').innerHTML=l.length
     ?`<table class="tco-tabla"><thead><tr><th>Perfil</th><th>Sedes</th><th>Modelo</th><th>Guardado</th><th></th></tr></thead><tbody>`
-      +l.map((p,i)=>`<tr><td><b>${esc(p.nombre)}</b></td><td>${p.sedes}</td><td>${esc(p.modelo)}</td><td>${p.fecha||'—'}</td>`
-        +`<td><button type="button" class="btn ghost" data-perfil-cargar="${i}" style="font-size:10px;padding:3px 8px">Cargar</button> `
-        +`<button type="button" class="btn ghost" data-perfil-borrar="${i}" style="font-size:10px;padding:3px 8px">Eliminar</button></td></tr>`).join('')
+      +l.map(p=>`<tr><td><b>${esc(p.nombre)}</b></td><td>${p.sedes}</td><td>${esc(p.modelo)}</td><td>${p.fecha||'—'}</td>`
+        +`<td><button type="button" class="btn ghost" data-perfil-cargar="${esc(p.id)}" style="font-size:10px;padding:3px 8px">Cargar</button> `
+        +`<button type="button" class="btn ghost" data-perfil-borrar="${esc(p.id)}" style="font-size:10px;padding:3px 8px">Eliminar</button></td></tr>`).join('')
       +'</tbody></table>'
     :'<p class="hint">Sin perfiles guardados todavía.</p>';
   $('btnConsolidar').disabled=!l.length;
 }
 $('listaPerfiles').addEventListener('click',e=>{
   const b=e.target.closest('button'); if(!b) return;
-  const l=cargarPerfiles();
   if(b.dataset.perfilCargar!=null){
-    const p=l[parseInt(b.dataset.perfilCargar)];
+    const p=cargarPerfiles().find(x=>x.id===b.dataset.perfilCargar);
     if(p&&p.campos) aplicarCampos(p.campos);
   }else if(b.dataset.perfilBorrar!=null){
-    l.splice(parseInt(b.dataset.perfilBorrar),1);
-    guardarPerfiles(l); pintarPerfiles();
+    BOM.quitarPerfil(b.dataset.perfilBorrar); pintarPerfiles();
   }
 });
 // BOM global consolidado Σ(BOM del perfil × sedes): suma linea a linea (cat+desc+sku)
 // con qty × sedes. Excepciones del fabric: el pool de Boost agrega en UNA linea y el
 // Orchestrator on-prem va una vez. Se pinta dentro de #modalConsolidado (SPEC B.7).
 function consolidarPerfiles(){
-  const l=cargarPerfiles();
-  const acum=new Map(); let boost=null;
-  let totalSedes=0;
-  for(const p of l){
-    totalSedes+=p.sedes;
-    for(const f of (p.filas||[])){
-      if(f.cat==='Aceleración'){
-        if(!boost) boost={cat:f.cat, desc:f.desc, sku:f.sku, unit:f.unit, qty:0,
-          nota:'Pool agregado del fabric: suma de los bloques por sede de cada perfil × sus sedes. Orchestrator lo reparte y lo reasigna sin tocar hardware.'};
-        boost.qty+=(f.qty||0)*p.sedes; continue;
-      }
-      if(f.cat==='Orquestación'){
-        if(!acum.has('ORCH')) acum.set('ORCH',{...f, qty:1,
-          nota:(f.nota||'')+' · una sola instancia por fabric, no por sede'});
-        continue;
-      }
-      const k=[f.cat,f.desc,f.sku||''].join('|');
-      if(!acum.has(k)) acum.set(k,{...f, qty:0});
-      acum.get(k).qty+=(f.qty||1)*p.sedes;
-    }
-  }
-  const filas=[...acum.values()];
-  if(boost&&boost.qty>0) filas.push(boost);
+  // TODOS los perfiles, no solo los de Aruba: una cotizacion de 50 sedes puede llevar dos
+  // marcas dentro, y ese es justamente el caso que esta pantalla existe para armar.
+  const l=BOM.perfiles();
+  // Las dos excepciones son el modelo COMERCIAL de Aruba, no una regla universal, asi que se
+  // declaran aqui y no dentro de bom.js. Un fabricante que no declare nada multiplica todo por
+  // sedes, que es lo correcto por defecto.
+  const {filas,totalSedes,fabricantes}=BOM.consolidar(l,{
+    agregadas:['Aceleración'],
+    unicas:['Orquestación'],
+    notaAgregada:'Pool agregado del fabric: suma de los bloques por sede de cada perfil × sus sedes. Orchestrator lo reparte y lo reasigna sin tocar hardware.',
+    notaUnica:'Una sola instancia por fabric, no por sede.',
+  });
   const dto=dtoActual();
+  const multi=fabricantes.length>1;
   const meta={
     titulo:`BOM global consolidado — ${l.length} perfil(es), ${totalSedes} sedes`,
     subtitulo:l.map(p=>`${p.nombre} ×${p.sedes} (${p.modelo})`).join(' · '),
-    archivo:'BOM_global_aruba', sinRefs:true,
+    archivo:multi?'BOM_global_multifabricante':'BOM_global_aruba', sinRefs:true,
     notas:[
       'REGLAS DE CONSOLIDACION (SPEC parte B, M6):',
       '  Equipo, suscripciones y soporte: cantidad por sede x numero de sedes del perfil.',
@@ -409,14 +401,27 @@ function consolidarPerfiles(){
       '  Lineas «consultar» (DTD, SSE, EC-V): se consolidan en cantidad, sin precio.',
     ],
   };
+  // Si hay mas de un fabricante se dice, porque las reglas de agregacion de arriba son de
+  // Aruba y no aplican a las lineas de los demas.
+  if(multi) meta.notas.push(`  MULTI-FABRICANTE: ${fabricantes.join(', ')}. Las dos reglas de agregacion son de Aruba; las lineas de otros fabricantes se multiplican por sedes.`);
   if(dto>0){ meta.dto=dto; meta.dtoEtq=dtoEtiqueta(); }
-  return {filas, meta, totalSedes};
+  return {filas, meta, totalSedes, fabricantes};
 }
+
 $('btnConsolidar').addEventListener('click',()=>{
-  const {filas, meta, totalSedes}=consolidarPerfiles();
+  const {filas, meta, totalSedes, fabricantes}=consolidarPerfiles();
   if(!totalSedes) return;
+  // SI HAY MAS DE UNA MARCA, SE DICE EN PANTALLA Y NO SOLO EN EL EXCEL. Las dos reglas de
+  // agregacion de arriba (pool de Boost, Orchestrator unico) son el modelo comercial de Aruba;
+  // las lineas de otro fabricante se multiplican por sedes como cualquier otra. Un consolidado
+  // que mezcla marcas sin declararlo invita a leer esas reglas como si aplicaran a todo.
+  const aviso=fabricantes.length>1
+    ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${fabricantes.join(', ')}). `
+      +'Las reglas de agregación de Aruba —pool de Boost en una línea, Orchestrator una vez por '
+      +'fabric— aplican solo a sus líneas; las de los demás fabricantes se multiplican por sedes.</p>'
+    : '';
   $('consolidadoSub').textContent=meta.subtitulo+` — ${totalSedes} sedes en total`;
-  $('consolidadoTabla').innerHTML=BOM.renderTabla(filas,{dto:dtoActual(), sinRefs:true});
+  $('consolidadoTabla').innerHTML=aviso+BOM.renderTabla(filas,{dto:dtoActual(), sinRefs:true});
   $('modalConsolidado').hidden=false;
   $('xlsConsolidadoBtn').onclick=()=>BOM.exportarExcel(filas,meta);
 });
