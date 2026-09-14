@@ -49,8 +49,12 @@ const FUENTES = {
   fortinet: [
     { documento: 'Fortinet Product Matrix',
       url: 'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf', estable: true,
-      fecha: '2026-07', hash: null, cubre: 'throughput por capa, sesiones, cps',
-      nota: 'Fuente oficial. `cps` esta en 53 de los 58 modelos (2026-09-02, traido via GitHub Actions a la rama fuente/fortinet-product-matrix y leido pagina por pagina). Los 5 restantes (100F/200F/400F/401F/600F) no aparecen en este documento: es un "Top Selling Models Matrix", subconjunto curado del catalogo completo.' },
+      fecha: '2026-09', hash: null, cubre: 'throughput por capa, sesiones, cps',
+      nota: 'Fuente oficial. `cps` esta en 53 de los 58 modelos (2026-09-02, traido via GitHub Actions a la rama fuente/fortinet-product-matrix y leido pagina por pagina). Los 5 restantes (100F/200F/400F/401F/600F) no aparecen en este documento: es un "Top Selling Models Matrix", subconjunto curado del catalogo completo. '
+        + 'REVISADO EL 2026-09-14 (pendiente 36): el vigia lo vio pasar de 109.483 a 123.387 bytes. Es una EDICION NUEVA -PRQMTX-2026-R176-SEP, septiembre 2026, frente a la de julio con la que se transcribio- y por eso sube aqui la fecha. '
+        + 'Pero NINGUNA de las cifras que usa el catalogo cambio: se leyeron sus 6 paginas y se contrastaron los 27 modelos FortiGate que publica x 7 campos (fw, vpn, ips, ngfw, tp, sess, cps) = 189 comparaciones, 189 coincidencias y 0 diferencias. Tampoco aparecen modelos nuevos ni desaparece ninguno de los que el catalogo toma de aqui. '
+        + 'La lectura se sometio ademas al doble anclaje de `npm run cps`, que acepto las 27 filas sin rechazar ninguna; y se comprobo que ese anclaje sigue vivo desplazando a proposito la fila del 90G a los valores del 200G, que SI fue rechazada. '
+        + 'Un matiz para la proxima vez: este documento publica "Power Supplies" (tipo y numero, que respalda `redund`) y NO vatios -esos salen de la tabla "Dimensions and Power" de cada ficha por serie-. Las 27 filas de Power Supplies no chocan con el `redund` del catalogo, incluidos el 80F y el 90G, que el documento describe como "Single AC PS, dual inputs" y el catalogo tiene en `opcional`.' },
     { documento: '2026Q3 Mid Price list_AMER_FINAL_EFF 090726.xlsx',
       url: null, fecha: '2026-09-07', hash: null, cubre: 'precios de hardware, licencias FortiGuard y soporte FortiCare',
       nota: 'Lista de precios AMER oficial, vigente desde el 7 de septiembre de 2026. Sucede a la "Main" del 3 de agosto, y lo declara el propio documento en su Cover Sheet ("Previous Version: Aug 3, 2026" -> "Current Version: Sep 7, 2026"). Fortinet sigue siendo el unico fabricante de este catalogo con precios verificados contra una lista firmada. '

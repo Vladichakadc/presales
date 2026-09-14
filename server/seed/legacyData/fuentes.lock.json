@@ -2,15 +2,9 @@
   "documentos": {
     "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf": {
       "documento": "Fortinet Product Matrix",
-      "hashVerificado": "bef873612306e9a985e1a900dbb836119a1be8793d6bede1475f8fee4cde3f8f",
-      "bytes": 109483,
-      "medido": "2026-09-02T11:40:08.599Z",
-      "visto": {
-        "hash": "242a6eba814f3583d658e267934447c6cb21481f03cdfab83d9e821708e72624",
-        "bytes": 123387,
-        "medido": "2026-09-14T12:14:09.774Z"
-      },
-      "pendienteDesde": "2026-09-14T12:14:09.774Z"
+      "hashVerificado": "242a6eba814f3583d658e267934447c6cb21481f03cdfab83d9e821708e72624",
+      "bytes": 123387,
+      "medido": "2026-09-14T12:14:09.774Z"
     },
     "cisco::https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html": {
       "documento": "Boletines oficiales de fin de venta (EOL)",

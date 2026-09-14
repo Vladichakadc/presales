@@ -18,6 +18,7 @@
 //     npm run vigia -- --escribir            compara y actualiza fuentes.lock.json
 //     npm run vigia -- --json                la misma salida como JSON, para el workflow
 //     npm run vigia -- --revisado <v> <url>  declara que una persona ya contrasto el cambio
+//     npm run vigia -- --sondeo             mide que fuentes son estables de verdad
 //
 // EL TERCER ESTADO, Y POR QUE HIZO FALTA (2026-09-14)
 // Hasta hoy `--escribir` guardaba el hash nuevo de TODO documento legible, incluidos los que
@@ -120,7 +121,33 @@ function pendientes(lock) {
   return out.sort((a, b) => (b.semanas || 0) - (a.semanas || 0));
 }
 
-async function revisar(vendor, f) {
+// EL TEXTO DE UNA PAGINA, SEPARADO DE SU MARCADO.
+//
+// El campo `estable` se puso A MANO, y nadie lo re-comprueba: el mismo modo de fallo que
+// CISCO_EOL_MODELS. El boletin EOL de Cisco esta marcado `estable: true` y lleva tres
+// mediciones cambiando con los BYTES IDENTICOS (173.913 las dos ultimas) -- la firma de una
+// marca rotatoria de ancho fijo. Si eso es cierto, la alarma es falsa; y si se apaga con
+// `estable: false`, las 8 fechas de `eolAnnounced` de Cisco -que deciden si un equipo se
+// puede pedir- se quedan sin vigilancia. Hashear el TEXTO en vez de los bytes resuelve las
+// dos cosas: el banner rotatorio deja de contar y un cambio de fecha sigue saltando.
+//
+// SOLO PARA HTML. Un PDF no se normaliza aqui: sacar su texto exige un parser, y este
+// repositorio no extrae de PDF automaticamente. Devuelve null, que significa "no se sabe" y
+// nunca "no cambio".
+function textoNormalizado(buf, tipo) {
+  if (!/html/i.test(tipo || '')) return null;
+  return buf.toString('utf8')
+    .replace(/<script\b[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style\b[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+const sha = (x) => crypto.createHash('sha256').update(x).digest('hex');
+
+async function revisar(vendor, f, opts) {
   const base = { vendor, documento: f.documento, url: f.url };
   const control = new AbortController();
   const reloj = setTimeout(() => control.abort(), TIEMPO_LIMITE);
@@ -134,13 +161,17 @@ async function revisar(vendor, f) {
       return { ...base, estado: 'inalcanzable', detalle: `HTTP ${res.status}` };
     }
     const cuerpo = Buffer.from(await res.arrayBuffer());
-    const hash = crypto.createHash('sha256').update(cuerpo).digest('hex');
+    const tipo = res.headers.get('content-type') || null;
+    const texto = textoNormalizado(cuerpo, tipo);
     return {
       ...base,
       estado: 'leido',
-      hash,
+      hash: sha(cuerpo),
+      hashTexto: texto === null ? null : sha(texto),
+      largoTexto: texto === null ? null : texto.length,
       bytes: cuerpo.length,
-      tipo: res.headers.get('content-type') || null,
+      tipo,
+      texto: (opts && opts.conTexto) ? texto : undefined,
     };
   } catch (err) {
     const detalle = err.name === 'AbortError' ? `sin respuesta en ${TIEMPO_LIMITE / 1000} s` : err.message;
@@ -292,6 +323,104 @@ function marcarRevisado(vendor, urlOTrozo, ruta) {
   return { ok: true, clave, documento: e.documento, hash: e.visto.hash };
 }
 
+// El primer punto en el que dos textos dejan de coincidir, con su contexto. Es lo que
+// convierte "el texto tambien varia" en algo accionable: se ve si lo que baila es una fecha,
+// un contador de visitas o el documento entero.
+function primeraDiferencia(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string' || a === b) return null;
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i += 1;
+  const desde = Math.max(0, i - 40);
+  return {
+    posicion: i,
+    largoA: a.length,
+    largoB: b.length,
+    a: a.slice(desde, i + 60),
+    b: b.slice(desde, i + 60),
+  };
+}
+
+// EL SONDEO: SE MIDE SI UNA FUENTE ES ESTABLE, EN VEZ DE DECLARARLO A MANO.
+//
+// Pide cada URL DOS VECES con unos segundos de diferencia. Lo que varie entre dos peticiones
+// consecutivas no puede ser un cambio del fabricante: es marcado volatil. Reproduce el metodo
+// con el que ya se descubrio la deriva -"dos corridas del vigia con minutos de diferencia
+// dieron tamanos distintos"- pero aplicado a las nueve URLs y dejando el dato escrito.
+//
+// Reporta tres cosas por fuente: si coinciden los BYTES, si coincide el TEXTO, y cuando el
+// texto difiere, el primer fragmento discrepante -- porque "no coincide" sin decir en que no
+// se puede accionar.
+async function sondear(segundos) {
+  const espera = (ms) => new Promise((r) => setTimeout(r, ms));
+  const filas = [];
+  for (const [vendor, lista] of Object.entries(FUENTES)) {
+    for (const f of lista) {
+      if (!f.url) continue;
+      const a = await revisar(vendor, f, { conTexto: true });
+      await espera((segundos || 10) * 1000);
+      const b = await revisar(vendor, f, { conTexto: true });
+      if (a.estado !== 'leido' || b.estado !== 'leido') {
+        filas.push({
+          vendor, documento: f.documento, url: f.url, estable: f.estable !== false,
+          estado: 'inalcanzable', detalle: (a.detalle || b.detalle),
+        });
+        continue;
+      }
+      filas.push({
+        vendor,
+        documento: f.documento,
+        url: f.url,
+        estable: f.estable !== false,
+        estado: 'leido',
+        bytesIguales: a.bytes === b.bytes,
+        bytesA: a.bytes,
+        bytesB: b.bytes,
+        hashIgual: a.hash === b.hash,
+        hashTextoIgual: a.hashTexto !== null && a.hashTexto === b.hashTexto,
+        hayTexto: a.hashTexto !== null,
+        // Cuando el texto difiere, el primer trozo que no casa. Sin esto, "el texto tambien
+        // varia" no dice si es una fecha, un contador de visitas o el documento entero.
+        difiereEn: primeraDiferencia(a.texto, b.texto),
+      });
+    }
+  }
+  return filas;
+}
+
+function imprimirSondeo(filas) {
+  console.log('\n== SONDEO DE ESTABILIDAD ==');
+  console.log('   Dos peticiones seguidas a la misma URL. Lo que cambie entre ellas NO puede ser');
+  console.log('   un cambio del fabricante: es marcado volatil.\n');
+  for (const r of filas) {
+    if (r.estado !== 'leido') {
+      console.log(`[ ---- ] ${r.vendor.padEnd(9)} ${r.documento}`);
+      console.log(`          inalcanzable: ${r.detalle}`);
+      continue;
+    }
+    const veredicto = r.hashIgual ? 'ESTABLE en bytes'
+      : (r.hashTextoIgual ? 'bytes volatiles, TEXTO ESTABLE'
+        : (r.hayTexto ? 'texto TAMBIEN volatil' : 'bytes volatiles (no es HTML: sin texto que comparar)'));
+    const marca = r.hashIgual ? '[  ok  ]' : (r.hashTextoIgual ? '[ texto]' : '[VOLATIL]');
+    console.log(`${marca} ${r.vendor.padEnd(9)} ${r.documento}`);
+    console.log(`          declarado estable: ${r.estable ? 'si' : 'no'} · medido: ${veredicto}`);
+    console.log(`          bytes ${r.bytesA} / ${r.bytesB}`);
+    if (r.difiereEn) {
+      console.log(`          el texto difiere en la posicion ${r.difiereEn.posicion} (largos ${r.difiereEn.largoA} / ${r.difiereEn.largoB}):`);
+      console.log(`            A: …${r.difiereEn.a}…`);
+      console.log(`            B: …${r.difiereEn.b}…`);
+    }
+  }
+  const mal = filas.filter((r) => r.estado === 'leido' && r.estable && !r.hashIgual);
+  if (mal.length) {
+    console.log(`\n${mal.length} fuente(s) declaradas estables que NO lo son. Cada alarma suya puede ser falsa.`);
+    for (const r of mal) {
+      console.log(`  - ${r.vendor} · ${r.documento}`);
+      console.log(`    ${r.hashTextoIgual ? 'su TEXTO si es estable: vigilar el texto en vez de los bytes.' : 'ni su texto es estable: hay que mirar que baila antes de decidir.'}`);
+    }
+  }
+  console.log('');
+}
+
 function imprimir(d) {
   console.log('\n== VIGIA DE FUENTES ==\n');
   for (const r of d.resultados) {
@@ -333,6 +462,19 @@ function imprimir(d) {
 }
 
 if (require.main === module) {
+  if (args.includes('--sondeo')) {
+    const seg = parseInt((args.find((a) => a.startsWith('--espera=')) || '').split('=')[1], 10);
+    sondear(Number.isFinite(seg) ? seg : 10).then((filas) => {
+      if (JSON_OUT) console.log(JSON.stringify(filas, null, 2));
+      else imprimirSondeo(filas);
+      process.exit(0);
+    }).catch((err) => {
+      console.error('[vigia] error inesperado en el sondeo:', err);
+      process.exit(1);
+    });
+    return;
+  }
+
   const i = args.indexOf('--revisado');
   if (i >= 0) {
     const [vendor, url] = [args[i + 1], args[i + 2]];
@@ -365,6 +507,7 @@ if (require.main === module) {
 
 module.exports = {
   correr, revisar, claveDe, pendientes, normalizarEntrada, marcarRevisado, aplicarAlLock,
+  sondear, textoNormalizado, primeraDiferencia,
   clasificar,
   leerLock, LOCK,
 };
