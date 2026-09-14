@@ -17,7 +17,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert');
-const { fuentesPendientes, SEMANAS_TOLERADAS } = require('../scripts/catalogo-check');
+const { fuentesPendientes, SEMANAS_TOLERADAS, impactoDeFuentes, clavesDe } = require('../scripts/catalogo-check');
 const { leerLock } = require('../scripts/vigia-fuentes');
 
 test('ninguna fuente lleva más del umbral esperando que una persona la contraste', () => {
@@ -67,5 +67,50 @@ test('el lock se lee de verdad, no devuelve vacío por un error de lectura', () 
   assert.ok(n >= 9, `el lock declara ${n} documentos y las FUENTES con URL son 9`);
   for (const [clave, e] of Object.entries(lock.documentos)) {
     assert.ok(e.hashVerificado || e.hash, `${clave} no tiene ningún hash`);
+  }
+});
+
+// EL RADIO DE IMPACTO DE UNA FUENTE TIENE QUE SER DATO, NO ADORNO.
+//
+// `cubre` es prosa: dice "throughput por capa, sesiones, cps" y quien lo lee no sabe si eso
+// toca tres campos o 58 modelos. `campos` lo declara, y estas pruebas son lo que impide que
+// se rellene a ojo -- mapear una fuente a un campo que no respalda manda a revisar las cifras
+// equivocadas, o da por respaldado un campo que ese documento nunca cubrio: el error del
+// `noAplica` deducido del comparador.
+
+test('ninguna fuente declara un campo que su fabricante no tiene', () => {
+  const malas = impactoDeFuentes().filter((f) => f.desconocidos.length);
+  const detalle = malas.map((f) => `\n  ${f.vendor} · ${f.documento}`
+    + `\n    no existen en el catálogo de ${f.vendor}: ${f.desconocidos.join(', ')}`).join('');
+  assert.strictEqual(malas.length, 0, `${malas.length} fuente(s) declaran campos inexistentes:${detalle}\n`);
+});
+
+test('la comprobación mira de verdad: un campo inventado se detecta', () => {
+  // Sin esto, un fallo del cruce que devolviera siempre [] dejaria la prueba anterior en verde
+  // sin haber mirado nada -- el conjunto inerte de CISCO_EOL_MODELS otra vez.
+  const claves = clavesDe('fortinet');
+  assert.ok(claves.has('cps'), 'no se están leyendo las claves reales del catálogo Fortinet');
+  assert.ok(!claves.has('campoQueNoExiste'), 'el conjunto de claves acepta cualquier cosa');
+  assert.ok(claves.size > 10, `solo ${claves.size} claves: el catálogo no se está cargando`);
+});
+
+test('una fuente sin campos declarados dice por qué, y no cuenta como impacto cero', () => {
+  // "No consta" nunca es "no afecta". Es el mismo tercer estado que protege `redund` y la
+  // columna «Vigilancia»: las de precio se marcan como tales y el resto declara su motivo.
+  const sinCampos = impactoDeFuentes().filter((f) => !f.declarado);
+  assert.ok(sinCampos.length > 0, 'se esperaba alguna fuente sin campos: las de precio no los tienen');
+  for (const f of sinCampos) {
+    assert.ok(f.dominio === 'precio' || f.porQue,
+      `${f.vendor} · ${f.documento} no declara campos y tampoco dice por qué`);
+  }
+});
+
+test('al menos una fuente por fabricante con catálogo declara su radio', () => {
+  // Que la mitad quede en "no consta" es aceptable; que lo quede ENTERA significa que la
+  // funcion no sirve para nada y conviene enterarse.
+  const declaradas = impactoDeFuentes().filter((f) => f.declarado);
+  assert.ok(declaradas.length >= 8, `solo ${declaradas.length} fuentes declaran campos`);
+  for (const f of declaradas) {
+    assert.ok(f.modelos > 0, `${f.vendor} · ${f.documento} declara ${f.campos.join(',')} pero 0 modelos los traen`);
   }
 });

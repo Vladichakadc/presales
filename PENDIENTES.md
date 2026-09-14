@@ -4,8 +4,8 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-14 (depuración del vigía de fuentes: el lock absorbía el cambio que
-acababa de denunciar).
+Última revisión: 2026-09-14 (cerrados el 36 y el 37: el Product Matrix es edición nueva sin
+cifras nuevas, y el campo `estable` estaba mal en los dos sentidos posibles).
 
 ---
 
@@ -500,34 +500,48 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     los siete»: la capa común es algo a lo que cada fabricante aporta lo que ya resolvió.
     Coste bajo, no toca ningún motor de cálculo.
 
-36. **El Fortinet Product Matrix se republicó y nadie lo ha leído (2026-09-14).** Es el
-    hallazgo que destapó la investigación del vigía. El documento pasó de **109.483 a 123.387
-    bytes** (+12,7 %) entre el 7 y el 14 de septiembre. Respalda `cps` en 56 de 58 modelos,
-    las cinco capas de throughput y las sesiones, del **único fabricante con lista de precios
-    firmada** — es el documento que más peso carga de todo el catálogo. **Lo que se sabe es que
-    fue republicado, no que una cifra se haya movido**: desde este entorno `fortinet.com`
-    responde 403 por política de egreso y eso se reporta, no se rodea. El lock ya lo conserva
-    como pendiente (`hashVerificado` = `bef87361…`, lo visto = `242a6eba…`) y la pestaña de
-    procedencia lo muestra en pantalla. **Cierra así:** traer el PDF con
-    `.github/workflows/traer-fortinet-matrix.yml` —los ejecutores de Actions sí alcanzan
-    fortinet.com—, leerlo, aplicar lo que cambie con `npm run cps` (que contrasta contra
-    `sess` antes de aceptar una fila) y después declarar la revisión:
-    `npm run vigia -- --revisado fortinet https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf`.
-    **A las 4 semanas rompe `npm run verificar`**, que es lo que impide que se quede aquí para
-    siempre.
+36. **~~El Fortinet Product Matrix se republicó y nadie lo ha leído~~ Resuelto (2026-09-14).**
+    Se trajo con `traer-fortinet-matrix.yml` (los ejecutores de Actions sí alcanzan
+    fortinet.com) y se leyó entero: sha256 `242a6eba…`, 123.387 bytes, exactamente lo que el
+    vigía había marcado. **Es una edición nueva de verdad** —`PRQMTX-2026-R176-SEP`,
+    septiembre de 2026, frente a la de julio con la que se transcribió— y por eso sube la
+    fecha de procedencia, que decía «2026-07» en pantalla. **Pero ninguna cifra que el
+    catálogo use se movió:** 27 modelos FortiGate x 7 campos = 189 comparaciones, 189
+    coincidencias, 0 diferencias, y ni un modelo nuevo ni uno que desaparezca. La lectura se
+    sometió al doble anclaje de `npm run cps` (27 filas aceptadas, 0 rechazadas) y se
+    comprobó que ese anclaje sigue vivo desplazando a propósito la fila del 90G a los valores
+    del 200G, que sí fue rechazada. De paso corrigió una afirmación de `CLAUDE.md`: este
+    documento publica «Power Supplies» (tipo y número, que respalda `redund`) y **no**
+    vatios.
 
-37. **El boletín EOL de Cisco: sospecha de `estable: true` mal clasificado (2026-09-14).**
-    Lleva **tres mediciones consecutivas** cambiando de hash —`48829947` (02-sep),
-    `4734ea1e` (07-sep), `f57ff23f` (14-sep)— y eso solo se vio al reconstruir el historial
-    del lock, porque la versión vieja del vigía borraba el anterior cada semana. **Dos indicios
-    apuntan a que es ruido y no contenido:** del 07 al 14 los bytes son **idénticos** (173.913)
-    con hash distinto, que es la firma de una marca rotatoria de ancho fijo; y la propia
-    cabecera de `legacyData/fuentes.js` cita **esta misma página** como ejemplo de que el HTML
-    deriva («Cisco 173.913 -> 173.905 bytes» en dos corridas con minutos de diferencia). Aun
-    así **no se ha cambiado a `estable: false`**: silenciar una alarma por una sospecha es
-    peor que atenderla, y desde aquí no se puede abrir el documento para comprobarlo. Queda
-    como pendiente y se resuelve igual que el 36 — se abre, se mira, y o se declara revisado o
-    se reclasifica el campo con el motivo escrito.
+37. **~~El boletín EOL de Cisco: sospecha de `estable: true` mal clasificado~~ Resuelto
+    (2026-09-14), midiéndolo.** La sospecha era correcta y la medición encontró **los dos
+    errores posibles a la vez**. `npm run vigia -- --sondeo`, nuevo, pide cada URL dos veces
+    con segundos de diferencia —lo que cambie entre ellas no puede ser un cambio del
+    fabricante— y compara los bytes y el texto por separado. Desde Actions:
+
+    - el **boletín EOL de Cisco**, declarado `estable: true`, devolvió los mismos 173.911
+      bytes con **hash distinto** y el **mismo texto**: sus tres semanas de «cambios» eran
+      alarmas falsas. Marcado revisado con esa evidencia;
+    - el **EOL de Juniper**, declarado `estable: false`, devolvió bytes y hash idénticos:
+      estaba **callado sin motivo**, así que un boletín nuevo de fin de venta se habría
+      reportado como «varió (página dinámica)» y nadie se habría enterado. Corregido a
+      `estable: true`.
+
+    De ahí sale el arreglo general: el vigía vigila ahora el **texto** en las fuentes HTML y
+    los bytes en los PDF. Lo que **no** se midió es la estabilidad de un día para otro —dos
+    peticiones con 15 s de diferencia no dicen nada de eso—, así que MikroTik, las páginas de
+    HPE y la de Nokia siguen en `estable: false` hasta que las corridas semanales acumulen
+    evidencia. Medir una cosa y afirmar otra es exactamente como se llega a un campo puesto a
+    ojo.
+
+38. **Tres fuentes siguen dando 403 incluso desde GitHub Actions (2026-09-14).** El sondeo lo
+    confirmó con su código, que es el resultado honesto: las *hardware guides* por modelo de
+    Juniper, sus fichas de la generación 2024, y el Validated Solution Guide de HPE. No es el
+    proxy de este entorno —los ejecutores no pasan por él—, así que es una restricción del
+    propio fabricante. Mientras siga así, esas tres respaldan datos que el vigía **no puede
+    comprobar**, y la pestaña de procedencia lo dice: salen como «no comprobada», nunca en
+    verde. Cierra desde una máquina con acceso, o con una URL vigente que sí resuelva.
 
 ## Limpieza
 

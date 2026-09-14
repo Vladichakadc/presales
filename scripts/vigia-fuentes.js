@@ -171,6 +171,13 @@ async function revisar(vendor, f, opts) {
       largoTexto: texto === null ? null : texto.length,
       bytes: cuerpo.length,
       tipo,
+      // LO QUE SE VIGILA. En HTML es el texto, no los bytes: medido el 2026-09-14 con
+      // `--sondeo`, cinco de las seis paginas HTML cambian de bytes entre dos peticiones con
+      // 15 s de diferencia y NINGUNA cambia de texto. El boletin EOL de Cisco llevaba tres
+      // semanas de alarmas falsas por eso. En un PDF no hay texto normalizable sin un parser,
+      // asi que se siguen vigilando los bytes -- y ahi son estables, tambien medido.
+      hashVigilado: texto === null ? sha(cuerpo) : sha(texto),
+      clase: texto === null ? 'bytes' : 'texto',
       texto: (opts && opts.conTexto) ? texto : undefined,
     };
   } catch (err) {
@@ -191,7 +198,17 @@ function clasificar(r, previo, ahora) {
     r.cambio = 'primera medición';
     return r;
   }
-  if (previo.hashVerificado === r.hash) {
+  // CAMBIO DE CLASE: lo guardado es un hash de bytes y ahora se vigila el texto (o al reves).
+  // No son comparables, asi que NO es un cambio del documento -- es una nueva linea base. Se
+  // dice en el informe en vez de callarlo: un rebase silencioso es indistinguible de una
+  // alarma que alguien apago.
+  const clase = previo.clase || 'bytes';
+  if (clase !== r.clase) {
+    r.cambio = 'nueva línea base (se pasa a vigilar el ' + r.clase + ')';
+    r.rebase = true;
+    return r;
+  }
+  if (previo.hashVerificado === r.hashVigilado) {
     r.cambio = 'sin cambios';
     return r;
   }
@@ -228,7 +245,8 @@ function aplicarAlLock(lock, resultados, ahora) {
         hashVerificado: previo.hashVerificado,
         bytes: previo.bytes,
         medido: previo.medido,
-        visto: { hash: r.hash, bytes: r.bytes, medido: ahora },
+        clase: previo.clase || 'bytes',
+        visto: { hash: r.hashVigilado, bytes: r.bytes, medido: ahora },
         pendienteDesde: r.pendienteDesde,
       };
       continue;
@@ -240,7 +258,8 @@ function aplicarAlLock(lock, resultados, ahora) {
     // reescribir la entrada entera se limpian `visto` y `pendienteDesde` si los hubiera,
     // que es lo correcto cuando el documento vuelve al hash ya verificado.
     lock.documentos[r.clave] = {
-      documento: r.documento, hashVerificado: r.hash, bytes: r.bytes, medido: ahora,
+      documento: r.documento, hashVerificado: r.hashVigilado, clase: r.clase,
+      bytes: r.bytes, medido: ahora,
     };
   }
   lock.revisado = ahora;
@@ -425,7 +444,9 @@ function imprimir(d) {
   console.log('\n== VIGIA DE FUENTES ==\n');
   for (const r of d.resultados) {
     const marca = r.estado !== 'leido' ? '[ ---- ]'
-      : (r.cambio === 'CAMBIÓ' ? '[CAMBIO]' : (r.cambio === 'varió (página dinámica)' ? '[ nota ]' : '[  ok  ]'));
+      : (r.cambio === 'CAMBIÓ' ? '[CAMBIO]'
+        : (r.cambio === 'varió (página dinámica)' ? '[ nota ]'
+          : (r.rebase ? '[ base ]' : '[  ok  ]')));
     let cola;
     if (r.estado !== 'leido') {
       cola = r.estado === 'sin url' ? 'sin URL que vigilar' : `inalcanzable: ${r.detalle}`;

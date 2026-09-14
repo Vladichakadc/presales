@@ -29,11 +29,13 @@ const DOC = 'Fortinet Product Matrix';
 
 // Una corrida semanal completa sobre un solo documento: mide, clasifica contra lo verificado y
 // escribe. Encadenar llamadas es simular semanas.
-function semana(lock, { hash, bytes = 1000, estable = true, cuando }) {
+function semana(lock, { hash, bytes = 1000, estable = true, clase = 'bytes', cuando }) {
   const ahora = cuando || new Date().toISOString();
   const r = {
     clave: CLAVE, vendor: 'fortinet', documento: DOC, url: 'https://www.fortinet.com/matrix.pdf',
-    estado: 'leido', hash, bytes, estable,
+    // `hashVigilado` es lo que se compara: el texto en HTML, los bytes en un PDF. Aqui se
+    // fija a mano porque lo que se prueba es la regla del lock, no el hasheo.
+    estado: 'leido', hash, hashVigilado: hash, clase, bytes, estable,
   };
   clasificar(r, normalizarEntrada(lock.documentos[CLAVE]), ahora);
   aplicarAlLock(lock, [r], ahora);
@@ -180,7 +182,9 @@ test('EL SABOTAJE: la versión que absorbía produce el verde falso, y esta prue
   const absorbiendo = (lock, resultados, ahora) => {
     for (const r of resultados) {
       if (r.estado !== 'leido') continue;
-      lock.documentos[r.clave] = { documento: r.documento, hashVerificado: r.hash, bytes: r.bytes, medido: ahora };
+      lock.documentos[r.clave] = {
+        documento: r.documento, hashVerificado: r.hashVigilado, clase: r.clase, bytes: r.bytes, medido: ahora,
+      };
     }
     return lock;
   };
@@ -194,7 +198,7 @@ test('EL SABOTAJE: la versión que absorbía produce el verde falso, y esta prue
       const ahora = new Date().toISOString();
       ultimo = {
         clave: CLAVE, vendor: 'fortinet', documento: DOC, url: 'x',
-        estado: 'leido', hash, bytes: 1000, estable: true,
+        estado: 'leido', hash, hashVigilado: hash, clase: 'bytes', bytes: 1000, estable: true,
       };
       clasificar(ultimo, normalizarEntrada(lock.documentos[CLAVE]), ahora);
       aplicar(lock, [ultimo], ahora);
@@ -206,4 +210,40 @@ test('EL SABOTAJE: la versión que absorbía produce el verde falso, y esta prue
     'el sabotaje ya no reproduce el defecto: esta prueba dejó de comprobar nada');
   assert.strictEqual(corrida(aplicarAlLock).cambio, 'CAMBIÓ',
     'la versión real se comporta como la saboteada: el tercer estado no está haciendo nada');
+});
+
+// PASAR DE VIGILAR BYTES A VIGILAR TEXTO NO ES UN CAMBIO DEL DOCUMENTO.
+//
+// Medido el 2026-09-14 con `npm run vigia -- --sondeo` desde Actions: cinco de las seis
+// paginas HTML cambian de bytes entre dos peticiones con 15 s de diferencia y NINGUNA cambia
+// de texto. El boletin EOL de Cisco llevaba por eso tres semanas de alarmas falsas. Al pasar
+// a vigilar el texto, el hash guardado (de bytes) y el nuevo (de texto) no son comparables:
+// tratarlo como "CAMBIO" seria una alarma inventada el dia del despliegue.
+
+test('cambiar de bytes a texto abre una línea base nueva, no una alarma', () => {
+  const lock = lockCon({
+    documento: DOC, hashVerificado: 'hash-de-bytes', clase: 'bytes', bytes: 1000,
+    medido: haceSemanas(2),
+  });
+  const r = semana(lock, { hash: 'hash-de-texto', clase: 'texto' });
+
+  assert.strictEqual(r.rebase, true);
+  assert.match(r.cambio, /línea base/);
+  assert.notStrictEqual(r.cambio, 'CAMBIÓ', 'un cambio de unidad de medida no es un cambio del documento');
+  const e = lock.documentos[CLAVE];
+  assert.strictEqual(e.hashVerificado, 'hash-de-texto');
+  assert.strictEqual(e.clase, 'texto');
+  assert.strictEqual(e.visto, undefined, 'una línea base nueva no deja nada pendiente');
+});
+
+test('ya en texto, un cambio del texto SÍ alarma', () => {
+  // El riesgo de normalizar es tapar cambios reales. Esto es lo que lo impide: una vez la
+  // linea base es de texto, cualquier diferencia de texto vuelve a ser CAMBIO.
+  const lock = lockCon(null);
+  semana(lock, { hash: 'texto-v1', clase: 'texto' });
+  const r = semana(lock, { hash: 'texto-v2', clase: 'texto' });
+
+  assert.strictEqual(r.cambio, 'CAMBIÓ');
+  assert.strictEqual(lock.documentos[CLAVE].hashVerificado, 'texto-v1', 'se tragó el cambio del texto');
+  assert.strictEqual(pendientes(lock).length, 1);
 });

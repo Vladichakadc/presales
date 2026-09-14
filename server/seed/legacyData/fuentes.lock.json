@@ -8,15 +8,9 @@
     },
     "cisco::https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html": {
       "documento": "Boletines oficiales de fin de venta (EOL)",
-      "hashVerificado": "48829947e3e1599312a2d056a460fce096ec3fb636f4a5cbb67661b6215f7df9",
-      "bytes": 173905,
-      "medido": "2026-09-02T11:40:08.599Z",
-      "visto": {
-        "hash": "f57ff23f2da671f218f82ed2d0b496511ae8193fa72cde65e5a6962baf4a364f",
-        "bytes": 173913,
-        "medido": "2026-09-14T12:14:09.774Z"
-      },
-      "pendienteDesde": "2026-09-07T11:59:03.463Z"
+      "hashVerificado": "f57ff23f2da671f218f82ed2d0b496511ae8193fa72cde65e5a6962baf4a364f",
+      "bytes": 173913,
+      "medido": "2026-09-14T12:14:09.774Z"
     },
     "juniper::https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/security-products-comparison-chart.pdf": {
       "documento": "SRX Series and vSRX Performance and Features Matrix",

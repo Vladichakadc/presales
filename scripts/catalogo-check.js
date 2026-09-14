@@ -232,6 +232,66 @@ function procedencia() {
   return vendors.map((v) => ({ vendor: v.code, fuentes: fuentesDe(v.code, ahora) }));
 }
 
+// EL RADIO DE IMPACTO DE UNA FUENTE.
+//
+// `cubre` es prosa y se lee bien en pantalla, pero no dice si un cambio toca tres campos o
+// cincuenta y ocho modelos -- y sin esa magnitud la cola de revision se atiende por orden de
+// llegada en vez de por lo que arriesga. `campos` lo declara, y aqui se cruza con el catalogo
+// de verdad.
+//
+// TODAS las listas de cada fabricante, no solo las que CAMPOS mira: ese mapa esta acotado a
+// los campos de dimensionamiento a proposito, y una fuente puede respaldar `eolAnnounced`,
+// `psu` o `skus`, que no estan ahi. Nokia va con sus dos listas porque son dos catalogos.
+const CATALOGOS = {
+  huawei: ['MODELS'], cisco: ['MODELS'], fortinet: ['MODELS'], mikrotik: ['MODELS'],
+  aruba: ['MODELS'], juniper: ['MODELS'], nokia: ['MODELS', 'MODELS_ROUTER'],
+};
+
+function clavesDe(vendor) {
+  const mod = cargar(vendor);
+  const claves = new Set();
+  if (!mod) return claves;
+  for (const lista of (CATALOGOS[vendor] || [])) {
+    for (const m of (mod[lista] || [])) for (const k of Object.keys(m)) claves.add(k);
+  }
+  return claves;
+}
+
+// Cuantos modelos traen de verdad cada campo declarado. Sale del catalogo y no de un numero
+// escrito a mano, que se quedaria con los modelos de ayer.
+function impactoDeFuente(vendor, f) {
+  if (!Array.isArray(f.campos)) {
+    return {
+      declarado: false,
+      dominio: f.dominio || null,
+      porQue: f.porQue || null,
+      campos: [], desconocidos: [], modelos: 0,
+    };
+  }
+  const claves = clavesDe(vendor);
+  const mod = cargar(vendor);
+  const filas = (CATALOGOS[vendor] || []).flatMap((l) => (mod && mod[l]) || []);
+  const desconocidos = f.campos.filter((c) => !claves.has(c));
+  // Un modelo cuenta si trae ALGUNO de los campos que esta fuente respalda: es el numero de
+  // equipos que se quedan sin respaldo si el documento cambia.
+  const modelos = filas.filter((m) => f.campos.some((c) => tieneDato(m[c]))).length;
+  return {
+    declarado: true, dominio: f.dominio || null, porQue: null,
+    campos: f.campos, desconocidos, modelos,
+  };
+}
+
+// Toda fuente declarada, con su impacto. Lo usa la prueba: un campo inventado es un fallo.
+function impactoDeFuentes() {
+  const out = [];
+  for (const v of vendors) {
+    for (const f of fuentesDe(v.code)) {
+      out.push({ vendor: v.code, documento: f.documento, url: f.url || null, ...impactoDeFuente(v.code, f) });
+    }
+  }
+  return out;
+}
+
 // A partir de cuantas semanas un documento que cambio y nadie ha revisado deja de ser un aviso
 // y pasa a romper `npm run verificar`. El umbral existe para que publicar un PDF un martes no
 // bloquee trabajo que no tiene nada que ver, y para que aun asi no se pueda ignorar sin
@@ -244,9 +304,19 @@ const SEMANAS_TOLERADAS = 4;
 // y NO sale a la red: el informe tiene que poder correrse desde este entorno, donde los seis
 // dominios dan 403.
 function fuentesPendientes(lock) {
-  return pendientesDeRevision(lock).map((f) => ({
-    ...f, vencida: (f.semanas || 0) >= SEMANAS_TOLERADAS,
-  }));
+  const declaradas = impactoDeFuentes();
+  return pendientesDeRevision(lock).map((f) => {
+    const d = declaradas.find((x) => x.vendor === f.vendor && x.url === f.url);
+    return {
+      ...f,
+      vencida: (f.semanas || 0) >= SEMANAS_TOLERADAS,
+      impacto: d || null,
+    };
+  // Primero lo vencido, y dentro de eso lo que mas catalogo deja sin respaldo. Una cola
+  // ordenada solo por antiguedad atiende antes un cambio de tres campos que uno de sesenta.
+  }).sort((a, b) => (Number(b.vencida) - Number(a.vencida))
+    || ((b.impacto ? b.impacto.modelos : 0) - (a.impacto ? a.impacto.modelos : 0))
+    || ((b.semanas || 0) - (a.semanas || 0)));
 }
 
 function informe() {
@@ -320,6 +390,14 @@ function imprimir(d) {
     for (const f of d.fuentesPendientes) {
       console.log(`[${f.vencida ? 'VENCIDA' : ' aviso '}] ${f.vendor.padEnd(9)} ${f.documento}  ·  ${f.semanas} semana(s)`);
       console.log(`          verificado ${f.hashVerificado.slice(0, 12)} (${f.bytesVerificado} B) -> visto ${f.hashVisto.slice(0, 12)} (${f.bytesVisto} B)`);
+      const im = f.impacto;
+      if (im && im.declarado) {
+        console.log(`          respalda ${im.campos.join(', ')} · ${im.modelos} modelo(s) con alguno de esos campos`);
+      } else if (im && im.dominio === 'precio') {
+        console.log('          precios: viven en cotizadorCatalog.js, no en el catálogo de modelos');
+      } else {
+        console.log(`          radio de impacto sin declarar${im && im.porQue ? `: ${im.porQue}` : ''}`);
+      }
       console.log(`          npm run vigia -- --revisado ${f.vendor} ${f.url}`);
     }
     console.log('');
@@ -334,5 +412,5 @@ if (require.main === module) {
 
 module.exports = {
   informe, cobertura, cicloDeVida, precios, pantallas, procedencia,
-  fuentesPendientes, SEMANAS_TOLERADAS,
+  fuentesPendientes, SEMANAS_TOLERADAS, impactoDeFuentes, clavesDe,
 };
