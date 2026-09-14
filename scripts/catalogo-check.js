@@ -25,6 +25,7 @@
 const fs = require('fs');
 const path = require('path');
 const { fuentesDe, ANTIGUEDAD_AVISO_MESES } = require('../server/seed/legacyData/fuentes');
+const { pendientes: pendientesDeRevision } = require('./vigia-fuentes');
 const vendors = require('../server/seed/legacyData/vendors');
 
 const args = process.argv.slice(2);
@@ -231,10 +232,27 @@ function procedencia() {
   return vendors.map((v) => ({ vendor: v.code, fuentes: fuentesDe(v.code, ahora) }));
 }
 
+// A partir de cuantas semanas un documento que cambio y nadie ha revisado deja de ser un aviso
+// y pasa a romper `npm run verificar`. El umbral existe para que publicar un PDF un martes no
+// bloquee trabajo que no tiene nada que ver, y para que aun asi no se pueda ignorar sin
+// limite. Cuatro semanas es un mes de margen: el mismo criterio que los seis meses de
+// ANTIGUEDAD_AVISO_MESES, lo bastante largo para no ser ruido y lo bastante corto para que no
+// se pase una gama entera.
+const SEMANAS_TOLERADAS = 4;
+
+// Lo que el vigia vio cambiar y todavia espera a que una persona lo contraste. Se lee del lock
+// y NO sale a la red: el informe tiene que poder correrse desde este entorno, donde los seis
+// dominios dan 403.
+function fuentesPendientes(lock) {
+  return pendientesDeRevision(lock).map((f) => ({
+    ...f, vencida: (f.semanas || 0) >= SEMANAS_TOLERADAS,
+  }));
+}
+
 function informe() {
   return {
     cobertura: cobertura(), cicloDeVida: cicloDeVida(), precios: precios(),
-    pantallas: pantallas(), procedencia: procedencia(),
+    pantallas: pantallas(), procedencia: procedencia(), fuentesPendientes: fuentesPendientes(),
   };
 }
 
@@ -292,6 +310,20 @@ function imprimir(d) {
     }
   }
   console.log(`\n${piden} fuente(s) piden revision.\n`);
+
+  console.log('== FUENTES QUE CAMBIARON Y NADIE HA CONTRASTADO ==');
+  console.log('   El vigia las vio cambiar; el catalogo sigue verificado contra la version anterior.');
+  console.log(`   A las ${SEMANAS_TOLERADAS} semanas dejan de ser un aviso y rompen npm run verificar.\n`);
+  if (!d.fuentesPendientes.length) {
+    console.log('   Ninguna. (No es lo mismo que "todas leidas": las inalcanzables salen arriba.)\n');
+  } else {
+    for (const f of d.fuentesPendientes) {
+      console.log(`[${f.vencida ? 'VENCIDA' : ' aviso '}] ${f.vendor.padEnd(9)} ${f.documento}  ·  ${f.semanas} semana(s)`);
+      console.log(`          verificado ${f.hashVerificado.slice(0, 12)} (${f.bytesVerificado} B) -> visto ${f.hashVisto.slice(0, 12)} (${f.bytesVisto} B)`);
+      console.log(`          npm run vigia -- --revisado ${f.vendor} ${f.url}`);
+    }
+    console.log('');
+  }
 }
 
 if (require.main === module) {
@@ -300,4 +332,7 @@ if (require.main === module) {
   else imprimir(d);
 }
 
-module.exports = { informe, cobertura, cicloDeVida, precios, pantallas, procedencia };
+module.exports = {
+  informe, cobertura, cicloDeVida, precios, pantallas, procedencia,
+  fuentesPendientes, SEMANAS_TOLERADAS,
+};

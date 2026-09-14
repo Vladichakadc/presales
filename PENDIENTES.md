@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-13 (revisión de portabilidad del módulo Aruba a los otros siete).
+Última revisión: 2026-09-14 (depuración del vigía de fuentes: el lock absorbía el cambio que
+acababa de denunciar).
 
 ---
 
@@ -464,7 +465,12 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     LIST/NET» (archivo compartido por los 7 fabricantes — no se tocó para no romper a los
     demás). Unificar criterio cuando se aplique el patrón Aruba al resto de fabricantes.
 
-33. **Railway no espera a `pantallas`, solo a `verificar` (2026-09-13).** Medido, no supuesto:
+33. **Railway no espera a `pantallas`, solo a `verificar` (2026-09-13).** *Actualizado el
+    2026-09-14: hay un segundo agujero, de otra clase, y ya está cerrado — un push de bot no
+    creaba ningún check, así que Railway no esperaba a nada. Un required check tampoco lo
+    habría cerrado: un push que no crea ningún check no puede fallarlo. El vigía abre PR desde
+    hoy. Ver `CLAUDE.md`, sección Deploying.*
+    Medido, no supuesto:
     el commit `7fe786e` desplegó con estado SUCCESS teniendo la comprobación de navegador en
     rojo desde hacía cuatro días — el dimensionador Aruba llevaba ese tiempo sin que nadie lo
     condujera. La cabecera de `.github/workflows/pantallas.yml` afirma «ESTE CHECK FRENA EL
@@ -493,6 +499,35 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     el refactor estrenó en Aruba, y no está en ninguna pantalla. El flujo no es «Aruba enseña a
     los siete»: la capa común es algo a lo que cada fabricante aporta lo que ya resolvió.
     Coste bajo, no toca ningún motor de cálculo.
+
+36. **El Fortinet Product Matrix se republicó y nadie lo ha leído (2026-09-14).** Es el
+    hallazgo que destapó la investigación del vigía. El documento pasó de **109.483 a 123.387
+    bytes** (+12,7 %) entre el 7 y el 14 de septiembre. Respalda `cps` en 56 de 58 modelos,
+    las cinco capas de throughput y las sesiones, del **único fabricante con lista de precios
+    firmada** — es el documento que más peso carga de todo el catálogo. **Lo que se sabe es que
+    fue republicado, no que una cifra se haya movido**: desde este entorno `fortinet.com`
+    responde 403 por política de egreso y eso se reporta, no se rodea. El lock ya lo conserva
+    como pendiente (`hashVerificado` = `bef87361…`, lo visto = `242a6eba…`) y la pestaña de
+    procedencia lo muestra en pantalla. **Cierra así:** traer el PDF con
+    `.github/workflows/traer-fortinet-matrix.yml` —los ejecutores de Actions sí alcanzan
+    fortinet.com—, leerlo, aplicar lo que cambie con `npm run cps` (que contrasta contra
+    `sess` antes de aceptar una fila) y después declarar la revisión:
+    `npm run vigia -- --revisado fortinet https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf`.
+    **A las 4 semanas rompe `npm run verificar`**, que es lo que impide que se quede aquí para
+    siempre.
+
+37. **El boletín EOL de Cisco: sospecha de `estable: true` mal clasificado (2026-09-14).**
+    Lleva **tres mediciones consecutivas** cambiando de hash —`48829947` (02-sep),
+    `4734ea1e` (07-sep), `f57ff23f` (14-sep)— y eso solo se vio al reconstruir el historial
+    del lock, porque la versión vieja del vigía borraba el anterior cada semana. **Dos indicios
+    apuntan a que es ruido y no contenido:** del 07 al 14 los bytes son **idénticos** (173.913)
+    con hash distinto, que es la firma de una marca rotatoria de ancho fijo; y la propia
+    cabecera de `legacyData/fuentes.js` cita **esta misma página** como ejemplo de que el HTML
+    deriva («Cisco 173.913 -> 173.905 bytes» en dos corridas con minutos de diferencia). Aun
+    así **no se ha cambiado a `estable: false`**: silenciar una alarma por una sospecha es
+    peor que atenderla, y desde aquí no se puede abrir el documento para comprobarlo. Queda
+    como pendiente y se resuelve igual que el 36 — se abre, se mira, y o se declara revisado o
+    se reclasifica el campo con el motivo escrito.
 
 ## Limpieza
 

@@ -75,6 +75,56 @@ async function getVendorsList() {
 // Procedencia por fabricante, para que el portal pueda decir de que documento y de que fecha
 // salen las cifras que alguien esta a punto de citar en una propuesta. Sale de
 // legacyData/fuentes.js, que transcribe lo que ya estaba en las cabeceras de cada catalogo.
+// ESTADO DE VIGILANCIA DE CADA FUENTE. `fuentes.js` dice de que documento y de que fecha
+// salieron las cifras; el lock del vigia sabe ademas si ese documento SIGUE siendo el mismo.
+// Hasta el 2026-09-14 ese segundo dato no llegaba a ninguna pantalla: el Product Matrix de
+// Fortinet se republico y la pestana de procedencia seguia mostrando un "2026-07" tranquilo a
+// quien estaba a punto de citar una cifra delante de un cliente.
+//
+// TRES ESTADOS Y NINGUNO DEDUCIDO, la regla de `redund` y del comparador:
+//   verificada     el documento de hoy es el mismo contra el que se contrasto el catalogo
+//   cambió         se republico y todavia no lo ha contrastado nadie (con desde cuando)
+//   no comprobada  no hay medicion: sin URL publica que vigilar, o nunca se pudo leer
+// "No comprobada" NUNCA es verde. No saber no es estar bien, igual que una fuente sin fecha no
+// cuenta como reciente.
+//
+// El lock se lee una vez y se cachea: vive en git y la base es efimera, asi que solo cambia
+// con un despliegue. Que falte no es un error -- el repositorio funciona igual sin vigia.
+const RUTA_LOCK = pathMod.join(__dirname, '..', 'seed', 'legacyData', 'fuentes.lock.json');
+let lockCache;
+function lockVigia() {
+  if (lockCache === undefined) {
+    try {
+      lockCache = JSON.parse(fs.readFileSync(RUTA_LOCK, 'utf8')).documentos || {};
+    } catch {
+      lockCache = {};
+    }
+  }
+  return lockCache;
+}
+
+function vigilanciaDe(vendorCode, f) {
+  if (!f.url) return { estado: 'no comprobada', motivo: 'no hay URL pública que vigilar' };
+  // Una pagina marcada `estable: false` cambia de hash en cada peticion por marcas de tiempo y
+  // banners rotatorios, asi que el vigia la mide pero su resultado NO dice nada del dato. Que
+  // coincida no es "sin cambios": es que hoy tuvo suerte. Pintarla verde seria el mismo verde
+  // deducido que el "IPS: no aplica" del Catalyst 8300 -- y se detecto pintando la pantalla,
+  // no razonando sobre ella.
+  if (f.estable === false) {
+    return { estado: 'no comprobada', motivo: 'página dinámica: su hash cambia en cada petición y no dice nada del dato' };
+  }
+  const e = lockVigia()[`${vendorCode}::${f.url}`];
+  if (!e) return { estado: 'no comprobada', motivo: 'el vigía todavía no ha podido leerla' };
+  if (e.visto) {
+    return {
+      estado: 'cambió',
+      desde: e.pendienteDesde || e.visto.medido,
+      motivo: 'el documento oficial se republicó y aún no se ha contrastado con el catálogo',
+    };
+  }
+  return { estado: 'verificada', desde: e.medido };
+}
+
 async function toFuentes() {
   const vendors = await Vendor.findAll({ order: [['name', 'ASC']] });
   const out = {};
@@ -83,7 +133,14 @@ async function toFuentes() {
     // procedencia transcrita del catálogo. Con el manifiesto vacío esto no añade nada, así que
     // el comportamiento por defecto no cambia.
     const cargadas = fuentesSubidas.comoProcedencia(v.code);
-    out[v.code] = { nombre: v.name, colorHex: v.colorHex, fuentes: [...cargadas, ...fuentesDe(v.code)] };
+    // Las cargadas a mano no las vigila nadie: viven en el volumen, no en la otra punta de
+    // una URL oficial. Se marcan como tales en vez de heredar un estado que nadie midio.
+    const propias = fuentesDe(v.code).map((f) => ({ ...f, vigilancia: vigilanciaDe(v.code, f) }));
+    const subidas = cargadas.map((f) => ({
+      ...f,
+      vigilancia: { estado: 'no comprobada', motivo: 'documento cargado a mano, no se vigila' },
+    }));
+    out[v.code] = { nombre: v.name, colorHex: v.colorHex, fuentes: [...subidas, ...propias] };
   }
   return out;
 }
