@@ -863,6 +863,30 @@ const LICENSES_HA = {
   },
 };
 
+// ── DTD · Dynamic Threat Defense (2026-09-14, pendiente #31) ─────────────────
+// DTD SÍ está en la lista de precios vigente (verificado 2026-09-14 contra el export,
+// PLC GA, vigencia 2026-06-01 — mismas reglas de extracción que LICENSES: solo SKU,
+// descripción, List Price y vigencia). Es una escalera PLANA por appliance: no tiene
+// tiers de caudal, así que la clave es modalidad × término, no tier. Misma forma de
+// hoja que LICENSES ({sku:{y1,y3,y5}, y1,y3,y5}) por clave saas/saasHa/onprem/onpremHa.
+//
+// Procedencia y alcance:
+//   · QuickSpecs EdgeConnect v18 p.32: DTD es licencia opcional INDEPENDIENTE del tier
+//     («adds IDS/IPS, Adaptive DDoS, Smart SYN cookie and Secure web service») — NO
+//     fuerza Advanced.
+//   · Invariante HA == estándar (igual que LICENSES_HA): la lista tarifa el SKU HA del
+//     segundo nodo exactamente igual que el estándar, solo cambia el número de parte.
+//   · La lista también trae término de 7 años (S0Z42AAS/S0Y29AAS/S0Y36AAS/S0Y43AAS,
+//     $2.604) y SKU de evaluación a $0 (S1C85AAS/S1C86AAS/S1C87AAS/S1C88AAS). Los 7
+//     años quedan FUERA por alcance (pendiente #28: el dimensionador ofrece 1/3/5) y
+//     los de evaluación se excluyen a propósito: una evaluación a $0 no se cotiza.
+const DTD_LICENSES = {
+  saas:      {sku:{y1:'S0Z37AAS', y3:'S0Z39AAS', y5:'S0Z41AAS'}, y1:372, y3:1116, y5:1860},
+  saasHa:    {sku:{y1:'S0Z44AAS', y3:'S0Y26AAS', y5:'S0Y28AAS'}, y1:372, y3:1116, y5:1860},
+  onprem:    {sku:{y1:'S0Y31AAS', y3:'S0Y33AAS', y5:'S0Y35AAS'}, y1:372, y3:1116, y5:1860},
+  onpremHa:  {sku:{y1:'S0Y38AAS', y3:'S0Y40AAS', y5:'S0Y42AAS'}, y1:372, y3:1116, y5:1860},
+};
+
 // ── SSE (Secure Service Edge) y umbrales Microbranch (2026-09-13) ────────────
 // SSE es la línea «consultar» del portafolio: el SKU existe en el catálogo HPE pero NO
 // figura en la lista de precios vigente (verificado 2026-09-13: ninguna fila R8M36AAE
@@ -1064,5 +1088,5 @@ const ACCESSORY_COMPAT = {
 module.exports = {
   MODELS, BUNDLES, CARE, CARE_SKU, LICENSES, LICENSES_HA, BW_TIERS, BOOST, FEC_OVERHEAD,
   SOFTWARE, CENTRAL_TIERS, DATASHEETS, EOL_ANNOUNCED, OS_MATRIX,
-  ARUBA_ACCESSORY_CATALOG, ACCESSORY_COMPAT, ARUBA_SSE, MICROBRANCH_UMBRALES,
+  ARUBA_ACCESSORY_CATALOG, ACCESSORY_COMPAT, ARUBA_SSE, MICROBRANCH_UMBRALES, DTD_LICENSES,
 };

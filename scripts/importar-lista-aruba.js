@@ -159,6 +159,22 @@ function construirRoster(arubaData) {
       for (const y of ['y1', 'y3', 'y5']) push(bloque.sku[y], familia, bloque[y], 'boost');
     }
   }
+  // 2.55 · Dynamic Threat Defense (2026-09-14, pendiente #31): escalera PLANA por
+  // appliance (sin tiers de caudal), modalidad × término. La lista también trae 7 años
+  // y SKU de evaluación a $0: los 7 años quedan fuera por alcance (#28) y los de
+  // evaluación no entran al roster (una evaluación a $0 no se cotiza; además el parser
+  // descarta precios no positivos).
+  const FAM_DTD = {
+    saas: 'Dynamic Threat Defense (SaaS)',
+    saasHa: 'Dynamic Threat Defense (SaaS HA)',
+    onprem: 'Dynamic Threat Defense (On-Premises)',
+    onpremHa: 'Dynamic Threat Defense (On-Premises HA)',
+  };
+  for (const [clave, familia] of Object.entries(FAM_DTD)) {
+    const t = arubaData.DTD_LICENSES[clave];
+    if (!t) continue;
+    for (const y of ['y1', 'y3', 'y5']) push(t.sku[y], familia, t[y], 'dtd');
+  }
   // 2.6 · Central para gateways 70xx/90xx
   for (const tier of Object.values(arubaData.CENTRAL_TIERS)) {
     for (const y of ['y1', 'y3', 'y5']) push(tier.sku[y], 'Central (gateways 70xx/90xx)', tier[y], 'central');

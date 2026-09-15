@@ -438,6 +438,9 @@ async function toDimensionadorAruba() {
     // microbranch son los umbrales del aviso de sede pequeña (2026-09-13).
     sse: arubaData.ARUBA_SSE,
     microbranch: arubaData.MICROBRANCH_UMBRALES,
+    // DTD sí está en la lista vigente (2026-09-14, pendiente #31): escalera plana por
+    // appliance, modalidad × término — ver DTD_LICENSES en aruba.js.
+    dtd: arubaData.DTD_LICENSES,
   };
 }
 
