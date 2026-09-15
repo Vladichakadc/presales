@@ -22,7 +22,10 @@
 //     medidores: m => [{etq, val, tope, txt}],   // barras de holgura del modelo elegido
 //     secciones: m => [{titulo, filas:[[clave, valorHTML]], nota}],
 //     vendor: 'fortinet',           // fabricante, para pedir sus referencias de pedido
-//     alCambiar: id => {},          // se avisa a la pagina para sincronizar el BOM
+//     alCambiar: (id, origen) => {}, // se avisa a la pagina para sincronizar el BOM;
+//                                   //   origen: 'selector' | 'volver' | 'candidato'
+//     listaCandidatos: true,        // (opt-in) lista clicable de TODOS los que cumplen
+//     etiquetaCand: (m,i) => '',    // (opt-in) detalle de cada fila de esa lista
 //   })
 //
 // La pagina conserva el motor de dimensionamiento; este modulo solo presenta. Ninguna
@@ -73,6 +76,18 @@
 .ficha-refs-add{border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:3px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 7px;white-space:nowrap}
 .ficha-refs-add:hover{border-color:var(--red);color:var(--red)}
 .ficha-refs .vacio{padding:10px;color:var(--steel);font-size:12.5px}
+.ficha-cands{margin:0 0 12px;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.ficha-cands.larga{max-height:232px;overflow-y:auto;scrollbar-width:thin}
+.ficha-cand{display:flex;align-items:center;gap:8px;width:100%;padding:7px 10px;border:0;border-top:1px solid var(--paper);background:var(--card);color:var(--ink);font-family:'Barlow',sans-serif;font-size:12.5px;text-align:left;cursor:pointer}
+.ficha-cand:first-child{border-top:0}
+.ficha-cand:hover{background:var(--paper)}
+.ficha-cand:focus-visible{outline:2px solid var(--red);outline-offset:-2px}
+.ficha-cand.on{background:var(--paper);box-shadow:inset 3px 0 0 var(--red)}
+.ficha-cand b{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;flex:none}
+.ficha-cand .cand-det{color:var(--steel);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.ficha-cand .cand-badge{flex:none;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;border-radius:2px;padding:1px 6px}
+.ficha-cand .cand-badge.rec{background:var(--red);color:#fff}
+.ficha-cand .cand-badge.fin{border:1px solid var(--rule);color:var(--steel)}
 `;
   if (!document.getElementById('ficha-estilos')) {
     const st = document.createElement('style');
@@ -337,8 +352,29 @@
     // ficha — pintar otro aqui seria la duplicacion que la unificacion de Aruba vino a
     // cerrar. El boton de volver al recomendado se mantiene, dentro del aviso de desvio.
     const btnVolver = `<button type="button" class="ficha-volver" id="${cid}-volver">Volver al recomendado</button>`;
+    // Lista clicable de candidatos (opt-in `listaCandidatos`, peticion directa del dueno
+    // en Aruba, 2026-09-15): el contador «Equipos que cumplen · N» decia CUANTOS eran pero
+    // no CUALES, y sin verlos no habia forma de compararlos ni de elegir otro — habia que
+    // adivinarlos en un combo de catalogo entero mezclados con los que no cumplen. Cada
+    // fila declara modelo, detalle (segmento/capacidad, via `etiquetaCand` o `etiqueta`)
+    // y sus marcas (recomendado / fin de venta); el clic elige por el mismo cauce que el
+    // desplegable (alCambiar con origen 'candidato'). Con mas de 6, la caja crece con
+    // scroll para no comerse la ficha. Sin el flag, esta pagina se pinta igual que antes.
+    const listaCands = cfg.listaCandidatos === true
+      ? `<div class="ficha-cands${lista.length > 6 ? ' larga' : ''}" id="${cid}-cands" role="listbox" aria-label="Equipos que cumplen">`
+        + lista.map((m, i) => {
+          const mk = marca(m);
+          const det = cfg.etiquetaCand ? cfg.etiquetaCand(m, i) : (cfg.etiqueta ? cfg.etiqueta(m, i) : '');
+          return `<button type="button" class="ficha-cand${m.id === sel.id ? ' on' : ''}" data-id="${esc(m.id)}" role="option" aria-selected="${m.id === sel.id}">`
+            + `<b>${esc(m.id)}</b><span class="cand-det">${esc(det)}</span>`
+            + (m.id === recomendado ? '<span class="cand-badge rec">recomendado</span>' : '')
+            + (mk ? `<span class="cand-badge fin">${esc(mk.t)}</span>` : '')
+            + '</button>';
+        }).join('') + '</div>'
+      : '';
     cont.innerHTML = `<p class="tag">Equipos que cumplen`
       + `<span class="ficha-cuenta"> · ${candidatos.length}</span></p>`
+      + listaCands
       + (cfg.selector === false ? '' :
         `<div class="ficha-sel"><label for="${cid}-sel">Equipo</label>`
         + `<select id="${cid}-sel">${opciones}</select>`
@@ -368,7 +404,23 @@
         // recomendado no volvia nunca.
         cfg.deliberada = true;
         pintar(cid);
-        if (cfg.alCambiar) cfg.alCambiar(nodo.value);
+        if (cfg.alCambiar) cfg.alCambiar(nodo.value, 'selector');
+      });
+    }
+    // Clic en la lista de candidatos: el mismo cauce que el desplegable (eleccion
+    // deliberada + alCambiar), con origen 'candidato' para que la pagina sepa que viene
+    // de la lista y sincronice su selector externo si lo tiene.
+    const cajaCands = document.getElementById(cid + '-cands');
+    if (cajaCands) {
+      cajaCands.querySelectorAll('.ficha-cand').forEach((b) => {
+        b.addEventListener('click', () => {
+          const id = b.dataset.id;
+          if (!id || id === cfg.seleccionado) return;
+          cfg.seleccionado = id;
+          cfg.deliberada = true;
+          pintar(cid);
+          if (cfg.alCambiar) cfg.alCambiar(id, 'candidato');
+        });
       });
     }
     // Salida del modo manual. Sin esto, apartarse del recomendado era una puerta de un solo
@@ -379,7 +431,7 @@
         cfg.seleccionado = recomendado;
         cfg.deliberada = false;
         pintar(cid);
-        if (cfg.alCambiar) cfg.alCambiar(recomendado);
+        if (cfg.alCambiar) cfg.alCambiar(recomendado, 'volver');
       });
     }
 

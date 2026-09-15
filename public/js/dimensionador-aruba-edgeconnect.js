@@ -31,6 +31,10 @@ let skuFiltro = '', skuCatActiva = null, skuTaaOn = false;
 // asi que hay que pasarla siempre): sin selector propio —el unico es pickModel, unificado
 // 2026-09-13— y sin tabla de referencias —integradas en la lista de materiales—.
 const FICHA_CFG={vendor:'aruba', refs:false, selector:false,
+  // Lista clicable de candidatos (petición directa del dueño, 2026-09-15): «solo se
+  // muestra 1 equipo recomendado pero hay varios que cumplen y el usuario no tiene cómo
+  // seleccionar otro». Opt-in de ficha.js — el resto de dimensionadores se pinta igual.
+  listaCandidatos:true,
   refsNota:'Las referencias de pedido de este equipo —y de todo el catálogo de Aruba: hardware, remanufacturados, suscripciones EdgeConnect, Boost, Central y licencias perpetuas— están integradas en la lista de materiales. Allí se añaden y se quitan con su SKU y su List Price.'};
 
 // El modelo viaja en la URL como parte del escenario compartible, pero ESTADO reescribe el
@@ -1643,14 +1647,26 @@ function render(){
     seleccionado:mManual?mManual.id:undefined,
     incluir:mManual||undefined,
     etiqueta:m=>`${m.id} — ${m.serie} · ${fmt(capacidadMax(m))}`,
+    // Detalle de cada fila de la lista de candidatos: segmento y capacidad ya sin el id
+    // (la fila lo pone en negrita ella misma).
+    etiquetaCand:m=>`${m.seg} · ${fmt(capacidadMax(m))}`,
     titulo:m=>m.id,
     subtitulo:m=>m.seg+' · '+famLabel(m),
     medidores:medidoresDe,
     porQue:porQueDe,
     secciones:seccionesDe,
-    alCambiar:id=>{
-      // Con el selector fuera de la ficha, esto solo puede ser «Volver al recomendado»:
-      // se suelta la eleccion manual y toda la pagina vuelve a seguir al dimensionamiento.
+    alCambiar:(id, origen)=>{
+      // Clic en la lista de candidatos de la ficha (2026-09-15): equivale a mover el
+      // selector único a mano — elección deliberada, con su marca y su aviso de desvío.
+      // El render completo reconstruye candidatos, ficha, escalera y BOM con el elegido.
+      if(origen==='candidato'){
+        if($('pickModel').value!==id) $('pickModel').value=id;
+        $('pickModel').dataset.bomManual='1';
+        render();
+        return;
+      }
+      // «Volver al recomendado»: se suelta la eleccion manual y toda la pagina vuelve a
+      // seguir al dimensionamiento.
       BOM.soltarManual('pickModel');
       if($('pickModel').value!==id) $('pickModel').value=id;
       const m=MODELS.find(x=>x.id===id);
