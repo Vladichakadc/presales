@@ -33,6 +33,16 @@
 (function (global) {
   'use strict';
 
+  // Los nombres de parámetro que se muestran salen de la URL, y una URL la escribe quien
+  // manda el enlace: se escapan antes de pintarlos. La CSP de este sitio ya bloquearía un
+  // `onerror=` inyectado, pero apoyarse en ella para esto sería confiar la corrección de una
+  // pantalla a una cabecera de otra capa.
+  function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[c]));
+  }
+
   // Lee el valor de un control, sea del tipo que sea. Los grupos .seg no son controles de
   // formulario: son botones con aria-pressed, y el "valor" es el data-v del que está activo.
   function leer(nodo) {
@@ -84,6 +94,26 @@
       origen = 'enlace';
       for (const id of campos) if (params.has(id)) guardado[id] = params.get(id);
     }
+
+    // ── Parámetros que esta página ya no entiende ───────────────────────────
+    // UN ENLACE VIEJO NO PUEDE ATERRIZAR EN SILENCIO. Cuando una pantalla renombra o retira
+    // un control, los enlaces ya pegados en chats y correos siguen llegando con el parámetro
+    // antiguo: el emisor ve su escenario y el receptor ve otro, sin una sola señal de que
+    // algo se perdió. Es el mismo modo de fallo que `RENOMBRADAS` en `server.js` evita para
+    // el NOMBRE del archivo —«peor que un 404 porque no se nota»— y que nadie cubría para
+    // los PARÁMETROS. Ocurrió de verdad el 2026-09-13: el dimensionador Aruba cambió su
+    // campo `#bw` por el Multi-Underlay Builder, y solo se salvó porque alguien escribió a
+    // mano una migración para esa página. La regla general faltaba.
+    //
+    // QUÉ NO SE DENUNCIA, y por eso se compara contra una lista declarada y no contra todo
+    // lo que venga: lo que la página SÍ sabe migrar (`cfg.migrados`, que es como Aruba
+    // declara sus seis parámetros v1) y lo que nunca fue escenario —marcas de campaña y de
+    // seguimiento—. Un aviso que salta con un `?utm_source=…` pegado al enlace enseña a
+    // ignorarlo, que es exactamente lo contrario de para lo que existe.
+    const AJENOS = /^(utm_[a-z_]+|fbclid|gclid|mc_[a-z]+|ref|source|_ga)$/i;
+    const migrados = cfg.migrados || [];
+    const ignorados = [...params.keys()].filter((k) => !campos.includes(k)
+      && !migrados.includes(k) && !AJENOS.test(k));
 
     // ── Arranque en blanco ──────────────────────────────────────────────────
     // Sin parámetros en la URL no hay nada que restaurar: se vacían los campos tecleables
@@ -192,7 +222,7 @@
     });
     setTimeout(volcar, 0);
 
-    return { origen, volcar };
+    return { origen, volcar, ignorados };
   }
 
   // Botón "Copiar enlace". Se inyecta desde JavaScript y no desde el HTML de cada página
@@ -221,17 +251,42 @@
 
   // Aviso discreto de dónde salió lo que se está viendo. Sin esto, restaurar estado es
   // desconcertante: abres la herramienta y los campos no están donde los dejó el compañero.
-  function avisoOrigen(contenedor, origen) {
-    if (!origen) return;
+  //
+  // Acepta el estado que devuelve `vincular()` —de donde saca también los parámetros que la
+  // página ya no entiende— o, por compatibilidad, solo la cadena de origen.
+  function avisoOrigen(contenedor, estado) {
+    const info = (estado && typeof estado === 'object') ? estado : { origen: estado, ignorados: [] };
+    const ignorados = info.ignorados || [];
+    if (!info.origen && !ignorados.length) return;
     const host = typeof contenedor === 'string' ? document.getElementById(contenedor) : contenedor;
     if (!host) return;
-    const p = document.createElement('p');
-    p.className = 'hint estado-origen';
-    p.style.marginTop = '8px';
-    p.innerHTML = origen === 'enlace'
-      ? 'Estás viendo un escenario <b>recibido por enlace</b>. Cambia cualquier parámetro y el enlace se actualiza solo.'
-      : 'Se restauraron <b>los parámetros de tu última visita</b>. Cambia cualquiera y se guardan de nuevo.';
-    host.appendChild(p);
+    if (info.origen) {
+      const p = document.createElement('p');
+      p.className = 'hint estado-origen';
+      p.style.marginTop = '8px';
+      p.innerHTML = info.origen === 'enlace'
+        ? 'Estás viendo un escenario <b>recibido por enlace</b>. Cambia cualquier parámetro y el enlace se actualiza solo.'
+        : 'Se restauraron <b>los parámetros de tu última visita</b>. Cambia cualquiera y se guardan de nuevo.';
+      host.appendChild(p);
+    }
+    if (!ignorados.length) return;
+    // SE DICE CUÁLES, no solo que había alguno: quien recibe el enlace necesita saber qué
+    // parte del escenario NO le llegó para poder pedirla. Y se avisa aunque el enlace no
+    // traiga ningún campo reconocible —el caso peor, en el que la pantalla sale entera en
+    // blanco y sin el aviso no habría absolutamente nada que explicara por qué.
+    // Y se acota la lista: un enlace con veinte parámetros sueltos produciría un párrafo que
+    // nadie lee, y un aviso que no se lee no avisa.
+    const TOPE = 6;
+    const nombres = ignorados.slice(0, TOPE).map(esc).join('</b>, <b>');
+    const resto = ignorados.length > TOPE ? ` y ${ignorados.length - TOPE} más` : '';
+    const av = document.createElement('p');
+    av.className = 'hint estado-ignorados';
+    av.style.marginTop = '8px';
+    av.innerHTML = `Este enlace trae ${ignorados.length === 1 ? 'un parámetro que esta pantalla' : 'parámetros que esta pantalla'} `
+      + `ya no usa (<b>${nombres}</b>${resto}), así que esa parte del escenario `
+      + '<b>no se ha aplicado</b>. Puede venir de una versión anterior de la herramienta: '
+      + 'compruébalo con quien te lo pasó antes de cotizar sobre él.';
+    host.appendChild(av);
   }
 
   global.ESTADO = { vincular, botonEnlace, avisoOrigen };

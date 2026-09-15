@@ -497,19 +497,10 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
   <section class="panel">
     <h2>Precio neto y TCO del sitio</h2>
     <div class="field">
-      <label for="selDescuento">Nivel de descuento sobre List Price</label>
-      <div class="row">
-        <select id="selDescuento" style="width:60%">
-          <option value="0" selected>Lista (0 %) — precio de referencia HPE</option>
-          <option value="0.35">Business Partner (35 %)</option>
-          <option value="0.45">Silver (45 %)</option>
-          <option value="0.50">Gold (50 %)</option>
-          <option value="0.55">Platinum (55 %)</option>
-          <option value="opg">Personalizado…</option>
-        </select>
-        <input type="number" id="dtoCustom" min="0" max="90" step="0.5" placeholder="% personalizado" hidden autocomplete="off">
-      </div>
-      <p class="hint"><b>Simulador genérico de tramos partner — no refleja el descuento real del distribuidor.</b> Los descuentos del programa de canal de HPE no son públicos: estos tramos son niveles de trabajo del equipo de preventa. El simulador muestra las columnas Subtotal Lista y Subtotal Neto en paralelo y las lleva al Excel; la cotización firme la cierra tu distribuidor.</p>
+      <!-- Lo rellena BOM.simuladorDescuento: los tramos y su aviso viven en js/bom.js
+           para que anadir el simulador a otra pantalla sea una linea, no doce de marcado
+           repetido en siete archivos que luego divergen. -->
+      <div id="cajaDescuento"></div>
     </div>
     <div id="tcoFin"></div>
   </section>

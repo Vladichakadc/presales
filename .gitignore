@@ -38,3 +38,5 @@ __pycache__/
 capturas/
 pantallas.sqlite
 .auth-pantallas/
+# El log del arranque que el propio job vuelca para comprobar `[seed]` y la linea de listen.
+arranque.log

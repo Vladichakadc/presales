@@ -193,6 +193,197 @@
   }
 
   // Las referencias de ESTA pagina como filas de BOM, en su propio grupo.
+  /* ══ PERFILES MULTI-SEDE ═══════════════════════════════════════════════════════
+     Un perfil guarda un escenario completo (los campos del formulario mas una foto de las
+     filas del BOM) y CUANTAS SEDES identicas se cotizan con el. Es la funcion que existe para
+     armar la cotizacion de un despliegue de 50 sucursales.
+
+     POR QUE UNA SOLA CLAVE Y NO UNA POR FABRICANTE. Nacieron en `arubaPerfilesV1`, y un
+     despliegue real de 50 sedes MEZCLA fabricantes: spokes Fortinet contra un core Nokia,
+     EdgeConnect en sucursal con Catalyst en el datacenter. Con una clave por pagina, el
+     consolidado de cada fabricante ignoraria al resto en silencio — exactamente el fallo que
+     `presales-bom-refs:<pathname>` ya tuvo aqui arriba y que se corrigio el 2026-09-09. Se
+     arregla ANTES de portar la funcion a los otros siete, porque despues cuesta siete veces.
+
+     CARGAR ES DEL FABRICANTE; CONSOLIDAR NO. `campos` son los ids del formulario de ESA
+     pagina, asi que aplicar un perfil de Fortinet al de Aruba no significa nada: la lista de
+     cada dimensionador muestra solo los suyos. Pero `filas` es la forma neutra que los siete
+     comparten, asi que el BOM global suma todos. */
+  const CLAVE_PERFILES = 'presales-perfiles';
+  const CLAVE_PERFILES_VIEJA = 'arubaPerfilesV1';
+
+  function guardarLista(lista) {
+    try { localStorage.setItem(CLAVE_PERFILES, JSON.stringify(lista)); } catch { /* almacenamiento off */ }
+  }
+
+  // Id propio y no la posicion en el array: en una lista compartida entre fabricantes el
+  // indice deja de ser estable, y borrar por indice borraria el perfil del vecino.
+  let seq = 0;
+  function nuevoId() { seq += 1; return `p${Date.now().toString(36)}${seq}`; }
+
+  // Misma migracion que la de las referencias, y por el mismo motivo: quien ya tuviera
+  // perfiles guardados los veria desaparecer al desplegar esto. Se leen una vez, se les
+  // estampa el fabricante y un id, y la clave vieja se borra.
+  let perfilesMigrados = false;
+  function migrarPerfiles() {
+    if (perfilesMigrados) return;
+    perfilesMigrados = true;
+    const previos = leerCrudo(CLAVE_PERFILES_VIEJA);
+    if (!previos.length) return;
+    const lista = leerCrudo(CLAVE_PERFILES);
+    for (const p of previos) lista.push({ ...p, vendor: p.vendor || 'aruba', id: p.id || nuevoId() });
+    guardarLista(lista);
+    try { localStorage.removeItem(CLAVE_PERFILES_VIEJA); } catch { /* almacenamiento off */ }
+  }
+
+  function perfiles() { migrarPerfiles(); return leerCrudo(CLAVE_PERFILES); }
+  function perfilesDe(vendor) {
+    const v = String(vendor || '').toLowerCase();
+    if (!v) return perfiles();
+    return perfiles().filter((p) => String(p.vendor || '').toLowerCase() === v);
+  }
+  function guardarPerfil(perfil) {
+    if (!perfil || !perfil.nombre || !perfil.sedes) return null;
+    const lista = perfiles();
+    const nuevo = { ...perfil, id: perfil.id || nuevoId(), vendor: String(perfil.vendor || vendorPagina || '').toLowerCase() };
+    lista.push(nuevo);
+    guardarLista(lista);
+    return nuevo;
+  }
+  function quitarPerfil(id) {
+    guardarLista(perfiles().filter((p) => p.id !== id));
+  }
+
+  /* CONSOLIDADO Σ(BOM del perfil × sedes), sobre TODOS los perfiles guardados.
+
+     LAS EXCEPCIONES DE AGREGACION LAS DECLARA LA PAGINA, no este modulo. Aruba agrega el pool
+     de Boost en una sola linea (`agregadas`) y deja el Orchestrator en cantidad 1 por fabric
+     (`unicas`), pero eso es su modelo COMERCIAL, no una regla universal: escribirlo aqui a
+     fuego haria que cualquier fabricante que algun dia use esos nombres de categoria heredara
+     la semantica de precios de Aruba sin que nadie lo decidiera — el mismo error que el
+     `noAplica` deducido del comparador, que llego a decir «IPS: no aplica» de un Catalyst 8300.
+     Quien no declare nada multiplica todo por sedes, que es el comportamiento correcto.
+
+     Y SE AGRUPA POR FABRICANTE ADEMAS DE POR SKU: con una sola lista compartida, dos marcas
+     podrian traer el mismo codigo y agrupar solo por cat+desc+sku las fundiria en un renglon.
+     Es la misma razon por la que la clave de una referencia es `fabricante|sku`. */
+  function consolidar(lista, opciones) {
+    const o = opciones || {};
+    const agregadas = (o.agregadas || []).map((c) => String(c));
+    const unicas = (o.unicas || []).map((c) => String(c));
+    const acum = new Map();
+    const pools = new Map();
+    let totalSedes = 0;
+    const fabricantes = new Set();
+    for (const p of (lista || [])) {
+      const sedes = Math.max(0, parseInt(p.sedes, 10) || 0);
+      totalSedes += sedes;
+      const v = String(p.vendor || '').toLowerCase();
+      if (v) fabricantes.add(v);
+      for (const f of (p.filas || [])) {
+        if (agregadas.includes(f.cat)) {
+          const k = `${v}|${f.cat}`;
+          if (!pools.has(k)) pools.set(k, { ...f, v, qty: 0, nota: o.notaAgregada || f.nota });
+          pools.get(k).qty += (f.qty || 0) * sedes;
+          continue;
+        }
+        if (unicas.includes(f.cat)) {
+          const k = `${v}|UNICA|${f.cat}|${f.sku || f.desc}`;
+          if (!acum.has(k)) acum.set(k, { ...f, v, qty: 1, nota: o.notaUnica || f.nota });
+          continue;
+        }
+        const k = [v, f.cat, f.desc, f.sku || ''].join('|');
+        if (!acum.has(k)) acum.set(k, { ...f, v, qty: 0 });
+        acum.get(k).qty += (f.qty || 1) * sedes;
+      }
+    }
+    const filas = [...acum.values()];
+    for (const pool of pools.values()) if (pool.qty > 0) filas.push(pool);
+    return { filas, totalSedes, perfiles: (lista || []).length, fabricantes: [...fabricantes] };
+  }
+
+  /* ══ SIMULADOR DE PRECIO NETO ══════════════════════════════════════════════════
+     Los tramos del programa de canal NO son publicos: son niveles de trabajo del equipo de
+     preventa, y la pantalla lo declara. El calculo es puro —lee un select y un numero— asi
+     que no depende de ningun fabricante, y `renderTabla`/`exportarExcel` ya saben pintar las
+     columnas NET en paralelo con `o.dto`.
+
+     EL CONTROL SE CONSTRUYE AQUI, NO SE COPIA EN CADA HTML. Es la misma decision que
+     `ESTADO.botonEnlace`: anadirlo a una pantalla nueva tiene que ser una linea, no doce de
+     marcado repetido en siete archivos que luego divergen. Los ids se conservan
+     (`selDescuento`, `dtoCustom`) porque `estado.js` ya los serializa en el enlace
+     compartido. */
+  const TRAMOS_DTO = [
+    { v: '0', etq: 'Lista (0 %) — precio de referencia del fabricante' },
+    { v: '0.35', etq: 'Business Partner (35 %)' },
+    { v: '0.45', etq: 'Silver (45 %)' },
+    { v: '0.50', etq: 'Gold (50 %)' },
+    { v: '0.55', etq: 'Platinum (55 %)' },
+    { v: 'opg', etq: 'Personalizado…' },
+  ];
+  const AVISO_DTO = '<b>Simulador genérico de tramos partner — no refleja el descuento real '
+    + 'del distribuidor.</b> Los descuentos del programa de canal no son públicos: estos tramos '
+    + 'son niveles de trabajo del equipo de preventa. Se muestran las columnas Subtotal Lista y '
+    + 'Subtotal Neto en paralelo y se llevan al Excel; la cotización firme la cierra tu distribuidor.';
+
+  function simuladorDescuento(contenedor, alCambiar) {
+    const host = typeof contenedor === 'string' ? document.getElementById(contenedor) : contenedor;
+    if (!host) return null;
+    host.innerHTML = '<label for="selDescuento">Nivel de descuento sobre List Price</label>'
+      + '<div class="row">'
+      + `<select id="selDescuento" style="width:60%">${TRAMOS_DTO.map((x) => `<option value="${x.v}">${esc(x.etq)}</option>`).join('')}</select>`
+      + '<input type="number" id="dtoCustom" min="0" max="90" step="0.5" placeholder="% personalizado" hidden autocomplete="off">'
+      + `</div><p class="hint">${AVISO_DTO}</p>`;
+    const sel = host.querySelector('#selDescuento');
+    const custom = host.querySelector('#dtoCustom');
+    // Un descuento fuera de [0,90] no es un descuento: por encima regalaria el equipo y por
+    // debajo subiria el precio de lista, que no es lo que este control significa.
+    const valor = () => {
+      if (sel.value === 'opg') return Math.min(0.9, Math.max(0, (parseFloat(custom.value) || 0) / 100));
+      return parseFloat(sel.value) || 0;
+    };
+    const etiqueta = () => {
+      if (sel.value === 'opg') return `Personalizado (${(valor() * 100).toFixed(1)} %)`;
+      const opt = sel.selectedOptions[0];
+      return opt ? opt.textContent.trim() : 'Lista (0 %)';
+    };
+    sel.addEventListener('input', () => {
+      custom.hidden = sel.value !== 'opg';
+      if (alCambiar) alCambiar();
+    });
+    custom.addEventListener('input', () => { if (alCambiar) alCambiar(); });
+    return { valor, etiqueta };
+  }
+
+  /* ══ CAPEX / OPEX ANUAL / TCO ══════════════════════════════════════════════════
+     Se calcula sobre las FILAS del BOM, que ya son la forma neutra que los siete comparten
+     —no sobre los objetos de licenciamiento de ningun fabricante, que es lo que ataba este
+     calculo a una sola pagina.
+
+     QUE ES OPEX LO DECLARA LA PAGINA, por la misma razon que las reglas de agregacion: que
+     una suscripcion sea recurrente y una licencia perpetua no lo sea es el modelo COMERCIAL
+     de cada fabricante, no una propiedad de la fila. Sin declarar nada, todo es CAPEX — que
+     es lo correcto para un catalogo que solo vende hardware.
+
+     Las lineas sin precio NO se reparten ni se estiman: se cuentan y se declaran, igual que
+     hace `renderTabla` con su total parcial. Un TCO que aparenta estar completo es peor que
+     uno que dice cuanto le falta. */
+  function tco(filas, opciones) {
+    const o = opciones || {};
+    const cats = (o.opex || []).map((c) => String(c));
+    const anios = Math.max(1, parseInt(o.anios, 10) || 1);
+    let capex = 0;
+    let opexTermino = 0;
+    let sinPrecio = 0;
+    for (const f of (filas || [])) {
+      const s = subtotal(f);
+      if (s == null) { sinPrecio++; continue; }
+      if (cats.includes(f.cat)) opexTermino += s; else capex += s;
+    }
+    const opexAnual = opexTermino / anios;
+    return { capex, opexTermino, opexAnual, tco: capex + opexAnual * anios, anios, sinPrecio };
+  }
+
   function filasDeRefs() {
     return refsDeLaPagina().map((r) => ({
       cat: 'Referencias añadidas',
@@ -570,5 +761,7 @@
   global.BOM = { renderTabla, exportarExcel, comoTexto, money, esc,
     enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar,
     sincronizar, soltarManual, avisoDesvio,
-    agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor };
+    agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor,
+    perfiles, perfilesDe, guardarPerfil, quitarPerfil, consolidar,
+    simuladorDescuento, tco };
 })(window);

@@ -103,14 +103,19 @@ function reconstruirWanDesdeHidden(){
   links.forEach(l=>{ if(!l.id) l.id=++wanSeq; wanSeq=Math.max(wanSeq,l.id); });
   pintarWanFilas(links);
 }
+// Los parámetros del escenario ANTERIOR al Multi-Underlay Builder. Viven en una sola
+// constante porque los usan dos cosas distintas: `migrarEstadoV1()` para convertirlos, y
+// `ESTADO.vincular({migrados})` para NO denunciarlos como parámetros que esta pantalla no
+// entiende. Dos listas iguales en dos sitios es como se desincronizan — el mismo error que
+// `llevarABom` tuvo en seis copias.
+const PARAMS_V1=['bw','unit','mplsType','bwMpls','inetType','bwInet'];
 // Migración v1→v2 (SPEC B.1): un enlace antiguo (?bw=…&mplsType=…&bwMpls=…&inetType=…&
 // bwInet=…) se convierte en 1-2 filas equivalentes del builder y se avisa por consola.
 // Devuelve true si migró algo.
 function migrarEstadoV1(){
   const p=new URLSearchParams(location.search);
   if(p.has('wanLinksData')) return false; // ya es v2
-  const legacy=['bw','unit','mplsType','bwMpls','inetType','bwInet'];
-  if(!legacy.some(k=>p.has(k))) return false;
+  if(!PARAMS_V1.some(k=>p.has(k))) return false;
   const links=[];
   const bwM=parseFloat(p.get('bwMpls'))||0, bwI=parseFloat(p.get('bwInet'))||0;
   const mplsT=p.get('mplsType')||'none', inetT=p.get('inetType')||'none';
@@ -242,26 +247,13 @@ $('accLista').addEventListener('input',e=>{
   if(n>0) accesoriosElegidos[sku]=n; else delete accesoriosElegidos[sku];
   renderBom();
 });
-// Simulador de precio neto (#selDescuento, SPEC B.7): «Simulador genérico de tramos
-// partner — no refleja el descuento real del distribuidor» (texto fijo en la interfaz).
-// Los descuentos del programa de canal de HPE NO son públicos, asi que se declaran como
-// supuesto configurable y la cotizacion firme queda en el distribuidor.
-function dtoActual(){
-  const v=$('selDescuento').value;
-  if(v==='opg') return Math.min(0.9,Math.max(0,(parseFloat($('dtoCustom').value)||0)/100));
-  return parseFloat(v)||0;
-}
-function dtoEtiqueta(){
-  const v=$('selDescuento').value;
-  if(v==='opg') return `Personalizado (${(dtoActual()*100).toFixed(1)} %)`;
-  const opt=$('selDescuento').selectedOptions[0];
-  return opt?opt.textContent.trim():'Lista (0 %)';
-}
-$('selDescuento').addEventListener('input',()=>{
-  $('dtoCustom').hidden=$('selDescuento').value!=='opg';
-  renderBom();
-});
-$('dtoCustom').addEventListener('input',renderBom);
+// SIMULADOR DE PRECIO NETO. El control y sus tramos los construye `BOM.simuladorDescuento`:
+// no dependen de ningun dato de fabricante, asi que copiarlos en cada pagina era exactamente
+// el patron que este repositorio ya pago con `llevarABom` en seis copias. Aqui solo se dice
+// donde va y que hacer cuando cambia.
+const DTO=BOM.simuladorDescuento('cajaDescuento',()=>renderBom());
+const dtoActual=()=>DTO?DTO.valor():0;
+const dtoEtiqueta=()=>DTO?DTO.etiqueta():'Lista (0 %)';
 
 /* ══ CALCULADORA DE POOL BOOST (fase 11, §3.2) ══
    Proyecta los bloques por sede del dimensionador al fabric: el pool se licencia una
@@ -294,12 +286,17 @@ $('poolSedes').addEventListener('input',pintarPoolBoost);
    una sola vez. Los perfiles viven en localStorage (clave arubaPerfilesV1) y conservan
    los precios del día en que se guardaron (snapshot de filas, para que el consolidado
    no cambie si la lista de precios se actualiza después). */
-const PERFILES_KEY='arubaPerfilesV1';
-function cargarPerfiles(){
-  try{ const v=JSON.parse(localStorage.getItem(PERFILES_KEY)||'[]'); return Array.isArray(v)?v:[]; }
-  catch{ return []; }
-}
-function guardarPerfiles(l){ localStorage.setItem(PERFILES_KEY,JSON.stringify(l)); }
+// EL ALMACEN VIVE EN bom.js, NO AQUI (2026-09-13). Nacio como `arubaPerfilesV1`, una clave
+// por fabricante, y un despliegue real de 50 sedes MEZCLA fabricantes — spokes Fortinet contra
+// un core Nokia. Con una clave por pagina, el consolidado de cada fabricante ignoraria al resto
+// en silencio: el mismo fallo que ya tuvo `presales-bom-refs:<pathname>`. `BOM` migra lo que
+// hubiera guardado bajo la clave vieja y lo estampa como de Aruba.
+//
+// Cargar es del fabricante (los `campos` son los ids de ESTA pagina, aplicar un perfil de
+// Fortinet aqui no significa nada) pero consolidar cruza fabricantes, porque `filas` es la
+// forma neutra que los siete comparten.
+const VENDOR='aruba';
+const cargarPerfiles=()=>BOM.perfilesDe(VENDOR);
 // Captura/restauracion de campos del escenario (la misma lista que persiste ESTADO).
 // #wanLinksData viaja como un campo más: es la serialización v2 de los enlaces WAN.
 function capturarCampos(){
@@ -334,10 +331,9 @@ $('btnGuardarPerfil').addEventListener('click',()=>{
   if(!nombre||!sedes){ $('nombrePerfil').focus(); return; }
   const m=MODELS.find(x=>x.id===$('pickModel').value);
   if(!m||!bomFilas.length) return;
-  const l=cargarPerfiles();
-  l.push({nombre, sedes, modelo:m.id, fecha:new Date().toISOString().slice(0,10),
+  BOM.guardarPerfil({nombre, sedes, modelo:m.id, vendor:VENDOR,
+    fecha:new Date().toISOString().slice(0,10),
     version:2, campos:capturarCampos(), filas:JSON.parse(JSON.stringify(bomFilas))});
-  guardarPerfiles(l);
   $('nombrePerfil').value=''; $('perfilSedes').value='';
   pintarPerfiles();
 });
@@ -345,56 +341,44 @@ function pintarPerfiles(){
   const l=cargarPerfiles();
   $('listaPerfiles').innerHTML=l.length
     ?`<table class="tco-tabla"><thead><tr><th>Perfil</th><th>Sedes</th><th>Modelo</th><th>Guardado</th><th></th></tr></thead><tbody>`
-      +l.map((p,i)=>`<tr><td><b>${esc(p.nombre)}</b></td><td>${p.sedes}</td><td>${esc(p.modelo)}</td><td>${p.fecha||'—'}</td>`
-        +`<td><button type="button" class="btn ghost" data-perfil-cargar="${i}" style="font-size:10px;padding:3px 8px">Cargar</button> `
-        +`<button type="button" class="btn ghost" data-perfil-borrar="${i}" style="font-size:10px;padding:3px 8px">Eliminar</button></td></tr>`).join('')
+      +l.map(p=>`<tr><td><b>${esc(p.nombre)}</b></td><td>${p.sedes}</td><td>${esc(p.modelo)}</td><td>${p.fecha||'—'}</td>`
+        +`<td><button type="button" class="btn ghost" data-perfil-cargar="${esc(p.id)}" style="font-size:10px;padding:3px 8px">Cargar</button> `
+        +`<button type="button" class="btn ghost" data-perfil-borrar="${esc(p.id)}" style="font-size:10px;padding:3px 8px">Eliminar</button></td></tr>`).join('')
       +'</tbody></table>'
     :'<p class="hint">Sin perfiles guardados todavía.</p>';
   $('btnConsolidar').disabled=!l.length;
 }
 $('listaPerfiles').addEventListener('click',e=>{
   const b=e.target.closest('button'); if(!b) return;
-  const l=cargarPerfiles();
   if(b.dataset.perfilCargar!=null){
-    const p=l[parseInt(b.dataset.perfilCargar)];
+    const p=cargarPerfiles().find(x=>x.id===b.dataset.perfilCargar);
     if(p&&p.campos) aplicarCampos(p.campos);
   }else if(b.dataset.perfilBorrar!=null){
-    l.splice(parseInt(b.dataset.perfilBorrar),1);
-    guardarPerfiles(l); pintarPerfiles();
+    BOM.quitarPerfil(b.dataset.perfilBorrar); pintarPerfiles();
   }
 });
 // BOM global consolidado Σ(BOM del perfil × sedes): suma linea a linea (cat+desc+sku)
 // con qty × sedes. Excepciones del fabric: el pool de Boost agrega en UNA linea y el
 // Orchestrator on-prem va una vez. Se pinta dentro de #modalConsolidado (SPEC B.7).
 function consolidarPerfiles(){
-  const l=cargarPerfiles();
-  const acum=new Map(); let boost=null;
-  let totalSedes=0;
-  for(const p of l){
-    totalSedes+=p.sedes;
-    for(const f of (p.filas||[])){
-      if(f.cat==='Aceleración'){
-        if(!boost) boost={cat:f.cat, desc:f.desc, sku:f.sku, unit:f.unit, qty:0,
-          nota:'Pool agregado del fabric: suma de los bloques por sede de cada perfil × sus sedes. Orchestrator lo reparte y lo reasigna sin tocar hardware.'};
-        boost.qty+=(f.qty||0)*p.sedes; continue;
-      }
-      if(f.cat==='Orquestación'){
-        if(!acum.has('ORCH')) acum.set('ORCH',{...f, qty:1,
-          nota:(f.nota||'')+' · una sola instancia por fabric, no por sede'});
-        continue;
-      }
-      const k=[f.cat,f.desc,f.sku||''].join('|');
-      if(!acum.has(k)) acum.set(k,{...f, qty:0});
-      acum.get(k).qty+=(f.qty||1)*p.sedes;
-    }
-  }
-  const filas=[...acum.values()];
-  if(boost&&boost.qty>0) filas.push(boost);
+  // TODOS los perfiles, no solo los de Aruba: una cotizacion de 50 sedes puede llevar dos
+  // marcas dentro, y ese es justamente el caso que esta pantalla existe para armar.
+  const l=BOM.perfiles();
+  // Las dos excepciones son el modelo COMERCIAL de Aruba, no una regla universal, asi que se
+  // declaran aqui y no dentro de bom.js. Un fabricante que no declare nada multiplica todo por
+  // sedes, que es lo correcto por defecto.
+  const {filas,totalSedes,fabricantes}=BOM.consolidar(l,{
+    agregadas:['Aceleración'],
+    unicas:['Orquestación'],
+    notaAgregada:'Pool agregado del fabric: suma de los bloques por sede de cada perfil × sus sedes. Orchestrator lo reparte y lo reasigna sin tocar hardware.',
+    notaUnica:'Una sola instancia por fabric, no por sede.',
+  });
   const dto=dtoActual();
+  const multi=fabricantes.length>1;
   const meta={
     titulo:`BOM global consolidado — ${l.length} perfil(es), ${totalSedes} sedes`,
     subtitulo:l.map(p=>`${p.nombre} ×${p.sedes} (${p.modelo})`).join(' · '),
-    archivo:'BOM_global_aruba', sinRefs:true,
+    archivo:multi?'BOM_global_multifabricante':'BOM_global_aruba', sinRefs:true,
     notas:[
       'REGLAS DE CONSOLIDACION (SPEC parte B, M6):',
       '  Equipo, suscripciones y soporte: cantidad por sede x numero de sedes del perfil.',
@@ -404,14 +388,27 @@ function consolidarPerfiles(){
       '  Lineas «consultar» (DTD, SSE, EC-V): se consolidan en cantidad, sin precio.',
     ],
   };
+  // Si hay mas de un fabricante se dice, porque las reglas de agregacion de arriba son de
+  // Aruba y no aplican a las lineas de los demas.
+  if(multi) meta.notas.push(`  MULTI-FABRICANTE: ${fabricantes.join(', ')}. Las dos reglas de agregacion son de Aruba; las lineas de otros fabricantes se multiplican por sedes.`);
   if(dto>0){ meta.dto=dto; meta.dtoEtq=dtoEtiqueta(); }
-  return {filas, meta, totalSedes};
+  return {filas, meta, totalSedes, fabricantes};
 }
+
 $('btnConsolidar').addEventListener('click',()=>{
-  const {filas, meta, totalSedes}=consolidarPerfiles();
+  const {filas, meta, totalSedes, fabricantes}=consolidarPerfiles();
   if(!totalSedes) return;
+  // SI HAY MAS DE UNA MARCA, SE DICE EN PANTALLA Y NO SOLO EN EL EXCEL. Las dos reglas de
+  // agregacion de arriba (pool de Boost, Orchestrator unico) son el modelo comercial de Aruba;
+  // las lineas de otro fabricante se multiplican por sedes como cualquier otra. Un consolidado
+  // que mezcla marcas sin declararlo invita a leer esas reglas como si aplicaran a todo.
+  const aviso=fabricantes.length>1
+    ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${fabricantes.join(', ')}). `
+      +'Las reglas de agregación de Aruba —pool de Boost en una línea, Orchestrator una vez por '
+      +'fabric— aplican solo a sus líneas; las de los demás fabricantes se multiplican por sedes.</p>'
+    : '';
   $('consolidadoSub').textContent=meta.subtitulo+` — ${totalSedes} sedes en total`;
-  $('consolidadoTabla').innerHTML=BOM.renderTabla(filas,{dto:dtoActual(), sinRefs:true});
+  $('consolidadoTabla').innerHTML=aviso+BOM.renderTabla(filas,{dto:dtoActual(), sinRefs:true});
   $('modalConsolidado').hidden=false;
   $('xlsConsolidadoBtn').onclick=()=>BOM.exportarExcel(filas,meta);
 });
@@ -1770,31 +1767,25 @@ function renderBom(){
     if(tr) tr.id='filaSse';
   }
 
-  /* ══ M6 · CAPEX / OPEX ANUAL / TCO (SPEC B.7) ══
-     Criterio declarado: CAPEX = hardware + accesorios (incluidos los inyectados por el
-     motor: S2N67A, R7J63A) + licencia perpetua de capacidad — todo one-time; OPEX ANUAL
-     = (suscripciones EdgeConnect/Boost/Central + soporte CARE del término) ÷ años del
-     término; TCO = CAPEX + OPEX anual × años. Las líneas «consultar» (DTD, SSE con
-     precio null, EC-V, FC de gateways) NO entran en la suma — se declara al pie. */
-  const capexList=(m.elpN!=null?m.elpN*qty:0)
-    +Object.entries(accesoriosElegidos).reduce((s,[sku,n])=>s+(ACCESSORY_CATALOG[sku]&&ACCESSORY_CATALOG[sku].listPrice!=null?ACCESSORY_CATALOG[sku].listPrice*n:0),0)
-    +inyectados.reduce((s,{sku,qty:qIny})=>s+(ACCESSORY_CATALOG[sku]&&ACCESSORY_CATALOG[sku].listPrice!=null?ACCESSORY_CATALOG[sku].listPrice*qIny:0),0)
-    +(capTier&&capTier.code!=='hw'&&capTier.elp!=null?capTier.elp*qty:0);
-  const opexDe=t=>{
-    let s=0;
-    if(esEC&&bundle){
-      if(licHa) s+=(tierPrice(licTier,t)||0)+(tierPrice(licHa,t)||0);
-      else s+=(tierPrice(licTier,t)||0)*qty;
-      if(bloques) s+=(tierPrice(boostBlk,t)||0)*bloques;
-    }
-    if(!esEC&&central) s+=(tierPrice(centralTier,t)||0)*qty;
-    if(care&&!esVirtual) s+=(tierPrice(careTier,t)||0)*qty;
-    return s;
-  };
-  const opexTermino=opexDe(termYrs);
-  const opexAnual=termYrs>0?opexTermino/termYrs:0;
-  const tco=capexList+opexAnual*termYrs;
-  const hayPrecios=capexList>0||[1,3,5].some(t=>opexDe(t)>0);
+  /* ══ M6 · CAPEX / OPEX ANUAL / TCO ══
+     La matematica vive en `BOM.tco` y se calcula sobre las FILAS del BOM, que ya son la forma
+     neutra que los siete fabricantes comparten. Antes se calculaba aqui a partir de los objetos
+     de licenciamiento de Aruba (`capTier`, `licHa`, `boostBlk`, `tierPrice`...), y eso era lo
+     que ataba el calculo a esta unica pagina.
+
+     LO QUE ESTA PAGINA DECLARA ES QUE CUENTA COMO OPEX, no como se suma: que una suscripcion
+     sea recurrente y una licencia perpetua no lo sea es el modelo COMERCIAL de Aruba, no una
+     propiedad de la fila. Un catalogo que solo venda hardware no declara nada y todo es CAPEX.
+     Criterio, el mismo de siempre: CAPEX = hardware + accesorios + licencia perpetua (one-time);
+     OPEX = suscripciones (SD-WAN, gestion, Boost, seguridad) + soporte del termino, prorrateado.
+
+     Se comprobo contra el calculo anterior antes de cambiarlo, en siete escenarios —incluidos
+     Boost y DTD, que son los que traen las categorias del camino largo— y las tres cifras
+     coincidieron en todos. */
+  const OPEX_ARUBA=['Suscripción SD-WAN','Suscripción de gestión','Soporte','Aceleración','Seguridad','Seguridad SASE'];
+  const fin=BOM.tco(filas,{opex:OPEX_ARUBA, anios:termYrs});
+  const capexList=fin.capex, opexAnual=fin.opexAnual, tco=fin.tco;
+  const hayPrecios=capexList>0||fin.opexTermino>0;
   const celdaNet=v=>dto>0?`<td><b>${BOM.money(v*(1-dto))}</b></td>`:'';
   $('tcoFin').innerHTML=hayPrecios
     ?`<table class="tco-tabla"><thead><tr><th>Pie de la lista de materiales</th><th>Subtotal Lista</th>${dto>0?'<th>Subtotal Neto</th>':''}</tr></thead><tbody>`
@@ -2141,7 +2132,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // se migra a filas equivalentes con aviso por consola; y al final se reconstruyen las
   // filas desde la serialización que haya quedado.
   reconstruirWanDesdeHidden();
-  const st = ESTADO.vincular({ campos: CAMPOS_ESCENARIO });
+  const st = ESTADO.vincular({ campos: CAMPOS_ESCENARIO, migrados: PARAMS_V1 });
   // Migración v1→v2: migrarEstadoV1 escribe la serialización en el input oculto; hay que
   // reconstruir las filas DESPUÉS y entonces avisar a ESTADO (sincronizarWanHidden leería
   // las filas viejas y pisaría lo migrado — orden importa).
@@ -2158,7 +2149,7 @@ document.addEventListener('DOMContentLoaded', () => {
     caja.style.cssText = 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px';
     anclaje.parentNode.insertBefore(caja, anclaje.nextSibling);
     ESTADO.botonEnlace(caja);
-    ESTADO.avisoOrigen(caja, st.origen);
+    ESTADO.avisoOrigen(caja, st);
   }
   // Perfiles multi-sede guardados en este navegador (arubaPerfilesV1): se pintan al arrancar.
   pintarPerfiles();

@@ -53,7 +53,17 @@ function cargarCon(previo, ...relativos) {
     removeItem: (k) => almacen.delete(k),
     clear: () => almacen.clear(),
   };
-  global.location = { pathname: '/prueba.html', href: '' };
+  global.location = { pathname: '/prueba.html', href: '', search: '' };
+  // `history` y el `addEventListener` de window los usa estado.js: reescribe la URL al
+  // volcar el escenario y se engancha a `pageshow` para el caso del bfcache. Dobles vacios
+  // bastan — lo que se prueba es que DECIDE bien, no que el navegador navegue.
+  global.history = { replaceState() {} };
+  global.addEventListener = () => {};
+  // Globales del navegador que el realm de `vm` no trae y estado.js si usa. Son los mismos
+  // de Node, no dobles: lo que hacen aqui es exactamente lo que hacen en Chromium.
+  global.URLSearchParams = URLSearchParams;
+  global.URL = URL;
+  global.Event = class { constructor(tipo, opts) { this.type = tipo; Object.assign(this, opts || {}); } };
   const ctx = vm.createContext(global);
   for (const rel of relativos) {
     const archivo = path.join(__dirname, '..', '..', rel);

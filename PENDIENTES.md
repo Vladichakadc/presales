@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-13 (motor de ingeniería carrier-grade — brief sección 1).
+Última revisión: 2026-09-14 (cerrados el 36 y el 37: el Product Matrix es edición nueva sin
+cifras nuevas, y el campo `estable` estaba mal en los dos sentidos posibles). Además, el
+2026-09-13: motor de ingeniería carrier-grade — brief sección 1.
 
 ---
 
@@ -466,12 +468,90 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     pie del TCO usa «Subtotal Lista/Neto» pero `bom.js` titula las columnas «Subtotal
     LIST/NET» (archivo compartido por los 7 fabricantes — no se tocó para no romper a los
     demás). Unificar criterio cuando se aplique el patrón Aruba al resto de fabricantes.
-33. **El brief carrier-grade llegó truncado: faltan las secciones 2-4 (2026-09-13).** El
+39. **El brief carrier-grade llegó truncado: faltan las secciones 2-4 (2026-09-13).** El
     documento anunciaba cuatro capas (Backend, Frontend, Lógica de Negocio de Service
     Provider y Componentes de Interfaz) pero solo contenía la sección 1 (Backend, 1.1 y
     1.2) — el archivo se corta al terminar la función. La sección 1 se ejecutó íntegra;
     las secciones 2-4 NO se inventaron. Si el dueño reenvía el brief completo, se
     ejecutan esas tres capas.
+
+33. **Railway no espera a `pantallas`, solo a `verificar` (2026-09-13).** *Actualizado el
+    2026-09-14: hay un segundo agujero, de otra clase, y ya está cerrado — un push de bot no
+    creaba ningún check, así que Railway no esperaba a nada. Un required check tampoco lo
+    habría cerrado: un push que no crea ningún check no puede fallarlo. El vigía abre PR desde
+    hoy. Ver `CLAUDE.md`, sección Deploying.*
+    Medido, no supuesto:
+    el commit `7fe786e` desplegó con estado SUCCESS teniendo la comprobación de navegador en
+    rojo desde hacía cuatro días — el dimensionador Aruba llevaba ese tiempo sin que nadie lo
+    condujera. La cabecera de `.github/workflows/pantallas.yml` afirma «ESTE CHECK FRENA EL
+    DESPLIEGUE, a proposito» y **no es cierto**, así que la red es más fina de lo que el propio
+    repositorio cree. Un documento que promete una protección que no existe es peor que no
+    prometer nada. **Decisión del dueño:** convertir `pantallas` en *required check* de la rama
+    `main` (ajuste de GitHub, no de código) y corregir esa cabecera, o aceptar que solo frena
+    `verificar` y decirlo en los dos sitios. `CLAUDE.md` ya lo declara como está hoy.
+
+34. **El semáforo de ciclo de vida pintaría verde falso sobre 131 modelos (2026-09-13).**
+    Sale de la revisión de portabilidad (`docs/portabilidad-aruba.md`). Solo Cisco (8/21),
+    Juniper (2/12) y Aruba (1/25) tienen boletín de fin de venta **con fecha**. Huawei,
+    MikroTik y Nokia tienen cero, y Fortinet marca cuatro modelos como `eol` **binario** en
+    `FORTINET_EOL_MODELS`, sin fecha: nunca encendería el naranja de «fin de venta anunciado».
+    Portar el semáforo tal cual afirmaría «vigente» sobre 131 modelos que nadie ha comprobado
+    —el mismo error que el «IPS: no aplica» del Catalyst 8300, y más caro, porque lo que se
+    afirma es que un equipo se puede pedir. **Regla al portarlo:** se enciende solo donde hay
+    `eolAnnounced` con fecha; donde no, declara «el catálogo no trae el ciclo de vida», que es
+    el tercer estado que ya protege `redund`. Cerrarlo de verdad exige cargar los boletines,
+    y para Huawei eso es el pendiente 14, bloqueado por Akamai.
+
+35. **La auditoría de puertos de Nokia es la mejor de las ocho y no se ve (2026-09-13).**
+    También de la revisión de portabilidad. `legacyData/nokia.js` ya modela las configuraciones
+    de puertos como **alternativas y no acumulables** —«36x100GE o 12x400GE» nunca son 48
+    interfaces— y aparta los chasis modulares que no publican densidad. Es más rica que la que
+    el refactor estrenó en Aruba, y no está en ninguna pantalla. El flujo no es «Aruba enseña a
+    los siete»: la capa común es algo a lo que cada fabricante aporta lo que ya resolvió.
+    Coste bajo, no toca ningún motor de cálculo.
+
+36. **~~El Fortinet Product Matrix se republicó y nadie lo ha leído~~ Resuelto (2026-09-14).**
+    Se trajo con `traer-fortinet-matrix.yml` (los ejecutores de Actions sí alcanzan
+    fortinet.com) y se leyó entero: sha256 `242a6eba…`, 123.387 bytes, exactamente lo que el
+    vigía había marcado. **Es una edición nueva de verdad** —`PRQMTX-2026-R176-SEP`,
+    septiembre de 2026, frente a la de julio con la que se transcribió— y por eso sube la
+    fecha de procedencia, que decía «2026-07» en pantalla. **Pero ninguna cifra que el
+    catálogo use se movió:** 27 modelos FortiGate x 7 campos = 189 comparaciones, 189
+    coincidencias, 0 diferencias, y ni un modelo nuevo ni uno que desaparezca. La lectura se
+    sometió al doble anclaje de `npm run cps` (27 filas aceptadas, 0 rechazadas) y se
+    comprobó que ese anclaje sigue vivo desplazando a propósito la fila del 90G a los valores
+    del 200G, que sí fue rechazada. De paso corrigió una afirmación de `CLAUDE.md`: este
+    documento publica «Power Supplies» (tipo y número, que respalda `redund`) y **no**
+    vatios.
+
+37. **~~El boletín EOL de Cisco: sospecha de `estable: true` mal clasificado~~ Resuelto
+    (2026-09-14), midiéndolo.** La sospecha era correcta y la medición encontró **los dos
+    errores posibles a la vez**. `npm run vigia -- --sondeo`, nuevo, pide cada URL dos veces
+    con segundos de diferencia —lo que cambie entre ellas no puede ser un cambio del
+    fabricante— y compara los bytes y el texto por separado. Desde Actions:
+
+    - el **boletín EOL de Cisco**, declarado `estable: true`, devolvió los mismos 173.911
+      bytes con **hash distinto** y el **mismo texto**: sus tres semanas de «cambios» eran
+      alarmas falsas. Marcado revisado con esa evidencia;
+    - el **EOL de Juniper**, declarado `estable: false`, devolvió bytes y hash idénticos:
+      estaba **callado sin motivo**, así que un boletín nuevo de fin de venta se habría
+      reportado como «varió (página dinámica)» y nadie se habría enterado. Corregido a
+      `estable: true`.
+
+    De ahí sale el arreglo general: el vigía vigila ahora el **texto** en las fuentes HTML y
+    los bytes en los PDF. Lo que **no** se midió es la estabilidad de un día para otro —dos
+    peticiones con 15 s de diferencia no dicen nada de eso—, así que MikroTik, las páginas de
+    HPE y la de Nokia siguen en `estable: false` hasta que las corridas semanales acumulen
+    evidencia. Medir una cosa y afirmar otra es exactamente como se llega a un campo puesto a
+    ojo.
+
+38. **Tres fuentes siguen dando 403 incluso desde GitHub Actions (2026-09-14).** El sondeo lo
+    confirmó con su código, que es el resultado honesto: las *hardware guides* por modelo de
+    Juniper, sus fichas de la generación 2024, y el Validated Solution Guide de HPE. No es el
+    proxy de este entorno —los ejecutores no pasan por él—, así que es una restricción del
+    propio fabricante. Mientras siga así, esas tres respaldan datos que el vigía **no puede
+    comprobar**, y la pestaña de procedencia lo dice: salen como «no comprobada», nunca en
+    verde. Cierra desde una máquina con acceso, o con una URL vigente que sí resuelva.
 
 ## Limpieza
 
@@ -491,7 +571,7 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
 ### Motor de ingeniería carrier-grade + submenú Cumplimiento Especial (2026-09-13)
 
 Sección 1 del brief carrier-grade del dueño (el archivo llegó truncado — ver pendiente
-33). El dimensionamiento del appliance pasa a una función matemática determinista y
+39). El dimensionamiento del appliance pasa a una función matemática determinista y
 testeable: `public/js/motor-ingenieria.js` (módulo puro UMD) con
 `calcularRequerimientosIngenieria` — IMIX por perfil de tráfico (0,70 empresarial /
 0,55 voz / 1,00 backup), FEC 5/15/25 %, cargo de seguridad (35 % NGFW local / 5 % SSE),
@@ -506,9 +586,203 @@ Público», cerrado por defecto. Los inputs manuales de «throughput de firewall
 dimensionado es por flujos y caudal agregado. 7 tests nuevos de la fórmula (273/273 en
 verde), E2E Chromium 13/13.
 
+### La capa comercial sale del archivo de Aruba (2026-09-13)
+
+Paso 1 del orden de [`docs/portabilidad-aruba.md`](docs/portabilidad-aruba.md), aprobado por el
+dueño. Mientras TCO y simulador de descuento vivieran dentro de las 2.117 líneas de Aruba,
+portarlos a los otros siete significaba copiarlos siete veces — el fallo de `llevarABom` en seis
+copias con más superficie.
+
+- **`BOM.simuladorDescuento()`**: el control se **construye** en el módulo, con sus tramos y su
+  aviso de «simulador genérico, no el descuento real del distribuidor». Es la decisión de
+  `ESTADO.botonEnlace` — añadirlo a otra pantalla es una línea, no doce de marcado repetido.
+  Conserva los ids `selDescuento`/`dtoCustom` porque `estado.js` los serializa en el enlace
+  compartido, y por eso quedan declarados en `TARDIOS`.
+- **`BOM.tco()`**: se calcula sobre las **filas del BOM**, que ya son la forma neutra. Antes
+  salía de los objetos de licenciamiento de Aruba, y eso era lo que lo ataba a una sola página.
+  **Qué cuenta como OPEX lo declara la página**, por lo mismo que las reglas de agregación.
+
+**Medido antes de cambiarlo, no supuesto.** Siete escenarios en el navegador con las tres cifras
+(CAPEX, OPEX anual, TCO) idénticas a las del cálculo anterior. El primer contraste solo cubría el
+camino fácil —sin Boost ni seguridad— así que se repitió activando Boost y DTD, que son los que
+traen las categorías del camino largo; sin eso la clasificación habría quedado verificada a
+medias.
+
+**Y el comprobador de ayer se ganó el sueldo:** al sacar el marcado del HTML, `npm run catalogo`
+reportó en el acto «selDescuento: no existe ningún control con ese id». La prueba que lo guarda
+también se rompió, pero por un motivo distinto y peor: exigía que la única excepción fuera
+`verdict-sel`, codificando el estado de ese día en vez de la regla. Corregida para afirmar lo que
+importa — que las excepciones se usan y ninguna ha caducado.
+
+**Lo que NO subió**: la matriz de accesorios. Solo Aruba tiene compatibilidad declarada, y
+construir la pantalla antes que el dato produce seis paneles vacíos — es el paso 4 del orden, y
+está bloqueado por dato, no por código.
+
+287/287 pruebas, lint limpio y 16/16 pantallas.
+
+### Los perfiles multi-sede dejan de ser de un solo fabricante (2026-09-13)
+
+Sale de la **revisión de arquitectura** que pidió el dueño sobre lo que dejó el otro motor de IA
+—«valida la estructura de los fabricantes que faltan, no la forma como se calcula el
+dimensionamiento, porque se dimensionan de diferente manera»—. El informe completo está en
+[`docs/portabilidad-aruba.md`](docs/portabilidad-aruba.md), y de él salen también los pendientes
+34 y 35.
+
+**El defecto.** Los perfiles nacieron en `arubaPerfilesV1`, una clave por fabricante. Un perfil
+multi-sede es *por definición* el caso de las 50 sucursales, y un despliegue real de 50 sedes
+**mezcla marcas**: spokes Fortinet contra un core Nokia, EdgeConnect en sucursal con Catalyst en
+el datacenter. Con una clave por página, el consolidado de cada fabricante ignoraba al resto en
+silencio — el mismo fallo que `presales-bom-refs:<pathname>` ya tuvo y que se corrigió el
+2026-09-09. Se arregló **antes** de portar la función a los otros siete, porque después costaba
+siete veces.
+
+- **Una sola clave** (`presales-perfiles`) en `bom.js`, copiando el patrón que ese archivo ya usa
+  para las referencias: cada perfil lleva su `vendor` dentro, y la clave vieja **se migra** en la
+  primera lectura y se borra. Sin eso, quien ya tuviera perfiles los vería desaparecer al
+  desplegar — justo la pérdida que el cambio venía a evitar.
+- **Cargar es del fabricante; consolidar no.** `campos` son los ids del formulario de *esa*
+  página, así que aplicar un perfil de Fortinet al de Aruba no significa nada y no se ofrece. Pero
+  `filas` es la forma neutra que los siete comparten, y el BOM global suma **todos**: ese es el
+  valor real, y es la distinción que hace correcto el cambio.
+- **Se borra por id, no por índice.** En una lista compartida el índice deja de ser estable en
+  cuanto otro dimensionador guarda algo, y borrar por posición borraría el perfil del vecino.
+- **Las reglas de agregación las declara la página.** El pool de Boost en una línea y el
+  Orchestrator único por fabric son el modelo **comercial de Aruba**, no una regla universal:
+  dejarlas a fuego en el módulo compartido haría que cualquier fabricante que use esos nombres de
+  categoría heredara la semántica de precios de Aruba sin que nadie lo decidiera. Quien no declare
+  nada multiplica todo por sedes.
+- **Y si el consolidado mezcla marcas se dice en pantalla**, no solo en el Excel: leer las reglas
+  de Aruba como si aplicaran a las líneas de otro fabricante es exactamente lo que un aviso
+  ausente invita a hacer.
+
+**Comprobado que las pruebas detectan, no solo que pasan:** desactivando la migración reportan
+los perfiles perdidos; devolviendo las reglas a fuego, el fabricante que no las declara hereda la
+semántica de Aruba y la prueba lo dice.
+
+Conducido en Chromium de extremo a extremo: tres perfiles guardados, uno de Fortinet sembrado a
+mano que **no** aparece en la lista de Aruba pero **sí** entra en el consolidado, supervivencia a
+la recarga, borrado del perfil del medio sin tocar al vecino, y una cotización de **52 sedes con
+FortiGate 60F ×40 y EC-M ×12 juntos**. 287/287 pruebas (8 nuevas) y 16/16 pantallas.
+
+### Una pantalla y su estado ya no se desincronizan en silencio (2026-09-13)
+
+Mejora propuesta al cerrar la entrega anterior y aprobada por el dueño. Sale de mirar los dos
+fallos del día y ver que eran **el mismo**: el refactor de Aruba retiró `#bw` y ninguna
+comprobación cruzó ese cambio con la lista de campos que el enlace compartido repone. El
+inventario miraba el catálogo —cobertura, ciclo de vida, precios, procedencia— y **nada** de
+la capa de presentación.
+
+`npm run catalogo` gana la sección «PANTALLAS»: cruza los `campos` que cada dimensionador
+declara en `ESTADO.vincular()` contra los `id=` de su propio HTML. Hoy salen las ocho en
+verde, 124 campos en total.
+
+Cuatro decisiones, cada una contra un modo de fallo concreto:
+
+- **Se parsea, no se ejecuta.** En `dimensionador-nokia-7220ixr.js` la llamada vive tras un
+  `await fetch(...)`, así que cargar el módulo exigiría doblar la red y el DOM para leer un
+  array literal. Cuando `campos:` es un identificador —el `CAMPOS_ESCENARIO` de Aruba— se
+  resuelve su declaración en el mismo archivo.
+- **Una página que no se sepa leer es un error, no un salto.** Un comprobador que no
+  comprueba se porta igual que uno que pasa: es `CISCO_EOL_MODELS` otra vez.
+- **Las excepciones caducan solas.** `verdict-sel` no está en ningún HTML porque lo construye
+  `ficha.js`; la excepción declara el módulo **y el ancla que debe seguir existiendo en él**.
+- **También se comprueba que se miran las ocho páginas.** Un parser que devolviera lista vacía
+  dejaría todo en verde sin haber mirado nada.
+
+**Y el ancla se aprendió saboteando, no razonando.** La primera versión anclaba en
+`${cid}-sel`; al renombrar el control a `${cid}-selector` para ver si saltaba, **no saltó** —
+el ancla corta seguía siendo subcadena de la larga, así que la excepción se daba por viva
+sobre un control que ya no existía. Con el ancla completa (`<select id="${cid}-sel">`) sí
+salta. Los otros tres sabotajes —renombrar un `id` del HTML, romper la forma de la llamada y
+quitar un dimensionador— se detectaron a la primera.
+
+La regla vive en `scripts/catalogo-check.js` y `test/pantallas-campos.test.js` solo la afirma,
+una sola implementación como `FICHA.rango()` con el fin de venta. Está en las pruebas y no
+solo en el inventario porque `npm run catalogo` se corre cuando alguien se acuerda, y
+`npm run verificar` corre en cada push. 279/279 pruebas (3 nuevas) y 16/16 pantallas.
+
+### Un enlace compartido ya no se pierde en silencio (2026-09-13)
+
+Mejora propuesta al cerrar la entrega anterior y aprobada por el dueño. Sale de lo que se
+acababa de tocar: `migrarEstadoV1()` salvó los enlaces de Aruba cuando esa pantalla retiró su
+campo `#bw`, pero **solo porque alguien se acordó de escribirla para esa página**. La regla
+general no existía, así que cualquier otra pantalla que renombre un control seguiría dejando
+al receptor viendo otro escenario sin una sola señal — el mismo modo de fallo que
+`RENOMBRADAS` evita para el nombre del archivo, y que nadie cubría para los parámetros.
+
+`ESTADO.vincular()` devuelve ahora `ignorados` y `ESTADO.avisoOrigen()` los **nombra** en
+pantalla, en los ocho dimensionadores a la vez porque el módulo es compartido. Tres decisiones
+son lo que separa un aviso útil de un ruido que se aprende a ignorar:
+
+- **Se avisa aunque el enlace no traiga ningún campo reconocible.** Es el caso peor: la
+  pantalla sale entera en blanco, y sin el aviso no habría absolutamente nada que explicara
+  por qué. Es justo el caso que un `if (!origen) return` habría dejado fuera.
+- **No se denuncia lo que la página sabe migrar.** Se declara en `cfg.migrados`, y Aruba pasa
+  `PARAMS_V1` — la misma constante que usa `migrarEstadoV1()`, extraída para que no haya dos
+  listas iguales en dos sitios, que es como se desincronizan.
+- **Tampoco las marcas de campaña** (`utm_*`, `gclid`, `fbclid`…), que nunca fueron escenario.
+
+Los nombres se escapan antes de pintarse —la URL la escribe quien manda el enlace, y confiar
+eso a la CSP sería dejar la corrección de una pantalla en manos de una cabecera de otra capa—
+y la lista se acota a seis, porque un párrafo que nadie lee no avisa.
+
+Verificado en Chromium en seis escenarios, incluidos los dos que importan: un enlace v1 de
+Aruba **no** dispara el aviso (se migró de verdad) y uno de Cisco con solo parámetros viejos
+**sí** lo dispara. `npm run pantallas` guarda el falso positivo: quitando `migrados` de Aruba,
+el informe lo reporta. 276/276 pruebas (10 nuevas) y 16/16 pantallas.
+
+### El verificador de pantallas vuelve a conducir Aruba, y ahora dice qué le falta (2026-09-13)
+
+`pantallas.yml` llevaba **cuatro días en rojo** sobre `main`. El refactor del dimensionador
+Aruba sustituyó su campo `#bw` por el Multi-Underlay Builder, y `scripts/verificar-pantallas.js`
+seguía rellenando `#bw` en las ocho páginas: `page.fill: Timeout 30000ms exceeded`, 14/15. La
+pantalla que más cambió —1.702 líneas— se quedó sin la única comprobación que la conduce en un
+navegador, que es justo la clase de fallo que este repositorio documenta como invisible a `curl`.
+
+**Se midió antes de tocar nada, y la conclusión importa: la página funciona.** Conducida a mano
+en Chromium, 13 equipos cumplen a 2,5 Gbps, EC-M sale recomendado, el builder responde y el BOM
+pinta 20 KB; los únicos errores de consola son los ambientales de siempre (Google Fonts y el
+favicon) y no hay una sola petición fallida al propio origen. El rojo era del verificador.
+
+Qué cambió, y por qué cada cosa:
+
+- **`caudal(page)` es ahora un gancho opcional por página.** El defecto de fondo no era el
+  selector: era asumir una sola forma para ocho páginas. Siete siguen entrando con una línea
+  (el `#bw` por defecto) y Aruba declara el suyo sobre las filas del builder.
+- **Un control ausente falla en el acto y con su nombre**, no con treinta segundos de espera.
+  Un rojo que tarda medio minuto en decir «ese campo ya no existe» se lee como lentitud del
+  ejecutor, y así es como se acaba ignorando.
+- **La ficha tiene que repintarse al mover el caudal.** El comentario del script lo prometía
+  desde que se escribió; nadie lo comprobaba.
+- **El E2E del refactor vuelve al repositorio.** El que declaró la entrega anterior (11/11)
+  vivía en `/tmp/e2e-refactor.js` y murió con su sesión: 1.702 líneas nuevas sin una sola
+  comprobación repetible. Ahora corre en cada push: segunda fila WAN, y el banner Microbranch
+  apareciendo y **retirándose** en sus umbrales.
+- **Pantalla nueva: el enlace compartido v1.** `migrarEstadoV1()` estaba bien escrita y nunca se
+  había ejecutado en un navegador. Verificada a mano en los tres casos —`?bw=2500&unit=1`,
+  `?bw=2.5&unit=1000` (multiplica bien) y MPLS+Internet, que da dos filas— y fijada como
+  pantalla propia. Un enlace viejo que aterriza con los valores por defecto es **peor que un
+  404 porque no se nota**: el receptor ve otra recomendación y no tiene cómo saberlo.
+- **La navegación del portal deja de esperar al evento `load`.** Medido desde este entorno: las
+  siete navegaciones alternaban 90 ms y **12.100 ms**, y esos 12 segundos son el mismo bloqueo
+  de Google Fonts que `js/fuentes.js` documenta. Lo que se afirma ahí es que el botón *navega*,
+  así que se espera a `commit` más `domcontentloaded`. Los `ERR_ABORTED` de la vuelta al portal
+  se descuentan por **el momento** en que ocurren y no por su nombre: fuera de esa ventana, un
+  script cancelado sigue siendo un fallo.
+
+**Se comprobó que detecta, no solo que pasa**, con tres sabotajes: renombrando `data-campo=down`
+dice que falta ese control; con el banner forzado a oculto lo declara; y desactivando
+`migrarEstadoV1()` reporta la fila DIA vacía, que es exactamente su fallo silencioso.
+
+16/16 pantallas y 266/266 pruebas. De aquí sale el pendiente **33**: Railway desplegó ese commit
+con SUCCESS pese al rojo, así que `pantallas` no frena un despliegue aunque su cabecera diga que
+sí. También se archivaron `SPEC.md` y `plan.md` —artefactos de proceso de otro motor, con rutas
+`/mnt/agents/output/` que no existen aquí— en `docs/refactor-aruba-2026-09-13/`, y se reconcilió
+`CLAUDE.md`, que tras 54 commits solo había cambiado tres líneas.
+
 ### Refactor integral del dimensionador Aruba en 7 módulos (2026-09-13)
 
-Brief del dueño ejecutado con orquestación multi-agente (SPEC.md como contrato, dos
+Brief del dueño ejecutado con orquestación multi-agente (`docs/refactor-aruba-2026-09-13/SPEC.md` como contrato, dos
 frentes —datos y motor/UI— integrados por bundles). Todo lo que el brief contradecía a
 la fuente oficial quedó resuelto a favor de la fuente oficial y documentado (pendientes
 28-32): S2N67A a $9.096 (no $7.146), PSU del 9240 = R7J63A $747 (no R1C72A, que es un

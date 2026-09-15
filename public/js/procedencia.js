@@ -28,6 +28,23 @@
     historico: { etiqueta: 'Sustituida', color: 'var(--steel)' },
   };
 
+  // VIGILANCIA: ¿el documento de la otra punta sigue siendo el mismo? Es una pregunta distinta
+  // de la de «Estado», que habla de la ANTIGÜEDAD de lo transcrito. Un documento puede ser
+  // reciente y haber cambiado ayer, y esas dos cosas se leen distinto delante de un cliente.
+  // «No comprobada» va en gris y NUNCA en verde: no saber no es estar bien.
+  const VIGILANCIA = {
+    verificada: { etiqueta: 'Sin cambios', color: 'var(--green)' },
+    'cambió': { etiqueta: 'Cambió · sin contrastar', color: 'var(--amber)' },
+    'no comprobada': { etiqueta: 'No comprobada', color: 'var(--steel)' },
+  };
+
+  function celdaVigilancia(v) {
+    const g = VIGILANCIA[(v && v.estado) || 'no comprobada'] || VIGILANCIA['no comprobada'];
+    const desde = v && v.desde ? String(v.desde).slice(0, 10) : '';
+    const sufijo = v && v.estado === 'cambió' && desde ? `<br><span style="font-weight:400;font-size:11px">desde ${escapeHtml(desde)}</span>` : '';
+    return `<td style="color:${g.color};font-weight:600;white-space:nowrap" title="${escapeHtml((v && v.motivo) || '')}">${escapeHtml(g.etiqueta)}${sufijo}</td>`;
+  }
+
   let puedeSync = false;
   const fuenteModelos = {}; // code -> () => [{model, ...specs}]
 
@@ -45,12 +62,13 @@
            data-borrar-fuente="${escapeHtml(code)}" data-fuente-id="${escapeHtml(f.id)}"
            title="Borra este documento cargado y su fila de procedencia">Borrar</button>`
       : '<span style="color:var(--steel);font-size:11px" title="Esta fuente viene del catálogo (server/seed/legacyData/fuentes.js): se quita con un commit, no desde aquí">en el código</span>';
-    const cols = puedeSync ? 6 : 5;
+    const cols = puedeSync ? 7 : 6;
     return `<tr>
       <td>${enlace}</td>
       <td style="white-space:nowrap">${escapeHtml(f.fecha || 'sin fecha')}</td>
       <td style="white-space:nowrap">${escapeHtml(antiguedad)}</td>
       <td style="color:${est.color};font-weight:600;white-space:nowrap">${escapeHtml(est.etiqueta)}</td>
+      ${celdaVigilancia(f.vigilancia)}
       <td>${escapeHtml(f.cubre || '')}</td>
       ${puedeSync ? `<td style="white-space:nowrap;text-align:center">${accion}</td>` : ''}
     </tr>${f.nota ? `<tr><td colspan="${cols}" style="color:var(--steel);font-size:12px;padding-top:0">${escapeHtml(f.nota)}</td></tr>` : ''}`;
@@ -94,7 +112,7 @@
       const activas = todas.filter((f) => f.estado !== 'historico');
       const historicas = todas.filter((f) => f.estado === 'historico');
       const cab = `<thead><tr>
-            <th>Documento</th><th>Fecha</th><th>Antigüedad</th><th>Estado</th><th>Qué cubre</th>${puedeSync ? '<th style="text-align:center">Acciones</th>' : ''}
+            <th>Documento</th><th>Fecha</th><th>Antigüedad</th><th>Estado</th><th title="¿El documento oficial sigue siendo el mismo contra el que se verificó el catálogo?">Vigilancia</th><th>Qué cubre</th>${puedeSync ? '<th style="text-align:center">Acciones</th>' : ''}
           </tr></thead>`;
       const tabla = activas.length
         ? `<table>${cab}<tbody>${activas.map((f) => filaProcedencia(f, code)).join('')}</tbody></table>`
