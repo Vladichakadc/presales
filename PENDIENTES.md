@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-13 (refactor integral del dimensionador Aruba — 7 módulos).
+Última revisión: 2026-09-13 (motor de ingeniería carrier-grade — brief sección 1).
 
 ---
 
@@ -449,11 +449,14 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     se inyecta por usuario y co-terminada, pero con precio `null` porque el SKU no figura
     en la lista del distribuidor. Si HPE publica precio o el distribuidor lo añade a la
     lista, el importador lo detectará como candidato y entra por gobierno.
-30. **Fórmula IMIX del widget: coeficientes del brief, no oficiales (2026-09-13).** El
-    widget de rendimiento estima `(caudal/0,70) × (1+0,15 FEC) × 1,20` tal como pedía el
-    brief; el motor principal conserva los anchors oficiales (IMIX 70 %, FEC auto 10 % /
-    agresivo 25 % según VSG, headroom SLA de enlace 75 %). La desviación está documentada
-    en el código; si el dueño quiere una sola regla, decidir cuál manda.
+30. **~~Fórmula IMIX del widget: coeficientes del brief, no oficiales~~ Resuelto
+    (2026-09-13).** El dueño envió el brief carrier-grade con la función determinista
+    `calcularRequerimientosIngenieria` («reemplazar cualquier comparación directa»): hay
+    UNA sola regla — IMIX 0,70/0,55/1,00 por perfil de tráfico, FEC 5/15/25 %, cargo de
+    seguridad 0/5/35 % y margen — implementada en `public/js/motor-ingenieria.js`. Los
+    anchors oficiales previos (FEC 10/25 % VSG, SLA de enlace 75 %) quedan referenciados
+    en comentarios; el slider de margen conserva el default 30 % por el ancla SLA 75 %
+    (el 20 % del brief es el mínimo documentado). Ver *Cerrado recientemente*.
 31. **DTD no fuerza Advanced — conflicto brief vs QuickSpecs (2026-09-13).** El brief
     pedía forzar Advanced con Dynamic Threat Defense; el QuickSpecs (p.32) lo define como
     licencia opcional independiente del tier. Mandó la fuente oficial: DTD se ofrece como
@@ -463,6 +466,12 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     pie del TCO usa «Subtotal Lista/Neto» pero `bom.js` titula las columnas «Subtotal
     LIST/NET» (archivo compartido por los 7 fabricantes — no se tocó para no romper a los
     demás). Unificar criterio cuando se aplique el patrón Aruba al resto de fabricantes.
+33. **El brief carrier-grade llegó truncado: faltan las secciones 2-4 (2026-09-13).** El
+    documento anunciaba cuatro capas (Backend, Frontend, Lógica de Negocio de Service
+    Provider y Componentes de Interfaz) pero solo contenía la sección 1 (Backend, 1.1 y
+    1.2) — el archivo se corta al terminar la función. La sección 1 se ejecutó íntegra;
+    las secciones 2-4 NO se inventaron. Si el dueño reenvía el brief completo, se
+    ejecutan esas tres capas.
 
 ## Limpieza
 
@@ -478,6 +487,24 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Motor de ingeniería carrier-grade + submenú Cumplimiento Especial (2026-09-13)
+
+Sección 1 del brief carrier-grade del dueño (el archivo llegó truncado — ver pendiente
+33). El dimensionamiento del appliance pasa a una función matemática determinista y
+testeable: `public/js/motor-ingenieria.js` (módulo puro UMD) con
+`calcularRequerimientosIngenieria` — IMIX por perfil de tráfico (0,70 empresarial /
+0,55 voz / 1,00 backup), FEC 5/15/25 %, cargo de seguridad (35 % NGFW local / 5 % SSE),
+margen de crecimiento, segregación 70/30 del caudal total con Local Breakout, flujos
+80/150 por usuario y licencia tasada por el ancho de banda físico agregado. Sin doble
+conteo de IMIX: el requerimiento ya viene ÷IMIX, así que EdgeConnect compara contra el
+throughput nominal publicado (los gateways 9000/9200 conservan su regla). Nuevo
+selector de perfil de tráfico; el widget declara la fórmula única con sus componentes
+vivos. TAA/NAL/FIPS recogidas en el submenú colapsable «Cumplimiento Especial / Sector
+Público», cerrado por defecto. Los inputs manuales de «throughput de firewall» y
+«túneles IPSec» no existían ya — el brief pedía eliminarlos: verificado, el
+dimensionado es por flujos y caudal agregado. 7 tests nuevos de la fórmula (273/273 en
+verde), E2E Chromium 13/13.
 
 ### Refactor integral del dimensionador Aruba en 7 módulos (2026-09-13)
 
