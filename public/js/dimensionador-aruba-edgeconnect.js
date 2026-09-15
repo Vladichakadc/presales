@@ -42,7 +42,7 @@ const $=id=>document.getElementById(id);
 // inetType/bwInet) salen del flujo y los sustituye el Multi-Underlay Builder — los enlaces
 // viajan serializados como JSON {v:2, wanLinks:[...]} en el input oculto #wanLinksData.
 // La migración v1→v2 de enlaces antiguos vive en migrarEstadoV1().
-const CAMPOS_ESCENARIO=['wanLinksData','users','aps','perUser','head','fecMode','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','famSeg','segSeg','destSeg','pickModel','personaSeg','selSeguridad','selTier','chkBreakout','selDescuento','dtoCustom'];
+const CAMPOS_ESCENARIO=['wanLinksData','users','aps','perUser','head','fecMode','selTrafico','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','famSeg','segSeg','destSeg','pickModel','personaSeg','selSeguridad','selTier','chkBreakout','selDescuento','dtoCustom'];
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let famMode='any', segMode='branch', destMode='hibrido', lastPick=null;
 // Arquetipo de sede y estrategia de seguridad como variables de estado del dimensionador
@@ -446,7 +446,7 @@ document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',
 $('famSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('famSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));famMode=b.dataset.v;render();});
 $('segSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('segSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));segMode=b.dataset.v;render();});
 $('destSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('destSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));destMode=b.dataset.v;$('destHint').textContent=DEST_HINT[destMode]||'';render();});
-['users','aps','perUser','head','fecMode','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','chkBreakout','selTier'].forEach(id=>$(id).addEventListener('input',render));
+['users','aps','perUser','head','fecMode','selTrafico','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','chkBreakout','selTier'].forEach(id=>$(id).addEventListener('input',render));
 
 // Arquetipo de sede (fase 11): restringe el catalogo a los modelos del VSG para ese
 // tamanyo de sitio; el hint declara que hace cada persona.
@@ -568,6 +568,17 @@ function capacidad(m){
 function capacidadMax(m){
   if(m.licCap&&m.licCap.length) return m.licCap[m.licCap.length-1].fw;
   return capacidad(m);
+}
+/* Capacidad con la que se compara el requerimiento (brief carrier-grade 2026-09-13,
+   SECCIÓN 1.B.4 — SIN DOBLE CONTEO IMIX). El requerimiento EdgeConnect (wanNeed) YA
+   viene dividido por el factor IMIX dentro del motor de ingeniería, así que se compara
+   contra el throughput NOMINAL publicado: degradar además la capacidad con ×0,70
+   contaría el IMIX dos veces. Los gateways 9000/9200 NO entran en la regla (van por
+   throughput de firewall/clientes) y su comparación conserva la degradación histórica
+   ×IMIX_FACTOR del lado capacidad. */
+function capacidadComparable(m){
+  const cap=capacidadMax(m);
+  return cap==null?null:(m.fam==='ec'?cap:cap*IMIX_FACTOR);
 }
 // En la serie 9200 la licencia perpetua amplia tambien clientes y APs, no solo el
 // throughput: filtrar por la cifra de solo-hardware descartaba un 9240 que si cumple con
@@ -729,41 +740,76 @@ function estadoDerivado(){
   const perUser=Math.max(0,parseFloat($('perUser').value)||0);
   const head=(parseFloat($('head').value)||0)/100;
   const boost=$('chkBoost').checked;
+  // featurePenalty conserva SOLO los multiplicadores de función que el brief
+  // carrier-grade (2026-09-13) no mueve al motor de ingeniería: +5 % por segmentación
+  // multi-overlay y +5 % por Cloud-First (clasificar cada primer paquete para decidir
+  // DIA/SSE es trabajo del appliance). Se aplican SOBRE el throughputDiseno del motor
+  // (composición: wanNeed = ing.throughputDisenoMbps × featurePenalty).
   let featurePenalty=1.0;
   if($('chkSeg').checked) featurePenalty+=0.05;
-  // Cloud-First hereda el coste de proceso que antes llevaba la casilla de breakout:
-  // clasificar cada primer paquete para decidir DIA/SSE es trabajo del appliance.
   if(destMode==='cloud') featurePenalty+=0.05;
-  // Dynamic Threat Defense: IDS/IPS en el chasis reserva capacidad de proceso.
-  // Regla de trabajo del duenyo: +35 % (SIN FUENTE oficial para EdgeConnect — en gateways
-  // SD-Branch HPE publica throughput IDS/IPS de solo el 17-30 % del de firewall, medido
-  // con iMix; la revision del diseno lo declara como aviso para no prometer de mas).
-  if(secMode==='dtd') featurePenalty+=0.35;
+  // El +35 % de Dynamic Threat Defense SALE de featurePenalty (brief carrier-grade):
+  // ahora vive en el motor como factorSeguridad LOCAL_NGFW_DPI 0,35 — no duplicar.
   // M2 · motor multi-underlay (SPEC B.3): los enlaces del builder son la fuente del
   // caudal. caudalTotal = Σ down; mplsMbps = Σ down de los transportes MPLS; el resto
-  // es Internet. Con Local Breakout, el ~30 % del tráfico de Internet se descarga del
-  // overlay (regla 70/30 declarada, SIN FUENTE oficial): caudalEfectivo = MPLS + 0,70×Inet.
+  // es Internet. caudalEfectivo (MPLS + 0,70×Inet) se conserva para la cuota del overlay
+  // que usa el dimensionado de Boost (share) — el tier ya NO lo usa (ver abajo).
   const wanLinks=leerWanLinks();
   const caudalTotal=wanLinks.reduce((s,l)=>s+l.down,0);
   const mplsMbps=wanLinks.filter(l=>/^MPLS/.test(l.tipo)).reduce((s,l)=>s+l.down,0);
   const inetMbps=caudalTotal-mplsMbps;
   const breakout=$('chkBreakout').checked;
   const caudalEfectivo=breakout?mplsMbps+inetMbps*0.70:caudalTotal;
+  const fec=SIZING.fec[$('fecMode').value]||SIZING.fec.auto;
+  const perfil=SIZING.boost.reduccion[$('boostProfile').value]||SIZING.boost.reduccion.generico;
+  // needProc (proceso lado LAN: gateways 9000/9200, Boost y el nivel de licencia de
+  // capacidad) conserva su fórmula histórica — el dimensionado de gateways va por
+  // throughput de firewall/clientes y NO entra en la regla carrier-grade de EdgeConnect.
   const caudalBase=caudalTotal*(1+head)*featurePenalty;
   const userBase=users*perUser*(1+head)*featurePenalty;
   const needProc=Math.max(caudalBase,userBase);
-  const fec=SIZING.fec[$('fecMode').value]||SIZING.fec.auto;
-  const perfil=SIZING.boost.reduccion[$('boostProfile').value]||SIZING.boost.reduccion.generico;
-  // Con enlaces declarados, el APPLIANCE se dimensiona por el caudal AGREGADO del sitio
-  // (regla oficial VSG: el chasis sostiene todo el underlay, también lo que el breakout
-  // descarga del overlay — la descarga alivia el túnel, no el hardware). Sin enlaces, se
-  // deriva del tráfico estimado con la paridad FEC y la reducción de Boost, como siempre.
-  const wanNeed=caudalTotal>0?caudalTotal:needProc*(1+fec.pct)/(boost?perfil.factor:1);
-  // El TIER de suscripción se licencia por el caudal del sitio (VSG): con breakout, por
-  // el efectivo que queda en el overlay; sin enlaces declarados, por el derivado.
-  const tierCaudal=caudalTotal>0?caudalEfectivo:wanNeed;
+
+  /* ══ MOTOR DE INGENIERÍA CARRIER-GRADE (brief del dueño 2026-09-13, SECCIÓN 1) ══
+     UNA fórmula para el throughput de diseño del appliance EdgeConnect:
+     (bwFísico / IMIX) × (1 + overheadFEC) × (1 + factorSeguridad) × (1 + headroom).
+     Mapeo de los controles a los parámetros del motor:
+       · fecMode off → fec_activo=false (overhead base 0,05); auto → true con calidad
+         normal (0,15); alto → true + ALTA_PERDIDA_LTE (0,25).
+       · secMode: dtd → LOCAL_NGFW_DPI (0,35) · sse → CLOUD_SASE_SSE (0,05) · none → 0.
+       · headroom_pct ← slider #head. Conserva su default 30 %: es el ancla oficial del
+         SLA de enlace al 75 % de la guía SD-Branch, que el brief mantiene como referencia.
+       · densidad_usuarios ← #perfilEntorno (intensivo → INTENSIVO_SAAS, 150 flujos/usuario). */
+  const fecMode=$('fecMode').value;
+  const ing=MotorIngenieria.calcularRequerimientosIngenieria({
+    bw_mpls_mbps:mplsMbps,
+    bw_internet_mbps:inetMbps,
+    local_breakout_activo:breakout,
+    perfil_trafico:($('selTrafico')&&$('selTrafico').value)||'ENTERPRISE_MIX',
+    fec_activo:fecMode!=='off',
+    enlace_calidad:fecMode==='alto'?'ALTA_PERDIDA_LTE':'NORMAL',
+    modelo_seguridad:secMode==='dtd'?'LOCAL_NGFW_DPI':secMode==='sse'?'CLOUD_SASE_SSE':'NINGUNO',
+    headroom_pct:parseFloat($('head').value)||0,
+    total_usuarios:users,
+    densidad_usuarios:$('perfilEntorno').value==='intensivo'?'INTENSIVO_SAAS':'ESTANDAR',
+  });
+  // Requerimiento de caudal del APPLIANCE EdgeConnect: con enlaces declarados manda el
+  // motor — throughputDiseno YA viene dividido por IMIX y cargado con FEC, seguridad y
+  // margen— multiplicado por los penalties de función que quedan fuera del motor. El
+  // chasis sostiene todo el underlay, también lo que el breakout descarga del overlay
+  // (la descarga alivia el túnel, no el hardware — regla oficial VSG). Sin enlaces, se
+  // deriva del tráfico estimado con la paridad FEC y la reducción de Boost, como siempre,
+  // pero dividido por el factor IMIX porque la comparación contra el modelo se hace ahora
+  // contra el throughput NOMINAL (sin degradar la capacidad — ver capacidadComparable).
+  const wanNeed=caudalTotal>0?ing.throughputDisenoMbps*featurePenalty
+    :needProc*(1+fec.pct)/(boost?perfil.factor:1)/IMIX_FACTOR;
+  // El TIER de suscripción: el brief carrier-grade tasa la licencia por el ancho de banda
+  // FÍSICO AGREGADO del sitio (tierLicenciaBwRequerido = Σ down de los enlaces), no por
+  // el caudal efectivo tras el breakout — es lo que se contrata al operador. Sin enlaces
+  // declarados, por el derivado del tráfico estimado.
+  const tierCaudal=caudalTotal>0?ing.tierLicenciaBwRequerido:wanNeed;
+  // Flujos simultáneos: la misma regla 80/150 de siempre, ahora calculada por el motor.
   const tasaFlujos=FLUJOS_POR_USUARIO[$('perfilEntorno').value]||FLUJOS_POR_USUARIO.estandar;
-  const flujosReq=users>0?users*tasaFlujos:0;
+  const flujosReq=ing.flujosRequeridos;
   // Licenciamiento 100 % automático: el nivel sale de las funciones marcadas (matriz
   // oficial QuickSpecs p.31) y la modalidad On-Premises del menú avanzado. Los «No
   // incluir» (chkNoSub/chkNoCentral/chkSoloHw) son la exclusión explícita que el dueño
@@ -789,7 +835,8 @@ function estadoDerivado(){
   const bloques=(boost&&bundle)?bloquesBoost(boostMbpsAuto(needProc,fec,share)):0;
   return {users,aps,perUser,head,boost,fec,perfil,needProc,wanNeed,tierCaudal,
     tasaFlujos,flujosReq,tier,tierAuto,onprem,bundle,central,termYrs,care,qty,bloques,
-    wanLinks,caudalTotal,mplsMbps,inetMbps,breakout,caudalEfectivo,share};
+    wanLinks,caudalTotal,mplsMbps,inetMbps,breakout,caudalEfectivo,share,
+    ing,featurePenalty};
 }
 
 /* ══ REVISIÓN DEL DISEÑO (par técnico automático, 2026-09-13 fase 10) ══
@@ -803,7 +850,7 @@ const REGLAS_DISENO=[
   {nivel:'rojo', cuando:(D,m)=>m.fam==='ec'&&D.flujosReq>0&&flujosDe(m)!=null&&flujosDe(m)<D.flujosReq,
    texto:(D,m)=>`Flujos insuficientes: ${m.id} publica ${miles(flujosDe(m))} flujos simultaneos y el escenario estima ${miles(D.flujosReq)} (${miles(D.users)} usuarios x ${D.tasaFlujos}/usuario). El recomendado del dimensionador si los cumple.`},
   {nivel:'rojo', cuando:(D,m)=>m.fam==='ec'&&m.wanMax!=null&&D.wanNeed>m.wanMax,
-   texto:(D,m)=>`Caudal WAN insuficiente: ${m.id} publica hasta ${fmt(m.wanMax)} y los enlaces necesitan ${fmt(D.wanNeed)}.`},
+   texto:(D,m)=>`Caudal WAN insuficiente: ${m.id} publica hasta ${fmt(m.wanMax)} y el requerimiento de diseño del motor de ingeniería es ${fmt(D.wanNeed)} (ya con IMIX, FEC, seguridad y margen).`},
   {nivel:'rojo', cuando:(D,m)=>m.fam!=='ec'&&m.fw!=null&&D.needProc>m.fw,
    texto:(D,m)=>`Proceso insuficiente: ${m.id} publica ${fmt(m.fw)} de firewall y el escenario necesita ${fmt(D.needProc)}.`},
   {nivel:'rojo', cuando:(D,m)=>m.fam==='ec'&&$('chkHa').checked&&D.qty!==2,
@@ -846,7 +893,7 @@ const REGLAS_DISENO=[
   {nivel:'aviso', cuando:(D,m)=>m.id==='EC-V',
    texto:()=>'EC-V es un appliance virtual: sin soporte de hardware (el hipervisor corre por cuenta del cliente) y su caudal lo fijan la licencia y los vCPU asignados.'},
   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&m.wanMin!=null&&D.wanNeed>0&&D.wanNeed<m.wanMin,
-   texto:(D,m)=>`Sobredimensionamiento: ${m.id} publica un suelo de ${fmt(m.wanMin)} y los enlaces solo necesitan ${fmt(D.wanNeed)} — un modelo menor sostiene el sitio y baja el tier de la suscripcion.`},
+   texto:(D,m)=>`Sobredimensionamiento: ${m.id} publica un suelo de ${fmt(m.wanMin)} y el requerimiento de diseño es ${fmt(D.wanNeed)} — un modelo menor sostiene el sitio y baja el tier de la suscripcion.`},
 ];
 function revisionDiseno(D,m){
   const h=REGLAS_DISENO.filter(r=>r.cuando(D,m)).map(r=>({nivel:r.nivel,texto:r.texto(D,m)}));
@@ -867,7 +914,9 @@ function pintarWidgetPerf(D){
   // Ahorro del overlay por Local Breakout (M2): el hint vive siempre bajo la casilla.
   const ah=$('ahorroMpls');
   if(D.breakout&&D.inetMbps>0&&D.caudalTotal>0){
-    ah.innerHTML=`El breakout local descarga <b>${fmt(D.inetMbps*0.30)}</b> del overlay (el ~30 % del tráfico de Internet sale directo); el túnel al DC sostiene ≈<b>${fmt(D.caudalEfectivo)}</b> — regla 70/30 declarada, sin fuente oficial.`;
+    // Distribución 70/30 sobre el caudal TOTAL (brief carrier-grade 2026-09-13): la calcula
+    // el motor de ingeniería — 70 % SaaS/navegación sale local, 30 % interno hacia el DC.
+    ah.innerHTML=`El breakout local descarga ≈<b>${fmt(D.ing.distribucion.bwLocalInternet)}</b> del overlay (70 % del caudal total sale local — regla del brief carrier-grade); el túnel al DC sostiene ≈<b>${fmt(D.ing.distribucion.bwTunelesPrivados)}</b>.`;
   }else if(D.breakout&&D.inetMbps<=0&&D.caudalTotal>0){
     ah.textContent='Breakout activo pero sin enlace de Internet declarado: no hay salida local — añade un DIA/banda ancha en el builder.';
   }else{
@@ -893,15 +942,21 @@ function pintarWidgetPerf(D){
     `<div class="bw-row ${f.cls}"><span class="bw-lbl">${f.lbl}</span>`
     +`<span class="bw-track"><i style="width:${Math.max(2,Math.round(f.val/max*100))}%"></i></span>`
     +`<span class="bw-val">${fmt(f.val)}</span></div>`).join('');
-  // Fórmula IMIX del widget (SPEC B.3): capacidad que el chasis debe sostener en la
-  // práctica = (caudal/0,70) × (1+0,15 si FEC) × 1,20.
-  // DESVIACIÓN DOCUMENTADA: el motor principal conserva los anchors del repo — FEC auto
-  // 10 % / agresivo 25 % (VSG) y headroom por SLA de enlace al 75 % (guía SD-Branch)— y
-  // NO se tocan; el widget usa los coeficientes del brief (0,70 IMIX, 0,15 FEC, 1,20 de
-  // margen) como estimación rápida de preventa. Ambas cifras se declaran donde se usan.
-  const imix=(fisico/0.70)*(fecActivo?1.15:1)*1.20;
-  $('widgetPerfImix').innerHTML=`Estimación IMIX de preventa: el chasis debería sostener ≈<b>${fmt(imix)}</b> `
-    +`(caudal/0,70 × ${fecActivo?'1,15 FEC':'1 (sin FEC)'} × 1,20 de margen — coeficientes del brief; el motor dimensiona con los anchors oficiales: IMIX 70 %, FEC 10/25 % y SLA de enlace 75 %).`;
+  // Requerimiento de diseño del motor de ingeniería (brief carrier-grade 2026-09-13) —
+  // la nota IMIX del widget ya NO es una estimación aparte: ES la fórmula única que
+  // dimensiona el appliance, declarada con sus componentes vivos:
+  //   throughputDiseno = (caudal ÷ IMIX) × (1 + FEC) × (1 + seguridad) × (1 + margen).
+  const TRAFICO_TXT={ENTERPRISE_MIX:'IMIX 0,70 (mezcla empresarial)',VOIP_INTENSIVE:'IMIX 0,55 (voz intensiva, paquetes pequeños)',BULK_BACKUP:'IMIX 1,00 (backup/réplica masiva)'};
+  const traficoV=($('selTrafico')&&$('selTrafico').value)||'ENTERPRISE_MIX';
+  const fecV=$('fecMode').value;
+  const fecTxt=fecV==='off'?'FEC 5 % (base, sin paridad)':fecV==='alto'?'FEC 25 % (alta pérdida LTE/satélite)':'FEC 15 % (activo)';
+  const segTxt=secMode==='dtd'?'+35 % NGFW/DPI local (DTD)':secMode==='sse'?'+5 % SSE en la nube':'+0 % (sin inspección extra)';
+  const margenTxt=`margen ${Math.round(parseFloat($('head').value)||0)} %`;
+  const imix=D.ing.throughputDisenoMbps;
+  $('widgetPerfImix').innerHTML=`Motor de ingeniería (fórmula única del brief carrier-grade): el chasis debería sostener ≈<b>${fmt(imix)}</b> `
+    +`= caudal ÷ ${TRAFICO_TXT[traficoV]||TRAFICO_TXT.ENTERPRISE_MIX} × (1 + ${fecTxt}) × (1 ${segTxt}) × (1 + ${margenTxt})`
+    +(D.featurePenalty>1?`, más los multiplicadores de función (×${D.featurePenalty.toFixed(2)}): requerimiento final ≈<b>${fmt(D.wanNeed)}</b>`:'')
+    +`. El throughput así obtenido se compara contra el NOMINAL publicado del modelo — el IMIX ya va dentro (sin doble conteo).`;
   fld.hidden=false;
 }
 
@@ -981,7 +1036,9 @@ function render(){
     const cap=capacidadMax(m);if(cap==null)return;
     const pct=xPct(cap);if(pct<0||pct>100)return;
     const dot=document.createElement('div');
-    dot.className='dot'+(cap*IMIX_FACTOR>=needDe(m)?' ok':'');
+    // Semáforo del punto: ver capacidadComparable — EdgeConnect compara contra el
+    // nominal (el requerimiento ya trae el IMIX del motor), gateways con ×0,70.
+    dot.className='dot'+(capacidadComparable(m)>=needDe(m)?' ok':'');
     if(lastPick&&m.id===lastPick.id)dot.className='dot pick';
     dot.style.left=pct+'%';dot.title=m.id+': '+fmt(cap);
     track.appendChild(dot);
@@ -1005,10 +1062,12 @@ function render(){
     // Sin cifra publicada no se puede afirmar que cumpla: se descarta y se explica, en
     // vez de colarlo con un numero inventado o de omitirlo en silencio.
     if(cap==null){ outBySinDato++; return false; }
-    // Factor IMIX (fase 11, regla de trabajo del duenyo): la capacidad efectiva con
-    // mezcla real de trafico es el 70 % del nominal de laboratorio — el requerimiento se
-    // compara contra la cifra ya degradada y la holgura queda dentro del modelo.
-    if(cap*IMIX_FACTOR<needDe(m)) return false;
+    // Factor IMIX (regla de trabajo del duenyo): la mezcla real de trafico rinde menos
+    // que el UDP de laboratorio. En EdgeConnect la degradación vive YA en el
+    // requerimiento del motor de ingeniería (÷IMIX según perfil) y se compara contra el
+    // nominal; en gateways se conserva el ×0,70 del lado capacidad (ver
+    // capacidadComparable — brief carrier-grade 2026-09-13, sin doble conteo).
+    if(capacidadComparable(m)<needDe(m)) return false;
     const cMax=clientesMax(m), aMax=apsMax(m);
     if(cMax!=null&&users&&cMax<users){ outByClients++; return false; }
     if(aMax!=null&&aps&&aMax<aps){ outByAps++; return false; }
@@ -1094,7 +1153,7 @@ function render(){
   const porQueDe=m=>{
     const cap=capacidadMax(m), req=needDe(m), nivel=nivelLicenciaNecesario(m,req,users,aps), flags=[];
     if(m.fam==='ec'){
-      flags.push(`<b>Caudal WAN a contratar:</b> ${fmt(wanNeed)}${fec.pct?` (incluye ${Math.round(fec.pct*100)}% de paridad FEC)`:''}${boost?` tras la reducción ${perfil.factor}:1 de Boost sobre ${esc(perfil.n.toLowerCase())}`:''}. Tier de suscripción: <b>${tier?esc(tier.n):'—'}</b>.`);
+      flags.push(`<b>Caudal WAN a contratar:</b> ${fmt(D.ing.tierLicenciaBwRequerido||wanNeed)} — el tier de la suscripción se tasa por el ancho de banda físico agregado (brief carrier-grade). El requerimiento de diseño del appliance es ${fmt(wanNeed)}: el motor de ingeniería aplica el IMIX del perfil de tráfico, la paridad FEC del modo elegido, la estrategia de seguridad y el margen de crecimiento${boost?`, con la reducción ${perfil.factor}:1 de Boost sobre ${esc(perfil.n.toLowerCase())} en el caudal derivado`:''}. Tier de suscripción: <b>${tier?esc(tier.n):'—'}</b>.`);
       if(boost&&D.bloques) flags.push(`<b>Boost auto-dimensionado:</b> el enlace transporta ${fmt(wanNeed)} en vez de ${fmt(needProc*(1+fec.pct))}. Se licencia el 30 % del tráfico WAN privado estimado (${fmt(boostMbpsAuto(needProc,fec,D.share))}${D.share<1?' — ya descontada la descarga del breakout (regla 70/30: el 30 % del tráfico de Internet sale local)':''}) en bloques de ${SIZING.boost.bloque} Mbps que forman un pool del fabric — para esta sede, <b>${D.bloques} bloque(s)</b>.`);
       else if(!boost) flags.push('Admite Boost. Merece evaluarse si el tráfico es repetitivo (réplicas, backups, VDI, CIFS/SMB): reduce el caudal contratado, que a 3–5 años suele pesar más en el TCO que el propio equipo.');
       if(sobrado.includes(m.id)) flags.push(`<b class="warn">Sobredimensionado:</b> el requerimiento (${fmt(wanNeed)}) queda por debajo del suelo del rango publicado (${fmt(m.wanMin)}). Revisar el escalón inferior antes de cotizar.`);
@@ -1111,7 +1170,9 @@ function render(){
     if(destMode==='cloud') flags.push('<b>Cloud-First/SaaS:</b> First-packet iQ clasifica la aplicación en el primer paquete y rompe al Internet local o a la nube SSE; el túnel cifrado al datacenter se reserva para el tráfico privado. Son capacidades de plataforma — no fuerzan el nivel de suscripción.');
     if(secMode==='dtd') flags.push('<b>Dynamic Threat Defense:</b> IDS/IPS, DDoS adaptativo y clasificación web son una licencia opcional APARTE de Foundation y Advanced (QuickSpecs p.32). Entra en la lista de materiales como «consultar»: no está en la lista de precios. El dimensionado reserva un 35 % adicional de proceso para la inspección (regla de trabajo declarada — ver la revisión del diseño).');
     if(secMode==='sse') flags.push('<b>HPE Aruba Networking SSE:</b> la inspección se hace en la nube — ZTNA, SWG, CASB y DEM en suscripción <b>por usuario</b> (paquetes oficiales Foundation ZTNA / Foundation SWG / Foundation Plus / Advanced / Advanced Plus, QuickSpecs SSE a50009212enw). El appliance monta los túneles IPsec orquestados hacia el SSE y AppExpress elige el mejor PoP. Entra en la lista como «consultar»: HPE no publica List Price de SSE.');
-    if(cap!=null) flags.push(`<b>Capacidad efectiva (IMIX):</b> el dimensionador exige que el requerimiento quepa en el 70 % del throughput nominal (regla de trabajo declarada — HPE no publica el delta entre laboratorio y mezcla real de Internet). Este modelo queda al ${Math.round(req/(cap*IMIX_FACTOR)*100)} % de su capacidad efectiva.`);
+    if(cap!=null) flags.push(m.fam==='ec'
+      ?`<b>Mezcla de tráfico (IMIX):</b> el requerimiento ya viene degradado por el motor de ingeniería (÷IMIX según el perfil de tráfico, más FEC, seguridad y margen), así que se compara contra el throughput NOMINAL publicado — sin volver a aplicar un 70 % al chasis (regla única del brief carrier-grade 2026-09-13; HPE no publica el delta entre laboratorio y mezcla real). Este modelo queda al ${Math.round(req/cap*100)} % de su capacidad nominal.`
+      :`<b>Capacidad efectiva (IMIX):</b> el dimensionador exige que el requerimiento quepa en el 70 % del throughput nominal (regla de trabajo declarada — HPE no publica el delta entre laboratorio y mezcla real de Internet). Este modelo queda al ${Math.round(req/(cap*IMIX_FACTOR)*100)} % de su capacidad efectiva.`);
     if(m.legacy) flags.push('<b class="warn">Línea anterior (AOS 8):</b> las series 7000 y 7200 siguen en canal y son la respuesta natural para <b>ampliar un parque ya instalado</b>, pero para un despliegue nuevo conviene contrastar con la generación actual (series 9000/9100/9200 sobre AOS 10).');
     if(m.fam==='gw'&&m.rol==='sucursal'&&!m.legacy) flags.push(`<b>Sucursal:</b> el mismo equipo termina la WAN y hace de controladora de APs (hasta ${miles(m.aps)}), aplicando Dynamic Segmentation con el rol que traen el switch CX o el AP. No hace optimización WAN.`);
     if(m.fam==='gw') flags.push(`<b>Central ${nivelAutoCentral()==='advanced'?'Advanced':'Foundation'}:</b> ${nivelAutoCentral()==='advanced'?'deducido de las funciones marcadas (segmentación de extremo a extremo o AIOps ampliada)':'gestión SD-Branch completa — firewall, VPN y políticas por aplicación ya son Foundation, sin funciones que fuercen el nivel superior'}.`);
@@ -1646,12 +1707,13 @@ function renderBom(){
       m.dsLocal?`  Copia local:          ${m.dsLocal}`:null,
       // Transporte WAN del sitio (M1/M2, estado v2): cuando el preventa declara los
       // enlaces en el builder, la exportacion los documenta uno a uno; el appliance se
-      // dimensiona por el caudal agregado y el tier por el efectivo tras el breakout.
+      // dimensiona por el throughputDiseno del motor de ingenieria y el tier se tasa por
+      // el ancho de banda fisico agregado (brief carrier-grade 2026-09-13).
       D.caudalTotal>0?'':'',
       D.caudalTotal>0?'TRANSPORTE WAN DEL SITIO (multi-underlay, estado v2)':null,
       ...D.wanLinks.filter(l=>l.down>0||l.up>0).map((l,i)=>
         `  Enlace ${i+1}:  ${l.tipo} · ${l.medio} · ${fmt(l.down)} down / ${fmt(l.up)} up`),
-      D.caudalTotal>0?`  Agregado: ${fmt(D.caudalTotal)} (MPLS ${fmt(D.mplsMbps)} + Internet ${fmt(D.inetMbps)}) · Local Breakout ${D.breakout?'ACTIVO — caudal efectivo del overlay '+fmt(D.caudalEfectivo)+' (regla 70/30 declarada)':'desactivado (full backhaul)'}`:null,
+      D.caudalTotal>0?`  Agregado: ${fmt(D.caudalTotal)} (MPLS ${fmt(D.mplsMbps)} + Internet ${fmt(D.inetMbps)}) · Local Breakout ${D.breakout?'ACTIVO — el 70 % del caudal total sale local y el tunel al DC sostiene ≈'+fmt(D.ing.distribucion.bwTunelesPrivados)+' (regla del brief carrier-grade); la suscripcion se tasa por el ancho de banda fisico agregado':'desactivado (full backhaul)'}`:null,
       '',
       esEC?'COMO SE LICENCIA EDGECONNECT':'COMO SE LICENCIA ESTE GATEWAY',
       esEC?'  Nivel (Foundation/Advanced) DEDUCIDO de las funciones del diseno segun la'
@@ -1798,6 +1860,7 @@ async function cargarCatalogoSku(){
     // Estado del ciclo de vida por SKU (columna PLC del export): «ES» = End of Sale —
     // HPE ya no lo vende. Lo cruzan el panel (chip ámbar) y el BOM (aviso de fin de venta).
     PLC_POR_SKU={}; for(const x of SKU_CAT) if(x.sku&&x.plc) PLC_POR_SKU[x.sku]=x.plc;
+    pintarSkuTaa();
     pintarCatalogoSku();
     // El BOM se pintó antes de que llegara el CSV: se repinta para que el aviso de fin de
     // venta aparezca sin que quien opera tenga que tocar nada.
@@ -1848,10 +1911,17 @@ function pintarCatalogoSku(){
 
 $('skuBuscar').addEventListener('input',e=>{ skuFiltro=e.target.value; pintarCatalogoSku(); });
 
+// El botón vive dentro del submenú colapsable «Cumplimiento Especial / Sector Público»
+// (brief 1.1c, 2026-09-13): las variantes solo se ofrecen al abrir el submenú y activar
+// el toggle. El contador declara cuántas variantes TAA/NAL/FIPS hay en el catálogo.
+function pintarSkuTaa(){
+  const n=SKU_CAT.filter(x=>TAA_RE.test(x.d||'')).length;
+  $('skuTaa').setAttribute('aria-pressed',String(skuTaaOn));
+  $('skuTaa').textContent=`Variantes gubernamentales (TAA / NAL) — ${n} en el catálogo · ${skuTaaOn?'ocultar':'mostrar'}`;
+}
 $('skuTaa').addEventListener('click',()=>{
   skuTaaOn=!skuTaaOn;
-  $('skuTaa').setAttribute('aria-pressed',String(skuTaaOn));
-  $('skuTaa').textContent=`Variantes gubernamentales (TAA / NAL) · ${skuTaaOn?'ocultar':'mostrar'}`;
+  pintarSkuTaa();
   pintarCatalogoSku();
 });
 

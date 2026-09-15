@@ -152,6 +152,11 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 details.adv{margin-top:14px;border-top:1px dashed var(--rule);padding-top:10px}
 details.adv summary{cursor:pointer;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);font-weight:600}
 details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+/* Cumplimiento Especial / Sector Público (brief 1.1c): submenú colapsable, cerrado por
+   defecto, que guarda el conmutador de variantes gubernamentales TAA/NAL/FIPS. */
+details.cumplimiento-especial{margin:8px 0;border:1px dashed var(--rule);border-radius:2px;padding:8px 10px}
+details.cumplimiento-especial summary{cursor:pointer;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);font-weight:600}
+details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .sku-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
 .sku-chip{padding:3px 9px;border:1px solid var(--rule);border-radius:11px;background:var(--card);color:var(--steel);font-family:'IBM Plex Mono',monospace;font-size:10px;cursor:pointer}
 .sku-chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -314,7 +319,7 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
       <b>Perfil Microbranch:</b> considera Aruba Central + AP/9004 en vez de EdgeConnect dedicado — el túnel IPsec corre en el propio AP AOS-10 (persona Microbranch), sin appliance en el sitio.
     </div>
     <div class="field">
-      <label class="check"><input type="checkbox" id="chkBreakout" checked> <span>Local Breakout (internet local)<span class="sku">Regla de diseño del arquitecto (sin fuente oficial): con salida local activa, el ~30 % del tráfico de Internet se descarga del overlay (SaaS e invitados salen directos). El appliance se dimensiona igualmente por el caudal agregado — regla oficial.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkBreakout" checked> <span>Local Breakout (internet local)<span class="sku">Regla del brief carrier-grade (2026-09-13): con salida local activa, el 70 % del caudal total sale local (SaaS y navegación) y el 30 % interno sigue por el túnel al datacenter. El appliance se dimensiona igualmente por el caudal agregado — regla oficial.</span></span></label>
       <p class="hint" id="ahorroMpls"></p>
     </div>
     <div class="field" id="widgetPerf" hidden>
@@ -333,7 +338,7 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
         <option value="estandar" selected>Estándar — ~80 flujos por usuario/dispositivo</option>
         <option value="intensivo">Intensivo (apps SaaS concurrentes, video, VoIP) — ~150 flujos por usuario</option>
       </select>
-      <p class="hint">El SD-WAN de Aruba se dimensiona por <b>flujos simultáneos</b>, no por túneles IPsec estáticos (el orquestador los gestiona dinámicamente según los overlays). Regla de trabajo declarada (brief del dueño, 2026-09-13): 80 flujos/usuario en entorno estándar y 150 en intensivo — punto medio del rango 80–100 / 150–200 documentado en fase 9; no existe cifra oficial HPE (SIN FUENTE, regla de preventa). Además, la capacidad de cada chasis se evalúa con un factor IMIX del 70 % sobre el throughput nominal (regla de trabajo del dueño — HPE no publica el delta entre tráfico UDP de laboratorio y mezcla real de Internet), así que la holgura ya va dentro.</p>
+      <p class="hint">El SD-WAN de Aruba se dimensiona por <b>flujos simultáneos</b>, no por túneles IPsec estáticos (el orquestador los gestiona dinámicamente según los overlays). Regla de trabajo declarada (brief del dueño, 2026-09-13): 80 flujos/usuario en entorno estándar y 150 en intensivo — punto medio del rango 80–100 / 150–200 documentado en fase 9; no existe cifra oficial HPE (SIN FUENTE, regla de preventa), y la calcula el motor de ingeniería. Además, el requerimiento de caudal del appliance sale ya degradado por el IMIX del perfil de tráfico (motor de ingeniería, brief carrier-grade), así que la comparación va contra el throughput nominal del chasis — la holgura ya va dentro.</p>
     </div>
     <div class="field">
       <label for="perUser">Mbps por usuario activo</label>
@@ -353,6 +358,17 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
         <option value="alto">Agresivo</option>
       </select>
       <p class="hint" id="fecHint">Orchestrator ajusta la paridad según la pérdida medida. Es el modo habitual.</p>
+    </div>
+    <!-- Perfil de tráfico (brief carrier-grade 2026-09-13, SECCIÓN 1): alimenta el factor
+         IMIX del motor de ingeniería — /js/motor-ingenieria.js. -->
+    <div class="field">
+      <label for="selTrafico">Perfil de tráfico (mezcla IMIX)</label>
+      <select id="selTrafico">
+        <option value="ENTERPRISE_MIX" selected>Mezcla empresarial (IMIX estándar)</option>
+        <option value="VOIP_INTENSIVE">Voz intensiva (paquetes pequeños)</option>
+        <option value="BULK_BACKUP">Backup/réplica masiva</option>
+      </select>
+      <p class="hint">Degrada el IMIX del motor de ingeniería: <b>0,70</b> mezcla empresarial / <b>0,55</b> voz intensiva / <b>1,00</b> backup masivo — el requerimiento de caudal sale de <code>caudal ÷ IMIX</code>, así que la voz sube el dimensionado y el backup masivo lo deja en el físico (regla del brief carrier-grade, 2026-09-13).</p>
     </div>
     <div class="field">
       <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
@@ -466,7 +482,16 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
     <h2>Añadir a la lista de materiales</h2>
     <p class="hint" style="margin:0 0 10px">Todo el catálogo pedible de Aruba con su SKU y su List Price: hardware, remanufacturados, suscripciones EdgeConnect, Boost, Central y licencias perpetuas. Lo que añadas queda integrado en la lista de materiales —con stepper de cantidad y botón de quitar— y viaja con ella al Excel y al cotizador.</p>
     <input type="search" id="skuBuscar" placeholder="Buscar por SKU o descripción…" aria-label="Buscar referencia por SKU o descripción">
-    <button type="button" id="skuTaa" class="btn ghost" style="font-size:11px;padding:5px 11px;margin:8px 0 0" aria-pressed="false">Variantes gubernamentales (TAA / NAL) · mostrar</button>
+    <!-- Cumplimiento Especial / Sector Público (brief 1.1c, 2026-09-13): las variantes
+         gubernamentales viven tras un submenú colapsable, cerrado por defecto. Auditaron
+         también los modelos de #pickModel: ninguno es una variante TAA/NAL (son SKUs del
+         catálogo de precios, no modelos del dimensionador), así que el filtro del toggle
+         cubre todo lo que hay que esconder. -->
+    <details class="cumplimiento-especial">
+      <summary>Cumplimiento Especial / Sector Público</summary>
+      <p class="hint">Variantes TAA/NAL/FIPS para sector público y cumplimiento — Trade Agreements Act.</p>
+      <button type="button" id="skuTaa" class="btn ghost" style="font-size:11px;padding:5px 11px;margin:4px 0 0" aria-pressed="false">Variantes gubernamentales (TAA / NAL) · mostrar</button>
+    </details>
     <div id="skuCatalogo"><p class="hint">Cargando catálogo de SKUs…</p></div>
   </section>
   <section class="panel">
@@ -707,6 +732,7 @@ details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2p
   </div>
 </div>
 
+<script src="/js/motor-ingenieria.js"></script>
 <script src="/js/bom.js"></script>
 <script src="/js/ficha.js"></script>
 <script src="/js/estado.js"></script>

@@ -42,6 +42,9 @@ const globalsNavegador = {
   // APIs que las paginas se pasan entre si por `window`, ya que no hay sistema de modulos.
   FICHA: 'readonly', BOM: 'readonly', ESTADO: 'readonly', TABLA: 'readonly', COMPARADOR: 'readonly', CALC: 'readonly',
   CONTRASTE: 'readonly', NAVFAB: 'readonly', PROCEDENCIA: 'readonly',
+  // Motor de ingeniería carrier-grade (brief del dueño 2026-09-13): módulo UMD, global
+  // en el navegador y requireable desde Node en los tests.
+  MotorIngenieria: 'readonly',
 };
 
 const reglas = {
