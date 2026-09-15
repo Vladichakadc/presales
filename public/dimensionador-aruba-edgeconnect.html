@@ -137,6 +137,19 @@ input[type=range]{width:100%;accent-color:var(--red)}
 .bar i.tight{background:var(--amber)}.bar i.good{background:var(--green)}
 .why{border-top:1px solid var(--rule);padding-top:14px;font-size:13.5px;margin-top:4px}
 .warn{color:var(--amber)}
+/* Usuarios requeridos por SSE (2026-09-15): con la estrategia de seguridad «HPE Aruba
+   SSE» la cifra de usuarios ES la cantidad de licencias — sin ella la línea no se puede
+   cotizar, así que el campo lo grita en ámbar. */
+.req-sse-tag{color:var(--amber);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.field.req-sse input{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber)}
+/* Líneas retiradas del BOM (2026-09-15): omisiones restaurables, bajo la tabla. */
+.bom-retiradas{margin-top:10px;border:1px dashed var(--rule);border-radius:3px;padding:8px 12px;font-size:12px}
+.bom-retiradas summary{cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel)}
+.bom-retirada{display:flex;align-items:center;gap:8px;padding:4px 0;border-top:1px solid var(--paper);color:var(--steel)}
+.bom-retirada:first-of-type{border-top:0}
+.bom-retirada s{flex:1}
+.bom-restaurar{border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:3px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 8px}
+.bom-restaurar:hover{border-color:var(--red);color:var(--red)}
 ul.clean{list-style:none;margin:0;padding:0}
 ul.clean li{padding-left:14px;position:relative;margin-bottom:9px;font-size:13.5px}
 ul.clean li:before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;background:var(--rule)}
@@ -315,6 +328,9 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
   <input type="text" id="nombreCliente" placeholder="Nombre del cliente" aria-label="Nombre del cliente" autocomplete="off">
   <input type="text" id="refProyecto" placeholder="Referencia del proyecto" aria-label="Referencia del proyecto" autocomplete="off">
   <button type="button" class="btn ghost" id="btnCopiarEscenario">Copiar enlace del escenario</button>
+  <!-- «Limpiar escenario» (petición del dueño, 2026-09-15): el estado vive en la URL —
+       limpiar es volver a la URL desnuda y recargar con los valores por defecto. -->
+  <button type="button" class="btn ghost" id="btnLimpiarEscenario">Limpiar escenario</button>
   <span id="copiadoMsg" class="hint" role="status" aria-live="polite"></span>
 </div>
 <section class="ladder">
@@ -357,7 +373,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
         <button type="button" data-v="hibrido" aria-pressed="true">Híbrido / DC privado</button>
         <button type="button" data-v="cloud" aria-pressed="false">Cloud-First / SaaS</button>
       </div>
-      <p class="hint" id="destHint">Tráfico intensivo en túneles del fabric hacia el datacenter propio, con Path Conditioning (FEC y corrección de orden de paquetes) sosteniendo el SLA de aplicación.</p>
+      <p class="hint" id="destHint">Tráfico intensivo en túneles del fabric hacia el datacenter propio, con Path Conditioning (FEC y corrección de orden de paquetes) sosteniendo el SLA de aplicación. <b>Cálculo:</b> sin sobrecoste — el throughput de diseño sale del motor de ingeniería tal cual (penalización de función ×1,00).</p>
     </div>
     <div class="field">
       <label><input type="checkbox" id="chkBoost"> <span>Optimización y deduplicación de datos (Aruba Boost)<span class="sku" style="display:block;margin-top:2px">¿Aplicaciones con datos repetitivos —CIFS/SMB, transferencias masivas, réplicas— o enlaces de alta latencia / satelitales? Boost reduce el caudal WAN a contratar y, a cambio, exige más proceso al appliance. Los Mbps de Boost se calculan solos: el 30 % del tráfico WAN privado (regla de preventa declarada), licenciados en bloques de 100 Mbps que forman un pool del fabric.</span></span></label>
@@ -369,7 +385,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
         <option value="oficina" selected>Ficheros de oficina y correo interno — 2:1</option>
         <option value="repetido">Réplicas, backups, VDI, CIFS/SMB — 1.8:1</option>
       </select>
-      <p class="hint">El perfil de réplicas/backups/CIFS usa el ancla oficial del caso de estudio HPE Aruba (Universal Health Services: ~45 % Veeam, ~40 % CIFS ≈ 1.8:1); los demás perfiles son supuestos conservadores de trabajo, <b>no cifras publicadas</b>. El ahorro real depende de cuánto se repita el contenido y solo una prueba con el tráfico del cliente lo confirma.</p>
+      <p class="hint">El perfil de réplicas/backups/CIFS usa el ancla oficial del caso de estudio HPE Aruba (Universal Health Services: ~45 % Veeam, ~40 % CIFS ≈ 1.8:1); los demás perfiles son supuestos conservadores de trabajo, <b>no cifras publicadas</b>. <b>Dónde actúa este factor</b>: en el widget «Caudal contratado vs. rendimiento efectivo» (barra «Percibida con Boost»), en el caudal derivado cuando NO hay enlaces declarados y en la justificación de la ficha. <b>Dónde NO actúa, a propósito</b>: ni en el modelo del appliance (Boost exige MÁS proceso, no menos — la deduplicación la ejecuta el chasis) ni en el tier de la suscripción, que se licencia por el caudal WAN físico contratado al operador (regla oficial VSG). El ahorro real depende de cuánto se repita el contenido y solo una prueba con el tráfico del cliente lo confirma.</p>
     </div>
   </section>
 
@@ -412,9 +428,9 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
       <p class="hint" id="widgetPerfImix" style="margin-top:8px"></p>
     </div>
     <div class="field">
-      <label for="users">Usuarios / dispositivos concurrentes</label>
+      <label for="users">Usuarios / dispositivos concurrentes <span class="req-sse-tag" id="usersReqTag" hidden>— define el nº de licencias SSE</span></label>
       <input type="number" id="users" min="1" step="1" autocomplete="off">
-      <p class="hint">En los gateways esta cifra es además una <b>restricción dura de capacidad</b>: la serie 9000 soporta 2.048 clientes y la 9200 hasta 32.000 con licencia Gold.</p>
+      <p class="hint" id="usersHint">Influye en tres cálculos: (1) los <b>flujos simultáneos</b> que debe sostener el appliance (regla 80/150 por usuario del VSG, vía el perfil de entorno); (2) sin enlaces declarados, el <b>tráfico estimado</b> del sitio (usuarios × Mbps/usuario) del que sale el tier; (3) en los gateways es una <b>restricción dura de capacidad</b>: la serie 9000 soporta 2.048 clientes y la 9200 hasta 32.000 con licencia Gold. Además, con estrategia de seguridad <b>HPE Aruba SSE</b> esta cifra ES la cantidad de licencias: SSE se suscribe por usuario (QuickSpecs SSE) y la línea del BOM no se puede cotizar sin ella.</p>
     </div>
     <div class="field">
       <label for="perfilEntorno">Perfil de entorno — flujos simultáneos</label>
@@ -477,7 +493,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
       <p class="hint" id="secHint">El NGFW y la clasificación de aplicaciones (AppRF, ~3.500 apps) ya van en Foundation. Activa una estrategia solo si el diseño exige IDS/IPS o inspección en la nube.</p>
     </div>
     <div class="checks" style="margin-top:14px">
-      <label class="check"><input type="checkbox" id="chkAiops"> <span>Analítica de experiencia y AIOps<span class="sku">Requiere <b>Advanced</b>: la retención ampliada de datos es del nivel Advanced de EdgeConnect (QuickSpecs p.31), y en Central los AI Insights ampliados de WAN y la visibilidad UCC son del nivel Advanced (la retención de datos de Central es la misma en ambos niveles — tabla oficial).</span></span></label>
+      <label class="check"><input type="checkbox" id="chkAiops"> <span>Analítica de experiencia y AIOps<span class="sku">No es un SKU aparte ni una línea más del BOM: es una <b>capacidad del nivel Advanced</b>. Al marcarla, la suscripción EdgeConnect y Aruba Central suben de Foundation a Advanced (la retención ampliada de datos es del nivel Advanced de EdgeConnect —QuickSpecs p.31— y en Central los AI Insights ampliados de WAN y la visibilidad UCC son del nivel Advanced; la retención de datos de Central es la misma en ambos niveles — tabla oficial). El cambio de nivel —y su precio— se ve en el panel 4 y en la lista de materiales.</span></span></label>
       <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad (HA 1+1)<span class="sku">Se cotizan 2 unidades. En modalidad SaaS el segundo nodo lleva el SKU de alta disponibilidad del QuickSpecs —mismo tier, caudal y término (VSG)— que la lista de precios documentada tarifa igual que el estándar; en On-Premises, 2× estándar.</span></span></label>
     </div>
     <p class="hint" style="margin-top:10px">El steering dinámico por SLA de aplicación (Dynamic Path Control) y las funciones NGFW ya los incluye <b>Foundation</b> — no obligan a subir de nivel (QuickSpecs v18, p.31).</p>
@@ -501,10 +517,9 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
       <select id="pickModel"></select>
       <p class="hint">El selector <b>sigue al dimensionamiento</b>: propone el recomendado y marca los que cumplen. Cámbialo a mano para cotizar otro equipo —la ficha avisará del desvío y ofrecerá volver al recomendado.</p>
     </div>
-    <div class="field">
-      <label for="qty">Cantidad (unidades)</label>
-      <input type="number" id="qty" min="1" autocomplete="off">
-    </div>
+    <!-- Sin campo de cantidad (petición del dueño, 2026-09-15): en EdgeConnect un sitio
+         lleva UN appliance o un par HA 1+1 — no hay despliegues de 3+ por sitio en la
+         arquitectura oficial. Las unidades se deducen de la casilla HA (1 ó 2). -->
     <div class="field">
       <label for="termYears">Término de suscripción y soporte</label>
       <select id="termYears">
@@ -523,7 +538,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
       <div style="margin-top:10px">
         <label for="selTier" style="font-size:12px">Tier de caudal de la suscripción</label>
         <select id="selTier"></select>
-        <p class="hint">En «Automático» el tier sale del caudal WAN agregado del sitio. Los tiers intermedios solo existen en <b>Advanced</b>: con Foundation quedan bloqueados (restricción oficial de la lista de precios).</p>
+        <p class="hint">En «Automático» el tier sale del <b>caudal WAN agregado del módulo 2</b> (Σ de los enlaces declarados — regla oficial VSG) y su nombre se muestra en la propia opción. <b>El tier no dimensiona el equipo</b>: solo tarifa la suscripción; el appliance lo dimensiona el motor de ingeniería (IMIX, FEC, seguridad, margen). Elegir un tier superior al deducido es una decisión comercial de crecimiento — no cambia el modelo propuesto. Los tiers intermedios solo existen en <b>Advanced</b>: con Foundation quedan bloqueados (restricción oficial de la lista de precios).</p>
       </div>
       <label class="check" style="margin-top:8px"><input type="checkbox" id="chkNoSub"> <span class="sku">No incluir la suscripción: el equipo queda standalone, sin fabric gestionado ni ZTP — y tampoco se licencia Boost, que es un add-on de la suscripción.</span></label>
     </div>
@@ -566,21 +581,19 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
 <!-- ════ TAB 2 · BOM ════ -->
 <div class="tabpane" id="pane-bom" hidden>
 <div class="pane-centro">
-  <section class="panel" id="skuPanel">
-    <h2>Añadir a la lista de materiales</h2>
-    <p class="hint" style="margin:0 0 10px">Todo el catálogo pedible de Aruba con su SKU y su List Price: hardware, remanufacturados, suscripciones EdgeConnect, Boost, Central y licencias perpetuas. Lo que añadas queda integrado en la lista de materiales —con stepper de cantidad y botón de quitar— y viaja con ella al Excel y al cotizador.</p>
-    <input type="search" id="skuBuscar" placeholder="Buscar por SKU o descripción…" aria-label="Buscar referencia por SKU o descripción">
-    <!-- Cumplimiento Especial / Sector Público (brief 1.1c, 2026-09-13): las variantes
-         gubernamentales viven tras un submenú colapsable, cerrado por defecto. Auditaron
-         también los modelos de #pickModel: ninguno es una variante TAA/NAL (son SKUs del
-         catálogo de precios, no modelos del dimensionador), así que el filtro del toggle
-         cubre todo lo que hay que esconder. -->
-    <details class="cumplimiento-especial">
-      <summary>Cumplimiento Especial / Sector Público</summary>
-      <p class="hint">Variantes TAA/NAL/FIPS para sector público y cumplimiento — Trade Agreements Act.</p>
-      <button type="button" id="skuTaa" class="btn ghost" style="font-size:11px;padding:5px 11px;margin:4px 0 0" aria-pressed="false">Variantes gubernamentales (TAA / NAL) · mostrar</button>
-    </details>
-    <div id="skuCatalogo"><p class="hint">Cargando catálogo de SKUs…</p></div>
+  <section class="panel">
+    <h2>Lista de materiales
+      <span class="bom-acciones">
+        <button class="btn ghost" id="accBtn" style="font-size:11px;padding:5px 11px" hidden>Ópticas y accesorios</button>
+        <button class="btn" id="xlsBtn" style="font-size:11px;padding:5px 11px">Exportar a Excel</button>
+        <button class="btn ghost" id="copyBtn" style="font-size:11px;padding:5px 11px">Copiar como texto</button>
+      </span>
+    </h2>
+    <p class="hint" style="margin:0 0 10px">Toda la lista es editable: cada línea —la calcule el dimensionador o la añadas a mano— se quita con su botón ✕ y se restaura desde «Líneas retiradas», y la omisión viaja en el enlace del escenario. Las cantidades de las líneas calculadas las fija el escenario (HA 1+1, enlaces WAN, término); las de las referencias añadidas a mano se ajustan con su stepper.</p>
+    <input type="hidden" id="bomOmitidas">
+    <div id="bomTabla"></div>
+    <div id="bomRetiradas"></div>
+    <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
   </section>
   <section class="panel">
     <h2>Precio neto y TCO del sitio</h2>
@@ -606,16 +619,23 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
       <p class="hint" style="margin-top:6px">Abre el BOM agregado Σ(BOM del perfil × sedes) en una ventana aparte, con su exportación a Excel.</p>
     </div>
   </section>
-  <section class="panel">
-    <h2>Lista de materiales
-      <span class="bom-acciones">
-        <button class="btn ghost" id="accBtn" style="font-size:11px;padding:5px 11px" hidden>Ópticas y accesorios</button>
-        <button class="btn" id="xlsBtn" style="font-size:11px;padding:5px 11px">Exportar a Excel</button>
-        <button class="btn ghost" id="copyBtn" style="font-size:11px;padding:5px 11px">Copiar como texto</button>
-      </span>
-    </h2>
-    <div id="bomTabla"></div>
-    <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
+  <section class="panel" id="skuPanel">
+    <h2>Añadir a la lista de materiales</h2>
+    <!-- Movido al FINAL del tab (petición del dueño, 2026-09-15): primero se ve la
+         lista que el dimensionador propone; el catálogo para añadir a mano queda debajo. -->
+    <p class="hint" style="margin:0 0 10px">Todo el catálogo pedible de Aruba con su SKU y su List Price: hardware, remanufacturados, suscripciones EdgeConnect, Boost, Central y licencias perpetuas. Lo que añadas queda integrado en la lista de materiales —con stepper de cantidad y botón de quitar— y viaja con ella al Excel y al cotizador.</p>
+    <input type="search" id="skuBuscar" placeholder="Buscar por SKU o descripción…" aria-label="Buscar referencia por SKU o descripción">
+    <!-- Cumplimiento Especial / Sector Público (brief 1.1c, 2026-09-13): las variantes
+         gubernamentales viven tras un submenú colapsable, cerrado por defecto. Auditaron
+         también los modelos de #pickModel: ninguno es una variante TAA/NAL (son SKUs del
+         catálogo de precios, no modelos del dimensionador), así que el filtro del toggle
+         cubre todo lo que hay que esconder. -->
+    <details class="cumplimiento-especial">
+      <summary>Cumplimiento Especial / Sector Público</summary>
+      <p class="hint">Variantes TAA/NAL/FIPS para sector público y cumplimiento — Trade Agreements Act.</p>
+      <button type="button" id="skuTaa" class="btn ghost" style="font-size:11px;padding:5px 11px;margin:4px 0 0" aria-pressed="false">Variantes gubernamentales (TAA / NAL) · mostrar</button>
+    </details>
+    <div id="skuCatalogo"><p class="hint">Cargando catálogo de SKUs…</p></div>
   </section>
   <div class="flag-ft">
     <b>Aviso de preventa:</b> el hardware, las suscripciones EdgeConnect/Boost/Central (incluidos los SKU de alta disponibilidad del segundo nodo) y el soporte Foundational Care de los EdgeConnect traen List Price de HPE verificado el 2026-09-13 (94 SKU en <code>public/datasheets/aruba-lista-precios-hpe.csv</code> más los SKU de servicio por modelo en <code>server/seed/legacyData/aruba.js</code>); es precio de lista sin el descuento del distribuidor, no una cotización firme. Lo que sigue sin precio verificado —EC-V, FC de software y FC de gateways— figura en «consultar» a propósito.

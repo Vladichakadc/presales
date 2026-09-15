@@ -401,6 +401,14 @@
     }));
   }
 
+  // Clave estable de una línea del BOM (petición del dueño en Aruba, 2026-09-15 —
+  // BOM editable): con SKU es 'sku:XXX'; sin SKU (líneas informativas/pendientes) es
+  // 'desc:categoría|descripción'. La página la usa para filtrar las líneas retiradas y
+  // este módulo para pintar el botón de retirar — una sola convención en los dos lados.
+  function claveFila(f) {
+    return f && f.sku ? 'sku:' + f.sku : 'desc:' + ((f && f.cat) || '') + '|' + ((f && f.desc) || '');
+  }
+
   function renderTabla(filasBase, opciones) {
     const o = opciones || {};
     // Las referencias anadidas se pegan aqui, no en la pagina, y entran ANTES de los totales:
@@ -453,7 +461,12 @@
             : '')
           // Lo que se anade a mano se tiene que poder quitar a mano: sin salida, anadir una
           // referencia por error obligaria a vaciar el almacenamiento del navegador.
-          + (f._ref ? ` <button type="button" class="bom-quitar" data-bom-quitar="${esc(f._ref)}" title="Quitar de la cotización">&times;</button>` : '')
+          // `o.editable` (opt-in, 2026-09-15 — Aruba): TAMBIÉN las líneas calculadas llevan
+          // su botón de retirar; no las borra el motor — la página las mueve a «Líneas
+          // retiradas» (restaurables) y las excluye de totales, Excel y texto. Sin el flag,
+          // la tabla se pinta igual que siempre (los otros seis dimensionadores no cambian).
+          + (f._ref ? ` <button type="button" class="bom-quitar" data-bom-quitar="${esc(f._ref)}" title="Quitar de la cotización">&times;</button>`
+            : (o.editable ? ` <button type="button" class="bom-quitar" data-bom-omitir="${esc(claveFila(f))}" title="Retirar de la cotización (restaurable)">&times;</button>` : ''))
           + '</td>'
           + '</tr>';
       }
@@ -798,7 +811,7 @@
     });
   }
 
-  global.BOM = { renderTabla, exportarExcel, comoTexto, money, esc,
+  global.BOM = { renderTabla, exportarExcel, comoTexto, money, esc, claveFila,
     enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar,
     sincronizar, soltarManual, avisoDesvio,
     agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor,

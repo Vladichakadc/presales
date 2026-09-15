@@ -56,7 +56,14 @@ const CAMPOS_ESCENARIO=['wanLinksData','users','aps','perUser','head','fecMode',
   'nombreCliente','refProyecto',
   // Ópticas elegidas en #sfpChooser (2026-09-15): JSON {medio: sku} en el oculto
   // #sfpPickData — viaja en la URL y en los perfiles como un campo más.
-  'sfpPickData'];
+  'sfpPickData',
+  // Líneas retiradas de la lista de materiales (BOM editable, petición del dueño
+  // 2026-09-15): JSON de claves en el oculto #bomOmitidas. La clave la define
+  // BOM.claveFila (con el SKU si lo hay, o categoría|descripción). Viaja en la URL:
+  // quien abre el enlace ve la misma lista, con las mismas líneas retiradas.
+  // OJO: nada de literales entrecomillados en este comentario — catalogo-check extrae
+  // los ids del array con una expresión sobre comillas y los tomaría por campos.
+  'bomOmitidas'];
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let famMode='any', segMode='branch', destMode='hibrido', lastPick=null;
 // Arquetipo de sede y estrategia de seguridad como variables de estado del dimensionador
@@ -328,6 +335,16 @@ $('btnCopiarEscenario').addEventListener('click',async()=>{
   setTimeout(()=>{ msg.textContent=''; },2500);
 });
 
+// «Limpiar escenario» (petición del dueño, 2026-09-15): para dimensionar otro equipo
+// desde cero. El estado vive SOLO en la URL (estado v2 — no se guarda entre sesiones),
+// así que limpiar es volver a la URL desnuda y recargar: cada campo cae a su defecto.
+// Pide confirmación porque borra TODO lo declarado, incluida la lista de materiales.
+$('btnLimpiarEscenario').addEventListener('click',()=>{
+  if(!window.confirm('¿Limpiar el escenario completo? Se pierden los enlaces WAN, las opciones y la lista de materiales actuales y se vuelve a los valores por defecto.')) return;
+  history.replaceState(null,'',location.pathname);
+  location.reload();
+});
+
 // Arquetipos de sede (personas Aruba, brief del duenyo 2026-09-13): restringen el
 // catalogo a los modelos que el VSG posiciona para ese tamanyo de sitio. Libre = el
 // calculo manda sobre todo el catalogo, como hasta ahora.
@@ -400,9 +417,33 @@ function necesidadesOptica(links){
   (links||[]).filter(l=>l.down>0||l.up>0).forEach(l=>{ if(MEDIOS_OPTICA[l.medio]) n[l.medio]=(n[l.medio]||0)+1; });
   return n;
 }
-function unidadesSitio(){ return Math.max(1,parseInt($('qty')&&$('qty').value)||1); }
-function leerSfpPick(){ try{ return JSON.parse(($('sfpPickData')||{}).value||'{}')||{}; }catch(e){ return {}; } }
+// Unidades del sitio (petición del dueño, 2026-09-15): SIN campo de cantidad — en
+// EdgeConnect un sitio lleva un appliance o un par HA 1+1 (arquitectura oficial), así
+// que las unidades se deducen de la casilla HA: marcada → 2, sin marcar → 1.
+function unidadesSitio(){ return ($('chkHa')&&$('chkHa').checked)?2:1; }
+function leerSfpPick(){ try{ return JSON.parse(($('sfpPickData')||{}).value||'{}')||{}; }catch{ return {}; } }
 function escribirSfpPick(p){ if($('sfpPickData')) $('sfpPickData').value=JSON.stringify(p); }
+
+/* ══ BOM EDITABLE: LÍNEAS RETIRADAS (petición del dueño, 2026-09-15) ══
+   Cualquier línea de la lista —la calcule el dimensionador o la añada la mano— se puede
+   RETIRAR con su botón ✕: no se borra, se mueve a «Líneas retiradas» (restaurable con un
+   clic) y sale de totales, Excel y texto. La omisión viaja en la URL (#bomOmitidas).
+   Las cantidades de las líneas calculadas NO se editan a mano: las fija el escenario
+   (HA 1+1, enlaces WAN, término) — editarlas invitaría a cambiar una cifra que el
+   próximo repintado pisaría sin avisar; retirar, en cambio, es una decisión de alcance
+   («este sitio no lleva Central») que el motor no puede adivinar. */
+function leerOmitidas(){ try{ const v=JSON.parse(($('bomOmitidas')||{}).value||'[]'); return Array.isArray(v)?v:[]; }catch(e){ return []; } }
+function escribirOmitidas(a){ if($('bomOmitidas')) $('bomOmitidas').value=JSON.stringify(a); }
+// La caja de retiradas se pinta tras la tabla: líneas tachadas con su botón de restaurar.
+function pintarRetiradas(filas, omitidas){
+  const box=$('bomRetiradas'); if(!box) return;
+  const retiradas=(filas||[]).filter(f=>omitidas.has(BOM.claveFila(f)));
+  if(!retiradas.length){ box.innerHTML=''; return; }
+  box.innerHTML=`<details class="bom-retiradas"><summary>Líneas retiradas de la cotización · ${retiradas.length}</summary>`
+    +retiradas(f=>`<div class="bom-retirada"><s>${esc(f.desc)}${f.sku?` — <code>${esc(f.sku)}</code>`:''}</s>`
+      +`<button type="button" class="bom-restaurar" data-bom-restaurar="${esc(BOM.claveFila(f))}">Restaurar</button></div>`).join('')
+    +'</details>';
+}
 // Óptica resuelta para un medio: la elegida si sigue siendo compatible; la única si no
 // hay alternativa; null si hay varias y el usuario aún no elige.
 function opticaResuelta(modeloId, medio, pick){
@@ -663,9 +704,14 @@ $('modalConsolidado').addEventListener('click',e=>{ if(e.target===$('modalConsol
 // aplicaciones sustituye a los campos abstractos. Cloud-First usa First-packet iQ para
 // sacar el tráfico SaaS de confianza directo a Internet o al SSE; Híbrido concentra el
 // tráfico en los overlays con Path Conditioning hacia el datacenter privado.
+// Cada opción declara SU cálculo (petición del dueño, 2026-09-15): el destino mueve el
+// «featurePenalty» del motor — +0 % en híbrido (el túnel al DC es el caso base) y +5 %
+// en Cloud-First, porque clasificar cada primer paquete (First-packet iQ) para decidir
+// DIA/SSE es trabajo extra del appliance. La cifra se aplica sobre el throughput de
+// diseño del motor de ingeniería y se ve en la ficha («por qué este equipo»).
 const DEST_HINT={
-  hibrido:'Tráfico intensivo en túneles del fabric hacia el datacenter propio, con Path Conditioning (FEC y corrección de orden de paquetes) sosteniendo el SLA de aplicación.',
-  cloud:'Office 365, Teams, Salesforce y web salen directos a Internet (DIA) o hacia la nube SSE: First-packet iQ clasifica la aplicación en el primer paquete y decide el breakout. Menos carga cifrada en el túnel corporativo.',
+  hibrido:'Tráfico intensivo en túneles del fabric hacia el datacenter propio, con Path Conditioning (FEC y corrección de orden de paquetes) sosteniendo el SLA de aplicación. Cálculo: sin sobrecoste — el throughput de diseño sale del motor de ingeniería tal cual (penalización de función ×1,00).',
+  cloud:'Office 365, Teams, Salesforce y web salen directos a Internet (DIA) o hacia la nube SSE: First-packet iQ clasifica la aplicación en el primer paquete y decide el breakout. Menos carga cifrada en el túnel corporativo. Cálculo: +5 % sobre el throughput de diseño (×1,05) — clasificar cada primer paquete es trabajo del appliance.',
 };
 
 // El equipo del dimensionamiento se lleva solo al BOM. La regla vive en js/bom.js —
@@ -727,11 +773,9 @@ $('chkBoost').addEventListener('change',()=>{
 // Dynamic Threat Defense vive en el selector de estrategia de seguridad (#selSeguridad,
 // SPEC B.4): el movimiento del filtro de familia se hace en su listener de arriba.
 $('chkHa').addEventListener('change',()=>{
-  const q=$('qty');
-  if($('chkHa').checked){ if((parseInt(q.value)||1)<2) q.value=2; }
-  else if((parseInt(q.value)||1)===2){ q.value=1; }
-  // render() entero: la ficha declara el par HA en «Unidades a licenciar» y el BOM
-  // parte la suscripción en 1× estándar + 1× SKU de alta disponibilidad (2026-09-13).
+  // Las unidades se deducen de esta casilla (1 ó 2 — sin campo de cantidad desde
+  // 2026-09-15). render() entero: la ficha declara el par HA en «Unidades a licenciar»
+  // y el BOM parte la suscripción en 1× estándar + 1× SKU de alta disponibilidad.
   render();
 });
 // Estos campos disparan render() y no solo renderBom: con la unificacion de 2026-09-13 la
@@ -741,7 +785,7 @@ $('chkHa').addEventListener('change',()=>{
 // de Boost y el nivel de capacidad del 9240 se DEDUCEN (no hay selectores manuales): lo
 // que queda aqui es el termino, el soporte y las exclusiones («No incluir», pedido
 // explicito del dueno que se conserva) mas la modalidad On-Premises del menu avanzado.
-['qty','termYears','careLevel','chkNoSub','chkNoCentral','chkSoloHw','chkOnprem']
+['termYears','careLevel','chkNoSub','chkNoCentral','chkSoloHw','chkOnprem']
   .forEach(id=>$(id).addEventListener('input',render));
 // El modelo es el selector UNICO de la pagina: cambiarlo a mano mueve ficha, resumen,
 // escalera y BOM, no solo la lista. La marca de eleccion manual se fija ANTES de render,
@@ -759,6 +803,23 @@ $('sfpChooser').addEventListener('change',e=>{
   const pick=leerSfpPick();
   if(e.target.value) pick[medio]=e.target.value; else delete pick[medio];
   escribirSfpPick(pick);
+  renderBom();
+});
+
+// BOM editable (petición del dueño, 2026-09-15): retirar y restaurar líneas. Delegado en
+// document porque la tabla se repinta entera en cada render — un listener colgado del
+// botón moriría con el primer repintado (misma razón que el data-bom-quitar de bom.js).
+// Solo se repinta el BOM: la omisión no cambia el dimensionamiento, solo la cotización.
+document.addEventListener('click',e=>{
+  const b=e.target.closest&&e.target.closest('[data-bom-omitir],[data-bom-restaurar]');
+  if(!b) return;
+  const omit=leerOmitidas();
+  if(b.dataset.bomOmitir){ if(!omit.includes(b.dataset.bomOmitir)) omit.push(b.dataset.bomOmitir); }
+  else{
+    const i=omit.indexOf(b.dataset.bomRestaurar);
+    if(i>=0) omit.splice(i,1);
+  }
+  escribirOmitidas(omit);
   renderBom();
 });
 
@@ -1100,12 +1161,19 @@ function estadoDerivado(){
   // bloquea con title explicativo). Se lee DINÁMICAMENTE de LICENSES: cuando DATOS
   // amplíe la lista a 8 tiers, el filtro se actualiza solo.
   const tierAuto=tierParaCaudal(tierCaudal);
+  // Sincronización visible con el módulo 2 (petición del dueño, 2026-09-15): la opción
+  // «Automático» declara QUÉ tier está deduciendo del agregado WAN en este momento —
+  // antes el usuario veía que variaba pero no cómo se calculaba.
+  const opAuto=$('selTier')&&$('selTier').options[0];
+  if(opAuto) opAuto.textContent=tierAuto
+    ?`Automático — ${tierAuto.n} (Σ enlaces WAN del módulo 2)`
+    :'Automático — deducido del caudal del sitio';
   const nivelTier=bundle==='onprem'?'onprem':nivelAutoEC();
   const tManual=(SIZING.bwTiers||[]).find(t=>t.code===$('selTier').value);
   const tier=(tManual&&(!LICENSES[tManual.code]||LICENSES[tManual.code][nivelTier]))?tManual:tierAuto;
   const termYrs=parseInt($('termYears').value)||3;
   const care=$('careLevel').value;
-  const qty=Math.max(1,parseInt($('qty').value)||1);
+  const qty=unidadesSitio(); // 1 ó 2 — deducido de HA, sin campo de cantidad (2026-09-15)
   // Boost auto-dimensionado: 30 % del tráfico WAN privado, en bloques de 100 Mbps.
   // Sin suscripción no hay Boost (es un add-on suyo, no un producto independiente).
   const share=(caudalTotal>0&&breakout)?caudalEfectivo/caudalTotal:1;
@@ -1130,8 +1198,9 @@ const REGLAS_DISENO=[
    texto:(D,m)=>`Caudal WAN insuficiente: ${m.id} publica hasta ${fmt(m.wanMax)} y el requerimiento de diseño del motor de ingeniería es ${fmt(D.wanNeed)} (ya con IMIX, FEC, seguridad y margen).`},
   {nivel:'rojo', cuando:(D,m)=>m.fam!=='ec'&&m.fw!=null&&D.needProc>m.fw,
    texto:(D,m)=>`Proceso insuficiente: ${m.id} publica ${fmt(m.fw)} de firewall y el escenario necesita ${fmt(D.needProc)}.`},
-  {nivel:'rojo', cuando:(D,m)=>m.fam==='ec'&&$('chkHa').checked&&D.qty!==2,
-   texto:(D,m)=>`HA 1+1 exige exactamente 2 unidades identicas y la cantidad es ${D.qty}: ajusta la cantidad o desmarca HA.`},
+  // (La antigua alerta «HA exige exactamente 2 unidades y la cantidad es N» desapareció
+  // el 2026-09-15: sin campo de cantidad, las unidades se deducen de HA — 1 ó 2 — y la
+  // contradicción ya no es alcanzable.)
   // IDS/IPS no corre en EC-XS (doc oficial Orchestrator/IDS: PN 200889/200900 sin soporte;
   // en EC-V exige min. 4 vCPU y 16 GB RAM). Marcar DTD con un EC-XS seleccionado es un
   // diseno imposible — hay que subir de modelo o quitar la funcion.
@@ -1246,6 +1315,16 @@ function render(){
   // recomendación todavía — es el espejo de lo que el builder está declarando.
   pintarWanResumen();
   pintarSfpChooser();
+  // SSE licencia POR USUARIO (petición del dueño, 2026-09-15): con esa estrategia, el
+  // campo de usuarios deja de ser opcional — se marca en ámbar mientras esté vacío y la
+  // línea del BOM queda «PENDIENTE» en vez de cotizar una licencia inventada.
+  {
+    const faltaUsers=secMode==='sse'&&!(parseInt($('users').value)>0);
+    const fldUsers=$('users').closest('.field');
+    if(fldUsers) fldUsers.classList.toggle('req-sse',faltaUsers);
+    const tag=$('usersReqTag');
+    if(tag) tag.hidden=!faltaUsers;
+  }
   // M5 · Widget de rendimiento + hint de ahorro por breakout + banner Microbranch: se
   // pinta siempre que haya cifras, y se oculta solo cuando no hay nada que mostrar.
   pintarWidgetPerf(D);
@@ -2010,9 +2089,16 @@ function renderBom(){
   if(secMode==='sse'){
     const sseSku=(SSE&&SSE.sku)||'R8M36AAE';
     const ssePrecio=SSE&&SSE.precio!=null?SSE.precio:null;
-    filas.push({cat:'Seguridad SASE', desc:'HPE Aruba Networking SSE — suscripción por usuario (ZTNA, SWG, CASB, DEM)',
-      sku:sseSku, qty:Math.max(1,D.users||1), unit:ssePrecio,
-      nota:`${termino} · co-terminada con la suscripción del sitio · por usuario (${miles(Math.max(1,D.users||1))} usuarios) · paquetes Foundation ZTNA / Foundation SWG / Foundation Plus / Advanced / Advanced Plus (QuickSpecs SSE)${SSE&&SSE.nota?' · '+SSE.nota:''} · HPE no publica List Price — consultar`});
+    // Usuarios = cantidad de licencias (petición del dueño, 2026-09-15): sin la cifra la
+    // línea NO se cotiza con un «1» inventado — queda PENDIENTE y el campo #users se
+    // marca como requerido en el formulario (ver marcarUsersReq en render).
+    const nUsers=parseInt(D.users)>0?parseInt(D.users):null;
+    filas.push({cat:'Seguridad SASE', desc:'HPE Aruba Networking SSE — suscripción por usuario (ZTNA, SWG, CASB, DEM)'
+        +(nUsers?'':' — PENDIENTE: declara los usuarios del sitio'),
+      sku:sseSku, qty:nUsers, unit:ssePrecio,
+      nota:nUsers
+        ?`${termino} · co-terminada con la suscripción del sitio · por usuario (${miles(nUsers)} usuarios) · paquetes Foundation ZTNA / Foundation SWG / Foundation Plus / Advanced / Advanced Plus (QuickSpecs SSE)${SSE&&SSE.nota?' · '+SSE.nota:''} · HPE no publica List Price — consultar`
+        :`SSE se suscribe POR USUARIO (QuickSpecs SSE) y el escenario no declara usuarios: la cantidad de licencias no se puede fijar. Rellena «Usuarios / dispositivos concurrentes» en el módulo 2.`});
   }
   if(care&&!esVirtual){
     filas.push({cat:'Soporte', desc:CARE[care].n, sku:tierSku(careTier,termYrs), qty, unit:carePrice,
@@ -2025,7 +2111,12 @@ function renderBom(){
   // Cotizar hardware en fin de venta deja al cliente sin contrato de soporte vendible
   // antes de que acabe el plazo — hay que verlo, no descubrirlo en la entrega.
   const refsPagina=(BOM.refsExtra?BOM.refsExtra():[]).filter(r=>!r.v||String(r.v).toLowerCase()==='aruba');
-  const enEs=[...filas.map(f=>({sku:f.sku,desc:f.desc})), ...refsPagina.map(r=>({sku:r.sku,desc:r.d}))]
+  // BOM editable (petición del dueño, 2026-09-15): las líneas retiradas se excluyen de la
+  // tabla, del texto, del Excel, del TCO y también del aviso de fin de venta — una línea
+  // retirada no puede seguir condicionando la propuesta.
+  const omitidas=new Set(leerOmitidas());
+  const filasVivas=filas.filter(f=>!omitidas.has(BOM.claveFila(f)));
+  const enEs=[...filasVivas.map(f=>({sku:f.sku,desc:f.desc})), ...refsPagina.map(r=>({sku:r.sku,desc:r.d}))]
     .filter((x,i,l)=>x.sku&&PLC_POR_SKU[x.sku]==='ES'&&l.findIndex(y=>y.sku===x.sku)===i);
 
   // Contexto MSP del escenario (etapa A / #39, 2026-09-14): cliente y referencia
@@ -2109,12 +2200,14 @@ function renderBom(){
     ?`<p class="bom-ctx">${cliente?`<b>${esc(cliente)}</b>`:''}${cliente&&refProy?' · ':''}${refProy?`Ref. ${esc(refProy)}`:''}</p>`
     :'';
   $('bomTabla').innerHTML=cabCtx+avisoEs+BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato:!!lastPick})
-    +BOM.renderTabla(filas,{
+    +BOM.renderTabla(filasVivas,{
     aviso:'List Price de HPE (sin descuento de distribuidor) — hardware, suscripciones EdgeConnect/Boost/Central, licencias perpetuas 9240 y Foundational Care de EdgeConnect verificados el 2026-09-13 (ver aruba-lista-precios-hpe.csv y CARE_SKU en aruba.js). Lo que no tiene precio verificado figura en "consultar" a propósito.',
     dto,
+    editable:true,
   });
-  $('bomOut').value=BOM.comoTexto(filas,meta);
-  bomMeta=meta; bomFilas=filas;
+  pintarRetiradas(filas, omitidas);
+  $('bomOut').value=BOM.comoTexto(filasVivas,meta);
+  bomMeta=meta; bomFilas=filasVivas;
   // SPEC B.4: la línea SSE de la tabla lleva el id de contrato #filaSse (la tabla la
   // genera bom.js, que no pone ids — se etiqueta aquí tras el repintado).
   if(secMode==='sse'){
@@ -2139,7 +2232,7 @@ function renderBom(){
      Boost y DTD, que son los que traen las categorias del camino largo— y las tres cifras
      coincidieron en todos. */
   const OPEX_ARUBA=['Suscripción SD-WAN','Suscripción de gestión','Soporte','Aceleración','Seguridad','Seguridad SASE'];
-  const fin=BOM.tco(filas,{opex:OPEX_ARUBA, anios:termYrs});
+  const fin=BOM.tco(filasVivas,{opex:OPEX_ARUBA, anios:termYrs});
   const capexList=fin.capex, opexAnual=fin.opexAnual, tco=fin.tco;
   const hayPrecios=capexList>0||fin.opexTermino>0;
   const celdaNet=v=>dto>0?`<td><b>${BOM.money(v*(1-dto))}</b></td>`:'';
@@ -2518,7 +2611,10 @@ document.addEventListener('DOMContentLoaded', () => {
     caja.className = 'estado-barra';
     caja.style.cssText = 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px';
     anclaje.parentNode.insertBefore(caja, anclaje.nextSibling);
-    ESTADO.botonEnlace(caja);
+    // SIN ESTADO.botonEnlace aquí (2026-09-15, petición del dueño): esta página ya tiene
+    // su propio «Copiar enlace del escenario» en la barra MSP (#btnCopiarEscenario, etapa
+    // A) y tener los dos era duplicación visible. Las otras seis páginas siguen usando el
+    // botón compartido de estado.js, que para ellas es el único.
     ESTADO.avisoOrigen(caja, st);
   }
   // Perfiles multi-sede guardados en este navegador (arubaPerfilesV1): se pintan al arrancar.
@@ -2536,8 +2632,7 @@ document.addEventListener('DOMContentLoaded', () => {
   BOM.montarBotonCotizador(() => {
     const elegido = ($('pickModel') && $('pickModel').value) || (lastPick && lastPick.id) || null;
     if (!elegido) return null;
-    const cant = document.getElementById('qty');
-    return { modelo: elegido, qty: Math.max(1, parseInt(cant && cant.value, 10) || 1),
+    return { modelo: elegido, qty: unidadesSitio(),
              de: document.title.split('—')[0].trim() };
   });
 });
