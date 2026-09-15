@@ -37,6 +37,8 @@
 .bom-quitar{margin-left:6px;border:1px solid var(--rule);background:var(--card);color:var(--steel);border-radius:3px;cursor:pointer;font-size:12px;line-height:1;padding:1px 5px}
 .bom-quitar:hover{border-color:var(--red);color:var(--red)}
 .bom-aviso{font-size:11.5px;color:var(--amber);margin:10px 0 0;line-height:1.45}
+.bom-ctx{font-size:12.5px;color:var(--steel);margin:0 0 10px;padding-bottom:8px;border-bottom:1px solid var(--rule)}
+.bom-pend{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 5px;border-radius:2px;border:1px solid var(--amber);color:var(--amber);margin-left:6px;vertical-align:1px;white-space:nowrap}
 .bom-acciones{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .bom-desvio{font-size:12.5px;line-height:1.5;color:var(--steel);border-left:2px solid var(--amber);padding:6px 0 6px 10px;margin:0 0 12px}
 .bom-desvio b.warn{color:var(--amber)}
@@ -438,7 +440,9 @@
           + `<td class="n r">${f._ref
             ? `<input type="number" class="bom-cant" min="1" step="1" value="${Number(f.qty) || 1}" data-bom-cant="${esc(f._ref)}" aria-label="Cantidad">`
             : (f.qty == null ? '—' : f.qty)}</td>`
-          + `<td class="n r">${f.unit == null ? '<span class="bom-nd">consultar</span>' : esc(money(f.unit))}</td>`
+          // Líneas sin precio (2026-09-14, pendiente #29): además del «consultar» llevan
+          // el badge operativo que cierra el ciclo — hay que pedirlas al distribuidor.
+          + `<td class="n r">${f.unit == null ? '<span class="bom-nd">consultar</span><br><span class="bom-pend">Pendiente de cotización</span>' : esc(money(f.unit))}</td>`
           + `<td class="n r">${s == null ? '<span class="bom-nd">—</span>' : esc(money(s))}`
           + (dto > 0
             ? `<td class="n r">${f.unit == null ? '<span class="bom-nd">—</span>' : esc(money(f.unit * (1 - dto)))}</td>`
@@ -470,6 +474,15 @@
     } else if (sinPrecio > 0) {
       html += `<p class="bom-aviso">${sinPrecio} línea(s) sin precio de lista publicado — el total no las incluye.`
         + ' Complétalas con tu distribuidor antes de cotizar en firme.</p>';
+    }
+    // Nota al pie que ENUMERA las líneas pendientes (2026-09-14, pendiente #29): no basta
+    // saber cuántas faltan — quien cierra la cotización necesita la lista exacta para
+    // pedirla al distribuidor de una sola pasada. Aplica a cualquier línea con unit null.
+    if (sinPrecio > 0) {
+      const pendientes = filas.filter((f) => f.unit == null);
+      html += `<p class="bom-aviso"><b>Pendiente de cotización con el distribuidor:</b> `
+        + pendientes.map((f) => `${esc(f.desc)}${f.sku ? ` <code>${esc(f.sku)}</code>` : ''}`).join(' · ')
+        + '.</p>';
     }
     if (o.aviso) html += `<p class="bom-aviso">${esc(o.aviso)}</p>`;
 
@@ -513,6 +526,10 @@
     const aoa = [];
     aoa.push([m.titulo || 'Lista de materiales']);
     if (m.subtitulo) aoa.push([m.subtitulo]);
+    // Contexto MSP (2026-09-14, pendiente #39): cliente y referencia del proyecto en la
+    // cabecera de la primera hoja, cuando la página los declara.
+    if (m.cliente) aoa.push([`Cliente: ${m.cliente}`]);
+    if (m.referencia) aoa.push([`Referencia del proyecto: ${m.referencia}`]);
     aoa.push([`Generado ${new Date().toLocaleString('es')}`]);
     if (dtoX > 0 && m.dtoEtq) aoa.push([`Precio neto simulado: ${m.dtoEtq}`]);
     aoa.push([]);
@@ -549,6 +566,18 @@
     } else if (sinPrecio > 0) {
       aoa.push(['', `${sinPrecio} linea(s) sin precio de lista publicado — no incluidas en el total.`]);
     }
+    // Sección «Pendiente de cotización con el distribuidor» (2026-09-14, pendiente #29):
+    // enumera en el propio Excel TODAS las líneas sin precio (unit null), no solo su
+    // cuenta — es la lista de la compra que hay que cerrar con el distribuidor.
+    if (sinPrecio > 0) {
+      aoa.push([]);
+      aoa.push(['', 'PENDIENTE DE COTIZACION CON EL DISTRIBUIDOR (sin precio de lista — no entran en el total):']);
+      for (const f of filas) {
+        if (f.unit != null) continue;
+        aoa.push([f.cat || '', `${f.desc || ''}${f.sku ? ` (${f.sku})` : ''}`, f.sku || '', f.qty == null ? '' : f.qty, '', '',
+          ...(dtoX > 0 ? ['', ''] : []), 'Pendiente de cotización con el distribuidor']);
+      }
+    }
     for (const n of (m.notas || [])) aoa.push(['', n]);
 
     const hoja = global.XLSX.utils.aoa_to_sheet(aoa);
@@ -573,6 +602,8 @@
     const L = [];
     L.push(m.titulo || 'LISTA DE MATERIALES');
     if (m.subtitulo) L.push(m.subtitulo);
+    if (m.cliente) L.push(`Cliente: ${m.cliente}`);
+    if (m.referencia) L.push(`Referencia del proyecto: ${m.referencia}`);
     L.push('');
     let catActual = null;
     for (const f of filas) {
@@ -593,6 +624,12 @@
       if (m.dto != null && m.dto > 0 && m.dto < 1) {
         L.push(`${sinPrecio === 0 ? 'TOTAL NET SIMULADO' : 'TOTAL NET PARCIAL'}${m.dtoEtq ? ' (' + m.dtoEtq + ')' : ''}: ${money(suma * (1 - m.dto))}`);
       }
+    }
+    // Las pendientes se enumeran por su nombre (2026-09-14, pendiente #29): el texto
+    // plano es lo que se pega en el correo al distribuidor — tiene que servir de lista.
+    if (sinPrecio > 0) {
+      L.push('PENDIENTE DE COTIZACION CON EL DISTRIBUIDOR:');
+      for (const f of filas) if (f.unit == null) L.push(`  - ${f.desc}${f.sku ? ` (${f.sku})` : ''}${f.qty != null ? ` x${f.qty}` : ''}`);
     }
     for (const n of (m.notas || [])) L.push(n);
     return L.join('\n');

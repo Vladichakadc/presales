@@ -14,7 +14,7 @@ const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 
-const { MODELS, CARE, CARE_SKU, LICENSES, LICENSES_HA, CENTRAL_TIERS, BOOST, FEC_OVERHEAD, ARUBA_ACCESSORY_CATALOG, ACCESSORY_COMPAT, ARUBA_SSE } = require('../server/seed/legacyData/aruba');
+const { MODELS, CARE, CARE_SKU, LICENSES, LICENSES_HA, CENTRAL_TIERS, BOOST, FEC_OVERHEAD, ARUBA_ACCESSORY_CATALOG, ACCESSORY_COMPAT, ARUBA_SSE, DTD_LICENSES } = require('../server/seed/legacyData/aruba');
 
 const csvFilas = fs.readFileSync(path.join(__dirname, '..', 'public', 'datasheets', 'aruba-lista-precios-hpe.csv'), 'utf8')
   .trim().split(/\r?\n/).slice(1).map((l) => l.split(','));
@@ -32,6 +32,8 @@ const FAMILIAS_CSV = new Set([
   'Suscripcion EdgeConnect On-Premises',
   'Boost EdgeConnect (SaaS)', 'Boost EdgeConnect (On-Premises)', 'Central (gateways 70xx/90xx)',
   'Accesorios EdgeConnect y gateways',
+  'Dynamic Threat Defense (SaaS)', 'Dynamic Threat Defense (SaaS HA)',
+  'Dynamic Threat Defense (On-Premises)', 'Dynamic Threat Defense (On-Premises HA)',
 ]);
 
 // Estados del ciclo de vida que la pagina sabe pintar (columna PLC Status del export):
@@ -98,6 +100,9 @@ test('los SKU de suscripcion, Boost y Central del seed estan en el CSV con el mi
   for (const modal of ['saas', 'onprem']) {
     const blk = BOOST[modal].bloque100;
     for (const [term, sku] of Object.entries(blk.sku || {})) cruza(`boost/${modal}/${term}`, sku, blk[term]);
+  }
+  for (const [variante, t] of Object.entries(DTD_LICENSES)) {
+    for (const [term, sku] of Object.entries(t.sku || {})) cruza(`dtd/${variante}/${term}`, sku, t[term]);
   }
   assert.deepStrictEqual(mal, [], 'seed y lista cuentan dos precios distintos para el mismo SKU');
 });
@@ -247,6 +252,55 @@ test('ARUBA_SSE va siempre sin precio: linea «consultar», nunca importe invent
   assert.strictEqual(ARUBA_SSE.sku, 'R8M36AAE');
   assert.strictEqual(ARUBA_SSE.precio, null, 'SSE no tiene precio en la lista: debe quedar en «consultar»');
   assert.ok(!porSku.has('R8M36AAE'), 'R8M36AAE no puede tener fila con precio en el CSV del cotizador');
+});
+
+// ── Dynamic Threat Defense (2026-09-14, pendiente #31) ──────────────────────
+// DTD SI esta en la lista de precios vigente (PLC GA, vigencia 2026-06-01): escalera
+// PLANA por appliance (sin tiers de caudal) en cuatro variantes (modalidad x HA).
+// Estas reglas convierten en ruido de CI: una variante que falte, un precio HA que se
+// desvie del estandar o un SKU que deje de ser el literal de la lista.
+
+test('DTD_LICENSES tiene las 4 variantes con SKU literales de la lista y precios positivos', () => {
+  // Literales verificados contra el export de la lista el 2026-09-14 (vigencia
+  // 2026-06-01, PLC GA). Los de 7 anos y los de evaluacion a $0 quedan FUERA por
+  // alcance: no son cotizables del dimensionador.
+  const esperado = {
+    saas:     { y1: 'S0Z37AAS', y3: 'S0Z39AAS', y5: 'S0Z41AAS' },
+    saasHa:   { y1: 'S0Z44AAS', y3: 'S0Y26AAS', y5: 'S0Y28AAS' },
+    onprem:   { y1: 'S0Y31AAS', y3: 'S0Y33AAS', y5: 'S0Y35AAS' },
+    onpremHa: { y1: 'S0Y38AAS', y3: 'S0Y40AAS', y5: 'S0Y42AAS' },
+  };
+  assert.deepStrictEqual(Object.keys(DTD_LICENSES).sort(), Object.keys(esperado).sort());
+  for (const [variante, skus] of Object.entries(esperado)) {
+    const t = DTD_LICENSES[variante];
+    for (const term of ['y1', 'y3', 'y5']) {
+      assert.strictEqual(t.sku[term], skus[term], `dtd/${variante}/${term}: SKU no es el literal de la lista`);
+      assert.ok(t[term] > 0, `dtd/${variante}/${term}: precio no positivo`);
+      assert.ok(porSku.has(t.sku[term]), `dtd/${variante}/${term}: ${t.sku[term]} no esta en el CSV del cotizador`);
+    }
+    // Escalera plana 1/3/5: el precio es lineal al termino (372/1116/1860 en toda la escalera).
+    assert.strictEqual(t.y1, 372, `dtd/${variante}: y1 distinto del literal $372 de la lista`);
+    assert.strictEqual(t.y3, 1116, `dtd/${variante}: y3 distinto del literal $1.116 de la lista`);
+    assert.strictEqual(t.y5, 1860, `dtd/${variante}: y5 distinto del literal $1.860 de la lista`);
+  }
+  // Los SKU de 7 anos y de evaluacion NO entran al catalogo cotizable.
+  for (const excluido of ['S0Z42AAS', 'S0Y29AAS', 'S0Y36AAS', 'S0Y43AAS', 'S1C85AAS', 'S1C86AAS', 'S1C87AAS', 'S1C88AAS']) {
+    assert.ok(!porSku.has(excluido), `${excluido} (7 anos / evaluacion) no debe tener fila en el CSV`);
+  }
+});
+
+test('invariante DTD: el SKU HA cuesta exactamente lo mismo que el estandar', () => {
+  // Misma invariante QuickSpecs que LICENSES_HA, verificada literal contra la lista el
+  // 2026-09-14: el SKU de alta disponibilidad del segundo nodo solo cambia el numero
+  // de parte, no el importe — vale para SaaS y para On-Premises.
+  for (const [std, ha] of [['saas', 'saasHa'], ['onprem', 'onpremHa']]) {
+    for (const term of ['y1', 'y3', 'y5']) {
+      assert.strictEqual(DTD_LICENSES[ha][term], DTD_LICENSES[std][term],
+        `dtd ${ha}/${term}: HA=${DTD_LICENSES[ha][term]} estandar=${DTD_LICENSES[std][term]}`);
+      assert.notStrictEqual(DTD_LICENSES[ha].sku[term], DTD_LICENSES[std].sku[term],
+        `dtd ${ha}/${term}: el SKU HA debe ser distinto del estandar`);
+    }
+  }
 });
 
 test('todo modelo publica sus flujos simultaneos o declara por que no', () => {

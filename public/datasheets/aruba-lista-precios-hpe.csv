@@ -123,6 +123,18 @@ S1A03AAS,Boost EdgeConnect (On-Premises),HPE ANW EC Boost ONP 100Mb 5yr Sub E-ST
 S0Z23AAS,Boost EdgeConnect (On-Premises),HPE ANW EC Boost ONP 10Gb 1yr Sub E-STU,327600.00,2026-06-01,GA
 S0Z25AAS,Boost EdgeConnect (On-Premises),HPE ANW EC Boost ONP 10Gb 3yr Sub E-STU,982800.00,2026-06-01,GA
 S0Z27AAS,Boost EdgeConnect (On-Premises),HPE ANW EC Boost ONP 10Gb 5yr Sub E-STU,1638000.00,2026-06-01,GA
+S0Z37AAS,Dynamic Threat Defense (SaaS),HPE ANW EC DTD AAS 1y Sub SaaS,372.00,2026-06-01,GA
+S0Z39AAS,Dynamic Threat Defense (SaaS),HPE ANW EC DTD 3y Sub SaaS,1116.00,2026-06-01,GA
+S0Z41AAS,Dynamic Threat Defense (SaaS),HPE ANW EC DTD 5y Sub SaaS,1860.00,2026-06-01,GA
+S0Z44AAS,Dynamic Threat Defense (SaaS HA),HPE ANW EC DTD HA 1y Sub SaaS,372.00,2026-06-01,GA
+S0Y26AAS,Dynamic Threat Defense (SaaS HA),HPE ANW EC DTD HA 3y Sub SaaS,1116.00,2026-06-01,GA
+S0Y28AAS,Dynamic Threat Defense (SaaS HA),HPE ANW EC DTD HA 5y Sub SaaS,1860.00,2026-06-01,GA
+S0Y31AAS,Dynamic Threat Defense (On-Premises),HPE ANW EC DTD ONP 1y Sub E-STU,372.00,2026-06-01,GA
+S0Y33AAS,Dynamic Threat Defense (On-Premises),HPE ANW EC DTD ONP 3yr Sub E-STU,1116.00,2026-06-01,GA
+S0Y35AAS,Dynamic Threat Defense (On-Premises),HPE ANW EC DTD ONP 5yr Sub E-STU,1860.00,2026-06-01,GA
+S0Y38AAS,Dynamic Threat Defense (On-Premises HA),HPE ANW EC DTD ONP HA 1yr Sub E-STU,372.00,2026-06-01,GA
+S0Y40AAS,Dynamic Threat Defense (On-Premises HA),HPE ANW EC DTD ONP HA 3yr Sub E-STU,1116.00,2026-06-01,GA
+S0Y42AAS,Dynamic Threat Defense (On-Premises HA),HPE ANW EC DTD ONP HA 5yr Sub E-STU,1860.00,2026-06-01,GA
 JZ118AAE,Central (gateways 70xx/90xx),Aruba 7/90xx Gtwy Fnd 1yr Sub E-STU,1260.00,2026-03-01,GA
 JZ119AAE,Central (gateways 70xx/90xx),Aruba 7/90xx Gtwy Fnd 3yr Sub E-STU,2520.00,2026-03-01,GA
 JZ120AAE,Central (gateways 70xx/90xx),Aruba 7/90xx Gtwy Fnd 5yr Sub E-STU,3780.00,2026-03-01,GA

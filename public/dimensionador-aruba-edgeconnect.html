@@ -197,13 +197,51 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
 /* ══ Refactor SPEC parte B (2026-09-13): multi-underlay builder, alertas del motor,
    badge de nivel y modal del consolidado multi-sede. Misma paleta y lenguaje visual de
    la página — sin frameworks nuevos. ══ */
-/* M1 · Multi-Underlay Builder: una fila por enlace WAN (transporte · medio · down/up · quitar) */
-.wan-fila{display:grid;grid-template-columns:1.2fr 1fr .7fr .7fr 30px;gap:6px;align-items:center;margin-bottom:6px}
+/* M1 · Multi-Underlay Builder (etapa A, 2026-09-14 — rediseño carrier-grade): cada
+   enlace WAN es una TARJETA con cabecera (Enlace N + badge de familia + duplicar/quitar),
+   grid de campos que colapsa a una columna en móvil, toggle «Simétrico», validación
+   inline y sufijo «Mbps» visible. */
+.wan-fila{border:1px solid var(--rule);border-radius:3px;background:var(--paper);padding:10px 12px 12px;margin-bottom:10px}
 .wan-fila select,.wan-fila input{padding:7px 8px;font-size:12px}
 .wan-fila input{font-family:'IBM Plex Mono',monospace;font-size:12.5px}
-.wan-quitar{border:1px solid var(--rule);background:var(--card);color:var(--steel);border-radius:2px;cursor:pointer;font-size:14px;line-height:1;padding:6px 0}
-.wan-quitar:hover{border-color:var(--red);color:var(--red)}
-@media(max-width:560px){.wan-fila{grid-template-columns:1fr 1fr 30px}.wan-fila select[data-campo=tipo]{grid-column:1/-1}}
+.wan-cab{display:flex;align-items:center;gap:8px;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid var(--rule)}
+.wan-num{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:14px;letter-spacing:.04em;text-transform:uppercase}
+.wan-badge{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:2px;font-weight:600}
+.wan-badge.mpls{background:#3D5A80;color:#fff}
+.wan-badge.inet{background:var(--green);color:#fff}
+.wan-badge.cel{background:var(--amber);color:#fff}
+.wan-acc{margin-left:auto;display:flex;gap:6px}
+.wan-iconbtn{border:1px solid var(--rule);background:var(--card);color:var(--steel);border-radius:2px;cursor:pointer;font-size:13px;line-height:1;padding:4px 8px}
+.wan-iconbtn:hover{border-color:var(--red);color:var(--red)}
+/* Grid de la tarjeta en DOS columnas (transporte+medio / bajada+subida): con cuatro
+   columnas los inputs de Mbps quedaban tan estrechos que el número no se leía. */
+.wan-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:8px;align-items:end}
+.wan-campo label{display:block;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--steel);margin-bottom:4px}
+.wan-bw{position:relative;display:block}
+.wan-bw input{padding-right:46px}
+.wan-sufijo{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.06em;color:var(--steel);pointer-events:none}
+.wan-bw input:disabled{background:var(--paper);color:var(--steel)}
+.wan-sim{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--steel);cursor:pointer;white-space:nowrap;grid-column:1/-1;padding-bottom:2px}
+.wan-sim input{margin:0;accent-color:var(--red)}
+.wan-fila input.wan-invalido{border-color:#a4544e;outline-color:#a4544e}
+.wan-msg{font-size:11.5px;line-height:1.45;margin:8px 0 0}
+.wan-msg.err{color:#a4544e}
+.wan-msg.warn{color:var(--amber)}
+/* Barra agregada viva bajo el builder (etapa A): Σ de caudales, desglose por familia,
+   puertos WAN ocupados y semáforo de densidad contra el modelo seleccionado. */
+.wan-resumen{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;border:1px solid var(--rule);border-left:3px solid var(--ink);background:var(--card);border-radius:2px;padding:9px 12px;margin-top:12px;font-size:12.5px;line-height:1.5}
+.wan-resumen b{font-family:'IBM Plex Mono',monospace;font-size:12px}
+.wan-res-sep{color:var(--rule)}
+.wan-sem{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600}
+.wan-sem i{display:inline-block;width:8px;height:8px;border-radius:50%}
+.wan-sem.verde{color:var(--green)}.wan-sem.verde i{background:#5e8a68}
+.wan-sem.ambar{color:var(--amber)}.wan-sem.ambar i{background:#b98a3e}
+.wan-sem.rojo{color:#a4544e}.wan-sem.rojo i{background:#a4544e}
+@media(max-width:560px){.wan-grid{grid-template-columns:1fr}.wan-sim{padding-bottom:0}}
+/* Barra de contexto del escenario (etapa A / #39): cliente + referencia + copiar enlace */
+.esc-barra{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.esc-barra input{width:auto;flex:1 1 200px;min-width:150px}
+.esc-barra #copiadoMsg{margin:0;color:var(--green);font-weight:600}
 /* Banner Microbranch (M1): sugiere la arquitectura sin appliance cuando el sitio es pequeño */
 .banner-micro{border:1px solid var(--rule);border-left:3px solid var(--amber);background:#FDF6EC;border-radius:2px;padding:10px 12px;font-size:12.5px;line-height:1.5;margin-bottom:16px}
 /* Alerta de escalado de hardware (M2 · auditoría de puertos EC-10104) */
@@ -244,6 +282,15 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
 
 <!-- ════ TAB 1 · CALCULADORA ════ -->
 <div class="tabpane" id="pane-calc">
+<!-- Contexto MSP del escenario (etapa A / pendiente #39, 2026-09-14): cliente y
+     referencia viajan en el estado v2 y en la URL, encabezan la lista de materiales y
+     la primera hoja del Excel. El botón copia la URL completa del escenario. -->
+<div class="esc-barra">
+  <input type="text" id="nombreCliente" placeholder="Nombre del cliente" aria-label="Nombre del cliente" autocomplete="off">
+  <input type="text" id="refProyecto" placeholder="Referencia del proyecto" aria-label="Referencia del proyecto" autocomplete="off">
+  <button type="button" class="btn ghost" id="btnCopiarEscenario">Copiar enlace del escenario</button>
+  <span id="copiadoMsg" class="hint" role="status" aria-live="polite"></span>
+</div>
 <section class="ladder">
   <p class="mono-lbl">Escala de capacidad — capacidad publicada de cada modelo vs. requerimiento (logarítmica)</p>
   <div class="track" id="track"><div class="axis"></div><div class="need" id="need"><span id="needLbl">—</span></div><div class="pickLabel" id="pickLbl" style="display:none"></div></div>
@@ -312,6 +359,9 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
         <div id="wanBuilderFilas"></div>
         <button type="button" class="btn ghost" id="btnAddWan" style="font-size:11px;padding:5px 11px;margin-top:8px">+ Añadir enlace WAN</button>
       </div>
+      <!-- Barra agregada viva (etapa A, 2026-09-14): Σ de caudales, desglose por familia,
+           puertos WAN ocupados y semáforo de densidad contra el modelo seleccionado. -->
+      <div id="wanResumen" class="wan-resumen" aria-live="polite" hidden></div>
       <input type="hidden" id="wanLinksData">
       <p class="hint">Cada enlace declara su transporte, el <b>medio del puerto</b> (RJ-45 u óptica SFP — alimenta la auditoría de puertos del chasis) y su caudal. La suscripción EdgeConnect se licencia por el <b>caudal WAN agregado del sitio</b> (MPLS + Internet — VSG oficial) y el appliance se dimensiona por ese agregado. Sin enlaces declarados, el tier se deriva del tráfico estimado (usuarios × Mbps/usuario).</p>
     </div>
@@ -530,7 +580,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
     <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
   </section>
   <div class="flag-ft">
-    <b>Aviso de preventa:</b> el hardware, las suscripciones EdgeConnect/Boost/Central (incluidos los SKU de alta disponibilidad del segundo nodo) y el soporte Foundational Care de los EdgeConnect traen List Price de HPE verificado el 2026-09-13 (94 SKU en <code>public/datasheets/aruba-lista-precios-hpe.csv</code> más los SKU de servicio por modelo en <code>server/seed/legacyData/aruba.js</code>); es precio de lista sin el descuento del distribuidor, no una cotización firme. Lo que sigue sin precio verificado —EC-V, Dynamic Threat Defense, FC de software y FC de gateways— figura en «consultar» a propósito.
+    <b>Aviso de preventa:</b> el hardware, las suscripciones EdgeConnect/Boost/Central (incluidos los SKU de alta disponibilidad del segundo nodo) y el soporte Foundational Care de los EdgeConnect traen List Price de HPE verificado el 2026-09-13 (94 SKU en <code>public/datasheets/aruba-lista-precios-hpe.csv</code> más los SKU de servicio por modelo en <code>server/seed/legacyData/aruba.js</code>); es precio de lista sin el descuento del distribuidor, no una cotización firme. Lo que sigue sin precio verificado —EC-V, FC de software y FC de gateways— figura en «consultar» a propósito.
   </div>
 </div>
 </div>
@@ -554,7 +604,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
           <td>Sectores con requisitos de soberanía del dato o de operación sin dependencia de un SaaS</td></tr>
       <tr><td><b>Dynamic Threat Defense</b><br><span style="font-family:'IBM Plex Mono',monospace;font-size:10px">licencia opcional aparte</span></td>
           <td>Añade IDS/IPS, DDoS adaptativo (Adaptive DDoS, Smart SYN cookie) y clasificación web (Secure web service). Licencia separada de Foundation y Advanced (QuickSpecs p.32)</td>
-          <td>Cuando el diseño pide inspección avanzada de seguridad en el propio appliance. Sin SKU en la lista de precios: «consultar»</td></tr>
+          <td>Cuando el diseño pide inspección avanzada de seguridad en el propio appliance. Con SKU y List Price en la lista vigente (escalera plana por appliance, 1/3/5 años — verificado 2026-09-14)</td></tr>
       <tr><td><b>Boost</b><br><span style="font-family:'IBM Plex Mono',monospace;font-size:10px">add-on de aceleración</span></td>
           <td>Optimización WAN: deduplicación Network Memory, compresión y aceleración TCP y de protocolos. Bloques de 100 Mbps agrupables como pool del fabric, como servicio (Boost-aaS) o suscripción on-premises</td>
           <td>Sedes con tráfico repetitivo — réplicas, backups, VDI, CIFS/SMB — o enlaces de alta latencia. El dimensionador lo auto-calcula: 30 % del tráfico WAN privado</td></tr>

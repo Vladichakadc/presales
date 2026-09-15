@@ -72,7 +72,10 @@ test('construirRoster cubre exactamente los SKU del CSV vigente', () => {
   // 2026-09-13: 147 → 192 filas. Los 45 SKU nuevos son los tiers 20M/50M/200M/500M/2G
   // de Advanced y On-Premises (5 tiers × 3 términos × 2 niveles = 30) y de Advanced HA
   // (5 × 3 = 15). Foundation NO crece: la lista oficial no publica esos tiers para él.
-  assert.strictEqual(csv.length, 192, 'el CSV vigente tiene 192 filas de datos (147 + 45 de los tiers 20M-2G del 2026-09-13)');
+  // 2026-09-14: 192 → 204 filas. Los 12 SKU nuevos son Dynamic Threat Defense
+  // (pendiente #31): 4 variantes (SaaS, SaaS HA, On-Premises, On-Premises HA) × 3
+  // términos (1/3/5 años). Los de 7 años y los de evaluación a $0 NO entran (alcance).
+  assert.strictEqual(csv.length, 204, 'el CSV vigente tiene 204 filas de datos (192 + 12 de Dynamic Threat Defense del 2026-09-14)');
   for (const fila of csv) {
     assert.ok(enRoster.has(fila.sku), `${fila.sku} del CSV debe estar declarado en el roster`);
   }
