@@ -422,7 +422,9 @@ function necesidadesOptica(links){
 // que las unidades se deducen de la casilla HA: marcada → 2, sin marcar → 1.
 function unidadesSitio(){ return ($('chkHa')&&$('chkHa').checked)?2:1; }
 function leerSfpPick(){ try{ return JSON.parse(($('sfpPickData')||{}).value||'{}')||{}; }catch{ return {}; } }
-function escribirSfpPick(p){ if($('sfpPickData')) $('sfpPickData').value=JSON.stringify(p); }
+// Escribir el value de un oculto NO dispara «input» y ESTADO volcaría sin verlo: hay
+// que emitirlo a mano o la elección no viajaría al enlace hasta el próximo tecleo.
+function escribirSfpPick(p){ const n=$('sfpPickData'); if(!n) return; n.value=JSON.stringify(p); n.dispatchEvent(new Event('input',{bubbles:true})); }
 
 /* ══ BOM EDITABLE: LÍNEAS RETIRADAS (petición del dueño, 2026-09-15) ══
    Cualquier línea de la lista —la calcule el dimensionador o la añada la mano— se puede
@@ -432,15 +434,15 @@ function escribirSfpPick(p){ if($('sfpPickData')) $('sfpPickData').value=JSON.st
    (HA 1+1, enlaces WAN, término) — editarlas invitaría a cambiar una cifra que el
    próximo repintado pisaría sin avisar; retirar, en cambio, es una decisión de alcance
    («este sitio no lleva Central») que el motor no puede adivinar. */
-function leerOmitidas(){ try{ const v=JSON.parse(($('bomOmitidas')||{}).value||'[]'); return Array.isArray(v)?v:[]; }catch(e){ return []; } }
-function escribirOmitidas(a){ if($('bomOmitidas')) $('bomOmitidas').value=JSON.stringify(a); }
+function leerOmitidas(){ try{ const v=JSON.parse(($('bomOmitidas')||{}).value||'[]'); return Array.isArray(v)?v:[]; }catch{ return []; } }
+function escribirOmitidas(a){ const n=$('bomOmitidas'); if(!n) return; n.value=JSON.stringify(a); n.dispatchEvent(new Event('input',{bubbles:true})); }
 // La caja de retiradas se pinta tras la tabla: líneas tachadas con su botón de restaurar.
 function pintarRetiradas(filas, omitidas){
   const box=$('bomRetiradas'); if(!box) return;
   const retiradas=(filas||[]).filter(f=>omitidas.has(BOM.claveFila(f)));
   if(!retiradas.length){ box.innerHTML=''; return; }
   box.innerHTML=`<details class="bom-retiradas"><summary>Líneas retiradas de la cotización · ${retiradas.length}</summary>`
-    +retiradas(f=>`<div class="bom-retirada"><s>${esc(f.desc)}${f.sku?` — <code>${esc(f.sku)}</code>`:''}</s>`
+    +retiradas.map(f=>`<div class="bom-retirada"><s>${esc(f.desc)}${f.sku?` — <code>${esc(f.sku)}</code>`:''}</s>`
       +`<button type="button" class="bom-restaurar" data-bom-restaurar="${esc(BOM.claveFila(f))}">Restaurar</button></div>`).join('')
     +'</details>';
 }
