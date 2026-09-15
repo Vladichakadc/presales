@@ -80,6 +80,9 @@ test('los estados PLC de la lista son los que la pagina sabe pintar', () => {
 test('los SKU de suscripcion, Boost y Central del seed estan en el CSV con el mismo precio', () => {
   const mal = [];
   const cruza = (origen, sku, precio) => {
+    // y7 null (2026-09-15, pendiente #28): la lista no publica el término de 7 años en
+    // ese peldaño — null es «la lista no tiene el dato», no un SKU que deba cruzar.
+    if (sku == null) return;
     const f = porSku.get(sku);
     if (!f) { mal.push(`${origen}: ${sku} no esta en el CSV`); return; }
     if (f.p !== precio) mal.push(`${origen}: ${sku} seed=${precio} csv=${f.p}`);
@@ -235,14 +238,61 @@ test('Foundation (y Foundation HA) solo tienen bw100/bw1g/bwunl; advanced/onprem
 test('invariante HA == estandar en los 8 tiers de advanced', () => {
   // Misma invariante QuickSpecs del test historico, extendida 2026-09-13 a los ocho
   // tiers de Advanced: el SKU HA del segundo nodo cuesta EXACTAMENTE lo mismo que el
-  // estandar — solo cambia el numero de parte.
+  // estandar — solo cambia el numero de parte. 2026-09-15: tambien en y7 (#28).
   for (const bw of ['bw20', 'bw50', 'bw100', 'bw200', 'bw500', 'bw1g', 'bw2g', 'bwunl']) {
     const ha = (LICENSES_HA[bw] || {}).advanced;
     const std = (LICENSES[bw] || {}).advanced;
     assert.ok(ha && std, `${bw}/advanced: falta el par HA o el estandar`);
-    for (const term of ['y1', 'y3', 'y5']) {
+    for (const term of ['y1', 'y3', 'y5', 'y7']) {
+      // Excepcion literal de la lista (2026-09-15): en 7 anos publica «Adv HA UL» pero
+      // NO «Adv UL» estandar — la invariante se predica donde AMBOS existen; el hueco
+      // de bwunl/y7 esta clavado en el test de cobertura de 7 anos.
+      if (std[term] == null || ha[term] == null) continue;
       assert.strictEqual(ha[term], std[term], `${bw}/advanced/${term}: HA=${ha[term]} estandar=${std[term]}`);
     }
+  }
+});
+
+test('termino de 7 anos: cobertura exacta de la lista, null donde no se publica (#28)', () => {
+  // Cobertura literal verificada contra el export de la lista el 2026-09-15 (vigencia
+  // 2026-06-01, PLC GA). Regla: y7 con SKU y precio donde la lista lo publica; y7 null
+  // donde no — jamas un SKU o precio inventado.
+  const TIERS_ADV_7Y = ['bw20', 'bw50', 'bw100', 'bw200', 'bw500', 'bw1g', 'bw2g'];
+  // Advanced SaaS: 20M→2G completo; ILIMITADO no (la lista solo trae «Adv HA UL 7yr»).
+  for (const bw of TIERS_ADV_7Y) {
+    const t = LICENSES[bw].advanced;
+    assert.ok(t.sku.y7 && t.y7 > 0, `LICENSES ${bw}/advanced/y7: la lista SI lo publica`);
+    assert.ok(porSku.has(t.sku.y7), `LICENSES ${bw}/advanced/y7: ${t.sku.y7} debe tener fila en el CSV`);
+  }
+  assert.strictEqual(LICENSES.bwunl.advanced.y7, null, 'Adv UL 7y no esta en la lista: null');
+  assert.strictEqual(LICENSES.bwunl.advanced.sku.y7, null);
+  // Advanced HA: los 8 tiers completos, y el SKU de 7 anos tambien cruza al CSV.
+  for (const bw of [...TIERS_ADV_7Y, 'bwunl']) {
+    const t = LICENSES_HA[bw].advanced;
+    assert.ok(t.sku.y7 && t.y7 > 0, `LICENSES_HA ${bw}/advanced/y7: la lista SI lo publica`);
+    assert.ok(porSku.has(t.sku.y7), `LICENSES_HA ${bw}/advanced/y7: ${t.sku.y7} debe tener fila en el CSV`);
+  }
+  // On-Premises no-HA: la lista solo publica 7y para 1G y 2G.
+  for (const bw of ['bw20', 'bw50', 'bw100', 'bw200', 'bw500', 'bwunl']) {
+    assert.strictEqual(LICENSES[bw].onprem.y7, null, `LICENSES ${bw}/onprem/y7: no publicado — null`);
+    assert.strictEqual(LICENSES[bw].onprem.sku.y7, null);
+  }
+  for (const bw of ['bw1g', 'bw2g']) {
+    assert.ok(LICENSES[bw].onprem.sku.y7 && LICENSES[bw].onprem.y7 > 0, `LICENSES ${bw}/onprem/y7: la lista SI lo publica`);
+  }
+  // Foundation: 1G y UL si; 100M no. Foundation HA: las 3 completas.
+  assert.strictEqual(LICENSES.bw100.foundation.y7, null, 'Fnd 100M 7y no esta en la lista: null');
+  for (const bw of ['bw1g', 'bwunl']) assert.ok(LICENSES[bw].foundation.sku.y7, `LICENSES ${bw}/foundation/y7: publicado`);
+  for (const bw of ['bw100', 'bw1g', 'bwunl']) assert.ok(LICENSES_HA[bw].foundation.sku.y7, `LICENSES_HA ${bw}/foundation/y7: publicado`);
+  // Boost: los cuatro bloques tienen 7 anos.
+  for (const via of ['saas', 'onprem']) {
+    for (const bloque of ['bloque100', 'bloque10g']) {
+      assert.ok(BOOST[via][bloque].sku.y7 && BOOST[via][bloque].y7 > 0, `BOOST ${via}/${bloque}/y7: publicado`);
+    }
+  }
+  // Linealidad documentada de la lista: 7 anos = 7 x 1 ano en toda la escalera.
+  for (const bw of TIERS_ADV_7Y) {
+    assert.strictEqual(LICENSES[bw].advanced.y7, LICENSES[bw].advanced.y1 * 7, `${bw}/advanced: y7 no es 7 x y1`);
   }
 });
 
@@ -262,19 +312,22 @@ test('ARUBA_SSE va siempre sin precio: linea «consultar», nunca importe invent
 
 test('DTD_LICENSES tiene las 4 variantes con SKU literales de la lista y precios positivos', () => {
   // Literales verificados contra el export de la lista el 2026-09-14 (vigencia
-  // 2026-06-01, PLC GA). Los de 7 anos y los de evaluacion a $0 quedan FUERA por
-  // alcance: no son cotizables del dimensionador.
+  // 2026-06-01, PLC GA). Los de evaluacion a $0 quedan FUERA por alcance: no son
+  // cotizables. El termino de 7 anos ENTRA el 2026-09-15 (pendiente #28, pedido del
+  // duenyo): la lista solo lo publica para DTD On-Premises (estandar y HA) — en SaaS
+  // y7 queda null («la lista no tiene el dato»).
   const esperado = {
-    saas:     { y1: 'S0Z37AAS', y3: 'S0Z39AAS', y5: 'S0Z41AAS' },
-    saasHa:   { y1: 'S0Z44AAS', y3: 'S0Y26AAS', y5: 'S0Y28AAS' },
-    onprem:   { y1: 'S0Y31AAS', y3: 'S0Y33AAS', y5: 'S0Y35AAS' },
-    onpremHa: { y1: 'S0Y38AAS', y3: 'S0Y40AAS', y5: 'S0Y42AAS' },
+    saas:     { y1: 'S0Z37AAS', y3: 'S0Z39AAS', y5: 'S0Z41AAS', y7: null },
+    saasHa:   { y1: 'S0Z44AAS', y3: 'S0Y26AAS', y5: 'S0Y28AAS', y7: null },
+    onprem:   { y1: 'S0Y31AAS', y3: 'S0Y33AAS', y5: 'S0Y35AAS', y7: 'S0Y36AAS' },
+    onpremHa: { y1: 'S0Y38AAS', y3: 'S0Y40AAS', y5: 'S0Y42AAS', y7: 'S0Y43AAS' },
   };
   assert.deepStrictEqual(Object.keys(DTD_LICENSES).sort(), Object.keys(esperado).sort());
   for (const [variante, skus] of Object.entries(esperado)) {
     const t = DTD_LICENSES[variante];
-    for (const term of ['y1', 'y3', 'y5']) {
+    for (const term of ['y1', 'y3', 'y5', 'y7']) {
       assert.strictEqual(t.sku[term], skus[term], `dtd/${variante}/${term}: SKU no es el literal de la lista`);
+      if (skus[term] == null) { assert.strictEqual(t[term], null, `dtd/${variante}/${term}: precio debe ser null si no hay SKU`); continue; }
       assert.ok(t[term] > 0, `dtd/${variante}/${term}: precio no positivo`);
       assert.ok(porSku.has(t.sku[term]), `dtd/${variante}/${term}: ${t.sku[term]} no esta en el CSV del cotizador`);
     }
@@ -283,9 +336,9 @@ test('DTD_LICENSES tiene las 4 variantes con SKU literales de la lista y precios
     assert.strictEqual(t.y3, 1116, `dtd/${variante}: y3 distinto del literal $1.116 de la lista`);
     assert.strictEqual(t.y5, 1860, `dtd/${variante}: y5 distinto del literal $1.860 de la lista`);
   }
-  // Los SKU de 7 anos y de evaluacion NO entran al catalogo cotizable.
-  for (const excluido of ['S0Z42AAS', 'S0Y29AAS', 'S0Y36AAS', 'S0Y43AAS', 'S1C85AAS', 'S1C86AAS', 'S1C87AAS', 'S1C88AAS']) {
-    assert.ok(!porSku.has(excluido), `${excluido} (7 anos / evaluacion) no debe tener fila en el CSV`);
+  // Los SKU de evaluacion a $0 NO entran al catalogo cotizable (una evaluacion no se cotiza).
+  for (const excluido of ['S1C85AAS', 'S1C86AAS', 'S1C87AAS', 'S1C88AAS']) {
+    assert.ok(!porSku.has(excluido), `${excluido} (evaluacion) no debe tener fila en el CSV`);
   }
 });
 

@@ -1653,10 +1653,15 @@ function accesoriosInyectados(m,D){
     nota:'Segunda fuente de alimentación 550W AC para el Gateway 9240 (alimentación 1+1) — opción de diseño marcada en el panel 4. List Price del catálogo maestro de accesorios.'});
   return out;
 }
-function tierPrice(t,y){ if(!t) return null; const v=y===1?t.y1:y===5?t.y5:t.y3; return v==null?null:v; }
-// El SKU de una suscripción depende de la duración (1/3/5 años): desde el 2026-09-13
-// `sku` puede ser un objeto {y1,y3,y5}. Se acepta también la forma plana por compatibilidad.
-function tierSku(t,y){ if(!t||t.sku==null) return null; if(typeof t.sku==='string') return t.sku; const v=y===1?t.sku.y1:y===5?t.sku.y5:t.sku.y3; return v||null; }
+// Término genérico y1/y3/y5/y7 (2026-09-15, pendiente #28): antes y=7 caía al else de
+// y3 y cotizaba 7 años A PRECIO DE 3 — una subcotización silenciosa. Clave directa y
+// null cuando el peldaño no publica ese término (la interfaz muestra «consultar»).
+function tierPrice(t,y){ if(!t) return null; const v=t['y'+y]; return v==null?null:v; }
+// El SKU de una suscripción depende de la duración (1/3/5/7 años — y7 desde el
+// 2026-09-15, pendiente #28): `sku` puede ser un objeto {y1,y3,y5,y7}. Se acepta
+// también la forma plana por compatibilidad. Misma corrección que tierPrice: clave
+// directa, sin else que cotizara 7 años a precio de 3.
+function tierSku(t,y){ if(!t||t.sku==null) return null; if(typeof t.sku==='string') return t.sku; return t.sku['y'+y]||null; }
 
 function renderBom(){
   const m=MODELS.find(x=>x.id===$('pickModel').value)||MODELS[0];
