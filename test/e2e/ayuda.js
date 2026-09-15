@@ -24,17 +24,24 @@ const BASE = process.env.E2E_BASE || 'http://localhost:4131';
 const USUARIO = process.env.E2E_USER || 'presales';
 const CLAVE = process.env.E2E_PASSWORD || 'e2e-local';
 
+// Las navegaciones NO esperan al evento load (2026-09-16, misma lección que la navegación
+// del portal en verificar-pantallas.js): la página carga Google Fonts, y en un entorno sin
+// salida a ese dominio la petición puede quedarse colgada 30 s y tumbar el goto aunque la
+// app esté lista en 100 ms. Lo que se afirma aquí es que la pantalla CARGA, así que basta
+// domcontentloaded + el control de contrato (#users), que es la señal real de «lista».
 async function abrirSesion(page) {
-  await page.goto(BASE + '/login');
+  await page.goto(BASE + '/login', { waitUntil: 'domcontentloaded' });
   await page.fill('input[name=usuario]', USUARIO);
   await page.fill('input[name=password]', CLAVE);
   await page.click('button[type=submit]');
-  await page.waitForURL('**/');
+  // waitForURL también espera load por defecto: sin el waitUntil, el login cae con 30 s
+  // aunque el portal ya esté pintado — el fallo intermitente del 2026-09-16 era ESTE.
+  await page.waitForURL('**/', { waitUntil: 'domcontentloaded' });
 }
 
 async function abrirDimensionador(page) {
   await abrirSesion(page);
-  await page.goto(BASE + '/dimensionador-aruba-edgeconnect.html');
+  await page.goto(BASE + '/dimensionador-aruba-edgeconnect.html', { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#users', { timeout: 20000 });
   await page.waitForTimeout(900);
 }

@@ -53,7 +53,7 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   ok(/Automático — .+ \(Σ enlaces WAN/.test(autoTxt), 'tier «Automático» muestra el deducido: ' + autoTxt.trim());
 
   // D7b · HA => 2 unidades en el BOM (con Advanced, cuya escalera HA cubre todos los
-  // tiers; con Foundation algunos tiers no tienen SKU HA y el segundo nodo va 2× estándar)
+  // tiers; On-Premises tiene su propia escalera HA E-STU desde el 2026-09-16 — #17)
   await page.check('#chkAiops');
   await page.waitForTimeout(500);
   await page.check('#chkHa');
@@ -62,6 +62,24 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   await page.waitForTimeout(600);
   let bomTxt = (await page.textContent('#pane-bom')) || '';
   ok(/HA — .*segundo nodo|segundo nodo del par/.test(bomTxt), 'HA 1+1 cotiza el segundo nodo sin campo cantidad');
+  // D7c · HA en On-Premises (#17, cerrado 2026-09-16): el segundo nodo lleva su SKU
+  // HA E-STU propio (escalera «On-Premises High Availability» del QuickSpecs), ya no 2× estándar.
+  // chkOnprem vive dentro de <details class="adv">: hay que abrir el menú antes de marcarla.
+  await page.click('[data-tab=calc]');
+  await page.waitForTimeout(300);
+  await page.click('details.adv summary');
+  await page.waitForTimeout(200);
+  await page.check('#chkOnprem');
+  await page.waitForTimeout(500);
+  await page.click('[data-tab=bom]');
+  await page.waitForTimeout(600);
+  bomTxt = (await page.textContent('#pane-bom')) || '';
+  ok(/On-Premises HA — .*segundo nodo del par/.test(bomTxt.replace(/\s+/g, ' ')),
+    'HA on-prem cotiza el segundo nodo con SKU HA E-STU (#17)');
+  await page.click('[data-tab=calc]');
+  await page.waitForTimeout(300);
+  await page.uncheck('#chkOnprem');
+  await page.waitForTimeout(300);
   await page.click('[data-tab=calc]');
   await page.waitForTimeout(300);
   await page.uncheck('#chkHa');

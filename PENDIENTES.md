@@ -4,7 +4,13 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-16 (plan 4, fusionado a main: paquete A de datos — #27 variantes
+Última revisión: 2026-09-16 (plan 5: **#17 CERRADO** — la escalera On-Premises High
+Availability E-STU sí existe: QuickSpecs a50004289enw + 32 SKU en la lista vigente, par
+HA on-prem con SKU propio —; corrección de datos: los 6 términos de 7 años On-Premises
+que la revisión del 2026-09-15 no vio (descripción «EC ONP 20M 7y», sin «Gb» ni «yr
+Sub»); mejora ejecutada: cantidades editables a mano en el BOM de Aruba con sello de
+declaración, viajan en `#bomAjustes`; #16 y #25 afinados con fuentes nuevas).
+Anterior (2026-09-16): plan 4, fusionado a main: paquete A de datos — #27 variantes
 EC-S-P, #28 término de 7 años, #32 títulos Lista/Neto —; paquete B — ópticas SFP de los
 enlaces WAN en el BOM con selección del usuario y lista clicable de equipos candidatos —;
 paquete D — los 10 ajustes de UX del dimensionador pedidos por el dueño —; paquete C — la
@@ -147,7 +153,12 @@ Cobertura actual por herramienta:
      único método en el que Juniper publica también las capas profundas. Siguen abiertos el
      **SRX4700** (la conexión falló, merece un reintento) y el **SRX4100/SRX4200**, cuyas
      fichas dan 404 en ese patrón de URL — son de una generación anterior y probablemente se
-     llamen de otra forma.
+     llamen de otra forma. **Verificado el 2026-09-16:** el SRX4700 ya quedó completo el
+     2026-09-11 (fw/fwImix 1,4 Tbps, vpn 170G, vpnImix 90G, ips 60G por método CPS — no el
+     TPS de 110 que titula la ficha —, sess 60M, cps 600k) y la ficha oficial del modelo
+     (juniper.net) confirma esas cifras; `atp` se mantiene en null a propósito porque
+     Juniper no publica Advanced Threat Prevention para este modelo. Lo abierto de verdad:
+     el reintento de SRX4100/SRX4200.
    - **Precios y SKU**: no hay lista de precios de Juniper, todo va sin cotizar.
    - **Niveles de Juniper Care**: nombres y SLA sin verificar. Antes que inventar una tabla
      de SLA en una herramienta de preventa, hay un único nivel declarado como no verificado.
@@ -373,19 +384,27 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     variantes localizadas JM962A#xx y el reman JM962AR ya en PLC «ES») — coherente con
     un fin de venta reciente del EC-XS; y JZ878A (EC-L-H) renovó vigencia de List Price
     a 2025-06-01 con PLC GA, señal a favor de seguir vivo. El S0B67A (EC-XL-H-10G) sí
-    pasó a PLC «ES» en la lista — coherente con su EOL_ANNOUNCED ya marcado. Cómo se
-    cierra: conseguir el boletín o la tabla de ciclo de vida oficial de HPE que nombre a
-    EC-L-H y EC-XS (una persona con navegador real en arubanetworking.hpe.com, o
-    preguntar al distribuidor), y entonces replicar el patrón `EOL_ANNOUNCED` del EC-XL.
-17. **Equivalencia E-STU de HA para suscripciones On-Premises (2026-09-13).** HPE publica
-    SKU «HA» propios del segundo nodo para las suscripciones SaaS (Foundation/Advanced ×
-    100M/1G/ilimitado × 1/3/5 años, ya en `LICENSES_HA` con precio idéntico al estándar),
-    pero **no** una equivalencia E-STU de alta disponibilidad para On-Premises en el
-    QuickSpecs v18 consultado. Mientras tanto, un par HA 1+1 on-prem cotiza 2× la
-    suscripción estándar y el BOM lo declara. Cómo se cierra: confirmar con HPE o el
-    distribuidor si existe SKU E-STU HA; si existe, se mapea en `LICENSES_HA.onprem`, se
-    ajusta el test de cobertura (hoy exige exactamente bw100/bw1g/bwunl) y el motor lo usa
-    solo.
+    pasó a PLC «ES» en la lista — coherente con su EOL_ANNOUNCED ya marcado.
+    **Afinado el 2026-09-16:** la lista oficial «HPE ARUBA HARDWARE END OF SALE (EoS)»
+    (PDF de asp-documents.arubanetworks.com, 25 págs., descargada y leída completa) NO
+    incluye ninguna fila EdgeConnect — solo switches y APs legados, así que no confirma
+    ni desmiente; el documento que nombraría ambos modelos (EC_LifecyclePolicy_latest.pdf)
+    sigue devolviendo 403 (bloqueo Akamai del datacenter, no del documento). Los rastreadores
+    de terceros convergen al día exacto y citan el título del anuncio oficial («HPE Aruba
+    Networking EdgeConnect L-H Gateway End of Sale Announcement»): JZ878A — anuncio
+    2025-06-30, EoS 2025-12-31, fin de soporte 2030-12-31; JM962A — anuncio 2025-06-30,
+    EoS 2026-01-31, fin de soporte 2031-01-31. Cómo se cierra: una persona con navegador
+    real descarga el PDF de la política de ciclo de vida y confirma esas dos filas (las
+    fechas a verificar ya están aquí), y entonces se replica el patrón `EOL_ANNOUNCED`
+    del EC-XL. Sin el documento oficial NO se marca (regla de doble anclaje).
+17. **~~Equivalencia E-STU de HA para suscripciones On-Premises~~ Resuelto (2026-09-16)**,
+    ver *Cerrado recientemente*. El QuickSpecs vigente (a50004289enw) SÍ publica la
+    escalera «EdgeConnect On-Premises High Availability E-STU» (8 tiers × 1/3/5/7 años) y
+    la lista del distribuidor tarifa los 32 SKU con la invariante de siempre (precio HA
+    idéntico al estándar, verificada 32/32). Mapeada en `LICENSES_HA[bw].onprem`; el par
+    HA on-prem ya no cotiza 2× estándar. De paso, la verificación cazó 6 términos de 7
+    años On-Premises estándar que la revisión del 2026-09-15 había declarado inexistentes
+    (formato de descripción distinto): entran con SKU y precio de la lista.
 18. **~~Segunda PSU del Gateway 9240: R1C72A o R7J63A~~ Resuelto (2026-09-13)**, ver
     *Cerrado recientemente*. La lista oficial del distribuidor desempata: R1C72A es un
     kit de montaje de APs ($415) y la PSU del 9240 es **R7J63A** ($747 List).
@@ -435,9 +454,16 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     transceptor), y **R9Y49A** «EC-SFP-1000BT» ($650, 1G cobre marca EdgeConnect,
     confirmado por el VSG solo en EC-M-P — variante que no está en este catálogo; el
     EC-M-H queda sin confirmar). Ninguno entra al catálogo maestro hasta tener plataforma
-    confirmada: la regla de la casa es cita literal, no parecido. Cómo se cierra:
-    preguntar al distribuidor si J9153E sustituye a J9153D (y J8177E a S3R03A) en las
-    matrices EC/9200, y si R9Y49A aplica al EC-M-H.
+    confirmada: la regla de la casa es cita literal, no parecido. **Afinado el
+    2026-09-16:** el QuickSpecs EdgeConnect vigente (a50004289enw) lista **R9Y49A** bajo
+    «EdgeConnect SD-WAN Hub Gateways Options → SFP Transceivers» — confirmación oficial
+    de que es transceptor EdgeConnect de HUB (los EC-10150/10170 son hubs): ya hay
+    documento oficial, falta decidir el alcance (¿todos los hubs o alguna restricción por
+    modelo que el chunk consultado no mostraba?). J9153E es pedible en buy.hpe.com como
+    «HPE ANW 10G ER SFP+ LC 40km SMF» mientras el QuickSpecs sigue listando J9153D:
+    hipótesis de rebranding reforzada, pendiente de confirmación del distribuidor.
+    Cómo se cierra: preguntar al distribuidor si J9153E sustituye a J9153D (y J8177E a
+    S3R03A) en las matrices EC/9200, y confirmar la matriz por modelo de R9Y49A.
 26. **S0W40A «EC-NX-SSD-A2» no está en la lista del distribuidor (2026-09-13).** El
     Accessories Guide Rev F lo da como repuesto SSD actual de la línea -H (EC-M/L/L-H/
     XL/XL-H, 480 GB), pero no tiene fila en la lista — el catálogo sigue ofertando
@@ -597,6 +623,41 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Plan 5: HA On-Premises E-STU (#17), 7 años On-Premises completos y cantidades ajustadas a mano en el BOM (2026-09-16)
+
+**#17 cerrado — el par HA on-prem ya tiene SKU propio.** La premisa del pendiente («HPE
+no publica equivalencia E-STU de HA») era falsa: el QuickSpecs EdgeConnect vigente
+(a50004289enw) lista la escalera **«EdgeConnect On-Premises High Availability E-STU»**
+completa — 8 tiers (20M/50M/100M/200M/500M/1G/2G/ILIMITADO) × 1/3/5/7 años. La lista del
+distribuidor tarifa los 32 SKU (PLC GA, vigencia 2026-06-01) y la invariante histórica se
+cumple celda a celda: **precio HA idéntico al estándar on-prem del mismo tier y término
+(32/32)** — solo cambia el número de parte. Cableado como `LICENSES_HA[bw].onprem`
+(familia CSV nueva «Suscripcion EdgeConnect On-Premises HA»); el dimensionador resuelve el
+segundo nodo con su SKU HA en las tres modalidades y la nota declara la fuente. El CSV de
+precios pasó de 234 a 272 filas por la vía gobernada (`importar-lista-aruba.js`, dry-run
+limpio: 0 divergencias de precio repo↔lista).
+
+**Corrección de datos cazada por la medición.** La revisión del 2026-09-15 (#28) declaró
+«On-Premises no-HA: solo 1G y 2G tienen 7 años». Era un artefacto del filtro: esas filas se
+describen «EC ONP 20M 7y E-STU» (sin «Gb» ni «yr Sub») y no se vieron. Re-verificación
+literal: la lista SÍ publica los 6 términos que faltaban (20/50/100/200/500M y UL — PLC GA,
+vigencia 2026-06-01); entran en `LICENSES[bw].onprem.y7` y el test de cobertura exacta de
+7 años se reescribe con la corrección documentada.
+
+**Mejora ejecutada (propuesta del plan 4): cantidades editables a mano en el BOM de Aruba.**
+El dimensionador calcula cada cantidad, pero el ingeniero de preventa puede ajustarla: la
+línea queda sellada «cantidad ajustada a mano — el cálculo decía N» (borde discontinuo en
+el input, sello ámbar bajo la descripción), el ajuste viaja en el enlace compartido
+(`#bomAjustes`, en `CAMPOS_ESCENARIO`), se declara en el texto plano (nota inline + sección
+de cierre) y en el Excel (columna Notas + bloque propio), y alimenta TCO y totales porque
+se aplica antes que todos los consumidores. Volver a la cifra calculada poda el ajuste
+(nada que declarar); los ajustes de líneas ausentes se conservan por si la línea vuelve;
+las líneas sin cifra (`qty` null, p. ej. SSE «consultar») no ofrecen control — lo que falta
+ahí es el dato del cliente, no una cifra que pisar. Opt-in en `bom.js` (`o.ajustable`, como
+`o.editable`): los otros 6 fabricantes no cambian. Regla del piloto: solo Aruba hasta que
+el dueño diga lo contrario. Pruebas: `test/bom-ajustes.test.js` (7) y `test/e2e/e2e-ajustes.js`
+(12), con sabotaje verificado (apagar `ajustable` rompe el E2E).
 
 ### Plan 4: datos 7 años, ópticas SFP en el BOM, candidatos clicables, UX del dimensionador y la batería E2E en el repo (2026-09-15/16)
 

@@ -39,6 +39,8 @@
 .bom-aviso{font-size:11.5px;color:var(--amber);margin:10px 0 0;line-height:1.45}
 .bom-ctx{font-size:12.5px;color:var(--steel);margin:0 0 10px;padding-bottom:8px;border-bottom:1px solid var(--rule)}
 .bom-pend{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 5px;border-radius:2px;border:1px solid var(--amber);color:var(--amber);margin-left:6px;vertical-align:1px;white-space:nowrap}
+.bom-cant-calc{border-style:dashed}
+.bom-ajuste{display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--amber);margin-top:2px}
 .bom-acciones{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .bom-desvio{font-size:12.5px;line-height:1.5;color:var(--steel);border-left:2px solid var(--amber);padding:6px 0 6px 10px;margin:0 0 12px}
 .bom-desvio b.warn{color:var(--amber)}
@@ -442,15 +444,27 @@
       for (const f of g.filas) {
         const s = subtotal(f);
         html += '<tr>'
-          + `<td><b>${esc(f.desc)}</b>${f.nota ? `<span class="bom-nota">${esc(f.nota)}</span>` : ''}</td>`
+          + `<td><b>${esc(f.desc)}</b>${f.nota ? `<span class="bom-nota">${esc(f.nota)}</span>` : ''}`
+          // Ajuste manual de cantidad (mejora 2026-09-16, Aruba): la PÁGINA es quien aplica
+          // el ajuste y deja la cifra del motor en `f.ajuste`; aquí solo se declara. Un
+          // ajuste sin esta marca parecería un error de cálculo cuando es una decisión.
+          + `${f.ajuste != null ? `<span class="bom-ajuste">Cantidad ajustada a mano — el cálculo decía ${esc(String(f.ajuste))}</span>` : ''}</td>`
           + `<td class="n">${f.sku ? `<code>${esc(f.sku)}</code>` : '<span class="bom-nd">—</span>'}</td>`
-          // La cantidad se edita SOLO en lo que se anadio a mano: las filas que calcula el
-          // dimensionador (unidades, opticas, licencias) salen del motor de la pagina, y
-          // dejarlas editables invitaria a cambiar a mano una cifra que el proximo repintado
-          // va a pisar sin avisar.
+          // La cantidad se edita a mano en dos casos, y solo en dos:
+          //  - lo que se ANADIO a mano (`f._ref`): su cifra no la recalcula nadie;
+          //  - `o.ajustable` (opt-in, 2026-09-16 — Aruba): las líneas calculadas llevan un
+          //    input cuya divergencia contra la cifra del motor (data-bom-calc) guarda la
+          //    PÁGINA en su estado (#bomAjustes), de modo que sobrevive al repintado y
+          //    viaja en el enlace. Sin el flag, las calculadas se pintan igual que siempre
+          //    (los otros seis dimensionadores no cambian). Una línea sin cantidad
+          //    calculada (qty null: p.ej. la SSE pendiente de usuarios) no lleva control:
+          //    lo que falta ahí es el dato, no una cifra que pisar.
           + `<td class="n r">${f._ref
             ? `<input type="number" class="bom-cant" min="1" step="1" value="${Number(f.qty) || 1}" data-bom-cant="${esc(f._ref)}" aria-label="Cantidad">`
-            : (f.qty == null ? '—' : f.qty)}</td>`
+            : (f.qty == null ? '—'
+              : (o.ajustable
+                ? `<input type="number" class="bom-cant bom-cant-calc" min="1" step="1" value="${Number(f.qty)}" data-bom-ajustar="${esc(claveFila(f))}" data-bom-calc="${f.ajuste != null ? Number(f.ajuste) : Number(f.qty)}" aria-label="Cantidad (ajustable a mano)">`
+                : f.qty))}</td>`
           // Líneas sin precio (2026-09-14, pendiente #29): además del «consultar» llevan
           // el badge operativo que cierra el ciclo — hay que pedirlas al distribuidor.
           + `<td class="n r">${f.unit == null ? '<span class="bom-nd">consultar</span><br><span class="bom-pend">Pendiente de cotización</span>' : esc(money(f.unit))}</td>`
@@ -566,7 +580,9 @@
         base.push(f.unit == null ? '' : Math.round(f.unit * (1 - dtoX) * 100) / 100);
         base.push(subtotal(f) == null ? '' : Math.round(subtotal(f) * (1 - dtoX) * 100) / 100);
       }
-      base.push(f.nota || '');
+      // Ajuste manual de cantidad (2026-09-16): va en la columna Notas, junto a la fila
+      // que lo lleva — una cifra distinta de la del motor sin esta nota parecería un error.
+      base.push((f.nota || '') + (f.ajuste != null ? `${f.nota ? ' · ' : ''}Cantidad ajustada a mano — el cálculo del dimensionador decía ${f.ajuste}` : ''));
       aoa.push(base);
     }
 
@@ -592,6 +608,17 @@
         if (f.unit != null) continue;
         aoa.push([f.cat || '', `${f.desc || ''}${f.sku ? ` (${f.sku})` : ''}`, f.sku || '', f.qty == null ? '' : f.qty, '', '',
           ...(dtoX > 0 ? ['', ''] : []), 'Pendiente de cotización con el distribuidor']);
+      }
+    }
+    // Seccion propia (2026-09-16), espejo del texto plano: enumera TODOS los ajustes de
+    // cantidad hechos a mano con la cifra que el motor había calculado.
+    const ajustadasX = filas.filter((f) => f.ajuste != null);
+    if (ajustadasX.length) {
+      aoa.push([]);
+      aoa.push(['', 'CANTIDADES AJUSTADAS A MANO (el dimensionador calculó otra cifra — son decisiones declaradas, no errores):']);
+      for (const f of ajustadasX) {
+        aoa.push([f.cat || '', `${f.desc || ''}${f.sku ? ` (${f.sku})` : ''}`, f.sku || '', f.qty == null ? '' : f.qty, '', '',
+          ...(dtoX > 0 ? ['', ''] : []), `El cálculo del dimensionador decía ${f.ajuste}`]);
       }
     }
     for (const n of (m.notas || [])) aoa.push(['', n]);
@@ -627,6 +654,9 @@
       const s = subtotal(f);
       L.push(`  ${pad(f.qty == null ? '' : f.qty + ' x', 6)} ${pad(f.desc, 42)} ${pad(f.sku || '', 26)} ${s == null ? 'consultar' : money(s)}`);
       if (f.nota) L.push(`         ${f.nota}`);
+      // Ajuste manual de cantidad (2026-09-16): la fila muestra la cifra ajustada y aquí
+      // se declara la del motor — en un correo, un ajuste sin declarar parece un error.
+      if (f.ajuste != null) L.push(`         (cantidad ajustada a mano — el cálculo del dimensionador decía ${f.ajuste})`);
     }
     const faltaEquipoT = filas.some((f) => f.unit == null && /equipo|hardware|chasis/i.test(f.cat || ''));
     L.push('');
@@ -646,6 +676,13 @@
     if (sinPrecio > 0) {
       L.push('PENDIENTE DE COTIZACION CON EL DISTRIBUIDOR:');
       for (const f of filas) if (f.unit == null) L.push(`  - ${f.desc}${f.sku ? ` (${f.sku})` : ''}${f.qty != null ? ` x${f.qty}` : ''}`);
+    }
+    // Y la seccion que las enumera cierra el ciclo: quien recibe el texto ve de un vistazo
+    // que las divergencias contra el motor son decisiones declaradas, no errores.
+    const ajustadasT = filas.filter((f) => f.ajuste != null);
+    if (ajustadasT.length) {
+      L.push('CANTIDADES AJUSTADAS A MANO (el dimensionador calculó otra cifra):');
+      for (const f of ajustadasT) L.push(`  - ${f.desc}${f.sku ? ` (${f.sku})` : ''}: ${f.qty} uds — el cálculo decía ${f.ajuste}`);
     }
     for (const n of (m.notas || [])) L.push(n);
     return L.join('\n');

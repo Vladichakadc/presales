@@ -142,9 +142,13 @@ function construirRoster(arubaData) {
     }
   }
   // 2.4 · Suscripciones HA (segundo nodo del par)
+  // On-Premises HA entra el 2026-09-16 (pendiente #17 cerrado): el QuickSpecs vigente
+  // (a50004289enw) publica la escalera «On-Premises High Availability E-STU» y la lista
+  // tarifa sus 32 SKU con la invariante precio HA == estándar. Nueva familia CSV propia.
   const FAM_HA = {
     foundation: 'Suscripcion EdgeConnect Foundation HA',
     advanced: 'Suscripcion EdgeConnect Advanced HA',
+    onprem: 'Suscripcion EdgeConnect On-Premises HA',
   };
   for (const [nivel, familia] of Object.entries(FAM_HA)) {
     for (const bw of Object.values(arubaData.LICENSES_HA)) {

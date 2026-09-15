@@ -494,7 +494,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
     </div>
     <div class="checks" style="margin-top:14px">
       <label class="check"><input type="checkbox" id="chkAiops"> <span>Analítica de experiencia y AIOps<span class="sku">No es un SKU aparte ni una línea más del BOM: es una <b>capacidad del nivel Advanced</b>. Al marcarla, la suscripción EdgeConnect y Aruba Central suben de Foundation a Advanced (la retención ampliada de datos es del nivel Advanced de EdgeConnect —QuickSpecs p.31— y en Central los AI Insights ampliados de WAN y la visibilidad UCC son del nivel Advanced; la retención de datos de Central es la misma en ambos niveles — tabla oficial). El cambio de nivel —y su precio— se ve en el panel 4 y en la lista de materiales.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad (HA 1+1)<span class="sku">Se cotizan 2 unidades. En modalidad SaaS el segundo nodo lleva el SKU de alta disponibilidad del QuickSpecs —mismo tier, caudal y término (VSG)— que la lista de precios documentada tarifa igual que el estándar; en On-Premises, 2× estándar.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad (HA 1+1)<span class="sku">Se cotizan 2 unidades. El segundo nodo lleva el SKU de alta disponibilidad del QuickSpecs —mismo tier, caudal y término— que la lista de precios documentada tarifa igual que el estándar, tanto en SaaS como en On-Premises (escalera HA E-STU verificada 2026-09-16).</span></span></label>
     </div>
     <p class="hint" style="margin-top:10px">El steering dinámico por SLA de aplicación (Dynamic Path Control) y las funciones NGFW ya los incluye <b>Foundation</b> — no obligan a subir de nivel (QuickSpecs v18, p.31).</p>
     <div class="field" style="margin-top:16px">
@@ -561,7 +561,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
     </div>
     <details class="adv">
       <summary>Opciones avanzadas</summary>
-      <label class="check" style="margin-top:8px"><input type="checkbox" id="chkOnprem"> <span>Modalidad On-Premises (E-STU)<span class="sku">El Orchestrator vive en la infraestructura del cliente en vez de consumirse como servicio: cambia el juego de SKU de la suscripción y de Boost. En HA, el par on-prem se cotiza 2× estándar — la equivalencia de los SKU HA E-STU de la línea antigua no está confirmada en las fuentes consultadas.</span></span></label>
+      <label class="check" style="margin-top:8px"><input type="checkbox" id="chkOnprem"> <span>Modalidad On-Premises (E-STU)<span class="sku">El Orchestrator vive en la infraestructura del cliente en vez de consumirse como servicio: cambia el juego de SKU de la suscripción y de Boost. En HA, el segundo nodo lleva el SKU HA E-STU del QuickSpecs (sección «On-Premises High Availability», verificada 2026-09-16), tarifado igual que el estándar.</span></span></label>
       <p class="hint">Las variantes gubernamentales (TAA / NAL) no estorban en el catálogo: se ofrecen en la pestaña <b>Lista de materiales</b>, tras su propio conmutador.</p>
     </details>
   </section>
@@ -589,8 +589,9 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
         <button class="btn ghost" id="copyBtn" style="font-size:11px;padding:5px 11px">Copiar como texto</button>
       </span>
     </h2>
-    <p class="hint" style="margin:0 0 10px">Toda la lista es editable: cada línea —la calcule el dimensionador o la añadas a mano— se quita con su botón ✕ y se restaura desde «Líneas retiradas», y la omisión viaja en el enlace del escenario. Las cantidades de las líneas calculadas las fija el escenario (HA 1+1, enlaces WAN, término); las de las referencias añadidas a mano se ajustan con su stepper.</p>
+    <p class="hint" style="margin:0 0 10px">Toda la lista es editable: cada línea —la calcule el dimensionador o la añadas a mano— se quita con su botón ✕ y se restaura desde «Líneas retiradas», y la omisión viaja en el enlace del escenario. Las cantidades también se pueden ajustar (borde discontinuo): el ajuste queda declarado con la cifra que calculó el dimensionador, sobrevive a los cambios del escenario y viaja en el enlace; devolver la cantidad a la cifra calculada retira el ajuste. Las de las referencias añadidas a mano se ajustan con su stepper.</p>
     <input type="hidden" id="bomOmitidas">
+    <input type="hidden" id="bomAjustes">
     <div id="bomTabla"></div>
     <div id="bomRetiradas"></div>
     <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>

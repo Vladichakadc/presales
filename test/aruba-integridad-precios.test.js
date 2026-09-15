@@ -29,7 +29,7 @@ const SIN_HW_SKU_DECLARADO = new Set(['EC-V', '7005', '7008', '7010', '7024', '7
 const FAMILIAS_CSV = new Set([
   'Suscripcion EdgeConnect Foundation', 'Suscripcion EdgeConnect Advanced',
   'Suscripcion EdgeConnect Foundation HA', 'Suscripcion EdgeConnect Advanced HA',
-  'Suscripcion EdgeConnect On-Premises',
+  'Suscripcion EdgeConnect On-Premises', 'Suscripcion EdgeConnect On-Premises HA',
   'Boost EdgeConnect (SaaS)', 'Boost EdgeConnect (On-Premises)', 'Central (gateways 70xx/90xx)',
   'Accesorios EdgeConnect y gateways',
   'Dynamic Threat Defense (SaaS)', 'Dynamic Threat Defense (SaaS HA)',
@@ -159,22 +159,26 @@ test('los SKU de servicio de CARE_SKU no chocan con la lista de precios', () => 
   assert.deepStrictEqual(choques, [], 'el mismo SKU no puede vivir en dos fuentes con dos precios');
 });
 
-test('LICENSES_HA cubre los 8 tiers en advanced y los 3 de foundation, con precios positivos', () => {
+test('LICENSES_HA cubre los 8 tiers en advanced, los 3 de foundation y los 8 de onprem', () => {
   // 2026-09-13: Advanced HA crece de 3 a 8 tiers (20M-2G, verificado en la lista oficial).
   // Foundation HA se queda en bw100/bw1g/bwunl: la lista no publica Foundation en los
-  // tiers intermedios, ni estandar ni HA. On-Premises NO esta mapeado a proposito: HPE
-  // no publica equivalencia E-STU de HA para el segundo nodo on-prem, asi que el motor
-  // cotiza 2x estandar con declaracion (decision del duenyo, 2026-09-13). Si algun dia
-  // se confirma, se mapea aqui y se ajusta el BOM.
+  // tiers intermedios, ni estandar ni HA.
+  // 2026-09-16 (pendiente #17 cerrado): On-Premises HA se mapea en los 8 tiers — el
+  // QuickSpecs vigente (a50004289enw) publica la escalera «On-Premises High Availability
+  // E-STU» y la lista tarifa sus 32 SKU (PLC GA, vigencia 2026-06-01), con la invariante
+  // precio HA == estandar verificada celda a celda. El par on-prem ya no va 2x estandar.
   assert.deepStrictEqual(Object.keys(LICENSES_HA).sort(),
     ['bw100', 'bw1g', 'bw20', 'bw200', 'bw2g', 'bw50', 'bw500', 'bwunl']);
   const mal = [];
   for (const [bw, lic] of Object.entries(LICENSES_HA)) {
-    const niveles = ['bw100', 'bw1g', 'bwunl'].includes(bw) ? ['foundation', 'advanced'] : ['advanced'];
+    const niveles = ['bw100', 'bw1g', 'bwunl'].includes(bw) ? ['foundation', 'advanced', 'onprem'] : ['advanced', 'onprem'];
     for (const nivel of niveles) {
       const t = lic[nivel];
       if (!t) { mal.push(`${bw}/${nivel}: falta el nivel`); continue; }
-      for (const term of ['y1', 'y3', 'y5']) {
+      // La escalera On-Premises HA esta publicada en 1/3/5/7 años en los 8 tiers; en
+      // SaaS el y7 se valida en su propio test (cobertura parcial documentada).
+      const terminos = nivel === 'onprem' ? ['y1', 'y3', 'y5', 'y7'] : ['y1', 'y3', 'y5'];
+      for (const term of terminos) {
         if (!t.sku || !t.sku[term]) mal.push(`${bw}/${nivel}/${term}: falta SKU`);
         if (!(t[term] > 0)) mal.push(`${bw}/${nivel}/${term}: precio no positivo`);
       }
@@ -188,12 +192,15 @@ test('el precio HA es identico al estandar, tier a tier y anyo a anyo (invariant
   // cuesta EXACTAMENTE lo mismo que el estandar del mismo tier/nivel/termino — solo
   // cambia el numero de parte. Si esto se rompe, la lista de precios cambio y hay que
   // revisar la invariante antes de cotizar pares HA.
+  // 2026-09-16: la invariante se extiende a On-Premises en los 4 terminos (la lista
+  // publica la escalera HA E-STU completa, 32/32 celdas verificadas contra el export).
   const mal = [];
   for (const [bw, lic] of Object.entries(LICENSES_HA)) {
     for (const [nivel, t] of Object.entries(lic)) {
       const std = (LICENSES[bw] || {})[nivel];
       if (!std) { mal.push(`${bw}/${nivel}: sin par estandar`); continue; }
-      for (const term of ['y1', 'y3', 'y5']) {
+      const terminos = nivel === 'onprem' ? ['y1', 'y3', 'y5', 'y7'] : ['y1', 'y3', 'y5'];
+      for (const term of terminos) {
         if (t[term] !== std[term]) mal.push(`${bw}/${nivel}/${term}: HA=${t[term]} estandar=${std[term]}`);
       }
     }
@@ -272,13 +279,20 @@ test('termino de 7 anos: cobertura exacta de la lista, null donde no se publica 
     assert.ok(t.sku.y7 && t.y7 > 0, `LICENSES_HA ${bw}/advanced/y7: la lista SI lo publica`);
     assert.ok(porSku.has(t.sku.y7), `LICENSES_HA ${bw}/advanced/y7: ${t.sku.y7} debe tener fila en el CSV`);
   }
-  // On-Premises no-HA: la lista solo publica 7y para 1G y 2G.
-  for (const bw of ['bw20', 'bw50', 'bw100', 'bw200', 'bw500', 'bwunl']) {
-    assert.strictEqual(LICENSES[bw].onprem.y7, null, `LICENSES ${bw}/onprem/y7: no publicado — null`);
-    assert.strictEqual(LICENSES[bw].onprem.sku.y7, null);
+  // On-Premises no-HA: los 8 tiers COMPLETOS. Correccion 2026-09-16: la verificacion
+  // del 2026-09-15 declaro «solo 1G y 2G» porque esas filas se describen «EC ONP 20M 7y
+  // E-STU» (sin «Gb» ni «yr Sub») y el filtro no las vio; re-verificacion literal:
+  // S1A85AAS, S1A99AAS, S1C04AAS, S1C18AAS, S0X98AAS, S0Z62AAS — PLC GA, vig. 2026-06-01.
+  for (const bw of [...TIERS_ADV_7Y, 'bwunl']) {
+    const t = LICENSES[bw].onprem;
+    assert.ok(t.sku.y7 && t.y7 > 0, `LICENSES ${bw}/onprem/y7: la lista SI lo publica (verificado 2026-09-16)`);
+    assert.ok(porSku.has(t.sku.y7), `LICENSES ${bw}/onprem/y7: ${t.sku.y7} debe tener fila en el CSV`);
   }
-  for (const bw of ['bw1g', 'bw2g']) {
-    assert.ok(LICENSES[bw].onprem.sku.y7 && LICENSES[bw].onprem.y7 > 0, `LICENSES ${bw}/onprem/y7: la lista SI lo publica`);
+  // On-Premises HA (#17, 2026-09-16): los 8 tiers completos, con cruce al CSV.
+  for (const bw of [...TIERS_ADV_7Y, 'bwunl']) {
+    const t = LICENSES_HA[bw].onprem;
+    assert.ok(t.sku.y7 && t.y7 > 0, `LICENSES_HA ${bw}/onprem/y7: la lista SI lo publica`);
+    assert.ok(porSku.has(t.sku.y7), `LICENSES_HA ${bw}/onprem/y7: ${t.sku.y7} debe tener fila en el CSV`);
   }
   // Foundation: 1G y UL si; 100M no. Foundation HA: las 3 completas.
   assert.strictEqual(LICENSES.bw100.foundation.y7, null, 'Fnd 100M 7y no esta en la lista: null');

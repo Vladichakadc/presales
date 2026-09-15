@@ -81,7 +81,12 @@ test('construirRoster cubre exactamente los SKU del CSV vigente', () => {
   // 2 (SaaS no tiene 7y en la lista) — y las variantes no-NAL del EC-S-P
   // (JM538A/JM769A). Los SKU de Core, Boost HA y DTD SaaS 7y existen en la lista pero
   // no se cablean: el dimensionador no modela esas escaleras.
-  assert.strictEqual(csv.length, 234, 'el CSV vigente tiene 234 filas de datos (204 + 28 del término de 7 años + 2 variantes EC-S-P del 2026-09-15)');
+  // 2026-09-16: 234 → 272 filas. Los 38 SKU nuevos son (pendiente #17 cerrado): la
+  // escalera On-Premises High Availability E-STU completa (8 tiers × 4 términos = 32;
+  // QuickSpecs a50004289enw + lista vigente, invariante HA == estándar verificada) y
+  // los 6 términos de 7 años On-Premises no-HA que la revisión del 2026-09-15 no vio
+  // (descripción «EC ONP 20M 7y E-STU», sin «Gb» ni «yr Sub»): 20/50/100/200/500M y UL.
+  assert.strictEqual(csv.length, 272, 'el CSV vigente tiene 272 filas de datos (234 + 32 HA On-Premises + 6 y7 On-Premises del 2026-09-16)');
   for (const fila of csv) {
     assert.ok(enRoster.has(fila.sku), `${fila.sku} del CSV debe estar declarado en el roster`);
   }

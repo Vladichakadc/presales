@@ -63,7 +63,12 @@ const CAMPOS_ESCENARIO=['wanLinksData','users','aps','perUser','head','fecMode',
   // quien abre el enlace ve la misma lista, con las mismas líneas retiradas.
   // OJO: nada de literales entrecomillados en este comentario — catalogo-check extrae
   // los ids del array con una expresión sobre comillas y los tomaría por campos.
-  'bomOmitidas'];
+  'bomOmitidas',
+  // Cantidades ajustadas a mano (mejora aprobada por el dueño, 2026-09-16): JSON
+  // clave → cantidad en el oculto #bomAjustes, con la misma convención de clave que
+  // las retiradas. También viaja en la URL y en los perfiles multi-sede.
+  // OJO: misma trampa que arriba — nada de literales entrecomillados aquí.
+  'bomAjustes'];
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let famMode='any', segMode='branch', destMode='hibrido', lastPick=null;
 // Arquetipo de sede y estrategia de seguridad como variables de estado del dimensionador
@@ -430,12 +435,41 @@ function escribirSfpPick(p){ const n=$('sfpPickData'); if(!n) return; n.value=JS
    Cualquier línea de la lista —la calcule el dimensionador o la añada la mano— se puede
    RETIRAR con su botón ✕: no se borra, se mueve a «Líneas retiradas» (restaurable con un
    clic) y sale de totales, Excel y texto. La omisión viaja en la URL (#bomOmitidas).
-   Las cantidades de las líneas calculadas NO se editan a mano: las fija el escenario
-   (HA 1+1, enlaces WAN, término) — editarlas invitaría a cambiar una cifra que el
-   próximo repintado pisaría sin avisar; retirar, en cambio, es una decisión de alcance
-   («este sitio no lleva Central») que el motor no puede adivinar. */
+   Retirar es una decisión de ALCANCE («este sitio no lleva Central») que el motor no
+   puede adivinar — por eso la admite y la declara. */
 function leerOmitidas(){ try{ const v=JSON.parse(($('bomOmitidas')||{}).value||'[]'); return Array.isArray(v)?v:[]; }catch{ return []; } }
 function escribirOmitidas(a){ const n=$('bomOmitidas'); if(!n) return; n.value=JSON.stringify(a); n.dispatchEvent(new Event('input',{bubbles:true})); }
+
+/* ══ BOM EDITABLE: CANTIDADES AJUSTADAS A MANO (mejora propuesta y aprobada por el
+   dueño, 2026-09-16) ══
+   El complemento de retirar: ajustar la CANTIDAD es una decisión de ingeniería («dos
+   enlaces de reserva que el escenario no modela», «una óptica de repuesto en caja»).
+   Hasta el 2026-09-15 no se admitía porque el siguiente repintado la pisaría en
+   silencio; la solución no es prohibirla sino hacerla parte del estado: la divergencia
+   contra la cifra del motor se guarda en #bomAjustes, sobrevive al repintado, viaja en
+   el enlace y SE DECLARA en pantalla, texto y Excel con la cifra que el motor calculó.
+   Reglas:
+   - Ajustar al valor que el motor calcula PODA el ajuste (ya no diverge: no hay nada
+     que declarar y la línea vuelve a seguir al escenario).
+   - Los ajustes cuya línea no está en el escenario actual se conservan, igual que las
+     retiradas: si la línea vuelve (otro modelo que usa el mismo SKU), se re-aplican.
+   - Líneas sin cantidad calculada (qty null — la SSE pendiente de usuarios) no llevan
+     control: lo que falta ahí es el dato, no una cifra que pisar. */
+function leerAjustes(){ try{ const v=JSON.parse(($('bomAjustes')||{}).value||'{}'); return v&&typeof v==='object'&&!Array.isArray(v)?v:{}; }catch{ return {}; } }
+function escribirAjustes(a){ const n=$('bomAjustes'); if(!n) return; n.value=JSON.stringify(a); n.dispatchEvent(new Event('input',{bubbles:true})); }
+// Devuelve una COPIA de las filas con los ajustes aplicados (las originales conservan la
+// cifra del motor) y poda del mapa los que ya no divergen; informa de si podó algo.
+function aplicarAjustes(filas, ajustes){
+  let podo=false;
+  const out=(filas||[]).map(f=>{
+    if(typeof f.qty!=='number'||!isFinite(f.qty)) return f;
+    const clave=BOM.claveFila(f), a=ajustes[clave];
+    if(a==null) return f;
+    if(a===f.qty){ delete ajustes[clave]; podo=true; return f; }
+    return {...f, qty:a, ajuste:f.qty};
+  });
+  return {filas:out, podo};
+}
 // La caja de retiradas se pinta tras la tabla: líneas tachadas con su botón de restaurar.
 function pintarRetiradas(filas, omitidas){
   const box=$('bomRetiradas'); if(!box) return;
@@ -822,6 +856,24 @@ document.addEventListener('click',e=>{
     if(i>=0) omit.splice(i,1);
   }
   escribirOmitidas(omit);
+  renderBom();
+});
+
+// Ajuste de cantidad de una línea calculada (mejora, 2026-09-16): delegado en document
+// por la misma razón que el click de arriba. Se guarda la DIVERGENCIA contra la cifra
+// del motor (data-bom-calc): devolverla a esa cifra poda el ajuste y la línea vuelve a
+// seguir al escenario; fuera de rango (vacío, 0, negativo) se repone la cifra calculada
+// sin guardar nada — un ajuste inválido no puede quedar escrito en el enlace.
+document.addEventListener('change',e=>{
+  const b=e.target.closest&&e.target.closest('[data-bom-ajustar]');
+  if(!b) return;
+  const clave=b.getAttribute('data-bom-ajustar');
+  const calc=parseInt(b.getAttribute('data-bom-calc'),10);
+  const v=parseInt(b.value,10);
+  if(!isFinite(v)||v<1){ b.value=isFinite(calc)&&calc>0?calc:1; return; }
+  const ajustes=leerAjustes();
+  if(isFinite(calc)&&v===calc) delete ajustes[clave]; else ajustes[clave]=v;
+  escribirAjustes(ajustes);
   renderBom();
 });
 
@@ -1236,8 +1288,8 @@ const REGLAS_DISENO=[
    texto:(D,m)=>`Densidad de ópticas: el escenario declara ${auditarPuertos(m,D.wanLinks).sfp} enlaces SFP y ${m.id} tiene ${SFP_DENSIDAD[m.id]} jaulas — recablea algún enlace a RJ-45/DAC o revisa el medio declarado en el builder.`},
   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&D.bundle==='onprem',
    texto:()=>'Modalidad On-Premises: el software de Orchestrator va incluido en la suscripcion, pero el ALOJAMIENTO (VM, uptime, backup y upgrades) corre por cuenta del cliente — dimensionarlo en la propuesta.'},
-  {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&D.onprem&&$('chkHa').checked&&D.qty===2,
-   texto:()=>'Par HA on-prem cotizado 2x estandar: la equivalencia de los SKU HA E-STU no esta confirmada en las fuentes consultadas (PENDIENTES #17).'},
+  {nivel:'ok', cuando:(D,m)=>m.fam==='ec'&&D.onprem&&$('chkHa').checked&&D.qty===2,
+   texto:()=>'Par HA on-prem con SKU propio: el segundo nodo lleva la suscripción HA E-STU del QuickSpecs (sección «On-Premises High Availability»); la lista la tarifa igual que la estándar (invariante verificada 2026-09-16 — pendiente #17 cerrado).'},
   {nivel:'aviso', cuando:(D,m)=>m.id==='EC-V',
    texto:()=>'EC-V es un appliance virtual: sin soporte de hardware (el hipervisor corre por cuenta del cliente) y su caudal lo fijan la licencia y los vCPU asignados.'},
   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&m.wanMin!=null&&D.wanNeed>0&&D.wanNeed<m.wanMin,
@@ -1679,7 +1731,7 @@ function render(){
       FICHA.seccionAlimentacion(m),
       {titulo:'Suscripción y licencias',
        filas:[['Unidades a licenciar', unidades===2
-         ?(esEC&&!D.onprem
+         ?(esEC
            ?'2 — 1× suscripción estándar + 1× SKU de alta disponibilidad para el segundo nodo (la lista de precios documentada lo tarifa igual que el estándar)'
            :'2 — cada nodo del par lleva la suya')
          :'1']],
@@ -1930,12 +1982,12 @@ function renderBom(){
   const lic=LICENSES[bwCode]||null;
   const licTier=lic&&bundle?(lic[bundle]||null):null;
   // Par HA 1+1: HPE publica un juego de SKU propio para el SEGUNDO nodo (LICENSES_HA),
-  // con el mismo precio que el estándar — lo que cambia es el SKU de pedido. Solo aplica
-  // a la modalidad SaaS: la equivalencia de los SKU HA E-STU (on-prem) no está confirmada
-  // en las fuentes consultadas, así que el par on-prem se cotiza 2× estándar y se declara.
+  // con el mismo precio que el estándar — lo que cambia es el SKU de pedido. Aplica a
+  // las TRES modalidades desde el 2026-09-16 (pendiente #17 cerrado): el QuickSpecs
+  // vigente (a50004289enw) publica la escalera «On-Premises High Availability E-STU» y
+  // la lista la tarifa con la misma invariante (HA == estándar, verificada 32/32).
   const haPar=esEC&&$('chkHa').checked&&qty===2;
-  const licHa=haPar&&!D.onprem&&bundle&&bundle!=='onprem'
-    ?((LICENSES_HA[bwCode]||{})[bundle]||null):null;
+  const licHa=haPar&&bundle?((LICENSES_HA[bwCode]||{})[bundle]||null):null;
   // El soporte se cotiza por MODELO (CARE_SKU, servicio atado a la variante de hardware),
   // no por tier de caudal — desde 2026-09-13 sale de la lista de precios documentada en
   // aruba.js. Lo que la lista no cubre (fcsw, gateways, 4HR del 10150) sigue en consultar.
@@ -2013,19 +2065,22 @@ function renderBom(){
   if(esEC){
     if(bundle){
       if(licHa){
-        // Par HA 1+1 en modalidad SaaS: 1× suscripción estándar (nodo primario) + 1×
-        // suscripción de alta disponibilidad (segundo nodo, SKU «HA» del QuickSpecs).
+        // Par HA 1+1: 1× suscripción estándar (nodo primario) + 1× suscripción de alta
+        // disponibilidad (segundo nodo, SKU «HA» del QuickSpecs). Misma forma en SaaS
+        // (Foundation/Advanced HA) y en On-Premises (E-STU HA, desde el 2026-09-16).
         filas.push({cat:'Suscripción SD-WAN', desc:`${BUNDLES[bundle].n} — ${bwTier?bwTier.n:'tier por definir'} · nodo primario`,
           sku:tierSku(licTier,termYrs), qty:1, unit:licPrice,
           nota:`${termino} · suscripción por caudal del sitio, no por modelo de appliance`});
         filas.push({cat:'Suscripción SD-WAN', desc:`${BUNDLES[bundle].n} HA — ${bwTier?bwTier.n:'tier por definir'} · segundo nodo del par 1+1`,
           sku:tierSku(licHa,termYrs), qty:1, unit:licHaPrice,
-          nota:`${termino} · SKU de alta disponibilidad del QuickSpecs (existencia y regla «match tier, bandwidth, term»); la lista de precios documentada lo tarifa igual que el estándar`});
+          nota:`${termino} · ${D.onprem
+            ?'SKU HA E-STU del QuickSpecs (sección «On-Premises High Availability», verificada 2026-09-16)'
+            :'SKU de alta disponibilidad del QuickSpecs (existencia y regla «match tier, bandwidth, term»)'}; la lista de precios documentada lo tarifa igual que el estándar`});
       }else{
         filas.push({cat:'Suscripción SD-WAN', desc:`${BUNDLES[bundle].n} — ${bwTier?bwTier.n:'tier por definir'}`,
           sku:tierSku(licTier,termYrs), qty, unit:licPrice,
           nota:`${termino} · suscripción por caudal del sitio, no por modelo de appliance`
-            +(haPar&&D.onprem?' · par HA on-prem cotizado 2× estándar: la equivalencia de los SKU HA E-STU no está confirmada en las fuentes consultadas':'')});
+            +(haPar&&D.onprem?' · par HA on-prem: la escalera de SKU HA E-STU no llegó del servidor — consultar':'' )});
       }
       if(bloques){
         filas.push({cat:'Aceleración', desc:`${SIZING.boost.n} — bloque de ${SIZING.boost.bloque} Mbps`,
@@ -2118,7 +2173,16 @@ function renderBom(){
   // retirada no puede seguir condicionando la propuesta.
   const omitidas=new Set(leerOmitidas());
   const filasVivas=filas.filter(f=>!omitidas.has(BOM.claveFila(f)));
-  const enEs=[...filasVivas.map(f=>({sku:f.sku,desc:f.desc})), ...refsPagina.map(r=>({sku:r.sku,desc:r.d}))]
+  // Cantidades ajustadas a mano (mejora, 2026-09-16): se aplican DESPUÉS de filtrar las
+  // retiradas y ANTES de todos los consumidores (tabla, texto, Excel, TCO y aviso de fin
+  // de venta), para que la cifra que cotiza sea la que el usuario ve en todas partes —
+  // y declarada con la cifra del motor. Si al aplicar se podó algún ajuste que ya no
+  // divergía, el mapa se reescribe para que el enlace quede limpio.
+  const ajustes=leerAjustes();
+  const rAj=aplicarAjustes(filasVivas,ajustes);
+  if(rAj.podo) escribirAjustes(ajustes);
+  const filasFin=rAj.filas;
+  const enEs=[...filasFin.map(f=>({sku:f.sku,desc:f.desc})), ...refsPagina.map(r=>({sku:r.sku,desc:r.d}))]
     .filter((x,i,l)=>x.sku&&PLC_POR_SKU[x.sku]==='ES'&&l.findIndex(y=>y.sku===x.sku)===i);
 
   // Contexto MSP del escenario (etapa A / #39, 2026-09-14): cliente y referencia
@@ -2202,14 +2266,15 @@ function renderBom(){
     ?`<p class="bom-ctx">${cliente?`<b>${esc(cliente)}</b>`:''}${cliente&&refProy?' · ':''}${refProy?`Ref. ${esc(refProy)}`:''}</p>`
     :'';
   $('bomTabla').innerHTML=cabCtx+avisoEs+BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato:!!lastPick})
-    +BOM.renderTabla(filasVivas,{
+    +BOM.renderTabla(filasFin,{
     aviso:'List Price de HPE (sin descuento de distribuidor) — hardware, suscripciones EdgeConnect/Boost/Central, licencias perpetuas 9240 y Foundational Care de EdgeConnect verificados el 2026-09-13 (ver aruba-lista-precios-hpe.csv y CARE_SKU en aruba.js). Lo que no tiene precio verificado figura en "consultar" a propósito.',
     dto,
     editable:true,
+    ajustable:true,
   });
   pintarRetiradas(filas, omitidas);
-  $('bomOut').value=BOM.comoTexto(filasVivas,meta);
-  bomMeta=meta; bomFilas=filasVivas;
+  $('bomOut').value=BOM.comoTexto(filasFin,meta);
+  bomMeta=meta; bomFilas=filasFin;
   // SPEC B.4: la línea SSE de la tabla lleva el id de contrato #filaSse (la tabla la
   // genera bom.js, que no pone ids — se etiqueta aquí tras el repintado).
   if(secMode==='sse'){
@@ -2234,7 +2299,7 @@ function renderBom(){
      Boost y DTD, que son los que traen las categorias del camino largo— y las tres cifras
      coincidieron en todos. */
   const OPEX_ARUBA=['Suscripción SD-WAN','Suscripción de gestión','Soporte','Aceleración','Seguridad','Seguridad SASE'];
-  const fin=BOM.tco(filasVivas,{opex:OPEX_ARUBA, anios:termYrs});
+  const fin=BOM.tco(filasFin,{opex:OPEX_ARUBA, anios:termYrs});
   const capexList=fin.capex, opexAnual=fin.opexAnual, tco=fin.tco;
   const hayPrecios=capexList>0||fin.opexTermino>0;
   const celdaNet=v=>dto>0?`<td><b>${BOM.money(v*(1-dto))}</b></td>`:'';
@@ -2310,7 +2375,7 @@ async function cargarCatalogoSku(){
     // El BOM se pintó antes de que llegara el CSV: se repinta para que el aviso de fin de
     // venta aparezca sin que quien opera tenga que tocar nada.
     renderBom();
-  }catch(e){
+  }catch{
     caja.innerHTML='<p class="hint">No se pudo cargar el catálogo de SKUs (lista de precios). La lista de materiales sigue disponible.</p>';
   }
 }
