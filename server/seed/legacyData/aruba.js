@@ -214,8 +214,15 @@ const MODELS = [
      fru:'SSD y fuente de poder (variantes EC-S-P)', disco:'2x SSD (variantes EC-S-P)',
      mtbf:'177.726 h (20 años)', watts:'100 W (EC-S, fuente única) · 111 W AC / 103 W DC a -48 V (EC-S-P, 1+1)',
      ruido:'40 dBA', peso:'8,23 kg (18,14 lb)'},
+   // Variantes de pedido (2026-09-15, pendiente #27 — decisión delegada al arquitecto):
+   // el EC-S del catálogo YA es el EC-S-P; se añaden los SKU de canal no-NAL que el
+   // importador encontró en la lista (mismo equipo, mismos precios que los NAL, PLC GA).
+   // Fuera a propósito: JM778A (NFR — not-for-resale, PLC SA: no es vendible) y JM538AR
+   // (remanufacturado: el reman se oferta como tal, no como variante del modelo nuevo).
    hwSku:'S3N73A', skus:[{sku:'S3N73A',d:'EC-S-P · 4x SFP+ · 10x RJ45 · PSU AC · 2x SSD · NAL'},
-                         {sku:'S3N74A',d:'EC-S-P · 4x SFP+ · 10x RJ45 · PSU DC · 2x SSD · NAL'}],
+                         {sku:'S3N74A',d:'EC-S-P · 4x SFP+ · 10x RJ45 · PSU DC · 2x SSD · NAL'},
+                         {sku:'JM538A',d:'EC-S-P · PSU AC · canal no-NAL'},
+                         {sku:'JM769A',d:'EC-S-P-DC · PSU DC · canal no-NAL'}],
    ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
 
   {id:'EC-M', redund:true, psu:{tipo:'1+1 redundante, sustituible e intercambiable en caliente', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 126 W — HPE publica el requerimiento, no un consumo típico.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Hub / Sucursal grande',
@@ -658,13 +665,15 @@ const BOOST = {
   // para SKU↔descripción, lista del distribuidor para el precio). El dimensionador consume
   // el bloque de 100 Mbps; el de 10 Gbps existe para hubs grandes y se deja documentado.
   // `saas` acompaña a Foundation/Advanced; `onprem` a la suscripción On-Premises.
+  // Término de 7 años (2026-09-15, pendiente #28): la lista publica y7 para los cuatro
+  // bloques (SaaS y On-Prem, 100 Mbps y 10 Gbps — vigencia 2026-06-01, PLC GA).
   saas: {
-    bloque100: {sku:{y1:'S0Z71AAS', y3:'S0Z73AAS', y5:'S0Z75AAS'}, y1:6552,   y3:19656,  y5:32760},
-    bloque10g: {sku:{y1:'S0Z85AAS', y3:'S0Z87AAS', y5:'S0Z89AAS'}, y1:327600, y3:982800, y5:1638000},
+    bloque100: {sku:{y1:'S0Z71AAS', y3:'S0Z73AAS', y5:'S0Z75AAS', y7:'S0Z76AAS'}, y1:6552,   y3:19656,  y5:32760,   y7:45864},
+    bloque10g: {sku:{y1:'S0Z85AAS', y3:'S0Z87AAS', y5:'S0Z89AAS', y7:'S0Z90AAS'}, y1:327600, y3:982800, y5:1638000, y7:2293200},
   },
   onprem: {
-    bloque100: {sku:{y1:'S0Z99AAS', y3:'S1A01AAS', y5:'S1A03AAS'}, y1:6552,   y3:19656,  y5:32760},
-    bloque10g: {sku:{y1:'S0Z23AAS', y3:'S0Z25AAS', y5:'S0Z27AAS'}, y1:327600, y3:982800, y5:1638000},
+    bloque100: {sku:{y1:'S0Z99AAS', y3:'S1A01AAS', y5:'S1A03AAS', y7:'S1A04AAS'}, y1:6552,   y3:19656,  y5:32760,   y7:45864},
+    bloque10g: {sku:{y1:'S0Z23AAS', y3:'S0Z25AAS', y5:'S0Z27AAS', y7:'S0Z28AAS'}, y1:327600, y3:982800, y5:1638000, y7:2293200},
   },
 };
 
@@ -772,7 +781,11 @@ const CARE_SKU = {
 // duración (1/3/5 años), así que `sku` va desglosado igual que el precio. Doble fuente,
 // ver cabecera: QuickSpecs oficial v18 para SKU↔descripción (verificado contra hpe.com),
 // lista del distribuidor para el List Price. La lista también publica SKU de 7 años, por
-// suscripción purga y de alta disponibilidad — no los consume el dimensionador.
+// suscripción purga y de alta disponibilidad — consumidos desde el 2026-09-15 (pendiente
+// #28), con la cobertura exacta documentada junto a LICENSES.
+// Foundational Care NO se extiende a 7 años: la lista no trae «7Y FC» para los modelos
+// del catálogo (verificado 2026-09-15) — con término 7 la línea de soporte muestra
+// «consultar», nunca un SKU de otro término.
 //
 // El soporte NO va aquí: los SKU de Foundational Care (H43W0E, H44Z4E, H07BKE…) van
 // atados a la VARIANTE de hardware, no al tier de caudal — viven en CARE_SKU por modelo
@@ -780,41 +793,49 @@ const CARE_SKU = {
 // Foundation no tiene tiers intermedios; el motor debe bloquearlos (restricción oficial
 // verificada en la lista 2026-09-13: solo existen filas Foundation de 100 Mbps, 1 Gbps
 // e ilimitado — ver el comentario de BW_TIERS). Advanced y On-Premises cubren los 8.
+// Término de 7 años (2026-09-15, pendiente #28 — el dueño lo pidió): la lista oficial
+// vigente SÍ publica y7, pero NO en todos los peldaños. Regla de la casa: donde la lista
+// no tiene fila de 7 años, y7 queda null («la lista no tiene el dato») y la interfaz
+// muestra «consultar / PENDIENTE DE COTIZACIÓN» — jamás un SKU o precio inventado.
+// Cobertura literal verificada contra el export (vigencia 2026-06-01, PLC GA):
+//   · Advanced SaaS: 20M→2G completo; ILIMITADO no (la lista solo trae «Adv HA UL 7yr»).
+//   · On-Premises no-HA: SOLO 1G y 2G — la lista no publica 7y para 20/50/100/200/500/UL.
+//   · Foundation SaaS: 1G y UL; 100M no.
 const LICENSES = {
   bw20: {
-    advanced:   {sku:{y1:'S1B06AAS', y3:'S1B08AAS', y5:'S1B10AAS'}, y1:900,  y3:2700,  y5:4500},
-    onprem:     {sku:{y1:'S1A80AAS', y3:'S1A82AAS', y5:'S1A84AAS'}, y1:948,  y3:2844,  y5:4740},
+    advanced:   {sku:{y1:'S1B06AAS', y3:'S1B08AAS', y5:'S1B10AAS', y7:'S1B11AAS'}, y1:900,  y3:2700,  y5:4500,  y7:6300},
+    onprem:     {sku:{y1:'S1A80AAS', y3:'S1A82AAS', y5:'S1A84AAS', y7:null},       y1:948,  y3:2844,  y5:4740,  y7:null},
   },
   bw50: {
-    advanced:   {sku:{y1:'S1B20AAS', y3:'S1B22AAS', y5:'S1B24AAS'}, y1:1296, y3:3888,  y5:6480},
-    onprem:     {sku:{y1:'S1A94AAS', y3:'S1A96AAS', y5:'S1A98AAS'}, y1:1356, y3:4068,  y5:6780},
+    advanced:   {sku:{y1:'S1B20AAS', y3:'S1B22AAS', y5:'S1B24AAS', y7:'S1B25AAS'}, y1:1296, y3:3888,  y5:6480,  y7:9072},
+    onprem:     {sku:{y1:'S1A94AAS', y3:'S1A96AAS', y5:'S1A98AAS', y7:null},       y1:1356, y3:4068,  y5:6780,  y7:null},
   },
   bw100: {
-    foundation: {sku:{y1:'S1C49AAS', y3:'S1C51AAS', y5:'S1C53AAS'}, y1:900,  y3:2700,  y5:4500},
-    advanced:   {sku:{y1:'S1B34AAS', y3:'S1B36AAS', y5:'S1B38AAS'}, y1:1848, y3:5544,  y5:9240},
-    onprem:     {sku:{y1:'S1B99AAS', y3:'S1C01AAS', y5:'S1C03AAS'}, y1:1932, y3:5796,  y5:9660},
+    foundation: {sku:{y1:'S1C49AAS', y3:'S1C51AAS', y5:'S1C53AAS', y7:null},       y1:900,  y3:2700,  y5:4500,  y7:null},
+    advanced:   {sku:{y1:'S1B34AAS', y3:'S1B36AAS', y5:'S1B38AAS', y7:'S1B39AAS'}, y1:1848, y3:5544,  y5:9240,  y7:12936},
+    onprem:     {sku:{y1:'S1B99AAS', y3:'S1C01AAS', y5:'S1C03AAS', y7:null},       y1:1932, y3:5796,  y5:9660,  y7:null},
   },
   bw200: {
-    advanced:   {sku:{y1:'S1B48AAS', y3:'S1B50AAS', y5:'S1B52AAS'}, y1:2604, y3:7812,  y5:13020},
-    onprem:     {sku:{y1:'S1C13AAS', y3:'S1C15AAS', y5:'S1C17AAS'}, y1:2736, y3:8208,  y5:13680},
+    advanced:   {sku:{y1:'S1B48AAS', y3:'S1B50AAS', y5:'S1B52AAS', y7:'S1B53AAS'}, y1:2604, y3:7812,  y5:13020, y7:18228},
+    onprem:     {sku:{y1:'S1C13AAS', y3:'S1C15AAS', y5:'S1C17AAS', y7:null},       y1:2736, y3:8208,  y5:13680, y7:null},
   },
   bw500: {
-    advanced:   {sku:{y1:'S1B62AAS', y3:'S1B64AAS', y5:'S1B67AAS'}, y1:4572, y3:13716, y5:22860},
-    onprem:     {sku:{y1:'S0X93AAS', y3:'S0X95AAS', y5:'S0X97AAS'}, y1:4788, y3:14364, y5:23940},
+    advanced:   {sku:{y1:'S1B62AAS', y3:'S1B64AAS', y5:'S1B67AAS', y7:'S1B68AAS'}, y1:4572, y3:13716, y5:22860, y7:32004},
+    onprem:     {sku:{y1:'S0X93AAS', y3:'S0X95AAS', y5:'S0X97AAS', y7:null},       y1:4788, y3:14364, y5:23940, y7:null},
   },
   bw1g: {
-    foundation: {sku:{y1:'S1A22AAS', y3:'S1A24AAS', y5:'S1A26AAS'}, y1:1680, y3:5040,  y5:8400},
-    advanced:   {sku:{y1:'S1B77AAS', y3:'S1B79AAS', y5:'S1B81AAS'}, y1:6540, y3:19620, y5:32700},
-    onprem:     {sku:{y1:'S0Y07AAS', y3:'S0Y09AAS', y5:'S0Y11AAS'}, y1:6864, y3:20592, y5:34320},
+    foundation: {sku:{y1:'S1A22AAS', y3:'S1A24AAS', y5:'S1A26AAS', y7:'S1A27AAS'}, y1:1680, y3:5040,  y5:8400,  y7:11760},
+    advanced:   {sku:{y1:'S1B77AAS', y3:'S1B79AAS', y5:'S1B81AAS', y7:'S1B82AAS'}, y1:6540, y3:19620, y5:32700, y7:45780},
+    onprem:     {sku:{y1:'S0Y07AAS', y3:'S0Y09AAS', y5:'S0Y11AAS', y7:'S0Y12AAS'}, y1:6864, y3:20592, y5:34320, y7:48048},
   },
   bw2g: {
-    advanced:   {sku:{y1:'S1B91AAS', y3:'S1B93AAS', y5:'S1B95AAS'}, y1:9384, y3:28152, y5:46920},
-    onprem:     {sku:{y1:'S0Y21AAS', y3:'S0Z45AAS', y5:'S0Z47AAS'}, y1:9864, y3:29592, y5:49320},
+    advanced:   {sku:{y1:'S1B91AAS', y3:'S1B93AAS', y5:'S1B95AAS', y7:'S1B96AAS'}, y1:9384, y3:28152, y5:46920, y7:65688},
+    onprem:     {sku:{y1:'S0Y21AAS', y3:'S0Z45AAS', y5:'S0Z47AAS', y7:'S0Z48AAS'}, y1:9864, y3:29592, y5:49320, y7:69048},
   },
   bwunl: {
-    foundation: {sku:{y1:'S1A36AAS', y3:'S1A38AAS', y5:'S1A40AAS'}, y1:7848,  y3:23544, y5:39240},
-    advanced:   {sku:{y1:'S1C35AAS', y3:'S1C37AAS', y5:'S1C39AAS'}, y1:23580, y3:70740, y5:117900},
-    onprem:     {sku:{y1:'S0Z57AAS', y3:'S0Z59AAS', y5:'S0Z61AAS'}, y1:24744, y3:74232, y5:123720},
+    foundation: {sku:{y1:'S1A36AAS', y3:'S1A38AAS', y5:'S1A40AAS', y7:'S1A41AAS'}, y1:7848,  y3:23544, y5:39240,  y7:54936},
+    advanced:   {sku:{y1:'S1C35AAS', y3:'S1C37AAS', y5:'S1C39AAS', y7:null},       y1:23580, y3:70740, y5:117900, y7:null},
+    onprem:     {sku:{y1:'S0Z57AAS', y3:'S0Z59AAS', y5:'S0Z61AAS', y7:null},       y1:24744, y3:74232, y5:123720, y7:null},
   },
 };
 
@@ -833,33 +854,37 @@ const LICENSES = {
 // On-Premises NO se mapea: la lista trae SKU HA E-STU de la línea antigua EC-BW
 // (JM075AAS…) pero ninguna fuente consultada declara su equivalencia con los niveles
 // Foundation/Advanced, así que el par on-prem se cotiza 2× estándar y se declara.
+// Término de 7 años en HA (2026-09-15, pendiente #28): la lista publica la escalera HA
+// COMPLETA en 7 años (Advanced 20M→UL y Foundation 100M/1G/UL), con la misma invariante
+// de siempre — precio HA idéntico al estándar, solo cambia el SKU de pedido. Verificado
+// literal contra el export (vigencia 2026-06-01, PLC GA).
 const LICENSES_HA = {
   bw20: {
-    advanced:   {sku:{y1:'S1B13AAS', y3:'S1B15AAS', y5:'S1B17AAS'}, y1:900,  y3:2700,  y5:4500},
+    advanced:   {sku:{y1:'S1B13AAS', y3:'S1B15AAS', y5:'S1B17AAS', y7:'S1B18AAS'}, y1:900,  y3:2700,  y5:4500,  y7:6300},
   },
   bw50: {
-    advanced:   {sku:{y1:'S1B27AAS', y3:'S1B29AAS', y5:'S1B31AAS'}, y1:1296, y3:3888,  y5:6480},
+    advanced:   {sku:{y1:'S1B27AAS', y3:'S1B29AAS', y5:'S1B31AAS', y7:'S1B32AAS'}, y1:1296, y3:3888,  y5:6480,  y7:9072},
   },
   bw100: {
-    foundation: {sku:{y1:'S1C56AAS', y3:'S1A17AAS', y5:'S1A19AAS'}, y1:900,  y3:2700,  y5:4500},
-    advanced:   {sku:{y1:'S1B41AAS', y3:'S1B43AAS', y5:'S1B45AAS'}, y1:1848, y3:5544,  y5:9240},
+    foundation: {sku:{y1:'S1C56AAS', y3:'S1A17AAS', y5:'S1A19AAS', y7:'S1A20AAS'}, y1:900,  y3:2700,  y5:4500,  y7:6300},
+    advanced:   {sku:{y1:'S1B41AAS', y3:'S1B43AAS', y5:'S1B45AAS', y7:'S1B46AAS'}, y1:1848, y3:5544,  y5:9240,  y7:12936},
   },
   bw200: {
-    advanced:   {sku:{y1:'S1B55AAS', y3:'S1B57AAS', y5:'S1B59AAS'}, y1:2604, y3:7812,  y5:13020},
+    advanced:   {sku:{y1:'S1B55AAS', y3:'S1B57AAS', y5:'S1B59AAS', y7:'S1B60AAS'}, y1:2604, y3:7812,  y5:13020, y7:18228},
   },
   bw500: {
-    advanced:   {sku:{y1:'S1B70AAS', y3:'S1B72AAS', y5:'S1B74AAS'}, y1:4572, y3:13716, y5:22860},
+    advanced:   {sku:{y1:'S1B70AAS', y3:'S1B72AAS', y5:'S1B74AAS', y7:'S1B75AAS'}, y1:4572, y3:13716, y5:22860, y7:32004},
   },
   bw1g: {
-    foundation: {sku:{y1:'S1A29AAS', y3:'S1A31AAS', y5:'S1A33AAS'}, y1:1680, y3:5040,  y5:8400},
-    advanced:   {sku:{y1:'S1B84AAS', y3:'S1B86AAS', y5:'S1B88AAS'}, y1:6540, y3:19620, y5:32700},
+    foundation: {sku:{y1:'S1A29AAS', y3:'S1A31AAS', y5:'S1A33AAS', y7:'S1A34AAS'}, y1:1680, y3:5040,  y5:8400,  y7:11760},
+    advanced:   {sku:{y1:'S1B84AAS', y3:'S1B86AAS', y5:'S1B88AAS', y7:'S1B89AAS'}, y1:6540, y3:19620, y5:32700, y7:45780},
   },
   bw2g: {
-    advanced:   {sku:{y1:'S1C28AAS', y3:'S1C30AAS', y5:'S1C32AAS'}, y1:9384, y3:28152, y5:46920},
+    advanced:   {sku:{y1:'S1C28AAS', y3:'S1C30AAS', y5:'S1C32AAS', y7:'S1C33AAS'}, y1:9384, y3:28152, y5:46920, y7:65688},
   },
   bwunl: {
-    foundation: {sku:{y1:'S1A43AAS', y3:'S1A45AAS', y5:'S1A77AAS'}, y1:7848,  y3:23544, y5:39240},
-    advanced:   {sku:{y1:'S1C42AAS', y3:'S1C44AAS', y5:'S1C46AAS'}, y1:23580, y3:70740, y5:117900},
+    foundation: {sku:{y1:'S1A43AAS', y3:'S1A45AAS', y5:'S1A77AAS', y7:'S1A78AAS'}, y1:7848,  y3:23544, y5:39240,  y7:54936},
+    advanced:   {sku:{y1:'S1C42AAS', y3:'S1C44AAS', y5:'S1C46AAS', y7:'S1C47AAS'}, y1:23580, y3:70740, y5:117900, y7:165060},
   },
 };
 
@@ -877,14 +902,16 @@ const LICENSES_HA = {
 //   · Invariante HA == estándar (igual que LICENSES_HA): la lista tarifa el SKU HA del
 //     segundo nodo exactamente igual que el estándar, solo cambia el número de parte.
 //   · La lista también trae término de 7 años (S0Z42AAS/S0Y29AAS/S0Y36AAS/S0Y43AAS,
-//     $2.604) y SKU de evaluación a $0 (S1C85AAS/S1C86AAS/S1C87AAS/S1C88AAS). Los 7
-//     años quedan FUERA por alcance (pendiente #28: el dimensionador ofrece 1/3/5) y
-//     los de evaluación se excluyen a propósito: una evaluación a $0 no se cotiza.
+//     $2.604) y SKU de evaluación a $0 (S1C85AAS/S1C86AAS/S1C87AAS/S1C88AAS). Los de
+//     evaluación se excluyen a propósito: una evaluación a $0 no se cotiza.
+//   · 7 años (2026-09-15, pendiente #28 — el dueño lo pidió): la lista solo publica y7
+//     para DTD ON-PREMISES (estándar S0Y36AAS y HA S0Y43AAS, $2.604). DTD SaaS no tiene
+//     fila de 7 años en la lista → y7 null («consultar», nunca inventado).
 const DTD_LICENSES = {
-  saas:      {sku:{y1:'S0Z37AAS', y3:'S0Z39AAS', y5:'S0Z41AAS'}, y1:372, y3:1116, y5:1860},
-  saasHa:    {sku:{y1:'S0Z44AAS', y3:'S0Y26AAS', y5:'S0Y28AAS'}, y1:372, y3:1116, y5:1860},
-  onprem:    {sku:{y1:'S0Y31AAS', y3:'S0Y33AAS', y5:'S0Y35AAS'}, y1:372, y3:1116, y5:1860},
-  onpremHa:  {sku:{y1:'S0Y38AAS', y3:'S0Y40AAS', y5:'S0Y42AAS'}, y1:372, y3:1116, y5:1860},
+  saas:      {sku:{y1:'S0Z37AAS', y3:'S0Z39AAS', y5:'S0Z41AAS', y7:null},       y1:372, y3:1116, y5:1860, y7:null},
+  saasHa:    {sku:{y1:'S0Z44AAS', y3:'S0Y26AAS', y5:'S0Y28AAS', y7:null},       y1:372, y3:1116, y5:1860, y7:null},
+  onprem:    {sku:{y1:'S0Y31AAS', y3:'S0Y33AAS', y5:'S0Y35AAS', y7:'S0Y36AAS'}, y1:372, y3:1116, y5:1860, y7:2604},
+  onpremHa:  {sku:{y1:'S0Y38AAS', y3:'S0Y40AAS', y5:'S0Y42AAS', y7:'S0Y43AAS'}, y1:372, y3:1116, y5:1860, y7:2604},
 };
 
 // ── SSE (Secure Service Edge) y umbrales Microbranch (2026-09-13) ────────────

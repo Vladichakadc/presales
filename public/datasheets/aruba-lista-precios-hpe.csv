@@ -203,3 +203,33 @@ JX934A,Accesorios EdgeConnect y gateways,Aruba 7008-MNT-19 7008 Rack Mnt,492.00,
 JW085A,Accesorios EdgeConnect y gateways,Aruba 7010-MNT-19 7010 Rack Mnt,106.00,2022-11-01,GA
 JW086A,Accesorios EdgeConnect y gateways,Aruba 7030-MNT-19 7030 Rack Mnt,106.00,2022-11-01,GA
 JW107A,Accesorios EdgeConnect y gateways,Aruba SPR-RK-MNT 7200/S3500 Rk Mount,106.00,2022-11-01,GA
+S1B11AAS,Suscripcion EdgeConnect Advanced,HPE ANW EC Adv 20Mb 7yr Sub SaaS,6300.00,2026-06-01,GA
+S1B25AAS,Suscripcion EdgeConnect Advanced,HPE ANW EC Adv 50Mb 7yr Sub SaaS,9072.00,2026-06-01,GA
+S1B39AAS,Suscripcion EdgeConnect Advanced,HPE ANW EC Adv 100Mb 7yr Sub SaaS,12936.00,2026-06-01,GA
+S1B53AAS,Suscripcion EdgeConnect Advanced,HPE ANW EC Adv 200Mb 7yr Sub SaaS,18228.00,2026-06-01,GA
+S1B68AAS,Suscripcion EdgeConnect Advanced,HPE ANW EC Adv 500Mb 7yr Sub SaaS,32004.00,2026-06-01,GA
+S1B82AAS,Suscripcion EdgeConnect Advanced,HPE ANW EC Adv 1Gb 7yr Sub SaaS,45780.00,2026-06-01,GA
+S1B96AAS,Suscripcion EdgeConnect Advanced,HPE ANW EC Adv 2Gb 7yr Sub SaaS,65688.00,2026-06-01,GA
+S1B18AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 20Mb 7yr Sub SaaS,6300.00,2026-06-01,GA
+S1B32AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 50Mb 7yr Sub SaaS,9072.00,2026-06-01,GA
+S1B46AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 100Mb 7yr Sub SaaS,12936.00,2026-06-01,GA
+S1B60AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 200Mb 7yr Sub SaaS,18228.00,2026-06-01,GA
+S1B75AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 500Mb 7yr Sub SaaS,32004.00,2026-06-01,GA
+S1B89AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 1Gb 7yr Sub SaaS,45780.00,2026-06-01,GA
+S1C33AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA 2Gb 7yr Sub SaaS,65688.00,2026-06-01,GA
+S1C47AAS,Suscripcion EdgeConnect Advanced HA,HPE ANW EC Adv HA UL 7yr Sub SaaS,165060.00,2026-06-01,GA
+S1A27AAS,Suscripcion EdgeConnect Foundation,HPE ANW EC Fnd 1Gb 7yr Sub SaaS,11760.00,2026-06-01,GA
+S1A41AAS,Suscripcion EdgeConnect Foundation,HPE ANW EC Fnd UL 7yr Sub SaaS,54936.00,2026-06-01,GA
+S1A20AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 100Mb 7yr Sub SaaS,6300.00,2026-06-01,GA
+S1A34AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA 1Gb 7yr Sub SaaS,11760.00,2026-06-01,GA
+S1A78AAS,Suscripcion EdgeConnect Foundation HA,HPE ANW EC Fnd HA UL 7yr Sub SaaS,54936.00,2026-06-01,GA
+S0Y12AAS,Suscripcion EdgeConnect On-Premises,HPE ANW EC ONP 1Gb 7yr Sub E-STU,48048.00,2026-06-01,GA
+S0Z48AAS,Suscripcion EdgeConnect On-Premises,HPE ANW EC ONP 2Gb 7yr Sub E-STU,69048.00,2026-06-01,GA
+S0Z76AAS,Boost EdgeConnect (SaaS),HPE ANW EC Boost 100Mb 7yr Sub SaaS,45864.00,2026-06-01,GA
+S0Z90AAS,Boost EdgeConnect (SaaS),HPE ANW EC Boost 10Gb 7yr Sub SaaS,2293200.00,2026-06-01,GA
+S1A04AAS,Boost EdgeConnect (On-Premises),HPE ANW EC Boost ONP 100Mb 7yr Sub E-STU,45864.00,2026-06-01,GA
+S0Z28AAS,Boost EdgeConnect (On-Premises),HPE ANW EC Boost ONP 10Gb 7yr Sub E-STU,2293200.00,2026-06-01,GA
+S0Y36AAS,Dynamic Threat Defense (On-Premises),HPE ANW EC DTD ONP 7yr Sub E-STU,2604.00,2026-06-01,GA
+S0Y43AAS,Dynamic Threat Defense (On-Premises HA),HPE ANW EC DTD ONP HA 7yr Sub E-STU,2604.00,2026-06-01,GA
+JM538A,EC-S,Aruba EC-S-P SD-WAN Gateway,13479.00,2026-06-01,GA
+JM769A,EC-S,Aruba EC-S-P-DC SD-WAN Gateway,15510.00,2026-06-01,GA

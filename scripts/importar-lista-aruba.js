@@ -136,7 +136,9 @@ function construirRoster(arubaData) {
       // Foundation no existe en los tiers intermedios (restricción oficial 2026-09-13):
       // el nivel ausente se omite, no es un error de datos.
       if (!t) continue;
-      for (const y of ['y1', 'y3', 'y5']) push(t.sku[y], familia, t[y], 'licencia');
+      // y7 desde el 2026-09-15 (pendiente #28): push() omite los null — los peldaños
+      // sin término de 7 años publicado no generan fila, que es lo correcto.
+      for (const y of ['y1', 'y3', 'y5', 'y7']) push(t.sku[y], familia, t[y], 'licencia');
     }
   }
   // 2.4 · Suscripciones HA (segundo nodo del par)
@@ -149,21 +151,21 @@ function construirRoster(arubaData) {
       const t = bw[nivel];
       // Foundation HA solo tiene 3 tiers (misma restricción que LICENSES): se omite.
       if (!t) continue;
-      for (const y of ['y1', 'y3', 'y5']) push(t.sku[y], familia, t[y], 'licencia-ha');
+      for (const y of ['y1', 'y3', 'y5', 'y7']) push(t.sku[y], familia, t[y], 'licencia-ha');
     }
   }
   // 2.5 · Boost (SaaS y On-Premises, bloques 100M y 10G)
   const FAM_BOOST = { saas: 'Boost EdgeConnect (SaaS)', onprem: 'Boost EdgeConnect (On-Premises)' };
   for (const [via, familia] of Object.entries(FAM_BOOST)) {
     for (const bloque of Object.values(arubaData.BOOST[via])) {
-      for (const y of ['y1', 'y3', 'y5']) push(bloque.sku[y], familia, bloque[y], 'boost');
+      for (const y of ['y1', 'y3', 'y5', 'y7']) push(bloque.sku[y], familia, bloque[y], 'boost');
     }
   }
   // 2.55 · Dynamic Threat Defense (2026-09-14, pendiente #31): escalera PLANA por
   // appliance (sin tiers de caudal), modalidad × término. La lista también trae 7 años
-  // y SKU de evaluación a $0: los 7 años quedan fuera por alcance (#28) y los de
-  // evaluación no entran al roster (una evaluación a $0 no se cotiza; además el parser
-  // descarta precios no positivos).
+  // y SKU de evaluación a $0: los 7 años ENTRAN el 2026-09-15 (#28 — solo On-Premises;
+  // en SaaS y7 es null y push() lo omite) y los de evaluación no entran al roster (una
+  // evaluación a $0 no se cotiza; además el parser descarta precios no positivos).
   const FAM_DTD = {
     saas: 'Dynamic Threat Defense (SaaS)',
     saasHa: 'Dynamic Threat Defense (SaaS HA)',
@@ -173,7 +175,7 @@ function construirRoster(arubaData) {
   for (const [clave, familia] of Object.entries(FAM_DTD)) {
     const t = arubaData.DTD_LICENSES[clave];
     if (!t) continue;
-    for (const y of ['y1', 'y3', 'y5']) push(t.sku[y], familia, t[y], 'dtd');
+    for (const y of ['y1', 'y3', 'y5', 'y7']) push(t.sku[y], familia, t[y], 'dtd');
   }
   // 2.6 · Central para gateways 70xx/90xx
   for (const tier of Object.values(arubaData.CENTRAL_TIERS)) {

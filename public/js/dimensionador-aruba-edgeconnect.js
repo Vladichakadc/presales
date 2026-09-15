@@ -31,6 +31,10 @@ let skuFiltro = '', skuCatActiva = null, skuTaaOn = false;
 // asi que hay que pasarla siempre): sin selector propio —el unico es pickModel, unificado
 // 2026-09-13— y sin tabla de referencias —integradas en la lista de materiales—.
 const FICHA_CFG={vendor:'aruba', refs:false, selector:false,
+  // Lista clicable de candidatos (petición directa del dueño, 2026-09-15): «solo se
+  // muestra 1 equipo recomendado pero hay varios que cumplen y el usuario no tiene cómo
+  // seleccionar otro». Opt-in de ficha.js — el resto de dimensionadores se pinta igual.
+  listaCandidatos:true,
   refsNota:'Las referencias de pedido de este equipo —y de todo el catálogo de Aruba: hardware, remanufacturados, suscripciones EdgeConnect, Boost, Central y licencias perpetuas— están integradas en la lista de materiales. Allí se añaden y se quitan con su SKU y su List Price.'};
 
 // El modelo viaja en la URL como parte del escenario compartible, pero ESTADO reescribe el
@@ -49,7 +53,17 @@ const $=id=>document.getElementById(id);
 const CAMPOS_ESCENARIO=['wanLinksData','users','aps','perUser','head','fecMode','selTrafico','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','famSeg','segSeg','destSeg','pickModel','personaSeg','selSeguridad','selTier','chkBreakout','selDescuento','dtoCustom',
   // Contexto MSP del escenario (etapa A / #39, 2026-09-14): viajan en la URL y en los
   // perfiles multi-sede como un campo más, y encabezan la lista de materiales y el Excel.
-  'nombreCliente','refProyecto'];
+  'nombreCliente','refProyecto',
+  // Ópticas elegidas en #sfpChooser (2026-09-15): JSON {medio: sku} en el oculto
+  // #sfpPickData — viaja en la URL y en los perfiles como un campo más.
+  'sfpPickData',
+  // Líneas retiradas de la lista de materiales (BOM editable, petición del dueño
+  // 2026-09-15): JSON de claves en el oculto #bomOmitidas. La clave la define
+  // BOM.claveFila (con el SKU si lo hay, o categoría|descripción). Viaja en la URL:
+  // quien abre el enlace ve la misma lista, con las mismas líneas retiradas.
+  // OJO: nada de literales entrecomillados en este comentario — catalogo-check extrae
+  // los ids del array con una expresión sobre comillas y los tomaría por campos.
+  'bomOmitidas'];
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let famMode='any', segMode='branch', destMode='hibrido', lastPick=null;
 // Arquetipo de sede y estrategia de seguridad como variables de estado del dimensionador
@@ -321,6 +335,16 @@ $('btnCopiarEscenario').addEventListener('click',async()=>{
   setTimeout(()=>{ msg.textContent=''; },2500);
 });
 
+// «Limpiar escenario» (petición del dueño, 2026-09-15): para dimensionar otro equipo
+// desde cero. El estado vive SOLO en la URL (estado v2 — no se guarda entre sesiones),
+// así que limpiar es volver a la URL desnuda y recargar: cada campo cae a su defecto.
+// Pide confirmación porque borra TODO lo declarado, incluida la lista de materiales.
+$('btnLimpiarEscenario').addEventListener('click',()=>{
+  if(!window.confirm('¿Limpiar el escenario completo? Se pierden los enlaces WAN, las opciones y la lista de materiales actuales y se vuelve a los valores por defecto.')) return;
+  history.replaceState(null,'',location.pathname);
+  location.reload();
+});
+
 // Arquetipos de sede (personas Aruba, brief del duenyo 2026-09-13): restringen el
 // catalogo a los modelos que el VSG posiciona para ese tamanyo de sitio. Libre = el
 // calculo manda sobre todo el catalogo, como hasta ahora.
@@ -366,6 +390,102 @@ let ACCESSORY_CATALOG={}, ACCESSORY_COMPAT={};
 // Selección viva del modal: sku → cantidad. Se depura al cambiar de modelo para no
 // cotizar una óptica incompatible con el equipo elegido.
 let accesoriosElegidos={};
+/* ══ ÓPTICAS SFP DE LOS ENLACES WAN (petición directa del dueño, 2026-09-15) ══
+   Cada enlace declarado con medio «SFP 1G» o «SFP+ 10G» necesita UNA óptica en el
+   extremo local (× unidades del sitio — en HA 1+1 son dos appliances). Reglas:
+   · Candidatas = ACCESSORY_COMPAT[modelo].items ∩ catálogo maestro con la velocidad
+     del medio, EXCLUYENDO: DAC (interconexión corta de sala, no underlay WAN), TAA
+     (se ofertan desde el toggle de Cumplimiento Especial de la pestaña BOM, no aquí)
+     y PLC «ES» (fin de venta nunca se oferta).
+   · 0 candidatas → aviso (el modelo no admite ese medio). 1 → auto-seleccionada.
+   · >1 → mensaje + select SIN opción por defecto: es el usuario quien elige el tipo
+     (alcance y medio) — cotizar una óptica por él sería apostar el pedido.
+   · La elección viaja en el escenario compartible (#sfpPickData, JSON {medio: sku}),
+     un campo oculto más como #wanLinksData, y el BOM la cotiza (o declara la
+     «PENDIENTE DE SELECCIÓN» sin precio — jamás una óptica inventada).
+   · RJ45 no necesita óptica: el puerto cobre es nativo. */
+const MEDIOS_OPTICA={'SFP 1G':'1G','SFP+ 10G':'10G'};
+function opticasPara(modeloId, medio){
+  const speed=MEDIOS_OPTICA[medio]; if(!speed||!modeloId) return [];
+  const cfg=ACCESSORY_COMPAT[modeloId]; if(!cfg) return [];
+  return cfg.items.map(sku=>({sku, a:ACCESSORY_CATALOG[sku]}))
+    .filter(x=>x.a&&x.a.speed===speed&&x.a.media!=='DAC'&&!/_TAA$/.test(x.a.media||'')&&x.a.plc!=='ES');
+}
+// Enlaces activos (con caudal) que necesitan óptica, agrupados por medio: {medio: n}.
+function necesidadesOptica(links){
+  const n={};
+  (links||[]).filter(l=>l.down>0||l.up>0).forEach(l=>{ if(MEDIOS_OPTICA[l.medio]) n[l.medio]=(n[l.medio]||0)+1; });
+  return n;
+}
+// Unidades del sitio (petición del dueño, 2026-09-15): SIN campo de cantidad — en
+// EdgeConnect un sitio lleva un appliance o un par HA 1+1 (arquitectura oficial), así
+// que las unidades se deducen de la casilla HA: marcada → 2, sin marcar → 1.
+function unidadesSitio(){ return ($('chkHa')&&$('chkHa').checked)?2:1; }
+function leerSfpPick(){ try{ return JSON.parse(($('sfpPickData')||{}).value||'{}')||{}; }catch{ return {}; } }
+// Escribir el value de un oculto NO dispara «input» y ESTADO volcaría sin verlo: hay
+// que emitirlo a mano o la elección no viajaría al enlace hasta el próximo tecleo.
+function escribirSfpPick(p){ const n=$('sfpPickData'); if(!n) return; n.value=JSON.stringify(p); n.dispatchEvent(new Event('input',{bubbles:true})); }
+
+/* ══ BOM EDITABLE: LÍNEAS RETIRADAS (petición del dueño, 2026-09-15) ══
+   Cualquier línea de la lista —la calcule el dimensionador o la añada la mano— se puede
+   RETIRAR con su botón ✕: no se borra, se mueve a «Líneas retiradas» (restaurable con un
+   clic) y sale de totales, Excel y texto. La omisión viaja en la URL (#bomOmitidas).
+   Las cantidades de las líneas calculadas NO se editan a mano: las fija el escenario
+   (HA 1+1, enlaces WAN, término) — editarlas invitaría a cambiar una cifra que el
+   próximo repintado pisaría sin avisar; retirar, en cambio, es una decisión de alcance
+   («este sitio no lleva Central») que el motor no puede adivinar. */
+function leerOmitidas(){ try{ const v=JSON.parse(($('bomOmitidas')||{}).value||'[]'); return Array.isArray(v)?v:[]; }catch{ return []; } }
+function escribirOmitidas(a){ const n=$('bomOmitidas'); if(!n) return; n.value=JSON.stringify(a); n.dispatchEvent(new Event('input',{bubbles:true})); }
+// La caja de retiradas se pinta tras la tabla: líneas tachadas con su botón de restaurar.
+function pintarRetiradas(filas, omitidas){
+  const box=$('bomRetiradas'); if(!box) return;
+  const retiradas=(filas||[]).filter(f=>omitidas.has(BOM.claveFila(f)));
+  if(!retiradas.length){ box.innerHTML=''; return; }
+  box.innerHTML=`<details class="bom-retiradas"><summary>Líneas retiradas de la cotización · ${retiradas.length}</summary>`
+    +retiradas.map(f=>`<div class="bom-retirada"><s>${esc(f.desc)}${f.sku?` — <code>${esc(f.sku)}</code>`:''}</s>`
+      +`<button type="button" class="bom-restaurar" data-bom-restaurar="${esc(BOM.claveFila(f))}">Restaurar</button></div>`).join('')
+    +'</details>';
+}
+// Óptica resuelta para un medio: la elegida si sigue siendo compatible; la única si no
+// hay alternativa; null si hay varias y el usuario aún no elige.
+function opticaResuelta(modeloId, medio, pick){
+  const ops=opticasPara(modeloId, medio);
+  if(!ops.length) return {ops, sku:null};
+  if(pick[medio]&&ops.some(o=>o.sku===pick[medio])) return {ops, sku:pick[medio]};
+  if(ops.length===1) return {ops, sku:ops[0].sku};
+  return {ops, sku:null};
+}
+function pintarSfpChooser(){
+  const box=$('sfpChooser'); if(!box) return;
+  const nec=necesidadesOptica(leerWanLinks());
+  const medios=Object.keys(nec);
+  const m=typeof modeloActual==='function'&&MODELS.length?modeloActual():null;
+  if(!medios.length||!m){ box.hidden=true; box.innerHTML=''; return; }
+  const pick=leerSfpPick();
+  const und=unidadesSitio();
+  let dirty=false;
+  const filas=medios.map(medio=>{
+    const ops=opticasPara(m.id, medio);
+    const qty=nec[medio]*und;
+    if(!ops.length)
+      return `<div class="sfp-fila"><span class="warn">El modelo elegido (${esc(m.id)}) no admite ópticas ${esc(medio)} — revisa el medio declarado o el modelo.</span></div>`;
+    // La elección guardada deja de valer si el modelo nuevo no la admite.
+    if(pick[medio]&&!ops.some(o=>o.sku===pick[medio])){ delete pick[medio]; dirty=true; }
+    if(ops.length===1&&pick[medio]!==ops[0].sku){ pick[medio]=ops[0].sku; dirty=true; }
+    const sel=ops.length===1
+      ?`<span class="sfp-auto"><code>${ops[0].sku}</code> — ${esc(accEtiquetas(ops[0].a))} · única compatible</span>`
+      :`<select data-sfp-medio="${esc(medio)}" aria-label="Óptica para los enlaces ${esc(medio)}">`
+        +`<option value="">— Selecciona la óptica…</option>`
+        +ops.map(o=>`<option value="${o.sku}"${pick[medio]===o.sku?' selected':''}>${o.sku} — ${esc(accEtiquetas(o.a))} · ${o.a.listPrice!=null?'$'+o.a.listPrice.toLocaleString('en-US'):'consultar'}</option>`).join('')
+        +`</select>`;
+    const aviso=ops.length>1?`<p class="hint" style="margin:0 0 6px">Hay ${ops.length} ópticas ${esc(medio)} compatibles con ${esc(m.id)} — selecciona el tipo que requiere el enlace (alcance y medio).</p>`:'';
+    return `<div class="sfp-fila"><div class="sfp-fila-top"><b>${esc(medio)}</b> × ${qty} — ${nec[medio]} enlace${nec[medio]===1?'':'s'}${und>1?` × ${und} unidades`:''}</div>${aviso}${sel}</div>`;
+  });
+  if(dirty) escribirSfpPick(pick);
+  box.innerHTML=`<p class="mono-lbl" style="margin:0 0 8px">Ópticas de los enlaces WAN</p>`+filas.join('');
+  box.hidden=false;
+}
+
 function modeloActual(){ return MODELS.find(x=>x.id===$('pickModel').value)||null; }
 // Etiquetas técnicas del accesorio: velocidad · medio · alcance, o su categoría
 // funcional (módulo, SSD, 2ª PSU, rack, consola). TAA se destaca porque condiciona la
@@ -586,9 +706,14 @@ $('modalConsolidado').addEventListener('click',e=>{ if(e.target===$('modalConsol
 // aplicaciones sustituye a los campos abstractos. Cloud-First usa First-packet iQ para
 // sacar el tráfico SaaS de confianza directo a Internet o al SSE; Híbrido concentra el
 // tráfico en los overlays con Path Conditioning hacia el datacenter privado.
+// Cada opción declara SU cálculo (petición del dueño, 2026-09-15): el destino mueve el
+// «featurePenalty» del motor — +0 % en híbrido (el túnel al DC es el caso base) y +5 %
+// en Cloud-First, porque clasificar cada primer paquete (First-packet iQ) para decidir
+// DIA/SSE es trabajo extra del appliance. La cifra se aplica sobre el throughput de
+// diseño del motor de ingeniería y se ve en la ficha («por qué este equipo»).
 const DEST_HINT={
-  hibrido:'Tráfico intensivo en túneles del fabric hacia el datacenter propio, con Path Conditioning (FEC y corrección de orden de paquetes) sosteniendo el SLA de aplicación.',
-  cloud:'Office 365, Teams, Salesforce y web salen directos a Internet (DIA) o hacia la nube SSE: First-packet iQ clasifica la aplicación en el primer paquete y decide el breakout. Menos carga cifrada en el túnel corporativo.',
+  hibrido:'Tráfico intensivo en túneles del fabric hacia el datacenter propio, con Path Conditioning (FEC y corrección de orden de paquetes) sosteniendo el SLA de aplicación. Cálculo: sin sobrecoste — el throughput de diseño sale del motor de ingeniería tal cual (penalización de función ×1,00).',
+  cloud:'Office 365, Teams, Salesforce y web salen directos a Internet (DIA) o hacia la nube SSE: First-packet iQ clasifica la aplicación en el primer paquete y decide el breakout. Menos carga cifrada en el túnel corporativo. Cálculo: +5 % sobre el throughput de diseño (×1,05) — clasificar cada primer paquete es trabajo del appliance.',
 };
 
 // El equipo del dimensionamiento se lleva solo al BOM. La regla vive en js/bom.js —
@@ -650,11 +775,9 @@ $('chkBoost').addEventListener('change',()=>{
 // Dynamic Threat Defense vive en el selector de estrategia de seguridad (#selSeguridad,
 // SPEC B.4): el movimiento del filtro de familia se hace en su listener de arriba.
 $('chkHa').addEventListener('change',()=>{
-  const q=$('qty');
-  if($('chkHa').checked){ if((parseInt(q.value)||1)<2) q.value=2; }
-  else if((parseInt(q.value)||1)===2){ q.value=1; }
-  // render() entero: la ficha declara el par HA en «Unidades a licenciar» y el BOM
-  // parte la suscripción en 1× estándar + 1× SKU de alta disponibilidad (2026-09-13).
+  // Las unidades se deducen de esta casilla (1 ó 2 — sin campo de cantidad desde
+  // 2026-09-15). render() entero: la ficha declara el par HA en «Unidades a licenciar»
+  // y el BOM parte la suscripción en 1× estándar + 1× SKU de alta disponibilidad.
   render();
 });
 // Estos campos disparan render() y no solo renderBom: con la unificacion de 2026-09-13 la
@@ -664,12 +787,43 @@ $('chkHa').addEventListener('change',()=>{
 // de Boost y el nivel de capacidad del 9240 se DEDUCEN (no hay selectores manuales): lo
 // que queda aqui es el termino, el soporte y las exclusiones («No incluir», pedido
 // explicito del dueno que se conserva) mas la modalidad On-Premises del menu avanzado.
-['qty','termYears','careLevel','chkNoSub','chkNoCentral','chkSoloHw','chkOnprem']
+['termYears','careLevel','chkNoSub','chkNoCentral','chkSoloHw','chkOnprem']
   .forEach(id=>$(id).addEventListener('input',render));
 // El modelo es el selector UNICO de la pagina: cambiarlo a mano mueve ficha, resumen,
 // escalera y BOM, no solo la lista. La marca de eleccion manual se fija ANTES de render,
 // porque render podria reponer el recomendado si la tomara por heredada.
 $('pickModel').addEventListener('change',()=>{ $('pickModel').dataset.bomManual='1'; render(); });
+
+// Selector de óptica SFP por medio (SPEC B.1, 2026-09-15): cuando hay varias ópticas
+// compatibles con el modelo, la elección es del USUARIO (alcance/medio del enlace — el
+// dimensionador no puede inferirlo). La elección viaja en #sfpPickData (JSON {medio:sku},
+// dentro de CAMPOS_ESCENARIO, así que sobrevive a la URL compartida) y al cambiarla solo
+// hace falta repintar el BOM: ficha y resumen no dependen de la óptica elegida.
+$('sfpChooser').addEventListener('change',e=>{
+  const medio=e.target.dataset&&e.target.dataset.sfpMedio;
+  if(!medio) return;
+  const pick=leerSfpPick();
+  if(e.target.value) pick[medio]=e.target.value; else delete pick[medio];
+  escribirSfpPick(pick);
+  renderBom();
+});
+
+// BOM editable (petición del dueño, 2026-09-15): retirar y restaurar líneas. Delegado en
+// document porque la tabla se repinta entera en cada render — un listener colgado del
+// botón moriría con el primer repintado (misma razón que el data-bom-quitar de bom.js).
+// Solo se repinta el BOM: la omisión no cambia el dimensionamiento, solo la cotización.
+document.addEventListener('click',e=>{
+  const b=e.target.closest&&e.target.closest('[data-bom-omitir],[data-bom-restaurar]');
+  if(!b) return;
+  const omit=leerOmitidas();
+  if(b.dataset.bomOmitir){ if(!omit.includes(b.dataset.bomOmitir)) omit.push(b.dataset.bomOmitir); }
+  else{
+    const i=omit.indexOf(b.dataset.bomRestaurar);
+    if(i>=0) omit.splice(i,1);
+  }
+  escribirOmitidas(omit);
+  renderBom();
+});
 
 function fmt(m){
   if(m==null) return '—';
@@ -1009,12 +1163,19 @@ function estadoDerivado(){
   // bloquea con title explicativo). Se lee DINÁMICAMENTE de LICENSES: cuando DATOS
   // amplíe la lista a 8 tiers, el filtro se actualiza solo.
   const tierAuto=tierParaCaudal(tierCaudal);
+  // Sincronización visible con el módulo 2 (petición del dueño, 2026-09-15): la opción
+  // «Automático» declara QUÉ tier está deduciendo del agregado WAN en este momento —
+  // antes el usuario veía que variaba pero no cómo se calculaba.
+  const opAuto=$('selTier')&&$('selTier').options[0];
+  if(opAuto) opAuto.textContent=tierAuto
+    ?`Automático — ${tierAuto.n} (Σ enlaces WAN del módulo 2)`
+    :'Automático — deducido del caudal del sitio';
   const nivelTier=bundle==='onprem'?'onprem':nivelAutoEC();
   const tManual=(SIZING.bwTiers||[]).find(t=>t.code===$('selTier').value);
   const tier=(tManual&&(!LICENSES[tManual.code]||LICENSES[tManual.code][nivelTier]))?tManual:tierAuto;
   const termYrs=parseInt($('termYears').value)||3;
   const care=$('careLevel').value;
-  const qty=Math.max(1,parseInt($('qty').value)||1);
+  const qty=unidadesSitio(); // 1 ó 2 — deducido de HA, sin campo de cantidad (2026-09-15)
   // Boost auto-dimensionado: 30 % del tráfico WAN privado, en bloques de 100 Mbps.
   // Sin suscripción no hay Boost (es un add-on suyo, no un producto independiente).
   const share=(caudalTotal>0&&breakout)?caudalEfectivo/caudalTotal:1;
@@ -1039,8 +1200,9 @@ const REGLAS_DISENO=[
    texto:(D,m)=>`Caudal WAN insuficiente: ${m.id} publica hasta ${fmt(m.wanMax)} y el requerimiento de diseño del motor de ingeniería es ${fmt(D.wanNeed)} (ya con IMIX, FEC, seguridad y margen).`},
   {nivel:'rojo', cuando:(D,m)=>m.fam!=='ec'&&m.fw!=null&&D.needProc>m.fw,
    texto:(D,m)=>`Proceso insuficiente: ${m.id} publica ${fmt(m.fw)} de firewall y el escenario necesita ${fmt(D.needProc)}.`},
-  {nivel:'rojo', cuando:(D,m)=>m.fam==='ec'&&$('chkHa').checked&&D.qty!==2,
-   texto:(D,m)=>`HA 1+1 exige exactamente 2 unidades identicas y la cantidad es ${D.qty}: ajusta la cantidad o desmarca HA.`},
+  // (La antigua alerta «HA exige exactamente 2 unidades y la cantidad es N» desapareció
+  // el 2026-09-15: sin campo de cantidad, las unidades se deducen de HA — 1 ó 2 — y la
+  // contradicción ya no es alcanzable.)
   // IDS/IPS no corre en EC-XS (doc oficial Orchestrator/IDS: PN 200889/200900 sin soporte;
   // en EC-V exige min. 4 vCPU y 16 GB RAM). Marcar DTD con un EC-XS seleccionado es un
   // diseno imposible — hay que subir de modelo o quitar la funcion.
@@ -1154,6 +1316,17 @@ function render(){
   // Barra agregada del underlay (etapa A): viva en cada cambio, aunque no haya
   // recomendación todavía — es el espejo de lo que el builder está declarando.
   pintarWanResumen();
+  pintarSfpChooser();
+  // SSE licencia POR USUARIO (petición del dueño, 2026-09-15): con esa estrategia, el
+  // campo de usuarios deja de ser opcional — se marca en ámbar mientras esté vacío y la
+  // línea del BOM queda «PENDIENTE» en vez de cotizar una licencia inventada.
+  {
+    const faltaUsers=secMode==='sse'&&!(parseInt($('users').value)>0);
+    const fldUsers=$('users').closest('.field');
+    if(fldUsers) fldUsers.classList.toggle('req-sse',faltaUsers);
+    const tag=$('usersReqTag');
+    if(tag) tag.hidden=!faltaUsers;
+  }
   // M5 · Widget de rendimiento + hint de ahorro por breakout + banner Microbranch: se
   // pinta siempre que haya cifras, y se oculta solo cuando no hay nada que mostrar.
   pintarWidgetPerf(D);
@@ -1555,14 +1728,26 @@ function render(){
     seleccionado:mManual?mManual.id:undefined,
     incluir:mManual||undefined,
     etiqueta:m=>`${m.id} — ${m.serie} · ${fmt(capacidadMax(m))}`,
+    // Detalle de cada fila de la lista de candidatos: segmento y capacidad ya sin el id
+    // (la fila lo pone en negrita ella misma).
+    etiquetaCand:m=>`${m.seg} · ${fmt(capacidadMax(m))}`,
     titulo:m=>m.id,
     subtitulo:m=>m.seg+' · '+famLabel(m),
     medidores:medidoresDe,
     porQue:porQueDe,
     secciones:seccionesDe,
-    alCambiar:id=>{
-      // Con el selector fuera de la ficha, esto solo puede ser «Volver al recomendado»:
-      // se suelta la eleccion manual y toda la pagina vuelve a seguir al dimensionamiento.
+    alCambiar:(id, origen)=>{
+      // Clic en la lista de candidatos de la ficha (2026-09-15): equivale a mover el
+      // selector único a mano — elección deliberada, con su marca y su aviso de desvío.
+      // El render completo reconstruye candidatos, ficha, escalera y BOM con el elegido.
+      if(origen==='candidato'){
+        if($('pickModel').value!==id) $('pickModel').value=id;
+        $('pickModel').dataset.bomManual='1';
+        render();
+        return;
+      }
+      // «Volver al recomendado»: se suelta la eleccion manual y toda la pagina vuelve a
+      // seguir al dimensionamiento.
       BOM.soltarManual('pickModel');
       if($('pickModel').value!==id) $('pickModel').value=id;
       const m=MODELS.find(x=>x.id===id);
@@ -1653,10 +1838,15 @@ function accesoriosInyectados(m,D){
     nota:'Segunda fuente de alimentación 550W AC para el Gateway 9240 (alimentación 1+1) — opción de diseño marcada en el panel 4. List Price del catálogo maestro de accesorios.'});
   return out;
 }
-function tierPrice(t,y){ if(!t) return null; const v=y===1?t.y1:y===5?t.y5:t.y3; return v==null?null:v; }
-// El SKU de una suscripción depende de la duración (1/3/5 años): desde el 2026-09-13
-// `sku` puede ser un objeto {y1,y3,y5}. Se acepta también la forma plana por compatibilidad.
-function tierSku(t,y){ if(!t||t.sku==null) return null; if(typeof t.sku==='string') return t.sku; const v=y===1?t.sku.y1:y===5?t.sku.y5:t.sku.y3; return v||null; }
+// Término genérico y1/y3/y5/y7 (2026-09-15, pendiente #28): antes y=7 caía al else de
+// y3 y cotizaba 7 años A PRECIO DE 3 — una subcotización silenciosa. Clave directa y
+// null cuando el peldaño no publica ese término (la interfaz muestra «consultar»).
+function tierPrice(t,y){ if(!t) return null; const v=t['y'+y]; return v==null?null:v; }
+// El SKU de una suscripción depende de la duración (1/3/5/7 años — y7 desde el
+// 2026-09-15, pendiente #28): `sku` puede ser un objeto {y1,y3,y5,y7}. Se acepta
+// también la forma plana por compatibilidad. Misma corrección que tierPrice: clave
+// directa, sin else que cotizara 7 años a precio de 3.
+function tierSku(t,y){ if(!t||t.sku==null) return null; if(typeof t.sku==='string') return t.sku; return t.sku['y'+y]||null; }
 
 function renderBom(){
   const m=MODELS.find(x=>x.id===$('pickModel').value)||MODELS[0];
@@ -1798,6 +1988,28 @@ function renderBom(){
     filas.push({cat:'Accesorios', desc:a?a.name:sku, sku, qty:qIny,
       unit:a&&a.listPrice!=null?a.listPrice:null, nota});
   });
+  // Ópticas SFP de los enlaces WAN (petición del dueño, 2026-09-15): una por enlace
+  // declarado con medio SFP (× unidades del sitio). La elección se hace en #sfpChooser,
+  // junto al builder; con varias compatibles y sin elección, la línea queda «PENDIENTE
+  // DE SELECCIÓN» sin precio — la declaración de líneas sin precio de siempre (nota al
+  // pie y sección propia en Excel/texto), nunca una óptica inventada.
+  const pickSfp=leerSfpPick();
+  Object.entries(necesidadesOptica(D.wanLinks)).forEach(([medio,nLinks])=>{
+    const {ops, sku}=opticaResuelta(m.id, medio, pickSfp);
+    if(!ops.length) return; // el aviso «este modelo no admite ese medio» vive en #sfpChooser
+    const qtyO=nLinks*qty;
+    if(!sku){
+      filas.push({cat:'Accesorios', desc:`Óptica ${medio} para ${nLinks} enlace${nLinks===1?'':'s'} WAN — PENDIENTE DE SELECCIÓN en el builder`, sku:null, qty:qtyO, unit:null,
+        nota:`El escenario declara ${nLinks} enlace${nLinks===1?'':'s'} con medio ${medio} y hay ${ops.length} ópticas compatibles con ${m.id}: selecciona el tipo en la sección de enlaces WAN (pestaña Dimensionar). No entra en el total hasta elegirla.`});
+      return;
+    }
+    // Misma regla anti-duplicado que los inyectados: si esa óptica ya se metió a mano
+    // en el modal, la línea del builder manda y la manual se suelta.
+    if(accesoriosElegidos[sku]) delete accesoriosElegidos[sku];
+    const a=ACCESSORY_CATALOG[sku];
+    filas.push({cat:'Accesorios', desc:a.name, sku, qty:qtyO, unit:a.listPrice!=null?a.listPrice:null,
+      nota:`Óptica ${medio} × ${qtyO} (${nLinks} enlace${nLinks===1?'':'s'}${qty>1?` × ${qty} unidades`:''}) — List Price de la lista oficial (vigencia ${a.vigencia||'s/f'}); tipo seleccionado en el builder WAN`});
+  });
   if(esEC){
     if(bundle){
       if(licHa){
@@ -1879,9 +2091,16 @@ function renderBom(){
   if(secMode==='sse'){
     const sseSku=(SSE&&SSE.sku)||'R8M36AAE';
     const ssePrecio=SSE&&SSE.precio!=null?SSE.precio:null;
-    filas.push({cat:'Seguridad SASE', desc:'HPE Aruba Networking SSE — suscripción por usuario (ZTNA, SWG, CASB, DEM)',
-      sku:sseSku, qty:Math.max(1,D.users||1), unit:ssePrecio,
-      nota:`${termino} · co-terminada con la suscripción del sitio · por usuario (${miles(Math.max(1,D.users||1))} usuarios) · paquetes Foundation ZTNA / Foundation SWG / Foundation Plus / Advanced / Advanced Plus (QuickSpecs SSE)${SSE&&SSE.nota?' · '+SSE.nota:''} · HPE no publica List Price — consultar`});
+    // Usuarios = cantidad de licencias (petición del dueño, 2026-09-15): sin la cifra la
+    // línea NO se cotiza con un «1» inventado — queda PENDIENTE y el campo #users se
+    // marca como requerido en el formulario (ver marcarUsersReq en render).
+    const nUsers=parseInt(D.users)>0?parseInt(D.users):null;
+    filas.push({cat:'Seguridad SASE', desc:'HPE Aruba Networking SSE — suscripción por usuario (ZTNA, SWG, CASB, DEM)'
+        +(nUsers?'':' — PENDIENTE: declara los usuarios del sitio'),
+      sku:sseSku, qty:nUsers, unit:ssePrecio,
+      nota:nUsers
+        ?`${termino} · co-terminada con la suscripción del sitio · por usuario (${miles(nUsers)} usuarios) · paquetes Foundation ZTNA / Foundation SWG / Foundation Plus / Advanced / Advanced Plus (QuickSpecs SSE)${SSE&&SSE.nota?' · '+SSE.nota:''} · HPE no publica List Price — consultar`
+        :`SSE se suscribe POR USUARIO (QuickSpecs SSE) y el escenario no declara usuarios: la cantidad de licencias no se puede fijar. Rellena «Usuarios / dispositivos concurrentes» en el módulo 2.`});
   }
   if(care&&!esVirtual){
     filas.push({cat:'Soporte', desc:CARE[care].n, sku:tierSku(careTier,termYrs), qty, unit:carePrice,
@@ -1894,7 +2113,12 @@ function renderBom(){
   // Cotizar hardware en fin de venta deja al cliente sin contrato de soporte vendible
   // antes de que acabe el plazo — hay que verlo, no descubrirlo en la entrega.
   const refsPagina=(BOM.refsExtra?BOM.refsExtra():[]).filter(r=>!r.v||String(r.v).toLowerCase()==='aruba');
-  const enEs=[...filas.map(f=>({sku:f.sku,desc:f.desc})), ...refsPagina.map(r=>({sku:r.sku,desc:r.d}))]
+  // BOM editable (petición del dueño, 2026-09-15): las líneas retiradas se excluyen de la
+  // tabla, del texto, del Excel, del TCO y también del aviso de fin de venta — una línea
+  // retirada no puede seguir condicionando la propuesta.
+  const omitidas=new Set(leerOmitidas());
+  const filasVivas=filas.filter(f=>!omitidas.has(BOM.claveFila(f)));
+  const enEs=[...filasVivas.map(f=>({sku:f.sku,desc:f.desc})), ...refsPagina.map(r=>({sku:r.sku,desc:r.d}))]
     .filter((x,i,l)=>x.sku&&PLC_POR_SKU[x.sku]==='ES'&&l.findIndex(y=>y.sku===x.sku)===i);
 
   // Contexto MSP del escenario (etapa A / #39, 2026-09-14): cliente y referencia
@@ -1978,12 +2202,14 @@ function renderBom(){
     ?`<p class="bom-ctx">${cliente?`<b>${esc(cliente)}</b>`:''}${cliente&&refProy?' · ':''}${refProy?`Ref. ${esc(refProy)}`:''}</p>`
     :'';
   $('bomTabla').innerHTML=cabCtx+avisoEs+BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato:!!lastPick})
-    +BOM.renderTabla(filas,{
+    +BOM.renderTabla(filasVivas,{
     aviso:'List Price de HPE (sin descuento de distribuidor) — hardware, suscripciones EdgeConnect/Boost/Central, licencias perpetuas 9240 y Foundational Care de EdgeConnect verificados el 2026-09-13 (ver aruba-lista-precios-hpe.csv y CARE_SKU en aruba.js). Lo que no tiene precio verificado figura en "consultar" a propósito.',
     dto,
+    editable:true,
   });
-  $('bomOut').value=BOM.comoTexto(filas,meta);
-  bomMeta=meta; bomFilas=filas;
+  pintarRetiradas(filas, omitidas);
+  $('bomOut').value=BOM.comoTexto(filasVivas,meta);
+  bomMeta=meta; bomFilas=filasVivas;
   // SPEC B.4: la línea SSE de la tabla lleva el id de contrato #filaSse (la tabla la
   // genera bom.js, que no pone ids — se etiqueta aquí tras el repintado).
   if(secMode==='sse'){
@@ -2008,7 +2234,7 @@ function renderBom(){
      Boost y DTD, que son los que traen las categorias del camino largo— y las tres cifras
      coincidieron en todos. */
   const OPEX_ARUBA=['Suscripción SD-WAN','Suscripción de gestión','Soporte','Aceleración','Seguridad','Seguridad SASE'];
-  const fin=BOM.tco(filas,{opex:OPEX_ARUBA, anios:termYrs});
+  const fin=BOM.tco(filasVivas,{opex:OPEX_ARUBA, anios:termYrs});
   const capexList=fin.capex, opexAnual=fin.opexAnual, tco=fin.tco;
   const hayPrecios=capexList>0||fin.opexTermino>0;
   const celdaNet=v=>dto>0?`<td><b>${BOM.money(v*(1-dto))}</b></td>`:'';
@@ -2387,7 +2613,10 @@ document.addEventListener('DOMContentLoaded', () => {
     caja.className = 'estado-barra';
     caja.style.cssText = 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px';
     anclaje.parentNode.insertBefore(caja, anclaje.nextSibling);
-    ESTADO.botonEnlace(caja);
+    // SIN ESTADO.botonEnlace aquí (2026-09-15, petición del dueño): esta página ya tiene
+    // su propio «Copiar enlace del escenario» en la barra MSP (#btnCopiarEscenario, etapa
+    // A) y tener los dos era duplicación visible. Las otras seis páginas siguen usando el
+    // botón compartido de estado.js, que para ellas es el único.
     ESTADO.avisoOrigen(caja, st);
   }
   // Perfiles multi-sede guardados en este navegador (arubaPerfilesV1): se pintan al arrancar.
@@ -2405,8 +2634,7 @@ document.addEventListener('DOMContentLoaded', () => {
   BOM.montarBotonCotizador(() => {
     const elegido = ($('pickModel') && $('pickModel').value) || (lastPick && lastPick.id) || null;
     if (!elegido) return null;
-    const cant = document.getElementById('qty');
-    return { modelo: elegido, qty: Math.max(1, parseInt(cant && cant.value, 10) || 1),
+    return { modelo: elegido, qty: unidadesSitio(),
              de: document.title.split('—')[0].trim() };
   });
 });

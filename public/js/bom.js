@@ -305,6 +305,9 @@
   }
 
   /* ══ SIMULADOR DE PRECIO NETO ══════════════════════════════════════════════════
+     Títulos de columna unificados al criterio del pie de TCO («Subtotal Lista/Neto»)
+     el 2026-09-15 — pendiente #32: antes esta tabla decía «LIST/NET» y el pie
+     «Lista/Neto»; un solo criterio en los 7 fabricantes que comparten este módulo.
      Los tramos del programa de canal NO son publicos: son niveles de trabajo del equipo de
      preventa, y la pantalla lo declara. El calculo es puro —lee un select y un numero— asi
      que no depende de ningun fabricante, y `renderTabla`/`exportarExcel` ya saben pintar las
@@ -398,6 +401,14 @@
     }));
   }
 
+  // Clave estable de una línea del BOM (petición del dueño en Aruba, 2026-09-15 —
+  // BOM editable): con SKU es 'sku:XXX'; sin SKU (líneas informativas/pendientes) es
+  // 'desc:categoría|descripción'. La página la usa para filtrar las líneas retiradas y
+  // este módulo para pintar el botón de retirar — una sola convención en los dos lados.
+  function claveFila(f) {
+    return f && f.sku ? 'sku:' + f.sku : 'desc:' + ((f && f.cat) || '') + '|' + ((f && f.desc) || '');
+  }
+
   function renderTabla(filasBase, opciones) {
     const o = opciones || {};
     // Las referencias anadidas se pegan aqui, no en la pagina, y entran ANTES de los totales:
@@ -422,8 +433,8 @@
     let html = '<div class="scroll"><table class="bom-tabla">'
       + '<thead><tr>'
       + '<th>Descripción</th><th>SKU / Código</th><th class="r">Cant.</th>'
-      + '<th class="r">Precio unit.</th><th class="r">Subtotal LIST</th>'
-      + (dto > 0 ? '<th class="r">Unit. NET</th><th class="r">Subtotal NET</th>' : '')
+      + '<th class="r">Precio unit.</th><th class="r">Subtotal Lista</th>'
+      + (dto > 0 ? '<th class="r">Unit. Neto</th><th class="r">Subtotal Neto</th>' : '')
       + '</tr></thead><tbody>';
 
     for (const g of grupos) {
@@ -450,7 +461,12 @@
             : '')
           // Lo que se anade a mano se tiene que poder quitar a mano: sin salida, anadir una
           // referencia por error obligaria a vaciar el almacenamiento del navegador.
-          + (f._ref ? ` <button type="button" class="bom-quitar" data-bom-quitar="${esc(f._ref)}" title="Quitar de la cotización">&times;</button>` : '')
+          // `o.editable` (opt-in, 2026-09-15 — Aruba): TAMBIÉN las líneas calculadas llevan
+          // su botón de retirar; no las borra el motor — la página las mueve a «Líneas
+          // retiradas» (restaurables) y las excluye de totales, Excel y texto. Sin el flag,
+          // la tabla se pinta igual que siempre (los otros seis dimensionadores no cambian).
+          + (f._ref ? ` <button type="button" class="bom-quitar" data-bom-quitar="${esc(f._ref)}" title="Quitar de la cotización">&times;</button>`
+            : (o.editable ? ` <button type="button" class="bom-quitar" data-bom-omitir="${esc(claveFila(f))}" title="Retirar de la cotización (restaurable)">&times;</button>` : ''))
           + '</td>'
           + '</tr>';
       }
@@ -534,7 +550,7 @@
     if (dtoX > 0 && m.dtoEtq) aoa.push([`Precio neto simulado: ${m.dtoEtq}`]);
     aoa.push([]);
     aoa.push(dtoX > 0
-      ? ['Categoría', 'Descripción', 'SKU / Código', 'Cantidad', 'Precio unit. LIST', 'Subtotal LIST', 'Unit. NET', 'Subtotal NET', 'Notas']
+      ? ['Categoría', 'Descripción', 'SKU / Código', 'Cantidad', 'Precio unit. Lista', 'Subtotal Lista', 'Unit. Neto', 'Subtotal Neto', 'Notas']
       : ['Categoría', 'Descripción', 'SKU / Código', 'Cantidad', 'Precio unit.', 'Subtotal', 'Notas']);
 
     for (const f of filas) {
@@ -557,7 +573,7 @@
     const faltaEquipoX = filas.some((f) => f.unit == null && /equipo|hardware|chasis/i.test(f.cat || ''));
     aoa.push([]);
     if (dtoX > 0) {
-      aoa.push(['', '', '', '', sinPrecio === 0 ? 'Total LIST de referencia' : 'Total LIST parcial', faltaEquipoX ? 'sin cotizar' : suma, sinPrecio === 0 ? 'Total NET' : 'Total NET parcial', faltaEquipoX ? 'sin cotizar' : Math.round(suma * (1 - dtoX) * 100) / 100, '']);
+      aoa.push(['', '', '', '', sinPrecio === 0 ? 'Total Lista de referencia' : 'Total Lista parcial', faltaEquipoX ? 'sin cotizar' : suma, sinPrecio === 0 ? 'Total Neto' : 'Total Neto parcial', faltaEquipoX ? 'sin cotizar' : Math.round(suma * (1 - dtoX) * 100) / 100, '']);
     } else {
       aoa.push(['', '', '', '', sinPrecio === 0 ? 'Total de referencia' : 'Total parcial', faltaEquipoX ? 'sin cotizar' : suma, '']);
     }
@@ -622,7 +638,7 @@
       if (sinPrecio > 0) L.push(`(${sinPrecio} linea(s) sin precio publicado, no incluidas)`);
       // Simulador de precio neto (fase 11, opt-in via meta.dto): total NET en paralelo.
       if (m.dto != null && m.dto > 0 && m.dto < 1) {
-        L.push(`${sinPrecio === 0 ? 'TOTAL NET SIMULADO' : 'TOTAL NET PARCIAL'}${m.dtoEtq ? ' (' + m.dtoEtq + ')' : ''}: ${money(suma * (1 - m.dto))}`);
+        L.push(`${sinPrecio === 0 ? 'TOTAL NETO SIMULADO' : 'TOTAL NETO PARCIAL'}${m.dtoEtq ? ' (' + m.dtoEtq + ')' : ''}: ${money(suma * (1 - m.dto))}`);
       }
     }
     // Las pendientes se enumeran por su nombre (2026-09-14, pendiente #29): el texto
@@ -795,7 +811,7 @@
     });
   }
 
-  global.BOM = { renderTabla, exportarExcel, comoTexto, money, esc,
+  global.BOM = { renderTabla, exportarExcel, comoTexto, money, esc, claveFila,
     enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar,
     sincronizar, soltarManual, avisoDesvio,
     agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor,
