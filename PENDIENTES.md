@@ -4,12 +4,18 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-15 (UX del dimensionador Aruba: panel «Equipos que cumplen» fijo
-con sticky mientras la columna de configuración se desplaza — tope de altura calculado
-contra la zona muerta bajo .cols para que nunca se suelte antes del fondo real; E2E
-e2e-sticky.js 4/4). Anterior (2026-09-14): plan 3 — cerrados 29/31/34/35/39 como código, 33
-queda solo con la acción manual de GitHub, 38 verificado «no comprobada» — bloqueo externo
-del fabricante; rediseño carrier-grade del input WAN underlay.
+Última revisión: 2026-09-16 (plan 4, fusionado a main: paquete A de datos — #27 variantes
+EC-S-P, #28 término de 7 años, #32 títulos Lista/Neto —; paquete B — ópticas SFP de los
+enlaces WAN en el BOM con selección del usuario y lista clicable de equipos candidatos —;
+paquete D — los 10 ajustes de UX del dimensionador pedidos por el dueño —; paquete C — la
+batería E2E promovida al repo, #40 —; y el #14 investigado: Huawei sí publica el ciclo de
+vida de sus routers NetEngine, pero el documento oficial exige cuenta del fabricante).
+Anterior (2026-09-15): UX del dimensionador Aruba — panel «Equipos que cumplen» fijo con
+sticky mientras la columna de configuración se desplaza (tope de altura contra la zona
+muerta bajo .cols; E2E e2e-sticky.js 4/4). Anterior (2026-09-14): plan 3 — cerrados
+29/31/34/35/39 como código, 33 queda solo con la acción manual de GitHub, 38 verificado
+«no comprobada» — bloqueo externo del fabricante; rediseño carrier-grade del input WAN
+underlay.
 
 ---
 
@@ -102,7 +108,7 @@ de datos— está en [`IMPORTAR-CATALOGO.md`](IMPORTAR-CATALOGO.md).
 |---|---|---|---|
 | ~~2~~ | ~~`cps` en 37 de los 58 FortiGate~~ **Resuelto (2026-09-02)**, y ampliado el 2026-09-03 de 53 a **56 de 58** leyendo las fichas por serie de 400F y 600F. Quedan 100F y 200F, cuyas fichas no están en la URL que sigue el patrón del resto (404, reportado). | — | resuelto vía Actions |
 | ~~3~~ | **~~PDFs de datasheets de Aruba~~ Resuelto (2026-09-11): 18/24, ver *Cerrado recientemente*.** Los 6 que quedaban atascados bajaron en sesión nueva con Chrome real: `ecQuickspecs`, `ecXlSpec`, `gw9000`, `gw9100`, `gw9200Qs` y `sdBranchVsg`. La cuota de `psnow/downloadDoc` efectivamente se había reseteado al día siguiente. De los 6 que faltan: 4 nunca fueron PDFs (páginas de documentación en vivo), 1 URL murió (`ecSpecSheet`, 404 genuino, hay que buscar el reemplazo) y 1 exige cuenta de soporte HPE (`gw9000Spec`). El método completo quedó documentado en `public/datasheets/LEEME.md`. | Nada pendiente salvo decidir el reemplazo de `ecSpecSheet` y conseguir una cuenta HPE para `gw9000Spec`. | — |
-| 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ` y las 23 AR no traen `mpps`. El motor no inventa: muestra lo que hay. | **El importador ya existe, y desde el 2026-09-04 también la plantilla**: `npm run huawei -- --check` inventaría los huecos y `npm run huawei -- --plantilla` escribe `huawei-specs.csv` y `huawei-eox.csv` ya con los 40 modelos y las cabeceras que el importador reconoce, así que el trabajo en la página se reduce a pegar cifras. Luego `npm run huawei -- huawei-specs.csv --dry` para el ensayo, sin `--dry` para aplicar, y `npm run huawei -- huawei-eox.csv --eol` para el fin de venta. **2026-09-10: el bloqueo de Akamai no es contra todo navegador** — con Chrome real (no Playwright/Actions) `support.huawei.com/enterprise/en/bulletins/` carga completo y sin captcha, con buscador por modelo (`AR6700` → 11 avisos con fecha real). Dos obstáculos nuevos, distintos del bloqueo anterior: el **contenido** de cada aviso exige cuenta Huawei (candado visible, no se intentó sortear), y lo que se ve en la lista son ciclos de vida de **versiones de software** (`V600R023C00`…), no de hardware — puede que ni sea la categoría correcta para lo que el catálogo modela (fin de venta del equipo físico). "PCN" (Product Change Notice) sí es a nivel de hardware pero no lista una categoría de routers en este momento. | Cuenta Huawei para leer el contenido de cada aviso (no se intentó); y aclarar primero si "Life Cycle Notices" es la categoría correcta antes de pedir esa cuenta |
+| 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ` y las 23 AR no traen `mpps`. El motor no inventa: muestra lo que hay. | **El importador ya existe, y desde el 2026-09-04 también la plantilla**: `npm run huawei -- --check` inventaría los huecos y `npm run huawei -- --plantilla` escribe `huawei-specs.csv` y `huawei-eox.csv` ya con los 40 modelos y las cabeceras que el importador reconoce, así que el trabajo en la página se reduce a pegar cifras. Luego `npm run huawei -- huawei-specs.csv --dry` para el ensayo, sin `--dry` para aplicar, y `npm run huawei -- huawei-eox.csv --eol` para el fin de venta. **2026-09-10: el bloqueo de Akamai no es contra todo navegador** — con Chrome real (no Playwright/Actions) `support.huawei.com/enterprise/en/bulletins/` carga completo y sin captcha, con buscador por modelo (`AR6700` → 11 avisos con fecha real). Dos obstáculos nuevos, distintos del bloqueo anterior: el **contenido** de cada aviso exige cuenta Huawei (candado visible, no se intentó sortear), y lo que se ve en la lista son ciclos de vida de **versiones de software** (`V600R023C00`…), no de hardware — puede que ni sea la categoría correcta para lo que el catálogo modela (fin de venta del equipo físico). "PCN" (Product Change Notice) sí es a nivel de hardware pero no lista una categoría de routers en este momento. **2026-09-16: la categoría correcta ya no es una duda.** La búsqueda web localizó el documento oficial «Huawei NetEngine AR5700&6700&8000 Series Routers Product Life Cycle» (e.huawei.com, 2023-10-20) — ciclo de vida de **hardware**, exactamente lo que el catálogo modela — y al abrirlo pide contraseña: el contenido sigue tras la cuenta Huawei, como se sospechaba. El tablón de routers «Life Cycle Notices» existe y declara 450 avisos (la página carga; el índice es dinámico). Conclusión: el bloqueo ya no es la categoría ni el buscador, es solo la cuenta. | Cuenta Huawei Enterprise para abrir el PDF «NetEngine AR5700&6700&8000 Series Routers Product Life Cycle» (e.huawei.com) y el tablón de routers — la categoría de hardware quedó confirmada el 2026-09-16, ya no hace falta aclararla |
 | 4 | **~~Comprobar el sitio en vivo tras desplegar~~ Cerrado (2026-09-04)**, ver *Cerrado recientemente*. Eran dos preguntas distintas y ahora las cubren dos workflows: `sonda-produccion.yml` confirma desde fuera de este entorno que el dominio público responde de verdad (`/salud` y `/login`, sin sesión), y **`pantallas.yml`** conduce las 15 pantallas detrás del muro en un Chromium de verdad y sube una captura de cada una. No hace falta producción para lo segundo: la base es efímera y se resiembra desde `legacyData/` en cada despliegue, así que lo que pinta una pantalla es función del commit. | Nada pendiente de ingeniería. Queda el **juicio**: mirar las capturas del artefacto y decidir si la pantalla dice lo que se le quiere decir a un cliente. | — |
 
 ## Fabricantes sin dimensionador
@@ -437,19 +443,18 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     XL/XL-H, 480 GB), pero no tiene fila en la lista — el catálogo sigue ofertando
     JZ889A (que sí está, $1.207). Si el distribuidor confirma que S0W40A sustituye a
     JZ889A, se añade con el importador y se ajusta la matriz.
-27. **Variantes de modelo detectadas por el importador — decisión de surtido del dueño
-    (2026-09-13).** El primer dry-run del importador encontró en la lista, fuera del
-    roster: **JM538A** «EC-S-P SD-WAN Gateway» ($13.479, la variante base no-NAL del
-    EC-S), **JM769A** «EC-S-P-DC» ($15.510), **JM778A** «EC-S-P-NFR» (not-for-resale,
-    PLC SA), **JM538AR** (reman, $11.457) y **JM962AR** (EC-XS reman, PLC ES). También
-    documentó que el EC-10170 (hermano del 10150 en el kit S2N67A) no está catalogado.
-    No entran solos: ampliar el surtido de modelos es decisión del dueño.
-28. **Suscripciones a 7 años: la lista las tiene, el dimensionador no (2026-09-13).** Al
-    ampliar los tiers de licencias (20M-2G) se verificó que la lista oficial trae términos
-    de 1, 3, 5 **y 7 años** para Advanced, On-Prem y Advanced HA; el dimensionador modela
-    solo 1/3/5 (co-terming incluido). Añadir el término de 7 años es un cambio acotado
-    (un nivel más en `sku` y un valor más en el selector), pero multiplica filas del BOM:
-    entra cuando el dueño lo pida.
+27. **~~Variantes de modelo detectadas por el importador — decisión de surtido~~ Resuelto
+    (2026-09-15)**, ver *Cerrado recientemente* (plan 4, paquete A). El EC-S del catálogo
+    ya era el EC-S-P, así que JM538A ($13.479, canal no-NAL) y JM769A (DC, $15.510)
+    entraron como **variantes** del modelo. Fuera a propósito: JM778A (NFR, no vendible)
+    y JM538AR (reman). El EC-10170 (hermano del 10150 en el kit S2N67A) sigue sin
+    catalogar — ampliar el roster sigue siendo decisión del dueño. Registro original: el
+    primer dry-run del importador encontró esos cinco SKU fuera del roster.
+28. **~~Suscripciones a 7 años: la lista las tiene, el dimensionador no~~ Resuelto
+    (2026-09-15 — el dueño lo pidió)**, ver *Cerrado recientemente* (plan 4, paquete A).
+    Cableado donde la lista lo publica, «consultar» donde no, nunca inventado. Registro
+    original: la lista oficial trae términos de 1, 3, 5 **y 7 años** para Advanced,
+    On-Prem y Advanced HA; el dimensionador modelaba solo 1/3/5.
 29. **~~SSE (R8M36AAE) sin List Price~~ Resuelto operativamente (2026-09-14).** El SKU sigue
     sin precio en la lista (eso no cambia: si aparece, el importador lo detecta), pero el
     ciclo ya se cierra en la herramienta: toda línea sin precio verificado queda marcada
@@ -470,10 +475,11 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     chasis — DTD» el BOM añade la línea con su SKU y precio reales (2 líneas en HA 1+1,
     patrón de las demás suscripciones). Los términos de 7 años y los SKU de evaluación a
     $0 quedan fuera con comentario (ver 28).
-32. **Títulos de columna del BOM: «LIST/NET» vs «Lista/Neto» (2026-09-13, menor).** El
-    pie del TCO usa «Subtotal Lista/Neto» pero `bom.js` titula las columnas «Subtotal
-    LIST/NET» (archivo compartido por los 7 fabricantes — no se tocó para no romper a los
-    demás). Unificar criterio cuando se aplique el patrón Aruba al resto de fabricantes.
+32. **~~Títulos de columna del BOM: «LIST/NET» vs «Lista/Neto»~~ Resuelto
+    (2026-09-15)**, ver *Cerrado recientemente* (plan 4, paquete A). `bom.js` unificado
+    al criterio del pie de TCO —«Subtotal Lista/Neto», «Unit. Neto», totales Lista/Neto—
+    en tabla, Excel y texto plano. El archivo es compartido por los 7 fabricantes, pero
+    es etiqueta y no cifra, así que era seguro tocarlo.
 39. **~~El brief carrier-grade llegó truncado~~ Cerrado por ejecución de arquitecto
     (2026-09-14).** El dueño autorizó avanzar sin las secciones 2-4; se diseñaron e
     implementaron con criterio propio: (Frontend) rediseño carrier-grade del builder de
@@ -483,6 +489,13 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     y enlace compartible del escenario (con el bug de round-trip de secMode corregido);
     (Componentes) todo con los IDs de contrato intactos. Si el brief original reaparece,
     lo que llegue se cruza con lo construido.
+40. **~~La batería E2E vivía en /tmp y moría con la sesión~~ Resuelto (2026-09-15)**,
+    ver *Cerrado recientemente* (plan 4, paquete C). `npm run e2e` corre cinco guiones
+    (regresión, sticky, ópticas SFP, candidatos, UX — 51 comprobaciones) contra un
+    servidor propio con base SQLite desechable. Fuera de `verificar` a propósito
+    (exige Chromium); el workflow de CI que la correría en cada push se entrega en
+    parche (`e2e-ci.patch`) porque el token en uso no tiene scope «workflow» —
+    aplicarlo es acción manual del dueño, junto a la de 33.
 
 33. **Railway no espera a `pantallas`, solo a `verificar` (2026-09-13).** *Actualizado el
     2026-09-14: hay un segundo agujero, de otra clase, y ya está cerrado — un push de bot no
@@ -584,6 +597,57 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Plan 4: datos 7 años, ópticas SFP en el BOM, candidatos clicables, UX del dimensionador y la batería E2E en el repo (2026-09-15/16)
+
+Dos instrucciones del dueño, ejecutadas con la regla de siempre (fuente oficial > brief;
+donde falta el dato, «consultar» — nunca inventado). Paquetes A-D integrados en
+`feature/plan4` y fusionados a main.
+
+**Paquete A — datos (pendientes 27/28/32).** Término de 7 años cableado donde la lista
+oficial lo publica y `null` («consultar») donde no: Advanced SaaS 20M→2G (UL no existe en
+la lista), On-Premises solo 1G/2G, Foundation 1G/UL, la escalera HA completa, Boost
+(100M/10G) y DTD On-Prem. CARE no se extiende: la lista no trae «7Y FC». La medición cazó
+un bug real: `tierPrice`/`tierSku` caían al *else* de 3 años — 7 años se habría cotizado a
+precio de 3. JM538A y JM769A entran como variantes del EC-S (que ya era el EC-S-P);
+JM778A (NFR) y JM538AR (reman) fuera a propósito. Títulos del BOM unificados a
+«Lista/Neto» en tabla, Excel y texto plano (`bom.js`, compartido: es etiqueta, no cifra).
+
+**Paquete B — el usuario decide la óptica y el equipo.** (1) Cada enlace WAN con medio
+SFP 1G/SFP+ 10G añade su óptica al BOM (una por enlace × unidades del sitio, HA 1+1 = 2):
+candidatas = compatibilidad oficial del modelo ∩ lista de precios, a la velocidad del
+medio, sin DAC/TAA/PLC-ES. Cero opciones → aviso; una → automática; varias → **mensaje
+para que el usuario elija, sin valor por defecto**, con la línea «PENDIENTE DE SELECCIÓN»
+hasta que elija. La elección viaja en el enlace compartido (`#sfpPickData`). (2) La ficha
+muestra «Equipos que cumplen · N» con la lista clicable de **todos** los candidatos que
+pasan el filtro — no solo el recomendado — como opt-in de `ficha.js`; las otras páginas
+no cambian.
+
+**Paquete D — los 10 ajustes de UX pedidos (2026-09-15).** Botón «copiar enlace»
+duplicado retirado (queda uno); «Limpiar escenario» con confirmación (URL a pelo +
+recarga); el destino de tráfico declara su cálculo (×1,00 híbrido / ×1,05 cloud-first);
+el perfil de datos de Boost se **queda** — decisión de arquitecto: alimenta el widget de
+rendimiento, el dimensionado de reserva sin enlaces y la justificación de la ficha — y su
+ayuda declara dónde actúa y dónde NO (ni el modelo del appliance ni el tier de la
+suscripción, doctrina oficial); usuarios/dispositivos declara sus tres influencias y con
+estrategia SSE se convierte en la **cantidad de licencias** (vacío → línea PENDIENTE y
+campo marcado, nunca un «1» inventado); AIOps queda declarado como capacidad del nivel
+Advanced — ya forzaba Advanced en EdgeConnect y Central, no es SKU aparte —; el campo
+«cantidad (unidades)» se retira: las unidades se deducen de HA (1 o 2); el tier de caudal
+declara que **tarifa y no dimensiona**, con la opción «Automático» mostrando en vivo el
+tier deducido del Σ WAN del módulo 2; «Añadir a la lista de materiales» se mueve al final
+de la pestaña; y la lista de materiales sube al principio y es **editable**: toda línea
+(computada o manual) se puede retirar (✕) a una sección restaurable, las omisiones viajan
+en el enlace (`#bomOmitidas`) y se excluyen de totales, texto, Excel y TCO.
+
+**Paquete C — la batería E2E promovida al repo (#40).** `test/e2e/` con runner propio:
+`npm run e2e` levanta un servidor desechable (puerto 4131, SQLite en /tmp) y corre los
+cinco guiones en serie. Fuera de `verificar` a propósito (exige Chromium instalado) — el
+workflow de CI se entrega en parche (`e2e-ci.patch`) por la falta de scope «workflow»
+del token; aplicarlo es acción manual del dueño.
+
+Verificación: 335/335 pruebas y eslint limpio (`npm run verificar`), 5/5 guiones E2E en
+verde (51 comprobaciones). Fusionado a main (`769bf2c`); Railway despliega solo.
 
 ### Plan 3: underlay WAN carrier-grade, DTD cotizado, «pendiente de cotización», Nokia visible y enlace de escenario (2026-09-14)
 
