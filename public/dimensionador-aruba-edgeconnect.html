@@ -247,6 +247,15 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
 /* Barra agregada viva bajo el builder (etapa A): Σ de caudales, desglose por familia,
    puertos WAN ocupados y semáforo de densidad contra el modelo seleccionado. */
 .wan-resumen{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;border:1px solid var(--rule);border-left:3px solid var(--ink);background:var(--card);border-radius:2px;padding:9px 12px;margin-top:12px;font-size:12.5px;line-height:1.5}
+/* Selector de óptica SFP por medio (SPEC B.1, 2026-09-15): mismo lenguaje visual que la
+   barra agregada (#wanResumen) — borde de acento a la izquierda, filas por medio. */
+.sfp-chooser{border:1px solid var(--rule);border-left:3px solid var(--ink);background:var(--card);border-radius:2px;padding:9px 12px;margin-top:8px;font-size:12.5px;line-height:1.5}
+.sfp-fila{padding:7px 0;border-top:1px dashed var(--rule)}
+.sfp-fila:first-of-type{border-top:0;padding-top:0}
+.sfp-fila-top{font-family:'IBM Plex Mono',monospace;font-size:12px;margin-bottom:5px}
+.sfp-fila select{width:100%;max-width:560px;margin-top:2px}
+.sfp-auto{font-size:12px}
+.sfp-auto code{font-family:'IBM Plex Mono',monospace;font-weight:600}
 .wan-resumen b{font-family:'IBM Plex Mono',monospace;font-size:12px}
 .wan-res-sep{color:var(--rule)}
 .wan-sem{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600}
@@ -379,7 +388,15 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
       <!-- Barra agregada viva (etapa A, 2026-09-14): Σ de caudales, desglose por familia,
            puertos WAN ocupados y semáforo de densidad contra el modelo seleccionado. -->
       <div id="wanResumen" class="wan-resumen" aria-live="polite" hidden></div>
+      <!-- Selector de óptica SFP por medio (SPEC B.1, 2026-09-15): con enlaces cuyo medio
+           es SFP 1G / SFP+ 10G, el BOM necesita la óptica. Si el catálogo ofrece varias
+           compatibles con el modelo, la elección (alcance/medio) es del usuario: aquí se
+           muestra el mensaje y el select SIN opción por defecto. Con una sola opción se
+           auto-selecciona y se declara; con ninguna, aviso. La elección viaja en
+           #sfpPickData (JSON {medio:sku}) dentro del estado del escenario. -->
+      <div id="sfpChooser" class="sfp-chooser" aria-live="polite" hidden></div>
       <input type="hidden" id="wanLinksData">
+      <input type="hidden" id="sfpPickData">
       <p class="hint">Cada enlace declara su transporte, el <b>medio del puerto</b> (RJ-45 u óptica SFP — alimenta la auditoría de puertos del chasis) y su caudal. La suscripción EdgeConnect se licencia por el <b>caudal WAN agregado del sitio</b> (MPLS + Internet — VSG oficial) y el appliance se dimensiona por ese agregado. Sin enlaces declarados, el tier se deriva del tráfico estimado (usuarios × Mbps/usuario).</p>
     </div>
     <div id="bannerMicrobranch" class="banner-micro" hidden>
@@ -494,6 +511,10 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
         <option value="1">1 año</option>
         <option value="3" selected>3 años</option>
         <option value="5">5 años</option>
+        <!-- 7 años (pendiente #28, 2026-09-15): la lista vigente sí publica términos de
+             7 años en varias escaleras; donde no los publica, la línea sale «a consultar»
+             (PENDIENTE DE COTIZACIÓN) en vez de heredar el precio de otro término. -->
+        <option value="7">7 años</option>
       </select>
     </div>
     <div class="field" id="fldSub">

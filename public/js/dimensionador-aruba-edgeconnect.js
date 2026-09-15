@@ -49,7 +49,10 @@ const $=id=>document.getElementById(id);
 const CAMPOS_ESCENARIO=['wanLinksData','users','aps','perUser','head','fecMode','selTrafico','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','famSeg','segSeg','destSeg','pickModel','personaSeg','selSeguridad','selTier','chkBreakout','selDescuento','dtoCustom',
   // Contexto MSP del escenario (etapa A / #39, 2026-09-14): viajan en la URL y en los
   // perfiles multi-sede como un campo más, y encabezan la lista de materiales y el Excel.
-  'nombreCliente','refProyecto'];
+  'nombreCliente','refProyecto',
+  // Ópticas elegidas en #sfpChooser (2026-09-15): JSON {medio: sku} en el oculto
+  // #sfpPickData — viaja en la URL y en los perfiles como un campo más.
+  'sfpPickData'];
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let famMode='any', segMode='branch', destMode='hibrido', lastPick=null;
 // Arquetipo de sede y estrategia de seguridad como variables de estado del dimensionador
@@ -366,6 +369,76 @@ let ACCESSORY_CATALOG={}, ACCESSORY_COMPAT={};
 // Selección viva del modal: sku → cantidad. Se depura al cambiar de modelo para no
 // cotizar una óptica incompatible con el equipo elegido.
 let accesoriosElegidos={};
+/* ══ ÓPTICAS SFP DE LOS ENLACES WAN (petición directa del dueño, 2026-09-15) ══
+   Cada enlace declarado con medio «SFP 1G» o «SFP+ 10G» necesita UNA óptica en el
+   extremo local (× unidades del sitio — en HA 1+1 son dos appliances). Reglas:
+   · Candidatas = ACCESSORY_COMPAT[modelo].items ∩ catálogo maestro con la velocidad
+     del medio, EXCLUYENDO: DAC (interconexión corta de sala, no underlay WAN), TAA
+     (se ofertan desde el toggle de Cumplimiento Especial de la pestaña BOM, no aquí)
+     y PLC «ES» (fin de venta nunca se oferta).
+   · 0 candidatas → aviso (el modelo no admite ese medio). 1 → auto-seleccionada.
+   · >1 → mensaje + select SIN opción por defecto: es el usuario quien elige el tipo
+     (alcance y medio) — cotizar una óptica por él sería apostar el pedido.
+   · La elección viaja en el escenario compartible (#sfpPickData, JSON {medio: sku}),
+     un campo oculto más como #wanLinksData, y el BOM la cotiza (o declara la
+     «PENDIENTE DE SELECCIÓN» sin precio — jamás una óptica inventada).
+   · RJ45 no necesita óptica: el puerto cobre es nativo. */
+const MEDIOS_OPTICA={'SFP 1G':'1G','SFP+ 10G':'10G'};
+function opticasPara(modeloId, medio){
+  const speed=MEDIOS_OPTICA[medio]; if(!speed||!modeloId) return [];
+  const cfg=ACCESSORY_COMPAT[modeloId]; if(!cfg) return [];
+  return cfg.items.map(sku=>({sku, a:ACCESSORY_CATALOG[sku]}))
+    .filter(x=>x.a&&x.a.speed===speed&&x.a.media!=='DAC'&&!/_TAA$/.test(x.a.media||'')&&x.a.plc!=='ES');
+}
+// Enlaces activos (con caudal) que necesitan óptica, agrupados por medio: {medio: n}.
+function necesidadesOptica(links){
+  const n={};
+  (links||[]).filter(l=>l.down>0||l.up>0).forEach(l=>{ if(MEDIOS_OPTICA[l.medio]) n[l.medio]=(n[l.medio]||0)+1; });
+  return n;
+}
+function unidadesSitio(){ return Math.max(1,parseInt($('qty')&&$('qty').value)||1); }
+function leerSfpPick(){ try{ return JSON.parse(($('sfpPickData')||{}).value||'{}')||{}; }catch(e){ return {}; } }
+function escribirSfpPick(p){ if($('sfpPickData')) $('sfpPickData').value=JSON.stringify(p); }
+// Óptica resuelta para un medio: la elegida si sigue siendo compatible; la única si no
+// hay alternativa; null si hay varias y el usuario aún no elige.
+function opticaResuelta(modeloId, medio, pick){
+  const ops=opticasPara(modeloId, medio);
+  if(!ops.length) return {ops, sku:null};
+  if(pick[medio]&&ops.some(o=>o.sku===pick[medio])) return {ops, sku:pick[medio]};
+  if(ops.length===1) return {ops, sku:ops[0].sku};
+  return {ops, sku:null};
+}
+function pintarSfpChooser(){
+  const box=$('sfpChooser'); if(!box) return;
+  const nec=necesidadesOptica(leerWanLinks());
+  const medios=Object.keys(nec);
+  const m=typeof modeloActual==='function'&&MODELS.length?modeloActual():null;
+  if(!medios.length||!m){ box.hidden=true; box.innerHTML=''; return; }
+  const pick=leerSfpPick();
+  const und=unidadesSitio();
+  let dirty=false;
+  const filas=medios.map(medio=>{
+    const ops=opticasPara(m.id, medio);
+    const qty=nec[medio]*und;
+    if(!ops.length)
+      return `<div class="sfp-fila"><span class="warn">El modelo elegido (${esc(m.id)}) no admite ópticas ${esc(medio)} — revisa el medio declarado o el modelo.</span></div>`;
+    // La elección guardada deja de valer si el modelo nuevo no la admite.
+    if(pick[medio]&&!ops.some(o=>o.sku===pick[medio])){ delete pick[medio]; dirty=true; }
+    if(ops.length===1&&pick[medio]!==ops[0].sku){ pick[medio]=ops[0].sku; dirty=true; }
+    const sel=ops.length===1
+      ?`<span class="sfp-auto"><code>${ops[0].sku}</code> — ${esc(accEtiquetas(ops[0].a))} · única compatible</span>`
+      :`<select data-sfp-medio="${esc(medio)}" aria-label="Óptica para los enlaces ${esc(medio)}">`
+        +`<option value="">— Selecciona la óptica…</option>`
+        +ops.map(o=>`<option value="${o.sku}"${pick[medio]===o.sku?' selected':''}>${o.sku} — ${esc(accEtiquetas(o.a))} · ${o.a.listPrice!=null?'$'+o.a.listPrice.toLocaleString('en-US'):'consultar'}</option>`).join('')
+        +`</select>`;
+    const aviso=ops.length>1?`<p class="hint" style="margin:0 0 6px">Hay ${ops.length} ópticas ${esc(medio)} compatibles con ${esc(m.id)} — selecciona el tipo que requiere el enlace (alcance y medio).</p>`:'';
+    return `<div class="sfp-fila"><div class="sfp-fila-top"><b>${esc(medio)}</b> × ${qty} — ${nec[medio]} enlace${nec[medio]===1?'':'s'}${und>1?` × ${und} unidades`:''}</div>${aviso}${sel}</div>`;
+  });
+  if(dirty) escribirSfpPick(pick);
+  box.innerHTML=`<p class="mono-lbl" style="margin:0 0 8px">Ópticas de los enlaces WAN</p>`+filas.join('');
+  box.hidden=false;
+}
+
 function modeloActual(){ return MODELS.find(x=>x.id===$('pickModel').value)||null; }
 // Etiquetas técnicas del accesorio: velocidad · medio · alcance, o su categoría
 // funcional (módulo, SSD, 2ª PSU, rack, consola). TAA se destaca porque condiciona la
@@ -670,6 +743,20 @@ $('chkHa').addEventListener('change',()=>{
 // escalera y BOM, no solo la lista. La marca de eleccion manual se fija ANTES de render,
 // porque render podria reponer el recomendado si la tomara por heredada.
 $('pickModel').addEventListener('change',()=>{ $('pickModel').dataset.bomManual='1'; render(); });
+
+// Selector de óptica SFP por medio (SPEC B.1, 2026-09-15): cuando hay varias ópticas
+// compatibles con el modelo, la elección es del USUARIO (alcance/medio del enlace — el
+// dimensionador no puede inferirlo). La elección viaja en #sfpPickData (JSON {medio:sku},
+// dentro de CAMPOS_ESCENARIO, así que sobrevive a la URL compartida) y al cambiarla solo
+// hace falta repintar el BOM: ficha y resumen no dependen de la óptica elegida.
+$('sfpChooser').addEventListener('change',e=>{
+  const medio=e.target.dataset&&e.target.dataset.sfpMedio;
+  if(!medio) return;
+  const pick=leerSfpPick();
+  if(e.target.value) pick[medio]=e.target.value; else delete pick[medio];
+  escribirSfpPick(pick);
+  renderBom();
+});
 
 function fmt(m){
   if(m==null) return '—';
@@ -1154,6 +1241,7 @@ function render(){
   // Barra agregada del underlay (etapa A): viva en cada cambio, aunque no haya
   // recomendación todavía — es el espejo de lo que el builder está declarando.
   pintarWanResumen();
+  pintarSfpChooser();
   // M5 · Widget de rendimiento + hint de ahorro por breakout + banner Microbranch: se
   // pinta siempre que haya cifras, y se oculta solo cuando no hay nada que mostrar.
   pintarWidgetPerf(D);
@@ -1802,6 +1890,28 @@ function renderBom(){
     const a=ACCESSORY_CATALOG[sku]||null;
     filas.push({cat:'Accesorios', desc:a?a.name:sku, sku, qty:qIny,
       unit:a&&a.listPrice!=null?a.listPrice:null, nota});
+  });
+  // Ópticas SFP de los enlaces WAN (petición del dueño, 2026-09-15): una por enlace
+  // declarado con medio SFP (× unidades del sitio). La elección se hace en #sfpChooser,
+  // junto al builder; con varias compatibles y sin elección, la línea queda «PENDIENTE
+  // DE SELECCIÓN» sin precio — la declaración de líneas sin precio de siempre (nota al
+  // pie y sección propia en Excel/texto), nunca una óptica inventada.
+  const pickSfp=leerSfpPick();
+  Object.entries(necesidadesOptica(D.wanLinks)).forEach(([medio,nLinks])=>{
+    const {ops, sku}=opticaResuelta(m.id, medio, pickSfp);
+    if(!ops.length) return; // el aviso «este modelo no admite ese medio» vive en #sfpChooser
+    const qtyO=nLinks*qty;
+    if(!sku){
+      filas.push({cat:'Accesorios', desc:`Óptica ${medio} para ${nLinks} enlace${nLinks===1?'':'s'} WAN — PENDIENTE DE SELECCIÓN en el builder`, sku:null, qty:qtyO, unit:null,
+        nota:`El escenario declara ${nLinks} enlace${nLinks===1?'':'s'} con medio ${medio} y hay ${ops.length} ópticas compatibles con ${m.id}: selecciona el tipo en la sección de enlaces WAN (pestaña Dimensionar). No entra en el total hasta elegirla.`});
+      return;
+    }
+    // Misma regla anti-duplicado que los inyectados: si esa óptica ya se metió a mano
+    // en el modal, la línea del builder manda y la manual se suelta.
+    if(accesoriosElegidos[sku]) delete accesoriosElegidos[sku];
+    const a=ACCESSORY_CATALOG[sku];
+    filas.push({cat:'Accesorios', desc:a.name, sku, qty:qtyO, unit:a.listPrice!=null?a.listPrice:null,
+      nota:`Óptica ${medio} × ${qtyO} (${nLinks} enlace${nLinks===1?'':'s'}${qty>1?` × ${qty} unidades`:''}) — List Price de la lista oficial (vigencia ${a.vigencia||'s/f'}); tipo seleccionado en el builder WAN`});
   });
   if(esEC){
     if(bundle){
