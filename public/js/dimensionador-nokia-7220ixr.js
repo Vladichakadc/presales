@@ -27,8 +27,33 @@
 
 (function () {
   const $ = (id) => document.getElementById(id);
+  const esc = (s) => (window.BOM ? BOM.esc(s) : String(s == null ? '' : s));
 
   let CATALOGO = { models: [] };
+
+  // ── Auditoría de puertos, visible (pendiente 35) ───────────────────────────
+  // `legacyData/nokia.js` modela los puertos como grupos {cantidad, veloc, uso} y esa
+  // auditoría —la más rica de los ocho fabricantes— no salía en ninguna pantalla. El
+  // rótulo del uso va literal: 'gestion' queda FUERA de la escala de fabric (el motor no
+  // lo cuenta) y 'ambos' no es un uso sino la ausencia de uno fijo — decirlo es el dato.
+  const ROTULO_USO = {
+    acceso: 'acceso',
+    fabric: 'fabric',
+    gestion: 'gestión (fuera de la escala de fabric)',
+    ambos: 'acceso o fabric, según el rol',
+  };
+
+  // Lista los grupos de puertos del modelo con su uso. Si el modelo no trae el dato, lo
+  // declara en vez de deducir una densidad: el tercer estado honesto, la misma regla que
+  // el semáforo de ciclo de vida. Hoy ningún 7220 IXR cae en esa rama; existe para el
+  // modelo futuro que entre sin `puertos`.
+  function puertosHtml(modelo) {
+    const grupos = ((modelo && modelo.puertos) || []).filter((p) => p && p.cantidad > 0 && p.veloc > 0);
+    if (!grupos.length) {
+      return '<li><span>el catálogo no trae la densidad de este chasis</span></li>';
+    }
+    return grupos.map((p) => `<li><span>${p.cantidad} × ${p.veloc} GbE</span><b>${esc(ROTULO_USO[p.uso] || p.uso)}</b></li>`).join('');
+  }
 
   // ── Motor puro ──────────────────────────────────────────────────────────────
   function puertosDe(modelo, veloc, usos) {
@@ -162,6 +187,8 @@
           <li><span>Acceso usado por leaf</span><b>${r.accesoPorLeaf} × ${r.accesoVel} GbE</b></li>
           <li><span>Uplinks por leaf</span><b>${r.uplinksPorLeaf} × ${r.velocUplink} GbE</b></li>
         </ul>
+        <h3 class="bloque">Configuración de puertos</h3>
+        <ul>${puertosHtml(r.leaf)}</ul>
       </div>
       <div class="rolCard">
         <h3>Spine</h3>
@@ -171,6 +198,8 @@
           <li><span>Puertos hacia leafs, por spine</span><b>${r.numLeafs} × ${r.velocUplink} GbE</b></li>
           <li><span>Puertos disponibles en el modelo</span><b>${r.puertosPorSpine} × ${r.velocUplink} GbE</b></li>
         </ul>
+        <h3 class="bloque">Configuración de puertos</h3>
+        <ul>${puertosHtml(r.spine)}</ul>
       </div>`;
 
     const avisos = [];
@@ -252,6 +281,18 @@
     render();
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
-  else iniciar();
+  // Se expone la pieza pura —no el render entero— para que la regla que importa se pueda
+  // probar sin navegador: los grupos salen con su uso y un modelo sin dato declara el
+  // tercer estado en vez de inventar una densidad.
+  window.NOKIA_7220 = { puertosHtml };
+
+  // Solo arranca sobre su propia pagina, el mismo patron que el dimensionador 7750 SR: sin
+  // esta guarda, cargar el fichero en las pruebas lanzaba un fetch y un addEventListener
+  // sobre null que reventaban de forma asincrona, despues del test.
+  const suPagina = () => !!document.getElementById('servers');
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => { if (suPagina()) iniciar(); });
+  } else if (suPagina()) {
+    iniciar();
+  }
 })();

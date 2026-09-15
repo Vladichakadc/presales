@@ -187,6 +187,44 @@
     return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">${li.join('')}</ul>`;
   }
 
+  // La auditoría de puertos del catálogo, visible en la ficha (pendiente 35). Tres casos y
+  // ninguno deducido:
+  //   - Con `configs`: cada configuración es UNA forma de pedir el equipo. Con más de una
+  //     se enumeran con «o» y se dice «alternativas, no acumulables» — sumarlas prometería
+  //     48 interfaces donde hay 36.
+  //   - Chasis modular (`slots`): se muestra la `notaPuertos` LITERAL y los slots que el
+  //     catálogo sí publica. No se afirma densidad: depende de las tarjetas/IOM que se
+  //     pidan, y este catálogo no tiene el catálogo de tarjetas.
+  //   - Sin ninguno de los dos: «el catálogo no trae la densidad de este chasis» — el
+  //     tercer estado honesto, la misma regla que el semáforo de ciclo de vida. Hoy ningún
+  //     modelo cae aquí (el test de nokia-agregacion lo impide: configs o notaPuertos),
+  //     pero la rama queda para el modelo futuro que entre sin el dato.
+  function seccionPuertos(m) {
+    if (m.configs && m.configs.length) {
+      const varias = m.configs.length > 1;
+      return {
+        titulo: 'Configuración de puertos',
+        // La clave la escapa seccionHtml; el valor es HTML de la página (solo números).
+        filas: m.configs.map((c, i) => [
+          varias ? `Opción ${i + 1} de ${m.configs.length} · «${c.n}»` : `«${c.n}»`,
+          c.puertos.map((p) => `${p.cantidad} × ${p.veloc}GE`).join(' + '),
+        ]),
+        nota: varias
+          ? `Son <b>alternativas, no acumulables</b>: el equipo se pide en una de ellas —${m.configs.map((c) => `«${esc(c.n)}»`).join(' <b>o</b> ')}— y nunca en varias a la vez.`
+          : null,
+      };
+    }
+    const filas = [];
+    if (m.slots) {
+      filas.push(['Slots', `${m.slots.cantidad} × ${esc(m.slots.tipo)}, interfaces de hasta ${m.slots.hasta}GE`]);
+    }
+    return {
+      titulo: 'Configuración de puertos',
+      filas,
+      nota: `<span class="warn">${esc(m.notaPuertos || 'el catálogo no trae la densidad de este chasis')}</span>`,
+    };
+  }
+
   function seccionesDe(m) {
     const filas = [
       ['Familia', esc((CATALOGO.plataformas[m.plat] || {}).n || m.ser)],
@@ -199,14 +237,7 @@
     ];
     const secciones = [{ titulo: 'Características', filas }];
 
-    secciones.push({
-      titulo: 'Densidad de puertos',
-      filas: m.configs
-        ? m.configs.map((c) => [`Configuración «${esc(c.n)}»`,
-          c.puertos.map((p) => `${p.cantidad} × ${p.veloc}GE`).join(' + ')])
-        : [['Densidad publicada', `<span class="warn">${esc(m.notaPuertos || 'el catálogo no la publica')}</span>`, true]]
-          .concat(m.slots ? [['Slots', `${m.slots.cantidad} × ${esc(m.slots.tipo)}, interfaces de hasta ${m.slots.hasta}GE`]] : []),
-    });
+    secciones.push(seccionPuertos(m));
 
     // La sección de alimentación aparece igual que en las otras páginas, aunque hoy salga
     // entera sin dato: la pregunta merece hacerse, y ficha.js la declara sin rodeos en vez
@@ -325,7 +356,7 @@
   // Se expone el motor -no el render- para que las reglas que de verdad importan se puedan
   // probar sin navegador: que las configuraciones de puertos son alternativas y no se suman,
   // y que un chasis modular se aparta con su motivo en vez de descartarse.
-  window.NOKIA_SR = { configQueCumple, sinDensidad, evaluar };
+  window.NOKIA_SR = { configQueCumple, sinDensidad, evaluar, seccionPuertos };
 
   // Solo arranca sobre su propia pagina. Sin esta guarda, cargar el fichero en cualquier otro
   // sitio -las pruebas lo hacen, para poder ejercitar el motor sin navegador- lanzaba un fetch
