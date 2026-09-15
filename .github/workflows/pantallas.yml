@@ -17,19 +17,11 @@ name: pantallas
 #
 # ESTE CHECK NO FRENA EL DESPLIEGUE, aunque esta cabecera lo afirmo hasta el 2026-09-13.
 # Medido ese dia: el commit 7fe786e desplego en Railway con estado SUCCESS teniendo este job en
-# rojo desde hacia cuatro dias -- Railway espera a `verificar` y no a este. Lo que SI hace este
-# check hoy: dejar la corrida en rojo en el push o en el PR, para que una persona la vea; lo que
-# NO hace: impedir que una pantalla rota llegue a produccion. Se deja escrito porque una
-# cabecera que promete una proteccion inexistente es peor que no prometer nada: haria leer un
-# rojo de aqui como «ya esta contenido, no llega a produccion», y si llega.
-#
-# QUE FALTA PARA QUE FRENE DE VERDAD: convertir `pantallas` en required check de la rama `main`.
-# Es un ajuste MANUAL de GitHub (Settings > Branches), no de este archivo, y sigue pendiente del
-# duenyo como punto 33 de PENDIENTES.md. Ni siquiera eso cerraria el segundo agujero medido el
-# 2026-09-14: un push hecho con el GITHUB_TOKEN por defecto (un bot) no crea NINGUN check, asi
-# que Railway no espera a nada y no hay check que fallar -- ese agujero se cerro haciendo que el
-# vigia abra PR en vez de empujar a `main`, para que el camino a produccion pase por una
-# persona. Los dos agujeros, con las mediciones, estan en CLAUDE.md, seccion Deploying.
+# rojo desde hacia cuatro dias -- Railway espera a `verificar` y no a este. Se deja escrito
+# porque una cabecera que promete una proteccion inexistente es peor que no prometer nada: haria
+# leer un rojo de aqui como «ya esta contenido, no llega a produccion», y si llega. Convertirlo
+# en required check de `main` es un ajuste de GitHub, no de este archivo, y esta abierto como
+# punto 33 de PENDIENTES.md.
 
 on:
   push:
