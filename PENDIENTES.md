@@ -4,9 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-14 (cerrados el 36 y el 37: el Product Matrix es edición nueva sin
-cifras nuevas, y el campo `estable` estaba mal en los dos sentidos posibles). Además, el
-2026-09-13: motor de ingeniería carrier-grade — brief sección 1.
+Última revisión: 2026-09-14 (plan 3: cerrados 29/31/34/35/39 como código, 33 queda solo con
+la acción manual de GitHub, 38 verificado «no comprobada» — bloqueo externo del fabricante;
+rediseño carrier-grade del input WAN underlay). Anterior: cerrados 36 y 37.
 
 ---
 
@@ -447,10 +447,11 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     solo 1/3/5 (co-terming incluido). Añadir el término de 7 años es un cambio acotado
     (un nivel más en `sku` y un valor más en el selector), pero multiplica filas del BOM:
     entra cuando el dueño lo pida.
-29. **SSE (R8M36AAE) sin List Price — seguir «consultar» (2026-09-13).** La línea SSE ya
-    se inyecta por usuario y co-terminada, pero con precio `null` porque el SKU no figura
-    en la lista del distribuidor. Si HPE publica precio o el distribuidor lo añade a la
-    lista, el importador lo detectará como candidato y entra por gobierno.
+29. **~~SSE (R8M36AAE) sin List Price~~ Resuelto operativamente (2026-09-14).** El SKU sigue
+    sin precio en la lista (eso no cambia: si aparece, el importador lo detecta), pero el
+    ciclo ya se cierra en la herramienta: toda línea sin precio verificado queda marcada
+    «PENDIENTE DE COTIZACIÓN» en el BOM, enumerada en la nota al pie y en sección propia
+    del Excel y del texto plano — lo que se entrega al distribuidor ya no admite olvido.
 30. **~~Fórmula IMIX del widget: coeficientes del brief, no oficiales~~ Resuelto
     (2026-09-13).** El dueño envió el brief carrier-grade con la función determinista
     `calcularRequerimientosIngenieria` («reemplazar cualquier comparación directa»): hay
@@ -459,21 +460,26 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     anchors oficiales previos (FEC 10/25 % VSG, SLA de enlace 75 %) quedan referenciados
     en comentarios; el slider de margen conserva el default 30 % por el ancla SLA 75 %
     (el 20 % del brief es el mínimo documentado). Ver *Cerrado recientemente*.
-31. **DTD no fuerza Advanced — conflicto brief vs QuickSpecs (2026-09-13).** El brief
-    pedía forzar Advanced con Dynamic Threat Defense; el QuickSpecs (p.32) lo define como
-    licencia opcional independiente del tier. Mandó la fuente oficial: DTD se ofrece como
-    estrategia de seguridad aparte y no cambia el nivel. Si el dueño tiene evidencia
-    comercial de lo contrario, se revisa.
+31. **~~DTD: licencia aparte y ahora TAMBIÉN cotizada~~ Resuelto (2026-09-14).** Se mantiene
+    la regla oficial (QuickSpecs p.32: DTD no fuerza Advanced). Y al cruzarlo con la lista
+    resultó que DTD SÍ tiene escalera de SKU con precio (plano por appliance, SaaS/On-Prem
+    × estándar/HA × 1/3/5 años — $372/$1.116/$1.860, PLC GA): con la estrategia «En el
+    chasis — DTD» el BOM añade la línea con su SKU y precio reales (2 líneas en HA 1+1,
+    patrón de las demás suscripciones). Los términos de 7 años y los SKU de evaluación a
+    $0 quedan fuera con comentario (ver 28).
 32. **Títulos de columna del BOM: «LIST/NET» vs «Lista/Neto» (2026-09-13, menor).** El
     pie del TCO usa «Subtotal Lista/Neto» pero `bom.js` titula las columnas «Subtotal
     LIST/NET» (archivo compartido por los 7 fabricantes — no se tocó para no romper a los
     demás). Unificar criterio cuando se aplique el patrón Aruba al resto de fabricantes.
-39. **El brief carrier-grade llegó truncado: faltan las secciones 2-4 (2026-09-13).** El
-    documento anunciaba cuatro capas (Backend, Frontend, Lógica de Negocio de Service
-    Provider y Componentes de Interfaz) pero solo contenía la sección 1 (Backend, 1.1 y
-    1.2) — el archivo se corta al terminar la función. La sección 1 se ejecutó íntegra;
-    las secciones 2-4 NO se inventaron. Si el dueño reenvía el brief completo, se
-    ejecutan esas tres capas.
+39. **~~El brief carrier-grade llegó truncado~~ Cerrado por ejecución de arquitecto
+    (2026-09-14).** El dueño autorizó avanzar sin las secciones 2-4; se diseñaron e
+    implementaron con criterio propio: (Frontend) rediseño carrier-grade del builder de
+    underlay WAN — filas tarjeta con badge por familia, toggle simétrico, duplicar,
+    validación inline, sugerencia de medio, barra agregada viva #wanResumen con semáforo
+    de densidad de puertos; (Lógica SP) campos cliente/proyecto que encabezan BOM y Excel
+    y enlace compartible del escenario (con el bug de round-trip de secMode corregido);
+    (Componentes) todo con los IDs de contrato intactos. Si el brief original reaparece,
+    lo que llegue se cruza con lo construido.
 
 33. **Railway no espera a `pantallas`, solo a `verificar` (2026-09-13).** *Actualizado el
     2026-09-14: hay un segundo agujero, de otra clase, y ya está cerrado — un push de bot no
@@ -489,6 +495,9 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     prometer nada. **Decisión del dueño:** convertir `pantallas` en *required check* de la rama
     `main` (ajuste de GitHub, no de código) y corregir esa cabecera, o aceptar que solo frena
     `verificar` y decirlo en los dos sitios. `CLAUDE.md` ya lo declara como está hoy.
+    *2026-09-14: la cabecera de `pantallas.yml` ya dice la verdad (qué frena y qué no, y que
+    el required check es un ajuste manual de GitHub). Queda abierta SOLO esa acción manual
+    del dueño en la configuración del repo.*
 
 34. **El semáforo de ciclo de vida pintaría verde falso sobre 131 modelos (2026-09-13).**
     Sale de la revisión de portabilidad (`docs/portabilidad-aruba.md`). Solo Cisco (8/21),
@@ -500,7 +509,12 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     afirma es que un equipo se puede pedir. **Regla al portarlo:** se enciende solo donde hay
     `eolAnnounced` con fecha; donde no, declara «el catálogo no trae el ciclo de vida», que es
     el tercer estado que ya protege `redund`. Cerrarlo de verdad exige cargar los boletines,
-    y para Huawei eso es el pendiente 14, bloqueado por Akamai.
+    y para Huawei eso es el pendiente 14, bloqueado por Akamai. *2026-09-14: la regla ya
+    estaba escrita en `docs/portabilidad-aruba.md` y ahora además está FIJADA EN TEST
+    (`test/ciclo-de-vida-datos.test.js`): ningún modelo de los 189 afirma vigencia sin
+    boletín con fecha; todo `eolAnnounced` trae `lastOrder` parseable. La carga de los
+    boletines que faltan sigue pendiente (14 para Huawei). Cerrado como REGLA; abierto
+    como DATO.*
 
 35. **La auditoría de puertos de Nokia es la mejor de las ocho y no se ve (2026-09-13).**
     También de la revisión de portabilidad. `legacyData/nokia.js` ya modela las configuraciones
@@ -567,6 +581,38 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Plan 3: underlay WAN carrier-grade, DTD cotizado, «pendiente de cotización», Nokia visible y enlace de escenario (2026-09-14)
+
+Instrucción del dueño: «avanza con el 39, 29, 31, 33-38 — revisa el diseño de cómo se
+ingresan los BW enlaces WAN del sitio (underlay), MEJÓRALO». Orquestación multi-agente
+(dos frentes con archivos disjuntos, integrados por bundles).
+
+- **Rediseño del input WAN underlay** (la petición central): de filas planas a filas
+  tarjeta con badge por familia (MPLS/Internet/celular), toggle «Simétrico» (up sigue a
+  down, persiste en el estado v2), botón duplicar, validación inline (down vacío, up>down,
+  celular por fibra), sugerencia de medio por tipo solo si no se tocó a mano, y barra
+  agregada viva `#wanResumen` (Σ↓/Σ↑, desglose MPLS/Internet, puertos WAN +2 LAN y
+  semáforo de densidad contra el modelo — la misma función `evaluarPuertos` gobierna el
+  descarte del EC-10104: la regla no se duplica). Contrato de IDs intacto.
+- **#31**: DTD resultó tener escalera completa en la lista (SaaS/On-Prem × std/HA ×
+  1/3/5 años, $372-$1.860, PLC GA) — el BOM lo cotiza con SKU y precio reales, dos
+  líneas en HA 1+1, sin forzar Advanced (QuickSpecs p.32). CSV 192→204 por el importador.
+- **#29**: las líneas sin precio verificado se etiquetan «PENDIENTE DE COTIZACIÓN» en el
+  BOM, el texto plano y el Excel — el «consultar» ya no se puede olvidar al enviar.
+- **#39** (secciones ausentes del brief, diseño de arquitecto autorizado): campos
+  cliente/proyecto que encabezan BOM/Excel y botón «Copiar enlace del escenario» con
+  round-trip (se encontró y corrigió un bug real: secMode no se restauraba desde la URL).
+- **#35**: las dos páginas Nokia muestran su auditoría de puertos (alternativas no
+  acumulables, nota literal en chasis modulares, tercer estado honesto).
+- **#33**: la cabecera de `pantallas.yml` ya dice la verdad; el required check de main
+  queda como acción manual del dueño en GitHub. **#34**: la regla de 3 estados del
+  semáforo queda fijada en test sobre los 189 modelos. **#38**: verificado — las tres
+  fuentes 403 salen «no comprobada», nunca en verde; es restricción del fabricante.
+
+Verificación: 334/334 tests, E2E Chromium 12/12 del plan + comprobación rápida de
+descuento/TCO/widget. Se corrigió en integración un binding de render que faltaba en
+`nombreCliente`/`refProyecto`.
 
 ### Motor de ingeniería carrier-grade + submenú Cumplimiento Especial (2026-09-13)
 

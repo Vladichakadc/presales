@@ -610,7 +610,10 @@ document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',
 $('famSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('famSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));famMode=b.dataset.v;render();});
 $('segSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('segSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));segMode=b.dataset.v;render();});
 $('destSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('destSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));destMode=b.dataset.v;$('destHint').textContent=DEST_HINT[destMode]||'';render();});
-['users','aps','perUser','head','fecMode','selTrafico','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','chkBreakout','selTier'].forEach(id=>$(id).addEventListener('input',render));
+['users','aps','perUser','head','fecMode','selTrafico','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','chkBreakout','selTier',
+  // Cliente/referencia (etapa A / #39): también repintan — la cabecera MSP del BOM se
+  // escribe en el render y sin este binding no aparecía hasta que cambiara otro campo.
+  'nombreCliente','refProyecto'].forEach(id=>$(id).addEventListener('input',render));
 
 // Arquetipo de sede (fase 11): restringe el catalogo a los modelos del VSG para ese
 // tamanyo de sitio; el hint declara que hace cada persona.
