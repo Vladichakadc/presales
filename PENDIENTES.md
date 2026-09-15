@@ -4,9 +4,12 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-14 (plan 3: cerrados 29/31/34/35/39 como código, 33 queda solo con
-la acción manual de GitHub, 38 verificado «no comprobada» — bloqueo externo del fabricante;
-rediseño carrier-grade del input WAN underlay). Anterior: cerrados 36 y 37.
+Última revisión: 2026-09-15 (UX del dimensionador Aruba: panel «Equipos que cumplen» fijo
+con sticky mientras la columna de configuración se desplaza — tope de altura calculado
+contra la zona muerta bajo .cols para que nunca se suelte antes del fondo real; E2E
+e2e-sticky.js 4/4). Anterior (2026-09-14): plan 3 — cerrados 29/31/34/35/39 como código, 33
+queda solo con la acción manual de GitHub, 38 verificado «no comprobada» — bloqueo externo
+del fabricante; rediseño carrier-grade del input WAN underlay.
 
 ---
 
