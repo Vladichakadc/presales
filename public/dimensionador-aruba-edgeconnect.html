@@ -13,7 +13,9 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
-.wrap{max-width:1140px;margin:0 auto;padding:26px 18px 80px}
+/* padding inferior reducido de 80 a 24px (2026-09-14): la zona muerta bajo .cols recorta
+   el recorrido del panel sticky «Equipos que cumplen» — ver el bloque de .cols abajo. */
+.wrap{max-width:1140px;margin:0 auto;padding:26px 18px 24px}
 .masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px}
 .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0 0 6px}
 h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28px,5.5vw,48px);line-height:.98;text-transform:uppercase;margin:0}
@@ -46,6 +48,21 @@ h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28p
 /* LAYOUT */
 .cols{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
 @media(max-width:880px){.cols{grid-template-columns:1fr}}
+/* «Equipos que cumplen» fijo mientras la columna de configuración se desplaza
+   (petición del dueño, 2026-09-14): la columna derecha (#verdict + nota) queda
+   pegada al viewport para ver qué cambia al configurar; si la ficha es más alta
+   que el tope, el propio panel ofrece scroll interno sin encadenar el de la
+   página. Solo escritorio — en móvil la columna fluye en orden natural.
+   El tope de altura NO es 100vh-32 a propósito: un sticky se suelta cuando su
+   borde inferior alcanza el fondo de .cols, y bajo .cols hay ~147px de zona
+   muerta (padding del .wrap + márgenes del pane). Condición para que nunca se
+   suelte antes del fondo real de la página: altura ≤ 100vh − zona muerta.
+   Con 160px quedan ~13px de margen en cualquier viewport (medido en E2E:
+   e2e-sticky.js, 2026-09-14). Si alguien cambia el padding inferior de .wrap,
+   hay que reajustar este 160 en la misma proporción. */
+@media(min-width:881px){
+  .cols>div:last-child{position:sticky;top:16px;max-height:calc(100vh - 160px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+}
 /* Lista de materiales: una sola columna centrada, no el grid de dos del dimensionador —
    los dos cuadros (añadir y lista) van al centro de la pantalla y al mismo ancho (2026-09-13). */
 .pane-centro{max-width:960px;margin:0 auto}
