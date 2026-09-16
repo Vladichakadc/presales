@@ -685,7 +685,12 @@
     const eos = m.eolAnnounced;
     if (eos && eos.lastOrder && eosVencido(m)) {
       return { estado: 'fuera', ...CICLO.fuera,
-        detalle: 'su fecha de ultimo pedido (' + eos.lastOrder + ') ya paso' };
+        // 2026-09-16 (peticion del dueño: «resalta si hay equipos con esta condicion»):
+        // el fin de soporte del boletin se suma aqui — es el dato que salva la renovacion
+        // del parque instalado. Opt-in como en avisoDe(): solo lo dicen los modelos que
+        // lo traen; los demas no cambian.
+        detalle: 'su fecha de ultimo pedido (' + eos.lastOrder + ') ya paso'
+          + (eos.endOfSupport ? ' · soporte del fabricante hasta el ' + eos.endOfSupport : '') };
     }
     if (m.eol) {
       return { estado: 'fuera', ...CICLO.fuera,

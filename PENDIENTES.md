@@ -4,7 +4,25 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-16 (plan 8: **características expandibles DENTRO de la tarjeta
+Última revisión: 2026-09-16 (plan 9: **EC-XS verificado VIGENTE en fuentes oficiales
++ resaltado de fin de venta consciente de la fecha** — petición directa del dueño:
+«valida en las fuentes oficiales si el EC-XS sigue vigente o entró en EOL y resalta
+si hay equipos con esta condición». Veredicto con cuatro fuentes oficiales: las
+QuickSpecs a50004289enw V18 (06-jul-2026, en el repo) lo listan ORDENABLE
+(JM962A#AC3 y la NAL S3N70A), la versión online actual de hpe.com igual, la
+garantía oficial a00143138enw lo declara «Active» sin fecha de fin de venta y la
+política de ciclo de vida solo menciona el EC-XS de 4 GB (EoS 2016, hardware
+antiguo). La señal de los agregadores (EoS 31-ene-2026) no existe en ningún canal
+oficial y queda contradicha por las QuickSpecs publicadas cinco meses después: NO
+se marca — la casa nunca marca por terceros. EC-L-H (JZ878A): mismo veredicto.
+Resaltado, integrado con la regla única del pendiente 34 que el dueño subió mientras
+tanto (semáforo en `FICHA.cicloHtml`, tercer estado sin verde por omisión): el EC-XL
+sale ROJO «Fuera de venta» con su fecha y ahora también con el fin de soporte del
+boletín (2033-03-31) en el detalle; el combo lo nombra «fin de venta vencido»
+(marca de ficha.js); el EC-XS queda en el tercer estado, sin marca de fin de venta.
+Guardas: test de datos que fija el veredicto del EC-XS y e2e-ciclo-vida.js nuevo).
+
+Revisión anterior: 2026-09-16 (plan 8: **características expandibles DENTRO de la tarjeta
 + #41 parcial** — petición directa del dueño: el detalle «en el mismo cuadro donde
 recomiendas el equipo, como estaba antes, sin llevarlo a otra página». La pestaña
 «Equipo» del plan 7 se retira: el conmutador «Ver características del equipo ↓»
@@ -857,6 +875,50 @@ Juniper en verde citando su boletín, los otros cinco en el tercer estado, y la 
 puertos en los siete. La revisión diferencial del diff está en `docs/revision-34-35-38.md`;
 de ella salió un hallazgo propio: el CSS del semáforo de Aruba quedó inerte al sustituirlo
 y se retiró, porque es la misma forma que `CISCO_EOL_MODELS`.
+
+### EC-XS verificado VIGENTE en fuentes oficiales + resaltado de fin de venta con la fecha encima (2026-09-16)
+
+Petición directa del dueño: «valida en las fuentes oficiales si el EC-XS sigue vigente o
+entró en EOL… y resalta si hay equipos con esta condición para que los usuarios lo sepan».
+
+**La validación (cuatro fuentes oficiales, ninguna marca el EC-XS):**
+1. QuickSpecs oficiales a50004289enw **V18 del 06-jul-2026** (copia en el repo,
+   `public/datasheets/edgeconnect-quickspecs.pdf`): el EC-XS figura ORDENABLE en
+   Configuration Information → BTO Models → «Extra Small» (JM962A#AC3), igual que la
+   variante NAL S3N70A y sus accesorios JM965A/JM996A. Cero marcas de fin de venta en
+   las 47 páginas. La versión online actual (hpe.com) mantiene la misma línea.
+2. Product Warranty Quick Reference oficial (a00143138enw): JM962A «Active», garantía
+   1-Year, SIN fecha de End of Sale.
+3. Política de ciclo de vida oficial (EC_LifecyclePolicy_latest.pdf, en vivo): la única
+   mención al EC-XS es histórica — la versión de 4 GB declarada EoS el 31-dic-2016,
+   una revisión de hardware antigua, no el modelo actual.
+4. El anuncio que citan los agregadores («EdgeConnect XS Gateway End of Sale
+   Announcement», EoS 31-ene-2026) **no existe en ningún canal oficial**
+   (networkingsupport.hpe.com: 0 resultados) y queda contradicho por (1): unas
+   QuickSpecs publicadas cinco meses después de esa fecha no listarían el SKU como
+   ordenable. Veredicto: la casa nunca marca por agregadores — el EC-XS queda SIN
+   boletín, y un test de datos fija el veredicto para que nadie lo «arregle» desde un
+   checker de terceros. EC-L-H (JZ878A): misma señal, mismo veredicto (ordenable en
+   las QuickSpecs V18).
+
+**El resaltado, integrado con la regla única del pendiente 34** (los commits del dueño
+movieron el semáforo a `FICHA.cicloHtml` mientras esta validación corría — la integración
+quedó sobre SU arquitectura, no sobre la copia vieja de Aruba): el EC-XL, con su último
+pedido (2026-03-31) ya vencido, sale ROJO «Fuera de venta» en el catálogo con su fecha,
+y el detalle suma ahora el **fin de soporte del boletín** («soporte del fabricante hasta
+el 2033-03-31») — el dato que salva la renovación del parque instalado, opt-in como en
+`avisoDe()`. El combo de selección nombra la condición con la marca de ficha.js
+(«fin de venta vencido», no «fin de venta» a secas). El EC-XS, sin boletín y sin respaldo
+declarado a nivel fabricante, sale en el **tercer estado** («Sin dato de ciclo de vida»):
+nunca verde por omisión y nunca con una marca de fin de venta sacada de un agregador.
+Cubierto por `test/e2e/e2e-ciclo-vida.js` (nuevo) y por la guarda de datos en
+`test/ciclo-de-vida-datos.test.js`.
+
+**Nota de gobierno:** la URL viva de la política de ciclo de vida ya no muestra hoy las
+líneas por modelo que fundamentaron el boletín del EC-XL el 2026-09-13 (la copia en
+caché de buscadores sí las conserva; el documento cambia sin historial público). Las
+citas del seed quedan como el registro — si el dueño quiere, se guarda una copia
+congelada del PDF en `public/datasheets/` como se hizo con las QuickSpecs.
 
 ### Rediseño del módulo Fortinet sobre la arquitectura de Aruba (2026-09-16)
 

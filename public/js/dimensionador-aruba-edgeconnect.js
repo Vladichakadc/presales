@@ -1880,9 +1880,12 @@ function poblarPickModel(cumplen, recomendado){
   sel.innerHTML=series.map(se=>`<optgroup label="${esc(se)}">`
     +MODELS.filter(m=>m.serie===se).sort((a,b)=>capDe(a)-capDe(b)).map(m=>{
       // Fuera de venta se nombra como tal en el combo (2026-09-13, EC-XL): «cumple» por
-      // capacidad no es proponible si ya no se puede pedir.
+      // capacidad no es proponible si ya no se puede pedir. 2026-09-16: se usa la marca
+      // de ficha.js, que distingue «fuera de venta» (eol declarado) de «fin de venta
+      // vencido» (la fecha de último pedido ya pasó) — antes ambos decían «fin de
+      // venta», que con la fecha en pasado subestimaba la condición.
       const mc=FICHA.marca?FICHA.marca(m):null;
-      const marca=mc&&mc.fuera?' · fin de venta':m.id===recomendado?' · recomendado':(ids.has(m.id)?' · cumple':'');
+      const marca=mc&&mc.fuera?' · '+mc.t:m.id===recomendado?' · recomendado':(ids.has(m.id)?' · cumple':'');
       return `<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.seg)}${marca}</option>`;
     }).join('')+'</optgroup>').join('');
   if(actual&&[...sel.options].some(o=>o.value===actual)) sel.value=actual;

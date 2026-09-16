@@ -94,3 +94,26 @@ test('el cliente no enciende el semáforo sin dato, y lo que enciende exige fech
   assert.strictEqual(FICHA.marca(vencido).t, 'fin de venta vencido');
   assert.strictEqual(FICHA.recomendable(vencido), false);
 });
+
+test('Aruba EC-XS NO lleva boletín: verificado vigente en fuentes oficiales el 2026-09-16', () => {
+  // Petición directa del dueño: «valida en las fuentes oficiales si el EC-XS sigue
+  // vigente o entró en EOL». Veredicto (comentario de EOL_ANNOUNCED en
+  // server/seed/legacyData/aruba.js): las QuickSpecs oficiales a50004289enw V18
+  // (06-jul-2026) lo listan ORDENABLE (JM962A#AC3 y la NAL S3N70A), la garantía
+  // oficial a00143138enw lo declara «Active» sin fecha de fin de venta, y la señal
+  // de los agregadores (EoS 31-ene-2026) no existe en ningún canal oficial. La casa
+  // nunca marca por agregadores: esta guarda fija el veredicto para que nadie lo
+  // «arregle» desde un checker de terceros.
+  const aruba = CATALOGOS.aruba;
+  const ecxs = aruba.find((m) => m.id === 'EC-XS');
+  assert.ok(ecxs, 'el EC-XS sigue en el catálogo');
+  assert.strictEqual(ecxs.eolAnnounced, null,
+    'EC-XS: verificado vigente el 2026-09-16 (QuickSpecs V18 + garantía oficial); marcarlo exige documento del fabricante, no un agregador');
+  // El que SÍ está fuera de venta queda marcado con su fecha (la condición que el
+  // dueño pidió resaltar): EC-XL, último pedido 2026-03-31, ya vencido hoy.
+  const ecxl = aruba.find((m) => m.id === 'EC-XL');
+  assert.ok(ecxl && ecxl.eolAnnounced, 'EC-XL conserva su boletín oficial');
+  assert.strictEqual(FICHA.marca(ecxl).t, 'fin de venta vencido',
+    'con el último pedido en pasado, la marca dice «fin de venta vencido» — la condición real a día de hoy');
+  assert.strictEqual(FICHA.recomendable(ecxl), false, 'vencido = rango 2: nunca se propone');
+});

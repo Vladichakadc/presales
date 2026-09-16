@@ -495,8 +495,32 @@ const MODELS = [
 // El sucesor NO se declara: la política dice que la notificación nombra el reemplazo,
 // pero esa notificación no está publicada en las fuentes abiertas consultadas — poner
 // "EC-10150" sería inferirlo. Confirmar con el distribuidor (ver PENDIENTES.md).
-// Señales de terceros SIN confirmar por fuente oficial (quedan pendientes): EC-L-H
-// (JZ878A, EoS 31-dic-2025) y EC-XS (JM962A, EoS 31-ene-2026) según router-switch.
+//
+// EC-XS VERIFICADO VIGENTE en fuentes oficiales el 2026-09-16 (petición directa del
+// dueño: «valida en las fuentes oficiales si el EC-XS sigue vigente o entró en EOL»):
+//   · QuickSpecs oficiales a50004289enw V18 (06-jul-2026, copia en el repo:
+//     public/datasheets/edgeconnect-quickspecs.pdf) — sección Configuration
+//     Information → BTO Models → «Extra Small»: "HPE Aruba Networking EC-XS 4x RJ45
+//     10/100/1000 SD-WAN Gateway NoLoc JM962A#AC3" ORDENABLE, igual que la variante
+//     NAL S3N70A y los accesorios JM965A/JM996A. Cero marcas de fin de venta en todo
+//     el documento. La versión ONLINE actual (hpe.com, consultada el mismo día)
+//     mantiene la misma línea.
+//   · Product Warranty Quick Reference oficial (a00143138enw): JM962A «Active»,
+//     garantía 1-Year, SIN fecha de End of Sale.
+//   · Política de ciclo de vida oficial (EC_LifecyclePolicy_latest.pdf, en vivo):
+//     la única mención al EC-XS es histórica — "The 4GB version of EC-XS was declared
+//     as End of Sale (EoS) on December 31, 2016" — una revisión de hardware antigua,
+//     no el modelo actual.
+//   · La señal de terceros (router-switch / layer23: anuncio 30-jun-2025, EoS
+//     31-ene-2026, EOSL 31-ene-2031, «EdgeConnect XS Gateway End of Sale
+//     Announcement») NO existe en ningún canal oficial (networkingsupport.hpe.com:
+//     0 resultados) y queda CONTRADECIDA por las QuickSpecs oficiales publicadas
+//     cinco meses DESPUÉS de esa supuesta fecha, que lo siguen listando ordenable.
+//   Veredicto: el EC-XS NO lleva marca de fin de venta. La casa nunca marca por
+//   agregadores — solo por documento del fabricante.
+// EC-L-H (JZ878A): misma señal de terceros (EoS 31-dic-2025) y mismo veredicto el
+// 2026-09-16 — ordenable en las QuickSpecs V18 (líneas "EC-L-H 6x SFP+ 1/10G SD-WAN
+// Gateway JZ878A" y su NoLoc). SIN confirmar por fuente oficial: no se marca.
 const EOL_ANNOUNCED = {
   'EC-XL': {pid:'S0B67A', lastOrder:'2026-03-31', sucesor:null,
             endOfSupport:'2033-03-31',
