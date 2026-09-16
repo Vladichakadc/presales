@@ -86,6 +86,46 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   await page.uncheck('#chkAiops');
   await page.waitForTimeout(500);
 
+  // D11 · tarjeta gráfica del equipo (petición directa del dueño, 2026-09-16): la foto
+  // oficial corona la ficha, CAMBIA al elegir otro equipo, y el conmutador trae las
+  // vistas frontal/trasera que publica el documento de origen. Modelo sin foto oficial:
+  // aviso honesto, nunca un «parecido».
+  const imgSel = '#verdict .ficha-vista img';
+  await page.waitForSelector(imgSel, { timeout: 20000 });
+  const src1 = await page.$eval(imgSel, (i) => i.getAttribute('src'));
+  ok(/\/img\/equipos\/.+-front\.webp$/.test(src1), 'la ficha corona con la foto oficial del equipo (' + src1 + ')');
+  const pie1 = ((await page.textContent('#verdict .ficha-vista figcaption')) || '').replace(/\s+/g, ' ');
+  ok(/mm|pulgadas|in\b/.test(pie1) && /QuickSpecs|Hardware Reference|DS serie|spec sheet/i.test(pie1),
+    'el pie declara tamaño y procedencia: ' + pie1.trim().slice(0, 90));
+  // ··· cambia con la selección
+  const cands = await page.$$('#verdict .ficha-cand');
+  ok(cands.length >= 2, 'hay al menos 2 candidatos para probar el cambio de foto (' + cands.length + ')');
+  await cands[1].click();
+  await page.waitForTimeout(600);
+  const src2 = await page.$eval(imgSel, (i) => i.getAttribute('src'));
+  ok(src2 !== src1, 'la foto cambia al seleccionar otro equipo (' + src1.split('/').pop() + ' → ' + src2.split('/').pop() + ')');
+  // ··· conmutador frontal/trasera (los EC pequeños de este escenario traen ambas caras)
+  const nTabs = await page.locator('#verdict .ficha-vista-tab').count();
+  ok(nTabs === 2, 'el equipo trae las dos vistas, frontal y trasera (' + nTabs + ' pestañas)');
+  await page.click('#verdict .ficha-vista-tab[data-vista=rear]');
+  await page.waitForTimeout(250);
+  const srcRear = await page.$eval(imgSel, (i) => i.getAttribute('src'));
+  ok(/-rear\.webp$/.test(srcRear), '«Trasera» carga la cara trasera (' + srcRear.split('/').pop() + ')');
+  await page.click('#verdict .ficha-vista-tab[data-vista=front]');
+  await page.waitForTimeout(250);
+  ok((await page.$eval(imgSel, (i) => i.getAttribute('src'))) === src2, '«Frontal» devuelve la cara frontal');
+  // ··· volver al recomendado y probar el hueco honesto con un modelo sin foto
+  await page.click('#verdict-volver');
+  await page.waitForTimeout(500);
+  await page.selectOption('#pickModel', 'EC-S');
+  await page.waitForTimeout(600);
+  ok(await page.locator('#verdict .ficha-vista-vacia').count() === 1,
+    'un modelo sin foto oficial declara el hueco, no enseña una foto prestada');
+  const txtVacio = (await page.textContent('#verdict .ficha-vista-vacia')) || '';
+  ok(/Sin foto oficial/.test(txtVacio), 'el aviso dice por qué no hay foto: ' + txtVacio.trim().slice(0, 70));
+  await page.click('#verdict-volver');
+  await page.waitForTimeout(500);
+
   // D9/D10 · orden de secciones: Lista primero, Añadir al final
   await page.click('[data-tab=bom]');
   await page.waitForTimeout(600);

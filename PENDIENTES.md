@@ -4,7 +4,14 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-16 (plan 5: **#17 CERRADO** — la escalera On-Premises High
+Última revisión: 2026-09-16 (plan 6: **tarjeta «Equipos que cumplen» FIJA y con foto
+oficial del equipo** — petición directa del dueño: sin scroll interno (el único scroll
+es el de la página), foto oficial coronando la ficha con vistas frontal/trasera del
+documento de origen, cambia al elegir otro equipo, pie con tamaño y procedencia;
+candidatos compactados a 6 con pie honesto «+ N más». Opt-ins nuevos de ficha.js
+(`vistas`, `panelFijo`, `contenedorDetalle`) — los demás dimensionadores no cambian.
+Nace el pendiente #41: fotos oficiales de los modelos legacy).
+Anterior (2026-09-16): plan 5: **#17 CERRADO** — la escalera On-Premises High
 Availability E-STU sí existe: QuickSpecs a50004289enw + 32 SKU en la lista vigente, par
 HA on-prem con SKU propio —; corrección de datos: los 6 términos de 7 años On-Premises
 que la revisión del 2026-09-15 no vio (descripción «EC ONP 20M 7y», sin «Gb» ni «yr
@@ -608,6 +615,18 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     propio fabricante. Mientras siga así, esas tres respaldan datos que el vigía **no puede
     comprobar**, y la pestaña de procedencia lo dice: salen como «no comprobada», nunca en
     verde. Cierra desde una máquina con acceso, o con una URL vigente que sí resuelva.
+41. **Fotos oficiales de los modelos legacy (2026-09-16, nace con la tarjeta gráfica de la
+    ficha).** La tarjeta «Equipos que cumplen» ya corona con la foto oficial del equipo
+    elegido —EdgeConnect 101xx/XS con frontal y trasera del Hardware Reference Rev V,
+    gateways 9004/9004-LTE/9012/9106/9114/9240 con la suya del DS/QuickSpecs—, pero los
+    modelos que no tienen foto oficial en el repo muestran el aviso honesto «Sin foto
+    oficial…» (la regla del catálogo prohíbe un «parecido»): **EC-S, EC-M, EC-L, EC-XL**,
+    la serie **7000/7200** y **EC-V** (virtual: no hay chasis que fotografiar — candidato
+    a un pictograma propio declarado como tal, no a una foto). Las fotos que el Hardware
+    Reference publica de esos chasis van etiquetadas con la variante (-P/-H), no con el
+    modelo base, así que no se reutilizan. Cierra bajando las fotos de la biblioteca de
+    medios oficial de HPE (o de los QuickSpecs de cada legacy si los hubiera) con su
+    atribución, y añadiéndolas a `public/data/aruba-vistas-equipos.json`.
 
 ## Limpieza
 

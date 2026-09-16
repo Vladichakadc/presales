@@ -35,6 +35,14 @@ const FICHA_CFG={vendor:'aruba', refs:false, selector:false,
   // muestra 1 equipo recomendado pero hay varios que cumplen y el usuario no tiene cómo
   // seleccionar otro». Opt-in de ficha.js — el resto de dimensionadores se pinta igual.
   listaCandidatos:true,
+  // Panel fijo + foto oficial del equipo (petición directa del dueño, 2026-09-16): la
+  // tarjeta «Equipos que cumplen» se queda clavada SIN scroll interno —por eso el
+  // porqué y las secciones largas se pintan aparte, en #verdict-detalle— y la corona
+  // la foto del modelo elegido, con vistas frontal/trasera cuando el documento de
+  // origen publica ambas. `vistas` se rellena en initApp desde
+  // /data/aruba-vistas-equipos.json (mapa id→foto con procedencia y tamaño). Ambos son
+  // opt-ins de ficha.js: los demás dimensionadores no los declaran y no cambian.
+  panelFijo:true, contenedorDetalle:'verdict-detalle', vistas:null,
   refsNota:'Las referencias de pedido de este equipo —y de todo el catálogo de Aruba: hardware, remanufacturados, suscripciones EdgeConnect, Boost, Central y licencias perpetuas— están integradas en la lista de materiales. Allí se añaden y se quitan con su SKU y su List Price.'};
 
 // El modelo viaja en la URL como parte del escenario compartible, pero ESTADO reescribe el
@@ -2605,6 +2613,15 @@ async function compararListaPrecios(archivo){
   SSE = data.sse || null;
   MICROBRANCH = data.microbranch || { usuarios: 10, caudalMbps: 50 };
   DTD = data.dtd || null;
+
+  // Fotos oficiales de los equipos para la tarjeta gráfica de la ficha (opt-in
+  // `vistas`, 2026-09-16). Se cargan ANTES del primer render para que la tarjeta
+  // ya salga con imagen; si el fetch falla, la página sigue operativa y la ficha
+  // declara el hueco en vez de inventar una foto.
+  try{
+    const rv=await fetch('/data/aruba-vistas-equipos.json');
+    if(rv.ok) FICHA_CFG.vistas=await rv.json();
+  }catch{ /* sin fotos: la ficha declara el hueco, nunca inventa */ }
 
   // La ficha ya no pide referencias (van integradas en el BOM), así que el fabricante se
   // declara aquí: es lo que permite que la lista de materiales muestre solo lo de Aruba.

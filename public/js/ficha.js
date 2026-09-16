@@ -26,6 +26,10 @@
 //                                   //   origen: 'selector' | 'volver' | 'candidato'
 //     listaCandidatos: true,        // (opt-in) lista clicable de TODOS los que cumplen
 //     etiquetaCand: (m,i) => '',    // (opt-in) detalle de cada fila de esa lista
+//     vistas: {ID:{front,rear?}},   // (opt-in) foto oficial del equipo arriba, con
+//                                   //   conmutador frontal/trasera si hay ambas caras
+//     panelFijo: true,              // (opt-in) tarjeta compacta: lista sin scroll
+//     contenedorDetalle: 'id',      //   interno y porQue+secciones en otro contenedor
 //   })
 //
 // La pagina conserva el motor de dimensionamiento; este modulo solo presenta. Ninguna
@@ -88,6 +92,16 @@
 .ficha-cand .cand-badge{flex:none;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;border-radius:2px;padding:1px 6px}
 .ficha-cand .cand-badge.rec{background:var(--red);color:#fff}
 .ficha-cand .cand-badge.fin{border:1px solid var(--rule);color:var(--steel)}
+.ficha-vista{margin:0 0 12px;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:var(--card)}
+.ficha-vista-img{display:flex;align-items:center;justify-content:center;padding:10px 12px 6px;min-height:96px}
+.ficha-vista-img img{max-width:100%;max-height:150px;object-fit:contain;display:block}
+.ficha-vista-bar{display:flex;align-items:center;gap:10px;padding:0 12px 10px;flex-wrap:wrap}
+.ficha-vista-tabs{display:flex;gap:4px;flex:none}
+.ficha-vista-tab{padding:3px 10px;border:1px solid var(--rule);border-radius:2px;background:var(--card);color:var(--steel);font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.ficha-vista-tab.on{background:var(--ink);border-color:var(--ink);color:var(--card)}
+.ficha-vista figcaption{flex:1;min-width:180px;font-size:11px;line-height:1.45;color:var(--steel)}
+.ficha-vista-vacia{margin:0 0 12px;border:1px dashed var(--rule);border-radius:4px;padding:14px 12px;color:var(--steel);font-size:12px;line-height:1.5}
+.ficha-cands-mas{margin:-6px 0 12px;padding:0 2px;font-size:11px;color:var(--steel)}
 `;
   if (!document.getElementById('ficha-estilos')) {
     const st = document.createElement('style');
@@ -325,6 +339,12 @@
         + `<p class="model">Sin candidato</p>`
         + `<p class="family">${esc(cfg.vacioTitulo || 'Ningún equipo cumple todas las restricciones')}</p>`
         + `<div class="why">${cfg.vacioDetalle || ''}</div>`;
+      // Con panel fijo el detalle vive en otro contenedor: sin candidato se vacía
+      // también, para que no queden secciones del equipo anterior colgadas.
+      if (cfg.panelFijo && cfg.contenedorDetalle) {
+        const dv = document.getElementById(cfg.contenedorDetalle);
+        if (dv) dv.innerHTML = '';
+      }
       return;
     }
 
@@ -360,9 +380,19 @@
     // y sus marcas (recomendado / fin de venta); el clic elige por el mismo cauce que el
     // desplegable (alCambiar con origen 'candidato'). Con mas de 6, la caja crece con
     // scroll para no comerse la ficha. Sin el flag, esta pagina se pinta igual que antes.
+    // Con `panelFijo` la lista NUNCA lleva scroll interno (`.larga`) ni crece sin tope:
+    // la petición del dueño (Aruba, 2026-09-16) es que la tarjeta quede clavada y ENTERA
+    // a la vista — el único scroll es el de la página, que gobierna la columna de
+    // configuración. Cuando cumplen más de 6 (umbral heredado de `.larga`), se muestran
+    // los 6 primeros —la comparación de preventa se hace entre los primeros escalones—
+    // y un pie honesto declara cuántos más cumplen y dónde verlos (el selector de
+    // equipo de la página los lista todos). Sin tope, la tarjeta superaría el viewport
+    // y volvería el mismo problema sin scroll que la trajo aquí.
+    const TOPE_PANEL_FIJO = 6;
+    const visibles = cfg.panelFijo ? lista.slice(0, TOPE_PANEL_FIJO) : lista;
     const listaCands = cfg.listaCandidatos === true
-      ? `<div class="ficha-cands${lista.length > 6 ? ' larga' : ''}" id="${cid}-cands" role="listbox" aria-label="Equipos que cumplen">`
-        + lista.map((m, i) => {
+      ? `<div class="ficha-cands${lista.length > 6 && !cfg.panelFijo ? ' larga' : ''}" id="${cid}-cands" role="listbox" aria-label="Equipos que cumplen">`
+        + visibles.map((m, i) => {
           const mk = marca(m);
           const det = cfg.etiquetaCand ? cfg.etiquetaCand(m, i) : (cfg.etiqueta ? cfg.etiqueta(m, i) : '');
           return `<button type="button" class="ficha-cand${m.id === sel.id ? ' on' : ''}" data-id="${esc(m.id)}" role="option" aria-selected="${m.id === sel.id}">`
@@ -371,8 +401,49 @@
             + (mk ? `<span class="cand-badge fin">${esc(mk.t)}</span>` : '')
             + '</button>';
         }).join('') + '</div>'
+        + (cfg.panelFijo && lista.length > visibles.length
+          ? `<p class="ficha-cands-mas">+ ${lista.length - visibles.length} más que también cumplen — el selector de equipo del panel 1 los lista todos.</p>`
+          : '')
       : '';
-    cont.innerHTML = `<p class="tag">Equipos que cumplen`
+    // Tarjeta gráfica del equipo (opt-in `vistas`, petición directa del dueño en Aruba,
+    // 2026-09-16): la foto oficial del modelo seleccionado corona la ficha, con
+    // conmutador frontal/trasera cuando el documento de origen publica ambas caras, y
+    // pie con tamaño y procedencia. Cambia con cada selección porque pintar() la
+    // reconstruye con el `sel` vigente. Si el modelo no tiene foto oficial en el
+    // repositorio se DECLARA el hueco — la regla del catálogo prohíbe un «parecido».
+    const mapaVistas = cfg.vistas && typeof cfg.vistas === 'object' ? cfg.vistas : null;
+    let vistaHtml = '';
+    if (mapaVistas) {
+      const v = mapaVistas[sel.id];
+      if (v && v.front) {
+        const tabs = v.rear
+          ? `<div class="ficha-vista-tabs" role="tablist" aria-label="Vistas del equipo">`
+            + `<button type="button" class="ficha-vista-tab on" data-vista="front" role="tab" aria-selected="true">Frontal</button>`
+            + `<button type="button" class="ficha-vista-tab" data-vista="rear" role="tab" aria-selected="false">Trasera</button></div>`
+          : '';
+        const pie = [v.tamano, v.fuente].filter(Boolean).map(esc).join(' · ');
+        vistaHtml = `<figure class="ficha-vista" id="${cid}-vista" data-front="${esc(v.front)}"${v.rear ? ` data-rear="${esc(v.rear)}"` : ''}>`
+          + `<div class="ficha-vista-img"><img src="${esc(v.front)}" alt="Vista frontal del ${esc(sel.id)}" loading="lazy"></div>`
+          + `<div class="ficha-vista-bar">${tabs}<figcaption>${pie}</figcaption></div>`
+          + `</figure>`;
+      } else {
+        vistaHtml = `<div class="ficha-vista-vacia">Sin foto oficial de este equipo en el repositorio — manda la ficha técnica de abajo.</div>`;
+      }
+    }
+
+    // Panel fijo (opt-in `panelFijo` + `contenedorDetalle`, Aruba 2026-09-16): para que
+    // la tarjeta se quede clavada SIN scroll interno tiene que caber en el viewport, así
+    // que el porqué, las secciones largas y las referencias se pintan en un contenedor
+    // aparte, en el flujo normal de la página. Sin ese contenedor, van aquí como siempre
+    // (el resto de dimensionadores no declara el par y no cambia).
+    const detNodo = (cfg.panelFijo && cfg.contenedorDetalle)
+      ? document.getElementById(cfg.contenedorDetalle) : null;
+    const detalleHtml = (cfg.porQue ? `<div class="why">${cfg.porQue(sel)}</div>` : '')
+      + secciones
+      + `<div class="ficha-refs" id="${cid}-refs"></div>`;
+
+    cont.innerHTML = vistaHtml
+      + `<p class="tag">Equipos que cumplen`
       + `<span class="ficha-cuenta"> · ${candidatos.length}</span></p>`
       + listaCands
       + (cfg.selector === false ? '' :
@@ -390,9 +461,8 @@
       + `<p class="family">${esc(cfg.subtitulo ? cfg.subtitulo(sel) : '')}</p>`
       + (mkSel ? `<p class="ficha-aviso">${avisoDe(sel)}</p>` : '')
       + medidores
-      + (cfg.porQue ? `<div class="why">${cfg.porQue(sel)}</div>` : '')
-      + secciones
-      + `<div class="ficha-refs" id="${cid}-refs"></div>`;
+      + (detNodo ? '' : detalleHtml);
+    if (detNodo) detNodo.innerHTML = detalleHtml;
 
     // Sin onchange= en linea: la CSP del sitio prohibe todo codigo inline.
     const nodo = document.getElementById(cid + '-sel');
@@ -420,6 +490,28 @@
           cfg.deliberada = true;
           pintar(cid);
           if (cfg.alCambiar) cfg.alCambiar(id, 'candidato');
+        });
+      });
+    }
+    // Conmutador frontal/trasera de la tarjeta gráfica: solo cambia la foto, no toca la
+    // selección ni avisa a la página (vista, no estado). La próxima pintar() —por cambio
+    // de equipo o de datos— vuelve a la cara frontal, que es la que el documento oficial
+    // presenta primero.
+    const vistaNodo = document.getElementById(cid + '-vista');
+    if (vistaNodo) {
+      const imgNodo = vistaNodo.querySelector('img');
+      vistaNodo.querySelectorAll('.ficha-vista-tab').forEach((tb) => {
+        tb.addEventListener('click', () => {
+          const cual = tb.dataset.vista;
+          const src = cual === 'rear' ? vistaNodo.dataset.rear : vistaNodo.dataset.front;
+          if (!src || !imgNodo) return;
+          imgNodo.src = src;
+          imgNodo.alt = (cual === 'rear' ? 'Vista trasera del ' : 'Vista frontal del ') + sel.id;
+          vistaNodo.querySelectorAll('.ficha-vista-tab').forEach((x) => {
+            const on = x === tb;
+            x.classList.toggle('on', on);
+            x.setAttribute('aria-selected', on ? 'true' : 'false');
+          });
         });
       });
     }
