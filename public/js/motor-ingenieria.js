@@ -56,8 +56,13 @@
     const throughputDisenoMbps = Math.ceil(((totalBwFisico / factorIMIX) * (1 + overheadFEC) * (1 + factorSeguridad)) * (1 + factorHeadroom));
     const sesionesPorUsuario = params.densidad_usuarios === 'INTENSIVO_SAAS' ? 150 : 80;
     const flujosRequeridos = params.total_usuarios * sesionesPorUsuario;
+    // traza (2026-09-17, mejora del veredicto de desbordamiento): los factores VIVOS con
+    // los que se calculó — el dimensionador los pinta en el veredicto para que la cuenta
+    // sea auditable tal cual salió (8.000 ÷ 0,70 × 1,15 × 1,35 × 1,30 ≈ 23.066) y nadie
+    // confunda un techo de ingeniería declarado con un fallo de filtrado del catálogo.
     return { throughputDisenoMbps, flujosRequeridos, tierLicenciaBwRequerido: totalBwFisico,
-             distribucion: { bwLocalInternet, bwTunelesPrivados, totalBwFisico } };
+             distribucion: { bwLocalInternet, bwTunelesPrivados, totalBwFisico },
+             traza: { bwFisico: totalBwFisico, factorIMIX, overheadFEC, factorSeguridad, factorHeadroom } };
   }
 
   return { calcularRequerimientosIngenieria };

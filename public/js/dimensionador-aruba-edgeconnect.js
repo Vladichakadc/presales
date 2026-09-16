@@ -1731,7 +1731,19 @@ function render(){
           :'<b>Revisar las hipótesis del motor</b> (perfil de tráfico, FEC, margen) reduce el requerimiento, pero ni con todo al mínimo entra en el techo publicado — la salida es EC-V o el reparto del fabric, no un solo appliance.',
         `<b>Selección deliberada:</b> el ${topeEC.id} sigue en el selector de modelo — elegirlo cotiza la lista de materiales con su SKU (${topeEC.hwSku||'consultar'}) y la revisión del diseño marca el exceso de caudal en rojo, con las cifras encima de la mesa.`,
       ];
-      why.push(`<li><b>El requerimiento (${fmt(wanNeed)}) supera el techo oficial de toda la línea EdgeConnect:</b> el modelo más capaz, el <b>${topeEC.id}</b>, publica <b>${fmt(techoEC)}</b> de caudal WAN («Up to 12 Gbps», QuickSpecs a50004289enw V18, p.30 — cifra bidireccional según la nota 3 de la propia tabla). Ningún appliance EdgeConnect lo cubre en solitario. Las salidas que sí sostiene la fuente oficial:<ul style="margin:6px 0 0;padding-left:18px">${salidas.map(s=>`<li>${s}</li>`).join('')}</ul></li>`);
+      /* Traza aritmética VIVA (mejora 2026-09-17): la cuenta del motor, factor a
+         factor, para que el veredicto se lea como ingeniería declarada y no como
+         «no hay equipos disponibles» — la confusión real que generó un diagnóstico
+         de «bug de filtrado por tipo de despliegue» sobre este mismo veredicto.
+         Los factores salen del propio motor (D.ing.traza), nunca de literales.
+         Solo aplica con enlaces declarados: sin caudal físico, wanNeed sale de la
+         fórmula histórica y esta traza no corresponde. */
+      const tz=D.ing&&D.ing.traza;
+      const fmtF=n=>(Math.round(n*100)/100).toFixed(2).replace('.',',');
+      const trazaMotor=(D.caudalTotal>0&&tz)
+        ?` La cuenta, con las hipótesis vivas del motor: <b>${miles(tz.bwFisico)} Mbps físicos ÷ IMIX ${fmtF(tz.factorIMIX)} × ${fmtF(1+tz.overheadFEC)} FEC × ${fmtF(1+tz.factorSeguridad)} seguridad × ${fmtF(1+tz.factorHeadroom)} margen${D.featurePenalty!==1?` × ${fmtF(D.featurePenalty)} función`:''} ≈ ${miles(Math.round(wanNeed))} Mbps</b> de diseño.`
+        :'';
+      why.push(`<li><b>El requerimiento (${fmt(wanNeed)}) supera el techo oficial de toda la línea EdgeConnect.</b>${trazaMotor} El modelo más capaz, el <b>${topeEC.id}</b>, publica <b>${fmt(techoEC)}</b> de caudal WAN («Up to 12 Gbps», QuickSpecs a50004289enw V18, p.30 — cifra bidireccional según la nota 3 de la propia tabla). Ningún appliance EdgeConnect lo cubre en solitario. Las salidas que sí sostiene la fuente oficial:<ul style="margin:6px 0 0;padding-left:18px">${salidas.map(s=>`<li>${s}</li>`).join('')}</ul></li>`);
     }
     // Cumplir por capacidad no basta si el equipo ya no se puede pedir: es el caso del
     // EC-XL (fin de venta 2026-03-31, política oficial de ciclo de vida de EdgeConnect).

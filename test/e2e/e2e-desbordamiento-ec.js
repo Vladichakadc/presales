@@ -45,6 +45,11 @@ async function enlazar5000mas5000(page) {
   let verdict = (await page.textContent('#verdict')) || '';
   t.ok(/Ningún modelo cumple/.test(verdict), 'con 21,4 Gbps de requerimiento no hay appliance EC que cumpla (no se inventa capacidad)');
   t.ok(/supera el techo oficial de toda la línea EdgeConnect/.test(verdict), 'el veredicto declara el desbordamiento de la línea');
+  // Traza aritmética viva (mejora 2026-09-17): la cuenta del motor, factor a factor,
+  // para que el desbordamiento se lea como ingeniería declarada y no como «fallo».
+  t.ok(/10,000 Mbps físicos ÷ IMIX 0,70/.test(verdict), 'la traza muestra el caudal físico agregado y el IMIX vivo');
+  t.ok(/× 1,15 FEC × 1,00 seguridad × 1,30 margen/.test(verdict), 'la traza muestra FEC, seguridad y margen vivos');
+  t.ok(/≈ 21,3\d\d Mbps de diseño/.test(verdict), 'la traza cierra con el requerimiento de diseño (≈21,4 Gbps)');
   t.ok(/EC-10150/.test(verdict) && /12(\.|,)0?00\s*0*\s*(Mbps|Gbps)|12 Gbps/.test(verdict), 'nombra el EC-10150 y su techo publicado');
   t.ok(/EC-V/.test(verdict), 'ofrece la vía EC-V (licencia + vCPU, sin techo de hardware publicado)');
   t.ok(/Repartir el fabric/.test(verdict), 'ofrece el reparto del fabric entre varios appliances');

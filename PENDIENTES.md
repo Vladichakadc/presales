@@ -4,7 +4,28 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-17 (plan 14: **interconexión EdgeHA en la lista de
+Última revisión: 2026-09-17 (plan 15: **traza aritmética viva en el veredicto de
+desbordamiento** — mejora propuesta al cerrar el plan 14 y aprobada por el dueño
+(«Si»). CONTEXTO: un prompt externo diagnosticó el veredicto de desbordamiento como
+«bug de filtrado por `tipo_despliegue`» — campo que NUNCA existió (0 coincidencias
+en el repo y en TODA la historia git); la clasificación real es `fam`/`rol` y el
+síntoma descrito («Gateway campus recomienda EC-10150») es imposible por
+construcción (`coincideFiltro`). El análisis quedó entregado: con 2×4000 Mbps el
+veredicto ES el comportamiento diseñado (≈23 Gbps de diseño > 12 Gbps publicados).
+La lección: un lector rápido —humano o IA— puede leer «ningún appliance lo cubre»
+como un fallo. Implementación: (1) el motor de ingeniería devuelve ahora `traza`
+con los factores VIVOS del cálculo (`bwFisico, factorIMIX, overheadFEC,
+factorSeguridad, factorHeadroom`) — la fuente del texto es el propio cálculo, no
+una foto que pueda derivar; (2) el veredicto pinta la cuenta factor a factor:
+«10,000 Mbps físicos ÷ IMIX 0,70 × 1,15 FEC × 1,00 seguridad × 1,30 margen ≈
+21,358 Mbps de diseño» (con la penalización de función cuando aplica, y solo con
+enlaces declarados — sin caudal físico el requerimiento sale de la fórmula
+histórica y la traza no corresponde). Cobertura: test unitario nuevo en el motor
+(la traza reconstruye el resultado + el escenario 2×4000 del reporte + el mapeo
+VOIP/LTE) y 3 afirmaciones e2e nuevas en el desbordamiento; 392 unitarios y 8/8 e2e
+en verde.)
+
+Revisión anterior: 2026-09-17 (plan 14: **interconexión EdgeHA en la lista de
 materiales — pendiente #7** — mejora propuesta y aprobada por el dueño en la misma
 frase («avanza con la mejora propuesta y el pendiente 7»: el #7 ERA esa mejora). El
 enlace directo entre los dos chasis del par necesita 1 puerto por chasis y ninguna

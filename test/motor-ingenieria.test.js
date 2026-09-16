@@ -118,3 +118,37 @@ test('el tier de licencia se tasa por el ancho de banda FÍSICO agregado', () =>
   assert.strictEqual(sin.tierLicenciaBwRequerido, 300);
   assert.strictEqual(con.tierLicenciaBwRequerido, 300);
 });
+
+test('traza: el motor devuelve los factores vivos con los que calculó', () => {
+  // 2026-09-17 — el veredicto de desbordamiento pinta la cuenta factor a factor
+  // (8.000 ÷ 0,70 × 1,15 × 1,35 × 1,30 ≈ 23.066) para que se lea como ingeniería
+  // declarada y no como «no hay equipos». La traza ES la fuente de ese texto:
+  // si alguien cambia un factor, aquí rompe — no en la propuesta de un cliente.
+  const r = calcularRequerimientosIngenieria({
+    ...BASE, fec_activo: true, modelo_seguridad: 'LOCAL_NGFW_DPI', headroom_pct: 30,
+  });
+  assert.deepStrictEqual(r.traza, {
+    bwFisico: 300, factorIMIX: 0.70, overheadFEC: 0.15, factorSeguridad: 0.35,
+    factorHeadroom: 0.30,
+  });
+  // Y la traza reconstruye el resultado: es la misma cuenta, no una foto aparte.
+  const reconstruido = Math.ceil(
+    (r.traza.bwFisico / r.traza.factorIMIX) * (1 + r.traza.overheadFEC) *
+    (1 + r.traza.factorSeguridad) * (1 + r.traza.factorHeadroom));
+  assert.strictEqual(reconstruido, r.throughputDisenoMbps);
+  // El escenario del reporte del dueño (2×4000 Mbps, hipótesis por defecto):
+  // ≈23 Gbps de diseño contra el techo oficial de 12 Gbps — desbordamiento declarado.
+  const esc = calcularRequerimientosIngenieria({
+    ...BASE, bw_mpls_mbps: 0, bw_internet_mbps: 8000,
+    fec_activo: true, modelo_seguridad: 'LOCAL_NGFW_DPI', headroom_pct: 30,
+  });
+  assert.strictEqual(esc.traza.bwFisico, 8000);
+  assert.ok(esc.throughputDisenoMbps > 12000);
+  // Perfil VOIP y FEC alto cambian los factores de la traza (mapeo vivo).
+  const lte = calcularRequerimientosIngenieria({
+    ...BASE, perfil_trafico: 'VOIP_INTENSIVE', fec_activo: true,
+    enlace_calidad: 'ALTA_PERDIDA_LTE',
+  });
+  assert.strictEqual(lte.traza.factorIMIX, 0.55);
+  assert.strictEqual(lte.traza.overheadFEC, 0.25);
+});
