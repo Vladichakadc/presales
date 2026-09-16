@@ -95,6 +95,20 @@ async function rellena(page, selector, valor) {
 // aqui con una linea, que es la propiedad que este array tiene y conviene conservar— y Aruba
 // declara el suyo, porque desde el refactor del 2026-09-13 el caudal se compone de filas de
 // enlaces WAN y no de un numero suelto.
+// El caudal de SUBIDA solo es editable si el enlace NO es simetrico, y las filas nacen
+// simetricas (dimensionador-aruba-edgeconnect.js: el input lleva `disabled` mientras
+// `simetrico` este marcado). Desmarcarlo antes de rellenar es lo que hace que esta
+// comprobacion siga ejercitando el campo en vez de esquivarlo.
+async function asimetrico(page, n) {
+  const sel = `#wanBuilderFilas .wan-fila >> nth=${n} >> [data-campo=simetrico]`;
+  const casilla = await page.$(sel);
+  if (!casilla) throw new Error(`no existe la casilla «simetrico» de la fila ${n + 1} (la pagina cambio de forma)`);
+  if (await casilla.isChecked()) {
+    await casilla.uncheck();
+    await espera(page, 200);
+  }
+}
+
 const caudalPorDefecto = (page) => rellena(page, '#bw', '2500');
 
 const dimensionadores = [
@@ -108,6 +122,7 @@ const dimensionadores = [
     // repinta, asi que basta con avisar del `input` en la primera fila.
     async caudal(page) {
       await rellena(page, '#wanBuilderFilas [data-campo=down] >> nth=0', '2500');
+      await asimetrico(page, 0);
       await rellena(page, '#wanBuilderFilas [data-campo=up] >> nth=0', '2500');
     },
     // LO QUE EL REFACTOR DEL 2026-09-13 TRAJO Y NADIE COMPROBABA. Su verificacion de extremo
@@ -136,6 +151,7 @@ const dimensionadores = [
       await page.click('[data-wan-quitar]');
       await espera(page, 200);
       await rellena(page, '#wanBuilderFilas [data-campo=down] >> nth=0', '20');
+      await asimetrico(page, 0);
       await rellena(page, '#wanBuilderFilas [data-campo=up] >> nth=0', '20');
       await rellena(page, '#users', '5');
       await espera(page, 600);
@@ -287,7 +303,7 @@ const PANTALLAS = [
     async acciones(page) {
       await espera(page, 600);
       const filas = await page.$$eval('#wanBuilderFilas [data-campo=down]', (es) => es.map((e) => ({
-        tipo: e.closest('div').querySelector('[data-campo=tipo]').value,
+        tipo: e.closest('.wan-fila').querySelector('[data-campo=tipo]').value,
         down: e.value,
       })));
       // Dos enlaces declarados en el enlace viejo = dos filas, con su tipo y su caudal. Que
