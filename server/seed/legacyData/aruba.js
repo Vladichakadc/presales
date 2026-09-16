@@ -64,6 +64,10 @@
 const DATASHEETS = {
   ecHardware:  {n:'EdgeConnect Hardware Reference Guide (PDF)', url:'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/hardware/reference/EdgeConnect-Hardware-Reference_latest.pdf', file:'edgeconnect-hardware-reference.pdf'},
   ecQuickspecs:{n:'EdgeConnect SD-WAN QuickSpecs',              url:'https://www.hpe.com/us/en/collaterals/collateral.a50004289enw.html', file:'edgeconnect-quickspecs.pdf'},
+  // La política de ciclo de vida es la fuente del boletín EC-XL (EOL_ANNOUNCED). La URL
+  // es VIVA y cambia sin historial público: el 2026-09-16 ya no mostraba las líneas por
+  // modelo consultadas el 2026-09-13 — de ahí congelar una copia como las demás.
+  ecLifecycle: {n:'EdgeConnect — Product Lifecycle Policy (PDF)', url:'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/docs/eula/EC_LifecyclePolicy_latest.pdf', file:'edgeconnect-lifecycle-policy.pdf'},
   ecSpecSheet: {n:'EdgeConnect Spec Sheet (US)',                url:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', file:'edgeconnect-spec-sheet-us.pdf'},
   ecOverview:  {n:'EdgeConnect SD-WAN — página de producto',    url:'https://www.hpe.com/us/en/aruba-edgeconnect-sd-wan.html', file:'edgeconnect-overview.pdf'},
   ecXsSpec:    {n:'EdgeConnect EC-XS — spec sheet',            url:'https://www.hpe.com/psnow/doc/a00110177enw', file:'edgeconnect-xs-spec-sheet.pdf'},

@@ -4,7 +4,22 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-16 (plan 9: **EC-XS verificado VIGENTE en fuentes oficiales
+Última revisión: 2026-09-16 (plan 10: **vigilancia de vigencia por QuickSpecs +
+congelado declarado de la política de ciclo de vida** — el dueño aceptó la mejora
+propuesta y los pendientes «—» del plan 9. Nace `npm run vigencia`: cruza el `hwSku`
+de cada EdgeConnect contra la sección de pedido de las QuickSpecs oficiales EN EL
+REPO (sin salir a internet) y ALARMA con código 1 cuando un modelo SIN boletín
+desaparece de la guía — la señal temprana y oficial de fin de venta, la misma que
+desmontó el falso EOL del EC-XS. Hoy: 9/9 ordenables, EC-XL nota (la V18 aún lista
+la variante NoLoc pese al boletín vencido), cero alarmas. No escribe en el catálogo:
+la marca sigue entrando solo por documento del fabricante. Alcance declarado: solo
+fam `ec` con SKU (gateways de campus y EC-V fuera, con motivo). Además la política
+de ciclo de vida entra en DATASHEETS para congelarla como las demás — los bytes
+quedan bloqueados por el egreso (fila nueva en *Bloqueado por acceso*); la pestaña
+de fuentes ya la enlaza oficial mientras tanto. Cobertura: 6 tests nuevos, 382 en
+verde; e2e 8/8).
+
+Revisión anterior: 2026-09-16 (plan 9: **EC-XS verificado VIGENTE en fuentes oficiales
 + resaltado de fin de venta consciente de la fecha** — petición directa del dueño:
 «valida en las fuentes oficiales si el EC-XS sigue vigente o entró en EOL y resalta
 si hay equipos con esta condición». Veredicto con cuatro fuentes oficiales: las
@@ -165,6 +180,7 @@ de datos— está en [`IMPORTAR-CATALOGO.md`](IMPORTAR-CATALOGO.md).
 |---|---|---|---|
 | ~~2~~ | ~~`cps` en 37 de los 58 FortiGate~~ **Resuelto (2026-09-02)**, y ampliado el 2026-09-03 de 53 a **56 de 58** leyendo las fichas por serie de 400F y 600F. Quedan 100F y 200F, cuyas fichas no están en la URL que sigue el patrón del resto (404, reportado). | — | resuelto vía Actions |
 | ~~3~~ | **~~PDFs de datasheets de Aruba~~ Resuelto (2026-09-11): 18/24, ver *Cerrado recientemente*.** Los 6 que quedaban atascados bajaron en sesión nueva con Chrome real: `ecQuickspecs`, `ecXlSpec`, `gw9000`, `gw9100`, `gw9200Qs` y `sdBranchVsg`. La cuota de `psnow/downloadDoc` efectivamente se había reseteado al día siguiente. De los 6 que faltan: 4 nunca fueron PDFs (páginas de documentación en vivo), 1 URL murió (`ecSpecSheet`, 404 genuino, hay que buscar el reemplazo) y 1 exige cuenta de soporte HPE (`gw9000Spec`). El método completo quedó documentado en `public/datasheets/LEEME.md`. | Nada pendiente salvo decidir el reemplazo de `ecSpecSheet` y conseguir una cuenta HPE para `gw9000Spec`. | — |
+| — | **Bytes del PDF «EdgeConnect Product Lifecycle Policy»** (entrada `ecLifecycle` en DATASHEETS, plan 10 del 2026-09-16). La entrada ya existe y la pestaña de fuentes enlaza la URL oficial; falta la copia congelada en `public/datasheets/edgeconnect-lifecycle-policy.pdf`. | `npm run datasheets` desde una máquina con salida (o navegador real) y commit del PDF — el mecanismo es el de siempre, la pared es la misma de los otros seis datasheets sin copia | El proxy de egreso responde 403 a `arubanetworking.hpe.com`; desde GitHub Actions la cuota de HPE se agota con ráfagas |
 | 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ` y las 23 AR no traen `mpps`. El motor no inventa: muestra lo que hay. | **El importador ya existe, y desde el 2026-09-04 también la plantilla**: `npm run huawei -- --check` inventaría los huecos y `npm run huawei -- --plantilla` escribe `huawei-specs.csv` y `huawei-eox.csv` ya con los 40 modelos y las cabeceras que el importador reconoce, así que el trabajo en la página se reduce a pegar cifras. Luego `npm run huawei -- huawei-specs.csv --dry` para el ensayo, sin `--dry` para aplicar, y `npm run huawei -- huawei-eox.csv --eol` para el fin de venta. **2026-09-10: el bloqueo de Akamai no es contra todo navegador** — con Chrome real (no Playwright/Actions) `support.huawei.com/enterprise/en/bulletins/` carga completo y sin captcha, con buscador por modelo (`AR6700` → 11 avisos con fecha real). Dos obstáculos nuevos, distintos del bloqueo anterior: el **contenido** de cada aviso exige cuenta Huawei (candado visible, no se intentó sortear), y lo que se ve en la lista son ciclos de vida de **versiones de software** (`V600R023C00`…), no de hardware — puede que ni sea la categoría correcta para lo que el catálogo modela (fin de venta del equipo físico). "PCN" (Product Change Notice) sí es a nivel de hardware pero no lista una categoría de routers en este momento. **2026-09-16: la categoría correcta ya no es una duda.** La búsqueda web localizó el documento oficial «Huawei NetEngine AR5700&6700&8000 Series Routers Product Life Cycle» (e.huawei.com, 2023-10-20) — ciclo de vida de **hardware**, exactamente lo que el catálogo modela — y al abrirlo pide contraseña: el contenido sigue tras la cuenta Huawei, como se sospechaba. El tablón de routers «Life Cycle Notices» existe y declara 450 avisos (la página carga; el índice es dinámico). Conclusión: el bloqueo ya no es la categoría ni el buscador, es solo la cuenta. | Cuenta Huawei Enterprise para abrir el PDF «NetEngine AR5700&6700&8000 Series Routers Product Life Cycle» (e.huawei.com) y el tablón de routers — la categoría de hardware quedó confirmada el 2026-09-16, ya no hace falta aclararla |
 | 4 | **~~Comprobar el sitio en vivo tras desplegar~~ Cerrado (2026-09-04)**, ver *Cerrado recientemente*. Eran dos preguntas distintas y ahora las cubren dos workflows: `sonda-produccion.yml` confirma desde fuera de este entorno que el dominio público responde de verdad (`/salud` y `/login`, sin sesión), y **`pantallas.yml`** conduce las 15 pantallas detrás del muro en un Chromium de verdad y sube una captura de cada una. No hace falta producción para lo segundo: la base es efímera y se resiembra desde `legacyData/` en cada despliegue, así que lo que pinta una pantalla es función del commit. | Nada pendiente de ingeniería. Queda el **juicio**: mirar las capturas del artefacto y decidir si la pantalla dice lo que se le quiere decir a un cliente. | — |
 
@@ -749,6 +765,43 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Vigilancia de vigencia por QuickSpecs + congelado declarado de la política de ciclo de vida (2026-09-16)
+
+El dueño aceptó la mejora propuesta al cerrar la validación del EC-XS, junto con los
+pendientes «—» de aquella entrega.
+
+**La mejora: `npm run vigencia`.** Lo que el 2026-09-16 se hizo a mano —desmontar el
+falso EOL del EC-XS cruzando los agregadores contra las QuickSpecs oficiales— queda
+convertido en sistema: `scripts/vigencia-quickspecs.js` lee la copia de las QuickSpecs
+que viaja CON el repositorio (sin salir a internet, corre igual aquí que en CI), busca
+el `hwSku` de cada EdgeConnect en la sección «Configuration Information» (la guía de
+pedido) y clasifica: **ordenable** / **mencionado** (solo fuera de la guía, p. ej. la
+tabla comparativa — el tercer estado, no un ausente) / **ausente**. Cruzado con el
+boletín del catálogo: ausente o mencionado SIN boletín es **ALARMA** (código de salida
+1: posible fin de venta no documentado, revisar el boletín oficial a mano); con boletín
+es nota consistente; ordenable con boletín vencido es nota (la V18 aún lista S0B67A
+NoLoc — patrón observado, no alarma). Declara la fuente con lo legible del propio PDF
+(título + fecha de creación) y el alcance con motivo: solo fam `ec` con SKU — gateways
+de campus (sus guías son otros documentos) y EC-V/legacy sin SKU quedan fuera
+declarados. **No escribe en el catálogo**: la marca de fin de venta sigue entrando solo
+por documento del fabricante con cita literal — automatizar la marca sería automatizar
+el juicio. Pareja natural del vigía: `vigia` avisa de que el documento cambió →
+`datasheets --force` lo refresca → `vigencia` dice qué cambió en ordenabilidad. Hoy:
+9/9 ordenables, cero alarmas. Seis tests fijan la regla (con modelos de mentira) y la
+realidad (contra el PDF oficial: si fallan tras un refresco, es la alarma funcionando).
+
+**El monitoreo EC-XS / EC-L-H (pendiente «—») queda cerrado por ese script**: si HPE
+retira JM962A o JZ878A de la guía, la alarma salta en la próxima corrida — y la guarda
+de `ciclo-de-vida-datos.test.js` sigue impidiendo marcarlos sin documento.
+
+**El congelado de la política de ciclo de vida (pendiente «—») queda declarado y
+mecanizado**: entrada `ecLifecycle` en DATASHEETS (la pestaña de fuentes ya la enlaza
+oficial, con «copia local» cuando baje). Los bytes no bajan desde este entorno —403 del
+proxy, la misma pared de los otros seis datasheets sin copia—: fila nueva en *Bloqueado
+por acceso*. La URL viva del documento ya no muestra las líneas por modelo que
+fundamentaron el boletín del EC-XL el 2026-09-13, que es justo lo que el congelado
+protege; las citas del seed quedan como el registro mientras tanto.
 
 ### La cobertura del contraste se mide, no se declara (2026-09-16)
 

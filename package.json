@@ -19,6 +19,7 @@
     "lista-aruba": "node scripts/importar-lista-aruba.js",
     "propuesta": "node scripts/importar-propuesta.js",
     "vigia": "node scripts/vigia-fuentes.js",
+    "vigencia": "node scripts/vigencia-quickspecs.js",
     "manual": "node scripts/generar-manual-usuario.js",
     "pantallas": "node scripts/verificar-pantallas.js",
     "skus": "node scripts/importar-skus-fortinet.js",
@@ -45,6 +46,7 @@
   },
   "devDependencies": {
     "eslint": "^9.39.5",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "pdf-parse": "^1.1.1"
   }
 }
