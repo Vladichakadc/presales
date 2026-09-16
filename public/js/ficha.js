@@ -102,6 +102,9 @@
 .ficha-vista figcaption{flex:1;min-width:180px;font-size:11px;line-height:1.45;color:var(--steel)}
 .ficha-vista-vacia{margin:0 0 12px;border:1px dashed var(--rule);border-radius:4px;padding:14px 12px;color:var(--steel);font-size:12px;line-height:1.5}
 .ficha-cands-mas{margin:-6px 0 12px;padding:0 2px;font-size:11px;color:var(--steel)}
+.ficha-salto{margin:10px 0 0;text-align:center}
+.ficha-salto a{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);text-decoration:none;border-bottom:1px dashed var(--rule);padding-bottom:1px}
+.ficha-salto a:hover{color:var(--red);border-bottom-color:var(--red)}
 `;
   if (!document.getElementById('ficha-estilos')) {
     const st = document.createElement('style');
@@ -438,7 +441,9 @@
     // (el resto de dimensionadores no declara el par y no cambia).
     const detNodo = (cfg.panelFijo && cfg.contenedorDetalle)
       ? document.getElementById(cfg.contenedorDetalle) : null;
-    const detalleHtml = (cfg.porQue ? `<div class="why">${cfg.porQue(sel)}</div>` : '')
+    const detalleHtml = (detNodo
+        ? `<h2 class="ficha-det-tit">Características del equipo seleccionado — <b>${esc(sel.id)}</b></h2>` : '')
+      + (cfg.porQue ? `<div class="why">${cfg.porQue(sel)}</div>` : '')
       + secciones
       + `<div class="ficha-refs" id="${cid}-refs"></div>`;
 
@@ -461,8 +466,20 @@
       + `<p class="family">${esc(cfg.subtitulo ? cfg.subtitulo(sel) : '')}</p>`
       + (mkSel ? `<p class="ficha-aviso">${avisoDe(sel)}</p>` : '')
       + medidores
+      // Wayfinding (2026-09-16): con el detalle fuera de la tarjeta, la primera versión
+      // lo dejó enterrado bajo toda la página y el dueño reportó las características
+      // «perdidas». El enlace declara DÓNDE están y salta a ellas con scroll suave;
+      // sin él, compacta se paga en no encontrar la información.
+      + (detNodo ? `<p class="ficha-salto"><a href="#${cfg.contenedorDetalle}" id="${cid}-salto">Ver características del equipo ↓</a></p>` : '')
       + (detNodo ? '' : detalleHtml);
     if (detNodo) detNodo.innerHTML = detalleHtml;
+    const salto = document.getElementById(cid + '-salto');
+    if (salto && detNodo) {
+      salto.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        detNodo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
 
     // Sin onchange= en linea: la CSP del sitio prohibe todo codigo inline.
     const nodo = document.getElementById(cid + '-sel');

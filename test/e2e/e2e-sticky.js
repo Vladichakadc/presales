@@ -60,13 +60,47 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   t.ok(topFondo >= 10 && topFondo <= 18,
     `panel sigue clavado al llegar al fondo (top=${topFondo}) — la regresión lo soltaba ~187 px antes`);
 
-  // ── el detalle largo quedó FUERA del panel clavado, en el flujo normal ──
+  // ── el detalle largo vive en la pestaña «Equipo»: FUERA del panel clavado y
+  //    alcanzable a UN clic desde la barra de pestañas, siempre visible
+  //    (2026-09-16: la 1.ª versión lo dejó a ~6300 px —7 viewports— y el dueño
+  //    reportó las características «perdidas»; la 2.ª, dentro de la columna
+  //    izquierda, medía igual de profundo. La pestaña es la solución) ──
   const detalle = await page.$eval('#verdict-detalle', (el) => ({
     texto: (el.textContent || '').length,
+    enPaneEquipo: !!el.closest('#pane-equipo'),
+    titulo: (el.querySelector('.ficha-det-tit') || {}).textContent || '',
   }));
   t.ok(detalle.texto > 200, `el detalle de la ficha (porqué + secciones) se pinta en #verdict-detalle (${detalle.texto} caracteres)`);
+  t.ok(detalle.enPaneEquipo,
+    'el detalle vive DENTRO de la pestaña «Equipo» (#pane-equipo) — si vuelve al flujo de «Dimensionar», queda enterrado a ~6300 px y «se pierde»');
+  t.ok(/Características del equipo seleccionado/.test(detalle.titulo),
+    `el detalle se encabeza con su título (${detalle.titulo.trim().slice(0, 60)})`);
   const veredictoTieneWhy = await page.$eval(PANEL, (el) => !!el.querySelector('.why'));
   t.ok(!veredictoTieneWhy, 'la tarjeta clavada ya no carga el porqué/secciones largas — eso es lo que forzaba el scroll');
+
+  // La pestaña existe en la barra y la pista de vacío se oculta al haber detalle
+  const tabEquipo = await page.$('.tabs button[data-tab="equipo"]');
+  t.ok(!!tabEquipo, 'la barra de pestañas incluye «Equipo»');
+  const pistaOculta = await page.$eval('#detalleVacio', (el) => getComputedStyle(el).display === 'none');
+  t.ok(pistaOculta, 'la pista «Configure el sitio…» se oculta cuando ya hay detalle pintado');
+
+  // ── wayfinding: la tarjeta declara dónde están las características y el salto
+  //    cambia a la pestaña «Equipo» y las deja a la vista ──
+  const salto = await page.$('#verdict .ficha-salto a');
+  t.ok(!!salto, 'la tarjeta fija lleva el enlace «Ver características del equipo ↓»');
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(200);
+  await salto.click();
+  await page.waitForTimeout(1200);
+  const estado = await page.evaluate(() => ({
+    paneVisible: !document.getElementById('pane-equipo').hidden,
+    tabActiva: document.querySelector('.tabs button[data-tab="equipo"]').getAttribute('aria-selected') === 'true',
+    topDetalle: Math.round(document.getElementById('verdict-detalle').getBoundingClientRect().top),
+  }));
+  t.ok(estado.paneVisible, 'el salto revela la pestaña «Equipo» (pane-equipo visible)');
+  t.ok(estado.tabActiva, 'el salto marca «Equipo» como pestaña activa');
+  t.ok(estado.topDetalle >= 0 && estado.topDetalle <= 900,
+    `el salto deja las características a la vista (top=${estado.topDetalle}px en un viewport de 900)`);
 
   await browser.close();
   process.exit(t.resumen('e2e-sticky'));

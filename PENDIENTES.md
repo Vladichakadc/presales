@@ -4,7 +4,16 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-16 (plan 6: **tarjeta «Equipos que cumplen» FIJA y con foto
+Última revisión: 2026-09-16 (plan 7: **pestaña «Equipo»** — el plan 6 movió el porqué
+y las secciones de características a `#verdict-detalle`, pero al quedar en el flujo de
+«Dimensionar» aterrizaban a ~6 300 px (7 viewports: la columna de configuración sola
+mide ~5 500 px) y el dueño reportó la información «perdida». Solución de diseño: sexta
+pestaña «Equipo» en la barra — visible siempre, a un clic, a todo ancho — que aloja el
+porqué + secciones en `.pane-centro`; el enlace «Ver características del equipo ↓» de
+la tarjeta fija cambia a esa pestaña y sube al inicio; pista de vacío mientras no hay
+candidatos. La tarjeta sigue fija y sin scroll interno, como pidió el dueño).
+
+Revisión anterior: 2026-09-16 (plan 6: **tarjeta «Equipos que cumplen» FIJA y con foto
 oficial del equipo** — petición directa del dueño: sin scroll interno (el único scroll
 es el de la página), foto oficial coronando la ficha con vistas frontal/trasera del
 documento de origen, cambia al elegir otro equipo, pie con tamaño y procedencia;

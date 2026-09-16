@@ -65,10 +65,15 @@ h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28p
    la tarjeta clavada se queda en lo esencial y esto aparece al bajar. */
 .detalle-verdict{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:0 16px;align-items:start}
 .detalle-verdict:empty{display:none}
+#verdict-detalle:not(:empty)~#detalleVacio{display:none}
 .detalle-verdict>.why{grid-column:1/-1}
-/* El detalle y la nota son filas del grid a todo lo ancho: viven DENTRO de .cols para
-   que la columna derecha siga clavada hasta el fondo (ver el comentario del sticky). */
-.cols>.detalle-verdict,.cols>.note{grid-column:1/-1}
+/* La nota es fila del grid a todo lo ancho, DENTRO de .cols: alarga el grid y eso
+   mantiene clavada la columna derecha hasta el fondo (ver el comentario del sticky).
+   El detalle vive dentro de la columna izquierda — ver el comentario junto al markup. */
+.cols>.note{grid-column:1/-1}
+/* Titular del detalle, en el lenguaje de los paneles de la página (.panel h2). */
+.ficha-det-tit{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:0 0 10px;font-weight:600}
+.ficha-det-tit b{color:var(--ink)}
 }
 /* Lista de materiales: una sola columna centrada, no el grid de dos del dimensionador —
    los dos cuadros (añadir y lista) van al centro de la pantalla y al mismo ancho (2026-09-13). */
@@ -320,6 +325,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
 
 <div class="tabs" role="tablist">
   <button role="tab" aria-selected="true" data-tab="calc">Dimensionar</button>
+  <button role="tab" aria-selected="false" data-tab="equipo">Equipo</button>
   <button role="tab" aria-selected="false" data-tab="bom">Lista de materiales</button>
   <button role="tab" aria-selected="false" data-tab="lic">Licencias y software</button>
   <button role="tab" aria-selected="false" data-tab="cat">Catálogo</button>
@@ -579,16 +585,16 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
   <div class="verdict" id="verdict"></div>
 </div>
 
-<!-- Detalle de la ficha (porqué + secciones largas) FUERA de la tarjeta clavada pero
-     DENTRO de .cols como fila a todo lo ancho (2026-09-16): la tarjeta se queda
-     compacta y fija, esto fluye con la página — y al vivir dentro del grid alarga
-     .cols, que es lo que mantiene clavada la columna derecha hasta el fondo (si va
-     fuera, el sticky se suelta al terminar las columnas, medido en e2e-sticky.js). -->
-<div class="detalle-verdict" id="verdict-detalle"></div>
-
 <div class="note">
   <b>Nota metodológica.</b> El dimensionamiento separa dos números que otras plataformas funden en uno: lo que el <b>equipo procesa</b> (tráfico de aplicación, lado LAN) y lo que los <b>enlaces transportan</b> (caudal WAN, que es lo que se contrata al operador y lo que fija el tier de la suscripción). Path Conditioning sube el segundo —el FEC envía paquetes de paridad para reconstruir pérdidas sin esperar retransmisión, y esa paridad ocupa ancho de banda—, mientras que Boost lo baja, porque deduplica y comprime antes de que el tráfico salga. Boost, a cambio, exige más proceso al equipo. Por eso una sede con tráfico repetitivo puede justificar un appliance mayor y aun así salir más barata, si el ahorro de caudal contratado durante tres años supera la diferencia de hardware. Para EdgeConnect, HPE publica un <b>rango</b> de caudal por modelo y no un throughput único: quedar por debajo del suelo del rango señala sobredimensionamiento, y es tan accionable como pasarse del techo.
 </div>
+</div>
+</div>
+
+<div class="tabpane" id="pane-equipo" hidden>
+<div class="pane-centro">
+<div class="detalle-verdict" id="verdict-detalle"></div>
+<p class="hint" id="detalleVacio">Configure el sitio en «Dimensionar»: aquí aparecerán el porqué de la recomendación y las características completas del equipo seleccionado (interfaces, alimentación, ambiente, licenciamiento…), extraídas de los documentos oficiales.</p>
 </div>
 </div>
 
