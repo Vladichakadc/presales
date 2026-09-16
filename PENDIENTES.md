@@ -4,7 +4,33 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-17 (plan 13: **vigencia extendida a los gateways de campus +
+Última revisión: 2026-09-17 (plan 14: **interconexión EdgeHA en la lista de
+materiales — pendiente #7** — mejora propuesta y aprobada por el dueño en la misma
+frase («avanza con la mejora propuesta y el pendiente 7»: el #7 ERA esa mejora). El
+enlace directo entre los dos chasis del par necesita 1 puerto por chasis y ninguna
+propuesta puede salir sin él. Implementado con el patrón de siempre, nunca una óptica
+inventada: (1) PREDICADO ÚNICO `parEdgeHA()` compartido por asistente de cableado,
+chooser y BOM (EdgeConnect + HA marcado + ≥2 enlaces activos); (2) regla de
+ingeniería DECLARADA de la casa para la velocidad — `velocidadEdgeHA()`: la menor
+velocidad de óptica compatible con el modelo que cubre el AGREGADO WAN del sitio (el
+VSG no la fija; por la interconexión cruza el tráfico de los underlays que no
+aterrizan en el activo — dimensionarla al agregado deja la asignación libre y el
+failover sin cuello de botella); (3) fila «Interconexión EdgeHA» en el chooser — se
+muestra AUNQUE no haya ópticas WAN que elegir (dos enlaces RJ45 en par HA siguen
+necesitando la interconexión), la elección viaja en `sfpPickData['EdgeHA']` con la
+misma mecánica de los enlaces WAN; (4) línea del BOM: ×2 cotizadas si hay elección,
+PENDIENTE DE SELECCIÓN sin precio si hay varias compatibles, y declarada sin SKU si
+el agregado supera las ópticas del catálogo del modelo (salida honesta: cobre directo
+o confirmar con HPE); (5) la fila de interconexión del asistente de cableado refleja
+el estado real (elegida / por elegir / no cubierta). El trabajo destapó UN DEFECTO
+PREEXISTENTE: el chooser se pintaba al principio del render leyendo `#pickModel` ANTES
+de que el combo se repoblará — quedaba un render atrás (invisible hasta que la fila
+EdgeHA lo hizo notar). Corregido: el chooser se pinta al final de `poblarPickModel`,
+con el pick del render actual. Cobertura: 9 comprobaciones e2e nuevas (fila visible,
+velocidad desde los datos, PENDIENTE → elegida → cotizada, chooser se oculta sin HA,
+elección que sobrevive al ciclo HA off→on); 391 unitarios y 8/8 e2e en verde.)
+
+Revisión anterior: 2026-09-17 (plan 13: **vigencia extendida a los gateways de campus +
 asistente de cableado EdgeHA + dedup de «Interfaces» en la ficha** — petición del
 dueño: «ejecuta el primer pendiente y la mejora propuesta… y valida en las
 características del equipo, veo información redundante, por ejemplo interfaces».
@@ -858,6 +884,30 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Interconexión EdgeHA en la lista de materiales — pendiente #7 (2026-09-17)
+
+El asistente de cableado del plan 13 dejaba claro que el enlace EdgeHA necesita un
+puerto por chasis, pero ninguna línea del BOM lo reflejaba: en un chasis todo-SFP+ son
+2 ópticas que la propuesta no recogía. El dueño aprobó la mejora propuesta («avanza
+con la mejora propuesta y el pendiente 7» — eran la misma).
+
+**Implementación.** Predicado único `parEdgeHA()` (EdgeConnect + HA + ≥2 enlaces
+activos) compartido por ficha, chooser y BOM. Regla de velocidad declarada de la casa
+(`velocidadEdgeHA()`): menor óptica compatible con el modelo que cubre el agregado WAN
+del sitio — el VSG no la fija, y por la interconexión cruza el tráfico de los
+underlays que no aterrizan en el activo. El chooser muestra la fila «Interconexión
+EdgeHA» aunque no haya ópticas WAN que elegir; la elección viaja en
+`sfpPickData['EdgeHA']`. El BOM cotiza ×2 si hay elección, declara PENDIENTE DE
+SELECCIÓN si hay varias compatibles, y declara sin SKU si el agregado supera las
+ópticas del catálogo (cobre directo o confirmar con HPE — nunca una óptica inventada).
+
+**Defecto preexistente pescado al probarlo:** el chooser se pintaba al principio del
+render leyendo `#pickModel` antes de que el combo se repoblara — quedaba un render
+atrás. Ahora se pinta al final de `poblarPickModel`, con el pick del render actual.
+
+Cobertura: 9 comprobaciones e2e nuevas en `e2e-desbordamiento-ec.js` (§3c); 391
+unitarios y 8/8 e2e en verde.
 
 ### Vigencia multi-fuente + asistente de cableado EdgeHA + dedup «Interfaces» (2026-09-17)
 

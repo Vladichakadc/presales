@@ -120,7 +120,7 @@ async function enlazar5000mas5000(page) {
   // de 5 Gbps: la ficha pinta qué enlace va a qué chasis del par, con la interconexión
   // EdgeHA declarada. En el escenario de desbordamiento NO se puede probar: allí el
   // veredicto honesto («ningún modelo cumple») sustituye a la ficha a propósito.
-  let fichaHa = (await page.textContent('#verdict')) || '';
+  const fichaHa = (await page.textContent('#verdict')) || '';
   t.ok(/Cableado del par EdgeHA/.test(fichaHa), 'con HA y 2 enlaces la ficha pinta «Cableado del par EdgeHA»');
   t.ok(/Nodo A/.test(fichaHa) && /Nodo B/.test(fichaHa), 'asigna cada enlace a un chasis del par (A/B)');
   t.ok(/Enlace EdgeHA/.test(fichaHa) && /sin switch/.test(fichaHa), 'declara la interconexión directa entre chasis, sin switch');
@@ -129,13 +129,50 @@ async function enlazar5000mas5000(page) {
   // «Características del equipo» Y en «Configuración de puertos». Ahora, una sola vez.
   t.ok((fichaHa.match(/Interfaces/g) || []).length === 1,
     '«Interfaces» aparece UNA sola vez en la ficha (solo en «Configuración de puertos»)');
-  // Y al apagar HA con la ficha pintada, la sección desaparece (no es decoración fija).
+  // ── 3c · Interconexión EdgeHA en la lista de materiales (pendiente #7, 2026-09-17) ──
+  // Los dos enlaces del escenario son RJ45 (sin óptica WAN que elegir): el chooser se
+  // abre SOLO por la interconexión del par. Agregado 10 Gbps ⇒ velocidad recomendada
+  // 10G; el EC-10150 tiene varias compatibles ⇒ PENDIENTE hasta que el usuario elija.
+  const selHA = page.locator('#sfpChooser select[data-sfp-medio="EdgeHA"]');
+  t.ok(await selHA.count() === 1, 'el builder ofrece la óptica de la interconexión EdgeHA');
+  const chooTxt = (await page.textContent('#sfpChooser')) || '';
+  t.ok(/Interconexión EdgeHA/.test(chooTxt) && /1 puerto por chasis/.test(chooTxt),
+    'la fila declara la interconexión: 2 ópticas, 1 puerto por chasis');
+  t.ok(/10G/.test(chooTxt) && /agregado/.test(chooTxt),
+    'la velocidad recomendada (10G ≥ agregado de 10 Gbps) sale de los datos, no de un literal');
+  await page.click('[data-tab=bom]');
+  await page.waitForTimeout(600);
+  let bomHA = (await page.textContent('#pane-bom')) || '';
+  t.ok(/Interconexión EdgeHA/.test(bomHA) && /PENDIENTE DE SELECCIÓN/.test(bomHA),
+    'sin elección, la interconexión queda PENDIENTE declarada en el BOM (nunca una óptica inventada)');
+  await page.click('[data-tab=calc]');
+  await page.waitForTimeout(300);
+  const optHA = await selHA.locator('option').nth(1).getAttribute('value');
+  await selHA.selectOption(optHA);
+  await page.waitForTimeout(800);
+  const fichaOpt = (await page.textContent('#verdict')) || '';
+  t.ok(fichaOpt.includes(optHA), 'la ficha muestra la óptica elegida para la interconexión (' + optHA + ')');
+  await page.click('[data-tab=bom]');
+  await page.waitForTimeout(600);
+  bomHA = (await page.textContent('#pane-bom')) || '';
+  t.ok(bomHA.includes(optHA) && !/PENDIENTE DE SELECCIÓN/.test(bomHA),
+    'tras elegir, el BOM cotiza la interconexión y el PENDIENTE desaparece');
+  await page.click('[data-tab=calc]');
+  await page.waitForTimeout(300);
+  // Y al apagar HA no queda nada que elegir: el chooser se oculta entero.
   await page.click('#chkHa');
   await page.waitForTimeout(700);
-  fichaHa = (await page.textContent('#verdict')) || '';
-  t.ok(!/Cableado del par EdgeHA/.test(fichaHa), 'al desmarcar HA con la ficha pintada, la sección EdgeHA desaparece');
+  const fichaSinHA = (await page.textContent('#verdict')) || '';
+  t.ok(!/Cableado del par EdgeHA/.test(fichaSinHA), 'al desmarcar HA con la ficha pintada, la sección EdgeHA desaparece');
+  t.ok(await page.isHidden('#sfpChooser'), 'sin HA ni enlaces SFP, el chooser se oculta entero');
   await page.click('#chkHa');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(600);
+  await page.click('[data-tab=bom]');
+  await page.waitForTimeout(600);
+  const bomHA2 = (await page.textContent('#pane-bom')) || '';
+  t.ok(bomHA2.includes(optHA), 'la elección de la interconexión sobrevive al ciclo HA off→on (estado en #sfpPickData)');
+  await page.click('[data-tab=calc]');
+  await page.waitForTimeout(300);
 
   // ── 4 · Regresión: escenario pequeño sigue recomendando EC pequeño ────────
   await page.click('#btnLimpiarEscenario');

@@ -423,17 +423,54 @@ let accesoriosElegidos={};
      «PENDIENTE DE SELECCIÓN» sin precio — jamás una óptica inventada).
    · RJ45 no necesita óptica: el puerto cobre es nativo. */
 const MEDIOS_OPTICA={'SFP 1G':'1G','SFP+ 10G':'10G'};
-function opticasPara(modeloId, medio){
-  const speed=MEDIOS_OPTICA[medio]; if(!speed||!modeloId) return [];
+// Ópticas compatibles con un modelo a una velocidad dada: el filtro vive UNA vez aquí
+// (lo comparten los enlaces WAN y la interconexión EdgeHA, pendiente #7 del dueño).
+function opticasPorVelocidad(modeloId, speed){
+  if(!speed||!modeloId) return [];
   const cfg=ACCESSORY_COMPAT[modeloId]; if(!cfg) return [];
   return cfg.items.map(sku=>({sku, a:ACCESSORY_CATALOG[sku]}))
     .filter(x=>x.a&&x.a.speed===speed&&x.a.media!=='DAC'&&!/_TAA$/.test(x.a.media||'')&&x.a.plc!=='ES');
+}
+function opticasPara(modeloId, medio){
+  return opticasPorVelocidad(modeloId, MEDIOS_OPTICA[medio]);
 }
 // Enlaces activos (con caudal) que necesitan óptica, agrupados por medio: {medio: n}.
 function necesidadesOptica(links){
   const n={};
   (links||[]).filter(l=>l.down>0||l.up>0).forEach(l=>{ if(MEDIOS_OPTICA[l.medio]) n[l.medio]=(n[l.medio]||0)+1; });
   return n;
+}
+
+/* ══ INTERCONEXIÓN EdgeHA (pendiente #7 del dueño, 2026-09-17 — mejora propuesta y
+   aprobada: «línea declarada en la lista de materiales, sin precio inventado») ══
+   El enlace directo entre los dos chasis del par —por él viajan los túneles de cada
+   underlay hacia ambos appliances (VSG SD-Branch, fig. «EC HA»)— necesita UN PUERTO
+   POR CHASIS. Si queda cobre libre basta un latiguillo (no se cotiza desde el
+   catálogo); si no, son 2 ópticas. Tres cosas se comparten entre el asistente de
+   cableado de la ficha, el chooser y el BOM: el PREDICADO (parEdgeHA), la VELOCIDAD
+   recomendada (velocidadEdgeHA) y la clave de la elección (sfpPickData['EdgeHA']). */
+// El predicado, una sola vez: EdgeConnect, par HA marcado y ≥2 enlaces WAN activos.
+// Devuelve los enlaces activos (ya filtrados) o null — así el llamador no repite el
+// filtro ni arriesga una condición distinta en cada sitio.
+function parEdgeHA(esEC, unidades, links){
+  const act=(links||[]).filter(l=>l.down>0||l.up>0);
+  return (esEC&&unidades===2&&act.length>=2)?act:null;
+}
+// Velocidad de las ópticas del catálogo, en Mbps por dirección (full-duplex).
+const VELOCIDAD_OPTICA={'1G':1000,'10G':10000,'25G':25000};
+// Regla de ingeniería de la casa (2026-09-17, DECLARADA — el VSG no fija la velocidad
+// del enlace EdgeHA): por la interconexión cruza el tráfico de los underlays que NO
+// aterrizan en el chasis activo, así que dimensionarla al AGREGADO WAN del sitio deja
+// la asignación de enlaces a chasis libre y el failover sin cuello de botella. Se
+// recomienda la MENOR velocidad de óptica compatible con el modelo que cubre ese
+// agregado; null si ninguna la cubre (o el modelo no tiene jaulas: entonces la salida
+// honesta es cobre directo o confirmar con HPE — se declara, no se inventa).
+function velocidadEdgeHA(modeloId, agregadoMbps){
+  const cfg=ACCESSORY_COMPAT[modeloId]; if(!cfg) return null;
+  const speeds=[...new Set(cfg.items.map(s=>ACCESSORY_CATALOG[s]&&ACCESSORY_CATALOG[s].speed).filter(Boolean))];
+  const caben=speeds.filter(s=>(VELOCIDAD_OPTICA[s]||0)>=agregadoMbps)
+    .sort((a,b)=>VELOCIDAD_OPTICA[a]-VELOCIDAD_OPTICA[b]);
+  return caben[0]||null;
 }
 // Unidades del sitio (petición del dueño, 2026-09-15): SIN campo de cantidad — en
 // EdgeConnect un sitio lleva un appliance o un par HA 1+1 (arquitectura oficial), así
@@ -543,12 +580,16 @@ function opticaResuelta(modeloId, medio, pick){
 }
 function pintarSfpChooser(){
   const box=$('sfpChooser'); if(!box) return;
-  const nec=necesidadesOptica(leerWanLinks());
+  const enlaces=leerWanLinks();
+  const nec=necesidadesOptica(enlaces);
   const medios=Object.keys(nec);
   const m=typeof modeloActual==='function'&&MODELS.length?modeloActual():null;
-  if(!medios.length||!m){ box.hidden=true; box.innerHTML=''; return; }
-  const pick=leerSfpPick();
   const und=unidadesSitio();
+  // Interconexión EdgeHA (pendiente #7): se pinta aunque no haya ópticas WAN que elegir
+  // — dos enlaces RJ45 en par HA siguen necesitando el puerto de interconexión.
+  const actHA=m?parEdgeHA(m.fam==='ec', und, enlaces):null;
+  if(!m||(!medios.length&&!actHA)){ box.hidden=true; box.innerHTML=''; return; }
+  const pick=leerSfpPick();
   // EdgeHA (2026-09-17): con el par marcado, cada enlace aterriza en UN chasis — la
   // óptica es 1 por enlace, no 1 por enlace y por unidad (eso es el patrón de hub).
   const esParEdgeHA=m.fam==='ec'&&und===2;
@@ -570,8 +611,32 @@ function pintarSfpChooser(){
     const aviso=ops.length>1?`<p class="hint" style="margin:0 0 6px">Hay ${ops.length} ópticas ${esc(medio)} compatibles con ${esc(m.id)} — selecciona el tipo que requiere el enlace (alcance y medio).</p>`:'';
     return `<div class="sfp-fila"><div class="sfp-fila-top"><b>${esc(medio)}</b> × ${qty} — ${nec[medio]} enlace${nec[medio]===1?'':'s'}${esParEdgeHA?' · 1 por enlace — EdgeHA: cada enlace a un chasis del par':und>1?` × ${und} unidades`:''}</div>${aviso}${sel}</div>`;
   });
+  // La fila de la interconexión del par: 1 puerto por chasis, velocidad recomendada ≥
+  // agregado del sitio (regla declarada de la casa — el VSG no la fija). Misma mecánica
+  // que los enlaces WAN: la elección viaja en sfpPickData['EdgeHA'] y el BOM la cotiza.
+  if(actHA){
+    const agregado=actHA.reduce((s,l)=>s+l.down,0);
+    const vel=velocidadEdgeHA(m.id, agregado);
+    const ops=vel?opticasPorVelocidad(m.id, vel):[];
+    if(!vel||!ops.length){
+      filas.push(`<div class="sfp-fila"><div class="sfp-fila-top"><b>Interconexión EdgeHA</b> × 2 — 1 puerto por chasis</div>`
+        +`<span class="warn">${vel?`No hay óptica ${esc(vel)} compatible con ${esc(m.id)} en el catálogo`:`El agregado del sitio (${fmt(agregado)}) supera las ópticas del catálogo para ${esc(m.id)}`} — salida honesta: cobre directo si quedan puertos libres, o confirmar la óptica con HPE. Se declara en la lista de materiales, sin SKU inventado.</span></div>`);
+    }else{
+      if(pick.EdgeHA&&!ops.some(o=>o.sku===pick.EdgeHA)){ delete pick.EdgeHA; dirty=true; }
+      if(ops.length===1&&pick.EdgeHA!==ops[0].sku){ pick.EdgeHA=ops[0].sku; dirty=true; }
+      const sel=ops.length===1
+        ?`<span class="sfp-auto"><code>${ops[0].sku}</code> — ${esc(accEtiquetas(ops[0].a))} · única compatible</span>`
+        :`<select data-sfp-medio="EdgeHA" aria-label="Óptica de la interconexión EdgeHA">`
+          +`<option value="">— Selecciona la óptica…</option>`
+          +ops.map(o=>`<option value="${o.sku}"${pick.EdgeHA===o.sku?' selected':''}>${o.sku} — ${esc(accEtiquetas(o.a))} · ${o.a.listPrice!=null?'$'+o.a.listPrice.toLocaleString('en-US'):'consultar'}</option>`).join('')
+          +`</select>`;
+      filas.push(`<div class="sfp-fila"><div class="sfp-fila-top"><b>Interconexión EdgeHA</b> × 2 — 1 puerto por chasis · velocidad recomendada <b>${esc(vel)}</b> (≥ agregado del sitio, ${fmt(agregado)})</div>`
+        +`<p class="hint" style="margin:0 0 6px">El enlace directo entre los dos chasis lleva los túneles de cada underlay a ambos (VSG SD-Branch, fig. «EC HA»). Si queda un puerto cobre libre en cada chasis, un latiguillo lo resuelve sin ópticas — decisión de despliegue; si se opta por fibra, se cotizan 2.</p>${sel}</div>`);
+    }
+  }
   if(dirty) escribirSfpPick(pick);
-  box.innerHTML=`<p class="mono-lbl" style="margin:0 0 8px">Ópticas de los enlaces WAN</p>`+filas.join('');
+  const cabecera=medios.length?'Ópticas de los enlaces WAN':'Óptica de la interconexión EdgeHA';
+  box.innerHTML=`<p class="mono-lbl" style="margin:0 0 8px">${cabecera}</p>`+filas.join('');
   box.hidden=false;
 }
 
@@ -917,15 +982,16 @@ $('pickModel').addEventListener('change',()=>{ $('pickModel').dataset.bomManual=
 // Selector de óptica SFP por medio (SPEC B.1, 2026-09-15): cuando hay varias ópticas
 // compatibles con el modelo, la elección es del USUARIO (alcance/medio del enlace — el
 // dimensionador no puede inferirlo). La elección viaja en #sfpPickData (JSON {medio:sku},
-// dentro de CAMPOS_ESCENARIO, así que sobrevive a la URL compartida) y al cambiarla solo
-// hace falta repintar el BOM: ficha y resumen no dependen de la óptica elegida.
+// dentro de CAMPOS_ESCENARIO, así que sobrevive a la URL compartida). Al cambiarla basta
+// repintar el BOM… salvo la de la interconexión EdgeHA (pendiente #7, 2026-09-17): su SKU
+// sí se muestra en la ficha (asistente de cableado), así que esa repinta todo.
 $('sfpChooser').addEventListener('change',e=>{
   const medio=e.target.dataset&&e.target.dataset.sfpMedio;
   if(!medio) return;
   const pick=leerSfpPick();
   if(e.target.value) pick[medio]=e.target.value; else delete pick[medio];
   escribirSfpPick(pick);
-  renderBom();
+  if(medio==='EdgeHA') render(); else renderBom();
 });
 
 // BOM editable (petición del dueño, 2026-09-15): retirar y restaurar líneas. Delegado en
@@ -1471,7 +1537,10 @@ function render(){
   // Barra agregada del underlay (etapa A): viva en cada cambio, aunque no haya
   // recomendación todavía — es el espejo de lo que el builder está declarando.
   pintarWanResumen();
-  pintarSfpChooser();
+  // El chooser de ópticas NO se pinta aquí: lee el modelo de #pickModel y el combo se
+  // repuebla al final de cada rama del render (poblarPickModel) — pintarlo antes lo
+  // dejaba un render ATRÁS (con el modelo del render anterior; lo pescó la fila de la
+  // interconexión EdgeHA, 2026-09-17). Vive al final de poblarPickModel.
   // SSE licencia POR USUARIO (petición del dueño, 2026-09-15): con esa estrategia, el
   // campo de usuarios deja de ser opcional — se marca en ámbar mientras esté vacío y la
   // línea del BOM queda «PENDIENTE» en vez de cotizar una licencia inventada.
@@ -1882,9 +1951,8 @@ function render(){
        la nota lo declara. Lo que NO hace: proponer SKU para la interconexión — el VSG
        no lo fija y aquí no se inventa (regla de las ópticas pendientes de siempre). */
     const seccionEdgeHA=()=>{
-      if(!esEC||unidades!==2) return [];
-      const enlaces=leerWanLinks().filter(l=>l.down>0||l.up>0);
-      if(enlaces.length<2) return [];
+      const enlaces=parEdgeHA(esEC, unidades, leerWanLinks()); // predicado único, ver arriba
+      if(!enlaces) return [];
       const pickSfp=leerSfpPick();
       const filas=enlaces.map((l,i)=>{
         const nodo=i%2===0?'Nodo A':'Nodo B';
@@ -1901,8 +1969,21 @@ function render(){
         }
         return [`WAN ${i+1} · ${esc(l.tipo)} ↓${fmt(l.down)}`, `<b>${nodo}</b> — ${medioTxt}`, true];
       });
+      // La interconexión refleja lo que la lista de materiales cotiza (pendiente #7):
+      // óptica elegida, pendiente de elegir, o declarada sin SKU cuando el catálogo no
+      // cubre el agregado. La velocidad recomendada es la regla declarada de la casa.
+      const agregado=enlaces.reduce((s,l)=>s+l.down,0);
+      const velHA=velocidadEdgeHA(m.id, agregado);
+      const opsHA=velHA?opticasPorVelocidad(m.id, velHA):[];
+      const pickHA=pickSfp.EdgeHA;
+      const skuHA=pickHA&&opsHA.some(o=>o.sku===pickHA)?pickHA:(opsHA.length===1?opsHA[0].sku:null);
       filas.push(['Enlace EdgeHA (interconexión del par)',
-        'Puerto libre en <b>cada</b> chasis, cableado directo entre ambos (sin switch): por él viajan los túneles de CADA underlay hacia los dos appliances. Velocidad y medio a criterio del despliegue — el VSG no fija SKU y aquí no se inventa.', true]);
+        'Puerto libre en <b>cada</b> chasis, cableado directo entre ambos (sin switch): por él viajan los túneles de CADA underlay hacia los dos appliances. '
+        +(skuHA
+          ?`Óptica <code>${esc(skuHA)}</code> ×2 — la elegida en el builder WAN, ya cotizada en la lista de materiales.`
+          :(velHA&&opsHA.length
+            ?`Velocidad recomendada <b>${esc(velHA)}</b> (≥ agregado del sitio, ${fmt(agregado)} — regla declarada de la casa): <span class="warn">óptica por elegir en el builder WAN</span>; la línea ya está declarada en la lista de materiales. Si queda cobre libre, un latiguillo la resuelve sin ópticas.`
+            :`<span class="warn">El agregado del sitio (${fmt(agregado)}) supera las ópticas del catálogo para este modelo</span> — cobre directo si quedan puertos libres, o confirmar la óptica con HPE; la línea está declarada en la lista de materiales. Sin SKU inventado.`)), true]);
       return [{titulo:'Cableado del par EdgeHA', filas,
         nota:'Diseño oficial de sucursal del VSG SD-Branch (fig. «EC HA»): cada transporte aterriza en un chasis del par — «no WAN-side switches are required». Activo/standby: el activo procesa el agregado completo y el standby toma el relevo en fallo (métrica OSPF mayor en el standby, para evitar ECMP). HA suma <b>disponibilidad, no caudal</b>.'
         +(enlaces.length>2?' Con más de dos transportes, el reparto A/B alterno <b>extiende</b> el patrón de la figura — asignación propuesta, no prescrita por el VSG.':'')}];
@@ -2031,6 +2112,11 @@ function poblarPickModel(cumplen, recomendado){
       return `<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.seg)}${marca}</option>`;
     }).join('')+'</optgroup>').join('');
   if(actual&&[...sel.options].some(o=>o.value===actual)) sel.value=actual;
+  // El chooser de ópticas se repinta con el combo YA poblado (2026-09-17): lee el modelo
+  // de #pickModel, así que solo aquí ve el pick del render ACTUAL — antes se pintaba al
+  // principio del render y quedaba un ciclo atrás (la fila de interconexión EdgeHA no
+  // aparecía hasta el siguiente cambio de cualquier campo).
+  pintarSfpChooser();
 }
 
 function populateSelects(){
@@ -2253,6 +2339,33 @@ function renderBom(){
     filas.push({cat:'Accesorios', desc:a.name, sku, qty:qtyO, unit:a.listPrice!=null?a.listPrice:null,
       nota:`Óptica ${medio} × ${qtyO} (${nLinks} enlace${nLinks===1?'':'s'}${esEC&&qty>1?' — EdgeHA: cada enlace aterriza en UN chasis del par (VSG SD-Branch, fig. «EC HA»)':qty>1?` × ${qty} unidades`:''}) — List Price de la lista oficial (vigencia ${a.vigencia||'s/f'}); tipo seleccionado en el builder WAN`});
   });
+  // Interconexión EdgeHA (pendiente #7 del dueño, 2026-09-17 — mejora aprobada): el
+  // enlace directo entre los dos chasis del par necesita 1 puerto por chasis. Si hay
+  // cobre libre lo resuelve un latiguillo (no cotizable desde el catálogo); si va por
+  // fibra son 2 ópticas de la velocidad recomendada (≥ agregado — regla declarada de
+  // la casa, ver velocidadEdgeHA). Sin elección del usuario la línea queda PENDIENTE
+  // DE SELECCIÓN sin precio: declarada, nunca una óptica inventada.
+  const enlacesHA=parEdgeHA(esEC, qty, D.wanLinks);
+  if(enlacesHA){
+    const agregadoHA=enlacesHA.reduce((s,l)=>s+l.down,0);
+    const velHA=velocidadEdgeHA(m.id, agregadoHA);
+    const opsHA=velHA?opticasPorVelocidad(m.id, velHA):[];
+    const pickHA=leerSfpPick().EdgeHA;
+    const skuHA=pickHA&&opsHA.some(o=>o.sku===pickHA)?pickHA:(opsHA.length===1?opsHA[0].sku:null);
+    if(!skuHA){
+      filas.push({cat:'Accesorios', desc:'Interconexión EdgeHA — 2 puertos (1 por chasis) — PENDIENTE DE SELECCIÓN en el builder', sku:null, qty:2, unit:null,
+        nota:!velHA||!opsHA.length
+          ?`El agregado del sitio (${fmt(agregadoHA)}) supera las ópticas del catálogo para ${m.id}, o el modelo no tiene jaulas: la salida honesta es cobre directo (latiguillo entre puertos libres) o confirmar la óptica con HPE. No entra en el total — se declara para que la propuesta no salga sin el enlace del par.`
+          :`La interconexión del par lleva los túneles de cada underlay a ambos chasis (VSG SD-Branch, fig. «EC HA»). Velocidad recomendada ${velHA} (≥ agregado del sitio, ${fmt(agregadoHA)} — regla declarada de la casa); hay ${opsHA.length} ópticas compatibles: selecciona el tipo en la sección de enlaces WAN (pestaña Dimensionar). Si se resuelve por cobre, retira esta línea. No entra en el total hasta elegirla.`});
+    }else{
+      // Misma regla anti-duplicado que el resto de ópticas: si ya se metió a mano en el
+      // modal, la línea del builder manda y la manual se suelta.
+      if(accesoriosElegidos[skuHA]) delete accesoriosElegidos[skuHA];
+      const aHA=ACCESSORY_CATALOG[skuHA];
+      filas.push({cat:'Accesorios', desc:`${aHA.name} — interconexión EdgeHA del par`, sku:skuHA, qty:2, unit:aHA.listPrice!=null?aHA.listPrice:null,
+        nota:`Óptica ${velHA} × 2 (1 por chasis) para el enlace EdgeHA — recomendada ≥ agregado del sitio (${fmt(agregadoHA)}), regla declarada de la casa. List Price de la lista oficial (vigencia ${aHA.vigencia||'s/f'}); tipo seleccionado en el builder WAN`});
+    }
+  }
   if(esEC){
     if(bundle){
       if(licHa){
