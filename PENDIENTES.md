@@ -732,6 +732,46 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
 
 ## Cerrado recientemente
 
+### La cobertura del contraste se mide, no se declara (2026-09-16)
+
+La mejora propuesta al cerrar la entrega anterior — **con la corrección que la propia
+propuesta ya advertía**. La idea era que cada caso declarara `cubre: ['ficha.js']`, y ahí
+mismo quedó escrito el riesgo: «que el campo se rellene a ojo; un caso que declara cubrir
+`bom.js` sin conducir ni una línea del BOM daría una cobertura falsa — peor que no tener el
+dato». Eso no es un riesgo que se mitigue con cuidado: es el diseño equivocado. Así que no se
+declara, **se mide**: `page.coverage` de Chromium dice qué funciones de cada script se
+ejecutaron durante la corrida, y eso no se puede escribir a mano.
+
+**Tres decisiones que hacen la cifra defendible.** La métrica son **funciones ejecutadas** y
+no bytes, porque los rangos de V8 **anidan** —el de una función contiene los de sus bloques—
+y sumarlos cuenta dos veces lo mismo. Se **une entre cargas de página** en vez de tomar la
+mejor, porque un módulo compartido ejecuta funciones distintas en cada pantalla y quedarse
+con una diría menos de lo que la corrida hizo. Y hay **tres estados**: `ejercitado`, `rozado`
+(se carga pero casi nada suyo corre) y **`sin conducir`**, que **no es «0 %»** — es que
+ninguna pantalla de ningún caso lo carga. Reportarlo como cero afirmaría que se midió algo
+que nadie miró, el tercer estado de siempre.
+
+**El dato envejece, y el inventario lo dice.** El artefacto
+(`scripts/contrastes/cobertura.lock.json`) lleva su `medidoEn: {commit, fecha}` dentro, y
+`npm run catalogo` **compara ese commit contra HEAD**: «del commit actual», «de otro commit —
+puede estar desfasada» o «nunca medida». Sin eso, una cobertura de hace meses se leería como
+un hecho de hoy, que es el vicio del lock del vigía curándose solo.
+
+**La medición corrigió la suposición que originó la mejora.** Se propuso diciendo que
+`bom.js` «no tiene ni un caso detrás». Medido: está al **54 %**, porque los dimensionadores
+pintan el BOM al cargar. Lo que sí está casi a cero es otra cosa —`comparador.js` al **4 %**
+y `calculadora.js` al **6 %**, las dos herramientas del portal que ningún caso toca— y eso no
+se habría sabido declarando. Hoy: **10 ejercitados, 4 rozados, 11 sin conducir**.
+
+**Comprobado que la cifra responde a lo que los casos hacen de verdad:** saboteando el caso de
+Nokia para que deje de conducir su pantalla, el contraste sale en rojo con 3 discrepancias
+**y** `ficha.js` baja de 78 % a 72 %. Las dos señales se mueven.
+
+Verificado: `npm run verificar` (375 pruebas, +8), la corrida completa con cobertura,
+`npm run catalogo` con la sección nueva, `npm run pantallas` 16/16 y arranque con
+`NODE_ENV=production`. El lint volvió a ganarse el sueldo: cazó un `RAIZ` que no existe en ese
+archivo y un `execSync` sin importar, los dos en la sección nueva del inventario.
+
 ### El contraste corre en CI, y los tres navegadores comparten su resolución (2026-09-16)
 
 La mejora propuesta al cerrar la entrega anterior, ejecutada. `npm run contraste -- --todos`

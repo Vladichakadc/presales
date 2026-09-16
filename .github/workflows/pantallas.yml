@@ -117,6 +117,11 @@ jobs:
       # SE EJECUTA AUNQUE LAS PANTALLAS FALLEN (pero no si el servidor no arranco): las dos
       # comprobaciones miran cosas distintas y tener las dos en el mismo informe es lo que
       # evita una segunda corrida para enterarse de la segunda mitad.
+      # Y de paso MIDE que modulos de public/js/ ejercita la corrida (page.coverage de
+      # Chromium): el informe sale en el resumen y el artefacto lleva el detalle. No se
+      # declara por caso a proposito — un `cubre: ['bom.js']` escrito a mano da una cobertura
+      # falsa, que es peor que no tener el dato. En el ejecutor el fichero NO se commitea (un
+      # push de bot no dispara CI, ver la cabecera de vigia-fuentes.yml): viaja como artefacto.
       - name: Contrastar que los refactores no cambian lo que se recomienda
         if: ${{ !cancelled() && steps.servidor.conclusion == 'success' }}
         env:
@@ -142,6 +147,7 @@ jobs:
           path: |
             capturas/
             contraste.txt
+            scripts/contrastes/cobertura.lock.json
           retention-days: 30
           if-no-files-found: warn
 

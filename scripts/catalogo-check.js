@@ -24,6 +24,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 const { fuentesDe, ANTIGUEDAD_AVISO_MESES } = require('../server/seed/legacyData/fuentes');
 const { pendientes: pendientesDeRevision } = require('./vigia-fuentes');
 const vendors = require('../server/seed/legacyData/vendors');
@@ -319,9 +320,37 @@ function fuentesPendientes(lock) {
     || ((b.semanas || 0) - (a.semanas || 0)));
 }
 
+/* COBERTURA DEL CONTRASTE — que modulos de public/js/ ejercita de verdad `npm run contraste`.
+ *
+ * El dato lo MIDE Chromium durante la corrida (`scripts/ayuda/cobertura.js`) y queda en
+ * `scripts/contrastes/cobertura.lock.json`. Aqui solo se lee, porque este inventario no abre
+ * un navegador.
+ *
+ * Y POR ESO LLEVA TRES ESTADOS DE VIGENCIA, no dos. Una cobertura medida sobre otro commit
+ * sigue leyendose como un hecho de HOY y ya no lo es — el mismo vicio que el lock del vigia
+ * curandose solo, y el mismo que obliga a cada caso a declarar su `medidoEn`. Se dice de que
+ * commit es y si ese commit es el actual; nunca se calla. */
+function coberturaContraste() {
+  const ruta = path.join(__dirname, 'contrastes', 'cobertura.lock.json');
+  if (!fs.existsSync(ruta)) return { estado: 'nunca medida' };
+  let d;
+  try { d = JSON.parse(fs.readFileSync(ruta, 'utf8')); }
+  catch (e) { return { estado: 'ilegible', detalle: e.message }; }
+  let head = null;
+  try { head = execSync('git rev-parse --short HEAD', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); }
+  catch { head = null; }
+  const medido = (d.medidoEn || {}).commit || null;
+  // `null` en head (sin git) NO es «coincide»: es que no se pudo comprobar. Tercer estado.
+  const vigencia = !medido ? 'sin commit declarado'
+    : !head ? 'no comprobable aqui'
+      : medido === head ? 'del commit actual' : 'de otro commit';
+  return { estado: 'medida', vigencia, head, ...d };
+}
+
 function informe() {
   return {
     cobertura: cobertura(), cicloDeVida: cicloDeVida(), precios: precios(),
+    coberturaContraste: coberturaContraste(),
     pantallas: pantallas(), procedencia: procedencia(), fuentesPendientes: fuentesPendientes(),
   };
 }
@@ -366,6 +395,31 @@ function imprimir(d) {
       for (const x of f.faltan) console.log(`         ${x.id}: ${x.motivo}`);
     }
     console.log(rotos ? `\n${rotos} pantalla(s) con un campo declarado que no existe.` : '\nNinguna pantalla declara un campo que no exista.');
+
+    const cc = d.coberturaContraste;
+    console.log('\n== COBERTURA DEL CONTRASTE: que modulos de public/js/ se ejercitan ==');
+    console.log('   `npm run contraste` prueba que un refactor no cambia lo que una pantalla');
+    console.log('   recomienda. Esto dice sobre QUE modulos vale esa prueba — medido por el');
+    console.log('   navegador durante la corrida, no declarado por cada caso.\n');
+    if (cc.estado === 'nunca medida') {
+      console.log('   Nunca medida. Corre `npm run contraste -- --todos` y vuelve a mirar.');
+    } else if (cc.estado === 'ilegible') {
+      console.log(`   El informe existe pero no se pudo leer: ${cc.detalle}`);
+    } else {
+      const m = cc.medidoEn || {};
+      console.log(`   Medida el ${m.fecha || '(sin fecha)'} sobre ${m.commit || '(sin commit)'} — ${cc.vigencia}.`);
+      if (cc.vigencia === 'de otro commit') {
+        console.log(`   HEAD es ${cc.head}: estas cifras pueden estar desfasadas.`);
+      }
+      const sin = cc.modulos.filter((x) => x.estado === 'sin conducir');
+      const roz = cc.modulos.filter((x) => x.estado === 'rozado');
+      console.log('');
+      for (const x of sin) console.log(`   [sin conducir] ${x.modulo}`);
+      for (const x of roz) console.log(`   [rozado  ${String(x.pct).padStart(3)}%] ${x.modulo}  (${x.usadas}/${x.total} funciones)`);
+      const ok = cc.modulos.length - sin.length - roz.length;
+      console.log(`\n   ${sin.length} sin conducir · ${roz.length} rozado(s) bajo el ${cc.umbralRozado}% · ${ok} ejercitado(s).`);
+      console.log('   «Sin conducir» NO es 0%: es que ninguna pantalla de ningun caso lo carga.');
+    }
   }
 
   console.log('\n== PROCEDENCIA ==');

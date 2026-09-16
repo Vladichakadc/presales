@@ -72,8 +72,27 @@ async function abrirSesion(opciones) {
 
   const b = await chromium.launch(opcionesDeLanzamiento());
   const p = await b.newPage({ viewport: { width: 1440, height: 1200 } });
+  // QUE MODULOS EJERCITA DE VERDAD ESTA CORRIDA (ver ayuda/cobertura.js). `resetOnNavigation`
+  // en false es lo que hace que la medida sea de la CORRIDA y no de la ultima pagina: cada
+  // caso navega varias veces y un modulo compartido ejecuta funciones distintas en cada una.
+  // Si el navegador no expone la API, se sigue sin cobertura en vez de tumbar el contraste:
+  // medir es util, pero el contraste es lo que no puede fallar.
+  let midiendo = false;
+  if (p.coverage && !opciones.sinCobertura) {
+    try { await p.coverage.startJSCoverage({ resetOnNavigation: false }); midiendo = true; }
+    catch { midiendo = false; }
+  }
   await entrar(p, base, usuario, clave);
-  return { page: p, base, cerrar: () => b.close() };
+  return {
+    page: p,
+    base,
+    async cerrar() {
+      let cobertura = null;
+      if (midiendo) { try { cobertura = await p.coverage.stopJSCoverage(); } catch { cobertura = null; } }
+      await b.close();
+      return cobertura;
+    },
+  };
 }
 
 /* Un caso declara:

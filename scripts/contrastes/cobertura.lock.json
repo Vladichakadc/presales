@@ -1,0 +1,184 @@
+{
+ "medidoEn": {
+  "commit": "e5a11ac",
+  "fecha": "2026-09-16"
+ },
+ "umbralRozado": 25,
+ "modulos": [
+  {
+   "modulo": "cotizador.js",
+   "estado": "sin conducir",
+   "total": null,
+   "usadas": null,
+   "pct": null
+  },
+  {
+   "modulo": "cuenta.js",
+   "estado": "sin conducir",
+   "total": null,
+   "usadas": null,
+   "pct": null
+  },
+  {
+   "modulo": "dimensionador-aruba-edgeconnect.js",
+   "estado": "sin conducir",
+   "total": null,
+   "usadas": null,
+   "pct": null
+  },
+  {
+   "modulo": "dimensionador-cisco-catalyst8k.js",
+   "estado": "sin conducir",
+   "total": null,
+   "usadas": null,
+   "pct": null
+  },
+  {
+   "modulo": "dimensionador-huawei-netengine.js",
+   "estado": "sin conducir",
+   "total": null,
+   "usadas": null,
+   "pct": null
+  },
+  {
+   "modulo": "dimensionador-juniper-srx.js",
+   "estado": "sin conducir",
+   "total": null,
+   "usadas": null,
+   "pct": null
+  },
+  {
+   "modulo": "dimensionador-mikrotik-routeros.js",
+   "estado": "sin conducir",
+   "total": null,
+   "usadas": null,
+   "pct": null
+  },
+  {
+   "modulo": "dimensionador-nokia-7220ixr.js",
+   "estado": "sin conducir",
+   "total": null,
+   "usadas": null,
+   "pct": null
+  },
+  {
+   "modulo": "guia-diseno-interactiva.js",
+   "estado": "sin conducir",
+   "total": null,
+   "usadas": null,
+   "pct": null
+  },
+  {
+   "modulo": "motor-ingenieria.js",
+   "estado": "sin conducir",
+   "total": null,
+   "usadas": null,
+   "pct": null
+  },
+  {
+   "modulo": "usuarios.js",
+   "estado": "sin conducir",
+   "total": null,
+   "usadas": null,
+   "pct": null
+  },
+  {
+   "modulo": "comparador.js",
+   "estado": "rozado",
+   "total": 45,
+   "usadas": 2,
+   "pct": 4
+  },
+  {
+   "modulo": "calculadora.js",
+   "estado": "rozado",
+   "total": 34,
+   "usadas": 2,
+   "pct": 6
+  },
+  {
+   "modulo": "index.js",
+   "estado": "rozado",
+   "total": 31,
+   "usadas": 4,
+   "pct": 13
+  },
+  {
+   "modulo": "contraste.js",
+   "estado": "rozado",
+   "total": 11,
+   "usadas": 2,
+   "pct": 18
+  },
+  {
+   "modulo": "navegacion.js",
+   "estado": "ejercitado",
+   "total": 17,
+   "usadas": 9,
+   "pct": 53
+  },
+  {
+   "modulo": "procedencia.js",
+   "estado": "ejercitado",
+   "total": 34,
+   "usadas": 18,
+   "pct": 53
+  },
+  {
+   "modulo": "bom.js",
+   "estado": "ejercitado",
+   "total": 65,
+   "usadas": 35,
+   "pct": 54
+  },
+  {
+   "modulo": "login.js",
+   "estado": "ejercitado",
+   "total": 5,
+   "usadas": 3,
+   "pct": 60
+  },
+  {
+   "modulo": "tabla.js",
+   "estado": "ejercitado",
+   "total": 11,
+   "usadas": 7,
+   "pct": 64
+  },
+  {
+   "modulo": "estado.js",
+   "estado": "ejercitado",
+   "total": 23,
+   "usadas": 16,
+   "pct": 70
+  },
+  {
+   "modulo": "dimensionador-fortinet-fortigate.js",
+   "estado": "ejercitado",
+   "total": 129,
+   "usadas": 91,
+   "pct": 71
+  },
+  {
+   "modulo": "ficha.js",
+   "estado": "ejercitado",
+   "total": 55,
+   "usadas": 43,
+   "pct": 78
+  },
+  {
+   "modulo": "dimensionador-nokia-7750sr.js",
+   "estado": "ejercitado",
+   "total": 50,
+   "usadas": 40,
+   "pct": 80
+  },
+  {
+   "modulo": "fuentes.js",
+   "estado": "ejercitado",
+   "total": 5,
+   "usadas": 5,
+   "pct": 100
+  }
+ ]
+}

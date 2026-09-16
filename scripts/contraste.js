@@ -11,7 +11,9 @@
  */
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 const { abrirSesion, correr } = require('./contraste-motor');
+const cobertura = require('./ayuda/cobertura');
 
 const DIR = path.join(__dirname, 'contrastes');
 const casos = fs.readdirSync(DIR).filter((f) => f.endsWith('.js')).map((f) => f.replace(/\.js$/, '')).sort();
@@ -30,6 +32,32 @@ if (!todos && (!pedido || !casos.includes(pedido))) {
   process.exit(2);
 }
 
+// Los modulos que EXISTEN, para poder distinguir «sin conducir» de «no existe». Se leen del
+// directorio y no de una lista: una lista a mano se queda sin el modulo que alguien anada.
+const PUBLIC_JS = path.join(__dirname, '..', 'public', 'js');
+const modulosExistentes = () => fs.readdirSync(PUBLIC_JS).filter((f) => f.endsWith('.js')).sort();
+
+const LOCK = path.join(DIR, 'cobertura.lock.json');
+
+function escribirCobertura(crudo) {
+  let commit = null;
+  try { commit = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim(); } catch { commit = null; }
+  const filas = cobertura.agregar(crudo, modulosExistentes());
+  const informe = cobertura.informe(filas, { commit, fecha: new Date().toISOString().slice(0, 10) });
+  fs.writeFileSync(LOCK, JSON.stringify(informe, null, 1) + '\n');
+
+  const sinConducir = filas.filter((f) => f.estado === 'sin conducir');
+  const rozados = filas.filter((f) => f.estado === 'rozado');
+  console.log('\nCOBERTURA DE public/js/ — que ejercita de verdad esta corrida');
+  console.log(`  (medida, no declarada · umbral de «rozado»: ${informe.umbralRozado} % de las funciones del modulo)`);
+  for (const f of filas) {
+    const cifra = f.pct == null ? '   —' : String(f.pct).padStart(3) + '%';
+    const det = f.pct == null ? 'ninguna pantalla del contraste lo carga' : `${f.usadas}/${f.total} funciones`;
+    console.log(`  ${f.estado === 'ejercitado' ? ' ' : '!'} ${f.modulo.padEnd(36)}${cifra}  ${det}`);
+  }
+  console.log(`\n  ${sinConducir.length} sin conducir · ${rozados.length} rozado(s) · escrito en ${path.relative(process.cwd(), LOCK)}`);
+}
+
 (async () => {
   const lista = todos ? casos : [pedido];
   // Un solo navegador y una sola sesion para todos los casos: en un ejecutor, arrancar
@@ -37,6 +65,7 @@ if (!todos && (!pedido || !casos.includes(pedido))) {
   const sesion = await abrirSesion(opciones);
   const rotos = [];
   let fallos = 0;
+  let crudo = null;
   try {
     for (const nombre of lista) {
       if (lista.length > 1) console.log('\n' + '─'.repeat(72));
@@ -45,8 +74,14 @@ if (!todos && (!pedido || !casos.includes(pedido))) {
       if (n) rotos.push(nombre);
     }
   } finally {
-    await sesion.cerrar();
+    // `cerrar()` devuelve la cobertura acumulada de la sesion entera. Va en el `finally`
+    // porque el navegador hay que soltarlo pase lo que pase; la cobertura es el subproducto.
+    try { crudo = await sesion.cerrar(); } catch { crudo = null; }
   }
+
+  // La cobertura solo se escribe con `--todos`: medirla con un caso suelto daria un informe
+  // que dice que los demas modulos estan sin conducir, y eso seria falso — no se corrieron.
+  if (todos && crudo) escribirCobertura(crudo);
   if (lista.length > 1) {
     console.log('\n' + '═'.repeat(72));
     console.log(rotos.length
