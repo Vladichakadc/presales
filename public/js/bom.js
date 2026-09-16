@@ -418,6 +418,22 @@
     // que la cotizacion lleva dentro. `o.sinRefs` (fase 11) las omite: el BOM global
     // consolidado de perfiles multi-sede no debe arrastrar las refs manuales de la pagina.
     const filas = (filasBase || []).concat(o.sinRefs ? [] : filasDeRefs());
+
+    // UN SKU QUE YA ESTA EN LA COTIZACION SE DICE, NO SE IMPIDE.
+    //
+    // Medido en la pagina de Fortinet el 2026-09-16: su ficha publica 71 referencias de
+    // pedido para el FortiGate 200G y la PRIMERA es el propio SKU del hardware (FG-200G).
+    // Anadirla duplicaba la linea de Equipo sin una sola senal y el total pasaba de
+    // $38.088,20 a $49.565,20 -- el mismo cortafuegos cotizado dos veces. Es el modo de
+    // fallo peor de este repositorio: no falla, miente.
+    //
+    // No se bloquea porque duplicar puede ser deliberado (una unidad de repuesto, un
+    // segundo nodo que no se cotiza por cantidad). Se avisa, que es lo que convierte un
+    // numero equivocado en una decision de quien cotiza.
+    const skusCalculados = new Set((filasBase || []).map((f) => f.sku).filter(Boolean));
+    const duplicados = [...new Set((o.sinRefs ? [] : filasDeRefs())
+      .map((f) => f.sku).filter((k) => k && skusCalculados.has(k)))];
+
     const { suma, sinPrecio } = totales(filas);
 
     const grupos = [];
@@ -496,6 +512,16 @@
       + (dto > 0 ? `<td class="n r"></td><td class="n r">${faltaEquipo ? '<span class="bom-nd">—</span>' : esc(money(suma * (1 - dto)))}</td>` : '')
       + '</tr>';
     html += '</tbody></table></div>';
+
+    if (duplicados.length) {
+      html += '<p class="bom-aviso">'
+        + (duplicados.length === 1 ? 'El SKU <code>' : 'Los SKU <code>')
+        + duplicados.map(esc).join('</code>, <code>') + '</code> '
+        + (duplicados.length === 1 ? 'ya está' : 'ya están')
+        + ' en las líneas que calcula el dimensionador, y la referencia añadida <b>vuelve a sumar</b> '
+        + 'en el total. Si no es un equipo adicional a propósito, quítala o ajusta la cantidad del equipo.'
+        + '</p>';
+    }
 
     if (faltaEquipo) {
       html += '<p class="bom-aviso">El equipo principal no tiene precio de lista publicado, así que no se'

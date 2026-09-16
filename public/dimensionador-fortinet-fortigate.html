@@ -114,6 +114,12 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 .tierRow.on .tv{color:var(--ink);font-weight:600}
 .tierRow.off .tb i{background:#8FA3B8}
 .tierDrop{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--amber);margin:2px 0 9px 122px}
+.tco-tabla{width:100%;border-collapse:collapse;margin-top:6px}
+.tco-tabla th,.tco-tabla td{font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--rule);text-align:right}
+.tco-tabla th:first-child,.tco-tabla td:first-child{text-align:left}
+.acc-caja{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:20px;max-height:86vh;overflow:auto}
+#modalConsolidado{position:fixed;inset:0;background:rgba(28,25,23,.45);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
+#modalConsolidado[hidden]{display:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 .bom-desvio{font-size:12.5px;line-height:1.5;color:var(--steel);border-left:2px solid var(--amber);padding:6px 0 6px 10px;margin:8px 0 0}
 .fuentes-list{font-size:13.5px;color:var(--steel);padding:0;margin:0 0 0 20px}
@@ -152,11 +158,46 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <span style="color:var(--red)"><i style="background:var(--red)"></i>Requerimiento calculado</span>
   </div>
 </section>
+  <div class="row" style="gap:10px;margin:14px 0 0">
+    <input type="text" id="nombreCliente" placeholder="Nombre del cliente" autocomplete="off" style="flex:1">
+    <input type="text" id="refProyecto" placeholder="Referencia / proyecto" autocomplete="off" style="flex:1">
+  </div>
 
 <div class="cols">
 <div>
   <section class="panel">
-    <h2>1 · Tipo de inspección requerida</h2>
+    <h2>1 · Plataforma y rol</h2>
+    <p class="hint" style="margin:-4px 0 14px">Se acota <b>antes</b> que el caudal, por lo mismo que en Cisco se elige la plataforma primero: el rol en la topología decide si el motor IPsec impone un segundo techo, y el segmento decide qué gama compite.</p>
+    <div class="field">
+      <label>Segmento de instalación</label>
+      <div class="seg" id="segSeg">
+        <button type="button" data-v="branch" aria-pressed="true">Sucursal</button>
+        <button type="button" data-v="campus" aria-pressed="false">Campus / Hub</button>
+        <button type="button" data-v="dc"     aria-pressed="false">Datacenter / Carrier</button>
+      </div>
+    </div>
+    <div class="field" style="margin-top:16px">
+      <label>Rol en la topología SD-WAN</label>
+      <div class="seg" id="rolSeg">
+        <button type="button" data-v="none"  aria-pressed="true">Sin SD-WAN</button>
+        <button type="button" data-v="spoke" aria-pressed="false">Spoke<br>(sucursal)</button>
+        <button type="button" data-v="hub"   aria-pressed="false">Hub<br>(concentrador)</button>
+      </div>
+      <p class="hint" id="rolHint">Solo perímetro: el tráfico no viaja por túneles del overlay, así que el techo lo fija únicamente la capa de inspección.</p>
+    </div>
+    <div class="field" id="fldOverlay" hidden>
+      <label for="pctOverlay">Tráfico por el overlay: <span id="pctOverlayVal" style="font-family:'IBM Plex Mono',monospace">100 %</span></label>
+      <input type="range" id="pctOverlay" min="0" max="100" step="5" value="100" autocomplete="off">
+      <p class="hint">La fracción que va cifrada al fabric. El resto sale por <b>breakout local</b> a Internet y no paga IPsec. Bajarlo es lo que hace que una sucursal con salida directa a SaaS no necesite un equipo mayor.</p>
+    </div>
+    <div class="checks">
+    <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad — par en clúster<span class="sku">Se cotizan 2 unidades y cada una lleva su propia suscripción FortiGuard. En <b>activo-pasivo el clúster no suma capacidad</b>: el throughput sigue siendo el de una unidad, así que el dimensionamiento no cambia. En activo-activo hay reparto, pero solo sobre sesiones de inspección y lejos de ser lineal — esta herramienta no lo descuenta.</span></span></label>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>2 · Capa de inspección</h2>
+    <p class="hint" style="margin:-4px 0 14px">Lo propio de FortiGate y el punto donde este dimensionador se separa del de cualquier otro fabricante: las cinco cifras publicadas miden rutas de procesamiento distintas, así que activar una función <b>no aplica un recargo</b> — cambia la cifra del datasheet que aplica.</p>
     <div class="field">
       <label>Capa de inspección a dimensionar <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— es el punto de partida: las funciones que actives abajo pueden elevarla</span></label>
       <div class="seg" id="profileSeg">
@@ -172,23 +213,16 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <div class="field">
       <label><input type="checkbox" id="chkSsl"> <span>Inspección profunda SSL/TLS<span class="sku" style="display:block;margin-top:2px">Fuerza el piso a Threat Protection (no se puede inspeccionar TLS sin el stack completo) y aplica un castigo adicional estimado del 35%. Fortinet dejó de publicar una cifra de SSL Inspection por modelo en el Product Matrix.</span></span></label>
     </div>
-    <div class="field">
-      <label for="sesUser">Sesiones concurrentes por usuario</label>
-      <input type="number" id="sesUser" min="0" step="1" autocomplete="off">
-      <p class="hint">Nadie sabe estimar «cuántas sesiones concurrentes necesito», pero todo el mundo puede estimar cuántas abre un usuario: 15–30 en un puesto corporativo, 50–100 con muchas apps SaaS y móviles, 5–10 en un dispositivo IoT. El total se calcula solo.</p>
-    </div>
-    <div class="field">
-      <label for="sessNeed">Total de sesiones concurrentes <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— opcional, para forzar un valor</span></label>
-      <input type="number" id="sessNeed" min="0" step="1000" autocomplete="off">
-      <p class="hint">Deja 0 y se toma <b>usuarios x sesiones por usuario</b>. Ponle un valor solo si ya conoces la cifra agregada — típico en CGNAT o portales, donde se cuenta por suscriptor y no por usuario.</p>
-      <p class="hint" id="sesCalc" style="margin-top:6px"></p>
-    </div>
-    <div class="field">
-      <label for="vidaSes">Vida media de una sesión <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— segundos</span></label>
-      <input type="number" id="vidaSes" min="1" step="1" autocomplete="off">
-      <p class="hint">De aquí sale el <b>segundo eje de sesiones</b>, el que de verdad aprieta: las <b>sesiones nuevas por segundo</b>. Si un usuario mantiene N sesiones abiertas y cada una dura V segundos, está abriendo N/V por segundo. 20–60 s es lo típico de navegación web y SaaS; baja a 2–5 s en tráfico de APIs o microservicios, que es donde este eje se dispara.</p>
-      <p class="hint" id="cpsCalc" style="margin-top:6px"></p>
-    </div>
+    <div class="checks">
+      <label class="check"><input type="checkbox" id="chkAv"> <span>Antivirus / Antimalware (FortiGuard AV)<span class="sku">Eleva el piso a <b>Threat Protection</b>: la inspección de archivos en línea saca la sesión del fast path del ASIC, y esa es la cifra que pasa a aplicar.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkWeb"> <span>Web Filtering / Application Control<span class="sku">Eleva el piso a <b>NGFW</b>, que es la cifra que Fortinet mide con IPS + Application Control sobre Enterprise Mix.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkSandbox"> <span>FortiSandbox integrado (CASI / Cloud)<span class="sku"><b>No eleva la capa:</b> analiza fuera de banda, así que no consume throughput del FortiGate — solo añade latencia al primer encuentro de un archivo. Se cotiza aparte.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkIotDlp"> <span>IoT Detection + DLP<span class="sku">Eleva el piso a <b>Threat Protection</b>: corren sobre el stack completo. Requieren el bundle Enterprise Protection.</span></span></label>
+      </div>
+  </section>
+
+  <section class="panel">
+    <h2>3 · Tráfico y capacidad</h2>
     <div class="field">
       <label>Cómo se declara el caudal</label>
       <div class="seg" id="modoSeg">
@@ -226,73 +260,30 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       <p class="hint">Regla habitual: 1–5 Mbps por usuario corporativo. <b>Bájala en campus grandes</b>: 5.000 usuarios a 3 Mbps dan 15 Gbps, cifra que no representa ningún consumo real y que desplaza el dimensionamiento a gama de datacenter. Ponla en 0 para dimensionar solo por el caudal.</p>
     </div>
     <div class="field">
+      <label for="sesUser">Sesiones concurrentes por usuario</label>
+      <input type="number" id="sesUser" min="0" step="1" autocomplete="off">
+      <p class="hint">Nadie sabe estimar «cuántas sesiones concurrentes necesito», pero todo el mundo puede estimar cuántas abre un usuario: 15–30 en un puesto corporativo, 50–100 con muchas apps SaaS y móviles, 5–10 en un dispositivo IoT. El total se calcula solo.</p>
+    </div>
+    <div class="field">
+      <label for="sessNeed">Total de sesiones concurrentes <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— opcional, para forzar un valor</span></label>
+      <input type="number" id="sessNeed" min="0" step="1000" autocomplete="off">
+      <p class="hint">Deja 0 y se toma <b>usuarios x sesiones por usuario</b>. Ponle un valor solo si ya conoces la cifra agregada — típico en CGNAT o portales, donde se cuenta por suscriptor y no por usuario.</p>
+      <p class="hint" id="sesCalc" style="margin-top:6px"></p>
+    </div>
+    <div class="field">
+      <label for="vidaSes">Vida media de una sesión <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— segundos</span></label>
+      <input type="number" id="vidaSes" min="1" step="1" autocomplete="off">
+      <p class="hint">De aquí sale el <b>segundo eje de sesiones</b>, el que de verdad aprieta: las <b>sesiones nuevas por segundo</b>. Si un usuario mantiene N sesiones abiertas y cada una dura V segundos, está abriendo N/V por segundo. 20–60 s es lo típico de navegación web y SaaS; baja a 2–5 s en tráfico de APIs o microservicios, que es donde este eje se dispara.</p>
+      <p class="hint" id="cpsCalc" style="margin-top:6px"></p>
+    </div>
+    <div class="field">
       <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
       <input type="range" id="head" min="0" max="100" step="5" value="30" autocomplete="off">
     </div>
   </section>
 
   <section class="panel">
-    <h2>2 · Funciones adicionales</h2>
-    <div class="checks">
-      <label class="check"><input type="checkbox" id="chkAv"> <span>Antivirus / Antimalware (FortiGuard AV)<span class="sku">Eleva el piso a <b>Threat Protection</b>: la inspección de archivos en línea saca la sesión del fast path del ASIC, y esa es la cifra que pasa a aplicar.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkWeb"> <span>Web Filtering / Application Control<span class="sku">Eleva el piso a <b>NGFW</b>, que es la cifra que Fortinet mide con IPS + Application Control sobre Enterprise Mix.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkSandbox"> <span>FortiSandbox integrado (CASI / Cloud)<span class="sku"><b>No eleva la capa:</b> analiza fuera de banda, así que no consume throughput del FortiGate — solo añade latencia al primer encuentro de un archivo. Se cotiza aparte.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkIotDlp"> <span>IoT Detection + DLP<span class="sku">Eleva el piso a <b>Threat Protection</b>: corren sobre el stack completo. Requieren el bundle Enterprise Protection.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad — par en clúster<span class="sku">Se cotizan 2 unidades y cada una lleva su propia suscripción FortiGuard. En <b>activo-pasivo el clúster no suma capacidad</b>: el throughput sigue siendo el de una unidad, así que el dimensionamiento no cambia. En activo-activo hay reparto, pero solo sobre sesiones de inspección y lejos de ser lineal — esta herramienta no lo descuenta.</span></span></label>
-    </div>
-    <div class="field" style="margin-top:16px">
-      <label>Rol en la topología SD-WAN</label>
-      <div class="seg" id="rolSeg">
-        <button type="button" data-v="none"  aria-pressed="true">Sin SD-WAN</button>
-        <button type="button" data-v="spoke" aria-pressed="false">Spoke<br>(sucursal)</button>
-        <button type="button" data-v="hub"   aria-pressed="false">Hub<br>(concentrador)</button>
-      </div>
-      <p class="hint" id="rolHint">Solo perímetro: el tráfico no viaja por túneles del overlay, así que el techo lo fija únicamente la capa de inspección.</p>
-    </div>
-    <div class="field" id="fldOverlay" hidden>
-      <label for="pctOverlay">Tráfico por el overlay: <span id="pctOverlayVal" style="font-family:'IBM Plex Mono',monospace">100 %</span></label>
-      <input type="range" id="pctOverlay" min="0" max="100" step="5" value="100" autocomplete="off">
-      <p class="hint">La fracción que va cifrada al fabric. El resto sale por <b>breakout local</b> a Internet y no paga IPsec. Bajarlo es lo que hace que una sucursal con salida directa a SaaS no necesite un equipo mayor.</p>
-    </div>
-    <div class="field">
-      <label>Segmento de instalación</label>
-      <div class="seg" id="segSeg">
-        <button type="button" data-v="branch" aria-pressed="true">Sucursal</button>
-        <button type="button" data-v="campus" aria-pressed="false">Campus / Hub</button>
-        <button type="button" data-v="dc"     aria-pressed="false">Datacenter / Carrier</button>
-      </div>
-    </div>
-  </section>
-</div>
-
-<div>
-  <div class="verdict" id="verdict"></div>
-  </div>
-
-  <section class="panel">
-    <h2>Rendimiento por capa de inspección <span id="perfModel" style="font-weight:400;text-transform:none;letter-spacing:0"></span></h2>
-    <div id="perfTiers"></div>
-    <p class="hint" id="perfNote" style="margin-top:12px"></p>
-  </section>
-
-  <section class="panel">
-    <h2>Resumen de sizing</h2>
-    <div id="sizingBox"><p style="font-size:13.5px;color:var(--steel)">Completa los parámetros para ver el resumen.</p></div>
-  </section>
-
-  <div class="note">
-    <b>Nota metodológica.</b> Las cinco cifras que publica Fortinet no son escenarios alternativos del mismo número: miden rutas de procesamiento distintas. <b>Firewall</b> (1518 B UDP) e <b>IPsec VPN</b> (512 B) van descargadas al procesador de red del ASIC — la sesión no toca la CPU. En cuanto se aplica cualquier perfil de inspección, la sesión <b>sale del offload</b> y pasa por CPU con asistencia del content processor: ahí viven <b>IPS</b>, <b>NGFW</b> y <b>Threat Protection</b>, todas medidas con Enterprise Mix. Por eso dimensionar una sucursal con UTM completo contra la cifra de firewall puro subdimensiona por un orden de magnitud, y es el error de preventa más frecuente con FortiGate. Para inspección TLS profunda, Fortinet ya no publica un valor por modelo en el Product Matrix: esta herramienta aplica un derate estimado del 35% <b>sobre la capacidad</b> de Threat Protection —nunca sobre el requerimiento, que sobredimensionaría— y lo declara como estimación; validar con PoC antes de comprometerlo. Ninguna otra función aplica recargo: lo que hacen es <b>elevar el piso de capa</b>, porque las cifras de Enterprise Mix ya se miden con esas funciones activas y sumarles un porcentaje contaría dos veces lo mismo. Consultar el <b>FortiGate Datasheet</b> del modelo para sesiones nuevas por segundo y detalle de interfaces.
-  </div>
-</div>
-</div>
-</div>
-
-<!-- ════ TAB 2 · BOM ════ -->
-<div class="tabpane" id="pane-bom" hidden>
-<div class="cols">
-<div>
-  <section class="panel">
-    <h2>Selección de equipo</h2>
+    <h2>4 · Equipo y cotización</h2>
     <div class="field">
       <label for="pickModel">Modelo FortiGate</label>
       <select id="pickModel"></select>
@@ -327,6 +318,34 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     </div>
   </section>
 
+</div>
+
+<div>
+  <div class="verdict" id="verdict"></div>
+  </div>
+
+  <section class="panel">
+    <h2>Rendimiento por capa de inspección <span id="perfModel" style="font-weight:400;text-transform:none;letter-spacing:0"></span></h2>
+    <div id="perfTiers"></div>
+    <p class="hint" id="perfNote" style="margin-top:12px"></p>
+  </section>
+
+  <section class="panel">
+    <h2>Resumen de sizing</h2>
+    <div id="sizingBox"><p style="font-size:13.5px;color:var(--steel)">Completa los parámetros para ver el resumen.</p></div>
+  </section>
+
+  <div class="note">
+    <b>Nota metodológica.</b> Las cinco cifras que publica Fortinet no son escenarios alternativos del mismo número: miden rutas de procesamiento distintas. <b>Firewall</b> (1518 B UDP) e <b>IPsec VPN</b> (512 B) van descargadas al procesador de red del ASIC — la sesión no toca la CPU. En cuanto se aplica cualquier perfil de inspección, la sesión <b>sale del offload</b> y pasa por CPU con asistencia del content processor: ahí viven <b>IPS</b>, <b>NGFW</b> y <b>Threat Protection</b>, todas medidas con Enterprise Mix. Por eso dimensionar una sucursal con UTM completo contra la cifra de firewall puro subdimensiona por un orden de magnitud, y es el error de preventa más frecuente con FortiGate. Para inspección TLS profunda, Fortinet ya no publica un valor por modelo en el Product Matrix: esta herramienta aplica un derate estimado del 35% <b>sobre la capacidad</b> de Threat Protection —nunca sobre el requerimiento, que sobredimensionaría— y lo declara como estimación; validar con PoC antes de comprometerlo. Ninguna otra función aplica recargo: lo que hacen es <b>elevar el piso de capa</b>, porque las cifras de Enterprise Mix ya se miden con esas funciones activas y sumarles un porcentaje contaría dos veces lo mismo. Consultar el <b>FortiGate Datasheet</b> del modelo para sesiones nuevas por segundo y detalle de interfaces.
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ════ TAB 2 · BOM ════ -->
+<div class="tabpane" id="pane-bom" hidden>
+<div class="cols">
+<div>
   <div class="flag-ft">
     <b>Aviso de preventa:</b> SKUs y precios de lista tomados del price list AMER vigente — verificar disponibilidad regional, término contratado y descuentos de canal con el distribuidor Fortinet autorizado antes de cotizar en firme.
   </div>
@@ -343,6 +362,30 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     </h2>
     <div id="bomTabla"></div>
     <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
+  </section>
+  <section class="panel">
+    <h2>Precio neto y TCO del sitio</h2>
+    <div class="field">
+      <!-- Lo construye BOM.simuladorDescuento: los tramos y su aviso viven en js/bom.js,
+           asi que anadirlo aqui es una linea y no doce de marcado que luego diverge. -->
+      <div id="cajaDescuento"></div>
+    </div>
+    <div id="tcoFin"></div>
+    <p class="hint" style="margin-top:10px">En FortiGate el OPEX es el <b>bundle FortiGuard</b> y el <b>soporte FortiCare</b>, que son suscripciones por término; el equipo y los servicios únicos (FortiConverter) van en CAPEX. Esa clasificación la declara esta página porque es el modelo comercial del fabricante, no una propiedad de la fila.</p>
+  </section>
+  <section class="panel">
+    <h2>Perfiles multi-sede</h2>
+    <p class="hint" style="margin:0 0 10px">Guarda el escenario actual como perfil («Sucursal», «Hub regional»…) con su número de sedes idénticas. El <b>BOM global consolidado</b> suma las líneas de todos los perfiles —de cualquier fabricante, porque un despliegue real mezcla marcas— y se exporta aparte. En FortiGate <b>todo multiplica por sedes</b>: en HA cada nodo paga su propia suscripción FortiGuard y su propio FortiCare, así que no hay nada análogo a un pool agregado. Los perfiles viven en este navegador y conservan los precios del día en que se guardaron.</p>
+    <div class="row" style="margin-bottom:10px">
+      <input type="text" id="nombrePerfil" placeholder="Nombre del perfil — p. ej. Sucursal" autocomplete="off">
+      <input type="number" id="perfilSedes" min="1" step="1" placeholder="Nº sedes" style="width:100px" autocomplete="off">
+      <button type="button" class="btn" id="btnGuardarPerfil" style="font-size:11px;padding:6px 12px;white-space:nowrap">Guardar perfil</button>
+    </div>
+    <div id="listaPerfiles"></div>
+    <div style="margin-top:10px">
+      <button type="button" class="btn" id="btnConsolidar" style="font-size:11px;padding:6px 12px" disabled>Consolidar BOM global</button>
+      <p class="hint" style="margin-top:6px">Abre el BOM agregado Σ(BOM del perfil × sedes) en una ventana aparte, con su exportación a Excel.</p>
+    </div>
   </section>
 </div>
 </div>
@@ -474,6 +517,18 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 </p>
 
 </div><!-- /wrap -->
+<div id="modalConsolidado" hidden>
+  <div class="acc-caja" style="max-width:860px">
+    <h3>BOM global consolidado — perfiles multi-sede</h3>
+    <p class="hint" id="consolidadoSub"></p>
+    <div id="consolidadoTabla"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+      <button type="button" class="btn" id="xlsConsolidadoBtn" style="font-size:11px;padding:6px 12px">Exportar consolidado a Excel</button>
+      <button type="button" class="btn ghost" id="consolidadoCerrar" style="font-size:11px;padding:6px 12px">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <script src="/js/bom.js"></script>
 <script src="/js/ficha.js"></script>
 <script src="/js/estado.js"></script>

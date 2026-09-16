@@ -84,6 +84,9 @@ $('chkHa').addEventListener('change',()=>{
   renderBom();
 });
 ['pickModel','qty','termYears','licBundle','careLevel'].forEach(id=>$(id).addEventListener('input',renderBom));
+// La identidad de la propuesta no cambia ningun calculo, pero viaja en el enlace y encabeza
+// el Excel, asi que basta con que el BOM se entere.
+['nombreCliente','refProyecto'].forEach(id=>{const n=$(id); if(n) n.addEventListener('input',renderBom);});
 
 function fmt(m){
   if(!m) return '—';
@@ -144,6 +147,25 @@ const SOFTWARE=[
 // Ahora cada funcion impone un PISO y se aplica la capa mas profunda de todas las activas.
 // La eleccion del usuario sigue valiendo como base: puede dimensionar contra una capa mas
 // exigente de la que sus funciones obligan, pero no contra una mas liviana.
+// CAMPOS DEL ESCENARIO. Una sola lista para el enlace compartido y para los perfiles
+// multi-sede. Incluye ahora la IDENTIDAD de la propuesta (cliente y referencia) y la
+// CONFIGURACION DE LA COTIZACION (modelo, cantidad, termino, bundle y soporte): al subir el
+// paso «Equipo y cotizacion» a la escalera, un enlace que no los llevara aterrizaria en el
+// escenario correcto con otra cotizacion, que es peor que no llevar nada porque no se nota.
+const CAMPOS_ESCENARIO=['nombreCliente','refProyecto',
+  'bw','unit','users','perUser','head','sesUser','sessNeed','vidaSes','sites','conc','pctOverlay',
+  'chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa',
+  'modoSeg','profileSeg','rolSeg','segSeg',
+  'pickModel','qty','termYears','licBundle','careLevel','selDescuento','dtoCustom','verdict-sel'];
+
+const VENDOR='fortinet';
+// Que cuenta como OPEX en FortiGate, DECLARADO por esta pagina y no deducido: el bundle
+// FortiGuard y el soporte FortiCare son suscripciones por termino; el equipo y los servicios
+// unicos (FortiConverter) son CAPEX. BOM.tco suma el precio TAL COMO VIENE y usa los anios
+// solo para derivar el anual, que es exactamente la semantica de tierPrice(tier, termYrs)
+// -- comprobada leyendola antes de elegir estas categorias, no supuesta.
+const OPEX_FORTINET=['Licencias FortiGuard','Soporte'];
+
 const ORDEN_CAPAS=['fw','vpn','ips','ngfw','tp'];
 const PISO_POR_FUNCION=[
   {id:'chkAv',     capa:'tp',   n:'Antivirus / Antimalware'},
@@ -668,6 +690,15 @@ function tierPrice(tier,termYrs){
   return v==null?null:v;
 }
 
+
+// CAPA COMERCIAL (2026-09-16). Los tres bloques —simulador de precio neto, TCO y perfiles
+// multi-sede— ya vivian en js/bom.js desde el 2026-09-13, construidos al sacarlos del
+// archivo de Aruba. Esta pagina no los usaba: de las 20 funciones de BOM que usa Aruba,
+// Fortinet usaba 6. No hace falta un dato nuevo para encenderlos, solo declarar lo que es
+// del fabricante.
+const DTO=BOM.simuladorDescuento('cajaDescuento',()=>renderBom());
+const dtoActual=()=>DTO?DTO.valor():0;
+const dtoEtiqueta=()=>DTO?DTO.etiqueta():null;
 function renderBom(){
   const m=MODELS.find(x=>x.id===$('pickModel').value)||MODELS[0];
   const qty=Math.max(1,parseInt($('qty').value)||1);
@@ -765,14 +796,149 @@ function renderBom(){
     ].filter((n)=>n!==null),
   };
 
+  const dto=dtoActual();
   $('bomTabla').innerHTML=BOM.renderTabla(filas,{
+    dto,
     aviso:qty>1?'Clúster HA: cada nodo lleva su propia suscripción FortiGuard y su propio contrato FortiCare.':null,
   });
+
+  // TCO. El calculo vive en BOM.tco y se hace sobre las FILAS, que ya son la forma neutra
+  // que los siete comparten; esta pagina solo declara QUE cuenta como OPEX, porque que una
+  // suscripcion sea recurrente es el modelo comercial del fabricante y no una propiedad de
+  // la fila. Las lineas sin precio no se estiman: se cuentan y se dicen.
+  const fin=BOM.tco(filas,{opex:OPEX_FORTINET, anios:termYrs});
+  const hayPrecios=fin.capex>0||fin.opexTermino>0;
+  const celdaNet=v=>dto>0?`<td><b>${BOM.money(v*(1-dto))}</b></td>`:'';
+  $('tcoFin').innerHTML=hayPrecios
+    ?`<table class="tco-tabla"><thead><tr><th>Pie de la lista de materiales</th><th>Subtotal Lista</th>${dto>0?'<th>Subtotal Neto</th>':''}</tr></thead><tbody>`
+      +`<tr><td><b>CAPEX</b> — equipo y servicios únicos (one-time)</td><td>${BOM.money(fin.capex)}</td>${celdaNet(fin.capex)}</tr>`
+      +`<tr><td><b>OPEX anual</b> — FortiGuard + FortiCare del término ÷ ${termYrs} año${termYrs>1?'s':''}</td><td>${BOM.money(fin.opexAnual)}</td>${celdaNet(fin.opexAnual)}</tr>`
+      +`<tr><td><b>TCO a ${termYrs} año${termYrs>1?'s':''}</b> — CAPEX + OPEX anual × ${termYrs}</td><td><b>${BOM.money(fin.tco)}</b></td>${celdaNet(fin.tco)}</tr>`
+      +'</tbody></table>'
+      +(fin.sinPrecio?`<p class="hint" style="margin-top:8px">${fin.sinPrecio} línea(s) sin precio no entran en la suma: están en «consultar» a propósito, no estimadas.</p>`:'')
+      +'<p class="hint" style="margin-top:8px">El neto es un <b>simulador genérico de tramos partner — no refleja el descuento real del distribuidor Fortinet</b>. Precios de lista AMER, sin impuestos.</p>'
+    :'<p class="hint">Sin precios suficientes para calcular el TCO: el equipo o las licencias están en «consultar».</p>';
+
+  pintarPerfiles();
   $('bomOut').value=BOM.comoTexto(filas,meta);
   bomMeta=meta; bomFilas=filas;
 
 }
 
+
+/* ── PERFILES MULTI-SEDE ───────────────────────────────────────────────────
+   Un perfil guarda el escenario completo mas cuantas sedes identicas se cotizan con el.
+   El almacen es UNO SOLO para los siete fabricantes (js/bom.js, clave `presales-perfiles`):
+   un despliegue real de 50 sedes mezcla marcas —spokes FortiGate contra un core Nokia— y
+   una clave por pagina hacia que el consolidado de cada fabricante ignorara al resto en
+   silencio.
+
+   CARGAR ES DEL FABRICANTE; CONSOLIDAR NO. `campos` son los ids del formulario de ESTA
+   pagina, asi que aplicar un perfil de Aruba aqui no significa nada; `filas` es la forma
+   neutra que los siete comparten, y por eso el BOM global suma todos. */
+const cargarPerfiles=()=>BOM.perfilesDe(VENDOR);
+
+function capturarCampos(){
+  const v={};
+  CAMPOS_ESCENARIO.forEach(id=>{
+    const n=$(id); if(!n) return;
+    if(n.classList&&n.classList.contains('seg')){
+      const a=n.querySelector('[aria-pressed="true"]'); v[id]=a?a.dataset.v:null;
+    }else if(n.type==='checkbox'){ v[id]=n.checked; }
+    else v[id]=n.value;
+  });
+  return v;
+}
+function aplicarCampos(v){
+  CAMPOS_ESCENARIO.forEach(id=>{
+    const n=$(id); if(!n||v[id]==null) return;
+    if(n.classList&&n.classList.contains('seg')){
+      const b=[...n.children].find(x=>x.dataset.v===v[id]); if(b) b.click();
+    }else if(n.type==='checkbox'){ n.checked=!!v[id]; }
+    else n.value=v[id];
+  });
+  render(); renderBom();
+}
+
+$('btnGuardarPerfil').addEventListener('click',()=>{
+  const nombre=$('nombrePerfil').value.trim();
+  const sedes=Math.max(0,parseInt($('perfilSedes').value)||0);
+  if(!nombre||!sedes){ $('nombrePerfil').focus(); return; }
+  const m=MODELS.find(x=>x.id===$('pickModel').value);
+  if(!m||!bomFilas.length) return;
+  BOM.guardarPerfil({nombre, sedes, modelo:m.id, vendor:VENDOR,
+    fecha:new Date().toISOString().slice(0,10),
+    version:1, campos:capturarCampos(), filas:JSON.parse(JSON.stringify(bomFilas))});
+  $('nombrePerfil').value=''; $('perfilSedes').value='';
+  pintarPerfiles();
+});
+
+function pintarPerfiles(){
+  const caja=$('listaPerfiles'); if(!caja) return;
+  const l=cargarPerfiles();
+  caja.innerHTML=l.length
+    ?'<table class="tco-tabla"><thead><tr><th>Perfil</th><th>Sedes</th><th>Modelo</th><th>Guardado</th><th></th></tr></thead><tbody>'
+      +l.map(x=>`<tr><td><b>${esc(x.nombre)}</b></td><td>${x.sedes}</td><td>${esc(x.modelo)}</td><td>${x.fecha||'—'}</td>`
+        +`<td><button type="button" class="btn ghost" data-perfil-cargar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Cargar</button> `
+        +`<button type="button" class="btn ghost" data-perfil-borrar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Eliminar</button></td></tr>`).join('')
+      +'</tbody></table>'
+    :'<p class="hint">Sin perfiles guardados todavía.</p>';
+  $('btnConsolidar').disabled=!l.length;
+}
+
+$('listaPerfiles').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.perfilCargar!=null){
+    const x=cargarPerfiles().find(y=>y.id===b.dataset.perfilCargar);
+    if(x&&x.campos) aplicarCampos(x.campos);
+  }else if(b.dataset.perfilBorrar!=null){
+    BOM.quitarPerfil(b.dataset.perfilBorrar); pintarPerfiles();
+  }
+});
+
+// EN FORTIGATE NO HAY EXCEPCIONES DE AGREGACION, Y ESO SE DECLARA EN VEZ DE OMITIRSE.
+// Aruba agrega el pool de Boost en una linea y deja el Orchestrator una vez por fabric
+// porque es SU modelo comercial. Aqui cada nodo paga su propia suscripcion FortiGuard y su
+// propio FortiCare, incluso en HA, asi que TODO multiplica por sedes -- que es el
+// comportamiento por defecto de BOM.consolidar. Pasar los objetos vacios es la forma de
+// dejar constancia de que se miro y se decidio, no de que se olvido.
+function consolidarPerfiles(){
+  const l=BOM.perfiles();
+  const {filas,totalSedes,fabricantes}=BOM.consolidar(l,{agregadas:[], unicas:[]});
+  const multi=fabricantes.length>1;
+  const meta={
+    titulo:`BOM global consolidado — ${l.length} perfil(es), ${totalSedes} sedes`,
+    subtitulo:l.map(x=>`${x.nombre} ×${x.sedes} (${x.modelo})`).join(' · '),
+    archivo:multi?'BOM_global_multifabricante':'BOM_global_fortinet', sinRefs:true,
+    notas:[
+      'REGLAS DE CONSOLIDACION (FortiGate):',
+      '  Equipo, licencias FortiGuard y soporte FortiCare: cantidad por sede x sedes del perfil.',
+      '  No hay lineas agregadas ni unicas: en HA cada nodo lleva su propia suscripcion.',
+      '  Precios: los vigentes el dia en que se guardo cada perfil.',
+    ],
+  };
+  const cli=$('nombreCliente').value.trim(), ref=$('refProyecto').value.trim();
+  if(cli) meta.cliente=cli;
+  if(ref) meta.referencia=ref;
+  if(multi) meta.notas.push(`  MULTI-FABRICANTE: ${fabricantes.join(', ')}. Las lineas de cada marca siguen sus propias reglas.`);
+  const d=dtoActual();
+  if(d>0){ meta.dto=d; meta.dtoEtq=dtoEtiqueta(); }
+  return {filas, meta, totalSedes, fabricantes};
+}
+
+$('btnConsolidar').addEventListener('click',()=>{
+  const {filas, meta, totalSedes, fabricantes}=consolidarPerfiles();
+  if(!totalSedes) return;
+  const aviso=fabricantes.length>1
+    ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${fabricantes.join(', ')}). En FortiGate todo multiplica por sedes; las líneas de otras marcas siguen las reglas que declare su página.</p>`
+    : '';
+  $('consolidadoSub').textContent=meta.subtitulo+` — ${totalSedes} sedes en total`;
+  $('consolidadoTabla').innerHTML=aviso+BOM.renderTabla(filas,{dto:dtoActual(), sinRefs:true});
+  $('modalConsolidado').hidden=false;
+  $('xlsConsolidadoBtn').onclick=()=>BOM.exportarExcel(filas,meta);
+});
+$('consolidadoCerrar').addEventListener('click',()=>{ $('modalConsolidado').hidden=true; });
+$('modalConsolidado').addEventListener('click',e=>{ if(e.target===$('modalConsolidado')) $('modalConsolidado').hidden=true; });
 $('copyBtn').addEventListener('click',async()=>{
   const t=$('bomOut');
   try{await navigator.clipboard.writeText(t.value);$('copyBtn').textContent='Copiado';}
@@ -821,7 +987,7 @@ document.addEventListener('click', (e) => {
    otra recomendacion. Ahora el escenario viaja en la URL; ya no se guarda entre sesiones
    (ver /js/estado.js). */
 document.addEventListener('DOMContentLoaded', () => {
-  const st = ESTADO.vincular({ campos: ['bw','unit','users','perUser','head','sesUser','sessNeed','vidaSes','sites','conc','pctOverlay','chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa','modoSeg','profileSeg','rolSeg','segSeg','verdict-sel'] });
+  const st = ESTADO.vincular({ campos: CAMPOS_ESCENARIO });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');
