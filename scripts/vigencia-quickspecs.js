@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 'use strict';
-// Vigilancia de vigencia por QuickSpecs: avisa cuando un EdgeConnect del catalogo
-// DESAPARECE de la guia de pedido oficial — la señal temprana y OFICIAL de un fin de
+// Vigilancia de vigencia por guias de pedido oficiales: avisa cuando un modelo del
+// catalogo DESAPARECE de su guia oficial — la señal temprana y OFICIAL de un fin de
 // venta, sin depender de agregadores de terceros.
 //
 // EL PROBLEMA QUE RESUELVE (2026-09-16, mejora propuesta y aceptada por el dueño)
 // La validacion del EC-XS se hizo a mano: los agregadores decian EoS 31-ene-2026 y las
 // QuickSpecs oficiales V18 (06-jul-2026) lo seguian listando ordenable — la fuente
 // oficial desmonto la señal de terceros. Ese cruce no puede depender de que alguien
-// vuelva a mirar: cuando `npm run datasheets -- --force` refresque el PDF (tipicamente
+// vuelva a mirar: cuando `npm run datasheets -- --force` refresque un PDF (tipicamente
 // porque `npm run vigia` aviso de que el documento cambio), este script dice QUE CAMBIO
 // en terminos de ordenabilidad, modelo a modelo.
 //
@@ -16,10 +16,10 @@
 //     npm run vigencia -- --json      la misma salida como JSON, para CI
 //
 // QUE HACE Y QUE NO HACE
-// · LEE la copia local de las QuickSpecs (public/datasheets/edgeconnect-quickspecs.pdf)
-//   y busca el `hwSku` de cada modelo EdgeConnect en la seccion «Configuration
-//   Information» (la guia de pedido). NO sale a internet: corre igual en este entorno
-//   que en CI, porque el documento oficial viaja CON el repositorio.
+// · LEE las copias locales de las guias oficiales (public/datasheets/*.pdf) y busca el
+//   `hwSku` de cada modelo cubierto en la seccion de pedido de SU guia. NO sale a
+//   internet: corre igual en este entorno que en CI, porque los documentos oficiales
+//   viajan CON el repositorio.
 // · NO escribe nada en el catalogo. Una alarma es una orden de revisar el boletin
 //   oficial a mano — la marca de fin de venta sigue entrando solo por documento del
 //   fabricante, con su cita literal (ver EOL_ANNOUNCED en aruba.js). Automatizar la
@@ -29,7 +29,7 @@
 //   automatiza (ver vigia-fuentes.js).
 //
 // LOS TRES ESTADOS DE UN MODELO, Y LAS DOS CLASES DE HALLAZGO
-//   ordenable   el SKU (base u opcion #) figura en la guia de pedido
+//   ordenable   el SKU (base u opcion #) figura en la seccion de pedido de su guia
 //   mencionado  solo figura fuera de ella (p. ej. la tabla comparativa): no consta
 //               como ordenable — el tercer estado de siempre, no un ausente
 //   ausente     no figura en todo el documento
@@ -39,24 +39,63 @@
 //   boletin vencido (HPE mantiene la variante NoLoc tras el ultimo pedido — patron
 //   observado con S0B67A en la V18; se vigila la proxima revision).
 //
-// ALCANCE DECLARADO. Solo modelos fam 'ec' con hwSku: las QuickSpecs de EdgeConnect no
-// cubren los gateways de campus (fam 'gw' — sus guias son otros documentos, ver
-// DATASHEETS.gw9000/gw9100/gw9200Qs) ni los virtuales/sin SKU (EC-V, series 7000/7200).
-// Extenderlo es una mejora futura con el mismo patron, no un hueco silencioso.
+// ALCANCE (ampliado 2026-09-17, primer pendiente accionable de la lista del dueño)
+// Cada familia se cruza contra SU guia oficial, porque ningun documento cubre dos:
+// · EdgeConnect SD-WAN (fam 'ec')  → QuickSpecs EdgeConnect (a50004289enw)
+// · Gateways serie 9000            → guia de pedidos PSNow (a00067607enw): el documento
+//   entero ES la guia («Ordering guide»), sin seccion «Configuration Information».
+// · Gateways serie 9100            → QuickSpecs 9100 Hybrid (a50006999enw)
+// · Gateway 9240 (serie 9200)      → QuickSpecs CX 9240 (a50004272enw)
+// Quedan fuera, declarado: modelos sin SKU hardware (EC-V — se licencia, no se pide
+// chasis) y las series legacy 7000/7200 (sin hwSku en el catalogo; sus guias no estan
+// en el repo). Un modelo con hwSku que no case con NINGUNA fuente rompe el cruce con
+// codigo 2 — un verde silencioso por modelo huerfano seria peor que ningun cruce.
 
 const fs = require('fs');
 const path = require('path');
 const pdf = require('pdf-parse');
 const { MODELS, DATASHEETS } = require('../server/seed/legacyData/aruba');
 
-const PDF = path.join(__dirname, '..', 'public', 'datasheets', DATASHEETS.ecQuickspecs.file);
 const JSON_OUT = process.argv.slice(2).includes('--json');
 
-// Las marcas que delimitan la guia de pedido dentro del texto extraido. Si el documento
-// cambia de forma, el script falla declarandolo (codigo 2) antes que cruzar contra la
-// region equivocada — un verde falso por seccion movida seria peor que ningun cruce.
-const MARCA_GUIA = 'Configuration Information';
-const MARCA_FIN = 'Technical Specifications';
+// Las fuentes oficiales y a que modelos cubre cada una. `marcaGuia`/`marcaFin`
+// delimitan la seccion de pedido dentro del texto extraido; `marcaFin: null` significa
+// «hasta el final del documento» (la guia PSNow de la serie 9000 es toda ella de
+// pedidos). Si un documento cambia de forma, el script falla declarandolo (codigo 2)
+// antes que cruzar contra la region equivocada — un verde falso por seccion movida
+// seria peor que ningun cruce.
+const FUENTES = [
+  {
+    clave: 'ecQuickspecs',
+    marcaGuia: 'Configuration Information',
+    marcaFin: 'Technical Specifications',
+    cubre: (m) => m.fam === 'ec' && !!m.hwSku,
+  },
+  {
+    clave: 'gw9000Psnow',
+    marcaGuia: 'Ordering guide',
+    marcaFin: null, // el documento entero es la guia de pedidos (7 pp, a00067607enw)
+    cubre: (m) => m.fam === 'gw' && /^Gateway 90/.test(m.id) && !!m.hwSku,
+  },
+  {
+    clave: 'gw9100',
+    marcaGuia: 'Configuration Information',
+    marcaFin: 'Technical Specifications',
+    cubre: (m) => m.fam === 'gw' && /^Gateway 91/.test(m.id) && !!m.hwSku,
+  },
+  {
+    clave: 'gw9200Qs',
+    marcaGuia: 'Configuration Information',
+    marcaFin: 'Technical Specifications',
+    cubre: (m) => m.fam === 'gw' && /^Gateway 92/.test(m.id) && !!m.hwSku,
+  },
+];
+
+// La fuente de un modelo, o null si ninguna lo cubre. Un modelo CON hwSku sin fuente
+// es un agujero del cruce: se declara en el informe y rompe la ejecucion (codigo 2).
+function fuenteDe(m) {
+  return FUENTES.find((f) => f.cubre(m)) || null;
+}
 
 // La fecha de creacion del PDF viene en formato «D:YYYYMMDDHHmmSS±HH'mm'»; la version
 // legible (V18, 06-jul-2026) vive en un campo que pdf.js no expone, asi que se declara
@@ -102,45 +141,69 @@ async function parsearPdf(buf) {
   }
 }
 
-async function informe() {
-  if (!fs.existsSync(PDF)) {
-    throw new Error(`no esta la copia local de las QuickSpecs (${path.relative(process.cwd(), PDF)}) — descargala con npm run datasheets`);
+// Lee y delimita la seccion de pedido de una fuente. Cache por clave: un mismo PDF no
+// se parsea dos veces aunque cubra varios modelos.
+async function cargarFuente(fuente, cache) {
+  if (cache.has(fuente.clave)) return cache.get(fuente.clave);
+  const meta = DATASHEETS[fuente.clave];
+  const archivo = path.join(__dirname, '..', 'public', 'datasheets', meta.file);
+  if (!fs.existsSync(archivo)) {
+    throw new Error(`no esta la copia local de ${meta.n} (${path.relative(process.cwd(), archivo)}) — descargala con npm run datasheets`);
   }
-  const datos = await parsearPdf(fs.readFileSync(PDF));
+  const datos = await parsearPdf(fs.readFileSync(archivo));
   const texto = datos.text || '';
-  const iGuia = texto.indexOf(MARCA_GUIA);
-  const iFin = texto.indexOf(MARCA_FIN);
-  if (iGuia < 0 || iFin < 0 || iFin <= iGuia) {
-    throw new Error(`las QuickSpecs ya no tienen la forma esperada («${MARCA_GUIA}» / «${MARCA_FIN}») — revisar el documento antes de cruzar`);
+  const iGuia = texto.indexOf(fuente.marcaGuia);
+  const iFin = fuente.marcaFin ? texto.indexOf(fuente.marcaFin) : texto.length;
+  if (iGuia < 0 || iFin <= iGuia) {
+    throw new Error(`${meta.n} ya no tiene la forma esperada («${fuente.marcaGuia}»${fuente.marcaFin ? ` / «${fuente.marcaFin}»` : ''}) — revisar el documento antes de cruzar`);
   }
-  const guia = texto.slice(iGuia, iFin);
+  const cargada = {
+    guia: texto.slice(iGuia, iFin),
+    texto,
+    meta: {
+      clave: fuente.clave,
+      documento: meta.n,
+      archivo: path.relative(process.cwd(), archivo),
+      titulo: (datos.info && datos.info.Title) || null,
+      creado: fechaDelPdf(datos.info && datos.info.CreationDate),
+      url: meta.url,
+    },
+  };
+  cache.set(fuente.clave, cargada);
+  return cargada;
+}
 
+async function informe() {
+  const cache = new Map();
   const modelos = [];
   const sinSku = [];
+  const sinFuente = [];
+  const fuentesUsadas = new Map();
+
   for (const m of MODELS) {
-    if (m.fam !== 'ec') continue; // gateways de campus: otras guias, alcance declarado
-    if (!m.hwSku) { sinSku.push(m.id); continue; }
+    if (!m.hwSku) { sinSku.push(m.id); continue; } // EC-V, series 7000/7200: nada que buscar
+    const fuente = fuenteDe(m);
+    if (!fuente) { sinFuente.push(m.id); continue; }
+    const f = await cargarFuente(fuente, cache);
+    fuentesUsadas.set(fuente.clave, f.meta);
     // La opcion «#AC3» (NoLoc) cuelga del SKU base: basta la presencia del base.
-    const presencia = guia.includes(m.hwSku) ? 'ordenable'
-      : texto.includes(m.hwSku) ? 'mencionado' : 'ausente';
-    modelos.push({ id: m.id, sku: m.hwSku, presencia, ...clasificar(presencia, m.eolAnnounced) });
+    const presencia = f.guia.includes(m.hwSku) ? 'ordenable'
+      : f.texto.includes(m.hwSku) ? 'mencionado' : 'ausente';
+    modelos.push({ id: m.id, sku: m.hwSku, fuente: fuente.clave, presencia, ...clasificar(presencia, m.eolAnnounced) });
+  }
+
+  if (sinFuente.length) {
+    throw new Error(`modelos con SKU hardware sin guia asignada: ${sinFuente.join(', ')} — declarar su fuente en FUENTES antes de cruzar`);
   }
 
   const alarmas = modelos.filter((x) => x.veredicto === 'alarma');
   const notas = modelos.filter((x) => x.veredicto === 'nota');
   return {
-    fuente: {
-      documento: DATASHEETS.ecQuickspecs.n,
-      archivo: path.relative(process.cwd(), PDF),
-      titulo: (datos.info && datos.info.Title) || null,
-      creado: fechaDelPdf(datos.info && datos.info.CreationDate),
-      url: DATASHEETS.ecQuickspecs.url,
-    },
+    fuentes: [...fuentesUsadas.values()],
     modelos,
     fueraDeAlcance: {
       sinSku,
-      gateways: MODELS.filter((m) => m.fam === 'gw').map((m) => m.id),
-      motivo: 'las QuickSpecs de EdgeConnect no cubren gateways de campus ni modelos sin SKU hardware',
+      motivo: 'sin SKU hardware que buscar (EC-V se licencia por software; series 7000/7200 legacy sin SKU en el catalogo)',
     },
     resumen: {
       cotejados: modelos.length,
@@ -152,23 +215,28 @@ async function informe() {
 }
 
 function imprimir(d) {
-  console.log(`Fuente: ${d.fuente.documento} — ${d.fuente.titulo || 'sin titulo'}`
-    + `${d.fuente.creado ? `, creado ${d.fuente.creado}` : ''} (${d.fuente.archivo})`);
-  console.log('');
+  const porFuente = new Map();
   for (const m of d.modelos) {
-    const marca = m.veredicto === 'alarma' ? '✖ ALARMA' : m.veredicto === 'nota' ? '⚠ nota' : '✔';
-    console.log(`  ${marca}  ${m.id.padEnd(10)} ${m.sku.padEnd(8)} ${m.detalle}`);
+    if (!porFuente.has(m.fuente)) porFuente.set(m.fuente, []);
+    porFuente.get(m.fuente).push(m);
   }
-  console.log('');
-  console.log(`  Alcance: ${d.resumen.cotejados} EdgeConnect con SKU cotejados; `
-    + `sin SKU (${d.fueraDeAlcance.sinSku.join(', ') || 'ninguno'}) y gateways de campus `
-    + `(${d.fueraDeAlcance.gateways.length}) quedan fuera — ${d.fueraDeAlcance.motivo}.`);
+  for (const f of d.fuentes) {
+    console.log(`Fuente: ${f.documento} — ${f.titulo || 'sin titulo'}`
+      + `${f.creado ? `, creado ${f.creado}` : ''} (${f.archivo})`);
+    for (const m of porFuente.get(f.clave) || []) {
+      const marca = m.veredicto === 'alarma' ? '✖ ALARMA' : m.veredicto === 'nota' ? '⚠ nota' : '✔';
+      console.log(`  ${marca}  ${m.id.padEnd(17)} ${m.sku.padEnd(8)} ${m.detalle}`);
+    }
+    console.log('');
+  }
+  console.log(`  Alcance: ${d.resumen.cotejados} modelos con SKU cotejados en ${d.fuentes.length} guias oficiales; `
+    + `sin SKU (${d.fueraDeAlcance.sinSku.join(', ') || 'ninguno'}) quedan fuera — ${d.fueraDeAlcance.motivo}.`);
   console.log('');
   if (d.resumen.alarmas) {
     console.log(`  ${d.resumen.alarmas} ALARMA(S): revisar el boletin oficial de fin de venta a mano. `
       + 'La marca no entra sola — entra por documento del fabricante, con su cita.');
   } else {
-    console.log('  Sin alarmas: todo EdgeConnect sin boletin sigue ordenable en la guia oficial.');
+    console.log('  Sin alarmas: todo modelo sin boletin sigue ordenable en su guia oficial.');
   }
 }
 
@@ -182,4 +250,4 @@ if (require.main === module) {
     .catch((e) => { console.error(`[vigencia] ${e.message}`); process.exit(2); });
 }
 
-module.exports = { informe, clasificar, fechaDelPdf, MARCA_GUIA, MARCA_FIN };
+module.exports = { informe, clasificar, fechaDelPdf, fuenteDe, FUENTES };

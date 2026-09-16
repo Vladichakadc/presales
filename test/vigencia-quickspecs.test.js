@@ -11,7 +11,8 @@
 
 const test = require('node:test');
 const assert = require('node:assert');
-const { informe, clasificar, fechaDelPdf } = require('../scripts/vigencia-quickspecs');
+const { MODELS } = require('../server/seed/legacyData/aruba');
+const { informe, clasificar, fechaDelPdf, fuenteDe, FUENTES } = require('../scripts/vigencia-quickspecs');
 
 test('la regla: ordenable sin boletin es ok', () => {
   const c = clasificar('ordenable', null);
@@ -46,11 +47,12 @@ test('la fecha del PDF se lee del formato D:AAAAMMDD…', () => {
   assert.strictEqual(fechaDelPdf('basura'), null);
 });
 
-test('contra el documento oficial de hoy: EC-XS ordenable, EC-XL nota, cero alarmas', async () => {
+test('contra los documentos oficiales de hoy: EC-XS ordenable, EC-XL nota, cero alarmas', async () => {
   const d = await informe();
-  // La fuente se declara con lo que se puede leer del propio documento.
-  assert.strictEqual(d.fuente.titulo, 'HPE Aruba Networking EdgeConnect SD-WAN');
-  assert.strictEqual(d.fuente.creado, '2026-06-23');
+  // Las fuentes se declaran con lo que se puede leer de cada documento.
+  const ec = d.fuentes.find((f) => f.clave === 'ecQuickspecs');
+  assert.strictEqual(ec.titulo, 'HPE Aruba Networking EdgeConnect SD-WAN');
+  assert.strictEqual(ec.creado, '2026-06-23');
 
   const xs = d.modelos.find((m) => m.id === 'EC-XS');
   assert.ok(xs, 'el EC-XS esta en el cruce');
@@ -62,7 +64,34 @@ test('contra el documento oficial de hoy: EC-XS ordenable, EC-XL nota, cero alar
   assert.strictEqual(xl.veredicto, 'nota', 'EC-XL: ordenable pese al boletin vencido (patron NoLoc de la V18)');
 
   assert.strictEqual(d.resumen.alarmas, 0,
-    'hoy no hay alarmas — si aparecen tras refrescar las QuickSpecs, revisar el boletin oficial a mano');
-  assert.strictEqual(d.resumen.cotejados, 9, 'los nueve EdgeConnect con hwSku entran al cruce');
+    'hoy no hay alarmas — si aparecen tras refrescar las guias, revisar el boletin oficial a mano');
+  assert.strictEqual(d.resumen.cotejados, 15, 'los nueve EdgeConnect y los seis gateways con hwSku entran al cruce');
   assert.ok(d.fueraDeAlcance.sinSku.includes('EC-V'), 'el EC-V queda declarado fuera de alcance');
+});
+
+// La extension a gateways de campus (2026-09-17, primer pendiente accionable de la
+// lista del dueño): cada gateway con SKU se cruza contra SU guia — la serie 9000 no
+// esta en las QuickSpecs de EdgeConnect, tiene la suya (PSNow a00067607enw).
+test('la correspondencia modelo-guia: cada gateway con SKU cae en SU documento', () => {
+  assert.strictEqual(fuenteDe(MODELS.find((m) => m.id === 'Gateway 9004')).clave, 'gw9000Psnow');
+  assert.strictEqual(fuenteDe(MODELS.find((m) => m.id === 'Gateway 9012')).clave, 'gw9000Psnow');
+  assert.strictEqual(fuenteDe(MODELS.find((m) => m.id === 'Gateway 9106')).clave, 'gw9100');
+  assert.strictEqual(fuenteDe(MODELS.find((m) => m.id === 'Gateway 9114')).clave, 'gw9100');
+  assert.strictEqual(fuenteDe(MODELS.find((m) => m.id === 'Gateway 9240')).clave, 'gw9200Qs');
+  // Un gateway con SKU de una serie sin guia asignada NO puede quedar verde en
+  // silencio: fuenteDe devuelve null y el informe rompe declarandolo (codigo 2).
+  assert.strictEqual(fuenteDe({ fam: 'gw', id: 'Gateway 9300', hwSku: 'XXXXXXA' }), null);
+  // Sin SKU no hay nada que buscar: ni fuente ni alarma (EC-V, legacy 7000/7200).
+  assert.strictEqual(fuenteDe({ fam: 'gw', id: '7030', hwSku: null }), null);
+});
+
+test('contra las guias de gateways de hoy: los seis, ordenables', async () => {
+  const d = await informe();
+  for (const id of ['Gateway 9004', 'Gateway 9004-LTE', 'Gateway 9012', 'Gateway 9106', 'Gateway 9114', 'Gateway 9240']) {
+    const m = d.modelos.find((x) => x.id === id);
+    assert.ok(m, `${id} entra al cruce`);
+    assert.strictEqual(m.presencia, 'ordenable', `${id}: verificado en su guia el 2026-09-17`);
+    assert.strictEqual(m.veredicto, 'ok');
+  }
+  assert.strictEqual(d.fuentes.length, 4, 'EdgeConnect + 9000 (PSNow) + 9100 + 9200');
 });

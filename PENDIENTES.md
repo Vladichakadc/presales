@@ -4,7 +4,46 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-16 (plan 12: **HA 1+1 pre-marcado por capacidad del sitio +
+Última revisión: 2026-09-17 (plan 13: **vigencia extendida a los gateways de campus +
+asistente de cableado EdgeHA + dedup de «Interfaces» en la ficha** — petición del
+dueño: «ejecuta el primer pendiente y la mejora propuesta… y valida en las
+características del equipo, veo información redundante, por ejemplo interfaces».
+MAPA HONESTO de la petición: el primer pendiente LITERAL de la tabla era una acción
+del dueño (reenviar las secciones 2+ del reporte truncado del plan 11 — no la puede
+hacer la casa), así que se ejecutó el primer pendiente ACCIONABLE: extender
+`npm run vigencia` más allá de EdgeConnect. (1) VIGENCIA MULTI-FUENTE: el script pasa
+de una guía a un array FUENTES — QuickSpecs EdgeConnect (a50004289enw) + guía de
+pedidos PSNow de la serie 9000 (a00067607enw: el documento entero ES la guía, sin
+sección «Configuration Information»; ancla «Ordering guide» hasta el final) +
+QuickSpecs 9100 (a50006999enw) + QuickSpecs 9200 (a50004272enw)— con la
+correspondencia por prefijo de modelo (Gateway 90xx/91xx/92xx) y la regla dura de la
+casa: un modelo con SKU que no case con NINGUNA fuente rompe el cruce con código 2,
+nunca verde silencioso. Hoy: 15/15 ordenables en 4 guías (9 EC + 6 gateways), cero
+alarmas; EC-V y las series legacy 7000/7200 quedan fuera declaradas (sin SKU que
+buscar). El `--json` ya existía; se entrega `vigencia-ci.patch` (el PAT no tiene scope
+workflow) con el workflow que lo corre en push/PR que toquen guías o catálogo, los
+lunes 06:17 UTC y a mano, y publica el JSON como artefacto. (2) MEJORA PROPUESTA —
+ASISTENTE DE CABLEADO EdgeHA: con HA marcado y ≥2 enlaces activos, la ficha pinta la
+sección «Cableado del par EdgeHA»: cada enlace a SU chasis (WAN 1→Nodo A, WAN 2→Nodo
+B, alterno si hay más — declarado como extensión del patrón, no figura oficial), la
+interconexión EdgeHA directa entre chasis (sin switch; el VSG no fija SKU y no se
+inventa) y la óptica de cada nodo según el medio declarado. Destapó una INCONSISTENCIA
+REAL: el BOM y el chooser cotizaban las ópticas ×2 unidades con HA — el patrón de HUB
+(«Each WAN transport is brought into each appliance») aplicado a una sucursal. Con
+EdgeHA cada enlace aterriza en UN chasis: corregido a 1 por enlace (solo fam `ec`;
+los gateways conservan el ×unidades — su cableado HA no está validado contra fuente).
+(3) REDUNDANCIA VALIDADA Y CORREGIDA: «Interfaces» se pintaba DOS veces con la misma
+cadena `m.ifaces` — en «Características del equipo» y en «Configuración de puertos»
+(rama de texto libre de FICHA.seccionPuertos). Queda una sola vez, en su sección
+dedicada y con su nota de procedencia. El resto de la ficha se auditó sección a
+sección: «Alimentación» ya tenía su regla anti-dup (watts se salta si psu.watts lo
+da) y «Boost recomendado» (recomendación) no duplica la escalera (capacidad).
+Cobertura: 2 unitarias nuevas de vigencia (correspondencia modelo-guía + los seis
+gateways ordenables) y 6 comprobaciones e2e nuevas (sección EdgeHA presente/ausente
+según HA, asignación A/B, interconexión, «Interfaces» exactamente una); 391 unitarios
+y 8/8 e2e en verde.)
+
+Revisión anterior: 2026-09-16 (plan 12: **HA 1+1 pre-marcado por capacidad del sitio +
 validación de la premisa «cada WAN a un equipo del par»** — petición del dueño: con 2
 enlaces de ≥5 Gbps, «cada WAN debería ir conectado a un equipo del HA y por defecto
 debería habilitarse el HA con el licenciamiento necesario». Validación contra las
@@ -819,6 +858,47 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Vigencia multi-fuente + asistente de cableado EdgeHA + dedup «Interfaces» (2026-09-17)
+
+Petición del dueño en tres partes: ejecutar el primer pendiente, ejecutar la mejora
+propuesta y validar la información redundante de las características del equipo
+(«por ejemplo interfaces»). Mapa honesto: el primer pendiente literal era una acción
+del dueño (reenviar las secciones 2+ del reporte del plan 11), así que se ejecutó el
+primero ACCIONABLE.
+
+**1 · Vigencia extendida a gateways de campus.** `scripts/vigencia-quickspecs.js` pasa
+de una única guía a un array FUENTES con la correspondencia declarada por prefijo:
+EdgeConnect → QuickSpecs a50004289enw; Gateway 90xx → guía de pedidos PSNow
+a00067607enw (documento entero, ancla «Ordering guide»); Gateway 91xx → QuickSpecs
+a50006999enw; Gateway 92xx → QuickSpecs a50004272enw. Un modelo con SKU sin fuente
+asignable rompe el cruce con código 2 (nunca verde silencioso). Hoy: **15/15
+ordenables en 4 guías oficiales, cero alarmas**; EC-V y legacy 7000/7200 fuera,
+declarados. CI: `vigencia-ci.patch` (el PAT no tiene scope `workflow`) — corre en
+push/PR que toquen guías o catálogo, los lunes y a mano, y sube el JSON de artefacto.
+
+**2 · Asistente de cableado EdgeHA (la mejora propuesta).** Con HA marcado y ≥2
+enlaces WAN activos, la ficha del EdgeConnect pinta «Cableado del par EdgeHA»: cada
+enlace a su chasis (WAN 1 → Nodo A, WAN 2 → Nodo B; con >2 transportes el reparto A/B
+se declara extensión del patrón, no figura oficial), la interconexión EdgeHA directa
+entre chasis sin switch (sin SKU: el VSG no lo fija y aquí no se inventa) y la óptica
+de cada nodo según el medio declarado. La mejora destapó una inconsistencia real: el
+BOM y el chooser cotizaban las ópticas WAN ×2 con HA — el patrón de hub del VSG
+aplicado a una sucursal. Con EdgeHA cada enlace aterriza en UN chasis: corregido a 1
+por enlace (solo fam `ec`; gateways sin tocar — sin fuente validada para su HA).
+
+**3 · Redundancia de la ficha: confirmada y corregida.** «Interfaces» se pintaba DOS
+veces con la misma cadena — en «Características del equipo» y en «Configuración de
+puertos». Queda una sola vez, en su sección dedicada y con su nota de procedencia
+(el catálogo lo trae como texto libre). Auditoría completa de las demás secciones:
+«Alimentación» ya tenía su regla anti-duplicado (watts vs. psu.watts) y «Boost
+recomendado» (recomendación de preventa) no duplica la escalera (capacidad publicada).
+
+Cobertura: 2 unitarias nuevas (`vigencia-quickspecs`: correspondencia modelo-guía,
+los seis gateways ordenables) y 6 comprobaciones e2e nuevas en
+`e2e-desbordamiento-ec.js` (sección EdgeHA presente/ausente según HA, asignación A/B,
+interconexión declarada, «Interfaces» exactamente una vez). **391 unitarios y 8/8 e2e
+en verde.**
 
 ### HA pre-marcado por capacidad del sitio + validación «cada WAN a un equipo del par» (2026-09-16)
 

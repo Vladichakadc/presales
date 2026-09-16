@@ -115,6 +115,28 @@ async function enlazar5000mas5000(page) {
   t.ok(pickMin === 'EC-10150' && !/Ningún modelo cumple/.test(verdict),
     'con IMIX 1,00 + FEC off + margen 0 el requerimiento (≈10,5 Gbps) entra en el EC-10150 (' + pickMin + ')');
 
+  // ── 3b · Asistente de cableado EdgeHA (mejora propuesta y aceptada, 2026-09-17) ──
+  // Aquí SÍ hay ficha (el EC-10150 quedó recomendado), con HA marcado y los dos enlaces
+  // de 5 Gbps: la ficha pinta qué enlace va a qué chasis del par, con la interconexión
+  // EdgeHA declarada. En el escenario de desbordamiento NO se puede probar: allí el
+  // veredicto honesto («ningún modelo cumple») sustituye a la ficha a propósito.
+  let fichaHa = (await page.textContent('#verdict')) || '';
+  t.ok(/Cableado del par EdgeHA/.test(fichaHa), 'con HA y 2 enlaces la ficha pinta «Cableado del par EdgeHA»');
+  t.ok(/Nodo A/.test(fichaHa) && /Nodo B/.test(fichaHa), 'asigna cada enlace a un chasis del par (A/B)');
+  t.ok(/Enlace EdgeHA/.test(fichaHa) && /sin switch/.test(fichaHa), 'declara la interconexión directa entre chasis, sin switch');
+  t.ok(/MPLS L3/.test(fichaHa) && /DIA/.test(fichaHa), 'nombra los transportes declarados en el escenario');
+  // Dedup «Interfaces» (validación del dueño, 2026-09-17): la misma cadena se pintaba en
+  // «Características del equipo» Y en «Configuración de puertos». Ahora, una sola vez.
+  t.ok((fichaHa.match(/Interfaces/g) || []).length === 1,
+    '«Interfaces» aparece UNA sola vez en la ficha (solo en «Configuración de puertos»)');
+  // Y al apagar HA con la ficha pintada, la sección desaparece (no es decoración fija).
+  await page.click('#chkHa');
+  await page.waitForTimeout(700);
+  fichaHa = (await page.textContent('#verdict')) || '';
+  t.ok(!/Cableado del par EdgeHA/.test(fichaHa), 'al desmarcar HA con la ficha pintada, la sección EdgeHA desaparece');
+  await page.click('#chkHa');
+  await page.waitForTimeout(500);
+
   // ── 4 · Regresión: escenario pequeño sigue recomendando EC pequeño ────────
   await page.click('#btnLimpiarEscenario');
   await page.waitForSelector('#users', { timeout: 20000 });
