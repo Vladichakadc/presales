@@ -118,6 +118,39 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 .tco-tabla th,.tco-tabla td{font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--rule);text-align:right}
 .tco-tabla th:first-child,.tco-tabla td:first-child{text-align:left}
 .acc-caja{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:20px;max-height:86vh;overflow:auto}
+/* ══ M1 · Multi-Underlay Builder (2026-09-16) ══
+   Mismo lenguaje visual que el de Aruba —tarjeta por enlace, cabecera con badge de
+   familia, validacion en linea, barra agregada viva— pero con la FILA de FortiGate, que
+   es mas corta a proposito: {transporte, bajada, overlay}. Ni medio de puerto ni subida.
+   El porque esta en el comentario del marcado. */
+.wan-fila{border:1px solid var(--rule);border-radius:3px;background:var(--paper);padding:10px 12px 12px;margin-bottom:10px}
+.wan-fila select,.wan-fila input{padding:7px 8px;font-size:12px}
+.wan-fila input[type=number]{font-family:'IBM Plex Mono',monospace;font-size:12.5px}
+.wan-cab{display:flex;align-items:center;gap:8px;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid var(--rule)}
+.wan-num{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:14px;letter-spacing:.04em;text-transform:uppercase}
+.wan-badge{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:2px;font-weight:600}
+.wan-badge.mpls{background:#3D5A80;color:#fff}
+.wan-badge.inet{background:var(--green);color:#fff}
+.wan-badge.cel{background:var(--amber);color:#fff}
+.wan-acc{margin-left:auto;display:flex;gap:6px}
+.wan-iconbtn{border:1px solid var(--rule);background:var(--card);color:var(--steel);border-radius:2px;cursor:pointer;font-size:13px;line-height:1;padding:4px 8px}
+.wan-iconbtn:hover{border-color:var(--red);color:var(--red)}
+.wan-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:8px;align-items:end}
+.wan-campo label{display:block;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--steel);margin-bottom:4px}
+.wan-bw{position:relative;display:block}
+.wan-bw input{padding-right:46px;width:100%}
+.wan-sufijo{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.06em;color:var(--steel);pointer-events:none}
+.wan-ov{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--steel);cursor:pointer;grid-column:1/-1;padding-bottom:2px}
+.wan-ov input{margin:0;accent-color:var(--red)}
+.wan-ov.na{opacity:.55;cursor:default}
+.wan-fila input.wan-invalido{border-color:#a4544e;outline-color:#a4544e}
+.wan-msg{font-size:11.5px;line-height:1.45;margin:8px 0 0}
+.wan-msg.err{color:#a4544e}
+.wan-msg.warn{color:var(--amber)}
+.wan-resumen{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;border:1px solid var(--rule);border-left:3px solid var(--ink);background:var(--card);border-radius:2px;padding:9px 12px;margin-top:12px;font-size:12.5px;line-height:1.5}
+.wan-resumen b{font-family:'IBM Plex Mono',monospace;font-size:12px}
+.wan-res-sep{color:var(--rule)}
+@media(max-width:560px){.wan-grid{grid-template-columns:1fr}.wan-ov{padding-bottom:0}}
 #modalConsolidado{position:fixed;inset:0;background:rgba(28,25,23,.45);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
 #modalConsolidado[hidden]{display:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -185,11 +218,6 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       </div>
       <p class="hint" id="rolHint">Solo perímetro: el tráfico no viaja por túneles del overlay, así que el techo lo fija únicamente la capa de inspección.</p>
     </div>
-    <div class="field" id="fldOverlay" hidden>
-      <label for="pctOverlay">Tráfico por el overlay: <span id="pctOverlayVal" style="font-family:'IBM Plex Mono',monospace">100 %</span></label>
-      <input type="range" id="pctOverlay" min="0" max="100" step="5" value="100" autocomplete="off">
-      <p class="hint">La fracción que va cifrada al fabric. El resto sale por <b>breakout local</b> a Internet y no paga IPsec. Bajarlo es lo que hace que una sucursal con salida directa a SaaS no necesite un equipo mayor.</p>
-    </div>
     <div class="checks">
     <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad — par en clúster<span class="sku">Se cotizan 2 unidades y cada una lleva su propia suscripción FortiGuard. En <b>activo-pasivo el clúster no suma capacidad</b>: el throughput sigue siendo el de una unidad, así que el dimensionamiento no cambia. En activo-activo hay reparto, pero solo sobre sesiones de inspección y lejos de ser lineal — esta herramienta no lo descuenta.</span></span></label>
     </div>
@@ -231,13 +259,33 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       </div>
       <p class="hint" id="modoHint">Un solo caudal, para dimensionar una sede o un perímetro de Internet.</p>
     </div>
+    <!-- M1 · Multi-Underlay Builder (2026-09-16). Sustituye al caudal único más el
+         deslizador «% por el overlay», que era una ESTIMACIÓN a ojo justo del número que
+         fija el segundo techo del motor IPsec. Ahora los enlaces del sitio se DECLARAN y
+         la fracción se calcula.
+         LA FILA DE FORTIGATE ES MÁS CORTA QUE LA DE ARUBA, A PROPÓSITO:
+           · sin «medio del puerto» — este catálogo no trae ópticas de Fortinet, así que
+             una auditoría de puertos del chasis sería un dato inventado;
+           · sin «subida» — el motor consume un solo caudal, y un campo que nadie lee es
+             peor que uno ausente (es el que hace creer que se tuvo en cuenta).
+         EL MOTOR NO CAMBIA: #bw, #unit y #pctOverlay siguen existiendo como espejos
+         ocultos que este builder calcula, así que el dimensionamiento de un escenario
+         equivalente da exactamente lo mismo que antes. -->
     <div class="field">
-      <label for="bw"><span id="bwLbl">Ancho de banda de Internet / WAN</span></label>
-      <div class="row">
-        <input type="number" id="bw" min="1" step="any" autocomplete="off">
-        <select id="unit" style="width:105px"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
+      <label><span id="bwLbl">Enlaces WAN del sitio (underlay)</span></label>
+      <div id="wanBuilder">
+        <div id="wanBuilderFilas"></div>
+        <button type="button" class="btn ghost" id="btnAddWan" style="font-size:11px;padding:5px 11px;margin-top:8px">+ Añadir enlace WAN</button>
       </div>
-      <p class="hint">En NGFW/SD-WAN, el throughput relevante es el tráfico que el FortiGate inspecciona, no solo el de WAN.</p>
+      <div id="wanResumen" class="wan-resumen" aria-live="polite" hidden></div>
+      <input type="hidden" id="wanLinksData">
+      <!-- Espejos del motor: los calcula sincronizarWanHidden() a partir de las filas.
+           Siguen siendo los ids que render() lee, para que el cambio sea de entrada de
+           datos y no de dimensionamiento. -->
+      <input type="hidden" id="bw" value="">
+      <input type="hidden" id="unit" value="1">
+      <input type="hidden" id="pctOverlay" value="100">
+      <p class="hint">Cada enlace declara su <b>transporte</b>, su <b>caudal de bajada</b> y si su tráfico <b>va por el overlay SD-WAN</b>. De ahí salen las dos cifras que el motor usa: el caudal del sitio (Σ de las bajadas) y la fracción cifrada que impone el segundo techo del motor IPsec. El resto sale por <b>breakout local</b> y no paga IPsec — que es lo que hace que una sucursal con salida directa a SaaS no necesite subir de gama.</p>
     </div>
     <div class="field" id="fldAgg" hidden>
       <label for="sites">Número de sedes que concentra</label>

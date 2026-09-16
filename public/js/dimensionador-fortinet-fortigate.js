@@ -10,6 +10,10 @@ let CARE = {};
 
 const $=id=>document.getElementById(id);
 let profile='tp', modoCaudal='link', rolSdwan='none', segMode='branch', lastPick=null;
+// Ultimo rol con el que se pintaron las filas del builder: la casilla de overlay se
+// habilita o deshabilita segun el rol, y repintar en cada render destruiria el campo a
+// medio teclear (el mismo motivo por el que BOM.cantidadRef escucha change y no input).
+let wanRolPintado=null;
 let bomFilas=[], bomMeta={};
 // Si el dimensionamiento se queda sin candidatos, el BOM conservaba intacta la cotizacion
 // del ultimo equipo que si cumplia: el veredicto decia "Sin candidato" y la pestana de BOM
@@ -73,7 +77,9 @@ $('rolSeg').addEventListener('click',e=>{
   render();
 });
 $('segSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('segSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));segMode=b.dataset.v;render();});
-['bw','unit','users','perUser','head','sesUser','sessNeed','vidaSes','sites','conc','pctOverlay',
+// bw/unit/pctOverlay ya no estan aqui: son espejos ocultos que escribe el builder, y este
+// dispara render() por su cuenta al cambiar una fila.
+['users','perUser','head','sesUser','sessNeed','vidaSes','sites','conc',
  'chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa'].forEach(id=>$(id).addEventListener('input',render));
 // En HA se compran 2 unidades y cada una lleva su propia suscripcion FortiGuard: enlazar la
 // casilla con la cantidad del BOM evita cotizar un clúster con una sola licencia.
@@ -95,6 +101,239 @@ function fmt(m){
   return Math.round(m)+' Mbps';
 }
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+/* == M1 · MULTI-UNDERLAY BUILDER (2026-09-16) ==
+   Sustituye al par «caudal unico + deslizador de % por el overlay». El deslizador era
+   una ESTIMACION a ojo justo del numero que fija el segundo techo del motor IPsec:
+   capacidad efectiva = min(capa de inspeccion, IPsec / fraccion del overlay). Ahora los
+   enlaces del sitio se DECLARAN y la fraccion SALE de ellos.
+
+   LA FILA DE FORTIGATE ES MAS CORTA QUE LA DE ARUBA, A PROPOSITO. Alli es
+   {tipo, medio, down, up}; aqui es {tipo, down, overlay}:
+     · sin `medio` — este catalogo no trae opticas de Fortinet, asi que una auditoria de
+       puertos del chasis seria un dato inventado (el mismo vicio del `noAplica` deducido);
+     · sin `up` — el motor consume UN caudal, y un campo que nadie lee es peor que uno
+       ausente: invita a creer que se tuvo en cuenta;
+     · con `overlay`, que Aruba no necesita — en EdgeConnect el appliance se dimensiona
+       por el agregado del sitio, mientras que en FortiGate la fraccion cifrada ES el
+       segundo techo. Es el campo propio de este fabricante.
+
+   EL MOTOR NO CAMBIA. Este builder solo CALCULA los dos numeros que render() ya leia
+   —#bw (con #unit fijo en Mbps) y #pctOverlay—, que pasan a ser espejos ocultos. Por
+   construccion, un escenario equivalente tiene que dar el mismo equipo que antes: eso es
+   lo que contrasta scripts/contraste-fortinet.js contra la linea base medida. */
+const TIPOS_WAN=['MPLS L3','MPLS L2','DIA','Banda Ancha','4G/5G'];
+let wanSeq=0; // ids unicos de fila dentro de la sesion
+// Familia del transporte para el badge de la tarjeta (MPLS / Internet / celular).
+function familiaTipoWan(tipo){
+  if(/^MPLS/.test(tipo)) return {cls:'mpls', n:'MPLS'};
+  if(/^4G\/5G/.test(tipo)) return {cls:'cel', n:'Celular'};
+  return {cls:'inet', n:'Internet'};
+}
+// Por defecto va por el overlay lo que no es salida directa a Internet: MPLS y celular
+// son transporte del fabric. Es solo un DEFAULT — la casilla manda, y por eso el default
+// no se recalcula cuando alguien ya la toco.
+function overlaySugerido(tipo){ return /^MPLS|^4G\/5G/.test(tipo); }
+// Lee las filas tal como estan pintadas: es la unica fuente de los enlaces, asi el motor,
+// la serializacion y los perfiles ven exactamente lo mismo.
+function leerWanLinks(){
+  return [...document.querySelectorAll('#wanBuilderFilas .wan-fila')].map(f=>{
+    const ov=f.querySelector('[data-campo=overlay]');
+    return {
+      id:parseInt(f.dataset.id)||0,
+      tipo:f.querySelector('[data-campo=tipo]').value,
+      down:Math.max(0,parseFloat(f.querySelector('[data-campo=down]').value)||0),
+      overlay:!!ov.checked,
+      overlayManual:ov.dataset.manual==='1',
+    };
+  });
+}
+function wanFilaHtml(l,idx){
+  const ops=(lista,v)=>lista.map(x=>`<option value="${esc(x)}"${x===v?' selected':''}>${esc(x)}</option>`).join('');
+  const fam=familiaTipoWan(l.tipo), n=idx==null?'?':idx+1;
+  // Sin rol SD-WAN la casilla del overlay no significa nada: se deshabilita y se dice,
+  // en vez de dejarla activa sin efecto (un control que no hace nada invita a creer que
+  // se tuvo en cuenta).
+  const naOv=rolSdwan==='none';
+  return `<div class="wan-fila" data-id="${l.id}">`
+    +`<div class="wan-cab"><span class="wan-num">Enlace ${n}</span><span class="wan-badge ${fam.cls}" data-wan-badge>${fam.n}</span>`
+    +`<span class="wan-acc">`
+    +`<button type="button" class="wan-iconbtn" data-wan-duplicar="${l.id}" title="Duplicar este enlace" aria-label="Duplicar este enlace">&#10697;</button>`
+    +`<button type="button" class="wan-iconbtn" data-wan-quitar="${l.id}" title="Quitar este enlace" aria-label="Quitar este enlace">&times;</button>`
+    +`</span></div>`
+    +`<div class="wan-grid">`
+    +`<div class="wan-campo"><label>Transporte</label><select data-campo="tipo" aria-label="Tipo de transporte WAN del enlace ${n}">${ops(TIPOS_WAN,l.tipo)}</select></div>`
+    +`<div class="wan-campo"><label>Caudal</label><span class="wan-bw"><input type="number" data-campo="down" min="0" step="any" placeholder="100" value="${l.down||''}" aria-label="Caudal del enlace ${n} en Mbps" autocomplete="off"><span class="wan-sufijo">Mbps</span></span></div>`
+    +`<label class="wan-ov${naOv?' na':''}"><input type="checkbox" data-campo="overlay"${l.overlay?' checked':''}${naOv?' disabled':''}${l.overlayManual?' data-manual="1"':''} aria-label="El trafico de este enlace va por el overlay SD-WAN"> ${naOv?'Overlay SD-WAN (sin rol SD-WAN no aplica)':'Va por el overlay SD-WAN'}</label>`
+    +`</div>`
+    +`<p class="wan-msg" data-wan-msg hidden></p>`
+    +`</div>`;
+}
+function pintarWanFilas(links){
+  $('wanBuilderFilas').innerHTML=links.map(wanFilaHtml).join('');
+  validarWanFilas();
+}
+// Validacion en linea: NO bloquea el calculo. Un enlace sin caudal no cuenta en el
+// agregado y hay que decirlo; declarar el overlay por un enlace celular es posible pero
+// sospechoso y se avisa en ambar.
+function validarWanFila(f){
+  const downEl=f.querySelector('[data-campo=down]');
+  const down=parseFloat(downEl.value);
+  const tipo=f.querySelector('[data-campo=tipo]').value;
+  const ov=f.querySelector('[data-campo=overlay]').checked;
+  const msg=f.querySelector('[data-wan-msg]');
+  const malo=!(down>0);
+  downEl.classList.toggle('wan-invalido',malo);
+  let txt='', cls='';
+  if(malo){ txt='Declara el caudal (Mbps): sin el, este enlace no cuenta en el agregado del sitio.'; cls='err'; }
+  else if(ov&&/^4G\/5G/.test(tipo)){ txt='Overlay sobre 4G/5G: es normal como respaldo, pero su caudal entra en la fraccion cifrada y por tanto en el techo del motor IPsec. Revisa si de verdad transporta trafico en regimen normal.'; cls='warn'; }
+  msg.hidden=!txt; msg.textContent=txt; msg.className='wan-msg'+(cls?' '+cls:'');
+}
+function validarWanFilas(){ document.querySelectorAll('#wanBuilderFilas .wan-fila').forEach(validarWanFila); }
+// LOS ESPEJOS DEL MOTOR. Aqui, y solo aqui, las filas se convierten en los dos numeros
+// que render() lee. #unit se fija en 1 porque el builder declara siempre Mbps.
+function actualizarEspejos(){
+  const links=leerWanLinks();
+  const total=links.reduce((a,l)=>a+l.down,0);
+  const ovl=links.filter(l=>l.overlay).reduce((a,l)=>a+l.down,0);
+  $('bw').value=total?String(total):'';
+  $('unit').value='1';
+  // Sin caudal declarado la fraccion no se puede calcular: se deja el 100 %, que es el
+  // supuesto conservador (todo el trafico paga IPsec) y ademas el valor por defecto de
+  // antes. Con caudal, sale de los enlaces.
+  $('pctOverlay').value=total?String(Math.round(ovl/total*100)):'100';
+  return {links, total, ovl};
+}
+// Serializacion v2: el escenario viaja en la URL como JSON {v:2, wanLinks:[...]} dentro
+// del input oculto #wanLinksData, que ESTADO persiste como un campo mas.
+function sincronizarWanHidden(){
+  const {links}=actualizarEspejos();
+  const h=$('wanLinksData');
+  // `overlayManual` es detalle de UI (la restauracion lo deduce: overlay != sugerido ⇒
+  // elegido a mano), asi que no ensucia la URL.
+  h.value=JSON.stringify({v:2, wanLinks:links.map(l=>({id:l.id, tipo:l.tipo, down:l.down, overlay:l.overlay}))});
+  h.dispatchEvent(new Event('input',{bubbles:true}));
+}
+// Reconstruye las filas desde el input oculto (enlace compartido o perfil guardado).
+// Tolerante con JSON roto: cae a una fila DIA vacia en vez de romper la pagina.
+function reconstruirWanDesdeHidden(){
+  let links=null;
+  try{
+    const d=JSON.parse($('wanLinksData').value||'null');
+    if(d&&Array.isArray(d.wanLinks)&&d.wanLinks.length) links=d.wanLinks;
+  }catch{ links=null; }
+  if(!links) links=[{id:++wanSeq, tipo:'DIA', down:0, overlay:false}];
+  links.forEach(l=>{
+    if(!l.id) l.id=++wanSeq; wanSeq=Math.max(wanSeq,l.id);
+    if(l.overlay==null) l.overlay=overlaySugerido(l.tipo);
+    l.overlayManual=l.overlay!==overlaySugerido(l.tipo);
+  });
+  pintarWanFilas(links);
+  actualizarEspejos();
+}
+// Barra agregada viva bajo el builder: caudal del sitio, desglose por familia y la
+// fraccion cifrada que sale de las casillas — el numero que antes se estimaba a ojo.
+function pintarWanResumen(){
+  const box=$('wanResumen'); if(!box) return;
+  const {links,total,ovl}=actualizarEspejos();
+  if(!links.length){ box.hidden=true; box.innerHTML=''; return; }
+  const act=links.filter(l=>l.down>0);
+  let html=`<span>Caudal del sitio <b>${fmt(total)}</b></span><span class="wan-res-sep">·</span>`;
+  if(act.length){
+    const nM=act.filter(l=>/^MPLS/.test(l.tipo)).length;
+    const nC=act.filter(l=>/^4G\/5G/.test(l.tipo)).length;
+    const nI=act.length-nM-nC;
+    const fam=[];
+    if(nM) fam.push(`${nM} MPLS`);
+    if(nI) fam.push(`${nI} Internet`);
+    if(nC) fam.push(`${nC} celular`);
+    html+=`<span>${act.length} enlace${act.length===1?'':'s'} (${fam.join(', ')})</span>`;
+    if(rolSdwan!=='none'){
+      const pct=total?Math.round(ovl/total*100):100;
+      html+=`<span class="wan-res-sep">·</span><span>Por el overlay <b>${fmt(ovl)}</b> = <b>${pct} %</b>`
+        +`${pct<100?` · breakout local <b>${fmt(total-ovl)}</b>`:''}</span>`;
+    }
+  }else{
+    html+='<span>sin enlaces con caudal — declara los Mbps de cada fila</span>';
+  }
+  box.innerHTML=html;
+  box.hidden=false;
+}
+// Los parametros del escenario ANTERIOR al builder. Viven en UNA constante porque los usan
+// dos cosas distintas —`migrarEstadoV1()` para convertirlos y `ESTADO.vincular({migrados})`
+// para no denunciarlos como parametros que esta pantalla no entiende— y dos listas iguales
+// en dos sitios se desincronizan.
+const PARAMS_V1=['bw','unit','pctOverlay'];
+// Migracion v1→v2: un enlace antiguo (?bw=2500&unit=1&pctOverlay=70) se convierte en las
+// filas equivalentes y se avisa por consola. UN ENLACE VIEJO QUE ATERRIZA CON LOS VALORES
+// POR DEFECTO ES PEOR QUE UN 404: no se nota. Con una fraccion intermedia hacen falta DOS
+// filas para conservarla —la cifrada y la de breakout—, que es exactamente lo que el
+// escenario v1 describia.
+function migrarEstadoV1(){
+  const p=new URLSearchParams(location.search);
+  if(p.has('wanLinksData')) return false; // ya es v2
+  if(!PARAMS_V1.some(k=>p.has(k))) return false;
+  const bw=(parseFloat(p.get('bw'))||0)*(parseFloat(p.get('unit'))||1);
+  if(!(bw>0)) return false;
+  const pct=p.has('pctOverlay')?Math.max(0,Math.min(100,parseFloat(p.get('pctOverlay'))||0)):100;
+  const ovl=Math.round(bw*pct/100), resto=bw-ovl;
+  const links=[];
+  if(ovl>0) links.push({id:++wanSeq, tipo:'MPLS L3', down:ovl, overlay:true});
+  if(resto>0) links.push({id:++wanSeq, tipo:'DIA', down:resto, overlay:false});
+  if(!links.length) links.push({id:++wanSeq, tipo:'DIA', down:bw, overlay:false});
+  console.warn('[dimensionador-fortinet] Migracion de estado v1→v2: el caudal unico y el'
+    +' porcentaje de overlay (bw/unit/pctOverlay) se convirtieron en', links.length,
+    'fila(s) del Multi-Underlay Builder.', links);
+  $('wanLinksData').value=JSON.stringify({v:2, wanLinks:links});
+  return true;
+}
+$('btnAddWan').addEventListener('click',()=>{
+  const links=leerWanLinks();
+  links.push({id:++wanSeq, tipo:'DIA', down:0, overlay:overlaySugerido('DIA')});
+  pintarWanFilas(links);
+  sincronizarWanHidden();
+  render();
+});
+// Delegacion: un cambio en una fila se aplica SOBRE LA PROPIA TARJETA (sin repintarla, para
+// no perder el foco a media cifra), valida en linea, reserializa y repinta el resto.
+$('wanBuilder').addEventListener('input',e=>{
+  const t=e.target;
+  if(!t.dataset||!t.dataset.campo) return;
+  const fila=t.closest('.wan-fila');
+  if(t.dataset.campo==='overlay') t.dataset.manual='1';
+  if(t.dataset.campo==='tipo'&&fila){
+    const badge=fila.querySelector('[data-wan-badge]');
+    const fam=familiaTipoWan(t.value);
+    badge.className='wan-badge '+fam.cls; badge.textContent=fam.n;
+    // Default inteligente que NO se impone: si alguien ya toco la casilla, se respeta.
+    const ov=fila.querySelector('[data-campo=overlay]');
+    if(ov.dataset.manual!=='1') ov.checked=overlaySugerido(t.value);
+  }
+  if(fila) validarWanFila(fila);
+  sincronizarWanHidden();
+  render();
+});
+$('wanBuilder').addEventListener('click',e=>{
+  const dup=e.target.closest('[data-wan-duplicar]');
+  if(dup){
+    const links=leerWanLinks();
+    const i=links.findIndex(l=>l.id===parseInt(dup.dataset.wanDuplicar));
+    if(i>=0) links.splice(i+1,0,{...links[i], id:++wanSeq});
+    pintarWanFilas(links);
+    sincronizarWanHidden();
+    render();
+    return;
+  }
+  const b=e.target.closest('[data-wan-quitar]');
+  if(!b) return;
+  let links=leerWanLinks().filter(l=>l.id!==parseInt(b.dataset.wanQuitar));
+  // La ultima fila no se quita: se queda vacia.
+  if(!links.length) links=[{id:++wanSeq, tipo:'DIA', down:0, overlay:false}];
+  pintarWanFilas(links);
+  sincronizarWanHidden();
+  render();
+});
+
 
 /* ── Motor de dimensionamiento ─────────────────────────────────────────────── */
 
@@ -153,7 +392,10 @@ const SOFTWARE=[
 // paso «Equipo y cotizacion» a la escalera, un enlace que no los llevara aterrizaria en el
 // escenario correcto con otra cotizacion, que es peor que no llevar nada porque no se nota.
 const CAMPOS_ESCENARIO=['nombreCliente','refProyecto',
-  'bw','unit','users','perUser','head','sesUser','sessNeed','vidaSes','sites','conc','pctOverlay',
+  // #wanLinksData es la serializacion v2 de los enlaces WAN; sustituye a bw/unit/pctOverlay,
+  // que ahora son espejos que el builder calcula y por tanto no viajan (viajarian dos veces
+  // el mismo dato, y el desincronizado ganaria segun el orden de restauracion).
+  'wanLinksData','users','perUser','head','sesUser','sessNeed','vidaSes','sites','conc',
   'chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa',
   'modoSeg','profileSeg','rolSeg','segSeg',
   'pickModel','qty','termYears','licBundle','careLevel','selDescuento','dtoCustom','verdict-sel'];
@@ -258,11 +500,13 @@ function pintarHintCapa(capa){
 function pintarControlesTopologia(){
   const agg=modoCaudal==='agg';
   $('fldAgg').hidden=!agg; $('fldConc').hidden=!agg;
-  $('bwLbl').textContent=agg?'Caudal por sede':'Ancho de banda de Internet / WAN';
+  $('bwLbl').textContent=agg?'Enlaces WAN de UNA sede (underlay)':'Enlaces WAN del sitio (underlay)';
   $('modoHint').textContent=agg
     ? 'Caudal de UNA sede por el número de sedes y por el factor de simultaneidad. Es el modo del concentrador.'
     : 'Un solo caudal, para dimensionar una sede o un perímetro de Internet.';
-  $('fldOverlay').hidden=(rolSdwan==='none');
+  // La casilla de overlay de cada fila solo significa algo con rol SD-WAN: se repintan las
+  // filas para habilitarla o deshabilitarla, conservando lo declarado.
+  if(wanRolPintado!==rolSdwan){ wanRolPintado=rolSdwan; pintarWanFilas(leerWanLinks()); }
   $('rolHint').innerHTML={
     none:'Solo perímetro: el tráfico no viaja por túneles del overlay, así que el techo lo fija únicamente la capa de inspección.',
     spoke:'Sucursal del fabric: el tráfico hacia el hub va cifrado, así que el <b>throughput IPsec del modelo también es un techo</b>, no solo la capa de inspección.',
@@ -288,13 +532,15 @@ function render(){
     const need=$('need'); need.style.left='0%'; $('needLbl').textContent='—';
     $('track').querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
     FICHA.render({vendor:'fortinet', contenedor:'verdict', candidatos:[], recomendado:null,
-      vacioTitulo:'Ingrese valores para recomendar un equipo',
-      vacioDetalle:'<p style="margin:0;font-size:13.5px">Escriba el <b>ancho de banda</b> del sitio (y si aplica, usuarios y sesiones) para que el dimensionador proponga los modelos que cumplen.</p>'});
+      vacioTitulo:'Declare los enlaces WAN para recomendar un equipo',
+      vacioDetalle:'<p style="margin:0;font-size:13.5px">Ponga el <b>caudal</b> de al menos un enlace del sitio en el paso 3 (y si aplica, usuarios y sesiones) para que el dimensionador proponga los modelos que cumplen.</p>'});
     $('verdict').style.borderLeftColor='var(--steel)';
     $('perfTiers').innerHTML='';
     $('perfNote').textContent='';
     $('sesCalc').textContent='';
     $('cpsCalc').textContent='';
+    pintarControlesTopologia();
+    pintarWanResumen();
     return;
   }
 
@@ -317,12 +563,12 @@ function render(){
 
   // La fraccion que va por el overlay paga la encapsulacion ESP.
   const frac=fraccionOverlay();
-  $('pctOverlayVal').textContent=Math.round(frac*100)+' %';
   const effectiveNeed=baseNeed*(1+frac*OVERHEAD_ESP);
 
   const capa=capaEfectiva();
   pintarHintCapa(capa);
   pintarControlesTopologia();
+  pintarWanResumen();
 
   // scale
   const allCaps=MODELS.map(m=>m.fw);
@@ -850,6 +1096,22 @@ function capturarCampos(){
   return v;
 }
 function aplicarCampos(v){
+  // PERFILES GUARDADOS ANTES DEL BUILDER. Viven en localStorage y llevan bw/unit/pctOverlay
+  // pero no wanLinksData: aplicarlos tal cual dejaria el escenario SIN caudal y en silencio
+  // —la misma perdida muda que la clave por pagina de `presales-bom-refs`—. Se convierten
+  // con la misma regla que migrarEstadoV1().
+  if(v.wanLinksData==null&&v.bw!=null){
+    const bw=(parseFloat(v.bw)||0)*(parseFloat(v.unit)||1);
+    if(bw>0){
+      const pct=v.pctOverlay!=null?Math.max(0,Math.min(100,parseFloat(v.pctOverlay)||0)):100;
+      const ovl=Math.round(bw*pct/100), resto=bw-ovl, links=[];
+      if(ovl>0) links.push({id:++wanSeq, tipo:'MPLS L3', down:ovl, overlay:true});
+      if(resto>0) links.push({id:++wanSeq, tipo:'DIA', down:resto, overlay:false});
+      v={...v, wanLinksData:JSON.stringify({v:2, wanLinks:links})};
+      console.warn('[dimensionador-fortinet] Perfil anterior al builder: su caudal y su'
+        +' porcentaje de overlay se convirtieron en', links.length, 'enlace(s).', links);
+    }
+  }
   CAMPOS_ESCENARIO.forEach(id=>{
     const n=$(id); if(!n||v[id]==null) return;
     if(n.classList&&n.classList.contains('seg')){
@@ -857,6 +1119,9 @@ function aplicarCampos(v){
     }else if(n.type==='checkbox'){ n.checked=!!v[id]; }
     else n.value=v[id];
   });
+  // Las filas se reconstruyen DESPUES de restaurar el campo oculto: leerlas antes daria las
+  // del escenario anterior y pisaria lo que el perfil trae.
+  reconstruirWanDesdeHidden();
   render(); renderBom();
 }
 
@@ -987,7 +1252,16 @@ document.addEventListener('click', (e) => {
    otra recomendacion. Ahora el escenario viaja en la URL; ya no se guarda entre sesiones
    (ver /js/estado.js). */
 document.addEventListener('DOMContentLoaded', () => {
-  const st = ESTADO.vincular({ campos: CAMPOS_ESCENARIO });
+  // Estado v2: primero el builder queda con su fila por defecto; ESTADO repone
+  // #wanLinksData si el enlace es v2; si el enlace es v1 (?bw=…&pctOverlay=…) se migra a
+  // filas equivalentes avisando por consola; y al final se reconstruyen las filas desde la
+  // serializacion que haya quedado. El orden importa: sincronizarWanHidden() leeria las
+  // filas viejas y pisaria lo migrado.
+  reconstruirWanDesdeHidden();
+  const st = ESTADO.vincular({ campos: CAMPOS_ESCENARIO, migrados: PARAMS_V1 });
+  const migrado = migrarEstadoV1();
+  reconstruirWanDesdeHidden();
+  if (migrado) $('wanLinksData').dispatchEvent(new Event('input', { bubbles: true }));
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');

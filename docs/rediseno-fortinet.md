@@ -125,3 +125,84 @@ lo respalde.
    regresiones: añadir una referencia al BOM, guardar un perfil, ver el TCO.
 4. **Contraste antes/después del Builder**: mismo escenario, misma recomendación.
 5. `npm run pantallas` — 16/16.
+
+---
+
+# Etapa 2 — El Multi-Underlay Builder, entregado (2026-09-16)
+
+## Qué se sustituyó
+
+El par «un caudal único + un deslizador de *% por el overlay*» por **filas de enlaces WAN
+declarados**. El deslizador era una **estimación a ojo justo del número que fija el segundo
+techo** del motor: `capacidad efectiva = min(capa de inspección, IPsec / fracción del overlay)`.
+Ahora esa fracción **sale de los enlaces**: se declara qué transporta cada uno y si su tráfico va
+cifrado al fabric, y la fracción es aritmética sobre datos declarados en vez de una opinión
+arrastrando un control.
+
+## La fila de FortiGate es más corta que la de Aruba, a propósito
+
+| Campo | Aruba | Fortinet | Por qué |
+|---|---|---|---|
+| `tipo` (transporte) | sí | **sí** | Decide la familia y el default de overlay. |
+| `medio` (RJ-45 / SFP) | sí | **no** | Alimenta la auditoría de puertos y la elección de ópticas. **Este catálogo no trae ópticas de Fortinet**, así que el campo produciría un dato inventado — el vicio del `noAplica` deducido. |
+| `down` / `up` | sí | **solo `down`** | El motor de FortiGate consume **un** caudal. Un campo que nadie lee es peor que uno ausente: invita a creer que se tuvo en cuenta. |
+| `overlay` | no | **sí** | En EdgeConnect el appliance se dimensiona por el agregado del sitio; en FortiGate la fracción cifrada **es** el segundo techo. Es el campo propio de este fabricante. |
+
+## Por qué el riesgo es bajo, y cómo se demostró
+
+**El motor no cambia.** El builder solo *calcula* los dos números que `render()` ya leía —`#bw`
+(con `#unit` fijo en Mbps) y `#pctOverlay`—, que pasan a ser **espejos ocultos**. Por
+construcción, un escenario equivalente tiene que dar el mismo equipo.
+
+Eso hay que probarlo, no declararlo: **`scripts/contraste-fortinet.js`** conduce en Chromium los
+mismos ocho escenarios medidos sobre la página anterior (commit `2147588`) y exige la misma
+recomendación, el mismo requerimiento y el mismo número de candidatos. Los ocho cubren los dos
+techos que el motor puede aplicar y los tres roles, porque el rol es lo que activa el segundo.
+
+| Escenario | Antes | Después |
+|---|---|---|
+| sin SD-WAN, 500 Mbps | FortiGate 60F · 650 Mbps · 55 cand. | **idéntico** |
+| sin SD-WAN, 2,5 Gbps | FortiGate 200G · 3,3 Gbps · 39 cand. | **idéntico** |
+| spoke 100 % overlay, 500 Mbps | FortiGate 60F · 689 Mbps · 55 cand. | **idéntico** |
+| spoke 70 % overlay, 500 Mbps | FortiGate 60F · 677 Mbps · 55 cand. | **idéntico** |
+| spoke 30 % overlay, 2,5 Gbps | FortiGate 200G · 3,3 Gbps · 39 cand. | **idéntico** |
+| spoke 100 % overlay, 2,5 Gbps | FortiGate 200G · 3,4 Gbps · 39 cand. | **idéntico** |
+| hub 100 % overlay, 10 Gbps | FortiGate 200G · 4,8 Gbps · 39 cand. | **idéntico** |
+| hub 50 % overlay, 10 Gbps | FortiGate 200G · 4,7 Gbps · 39 cand. | **idéntico** |
+
+**La línea base va embebida en el script y no en un archivo aparte** a propósito: es un hecho
+histórico medido sobre el commit anterior, no un dato que se regenere — un fichero regenerable se
+regeneraría justo cuando el contraste fallara.
+
+**Se comprobó que el contraste detecta, no solo que pasa.** Saboteando `actualizarEspejos()` para
+que el caudal contara únicamente los enlaces del overlay, los tres escenarios de dos filas y tres
+migraciones se pusieron en rojo con la cifra concreta (`FortiGate 30G` donde debía salir un 60F,
+`bw=350` donde debía ser 500). Los escenarios de una sola fila **no** lo detectan, y eso también
+es información: un contraste de un solo enlace no discrimina este fallo.
+
+## Enlaces ya compartidos
+
+`migrarEstadoV1()` convierte `?bw=…&unit=…&pctOverlay=…` en las filas equivalentes avisando por
+consola, con la misma regla que Aruba: **un enlace viejo que aterriza con los valores por defecto
+es peor que un 404, porque no se nota.** Con una fracción intermedia hacen falta **dos** filas
+—la cifrada y la de breakout— para conservarla, que es exactamente lo que el escenario v1
+describía. `PARAMS_V1` vive en una sola constante porque la usan dos cosas distintas: la
+migración y `ESTADO.vincular({migrados})`, que es lo que evita que esos parámetros se denuncien
+como desconocidos.
+
+**Los perfiles guardados antes del builder se migran igual**, al aplicarlos: viven en
+`localStorage` con `bw`/`unit`/`pctOverlay` y sin `wanLinksData`, así que aplicarlos tal cual
+habría dejado el escenario sin caudal y **en silencio** — la misma pérdida muda que tuvo la clave
+por página de `presales-bom-refs`.
+
+## Lo que se aprendió del refactor de Aruba y aquí no se repitió
+
+El 2026-09-13 el builder de Aruba retiró `#bw` y dejó `pantallas.yml` en rojo cuatro días porque
+el verificador rellenaba `#bw` en las ocho páginas. Aquí el gancho `caudal(page)` de Fortinet
+entró **en el mismo commit** que el builder, con su propio `extraAcciones` que conduce el caso de
+dos enlaces y exige que la barra agregada declare la fracción cifrada. Se comprobó que detecta:
+apagando esa línea, `npm run pantallas` da 15/16 nombrando el fallo.
+
+**No hay un gancho compartido entre Aruba y Fortinet**, aunque los dos se llamen «builder»: las
+filas no tienen los mismos campos, y un gancho común tendría que rellenar controles que en una de
+las dos no existen — justo el fallo que el gancho existe para evitar.

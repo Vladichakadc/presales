@@ -643,6 +643,60 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
 
 ## Cerrado recientemente
 
+### Rediseño del módulo Fortinet sobre la arquitectura de Aruba (2026-09-16)
+
+Dos entregas, en dos commits, según lo acordado con el dueño del repo.
+
+**Etapa 1 — la escalera de 4 pasos y la capa comercial.** El formulario era una columna
+de catorce controles sin jerarquía; ahora son cuatro pasos con la misma semántica que
+Aruba —*plataforma y rol*, *capa de inspección*, *tráfico y capacidad*, *equipo y
+cotización*— y el panel de «Selección de equipo» sube desde la pestaña de BOM a la
+calculadora, donde se decide. Lo que **no** se copió de Aruba, y por qué, está en
+`docs/rediseno-fortinet.md`: el tier por caudal, el pool de Boost, el rango WAN publicado
+y la auditoría de puertos son del modelo comercial y del catálogo de HPE, no de Fortinet.
+La capa comercial sí es universal, y por eso bajó al módulo compartido: simulador de
+descuento, TCO sobre las filas neutras y perfiles multi-sede quedan disponibles en
+Fortinet sin duplicar una línea de lógica. **Las reglas de agregación se declaran vacías a
+propósito** (`BOM.consolidar(l,{agregadas:[],unicas:[]})`): en FortiGate cada sede compra
+su equipo y su suscripción, y heredar en silencio las de Aruba habría dado un consolidado
+con precios de otro fabricante.
+
+**De paso, un error de dinero en el módulo compartido.** Añadir al BOM una referencia cuyo
+SKU es el del propio equipo calculado sumaba la línea dos veces sin decirlo: medido,
+$38.088,20 → $49.565,20. Ahora `renderTabla` lo avisa, y el aviso vale para los siete
+fabricantes porque vive en `bom.js`.
+
+**Etapa 2 — el Multi-Underlay Builder.** `pctOverlay` era un **deslizador con el que el
+usuario estimaba a ojo** justo el número que fija el segundo techo del motor
+(`min(capa de inspección, IPsec / fracción)`). Ahora los enlaces WAN del sitio se declaran
+como filas y la fracción **se calcula**. La fila de FortiGate es más corta que la de Aruba
+a propósito: sin `medio` (este catálogo no trae ópticas de Fortinet, así que una auditoría
+de puertos sería un dato inventado) y sin `up` (el motor consume un solo caudal, y un campo
+que nadie lee es peor que uno ausente), pero **con `overlay`**, que Aruba no necesita.
+
+**El motor no cambia, y se demostró en vez de declararse.** `#bw` y `#pctOverlay` siguen
+siendo lo que `render()` lee; el builder solo los calcula, como espejos ocultos.
+`scripts/contraste-fortinet.js` conduce en Chromium los ocho escenarios medidos sobre el
+commit anterior y exige la misma recomendación, el mismo requerimiento y el mismo número de
+candidatos: **los ocho idénticos**, y las seis migraciones de enlace v1 también. Se
+comprobó que el contraste detecta saboteando el cálculo del caudal — seis discrepancias con
+la cifra concreta.
+
+**La lección del 2026-09-13 no se repitió.** Cuando Aruba retiró su `#bw`, `pantallas.yml`
+quedó en rojo cuatro días porque el verificador rellenaba ese campo en las ocho páginas.
+Aquí el gancho `caudal(page)` de Fortinet entró en el mismo commit, con un `extraAcciones`
+que conduce el caso de dos enlaces y exige que la barra agregada declare la fracción
+cifrada; apagando esa línea, `npm run pantallas` da 15/16 nombrando el fallo. **No hay un
+gancho compartido entre los dos builders**: las filas no tienen los mismos campos, y uno
+común tendría que rellenar controles que en una de las dos páginas no existen.
+
+Verificado: `npm run verificar` (348 pruebas), `npm run catalogo` (PANTALLAS en verde, 29
+campos en Fortinet), `npm run pantallas` 16/16 contra un arranque con `NODE_ENV=production`,
+y la página conducida a mano en Chromium — casilla de overlay deshabilitada sin rol SD-WAN
+y declarándolo, validación en línea, default por transporte que no pisa una elección manual,
+duplicar/quitar, última fila que no se puede quitar, y el enlace compartido reabierto con
+las dos filas y el mismo equipo.
+
 ### Plan 5: HA On-Premises E-STU (#17), 7 años On-Premises completos y cantidades ajustadas a mano en el BOM (2026-09-16)
 
 **#17 cerrado — el par HA on-prem ya tiene SKU propio.** La premisa del pendiente («HPE

@@ -91,10 +91,14 @@ async function rellena(page, selector, valor) {
 
 // Las ocho paginas de dimensionamiento comparten el andamio: la ficha del equipo elegido y la
 // pestaña de BOM. Lo que NO comparten es como se les declara el caudal, y por eso `caudal` es
-// un gancho opcional: siete usan el campo unico `#bw` —el valor por defecto, asi que entran
+// un gancho opcional: SEIS usan el campo unico `#bw` —el valor por defecto, asi que entran
 // aqui con una linea, que es la propiedad que este array tiene y conviene conservar— y Aruba
-// declara el suyo, porque desde el refactor del 2026-09-13 el caudal se compone de filas de
-// enlaces WAN y no de un numero suelto.
+// y Fortinet declaran el suyo, porque su caudal se compone de filas de enlaces WAN y no de un
+// numero suelto (Aruba desde el refactor del 2026-09-13, Fortinet desde el del 2026-09-16).
+// LA FILA NO ES LA MISMA EN LAS DOS PAGINAS, y por eso no hay un gancho compartido: la de
+// Aruba es {tipo, medio, down, up} y la de Fortinet {tipo, down, overlay}. Un gancho comun
+// tendria que rellenar campos que en una de las dos no existen, que es exactamente el fallo
+// que este gancho existe para evitar.
 // El caudal de SUBIDA solo es editable si el enlace NO es simetrico, y las filas nacen
 // simetricas (dimensionador-aruba-edgeconnect.js: el input lleva `disabled` mientras
 // `simetrico` este marcado). Desmarcarlo antes de rellenar es lo que hace que esta
@@ -114,7 +118,35 @@ const caudalPorDefecto = (page) => rellena(page, '#bw', '2500');
 const dimensionadores = [
   ['huawei', 'dimensionador-huawei-netengine.html', 'Huawei NetEngine / AR'],
   ['cisco', 'dimensionador-cisco-catalyst8k.html', 'Cisco Catalyst 8000'],
-  ['fortinet', 'dimensionador-fortinet-fortigate.html', 'Fortinet FortiGate'],
+  ['fortinet', 'dimensionador-fortinet-fortigate.html', 'Fortinet FortiGate', {
+    // Multi-Underlay Builder de Fortinet (2026-09-16): `#bw` sigue existiendo pero es un
+    // espejo OCULTO que el builder calcula, asi que rellenarlo a mano no dimensiona nada.
+    // El caudal se declara en la fila: {tipo, down, overlay}.
+    caudal: (page) => rellena(page, '#wanBuilderFilas [data-campo=down] >> nth=0', '2500'),
+    // La fraccion del overlay era un deslizador estimado y ahora sale de las casillas de las
+    // filas. Se conduce el caso que justifica el builder: un segundo enlace de breakout
+    // local baja la fraccion cifrada, que es el segundo techo del motor IPsec.
+    async extraAcciones(page) {
+      await page.click('[data-tab="calc"]');
+      await espera(page, 300);
+      // Con rol SD-WAN la casilla de overlay deja de estar deshabilitada: sin rol no
+      // significa nada y la pagina lo dice en vez de dejarla activa sin efecto.
+      await page.click('#rolSeg button[data-v="spoke"]');
+      await espera(page, 300);
+      const filas = () => page.$$eval('#wanBuilderFilas [data-campo=down]', (es) => es.length);
+      const antes = await filas();
+      await page.click('#btnAddWan');
+      await espera(page, 300);
+      if (await filas() !== antes + 1) throw new Error('«+ Anadir enlace» no anadio una fila WAN');
+      await rellena(page, '#wanBuilderFilas [data-campo=down] >> nth=1', '1500');
+      await espera(page, 400);
+      // La barra agregada tiene que declarar la fraccion cifrada; sin ella el builder seria
+      // un formulario mas largo que no dice lo que calcula.
+      await this.exigeConTexto(page, '#wanResumen', 'con dos enlaces WAN');
+      const txt = await page.$eval('#wanResumen', (e) => e.textContent);
+      if (!/overlay/i.test(txt)) throw new Error('la barra del builder no declara la fraccion por el overlay');
+    },
+  }],
   ['mikrotik', 'dimensionador-mikrotik-routeros.html', 'MikroTik RouterOS'],
   ['aruba', 'dimensionador-aruba-edgeconnect.html', 'Aruba EdgeConnect', {
     // Multi-Underlay Builder: el caudal son filas `{tipo, medio, down, up}` dentro de
