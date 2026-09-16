@@ -41,10 +41,18 @@ const CASOS = [
     bloqueada: 'https://www.juniper.net/documentation/us/en/hardware/',
     respalda: 'redund / psu de los 12 SRX (hardware guides, una por modelo)',
     candidatas: [
-      { url: 'https://www.juniper.net/documentation/us/en/hardware/index.html',
-        porQue: 'la misma seccion pedida como documento y no como listado de directorio' },
+      // Medido el 2026-09-16: `/documentation/` responde 200 y la carpeta 403, asi que el
+      // dominio no bloquea. Falta una guia CONCRETA: sin ella, sustituir la carpeta por la
+      // portada de la TechLibrary seria vigilar algo que no respalda ningun dato de este
+      // catalogo — el error del `noAplica` deducido, con otra forma.
+      { url: 'https://www.juniper.net/documentation/us/en/hardware/srx1600/index.html',
+        porQue: 'patron de la TechLibrary por modelo, sobre un SRX que este catalogo trae' },
+      { url: 'https://www.juniper.net/documentation/us/en/hardware/srx1600/srx1600-hardware-guide/index.html',
+        porQue: 'el mismo patron con el sufijo -hardware-guide, que es como se nombra el documento' },
+      { url: 'https://www.juniper.net/documentation/us/en/hardware/srx1600/srx1600-hardware-guide/srx1600-hardware-guide.pdf',
+        porQue: 'la version PDF de esa guia: un PDF es lo que el vigia sabe comparar por bytes' },
       { url: 'https://www.juniper.net/documentation/',
-        porQue: 'la portada de la TechLibrary: si responde, el dominio no bloquea al ejecutor' },
+        porQue: 'la portada de la TechLibrary: responde 200, asi que el dominio no bloquea al ejecutor (grupo de control secundario)' },
     ],
     control: { url: 'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/security-products-comparison-chart.pdf',
       porQue: 'ARCHIVO del mismo dominio que este repositorio ya trajo con exito (la matriz SRX)' },
