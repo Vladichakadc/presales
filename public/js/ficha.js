@@ -102,6 +102,19 @@
 .ficha-vista figcaption{flex:1;min-width:180px;font-size:11px;line-height:1.45;color:var(--steel)}
 .ficha-vista-vacia{margin:0 0 12px;border:1px dashed var(--rule);border-radius:4px;padding:14px 12px;color:var(--steel);font-size:12px;line-height:1.5}
 .ficha-cands-mas{margin:-6px 0 12px;padding:0 2px;font-size:11px;color:var(--steel)}
+/* Semaforo de ciclo de vida (pendiente 34). Cinco estados; el gris usa --steel, que es el
+   color con el que el resto de este catalogo ya dice «sin dato». El verde NO es el estado por
+   defecto: se gana con un boletin fechado. */
+.ficha-ciclo{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.09em;text-transform:uppercase;font-weight:600}
+.ficha-ciclo i{display:inline-block;width:8px;height:8px;border-radius:50%;flex:none}
+.ficha-ciclo.ciclo-verde{color:var(--green)}.ficha-ciclo.ciclo-verde i{background:var(--green)}
+.ficha-ciclo.ciclo-ambar{color:var(--amber)}.ficha-ciclo.ciclo-ambar i{background:var(--amber)}
+.ficha-ciclo.ciclo-rojo{color:#a4544e}.ficha-ciclo.ciclo-rojo i{background:#a4544e}
+/* El gris va con el punto HUECO a proposito: «no consta» no es un estado del equipo sino del
+   catalogo, y un punto relleno lo leeria como un cuarto veredicto mas. */
+.ficha-ciclo.ciclo-gris{color:var(--steel)}.ficha-ciclo.ciclo-gris i{background:transparent;border:1.5px dashed var(--steel)}
+.ficha-ciclo-det{display:block;font-size:11.5px;line-height:1.45;color:var(--steel);margin-top:3px}
+.ficha-ciclo-caja{margin:9px 0 0}
 .ficha-salto{margin:10px 0 0;text-align:center}
 .ficha-salto a{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);text-decoration:none;border-bottom:1px dashed var(--rule);padding-bottom:1px}
 .ficha-salto a:hover{color:var(--red);border-bottom-color:var(--red)}
@@ -169,6 +182,13 @@
 
   // Estado por contenedor: permite varias fichas en una pagina sin que se pisen.
   const estado = {};
+
+  // El respaldo lo informa la pagina UNA VEZ tras su fetch (FICHA.fijarCicloVida), no en cada
+  // FICHA.render: hay veinte puntos de llamada entre los siete dimensionadores contando los
+  // estados vacios, y pasarlo en todos es exactamente como `llevarABom` acabo en seis copias
+  // que no hacian lo mismo. `null` mientras no se informe, que es el tercer estado.
+  let cicloVidaVendor = null;
+
 
   function medidorHtml(m) {
     const pct = m.tope > 0 ? Math.min((m.val / m.tope) * 100, 100) : 0;
@@ -464,6 +484,11 @@
       + `${sel.id === recomendado ? '<span class="ficha-rec">recomendado</span>' : ''}`
       + `${mkSel ? `<span class="ficha-ref${mkSel.fuera ? ' fuera' : ''}">${esc(mkSel.t)}</span>` : ''}</p>`
       + `<p class="family">${esc(cfg.subtitulo ? cfg.subtitulo(sel) : '')}</p>`
+      // Ciclo de vida (pendiente 34): va ANTES del aviso porque responde a otra pregunta —
+      // el aviso dice que hacer con el equipo, esto dice en que estado esta. Se pinta siempre
+      // que la pagina informe `cicloVida`, incluido el tercer estado: un hueco se lee como
+      // «vigente» y eso es justo lo que este pendiente existe para evitar.
+      + (cicloVidaVendor || cfg.cicloVida ? `<p class="ficha-ciclo-caja">${cicloHtml(sel, cfg.cicloVida)}</p>` : '')
       + (mkSel ? `<p class="ficha-aviso">${avisoDe(sel)}</p>` : '')
       + medidores
       // Wayfinding (2026-09-16): con el detalle fuera de la tarjeta, la primera versión
@@ -608,12 +633,187 @@
     return { titulo: 'Alimentación eléctrica', filas, nota };
   }
 
+
+  /* == SEMAFORO DE CICLO DE VIDA (pendiente 34) ==============================
+     Vivia SOLO en la pagina de Aruba, y su rama por defecto era VERDE: cualquier modelo que
+     no estuviera marcado `eol` ni `legacy` salia como «Generacion actual». Portarlo tal cual a
+     los siete habria afirmado «se puede pedir» sobre 131 modelos que nadie ha comprobado — el
+     mismo error que el «IPS: no aplica» del Catalyst 8300, y mas caro, porque lo que se afirma
+     delante de un cliente es que el equipo esta a la venta.
+
+     LA AUSENCIA DE UN BOLETIN NO ES PRUEBA DE VIGENCIA. Solo lo es si alguien mira los
+     boletines de ese fabricante, y eso lo declara el servidor en `cicloVida.respaldado` a
+     partir de las `campos` de `legacyData/fuentes.js` (hoy: Cisco y Juniper). Sin respaldo, el
+     estado es el TERCER ESTADO — el mismo que protege `redund`— y nunca verde.
+
+     CINCO ESTADOS, y dos de ellos la version de Aruba fundia en uno:
+       rojo   · fuera de venta: `eol`, o `lastOrder` YA VENCIDO
+       rojo   · fuera de venta sin fecha publicada en el catalogo (`eol` binario)
+       ambar  · fin de venta ANUNCIADO y todavia pedible (hasta `lastOrder`)
+       ambar  · linea anterior (`legacy`)
+       verde  · vigente SEGUN un boletin fechado — se nombra cual y de cuando
+       gris   · el catalogo no trae el ciclo de vida de este fabricante
+     La copia de Aruba pintaba de rojo «Fin de venta — ultimo pedido X» tanto si la fecha habia
+     pasado como si no, y hasta esa fecha el equipo SE PIDE CON NORMALIDAD. `rango()` ya hacia
+     esa distincion; el semaforo no. Ahora los dos leen la misma regla.
+
+     `cicloVida` es opcional: una pagina que no lo pase obtiene el tercer estado, que es lo
+     correcto cuando no consta — nunca verde por omision. */
+  const CICLO = {
+    fuera:     { cls: 'rojo',  n: 'Fuera de venta' },
+    anunciado: { cls: 'ambar', n: 'Fin de venta anunciado' },
+    anterior:  { cls: 'ambar', n: 'Linea anterior' },
+    vigente:   { cls: 'verde', n: 'Vigente' },
+    sinDato:   { cls: 'gris',  n: 'Sin dato de ciclo de vida' },
+  };
+  function cicloDeVida(m, cicloVida) {
+    if (cicloVida === undefined) cicloVida = cicloVidaVendor;
+    if (!m) return { estado: 'sinDato', ...CICLO.sinDato, detalle: 'sin equipo seleccionado' };
+    const eos = m.eolAnnounced;
+    if (eos && eos.lastOrder && eosVencido(m)) {
+      return { estado: 'fuera', ...CICLO.fuera,
+        detalle: 'su fecha de ultimo pedido (' + eos.lastOrder + ') ya paso' };
+    }
+    if (m.eol) {
+      return { estado: 'fuera', ...CICLO.fuera,
+        detalle: 'el catalogo no trae la fecha de ultimo pedido' };
+    }
+    if (eos && eos.lastOrder) {
+      return { estado: 'anunciado', ...CICLO.anunciado,
+        detalle: 'se pide con normalidad hasta el ' + eos.lastOrder
+          + (eos.sucesor ? ' · sucesor: ' + eos.sucesor : '') };
+    }
+    if (m.legacy) {
+      return { estado: 'anterior', ...CICLO.anterior,
+        detalle: 'sigue en canal para ampliar parque instalado'
+          + (m.sucesor ? ' · sucesor natural: ' + m.sucesor + ' (inferencia por capacidad, sin doc oficial)' : '') };
+    }
+    // AQUI ESTA EL PENDIENTE 34. Antes esta rama devolvia verde siempre.
+    if (cicloVida && cicloVida.respaldado) {
+      return { estado: 'vigente', ...CICLO.vigente,
+        detalle: 'sin boletin de fin de venta en ' + (cicloVida.fuente || 'la fuente declarada')
+          + (cicloVida.fecha ? ' (' + cicloVida.fecha + ')' : '') };
+    }
+    return { estado: 'sinDato', ...CICLO.sinDato,
+      detalle: (cicloVida && cicloVida.motivo) || 'ninguna fuente declarada respalda el fin de venta de este fabricante' };
+  }
+  // Una linea lista para pintar. `esc` se aplica aqui y no en quien llama, para que no haya
+  // una copia que se olvide de escapar — el detalle lleva dentro nombres del catalogo.
+  function cicloHtml(m, cicloVida) {
+    const c = cicloDeVida(m, cicloVida);
+    return '<span class="ficha-ciclo ciclo-' + c.cls + '"><i></i>' + esc(c.n) + '</span>'
+      + '<span class="ficha-ciclo-det">' + esc(c.detalle) + '</span>';
+  }
+
+  /* == CONFIGURACION DE PUERTOS (pendiente 35) ===============================
+     LA REGLA LA APORTA NOKIA, NO ARUBA. `legacyData/nokia.js` es el unico catalogo de los
+     ocho que modela los puertos como DATO y no como texto, y lo hace con dos reglas que
+     salieron de estructurar material comercial y que ningun otro fabricante tenia resueltas:
+
+       1. LAS CONFIGURACIONES SON ALTERNATIVAS, NO ACUMULABLES. «36x100GE o 12x400GE» nunca
+          son 48 interfaces: el equipo se pide en UNA de ellas. Sumarlas prometeria una
+          densidad que no existe.
+       2. UN CHASIS MODULAR NO PUBLICA DENSIDAD. «7 slots IOM» dice cuantas tarjetas caben,
+          no cuantos puertos salen — eso depende de las tarjetas que se pidan, y este
+          catalogo no tiene el catalogo de tarjetas. Se aparta CON SU MOTIVO en vez de
+          colarse con una densidad inventada.
+
+     Por que sube aqui: el flujo de `docs/portabilidad-aruba.md` no es «Aruba enseña a los
+     siete», es que la capa comun es algo A LO QUE CADA FABRICANTE APORTA LO QUE YA RESOLVIO.
+     Vivia dentro de dimensionador-nokia-7750sr.js y por tanto no la veia nadie mas.
+
+     QUE VEN LOS OTROS SEIS, Y POR QUE NO ES UN PANEL VACIO. Sus catalogos traen los puertos
+     como texto libre (`ports` en Cisco/Huawei/MikroTik, `ifaces` en Fortinet/Juniper/Aruba):
+     se muestran, y la ficha DECLARA que no estan estructurados y que por eso no se puede
+     comprobar densidad contra un requerimiento. Eso no es un hueco: es la diferencia entre
+     «este equipo no tiene puertos» y «el catalogo no sabe contarlos», que es justo la
+     distincion que este repositorio protege en `redund` y en el comparador.
+
+     NO AUDITA NADA CONTRA UN ESCENARIO. La auditoria de Aruba (cuantos enlaces declarados
+     caben en el chasis) responde OTRA pregunta y se queda en su pagina: esto describe lo que
+     el equipo tiene. Mezclarlas habria metido un motor de calculo en un modulo de
+     presentacion, que es lo que el pendiente pedia no hacer. */
+  // El titulo va CON TILDE: es texto visible, y en este repositorio los comentarios van en
+  // ASCII pero lo que lee una persona va en español correcto. Lo cazo el contraste de Nokia
+  // al mover la regla, que es justo para lo que existe.
+  const PUERTOS_TIT = 'Configuración de puertos';
+  function seccionPuertos(m) {
+    if (!m) return { titulo: PUERTOS_TIT, filas: [] };
+    // 1 · Configuraciones alternativas (Nokia 7250 IXR / 7750 SR).
+    if (Array.isArray(m.configs) && m.configs.length) {
+      const varias = m.configs.length > 1;
+      return {
+        titulo: PUERTOS_TIT,
+        filas: m.configs.map((c, i) => [
+          varias ? 'Opción ' + (i + 1) + ' de ' + m.configs.length + ' · «' + c.n + '»' : '«' + c.n + '»',
+          (c.puertos || []).map((p) => p.cantidad + ' × ' + p.veloc + 'GE').join(' + '),
+        ]),
+        nota: varias
+          ? 'Son <b>alternativas, no acumulables</b>: el equipo se pide en una de ellas —'
+            + m.configs.map((c) => '«' + esc(c.n) + '»').join(' <b>o</b> ') + '— y nunca en varias a la vez.'
+          : null,
+      };
+    }
+    // 2 · Puertos estructurados de un equipo fijo (Nokia 7220 IXR).
+    if (Array.isArray(m.puertos) && m.puertos.length) {
+      return {
+        titulo: PUERTOS_TIT,
+        filas: m.puertos.map((p) => [
+          p.uso ? 'Puertos de ' + p.uso : 'Puertos',
+          p.cantidad + ' × ' + p.veloc + 'GE',
+        ]),
+        nota: null,
+      };
+    }
+    // 3 · Chasis modular: se publica lo que cabe, NO lo que sale.
+    if (m.slots) {
+      return {
+        titulo: PUERTOS_TIT,
+        filas: [['Slots', m.slots.cantidad + ' × ' + esc(m.slots.tipo)
+          + (m.slots.hasta ? ', interfaces de hasta ' + m.slots.hasta + 'GE' : '')]],
+        nota: '<span class="warn">' + esc(m.notaPuertos
+          || 'chasis modular: los slots dicen cuántas tarjetas caben, no cuántos puertos salen.')
+          + '</span>',
+      };
+    }
+    // 4 · UNA NOTA EXPLICITA DEL CATALOGO GANA AL TEXTO LIBRE. El 7250 IXR-e publica
+    // velocidades pero no densidad y lo dice en `notaPuertos`; su `ifaces` es texto comercial.
+    // Pintar ese texto como una fila «Interfaces» al lado de la nota lo haria leer como una
+    // densidad, que es justo lo que la nota niega. Quien declara, manda.
+    if (m.notaPuertos) {
+      return { titulo: PUERTOS_TIT, filas: [], nota: '<span class="warn">' + esc(m.notaPuertos) + '</span>' };
+    }
+    // 5 · El resto de los catalogos: texto libre. Se muestra Y SE DECLARA como tal.
+    const texto = m.ifaces || m.ports;
+    if (texto) {
+      return {
+        titulo: PUERTOS_TIT,
+        filas: [['Interfaces', esc(texto)]],
+        nota: 'El catálogo trae los puertos de este fabricante <b>como texto</b>, no como dato'
+          + ' estructurado, así que no se puede contrastar la densidad contra un requerimiento'
+          + ' — solo Nokia los publica estructurados en este catálogo.',
+      };
+    }
+    // 6 · Tercer estado. Ni afirma que no tenga puertos ni inventa una densidad.
+    return {
+      titulo: PUERTOS_TIT,
+      filas: [],
+      nota: '<span class="warn">el catálogo no trae la densidad de este equipo</span>',
+    };
+  }
   const API = {
     // La regla se expone para que las cinco paginas ordenen y elijan con el mismo criterio
     // en vez de reimplementarlo cada una a su manera, que es como se llego a tres.
     rango,
     recomendable,
     marca,
+    cicloDeVida,
+    cicloHtml,
+    seccionPuertos,
+    // La pagina lo llama una vez, con el `cicloVida` que le devuelve /api/dimensionador/<v>.
+    // Quien no lo llame no pinta nada: es lo correcto: un hueco no afirma vigencia, y una
+    // linea en gris sin que nadie haya decidido mostrarla seria ruido.
+    fijarCicloVida(datos) { cicloVidaVendor = datos || null; },
     seccionAlimentacion,
     // Ordena dejando primero lo vigente y al final lo que esta fuera de venta, conservando
     // el criterio propio de cada pagina (capacidad, precio, medio) como desempate.

@@ -110,12 +110,11 @@ label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px}
 .tco-tabla th:first-child,.tco-tabla td:first-child{text-align:left}
 .tco-tabla thead th{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel)}
 /* Semáforo de ciclo de vida en el catálogo (fase 11, E5) */
-.sem-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
-.sem-verde{background:#5e8a68}
-.sem-naranja{background:#b98a3e}
-.sem-rojo{background:#a4544e}
+/* Las clases .sem-dot/.sem-verde/.sem-naranja/.sem-rojo se retiraron el 2026-09-16 con el
+   semaforo de ciclo de vida (pendiente 34): la regla vive en FICHA.cicloHtml y pinta
+   .ficha-ciclo, cuyo CSS inyecta el propio ficha.js. Dejarlas habria sido CSS inerte, que
+   es la misma forma del conjunto CISCO_EOL_MODELS: no hace nada y parece que si. */
 .sem-cel{font-size:11.5px;line-height:1.4}
-.sem-suc{display:block;color:var(--steel);font-size:10.5px;margin-top:2px}
 /* Delta de precios y salud de fuentes (fase 11, E5) */
 .delta-alza{color:#a4544e;font-weight:600}
 .delta-baja{color:#5e8a68;font-weight:600}

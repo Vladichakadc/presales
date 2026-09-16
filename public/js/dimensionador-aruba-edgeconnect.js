@@ -908,17 +908,21 @@ const miles=n=>n==null?'—':n.toLocaleString('en-US');
 // EdgeConnect (rol sdwan) publica un RANGO de caudal WAN, no una cifra única; los gateways
 // (sucursal/campus) publican throughput de firewall — son dos medidas distintas, así que la
 // columna "Capacidad" declara cuál está mostrando en vez de fundirlas en un solo número.
-// Semáforo de ciclo de vida (fase 11, E5): verde = generación actual, naranja = línea
-// anterior con sucesor inferido (etiquetado como inferencia, sin doc oficial), rojo = fin
-// de venta anunciado con fecha de último pedido.
-function semaforoCiclo(m){
-  if(m.eolAnnounced&&m.eolAnnounced.lastOrder)
-    return `<span class="sem-dot sem-rojo"></span>Fin de venta — último pedido ${esc(m.eolAnnounced.lastOrder)}`;
-  if(m.legacy)
-    return `<span class="sem-dot sem-naranja"></span>Línea anterior (AOS 8) — QuickSpecs RETIRED`
-      +(m.sucesor?`<span class="sem-suc"> → sucesor natural: <b>${esc(m.sucesor)}</b> (inferencia por capacidad, sin doc oficial)</span>`:'');
-  return '<span class="sem-dot sem-verde"></span>Generación actual';
-}
+// SEMAFORO DE CICLO DE VIDA — LA REGLA YA NO VIVE AQUI (pendiente 34, 2026-09-16).
+// Esta copia tenia dos defectos que solo se ven al intentar portarla a los otros seis:
+//
+//  1. SU RAMA POR DEFECTO ERA VERDE. Todo modelo sin marca salia «Generacion actual», asi que
+//     afirmaba que se puede pedir sobre equipos que nadie ha contrastado contra un boletin.
+//     Ninguna fuente declarada de Aruba respalda `eolAnnounced` (ver `campos` en fuentes.js),
+//     asi que esa afirmacion no tenia detras mas que la ausencia de una marca. Los 23 modelos
+//     de Aruba sin marca pasan ahora al TERCER ESTADO, que es lo que de verdad se sabe.
+//  2. PINTABA DE ROJO UN FIN DE VENTA ANUNCIADO QUE TODAVIA NO HA VENCIDO. Hasta su fecha de
+//     ultimo pedido el equipo SE PIDE CON NORMALIDAD — `FICHA.rango()` ya hacia esa
+//     distincion y este semaforo no, asi que la misma pagina se contradecia.
+//
+// La implementacion unica esta en `FICHA.cicloHtml`, como `FICHA.rango` es la unica del fin
+// de venta. Aqui solo queda la llamada.
+const semaforoCiclo=m=>FICHA.cicloHtml(m);
 
 function renderCatalogo(){
   const tbody=document.querySelector('#tbl-aruba-cat tbody');
@@ -1747,6 +1751,7 @@ function render(){
       capacidadPublicadaDe(m),
       {titulo:'Características del equipo', filas:caract},
       {titulo:'Ficha técnica', filas:tecnica},
+      FICHA.seccionPuertos(m),
       FICHA.seccionAlimentacion(m),
       {titulo:'Suscripción y licencias',
        filas:[['Unidades a licenciar', unidades===2
@@ -2605,6 +2610,10 @@ async function compararListaPrecios(archivo){
 (async function initApp(){
   const res = await fetch('/api/dimensionador/aruba');
   const data = await res.json();
+  // Pendiente 34: el respaldo de ciclo de vida de ESTE fabricante, tal como lo declara
+  // `legacyData/fuentes.js` con sus `campos`. Sin el, la ficha dice «el catalogo no trae el
+  // ciclo de vida» en vez de afirmar vigencia por omision.
+  FICHA.fijarCicloVida(data.cicloVida);
   MODELS = data.models;
   BUNDLES = data.bundles;
   CARE = data.care;

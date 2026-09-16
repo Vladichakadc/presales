@@ -572,9 +572,45 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     (`test/ciclo-de-vida-datos.test.js`): ningún modelo de los 189 afirma vigencia sin
     boletín con fecha; todo `eolAnnounced` trae `lastOrder` parseable. La carga de los
     boletines que faltan sigue pendiente (14 para Huawei). Cerrado como REGLA; abierto
-    como DATO.*
+    como DATO.* **2026-09-16: cerrado también como PANTALLA.** El semáforo existía solo
+    dentro de `dimensionador-aruba-edgeconnect.js` y su rama por defecto era **verde**, así
+    que no era que portarlo fuera a pintar verde falso: **ya lo estaba pintando** sobre sus
+    propios 25 modelos. Ahora vive en `FICHA.cicloHtml` y lo usan los siete, con **cinco
+    estados**: fuera de venta (fecha vencida, o `eol` binario declarando que no hay fecha),
+    fin de venta **anunciado y todavía pedible**, línea anterior, vigente, y el tercer estado.
+    **El verde se gana, no se hereda:** solo lo enciende un fabricante cuya `legacyData/
+    fuentes.js` declare en `campos` que alguna fuente respalda `eolAnnounced` —hoy **Cisco y
+    Juniper**, y la ficha dice contra qué documento y de qué fecha—; los otros cinco declaran
+    «el catálogo no trae el ciclo de vida». Se reutiliza esa declaración en vez de escribir
+    una segunda lista de fabricantes, que es como se desincronizan dos sitios con el mismo
+    dato. De paso corrige un defecto que la copia de Aruba tenía y `FICHA.rango()` no: pintaba
+    de rojo un fin de venta anunciado **que aún no había vencido**, cuando hasta esa fecha el
+    equipo se pide con normalidad — la misma página se contradecía. `test/ciclo-de-vida-
+    semaforo.test.js` (9 casos) lo fija, y se comprobó saboteando: devolviendo el verde a rama
+    por defecto caen 2 de 9 nombrando el motivo. **Sigue abierto como DATO**: cerrarlo del todo
+    es cargar los boletines que faltan (14 para Huawei, bloqueado por Akamai).
 
-35. **La auditoría de puertos de Nokia es la mejor de las ocho y no se ve (2026-09-13).**
+35. **~~La auditoría de puertos de Nokia es la mejor de las ocho y no se ve~~ Resuelto
+    (2026-09-16).** La regla subió a `FICHA.seccionPuertos` y la usan los siete. Lo que Nokia
+    aporta —y ningún otro catálogo tenía resuelto— son dos cosas: **las configuraciones son
+    alternativas y no acumulables** («36x100GE o 12x400GE» nunca son 48 interfaces) y **un
+    chasis modular no publica densidad** («7 slots IOM» dice cuántas tarjetas caben, no
+    cuántos puertos salen), así que se aparta con su motivo. **Los otros seis no reciben un
+    panel vacío:** sus catálogos traen los puertos como texto libre (`ports` en Cisco/Huawei/
+    MikroTik, `ifaces` en Fortinet/Juniper/Aruba), la sección los muestra y **declara** que no
+    están estructurados y que por eso no se puede contrastar densidad contra un requerimiento
+    — la diferencia entre «este equipo no tiene puertos» y «el catálogo no sabe contarlos».
+    Una regla nueva salió de moverla: **una `notaPuertos` explícita gana al texto libre**,
+    porque el 7250 IXR-e publica velocidades pero no densidad y pintar su `ifaces` al lado de
+    esa nota lo haría leer como una densidad. **No audita nada contra un escenario**: la de
+    Aruba (cuántos enlaces declarados caben en el chasis) responde otra pregunta y se queda en
+    su página — mezclarlas habría metido un motor de cálculo en un módulo de presentación.
+    Probado con `npm run contraste -- nokia-sr` contra la línea base **medida antes de mover
+    nada**, que cazó dos tildes perdidas en texto visible. `test/nokia-puertos.test.js` pasó
+    sin tocar una sola aserción, que es la mejor señal de que cambió de domicilio y no de
+    contenido.
+
+    *Texto original del pendiente:*
     También de la revisión de portabilidad. `legacyData/nokia.js` ya modela las configuraciones
     de puertos como **alternativas y no acumulables** —«36x100GE o 12x400GE» nunca son 48
     interfaces— y aparta los chasis modulares que no publican densidad. Es más rica que la que
@@ -617,13 +653,36 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     evidencia. Medir una cosa y afirmar otra es exactamente como se llega a un campo puesto a
     ojo.
 
-38. **Tres fuentes siguen dando 403 incluso desde GitHub Actions (2026-09-14).** El sondeo lo
-    confirmó con su código, que es el resultado honesto: las *hardware guides* por modelo de
-    Juniper, sus fichas de la generación 2024, y el Validated Solution Guide de HPE. No es el
-    proxy de este entorno —los ejecutores no pasan por él—, así que es una restricción del
-    propio fabricante. Mientras siga así, esas tres respaldan datos que el vigía **no puede
-    comprobar**, y la pestaña de procedencia lo dice: salen como «no comprobada», nunca en
-    verde. Cierra desde una máquina con acceso, o con una URL vigente que sí resuelva.
+38. **~~Tres fuentes siguen dando 403 incluso desde GitHub Actions~~ Eran dos cosas
+    distintas, y la medición lo separó (2026-09-16).** La conclusión anterior —«no es el proxy
+    de este entorno, así que es una restricción del propio fabricante»— **estaba deducida, no
+    medida**, y en 2 de los 3 casos era falsa. Las tres URL terminaban en `/`: no eran
+    documentos sino **directorios**, y un CDN niega un listado de directorio por configuración
+    sin bloquear a nadie. Las dos hipótesis se distinguen con un **grupo de control**, que es
+    lo que añade `scripts/probar-candidatas.js` (+ `candidatas-fuentes.yml`): junto a cada URL
+    bloqueada se pide un **archivo** del mismo dominio —y donde se puede, del mismo
+    directorio— que este repositorio ya sabe que se descarga. Medido desde un ejecutor:
+
+    | Fuente | Carpeta | Control | Veredicto |
+    |---|---|---|---|
+    | Juniper · *hardware guides* (`redund`/`psu`) | 403 | matriz SRX **200** | **forma de la URL** |
+    | Juniper · fichas 2024 (`fwImix`/`ips`/`atp`) | 403 | mismo directorio, PDF **200** | **forma de la URL** |
+    | HPE · Validated Solution Guide | 403 | Hardware Reference **403** | **el fabricante** |
+
+    Las dos de Juniper **se corrigieron con documentos que responden**:
+    `…/hardware/srx1600/index.html` (200) y `…/security/srx1600-firewall-datasheet.pdf` (200,
+    PDF real de 484 KB; el del SRX4300 también responde y sigue el mismo patrón). Van con su
+    `cubre` ajustado: el vigía mira **una URL por fuente**, así que ahora vigila un modelo de
+    los doce y una ficha de las tres — menos de lo que la entrada prometía antes, y más de lo
+    que de verdad hacía, que era **nada**, porque una carpeta no se puede leer nunca.
+
+    **La de HPE sigue abierta, y ahora con evidencia en vez de con una suposición.** La URL
+    **se deja como carpeta a propósito**: apuntarla al PDF concreto alinearía las dos
+    declaraciones del repositorio (`fuentes.js` vigila la carpeta y `aruba.js` declara el PDF
+    en `DATASHEETS.sdBranchVsg`), pero un `.pdf` obliga a `estable: true` —se vigila por
+    bytes— y de la estabilidad de ese documento no hay ninguna medición porque nadie puede
+    leerlo. Declararla sería el campo puesto a ojo que este repositorio persigue. Cierra desde
+    una máquina con acceso a los dominios de HPE.
 41. **Fotos oficiales de los modelos legacy (2026-09-16, nace con la tarjeta gráfica de la
     ficha).** La tarjeta «Equipos que cumplen» ya corona con la foto oficial del equipo
     elegido —EdgeConnect 101xx/XS con frontal y trasera del Hardware Reference Rev V,
@@ -651,6 +710,42 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Pendientes 34, 35 y 38, y el arnés de contraste compartido (2026-09-16)
+
+Los tres pendientes que la entrega anterior propuso, más la mejora propuesta al cerrarla.
+El detalle de cada uno está en su punto; aquí lo que los une.
+
+**La mejora primero, porque es lo que hizo seguro el 35.** `scripts/contraste-fortinet.js`
+se partió en un **arnés** (`scripts/contraste-motor.js`) más **casos declarados**
+(`scripts/contrastes/*.js`), con `npm run contraste -- <caso>`. Lo único que cambia entre
+casos es traducir un escenario a los controles de *su* pantalla y leer de ella lo que se
+compara; entrar por el muro, conducir Chromium, comparar contra la línea base y salir con
+código distinto de cero es idéntico. Copiar el archivo para el segundo caso habría sido
+exactamente como `llevarABom` acabó en seis copias que no hacían lo mismo. **No generaliza
+de más a propósito**: `preparar()` recibe la página y hace lo que haga falta, sin intentar
+adivinar campos comunes — un traductor que aceptara campos que una página no tiene acabaría
+rellenando controles inexistentes, que es el fallo que el gancho `caudal(page)` existe para
+evitar. El caso de Fortinet se reprodujo idéntico tras la partición.
+
+**Y sirvió el mismo día.** Al mover la regla de puertos de Nokia, el contraste cazó dos
+tildes perdidas en texto visible («Configuracion de puertos», «Opcion 1 de 2»). Es
+literalmente el fallo que un refactor produce y que una revisión a ojo no ve.
+
+**Lo que los tres pendientes tenían en común: una afirmación deducida.** El 34 daba por
+vigente todo modelo sin marca; el 35 daba por hecho que la regla de Nokia no estaba en
+ninguna pantalla (estaba, pero solo en la suya); el 38 daba por hecho que el 403 era del
+fabricante. Los tres se cerraron **midiendo**, y en dos de ellos la medición contradijo la
+premisa: la copia de Aruba **ya** pintaba verde falso sobre sus propios 25 modelos, y 2 de
+las 3 fuentes bloqueadas no lo estaban por el fabricante sino por pedir una carpeta.
+
+Verificado: `npm run verificar` (358 pruebas, +10), `npm run catalogo`, `npm run contraste`
+en sus dos casos, `npm run pantallas` 16/16 contra un arranque con `NODE_ENV=production`, y
+los siete dimensionadores conducidos a mano en Chromium sin una sola excepción — Cisco y
+Juniper en verde citando su boletín, los otros cinco en el tercer estado, y la sección de
+puertos en los siete. La revisión diferencial del diff está en `docs/revision-34-35-38.md`;
+de ella salió un hallazgo propio: el CSS del semáforo de Aruba quedó inerte al sustituirlo
+y se retiró, porque es la misma forma que `CISCO_EOL_MODELS`.
 
 ### Rediseño del módulo Fortinet sobre la arquitectura de Aruba (2026-09-16)
 

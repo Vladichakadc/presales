@@ -262,6 +262,7 @@ function render(){
         ['Puertos', esc(m.ports), true],
         ['Precio de lista ref.', m.elp?esc(m.elp):'Consultar CCW'],
       ]},
+      FICHA.seccionPuertos(m),
       FICHA.seccionAlimentacion(m),
       {titulo:'Licenciamiento propuesto', filas:[
         ['Suscripción DNA', esc(dnaNom)],
@@ -507,6 +508,10 @@ $('xlsBtn').addEventListener('click', async()=>{
 (async function initApp(){
   const res = await fetch('/api/dimensionador/cisco');
   const data = await res.json();
+  // Pendiente 34: el respaldo de ciclo de vida de ESTE fabricante, tal como lo declara
+  // `legacyData/fuentes.js` con sus `campos`. Sin el, la ficha dice «el catalogo no trae el
+  // ciclo de vida» en vez de afirmar vigencia por omision.
+  FICHA.fijarCicloVida(data.cicloVida);
   MODELS = data.models;
   OPTICS = data.optics;
   OPTIC_LABEL = data.opticLabel;

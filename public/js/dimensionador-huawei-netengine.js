@@ -233,6 +233,7 @@ function seccionesHuawei(m, c){
   if(m.elp) caract.push(['Precio de lista ref.', m.elp]);
   return [
     {titulo:'Características del equipo', filas:caract},
+    FICHA.seccionPuertos(m),
     FICHA.seccionAlimentacion(m),
     {titulo:'Licenciamiento propuesto', filas:lic,
      nota:'Todas las licencias se emiten contra el ESN del equipo y se descargan del portal ESDP de Huawei.'},
@@ -509,6 +510,10 @@ $('copyBtn').addEventListener('click', async () => {
 (async function initApp(){
   const res = await fetch('/api/dimensionador/huawei');
   const data = await res.json();
+  // Pendiente 34: el respaldo de ciclo de vida de ESTE fabricante, tal como lo declara
+  // `legacyData/fuentes.js` con sus `campos`. Sin el, la ficha dice «el catalogo no trae el
+  // ciclo de vida» en vez de afirmar vigencia por omision.
+  FICHA.fijarCicloVida(data.cicloVida);
   OPTICS = data.optics;
   OPTIC_LABEL = data.opticLabel;
   PARTS = data.parts;

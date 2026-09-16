@@ -82,6 +82,10 @@ function capaEfectiva() {
   try {
     const r = await fetch('/api/dimensionador/juniper');
     const d = await r.json();
+    // Pendiente 34: el respaldo de ciclo de vida de ESTE fabricante, tal como lo declara
+    // `legacyData/fuentes.js` con sus `campos`. Sin el, la ficha dice «el catalogo no trae el
+    // ciclo de vida» en vez de afirmar vigencia por omision.
+    FICHA.fijarCicloVida(d.cicloVida);
     MODELS = d.models || []; SDWAN = d.sdwan || [];
     BUNDLES = d.bundles || {}; CARE = d.care || {};
   } catch {
@@ -294,6 +298,7 @@ function seccionesDe(m) {
         ['Interfaces', esc(m.ifaces), true],
         ['Precio de lista ref.', '<span class="warn">sin lista de precios Juniper</span>'],
       ] },
+    FICHA.seccionPuertos(m),
     FICHA.seccionAlimentacion(m),
     { titulo: 'Licenciamiento propuesto',
       filas: [[esc(b.n || tier), esc(b.svcs || '')]],
@@ -365,7 +370,7 @@ function renderSsr(need) {
       filas: [['Serie', esc(m.ser)], ['Segmento', esc(m.seg)], ['Caudal', fmt(m.cap)],
         ['Interfaces', esc(m.ifaces), true],
         ['Precio de lista ref.', '<span class="warn">sin lista de precios Juniper</span>']] },
-      FICHA.seccionAlimentacion(m)],
+      FICHA.seccionPuertos(m), FICHA.seccionAlimentacion(m)],
     alCambiar: (id) => { $('pickModel').value = id; renderBom(); },
   });
   const m = SDWAN.find((x) => x.id === FICHA.elegido('verdict')) || pick;

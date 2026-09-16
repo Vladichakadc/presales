@@ -125,6 +125,34 @@ function vigilanciaDe(vendorCode, f) {
   return { estado: 'verificada', desde: e.medido };
 }
 
+// PENDIENTE 34 — QUE HACE FALTA PARA QUE UN MODELO PUEDA SALIR EN VERDE.
+//
+// El semaforo de ciclo de vida vivia solo en la pagina de Aruba y su rama por defecto era
+// VERDE: todo lo que no estuviera marcado `eol` o `legacy` salia como «Generacion actual».
+// Portarlo tal cual a los siete habria afirmado «se puede pedir» sobre 131 modelos que nadie
+// ha comprobado — el mismo error que el «IPS: no aplica» del Catalyst 8300, y mas caro,
+// porque lo que se afirma es que un equipo esta a la venta.
+//
+// LA AUSENCIA DE UN BOLETIN NO ES PRUEBA DE VIGENCIA. Solo lo es si alguien mira los
+// boletines de ese fabricante. Y eso ya esta declarado en el repositorio: una fuente de
+// `legacyData/fuentes.js` con `campos` que incluya `eolAnnounced` es exactamente «hay un
+// documento de fin de venta contrastado, de esta fecha». Se reutiliza esa declaracion en vez
+// de escribir una segunda lista de fabricantes, que es como se desincronizan dos sitios con
+// el mismo dato.
+//
+// Hoy la cumplen Cisco y Juniper. Los otros cinco reciben `respaldado: false` y su ficha
+// declara «el catalogo no trae el ciclo de vida» — el tercer estado que ya protege `redund`.
+function respaldoCicloVida(vendorCode) {
+  const f = fuentesDe(vendorCode).find((x) => Array.isArray(x.campos) && x.campos.includes('eolAnnounced'));
+  if (!f) {
+    return {
+      respaldado: false,
+      motivo: 'ninguna fuente declarada respalda el campo eolAnnounced de este fabricante',
+    };
+  }
+  return { respaldado: true, fuente: f.documento || null, fecha: f.fecha || null, url: f.url || null };
+}
+
 async function toFuentes() {
   const vendors = await Vendor.findAll({ order: [['name', 'ASC']] });
   const out = {};
@@ -507,6 +535,7 @@ module.exports = {
   getVendorsList,
   toIndexPR,
   toFuentes,
+  respaldoCicloVida,
   toCotizadorCatalog,
   toDimensionadorHuawei,
   toDimensionadorCisco,

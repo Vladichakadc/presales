@@ -15,7 +15,10 @@ const assert = require('node:assert');
 const { cargar } = require('./ayuda/navegador.js');
 const { MODELS, MODELS_ROUTER } = require('../server/seed/legacyData/nokia.js');
 
-const { NOKIA_SR } = cargar('public/js/dimensionador-nokia-7750sr.js');
+// `ficha.js` va PRIMERO: desde el 2026-09-16 la regla de puertos vive ahi (pendiente 35) y
+// la pagina de Nokia solo la llama. Que esta prueba siga pasando sin tocar una asercion es
+// la mejor senal de que el traslado no cambio la regla, solo su domicilio.
+const { NOKIA_SR } = cargar('public/js/ficha.js', 'public/js/dimensionador-nokia-7750sr.js');
 const { NOKIA_7220 } = cargar('public/js/dimensionador-nokia-7220ixr.js');
 
 const deRouter = (id) => MODELS_ROUTER.find((m) => m.id === id);
@@ -74,5 +77,28 @@ test('un chasis modular muestra su notaPuertos literal y no afirma densidad', ()
 
 test('sin configs ni notaPuertos, la ficha declara el tercer estado', () => {
   const sec = NOKIA_SR.seccionPuertos({ id: 'Hipotético' });
-  assert.ok(sec.nota.includes('el catálogo no trae la densidad de este chasis'));
+  // «de este equipo» y ya no «de este chasis»: desde que la regla vive en `ficha.js`
+  // (pendiente 35) la usan los siete fabricantes, y un FortiGate 40F no es un chasis. Es un
+  // cambio de redacción deliberado, no un texto que se movió solo — de ahí que se anote.
+  assert.ok(sec.nota.includes('el catálogo no trae la densidad de este equipo'));
+});
+
+test('los otros seis fabricantes no reciben un panel vacío: el texto libre se muestra Y se declara', () => {
+  // Es la mitad del pendiente 35 que se ve desde fuera de Nokia. Sus catálogos traen los
+  // puertos como texto (`ports` en Cisco/Huawei/MikroTik, `ifaces` en Fortinet/Juniper/Aruba),
+  // así que la sección los enseña y DICE que no están estructurados. Decirlo es la diferencia
+  // entre «este equipo no tiene puertos» y «el catálogo no sabe contarlos» — la misma
+  // distinción que protege `redund` y el `noAplica` del comparador.
+  const { FICHA } = cargar('public/js/ficha.js');
+  const cisco = require('../server/seed/legacyData/cisco.js').MODELS[0];
+  const sec = FICHA.seccionPuertos(cisco);
+  assert.ok(sec.filas.length === 1 && sec.filas[0][0] === 'Interfaces');
+  assert.ok(sec.filas[0][1].includes('NIM slot'), 'el texto del catálogo, tal cual');
+  assert.match(sec.nota, /<b>como texto<\/b>/, 'y se declara que no es dato estructurado');
+  assert.match(sec.nota, /no se puede contrastar la densidad/);
+
+  // Fortinet usa `ifaces` en vez de `ports`: las dos claves valen, porque el catálogo las
+  // nombra distinto y eso es del catálogo, no del equipo.
+  const forti = require('../server/seed/legacyData/fortinet.js').MODELS[0];
+  assert.ok(FICHA.seccionPuertos(forti).filas[0][1].includes('GE'));
 });

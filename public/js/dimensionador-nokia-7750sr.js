@@ -187,43 +187,21 @@
     return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">${li.join('')}</ul>`;
   }
 
-  // La auditoría de puertos del catálogo, visible en la ficha (pendiente 35). Tres casos y
-  // ninguno deducido:
-  //   - Con `configs`: cada configuración es UNA forma de pedir el equipo. Con más de una
-  //     se enumeran con «o» y se dice «alternativas, no acumulables» — sumarlas prometería
-  //     48 interfaces donde hay 36.
-  //   - Chasis modular (`slots`): se muestra la `notaPuertos` LITERAL y los slots que el
-  //     catálogo sí publica. No se afirma densidad: depende de las tarjetas/IOM que se
-  //     pidan, y este catálogo no tiene el catálogo de tarjetas.
-  //   - Sin ninguno de los dos: «el catálogo no trae la densidad de este chasis» — el
-  //     tercer estado honesto, la misma regla que el semáforo de ciclo de vida. Hoy ningún
-  //     modelo cae aquí (el test de nokia-agregacion lo impide: configs o notaPuertos),
-  //     pero la rama queda para el modelo futuro que entre sin el dato.
-  function seccionPuertos(m) {
-    if (m.configs && m.configs.length) {
-      const varias = m.configs.length > 1;
-      return {
-        titulo: 'Configuración de puertos',
-        // La clave la escapa seccionHtml; el valor es HTML de la página (solo números).
-        filas: m.configs.map((c, i) => [
-          varias ? `Opción ${i + 1} de ${m.configs.length} · «${c.n}»` : `«${c.n}»`,
-          c.puertos.map((p) => `${p.cantidad} × ${p.veloc}GE`).join(' + '),
-        ]),
-        nota: varias
-          ? `Son <b>alternativas, no acumulables</b>: el equipo se pide en una de ellas —${m.configs.map((c) => `«${esc(c.n)}»`).join(' <b>o</b> ')}— y nunca en varias a la vez.`
-          : null,
-      };
-    }
-    const filas = [];
-    if (m.slots) {
-      filas.push(['Slots', `${m.slots.cantidad} × ${esc(m.slots.tipo)}, interfaces de hasta ${m.slots.hasta}GE`]);
-    }
-    return {
-      titulo: 'Configuración de puertos',
-      filas,
-      nota: `<span class="warn">${esc(m.notaPuertos || 'el catálogo no trae la densidad de este chasis')}</span>`,
-    };
-  }
+  // LA AUDITORIA DE PUERTOS YA NO VIVE AQUI (pendiente 35, 2026-09-16).
+  //
+  // Esta era la mejor de las ocho —configuraciones como ALTERNATIVAS y no acumulables, y un
+  // chasis modular apartado con su motivo en vez de colarse con una densidad inventada— y no
+  // la veia ningun otro fabricante, porque estaba dentro de este archivo. Subio a
+  // `FICHA.seccionPuertos`, que es el punto por el que pasan los siete dimensionadores.
+  //
+  // El flujo de `docs/portabilidad-aruba.md` no es «Aruba enseña a los siete»: la capa comun
+  // es algo A LO QUE CADA FABRICANTE APORTA LO QUE YA RESOLVIO. Aqui lo aporta Nokia.
+  //
+  // Se comprobo que esta pagina sigue diciendo EXACTAMENTE lo mismo: `npm run contraste --
+  // nokia-sr` lee el texto de la seccion en los tres casos que la regla distingue (varias
+  // configuraciones, una sola, y chasis modular) contra la linea base medida ANTES de mover
+  // nada. Un refactor que cambia un texto en silencio es indistinguible de uno que rompe.
+  const seccionPuertos = (m) => FICHA.seccionPuertos(m);
 
   function seccionesDe(m) {
     const filas = [
@@ -331,6 +309,10 @@
     montarSeg();
     const res = await fetch('/api/dimensionador/nokia-sr');
     CATALOGO = await res.json();
+    // Pendiente 34: el respaldo de ciclo de vida de ESTE fabricante, tal como lo declara
+    // `legacyData/fuentes.js` con sus `campos`. Sin el, la ficha dice «el catalogo no trae el
+    // ciclo de vida» en vez de afirmar vigencia por omision.
+    FICHA.fijarCicloVida(CATALOGO.cicloVida);
     renderCatalogo();
     PROCEDENCIA.registrarModelos('nokia', () => CATALOGO.models.map((m) => ({ model: m.id, ...m })));
 
