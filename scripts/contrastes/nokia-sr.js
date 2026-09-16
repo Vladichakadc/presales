@@ -35,6 +35,8 @@ const BASE_LINEA = [
 ];
 
 module.exports = {
+  // Medida leyendo la pantalla ANTES de mover la regla a ficha.js, en la misma sesion.
+  medidoEn: { commit: '368b370~1', fecha: '2026-09-16' },
   nombre: 'Nokia SR/IXR — la auditoria de puertos al subir al modulo compartido',
   pagina: 'dimensionador-nokia-7750sr.html',
   claves: ['puertos'],

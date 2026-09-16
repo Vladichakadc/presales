@@ -38,37 +38,21 @@
 // entorno de trabajo habitual del equipo; si no lo encuentra, dice exactamente que instalar.
 
 const path = require('path');
-const fs = require('fs');
 
-const RUTAS_PLAYWRIGHT = ['playwright', '/opt/node22/lib/node_modules/playwright'];
-const RUTAS_CHROMIUM = ['/opt/pw-browsers/chromium-1194/chrome-linux/chrome'];
-
-function requerirPlaywright() {
-  for (const ruta of RUTAS_PLAYWRIGHT) {
-    try { return require(ruta); } catch { /* probar la siguiente */ }
-  }
-  console.error('No se encontro el paquete "playwright". Instalalo sin guardarlo en '
-    + 'package.json y trae un Chromium:\n\n'
-    + '    npm install --no-save playwright\n'
-    + '    npx playwright install chromium\n');
-  process.exit(1);
-}
-
-function chromiumDisponible() {
-  return RUTAS_CHROMIUM.find((r) => fs.existsSync(r));
-}
+// Donde vive Playwright y donde vive Chromium: `ayuda/chromium.js`, compartido con
+// verificar-pantallas.js y contraste-motor.js (2026-09-16).
+const { requerirPlaywright, opcionesDeLanzamiento } = require('./ayuda/chromium');
 
 const { chromium } = requerirPlaywright();
 
 const DIR = path.join(__dirname, '..', 'docs', 'manual-usuario');
 const ORIGEN = path.join(DIR, 'manual.html');
 const DESTINO = path.join(DIR, 'Manual de uso - Dimensionadores y BOM.pdf');
-const CHROMIUM = chromiumDisponible();
 
 async function generar() {
   // Sin ruta conocida, se deja que Playwright use el Chromium que haya instalado el
   // propio paquete -es lo correcto fuera de este entorno, donde no existe /opt/pw-browsers.
-  const b = await chromium.launch(CHROMIUM ? { executablePath: CHROMIUM } : {});
+  const b = await chromium.launch(opcionesDeLanzamiento());
   try {
     const p = await b.newPage();
     await p.goto('file://' + ORIGEN, { waitUntil: 'load' });

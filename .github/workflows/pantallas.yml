@@ -3,6 +3,17 @@ name: pantallas
 # Conduce TODAS las pantallas en un navegador de verdad, detras del muro de acceso, y sube
 # una captura de cada una. Es la mitad del pendiente 4 que faltaba.
 #
+# DESDE EL 2026-09-16 ESTE JOB HACE DOS COSAS, y son distintas a proposito:
+#   · `pantallas`  comprueba que NADA EXPLOTA -- sin errores de consola, sin peticiones
+#     fallidas al propio origen, sin contenedores vacios. No compara ninguna cifra, y no debe:
+#     una asercion sobre «3,1 Gbps» se romperia en cada cambio de catalogo, que es como se
+#     ensena a la gente a ignorar un rojo.
+#   · `contraste`  compara lo que la pantalla RECOMIENDA para un escenario ya medido contra
+#     la linea base de antes de un refactor. Eso no lo cubre ni `verificar` (funciones puras)
+#     ni `pantallas`, y es justo donde un refactor rompe en silencio.
+# Se quedan en el mismo job porque el contraste necesita exactamente lo que este ya monta:
+# Chromium, un servidor en modo produccion y una clave efimera.
+#
 # POR QUE AQUI Y NO CONTRA UN SITIO DESPLEGADO. `DATABASE_PATH` va sin definir en produccion,
 # asi que la base es efimera y se resiembra desde `server/seed/legacyData/` en CADA
 # despliegue: lo que pinta una pantalla es funcion del commit, no del entorno. Este job
@@ -58,6 +69,7 @@ jobs:
           npx playwright install --with-deps chromium
 
       - name: Arrancar el servidor en modo produccion
+        id: servidor
         env:
           NODE_ENV: production
           PORT: 4000
@@ -84,12 +96,52 @@ jobs:
           AUTH_USER: verificacion
         run: npm run pantallas -- --base=http://127.0.0.1:4000 --salida=./capturas
 
+      # EL CONTRASTE VA AQUI Y NO EN UN WORKFLOW APARTE porque necesita exactamente lo que
+      # este job ya tiene montado: Chromium, un servidor en modo produccion y una clave que
+      # vive y muere con la corrida. Un workflow propio pagaria ese montaje dos veces para
+      # comprobar lo mismo sobre el mismo commit.
+      #
+      # QUE ANADE SOBRE LAS PANTALLAS, que es lo que justifica el paso. `pantallas` comprueba
+      # que nada explota: sin errores de consola, sin peticiones fallidas, sin contenedores
+      # vacios. NO compara ninguna cifra contra nada — y no debe, porque una asercion sobre
+      # «3,1 Gbps» se romperia en cada cambio de catalogo. El contraste compara otra cosa: que
+      # un REFACTOR no cambie la recomendacion que la pantalla da para un escenario ya medido.
+      # Ninguno de los dos cubre eso hoy, y la prueba de que hace falta es que el caso de
+      # Nokia cazo una regresion real (dos tildes perdidas en texto visible) el mismo dia que
+      # se escribio.
+      #
+      # `--todos` deriva la lista de `scripts/contrastes/`: anadir un caso es anadir un
+      # archivo, no tocar este workflow. Una lista aqui se quedaria atras y un caso que nunca
+      # corre se porta igual que uno que pasa.
+      #
+      # SE EJECUTA AUNQUE LAS PANTALLAS FALLEN (pero no si el servidor no arranco): las dos
+      # comprobaciones miran cosas distintas y tener las dos en el mismo informe es lo que
+      # evita una segunda corrida para enterarse de la segunda mitad.
+      - name: Contrastar que los refactores no cambian lo que se recomienda
+        if: ${{ !cancelled() && steps.servidor.conclusion == 'success' }}
+        env:
+          AUTH_USER: verificacion
+        run: node scripts/contraste.js --todos --base=http://127.0.0.1:4000 | tee contraste.txt
+
+      - name: Publicar el contraste en la corrida
+        if: ${{ !cancelled() && hashFiles('contraste.txt') != '' }}
+        run: |
+          {
+            echo '## Contraste antes/despues'
+            echo ''
+            echo '```'
+            cat contraste.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Capturas
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pantallas-${{ github.sha }}
-          path: capturas/
+          path: |
+            capturas/
+            contraste.txt
           retention-days: 30
           if-no-files-found: warn
 

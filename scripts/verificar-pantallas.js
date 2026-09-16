@@ -40,22 +40,11 @@
 const fs = require('fs');
 const path = require('path');
 
-const RUTAS_PLAYWRIGHT = ['playwright', '/opt/node22/lib/node_modules/playwright'];
-const RUTAS_CHROMIUM = [
-  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
-  '/opt/pw-browsers/chromium/chrome-linux/chrome',
-];
-
-function requerirPlaywright() {
-  for (const ruta of RUTAS_PLAYWRIGHT) {
-    try { return require(ruta); } catch { /* probar la siguiente */ }
-  }
-  console.error('No se encontro el paquete "playwright". Instalalo sin guardarlo en '
-    + 'package.json y trae un Chromium:\n\n'
-    + '    npm install --no-save playwright\n'
-    + '    npx playwright install --with-deps chromium\n');
-  process.exit(1);
-}
+// Donde vive Playwright y donde vive Chromium: `ayuda/chromium.js`, compartido con
+// contraste-motor.js y generar-manual-usuario.js (2026-09-16). Esta era una de las tres
+// copias; se conserva EXACTAMENTE su orden de busqueda, que es el que funciona tanto aqui
+// como en un ejecutor de Actions.
+const { requerirPlaywright, opcionesDeLanzamiento } = require('./ayuda/chromium');
 
 const arg = (n, def) => {
   const p = process.argv.find((a) => a.startsWith(`--${n}=`));
@@ -429,8 +418,7 @@ async function main() {
   const { chromium } = requerirPlaywright();
   fs.mkdirSync(SALIDA, { recursive: true });
 
-  const ejecutable = RUTAS_CHROMIUM.find((r) => fs.existsSync(r));
-  const navegador = await chromium.launch(ejecutable ? { executablePath: ejecutable } : {});
+  const navegador = await chromium.launch(opcionesDeLanzamiento());
   const contexto = await navegador.newContext({ viewport: { width: 1400, height: 1000 } });
   const page = await contexto.newPage();
 

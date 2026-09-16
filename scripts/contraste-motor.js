@@ -22,19 +22,16 @@
  * que el gancho `caudal(page)` de verificar-pantallas.js existe para evitar.
  *
  * Playwright va FUERA de package.json, como en scripts/generar-manual-usuario.js: es una
- * dependencia pesada para un script que se corre pocas veces.
+ * dependencia pesada para un repositorio que no lo necesita para nada mas. Donde encontrarlo
+ * lo decide `ayuda/chromium.js`, en un solo sitio para los tres scripts que abren un
+ * navegador.
  */
-const RUTA_PW = process.env.PLAYWRIGHT_PATH || '/opt/node22/lib/node_modules/playwright';
-const EJECUTABLE = process.env.CHROMIUM_PATH || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
-
-function traerPlaywright() {
-  try { return require(RUTA_PW); }
-  catch {
-    console.error(`No se encontro Playwright en ${RUTA_PW}.`);
-    console.error('Instalalo con:  npm i -g playwright   (o exporta PLAYWRIGHT_PATH al modulo)');
-    process.exit(2);
-  }
-}
+// Donde vive Playwright y donde vive Chromium lo resuelve `ayuda/chromium.js`, igual que
+// verificar-pantallas.js y generar-manual-usuario.js. La version anterior de este archivo
+// fijaba /opt/pw-browsers sin alternativa y pasaba SIEMPRE executablePath: habria fallado en
+// el ejecutor de GitHub, donde Playwright se instala en node_modules y trae su propio
+// Chromium. Tres copias de la misma resolucion que no hacian lo mismo.
+const { requerirPlaywright, opcionesDeLanzamiento } = require('./ayuda/chromium');
 
 const pausa = (p, ms) => p.waitForTimeout(ms);
 
@@ -63,29 +60,45 @@ function comparar(esperado, obtenido, claves) {
 
 const corto = (v) => (Array.isArray(v) ? `[${v.length}] ${v.slice(0, 4).join(', ')}${v.length > 4 ? '…' : ''}` : String(v));
 
-/* Un caso declara:
- *   nombre     · para el encabezado del informe
- *   pagina     · ruta relativa de la pantalla que se conduce
- *   claves     · que campos se comparan, en orden de lectura
- *   baseLinea  · [{n, ...escenario, ...esperado}] medido sobre el commit anterior
- *   preparar   · async (page, escenario) => void — traduce el escenario a ESA pagina
- *   leer       · async (page) => obtenido
- *   extra      · opcional: async (page, ctx) => [{n, ok, detalle}] comprobaciones propias
- */
-async function correr(caso, opciones) {
-  const { chromium } = traerPlaywright();
+/* UNA SESION PARA TODOS LOS CASOS. Abrir Chromium y volver a entrar por el muro de acceso
+ * en cada caso cuesta minutos en un ejecutor, y no aporta aislamiento: cada caso empieza con
+ * un `goto` a su pantalla, que es un estado limpio. `cerrar()` la suelta al final. */
+async function abrirSesion(opciones) {
+  const { chromium } = requerirPlaywright();
   const base = (opciones.base || 'http://127.0.0.1:4000').replace(/\/$/, '');
   const usuario = opciones.usuario || process.env.AUTH_USER || 'presales';
   const clave = opciones.password || process.env.AUTH_PASSWORD;
   if (!clave) { console.error('Falta la contrasena. Pasa --password=... o define AUTH_PASSWORD.'); process.exit(2); }
 
-  const b = await chromium.launch({ executablePath: EJECUTABLE });
+  const b = await chromium.launch(opcionesDeLanzamiento());
   const p = await b.newPage({ viewport: { width: 1440, height: 1200 } });
   await entrar(p, base, usuario, clave);
+  return { page: p, base, cerrar: () => b.close() };
+}
+
+/* Un caso declara:
+ *   nombre     · para el encabezado del informe
+ *   pagina     · ruta relativa de la pantalla que se conduce
+ *   claves     · que campos se comparan, en orden de lectura
+ *   medidoEn   · {commit, fecha} de CUANDO se midio la linea base — procedencia, no adorno:
+ *                sin ella nadie puede saber si esa referencia sigue queriendo decir algo
+ *   baseLinea  · [{n, ...escenario, ...esperado}] medido sobre ese commit
+ *   preparar   · async (page, escenario) => void — traduce el escenario a ESA pagina
+ *   leer       · async (page) => obtenido
+ *   extra      · opcional: async (page, ctx) => [{n, ok, detalle}] comprobaciones propias
+ */
+async function correr(caso, sesion) {
+  const { page: p, base } = sesion;
 
   console.log(`CONTRASTE · ${caso.nombre}`);
   console.log(`  pantalla : ${caso.pagina}`);
-  console.log(`  escenarios: ${caso.baseLinea.length} · campos: ${caso.claves.join(', ')}\n`);
+  console.log(`  escenarios: ${caso.baseLinea.length} · campos: ${caso.claves.join(', ')}`);
+  // La procedencia de la linea base se IMPRIME. Una referencia medida hace ocho meses sigue
+  // pasando en verde y ya no quiere decir lo mismo; que se vea es lo que permite dudar de
+  // ella. Misma idea que la fecha de cada fuente en la pestana de procedencia.
+  const m = caso.medidoEn || {};
+  console.log(`  linea base: medida el ${m.fecha || '(sin fecha declarada)'}`
+    + ` sobre ${m.commit || '(sin commit declarado)'}\n`);
 
   let fallos = 0;
   for (const esc of caso.baseLinea) {
@@ -111,11 +124,10 @@ async function correr(caso, opciones) {
     }
   }
 
-  await b.close();
   console.log(fallos
     ? `\n${fallos} discrepancia(s): el cambio SI altera lo que decide esta pantalla.`
     : '\nSin discrepancias: el cambio no altera lo que decide esta pantalla.');
   return fallos;
 }
 
-module.exports = { correr, pausa, comparar };
+module.exports = { abrirSesion, correr, pausa, comparar };

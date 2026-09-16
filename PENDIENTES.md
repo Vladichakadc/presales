@@ -732,6 +732,56 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
 
 ## Cerrado recientemente
 
+### El contraste corre en CI, y los tres navegadores comparten su resolución (2026-09-16)
+
+La mejora propuesta al cerrar la entrega anterior, ejecutada. `npm run contraste -- --todos`
+entra en el job de `pantallas.yml`.
+
+**Un bloqueador real, encontrado antes de que lo encontrara CI.** Tres scripts abren un
+navegador y los tres llevaban su propia copia de «dónde está Playwright y dónde está
+Chromium». La de `contraste-motor.js` —escrita el día anterior— fijaba `/opt/pw-browsers/…`
+sin alternativa y pasaba **siempre** `executablePath`: habría fallado en el primer intento en
+el ejecutor, donde Playwright se instala en `node_modules` y trae su propio Chromium. Las
+tres copias se unifican en `scripts/ayuda/chromium.js`, conservando el orden de búsqueda de
+las dos que sí funcionaban. Medido simulando el ejecutor (parcheando `existsSync` para que
+ninguna ruta conocida exista): devuelve `{}`, que es exactamente lo que hace hoy
+`verificar-pantallas.js` en verde.
+
+**Por qué en el mismo job y no en un workflow aparte.** El contraste necesita lo que ese job
+ya monta: Chromium, un servidor con `NODE_ENV=production` y una clave efímera que se genera
+en el propio ejecutor. Uno propio pagaría ese montaje dos veces para comprobar lo mismo sobre
+el mismo commit. Va **después** de las pantallas y se ejecuta **aunque estas fallen** (pero no
+si el servidor no arrancó): son preguntas distintas y tener las dos en un informe evita una
+segunda corrida.
+
+**Lo que este control sí y no gatea, dicho claro.** Railway espera a `verificar` y **no** a
+`pantallas` (punto 33), así que un contraste en rojo **no frena el despliegue hoy**. Lo hará
+el día que ese pendiente se cierre. Escribirlo aquí es lo mismo que se hizo con la cabecera de
+`pantallas.yml`: una protección que se anuncia y no existe es peor que ninguna.
+
+**Dos defensas contra que se vuelva ceremonia.** `--todos` deriva la lista del directorio, así
+que añadir `contrastes/cisco.js` basta y no hay una lista en el YAML que se quede atrás — un
+caso que nunca corre se porta igual que uno que pasa. Y cada caso declara
+`medidoEn: {commit, fecha}`, que el informe **imprime**: una línea base medida hace meses
+sigue pasando en verde y ya no quiere decir lo mismo.
+
+**Y una tercera contra el gasto inútil:** `test/contraste-casos.test.js` (9 casos) frena en
+`npm run verificar` —segundos, en cada push— lo que se ve leyendo el archivo: un caso sin
+`leer`, una pantalla renombrada, una clave que la línea base no mide, una procedencia
+ausente. Misma idea que `test/pantallas-campos.test.js`: parsear en vez de ejecutar cuando
+ejecutar es caro.
+
+De paso, el arnés pasó a **una sola sesión para todos los casos** (`abrirSesion` +
+`correr(caso, sesion)`): el comentario ya prometía un solo navegador y la implementación
+abría uno por caso.
+
+Verificado: `npm run verificar` (367 pruebas, +9), el comando **exacto** de CI corriendo en
+local con la clave por entorno y sin `--password` (2 casos, sin discrepancias, salida 0),
+`npm run pantallas` 16/16 y `npm run manual` tras el refactor del helper. **Comprobado que
+detecta en las dos mitades:** cambiando un texto visible del módulo compartido, la corrida
+sale con código 1 nombrando el caso; quitando la procedencia y declarando una clave que la
+línea base no mide, caen 2 de 9 pruebas antes de tocar un navegador.
+
 ### Pendientes 34, 35 y 38, y el arnés de contraste compartido (2026-09-16)
 
 Los tres pendientes que la entrega anterior propuso, más la mejora propuesta al cerrarla.

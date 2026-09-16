@@ -32,6 +32,11 @@ function filasDe(e) {
 }
 
 module.exports = {
+  // Medida en Chromium sobre el commit ANTERIOR al builder, con el deslizador todavia
+  // puesto. Va con su fecha y su commit porque una linea base sin procedencia sigue pasando
+  // en verde cuando ya no quiere decir nada — el mismo motivo por el que cada fuente del
+  // catalogo declara de que fecha es.
+  medidoEn: { commit: '2147588', fecha: '2026-09-16' },
   nombre: 'Fortinet — Multi-Underlay Builder contra el caudal unico',
   pagina: 'dimensionador-fortinet-fortigate.html',
   claves: ['recomendado', 'need', 'nCandidatos'],
