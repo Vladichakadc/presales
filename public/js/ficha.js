@@ -29,7 +29,8 @@
 //     vistas: {ID:{front,rear?}},   // (opt-in) foto oficial del equipo arriba, con
 //                                   //   conmutador frontal/trasera si hay ambas caras
 //     panelFijo: true,              // (opt-in) tarjeta compacta: lista sin scroll
-//     contenedorDetalle: 'id',      //   interno y porQue+secciones en otro contenedor
+//     detalleExpandible: true,      //   interno; porQue+secciones se despliegan
+//                                   //   DENTRO de la tarjeta con un conmutador
 //   })
 //
 // La pagina conserva el motor de dimensionamiento; este modulo solo presenta. Ninguna
@@ -37,6 +38,12 @@
 
 (function (global) {
   'use strict';
+
+  // Despliegue de las características por tarjeta (opt-in detalleExpandible): vive
+  // FUERA del cfg porque la página repinta la tarjeta con cada cambio de entrada y
+  // el despliegue debe sobrevivir — si viajara en el DOM, cualquier retoque del
+  // escenario plegaría el detalle que el usuario acababa de abrir.
+  const estadoDet = {};
 
   // El estilo viaja con el modulo, como en bom.js, y usa las variables de color que cada
   // pagina ya declara en :root — asi cada fabricante conserva su acento sin configurar nada.
@@ -103,6 +110,7 @@
 .ficha-vista-vacia{margin:0 0 12px;border:1px dashed var(--rule);border-radius:4px;padding:14px 12px;color:var(--steel);font-size:12px;line-height:1.5}
 .ficha-cands-mas{margin:-6px 0 12px;padding:0 2px;font-size:11px;color:var(--steel)}
 .ficha-salto{margin:10px 0 0;text-align:center}
+.ficha-det{margin-top:14px;padding-top:4px;border-top:1px solid var(--rule)}
 .ficha-salto a{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);text-decoration:none;border-bottom:1px dashed var(--rule);padding-bottom:1px}
 .ficha-salto a:hover{color:var(--red);border-bottom-color:var(--red)}
 `;
@@ -342,12 +350,6 @@
         + `<p class="model">Sin candidato</p>`
         + `<p class="family">${esc(cfg.vacioTitulo || 'Ningún equipo cumple todas las restricciones')}</p>`
         + `<div class="why">${cfg.vacioDetalle || ''}</div>`;
-      // Con panel fijo el detalle vive en otro contenedor: sin candidato se vacía
-      // también, para que no queden secciones del equipo anterior colgadas.
-      if (cfg.panelFijo && cfg.contenedorDetalle) {
-        const dv = document.getElementById(cfg.contenedorDetalle);
-        if (dv) dv.innerHTML = '';
-      }
       return;
     }
 
@@ -434,14 +436,16 @@
       }
     }
 
-    // Panel fijo (opt-in `panelFijo` + `contenedorDetalle`, Aruba 2026-09-16): para que
-    // la tarjeta se quede clavada SIN scroll interno tiene que caber en el viewport, así
-    // que el porqué, las secciones largas y las referencias se pintan en un contenedor
-    // aparte, en el flujo normal de la página. Sin ese contenedor, van aquí como siempre
-    // (el resto de dimensionadores no declara el par y no cambia).
-    const detNodo = (cfg.panelFijo && cfg.contenedorDetalle)
-      ? document.getElementById(cfg.contenedorDetalle) : null;
-    const detalleHtml = (detNodo
+    // Detalle expandible (opt-in `panelFijo` + `detalleExpandible`, Aruba 2026-09-16):
+    // la tarjeta clavada va compacta para caber en el viewport SIN scroll interno, y
+    // el porqué, las secciones largas y las referencias se DESPLIEGAN DENTRO de la
+    // propia tarjeta con el conmutador «Ver características del equipo ↓» — petición
+    // directa del dueño: las características en el mismo cuadro que recomienda el
+    // equipo, como estaban antes, sin llevarlo a otra página. Sin el opt-in, el
+    // detalle va en línea como siempre (el resto de dimensionadores no cambia).
+    const detExp = !!(cfg.panelFijo && cfg.detalleExpandible);
+    const detAbierto = detExp && !!estadoDet[cid];
+    const detalleHtml = (detExp
         ? `<h2 class="ficha-det-tit">Características del equipo seleccionado — <b>${esc(sel.id)}</b></h2>` : '')
       + (cfg.porQue ? `<div class="why">${cfg.porQue(sel)}</div>` : '')
       + secciones
@@ -466,18 +470,27 @@
       + `<p class="family">${esc(cfg.subtitulo ? cfg.subtitulo(sel) : '')}</p>`
       + (mkSel ? `<p class="ficha-aviso">${avisoDe(sel)}</p>` : '')
       + medidores
-      // Wayfinding (2026-09-16): con el detalle fuera de la tarjeta, la primera versión
-      // lo dejó enterrado bajo toda la página y el dueño reportó las características
-      // «perdidas». El enlace declara DÓNDE están y salta a ellas con scroll suave;
-      // sin él, compacta se paga en no encontrar la información.
-      + (detNodo ? `<p class="ficha-salto"><a href="#${cfg.contenedorDetalle}" id="${cid}-salto">Ver características del equipo ↓</a></p>` : '')
-      + (detNodo ? '' : detalleHtml);
-    if (detNodo) detNodo.innerHTML = detalleHtml;
+      // Conmutador del detalle (2026-09-16): la compacta se paga en no encontrar la
+      // información si el detalle no está donde se mira. El enlace declara QUÉ hay y
+      // lo despliega en el mismo cuadro; el estado vive en estadoDet para sobrevivir
+      // a los repintados, y la página escucha el clic para soltar el sticky y para
+      // llevar el estado a la URL (?ficha=abierta).
+      + (detExp
+        ? `<p class="ficha-salto"><a href="#${cid}-det" id="${cid}-salto" role="button"`
+          + ` aria-expanded="${detAbierto}" aria-controls="${cid}-det">`
+          + `${detAbierto ? 'Ocultar características ↑' : 'Ver características del equipo ↓'}</a></p>`
+          + `<div class="ficha-det" id="${cid}-det"${detAbierto ? '' : ' hidden'}>${detalleHtml}</div>`
+        : detalleHtml);
     const salto = document.getElementById(cid + '-salto');
-    if (salto && detNodo) {
+    if (salto && detExp) {
       salto.addEventListener('click', (ev) => {
         ev.preventDefault();
-        detNodo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const abierto = !estadoDet[cid];
+        estadoDet[cid] = abierto;
+        const det = document.getElementById(cid + '-det');
+        if (det) det.hidden = !abierto;
+        salto.setAttribute('aria-expanded', String(abierto));
+        salto.textContent = abierto ? 'Ocultar características ↑' : 'Ver características del equipo ↓';
       });
     }
 

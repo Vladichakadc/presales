@@ -4,14 +4,31 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-16 (plan 7: **pestaña «Equipo»** — el plan 6 movió el porqué
+Última revisión: 2026-09-16 (plan 8: **características expandibles DENTRO de la tarjeta
++ #41 parcial** — petición directa del dueño: el detalle «en el mismo cuadro donde
+recomiendas el equipo, como estaba antes, sin llevarlo a otra página». La pestaña
+«Equipo» del plan 7 se retira: el conmutador «Ver características del equipo ↓»
+despliega porqué + secciones en la propia tarjeta; al expandirse, la columna SUELTA
+el sticky (`.expandida → position:static` — una tarjeta clavada más alta que el
+viewport dejaría el detalle inalcanzable) y el detalle se lee con el scroll normal;
+al plegarse vuelve a clavarse. El estado sobrevive a los repintados (módulo ficha.js)
+y viaja en la URL (`?ficha=abierta`, deep-link: la mejora propuesta, adaptada — la
+pestaña a la que apuntaba ya no existe). Medido: el detalle en línea permanente
+haría la tarjeta de 2 475 px — el despliegue bajo demanda es la única forma de
+cumplir AMBAS peticiones del dueño (tarjeta fija sin scroll + características en el
+mismo cuadro). Además #41 parcial: fotos oficiales de EC-S/M/L/XL del Hardware
+Reference Rev V (el supuesto de que solo había variantes -P/-H era falso) y
+pictograma rotulado del EC-V; sigue abierta la serie 7000/7200).
+
+Revisión anterior: 2026-09-16 (plan 7: **pestaña «Equipo»** — el plan 6 movió el porqué
 y las secciones de características a `#verdict-detalle`, pero al quedar en el flujo de
 «Dimensionar» aterrizaban a ~6 300 px (7 viewports: la columna de configuración sola
 mide ~5 500 px) y el dueño reportó la información «perdida». Solución de diseño: sexta
 pestaña «Equipo» en la barra — visible siempre, a un clic, a todo ancho — que aloja el
 porqué + secciones en `.pane-centro`; el enlace «Ver características del equipo ↓» de
 la tarjeta fija cambia a esa pestaña y sube al inicio; pista de vacío mientras no hay
-candidatos. La tarjeta sigue fija y sin scroll interno, como pidió el dueño).
+candidatos. La tarjeta sigue fija y sin scroll interno, como pidió el dueño. SUPERADO
+POR EL PLAN 8 el mismo día: el dueño pidió el detalle en el mismo cuadro).
 
 Revisión anterior: 2026-09-16 (plan 6: **tarjeta «Equipos que cumplen» FIJA y con foto
 oficial del equipo** — petición directa del dueño: sin scroll interno (el único scroll
@@ -625,17 +642,21 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     comprobar**, y la pestaña de procedencia lo dice: salen como «no comprobada», nunca en
     verde. Cierra desde una máquina con acceso, o con una URL vigente que sí resuelva.
 41. **Fotos oficiales de los modelos legacy (2026-09-16, nace con la tarjeta gráfica de la
-    ficha).** La tarjeta «Equipos que cumplen» ya corona con la foto oficial del equipo
-    elegido —EdgeConnect 101xx/XS con frontal y trasera del Hardware Reference Rev V,
-    gateways 9004/9004-LTE/9012/9106/9114/9240 con la suya del DS/QuickSpecs—, pero los
-    modelos que no tienen foto oficial en el repo muestran el aviso honesto «Sin foto
-    oficial…» (la regla del catálogo prohíbe un «parecido»): **EC-S, EC-M, EC-L, EC-XL**,
-    la serie **7000/7200** y **EC-V** (virtual: no hay chasis que fotografiar — candidato
-    a un pictograma propio declarado como tal, no a una foto). Las fotos que el Hardware
-    Reference publica de esos chasis van etiquetadas con la variante (-P/-H), no con el
-    modelo base, así que no se reutilizan. Cierra bajando las fotos de la biblioteca de
-    medios oficial de HPE (o de los QuickSpecs de cada legacy si los hubiera) con su
-    atribución, y añadiéndolas a `public/data/aruba-vistas-equipos.json`.
+    ficha; CERRADO PARCIAL el mismo día).** ~~EC-S, EC-M, EC-L, EC-XL~~ y ~~EC-V~~
+    resueltos: el supuesto original («el Hardware Reference solo publica las variantes
+    -P/-H») era FALSO — el documento tiene secciones propias del modelo base con sus
+    vistas «— Front View»/«— Rear View»: EC-S p.55, EC-M p.63, EC-L p.77, EC-XL p.92
+    (Rev V, ago-2026, ya versionado en `public/datasheets/`). Extraídas, recortadas y
+    servidas en WebP con su atribución en `aruba-vistas-equipos.json`; la figura
+    frontal de EC-L y EC-XL es byte a byte LA MISMA en el documento oficial (pp.77 y
+    92), así que ambos modelos citan un único archivo `ec-lxl-front.webp` con la
+    doble página declarada. El EC-V, al no tener chasis, lleva pictograma propio
+    rotulado «REPRESENTACIÓN — NO ES UNA FOTO». Esos documentos no publican las
+    dimensiones de los legacy: el pie declara el peso (catálogo) y dice que las
+    dimensiones no están en el repo. **Sigue abierto: serie 7000/7200** — no hay
+    fuente oficial con fotos en el repo y el egreso a los dominios de HPE está
+    bloqueado desde el sandbox (2026-09-16); cierra bajando el DS oficial de la
+    serie 7000/7200 desde una máquina con acceso y repitiendo este mismo patrón.
 
 ## Limpieza
 

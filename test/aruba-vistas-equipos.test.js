@@ -57,17 +57,21 @@ test('las fotos solo se enchufan por opt-in: ficha.js exige cfg.vistas y cfg.pan
   // Sin estas guardas el módulo compartido pintaría fotos o movería secciones en los
   // otros cuatro dimensionadores, que no las han pedido.
   assert.ok(/cfg\.vistas && typeof cfg\.vistas === 'object'/.test(ficha), 'ficha.js: la tarjeta gráfica debe ser opt-in (cfg.vistas)');
-  assert.ok(/cfg\.panelFijo && cfg\.contenedorDetalle/.test(ficha), 'ficha.js: el detalle aparte debe ser opt-in (cfg.panelFijo + cfg.contenedorDetalle)');
+  assert.ok(/cfg\.panelFijo && cfg\.detalleExpandible/.test(ficha), 'ficha.js: el detalle expandible debe ser opt-in (cfg.panelFijo + cfg.detalleExpandible)');
   assert.ok(/!cfg\.panelFijo \? ' larga'/.test(ficha), 'ficha.js: con panelFijo la lista de candidatos no lleva scroll interno (.larga)');
 });
 
 test('la página de Aruba declara los opt-ins y carga el mapa', () => {
   const pag = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'dimensionador-aruba-edgeconnect.js'), 'utf8');
   assert.ok(/panelFijo:true/.test(pag), 'la página de Aruba no declara panelFijo');
-  assert.ok(/contenedorDetalle:'verdict-detalle'/.test(pag), 'la página de Aruba no declara contenedorDetalle');
+  assert.ok(/detalleExpandible:true/.test(pag), 'la página de Aruba no declara detalleExpandible');
   assert.ok(pag.includes('/data/aruba-vistas-equipos.json'), 'la página de Aruba no carga el mapa de vistas');
   const html = fs.readFileSync(path.join(__dirname, '..', 'public', 'dimensionador-aruba-edgeconnect.html'), 'utf8');
-  assert.ok(html.includes('id="verdict-detalle"'), 'falta el contenedor #verdict-detalle en el HTML');
+  // 2026-09-16 (petición directa del dueño): las características se despliegan DENTRO
+  // de la tarjeta — la pestaña «Equipo» y su contenedor #verdict-detalle se retiran.
+  assert.ok(!html.includes('id="verdict-detalle"'), 'sobra #verdict-detalle: el detalle vive otra vez dentro de la tarjeta');
+  assert.ok(!html.includes('data-tab="equipo"'), 'sobra la pestaña «Equipo»: el detalle no debe llevar a otra página');
+  assert.ok(/col-fijo\.expandida\{position:static\}/.test(html), 'falta la regla que suelta el sticky al expandir la tarjeta');
   assert.ok(!/overflow-y:auto/.test(html.split('id="verdict"')[0].split('TAB 2')[0]),
     'la columna del verdict no debe tener scroll interno');
 });

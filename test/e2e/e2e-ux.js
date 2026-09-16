@@ -117,7 +117,10 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   // ··· volver al recomendado y probar el hueco honesto con un modelo sin foto
   await page.click('#verdict-volver');
   await page.waitForTimeout(500);
-  await page.selectOption('#pickModel', 'EC-S');
+  // (2026-09-16, pendiente #41: EC-S/M/L/XL ya TIENEN foto oficial del Hardware
+  //  Reference Rev V — el hueco honesto se prueba con la serie 7000, que sigue sin
+  //  foto en el repo por el bloqueo de egreso a los dominios de HPE)
+  await page.selectOption('#pickModel', '7005');
   await page.waitForTimeout(600);
   ok(await page.locator('#verdict .ficha-vista-vacia').count() === 1,
     'un modelo sin foto oficial declara el hueco, no enseña una foto prestada');

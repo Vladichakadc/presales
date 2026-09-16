@@ -1,5 +1,5 @@
 {
- "_procedencia": "Fotos extraídas de documentos oficiales HPE Aruba ya versionados en public/datasheets/ (2026-09-16). EdgeConnect: edgeconnect-hardware-reference.pdf (Rev V, ago-2026), vistas etiquetadas «— Front View»/«— Rear View» en pp.42-52. Serie 9000: serie-9000-branch-gateways.pdf (figuras 1-3, p.3; la 9012 tiene cara de puertos y cara LED). Serie 9100: serie-9100-hybrid-quickspecs.pdf p.2 (foto de familia — chasis común 9106/9114). Serie 9200: serie-9200-quickspecs.pdf (9240). Dimensiones: QuickSpecs/DS oficiales citados en cada entrada; solo se publican donde la atribución por modelo es directa. Sin foto oficial en el repo → la ficha muestra un aviso honesto, nunca una foto «parecida» (regla del catálogo).",
+ "_procedencia": "Fotos extraídas de documentos oficiales HPE Aruba ya versionados en public/datasheets/ (2026-09-16). EdgeConnect (incluidos los legacy EC-S/M/L/XL): edgeconnect-hardware-reference.pdf (Rev V, ago-2026), vistas etiquetadas «— Front View»/«— Rear View» en pp.42-52 (1010x/XS) y pp.55, 63, 77, 92 (EC-S/M/L/XL); la figura frontal de EC-L y EC-XL es LA MISMA en el documento oficial (pp.77 y 92) — se sirve un único archivo ec-lxl-front.webp citando ambas páginas. Serie 9000: serie-9000-branch-gateways.pdf (figuras 1-3, p.3; la 9012 tiene cara de puertos y cara LED). Serie 9100: serie-9100-hybrid-quickspecs.pdf p.2 (foto de familia — chasis común 9106/9114). Serie 9200: serie-9200-quickspecs.pdf (9240). EC-V: appliance virtual sin chasis — pictograma propio rotulado «REPRESENTACIÓN — NO ES UNA FOTO» (hardware inexistente; guía EC-V en Azure en el repo). Dimensiones: QuickSpecs/DS oficiales citados en cada entrada; solo se publican donde la atribución por modelo es directa — los legacy EC-S/M/L/XL no traen dimensiones en los documentos del repo, solo peso (catálogo del dimensionador). Series 7000/7200: sin foto oficial en el repo y sin egreso a los dominios de HPE (2026-09-16) — mantienen el aviso honesto. Sin foto oficial en el repo → la ficha muestra un aviso honesto, nunca una foto «parecida» (regla del catálogo).",
  "EC-XS": {
   "front": "/img/equipos/ec-xs-front.webp",
   "rear": "/img/equipos/ec-xs-rear.webp",
@@ -60,5 +60,34 @@
   "front": "/img/equipos/gw-9240-front.webp",
   "fuente": "QuickSpecs serie 9200 (foto 9240)",
   "tamano": "44 mm (1U) × 442 × 396 mm — rack (QuickSpecs serie 9200 pp.9-11)"
+ },
+ "EC-S": {
+  "front": "/img/equipos/ec-s-front.webp",
+  "rear": "/img/equipos/ec-s-rear.webp",
+  "fuente": "Hardware Reference Rev V (ago-2026) p.55",
+  "tamano": "8,23 kg — rack; dimensiones no publicadas en los documentos del repositorio (peso: catálogo del dimensionador)"
+ },
+ "EC-M": {
+  "front": "/img/equipos/ec-m-front.webp",
+  "rear": "/img/equipos/ec-m-rear.webp",
+  "fuente": "Hardware Reference Rev V (ago-2026) p.63",
+  "tamano": "8,21 kg — rack; dimensiones no publicadas en los documentos del repositorio (peso: catálogo del dimensionador)"
+ },
+ "EC-L": {
+  "front": "/img/equipos/ec-lxl-front.webp",
+  "rear": "/img/equipos/ec-l-rear.webp",
+  "fuente": "Hardware Reference Rev V (ago-2026) p.77 — la misma figura frontal ilustra el EC-XL (p.92) en el documento oficial",
+  "tamano": "14,5 kg — rack; dimensiones no publicadas en los documentos del repositorio (peso: catálogo del dimensionador)"
+ },
+ "EC-XL": {
+  "front": "/img/equipos/ec-lxl-front.webp",
+  "rear": "/img/equipos/ec-xl-rear.webp",
+  "fuente": "Hardware Reference Rev V (ago-2026) p.92 — la misma figura frontal ilustra el EC-L (p.77) en el documento oficial",
+  "tamano": "15,2 kg — rack; dimensiones no publicadas en los documentos del repositorio (peso: catálogo del dimensionador)"
+ },
+ "EC-V": {
+  "front": "/img/equipos/ec-v-front.webp",
+  "fuente": "Pictograma propio rotulado «REPRESENTACIÓN — NO ES UNA FOTO»: el EC-V es software, no tiene chasis (guía de despliegue EC-V en Azure, en el repositorio)",
+  "tamano": "Sin dimensiones físicas — appliance virtual (vNIC/vCPU según hipervisor y tier de licencia)"
  }
 }
