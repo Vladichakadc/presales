@@ -37,12 +37,14 @@ const FICHA_CFG={vendor:'aruba', refs:false, selector:false,
   listaCandidatos:true,
   // Panel fijo + foto oficial del equipo (petición directa del dueño, 2026-09-16): la
   // tarjeta «Equipos que cumplen» se queda clavada SIN scroll interno —por eso el
-  // porqué y las secciones largas se pintan aparte, en #verdict-detalle— y la corona
-  // la foto del modelo elegido, con vistas frontal/trasera cuando el documento de
-  // origen publica ambas. `vistas` se rellena en initApp desde
-  // /data/aruba-vistas-equipos.json (mapa id→foto con procedencia y tamaño). Ambos son
-  // opt-ins de ficha.js: los demás dimensionadores no los declaran y no cambian.
-  panelFijo:true, contenedorDetalle:'verdict-detalle', vistas:null,
+  // las características se despliegan DENTRO de la propia tarjeta con el conmutador
+  // «Ver características del equipo ↓» (petición directa del dueño, 2026-09-16: en el
+  // mismo cuadro que recomienda el equipo, sin otra página) — y la corona la foto del
+  // modelo elegido, con vistas frontal/trasera cuando el documento de origen publica
+  // ambas. `vistas` se rellena en initApp desde /data/aruba-vistas-equipos.json (mapa
+  // id→foto con procedencia y tamaño). Ambos son opt-ins de ficha.js: los demás
+  // dimensionadores no los declaran y no cambian.
+  panelFijo:true, detalleExpandible:true, vistas:null,
   refsNota:'Las referencias de pedido de este equipo —y de todo el catálogo de Aruba: hardware, remanufacturados, suscripciones EdgeConnect, Boost, Central y licencias perpetuas— están integradas en la lista de materiales. Allí se añaden y se quitan con su SKU y su List Price.'};
 
 // El modelo viaja en la URL como parte del escenario compartible, pero ESTADO reescribe el
@@ -50,6 +52,9 @@ const FICHA_CFG={vendor:'aruba', refs:false, selector:false,
 // reponerlo— y el parametro se pierde. Se captura aqui, al cargar el script (antes de que
 // ESTADO corra en DOMContentLoaded), y se reaplica en initApp con el catalogo ya puesto.
 const QMODEL_URL=new URLSearchParams(location.search).get('pickModel');
+// Mismo motivo, mismo patrón: ?ficha=abierta (deep-link de las características,
+// 2026-09-16) se captura al cargar el script y se reaplica tras el primer render.
+const FICHA_ABIERTA_URL=new URLSearchParams(location.search).get('ficha')==='abierta';
 
 const $=id=>document.getElementById(id);
 // Campos del escenario: la misma lista que persiste ESTADO y que capturan los perfiles
@@ -769,20 +774,35 @@ function llevarABom(id){
   BOM.sincronizar({elegido:id||null, render:renderBom});
 }
 
-// Enlace «Ver características…» de la tarjeta → pestaña Equipo.
-// Delegado porque ficha.js repinta el enlace en cada render.
+// Conmutador «Ver características…» de la tarjeta (delegado: ficha.js repinta el
+// enlace en cada render). ficha.js ya hizo el toggle en su listener de destino; aquí,
+// en burbuja, la página: (a) SUELTA el sticky cuando la tarjeta se expande —una
+// tarjeta clavada más alta que el viewport deja su parte inferior inalcanzable— y lo
+// repone al plegar; (b) compensa el scroll para que la tarjeta no «salte» al soltar
+// el sticky (su posición natural puede quedar muy por encima del scroll actual);
+// (c) lleva el estado a la URL (?ficha=abierta) para compartir el escenario con las
+// características ya desplegadas — la mejora de deep-link, adaptada: la pestaña
+// «Equipo» desapareció y el estado que interesa compartir es ESTE.
 document.addEventListener('click',(e)=>{
   if(e.target&&e.target.id==='verdict-salto'){
-    e.preventDefault();
-    const b=document.querySelector('.tabs button[data-tab="equipo"]');
-    if(b)b.click();
-    window.scrollTo({top:0,behavior:'smooth'});
+    const col=document.querySelector('.cols>.col-fijo');
+    const det=document.getElementById('verdict-det');
+    if(!col||!det)return;
+    const abierto=!det.hidden;
+    col.classList.toggle('expandida',abierto);
+    if(abierto){
+      const y=col.getBoundingClientRect().top+window.scrollY;
+      window.scrollTo(0,Math.max(0,y-16));
+    }
+    const u=new URL(window.location.href);
+    if(abierto)u.searchParams.set('ficha','abierta');else u.searchParams.delete('ficha');
+    window.history.replaceState(null,'',u);
   }
 });
 
 document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
-  ['calc','equipo','bom','lic','cat','src'].forEach(t=>$('pane-'+t).hidden=(t!==b.dataset.tab));
+  ['calc','bom','lic','cat','src'].forEach(t=>$('pane-'+t).hidden=(t!==b.dataset.tab));
 }));
 
 $('famSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('famSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));famMode=b.dataset.v;render();});
@@ -2654,6 +2674,14 @@ async function compararListaPrecios(archivo){
     $('pickModel').dataset.bomManual='1';
   }
   render();
+  // Deep-link: ?ficha=abierta abre las características al cargar. El clic pasa por el
+  // mismo cauce que el del usuario (toggle de ficha.js + soltar sticky + reponer el
+  // parámetro en la URL), así que no hay nada más que sincronizar; sin candidato no
+  // hay conmutador y el enlace simplemente abre la página normal.
+  if(FICHA_ABIERTA_URL){
+    const s=document.getElementById('verdict-salto');
+    if(s)s.click();
+  }
   renderBom();
   renderCatalogo();
   cargarCatalogoSku();

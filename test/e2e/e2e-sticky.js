@@ -5,11 +5,15 @@
    E2E del panel «Equipos que cumplen» FIJO (2026-09-16, petición directa del dueño):
    la columna derecha queda clavada (top:16) SIN scroll interno —«no es funcional para
    los usuarios»— y el único scroll es el de la página, que gobierna la columna de
-   configuración. Para que sea posible la tarjeta va compacta (foto + candidatos +
-   medidores) y el detalle largo vive abajo en #verdict-detalle; este script es la
-   guardia: si el panel crece más allá del viewport o alguien le devuelve el overflow,
-   rompe aquí. Conserva además la regresión original (v29): el panel no se suelta
-   antes del fondo de la página. */
+   configuración. La tarjeta va compacta (foto + candidatos + medidores) y las
+   características se DESPLIEGAN DENTRO de la propia tarjeta (petición directa del
+   dueño: «en el mismo cuadro donde recomiendas el equipo, como estaba antes — sin
+   llevarlo a otra página»); al expandirse, la columna suelta el sticky para que el
+   detalle se lea con el scroll normal. Este script es la guardia: si el panel
+   plegado crece más allá del viewport, si alguien le devuelve el overflow, si el
+   detalle sale de la tarjeta o si el sticky no se suelta al expandir, rompe aquí.
+   Conserva además la regresión original (v29): el panel no se suelta antes del
+   fondo de la página. */
 const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
 
 (async () => {
@@ -38,7 +42,7 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   t.ok(desborde.exceso <= 1,
     `el contenido del panel no desborda su caja (scrollHeight-clientHeight=${desborde.exceso})`);
   t.ok(desborde.alto <= 900,
-    `el panel cabe entero en el viewport (alto=${desborde.alto}px ≤ 900) — si crece, hay que sacar contenido a #verdict-detalle, no darle scroll`);
+    `el panel PLEGADO cabe entero en el viewport (alto=${desborde.alto}px ≤ 900) — si crece, hay que compactar, no darle scroll`);
 
   // ── sigue clavado a top:16 de principio a fin (regresión v29) ──
   const topAl = async () => page.$eval(PANEL, (el) => Math.round(el.getBoundingClientRect().top));
@@ -60,47 +64,81 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   t.ok(topFondo >= 10 && topFondo <= 18,
     `panel sigue clavado al llegar al fondo (top=${topFondo}) — la regresión lo soltaba ~187 px antes`);
 
-  // ── el detalle largo vive en la pestaña «Equipo»: FUERA del panel clavado y
-  //    alcanzable a UN clic desde la barra de pestañas, siempre visible
-  //    (2026-09-16: la 1.ª versión lo dejó a ~6300 px —7 viewports— y el dueño
-  //    reportó las características «perdidas»; la 2.ª, dentro de la columna
-  //    izquierda, medía igual de profundo. La pestaña es la solución) ──
-  const detalle = await page.$eval('#verdict-detalle', (el) => ({
+  // ── las características viven DENTRO de la tarjeta, plegadas por defecto
+  //    (2026-09-16, petición directa del dueño: «en el mismo cuadro donde
+  //    recomiendas el equipo, como estaba antes — sin llevarlo a otra página»).
+  //    La pestaña «Equipo» de la versión anterior se retira. ──
+  const det = await page.$('#verdict-det');
+  t.ok(!!det, 'la tarjeta lleva el contenedor del detalle (#verdict-det) en su interior');
+  const detInfo = await page.$eval('#verdict-det', (el) => ({
+    oculto: el.hidden,
+    enTarjeta: !!el.closest('#verdict'),
     texto: (el.textContent || '').length,
-    enPaneEquipo: !!el.closest('#pane-equipo'),
     titulo: (el.querySelector('.ficha-det-tit') || {}).textContent || '',
   }));
-  t.ok(detalle.texto > 200, `el detalle de la ficha (porqué + secciones) se pinta en #verdict-detalle (${detalle.texto} caracteres)`);
-  t.ok(detalle.enPaneEquipo,
-    'el detalle vive DENTRO de la pestaña «Equipo» (#pane-equipo) — si vuelve al flujo de «Dimensionar», queda enterrado a ~6300 px y «se pierde»');
-  t.ok(/Características del equipo seleccionado/.test(detalle.titulo),
-    `el detalle se encabeza con su título (${detalle.titulo.trim().slice(0, 60)})`);
-  const veredictoTieneWhy = await page.$eval(PANEL, (el) => !!el.querySelector('.why'));
-  t.ok(!veredictoTieneWhy, 'la tarjeta clavada ya no carga el porqué/secciones largas — eso es lo que forzaba el scroll');
-
-  // La pestaña existe en la barra y la pista de vacío se oculta al haber detalle
+  t.ok(detInfo.enTarjeta,
+    'el detalle vive DENTRO de la tarjeta que recomienda el equipo — si sale a otro contenedor, «se pierde» (regresión de los ~6300 px)');
+  t.ok(detInfo.oculto, 'el detalle arranca plegado: la tarjeta compacta es la que cabe en el viewport');
+  t.ok(detInfo.texto > 200, `el detalle trae el porqué + las secciones (${detInfo.texto} caracteres)`);
+  t.ok(/Características del equipo seleccionado/.test(detInfo.titulo),
+    `el detalle se encabeza con su título (${detInfo.titulo.trim().slice(0, 60)})`);
   const tabEquipo = await page.$('.tabs button[data-tab="equipo"]');
-  t.ok(!!tabEquipo, 'la barra de pestañas incluye «Equipo»');
-  const pistaOculta = await page.$eval('#detalleVacio', (el) => getComputedStyle(el).display === 'none');
-  t.ok(pistaOculta, 'la pista «Configure el sitio…» se oculta cuando ya hay detalle pintado');
+  t.ok(!tabEquipo, 'ya no hay pestaña «Equipo»: el detalle no lleva a otra página');
 
-  // ── wayfinding: la tarjeta declara dónde están las características y el salto
-  //    cambia a la pestaña «Equipo» y las deja a la vista ──
+  // ── expansión: el sticky se suelta y el detalle se lee con el scroll de la página ──
   const salto = await page.$('#verdict .ficha-salto a');
-  t.ok(!!salto, 'la tarjeta fija lleva el enlace «Ver características del equipo ↓»');
+  t.ok(!!salto, 'la tarjeta fija lleva el conmutador «Ver características del equipo ↓»');
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(200);
   await salto.click();
-  await page.waitForTimeout(1200);
-  const estado = await page.evaluate(() => ({
-    paneVisible: !document.getElementById('pane-equipo').hidden,
-    tabActiva: document.querySelector('.tabs button[data-tab="equipo"]').getAttribute('aria-selected') === 'true',
-    topDetalle: Math.round(document.getElementById('verdict-detalle').getBoundingClientRect().top),
+  await page.waitForTimeout(900);
+  const abierto = await page.evaluate(() => {
+    const col = document.querySelector('.cols>.col-fijo');
+    return {
+      detVisible: !document.getElementById('verdict-det').hidden,
+      claseExp: col.classList.contains('expandida'),
+      posicion: getComputedStyle(col).position,
+      url: window.location.search,
+      textoSalto: (document.getElementById('verdict-salto') || {}).textContent || '',
+    };
+  });
+  t.ok(abierto.detVisible, 'el conmutador despliega las características en la misma tarjeta');
+  t.ok(abierto.claseExp, 'al expandirse la columna recibe .expandida');
+  t.ok(abierto.posicion === 'static',
+    `al expandirse el sticky se SUELTA (position=${abierto.posicion}) — una tarjeta clavada más alta que el viewport dejaría el detalle inalcanzable`);
+  t.ok(/Ocultar características/.test(abierto.textoSalto),
+    `el conmutador pasa a «Ocultar características ↑» (${abierto.textoSalto.trim()})`);
+  t.ok(/ficha=abierta/.test(abierto.url),
+    `el estado expandido viaja en la URL (?ficha=abierta) — deep-link del escenario (${abierto.url.slice(0, 60)}…)`);
+
+  // ── repliegue: vuelve el sticky y la tarjeta compacta ──
+  await page.click('#verdict .ficha-salto a');
+  await page.waitForTimeout(600);
+  const plegado = await page.evaluate(() => {
+    const col = document.querySelector('.cols>.col-fijo');
+    return {
+      detOculto: document.getElementById('verdict-det').hidden,
+      sinClase: !col.classList.contains('expandida'),
+      posicion: getComputedStyle(col).position,
+      url: window.location.search,
+    };
+  });
+  t.ok(plegado.detOculto, 'el conmutador repliega las características');
+  t.ok(plegado.sinClase && plegado.posicion === 'sticky',
+    `al plegarse el sticky se repone (position=${plegado.posicion})`);
+  t.ok(!/ficha=abierta/.test(plegado.url), 'al plegarse el parámetro sale de la URL');
+
+  // ── deep-link: cargar la página CON ?ficha=abierta abre las características solas ──
+  const urlBase = await page.evaluate(() => window.location.href.split('?')[0] + '?' + window.location.search.replace(/^\?/, '').split('&').filter((p) => p && !p.startsWith('ficha=')).join('&'));
+  await page.goto(urlBase + (urlBase.includes('?') && !urlBase.endsWith('?') ? '&' : '') + 'ficha=abierta', { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#users', { timeout: 20000 });
+  await page.waitForTimeout(1500);
+  const deeplink = await page.evaluate(() => ({
+    detVisible: !!document.getElementById('verdict-det') && !document.getElementById('verdict-det').hidden,
+    claseExp: document.querySelector('.cols>.col-fijo').classList.contains('expandida'),
   }));
-  t.ok(estado.paneVisible, 'el salto revela la pestaña «Equipo» (pane-equipo visible)');
-  t.ok(estado.tabActiva, 'el salto marca «Equipo» como pestaña activa');
-  t.ok(estado.topDetalle >= 0 && estado.topDetalle <= 900,
-    `el salto deja las características a la vista (top=${estado.topDetalle}px en un viewport de 900)`);
+  t.ok(deeplink.detVisible && deeplink.claseExp,
+    'cargar con ?ficha=abierta deja las características desplegadas (deep-link del escenario)');
 
   await browser.close();
   process.exit(t.resumen('e2e-sticky'));
