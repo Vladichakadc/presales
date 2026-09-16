@@ -439,6 +439,45 @@ function necesidadesOptica(links){
 // EdgeConnect un sitio lleva un appliance o un par HA 1+1 (arquitectura oficial), así
 // que las unidades se deducen de la casilla HA: marcada → 2, sin marcar → 1.
 function unidadesSitio(){ return ($('chkHa')&&$('chkHa').checked)?2:1; }
+
+/* ══ HA PRE-MARCADO POR CAPACIDAD DEL SITIO (regla de preventa del dueño, 2026-09-17) ══
+   Regla: ≥2 enlaces WAN activos y TODOS de ≥5 Gbps ⇒ el sitio concentra ≥10 Gbps y un
+   chasis único es un punto único de fallo, así que HA 1+1 se pre-marca y se declara
+   (#haAutoHint). Es una decisión de negocio del dueño (SIN FUENTE oficial — HPE no
+   publica umbrales; el DISEÑO sí es oficial: EdgeHA es la respuesta de sucursal del VSG
+   SD-Branch, fig. «EC HA»: cada transporte aterriza en un chasis del par y el enlace
+   EdgeHA lleva los túneles de cada underlay a ambos, sin switches WAN).
+   OJO — lo que la regla NO hace: dividir el dimensionado entre los dos chasis. El VRRP
+   manda todo el tráfico al activo y el standby solo toma el relevo en fallo («traffic
+   is sent there only during an outage», VSG — por eso ECMP hay que evitarlo), así que
+   cada chasis del par se dimensiona al AGREGADO completo. HA suma disponibilidad, no
+   caudal.
+   El auto-marcado es DE FLANCO: se aplica al entrar en la regla, no en cada repintado,
+   para no pelear con quien la desmarca a mano (queda registrado en data-ha-manual y la
+   revisión del diseño lo declara como aviso). Al salir de la regla se limpia todo. */
+const HA_AUTO_MBPS=5000;
+let haAutoVigente=false; // la regla se evalúa en cada render; true mientras aplique
+// ¿Se cumple la regla del dueño sobre estos enlaces? (También la usa estadoDerivado
+// para que la revisión del diseño la vea como dato, no como DOM.)
+function reglaHaActiva(wanLinks){
+  const enlaces=(wanLinks||[]).filter(l=>l.down>0||l.up>0);
+  return enlaces.length>=2&&enlaces.every(l=>l.down>=HA_AUTO_MBPS);
+}
+function sincronizarHaAuto(){
+  const chk=$('chkHa'); if(!chk) return;
+  const aplica=reglaHaActiva(leerWanLinks());
+  if(aplica){
+    if(!haAutoVigente){
+      haAutoVigente=true;
+      if(!chk.checked&&chk.dataset.haManual!=='1') chk.checked=true;
+    }
+  }else{
+    haAutoVigente=false;
+    delete chk.dataset.haManual; // fuera de la regla, la próxima entrada auto-marca de nuevo
+  }
+  const hint=$('haAutoHint');
+  if(hint) hint.hidden=!(aplica&&chk.checked);
+}
 function leerSfpPick(){ try{ return JSON.parse(($('sfpPickData')||{}).value||'{}')||{}; }catch{ return {}; } }
 // Escribir el value de un oculto NO dispara «input» y ESTADO volcaría sin verlo: hay
 // que emitirlo a mano o la elección no viajaría al enlace hasta el próximo tecleo.
@@ -848,6 +887,11 @@ $('chkBoost').addEventListener('change',()=>{
 // Dynamic Threat Defense vive en el selector de estrategia de seguridad (#selSeguridad,
 // SPEC B.4): el movimiento del filtro de familia se hace en su listener de arriba.
 $('chkHa').addEventListener('change',()=>{
+  // Si la regla de auto-marcado del dueño (2026-09-17) está activa y el usuario la
+  // contradice a mano, se respeta: no se vuelve a marcar mientras la regla siga y la
+  // revisión del diseño declara el sitio de gran capacidad sin par HA. Marcarla a mano
+  // limpia el registro.
+  if(haAutoVigente) $('chkHa').dataset.haManual=$('chkHa').checked?'':'1';
   // Las unidades se deducen de esta casilla (1 ó 2 — sin campo de cantidad desde
   // 2026-09-15). render() entero: la ficha declara el par HA en «Unidades a licenciar»
   // y el BOM parte la suscripción en 1× estándar + 1× SKU de alta disponibilidad.
@@ -1271,6 +1315,9 @@ function estadoDerivado(){
   const termYrs=parseInt($('termYears').value)||3;
   const care=$('careLevel').value;
   const qty=unidadesSitio(); // 1 ó 2 — deducido de HA, sin campo de cantidad (2026-09-15)
+  // Regla HA del dueño (2026-09-17, sincronizarHaAuto): ≥2 enlaces activos, todos
+  // ≥5 Gbps. Viaja en el estado para que la revisión del diseño la evalúe como DATO.
+  const haRegla=reglaHaActiva(wanLinks);
   // Boost auto-dimensionado: 30 % del tráfico WAN privado, en bloques de 100 Mbps.
   // Sin suscripción no hay Boost (es un add-on suyo, no un producto independiente).
   const share=(caudalTotal>0&&breakout)?caudalEfectivo/caudalTotal:1;
@@ -1278,7 +1325,7 @@ function estadoDerivado(){
   return {users,aps,perUser,head,boost,fec,perfil,needProc,wanNeed,tierCaudal,
     tasaFlujos,flujosReq,tier,tierAuto,onprem,bundle,central,termYrs,care,qty,bloques,
     wanLinks,caudalTotal,mplsMbps,inetMbps,breakout,caudalEfectivo,share,
-    ing,featurePenalty};
+    ing,featurePenalty,haRegla};
 }
 
 /* ══ REVISIÓN DEL DISEÑO (par técnico automático, 2026-09-13 fase 10) ══
@@ -1333,6 +1380,12 @@ const REGLAS_DISENO=[
    texto:()=>'Modalidad On-Premises: el software de Orchestrator va incluido en la suscripcion, pero el ALOJAMIENTO (VM, uptime, backup y upgrades) corre por cuenta del cliente — dimensionarlo en la propuesta.'},
   {nivel:'ok', cuando:(D,m)=>m.fam==='ec'&&D.onprem&&$('chkHa').checked&&D.qty===2,
    texto:()=>'Par HA on-prem con SKU propio: el segundo nodo lleva la suscripción HA E-STU del QuickSpecs (sección «On-Premises High Availability»); la lista la tarifa igual que la estándar (invariante verificada 2026-09-16 — pendiente #17 cerrado).'},
+  // Regla HA del dueño (2026-09-17): ≥2 enlaces de ≥5 Gbps ⇒ la casa pre-marca HA 1+1.
+  // Desmarcarlo es legítimo (el dueño manda), pero la decisión queda registrada aquí.
+  {nivel:'aviso', cuando:(D,m)=>D.haRegla&&!$('chkHa').checked,
+   texto:(D,m)=>`Sitio de ${fmt(D.caudalTotal)} agregados SIN par HA: la regla de preventa de la casa pre-marca HA 1+1 con ≥2 enlaces de ≥5 Gbps y se ha desmarcado a mano. Un único chasis es punto único de fallo para todo ese caudal — decisión aceptable si el negocio la firma, pero queda registrada.`},
+  {nivel:'ok', cuando:(D,m)=>m.fam==='ec'&&D.haRegla&&$('chkHa').checked&&D.qty===2,
+   texto:()=>'Par HA 1+1 (EdgeHA, diseño oficial de sucursal del VSG SD-Branch): cada transporte aterriza en un chasis del par y el enlace EdgeHA lleva los túneles de cada underlay a ambos, sin switches WAN. Ojo: HA suma disponibilidad, no caudal — el activo procesa el agregado completo y el standby solo toma el relevo en fallo, así que cada chasis está dimensionado al total del sitio.'},
   {nivel:'aviso', cuando:(D,m)=>m.id==='EC-V',
    texto:()=>'EC-V es un appliance virtual: sin soporte de hardware (el hipervisor corre por cuenta del cliente) y su caudal lo fijan la licencia y los vCPU asignados.'},
   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&m.wanMin!=null&&D.wanNeed>0&&D.wanNeed<m.wanMin,
@@ -1404,6 +1457,10 @@ function pintarWidgetPerf(D){
 }
 
 function render(){
+  // HA pre-marcado PRIMERO (regla del dueño, 2026-09-17): las unidades, la revisión del
+  // diseño y el BOM se derivan de la casilla ya ajustada — si se aplicara después del
+  // estado derivado, el primer repintado cotizaría 1 unidad con la casilla marcada.
+  sincronizarHaAuto();
   // Todo lo calculable sale del estado derivado: una sola fuente para el dimensionador,
   // la ficha y el BOM (2026-09-13, refactor arquitectónico).
   const D=estadoDerivado();
@@ -1589,6 +1646,14 @@ function render(){
       const salidas=[
         '<b>EC-V en el hub o datacenter:</b> sin techo de hardware publicado — el caudal lo fijan el tier de la suscripción (la escalera oficial llega a «Sin límite de caudal») y los vCPU del hipervisor; la guía oficial de despliegue exige Accelerated Networking (SR-IOV) para alcanzar el throughput máximo. El dimensionado exacto se confirma con HPE.',
         '<b>Repartir el fabric entre varios appliances:</b> cada chasis sostiene el underlay que termina en él — dos EC-10150 repartiendo enlaces u overlays cubren el sitio sin violar ninguna cifra publicada.',
+        // Lo que NO es salida (2026-09-17, validación de arquitectura pedida por el
+        // dueño): el par HA. EdgeHA es el diseño oficial de sucursal —cada transporte
+        // aterriza en un chasis y el enlace EdgeHA lleva los túneles de cada underlay a
+        // ambos (VSG SD-Branch, fig. «EC HA»)—, pero el VRRP manda TODO el tráfico al
+        // activo y el standby solo toma el relevo en fallo («traffic is sent there only
+        // during an outage», mismo VSG): cada chasis del par se dimensiona al agregado
+        // completo. HA suma disponibilidad, no caudal — no divide el requerimiento.
+        '<b>Lo que NO resuelve el desbordamiento: el par HA.</b> EdgeHA (cada WAN a un chasis, enlace EdgeHA entre ellos — diseño oficial de sucursal del VSG SD-Branch) suma <b>disponibilidad, no caudal</b>: el tráfico lo procesa el activo y el standby solo toma el relevo en fallo, así que cada chasis del par debe sostener el agregado completo. Con HA marcado la lista cotiza las 2 unidades con su SKU HA, pero el dimensionado no se divide entre los dos.',
         reqMin<=techoEC
           ?`<b>Revisar las hipótesis del motor:</b> perfil «backup/réplica masiva» (IMIX 1,00), FEC desactivado (enlaces limpios) y margen 0 % dejarían el requerimiento en ≈<b>${fmt(reqMin)}</b> — dentro de los ${fmt(techoEC)} publicados. Cada hipótesis relajada es una decisión de riesgo que hay que saber defender: el margen es el ancla del SLA de enlace al 75 % de la guía SD-Branch.`
           :'<b>Revisar las hipótesis del motor</b> (perfil de tráfico, FEC, margen) reduce el requerimiento, pero ni con todo al mínimo entra en el techo publicado — la salida es EC-V o el reparto del fabric, no un solo appliance.',

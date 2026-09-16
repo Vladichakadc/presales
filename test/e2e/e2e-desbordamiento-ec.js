@@ -35,6 +35,10 @@ async function enlazar5000mas5000(page) {
   await abrirDimensionador(page);
   await enlazar5000mas5000(page);
 
+  // ── 0 · Regla HA del dueño (2026-09-17): ≥2 enlaces de ≥5 Gbps ⇒ HA pre-marcado ──
+  t.ok(await page.isChecked('#chkHa'), 'con 2 enlaces de 5 Gbps, HA 1+1 queda pre-marcado por la regla de la casa');
+  t.ok(await page.isVisible('#haAutoHint'), 'el hint declara por qué se pre-marcó (EdgeHA, disponibilidad ≠ caudal)');
+
   // ── 1 · famSeg = EdgeConnect SD-WAN: el desbordamiento guiado ──────────────
   await page.click('#famSeg button[data-v=ec]');
   await page.waitForTimeout(900);
@@ -46,6 +50,7 @@ async function enlazar5000mas5000(page) {
   t.ok(/Repartir el fabric/.test(verdict), 'ofrece el reparto del fabric entre varios appliances');
   t.ok(/hipótesis del motor/.test(verdict), 'señala las hipótesis del motor (IMIX/FEC/margen) como palanca');
   t.ok(/Selección deliberada/.test(verdict) && /S2N65A/.test(verdict), 'deja la selección deliberada del EC-10150 con su SKU real');
+  t.ok(/disponibilidad, no caudal/.test(verdict), 'el bloque declara que el par HA no divide el dimensionado (activo/standby, VSG)');
   t.ok(!/Por encima del catálogo: repartir/.test(verdict), 'la salida genérica queda absorbida por el bloque completo');
 
   // El combo mantiene el EC-10150 como selección deliberada posible.
@@ -61,8 +66,24 @@ async function enlazar5000mas5000(page) {
   await page.waitForTimeout(700);
   const bomTxt = (await page.inputValue('#bomOut')) || '';
   t.ok(/Caudal WAN insuficiente/.test(bomTxt), 'con el EC-10150 elegido a mano, la revisión del diseño marca el exceso en rojo');
+  t.ok(/Par HA 1\+1/.test(bomTxt), 'con HA pre-marcado, el BOM cotiza el par (1× estándar + 1× SKU HA del mismo tier)');
+
+  // Desmarcar HA contra la regla: se respeta (no se re-marca) y la revisión lo declara.
   await page.click('[data-tab=calc]');
   await page.waitForTimeout(400);
+  await page.click('#chkHa');
+  await page.waitForTimeout(700);
+  t.ok(!(await page.isChecked('#chkHa')), 'desmarcar HA a mano se respeta aunque la regla siga activa');
+  t.ok(!(await page.isVisible('#haAutoHint')), 'el hint de auto-marcado se oculta al desmarcar');
+  await page.click('[data-tab=bom]');
+  await page.waitForTimeout(700);
+  const bomSinHa = (await page.inputValue('#bomOut')) || '';
+  t.ok(/SIN par HA/.test(bomSinHa) && !/Par HA 1\+1: 1x/.test(bomSinHa),
+    'la revisión del diseño registra el sitio de 10 Gbps sin par HA (y ya no cotiza el segundo nodo)');
+  await page.click('[data-tab=calc]');
+  await page.waitForTimeout(400);
+  await page.click('#chkHa');
+  await page.waitForTimeout(500);
 
   // ── 2 · famSeg = Indiferente: los gateways siguen respondiendo ─────────────
   await page.click('#famSeg button[data-v=any]');
@@ -103,6 +124,7 @@ async function enlazar5000mas5000(page) {
   await page.waitForTimeout(900);
   const pickPeq = await page.inputValue('#pickModel');
   t.ok(/^EC-/.test(pickPeq), 'escenario pequeño: recomienda un EdgeConnect (' + pickPeq + ')');
+  t.ok(!(await page.isChecked('#chkHa')), 'escenario pequeño: la regla HA no se dispara (un solo enlace de 200 Mbps)');
 
   await browser.close();
   process.exit(t.resumen('e2e-desbordamiento-ec'));

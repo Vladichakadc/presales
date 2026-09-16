@@ -4,7 +4,34 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-16 (plan 11: **desbordamiento de la línea EdgeConnect guiado
+Última revisión: 2026-09-16 (plan 12: **HA 1+1 pre-marcado por capacidad del sitio +
+validación de la premisa «cada WAN a un equipo del par»** — petición del dueño: con 2
+enlaces de ≥5 Gbps, «cada WAN debería ir conectado a un equipo del HA y por defecto
+debería habilitarse el HA con el licenciamiento necesario». Validación contra las
+fuentes oficiales EN EL REPO: la intuición de cableado ES el diseño oficial —EdgeHA,
+VSG SD-Branch: dos EdgeConnect, «each connected with a single WAN link to two
+different underlay networks», sin switches WAN, con el enlace EdgeHA llevando los
+túneles de cada underlay a ambos—; pero la inferencia de dimensionado NO: el VRRP
+manda todo el tráfico al activo y el standby solo toma el relevo en fallo («traffic is
+sent there only during an outage», mismo VSG — ECMP hay que evitarlo), así que cada
+chasis del par se dimensiona al AGREGADO completo. HA suma disponibilidad, no caudal:
+el motor NO divide el requerimiento entre los dos. Implementado: regla del dueño
+(≥2 enlaces activos, todos ≥5 Gbps — decisión de negocio declarada, SIN FUENTE
+oficial) que PRE-MARCA HA de flanco (no pelea con quien lo desmarca a mano: queda
+registrado y la revisión del diseño lo declara como aviso), hint #haAutoHint que
+declara la regla y su porqué, y dos reglas nuevas en REGLAS_DISENO (ok con cita VSG
+cuando el par queda; aviso cuando el sitio de ≥10 Gbps va sin HA por decisión manual).
+El licenciamiento ya seguía solo: 2 unidades + 1× suscripción estándar + 1× SKU HA
+E-STU del mismo tier (LICENSES_HA, invariante verificada). El bloque de
+desbordamiento del plan 11 gana la aclaración explícita: «Lo que NO resuelve el
+desbordamiento: el par HA». La auditoría de puertos se queda conservadora a propósito
+(cuenta todos los enlaces contra el chasis): es el patrón de hub del VSG («Each WAN
+transport is brought into each appliance») y el único que resiste un failover con
+circuitos dual-home. Cobertura: 8 comprobaciones e2e nuevas (auto-marcado, hint,
+BOM del par con SKU HA, desmarcado manual respetado + aviso, no-disparo en escenario
+pequeño); 389 unitarios y 8/8 e2e en verde.)
+
+Revisión anterior: 2026-09-16 (plan 11: **desbordamiento de la línea EdgeConnect guiado
 por el techo oficial + la trampa del cero falso en el margen** — reporte del dueño:
 5000 Mbps de Internet + 5000 de MPLS → «No se recomienda ningún equipo». Diagnóstico
 con evidencia oficial, contra lo que sugería el snippet que acompañaba el reporte: el
@@ -792,6 +819,40 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### HA pre-marcado por capacidad del sitio + validación «cada WAN a un equipo del par» (2026-09-16)
+
+El dueño pidió validar como arquitectura: con 2 enlaces WAN de ≥5 Gbps cada uno, cada
+enlace debería aterrizar en un equipo distinto del par HA, HA debería habilitarse por
+defecto y el licenciamiento debería seguir solo.
+
+**Veredicto de la validación (fuentes oficiales en el repo):**
+- ✅ El cableado propuesto ES el diseño oficial de sucursal: **EdgeHA** (VSG SD-Branch,
+  sección High Availability): dos EdgeConnect, «each connected with a single WAN link
+  to two different underlay networks», sin switches WAN, con el enlace EdgeHA llevando
+  los túneles de cada underlay a ambos appliances. Las QuickSpecs V18 lo confirman:
+  «a HA link that allows tunnels over each underlay to connect to both appliances».
+- ❌ La inferencia de dimensionado NO: en HA 1+1 el VRRP/enrutado manda TODO el tráfico
+  al activo y el standby solo toma el relevo en fallo (VSG: «traffic is sent there only
+  during an outage of the first appliance», evitando ECMP a propósito). Cada chasis del
+  par se dimensiona al agregado completo del sitio — HA suma disponibilidad, no caudal.
+  Dividir el requerimiento entre los dos habría sobrevendido el par al 50 %.
+- ✅ HA por defecto en ese escenario: implementado como regla de preventa declarada del
+  dueño (SIN FUENTE oficial — HPE no publica umbral; la decisión es de la casa).
+- ✅ El licenciamiento ya seguía solo: 2 unidades, 1× suscripción estándar + 1× SKU HA
+  E-STU del mismo tier y término (LICENSES_HA; invariante de precio verificada).
+
+**Implementación:** `sincronizarHaAuto()` corre al inicio de cada render (las unidades
+y el BOM se derivan de la casilla ya ajustada); la regla es de FLANCO — pre-marca al
+entrar en el escenario y no vuelve a marcar si el usuario la desmarca a mano
+(`data-ha-manual`), caso que la revisión del diseño declara como aviso. `#haAutoHint`
+explica la regla y su porqué mientras aplique. El bloque de desbordamiento del plan 11
+gana la aclaración «Lo que NO resuelve el desbordamiento: el par HA». La auditoría de
+puertos se queda conservadora a propósito (todos los enlaces contra el chasis: es el
+patrón de hub del VSG y el único que resiste failover con circuitos dual-home).
+
+Cobertura: 8 comprobaciones e2e nuevas en `e2e-desbordamiento-ec.js`; 389 unitarios y
+8/8 e2e en verde.
 
 ### Desbordamiento de la línea EdgeConnect guiado por el techo oficial (2026-09-16)
 
