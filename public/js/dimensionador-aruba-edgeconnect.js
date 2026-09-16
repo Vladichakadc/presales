@@ -769,9 +769,20 @@ function llevarABom(id){
   BOM.sincronizar({elegido:id||null, render:renderBom});
 }
 
+// Enlace «Ver características…» de la tarjeta → pestaña Equipo.
+// Delegado porque ficha.js repinta el enlace en cada render.
+document.addEventListener('click',(e)=>{
+  if(e.target&&e.target.id==='verdict-salto'){
+    e.preventDefault();
+    const b=document.querySelector('.tabs button[data-tab="equipo"]');
+    if(b)b.click();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+});
+
 document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
-  ['calc','bom','lic','cat','src'].forEach(t=>$('pane-'+t).hidden=(t!==b.dataset.tab));
+  ['calc','equipo','bom','lic','cat','src'].forEach(t=>$('pane-'+t).hidden=(t!==b.dataset.tab));
 }));
 
 $('famSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('famSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));famMode=b.dataset.v;render();});
