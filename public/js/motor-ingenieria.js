@@ -46,7 +46,13 @@
     let factorSeguridad = 0.0;
     if (params.modelo_seguridad === 'LOCAL_NGFW_DPI') factorSeguridad = 0.35;
     else if (params.modelo_seguridad === 'CLOUD_SASE_SSE') factorSeguridad = 0.05;
-    const factorHeadroom = (params.headroom_pct || 20) / 100;
+    // La trampa del cero falso (corregida 2026-09-16; la pescó el e2e de
+    // desbordamiento de la línea EdgeConnect): `(params.headroom_pct || 20)`
+    // convertía el 0 legítimo del slider —«sin margen», decisión deliberada— en
+    // un 20 % fantasma, y la página declaraba «margen 0 %» en el widget mientras
+    // calculaba con 20 %. El default 20 % es solo para quien NO pasa el
+    // parámetro; un 0 explícito manda.
+    const factorHeadroom = (params.headroom_pct ?? 20) / 100;
     const throughputDisenoMbps = Math.ceil(((totalBwFisico / factorIMIX) * (1 + overheadFEC) * (1 + factorSeguridad)) * (1 + factorHeadroom));
     const sesionesPorUsuario = params.densidad_usuarios === 'INTENSIVO_SAAS' ? 150 : 80;
     const flujosRequeridos = params.total_usuarios * sesionesPorUsuario;

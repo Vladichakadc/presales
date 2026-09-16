@@ -1567,6 +1567,35 @@ function render(){
   // cotiza el primero de la lista a ciegas, se compara con el escalon siguiente.
   if(!pick){
     const why=[`<li>Caudal WAN requerido <b>${fmt(wanNeed)}</b> · proceso requerido <b>${fmt(needProc)}</b>.</li>`];
+    /* Desbordamiento de la línea EdgeConnect (reporte del dueño, 2026-09-16): con enlaces
+       de gran capacidad (p. ej. 5000+5000 Mbps) el requerimiento de diseño del motor —ya
+       con IMIX, FEC, seguridad y margen— supera el techo que HPE publica para TODA la
+       familia. No es un hueco del catálogo: las cifras wanMin/wanMax se reverificaron
+       contra el QuickSpecs oficial a50004289enw V18 (06-jul-2026, p.30 y fichas por
+       modelo) y coinciden — EC-10108 «2-2000 Mbps», EC-10150 «Up to 12 Gbps». Proponer un
+       appliance igualmente sería afirmar una capacidad que la fuente oficial no publica;
+       lo que corresponde es declarar la salida de arquitectura completa, con las vías que
+       sí sostiene la documentación. El texto toma el modelo y el techo de los DATOS
+       (guardia en test/aruba-techo-ec.test.js), no de literales escritos a mano. */
+    const topeEC=MODELS.filter(m=>m.fam==='ec'&&m.wanMax!=null).sort((a,b)=>b.wanMax-a.wanMax)[0]||null;
+    const techoEC=topeEC?topeEC.wanMax:0;
+    const desbordaLineaEC=wanNeed>0&&techoEC>0&&wanNeed>techoEC&&(famMode==='ec'||famMode==='any');
+    if(desbordaLineaEC){
+      // Con las hipótesis del motor al mínimo (perfil «backup/réplica» → IMIX 1,00; FEC
+      // desactivado → overhead base 5 %; margen 0 %) el requerimiento baja a ≈ caudal
+      // físico × 1,05 × penalización de función. Solo si ESA cifra entra en el techo se
+      // señala el EC-10150 como viable tras revisar hipótesis — nunca por omisión.
+      const reqMin=Math.ceil(D.caudalTotal*1.05)*D.featurePenalty;
+      const salidas=[
+        '<b>EC-V en el hub o datacenter:</b> sin techo de hardware publicado — el caudal lo fijan el tier de la suscripción (la escalera oficial llega a «Sin límite de caudal») y los vCPU del hipervisor; la guía oficial de despliegue exige Accelerated Networking (SR-IOV) para alcanzar el throughput máximo. El dimensionado exacto se confirma con HPE.',
+        '<b>Repartir el fabric entre varios appliances:</b> cada chasis sostiene el underlay que termina en él — dos EC-10150 repartiendo enlaces u overlays cubren el sitio sin violar ninguna cifra publicada.',
+        reqMin<=techoEC
+          ?`<b>Revisar las hipótesis del motor:</b> perfil «backup/réplica masiva» (IMIX 1,00), FEC desactivado (enlaces limpios) y margen 0 % dejarían el requerimiento en ≈<b>${fmt(reqMin)}</b> — dentro de los ${fmt(techoEC)} publicados. Cada hipótesis relajada es una decisión de riesgo que hay que saber defender: el margen es el ancla del SLA de enlace al 75 % de la guía SD-Branch.`
+          :'<b>Revisar las hipótesis del motor</b> (perfil de tráfico, FEC, margen) reduce el requerimiento, pero ni con todo al mínimo entra en el techo publicado — la salida es EC-V o el reparto del fabric, no un solo appliance.',
+        `<b>Selección deliberada:</b> el ${topeEC.id} sigue en el selector de modelo — elegirlo cotiza la lista de materiales con su SKU (${topeEC.hwSku||'consultar'}) y la revisión del diseño marca el exceso de caudal en rojo, con las cifras encima de la mesa.`,
+      ];
+      why.push(`<li><b>El requerimiento (${fmt(wanNeed)}) supera el techo oficial de toda la línea EdgeConnect:</b> el modelo más capaz, el <b>${topeEC.id}</b>, publica <b>${fmt(techoEC)}</b> de caudal WAN («Up to 12 Gbps», QuickSpecs a50004289enw V18, p.30 — cifra bidireccional según la nota 3 de la propia tabla). Ningún appliance EdgeConnect lo cubre en solitario. Las salidas que sí sostiene la fuente oficial:<ul style="margin:6px 0 0;padding-left:18px">${salidas.map(s=>`<li>${s}</li>`).join('')}</ul></li>`);
+    }
     // Cumplir por capacidad no basta si el equipo ya no se puede pedir: es el caso del
     // EC-XL (fin de venta 2026-03-31, política oficial de ciclo de vida de EdgeConnect).
     // Se nombra y se deja como referencia, no se cuela como propuesta.
@@ -1579,7 +1608,10 @@ function render(){
     if(outByFlujos) why.push(`<li><b>${outByFlujos}</b> modelo(s) descartado(s) por flujos simultáneos: el perfil de entorno estima ${miles(flujosReq)} flujos activos (${miles(users)} usuarios × ${tasaFlujos}/usuario). Bajar el perfil o repartir la carga entre dos sitios son las salidas.</li>`);
     if(outByPuertos) why.push(`<li><b>EC-10104</b> descartado por la auditoría de puertos: los enlaces declarados necesitan más de 4 puertos o alguno es óptico (SFP) y el 10104 solo trae 4× RJ-45. El escalón superior (EC-10106) ya añade jaulas SFP+.</li>`);
     if(outBySinDato) why.push(`<li><b>${outBySinDato}</b> modelo(s) sin cifra de throughput publicada en las fuentes consultadas (serie 9100). Aparecen en la pestaña "Equipo y BOM" y su capacidad hay que confirmarla en las QuickSpecs.</li>`);
-    why.push('<li>Por encima del catálogo: repartir el fabric en varios head-ends, o escalar en el datacenter con EC-V, cuyo caudal lo fija la licencia y los vCPU asignados y no el hardware.</li>');
+    // La salida genérica «por encima del catálogo» queda absorbida por el bloque de
+    // desbordamiento cuando es ese el caso — repetirla sería ruido debajo de la versión
+    // completa, con cifras y vías oficiales.
+    if(!desbordaLineaEC) why.push('<li>Por encima del catálogo: repartir el fabric en varios head-ends, o escalar en el datacenter con EC-V, cuyo caudal lo fija la licencia y los vCPU asignados y no el hardware.</li>');
     poblarPickModel(candidates, null);
     FICHA.render({...FICHA_CFG, contenedor:'verdict', candidatos:[], recomendado:null,
       vacioTitulo:'Ningún modelo cumple todas las restricciones',

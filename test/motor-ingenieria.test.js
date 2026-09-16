@@ -91,6 +91,17 @@ test('el factor de seguridad ordena: NGFW/DPI local (0,35) > SSE nube (0,05) > n
   assert.strictEqual(sse.throughputDisenoMbps, Math.ceil((300 / 0.70) * 1.05 * 1.05 * 1.20));
 });
 
+test('headroom 0 % explícito se respeta (el default 20 % es solo para el parámetro ausente)', () => {
+  // La trampa del cero falso (`headroom_pct || 20`) convertía el «sin margen» del
+  // slider en un 20 % fantasma — la página declaraba «margen 0 %» y calculaba con 20.
+  const sin = calcularRequerimientosIngenieria({ ...BASE, headroom_pct: 0 });
+  assert.strictEqual(sin.throughputDisenoMbps, Math.ceil((300 / 0.70) * 1.05)); // sin ×1,20
+  // Parámetro ausente o null: conserva el default documentado del brief (20 %).
+  const ausente = { ...BASE }; delete ausente.headroom_pct;
+  assert.strictEqual(calcularRequerimientosIngenieria(ausente).throughputDisenoMbps, 540);
+  assert.strictEqual(calcularRequerimientosIngenieria({ ...BASE, headroom_pct: null }).throughputDisenoMbps, 540);
+});
+
 test('flujos requeridos: 80 por usuario estándar, 150 en INTENSIVO_SAAS', () => {
   assert.strictEqual(calcularRequerimientosIngenieria(BASE).flujosRequeridos, 10 * 80);
   const intensivo = calcularRequerimientosIngenieria({ ...BASE, densidad_usuarios: 'INTENSIVO_SAAS' });

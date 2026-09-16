@@ -4,7 +4,34 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-16 (plan 10: **vigilancia de vigencia por QuickSpecs +
+Última revisión: 2026-09-16 (plan 11: **desbordamiento de la línea EdgeConnect guiado
+por el techo oficial + la trampa del cero falso en el margen** — reporte del dueño:
+5000 Mbps de Internet + 5000 de MPLS → «No se recomienda ningún equipo». Diagnóstico
+con evidencia oficial, contra lo que sugería el snippet que acompañaba el reporte: el
+catálogo NO estaba mal — reverificado cifra a cifra contra las QuickSpecs oficiales
+a50004289enw V18 (p. 30 y fichas por modelo: EC-10108 «2-2000 Mbps» con SKU S0E23A,
+EC-10150 «Up to 12 Gbps» con S2N65A, EC-XL S0B67A fuera de venta desde 2026-03-31).
+Los datos propuestos (SKU «S2D93A» para el 10108, 20 Gbps para el 10150, «JZ888A» como
+chasis EC-XL —es el kit de montaje—, un «EC-V-10G» que no existe) NO entran: chocan
+con la fuente oficial y la casa nunca corrige contra ella. La causa real es
+aritmética: la fórmula del motor (÷IMIX 0,70 × FEC 1,15 × margen 1,30) lleva 10.000
+Mbps físicos a 21.358 Mbps de diseño, por encima de los 12 Gbps que HPE publica para
+su modelo más capaz. La corrección NO es recomendar igualmente —sería afirmar una
+capacidad que la fuente no publica—: el veredicto vacío se convierte en respuesta de
+arquitectura, que declara el techo con su cita y ofrece las vías que la documentación
+sí sostiene (EC-V por licencia/vCPU con SR-IOV, reparto del fabric entre appliances,
+revisión de hipótesis con la cifra mínima calculada de los DATOS, y la selección
+deliberada del EC-10150 — sigue en el combo y cotiza con la revisión del diseño en
+rojo). Y el e2e pescó un defecto real más: `headroom_pct || 20` en el motor se tragaba
+el «margen 0» del slider y aplicaba un 20 % fantasma — la página declaraba 0 % y
+calculaba 20 (con todo al mínimo daba 12,6 Gbps en vez de los 10,5 que el propio
+veredicto prometía). Corregido con `?? 20`: el default es solo para el parámetro
+ausente. Cobertura: guardia de datos `aruba-techo-ec` (fija las cifras oficiales y deja
+constancia de la refutación del snippet), prueba del cero falso en `motor-ingenieria`,
+`e2e-desbordamiento-ec` nuevo (14 comprobaciones); 389 unitarios en verde, e2e 8/8. El
+mensaje del reporte llegó TRUNCADO tras su sección 1: si traía más secciones, se piden.)
+
+Revisión anterior: 2026-09-16 (plan 10: **vigilancia de vigencia por QuickSpecs +
 congelado declarado de la política de ciclo de vida** — el dueño aceptó la mejora
 propuesta y los pendientes «—» del plan 9. Nace `npm run vigencia`: cruza el `hwSku`
 de cada EdgeConnect contra la sección de pedido de las QuickSpecs oficiales EN EL
@@ -765,6 +792,53 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Desbordamiento de la línea EdgeConnect guiado por el techo oficial (2026-09-16)
+
+Reporte del dueño: con enlaces de gran capacidad (5000 Mbps Internet + 5000 Mbps MPLS)
+el dimensionador respondía «Ningún modelo cumple todas las restricciones» — un callejón
+sin salida. El diagnóstico se hizo contra la fuente oficial y tumbó la mitad de lo que
+parecía obvio.
+
+**Lo que NO era: el catálogo.** El snippet que acompañaba el reporte proponía
+«corregirlo» con cifras nuevas (EC-10108 a 10/15 Gbps con SKU S2D93A, EC-10150 a 20
+Gbps, EC-XL con SKU JZ888A, un modelo «EC-V-10G»). Reverificado contra las QuickSpecs
+oficiales a50004289enw V18 que viajan en el repo: el catálogo ya estaba bien —EC-10108
+«2-2000 Mbps» (S0E23A), EC-10150 «Up to 12 Gbps» (S2N65A), EC-XL fuera de venta
+(S0B67A; JZ888A es su kit de montaje en rack, no el chasis) y EC-V sin techo publicado
+(se dimensiona por licencia y vCPU)—. Ninguna de esas «correcciones» entró: la casa
+solo escribe datos desde fuentes oficiales, nunca desde lo que parece razonable. La
+guardia `test/aruba-techo-ec.test.js` fija las cifras verdaderas y deja constancia del
+snippet refutado, para que la próxima propuesta parecida rompa ahí.
+
+**Lo que SÍ era: aritmética, no datos.** El motor de ingeniería carrier-grade aplica
+÷IMIX (0,70 en mezcla empresarial) × FEC (1,15) × margen (1,30): 10.000 Mbps físicos
+se convierten en 21.358 Mbps de requerimiento de diseño, y el EdgeConnect más capaz
+que HPE publica (EC-10150) llega a 12 Gbps. Ningún appliance cubre el escenario en
+solitario — la respuesta honesta no es un modelo sino una arquitectura. El veredicto
+vacío ahora lo dice: cuantifica el exceso contra el techo oficial con su cita
+(QuickSpecs V18, p. 30, cifra bidireccional según la nota 3) y ofrece las vías que la
+documentación sí sostiene: EC-V en el hub (la escalera oficial de suscripción llega a
+«Sin límite de caudal»; la guía de despliegue exige Accelerated Networking/SR-IOV),
+reparto del fabric entre varios appliances, revisión de las hipótesis del motor con la
+cifra mínima calculada de los datos (si entra en el techo se dice, si ni así, también),
+y la selección deliberada del EC-10150 —que sigue en el combo y cotiza su BOM real con
+la revisión del diseño marcando el exceso en rojo—. En el estado vacío no se pinta
+ficha aunque haya selección manual, a propósito: pintarla contradeciría el veredicto
+honesto; el BOM sí la cotiza con el aviso de desvío, y el veredicto lo declara.
+
+**El defecto que pescó el e2e de regalo:** la sección «hipótesis al mínimo» de la
+prueba reveló que `headroom_pct || 20` en `motor-ingenieria.js` convertía el 0 %
+legítimo del slider en un 20 % fantasma (la página declaraba «margen 0 %» y calculaba
+con 20: 12,6 Gbps en vez de 10,5 — la vía «revisar hipótesis» del propio veredicto
+fallaba al seguirla). Corregido a `?? 20` con su prueba de regresión: el default solo
+aplica cuando el parámetro está ausente.
+
+Cobertura: 6 guardias de datos + 1 prueba del cero falso + e2e nuevo de 14
+comprobaciones (desbordamiento guiado, selección deliberada con revisión en rojo,
+hipótesis al mínimo → EC-10150 recomendado, regresión del escenario pequeño). 389
+unitarios y 8/8 e2e en verde. El mensaje del dueño llegó truncado tras la sección 1 —
+si traía más correcciones, quedan por pedir.
 
 ### Vigilancia de vigencia por QuickSpecs + congelado declarado de la política de ciclo de vida (2026-09-16)
 
