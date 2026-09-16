@@ -1036,6 +1036,31 @@ function fmt(m){
 }
 const miles=n=>n==null?'—':n.toLocaleString('en-US');
 
+/* ══ Trazas aritméticas vivas (mejora 2026-09-17, plan 16) ══════════════════════
+   Toda cifra del veredicto debe ser auditable factor a factor — la lección del falso
+   diagnóstico de «bug de filtrado» sobre el desbordamiento (plan 15): quien ve la
+   cuenta no confunde ingeniería declarada con un error. Dos trazas, ambas desde los
+   DATOS del escenario, nunca de literales:
+   · trazaMotorHtml — la del motor de ingeniería, para el requerimiento WAN del
+     appliance EdgeConnect (los factores salen del propio motor, D.ing.traza).
+   · trazaProcesoHtml — la de la fórmula histórica de PROCESO con la que se
+     dimensionan los gateways: máx(caudal físico, usuarios × Mbps/usuario) × margen
+     × penalización de función. */
+const fmtF=n=>(Math.round(n*100)/100).toFixed(2).replace('.',',');
+function trazaMotorHtml(D,wanNeed){
+  const tz=D.ing&&D.ing.traza;
+  if(!(D.caudalTotal>0&&tz)) return '';
+  return ` La cuenta, con las hipótesis vivas del motor: <b>${miles(tz.bwFisico)} Mbps físicos ÷ IMIX ${fmtF(tz.factorIMIX)} × ${fmtF(1+tz.overheadFEC)} FEC × ${fmtF(1+tz.factorSeguridad)} seguridad × ${fmtF(1+tz.factorHeadroom)} margen${D.featurePenalty!==1?` × ${fmtF(D.featurePenalty)} función`:''} ≈ ${miles(Math.round(wanNeed))} Mbps</b> de diseño.`;
+}
+function trazaProcesoHtml(D){
+  if(!(D.needProc>0)) return '';
+  const base=D.caudalTotal>0&&D.users>0
+    ?`máx(${miles(D.caudalTotal)} Mbps de enlaces, ${miles(D.users)} usuarios × ${D.perUser} Mbps)`
+    :D.caudalTotal>0?`${miles(D.caudalTotal)} Mbps de enlaces`
+    :`${miles(D.users)} usuarios × ${D.perUser} Mbps`;
+  return ` La cuenta: <b>${base} × ${fmtF(1+D.head)} margen${D.featurePenalty!==1?` × ${fmtF(D.featurePenalty)} función`:''} = ${miles(Math.round(D.needProc))} Mbps</b>.`;
+}
+
 // Catálogo Aruba, con la misma tabla que antes vivía en la vista de Aruba del portal (ver
 // CLAUDE.md, 2026-09-10): se pinta desde MODELS, ya cargado para el propio dimensionador.
 // EdgeConnect (rol sdwan) publica un RANGO de caudal WAN, no una cifra única; los gateways
@@ -1731,18 +1756,14 @@ function render(){
           :'<b>Revisar las hipótesis del motor</b> (perfil de tráfico, FEC, margen) reduce el requerimiento, pero ni con todo al mínimo entra en el techo publicado — la salida es EC-V o el reparto del fabric, no un solo appliance.',
         `<b>Selección deliberada:</b> el ${topeEC.id} sigue en el selector de modelo — elegirlo cotiza la lista de materiales con su SKU (${topeEC.hwSku||'consultar'}) y la revisión del diseño marca el exceso de caudal en rojo, con las cifras encima de la mesa.`,
       ];
-      /* Traza aritmética VIVA (mejora 2026-09-17): la cuenta del motor, factor a
-         factor, para que el veredicto se lea como ingeniería declarada y no como
-         «no hay equipos disponibles» — la confusión real que generó un diagnóstico
-         de «bug de filtrado por tipo de despliegue» sobre este mismo veredicto.
-         Los factores salen del propio motor (D.ing.traza), nunca de literales.
-         Solo aplica con enlaces declarados: sin caudal físico, wanNeed sale de la
-         fórmula histórica y esta traza no corresponde. */
-      const tz=D.ing&&D.ing.traza;
-      const fmtF=n=>(Math.round(n*100)/100).toFixed(2).replace('.',',');
-      const trazaMotor=(D.caudalTotal>0&&tz)
-        ?` La cuenta, con las hipótesis vivas del motor: <b>${miles(tz.bwFisico)} Mbps físicos ÷ IMIX ${fmtF(tz.factorIMIX)} × ${fmtF(1+tz.overheadFEC)} FEC × ${fmtF(1+tz.factorSeguridad)} seguridad × ${fmtF(1+tz.factorHeadroom)} margen${D.featurePenalty!==1?` × ${fmtF(D.featurePenalty)} función`:''} ≈ ${miles(Math.round(wanNeed))} Mbps</b> de diseño.`
-        :'';
+      /* Traza aritmética VIVA (plan 15, generalizada en el 16): la cuenta del motor,
+         factor a factor, para que el veredicto se lea como ingeniería declarada y no
+         como «no hay equipos disponibles» — la confusión real que generó un
+         diagnóstico de «bug de filtrado por tipo de despliegue» sobre este mismo
+         veredicto. La construye el helper compartido `trazaMotorHtml` (mismo texto
+         en la ficha del camino feliz); sin enlaces declarados el requerimiento sale
+         de la fórmula histórica y la traza no corresponde. */
+      const trazaMotor=trazaMotorHtml(D,wanNeed);
       why.push(`<li><b>El requerimiento (${fmt(wanNeed)}) supera el techo oficial de toda la línea EdgeConnect.</b>${trazaMotor} El modelo más capaz, el <b>${topeEC.id}</b>, publica <b>${fmt(techoEC)}</b> de caudal WAN («Up to 12 Gbps», QuickSpecs a50004289enw V18, p.30 — cifra bidireccional según la nota 3 de la propia tabla). Ningún appliance EdgeConnect lo cubre en solitario. Las salidas que sí sostiene la fuente oficial:<ul style="margin:6px 0 0;padding-left:18px">${salidas.map(s=>`<li>${s}</li>`).join('')}</ul></li>`);
     }
     // Cumplir por capacidad no basta si el equipo ya no se puede pedir: es el caso del
@@ -1791,7 +1812,11 @@ function render(){
   const porQueDe=m=>{
     const cap=capacidadMax(m), req=needDe(m), nivel=nivelLicenciaNecesario(m,req,users,aps), flags=[];
     if(m.fam==='ec'){
-      flags.push(`<b>Caudal WAN a contratar:</b> ${fmt(D.ing.tierLicenciaBwRequerido||wanNeed)} — el tier de la suscripción se tasa por el ancho de banda físico agregado (brief carrier-grade). El requerimiento de diseño del appliance es ${fmt(wanNeed)}: el motor de ingeniería aplica el IMIX del perfil de tráfico, la paridad FEC del modo elegido, la estrategia de seguridad y el margen de crecimiento${boost?`, con la reducción ${perfil.factor}:1 de Boost sobre ${esc(perfil.n.toLowerCase())} en el caudal derivado`:''}. Tier de suscripción: <b>${tier?esc(tier.n):'—'}</b>.`);
+      // La traza del motor sustituye a la enumeración en prosa cuando hay enlaces
+      // declarados (plan 16): la MISMA cuenta, con los factores vivos, que pinta el
+      // veredicto de desbordamiento. Sin enlaces se conserva la prosa (la fórmula
+      // histórica no tiene traza del motor que mostrar).
+      flags.push(`<b>Caudal WAN a contratar:</b> ${fmt(D.ing.tierLicenciaBwRequerido||wanNeed)} — el tier de la suscripción se tasa por el ancho de banda físico agregado (brief carrier-grade). El requerimiento de diseño del appliance es ${fmt(wanNeed)}.${trazaMotorHtml(D,wanNeed)||' El motor de ingeniería aplica el IMIX del perfil de tráfico, la paridad FEC del modo elegido, la estrategia de seguridad y el margen de crecimiento.'}${boost?` Con la reducción ${perfil.factor}:1 de Boost sobre ${esc(perfil.n.toLowerCase())} en el caudal derivado.`:''} Tier de suscripción: <b>${tier?esc(tier.n):'—'}</b>.`);
       if(boost&&D.bloques) flags.push(`<b>Boost auto-dimensionado:</b> el enlace transporta ${fmt(wanNeed)} en vez de ${fmt(needProc*(1+fec.pct))}. Se licencia el 30 % del tráfico WAN privado estimado (${fmt(boostMbpsAuto(needProc,fec,D.share))}${D.share<1?' — ya descontada la descarga del breakout (regla 70/30: el 30 % del tráfico de Internet sale local)':''}) en bloques de ${SIZING.boost.bloque} Mbps que forman un pool del fabric — para esta sede, <b>${D.bloques} bloque(s)</b>.`);
       else if(!boost) flags.push('Admite Boost. Merece evaluarse si el tráfico es repetitivo (réplicas, backups, VDI, CIFS/SMB): reduce el caudal contratado, que a 3–5 años suele pesar más en el TCO que el propio equipo.');
       if(sobrado.includes(m.id)) flags.push(`<b class="warn">Sobredimensionado:</b> el requerimiento (${fmt(wanNeed)}) queda por debajo del suelo del rango publicado (${fmt(m.wanMin)}). Revisar el escalón inferior antes de cotizar.`);
@@ -1827,7 +1852,7 @@ function render(){
       ?'<b>HA 1+1:</b> el par se cotiza 1× suscripción estándar + 1× suscripción de alta disponibilidad para el segundo nodo (SKU «HA» propio del QuickSpecs; la lista de precios documentada lo tarifa igual que el estándar).'
       :'<b>HA:</b> se cotizan 2 unidades y cada una lleva su propia suscripción de sitio.');
     return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
-      <li>Requerimiento <b>${fmt(req)}</b> contra capacidad <b>${fmt(cap)}</b> — headroom ${Math.round((1-req/cap)*100)}%</li>
+      <li>Requerimiento <b>${fmt(req)}</b> contra capacidad <b>${fmt(cap)}</b> — headroom ${Math.round((1-req/cap)*100)}%.${m.fam==='gw'?trazaProcesoHtml(D):''}</li>
       ${flags.map(f=>`<li>${f}</li>`).join('')}
     </ul>`;
   };

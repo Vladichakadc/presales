@@ -4,7 +4,27 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-17 (plan 15: **traza aritmética viva en el veredicto de
+Última revisión: 2026-09-17 (plan 16: **la traza aritmética en TODOS los veredictos** —
+continuación del plan 15, aprobada por el dueño («Si»). La traza deja de ser
+exclusiva del desbordamiento: (1) los dos textos se extraen a helpers compartidos a
+nivel de módulo — `trazaMotorHtml(D, wanNeed)` (la cuenta del motor de ingeniería,
+con los factores vivos de `D.ing.traza`) y `trazaProcesoHtml(D)` (la fórmula
+histórica de proceso de los gateways: máx(enlaces, usuarios × Mbps/usuario) × margen
+× penalización de función, desde los DATOS del escenario); (2) el veredicto de
+desbordamiento delega en el mismo helper — una sola fuente para el texto; (3) el
+camino feliz la muestra: la ficha de todo EdgeConnect recomendado con enlaces
+declarados lleva la cuenta («200 Mbps físicos ÷ IMIX 0,70 × 1,15 FEC × 1,00
+seguridad × 1,30 margen ≈ 428 Mbps de diseño»; sin enlaces se conserva la prosa, la
+fórmula histórica no tiene traza del motor que mostrar) y la de todo gateway lleva la
+cuenta de proceso («10,000 Mbps de enlaces × 1,30 margen = 13,000 Mbps»). El e2e
+destapó un comportamiento preexistente que ahora queda DOCUMENTADO en el propio test:
+`#pickModel` es catálogo completo por diseño (selección manual deliberada, p. ej.
+cotizar el EC-10150 en desbordamiento), así que el pick SOBREVIVE al cambio de
+familia — la §2 que elige un gateway debe restaurarlo antes de la §3. Cobertura: 3
+afirmaciones e2e nuevas (traza EC en el camino feliz, traza de proceso en la ficha
+del gateway, restauración documentada del pick); 392 unitarios y 8/8 e2e en verde.)
+
+Revisión anterior: 2026-09-17 (plan 15: **traza aritmética viva en el veredicto de
 desbordamiento** — mejora propuesta al cerrar el plan 14 y aprobada por el dueño
 («Si»). CONTEXTO: un prompt externo diagnosticó el veredicto de desbordamiento como
 «bug de filtrado por `tipo_despliegue`» — campo que NUNCA existió (0 coincidencias

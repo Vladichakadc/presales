@@ -97,6 +97,19 @@ async function enlazar5000mas5000(page) {
   const pickAny = await page.inputValue('#pickModel');
   t.ok(!/Ningún modelo cumple/.test(verdict) && !!pickAny,
     'con «Indiferente» los gateways responden al escenario (' + pickAny + ')');
+  // Traza de proceso del gateway (plan 16): la fórmula histórica, factor a factor,
+  // en la ficha del candidato elegido — la misma auditabilidad que la traza del
+  // motor. OJO: el pick manual de la §1 (EC-10150) SOBREVIVE al cambio de familia
+  // por diseño, así que hay que elegir un gateway a mano para ver SU ficha.
+  await page.selectOption('#pickModel', 'Gateway 9114');
+  await page.waitForTimeout(900);
+  verdict = (await page.textContent('#verdict')) || '';
+  t.ok(/La cuenta: 10,000 Mbps de enlaces × 1,30 margen = 13,000 Mbps/.test(verdict),
+    'la ficha del gateway muestra la traza de proceso viva (enlaces × margen = requerimiento)');
+  // Restauro el estado que la §3 asume (pick manual EC-10150 de la §1): el combo es
+  // catálogo completo por diseño y el pick sobrevive al cambio de familia.
+  await page.selectOption('#pickModel', 'EC-10150');
+  await page.waitForTimeout(700);
 
   // ── 3 · Hipótesis al mínimo: el EC-10150 sí queda recomendado ─────────────
   // Esta sección pescó un defecto REAL del motor (2026-09-16): `headroom_pct || 20`
@@ -189,6 +202,12 @@ async function enlazar5000mas5000(page) {
   const pickPeq = await page.inputValue('#pickModel');
   t.ok(/^EC-/.test(pickPeq), 'escenario pequeño: recomienda un EdgeConnect (' + pickPeq + ')');
   t.ok(!(await page.isChecked('#chkHa')), 'escenario pequeño: la regla HA no se dispara (un solo enlace de 200 Mbps)');
+  // Traza del motor en el CAMINO FELIZ (plan 16): no solo el desbordamiento — toda
+  // recomendación EC con enlaces declarados muestra la cuenta factor a factor.
+  // 200 físicos ÷ 0,70 IMIX × 1,15 FEC × 1,00 seguridad × 1,30 margen = 427,1… → 428.
+  const fichaPeq = (await page.textContent('#verdict')) || '';
+  t.ok(/200 Mbps físicos ÷ IMIX 0,70 × 1,15 FEC × 1,00 seguridad × 1,30 margen ≈ 428 Mbps de diseño/.test(fichaPeq),
+    'escenario pequeño: la ficha del EC recomendado muestra la traza del motor (≈428 Mbps de diseño)');
 
   await browser.close();
   process.exit(t.resumen('e2e-desbordamiento-ec'));
