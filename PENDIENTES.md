@@ -4,7 +4,22 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-17 (plan 16: **la traza aritmética en TODOS los veredictos** —
+Última revisión: 2026-09-17 (plan 17: **la traza viaja con la propuesta exportada** —
+mejora propuesta al cerrar el plan 16 y aprobada por el dueño («Si»). La cuenta del
+dimensionado vivía solo en pantalla; quien recibía la lista de materiales no podía
+auditar de dónde sale el requerimiento. Implementación: (1) el núcleo de cada traza
+se extrae PLANO (sin intro ni <b>) — `cuentaMotorPlana` / `cuentaProcesoPlana` — y
+las envolturas HTML de la ficha (`trazaMotorHtml` / `trazaProcesoHtml`) se
+reescriben sobre él: una sola fuente para las dos superficies, imposible que
+deriven; (2) la exportación del BOM abre su «REVISIÓN DEL DISEÑO» con la línea
+`Dimensionado (motor de ingeniería): 200 Mbps físicos ÷ IMIX 0,70 × 1,15 FEC × 1,00
+seguridad × 1,30 margen ≈ 428 Mbps de diseño.` — para gateways, `Dimensionado
+(proceso, fórmula histórica): …` — que viaja al textarea, al copiado como texto y
+al Excel. Cobertura: 2 afirmaciones e2e nuevas (la traza del motor en el BOM del
+EC-10150 en desbordamiento; la traza de proceso en el BOM del Gateway 9114); 392
+unitarios y 8/8 e2e en verde.)
+
+Revisión anterior: 2026-09-17 (plan 16: **la traza aritmética en TODOS los veredictos** —
 continuación del plan 15, aprobada por el dueño («Si»). La traza deja de ser
 exclusiva del desbordamiento: (1) los dos textos se extraen a helpers compartidos a
 nivel de módulo — `trazaMotorHtml(D, wanNeed)` (la cuenta del motor de ingeniería,

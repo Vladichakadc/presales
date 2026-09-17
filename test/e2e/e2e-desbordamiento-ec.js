@@ -72,6 +72,10 @@ async function enlazar5000mas5000(page) {
   const bomTxt = (await page.inputValue('#bomOut')) || '';
   t.ok(/Caudal WAN insuficiente/.test(bomTxt), 'con el EC-10150 elegido a mano, la revisión del diseño marca el exceso en rojo');
   t.ok(/Par HA 1\+1/.test(bomTxt), 'con HA pre-marcado, el BOM cotiza el par (1× estándar + 1× SKU HA del mismo tier)');
+  // Plan 17: la traza viaja con la propuesta — la revisión del diseño exportada abre
+  // con la misma cuenta que pinta la ficha (mismo núcleo plano, imposible que deriven).
+  t.ok(/Dimensionado \(motor de ingeniería\): 10,000 Mbps físicos ÷ IMIX 0,70 × 1,15 FEC × 1,00 seguridad × 1,30 margen ≈ 21,3\d\d Mbps de diseño\./.test(bomTxt),
+    'la traza del motor abre la revisión del diseño del BOM exportado');
 
   // Desmarcar HA contra la regla: se respeta (no se re-marca) y la revisión lo declara.
   await page.click('[data-tab=calc]');
@@ -106,6 +110,14 @@ async function enlazar5000mas5000(page) {
   verdict = (await page.textContent('#verdict')) || '';
   t.ok(/La cuenta: 10,000 Mbps de enlaces × 1,30 margen = 13,000 Mbps/.test(verdict),
     'la ficha del gateway muestra la traza de proceso viva (enlaces × margen = requerimiento)');
+  // Plan 17: la traza de proceso del gateway también viaja en su BOM exportado.
+  await page.click('[data-tab=bom]');
+  await page.waitForTimeout(700);
+  const bomGw = (await page.inputValue('#bomOut')) || '';
+  t.ok(/Dimensionado \(proceso, fórmula histórica\): 10,000 Mbps de enlaces × 1,30 margen = 13,000 Mbps\./.test(bomGw),
+    'el BOM del gateway exporta la traza de proceso en su revisión del diseño');
+  await page.click('[data-tab=calc]');
+  await page.waitForTimeout(400);
   // Restauro el estado que la §3 asume (pick manual EC-10150 de la §1): el combo es
   // catálogo completo por diseño y el pick sobrevive al cambio de familia.
   await page.selectOption('#pickModel', 'EC-10150');

@@ -1047,18 +1047,29 @@ const miles=n=>n==null?'—':n.toLocaleString('en-US');
      dimensionan los gateways: máx(caudal físico, usuarios × Mbps/usuario) × margen
      × penalización de función. */
 const fmtF=n=>(Math.round(n*100)/100).toFixed(2).replace('.',',');
-function trazaMotorHtml(D,wanNeed){
+// Núcleo PLANO de cada traza (sin intro ni <b>): la ficha lo envuelve en HTML y la
+// lista de materiales exportada lo antepone con «Dimensionado:» (plan 17) — una sola
+// fuente para las dos superficies, imposible que deriven.
+function cuentaMotorPlana(D,wanNeed){
   const tz=D.ing&&D.ing.traza;
   if(!(D.caudalTotal>0&&tz)) return '';
-  return ` La cuenta, con las hipótesis vivas del motor: <b>${miles(tz.bwFisico)} Mbps físicos ÷ IMIX ${fmtF(tz.factorIMIX)} × ${fmtF(1+tz.overheadFEC)} FEC × ${fmtF(1+tz.factorSeguridad)} seguridad × ${fmtF(1+tz.factorHeadroom)} margen${D.featurePenalty!==1?` × ${fmtF(D.featurePenalty)} función`:''} ≈ ${miles(Math.round(wanNeed))} Mbps</b> de diseño.`;
+  return `${miles(tz.bwFisico)} Mbps físicos ÷ IMIX ${fmtF(tz.factorIMIX)} × ${fmtF(1+tz.overheadFEC)} FEC × ${fmtF(1+tz.factorSeguridad)} seguridad × ${fmtF(1+tz.factorHeadroom)} margen${D.featurePenalty!==1?` × ${fmtF(D.featurePenalty)} función`:''} ≈ ${miles(Math.round(wanNeed))} Mbps`;
 }
-function trazaProcesoHtml(D){
+function trazaMotorHtml(D,wanNeed){
+  const c=cuentaMotorPlana(D,wanNeed);
+  return c?` La cuenta, con las hipótesis vivas del motor: <b>${c}</b> de diseño.`:'';
+}
+function cuentaProcesoPlana(D){
   if(!(D.needProc>0)) return '';
   const base=D.caudalTotal>0&&D.users>0
     ?`máx(${miles(D.caudalTotal)} Mbps de enlaces, ${miles(D.users)} usuarios × ${D.perUser} Mbps)`
     :D.caudalTotal>0?`${miles(D.caudalTotal)} Mbps de enlaces`
     :`${miles(D.users)} usuarios × ${D.perUser} Mbps`;
-  return ` La cuenta: <b>${base} × ${fmtF(1+D.head)} margen${D.featurePenalty!==1?` × ${fmtF(D.featurePenalty)} función`:''} = ${miles(Math.round(D.needProc))} Mbps</b>.`;
+  return `${base} × ${fmtF(1+D.head)} margen${D.featurePenalty!==1?` × ${fmtF(D.featurePenalty)} función`:''} = ${miles(Math.round(D.needProc))} Mbps`;
+}
+function trazaProcesoHtml(D){
+  const c=cuentaProcesoPlana(D);
+  return c?` La cuenta: <b>${c}</b>.`:'';
 }
 
 // Catálogo Aruba, con la misma tabla que antes vivía en la vista de Aruba del portal (ver
@@ -2529,6 +2540,13 @@ function renderBom(){
   // Contexto MSP del escenario (etapa A / #39, 2026-09-14): cliente y referencia
   // encabezan la lista de materiales, el texto plano y la primera hoja del Excel.
   const cliente=$('nombreCliente').value.trim(), refProy=$('refProyecto').value.trim();
+  // La traza del dimensionado viaja con la propuesta (plan 17, 2026-09-17): la MISMA
+  // cuenta que pinta la ficha (plan 16) abre la revisión del diseño de la lista
+  // exportada — quien recibe el BOM audita de dónde sale el requerimiento sin abrir
+  // la herramienta. Mismo núcleo plano que la ficha: una sola fuente.
+  const cuentaBom=esEC
+    ?(cuentaMotorPlana(D,D.wanNeed)?`${cuentaMotorPlana(D,D.wanNeed)} de diseño`:'')
+    :cuentaProcesoPlana(D);
   const meta={
     titulo:`Lista de materiales — ${m.id}`,
     subtitulo:`${m.seg} · ${famLabel(m)} · ${termino}`,
@@ -2579,6 +2597,7 @@ function renderBom(){
       '  a proposito. Confirmar la fila exacta del datasheet antes de emitir la propuesta.',
       '',
       'REVISION DEL DISENO (par tecnico automatico)',
+      cuentaBom?`  Dimensionado ${esEC?'(motor de ingeniería)':'(proceso, fórmula histórica)'}: ${cuentaBom}.`:null,
       ...revisionDiseno(D,m).map(h=>`  [${h.nivel==='rojo'?'ROJO':h.nivel==='aviso'?'AVISO':'OK'}] ${h.texto}`),
       licHa?'  Par HA 1+1: 1x suscripcion estandar (nodo primario) + 1x suscripcion de'
           :null,
