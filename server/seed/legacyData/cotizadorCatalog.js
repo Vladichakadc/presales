@@ -127,12 +127,12 @@ module.exports = [
   {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-10106',              seg:'Sucursal pequeña',              spec:'EdgeConnect SD-WAN · WAN 2 Mbps - 1 Gbps · SKU S0E22A',  elp:'~ $4,318', elpN:4318},
   {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-10108',              seg:'Sucursal mediana',              spec:'EdgeConnect SD-WAN · WAN 2 Mbps - 2 Gbps · SKU S0E23A',  elp:'~ $5,588', elpN:5588},
   {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-10150',              seg:'Datacenter / Hub grande',       spec:'EdgeConnect SD-WAN · WAN hasta 12 Gbps · SKU S2N65A',  elp:'~ $47,304',elpN:47304},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9004',          seg:'Sucursal peq',                  spec:'Serie 9000 · FW 4 Gbps · 2.048 clientes · 32 APs · SKU R1B20A',  elp:'~ $2,505', elpN:2505},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9004-LTE',      seg:'Sucursal peq + LTE',            spec:'Serie 9000 · FW 4 Gbps · 2.048 clientes · 32 APs · SKU R3V91A',  elp:'~ $3,247', elpN:3247},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9012',          seg:'Sucursal med / gde',            spec:'Serie 9000 · FW 6 Gbps · 2.048 clientes · 32 APs · SKU R1B31A',  elp:'~ $4,441', elpN:4441},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9004',          seg:'Sucursal peq',                  spec:'Serie 9000 · FW 4 Gbps · 2.048 clientes · 128 APs (AOS 10) · SKU R1B20A',  elp:'~ $2,505', elpN:2505},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9004-LTE',      seg:'Sucursal peq + LTE',            spec:'Serie 9000 · FW 4 Gbps · 2.048 clientes · 128 APs (AOS 10) · SKU R3V91A',  elp:'~ $3,247', elpN:3247},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9012',          seg:'Sucursal med / gde',            spec:'Serie 9000 · FW 6 Gbps · 2.048 clientes · 256 APs (AOS 10) · SKU R1B31A',  elp:'~ $4,441', elpN:4441},
   {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9106',          seg:'Sucursal gde / Campus peq',     spec:'Serie 9100 Hybrid · FW 10 Gbps · 8.000 clientes · 2.000 APs · SKU S5H02A',  elp:'~ $9,228', elpN:9228},
   {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9114',          seg:'Campus peq / Sucursal grande',  spec:'Serie 9100 Hybrid · FW 20 Gbps · 10.000 clientes · 4.000 APs · SKU R9M45A',  elp:'~ $19,944',elpN:19944},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9240',          seg:'Campus / Hub regional',         spec:'Serie 9200 · FW 20 Gbps · 16.000 clientes · 512 APs · SKU R7H95A',  elp:'~ $37,614',elpN:37614},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9240',          seg:'Campus / Hub regional',         spec:'Serie 9200 · FW 20 Gbps · 32.000 clientes · 4.000 APs sin licencia (AOS 10) · SKU R7H95A',  elp:'~ $37,614',elpN:37614},
   // Serie 7000/7200 (2026-09-13): la unidad NUEVA no esta en la lista del distribuidor;
   // lo que tiene List Price es la unidad remanufacturada HPE (sufijo AR). Se cotiza esa y
   // se declara "(Reman)" en la fila — ver aruba.js, skus de cada modelo. 7024 y 7240XM no

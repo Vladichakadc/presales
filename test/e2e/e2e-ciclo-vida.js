@@ -50,8 +50,15 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   t.ok(xs && xs.includes('Sin dato de ciclo de vida'),
     'EC-XS: tercer estado honesto (sin boletín respaldado a nivel fabricante) — nunca verde por omisión');
 
-  const leg = await filaDe('7005');
-  t.ok(leg && /L.nea anterior/.test(leg), 'la serie 7000 conserva su semáforo ámbar de línea anterior');
+  // C5 de la auditoría 2026-09-17: el 7005 tiene boletín oficial de fin de venta
+  // (31-oct-2022, soporte hasta 31-oct-2027) — rojo con sus fechas. El 7010, sin boletín
+  // localizado, conserva el ámbar de línea anterior.
+  const l7005 = await filaDe('7005');
+  t.ok(l7005 && l7005.includes('Fuera de venta') && l7005.includes('2022-10-31'),
+    '7005: fuera de venta con la fecha de su boletín oficial (2022-10-31)');
+  t.ok(l7005 && l7005.includes('2027-10-31'), '7005: el semáforo suma el fin de soporte (2027-10-31)');
+  const leg = await filaDe('7010');
+  t.ok(leg && /L.nea anterior/.test(leg), 'el 7010 (sin boletín localizado) conserva su semáforo ámbar de línea anterior');
 
   // El selector de equipo nombra la condición con la fecha ya vencida.
   await page.click('[data-tab=calc]');

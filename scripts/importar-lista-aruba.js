@@ -186,6 +186,10 @@ function construirRoster(arubaData) {
     for (const y of ['y1', 'y3', 'y5']) push(tier.sku[y], 'Central (gateways 70xx/90xx)', tier[y], 'central');
   }
   // 2.7 · Licencias perpetuas de capacidad (9240 Silver/Gold)
+  // Solo la tabla base (AOS 10: R8R41AAE/R8R42AAE, las que tienen fila en la lista). Las
+  // de AOS 8 que trae `porSo.aos8` (R8R13AAE/R8R14AAE, C2 de la auditoria 2026-09-17) NO
+  // estan en la lista del distribuidor: el BOM las declara en «consultar» y el roster no
+  // las reclama — el roster es exactamente lo que la lista tarifa.
   for (const m of arubaData.MODELS) {
     for (const c of m.licCap || []) push(c.sku, m.id, c.elp ?? null, 'capacidad');
   }

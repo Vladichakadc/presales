@@ -27,6 +27,7 @@ Variables: `E2E_PORT` (puerto), `E2E_SOLO=filtro` (correr un solo script, p. ej.
 | `e2e-sticky.js` | El panel «Equipos que cumplen» queda clavado (top:16) de arriba abajo de la página — la regresión v29. |
 | `e2e-sfp.js` | Ópticas SFP de los enlaces WAN: chooser con mensaje cuando hay varias, select sin opción por defecto, línea PENDIENTE DE SELECCIÓN hasta elegir, cotización tras elegir, RJ45 no pide nada. |
 | `e2e-candidatos.js` | Lista clicable de «Equipos que cumplen · N»: N filas, insignia de recomendado, clic que elige otro equipo (selector único + ficha + BOM + aviso de desvío), «Volver al recomendado». |
+| `e2e-auditoria-fase1.js` | Fase 1 de la auditoría del 2026-09-17, por enlace de escenario: tier Foundation que sí existe (C1), 9240 sin Gold en AOS 10 y con SKU AOS 8 en AOS 8 (C2), 40 APs en la serie 9000 en AOS 10 (C3), Boost de 2 bloques en el hub MPLS+DIA (C4), 7005 fuera de venta (C5) y EC-XS fuera con DTD (A1). |
 | `e2e-ux.js` | Mejoras UX del 2026-09-15: destino de tráfico con su cálculo declarado, tier «Automático» sincronizado con el módulo 2, unidades por HA sin campo cantidad, orden de la pestaña BOM, BOM editable (retirar/restaurar, omisión en la URL), SSE por usuario con línea PENDIENTE sin usuarios. |
 
 ## Por qué NO está en `npm run verificar`

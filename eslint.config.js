@@ -45,6 +45,9 @@ const globalsNavegador = {
   // Motor de ingeniería carrier-grade (brief del dueño 2026-09-13): módulo UMD, global
   // en el navegador y requireable desde Node en los tests.
   MotorIngenieria: 'readonly',
+  // Reglas puras del dimensionador Aruba (fase 1 de la auditoria 2026-09-17), mismo
+  // patron UMD que MotorIngenieria: /js/aruba-reglas.js.
+  ArubaReglas: 'readonly',
 };
 
 const reglas = {

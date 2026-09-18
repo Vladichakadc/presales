@@ -162,8 +162,13 @@ const MODELS = [
   //   Reference 440 W para la variante EC-L-P — se muestran ambos en spec.watts.
   {id:'EC-XS', redund:false, psu:{tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 23 W en la primera revisión de hardware y 34 W en las posteriores — HPE publica el requerimiento, no un consumo típico. Fuente única mediante adaptador externo, sin opción de segunda.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal peq / Oficina remota',
    wanMin:2, wanMax:200, boostMax:200,
+   // A1 de la auditoría 2026-09-17: Dynamic Threat Defense (IDS/IPS en el chasis) NO corre
+   // en EC-XS — doc oficial de IDS/IPS de Orchestrator y QuickSpecs («Advanced Security not
+   // supported on JM962A»). La página ya lo avisaba en rojo pero lo seguía RECOMENDANDO y
+   // cotizaba la licencia DTD; `dtd:false` lo convierte en filtro duro.
+   dtd:false,
    ifaces:'4x RJ45 10/100/1000 LAN/WAN + 2x RJ45 10/100/1000 gestión + serie RJ-45',
-   spec:{conexiones:'256.000', boostRec:'250 Mbps', idsips:'Sí', fru:'Ninguna',
+   spec:{conexiones:'256.000', boostRec:'250 Mbps', idsips:'No — Dynamic Threat Defense (IDS/IPS) no corre en EC-XS', fru:'Ninguna',
      mtbf:'162.171 h (18,5 años)', watts:'23 W (primera revisión HW) / 34 W (posteriores) — requerimiento de alimentación', btu:'116 BTU/h',
      ruido:'40 dBA', peso:'1,59 kg (3,5 lb)'},
    // hwSku de la variante base completado el 2026-09-10 desde DATASHEETS.priceList (el
@@ -295,11 +300,18 @@ const MODELS = [
   // hwSku completado el 2026-09-10 desde el QuickSpecs de la serie (SKU (US) base; el
   // documento trae ademas variantes RW/JP/IL/EG y TAA, no listadas por brevedad).
   // fwSess completado el 2026-09-13 desde el DS de la serie 9000 (tabla AOS 10: 128K
-  // sesiones de firewall). El `aps:32` del catálogo es la cifra AOS 8 (campus APs); la
-  // tabla AOS 10 declara 128/256 "devices" por gateway — distinta arquitectura de gestión,
-  // se muestra en spec.aps10 sin tocar el campo existente (ver PENDIENTES.md).
+  // sesiones de firewall).
+  // SISTEMA OPERATIVO (C3 de la auditoría 2026-09-17, resuelve el conflicto «aps 32 vs
+  // 128/256» que PENDIENTES.md dejaba al dueño): las dos cifras son ciertas, cada una en su
+  // arquitectura. El campo base `aps` pasa a la de AOS 10 (128 en 9004/9004-LTE, 256 en
+  // 9012 — tabla AOS 10 del DS de la serie 9000, la arquitectura que gestiona Central y
+  // la que usa este catálogo) y `porSo.aos8` superpone la de AOS 8 (32 APs en modo
+  // controladora). El selector «Sistema operativo de los gateways» de la página elige cuál
+  // aplica. Antes el dimensionador filtraba con 32 y mandaba a un 9106 (US$9.228) una
+  // sede de 40 APs que un 9012 (US$4.441) cubre en AOS 10.
   {id:'Gateway 9004', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal peq',
-   fw:4000, clients:2048, aps:32, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
+   fw:4000, clients:2048, aps:128, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
+   porSo:{aos10:{aps:128}, aos8:{aps:32}},
    ifaces:'4x GbE RJ45', hwSku:'R1B20A', skus:[{sku:'R1B20A',d:'9004 (US) · 4x GbE RJ45'}],
    spec:{aps10:'128', cps:'130.000 sesiones nuevas/s', cluster:'Hasta 4 gateways por cluster · 8.192 clientes por cluster (AOS 10)',
      vlanMax:'4.094', ospf:'8.000 rutas', acls:'2.678 entradas', dhcp:'4.000 clientes', bridge:'64.000 entradas',
@@ -308,7 +320,8 @@ const MODELS = [
    ds:'https://www.hpe.com/psnow/doc/a00091602enw', dsFile:'gateway-9004.pdf'},
 
   {id:'Gateway 9004-LTE', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal peq + LTE',
-   fw:4000, clients:2048, aps:32, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
+   fw:4000, clients:2048, aps:128, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
+   porSo:{aos10:{aps:128}, aos8:{aps:32}},
    ifaces:'4x GbE RJ45 + LTE integrado (uplink dedicado o redundante)', hwSku:'R3V91A',
    skus:[{sku:'R3V91A',d:'9004-LTE (US) · 4x GbE RJ45 + LTE'}],
    spec:{aps10:'128', cps:'130.000 sesiones nuevas/s', cluster:'Hasta 4 gateways por cluster · 8.192 clientes por cluster (AOS 10)',
@@ -318,7 +331,8 @@ const MODELS = [
    ds:'https://www.hpe.com/psnow/doc/a00091602enw', dsFile:'gateway-9004.pdf'},
 
   {id:'Gateway 9012', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal med / gde',
-   fw:6000, clients:2048, aps:32, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
+   fw:6000, clients:2048, aps:256, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
+   porSo:{aos10:{aps:256}, aos8:{aps:32}},
    ifaces:'12x GbE RJ45 (6x PoE+)', hwSku:'R1B31A',
    skus:[{sku:'R1B31A',d:'9012 (US) · 12x GbE · 6x PoE+'},{sku:'R1B37A',d:'9012 (RW) TAA · 12x GbE · 6x PoE+'}],
    spec:{aps10:'256', cps:'130.000 sesiones nuevas/s', cluster:'Hasta 4 gateways por cluster · 8.192 clientes por cluster (AOS 10)',
@@ -339,6 +353,11 @@ const MODELS = [
   // AOS-10, solo lo hace la sección AOS-8 (8K, solo 9106) que es otra arquitectura de gestión.
   {id:'Gateway 9106', fam:'gw', rol:'sucursal', serie:'Serie 9100 Hybrid', seg:'Sucursal gde / Campus peq',
    fw:10000, clients:8000, aps:2000, fwSess:2000000, ipsecSess:16000, greTuns:null, boostMax:null,
+   // C3 (2026-09-17): las cifras son de la tabla AOS 10. La sección AOS-8 de la misma
+   // QuickSpecs no está transcrita: en AOS 8 el modelo se descarta y se dice por qué, en
+   // vez de afirmar con cifras de otra arquitectura que cumple.
+   porSo:{aos8:null},
+   porSoMotivo:{aos8:'el catálogo solo trae la tabla AOS 10 de las QuickSpecs 9100 — la capacidad en AOS 8 se confirma en su sección AOS-8 antes de cotizarlo'},
    ifaces:'2x SFP+ 10GbE + 2x combo SFP/RJ45 1GbE + 2x RJ45 1GbE con PoE hasta 60W',
    spec:{cluster:'Hasta 6 gateways por cluster (AOS 10)', tuneles:'20.000 túneles totales (AOS 10)',
      encTput:'GRE / AES-CBC-128/256 / AES-GCM-128/256: 10 Gbps (a velocidad de línea)',
@@ -349,6 +368,8 @@ const MODELS = [
 
   {id:'Gateway 9114', fam:'gw', rol:'campus', serie:'Serie 9100 Hybrid', seg:'Campus peq / Sucursal grande',
    fw:20000, clients:10000, aps:4000, fwSess:2000000, ipsecSess:32000, greTuns:null, boostMax:null,
+   porSo:{aos8:null},
+   porSoMotivo:{aos8:'no corre AOS 8: la matriz de sistema operativo lo lista solo en AOS 10 (10.5.0.1+)'},
    ifaces:'4x SFP+ 10GbE + 4x combo SFP/RJ45 1GbE + 1 slot de expansión',
    spec:{cluster:'Hasta 6 gateways por cluster (AOS 10)', tuneles:'40.000 túneles totales (AOS 10)',
      encTput:'GRE / AES-CBC-128/256 / AES-GCM-128/256: 20 Gbps (a velocidad de línea)',
@@ -359,20 +380,39 @@ const MODELS = [
 
   // ─── Serie 9200 · Campus Gateways ──────────────────────────────────────────
   {id:'Gateway 9240', fam:'gw', rol:'campus', serie:'Serie 9200', seg:'Campus / Hub regional',
-   fw:20000, clients:16000, aps:512, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
-   // SKU y List Price de las licencias perpetuas (2026-09-13, lista del distribuidor):
-   // variante AOS-10, la arquitectura que gestiona Central y la que usa este catálogo.
-   // Existen las equivalentes AOS-8 (R8R13AAE/R8R14AAE) — no aplican aquí.
+   fw:20000, clients:32000, aps:4000, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   // C2 de la auditoría 2026-09-17: el catálogo cotizaba los SKU de licencia de AOS 10
+   // (R8R41AAE/R8R42AAE, «9240 AOS10 Silver/Gold Capacity License» en la propia lista del
+   // distribuidor) con las capacidades de AOS 8 (512/1K/2K APs, 16K/24K/32K clientes). Con
+   // 12.000 clientes y 1.200 APs añadía una licencia Gold de US$19.995 que en AOS 10 no
+   // hace falta. Ahora cada sistema operativo trae SU tabla y SUS SKU:
+   //   · AOS 10 (base): DS serie 9200 + «AOS 10 Capacity Licenses» (techdocs HPE) —
+   //     Base 4K APs / 32K clientes / 20 Gbps; Silver 8K / 48K / 30 Gbps; Gold 16K / 64K /
+   //     40 Gbps. SKU R8R41AAE / R8R42AAE con su List Price. Silver y Gold NO admiten IDPS
+   //     (misma página oficial).
+   //   · AOS 8 (porSo.aos8): DS serie 9200, tabla AOS 8 — 512/1K/2K APs, 16K/24K/32K
+   //     clientes; reemplaza a 7210/7220/7240XM. SKU R8R13AAE / R8R14AAE (el boletín de fin
+   //     de venta del 7220 lo nombra: «9240 + Silver R8R13AAE»). Sin List Price en la lista
+   //     del distribuidor: van en «consultar», nunca con un precio inventado.
    licCap:[
-     {code:'hw',     n:'Solo hardware',             fw:20000, aps:512,  clients:16000},
-     {code:'silver', n:'+ licencia Silver (perp.)', fw:30000, aps:1000, clients:24000, sku:'R8R41AAE', elp:9995},
-     {code:'gold',   n:'+ licencia Gold (perp.)',   fw:40000, aps:2000, clients:32000, sku:'R8R42AAE', elp:19995},
+     {code:'hw',     n:'Solo hardware',             fw:20000, aps:4000,  clients:32000},
+     {code:'silver', n:'+ licencia Silver (perp.)', fw:30000, aps:8000,  clients:48000, sku:'R8R41AAE', elp:9995},
+     {code:'gold',   n:'+ licencia Gold (perp.)',   fw:40000, aps:16000, clients:64000, sku:'R8R42AAE', elp:19995},
    ],
+   porSo:{
+     aos10:{aps:4000, clients:32000, licCap:[
+       {code:'hw',     n:'Solo hardware',             fw:20000, aps:4000,  clients:32000},
+       {code:'silver', n:'+ licencia Silver (perp.)', fw:30000, aps:8000,  clients:48000, sku:'R8R41AAE', elp:9995},
+       {code:'gold',   n:'+ licencia Gold (perp.)',   fw:40000, aps:16000, clients:64000, sku:'R8R42AAE', elp:19995},
+     ]},
+     aos8:{aps:512, clients:16000, licCap:[
+       {code:'hw',     n:'Solo hardware',             fw:20000, aps:512,  clients:16000},
+       {code:'silver', n:'+ licencia Silver (perp.)', fw:30000, aps:1000, clients:24000, sku:'R8R13AAE', elp:null},
+       {code:'gold',   n:'+ licencia Gold (perp.)',   fw:40000, aps:2000, clients:32000, sku:'R8R14AAE', elp:null},
+     ]},
+   },
    ifaces:'4x SFP28 + 1 slot de expansión · 1U rack', hwSku:'R7H95A',
    skus:[{sku:'R7H95A',d:'9240 (US) · 4x SFP28 · 1 slot de expansión'}],
-   // clients/aps de licCap son las cifras AOS 8; la tabla AOS 10 del QuickSpecs declara
-   // otras (32K/48K/64K clientes, 4K/8K/16K APs) — se muestran en spec.extra sin tocar
-   // los campos existentes (misma regla que la serie 9000, ver PENDIENTES.md).
    spec:{encTput:'AES-CCM: 20 / 28 / 30 Gbps según licencia Base / Silver / Gold',
      ospf:'57.000 rutas', mtbf:'185.301 h', watts:'190 W máx. · PSU 550 W (ranuras 1+1)',
      btu:'648 BTU/h', ruido:'65,2 dBA', peso:'8,2 kg (18,08 lb)',
@@ -525,29 +565,65 @@ const MODELS = [
 // EC-L-H (JZ878A): misma señal de terceros (EoS 31-dic-2025) y mismo veredicto el
 // 2026-09-16 — ordenable en las QuickSpecs V18 (líneas "EC-L-H 6x SFP+ 1/10G SD-WAN
 // Gateway JZ878A" y su NoLoc). SIN confirmar por fuente oficial: no se marca.
+//
+// SERIES 7000 Y 7200 (C5 de la auditoría 2026-09-17). Se ofrecían como «línea anterior»
+// pedible, con List Price, cuando HPE ya las retiró de la venta. Boletines OFICIALES de fin
+// de venta (asp-documents.arubanetworks.com), leídos el 2026-09-17:
+//   · «End of Sale (EOS) External Announcement 7005/7008 Branch Controllers»: fin de venta
+//     31-oct-2022, fin de soporte 31-oct-2027. Reemplazos: 7005 → 9004; 7008 → 9012 (el
+//     mapa SUCESORES de abajo decía 9004 para el 7008 por inferencia: el boletín manda).
+//   · «End of Sale (EOS) External Announcement 7210/7220 Campus Controllers» (Rev4): último
+//     pedido 31-ene-2025, fin de soporte 31-ene-2030. Reemplazo: 9240; para el 7220, 9240 +
+//     licencia de capacidad Silver R8R13AAE (AOS 8).
+// 7010, 7024, 7030, 7205 y 7240XM NO se marcan: no se localizó boletín oficial para ellos
+// (el de «7240» de 2017 es la serie 7240 original, que el 7240XM reemplazó). Siguen como
+// línea anterior hasta que un documento del fabricante diga otra cosa (PENDIENTES.md).
+const EOS_7000_URL = 'https://asp-documents.arubanetworks.com/portals/0/el/EOS_Notice_7005-7008-Branch-Controllers.pdf';
+const EOS_7200_URL = 'https://asp-documents.arubanetworks.com/portals/0/7210%207220%20External%20EoS%20Updated%20Announcement%20Rev4.pdf';
 const EOL_ANNOUNCED = {
   'EC-XL': {pid:'S0B67A', lastOrder:'2026-03-31', sucesor:null,
             endOfSupport:'2033-03-31',
             url:'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/docs/eula/EC_LifecyclePolicy_latest.pdf'},
+  '7005':  {pid:'JW633A-JW640A, JY849A', lastOrder:'2022-10-31', sucesor:'Gateway 9004',
+            endOfSupport:'2027-10-31', url:EOS_7000_URL},
+  '7008':  {pid:'JX925A-JX932A', lastOrder:'2022-10-31', sucesor:'Gateway 9012',
+            endOfSupport:'2027-10-31', url:EOS_7000_URL},
+  '7210':  {pid:'JW645A-JW648A, JW743A-JW750A, JW779A-JW782A, JY853A', lastOrder:'2025-01-31', sucesor:'Gateway 9240',
+            endOfSupport:'2030-01-31', url:EOS_7200_URL},
+  '7220':  {pid:'JW649A-JW652A, JW751A-JW757A', lastOrder:'2025-01-31', sucesor:'Gateway 9240 + licencia Silver R8R13AAE (AOS 8)',
+            endOfSupport:'2030-01-31', url:EOS_7200_URL},
 };
 for (const m of MODELS) {
   m.eolAnnounced = EOL_ANNOUNCED[m.id] || null;
 }
 
 // Sucesor natural de cada gateway legacy (series 7000/7200) para el semáforo de ciclo de
-// vida del catálogo (fase 11, E5). INFERENCIA POR CAPACIDAD — no existe documento oficial
-// de tech-refresh que nombre el reemplazo de cada modelo; la página lo etiqueta como
-// «inferencia por capacidad, sin doc oficial» junto al dato. Decisión del dueño
-// (2026-09-13): mostrar la inferencia marcada vale más que no mostrar nada.
+// vida del catálogo (fase 11, E5). INFERENCIA POR CAPACIDAD donde no hay documento — la
+// página lo etiqueta como «inferencia por capacidad, sin doc oficial» junto al dato.
+// Decisión del dueño (2026-09-13): mostrar la inferencia marcada vale más que no mostrar
+// nada. 7005/7008/7210/7220 ya tienen sucesor OFICIAL en su boletín (EOL_ANNOUNCED, arriba):
+// el 7008 se corrige a 9012 el 2026-09-17 (antes 9004, por inferencia).
 const SUCESORES = {
   '7005': 'Gateway 9004',
-  '7008': 'Gateway 9004',
+  '7008': 'Gateway 9012',
   '7030': 'Gateway 9012',
   '7210': 'Gateway 9240',
   '7220': 'Gateway 9240',
 };
 for (const m of MODELS) {
   m.sucesor = SUCESORES[m.id] || null;
+}
+
+// Sistema operativo de las series 7000/7200 (C3 de la auditoría 2026-09-17): todas sus
+// cifras de APs, clientes y firewall salen de los datasheets de Mobility Controller AOS 8.
+// Con el selector en AOS 10 no se puede afirmar que cumplan con cifras de otra
+// arquitectura — se descartan del dimensionado y se dice por qué (siguen en el catálogo y
+// en el selector de equipo para ampliar parque instalado).
+for (const m of MODELS) {
+  if (m.legacy && !m.porSo) {
+    m.porSo = {aos10:null};
+    m.porSoMotivo = {aos10:'sus cifras de capacidad son de AOS 8 (Mobility Controller); en AOS 10 el catálogo no las trae'};
+  }
 }
 
 // ── Matriz de versiones mínimas de sistema operativo (fase 11, E5) ───────────

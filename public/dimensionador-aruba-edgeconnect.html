@@ -377,6 +377,14 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
       <p class="hint">Cada familia se dimensiona con lo que HPE publica para ella: EdgeConnect por <b>rango de caudal WAN</b>, los gateways por <b>throughput de firewall</b> y capacidad de clientes y APs. Solo EdgeConnect hace optimización WAN. Los gateways agrupan las series 9000, 9100 Hybrid, 9200 y las 7000/7200 de la línea anterior.</p>
     </div>
     <div class="field">
+      <label>Sistema operativo de los gateways</label>
+      <div class="seg" id="soSeg">
+        <button type="button" data-v="aos10" aria-pressed="true">AOS 10<br>(Central)</button>
+        <button type="button" data-v="aos8" aria-pressed="false">AOS 8<br>(Mobility Conductor)</button>
+      </div>
+      <p class="hint" id="soHint"><b>AOS 10</b>: gateways gestionados por HPE Aruba Networking Central. Serie 9000 hasta 128 APs (9004) / 256 (9012); 9240 Base 4.000 APs y 32.000 clientes, con licencias Silver/Gold AOS 10 (R8R41AAE/R8R42AAE). Las series 7000/7200 no se dimensionan aquí: sus cifras son de AOS 8. Solo afecta a los gateways; EdgeConnect corre ECOS.</p>
+    </div>
+    <div class="field">
       <label>Destino del tráfico</label>
       <div class="seg" id="destSeg">
         <button type="button" data-v="hibrido" aria-pressed="true">Híbrido / DC privado</button>
@@ -439,7 +447,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
     <div class="field">
       <label for="users">Usuarios / dispositivos concurrentes <span class="req-sse-tag" id="usersReqTag" hidden>— define el nº de licencias SSE</span></label>
       <input type="number" id="users" min="1" step="1" autocomplete="off">
-      <p class="hint" id="usersHint">Influye en tres cálculos: (1) los <b>flujos simultáneos</b> que debe sostener el appliance (regla 80/150 por usuario del VSG, vía el perfil de entorno); (2) sin enlaces declarados, el <b>tráfico estimado</b> del sitio (usuarios × Mbps/usuario) del que sale el tier; (3) en los gateways es una <b>restricción dura de capacidad</b>: la serie 9000 soporta 2.048 clientes y la 9200 hasta 32.000 con licencia Gold. Además, con estrategia de seguridad <b>HPE Aruba SSE</b> esta cifra ES la cantidad de licencias: SSE se suscribe por usuario (QuickSpecs SSE) y la línea del BOM no se puede cotizar sin ella.</p>
+      <p class="hint" id="usersHint">Influye en tres cálculos: (1) los <b>flujos simultáneos</b> que debe sostener el appliance (regla 80/150 por usuario del VSG, vía el perfil de entorno); (2) sin enlaces declarados, el <b>tráfico estimado</b> del sitio (usuarios × Mbps/usuario) del que sale el tier; (3) en los gateways es una <b>restricción dura de capacidad</b>: la serie 9000 soporta 2.048 clientes y el 9240 32.000 sin licencia en AOS 10 (64.000 con Gold) o 16.000 en AOS 8 (32.000 con Gold) — según el sistema operativo del panel 1. Además, con estrategia de seguridad <b>HPE Aruba SSE</b> esta cifra ES la cantidad de licencias: SSE se suscribe por usuario (QuickSpecs SSE) y la línea del BOM no se puede cotizar sin ella.</p>
     </div>
     <div class="field">
       <label for="perfilEntorno">Perfil de entorno — flujos simultáneos</label>
@@ -457,7 +465,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
     <div class="field">
       <label for="aps">Puntos de acceso a gestionar</label>
       <input type="number" id="aps" min="0" step="1" autocomplete="off">
-      <p class="hint">Deja 0 para omitirlo. Solo aplica a los gateways, que hacen de controladora: la serie 9000 soporta hasta 32 APs y la 9200 hasta 2.000 con licencia Gold.</p>
+      <p class="hint">Deja 0 para omitirlo. Solo aplica a los gateways, que hacen de controladora. En AOS 10: 128 APs el 9004, 256 el 9012 y 4.000 el 9240 sin licencia (16.000 con Gold). En AOS 8: 32 en la serie 9000 y 512 el 9240 (2.000 con Gold).</p>
     </div>
     <div class="field">
       <label for="fecMode">Path Conditioning (FEC)</label>
@@ -726,7 +734,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
           <td>Identifica la aplicación en el primer paquete, antes de decidir camino</td>
           <td>La decisión de breakout local o reenvío al SSE no espera a que la sesión se establezca</td></tr>
       <tr><td><b>Convergencia SD-Branch</b></td>
-          <td>Los gateways de la serie 9000 terminan la WAN y actúan de controladora de hasta 32 APs desde el mismo equipo, gestionados por Central</td>
+          <td>Los gateways de la serie 9000 terminan la WAN y actúan de controladora de hasta 128 APs (9004) o 256 (9012) desde el mismo equipo, gestionados por Central en AOS 10 (32 en AOS 8)</td>
           <td>En sucursales pequeñas elimina una caja y un contrato. La contrapartida, que hay que decir: no hacen optimización WAN — si hace falta Boost, la respuesta es EdgeConnect</td></tr>
       <tr><td><b>Capacidad por licencia (serie 9200)</b></td>
           <td>El mismo chasis entrega 20 Gbps solo con hardware, 30 con licencia Silver y 40 con Gold, escalando también APs y dispositivos</td>
@@ -843,6 +851,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
 </div>
 
 <script src="/js/motor-ingenieria.js"></script>
+<script src="/js/aruba-reglas.js"></script>
 <script src="/js/bom.js"></script>
 <script src="/js/ficha.js"></script>
 <script src="/js/estado.js"></script>

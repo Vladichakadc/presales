@@ -4,7 +4,19 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-17 (plan 17: **la traza viaja con la propuesta exportada** —
+Última revisión: 2026-09-17 (plan 18: **fase 1 de la auditoría técnica del
+dimensionador Aruba** — pedida por el dueño («avanza con la fase 1») sobre el documento
+«Auditoría técnica — Dimensionador Aruba»
+(<https://claude.ai/code/artifact/73f4cc17-eb40-494c-9127-ac3eea6849a0>). Cinco
+críticos que cambiaban equipo o precio (C1 tiers Foundation inexistentes, C2 licencias
+9240 AOS 8 vs AOS 10, C3 serie 9000 a 32 APs, C4 Boost ~5x, C5 7005/7008/7210/7220
+cotizables) más el A1 (DTD en EC-XS), y el **bloqueo de despliegue**: 8 despliegues
+seguidos en FAILED desde `b4e8c4e` porque `package-lock.json` resolvía 4 paquetes
+(pdf-parse y dependencias) contra `npm.mirrors.msh.team`, inalcanzable desde Railway.
+Producción seguía en `00ccc4b` (16-sep) y no tenía los planes 13 a 17. Ver *Cerrado
+recientemente*. 404 unitarios y 9/9 e2e en verde; 16/16 pantallas.)
+
+Revisión anterior: 2026-09-17 (plan 17: **la traza viaja con la propuesta exportada** —
 mejora propuesta al cerrar el plan 16 y aprobada por el dueño («Si»). La cuenta del
 dimensionado vivía solo en pantalla; quien recibía la lista de materiales no podía
 auditar de dónde sale el requerimiento. Implementación: (1) el núcleo de cada traza
@@ -550,8 +562,60 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
 | 7205 | `fw` | 15 Gbps | **12 Gbps** (DS serie 7200) |
 | 7030 | `ifaces` | «8x combo + puertos 10G» | **8x combo 1G, sin 10G** (DS serie 7000) |
 | EC-L | `psu.texto` watts | 401 W | **404 W** (QuickSpecs) / **440 W** (Hardware Ref., EC-L-P) |
-| Gateway 9004/9012 | `aps` | 32 (AOS 8) | **128 / 256 "devices" (AOS 10)** — arquitecturas distintas |
 | Gateway 9004/9012 | `fwSess` | 128.000 (datasheet AOS 10) | **64.000 en modo SD-WAN** (doc oficial a00099294en_us, validado 2026-09-13) — expuesto en `spec.fwSessSdwan` sin pisar el dato; si el dueño decide que el filtro de flujos use la cifra SD-WAN conservadora, se cambia `fwSess` y se ajusta el test de flujos |
+
+**~~Gateway 9004/9012 `aps` 32 (AOS 8) vs 128/256 (AOS 10)~~ Resuelto (2026-09-17, fase 1
+de la auditoría, C3).** Las dos cifras eran ciertas, cada una en su arquitectura: el
+selector «Sistema operativo de los gateways» elige cuál aplica (`porSo` en `aruba.js`).
+La base del catálogo pasa a AOS 10, la que gestiona Central.
+
+## Fases 2 y 3 de la auditoría técnica del 2026-09-17 (pendientes)
+
+Documento: «Auditoría técnica — Dimensionador Aruba»
+(<https://claude.ai/code/artifact/73f4cc17-eb40-494c-9127-ac3eea6849a0>). La fase 1 está
+cerrada (ver *Cerrado recientemente*). Lo que queda, en el orden del plan:
+
+**Fase 2 · sincronización**
+- **A2** — elegir DTD o SSE con «Gateways sucursal» cambia la familia a EdgeConnect sin
+  avisar y no vuelve al quitarlo. Para 9004/9012 existe Central Foundation/Advanced *with
+  Security* (IDS/IPS): R4D98AAE… ya documentados en `CENTRAL_TIERS`, sin cablear.
+- **A6** — «Enviar al cotizador» solo manda modelo y cantidad: se pierden suscripción, HA,
+  Boost, DTD/SSE, Central, licencia de capacidad, ópticas y soporte.
+- **A7** — selector de ópticas desfasado del modelo al cambiar de arquetipo (medido en
+  producción, que corría `00ccc4b`). El plan 14 ya movió el pintado al final de
+  `poblarPickModel`: verificar si queda algo. Y la matriz: EC-S/M/L/XL solo tienen 1G TAA
+  (excluida), EC-10108 sin 1G, 9106/9114 sin ninguna óptica, sin medio SFP28 25G.
+- **M1** — aviso falso «el underlay no sostiene la demanda» en todo escenario con margen
+  (`caudalTotal < needProc`, y needProc ya lleva el margen).
+- **M3** — FEC: catálogo 10 % automático / 0 % desactivado; motor 15 % / 5 %.
+- **M4** — el breakout manda a Internet el 70 % del caudal TOTAL, MPLS incluido (regla del
+  brief: decisión del dueño). Boost ya usa `bwTunelesPrivados` del motor, así que un
+  cambio aquí se propaga solo.
+- **M5** — error JS `reading 'auto'` al abrir un enlace de escenario: los `.seg` se
+  restauran con click() antes de que llegue la API (SIZING vacío).
+- **M6** — con la página vacía el BOM muestra EC-XS con precio y «[OK] Diseño coherente»
+  mientras Dimensionar dice «SIN CANDIDATO» (`renderBom` cae a `MODELS[0]`).
+- ~~M2 (margen 0 % = 20 %)~~ ya corregido en `4965bea`; no había llegado a producción.
+
+**Fase 3 · licenciamiento fino**
+- **A3** — Central de gateways usa siempre SKU «7/90xx» (JZ118–JZ123AAE), también para
+  9106/9114/9240. 72xx/92xx: JZ195AAE… (documentado en `CENTRAL_TIERS`); campus en modo
+  WLAN: «Gateway WLAN Advanced». Validar el SKU de la serie 91xx con HPE.
+- **A4** — Foundation Base (≤75 clientes, JZ124AAE…) para 9004/9012 no se ofrece.
+- **A5** — los APs solo limitan el modelo: ni hardware ni suscripción Central por AP en el BOM.
+- **M7** — el BOM exportable lleva textos internos («CARE_SKU en aruba.js», «brief del
+  dueño», rutas /datasheets/).
+- **M8** — sin headend VPNC de SD-Branch ni clúster N+1 de campus.
+- **M9** — un enlace 4G de respaldo suma al tier.
+- **B1** — EC-XL fuera de venta sin sucesor declarado.
+
+**Datos abiertos por la fase 1**
+- Estado de venta de **7010, 7024, 7030, 7205 y 7240XM**: no se localizó boletín oficial;
+  siguen como línea anterior (y fuera del dimensionado en AOS 10).
+- **9106 en AOS 8**: la sección AOS-8 de las QuickSpecs 9100 no está transcrita; en AOS 8
+  el modelo se descarta con su motivo.
+- **R8R13AAE / R8R14AAE** (Silver/Gold AOS 8 del 9240): sin List Price en la lista del
+  distribuidor — «consultar» en el BOM.
 
 ## Datos por confirmar
 
@@ -940,6 +1004,56 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Fase 1 de la auditoría técnica del dimensionador Aruba + despliegue desbloqueado (2026-09-17)
+
+El dueño pidió una auditoría como arquitecto Aruba del dimensionador en producción y,
+sobre el documento resultante, «avanza con la fase 1». Cada hallazgo se reprodujo en
+producción con un escenario y quedó fijado como prueba.
+
+**Despliegue.** Los 8 despliegues desde `b4e8c4e` (16-sep) fallaban en `npm install`:
+`package-lock.json` resolvía `pdf-parse`, `node-ensure` y `debug@3.2.7` contra
+`npm.mirrors.msh.team` (un espejo del entorno donde se añadió la dependencia), que
+Railway no resuelve (`ENOTFOUND`). Se reescriben a `registry.npmjs.org` — mismos
+tarballs, las `integrity` validan con `npm ci`.
+
+**C1 · tiers Foundation.** `tierParaCaudal` recorría los 8 tiers sin mirar el nivel y
+proponía «Foundation 200 Mbps» (o 20/50/500 Mbps, 2 Gbps), que no existe: la suscripción
+quedaba en «consultar» y fuera del total. Ahora elige solo entre los tiers del nivel
+deducido (150 Mbps → Foundation 1 Gbps S1A24AAS, US$5.040 a 3 años, más barato que
+Advanced 200 Mbps).
+
+**C2/C3 · sistema operativo de los gateways.** Selector nuevo «Sistema operativo de los
+gateways» (AOS 10 por defecto / AOS 8), en la URL como `soSeg`. `porSo` en `aruba.js`
+superpone por SO: serie 9000 128/256 APs en AOS 10 y 32 en AOS 8; 9240 con su tabla y sus
+SKU por SO (AOS 10: 4K/8K/16K APs, 32K/48K/64K clientes, R8R41/R8R42AAE; AOS 8:
+512/1K/2K, 16K/24K/32K, R8R13/R8R14AAE sin List Price). 9114 no corre AOS 8; del 9106 solo
+está la tabla AOS 10; las series 7000/7200 solo tienen cifras AOS 8 — cada descarte lleva
+su motivo en el veredicto y en la revisión del diseño. La propuesta exportada declara el SO.
+Escenario de la auditoría: 12.000 clientes / 1.200 APs ya no añade una Gold de US$19.995;
+300 usuarios / 40 APs vuelve a la serie 9000 en vez de un 9106.
+
+**C4 · Boost.** Se calculaba sobre `needProc` (margen + penalización + usuarios) con una
+cuota de breakout invertida (MPLS + 0,70 × Internet): un hub MPLS 1G + DIA 1G pedía 10
+bloques (US$196.560). Ahora es el 30 % de `bwTunelesPrivados` del motor (la cifra que el
+propio hint del breakout muestra) → 2 bloques. Se descarta el appliance cuyo Boost
+recomendado por HPE (`spec.boostRec`) no alcanza, y la barra de la ficha muestra ese
+recomendado en vez del techo WAN.
+
+**C5 · fin de venta.** Boletines oficiales en `EOL_ANNOUNCED`: 7005/7008 (último pedido
+31-oct-2022, soporte hasta 31-oct-2027; 7008 → 9012, no 9004) y 7210/7220 (31-ene-2025 /
+31-ene-2030; → 9240, el 7220 con Silver R8R13AAE). `FICHA.rango` ya los saca de la
+recomendación; siguen en el catálogo y en el selector para parque instalado.
+
+**A1 · DTD en EC-XS.** `dtd:false` en el EC-XS y filtro duro: con Dynamic Threat Defense
+ya no sale recomendado ni cotiza una licencia que no corre.
+
+**Dónde vive.** Las reglas puras salen a `public/js/aruba-reglas.js` (UMD, mismo patrón
+que `motor-ingenieria.js`) para probarlas en Node: `test/aruba-auditoria-fase1.test.js`
+(12 pruebas con los escenarios de la auditoría) y `test/e2e/e2e-auditoria-fase1.js` (19
+comprobaciones en Chromium, entrando por el enlace del escenario). `e2e-ciclo-vida.js`
+pasa a esperar el 7005 en rojo y el 7010 en ámbar. `npm run verificar` 404/404, e2e 9/9,
+`npm run pantallas` 16/16, arranque con `NODE_ENV=production` con `[seed]` y `/salud` ok.
 
 ### Interconexión EdgeHA en la lista de materiales — pendiente #7 (2026-09-17)
 
