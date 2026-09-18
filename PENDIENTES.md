@@ -4,7 +4,36 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-18 (plan 19: **lupa en las fotos de los equipos Aruba** —
+Última revisión: 2026-09-18 (plan 20: **la foto oficial viaja con la propuesta
+exportada** — mejora propuesta al cerrar el plan 19 y aprobada por el dueño («Avanza…
+y si encuentras alguna mejora por el camino ejecútala»). El BOM exportado deja de ser
+solo texto y tabla: el Excel lleva ahora una segunda hoja, «Fotos del equipo», con las
+vistas frontal y trasera del equipo cotizado a su resolución natural y el mismo pie de
+tamaño y fuente documental que la ficha en pantalla (regla de procedencia). Decisiones
+de arquitectura: (1) el escritor del Excel MIGRA de SheetJS a **ExcelJS** — la edición
+comunitaria de SheetJS no incrusta imágenes — servido perezoso desde node_modules como
+`/vendor/exceljs.js` (mismo patrón que xlsx.js; la LECTURA de xlsx en procedencia.js
+sigue con SheetJS); (2) el contenido de la hoja BOM se extrae a un núcleo PURO,
+`BOM.matrizExcel(filas, meta)` → { aoa, cols, filaCabecera, filaTotal }: una sola
+fuente que el escritor vierte y los unitarios afirman sin navegador ni dobles; (3) los
+webp oficiales se re-codifican a PNG sin pérdida vía canvas (Excel no admite webp) y se
+incrustan a resolución natural, mostrados a un máximo de 860 px; (4) regla del piloto
+intacta: solo Aruba emite `meta.fotos` (desde `FICHA_CFG.vistas`), y un modelo sin foto
+declarada exporta SIN hoja de fotos — el hueco honesto también viaja. Mejoras
+encontradas y ejecutadas en el camino: la conversión a PDF reveló que la foto se
+cortaba en el margen al imprimir, así que AMBAS hojas salen apaisadas y ajustadas al
+ancho (`fitToWidth`), la hoja BOM gana cabecera fija al desplazarse, título/cabecera/
+total en negrita con la tinta de la página, dinero con separador de miles conservando
+tipo numérico, y la columna «Precio unit.» pasa de 14 a 20 caracteres (el encabezado y
+la etiqueta «Total de referencia» quedaban cortados). Cobertura: el unitario del
+export se reescribe sobre el núcleo puro (+1 afirmación de índices); `e2e-ux.js` gana
+9 afirmaciones — el Excel descargado incrusta `xl/media/image1.png` y `image2.png`,
+lleva la hoja con el modelo cotizado y su procedencia, la hoja BOM declara el puntero,
+y el 7005 sin foto exporta sin hoja ni imagen (SheetJS relee el fichero como prueba de
+interop). Validado además abriéndolo con LibreOffice → PDF: las dos caras se ven
+completas. 419 unitarios y 9/9 e2e en verde.)
+
+Revisión anterior: 2026-09-18 (plan 19: **lupa en las fotos de los equipos Aruba** —
 petición directa del dueño: «incluir una Lupa en las imágenes de los routers de Aruba
 para que al darle click en la lupa traiga al frente la foto, ya sea frontal o trasera,
 en la máxima calidad de la imagen». La tarjeta sirve la foto a 150 px de alto; la lupa

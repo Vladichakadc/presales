@@ -223,6 +223,14 @@ app.get('/vendor/xlsx.js', (req, res) => {
   res.sendFile(require.resolve('xlsx/dist/xlsx.full.min.js'));
 });
 
+// exceljs: escritor del Excel del BOM (plan 20, 2026-09-18) — SheetJS CE no incrusta
+// imágenes y las fotos oficiales del equipo viajan ahora con la propuesta. Mismo patrón
+// que xlsx.js: se sirve desde node_modules, cargada solo al pulsar «Exportar a Excel».
+app.get('/vendor/exceljs.js', (req, res) => {
+  res.type('application/javascript');
+  res.sendFile(require.resolve('exceljs/dist/exceljs.min.js'));
+});
+
 // headroom.js: oculta/muestra un encabezado fijo segun el sentido del scroll. Mismo patron
 // que xlsx.js — se sirve desde la dependencia instalada en vez de duplicar el archivo en
 // public/, asi que la version vive en un solo sitio (package.json).

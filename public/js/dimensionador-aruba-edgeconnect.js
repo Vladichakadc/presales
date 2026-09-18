@@ -2619,10 +2619,23 @@ function renderBom(){
   const cuentaBom=esEC
     ?(cuentaMotorPlana(D,D.wanNeed)?`${cuentaMotorPlana(D,D.wanNeed)} de diseño`:'')
     :cuentaProcesoPlana(D);
+  // La foto oficial viaja con la propuesta (plan 20, 2026-09-18): las vistas que la ficha
+  // pinta en pantalla (misma fuente, FICHA_CFG.vistas) se incrustan en el Excel en la hoja
+  // «Fotos del equipo», con el mismo pie de tamaño y fuente documental — quien recibe la
+  // cotización ve el equipo real sin abrir la herramienta. Regla del piloto: solo Aruba
+  // declara vistas, así que ningún otro fabricante emite `fotos` hasta que su catálogo
+  // las declare. Modelo sin foto declarada (7000/7200, EC-V): no hay hoja — el hueco es
+  // honesto, no se inventa una imagen.
+  const vBom=(FICHA_CFG.vistas||{})[m.id];
+  const fotosBom=vBom&&vBom.front
+    ?{modelo:m.id, front:vBom.front, rear:vBom.rear||null,
+      pie:[vBom.tamano,vBom.fuente].filter(Boolean).join(' · ')}
+    :null;
   const meta={
     titulo:`Lista de materiales — ${m.id}`,
     subtitulo:`${m.seg} · ${famLabel(m)} · ${termino}`,
     archivo:`BOM_${m.id}`,
+    ...(fotosBom?{fotos:fotosBom}:{}),
     ...(cliente?{cliente}:{}),
     ...(refProy?{referencia:refProy}:{}),
     notas:[

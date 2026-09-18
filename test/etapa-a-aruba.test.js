@@ -100,22 +100,27 @@ test('el texto plano enumera las pendientes para el correo al distribuidor', () 
   assert.ok(txt.includes('HPE Aruba SSE — suscripción por usuario (R8M36AAE) x50'), 'la línea pendiente no va enumerada');
 });
 
-test('el Excel distingue las pendientes en una sección y encabeza cliente/referencia', async () => {
-  // Doble de XLSX: se captura el libro en vez de escribir el fichero — lo que se prueba
-  // es el CONTENIDO de la hoja, no el disco.
-  const XLSX = require('xlsx');
-  let libro = null;
-  g.XLSX = { utils: XLSX.utils, writeFile: (l) => { libro = l; } };
-  await BOM.exportarExcel(FILAS_PENDIENTE, {
+test('el Excel distingue las pendientes en una sección y encabeza cliente/referencia', () => {
+  // El contenido del Excel vive en BOM.matrizExcel (núcleo puro desde el plan 20,
+  // 2026-09-18): se afirma sin navegador, sin disco y sin dobles del escritor. El
+  // vertido real a .xlsx (ExcelJS) lo cubre el e2e, que descarga el fichero y lo relee
+  // con SheetJS — incluida la hoja «Fotos del equipo».
+  const { aoa } = BOM.matrizExcel(FILAS_PENDIENTE, {
     titulo: 'Prueba', archivo: 'prueba', cliente: 'Cliente MSP SA', referencia: 'PRY-2026-042',
   });
-  assert.ok(libro && libro.Sheets.BOM, 'no se generó la hoja BOM');
-  const aoa = XLSX.utils.sheet_to_json(libro.Sheets.BOM, { header: 1, blankrows: false });
   const plano = aoa.map((f) => f.join(' | ')).join('\n');
   assert.ok(plano.includes('Cliente: Cliente MSP SA'), 'la primera hoja no encabeza el cliente');
   assert.ok(plano.includes('Referencia del proyecto: PRY-2026-042'), 'la primera hoja no encabeza la referencia');
   assert.ok(plano.includes('PENDIENTE DE COTIZACION CON EL DISTRIBUIDOR'), 'falta la sección de pendientes en el Excel');
   assert.ok(plano.includes('R8M36AAE'), 'la sección de pendientes no enumera el SKU');
+});
+
+test('matrizExcel marca la cabecera y el total para que el escritor las destaque', () => {
+  // El escritor (plan 20) fija la vista bajo la cabecera y la pone en negrita junto al
+  // total: si estos índices se desalinean, el Excel queda con la fila equivocada fija.
+  const { aoa, filaCabecera, filaTotal } = BOM.matrizExcel(FILAS_PENDIENTE, { titulo: 'Prueba' });
+  assert.strictEqual(aoa[filaCabecera][0], 'Categoría', 'filaCabecera no apunta a la cabecera de columnas');
+  assert.ok(String(aoa[filaTotal][4]).startsWith('Total'), 'filaTotal no apunta a la fila de total');
 });
 
 // ── Pendiente #31: la línea DTD del BOM lleva precio real de la lista ─────────

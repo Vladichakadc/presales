@@ -3,8 +3,15 @@
    copiar enlace, «Limpiar escenario», cálculo declarado del destino de tráfico, tier
    automático sincronizado con el módulo 2, unidades por HA sin campo cantidad, orden de
    la pestaña BOM (lista primero, añadir al final), BOM editable (retirar/restaurar con
-   la omisión en la URL) y licenciamiento SSE por usuario con su línea PENDIENTE. */
+   la omisión en la URL) y licenciamiento SSE por usuario con su línea PENDIENTE. Plan 19
+   (2026-09-18): la lupa de las fotos oficiales. Plan 20 (2026-09-18): la foto oficial
+   viaja con la propuesta — el Excel lleva la hoja «Fotos del equipo» con las vistas a su
+   resolución natural y el hueco honesto de los modelos sin foto también se exporta. */
 const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
+const fs = require('fs');
+// SheetJS en Node: relee el .xlsx que el navegador escribió con ExcelJS — la prueba de
+// interop es parte del contrato (plan 20, 2026-09-18).
+const XLSX = require('xlsx');
 
 (async () => {
   const { chromium } = cargarPlaywright();
@@ -149,6 +156,20 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
     'un modelo sin foto oficial declara el hueco, no enseña una foto prestada');
   const txtVacio = (await page.textContent('#verdict .ficha-vista-vacia')) || '';
   ok(/Sin foto oficial/.test(txtVacio), 'el aviso dice por qué no hay foto: ' + txtVacio.trim().slice(0, 70));
+  // ··· plan 20 (2026-09-18): el hueco honesto también viaja — un modelo sin foto
+  //     declarada exporta un Excel SIN hoja de fotos (nunca una imagen inventada)
+  await page.click('[data-tab=bom]');
+  await page.waitForTimeout(500);
+  const [descVacio] = await Promise.all([
+    page.waitForEvent('download', { timeout: 30000 }),
+    page.click('#xlsBtn'),
+  ]);
+  const bufVacio = fs.readFileSync(await descVacio.path());
+  ok(!bufVacio.includes(Buffer.from('xl/media/')), 'sin foto declarada, el Excel no incrusta ninguna imagen');
+  ok(!XLSX.read(bufVacio, { type: 'buffer' }).SheetNames.includes('Fotos del equipo'),
+    'sin foto declarada no hay hoja «Fotos del equipo» — el hueco honesto viaja con la propuesta');
+  await page.click('[data-tab=calc]');
+  await page.waitForTimeout(400);
   await page.click('#verdict-volver');
   await page.waitForTimeout(500);
 
@@ -158,6 +179,29 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   const secciones = await page.$$eval('#pane-bom h2', hs => hs.map(h => h.textContent.trim().slice(0, 30)));
   ok(/^Lista de materiales/.test(secciones[0]), 'la lista de materiales va primera');
   ok(/^Añadir a la lista/.test(secciones[secciones.length - 1]), '«Añadir a la lista» va al final');
+
+  // ··· plan 20 (2026-09-18): la foto oficial viaja con la propuesta exportada
+  const modeloExcel = await page.inputValue('#pickModel');
+  const [descarga] = await Promise.all([
+    page.waitForEvent('download', { timeout: 30000 }),
+    page.click('#xlsBtn'),
+  ]);
+  const bufXlsx = fs.readFileSync(await descarga.path());
+  ok(bufXlsx.includes(Buffer.from('xl/media/image1.png')), 'el Excel incrusta la foto oficial (xl/media/image1.png)');
+  ok(bufXlsx.includes(Buffer.from('xl/media/image2.png')), 'el Excel incrusta también la cara trasera (image2.png)');
+  const libroX = XLSX.read(bufXlsx, { type: 'buffer' });
+  ok(libroX.SheetNames.includes('Fotos del equipo'), 'el Excel lleva la hoja «Fotos del equipo»');
+  const planoFotos = XLSX.utils.sheet_to_json(libroX.Sheets['Fotos del equipo'], { header: 1 })
+    .map((f) => f.join(' | ')).join('\n');
+  ok(planoFotos.includes('Modelo: ' + modeloExcel), 'la hoja de fotos declara el modelo cotizado (' + modeloExcel + ')');
+  ok(/QuickSpecs|Hardware Reference/.test(planoFotos), 'la hoja de fotos conserva la procedencia oficial');
+  ok(planoFotos.includes('Vista trasera'), 'la hoja de fotos lleva las dos caras, frontal y trasera');
+  // La hoja BOM se relee con SheetJS: que lo que ExcelJS escribió lo abra otro lector es
+  // la prueba de que el fichero es un xlsx sano, no solo uno que ExcelJS se relee a sí mismo.
+  const planoBomX = XLSX.utils.sheet_to_json(libroX.Sheets.BOM, { header: 1 })
+    .map((f) => f.join(' | ')).join('\n');
+  ok(planoBomX.includes('Categoría'), 'la hoja BOM conserva la tabla intacta');
+  ok(planoBomX.includes('Fotos del equipo'), 'la hoja BOM declara dónde viajan las fotos');
 
   // D10b · retirar y restaurar una línea calculada
   const nAntes = await page.locator('#bomTabla tbody tr').count();

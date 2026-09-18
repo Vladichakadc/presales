@@ -559,15 +559,18 @@
     return html;
   }
 
-  // SheetJS se carga solo al primer export. Se sirve desde node_modules vía /vendor/xlsx.js,
-  // asi que sigue la version de package.json y no hay copia que se desincronice.
+  // ExcelJS se carga solo al primer export. Se sirve desde node_modules vía
+  // /vendor/exceljs.js, así que sigue la versión de package.json y no hay copia que se
+  // desincronice. (Plan 20, 2026-09-18: antes se escribía con SheetJS, pero su edición
+  // comunitaria no incrusta imágenes y las fotos oficiales del equipo viajan ahora con
+  // la propuesta; la LECTURA de xlsx en procedencia.js sigue con SheetJS.)
   let cargando = null;
-  function cargarSheetJS() {
-    if (global.XLSX) return Promise.resolve();
+  function cargarExcelJS() {
+    if (global.ExcelJS) return Promise.resolve();
     if (cargando) return cargando;
     cargando = new Promise((resolve, reject) => {
       const s = document.createElement('script');
-      s.src = '/vendor/xlsx.js';
+      s.src = '/vendor/exceljs.js';
       s.onload = () => resolve();
       s.onerror = () => { cargando = null; reject(new Error('No se pudo cargar el componente de Excel.')); };
       document.head.appendChild(s);
@@ -582,9 +585,13 @@
     return `${limpio}_${hoy}.xlsx`;
   }
 
-  async function exportarExcel(filasBase, meta) {
+  // NÚCLEO PURO del Excel (plan 20, 2026-09-18): construye la matriz de filas, los anchos
+  // de columna y las posiciones destacadas SIN tocar red ni disco. Es la única fuente del
+  // contenido — exportarExcel solo lo vierte con ExcelJS, y las pruebas unitarias lo
+  // afirman directamente, sin navegador ni dobles del escritor.
+  // Devuelve { aoa, cols, dto, filaCabecera, filaTotal } (índices 0-based dentro de aoa).
+  function matrizExcel(filasBase, meta) {
     const m = meta || {};
-    await cargarSheetJS();
     // Igual que en renderTabla: lo anadido a mano tambien viaja al Excel. Exportar sin esas
     // lineas daria un documento que no corresponde a lo que se ve en pantalla (2026-09-13).
     // `meta.sinRefs` (fase 11) las omite para el BOM global consolidado de perfiles.
@@ -603,6 +610,7 @@
     aoa.push([`Generado ${new Date().toLocaleString('es')}`]);
     if (dtoX > 0 && m.dtoEtq) aoa.push([`Precio neto simulado: ${m.dtoEtq}`]);
     aoa.push([]);
+    const filaCabecera = aoa.length;
     aoa.push(dtoX > 0
       ? ['Categoría', 'Descripción', 'SKU / Código', 'Cantidad', 'Precio unit. Lista', 'Subtotal Lista', 'Unit. Neto', 'Subtotal Neto', 'Notas']
       : ['Categoría', 'Descripción', 'SKU / Código', 'Cantidad', 'Precio unit.', 'Subtotal', 'Notas']);
@@ -628,6 +636,7 @@
 
     const faltaEquipoX = filas.some((f) => f.unit == null && /equipo|hardware|chasis/i.test(f.cat || ''));
     aoa.push([]);
+    const filaTotal = aoa.length;
     if (dtoX > 0) {
       aoa.push(['', '', '', '', sinPrecio === 0 ? 'Total Lista de referencia' : 'Total Lista parcial', faltaEquipoX ? 'sin cotizar' : suma, sinPrecio === 0 ? 'Total Neto' : 'Total Neto parcial', faltaEquipoX ? 'sin cotizar' : Math.round(suma * (1 - dtoX) * 100) / 100, '']);
     } else {
@@ -663,13 +672,117 @@
     }
     for (const n of (m.notas || [])) aoa.push(['', n]);
 
-    const hoja = global.XLSX.utils.aoa_to_sheet(aoa);
-    hoja['!cols'] = dtoX > 0
-      ? [{ wch: 14 }, { wch: 46 }, { wch: 26 }, { wch: 9 }, { wch: 14 }, { wch: 14 }, { wch: 13 }, { wch: 14 }, { wch: 52 }]
-      : [{ wch: 14 }, { wch: 46 }, { wch: 26 }, { wch: 9 }, { wch: 14 }, { wch: 14 }, { wch: 52 }];
-    const libro = global.XLSX.utils.book_new();
-    global.XLSX.utils.book_append_sheet(libro, hoja, 'BOM');
-    global.XLSX.writeFile(libro, nombreArchivo(m.archivo || m.titulo));
+    // Col E (Precio unit.) a 20: con 14 el encabezado «Precio unit. Lista» y la
+    // etiqueta «Total de referencia» quedaban cortados al imprimir (visto 2026-09-18).
+    const cols = dtoX > 0
+      ? [{ wch: 14 }, { wch: 46 }, { wch: 26 }, { wch: 9 }, { wch: 20 }, { wch: 14 }, { wch: 13 }, { wch: 14 }, { wch: 52 }]
+      : [{ wch: 14 }, { wch: 46 }, { wch: 26 }, { wch: 9 }, { wch: 20 }, { wch: 14 }, { wch: 52 }];
+    return { aoa, cols, dto: dtoX, filaCabecera, filaTotal };
+  }
+
+  // webp → PNG sin pérdida (plan 20): los webp del repo son los ORIGINALES extraídos de
+  // los documentos oficiales de HPE y Excel no admite webp, así que se re-codifican a PNG
+  // a su resolución natural vía canvas — la propuesta lleva la máxima calidad disponible.
+  async function fotoPng(src) {
+    const resp = await fetch(src);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status} al leer ${src}`);
+    const bmp = await global.createImageBitmap(await resp.blob());
+    const cv = document.createElement('canvas');
+    cv.width = bmp.width; cv.height = bmp.height;
+    cv.getContext('2d').drawImage(bmp, 0, 0);
+    return { b64: cv.toDataURL('image/png').split(',')[1], w: bmp.width, h: bmp.height };
+  }
+
+  // Hoja «Fotos del equipo» (plan 20): modelo, pie con tamaño y fuente documental (regla
+  // de procedencia, el mismo que la ficha en pantalla) y las vistas declaradas, a lo sumo
+  // 860 px de ancho para que la hoja se maneje cómoda — el PNG incrustado conserva la
+  // resolución natural completa. Devuelve cuántas fotos se incrustaron de verdad.
+  async function hojaDeFotos(libro, fotos) {
+    const h = libro.addWorksheet('Fotos del equipo');
+    h.getColumn(1).width = 110;
+    // La propuesta se imprime o se pasa a PDF: sin este ajuste la foto se corta en el
+    // margen de la página (visto al convertir con LibreOffice, 2026-09-18).
+    h.pageSetup = { orientation: 'landscape', fitToWidth: 1, fitToHeight: 0 };
+    let r = 1;
+    const pon = (txt, bold) => {
+      const c = h.getCell(`A${r}`);
+      c.value = txt;
+      if (bold) c.font = { bold: true };
+      r++;
+    };
+    pon('FOTOS OFICIALES DEL EQUIPO RECOMENDADO', true);
+    pon(`Modelo: ${fotos.modelo}`);
+    if (fotos.pie) pon(fotos.pie);
+    pon('Extraídas de los documentos oficiales de HPE versionados en la herramienta — la misma fuente que la ficha en pantalla.');
+    r++;
+    let incrustadas = 0;
+    for (const [cara, src] of [['frontal', fotos.front], ['trasera', fotos.rear]]) {
+      if (!src) continue;
+      pon(`Vista ${cara}`, true);
+      try {
+        const f = await fotoPng(src);
+        const W = Math.min(f.w, 860);
+        const H = Math.round(f.h * W / f.w);
+        const id = libro.addImage({ base64: f.b64, extension: 'png' });
+        h.addImage(id, { tl: { col: 0, row: r - 1 }, ext: { width: W, height: H } });
+        r += Math.ceil(H / 20) + 2;
+        incrustadas++;
+      } catch (e) {
+        // Honestidad antes que silencio: la foto declarada que no se pudo incrustar
+        // deja constancia en la hoja, con su causa y dónde verla.
+        pon(`La foto ${cara} no se pudo incrustar (${e.message}) — está disponible en la ficha del equipo dentro de la herramienta.`);
+      }
+    }
+    return incrustadas;
+  }
+
+  async function exportarExcel(filasBase, meta) {
+    const m = meta || {};
+    await cargarExcelJS();
+    const { aoa, cols, dto, filaCabecera, filaTotal } = matrizExcel(filasBase, meta);
+
+    const libro = new global.ExcelJS.Workbook();
+    // La cabecera de columnas queda fijada al desplazarse: en un BOM largo, la columna
+    // que se está leyendo deja de ser una adivinanza (plan 20).
+    const hoja = libro.addWorksheet('BOM', { views: [{ state: 'frozen', ySplit: filaCabecera + 1 }] });
+    // La tabla (7-9 columnas anchas) tampoco cabía en un A4 vertical al imprimirla:
+    // apaisada y ajustada al ancho, la propuesta sale legible a papel o PDF (plan 20).
+    hoja.pageSetup = { orientation: 'landscape', fitToWidth: 1, fitToHeight: 0 };
+    hoja.columns = cols.map((c) => ({ width: c.wch }));
+    for (const fila of aoa) hoja.addRow(fila);
+    // Jerarquía mínima, la misma de la tabla en pantalla: título, cabecera y total.
+    hoja.getRow(1).font = { bold: true, size: 13 };
+    const filaCab = hoja.getRow(filaCabecera + 1);
+    filaCab.font = { bold: true };
+    filaCab.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEDF0F4' } };
+    hoja.getRow(filaTotal + 1).font = { bold: true };
+    // Las columnas de dinero se muestran con separador de miles, conservando su tipo
+    // numérico (Excel puede seguir sumando y filtrando).
+    hoja.eachRow((row, n) => {
+      if (n <= filaCabecera + 1) return;
+      for (const c of [5, 6, 7, 8]) {
+        const cel = row.getCell(c);
+        if (typeof cel.value === 'number') cel.numFmt = '#,##0.00';
+      }
+    });
+
+    // Fotos oficiales del equipo (plan 20): solo viajan cuando la página las declara en
+    // meta.fotos — hoy únicamente Aruba, por la regla del piloto.
+    if (m.fotos && m.fotos.front) {
+      const incrustadas = await hojaDeFotos(libro, m.fotos);
+      if (incrustadas > 0) {
+        hoja.addRow(['', 'Las fotos oficiales del equipo recomendado viajan en la hoja «Fotos del equipo».']);
+      }
+    }
+
+    const buf = await libro.xlsx.writeBuffer();
+    const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = nombreArchivo(m.archivo || m.titulo);
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 800);
   }
 
   // Texto plano para pegar en un correo o un ticket. Se conserva porque sigue siendo la vía
@@ -959,7 +1072,7 @@
     });
   }
 
-  global.BOM = { renderTabla, exportarExcel, comoTexto, money, esc, claveFila,
+  global.BOM = { renderTabla, exportarExcel, comoTexto, matrizExcel, money, esc, claveFila,
     enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar,
     sincronizar, soltarManual, avisoDesvio,
     agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor,
