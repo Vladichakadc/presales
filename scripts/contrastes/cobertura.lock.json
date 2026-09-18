@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "024b723",
+  "commit": "c85e7a8",
   "fecha": "2026-09-18"
  },
  "umbralRozado": 25,
@@ -184,8 +184,8 @@
    "modulo": "fuentes.js",
    "estado": "ejercitado",
    "total": 5,
-   "usadas": 4,
-   "pct": 80
+   "usadas": 5,
+   "pct": 100
   }
  ]
 }
