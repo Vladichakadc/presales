@@ -46,6 +46,18 @@ const esc=s=>String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt
   // pantalla. Si el nombre no casa con nada se dice — no se inventa una linea.
   const entrantes = BOM.recogerEntrada();
   const noEncontrados = [];
+  /* QUE CUENTA COMO «LA MISMA LINEA», EN UN SOLO SITIO (2026-09-18).
+     Tres puntos de este archivo deciden si una linea que llega ya estaba: la ingesta de
+     referencias, la de equipos y la fusion con el BOM restaurado. Los tres tenian su propia
+     regla, y la de la fusion comparaba `model + vendor`. Eso valia cuando del dimensionador
+     solo venia el equipo (`model` es el nombre unico de la caja), pero desde que viaja el BOM
+     entero `model` de una referencia es el nombre COMERCIAL del bundle: «Enterprise
+     Protection» es el mismo texto en un FortiGate 30G que en un 200G. Medido en Chromium:
+     cotizar un 200G y despues un 30G fundia la licencia de $1.147,50 dentro de la de
+     $21.205,80 y la dejaba en cantidad 2 — una cotizacion con un equipo que no tenia su
+     licencia y otro con el doble de la que no era. La identidad de una referencia es su SKU,
+     que es lo que se pide al distribuidor; la de un equipo, su fabricante y su modelo. */
+  const identidadLinea = (l) => (l.refSku ? 'ref:' + l.refSku : 'eq:' + l.vendor + '|' + l.model);
   for(const e of entrantes){
     // Una REFERENCIA (bundle de soporte, licencia, accesorio) no esta en CATALOG y no puede
     // estarlo: son 6.849 solo de Fortinet frente a sus 54 equipos. Viaja con su SKU, su
@@ -54,24 +66,31 @@ const esc=s=>String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt
     if(e.ref){
       const r = e.ref;
       const clave = r.sku || r.d;
-      const yaRef = bom.find(b2 => b2.refSku === clave);
+      const yaRef = bom.find(b2 => identidadLinea(b2) === 'ref:' + clave);
       if(yaRef){ yaRef.qty += (e.qty || 1); continue; }
       // El fabricante viaja con la referencia y su color sale de CATALOG. Fijarlos aqui
       // habria pintado de Fortinet una referencia de Aruba — un dato inventado, y de los que
       // no fallan: solo mienten.
       const vend = r.v || 'Referencia';
       const hermano = CATALOG.find(x => BOM.normalizar(x.vendor) === BOM.normalizar(vend));
+      // `r.cat` solo lo traen las lineas calculadas por el dimensionador (A6, 2026-09-18):
+      // una licencia se presenta como «Licencias FortiGuard» y no como «Referencia de
+      // pedido», que es de donde venia este canal. Distingue tambien la nota, porque las dos
+      // procedencias no son la misma cosa: una la calculo el motor, la otra la anadio alguien.
       bom.push({id: nextId++, vendor: hermano ? hermano.vendor : vend,
         color: hermano ? hermano.color : 'var(--steel)', model: r.d || r.sku,
-        seg: 'Referencia de pedido', spec: r.sku || '', refSku: clave,
+        seg: r.cat || 'Referencia de pedido', spec: r.sku || '', refSku: clave,
         elp: r.p == null ? 'Consultar' : ('~ $' + Number(r.p).toLocaleString('en-US')),
         elpN: r.p == null ? 0 : r.p,
-        qty: e.qty || 1, note: e.de ? `Añadida desde la ficha de ${e.de}` : 'Añadida desde la ficha del equipo'});
+        qty: e.qty || 1,
+        note: r.cat
+          ? (e.de ? `Dimensionado en ${e.de}` : 'Calculada por el dimensionador')
+          : (e.de ? `Añadida desde la ficha de ${e.de}` : 'Añadida desde la ficha del equipo')});
       continue;
     }
     const item = CATALOG.find(x => BOM.normalizar(x.model) === BOM.normalizar(e.modelo));
     if(!item){ noEncontrados.push(e.modelo); continue; }
-    const ya = bom.find(b2 => b2.model === item.model && b2.vendor === item.vendor);
+    const ya = bom.find(b2 => identidadLinea(b2) === 'eq:' + item.vendor + '|' + item.model);
     if(ya){ ya.qty += (e.qty || 1); continue; }
     bom.push({id: nextId++, vendor: item.vendor, color: item.color, model: item.model,
       seg: item.seg, spec: item.spec, elp: item.elp, elpN: item.elpN,
@@ -81,11 +100,22 @@ const esc=s=>String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt
   // Se restaura ANTES del primer renderBom para que la tabla salga ya con el trabajo previo.
   // Si llegaron equipos de un dimensionador, se suman a lo que ya hubiera guardado en vez
   // de sustituirlo: entrar desde el dimensionador no debe borrar el BOM en curso.
+  //
+  // LA FUSION SOLO CORRE SI DE VERDAD SE RESTAURO ALGO (2026-09-18). `restaurarBom()`
+  // SUSTITUYE `bom` por lo guardado; cuando no hay nada guardado lo deja como estaba, o sea
+  // siendo exactamente `traidos`. Sin esta guarda el bucle buscaba cada linea traida dentro
+  // del array que ya la contenia, se encontraba a SI MISMA y hacia `ya.qty += t.qty`: toda
+  // cotizacion empezada desde un dimensionador salia al DOBLE. Medido en Chromium ese dia
+  // con un FortiGate 200G: llegaba con cantidad 2 y $22.954 en vez de $11.477. Es el modo de
+  // fallo peor de este repositorio — no falla, miente, y encima en la cifra que se pone
+  // delante de un cliente.
   const traidos = bom.slice();
   const guardado = restaurarBom();
-  for(const t of traidos){
-    const ya = bom.find(b2 => b2.model === t.model && b2.vendor === t.vendor);
-    if(ya) ya.qty += t.qty; else { t.id = nextId++; bom.push(t); }
+  if(guardado){
+    for(const t of traidos){
+      const ya = bom.find(b2 => identidadLinea(b2) === identidadLinea(t));
+      if(ya) ya.qty += t.qty; else { t.id = nextId++; bom.push(t); }
+    }
   }
   renderBom();
   if(guardado){

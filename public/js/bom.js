@@ -113,6 +113,10 @@
   const CLAVE_REFS = 'presales-bom-refs';
   let repintar = null;   // lo deja `sincronizar`: es como se refresca el BOM tras anadir o quitar
   let vendorPagina = ''; // lo deja `ficha.js`: de que fabricante es la pagina que se esta viendo
+  // Las filas que el motor de la pagina calculo en su ultimo render PROPIO. `renderTabla` ya
+  // las recibia y las tiraba; se guardan porque son lo unico que sabe que lleva la cotizacion
+  // ademas del hardware. Ver `acompanantes()`.
+  let filasCalculadas = [];
 
   const claveDe = (r) => `${(r.v || '').toLowerCase()}|${r.sku || r.d || ''}`;
 
@@ -418,6 +422,16 @@
     // que la cotizacion lleva dentro. `o.sinRefs` (fase 11) las omite: el BOM global
     // consolidado de perfiles multi-sede no debe arrastrar las refs manuales de la pagina.
     const filas = (filasBase || []).concat(o.sinRefs ? [] : filasDeRefs());
+
+    // SE GUARDA EL BOM PROPIO DE ESTA PANTALLA, NO CUALQUIER TABLA QUE PASE POR AQUI.
+    // `o.sinRefs` marca hoy la tabla consolidada multi-sede, que no es el BOM de este equipo
+    // sino la suma de varias sedes: guardarla haria que «Enviar al cotizador» mandase las
+    // filas de todas las sedes como si fueran las de esta pantalla. Es la misma propiedad que
+    // dice «estas filas no son las de esta pagina», por eso decide las dos cosas y no hay un
+    // segundo interruptor que se desincronice. `test/bom-traspaso.test.js` lo fija.
+    // Se guarda `filasBase` y NO `filas`: las referencias anadidas a mano ya viajan por su
+    // propio canal (`refsExtra`), y meterlas aqui las duplicaria.
+    if (!o.sinRefs) filasCalculadas = (filasBase || []).slice();
 
     // UN SKU QUE YA ESTA EN LA COTIZACION SE DICE, NO SE IMPIDE.
     //
@@ -736,7 +750,53 @@
     return s.replace(PREFIJOS, '') || s;
   }
 
-  // Manda al cotizador el equipo y, con el, las referencias anadidas a mano.
+  /* LO QUE ACOMPANA AL EQUIPO: EL RESTO DEL BOM (A6, 2026-09-18).
+     El hueco medido en Chromium ese dia sobre el dimensionador de Fortinet: un FortiGate 200G
+     a 2.500 Mbps produce un BOM de cuatro lineas por $38.088,20 —equipo $11.477, bundle
+     Enterprise Protection $21.205,80, FortiCare Premium $4.989,60 y FortiConverter $415,80— y
+     al cotizador viajaba UNICAMENTE el equipo. El 70 % de la cotizacion se volvia a teclear a
+     mano, que es el mismo hueco que «Enviar al cotizador» existe para cerrar. Lo mismo con la
+     suscripcion y el Boost de Aruba, las opticas de Huawei o el soporte de cualquiera.
+
+     NO HACE FALTA UN CANAL NUEVO: el cotizador ya acepta lineas que no estan en `CATALOG` por
+     la via de las referencias (`e.ref`), que se construyo para los bundles anadidos desde la
+     ficha. Una linea de licencia calculada por el dimensionador es exactamente eso: algo que
+     no vive en `CATALOG` y viaja con su SKU, su descripcion y su precio.
+
+     EL EQUIPO SIGUE VIAJANDO SOLO COMO NOMBRE. La regla de este repositorio no cambia: el
+     dimensionador dice QUE equipo y `CATALOG` pone su precio y su texto comercial. Por eso la
+     fila `cat:'Equipo'` se EXCLUYE de lo que viaja como referencia — si viajara, el hardware
+     se cotizaria dos veces, que es el fallo de los $38.088,20 → $49.565,20 ya documentado en
+     `renderTabla`.
+
+     FALLA CERRADO. Solo se manda el resto del BOM cuando se puede PROBAR que ese BOM es el
+     del equipo que viaja:
+       - sin ninguna fila `cat:'Equipo'` no hay forma de saber cual de las filas es el
+         hardware, y mandarlas todas lo cotizaria dos veces;
+       - si la fila de equipo del BOM no es el modelo que manda la pagina, el BOM esta
+         cotizando otra caja (el desplegable del BOM cotiza cualquier equipo a proposito, ver
+         `avisoDesvio`) y sus licencias no corresponden a este.
+     En los dos casos viaja solo el equipo — lo de hoy— y se dice por que, en vez de armar una
+     cotizacion incoherente en silencio.
+
+     LO QUE NO VIAJA, Y ES UNA DECISION: la `nota` de cada fila. Esas notas llevan texto
+     interno del dimensionador (rutas de `/datasheets/`, referencias a constantes del catalogo)
+     y la cotizacion es el documento que ve el cliente. */
+  function acompanantes(modelo) {
+    const equipo = filasCalculadas.filter((f) => f && f.cat === 'Equipo');
+    if (!equipo.length) return { filas: [], motivo: 'sin-equipo' };
+    if (!equipo.some((f) => normalizar(f.desc) === normalizar(modelo))) return { filas: [], motivo: 'otro-equipo' };
+    // Defensa de segundo orden: si una fila de otra categoria repite el SKU del hardware
+    // (una variante, un repuesto listado aparte), no se manda — el cotizador la sumaria al
+    // equipo que ya viaja por su nombre.
+    const skusEquipo = new Set(equipo.map((f) => f.sku).filter(Boolean));
+    const filas = filasCalculadas.filter((f) => f && f.cat !== 'Equipo'
+      && (f.sku || f.desc)                       // una fila sin SKU ni descripcion no es una linea
+      && !(f.sku && skusEquipo.has(f.sku)));
+    return { filas, motivo: '' };
+  }
+
+  // Manda al cotizador el equipo, el resto de su BOM y las referencias anadidas a mano.
   //
   // LAS DOS COSAS VIAJAN DISTINTO A PROPOSITO. El EQUIPO viaja solo como nombre: el precio y
   // el texto comercial los pone `CATALOG`, que es la fuente de verdad del cotizador — si los
@@ -744,17 +804,35 @@
   // hacer eso porque no esta en `CATALOG` (son 6.849 solo de Fortinet, frente a sus 54
   // equipos), asi que viaja con su SKU, su descripcion y su precio, y la fuente de verdad de
   // esos tres es la price list de la que se extrajeron.
+  //
+  // Devuelve `{ok, lineas, motivo}` y no un booleano: el boton necesita decir cuantas lineas
+  // viajaron y, cuando solo viajo el equipo, por que — un «Enviado» a secas ocultaria
+  // exactamente el caso que esta funcion existe para no ocultar.
   function enviarACotizador(item) {
     try {
       const cola = JSON.parse(localStorage.getItem(ENTRADA) || '[]');
       cola.push({ modelo: item.modelo, qty: item.qty || 1, nota: item.nota || '', de: item.de || '' });
-      for (const r of refsExtra()) {
+      const acomp = acompanantes(item.modelo);
+      for (const f of acomp.filas) {
+        // `cat` viaja para que la cotizacion agrupe la linea por lo que es (Licencias, Soporte,
+        // Opticas) en vez de por «Referencia de pedido», que es de donde venia el canal.
+        cola.push({ ref: { sku: f.sku || null, d: f.desc || '', p: (f.unit == null ? null : f.unit), v: vendorPagina, cat: f.cat || '' },
+                    qty: f.qty || 1, de: item.de || '' });
+      }
+      const manuales = refsExtra();
+      for (const r of manuales) {
         cola.push({ ref: { sku: r.sku, d: r.d, p: r.p, v: r.v || '' }, qty: r.qty || 1, de: item.de || '' });
       }
       localStorage.setItem(ENTRADA, JSON.stringify(cola));
-      return true;
+      if (acomp.motivo) {
+        console.warn('[BOM] Al cotizador viaja solo el equipo: '
+          + (acomp.motivo === 'sin-equipo'
+            ? 'el BOM de esta pantalla no declara ninguna fila de categoria «Equipo».'
+            : 'el BOM esta cotizando otro equipo distinto del que se manda.'));
+      }
+      return { ok: true, lineas: 1 + acomp.filas.length + manuales.length, motivo: acomp.motivo };
     } catch {
-      return false; // almacenamiento deshabilitado: se avisa, no se finge que funciono
+      return { ok: false, lineas: 0, motivo: '' }; // almacenamiento deshabilitado: se avisa, no se finge que funciono
     }
   }
 
@@ -850,9 +928,16 @@
     b.addEventListener('click', () => {
       const item = obtener();
       if (!item || !item.modelo) { b.textContent = 'Sin equipo elegido'; setTimeout(() => { b.textContent = 'Enviar al cotizador'; }, 1800); return; }
-      b.textContent = enviarACotizador(item) ? 'Enviado — abriendo…' : 'No se pudo guardar';
-      if (b.textContent.startsWith('Enviado')) setTimeout(() => { location.href = '/cotizador.html'; }, 500);
-      else setTimeout(() => { b.textContent = 'Enviar al cotizador'; }, 2200);
+      const r = enviarACotizador(item);
+      if (!r.ok) { b.textContent = 'No se pudo guardar'; setTimeout(() => { b.textContent = 'Enviar al cotizador'; }, 2200); return; }
+      // EL BOTON DICE CUANTO VIAJO, Y CUANDO VIAJO MENOS, POR QUE. Un «Enviado» a secas
+      // ocultaria justo el caso en que la cotizacion sale incompleta — el mismo vicio que
+      // `avisoDesvio` existe para evitar en la pantalla.
+      b.textContent = r.motivo
+        ? (r.motivo === 'otro-equipo' ? 'Enviado solo el equipo — el BOM cotiza otro' : 'Enviado solo el equipo')
+        : `Enviado — ${r.lineas} línea${r.lineas === 1 ? '' : 's'}…`;
+      // Cuando la cotizacion sale recortada se da tiempo a leer por que antes de navegar.
+      setTimeout(() => { location.href = '/cotizador.html'; }, r.motivo ? 2200 : 500);
     });
     barra.appendChild(b);
   }

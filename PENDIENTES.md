@@ -579,8 +579,10 @@ cerrada (ver *Cerrado recientemente*). Lo que queda, en el orden del plan:
 - **A2** — elegir DTD o SSE con «Gateways sucursal» cambia la familia a EdgeConnect sin
   avisar y no vuelve al quitarlo. Para 9004/9012 existe Central Foundation/Advanced *with
   Security* (IDS/IPS): R4D98AAE… ya documentados en `CENTRAL_TIERS`, sin cablear.
-- **A6** — «Enviar al cotizador» solo manda modelo y cantidad: se pierden suscripción, HA,
-  Boost, DTD/SSE, Central, licencia de capacidad, ópticas y soporte.
+- ~~**A6** — «Enviar al cotizador» solo manda modelo y cantidad~~ **Cerrado (2026-09-18)**,
+  ver *Cerrado recientemente*. Viaja el BOM entero por el canal de referencias que el
+  cotizador ya tenía, y por el camino aparecieron dos fallos de dinero preexistentes en la
+  ingesta del cotizador (toda cotización al doble; las licencias de dos equipos fundidas).
 - **A7** — selector de ópticas desfasado del modelo al cambiar de arquetipo (medido en
   producción, que corría `00ccc4b`). El plan 14 ya movió el pintado al final de
   `poblarPickModel`: verificar si queda algo. Y la matriz: EC-S/M/L/XL solo tienen 1G TAA
@@ -1004,6 +1006,66 @@ cerrada (ver *Cerrado recientemente*). Lo que queda, en el orden del plan:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### El cotizador recibe el BOM entero, y dos fallos de dinero que salieron con él (2026-09-18)
+
+**A6 de la fase 2.** Se midió antes de tocar nada, en Chromium: el BOM de un FortiGate 200G a
+2.500 Mbps son **cuatro líneas por $38.088,20** —equipo $11.477, bundle Enterprise Protection
+$21.205,80, FortiCare Premium $4.989,60 y FortiConverter $415,80— y al cotizador viajaba
+**solo el equipo**. El 70 % de la cotización se volvía a teclear a mano, que es exactamente el
+hueco que «Enviar al cotizador» existe para cerrar.
+
+**No hizo falta un canal nuevo.** El cotizador ya ingiere líneas que no están en `CATALOG` por
+la vía de las referencias, construida para los bundles añadidos desde la ficha. Una línea de
+licencia calculada por el dimensionador es eso mismo. El equipo **sigue viajando solo como
+nombre** —su precio y su texto salen de `CATALOG`, que es la fuente de verdad de esa pantalla—
+y por eso la fila `cat:'Equipo'` se excluye de lo que viaja como referencia: si viajara, el
+hardware se cotizaría dos veces. Lo que **no** viaja es la `nota` de cada fila, decisión
+declarada: llevan texto interno del dimensionador y la cotización la ve el cliente.
+
+**Falla cerrado.** Solo se manda el resto del BOM cuando se puede probar que ese BOM es el del
+equipo que viaja: sin ninguna fila `cat:'Equipo'` no hay forma de saber cuál es el hardware, y
+si la fila de equipo del BOM no es el modelo que manda la página, el BOM está cotizando otra
+caja y sus licencias no corresponden. En los dos casos viaja solo el equipo y el botón dice por
+qué, en vez de armar una cotización incoherente en silencio.
+
+**Los dos fallos de dinero, los dos preexistentes y los dos invisibles desde `curl`:**
+
+1. **Toda cotización empezada desde un dimensionador salía al DOBLE.** La fusión con el BOM
+   restaurado corría también cuando no había nada que restaurar, y entonces `bom` seguía
+   siendo el array de lo que acababa de entrar: cada línea se encontraba a sí misma y se
+   sumaba su propia cantidad. Comprobado revirtiendo el arreglo — un FortiGate 200G llegaba
+   con cantidad 2 y **$22.954** en vez de $11.477. Estaba ahí desde que existe el traspaso.
+2. **Cotizar un segundo equipo fundía su licencia dentro de la del primero.** La identidad de
+   una línea se tomaba de `model + vendor`, y `model` de una referencia es el nombre comercial
+   del bundle: «Enterprise Protection» es el mismo texto en un 30G que en un 200G. Medido: la
+   licencia de $1.147,50 del 30G se metía en la de $21.205,80 del 200G con cantidad 2. Ahora
+   la identidad vive en **un solo sitio** (`identidadLinea`) y es el SKU para una referencia y
+   el fabricante+modelo para un equipo.
+
+**Verificado de extremo a extremo**, no razonado: Fortinet $38.088,20 → cotización $38.088,20
+en 4 líneas; dos envíos del mismo equipo suman a $76.176,40 sin duplicar líneas; un segundo
+equipo distinto da 8 líneas y $78.307,90, que es la suma exacta de los dos BOM. Aruba:
+$12.873 → $12.873 con su suscripción SD-WAN y su Foundational Care dentro. Las demás
+categorías (Boost, DTD/SSE, Central, licencia de capacidad, ópticas, HA) viajan por la misma
+regla, que es **categórica y no una lista enumerada**: cualquier fila que el motor produzca
+que no sea `cat:'Equipo'` viaja.
+
+**Lo que lo frena si alguien lo deshace.** `test/bom-traspaso.test.js` sube a 14 casos, y
+**el caso que importa se descubrió saboteando**: quitar la condición `cat !== 'Equipo'` pasaba
+en verde, porque la defensa de segundo orden (el SKU repetido) tapaba el fallo en el escenario
+que había escrito. Cuatro de los seis dimensionadores que montan el botón —Huawei, Juniper,
+MikroTik y Nokia— construyen su fila de hardware con `sku: null`, así que ahí la categoría es
+la **única** defensa; con ese escenario añadido, el sabotaje salta. La otra mitad del viaje
+—que el cotizador ingiera esa cola sin duplicar ni fundir— no la puede ver una función pura, y
+por eso hay un caso de contraste nuevo, `scripts/contrastes/cotizador-bom.js`, que conduce las
+dos pantallas y **no lleva ni una cifra del catálogo**: declara la *relación* (la cotización
+vale lo que ya llevaba más el BOM que entra, y el equipo aparece una sola vez) y lee las cifras
+de la pantalla, para no ponerse rojo en cada cambio de precio. Comprobado que detecta:
+revertir cada uno de los dos arreglos lo pone en rojo, con el importe esperado y el obtenido.
+De paso el contraste pasa a cubrir `cotizador.js`, que estaba **sin conducir** y ahora sale al
+65 %.
+
 
 ### Fase 1 de la auditoría técnica del dimensionador Aruba + despliegue desbloqueado (2026-09-17)
 

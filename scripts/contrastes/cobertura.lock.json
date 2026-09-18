@@ -1,12 +1,12 @@
 {
  "medidoEn": {
-  "commit": "e5a11ac",
-  "fecha": "2026-09-16"
+  "commit": "024b723",
+  "fecha": "2026-09-18"
  },
  "umbralRozado": 25,
  "modulos": [
   {
-   "modulo": "cotizador.js",
+   "modulo": "aruba-reglas.js",
    "estado": "sin conducir",
    "total": null,
    "usadas": null,
@@ -125,13 +125,6 @@
    "pct": 53
   },
   {
-   "modulo": "bom.js",
-   "estado": "ejercitado",
-   "total": 65,
-   "usadas": 35,
-   "pct": 54
-  },
-  {
    "modulo": "login.js",
    "estado": "ejercitado",
    "total": 5,
@@ -139,11 +132,25 @@
    "pct": 60
   },
   {
+   "modulo": "bom.js",
+   "estado": "ejercitado",
+   "total": 73,
+   "usadas": 45,
+   "pct": 62
+  },
+  {
    "modulo": "tabla.js",
    "estado": "ejercitado",
    "total": 11,
    "usadas": 7,
    "pct": 64
+  },
+  {
+   "modulo": "cotizador.js",
+   "estado": "ejercitado",
+   "total": 51,
+   "usadas": 33,
+   "pct": 65
   },
   {
    "modulo": "estado.js",
@@ -155,9 +162,9 @@
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
-   "total": 129,
-   "usadas": 91,
-   "pct": 71
+   "total": 131,
+   "usadas": 95,
+   "pct": 73
   },
   {
    "modulo": "ficha.js",
@@ -177,8 +184,8 @@
    "modulo": "fuentes.js",
    "estado": "ejercitado",
    "total": 5,
-   "usadas": 5,
-   "pct": 100
+   "usadas": 4,
+   "pct": 80
   }
  ]
 }
