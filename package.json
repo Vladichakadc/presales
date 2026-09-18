@@ -34,13 +34,13 @@
     "uuid": "^11.1.1"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.123.0",
+    "@anthropic-ai/sdk": "^0.125.0",
     "dotenv": "^17.2.3",
     "exceljs": "^4.4.0",
-    "express": "^4.21.2",
+    "express": "^4.22.3",
     "headroom.js": "^0.12.0",
     "helmet": "^8.1.0",
-    "multer": "^2.2.0",
+    "multer": "^2.4.0",
     "sequelize": "^6.37.7",
     "sqlite3": "^6.0.1",
     "xlsx": "npm:@e965/xlsx@^0.20.3"
