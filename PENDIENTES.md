@@ -4,7 +4,32 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-17 (plan 18: **fase 1 de la auditoría técnica del
+Última revisión: 2026-09-18 (plan 19: **lupa en las fotos de los equipos Aruba** —
+petición directa del dueño: «incluir una Lupa en las imágenes de los routers de Aruba
+para que al darle click en la lupa traiga al frente la foto, ya sea frontal o trasera,
+en la máxima calidad de la imagen». La tarjeta sirve la foto a 150 px de alto; la lupa
+la abre al frente a su RESOLUCIÓN NATURAL — los webp del repo son los originales
+extraídos de los documentos oficiales de HPE (~1200 px de ancho), así que la máxima
+calidad disponible es servir el mismo archivo sin reescalado. Implementación en
+`ficha.js`: (1) botón-lupa en la esquina de la tarjeta gráfica (26×26, borde --rule,
+acento --red al pasar — el lenguaje visual de la página) y clic sobre la propia foto
+(cursor zoom-in); (2) lightbox perezoso de una sola instancia (`#fichaLupa`,
+role="dialog" aria-modal): guarda DATOS, no referencias DOM, porque `pintar()`
+reconstruye la tarjeta en cada render y una referencia guardada quedaría huérfana;
+(3) cabecera con el modelo, las pestañas Frontal/Trasera cuando hay ambas caras y el
+cierre por ×, fondo o Escape; ←/→ conmutan las caras sin salir del diálogo; (4) el pie
+conserva tamaño y fuente documental (regla de procedencia); (5) accesibilidad: el foco
+entra al botón de cierre y VUELVE al botón de la lupa al cerrar, y el scroll del fondo
+queda bloqueado mientras está abierta. Solo Aruba declara «vistas» (regla del piloto):
+otro fabricante que las declare hereda la lupa sin tocar nada. Cobertura: 8
+afirmaciones e2e nuevas en `e2e-ux.js` (abre al frente; sirve el archivo original;
+resolución natural ≥ 1000 px; pie con procedencia; conmuta a trasera dentro del
+diálogo; ← devuelve la frontal; Esc cierra; el foco vuelve a la lupa). Nota de
+convergencia: este trabajo se hizo en paralelo con otra sesión que entregó el plan 18
+(auditoría fase 1 + desbloqueo del despliegue); se reintegró sobre `f4f6892` sin
+conflicto de código (solo este registro) y se renumeró como plan 19.)
+
+Revisión anterior: 2026-09-17 (plan 18: **fase 1 de la auditoría técnica del
 dimensionador Aruba** — pedida por el dueño («avanza con la fase 1») sobre el documento
 «Auditoría técnica — Dimensionador Aruba»
 (<https://claude.ai/code/artifact/73f4cc17-eb40-494c-9127-ac3eea6849a0>). Cinco
@@ -15,7 +40,6 @@ seguidos en FAILED desde `b4e8c4e` porque `package-lock.json` resolvía 4 paquet
 (pdf-parse y dependencias) contra `npm.mirrors.msh.team`, inalcanzable desde Railway.
 Producción seguía en `00ccc4b` (16-sep) y no tenía los planes 13 a 17. Ver *Cerrado
 recientemente*. 404 unitarios y 9/9 e2e en verde; 16/16 pantallas.)
-
 Revisión anterior: 2026-09-17 (plan 17: **la traza viaja con la propuesta exportada** —
 mejora propuesta al cerrar el plan 16 y aprobada por el dueño («Si»). La cuenta del
 dimensionado vivía solo en pantalla; quien recibía la lista de materiales no podía

@@ -114,6 +114,29 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   await page.click('#verdict .ficha-vista-tab[data-vista=front]');
   await page.waitForTimeout(250);
   ok((await page.$eval(imgSel, (i) => i.getAttribute('src'))) === src2, '«Frontal» devuelve la cara frontal');
+  // ··· lupa (plan 19, 2026-09-18): la foto se abre al frente a su resolución natural
+  await page.click('#verdict .ficha-vista-zoom');
+  await page.waitForTimeout(350);
+  ok(await page.isVisible('#fichaLupa'), 'la lupa abre la vista ampliada al frente');
+  const srcLupa = await page.$eval('#fichaLupa img', (i) => i.getAttribute('src'));
+  ok(srcLupa === src2, 'la ampliación sirve el archivo original — la máxima calidad disponible (' + (srcLupa || '').split('/').pop() + ')');
+  // `document` vive en la página; se toma vía globalThis para que eslint (Node) no lo marque
+  await page.waitForFunction(() => { const i = globalThis.document.querySelector('#fichaLupa img'); return i && i.complete && i.naturalWidth > 0; });
+  const natW = await page.$eval('#fichaLupa img', (i) => i.naturalWidth);
+  ok(natW >= 1000, 'la ampliación muestra la resolución natural del documento oficial (' + natW + ' px de ancho)');
+  ok(((await page.textContent('#fichaLupa figcaption')) || '').includes('QuickSpecs') || ((await page.textContent('#fichaLupa figcaption')) || '').includes('Hardware Reference'),
+    'el pie de la ampliación conserva la procedencia oficial');
+  await page.click('#fichaLupa .ficha-vista-tab[data-vista=rear]');
+  await page.waitForTimeout(250);
+  ok(/-rear\.webp$/.test(await page.$eval('#fichaLupa img', (i) => i.getAttribute('src'))), 'la ampliación conmuta a la cara trasera sin salir del diálogo');
+  await page.keyboard.press('ArrowLeft');
+  await page.waitForTimeout(250);
+  ok(!/-rear\.webp$/.test(await page.$eval('#fichaLupa img', (i) => i.getAttribute('src'))), 'el teclado (←) devuelve la cara frontal dentro del diálogo');
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(250);
+  ok(!(await page.isVisible('#fichaLupa')), 'Esc cierra la vista ampliada');
+  ok(await page.evaluate(() => { const a = globalThis.document.activeElement; return !!(a && a.classList && a.classList.contains('ficha-vista-zoom')); }),
+    'el foco vuelve al botón de la lupa al cerrar (accesibilidad)');
   // ··· volver al recomendado y probar el hueco honesto con un modelo sin foto
   await page.click('#verdict-volver');
   await page.waitForTimeout(500);

@@ -100,8 +100,29 @@
 .ficha-cand .cand-badge.rec{background:var(--red);color:#fff}
 .ficha-cand .cand-badge.fin{border:1px solid var(--rule);color:var(--steel)}
 .ficha-vista{margin:0 0 12px;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:var(--card)}
-.ficha-vista-img{display:flex;align-items:center;justify-content:center;padding:10px 12px 6px;min-height:96px}
-.ficha-vista-img img{max-width:100%;max-height:150px;object-fit:contain;display:block}
+.ficha-vista-img{display:flex;align-items:center;justify-content:center;padding:10px 12px 6px;min-height:96px;position:relative}
+.ficha-vista-img img{max-width:100%;max-height:150px;object-fit:contain;display:block;cursor:zoom-in}
+/* Lupa de la tarjeta gráfica (plan 19, 2026-09-18, petición del dueño): la tarjeta
+   sirve la foto a 150 px de alto; la lupa la trae al frente a su RESOLUCIÓN NATURAL
+   (los webp del repo son los originales extraídos de los documentos oficiales). El
+   botón habla el lenguaje de la página: borde --rule, acento --red al pasar. Hoy solo
+   Aruba declara «vistas» (regla del piloto) — otro fabricante que las declare la
+   hereda sin tocar nada. */
+.ficha-vista-zoom{position:absolute;top:6px;right:6px;width:26px;height:26px;padding:0;border:1px solid var(--rule);border-radius:2px;background:var(--card);color:var(--steel);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.ficha-vista-zoom:hover{border-color:var(--red);color:var(--red)}
+.ficha-vista-zoom:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+.ficha-vista-zoom svg{width:14px;height:14px}
+.ficha-lupa{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;padding:20px}
+.ficha-lupa[hidden]{display:none}
+.ficha-lupa-fondo{position:absolute;inset:0;background:rgba(14,26,43,.84)}
+.ficha-lupa-caja{position:relative;display:flex;flex-direction:column;max-width:min(1200px,94vw);max-height:92vh;background:var(--card);border:1px solid var(--rule);border-radius:4px;overflow:hidden;box-shadow:0 18px 60px rgba(14,26,43,.45)}
+.ficha-lupa-bar{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--rule)}
+.ficha-lupa-modelo{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);font-weight:600}
+.ficha-lupa-cerrar{margin-left:auto;width:28px;height:28px;padding:0;border:1px solid var(--rule);border-radius:2px;background:var(--card);color:var(--steel);font-size:15px;line-height:1;cursor:pointer}
+.ficha-lupa-cerrar:hover{border-color:var(--red);color:var(--red)}
+.ficha-lupa-cerrar:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+.ficha-lupa-caja img{max-width:100%;max-height:calc(92vh - 110px);object-fit:contain;display:block;padding:14px 18px}
+.ficha-lupa figcaption{padding:8px 12px;border-top:1px solid var(--rule);font-size:11px;line-height:1.45;color:var(--steel)}
 .ficha-vista-bar{display:flex;align-items:center;gap:10px;padding:0 12px 10px;flex-wrap:wrap}
 .ficha-vista-tabs{display:flex;gap:4px;flex:none}
 .ficha-vista-tab{padding:3px 10px;border:1px solid var(--rule);border-radius:2px;background:var(--card);color:var(--steel);font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
@@ -136,6 +157,79 @@
 
   const esc = (s) => String(s == null ? '' : s)
     .replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* ── LUPA DE LA TARJETA GRÁFICA (plan 19, 2026-09-18, petición del dueño) ──────
+     La tarjeta sirve la foto del equipo a 150 px de alto; la lupa la trae al frente
+     a su RESOLUCIÓN NATURAL (los webp de /img/equipos son los originales extraídos
+     de los documentos oficiales — no hay versión «grande» aparte: la máxima calidad
+     ES el archivo). Un único lightbox por documento, creado al primer uso; guarda
+     los DATOS (frente/reverso/modelo/pie), nunca referencias al DOM de la tarjeta
+     (pintar() la reconstruye en cada render y la referencia quedaría huérfana).
+     Cierra con ×, Esc o clic en el fondo; ←/→ conmutan frontal/trasera cuando el
+     documento de origen publica ambas caras; el foco vuelve al botón que la abrió. */
+  const SVG_LUPA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>';
+  let lupaN = null, lupaOrigen = null, lupaDatos = null;
+  function nodoLupa() {
+    if (lupaN) return lupaN;
+    const n = document.createElement('div');
+    n.className = 'ficha-lupa'; n.id = 'fichaLupa'; n.hidden = true;
+    n.setAttribute('role', 'dialog');
+    n.setAttribute('aria-modal', 'true');
+    n.setAttribute('aria-label', 'Foto del equipo ampliada');
+    n.innerHTML = '<div class="ficha-lupa-fondo"></div><figure class="ficha-lupa-caja">'
+      + '<div class="ficha-lupa-bar"><span class="ficha-lupa-modelo"></span>'
+      + '<span class="ficha-vista-tabs" role="tablist" aria-label="Vistas del equipo"></span>'
+      + '<button type="button" class="ficha-lupa-cerrar" aria-label="Cerrar la vista ampliada">&times;</button></div>'
+      + '<img alt=""><figcaption></figcaption></figure>';
+    n.querySelector('.ficha-lupa-fondo').addEventListener('click', cerrarLupa);
+    n.querySelector('.ficha-lupa-cerrar').addEventListener('click', cerrarLupa);
+    document.body.appendChild(n);
+    lupaN = n;
+    return n;
+  }
+  function pintarLupa() {
+    const n = nodoLupa(), d = lupaDatos, img = n.querySelector('img');
+    const src = d.cual === 'rear' ? d.rear : d.front;
+    if (!src) return;
+    img.src = src;
+    img.alt = (d.cual === 'rear' ? 'Vista trasera del ' : 'Vista frontal del ') + d.modelo + ' — ampliada a tamaño completo';
+    n.querySelector('.ficha-lupa-modelo').textContent = d.modelo;
+    n.querySelector('figcaption').textContent = d.pie;
+    const tabs = n.querySelector('.ficha-vista-tabs');
+    if (d.rear) {
+      tabs.style.display = '';
+      tabs.innerHTML = ['front', 'rear'].map((c) =>
+        `<button type="button" class="ficha-vista-tab${c === d.cual ? ' on' : ''}" data-vista="${c}" role="tab" aria-selected="${c === d.cual}">${c === 'front' ? 'Frontal' : 'Trasera'}</button>`).join('');
+      tabs.querySelectorAll('.ficha-vista-tab').forEach((tb) =>
+        tb.addEventListener('click', () => { lupaDatos.cual = tb.dataset.vista; pintarLupa(); }));
+    } else { tabs.innerHTML = ''; tabs.style.display = 'none'; }
+  }
+  function abrirLupa(fig) {
+    const tabOn = fig.querySelector('.ficha-vista-tab.on');
+    lupaDatos = { front: fig.dataset.front, rear: fig.dataset.rear || null,
+      modelo: fig.dataset.modelo || '', pie: fig.dataset.pie || '',
+      cual: tabOn ? tabOn.dataset.vista : 'front' };
+    lupaOrigen = fig.querySelector('.ficha-vista-zoom');
+    pintarLupa();
+    const n = nodoLupa();
+    n.hidden = false;
+    document.body.style.overflow = 'hidden';
+    n.querySelector('.ficha-lupa-cerrar').focus();
+  }
+  function cerrarLupa() {
+    if (!lupaN || lupaN.hidden) return;
+    lupaN.hidden = true;
+    document.body.style.overflow = '';
+    if (lupaOrigen) lupaOrigen.focus();
+  }
+  document.addEventListener('keydown', (e) => {
+    if (!lupaN || lupaN.hidden || !lupaDatos) return;
+    if (e.key === 'Escape') cerrarLupa();
+    if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && lupaDatos.rear) {
+      lupaDatos.cual = lupaDatos.cual === 'front' ? 'rear' : 'front';
+      pintarLupa();
+    }
+  });
 
   // ── REGLA TRANSVERSAL: FUERA DE VENTA SE MUESTRA, PERO NO SE RECOMIENDA ─────
   //
@@ -447,8 +541,13 @@
             + `<button type="button" class="ficha-vista-tab" data-vista="rear" role="tab" aria-selected="false">Trasera</button></div>`
           : '';
         const pie = [v.tamano, v.fuente].filter(Boolean).map(esc).join(' · ');
-        vistaHtml = `<figure class="ficha-vista" id="${cid}-vista" data-front="${esc(v.front)}"${v.rear ? ` data-rear="${esc(v.rear)}"` : ''}>`
-          + `<div class="ficha-vista-img"><img src="${esc(v.front)}" alt="Vista frontal del ${esc(sel.id)}" loading="lazy"></div>`
+        // La lupa lee lo que necesita del dataset de la figura (frente, reverso, modelo
+        // y pie con procedencia): el lightbox es un singleton del documento y NO guarda
+        // referencias al DOM de la tarjeta — pintar() la reconstruye con cada render y
+        // una referencia guardada quedaría huérfana.
+        vistaHtml = `<figure class="ficha-vista" id="${cid}-vista" data-front="${esc(v.front)}"${v.rear ? ` data-rear="${esc(v.rear)}"` : ''} data-modelo="${esc(sel.id)}" data-pie="${esc(pie)}">`
+          + `<div class="ficha-vista-img"><img src="${esc(v.front)}" alt="Vista frontal del ${esc(sel.id)} — pulsa la lupa para ampliar" loading="lazy">`
+          + `<button type="button" class="ficha-vista-zoom" aria-label="Ampliar la foto del ${esc(sel.id)} a tamaño completo" title="Ampliar a tamaño completo">${SVG_LUPA}</button></div>`
           + `<div class="ficha-vista-bar">${tabs}<figcaption>${pie}</figcaption></div>`
           + `</figure>`;
       } else {
@@ -569,6 +668,12 @@
           });
         });
       });
+      // Lupa (plan 19): el botón de la esquina y la propia foto abren la vista
+      // ampliada a resolución natural. El botón frena la propagación para no
+      // disparar dos veces el mismo diálogo.
+      const btnZoom = vistaNodo.querySelector('.ficha-vista-zoom');
+      if (btnZoom) btnZoom.addEventListener('click', (e) => { e.stopPropagation(); abrirLupa(vistaNodo); });
+      if (imgNodo) imgNodo.addEventListener('click', () => abrirLupa(vistaNodo));
     }
     // Salida del modo manual. Sin esto, apartarse del recomendado era una puerta de un solo
     // sentido: habia que acordarse de cual era y volver a buscarlo en una lista de 58.
