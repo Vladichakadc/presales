@@ -3,57 +3,80 @@
     "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf": {
       "documento": "Fortinet Product Matrix",
       "hashVerificado": "242a6eba814f3583d658e267934447c6cb21481f03cdfab83d9e821708e72624",
+      "clase": "bytes",
       "bytes": 123387,
-      "medido": "2026-09-14T12:14:09.774Z"
+      "medido": "2026-09-21T12:22:39.744Z"
     },
     "cisco::https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html": {
       "documento": "Boletines oficiales de fin de venta (EOL)",
-      "hashVerificado": "f57ff23f2da671f218f82ed2d0b496511ae8193fa72cde65e5a6962baf4a364f",
+      "hashVerificado": "8b7d2e78821894b29222b5958987f45771a1cb620988c41ec5446a2db8f2e893",
+      "clase": "texto",
       "bytes": 173913,
-      "medido": "2026-09-14T12:14:09.774Z"
+      "medido": "2026-09-21T12:22:39.744Z"
     },
     "juniper::https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/security-products-comparison-chart.pdf": {
       "documento": "SRX Series and vSRX Performance and Features Matrix",
       "hashVerificado": "ac24c11aae0cf0ef594227b1ebfd4d4a335969f34f2e8a3c8da118af1bb9d5e0",
+      "clase": "bytes",
       "bytes": 392019,
-      "medido": "2026-09-14T12:14:09.774Z"
+      "medido": "2026-09-21T12:22:39.744Z"
     },
     "mikrotik::https://mikrotik.com/products": {
       "documento": "Datasheets publicos y MSRP de mikrotik.com",
-      "hashVerificado": "a0cf309bbced8bfa1d56642540862e3e4f96335229298f8b037d14bf4d7de638",
+      "hashVerificado": "0b8bf579bcaccb3b0120c92a29f9a21b677976ca39afaf2b7fe32c7dabc4ad58",
+      "clase": "texto",
       "bytes": 449636,
-      "medido": "2026-09-14T12:14:09.774Z"
+      "medido": "2026-09-21T12:22:39.744Z"
     },
     "aruba::https://www.hpe.com/us/en/networking.html": {
       "documento": "Paginas de producto y tienda oficiales de HPE/Aruba",
-      "hashVerificado": "46bbd5b0ed7776f9e5c5bbcdf88968920007f452291c591ed28237b8a6868033",
-      "bytes": 334728,
-      "medido": "2026-09-14T12:14:09.774Z"
+      "hashVerificado": "add187962f6e03f97be3de310c387887fa2f5f3821d45b9c742dc9f383052096",
+      "clase": "texto",
+      "bytes": 335692,
+      "medido": "2026-09-21T12:22:39.744Z"
     },
     "nokia::https://www.nokia.com/networks/ip-networks/": {
       "documento": "Datasheets oficiales de producto",
-      "hashVerificado": "ba37350a67c2fe784e5a23746d479af5517ddf4c43a3745ac677de47132abba2",
-      "bytes": 314016,
-      "medido": "2026-09-14T12:14:09.774Z"
+      "hashVerificado": "45c6fb4dfcb3d8d898c0746bd6a3fef9eb5c56a479860d0c6100b2ca67434178",
+      "clase": "texto",
+      "bytes": 307782,
+      "medido": "2026-09-21T12:22:39.744Z"
     },
     "cisco::https://www.cisco.com/c/dam/en/us/products/collateral/routers/secure-routers/8300-series-secure-routers-ds.pdf": {
       "documento": "Cisco 8300 Series Secure Routers Data Sheet",
       "hashVerificado": "815494c6a4b7c876ff28b501a539424c5ec78c7995b8e471602837023359374e",
+      "clase": "bytes",
       "bytes": 804120,
-      "medido": "2026-09-14T12:14:09.774Z"
+      "medido": "2026-09-21T12:22:39.744Z"
     },
     "juniper::https://support.juniper.net/support/eol/product/srx_series/": {
       "documento": "SRX Series Hardware Dates & Milestones",
-      "hashVerificado": "952616d47a5380276cf99869c91b51e5aec86b35776c2aaf10c2062b1d6e7142",
-      "bytes": 104377,
-      "medido": "2026-09-14T12:14:09.774Z"
+      "hashVerificado": "c3b1c5da2877300ea66ffac68a84e566f903bc7c987cb5e321ea7b64a5ec1ae1",
+      "clase": "texto",
+      "bytes": 104777,
+      "medido": "2026-09-21T12:22:39.744Z"
     },
     "nokia::https://www.nokia.com/asset/f/207599/": {
       "documento": "Fichas de serie de Nokia (7220 IXR-D, 7750 SR-1x, 7750 SR-s, 7250 IXR-e)",
       "hashVerificado": "8294ee4f52397023cd63c0a4912a4a12ac907f5cac05946f7c7ccb97645df71d",
+      "clase": "bytes",
       "bytes": 818294,
-      "medido": "2026-09-14T12:14:09.774Z"
+      "medido": "2026-09-21T12:22:39.744Z"
+    },
+    "juniper::https://www.juniper.net/documentation/us/en/hardware/srx1600/index.html": {
+      "documento": "Hardware guides por modelo (SRX300/320/340/345/1500/1600/2300/4100/4200/4300/4700)",
+      "hashVerificado": "217679ceb7a8f90c49a3f6e6116308a070836ad60853a3bd57d57d0d756212e8",
+      "clase": "texto",
+      "bytes": 9734,
+      "medido": "2026-09-21T12:22:39.744Z"
+    },
+    "juniper::https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx1600-firewall-datasheet.pdf": {
+      "documento": "Fichas por modelo de la generacion 2024 (SRX1600, SRX2300, SRX4300)",
+      "hashVerificado": "2175d9142d15811c57eb9562163fb91a242b1cc87166ac705fe20e28f04474fb",
+      "clase": "bytes",
+      "bytes": 484008,
+      "medido": "2026-09-21T12:22:39.744Z"
     }
   },
-  "revisado": "2026-09-14T12:14:09.774Z"
+  "revisado": "2026-09-21T12:22:39.744Z"
 }
