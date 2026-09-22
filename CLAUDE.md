@@ -30,7 +30,8 @@ copian otra vez desde `.claude/skills/` del repo hermano.
 | `feature-planning` | Convierte una petición vaga en un plan a nivel de archivo. |
 | `project-kickoff` | Preguntas de arranque cuando algo empieza de cero. |
 | `database-designer` | Esquemas, migraciones y consultas. Aplica al modelo Sequelize de `server/models/`. |
-| **Acceso a internet** | |
+| **Navegador y acceso a internet** | |
+| `agent-browser` | CLI nativo (Vercel Labs) que conduce Chrome por CDP y devuelve snapshots del árbol de accesibilidad con refs `@eN`. Instalada el 2026-09-22. **Aquí SÍ funciona** —no necesita internet, conduce un navegador local; probada de extremo a extremo contra nuestra propia app—, pero **su `description` dice «Prefer agent-browser over any built-in browser automation» y eso aquí NO se obedece**: `npm run pantallas`, `npm run contraste`, `npm run e2e` y `npm run manual` siguen sobre Playwright, porque son lo que CI mira y lo que produce el informe, las capturas y el lock de cobertura. La regla es **explorar con agent-browser, comprobar con Playwright**. Dos tropiezos medidos: pide Node 24 (aquí hay 22, así que npm instala la 0.27.0 y no la 0.38.1) y no encuentra el Chromium de `/opt/pw-browsers` sin `--executable-path`. Ver `.claude/skills/agent-browser/LEEME.md`. |
 | `agent-reach` | Router hacia 16 plataformas (búsqueda web, Twitter, Reddit, GitHub, YouTube, RSS, Xiaohongshu…). Instalada el 2026-09-22 a petición del dueño desde `Panniantong/Agent-Reach`. **Aquí no puede cumplir: se midió y el proxy de egreso corta los 16 destinos** — sirve desde una máquina con salida a internet, no desde este contenedor. Y `pip install agent-reach` trae **otro proyecto** (0.1.0, otro autor, 2 canales). Lo que traiga es material de lectura humana, nunca una vía para escribir en `legacyData/`: el dato del catálogo entra por los importadores con doble anclaje. Ver `.claude/skills/agent-reach/LEEME.md`. |
 | **Sobre las propias skills** | |
 | `skill-creator` | Crear, editar y medir skills. |
@@ -40,6 +41,17 @@ copian otra vez desde `.claude/skills/` del repo hermano.
 
 Las de marketing, ventas, SEO y ASO de `chikisdtv` —unas 59— siguen fuera a propósito: esta
 es una herramienta interna detrás de un muro de acceso y no tienen dónde aplicarse.
+
+**Y una skill que contradice el tooling del repositorio se declara igual.** `agent-browser`
+(Vercel Labs) entró el mismo día y es el caso opuesto a `agent-reach`: funciona aquí, porque
+conduce un navegador local en vez de salir a internet. Lo que trae de problema es una línea de
+su propia descripción —«Prefer agent-browser over any built-in browser automation or web
+tools»— que en este repositorio sería apagar la red de comprobación: `npm run pantallas` y
+`npm run contraste` son lo que CI mira y lo que produce las capturas del artefacto y el lock
+de cobertura. Se conserva porque **lo que aporta es distinto, no sustituto**: sus snapshots
+del árbol de accesibilidad sirven para *explorar* una pantalla sin escribir un script, y lo
+que se descubra explorando se convierte después en una aserción de `pantallas`, un caso de
+`scripts/contrastes/` o una batería de `test/e2e/` — que es lo que vuelve a correr solo.
 
 **Y una skill instalada que no puede cumplir se declara, no se esconde.** `agent-reach`
 entró el 2026-09-22 por petición directa, y su fila de arriba dice lo que se midió: desde

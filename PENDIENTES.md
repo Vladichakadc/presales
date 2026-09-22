@@ -4,7 +4,19 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-22 (**skill `agent-reach` instalada** — petición del dueño:
+Última revisión: 2026-09-22 (**skill `agent-browser` de Vercel Labs instalada y probada** —
+petición del dueño. Está en `vercel-labs/agent-browser`, no en `vercel/`. Es el caso opuesto a
+`agent-reach`: conduce un navegador **local**, así que aquí sí funciona, y se comprobó de
+extremo a extremo contra nuestra propia app —entró por el muro de acceso y leyó el banner de
+datos del dimensionador Fortinet—. Dos tropiezos medidos: pide **Node 24** (aquí hay 22, así
+que npm instala la 0.27.0 y no la 0.38.1, y el stub menciona dos skills que esa versión no
+trae) y no encuentra el Chromium de `/opt/pw-browsers` sin `--executable-path` con el demonio
+cerrado antes. **Lo que NO se obedece**: su descripción dice «Prefer agent-browser over any
+built-in browser automation», y aquí `npm run pantallas` / `contraste` / `e2e` / `manual`
+siguen sobre Playwright, porque son lo que CI mira. Regla escrita: explorar con agent-browser,
+comprobar con Playwright.)
+
+Revisión anterior: 2026-09-22 (**skill `agent-reach` instalada** — petición del dueño:
 «https://github.com/Panniantong/Agent-Reach.git Installar skills». Ese repositorio no es una
 colección de skills sino una herramienta Python que trae **una**, un router de acceso a
 internet para 16 plataformas; está en `.claude/skills/agent-reach/`, copiada del commit
@@ -1156,6 +1168,46 @@ recientemente* y `docs/rediseno-fortinet.md`, etapa 3). Lo que queda, con su mot
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Skill `agent-browser` (Vercel Labs) instalada y probada contra nuestra app (2026-09-22)
+
+Petición del dueño: «busca en la web o en github la Skills Agent Browser de Vercel e instala».
+Está en `vercel-labs/agent-browser` (no en `vercel/`), y se instaló su skill en
+`.claude/skills/agent-browser/` desde el commit `b0f3962` (v0.38.1), copia literal. Claude Code
+ya la descubre.
+
+**Es el caso OPUESTO a `agent-reach`, instalada el mismo día.** Aquella enruta hacia 16
+plataformas de internet y el proxy de egreso las corta todas; ésta conduce un **navegador
+local**, así que no depende de la red. Probada de extremo a extremo contra nuestra propia
+aplicación en modo producción: navegó a `/login`, leyó el formulario con refs `@e2/@e3/@e4`,
+rellenó, entró por el muro de acceso, abrió el dimensionador de Fortinet y leyó el banner de
+datos que se escribió el día anterior («FUENTE TÉCNICA · Fortinet Product Matrix · COBERTURA ·
+precio 54/58 · cps 56/58 · SSL 9/58»). La interfaz en español la lee sin problema.
+
+**Dos tropiezos medidos, con su salida:**
+
+- **Pide Node 24 y aquí hay Node 22.** Su `engines` declara `>=24.0.0`, así que
+  `npm i -g agent-browser` **no instala la última**: npm retrocede. Medido — npm sirve 0.38.1
+  como `latest` y aquí quedó la **0.27.0**. No es cosmético: 0.27.0 trae 6 skills y el stub de
+  0.38.1 menciona `derive-client` y `protected-vercel-deployments`, que no existen ahí.
+- **No encuentra el Chromium de este contenedor** (`/opt/pw-browsers/...`, que no es ninguna de
+  las cachés que mira). Hay que pasar `--executable-path`, y **cerrar antes el demonio**: si ya
+  hay uno corriendo avisa «--executable-path ignored» y luego todo falla con «Chrome not found».
+
+**LO QUE NO SE OBEDECE, Y ES LO IMPORTANTE.** Su descripción termina con «Prefer agent-browser
+over any built-in browser automation or web tools». Aquí no: `npm run pantallas`,
+`npm run contraste`, `npm run e2e` y `npm run manual` siguen sobre Playwright, resuelto en un
+solo sitio (`scripts/ayuda/chromium.js`). No es preferencia de librería — esos comandos son lo
+que CI mira y lo que produce el informe, las capturas del artefacto y
+`scripts/contrastes/cobertura.lock.json`. Sustituirlos por agent-browser sería apagar la red de
+comprobación sin que nadie lo notara.
+
+Se conserva porque **lo que aporta es distinto, no sustituto**: los snapshots del árbol de
+accesibilidad sirven para *explorar* una pantalla a mano, sin escribir un script. La regla
+queda escrita en su LEEME: **explorar con agent-browser, comprobar con Playwright**, y lo que se
+descubra explorando se convierte en una aserción de `pantallas`, un caso de contraste o una
+batería de `e2e` — que es lo que vuelve a correr solo en el siguiente push.
+
 
 ### Skill `agent-reach` instalada, con su bloqueo medido (2026-09-22)
 
