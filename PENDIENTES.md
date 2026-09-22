@@ -4,7 +4,22 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-22 (**skill `agent-browser` de Vercel Labs instalada y probada** —
+Última revisión: 2026-09-22 (**la foto oficial del equipo en el dimensionador Fortinet, y el
+bloqueo medido con `agent-reach`** — petición del dueño. **54 de 58 modelos** con su foto
+oficial, lupa y pie documental, viajando también al Excel; cablearlo fueron tres líneas porque
+`ficha.js` ya era genérico. **La vista trasera NO existe y se comprobó**: los 28 datasheets por
+serie traen una sola foto de producto, en la portada — Aruba tiene dos caras porque el Hardware
+Reference de HPE las publica etiquetadas, y el datasheet de Fortinet no tiene equivalente. Los
+PDF se trajeron por las ramas de transporte `fuente/fortinet-*` que un ejecutor de Actions
+publicó, porque `fortinet.com` sigue devolviendo 403 aquí —medido con `agent-reach`, 2 de 16
+canales, `Tunnel connection failed: 403 Forbidden`—. Qué unidad retrata cada foto se **leyó en
+la imagen**: 19 de 28 rótulos legibles y declarados, 9 sin afirmar; Fortinet fotografía con
+frecuencia la variante con SSD (la serie 1000F retrata un 1001F), y el pie lo dice. El
+`fortigate-70f-series.pdf` retrata un **71F**, la misma trampa que la cabecera del catálogo ya
+documentaba para las cifras. 462 unitarios, 16/16 pantallas, 4/4 contrastes y la batería e2e en
+verde. **Subido a producción en esta sesión.**)
+
+Revisión anterior: 2026-09-22 (**skill `agent-browser` de Vercel Labs instalada y probada** —
 petición del dueño. Está en `vercel-labs/agent-browser`, no en `vercel/`. Es el caso opuesto a
 `agent-reach`: conduce un navegador **local**, así que aquí sí funciona, y se comprobó de
 extremo a extremo contra nuestra propia app —entró por el muro de acceso y leyó el banner de
@@ -1168,6 +1183,71 @@ recientemente* y `docs/rediseno-fortinet.md`, etapa 3). Lo que queda, con su mot
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### La foto oficial del equipo en el dimensionador Fortinet (2026-09-22)
+
+Petición del dueño: «en el dimensionador de Fortinet debe traer las fotos de la parte frontal
+y trasera de los equipos tal como está en Aruba». Entregado: **54 de los 58 modelos** con su
+foto oficial, la lupa y el pie documental, y viajando al Excel en la hoja «Fotos del equipo».
+Cablearlo fueron tres líneas — `ficha.js` ya era genérico desde el plan 19 y trae su propio
+CSS; lo que costó fue conseguir las fotos y decidir qué se puede afirmar de cada una.
+
+**LA PARTE TRASERA NO EXISTE, y se comprobó en vez de suponerse.** Se revisaron los 28
+datasheets por serie uno a uno: **ninguno publica una vista trasera**. Cada uno trae
+exactamente UNA foto de producto, en la portada; las imágenes de las páginas 3 y 5 son
+idénticas en los 28 (gráficos de marketing y capturas de FortiOS), no equipos. Aruba tiene
+las dos caras porque el *Hardware Reference* de HPE las publica etiquetadas «Front View» /
+«Rear View»; el datasheet de Fortinet no tiene equivalente. La cara trasera vive en las
+*hardware guides* de `docs.fortinet.com`, que este entorno no alcanza. `ficha.js` ya sabía
+pintar una sola cara: sin `rear` no dibuja el conmutador, así que no hubo que tocarlo.
+
+**Los PDF no se bajaron desde aquí.** `fortinet.com` responde 403 al proxy de egreso —medido
+el mismo día con `agent-reach`, ver más abajo—. Se trajeron por el mecanismo de transporte
+que este repositorio ya usa y documenta: las ramas `fuente/fortinet-serie`,
+`fuente/fortinet-serie-f` y `fuente/fortinet-datasheets`, publicadas en su momento por un
+ejecutor de GitHub Actions. No es rodear el bloqueo: es el camino sancionado, el mismo de
+`fuente/fortinet-product-matrix`.
+
+**Qué unidad retrata cada foto se LEYÓ en la imagen**, no se dedujo del nombre del archivo.
+En 19 de 28 el rótulo del chasis era legible y va declarado en el pie; en las otras nueve
+(50G, 70G, 3000F, 3000G, 3200F, 3500F, 3500G, 3700F, 3800G) no lo era y **no se afirma nada**.
+El hallazgo: Fortinet fotografía con frecuencia la **variante con SSD** — la serie 200G
+retrata un 201G, la 400G un 401G, la 1000F un 1001F, la 4800F un 4801F. La foto se sirve a
+las dos variantes (mismo chasis, un solo datasheet, igual que el Hardware Reference sirve una
+sola figura frontal a EC-L y EC-XL) **y el pie dice cuál se fotografió**.
+
+**El caso 70F/71F cerró un círculo.** `fortigate-70f-series.pdf` retrata un **71F**, que es
+exactamente la trampa que la cabecera de `fortinet.js` ya documentaba para las CIFRAS («el 70F
+no aparece ni una vez en ella»). Aquí no engaña a nadie porque el pie lo declara; lo que no se
+hizo fue creerle al nombre del archivo.
+
+**Sin foto (4):** 100F y 200F —su datasheet por serie da 404 en la URL que sigue el patrón del
+resto, reportado y no dado por bueno— y los chasis 7081F y 7121F, cuyos *System Guide* no son
+datasheets de serie. Los cuatro muestran el aviso honesto de la ficha, **nunca una foto
+parecida**. Cerrar ese hueco es traer esos documentos por el mismo transporte.
+
+Peso: 28 webp, **1,7 MB**, reescaladas a 1600 px (los originales van de 1126 a 7385 px y
+pesaban 14 MB). Cobertura: `test/fortinet-vistas-equipos.test.js` (8 casos) y 6 afirmaciones
+e2e. Una de ellas costó entenderla: `loading="lazy"` difiere la carga hasta que la figura
+entra en el viewport, así que medir `naturalWidth` antes da 0 y parece un fallo que no existe.
+
+### `agent-reach` usado para medir el bloqueo, y lo que dijo (2026-09-22)
+
+Petición del dueño: «utiliza la skill agent-reach para revisar si existe un bloqueo para
+avanzar con la ejecución de pendientes». Hecho, y el resultado es útil:
+
+- `agent-reach doctor` (con el CLI correcto, v1.5.0 desde el repositorio —no el 0.1.0 de
+  PyPI, que es otro proyecto—): **2 de 16 canales disponibles**. V2EX falla con
+  `Tunnel connection failed: 403 Forbidden`, que es la firma del proxy.
+- Por su categoría `web` (Jina Reader, el único canal que el doctor da por bueno):
+  **no alcanza `fortinet.com`** ni el Product Matrix ni las páginas de producto. Directo,
+  tampoco.
+
+**Conclusión: el bloqueo es real y sigue en pie**, así que **F1** (49 modelos sin cifra
+oficial de SSL) y las fotos que faltan **no se pueden cerrar desde este entorno**. Lo que sí
+funciona —y es lo que se usó para las fotos— es el transporte por ramas `fuente/*` desde un
+ejecutor de Actions, que este repositorio ya tenía montado.
+
 
 ### Skill `agent-browser` (Vercel Labs) instalada y probada contra nuestra app (2026-09-22)
 

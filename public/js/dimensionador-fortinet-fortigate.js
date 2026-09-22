@@ -16,6 +16,16 @@ let TERMINOS = {};
 // Procedencia del fabricante (/api/fuentes): alimenta el banner de estado de datos y la
 // puerta de exportacion, que bloquea si la lista de precios esta vencida.
 let FUENTES = null;
+/* FOTO OFICIAL DEL EQUIPO (2026-09-22, peticion del dueño: «como esta en Aruba»).
+   Mapa {modelo: {front, fuente}} servido desde /data/fortinet-vistas-equipos.json. Se carga
+   ANTES del primer render para que la tarjeta no aparezca sin foto y se rellene despues.
+
+   SOLO VISTA FRONTAL, y no es un recorte del trabajo: se revisaron los 28 datasheets por
+   serie y NINGUNO publica una trasera -cada uno trae una sola foto de producto, en la
+   portada-. Aruba tiene las dos caras porque el Hardware Reference de HPE las publica
+   etiquetadas «Front View»/«Rear View»; Fortinet no publica el equivalente en el datasheet.
+   `ficha.js` ya sabe pintar una sola cara: sin `rear` no dibuja el conmutador. */
+let VISTAS = null;
 const R = FortinetReglas;
 
 const $=id=>document.getElementById(id);
@@ -1152,6 +1162,9 @@ function render(){
     contenedor:'verdict',
     candidatos:candidates,
     recomendado:pick.id,
+    // La foto oficial corona la ficha y cambia con cada seleccion. Un modelo sin foto
+    // declarada (100F, 200F y los dos chasis) muestra el aviso honesto de ficha.js.
+    vistas:VISTAS,
     etiqueta:m=>`${m.id} — ${m.seg} · soporta ${fmt(soporta(m,demandas,effectiveNeed))}`,
     titulo:m=>m.id,
     subtitulo:m=>m.seg+' · FortiOS Security Fabric',
@@ -1357,10 +1370,20 @@ function renderBom(){
   const termino=`término ${termYrs} año${termYrs>1?'s':''}`;
   const filas=comercialActual.filas;
 
+  // LA FOTO OFICIAL VIAJA CON LA PROPUESTA (plan 20, extendido a Fortinet el 2026-09-22).
+  // Misma fuente que la ficha en pantalla, mismo pie documental: quien recibe la cotizacion
+  // ve el equipo real sin abrir la herramienta. Un modelo sin foto declarada exporta SIN
+  // hoja de fotos — el hueco honesto tambien viaja, no se rellena con una imagen parecida.
+  const vBom=(VISTAS||{})[m.id];
+  const fotosBom=vBom&&vBom.front
+    ?{modelo:m.id, front:vBom.front, rear:vBom.rear||null,
+      pie:[vBom.tamano,vBom.fuente].filter(Boolean).join(' · ')}
+    :null;
   const meta={
     titulo:`Lista de materiales — ${m.id}`,
     subtitulo:`${m.seg} · FortiOS · Security Fabric · ${termino}`,
     archivo:`BOM_${m.id}`,
+    ...(fotosBom?{fotos:fotosBom}:{}),
     notas:[
       '',
       'RENDIMIENTO POR CAPA DE INSPECCION',
@@ -1679,6 +1702,15 @@ $('xlsBtn').addEventListener('click',async()=>{
   FUNCIONES = data.funciones || [];
   SERVICIOS_SDWAN = data.serviciosSdwan || [];
   TERMINOS = data.terminos || {};
+
+  // Las vistas se cargan ANTES del primer render: si llegaran despues, la tarjeta se
+  // pintaria una vez sin foto y otra con ella, que es justo el parpadeo que hace dudar de
+  // si el equipo tiene foto o no. Si el fetch falla, `vistas` queda en null y la ficha
+  // declara el hueco -nunca una imagen inventada-.
+  try{
+    const rv=await fetch('/data/fortinet-vistas-equipos.json');
+    if(rv.ok) VISTAS=await rv.json();
+  }catch{ VISTAS=null; }
 
   populatePickModel();
   render();

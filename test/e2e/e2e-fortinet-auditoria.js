@@ -13,6 +13,9 @@
    es como se enseña a ignorar un rojo. Las dos cifras que sí se fijan —los 310 Mbps de SSL del
    40F y los 390 del escenario— son EL hallazgo: sin ellas la prueba no distingue el motor
    nuevo del que aplicaba un derate. */
+/* global document */
+/*   ↑ los callbacks de page.evaluate corren EN el navegador, no en Node; eslint los analiza
+     como si fueran de este fichero. Mismo comentario que en e2e-sticky.js. */
 const { cargarPlaywright, abrirSesion, contador } = require('./ayuda');
 
 const BASE = process.env.E2E_BASE || 'http://localhost:4131';
@@ -259,6 +262,53 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
     'AT-15: un escenario recalculado no se marca como obsoleto');
   t.ok(/Huella del escenario/.test(puertaFinal),
     'AT-15: la puerta publica la huella con la que se construyó la lista');
+
+  /* ── FOTO OFICIAL DEL EQUIPO (2026-09-22) ───────────────────────────────────────────
+     Petición del dueño: «como está en Aruba». Lo que se afirma es la CADENA COMPLETA —que
+     la foto se sirve de verdad (no un 404 con hueco), que su pie declara de qué documento
+     salió, y que un modelo sin foto lo DICE en vez de enseñar una parecida—, no cuántos
+     modelos la tienen: ese número sube en cuanto alguien traiga los datasheets que faltan,
+     y fijarlo pondría la prueba en rojo por una mejora. */
+  await page.click('[data-tab=calc]');
+  await page.waitForTimeout(400);
+  await caudal(2500);
+  await page.waitForTimeout(700);
+  await page.evaluate(() => { const f = document.querySelector('.ficha-vista'); if (f) f.scrollIntoView({ block: 'center' }); });
+  // `loading="lazy"`: la figura vive por encima del viewport hasta que se desplaza, así que
+  // medir naturalWidth antes de eso da 0 y parece un fallo que no existe.
+  await page.waitForFunction(() => {
+    const i = document.querySelector('.ficha-vista img');
+    return i && i.complete && i.naturalWidth > 0;
+  }, { timeout: 15000 }).catch(() => {});
+  const foto = await page.evaluate(() => {
+    const f = document.querySelector('.ficha-vista');
+    const i = f && f.querySelector('img');
+    return {
+      hay: !!f, src: i ? i.getAttribute('src') : null, ancho: i ? i.naturalWidth : 0,
+      pie: ((f && f.querySelector('figcaption')) || {}).textContent || '',
+      lupa: !!(f && f.querySelector('.ficha-vista-zoom')),
+      caras: f ? f.querySelectorAll('.ficha-vista-tab').length : -1,
+    };
+  });
+  t.ok(foto.hay, 'la ficha corona con la foto oficial del equipo, como en Aruba');
+  t.ok(foto.ancho > 0, `la foto CARGA de verdad, no es un hueco (natural ${foto.ancho}px)`);
+  t.ok(/^\/img\/equipos\/fg-/.test(foto.src || ''), `la foto sale del repositorio (${foto.src})`);
+  t.ok(/Datasheet/.test(foto.pie), `el pie declara de qué documento salió (${foto.pie})`);
+  t.ok(foto.lupa, 'la lupa está, como en Aruba');
+  t.ok(foto.caras === 0,
+    'sin conmutador de caras: Fortinet no publica vista trasera en sus datasheets, y no se inventa una');
+
+  // El hueco honesto: el 100F no tiene datasheet por serie, así que NO tiene foto y lo dice.
+  await caudal(500);
+  await page.waitForTimeout(800);
+  await page.selectOption('#verdict-sel', 'FortiGate 100F');
+  await page.waitForTimeout(900);
+  const hueco = await page.evaluate(() => ({
+    aviso: ((document.querySelector('.ficha-vista-vacia')) || {}).textContent || '',
+    foto: !!document.querySelector('.ficha-vista'),
+  }));
+  t.ok(!hueco.foto && /Sin foto oficial/.test(hueco.aviso),
+    'un modelo sin foto oficial DECLARA el hueco en vez de enseñar una parecida');
 
   t.ok(errores.length === 0, `sin excepciones de página (${errores.join(' | ') || 'ninguna'})`);
 
