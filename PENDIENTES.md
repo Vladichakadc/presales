@@ -4,20 +4,20 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-22 (**la figura oficial frontal Y trasera en el dimensionador
-Fortinet, más la paridad con Aruba en la pestaña de materiales** — seis peticiones del dueño
-en un mensaje, y la primera **corrige a la entrega de esa mañana**: «sí hay evidencia que
-existe las imágenes de la parte trasera». La tenía, y lo que se dijo aquí por la mañana era
-**falso**: esa revisión miró solo la **portada** de los 28 datasheets, y la **página 7** de
-los 28 es la página «Hardware» con el diagrama de panel — cuatro de ellos rotulan las caras
-literalmente. Ahora son **54 de 58 modelos con las dos caras**, y el diagrama sustituye a la
-portada porque es el equivalente exacto del *Front View*/*Rear View* de HPE. Además: los
-pasos 1-3 contrastados campo a campo con la §8 del informe (coinciden en todo lo que el
-catálogo respalda; las nueve divergencias van declaradas), las **referencias de pedido
-movidas a la lista de materiales** con el nombre y el orden de Aruba, **fuera el «Resumen de
-sizing»**, **«No incluir»** en los combos de bundle y soporte, el **paso 4 sincronizado** con
-el equipo de la calculadora, y «BOM EdgeConnect» → «BOM Aruba» en el portal. 470 unitarios,
-16/16 pantallas, 4/4 contrastes y 10/10 baterías e2e en verde.)
+Última revisión: 2026-09-22 (**el formulario del dimensionador Fortinet, reconstruido sobre lo
+que de verdad dimensiona** — encargo del dueño: revisarlo como arquitecto senior, dejar solo
+las variables de SD-WAN y NGFW, retirar el tipo de transacción «que no es válido técnicamente»
+y quitar lo que no aporta. **Tres bajas**: `tipoTx` (decisión comercial disfrazada de entrada
+técnica; se comprobó que no alimentaba el motor), `modoSeg` (dos controles para una pregunta:
+el código ya tenía que forzar `agg` al elegir `hub`, y dejaba abierta la combinación «hub en
+enlace único» con la que un concentrador se dimensiona de menos) y `perUser` (segunda fuente
+de verdad del caudal desde que existe el builder, con un aviso en pantalla que decía que no te
+fiaras de él). **Cuatro altas**: la **VPN de acceso remoto**, que no estaba modelada en
+absoluto y carga el eje IPsec y la tabla de sesiones, y el **conteo de túneles** como eje
+declarado —spokes en el hub, hubs en el spoke—. El eje IPsec recibe ahora overlay + acceso
+remoto. **Licenciamiento derivado**: FortiClient EMS toma los endpoints del paso 3 y entra sin
+SKU, bloqueando la exportación, porque el catálogo solo trae el patrón del código. 473
+unitarios, 16/16 pantallas, **4/4 contrastes sin discrepancias** y 10/10 baterías e2e.)
 
 Revisión anterior: 2026-09-22 (**skill `agent-browser` de Vercel Labs instalada y probada** —
 petición del dueño. Está en `vercel-labs/agent-browser`, no en `vercel/`. Es el caso opuesto a

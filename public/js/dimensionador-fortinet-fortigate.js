@@ -29,7 +29,14 @@ let VISTAS = null;
 const R = FortinetReglas;
 
 const $=id=>document.getElementById(id);
-let profile='tp', modoCaudal='link', rolSdwan='none', segMode='branch', lastPick=null;
+let profile='tp', rolSdwan='none', segMode='branch', lastPick=null;
+// EL MODO DE CAUDAL SE DERIVA DEL ROL, no se pregunta. Era un segmentado propio («enlace
+// unico» / «agregado») que respondia a la MISMA pregunta que el rol: un concentrador agrega
+// por definicion y una sucursal no. Dos controles para un dato se desincronizan —la version
+// anterior ya tenia que forzar `agg` a mano cada vez que alguien elegia `hub`— y dejaba
+// abierta la combinacion «hub en enlace unico», que es exactamente como se dimensiona de
+// menos un concentrador.
+const esConcentrador=()=>rolSdwan==='hub';
 // Ultimo rol con el que se pintaron las filas del builder: la casilla de overlay se
 // habilita o deshabilita segun el rol, y repintar en cada render destruiria el campo a
 // medio teclear (el mismo motivo por el que BOM.cantidadRef escucha change y no input).
@@ -112,17 +119,10 @@ $('profileSeg').addEventListener('click',e=>{
   profile=b.dataset.v;
   render();
 });
-$('modoSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('modoSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));modoCaudal=b.dataset.v;render();});
 $('rolSeg').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   [...$('rolSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
   rolSdwan=b.dataset.v;
-  // Un hub concentra sedes: el modo agregado es el que corresponde, y dejarlo en enlace
-  // unico es justamente como se dimensiona de menos un concentrador.
-  if(rolSdwan==='hub'&&modoCaudal!=='agg'){
-    modoCaudal='agg';
-    [...$('modoSeg').children].forEach(x=>x.setAttribute('aria-pressed',x.dataset.v==='agg'));
-  }
   render();
 });
 $('segSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('segSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));segMode=b.dataset.v;render();});
@@ -133,13 +133,14 @@ $('metricaEje').addEventListener('change',()=>{ metricaEje=$('metricaEje').value
 $('chkVerEol').addEventListener('change',()=>{ verEol=$('chkVerEol').checked; render(); });
 // bw/unit/pctOverlay ya no estan aqui: son espejos ocultos que escribe el builder, y este
 // dispara render() por su cuenta al cambiar una fila.
-['users','perUser','head','sesUser','sessNeed','vidaSes','sites','conc','interVlan','techoUtil',
- 'chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa','chkNoConcurrente',
- 'tipoTx'].forEach(id=>$(id).addEventListener('input',render));
+['users','head','sesUser','sessNeed','vidaSes','sites','hubs','conc','interVlan','techoUtil',
+ 'vpnUsers','vpnMbps',
+ 'chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa','chkNoConcurrente'
+].forEach(id=>$(id).addEventListener('input',render));
 // Los servicios avanzados de SD-WAN y FortiConverter no cambian el dimensionamiento -no
 // consumen throughput-: solo la cotizacion. Repintar el motor entero por ellos seria gasto
 // sin efecto, y peor, haria creer que influyen en la recomendacion.
-['chkSdwanMon','chkSdwanOrq','chkSdwanSase','chkConverter'].forEach(id=>$(id).addEventListener('input',renderBom));
+['chkSdwanMon','chkSdwanOrq','chkSdwanSase','chkConverter','chkEms'].forEach(id=>$(id).addEventListener('input',renderBom));
 // En HA se compran 2 unidades y cada una lleva su propia suscripcion FortiGuard: enlazar la
 // casilla con la cantidad del BOM evita cotizar un clúster con una sola licencia.
 $('chkHa').addEventListener('change',()=>{
@@ -458,16 +459,19 @@ const CAMPOS_ESCENARIO=['nombreCliente','refProyecto',
   // #wanLinksData es la serializacion v2 de los enlaces WAN; sustituye a bw/unit/pctOverlay,
   // que ahora son espejos que el builder calcula y por tanto no viajan (viajarian dos veces
   // el mismo dato, y el desincronizado ganaria segun el orden de restauracion).
-  'wanLinksData','users','perUser','head','sesUser','sessNeed','vidaSes','sites','conc',
+  'wanLinksData','users','head','sesUser','sessNeed','vidaSes','sites','hubs','conc',
+  // VPN de acceso remoto: cambia la recomendacion (eje IPsec y tabla de sesiones), asi que
+  // un enlace compartido que no la llevara aterrizaria en otro escenario sin decirlo.
+  'vpnUsers','vpnMbps',
   // Añadidos el 2026-09-22: el tráfico inter-VLAN y su regla de simultaneidad, el techo de
   // utilización y el tipo de transacción CAMBIAN la recomendación, así que un enlace que no
   // los llevara aterrizaría en otro escenario sin decirlo — que es peor que un 404 porque no
   // se nota. Los servicios SD-WAN y FortiConverter no cambian el equipo pero sí la
   // cotización, y el enlace se comparte para revisar una propuesta entera.
-  'interVlan','chkNoConcurrente','techoUtil','tipoTx',
-  'chkSdwanMon','chkSdwanOrq','chkSdwanSase','chkConverter',
+  'interVlan','chkNoConcurrente','techoUtil',
+  'chkSdwanMon','chkSdwanOrq','chkSdwanSase','chkConverter','chkEms',
   'chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa',
-  'modoSeg','profileSeg','rolSeg','segSeg',
+  'profileSeg','rolSeg','segSeg',
   'pickModel','qty','termYears','licBundle','careLevel','selDescuento','dtoCustom','verdict-sel'];
 
 const VENDOR='fortinet';
@@ -524,13 +528,37 @@ function serviciosSdwanPedidos(){
    independientes. La reformulacion no cambia ninguna recomendacion sin SSL -lo prueba
    scripts/contrastes/fortinet.js, cuya linea base se midio antes de este cambio- y ademas
    coincide con la formula del informe (U_ipsec = T_overlay / C_ipsec). */
-function demandasDe(effectiveNeed, capa, sessNeed, cpsNeed){
+/* CUANTOS TUNELES IPsec TERMINA ESTE EQUIPO, y de donde sale cada uno.
+   La pregunta es distinta a cada lado del fabric, asi que el control tambien: un hub declara
+   sus spokes, un spoke sus hubs. Los usuarios de acceso remoto en modo IPsec dial-up levantan
+   su propio tunel cada uno, pero NO se suman aqui: SSL-VPN y ZTNA no son tuneles IPsec y esta
+   pagina no pregunta cual de los tres modos se usa. Contarlos seria inventar la mitad del
+   dato — se declaran aparte, con su propio limite sin comprobar. */
+function tunelesDeclarados(){
+  if(rolSdwan==='hub'){
+    const n=Math.max(1,parseInt($('sites').value)||1);
+    return { total:n, detalle:`uno por cada uno de los ${n} spokes que concentra` };
+  }
+  if(rolSdwan==='spoke'){
+    const n=Math.max(1,parseInt($('hubs').value)||1);
+    return { total:n, detalle:`uno por cada uno de los ${n} hubs a los que cifra` };
+  }
+  return { total:0, detalle:'' };
+}
+
+function demandasDe(effectiveNeed, capa, sessNeed, cpsNeed, vpnMbps){
   const d={};
   d[capa.k]=effectiveNeed;
   const frac=fraccionOverlay();
-  // El eje IPsec solo entra con rol SD-WAN; si la capa elegida YA es 'vpn', no se pisa con
-  // una cifra menor -se queda la mayor de las dos demandas sobre el mismo eje-.
-  if(frac>0) d.vpn=Math.max(d.vpn||0, effectiveNeed*frac);
+  // DEMANDA DEL MOTOR IPsec = overlay del fabric + acceso remoto. Son dos orígenes de
+  // tráfico cifrado que terminan en el MISMO motor del equipo, así que se suman en vez de
+  // competir: un hub con 40 spokes y 300 teletrabajadores los cifra todos a la vez.
+  // El overlay es una FRACCION del caudal del sitio (el resto sale por breakout local); el
+  // acceso remoto va entero, porque no existe una parte de él sin cifrar.
+  const ipsec=(frac>0?(effectiveNeed-(vpnMbps||0))*frac:0)+(vpnMbps||0);
+  // Si la capa elegida YA es 'vpn', no se pisa con una cifra menor: se queda la mayor de las
+  // dos demandas sobre el mismo eje.
+  if(ipsec>0) d.vpn=Math.max(d.vpn||0, ipsec);
   // SSL como eje propio, con la cifra oficial del modelo. Sin marcar la casilla no entra:
   // un eje que nadie pidio no puede apartar a nadie.
   if($('chkSsl').checked) d.ssl=effectiveNeed;
@@ -582,19 +610,20 @@ function pintarHintCapa(capa){
 // Los campos que no aplican se ocultan en vez de quedar visibles sin efecto: un control
 // que no hace nada es peor que uno ausente, porque invita a creer que se tuvo en cuenta.
 function pintarControlesTopologia(){
-  const agg=modoCaudal==='agg';
+  // Cada rol pide lo suyo y esconde lo que no aplica: un spoke no declara simultaneidad de
+  // sedes y un hub no declara a cuantos hubs cifra. Un control visible que el motor no lee
+  // es peor que uno ausente, porque hace creer que se tuvo en cuenta.
+  const agg=esConcentrador();
   $('fldAgg').hidden=!agg; $('fldConc').hidden=!agg;
+  $('fldHubs').hidden=rolSdwan!=='spoke';
   $('bwLbl').textContent=agg?'Enlaces WAN de UNA sede (underlay)':'Enlaces WAN del sitio (underlay)';
-  $('modoHint').textContent=agg
-    ? 'Caudal de UNA sede por el número de sedes y por el factor de simultaneidad. Es el modo del concentrador.'
-    : 'Un solo caudal, para dimensionar una sede o un perímetro de Internet.';
   // La casilla de overlay de cada fila solo significa algo con rol SD-WAN: se repintan las
   // filas para habilitarla o deshabilitarla, conservando lo declarado.
   if(wanRolPintado!==rolSdwan){ wanRolPintado=rolSdwan; pintarWanFilas(leerWanLinks()); }
   $('rolHint').innerHTML={
     none:'Solo perímetro: el tráfico no viaja por túneles del overlay, así que el techo lo fija únicamente la capa de inspección.',
     spoke:'Sucursal del fabric: el tráfico hacia el hub va cifrado, así que el <b>throughput IPsec del modelo también es un techo</b>, no solo la capa de inspección.',
-    hub:'Concentrador: agrega el tráfico de las sedes y termina un túnel por cada una. Se dimensiona con el caudal agregado y con el techo del motor IPsec.',
+    hub:'Concentrador: agrega el tráfico de los spokes y termina un túnel por cada uno. El caudal pasa a ser <b>agregado</b> —caudal de una sede x spokes x simultaneidad— y el techo del motor IPsec entra en juego. No hay que declararlo aparte: el rol lo decide.',
   }[rolSdwan];
 }
 
@@ -792,14 +821,12 @@ function render(){
   const sites=Math.max(1,parseInt($('sites').value)||1);
   const conc=Math.max(0,Math.min(100,parseFloat($('conc').value)||0))/100;
   $('concVal').textContent=Math.round(conc*100)+' %';
-  const caudal = modoCaudal==='agg' ? bw*unit*sites*conc : bw*unit;
+  const caudal = esConcentrador() ? bw*unit*sites*conc : bw*unit;
 
   // Sin recargo por funciones: lo que cambia al activarlas es la CAPA contra la que se
   // compara (ver capaEfectiva), no el requerimiento. Sumar ademas un porcentaje contaria
   // dos veces lo mismo, porque las cifras de Enterprise Mix de Fortinet ya incluyen esas
   // funciones activas. El unico factor de seguridad es el margen de crecimiento.
-  const perUser=Math.max(0,parseFloat($('perUser').value)||0);
-
   // AT-11. El trafico del sitio ya no es un solo camino: la WAN y el inter-VLAN SE SUMAN
   // salvo que alguien declare que sus picos no coinciden. `max` automatico es lo que cambia
   // de familia sin que nadie lo decida -el informe lo demuestra con 600 + 300 Mbps, que dan
@@ -817,8 +844,13 @@ function render(){
     : 'Sin tráfico inter-VLAN declarado: el requerimiento sale solo de los enlaces WAN. '
       +'Declararlo importa cuando el FortiGate también enruta e inspecciona entre segmentos internos.';
 
-  const userBaseMbps=users*perUser*(1+head);
-  const baseNeed=Math.max(trafico.previsto,userBaseMbps);
+  // ── ACCESO REMOTO: TRAFICO CIFRADO QUE TAMBIEN SE INSPECCIONA ─────────────────
+  // El caudal de teletrabajo atraviesa las dos rutas de procesamiento: entra por el motor
+  // IPsec (o SSL-VPN) y sale por el stack de inspeccion, asi que SUMA al requerimiento de
+  // la capa efectiva y ademas carga el eje IPsec entero -no una fraccion, porque todo el
+  // va cifrado-. Antes esta pagina no lo modelaba en absoluto.
+  const vpnMbps=Math.max(0,parseFloat($('vpnMbps').value)||0)*(1+head);
+  const baseNeed=trafico.previsto+vpnMbps;
 
   // La fraccion que va por el overlay paga la encapsulacion ESP.
   const frac=fraccionOverlay();
@@ -852,11 +884,16 @@ function render(){
   // sesiones y de su vida media.
   const sesUser=Math.max(0,parseInt($('sesUser').value)||0);
   const sessOverride=parseInt($('sessNeed').value)||0;
-  const sessNeed=sessOverride||Math.round(users*sesUser*(1+head));
+  // Un usuario de acceso remoto ocupa tabla de sesiones igual que uno local: la sesion la
+  // sostiene el FortiGate en los dos casos. Sumarlos es lo correcto y no hacerlo dejaba
+  // corto el eje de memoria justo en el escenario de teletrabajo masivo.
+  const vpnUsers=Math.max(0,parseInt($('vpnUsers').value)||0);
+  const usuariosSesion=users+vpnUsers;
+  const sessNeed=sessOverride||Math.round(usuariosSesion*sesUser*(1+head));
   $('sesCalc').innerHTML=sessOverride
     ? `Forzado a <b>${sessOverride.toLocaleString('en-US')}</b> sesiones. Se ignora el cálculo por usuario.`
-    : (sesUser&&users
-        ? `Calculado: ${users} usuarios x ${sesUser} sesiones + ${Math.round(head*100)} % de margen = <b>${sessNeed.toLocaleString('en-US')}</b> sesiones concurrentes.`
+    : (sesUser&&usuariosSesion
+        ? `Calculado: ${users} del sitio${vpnUsers?` + ${vpnUsers} de acceso remoto`:''} = ${usuariosSesion} usuarios x ${sesUser} sesiones + ${Math.round(head*100)} % de margen = <b>${sessNeed.toLocaleString('en-US')}</b> sesiones concurrentes.`
         : 'Sin restricción de sesiones: pon un valor por usuario o un total.');
 
   // ── SESIONES NUEVAS POR SEGUNDO (CPS) ─────────────────────────────────────
@@ -885,7 +922,7 @@ function render(){
      cps- lleva su demanda y su capacidad OFICIAL, y el maximo de las utilizaciones define
      el cuello de botella. `FortinetReglas.evaluar` es quien decide; esta pagina solo
      traduce el escenario a demandas y presenta el resultado. */
-  const demandas=demandasDe(effectiveNeed, capa, sessNeed, cpsNeed);
+  const demandas=demandasDe(effectiveNeed, capa, sessNeed, cpsNeed, vpnMbps);
   const politica={techo:techoUtil()};
   // AT-15. La huella resume el escenario TECNICO con el que se calculo. El BOM guarda la
   // suya al construirse; si dejan de coincidir es que alguien movio un parametro despues, y
@@ -998,7 +1035,16 @@ function render(){
       flags.push(`Sobre el requerimiento se suma un ${Math.round(OVERHEAD_ESP*100)} % de encapsulación ESP sobre la fracción del overlay — supuesto de esta herramienta, no una cifra publicada por Fortinet.`);
       flags.push('<b>SD-WAN sin costo de licencia:</b> el balanceo por SLA, ADVPN y la selección dinámica de camino vienen en FortiOS. <b>Tener varios enlaces no obliga a ningún bundle</b>: lo que se licencia aparte son los servicios avanzados (monitoreo de underlay, orquestación de overlays, conector FortiSASE), y solo si el diseño los usa.');
     }
-    if(rolSdwan==='hub'&&modoCaudal==='agg') flags.push(`<b>Escala del fabric:</b> ${sites} túnel(es) del overlay a terminar. <b class="warn">El límite de túneles por modelo no está en este catálogo</b> — confirmarlo en el datasheet del ${esc(m.id)} antes de cotizar. Con ADVPN los shortcuts spoke-a-spoke son dinámicos y no cuentan contra el hub.`);
+    // ── CONTEO DE TUNELES: UN EJE DEL DISENO QUE ESTE CATALOGO NO PUEDE COMPROBAR ──
+    // Se declara cuantos hacen falta y de donde salen, y se dice explicitamente que el tope
+    // por modelo NO esta aqui. Decir «cabe» sin tener el limite seria inventarlo; callarlo
+    // seria peor, porque el conteo es justo lo que decide un hub de fabric grande.
+    const tun=tunelesDeclarados();
+    if(tun.total>0) flags.push(`<b>Escala del overlay:</b> ${tun.total} túnel(es) IPsec a terminar — ${tun.detalle}. `
+      +`<b class="warn">El límite de túneles por modelo no está en este catálogo</b>: confirmarlo en el datasheet del ${esc(m.id)} y en la <i>Maximum Values Table</i> antes de cotizar.`
+      +(rolSdwan==='hub'?' Con <b>ADVPN</b> los atajos spoke-a-spoke se negocian dinámicamente y no cuentan contra el hub.':''));
+    const nVpn=Math.max(0,parseInt($('vpnUsers').value)||0);
+    if(nVpn>0) flags.push(`<b>Acceso remoto:</b> ${nVpn.toLocaleString('en-US')} usuario(s) concurrente(s) declarados. Su tráfico ya entra en el eje IPsec y en la tabla de sesiones, pero <b class="warn">el máximo de usuarios SSL-VPN concurrentes por modelo no está en este catálogo</b> — es un límite propio de FortiOS por plataforma y hay que contrastarlo aparte.`);
     if($('chkHa').checked) flags.push('En <b>activo-pasivo el clúster no suma capacidad</b>: el throughput sigue siendo el de una unidad. El par se cotiza por disponibilidad, no por rendimiento.');
 
     // QUE EJE MANDA Y A QUE DISTANCIA QUEDA EL SIGUIENTE. Antes esto solo se decia cuando
@@ -1304,6 +1350,11 @@ function renderBom(){
     qty, anios:termYrs, terminos:TERMINOS,
     converter:$('chkConverter').checked,
     serviciosSdwan:serviciosSdwanPedidos(),
+    // Los endpoints NO se piden en el paso 4: salen del paso 3 (usuarios del sitio +
+    // usuarios de acceso remoto), que es donde ya se declararon para el eje de sesiones.
+    endpointsEms:$('chkEms').checked
+      ? (Math.max(0,parseInt($('users').value)||0)+Math.max(0,parseInt($('vpnUsers').value)||0))
+      : 0,
   });
   // El bundle insuficiente es un bloqueo mas, y el primero: cambia QUE se cotiza, no solo
   // si se puede exportar.
@@ -1407,7 +1458,6 @@ function renderBom(){
       '  se puede cruzar contra el enlace compartido para comprobar que son el mismo).',
       '',
       'DECISIONES COMERCIALES APLICADAS A ESTA LISTA',
-      `  Transaccion: ${$('tipoTx').selectedOptions[0].textContent}.`,
       `  Termino ${termYrs} ano(s): los SKU llevan el sufijo ${TERMINOS[termYrs]?TERMINOS[termYrs].sufijo:'?'} (meses), no el marcador DD del patron.`,
       ...comercialActual.avisos.map((a)=>`  · ${a.mensaje.replace(/\s+/g,' ')}`),
       ...(bloqueos.length?['', 'ESTA LISTA NO ESTA HABILITADA PARA COTIZAR EN FIRME:',

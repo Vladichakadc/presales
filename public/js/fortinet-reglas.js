@@ -466,6 +466,27 @@
       }
     }
 
+    /* ── FORTICLIENT EMS: LICENCIA POR ENDPOINT, DERIVADA DEL DIMENSIONAMIENTO ────────
+       El unico bloque de licenciamiento cuya CANTIDAD sale de un campo del dimensionamiento
+       y no de una eleccion comercial: los endpoints son los usuarios ya declarados (los del
+       sitio mas los de acceso remoto). Pedirlos otra vez en el paso 4 habria sido un segundo
+       sitio con el mismo dato.
+       VA SIN SKU Y BLOQUEA, a proposito. Este catalogo trae el PATRON del codigo
+       (`FC1-10-EMS05-428-01-DD`, 25 endpoints) y no un codigo pedible: la linea entra con la
+       cantidad correcta para que la cotizacion no salga corta, y cierra la exportacion hasta
+       que alguien confirme el SKU del tramo en el Ordering Guide. Inventar el tramo seria el
+       fallo del `FortiGate 2000F`. */
+    const ems = Math.max(0, parseInt(e.endpointsEms, 10) || 0);
+    if (ems > 0) {
+      filas.push({ cat: 'Licencias endpoint', desc: 'FortiClient EMS — ZTNA + VPN gestionado',
+        sku: null, qty: ems, unit: null,
+        nota: `${termino} · ${ems} endpoint(s) declarados en el dimensionamiento` });
+      bloqueos.push({ codigo: 'sin-sku-ems',
+        mensaje: `FortiClient EMS para ${ems} endpoint(s): este repositorio solo tiene el PATRON del SKU `
+          + '(`FC1-10-EMS05-428-01-DD`, tramo de 25), no el codigo del tramo que corresponde. '
+          + 'Confirmarlo en el Ordering Guide antes de exportar como cotizacion.' });
+    }
+
     // ── HA ────────────────────────────────────────────────────────────────────────────
     // AT-17. La regla general es una licencia por nodo. La excepcion de FortiGuard unico en
     // activo-pasivo depende del modelo y de la version de FortiOS, y este catalogo no trae

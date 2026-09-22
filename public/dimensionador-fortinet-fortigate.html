@@ -355,18 +355,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       </div>
       <p class="hint" id="rolHint">Solo perímetro: el tráfico no viaja por túneles del overlay, así que el techo lo fija únicamente la capa de inspección.</p>
     </div>
-    <div class="field" style="margin-top:16px">
-      <label for="tipoTx">Tipo de transacción <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— se pregunta ANTES de elegir la familia de SKU, no después</span></label>
-      <select id="tipoTx">
-        <option value="nueva" selected>Compra nueva</option>
-        <option value="renovacion">Renovación de servicios</option>
-        <option value="ampliacion">Ampliación de parque instalado</option>
-        <option value="coterm">Co-term (alinear vencimientos)</option>
-        <option value="hardware">Solo hardware</option>
-      </select>
-      <p class="hint" id="txHint">Compra nueva: el equipo, su bundle y su soporte. Un equipo <b>fuera de venta</b> no se recomienda aquí, pero sí sigue consultable para una ampliación.</p>
-    </div>
-    <div class="checks">
+        <div class="checks">
     <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad — par en clúster<span class="sku">Se cotizan 2 unidades y cada una lleva su propia suscripción FortiGuard. En <b>activo-pasivo el clúster no suma capacidad</b>: el throughput sigue siendo el de una unidad, así que el dimensionamiento no cambia. En activo-activo hay reparto, pero solo sobre sesiones de inspección y lejos de ser lineal — esta herramienta no lo descuenta.</span></span></label>
     </div>
     </div>
@@ -421,15 +410,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <details open>
     <summary><h2>3 · Tráfico y capacidad <span class="paso-chip" id="chipPaso3"></span></h2></summary>
     <div class="paso-cuerpo">
-    <div class="field">
-      <label>Cómo se declara el caudal</label>
-      <div class="seg" id="modoSeg">
-        <button type="button" data-v="link" aria-pressed="true">Enlace único</button>
-        <button type="button" data-v="agg"  aria-pressed="false">Agregado<br>(varias sedes)</button>
-      </div>
-      <p class="hint" id="modoHint">Un solo caudal, para dimensionar una sede o un perímetro de Internet.</p>
-    </div>
-    <!-- M1 · Multi-Underlay Builder (2026-09-16). Sustituye al caudal único más el
+        <!-- M1 · Multi-Underlay Builder (2026-09-16). Sustituye al caudal único más el
          deslizador «% por el overlay», que era una ESTIMACIÓN a ojo justo del número que
          fija el segundo techo del motor IPsec. Ahora los enlaces del sitio se DECLARAN y
          la fracción se calcula.
@@ -469,27 +450,48 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       <label class="check" style="margin-top:8px"><input type="checkbox" id="chkNoConcurrente"> <span>Los picos de WAN e inter-VLAN <b>no</b> son concurrentes<span class="sku">Solo marcar si el diseño lo justifica (p. ej. respaldo nocturno contra navegación diurna). Sin marcar, los caminos se SUMAN.</span></span></label>
       <p class="hint" id="traficoHint"></p>
     </div>
+    <!-- TOPOLOGIA DEL OVERLAY. Un FortiGate SD-WAN no se dimensiona solo por caudal: termina
+         un túnel IPsec por cada extremo del fabric, y ese conteo es un eje propio del diseño.
+         El control que se pide depende del ROL, porque la pregunta es distinta a cada lado
+         del túnel: un hub declara cuántos spokes agrega, un spoke cuántos hubs cifra. -->
     <div class="field" id="fldAgg" hidden>
-      <label for="sites">Número de sedes que concentra</label>
+      <label for="sites">Spokes que concentra este hub</label>
       <input type="number" id="sites" min="1" step="1" autocomplete="off">
-      <p class="hint">Cada sede necesita su propio túnel del overlay. El límite de túneles por modelo hay que confirmarlo en el datasheet: no está en este catálogo.</p>
+      <p class="hint">Fija dos cosas a la vez: el <b>caudal agregado</b> (caudal de una sede x spokes x simultaneidad) y el <b>número de túneles IPsec</b> que el equipo termina. Con <b>ADVPN</b> los atajos spoke-a-spoke se negocian dinámicamente y no cuentan contra el hub. El <b>límite de túneles por modelo no está en este catálogo</b>: se declara cuántos hacen falta y hay que confirmarlo en el datasheet.</p>
+    </div>
+    <div class="field" id="fldHubs" hidden>
+      <label for="hubs">Hubs / datacenters a los que cifra</label>
+      <input type="number" id="hubs" min="1" step="1" autocomplete="off">
+      <p class="hint">Túneles IPsec que levanta esta sucursal. Lo habitual es <b>2</b> (hub primario y secundario); con doble transporte activo-activo se duplica, porque cada underlay levanta su propio túnel a cada hub.</p>
     </div>
     <div class="field" id="fldConc" hidden>
       <label for="conc">Simultaneidad: <span id="concVal" style="font-family:'IBM Plex Mono',monospace">35 %</span></label>
       <input type="range" id="conc" min="5" max="100" step="5" value="35" autocomplete="off">
       <p class="hint">Qué fracción del caudal de todas las sedes coincide en el pico. Es <b>el</b> parámetro que decide el tamaño de un concentrador: sumarlas linealmente sobredimensiona y encarece la propuesta; usar el caudal de una sola sede la deja corta.</p>
     </div>
+    <!-- VPN DE ACCESO REMOTO. Faltaba por completo y es un eje real: el tráfico de teletrabajo
+         entra CIFRADO, así que consume el motor IPsec igual que el overlay del fabric, y cada
+         sesión de usuario remoto ocupa tabla de sesiones. Se piden las dos magnitudes por
+         separado -usuarios y caudal- porque miden ejes distintos y ninguna se deduce de la
+         otra sin inventar un Mbps por usuario. Lo que este catálogo NO trae es el límite de
+         usuarios SSL-VPN concurrentes por modelo: se declara la demanda y se dice que el tope
+         hay que confirmarlo, en vez de dar por bueno que cabe. -->
     <div class="field">
-      <label for="users">Usuarios / dispositivos concurrentes</label>
+      <label for="vpnUsers">Usuarios de acceso remoto concurrentes <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— SSL-VPN, IPsec dial-up o ZTNA</span></label>
+      <input type="number" id="vpnUsers" min="0" step="1" autocomplete="off" placeholder="0">
+      <p class="hint">Teletrabajo y contratistas. Suman a la <b>tabla de sesiones</b> con las mismas sesiones por usuario declaradas abajo. El <b>máximo de usuarios SSL-VPN concurrentes por modelo no está en este catálogo</b> — se muestra cuántos se piden y hay que contrastarlo con el datasheet y la <i>Maximum Values Table</i>.</p>
+    </div>
+    <div class="field">
+      <label for="vpnMbps">Caudal agregado de acceso remoto (Mbps)</label>
+      <input type="number" id="vpnMbps" min="0" step="10" autocomplete="off" placeholder="0">
+      <p class="hint">Lo que ese conjunto de usuarios mueve en el pico. Va <b>cifrado</b>, así que entra en el eje IPsec junto al overlay del fabric, y además se inspecciona, así que también suma al caudal de la capa efectiva. Déjalo en 0 si el acceso remoto no termina en este equipo.</p>
+    </div>
+    <div class="field">
+      <label for="users">Usuarios / dispositivos concurrentes en el sitio</label>
       <input type="number" id="users" min="1" step="1" autocomplete="off">
-      <p class="hint">Se toma el mayor entre esta vía y el caudal declarado arriba, no la suma.</p>
+      <p class="hint">Usuarios locales detrás del equipo. <b>No deriva caudal</b> —eso lo declaran los enlaces WAN de arriba—: alimenta la <b>tabla de sesiones</b>, el caudal de sesiones nuevas y el licenciamiento por endpoint del paso 4.</p>
     </div>
-    <div class="field">
-      <label for="perUser">Mbps por usuario activo</label>
-      <input type="number" id="perUser" min="0" step="0.1" autocomplete="off">
-      <p class="hint">Regla habitual: 1–5 Mbps por usuario corporativo. <b>Bájala en campus grandes</b>: 5.000 usuarios a 3 Mbps dan 15 Gbps, cifra que no representa ningún consumo real y que desplaza el dimensionamiento a gama de datacenter. Ponla en 0 para dimensionar solo por el caudal.</p>
-    </div>
-    <div class="field">
+        <div class="field">
       <label for="sesUser">Sesiones concurrentes por usuario</label>
       <input type="number" id="sesUser" min="0" step="1" autocomplete="off">
       <p class="hint">Nadie sabe estimar «cuántas sesiones concurrentes necesito», pero todo el mundo puede estimar cuántas abre un usuario: 15–30 en un puesto corporativo, 50–100 con muchas apps SaaS y móviles, 5–10 en un dispositivo IoT. El total se calcula solo.</p>
@@ -571,6 +573,16 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
         <option value="none">No incluir — sin contrato FortiCare</option>
       </select>
       <p class="hint">Los tres bundles ya traen <b>FortiCare Premium</b>, así que «no incluir» con un bundle puesto no pierde cobertura — solo evita una segunda línea. Sin bundle y sin soporte, el equipo se cotiza <b>sin RMA ni actualizaciones de FortiOS</b>, y la lista de materiales lo dice.</p>
+    </div>
+    <!-- LICENCIAMIENTO QUE SALE DEL DIMENSIONAMIENTO, no de un campo nuevo. FortiClient EMS
+         se licencia POR ENDPOINT, y los endpoints ya están declarados en el paso 3 (usuarios
+         del sitio + usuarios de acceso remoto): pedir la cantidad otra vez sería un segundo
+         sitio con el mismo dato. Va como casilla y no encendido por defecto porque no todo
+         diseño lo incluye — y cuando se pide, la línea entra SIN SKU exacto y cierra la
+         puerta de exportación, que es lo correcto mientras este repositorio no haya leído el
+         Ordering Guide: el catálogo solo trae el PATRÓN del código, no uno pedible. -->
+    <div class="checks">
+      <label class="check"><input type="checkbox" id="chkEms"> <span>FortiClient EMS — gestión de endpoints (ZTNA + VPN)<span class="sku">Se licencia por endpoint y la cantidad sale del paso 3: usuarios del sitio + usuarios de acceso remoto. <b>Este catálogo no trae un SKU pedible</b>, solo el patrón <code>FC1-10-EMS05-428-01-DD</code> para 25 endpoints, así que pedirlo bloquea la exportación hasta confirmar el código en el Ordering Guide.</span></span></label>
     </div>
     </div>
     </details>

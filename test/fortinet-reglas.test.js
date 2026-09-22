@@ -476,3 +476,42 @@ test('AT-25 · sin ninguna funcion que licenciar, excluir el bundle no genera av
   assert.ok(R.validarBundle('none', ['chkAv'], FUNCIONES, BUNDLES),
     'el antivirus si es un servicio de bundle: excluirlo se declara');
 });
+
+/* ── REDISENO DEL FORMULARIO (2026-09-22, peticion del dueno) ──────────────────────────
+   «Solo las variables y los campos necesarios para dimensionar SD-WAN y NGFW; quita el tipo
+   de transaccion, que no es valido tecnicamente; valida sesiones, cantidad de VPN y usuarios
+   concurrentes.» Lo que estas pruebas fijan es la parte del rediseno que vive en el modulo
+   puro: el licenciamiento por endpoint derivado del dimensionamiento. El resto -las bajas de
+   campos y el reparto de la demanda entre ejes- lo guardan `test/pantallas-campos.test.js`,
+   los contrastes y la bateria e2e, porque son de la pantalla y no de las reglas. */
+
+test('AT-26 · FortiClient EMS entra con la cantidad de endpoints del dimensionamiento', () => {
+  // La cantidad NO se pide en el paso 4: son los usuarios ya declarados. Un segundo campo
+  // para el mismo dato es como se desincronizan dos sitios con la misma cifra.
+  const r = comercial({ endpointsEms: 500 });
+  const ems = r.filas.find((f) => f.cat === 'Licencias endpoint');
+  assert.ok(ems, 'con endpoints declarados tiene que haber linea de EMS');
+  assert.strictEqual(ems.qty, 500, 'la cantidad es el numero de endpoints, no las unidades de hardware');
+  assert.strictEqual(ems.sku, null, 'este catalogo no trae un SKU de tramo pedible');
+});
+
+test('AT-27 · EMS sin SKU exacto BLOQUEA la exportacion, no avisa', () => {
+  // Es la misma regla que los tres servicios avanzados de SD-WAN: una linea sin codigo
+  // pedible no puede salir como cotizacion en firme. Inventar el tramo de 25/500/2.000
+  // endpoints seria exactamente el fallo del `FortiGate 2000F`.
+  const r = comercial({ endpointsEms: 500 });
+  const b = r.bloqueos.find((x) => x.codigo === 'sin-sku-ems');
+  assert.ok(b, 'tiene que bloquear');
+  assert.match(b.mensaje, /PATRON|Ordering Guide/,
+    'y decir por que: hay patron, no codigo, y donde se confirma');
+});
+
+test('AT-28 · sin endpoints declarados no aparece ninguna linea de endpoint', () => {
+  // Un bloqueo que se enciende solo porque el bloque existe cerraria la exportacion de todo
+  // escenario, y una puerta que nunca se abre se rodea copiando la tabla a mano.
+  for (const v of [0, undefined, null, '']) {
+    const r = comercial({ endpointsEms: v });
+    assert.ok(!r.filas.some((f) => f.cat === 'Licencias endpoint'), `endpointsEms=${v} no debe cotizar EMS`);
+    assert.ok(!r.bloqueos.some((x) => x.codigo === 'sin-sku-ems'), `endpointsEms=${v} no debe bloquear`);
+  }
+});

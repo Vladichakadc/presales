@@ -588,3 +588,104 @@ habría sido la sexta copia de `llevarABom`.
 - Conducido en Chromium: conmutador frontal/trasera con la figura trasera cargando de verdad
   (`naturalWidth` 1599), las 385 referencias del equipo pintadas en la sección nueva, y el
   orden de secciones idéntico al de Aruba.
+
+---
+
+# Etapa 5 — El formulario, reconstruido sobre lo que de verdad dimensiona (2026-09-22)
+
+Encargo del dueño: revisar el dimensionador **como arquitecto senior**, dejar solo las
+variables que dimensionan SD-WAN y NGFW, retirar el tipo de transacción «que no es válido
+técnicamente», validar sesiones, cantidad de VPN y usuarios concurrentes, y quitar los campos
+que no aportan valor al diseño.
+
+## Tres bajas
+
+**`#tipoTx` — tipo de transacción.** Compra nueva, renovación, co-term, ampliación. Ninguna de
+las cinco cambia un solo Mbps que el equipo tenga que procesar: es una **decisión comercial
+disfrazada de entrada técnica**, en el primer paso de un formulario de ingeniería. Se
+comprobó antes de retirarla que no alimentaba el motor — un `grep` da cuatro usos: el
+escuchador que repinta, el campo del enlace compartido, una línea del texto exportado y una
+mención en el tooltip del paso 1. Cero en el cálculo. El ciclo de vida, que era el argumento
+para tenerla, ya lo cubren dos cosas mejores: `FICHA.rango()` nunca recomienda un equipo fuera
+de venta, y `#chkVerEol` filtra el gráfico.
+
+**`#modoSeg` — enlace único / agregado.** Dos controles para una sola pregunta. El rol ya
+dice si el equipo es un concentrador, y el código tenía que **forzar `agg` a mano** cada vez
+que alguien elegía `hub` — la señal de que el segundo control sobraba. Peor: dejaba abierta la
+combinación «hub en enlace único», que es exactamente como se dimensiona de menos un
+concentrador. Ahora el modo **se deriva** (`esConcentrador() === rolSdwan==='hub'`) y los
+controles de sedes y simultaneidad aparecen solos.
+
+**`#perUser` — Mbps por usuario activo.** Desde que existe el Multi-Underlay Builder, el
+caudal **se declara** enlace por enlace. `usuarios × Mbps/usuario` era una segunda fuente de
+verdad para la misma magnitud, resuelta con un `max()` — y la propia pantalla advertía que
+producía cifras irreales («5.000 usuarios a 3 Mbps dan 15 Gbps, cifra que no representa ningún
+consumo real»). Un campo cuyo aviso dice que no te fíes de él no es un campo, es una trampa.
+Los usuarios se quedan: alimentan sesiones, CPS y licenciamiento por endpoint, que es para lo
+que sirven de verdad.
+
+## Cuatro altas — lo que faltaba para dimensionar SD-WAN y acceso remoto
+
+**VPN de acceso remoto (`#vpnUsers` + `#vpnMbps`).** No estaba modelado **en absoluto**, y es
+un caso de uso central de cualquier FortiGate. Su tráfico atraviesa las dos rutas de
+procesamiento: entra por el motor IPsec/SSL-VPN y sale por el stack de inspección, así que
+suma al caudal de la capa efectiva **y** carga el eje IPsec. Se piden las dos magnitudes por
+separado porque miden ejes distintos y ninguna se deduce de la otra sin inventar un Mbps por
+usuario — el error que se acaba de retirar. Los usuarios remotos **suman a la tabla de
+sesiones**: el FortiGate sostiene esa sesión igual que la de un usuario local.
+
+**Conteo de túneles (`#sites` como spokes, `#hubs` nuevo).** La pregunta es distinta a cada
+lado del fabric y por eso el control también: un hub declara cuántos spokes agrega, un spoke
+cuántos hubs cifra. `#sites` ya existía pero solo servía para el caudal agregado; ahora fija
+las dos cosas. Un spoke no tenía dónde declararlo.
+
+**Lo que se declara y NO se comprueba, dicho en pantalla.** Tres límites reales de FortiOS que
+este catálogo no trae: túneles IPsec por modelo, usuarios SSL-VPN concurrentes por modelo, y
+la escala del plano de control (pendiente **F4**). Se muestra **cuántos se piden** y se dice
+que el tope hay que contrastarlo con el datasheet y la *Maximum Values Table*. Dar por bueno
+que caben sería inventarlo; callarlo sería peor, porque el conteo es justo lo que decide un
+hub de fabric grande.
+
+## El reparto de la demanda entre ejes, corregido
+
+El eje IPsec recibía solo la fracción del overlay. Ahora recibe **overlay + acceso remoto**,
+porque son dos orígenes de tráfico cifrado que terminan en el **mismo motor** del equipo: un
+hub con 40 spokes y 300 teletrabajadores los cifra todos a la vez. El overlay es una fracción
+del caudal del sitio (el resto sale por breakout local); el acceso remoto va entero, porque no
+existe una parte de él sin cifrar.
+
+Medido en Chromium: 500 Mbps de WAN con 200 usuarios recomiendan un **60F**; añadir 300
+usuarios remotos y 400 Mbps de acceso remoto lo llevan a un **70G**, con las sesiones pasando
+de 5.200 a 13.000 y el aviso del límite SSL-VPN en pantalla. Ese salto no existía antes
+porque el escenario no se podía expresar.
+
+## Licenciamiento derivado del dimensionamiento
+
+**FortiClient EMS** es el único bloque cuya cantidad sale de un campo técnico y no de una
+elección comercial: los endpoints son los usuarios ya declarados (sitio + acceso remoto).
+Pedirlos otra vez en el paso 4 habría sido un segundo sitio con el mismo dato. Va como casilla
+y apagado por defecto, y cuando se pide **entra con la cantidad correcta y sin SKU**, cerrando
+la puerta de exportación: este repositorio tiene el **patrón** del código
+(`FC1-10-EMS05-428-01-DD`, tramo de 25) y no un código pedible. La línea entra igualmente para
+que la cotización no salga corta — declarada, no inventada.
+
+## El formulario resultante
+
+| Paso | Campos | Qué eje alimenta |
+|---|---|---|
+| **1 · Plataforma y rol** | Segmento · Rol SD-WAN · HA | Acota la familia; el rol decide si el eje IPsec entra y si el caudal es agregado |
+| **2 · Capa de inspección** | Capa · SSL · AV · Web/App · IoT+DLP · Sandbox · Servicios SD-WAN · FortiConverter | Qué cifra del Product Matrix aplica, y el bundle mínimo |
+| **3 · Tráfico, VPN y sesiones** | Enlaces WAN · inter-VLAN + simultaneidad · Spokes/Hubs · Simultaneidad · **VPN remota (usuarios + caudal)** · Usuarios del sitio · Sesiones/usuario (+ override) · Vida de sesión · Crecimiento · Techo de utilización | Capa efectiva, IPsec, sesiones, CPS, túneles |
+| **4 · Equipo y cotización** | Modelo · Cantidad · Término · Bundle (+ no incluir) · FortiCare (+ no incluir) · **FortiClient EMS** | Solo cotización |
+
+**Lo que sigue sin entrar, y por qué:** mezcla porcentual por capa (el Product Matrix no la
+publica), proxy/flow (su derate está entre los once que el informe pide excluir), upstream (el
+motor consume un solo caudal), appliance/VM y región (no hay dato en el catálogo), rutas,
+vecinos y VDOM (pendiente F4). Ninguno se cierra con código: se cierran con un dato.
+
+## Verificación de la etapa 5
+
+473 unitarios (AT-26…AT-28 nuevos sobre el licenciamiento por endpoint), 16/16 pantallas,
+**4/4 contrastes sin discrepancias** —incluido `fortinet`, cuya línea base se midió antes del
+Multi-Underlay Builder: la prueba de que retirar tres campos y añadir cuatro **no movió el
+dimensionamiento de ningún escenario que no los use**— y 10/10 baterías e2e.
