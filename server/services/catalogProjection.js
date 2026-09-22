@@ -6,6 +6,7 @@ const cotizadorCatalog = require('../seed/legacyData/cotizadorCatalog');
 const mikrotikData = require('../seed/legacyData/mikrotik');
 const arubaData = require('../seed/legacyData/aruba');
 const nokiaData = require('../seed/legacyData/nokia');
+const fortinetData = require('../seed/legacyData/fortinet');
 const { fuentesDe } = require('../seed/legacyData/fuentes');
 const fuentesSubidas = require('../fuentesSubidas');
 const fs = require('fs');
@@ -305,9 +306,19 @@ async function toDimensionadorFortinet() {
   const vendorIds = await vendorIdMap();
   const vendorId = vendorIds.fortinet;
 
+  // El nombre y la descripcion salen de la base (se siembran ahi); el CONTENIDO ESTRUCTURADO
+  // del bundle sale de legacyData, con el precedente de `toFuentes` y `referencias.js`.
+  // Meterlo en la base obligaria a una columna nueva y a una migracion para un dato que no
+  // se consulta ni se filtra: solo lo leen las reglas comerciales, y ahi tiene que llegar
+  // COMO ESTA ESCRITO, porque de `incluye` cuelgan el bundle minimo (AT-03), el soporte que
+  // no se duplica (AT-04) y el FortiConverter que no se cotiza dos veces (AT-05).
   const bundles = await LicenseBundle.findAll({ where: { vendorId } });
   const bundlesOut = {};
-  for (const b of bundles) bundlesOut[b.code] = { n: b.name, svcs: b.description };
+  for (const b of bundles) {
+    const extra = fortinetData.BUNDLES[b.code] || {};
+    bundlesOut[b.code] = { n: b.name, svcs: b.description,
+      incluye: extra.incluye || [], nivel: extra.nivel || 0 };
+  }
 
   const tiers = await SupportTier.findAll({ where: { vendorId } });
   const care = {};
@@ -323,7 +334,17 @@ async function toDimensionadorFortinet() {
       elp: p.priceDisplay, elpN: p.priceNumeric,
     }));
 
-  return { models, bundles: bundlesOut, care };
+  return {
+    models, bundles: bundlesOut, care,
+    // Reglas comerciales y de formulario como DATOS, no como listas repetidas en la pagina:
+    // el catalogo de funciones de seguridad con su servicio FortiGuard y su piso de capa,
+    // los servicios avanzados de SD-WAN (que existen porque la funcion base NO se licencia)
+    // y la equivalencia termino -> sufijo real de SKU, que es lo que convierte un `-DD` de
+    // patron en una linea pedible.
+    funciones: fortinetData.FUNCIONES,
+    serviciosSdwan: fortinetData.SERVICIOS_SDWAN,
+    terminos: fortinetData.TERMINOS,
+  };
 }
 
 // MikroTik: ademas de modelos/opticas/soporte devuelve las constantes de dimensionamiento

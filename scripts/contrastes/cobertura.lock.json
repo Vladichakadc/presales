@@ -1,7 +1,7 @@
 {
  "medidoEn": {
-  "commit": "c85e7a8",
-  "fecha": "2026-09-18"
+  "commit": "419b357",
+  "fecha": "2026-09-22"
  },
  "umbralRozado": 25,
  "modulos": [
@@ -97,13 +97,6 @@
    "pct": 6
   },
   {
-   "modulo": "index.js",
-   "estado": "rozado",
-   "total": 31,
-   "usadas": 4,
-   "pct": 13
-  },
-  {
    "modulo": "contraste.js",
    "estado": "rozado",
    "total": 11,
@@ -125,18 +118,25 @@
    "pct": 53
   },
   {
+   "modulo": "index.js",
+   "estado": "ejercitado",
+   "total": 46,
+   "usadas": 25,
+   "pct": 54
+  },
+  {
+   "modulo": "bom.js",
+   "estado": "ejercitado",
+   "total": 76,
+   "usadas": 45,
+   "pct": 59
+  },
+  {
    "modulo": "login.js",
    "estado": "ejercitado",
    "total": 5,
    "usadas": 3,
    "pct": 60
-  },
-  {
-   "modulo": "bom.js",
-   "estado": "ejercitado",
-   "total": 73,
-   "usadas": 45,
-   "pct": 62
   },
   {
    "modulo": "tabla.js",
@@ -153,25 +153,32 @@
    "pct": 65
   },
   {
+   "modulo": "ficha.js",
+   "estado": "ejercitado",
+   "total": 62,
+   "usadas": 43,
+   "pct": 69
+  },
+  {
    "modulo": "estado.js",
    "estado": "ejercitado",
    "total": 23,
-   "usadas": 16,
-   "pct": 70
+   "usadas": 17,
+   "pct": 74
+  },
+  {
+   "modulo": "fortinet-reglas.js",
+   "estado": "ejercitado",
+   "total": 37,
+   "usadas": 29,
+   "pct": 78
   },
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
-   "total": 131,
-   "usadas": 95,
-   "pct": 73
-  },
-  {
-   "modulo": "ficha.js",
-   "estado": "ejercitado",
-   "total": 55,
-   "usadas": 43,
-   "pct": 78
+   "total": 186,
+   "usadas": 148,
+   "pct": 80
   },
   {
    "modulo": "dimensionador-nokia-7750sr.js",

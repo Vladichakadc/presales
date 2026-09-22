@@ -14,10 +14,50 @@
 //        se debe usar para dimensionar de verdad. (Antes esta clave se llamaba `ssl`, lo que
 //        inducía a tratarla como "SSL Inspection Throughput" — un número distinto que
 //        Fortinet ya no publica por modelo en el Product Matrix.)
+//   ssl  SSL Inspection Throughput — IPS activado y un promedio de sesiones HTTPS con
+//        distintas suites criptograficas. ES UNA METRICA PROPIA, no una fraccion de `tp`:
+//        las metodologias son distintas y su cociente NO es constante entre plataformas
+//        (30G 500/400, 40F 600/310, 50G 1100/1300 — el 50G, el 70G y el 90G publican MAS
+//        SSL que Threat Protection, asi que cualquier derate fijo sobredimensiona ahi y
+//        subdimensiona en el 40F). Ver la PROCEDENCIA DE `ssl` mas abajo.
 //   sess Concurrent Sessions (valor base, sin licencia Hyperscale).
 //   cps  New Sessions/Sec (TCP) — sesiones NUEVAS por segundo. Es el eje de CPU, distinto del
 //        de memoria que mide `sess`: una sesion establecida cuesta memoria, abrirla cuesta
 //        ciclos. Cifra de modo flow; con inspeccion proxy cae, y Fortinet no publica cuanto.
+//
+// PROCEDENCIA DE `ssl` — 9 de 58 modelos, y los otros 49 en null A PROPOSITO.
+// Hasta el 2026-09-22 esta pagina NO tenia el dato: estimaba la inspeccion SSL aplicando un
+// factor unico (0,65) sobre Threat Protection. El informe «Informe final de validacion
+// tecnica y plan de mejora del modulo Fortinet Presales» (22-sep-2026, seccion 5.1) lo
+// documenta como el defecto P0 del motor y publica la tabla oficial que lo desmiente,
+// citando el Fortinet Product Matrix de septiembre de 2026 -la misma edicion
+// PRQMTX-2026-R176-SEP que ya respalda el resto de este archivo-:
+//
+//     modelo   TP oficial   SSL oficial   TP x 0,55   TP x 0,65 (lo que hacia esta pagina)
+//     FG-30G     500 Mbps     400 Mbps     275 Mbps     325 Mbps   <- subdimensiona
+//     FG-40F     600 Mbps     310 Mbps     330 Mbps     390 Mbps   <- SOBREstima el equipo
+//     FG-50G   1.100 Mbps   1.300 Mbps     605 Mbps     715 Mbps   <- subdimensiona 1,8x
+//     FG-70G   1.300 Mbps   1.400 Mbps     715 Mbps     845 Mbps   <- subdimensiona
+//     FG-90G   2.200 Mbps   2.600 Mbps   1.210 Mbps   1.430 Mbps   <- subdimensiona 1,8x
+//
+// El cociente ssl/tp va de 0,52 (40F) a 1,18 (50G): no hay constante que lo describa, y en
+// tres de los cinco el equipo aguanta MAS SSL que Threat Protection. Un factor unico no es
+// "conservador": se equivoca en las dos direcciones, y en el 40F es el error caro -promete
+// 390 Mbps donde el equipo da 310-.
+//
+// LAS CIFRAS ESTAN TRANSCRITAS DEL INFORME, NO LEIDAS DEL PDF EN ESTA SESION: fortinet.com
+// responde 403 al proxy de egreso de este entorno (politica de la organizacion, no un fallo
+// de red), asi que no se pudo abrir el Product Matrix para contrastarlas de primera mano.
+// El informe cita el documento y la edicion; eso es lo que se declara, ni mas ni menos. Las
+// cuatro variantes con SSD (31G/51G/71G/91G) heredan el valor de su modelo base por la misma
+// regla ya documentada en este archivo -mismo silicio, mismas cifras de rendimiento-.
+//
+// LOS OTROS 49 QUEDAN EN null, Y null NO ES CERO NI ES "no tiene limite": es «el catalogo no
+// trae la cifra». El motor NO los dimensiona con otra capa cuando se pide inspeccion SSL
+// profunda; los APARTA CON SU MOTIVO y pide PoC o revision senior, que es la misma regla que
+// `dimensionador-juniper-srx.js` aplica a `fw` y la calculadora a cada capa. Completarlos es
+// leer el Product Matrix desde una maquina con acceso -la columna existe en el documento- y
+// pasarlos por `npm run cps`, que ya contrasta contra `sess` antes de aceptar una fila.
 //
 // PROCEDENCIA DE `cps` — leer antes de completar los que faltan.
 // El Product Matrix no es accesible desde el entorno donde se edita este catalogo: el proxy
@@ -317,10 +357,26 @@ const LICENSES={
 const DATASHEET_URL = 'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf';
 
 const bareId=id=>id.replace('FortiGate ','');
+
+// SSL Inspection Throughput (Mbps). Se asigna aqui y no modelo a modelo por el mismo motivo
+// que HW_SKU y ASIC_BY_MODEL: lo que importa de este campo es CUANTOS modelos lo tienen, y
+// una tabla corta al lado de un bucle que pone null en todos los demas lo dice de un vistazo.
+// Ver «PROCEDENCIA DE `ssl`» en la cabecera antes de anadir una fila aqui.
+const SSL_INSPECTION={
+  '30G':400, '31G':400,      // 31G hereda del 30G (misma plataforma SP4/SoC4 + SSD)
+  '40F':310,
+  '50G':1300, '51G':1300,
+  '70G':1400, '71G':1400,
+  '90G':2600, '91G':2600,
+};
+
 for (const m of MODELS) {
   m.hwSku=HW_SKU[bareId(m.id)]||null;
   m.lic=LICENSES[bareId(m.id)]||null;
   m.datasheetUrl=DATASHEET_URL;
+  // null EXPLICITO en los 49 restantes: «el catalogo no trae la cifra», nunca «no aplica».
+  const sslV=SSL_INSPECTION[bareId(m.id)];
+  m.ssl=sslV==null?null:sslV;
 }
 
 // Bundles de protección FortiGuard reales y vigentes (sufijos de SKU -809/-950/-928 en el price list AMER).
@@ -403,11 +459,76 @@ for (const m of MODELS) {
   if (a) Object.assign(m, a);
 }
 
+// `incluye` ESTRUCTURA lo que `svcs` ya decia en prosa, y no es cosmetica: de aqui salen las
+// tres reglas comerciales que el informe del 2026-09-22 marco como P0 y que una cadena de
+// texto no puede sostener.
+//   1. BUNDLE MINIMO (AT-03). Una funcion pedida en el formulario se cubre con el bundle mas
+//      barato que la incluya; elegir uno por debajo se BLOQUEA en vez de avisarse. DLP e IoT
+//      Security solo estan en Enterprise, asi que «IoT Detection + DLP con UTP» no es una
+//      advertencia: es una cotizacion que no se puede pedir.
+//   2. FORTICARE PREMIUM NO SE COTIZA DOS VECES (AT-04). Los tres bundles lo incluyen, y el
+//      BOM anadia ademas una linea de soporte SIEMPRE: el cliente pagaba Premium dos veces.
+//   3. FORTICONVERTER NO SE DUPLICA (AT-05). Solo Enterprise lo trae; con Enterprise elegido
+//      la linea a la carta sobra, y fuera de Enterprise solo entra si alguien la pide.
+// `nivel` es el orden de cobertura para poder decir «este bundle esta por debajo del minimo»;
+// NO es orden de precio -ATP puede salir mas caro que UTP en algun modelo- y por eso no se
+// usa para recomendar el mas barato, solo para comparar coberturas.
 const BUNDLES={
-  utp:  {n:'UTP — Unified Threat Protection', svcs:'IPS, Advanced Malware Protection, Application Control, URL/DNS/Video Filtering, Antispam Service, FortiCare Premium'},
-  ent:  {n:'Enterprise Protection',           svcs:'IPS, DLP, AMP, Antispam, AI-Based Malware Prevention, Application Control, URL/DNS/Video Filtering, FortiConverter, IoT Security, Security Rating, FortiCare Premium'},
-  atp:  {n:'ATP — Advanced Threat Protection', svcs:'IPS, Advanced Malware Protection Service, Application Control, FortiCare Premium'},
+  utp:  {n:'UTP — Unified Threat Protection', nivel:2,
+         svcs:'IPS, Advanced Malware Protection, Application Control, URL/DNS/Video Filtering, Antispam Service, FortiCare Premium',
+         incluye:['ips','amp','appctrl','webfilter','antispam','forticare-premium']},
+  ent:  {n:'Enterprise Protection', nivel:3,
+         svcs:'IPS, DLP, AMP, Antispam, AI-Based Malware Prevention, Application Control, URL/DNS/Video Filtering, FortiConverter, IoT Security, Security Rating, FortiCare Premium',
+         incluye:['ips','amp','appctrl','webfilter','antispam','dlp','iot','securityrating','forticonverter','forticare-premium']},
+  atp:  {n:'ATP — Advanced Threat Protection', nivel:1,
+         svcs:'IPS, Advanced Malware Protection Service, Application Control, FortiCare Premium',
+         incluye:['ips','amp','appctrl','forticare-premium']},
 };
+
+// Catalogo de funciones de seguridad que el formulario puede pedir, como DATOS. Cada una
+// declara el servicio FortiGuard que consume (`servicio`, la clave que se cruza contra el
+// `incluye` de cada bundle) y el piso de capa de inspeccion que impone.
+// `servicio:null` = la funcion NO exige ningun servicio FortiGuard: es de FortiOS o se
+// cotiza como producto aparte, y por tanto NO puede elevar el bundle minimo. Confundir las
+// dos cosas es como se llega a «multi-WAN obliga a Enterprise», que el informe desmiente.
+const FUNCIONES=[
+  {id:'chkAv',     n:'Antivirus / Antimalware', servicio:'amp',       capa:'tp'},
+  {id:'chkWeb',    n:'Web Filtering / Application Control', servicio:'webfilter', capa:'ngfw'},
+  {id:'chkIotDlp', n:'IoT Detection + DLP',     servicio:'dlp',       capa:'tp',
+   tambien:['iot'], porQue:'DLP e IoT Security solo existen en Enterprise Protection'},
+  // La inspeccion TLS profunda es una funcion de FortiOS: no consume un servicio FortiGuard
+  // y por tanto NO eleva el bundle. Lo que si hace es cambiar el EJE contra el que se
+  // dimensiona -pasa a mandar la cifra oficial de SSL Inspection-, que es cosa del motor.
+  {id:'chkSsl',    n:'Inspeccion profunda SSL/TLS', servicio:null,    capa:'tp'},
+  // FortiSandbox analiza FUERA DE BANDA: ni eleva la capa ni entra en el bundle. Se cotiza
+  // como producto propio. Figura aqui para que la pagina no tenga una lista paralela.
+  {id:'chkSandbox',n:'FortiSandbox (analisis zero-day)', servicio:null, capa:null,
+   producto:'FortiSandbox', porQue:'analiza fuera de banda: no consume throughput ni entra en el bundle'},
+];
+
+// SERVICIOS AVANZADOS DE SD-WAN (categoria «SD-WAN» del Ordering Guide de FortiGuard).
+// EXISTEN PORQUE LA FUNCION BASE NO SE LICENCIA. Secure SD-WAN -seleccion dinamica de camino
+// por SLA, health checks, ADVPN- viene en FortiOS y se configura en cualquier FortiGate; lo
+// que se licencia aparte son estos servicios. Tener dos WAN NO obliga a Enterprise, y esa
+// suposicion es justo lo que el informe del 2026-09-22 manda retirar (AT-07).
+//
+// `sku:null` A PROPOSITO: el SKU exacto depende de la region, el modelo y el termino, y este
+// repositorio no lo ha leido del Ordering Guide. Una linea sin SKU exacto NO se puede
+// exportar como cotizacion -la puerta de exportacion lo bloquea- y eso es preferible a
+// inventar un codigo con pinta de valido, que es el fallo del «FortiGate 2000F».
+const SERVICIOS_SDWAN=[
+  {id:'sdwanMon', n:'SD-WAN Underlay and Application Monitoring Service', sku:null,
+   d:'Base de datos de SLA, speed tests activos y monitoreo de aplicacion. Se deriva solo si el diseno usa esas funciones, no por tener varios enlaces.'},
+  {id:'sdwanOrq', n:'SD-WAN Overlay Orchestration Service', sku:null,
+   d:'Orquestacion cloud de overlays (plantillas de hub-and-spoke y ADVPN desde el portal). Se deriva solo si el diseno la usa.'},
+  {id:'sdwanSase',n:'FortiSASE — conector SD-WAN (spoke)', sku:null,
+   d:'Conecta el FortiGate a FortiSASE como spoke. Se licencia por usuario segun el Ordering Guide, aparte del FortiGate.'},
+];
+
+// TERMINO -> sufijo real del SKU. En el price list de Fortinet el sufijo `DD` es el marcador
+// del PATRON («duracion»), no un codigo pedible: una cotizacion con `-DD` no se puede pasar a
+// un distribuidor. La equivalencia es meses, no anios, y por eso se declara en meses.
+const TERMINOS={1:{meses:12, sufijo:'12'}, 3:{meses:36, sufijo:'36'}, 5:{meses:60, sufijo:'60'}};
 
 // Niveles de soporte FortiCare tal como aparecen en el price list AMER (SKUs -314/-247/-284 por modelo, ver LICENSES).
 // Essential no incluye TAC 24x7 ni reemplazo de hardware — confirmar alcance exacto y SLA de RMA con Fortinet,
@@ -418,4 +539,4 @@ const CARE={
   fcelite:{n:'FortiCare Elite',      sla:'FortiCare Premium + atención de tickets con prioridad Elite'},
 };
 
-module.exports = { MODELS, BUNDLES, CARE, LICENSES, HW_SKU };
+module.exports = { MODELS, BUNDLES, CARE, LICENSES, HW_SKU, FUNCIONES, SERVICIOS_SDWAN, TERMINOS, SSL_INSPECTION };

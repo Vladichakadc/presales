@@ -112,9 +112,12 @@ module.exports = {
     await campos[0].fill(String(mbps));
     await campos[0].dispatchEvent('change');
     await pausa(p, 900);
-    for (const b of await p.$$('.tabs button')) {
-      if (((await b.textContent()) || '').toLowerCase().includes('bom')) { await b.click(); break; }
-    }
+    // La pestaña se selecciona por su ATRIBUTO, no por su rotulo visible. Buscar «bom» en el
+    // texto se rompio el 2026-09-22, cuando la pestaña paso a llamarse «Lista de materiales»
+    // por paridad con Aruba: el bucle no encontraba ninguna, se quedaba en la calculadora y
+    // el fallo salia 40 lineas despues como «.btn-cotizador no es visible», que no dice nada
+    // de la causa. `data-tab` es el contrato; el rotulo es texto de interfaz y cambia.
+    await p.click('.tabs button[data-tab=bom]');
     await pausa(p, 700);
   },
 

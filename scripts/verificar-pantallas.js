@@ -134,6 +134,57 @@ const dimensionadores = [
       await this.exigeConTexto(page, '#wanResumen', 'con dos enlaces WAN');
       const txt = await page.$eval('#wanResumen', (e) => e.textContent);
       if (!/overlay/i.test(txt)) throw new Error('la barra del builder no declara la fraccion por el overlay');
+
+      // ── REDISENO DEL 2026-09-22 (informe de validacion tecnica) ──────────────────────
+      // Se conducen las tres piezas que ANTES NO EXISTIAN y que cambian lo que se entrega:
+      // el banner de estado de datos, el panel de utilizacion por eje y la puerta de
+      // exportacion. No se afirma ninguna CIFRA del catalogo -eso se rompe en cada cambio de
+      // catalogo y ensena a ignorar un rojo-: se afirma que la pieza esta viva y que DICE
+      // algo, que es justo lo que un `curl` no ve.
+      await this.exigeConTexto(page, '#dataBanner', 'tras dimensionar');
+      await this.exigeConTexto(page, '#ejesPanel', 'tras dimensionar');
+      const ejes = await page.$eval('#ejesPanel', (e) => e.textContent);
+      if (!/Cuello de botella/i.test(ejes)) throw new Error('el panel de ejes no declara el cuello de botella');
+
+      // LA INSPECCION SSL PASA A SER UN EJE CON CIFRA OFICIAL, y tiene DOS ramas que se
+      // conducen las dos porque fallan distinto:
+      //
+      //   (a) a 4 Gbps ningun modelo del catalogo trae cifra de SSL suficiente -la mayor es
+      //       la del 90G, 2,6 Gbps-, asi que no hay candidato. Lo que NO puede pasar es que
+      //       la pantalla diga «ningun modelo cumple» a secas: eso se lee como «hace falta
+      //       mas equipo» cuando lo que falta es el DATO. Tiene que nombrar el motivo.
+      //   (b) a 1 Gbps si hay candidatos con cifra oficial, y ahi el eje tiene que aparecer
+      //       en el panel de utilizacion con su porcentaje.
+      //
+      // Conducir solo (b) dejaria sin cubrir justo el caso en el que la pantalla puede
+      // mentir por omision.
+      await page.check('#chkSsl');
+      await espera(page, 700);
+      const sinCandidato = await page.$eval('#verdict', (e) => e.textContent);
+      if (!/inspecci[oó]n SSL/i.test(sinCandidato)) {
+        throw new Error('sin candidato por falta de cifra de SSL, el veredicto no nombra ese motivo');
+      }
+      await rellena(page, '#wanBuilderFilas [data-campo=down] >> nth=1', '0');
+      await rellena(page, '#wanBuilderFilas [data-campo=down] >> nth=0', '800');
+      await espera(page, 700);
+      const conSsl = await page.$eval('#ejesPanel', (e) => e.textContent);
+      if (!/SSL/i.test(conSsl)) throw new Error('con inspeccion SSL marcada, el panel de ejes no muestra ese eje');
+      await page.uncheck('#chkSsl');
+      await espera(page, 400);
+
+      // AT-03: un bundle por debajo del minimo BLOQUEA la exportacion, no solo avisa.
+      await page.check('#chkIotDlp');
+      await page.selectOption('#licBundle', 'utp');
+      await espera(page, 700);
+      const bloqueado = await page.$eval('#xlsBtn', (e) => e.disabled);
+      if (!bloqueado) throw new Error('un bundle insuficiente tendria que deshabilitar la exportacion a Excel');
+      await this.exigeConTexto(page, '#exportGate', 'con un bundle insuficiente');
+      await page.selectOption('#licBundle', 'ent');
+      await page.uncheck('#chkIotDlp');
+      await espera(page, 700);
+      if (await page.$eval('#xlsBtn', (e) => e.disabled)) {
+        throw new Error('con Enterprise Protection la exportacion tendria que volver a habilitarse');
+      }
     },
   }],
   ['mikrotik', 'dimensionador-mikrotik-routeros.html', 'MikroTik RouterOS'],

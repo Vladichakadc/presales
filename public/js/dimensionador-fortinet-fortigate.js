@@ -7,6 +7,16 @@ const CARE_LIC_KEY={fc247:'essential',fcpre:'premium',fcelite:'elite'};
 let MODELS = [];
 let BUNDLES = {};
 let CARE = {};
+// Reglas comerciales y de formulario servidas por /api/dimensionador/fortinet, no escritas
+// aqui: el catalogo de funciones con su servicio FortiGuard, los servicios avanzados de
+// SD-WAN y la equivalencia termino -> sufijo de SKU. Ver legacyData/fortinet.js.
+let FUNCIONES = [];
+let SERVICIOS_SDWAN = [];
+let TERMINOS = {};
+// Procedencia del fabricante (/api/fuentes): alimenta el banner de estado de datos y la
+// puerta de exportacion, que bloquea si la lista de precios esta vencida.
+let FUENTES = null;
+const R = FortinetReglas;
 
 const $=id=>document.getElementById(id);
 let profile='tp', modoCaudal='link', rolSdwan='none', segMode='branch', lastPick=null;
@@ -14,6 +24,29 @@ let profile='tp', modoCaudal='link', rolSdwan='none', segMode='branch', lastPick
 // habilita o deshabilita segun el rol, y repintar en cada render destruiria el campo a
 // medio teclear (el mismo motivo por el que BOM.cantidadRef escucha change y no input).
 let wanRolPintado=null;
+// Controles de LECTURA del gráfico (métrica del eje y ver/ocultar fuera de venta). No son
+// escenario: cambian lo que se dibuja, no lo que se dimensiona.
+let metricaEje='auto';
+let verEol=false;
+/* PUERTA DE EXPORTACION (AT-15/16/18).
+   `ultimaHuella` resume el escenario TECNICO del ultimo calculo; `huellaDelBom`, la que
+   tenia cuando se construyo la lista de materiales.
+
+   EN ESTA PAGINA LAS DOS TIENEN QUE COINCIDIR SIEMPRE, y eso es una afirmacion, no un
+   descuido: `BOM.sincronizar` repinta el BOM en CADA render -esa es justamente la regla que
+   se escribio el 2026-09-03, cuando cinco de los seis dimensionadores se quedaban cotizando
+   el equipo anterior-. La comparacion se mantiene como INVARIANTE: si algun dia falla,
+   significa que alguien salto un repintado, y entonces cerrar la puerta es lo correcto.
+   Declararla como «detector de escenarios obsoletos» seria venderla como algo que en esta
+   arquitectura no puede pasar — la clase de comprobacion inerte que este repositorio ya pago
+   con `CISCO_EOL_MODELS`.
+
+   LO QUE LA HUELLA SI HACE TODOS LOS DIAS es identificar la propuesta: se publica en la
+   puerta y VIAJA DENTRO del documento exportado, asi que quien recibe un BOM por correo
+   puede cruzarlo contra el enlace del escenario y ver si son el mismo.
+   `override` guarda el motivo con el que alguien forzo una exportacion. */
+let override=null; // {motivo, fecha, usuario}
+let ultimaHuella=null, huellaDelBom=null;
 let bomFilas=[], bomMeta={};
 // Si el dimensionamiento se queda sin candidatos, el BOM conservaba intacta la cotizacion
 // del ultimo equipo que si cumplia: el veredicto decia "Sin candidato" y la pestana de BOM
@@ -77,10 +110,20 @@ $('rolSeg').addEventListener('click',e=>{
   render();
 });
 $('segSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('segSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));segMode=b.dataset.v;render();});
+// Métrica del eje y filtro de ciclo de vida del gráfico. NO entran en CAMPOS_ESCENARIO a
+// propósito: son controles de LECTURA —cambian lo que se dibuja, no lo que se dimensiona—
+// y meterlos en el enlace compartido haría creer que forman parte del escenario.
+$('metricaEje').addEventListener('change',()=>{ metricaEje=$('metricaEje').value; render(); });
+$('chkVerEol').addEventListener('change',()=>{ verEol=$('chkVerEol').checked; render(); });
 // bw/unit/pctOverlay ya no estan aqui: son espejos ocultos que escribe el builder, y este
 // dispara render() por su cuenta al cambiar una fila.
-['users','perUser','head','sesUser','sessNeed','vidaSes','sites','conc',
- 'chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa'].forEach(id=>$(id).addEventListener('input',render));
+['users','perUser','head','sesUser','sessNeed','vidaSes','sites','conc','interVlan','techoUtil',
+ 'chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa','chkNoConcurrente',
+ 'tipoTx'].forEach(id=>$(id).addEventListener('input',render));
+// Los servicios avanzados de SD-WAN y FortiConverter no cambian el dimensionamiento -no
+// consumen throughput-: solo la cotizacion. Repintar el motor entero por ellos seria gasto
+// sin efecto, y peor, haria creer que influyen en la recomendacion.
+['chkSdwanMon','chkSdwanOrq','chkSdwanSase','chkConverter'].forEach(id=>$(id).addEventListener('input',renderBom));
 // En HA se compran 2 unidades y cada una lleva su propia suscripcion FortiGuard: enlazar la
 // casilla con la cantidad del BOM evita cotizar un clúster con una sola licencia.
 $('chkHa').addEventListener('change',()=>{
@@ -349,10 +392,14 @@ const TIERS=[
 ];
 const TIER_BY_K=Object.fromEntries(TIERS.map(t=>[t.k,t]));
 
-// Fortinet dejó de publicar SSL Inspection Throughput por modelo en el Product Matrix.
-// Estimación conservadora sobre Threat Protection, declarada como estimación en la UI.
-// ponytail: factor único; sustituir por cifra por modelo si Fortinet vuelve a publicarla.
-const SSL_DERATE=0.65;
+// EL DERATE DE SSL SE RETIRO EL 2026-09-22 (informe de validacion tecnica, §5.1, P0).
+// Aqui vivia `const SSL_DERATE=0.65`, que estimaba la inspeccion SSL como una fraccion de
+// Threat Protection. El Product Matrix publica la cifra POR MODELO y el cociente ssl/tp va
+// de 0,52 (40F) a 1,18 (50G): no hay constante que lo describa, y en tres de los cinco
+// modelos con dato el equipo aguanta MAS SSL que Threat Protection. El factor no era
+// conservador -se equivocaba en las dos direcciones- y en el 40F prometia 390 Mbps donde el
+// equipo da 310. Ahora SSL es un eje propio de `FortinetReglas`, con la cifra oficial, y un
+// modelo sin ella se aparta con su motivo en vez de dimensionarse contra otra capa.
 
 // Sobrecarga de encapsulacion del overlay SD-WAN. Un tunel IPsec anade cabecera ESP, IV,
 // relleno y trailer; con AES-GCM y MTU de 1500 ronda el 5-8%, y sube si el diseno reduce
@@ -396,6 +443,13 @@ const CAMPOS_ESCENARIO=['nombreCliente','refProyecto',
   // que ahora son espejos que el builder calcula y por tanto no viajan (viajarian dos veces
   // el mismo dato, y el desincronizado ganaria segun el orden de restauracion).
   'wanLinksData','users','perUser','head','sesUser','sessNeed','vidaSes','sites','conc',
+  // Añadidos el 2026-09-22: el tráfico inter-VLAN y su regla de simultaneidad, el techo de
+  // utilización y el tipo de transacción CAMBIAN la recomendación, así que un enlace que no
+  // los llevara aterrizaría en otro escenario sin decirlo — que es peor que un 404 porque no
+  // se nota. Los servicios SD-WAN y FortiConverter no cambian el equipo pero sí la
+  // cotización, y el enlace se comparte para revisar una propuesta entera.
+  'interVlan','chkNoConcurrente','techoUtil','tipoTx',
+  'chkSdwanMon','chkSdwanOrq','chkSdwanSase','chkConverter',
   'chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa',
   'modoSeg','profileSeg','rolSeg','segSeg',
   'pickModel','qty','termYears','licBundle','careLevel','selDescuento','dtoCustom','verdict-sel'];
@@ -408,34 +462,27 @@ const VENDOR='fortinet';
 // -- comprobada leyendola antes de elegir estas categorias, no supuesta.
 const OPEX_FORTINET=['Licencias FortiGuard','Soporte'];
 
-const ORDEN_CAPAS=['fw','vpn','ips','ngfw','tp'];
-const PISO_POR_FUNCION=[
-  {id:'chkAv',     capa:'tp',   n:'Antivirus / Antimalware'},
-  {id:'chkWeb',    capa:'ngfw', n:'Web Filtering / Application Control'},
-  {id:'chkIotDlp', capa:'tp',   n:'IoT Detection + DLP'},
-  {id:'chkSsl',    capa:'tp',   n:'Inspección profunda SSL/TLS'},
-];
-// FortiSandbox no figura arriba a proposito: analiza FUERA DE BANDA. No consume throughput
-// del FortiGate, solo anade latencia al primer encuentro de un archivo. El +10% que se le
-// aplicaba antes no correspondia a ninguna cifra medible.
+// El piso de capa por funcion YA NO SE ESCRIBE AQUI: lo declara cada entrada de `FUNCIONES`
+// en legacyData/fortinet.js (campo `capa`), junto al servicio FortiGuard que consume. Tener
+// la misma funcion descrita en dos sitios -el piso aqui y el bundle alla- es como se
+// desincronizan: al anadir IoT/DLP habria que acordarse de tocar los dos.
+// FortiSandbox sigue sin elevar capa a proposito y ahora lo dice el propio dato (`capa:null`):
+// analiza FUERA DE BANDA, no consume throughput del equipo.
 
+function funcionesActivas(){
+  return FUNCIONES.filter(f=>{ const n=$(f.id); return n&&n.checked; }).map(f=>f.id);
+}
 function capaEfectiva(){
-  const base=ORDEN_CAPAS.indexOf(profile);
-  let idx=base;
-  const elevan=[];
-  for(const f of PISO_POR_FUNCION){
-    const nodo=$(f.id);
-    if(!nodo||!nodo.checked) continue;
-    const i=ORDEN_CAPAS.indexOf(f.capa);
-    if(i>base) elevan.push(f);
-    if(i>idx) idx=i;
-  }
-  return {k:ORDEN_CAPAS[idx], elevan, elevada:idx>base};
+  return R.capaEfectiva(profile, funcionesActivas(), FUNCIONES);
 }
 
-// La inspección TLS profunda exige el stack completo, así que su piso es Threat Protection
-// aunque se haya elegido una capa más liviana. El derate se aplica UNA vez y sobre la
-// capacidad — nunca sobre el requerimiento, que sobredimensionaría.
+// Techo de utilizacion declarado (politica separada del crecimiento, §10.2 del informe).
+function techoUtil(){
+  const n=$('techoUtil');
+  const v=n?parseFloat(n.value):100;
+  return (v>0?v:100)/100;
+}
+
 // Fraccion del trafico que viaja cifrada por el fabric. 0 sin SD-WAN.
 function fraccionOverlay(){
   if(rolSdwan==='none') return 0;
@@ -443,36 +490,57 @@ function fraccionOverlay(){
   return nodo?Math.max(0,Math.min(100,parseFloat(nodo.value)||0))/100:1;
 }
 
-// En un despliegue SD-WAN el trafico del overlay va DENTRO de tuneles IPsec, asi que hay
-// dos restricciones simultaneas y no una:
-//
-//   1. todo el trafico atraviesa la capa de inspeccion elegida;
-//   2. la fraccion que va por el overlay atraviesa ademas el motor IPsec.
-//
-// La capacidad efectiva es el menor de los dos techos. Con el 100% por el overlay eso
-// equivale a min(inspeccion, IPsec); con breakout local parcial el techo de IPsec se
-// reparte entre menos trafico y deja de ser el limitante — que es exactamente por que una
-// sucursal con salida directa a SaaS no necesita subir de gama.
-//
-// Salvedad de medicion, que conviene decir en una propuesta: Fortinet mide el firewall a
-// 1518 bytes y el IPsec a 512, asi que las dos cifras no son estrictamente comparables.
-// Tomar el minimo es la lectura conservadora.
-function getCap(m){
-  const {k}=capaEfectiva();
-  const base=m[k]!=null?m[k]:m.ngfw;
-  const insp=$('chkSsl').checked?base*SSL_DERATE:base;
-  const frac=fraccionOverlay();
-  if(!frac||m.vpn==null) return insp;
-  return Math.min(insp, m.vpn/frac);
+// Servicios avanzados de SD-WAN pedidos. La funcion base NO se licencia: tener dos WAN no
+// deriva ninguno, y por eso salen de casillas explicitas y no del rol ni del builder.
+const CHK_SDWAN={sdwanMon:'chkSdwanMon', sdwanOrq:'chkSdwanOrq', sdwanSase:'chkSdwanSase'};
+function serviciosSdwanPedidos(){
+  return SERVICIOS_SDWAN.filter(sv=>{ const n=$(CHK_SDWAN[sv.id]); return n&&n.checked; });
 }
-// Cual de las dos restricciones manda en este modelo — para poder explicarlo.
-function techoQueManda(m){
-  const {k}=capaEfectiva();
-  const base=m[k]!=null?m[k]:m.ngfw;
-  const insp=$('chkSsl').checked?base*SSL_DERATE:base;
+
+/* ── DEMANDA POR EJE ─────────────────────────────────────────────────────────────────
+   Traduce el escenario a {eje: cantidad}, que es lo unico que el evaluador multieje
+   consume. Antes esto no existia: habia UN requerimiento y UNA capacidad efectiva, asi que
+   no se podia decir cual de los ocho ejes mandaba ni a que distancia quedaban los demas.
+
+   EQUIVALENCIA CON EL MOTOR ANTERIOR, QUE NO ES CASUAL. El motor viejo comparaba
+   `effectiveNeed` contra `min(capa, IPsec/fraccion)`; eso es exactamente lo mismo que pedir
+   `effectiveNeed <= capa` Y `effectiveNeed x fraccion <= IPsec`, que son dos ejes
+   independientes. La reformulacion no cambia ninguna recomendacion sin SSL -lo prueba
+   scripts/contrastes/fortinet.js, cuya linea base se midio antes de este cambio- y ademas
+   coincide con la formula del informe (U_ipsec = T_overlay / C_ipsec). */
+function demandasDe(effectiveNeed, capa, sessNeed, cpsNeed){
+  const d={};
+  d[capa.k]=effectiveNeed;
   const frac=fraccionOverlay();
-  if(!frac||m.vpn==null) return {cual:'inspeccion', insp, ipsec:null};
-  return {cual:(m.vpn/frac)<insp?'overlay':'inspeccion', insp, ipsec:m.vpn/frac};
+  // El eje IPsec solo entra con rol SD-WAN; si la capa elegida YA es 'vpn', no se pisa con
+  // una cifra menor -se queda la mayor de las dos demandas sobre el mismo eje-.
+  if(frac>0) d.vpn=Math.max(d.vpn||0, effectiveNeed*frac);
+  // SSL como eje propio, con la cifra oficial del modelo. Sin marcar la casilla no entra:
+  // un eje que nadie pidio no puede apartar a nadie.
+  if($('chkSsl').checked) d.ssl=effectiveNeed;
+  if(sessNeed) d.sess=sessNeed;
+  if(cpsNeed) d.cps=cpsNeed;
+  return d;
+}
+
+/* CUANTO REQUERIMIENTO SOPORTA UN MODELO, en las unidades del eje de caudal.
+   Sirve para ordenar la lista y para situar el punto del modelo en la escala logaritmica.
+   Se deriva de los propios ejes -capacidad dividida por lo que ese eje consume de cada Mbps
+   del requerimiento- en vez de repetir la formula del motor: asi, anadir un eje de caudal
+   nuevo no deja la escala mintiendo. Un eje sin dato no entra en el minimo; lo que decide si
+   ese modelo se aparta es el evaluador, no esta funcion. */
+function soporta(m, demandas, effectiveNeed){
+  if(!effectiveNeed) return m.fw;
+  let tope=Infinity;
+  for(const def of R.EJES){
+    if(def.unidad) continue; // sesiones y cps no se miden en Mbps
+    const req=demandas[def.k];
+    if(!req) continue;
+    const cap=m[def.campo];
+    if(cap==null) continue;
+    tope=Math.min(tope, cap/(req/effectiveNeed));
+  }
+  return tope===Infinity?m.fw:tope;
 }
 
 // Coincidencia por subcadena en lugar de lista exacta: los `seg` del catálogo son 21 cadenas
@@ -514,6 +582,157 @@ function pintarControlesTopologia(){
   }[rolSdwan];
 }
 
+/* ── ESCALA LOGARITMICA Y ALTERNATIVAS ────────────────────────────────────────────────
+   §7 del informe: «Modelo elegido y dos alternativas; métrica activa; filtro de lifecycle»
+   en lugar de 58 puntos indistinguibles. Los 58 se siguen dibujando -esconder el catalogo
+   seria peor que no etiquetarlo- pero se ETIQUETAN el elegido y sus dos vecinos por
+   capacidad, que son los que alguien de verdad compara.
+
+   LA METRICA DEL EJE SE ELIGE, y por defecto es «la que dimensiona»: cuanto requerimiento
+   soporta cada modelo en este escenario. Fijarla en `fw` -que es lo que hacia antes- pinta
+   la cifra de portada, que es justo la que no aplica en cuanto hay inspeccion. */
+function pintarEscala(ctx){
+  const {effectiveNeed, demandas, candidatos, elegido}=ctx;
+  const track=$('track');
+  track.querySelectorAll('.dot,.tick,.pickLabel,.altLabel').forEach(e=>e.remove());
+
+  const def=metricaEje==='auto'?null:R.EJE_POR_K[metricaEje];
+  const valorDe=m=>def?m[def.campo]:soporta(m,demandas,effectiveNeed);
+  const visibles=MODELS.filter(m=>(verEol||!m.eol)&&valorDe(m)!=null);
+  $('trackLbl').textContent=def
+    ? `Escala de ${def.n} — cifra publicada por modelo (logarítmica)`
+    : 'Escala de capacidad — cuánto requerimiento soporta cada modelo en este escenario (logarítmica)';
+
+  const caps=visibles.map(valorDe);
+  const maxCap=caps.length?Math.max(...caps):Math.max(...MODELS.map(m=>m.fw));
+  const logP=v=>Math.log10(Math.max(v,10));
+  const logMin=Math.log10(10),logMax=logP(Math.max(maxCap,effectiveNeed)*1.2);
+  const xPct=v=>(logP(v)-logMin)/(logMax-logMin)*100;
+
+  const needPct=Math.min(xPct(effectiveNeed),99);
+  const need=$('need');
+  need.style.left=needPct+'%';
+  $('needLbl').textContent=fmt(effectiveNeed);
+  need.classList.toggle('flip',needPct>60);
+
+  const pickLbl=document.createElement('div');
+  pickLbl.className='pickLabel'; pickLbl.id='pickLbl'; pickLbl.style.display='none';
+  track.appendChild(pickLbl);
+  [10,50,100,500,1000,5000,10000,50000,100000,500000,1000000].forEach(v=>{
+    const pct=xPct(v);if(pct<0||pct>100)return;
+    const tick=document.createElement('div');tick.className='tick';tick.style.left=pct+'%';
+    const lbl=v>=1000000?v/1e6+'T':v>=1000?v/1000+'G':v+'M';
+    tick.innerHTML=`<i></i><b>${lbl}</b>`;track.appendChild(tick);
+  });
+
+  // Las dos alternativas: los candidatos inmediatamente por encima y por debajo del
+  // elegido. Se toman de la lista YA ORDENADA por capacidad, asi que son sus vecinos
+  // reales y no los dos primeros de la lista -que en una lista de 39 no dicen nada-.
+  const idx=elegido?candidatos.findIndex(m=>m.id===elegido.id):-1;
+  const alternativas=[];
+  if(idx>0) alternativas.push(candidatos[idx-1]);
+  if(idx>=0&&idx<candidatos.length-1) alternativas.push(candidatos[idx+1]);
+
+  visibles.forEach(m=>{
+    const cap=valorDe(m);const pct=xPct(cap);if(pct<0||pct>100)return;
+    const dot=document.createElement('div');
+    const esAlt=alternativas.some(a=>a.id===m.id);
+    dot.className='dot'+(candidatos.some(c=>c.id===m.id)?' ok':'')+(esAlt?' alt':'');
+    if(elegido&&m.id===elegido.id)dot.className='dot pick';
+    dot.style.left=pct+'%';dot.title=m.id+': '+fmt(cap)+(m.eol?' (fuera de venta)':'');
+    track.appendChild(dot);
+    if(esAlt){
+      const lbl=document.createElement('div');
+      lbl.className='altLabel';lbl.style.left=pct+'%';lbl.textContent=m.id.replace('FortiGate ','');
+      track.appendChild(lbl);
+    }
+  });
+  if(elegido){
+    $('pickLbl').textContent=elegido.id;
+    $('pickLbl').style.display='block';
+    $('pickLbl').style.left=xPct(valorDe(elegido))+'%';
+  }
+  const ocultos=MODELS.length-visibles.length;
+  $('trackNota').innerHTML=(alternativas.length
+      ? `En ámbar, las dos alternativas inmediatas por capacidad: <b>${alternativas.map(a=>esc(a.id)).join('</b> y <b>')}</b>. `
+      : '')
+    +(ocultos?`${ocultos} modelo(s) fuera de venta ocultos — se muestran con la casilla de arriba, como referencia de un parque instalado.`
+            :'Se muestran también los modelos fuera de venta: sirven como referencia de un parque instalado, nunca como propuesta nueva.');
+}
+
+/* ══ VALIDACION POR PASO ════════════════════════════════════════════════════════════════
+   §7 del informe: «cuatro pasos plegables y validación por paso». El chip del encabezado
+   dice si ese paso esta completo, si tiene una decision que conviene mirar o si BLOQUEA, y
+   por eso se puede plegar un paso sin perder de vista que algo falta dentro.
+
+   NO INVENTA ESTADOS: cada chip sale de la misma regla que ya decide el calculo o la
+   cotizacion, no de una segunda comprobacion escrita aparte -que es como los dos se
+   contradirian-. */
+function chip(id,cls,texto,titulo){
+  const n=$(id); if(!n) return;
+  n.className='paso-chip '+(cls||'');
+  n.textContent=texto||'';
+  if(titulo) n.title=titulo;
+}
+// El ultimo contexto de calculo, para que renderBom() pueda refrescar los chips sin
+// recalcular el dimensionamiento entero: el bundle y el termino no cambian la recomendacion
+// pero SI el estado del paso 4, y sin esto el chip se quedaba diciendo «todo bien» con la
+// puerta de exportacion cerrada.
+let ultimoCtxPasos=null;
+function pintarPasos(ctx){
+  if(ctx) ultimoCtxPasos=ctx; else if(ultimoCtxPasos) ctx=ultimoCtxPasos; else return;
+  // 1 · Plataforma y rol
+  chip('chipPaso1','', `${{branch:'Sucursal',campus:'Campus',dc:'Datacenter'}[segMode]} · ${{none:'sin SD-WAN',spoke:'spoke',hub:'hub'}[rolSdwan]}${$('chkHa').checked?' · HA':''}`,
+    'Segmento, rol en la topología, tipo de transacción y alta disponibilidad.');
+  // 2 · Capa de inspección: el bundle mínimo se decide aquí aunque se elija en el paso 4.
+  const activas=funcionesActivas();
+  const min=R.bundleMinimo(activas,FUNCIONES,BUNDLES);
+  const elevada=ctx.capa&&ctx.capa.elevada;
+  chip('chipPaso2', elevada?'warn':'',
+    `${TIER_BY_K[ctx.capa?ctx.capa.k:'tp'].n}${elevada?' (elevada)':''}${min.minimo&&min.minimo!=='atp'?' · mín. '+BUNDLES[min.minimo].n.split(' ')[0]:''}`,
+    elevada?`La capa se elevó por ${ctx.capa.elevan.map(f=>f.n).join(', ')}.`:'Capa efectiva contra la que se dimensiona.');
+  // 3 · Tráfico: el caudal es el dato mínimo; sin él no hay cálculo.
+  const bwOk=(parseFloat($('bw').value)||0)>0;
+  chip('chipPaso3', bwOk?(ctx.sinCandidato?'warn':''):'bad',
+    bwOk?`${fmt(ctx.trafico?ctx.trafico.previsto:0)} previstos`:'Falta el caudal',
+    bwOk?'Requerimiento previsto con crecimiento aplicado.':'Declara el caudal de al menos un enlace WAN.');
+  // 4 · Equipo y cotización: manda el bundle mínimo, que es bloqueante.
+  const err=R.validarBundle($('licBundle').value||'ent',activas,FUNCIONES,BUNDLES);
+  chip('chipPaso4', err?'bad':'', err?'Bundle insuficiente':`${$('pickModel').value||'—'} · ${$('termYears').value} año(s)`,
+    err?err.mensaje:'Modelo, cantidad, término, bundle y soporte de la cotización.');
+  // Un paso que BLOQUEA no se puede dejar plegado sin más: se abre para que se vea el motivo.
+  if(err){ const d=$('paso4').querySelector('details'); if(d) d.open=true; }
+}
+
+/* ══ BANNER DE ESTADO DE DATOS ══════════════════════════════════════════════════════════
+   Responde «¿esto tiene grado comercial?» ANTES de mirar una cifra, que es cuando la
+   pregunta sirve. La cobertura NO se escribe a mano: se cuenta sobre el catálogo servido,
+   así que el día que alguien complete `ssl` en el Product Matrix el banner sube solo. */
+function pintarBanner(){
+  const caja=$('dataBanner'); if(!caja||!MODELS.length) return;
+  const conSsl=MODELS.filter(m=>m.ssl!=null).length;
+  const conCps=MODELS.filter(m=>m.cps!=null).length;
+  const conPrecio=MODELS.filter(m=>m.elpN!=null&&m.elpN>0).length;
+  const precios=FUENTES&&FUENTES.fuentes?FUENTES.fuentes.find(f=>f.dominio==='precio'):null;
+  const tecnica=FUENTES&&FUENTES.fuentes?FUENTES.fuentes.find(f=>f.dominio!=='precio'):null;
+  const salud=precios?R.saludPrecios(precios):null;
+  const cls=!salud?'warn':salud.bloquea?'bad':(conSsl<MODELS.length?'warn':'ok');
+  const item=(k,v,t)=>`<span class="db-item" title="${esc(t||'')}"><span class="db-k">${esc(k)}</span><span class="db-v">${v}</span></span>`;
+  caja.innerHTML=
+    item('Fuente técnica', tecnica?esc(tecnica.documento):'—', tecnica?tecnica.nota||'':'')
+    +item('Fecha', tecnica&&tecnica.fecha?esc(tecnica.fecha):'sin fecha')
+    +item('Precios', precios?`${esc(precios.fecha||'sin fecha')}${salud?` · ${esc(salud.estado)}`:''}`:'sin lista',
+      salud?salud.mensaje:'')
+    +item('Región', 'AMER', 'Los precios de lista de este catálogo son de la price list AMER.')
+    +item('Cobertura', `precio ${conPrecio}/${MODELS.length} · cps ${conCps}/${MODELS.length} · SSL ${conSsl}/${MODELS.length}`,
+      'Cuántos modelos traen cada campo. Se cuenta sobre el catálogo servido, no se declara.')
+    +(conSsl<MODELS.length
+      ? `<span class="db-item"><span class="db-v warn">La cifra oficial de inspección SSL está en ${conSsl} de ${MODELS.length} modelos: el resto se aparta si se pide ese eje, en vez de estimarse.</span></span>`
+      : '');
+  caja.className='databanner '+cls;
+  caja.hidden=false;
+}
+
 function render(){
   const bw=parseFloat($('bw').value)||0;
   const unit=parseFloat($('unit').value);
@@ -525,6 +744,7 @@ function render(){
   // mínimo del dimensionamiento; sin él la página pide valores en vez de proponer un
   // equipo a ciegas.
   if(bw<=0){
+    ultimaHuella=R.huella({vacio:true});
     lastPick=null;
     const habiaCandidato=hayCandidato;
     hayCandidato=false;
@@ -536,6 +756,8 @@ function render(){
       vacioDetalle:'<p style="margin:0;font-size:13.5px">Ponga el <b>caudal</b> de al menos un enlace del sitio en el paso 3 (y si aplica, usuarios y sesiones) para que el dimensionador proponga los modelos que cumplen.</p>'});
     $('verdict').style.borderLeftColor='var(--steel)';
     $('perfTiers').innerHTML='';
+    $('ejesPanel').innerHTML='';
+    $('stickyReco').hidden=true;
     $('perfNote').textContent='';
     $('sesCalc').textContent='';
     $('cpsCalc').textContent='';
@@ -557,9 +779,26 @@ function render(){
   // dos veces lo mismo, porque las cifras de Enterprise Mix de Fortinet ya incluyen esas
   // funciones activas. El unico factor de seguridad es el margen de crecimiento.
   const perUser=Math.max(0,parseFloat($('perUser').value)||0);
-  const bwBaseMbps=caudal*(1+head);
+
+  // AT-11. El trafico del sitio ya no es un solo camino: la WAN y el inter-VLAN SE SUMAN
+  // salvo que alguien declare que sus picos no coinciden. `max` automatico es lo que cambia
+  // de familia sin que nadie lo decida -el informe lo demuestra con 600 + 300 Mbps, que dan
+  // 750 u 1.125 segun el supuesto, y entre esas dos cifras el equipo pasa de 70G a 90G-.
+  const trafico=R.demandaTrafico({
+    internet:caudal,
+    interVlan:Math.max(0,parseFloat($('interVlan').value)||0),
+    crecimiento:head,
+    picosNoConcurrentes:$('chkNoConcurrente').checked,
+  });
+  $('traficoHint').innerHTML=trafico.interVlan
+    ? `Caminos declarados: WAN <b>${fmt(trafico.internet)}</b> + inter-VLAN <b>${fmt(trafico.interVlan)}</b>. `
+      +`Regla aplicada: <b>${esc(trafico.regla)}</b> = ${fmt(trafico.base)} de base, `
+      +`<b>${fmt(trafico.previsto)}</b> con el ${Math.round(head*100)} % de crecimiento.`
+    : 'Sin tráfico inter-VLAN declarado: el requerimiento sale solo de los enlaces WAN. '
+      +'Declararlo importa cuando el FortiGate también enruta e inspecciona entre segmentos internos.';
+
   const userBaseMbps=users*perUser*(1+head);
-  const baseNeed=Math.max(bwBaseMbps,userBaseMbps);
+  const baseNeed=Math.max(trafico.previsto,userBaseMbps);
 
   // La fraccion que va por el overlay paga la encapsulacion ESP.
   const frac=fraccionOverlay();
@@ -569,40 +808,6 @@ function render(){
   pintarHintCapa(capa);
   pintarControlesTopologia();
   pintarWanResumen();
-
-  // scale
-  const allCaps=MODELS.map(m=>m.fw);
-  const maxCap=Math.max(...allCaps);
-  const logP=v=>Math.log10(Math.max(v,10));
-  const logMin=Math.log10(10),logMax=logP(maxCap*1.2);
-  const xPct=v=>(logP(v)-logMin)/(logMax-logMin)*100;
-  const needPct=Math.min(xPct(effectiveNeed),99);
-
-  const need=$('need');
-  need.style.left=needPct+'%';
-  $('needLbl').textContent=fmt(effectiveNeed);
-  need.classList.toggle('flip',needPct>60);
-
-  // draw track
-  const track=$('track');
-  track.querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
-  const pickLbl=document.createElement('div');
-  pickLbl.className='pickLabel'; pickLbl.id='pickLbl'; pickLbl.style.display='none';
-  track.appendChild(pickLbl);
-  [10,50,100,500,1000,5000,10000,50000,100000,500000,1000000].forEach(v=>{
-    const pct=xPct(v);if(pct<0||pct>100)return;
-    const tick=document.createElement('div');tick.className='tick';tick.style.left=pct+'%';
-    const lbl=v>=1000000?v/1e6+'T':v>=1000?v/1000+'G':v+'M';
-    tick.innerHTML=`<i></i><b>${lbl}</b>`;track.appendChild(tick);
-  });
-  MODELS.forEach(m=>{
-    const cap=getCap(m);const pct=xPct(cap);if(pct<0||pct>100)return;
-    const dot=document.createElement('div');
-    dot.className='dot'+(cap>=effectiveNeed?' ok':'');
-    if(lastPick&&m.id===lastPick.id)dot.className='dot pick';
-    dot.style.left=pct+'%';dot.title=m.id+': '+fmt(cap);
-    track.appendChild(dot);
-  });
 
   // Candidatos: modelos vigentes que cumplen throughput Y sesiones concurrentes.
   // ── SESIONES CONCURRENTES, DERIVADAS DE LOS USUARIOS ──────────────────────
@@ -654,33 +859,45 @@ function render(){
     ? `${sessNeed.toLocaleString('en-US')} sesiones sostenidas / ${vidaSes} s de vida media = <b>${cpsNeed.toLocaleString('en-US')} sesiones nuevas por segundo</b>. La tabla de sesiones es el eje de memoria; éste es el de CPU.`
     : 'Sin sesiones declaradas no se puede derivar el caudal de sesiones nuevas por segundo.';
 
-  // Un unico lugar decide que eje limita, para que la ficha, el resumen y la exportacion no
-  // puedan contradecirse. Un eje sin dato en el catalogo no entra: no se puede declarar
-  // ganador ni perdedor a algo que no se midio.
-  const ejesDe=m=>{
-    const e=[{n:'Throughput', frase:'el throughput', o:effectiveNeed/getCap(m)}];
-    if(sessNeed&&m.sess) e.push({n:'Tabla de sesiones', frase:'la tabla de sesiones', o:sessNeed/m.sess});
-    if(cpsNeed&&m.cps!=null) e.push({n:'Sesiones nuevas / s', frase:'las sesiones nuevas por segundo', o:cpsNeed/m.cps});
-    return e;
-  };
-  const ejeQueManda=m=>ejesDe(m).reduce((x,y)=>y.o>x.o?y:x);
+  /* ── EVALUACION MULTIEJE ──────────────────────────────────────────────────────────
+     Antes habia UN requerimiento y UNA capacidad efectiva, mas dos filtros sueltos para
+     sesiones y cps. Ahora cada eje -capa de inspeccion, IPsec del overlay, SSL, sesiones y
+     cps- lleva su demanda y su capacidad OFICIAL, y el maximo de las utilizaciones define
+     el cuello de botella. `FortinetReglas.evaluar` es quien decide; esta pagina solo
+     traduce el escenario a demandas y presenta el resultado. */
+  const demandas=demandasDe(effectiveNeed, capa, sessNeed, cpsNeed);
+  const politica={techo:techoUtil()};
+  // AT-15. La huella resume el escenario TECNICO con el que se calculo. El BOM guarda la
+  // suya al construirse; si dejan de coincidir es que alguien movio un parametro despues, y
+  // la lista de materiales que hay en pantalla ya no corresponde. Se cierra la exportacion
+  // en vez de entregar una cotizacion de otra pregunta.
+  ultimaHuella=R.huella({demandas, techo:politica.techo, capa:capa.k, rol:rolSdwan, seg:segMode});
+  const veredicto=R.evaluar(MODELS, demandas, politica);
+  const evalPorId={};
+  for(const x of veredicto.aptos.concat(veredicto.apartados)) evalPorId[x.eval.id]=x.eval;
+  const ejeQueManda=m=>(evalPorId[m.id]||{}).manda||null;
   const ejeQueLimita=m=>{
     const g=ejeQueManda(m);
-    return g.n==='Throughput'?'Throughput':`<b class="warn">${g.n}</b>`;
+    if(!g) return '—';
+    return g.k===capa.k?esc(g.n):`<b class="warn">${esc(g.n)}</b>`;
   };
 
-  let outBySess=0, outByCps=0;
+  // Los apartados se cuentan POR MOTIVO, no en un solo saco: «no cumple la capacidad» y «el
+  // catalogo no trae la cifra» son dos cosas distintas y una lista corta tiene que
+  // explicarse. Es la misma regla que la calculadora de throughput del portal.
+  const outBySess=veredicto.apartados.filter(x=>{
+    const e=x.eval.ejes.find(y=>y.k==='sess'); return e&&e.estado==='excede'&&x.eval.manda&&x.eval.manda.k==='sess';
+  }).length;
+  const outByCps=veredicto.apartados.filter(x=>{
+    const e=x.eval.ejes.find(y=>y.k==='cps'); return e&&e.estado==='excede'&&x.eval.manda&&x.eval.manda.k==='cps';
+  }).length;
+  const sinSsl=veredicto.apartados.filter(x=>x.eval.estado==='apartado').map(x=>x.modelo);
+
   // Los descontinuados YA NO se borran de la lista: antes desaparecian, asi que no habia
   // forma de consultarlos aqui cuando lo que se cotiza es ampliar un parque instalado.
   // Ahora entran, van al final y no pueden salir recomendados — ver la regla en ficha.js.
-  const candidates=FICHA.ordenar(MODELS.filter(m=>{
-    if(getCap(m)<effectiveNeed) return false;
-    if(sessNeed&&m.sess<sessNeed){ outBySess++; return false; }
-    // m.cps==null no es "no tiene limite", es "el catalogo no trae el dato": no se filtra
-    // por el, y la ficha del modelo lo declara ausente en vez de dejarlo pasar en silencio.
-    if(cpsNeed&&m.cps!=null&&m.cps<cpsNeed){ outByCps++; return false; }
-    return true;
-  }), (a,b)=>getCap(a)-getCap(b));
+  const candidates=FICHA.ordenar(veredicto.aptos.map(x=>x.modelo),
+    (a,b)=>soporta(a,demandas,effectiveNeed)-soporta(b,demandas,effectiveNeed));
   const rx=SEG_MATCH[segMode];
   let pick=FICHA.recomendar(candidates, rx?(m=>rx.test(m.seg)):null);
   lastPick=pick;
@@ -706,6 +923,17 @@ function render(){
     // Decirlo es mas util que decir "ningun modelo cumple", que seria falso.
     if(candidates.length) why.push(`<li><b>${candidates.length}</b> equipo(s) cumplen las restricciones pero están <b>fuera de venta</b> (${candidates.map(m=>esc(m.id)).join(', ')}): sirven como referencia para un parque ya instalado, no como propuesta para un diseño nuevo.</li>`);
     if(outByCps) why.push(`<li><b>${outByCps}</b> modelo(s) descartado(s) por sesiones nuevas por segundo: necesitas ${cpsNeed.toLocaleString('en-US')} cps y el catálogo publica esa cifra para ellos.</li>`);
+    // APARTADOS POR FALTA DE DATO, contados aparte de los que no dan la capacidad. Es la
+    // diferencia entre «ningún equipo aguanta esto» y «el catálogo no puede afirmarlo»: la
+    // segunda es una tarea de datos, no un problema de dimensionamiento, y decir «no cumple»
+    // mandaría a subir de gama por un hueco documental.
+    if(sinSsl.length) why.push(`<li><b class="warn">${sinSsl.length} modelo(s) apartados por falta de cifra oficial de inspección SSL</b> en el catálogo — no por capacidad. `
+      +`Los ${MODELS.filter(m=>m.ssl!=null).length} que sí la traen son los que compiten aquí. `
+      +'Completar el resto es leer el <b>SSL Inspection Throughput</b> del Product Matrix; mientras tanto, esta pantalla '
+      +'<b>no se sustituye</b> esa cifra por la de Threat Protection, que es lo que hacía antes y lo que producía '
+      +'propuestas cortas. Es una <b>tarea de datos, no una falta de capacidad</b>: para comprometer uno de esos '
+      +'modelos con inspección TLS hace falta una <b>PoC</b> o revisión senior.</li>');
+    if(politica.techo<1) why.push(`<li>Se está aplicando un <b>techo de utilización del ${Math.round(politica.techo*100)} %</b> sobre la cifra publicada. Subirlo a 100 % ensancha la lista de candidatos, a costa de diseñar más cerca del máximo de laboratorio.</li>`);
     if(capa.k==='tp'||$('chkSsl').checked) why.push('<li>Estás dimensionando contra la capa más exigente. Si el diseño no requiere antivirus en línea sobre todo el tráfico, evaluar la capa <b>NGFW</b> o segmentar por política qué tráfico se inspecciona a fondo — es la palanca que más capacidad libera en FortiGate.</li>');
     why.push('<li>Por encima del catálogo: evaluar chasis FortiGate 7000F o distribuir la carga en varias unidades.</li>');
     FICHA.render({vendor:'fortinet', contenedor:'verdict', candidatos:[], recomendado:null,
@@ -713,58 +941,74 @@ function render(){
       vacioDetalle:`<ul style="margin:0;padding-left:18px;font-size:13.5px">${why.join('')}</ul>`});
     $('verdict').style.borderLeftColor='var(--amber)';
     $('perfTiers').innerHTML='';
+    $('ejesPanel').innerHTML='';
+    $('stickyReco').hidden=true;
+    pintarEscala({effectiveNeed, demandas, candidatos:[], elegido:null});
+    pintarPasos({capa, trafico, sinCandidato:true});
     return;
   }
   $('verdict').style.borderLeftColor='var(--red)';
 
-  const medidoresDe=m=>[
-    {etq:`Capa ${TIER_BY_K[capa.k].n}${$('chkSsl').checked?' + SSL':''}`,
-     val:effectiveNeed, tope:getCap(m), txt:fmt(effectiveNeed)+' / '+fmt(getCap(m))},
-    {etq:'Sesiones concurrentes', val:sessNeed, tope:m.sess,
-     txt:(sessNeed?sessNeed.toLocaleString('en-US')+' / ':'')+(m.sess/1000).toFixed(0)+'K'},
-  ].concat(m.cps!=null?[
-    {etq:'Sesiones nuevas / s', val:cpsNeed, tope:m.cps,
-     txt:(cpsNeed?cpsNeed.toLocaleString('en-US')+' / ':'')+m.cps.toLocaleString('en-US')},
-  ]:[]);
-
+  // `nMil` formatea sesiones y cps (10.4K), que no se miden en Mbps. Lo usan el panel de
+  // ejes y el resumen fijo.
+  const nMil=v=>v>=1000?`${(v/1000).toFixed(v%1000?1:0)}K`:String(Math.round(v));
+  const pc=u=>R.pct(u);
   const porQueDe=m=>{
+    const evalm=evalPorId[m.id]||R.evaluarModelo(m,demandas,politica);
     const flags=[];
-    if($('chkSsl').checked)flags.push(`<b class="warn">Inspección SSL profunda:</b> capacidad estimada en ${fmt(getCap(m))} sobre los ${fmt(m.tp)} de Threat Protection. Fortinet ya no publica esta cifra por modelo — validar con una PoC antes de comprometerla.`);
+    if($('chkSsl').checked){
+      const ssl=evalm.ejes.find(e=>e.k==='ssl');
+      flags.push(ssl&&ssl.cap!=null
+        ? `<b>Inspección SSL profunda:</b> se dimensiona contra los <b>${fmt(ssl.cap)}</b> de `
+          +`<b>SSL Inspection Throughput</b> que el Product Matrix publica para el ${esc(m.id)}, que es una `
+          +`medición propia y no una fracción de los ${fmt(m.tp)} de Threat Protection `
+          +`(aquí el cociente es ${(m.ssl/m.tp).toFixed(2)}). Queda al ${pc(ssl.u)}.`
+        : `<b class="warn">Inspección SSL sin cifra oficial para el ${esc(m.id)}:</b> el catálogo no la trae, `
+          +'así que este modelo no debería recomendarse contra ese eje sin PoC.');
+    }
     if($('chkAv').checked)flags.push('El antivirus en línea es lo que fija el piso en Threat Protection: esa cifra ya lo incluye, junto con el logging. El content processor (CP9/CP10) asiste la inspección.');
     if($('chkSandbox').checked)flags.push('FortiSandbox analiza <b>fuera de banda</b>: se cotiza aparte y <b>no consume throughput del FortiGate</b>, solo añade latencia al primer encuentro de un archivo. Por eso no eleva la capa de dimensionamiento.');
-    if($('chkIotDlp').checked)flags.push('IoT Security y DLP requieren el bundle <b>Enterprise Protection</b> (UTP y ATP no los incluyen) y elevan el piso a Threat Protection, porque corren sobre el stack completo.');
+    if($('chkIotDlp').checked)flags.push('IoT Security y DLP <b>fijan el bundle mínimo en Enterprise Protection</b> (UTP y ATP no los incluyen) y elevan el piso a Threat Protection, porque corren sobre el stack completo.');
     if($('chkHa').checked)flags.push('<b>HA:</b> se cotizan 2 unidades y <b>cada una necesita su propia suscripción FortiGuard</b> — la licencia no se comparte entre nodos del clúster.');
     if(rolSdwan!=='none'){
-      const t=techoQueManda(m);
-      flags.push(t.cual==='overlay'
-        ? `<b class="warn">Manda el overlay:</b> con ${Math.round(frac*100)} % del tráfico cifrado, el motor IPsec (${fmt(m.vpn)}) limita antes que la capa de inspección (${fmt(t.insp)}). El techo efectivo es ${fmt(getCap(m))}.`
-        : `El techo lo fija la capa de inspección (${fmt(t.insp)}); el motor IPsec da de sobra para el ${Math.round(frac*100)} % que va cifrado.`);
+      const ipsec=evalm.ejes.find(e=>e.k==='vpn');
+      const insp=evalm.ejes.find(e=>e.k===capa.k);
+      const mandaIpsec=evalm.manda&&evalm.manda.k==='vpn';
+      if(ipsec&&insp){
+        flags.push(mandaIpsec
+          ? `<b class="warn">Manda el overlay:</b> con ${Math.round(frac*100)} % del tráfico cifrado, el motor IPsec `
+            +`(${fmt(ipsec.cap)}) va al ${pc(ipsec.u)} mientras la capa de inspección va al ${pc(insp.u)}.`
+          : `El eje que aprieta es la capa de inspección (${pc(insp.u)}); el motor IPsec queda al ${pc(ipsec.u)} `
+            +`para el ${Math.round(frac*100)} % que va cifrado.`);
+      }
       flags.push(`Sobre el requerimiento se suma un ${Math.round(OVERHEAD_ESP*100)} % de encapsulación ESP sobre la fracción del overlay — supuesto de esta herramienta, no una cifra publicada por Fortinet.`);
-      flags.push('<b>SD-WAN sin costo de licencia:</b> el balanceo por SLA, ADVPN y la selección dinámica de camino vienen en FortiOS. No hay suscripción por dispositivo como en Cisco Catalyst SD-WAN o Meraki.');
+      flags.push('<b>SD-WAN sin costo de licencia:</b> el balanceo por SLA, ADVPN y la selección dinámica de camino vienen en FortiOS. <b>Tener varios enlaces no obliga a ningún bundle</b>: lo que se licencia aparte son los servicios avanzados (monitoreo de underlay, orquestación de overlays, conector FortiSASE), y solo si el diseño los usa.');
     }
     if(rolSdwan==='hub'&&modoCaudal==='agg') flags.push(`<b>Escala del fabric:</b> ${sites} túnel(es) del overlay a terminar. <b class="warn">El límite de túneles por modelo no está en este catálogo</b> — confirmarlo en el datasheet del ${esc(m.id)} antes de cotizar. Con ADVPN los shortcuts spoke-a-spoke son dinámicos y no cuentan contra el hub.`);
     if($('chkHa').checked) flags.push('En <b>activo-pasivo el clúster no suma capacidad</b>: el throughput sigue siendo el de una unidad. El par se cotiza por disponibilidad, no por rendimiento.');
-    // Que eje manda, y a que distancia esta el otro: es lo que evita subir de gama por un
-    // limite que en realidad esta a dos ordenes de magnitud.
-    if(sessNeed&&m.sess){
-      const pc=o=>(o*100)<1?(o*100).toFixed(2)+' %':Math.round(o*100)+' %';
-      // `manda` tiene que salir de ESTE array: si se pide a ejeQueManda() devuelve otro
-      // objeto equivalente y el filtro por identidad deja dentro al propio eje ganador.
-      const ejes=ejesDe(m);
-      const manda=ejes.reduce((x,y)=>y.o>x.o?y:x);
-      const otros=ejes.filter(e=>e!==manda);
-      flags.push(`<b${manda.n==='Throughput'?'':' class="warn"'}>Manda ${manda.frase}</b>: ${pc(manda.o)} de lo que da el modelo.`+
-        (otros.length?` Los demás ejes van en ${otros.map(e=>`${e.frase} ${pc(e.o)}`).join(' y ')} — el más cercano queda a <b>${(manda.o/Math.max(...otros.map(e=>e.o))).toFixed(1)}x</b> del que manda. Subir de gama por un eje que no es el que limita no compra nada.`:''));
-      if(m.cps==null){
-        flags.push(`<b class="warn">Sesiones nuevas por segundo sin dato:</b> el catálogo no trae la cifra del ${esc(m.id)}, así que ese eje <b>no se comprobó</b> para este modelo (se necesitarían ${cpsNeed?cpsNeed.toLocaleString('en-US'):'—'} cps). Es el eje de CPU y es el que aprieta con sesiones cortas y masivas: confirmarlo en el Product Matrix antes de cerrar el diseño.`);
-      }else{
-        flags.push(`Los <b>${m.cps.toLocaleString('en-US')} cps</b> del ${esc(m.id)} son la cifra en <b>modo flow</b>. Con inspección <b>proxy</b> (antivirus en modo proxy, inspección SSL profunda) el caudal de sesiones nuevas cae, y <b>Fortinet no publica cuánto</b>: con este perfil al ${pc(cpsNeed/m.cps)} conviene dejar margen o validar con PoC.`);
-      }
+
+    // QUE EJE MANDA Y A QUE DISTANCIA QUEDA EL SIGUIENTE. Antes esto solo se decia cuando
+    // habia sesiones declaradas -estaba dentro de un `if(sessNeed && m.sess)`-, asi que en
+    // el escenario mas comun, que es solo caudal, no aparecia nunca.
+    const conDato=evalm.ejes.filter(e=>e.u!=null);
+    if(evalm.manda&&conDato.length){
+      const otros=conDato.filter(e=>e!==evalm.manda);
+      flags.push(`<b${evalm.manda.k===capa.k?'':' class="warn"'}>Manda ${evalm.manda.frase}</b>: ${pc(evalm.manda.u)} de lo que da el modelo.`
+        +(otros.length?` Los demás ejes van en ${otros.map(e=>`${e.frase} ${pc(e.u)}`).join(', ')} — el más cercano queda a <b>${(evalm.manda.u/Math.max(...otros.map(e=>e.u))).toFixed(1)}x</b> del que manda. Subir de gama por un eje que no es el que limita no compra nada.`:''));
     }
+    for(const nombre of evalm.sinComprobar){
+      flags.push(`<b class="warn">${esc(nombre)} sin dato:</b> el catálogo no trae esa cifra del ${esc(m.id)}, así que ese eje <b>no se comprobó</b>. Es el eje de CPU y es el que aprieta con sesiones cortas y masivas: confirmarlo en el Product Matrix antes de cerrar el diseño.`);
+    }
+    if(cpsNeed&&m.cps!=null){
+      flags.push(`Los <b>${m.cps.toLocaleString('en-US')} cps</b> del ${esc(m.id)} son la cifra en <b>modo flow</b>. Con inspección <b>proxy</b> (antivirus en modo proxy, inspección SSL profunda) el caudal de sesiones nuevas cae, y <b>Fortinet no publica cuánto</b>: con este perfil al ${pc(cpsNeed/m.cps)} conviene dejar margen o validar con PoC.`);
+    }
+    if(politica.techo<1) flags.push(`Todos los ejes se comparan contra un <b>techo de utilización del ${Math.round(politica.techo*100)} %</b> de la cifra publicada, declarado en el paso 3. Es una política, no una cifra de Fortinet.`);
+
+    const tope=soporta(m,demandas,effectiveNeed);
     return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
-      <li>Requerimiento <b>${fmt(effectiveNeed)}</b> en capa <b>${esc(TIER_BY_K[capa.k].n)}</b> contra capacidad <b>${fmt(getCap(m))}</b> — headroom ${Math.round((1-effectiveNeed/getCap(m))*100)}%</li>
+      <li>Requerimiento <b>${fmt(effectiveNeed)}</b> en capa <b>${esc(TIER_BY_K[capa.k].n)}</b>; este modelo soporta hasta <b>${fmt(tope)}</b> en este escenario — headroom ${Math.round((1-effectiveNeed/tope)*100)}%</li>
       ${capa.elevada?`<li><b class="warn">Capa elevada:</b> elegiste <b>${esc(TIER_BY_K[profile].n)}</b>, pero ${capa.elevan.map(f=>esc(f.n)).join(' y ')} obliga${capa.elevan.length>1?'n':''} a dimensionar contra <b>${esc(TIER_BY_K[capa.k].n)}</b>. Activar inspección saca la sesión del fast path del ASIC: no es un recargo porcentual, es otra cifra del datasheet.</li>`:''}
-      <li>Sesiones concurrentes: <b>${(m.sess/1000).toFixed(0)}K</b> | Sesiones nuevas/s: <b>${m.cps!=null?m.cps.toLocaleString('en-US'):'<span class="warn">sin dato en el catálogo</span>'}</b> | Interfaces: ${esc(m.ifaces)}</li>
+      <li>Sesiones concurrentes: <b>${(m.sess/1000).toFixed(0)}K</b> | Sesiones nuevas/s: <b>${m.cps!=null?m.cps.toLocaleString('en-US'):'<span class="warn">sin dato en el catálogo</span>'}</b> | Inspección SSL: <b>${m.ssl!=null?fmt(m.ssl):'<span class="warn">sin dato en el catálogo</span>'}</b> | Interfaces: ${esc(m.ifaces)}</li>
       ${flags.map(f=>`<li>${f}</li>`).join('')}
     </ul>`;
   };
@@ -782,7 +1026,11 @@ function render(){
         ['IPsec VPN (512 B, offload ASIC)', fmt(m.vpn)],
         ['IPS (Enterprise Mix)', fmt(m.ips)],
         ['NGFW (IPS + App Control)', fmt(m.ngfw)],
-        ['<b>Threat Protection</b>', m.tp?`<b>${fmt(m.tp)}</b>`:'Consultar datasheet'],
+        // Sin `<b>` en la etiqueta: ficha.js escapa la columna izquierda (`esc(k)`), asi que
+        // el marcado salia LITERAL en pantalla («<b>Threat Protection</b>»). El valor sí admite
+        // HTML, que es donde va el enfasis.
+        ['Threat Protection', m.tp?`<b>${fmt(m.tp)}</b>`:'Consultar datasheet'],
+        ['Inspección SSL', m.ssl!=null?`<b>${fmt(m.ssl)}</b>`:'<span class="warn">no está en el catálogo — ver Product Matrix</span>'],
         ['Sesiones concurrentes', m.sess.toLocaleString('en-US')],
         ['Sesiones nuevas / s (TCP)', m.cps!=null?m.cps.toLocaleString('en-US'):'<span class="warn">no está en el catálogo — ver Product Matrix</span>'],
         ['Procesadores de seguridad', m.asic?esc(m.asic):'<span class="warn">sin dato publicado</span>'],
@@ -808,42 +1056,111 @@ function render(){
     ];
   };
 
+  /* ── PANEL DE UTILIZACION POR EJE ─────────────────────────────────────────────────
+     Lo que el informe llama «decisión explicable»: los ocho ejes a la vez, con el que manda
+     marcado y el que el catálogo no puede comprobar en su tercer estado -rayado, nunca en
+     cero-. Antes esto no existía: había una sola barra de «capa» y dos medidores sueltos. */
+  const pintarEjes=m=>{
+    const evalm=evalPorId[m.id]||R.evaluarModelo(m,demandas,politica);
+    const caja=$('ejesPanel');
+    if(!evalm.ejes.length){ caja.innerHTML=''; return; }
+    const filas=evalm.ejes.map(e=>{
+      const manda=evalm.manda&&e.k===evalm.manda.k;
+      const cls=e.estado==='sinDato'?'sindato':manda?'manda':(e.u>0.8?'alto':'');
+      const ancho=e.u==null?0:Math.min(100,e.u*100);
+      const val=e.estado==='sinDato'
+        ? 'sin dato'
+        : `${pc(e.u)} <span style="color:var(--steel)">de ${e.unidad==='Mbps'?fmt(e.cap):nMil(e.cap)}</span>`;
+      return `<div class="eje ${cls}" title="${esc(e.metodo)}">`
+        +`<span class="en">${esc(e.n)}</span>`
+        +`<span class="eb"><i style="width:${ancho}%"></i></span>`
+        +`<span class="ev">${val}</span></div>`;
+    }).join('');
+    const pie=(evalm.manda
+      ? `Cuello de botella: <b>${esc(evalm.manda.n)}</b> al ${pc(evalm.manda.u)}`
+        +(politica.techo<1?` · techo declarado ${Math.round(politica.techo*100)} %`:'')
+        +'. Cada eje se compara contra su propia cifra oficial; ninguno se deriva de otro.'
+      : 'Sin ejes evaluables con los datos declarados.')
+      // UNA LISTA CORTA TIENE QUE EXPLICARSE. Con la inspeccion SSL pedida compiten 9 de 58
+      // modelos, y sin decirlo la lista se lee como «el catalogo entero es esto». Es la misma
+      // regla con la que la calculadora del portal cuenta sus apartados por fabricante.
+      +(sinSsl.length?` <b class="warn">${sinSsl.length} modelo(s) apartados</b> porque el catálogo no trae `
+        +'su cifra oficial de inspección SSL — es una tarea de datos, no una falta de capacidad: '
+        +'no se sustituye por Threat Protection.':'');
+    caja.innerHTML=`<div class="ejes"><h3>Utilización por eje — ${esc(m.id)}</h3>${filas}`
+      +`<p class="eje-pie">${pie}</p></div>`;
+  };
+
+  /* RESUMEN FIJO: equipo, cuello de botella y las dos alternativas como BOTONES.
+     Las alternativas son los vecinos por capacidad en la lista ya ordenada -no los dos
+     primeros, que en una lista de 39 no dicen nada-, y se eligen de un clic: una alternativa
+     que hay que buscar en un desplegable de 39 entradas no es una alternativa. */
+  const pintarSticky=m=>{
+    const caja=$('stickyReco'); if(!caja) return;
+    const evalm=evalPorId[m.id]||R.evaluarModelo(m,demandas,politica);
+    const i=candidates.findIndex(x=>x.id===m.id);
+    const alts=[];
+    if(i>0) alts.push(candidates[i-1]);
+    if(i>=0&&i<candidates.length-1) alts.push(candidates[i+1]);
+    const cuello=evalm.manda
+      ? `Manda <b>${esc(evalm.manda.n)}</b> &middot; ${pc(evalm.manda.u)} de ${evalm.manda.unidad==='Mbps'?fmt(evalm.manda.cap):nMil(evalm.manda.cap)}`
+      : 'Sin ejes evaluables';
+    caja.innerHTML=`<span class="sr-modelo">${esc(m.id)}</span>`
+      +`<span class="sr-cuello">${cuello}${m.id===pick.id?'':' &middot; elegido a mano'}</span>`
+      +(alts.length?`<span class="sr-alts"><span>Alternativas</span>`
+        +alts.map(a=>`<button type="button" class="sr-alt" data-alt="${esc(a.id)}">${esc(a.id.replace('FortiGate ',''))}</button>`).join('')
+        +'</span>':'');
+    caja.hidden=false;
+  };
+
   const pintarDependientes=m=>{
-    $('pickLbl').textContent=m.id;$('pickLbl').style.display='block';
-    $('pickLbl').style.left=xPct(getCap(m))+'%';
+    const evalm=evalPorId[m.id]||R.evaluarModelo(m,demandas,politica);
+    const tope=soporta(m,demandas,effectiveNeed);
+    const sslEje=evalm.ejes.find(e=>e.k==='ssl');
     renderTiers(m,effectiveNeed);
+    pintarEjes(m);
     $('sizingBox').innerHTML=`
       <table><tbody>
         <tr><td>Equipo evaluado</td><td class="n">${esc(m.id)}${m.id===pick.id?'':' (elegido a mano)'}</td></tr>
+        <tr><td>Tipo de transacción</td><td class="n">${esc($('tipoTx').selectedOptions[0].textContent)}</td></tr>
         <tr><td>Capa seleccionada</td><td class="n">${esc(TIER_BY_K[profile].n)}</td></tr>
         <tr><td><b>Capa efectiva</b></td><td class="n"><b>${esc(TIER_BY_K[capa.k].n)}</b>${capa.elevada?' <span class="warn">(elevada)</span>':''}</td></tr>
         ${capa.elevada?`<tr><td>Motivo de la elevación</td><td class="n">${capa.elevan.map(f=>esc(f.n)).join(', ')}</td></tr>`:''}
-        <tr><td>Inspección SSL profunda</td><td class="n">${$('chkSsl').checked?`Sí — piso Threat Protection x${SSL_DERATE} (estimado)`:'No'}</td></tr>
+        <tr><td>Inspección SSL profunda</td><td class="n">${$('chkSsl').checked?(sslEje&&sslEje.cap!=null?`Sí — eje propio contra ${fmt(sslEje.cap)} oficiales`:'Sí — <span class="warn">sin cifra oficial para este modelo</span>'):'No'}</td></tr>
         <tr><td>Modo de caudal</td><td class="n">${modoCaudal==='agg'?`Agregado — ${sites} sedes x ${fmt(bw*unit)} x ${Math.round(conc*100)} %`:'Enlace único'}</td></tr>
-        <tr><td>Caudal resultante</td><td class="n">${fmt(caudal)}</td></tr>
+        <tr><td>Caudal WAN resultante</td><td class="n">${fmt(caudal)}</td></tr>
+        ${trafico.interVlan?`<tr><td>Tráfico inter-VLAN</td><td class="n">${fmt(trafico.interVlan)} · ${esc(trafico.regla)}</td></tr>`:''}
         <tr><td>Usuarios estimados</td><td class="n">${users}${perUser?` x ${perUser} Mbps`:' (sin tráfico por usuario)'}</td></tr>
         <tr><td>Rol SD-WAN</td><td class="n">${{none:'Sin SD-WAN',spoke:'Spoke (sucursal)',hub:'Hub (concentrador)'}[rolSdwan]}</td></tr>
         ${frac?`<tr><td>Tráfico por el overlay</td><td class="n">${Math.round(frac*100)} % · +${Math.round(OVERHEAD_ESP*100)} % ESP</td></tr>`:''}
         <tr><td>Requerimiento final</td><td class="n"><b>${fmt(effectiveNeed)}</b></td></tr>
-        <tr><td>Capacidad efectiva</td><td class="n">${fmt(getCap(m))}${rolSdwan!=='none'&&techoQueManda(m).cual==='overlay'?' <span class="warn">(limita el overlay)</span>':''}</td></tr>
-        <tr><td>Headroom disponible</td><td class="n">${Math.round((1-effectiveNeed/getCap(m))*100)}%</td></tr>
+        <tr><td>Techo de utilización</td><td class="n">${Math.round(politica.techo*100)} %${politica.techo>=1?' (sin techo declarado)':''}</td></tr>
+        <tr><td>Soporta hasta</td><td class="n">${fmt(tope)}</td></tr>
+        <tr><td>Headroom disponible</td><td class="n">${Math.round((1-effectiveNeed/tope)*100)}%</td></tr>
         <tr><td>Sesiones por usuario</td><td class="n">${sessOverride?'—  (total forzado)':sesUser||'—'}</td></tr>
         <tr><td>Sesiones concurrentes</td><td class="n">${sessNeed?sessNeed.toLocaleString('en-US')+' / ':''}${m.sess.toLocaleString('en-US')}</td></tr>
         <tr><td>Vida media de sesión</td><td class="n">${vidaSes} s</td></tr>
         <tr><td>Sesiones nuevas / s</td><td class="n">${cpsNeed?cpsNeed.toLocaleString('en-US')+' / ':''}${m.cps!=null?m.cps.toLocaleString('en-US'):'<span class="warn">sin dato</span>'}</td></tr>
-        ${sessNeed&&m.sess?`<tr><td>Eje que limita</td><td class="n">${ejeQueLimita(m)}</td></tr>`:''}
+        <tr><td>Eje que limita</td><td class="n">${ejeQueLimita(m)}</td></tr>
         <tr><td>Unidades a cotizar</td><td class="n">${$('chkHa').checked?'2 (HA) — licencia por unidad':'1'}</td></tr>
       </tbody></table>`;
+    pintarSticky(m);
+    pintarEscala({effectiveNeed, demandas, candidatos:candidates, elegido:m});
   };
 
   const elegidoId=FICHA.render({vendor:'fortinet', 
     contenedor:'verdict',
     candidatos:candidates,
     recomendado:pick.id,
-    etiqueta:m=>`${m.id} — ${m.seg} · ${fmt(getCap(m))}`,
+    etiqueta:m=>`${m.id} — ${m.seg} · soporta ${fmt(soporta(m,demandas,effectiveNeed))}`,
     titulo:m=>m.id,
     subtitulo:m=>m.seg+' · FortiOS Security Fabric',
-    medidores:medidoresDe,
+    // SIN `medidores` A PROPOSITO: las barras de utilizacion viven en `#ejesPanel`, encima
+    // de la ficha, que es donde el informe las pide -junto al candidato, sus alternativas y
+    // el cuello de botella-. Dejarlas tambien aqui pintaria los mismos cuatro ejes dos veces
+    // en la misma pantalla, y el panel de arriba dice mas: los tres estados por eje y los
+    // modelos apartados por falta de dato. El resto de dimensionadores las conserva.
+    medidores:null,
     porQue:porQueDe,
     secciones:seccionesDe,
     alCambiar:id=>{
@@ -855,6 +1172,7 @@ function render(){
   });
   const elegido=candidates.find(m=>m.id===elegidoId)||pick;
   pintarDependientes(elegido);
+  pintarPasos({capa, trafico, sinCandidato:false});
   sincronizarConBom(elegido);
 }
 
@@ -880,21 +1198,31 @@ function renderTiers(m,need){
         <span class="tv">${fmt(v)}</span>
       </div>`;
   }).join('');
+  // LA SEXTA FILA ES UN DATO, NO UNA ESTIMACION. Aqui se pintaba `m.tp x 0,65` con una
+  // tilde delante; ahora se pinta la cifra oficial, y donde el catalogo no la trae se dice
+  // -que es la informacion util: falta el dato, no falta la capacidad-.
   if(ssl){
-    const v=m.tp*SSL_DERATE;
-    $('perfTiers').insertAdjacentHTML('beforeend',
-      `<div class="tierRow on" title="Estimación: Fortinet ya no publica SSL Inspection por modelo.">
-        <span class="tn">+ SSL profundo</span>
-        <span class="tb"><i style="width:${Math.max(2,v/top*100)}%"></i></span>
-        <span class="tv">~${fmt(v)}</span>
+    $('perfTiers').insertAdjacentHTML('beforeend', m.ssl!=null
+      ? `<div class="tierRow on" title="SSL Inspection Throughput: IPS activo sobre un promedio de sesiones HTTPS. Medicion propia, no derivada de Threat Protection.">
+        <span class="tn">Inspección SSL</span>
+        <span class="tb"><i style="width:${Math.max(2,m.ssl/top*100)}%"></i></span>
+        <span class="tv">${fmt(m.ssl)}</span>
+      </div>`
+      : `<div class="tierRow off" title="El catalogo no trae SSL Inspection Throughput de este modelo.">
+        <span class="tn">Inspección SSL</span>
+        <span class="tb"></span>
+        <span class="tv warn">sin dato</span>
       </div>`);
   }
   const ratio=m.tp?Math.round(m.fw/m.tp):0;
   const asic=m.asic
     ? `Silicio: <b>${esc(m.asic)}</b>. El ${esc(m.np||'procesador de red')} es el que sostiene las dos primeras cifras${m.cp?`; el ${esc(m.cp)} asiste el pattern matching de IPS y antivirus en las tres últimas`:''}.`
     : `<span class="warn">Fortinet no publica página de fast path architecture para este modelo — sin dato de ASIC verificado.</span>`;
+  const notaSsl=m.ssl!=null
+    ? ` La inspección SSL de este modelo son <b>${fmt(m.ssl)}</b> oficiales, que es un <b>${(m.ssl/m.tp).toFixed(2)}x</b> de su Threat Protection: por eso no se deriva con un factor — en el catálogo ese cociente va de 0,52 a 1,18.`
+    : ' <span class="warn">El catálogo no trae la cifra de inspección SSL de este modelo</span>, así que ese eje no se puede comprobar aquí.';
   $('perfNote').innerHTML=`Del firewall puro a Threat Protection hay un factor <b>${ratio}x</b> en este modelo (${fmt(m.fw)} &rarr; ${fmt(m.tp)}). `+
-    `La cifra de portada solo aplica a sesiones descargadas al procesador de red; cualquier perfil de inspección saca la sesión del fast path. ${asic} Requerimiento actual: <b>${fmt(need)}</b>.`;
+    `La cifra de portada solo aplica a sesiones descargadas al procesador de red; cualquier perfil de inspección saca la sesión del fast path.${notaSsl} ${asic} Requerimiento actual: <b>${fmt(need)}</b>.`;
 }
 
 /* BOM */
@@ -954,9 +1282,7 @@ function renderBom(){
   const care=$('careLevel').value||'fcpre';
   const lic=m.lic;
   const licTier=lic?lic[bundle]:null;
-  const careTier=lic?lic.care[CARE_LIC_KEY[care]]:null;
   const licPrice=tierPrice(licTier,termYrs);
-  const carePrice=tierPrice(careTier,termYrs);
 
   // Coherencia con el dimensionamiento, declarada en vez de supuesta. Son dos desajustes
   // distintos y conviene no confundirlos: que el dimensionamiento no tenga candidato, y que
@@ -964,6 +1290,25 @@ function renderBom(){
   // El aviso de desvio ya no se escribe aqui: lo da js/bom.js, para que los siete
   // fabricantes digan lo mismo con las mismas palabras.
   const aviso=BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato});
+
+  /* ── LA CAPA COMERCIAL SE CALCULA UNA VEZ, EN `FortinetReglas.lineasComerciales` ─────
+     Aqui se montaban las filas a mano, y de esa construccion salian los tres P0 comerciales
+     del informe: la linea de FortiCare se anadia SIEMPRE aunque el bundle ya lo incluyera
+     (doble cobro), FortiConverter se anadia siempre que el modelo tuviera SKU aunque
+     Enterprise ya lo trajera (segundo doble cobro), y el SKU conservaba el marcador `-DD`
+     del price list, que no es un codigo pedible. Ahora lo decide el modulo puro, que es lo
+     que hace que las veinte pruebas de aceptacion se puedan afirmar sin navegador. */
+  const errBundle=R.validarBundle(bundle, funcionesActivas(), FUNCIONES, BUNDLES);
+  const comercialActual=R.lineasComerciales({
+    modelo:m, bundles:BUNDLES, care:CARE,
+    bundle, care_elegido:care, careKey:CARE_LIC_KEY[care],
+    qty, anios:termYrs, terminos:TERMINOS,
+    converter:$('chkConverter').checked,
+    serviciosSdwan:serviciosSdwanPedidos(),
+  });
+  // El bundle insuficiente es un bloqueo mas, y el primero: cambia QUE se cotiza, no solo
+  // si se puede exportar.
+  const bloqueos=(errBundle?[errBundle]:[]).concat(comercialActual.bloqueos);
 
 
   let html=`<section class="panel"><h2>Ficha del equipo</h2>
@@ -979,6 +1324,7 @@ function renderBom(){
     <tr><td><b>Threat Protection</b> (NGFW + AV + log)</td><td class="n"><b>${m.tp?fmt(m.tp):'Consultar datasheet'}</b>${m.tp&&m.fw?` <span class="warn">(${Math.round(m.fw/m.tp)}x menos que el firewall puro)</span>`:''}</td></tr>
     <tr><td>Sesiones concurrentes</td><td class="n">${m.sess.toLocaleString('en-US')}</td></tr>
     <tr><td>Sesiones nuevas / s (TCP, modo flow)</td><td class="n">${m.cps!=null?m.cps.toLocaleString('en-US'):'<span class="warn">no está en el catálogo</span>'}</td></tr>
+    <tr><td><b>Inspección SSL</b> (IPS + HTTPS medio)</td><td class="n">${m.ssl!=null?`<b>${fmt(m.ssl)}</b> <span class="sku">${(m.ssl/m.tp).toFixed(2)}x de su Threat Protection</span>`:'<span class="warn">no está en el catálogo — ver Product Matrix</span>'}</td></tr>
     <tr><td>Procesadores de seguridad</td><td class="n">${m.asic?`${esc(m.asic)}${m.soc?' <span class="pillc">SoC</span>':''}<span class="sku">${esc(m.asicSrc||'')}</span>`:'<span class="warn">Sin página de fast path architecture publicada</span>'}</td></tr>
     <tr><td>Interfaces</td><td>${m.ifaces}</td></tr>
     </tbody></table></div>
@@ -989,33 +1335,27 @@ function renderBom(){
     ${licTier?`<li class="on"><b>${BUNDLES[bundle].n}</b><span class="req">Requerida</span><span class="sku">${BUNDLES[bundle].svcs}<br><code>${esc(licTier.sku)}</code> · término ${termYrs} año${termYrs>1?'s':''}${licPrice!=null?' · '+money(licPrice)+' c/u':' · precio no disponible a '+termYrs+' años para este modelo'}</span></li>`
       :`<li><b>${BUNDLES[bundle].n}</b><span class="req opt">No disponible</span><span class="sku">Este bundle no tiene SKU vigente para ${m.id} en el price list actual${m.eol?' (equipo EOL, sin renovación de Enterprise Protection)':''}.</span></li>`}
     <li><b>FortiConverter</b><span class="req opt">Opcional</span><span class="sku">${lic&&lic.converter?`Migración de configuración desde Cisco ASA, Check Point, Palo Alto. <code>${esc(lic.converter.sku)}</code> · ${money(lic.converter.fee)} (servicio único)`:'Incluido dentro de Enterprise Protection en modelos vigentes.'}</span></li>
-    <li><b>FortiSandbox</b><span class="req opt">Opcional</span><span class="sku">Análisis dinámico de archivos zero-day (add-on independiente del bundle). SKU de referencia: <code>FC-10-FS5HG-499-02-DD</code>.</span></li>
-    <li><b>FortiClient EMS</b><span class="req opt">Opcional</span><span class="sku">Gestión de endpoints ZTNA + VPN, licenciado por número de endpoints. SKU de referencia (25 endpoints): <code>FC1-10-EMS05-428-01-DD</code>.</span></li>
-  </ul></section>`;
+    <li><b>FortiSandbox</b><span class="req opt">Opcional</span><span class="sku">Análisis dinámico de archivos zero-day (add-on independiente del bundle). <b>Patrón</b> de SKU: <code>FC-10-FS5HG-499-02-DD</code> — el <code>DD</code> es el marcador del término (12/36/60), no un código pedible.</span></li>
+    <li><b>FortiClient EMS</b><span class="req opt">Opcional</span><span class="sku">Gestión de endpoints ZTNA + VPN, licenciado por número de endpoints. <b>Patrón</b> de SKU (25 endpoints): <code>FC1-10-EMS05-428-01-DD</code>.</span></li>
+  </ul>
+  <p class="hint" style="margin-top:10px">Estos dos son <b>documentación de patrón</b> y no entran en la lista de materiales: se muestran con el marcador <code>DD</code> a propósito. Las líneas que sí se cotizan llevan el término resuelto (<code>-12</code>, <code>-36</code>, <code>-60</code>), porque un SKU con <code>DD</code> no se puede pasar a un distribuidor.</p>
+  </section>`;
 
+  // SOPORTE FORTICARE. El panel ya no puede limitarse a pintar el nivel elegido: los tres
+  // bundles incluyen FortiCare Premium, asi que lo que hay que decir es si esta linea SE
+  // COTIZA o no. Es el AT-04 del informe y era un doble cobro real.
+  const soporteEnBom=comercialActual.filas.find(f=>f.cat==='Soporte');
   html+=`<section class="panel"><h2>Soporte FortiCare</h2><div class="scroll"><table>
     <thead><tr><th>Servicio</th><th>SLA</th><th>SKU</th><th>Término</th><th>Precio ref. c/u</th><th>Qty</th></tr></thead><tbody>
-    <tr><td>${CARE[care].n}</td><td class="n">${CARE[care].sla}</td><td class="n">${careTier?`<code>${esc(careTier.sku)}</code>`:'<span class="warn">No disponible para este modelo</span>'}</td><td class="n">${termYrs} años</td><td class="n">${carePrice!=null?money(carePrice):'—'}</td><td class="n">${qty}</td></tr>
-    </tbody></table></div></section>`;
+    <tr><td>${CARE[care].n}</td><td class="n">${CARE[care].sla}</td><td class="n">${soporteEnBom&&soporteEnBom.sku?`<code>${esc(soporteEnBom.sku)}</code>`:'<span class="warn">no se cotiza aparte</span>'}</td><td class="n">${termYrs} años</td><td class="n">${soporteEnBom&&soporteEnBom.unit!=null?money(soporteEnBom.unit):'—'}</td><td class="n">${soporteEnBom?qty:0}</td></tr>
+    </tbody></table></div>
+    ${comercialActual.soporteIncluido?`<p class="hint" style="margin-top:10px"><b>${esc(BUNDLES[bundle].n)} ya incluye FortiCare Premium.</b> ${soporteEnBom?'La línea de arriba es la <b>mejora</b> sobre ese Premium incluido, no un segundo contrato de soporte completo.':'Por eso no se añade una segunda línea de soporte a la lista de materiales: hacerlo cobraba el mismo servicio dos veces.'}</p>`:''}
+    </section>`;
 
   $('bomBody').innerHTML=html;
 
-  // Filas del BOM en el formato compartido de /js/bom.js. En HA cada nodo paga su propia
-  // suscripcion FortiGuard y su propio FortiCare, por eso licencias y soporte multiplican
-  // por la cantidad igual que el hardware.
   const termino=`término ${termYrs} año${termYrs>1?'s':''}`;
-  const filas=[
-    {cat:'Equipo', desc:m.id, sku:m.hwSku||null, qty, unit:m.elpN!=null?m.elpN:null,
-     nota:`${m.seg} · ${m.ifaces}${m.eol?' · DESCONTINUADO (EOL)':''}`},
-    {cat:'Licencias FortiGuard', desc:BUNDLES[bundle].n, sku:licTier?licTier.sku:null, qty, unit:licPrice,
-     nota:`${termino} · ${BUNDLES[bundle].svcs}`},
-    {cat:'Soporte', desc:CARE[care].n, sku:careTier?careTier.sku:null, qty, unit:carePrice,
-     nota:`${termino} · ${CARE[care].sla}`},
-  ];
-  if(lic&&lic.converter){
-    filas.push({cat:'Servicios opcionales', desc:'FortiConverter — migración de configuración', sku:lic.converter.sku, qty:1, unit:lic.converter.fee,
-      nota:'Servicio único. Migra desde Cisco ASA, Check Point o Palo Alto.'});
-  }
+  const filas=comercialActual.filas;
 
   const meta={
     titulo:`Lista de materiales — ${m.id}`,
@@ -1040,6 +1380,22 @@ function renderBom(){
       'Precios de lista (list price) AMER, sin descuentos de canal ni impuestos.',
       'Confirmar SKU exacto, termino y precio final con el distribuidor Fortinet autorizado.',
       qty>1?`Cluster de ${qty} unidades: la licencia no se comparte en HA, cada nodo lleva la suya.`:null,
+      '',
+      `Huella del escenario: ${ultimaHuella || '—'} (identifica el escenario tecnico que produjo esta lista;`,
+      '  se puede cruzar contra el enlace compartido para comprobar que son el mismo).',
+      '',
+      'DECISIONES COMERCIALES APLICADAS A ESTA LISTA',
+      `  Transaccion: ${$('tipoTx').selectedOptions[0].textContent}.`,
+      `  Termino ${termYrs} ano(s): los SKU llevan el sufijo ${TERMINOS[termYrs]?TERMINOS[termYrs].sufijo:'?'} (meses), no el marcador DD del patron.`,
+      ...comercialActual.avisos.map((a)=>`  · ${a.mensaje.replace(/\s+/g,' ')}`),
+      ...(bloqueos.length?['', 'ESTA LISTA NO ESTA HABILITADA PARA COTIZAR EN FIRME:',
+        ...bloqueos.map((b)=>`  · ${b.mensaje.replace(/\s+/g,' ')}`)]:[]),
+      // Si alguien fuerza la exportacion, el motivo VIAJA con el documento. Una puerta sin
+      // salida se rodea copiando la tabla a mano, y entonces el documento sale sin la
+      // advertencia; asi sale con ella.
+      ...(override?['', `EXPORTACION FORZADA el ${override.fecha}`
+        +`${override.usuario?` por ${override.usuario}`:''} — motivo: ${override.motivo}`,
+        'Documento de trabajo: NO es una cotizacion en firme.']:[]),
     ].filter((n)=>n!==null),
   };
 
@@ -1066,11 +1422,100 @@ function renderBom(){
       +'<p class="hint" style="margin-top:8px">El neto es un <b>simulador genérico de tramos partner — no refleja el descuento real del distribuidor Fortinet</b>. Precios de lista AMER, sin impuestos.</p>'
     :'<p class="hint">Sin precios suficientes para calcular el TCO: el equipo o las licencias están en «consultar».</p>';
 
+  huellaDelBom=ultimaHuella;
+
   pintarPerfiles();
   $('bomOut').value=BOM.comoTexto(filas,meta);
   bomMeta=meta; bomFilas=filas;
 
+  // La puerta se evalua al final, con las lineas ya construidas: lo que decide si esta
+  // propuesta se puede exportar es el conjunto -escenario, bloqueos y vigencia de la fuente
+  // comercial-, no ninguna de las tres por separado.
+  pintarPuerta({bloqueos, avisos:comercialActual.avisos, meta});
+  pintarPasos(null);
 }
+
+// El clic en una alternativa escribe en el desplegable de la ficha y dispara su `change`:
+// ese manejador ya sabe repintar medidores, razones, BOM y escala, asi que duplicar aqui esa
+// cadena seria la segunda implementacion que acaba divergiendo. Se delega en `document`
+// porque el sticky se reconstruye entero en cada render y un listener directo se perderia.
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.sr-alt'); if(!b) return;
+  const sel=document.getElementById('verdict-sel');
+  if(!sel) return;
+  sel.value=b.dataset.alt;
+  sel.dispatchEvent(new Event('change',{bubbles:true}));
+});
+
+/* ══ PUERTA DE EXPORTACION (§12 y §14 del informe) ═══════════════════════════════════════
+   Exportar a Excel, copiar e imprimir se habilitan SOLO cuando el escenario coincide con el
+   calculo, no hay bloqueos P0 y cada linea lleva SKU exacto. No es un aviso pasivo: los
+   botones se deshabilitan de verdad.
+
+   EL OVERRIDE EXISTE A PROPOSITO, y con motivo obligatorio. A veces hay que mandar un
+   borrador tecnico antes de tener el SKU del Ordering Guide, y una puerta sin salida se
+   rodea copiando la tabla a mano — que es peor, porque entonces el documento sale SIN la
+   advertencia. Asi sale con ella: el motivo, la fecha y el usuario viajan estampados en las
+   notas del Excel y del texto copiado. */
+function usuarioActual(){ return (window.__usuarioPresales||null); }
+
+function pintarPuerta(ctx){
+  const caja=$('exportGate'); if(!caja) return;
+  const precios=FUENTES&&FUENTES.fuentes
+    ? FUENTES.fuentes.find(f=>f.dominio==='precio')||null : null;
+  const salud=precios?R.saludPrecios(precios):{estado:'sin-fuente', bloquea:false,
+    mensaje:'No se localizó la lista de precios en la procedencia del fabricante.'};
+  const bloqueos=ctx.bloqueos.slice();
+  if(salud.bloquea) bloqueos.push({codigo:'precios-vencidos', mensaje:salud.mensaje});
+
+  const st=R.estadoEscenario({
+    faltan:[],
+    hayCandidato,
+    // Invariante, no deteccion: ver el comentario de `ultimaHuella` arriba.
+    stale:ultimaHuella!==null&&huellaDelBom!==null&&ultimaHuella!==huellaDelBom,
+    bloqueos,
+    avisos:ctx.avisos,
+  });
+
+  const abierto=st.puedeExportar||!!override;
+  ['xlsBtn','copyBtn'].forEach(id=>{ const b=$(id); if(b) b.disabled=!abierto; });
+  const cot=document.getElementById('btnACotizador');
+  if(cot) cot.disabled=!abierto;
+
+  const cls=st.puedeExportar?'ok':(st.estado==='advertencia'?'warn':'bad');
+  // El titular resume; la lista detalla. Se listan TODOS menos el que ya encabeza, porque
+  // repetirlo palabra por palabra hace dudar de lo demas que dice la pantalla.
+  const lista=bloqueos.length?bloqueos:ctx.avisos;
+  let html=`<h3 class="${cls==='bad'?'warn':''}">${esc(st.titulo)}</h3><p style="margin:0">${esc(st.motivo)}</p>`;
+  if(lista.length>1) html+=`<ul>${lista.slice(1).map(b=>`<li>${esc(b.mensaje)}</li>`).join('')}</ul>`;
+  html+=`<p class="hint" style="margin:8px 0 0">Huella del escenario <code>${esc(huellaDelBom||'—')}</code>`
+    +` · ${filasSinSku(ctx.meta)} línea(s) sin SKU exacto · lista de precios: ${esc(salud.mensaje)}</p>`;
+  if(!st.puedeExportar){
+    html+=override
+      ? `<p class="hint" style="margin:8px 0 0"><b class="warn">Exportación forzada</b> por ${esc(override.usuario||'usuario sin identificar')} el ${esc(override.fecha)} — motivo: «${esc(override.motivo)}». Viaja estampado en el documento. <button type="button" class="btn ghost" id="btnOvCancel" style="font-size:10px;padding:3px 8px">Deshacer</button></p>`
+      : `<div class="gate-ov"><input type="text" id="ovMotivo" placeholder="Motivo para exportar igualmente (obligatorio)" autocomplete="off">`
+        +`<button type="button" class="btn ghost" id="btnOverride" style="font-size:11px;padding:5px 11px">Exportar como borrador</button></div>`;
+  }
+  caja.className='gate '+cls;
+  caja.innerHTML=html;
+}
+
+// Cuenta las lineas cotizables que no tienen SKU exacto. El equipo sin SKU cuenta: es lo que
+// distingue un borrador tecnico de una cotizacion.
+function filasSinSku(){
+  return bomFilas.filter(f=>!f.sku).length;
+}
+
+$('exportGate').addEventListener('click',e=>{
+  if(e.target.id==='btnOverride'){
+    const motivo=($('ovMotivo').value||'').trim();
+    if(!motivo){ $('ovMotivo').focus(); return; }
+    override={motivo, fecha:new Date().toISOString().slice(0,10), usuario:usuarioActual()};
+    renderBom();
+  }else if(e.target.id==='btnOvCancel'){
+    override=null; renderBom();
+  }
+});
 
 
 /* ── PERFILES MULTI-SEDE ───────────────────────────────────────────────────
@@ -1230,11 +1675,26 @@ $('xlsBtn').addEventListener('click',async()=>{
   MODELS = data.models;
   BUNDLES = data.bundles;
   CARE = data.care;
+  // Reglas comerciales servidas con el catalogo, no escritas en esta pagina.
+  FUNCIONES = data.funciones || [];
+  SERVICIOS_SDWAN = data.serviciosSdwan || [];
+  TERMINOS = data.terminos || {};
 
   populatePickModel();
   render();
   renderBom();
   renderCatalogo();
+
+  // La procedencia llega DESPUES del catalogo y en su propia peticion: el banner y la puerta
+  // de exportacion la necesitan, pero el dimensionamiento no, asi que no se le hace esperar.
+  // Si /api/fuentes falla, el banner dice que no pudo leerla en vez de afirmar vigencia.
+  try{
+    const rf = await fetch('/api/fuentes');
+    const todas = await rf.json();
+    FUENTES = (todas && todas.fortinet) ? todas.fortinet : null;
+  }catch{ FUENTES = null; }
+  pintarBanner();
+  renderBom();
   // El contraste al subir una fuente oficial (pestaña "Fuentes", js/procedencia.js) necesita
   // saber de dónde sacar los modelos de este fabricante para comparar.
   PROCEDENCIA.registrarModelos('fortinet', () => MODELS.map(m => ({ model: m.id, ...m })));
@@ -1267,15 +1727,34 @@ document.addEventListener('DOMContentLoaded', () => {
   const migrado = migrarEstadoV1();
   reconstruirWanDesdeHidden();
   if (migrado) $('wanLinksData').dispatchEvent(new Event('input', { bubbles: true }));
-  const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
-  if (anclaje && anclaje.parentNode) {
-    const caja = document.createElement('div');
-    caja.className = 'estado-barra';
-    caja.style.cssText = 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px';
-    anclaje.parentNode.insertBefore(caja, anclaje.nextSibling);
+  // El boton de enlace y el aviso de parametros desconocidos van AHORA dentro de la barra de
+  // acciones, con el cliente y la referencia (§7 del informe: «cliente, referencia, copiar,
+  // limpiar y estado guardado en una fila»). Antes se inyectaban debajo de las pestanas, en
+  // un tercer sitio: reproducir un escenario exigia saber donde mirar.
+  const caja = $('accionesEnlace');
+  if (caja) {
     ESTADO.botonEnlace(caja);
     ESTADO.avisoOrigen(caja, st);
   }
+  actualizarEstadoGuardado(st);
+});
+
+/* ══ ESTADO GUARDADO Y «LIMPIAR» ═════════════════════════════════════════════════════════
+   El indicador dice de donde salio lo que hay en pantalla -un enlace compartido o los
+   valores por defecto-, porque son dos situaciones que se leen muy distinto: con la segunda
+   se esta empezando y con la primera se esta revisando lo que mando otra persona. */
+function actualizarEstadoGuardado(st){
+  const n=$('estadoGuardado'); if(!n) return;
+  n.textContent=(st&&st.origen)
+    ? 'Escenario repuesto desde un enlace compartido'
+    : 'Escenario nuevo — valores por defecto';
+}
+
+// «Limpiar» vuelve a los valores por defecto SIN recargar con el querystring puesto: recargar
+// repondria el enlace compartido y no limpiaria nada, que es el fallo obvio de hacerlo con
+// location.reload().
+$('btnLimpiar').addEventListener('click',()=>{
+  location.href = location.pathname;
 });
 
 /* ══ ENVIAR AL COTIZADOR ══

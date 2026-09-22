@@ -4,7 +4,47 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-18 (plan 20: **la foto oficial viaja con la propuesta
+Última revisión: 2026-09-22 (plan 21: **el informe de validación técnica del módulo Fortinet,
+aplicado** — petición directa del dueño con el informe adjunto: «actúa como un experto
+arquitecto senior en el fabricante de Fortinet implementando según el informe adjunto todas
+las mejoras que se han consolidado… el dimensionador debe ser funcional, dinámico e
+interactivo»). El informe consolida dos auditorías, clasifica sus hallazgos en P0 técnico, P0
+comercial, P1 arquitectónico y P2 de experiencia, y cierra con veinte pruebas de aceptación y
+un dictamen de NO-GO hasta cerrar los P0. **No se implementó literalmente, y él mismo pide que
+no se haga**: once de sus diecisiete propuestas vienen marcadas para excluir o reformular
+porque son constantes sin respaldo (0,55 y 0,45 para SSL, 0,95 para SD-WAN, 0,90 para SIP, 0,70
+para proxy, 0,95 para logging, 0,85 por nodo en HA A-A, 15 % por VDOM, pisos de serie para
+SD-WAN y BGP) — ninguna de ellas se aplicó. Lo entregado: **(1) P0 técnico** — la inspección
+SSL deja de estimarse como `tp × 0,65` y pasa a ser un eje con la cifra oficial por modelo
+(9 de 58; el cociente ssl/tp va de 0,52 a 1,18, así que el factor único se equivocaba en las
+dos direcciones y en el 40F prometía 390 Mbps donde el equipo da 310); los 49 sin cifra se
+**apartan con su motivo** y piden PoC, nunca se sustituyen por otra capa. **(2) Motor multieje**
+en `public/js/fortinet-reglas.js` (UMD, patrón de `aruba-reglas.js`): ocho ejes independientes
+con tres estados y dos durezas, cuello de botella explicado, y techo de utilización separado
+del margen de crecimiento (por defecto 100 %, para no mover en silencio los escenarios ya
+compartidos). La reformulación es equivalente para lo que no toca y se **demostró**: el
+contraste `fortinet`, con línea base de antes del cambio, pasa sus 8 escenarios y sus 6
+migraciones v1 sin discrepancias. **(3) P0 comercial** — FortiCare Premium ya no se cobra dos
+veces (los tres bundles lo incluyen y el BOM añadía además una línea de soporte *siempre*),
+FortiConverter no se duplica con Enterprise, el SKU resuelve el término real (`-36` en vez del
+marcador `DD`, que no es pedible), el bundle mínimo se deriva de las funciones y **bloquea** lo
+que está por debajo, multi-WAN ya no insinúa Enterprise y los servicios avanzados de SD-WAN
+derivan su línea con `sku: null` declarado. **(4) Puerta de exportación real**: deshabilita
+Excel, copiar y enviar al cotizador ante un bloqueo P0, un SKU inexacto o una lista de precios
+vencida, con override de motivo obligatorio que viaja estampado en el documento. **(5) P2 de
+experiencia**: banner de estado de datos con cobertura contada sobre el catálogo, pestañas con
+los nombres de Aruba, barra de acciones en una fila, cuatro pasos plegables con chip de
+validación, resumen fijo compacto con alternativas de un clic, panel de utilización por eje y
+gráfico con métrica elegible y filtro de ciclo de vida. Cobertura: **31 unitarios**
+(AT-01…AT-20), **38 afirmaciones e2e**, un **contraste nuevo** comprobado saboteando —bajar el
+eje SSL a `blanda` da 6 discrepancias y a 4 Gbps pasa de «sin candidato» a recomendar un 200G—,
+454 unitarios y 16/16 pantallas en verde. Tres hallazgos que salieron del camino y se
+arreglaron: el rótulo `<b>Threat Protection</b>` salía literal en la ficha (ficha.js escapa la
+columna izquierda), el chip del paso 4 no se refrescaba al cambiar el bundle, y el caso de
+contraste `cotizador-bom` seleccionaba la pestaña por su **rótulo visible** y se rompió con el
+renombrado — ahora usa `data-tab`, que es el contrato.)
+
+Revisión anterior: 2026-09-18 (plan 20: **la foto oficial viaja con la propuesta
 exportada** — mejora propuesta al cerrar el plan 19 y aprobada por el dueño («Avanza…
 y si encuentras alguna mejora por el camino ejecútala»). El BOM exportado deja de ser
 solo texto y tabla: el Excel lleva ahora una segunda hoja, «Fotos del equipo», con las
@@ -33,7 +73,7 @@ y el 7005 sin foto exporta sin hoja ni imagen (SheetJS relee el fichero como pru
 interop). Validado además abriéndolo con LibreOffice → PDF: las dos caras se ven
 completas. 419 unitarios y 9/9 e2e en verde.)
 
-Revisión anterior: 2026-09-18 (plan 19: **lupa en las fotos de los equipos Aruba** —
+Revisión previa: 2026-09-18 (plan 19: **lupa en las fotos de los equipos Aruba** —
 petición directa del dueño: «incluir una Lupa en las imágenes de los routers de Aruba
 para que al darle click en la lupa traiga al frente la foto, ya sea frontal o trasera,
 en la máxima calidad de la imagen». La tarjeta sirve la foto a 150 px de alto; la lupa
@@ -672,6 +712,37 @@ cerrada (ver *Cerrado recientemente*). Lo que queda, en el orden del plan:
 - **R8R13AAE / R8R14AAE** (Silver/Gold AOS 8 del 9240): sin List Price en la lista del
   distribuidor — «consultar» en el BOM.
 
+## Lo que el informe de validación técnica de Fortinet deja abierto (2026-09-22)
+
+Documento: «Informe final de validación técnica y plan de mejora del módulo Fortinet
+Presales», 22-sep-2026. Los P0 técnico y comercial están cerrados (ver *Cerrado
+recientemente* y `docs/rediseno-fortinet.md`, etapa 3). Lo que queda, con su motivo:
+
+- **F1 · 49 de 58 modelos sin cifra oficial de inspección SSL.** Es el hueco más caro que
+  queda en este catálogo: con inspección TLS profunda pedida compiten 9 modelos, y los otros
+  49 se apartan con su motivo. **No es un fallo del motor, es una tarea de datos.** Se cierra
+  leyendo la columna `SSL Inspection Throughput` del Product Matrix desde una máquina con
+  acceso —`fortinet.com` responde 403 al proxy de egreso de este entorno— y pasándola por
+  `npm run cps`, que ya contrasta cada fila contra el `sess` verificado antes de aceptarla.
+  `npm run catalogo` lo cuenta desde hoy (`ssl 16% 9/58`).
+- **F2 · Los SKU de los tres servicios avanzados de SD-WAN** (Underlay & Application
+  Monitoring, Overlay Orchestration, conector FortiSASE), de la categoría «SD-WAN» del
+  Ordering Guide de FortiGuard. Van con `sku: null` **declarado**, así que pedir uno bloquea
+  la exportación comercial — que es el comportamiento correcto mientras no estén, y mejor que
+  inventar un código con pinta de válido (el fallo del `FortiGate 2000F`).
+- **F3 · Elegibilidad de FortiGuard único en HA activo-pasivo**, por modelo y versión de
+  FortiOS. La regla general —una licencia por nodo— está aplicada; la excepción se declara sin
+  ofrecerse, porque este catálogo no trae de qué modelos y qué versiones se puede afirmar.
+- **F4 · Escala del plano de control como *hard constraints***: rutas BGP/OSPF, vecinos, VRF,
+  VDOM y túneles máximos por modelo. El informe lo pide (P1) y la **Maximum Values Table** de
+  Fortinet lo publica, pero este catálogo no la trae. **Pedir esos datos en el formulario sin
+  poder contrastarlos contra un límite por modelo daría controles que no hacen nada**, que es
+  peor que su ausencia porque invitan a creer que se tuvieron en cuenta. Entra cuando entre el
+  dato — y entonces el motor ya tiene dónde ponerlo: son ejes más en `FortinetReglas.EJES`.
+- **F5 · Si un derate publicado por Fortinet apareciera** para proxy, SIP, logging o HA
+  activo-activo, entraría como dato con su fuente. Los del informe se excluyeron porque
+  dependen del flujo, del perfil, del cifrado y de la configuración: no son constantes.
+
 ## Datos por confirmar
 
 7. **Precio de los modelos Juniper y Nokia añadidos en agosto 2026.** Las cifras técnicas
@@ -1059,6 +1130,60 @@ cerrada (ver *Cerrado recientemente*). Lo que queda, en el orden del plan:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### El informe de validación técnica de Fortinet, aplicado (2026-09-22)
+
+Petición del dueño con el informe adjunto: implementar «todas las mejoras que se han
+consolidado», con el dimensionador «funcional, dinámico e interactivo». Detalle completo en
+`docs/rediseno-fortinet.md`, etapa 3. Lo que importa recordar:
+
+**El informe no se implementó literalmente, y él mismo pide que no se haga.** Su sección 4 es
+una matriz de «incorporar / reformular / excluir» donde once de sus diecisiete propuestas van
+marcadas para excluir o reformular porque son constantes sin respaldo. Ninguno de esos factores
+se aplicó: multiplicar por ellos habría sido inventar precisión, el mismo vicio que este
+catálogo persigue con los SKU.
+
+**P0 técnico — la inspección SSL era un derate y ahora es un eje.** Vivía como
+`SSL_DERATE = 0,65` sobre Threat Protection. El Product Matrix publica la cifra por modelo y el
+cociente ssl/tp va de **0,52 (40F) a 1,18 (50G)**: en tres de los cinco modelos con dato el
+equipo aguanta MÁS SSL que Threat Protection, así que un factor único **no es conservador, se
+equivoca en las dos direcciones** — en el 40F prometía 390 Mbps donde el equipo da 310. `ssl`
+entra con 9 de 58 (5 base + 4 variantes con SSD) y `null` explícito en los otros 49, que se
+apartan con su motivo. Las cifras están **transcritas del informe**, que cita el documento y su
+edición: `fortinet.com` responde 403 al proxy de egreso de este entorno y eso se declara en la
+cabecera del catálogo y en `fuentes.js`.
+
+**El motor pasa de una cifra derivada a ocho ejes independientes** (`public/js/fortinet-reglas.js`).
+Y la reformulación es equivalente para lo que no toca: `min(capa, IPsec/frac) ≥ req` es lo mismo
+que `req ≤ capa` Y `req × frac ≤ IPsec`. Eso **se demostró, no se afirmó** — el contraste
+`fortinet`, cuya línea base se midió en septiembre antes de este cambio, pasa sus 8 escenarios y
+sus 6 migraciones de enlace v1 sin una discrepancia.
+
+**P0 comercial — tres cobros que no correspondían.** FortiCare Premium cobrado dos veces (los
+tres bundles lo incluyen y el BOM añadía además una línea de soporte *siempre*), FortiConverter
+duplicado con Enterprise, y el SKU con el marcador `DD` del price list, que es el patrón del
+término y no un código pedible. Más el bundle mínimo derivado de las funciones, que **bloquea**
+en vez de avisar, y la retirada de la suposición «multi-WAN obliga a Enterprise».
+
+**Tres hallazgos que salieron del camino y se arreglaron**, los tres invisibles desde `curl`:
+el rótulo `<b>Threat Protection</b>` salía literal en la ficha (ficha.js escapa la columna
+izquierda con `esc(k)`); el chip de validación del paso 4 no se refrescaba al cambiar el bundle,
+porque `#licBundle` solo dispara `renderBom` y los chips se pintaban solo desde `render`; y el
+caso de contraste `cotizador-bom` seleccionaba la pestaña de la lista de materiales **por su
+rótulo visible**, así que el renombrado a «Lista de materiales» lo dejó en la calculadora y el
+fallo salía 40 líneas después como «`.btn-cotizador` no es visible», que no dice nada de la
+causa. Ahora usa `data-tab`, que es el contrato; el rótulo es texto de interfaz y cambia.
+
+**Cobertura:** 31 unitarios nuevos (AT-01…AT-20) en `test/fortinet-reglas.test.js`, 38
+afirmaciones en `test/e2e/e2e-fortinet-auditoria.js`, un contraste nuevo (`fortinet-ssl`, 7
+escenarios + 2 comprobaciones de mensaje) y `ssl` incorporado al inventario de
+`npm run catalogo`. Total: **454 unitarios, 10/10 e2e, 4/4 contrastes y 16/16 pantallas en
+verde**. El contraste nuevo se comprobó **saboteando**: bajando el eje SSL de `dura` a `blanda`
+—la «simplificación» plausible que devolvería el defecto— da 6 discrepancias, y la peor es
+exactamente el fallo que el cambio venía a cerrar: a 4 Gbps con inspección SSL pasa de «sin
+candidato» a recomendar un **FortiGate 200G**. Los dos escenarios de control **sin** SSL se
+quedan en verde, que es lo que prueba que el caso aísla el eje.
+
 
 ### El cotizador recibe el BOM entero, y dos fallos de dinero que salieron con él (2026-09-18)
 

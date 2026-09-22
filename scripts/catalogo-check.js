@@ -38,7 +38,10 @@ const SOLO_FUENTES = args.includes('--fuentes');
 const CAMPOS = {
   huawei: { mod: 'huawei', lista: 'MODELS', campos: ['fwd', 'ipsec', 'typ', 'mpps', 'redund'] },
   cisco: { mod: 'cisco', lista: 'MODELS', campos: ['ipsec', 'sdwan', 'redund'] },
-  fortinet: { mod: 'fortinet', lista: 'MODELS', campos: ['fw', 'tp', 'vpn', 'sess', 'cps', 'redund'] },
+  // `ssl` entra en la cuenta el 2026-09-22: esta en 9 de 58 y es el hueco mas caro que
+  // queda, porque el motor APARTA un modelo sin esa cifra en cuanto alguien pide inspeccion
+  // SSL profunda. Un hueco que no se cuenta se comporta como uno que no existe.
+  fortinet: { mod: 'fortinet', lista: 'MODELS', campos: ['fw', 'tp', 'ssl', 'vpn', 'sess', 'cps', 'redund'] },
   mikrotik: { mod: 'mikrotik', lista: 'MODELS', campos: ['fwd', 'ipsec', 'ram', 'cores', 'redund'] },
   aruba: { mod: 'aruba', lista: 'MODELS', campos: ['redund'] },
   juniper: { mod: 'juniper', lista: 'MODELS', campos: ['fw', 'fwImix', 'vpn', 'ips', 'atp', 'sess', 'redund'] },
