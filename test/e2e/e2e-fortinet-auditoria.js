@@ -295,8 +295,28 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   t.ok(/^\/img\/equipos\/fg-/.test(foto.src || ''), `la foto sale del repositorio (${foto.src})`);
   t.ok(/Datasheet/.test(foto.pie), `el pie declara de qué documento salió (${foto.pie})`);
   t.ok(foto.lupa, 'la lupa está, como en Aruba');
-  t.ok(foto.caras === 0,
-    'sin conmutador de caras: Fortinet no publica vista trasera en sus datasheets, y no se inventa una');
+  // CORRECCIÓN DEL 2026-09-22 (tarde). Esta aserción decía lo contrario -«sin conmutador de
+  // caras: Fortinet no publica vista trasera»- y era FALSA. La revisión de la mañana miró
+  // solo la portada de los 28 datasheets; la página 7 de los 28 es la página «Hardware», con
+  // el diagrama de panel, y cuatro de ellos rotulan las caras literalmente («Front Panel» /
+  // «Rear Panel»). Se deja escrito aquí porque una prueba que afirmaba un hueco inexistente
+  // es peor que no tenerla: bloquea el arreglo y da la falsa sensación de estar cubierto.
+  t.ok(foto.caras === 2,
+    `conmutador frontal/trasera, como en Aruba: el datasheet publica las dos caras (${foto.caras} pestañas)`);
+  const trasera = await page.evaluate(async () => {
+    const tab = document.querySelector('.ficha-vista-tab[data-vista="rear"]');
+    if (!tab) return null;
+    tab.click();
+    await new Promise((r) => setTimeout(r, 400));
+    const i = document.querySelector('.ficha-vista img');
+    i.scrollIntoView();
+    await new Promise((r) => setTimeout(r, 900));
+    return { src: i.getAttribute('src'), ancho: i.naturalWidth };
+  });
+  t.ok(trasera && /-rear\.webp$/.test(trasera.src || ''),
+    `la pestaña «Trasera» sirve la figura trasera (${trasera && trasera.src})`);
+  t.ok(trasera && trasera.ancho > 0,
+    `y esa figura CARGA de verdad, no es un hueco (natural ${trasera && trasera.ancho}px)`);
 
   // El hueco honesto: el 100F no tiene datasheet por serie, así que NO tiene foto y lo dice.
   await caudal(500);

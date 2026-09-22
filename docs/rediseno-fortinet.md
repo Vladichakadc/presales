@@ -416,3 +416,175 @@ quedan en verde, que es lo que prueba que el caso aísla el eje y no mide el mot
   catálogo no la trae: pedir esos datos en el formulario sin poder contrastarlos contra un
   límite por modelo daría controles que no hacen nada, que es peor que su ausencia. Entra
   cuando entre el dato.
+
+---
+
+# Etapa 4 — La corrección del dueño, y la paridad con Aruba (2026-09-22, tarde)
+
+Seis peticiones en un mensaje, y la primera corrige a la etapa anterior.
+
+## 1 · «Sí hay evidencia que existe las imágenes de la parte trasera» — y la había
+
+La entrega de la mañana afirmó, en el commit, en `CLAUDE.md`, en `PENDIENTES.md` y en una
+prueba e2e, que **Fortinet no publica vista trasera**. Era falso.
+
+**Cómo se llegó al error.** Se abrieron los 28 datasheets por serie, se extrajo la foto de
+**portada** de cada uno y se comprobó que las imágenes de las páginas 3 y 5 eran idénticas en
+los 28 (gráficos de marketing). De ahí se concluyó «no hay trasera». El fallo no fue de
+lectura sino de **alcance**: nunca se miraron las otras ocho páginas.
+
+**Dónde estaba.** La **página 7** de los 28 documentos es la página «Hardware», con el
+diagrama de panel y sus llamadas numeradas. Cuatro de ellos rotulan las caras literalmente
+—`Front Panel` / `Rear Panel`: 400F, 400G, 700G y 900G— y uno, el 400F, publica **tres**
+figuras: frontal, trasera AC y trasera DC. Una búsqueda de la palabra «rear» sobre el texto
+de los PDF lo habría encontrado en treinta segundos.
+
+Y es **mejor** que la portada: el diagrama de panel es el equivalente exacto del
+*Front View* / *Rear View* del *Hardware Reference* de HPE con el que se construyó la tarjeta
+de Aruba, mientras que la portada es un render comercial. Así que las portadas se retiraron y
+las sustituyen los paneles: **54 de 58 modelos con las dos caras**, 57 ficheros y 2,6 MB.
+
+### Cómo se decidió qué cara es cada una
+
+Solo 4 de 28 documentos lo rotulan. Los otros 24 se resolvieron con un **ancla tomada de esos
+cuatro**: en ellos, la cara rotulada trasera es exactamente la que lleva la entrada de
+alimentación, las fuentes, los ventiladores o los SSD. Ese es el criterio, y es contrastable
+leyendo el texto que el propio dibujo incrusta (`AC LINE`, `PWR1/PWR2`, `FAN1..5`, `SSD1/2`).
+
+**No se dedujo del orden en la página, que no es constante**: el 120G y el 90G publican la
+trasera **primero**. Un `figuras[0] = frontal` habría puesto la cara de alimentación como
+portada de dos modelos sin que nadie lo notara.
+
+**Y en los ocho equipos de sobremesa no hay lectura automática posible**: los rótulos de su
+panel son **trazos vectoriales, no texto** (comprobado: `get_text()` sobre el marco del 60F
+devuelve cadena vacía). Ahí la tabla de caras se escribió **a mano, mirando las 68 figuras
+una por una**, y va transcrita con esa declaración dentro de `_procedencia`.
+
+### Los tres casos que no encajan en la regla, declarados
+
+- **400F y 900G publican dos traseras** (AC y DC). Se sirve la **AC**, que es la
+  configuración por defecto, y el pie dice que existe la otra.
+- **El 80F se queda sin frontal.** Su datasheet publica una sola figura del 80F/81F y es la
+  cara de conectores; las dos que sí traen frontal son de las variantes **DSL** y **PoE**,
+  que son otro producto. Servirle aquella habría sido la figura de otro equipo. `ficha.js`
+  se generalizó para pintar una tarjeta con **una sola cara**, la que haya: exigir `front`
+  habría dejado a ese modelo sin figura teniendo una oficial.
+- **Cuatro modelos siguen sin ninguna figura**: 100F y 200F (su datasheet por serie no está
+  en la URL que sigue el patrón del resto — 404 reportado, no dado por bueno) y los chasis
+  7081F y 7121F (sus *System Guide* no son datasheets de serie). Muestran el aviso honesto.
+
+### Qué unidad dibuja cada figura
+
+Se leyó el rótulo del chasis en el propio dibujo. A diferencia de la portada —que retrataba
+con frecuencia la variante con SSD: la serie 1000F retrataba un 1001F— los diagramas dibujan
+casi siempre el **modelo base**. Las excepciones son el **400G** (dibuja un 401G) y el
+**700G** (un 701G), y van declaradas en el pie. El caso 70F/71F sigue siendo el mismo que la
+cabecera de `fortinet.js` documenta para las cifras, y sigue dicho en el pie.
+
+## 2 · Los pasos 1 a 3 contra la §8 del informe
+
+Contraste campo a campo con la tabla «Especificación del formulario Dimensionar».
+
+| Paso | Campo del informe | Estado | Nota |
+|---|---|---|---|
+| **1** | Rol | ✔ `#rolSeg` | Sin SD-WAN / spoke / hub |
+| | Segmento | ✔ `#segSeg` | Sucursal / campus / DC |
+| | HA | ✔ `#chkHa` | Con la nota de que A-P no suma capacidad |
+| | Lifecycle | ✔ | Por dos vías: `#tipoTx` decide si un EOL puede recomendarse, y `#chkVerEol` filtra el gráfico (§7 del informe) |
+| | Sitio | ✔ `#nombreCliente` · `#refProyecto` | En la barra de acciones, no en el paso |
+| | Appliance o VM | ✖ **declarado** | Este catálogo no trae modelos FortiGate-VM. Un selector con una sola opción es un control que no hace nada |
+| | Región | ✖ **declarado** | Una sola price list (AMER). Un selector de región que no cambia ningún precio invita a creer que se tuvo en cuenta |
+| | Rack/PSU/SSD/VDOM/FortiOS/AP/switches | ✖ | Avanzados. PSU sí está, en la ficha (`FICHA.seccionAlimentacion`) |
+| **2** | SSL deep inspection | ✔ `#chkSsl` | Eje propio con cifra oficial (etapa 3) |
+| | DLP, IoT | ✔ `#chkIotDlp` | Y fija el bundle mínimo |
+| | Sandbox | ✔ `#chkSandbox` | Declarado como fuera de banda: no eleva capa |
+| | Porcentaje FW/IPS/NGFW/TP | ✖ **declarado** | El informe pide una **mezcla porcentual** por capa. Este motor elige **una** capa efectiva y toma la más profunda entre la elegida y las que obligan las funciones. Repartir el caudal por capas exigiría una mezcla que el Product Matrix no publica, y sus propias reglas de interacción admiten que las clases se solapan y no se suman |
+| | Proxy o flow | ✖ **declarado** | Su derate está entre los once que el informe pide excluir por no tener constante publicada |
+| | Excepciones TLS, OT, CASB | ✖ | No están en `FUNCIONES`. Las excepciones TLS son el hueco más defendible de los tres |
+| **3** | Downstream | ✔ builder WAN | Fila `{tipo, down, overlay}` |
+| | Inter-VLAN + simultaneidad | ✔ `#interVlan` · `#chkNoConcurrente` | AT-11 |
+| | Growth | ✔ `#head` | |
+| | Utilization ceiling | ✔ `#techoUtil` | Política separada del crecimiento |
+| | Sesiones | ✔ `#users` × `#sesUser`, con `#sessNeed` como anulación | |
+| | CPS | ✔ derivado de `#vidaSes` | |
+| | Vida de sesión | ✔ `#vidaSes` | El informe lo pone en «avanzados»; aquí es obligatorio porque de él sale el eje CPS |
+| | Upstream | ✖ **declarado** | El motor consume un solo caudal. Un campo que nadie lee es peor que uno ausente |
+| | IMIX, NAT, VPN users, SLA probes | ✖ | Avanzados sin dato de catálogo detrás |
+| | Túneles, rutas, vecinos | ✖ **pendiente F4** | La *Maximum Values Table* los publica; este catálogo no la trae. Pedirlos sin poder contrastarlos daría controles que no hacen nada |
+
+**Conclusión: los tres pasos coinciden con el informe en todo lo que este catálogo puede
+respaldar.** Las nueve divergencias son deliberadas y cada una tiene su motivo escrito; siete
+de ellas se cierran con un dato, no con código.
+
+## 3 · «No incluir» en los dos combos comerciales
+
+`#licBundle` y `#careLevel` ganan la opción. Habilita dos cotizaciones legítimas que antes no
+se podían armar: **solo hardware** (ampliar un parque que ya tiene sus suscripciones vigentes)
+y **equipo separado de servicios** para negociarlos por vías distintas.
+
+**Avisa, no bloquea.** Excluir el bundle teniendo funciones de inspección pedidas produce una
+cotización que no alcanza para el escenario descrito, y eso se **declara** — «la cotización
+cubre el equipo, no el escenario» — en vez de cerrar la puerta de exportación. Bloquearlo
+dejaría sin salida a quien cotiza solo hardware, y entonces la tabla se copia a mano y **la
+advertencia se pierde**: el mismo razonamiento por el que el override existe con motivo
+obligatorio. Lo que sigue bloqueando es un bundle **real** por debajo del mínimo (UTP con
+DLP/IoT): eso no es una exclusión, es una cotización que no se puede pedir.
+
+**Dos cosas que no son simétricas y se dicen distinto:**
+- Sin bundle, **FortiCare vuelve a ser línea propia**. La razón por la que no se cotizaba
+  (AT-04: los tres bundles traen Premium) desaparece con el bundle. Si se hubiera mantenido
+  la omisión, la cotización no llevaría **nada** de soporte sin decirlo.
+- Excluir el soporte **con** un bundle puesto no pierde cobertura y se dice así; **sin**
+  bundle, el equipo va sin RMA ni actualizaciones de FortiOS, y eso no puede callarse.
+
+**El fallo que costó entenderlo, porque es el peor modo posible.** La primera versión
+reventaba: `BUNDLES` no tiene clave `none`, así que `BUNDLES[bundle].n` lanzaba dentro de
+`renderBom` y, como la excepción abortaba **antes** de `$('bomBody').innerHTML = html`, la
+lista de materiales se quedaba con el contenido **anterior**. En pantalla eso se lee como «el
+combo no hace nada», no como «la página ha fallado» — y el contenido obsoleto es una cifra
+que se pone delante de un cliente. Medido: $2.747,70 → $1.525,60 (sin bundle) → $1.093 (solo
+hardware).
+
+## 4 · El paso 4 sigue al equipo elegido en la calculadora
+
+`llevarABom()` no soltaba el pestillo manual de `BOM.sincronizar`. Tocar una vez el modelo
+del paso 4 dejaba los dos desplegables desincronizados **para siempre y sin forma de volver**.
+Elegir en la calculadora es una elección posterior y más explícita sobre el mismo asunto, así
+que ahora suelta el pestillo. La distinción «elegido a mano / heredado» sigue intacta: el
+desplegable del paso 4 cotiza cualquier equipo a propósito, y `BOM.avisoDesvio` lo declara.
+
+## 5 · Fuera el «Resumen de sizing»
+
+No lo tiene Aruba y todo lo que decía está ya —y mejor— en el panel sticky (equipo, cuello de
+botella, utilización), en las barras por eje y en el veredicto. Con él se fueron
+`ejeQueLimita` y dos variables que solo existían para alimentarlo.
+
+## 6 · Las referencias de pedido van a la lista de materiales
+
+Vivían dentro de la ficha, en la pestaña de cálculo, que es donde se decide **qué equipo** —
+no qué se pide. Ahora están donde Aruba las tiene: al final de la pestaña de lista de
+materiales, en una sección `#skuPanel` titulada **«Añadir a la lista de materiales»**, con el
+mismo orden (lista → precio neto y TCO → perfiles multi-sede → añadir).
+
+El contenido lo sigue pintando `ficha.js`: se le añadió `refsEn` (el contenedor externo donde
+pintarlas) y `refsTitulo` (para suprimir el `h3` interno cuando el contenedor ya titula). Con
+`refsEn` la ficha **deja de emitir su div interno**, porque dos elementos con el mismo id
+harían que `getElementById` devolviera el primero del documento y la tabla se pintara en el
+sitio equivocado según el orden del marcado — un fallo que no se ve hasta que alguien
+reordena una sección. Duplicar el buscador, los chips y el botón «Añadir» en esta página
+habría sido la sexta copia de `llevarABom`.
+
+## Verificación de la etapa 4
+
+- **470 unitarios**, con cinco nuevos (AT-21…AT-25) sobre «no incluir» y once sobre el mapa
+  de figuras, incluida la afirmación de que los cuatro datasheets que rotulan las caras dan
+  modelo con las dos.
+- **16/16 pantallas** y **4/4 contrastes sin discrepancias** — incluido `fortinet`, cuya
+  línea base se midió **antes** del rediseño: la prueba de que nada de esto movió el
+  dimensionamiento.
+- **10/10 baterías e2e**, tras **invertir** la aserción que afirmaba el hueco inexistente.
+  Una prueba que afirma un hueco que no existe es peor que no tenerla: bloquea el arreglo y
+  da la falsa sensación de estar cubierto.
+- Conducido en Chromium: conmutador frontal/trasera con la figura trasera cargando de verdad
+  (`naturalWidth` 1599), las 385 referencias del equipo pintadas en la sección nueva, y el
+  orden de secciones idéntico al de Aruba.

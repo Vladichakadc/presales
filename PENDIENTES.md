@@ -4,20 +4,20 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-22 (**la foto oficial del equipo en el dimensionador Fortinet, y el
-bloqueo medido con `agent-reach`** — petición del dueño. **54 de 58 modelos** con su foto
-oficial, lupa y pie documental, viajando también al Excel; cablearlo fueron tres líneas porque
-`ficha.js` ya era genérico. **La vista trasera NO existe y se comprobó**: los 28 datasheets por
-serie traen una sola foto de producto, en la portada — Aruba tiene dos caras porque el Hardware
-Reference de HPE las publica etiquetadas, y el datasheet de Fortinet no tiene equivalente. Los
-PDF se trajeron por las ramas de transporte `fuente/fortinet-*` que un ejecutor de Actions
-publicó, porque `fortinet.com` sigue devolviendo 403 aquí —medido con `agent-reach`, 2 de 16
-canales, `Tunnel connection failed: 403 Forbidden`—. Qué unidad retrata cada foto se **leyó en
-la imagen**: 19 de 28 rótulos legibles y declarados, 9 sin afirmar; Fortinet fotografía con
-frecuencia la variante con SSD (la serie 1000F retrata un 1001F), y el pie lo dice. El
-`fortigate-70f-series.pdf` retrata un **71F**, la misma trampa que la cabecera del catálogo ya
-documentaba para las cifras. 462 unitarios, 16/16 pantallas, 4/4 contrastes y la batería e2e en
-verde. **Subido a producción en esta sesión.**)
+Última revisión: 2026-09-22 (**la figura oficial frontal Y trasera en el dimensionador
+Fortinet, más la paridad con Aruba en la pestaña de materiales** — seis peticiones del dueño
+en un mensaje, y la primera **corrige a la entrega de esa mañana**: «sí hay evidencia que
+existe las imágenes de la parte trasera». La tenía, y lo que se dijo aquí por la mañana era
+**falso**: esa revisión miró solo la **portada** de los 28 datasheets, y la **página 7** de
+los 28 es la página «Hardware» con el diagrama de panel — cuatro de ellos rotulan las caras
+literalmente. Ahora son **54 de 58 modelos con las dos caras**, y el diagrama sustituye a la
+portada porque es el equivalente exacto del *Front View*/*Rear View* de HPE. Además: los
+pasos 1-3 contrastados campo a campo con la §8 del informe (coinciden en todo lo que el
+catálogo respalda; las nueve divergencias van declaradas), las **referencias de pedido
+movidas a la lista de materiales** con el nombre y el orden de Aruba, **fuera el «Resumen de
+sizing»**, **«No incluir»** en los combos de bundle y soporte, el **paso 4 sincronizado** con
+el equipo de la calculadora, y «BOM EdgeConnect» → «BOM Aruba» en el portal. 470 unitarios,
+16/16 pantallas, 4/4 contrastes y 10/10 baterías e2e en verde.)
 
 Revisión anterior: 2026-09-22 (**skill `agent-browser` de Vercel Labs instalada y probada** —
 petición del dueño. Está en `vercel-labs/agent-browser`, no en `vercel/`. Es el caso opuesto a
@@ -766,6 +766,19 @@ recientemente* y `docs/rediseno-fortinet.md`, etapa 3). Lo que queda, con su mot
   acceso —`fortinet.com` responde 403 al proxy de egreso de este entorno— y pasándola por
   `npm run cps`, que ya contrasta cada fila contra el `sess` verificado antes de aceptarla.
   `npm run catalogo` lo cuenta desde hoy (`ssl 16% 9/58`).
+- **F6 · Los 4 modelos sin ninguna figura de hardware** (100F, 200F y los chasis 7081F y
+  7121F). Es el mismo bloqueo y el mismo transporte que F1: el datasheet por serie de 100F y
+  200F no está en la URL que sigue el patrón del resto (404 reportado, no dado por bueno) y
+  los *System Guide* de los dos chasis no son datasheets de serie. Se cierra publicando esos
+  documentos en una rama `fuente/*` desde un ejecutor de Actions y volviendo a correr la
+  extracción de la página «Hardware». Mientras tanto la ficha declara el hueco y **nunca
+  muestra una figura parecida**.
+- **F7 · Excepciones TLS como fracción declarada del tráfico SSL.** Es el campo de la §8 del
+  informe que más se echa en falta de los que no están, y el único de ellos que **no** exige
+  una constante del fabricante: lo declara quien dimensiona («el 20 % del HTTPS va exento por
+  política»), igual que ya se declara la fracción del overlay. Hoy la inspección SSL se
+  dimensiona sobre el caudal completo, que es lo conservador. Entra cuando alguien decida que
+  merece un control más en el paso 2.
 - **F2 · Los SKU de los tres servicios avanzados de SD-WAN** (Underlay & Application
   Monitoring, Overlay Orchestration, conector FortiSASE), de la categoría «SD-WAN» del
   Ordering Guide de FortiGuard. Van con `sku: null` **declarado**, así que pedir uno bloquea
@@ -1184,52 +1197,97 @@ recientemente* y `docs/rediseno-fortinet.md`, etapa 3). Lo que queda, con su mot
 
 ## Cerrado recientemente
 
-### La foto oficial del equipo en el dimensionador Fortinet (2026-09-22)
+### La figura oficial del equipo, frontal Y trasera, en el dimensionador Fortinet (2026-09-22)
 
 Petición del dueño: «en el dimensionador de Fortinet debe traer las fotos de la parte frontal
-y trasera de los equipos tal como está en Aruba». Entregado: **54 de los 58 modelos** con su
-foto oficial, la lupa y el pie documental, y viajando al Excel en la hoja «Fotos del equipo».
-Cablearlo fueron tres líneas — `ficha.js` ya era genérico desde el plan 19 y trae su propio
-CSS; lo que costó fue conseguir las fotos y decidir qué se puede afirmar de cada una.
+y trasera de los equipos tal como está en Aruba». **Entregado por la tarde, después de que él
+mismo corrigiera la primera entrega**: «sí hay evidencia que existe las imágenes de la parte
+trasera». La tenía. **54 de 58 modelos con las dos caras**, con lupa, pie documental y viaje
+al Excel en la hoja «Fotos del equipo».
 
-**LA PARTE TRASERA NO EXISTE, y se comprobó en vez de suponerse.** Se revisaron los 28
-datasheets por serie uno a uno: **ninguno publica una vista trasera**. Cada uno trae
-exactamente UNA foto de producto, en la portada; las imágenes de las páginas 3 y 5 son
-idénticas en los 28 (gráficos de marketing y capturas de FortiOS), no equipos. Aruba tiene
-las dos caras porque el *Hardware Reference* de HPE las publica etiquetadas «Front View» /
-«Rear View»; el datasheet de Fortinet no tiene equivalente. La cara trasera vive en las
-*hardware guides* de `docs.fortinet.com`, que este entorno no alcanza. `ficha.js` ya sabía
-pintar una sola cara: sin `rear` no dibuja el conmutador, así que no hubo que tocarlo.
+**LO QUE LA PRIMERA ENTREGA AFIRMÓ ERA FALSO, y conviene que quede escrito.** Dijo —en el
+commit, en `CLAUDE.md`, aquí y en una prueba e2e— que ningún datasheet de Fortinet publica
+vista trasera. El fallo no fue de lectura sino de **alcance**: se abrieron los 28 documentos,
+se extrajo la foto de **portada** de cada uno y se comprobó que las imágenes de las páginas 3
+y 5 eran idénticas en los 28. Nunca se miraron las otras ocho páginas. La **página 7** de los
+28 es la página «Hardware», con el diagrama de panel y sus llamadas numeradas, y **cuatro de
+ellos rotulan las caras literalmente** —«Front Panel» / «Rear Panel»: 400F, 400G, 700G y
+900G—; el 400F publica **tres** figuras (frontal, trasera AC y trasera DC). Una búsqueda de
+la palabra «rear» sobre el texto de los PDF lo habría encontrado en treinta segundos.
+
+Y el diagrama de panel es **mejor** que la portada: es el equivalente exacto del *Front View*
+/ *Rear View* del *Hardware Reference* de HPE con el que se construyó la tarjeta de Aruba,
+mientras que la portada es un render comercial. Así que las portadas se **retiraron** y las
+sustituyen los paneles: 57 ficheros, 2,6 MB.
+
+**Cómo se decidió qué cara es cada una.** Los 24 documentos que no lo rotulan se resolvieron
+con un **ancla tomada de los cuatro que sí**: allí, la cara rotulada trasera es exactamente la
+que lleva la entrada de alimentación, las fuentes, los ventiladores o los SSD — contrastable
+leyendo el texto que el propio dibujo incrusta (`AC LINE`, `PWR1/PWR2`, `FAN1..5`, `SSD1/2`).
+**No se dedujo del orden en la página, que no es constante**: el 120G y el 90G publican la
+trasera **primero**, así que un `figuras[0] = frontal` habría puesto la cara de alimentación
+como portada de dos modelos sin que nadie lo notara. **Y en los ocho de sobremesa no hay
+lectura automática posible**: los rótulos de su panel son **trazos vectoriales, no texto**
+(comprobado — `get_text()` sobre el marco del 60F devuelve cadena vacía), así que la tabla de
+caras se escribió **a mano, mirando las 68 figuras una por una**.
+
+**Tres casos que no encajan en la regla, declarados:** 400F y 900G publican **dos traseras**
+(AC y DC — se sirve la AC, la configuración por defecto, y el pie dice que existe la otra);
+**el 80F se queda sin frontal**, porque su datasheet publica una sola figura del 80F/81F y es
+la cara de conectores —las dos que traen frontal son de las variantes DSL y PoE, que son otro
+producto—, para lo que `ficha.js` se generalizó a pintar la tarjeta con **una sola cara, la
+que haya**; y **cuatro modelos siguen sin ninguna figura**: 100F y 200F (su datasheet por
+serie da 404 en la URL que sigue el patrón del resto, reportado y no dado por bueno) y los
+chasis 7081F y 7121F (sus *System Guide* no son datasheets de serie). Esos cuatro muestran el
+aviso honesto, **nunca una figura «parecida»**.
+
+**Qué unidad dibuja cada figura** se leyó en el propio dibujo. A diferencia de la portada
+—que retrataba con frecuencia la variante con SSD: la serie 1000F retrataba un 1001F— los
+diagramas dibujan casi siempre el **modelo base**; el **400G** (dibuja un 401G) y el **700G**
+(un 701G) son las excepciones y van declaradas en el pie. El caso 70F/71F sigue siendo el
+mismo que la cabecera de `fortinet.js` documenta para las CIFRAS, y sigue dicho en el pie.
 
 **Los PDF no se bajaron desde aquí.** `fortinet.com` responde 403 al proxy de egreso —medido
-el mismo día con `agent-reach`, ver más abajo—. Se trajeron por el mecanismo de transporte
-que este repositorio ya usa y documenta: las ramas `fuente/fortinet-serie`,
-`fuente/fortinet-serie-f` y `fuente/fortinet-datasheets`, publicadas en su momento por un
-ejecutor de GitHub Actions. No es rodear el bloqueo: es el camino sancionado, el mismo de
-`fuente/fortinet-product-matrix`.
+el mismo día con `agent-reach`, ver más abajo—. Se trajeron por el mecanismo de transporte que
+este repositorio ya usa y documenta: las ramas `fuente/fortinet-serie`,
+`fuente/fortinet-serie-f` y `fuente/fortinet-datasheets`, publicadas por un ejecutor de
+GitHub Actions. No es rodear el bloqueo: es el camino sancionado.
 
-**Qué unidad retrata cada foto se LEYÓ en la imagen**, no se dedujo del nombre del archivo.
-En 19 de 28 el rótulo del chasis era legible y va declarado en el pie; en las otras nueve
-(50G, 70G, 3000F, 3000G, 3200F, 3500F, 3500G, 3700F, 3800G) no lo era y **no se afirma nada**.
-El hallazgo: Fortinet fotografía con frecuencia la **variante con SSD** — la serie 200G
-retrata un 201G, la 400G un 401G, la 1000F un 1001F, la 4800F un 4801F. La foto se sirve a
-las dos variantes (mismo chasis, un solo datasheet, igual que el Hardware Reference sirve una
-sola figura frontal a EC-L y EC-XL) **y el pie dice cuál se fotografió**.
+Cobertura: `test/fortinet-vistas-equipos.test.js` (**11 casos**, entre ellos que los cuatro
+datasheets que rotulan las caras den modelo con las dos — si uno perdiera una cara, el ancla
+con la que se resolvieron los otros 24 habría dejado de existir sin que nadie se enterara),
+más las afirmaciones e2e **invertidas**: una prueba que afirma un hueco inexistente es peor
+que no tenerla, porque bloquea el arreglo y da la falsa sensación de estar cubierto.
 
-**El caso 70F/71F cerró un círculo.** `fortigate-70f-series.pdf` retrata un **71F**, que es
-exactamente la trampa que la cabecera de `fortinet.js` ya documentaba para las CIFRAS («el 70F
-no aparece ni una vez en ella»). Aquí no engaña a nadie porque el pie lo declara; lo que no se
-hizo fue creerle al nombre del archivo.
+### Paridad con Aruba en la pestaña de materiales, y «no incluir» en los combos (2026-09-22)
 
-**Sin foto (4):** 100F y 200F —su datasheet por serie da 404 en la URL que sigue el patrón del
-resto, reportado y no dado por bueno— y los chasis 7081F y 7121F, cuyos *System Guide* no son
-datasheets de serie. Los cuatro muestran el aviso honesto de la ficha, **nunca una foto
-parecida**. Cerrar ese hueco es traer esos documentos por el mismo transporte.
+Las otras cinco peticiones del mismo mensaje. Documentado entero en
+`docs/rediseno-fortinet.md`, etapa 4.
 
-Peso: 28 webp, **1,7 MB**, reescaladas a 1600 px (los originales van de 1126 a 7385 px y
-pesaban 14 MB). Cobertura: `test/fortinet-vistas-equipos.test.js` (8 casos) y 6 afirmaciones
-e2e. Una de ellas costó entenderla: `loading="lazy"` difiere la carga hasta que la figura
-entra en el viewport, así que medir `naturalWidth` antes da 0 y parece un fallo que no existe.
+- **Los pasos 1 a 3, contrastados campo a campo con la §8 del informe.** Coinciden en todo lo
+  que este catálogo puede respaldar; las nueve divergencias son deliberadas y cada una tiene
+  su motivo escrito (tabla completa en el documento). Siete se cierran con un dato, no con
+  código: `appliance o VM` (no hay modelos FortiGate-VM en el catálogo), `región` (una sola
+  price list — un selector que no cambia ningún precio invita a creer que se tuvo en cuenta),
+  `upstream` (el motor consume un solo caudal), la **mezcla porcentual por capa** (el Product
+  Matrix no la publica, y las propias reglas de interacción del informe admiten que las
+  clases se solapan y no se suman), `proxy o flow` (su derate está entre los once que el
+  propio informe pide excluir) y `rutas/vecinos/túneles` (pendiente **F4**: la *Maximum
+  Values Table* los publica y este catálogo no la trae). El hueco más defendible de los que
+  quedan son las **excepciones TLS**, que sí serían una fracción declarada por el usuario y
+  no una constante inventada.
+- **Las referencias de pedido salen de la ficha y van a la lista de materiales**, al final
+  del tab y con el nombre y el orden de Aruba: sección `#skuPanel`, «Añadir a la lista de
+  materiales», detrás de lista → precio neto y TCO → perfiles multi-sede.
+- **Fuera el «Resumen de sizing»**: Aruba no lo tiene y todo lo que decía está ya —y mejor—
+  en el panel sticky, en las barras por eje y en el veredicto.
+- **«No incluir» en `#licBundle` y `#careLevel`**, que habilita la cotización de solo hardware
+  y la que separa equipo de servicios. Avisa y **no** bloquea; lo que sigue bloqueando es un
+  bundle real por debajo del mínimo. Medido: $2.747,70 → $1.525,60 (sin bundle) → $1.093.
+- **El paso 4 sigue al equipo elegido en la calculadora**: `llevarABom()` no soltaba el
+  pestillo manual, así que tocar una vez el modelo del paso 4 desincronizaba los dos
+  desplegables para siempre y sin forma de volver.
+- **En el portal, «BOM EdgeConnect» pasa a «BOM Aruba»**, como los otros seis botones.
 
 ### `agent-reach` usado para medir el bloqueo, y lo que dijo (2026-09-22)
 

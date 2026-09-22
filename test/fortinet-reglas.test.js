@@ -399,3 +399,80 @@ test('cada funcion del catalogo declara un servicio que algun bundle cubre, o ni
     if (f.capa) assert.ok(R.ORDEN_CAPAS.includes(f.capa), `${f.n} declara una capa inexistente`);
   }
 });
+
+/* ── «NO INCLUIR» EN LOS DOS COMBOS COMERCIALES (2026-09-22) ──────────────────────────
+   Peticion del dueño: el bundle FortiGuard y el nivel FortiCare necesitan la opcion de no
+   cotizarse. Hay dos cotizaciones legitimas que antes no se podian armar -solo hardware, y
+   equipo separado de servicios-, y la primera version del cambio se ESTRELLABA: `BUNDLES`
+   no tiene clave `none`, asi que leer `BUNDLES[bundle].n` lanzaba dentro de `renderBom` y,
+   como la excepcion abortaba antes de escribir la tabla, la lista de materiales se quedaba
+   con el contenido ANTERIOR. En pantalla eso se lee como «el combo no hace nada», no como
+   «la pagina ha fallado» — el peor modo de fallo posible en la cifra que ve un cliente.
+   De ahi que estas pruebas afirmen la FORMA de las filas y no solo que no lanza. */
+// Reusa el `comercial()` de arriba fijando solo los dos combos que este bloque examina.
+const comercialBC = (bundle, care) =>
+  comercial({ bundle, care_elegido: care, careKey: CARE_KEY[care] || null });
+
+test('AT-21 · excluir el bundle quita su linea y lo declara, sin tocar el equipo', () => {
+  const r = comercialBC('none', 'fcpre');
+  const cats = r.filas.map((f) => f.cat);
+  assert.ok(cats.includes('Equipo'), 'el equipo se sigue cotizando');
+  assert.ok(!cats.includes('Licencias FortiGuard'), 'no puede quedar linea de bundle');
+  assert.ok(r.avisos.some((a) => a.codigo === 'bundle-excluido'),
+    'una cotizacion sin suscripcion que no lo diga es una cotizacion corta presentada como completa');
+});
+
+test('AT-22 · sin bundle, el soporte deja de estar incluido y vuelve a ser linea propia', () => {
+  // La regla de AT-04 (los tres bundles traen FortiCare Premium) es lo que hace que el
+  // soporte no se cotice aparte. Sin bundle esa razon desaparece: si el soporte volviera a
+  // omitirse, la cotizacion no llevaria NADA de soporte sin decirlo.
+  const r = comercialBC('none', 'fcpre');
+  const sop = r.filas.find((f) => f.cat === 'Soporte');
+  assert.ok(sop, 'el soporte tiene que volver a ser linea propia');
+  assert.ok(sop.sku, 'y con su SKU resuelto: sin el, la cotizacion no se puede pedir');
+  assert.ok(!/DD$/.test(sop.sku), 'el marcador DD del price list no es un codigo pedible (AT-06)');
+  assert.strictEqual(r.bloqueos.length, 0,
+    'equipo + soporte sin bundle es una cotizacion completa y pedible: no hay nada que bloquear');
+});
+
+test('AT-23 · excluir el soporte se declara distinto segun lo traiga o no el bundle', () => {
+  const conBundle = comercialBC('ent', 'none');
+  assert.ok(!conBundle.filas.some((f) => f.cat === 'Soporte'));
+  const a1 = conBundle.avisos.find((a) => a.codigo === 'soporte-excluido');
+  assert.ok(a1 && /no pierde cobertura/.test(a1.mensaje),
+    'con Enterprise puesto, excluir la linea de soporte no quita cobertura y hay que decirlo asi');
+
+  const sinBundle = comercialBC('none', 'none');
+  assert.deepStrictEqual(sinBundle.filas.map((f) => f.cat), ['Equipo'],
+    'solo hardware: ni bundle ni soporte');
+  const a2 = sinBundle.avisos.find((a) => a.codigo === 'soporte-excluido');
+  assert.ok(a2 && /RMA/.test(a2.mensaje),
+    'sin bundle que lo traiga, el equipo va sin RMA ni actualizaciones y eso NO puede callarse');
+});
+
+test('AT-24 · excluir el bundle avisa pero NO bloquea; elegir uno insuficiente si bloquea', () => {
+  // La diferencia es la que separa «esto no se puede pedir» de «esto se deja fuera a
+  // proposito». Bloquear la exportacion de una cotizacion de solo hardware dejaria sin
+  // salida a quien la arma, y entonces la tabla se copia a mano — y la advertencia se
+  // pierde, que es el mismo razonamiento por el que el override existe con motivo.
+  const excluido = R.validarBundle('none', ['chkIotDlp'], FUNCIONES, BUNDLES);
+  assert.strictEqual(excluido.codigo, 'bundle-excluido');
+  assert.strictEqual(excluido.bloquea, false);
+  assert.match(excluido.mensaje, /no el escenario/,
+    'tiene que decir que la cotizacion cubre el equipo pero no el escenario pedido');
+
+  const insuficiente = R.validarBundle('utp', ['chkIotDlp'], FUNCIONES, BUNDLES);
+  assert.strictEqual(insuficiente.codigo, 'bundle-insuficiente');
+  assert.strictEqual(insuficiente.bloquea, true, 'UTP con DLP e IoT sigue sin poderse pedir');
+});
+
+test('AT-25 · sin ninguna funcion que licenciar, excluir el bundle no genera aviso', () => {
+  // `bundleMinimo` devuelve un minimo aunque no se pida ningun servicio -sin servicios,
+  // todos los bundles «cubren» el vacio-, asi que usarlo como guarda avisaba SIEMPRE. Un
+  // aviso que sale en todos los casos deja de leerse, que es como se apaga una advertencia.
+  assert.strictEqual(R.validarBundle('none', [], FUNCIONES, BUNDLES), null);
+  assert.strictEqual(R.validarBundle('none', ['chkSsl'], FUNCIONES, BUNDLES), null,
+    'la inspeccion SSL no es un servicio licenciado por bundle en este catalogo');
+  assert.ok(R.validarBundle('none', ['chkAv'], FUNCIONES, BUNDLES),
+    'el antivirus si es un servicio de bundle: excluirlo se declara');
+});

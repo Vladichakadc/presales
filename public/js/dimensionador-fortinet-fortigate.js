@@ -74,8 +74,14 @@ let hayCandidato=true;
 function sincronizarConBom(elegido){
   BOM.sincronizar({elegido:elegido?elegido.id:null, render:renderBom});
 }
-// Eleccion explicita en el desplegable de equipos: se lleva al BOM siempre.
+// Eleccion explicita en el desplegable de equipos de la CALCULADORA: manda sobre el paso 4.
+// `BOM.sincronizar` respeta una eleccion hecha a mano en `#pickModel` -es deliberado: ese
+// desplegable cotiza cualquier equipo-, pero elegir en la calculadora es una eleccion
+// posterior y mas explicita sobre el mismo asunto, asi que suelta el pestillo. Sin esto,
+// tocar una vez el modelo del paso 4 dejaba los dos desplegables desincronizados para
+// siempre y sin forma de volver, que es lo que el dueno reporto el 2026-09-22.
 function llevarABom(id){
+  BOM.soltarManual();
   BOM.sincronizar({elegido:id||null, render:renderBom});
 }
 
@@ -708,7 +714,11 @@ function pintarPasos(ctx){
     bwOk?'Requerimiento previsto con crecimiento aplicado.':'Declara el caudal de al menos un enlace WAN.');
   // 4 · Equipo y cotización: manda el bundle mínimo, que es bloqueante.
   const err=R.validarBundle($('licBundle').value||'ent',activas,FUNCIONES,BUNDLES);
-  chip('chipPaso4', err?'bad':'', err?'Bundle insuficiente':`${$('pickModel').value||'—'} · ${$('termYears').value} año(s)`,
+  // Excluir el bundle a proposito no es un error del escenario: el chip lo dice sin pintarse
+  // en rojo, que es lo que distingue «esto no se puede pedir» de «esto se deja fuera».
+  const bloquea=!!(err&&err.bloquea!==false);
+  chip('chipPaso4', bloquea?'bad':'', bloquea?'Bundle insuficiente'
+      :(err?`Sin bundle · ${$('pickModel').value||'—'}`:`${$('pickModel').value||'—'} · ${$('termYears').value} año(s)`),
     err?err.mensaje:'Modelo, cantidad, término, bundle y soporte de la cotización.');
   // Un paso que BLOQUEA no se puede dejar plegado sin más: se abre para que se vea el motivo.
   if(err){ const d=$('paso4').querySelector('details'); if(d) d.open=true; }
@@ -885,12 +895,6 @@ function render(){
   const veredicto=R.evaluar(MODELS, demandas, politica);
   const evalPorId={};
   for(const x of veredicto.aptos.concat(veredicto.apartados)) evalPorId[x.eval.id]=x.eval;
-  const ejeQueManda=m=>(evalPorId[m.id]||{}).manda||null;
-  const ejeQueLimita=m=>{
-    const g=ejeQueManda(m);
-    if(!g) return '—';
-    return g.k===capa.k?esc(g.n):`<b class="warn">${esc(g.n)}</b>`;
-  };
 
   // Los apartados se cuentan POR MOTIVO, no en un solo saco: «no cumple la capacidad» y «el
   // catalogo no trae la cifra» son dos cosas distintas y una lista corta tiene que
@@ -1050,18 +1054,21 @@ function render(){
       ]},
       FICHA.seccionPuertos(m),
       FICHA.seccionAlimentacion(m),
+      // Misma guarda que en la lista de materiales: «no incluir» no es un bundle y leer
+      // `BUNDLES['none']` lanzaria al pintar la ficha del equipo.
       {titulo:'Licenciamiento propuesto', filas:[
-        ['Bundle FortiGuard', esc(BUNDLES[bundle].n)],
-        ['Servicios incluidos', esc(BUNDLES[bundle].svcs), true],
-        ['SKU del bundle', lt&&lt.sku?`<code>${esc(lt.sku)}</code>`:'<span class="warn">Sin SKU vigente para este modelo</span>'],
+        ['Bundle FortiGuard', BUNDLES[bundle]?esc(BUNDLES[bundle].n):'<span class="warn">Excluido de la cotización</span>'],
+        ['Servicios incluidos', BUNDLES[bundle]?esc(BUNDLES[bundle].svcs):'Ninguno: no se cotiza suscripción de seguridad', true],
+        ['SKU del bundle', !BUNDLES[bundle]?'—':lt&&lt.sku?`<code>${esc(lt.sku)}</code>`:'<span class="warn">Sin SKU vigente para este modelo</span>'],
         ['Término', `${termYrs} año${termYrs>1?'s':''}`],
         ['Unidades a licenciar', $('chkHa').checked?'2 — la licencia no se comparte en HA':'1'],
       ], nota:'En FortiGate el SKU lleva el código del modelo embebido: la licencia va atada al equipo, no al ancho de banda.'},
       {titulo:'Software del portafolio', filas:SOFTWARE.map(sw=>[esc(sw.n), esc(sw.d), true]),
        nota:'SKU y precios de referencia del price list AMER — no escalan con el modelo de FortiGate elegido.'},
       {titulo:'Soporte', filas:[
-        [esc(CARE[care].n), esc(CARE[care].sla)],
-        ['SKU', ct&&ct.sku?`<code>${esc(ct.sku)}</code>`:'<span class="warn">No disponible para este modelo</span>'],
+        [CARE[care]?esc(CARE[care].n):'Sin contrato FortiCare',
+         CARE[care]?esc(CARE[care].sla):'<span class="warn">Excluido de la cotización — sin RMA ni actualizaciones de FortiOS</span>'],
+        ['SKU', !CARE[care]?'—':ct&&ct.sku?`<code>${esc(ct.sku)}</code>`:'<span class="warn">No disponible para este modelo</span>'],
       ]},
     ];
   };
@@ -1124,36 +1131,8 @@ function render(){
   };
 
   const pintarDependientes=m=>{
-    const evalm=evalPorId[m.id]||R.evaluarModelo(m,demandas,politica);
-    const tope=soporta(m,demandas,effectiveNeed);
-    const sslEje=evalm.ejes.find(e=>e.k==='ssl');
     renderTiers(m,effectiveNeed);
     pintarEjes(m);
-    $('sizingBox').innerHTML=`
-      <table><tbody>
-        <tr><td>Equipo evaluado</td><td class="n">${esc(m.id)}${m.id===pick.id?'':' (elegido a mano)'}</td></tr>
-        <tr><td>Tipo de transacción</td><td class="n">${esc($('tipoTx').selectedOptions[0].textContent)}</td></tr>
-        <tr><td>Capa seleccionada</td><td class="n">${esc(TIER_BY_K[profile].n)}</td></tr>
-        <tr><td><b>Capa efectiva</b></td><td class="n"><b>${esc(TIER_BY_K[capa.k].n)}</b>${capa.elevada?' <span class="warn">(elevada)</span>':''}</td></tr>
-        ${capa.elevada?`<tr><td>Motivo de la elevación</td><td class="n">${capa.elevan.map(f=>esc(f.n)).join(', ')}</td></tr>`:''}
-        <tr><td>Inspección SSL profunda</td><td class="n">${$('chkSsl').checked?(sslEje&&sslEje.cap!=null?`Sí — eje propio contra ${fmt(sslEje.cap)} oficiales`:'Sí — <span class="warn">sin cifra oficial para este modelo</span>'):'No'}</td></tr>
-        <tr><td>Modo de caudal</td><td class="n">${modoCaudal==='agg'?`Agregado — ${sites} sedes x ${fmt(bw*unit)} x ${Math.round(conc*100)} %`:'Enlace único'}</td></tr>
-        <tr><td>Caudal WAN resultante</td><td class="n">${fmt(caudal)}</td></tr>
-        ${trafico.interVlan?`<tr><td>Tráfico inter-VLAN</td><td class="n">${fmt(trafico.interVlan)} · ${esc(trafico.regla)}</td></tr>`:''}
-        <tr><td>Usuarios estimados</td><td class="n">${users}${perUser?` x ${perUser} Mbps`:' (sin tráfico por usuario)'}</td></tr>
-        <tr><td>Rol SD-WAN</td><td class="n">${{none:'Sin SD-WAN',spoke:'Spoke (sucursal)',hub:'Hub (concentrador)'}[rolSdwan]}</td></tr>
-        ${frac?`<tr><td>Tráfico por el overlay</td><td class="n">${Math.round(frac*100)} % · +${Math.round(OVERHEAD_ESP*100)} % ESP</td></tr>`:''}
-        <tr><td>Requerimiento final</td><td class="n"><b>${fmt(effectiveNeed)}</b></td></tr>
-        <tr><td>Techo de utilización</td><td class="n">${Math.round(politica.techo*100)} %${politica.techo>=1?' (sin techo declarado)':''}</td></tr>
-        <tr><td>Soporta hasta</td><td class="n">${fmt(tope)}</td></tr>
-        <tr><td>Headroom disponible</td><td class="n">${Math.round((1-effectiveNeed/tope)*100)}%</td></tr>
-        <tr><td>Sesiones por usuario</td><td class="n">${sessOverride?'—  (total forzado)':sesUser||'—'}</td></tr>
-        <tr><td>Sesiones concurrentes</td><td class="n">${sessNeed?sessNeed.toLocaleString('en-US')+' / ':''}${m.sess.toLocaleString('en-US')}</td></tr>
-        <tr><td>Vida media de sesión</td><td class="n">${vidaSes} s</td></tr>
-        <tr><td>Sesiones nuevas / s</td><td class="n">${cpsNeed?cpsNeed.toLocaleString('en-US')+' / ':''}${m.cps!=null?m.cps.toLocaleString('en-US'):'<span class="warn">sin dato</span>'}</td></tr>
-        <tr><td>Eje que limita</td><td class="n">${ejeQueLimita(m)}</td></tr>
-        <tr><td>Unidades a cotizar</td><td class="n">${$('chkHa').checked?'2 (HA) — licencia por unidad':'1'}</td></tr>
-      </tbody></table>`;
     pintarSticky(m);
     pintarEscala({effectiveNeed, demandas, candidatos:candidates, elegido:m});
   };
@@ -1165,6 +1144,13 @@ function render(){
     // La foto oficial corona la ficha y cambia con cada seleccion. Un modelo sin foto
     // declarada (100F, 200F y los dos chasis) muestra el aviso honesto de ficha.js.
     vistas:VISTAS,
+    // LAS REFERENCIAS DE PEDIDO NO VAN EN LA FICHA, van en la lista de materiales
+    // (peticion del dueno, 2026-09-22). `refsEn` las manda a `#fortiRefs`, la seccion
+    // «Anadir a la lista de materiales» del tab de BOM -mismo nombre, misma posicion y
+    // mismo orden que en Aruba-, y `refsTitulo:null` suprime el `h3` interno porque el
+    // `h2` de esa seccion ya titula el cuadro. La ficha deja de emitir su contenedor,
+    // asi que no hay dos elementos con el mismo id.
+    refsEn:'fortiRefs', refsTitulo:null,
     etiqueta:m=>`${m.id} — ${m.seg} · soporta ${fmt(soporta(m,demandas,effectiveNeed))}`,
     titulo:m=>m.id,
     subtitulo:m=>m.seg+' · FortiOS Security Fabric',
@@ -1321,7 +1307,12 @@ function renderBom(){
   });
   // El bundle insuficiente es un bloqueo mas, y el primero: cambia QUE se cotiza, no solo
   // si se puede exportar.
-  const bloqueos=(errBundle?[errBundle]:[]).concat(comercialActual.bloqueos);
+  // Solo bloquea lo que de verdad impide pedir la cotizacion. Un bundle EXCLUIDO a
+  // proposito viaja como aviso: cierra la puerta de exportacion seria dejar sin salida a
+  // quien cotiza solo hardware, y entonces la tabla se copia a mano y la advertencia se
+  // pierde — que es el mismo razonamiento por el que el override existe con motivo.
+  const bloqueos=(errBundle&&errBundle.bloquea!==false?[errBundle]:[]).concat(comercialActual.bloqueos);
+  if(errBundle&&errBundle.bloquea===false) comercialActual.avisos.push(errBundle);
 
 
   let html=`<section class="panel"><h2>Ficha del equipo</h2>
@@ -1344,9 +1335,15 @@ function renderBom(){
     ${m.eol?'<p class="hint warn" style="margin-top:10px">Modelo descontinuado (EOL) — no disponible para diseños nuevos, solo referencia para equipos ya instalados.</p>':''}
     </section>`;
 
+  // «No incluir» no es un bundle: `BUNDLES['none']` no existe. Leerlo sin guarda lanzaba
+  // dentro de renderBom, y como la excepción abortaba antes de `$('bomBody').innerHTML`,
+  // la lista de materiales se quedaba con el contenido ANTERIOR — que en pantalla se lee
+  // como «el combo no hace nada» y no como «la página ha fallado».
+  const bDef=BUNDLES[bundle]||null;
   html+=`<section class="panel"><h2>Licencias FortiGuard</h2><ul class="clean">
-    ${licTier?`<li class="on"><b>${BUNDLES[bundle].n}</b><span class="req">Requerida</span><span class="sku">${BUNDLES[bundle].svcs}<br><code>${esc(licTier.sku)}</code> · término ${termYrs} año${termYrs>1?'s':''}${licPrice!=null?' · '+money(licPrice)+' c/u':' · precio no disponible a '+termYrs+' años para este modelo'}</span></li>`
-      :`<li><b>${BUNDLES[bundle].n}</b><span class="req opt">No disponible</span><span class="sku">Este bundle no tiene SKU vigente para ${m.id} en el price list actual${m.eol?' (equipo EOL, sin renovación de Enterprise Protection)':''}.</span></li>`}
+    ${!bDef?`<li><b>Sin bundle FortiGuard</b><span class="req opt">Excluido</span><span class="sku">Excluido de la cotización a petición: no se cotiza ninguna suscripción de seguridad. La cotización vale para un parque que ya la tiene vigente, o para negociar hardware y servicios por vías distintas.</span></li>`
+      :licTier?`<li class="on"><b>${bDef.n}</b><span class="req">Requerida</span><span class="sku">${bDef.svcs}<br><code>${esc(licTier.sku)}</code> · término ${termYrs} año${termYrs>1?'s':''}${licPrice!=null?' · '+money(licPrice)+' c/u':' · precio no disponible a '+termYrs+' años para este modelo'}</span></li>`
+      :`<li><b>${bDef.n}</b><span class="req opt">No disponible</span><span class="sku">Este bundle no tiene SKU vigente para ${m.id} en el price list actual${m.eol?' (equipo EOL, sin renovación de Enterprise Protection)':''}.</span></li>`}
     <li><b>FortiConverter</b><span class="req opt">Opcional</span><span class="sku">${lic&&lic.converter?`Migración de configuración desde Cisco ASA, Check Point, Palo Alto. <code>${esc(lic.converter.sku)}</code> · ${money(lic.converter.fee)} (servicio único)`:'Incluido dentro de Enterprise Protection en modelos vigentes.'}</span></li>
     <li><b>FortiSandbox</b><span class="req opt">Opcional</span><span class="sku">Análisis dinámico de archivos zero-day (add-on independiente del bundle). <b>Patrón</b> de SKU: <code>FC-10-FS5HG-499-02-DD</code> — el <code>DD</code> es el marcador del término (12/36/60), no un código pedible.</span></li>
     <li><b>FortiClient EMS</b><span class="req opt">Opcional</span><span class="sku">Gestión de endpoints ZTNA + VPN, licenciado por número de endpoints. <b>Patrón</b> de SKU (25 endpoints): <code>FC1-10-EMS05-428-01-DD</code>.</span></li>
@@ -1358,11 +1355,13 @@ function renderBom(){
   // bundles incluyen FortiCare Premium, asi que lo que hay que decir es si esta linea SE
   // COTIZA o no. Es el AT-04 del informe y era un doble cobro real.
   const soporteEnBom=comercialActual.filas.find(f=>f.cat==='Soporte');
+  const cDef=CARE[care]||null;
   html+=`<section class="panel"><h2>Soporte FortiCare</h2><div class="scroll"><table>
     <thead><tr><th>Servicio</th><th>SLA</th><th>SKU</th><th>Término</th><th>Precio ref. c/u</th><th>Qty</th></tr></thead><tbody>
-    <tr><td>${CARE[care].n}</td><td class="n">${CARE[care].sla}</td><td class="n">${soporteEnBom&&soporteEnBom.sku?`<code>${esc(soporteEnBom.sku)}</code>`:'<span class="warn">no se cotiza aparte</span>'}</td><td class="n">${termYrs} años</td><td class="n">${soporteEnBom&&soporteEnBom.unit!=null?money(soporteEnBom.unit):'—'}</td><td class="n">${soporteEnBom?qty:0}</td></tr>
+    <tr><td>${cDef?esc(cDef.n):'Sin contrato FortiCare'}</td><td class="n">${cDef?esc(cDef.sla):'—'}</td><td class="n">${soporteEnBom&&soporteEnBom.sku?`<code>${esc(soporteEnBom.sku)}</code>`:'<span class="warn">no se cotiza aparte</span>'}</td><td class="n">${termYrs} años</td><td class="n">${soporteEnBom&&soporteEnBom.unit!=null?money(soporteEnBom.unit):'—'}</td><td class="n">${soporteEnBom?qty:0}</td></tr>
     </tbody></table></div>
-    ${comercialActual.soporteIncluido?`<p class="hint" style="margin-top:10px"><b>${esc(BUNDLES[bundle].n)} ya incluye FortiCare Premium.</b> ${soporteEnBom?'La línea de arriba es la <b>mejora</b> sobre ese Premium incluido, no un segundo contrato de soporte completo.':'Por eso no se añade una segunda línea de soporte a la lista de materiales: hacerlo cobraba el mismo servicio dos veces.'}</p>`:''}
+    ${!cDef?`<p class="hint warn" style="margin-top:10px"><b>Soporte excluido de la cotización a petición.</b> ${bDef&&comercialActual.soporteIncluido?`${esc(bDef.n)} ya trae FortiCare Premium, así que la cotización no pierde cobertura.`:'Sin bundle que lo incluya, el equipo se cotiza <b>sin contrato de soporte, sin derecho a RMA y sin actualizaciones de FortiOS</b>.'}</p>`
+      :comercialActual.soporteIncluido?`<p class="hint" style="margin-top:10px"><b>${esc(bDef.n)} ya incluye FortiCare Premium.</b> ${soporteEnBom?'La línea de arriba es la <b>mejora</b> sobre ese Premium incluido, no un segundo contrato de soporte completo.':'Por eso no se añade una segunda línea de soporte a la lista de materiales: hacerlo cobraba el mismo servicio dos veces.'}</p>`:''}
     </section>`;
 
   $('bomBody').innerHTML=html;

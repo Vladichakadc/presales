@@ -229,6 +229,18 @@
      Una funcion con `servicio:null` NO eleva el bundle: es de FortiOS (inspeccion TLS) o se
      cotiza como producto aparte (FortiSandbox). Confundirlas es como se llega a «multi-WAN
      obliga a Enterprise», que el informe desmiente expresamente (AT-07). */
+  /* «NO INCLUIR» EN LOS DOS COMBOS COMERCIALES (peticion del dueño, 2026-09-22).
+     Hay dos cotizaciones legitimas que antes no se podian armar: la de solo hardware -un
+     cliente que ya tiene sus suscripciones vigentes y amplia el parque- y la que separa
+     equipo de servicios para negociarlos por vias distintas.
+     NO ES UN BLOQUEO, PERO TAMPOCO ES MUDO. Excluir el bundle teniendo funciones de
+     inspeccion pedidas produce una cotizacion que NO alcanza para el escenario descrito, y
+     eso se DECLARA como aviso en vez de bloquear la exportacion: quien lo excluye
+     normalmente sabe por que, y bloquearlo le dejaria sin salida salvo copiar la tabla a
+     mano -que es justo como se pierde la advertencia-. Callarlo seria peor: es una
+     cotizacion corta presentada como completa. */
+  const SIN_LINEA = 'none';
+
   function bundleMinimo(activas, funciones, bundles) {
     const pedidos = [];
     for (const f of funciones || []) {
@@ -262,13 +274,34 @@
     };
   }
 
-  // ¿El bundle elegido esta por debajo del minimo? Devuelve el error bloqueante o null.
+  // ¿El bundle elegido esta por debajo del minimo? Devuelve el hallazgo o null. El campo
+  // `bloquea` distingue los dos casos: un bundle REAL por debajo del minimo es una
+  // cotizacion que no se puede pedir (bloquea), y «no incluir» es una exclusion deliberada
+  // que solo hay que declarar.
   function validarBundle(elegido, activas, funciones, bundles) {
     const min = bundleMinimo(activas, funciones, bundles);
+    if (elegido === SIN_LINEA) {
+      // Sin ninguna funcion que licenciar no hay nada que declarar: excluir el bundle es
+      // entonces una cotizacion de hardware coherente consigo misma. `min.minimo` NO sirve
+      // de guarda aqui -sin servicios pedidos todos los bundles «cubren» el vacio y el
+      // minimo sale igualmente-, asi que se mira lo que de verdad se pide.
+      if (!min.servicios.length) return null;
+      const quien = min.exigentes.map((e) => e.funcion).join(' y ') || min.servicios.join(', ');
+      return {
+        codigo: 'bundle-excluido',
+        bloquea: false,
+        minimo: min.minimo,
+        mensaje: `El bundle FortiGuard se ha excluido de la cotizacion, pero el escenario pide `
+          + `${quien}, que necesita ${bundles[min.minimo].n}. La cotizacion cubre el equipo, `
+          + 'no el escenario: la suscripcion tiene que estar vigente por otra via.',
+        detalle: min.exigentes.map((e) => e.porQue).filter(Boolean),
+      };
+    }
     if (!min.minimo || min.validos.includes(elegido)) return null;
     const nombres = min.exigentes.map((e) => e.funcion).join(' y ');
     return {
       codigo: 'bundle-insuficiente',
+      bloquea: true,
       minimo: min.minimo,
       mensaje: `${bundles[elegido] ? bundles[elegido].n : elegido} no cubre `
         + `${nombres || min.servicios.join(', ')}. El bundle minimo para este escenario es `
@@ -335,9 +368,14 @@
     }
 
     // ── Bundle FortiGuard ─────────────────────────────────────────────────────────────
-    const licTier = lic ? lic[bundleCod] : null;
-    const bundle = bundles[bundleCod];
-    if (!licTier) {
+    const excluyeBundle = bundleCod === SIN_LINEA;
+    const licTier = (lic && !excluyeBundle) ? lic[bundleCod] : null;
+    const bundle = excluyeBundle ? null : bundles[bundleCod];
+    if (excluyeBundle) {
+      avisos.push({ codigo: 'bundle-excluido',
+        mensaje: 'Bundle FortiGuard excluido de la cotizacion a peticion: no se cotiza ninguna '
+          + 'suscripcion de seguridad. La cotizacion vale para un parque que ya la tiene vigente.' });
+    } else if (!licTier) {
       bloqueos.push({ codigo: 'sin-sku-bundle',
         mensaje: `${bundle ? bundle.n : bundleCod} no tiene SKU vigente para ${m.id} en el price list.` });
       filas.push({ cat: 'Licencias FortiGuard', desc: bundle ? bundle.n : bundleCod, sku: null, qty, unit: null,
@@ -355,7 +393,16 @@
     const incluyeSoporte = !!(bundle && (bundle.incluye || []).includes('forticare-premium'));
     const careTier = lic && lic.care ? lic.care[e.careKey] : null;
     const nivelCare = care[careCod] || null;
-    if (!incluyeSoporte) {
+    if (careCod === SIN_LINEA) {
+      // Excluir el soporte SIN bundle que lo traiga deja un equipo sin cobertura ninguna, y
+      // eso se dice distinto de excluirlo teniendo Premium incluido en el bundle.
+      avisos.push({ codigo: 'soporte-excluido',
+        mensaje: incluyeSoporte
+          ? `Soporte FortiCare excluido como linea propia: ${bundle.n} ya trae FortiCare Premium, `
+            + 'asi que la cotizacion no pierde cobertura.'
+          : 'Soporte FortiCare excluido de la cotizacion a peticion: el equipo se cotiza SIN '
+            + 'contrato de soporte ni derecho a RMA ni a actualizaciones de FortiOS.' });
+    } else if (!incluyeSoporte) {
       // Sin bundle que lo traiga, el soporte es una linea propia y obligatoria.
       const s = careTier ? skuTermino(careTier.sku, anios, terminos) : { sku: null, exacto: false, motivo: 'sin SKU para este modelo' };
       if (!s.exacto) bloqueos.push({ codigo: 'sku-soporte', mensaje: `Soporte FortiCare: ${s.motivo}.` });

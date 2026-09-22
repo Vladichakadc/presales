@@ -196,7 +196,7 @@
     n.querySelector('.ficha-lupa-modelo').textContent = d.modelo;
     n.querySelector('figcaption').textContent = d.pie;
     const tabs = n.querySelector('.ficha-vista-tabs');
-    if (d.rear) {
+    if (d.front && d.rear) {
       tabs.style.display = '';
       tabs.innerHTML = ['front', 'rear'].map((c) =>
         `<button type="button" class="ficha-vista-tab${c === d.cual ? ' on' : ''}" data-vista="${c}" role="tab" aria-selected="${c === d.cual}">${c === 'front' ? 'Frontal' : 'Trasera'}</button>`).join('');
@@ -206,9 +206,10 @@
   }
   function abrirLupa(fig) {
     const tabOn = fig.querySelector('.ficha-vista-tab.on');
-    lupaDatos = { front: fig.dataset.front, rear: fig.dataset.rear || null,
+    lupaDatos = { front: fig.dataset.front || null, rear: fig.dataset.rear || null,
       modelo: fig.dataset.modelo || '', pie: fig.dataset.pie || '',
-      cual: tabOn ? tabOn.dataset.vista : 'front' };
+      // Sin pestañas (una sola cara) la lupa abre la que HAY, no `front` a ciegas.
+      cual: tabOn ? tabOn.dataset.vista : (fig.dataset.front ? 'front' : 'rear') };
     lupaOrigen = fig.querySelector('.ficha-vista-zoom');
     pintarLupa();
     const n = nodoLupa();
@@ -326,6 +327,23 @@
   // candidatos, y repetir la peticion cada vez haria parpadear la tabla sin motivo.
   const cacheRefs = new Map();
 
+  // DONDE SE PINTAN LAS REFERENCIAS. Por defecto, dentro de la propia ficha. Con `refsEn`
+  // la pagina las manda a un contenedor suyo -Fortinet las lleva al final de la pestana de
+  // lista de materiales, en el sitio y con el nombre que Aruba ya usaba-, y entonces la
+  // ficha NO emite su div interno: dos elementos con el mismo id harian que
+  // getElementById devolviera el primero del documento y la tabla se pintara en el sitio
+  // equivocado segun el orden del marcado, que es un fallo que no se ve hasta que alguien
+  // reordena una seccion.
+  function cajaRefs(cid) {
+    const cfg = estado[cid];
+    return document.getElementById((cfg && cfg.refsEn) || (cid + '-refs'));
+  }
+  function tituloRefs(cid) {
+    const cfg = estado[cid];
+    const t = cfg && 'refsTitulo' in cfg ? cfg.refsTitulo : 'Referencias de pedido';
+    return t ? `<h3>${esc(t)}</h3>` : '';
+  }
+
   const fmtPrecio = (p) => (p == null ? '—' : '$' + Number(p).toLocaleString('en-US'));
 
   function refsHtml(cid, datos, filtro, tipo) {
@@ -363,8 +381,13 @@
           + `</tr>`).join('')}</tbody></table></div>`
       : `<p class="vacio">Ninguna referencia coincide con la búsqueda.</p>`;
 
-    return `<h3>Referencias de pedido<span class="ficha-cuenta"> · ${lista.length}`
+    // `refsTitulo: null` suprime el encabezado: lo pone el contenedor externo (la seccion
+    // «Anadir a la lista de materiales»), y repetirlo daria dos titulos al mismo cuadro.
+    const tit = estado[cid] && 'refsTitulo' in estado[cid] ? estado[cid].refsTitulo : 'Referencias de pedido';
+    return (tit ? `<h3>${esc(tit)}<span class="ficha-cuenta"> · ${lista.length}`
       + `${lista.length !== datos.refs.length ? ` de ${datos.refs.length}` : ''}</span></h3>`
+      : `<p class="ficha-refs-cuenta">${lista.length}`
+      + `${lista.length !== datos.refs.length ? ` de ${datos.refs.length}` : ''} referencias</p>`)
       + `<div class="ficha-refs-barra">`
       + `<input type="search" id="${cid}-refq" placeholder="Buscar SKU o descripción…" value="${esc(filtro || '')}">`
       + chips + '</div>'
@@ -374,14 +397,14 @@
 
   function pintarRefs(cid) {
     const cfg = estado[cid];
-    const caja = document.getElementById(cid + '-refs');
+    const caja = cajaRefs(cid);
     if (!cfg || !caja) return;
     const datos = cfg._refs;
     if (!datos) return;
     if (!datos.refs.length) {
       // Un fabricante sin referencias lo DICE, en vez de dejar un hueco que se lee como si la
       // pantalla estuviera rota. Es el mismo criterio que «el catalogo no lo especifica».
-      caja.innerHTML = '<h3>Referencias de pedido</h3>'
+      caja.innerHTML = tituloRefs(cid)
         + `<p class="ficha-nota">${esc(datos.nota || 'El catálogo no trae referencias de pedido para este equipo.')}</p>`;
       return;
     }
@@ -426,8 +449,8 @@
     // tabla del equipo nuevo apareciera recortada por una busqueda que era del anterior.
     if (cfg._refClave !== clave) { cfg._refFiltro = ''; cfg._refTipo = null; cfg._refClave = clave; }
     if (cacheRefs.has(clave)) { cfg._refs = cacheRefs.get(clave); pintarRefs(cid); return; }
-    const caja = document.getElementById(cid + '-refs');
-    if (caja) caja.innerHTML = '<h3>Referencias de pedido</h3><p class="ficha-nota">Cargando…</p>';
+    const caja = cajaRefs(cid);
+    if (caja) caja.innerHTML = tituloRefs(cid) + '<p class="ficha-nota">Cargando…</p>';
     fetch(`/api/referencias/${encodeURIComponent(vendor)}/${encodeURIComponent(modelo)}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
@@ -437,8 +460,8 @@
         if (estado[cid] && estado[cid].seleccionado === modelo) { estado[cid]._refs = d; pintarRefs(cid); }
       })
       .catch(() => {
-        const c = document.getElementById(cid + '-refs');
-        if (c) c.innerHTML = '<h3>Referencias de pedido</h3><p class="ficha-nota">No se pudieron cargar las referencias de este equipo.</p>';
+        const c = cajaRefs(cid);
+        if (c) c.innerHTML = tituloRefs(cid) + '<p class="ficha-nota">No se pudieron cargar las referencias de este equipo.</p>';
       });
   }
 
@@ -534,8 +557,13 @@
     let vistaHtml = '';
     if (mapaVistas) {
       const v = mapaVistas[sel.id];
-      if (v && v.front) {
-        const tabs = v.rear
+      // Basta UNA cara: el documento manda. El datasheet de la serie 80F publica una
+      // sola figura del 80F/81F y es la de conectores, así que ese modelo entra con
+      // `rear` y sin `front`; exigir `front` lo habría dejado sin figura teniendo una
+      // oficial, o habría invitado a servirle la del 80F-DSL, que es otro producto.
+      if (v && (v.front || v.rear)) {
+        const cara0 = v.front ? 'front' : 'rear';
+        const tabs = (v.front && v.rear)
           ? `<div class="ficha-vista-tabs" role="tablist" aria-label="Vistas del equipo">`
             + `<button type="button" class="ficha-vista-tab on" data-vista="front" role="tab" aria-selected="true">Frontal</button>`
             + `<button type="button" class="ficha-vista-tab" data-vista="rear" role="tab" aria-selected="false">Trasera</button></div>`
@@ -545,8 +573,8 @@
         // y pie con procedencia): el lightbox es un singleton del documento y NO guarda
         // referencias al DOM de la tarjeta — pintar() la reconstruye con cada render y
         // una referencia guardada quedaría huérfana.
-        vistaHtml = `<figure class="ficha-vista" id="${cid}-vista" data-front="${esc(v.front)}"${v.rear ? ` data-rear="${esc(v.rear)}"` : ''} data-modelo="${esc(sel.id)}" data-pie="${esc(pie)}">`
-          + `<div class="ficha-vista-img"><img src="${esc(v.front)}" alt="Vista frontal del ${esc(sel.id)} — pulsa la lupa para ampliar" loading="lazy">`
+        vistaHtml = `<figure class="ficha-vista" id="${cid}-vista"${v.front ? ` data-front="${esc(v.front)}"` : ''}${v.rear ? ` data-rear="${esc(v.rear)}"` : ''} data-modelo="${esc(sel.id)}" data-pie="${esc(pie)}">`
+          + `<div class="ficha-vista-img"><img src="${esc(v[cara0])}" alt="Vista ${cara0 === 'rear' ? 'trasera' : 'frontal'} del ${esc(sel.id)} — pulsa la lupa para ampliar" loading="lazy">`
           + `<button type="button" class="ficha-vista-zoom" aria-label="Ampliar la foto del ${esc(sel.id)} a tamaño completo" title="Ampliar a tamaño completo">${SVG_LUPA}</button></div>`
           + `<div class="ficha-vista-bar">${tabs}<figcaption>${pie}</figcaption></div>`
           + `</figure>`;
@@ -568,7 +596,7 @@
         ? `<h2 class="ficha-det-tit">Características del equipo seleccionado — <b>${esc(sel.id)}</b></h2>` : '')
       + (cfg.porQue ? `<div class="why">${cfg.porQue(sel)}</div>` : '')
       + secciones
-      + `<div class="ficha-refs" id="${cid}-refs"></div>`;
+      + (cfg.refsEn ? '' : `<div class="ficha-refs" id="${cid}-refs"></div>`);
 
     cont.innerHTML = vistaHtml
       + `<p class="tag">Equipos que cumplen`
@@ -694,8 +722,8 @@
     // deja el cartel que dice donde estan, para que la seccion no desaparezca sin explicacion.
     if (cfg.vendor && cfg.refs !== false) cargarRefs(cid, cfg.vendor, sel.id);
     else if (cfg.refsNota) {
-      const cajaRefs = document.getElementById(cid + '-refs');
-      if (cajaRefs) cajaRefs.innerHTML = '<h3>Referencias de pedido</h3><p class="ficha-nota">' + esc(cfg.refsNota) + '</p>';
+      const caja = cajaRefs(cid);
+      if (caja) caja.innerHTML = tituloRefs(cid) + '<p class="ficha-nota">' + esc(cfg.refsNota) + '</p>';
     }
   }
 

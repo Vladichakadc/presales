@@ -558,7 +558,9 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
         <option value="utp">UTP — Unified Threat Protection</option>
         <option value="ent" selected>Enterprise Protection</option>
         <option value="atp">ATP — Advanced Threat Protection</option>
+        <option value="none">No incluir — sin bundle FortiGuard</option>
       </select>
+      <p class="hint">«No incluir» cotiza el equipo sin ninguna suscripción de seguridad: sirve para ampliar un parque que ya la tiene vigente, o para negociar hardware y servicios por vías distintas. <b>No bloquea la exportación</b>, pero si el escenario pide funciones de inspección la cotización lo <b>declara</b>: cubre el equipo, no el escenario.</p>
     </div>
     <div class="field">
       <label for="careLevel">Nivel de soporte FortiCare</label>
@@ -566,7 +568,9 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
         <option value="fc247">FortiCare Essential</option>
         <option value="fcpre" selected>FortiCare Premium</option>
         <option value="fcelite">FortiCare Elite</option>
+        <option value="none">No incluir — sin contrato FortiCare</option>
       </select>
+      <p class="hint">Los tres bundles ya traen <b>FortiCare Premium</b>, así que «no incluir» con un bundle puesto no pierde cobertura — solo evita una segunda línea. Sin bundle y sin soporte, el equipo se cotiza <b>sin RMA ni actualizaciones de FortiOS</b>, y la lista de materiales lo dice.</p>
     </div>
     </div>
     </details>
@@ -595,11 +599,6 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <h2>Rendimiento por capa de inspección <span id="perfModel" style="font-weight:400;text-transform:none;letter-spacing:0"></span></h2>
     <div id="perfTiers"></div>
     <p class="hint" id="perfNote" style="margin-top:12px"></p>
-  </section>
-
-  <section class="panel">
-    <h2>Resumen de sizing</h2>
-    <div id="sizingBox"><p style="font-size:13.5px;color:var(--steel)">Completa los parámetros para ver el resumen.</p></div>
   </section>
 
   <div class="note">
@@ -659,6 +658,20 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       <button type="button" class="btn" id="btnConsolidar" style="font-size:11px;padding:6px 12px" disabled>Consolidar BOM global</button>
       <p class="hint" style="margin-top:6px">Abre el BOM agregado Σ(BOM del perfil × sedes) en una ventana aparte, con su exportación a Excel.</p>
     </div>
+  </section>
+  <!-- REFERENCIAS DE PEDIDO, EN LA LISTA DE MATERIALES Y NO EN LA FICHA (petición del dueño,
+       2026-09-22: «debe estar configurado y diseñado como en Aruba, en el mismo orden»).
+       Vivían dentro de la ficha del equipo, en la pestaña de cálculo, que es donde se decide
+       QUÉ equipo — no qué se pide. Aquí están junto a la lista a la que se añaden, con el
+       mismo nombre, la misma posición (al final del tab, debajo de lo que el dimensionador
+       propone) y el mismo comportamiento que la sección homóloga de Aruba.
+       El contenido lo pinta `ficha.js` en `#fortiRefs` vía `refsEn`: el motor de búsqueda,
+       los chips por tipo y el botón «Añadir» ya eran suyos y son los mismos de los otros
+       seis dimensionadores — duplicarlos aquí sería la sexta copia de `llevarABom`. -->
+  <section class="panel" id="skuPanel">
+    <h2>Añadir a la lista de materiales</h2>
+    <p class="hint" style="margin:0 0 10px">Las <b>6.849 referencias</b> de Fortinet extraídas de la misma price list que respalda los precios: hardware, bundles FortiCare y FortiGuard, licencias y SaaS. Se muestran las del <b>equipo seleccionado</b> y cambian con él. Lo que añadas queda integrado en la lista de materiales —con cantidad editable y botón de quitar— y viaja con ella al Excel y al cotizador.</p>
+    <div class="ficha-refs" id="fortiRefs"></div>
   </section>
 </div>
 </div>
