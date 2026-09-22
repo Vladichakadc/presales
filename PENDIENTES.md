@@ -4,7 +4,21 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-22 (plan 21: **el informe de validación técnica del módulo Fortinet,
+Última revisión: 2026-09-22 (**skill `agent-reach` instalada** — petición del dueño:
+«https://github.com/Panniantong/Agent-Reach.git Installar skills». Ese repositorio no es una
+colección de skills sino una herramienta Python que trae **una**, un router de acceso a
+internet para 16 plataformas; está en `.claude/skills/agent-reach/`, copiada del commit
+`a19a171` sin tocar una línea, y Claude Code ya la descubre. Dos cosas se **midieron** en vez
+de suponerse: desde este entorno el proxy de egreso **corta las 16 plataformas** —solo pasan
+`api.github.com`, `raw.githubusercontent.com` y `pypi.org`—, así que la skill se dispara aquí
+y no puede cumplir; y **`pip install agent-reach` instala otro proyecto** (0.1.0 de Jean
+Galea, 2 canales, frente al 1.5.0 de Panniantong con 16), con el agravante de que el
+`doctor --json` del paquete equivocado **responde con éxito** y se lee como «sin backends» en
+vez de «programa equivocado». Todo declarado en `CLAUDE.md` y en el LEEME de la skill. Queda
+abierto para el dueño si se configuran los canales con login, que piden cookies de Twitter y
+sesión de Chrome.)
+
+Revisión anterior: 2026-09-22 (plan 21: **el informe de validación técnica del módulo Fortinet,
 aplicado** — petición directa del dueño con el informe adjunto: «actúa como un experto
 arquitecto senior en el fabricante de Fortinet implementando según el informe adjunto todas
 las mejoras que se han consolidado… el dimensionador debe ser funcional, dinámico e
@@ -44,7 +58,7 @@ columna izquierda), el chip del paso 4 no se refrescaba al cambiar el bundle, y 
 contraste `cotizador-bom` seleccionaba la pestaña por su **rótulo visible** y se rompió con el
 renombrado — ahora usa `data-tab`, que es el contrato.)
 
-Revisión anterior: 2026-09-18 (plan 20: **la foto oficial viaja con la propuesta
+Revisión previa: 2026-09-18 (plan 20: **la foto oficial viaja con la propuesta
 exportada** — mejora propuesta al cerrar el plan 19 y aprobada por el dueño («Avanza…
 y si encuentras alguna mejora por el camino ejecútala»). El BOM exportado deja de ser
 solo texto y tabla: el Excel lleva ahora una segunda hoja, «Fotos del equipo», con las
@@ -73,7 +87,7 @@ y el 7005 sin foto exporta sin hoja ni imagen (SheetJS relee el fichero como pru
 interop). Validado además abriéndolo con LibreOffice → PDF: las dos caras se ven
 completas. 419 unitarios y 9/9 e2e en verde.)
 
-Revisión previa: 2026-09-18 (plan 19: **lupa en las fotos de los equipos Aruba** —
+Revisión de antes: 2026-09-18 (plan 19: **lupa en las fotos de los equipos Aruba** —
 petición directa del dueño: «incluir una Lupa en las imágenes de los routers de Aruba
 para que al darle click en la lupa traiga al frente la foto, ya sea frontal o trasera,
 en la máxima calidad de la imagen». La tarjeta sirve la foto a 150 px de alto; la lupa
@@ -1126,10 +1140,58 @@ recientemente* y `docs/rediseno-fortinet.md`, etapa 3). Lo que queda, con su mot
 
 ## Decisiones que necesitan al dueño del producto
 
+- **Si `agent-reach` se activa de verdad, con qué credenciales** (2026-09-22). La skill está
+  instalada y declarada, pero **no se ha configurado ningún canal con login**, y esa parte no
+  es un `npm install`: pide cookies de Twitter (`TWITTER_AUTH_TOKEN`, `TWITTER_CT0`), un
+  Chrome dedicado con el puerto de depuración `127.0.0.1:9222` para Boss直聘, y la sesión de
+  Chrome del usuario para Xiaohongshu, Facebook e Instagram. En su descargo, el upstream
+  declara sus límites (nada de `sudo` sin permiso, nada fuera de `~/.agent-reach/`), y su
+  guía de instalación se sigue **desde una URL remota** que puede cambiar cualquier día —se
+  leyó la del commit `a19a171`—. Desde este entorno la pregunta es teórica (todo bloqueado);
+  desde una máquina con salida, decide el dueño. Los seis canales «zero-config» (búsqueda web
+  Exa, GitHub, YouTube, RSS, lectura de páginas, V2EX) no piden ninguna credencial.
+
+
 14. **Nada abierto por ahora.** El único punto que vivía aquí (el nombre de usuario sin
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Skill `agent-reach` instalada, con su bloqueo medido (2026-09-22)
+
+Petición del dueño: «https://github.com/Panniantong/Agent-Reach.git Installar skills». Ese
+repositorio **no es una colección de skills**: es una herramienta Python (un router de acceso
+a internet para 16 plataformas) que trae **una** skill, la que enruta hacia su propio CLI.
+Instalada en `.claude/skills/agent-reach/` desde el commit `a19a171` (v1.5.0), copiada sin
+tocar una línea; Claude Code ya la descubre.
+
+**Dos cosas se midieron en vez de suponerse, y las dos cambian cómo usarla:**
+
+- **Desde este entorno no alcanza ninguna de las 16 plataformas.** Se probaron una por una:
+  `r.jina.ai`, `v2ex.com/api`, `xiaohongshu.com`, `x.com`, `reddit.com`, `api.bilibili.com`,
+  `youtube.com`, `linkedin.com`, `xueqiu.com` y `api.exa.ai` no responden. Solo pasan
+  `api.github.com`, `raw.githubusercontent.com` y `pypi.org`, que el proxy ya permitía. Es la
+  misma política que devuelve 403 a `fortinet.com` y a los dominios de HPE y Huawei, y se
+  reporta igual: **la skill se dispara aquí pero no puede cumplir**; sirve desde una máquina
+  con salida a internet.
+- **`pip install agent-reach` instala OTRO proyecto.** PyPI sirve `agent-reach` 0.1.0 de
+  *Jean Galea* (`github.com/jgalea/agent-reach`, 2 canales), no el de `Panniantong` (1.5.0,
+  16 plataformas). Se comprobó instalándolo. El modo de fallo es el peor: con el paquete
+  equivocado en el PATH, el `agent-reach doctor --json` que la skill manda ejecutar
+  **responde con éxito** (`[]`, «No channels installed»), que se lee como «no hay backends
+  configurados» y no como «has instalado otro programa». El CLI correcto se instala desde el
+  repositorio, no por nombre de paquete.
+
+**Lo que NO cambia.** Su descripción es un `MUST USE` sobre «buscar algo en internet», que en
+este repositorio se dice a todas horas —buscar una cifra de un datasheet—, así que conviene
+dejarlo escrito: **lo que esta skill traiga es material de lectura humana**. El dato del
+catálogo sigue entrando por `npm run cps` / `juniper` / `huawei` / `propuesta`, que contrastan
+con doble anclaje antes de escribir. Este repositorio no automatiza la extracción de tablas de
+PDF a propósito, y una skill nueva no es motivo para empezar.
+
+Queda declarado en `CLAUDE.md` (tabla de skills) y en `.claude/skills/agent-reach/LEEME.md`,
+que incluye cómo comprobar que el CLI instalado es el bueno.
+
 
 ### El informe de validación técnica de Fortinet, aplicado (2026-09-22)
 

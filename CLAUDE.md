@@ -30,6 +30,8 @@ copian otra vez desde `.claude/skills/` del repo hermano.
 | `feature-planning` | Convierte una petición vaga en un plan a nivel de archivo. |
 | `project-kickoff` | Preguntas de arranque cuando algo empieza de cero. |
 | `database-designer` | Esquemas, migraciones y consultas. Aplica al modelo Sequelize de `server/models/`. |
+| **Acceso a internet** | |
+| `agent-reach` | Router hacia 16 plataformas (búsqueda web, Twitter, Reddit, GitHub, YouTube, RSS, Xiaohongshu…). Instalada el 2026-09-22 a petición del dueño desde `Panniantong/Agent-Reach`. **Aquí no puede cumplir: se midió y el proxy de egreso corta los 16 destinos** — sirve desde una máquina con salida a internet, no desde este contenedor. Y `pip install agent-reach` trae **otro proyecto** (0.1.0, otro autor, 2 canales). Lo que traiga es material de lectura humana, nunca una vía para escribir en `legacyData/`: el dato del catálogo entra por los importadores con doble anclaje. Ver `.claude/skills/agent-reach/LEEME.md`. |
 | **Sobre las propias skills** | |
 | `skill-creator` | Crear, editar y medir skills. |
 | `skill-usage-insights` · `skill-feedback-adaptation` · `skill-official-updater` | Qué skills se usan de verdad, registrar desacuerdos y sincronizar las oficiales. |
@@ -38,6 +40,16 @@ copian otra vez desde `.claude/skills/` del repo hermano.
 
 Las de marketing, ventas, SEO y ASO de `chikisdtv` —unas 59— siguen fuera a propósito: esta
 es una herramienta interna detrás de un muro de acceso y no tienen dónde aplicarse.
+
+**Y una skill instalada que no puede cumplir se declara, no se esconde.** `agent-reach`
+entró el 2026-09-22 por petición directa, y su fila de arriba dice lo que se midió: desde
+este entorno el proxy de egreso corta las 16 plataformas a las que enruta, así que se
+dispara —su descripción es un `MUST USE` sobre «buscar algo en internet», que aquí se dice
+a todas horas— y no puede traer nada. Es el mismo defecto por el que salieron
+`data-viz-charts` y `web-page-builder`, con una diferencia que justifica conservarla: **no
+miente sobre el stack, sino sobre la red de un entorno concreto**, y desde el portátil de
+quien use Claude Code funciona. Por eso se queda, con el bloqueo escrito al lado en vez de
+que alguien lo redescubra intentándolo.
 
 # CLAUDE.md
 
