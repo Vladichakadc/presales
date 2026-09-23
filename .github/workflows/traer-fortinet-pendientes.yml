@@ -1,0 +1,149 @@
+name: traer-fortinet-pendientes
+
+# Baja a una rama de transporte los DOS documentos que quedan bloqueados del modulo Fortinet,
+# para poder leerlos desde una sesion que no tiene salida a los dominios del fabricante:
+#
+#   F6 · las fichas por serie del FortiGate 100F y 200F y los System Guide de los chasis
+#        7081F y 7121F, que son los 4 modelos sin ninguna figura de hardware. La pagina
+#        «Hardware» de una ficha por serie -pagina 7 en las 28 que ya se leyeron- es de donde
+#        salen las 68 figuras frontal/trasera que ya sirve el dimensionador.
+#   F2 · el Ordering Guide de FortiGuard, del que salen los SKU de los tres servicios
+#        avanzados de SD-WAN (Underlay & Application Monitoring, Overlay Orchestration,
+#        conector FortiSASE) que hoy van con `sku: null` y bloquean la exportacion.
+#
+# NO EXTRAE NADA. Igual que `traer-fortinet-matrix.yml`: la lectura sigue siendo humana y el
+# dato entra por los importadores con doble anclaje o por la extraccion de figuras, que se
+# corre a mano. Automatizar la extraccion de una tabla o de una figura de un PDF es justo
+# donde se cuelan las filas desplazadas y las caras cambiadas.
+#
+# POR QUE UNA RAMA Y NO main NI UN PR: son material de trabajo de terceros, no activos de la
+# aplicacion. Se traen con `git fetch` y se descartan tras transcribir.
+#
+# POR QUE EN ACTIONS: medido otra vez el 2026-09-23 desde el entorno donde se edita este
+# repositorio, `www.fortinet.com` y `docs.fortinet.com` devuelven `connect_rejected` del
+# proxy de egreso — una denegacion de politica de la organizacion, no un fallo de red. Los
+# ejecutores de GitHub no pasan por ese proxy. Es la misma via ya aprobada aqui.
+#
+# UN 404 NO SE DA POR BUENO NI TUMBA LA CORRIDA. Las URL de 100F y 200F ya dieron 404 en el
+# patron que siguen las otras 26 fichas, y eso esta reportado como tal en PENDIENTES.md. El
+# workflow prueba las rutas conocidas de cada documento, publica lo que SI responde y deja en
+# el resumen, documento a documento, que codigo dio cada intento: un informe que dice «no se
+# pudo» con su codigo vale, y uno que se calla los fallos para salir en verde no.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  traer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      - name: Descargar los documentos que faltan
+        run: |
+          node -e "
+            const fs = require('fs');
+            // Cada documento con TODAS las rutas conocidas, en orden. Fortinet sirve las
+            // fichas nuevas en /data-sheets/pdf/ y las de la generacion F en /data-sheets/,
+            // un subdirectorio de diferencia que ya explico doce 404 el 2026-09-03.
+            const DOCS = [
+              { archivo: 'fg-100f-serie.pdf', tipo: 'pdf', pendiente: 'F6', urls: [
+                'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/FortiGate_100F_Series.pdf',
+                'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/FortiGate_100F_Series.pdf',
+                'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-100f-series.pdf',
+                'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-100f-series.pdf',
+              ] },
+              { archivo: 'fg-200f-serie.pdf', tipo: 'pdf', pendiente: 'F6', urls: [
+                'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/FortiGate_200F_Series.pdf',
+                'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/FortiGate_200F_Series.pdf',
+                'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-200f-series.pdf',
+                'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-200f-series.pdf',
+              ] },
+              { archivo: 'fg-7081f-system-guide.html', tipo: 'html', pendiente: 'F6', urls: [
+                'https://docs.fortinet.com/document/fortigate-7000f/7.6.0/fortigate-7081f-system-guide/',
+                'https://docs.fortinet.com/document/fortigate-7000f/7.4.0/fortigate-7081f-system-guide/',
+              ] },
+              { archivo: 'fg-7121f-system-guide.html', tipo: 'html', pendiente: 'F6', urls: [
+                'https://docs.fortinet.com/document/fortigate-7000f/7.6.0/fortigate-7121f-system-guide/',
+                'https://docs.fortinet.com/document/fortigate-7000f/7.4.0/fortigate-7121f-system-guide/',
+              ] },
+              { archivo: 'fortiguard-ordering-guide.pdf', tipo: 'pdf', pendiente: 'F2', urls: [
+                'https://www.fortinet.com/content/dam/fortinet/assets/ordering-guides/fortiguard-ordering-guide.pdf',
+                'https://www.fortinet.com/content/dam/fortinet/assets/ordering-guides/FortiGuard_Ordering_Guide.pdf',
+                'https://www.fortinet.com/content/dam/fortinet/assets/ordering-guides/secure-sdwan-ordering-guide.pdf',
+              ] },
+            ];
+            const informe = [];
+            (async () => {
+              fs.mkdirSync('fuente-fortinet', { recursive: true });
+              for (const doc of DOCS) {
+                const intentos = [];
+                let guardado = false;
+                for (const url of doc.urls) {
+                  let res;
+                  try {
+                    res = await fetch(url, { headers: { 'User-Agent': 'presales-traer-fuente/1.0' } });
+                  } catch (e) { intentos.push({ url, error: String(e.message || e) }); continue; }
+                  if (!res.ok) { intentos.push({ url, status: res.status }); continue; }
+                  const buf = Buffer.from(await res.arrayBuffer());
+                  // LA FIRMA DEL CONTENIDO MANDA SOBRE EL CODIGO HTTP: un 200 que devuelve la
+                  // pagina de error en HTML donde se espera un PDF es un 404 disfrazado, y
+                  // guardarlo dejaria un documento vacio con pinta de bueno.
+                  if (doc.tipo === 'pdf' && buf.subarray(0, 4).toString() !== '%PDF') {
+                    intentos.push({ url, status: res.status, firma: buf.subarray(0, 8).toString('hex'), nota: 'no es un PDF' });
+                    continue;
+                  }
+                  fs.writeFileSync('fuente-fortinet/' + doc.archivo, buf);
+                  intentos.push({ url, status: res.status, bytes: buf.length, guardado: true });
+                  guardado = true;
+                  break;
+                }
+                informe.push({ archivo: doc.archivo, pendiente: doc.pendiente, guardado, intentos });
+              }
+              fs.writeFileSync('fuente-fortinet/informe.json', JSON.stringify(informe, null, 2));
+              for (const d of informe) {
+                console.log((d.guardado ? 'OK   ' : 'FALLA') + '  ' + d.pendiente + '  ' + d.archivo);
+                for (const i of d.intentos) console.log('        ' + (i.status || i.error) + '  ' + i.url + (i.nota ? '  <- ' + i.nota : ''));
+              }
+            })().catch((e) => { console.error(e); process.exit(1); });
+          "
+
+      - name: Publicar en la rama de transporte
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout -B fuente/fortinet-pendientes
+          git add fuente-fortinet/
+          git commit -m "Documentos pendientes de Fortinet (F6, F2) descargados $(date -u +%Y-%m-%d)"
+          git push --force origin fuente/fortinet-pendientes
+
+      - name: Resumen
+        run: |
+          {
+            echo '## Documentos pendientes de Fortinet'
+            echo ''
+            echo 'Rama `fuente/fortinet-pendientes`. Traerla con:'
+            echo '```'
+            echo 'git fetch origin fuente/fortinet-pendientes'
+            echo '```'
+            echo ''
+            echo 'Qué respondió cada intento (un 404 se reporta, no se da por bueno):'
+            echo '```'
+            node -e "
+              const inf = require('./fuente-fortinet/informe.json');
+              for (const d of inf) {
+                console.log((d.guardado ? 'OK   ' : 'FALLA') + '  ' + d.pendiente + '  ' + d.archivo);
+                for (const i of d.intentos) console.log('        ' + (i.status || i.error) + '  ' + i.url + (i.nota ? '  <- ' + i.nota : ''));
+              }
+            "
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

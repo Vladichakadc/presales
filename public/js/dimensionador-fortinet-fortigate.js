@@ -134,7 +134,7 @@ $('chkVerEol').addEventListener('change',()=>{ verEol=$('chkVerEol').checked; re
 // bw/unit/pctOverlay ya no estan aqui: son espejos ocultos que escribe el builder, y este
 // dispara render() por su cuenta al cambiar una fila.
 ['users','head','sesUser','sessNeed','vidaSes','sites','hubs','conc','interVlan','techoUtil',
- 'vpnUsers','vpnMbps',
+ 'vpnUsers','vpnMbps','vpnTipo','vdoms','pctTlsExento',
  'chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa','chkNoConcurrente'
 ].forEach(id=>$(id).addEventListener('input',render));
 // Los servicios avanzados de SD-WAN y FortiConverter no cambian el dimensionamiento -no
@@ -462,7 +462,9 @@ const CAMPOS_ESCENARIO=['nombreCliente','refProyecto',
   'wanLinksData','users','head','sesUser','sessNeed','vidaSes','sites','hubs','conc',
   // VPN de acceso remoto: cambia la recomendacion (eje IPsec y tabla de sesiones), asi que
   // un enlace compartido que no la llevara aterrizaria en otro escenario sin decirlo.
-  'vpnUsers','vpnMbps',
+  // `vpnTipo` decide POR QUE MOTOR pasa ese caudal (IPsec dial-up o SSL-VPN), y son dos topes
+  // distintos del Product Matrix: sin el, el receptor del enlace dimensionaria contra el otro.
+  'vpnUsers','vpnMbps','vpnTipo','vdoms','pctTlsExento',
   // Añadidos el 2026-09-22: el tráfico inter-VLAN y su regla de simultaneidad, el techo de
   // utilización y el tipo de transacción CAMBIAN la recomendación, así que un enlace que no
   // los llevara aterrizaría en otro escenario sin decirlo — que es peor que un 404 porque no
@@ -546,24 +548,58 @@ function tunelesDeclarados(){
   return { total:0, detalle:'' };
 }
 
+/* POR QUE MOTOR TERMINA EL ACCESO REMOTO. No es una preferencia de producto: el Product
+   Matrix publica DOS topes distintos -«Max Client to G/W IPsec Tunnels» y «Concurrent SSL
+   VPN Users»- y dos motores distintos del equipo. Con IPsec dial-up el caudal se cifra en el
+   mismo ASIC que el overlay y por eso se suma al eje IPsec; con SSL-VPN se termina en el
+   stack TLS, tiene su propia cifra de caudal y NO carga el eje IPsec. Hasta el 2026-09-23
+   esta pagina sumaba el acceso remoto al eje IPsec pasara lo que pasara, porque no preguntaba
+   el modo: para un diseno SSL-VPN eso cargaba el eje equivocado en los dos sentidos. */
+const modoAccesoRemoto=()=>($('vpnTipo')&&$('vpnTipo').value==='sslvpn')?'sslvpn':'ipsec';
+
+/* FRACCION DEL HTTPS EXENTA DE INSPECCION TLS (pendiente F7). La declara quien disena, igual
+   que la fraccion del overlay, y NO es una constante de Fortinet: por eso el valor por
+   defecto es 0 -dimensionar sobre el caudal completo, que es lo conservador y lo que esta
+   pagina hacia antes de que el control existiera-. */
+const fraccionTlsExenta=()=>{
+  const v=parseFloat($('pctTlsExento')&&$('pctTlsExento').value)||0;
+  return Math.min(0.9, Math.max(0, v/100));
+};
+
 function demandasDe(effectiveNeed, capa, sessNeed, cpsNeed, vpnMbps){
   const d={};
   d[capa.k]=effectiveNeed;
   const frac=fraccionOverlay();
-  // DEMANDA DEL MOTOR IPsec = overlay del fabric + acceso remoto. Son dos orígenes de
-  // tráfico cifrado que terminan en el MISMO motor del equipo, así que se suman en vez de
-  // competir: un hub con 40 spokes y 300 teletrabajadores los cifra todos a la vez.
-  // El overlay es una FRACCION del caudal del sitio (el resto sale por breakout local); el
-  // acceso remoto va entero, porque no existe una parte de él sin cifrar.
-  const ipsec=(frac>0?(effectiveNeed-(vpnMbps||0))*frac:0)+(vpnMbps||0);
+  const remoto=Math.max(0, vpnMbps||0);
+  const modo=modoAccesoRemoto();
+  // DEMANDA DEL MOTOR IPsec = overlay del fabric + acceso remoto CUANDO ES IPsec dial-up.
+  // Son dos orígenes de tráfico cifrado que terminan en el MISMO motor del equipo, así que
+  // se suman en vez de competir: un hub con 40 spokes y 300 teletrabajadores los cifra todos
+  // a la vez. El overlay es una FRACCION del caudal del sitio (el resto sale por breakout
+  // local); el acceso remoto IPsec va entero, porque no existe una parte de él sin cifrar.
+  const ipsec=(frac>0?(effectiveNeed-remoto)*frac:0)+(modo==='ipsec'?remoto:0);
   // Si la capa elegida YA es 'vpn', no se pisa con una cifra menor: se queda la mayor de las
   // dos demandas sobre el mismo eje.
   if(ipsec>0) d.vpn=Math.max(d.vpn||0, ipsec);
   // SSL como eje propio, con la cifra oficial del modelo. Sin marcar la casilla no entra:
-  // un eje que nadie pidio no puede apartar a nadie.
-  if($('chkSsl').checked) d.ssl=effectiveNeed;
+  // un eje que nadie pidio no puede apartar a nadie. La fracción exenta por política (F7)
+  // atraviesa el equipo pero no el motor de inspección, así que se descuenta AQUÍ y no del
+  // caudal de la capa efectiva, que sí la procesa.
+  if($('chkSsl').checked) d.ssl=effectiveNeed*(1-fraccionTlsExenta());
   if(sessNeed) d.sess=sessNeed;
   if(cpsNeed) d.cps=cpsNeed;
+  // ── LIMITES DE CONFIGURACION, que desde el 2026-09-23 SE COMPRUEBAN ────────────────────
+  // Los tres que esta pantalla declaraba «sin comprobar» y uno nuevo. Cada uno entra solo si
+  // el escenario lo pide: un eje que nadie declaró no puede apartar a nadie.
+  const tun=tunelesDeclarados();
+  if(tun.total>0) d.tunGw=tun.total;
+  const nVpn=Math.max(0,parseInt($('vpnUsers').value)||0);
+  if(nVpn>0){
+    if(modo==='ipsec') d.tunCli=nVpn;
+    else { d.sslVpnUsers=nVpn; if(remoto>0) d.sslVpn=remoto; }
+  }
+  const nVdom=Math.max(0,parseInt($('vdoms')&&$('vdoms').value)||0);
+  if(nVdom>0) d.vdom=nVdom;
   return d;
 }
 
@@ -577,7 +613,7 @@ function soporta(m, demandas, effectiveNeed){
   if(!effectiveNeed) return m.fw;
   let tope=Infinity;
   for(const def of R.EJES){
-    if(def.unidad) continue; // sesiones y cps no se miden en Mbps
+    if(!def.escalaMbps) continue; // solo los ejes cuya demanda crece con el caudal del sitio
     const req=demandas[def.k];
     if(!req) continue;
     const cap=m[def.campo];
@@ -616,6 +652,10 @@ function pintarControlesTopologia(){
   const agg=esConcentrador();
   $('fldAgg').hidden=!agg; $('fldConc').hidden=!agg;
   $('fldHubs').hidden=rolSdwan!=='spoke';
+  // Las excepciones TLS solo existen si hay inspección TLS que excepcionar: un control
+  // siempre visible que no hace nada en el 90 % de los escenarios es ruido que enseña a
+  // ignorar el paso 2. `style.display` y no `hidden` porque el bloque nace con display:none.
+  $('fldTlsExento').style.display=$('chkSsl').checked?'':'none';
   $('bwLbl').textContent=agg?'Enlaces WAN de UNA sede (underlay)':'Enlaces WAN del sitio (underlay)';
   // La casilla de overlay de cada fila solo significa algo con rol SD-WAN: se repintan las
   // filas para habilitarla o deshabilitarla, conservando lo declarado.
@@ -942,7 +982,22 @@ function render(){
   const outByCps=veredicto.apartados.filter(x=>{
     const e=x.eval.ejes.find(y=>y.k==='cps'); return e&&e.estado==='excede'&&x.eval.manda&&x.eval.manda.k==='cps';
   }).length;
-  const sinSsl=veredicto.apartados.filter(x=>x.eval.estado==='apartado').map(x=>x.modelo);
+  // APARTADOS POR FALTA DE DATO, AGRUPADOS POR EJE. Hasta el 2026-09-23 esto era una sola
+  // lista rotulada «por falta de cifra oficial de inspeccion SSL», y valia porque `ssl` era
+  // el unico eje duro que podia faltar. Al entrar los limites del Product Matrix dejo de
+  // valer: un modelo sin tope de tuneles publicado se habria contado y rotulado como un hueco
+  // de SSL. Un contador que cuenta cualquier cosa es peor que no tenerlo, porque manda a
+  // completar el documento equivocado.
+  const sinDatoPorEje=new Map();
+  for(const x of veredicto.apartados){
+    if(x.eval.estado!=='apartado'||!x.eval.apartadoPor) continue;
+    const k=x.eval.apartadoPor;
+    if(!sinDatoPorEje.has(k)) sinDatoPorEje.set(k,{n:x.eval.apartadoPorN, modelos:[]});
+    sinDatoPorEje.get(k).modelos.push(x.modelo);
+  }
+  // Cuantos modelos traen la cifra de cada eje, para poder decir «compiten N de 58» sin
+  // escribir el numero a mano en dos sitios.
+  const conCifra=k=>MODELS.filter(m=>m[R.EJE_POR_K[k].campo]!=null).length;
 
   // Los descontinuados YA NO se borran de la lista: antes desaparecian, asi que no habia
   // forma de consultarlos aqui cuando lo que se cotiza es ampliar un parque instalado.
@@ -978,12 +1033,14 @@ function render(){
     // diferencia entre «ningún equipo aguanta esto» y «el catálogo no puede afirmarlo»: la
     // segunda es una tarea de datos, no un problema de dimensionamiento, y decir «no cumple»
     // mandaría a subir de gama por un hueco documental.
-    if(sinSsl.length) why.push(`<li><b class="warn">${sinSsl.length} modelo(s) apartados por falta de cifra oficial de inspección SSL</b> en el catálogo — no por capacidad. `
-      +`Los ${MODELS.filter(m=>m.ssl!=null).length} que sí la traen son los que compiten aquí. `
-      +'Completar el resto es leer el <b>SSL Inspection Throughput</b> del Product Matrix; mientras tanto, esta pantalla '
-      +'<b>no se sustituye</b> esa cifra por la de Threat Protection, que es lo que hacía antes y lo que producía '
-      +'propuestas cortas. Es una <b>tarea de datos, no una falta de capacidad</b>: para comprometer uno de esos '
-      +'modelos con inspección TLS hace falta una <b>PoC</b> o revisión senior.</li>');
+    for(const [k,g] of sinDatoPorEje){
+      why.push(`<li><b class="warn">${g.modelos.length} modelo(s) apartados porque el catálogo no trae su cifra de ${esc(g.n)}</b> — no por capacidad. `
+        +`Los ${conCifra(k)} que sí la traen son los que compiten aquí. `
+        +`Completar el resto es leer <b>${esc(R.EJE_POR_K[k].metodo)}</b>; mientras tanto, esta pantalla `
+        +'<b>no sustituye</b> esa cifra por la de otro eje, que es lo que producía propuestas cortas. '
+        +'Es una <b>tarea de datos, no una falta de capacidad</b>: para comprometer uno de esos '
+        +'modelos hace falta una <b>PoC</b> o revisión senior.</li>');
+    }
     if(politica.techo<1) why.push(`<li>Se está aplicando un <b>techo de utilización del ${Math.round(politica.techo*100)} %</b> sobre la cifra publicada. Subirlo a 100 % ensancha la lista de candidatos, a costa de diseñar más cerca del máximo de laboratorio.</li>`);
     if(capa.k==='tp'||$('chkSsl').checked) why.push('<li>Estás dimensionando contra la capa más exigente. Si el diseño no requiere antivirus en línea sobre todo el tráfico, evaluar la capa <b>NGFW</b> o segmentar por política qué tráfico se inspecciona a fondo — es la palanca que más capacidad libera en FortiGate.</li>');
     why.push('<li>Por encima del catálogo: evaluar chasis FortiGate 7000F o distribuir la carga en varias unidades.</li>');
@@ -1035,16 +1092,35 @@ function render(){
       flags.push(`Sobre el requerimiento se suma un ${Math.round(OVERHEAD_ESP*100)} % de encapsulación ESP sobre la fracción del overlay — supuesto de esta herramienta, no una cifra publicada por Fortinet.`);
       flags.push('<b>SD-WAN sin costo de licencia:</b> el balanceo por SLA, ADVPN y la selección dinámica de camino vienen en FortiOS. <b>Tener varios enlaces no obliga a ningún bundle</b>: lo que se licencia aparte son los servicios avanzados (monitoreo de underlay, orquestación de overlays, conector FortiSASE), y solo si el diseño los usa.');
     }
-    // ── CONTEO DE TUNELES: UN EJE DEL DISENO QUE ESTE CATALOGO NO PUEDE COMPROBAR ──
-    // Se declara cuantos hacen falta y de donde salen, y se dice explicitamente que el tope
-    // por modelo NO esta aqui. Decir «cabe» sin tener el limite seria inventarlo; callarlo
-    // seria peor, porque el conteo es justo lo que decide un hub de fabric grande.
+    // ── CONTEO DE TUNELES: UN EJE DEL DISENO QUE AHORA SI SE COMPRUEBA ──
+    // Hasta el 2026-09-23 esta pantalla declaraba el conteo y decia que el tope por modelo no
+    // estaba en el catalogo. Ya lo esta -«Max G/W to G/W IPsec Tunnels» del Product Matrix de
+    // septiembre-, asi que el eje entra en el motor y lo que se pinta aqui es el contraste.
     const tun=tunelesDeclarados();
-    if(tun.total>0) flags.push(`<b>Escala del overlay:</b> ${tun.total} túnel(es) IPsec a terminar — ${tun.detalle}. `
-      +`<b class="warn">El límite de túneles por modelo no está en este catálogo</b>: confirmarlo en el datasheet del ${esc(m.id)} y en la <i>Maximum Values Table</i> antes de cotizar.`
+    const ejeDe=k=>evalm.ejes.find(e=>e.k===k);
+    const cifra=n=>n.toLocaleString('en-US');
+    const contraste=(e,que)=>e
+      ? (e.estado==='sinDato'
+        ? `<b class="warn">El catálogo no trae ${que} del ${esc(m.id)}</b>, así que ese tope no se comprobó.`
+        : `Entra en <b>${cifra(e.cap)}</b> ${esc(e.unidad)} publicados — <b${e.estado==='excede'?' class="warn"':''}>${pc(e.u)}</b> del tope de plataforma.`)
+      : '';
+    if(tun.total>0) flags.push(`<b>Escala del overlay:</b> ${tun.total} túnel(es) IPsec sitio a sitio a terminar — ${tun.detalle}. `
+      +contraste(ejeDe('tunGw'),'el máximo de túneles sitio a sitio')
       +(rolSdwan==='hub'?' Con <b>ADVPN</b> los atajos spoke-a-spoke se negocian dinámicamente y no cuentan contra el hub.':''));
     const nVpn=Math.max(0,parseInt($('vpnUsers').value)||0);
-    if(nVpn>0) flags.push(`<b>Acceso remoto:</b> ${nVpn.toLocaleString('en-US')} usuario(s) concurrente(s) declarados. Su tráfico ya entra en el eje IPsec y en la tabla de sesiones, pero <b class="warn">el máximo de usuarios SSL-VPN concurrentes por modelo no está en este catálogo</b> — es un límite propio de FortiOS por plataforma y hay que contrastarlo aparte.`);
+    if(nVpn>0){
+      const sslMode=modoAccesoRemoto()==='sslvpn';
+      flags.push(`<b>Acceso remoto por ${sslMode?'SSL-VPN':'IPsec dial-up'}:</b> ${cifra(nVpn)} usuario(s) concurrente(s). `
+        +contraste(ejeDe(sslMode?'sslVpnUsers':'tunCli'), sslMode?'el máximo de usuarios SSL-VPN concurrentes':'el máximo de túneles de cliente')
+        +(sslMode
+          ? ` Su caudal <b>no carga el eje IPsec</b>: se termina en el stack TLS y compite contra el <i>SSL VPN Throughput</i> del modelo.${ejeDe('sslVpn')?' '+contraste(ejeDe('sslVpn'),'el caudal SSL-VPN'):''}`
+          : ' Su caudal entra en el eje IPsec junto al overlay, y sus sesiones en la tabla de sesiones.'));
+    }
+    const eVdom=ejeDe('vdom');
+    if(eVdom) flags.push(`<b>Segmentación:</b> ${cifra(eVdom.req)} VDOM declarados. `+contraste(eVdom,'el máximo de dominios virtuales')
+      +' Es un tope de plataforma, no una cifra de laboratorio: se compara contra el 100 % de lo publicado y el techo de utilización no se le aplica.');
+    const exento=fraccionTlsExenta();
+    if($('chkSsl').checked&&exento>0) flags.push(`<b>Excepciones TLS:</b> se descuenta el <b>${Math.round(exento*100)} %</b> del caudal del eje de inspección SSL — tráfico que atraviesa el equipo pero no se descifra. <b class="warn">Es un supuesto declarado en el paso 2, no una cifra de Fortinet</b>: si la política de exclusión cambia, este eje sube.`);
     if($('chkHa').checked) flags.push('En <b>activo-pasivo el clúster no suma capacidad</b>: el throughput sigue siendo el de una unidad. El par se cotiza por disponibilidad, no por rendimiento.');
 
     // QUE EJE MANDA Y A QUE DISTANCIA QUEDA EL SIGUIENTE. Antes esto solo se decia cuando
@@ -1147,9 +1223,9 @@ function render(){
       // UNA LISTA CORTA TIENE QUE EXPLICARSE. Con la inspeccion SSL pedida compiten 9 de 58
       // modelos, y sin decirlo la lista se lee como «el catalogo entero es esto». Es la misma
       // regla con la que la calculadora del portal cuenta sus apartados por fabricante.
-      +(sinSsl.length?` <b class="warn">${sinSsl.length} modelo(s) apartados</b> porque el catálogo no trae `
-        +'su cifra oficial de inspección SSL — es una tarea de datos, no una falta de capacidad: '
-        +'no se sustituye por Threat Protection.':'');
+      +(sinDatoPorEje.size?` <b class="warn">${[...sinDatoPorEje.values()].reduce((a,g)=>a+g.modelos.length,0)} modelo(s) apartados</b> porque el catálogo no trae `
+        +`su cifra de ${[...sinDatoPorEje.values()].map(g=>esc(g.n)).join(', ')} — es una tarea de datos, no una falta de capacidad: `
+        +'no se sustituye por la de otro eje.':'');
     caja.innerHTML=`<div class="ejes"><h3>Utilización por eje — ${esc(m.id)}</h3>${filas}`
       +`<p class="eje-pie">${pie}</p></div>`;
   };
@@ -1380,6 +1456,11 @@ function renderBom(){
     <tr><td>Sesiones concurrentes</td><td class="n">${m.sess.toLocaleString('en-US')}</td></tr>
     <tr><td>Sesiones nuevas / s (TCP, modo flow)</td><td class="n">${m.cps!=null?m.cps.toLocaleString('en-US'):'<span class="warn">no está en el catálogo</span>'}</td></tr>
     <tr><td><b>Inspección SSL</b> (IPS + HTTPS medio)</td><td class="n">${m.ssl!=null?`<b>${fmt(m.ssl)}</b> <span class="sku">${(m.ssl/m.tp).toFixed(2)}x de su Threat Protection</span>`:'<span class="warn">no está en el catálogo — ver Product Matrix</span>'}</td></tr>
+    <tr><td>Túneles IPsec sitio a sitio (máx.)</td><td class="n">${m.tunGw!=null?m.tunGw.toLocaleString('en-US'):'<span class="warn">no está en el catálogo</span>'}</td></tr>
+    <tr><td>Túneles IPsec de cliente (máx.)</td><td class="n">${m.tunCli!=null?m.tunCli.toLocaleString('en-US'):'<span class="warn">no está en el catálogo</span>'}</td></tr>
+    <tr><td>SSL-VPN: usuarios concurrentes / caudal</td><td class="n">${m.sslVpnUsers!=null?`${m.sslVpnUsers.toLocaleString('en-US')} usuarios`:'<span class="warn">el documento no lo publica</span>'} · ${m.sslVpn!=null?fmt(m.sslVpn):'<span class="warn">—</span>'}</td></tr>
+    <tr><td>Políticas de firewall / VDOM (máx.)</td><td class="n">${m.policies!=null?m.policies.toLocaleString('en-US'):'<span class="warn">sin dato</span>'} · ${m.vdomMax!=null?`${m.vdomMax} VDOM`:'<span class="warn">el documento no lo publica</span>'}</td></tr>
+    ${m.matrixDe?`<tr><td colspan="2" class="sku">Los límites de plataforma se heredan del <b>FortiGate ${esc(m.matrixDe)}</b>: mismo silicio, y el Product Matrix publica una sola fila para los dos.</td></tr>`:''}
     <tr><td>Procesadores de seguridad</td><td class="n">${m.asic?`${esc(m.asic)}${m.soc?' <span class="pillc">SoC</span>':''}<span class="sku">${esc(m.asicSrc||'')}</span>`:'<span class="warn">Sin página de fast path architecture publicada</span>'}</td></tr>
     <tr><td>Interfaces</td><td>${m.ifaces}</td></tr>
     </tbody></table></div>

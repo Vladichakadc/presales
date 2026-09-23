@@ -382,6 +382,17 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <div class="field">
       <label><input type="checkbox" id="chkSsl"> <span>Inspección profunda SSL/TLS<span class="sku" style="display:block;margin-top:2px">Pasa a dimensionar contra la cifra oficial de <b>SSL Inspection Throughput</b> del modelo, que es una medición propia y <b>no una fracción de Threat Protection</b>: el cociente entre las dos va de 0,52 a 1,18 según la plataforma. Un modelo sin esa cifra en el catálogo <b>se aparta con su motivo</b> — no se sustituye por otra capa.</span></span></label>
     </div>
+    <div class="field" id="fldTlsExento" style="display:none">
+      <label for="pctTlsExento">Tráfico exento de inspección TLS por política</label>
+      <select id="pctTlsExento">
+        <option value="0" selected>0 % — se inspecciona todo (supuesto conservador)</option>
+        <option value="10">10 %</option>
+        <option value="20">20 % — banca, salud y SaaS de confianza en la lista de exclusión</option>
+        <option value="30">30 %</option>
+        <option value="40">40 %</option>
+      </select>
+      <p class="hint">Toda implantación real deja fuera de la inspección una parte del HTTPS —categorías con obligación legal, aplicaciones con <i>pinning</i> de certificado, tráfico de actualización—. Ese caudal atraviesa el equipo pero <b>no consume el motor de inspección SSL</b>. Lo declara quien diseña, igual que la fracción del overlay: <b>no es una constante de Fortinet</b>, y por eso el valor por defecto es 0 %, que es dimensionar sobre el caudal completo.</p>
+    </div>
     <div class="checks">
       <label class="check"><input type="checkbox" id="chkAv"> <span>Antivirus / Antimalware (FortiGuard AV)<span class="sku">Eleva el piso a <b>Threat Protection</b>: la inspección de archivos en línea saca la sesión del fast path del ASIC, y esa es la cifra que pasa a aplicar.</span></span></label>
       <label class="check"><input type="checkbox" id="chkWeb"> <span>Web Filtering / Application Control<span class="sku">Eleva el piso a <b>NGFW</b>, que es la cifra que Fortinet mide con IPS + Application Control sobre Enterprise Mix.</span></span></label>
@@ -477,14 +488,27 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
          usuarios SSL-VPN concurrentes por modelo: se declara la demanda y se dice que el tope
          hay que confirmarlo, en vez de dar por bueno que cabe. -->
     <div class="field">
-      <label for="vpnUsers">Usuarios de acceso remoto concurrentes <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— SSL-VPN, IPsec dial-up o ZTNA</span></label>
+      <label for="vpnTipo">Cómo termina el acceso remoto</label>
+      <select id="vpnTipo">
+        <option value="ipsec" selected>IPsec dial-up (FortiClient)</option>
+        <option value="sslvpn">SSL-VPN en modo túnel</option>
+      </select>
+      <p class="hint">No es una preferencia de producto: <b>son dos motores distintos del equipo y el Product Matrix publica un tope para cada uno</b>. IPsec dial-up consume <i>Max Client to G/W IPsec Tunnels</i> y se cifra en el ASIC junto al overlay; SSL-VPN consume <i>Concurrent SSL VPN Users</i> y su propio <i>SSL VPN Throughput</i>, y <b>no</b> carga el eje IPsec. Elegir mal mueve el caudal de un eje al otro y con él la recomendación.</p>
+    </div>
+    <div class="field">
+      <label for="vpnUsers">Usuarios de acceso remoto concurrentes</label>
       <input type="number" id="vpnUsers" min="0" step="1" autocomplete="off" placeholder="0">
-      <p class="hint">Teletrabajo y contratistas. Suman a la <b>tabla de sesiones</b> con las mismas sesiones por usuario declaradas abajo. El <b>máximo de usuarios SSL-VPN concurrentes por modelo no está en este catálogo</b> — se muestra cuántos se piden y hay que contrastarlo con el datasheet y la <i>Maximum Values Table</i>.</p>
+      <p class="hint">Teletrabajo y contratistas. Suman a la <b>tabla de sesiones</b> con las mismas sesiones por usuario declaradas abajo, y desde el 2026-09-23 <b>se contrastan contra el tope del modelo</b> —túneles de cliente o usuarios SSL-VPN concurrentes, según el método— en vez de mostrarse sin comprobar. Un modelo sin esa cifra en el catálogo se aparta con su motivo.</p>
     </div>
     <div class="field">
       <label for="vpnMbps">Caudal agregado de acceso remoto (Mbps)</label>
       <input type="number" id="vpnMbps" min="0" step="10" autocomplete="off" placeholder="0">
-      <p class="hint">Lo que ese conjunto de usuarios mueve en el pico. Va <b>cifrado</b>, así que entra en el eje IPsec junto al overlay del fabric, y además se inspecciona, así que también suma al caudal de la capa efectiva. Déjalo en 0 si el acceso remoto no termina en este equipo.</p>
+      <p class="hint">Lo que ese conjunto de usuarios mueve en el pico. Se inspecciona, así que suma al caudal de la capa efectiva en los dos casos; lo que cambia es el <b>segundo</b> motor por el que pasa: con IPsec dial-up carga el eje IPsec junto al overlay, con SSL-VPN carga el eje <i>SSL VPN Throughput</i>. Déjalo en 0 si el acceso remoto no termina en este equipo.</p>
+    </div>
+    <div class="field">
+      <label for="vdoms">Dominios virtuales (VDOM) del diseño</label>
+      <input type="number" id="vdoms" min="0" step="1" autocomplete="off" placeholder="0">
+      <p class="hint">Cuántos VDOM separa el diseño: segmentación por cliente, por unidad de negocio o por zona regulatoria. <b>Es un tope de plataforma, no una cifra de rendimiento</b>, y por eso se compara contra el 100 % del máximo publicado y no contra el techo de utilización. Déjalo en 0 si el equipo va en modo único.</p>
     </div>
     <div class="field">
       <label for="users">Usuarios / dispositivos concurrentes en el sitio</label>

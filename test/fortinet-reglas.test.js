@@ -80,11 +80,14 @@ test('AT-02 · el 50G usa TP 1,1 G y SSL 1,3 G como ejes independientes', () => 
 });
 
 test('AT-20 · sin cifra oficial de SSL el modelo se aparta con su motivo, no se imputa', () => {
-  const m = porId('FortiGate 200G');
+  // El 200G dejo de servir de ejemplo el 2026-09-23: el Product Matrix SI publica su SSL
+  // (7.000 Mbps). El hueco quedo en los cinco modelos de la generacion F que esa edicion ya
+  // no lista, y esta prueba se muda a uno de ellos en vez de ablandarse.
+  const m = porId('FortiGate 600F');
   assert.strictEqual(m.ssl, null, 'el catalogo no trae SSL de este modelo');
   const r = R.evaluarModelo(m, { tp: 1000, ssl: 1000 });
   assert.strictEqual(r.estado, 'apartado');
-  assert.match(r.motivo, /no trae Inspeccion SSL/);
+  assert.match(r.motivo, /no trae Inspecci[oó]n SSL/);
   assert.match(r.motivo, /PoC/);
   const ssl = r.ejes.find((e) => e.k === 'ssl');
   assert.strictEqual(ssl.estado, 'sinDato');
@@ -369,12 +372,23 @@ test('el campo ssl es null explicito donde el catalogo no lo trae, nunca undefin
     assert.ok(m.ssl === null || m.ssl > 0, `${m.id} tiene un ssl que no es ni null ni una cifra`);
   }
   const conDato = MODELS.filter((m) => m.ssl != null);
-  assert.strictEqual(conDato.length, 9, 'nueve modelos con cifra oficial: 5 base + 4 variantes con SSD');
+  assert.strictEqual(conDato.length, 51, '51 modelos con cifra oficial: 27 filas del Matrix + 24 variantes con SSD');
+  // Los 7 que faltan son los cinco de la generacion F que la edicion de septiembre del Matrix
+  // ya no lista, mas sus dos variantes con SSD. Se enumeran a proposito: si manana uno
+  // apareciera o desapareciera, la prueba lo dice en vez de contar un total que cuadra.
+  const sinDato = MODELS.filter((m) => m.ssl == null).map((m) => m.id.replace('FortiGate ', ''));
+  assert.deepStrictEqual(sinDato.sort(),
+    ['1000F', '1001F', '100F', '200F', '400F', '401F', '600F'].sort());
   // Las variantes con SSD heredan del modelo base por la regla ya declarada en el archivo.
-  const pares = [['30G', '31G'], ['50G', '51G'], ['70G', '71G'], ['90G', '91G']];
+  const pares = [['30G', '31G'], ['50G', '51G'], ['70G', '71G'], ['90G', '91G'],
+    ['200G', '201G'], ['3500F', '3501F'], ['4800F', '4801F']];
   for (const [a, b] of pares) {
     assert.strictEqual(porId(`FortiGate ${b}`).ssl, porId(`FortiGate ${a}`).ssl);
+    assert.strictEqual(porId(`FortiGate ${b}`).matrixDe, a, `${b} debe declarar de quien hereda`);
   }
+  // Y el modelo base NO declara herencia: un valor propio marcado como heredado seria una
+  // procedencia falsa, que es justo lo que `matrixDe` existe para poder decir en la ficha.
+  assert.strictEqual(porId('FortiGate 30G').matrixDe, null);
 });
 
 test('los bundles declaran su contenido como datos, y los tres traen FortiCare Premium', () => {
@@ -514,4 +528,109 @@ test('AT-28 · sin endpoints declarados no aparece ninguna linea de endpoint', (
     assert.ok(!r.filas.some((f) => f.cat === 'Licencias endpoint'), `endpointsEms=${v} no debe cotizar EMS`);
     assert.ok(!r.bloqueos.some((x) => x.codigo === 'sin-sku-ems'), `endpointsEms=${v} no debe bloquear`);
   }
+});
+
+/* ── AT-29 a AT-34 · LIMITES DE CONFIGURACION DEL PRODUCT MATRIX (2026-09-23) ────────────
+   El informe los pedia como P1 (pendiente F4) y la pagina los declaraba sin poder
+   comprobarlos: «el limite de tuneles por modelo no esta en este catalogo». La edicion de
+   septiembre del Matrix los publica y ya entraron al catalogo, asi que lo que estas pruebas
+   guardan es que el motor los TRATE COMO LO QUE SON -topes de plataforma, no cifras de
+   laboratorio- y que sigan cayendo del lado seguro donde el documento no dice nada. */
+
+test('AT-29 · el doble anclaje de la transcripcion del Matrix sigue casando modelo a modelo', () => {
+  // Es la unica prueba de que ninguna fila se desplazo al reconstruir la tabla desde el PDF.
+  // Se afirma sobre cinco modelos repartidos por toda la gama y no sobre uno: una fila
+  // desplazada arrastra a sus vecinas, asi que mirar solo un extremo no la veria.
+  const anclas = [
+    ['FortiGate 40F', 700000, 35000, 310],
+    ['FortiGate 90G', 3000000, 124000, 2600],
+    ['FortiGate 200G', 11000000, 400000, 7000],
+    ['FortiGate 3500G', 179000000, 1100000, 112000],
+    ['FortiGate 7121F', 1000000000, 9000000, 540000],
+  ];
+  for (const [id, sess, cps, ssl] of anclas) {
+    const m = porId(id);
+    assert.strictEqual(m.sess, sess, `${id}: sess no casa con el Matrix`);
+    assert.strictEqual(m.cps, cps, `${id}: cps no casa con el Matrix`);
+    assert.strictEqual(m.ssl, ssl, `${id}: ssl no casa con el Matrix`);
+  }
+});
+
+test('AT-30 · los tuneles sitio a sitio son un eje duro: por encima del tope el modelo no pasa', () => {
+  const m = porId('FortiGate 60F');                 // tunGw = 200
+  assert.strictEqual(m.tunGw, 200);
+  assert.strictEqual(R.evaluarModelo(m, { tp: 100, tunGw: 180 }).estado, 'ok');
+  const r = R.evaluarModelo(m, { tp: 100, tunGw: 260 });
+  assert.strictEqual(r.estado, 'excede');
+  assert.match(r.motivo, /T[uú]neles IPsec sitio a sitio/);
+  assert.match(r.motivo, /la plataforma admite/, 'no se presenta como una cifra de rendimiento');
+});
+
+test('AT-31 · el techo de utilizacion NO se aplica a un tope de configuracion', () => {
+  // La regla y su motivo: `techoUtil` es una politica sobre CIFRAS DE LABORATORIO. Un maximo
+  // de tuneles es un tope declarado por el fabricante, y recortarlo un 30 % apartaria un
+  // modelo por un limite que nadie fijo -y en silencio, que es lo grave-.
+  const m = porId('FortiGate 60F');
+  const conTecho = { techo: 0.7 };
+  assert.strictEqual(R.evaluarModelo(m, { tunGw: 180 }, conTecho).estado, 'ok',
+    '180 de 200 tuneles cabe aunque el techo declarado sea del 70 %');
+  // Y el mismo techo SI recorta un eje de rendimiento, que es para lo que existe.
+  const caudal = R.evaluarModelo(m, { tp: m.tp * 0.8 }, conTecho);
+  assert.strictEqual(caudal.estado, 'excede');
+  assert.match(caudal.motivo, /techo de utilizacion declarado/);
+});
+
+test('AT-32 · acceso remoto: IPsec dial-up y SSL-VPN son dos topes distintos, no uno', () => {
+  const m = porId('FortiGate 70F');                 // tunCli 500 · sslVpnUsers 200
+  assert.strictEqual(m.tunCli, 500);
+  assert.strictEqual(m.sslVpnUsers, 200);
+  // 300 usuarios caben por IPsec dial-up y NO caben por SSL-VPN. Es exactamente el escenario
+  // que la pagina no podia distinguir antes de preguntar el modo: sumaba los dos al eje IPsec.
+  assert.strictEqual(R.evaluarModelo(m, { tunCli: 300 }).estado, 'ok');
+  assert.strictEqual(R.evaluarModelo(m, { sslVpnUsers: 300 }).estado, 'excede');
+});
+
+test('AT-33 · donde el documento imprime «—» el eje se aparta, nunca se da por ilimitado', () => {
+  // El 70G no publica SSL-VPN. Tratar ese hueco como «cabe» es el error caro: un diseno de
+  // teletrabajo entero sobre un equipo del que no se sabe si lo soporta.
+  const m = porId('FortiGate 70G');
+  assert.strictEqual(m.sslVpnUsers, null);
+  assert.strictEqual(m.sslVpn, null);
+  const r = R.evaluarModelo(m, { tp: 100, sslVpnUsers: 50 });
+  assert.strictEqual(r.estado, 'apartado');
+  assert.match(r.motivo, /Usuarios SSL-VPN concurrentes/);
+  // Y si nadie pide ese eje, el hueco no aparta a nadie: un eje que el escenario no declara
+  // no puede descartar un modelo.
+  assert.strictEqual(R.evaluarModelo(m, { tp: 100 }).estado, 'ok');
+});
+
+test('AT-34 · solo los ejes proporcionales al caudal entran en la escala de Mbps', () => {
+  // `escalaMbps` sustituyo a «no tiene unidad», que funcionaba por casualidad: al entrar el
+  // eje de caudal SSL-VPN -Mbps, pero una constante declarada aparte- esa deduccion habria
+  // metido en la regla de tres un numero que no crece con el caudal del sitio.
+  const conEscala = R.EJES.filter((e) => e.escalaMbps).map((e) => e.k);
+  assert.deepStrictEqual(conEscala, ['fw', 'vpn', 'ips', 'ngfw', 'tp', 'ssl']);
+  for (const e of R.EJES) {
+    if (e.configuracion) assert.ok(!e.escalaMbps, `${e.k}: un tope de configuracion no escala`);
+    if (e.escalaMbps) assert.ok(!e.unidad, `${e.k}: un eje de caudal se mide en Mbps`);
+  }
+});
+
+test('los siete campos del Matrix llegan a los 58 modelos como null o como cifra', () => {
+  const claves = ['ssl', 'tunGw', 'tunCli', 'sslVpn', 'sslVpnUsers', 'policies', 'vdomMax'];
+  for (const m of MODELS) {
+    for (const k of claves) {
+      assert.ok(Object.prototype.hasOwnProperty.call(m, k), `${m.id} sin campo ${k}`);
+      assert.ok(m[k] === null || m[k] > 0, `${m.id}.${k} no es ni null ni una cifra`);
+    }
+  }
+  const cuenta = (k) => MODELS.filter((m) => m[k] != null).length;
+  assert.strictEqual(cuenta('tunGw'), 51);
+  assert.strictEqual(cuenta('tunCli'), 51);
+  assert.strictEqual(cuenta('policies'), 51);
+  // sslVpn y sslVpnUsers van a 42 porque el documento imprime «—» en cinco modelos base
+  // (30G, 40F, 50G, 60F, 70G) y sus variantes. Ese hueco es del DOCUMENTO y se declara.
+  assert.strictEqual(cuenta('sslVpn'), 42);
+  assert.strictEqual(cuenta('sslVpnUsers'), 42);
+  assert.strictEqual(cuenta('vdomMax'), 49);
 });

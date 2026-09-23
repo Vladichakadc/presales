@@ -18,25 +18,43 @@
  * tiene que seguir compitiendo contra los 58 modelos. Si un refactor rompiera eso, el caso
  * sin SSL saltaria primero y diria exactamente donde mirar.
  *
- * Y EL ESCENARIO DE 4 Gbps ES EL MAS IMPORTANTE DE LOS SIETE: ningun modelo del catalogo
- * trae cifra de SSL suficiente (la mayor es la del 90G, 2,6 Gbps), asi que la respuesta
- * correcta es CERO candidatos. Un motor que «arreglara» ese cero cayendo a Threat Protection
- * daria de pronto 30 candidatos y una propuesta corta por un orden de magnitud — que es
- * exactamente el fallo que este cambio vino a cerrar.
+ * REMEDIDO EL 2026-09-23, Y LA PREMISA DE UN ESCENARIO DEJO DE SER CIERTA. Cuando este caso
+ * se escribio, el catalogo traia la cifra de SSL de 9 modelos y por eso 4 Gbps daba CERO
+ * candidatos: la mayor era la del 90G, 2,6 Gbps. Al leer la tabla del Product Matrix de
+ * septiembre entraron 51 de 58, y ese mismo escenario recomienda ahora un 200G (7 Gbps de
+ * inspeccion SSL). La linea base se rehace por eso, no por un refactor: el escenario cambio
+ * de respuesta porque LLEGO EL DATO, que es justo el desenlace que el caso anticipaba.
+ *
+ * UN ESCENARIO QUE YA NO PRUEBA NADA SE SUSTITUYE, NO SE BORRA. Aquel cero era la prueba de
+ * que el motor no «arregla» la falta de dato cayendo a Threat Protection. Hoy eso se afirma
+ * donde sigue siendo cierto: los 7 modelos que el Matrix de septiembre ya no lista se apartan
+ * aunque su Threat Protection sobre. El escenario de 2 Gbps y las dos comprobaciones extra lo
+ * fijan con nombre y apellidos -el 600F hace 10,5 Gbps de Threat Protection y NO puede salir
+ * entre los candidatos-, que es mas fuerte que el cero de antes: aquel dependia de que el
+ * catalogo siguiera incompleto, y este no.
  */
 const BASE_LINEA = [
   { n: 'SSL 300 Mbps (AT-01)', bw: 300, ssl: true, techo: '100',
-    recomendado: 'FortiGate 30G', need: '390 Mbps', nCandidatos: 8 },
+    recomendado: 'FortiGate 30G', need: '390 Mbps', nCandidatos: 50 },
   { n: 'SSL 800 Mbps', bw: 800, ssl: true, techo: '100',
-    recomendado: 'FortiGate 50G', need: '1.0 Gbps', nCandidatos: 6 },
+    recomendado: 'FortiGate 50G', need: '1.0 Gbps', nCandidatos: 42 },
   { n: 'SSL 1.500 Mbps', bw: 1500, ssl: true, techo: '100',
-    recomendado: 'FortiGate 90G', need: '1.9 Gbps', nCandidatos: 2 },
-  { n: 'SSL 4.000 Mbps — ningun modelo trae la cifra', bw: 4000, ssl: true, techo: '100',
-    recomendado: '(sin candidato)', need: '5.2 Gbps', nCandidatos: 0 },
+    recomendado: 'FortiGate 90G', need: '1.9 Gbps', nCandidatos: 38 },
+  // Era «ningun modelo trae la cifra» y daba cero. Hoy el 200G la trae y la respuesta
+  // correcta es el 200G: el escenario se conserva con su nueva respuesta en vez de retirarse,
+  // porque sigue siendo el que veria un motor que volviera a caer a Threat Protection -ahi
+  // recomendaria un 90G, dos gamas por debajo-.
+  { n: 'SSL 4.000 Mbps', bw: 4000, ssl: true, techo: '100',
+    recomendado: 'FortiGate 200G', need: '5.2 Gbps', nCandidatos: 34 },
+  // NUEVO: el escenario que fija «sin dato aparta» sin depender de que el catalogo siga
+  // incompleto. A 2 Gbps de requerimiento el 600F sobra por Threat Protection (10,5 Gbps) y
+  // aun asi no puede competir, porque su SSL no esta publicado.
+  { n: 'SSL 2.000 Mbps — el 600F sobra por TP y aun asi se aparta', bw: 2000, ssl: true, techo: '100',
+    recomendado: 'FortiGate 120G', need: '2.6 Gbps', nCandidatos: 36 },
   { n: 'control sin SSL, 800 Mbps', bw: 800, ssl: false, techo: '100',
     recomendado: 'FortiGate 50G', need: '1.0 Gbps', nCandidatos: 48 },
   { n: 'SSL 800 Mbps con techo del 70 %', bw: 800, ssl: true, techo: '70',
-    recomendado: 'FortiGate 90G', need: '1.0 Gbps', nCandidatos: 2 },
+    recomendado: 'FortiGate 90G', need: '1.0 Gbps', nCandidatos: 38 },
   { n: 'control sin SSL, 800 Mbps con techo del 70 %', bw: 800, ssl: false, techo: '70',
     recomendado: 'FortiGate 90G', need: '1.0 Gbps', nCandidatos: 44 },
 ];
@@ -45,7 +63,7 @@ module.exports = {
   // Medida en Chromium el dia del cambio, sobre el commit anterior a el. Va con su fecha y
   // su commit porque una linea base sin procedencia sigue pasando en verde cuando ya no
   // quiere decir nada — misma regla que la fecha de cada fuente del catalogo.
-  medidoEn: { commit: '419b357', fecha: '2026-09-22' },
+  medidoEn: { commit: '15af632', fecha: '2026-09-23' },
   nombre: 'Fortinet — la inspeccion SSL es un eje con cifra oficial',
   pagina: 'dimensionador-fortinet-fortigate.html',
   claves: ['recomendado', 'need', 'nCandidatos'],
@@ -70,24 +88,37 @@ module.exports = {
     };
   },
 
-  // LO QUE UN NUMERO NO DICE: que la pantalla EXPLIQUE por que la lista es corta. Cero
-  // candidatos con el mensaje «ningun modelo cumple» se lee como «hace falta mas equipo»,
-  // cuando lo que falta es el dato — y esa lectura manda a cotizar un chasis que nadie
-  // necesita. La cifra sola no distingue las dos cosas; este extra si.
+  // LO QUE UN NUMERO NO DICE: que un modelo SIN la cifra no se cuele por la de otra capa, y
+  // que la pantalla lo EXPLIQUE. Un conteo de candidatos no distingue «no cabe» de «no se
+  // sabe», y esas dos lecturas mandan a sitios opuestos: una a subir de gama, la otra a
+  // completar un documento. Estas dos comprobaciones si las distinguen, y lo hacen con
+  // nombre propio en vez de con un total.
   async extra(p, { base, pausa }) {
     const out = [];
     await p.goto(`${base}/dimensionador-fortinet-fortigate.html`, { waitUntil: 'domcontentloaded' });
     await pausa(p, 1400);
-    await p.fill('#wanBuilderFilas [data-campo=down] >> nth=0', '4000');
+    await p.fill('#wanBuilderFilas [data-campo=down] >> nth=0', '2000');
     await p.dispatchEvent('#wanBuilderFilas [data-campo=down] >> nth=0', 'input');
     await p.check('#chkSsl');
     await pausa(p, 1000);
-    const txt = await p.$eval('#verdict', (e) => e.textContent || '');
-    const nombra = /inspecci[oó]n SSL/i.test(txt);
-    const distingue = /tarea de datos|no se sustituye/i.test(txt);
-    out.push({ n: 'sin candidato por SSL · nombra el motivo', ok: nombra,
-      detalle: nombra ? 'el veredicto cita la inspeccion SSL' : 'el veredicto NO cita la inspeccion SSL' });
-    out.push({ n: 'sin candidato por SSL · distingue falta de dato de falta de capacidad', ok: distingue,
+    // El 600F hace 10,5 Gbps de Threat Protection: con 2,6 Gbps de requerimiento sobraria de
+    // largo si el motor cayera a esa capa. No tiene cifra de inspeccion SSL, asi que no puede
+    // estar entre los candidatos. Es la version fuerte del cero que este caso tenia antes.
+    // NOMBRE EXACTO Y NO SUBCADENA. La primera version comparaba con /600F|200F|400F/ y daba
+    // por colados al 2600F, al 3200F y al 4400F: es el mismo tropiezo que el ancla corta de
+    // `catalogo-check.js`, donde `${cid}-sel` seguia casando dentro de `${cid}-selector`.
+    const SIN_CIFRA = ['FortiGate 100F', 'FortiGate 200F', 'FortiGate 400F', 'FortiGate 401F',
+      'FortiGate 600F', 'FortiGate 1000F', 'FortiGate 1001F'];
+    const opciones = await p.$eval('#verdict-sel', (e) => [...e.options].map((o) => o.value));
+    const colados = opciones.filter((v) => SIN_CIFRA.includes(v));
+    out.push({ n: 'un modelo sin cifra de SSL no se cuela por su Threat Protection', ok: !colados.length,
+      detalle: colados.length ? `aparece ${colados.join(', ')}`
+        : 'ninguno de los 7 sin cifra aparece entre los candidatos' });
+    // El aviso vive en el panel de ejes y no en el veredicto: con candidatos, `#verdict` pinta
+    // el equipo elegido. Se lee donde esta, en vez de aflojar la afirmacion.
+    const txt = await p.$eval('#ejesPanel', (e) => e.textContent || '');
+    const distingue = /tarea de datos|no sustituye/i.test(txt);
+    out.push({ n: 'la pantalla distingue falta de dato de falta de capacidad', ok: distingue,
       detalle: distingue ? 'lo declara como tarea de datos' : 'se lee como si faltara equipo' });
     return out;
   },

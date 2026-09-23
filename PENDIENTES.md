@@ -4,7 +4,24 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-22 (**el formulario del dimensionador Fortinet, reconstruido sobre lo
+Última revisión: 2026-09-23 (**los límites del Product Matrix dejan de declararse y pasan a
+comprobarse** — encargo del dueño: ejecutar los pendientes con el máximo esfuerzo y aplicar la
+mejora propuesta. **F1 cerrado**: la inspección SSL pasa de 9 a **51 de 58 modelos**, leída del
+PDF que ya estaba en la rama de transporte `fuente/fortinet-product-matrix` —no se descargó
+nada: `fortinet.com` y `docs.fortinet.com` siguen denegados por política de egreso, medido otra
+vez hoy—, con **doble anclaje 27/27 sin un solo rechazo** contra `sess` y `cps`. **F4 cerrado
+en su mayor parte**: entran `tunGw`, `tunCli`, `sslVpnUsers`, `sslVpn`, `policies` y `vdomMax`,
+y los tres límites que la pantalla declaraba «sin comprobar» son ahora **ejes duros**; lo que
+sigue fuera son rutas BGP/OSPF, vecinos y VRF, que ese documento no publica. **F7 cerrado**:
+las excepciones TLS como fracción declarada, con 0 % por defecto. **Un defecto de la etapa 5
+corregido por el camino**: el acceso remoto cargaba SIEMPRE el eje IPsec porque la pantalla no
+preguntaba si termina en IPsec dial-up o en SSL-VPN, que son dos motores distintos con dos
+topes distintos — 400 remotos dan un 60F por uno y un 120G por el otro. Y un contador que
+habría contado cualquier cosa: los apartados se agrupan por el eje que falta, no todos bajo el
+rótulo de SSL. 484 unitarios, 16/16 pantallas, **5/5 contrastes sin discrepancias** —uno nuevo,
+comprobado saboteando— y 10/10 baterías e2e.)
+
+Revisión anterior: 2026-09-22 (**el formulario del dimensionador Fortinet, reconstruido sobre lo
 que de verdad dimensiona** — encargo del dueño: revisarlo como arquitecto senior, dejar solo
 las variables de SD-WAN y NGFW, retirar el tipo de transacción «que no es válido técnicamente»
 y quitar lo que no aporta. **Tres bajas**: `tipoTx` (decisión comercial disfrazada de entrada
@@ -753,49 +770,58 @@ cerrada (ver *Cerrado recientemente*). Lo que queda, en el orden del plan:
 - **R8R13AAE / R8R14AAE** (Silver/Gold AOS 8 del 9240): sin List Price en la lista del
   distribuidor — «consultar» en el BOM.
 
-## Lo que el informe de validación técnica de Fortinet deja abierto (2026-09-22)
+## Lo que el informe de validación técnica de Fortinet deja abierto (rev. 2026-09-23)
 
 Documento: «Informe final de validación técnica y plan de mejora del módulo Fortinet
 Presales», 22-sep-2026. Los P0 técnico y comercial están cerrados (ver *Cerrado
 recientemente* y `docs/rediseno-fortinet.md`, etapa 3). Lo que queda, con su motivo:
 
-- **F1 · 49 de 58 modelos sin cifra oficial de inspección SSL.** Es el hueco más caro que
-  queda en este catálogo: con inspección TLS profunda pedida compiten 9 modelos, y los otros
-  49 se apartan con su motivo. **No es un fallo del motor, es una tarea de datos.** Se cierra
-  leyendo la columna `SSL Inspection Throughput` del Product Matrix desde una máquina con
-  acceso —`fortinet.com` responde 403 al proxy de egreso de este entorno— y pasándola por
-  `npm run cps`, que ya contrasta cada fila contra el `sess` verificado antes de aceptarla.
-  `npm run catalogo` lo cuenta desde hoy (`ssl 16% 9/58`).
+**Cerrados el 2026-09-23 (F1, F4 en su mayor parte, F7).** Ver `docs/rediseno-fortinet.md`,
+etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
+
 - **F6 · Los 4 modelos sin ninguna figura de hardware** (100F, 200F y los chasis 7081F y
-  7121F). Es el mismo bloqueo y el mismo transporte que F1: el datasheet por serie de 100F y
-  200F no está en la URL que sigue el patrón del resto (404 reportado, no dado por bueno) y
-  los *System Guide* de los dos chasis no son datasheets de serie. Se cierra publicando esos
-  documentos en una rama `fuente/*` desde un ejecutor de Actions y volviendo a correr la
-  extracción de la página «Hardware». Mientras tanto la ficha declara el hueco y **nunca
-  muestra una figura parecida**.
-- **F7 · Excepciones TLS como fracción declarada del tráfico SSL.** Es el campo de la §8 del
-  informe que más se echa en falta de los que no están, y el único de ellos que **no** exige
-  una constante del fabricante: lo declara quien dimensiona («el 20 % del HTTPS va exento por
-  política»), igual que ya se declara la fracción del overlay. Hoy la inspección SSL se
-  dimensiona sobre el caudal completo, que es lo conservador. Entra cuando alguien decida que
-  merece un control más en el paso 2.
+  7121F). **Sigue bloqueado y el bloqueo se volvió a medir el 2026-09-23**: `www.fortinet.com`
+  y `docs.fortinet.com` devuelven `connect_rejected` del proxy de egreso —denegación de
+  política de la organización, no un fallo de red—. El datasheet por serie de 100F y 200F no
+  está en la URL que sigue el patrón del resto (404 reportado, no dado por bueno) y los
+  *System Guide* de los dos chasis viven en `docs.fortinet.com`. **Se revisó la rama
+  `fuente/fortinet-psu` y NO sirve**: son páginas de sustitución de fuente de alimentación —una
+  de ellas del foro de la comunidad—, no la página «Hardware» de un datasheet, y su única
+  figura es un detalle de la PSU del 7081F. Usarla sería la «figura parecida» que esta ficha
+  no muestra. Se cierra publicando esos documentos en una rama `fuente/*` desde un ejecutor de
+  Actions y volviendo a correr la extracción. Mientras tanto la ficha declara el hueco.
+  **Ese workflow ya existe desde el 2026-09-23**: `.github/workflows/traer-fortinet-pendientes.yml`
+  (`workflow_dispatch`) prueba las rutas conocidas de cada documento, publica lo que responde
+  en `fuente/fortinet-pendientes` y **deja en el resumen qué código dio cada intento** — un
+  404 se reporta, no se da por bueno ni tumba la corrida. Lo que falta es lanzarlo y
+  transcribir, que es trabajo humano por diseño.
 - **F2 · Los SKU de los tres servicios avanzados de SD-WAN** (Underlay & Application
   Monitoring, Overlay Orchestration, conector FortiSASE), de la categoría «SD-WAN» del
-  Ordering Guide de FortiGuard. Van con `sku: null` **declarado**, así que pedir uno bloquea
-  la exportación comercial — que es el comportamiento correcto mientras no estén, y mejor que
-  inventar un código con pinta de válido (el fallo del `FortiGate 2000F`).
+  Ordering Guide de FortiGuard. **Se buscó en las ramas de transporte el 2026-09-23 y no está**:
+  el `sd-wan-ordering-guide.pdf` que hay en `fuente/fortinet-product-matrix` es el de **Aruba**,
+  no el de Fortinet — se leyeron sus 5 páginas para comprobarlo. Van con `sku: null`
+  **declarado**, así que pedir uno bloquea la exportación comercial, que es el comportamiento
+  correcto mientras no estén y mejor que inventar un código con pinta de válido (el fallo del
+  `FortiGate 2000F`). Mismo transporte y mismo bloqueo que F6, y el mismo workflow lo trae:
+  `traer-fortinet-pendientes.yml` incluye el Ordering Guide de FortiGuard entre sus descargas.
 - **F3 · Elegibilidad de FortiGuard único en HA activo-pasivo**, por modelo y versión de
   FortiOS. La regla general —una licencia por nodo— está aplicada; la excepción se declara sin
   ofrecerse, porque este catálogo no trae de qué modelos y qué versiones se puede afirmar.
-- **F4 · Escala del plano de control como *hard constraints***: rutas BGP/OSPF, vecinos, VRF,
-  VDOM y túneles máximos por modelo. El informe lo pide (P1) y la **Maximum Values Table** de
-  Fortinet lo publica, pero este catálogo no la trae. **Pedir esos datos en el formulario sin
-  poder contrastarlos contra un límite por modelo daría controles que no hacen nada**, que es
-  peor que su ausencia porque invitan a creer que se tuvieron en cuenta. Entra cuando entre el
-  dato — y entonces el motor ya tiene dónde ponerlo: son ejes más en `FortinetReglas.EJES`.
+- **F4-resto · Escala del plano de control que el Product Matrix NO publica**: rutas BGP/OSPF,
+  vecinos y VRF por modelo. Los túneles, los VDOM, las políticas de firewall y los usuarios
+  SSL-VPN concurrentes **ya entraron** y son ejes duros; estos tres siguen solo en la
+  *Maximum Values Table*, que este catálogo no trae. **No se piden en el formulario mientras
+  no se puedan contrastar**: un control que no comprueba nada invita a creer que se tuvo en
+  cuenta, que es peor que su ausencia. Cuando entre el dato, el motor ya tiene dónde ponerlo —
+  son tres entradas más en `FortinetReglas.EJES`, con la misma mecánica de `configuracion: true`.
 - **F5 · Si un derate publicado por Fortinet apareciera** para proxy, SIP, logging o HA
   activo-activo, entraría como dato con su fuente. Los del informe se excluyeron porque
   dependen del flujo, del perfil, del cifrado y de la configuración: no son constantes.
+- **Los 7 modelos que el Product Matrix de septiembre ya no lista** (100F, 200F, 400F, 401F,
+  600F, 1000F, 1001F) se quedan sin `ssl` ni límites de configuración, y por tanto **se apartan
+  con su motivo** en cuanto un escenario pide uno de esos ejes. Es un *Top Selling Models
+  Matrix*, un subconjunto curado, no un catálogo completo: el dato falta en el documento, no en
+  el equipo. Se cierra con las fichas por serie de esos cinco modelos — el mismo bloqueo que F6.
 
 ## Datos por confirmar
 
@@ -1196,6 +1222,87 @@ recientemente* y `docs/rediseno-fortinet.md`, etapa 3). Lo que queda, con su mot
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Los límites del Product Matrix se comprueban: F1, F4 (casi entero) y F7 (2026-09-23)
+
+Encargo del dueño: «ejecuta los pendientes haciendo el máximo esfuerzo para resolverlos y
+aplica la mejora propuesta y la que encuentres por el camino». La mejora propuesta al cerrar la
+etapa 5 era exactamente esta: **convertir en ejes duros los tres límites que la pantalla pedía
+y no podía comprobar**.
+
+**EL DATO NO HUBO QUE TRAERLO: YA ESTABA EN EL REPOSITORIO.** `www.fortinet.com` y
+`docs.fortinet.com` se volvieron a medir hoy y siguen devolviendo `connect_rejected` del proxy
+de egreso —denegación de política de la organización—, así que **no se descargó nada**. El PDF
+del **Product Matrix de septiembre de 2026** (`PROMTX-2026-R176-SEP`) lo publicó un ejecutor de
+Actions el 2026-09-02 en la rama de transporte `fuente/fortinet-product-matrix`. Se reconstruyó
+su tabla por coordenadas de texto de las páginas 1 a 3 y se transcribieron **27 filas de modelo
+con siete columnas**. **El doble anclaje dio 27/27 sin un solo rechazo** (anclas: `Concurrent
+Sessions` y `New Sessions/Sec`, las dos ya verificadas modelo a modelo) — es lo único que
+prueba que ninguna fila se desplazó. De paso la fuente primaria **confirma exactamente** los
+cinco valores de SSL que la etapa 3 había transcrito de un informe.
+
+**F1 · La inspección SSL pasa de 9 a 51 de 58 modelos.** Era el hueco más caro del catálogo:
+con inspección TLS profunda pedida competían 9 equipos. Los **7 que siguen en `null`** (100F,
+200F, 400F, 401F, 600F, 1000F, 1001F) son los que esa edición del documento ya no lista, y
+**se apartan con su motivo** en vez de dimensionarse con otra capa.
+
+**F4 · Seis campos nuevos, y los tres límites declarados pasan a ejes duros.** `tunGw`,
+`tunCli`, `sslVpnUsers`, `sslVpn`, `policies` y `vdomMax`. La pantalla decía «el límite de
+túneles por modelo no está en este catálogo»; ahora dice «entra en 200 túneles publicados —
+95 % del tope de plataforma». **`configuracion: true` los separa de los ejes de rendimiento** y
+no es cosmético: el techo de utilización es una política sobre *cifras de laboratorio*, y un
+máximo de túneles o de VDOM es un tope de la plataforma — aplicarle ese margen apartaría un
+modelo por un límite que nadie fijó, y en silencio. **Lo que NO entró y sigue abierto**: rutas
+BGP/OSPF, vecinos y VRF, que este documento no publica.
+
+**F7 · Las excepciones TLS, como fracción declarada.** `#pctTlsExento`, con **0 % por defecto**
+—dimensionar sobre el caudal completo, que es lo conservador y lo que la página hacía—. No es
+una constante de Fortinet y la pantalla lo dice donde se usa.
+
+**EL DEFECTO QUE SALIÓ POR EL CAMINO, Y ES DE LA ETAPA 5.** El caudal de acceso remoto se sumaba
+**siempre** al eje IPsec, porque la pantalla no preguntaba cómo termina. Son **dos motores
+distintos** y el documento publica un tope para cada uno: IPsec dial-up se cifra en el mismo
+ASIC que el overlay; SSL-VPN se termina en el stack TLS, tiene su propia cifra de caudal y **no
+carga el eje IPsec**. `#vpnTipo` lo declara. Medido: los mismos 400 usuarios remotos con el
+mismo caudal dan un **60F por IPsec dial-up y un 120G por SSL-VPN**.
+
+**Y UN CONTADOR QUE HABRÍA CONTADO CUALQUIER COSA.** Todos los modelos apartados se rotulaban
+«por falta de cifra oficial de inspección SSL». Valía mientras `ssl` fuera el único eje duro que
+podía faltar; con cuatro más habría mandado a completar el documento equivocado. El motor expone
+**`apartadoPor` como dato** —no como una cadena que alguien tenga que leer con una expresión
+regular— y la pantalla agrupa por eje.
+
+**Verificación.** 484 unitarios (AT-29…AT-34 nuevos), **16/16 pantallas**, **5/5 contrastes sin
+discrepancias** y **10/10 baterías e2e**. El contraste nuevo `fortinet-limites` **se comprobó
+saboteando**: aplicar el techo a los topes de configuración, o mandar todo el acceso remoto al
+eje IPsec, producen discrepancias. **Dos líneas base se revisaron y ninguna en silencio**: la de
+`fortinet` movió solo `nCandidatos` (`recomendado` y `need` quedaron idénticos en los ocho
+escenarios), y la de `fortinet-ssl` se rehízo porque **la premisa de un escenario dejó de ser
+cierta** —«a 4 Gbps ningún modelo trae la cifra» era verdad con 9 de 58— y se sustituyó por uno
+más fuerte que no depende de que el catálogo siga incompleto: el 600F hace 10,5 Gbps de Threat
+Protection y aun así no compite, porque su SSL no está publicado.
+
+**Y el transporte de lo que sigue bloqueado queda montado, no solo descrito.**
+`.github/workflows/traer-fortinet-pendientes.yml` baja desde un ejecutor de Actions los dos
+documentos que cierran **F6** (fichas por serie del 100F y el 200F, System Guide de los chasis
+7081F y 7121F) y **F2** (Ordering Guide de FortiGuard). Prueba las rutas conocidas de cada
+uno —Fortinet sirve las fichas nuevas en `/data-sheets/pdf/` y las de la generación F en
+`/data-sheets/`, el subdirectorio que ya explicó doce 404—, **valida la firma del contenido y
+no el código HTTP** —un 200 que devuelve la página de error en HTML donde se espera un PDF es
+un 404 disfrazado— y deja en el resumen qué respondió cada intento. **Un 404 se reporta y no
+tumba la corrida**: un informe que dice «no se pudo» con su código vale, y uno que se calla
+los fallos para salir en verde no. No extrae nada: la lectura sigue siendo humana.
+
+**Se revisó `fuente/fortinet-psu` y NO servía para F6**, y conviene dejarlo escrito para que
+nadie lo vuelva a intentar: son páginas de sustitución de fuente de alimentación —una del foro
+de la comunidad— y su única figura es un detalle de la PSU del 7081F, no la página «Hardware»
+de un datasheet. Y el `sd-wan-ordering-guide.pdf` que hay en `fuente/fortinet-product-matrix`
+**es el de Aruba**, no el de Fortinet: se leyeron sus 5 páginas para comprobarlo.
+
+**De paso, dos tildes en texto visible**: `Inspeccion SSL` y `Tuneles` se leían sin acento en el
+panel de utilización, que es texto que ve el usuario. Mismo hallazgo que el contraste de Nokia
+cazó el día que se escribió.
+
 
 ### La figura oficial del equipo, frontal Y trasera, en el dimensionador Fortinet (2026-09-22)
 

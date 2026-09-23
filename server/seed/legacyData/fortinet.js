@@ -19,19 +19,17 @@
 //        las metodologias son distintas y su cociente NO es constante entre plataformas
 //        (30G 500/400, 40F 600/310, 50G 1100/1300 — el 50G, el 70G y el 90G publican MAS
 //        SSL que Threat Protection, asi que cualquier derate fijo sobredimensiona ahi y
-//        subdimensiona en el 40F). Ver la PROCEDENCIA DE `ssl` mas abajo.
+//        subdimensiona en el 40F). Ver la PROCEDENCIA DE LA TABLA DEL MATRIX.
 //   sess Concurrent Sessions (valor base, sin licencia Hyperscale).
 //   cps  New Sessions/Sec (TCP) — sesiones NUEVAS por segundo. Es el eje de CPU, distinto del
 //        de memoria que mide `sess`: una sesion establecida cuesta memoria, abrirla cuesta
 //        ciclos. Cifra de modo flow; con inspeccion proxy cae, y Fortinet no publica cuanto.
 //
-// PROCEDENCIA DE `ssl` — 9 de 58 modelos, y los otros 49 en null A PROPOSITO.
-// Hasta el 2026-09-22 esta pagina NO tenia el dato: estimaba la inspeccion SSL aplicando un
-// factor unico (0,65) sobre Threat Protection. El informe «Informe final de validacion
-// tecnica y plan de mejora del modulo Fortinet Presales» (22-sep-2026, seccion 5.1) lo
-// documenta como el defecto P0 del motor y publica la tabla oficial que lo desmiente,
-// citando el Fortinet Product Matrix de septiembre de 2026 -la misma edicion
-// PRQMTX-2026-R176-SEP que ya respalda el resto de este archivo-:
+// PROCEDENCIA DE LA TABLA DEL MATRIX — 51 de 58 modelos, y los otros 7 en null A PROPOSITO.
+// Hasta el 2026-09-22 esta pagina NO tenia el dato de inspeccion SSL: estimaba la cifra
+// aplicando un factor unico (0,65) sobre Threat Protection. El informe «Informe final de
+// validacion tecnica y plan de mejora del modulo Fortinet Presales» (22-sep-2026, seccion
+// 5.1) lo documenta como el defecto P0 del motor y publicaba cinco modelos que lo desmienten:
 //
 //     modelo   TP oficial   SSL oficial   TP x 0,55   TP x 0,65 (lo que hacia esta pagina)
 //     FG-30G     500 Mbps     400 Mbps     275 Mbps     325 Mbps   <- subdimensiona
@@ -45,19 +43,33 @@
 // "conservador": se equivoca en las dos direcciones, y en el 40F es el error caro -promete
 // 390 Mbps donde el equipo da 310-.
 //
-// LAS CIFRAS ESTAN TRANSCRITAS DEL INFORME, NO LEIDAS DEL PDF EN ESTA SESION: fortinet.com
-// responde 403 al proxy de egreso de este entorno (politica de la organizacion, no un fallo
-// de red), asi que no se pudo abrir el Product Matrix para contrastarlas de primera mano.
-// El informe cita el documento y la edicion; eso es lo que se declara, ni mas ni menos. Las
-// cuatro variantes con SSD (31G/51G/71G/91G) heredan el valor de su modelo base por la misma
-// regla ya documentada en este archivo -mismo silicio, mismas cifras de rendimiento-.
+// EL 2026-09-23 LAS CIFRAS DEJARON DE ESTAR TRANSCRITAS DE UN INFORME Y PASARON A SALIR DEL
+// DOCUMENTO. `fortinet.com` y `docs.fortinet.com` siguen respondiendo `connect_rejected` al
+// proxy de egreso de este entorno (politica de la organizacion, no un fallo de red), asi que
+// no se bajo nada: el PDF ya estaba en el repositorio. Un ejecutor de GitHub Actions lo
+// publico el 2026-09-02 en la rama de transporte `fuente/fortinet-product-matrix`
+// (`fuente-fortinet/Fortinet_Product_Matrix.pdf`, edicion de septiembre de 2026,
+// PROMTX-2026-R176-SEP), que es de donde salieron `cps` y `sess` de 32 modelos. Se
+// reconstruyo la tabla por coordenadas de texto de sus paginas 1 a 3 y se transcribieron 27
+// filas de modelo con siete columnas cada una.
 //
-// LOS OTROS 49 QUEDAN EN null, Y null NO ES CERO NI ES "no tiene limite": es «el catalogo no
-// trae la cifra». El motor NO los dimensiona con otra capa cuando se pide inspeccion SSL
-// profunda; los APARTA CON SU MOTIVO y pide PoC o revision senior, que es la misma regla que
-// `dimensionador-juniper-srx.js` aplica a `fw` y la calculadora a cada capa. Completarlos es
-// leer el Product Matrix desde una maquina con acceso -la columna existe en el documento- y
-// pasarlos por `npm run cps`, que ya contrasta contra `sess` antes de aceptar una fila.
+// EL DOBLE ANCLAJE DIO 27 DE 27 SIN UN SOLO RECHAZO. Es la misma regla que aplican
+// `npm run cps`, `juniper` y `huawei`, y es lo unico que prueba que ninguna fila se
+// desplazo al reconstruir la tabla desde un PDF: una fila solo se acepta si al menos dos de
+// sus columnas casan con lo ya verificado y ninguna lo contradice. Las anclas fueron
+// `Concurrent Sessions` y `New Sessions/Sec`, que este catalogo ya traia verificadas modelo
+// a modelo. De paso el documento CONFIRMA los cinco valores de inspeccion SSL que el informe
+// habia dado (30G 400, 40F 310, 50G 1300, 70G 1400, 90G 2600): la fuente primaria y la
+// secundaria coinciden exactamente, que es la comprobacion que no se habia podido hacer.
+//
+// LOS OTROS 7 QUEDAN EN null, Y null NO ES CERO NI ES "no tiene limite": es «el catalogo no
+// trae la cifra». Son 100F, 200F, 400F, 600F y 1000F con sus variantes 401F y 1001F, cinco
+// modelos de la generacion F que la edicion de septiembre del Matrix ya no lista —es un
+// «Top Selling Models Matrix», un subconjunto curado, no el catalogo completo—. El motor NO
+// los dimensiona con otra capa cuando se pide un eje que les falta: los APARTA CON SU MOTIVO
+// y pide PoC o revision senior, que es la misma regla que `dimensionador-juniper-srx.js`
+// aplica a `fw` y la calculadora a cada capa. Completarlos es leer las fichas por serie de
+// esos cinco modelos, que es otro documento y otro bloqueo (pendiente F6).
 //
 // PROCEDENCIA DE `cps` — leer antes de completar los que faltan.
 // El Product Matrix no es accesible desde el entorno donde se edita este catalogo: el proxy
@@ -358,25 +370,84 @@ const DATASHEET_URL = 'https://www.fortinet.com/content/dam/fortinet/assets/data
 
 const bareId=id=>id.replace('FortiGate ','');
 
-// SSL Inspection Throughput (Mbps). Se asigna aqui y no modelo a modelo por el mismo motivo
-// que HW_SKU y ASIC_BY_MODEL: lo que importa de este campo es CUANTOS modelos lo tienen, y
-// una tabla corta al lado de un bucle que pone null en todos los demas lo dice de un vistazo.
-// Ver «PROCEDENCIA DE `ssl`» en la cabecera antes de anadir una fila aqui.
-const SSL_INSPECTION={
-  '30G':400, '31G':400,      // 31G hereda del 30G (misma plataforma SP4/SoC4 + SSD)
-  '40F':310,
-  '50G':1300, '51G':1300,
-  '70G':1400, '71G':1400,
-  '90G':2600, '91G':2600,
+// ── LIMITES POR MODELO DEL PRODUCT MATRIX ────────────────────────────────
+// Siete cifras que el documento publica por modelo. Se asignan aqui y no modelo a modelo por
+// el mismo motivo que HW_SKU y ASIC_BY_MODEL: lo que importa de estos campos es CUANTOS
+// modelos los tienen, y una tabla al lado del bucle que pone null en todos los demas lo dice
+// de un vistazo. Ver «PROCEDENCIA DE LA TABLA DEL MATRIX» en la cabecera.
+//
+//   ssl          SSL Inspection Throughput (Mbps).
+//   tunGw        Max G/W to G/W IPsec Tunnels — tuneles sitio a sitio. Es el techo del
+//                overlay SD-WAN: un hub con N spokes necesita N tuneles de esta clase.
+//   tunCli       Max Client to G/W IPsec Tunnels — dial-up de cliente (FortiClient).
+//   sslVpn       SSL VPN Throughput (Mbps).
+//   sslVpnUsers  Concurrent SSL VPN Users (Recommended Maximum, Tunnel Mode).
+//   policies     Firewall Policies — tamano de la tabla de politicas.
+//   vdomMax      Virtual Domains (Max) — el documento publica «por defecto / maximo» y aqui
+//                se transcribe EL MAXIMO, que es el que limita un diseno multi-tenant.
+//
+// `null` ES «EL DOCUMENTO IMPRIME "—"», NUNCA «no tiene limite» NI CERO. Pasa en cinco
+// modelos para `sslVpn`/`sslVpnUsers` (30G, 40F, 50G, 60F, 70G) y en el 30G para `vdomMax`.
+// No se dedujo la causa: el motivo por el que Fortinet deja de publicar esa fila en parte de
+// la gama G no esta en el documento, y escribirlo aqui seria inventarlo.
+const MATRIX_LIMITES={
+  '30G':    {ssl:   400, tunGw:  200, tunCli:   250, sslVpn: null, sslVpnUsers: null, policies:  2000, vdomMax:null},
+  '40F':    {ssl:   310, tunGw:  200, tunCli:   250, sslVpn: null, sslVpnUsers: null, policies:  2000, vdomMax:  10},
+  '50G':    {ssl:  1300, tunGw:  200, tunCli:   250, sslVpn: null, sslVpnUsers: null, policies:  2000, vdomMax:   5},
+  '60F':    {ssl:   630, tunGw:  200, tunCli:   500, sslVpn: null, sslVpnUsers: null, policies:  2000, vdomMax:  10},
+  '70F':    {ssl:   700, tunGw:  200, tunCli:   500, sslVpn:  405, sslVpnUsers:  200, policies:  5000, vdomMax:  10},
+  '70G':    {ssl:  1400, tunGw:  200, tunCli:   500, sslVpn: null, sslVpnUsers: null, policies:  5000, vdomMax:  10},
+  '80F':    {ssl:   715, tunGw:  200, tunCli:  2500, sslVpn:  950, sslVpnUsers:  200, policies:  5000, vdomMax:  10},
+  '90G':    {ssl:  2600, tunGw:  200, tunCli:  2500, sslVpn: 1400, sslVpnUsers:  200, policies:  5000, vdomMax:  10},
+  '120G':   {ssl:  3000, tunGw: 2000, tunCli: 16000, sslVpn: 1500, sslVpnUsers:  500, policies: 10000, vdomMax:  10},
+  '200G':   {ssl:  7000, tunGw: 2000, tunCli: 16000, sslVpn: 3000, sslVpnUsers:  500, policies: 10000, vdomMax:  25},
+  '400G':   {ssl: 11500, tunGw: 2000, tunCli: 50000, sslVpn: 6100, sslVpnUsers: 5000, policies: 10000, vdomMax:  50},
+  '700G':   {ssl: 14000, tunGw: 2000, tunCli: 50000, sslVpn: 8000, sslVpnUsers:10000, policies: 30000, vdomMax:  50},
+  '900G':   {ssl: 16700, tunGw: 2000, tunCli: 50000, sslVpn:10000, sslVpnUsers:10000, policies: 50000, vdomMax:  50},
+  '1800F':  {ssl: 12000, tunGw:20000, tunCli:100000, sslVpn:11000, sslVpnUsers:10000, policies:100000, vdomMax: 250},
+  '2600F':  {ssl: 20000, tunGw:20000, tunCli:100000, sslVpn:16000, sslVpnUsers:30000, policies:100000, vdomMax: 500},
+  '3000F':  {ssl: 29000, tunGw:40000, tunCli:200000, sslVpn:11000, sslVpnUsers:30000, policies:200000, vdomMax: 500},
+  '3000G':  {ssl: 75000, tunGw:40000, tunCli:200000, sslVpn: 9000, sslVpnUsers:30000, policies:200000, vdomMax: 500},
+  '3200F':  {ssl: 29000, tunGw:40000, tunCli:200000, sslVpn:11000, sslVpnUsers:30000, policies:200000, vdomMax: 500},
+  '3500F':  {ssl: 63000, tunGw:40000, tunCli:200000, sslVpn:16000, sslVpnUsers:30000, policies:200000, vdomMax: 500},
+  '3500G':  {ssl:112000, tunGw:40000, tunCli:200000, sslVpn: 9800, sslVpnUsers:30000, policies:200000, vdomMax: 500},
+  '3700F':  {ssl: 55000, tunGw:40000, tunCli:200000, sslVpn:16000, sslVpnUsers:30000, policies:200000, vdomMax: 500},
+  '3800G':  {ssl:120000, tunGw:40000, tunCli:200000, sslVpn:27000, sslVpnUsers:30000, policies:400000, vdomMax: 500},
+  '4200F':  {ssl: 50000, tunGw:40000, tunCli:200000, sslVpn:16000, sslVpnUsers:30000, policies:400000, vdomMax: 500},
+  '4400F':  {ssl: 86000, tunGw:40000, tunCli:200000, sslVpn:16000, sslVpnUsers:30000, policies:400000, vdomMax: 500},
+  '4800F':  {ssl: 63000, tunGw:40000, tunCli:200000, sslVpn:18000, sslVpnUsers:30000, policies:400000, vdomMax: 500},
+  '7081F':  {ssl:324000, tunGw:40000, tunCli:260000, sslVpn:13700, sslVpnUsers:30000, policies:200000, vdomMax: 500},
+  '7121F':  {ssl:540000, tunGw:40000, tunCli:260000, sslVpn:13700, sslVpnUsers:30000, policies:200000, vdomMax: 500},
 };
+
+// Variantes con SSD onboard: mismo silicio y mismas cifras que su modelo base, que es el
+// unico que el Product Matrix publica. EL PARENTESCO SE DEDUCE DEL PROPIO CATALOGO —dos
+// modelos son hermanos si comparten fw, tp, vpn y sess— en vez de mantener aqui una segunda
+// lista que se desincronizaria al entrar un modelo nuevo. Es exactamente la regla que ya
+// aplica `scripts/importar-cps.js`, escrita una sola vez por fabricante y no dos.
+const CLAVES_MATRIX=['ssl','tunGw','tunCli','sslVpn','sslVpnUsers','policies','vdomMax'];
+const hermanasDe=(b)=>MODELS.filter((m)=>m!==b
+  && m.fw===b.fw && m.tp===b.tp && m.vpn===b.vpn && m.sess===b.sess);
 
 for (const m of MODELS) {
   m.hwSku=HW_SKU[bareId(m.id)]||null;
   m.lic=LICENSES[bareId(m.id)]||null;
   m.datasheetUrl=DATASHEET_URL;
-  // null EXPLICITO en los 49 restantes: «el catalogo no trae la cifra», nunca «no aplica».
-  const sslV=SSL_INSPECTION[bareId(m.id)];
-  m.ssl=sslV==null?null:sslV;
+  // null EXPLICITO en los que no tienen fila: «el catalogo no trae la cifra», nunca «no aplica».
+  for (const k of CLAVES_MATRIX) m[k]=null;
+  m.matrixDe=null;
+}
+for (const [base, lim] of Object.entries(MATRIX_LIMITES)) {
+  const m=MODELS.find((x)=>bareId(x.id)===base);
+  // Un aviso y no un fallo silencioso, por lo mismo que `seedDimensionadorModels` avisa de un
+  // `eolModels` que no casa: una tabla que dejo de aplicarse se comporta igual que una que si.
+  if (!m) { console.warn(`[fortinet] MATRIX_LIMITES declara "${base}" y no hay tal modelo`); continue; }
+  for (const k of CLAVES_MATRIX) m[k]=lim[k];
+  for (const h of hermanasDe(m)) {
+    if (h.matrixDe || MATRIX_LIMITES[bareId(h.id)]) continue;
+    for (const k of CLAVES_MATRIX) h[k]=lim[k];
+    h.matrixDe=base;   // de quien lo heredo, para que la ficha lo pueda declarar
+  }
 }
 
 // Bundles de protección FortiGuard reales y vigentes (sufijos de SKU -809/-950/-928 en el price list AMER).
@@ -539,4 +610,4 @@ const CARE={
   fcelite:{n:'FortiCare Elite',      sla:'FortiCare Premium + atención de tickets con prioridad Elite'},
 };
 
-module.exports = { MODELS, BUNDLES, CARE, LICENSES, HW_SKU, FUNCIONES, SERVICIOS_SDWAN, TERMINOS, SSL_INSPECTION };
+module.exports = { MODELS, BUNDLES, CARE, LICENSES, HW_SKU, FUNCIONES, SERVICIOS_SDWAN, TERMINOS, MATRIX_LIMITES };

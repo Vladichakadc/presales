@@ -54,6 +54,13 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   t.ok(/SSL \d+\/\d+/.test(banner), 'el banner cuenta la cobertura real de `ssl` sobre el catálogo servido');
   t.ok(/vigente|vencida|sin fecha/.test(banner), 'el banner declara la vigencia de la lista de precios');
 
+  /* Los 7 modelos cuya cifra de inspeccion SSL el Product Matrix de septiembre ya no lista.
+     Se comparan por NOMBRE EXACTO y no por subcadena: `/600F/` casa dentro de `2600F` y
+     `/200F/` dentro de `3200F`, que es el mismo tropiezo del ancla corta que este repositorio
+     ya pago en `catalogo-check.js`. */
+  const SIN_CIFRA_SSL = ['FortiGate 100F', 'FortiGate 200F', 'FortiGate 400F', 'FortiGate 401F',
+    'FortiGate 600F', 'FortiGate 1000F', 'FortiGate 1001F'];
+
   /* ── AT-01 · SSL OFICIAL, NO UN DERATE ──────────────────────────────────────────────
      300 Mbps + 30 % de crecimiento = 390 Mbps. El 40F publica 600 Mbps de Threat Protection
      y 310 de SSL Inspection. El derate que esta página aplicaba (tp × 0,65 = 390) lo dejaba
@@ -64,22 +71,34 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   const sel40 = await page.$eval('#verdict-sel', (e) => [...e.options].map((o) => o.value));
   t.ok(!sel40.includes('FortiGate 40F'),
     'AT-01: con inspección SSL a 390 Mbps, el 40F NO es candidato (su SSL oficial son 310 Mbps)');
-  t.ok(sel40.length > 0 && sel40.length < 20,
-    'AT-01: compiten solo los modelos con cifra oficial de SSL, no los 58 del catálogo');
+  // NOMBRE EXACTO Y NO UN TOTAL. Esta afirmacion decia «menos de 20 candidatos», que era
+  // cierto solo mientras el catalogo tuviera 9 cifras de SSL de 58 modelos; al leer la tabla
+  // del Product Matrix pasaron a 51 y la prueba se puso roja sin que nada estuviera mal. Lo
+  // que hay que fijar no es CUANTOS compiten sino QUE NINGUNO SIN LA CIFRA compita: esa es la
+  // regla, y no caduca al completarse el catalogo.
+  t.ok(sel40.length > 0, 'AT-01: hay candidatos con cifra oficial de SSL');
+  t.ok(!sel40.some((v) => SIN_CIFRA_SSL.includes(v)),
+    'AT-01: ningún modelo sin cifra oficial de SSL se cuela por su Threat Protection');
   const ejes40 = await texto('#ejesPanel');
-  t.ok(/Inspeccion SSL/i.test(ejes40), 'AT-01: el panel de utilización muestra el eje SSL');
+  t.ok(/Inspecci[oó]n SSL/i.test(ejes40), 'AT-01: el panel de utilización muestra el eje SSL');
   t.ok(/apartados/.test(ejes40),
     'AT-01: se dice cuántos modelos se apartaron por falta de cifra — una lista corta se explica');
 
   /* ── AT-20 · UN EJE SIN DATO APARTA, NO SE IMPUTA ───────────────────────────────────
-     A 4 Gbps ningún modelo trae cifra de SSL suficiente (la mayor es la del 90G, 2,6 Gbps).
-     Lo que NO puede pasar es que la pantalla diga «ningún modelo cumple» a secas: eso se lee
-     como «hace falta más equipo» cuando lo que falta es el DATO. */
+     A 4 Gbps el 600F sobra por Threat Protection (10,5 Gbps) y aun asi no puede competir,
+     porque su inspeccion SSL no esta publicada. Hasta el 2026-09-23 esta afirmacion se
+     apoyaba en que a 4 Gbps NADIE cumplia -la mayor cifra de SSL del catalogo eran los 2,6
+     Gbps del 90G-; al entrar la tabla del Product Matrix el 200G la cubre y ese cero dejo de
+     existir. La regla no cambio; la forma de afirmarla, si. Lo que NO puede pasar sigue
+     siendo que la pantalla presente la falta de DATO como falta de capacidad. */
   await caudal(4000);
-  const vacio = await texto('#verdict');
-  t.ok(/inspecci[oó]n SSL/i.test(vacio),
-    'AT-20: sin candidato por falta de cifra de SSL, el veredicto nombra ese motivo');
-  t.ok(/tarea de datos|no se sustituye|PoC/i.test(vacio),
+  const sel4G = await page.$eval('#verdict-sel', (e) => [...e.options].map((o) => o.value));
+  t.ok(!sel4G.some((v) => SIN_CIFRA_SSL.includes(v)),
+    'AT-20: a 4 Gbps, un modelo sin cifra de SSL no entra aunque su Threat Protection sobre');
+  const ejes4G = await texto('#ejesPanel');
+  t.ok(/apartados/.test(ejes4G),
+    'AT-20: se declara cuántos se apartaron por falta de dato');
+  t.ok(/tarea de datos|no sustituye|PoC/i.test(ejes4G),
     'AT-20: y distingue «el catálogo no lo trae» de «ningún equipo aguanta»');
   await page.uncheck('#chkSsl');
   await page.waitForTimeout(500);
@@ -329,6 +348,80 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   }));
   t.ok(!hueco.foto && /Sin foto oficial/.test(hueco.aviso),
     'un modelo sin foto oficial DECLARA el hueco en vez de enseñar una parecida');
+
+  /* ── AT-29 a AT-33 · LOS LIMITES DEL PRODUCT MATRIX, CONDUCIDOS EN LA PANTALLA ───────
+     Las reglas se afirman en `test/fortinet-reglas.test.js`; aqui se afirma que la PANTALLA
+     las conduce: que los controles existen, que escriben el eje correcto y que lo que se lee
+     junto al equipo es el contraste y no la declaracion sin comprobar de antes. */
+  await page.goto(`${BASE}/dimensionador-fortinet-fortigate.html`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1500);
+  await caudal(1);
+  await page.click('#rolSeg button[data-v="hub"]');
+  await page.waitForTimeout(500);
+  await page.fill('#sites', '190');
+  await page.dispatchEvent('#sites', 'input');
+  await page.waitForTimeout(900);
+  const tunTxt = await texto('#verdict');
+  t.ok(/t[uú]neles publicados/.test(tunTxt) && /tope de plataforma/.test(tunTxt),
+    'AT-29: el conteo de túneles se contrasta contra la cifra publicada del modelo');
+  t.ok(!/no est[aá] en este cat[aá]logo/.test(tunTxt),
+    'AT-29: ya no queda el aviso «el límite de túneles no está en este catálogo»');
+  const reco190 = await page.$eval('#verdict-sel', (e) => e.value);
+  await page.fill('#sites', '260');
+  await page.dispatchEvent('#sites', 'input');
+  await page.waitForTimeout(900);
+  const reco260 = await page.$eval('#verdict-sel', (e) => e.value);
+  t.ok(reco190 === 'FortiGate 30G' && reco260 === 'FortiGate 120G',
+    `AT-30: pasar de 190 a 260 spokes de 1 Mbps cambia el equipo por el TOPE DE TUNELES (${reco190} → ${reco260})`);
+
+  // El acceso remoto va a un eje o al otro segun el modo, y son dos topes distintos.
+  await page.goto(`${BASE}/dimensionador-fortinet-fortigate.html`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1500);
+  await caudal(100);
+  await page.fill('#vpnUsers', '400');
+  await page.dispatchEvent('#vpnUsers', 'input');
+  await page.waitForTimeout(800);
+  const recoIpsec = await page.$eval('#verdict-sel', (e) => e.value);
+  await page.selectOption('#vpnTipo', 'sslvpn');
+  await page.waitForTimeout(900);
+  const recoSsl = await page.$eval('#verdict-sel', (e) => e.value);
+  t.ok(recoIpsec !== recoSsl,
+    `AT-31: los mismos 400 remotos dan otro equipo segun el motor que los termina (${recoIpsec} → ${recoSsl})`);
+  t.ok(/SSL-VPN/.test(await texto('#verdict')),
+    'AT-31: la pantalla dice por qué motor pasa el acceso remoto');
+
+  // VDOM: un tope que este catálogo no tenía y que decide un diseño multi-tenant.
+  await page.goto(`${BASE}/dimensionador-fortinet-fortigate.html`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1500);
+  await caudal(100);
+  await page.fill('#vdoms', '120');
+  await page.dispatchEvent('#vdoms', 'input');
+  await page.waitForTimeout(900);
+  t.ok(await page.$eval('#verdict-sel', (e) => e.value) === 'FortiGate 1800F',
+    'AT-32: 120 VDOM declarados llevan al primer modelo cuyo máximo publicado los admite');
+  t.ok(/VDOM/.test(await texto('#verdict')), 'AT-32: y la pantalla lo declara junto al equipo');
+
+  // F7 · las excepciones TLS son un supuesto declarado, no una constante del fabricante.
+  await page.goto(`${BASE}/dimensionador-fortinet-fortigate.html`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1500);
+  // EL ESCENARIO DE AT-01, QUE ES DONDE EL EJE SSL MANDA DE VERDAD. 300 Mbps + 30 % dan 390:
+  // el 40F publica 600 Mbps de Threat Protection y solo 310 de inspeccion SSL, asi que el eje
+  // que lo saca es el de SSL y no el de la capa. Un caudal mayor no serviria para esto: alli
+  // manda Threat Protection y bajar la demanda del eje SSL no cambiaria la lista, que fue
+  // exactamente el falso verde de la primera version de esta prueba.
+  await caudal(300);
+  await page.check('#chkSsl');
+  await page.waitForTimeout(800);
+  t.ok(await page.$eval('#fldTlsExento', (e) => e.style.display !== 'none'),
+    'F7: el control de excepciones TLS aparece solo con la inspección SSL pedida');
+  const sinExento = await page.$eval('#verdict-sel', (e) => [...e.options].map((o) => o.value));
+  await page.selectOption('#pctTlsExento', '40');
+  await page.waitForTimeout(900);
+  const conExento = await page.$eval('#verdict-sel', (e) => [...e.options].map((o) => o.value));
+  t.ok(!sinExento.includes('FortiGate 40F') && conExento.includes('FortiGate 40F'),
+    'F7: declarar un 40 % exento baja la demanda del eje SSL de 390 a 234 Mbps y el 40F (310) vuelve a caber');
+  t.ok(/no es una cifra de Fortinet|supuesto declarado/i.test(await texto('#verdict')),
+    'F7: y se declara como supuesto de quien diseña, no como dato del fabricante');
 
   t.ok(errores.length === 0, `sin excepciones de página (${errores.join(' | ') || 'ninguna'})`);
 

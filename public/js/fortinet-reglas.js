@@ -70,23 +70,54 @@
      Confundirlos en un solo comportamiento es lo que produce o bien un catalogo mutilado o
      bien una recomendacion sobre un dato que nadie midio. */
   const EJES = [
-    { k: 'fw', n: 'Firewall', frase: 'el firewall', campo: 'fw', dureza: 'dura',
+    { k: 'fw', escalaMbps: true, n: 'Firewall', frase: 'el firewall', campo: 'fw', dureza: 'dura',
       metodo: 'Firewall Throughput (1518 B UDP), sesion descargada al ASIC de red' },
-    { k: 'vpn', n: 'IPsec VPN', frase: 'el motor IPsec', campo: 'vpn', dureza: 'dura',
+    { k: 'vpn', escalaMbps: true, n: 'IPsec VPN', frase: 'el motor IPsec', campo: 'vpn', dureza: 'dura',
       metodo: 'IPsec VPN Throughput (512 B), criptografia descargada al ASIC' },
-    { k: 'ips', n: 'IPS', frase: 'el IPS', campo: 'ips', dureza: 'dura',
+    { k: 'ips', escalaMbps: true, n: 'IPS', frase: 'el IPS', campo: 'ips', dureza: 'dura',
       metodo: 'IPS Throughput (Enterprise Mix)' },
-    { k: 'ngfw', n: 'NGFW', frase: 'el NGFW', campo: 'ngfw', dureza: 'dura',
+    { k: 'ngfw', escalaMbps: true, n: 'NGFW', frase: 'el NGFW', campo: 'ngfw', dureza: 'dura',
       metodo: 'NGFW Throughput (Enterprise Mix) = IPS + Application Control' },
-    { k: 'tp', n: 'Threat Protection', frase: 'Threat Protection', campo: 'tp', dureza: 'dura',
+    { k: 'tp', escalaMbps: true, n: 'Threat Protection', frase: 'Threat Protection', campo: 'tp', dureza: 'dura',
       metodo: 'Threat Protection (Enterprise Mix) = NGFW + antivirus + logging' },
-    { k: 'ssl', n: 'Inspeccion SSL', frase: 'la inspeccion SSL', campo: 'ssl', dureza: 'dura',
+    { k: 'ssl', escalaMbps: true, n: 'Inspección SSL', frase: 'la inspección SSL', campo: 'ssl', dureza: 'dura',
       metodo: 'SSL Inspection Throughput (IPS activo, promedio de sesiones HTTPS)' },
     { k: 'sess', n: 'Sesiones concurrentes', frase: 'la tabla de sesiones', campo: 'sess', dureza: 'dura',
       unidad: 'sesiones', metodo: 'Concurrent Sessions (valor base, sin licencia Hyperscale)' },
     { k: 'cps', n: 'Sesiones nuevas / s', frase: 'las sesiones nuevas por segundo', campo: 'cps', dureza: 'blanda',
       unidad: 'cps', metodo: 'New Sessions/Sec (TCP, modo flow)' },
+    // ── LIMITES DE CONFIGURACION (Product Matrix, sept-2026) ───────────────────────────
+    // Entraron el 2026-09-23 y cierran el hueco que este mismo modulo declaraba en pantalla:
+    // la pagina pedia tuneles y usuarios de acceso remoto y despues decia que el tope por
+    // modelo «no esta en este catalogo». Un control que no se puede contrastar invita a creer
+    // que se tuvo en cuenta, que es peor que su ausencia.
+    //
+    // `configuracion: true` LOS SEPARA DE LOS EJES DE RENDIMIENTO, y no es cosmetico: el
+    // techo de utilizacion es una politica sobre CIFRAS DE LABORATORIO («no disenar al 100 %
+    // de un numero medido en banco»). Un maximo de tuneles, de VDOM o de usuarios
+    // recomendados no es una medicion: es un tope de la plataforma. Aplicarle el mismo
+    // margen apartaria un modelo por un limite que el fabricante declara como absoluto, y
+    // encima en silencio. Se comparan contra el 100 % de lo publicado.
+    { k: 'tunGw', n: 'Túneles IPsec sitio a sitio', frase: 'los túneles del overlay', campo: 'tunGw',
+      dureza: 'dura', unidad: 'túneles', configuracion: true,
+      metodo: 'Max G/W to G/W IPsec Tunnels (Product Matrix)' },
+    { k: 'tunCli', n: 'Túneles IPsec de cliente', frase: 'los túneles de acceso remoto', campo: 'tunCli',
+      dureza: 'dura', unidad: 'túneles', configuracion: true,
+      metodo: 'Max Client to G/W IPsec Tunnels (Product Matrix)' },
+    { k: 'sslVpnUsers', n: 'Usuarios SSL-VPN concurrentes', frase: 'los usuarios SSL-VPN', campo: 'sslVpnUsers',
+      dureza: 'dura', unidad: 'usuarios', configuracion: true,
+      metodo: 'Concurrent SSL VPN Users (Recommended Maximum, Tunnel Mode)' },
+    { k: 'sslVpn', n: 'Caudal SSL-VPN', frase: 'el motor SSL-VPN', campo: 'sslVpn', dureza: 'dura',
+      metodo: 'SSL VPN Throughput (Product Matrix)' },
+    { k: 'vdom', n: 'Dominios virtuales', frase: 'los dominios virtuales', campo: 'vdomMax',
+      dureza: 'dura', unidad: 'VDOM', configuracion: true,
+      metodo: 'Virtual Domains (Max) (Product Matrix)' },
   ];
+  // `escalaMbps` marca los ejes cuya demanda es PROPORCIONAL al caudal del sitio. Solo esos
+  // sirven para responder «hasta cuantos Mbps aguanta este modelo en este escenario»: el
+  // caudal SSL-VPN y los limites de configuracion son constantes declaradas aparte, y
+  // meterlos en esa regla de tres daria un tope que se mueve al cambiar un dato que no es
+  // caudal. Antes esto se deducia de «no tiene `unidad`», que valia por casualidad.
   const EJE_POR_K = Object.fromEntries(EJES.map((e) => [e.k, e]));
 
   // Las cinco capas de inspeccion, de menor a mayor profundidad. El orden ES la regla: una
@@ -173,9 +204,13 @@
         if (def.dureza === 'dura' && !apartaPor) apartaPor = def;
         continue;
       }
+      // El techo de utilizacion NO se aplica a un maximo de configuracion: ver la nota de
+      // `configuracion` en EJES. Un tope de plataforma se compara contra si mismo.
+      const techoEje = def.configuracion ? 1 : techo;
       const u = req / cap;
       ejes.push({ k: def.k, n: def.n, frase: def.frase, unidad: def.unidad || 'Mbps',
-        metodo: def.metodo, req, cap, u, estado: u > techo ? 'excede' : 'ok', dureza: def.dureza });
+        metodo: def.metodo, req, cap, u, configuracion: !!def.configuracion,
+        estado: u > techoEje ? 'excede' : 'ok', dureza: def.dureza });
     }
     const conDato = ejes.filter((e) => e.u != null);
     const manda = conDato.length ? conDato.reduce((a, b) => (b.u > a.u ? b : a)) : null;
@@ -191,10 +226,17 @@
     } else if (excede.length) {
       estado = 'excede';
       const p = excede[0];
-      motivo = `${p.n} al ${pct(p.u)} de la cifra publicada`
-        + (techo < 1 ? ` (techo de utilizacion declarado: ${pct(techo)})` : '');
+      motivo = `${p.n} al ${pct(p.u)} de ${p.configuracion ? 'lo que la plataforma admite' : 'la cifra publicada'}`
+        + (techo < 1 && !p.configuracion ? ` (techo de utilizacion declarado: ${pct(techo)})` : '');
     }
     return {
+      // QUE EJE lo aparto, como dato y no como cadena. Quien lo pinta necesita agrupar por
+      // motivo -«3 sin cifra de SSL» y «5 sin tope de tuneles» son dos tareas de datos
+      // distintas-, y sacarlo de una expresion regular sobre `motivo` seria atar el texto de
+      // pantalla a una decision de logica: cambiar una palabra romperia el recuento en
+      // silencio, que es como se llega a un contador que cuenta cualquier cosa.
+      apartadoPor: apartaPor ? apartaPor.k : null,
+      apartadoPorN: apartaPor ? apartaPor.n : null,
       id: m.id, estado, motivo, ejes, manda,
       uMax: manda ? manda.u : null,
       // Un eje 'blanda' sin dato no aparta, pero tampoco se calla: la ficha lo declara.

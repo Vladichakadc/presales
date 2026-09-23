@@ -41,7 +41,10 @@ const CAMPOS = {
   // `ssl` entra en la cuenta el 2026-09-22: esta en 9 de 58 y es el hueco mas caro que
   // queda, porque el motor APARTA un modelo sin esa cifra en cuanto alguien pide inspeccion
   // SSL profunda. Un hueco que no se cuenta se comporta como uno que no existe.
-  fortinet: { mod: 'fortinet', lista: 'MODELS', campos: ['fw', 'tp', 'ssl', 'vpn', 'sess', 'cps', 'redund'] },
+  // Los cuatro limites de configuracion entran el 2026-09-23 con la tabla del Product Matrix:
+  // son lo que convierte «tantos tuneles hacen falta» en una comprobacion, y su cobertura es
+  // justo lo que hay que mirar antes de creer que un escenario se valido entero.
+  fortinet: { mod: 'fortinet', lista: 'MODELS', campos: ['fw', 'tp', 'ssl', 'vpn', 'sess', 'cps', 'redund', 'tunGw', 'tunCli', 'sslVpnUsers', 'vdomMax'] },
   mikrotik: { mod: 'mikrotik', lista: 'MODELS', campos: ['fwd', 'ipsec', 'ram', 'cores', 'redund'] },
   aruba: { mod: 'aruba', lista: 'MODELS', campos: ['redund'] },
   juniper: { mod: 'juniper', lista: 'MODELS', campos: ['fw', 'fwImix', 'vpn', 'ips', 'atp', 'sess', 'redund'] },

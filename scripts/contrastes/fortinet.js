@@ -9,16 +9,28 @@
  * IPsec/fraccion— por los tres roles, porque el rol es lo que activa el segundo.
  *
  * LINEA BASE MEDIDA EN CHROMIUM SOBRE EL COMMIT 2147588, con el deslizador todavia puesto.
+ *
+ * REVISION DELIBERADA DE `nCandidatos` EL 2026-09-23, y por que no es aflojar la prueba. Al
+ * entrar los limites del Product Matrix, el conteo de tuneles paso de declararse en pantalla
+ * a ser un EJE DURO: en los seis escenarios con rol spoke o hub el escenario declara tuneles,
+ * y los 7 modelos cuyo «Max G/W to G/W IPsec Tunnels» ese documento ya no publica -100F, 200F,
+ * 400F, 401F, 600F, 1000F, 1001F- se apartan con su motivo en vez de darse por buenos. De ahi
+ * 55 -> 48 y 39 -> 34, exactamente los 7 y los 5 de ellos que antes competian.
+ *
+ * LO QUE ESTE CASO EXISTE PARA VIGILAR NO SE TOCO: `recomendado` y `need` son IDENTICOS en los
+ * ocho escenarios y en las seis migraciones de enlace v1. Esa es la parte que no puede moverse
+ * sin una decision; el conteo de candidatos si se mueve cuando el catalogo gana o pierde una
+ * cifra, y por eso la revision va fechada y con su motivo en vez de regenerada en silencio.
  */
 const BASE_LINEA = [
   { n: 'sin sdwan, 500 Mbps',          bw: 500,   rol: 'none',  pct: 100, recomendado: 'FortiGate 60F',  need: '650 Mbps', nCandidatos: 55 },
   { n: 'sin sdwan, 2.5 Gbps',          bw: 2500,  rol: 'none',  pct: 100, recomendado: 'FortiGate 200G', need: '3.3 Gbps', nCandidatos: 39 },
-  { n: 'spoke 100% overlay, 500',      bw: 500,   rol: 'spoke', pct: 100, recomendado: 'FortiGate 60F',  need: '689 Mbps', nCandidatos: 55 },
-  { n: 'spoke 70% overlay, 500',       bw: 500,   rol: 'spoke', pct: 70,  recomendado: 'FortiGate 60F',  need: '677 Mbps', nCandidatos: 55 },
-  { n: 'spoke 30% overlay, 2.5 Gbps',  bw: 2500,  rol: 'spoke', pct: 30,  recomendado: 'FortiGate 200G', need: '3.3 Gbps', nCandidatos: 39 },
-  { n: 'spoke 100% overlay, 2.5 Gbps', bw: 2500,  rol: 'spoke', pct: 100, recomendado: 'FortiGate 200G', need: '3.4 Gbps', nCandidatos: 39 },
-  { n: 'hub 100% overlay, 10 Gbps',    bw: 10000, rol: 'hub',   pct: 100, recomendado: 'FortiGate 200G', need: '4.8 Gbps', nCandidatos: 39 },
-  { n: 'hub 50% overlay, 10 Gbps',     bw: 10000, rol: 'hub',   pct: 50,  recomendado: 'FortiGate 200G', need: '4.7 Gbps', nCandidatos: 39 },
+  { n: 'spoke 100% overlay, 500',      bw: 500,   rol: 'spoke', pct: 100, recomendado: 'FortiGate 60F',  need: '689 Mbps', nCandidatos: 48 },
+  { n: 'spoke 70% overlay, 500',       bw: 500,   rol: 'spoke', pct: 70,  recomendado: 'FortiGate 60F',  need: '677 Mbps', nCandidatos: 48 },
+  { n: 'spoke 30% overlay, 2.5 Gbps',  bw: 2500,  rol: 'spoke', pct: 30,  recomendado: 'FortiGate 200G', need: '3.3 Gbps', nCandidatos: 34 },
+  { n: 'spoke 100% overlay, 2.5 Gbps', bw: 2500,  rol: 'spoke', pct: 100, recomendado: 'FortiGate 200G', need: '3.4 Gbps', nCandidatos: 34 },
+  { n: 'hub 100% overlay, 10 Gbps',    bw: 10000, rol: 'hub',   pct: 100, recomendado: 'FortiGate 200G', need: '4.8 Gbps', nCandidatos: 34 },
+  { n: 'hub 50% overlay, 10 Gbps',     bw: 10000, rol: 'hub',   pct: 50,  recomendado: 'FortiGate 200G', need: '4.7 Gbps', nCandidatos: 34 },
 ];
 
 // La fraccion cifrada deja de declararse como porcentaje y pasa a ser un enlace de overlay

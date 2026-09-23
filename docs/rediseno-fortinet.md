@@ -689,3 +689,128 @@ vecinos y VDOM (pendiente F4). Ninguno se cierra con código: se cierran con un 
 **4/4 contrastes sin discrepancias** —incluido `fortinet`, cuya línea base se midió antes del
 Multi-Underlay Builder: la prueba de que retirar tres campos y añadir cuatro **no movió el
 dimensionamiento de ningún escenario que no los use**— y 10/10 baterías e2e.
+
+---
+
+# Etapa 6 · Los límites del Product Matrix dejan de declararse y pasan a comprobarse (2026-09-23)
+
+La etapa 5 cerró con el formulario pidiendo tres cosas que la pantalla no podía contrastar
+—túneles IPsec, usuarios SSL-VPN concurrentes y la escala del plano de control— y diciéndolo
+en voz alta: «el límite por modelo no está en este catálogo». Eso era lo correcto mientras el
+dato no estuviera, y a la vez era el defecto más caro que quedaba: **un control que no se
+puede comprobar invita a creer que se tuvo en cuenta**, que es peor que su ausencia. El
+pendiente **F4** lo registraba así, y remitía a la *Maximum Values Table* de Fortinet.
+
+## El dato no hizo falta traerlo: ya estaba en el repositorio
+
+`fortinet.com` y `docs.fortinet.com` siguen respondiendo `connect_rejected` al proxy de egreso
+de este entorno — se volvió a medir el 2026-09-23 y sigue siendo una denegación de política de
+la organización, no un fallo de red. **No se descargó nada.** El PDF del **Product Matrix de
+septiembre de 2026** (`PROMTX-2026-R176-SEP`) lo publicó un ejecutor de GitHub Actions el
+2026-09-02 en la rama de transporte `fuente/fortinet-product-matrix`, que es de donde ya
+salieron `cps` y `sess` de 32 modelos. Se reconstruyó su tabla por coordenadas de texto de las
+páginas 1 a 3 y se transcribieron **27 filas de modelo con siete columnas cada una**.
+
+**El doble anclaje dio 27 de 27 sin un solo rechazo**, con `Concurrent Sessions` y
+`New Sessions/Sec` como anclas — las dos que este catálogo ya traía verificadas modelo a
+modelo. Es lo único que prueba que ninguna fila se desplazó al reconstruir una tabla desde un
+PDF, que es justo el fallo que los importadores de este repositorio existen para cazar. De
+paso, la fuente primaria **confirma exactamente** los cinco valores de inspección SSL que la
+etapa 3 había transcrito de un informe (30G 400, 40F 310, 50G 1300, 70G 1400, 90G 2600): la
+comprobación que entonces no se pudo hacer.
+
+## Qué entró, y qué sigue faltando
+
+| Campo | Columna del documento | Cobertura |
+|---|---|---|
+| `ssl` | SSL Inspection Throughput | **51/58** (era 9/58) |
+| `tunGw` | Max G/W to G/W IPsec Tunnels | 51/58 |
+| `tunCli` | Max Client to G/W IPsec Tunnels | 51/58 |
+| `sslVpn` | SSL VPN Throughput | 42/58 |
+| `sslVpnUsers` | Concurrent SSL VPN Users (Recommended Maximum, Tunnel Mode) | 42/58 |
+| `policies` | Firewall Policies | 51/58 |
+| `vdomMax` | Virtual Domains (Max) | 49/58 |
+
+Los **7 que faltan** son 100F, 200F, 400F, 600F y 1000F con sus variantes 401F y 1001F: cinco
+modelos de la generación F que la edición de septiembre ya no lista, porque es un *Top Selling
+Models Matrix* y no el catálogo completo. Van en `null`, y **`null` no es cero ni «no tiene
+límite»**. Los huecos de `sslVpn`/`sslVpnUsers` son distintos: ahí **el documento imprime
+«—»** en cinco modelos base (30G, 40F, 50G, 60F, 70G). No se dedujo la causa; el motivo por el
+que Fortinet deja de publicar esa fila en parte de la gama G no está en el documento, y
+escribirlo sería inventarlo.
+
+Las variantes con SSD heredan del modelo base **deduciendo el parentesco del propio catálogo**
+—dos modelos son hermanos si comparten `fw`, `tp`, `vpn` y `sess`—, que es la regla que ya
+aplica `scripts/importar-cps.js`: una segunda lista escrita a mano se desincronizaría al
+entrar un modelo nuevo. El campo `matrixDe` declara de quién heredó cada uno, y la ficha lo
+dice en pantalla en vez de presentar un valor heredado como propio.
+
+## Cinco ejes nuevos, y una distinción que no es cosmética
+
+`FortinetReglas.EJES` pasa de 8 a 13: `tunGw`, `tunCli`, `sslVpnUsers`, `sslVpn` y `vdom`.
+Cuatro de ellos llevan **`configuracion: true`**, y ahí está la decisión de diseño:
+
+> **El techo de utilización es una política sobre CIFRAS DE LABORATORIO** —«no diseñar al
+> 100 % de un número medido en banco»—. Un máximo de túneles, de VDOM o de usuarios
+> recomendados **no es una medición: es un tope de la plataforma**. Aplicarle el mismo margen
+> apartaría un modelo por un límite que el fabricante declara como absoluto, y encima en
+> silencio. Se comparan contra el 100 % de lo publicado.
+
+El contraste lo fija con un par: 190 de 200 túneles es el 95 %, así que un techo del 70 %
+aplicado a ciegas habría sacado ese modelo. Sigue entrando, y el resultado es idéntico al del
+100 %.
+
+Y `escalaMbps` sustituye a la deducción «no tiene `unidad`» con la que `soporta()` decidía qué
+ejes entran en la regla de tres del «hasta cuántos Mbps aguanta este modelo». Funcionaba por
+casualidad: al entrar el caudal SSL-VPN —Mbps, pero una constante declarada aparte— esa
+deducción habría metido en la escala un número que no crece con el caudal del sitio.
+
+## El acceso remoto pasaba por el motor equivocado
+
+**Es el defecto que salió por el camino, y es de la etapa 5.** Cuando entró la VPN de acceso
+remoto, su caudal se sumaba **siempre** al eje IPsec, porque la pantalla no preguntaba cómo
+termina. El Product Matrix publica dos topes distintos —*Max Client to G/W IPsec Tunnels* y
+*Concurrent SSL VPN Users*— porque son **dos motores distintos del equipo**: IPsec dial-up se
+cifra en el mismo ASIC que el overlay; SSL-VPN se termina en el stack TLS, tiene su propia
+cifra de caudal y **no carga el eje IPsec**. Un diseño SSL-VPN cargaba el eje equivocado en
+los dos sentidos.
+
+El control nuevo es `#vpnTipo`, y **no es una preferencia de producto**: decide a qué eje va
+la demanda. Medido: 400 usuarios remotos con el mismo caudal y el mismo requerimiento dan un
+**60F por IPsec dial-up y un 120G por SSL-VPN**.
+
+## F7 · Las excepciones TLS, como fracción declarada
+
+Toda implantación real deja fuera de la inspección una parte del HTTPS —categorías con
+obligación legal, aplicaciones con *pinning*, tráfico de actualización—. Ese caudal atraviesa
+el equipo pero **no consume el motor de inspección SSL**. `#pctTlsExento` lo declara, igual
+que ya se declara la fracción del overlay, y **el valor por defecto es 0 %**: dimensionar
+sobre el caudal completo, que es lo conservador y lo que esta página hacía antes. **No es una
+constante de Fortinet** y la pantalla lo dice donde se usa. Se descuenta del eje SSL y **no**
+del caudal de la capa efectiva, que sí procesa ese tráfico.
+
+## Un contador que contaba cualquier cosa
+
+`sinSsl` agrupaba **todos** los modelos apartados bajo el rótulo «por falta de cifra oficial
+de inspección SSL». Valía mientras `ssl` fuera el único eje duro que podía faltar; al entrar
+cuatro más habría contado y rotulado como hueco de SSL un modelo apartado por no publicar su
+tope de túneles — y habría mandado a completar el documento equivocado. Ahora el motor expone
+**`apartadoPor`** como dato (no como cadena que alguien tenga que leer con una expresión
+regular) y la pantalla agrupa por eje.
+
+## Verificación de la etapa 6
+
+484 unitarios (AT-29…AT-34 nuevos, entre ellos el doble anclaje afirmado modelo a modelo y el
+techo que no recorta un tope de plataforma), **16/16 pantallas**, **5/5 contrastes sin
+discrepancias** —`fortinet-limites` es nuevo y **se comprobó saboteando**: aplicar el techo a
+los topes de configuración, o mandar todo el acceso remoto al eje IPsec, producen
+discrepancias— y **10/10 baterías e2e**, con AT-29…AT-32 y F7 conducidos en Chromium.
+
+**Dos líneas base se revisaron, y ninguna en silencio.** La de `fortinet` movió solo
+`nCandidatos` en los seis escenarios con rol spoke o hub —los 7 modelos sin tope de túneles
+publicado se apartan— mientras `recomendado` y `need` quedaron **idénticos**, que es lo que
+ese caso existe para vigilar. La de `fortinet-ssl` se rehízo entera porque **la premisa de uno
+de sus escenarios dejó de ser cierta**: «a 4 Gbps ningún modelo trae la cifra» era verdad con
+9 de 58 y hoy el 200G la cubre. Ese escenario no se borró: se sustituyó por uno más fuerte
+—el 600F hace 10,5 Gbps de Threat Protection y aun así no puede competir, porque su SSL no
+está publicado—, que **no depende de que el catálogo siga incompleto**.
