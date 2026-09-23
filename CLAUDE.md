@@ -117,6 +117,39 @@ No build step for the frontend — `public/*.html` and `public/js/*.js` are serv
 
 Set `AUTH_PASSWORD` in `.env` before starting, or nobody can log in: locally the server only warns, but with `NODE_ENV=production` it refuses to boot rather than serving prices to the open web. The other auth variables (`AUTH_USER`, `SESSION_SECRET`, `AUTH_STATE_DIR`) are documented in `.env.example`.
 
+**El registro de corridas existe, y su diseño salió de medir el contrato de los hooks (2026-09-23).**
+`.claude/hooks/aprendizaje.sh` anota cada `npm run ...` en `.claude/learning/runs.jsonl`, que es
+el archivo del que viven `self-learning`, `skill-usage-insights` y `skill-feedback-adaptation`
+— **hasta ese día ese directorio no existía**, así que las tres estaban instaladas y mudas: el
+mismo defecto que `CISCO_EOL_MODELS` y que el permiso `sync` sin exigir. **Hacen falta los dos
+eventos y no solo `PostToolUse`**, y eso se midió: con un comando que sale con código 3,
+**`PostToolUse` no se dispara**. Un registro construido sobre el evento de salida guardaría
+únicamente los aciertos, y `skill-usage-insights` calcularía su `success_rate` sobre ellos —
+100 % siempre. De ahí el tercer estado de siempre: `PreToolUse` apunta la corrida en
+`en-curso.jsonl`, `PostToolUse` la cierra en `runs.jsonl` con `rc:0` y su duración, y lo que se
+queda sin cerrar lo **salda el hook de arranque** como `rc:1`. No se deduce del texto de la
+salida: adivinar el éxito leyendo stdout es la heurística que un corchete suelto rompe.
+**Y el registro es telemetría local**: `.claude/learning/` sigue ignorado por git, que es lo que
+su `.gitignore` ya decía.
+
+**El aviso antes de un `git push` (2026-09-23).** `.claude/hooks/pre-push.sh` compara la fecha
+del último `npm run verificar` en verde contra el `mtime` más reciente de `public/`, `server/`,
+`scripts/`, `test/` y `package.json`. Aquí empujar a `main` **es** el despliegue, y hasta ese
+día nada comprobaba que la puerta se hubiera corrido: el único que falla cerrado es `verificar`
+en CI, y para entonces ya empujaste. **Avisa, no bloquea** —responde `ask` con el motivo
+dentro—, por el mismo razonamiento del override con motivo del dimensionador Fortinet: un
+bloqueo rígido se rodea con una variable de entorno y entonces la advertencia se pierde entera.
+Sin registro todavía se calla, en vez de dar una alarma que nadie puede atender.
+
+**Y los dos comparten `lib-comando.js`, que distingue un comando que SE EJECUTA de uno que solo
+se menciona.** No es una precaución teórica: la primera versión casaba con un `grep` sobre el
+JSON del hook y **registró un `npm run verificar` que viajaba dentro de una cadena de shell**,
+un verde falso justo delante de un push que despliega. Es el ancla-subcadena que este
+repositorio ya pagó dos veces —`${cid}-sel` dentro de `${cid}-selector`, `/600F/` dentro de
+`2600F`—. La regla: se parte el comando por los separadores de shell y se exige que el programa
+abra su segmento, saltando solo lo que no cambia qué se ejecuta (`cd X &&`, `timeout`, las
+asignaciones de entorno).
+
 **Una sesión de Claude Code en la web arranca con el repo ya listo (2026-09-23).**
 `.claude/hooks/session-start.sh`, registrado en `.claude/settings.json`, corre `npm install` y
 **comprueba** que Playwright y Chromium están donde `scripts/ayuda/chromium.js` los busca. Sin

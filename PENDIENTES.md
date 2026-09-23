@@ -4,7 +4,22 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-23 (**las dos mejoras propuestas, ejecutadas, y el repo arranca solo
+Última revisión: 2026-09-23 (**puntos 3 y 4 del orden de automatizaciones, activados**. (3)
+`self-learning` deja de estar muda: `.claude/hooks/aprendizaje.sh` escribe
+`.claude/learning/runs.jsonl`, que **no existía** — tres skills instaladas dependían de un
+archivo que nadie escribía, el defecto de `CISCO_EOL_MODELS`. **El diseño salió de medir el
+contrato**: con un comando que sale con código 3, `PostToolUse` NO se dispara, así que un
+registro basado solo en él habría reportado 100 % de éxito siempre; ahora `PreToolUse` apunta,
+`PostToolUse` cierra y el hook de arranque **salda como fallidas** las que quedaron abiertas.
+(4) `.claude/hooks/pre-push.sh` avisa antes de un `git push` cuando la puerta no ha pasado
+desde el último cambio — responde `ask` con el motivo, **no bloquea**, porque un bloqueo rígido
+se rodea y entonces la advertencia se pierde. **Un fallo encontrado probando**: la primera
+versión registró un `npm run verificar` que solo estaba *mencionado* dentro de una cadena — un
+verde falso delante de un push que despliega. Lo arregla `lib-comando.js`, compartido por los
+dos hooks. Quedan sin hacer los puntos 1 (`npm run puerta`), 2 (allowlist), 5
+(`revisor-catalogo`) y 6 (pendiente 33, decisión del dueño).)
+
+Revisión anterior: 2026-09-23 (**las dos mejoras propuestas, ejecutadas, y el repo arranca solo
 en la web**. (1) **El Comparador dice cuántas casillas son un hueco del catálogo**: medido en
 pantalla, un 7750 SR-7s frente a un FortiGate 120G deja **9 de 19 filas sin dato contra 3**, así
 que leer la tabla de arriba abajo favorece al que más publica y no al mejor. Los `noAplica` se

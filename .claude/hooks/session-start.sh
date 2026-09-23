@@ -29,6 +29,28 @@ fi
 
 cd "${CLAUDE_PROJECT_DIR:-$(dirname "$0")/../..}"
 
+# SALDA LAS CORRIDAS QUE NUNCA SE CERRARON. `aprendizaje.sh` apunta cada `npm run ...` en
+# en-curso.jsonl al empezar y la cierra en runs.jsonl al terminar bien; lo que se queda en el
+# primero fallo o se interrumpio, porque PostToolUse NO SE DISPARA cuando el comando sale con
+# codigo distinto de cero (medido, no supuesto). Saldarlas aqui es lo que hace que el registro
+# tenga fallos dentro: sin esto, `skill-usage-insights` calcularia siempre 100 % de exito
+# sobre una lista que solo contiene aciertos.
+if [ -s .claude/learning/en-curso.jsonl ]; then
+  node -e '
+    const fs=require("fs");
+    const pend=fs.readFileSync(".claude/learning/en-curso.jsonl","utf8").split("\n").filter(l=>l.trim());
+    for(const l of pend){
+      let r; try{ r=JSON.parse(l); }catch{ continue; }
+      fs.appendFileSync(".claude/learning/runs.jsonl", JSON.stringify({
+        ts:r.ts, skill:r.skill, action:r.action, rc:1, duration:null,
+        error:"sin cierre: el comando fallo o se interrumpio", hint:"", note:"saldado al arrancar",
+      })+"\n");
+    }
+    fs.writeFileSync(".claude/learning/en-curso.jsonl","");
+    if(pend.length) console.log(`[arranque] ${pend.length} corrida(s) sin cerrar saldadas como fallidas en el registro.`);
+  ' 2>/dev/null || true
+fi
+
 echo "[arranque] Instalando dependencias de npm..."
 # `npm install` y no `npm ci`: el estado del contenedor se cachea despues del hook, asi que
 # una instalacion incremental aprovecha esa cache. El fallo cerrado de `npm ci` ante un
