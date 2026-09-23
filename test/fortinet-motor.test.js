@@ -121,6 +121,9 @@ test('T06 · con FortiOS 7.6.3+ SSL-VPN esta retirado: bloquea y ofrece IPsec co
   assert.ok(b, 'bloqueo de escenario');
   assert.deepStrictEqual(b.correccion, { accion: 'cambiar', campo: 'remoto.metodo', valor: 'ipsec' });
   assert.ok(b.fuente, 'con su fuente');
+  // La regla sale de una cita del informe de auditoria (Release Notes 7.6.6) que no se leyo
+  // desde este entorno: el catalogo la marca `leida:false` y el bloqueo tiene que decirlo.
+  assert.strictEqual(b.fuenteLeida, false, 'una cita no leida no se presenta como leida');
 });
 
 test('T07 · 90G y 91G no admiten SSL-VPN en ninguna rama ofrecida aunque el Matrix publique su cifra', () => {
@@ -129,8 +132,11 @@ test('T07 · 90G y 91G no admiten SSL-VPN en ninguna rama ofrecida aunque el Mat
     for (const id of ['FortiGate 90G', 'FortiGate 91G']) {
       const c = r.candidatos.find((x) => x.id === id);
       assert.ok(c.modelo.sslVpnUsers > 0, 'el dato historico existe');
-      assert.ok(c.bloqueos.some((x) => x.codigo === 'FORTIOS_INCOMPATIBLE'), `${id} con ${v}`);
+      const b = c.bloqueos.find((x) => x.codigo === 'FORTIOS_INCOMPATIBLE');
+      assert.ok(b, `${id} con ${v}`);
       assert.ok(!c.elegible);
+      // En 7.4 manda la nota 11 del Matrix, leida; en 7.6.3+ la regla retirada, citada.
+      assert.strictEqual(b.fuenteLeida, v !== '7.6.3+', `${id} con ${v}: ${b.fuente}`);
     }
   }
   const r74 = evaluar(con(CU01(), { 'remoto.metodo': 'sslvpn', 'software.fortiOS': '7.4' }));
@@ -314,7 +320,7 @@ test('T22 · VDOM por encima de los incluidos anade la licencia; por encima del 
 test('T23 · un termino de 60 meses resuelve el sufijo -60, nunca un ano', () => {
   const r = evaluar(con(CU01(), { 'comercial.anios': 5 }));
   assert.deepStrictEqual(r.bom.filas.map((f) => f.sku), ['FG-90G-BDL-809-60']);
-  assert.match(r.bom.filas[0].nota, /5 anos/);
+  assert.match(r.bom.filas[0].nota, /5 años/);
 });
 
 test('T25 · la puerta decide las acciones, y BLOCKED nunca deja salir nada', () => {
@@ -395,4 +401,60 @@ test('invariante · un eje sin dato nunca se lee como cero ni como ilimitado', (
   const c100 = r.candidatos.find((x) => x.id === 'FortiGate 100F');
   assert.strictEqual(c100.eval.estado, 'apartado', 'el 100F no tiene cifra de SSL: se aparta');
   assert.ok(!c100.elegible);
+});
+
+/* ── LO QUE SE AFINO AL CONDUCIR LA PANTALLA (etapa 7, misma fecha) ──────────────────────
+   Cinco comportamientos que salieron de ver la pagina funcionar, no de leer el informe, y que
+   por eso conviene fijar aqui: sin prueba, el primero en «simplificarlos» los desharia. */
+
+test('un dato COMERCIAL que falta bloquea la cotizacion, no el dimensionamiento', () => {
+  // Elegir un fuera de venta en ampliacion pide su justificacion. Antes de este ajuste el
+  // motor dejaba de evaluar y la ficha se quedaba vacia: la persona no veia el equipo que
+  // acababa de elegir. Ahora se evalua, se ve, y lo que se cierra es la salida comercial.
+  const r = evaluar(con(CU01(), { 'comercial.motivo': 'ampliacion', 'seleccion.manual': 'FortiGate 600F',
+    'seguridad.funciones': ['chkAv'] }));
+  assert.ok(r.faltan.includes('comercial.justificacionEol'));
+  assert.ok(r.seleccion && r.seleccion.id === 'FortiGate 600F', 'el equipo elegido se evalua y se ve');
+  assert.ok(r.bom, 'y su BOM se construye');
+  assert.strictEqual(r.quoteGate, 'BLOCKED');
+  assert.ok(r.bloqueos.some((b) => b.codigo === 'dato-requerido' && b.campo === 'comercial.justificacionEol'));
+  assert.strictEqual(r.bloqueos.filter((b) => /justificaci/i.test(b.mensaje)).length, 1, 'un solo motivo, no dos con otras palabras');
+  // Un dato TECNICO que falta si impide evaluar: el resultado mentiria.
+  const t = evaluar(con(CU01(), { 'remoto.usuarios': 0 }));
+  assert.ok(t.faltan.includes('remoto.usuarios'));
+  assert.strictEqual(t.seleccion, null);
+});
+
+test('el motor publica que campo se ve, cual es obligatorio y cual falta: la pagina no lo decide', () => {
+  const r = evaluar(con(CU01(), { 'comercial.emsActivo': true }));
+  assert.deepStrictEqual({ ...r.campos['comercial.emsEndpoints'], afecta: undefined },
+    { visible: true, requerido: true, falta: true, afecta: undefined });
+  assert.strictEqual(r.campos['topologia.spokes'].visible, false, 'un spoke no declara spokes');
+  assert.strictEqual(r.campos['topologia.hubs'].visible, true);
+  assert.ok(r.campos['remoto.usuarios'].afecta.includes('tunCli'), 'y que eje toca cada uno');
+});
+
+test('el bundle insuficiente trae su correccion, y se declara aunque no haya candidato', () => {
+  const r = evaluar(con(CU01(), { 'seguridad.funciones': ['chkIotDlp'], 'comercial.bundle': 'utp' }));
+  const b = r.bloqueos.find((x) => x.codigo === 'bundle-insuficiente');
+  assert.deepStrictEqual(b.correccion, { accion: 'cambiar', campo: 'comercial.bundle', valor: 'ent' });
+  const sin = evaluar(con(CU01(), { 'seguridad.funciones': ['chkIotDlp'], 'comercial.bundle': 'utp',
+    'topologia.enlaces': [{ id: 1, tipo: 'DIA', down: 900000, overlay: true }] }));
+  assert.ok(sin.bloqueos.some((x) => x.codigo === 'sin-candidato'));
+  assert.ok(sin.bloqueos.some((x) => x.codigo === 'bundle-insuficiente'), 'sin candidato tambien se dice que el bundle no alcanza');
+});
+
+test('con SSL-VPN en 7.6.3+ la causa va delante de su consecuencia', () => {
+  const r = evaluar(con(CU01(), { 'remoto.metodo': 'sslvpn' }));
+  const cods = r.bloqueos.map((b) => b.codigo);
+  assert.ok(cods.indexOf('fortios-funcion-retirada') < cods.indexOf('sin-candidato'), cods.join(' > '));
+});
+
+test('una alternativa del mismo silicio se explica por lo que la distingue, no con «0 % mas»', () => {
+  const r = evaluar(CU01());
+  const a91 = r.alternativas.find((a) => a.id === 'FortiGate 91G');
+  assert.ok(a91, 'el 91G es alternativa del 90G');
+  assert.match(a91.porQue, /misma capacidad que FortiGate 90G/);
+  assert.match(a91.porQue, /disco local de \d+ GB/);
+  assert.ok(!/\b0 % más/.test(a91.porQue));
 });

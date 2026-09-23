@@ -288,6 +288,13 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 .res-tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:8px 10px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:14px;letter-spacing:.03em;text-transform:uppercase;color:var(--steel);white-space:nowrap}
 .res-tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--red)}
 .res-tabs button:focus-visible,.tabs button:focus-visible{outline:2px solid var(--red);outline-offset:-2px}
+/* Por debajo de 1200 px el panel mide unos 540 px (y 350 en movil) y la quinta pestana quedaba
+   cortada: se podia desplazar, pero no se veia que existiera. Se compacta la fila en vez de
+   esconderla. Va DESPUES de la regla base a proposito: con la misma especificidad, gana la
+   ultima de la hoja. */
+@media(max-width:1199px){.res-tabs{padding:0 2px}.res-tabs button{padding:8px 5px;font-size:12px;letter-spacing:0}}
+/* En movil no caben ni compactadas (468 px en 352): pasan a dos filas, que se ven enteras. */
+@media(max-width:880px){.res-tabs{flex-wrap:wrap;overflow-x:visible}}
 .res-cuerpo{padding:12px 14px}
 .res-panel[hidden]{display:none}
 .res-panel:focus-visible{outline:2px solid var(--red);outline-offset:2px}
@@ -306,6 +313,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 .override-aviso{border:1px solid var(--red);border-left:3px solid var(--red);background:#FFF5F5;padding:10px 12px;margin:10px 0 0;font-size:12.5px;line-height:1.5}
 .override-aviso table{margin-top:6px;font-size:12px}
 .res-bloqueos{margin:10px 0 0;padding:0;list-style:none;font-size:12.5px;line-height:1.45}
+.res-bloqueos .bloq-fuente{display:block;font-size:11px;color:var(--steel);margin-top:3px}
 .res-bloqueos li{padding:6px 0 6px 10px;border-left:2px solid var(--red);margin-bottom:6px}
 .res-bloqueos li.warning{border-left-color:var(--amber)}
 .res-bloqueos li.borrador{border-left-color:var(--steel)}

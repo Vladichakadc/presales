@@ -646,7 +646,7 @@ const FORTIOS={
   porDefecto:'7.6.3+',
   reglas:[
     {funcion:'sslvpn', versiones:['7.6.3+'], modelos:'*', estado:'retirada', sustituto:'ipsec',
-     fuente:'Informe de auditoria 23-sep-2026, ref. [3]: FortiOS 7.6.6 Release Notes, «SSL VPN tunnel mode replaced with IPsec VPN»',
+     fuente:'Informe de auditoría 23-sep-2026, ref. [3]: FortiOS 7.6.6 Release Notes, «SSL VPN tunnel mode replaced with IPsec VPN»',
      leida:false},
     {funcion:'sslvpn', versiones:['7.6.0-7.6.2'], modelos:'ram-2gb', estado:'no-soportada', sustituto:'ipsec',
      fuente:'Product Matrix sept-2026, nota 10: «SSL VPN not supported on FortiOS 7.6.0 and above, for models with 2GB RAM»',

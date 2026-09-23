@@ -214,8 +214,8 @@
       case 'num':
       case 'int': {
         const n = typeof v === 'string' && v.trim() !== '' ? Number(v) : v;
-        if (typeof n !== 'number' || !Number.isFinite(n)) return err('tipo-invalido', `se esperaba un numero y llego ${JSON.stringify(v)}`);
-        if (def.t === 'int' && !Number.isInteger(n)) return err('tipo-invalido', `se esperaba un entero y llego ${n}`);
+        if (typeof n !== 'number' || !Number.isFinite(n)) return err('tipo-invalido', `se esperaba un número y llegó ${JSON.stringify(v)}`);
+        if (def.t === 'int' && !Number.isInteger(n)) return err('tipo-invalido', `se esperaba un entero y llegó ${n}`);
         if (n < def.min || n > def.max) return err('fuera-de-rango', `${n} fuera de [${def.min}, ${def.max}]`);
         return n;
       }
@@ -224,7 +224,7 @@
         return v;
       case 'texto':
         if (typeof v !== 'string') return err('tipo-invalido', 'se esperaba texto');
-        if (v.length > def.max) return err('fuera-de-rango', `texto de mas de ${def.max} caracteres`);
+        if (v.length > def.max) return err('fuera-de-rango', `texto de más de ${def.max} caracteres`);
         return v.trim();
       case 'lista':
         if (!Array.isArray(v)) return err('tipo-invalido', 'se esperaba una lista');
@@ -236,7 +236,7 @@
         return v;
       case 'enlaces': {
         if (!Array.isArray(v)) return err('tipo-invalido', 'se esperaba la lista de enlaces');
-        if (v.length > 32) return err('fuera-de-rango', 'mas de 32 enlaces');
+        if (v.length > 32) return err('fuera-de-rango', 'más de 32 enlaces');
         const out = [];
         v.forEach((l, i) => {
           const r = `${ruta}[${i}]`;
@@ -254,7 +254,7 @@
         return out;
       }
       default:
-        return err('tipo-invalido', 'definicion desconocida');
+        return err('tipo-invalido', 'definición desconocida');
     }
   }
   function validarRama(def, entrada, base, ruta, errores) {
@@ -337,7 +337,7 @@
     const manual = s.seleccion.manual ? modelos.find((m) => m.id === s.seleccion.manual) : null;
     if (s.seleccion.manual && modelos.length && !manual) {
       errores.push({ codigo: 'modelo-desconocido', campo: 'seleccion.manual',
-        mensaje: `«${s.seleccion.manual}» no es un modelo del catalogo vigente` });
+        mensaje: `«${s.seleccion.manual}» no es un modelo del catálogo vigente` });
     }
     const ctx = { manualEsEol: !!(manual && (manual.eol || !manual.hwSku)) };
     const inactivos = [];
@@ -512,7 +512,8 @@
       if (c.estado === 'retirada' || c.estado === 'no-soportada') {
         b.push({ codigo: 'FORTIOS_INCOMPATIBLE', eje: 'sslVpnUsers',
           mensaje: `SSL-VPN en modo túnel ${c.estado === 'retirada' ? 'está retirado' : 'no está soportado'} en ${m.id} con ${s.software.fortiOS}.`,
-          fuente: c.regla.fuente, correccion: 'Usar acceso remoto IPsec (FortiClient), que es el sustituto que declara el fabricante.' });
+          fuente: c.regla.fuente, fuenteLeida: c.regla.leida !== false,
+          correccion: 'Usar acceso remoto IPsec (FortiClient), que es el sustituto que declara el fabricante.' });
       } else if (c.estado === 'desconocida') {
         av.push({ codigo: 'FORTIOS_DESCONOCIDA', mensaje: `Con ${s.software.fortiOS}, SSL-VPN no está soportado en modelos de 2 GB de RAM, y la RAM de ${m.id} no está en el catálogo.`,
           fuente: c.regla.fuente, confianza: 'baja' });
@@ -816,7 +817,9 @@
         const r = ((cat.fortios && cat.fortios.reglas) || []).find((x) => x.funcion === 'sslvpn' && x.modelos === '*');
         bl.push({ codigo: 'fortios-funcion-retirada', nivel: 'bloqueo',
           mensaje: 'SSL-VPN en modo túnel está retirado en FortiOS 7.6.3 o superior: el acceso remoto se diseña con IPsec.',
-          fuente: r ? r.fuente : null,
+          // `leida:false` en el catalogo: la regla sale de una referencia del informe de
+          // auditoria y el documento del fabricante no se leyo desde este entorno. Se dice.
+          fuente: r ? r.fuente : null, fuenteLeida: r ? r.leida !== false : null,
           correccion: { accion: 'cambiar', campo: 'remoto.metodo', valor: 'ipsec' } });
       }
       if (!res.recomendacion && !res.seleccion) {

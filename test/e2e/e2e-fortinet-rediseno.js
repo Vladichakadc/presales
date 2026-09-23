@@ -103,6 +103,10 @@ const CU01 = new URLSearchParams({
   const bloq = await texto('#resBloqueos');
   t.ok(/retirado en FortiOS 7\.6\.3/.test(bloq), 'T06: SSL-VPN en 7.6.3+ se bloquea con su causa');
   t.ok(/Cambiar a IPsec/.test(bloq), 'T06: y se ofrece IPsec como corrección');
+  // CU-05: «se explica el motivo con fuente». La regla de 7.6.3+ lleva `leida:false` en el
+  // catálogo (la cita el informe; el documento no se leyó desde aquí) y eso se declara.
+  t.ok(/Fuente: .*Release Notes/.test(bloq) && /no se leyó desde este entorno/.test(bloq),
+    'CU-05: el bloqueo cita su fuente y declara que el documento no se leyó');
   await page.click('#resBloqueos [data-corregir]');
   await page.waitForTimeout(800);
   t.ok(await page.$eval('#vpnTipo', (s) => s.value) === 'ipsec' && (await estado()).reco === 'FortiGate 90G',
@@ -153,7 +157,10 @@ const CU01 = new URLSearchParams({
   await page.waitForTimeout(600);
   t.ok(await page.$eval('#emsEndpoints', (x) => x.value) === '350', 'T12: «Sugerir» propone usuarios + remotos, a la vista');
   const ems = (await catsSb()).find((x) => /EMS/.test(x)) || '';
-  t.ok(/\b350\b/.test(ems) || /14 tramo|tramo/.test(ems) || ems.length > 0, 'T12: la línea de EMS entra con los endpoints declarados');
+  // La cantidad Y el tramo: con `|| ems.length > 0` esta aserción pasaba con cualquier fila
+  // que mencionara EMS, así que no comprobaba que la cantidad fueran los endpoints declarados.
+  t.ok(/\b350\b/.test(ems) && /350 endpoint\(s\) gestionados \(14 tramo\(s\) de 25/.test(ems),
+    `T12: la línea de EMS entra con los 350 endpoints declarados y 14 tramos de 25 («${ems.replace(/\s+/g, ' ').slice(0, 140)}»)`);
 
   /* ── T13 / T14 · FORMULARIO DINAMICO ─────────────────────────────────────────────── */
   await abrir(CU01);
@@ -182,6 +189,10 @@ const CU01 = new URLSearchParams({
 
   /* ── T16 · TLS CIFRADO × INSPECCIONADO ───────────────────────────────────────────── */
   await abrir(CU01);
+  // Se lee con la pestaña «Requisitos» abierta, como la lee una persona: oculta, la tabla no
+  // tiene maquetacion y sus celdas salen pegadas.
+  await page.click('#rtab-req');
+  await page.waitForTimeout(300);
   const sslReq = async () => { const m = /Inspección SSL\s+([\d.]+ [MG]bps)/.exec(await texto('#requisitos')); return m ? m[1] : null; };
   const antesSsl = await sslReq();
   await page.selectOption('#pctCifrado', '80');
@@ -269,6 +280,8 @@ const CU01 = new URLSearchParams({
 
   /* ── CONFIRMACION DEL SERVIDOR ───────────────────────────────────────────────────── */
   await abrir(CU01);
+  await page.click('#tab-bom');
+  await page.waitForTimeout(500);
   const [resp] = await Promise.all([
     page.waitForResponse((r) => r.url().includes('/api/v1/fortinet/evaluations'), { timeout: 15000 }),
     page.click('#xlsBtn'),
@@ -316,6 +329,15 @@ const CU01 = new URLSearchParams({
   t.ok(movil.ancho <= movil.vista, `T27: sin desplazamiento horizontal (${movil.ancho} ≤ ${movil.vista})`);
   t.ok(!movil.anidado, 'T27: el formulario no tiene scroll propio');
   t.ok(movil.barra !== 'none' && movil.rol === 'region' && /90G/.test(movil.txt), 'T27: el resumen de una línea sigue a la vista y es una región con nombre');
+  // Las cinco pestañas del panel se VEN, no solo se pueden desplazar: a 1024 px la quinta
+  // quedaba cortada detrás de un scroll horizontal que nada anunciaba.
+  const pestanas = async () => page.$eval('.res-tabs', (e) => ({ total: e.scrollWidth, visible: e.clientWidth }));
+  const pMovil = await pestanas();
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.waitForTimeout(300);
+  const pMedia = await pestanas();
+  t.ok(pMovil.total <= pMovil.visible + 1 && pMedia.total <= pMedia.visible + 1,
+    `las cinco pestañas del resultado caben a 390 y a 1024 px (${pMovil.total}/${pMovil.visible}, ${pMedia.total}/${pMedia.visible})`);
   await page.setViewportSize({ width: 1440, height: 936 });
 
   /* ── T28 · ANUNCIOS PARA LECTOR DE PANTALLA ──────────────────────────────────────── */

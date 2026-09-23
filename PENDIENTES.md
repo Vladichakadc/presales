@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-23 (**puntos 3 y 4 del orden de automatizaciones, activados**. (3)
+Última revisión: 2026-09-23 (**etapa 7 del dimensionador Fortinet: una sola verdad para recomendación, BOM y cotización** — el informe de auditoría en vivo del 23-sep y su prompt maestro. **Resultado: GO CONDICIONADO, en la rama `claude/laughing-babbage-pvpxyi`, sin fusionar ni desplegar**, porque el prompt lo prohíbe sin autorización expresa. Los cuatro P0 eran un solo defecto (varias verdades en la misma página) y los cierra un motor único, `fortinet-motor.js`, que es el mismo archivo en el navegador y en `POST /api/v1/fortinet/evaluations`. **T01–T30: 30/30 reportadas y aprobadas, cinco con un límite declarado.** Por el camino salieron cuatro defectos nuevos: N01 (error JS al abrir un enlace), N02 (108 precios de licencias con la lista de agosto), N03 (60 textos visibles sin tilde, entre ellos «termino 3 anos» en la nota que llega al Excel) y N04 (el bloqueo de SSL-VPN no pintaba su fuente). Entrega completa en `docs/auditoria-fortinet-2026-09-23/`. **542 unitarios, 16/16 pantallas, 6/6 contrastes y 11/11 baterías e2e.**)
+
+Revisión anterior: 2026-09-23 (**puntos 3 y 4 del orden de automatizaciones, activados**. (3)
 `self-learning` deja de estar muda: `.claude/hooks/aprendizaje.sh` escribe
 `.claude/learning/runs.jsonl`, que **no existía** — tres skills instaladas dependían de un
 archivo que nadie escribía, el defecto de `CISCO_EOL_MODELS`. **El diseño salió de medir el
@@ -768,6 +770,17 @@ Documento: «Auditoría técnica — Dimensionador Aruba»
 (<https://claude.ai/code/artifact/73f4cc17-eb40-494c-9127-ac3eea6849a0>). La fase 1 está
 cerrada (ver *Cerrado recientemente*). Lo que queda, en el orden del plan:
 
+**Nuevo, de la auditoría de Fortinet del 2026-09-23: Aruba tiene el mismo defecto que F05.**
+`dimensionador-aruba-edgeconnect.js` calcula `caudalTotal = Σ down` sobre **todos** los enlaces
+del Multi-Underlay Builder. La fila no tiene rol activo/respaldo, así que un sitio con un 4G de
+respaldo suma ese enlace al caudal de operación normal. Puede sobredimensionar el appliance y el
+tier de suscripción. Fortinet ya lo resolvió en `escenariosTrafico` (normal, falla de cada
+enlace activo y failover): la demanda es el **máximo** entre escenarios y el requisito dice cuál
+lo gobierna. Portarlo es añadir `rol` a la fila de Aruba y derivar el caudal por escenario.
+**No se hizo en la entrega de Fortinet**, porque el alcance era ese módulo y cambiar el caudal de
+Aruba mueve su tier, su Boost y su BOM, y necesita su propio contraste antes/después. Es el
+riesgo R11 de `docs/auditoria-fortinet-2026-09-23/LEEME.md`.
+
 **Fase 2 · sincronización**
 - **A2** — elegir DTD o SSE con «Gateways sucursal» cambia la familia a EdgeConnect sin
   avisar y no vuelve al quitarlo. Para 9004/9012 existe Central Foundation/Advanced *with
@@ -818,6 +831,43 @@ Documento: «Informe final de validación técnica y plan de mejora del módulo 
 Presales», 22-sep-2026. Los P0 técnico y comercial están cerrados (ver *Cerrado
 recientemente* y `docs/rediseno-fortinet.md`, etapa 3). Lo que queda, con su motivo:
 
+**Y lo que deja abierto la auditoría en vivo del 23-sep (etapa 7, GO CONDICIONADO).** Detalle y
+riesgos R1–R11 en `docs/auditoria-fortinet-2026-09-23/LEEME.md`.
+
+- **Decisión del dueño: fusionar y desplegar la etapa 7.** Está en la rama
+  `claude/laughing-babbage-pvpxyi` y **no se fusionó**, porque el prompt de la auditoría prohíbe
+  desplegar sin autorización expresa. El informe pide además una **aprobación explícita de
+  arquitectura Fortinet** antes de salir. Los pasos exactos están en la sección *Cómo revisar y
+  desplegar* de la entrega.
+- **R1 · La retirada de SSL-VPN en modo túnel en FortiOS 7.6.3+ está citada, no leída.** Viene
+  de la referencia [3] del informe (Release Notes 7.6.6). `docs.fortinet.com` responde
+  `connect_rejected` al proxy de egreso. La regla lleva `leida:false` y la pantalla lo dice junto
+  al bloqueo. **Se cierra** leyendo las Release Notes 7.6.x desde una máquina con acceso y
+  pasando la regla a `leida:true` con la cita literal.
+- **R2 · «Modelos con 2 GB de RAM» (nota 10 del Matrix) no dice cuáles son.** En 7.6.0–7.6.2
+  la compatibilidad con SSL-VPN queda «desconocida», con confianza baja y la cotización en
+  borrador. Hace falta la RAM por modelo, que está en las fichas por serie.
+- **Accesibilidad no ejecutada:** lector de pantalla real, zoom al 200 % y auditoría automática
+  tipo axe. La semántica ARIA sí está verificada por e2e (T28/T29 y el roving tabindex).
+- **SKU que dejan la cotización en borrador**, sin afectar al dimensionamiento:
+  - EMS por tramo: hay patrón, no el código del tramo;
+  - FortiSASE;
+  - FortiSandbox dedicado;
+  - FortiAnalyzer;
+  - licencia de VDOM adicional;
+  - segunda fuente opcional.
+
+  Van con `sku: null` declarado. Mismo transporte que F2: el Ordering Guide de FortiGuard.
+- **17 precios de licencias de la edición de agosto** (`anterior`). La lista de septiembre no
+  trae esos SKU; la línea sale en borrador y dice cuál. Se cierran con la próxima lista que los
+  traiga.
+- **Co-term sin prorrateo; heartbeat de HA sin modelar; ópticas de Fortinet fuera del
+  catálogo.** Se declaran en la entrega (CU-03, CU-09 y CU-10 parciales) y no se inventan.
+- **El caso `calculadora-ssl` se quedó sin sujeto.** Ningún FortiGate *visible en el portal*
+  carece hoy de la cifra de TLS: el 100F y el 200F no aparecen allí. El caso lo reporta como
+  «SIN SUJETO» en vez de pasar en verde sin mirar. La regla la sigue fijando
+  `test/calculadora.test.js` con datos sintéticos.
+
 **Cerrados el 2026-09-23 (F1, F4 en su mayor parte, F7).** Ver `docs/rediseno-fortinet.md`,
 etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
 
@@ -859,11 +909,15 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
 - **F5 · Si un derate publicado por Fortinet apareciera** para proxy, SIP, logging o HA
   activo-activo, entraría como dato con su fuente. Los del informe se excluyeron porque
   dependen del flujo, del perfil, del cifrado y de la configuración: no son constantes.
-- **Los 7 modelos que el Product Matrix de septiembre ya no lista** (100F, 200F, 400F, 401F,
-  600F, 1000F, 1001F) se quedan sin `ssl` ni límites de configuración, y por tanto **se apartan
-  con su motivo** en cuanto un escenario pide uno de esos ejes. Es un *Top Selling Models
-  Matrix*, un subconjunto curado, no un catálogo completo: el dato falta en el documento, no en
-  el equipo. Se cierra con las fichas por serie de esos cinco modelos — el mismo bloqueo que F6.
+- **De los 7 modelos que el Product Matrix de septiembre ya no lista quedan 2: el 100F y el
+  200F.** Los otros cinco (400F, 401F, 600F, 1000F y 1001F) se cerraron el 2026-09-23 en la
+  etapa 7 con sus fichas por serie (`FICHAS_LIMITES` en `fortinet.js`). Esas fichas ya estaban
+  en las ramas de transporte y casaron 12 de 12 contra cuatro anclas, que se comprueban al
+  cargar. El 100F y el 200F siguen **apartándose con su motivo** cuando un escenario pide esos
+  ejes: el mismo bloqueo que F6.
+  **No se completan desde los espejos** con los que se leyó su alimentación el 2026-09-11. Un
+  tope de túneles o de SSL es una restricción crítica, y el prompt de la auditoría del 23-sep
+  prohíbe usar como autoridad una copia secundaria cuando existe el documento del fabricante.
 
 ## Datos por confirmar
 
@@ -1264,6 +1318,47 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Etapa 7 del dimensionador Fortinet: una sola verdad, puerta única y formulario dinámico (2026-09-23)
+
+Encargo: el *Informe de auditoría y propuesta de rediseño dinámico del módulo Fortinet
+Presales* (auditoría en vivo, 23-sep) con su prompt maestro. **Resultado: GO CONDICIONADO, sin
+fusionar ni desplegar.** Entrega completa, con el informe delta, las matrices T01–T30 y
+CU-01…CU-13, los ADR, el contrato de la API y las fórmulas, en
+`docs/auditoria-fortinet-2026-09-23/`. Las capturas antes/después viven en la página de resumen
+que enlaza su `LEEME.md`: el `.gitignore` excluye `capturas/` a propósito, y no se esquivó.
+
+**LOS CUATRO P0 ERAN UN SOLO DEFECTO.** El recomendado, lo cotizado, la cantidad y la puerta
+vivían en cuatro estados de la misma página:
+- se elegía un 40F a mano y el BOM lo cotizaba con Excel y cotizador habilitados (F01);
+- SSL-VPN se aceptaba sin versión de FortiOS (F02);
+- con HA la cantidad bajaba a 1 (F03);
+- la puerta deshabilitaba un id que el botón del cotizador no tenía (F04).
+
+Se reprodujeron los cuatro en Chromium antes de tocar nada. **Se cerraron con un motor único,
+no con cuatro parches**: `fortinet-motor.js`, el mismo archivo en el navegador y en `POST
+/api/v1/fortinet/evaluations`, que confirma cada salida comercial por huella y versión de
+catálogo y la audita en el volumen.
+
+**CUATRO DEFECTOS NUEVOS, Y TRES SALIERON DE ENDURECER PRUEBAS:**
+- **N01**: al abrir un enlace, el BOM se pintaba antes de llegar el catálogo. Las capturas del
+  «antes» registran 4 errores de página; el «después», ninguno.
+- **N02**: 108 de 1.193 precios de licencias seguían con la lista de agosto; se reanclaron por
+  SKU exacto.
+- **N03**: la aserción de EMS aceptaba cualquier fila con «EMS». Al exigir la cantidad apareció
+  la nota «termino 3 anos», que llega al Excel, y otros 59 textos visibles sin tilde (53 en las reglas, 6 en el motor y 1 en los datos).
+- **N04**: el bloqueo de SSL-VPN no pintaba la fuente que llevaba en los datos, y CU-05 pide
+  justo eso.
+
+**Y F13 se cerró en su propio origen.** La nota del Product Matrix en `fuentes.js` seguía
+diciendo «cps en 53 de 58» y «49 en null». Queda fechada como historia, declara que los
+recuentos los hace `npm run catalogo` y no la prosa, y registra las fichas por serie de
+400F/600F/1000F como fuente propia: **sin URL a propósito**, porque la exacta no consta en el
+repositorio y ponerla a ojo sería inventarla.
+
+**Verificación.** 542 unitarios, 16/16 pantallas, 6/6 contrastes y 11/11 baterías e2e.
+`e2e-fortinet-rediseno.js` es nuevo, con 76 afirmaciones. Hay capturas antes/después en tres
+viewports, y el servidor arranca en modo producción con `[seed]`, `listen` y `/salud` en verde.
 
 ### El portal dimensiona la inspección TLS con su propia cifra (2026-09-23)
 

@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "0162081",
+  "commit": "d486b1b",
   "fecha": "2026-09-23"
  },
  "umbralRozado": 25,
@@ -107,15 +107,15 @@
    "modulo": "procedencia.js",
    "estado": "ejercitado",
    "total": 34,
-   "usadas": 18,
-   "pct": 53
+   "usadas": 19,
+   "pct": 56
   },
   {
    "modulo": "bom.js",
    "estado": "ejercitado",
    "total": 76,
-   "usadas": 45,
-   "pct": 59
+   "usadas": 44,
+   "pct": 58
   },
   {
    "modulo": "login.js",
@@ -125,6 +125,13 @@
    "pct": 60
   },
   {
+   "modulo": "cotizador.js",
+   "estado": "ejercitado",
+   "total": 51,
+   "usadas": 31,
+   "pct": 61
+  },
+  {
    "modulo": "tabla.js",
    "estado": "ejercitado",
    "total": 11,
@@ -132,24 +139,24 @@
    "pct": 64
   },
   {
-   "modulo": "cotizador.js",
+   "modulo": "fortinet-reglas.js",
    "estado": "ejercitado",
-   "total": 51,
-   "usadas": 33,
-   "pct": 65
-  },
-  {
-   "modulo": "ficha.js",
-   "estado": "ejercitado",
-   "total": 65,
-   "usadas": 46,
-   "pct": 71
+   "total": 35,
+   "usadas": 24,
+   "pct": 69
   },
   {
    "modulo": "calculadora.js",
    "estado": "ejercitado",
    "total": 47,
    "usadas": 34,
+   "pct": 72
+  },
+  {
+   "modulo": "ficha.js",
+   "estado": "ejercitado",
+   "total": 65,
+   "usadas": 47,
    "pct": 72
   },
   {
@@ -160,18 +167,18 @@
    "pct": 74
   },
   {
-   "modulo": "fortinet-reglas.js",
-   "estado": "ejercitado",
-   "total": 39,
-   "usadas": 29,
-   "pct": 74
-  },
-  {
    "modulo": "index.js",
    "estado": "ejercitado",
    "total": 57,
    "usadas": 43,
    "pct": 75
+  },
+  {
+   "modulo": "dimensionador-fortinet-fortigate.js",
+   "estado": "ejercitado",
+   "total": 280,
+   "usadas": 222,
+   "pct": 79
   },
   {
    "modulo": "dimensionador-nokia-7750sr.js",
@@ -181,11 +188,11 @@
    "pct": 80
   },
   {
-   "modulo": "dimensionador-fortinet-fortigate.js",
+   "modulo": "fortinet-motor.js",
    "estado": "ejercitado",
-   "total": 188,
-   "usadas": 152,
-   "pct": 81
+   "total": 105,
+   "usadas": 87,
+   "pct": 83
   },
   {
    "modulo": "fuentes.js",

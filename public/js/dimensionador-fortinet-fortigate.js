@@ -19,6 +19,11 @@
 
 const R = FortinetReglas;
 const M = FortinetMotor;
+// El enlace TAL COMO LLEGO. Se captura antes de que nada lo toque: estado.js reescribe la URL
+// con cada cambio, y la verificacion de la huella (T30) tiene que comparar contra la huella
+// que TRAIA el enlace, no contra la que la propia pagina acaba de escribir — si no, una
+// huella manipulada se «verificaria» sola.
+const PARAMS_ENTRADA = new URLSearchParams(location.search);
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 function fmt(m) {
@@ -863,7 +868,12 @@ function pintarCabecera(r) {
     } else if (b.campo && (b.codigo === 'dato-requerido' || b.codigo === 'entrada-invalida')) {
       accion = `<button type="button" class="btn ghost btn-corr" data-corregir='${esc(JSON.stringify({ accion: 'ir', campo: b.campo }))}'>Ir al campo</button>`;
     }
-    return `<li class="${cls}">${esc(b.mensaje)}${accion}</li>`;
+    // CU-05: el motivo va con su fuente. Si la regla sale de una cita que nadie leyo aqui
+    // (`leida:false` en el catalogo), se dice: una restriccion critica no se presenta con la
+    // misma autoridad que una leida del documento del fabricante.
+    const fuente = b.fuente ? `<span class="bloq-fuente">Fuente: ${esc(b.fuente)}`
+      + `${b.fuenteLeida === false ? ' — citada por el informe de auditoría; el documento no se leyó desde este entorno' : ''}</span>` : '';
+    return `<li class="${cls}">${esc(b.mensaje)}${fuente}${accion}</li>`;
   }).join('');
   ul.hidden = !lista.length;
 }
@@ -1399,7 +1409,7 @@ function pintarBom() {
     <div class="model" style="font-size:28px">${esc(m.id)}</div>
     <p class="family">${esc(m.seg)} · ${r.bom.nodos} nodo(s) · ${esc({ nueva: 'compra nueva', ampliacion: 'ampliación', renovacion: 'renovación', coterm: 'co-term' }[s.comercial.motivo])}${r.override && r.override.elegible ? ' · <b>elegido a mano y revalidado</b>' : ''}</p>
     ${sinEquipo ? `<p class="hint"><b>Solo servicios:</b> la caja ya está instalada${s.comercial.serieInstalada ? ` (${esc(s.comercial.serieInstalada)})` : ''} y no se cotiza.</p>` : ''}
-    ${bdl ? `<p class="hint">En compra nueva el equipo, ${bDef ? esc(bDef.n) : 'el bundle'} y FortiCare Premium van en el <b>SKU combinado <code>${esc(bdl.sku)}</code></b>: una línea en vez de tres. En la lista de septiembre cuesta exactamente lo mismo que por separado.</p>` : ''}
+    ${bdl ? `<p class="hint">En compra nueva el equipo, ${bDef ? esc(bDef.n) : 'el bundle'} y FortiCare Premium van en el <b>SKU combinado <code>${esc(bdl.sku)}</code></b>: una línea en vez de dos (el bundle ya trae FortiCare Premium). En la lista de septiembre cuesta exactamente lo mismo que por separado.</p>` : ''}
     <div class="scroll"><table><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
     <tr><td>SKU hardware</td><td class="n">${m.hwSku ? `<code>${esc(m.hwSku)}</code>` : '<span class="warn">Descontinuado — sin SKU nuevo vigente</span>'}</td></tr>
     <tr><td>Precio de lista ref. (equipo)</td><td class="n">${m.elp ? esc(m.elp) : 'Consultar distribuidor'}</td></tr>
@@ -1888,7 +1898,7 @@ function populatePickModel() {
 }
 // El equipo elegido de un enlace: `pickModel`, o `verdict-sel` en los de antes de la etapa 7.
 function restaurarSeleccionDeUrl() {
-  const p = new URLSearchParams(location.search);
+  const p = PARAMS_ENTRADA;
   const id = p.get('pickModel') || p.get('verdict-sel');
   if (id && MODELS.some((m) => m.id === id)) {
     seleccionManual = id;
@@ -1901,7 +1911,7 @@ function restaurarSeleccionDeUrl() {
    se recalcula y se compara: si coinciden, el receptor ve EXACTAMENTE lo que vio el emisor;
    si no, se dice cual de las dos cosas cambio. */
 function verificarEnlace() {
-  const p = new URLSearchParams(location.search);
+  const p = PARAMS_ENTRADA;
   const h = p.get('h');
   const ds = p.get('ds');
   if (!h && !ds) return;
@@ -2027,7 +2037,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const migrado = migrarEstadoV1();
   reconstruirWanDesdeHidden();
   if (migrado) $('wanLinksData').dispatchEvent(new Event('input', { bubbles: true }));
-  migrarActivadores(new URLSearchParams(location.search));
+  migrarActivadores(PARAMS_ENTRADA);
   // Las variables de la pagina que viven fuera del DOM se leen de lo repuesto.
   for (const [id, fija] of [['profileSeg', (v) => { profile = v; }], ['rolSeg', (v) => { rolSdwan = v; }], ['segSeg', (v) => { segMode = v; }]]) {
     const a = $(id).querySelector('[aria-pressed="true"]');

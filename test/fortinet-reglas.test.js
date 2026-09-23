@@ -114,7 +114,7 @@ test('AT-11 · inter-VLAN e Internet se SUMAN salvo declaracion expresa de picos
   const noConcurrentes = R.demandaTrafico({ internet: 600, interVlan: 300, crecimiento: 0.25, picosNoConcurrentes: true });
   assert.strictEqual(noConcurrentes.base, 600);
   assert.strictEqual(Math.round(noConcurrentes.previsto), 750);
-  assert.match(noConcurrentes.regla, /maximo/);
+  assert.match(noConcurrentes.regla, /máximo/);
 
   // Las dos cifras del informe (§13), con su techo de utilizacion del 70 %. Y el punto del
   // hallazgo: el supuesto de simultaneidad, por si solo, CAMBIA DE FAMILIA.
@@ -136,7 +136,7 @@ test('el techo de utilizacion es una politica SEPARADA del crecimiento', () => {
   assert.strictEqual(R.evaluarModelo(m, { tp: 1000 }, { techo: 1 }).estado, 'ok');
   const conTecho = R.evaluarModelo(m, { tp: 1000 }, { techo: 0.70 });
   assert.strictEqual(conTecho.estado, 'excede');
-  assert.match(conTecho.motivo, /techo de utilizacion declarado/);
+  assert.match(conTecho.motivo, /techo de utilización declarado/);
   // Y el crecimiento no se confunde con el techo: infla la demanda, no limita la capacidad.
   assert.strictEqual(R.demandaTrafico({ internet: 1000, crecimiento: 0.30 }).previsto, 1300);
 });
@@ -352,7 +352,7 @@ test('AT-17 · en HA cada nodo lleva su licencia, y la excepcion se declara sin 
   }
   const ha = r.avisos.find((a) => a.codigo === 'ha-licencia-por-nodo');
   assert.ok(ha);
-  assert.match(ha.mensaje, /este catalogo no trae esa elegibilidad/);
+  assert.match(ha.mensaje, /este catálogo no trae esa elegibilidad/);
 });
 
 /* ══ AT-19 · una interface fisica no obliga a subir de familia ═════════════════════════ */
@@ -582,7 +582,7 @@ test('AT-31 · el techo de utilizacion NO se aplica a un tope de configuracion',
   // Y el mismo techo SI recorta un eje de rendimiento, que es para lo que existe.
   const caudal = R.evaluarModelo(m, { tp: m.tp * 0.8 }, conTecho);
   assert.strictEqual(caudal.estado, 'excede');
-  assert.match(caudal.motivo, /techo de utilizacion declarado/);
+  assert.match(caudal.motivo, /techo de utilización declarado/);
 });
 
 test('AT-32 · acceso remoto: IPsec dial-up y SSL-VPN son dos topes distintos, no uno', () => {

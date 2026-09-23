@@ -814,3 +814,48 @@ de sus escenarios dejó de ser cierta**: «a 4 Gbps ningún modelo trae la cifra
 9 de 58 y hoy el 200G la cubre. Ese escenario no se borró: se sustituyó por uno más fuerte
 —el 600F hace 10,5 Gbps de Threat Protection y aun así no puede competir, porque su SSL no
 está publicado—, que **no depende de que el catálogo siga incompleto**.
+
+# Etapa 7 · Una sola verdad para recomendación, BOM y cotización (2026-09-23)
+
+La entrega completa está en [`docs/auditoria-fortinet-2026-09-23/`](auditoria-fortinet-2026-09-23/LEEME.md):
+- resultado GO CONDICIONADO;
+- informe delta F01–F18 y N01–N04;
+- matrices T01–T30 y CU-01…CU-13;
+- ADR, contrato de la API, fórmulas, BOM y guía de fuentes;
+- el enlace a la página de resumen con las capturas antes/después, que no van en git porque el
+  `.gitignore` excluye `capturas/` a propósito.
+
+Aquí queda lo que conviene saber antes de tocar este módulo.
+
+**Los cuatro P0 del informe del 23-sep eran un solo defecto: había varias verdades.** El
+recomendado vivía en `#verdict-sel`, lo cotizado en `#pickModel` a través de
+`BOM.sincronizar`, la cantidad en un `#qty` editable también con HA, y la puerta deshabilitaba
+un id que el botón del cotizador no tenía. Por esas costuras salía una cotización del 40F con
+el panel diciendo 90G.
+
+**La corrección no parcheó cuatro sitios: dejó uno.** `public/js/fortinet-motor.js` es una
+función pura, `evaluar(escenario, catálogo)`, que devuelve todo lo que la página pinta y todo
+lo que una salida comercial necesita: requisitos por eje con su escenario gobernante,
+elegibles y descartados con su motivo, shortlist, modelo validado, BOM, puerta y huella. Es el
+**mismo archivo** en el navegador y en `POST /api/v1/fortinet/evaluations`, que confirma cada
+salida comercial y la audita en el volumen.
+
+**Tres reglas de este módulo que no hay que romper:**
+
+- **El BOM sale solo del modelo validado.** Un override que no cumple no lo sustituye: deja la
+  puerta en BLOCKED y muestra el déficit.
+- **Lo que un grupo inactivo conserva no cuenta.** Se guarda en el campo para recuperarlo,
+  pero sale del cálculo, de la huella y del enlace (`data-inactivo`). Lo deciden las `REGLAS`
+  del motor, no la página.
+- **Un dato técnico que falta impide evaluar; uno comercial solo bloquea la cotización.**
+
+**Dos defectos salieron al endurecer las pruebas, no al leer el código:**
+
+- La aserción de EMS aceptaba `|| ems.length > 0`, es decir, cualquier fila con «EMS». Al
+  exigir la cantidad real apareció la nota de la línea: «termino 3 anos». Ese texto llega al
+  Excel y al cotizador, y había otros 59 textos visibles sin tilde: 53 en `fortinet-reglas.js`, 6 en el motor y 1 en los datos.
+  Se corrigieron solo dentro de las cadenas, con un analizador léxico que deja fuera
+  interpolaciones y códigos.
+- El bloqueo de SSL-VPN llevaba su `fuente` en los datos y la pantalla no la pintaba. CU-05
+  pide justo eso. Ahora se pinta, y como esa regla está citada y no leída (`leida:false`), se
+  dice.

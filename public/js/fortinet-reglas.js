@@ -71,9 +71,9 @@
      bien una recomendacion sobre un dato que nadie midio. */
   const EJES = [
     { k: 'fw', escalaMbps: true, n: 'Firewall', frase: 'el firewall', campo: 'fw', dureza: 'dura',
-      metodo: 'Firewall Throughput (1518 B UDP), sesion descargada al ASIC de red' },
+      metodo: 'Firewall Throughput (1518 B UDP), sesión descargada al ASIC de red' },
     { k: 'vpn', escalaMbps: true, n: 'IPsec VPN', frase: 'el motor IPsec', campo: 'vpn', dureza: 'dura',
-      metodo: 'IPsec VPN Throughput (512 B), criptografia descargada al ASIC' },
+      metodo: 'IPsec VPN Throughput (512 B), criptografía descargada al ASIC' },
     { k: 'ips', escalaMbps: true, n: 'IPS', frase: 'el IPS', campo: 'ips', dureza: 'dura',
       metodo: 'IPS Throughput (Enterprise Mix)' },
     { k: 'ngfw', escalaMbps: true, n: 'NGFW', frase: 'el NGFW', campo: 'ngfw', dureza: 'dura',
@@ -167,7 +167,7 @@
       crecimiento,
       regla: concurrentes
         ? 'suma de los caminos (supuesto por defecto: los picos coinciden)'
-        : 'maximo entre los caminos (declarado: los picos no son concurrentes)',
+        : 'máximo entre los caminos (declarado: los picos no son concurrentes)',
     };
   }
 
@@ -234,14 +234,14 @@
     let motivo = null;
     if (apartaPor) {
       estado = 'apartado';
-      motivo = `el catalogo no trae ${apartaPor.n} de este modelo, y es el eje que el `
+      motivo = `el catálogo no trae ${apartaPor.n} de este modelo, y es el eje que el `
         + 'escenario pide dimensionar: se aparta en vez de sustituirlo por otra capa. '
         + 'Confirmar con el Product Matrix o validar con PoC.';
     } else if (excede.length) {
       estado = 'excede';
       const p = excede[0];
       motivo = `${p.n} al ${pct(p.u)} de ${p.configuracion ? 'lo que la plataforma admite' : 'la cifra publicada'}`
-        + (techo < 1 && !p.configuracion ? ` (techo de utilizacion declarado: ${pct(techo)})` : '');
+        + (techo < 1 && !p.configuracion ? ` (techo de utilización declarado: ${pct(techo)})` : '');
     }
     return {
       // QUE EJE lo aparto, como dato y no como cadena. Quien lo pinta necesita agrupar por
@@ -348,9 +348,9 @@
         bloquea: false,
         nivel: 'warning',
         minimo: min.minimo,
-        mensaje: `El bundle FortiGuard se ha excluido de la cotizacion, pero el escenario pide `
-          + `${quien}, que necesita ${bundles[min.minimo].n}. La cotizacion cubre el equipo, `
-          + 'no el escenario: la suscripcion tiene que estar vigente por otra via.',
+        mensaje: `El bundle FortiGuard se ha excluido de la cotización, pero el escenario pide `
+          + `${quien}, que necesita ${bundles[min.minimo].n}. La cotización cubre el equipo, `
+          + 'no el escenario: la suscripción tiene que estar vigente por otra vía.',
         detalle: min.exigentes.map((e) => e.porQue).filter(Boolean),
       };
     }
@@ -362,7 +362,7 @@
       nivel: 'bloqueo',
       minimo: min.minimo,
       mensaje: `${bundles[elegido] ? bundles[elegido].n : elegido} no cubre `
-        + `${nombres || min.servicios.join(', ')}. El bundle minimo para este escenario es `
+        + `${nombres || min.servicios.join(', ')}. El bundle mínimo para este escenario es `
         + `${bundles[min.minimo].n}.`,
       detalle: min.exigentes.map((e) => e.porQue).filter(Boolean),
     };
@@ -374,13 +374,13 @@
      se devuelve intacto: no todos los SKU llevan el marcador y reescribir a ciegas los
      ultimos dos caracteres corromperia los que no. */
   function skuTermino(sku, anios, terminos) {
-    if (!sku) return { sku: null, exacto: false, motivo: 'el price list no trae SKU para esta linea' };
+    if (!sku) return { sku: null, exacto: false, motivo: 'el price list no trae SKU para esta línea' };
     if (!/-DD$/.test(sku)) return { sku, exacto: true, motivo: null };
     const t = (terminos || {})[anios];
     if (!t) {
       return { sku, exacto: false,
-        motivo: `el catalogo no tiene equivalencia de SKU para un termino de ${anios} anio(s): `
-          + 'el marcador DD se queda puesto y la linea no es pedible' };
+        motivo: `el catálogo no tiene equivalencia de SKU para un término de ${anios} año(s): `
+          + 'el marcador DD se queda puesto y la línea no es pedible' };
     }
     return { sku: sku.replace(/-DD$/, `-${t.sufijo}`), exacto: true, motivo: null, meses: t.meses };
   }
@@ -414,7 +414,7 @@
     const filas = [];
     const avisos = [];
     const bloqueos = [];
-    const termino = `termino ${anios} ano${anios > 1 ? 's' : ''}`;
+    const termino = `término ${anios} año${anios > 1 ? 's' : ''}`;
     // Cada bloqueo declara su NIVEL: 'borrador' = falta un SKU o un precio pero el diseno es
     // coherente (la propuesta sale como borrador tecnico y no va al cotizador); 'bloqueo' =
     // la cotizacion no se puede pedir tal como esta (ninguna salida comercial).
@@ -459,7 +459,7 @@
         nota: `SKU combinado de compra nueva: equipo + ${bundle.n} + FortiCare Premium · ${termino}` });
       avisar({ codigo: 'bdl',
         mensaje: `Compra nueva: el equipo y ${bundle.n} van en el SKU combinado ${s.sku} (incluye FortiCare Premium), `
-          + 'que es la construccion que la price list publica para la primera compra. Una linea en vez de dos.' });
+          + 'que es la construcción que la price list publica para la primera compra. Una línea en vez de dos.' });
     } else if (!sinEquipo) {
       filas.push({ cat: 'Equipo', desc: m.id, sku: m.hwSku || null, qty,
         unit: m.elpN != null ? m.elpN : null,
@@ -467,15 +467,15 @@
       if (!m.hwSku) {
         bloquear({ codigo: 'sin-sku-hardware',
           mensaje: `${m.id} no tiene SKU de hardware vigente en el price list (equipo descontinuado): `
-            + 'sirve como referencia de un parque instalado, no como linea pedible.' });
+            + 'sirve como referencia de un parque instalado, no como línea pedible.' });
       }
     }
 
     // ── Bundle FortiGuard ─────────────────────────────────────────────────────────────
     if (excluyeBundle) {
       avisar({ codigo: 'bundle-excluido',
-        mensaje: 'Bundle FortiGuard excluido de la cotizacion a peticion: no se cotiza ninguna '
-          + 'suscripcion de seguridad. La cotizacion vale para un parque que ya la tiene vigente.' });
+        mensaje: 'Bundle FortiGuard excluido de la cotización a petición: no se cotiza ninguna '
+          + 'suscripción de seguridad. La cotización vale para un parque que ya la tiene vigente.' });
     } else if (usaBdl) {
       // Ya va dentro del SKU combinado: una segunda linea lo cobraria dos veces.
     } else if (!licTier) {
@@ -501,9 +501,9 @@
       // eso se dice distinto de excluirlo teniendo Premium incluido en el bundle.
       avisar({ codigo: 'soporte-excluido',
         mensaje: incluyeSoporte
-          ? `Soporte FortiCare excluido como linea propia: ${bundle.n} ya trae FortiCare Premium, `
-            + 'asi que la cotizacion no pierde cobertura.'
-          : 'Soporte FortiCare excluido de la cotizacion a peticion: el equipo se cotiza SIN '
+          ? `Soporte FortiCare excluido como línea propia: ${bundle.n} ya trae FortiCare Premium, `
+            + 'así que la cotización no pierde cobertura.'
+          : 'Soporte FortiCare excluido de la cotización a petición: el equipo se cotiza SIN '
             + 'contrato de soporte ni derecho a RMA ni a actualizaciones de FortiOS.' });
     } else if (!incluyeSoporte) {
       // Sin bundle que lo traiga, el soporte es una linea propia y obligatoria.
@@ -513,13 +513,13 @@
         nota: `${termino} · ${nivelCare ? nivelCare.sla : ''}` });
     } else if (careCod === 'fcpre') {
       avisar({ codigo: 'soporte-incluido',
-        mensaje: `FortiCare Premium ya va dentro de ${bundle.n}: no se cotiza una segunda linea de soporte. `
-          + 'Antes se anadia siempre, y esa cotizacion cobraba el mismo soporte dos veces.' });
+        mensaje: `FortiCare Premium ya va dentro de ${bundle.n}: no se cotiza una segunda línea de soporte. `
+          + 'Antes se añadía siempre, y esa cotización cobraba el mismo soporte dos veces.' });
     } else if (careCod === 'fc247') {
       avisar({ codigo: 'soporte-inferior',
-        mensaje: `${nivelCare ? nivelCare.n : careCod} esta POR DEBAJO del FortiCare Premium que `
-          + `${bundle.n} ya incluye: no se cotiza, porque bajar de nivel no es una opcion de compra. `
-          + 'Para un soporte inferior habria que cotizar servicios sueltos sin bundle.' });
+        mensaje: `${nivelCare ? nivelCare.n : careCod} está POR DEBAJO del FortiCare Premium que `
+          + `${bundle.n} ya incluye: no se cotiza, porque bajar de nivel no es una opción de compra. `
+          + 'Para un soporte inferior habría que cotizar servicios sueltos sin bundle.' });
     } else {
       /* ELITE ES UNA MEJORA DEL PREMIUM INCLUIDO, Y LA PRICE LIST TRAE ESA MEJORA COMO SKU
          PROPIO: «Upgrade FortiCare Premium to Elite (Require FortiCare Premium)», familia
@@ -545,7 +545,7 @@
           nota: `${termino} · ${nivelCare ? nivelCare.sla : ''}` });
         avisos.push({ codigo: 'elite-upgrade', nivel: 'warning',
           mensaje: 'FortiCare Elite se cotiza como mejora del Premium que el bundle ya trae, pero la price list no '
-            + 'trae el SKU de mejora de este modelo: la linea lleva el contrato Elite completo. Confirmar con el '
+            + 'trae el SKU de mejora de este modelo: la línea lleva el contrato Elite completo. Confirmar con el '
             + 'distribuidor si se factura como delta o como reemplazo.' });
       }
     }
@@ -557,15 +557,15 @@
     if (bundleTraeConverter) {
       if (e.converter) {
         avisar({ codigo: 'converter-incluido',
-          mensaje: `FortiConverter ya va dentro de ${bundle.n}: no se anade una segunda linea.` });
+          mensaje: `FortiConverter ya va dentro de ${bundle.n}: no se añade una segunda línea.` });
       }
     } else if (e.converter) {
       if (lic && lic.converter) {
         const s = skuTermino(lic.converter.sku, anios, terminos);
         if (!s.exacto) bloquear({ codigo: 'sku-converter', mensaje: `FortiConverter: ${s.motivo}.` });
-        filas.push({ cat: 'Servicios opcionales', desc: 'FortiConverter — migracion de configuracion',
+        filas.push({ cat: 'Servicios opcionales', desc: 'FortiConverter — migración de configuración',
           sku: s.sku, qty: 1, unit: lic.converter.fee,
-          nota: 'Servicio unico, pedido a la carta. Migra desde Cisco ASA, Check Point o Palo Alto.' });
+          nota: 'Servicio único, pedido a la carta. Migra desde Cisco ASA, Check Point o Palo Alto.' });
       } else {
         bloquear({ codigo: 'sin-sku-converter',
           mensaje: `El price list no trae SKU de FortiConverter para ${m.id}.` });
@@ -580,8 +580,8 @@
         nota: sv.d });
       if (!sv.sku) {
         bloquear({ codigo: 'sin-sku-sdwan',
-          mensaje: `«${sv.n}»: este repositorio no ha leido su SKU del Ordering Guide, asi que la linea `
-            + 'no es pedible. Confirmarlo antes de exportar como cotizacion.' });
+          mensaje: `«${sv.n}»: este repositorio no ha leído su SKU del Ordering Guide, así que la línea `
+            + 'no es pedible. Confirmarlo antes de exportar como cotización.' });
       }
     }
 
@@ -595,8 +595,8 @@
       filas.push({ cat: 'Servicios SD-WAN', desc: 'FortiSASE — licencias de usuario', sku: null, qty: sase, unit: null,
         nota: `${termino} · ${sase} usuario(s) declarados` });
       bloquear({ codigo: 'sin-sku-sase',
-        mensaje: `FortiSASE para ${sase} usuario(s): edicion, tier, ancho incluido y minimo de compra no estan en este `
-          + 'catalogo. Confirmar el SKU en el Ordering Guide de FortiSASE antes de cotizar en firme.' });
+        mensaje: `FortiSASE para ${sase} usuario(s): edición, tier, ancho incluido y mínimo de compra no están en este `
+          + 'catálogo. Confirmar el SKU en el Ordering Guide de FortiSASE antes de cotizar en firme.' });
     }
 
     /* ── FORTICLIENT EMS: LICENCIA POR ENDPOINT GESTIONADO ───────────────────────────────
@@ -611,11 +611,11 @@
       const tramos = Math.ceil(ems / 25);
       filas.push({ cat: 'Licencias endpoint', desc: 'FortiClient EMS — ZTNA + VPN gestionado',
         sku: null, qty: ems, unit: null,
-        nota: `${termino} · ${ems} endpoint(s) gestionados (${tramos} tramo(s) de 25 segun el patron del SKU)` });
+        nota: `${termino} · ${ems} endpoint(s) gestionados (${tramos} tramo(s) de 25 según el patrón del SKU)` });
       bloquear({ codigo: 'sin-sku-ems',
         mensaje: `FortiClient EMS para ${ems} endpoint(s): este repositorio solo tiene el PATRON del SKU `
-          + '(`FC1-10-EMS05-428-01-DD`, tramo de 25), no el codigo del tramo que corresponde. '
-          + 'Confirmarlo en el Ordering Guide antes de exportar como cotizacion.' });
+          + '(`FC1-10-EMS05-428-01-DD`, tramo de 25), no el código del tramo que corresponde. '
+          + 'Confirmarlo en el Ordering Guide antes de exportar como cotización.' });
     }
 
     /* ── SANDBOX: TRES COSAS DISTINTAS CON EL MISMO NOMBRE (F11 del 23-sep) ──────────────
@@ -630,12 +630,12 @@
       if (!bundle) {
         bloqueos.push({ codigo: 'sandbox-sin-bundle', nivel: 'bloqueo',
           mensaje: 'Sandbox «incluido en el bundle» pedido con el bundle excluido: sin bundle no hay cobertura '
-            + 'incluida. Elegir un bundle o cotizar el servicio de sandbox como linea propia.' });
+            + 'incluida. Elegir un bundle o cotizar el servicio de sandbox como línea propia.' });
       } else {
         avisar({ codigo: 'sandbox-incluido',
-          mensaje: `Deteccion sandbox en la nube cubierta por ${bundle.n} (servicio de proteccion antimalware): no se `
-            + 'cotiza linea aparte. El catalogo no detalla el contenido de ese servicio; la cobertura se toma del '
-            + 'informe de auditoria del 23-sep (ref. [2], matriz de bundles FortiGuard, no leida en este entorno). '
+          mensaje: `Detección sandbox en la nube cubierta por ${bundle.n} (servicio de protección antimalware): no se `
+            + 'cotiza línea aparte. El catálogo no detalla el contenido de ese servicio; la cobertura se toma del '
+            + 'informe de auditoría del 23-sep (ref. [2], matriz de bundles FortiGuard, no leída en este entorno). '
             + 'Confirmarla antes de cotizar en firme.' });
       }
     } else if (e.sandbox === 'ai') {
@@ -650,7 +650,7 @@
       filas.push({ cat: 'Servicios de seguridad', desc: `FortiSandbox dedicado — ${mod}`, sku: null, qty: 1, unit: null,
         nota: 'Producto aparte del FortiGate: se dimensiona por volumen de archivos, no por throughput del firewall.' });
       bloquear({ codigo: 'sin-sku-sandbox-dedicado',
-        mensaje: `FortiSandbox dedicado (${mod}): este catalogo no trae sus SKU. La linea entra para que la cotizacion `
+        mensaje: `FortiSandbox dedicado (${mod}): este catálogo no trae sus SKU. La línea entra para que la cotización `
           + 'no salga corta; confirmar el SKU y el dimensionamiento del FortiSandbox antes de cotizar en firme.' });
     }
 
@@ -668,10 +668,10 @@
     } else if (e.registro === 'faz') {
       const gb = Math.max(0, Number(e.registroGbDia) || 0);
       filas.push({ cat: 'Registro', desc: 'FortiAnalyzer — appliance, VM o cloud', sku: null, qty: 1, unit: null,
-        nota: gb ? `Dimensionar por ingesta: ${gb} GB/dia declarados` : 'Dimensionar por GB/dia de ingesta' });
+        nota: gb ? `Dimensionar por ingesta: ${gb} GB/día declarados` : 'Dimensionar por GB/día de ingesta' });
       bloquear({ codigo: 'sin-sku-faz',
-        mensaje: 'FortiAnalyzer es un producto aparte que se dimensiona por GB/dia de ingesta, y este catalogo no trae '
-          + 'sus SKU. La linea entra para que la cotizacion no salga corta.' });
+        mensaje: 'FortiAnalyzer es un producto aparte que se dimensiona por GB/día de ingesta, y este catálogo no trae '
+          + 'sus SKU. La línea entra para que la cotización no salga corta.' });
     }
 
     /* ── VDOM POR ENCIMA DE LOS INCLUIDOS (F15/T22) ──────────────────────────────────────
@@ -691,10 +691,10 @@
        Un equipo con `redund: 'opcional'` sale de fabrica con UNA fuente y admite la segunda:
        si el diseno exige redundancia, esa segunda fuente es una linea, no un supuesto. */
     if (e.segundaFuente) {
-      filas.push({ cat: 'Alimentacion', desc: 'Segunda fuente / adaptador de alimentacion (redundancia)', sku: null,
+      filas.push({ cat: 'Alimentación', desc: 'Segunda fuente / adaptador de alimentación (redundancia)', sku: null,
         qty, unit: null, nota: 'El equipo sale de fabrica con una sola fuente y admite la segunda.' });
       bloquear({ codigo: 'sin-sku-fuente',
-        mensaje: `${m.id} admite una segunda fuente que no viene incluida, y su SKU no esta en este catalogo.` });
+        mensaje: `${m.id} admite una segunda fuente que no viene incluida, y su SKU no está en este catálogo.` });
     }
 
     // ── HA ────────────────────────────────────────────────────────────────────────────
@@ -703,9 +703,9 @@
     // la elegibilidad: se DECLARA en vez de ofrecerse sin evidencia.
     if (qty > 1) {
       avisar({ codigo: 'ha-licencia-por-nodo',
-        mensaje: `Cluster de ${qty} unidades: cada nodo lleva su propia suscripcion FortiGuard y su propio `
-          + 'FortiCare. La excepcion de FortiGuard unico en activo-pasivo existe, pero depende del modelo y '
-          + 'de la version de FortiOS y este catalogo no trae esa elegibilidad: confirmarla con Fortinet '
+        mensaje: `Clúster de ${qty} unidades: cada nodo lleva su propia suscripción FortiGuard y su propio `
+          + 'FortiCare. La excepción de FortiGuard único en activo-pasivo existe, pero depende del modelo y '
+          + 'de la versión de FortiOS y este catálogo no trae esa elegibilidad: confirmarla con Fortinet '
           + 'antes de quitar una licencia.' });
     }
 
@@ -744,8 +744,8 @@
       + (ahora.getUTCMonth() - f.getUTCMonth());
     if (meses > MESES_PRECIO) {
       return { estado: 'vencida', bloquea: true, meses,
-        mensaje: `La lista de precios es de hace ${meses} meses (limite declarado: ${MESES_PRECIO}). `
-          + 'Una cotizacion sobre precios vencidos se entrega a un cliente como si fueran de hoy.' };
+        mensaje: `La lista de precios es de hace ${meses} meses (límite declarado: ${MESES_PRECIO}). `
+          + 'Una cotización sobre precios vencidos se entrega a un cliente como si fueran de hoy.' };
     }
     return { estado: 'vigente', bloquea: false, meses,
       mensaje: `Lista de precios de hace ${meses} mes(es).` };
