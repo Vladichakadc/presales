@@ -1,4 +1,5 @@
-// Verificado contra Fortinet Product Matrix, julio 2026 (fuente oficial):
+// Verificado contra Fortinet Product Matrix, edicion de septiembre de 2026 (PROMTX-2026-R176-SEP;
+// la de julio con la que se transcribio al principio fue contrastada contra esta el 2026-09-14):
 // https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf
 // Las 5 cifras publicadas, en orden de profundidad de inspección creciente y throughput
 // decreciente. Entender qué mide cada una es el 80% del dimensionamiento correcto:
@@ -450,6 +451,301 @@ for (const [base, lim] of Object.entries(MATRIX_LIMITES)) {
   }
 }
 
+// ── LO QUE LAS FICHAS POR SERIE COMPLETAN DONDE EL MATRIX YA NO LLEGA (2026-09-23) ──────
+// El Product Matrix de septiembre es un «Top Selling Models Matrix» y ya no lista 400F,
+// 600F ni 1000F, asi que esos modelos -y sus variantes 401F y 1001F- se apartaban en cuanto
+// un escenario pedia SSL, tuneles o VDOM, con el motivo «el catalogo no trae la cifra». LA
+// CIFRA ESTABA EN EL REPOSITORIO: sus fichas por serie se trajeron el 2026-09-03 por la rama
+// de transporte `fuente/fortinet-datasheets` y `fuente/fortinet-serie` para leer la
+// alimentacion, y publican exactamente las mismas filas que el Matrix. Nadie las habia leido
+// para esto.
+//
+// DOBLE ANCLAJE, CUATRO ANCLAS, 12 DE 12. Una fila solo se acepta si las cifras que este
+// catalogo ya tenia verificadas -sesiones, sesiones nuevas/s, Threat Protection e IPsec-
+// casan con la ficha. Se comprueban AQUI, al cargar, y no solo el dia de la transcripcion:
+// si alguien corrige un `sess` sin volver a leer la ficha, la tabla deja de aplicarse y lo
+// dice por consola, en vez de dejar cifras de otra revision pegadas a un modelo que cambio.
+// 100F y 200F siguen sin ficha: su URL por serie da 404 (pendiente F6).
+const FICHAS_LIMITES={
+  '400F':  {ficha:'FG-400F-DAT-R22-202604', ancla:{sess:7800000, cps:500000, tp:9000,  vpn:55000},
+            ssl: 8000, tunGw: 2000, tunCli: 50000, sslVpn:3600, sslVpnUsers: 5000, policies: 10000, vdomMax: 25},
+  '600F':  {ficha:'FG-600F-DAT-R23-202604', ancla:{sess:8000000, cps:550000, tp:10500, vpn:55000},
+            ssl: 9000, tunGw: 2000, tunCli: 50000, sslVpn:4300, sslVpnUsers:10000, policies: 30000, vdomMax: 50},
+  '1000F': {ficha:'FG-1000F-DAT-R17-202604', ancla:{sess:7500000, cps:650000, tp:13000, vpn:55000},
+            ssl:10000, tunGw:20000, tunCli:100000, sslVpn:5300, sslVpnUsers:10000, policies:100000, vdomMax:250},
+};
+for (const [base, lim] of Object.entries(FICHAS_LIMITES)) {
+  const m=MODELS.find((x)=>bareId(x.id)===base);
+  if (!m) { console.warn(`[fortinet] FICHAS_LIMITES declara "${base}" y no hay tal modelo`); continue; }
+  const discrepan=Object.entries(lim.ancla).filter(([k,v])=>m[k]!==v);
+  if (discrepan.length) {
+    console.warn(`[fortinet] la ficha ${lim.ficha} ya no casa con el catalogo en ${discrepan.map(([k])=>k).join(', ')}: `
+      +'no se aplica. Volver a leer la ficha antes de confiar en sus limites.');
+    continue;
+  }
+  for (const h of [m].concat(hermanasDe(m))) {
+    if (h.matrixDe || MATRIX_LIMITES[bareId(h.id)]) continue;
+    for (const k of CLAVES_MATRIX) h[k]=lim[k];
+    h.limitesDe={modelo:base, fuente:`ficha por serie ${lim.ficha}`};
+  }
+}
+// Procedencia por modelo de los siete limites, como DATO: la ficha del equipo dice de donde
+// sale cada cifra en vez de que haya que leer este comentario.
+for (const m of MODELS) {
+  if (m.limitesDe) continue;
+  if (MATRIX_LIMITES[bareId(m.id)]) m.limitesDe={modelo:bareId(m.id), fuente:'Product Matrix sept-2026'};
+  else if (m.matrixDe) m.limitesDe={modelo:m.matrixDe, fuente:'Product Matrix sept-2026 (variante del mismo silicio)'};
+  else m.limitesDe=null;
+}
+
+// ── PLATAFORMA POR MODELO: LO QUE EL MATRIX PUBLICA ADEMAS DEL RENDIMIENTO (2026-09-23) ──
+// Seis filas del Product Matrix de septiembre que el catalogo no traia y que el informe de
+// auditoria del 23-sep pide como restricciones (F06, F14, F15): VDOM incluidos, almacenamiento
+// local, variantes (PoE incluido), fuentes, formato y la escala del Security Fabric que el
+// equipo gestiona (FortiAP, FortiSwitch, FortiToken). Reconstruidas por coordenadas de texto
+// de las paginas 1-3, igual que MATRIX_LIMITES, y ANCLADAS COLUMNA A COLUMNA con la cifra de
+// SSL Inspection ya verificada: las 27 columnas casan.
+//
+//   almacen   [variante, GB] — el documento atribuye el disco a la VARIANTE, entre parentesis
+//             («120 GB (91G)»). Por eso el modelo base se queda en 0 GB y no en null: el
+//             documento dice cuanto disco tiene cada uno, y el base no tiene. `null` en la
+//             columna significa «—» (el 40F no tiene variante con disco).
+//   variantes lo que el documento lista como variantes de la serie. PoE ES UNA VARIANTE
+//             (FG-50G-SFP-POE, FG-70G-POE, FG-80F-POE), no una propiedad del SKU base: el
+//             catalogo rotulaba el 80F como «Sucursal + PoE» y su ficha publica «PoE/+ Ports
+//             — — 6 6 —», es decir, PoE solo en las variantes -POE.
+//   aps       Max FortiAPs (total / tunel) · switches Max FortiSwitches · tokens Max FortiTokens.
+//   notas     llamadas del documento que condicionan una funcion:
+//             11 «SSL VPN only supported between 7.0.12 and 7.0.15» — pegada a la celda SSL
+//                VPN del FG-90G. El informe citaba la release note 7.6.1; el Matrix es mas
+//                estricto y es el documento que ya respalda este catalogo.
+//             12 «Proxy features limited supported, refer to data sheet» — en la cabecera de
+//                30G, 40F, 50G y 60F.
+const MATRIX_PLATAFORMA={
+  '30G':  {vdomDef:null, almacen:['31G',30],    variantes:['WiFi'],                              fuentes:'Single AC PS',              formato:'Desktop', aps:16,   apsTun:8,    switches:8,   tokens:500,   notas:{proxy:12}},
+  '40F':  {vdomDef:10,   almacen:null,          variantes:['WiFi','3G4G'],                       fuentes:'Single AC PS',              formato:'Desktop', aps:16,   apsTun:8,    switches:8,   tokens:500,   notas:{proxy:12}},
+  '50G':  {vdomDef:5,    almacen:['51G',64],    variantes:['WiFi','DSL','SFP','POE','5G'],       fuentes:'Single AC PS',              formato:'Desktop', aps:16,   apsTun:8,    switches:8,   tokens:500,   notas:{proxy:12}},
+  '60F':  {vdomDef:10,   almacen:['61F',128],   variantes:['WiFi','Storage'],                    fuentes:'Single AC PS',              formato:'Desktop', aps:64,   apsTun:32,   switches:24,  tokens:500,   notas:{proxy:12}},
+  '70F':  {vdomDef:10,   almacen:['71F',128],   variantes:[],                                    fuentes:'Single AC PS',              formato:'Desktop', aps:64,   apsTun:32,   switches:24,  tokens:500,   notas:{}},
+  '70G':  {vdomDef:10,   almacen:['71G',64],    variantes:['WiFi','POE'],                        fuentes:'Single AC PS',              formato:'Desktop', aps:96,   apsTun:48,   switches:24,  tokens:500,   notas:{}},
+  '80F':  {vdomDef:10,   almacen:['81F',128],   variantes:['WiFi','3G4G','DSL','Bypass','Storage'], fuentes:'Single AC PS, dual inputs', formato:'Desktop', aps:96, apsTun:48, switches:24,  tokens:500,   notas:{}},
+  '90G':  {vdomDef:10,   almacen:['91G',120],   variantes:[],                                    fuentes:'Single AC PS, dual inputs', formato:'Desktop', aps:128,  apsTun:64,   switches:24,  tokens:500,   notas:{sslVpn:11}},
+  '120G': {vdomDef:10,   almacen:['121G',480],  variantes:[],                                    fuentes:'Dual AC PS',                formato:'1 RU',    aps:128,  apsTun:64,   switches:48,  tokens:5000,  notas:{}},
+  '200G': {vdomDef:10,   almacen:['201G',480],  variantes:[],                                    fuentes:'Dual AC PS',                formato:'1 RU',    aps:256,  apsTun:128,  switches:64,  tokens:5000,  notas:{}},
+  '400G': {vdomDef:10,   almacen:['401G',960],  variantes:[],                                    fuentes:'Dual AC PS',                formato:'1 RU',    aps:512,  apsTun:256,  switches:96,  tokens:5000,  notas:{}},
+  '700G': {vdomDef:10,   almacen:['701G',960],  variantes:[],                                    fuentes:'Dual AC PS',                formato:'1 RU',    aps:1024, apsTun:512,  switches:128, tokens:5000,  notas:{}},
+  '900G': {vdomDef:10,   almacen:['901G',960],  variantes:['DC'],                                fuentes:'Dual PS',                   formato:'1 RU',    aps:2048, apsTun:1024, switches:196, tokens:5000,  notas:{}},
+  '1800F':{vdomDef:10,   almacen:['1801F',1920],variantes:['DC'],                                fuentes:'Dual PS',                   formato:'2 RU',    aps:4096, apsTun:2048, switches:196, tokens:20000, notas:{}},
+  '2600F':{vdomDef:10,   almacen:['2601F',1920],variantes:['DC'],                                fuentes:'Dual PS',                   formato:'2 RU',    aps:4096, apsTun:2048, switches:196, tokens:20000, notas:{}},
+  '3000F':{vdomDef:10,   almacen:['3001F',1920],variantes:['DC'],                                fuentes:'Dual PS',                   formato:'2 RU',    aps:4096, apsTun:2048, switches:300, tokens:20000, notas:{}},
+  '3000G':{vdomDef:10,   almacen:['3001G',1920],variantes:[],                                    fuentes:'Dual PS',                   formato:'2 RU',    aps:4096, apsTun:2048, switches:300, tokens:20000, notas:{}},
+  '3200F':{vdomDef:10,   almacen:['3201F',1920],variantes:[],                                    fuentes:'Dual PS',                   formato:'2 RU',    aps:4096, apsTun:2048, switches:300, tokens:20000, notas:{}},
+  '3500F':{vdomDef:10,   almacen:['3501F',3840],variantes:[],                                    fuentes:'Dual PS',                   formato:'2 RU',    aps:4096, apsTun:2048, switches:300, tokens:20000, notas:{}},
+  '3500G':{vdomDef:10,   almacen:['3501G',3840],variantes:[],                                    fuentes:'Dual PS',                   formato:'2 RU',    aps:4096, apsTun:2048, switches:300, tokens:20000, notas:{}},
+  '3700F':{vdomDef:10,   almacen:['3701F',3840],variantes:[],                                    fuentes:'Dual PS',                   formato:'2 RU',    aps:4096, apsTun:2048, switches:300, tokens:20000, notas:{}},
+  '3800G':{vdomDef:10,   almacen:['3801G',3840],variantes:['DC'],                                fuentes:'4 PS',                      formato:'3 RU',    aps:8192, apsTun:4096, switches:300, tokens:20000, notas:{}},
+  '4200F':{vdomDef:10,   almacen:['4201F',3840],variantes:['DC'],                                fuentes:'Dual PS',                   formato:'3 RU',    aps:8192, apsTun:4096, switches:300, tokens:20000, notas:{}},
+  '4400F':{vdomDef:10,   almacen:['4401F',3840],variantes:['DC'],                                fuentes:'4 PS',                      formato:'4 RU',    aps:8192, apsTun:4096, switches:300, tokens:20000, notas:{}},
+  '4800F':{vdomDef:10,   almacen:['4801F',3840],variantes:['DC','NEBS'],                         fuentes:'4 PS',                      formato:'4 RU',    aps:8192, apsTun:4096, switches:300, tokens:20000, notas:{}},
+  // Los chasis publican el disco del propio chasis, sin variante: 4 x 4 TB SSD.
+  '7081F':{vdomDef:10,   almacen:['7081F',16000],variantes:['DC'],                               fuentes:'6 PS',                      formato:'12 RU',   aps:null, apsTun:null, switches:300, tokens:20000, notas:{}},
+  '7121F':{vdomDef:10,   almacen:['7121F',16000],variantes:['DC'],                               fuentes:'8 PS',                      formato:'16 RU',   aps:null, apsTun:null, switches:300, tokens:20000, notas:{}},
+};
+// Lo mismo desde las fichas por serie, para los tres que el Matrix ya no lista. El 601F no
+// esta en este catalogo: la ficha del 600F lo publica, pero aqui solo cuenta que el 600F
+// base no tiene disco.
+const FICHAS_PLATAFORMA={
+  '400F': {vdomDef:10, almacen:['401F',960],  variantes:[], aps:512,  apsTun:256,  switches:96,  tokens:5000,  notas:{}, ficha:'FG-400F-DAT-R22-202604'},
+  '600F': {vdomDef:10, almacen:['601F',480],  variantes:[], aps:1024, apsTun:512,  switches:128, tokens:5000,  notas:{}, ficha:'FG-600F-DAT-R23-202604'},
+  '1000F':{vdomDef:10, almacen:['1001F',960], variantes:[], aps:4096, apsTun:2048, switches:196, tokens:20000, notas:{}, ficha:'FG-1000F-DAT-R17-202604'},
+};
+
+/* PUERTOS ESTRUCTURADOS, SOLO DONDE LA FUENTE ES LIMPIA. `ifaces` es texto libre y en varios
+   modelos no cuenta nada («GE + SFP/SFP+ (alta densidad)» en el 120G), asi que comparar un
+   requerimiento de puertos contra el habria sido inventar la mitad del dato. Se estructuran
+   las ocho columnas de la pagina 1 del Matrix, cuya celda «Interfaces» es de una sola linea,
+   y el 120G, cuya ficha trae la tabla de hardware completa. Las celdas de las paginas 2 y 3 se
+   parten en varias lineas y se entremezclan entre columnas al extraerlas: es exactamente donde
+   se cuela una fila desplazada, y por eso esos modelos se quedan en null (el eje de puertos se
+   declara «no comprobado» para ellos, no se aprueba ni se rechaza a ciegas).
+   `medios` con dos valores = puerto de medio compartido («Shared Port Pairs»): cuenta como
+   UNO u OTRO, nunca como los dos a la vez. Los puertos de gestion y HA dedicados no entran. */
+const P=(n,vel,...medios)=>({n,vel,medios});
+const PUERTOS={
+  '30G':  {puertos:[P(4,1,'RJ45')],                         fuente:'Product Matrix sept-2026 (Interfaces)'},
+  '40F':  {puertos:[P(5,1,'RJ45')],                         fuente:'Product Matrix sept-2026 (Interfaces)'},
+  '50G':  {puertos:[P(5,1,'RJ45')],                         fuente:'Product Matrix sept-2026 (Interfaces)'},
+  '60F':  {puertos:[P(10,1,'RJ45')],                        fuente:'Product Matrix sept-2026 (Interfaces)'},
+  '70F':  {puertos:[P(10,1,'RJ45')],                        fuente:'Product Matrix sept-2026 (Interfaces)'},
+  '70G':  {puertos:[P(10,1,'RJ45')],                        fuente:'Product Matrix sept-2026 (Interfaces)'},
+  '80F':  {puertos:[P(8,1,'RJ45'), P(2,1,'RJ45','SFP')],     fuente:'Product Matrix sept-2026 (Interfaces: 8x GE RJ45, 2x Shared Port Pairs)'},
+  '90G':  {puertos:[P(8,1,'RJ45'), P(2,10,'RJ45','SFP+')],   fuente:'Product Matrix sept-2026 (Interfaces: 8x GE RJ45, 2x 10GE Shared Port Pairs)'},
+  '120G': {puertos:[P(16,1,'RJ45'), P(8,1,'SFP'), P(4,10,'SFP+')], fuente:'ficha por serie FG-120G-DAT-R18-202607 (Hardware Specifications)'},
+};
+
+for (const m of MODELS) {
+  const id=bareId(m.id);
+  // Una variante hereda la plataforma de su base (misma columna del documento); el disco no,
+  // porque el documento dice de quien es.
+  const baseId=[id, m.matrixDe, m.limitesDe&&m.limitesDe.modelo].find((x)=>x&&(MATRIX_PLATAFORMA[x]||FICHAS_PLATAFORMA[x]));
+  const pl=baseId?(MATRIX_PLATAFORMA[baseId]||FICHAS_PLATAFORMA[baseId]):null;
+  if (!pl) {
+    // 100F y 200F: sin ficha ni columna en el Matrix. null EXPLICITO en todo: «el catalogo no
+    // lo trae», nunca «no tiene».
+    Object.assign(m,{vdomDef:null, almacenamientoGB:null, poe:null, poeVariante:null, aps:null, apsTun:null,
+      switches:null, tokens:null, formato:null, notasMatrix:{}, plataformaFuente:null});
+  } else {
+    const [variante, gb]=pl.almacen||[null, 0];
+    Object.assign(m,{
+      vdomDef:pl.vdomDef,
+      // El disco es de la variante que el documento nombra; cualquier otro modelo de la
+      // columna -el base- publica 0 GB.
+      almacenamientoGB: variante===id ? gb : 0,
+      // Ningun SKU de este catalogo es una variante -POE: el base publica 0 W de PoE.
+      poe:false,
+      poeVariante:(pl.variantes||[]).includes('POE') || baseId==='80F',
+      aps:pl.aps, apsTun:pl.apsTun, switches:pl.switches, tokens:pl.tokens,
+      formato:pl.formato||null,
+      notasMatrix:pl.notas||{},
+      plataformaFuente:MATRIX_PLATAFORMA[baseId]?'Product Matrix sept-2026':`ficha por serie ${pl.ficha}`,
+    });
+  }
+  const pu=PUERTOS[baseId||id]||PUERTOS[id];
+  m.puertos=pu?pu.puertos:null;
+  m.puertosFuente=pu?pu.fuente:null;
+  // Los dos chasis no se pueden cotizar como una linea: necesitan FIM, FPM, fuentes,
+  // ventiladores y opticas, y este catalogo no trae ese configurador (F07).
+  m.modular=/^(7081F|7121F)$/.test(id);
+}
+// El 80F y el 81F se rotulaban «Sucursal + PoE». Su ficha (FG-80F-DAT-R47-202606) publica PoE
+// solo en las variantes -POE y el Matrix lo lista como variante: el SKU que este catalogo
+// cotiza (FG-80F / FG-81F) no tiene PoE. El rotulo era un dato falso con pinta de cierto.
+for (const m of MODELS) if (/^FortiGate 8[01]F$/.test(m.id)) m.seg=m.seg.replace(/\s*\+\s*PoE/i,'');
+
+/* ── COMPATIBILIDAD FortiOS × FUNCION × MODELO (hallazgo P0 F02 del 23-sep) ─────────────
+   La pagina aceptaba SSL-VPN en modo tunel sin preguntar la version de FortiOS y recomendaba
+   un 90G con sus 200 usuarios publicados. Tres reglas, y cada una con su procedencia REAL:
+     · 7.6.3 o superior: el modo tunel SSL-VPN se sustituye por IPsec en TODOS los modelos.
+       Transcrita del informe de auditoria, que cita la release note de FortiOS 7.6.6 —
+       `docs.fortinet.com` responde `connect_rejected` al proxy de egreso de este entorno y
+       no se leyo el documento. Se declara, no se esconde.
+     · 7.6.0 en adelante: SSL-VPN no soportado en modelos de 2 GB de RAM (nota 10 del Matrix,
+       leida). QUE MODELOS TIENEN 2 GB NO LO DICE EL MATRIX, y la RAM no esta en este
+       catalogo: en esa rama la compatibilidad de un modelo con SSL-VPN publicado es
+       «desconocida», nunca «soportada» por omision.
+     · Serie 90G: SSL-VPN solo entre 7.0.12 y 7.0.15 (nota 11 del Matrix, leida, pegada a la
+       celda del FG-90G). Ninguna de las ramas que ofrece esta herramienta cae en ese rango.
+   Las ramas son tres a proposito: son las que las fuentes distinguen. Una lista de versiones
+   mas fina solo daria precision a lo que el catalogo no sabe. */
+const FORTIOS={
+  versiones:[
+    {id:'7.4',         n:'FortiOS 7.4.x'},
+    {id:'7.6.0-7.6.2', n:'FortiOS 7.6.0 a 7.6.2'},
+    {id:'7.6.3+',      n:'FortiOS 7.6.3 o superior (rama vigente)'},
+  ],
+  porDefecto:'7.6.3+',
+  reglas:[
+    {funcion:'sslvpn', versiones:['7.6.3+'], modelos:'*', estado:'retirada', sustituto:'ipsec',
+     fuente:'Informe de auditoria 23-sep-2026, ref. [3]: FortiOS 7.6.6 Release Notes, «SSL VPN tunnel mode replaced with IPsec VPN»',
+     leida:false},
+    {funcion:'sslvpn', versiones:['7.6.0-7.6.2'], modelos:'ram-2gb', estado:'no-soportada', sustituto:'ipsec',
+     fuente:'Product Matrix sept-2026, nota 10: «SSL VPN not supported on FortiOS 7.6.0 and above, for models with 2GB RAM»',
+     leida:true},
+    {funcion:'sslvpn', versiones:['7.4','7.6.0-7.6.2','7.6.3+'], modelos:['90G','91G'], estado:'no-soportada', sustituto:'ipsec',
+     fuente:'Product Matrix sept-2026, nota 11 en la celda SSL VPN del FG-90G: «SSL VPN only supported between 7.0.12 and 7.0.15»',
+     leida:true},
+    {funcion:'proxy', versiones:['7.4','7.6.0-7.6.2','7.6.3+'], modelos:['30G','31G','40F','50G','51G','60F','61F'], estado:'limitada',
+     fuente:'Product Matrix sept-2026, nota 12: «Proxy features limited supported, refer to data sheet»',
+     leida:true},
+  ],
+};
+
+/* ── TRES FAMILIAS DE SKU DEL PRICE LIST QUE EL BOM NECESITABA Y NO USABA ─────────────────
+   Salen de `fortinetSkus.js` —la price list que `fuentes.js` declara como fuente de precios,
+   la «Mid 090726» del 07-sep— y se leen por su codigo de familia en vez de copiarse a mano:
+     204  «Upgrade FortiCare Premium to Elite (Require FortiCare Premium)». El BOM cotizaba
+          Elite como el contrato completo (-284) encima del Premium que el bundle ya trae, y
+          lo advertia; el propio documento publica la MEJORA como SKU aparte.
+     577  «FG AI based Sandbox SVC» — el servicio de sandbox del FortiGate, por modelo.
+     585  «Sub to CLD based Central Logging» — registro central en la nube, por modelo.
+   Si una familia no esta para un modelo, el campo queda en null y la linea que lo pida sale
+   sin SKU, que es lo que cierra la puerta comercial. */
+const SKUS_POR_MODELO=require('./fortinetSkus.js');
+const FAMILIAS_EXTRA={eliteUpg:'204', sandboxAi:'577', logCloud:'585'};
+// El CODIGO DE MODELO de la price list (`0080F` en FC-10-0080F-809-02-DD) se toma de los SKU
+// que LICENSES ya tiene verificados, y la familia se busca SOLO con ese codigo. Las
+// referencias de un equipo traen tambien las de sus variantes -el 80F lleva F80FD, F80FP y
+// F80FC- y la primera version de este bucle se quedo con el SKU de una variante: una linea
+// con el precio de otro producto, que es el error que no se nota.
+const codigoModelo=(lic)=>{
+  for (const t of [lic.ent, lic.utp, lic.atp].concat(lic.care?Object.values(lic.care):[])) {
+    const x=t&&t.sku&&/^FC-10-([A-Z0-9]+)-/.exec(t.sku);
+    if (x) return x[1];
+  }
+  return null;
+};
+for (const m of MODELS) {
+  const refs=SKUS_POR_MODELO[m.id]||[];
+  if (!m.lic) continue;
+  const cod=codigoModelo(m.lic);
+  for (const [clave, fam] of Object.entries(FAMILIAS_EXTRA)) {
+    if (!cod) { m.lic[clave]=null; continue; }
+    const re=new RegExp(`^(FC-10-${cod}-${fam}-02)-(12|36|60)$`);
+    const t={};
+    let base=null;
+    for (const r of refs) {
+      const x=re.exec(r.sku);
+      if (!x) continue;
+      base=x[1];
+      t[{12:'y1',36:'y3',60:'y5'}[x[2]]]=r.p;
+    }
+    m.lic[clave]=base?{sku:`${base}-DD`, y1:t.y1==null?null:t.y1, y3:t.y3==null?null:t.y3, y5:t.y5==null?null:t.y5}:null;
+  }
+}
+
+/* ── LICENCIAS REANCLADAS A LA PRICE LIST DECLARADA (hallazgo N02, 2026-09-23) ────────────
+   LICENSES se transcribio de la «2026Q3 Main Price list 080326» (vigente desde el 03-ago),
+   pero la fuente de precios que declara `fuentes.js` —y de la que salen el hardware de
+   `cotizadorCatalog.js` y las 6.849 referencias de `fortinetSkus.js`— es la «Mid Price list
+   090726» del 07-sep. Medido ese dia, SKU por SKU y termino por termino: de 1.193 precios,
+   108 diferian —los 78 de los SKU combinados BDL, porque el hardware cambio de precio entre
+   las dos ediciones, y los 30 del bundle y el soporte de los dos chasis (+15 %)— y 17 no
+   estan en las referencias de septiembre. Una misma cotizacion llevaba el equipo al precio de
+   septiembre y su licencia al de agosto, y con el SKU combinado de compra nueva la diferencia
+   llegaba entera al total (90G, BDL Enterprise a 3 anos: 10.273,60 frente a 10.604,60).
+
+   SE ANCLA POR SKU EXACTO, con su sufijo de termino, contra la lista declarada: donde la
+   referencia existe manda su precio; donde no existe, el precio de agosto se CONSERVA pero se
+   marca (`anterior`), y la linea que lo use sale como borrador diciendo por que. No se borra:
+   los 17 son renovaciones de equipos fuera de venta (70F, 100F, 200F, 600F), cuyo bloque el
+   importador de referencias no ancla porque no tienen SKU de hardware, asi que su ausencia
+   en `fortinetSkus.js` no prueba que la lista de septiembre no los traiga. */
+const PRECIO_DECLARADO=new Map();
+for (const refs of Object.values(SKUS_POR_MODELO)) for (const r of refs) PRECIO_DECLARADO.set(r.sku, r.p);
+const REANCLAJE={reanclados:0, sinReferencia:0, iguales:0, ejemplos:[]};
+{
+  const vistos=new Set();
+  for (const m of MODELS) {
+    if (!m.lic) continue;
+    const tiers=[m.lic.ent, m.lic.utp, m.lic.atp, m.lic.entBdl, m.lic.utpBdl]
+      .concat(m.lic.care?Object.values(m.lic.care):[]);
+    for (const t of tiers) {
+      if (!t || !t.sku || vistos.has(t)) continue;
+      vistos.add(t);
+      for (const [y, suf] of [['y1','12'],['y3','36'],['y5','60']]) {
+        if (t[y]==null) continue;
+        const sku=t.sku.replace(/-DD$/, `-${suf}`);
+        const p=PRECIO_DECLARADO.get(sku);
+        if (p==null) { (t.anterior=t.anterior||{})[y]=true; REANCLAJE.sinReferencia++; }
+        else if (Math.abs(p-t[y])>0.005) {
+          if (REANCLAJE.ejemplos.length<5) REANCLAJE.ejemplos.push({sku, agosto:t[y], septiembre:p});
+          t[y]=p; REANCLAJE.reanclados++;
+        } else REANCLAJE.iguales++;
+      }
+    }
+  }
+}
+
 // Bundles de protección FortiGuard reales y vigentes (sufijos de SKU -809/-950/-928 en el price list AMER).
 // Los 3 ya incluyen FortiCare Premium. "Elite" no es un bundle de protección Fortinet — se reemplaza por
 // ATP (Advanced Threat Protection), el nombre y alcance oficiales del tercer bundle.
@@ -610,4 +906,5 @@ const CARE={
   fcelite:{n:'FortiCare Elite',      sla:'FortiCare Premium + atención de tickets con prioridad Elite'},
 };
 
-module.exports = { MODELS, BUNDLES, CARE, LICENSES, HW_SKU, FUNCIONES, SERVICIOS_SDWAN, TERMINOS, MATRIX_LIMITES };
+module.exports = { MODELS, BUNDLES, CARE, LICENSES, HW_SKU, FUNCIONES, SERVICIOS_SDWAN, TERMINOS, MATRIX_LIMITES,
+  FICHAS_LIMITES, MATRIX_PLATAFORMA, FICHAS_PLATAFORMA, PUERTOS, FORTIOS, REANCLAJE };

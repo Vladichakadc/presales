@@ -54,12 +54,13 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   t.ok(/SSL \d+\/\d+/.test(banner), 'el banner cuenta la cobertura real de `ssl` sobre el catálogo servido');
   t.ok(/vigente|vencida|sin fecha/.test(banner), 'el banner declara la vigencia de la lista de precios');
 
-  /* Los 7 modelos cuya cifra de inspeccion SSL el Product Matrix de septiembre ya no lista.
-     Se comparan por NOMBRE EXACTO y no por subcadena: `/600F/` casa dentro de `2600F` y
-     `/200F/` dentro de `3200F`, que es el mismo tropiezo del ancla corta que este repositorio
-     ya pago en `catalogo-check.js`. */
-  const SIN_CIFRA_SSL = ['FortiGate 100F', 'FortiGate 200F', 'FortiGate 400F', 'FortiGate 401F',
-    'FortiGate 600F', 'FortiGate 1000F', 'FortiGate 1001F'];
+  /* Los modelos sin cifra de inspeccion SSL, LEIDOS DEL CATALOGO y no escritos aqui: eran 7
+     con el Product Matrix de septiembre y son 2 (100F y 200F) desde que se leyeron las fichas
+     por serie del 400F, 600F y 1000F (2026-09-23). Una lista escrita a mano habria seguido
+     afirmando que el 400F no tiene la cifra. Se comparan por NOMBRE EXACTO y no por
+     subcadena: `/200F/` casa dentro de `3200F`. */
+  const SIN_CIFRA_SSL = require('../../server/seed/legacyData/fortinet.js').MODELS
+    .filter((m) => m.ssl == null).map((m) => m.id);
 
   /* ── AT-01 · SSL OFICIAL, NO UN DERATE ──────────────────────────────────────────────
      300 Mbps + 30 % de crecimiento = 390 Mbps. El 40F publica 600 Mbps de Threat Protection
@@ -153,8 +154,10 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   t.ok(/Enterprise Protection/.test(puerta), 'AT-03: y la puerta nombra el bundle mínimo');
   t.ok(!/y IoT Detection \+ DLP y IoT/.test(puerta),
     'AT-03: el mensaje no repite la misma función dos veces');
-  const chip4 = await texto('#chipPaso4');
-  t.ok(/insuficiente/i.test(chip4), 'AT-03: el paso 4 se marca como bloqueante en su chip');
+  const chip5 = await texto('#chipPaso5');
+  t.ok(/insuficiente/i.test(chip5), 'AT-03: el paso de cotización (5) se marca como bloqueante en su chip');
+  t.ok(/Cambiar a Enterprise Protection/.test(await texto('#resBloqueos')),
+    'AT-03 / T08: el bloqueo ofrece la corrección con un clic, no solo el motivo');
 
   await page.selectOption('#licBundle', 'ent');
   await page.waitForTimeout(800);
@@ -217,45 +220,44 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   t.ok(skus5.some((s) => /-60$/.test(s)),
     'AT-06: cambiar a 5 años cambia el sufijo del SKU a 60 meses');
 
-  /* ── AT-08 · SERVICIO SD-WAN SIN SKU CONFIRMADO BLOQUEA ─────────────────────────────
-     La función base no se licencia; estos servicios sí, y este repositorio no ha leído su
-     SKU del Ordering Guide. Una línea sin SKU exacto no es pedible: se declara y se cierra
-     la puerta, en vez de inventar un código con pinta de válido. */
+  /* ── AT-08 · SERVICIO SD-WAN SIN SKU CONFIRMADO: SOLO BORRADOR TECNICO ─────────────
+     La funcion base no se licencia; estos servicios si, y este repositorio no ha leido su SKU
+     del Ordering Guide. Desde la etapa 7 eso ya no «cierra» la exportacion sin salida: deja la
+     propuesta en BORRADOR —se exporta un documento que se declara borrador en el titulo y en
+     cada nota— y cierra lo que no admite borrador (cotizador, perfiles). Y los servicios solo
+     existen con rol SD-WAN: sin el, ni se ven (T13). */
   await page.click('[data-tab=calc]');
   await page.waitForTimeout(300);
+  t.ok(await page.$eval('#grpSdwan', (e) => e.hidden), 'T13: sin rol SD-WAN los servicios avanzados no se ven');
+  await page.click('#rolSeg button[data-v="spoke"]');
+  await page.waitForTimeout(600);
   await page.check('#chkSdwanOrq');
   await page.waitForTimeout(800);
-  t.ok(await page.$eval('#xlsBtn', (e) => e.disabled),
-    'AT-08: un servicio SD-WAN sin SKU confirmado cierra la exportación');
+  t.ok(/borrador/i.test(await texto('#gateResumen')), 'AT-08: un servicio SD-WAN sin SKU deja la puerta en BORRADOR');
+  t.ok(!(await page.$eval('#xlsBtn', (e) => e.disabled)) && /borrador/i.test(await texto('#xlsBtn')),
+    'AT-08: Excel sigue disponible, pero como «borrador técnico»');
+  t.ok(await page.$eval('#btnACotizador', (e) => e.disabled), 'AT-08: un borrador nunca va al cotizador');
+  t.ok(await page.$eval('#btnGuardarPerfil', (e) => e.disabled), 'AT-08: ni se guarda como perfil multi-sede');
   const puertaSd = await texto('#exportGate');
   t.ok(/Ordering Guide/.test(puertaSd), 'AT-08: y dice exactamente qué falta por confirmar');
-
-  /* ── AT-18 · EL OVERRIDE EXISTE, PERO EXIGE MOTIVO Y VIAJA ESTAMPADO ────────────────
-     Una puerta sin salida se rodea copiando la tabla a mano, y entonces el documento sale
-     SIN la advertencia. Así sale con ella. */
-  await page.click('[data-tab=bom]');
-  await page.waitForTimeout(700);
-  await page.click('#btnOverride');
-  await page.waitForTimeout(400);
-  t.ok(await page.$eval('#xlsBtn', (e) => e.disabled),
-    'AT-18: forzar sin motivo no abre la puerta');
-  await page.fill('#ovMotivo', 'Borrador técnico para revisión interna');
-  await page.click('#btnOverride');
-  await page.waitForTimeout(800);
-  t.ok(!(await page.$eval('#xlsBtn', (e) => e.disabled)),
-    'AT-18: con motivo escrito, la exportación se abre como borrador');
+  /* ── AT-18 (etapa 7) · EL BORRADOR SE DECLARA DENTRO DEL DOCUMENTO ──────────────────
+     El override con motivo se retiro: el estado BORRADOR cubre el caso para el que existia
+     (mandar un documento de trabajo antes de tener el SKU) sin un segundo camino que se
+     salte la puerta. Lo que se afirma es que el documento lo dice. */
   const txtBom = await page.$eval('#bomOut', (e) => e.value);
-  t.ok(/EXPORTACION FORZADA/.test(txtBom) && /Borrador técnico para revisión interna/.test(txtBom),
-    'AT-18: el motivo viaja ESTAMPADO en el documento exportado, no solo en pantalla');
-  t.ok(/NO es una cotizacion en firme/.test(txtBom),
-    'AT-18: y el documento se declara a sí mismo como borrador');
+  t.ok(/BORRADOR T[EÉ]CNICO/.test(txtBom) && /NO ES UNA COTIZACION EN FIRME/.test(txtBom),
+    'AT-18: el documento exportable se declara borrador en el título y en las notas');
+  t.ok(/Huella del escenario: sha256:[0-9a-f]{64}/.test(txtBom), 'AT-18: y lleva la huella completa del escenario');
+  t.ok(!(await page.$('#btnOverride')), 'AT-18: ya no existe un override que abra la puerta por fuera del motor');
+  await page.uncheck('#chkSdwanOrq');
+  await page.click('#rolSeg button[data-v="none"]');
+  await page.waitForTimeout(600);
 
   /* ── ALTERNATIVAS DE UN CLIC ────────────────────────────────────────────────────────
      «Candidato y dos alternativas» del informe. Una alternativa que hay que buscar en un
      desplegable de 39 entradas no es una alternativa. */
   await page.click('[data-tab=calc]');
   await page.waitForTimeout(400);
-  await page.uncheck('#chkSdwanOrq');
   await page.uncheck('#chkConverter');
   await caudal(1500);
   const antes = await elegido();
@@ -338,7 +340,9 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
     `y esa figura CARGA de verdad, no es un hueco (natural ${trasera && trasera.ancho}px)`);
 
   // El hueco honesto: el 100F no tiene datasheet por serie, así que NO tiene foto y lo dice.
+  // Está fuera de venta: desde la etapa 7 solo compite en ampliación de un parque instalado.
   await caudal(500);
+  await page.selectOption('#motivoCompra', 'ampliacion');
   await page.waitForTimeout(800);
   await page.selectOption('#verdict-sel', 'FortiGate 100F');
   await page.waitForTimeout(900);
@@ -378,10 +382,17 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   await page.goto(`${BASE}/dimensionador-fortinet-fortigate.html`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1500);
   await caudal(100);
+  await page.check('#chkRemoto');
+  await page.waitForTimeout(300);
   await page.fill('#vpnUsers', '400');
   await page.dispatchEvent('#vpnUsers', 'input');
   await page.waitForTimeout(800);
   const recoIpsec = await page.$eval('#verdict-sel', (e) => e.value);
+  // T06: con FortiOS 7.6.3+ la opcion SSL-VPN esta deshabilitada; se diseña en 7.4.
+  t.ok(await page.$eval('#vpnTipo option[value=sslvpn]', (o) => o.disabled),
+    'T06: con FortiOS 7.6.3 o superior el modo túnel SSL-VPN no se puede elegir');
+  await page.selectOption('#fortiOS', '7.4');
+  await page.waitForTimeout(400);
   await page.selectOption('#vpnTipo', 'sslvpn');
   await page.waitForTimeout(900);
   const recoSsl = await page.$eval('#verdict-sel', (e) => e.value);
@@ -397,7 +408,9 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   await page.fill('#vdoms', '120');
   await page.dispatchEvent('#vdoms', 'input');
   await page.waitForTimeout(900);
-  t.ok(await page.$eval('#verdict-sel', (e) => e.value) === 'FortiGate 1800F',
+  // El 1000F y no el 1800F desde el 2026-09-23: su ficha por serie publica 250 VDOM y el
+  // Product Matrix no lo listaba, así que antes se apartaba por no traer la cifra.
+  t.ok(await page.$eval('#verdict-sel', (e) => e.value) === 'FortiGate 1000F',
     'AT-32: 120 VDOM declarados llevan al primer modelo cuyo máximo publicado los admite');
   t.ok(/VDOM/.test(await texto('#verdict')), 'AT-32: y la pantalla lo declara junto al equipo');
 
@@ -410,9 +423,11 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   // manda Threat Protection y bajar la demanda del eje SSL no cambiaria la lista, que fue
   // exactamente el falso verde de la primera version de esta prueba.
   await caudal(300);
+  t.ok(await page.$eval('#fldTlsExento', (e) => e.hidden),
+    'F7: sin inspección SSL el control de excepciones TLS no se ve');
   await page.check('#chkSsl');
   await page.waitForTimeout(800);
-  t.ok(await page.$eval('#fldTlsExento', (e) => e.style.display !== 'none'),
+  t.ok(await page.$eval('#fldTlsExento', (e) => !e.hidden),
     'F7: el control de excepciones TLS aparece solo con la inspección SSL pedida');
   const sinExento = await page.$eval('#verdict-sel', (e) => [...e.options].map((o) => o.value));
   await page.selectOption('#pctTlsExento', '40');

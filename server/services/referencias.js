@@ -20,6 +20,7 @@
 // en cada arranque solo alargaria el despliegue.
 
 const fortinetSkus = require('../seed/legacyData/fortinetSkus.js');
+const terminoSku = require('./terminoSku');
 
 // El resto se carga en perezoso: solo Fortinet y Aruba tienen algo que dar hoy.
 const modelosDe = (archivo) => {
@@ -57,7 +58,9 @@ function referenciasDe(vendor, modeloId) {
   const id = String(modeloId || '');
 
   if (v === 'fortinet') {
-    const refs = fortinetSkus[id] || [];
+    // F18: el termino lo dice el codigo. Una descripcion que lo contradice se corrige a la
+    // vista (original en `dLista`, motivo en `aviso`); ver services/terminoSku.js.
+    const refs = (fortinetSkus[id] || []).map(terminoSku.normalizar);
     return {
       vendor: v,
       modelo: id,

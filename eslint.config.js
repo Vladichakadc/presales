@@ -51,6 +51,7 @@ const globalsNavegador = {
   // Reglas puras del dimensionador FortiGate (informe de validacion tecnica 2026-09-22),
   // mismo patron UMD: /js/fortinet-reglas.js.
   FortinetReglas: 'readonly',
+  FortinetMotor: 'readonly',
 };
 
 const reglas = {

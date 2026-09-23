@@ -173,3 +173,55 @@ test('las referencias anadidas a mano siguen viajando junto al BOM calculado', (
   const skus = g.BOM.recogerEntrada().filter((e) => e.ref).map((e) => e.ref.sku);
   assert.deepStrictEqual(llano(skus), ['FC-10-FG2HG-809-02-DD', 'FC-10-FG2HG-247-02-DD', 'FG-TRAN-SFP']);
 });
+
+/* ── SKU COMBINADO (BDL) Y RENOVACION (Fortinet, 2026-09-23) ──────────────────────────────
+   Dos construcciones nuevas del BOM de Fortinet cambian QUE es el equipo:
+     · en compra nueva la fila del equipo es el SKU combinado FG-90G-BDL-809-36, que incluye
+       el bundle y FortiCare Premium. Si viajara solo el nombre, el cotizador le pondria el
+       precio de la caja y el bundle desapareceria de la cotizacion;
+     · en renovacion y co-term no hay fila de equipo, a proposito: la caja ya esta instalada.
+       Si el nombre viajara, el cotizador cotizaria hardware en una renovacion.
+   Las dos reglas son las mismas que ya regian: el hardware nunca se cotiza dos veces, y lo
+   que viaja es lo que dice el BOM. */
+const FILAS_90G_BDL = [
+  { cat: 'Equipo', desc: 'FortiGate 90G', sku: 'FG-90G-BDL-809-36', qty: 1, unit: 10273.6, bdl: true,
+    nota: 'SKU combinado de compra nueva' },
+  { cat: 'Servicios opcionales', desc: 'FortiConverter', sku: 'FC-10-FG9HG-189-02-36', qty: 1, unit: 415.8, nota: '' },
+];
+
+test('BDL: el equipo viaja COMO REFERENCIA con su SKU y precio, y el nombre suelto no viaja', () => {
+  const B = conBom(FILAS_90G_BDL);
+  const r = B.enviarACotizador({ modelo: 'FortiGate 90G', qty: 1, de: 'Fortinet' });
+  assert.strictEqual(r.ok, true);
+  assert.strictEqual(r.lineas, 2);
+  const cola = B.recogerEntrada();
+  assert.ok(!cola.some((e) => e.modelo), 'ninguna entrada por nombre: el hardware se cotizaria dos veces');
+  assert.strictEqual(cola[0].ref.sku, 'FG-90G-BDL-809-36');
+  assert.strictEqual(cola[0].ref.p, 10273.6);
+  // La descripcion sigue siendo el modelo: es lo que identifica la linea del equipo.
+  assert.strictEqual(cola[0].ref.d, 'FortiGate 90G');
+  assert.match(cola[0].ref.cat, /BDL/);
+  assert.strictEqual(cola[1].ref.sku, 'FC-10-FG9HG-189-02-36');
+});
+
+test('BDL: una fila marcada BDL de OTRO modelo no convierte el envio en referencia', () => {
+  const B = conBom(FILAS_90G_BDL);
+  const r = B.enviarACotizador({ modelo: 'FortiGate 120G', qty: 1, de: 'Fortinet' });
+  assert.strictEqual(r.motivo, 'otro-equipo');
+  const cola = B.recogerEntrada();
+  assert.deepStrictEqual(llano(cola), [{ modelo: 'FortiGate 120G', qty: 1, nota: '', de: 'Fortinet' }]);
+});
+
+test('renovacion: sin fila de equipo viajan SOLO los servicios, y el nombre del equipo no', () => {
+  const B = conBom([
+    { cat: 'Licencias FortiGuard', desc: 'Enterprise Protection', sku: 'FC-10-FG9HG-809-02-36', qty: 1, unit: 3000, nota: '' },
+    { cat: 'Soporte', desc: 'FortiCare Elite (mejora)', sku: 'FC-10-FG9HG-204-02-36', qty: 1, unit: 500, nota: '' },
+  ]);
+  const r = B.enviarACotizador({ modelo: 'FortiGate 90G', qty: 1, de: 'Fortinet', sinEquipo: true });
+  assert.strictEqual(r.ok, true);
+  assert.strictEqual(r.motivo, '');
+  assert.strictEqual(r.lineas, 2);
+  const cola = B.recogerEntrada();
+  assert.ok(!cola.some((e) => e.modelo), 'una renovacion no cotiza la caja');
+  assert.deepStrictEqual(llano(cola.map((e) => e.ref.sku)), ['FC-10-FG9HG-809-02-36', 'FC-10-FG9HG-204-02-36']);
+});

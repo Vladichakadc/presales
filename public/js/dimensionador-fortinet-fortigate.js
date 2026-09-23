@@ -1,1934 +1,2054 @@
 'use strict';
-// Equivalencia entre el nivel de soporte que elige la pagina y la clave con la que el
-// catalogo guarda su precio. Vivia 120 lineas por debajo de su primer uso: funcionaba
-// porque quien lo lee corre despues, pero es la misma forma del fallo que dejo el
-// dimensionador de Cisco en blanco al usar `capDe` antes de su declaracion.
-const CARE_LIC_KEY={fc247:'essential',fcpre:'premium',fcelite:'elite'};
+/* ══ DIMENSIONADOR FORTIGATE — PAGINA (etapa 7, 2026-09-23) ════════════════════════════════
+   Informe de auditoria del 23-sep: el motor multieje acertaba, pero la recomendacion, el
+   selector manual, el BOM y los botones de salida vivian en ESTADOS DISTINTOS de esta pagina,
+   y por las costuras se colaba una cotizacion invalida (F01 un 40F elegido a mano se cotizaba
+   con el panel diciendo 90G; F02 SSL-VPN sin preguntar FortiOS; F03 HA con cantidad 1; F04
+   «Enviar al cotizador» fuera de la puerta).
+
+   LA CORRECCION ES ESTRUCTURAL: esta pagina ya no calcula nada. Lee el formulario, se lo da a
+   `FortinetMotor.evaluar` y pinta el resultado — el grafico, la ficha, la comparacion, los
+   requisitos, la lista de materiales, la puerta y cada exportacion salen de ESE resultado
+   (`RES`), el mismo que el servidor recalcula con el mismo archivo antes de dejar salir una
+   cotizacion (POST /api/v1/fortinet/evaluations). No hay un segundo sitio donde un numero
+   pueda divergir.
+
+   LO QUE SI HACE LA PAGINA, y solo la pagina: el formulario dinamico (mostrar lo que aplica
+   segun el esquema de dependencias del propio motor), el Multi-Underlay Builder, las
+   correcciones reversibles, el historial para deshacer, la accesibilidad y el enlace. */
+
+const R = FortinetReglas;
+const M = FortinetMotor;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function fmt(m) {
+  if (m == null || !Number.isFinite(m)) return '—';
+  if (m >= 1000000) return `${(m / 1e6).toFixed(1).replace(/\.0$/, '')} Tbps`;
+  if (m >= 1000) return `${(m / 1000).toFixed(m % 1000 ? 1 : 0)} Gbps`;
+  return `${Math.round(m)} Mbps`;
+}
+const nMil = (v) => (v >= 1000 ? `${(v / 1000).toFixed(v % 1000 ? 1 : 0)}K` : String(Math.round(v)));
+const cifra = (n) => Number(n).toLocaleString('en-US', { maximumFractionDigits: 1 });
+const money = (n) => (n == null ? null : `$${n.toLocaleString('en-US', { maximumFractionDigits: 2 })}`);
+const valEje = (e, v) => (e.unidad === 'Mbps' || !e.unidad ? fmt(v) : `${cifra(v)} ${e.unidad}`);
+
+// ── Catalogo ─────────────────────────────────────────────────────────────────────────────
+let CAT = null; // lo que consume el motor: la misma forma que usa el servidor
 let MODELS = [];
 let BUNDLES = {};
 let CARE = {};
-// Reglas comerciales y de formulario servidas por /api/dimensionador/fortinet, no escritas
-// aqui: el catalogo de funciones con su servicio FortiGuard, los servicios avanzados de
-// SD-WAN y la equivalencia termino -> sufijo de SKU. Ver legacyData/fortinet.js.
 let FUNCIONES = [];
 let SERVICIOS_SDWAN = [];
 let TERMINOS = {};
-// Procedencia del fabricante (/api/fuentes): alimenta el banner de estado de datos y la
-// puerta de exportacion, que bloquea si la lista de precios esta vencida.
-let FUENTES = null;
-/* FOTO OFICIAL DEL EQUIPO (2026-09-22, peticion del dueño: «como esta en Aruba»).
-   Mapa {modelo: {front, fuente}} servido desde /data/fortinet-vistas-equipos.json. Se carga
-   ANTES del primer render para que la tarjeta no aparezca sin foto y se rellene despues.
+let FUENTES = null; // procedencia del fabricante (/api/fuentes)
+let VISTAS = null; // figura oficial del equipo, frontal y trasera
 
-   SOLO VISTA FRONTAL, y no es un recorte del trabajo: se revisaron los 28 datasheets por
-   serie y NINGUNO publica una trasera -cada uno trae una sola foto de producto, en la
-   portada-. Aruba tiene las dos caras porque el Hardware Reference de HPE las publica
-   etiquetadas «Front View»/«Rear View»; Fortinet no publica el equivalente en el datasheet.
-   `ficha.js` ya sabe pintar una sola cara: sin `rear` no dibuja el conmutador. */
-let VISTAS = null;
-const R = FortinetReglas;
+// ── Estado de la pagina que no es un campo del formulario ────────────────────────────────
+let profile = 'tp';
+let rolSdwan = 'none';
+let segMode = 'branch';
+// La eleccion manual del equipo. UNA sola variable para los tres sitios desde los que se
+// puede elegir (el desplegable del paso 5, el de la ficha y las alternativas): «se elimina la
+// separacion entre pickModel y verdict-sel» (§11.1 del informe). No aprueba nada: pide al
+// motor que revalide ese equipo.
+let seleccionManual = null;
+let metricaEje = 'auto';
+let verEol = false;
+let RES = null; // el ultimo resultado del motor: la unica verdad de la pantalla
+let ESC = null; // el escenario que lo produjo, tal cual se manda al servidor
+let ST = null; // lo que devuelve ESTADO.vincular (para refrescar el enlace)
+let ultimoAnuncio = '';
+let ultimaConfirmacion = null; // {accion, ts, hash, gate} de la ultima salida confirmada
 
-const $=id=>document.getElementById(id);
-let profile='tp', rolSdwan='none', segMode='branch', lastPick=null;
-// EL MODO DE CAUDAL SE DERIVA DEL ROL, no se pregunta. Era un segmentado propio («enlace
-// unico» / «agregado») que respondia a la MISMA pregunta que el rol: un concentrador agrega
-// por definicion y una sucursal no. Dos controles para un dato se desincronizan —la version
-// anterior ya tenia que forzar `agg` a mano cada vez que alguien elegia `hub`— y dejaba
-// abierta la combinacion «hub en enlace unico», que es exactamente como se dimensiona de
-// menos un concentrador.
-const esConcentrador=()=>rolSdwan==='hub';
-// Ultimo rol con el que se pintaron las filas del builder: la casilla de overlay se
-// habilita o deshabilita segun el rol, y repintar en cada render destruiria el campo a
-// medio teclear (el mismo motivo por el que BOM.cantidadRef escucha change y no input).
-let wanRolPintado=null;
-// Controles de LECTURA del gráfico (métrica del eje y ver/ocultar fuera de venta). No son
-// escenario: cambian lo que se dibuja, no lo que se dimensiona.
-let metricaEje='auto';
-let verEol=false;
-/* PUERTA DE EXPORTACION (AT-15/16/18).
-   `ultimaHuella` resume el escenario TECNICO del ultimo calculo; `huellaDelBom`, la que
-   tenia cuando se construyo la lista de materiales.
+const VENDOR = 'fortinet';
+const CARE_LIC_KEY = { fc247: 'essential', fcpre: 'premium', fcelite: 'elite' };
+const FUNCIONES_ID = ['chkAv', 'chkWeb', 'chkIotDlp', 'chkSsl', 'chkSandbox'];
+const CHK_SDWAN = { sdwanMon: 'chkSdwanMon', sdwanOrq: 'chkSdwanOrq', sdwanSase: 'chkSdwanSase' };
+const OPEX_FORTINET = ['Licencias FortiGuard', 'Soporte'];
+const GATE = {
+  READY: { n: 'Lista para cotizar', cls: 'ok' },
+  WARNING: { n: 'Cotizable con advertencias', cls: 'warn' },
+  DRAFT: { n: 'Solo borrador técnico', cls: 'warn' },
+  BLOCKED: { n: 'Bloqueada', cls: 'bad' },
+};
+const TIERS = [
+  { k: 'fw', n: 'Firewall', d: 'Firewall stateful, 1518 B UDP. Sesión descargada al ASIC de red (NP7/SP5), sin inspección de contenido.' },
+  { k: 'vpn', n: 'IPsec VPN', d: 'Túnel IPsec, 512 B. Criptografía descargada al ASIC.' },
+  { k: 'ips', n: 'IPS', d: 'IPS sobre Enterprise Mix. La sesión sale del offload de red; el content processor (CP9/CP10) asiste el pattern matching.' },
+  { k: 'ngfw', n: 'NGFW', d: 'IPS + Application Control sobre Enterprise Mix.' },
+  { k: 'tp', n: 'Threat Protection', d: 'NGFW + antivirus + logging. Stack de seguridad completo — el número realista de una sucursal.' },
+];
+const TIER_BY_K = Object.fromEntries(TIERS.map((t) => [t.k, t]));
+const SOFTWARE = [
+  { n: 'FortiManager', d: 'Orquestación de políticas y SD-WAN. Appliance de entrada FMG-200G: hasta 30 dispositivos/VDOMs.' },
+  { n: 'FortiAnalyzer', d: 'Correlación y retención de logs. Appliance de entrada FAZ-150G: hasta 25 GB/día.' },
+  { n: 'FortiSandbox', d: 'Análisis dinámico de archivos zero-day. Ver el paso 2: incluido, servicio del FortiGate o dedicado.' },
+  { n: 'FortiClient EMS', d: 'Gestión de endpoints ZTNA + VPN, licenciado por endpoints gestionados.' },
+  { n: 'FortiSASE', d: 'SASE, ZTNA y EPP como servicio, licenciado por usuario.' },
+];
 
-   EN ESTA PAGINA LAS DOS TIENEN QUE COINCIDIR SIEMPRE, y eso es una afirmacion, no un
-   descuido: `BOM.sincronizar` repinta el BOM en CADA render -esa es justamente la regla que
-   se escribio el 2026-09-03, cuando cinco de los seis dimensionadores se quedaban cotizando
-   el equipo anterior-. La comparacion se mantiene como INVARIANTE: si algun dia falla,
-   significa que alguien salto un repintado, y entonces cerrar la puerta es lo correcto.
-   Declararla como «detector de escenarios obsoletos» seria venderla como algo que en esta
-   arquitectura no puede pasar — la clase de comprobacion inerte que este repositorio ya pago
-   con `CISCO_EOL_MODELS`.
-
-   LO QUE LA HUELLA SI HACE TODOS LOS DIAS es identificar la propuesta: se publica en la
-   puerta y VIAJA DENTRO del documento exportado, asi que quien recibe un BOM por correo
-   puede cruzarlo contra el enlace del escenario y ver si son el mismo.
-   `override` guarda el motivo con el que alguien forzo una exportacion. */
-let override=null; // {motivo, fecha, usuario}
-let ultimaHuella=null, huellaDelBom=null;
-let bomFilas=[], bomMeta={};
-// Si el dimensionamiento se queda sin candidatos, el BOM conservaba intacta la cotizacion
-// del ultimo equipo que si cumplia: el veredicto decia "Sin candidato" y la pestana de BOM
-// seguia ofreciendo un FortiGate 60F completo, exportable a Excel. El BOM no se vacia —se
-// puede querer cotizar cualquier equipo a mano— pero tiene que DECIR que ya no corresponde
-// a lo que salio del dimensionamiento.
-let hayCandidato=true;
-
-// El modelo recomendado se lleva solo a la pestaña de BOM. Se sincroniza unicamente cuando
-// la recomendacion CAMBIA, no en cada render: asi, si alguien elige otro modelo a mano para
-// compararlo, no se lo pisamos en cuanto mueva un parametro del dimensionamiento.
-// El equipo del dimensionamiento se lleva solo al BOM. La regla vive en js/bom.js —
-// `BOM.sincronizar` distingue lo heredado de lo elegido a mano y repinta siempre, para
-// que un cambio de escenario no deje el BOM cotizando el equipo anterior.
-function sincronizarConBom(elegido){
-  BOM.sincronizar({elegido:elegido?elegido.id:null, render:renderBom});
-}
-// Eleccion explicita en el desplegable de equipos de la CALCULADORA: manda sobre el paso 4.
-// `BOM.sincronizar` respeta una eleccion hecha a mano en `#pickModel` -es deliberado: ese
-// desplegable cotiza cualquier equipo-, pero elegir en la calculadora es una eleccion
-// posterior y mas explicita sobre el mismo asunto, asi que suelta el pestillo. Sin esto,
-// tocar una vez el modelo del paso 4 dejaba los dos desplegables desincronizados para
-// siempre y sin forma de volver, que es lo que el dueno reporto el 2026-09-22.
-function llevarABom(id){
-  BOM.soltarManual();
-  BOM.sincronizar({elegido:id||null, render:renderBom});
-}
-
-document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
-  ['calc','bom','lic','cat','src'].forEach(t=>$('pane-'+t).hidden=(t!==b.dataset.tab));
-}));
-
-// Catálogo FortiGate, con la misma tabla que antes vivía en la vista de Fortinet del portal
-// (ver CLAUDE.md, 2026-09-09): se pinta desde MODELS, ya cargado para el propio
-// dimensionador, en vez de repetir el fetch a /api/catalog para mostrar lo mismo dos veces.
-// Se incluyen los modelos fuera de venta (con su marca), a diferencia del portal, que los
-// oculta del todo: aquí la filosofía es la de FICHA.rango — se muestran, no se recomiendan.
-function renderCatalogo(){
-  const tbody=document.querySelector('#tbl-fortinet-cat tbody');
-  if(!tbody) return;
-  tbody.innerHTML=MODELS.map(m=>`<tr>
-    <td><code>${m.id}</code>${m.eol?' <span class="pillc" style="color:var(--red)">Fuera de venta</span>':''}</td><td>${m.seg}</td>
-    <td class="n">${m.fw}</td><td class="n">${m.ips}</td><td class="n">${m.ngfw}</td>
-    <td class="n">${m.vpn}</td><td>${m.ifaces}</td>
-    <td class="n" style="color:var(--amber);white-space:nowrap">${m.elp||'—'}</td>
-  </tr>`).join('');
-}
-
-$('profileSeg').addEventListener('click',e=>{
-  const b=e.target.closest('button');if(!b)return;
-  [...$('profileSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
-  profile=b.dataset.v;
-  render();
+/* ── EL FORMULARIO, COMO TABLA ──────────────────────────────────────────────────────────
+   Ruta del escenario del motor → control de la pagina. De aqui salen tres cosas que antes
+   vivian en tres sitios: la lectura del escenario, el campo al que lleva un error o una
+   correccion, y el paso al que pertenece cada dato. `vacio` es lo que vale un campo sin
+   rellenar: el valor por defecto del propio motor. */
+const UI = [
+  ['software.fortiOS', 'fortiOS', 'txt'],
+  ['software.inspeccion', 'modoInspeccion', 'txt'],
+  ['topologia.hubs', 'hubs', 'num', 1],
+  ['topologia.spokes', 'sites', 'num', 1],
+  ['topologia.simultaneidadPct', 'conc', 'num', 35],
+  ['trafico.interVlanMbps', 'interVlan', 'num', 0],
+  ['trafico.picosNoConcurrentes', 'chkNoConcurrente', 'chk'],
+  ['seguridad.tlsCifradoPct', 'pctCifrado', 'num', 100],
+  ['seguridad.tlsExentoPct', 'pctTlsExento', 'num', 0],
+  ['remoto.activo', 'chkRemoto', 'chk'],
+  ['remoto.metodo', 'vpnTipo', 'txt'],
+  ['remoto.usuarios', 'vpnUsers', 'num', 0],
+  ['remoto.mbps', 'vpnMbps', 'num', 0],
+  ['remoto.mfa', 'chkMfa', 'chk'],
+  ['escala.usuarios', 'users', 'num', 0],
+  ['escala.sesionesPorUsuario', 'sesUser', 'num', 0],
+  ['escala.sesionesMedidas', 'sessNeed', 'num', 0],
+  ['escala.vidaSesionS', 'vidaSes', 'num', 30],
+  ['escala.cpsMedido', 'cpsMedido', 'num', 0],
+  ['escala.vdoms', 'vdoms', 'num', 0],
+  ['escala.fortiAps', 'fortiAps', 'num', 0],
+  ['escala.fortiSwitches', 'fortiSwitches', 'num', 0],
+  ['fisico.poeW', 'poeW', 'num', 0],
+  ['fisico.psuRedundante', 'chkPsuRed', 'chk'],
+  ['fisico.registro', 'registroDestino', 'txt'],
+  ['fisico.registroGbDia', 'registroGbDia', 'num', 0],
+  ['fisico.registroDias', 'registroDias', 'num', 0],
+  ['politica.crecimientoPct', 'head', 'num', 30],
+  ['politica.techoPct', 'techoUtil', 'num', 100],
+  ['comercial.motivo', 'motivoCompra', 'txt'],
+  ['comercial.anios', 'termYears', 'num', 3],
+  ['comercial.bundle', 'licBundle', 'txt'],
+  ['comercial.soporte', 'careLevel', 'txt'],
+  ['comercial.converter', 'chkConverter', 'chk'],
+  ['comercial.emsActivo', 'chkEms', 'chk'],
+  ['comercial.emsEndpoints', 'emsEndpoints', 'num', 0],
+  ['comercial.sandboxModalidad', 'sandboxModalidad', 'txt'],
+  ['comercial.saseUsuarios', 'saseUsuarios', 'num', 0],
+  ['comercial.serieInstalada', 'serieInstalada', 'txt'],
+  ['comercial.justificacionEol', 'justificacionEol', 'txt'],
+];
+const PUERTOS_ID = M.TIPOS_PUERTO.map((t) => [t.k, `pt_${t.k}`]);
+// Campo del motor → control que lo edita. Lo usan los errores, los obligatorios y las
+// correcciones ofrecidas.
+const CAMPO_ID = Object.fromEntries(UI.map(([ruta, id]) => [ruta, id]));
+Object.assign(CAMPO_ID, {
+  'sitio.segmento': 'segSeg', 'topologia.rol': 'rolSeg', 'seguridad.capa': 'profileSeg',
+  'comercial.sandbox': 'sandboxModo', 'comercial.sdwan': 'chkSdwanMon', 'seleccion.manual': 'pickModel',
+  'disponibilidad.modo': 'chkHa',
 });
-$('rolSeg').addEventListener('click',e=>{
-  const b=e.target.closest('button');if(!b)return;
-  [...$('rolSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
-  rolSdwan=b.dataset.v;
-  render();
-});
-$('segSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('segSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));segMode=b.dataset.v;render();});
-// Métrica del eje y filtro de ciclo de vida del gráfico. NO entran en CAMPOS_ESCENARIO a
-// propósito: son controles de LECTURA —cambian lo que se dibuja, no lo que se dimensiona—
-// y meterlos en el enlace compartido haría creer que forman parte del escenario.
-$('metricaEje').addEventListener('change',()=>{ metricaEje=$('metricaEje').value; render(); });
-$('chkVerEol').addEventListener('change',()=>{ verEol=$('chkVerEol').checked; render(); });
-// bw/unit/pctOverlay ya no estan aqui: son espejos ocultos que escribe el builder, y este
-// dispara render() por su cuenta al cambiar una fila.
-['users','head','sesUser','sessNeed','vidaSes','sites','hubs','conc','interVlan','techoUtil',
- 'vpnUsers','vpnMbps','vpnTipo','vdoms','pctTlsExento',
- 'chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa','chkNoConcurrente'
-].forEach(id=>$(id).addEventListener('input',render));
-// Los servicios avanzados de SD-WAN y FortiConverter no cambian el dimensionamiento -no
-// consumen throughput-: solo la cotizacion. Repintar el motor entero por ellos seria gasto
-// sin efecto, y peor, haria creer que influyen en la recomendacion.
-['chkSdwanMon','chkSdwanOrq','chkSdwanSase','chkConverter','chkEms'].forEach(id=>$(id).addEventListener('input',renderBom));
-// En HA se compran 2 unidades y cada una lleva su propia suscripcion FortiGuard: enlazar la
-// casilla con la cantidad del BOM evita cotizar un clúster con una sola licencia.
-$('chkHa').addEventListener('change',()=>{
-  const q=$('qty');
-  if($('chkHa').checked){ if((parseInt(q.value)||1)<2) q.value=2; }
-  else if((parseInt(q.value)||1)===2){ q.value=1; }
-  renderBom();
-});
-['pickModel','qty','termYears','licBundle','careLevel'].forEach(id=>$(id).addEventListener('input',renderBom));
-// La identidad de la propuesta no cambia ningun calculo, pero viaja en el enlace y encabeza
-// el Excel, asi que basta con que el BOM se entere.
-['nombreCliente','refProyecto'].forEach(id=>{const n=$(id); if(n) n.addEventListener('input',renderBom);});
+for (const [k, id] of PUERTOS_ID) CAMPO_ID[`fisico.puertos.${k}`] = id;
+// Nombre legible de cada campo del motor, para los inactivos y los errores.
+const CAMPO_N = {
+  'topologia.hubs': 'hubs a los que cifra', 'topologia.spokes': 'spokes del hub',
+  'topologia.simultaneidadPct': 'simultaneidad de los spokes', 'comercial.sdwan': 'servicios avanzados de SD-WAN',
+  'comercial.saseUsuarios': 'usuarios de FortiSASE', 'remoto.metodo': 'método de acceso remoto',
+  'remoto.usuarios': 'usuarios de acceso remoto', 'remoto.mbps': 'caudal de acceso remoto', 'remoto.mfa': 'doble factor',
+  'seguridad.tlsCifradoPct': 'parte cifrada del tráfico', 'seguridad.tlsExentoPct': 'tráfico exento de inspección TLS',
+  'fisico.registroGbDia': 'GB/día de registro', 'fisico.registroDias': 'días de retención',
+  'comercial.emsEndpoints': 'endpoints de FortiClient EMS', 'comercial.sandbox': 'modo de FortiSandbox',
+  'comercial.sandboxModalidad': 'modalidad del FortiSandbox dedicado', 'comercial.serieInstalada': 'serie instalada',
+  'comercial.justificacionEol': 'justificación del equipo fuera de venta', 'topologia.enlaces': 'enlaces WAN',
+};
+// Nombre legible de lo que toca cada regla (`afecta` del motor).
+const AFECTA_N = {
+  caudal: 'caudal de la capa', tunGw: 'túneles sitio a sitio', tunCli: 'túneles de cliente', vpn: 'eje IPsec',
+  sslVpnUsers: 'usuarios SSL-VPN', sslVpn: 'caudal SSL-VPN', sess: 'tabla de sesiones', tokens: 'FortiToken',
+  ssl: 'eje de inspección SSL', almacenamiento: 'disco del equipo', bom: 'lista de materiales', puerta: 'puerta de cotización',
+};
 
-function fmt(m){
-  if(!m) return '—';
-  if(m>=1000000)return (m/1e6).toFixed(1).replace(/\.0$/,'')+' Tbps';
-  if(m>=1000)return (m/1000).toFixed(m%1000?1:0)+' Gbps';
-  return Math.round(m)+' Mbps';
+/* ── CAMPOS DEL ENLACE Y DE LOS PERFILES ────────────────────────────────────────────────
+   Una sola lista. Lo que un campo NO APLICA no viaja (estado.js salta los grupos marcados
+   `data-inactivo`). `verdict-sel` sale de la lista: el equipo elegido viaja como `pickModel`,
+   que es el unico selector; los enlaces viejos que lo traen se leen al arrancar (ver
+   `restaurarSeleccionDeUrl`). `qty` sale tambien: se deriva de la alta disponibilidad. */
+const CAMPOS_ESCENARIO = ['nombreCliente', 'refProyecto', 'wanLinksData',
+  'segSeg', 'rolSeg', 'fortiOS', 'modoInspeccion', 'chkHa', 'haModo',
+  'profileSeg', 'chkAv', 'chkWeb', 'chkIotDlp', 'chkSsl', 'pctCifrado', 'pctTlsExento',
+  'chkSandbox', 'sandboxModo', 'sandboxModalidad',
+  'interVlan', 'chkNoConcurrente', 'sites', 'hubs', 'conc',
+  'chkRemoto', 'vpnTipo', 'vpnUsers', 'vpnMbps', 'chkMfa',
+  'users', 'sesUser', 'sessNeed', 'vidaSes', 'cpsMedido', 'vdoms', 'fortiAps', 'fortiSwitches',
+  'pt_rj45_1g', 'pt_rj45_10g', 'pt_sfp_1g', 'pt_sfpp_10g', 'pt_sfp28_25g', 'pt_qsfp28_100g',
+  'poeW', 'chkPsuRed', 'registroDestino', 'registroGbDia', 'registroDias', 'head', 'techoUtil',
+  'motivoCompra', 'serieInstalada', 'pickModel', 'justificacionEol', 'termYears', 'licBundle', 'careLevel',
+  'chkSdwanMon', 'chkSdwanOrq', 'chkSdwanSase', 'saseUsuarios', 'chkEms', 'emsEndpoints', 'chkConverter',
+  'selDescuento', 'dtoCustom'];
+// Los parametros del escenario ANTERIOR al builder (v1), que `migrarEstadoV1` convierte.
+const PARAMS_V1 = ['bw', 'unit', 'pctOverlay'];
+// Parametros viejos que esta pagina sabe leer sin denunciarlos como perdidos.
+const PARAMS_CONOCIDOS = PARAMS_V1.concat(['verdict-sel', 'qty']);
+
+/* ══ PESTAÑAS CON ROVING TABINDEX (F17, WCAG 2.2) ════════════════════════════════════════
+   Flechas izquierda/derecha, Inicio y Fin mueven el foco y eligen; solo la pestaña activa
+   entra en el orden de tabulacion. Mismo codigo para las dos listas de la pagina. */
+function cablearTabs(lista, alElegir) {
+  if (!lista) return;
+  const tabs = () => [...lista.querySelectorAll('[role=tab]')];
+  const elegir = (b, foco) => {
+    for (const t of tabs()) {
+      const on = t === b;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      t.tabIndex = on ? 0 : -1;
+      const p = $(t.getAttribute('aria-controls'));
+      if (p) p.hidden = !on;
+    }
+    if (foco) b.focus();
+    if (alElegir) alElegir(b);
+  };
+  lista.addEventListener('click', (e) => { const b = e.target.closest('[role=tab]'); if (b) elegir(b, false); });
+  lista.addEventListener('keydown', (e) => {
+    const ts = tabs();
+    const i = ts.indexOf(document.activeElement);
+    if (i < 0) return;
+    let j = null;
+    if (e.key === 'ArrowRight') j = (i + 1) % ts.length;
+    else if (e.key === 'ArrowLeft') j = (i - 1 + ts.length) % ts.length;
+    else if (e.key === 'Home') j = 0;
+    else if (e.key === 'End') j = ts.length - 1;
+    if (j == null) return;
+    e.preventDefault();
+    elegir(ts[j], true);
+  });
+  return { elegir: (sel, foco) => { const b = typeof sel === 'string' ? lista.querySelector(sel) : sel; if (b) elegir(b, foco); } };
 }
-const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const TABS = cablearTabs(document.querySelector('.tabs'));
+cablearTabs(document.querySelector('.res-tabs'));
 
-/* == M1 · MULTI-UNDERLAY BUILDER (2026-09-16) ==
-   Sustituye al par «caudal unico + deslizador de % por el overlay». El deslizador era
-   una ESTIMACION a ojo justo del numero que fija el segundo techo del motor IPsec:
-   capacidad efectiva = min(capa de inspeccion, IPsec / fraccion del overlay). Ahora los
-   enlaces del sitio se DECLARAN y la fraccion SALE de ellos.
-
-   LA FILA DE FORTIGATE ES MAS CORTA QUE LA DE ARUBA, A PROPOSITO. Alli es
-   {tipo, medio, down, up}; aqui es {tipo, down, overlay}:
-     · sin `medio` — este catalogo no trae opticas de Fortinet, asi que una auditoria de
-       puertos del chasis seria un dato inventado (el mismo vicio del `noAplica` deducido);
-     · sin `up` — el motor consume UN caudal, y un campo que nadie lee es peor que uno
-       ausente: invita a creer que se tuvo en cuenta;
-     · con `overlay`, que Aruba no necesita — en EdgeConnect el appliance se dimensiona
-       por el agregado del sitio, mientras que en FortiGate la fraccion cifrada ES el
-       segundo techo. Es el campo propio de este fabricante.
-
-   EL MOTOR NO CAMBIA. Este builder solo CALCULA los dos numeros que render() ya leia
-   —#bw (con #unit fijo en Mbps) y #pctOverlay—, que pasan a ser espejos ocultos. Por
-   construccion, un escenario equivalente tiene que dar el mismo equipo que antes: eso es
-   lo que contrasta scripts/contraste-fortinet.js contra la linea base medida. */
-const TIPOS_WAN=['MPLS L3','MPLS L2','DIA','Banda Ancha','4G/5G'];
-let wanSeq=0; // ids unicos de fila dentro de la sesion
-// Familia del transporte para el badge de la tarjeta (MPLS / Internet / celular).
-function familiaTipoWan(tipo){
-  if(/^MPLS/.test(tipo)) return {cls:'mpls', n:'MPLS'};
-  if(/^4G\/5G/.test(tipo)) return {cls:'cel', n:'Celular'};
-  return {cls:'inet', n:'Internet'};
+/* ══ M1 · MULTI-UNDERLAY BUILDER ══════════════════════════════════════════════════════════
+   Cada fila es {tipo, down, overlay, rol}. El ROL es nuevo (F05): un enlace de RESPALDO no
+   suma en operacion normal y entra en el escenario de falla del enlace que sustituye, donde
+   la carga puede cambiar de breakout local a overlay cifrado. #bw y #pctOverlay siguen como
+   espejos ocultos de los enlaces ACTIVOS, que es lo que eran antes de que existiera el rol. */
+const TIPOS_WAN = M.TIPOS_WAN;
+let wanSeq = 0;
+let wanRolPintado = null;
+function familiaTipoWan(tipo) {
+  if (/^MPLS/.test(tipo)) return { cls: 'mpls', n: 'MPLS' };
+  if (/^4G\/5G/.test(tipo)) return { cls: 'cel', n: 'Celular' };
+  return { cls: 'inet', n: 'Internet' };
 }
-// Por defecto va por el overlay lo que no es salida directa a Internet: MPLS y celular
-// son transporte del fabric. Es solo un DEFAULT — la casilla manda, y por eso el default
-// no se recalcula cuando alguien ya la toco.
-function overlaySugerido(tipo){ return /^MPLS|^4G\/5G/.test(tipo); }
-// Lee las filas tal como estan pintadas: es la unica fuente de los enlaces, asi el motor,
-// la serializacion y los perfiles ven exactamente lo mismo.
-function leerWanLinks(){
-  return [...document.querySelectorAll('#wanBuilderFilas .wan-fila')].map(f=>{
-    const ov=f.querySelector('[data-campo=overlay]');
+function overlaySugerido(tipo) { return /^MPLS|^4G\/5G/.test(tipo); }
+function leerWanLinks() {
+  return [...document.querySelectorAll('#wanBuilderFilas .wan-fila')].map((f) => {
+    const ov = f.querySelector('[data-campo=overlay]');
+    const rol = f.querySelector('[data-campo=rol]');
     return {
-      id:parseInt(f.dataset.id)||0,
-      tipo:f.querySelector('[data-campo=tipo]').value,
-      down:Math.max(0,parseFloat(f.querySelector('[data-campo=down]').value)||0),
-      overlay:!!ov.checked,
-      overlayManual:ov.dataset.manual==='1',
+      id: parseInt(f.dataset.id, 10) || 0,
+      tipo: f.querySelector('[data-campo=tipo]').value,
+      down: Math.max(0, parseFloat(f.querySelector('[data-campo=down]').value) || 0),
+      overlay: !!ov.checked,
+      overlayManual: ov.dataset.manual === '1',
+      rol: rol && rol.value === 'respaldo' ? 'respaldo' : 'activo',
     };
   });
 }
-function wanFilaHtml(l,idx){
-  const ops=(lista,v)=>lista.map(x=>`<option value="${esc(x)}"${x===v?' selected':''}>${esc(x)}</option>`).join('');
-  const fam=familiaTipoWan(l.tipo), n=idx==null?'?':idx+1;
-  // Sin rol SD-WAN la casilla del overlay no significa nada: se deshabilita y se dice,
-  // en vez de dejarla activa sin efecto (un control que no hace nada invita a creer que
-  // se tuvo en cuenta).
-  const naOv=rolSdwan==='none';
+function wanFilaHtml(l, idx) {
+  const ops = (lista, v) => lista.map((x) => `<option value="${esc(x)}"${x === v ? ' selected' : ''}>${esc(x)}</option>`).join('');
+  const fam = familiaTipoWan(l.tipo);
+  const n = idx == null ? '?' : idx + 1;
+  const naOv = rolSdwan === 'none';
+  const rol = l.rol === 'respaldo' ? 'respaldo' : 'activo';
   return `<div class="wan-fila" data-id="${l.id}">`
-    +`<div class="wan-cab"><span class="wan-num">Enlace ${n}</span><span class="wan-badge ${fam.cls}" data-wan-badge>${fam.n}</span>`
-    +`<span class="wan-acc">`
-    +`<button type="button" class="wan-iconbtn" data-wan-duplicar="${l.id}" title="Duplicar este enlace" aria-label="Duplicar este enlace">&#10697;</button>`
-    +`<button type="button" class="wan-iconbtn" data-wan-quitar="${l.id}" title="Quitar este enlace" aria-label="Quitar este enlace">&times;</button>`
-    +`</span></div>`
-    +`<div class="wan-grid">`
-    +`<div class="wan-campo"><label>Transporte</label><select data-campo="tipo" aria-label="Tipo de transporte WAN del enlace ${n}">${ops(TIPOS_WAN,l.tipo)}</select></div>`
-    +`<div class="wan-campo"><label>Caudal</label><span class="wan-bw"><input type="number" data-campo="down" min="0" step="any" placeholder="100" value="${l.down||''}" aria-label="Caudal del enlace ${n} en Mbps" autocomplete="off"><span class="wan-sufijo">Mbps</span></span></div>`
-    +`<label class="wan-ov${naOv?' na':''}"><input type="checkbox" data-campo="overlay"${l.overlay?' checked':''}${naOv?' disabled':''}${l.overlayManual?' data-manual="1"':''} aria-label="El trafico de este enlace va por el overlay SD-WAN"> ${naOv?'Overlay SD-WAN (sin rol SD-WAN no aplica)':'Va por el overlay SD-WAN'}</label>`
-    +`</div>`
-    +`<p class="wan-msg" data-wan-msg hidden></p>`
-    +`</div>`;
+    + `<div class="wan-cab"><span class="wan-num">Enlace ${n}</span><span class="wan-badge ${fam.cls}" data-wan-badge>${fam.n}</span>`
+    + `<span class="wan-acc">`
+    + `<button type="button" class="wan-iconbtn" data-wan-duplicar="${l.id}" title="Duplicar este enlace" aria-label="Duplicar el enlace ${n}">&#10697;</button>`
+    + `<button type="button" class="wan-iconbtn" data-wan-quitar="${l.id}" title="Quitar este enlace" aria-label="Quitar el enlace ${n}">&times;</button>`
+    + '</span></div>'
+    + '<div class="wan-grid">'
+    + `<div class="wan-campo"><label>Transporte</label><select data-campo="tipo" aria-label="Tipo de transporte del enlace ${n}">${ops(TIPOS_WAN, l.tipo)}</select></div>`
+    + `<div class="wan-campo"><label>Caudal</label><span class="wan-bw"><input type="number" data-campo="down" min="0" step="any" placeholder="100" value="${l.down || ''}" aria-label="Caudal del enlace ${n} en Mbps" autocomplete="off"><span class="wan-sufijo">Mbps</span></span></div>`
+    + `<div class="wan-campo"><label>Rol</label><select data-campo="rol" aria-label="Rol del enlace ${n}">`
+    + `<option value="activo"${rol === 'activo' ? ' selected' : ''}>Activo</option>`
+    + `<option value="respaldo"${rol === 'respaldo' ? ' selected' : ''}>Respaldo (entra si cae otro)</option></select></div>`
+    + `<label class="wan-ov${naOv ? ' na' : ''}"><input type="checkbox" data-campo="overlay"${l.overlay ? ' checked' : ''}${naOv ? ' disabled' : ''}${l.overlayManual ? ' data-manual="1"' : ''} aria-label="El tráfico del enlace ${n} va por el overlay SD-WAN"> ${naOv ? 'Overlay SD-WAN (sin rol SD-WAN no aplica)' : 'Va por el overlay SD-WAN'}</label>`
+    + '</div>'
+    + '<p class="wan-msg" data-wan-msg hidden></p>'
+    + '</div>';
 }
-function pintarWanFilas(links){
-  $('wanBuilderFilas').innerHTML=links.map(wanFilaHtml).join('');
+function pintarWanFilas(links) {
+  $('wanBuilderFilas').innerHTML = links.map(wanFilaHtml).join('');
   validarWanFilas();
 }
-// Validacion en linea: NO bloquea el calculo. Un enlace sin caudal no cuenta en el
-// agregado y hay que decirlo; declarar el overlay por un enlace celular es posible pero
-// sospechoso y se avisa en ambar.
-function validarWanFila(f){
-  const downEl=f.querySelector('[data-campo=down]');
-  const down=parseFloat(downEl.value);
-  const tipo=f.querySelector('[data-campo=tipo]').value;
-  const ov=f.querySelector('[data-campo=overlay]').checked;
-  const msg=f.querySelector('[data-wan-msg]');
-  const malo=!(down>0);
-  downEl.classList.toggle('wan-invalido',malo);
-  let txt='', cls='';
-  if(malo){ txt='Declara el caudal (Mbps): sin el, este enlace no cuenta en el agregado del sitio.'; cls='err'; }
-  else if(ov&&/^4G\/5G/.test(tipo)){ txt='Overlay sobre 4G/5G: es normal como respaldo, pero su caudal entra en la fraccion cifrada y por tanto en el techo del motor IPsec. Revisa si de verdad transporta trafico en regimen normal.'; cls='warn'; }
-  msg.hidden=!txt; msg.textContent=txt; msg.className='wan-msg'+(cls?' '+cls:'');
+function validarWanFila(f) {
+  const downEl = f.querySelector('[data-campo=down]');
+  const down = parseFloat(downEl.value);
+  const tipo = f.querySelector('[data-campo=tipo]').value;
+  const ov = f.querySelector('[data-campo=overlay]').checked;
+  const respaldo = f.querySelector('[data-campo=rol]').value === 'respaldo';
+  const msg = f.querySelector('[data-wan-msg]');
+  const malo = !(down > 0);
+  downEl.classList.toggle('wan-invalido', malo);
+  downEl.setAttribute('aria-invalid', malo ? 'true' : 'false');
+  let txt = '';
+  let cls = '';
+  if (malo) { txt = 'Declara el caudal (Mbps): sin él, este enlace no cuenta.'; cls = 'err'; }
+  else if (respaldo) { txt = 'Respaldo: no suma en operación normal. Entra en el escenario de falla de cada enlace activo, hasta su caudal.'; cls = ''; }
+  else if (ov && /^4G\/5G/.test(tipo)) { txt = 'Overlay sobre 4G/5G activo: si es un respaldo, márcalo como tal y dejará de sumar en operación normal.'; cls = 'warn'; }
+  msg.hidden = !txt;
+  msg.textContent = txt;
+  msg.className = `wan-msg${cls ? ` ${cls}` : ''}`;
 }
-function validarWanFilas(){ document.querySelectorAll('#wanBuilderFilas .wan-fila').forEach(validarWanFila); }
-// LOS ESPEJOS DEL MOTOR. Aqui, y solo aqui, las filas se convierten en los dos numeros
-// que render() lee. #unit se fija en 1 porque el builder declara siempre Mbps.
-function actualizarEspejos(){
-  const links=leerWanLinks();
-  const total=links.reduce((a,l)=>a+l.down,0);
-  const ovl=links.filter(l=>l.overlay).reduce((a,l)=>a+l.down,0);
-  $('bw').value=total?String(total):'';
-  $('unit').value='1';
-  // Sin caudal declarado la fraccion no se puede calcular: se deja el 100 %, que es el
-  // supuesto conservador (todo el trafico paga IPsec) y ademas el valor por defecto de
-  // antes. Con caudal, sale de los enlaces.
-  $('pctOverlay').value=total?String(Math.round(ovl/total*100)):'100';
-  return {links, total, ovl};
+function validarWanFilas() { document.querySelectorAll('#wanBuilderFilas .wan-fila').forEach(validarWanFila); }
+// Espejos del motor anterior: el caudal y la fraccion cifrada de los enlaces ACTIVOS.
+function actualizarEspejos() {
+  const links = leerWanLinks();
+  const act = links.filter((l) => l.rol !== 'respaldo');
+  const total = act.reduce((a, l) => a + l.down, 0);
+  const ovl = act.filter((l) => l.overlay).reduce((a, l) => a + l.down, 0);
+  $('bw').value = total ? String(total) : '';
+  $('unit').value = '1';
+  $('pctOverlay').value = total ? String(Math.round((ovl / total) * 100)) : '100';
+  return { links, total, ovl };
 }
-// Serializacion v2: el escenario viaja en la URL como JSON {v:2, wanLinks:[...]} dentro
-// del input oculto #wanLinksData, que ESTADO persiste como un campo mas.
-function sincronizarWanHidden(){
-  const {links}=actualizarEspejos();
-  const h=$('wanLinksData');
-  // `overlayManual` es detalle de UI (la restauracion lo deduce: overlay != sugerido ⇒
-  // elegido a mano), asi que no ensucia la URL.
-  h.value=JSON.stringify({v:2, wanLinks:links.map(l=>({id:l.id, tipo:l.tipo, down:l.down, overlay:l.overlay}))});
-  h.dispatchEvent(new Event('input',{bubbles:true}));
+function sincronizarWanHidden() {
+  const { links } = actualizarEspejos();
+  const h = $('wanLinksData');
+  // `overlayManual` es detalle de interfaz y no viaja; el rol solo viaja si no es el de
+  // siempre, para que un enlace compartido antes de existir el rol siga siendo identico.
+  h.value = JSON.stringify({ v: 2, wanLinks: links.map((l) => Object.assign({ id: l.id, tipo: l.tipo, down: l.down, overlay: l.overlay },
+    l.rol === 'respaldo' ? { rol: 'respaldo' } : {})) });
+  h.dispatchEvent(new Event('input', { bubbles: true }));
 }
-// Reconstruye las filas desde el input oculto (enlace compartido o perfil guardado).
-// Tolerante con JSON roto: cae a una fila DIA vacia en vez de romper la pagina.
-function reconstruirWanDesdeHidden(){
-  let links=null;
-  try{
-    const d=JSON.parse($('wanLinksData').value||'null');
-    if(d&&Array.isArray(d.wanLinks)&&d.wanLinks.length) links=d.wanLinks;
-  }catch{ links=null; }
-  if(!links) links=[{id:++wanSeq, tipo:'DIA', down:0, overlay:false}];
-  links.forEach(l=>{
-    if(!l.id) l.id=++wanSeq; wanSeq=Math.max(wanSeq,l.id);
-    if(l.overlay==null) l.overlay=overlaySugerido(l.tipo);
-    l.overlayManual=l.overlay!==overlaySugerido(l.tipo);
+function reconstruirWanDesdeHidden() {
+  let links = null;
+  try {
+    const d = JSON.parse($('wanLinksData').value || 'null');
+    if (d && Array.isArray(d.wanLinks) && d.wanLinks.length) links = d.wanLinks;
+  } catch { links = null; }
+  if (!links) links = [{ id: ++wanSeq, tipo: 'DIA', down: 0, overlay: false }];
+  links.forEach((l) => {
+    if (!l.id) l.id = ++wanSeq;
+    wanSeq = Math.max(wanSeq, l.id);
+    if (!TIPOS_WAN.includes(l.tipo)) l.tipo = 'DIA';
+    if (l.overlay == null) l.overlay = overlaySugerido(l.tipo);
+    l.overlayManual = l.overlay !== overlaySugerido(l.tipo);
   });
   pintarWanFilas(links);
   actualizarEspejos();
 }
-// Barra agregada viva bajo el builder: caudal del sitio, desglose por familia y la
-// fraccion cifrada que sale de las casillas — el numero que antes se estimaba a ojo.
-function pintarWanResumen(){
-  const box=$('wanResumen'); if(!box) return;
-  const {links,total,ovl}=actualizarEspejos();
-  if(!links.length){ box.hidden=true; box.innerHTML=''; return; }
-  const act=links.filter(l=>l.down>0);
-  let html=`<span>Caudal del sitio <b>${fmt(total)}</b></span><span class="wan-res-sep">·</span>`;
-  if(act.length){
-    const nM=act.filter(l=>/^MPLS/.test(l.tipo)).length;
-    const nC=act.filter(l=>/^4G\/5G/.test(l.tipo)).length;
-    const nI=act.length-nM-nC;
-    const fam=[];
-    if(nM) fam.push(`${nM} MPLS`);
-    if(nI) fam.push(`${nI} Internet`);
-    if(nC) fam.push(`${nC} celular`);
-    html+=`<span>${act.length} enlace${act.length===1?'':'s'} (${fam.join(', ')})</span>`;
-    if(rolSdwan!=='none'){
-      const pct=total?Math.round(ovl/total*100):100;
-      html+=`<span class="wan-res-sep">·</span><span>Por el overlay <b>${fmt(ovl)}</b> = <b>${pct} %</b>`
-        +`${pct<100?` · breakout local <b>${fmt(total-ovl)}</b>`:''}</span>`;
+function pintarWanResumen() {
+  const box = $('wanResumen');
+  if (!box) return;
+  const { links, total, ovl } = actualizarEspejos();
+  if (!links.length) { box.hidden = true; box.innerHTML = ''; return; }
+  const act = links.filter((l) => l.down > 0 && l.rol !== 'respaldo');
+  const resp = links.filter((l) => l.down > 0 && l.rol === 'respaldo');
+  let html = `<span>Caudal del sitio <b>${fmt(total)}</b></span><span class="wan-res-sep">·</span>`;
+  if (act.length) {
+    const nM = act.filter((l) => /^MPLS/.test(l.tipo)).length;
+    const nC = act.filter((l) => /^4G\/5G/.test(l.tipo)).length;
+    const nI = act.length - nM - nC;
+    const fam = [];
+    if (nM) fam.push(`${nM} MPLS`);
+    if (nI) fam.push(`${nI} Internet`);
+    if (nC) fam.push(`${nC} celular`);
+    html += `<span>${act.length} enlace${act.length === 1 ? '' : 's'} activo${act.length === 1 ? '' : 's'} (${fam.join(', ')})</span>`;
+    if (resp.length) html += `<span class="wan-res-sep">·</span><span>${resp.length} de respaldo (<b>${fmt(resp.reduce((a, l) => a + l.down, 0))}</b>), fuera de la operación normal</span>`;
+    if (rolSdwan !== 'none') {
+      const pct = total ? Math.round((ovl / total) * 100) : 100;
+      html += `<span class="wan-res-sep">·</span><span>Por el overlay <b>${fmt(ovl)}</b> = <b>${pct} %</b>`
+        + `${pct < 100 ? ` · breakout local <b>${fmt(total - ovl)}</b>` : ''}</span>`;
     }
-  }else{
-    html+='<span>sin enlaces con caudal — declara los Mbps de cada fila</span>';
+  } else {
+    html += '<span>sin enlaces activos con caudal — declara los Mbps de cada fila</span>';
   }
-  box.innerHTML=html;
-  box.hidden=false;
+  box.innerHTML = html;
+  box.hidden = false;
 }
-// Los parametros del escenario ANTERIOR al builder. Viven en UNA constante porque los usan
-// dos cosas distintas —`migrarEstadoV1()` para convertirlos y `ESTADO.vincular({migrados})`
-// para no denunciarlos como parametros que esta pantalla no entiende— y dos listas iguales
-// en dos sitios se desincronizan.
-const PARAMS_V1=['bw','unit','pctOverlay'];
-// Migracion v1→v2: un enlace antiguo (?bw=2500&unit=1&pctOverlay=70) se convierte en las
-// filas equivalentes y se avisa por consola. UN ENLACE VIEJO QUE ATERRIZA CON LOS VALORES
-// POR DEFECTO ES PEOR QUE UN 404: no se nota. Con una fraccion intermedia hacen falta DOS
-// filas para conservarla —la cifrada y la de breakout—, que es exactamente lo que el
-// escenario v1 describia.
-function migrarEstadoV1(){
-  const p=new URLSearchParams(location.search);
-  if(p.has('wanLinksData')) return false; // ya es v2
-  if(!PARAMS_V1.some(k=>p.has(k))) return false;
-  const bw=(parseFloat(p.get('bw'))||0)*(parseFloat(p.get('unit'))||1);
-  if(!(bw>0)) return false;
-  const pct=p.has('pctOverlay')?Math.max(0,Math.min(100,parseFloat(p.get('pctOverlay'))||0)):100;
-  const ovl=Math.round(bw*pct/100), resto=bw-ovl;
-  const links=[];
-  if(ovl>0) links.push({id:++wanSeq, tipo:'MPLS L3', down:ovl, overlay:true});
-  if(resto>0) links.push({id:++wanSeq, tipo:'DIA', down:resto, overlay:false});
-  if(!links.length) links.push({id:++wanSeq, tipo:'DIA', down:bw, overlay:false});
+// Migracion v1→v2: un enlace antiguo (?bw=2500&unit=1&pctOverlay=70) se convierte en filas
+// equivalentes. Un enlace viejo que aterriza con los valores por defecto es peor que un 404.
+function migrarEstadoV1() {
+  const p = new URLSearchParams(location.search);
+  if (p.has('wanLinksData')) return false;
+  if (!PARAMS_V1.some((k) => p.has(k))) return false;
+  const bw = (parseFloat(p.get('bw')) || 0) * (parseFloat(p.get('unit')) || 1);
+  if (!(bw > 0)) return false;
+  const pct = p.has('pctOverlay') ? Math.max(0, Math.min(100, parseFloat(p.get('pctOverlay')) || 0)) : 100;
+  const links = filasV1(bw, pct);
   console.warn('[dimensionador-fortinet] Migracion de estado v1→v2: el caudal unico y el'
-    +' porcentaje de overlay (bw/unit/pctOverlay) se convirtieron en', links.length,
+    + ' porcentaje de overlay (bw/unit/pctOverlay) se convirtieron en', links.length,
     'fila(s) del Multi-Underlay Builder.', links);
-  $('wanLinksData').value=JSON.stringify({v:2, wanLinks:links});
+  $('wanLinksData').value = JSON.stringify({ v: 2, wanLinks: links });
   return true;
 }
-$('btnAddWan').addEventListener('click',()=>{
-  const links=leerWanLinks();
-  links.push({id:++wanSeq, tipo:'DIA', down:0, overlay:overlaySugerido('DIA')});
+function filasV1(bw, pct) {
+  const ovl = Math.round((bw * pct) / 100);
+  const resto = bw - ovl;
+  const links = [];
+  if (ovl > 0) links.push({ id: ++wanSeq, tipo: 'MPLS L3', down: ovl, overlay: true });
+  if (resto > 0) links.push({ id: ++wanSeq, tipo: 'DIA', down: resto, overlay: false });
+  if (!links.length) links.push({ id: ++wanSeq, tipo: 'DIA', down: bw, overlay: false });
+  return links;
+}
+$('btnAddWan').addEventListener('click', () => {
+  const links = leerWanLinks();
+  links.push({ id: ++wanSeq, tipo: 'DIA', down: 0, overlay: overlaySugerido('DIA') });
   pintarWanFilas(links);
   sincronizarWanHidden();
-  render();
+  programar(true, 'wan');
 });
-// Delegacion: un cambio en una fila se aplica SOBRE LA PROPIA TARJETA (sin repintarla, para
-// no perder el foco a media cifra), valida en linea, reserializa y repinta el resto.
-$('wanBuilder').addEventListener('input',e=>{
-  const t=e.target;
-  if(!t.dataset||!t.dataset.campo) return;
-  const fila=t.closest('.wan-fila');
-  if(t.dataset.campo==='overlay') t.dataset.manual='1';
-  if(t.dataset.campo==='tipo'&&fila){
-    const badge=fila.querySelector('[data-wan-badge]');
-    const fam=familiaTipoWan(t.value);
-    badge.className='wan-badge '+fam.cls; badge.textContent=fam.n;
-    // Default inteligente que NO se impone: si alguien ya toco la casilla, se respeta.
-    const ov=fila.querySelector('[data-campo=overlay]');
-    if(ov.dataset.manual!=='1') ov.checked=overlaySugerido(t.value);
+$('wanBuilder').addEventListener('input', (e) => {
+  const t = e.target;
+  if (!t.dataset || !t.dataset.campo) return;
+  const fila = t.closest('.wan-fila');
+  if (t.dataset.campo === 'overlay') t.dataset.manual = '1';
+  if (t.dataset.campo === 'tipo' && fila) {
+    const badge = fila.querySelector('[data-wan-badge]');
+    const fam = familiaTipoWan(t.value);
+    badge.className = `wan-badge ${fam.cls}`;
+    badge.textContent = fam.n;
+    const ov = fila.querySelector('[data-campo=overlay]');
+    if (ov.dataset.manual !== '1') ov.checked = overlaySugerido(t.value);
   }
-  if(fila) validarWanFila(fila);
+  if (fila) validarWanFila(fila);
   sincronizarWanHidden();
-  render();
+  programar(t.dataset.campo !== 'down', 'wan');
 });
-$('wanBuilder').addEventListener('click',e=>{
-  const dup=e.target.closest('[data-wan-duplicar]');
-  if(dup){
-    const links=leerWanLinks();
-    const i=links.findIndex(l=>l.id===parseInt(dup.dataset.wanDuplicar));
-    if(i>=0) links.splice(i+1,0,{...links[i], id:++wanSeq});
+$('wanBuilder').addEventListener('click', (e) => {
+  const dup = e.target.closest('[data-wan-duplicar]');
+  if (dup) {
+    const links = leerWanLinks();
+    const i = links.findIndex((l) => l.id === parseInt(dup.dataset.wanDuplicar, 10));
+    if (i >= 0) links.splice(i + 1, 0, { ...links[i], id: ++wanSeq });
     pintarWanFilas(links);
     sincronizarWanHidden();
-    render();
+    programar(true, 'wan');
     return;
   }
-  const b=e.target.closest('[data-wan-quitar]');
-  if(!b) return;
-  let links=leerWanLinks().filter(l=>l.id!==parseInt(b.dataset.wanQuitar));
-  // La ultima fila no se quita: se queda vacia.
-  if(!links.length) links=[{id:++wanSeq, tipo:'DIA', down:0, overlay:false}];
+  const b = e.target.closest('[data-wan-quitar]');
+  if (!b) return;
+  let links = leerWanLinks().filter((l) => l.id !== parseInt(b.dataset.wanQuitar, 10));
+  if (!links.length) links = [{ id: ++wanSeq, tipo: 'DIA', down: 0, overlay: false }];
   pintarWanFilas(links);
   sincronizarWanHidden();
-  render();
+  programar(true, 'wan');
 });
 
-
-/* ── Motor de dimensionamiento ─────────────────────────────────────────────── */
-
-// Las 5 capas que Fortinet publica, de menor a mayor profundidad de inspección. Elegir la
-// capa correcta ES el dimensionamiento: entre `fw` y `tp` hay un orden de magnitud, porque
-// la primera va descargada al ASIC de red y la última atraviesa el stack completo.
-const TIERS=[
-  {k:'fw',  n:'Firewall',          d:'Firewall stateful, 1518 B UDP. Sesión descargada al ASIC de red (NP7/SP5), sin inspección de contenido.'},
-  {k:'vpn', n:'IPsec VPN',         d:'Túnel IPsec, 512 B. Criptografía descargada al ASIC.'},
-  {k:'ips', n:'IPS',               d:'IPS sobre Enterprise Mix. La sesión sale del offload de red; el content processor (CP9/CP10) asiste el pattern matching.'},
-  {k:'ngfw',n:'NGFW',              d:'IPS + Application Control sobre Enterprise Mix.'},
-  {k:'tp',  n:'Threat Protection', d:'NGFW + antivirus + logging. Stack de seguridad completo — el número realista de una sucursal.'},
-];
-const TIER_BY_K=Object.fromEntries(TIERS.map(t=>[t.k,t]));
-
-// EL DERATE DE SSL SE RETIRO EL 2026-09-22 (informe de validacion tecnica, §5.1, P0).
-// Aqui vivia `const SSL_DERATE=0.65`, que estimaba la inspeccion SSL como una fraccion de
-// Threat Protection. El Product Matrix publica la cifra POR MODELO y el cociente ssl/tp va
-// de 0,52 (40F) a 1,18 (50G): no hay constante que lo describa, y en tres de los cinco
-// modelos con dato el equipo aguanta MAS SSL que Threat Protection. El factor no era
-// conservador -se equivocaba en las dos direcciones- y en el 40F prometia 390 Mbps donde el
-// equipo da 310. Ahora SSL es un eje propio de `FortinetReglas`, con la cifra oficial, y un
-// modelo sin ella se aparta con su motivo en vez de dimensionarse contra otra capa.
-
-// Sobrecarga de encapsulacion del overlay SD-WAN. Un tunel IPsec anade cabecera ESP, IV,
-// relleno y trailer; con AES-GCM y MTU de 1500 ronda el 5-8%, y sube si el diseno reduce
-// la MTU para evitar fragmentacion. Es un SUPUESTO de esta herramienta, no una cifra que
-// Fortinet publique, y solo se aplica a la fraccion de trafico que va por el overlay.
-const OVERHEAD_ESP=0.06;
-
-// Software del portafolio Fortinet que acompana al FortiGate en una propuesta. Mismos
-// productos y SKU que la tabla de la pestana "Licencias", como datos y no como markup.
-const SOFTWARE=[
-  {n:'FortiManager', d:'Orquestacion de politicas y SD-WAN. Appliance de entrada FMG-200G: hasta 30 dispositivos/VDOMs.'},
-  {n:'FortiAnalyzer', d:'Correlacion y retencion de logs. Appliance de entrada FAZ-150G: hasta 25 GB/dia.'},
-  {n:'FortiSandbox', d:'Analisis dinamico de archivos zero-day. Add-on independiente del bundle.'},
-  {n:'FortiClient EMS', d:'Gestion de endpoints ZTNA + VPN, licenciado por numero de endpoints.'},
-  {n:'FortiSASE', d:'SASE, ZTNA y EPP como servicio, licenciado por usuario.'},
-];
-
-// ── PISO DE CAPA POR FUNCION ACTIVA ────────────────────────────────────────
-//
-// Activar una funcion de inspeccion NO encarece un porcentaje la capa elegida: cambia la
-// capa que aplica. El antivirus no suma "un 8% al firewall" — saca la sesion del fast path
-// del NP y la cifra que rige pasa a ser Threat Protection, que en gama de sucursal es un
-// orden de magnitud menor (FortiGate 60F: 10 Gbps de firewall frente a 700 Mbps de TP).
-//
-// El motor anterior sumaba recargos al REQUERIMIENTO y dejaba la capa a criterio del
-// usuario. Eso rompia en las dos direcciones: con la capa en "firewall puro" y antivirus
-// marcado declaraba 93% de holgura sobre un equipo que iba al 100% (factor 14,3x), y con
-// la capa ya en Threat Protection contaba dos veces lo mismo, porque TP YA ES
-// NGFW + antivirus + logging medido con Enterprise Mix.
-//
-// Ahora cada funcion impone un PISO y se aplica la capa mas profunda de todas las activas.
-// La eleccion del usuario sigue valiendo como base: puede dimensionar contra una capa mas
-// exigente de la que sus funciones obligan, pero no contra una mas liviana.
-// CAMPOS DEL ESCENARIO. Una sola lista para el enlace compartido y para los perfiles
-// multi-sede. Incluye ahora la IDENTIDAD de la propuesta (cliente y referencia) y la
-// CONFIGURACION DE LA COTIZACION (modelo, cantidad, termino, bundle y soporte): al subir el
-// paso «Equipo y cotizacion» a la escalera, un enlace que no los llevara aterrizaria en el
-// escenario correcto con otra cotizacion, que es peor que no llevar nada porque no se nota.
-const CAMPOS_ESCENARIO=['nombreCliente','refProyecto',
-  // #wanLinksData es la serializacion v2 de los enlaces WAN; sustituye a bw/unit/pctOverlay,
-  // que ahora son espejos que el builder calcula y por tanto no viajan (viajarian dos veces
-  // el mismo dato, y el desincronizado ganaria segun el orden de restauracion).
-  'wanLinksData','users','head','sesUser','sessNeed','vidaSes','sites','hubs','conc',
-  // VPN de acceso remoto: cambia la recomendacion (eje IPsec y tabla de sesiones), asi que
-  // un enlace compartido que no la llevara aterrizaria en otro escenario sin decirlo.
-  // `vpnTipo` decide POR QUE MOTOR pasa ese caudal (IPsec dial-up o SSL-VPN), y son dos topes
-  // distintos del Product Matrix: sin el, el receptor del enlace dimensionaria contra el otro.
-  'vpnUsers','vpnMbps','vpnTipo','vdoms','pctTlsExento',
-  // Añadidos el 2026-09-22: el tráfico inter-VLAN y su regla de simultaneidad, el techo de
-  // utilización y el tipo de transacción CAMBIAN la recomendación, así que un enlace que no
-  // los llevara aterrizaría en otro escenario sin decirlo — que es peor que un 404 porque no
-  // se nota. Los servicios SD-WAN y FortiConverter no cambian el equipo pero sí la
-  // cotización, y el enlace se comparte para revisar una propuesta entera.
-  'interVlan','chkNoConcurrente','techoUtil',
-  'chkSdwanMon','chkSdwanOrq','chkSdwanSase','chkConverter','chkEms',
-  'chkSsl','chkAv','chkWeb','chkSandbox','chkIotDlp','chkHa',
-  'profileSeg','rolSeg','segSeg',
-  'pickModel','qty','termYears','licBundle','careLevel','selDescuento','dtoCustom','verdict-sel'];
-
-const VENDOR='fortinet';
-// Que cuenta como OPEX en FortiGate, DECLARADO por esta pagina y no deducido: el bundle
-// FortiGuard y el soporte FortiCare son suscripciones por termino; el equipo y los servicios
-// unicos (FortiConverter) son CAPEX. BOM.tco suma el precio TAL COMO VIENE y usa los anios
-// solo para derivar el anual, que es exactamente la semantica de tierPrice(tier, termYrs)
-// -- comprobada leyendola antes de elegir estas categorias, no supuesta.
-const OPEX_FORTINET=['Licencias FortiGuard','Soporte'];
-
-// El piso de capa por funcion YA NO SE ESCRIBE AQUI: lo declara cada entrada de `FUNCIONES`
-// en legacyData/fortinet.js (campo `capa`), junto al servicio FortiGuard que consume. Tener
-// la misma funcion descrita en dos sitios -el piso aqui y el bundle alla- es como se
-// desincronizan: al anadir IoT/DLP habria que acordarse de tocar los dos.
-// FortiSandbox sigue sin elevar capa a proposito y ahora lo dice el propio dato (`capa:null`):
-// analiza FUERA DE BANDA, no consume throughput del equipo.
-
-function funcionesActivas(){
-  return FUNCIONES.filter(f=>{ const n=$(f.id); return n&&n.checked; }).map(f=>f.id);
+/* ══ LECTURA DEL ESCENARIO ════════════════════════════════════════════════════════════════
+   El formulario se traduce al escenario del motor SIN interpretarlo: un numero se pasa como
+   numero y es el esquema del motor el que dice si es valido (un -5 o un 2,5 donde va un
+   entero es un error con nombre, no un 0 silencioso). Un campo vacio vale su valor por
+   defecto. */
+function leerCampo(id, tipo, vacio) {
+  const n = $(id);
+  if (!n) return vacio;
+  if (tipo === 'chk') return !!n.checked;
+  if (tipo === 'txt') return n.value;
+  const t = String(n.value).trim();
+  if (t === '') return vacio;
+  const v = Number(t);
+  return Number.isFinite(v) ? v : t;
 }
-function capaEfectiva(){
-  return R.capaEfectiva(profile, funcionesActivas(), FUNCIONES);
+function ponerRuta(o, ruta, v) {
+  const ks = ruta.split('.');
+  const ult = ks.pop();
+  let a = o;
+  for (const k of ks) { if (!a[k] || typeof a[k] !== 'object') a[k] = {}; a = a[k]; }
+  a[ult] = v;
+}
+function leerEscenario() {
+  const s = { esquema: M.ESQUEMA };
+  for (const [ruta, id, tipo, vacio] of UI) ponerRuta(s, ruta, leerCampo(id, tipo, vacio));
+  s.sitio = { segmento: segMode };
+  s.topologia.rol = rolSdwan;
+  s.topologia.enlaces = leerWanLinks().map((l) => ({ id: l.id, tipo: l.tipo, down: l.down, overlay: l.overlay, rol: l.rol }));
+  s.seguridad.capa = profile;
+  s.seguridad.funciones = FUNCIONES_ID.filter((id) => $(id) && $(id).checked);
+  s.fisico.puertos = Object.fromEntries(PUERTOS_ID.map(([k, id]) => [k, leerCampo(id, 'num', 0)]));
+  s.disponibilidad = { modo: $('chkHa').checked ? $('haModo').value : 'standalone' };
+  s.comercial.sdwan = Object.entries(CHK_SDWAN).filter(([, id]) => $(id).checked).map(([k]) => k);
+  s.comercial.sandbox = $('chkSandbox').checked ? $('sandboxModo').value : 'ninguno';
+  s.seleccion = { manual: seleccionManual };
+  return s;
 }
 
-// Techo de utilizacion declarado (politica separada del crecimiento, §10.2 del informe).
-function techoUtil(){
-  const n=$('techoUtil');
-  const v=n?parseFloat(n.value):100;
-  return (v>0?v:100)/100;
-}
-
-// Fraccion del trafico que viaja cifrada por el fabric. 0 sin SD-WAN.
-function fraccionOverlay(){
-  if(rolSdwan==='none') return 0;
-  const nodo=$('pctOverlay');
-  return nodo?Math.max(0,Math.min(100,parseFloat(nodo.value)||0))/100:1;
-}
-
-// Servicios avanzados de SD-WAN pedidos. La funcion base NO se licencia: tener dos WAN no
-// deriva ninguno, y por eso salen de casillas explicitas y no del rol ni del builder.
-const CHK_SDWAN={sdwanMon:'chkSdwanMon', sdwanOrq:'chkSdwanOrq', sdwanSase:'chkSdwanSase'};
-function serviciosSdwanPedidos(){
-  return SERVICIOS_SDWAN.filter(sv=>{ const n=$(CHK_SDWAN[sv.id]); return n&&n.checked; });
-}
-
-/* ── DEMANDA POR EJE ─────────────────────────────────────────────────────────────────
-   Traduce el escenario a {eje: cantidad}, que es lo unico que el evaluador multieje
-   consume. Antes esto no existia: habia UN requerimiento y UNA capacidad efectiva, asi que
-   no se podia decir cual de los ocho ejes mandaba ni a que distancia quedaban los demas.
-
-   EQUIVALENCIA CON EL MOTOR ANTERIOR, QUE NO ES CASUAL. El motor viejo comparaba
-   `effectiveNeed` contra `min(capa, IPsec/fraccion)`; eso es exactamente lo mismo que pedir
-   `effectiveNeed <= capa` Y `effectiveNeed x fraccion <= IPsec`, que son dos ejes
-   independientes. La reformulacion no cambia ninguna recomendacion sin SSL -lo prueba
-   scripts/contrastes/fortinet.js, cuya linea base se midio antes de este cambio- y ademas
-   coincide con la formula del informe (U_ipsec = T_overlay / C_ipsec). */
-/* CUANTOS TUNELES IPsec TERMINA ESTE EQUIPO, y de donde sale cada uno.
-   La pregunta es distinta a cada lado del fabric, asi que el control tambien: un hub declara
-   sus spokes, un spoke sus hubs. Los usuarios de acceso remoto en modo IPsec dial-up levantan
-   su propio tunel cada uno, pero NO se suman aqui: SSL-VPN y ZTNA no son tuneles IPsec y esta
-   pagina no pregunta cual de los tres modos se usa. Contarlos seria inventar la mitad del
-   dato — se declaran aparte, con su propio limite sin comprobar. */
-function tunelesDeclarados(){
-  if(rolSdwan==='hub'){
-    const n=Math.max(1,parseInt($('sites').value)||1);
-    return { total:n, detalle:`uno por cada uno de los ${n} spokes que concentra` };
+/* ══ CORRECCIONES AUTOMATICAS REVERSIBLES (§10.3 del informe) ════════════════════════════
+   «Si una seleccion invalida otra, ofrecer correccion automatica reversible y explicar el
+   motivo». Solo se corrige AL CAMBIAR EL CAMPO QUE DISPARA el conflicto —marcar DLP con UTP
+   elegido, pasar a FortiOS 7.6.3 con SSL-VPN puesto—: si despues alguien elige a mano la
+   opcion invalida, eso es una decision y la puerta la bloquea con su motivo, en vez de
+   deshacerla por detras. */
+let correccion = null; // {id, antes, texto}
+function autocorregir(origen) {
+  if (!CAT) return;
+  if (FUNCIONES_ID.includes(origen) && $(origen).checked) {
+    const funciones = FUNCIONES_ID.filter((id) => $(id).checked);
+    const err = R.validarBundle($('licBundle').value, funciones, FUNCIONES, BUNDLES);
+    if (err && err.bloquea !== false && err.minimo && BUNDLES[err.minimo]) {
+      const antes = $('licBundle').value;
+      $('licBundle').value = err.minimo;
+      const f = FUNCIONES.find((x) => x.id === origen);
+      mostrarCorreccion('licBundle', antes, `Se cambió el bundle a <b>${esc(BUNDLES[err.minimo].n)}</b>: `
+        + `${esc(f ? f.n : 'la función marcada')} no está en ${esc(BUNDLES[antes] ? BUNDLES[antes].n : antes)}.`);
+    }
   }
-  if(rolSdwan==='spoke'){
-    const n=Math.max(1,parseInt($('hubs').value)||1);
-    return { total:n, detalle:`uno por cada uno de los ${n} hubs a los que cifra` };
+  if (origen === 'fortiOS' && $('fortiOS').value === '7.6.3+' && $('chkRemoto').checked && $('vpnTipo').value === 'sslvpn') {
+    $('vpnTipo').value = 'ipsec';
+    mostrarCorreccion('vpnTipo', 'sslvpn', 'El acceso remoto pasó a <b>IPsec</b>: el modo túnel SSL-VPN no existe en FortiOS 7.6.3 o superior.');
   }
-  return { total:0, detalle:'' };
 }
-
-/* POR QUE MOTOR TERMINA EL ACCESO REMOTO. No es una preferencia de producto: el Product
-   Matrix publica DOS topes distintos -«Max Client to G/W IPsec Tunnels» y «Concurrent SSL
-   VPN Users»- y dos motores distintos del equipo. Con IPsec dial-up el caudal se cifra en el
-   mismo ASIC que el overlay y por eso se suma al eje IPsec; con SSL-VPN se termina en el
-   stack TLS, tiene su propia cifra de caudal y NO carga el eje IPsec. Hasta el 2026-09-23
-   esta pagina sumaba el acceso remoto al eje IPsec pasara lo que pasara, porque no preguntaba
-   el modo: para un diseno SSL-VPN eso cargaba el eje equivocado en los dos sentidos. */
-const modoAccesoRemoto=()=>($('vpnTipo')&&$('vpnTipo').value==='sslvpn')?'sslvpn':'ipsec';
-
-/* FRACCION DEL HTTPS EXENTA DE INSPECCION TLS (pendiente F7). La declara quien disena, igual
-   que la fraccion del overlay, y NO es una constante de Fortinet: por eso el valor por
-   defecto es 0 -dimensionar sobre el caudal completo, que es lo conservador y lo que esta
-   pagina hacia antes de que el control existiera-. */
-const fraccionTlsExenta=()=>{
-  const v=parseFloat($('pctTlsExento')&&$('pctTlsExento').value)||0;
-  return Math.min(0.9, Math.max(0, v/100));
-};
-
-function demandasDe(effectiveNeed, capa, sessNeed, cpsNeed, vpnMbps){
-  const d={};
-  d[capa.k]=effectiveNeed;
-  const frac=fraccionOverlay();
-  const remoto=Math.max(0, vpnMbps||0);
-  const modo=modoAccesoRemoto();
-  // DEMANDA DEL MOTOR IPsec = overlay del fabric + acceso remoto CUANDO ES IPsec dial-up.
-  // Son dos orígenes de tráfico cifrado que terminan en el MISMO motor del equipo, así que
-  // se suman en vez de competir: un hub con 40 spokes y 300 teletrabajadores los cifra todos
-  // a la vez. El overlay es una FRACCION del caudal del sitio (el resto sale por breakout
-  // local); el acceso remoto IPsec va entero, porque no existe una parte de él sin cifrar.
-  const ipsec=(frac>0?(effectiveNeed-remoto)*frac:0)+(modo==='ipsec'?remoto:0);
-  // Si la capa elegida YA es 'vpn', no se pisa con una cifra menor: se queda la mayor de las
-  // dos demandas sobre el mismo eje.
-  if(ipsec>0) d.vpn=Math.max(d.vpn||0, ipsec);
-  // SSL como eje propio, con la cifra oficial del modelo. Sin marcar la casilla no entra:
-  // un eje que nadie pidio no puede apartar a nadie. La fracción exenta por política (F7)
-  // atraviesa el equipo pero no el motor de inspección, así que se descuenta AQUÍ y no del
-  // caudal de la capa efectiva, que sí la procesa.
-  if($('chkSsl').checked) d.ssl=effectiveNeed*(1-fraccionTlsExenta());
-  if(sessNeed) d.sess=sessNeed;
-  if(cpsNeed) d.cps=cpsNeed;
-  // ── LIMITES DE CONFIGURACION, que desde el 2026-09-23 SE COMPRUEBAN ────────────────────
-  // Los tres que esta pantalla declaraba «sin comprobar» y uno nuevo. Cada uno entra solo si
-  // el escenario lo pide: un eje que nadie declaró no puede apartar a nadie.
-  const tun=tunelesDeclarados();
-  if(tun.total>0) d.tunGw=tun.total;
-  const nVpn=Math.max(0,parseInt($('vpnUsers').value)||0);
-  if(nVpn>0){
-    if(modo==='ipsec') d.tunCli=nVpn;
-    else { d.sslVpnUsers=nVpn; if(remoto>0) d.sslVpn=remoto; }
+function mostrarCorreccion(id, antes, texto) {
+  correccion = { id, antes, texto };
+  const caja = $('autoCorr');
+  caja.innerHTML = `<span>${texto}</span><button type="button" class="btn ghost btn-corr" id="btnCorrDeshacer">Deshacer</button>`
+    + '<button type="button" class="btn ghost btn-corr" id="btnCorrCerrar" aria-label="Cerrar el aviso">Entendido</button>';
+  caja.hidden = false;
+  anunciar(caja.textContent.replace(/DeshacerEntendido$/, ''), true);
+}
+$('autoCorr').addEventListener('click', (e) => {
+  if (e.target.id === 'btnCorrDeshacer' && correccion) {
+    $(correccion.id).value = correccion.antes;
+    $(correccion.id).dispatchEvent(new Event('input', { bubbles: true }));
   }
-  const nVdom=Math.max(0,parseInt($('vdoms')&&$('vdoms').value)||0);
-  if(nVdom>0) d.vdom=nVdom;
-  return d;
-}
-
-/* CUANTO REQUERIMIENTO SOPORTA UN MODELO, en las unidades del eje de caudal.
-   Sirve para ordenar la lista y para situar el punto del modelo en la escala logaritmica.
-   Se deriva de los propios ejes -capacidad dividida por lo que ese eje consume de cada Mbps
-   del requerimiento- en vez de repetir la formula del motor: asi, anadir un eje de caudal
-   nuevo no deja la escala mintiendo. Un eje sin dato no entra en el minimo; lo que decide si
-   ese modelo se aparta es el evaluador, no esta funcion. */
-function soporta(m, demandas, effectiveNeed){
-  if(!effectiveNeed) return m.fw;
-  let tope=Infinity;
-  for(const def of R.EJES){
-    if(!def.escalaMbps) continue; // solo los ejes cuya demanda crece con el caudal del sitio
-    const req=demandas[def.k];
-    if(!req) continue;
-    const cap=m[def.campo];
-    if(cap==null) continue;
-    tope=Math.min(tope, cap/(req/effectiveNeed));
+  if (e.target.id === 'btnCorrDeshacer' || e.target.id === 'btnCorrCerrar') {
+    correccion = null;
+    $('autoCorr').hidden = true;
+    programar(true);
   }
-  return tope===Infinity?m.fw:tope;
+});
+
+/* ══ HISTORIAL PARA DESHACER (§10.3) ══════════════════════════════════════════════════════
+   Cada cambio consolidado guarda el escenario anterior; «Deshacer» lo repone entero. Se
+   consolida con un respiro de medio segundo para que teclear «2500» sea un cambio y no
+   cuatro. */
+let historial = [];
+let estadoActual = null;
+let restaurando = false;
+let tHistorial = null;
+function registrarHistorial() {
+  if (restaurando) return;
+  clearTimeout(tHistorial);
+  tHistorial = setTimeout(() => {
+    const nuevo = JSON.stringify(capturarCampos());
+    if (estadoActual && nuevo !== estadoActual) {
+      historial.push(estadoActual);
+      if (historial.length > 30) historial.shift();
+    }
+    estadoActual = nuevo;
+    $('btnDeshacer').disabled = !historial.length;
+  }, 500);
+}
+$('btnDeshacer').addEventListener('click', () => {
+  const previo = historial.pop();
+  if (!previo) return;
+  restaurando = true;
+  aplicarCampos(JSON.parse(previo));
+  estadoActual = previo;
+  restaurando = false;
+  $('btnDeshacer').disabled = !historial.length;
+  anunciar('Se deshizo el último cambio del escenario.', true);
+});
+
+/* ══ EVALUACION ═══════════════════════════════════════════════════════════════════════════
+   «Recalcular en cada cambio mediante un unico reducer; debounce corto solo en campos
+   numericos» (§10.3). Todo cambio pasa por aqui. */
+let tRender = null;
+function programar(inmediato, origen) {
+  clearTimeout(tRender);
+  if (origen) autocorregir(origen);
+  registrarHistorial();
+  if (inmediato) evaluarYPintar();
+  else tRender = setTimeout(evaluarYPintar, 140);
+}
+function evaluarYPintar() {
+  clearTimeout(tRender);
+  if (!CAT) return;
+  const escenario = leerEscenario();
+  RES = M.evaluar(escenario, CAT, { hoy: new Date().toISOString() });
+  ESC = escenario;
+  pintarTodo();
 }
 
-// Coincidencia por subcadena en lugar de lista exacta: los `seg` del catálogo son 21 cadenas
-// distintas ('SOHO / Teletrabajo', 'DC edge / Enterprise', 'Hyperscale DC'...) y la lista
-// exacta anterior dejaba fuera toda la serie G de entrada y 8 variantes de datacenter.
-const SEG_MATCH={
-  branch:/SOHO|Sucursal|Teletrabajo/i,
-  campus:/Campus/i,
-  dc:/DC|Carrier|Hyperscale/i,
-};
+// ── Enlaces de los controles ─────────────────────────────────────────────────────────────
+function segClick(id, alElegir) {
+  $(id).addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    [...$(id).children].forEach((x) => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+    alElegir(b.dataset.v);
+    programar(true, id);
+  });
+}
+segClick('profileSeg', (v) => { profile = v; });
+segClick('rolSeg', (v) => { rolSdwan = v; });
+segClick('segSeg', (v) => { segMode = v; });
+// Numericos con respiro; el resto (casillas, desplegables) al instante.
+const NUMERICOS = UI.filter(([, , t]) => t === 'num').map(([, id]) => id).concat(PUERTOS_ID.map(([, id]) => id))
+  .filter((id) => $(id) && $(id).tagName === 'INPUT');
+for (const id of NUMERICOS) { const n = $(id); if (n) n.addEventListener('input', () => programar(n.type === 'range', id)); }
+const INMEDIATOS = ['fortiOS', 'modoInspeccion', 'chkHa', 'haModo', 'chkAv', 'chkWeb', 'chkIotDlp', 'chkSsl', 'pctCifrado',
+  'pctTlsExento', 'chkSandbox', 'sandboxModo', 'sandboxModalidad', 'chkNoConcurrente', 'chkRemoto', 'vpnTipo', 'chkMfa',
+  'chkPsuRed', 'registroDestino', 'techoUtil', 'motivoCompra', 'termYears', 'licBundle', 'careLevel',
+  'chkSdwanMon', 'chkSdwanOrq', 'chkSdwanSase', 'chkEms', 'chkConverter'];
+for (const id of INMEDIATOS) { const n = $(id); if (n) n.addEventListener(n.tagName === 'SELECT' ? 'change' : 'input', () => programar(true, id)); }
+// Los selects tambien disparan `input` en los navegadores actuales; con `change` basta y
+// evita evaluar dos veces.
+for (const id of ['serieInstalada', 'justificacionEol']) $(id).addEventListener('input', () => programar(false, id));
+for (const id of ['nombreCliente', 'refProyecto']) $(id).addEventListener('input', () => { registrarHistorial(); pintarBom(); });
+$('pickModel').addEventListener('change', () => fijarSeleccion($('pickModel').value || null));
+$('metricaEje').addEventListener('change', () => { metricaEje = $('metricaEje').value; if (RES) pintarEscala(RES); });
+$('chkVerEol').addEventListener('change', () => { verEol = $('chkVerEol').checked; if (RES) pintarEscala(RES); });
+$('btnEmsSugerir').addEventListener('click', () => {
+  const n = (parseInt($('users').value, 10) || 0) + ($('chkRemoto').checked ? (parseInt($('vpnUsers').value, 10) || 0) : 0);
+  $('emsEndpoints').value = n ? String(n) : '';
+  $('emsHint').innerHTML = n
+    ? `Sugerencia aplicada: <b>${cifra(n)}</b> = usuarios del sitio${$('chkRemoto').checked ? ' + remotos' : ''}. Ajústala a los endpoints que de verdad llevan FortiClient; se licencia en tramos de 25.`
+    : 'No hay usuarios declarados de los que partir: escribe la cifra de endpoints gestionados.';
+  programar(true, 'emsEndpoints');
+});
+$('btnRevisarBom').addEventListener('click', () => { if (TABS) TABS.elegir('#tab-bom', true); });
 
-// El texto bajo el selector explica la capa que REALMENTE se va a usar, que no siempre es
-// la que el usuario pulsó: si una función la eleva, hay que decirlo donde se elige.
-function pintarHintCapa(capa){
-  const nodo=$('profileHint');
-  if(!nodo) return;
-  nodo.innerHTML=capa.elevada
-    ? `<b class="warn">Capa elevada a ${esc(TIER_BY_K[capa.k].n)}</b> por ${capa.elevan.map(f=>esc(f.n)).join(', ')}. `
-      + `${esc(TIER_BY_K[capa.k].d)} Elegiste ${esc(TIER_BY_K[profile].n)}, pero activar inspección cambia la cifra del datasheet que aplica, no le suma un porcentaje.`
-    : esc(TIER_BY_K[capa.k].d);
+/* La eleccion manual, desde donde venga. Elegir el recomendado es SEGUIR la recomendacion:
+   si el escenario cambia despues, se sigue al nuevo recomendado en vez de quedarse fijo. */
+function fijarSeleccion(id) {
+  const rec = RES && RES.recomendacion ? RES.recomendacion.id : null;
+  seleccionManual = id && id !== rec ? id : null;
+  $('pickModel').value = seleccionManual || '';
+  $('pickModel').dispatchEvent(new Event('input', { bubbles: true }));
+  programar(true);
+}
+document.addEventListener('click', (e) => {
+  const alt = e.target.closest('[data-alt]');
+  if (alt) { fijarSeleccion(alt.dataset.alt); return; }
+  const corr = e.target.closest('[data-corregir]');
+  if (corr) aplicarCorreccion(JSON.parse(corr.dataset.corregir));
+});
+function aplicarCorreccion(c) {
+  if (!c) return;
+  if (c.accion === 'volver-recomendado') { fijarSeleccion(null); return; }
+  if (c.accion === 'cambiar' && CAMPO_ID[c.campo]) {
+    const n = $(CAMPO_ID[c.campo]);
+    n.value = c.valor;
+    n.dispatchEvent(new Event(n.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true }));
+    const r = $('stickyReco');
+    if (r) r.focus();
+    return;
+  }
+  if (c.accion === 'ir' && c.campo) irAlCampo(c.campo);
+}
+function irAlCampo(campo) {
+  const id = CAMPO_ID[campo];
+  const n = id ? $(id) : (campo === 'topologia.enlaces' ? document.querySelector('#wanBuilderFilas [data-campo=down]') : null);
+  if (!n) return;
+  const d = n.closest('details');
+  if (d) d.open = true;
+  n.scrollIntoView({ block: 'center' });
+  n.focus();
 }
 
-// Los campos que no aplican se ocultan en vez de quedar visibles sin efecto: un control
-// que no hace nada es peor que uno ausente, porque invita a creer que se tuvo en cuenta.
-function pintarControlesTopologia(){
-  // Cada rol pide lo suyo y esconde lo que no aplica: un spoke no declara simultaneidad de
-  // sedes y un hub no declara a cuantos hubs cifra. Un control visible que el motor no lee
-  // es peor que uno ausente, porque hace creer que se tuvo en cuenta.
-  const agg=esConcentrador();
-  $('fldAgg').hidden=!agg; $('fldConc').hidden=!agg;
-  $('fldHubs').hidden=rolSdwan!=='spoke';
-  // Las excepciones TLS solo existen si hay inspección TLS que excepcionar: un control
-  // siempre visible que no hace nada en el 90 % de los escenarios es ruido que enseña a
-  // ignorar el paso 2. `style.display` y no `hidden` porque el bloque nace con display:none.
-  $('fldTlsExento').style.display=$('chkSsl').checked?'':'none';
-  $('bwLbl').textContent=agg?'Enlaces WAN de UNA sede (underlay)':'Enlaces WAN del sitio (underlay)';
-  // La casilla de overlay de cada fila solo significa algo con rol SD-WAN: se repintan las
-  // filas para habilitarla o deshabilitarla, conservando lo declarado.
-  if(wanRolPintado!==rolSdwan){ wanRolPintado=rolSdwan; pintarWanFilas(leerWanLinks()); }
-  $('rolHint').innerHTML={
-    none:'Solo perímetro: el tráfico no viaja por túneles del overlay, así que el techo lo fija únicamente la capa de inspección.',
-    spoke:'Sucursal del fabric: el tráfico hacia el hub va cifrado, así que el <b>throughput IPsec del modelo también es un techo</b>, no solo la capa de inspección.',
-    hub:'Concentrador: agrega el tráfico de los spokes y termina un túnel por cada uno. El caudal pasa a ser <b>agregado</b> —caudal de una sede x spokes x simultaneidad— y el techo del motor IPsec entra en juego. No hay que declararlo aparte: el rol lo decide.',
+/* ══ PINTADO ══════════════════════════════════════════════════════════════════════════════ */
+function pintarTodo() {
+  const r = RES;
+  aplicarReglas(r);
+  pintarControles(r);
+  pintarWanResumen();
+  pintarErrores(r);
+  pintarHints(r);
+  pintarCabecera(r);
+  pintarEjes(r);
+  pintarFicha(r);
+  pintarShortlist(r);
+  pintarRequisitos(r);
+  pintarEscala(r);
+  pintarTiers(r);
+  pintarBomPreliminar(r);
+  pintarPie(r);
+  pintarBom();
+  pintarPasos(r);
+  pintarFuentesCalculo(r);
+  anunciarCambio(r);
+  if (ST && ST.volcar) ST.volcar();
+}
+
+/* EL FORMULARIO DINAMICO SALE DEL MOTOR (F09, F10). `r.campos` es la misma tabla con la que
+   el motor decide que cuenta: visible, obligatorio y si falta. Lo oculto se marca
+   `data-inactivo` —estado.js no lo pone en el enlace— y conserva su valor. */
+function aplicarReglas(r) {
+  const campos = r.campos || {};
+  document.querySelectorAll('[data-regla]').forEach((caja) => {
+    const regla = caja.dataset.regla;
+    let visible;
+    let requerido = false;
+    let falta = false;
+    if (regla === 'ha') visible = $('chkHa').checked;
+    else if (campos[regla]) ({ visible, requerido, falta } = campos[regla]);
+    else return;
+    caja.hidden = !visible;
+    if (visible) caja.removeAttribute('data-inactivo'); else caja.setAttribute('data-inactivo', '1');
+    caja.classList.toggle('falta', !!falta);
+    const input = caja.querySelector('input:not([type=checkbox]),select,textarea');
+    if (input) input.setAttribute('aria-required', requerido ? 'true' : 'false');
+    const lbl = caja.querySelector('label');
+    if (lbl) {
+      let marca = lbl.querySelector('.obligatorio');
+      if (requerido && !marca) { marca = document.createElement('span'); marca.className = 'obligatorio'; marca.textContent = 'obligatorio'; lbl.appendChild(marca); }
+      if (!requerido && marca) marca.remove();
+    }
+  });
+  // El grupo de acceso remoto entero cuenta como inactivo sin la casilla.
+  const grp = $('grpRemoto');
+  if (grp) { if ($('chkRemoto').checked) grp.removeAttribute('data-inactivo'); else grp.setAttribute('data-inactivo', '1'); }
+}
+
+// Lo que cada control dice de si mismo segun el resto del escenario.
+function pintarControles(r) {
+  const s = r.snapshot;
+  // Unidades por sitio: DERIVADAS, nunca editables (F03).
+  const nodos = s.disponibilidad.modo === 'standalone' ? 1 : 2;
+  $('qty').value = String(nodos);
+  $('qtyHint').innerHTML = nodos === 2
+    ? `<b>2 nodos</b> por el clúster ${s.disponibilidad.modo === 'ha-aa' ? 'activo-activo' : 'activo-pasivo'}: la cantidad no se puede bajar, y cada nodo lleva su propia suscripción FortiGuard y su FortiCare.`
+    : 'Se deriva de la alta disponibilidad: 1 nodo, o 2 en clúster. Varias sedes se cotizan con los perfiles multi-sede de la lista de materiales.';
+  // FortiOS decide si SSL-VPN existe (T06): con 7.6.3+ la opcion se deshabilita y se dice.
+  const opSsl = $('vpnTipo').querySelector('option[value=sslvpn]');
+  const retirado = s.software.fortiOS === '7.6.3+';
+  opSsl.disabled = retirado && $('vpnTipo').value !== 'sslvpn';
+  opSsl.textContent = retirado ? 'SSL-VPN en modo túnel — retirado en FortiOS 7.6.3+' : 'SSL-VPN en modo túnel';
+  $('fortiOSHint').innerHTML = retirado
+    ? 'Decide qué funciones existen, no qué cifra aplica. En <b>7.6.3 o superior el modo túnel SSL-VPN ya no existe</b>: el acceso remoto se diseña con IPsec.'
+    : `Con ${esc(s.software.fortiOS)} el modo túnel SSL-VPN existe salvo en los modelos que el Product Matrix excluye (serie 90G${s.software.fortiOS === '7.6.0-7.6.2' ? ', y los de 2 GB de RAM' : ''}).`;
+  // Tipo de compra.
+  const MOTIVO = {
+    nueva: 'Compra nueva: equipo y primer bundle en el <b>SKU combinado</b> de la price list; los equipos fuera de venta no se ofrecen.',
+    ampliacion: 'Ampliación: el equipo y sus servicios se cotizan por separado. Un modelo fuera de venta se admite solo con justificación escrita.',
+    renovacion: 'Renovación: <b>solo servicios</b> del equipo instalado —no se cotiza la caja—. Hace falta su modelo y serie.',
+    coterm: 'Co-term: <b>solo servicios</b>, alineados al vencimiento del contrato instalado. Hace falta su modelo y serie.',
+  };
+  $('motivoHint').innerHTML = MOTIVO[s.comercial.motivo] || '';
+  // Bundles que no cubren lo pedido se ROTULAN (T08): elegirlos igual es posible, y la puerta
+  // lo bloquea con su correccion, pero no se hace sin saberlo.
+  const min = R.bundleMinimo(s.seguridad.funciones, FUNCIONES, BUNDLES);
+  for (const op of $('licBundle').options) {
+    const b = BUNDLES[op.value];
+    if (!b) continue;
+    const insuf = min.minimo && !min.validos.includes(op.value);
+    const base = { utp: 'UTP — Unified Threat Protection', ent: 'Enterprise Protection', atp: 'ATP — Advanced Threat Protection' }[op.value] || b.n;
+    op.textContent = insuf ? `${base} — no cubre lo pedido` : base;
+  }
+  // Selector de modelo: refleja la eleccion vigente.
+  if (($('pickModel').value || null) !== seleccionManual) $('pickModel').value = seleccionManual || '';
+  // Rol: rotulo del builder y ayuda.
+  const hub = rolSdwan === 'hub';
+  $('bwLbl').textContent = hub ? 'Enlaces WAN de UNA sede (underlay)' : 'Enlaces WAN del sitio (underlay)';
+  $('rolHint').innerHTML = {
+    none: 'Solo perímetro: el tráfico no viaja por túneles del overlay, así que el techo lo fija únicamente la capa de inspección.',
+    spoke: 'Sucursal del fabric: el tráfico hacia el hub va cifrado, así que el <b>throughput IPsec del modelo también es un techo</b>, y cada hub es un túnel que se contrasta contra el máximo publicado.',
+    hub: 'Concentrador: agrega el tráfico de los spokes y termina un túnel por cada uno. El caudal pasa a ser <b>agregado</b> —caudal de una sede × spokes × simultaneidad— y se evalúa la escala del plano de control.',
   }[rolSdwan];
+  if (wanRolPintado !== rolSdwan) { wanRolPintado = rolSdwan; pintarWanFilas(leerWanLinks()); }
 }
 
-/* ── ESCALA LOGARITMICA Y ALTERNATIVAS ────────────────────────────────────────────────
-   §7 del informe: «Modelo elegido y dos alternativas; métrica activa; filtro de lifecycle»
-   en lugar de 58 puntos indistinguibles. Los 58 se siguen dibujando -esconder el catalogo
-   seria peor que no etiquetarlo- pero se ETIQUETAN el elegido y sus dos vecinos por
-   capacidad, que son los que alguien de verdad compara.
+// Errores de entrada y obligatorios que faltan, junto a su campo (validacion inmediata).
+function pintarErrores(r) {
+  const porCampo = {};
+  for (const e of r.errores) porCampo[e.campo] = e.mensaje;
+  for (const f of r.faltan) if (!porCampo[f]) porCampo[f] = `Falta ${CAMPO_N[f] || f}.`;
+  document.querySelectorAll('[data-error]').forEach((p) => { p.textContent = porCampo[p.dataset.error] || ''; });
+  for (const [ruta, id] of Object.entries(CAMPO_ID)) {
+    const n = $(id);
+    if (!n || n.type === 'checkbox' || (n.classList && n.classList.contains('seg'))) continue;
+    const mal = r.errores.some((e) => e.campo === ruta);
+    if (mal) { n.setAttribute('aria-invalid', 'true'); n.title = porCampo[ruta]; }
+    else if (n.getAttribute('aria-invalid') === 'true') { n.removeAttribute('aria-invalid'); n.removeAttribute('title'); }
+  }
+}
 
-   LA METRICA DEL EJE SE ELIGE, y por defecto es «la que dimensiona»: cuanto requerimiento
-   soporta cada modelo en este escenario. Fijarla en `fw` -que es lo que hacia antes- pinta
-   la cifra de portada, que es justo la que no aplica en cuanto hay inspeccion. */
-function pintarEscala(ctx){
-  const {effectiveNeed, demandas, candidatos, elegido}=ctx;
-  const track=$('track');
-  track.querySelectorAll('.dot,.tick,.pickLabel,.altLabel').forEach(e=>e.remove());
+function pintarHints(r) {
+  const s = r.snapshot;
+  $('headVal').textContent = `${Math.round(s.politica.crecimientoPct)} %`;
+  $('concVal').textContent = `${Math.round(s.topologia.simultaneidadPct)} %`;
+  const d = r.detalle;
+  const t = d && d.trafico;
+  $('traficoHint').innerHTML = t && t.interVlan
+    ? `Caminos declarados: WAN <b>${fmt(t.internet)}</b> + inter-VLAN <b>${fmt(t.interVlan)}</b>. Regla aplicada: <b>${esc(t.regla)}</b> = ${fmt(t.base)} de base, <b>${fmt(t.previsto)}</b> con el ${Math.round(s.politica.crecimientoPct)} % de crecimiento.`
+    : 'Sin tráfico inter-VLAN declarado: el requerimiento sale solo de los enlaces WAN.';
+  const req = (k) => r.requisitos.find((x) => x.eje === k);
+  const sess = req('sess');
+  const cps = req('cps');
+  const remotos = s.remoto.activo ? s.remoto.usuarios : 0;
+  $('sesCalc').innerHTML = !sess
+    ? 'Sin restricción de sesiones: pon un valor por usuario o una medición.'
+    : s.escala.sesionesMedidas
+      ? `Medidas <b>${cifra(s.escala.sesionesMedidas)}</b> + ${Math.round(s.politica.crecimientoPct)} % de crecimiento = <b>${cifra(sess.requerido)}</b> sesiones concurrentes.`
+      : `${cifra(s.escala.usuarios)} del sitio${remotos ? ` + ${cifra(remotos)} remotos` : ''} × ${s.escala.sesionesPorUsuario} sesiones + ${Math.round(s.politica.crecimientoPct)} % = <b>${cifra(sess.requerido)}</b> sesiones concurrentes.`;
+  $('cpsCalc').innerHTML = !cps
+    ? 'Sin sesiones declaradas no se puede derivar el caudal de sesiones nuevas por segundo.'
+    : s.escala.cpsMedido
+      ? `Medidas <b>${cifra(s.escala.cpsMedido)}</b> + crecimiento = <b>${cifra(cps.requerido)} cps</b>. Eje de CPU; la tabla de sesiones es el de memoria.`
+      : `${cifra(sess ? sess.requerido : 0)} sesiones / ${s.escala.vidaSesionS} s de vida media = <b>${cifra(cps.requerido)} sesiones nuevas por segundo</b>.`;
+  // El multiplicador conjunto de crecimiento y techo se DICE (§10.2): juntas no suman, multiplican.
+  $('multHint').innerHTML = `Crecimiento y techo son dos políticas distintas y <b>se multiplican</b>: ${esc(r.multiplicador.texto)}. `
+    + 'Ninguna cifra del datasheet se mide en producción: el techo dice hasta qué fracción se acepta diseñar en los ejes de rendimiento; a los topes de plataforma (túneles, VDOM, FortiAP…) no se les aplica.';
+  // La capa que de verdad se usa, que no siempre es la que se pulso.
+  if (d && d.capa) {
+    const c = d.capa;
+    $('profileHint').innerHTML = c.elevada
+      ? `<b class="warn">Capa elevada a ${esc(TIER_BY_K[c.k].n)}</b> por ${c.elevan.map((f) => esc(f.n)).join(', ')}. ${esc(TIER_BY_K[c.k].d)}`
+      : esc(TIER_BY_K[c.k].d);
+  } else {
+    $('profileHint').textContent = TIER_BY_K[profile].d;
+  }
+}
 
-  const def=metricaEje==='auto'?null:R.EJE_POR_K[metricaEje];
-  const valorDe=m=>def?m[def.campo]:soporta(m,demandas,effectiveNeed);
-  const visibles=MODELS.filter(m=>(verEol||!m.eol)&&valorDe(m)!=null);
-  $('trackLbl').textContent=def
+/* ── CABECERA DEL PANEL: siempre visible ─────────────────────────────────────────────── */
+function pintarCabecera(r) {
+  const caja = $('stickyReco');
+  const sel = r.seleccion;
+  const g = GATE[r.quoteGate];
+  if (!caja.hasAttribute('tabindex')) caja.setAttribute('tabindex', '-1');
+  if (!sel) {
+    const motivo = r.bloqueos[0] ? r.bloqueos[0].mensaje : 'Declara el caudal de al menos un enlace WAN.';
+    caja.innerHTML = '<span class="sr-modelo">Sin modelo validado</span>'
+      + `<span class="qg qg-${r.quoteGate}">${esc(g.n)}</span>`
+      + `<span class="sr-cuello">${esc(motivo)}</span>`;
+    caja.hidden = false;
+  } else {
+    const ev = sel.eval;
+    const conDato = ev.ejes.filter((e) => e.u != null);
+    const cumplen = conDato.filter((e) => e.estado === 'ok').length;
+    const cuello = ev.manda
+      ? `Manda <b>${esc(ev.manda.n)}</b> · ${R.pct(ev.manda.u)} de ${valEje(ev.manda, ev.manda.cap)}`
+      : 'Sin ejes evaluables';
+    const manual = r.override && r.override.elegible;
+    const alts = r.alternativas.filter((a) => a.id !== sel.id);
+    const recAlt = manual && r.recomendacion ? [{ id: r.recomendacion.id, rec: true }] : [];
+    caja.innerHTML = `<span class="sr-modelo">${esc(sel.id)}</span>`
+      + `<span class="qg qg-${r.quoteGate}" title="Confianza ${esc(r.confianza)}">${esc(g.n)}</span>`
+      + `<span class="sr-cuello">Cumple ${cumplen}/${conDato.length} ejes · ${cuello}${manual ? ' · <b>elegido a mano</b>' : ''} · confianza ${esc(r.confianza)}</span>`
+      + ((alts.length || recAlt.length) ? '<span class="sr-alts"><span>Alternativas</span>'
+        + recAlt.map((a) => `<button type="button" class="sr-alt" data-alt="${esc(a.id)}" title="Volver al recomendado">${esc(a.id.replace('FortiGate ', ''))} · recomendado</button>`).join('')
+        + alts.map((a) => `<button type="button" class="sr-alt" data-alt="${esc(a.id)}" title="${esc(a.porQue || '')}">${esc(a.id.replace('FortiGate ', ''))}</button>`).join('')
+        + '</span>' : '');
+    caja.hidden = false;
+  }
+  // OVERRIDE QUE NO CUMPLE (F01, T02): se conserva la recomendacion, se muestra el deficit y
+  // la salida comercial queda bloqueada mientras la eleccion siga en pie.
+  const ov = r.override;
+  const cajaOv = $('overrideAviso');
+  if (ov && !ov.elegible) {
+    const filas = ov.deficit.map((d) => `<tr><td>${esc(d.n)}</td><td class="n">${d.requerido == null ? '—' : valEje(d, d.requerido)}</td>`
+      + `<td class="n">${d.disponible == null ? 'sin dato' : valEje(d, d.disponible)}</td>`
+      + `<td class="n">${d.estado === 'sinDato' ? 'no comprobable' : `${R.pct(d.utilizacion)}${d.deficitPct != null ? ` (+${d.deficitPct} %)` : ''}`}</td></tr>`).join('');
+    const otros = (ov.bloqueos || []).map((b) => `<li>${esc(b.mensaje)}</li>`).join('');
+    cajaOv.innerHTML = `<b>Elegiste el ${esc(ov.modelo)} y no cumple este escenario.</b> La lista de materiales sigue con el `
+      + `<b>${esc(r.seleccion ? r.seleccion.id : 'modelo validado')}</b> y la cotización queda <b>bloqueada</b> mientras mantengas esa elección.`
+      + (filas ? `<table><thead><tr><th>Eje</th><th>Requerido</th><th>Disponible</th><th>Utilización</th></tr></thead><tbody>${filas}</tbody></table>` : '')
+      + (otros ? `<ul style="margin:6px 0 0;padding-left:18px">${otros}</ul>` : '')
+      + `<p style="margin:8px 0 0"><button type="button" class="btn btn-corr" data-corregir='${esc(JSON.stringify({ accion: 'volver-recomendado' }))}'>Volver al recomendado</button></p>`;
+    cajaOv.hidden = false;
+  } else {
+    cajaOv.hidden = true;
+    cajaOv.innerHTML = '';
+  }
+  // BLOQUEOS Y ADVERTENCIAS, con su correccion cuando existe. El override ya tiene su caja.
+  const lista = r.bloqueos.filter((b) => b.codigo !== 'override-no-elegible')
+    .concat(r.avisos.filter((a) => a.nivel === 'borrador' || a.nivel === 'warning'))
+    .slice(0, 6);
+  const ul = $('resBloqueos');
+  ul.innerHTML = lista.map((b) => {
+    const cls = b.nivel === 'bloqueo' ? '' : b.nivel;
+    let accion = '';
+    const c = b.correccion;
+    if (c && c.accion === 'cambiar') {
+      const txt = c.campo === 'comercial.bundle' ? `Cambiar a ${BUNDLES[c.valor] ? BUNDLES[c.valor].n : c.valor}`
+        : c.campo === 'remoto.metodo' ? 'Cambiar a IPsec' : 'Corregir';
+      accion = `<button type="button" class="btn ghost btn-corr" data-corregir='${esc(JSON.stringify(c))}'>${esc(txt)}</button>`;
+    } else if (b.campo && (b.codigo === 'dato-requerido' || b.codigo === 'entrada-invalida')) {
+      accion = `<button type="button" class="btn ghost btn-corr" data-corregir='${esc(JSON.stringify({ accion: 'ir', campo: b.campo }))}'>Ir al campo</button>`;
+    }
+    return `<li class="${cls}">${esc(b.mensaje)}${accion}</li>`;
+  }).join('');
+  ul.hidden = !lista.length;
+}
+
+/* ── UTILIZACION POR EJE: la decision explicable ─────────────────────────────────────── */
+function resumenDescartes(r) {
+  const sinDato = new Map();
+  const porCapacidad = new Map();
+  const porRestriccion = new Map();
+  for (const c of r.descartados) {
+    const ev = c.eval;
+    if (ev.estado === 'apartado' && ev.apartadoPor) {
+      if (!sinDato.has(ev.apartadoPor)) sinDato.set(ev.apartadoPor, { n: ev.apartadoPorN, modelos: [] });
+      sinDato.get(ev.apartadoPor).modelos.push(c.id);
+    } else if (ev.estado === 'excede' && ev.manda) {
+      const k = ev.manda.k;
+      if (!porCapacidad.has(k)) porCapacidad.set(k, { n: ev.manda.n, modelos: [] });
+      porCapacidad.get(k).modelos.push(c.id);
+    } else if (c.bloqueos.length) {
+      for (const b of c.bloqueos) {
+        if (!porRestriccion.has(b.codigo)) porRestriccion.set(b.codigo, { n: b.codigo, ejemplo: b.mensaje, modelos: [] });
+        porRestriccion.get(b.codigo).modelos.push(c.id);
+      }
+    }
+  }
+  return { sinDato, porCapacidad, porRestriccion };
+}
+const RESTRICCION_N = {
+  CICLO_VIDA: 'fuera de venta en compra nueva', FORTIOS_INCOMPATIBLE: 'FortiOS no admite la función pedida',
+  PROXY_LIMITADO: 'soporte proxy limitado', PUERTOS_INSUFICIENTES: 'puertos insuficientes',
+  ALMACENAMIENTO_SIN_DATO: 'disco sin dato', ALMACENAMIENTO_INSUFICIENTE: 'disco insuficiente',
+  POE_SIN_DATO: 'PoE sin dato', POE_NO_DISPONIBLE: 'sin PoE en el SKU base',
+  PSU_SIN_DATO: 'fuente sin dato', PSU_SIN_REDUNDANCIA: 'sin fuente redundante',
+};
+function pintarEjes(r) {
+  const caja = $('ejesPanel');
+  const sel = r.seleccion;
+  if (!sel) { caja.innerHTML = ''; return; }
+  const ev = sel.eval;
+  const conConfig = ev.ejes;
+  const filas = conConfig.map((e) => {
+    const manda = ev.manda && e.k === ev.manda.k;
+    const cls = e.estado === 'sinDato' ? 'sindato' : manda ? 'manda' : (e.u > 0.8 ? 'alto' : '');
+    const ancho = e.u == null ? 0 : Math.min(100, e.u * 100);
+    const req = r.requisitos.find((x) => x.eje === e.k);
+    const gob = req && req.escenario && req.escenario !== 'normal' ? ` · gobierna «${req.escenarioN}»` : '';
+    const val = e.estado === 'sinDato' ? 'sin dato'
+      : `${R.pct(e.u)} <span style="color:var(--steel)">de ${valEje(e, e.cap)}</span>`;
+    return `<div class="eje ${cls}" title="${esc(e.metodo)}${esc(gob)}">`
+      + `<span class="en">${esc(e.n)}${e.configuracion ? ' <span class="pillc">tope</span>' : ''}</span>`
+      + `<span class="eb" role="img" aria-label="${esc(e.n)}: ${e.u == null ? 'sin dato' : R.pct(e.u)}"><i style="width:${ancho}%"></i></span>`
+      + `<span class="ev">${val}</span></div>`;
+  }).join('');
+  const { sinDato } = resumenDescartes(r);
+  const nSinDato = [...sinDato.values()].reduce((a, g) => a + g.modelos.length, 0);
+  const techo = r.snapshot.politica.techoPct;
+  const pie = (ev.manda
+    ? `Cuello de botella: <b>${esc(ev.manda.n)}</b> al ${R.pct(ev.manda.u)}${techo < 100 ? ` · techo declarado ${techo} %` : ''}. Cada eje se compara contra su propia cifra oficial; ninguno se deriva de otro.`
+    : 'Sin ejes evaluables con los datos declarados.')
+    + (nSinDato ? ` <b class="warn">${nSinDato} modelo(s) apartados</b> porque el catálogo no trae su cifra de `
+      + `${[...sinDato.values()].map((g) => esc(g.n)).join(', ')} — es una tarea de datos, no una falta de capacidad: no se sustituye por la de otro eje.` : '');
+  caja.innerHTML = `<div class="ejes"><h3>Utilización por eje — ${esc(sel.id)}</h3>${filas}<p class="eje-pie">${pie}</p></div>`;
+}
+
+/* ── FICHA DEL EQUIPO VALIDADO (ficha.js) ─────────────────────────────────────────────── */
+function pintarFicha(r) {
+  if (!r.seleccion) {
+    const why = porQueSinCandidato(r);
+    FICHA.render({ vendor: VENDOR, contenedor: 'verdict', candidatos: [], recomendado: null,
+      vacioTitulo: r.faltan.length || r.errores.length ? 'Faltan datos para recomendar un equipo' : 'Ningún modelo vigente cumple todas las restricciones',
+      vacioDetalle: `<ul style="margin:0;padding-left:18px;font-size:13.5px">${why}</ul>` });
+    $('verdict').style.borderLeftColor = r.faltan.length || r.errores.length ? 'var(--steel)' : 'var(--amber)';
+    return;
+  }
+  $('verdict').style.borderLeftColor = 'var(--red)';
+  // `seleccionado` SIEMPRE es el modelo validado por el motor: ficha.js presenta, no decide.
+  const porId = Object.fromEntries(r.candidatos.map((c) => [c.id, c]));
+  FICHA.render({
+    vendor: VENDOR,
+    contenedor: 'verdict',
+    candidatos: r.elegibles.map((c) => c.modelo),
+    recomendado: r.recomendacion ? r.recomendacion.id : r.seleccion.id,
+    seleccionado: r.seleccion.id,
+    vistas: VISTAS,
+    refsEn: 'fortiRefs',
+    refsTitulo: null,
+    etiqueta: (m) => `${m.id} — ${m.seg} · soporta ${fmt(porId[m.id] ? porId[m.id].soporta : null)}`,
+    titulo: (m) => m.id,
+    subtitulo: (m) => `${m.seg} · FortiOS Security Fabric`,
+    medidores: null,
+    porQue: (m) => porQueDe(r, porId[m.id]),
+    secciones: (m) => seccionesDe(r, m),
+    alCambiar: (id, origen) => fijarSeleccion(origen === 'volver' ? null : id),
+  });
+}
+
+function porQueSinCandidato(r) {
+  const s = r.snapshot;
+  const d = r.detalle;
+  const why = [];
+  if (r.errores.length || r.faltan.length) {
+    for (const e of r.errores) why.push(`<li><b>${esc(CAMPO_N[e.campo] || e.campo)}</b>: ${esc(e.mensaje)}.</li>`);
+    for (const f of r.faltan) {
+      why.push(f === 'topologia.enlaces'
+        ? '<li>Declara el <b>caudal</b> de al menos un enlace activo del sitio en el paso 3 (y si aplica, usuarios y sesiones) para que el dimensionador proponga los modelos que cumplen.</li>'
+        : `<li>Falta <b>${esc(CAMPO_N[f] || f)}</b>, que el escenario hace obligatorio.</li>`);
+    }
+    return why.join('');
+  }
+  if (d) {
+    why.push(`<li>Requerimiento de <b>${fmt(d.effectiveNeed)}</b> en la capa <b>${esc(TIER_BY_K[d.capa.k].n)}</b>`
+      + `${s.seguridad.funciones.includes('chkSsl') ? ' con inspección SSL profunda' : ''}`
+      + `${d.escenario !== 'normal' ? `, en el escenario «${esc((r.escenarios.find((x) => x.id === d.escenario) || {}).n || d.escenario)}»` : ''}.</li>`);
+    if (d.capa.elevada) why.push(`<li>La capa se elevó de <b>${esc(TIER_BY_K[s.seguridad.capa].n)}</b> a <b>${esc(TIER_BY_K[d.capa.k].n)}</b> por ${d.capa.elevan.map((f) => esc(f.n)).join(', ')}.</li>`);
+  }
+  const { sinDato, porCapacidad, porRestriccion } = resumenDescartes(r);
+  for (const [, g] of porCapacidad) why.push(`<li><b>${g.modelos.length}</b> modelo(s) no llegan por <b>${esc(g.n)}</b>.</li>`);
+  for (const [k, g] of sinDato) {
+    const con = MODELS.filter((m) => m[R.EJE_POR_K[k].campo] != null).length;
+    why.push(`<li><b class="warn">${g.modelos.length} modelo(s) apartados porque el catálogo no trae su cifra de ${esc(g.n)}</b> — no por capacidad. `
+      + `Los ${con} que sí la traen son los que compiten. Es una <b>tarea de datos, no una falta de capacidad</b>: la pantalla no sustituye esa cifra por la de otro eje; para comprometer uno de esos modelos hace falta una <b>PoC</b>.</li>`);
+  }
+  for (const [k, g] of porRestriccion) {
+    why.push(`<li><b>${g.modelos.length}</b> modelo(s) descartados por <b>${esc(RESTRICCION_N[k] || k)}</b> (p. ej. ${esc(g.ejemplo)})</li>`);
+  }
+  if (s.politica.techoPct < 100) why.push(`<li>Se aplica un <b>techo de utilización del ${s.politica.techoPct} %</b>: subirlo ensancha la lista a costa de diseñar más cerca del máximo de laboratorio.</li>`);
+  if ((d && d.capa.k === 'tp') || s.seguridad.funciones.includes('chkSsl')) why.push('<li>Estás dimensionando contra la capa más exigente: segmentar por política qué tráfico se inspecciona a fondo es la palanca que más capacidad libera en FortiGate.</li>');
+  why.push('<li>Por encima del catálogo: chasis FortiGate 7000F con diseño especializado, o repartir la carga en varias unidades.</li>');
+  return why.join('');
+}
+
+function porQueDe(r, c) {
+  if (!c) return '';
+  const s = r.snapshot;
+  const m = c.modelo;
+  const ev = c.eval;
+  const d = r.detalle;
+  const eje = (k) => ev.ejes.find((e) => e.k === k);
+  const flags = [];
+  const contraste = (e, que) => (e
+    ? (e.estado === 'sinDato'
+      ? `<b class="warn">El catálogo no trae ${que} del ${esc(m.id)}</b>, así que ese tope no se comprobó.`
+      : `Entra en <b>${cifra(e.cap)}</b> ${esc(e.unidad)} publicados — <b${e.estado === 'excede' ? ' class="warn"' : ''}>${R.pct(e.u)}</b> del tope de plataforma.`)
+    : '');
+  if (s.seguridad.funciones.includes('chkSsl')) {
+    const ssl = eje('ssl');
+    flags.push(ssl && ssl.cap != null
+      ? `<b>Inspección SSL profunda:</b> se dimensiona contra los <b>${fmt(ssl.cap)}</b> de <b>SSL Inspection Throughput</b> del ${esc(m.id)}, una medición propia y no una fracción de sus ${fmt(m.tp)} de Threat Protection (aquí el cociente es ${(m.ssl / m.tp).toFixed(2)}). Carga: tráfico × ${s.seguridad.tlsCifradoPct} % cifrado × ${100 - s.seguridad.tlsExentoPct} % no exento. Queda al ${R.pct(ssl.u)}.`
+      : `<b class="warn">Inspección SSL sin cifra oficial para el ${esc(m.id)}:</b> no debería recomendarse contra ese eje sin PoC.`);
+    if (s.seguridad.tlsExentoPct > 0) flags.push(`<b>Excepciones TLS:</b> se descuenta el <b>${s.seguridad.tlsExentoPct} %</b> del eje de inspección SSL. <b class="warn">Es un supuesto declarado en el paso 2, no una cifra de Fortinet</b>: si la política de exclusión cambia, este eje sube.`);
+  }
+  if (s.seguridad.funciones.includes('chkAv')) flags.push('El antivirus en línea fija el piso en Threat Protection: esa cifra ya lo incluye, junto con el logging.');
+  if (s.seguridad.funciones.includes('chkSandbox')) flags.push(`FortiSandbox analiza <b>fuera de banda</b>: no consume throughput del FortiGate. Cobertura elegida: <b>${esc({ incluido: 'incluida en el bundle', ai: 'servicio de sandbox del FortiGate', dedicado: 'FortiSandbox dedicado' }[s.comercial.sandbox] || s.comercial.sandbox)}</b>.`);
+  if (s.seguridad.funciones.includes('chkIotDlp')) flags.push('IoT Security y DLP <b>fijan el bundle mínimo en Enterprise Protection</b> y elevan el piso a Threat Protection.');
+  if (s.disponibilidad.modo !== 'standalone') flags.push(`<b>HA ${s.disponibilidad.modo === 'ha-aa' ? 'activo-activo' : 'activo-pasivo'}:</b> se cotizan 2 nodos y cada uno lleva su propia suscripción. El clúster <b>no suma capacidad</b>: en el failover un nodo carga con todo, y ese es el escenario contra el que se dimensiona.`);
+  if (rolSdwan !== 'none' && d) {
+    const ipsec = eje('vpn');
+    const insp = eje(d.capa.k);
+    if (ipsec && insp) {
+      flags.push(ev.manda && ev.manda.k === 'vpn'
+        ? `<b class="warn">Manda el overlay:</b> con ${Math.round(d.frac * 100)} % del tráfico cifrado, el motor IPsec (${fmt(ipsec.cap)}) va al ${R.pct(ipsec.u)} mientras la capa de inspección va al ${R.pct(insp.u)}.`
+        : `El eje que aprieta es la capa de inspección (${R.pct(insp.u)}); el motor IPsec queda al ${R.pct(ipsec.u)} para el ${Math.round(d.frac * 100)} % que va cifrado.`);
+    }
+    flags.push(`Se suma un ${Math.round(M.OVERHEAD_ESP * 100)} % de encapsulación ESP sobre la fracción del overlay — supuesto de esta herramienta, no una cifra de Fortinet.`);
+    flags.push('<b>SD-WAN sin costo de licencia:</b> el balanceo por SLA y ADVPN vienen en FortiOS; se licencian aparte solo los servicios avanzados, y solo si el diseño los usa.');
+  }
+  const tun = eje('tunGw');
+  if (tun) flags.push(`<b>Escala del overlay:</b> ${cifra(tun.req)} túnel(es) IPsec sitio a sitio — ${rolSdwan === 'hub' ? 'uno por cada spoke que concentra' : 'uno por cada hub al que cifra'}. ${contraste(tun, 'el máximo de túneles sitio a sitio')}${rolSdwan === 'hub' ? ' Con <b>ADVPN</b> los atajos spoke-a-spoke no cuentan contra el hub.' : ''}`);
+  if (s.remoto.activo && s.remoto.usuarios > 0) {
+    const sslMode = s.remoto.metodo === 'sslvpn';
+    flags.push(`<b>Acceso remoto por ${sslMode ? 'SSL-VPN' : 'IPsec dial-up'}:</b> ${cifra(s.remoto.usuarios)} usuario(s) concurrente(s). `
+      + contraste(eje(sslMode ? 'sslVpnUsers' : 'tunCli'), sslMode ? 'el máximo de usuarios SSL-VPN concurrentes' : 'el máximo de túneles de cliente')
+      + (sslMode ? ` Su caudal <b>no carga el eje IPsec</b>: compite contra el <i>SSL VPN Throughput</i> del modelo.${eje('sslVpn') ? ` ${contraste(eje('sslVpn'), 'el caudal SSL-VPN')}` : ''}`
+        : ' Su caudal entra en el eje IPsec junto al overlay, y sus sesiones en la tabla de sesiones.')
+      + (s.remoto.mfa ? ` Doble factor: ${contraste(eje('tokens'), 'el máximo de FortiToken')}` : ''));
+  }
+  const vd = eje('vdom');
+  if (vd) flags.push(`<b>Segmentación:</b> ${cifra(vd.req)} VDOM declarados. ${contraste(vd, 'el máximo de dominios virtuales')} Es un tope de plataforma: el techo de utilización no se le aplica.${m.vdomDef != null && vd.req > m.vdomDef ? ` El modelo incluye ${m.vdomDef}: los ${vd.req - m.vdomDef} de más se cotizan como licencia de VDOM adicionales.` : ''}`);
+  for (const k of ['aps', 'switches']) { const e = eje(k); if (e) flags.push(`<b>${esc(e.n)}:</b> ${cifra(e.req)} declarados. ${contraste(e, `el máximo de ${e.unidad}`)}`); }
+  // Restricciones fisicas: el modelo es elegible, asi que las cumple; se dice contra que dato.
+  if (M.TIPOS_PUERTO.some((t) => s.fisico.puertos[t.k] > 0)) {
+    flags.push(m.puertos
+      ? `<b>Puertos:</b> cubre lo pedido por cantidad, velocidad y medio (${esc(m.puertosFuente || 'catálogo')}).`
+      : `<b class="warn">Puertos sin estructurar:</b> el catálogo solo trae «${esc(m.ifaces)}», así que el requerimiento de puertos no se comprobó.`);
+  }
+  if (s.fisico.registro === 'local') {
+    const reqGb = r.requisitos.find((x) => x.eje === 'almacenamiento');
+    flags.push(`<b>Registro local:</b> la retención pide ${reqGb ? cifra(Math.ceil(reqGb.requerido)) : '—'} GB y el ${esc(m.id)} publica ${cifra(m.almacenamientoGB)} GB brutos.`);
+  }
+  if (s.fisico.poeW > 0) flags.push(`<b>PoE:</b> ${cifra(s.fisico.poeW)} W pedidos.`);
+  if (s.fisico.psuRedundante) flags.push(`<b>Fuente redundante:</b> ${m.redund === 'opcional' ? 'el equipo admite la segunda fuente como opción, y la línea entra en la cotización.' : 'el equipo trae fuente doble.'}`);
+  for (const a of c.avisos) flags.push(`<b class="warn">${esc(a.mensaje)}</b>`);
+  // QUE EJE MANDA Y A QUE DISTANCIA QUEDA EL SIGUIENTE.
+  const conDato = ev.ejes.filter((e) => e.u != null && !e.configuracion);
+  if (ev.manda && conDato.length > 1) {
+    const otros = conDato.filter((e) => e.k !== ev.manda.k);
+    flags.push(`<b>Manda ${esc(ev.manda.frase)}</b>: ${R.pct(ev.manda.u)} de lo que da el modelo. Los demás ejes de rendimiento van en ${otros.map((e) => `${esc(e.frase)} ${R.pct(e.u)}`).join(', ')}. Subir de gama por un eje que no es el que limita no compra nada.`);
+  }
+  for (const nombre of ev.sinComprobar) flags.push(`<b class="warn">${esc(nombre)} sin dato:</b> el catálogo no trae esa cifra del ${esc(m.id)}, así que ese eje <b>no se comprobó</b>.`);
+  if (s.software.inspeccion === 'proxy') flags.push('<b class="warn">Modo proxy:</b> las cifras publicadas son de flow y Fortinet no publica cuánto caen; validar con PoC.');
+  if (s.politica.techoPct < 100) flags.push(`Los ejes de rendimiento se comparan contra un <b>techo del ${s.politica.techoPct} %</b> de la cifra publicada: una política, no una cifra de Fortinet.`);
+  const headroom = d && c.soporta ? Math.round((1 - d.effectiveNeed / c.soporta) * 100) : null;
+  return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">`
+    + (d ? `<li>Requerimiento <b>${fmt(d.effectiveNeed)}</b> en capa <b>${esc(TIER_BY_K[d.capa.k].n)}</b>${d.escenario !== 'normal' ? ` (escenario «${esc((r.escenarios.find((x) => x.id === d.escenario) || {}).n || d.escenario)}»)` : ''}; este modelo soporta hasta <b>${fmt(c.soporta)}</b> en este escenario${headroom != null ? ` — holgura ${headroom} %` : ''}.</li>` : '')
+    + (d && d.capa.elevada ? `<li><b class="warn">Capa elevada:</b> elegiste <b>${esc(TIER_BY_K[s.seguridad.capa].n)}</b>, pero ${d.capa.elevan.map((f) => esc(f.n)).join(' y ')} obliga${d.capa.elevan.length > 1 ? 'n' : ''} a dimensionar contra <b>${esc(TIER_BY_K[d.capa.k].n)}</b>.</li>` : '')
+    + `<li>Sesiones concurrentes: <b>${nMil(m.sess)}</b> | Sesiones nuevas/s: <b>${m.cps != null ? cifra(m.cps) : '<span class="warn">sin dato</span>'}</b> | Inspección SSL: <b>${m.ssl != null ? fmt(m.ssl) : '<span class="warn">sin dato</span>'}</b> | Interfaces: ${esc(m.ifaces)}</li>`
+    + flags.map((f) => `<li>${f}</li>`).join('')
+    + '</ul>';
+}
+
+function seccionesDe(r, m) {
+  const s = r.snapshot;
+  const bundle = s.comercial.bundle;
+  const care = s.comercial.soporte;
+  const anios = s.comercial.anios;
+  const lt = m.lic ? m.lic[bundle] : null;
+  const ct = m.lic && m.lic.care ? m.lic.care[CARE_LIC_KEY[care]] : null;
+  const tecnica = FUENTES && FUENTES.fuentes ? FUENTES.fuentes.find((f) => f.dominio !== 'precio') : null;
+  const precios = FUENTES && FUENTES.fuentes ? FUENTES.fuentes.find((f) => f.dominio === 'precio') : null;
+  const sinDato = '<span class="warn">sin dato en el catálogo</span>';
+  const v = VISTAS && VISTAS[m.id];
+  return [
+    { titulo: 'Características del equipo', filas: [
+      ['Segmento', esc(m.seg)],
+      ['Firewall (1518 B, offload ASIC)', fmt(m.fw)],
+      ['IPsec VPN (512 B, offload ASIC)', fmt(m.vpn)],
+      ['IPS (Enterprise Mix)', fmt(m.ips)],
+      ['NGFW (IPS + App Control)', fmt(m.ngfw)],
+      ['Threat Protection', m.tp ? `<b>${fmt(m.tp)}</b>` : 'Consultar datasheet'],
+      ['Inspección SSL', m.ssl != null ? `<b>${fmt(m.ssl)}</b>` : `${sinDato} — ver Product Matrix`],
+      ['Sesiones concurrentes', cifra(m.sess)],
+      ['Sesiones nuevas / s (TCP, flow)', m.cps != null ? cifra(m.cps) : sinDato],
+      ['Túneles IPsec sitio a sitio / cliente', `${m.tunGw != null ? cifra(m.tunGw) : '—'} / ${m.tunCli != null ? cifra(m.tunCli) : '—'}`],
+      ['SSL-VPN: usuarios / caudal', `${m.sslVpnUsers != null ? cifra(m.sslVpnUsers) : '—'} / ${m.sslVpn != null ? fmt(m.sslVpn) : '—'}`],
+      ['Procesadores de seguridad', m.asic ? esc(m.asic) : '<span class="warn">sin dato publicado</span>'],
+      ['Interfaces', esc(m.ifaces), true],
+      ['SKU de hardware', m.hwSku ? `<code>${esc(m.hwSku)}</code>` : '<span class="warn">Descontinuado — sin SKU nuevo</span>'],
+      ['Precio de lista ref.', m.elp ? esc(m.elp) : 'Consultar distribuidor'],
+    ] },
+    { titulo: 'Plataforma', filas: [
+      ['VDOM incluidos / máximo', `${m.vdomDef != null ? m.vdomDef : '—'} / ${m.vdomMax != null ? m.vdomMax : '—'}`],
+      ['Disco local', m.almacenamientoGB == null ? sinDato : m.almacenamientoGB ? `${cifra(m.almacenamientoGB)} GB` : 'sin disco (la variante terminada en 1 lo trae)'],
+      ['PoE', m.poe == null ? sinDato : m.poe ? 'sí' : (m.poeVariante ? 'no en el SKU base (existe variante -POE)' : 'no')],
+      ['FortiAP gestionados (túnel)', m.aps != null ? `${cifra(m.aps)}${m.apsTun != null ? ` (${cifra(m.apsTun)})` : ''}` : sinDato],
+      ['FortiSwitch / FortiToken', `${m.switches != null ? cifra(m.switches) : '—'} / ${m.tokens != null ? cifra(m.tokens) : '—'}`],
+      ['Formato', m.formato ? esc(m.formato) : '—'],
+    ] },
+    FICHA.seccionPuertos(m),
+    FICHA.seccionAlimentacion(m),
+    { titulo: 'Licenciamiento propuesto', filas: [
+      ['Tipo de compra', esc({ nueva: 'Compra nueva', ampliacion: 'Ampliación', renovacion: 'Renovación', coterm: 'Co-term' }[s.comercial.motivo])],
+      ['Bundle FortiGuard', BUNDLES[bundle] ? esc(BUNDLES[bundle].n) : '<span class="warn">Excluido de la cotización</span>'],
+      ['Servicios incluidos', BUNDLES[bundle] ? esc(BUNDLES[bundle].svcs) : 'Ninguno', true],
+      ['SKU del bundle', !BUNDLES[bundle] ? '—' : lt && lt.sku ? `<code>${esc(lt.sku)}</code>` : '<span class="warn">Sin SKU vigente para este modelo</span>'],
+      ['Término', `${anios} año${anios > 1 ? 's' : ''}`],
+      ['Nodos a licenciar', s.disponibilidad.modo === 'standalone' ? '1' : '2 — la licencia no se comparte en HA'],
+    ], nota: 'En FortiGate el SKU lleva el código del modelo: la licencia va atada al equipo, no al ancho de banda.' },
+    { titulo: 'Software del portafolio', filas: SOFTWARE.map((sw) => [esc(sw.n), esc(sw.d), true]) },
+    { titulo: 'Soporte', filas: [
+      [CARE[care] ? esc(CARE[care].n) : 'Sin contrato FortiCare', CARE[care] ? esc(CARE[care].sla) : '<span class="warn">Excluido de la cotización</span>'],
+      ['SKU', !CARE[care] ? '—' : ct && ct.sku ? `<code>${esc(ct.sku)}</code>` : '<span class="warn">No disponible para este modelo</span>'],
+    ] },
+    // PROCEDENCIA POR DATO (P2): de que documento sale cada grupo de cifras de ESTE equipo.
+    { titulo: 'Procedencia de las cifras de este equipo', filas: [
+      ['Rendimiento, sesiones y CPS', tecnica ? `${esc(tecnica.documento)}${tecnica.fecha ? ` (${esc(tecnica.fecha)})` : ''}` : 'Product Matrix'],
+      ['Límites de plataforma', m.limitesDe ? esc(m.limitesDe.fuente) : sinDato, true],
+      ['Disco, VDOM, PoE y Fabric', m.plataformaFuente ? esc(m.plataformaFuente) : sinDato, true],
+      ['Puertos', m.puertosFuente ? esc(m.puertosFuente) : 'texto libre del catálogo (sin estructurar)', true],
+      ['Precios y SKU', precios ? `${esc(precios.documento)}${precios.fecha ? ` (${esc(precios.fecha)})` : ''}` : sinDato, true],
+      ['Figura del equipo', v && v.fuente ? esc(v.fuente) : 'sin figura oficial declarada', true],
+    ] },
+  ].filter(Boolean);
+}
+
+/* ── COMPARACION: SHORTLIST DE TRES (F16) ────────────────────────────────────────────── */
+function pintarShortlist(r) {
+  const caja = $('shortlist');
+  if (!r.recomendacion) {
+    caja.innerHTML = '<p class="hint">Sin modelo recomendado no hay nada que comparar: revisa los bloqueos de arriba.</p>';
+    return;
+  }
+  const filas = [r.recomendacion].concat(r.alternativas);
+  if (r.seleccion && !filas.some((c) => c.id === r.seleccion.id)) filas.push(r.seleccion);
+  const precio = (c) => (c.modelo.elpN ? money(c.modelo.elpN) : '—');
+  caja.innerHTML = '<p class="hint" style="margin:0 0 10px">El recomendado y las dos opciones siguientes con más holgura, primero del mismo segmento. '
+    + `Los <b>${r.elegibles.length}</b> que cumplen están en el desplegable de la ficha; el catálogo entero, en su pestaña.</p>`
+    + '<div class="scroll"><table class="tabla-comp"><thead><tr><th>Modelo</th><th>Cuello</th><th>Soporta</th><th>Disco</th><th>Precio equipo</th><th>Por qué</th><th></th></tr></thead><tbody>'
+    + filas.map((c) => {
+      const esRec = c.id === r.recomendacion.id;
+      const esSel = r.seleccion && c.id === r.seleccion.id;
+      const ev = c.eval;
+      return `<tr class="${esRec ? 'rec' : ''}${esSel ? ' sel' : ''}"><td><b>${esc(c.id)}</b><span class="sku">${esc(c.modelo.seg)}${esRec ? ' · recomendado' : ''}</span></td>`
+        + `<td>${ev.manda ? `${esc(ev.manda.n)} ${R.pct(ev.manda.u)}` : '—'}</td>`
+        + `<td class="n">${fmt(c.soporta)}</td>`
+        + `<td class="n">${c.modelo.almacenamientoGB ? `${cifra(c.modelo.almacenamientoGB)} GB` : '—'}</td>`
+        + `<td class="n">${precio(c)}</td>`
+        + `<td>${esRec ? 'el más pequeño que cumple todo' : esc(c.porQue || (esSel ? 'elegido a mano' : ''))}</td>`
+        + `<td>${esSel ? '<span class="pillc">validado</span>' : `<button type="button" class="btn ghost btn-corr" data-alt="${esc(c.id)}">Elegir</button>`}</td></tr>`;
+    }).join('')
+    + '</tbody></table></div>';
+}
+
+/* ── REQUISITOS: que se pide, por que escenario y con que supuestos ───────────────────── */
+function pintarRequisitos(r) {
+  const caja = $('requisitos');
+  const sel = r.seleccion;
+  const capDe = (k) => { const e = sel && sel.eval.ejes.find((x) => x.k === k); return e || null; };
+  const reqs = r.requisitos.map((q) => {
+    const e = capDe(q.eje);
+    const cap = q.eje === 'almacenamiento' ? (sel ? sel.modelo.almacenamientoGB : null) : (e ? e.cap : null);
+    const u = e ? e.u : (cap ? q.requerido / cap : null);
+    return `<tr><td>${esc(q.n)}</td><td class="n">${q.unidad === 'Mbps' ? fmt(q.requerido) : `${cifra(q.unidad === 'GB' ? Math.ceil(q.requerido) : q.requerido)} ${esc(q.unidad)}`}</td>`
+      + `<td>${esc(q.escenarioN)}</td><td class="n">${cap == null ? '—' : q.unidad === 'Mbps' ? fmt(cap) : `${cifra(cap)} ${esc(q.unidad)}`}</td>`
+      + `<td class="n">${u == null ? '—' : R.pct(u)}</td></tr>`;
+  }).join('');
+  const escs = r.escenarios.map((e) => `<tr><td>${esc(e.n)}${e.igualANormal ? ' <span class="sku">coincide con la operación normal: el clúster no suma capacidad</span>' : ''}</td>`
+    + `<td class="n">${fmt(e.caudal)}</td><td class="n">${rolSdwan === 'none' ? '—' : fmt(e.overlay)}</td>`
+    + `<td class="n">${e.perdida ? `<span class="warn">${fmt(e.perdida)} sin camino</span>` : '—'}</td></tr>`).join('');
+  const inact = r.inactivos.length
+    ? `<p class="hint" style="margin-top:10px"><b>Conservados pero fuera del cálculo</b> (no aplican a este escenario y no viajan en el enlace): ${r.inactivos.map((c) => esc(CAMPO_N[c] || c)).join(', ')}.</p>` : '';
+  caja.innerHTML = (reqs
+    ? '<h3 class="ficha-det-tit">Requisitos por eje</h3><div class="scroll"><table class="req-tabla"><thead><tr><th>Eje</th><th>Requerido</th><th>Lo gobierna</th>'
+      + `<th>${sel ? esc(sel.id) : 'Disponible'}</th><th>Utilización</th></tr></thead><tbody>${reqs}</tbody></table></div>`
+    : '<p class="hint">Sin requisitos todavía: declara el caudal de los enlaces WAN.</p>')
+    + '<h3 class="ficha-det-tit" style="margin-top:16px">Escenarios de tráfico evaluados</h3>'
+    + `<div class="scroll"><table class="esc-tabla"><thead><tr><th>Escenario</th><th>Caudal</th><th>Por el overlay</th><th>Pérdida</th></tr></thead><tbody>${escs}</tbody></table></div>`
+    + '<p class="hint" style="margin-top:6px">Cada eje se dimensiona con el <b>peor</b> escenario, no con la suma de los enlaces contratados. El pico de sesiones y la reconexión tras una falla se declaran como medición en el paso 4.</p>'
+    + `<h3 class="ficha-det-tit" style="margin-top:16px">Política y supuestos</h3><p class="hint" style="margin:0">Multiplicador conjunto: <b>${esc(r.multiplicador.texto)}</b>.</p>`
+    + `<ul class="dl-supuestos">${r.supuestos.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`
+    + inact
+    + `<p class="hint" style="margin-top:10px">Huella del escenario <code>${esc(r.scenarioHash.slice(0, 23))}…</code> · catálogo <code>${esc(r.datasetVersion || '—')}</code> · motor ${esc(r.motor)}</p>`;
+}
+
+/* ── GRAFICO CON NOMBRE ACCESIBLE Y TABLA EQUIVALENTE (F17, T29) ───────────────────────── */
+function pintarEscala(r) {
+  const track = $('track');
+  track.querySelectorAll('.dot,.tick,.pickLabel,.altLabel').forEach((e) => e.remove());
+  const d = r.detalle;
+  const need = d ? d.effectiveNeed : 0;
+  const def = metricaEje === 'auto' ? null : R.EJE_POR_K[metricaEje];
+  const porId = Object.fromEntries(r.candidatos.map((c) => [c.id, c]));
+  const valorDe = (m) => (def ? m[def.campo] : (porId[m.id] ? porId[m.id].soporta : null));
+  const visibles = MODELS.filter((m) => (verEol || !(m.eol || !m.hwSku)) && valorDe(m) != null && valorDe(m) > 0);
+  $('trackLbl').textContent = def
     ? `Escala de ${def.n} — cifra publicada por modelo (logarítmica)`
     : 'Escala de capacidad — cuánto requerimiento soporta cada modelo en este escenario (logarítmica)';
-
-  const caps=visibles.map(valorDe);
-  const maxCap=caps.length?Math.max(...caps):Math.max(...MODELS.map(m=>m.fw));
-  const logP=v=>Math.log10(Math.max(v,10));
-  const logMin=Math.log10(10),logMax=logP(Math.max(maxCap,effectiveNeed)*1.2);
-  const xPct=v=>(logP(v)-logMin)/(logMax-logMin)*100;
-
-  const needPct=Math.min(xPct(effectiveNeed),99);
-  const need=$('need');
-  need.style.left=needPct+'%';
-  $('needLbl').textContent=fmt(effectiveNeed);
-  need.classList.toggle('flip',needPct>60);
-
-  const pickLbl=document.createElement('div');
-  pickLbl.className='pickLabel'; pickLbl.id='pickLbl'; pickLbl.style.display='none';
+  const caps = visibles.map(valorDe);
+  const maxCap = caps.length ? Math.max(...caps) : 1000;
+  const logP = (v) => Math.log10(Math.max(v, 10));
+  const logMin = Math.log10(10);
+  const logMax = logP(Math.max(maxCap, need || 0) * 1.2);
+  const xPct = (v) => ((logP(v) - logMin) / (logMax - logMin)) * 100;
+  const nodoNeed = $('need');
+  if (need > 0) {
+    const pct = Math.min(xPct(need), 99);
+    nodoNeed.style.left = `${pct}%`;
+    nodoNeed.classList.toggle('flip', pct > 60);
+    $('needLbl').textContent = fmt(need);
+  } else {
+    nodoNeed.style.left = '0%';
+    $('needLbl').textContent = '—';
+  }
+  const pickLbl = document.createElement('div');
+  pickLbl.className = 'pickLabel';
+  pickLbl.id = 'pickLbl';
+  pickLbl.style.display = 'none';
   track.appendChild(pickLbl);
-  [10,50,100,500,1000,5000,10000,50000,100000,500000,1000000].forEach(v=>{
-    const pct=xPct(v);if(pct<0||pct>100)return;
-    const tick=document.createElement('div');tick.className='tick';tick.style.left=pct+'%';
-    const lbl=v>=1000000?v/1e6+'T':v>=1000?v/1000+'G':v+'M';
-    tick.innerHTML=`<i></i><b>${lbl}</b>`;track.appendChild(tick);
+  [10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000].forEach((v) => {
+    const pct = xPct(v);
+    if (pct < 0 || pct > 100) return;
+    const tick = document.createElement('div');
+    tick.className = 'tick';
+    tick.style.left = `${pct}%`;
+    tick.innerHTML = `<i></i><b>${v >= 1000000 ? `${v / 1e6}T` : v >= 1000 ? `${v / 1000}G` : `${v}M`}</b>`;
+    track.appendChild(tick);
   });
-
-  // Las dos alternativas: los candidatos inmediatamente por encima y por debajo del
-  // elegido. Se toman de la lista YA ORDENADA por capacidad, asi que son sus vecinos
-  // reales y no los dos primeros de la lista -que en una lista de 39 no dicen nada-.
-  const idx=elegido?candidatos.findIndex(m=>m.id===elegido.id):-1;
-  const alternativas=[];
-  if(idx>0) alternativas.push(candidatos[idx-1]);
-  if(idx>=0&&idx<candidatos.length-1) alternativas.push(candidatos[idx+1]);
-
-  visibles.forEach(m=>{
-    const cap=valorDe(m);const pct=xPct(cap);if(pct<0||pct>100)return;
-    const dot=document.createElement('div');
-    const esAlt=alternativas.some(a=>a.id===m.id);
-    dot.className='dot'+(candidatos.some(c=>c.id===m.id)?' ok':'')+(esAlt?' alt':'');
-    if(elegido&&m.id===elegido.id)dot.className='dot pick';
-    dot.style.left=pct+'%';dot.title=m.id+': '+fmt(cap)+(m.eol?' (fuera de venta)':'');
+  const elegibles = new Set(r.elegibles.map((c) => c.id));
+  const alts = new Set(r.alternativas.map((c) => c.id));
+  const sel = r.seleccion;
+  if (!d) {
+    $('trackNota').textContent = 'Sin requerimiento todavía: el gráfico se dibuja al declarar el caudal.';
+    $('grafTabla').innerHTML = '';
+    track.setAttribute('aria-label', 'Escala de capacidad sin requerimiento declarado');
+    track.removeAttribute('aria-labelledby');
+    return;
+  }
+  visibles.forEach((m) => {
+    const cap = valorDe(m);
+    const pct = xPct(cap);
+    if (pct < 0 || pct > 100) return;
+    const dot = document.createElement('div');
+    dot.className = `dot${elegibles.has(m.id) ? ' ok' : ''}${alts.has(m.id) ? ' alt' : ''}`;
+    if (sel && m.id === sel.id) dot.className = 'dot pick';
+    dot.style.left = `${pct}%`;
+    dot.title = `${m.id}: ${fmt(cap)}${m.eol || !m.hwSku ? ' (fuera de venta)' : ''}`;
     track.appendChild(dot);
-    if(esAlt){
-      const lbl=document.createElement('div');
-      lbl.className='altLabel';lbl.style.left=pct+'%';lbl.textContent=m.id.replace('FortiGate ','');
+    if (alts.has(m.id) && (!sel || m.id !== sel.id)) {
+      const lbl = document.createElement('div');
+      lbl.className = 'altLabel';
+      lbl.style.left = `${pct}%`;
+      lbl.textContent = m.id.replace('FortiGate ', '');
       track.appendChild(lbl);
     }
   });
-  if(elegido){
-    $('pickLbl').textContent=elegido.id;
-    $('pickLbl').style.display='block';
-    $('pickLbl').style.left=xPct(valorDe(elegido))+'%';
+  if (sel) {
+    pickLbl.textContent = sel.id;
+    pickLbl.style.display = 'block';
+    pickLbl.style.left = `${xPct(valorDe(sel.modelo) || need)}%`;
   }
-  const ocultos=MODELS.length-visibles.length;
-  $('trackNota').innerHTML=(alternativas.length
-      ? `En ámbar, las dos alternativas inmediatas por capacidad: <b>${alternativas.map(a=>esc(a.id)).join('</b> y <b>')}</b>. `
-      : '')
-    +(ocultos?`${ocultos} modelo(s) fuera de venta ocultos — se muestran con la casilla de arriba, como referencia de un parque instalado.`
-            :'Se muestran también los modelos fuera de venta: sirven como referencia de un parque instalado, nunca como propuesta nueva.');
+  const ocultos = MODELS.length - visibles.length;
+  const nota = `Requerimiento ${fmt(need)}. `
+    + (sel ? `${sel.id} soporta ${fmt(valorDe(sel.modelo))} en esta métrica. ` : 'Ningún modelo validado. ')
+    + (r.alternativas.length ? `Alternativas: ${r.alternativas.map((a) => a.id).join(' y ')}. ` : '')
+    + `${elegibles.size} de ${MODELS.length} modelos cumplen el escenario completo.`
+    + (ocultos ? ` ${ocultos} modelo(s) sin cifra en esta métrica o fuera de venta no se dibujan.` : '');
+  $('trackNota').textContent = nota;
+  track.removeAttribute('aria-label');
+  track.setAttribute('aria-labelledby', 'trackLbl');
+  // TABLA EQUIVALENTE: la misma informacion que el grafico, en el orden del grafico.
+  const orden = visibles.slice().sort((a, b) => valorDe(a) - valorDe(b));
+  $('grafTabla').innerHTML = '<div class="scroll"><table><caption class="vh">Capacidad de cada modelo frente al requerimiento</caption>'
+    + '<thead><tr><th scope="col">Modelo</th><th scope="col">Capacidad en esta métrica</th><th scope="col">Estado</th></tr></thead><tbody>'
+    + orden.map((m) => {
+      const estado = sel && m.id === sel.id ? 'validado' : alts.has(m.id) ? 'alternativa' : elegibles.has(m.id) ? 'cumple'
+        : (m.eol || !m.hwSku) ? 'fuera de venta' : 'no cumple';
+      return `<tr><td>${esc(m.id)}</td><td class="n">${fmt(valorDe(m))}</td><td>${estado}</td></tr>`;
+    }).join('')
+    + '</tbody></table></div>';
 }
 
-/* ══ VALIDACION POR PASO ════════════════════════════════════════════════════════════════
-   §7 del informe: «cuatro pasos plegables y validación por paso». El chip del encabezado
-   dice si ese paso esta completo, si tiene una decision que conviene mirar o si BLOQUEA, y
-   por eso se puede plegar un paso sin perder de vista que algo falta dentro.
-
-   NO INVENTA ESTADOS: cada chip sale de la misma regla que ya decide el calculo o la
-   cotizacion, no de una segunda comprobacion escrita aparte -que es como los dos se
-   contradirian-. */
-function chip(id,cls,texto,titulo){
-  const n=$(id); if(!n) return;
-  n.className='paso-chip '+(cls||'');
-  n.textContent=texto||'';
-  if(titulo) n.title=titulo;
-}
-// El ultimo contexto de calculo, para que renderBom() pueda refrescar los chips sin
-// recalcular el dimensionamiento entero: el bundle y el termino no cambian la recomendacion
-// pero SI el estado del paso 4, y sin esto el chip se quedaba diciendo «todo bien» con la
-// puerta de exportacion cerrada.
-let ultimoCtxPasos=null;
-function pintarPasos(ctx){
-  if(ctx) ultimoCtxPasos=ctx; else if(ultimoCtxPasos) ctx=ultimoCtxPasos; else return;
-  // 1 · Plataforma y rol
-  chip('chipPaso1','', `${{branch:'Sucursal',campus:'Campus',dc:'Datacenter'}[segMode]} · ${{none:'sin SD-WAN',spoke:'spoke',hub:'hub'}[rolSdwan]}${$('chkHa').checked?' · HA':''}`,
-    'Segmento, rol en la topología, tipo de transacción y alta disponibilidad.');
-  // 2 · Capa de inspección: el bundle mínimo se decide aquí aunque se elija en el paso 4.
-  const activas=funcionesActivas();
-  const min=R.bundleMinimo(activas,FUNCIONES,BUNDLES);
-  const elevada=ctx.capa&&ctx.capa.elevada;
-  chip('chipPaso2', elevada?'warn':'',
-    `${TIER_BY_K[ctx.capa?ctx.capa.k:'tp'].n}${elevada?' (elevada)':''}${min.minimo&&min.minimo!=='atp'?' · mín. '+BUNDLES[min.minimo].n.split(' ')[0]:''}`,
-    elevada?`La capa se elevó por ${ctx.capa.elevan.map(f=>f.n).join(', ')}.`:'Capa efectiva contra la que se dimensiona.');
-  // 3 · Tráfico: el caudal es el dato mínimo; sin él no hay cálculo.
-  const bwOk=(parseFloat($('bw').value)||0)>0;
-  chip('chipPaso3', bwOk?(ctx.sinCandidato?'warn':''):'bad',
-    bwOk?`${fmt(ctx.trafico?ctx.trafico.previsto:0)} previstos`:'Falta el caudal',
-    bwOk?'Requerimiento previsto con crecimiento aplicado.':'Declara el caudal de al menos un enlace WAN.');
-  // 4 · Equipo y cotización: manda el bundle mínimo, que es bloqueante.
-  const err=R.validarBundle($('licBundle').value||'ent',activas,FUNCIONES,BUNDLES);
-  // Excluir el bundle a proposito no es un error del escenario: el chip lo dice sin pintarse
-  // en rojo, que es lo que distingue «esto no se puede pedir» de «esto se deja fuera».
-  const bloquea=!!(err&&err.bloquea!==false);
-  chip('chipPaso4', bloquea?'bad':'', bloquea?'Bundle insuficiente'
-      :(err?`Sin bundle · ${$('pickModel').value||'—'}`:`${$('pickModel').value||'—'} · ${$('termYears').value} año(s)`),
-    err?err.mensaje:'Modelo, cantidad, término, bundle y soporte de la cotización.');
-  // Un paso que BLOQUEA no se puede dejar plegado sin más: se abre para que se vea el motivo.
-  if(err){ const d=$('paso4').querySelector('details'); if(d) d.open=true; }
+// Escalera de capas del modelo validado.
+function pintarTiers(r) {
+  const sel = r.seleccion;
+  if (!sel) { $('perfTiers').innerHTML = ''; $('perfNote').textContent = ''; $('perfModel').textContent = ''; return; }
+  const m = sel.modelo;
+  const top = m.fw || 1;
+  const activeK = r.detalle ? r.detalle.capa.k : 'tp';
+  $('perfModel').textContent = `— ${m.id}`;
+  $('perfTiers').innerHTML = TIERS.map((t, i) => {
+    const v = m[t.k];
+    if (v == null) return '';
+    const prev = i > 0 ? m[TIERS[i - 1].k] : null;
+    const drop = prev && v && prev > v ? Math.round((1 - v / prev) * 100) : 0;
+    return `${drop >= 50 ? `<div class="tierDrop">&#8595; ${drop}% al salir del offload de red</div>` : ''}`
+      + `<div class="tierRow ${t.k === activeK ? 'on' : 'off'}" title="${esc(t.d)}"><span class="tn">${esc(t.n)}</span>`
+      + `<span class="tb"><i style="width:${Math.max(2, (v / top) * 100)}%"></i></span><span class="tv">${fmt(v)}</span></div>`;
+  }).join('') + (r.snapshot.seguridad.funciones.includes('chkSsl')
+    ? (m.ssl != null
+      ? `<div class="tierRow on" title="SSL Inspection Throughput: medición propia, no derivada de Threat Protection."><span class="tn">Inspección SSL</span><span class="tb"><i style="width:${Math.max(2, (m.ssl / top) * 100)}%"></i></span><span class="tv">${fmt(m.ssl)}</span></div>`
+      : '<div class="tierRow off"><span class="tn">Inspección SSL</span><span class="tb"></span><span class="tv warn">sin dato</span></div>')
+    : '');
+  const ratio = m.tp ? Math.round(m.fw / m.tp) : 0;
+  $('perfNote').innerHTML = `Del firewall puro a Threat Protection hay un factor <b>${ratio}x</b> en este modelo (${fmt(m.fw)} &rarr; ${fmt(m.tp)}). `
+    + `La cifra de portada solo aplica a sesiones descargadas al procesador de red.${m.asic ? ` Silicio: <b>${esc(m.asic)}</b>.` : ''}`
+    + ` Requerimiento actual: <b>${fmt(r.detalle ? r.detalle.effectiveNeed : 0)}</b>.`;
 }
 
-/* ══ BANNER DE ESTADO DE DATOS ══════════════════════════════════════════════════════════
-   Responde «¿esto tiene grado comercial?» ANTES de mirar una cifra, que es cuando la
-   pregunta sirve. La cobertura NO se escribe a mano: se cuenta sobre el catálogo servido,
-   así que el día que alguien complete `ssl` en el Product Matrix el banner sube solo. */
-function pintarBanner(){
-  const caja=$('dataBanner'); if(!caja||!MODELS.length) return;
-  const conSsl=MODELS.filter(m=>m.ssl!=null).length;
-  const conCps=MODELS.filter(m=>m.cps!=null).length;
-  const conPrecio=MODELS.filter(m=>m.elpN!=null&&m.elpN>0).length;
-  const precios=FUENTES&&FUENTES.fuentes?FUENTES.fuentes.find(f=>f.dominio==='precio'):null;
-  const tecnica=FUENTES&&FUENTES.fuentes?FUENTES.fuentes.find(f=>f.dominio!=='precio'):null;
-  const salud=precios?R.saludPrecios(precios):null;
-  const cls=!salud?'warn':salud.bloquea?'bad':(conSsl<MODELS.length?'warn':'ok');
-  const item=(k,v,t)=>`<span class="db-item" title="${esc(t||'')}"><span class="db-k">${esc(k)}</span><span class="db-v">${v}</span></span>`;
-  caja.innerHTML=
-    item('Fuente técnica', tecnica?esc(tecnica.documento):'—', tecnica?tecnica.nota||'':'')
-    +item('Fecha', tecnica&&tecnica.fecha?esc(tecnica.fecha):'sin fecha')
-    +item('Precios', precios?`${esc(precios.fecha||'sin fecha')}${salud?` · ${esc(salud.estado)}`:''}`:'sin lista',
-      salud?salud.mensaje:'')
-    +item('Región', 'AMER', 'Los precios de lista de este catálogo son de la price list AMER.')
-    +item('Cobertura', `precio ${conPrecio}/${MODELS.length} · cps ${conCps}/${MODELS.length} · SSL ${conSsl}/${MODELS.length}`,
-      'Cuántos modelos traen cada campo. Se cuenta sobre el catálogo servido, no se declara.')
-    +(conSsl<MODELS.length
-      ? `<span class="db-item"><span class="db-v warn">La cifra oficial de inspección SSL está en ${conSsl} de ${MODELS.length} modelos: el resto se aparta si se pide ese eje, en vez de estimarse.</span></span>`
-      : '');
-  caja.className='databanner '+cls;
-  caja.hidden=false;
-}
-
-function render(){
-  const bw=parseFloat($('bw').value)||0;
-  const unit=parseFloat($('unit').value);
-  const users=parseInt($('users').value)||0;
-  const head=(parseFloat($('head').value)||0)/100;
-  $('headVal').textContent=Math.round(head*100)+' %';
-
-  // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): es el dato
-  // mínimo del dimensionamiento; sin él la página pide valores en vez de proponer un
-  // equipo a ciegas.
-  if(bw<=0){
-    ultimaHuella=R.huella({vacio:true});
-    lastPick=null;
-    const habiaCandidato=hayCandidato;
-    hayCandidato=false;
-    if(habiaCandidato!==hayCandidato) renderBom();
-    const need=$('need'); need.style.left='0%'; $('needLbl').textContent='—';
-    $('track').querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
-    FICHA.render({vendor:'fortinet', contenedor:'verdict', candidatos:[], recomendado:null,
-      vacioTitulo:'Declare los enlaces WAN para recomendar un equipo',
-      vacioDetalle:'<p style="margin:0;font-size:13.5px">Ponga el <b>caudal</b> de al menos un enlace del sitio en el paso 3 (y si aplica, usuarios y sesiones) para que el dimensionador proponga los modelos que cumplen.</p>'});
-    $('verdict').style.borderLeftColor='var(--steel)';
-    $('perfTiers').innerHTML='';
-    $('ejesPanel').innerHTML='';
-    $('stickyReco').hidden=true;
-    $('perfNote').textContent='';
-    $('sesCalc').textContent='';
-    $('cpsCalc').textContent='';
-    pintarControlesTopologia();
-    pintarWanResumen();
+/* ── BOM PRELIMINAR en el panel (la version completa esta en su pestaña) ──────────────── */
+function pintarBomPreliminar(r) {
+  const caja = $('bomPreliminar');
+  if (!r.bom) {
+    caja.innerHTML = '<p class="hint">Sin modelo validado no se construye lista de materiales: el BOM solo sale del equipo que el motor valida.</p>';
     return;
   }
-
-  // Caudal declarado: una sede, o el agregado de varias con su factor de simultaneidad.
-  // Sumar linealmente las sedes de un concentrador sobredimensiona y encarece la
-  // propuesta; tomar el caudal de una sola lo deja corto. El factor es el que decide.
-  const sites=Math.max(1,parseInt($('sites').value)||1);
-  const conc=Math.max(0,Math.min(100,parseFloat($('conc').value)||0))/100;
-  $('concVal').textContent=Math.round(conc*100)+' %';
-  const caudal = esConcentrador() ? bw*unit*sites*conc : bw*unit;
-
-  // Sin recargo por funciones: lo que cambia al activarlas es la CAPA contra la que se
-  // compara (ver capaEfectiva), no el requerimiento. Sumar ademas un porcentaje contaria
-  // dos veces lo mismo, porque las cifras de Enterprise Mix de Fortinet ya incluyen esas
-  // funciones activas. El unico factor de seguridad es el margen de crecimiento.
-  // AT-11. El trafico del sitio ya no es un solo camino: la WAN y el inter-VLAN SE SUMAN
-  // salvo que alguien declare que sus picos no coinciden. `max` automatico es lo que cambia
-  // de familia sin que nadie lo decida -el informe lo demuestra con 600 + 300 Mbps, que dan
-  // 750 u 1.125 segun el supuesto, y entre esas dos cifras el equipo pasa de 70G a 90G-.
-  const trafico=R.demandaTrafico({
-    internet:caudal,
-    interVlan:Math.max(0,parseFloat($('interVlan').value)||0),
-    crecimiento:head,
-    picosNoConcurrentes:$('chkNoConcurrente').checked,
-  });
-  $('traficoHint').innerHTML=trafico.interVlan
-    ? `Caminos declarados: WAN <b>${fmt(trafico.internet)}</b> + inter-VLAN <b>${fmt(trafico.interVlan)}</b>. `
-      +`Regla aplicada: <b>${esc(trafico.regla)}</b> = ${fmt(trafico.base)} de base, `
-      +`<b>${fmt(trafico.previsto)}</b> con el ${Math.round(head*100)} % de crecimiento.`
-    : 'Sin tráfico inter-VLAN declarado: el requerimiento sale solo de los enlaces WAN. '
-      +'Declararlo importa cuando el FortiGate también enruta e inspecciona entre segmentos internos.';
-
-  // ── ACCESO REMOTO: TRAFICO CIFRADO QUE TAMBIEN SE INSPECCIONA ─────────────────
-  // El caudal de teletrabajo atraviesa las dos rutas de procesamiento: entra por el motor
-  // IPsec (o SSL-VPN) y sale por el stack de inspeccion, asi que SUMA al requerimiento de
-  // la capa efectiva y ademas carga el eje IPsec entero -no una fraccion, porque todo el
-  // va cifrado-. Antes esta pagina no lo modelaba en absoluto.
-  const vpnMbps=Math.max(0,parseFloat($('vpnMbps').value)||0)*(1+head);
-  const baseNeed=trafico.previsto+vpnMbps;
-
-  // La fraccion que va por el overlay paga la encapsulacion ESP.
-  const frac=fraccionOverlay();
-  const effectiveNeed=baseNeed*(1+frac*OVERHEAD_ESP);
-
-  const capa=capaEfectiva();
-  pintarHintCapa(capa);
-  pintarControlesTopologia();
-  pintarWanResumen();
-
-  // Candidatos: modelos vigentes que cumplen throughput Y sesiones concurrentes.
-  // ── SESIONES CONCURRENTES, DERIVADAS DE LOS USUARIOS ──────────────────────
-  //
-  // Pedir un total absoluto era pedir un dato que nadie sabe estimar. Lo que si se estima
-  // es cuantas sesiones abre un usuario, asi que el total se deriva: usuarios x sesiones.
-  // El campo absoluto queda como anulacion para escenarios donde la cifra agregada ya se
-  // conoce (CGNAT, portales cautivos).
-  //
-  // HALLAZGO DE INGENIERIA, contraintuitivo y util: con las densidades de este catalogo
-  // —entre 577 y 2121 sesiones concurrentes por Mbps de Threat Protection— la tabla de
-  // sesiones NO limita nunca antes que el throughput en un perfil de usuario humano. Con
-  // 3 Mbps por usuario harian falta entre 1.700 y 5.500 sesiones POR USUARIO para que
-  // empatara. En 500 usuarios con 20 sesiones el eje de sesiones queda a 300x de
-  // distancia. Solo empieza a competir cuando el ancho de banda por dispositivo es muy
-  // bajo y las sesiones muchas: flotas IoT y CGNAT, a partir de ~50-100 sesiones por
-  // dispositivo con menos de 0,1 Mbps cada uno.
-  //
-  // Lo anterior vale para sesiones CONCURRENTES, que consumen memoria. El eje que si
-  // aprieta en campus grandes es el de sesiones NUEVAS POR SEGUNDO, que consume CPU y se
-  // desploma con inspeccion proxy: se dimensiona justo debajo, a partir de estas mismas
-  // sesiones y de su vida media.
-  const sesUser=Math.max(0,parseInt($('sesUser').value)||0);
-  const sessOverride=parseInt($('sessNeed').value)||0;
-  // Un usuario de acceso remoto ocupa tabla de sesiones igual que uno local: la sesion la
-  // sostiene el FortiGate en los dos casos. Sumarlos es lo correcto y no hacerlo dejaba
-  // corto el eje de memoria justo en el escenario de teletrabajo masivo.
-  const vpnUsers=Math.max(0,parseInt($('vpnUsers').value)||0);
-  const usuariosSesion=users+vpnUsers;
-  const sessNeed=sessOverride||Math.round(usuariosSesion*sesUser*(1+head));
-  $('sesCalc').innerHTML=sessOverride
-    ? `Forzado a <b>${sessOverride.toLocaleString('en-US')}</b> sesiones. Se ignora el cálculo por usuario.`
-    : (sesUser&&usuariosSesion
-        ? `Calculado: ${users} del sitio${vpnUsers?` + ${vpnUsers} de acceso remoto`:''} = ${usuariosSesion} usuarios x ${sesUser} sesiones + ${Math.round(head*100)} % de margen = <b>${sessNeed.toLocaleString('en-US')}</b> sesiones concurrentes.`
-        : 'Sin restricción de sesiones: pon un valor por usuario o un total.');
-
-  // ── SESIONES NUEVAS POR SEGUNDO (CPS) ─────────────────────────────────────
-  //
-  // Cierra el hallazgo 05 de la auditoria. Son dos ejes distintos y se confundian en uno:
-  // una sesion ABIERTA cuesta memoria (la mide `sess`), ABRIRLA cuesta CPU (la mide `cps`).
-  // Un perfil puede ir holgado en la tabla de sesiones y estrangulado en el caudal de
-  // sesiones nuevas — es lo que pasa con trafico de APIs, escaneos y portales.
-  //
-  // No se pide como dato suelto: se DERIVA de lo que ya se declaro. Si un usuario sostiene
-  // N sesiones y cada una vive V segundos, en regimen estacionario abre N/V por segundo.
-  // Asi el modelo queda coherente con el eje de concurrentes en vez de pedir dos cifras
-  // que el preventa tendria que inventar por separado.
-  //
-  // La vida media por defecto (30 s) es un supuesto de esta herramienta, no una cifra
-  // publicada, y se declara como tal en la pagina.
-  const vidaSes=Math.max(1,parseInt($('vidaSes').value)||30);
-  const cpsNeed=sessNeed?Math.round(sessNeed/vidaSes):0;
-  $('cpsCalc').innerHTML=cpsNeed
-    ? `${sessNeed.toLocaleString('en-US')} sesiones sostenidas / ${vidaSes} s de vida media = <b>${cpsNeed.toLocaleString('en-US')} sesiones nuevas por segundo</b>. La tabla de sesiones es el eje de memoria; éste es el de CPU.`
-    : 'Sin sesiones declaradas no se puede derivar el caudal de sesiones nuevas por segundo.';
-
-  /* ── EVALUACION MULTIEJE ──────────────────────────────────────────────────────────
-     Antes habia UN requerimiento y UNA capacidad efectiva, mas dos filtros sueltos para
-     sesiones y cps. Ahora cada eje -capa de inspeccion, IPsec del overlay, SSL, sesiones y
-     cps- lleva su demanda y su capacidad OFICIAL, y el maximo de las utilizaciones define
-     el cuello de botella. `FortinetReglas.evaluar` es quien decide; esta pagina solo
-     traduce el escenario a demandas y presenta el resultado. */
-  const demandas=demandasDe(effectiveNeed, capa, sessNeed, cpsNeed, vpnMbps);
-  const politica={techo:techoUtil()};
-  // AT-15. La huella resume el escenario TECNICO con el que se calculo. El BOM guarda la
-  // suya al construirse; si dejan de coincidir es que alguien movio un parametro despues, y
-  // la lista de materiales que hay en pantalla ya no corresponde. Se cierra la exportacion
-  // en vez de entregar una cotizacion de otra pregunta.
-  ultimaHuella=R.huella({demandas, techo:politica.techo, capa:capa.k, rol:rolSdwan, seg:segMode});
-  const veredicto=R.evaluar(MODELS, demandas, politica);
-  const evalPorId={};
-  for(const x of veredicto.aptos.concat(veredicto.apartados)) evalPorId[x.eval.id]=x.eval;
-
-  // Los apartados se cuentan POR MOTIVO, no en un solo saco: «no cumple la capacidad» y «el
-  // catalogo no trae la cifra» son dos cosas distintas y una lista corta tiene que
-  // explicarse. Es la misma regla que la calculadora de throughput del portal.
-  const outBySess=veredicto.apartados.filter(x=>{
-    const e=x.eval.ejes.find(y=>y.k==='sess'); return e&&e.estado==='excede'&&x.eval.manda&&x.eval.manda.k==='sess';
-  }).length;
-  const outByCps=veredicto.apartados.filter(x=>{
-    const e=x.eval.ejes.find(y=>y.k==='cps'); return e&&e.estado==='excede'&&x.eval.manda&&x.eval.manda.k==='cps';
-  }).length;
-  // APARTADOS POR FALTA DE DATO, AGRUPADOS POR EJE. Hasta el 2026-09-23 esto era una sola
-  // lista rotulada «por falta de cifra oficial de inspeccion SSL», y valia porque `ssl` era
-  // el unico eje duro que podia faltar. Al entrar los limites del Product Matrix dejo de
-  // valer: un modelo sin tope de tuneles publicado se habria contado y rotulado como un hueco
-  // de SSL. Un contador que cuenta cualquier cosa es peor que no tenerlo, porque manda a
-  // completar el documento equivocado.
-  const sinDatoPorEje=new Map();
-  for(const x of veredicto.apartados){
-    if(x.eval.estado!=='apartado'||!x.eval.apartadoPor) continue;
-    const k=x.eval.apartadoPor;
-    if(!sinDatoPorEje.has(k)) sinDatoPorEje.set(k,{n:x.eval.apartadoPorN, modelos:[]});
-    sinDatoPorEje.get(k).modelos.push(x.modelo);
-  }
-  // Cuantos modelos traen la cifra de cada eje, para poder decir «compiten N de 58» sin
-  // escribir el numero a mano en dos sitios.
-  const conCifra=k=>MODELS.filter(m=>m[R.EJE_POR_K[k].campo]!=null).length;
-
-  // Los descontinuados YA NO se borran de la lista: antes desaparecian, asi que no habia
-  // forma de consultarlos aqui cuando lo que se cotiza es ampliar un parque instalado.
-  // Ahora entran, van al final y no pueden salir recomendados — ver la regla en ficha.js.
-  const candidates=FICHA.ordenar(veredicto.aptos.map(x=>x.modelo),
-    (a,b)=>soporta(a,demandas,effectiveNeed)-soporta(b,demandas,effectiveNeed));
-  const rx=SEG_MATCH[segMode];
-  let pick=FICHA.recomendar(candidates, rx?(m=>rx.test(m.seg)):null);
-  lastPick=pick;
-  // El BOM se sincroniza UNA vez, al final, con el equipo ELEGIDO. Aqui habia una segunda
-  // llamada con el recomendado: repintaba el BOM entero con un equipo y acto seguido lo
-  // repintaba con otro en cada pulsacion de tecla.
-  //
-  // El aviso de desajuste solo aparece si el BOM se vuelve a pintar, y quedarse sin
-  // candidatos no cambia el modelo cotizado — asi que hay que forzarlo en la transicion.
-  const habiaCandidato=hayCandidato;
-  hayCandidato=!!pick;
-  if(habiaCandidato!==hayCandidato) renderBom();
-
-  // ── Presentacion ──────────────────────────────────────────────────────────
-  // El veredicto pasa de un unico equipo fijo a un desplegable con todos los que cumplen;
-  // la escalera de capas, el resumen y el BOM siguen al equipo ELEGIDO. Ver /js/ficha.js.
-  if(!pick){
-    const why=[];
-    why.push(`<li>Requerimiento de <b>${fmt(effectiveNeed)}</b> en la capa <b>${TIER_BY_K[capa.k].n}</b>${$('chkSsl').checked?' con inspección SSL profunda':''}.</li>`);
-    if(capa.elevada) why.push(`<li>La capa se elevó de <b>${TIER_BY_K[profile].n}</b> a <b>${TIER_BY_K[capa.k].n}</b> por ${capa.elevan.map(f=>esc(f.n)).join(', ')}.</li>`);
-    if(outBySess) why.push(`<li><b>${outBySess}</b> modelo(s) descartado(s) por tabla de sesiones: necesitas ${sessNeed.toLocaleString('en-US')} concurrentes.</li>`);
-    // Caso raro pero posible: hay equipos que cumplen, pero todos estan fuera de venta.
-    // Decirlo es mas util que decir "ningun modelo cumple", que seria falso.
-    if(candidates.length) why.push(`<li><b>${candidates.length}</b> equipo(s) cumplen las restricciones pero están <b>fuera de venta</b> (${candidates.map(m=>esc(m.id)).join(', ')}): sirven como referencia para un parque ya instalado, no como propuesta para un diseño nuevo.</li>`);
-    if(outByCps) why.push(`<li><b>${outByCps}</b> modelo(s) descartado(s) por sesiones nuevas por segundo: necesitas ${cpsNeed.toLocaleString('en-US')} cps y el catálogo publica esa cifra para ellos.</li>`);
-    // APARTADOS POR FALTA DE DATO, contados aparte de los que no dan la capacidad. Es la
-    // diferencia entre «ningún equipo aguanta esto» y «el catálogo no puede afirmarlo»: la
-    // segunda es una tarea de datos, no un problema de dimensionamiento, y decir «no cumple»
-    // mandaría a subir de gama por un hueco documental.
-    for(const [k,g] of sinDatoPorEje){
-      why.push(`<li><b class="warn">${g.modelos.length} modelo(s) apartados porque el catálogo no trae su cifra de ${esc(g.n)}</b> — no por capacidad. `
-        +`Los ${conCifra(k)} que sí la traen son los que compiten aquí. `
-        +`Completar el resto es leer <b>${esc(R.EJE_POR_K[k].metodo)}</b>; mientras tanto, esta pantalla `
-        +'<b>no sustituye</b> esa cifra por la de otro eje, que es lo que producía propuestas cortas. '
-        +'Es una <b>tarea de datos, no una falta de capacidad</b>: para comprometer uno de esos '
-        +'modelos hace falta una <b>PoC</b> o revisión senior.</li>');
-    }
-    if(politica.techo<1) why.push(`<li>Se está aplicando un <b>techo de utilización del ${Math.round(politica.techo*100)} %</b> sobre la cifra publicada. Subirlo a 100 % ensancha la lista de candidatos, a costa de diseñar más cerca del máximo de laboratorio.</li>`);
-    if(capa.k==='tp'||$('chkSsl').checked) why.push('<li>Estás dimensionando contra la capa más exigente. Si el diseño no requiere antivirus en línea sobre todo el tráfico, evaluar la capa <b>NGFW</b> o segmentar por política qué tráfico se inspecciona a fondo — es la palanca que más capacidad libera en FortiGate.</li>');
-    why.push('<li>Por encima del catálogo: evaluar chasis FortiGate 7000F o distribuir la carga en varias unidades.</li>');
-    FICHA.render({vendor:'fortinet', contenedor:'verdict', candidatos:[], recomendado:null,
-      vacioTitulo:'Ningún modelo vigente cumple todas las restricciones',
-      vacioDetalle:`<ul style="margin:0;padding-left:18px;font-size:13.5px">${why.join('')}</ul>`});
-    $('verdict').style.borderLeftColor='var(--amber)';
-    $('perfTiers').innerHTML='';
-    $('ejesPanel').innerHTML='';
-    $('stickyReco').hidden=true;
-    pintarEscala({effectiveNeed, demandas, candidatos:[], elegido:null});
-    pintarPasos({capa, trafico, sinCandidato:true});
-    return;
-  }
-  $('verdict').style.borderLeftColor='var(--red)';
-
-  // `nMil` formatea sesiones y cps (10.4K), que no se miden en Mbps. Lo usan el panel de
-  // ejes y el resumen fijo.
-  const nMil=v=>v>=1000?`${(v/1000).toFixed(v%1000?1:0)}K`:String(Math.round(v));
-  const pc=u=>R.pct(u);
-  const porQueDe=m=>{
-    const evalm=evalPorId[m.id]||R.evaluarModelo(m,demandas,politica);
-    const flags=[];
-    if($('chkSsl').checked){
-      const ssl=evalm.ejes.find(e=>e.k==='ssl');
-      flags.push(ssl&&ssl.cap!=null
-        ? `<b>Inspección SSL profunda:</b> se dimensiona contra los <b>${fmt(ssl.cap)}</b> de `
-          +`<b>SSL Inspection Throughput</b> que el Product Matrix publica para el ${esc(m.id)}, que es una `
-          +`medición propia y no una fracción de los ${fmt(m.tp)} de Threat Protection `
-          +`(aquí el cociente es ${(m.ssl/m.tp).toFixed(2)}). Queda al ${pc(ssl.u)}.`
-        : `<b class="warn">Inspección SSL sin cifra oficial para el ${esc(m.id)}:</b> el catálogo no la trae, `
-          +'así que este modelo no debería recomendarse contra ese eje sin PoC.');
-    }
-    if($('chkAv').checked)flags.push('El antivirus en línea es lo que fija el piso en Threat Protection: esa cifra ya lo incluye, junto con el logging. El content processor (CP9/CP10) asiste la inspección.');
-    if($('chkSandbox').checked)flags.push('FortiSandbox analiza <b>fuera de banda</b>: se cotiza aparte y <b>no consume throughput del FortiGate</b>, solo añade latencia al primer encuentro de un archivo. Por eso no eleva la capa de dimensionamiento.');
-    if($('chkIotDlp').checked)flags.push('IoT Security y DLP <b>fijan el bundle mínimo en Enterprise Protection</b> (UTP y ATP no los incluyen) y elevan el piso a Threat Protection, porque corren sobre el stack completo.');
-    if($('chkHa').checked)flags.push('<b>HA:</b> se cotizan 2 unidades y <b>cada una necesita su propia suscripción FortiGuard</b> — la licencia no se comparte entre nodos del clúster.');
-    if(rolSdwan!=='none'){
-      const ipsec=evalm.ejes.find(e=>e.k==='vpn');
-      const insp=evalm.ejes.find(e=>e.k===capa.k);
-      const mandaIpsec=evalm.manda&&evalm.manda.k==='vpn';
-      if(ipsec&&insp){
-        flags.push(mandaIpsec
-          ? `<b class="warn">Manda el overlay:</b> con ${Math.round(frac*100)} % del tráfico cifrado, el motor IPsec `
-            +`(${fmt(ipsec.cap)}) va al ${pc(ipsec.u)} mientras la capa de inspección va al ${pc(insp.u)}.`
-          : `El eje que aprieta es la capa de inspección (${pc(insp.u)}); el motor IPsec queda al ${pc(ipsec.u)} `
-            +`para el ${Math.round(frac*100)} % que va cifrado.`);
-      }
-      flags.push(`Sobre el requerimiento se suma un ${Math.round(OVERHEAD_ESP*100)} % de encapsulación ESP sobre la fracción del overlay — supuesto de esta herramienta, no una cifra publicada por Fortinet.`);
-      flags.push('<b>SD-WAN sin costo de licencia:</b> el balanceo por SLA, ADVPN y la selección dinámica de camino vienen en FortiOS. <b>Tener varios enlaces no obliga a ningún bundle</b>: lo que se licencia aparte son los servicios avanzados (monitoreo de underlay, orquestación de overlays, conector FortiSASE), y solo si el diseño los usa.');
-    }
-    // ── CONTEO DE TUNELES: UN EJE DEL DISENO QUE AHORA SI SE COMPRUEBA ──
-    // Hasta el 2026-09-23 esta pantalla declaraba el conteo y decia que el tope por modelo no
-    // estaba en el catalogo. Ya lo esta -«Max G/W to G/W IPsec Tunnels» del Product Matrix de
-    // septiembre-, asi que el eje entra en el motor y lo que se pinta aqui es el contraste.
-    const tun=tunelesDeclarados();
-    const ejeDe=k=>evalm.ejes.find(e=>e.k===k);
-    const cifra=n=>n.toLocaleString('en-US');
-    const contraste=(e,que)=>e
-      ? (e.estado==='sinDato'
-        ? `<b class="warn">El catálogo no trae ${que} del ${esc(m.id)}</b>, así que ese tope no se comprobó.`
-        : `Entra en <b>${cifra(e.cap)}</b> ${esc(e.unidad)} publicados — <b${e.estado==='excede'?' class="warn"':''}>${pc(e.u)}</b> del tope de plataforma.`)
-      : '';
-    if(tun.total>0) flags.push(`<b>Escala del overlay:</b> ${tun.total} túnel(es) IPsec sitio a sitio a terminar — ${tun.detalle}. `
-      +contraste(ejeDe('tunGw'),'el máximo de túneles sitio a sitio')
-      +(rolSdwan==='hub'?' Con <b>ADVPN</b> los atajos spoke-a-spoke se negocian dinámicamente y no cuentan contra el hub.':''));
-    const nVpn=Math.max(0,parseInt($('vpnUsers').value)||0);
-    if(nVpn>0){
-      const sslMode=modoAccesoRemoto()==='sslvpn';
-      flags.push(`<b>Acceso remoto por ${sslMode?'SSL-VPN':'IPsec dial-up'}:</b> ${cifra(nVpn)} usuario(s) concurrente(s). `
-        +contraste(ejeDe(sslMode?'sslVpnUsers':'tunCli'), sslMode?'el máximo de usuarios SSL-VPN concurrentes':'el máximo de túneles de cliente')
-        +(sslMode
-          ? ` Su caudal <b>no carga el eje IPsec</b>: se termina en el stack TLS y compite contra el <i>SSL VPN Throughput</i> del modelo.${ejeDe('sslVpn')?' '+contraste(ejeDe('sslVpn'),'el caudal SSL-VPN'):''}`
-          : ' Su caudal entra en el eje IPsec junto al overlay, y sus sesiones en la tabla de sesiones.'));
-    }
-    const eVdom=ejeDe('vdom');
-    if(eVdom) flags.push(`<b>Segmentación:</b> ${cifra(eVdom.req)} VDOM declarados. `+contraste(eVdom,'el máximo de dominios virtuales')
-      +' Es un tope de plataforma, no una cifra de laboratorio: se compara contra el 100 % de lo publicado y el techo de utilización no se le aplica.');
-    const exento=fraccionTlsExenta();
-    if($('chkSsl').checked&&exento>0) flags.push(`<b>Excepciones TLS:</b> se descuenta el <b>${Math.round(exento*100)} %</b> del caudal del eje de inspección SSL — tráfico que atraviesa el equipo pero no se descifra. <b class="warn">Es un supuesto declarado en el paso 2, no una cifra de Fortinet</b>: si la política de exclusión cambia, este eje sube.`);
-    if($('chkHa').checked) flags.push('En <b>activo-pasivo el clúster no suma capacidad</b>: el throughput sigue siendo el de una unidad. El par se cotiza por disponibilidad, no por rendimiento.');
-
-    // QUE EJE MANDA Y A QUE DISTANCIA QUEDA EL SIGUIENTE. Antes esto solo se decia cuando
-    // habia sesiones declaradas -estaba dentro de un `if(sessNeed && m.sess)`-, asi que en
-    // el escenario mas comun, que es solo caudal, no aparecia nunca.
-    const conDato=evalm.ejes.filter(e=>e.u!=null);
-    if(evalm.manda&&conDato.length){
-      const otros=conDato.filter(e=>e!==evalm.manda);
-      flags.push(`<b${evalm.manda.k===capa.k?'':' class="warn"'}>Manda ${evalm.manda.frase}</b>: ${pc(evalm.manda.u)} de lo que da el modelo.`
-        +(otros.length?` Los demás ejes van en ${otros.map(e=>`${e.frase} ${pc(e.u)}`).join(', ')} — el más cercano queda a <b>${(evalm.manda.u/Math.max(...otros.map(e=>e.u))).toFixed(1)}x</b> del que manda. Subir de gama por un eje que no es el que limita no compra nada.`:''));
-    }
-    for(const nombre of evalm.sinComprobar){
-      flags.push(`<b class="warn">${esc(nombre)} sin dato:</b> el catálogo no trae esa cifra del ${esc(m.id)}, así que ese eje <b>no se comprobó</b>. Es el eje de CPU y es el que aprieta con sesiones cortas y masivas: confirmarlo en el Product Matrix antes de cerrar el diseño.`);
-    }
-    if(cpsNeed&&m.cps!=null){
-      flags.push(`Los <b>${m.cps.toLocaleString('en-US')} cps</b> del ${esc(m.id)} son la cifra en <b>modo flow</b>. Con inspección <b>proxy</b> (antivirus en modo proxy, inspección SSL profunda) el caudal de sesiones nuevas cae, y <b>Fortinet no publica cuánto</b>: con este perfil al ${pc(cpsNeed/m.cps)} conviene dejar margen o validar con PoC.`);
-    }
-    if(politica.techo<1) flags.push(`Todos los ejes se comparan contra un <b>techo de utilización del ${Math.round(politica.techo*100)} %</b> de la cifra publicada, declarado en el paso 3. Es una política, no una cifra de Fortinet.`);
-
-    const tope=soporta(m,demandas,effectiveNeed);
-    return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
-      <li>Requerimiento <b>${fmt(effectiveNeed)}</b> en capa <b>${esc(TIER_BY_K[capa.k].n)}</b>; este modelo soporta hasta <b>${fmt(tope)}</b> en este escenario — headroom ${Math.round((1-effectiveNeed/tope)*100)}%</li>
-      ${capa.elevada?`<li><b class="warn">Capa elevada:</b> elegiste <b>${esc(TIER_BY_K[profile].n)}</b>, pero ${capa.elevan.map(f=>esc(f.n)).join(' y ')} obliga${capa.elevan.length>1?'n':''} a dimensionar contra <b>${esc(TIER_BY_K[capa.k].n)}</b>. Activar inspección saca la sesión del fast path del ASIC: no es un recargo porcentual, es otra cifra del datasheet.</li>`:''}
-      <li>Sesiones concurrentes: <b>${(m.sess/1000).toFixed(0)}K</b> | Sesiones nuevas/s: <b>${m.cps!=null?m.cps.toLocaleString('en-US'):'<span class="warn">sin dato en el catálogo</span>'}</b> | Inspección SSL: <b>${m.ssl!=null?fmt(m.ssl):'<span class="warn">sin dato en el catálogo</span>'}</b> | Interfaces: ${esc(m.ifaces)}</li>
-      ${flags.map(f=>`<li>${f}</li>`).join('')}
-    </ul>`;
-  };
-
-  const seccionesDe=m=>{
-    const bundle=$('licBundle').value||'ent';
-    const care=$('careLevel').value||'fcpre';
-    const termYrs=parseInt($('termYears').value)||3;
-    const lt=m.lic?m.lic[bundle]:null;
-    const ct=m.lic?m.lic.care[CARE_LIC_KEY[care]]:null;
-    return [
-      {titulo:'Características del equipo', filas:[
-        ['Segmento', esc(m.seg)],
-        ['Firewall (1518 B, offload ASIC)', fmt(m.fw)],
-        ['IPsec VPN (512 B, offload ASIC)', fmt(m.vpn)],
-        ['IPS (Enterprise Mix)', fmt(m.ips)],
-        ['NGFW (IPS + App Control)', fmt(m.ngfw)],
-        // Sin `<b>` en la etiqueta: ficha.js escapa la columna izquierda (`esc(k)`), asi que
-        // el marcado salia LITERAL en pantalla («<b>Threat Protection</b>»). El valor sí admite
-        // HTML, que es donde va el enfasis.
-        ['Threat Protection', m.tp?`<b>${fmt(m.tp)}</b>`:'Consultar datasheet'],
-        ['Inspección SSL', m.ssl!=null?`<b>${fmt(m.ssl)}</b>`:'<span class="warn">no está en el catálogo — ver Product Matrix</span>'],
-        ['Sesiones concurrentes', m.sess.toLocaleString('en-US')],
-        ['Sesiones nuevas / s (TCP)', m.cps!=null?m.cps.toLocaleString('en-US'):'<span class="warn">no está en el catálogo — ver Product Matrix</span>'],
-        ['Procesadores de seguridad', m.asic?esc(m.asic):'<span class="warn">sin dato publicado</span>'],
-        ['Interfaces', esc(m.ifaces), true],
-        ['SKU de hardware', m.hwSku?`<code>${esc(m.hwSku)}</code>`:'<span class="warn">Descontinuado — sin SKU nuevo</span>'],
-        ['Precio de lista ref.', m.elp?esc(m.elp):'Consultar distribuidor'],
-      ]},
-      FICHA.seccionPuertos(m),
-      FICHA.seccionAlimentacion(m),
-      // Misma guarda que en la lista de materiales: «no incluir» no es un bundle y leer
-      // `BUNDLES['none']` lanzaria al pintar la ficha del equipo.
-      {titulo:'Licenciamiento propuesto', filas:[
-        ['Bundle FortiGuard', BUNDLES[bundle]?esc(BUNDLES[bundle].n):'<span class="warn">Excluido de la cotización</span>'],
-        ['Servicios incluidos', BUNDLES[bundle]?esc(BUNDLES[bundle].svcs):'Ninguno: no se cotiza suscripción de seguridad', true],
-        ['SKU del bundle', !BUNDLES[bundle]?'—':lt&&lt.sku?`<code>${esc(lt.sku)}</code>`:'<span class="warn">Sin SKU vigente para este modelo</span>'],
-        ['Término', `${termYrs} año${termYrs>1?'s':''}`],
-        ['Unidades a licenciar', $('chkHa').checked?'2 — la licencia no se comparte en HA':'1'],
-      ], nota:'En FortiGate el SKU lleva el código del modelo embebido: la licencia va atada al equipo, no al ancho de banda.'},
-      {titulo:'Software del portafolio', filas:SOFTWARE.map(sw=>[esc(sw.n), esc(sw.d), true]),
-       nota:'SKU y precios de referencia del price list AMER — no escalan con el modelo de FortiGate elegido.'},
-      {titulo:'Soporte', filas:[
-        [CARE[care]?esc(CARE[care].n):'Sin contrato FortiCare',
-         CARE[care]?esc(CARE[care].sla):'<span class="warn">Excluido de la cotización — sin RMA ni actualizaciones de FortiOS</span>'],
-        ['SKU', !CARE[care]?'—':ct&&ct.sku?`<code>${esc(ct.sku)}</code>`:'<span class="warn">No disponible para este modelo</span>'],
-      ]},
-    ];
-  };
-
-  /* ── PANEL DE UTILIZACION POR EJE ─────────────────────────────────────────────────
-     Lo que el informe llama «decisión explicable»: los ocho ejes a la vez, con el que manda
-     marcado y el que el catálogo no puede comprobar en su tercer estado -rayado, nunca en
-     cero-. Antes esto no existía: había una sola barra de «capa» y dos medidores sueltos. */
-  const pintarEjes=m=>{
-    const evalm=evalPorId[m.id]||R.evaluarModelo(m,demandas,politica);
-    const caja=$('ejesPanel');
-    if(!evalm.ejes.length){ caja.innerHTML=''; return; }
-    const filas=evalm.ejes.map(e=>{
-      const manda=evalm.manda&&e.k===evalm.manda.k;
-      const cls=e.estado==='sinDato'?'sindato':manda?'manda':(e.u>0.8?'alto':'');
-      const ancho=e.u==null?0:Math.min(100,e.u*100);
-      const val=e.estado==='sinDato'
-        ? 'sin dato'
-        : `${pc(e.u)} <span style="color:var(--steel)">de ${e.unidad==='Mbps'?fmt(e.cap):nMil(e.cap)}</span>`;
-      return `<div class="eje ${cls}" title="${esc(e.metodo)}">`
-        +`<span class="en">${esc(e.n)}</span>`
-        +`<span class="eb"><i style="width:${ancho}%"></i></span>`
-        +`<span class="ev">${val}</span></div>`;
-    }).join('');
-    const pie=(evalm.manda
-      ? `Cuello de botella: <b>${esc(evalm.manda.n)}</b> al ${pc(evalm.manda.u)}`
-        +(politica.techo<1?` · techo declarado ${Math.round(politica.techo*100)} %`:'')
-        +'. Cada eje se compara contra su propia cifra oficial; ninguno se deriva de otro.'
-      : 'Sin ejes evaluables con los datos declarados.')
-      // UNA LISTA CORTA TIENE QUE EXPLICARSE. Con la inspeccion SSL pedida compiten 9 de 58
-      // modelos, y sin decirlo la lista se lee como «el catalogo entero es esto». Es la misma
-      // regla con la que la calculadora del portal cuenta sus apartados por fabricante.
-      +(sinDatoPorEje.size?` <b class="warn">${[...sinDatoPorEje.values()].reduce((a,g)=>a+g.modelos.length,0)} modelo(s) apartados</b> porque el catálogo no trae `
-        +`su cifra de ${[...sinDatoPorEje.values()].map(g=>esc(g.n)).join(', ')} — es una tarea de datos, no una falta de capacidad: `
-        +'no se sustituye por la de otro eje.':'');
-    caja.innerHTML=`<div class="ejes"><h3>Utilización por eje — ${esc(m.id)}</h3>${filas}`
-      +`<p class="eje-pie">${pie}</p></div>`;
-  };
-
-  /* RESUMEN FIJO: equipo, cuello de botella y las dos alternativas como BOTONES.
-     Las alternativas son los vecinos por capacidad en la lista ya ordenada -no los dos
-     primeros, que en una lista de 39 no dicen nada-, y se eligen de un clic: una alternativa
-     que hay que buscar en un desplegable de 39 entradas no es una alternativa. */
-  const pintarSticky=m=>{
-    const caja=$('stickyReco'); if(!caja) return;
-    const evalm=evalPorId[m.id]||R.evaluarModelo(m,demandas,politica);
-    const i=candidates.findIndex(x=>x.id===m.id);
-    const alts=[];
-    if(i>0) alts.push(candidates[i-1]);
-    if(i>=0&&i<candidates.length-1) alts.push(candidates[i+1]);
-    const cuello=evalm.manda
-      ? `Manda <b>${esc(evalm.manda.n)}</b> &middot; ${pc(evalm.manda.u)} de ${evalm.manda.unidad==='Mbps'?fmt(evalm.manda.cap):nMil(evalm.manda.cap)}`
-      : 'Sin ejes evaluables';
-    caja.innerHTML=`<span class="sr-modelo">${esc(m.id)}</span>`
-      +`<span class="sr-cuello">${cuello}${m.id===pick.id?'':' &middot; elegido a mano'}</span>`
-      +(alts.length?`<span class="sr-alts"><span>Alternativas</span>`
-        +alts.map(a=>`<button type="button" class="sr-alt" data-alt="${esc(a.id)}">${esc(a.id.replace('FortiGate ',''))}</button>`).join('')
-        +'</span>':'');
-    caja.hidden=false;
-  };
-
-  const pintarDependientes=m=>{
-    renderTiers(m,effectiveNeed);
-    pintarEjes(m);
-    pintarSticky(m);
-    pintarEscala({effectiveNeed, demandas, candidatos:candidates, elegido:m});
-  };
-
-  const elegidoId=FICHA.render({vendor:'fortinet', 
-    contenedor:'verdict',
-    candidatos:candidates,
-    recomendado:pick.id,
-    // La foto oficial corona la ficha y cambia con cada seleccion. Un modelo sin foto
-    // declarada (100F, 200F y los dos chasis) muestra el aviso honesto de ficha.js.
-    vistas:VISTAS,
-    // LAS REFERENCIAS DE PEDIDO NO VAN EN LA FICHA, van en la lista de materiales
-    // (peticion del dueno, 2026-09-22). `refsEn` las manda a `#fortiRefs`, la seccion
-    // «Anadir a la lista de materiales» del tab de BOM -mismo nombre, misma posicion y
-    // mismo orden que en Aruba-, y `refsTitulo:null` suprime el `h3` interno porque el
-    // `h2` de esa seccion ya titula el cuadro. La ficha deja de emitir su contenedor,
-    // asi que no hay dos elementos con el mismo id.
-    refsEn:'fortiRefs', refsTitulo:null,
-    etiqueta:m=>`${m.id} — ${m.seg} · soporta ${fmt(soporta(m,demandas,effectiveNeed))}`,
-    titulo:m=>m.id,
-    subtitulo:m=>m.seg+' · FortiOS Security Fabric',
-    // SIN `medidores` A PROPOSITO: las barras de utilizacion viven en `#ejesPanel`, encima
-    // de la ficha, que es donde el informe las pide -junto al candidato, sus alternativas y
-    // el cuello de botella-. Dejarlas tambien aqui pintaria los mismos cuatro ejes dos veces
-    // en la misma pantalla, y el panel de arriba dice mas: los tres estados por eje y los
-    // modelos apartados por falta de dato. El resto de dimensionadores las conserva.
-    medidores:null,
-    porQue:porQueDe,
-    secciones:seccionesDe,
-    alCambiar:id=>{
-      const m=candidates.find(x=>x.id===id);
-      if(!m) return;
-      pintarDependientes(m);
-      llevarABom(m.id);
-    },
-  });
-  const elegido=candidates.find(m=>m.id===elegidoId)||pick;
-  pintarDependientes(elegido);
-  pintarPasos({capa, trafico, sinCandidato:false});
-  sincronizarConBom(elegido);
-}
-
-// Escalera de capas: muestra las 5 cifras publicadas del modelo a la vez, en escala relativa
-// al firewall puro. Hace visible de un vistazo el salto de un orden de magnitud entre lo que
-// va descargado al ASIC y lo que atraviesa el stack de inspección — que es exactamente el
-// malentendido que produce los FortiGate subdimensionados.
-function renderTiers(m,need){
-  const ssl=$('chkSsl').checked;
-  const top=m.fw||1;
-  const activeK=capaEfectiva().k;
-  $('perfModel').textContent='— '+m.id;
-  $('perfTiers').innerHTML=TIERS.map((t,i)=>{
-    const v=m[t.k];
-    if(v==null) return '';
-    const on=t.k===activeK;
-    const prev=i>0?m[TIERS[i-1].k]:null;
-    const drop=prev&&v&&prev>v?Math.round((1-v/prev)*100):0;
-    return `${drop>=50?`<div class="tierDrop">&#8595; ${drop}% al salir del offload de red</div>`:''}
-      <div class="tierRow ${on?'on':'off'}" title="${esc(t.d)}">
-        <span class="tn">${esc(t.n)}</span>
-        <span class="tb"><i style="width:${Math.max(2,v/top*100)}%"></i></span>
-        <span class="tv">${fmt(v)}</span>
-      </div>`;
+  let total = 0;
+  let sinPrecio = 0;
+  const filas = r.bom.filas.map((f) => {
+    const sub = f.unit == null ? null : f.unit * (f.qty || 1);
+    if (sub == null) sinPrecio += 1; else total += sub;
+    return `<tr><td>${esc(f.desc)}<span class="sku">${f.sku ? esc(f.sku) : '<span class="warn">sin SKU exacto</span>'}</span></td><td class="n">${f.qty}</td><td class="n">${sub == null ? '—' : money(sub)}</td></tr>`;
   }).join('');
-  // LA SEXTA FILA ES UN DATO, NO UNA ESTIMACION. Aqui se pintaba `m.tp x 0,65` con una
-  // tilde delante; ahora se pinta la cifra oficial, y donde el catalogo no la trae se dice
-  // -que es la informacion util: falta el dato, no falta la capacidad-.
-  if(ssl){
-    $('perfTiers').insertAdjacentHTML('beforeend', m.ssl!=null
-      ? `<div class="tierRow on" title="SSL Inspection Throughput: IPS activo sobre un promedio de sesiones HTTPS. Medicion propia, no derivada de Threat Protection.">
-        <span class="tn">Inspección SSL</span>
-        <span class="tb"><i style="width:${Math.max(2,m.ssl/top*100)}%"></i></span>
-        <span class="tv">${fmt(m.ssl)}</span>
-      </div>`
-      : `<div class="tierRow off" title="El catalogo no trae SSL Inspection Throughput de este modelo.">
-        <span class="tn">Inspección SSL</span>
-        <span class="tb"></span>
-        <span class="tv warn">sin dato</span>
-      </div>`);
+  caja.innerHTML = `<p class="hint" style="margin:0 0 8px">${esc(r.bom.modelo)} · ${r.bom.nodos} nodo(s) · construcción ${r.bom.construccion === 'bdl' ? '<b>SKU combinado (BDL)</b>' : 'equipo y servicios por separado'}</p>`
+    + `<div class="scroll"><table><thead><tr><th>Línea</th><th>Cant.</th><th>Subtotal lista</th></tr></thead><tbody>${filas}`
+    + `<tr><td><b>Total de lista</b>${sinPrecio ? ` <span class="warn">(${sinPrecio} línea(s) sin precio no suman)</span>` : ''}</td><td></td><td class="n"><b>${money(total)}</b></td></tr></tbody></table></div>`
+    + '<p style="margin-top:8px"><button type="button" class="btn ghost" id="btnVerBom" style="font-size:11px">Ver la lista de materiales completa</button></p>';
+  $('btnVerBom').addEventListener('click', () => { if (TABS) TABS.elegir('#tab-bom', true); });
+}
+
+/* ── PIE: la puerta, siempre visible ─────────────────────────────────────────────────── */
+function pintarPie(r) {
+  const g = GATE[r.quoteGate];
+  const precios = CAT.fuentes && CAT.fuentes.find ? CAT.fuentes.find((f) => f.dominio === 'precio') : null;
+  const salud = precios ? R.saludPrecios(precios) : null;
+  const nb = r.bloqueos.length;
+  const na = r.avisos.filter((a) => a.nivel !== 'info').length;
+  $('gateResumen').innerHTML = `<span class="qg qg-${r.quoteGate}">${esc(g.n)}</span> `
+    + `${nb ? `${nb} bloqueo(s)` : 'sin bloqueos'}${na ? ` · ${na} advertencia(s)` : ''}`
+    + ` · lista de precios ${salud ? esc(salud.estado) : 'sin fecha'}`
+    + ` · huella <code>${esc(r.scenarioHash.slice(7, 15))}</code>`;
+  const sel = r.seleccion;
+  $('resMovilTxt').innerHTML = `<b>${esc(sel ? sel.id : 'Sin modelo validado')}</b> · ${esc(g.n)}`;
+}
+
+/* ══ LISTA DE MATERIALES (pestaña) ═══════════════════════════════════════════════════════
+   Se construye desde `RES.bom` y SOLO desde el: el modelo validado, su construccion (BDL en
+   compra nueva, solo servicios en renovacion), sus nodos y sus lineas. Aqui no se decide
+   nada; se presenta y se exporta. */
+const DTO = BOM.simuladorDescuento('cajaDescuento', () => pintarBom());
+const dtoActual = () => (DTO ? DTO.valor() : 0);
+const dtoEtiqueta = () => (DTO ? DTO.etiqueta() : null);
+let bomFilas = [];
+let bomMeta = {};
+
+function pintarBom() {
+  const r = RES;
+  if (!r) return;
+  BOM.fijarVendor(VENDOR);
+  const s = r.snapshot;
+  const sel = r.seleccion;
+  if (!sel || !r.bom) {
+    $('bomBody').innerHTML = `<section class="panel"><h2>Ficha del equipo</h2><p class="hint">Sin modelo validado: no hay lista de materiales que construir. ${esc(r.bloqueos[0] ? r.bloqueos[0].mensaje : '')}</p></section>`;
+    BOM.renderTabla([], {});
+    $('bomTabla').innerHTML = '<p class="hint">La lista de materiales aparece cuando el motor valida un equipo para el escenario.</p>';
+    $('tcoFin').innerHTML = '';
+    bomFilas = [];
+    bomMeta = {};
+    $('bomOut').value = '';
+    pintarPuerta(r);
+    pintarPerfiles();
+    return;
   }
-  const ratio=m.tp?Math.round(m.fw/m.tp):0;
-  const asic=m.asic
-    ? `Silicio: <b>${esc(m.asic)}</b>. El ${esc(m.np||'procesador de red')} es el que sostiene las dos primeras cifras${m.cp?`; el ${esc(m.cp)} asiste el pattern matching de IPS y antivirus en las tres últimas`:''}.`
-    : `<span class="warn">Fortinet no publica página de fast path architecture para este modelo — sin dato de ASIC verificado.</span>`;
-  const notaSsl=m.ssl!=null
-    ? ` La inspección SSL de este modelo son <b>${fmt(m.ssl)}</b> oficiales, que es un <b>${(m.ssl/m.tp).toFixed(2)}x</b> de su Threat Protection: por eso no se deriva con un factor — en el catálogo ese cociente va de 0,52 a 1,18.`
-    : ' <span class="warn">El catálogo no trae la cifra de inspección SSL de este modelo</span>, así que ese eje no se puede comprobar aquí.';
-  $('perfNote').innerHTML=`Del firewall puro a Threat Protection hay un factor <b>${ratio}x</b> en este modelo (${fmt(m.fw)} &rarr; ${fmt(m.tp)}). `+
-    `La cifra de portada solo aplica a sesiones descargadas al procesador de red; cualquier perfil de inspección saca la sesión del fast path.${notaSsl} ${asic} Requerimiento actual: <b>${fmt(need)}</b>.`;
-}
-
-/* BOM */
-// El catalogo Fortinet no tiene campo de serie: se deriva del propio id
-// ("FortiGate 120G" -> familia G, numero 120). Los cortes por numero siguen el
-// posicionamiento de Fortinet: G/F de 2-3 cifras son sucursal, F de 4 cifras es
-// gama alta/DC y 7xxxF es chasis de operador.
-function serieFortinet(id){
-  const mm=/(\d+)([GF])/.exec(id);
-  if(!mm) return 'Otros';
-  const n=parseInt(mm[1]), fam=mm[2];
-  if(fam==='G') return n>=1000 ? 'FortiGate G — Data Center / Operador' : 'FortiGate G — Sucursal / SOHO';
-  if(n>=7000) return 'FortiGate F — Chasis / Operador';
-  return n>=1000 ? 'FortiGate F — Gama alta / Data Center' : 'FortiGate F — Sucursal / Mediana empresa';
-}
-function populatePickModel(){
-  // Orden fijo de familia y de modelo dentro de la familia (numerico por el id): la API
-  // puede servir el catalogo en cualquier orden y el combo no puede depender de eso.
-  const ORDEN=['FortiGate G — Sucursal / SOHO','FortiGate G — Data Center / Operador',
-    'FortiGate F — Sucursal / Mediana empresa','FortiGate F — Gama alta / Data Center',
-    'FortiGate F — Chasis / Operador','Otros'];
-  const numDe=id=>{const mm=/(\d+)/.exec(id);return mm?parseInt(mm[1]):0;};
-  const grupos=new Map();
-  for(const m of MODELS){
-    const g=serieFortinet(m.id);
-    if(!grupos.has(g)) grupos.set(g,[]);
-    grupos.get(g).push(m);
-  }
-  const ordenados=[...grupos.entries()].sort((a,b)=>ORDEN.indexOf(a[0])-ORDEN.indexOf(b[0]));
-  for(const [,ms] of ordenados) ms.sort((a,b)=>numDe(a.id)-numDe(b.id));
-  $('pickModel').innerHTML=ordenados.map(([g,ms])=>
-    `<optgroup label="${g}">`+ms.map(m=>`<option value="${m.id}">${m.id} — ${m.seg}${m.eol?' (EOL)':''}</option>`).join('')+`</optgroup>`
-  ).join('');
-}
-
-const money=n=>n==null?null:'$'+n.toLocaleString('en-US',{maximumFractionDigits:2});
-function tierPrice(tier,termYrs){
-  if(!tier) return null;
-  const v=termYrs===1?tier.y1:termYrs===5?tier.y5:tier.y3;
-  return v==null?null:v;
-}
-
-
-// CAPA COMERCIAL (2026-09-16). Los tres bloques —simulador de precio neto, TCO y perfiles
-// multi-sede— ya vivian en js/bom.js desde el 2026-09-13, construidos al sacarlos del
-// archivo de Aruba. Esta pagina no los usaba: de las 20 funciones de BOM que usa Aruba,
-// Fortinet usaba 6. No hace falta un dato nuevo para encenderlos, solo declarar lo que es
-// del fabricante.
-const DTO=BOM.simuladorDescuento('cajaDescuento',()=>renderBom());
-const dtoActual=()=>DTO?DTO.valor():0;
-const dtoEtiqueta=()=>DTO?DTO.etiqueta():null;
-function renderBom(){
-  const m=MODELS.find(x=>x.id===$('pickModel').value)||MODELS[0];
-  const qty=Math.max(1,parseInt($('qty').value)||1);
-  const termYrs=parseInt($('termYears').value)||3;
-  const bundle=$('licBundle').value||'ent';
-  const care=$('careLevel').value||'fcpre';
-  const lic=m.lic;
-  const licTier=lic?lic[bundle]:null;
-  const licPrice=tierPrice(licTier,termYrs);
-
-  // Coherencia con el dimensionamiento, declarada en vez de supuesta. Son dos desajustes
-  // distintos y conviene no confundirlos: que el dimensionamiento no tenga candidato, y que
-  // este cotizando un equipo distinto del que hay elegido en la pestana de calculo.
-  // El aviso de desvio ya no se escribe aqui: lo da js/bom.js, para que los siete
-  // fabricantes digan lo mismo con las mismas palabras.
-  const aviso=BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato});
-
-  /* ── LA CAPA COMERCIAL SE CALCULA UNA VEZ, EN `FortinetReglas.lineasComerciales` ─────
-     Aqui se montaban las filas a mano, y de esa construccion salian los tres P0 comerciales
-     del informe: la linea de FortiCare se anadia SIEMPRE aunque el bundle ya lo incluyera
-     (doble cobro), FortiConverter se anadia siempre que el modelo tuviera SKU aunque
-     Enterprise ya lo trajera (segundo doble cobro), y el SKU conservaba el marcador `-DD`
-     del price list, que no es un codigo pedible. Ahora lo decide el modulo puro, que es lo
-     que hace que las veinte pruebas de aceptacion se puedan afirmar sin navegador. */
-  const errBundle=R.validarBundle(bundle, funcionesActivas(), FUNCIONES, BUNDLES);
-  const comercialActual=R.lineasComerciales({
-    modelo:m, bundles:BUNDLES, care:CARE,
-    bundle, care_elegido:care, careKey:CARE_LIC_KEY[care],
-    qty, anios:termYrs, terminos:TERMINOS,
-    converter:$('chkConverter').checked,
-    serviciosSdwan:serviciosSdwanPedidos(),
-    // Los endpoints NO se piden en el paso 4: salen del paso 3 (usuarios del sitio +
-    // usuarios de acceso remoto), que es donde ya se declararon para el eje de sesiones.
-    endpointsEms:$('chkEms').checked
-      ? (Math.max(0,parseInt($('users').value)||0)+Math.max(0,parseInt($('vpnUsers').value)||0))
-      : 0,
-  });
-  // El bundle insuficiente es un bloqueo mas, y el primero: cambia QUE se cotiza, no solo
-  // si se puede exportar.
-  // Solo bloquea lo que de verdad impide pedir la cotizacion. Un bundle EXCLUIDO a
-  // proposito viaja como aviso: cierra la puerta de exportacion seria dejar sin salida a
-  // quien cotiza solo hardware, y entonces la tabla se copia a mano y la advertencia se
-  // pierde — que es el mismo razonamiento por el que el override existe con motivo.
-  const bloqueos=(errBundle&&errBundle.bloquea!==false?[errBundle]:[]).concat(comercialActual.bloqueos);
-  if(errBundle&&errBundle.bloquea===false) comercialActual.avisos.push(errBundle);
-
-
-  let html=`<section class="panel"><h2>Ficha del equipo</h2>
-    <div class="model" style="font-size:28px">${m.id}</div>
-    <p class="family">${m.seg} · FortiOS · Security Fabric</p>${aviso}
+  const m = sel.modelo;
+  const anios = s.comercial.anios;
+  const bundle = s.comercial.bundle;
+  const care = s.comercial.soporte;
+  const bDef = BUNDLES[bundle] || null;
+  const cDef = CARE[care] || null;
+  const filas = r.bom.filas;
+  const soporte = filas.find((f) => f.cat === 'Soporte');
+  const bdl = filas.find((f) => f.bdl);
+  const sinEquipo = ['renovacion', 'coterm'].includes(s.comercial.motivo);
+  let html = `<section class="panel"><h2>Equipo validado</h2>
+    <div class="model" style="font-size:28px">${esc(m.id)}</div>
+    <p class="family">${esc(m.seg)} · ${r.bom.nodos} nodo(s) · ${esc({ nueva: 'compra nueva', ampliacion: 'ampliación', renovacion: 'renovación', coterm: 'co-term' }[s.comercial.motivo])}${r.override && r.override.elegible ? ' · <b>elegido a mano y revalidado</b>' : ''}</p>
+    ${sinEquipo ? `<p class="hint"><b>Solo servicios:</b> la caja ya está instalada${s.comercial.serieInstalada ? ` (${esc(s.comercial.serieInstalada)})` : ''} y no se cotiza.</p>` : ''}
+    ${bdl ? `<p class="hint">En compra nueva el equipo, ${bDef ? esc(bDef.n) : 'el bundle'} y FortiCare Premium van en el <b>SKU combinado <code>${esc(bdl.sku)}</code></b>: una línea en vez de tres. En la lista de septiembre cuesta exactamente lo mismo que por separado.</p>` : ''}
     <div class="scroll"><table><thead><tr><th>Métrica</th><th>Valor</th></tr></thead><tbody>
-    <tr><td>SKU hardware</td><td class="n">${m.hwSku?`<code>${esc(m.hwSku)}</code>`:'<span class="warn">Descontinuado — sin SKU nuevo vigente</span>'}</td></tr>
-    <tr><td>Precio de lista ref. (equipo)</td><td class="n">${m.elp?esc(m.elp):'Consultar distribuidor'}</td></tr>
-    <tr><td>Firewall (1518 B, offload ASIC)</td><td class="n">${fmt(m.fw)}</td></tr>
-    <tr><td>IPsec VPN (512 B, offload ASIC)</td><td class="n">${fmt(m.vpn)}</td></tr>
-    <tr><td>IPS (Enterprise Mix)</td><td class="n">${fmt(m.ips)}</td></tr>
-    <tr><td>NGFW (IPS + App Control)</td><td class="n">${fmt(m.ngfw)}</td></tr>
-    <tr><td><b>Threat Protection</b> (NGFW + AV + log)</td><td class="n"><b>${m.tp?fmt(m.tp):'Consultar datasheet'}</b>${m.tp&&m.fw?` <span class="warn">(${Math.round(m.fw/m.tp)}x menos que el firewall puro)</span>`:''}</td></tr>
-    <tr><td>Sesiones concurrentes</td><td class="n">${m.sess.toLocaleString('en-US')}</td></tr>
-    <tr><td>Sesiones nuevas / s (TCP, modo flow)</td><td class="n">${m.cps!=null?m.cps.toLocaleString('en-US'):'<span class="warn">no está en el catálogo</span>'}</td></tr>
-    <tr><td><b>Inspección SSL</b> (IPS + HTTPS medio)</td><td class="n">${m.ssl!=null?`<b>${fmt(m.ssl)}</b> <span class="sku">${(m.ssl/m.tp).toFixed(2)}x de su Threat Protection</span>`:'<span class="warn">no está en el catálogo — ver Product Matrix</span>'}</td></tr>
-    <tr><td>Túneles IPsec sitio a sitio (máx.)</td><td class="n">${m.tunGw!=null?m.tunGw.toLocaleString('en-US'):'<span class="warn">no está en el catálogo</span>'}</td></tr>
-    <tr><td>Túneles IPsec de cliente (máx.)</td><td class="n">${m.tunCli!=null?m.tunCli.toLocaleString('en-US'):'<span class="warn">no está en el catálogo</span>'}</td></tr>
-    <tr><td>SSL-VPN: usuarios concurrentes / caudal</td><td class="n">${m.sslVpnUsers!=null?`${m.sslVpnUsers.toLocaleString('en-US')} usuarios`:'<span class="warn">el documento no lo publica</span>'} · ${m.sslVpn!=null?fmt(m.sslVpn):'<span class="warn">—</span>'}</td></tr>
-    <tr><td>Políticas de firewall / VDOM (máx.)</td><td class="n">${m.policies!=null?m.policies.toLocaleString('en-US'):'<span class="warn">sin dato</span>'} · ${m.vdomMax!=null?`${m.vdomMax} VDOM`:'<span class="warn">el documento no lo publica</span>'}</td></tr>
-    ${m.matrixDe?`<tr><td colspan="2" class="sku">Los límites de plataforma se heredan del <b>FortiGate ${esc(m.matrixDe)}</b>: mismo silicio, y el Product Matrix publica una sola fila para los dos.</td></tr>`:''}
-    <tr><td>Procesadores de seguridad</td><td class="n">${m.asic?`${esc(m.asic)}${m.soc?' <span class="pillc">SoC</span>':''}<span class="sku">${esc(m.asicSrc||'')}</span>`:'<span class="warn">Sin página de fast path architecture publicada</span>'}</td></tr>
-    <tr><td>Interfaces</td><td>${m.ifaces}</td></tr>
+    <tr><td>SKU hardware</td><td class="n">${m.hwSku ? `<code>${esc(m.hwSku)}</code>` : '<span class="warn">Descontinuado — sin SKU nuevo vigente</span>'}</td></tr>
+    <tr><td>Precio de lista ref. (equipo)</td><td class="n">${m.elp ? esc(m.elp) : 'Consultar distribuidor'}</td></tr>
+    <tr><td><b>Threat Protection</b></td><td class="n"><b>${fmt(m.tp)}</b></td></tr>
+    <tr><td>Inspección SSL</td><td class="n">${m.ssl != null ? fmt(m.ssl) : '<span class="warn">sin dato</span>'}</td></tr>
+    <tr><td>Sesiones concurrentes / nuevas por segundo</td><td class="n">${cifra(m.sess)} / ${m.cps != null ? cifra(m.cps) : '<span class="warn">sin dato</span>'}</td></tr>
+    <tr><td>Interfaces</td><td>${esc(m.ifaces)}</td></tr>
+    </tbody></table></div></section>`;
+  html += `<section class="panel"><h2>Licencias FortiGuard</h2><ul class="clean">
+    ${!bDef ? '<li><b>Sin bundle FortiGuard</b><span class="req opt">Excluido</span><span class="sku">No se cotiza ninguna suscripción de seguridad.</span></li>'
+    : `<li class="on"><b>${esc(bDef.n)}</b><span class="req">Requerida</span><span class="sku">${esc(bDef.svcs)} · término ${anios} año${anios > 1 ? 's' : ''}${bdl ? ' · dentro del SKU combinado' : ''}</span></li>`}
+  </ul></section>`;
+  html += `<section class="panel"><h2>Soporte FortiCare</h2><div class="scroll"><table>
+    <thead><tr><th>Servicio</th><th>SLA</th><th>SKU</th><th>Precio ref. c/u</th><th>Cant.</th></tr></thead><tbody>
+    <tr><td>${cDef ? esc(cDef.n) : 'Sin contrato FortiCare'}</td><td class="n">${cDef ? esc(cDef.sla) : '—'}</td><td class="n">${soporte && soporte.sku ? `<code>${esc(soporte.sku)}</code>` : '<span class="warn">no se cotiza aparte</span>'}</td><td class="n">${soporte && soporte.unit != null ? money(soporte.unit) : '—'}</td><td class="n">${soporte ? soporte.qty : 0}</td></tr>
     </tbody></table></div>
-    ${m.eol?'<p class="hint warn" style="margin-top:10px">Modelo descontinuado (EOL) — no disponible para diseños nuevos, solo referencia para equipos ya instalados.</p>':''}
+    ${r.bom.soporteIncluido ? `<p class="hint" style="margin-top:10px"><b>${esc(bDef ? bDef.n : 'El bundle')} ya incluye FortiCare Premium.</b> ${soporte ? 'La línea de arriba es la <b>mejora</b> sobre ese Premium, no un segundo contrato.' : 'Por eso no se añade una segunda línea de soporte: cobraría el mismo servicio dos veces.'}</p>` : ''}
     </section>`;
+  $('bomBody').innerHTML = html;
 
-  // «No incluir» no es un bundle: `BUNDLES['none']` no existe. Leerlo sin guarda lanzaba
-  // dentro de renderBom, y como la excepción abortaba antes de `$('bomBody').innerHTML`,
-  // la lista de materiales se quedaba con el contenido ANTERIOR — que en pantalla se lee
-  // como «el combo no hace nada» y no como «la página ha fallado».
-  const bDef=BUNDLES[bundle]||null;
-  html+=`<section class="panel"><h2>Licencias FortiGuard</h2><ul class="clean">
-    ${!bDef?`<li><b>Sin bundle FortiGuard</b><span class="req opt">Excluido</span><span class="sku">Excluido de la cotización a petición: no se cotiza ninguna suscripción de seguridad. La cotización vale para un parque que ya la tiene vigente, o para negociar hardware y servicios por vías distintas.</span></li>`
-      :licTier?`<li class="on"><b>${bDef.n}</b><span class="req">Requerida</span><span class="sku">${bDef.svcs}<br><code>${esc(licTier.sku)}</code> · término ${termYrs} año${termYrs>1?'s':''}${licPrice!=null?' · '+money(licPrice)+' c/u':' · precio no disponible a '+termYrs+' años para este modelo'}</span></li>`
-      :`<li><b>${bDef.n}</b><span class="req opt">No disponible</span><span class="sku">Este bundle no tiene SKU vigente para ${m.id} en el price list actual${m.eol?' (equipo EOL, sin renovación de Enterprise Protection)':''}.</span></li>`}
-    <li><b>FortiConverter</b><span class="req opt">Opcional</span><span class="sku">${lic&&lic.converter?`Migración de configuración desde Cisco ASA, Check Point, Palo Alto. <code>${esc(lic.converter.sku)}</code> · ${money(lic.converter.fee)} (servicio único)`:'Incluido dentro de Enterprise Protection en modelos vigentes.'}</span></li>
-    <li><b>FortiSandbox</b><span class="req opt">Opcional</span><span class="sku">Análisis dinámico de archivos zero-day (add-on independiente del bundle). <b>Patrón</b> de SKU: <code>FC-10-FS5HG-499-02-DD</code> — el <code>DD</code> es el marcador del término (12/36/60), no un código pedible.</span></li>
-    <li><b>FortiClient EMS</b><span class="req opt">Opcional</span><span class="sku">Gestión de endpoints ZTNA + VPN, licenciado por número de endpoints. <b>Patrón</b> de SKU (25 endpoints): <code>FC1-10-EMS05-428-01-DD</code>.</span></li>
-  </ul>
-  <p class="hint" style="margin-top:10px">Estos dos son <b>documentación de patrón</b> y no entran en la lista de materiales: se muestran con el marcador <code>DD</code> a propósito. Las líneas que sí se cotizan llevan el término resuelto (<code>-12</code>, <code>-36</code>, <code>-60</code>), porque un SKU con <code>DD</code> no se puede pasar a un distribuidor.</p>
-  </section>`;
-
-  // SOPORTE FORTICARE. El panel ya no puede limitarse a pintar el nivel elegido: los tres
-  // bundles incluyen FortiCare Premium, asi que lo que hay que decir es si esta linea SE
-  // COTIZA o no. Es el AT-04 del informe y era un doble cobro real.
-  const soporteEnBom=comercialActual.filas.find(f=>f.cat==='Soporte');
-  const cDef=CARE[care]||null;
-  html+=`<section class="panel"><h2>Soporte FortiCare</h2><div class="scroll"><table>
-    <thead><tr><th>Servicio</th><th>SLA</th><th>SKU</th><th>Término</th><th>Precio ref. c/u</th><th>Qty</th></tr></thead><tbody>
-    <tr><td>${cDef?esc(cDef.n):'Sin contrato FortiCare'}</td><td class="n">${cDef?esc(cDef.sla):'—'}</td><td class="n">${soporteEnBom&&soporteEnBom.sku?`<code>${esc(soporteEnBom.sku)}</code>`:'<span class="warn">no se cotiza aparte</span>'}</td><td class="n">${termYrs} años</td><td class="n">${soporteEnBom&&soporteEnBom.unit!=null?money(soporteEnBom.unit):'—'}</td><td class="n">${soporteEnBom?qty:0}</td></tr>
-    </tbody></table></div>
-    ${!cDef?`<p class="hint warn" style="margin-top:10px"><b>Soporte excluido de la cotización a petición.</b> ${bDef&&comercialActual.soporteIncluido?`${esc(bDef.n)} ya trae FortiCare Premium, así que la cotización no pierde cobertura.`:'Sin bundle que lo incluya, el equipo se cotiza <b>sin contrato de soporte, sin derecho a RMA y sin actualizaciones de FortiOS</b>.'}</p>`
-      :comercialActual.soporteIncluido?`<p class="hint" style="margin-top:10px"><b>${esc(bDef.n)} ya incluye FortiCare Premium.</b> ${soporteEnBom?'La línea de arriba es la <b>mejora</b> sobre ese Premium incluido, no un segundo contrato de soporte completo.':'Por eso no se añade una segunda línea de soporte a la lista de materiales: hacerlo cobraba el mismo servicio dos veces.'}</p>`:''}
-    </section>`;
-
-  $('bomBody').innerHTML=html;
-
-  const termino=`término ${termYrs} año${termYrs>1?'s':''}`;
-  const filas=comercialActual.filas;
-
-  // LA FOTO OFICIAL VIAJA CON LA PROPUESTA (plan 20, extendido a Fortinet el 2026-09-22).
-  // Misma fuente que la ficha en pantalla, mismo pie documental: quien recibe la cotizacion
-  // ve el equipo real sin abrir la herramienta. Un modelo sin foto declarada exporta SIN
-  // hoja de fotos — el hueco honesto tambien viaja, no se rellena con una imagen parecida.
-  const vBom=(VISTAS||{})[m.id];
-  const fotosBom=vBom&&vBom.front
-    ?{modelo:m.id, front:vBom.front, rear:vBom.rear||null,
-      pie:[vBom.tamano,vBom.fuente].filter(Boolean).join(' · ')}
-    :null;
-  const meta={
-    titulo:`Lista de materiales — ${m.id}`,
-    subtitulo:`${m.seg} · FortiOS · Security Fabric · ${termino}`,
-    archivo:`BOM_${m.id}`,
-    ...(fotosBom?{fotos:fotosBom}:{}),
-    notas:[
-      '',
-      'RENDIMIENTO POR CAPA DE INSPECCION',
-      `  Firewall (1518 B, offload ASIC): ${fmt(m.fw)}`,
-      `  IPsec VPN (512 B, offload ASIC): ${fmt(m.vpn)}`,
-      `  IPS (Enterprise Mix):            ${fmt(m.ips)}`,
-      `  NGFW (IPS + App Control):        ${fmt(m.ngfw)}`,
-      `  Threat Protection (+ AV + log):  ${fmt(m.tp)}   <- dimensionar con este valor`,
-      `  Sesiones concurrentes:           ${m.sess.toLocaleString('en-US')}`,
-      `  Sesiones nuevas / s (flow):      ${m.cps!=null?m.cps.toLocaleString('en-US'):'no esta en el catalogo - ver Product Matrix'}`,
-      `  Procesadores de seguridad:       ${m.asic||'sin dato publicado por Fortinet'}`,
-      '',
-      'INCLUIDO EN FORTIOS SIN LICENCIA ADICIONAL',
-      '  SD-WAN (seleccion de camino por SLA, ADVPN), ZTNA, IPsec/SSL-VPN, VDOMs base, y',
-      '  gestion de FortiSwitch/FortiAP por FortiLink sin controladora ni licencia por dispositivo.',
-      '',
-      'Precios de lista (list price) AMER, sin descuentos de canal ni impuestos.',
-      'Confirmar SKU exacto, termino y precio final con el distribuidor Fortinet autorizado.',
-      qty>1?`Cluster de ${qty} unidades: la licencia no se comparte en HA, cada nodo lleva la suya.`:null,
-      '',
-      `Huella del escenario: ${ultimaHuella || '—'} (identifica el escenario tecnico que produjo esta lista;`,
-      '  se puede cruzar contra el enlace compartido para comprobar que son el mismo).',
-      '',
-      'DECISIONES COMERCIALES APLICADAS A ESTA LISTA',
-      `  Termino ${termYrs} ano(s): los SKU llevan el sufijo ${TERMINOS[termYrs]?TERMINOS[termYrs].sufijo:'?'} (meses), no el marcador DD del patron.`,
-      ...comercialActual.avisos.map((a)=>`  · ${a.mensaje.replace(/\s+/g,' ')}`),
-      ...(bloqueos.length?['', 'ESTA LISTA NO ESTA HABILITADA PARA COTIZAR EN FIRME:',
-        ...bloqueos.map((b)=>`  · ${b.mensaje.replace(/\s+/g,' ')}`)]:[]),
-      // Si alguien fuerza la exportacion, el motivo VIAJA con el documento. Una puerta sin
-      // salida se rodea copiando la tabla a mano, y entonces el documento sale sin la
-      // advertencia; asi sale con ella.
-      ...(override?['', `EXPORTACION FORZADA el ${override.fecha}`
-        +`${override.usuario?` por ${override.usuario}`:''} — motivo: ${override.motivo}`,
-        'Documento de trabajo: NO es una cotizacion en firme.']:[]),
-    ].filter((n)=>n!==null),
-  };
-
-  const dto=dtoActual();
-  $('bomTabla').innerHTML=BOM.renderTabla(filas,{
+  const dto = dtoActual();
+  $('bomTabla').innerHTML = BOM.renderTabla(filas, {
     dto,
-    aviso:qty>1?'Clúster HA: cada nodo lleva su propia suscripción FortiGuard y su propio contrato FortiCare.':null,
+    aviso: r.bom.nodos > 1 ? 'Clúster HA: cada nodo lleva su propia suscripción FortiGuard y su propio contrato FortiCare.' : null,
   });
-
-  // TCO. El calculo vive en BOM.tco y se hace sobre las FILAS, que ya son la forma neutra
-  // que los siete comparten; esta pagina solo declara QUE cuenta como OPEX, porque que una
-  // suscripcion sea recurrente es el modelo comercial del fabricante y no una propiedad de
-  // la fila. Las lineas sin precio no se estiman: se cuentan y se dicen.
-  const fin=BOM.tco(filas,{opex:OPEX_FORTINET, anios:termYrs});
-  const hayPrecios=fin.capex>0||fin.opexTermino>0;
-  const celdaNet=v=>dto>0?`<td><b>${BOM.money(v*(1-dto))}</b></td>`:'';
-  $('tcoFin').innerHTML=hayPrecios
-    ?`<table class="tco-tabla"><thead><tr><th>Pie de la lista de materiales</th><th>Subtotal Lista</th>${dto>0?'<th>Subtotal Neto</th>':''}</tr></thead><tbody>`
-      +`<tr><td><b>CAPEX</b> — equipo y servicios únicos (one-time)</td><td>${BOM.money(fin.capex)}</td>${celdaNet(fin.capex)}</tr>`
-      +`<tr><td><b>OPEX anual</b> — FortiGuard + FortiCare del término ÷ ${termYrs} año${termYrs>1?'s':''}</td><td>${BOM.money(fin.opexAnual)}</td>${celdaNet(fin.opexAnual)}</tr>`
-      +`<tr><td><b>TCO a ${termYrs} año${termYrs>1?'s':''}</b> — CAPEX + OPEX anual × ${termYrs}</td><td><b>${BOM.money(fin.tco)}</b></td>${celdaNet(fin.tco)}</tr>`
-      +'</tbody></table>'
-      +(fin.sinPrecio?`<p class="hint" style="margin-top:8px">${fin.sinPrecio} línea(s) sin precio no entran en la suma: están en «consultar» a propósito, no estimadas.</p>`:'')
-      +'<p class="hint" style="margin-top:8px">El neto es un <b>simulador genérico de tramos partner — no refleja el descuento real del distribuidor Fortinet</b>. Precios de lista AMER, sin impuestos.</p>'
-    :'<p class="hint">Sin precios suficientes para calcular el TCO: el equipo o las licencias están en «consultar».</p>';
-
-  huellaDelBom=ultimaHuella;
-
+  const fin = BOM.tco(filas, { opex: OPEX_FORTINET, anios });
+  const hayPrecios = fin.capex > 0 || fin.opexTermino > 0;
+  const celdaNet = (v) => (dto > 0 ? `<td><b>${BOM.money(v * (1 - dto))}</b></td>` : '');
+  $('tcoFin').innerHTML = hayPrecios
+    ? `<table class="tco-tabla"><thead><tr><th>Pie de la lista de materiales</th><th>Subtotal Lista</th>${dto > 0 ? '<th>Subtotal Neto</th>' : ''}</tr></thead><tbody>`
+      + `<tr><td><b>CAPEX</b> — equipo y servicios únicos</td><td>${BOM.money(fin.capex)}</td>${celdaNet(fin.capex)}</tr>`
+      + `<tr><td><b>OPEX anual</b> — FortiGuard + FortiCare ÷ ${anios} año${anios > 1 ? 's' : ''}</td><td>${BOM.money(fin.opexAnual)}</td>${celdaNet(fin.opexAnual)}</tr>`
+      + `<tr><td><b>TCO a ${anios} año${anios > 1 ? 's' : ''}</b></td><td><b>${BOM.money(fin.tco)}</b></td>${celdaNet(fin.tco)}</tr></tbody></table>`
+      + (fin.sinPrecio ? `<p class="hint" style="margin-top:8px">${fin.sinPrecio} línea(s) sin precio no entran en la suma.</p>` : '')
+      + '<p class="hint" style="margin-top:8px">El neto es un <b>simulador genérico de tramos partner — no refleja el descuento real del distribuidor Fortinet</b>. Precios de lista AMER, sin impuestos.</p>'
+    : '<p class="hint">Sin precios suficientes para calcular el TCO.</p>';
+  bomFilas = filas;
+  bomMeta = documentoMeta(r, null);
+  $('bomOut').value = BOM.comoTexto(bomFilas, bomMeta);
+  pintarPuerta(r);
   pintarPerfiles();
-  $('bomOut').value=BOM.comoTexto(filas,meta);
-  bomMeta=meta; bomFilas=filas;
-
-  // La puerta se evalua al final, con las lineas ya construidas: lo que decide si esta
-  // propuesta se puede exportar es el conjunto -escenario, bloqueos y vigencia de la fuente
-  // comercial-, no ninguna de las tres por separado.
-  pintarPuerta({bloqueos, avisos:comercialActual.avisos, meta});
-  pintarPasos(null);
 }
 
-// El clic en una alternativa escribe en el desplegable de la ficha y dispara su `change`:
-// ese manejador ya sabe repintar medidores, razones, BOM y escala, asi que duplicar aqui esa
-// cadena seria la segunda implementacion que acaba divergiendo. Se delega en `document`
-// porque el sticky se reconstruye entero en cada render y un listener directo se perderia.
-document.addEventListener('click',e=>{
-  const b=e.target.closest('.sr-alt'); if(!b) return;
-  const sel=document.getElementById('verdict-sel');
-  if(!sel) return;
-  sel.value=b.dataset.alt;
-  sel.dispatchEvent(new Event('change',{bubbles:true}));
-});
+/* El documento que sale (Excel o texto). Lleva dentro TODO lo que permite auditarlo: la
+   huella del escenario, la version del catalogo y del motor, la puerta, los supuestos, y si es
+   un borrador, lo dice en el titulo y en cada nota. */
+function documentoMeta(r, confirmacion) {
+  const s = r.snapshot;
+  const m = r.seleccion.modelo;
+  const borrador = r.quoteGate === 'DRAFT';
+  const anios = s.comercial.anios;
+  const v = (VISTAS || {})[m.id];
+  const cli = $('nombreCliente').value.trim();
+  const ref = $('refProyecto').value.trim();
+  const meta = {
+    titulo: `${borrador ? 'BORRADOR TÉCNICO — ' : ''}Lista de materiales — ${m.id}`,
+    subtitulo: `${m.seg} · FortiOS · ${r.bom.nodos} nodo(s) · término ${anios} año${anios > 1 ? 's' : ''}`,
+    archivo: `${borrador ? 'BORRADOR_' : ''}BOM_${m.id}`,
+    ...(v && v.front ? { fotos: { modelo: m.id, front: v.front, rear: v.rear || null, pie: [v.tamano, v.fuente].filter(Boolean).join(' · ') } } : {}),
+    notas: [
+      '',
+      ...(borrador ? ['BORRADOR TECNICO: NO ES UNA COTIZACION EN FIRME. Falta, para cotizar:',
+        ...r.avisos.filter((a) => a.nivel === 'borrador').map((a) => `  · ${a.mensaje.replace(/\s+/g, ' ')}`), ''] : []),
+      `PUERTA DE COTIZACION: ${r.quoteGate} (${GATE[r.quoteGate].n}) · confianza ${r.confianza}`,
+      `Huella del escenario: ${r.scenarioHash}`,
+      `Catalogo: ${r.datasetVersion || '-'} · motor ${r.motor} · esquema ${r.esquema}`,
+      confirmacion ? `Confirmado por el servidor el ${confirmacion.ts} para la accion «${confirmacion.accion}».` : 'Pendiente de confirmacion del servidor (se confirma al exportar).',
+      '',
+      'RENDIMIENTO DEL EQUIPO (cifras publicadas, modo flow)',
+      `  Threat Protection: ${fmt(m.tp)} · Inspeccion SSL: ${m.ssl != null ? fmt(m.ssl) : 'sin dato'} · IPsec: ${fmt(m.vpn)}`,
+      `  Sesiones concurrentes: ${cifra(m.sess)} · nuevas/s: ${m.cps != null ? cifra(m.cps) : 'sin dato'}`,
+      r.seleccion.eval.manda ? `  Cuello de botella: ${r.seleccion.eval.manda.n} al ${R.pct(r.seleccion.eval.manda.u)}` : null,
+      '',
+      'SUPUESTOS DECLARADOS',
+      ...r.supuestos.map((x) => `  · ${x}`),
+      `  · Multiplicador: ${r.multiplicador.texto}`,
+      ...(r.avisos.filter((a) => a.nivel === 'warning').length ? ['', 'ADVERTENCIAS', ...r.avisos.filter((a) => a.nivel === 'warning').map((a) => `  · ${a.mensaje.replace(/\s+/g, ' ')}`)] : []),
+      ...(r.override && r.override.elegible ? ['', `Modelo elegido a mano (${r.override.modelo}) y revalidado por el motor contra el escenario completo.`] : []),
+      ...(s.comercial.justificacionEol ? ['', `Justificacion del equipo fuera de venta: ${s.comercial.justificacionEol}`] : []),
+      '',
+      'Precios de lista AMER, sin descuentos de canal ni impuestos. Confirmar con el distribuidor autorizado.',
+    ].filter((n) => n !== null),
+  };
+  if (cli) meta.cliente = cli;
+  if (ref) meta.referencia = ref;
+  const d = dtoActual();
+  if (d > 0) { meta.dto = d; meta.dtoEtq = dtoEtiqueta(); }
+  return meta;
+}
 
-/* ══ PUERTA DE EXPORTACION (§12 y §14 del informe) ═══════════════════════════════════════
-   Exportar a Excel, copiar e imprimir se habilitan SOLO cuando el escenario coincide con el
-   calculo, no hay bloqueos P0 y cada linea lleva SKU exacto. No es un aviso pasivo: los
-   botones se deshabilitan de verdad.
-
-   EL OVERRIDE EXISTE A PROPOSITO, y con motivo obligatorio. A veces hay que mandar un
-   borrador tecnico antes de tener el SKU del Ordering Guide, y una puerta sin salida se
-   rodea copiando la tabla a mano — que es peor, porque entonces el documento sale SIN la
-   advertencia. Asi sale con ella: el motivo, la fecha y el usuario viajan estampados en las
-   notas del Excel y del texto copiado. */
-function usuarioActual(){ return (window.__usuarioPresales||null); }
-
-function pintarPuerta(ctx){
-  const caja=$('exportGate'); if(!caja) return;
-  const precios=FUENTES&&FUENTES.fuentes
-    ? FUENTES.fuentes.find(f=>f.dominio==='precio')||null : null;
-  const salud=precios?R.saludPrecios(precios):{estado:'sin-fuente', bloquea:false,
-    mensaje:'No se localizó la lista de precios en la procedencia del fabricante.'};
-  const bloqueos=ctx.bloqueos.slice();
-  if(salud.bloquea) bloqueos.push({codigo:'precios-vencidos', mensaje:salud.mensaje});
-
-  const st=R.estadoEscenario({
-    faltan:[],
-    hayCandidato,
-    // Invariante, no deteccion: ver el comentario de `ultimaHuella` arriba.
-    stale:ultimaHuella!==null&&huellaDelBom!==null&&ultimaHuella!==huellaDelBom,
-    bloqueos,
-    avisos:ctx.avisos,
-  });
-
-  const abierto=st.puedeExportar||!!override;
-  ['xlsBtn','copyBtn'].forEach(id=>{ const b=$(id); if(b) b.disabled=!abierto; });
-  const cot=document.getElementById('btnACotizador');
-  if(cot) cot.disabled=!abierto;
-
-  const cls=st.puedeExportar?'ok':(st.estado==='advertencia'?'warn':'bad');
-  // El titular resume; la lista detalla. Se listan TODOS menos el que ya encabeza, porque
-  // repetirlo palabra por palabra hace dudar de lo demas que dice la pantalla.
-  const lista=bloqueos.length?bloqueos:ctx.avisos;
-  let html=`<h3 class="${cls==='bad'?'warn':''}">${esc(st.titulo)}</h3><p style="margin:0">${esc(st.motivo)}</p>`;
-  if(lista.length>1) html+=`<ul>${lista.slice(1).map(b=>`<li>${esc(b.mensaje)}</li>`).join('')}</ul>`;
-  html+=`<p class="hint" style="margin:8px 0 0">Huella del escenario <code>${esc(huellaDelBom||'—')}</code>`
-    +` · ${filasSinSku(ctx.meta)} línea(s) sin SKU exacto · lista de precios: ${esc(salud.mensaje)}</p>`;
-  if(!st.puedeExportar){
-    html+=override
-      ? `<p class="hint" style="margin:8px 0 0"><b class="warn">Exportación forzada</b> por ${esc(override.usuario||'usuario sin identificar')} el ${esc(override.fecha)} — motivo: «${esc(override.motivo)}». Viaja estampado en el documento. <button type="button" class="btn ghost" id="btnOvCancel" style="font-size:10px;padding:3px 8px">Deshacer</button></p>`
-      : `<div class="gate-ov"><input type="text" id="ovMotivo" placeholder="Motivo para exportar igualmente (obligatorio)" autocomplete="off">`
-        +`<button type="button" class="btn ghost" id="btnOverride" style="font-size:11px;padding:5px 11px">Exportar como borrador</button></div>`;
+/* ══ PUERTA DE COTIZACION (F04, T25) ══════════════════════════════════════════════════════
+   Todos los botones comerciales preguntan lo mismo: `FortinetMotor.permite(RES, accion)`. Y
+   antes de que salga nada, el servidor lo confirma recalculando el mismo escenario. */
+function pintarPuerta(r) {
+  const caja = $('exportGate');
+  const g = GATE[r.quoteGate];
+  const precios = CAT.fuentes && CAT.fuentes.find ? CAT.fuentes.find((f) => f.dominio === 'precio') : null;
+  const salud = precios ? R.saludPrecios(precios) : null;
+  const titulo = {
+    READY: 'Propuesta lista para cotizar',
+    WARNING: 'Cotizable: las advertencias viajan estampadas en el documento',
+    DRAFT: 'Solo borrador técnico: el diseño es coherente, pero falta algo pedible',
+    BLOCKED: 'Cotización bloqueada: ninguna salida comercial',
+  }[r.quoteGate];
+  const lista = r.bloqueos.concat(r.avisos.filter((a) => a.nivel !== 'info'));
+  let html = `<h3>${esc(titulo)} <span class="qg qg-${r.quoteGate}">${esc(g.n)}</span></h3>`;
+  if (lista.length) {
+    html += `<ul>${lista.map((b) => {
+      const c = b.correccion;
+      const btn = c && c.accion === 'cambiar'
+        ? ` <button type="button" class="btn ghost btn-corr" data-corregir='${esc(JSON.stringify(c))}'>${esc(c.campo === 'comercial.bundle' ? `Cambiar a ${BUNDLES[c.valor] ? BUNDLES[c.valor].n : c.valor}` : c.campo === 'remoto.metodo' ? 'Cambiar a IPsec' : 'Corregir')}</button>`
+        : c && c.accion === 'volver-recomendado' ? ` <button type="button" class="btn ghost btn-corr" data-corregir='${esc(JSON.stringify(c))}'>Volver al recomendado</button>` : '';
+      return `<li${b.nivel === 'bloqueo' ? ' class="warn"' : ''}>${esc(b.mensaje)}${btn}</li>`;
+    }).join('')}</ul>`;
   }
-  caja.className='gate '+cls;
-  caja.innerHTML=html;
-}
-
-// Cuenta las lineas cotizables que no tienen SKU exacto. El equipo sin SKU cuenta: es lo que
-// distingue un borrador tecnico de una cotizacion.
-function filasSinSku(){
-  return bomFilas.filter(f=>!f.sku).length;
-}
-
-$('exportGate').addEventListener('click',e=>{
-  if(e.target.id==='btnOverride'){
-    const motivo=($('ovMotivo').value||'').trim();
-    if(!motivo){ $('ovMotivo').focus(); return; }
-    override={motivo, fecha:new Date().toISOString().slice(0,10), usuario:usuarioActual()};
-    renderBom();
-  }else if(e.target.id==='btnOvCancel'){
-    override=null; renderBom();
+  html += `<p class="hint" style="margin:8px 0 0">Huella del escenario <code>${esc(r.scenarioHash.slice(0, 23))}…</code> · catálogo <code>${esc(r.datasetVersion || '—')}</code>`
+    + ` · ${bomFilas.filter((f) => !f.sku).length} línea(s) sin SKU exacto · lista de precios: ${esc(salud ? salud.mensaje : 'sin fuente declarada')}</p>`;
+  if (ultimaConfirmacion && ultimaConfirmacion.hash === r.scenarioHash) {
+    html += `<p class="hint" style="margin:6px 0 0">Última salida confirmada por el servidor: «${esc(ultimaConfirmacion.accion)}» el ${esc(ultimaConfirmacion.ts.replace('T', ' ').slice(0, 19))}.</p>`;
   }
-});
+  caja.className = `gate ${g.cls}`;
+  caja.innerHTML = html;
+  pintarBotones(r);
+}
+function pintarBotones(r) {
+  const x = $('xlsBtn');
+  const c = $('copyBtn');
+  const excel = M.permite(r, 'excel') ? 'excel' : M.permite(r, 'excel-borrador') ? 'excel-borrador' : null;
+  const copia = M.permite(r, 'copiar') ? 'copiar' : M.permite(r, 'copiar-borrador') ? 'copiar-borrador' : null;
+  if (x && !x.dataset.ocupado) { x.disabled = !excel || !r.bom; x.textContent = excel === 'excel-borrador' ? 'Exportar borrador técnico' : 'Exportar a Excel'; x.dataset.accion = excel || ''; }
+  if (c && !c.dataset.ocupado) { c.disabled = !copia || !r.bom; c.textContent = copia === 'copiar-borrador' ? 'Copiar borrador' : 'Copiar como texto'; c.dataset.accion = copia || ''; }
+  const cot = $('btnACotizador');
+  if (cot && cot.textContent === 'Enviar al cotizador') cot.disabled = !M.permite(r, 'cotizador') || !r.bom;
+  $('btnGuardarPerfil').disabled = !M.permite(r, 'perfil') || !r.bom;
+  $('btnConsolidar').disabled = !M.permite(r, 'consolidar') || !BOM.perfiles().length;
+  const motivo = r.quoteGate === 'BLOCKED' ? 'La puerta de cotización está bloqueada: revisa sus motivos.'
+    : r.quoteGate === 'DRAFT' ? 'Borrador técnico: no sale al cotizador ni a perfiles.' : '';
+  for (const b of [x, c, cot, $('btnGuardarPerfil'), $('btnConsolidar')]) if (b) b.title = b.disabled ? motivo : '';
+}
 
+/* CONFIRMACION DEL SERVIDOR. El navegador puede decir que si; quien deja salir la
+   cotizacion es el servidor, con el mismo motor, el mismo escenario y su propio catalogo. */
+async function confirmar(accion) {
+  if (!RES || !ESC) return { ok: false, motivo: 'Sin evaluación vigente.' };
+  if (!M.permite(RES, accion)) return { ok: false, motivo: `La puerta está en ${RES.quoteGate}.` };
+  const clave = `${accion}-${RES.scenarioHash.slice(7, 19)}-${Date.now().toString(36)}`;
+  try {
+    const resp = await fetch('/api/v1/fortinet/evaluations', {
+      method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scenario: ESC, accion, scenarioHash: RES.scenarioHash, datasetVersion: CAT.datasetVersion, idempotencyKey: clave }),
+    });
+    const j = await resp.json().catch(() => ({}));
+    if (!resp.ok || !j.permitida) {
+      const motivo = j.error || `El servidor no confirmó la acción (${resp.status}).`;
+      avisoAccion(motivo);
+      return { ok: false, motivo, respuesta: j };
+    }
+    ultimaConfirmacion = { accion, ts: new Date().toISOString(), hash: j.scenarioHash, gate: j.quoteGate };
+    return { ok: true, respuesta: j, confirmacion: ultimaConfirmacion };
+  } catch {
+    const motivo = 'No se pudo confirmar con el servidor: sin su confirmación no sale ninguna salida comercial.';
+    avisoAccion(motivo);
+    return { ok: false, motivo };
+  }
+}
+function avisoAccion(texto) {
+  const caja = $('exportGate');
+  const p = document.createElement('p');
+  p.className = 'hint warn';
+  p.style.margin = '8px 0 0';
+  p.textContent = texto;
+  caja.appendChild(p);
+  anunciar(texto, true);
+}
+async function conBoton(b, trabajo) {
+  if (!b || b.disabled) return;
+  const txt = b.textContent;
+  b.dataset.ocupado = '1';
+  b.disabled = true;
+  b.textContent = 'Confirmando…';
+  try { await trabajo((t) => { b.textContent = t; }); } finally {
+    delete b.dataset.ocupado;
+    b.textContent = txt;
+    if (RES) pintarBotones(RES);
+  }
+}
+$('xlsBtn').addEventListener('click', () => conBoton($('xlsBtn'), async (decir) => {
+  const accion = $('xlsBtn').dataset.accion;
+  if (!accion) return;
+  const v = await confirmar(accion);
+  if (!v.ok) return;
+  decir('Generando…');
+  try { await BOM.exportarExcel(bomFilas, documentoMeta(RES, v.confirmacion)); } catch (e) { console.error(e); avisoAccion('Error al generar el Excel.'); }
+  pintarPuerta(RES);
+}));
+$('copyBtn').addEventListener('click', () => conBoton($('copyBtn'), async (decir) => {
+  const accion = $('copyBtn').dataset.accion;
+  if (!accion) return;
+  const v = await confirmar(accion);
+  if (!v.ok) return;
+  const texto = BOM.comoTexto(bomFilas, documentoMeta(RES, v.confirmacion));
+  $('bomOut').value = texto;
+  try { await navigator.clipboard.writeText(texto); decir('Copiado'); } catch {
+    const t = $('bomOut');
+    t.classList.remove('hidden'); t.select(); document.execCommand('copy'); t.classList.add('hidden');
+    decir('Copiado');
+  }
+  await new Promise((res) => { setTimeout(res, 900); });
+  pintarPuerta(RES);
+}));
 
-/* ── PERFILES MULTI-SEDE ───────────────────────────────────────────────────
-   Un perfil guarda el escenario completo mas cuantas sedes identicas se cotizan con el.
-   El almacen es UNO SOLO para los siete fabricantes (js/bom.js, clave `presales-perfiles`):
-   un despliegue real de 50 sedes mezcla marcas —spokes FortiGate contra un core Nokia— y
-   una clave por pagina hacia que el consolidado de cada fabricante ignorara al resto en
-   silencio.
-
-   CARGAR ES DEL FABRICANTE; CONSOLIDAR NO. `campos` son los ids del formulario de ESTA
-   pagina, asi que aplicar un perfil de Aruba aqui no significa nada; `filas` es la forma
-   neutra que los siete comparten, y por eso el BOM global suma todos. */
-const cargarPerfiles=()=>BOM.perfilesDe(VENDOR);
-
-function capturarCampos(){
-  const v={};
-  CAMPOS_ESCENARIO.forEach(id=>{
-    const n=$(id); if(!n) return;
-    if(n.classList&&n.classList.contains('seg')){
-      const a=n.querySelector('[aria-pressed="true"]'); v[id]=a?a.dataset.v:null;
-    }else if(n.type==='checkbox'){ v[id]=n.checked; }
-    else v[id]=n.value;
+/* ── PERFILES MULTI-SEDE ─────────────────────────────────────────────────────────────── */
+const cargarPerfiles = () => BOM.perfilesDe(VENDOR);
+function capturarCampos() {
+  const v = {};
+  CAMPOS_ESCENARIO.forEach((id) => {
+    const n = $(id);
+    if (!n) return;
+    if (n.classList && n.classList.contains('seg')) { const a = n.querySelector('[aria-pressed="true"]'); v[id] = a ? a.dataset.v : null; }
+    else if (n.type === 'checkbox') v[id] = n.checked;
+    else v[id] = n.value;
   });
   return v;
 }
-function aplicarCampos(v){
-  // PERFILES GUARDADOS ANTES DEL BUILDER. Viven en localStorage y llevan bw/unit/pctOverlay
-  // pero no wanLinksData: aplicarlos tal cual dejaria el escenario SIN caudal y en silencio
-  // —la misma perdida muda que la clave por pagina de `presales-bom-refs`—. Se convierten
-  // con la misma regla que migrarEstadoV1().
-  if(v.wanLinksData==null&&v.bw!=null){
-    const bw=(parseFloat(v.bw)||0)*(parseFloat(v.unit)||1);
-    if(bw>0){
-      const pct=v.pctOverlay!=null?Math.max(0,Math.min(100,parseFloat(v.pctOverlay)||0)):100;
-      const ovl=Math.round(bw*pct/100), resto=bw-ovl, links=[];
-      if(ovl>0) links.push({id:++wanSeq, tipo:'MPLS L3', down:ovl, overlay:true});
-      if(resto>0) links.push({id:++wanSeq, tipo:'DIA', down:resto, overlay:false});
-      v={...v, wanLinksData:JSON.stringify({v:2, wanLinks:links})};
-      console.warn('[dimensionador-fortinet] Perfil anterior al builder: su caudal y su'
-        +' porcentaje de overlay se convirtieron en', links.length, 'enlace(s).', links);
+function aplicarCampos(v0) {
+  let v = v0 || {};
+  // Perfiles guardados antes del builder (bw/unit/pctOverlay): se convierten con la misma regla
+  // que la migracion de enlaces v1, en vez de aplicarse sin caudal y en silencio.
+  if (v.wanLinksData == null && v.bw != null) {
+    const bw = (parseFloat(v.bw) || 0) * (parseFloat(v.unit) || 1);
+    if (bw > 0) {
+      const pct = v.pctOverlay != null ? Math.max(0, Math.min(100, parseFloat(v.pctOverlay) || 0)) : 100;
+      v = { ...v, wanLinksData: JSON.stringify({ v: 2, wanLinks: filasV1(bw, pct) }) };
     }
   }
-  CAMPOS_ESCENARIO.forEach(id=>{
-    const n=$(id); if(!n||v[id]==null) return;
-    if(n.classList&&n.classList.contains('seg')){
-      const b=[...n.children].find(x=>x.dataset.v===v[id]); if(b) b.click();
-    }else if(n.type==='checkbox'){ n.checked=!!v[id]; }
-    else n.value=v[id];
+  // Un perfil de antes de la etapa 7 guarda el equipo en `verdict-sel`, no tiene casilla de
+  // acceso remoto y deriva los endpoints de EMS de los usuarios: se traduce con la regla de
+  // entonces (la misma que `migrarActivadores` aplica a los enlaces).
+  if (v.pickModel == null && v['verdict-sel'] != null) v = { ...v, pickModel: v['verdict-sel'] };
+  if (v.chkRemoto == null && ((parseFloat(v.vpnUsers) || 0) > 0 || (parseFloat(v.vpnMbps) || 0) > 0)) v = { ...v, chkRemoto: true };
+  if (v.chkEms === true && v.emsEndpoints == null) v = { ...v, emsEndpoints: String(Math.round((parseFloat(v.users) || 0) + (parseFloat(v.vpnUsers) || 0))) };
+  CAMPOS_ESCENARIO.forEach((id) => {
+    const n = $(id);
+    if (!n || v[id] == null) return;
+    if (n.classList && n.classList.contains('seg')) {
+      const b = [...n.children].find((x) => x.dataset.v === v[id]);
+      if (b) {
+        [...n.children].forEach((x) => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+        if (id === 'profileSeg') profile = v[id];
+        if (id === 'rolSeg') rolSdwan = v[id];
+        if (id === 'segSeg') segMode = v[id];
+      }
+    } else if (n.type === 'checkbox') n.checked = !!v[id];
+    else if (n.tagName === 'SELECT') { if ([...n.options].some((o) => o.value === String(v[id]))) n.value = String(v[id]); }
+    else n.value = v[id];
   });
-  // Las filas se reconstruyen DESPUES de restaurar el campo oculto: leerlas antes daria las
-  // del escenario anterior y pisaria lo que el perfil trae.
+  seleccionManual = $('pickModel').value || null;
   reconstruirWanDesdeHidden();
-  render(); renderBom();
+  wanRolPintado = null;
+  evaluarYPintar();
 }
-
-$('btnGuardarPerfil').addEventListener('click',()=>{
-  const nombre=$('nombrePerfil').value.trim();
-  const sedes=Math.max(0,parseInt($('perfilSedes').value)||0);
-  if(!nombre||!sedes){ $('nombrePerfil').focus(); return; }
-  const m=MODELS.find(x=>x.id===$('pickModel').value);
-  if(!m||!bomFilas.length) return;
-  BOM.guardarPerfil({nombre, sedes, modelo:m.id, vendor:VENDOR,
-    fecha:new Date().toISOString().slice(0,10),
-    version:1, campos:capturarCampos(), filas:JSON.parse(JSON.stringify(bomFilas))});
-  $('nombrePerfil').value=''; $('perfilSedes').value='';
+$('btnGuardarPerfil').addEventListener('click', () => conBoton($('btnGuardarPerfil'), async () => {
+  const nombre = $('nombrePerfil').value.trim();
+  const sedes = Math.max(0, parseInt($('perfilSedes').value, 10) || 0);
+  if (!nombre || !sedes) { $('perfilMsg').textContent = 'Pon un nombre y el número de sedes idénticas.'; $('nombrePerfil').focus(); return; }
+  const v = await confirmar('perfil');
+  if (!v.ok) return;
+  BOM.guardarPerfil({ nombre, sedes, modelo: RES.seleccion.id, vendor: VENDOR, fecha: new Date().toISOString().slice(0, 10),
+    version: 2, huella: RES.scenarioHash, puerta: RES.quoteGate, campos: capturarCampos(), filas: JSON.parse(JSON.stringify(bomFilas)) });
+  $('nombrePerfil').value = '';
+  $('perfilSedes').value = '';
+  $('perfilMsg').textContent = `Perfil «${nombre}» guardado con ${sedes} sede(s).`;
   pintarPerfiles();
-});
-
-function pintarPerfiles(){
-  const caja=$('listaPerfiles'); if(!caja) return;
-  const l=cargarPerfiles();
-  caja.innerHTML=l.length
-    ?'<table class="tco-tabla"><thead><tr><th>Perfil</th><th>Sedes</th><th>Modelo</th><th>Guardado</th><th></th></tr></thead><tbody>'
-      +l.map(x=>`<tr><td><b>${esc(x.nombre)}</b></td><td>${x.sedes}</td><td>${esc(x.modelo)}</td><td>${x.fecha||'—'}</td>`
-        +`<td><button type="button" class="btn ghost" data-perfil-cargar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Cargar</button> `
-        +`<button type="button" class="btn ghost" data-perfil-borrar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Eliminar</button></td></tr>`).join('')
-      +'</tbody></table>'
-    :'<p class="hint">Sin perfiles guardados todavía.</p>';
-  $('btnConsolidar').disabled=!l.length;
+}));
+function pintarPerfiles() {
+  const caja = $('listaPerfiles');
+  const l = cargarPerfiles();
+  caja.innerHTML = l.length
+    ? '<table class="tco-tabla"><thead><tr><th>Perfil</th><th>Sedes</th><th>Modelo</th><th>Guardado</th><th></th></tr></thead><tbody>'
+      + l.map((x) => `<tr><td><b>${esc(x.nombre)}</b></td><td>${x.sedes}</td><td>${esc(x.modelo)}</td><td>${esc(x.fecha || '—')}</td>`
+        + `<td><button type="button" class="btn ghost" data-perfil-cargar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Cargar</button> `
+        + `<button type="button" class="btn ghost" data-perfil-borrar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Eliminar</button></td></tr>`).join('')
+      + '</tbody></table>'
+    : '<p class="hint">Sin perfiles guardados todavía.</p>';
+  if (RES) $('btnConsolidar').disabled = !M.permite(RES, 'consolidar') || !BOM.perfiles().length;
 }
-
-$('listaPerfiles').addEventListener('click',e=>{
-  const b=e.target.closest('button'); if(!b) return;
-  if(b.dataset.perfilCargar!=null){
-    const x=cargarPerfiles().find(y=>y.id===b.dataset.perfilCargar);
-    if(x&&x.campos) aplicarCampos(x.campos);
-  }else if(b.dataset.perfilBorrar!=null){
-    BOM.quitarPerfil(b.dataset.perfilBorrar); pintarPerfiles();
+$('listaPerfiles').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  if (b.dataset.perfilCargar != null) {
+    const x = cargarPerfiles().find((y) => y.id === b.dataset.perfilCargar);
+    if (x && x.campos) { aplicarCampos(x.campos); registrarHistorial(); }
+  } else if (b.dataset.perfilBorrar != null) {
+    BOM.quitarPerfil(b.dataset.perfilBorrar);
+    pintarPerfiles();
   }
 });
-
-// EN FORTIGATE NO HAY EXCEPCIONES DE AGREGACION, Y ESO SE DECLARA EN VEZ DE OMITIRSE.
-// Aruba agrega el pool de Boost en una linea y deja el Orchestrator una vez por fabric
-// porque es SU modelo comercial. Aqui cada nodo paga su propia suscripcion FortiGuard y su
-// propio FortiCare, incluso en HA, asi que TODO multiplica por sedes -- que es el
-// comportamiento por defecto de BOM.consolidar. Pasar los objetos vacios es la forma de
-// dejar constancia de que se miro y se decidio, no de que se olvido.
-function consolidarPerfiles(){
-  const l=BOM.perfiles();
-  const {filas,totalSedes,fabricantes}=BOM.consolidar(l,{agregadas:[], unicas:[]});
-  const multi=fabricantes.length>1;
-  const meta={
-    titulo:`BOM global consolidado — ${l.length} perfil(es), ${totalSedes} sedes`,
-    subtitulo:l.map(x=>`${x.nombre} ×${x.sedes} (${x.modelo})`).join(' · '),
-    archivo:multi?'BOM_global_multifabricante':'BOM_global_fortinet', sinRefs:true,
-    notas:[
-      'REGLAS DE CONSOLIDACION (FortiGate):',
-      '  Equipo, licencias FortiGuard y soporte FortiCare: cantidad por sede x sedes del perfil.',
-      '  No hay lineas agregadas ni unicas: en HA cada nodo lleva su propia suscripcion.',
-      '  Precios: los vigentes el dia en que se guardo cada perfil.',
-    ],
+// En FortiGate TODO multiplica por sedes: en HA cada nodo paga su suscripcion. Pasar los
+// objetos vacios deja constancia de que se miro y se decidio, no de que se olvido.
+function consolidarPerfiles() {
+  const l = BOM.perfiles();
+  const { filas, totalSedes, fabricantes } = BOM.consolidar(l, { agregadas: [], unicas: [] });
+  const multi = fabricantes.length > 1;
+  const meta = {
+    titulo: `BOM global consolidado — ${l.length} perfil(es), ${totalSedes} sedes`,
+    subtitulo: l.map((x) => `${x.nombre} ×${x.sedes} (${x.modelo})`).join(' · '),
+    archivo: multi ? 'BOM_global_multifabricante' : 'BOM_global_fortinet',
+    sinRefs: true,
+    notas: ['REGLAS DE CONSOLIDACION (FortiGate):',
+      '  Equipo, licencias y soporte: cantidad por sede x sedes del perfil. En HA cada nodo lleva su propia suscripcion.',
+      '  Precios: los vigentes el dia en que se guardo cada perfil; cada perfil lleva la huella de su escenario.'],
   };
-  const cli=$('nombreCliente').value.trim(), ref=$('refProyecto').value.trim();
-  if(cli) meta.cliente=cli;
-  if(ref) meta.referencia=ref;
-  if(multi) meta.notas.push(`  MULTI-FABRICANTE: ${fabricantes.join(', ')}. Las lineas de cada marca siguen sus propias reglas.`);
-  const d=dtoActual();
-  if(d>0){ meta.dto=d; meta.dtoEtq=dtoEtiqueta(); }
-  return {filas, meta, totalSedes, fabricantes};
+  const cli = $('nombreCliente').value.trim();
+  const ref = $('refProyecto').value.trim();
+  if (cli) meta.cliente = cli;
+  if (ref) meta.referencia = ref;
+  if (multi) meta.notas.push(`  MULTI-FABRICANTE: ${fabricantes.join(', ')}.`);
+  const d = dtoActual();
+  if (d > 0) { meta.dto = d; meta.dtoEtq = dtoEtiqueta(); }
+  return { filas, meta, totalSedes, fabricantes };
+}
+$('btnConsolidar').addEventListener('click', () => conBoton($('btnConsolidar'), async () => {
+  const v = await confirmar('consolidar');
+  if (!v.ok) return;
+  const { filas, meta, totalSedes, fabricantes } = consolidarPerfiles();
+  if (!totalSedes) return;
+  $('consolidadoSub').textContent = `${meta.subtitulo} — ${totalSedes} sedes en total`;
+  $('consolidadoTabla').innerHTML = (fabricantes.length > 1 ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${esc(fabricantes.join(', '))}).</p>` : '')
+    + BOM.renderTabla(filas, { dto: dtoActual(), sinRefs: true });
+  $('modalConsolidado').hidden = false;
+  $('xlsConsolidadoBtn').onclick = () => BOM.exportarExcel(filas, meta);
+  $('consolidadoCerrar').focus();
+}));
+$('consolidadoCerrar').addEventListener('click', () => { $('modalConsolidado').hidden = true; $('btnConsolidar').focus(); });
+$('modalConsolidado').addEventListener('click', (e) => { if (e.target === $('modalConsolidado')) $('modalConsolidado').hidden = true; });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('modalConsolidado').hidden) $('modalConsolidado').hidden = true; });
+
+/* ── CHIPS DE LOS PASOS: salen del mismo resultado que el calculo ────────────────────── */
+function chip(id, cls, texto, titulo) {
+  const n = $(id);
+  if (!n) return;
+  n.className = `paso-chip ${cls || ''}`;
+  n.textContent = texto || '';
+  n.title = titulo || '';
+}
+function pasoDe(campo) {
+  const id = CAMPO_ID[campo];
+  const n = id ? $(id) : (campo === 'topologia.enlaces' ? $('wanBuilder') : null);
+  const sec = n && n.closest('.paso');
+  return sec ? sec.id : null;
+}
+function pintarPasos(r) {
+  const s = r.snapshot;
+  const faltanEn = {};
+  for (const f of r.faltan.concat(r.errores.map((e) => e.campo))) {
+    const p = pasoDe(f);
+    if (p) (faltanEn[p] = faltanEn[p] || []).push(CAMPO_N[f] || f);
+  }
+  const conFalta = (paso, def) => (faltanEn[paso] ? ['bad', `Falta ${faltanEn[paso][0]}`, `Revisar: ${faltanEn[paso].join(', ')}`] : def);
+  chip('chipPaso1', ...conFalta('paso1', [s.software.inspeccion === 'proxy' ? 'warn' : '',
+    `${{ branch: 'Sucursal', campus: 'Campus', dc: 'Datacenter' }[s.sitio.segmento]} · ${{ none: 'sin SD-WAN', spoke: 'spoke', hub: 'hub' }[s.topologia.rol]} · FortiOS ${s.software.fortiOS}${s.disponibilidad.modo !== 'standalone' ? ' · HA' : ''}`,
+    'Segmento, rol, versión de FortiOS y alta disponibilidad.']));
+  const c = r.detalle && r.detalle.capa;
+  const min = R.bundleMinimo(s.seguridad.funciones, FUNCIONES, BUNDLES);
+  chip('chipPaso2', ...conFalta('paso2', [c && c.elevada ? 'warn' : '',
+    `${TIER_BY_K[c ? c.k : s.seguridad.capa].n}${c && c.elevada ? ' (elevada)' : ''}${min.minimo && min.minimo !== 'atp' ? ` · mín. ${BUNDLES[min.minimo].n.split(' ')[0]}` : ''}`,
+    'Capa efectiva contra la que se dimensiona.']));
+  const d = r.detalle;
+  chip('chipPaso3', ...conFalta('paso3', [!r.seleccion && d ? 'warn' : '', d ? `${fmt(d.trafico.previsto)} previstos${r.escenarios.length > 1 ? ` · ${r.escenarios.length} escenarios` : ''}` : '—',
+    'Requerimiento previsto con crecimiento aplicado.']));
+  const sess = r.requisitos.find((x) => x.eje === 'sess');
+  chip('chipPaso4', ...conFalta('paso4', ['', `${sess ? `${nMil(sess.requerido)} sesiones` : 'sin sesiones'} · techo ${s.politica.techoPct} %`,
+    'Escala, hardware físico, registro y política.']));
+  const bundleMal = r.bloqueos.find((b) => b.codigo === 'bundle-insuficiente');
+  chip('chipPaso5', ...conFalta('paso5', bundleMal ? ['bad', 'Bundle insuficiente', bundleMal.mensaje]
+    : [r.quoteGate === 'BLOCKED' ? 'bad' : r.quoteGate === 'READY' ? '' : 'warn',
+      `${r.seleccion ? r.seleccion.id.replace('FortiGate ', '') : '—'} · ${s.comercial.anios} año(s) · ${GATE[r.quoteGate].n}`, 'Tipo de compra, modelo, término, bundle y soporte.']));
+  // Un paso que bloquea no se queda plegado: se abre para que se vea el motivo.
+  for (const p of Object.keys(faltanEn)) { const det = $(p) && $(p).querySelector('details'); if (det) det.open = true; }
+  if (bundleMal) { const det = $('paso5').querySelector('details'); if (det) det.open = true; }
 }
 
-$('btnConsolidar').addEventListener('click',()=>{
-  const {filas, meta, totalSedes, fabricantes}=consolidarPerfiles();
-  if(!totalSedes) return;
-  const aviso=fabricantes.length>1
-    ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${fabricantes.join(', ')}). En FortiGate todo multiplica por sedes; las líneas de otras marcas siguen las reglas que declare su página.</p>`
-    : '';
-  $('consolidadoSub').textContent=meta.subtitulo+` — ${totalSedes} sedes en total`;
-  $('consolidadoTabla').innerHTML=aviso+BOM.renderTabla(filas,{dto:dtoActual(), sinRefs:true});
-  $('modalConsolidado').hidden=false;
-  $('xlsConsolidadoBtn').onclick=()=>BOM.exportarExcel(filas,meta);
-});
-$('consolidadoCerrar').addEventListener('click',()=>{ $('modalConsolidado').hidden=true; });
-$('modalConsolidado').addEventListener('click',e=>{ if(e.target===$('modalConsolidado')) $('modalConsolidado').hidden=true; });
-$('copyBtn').addEventListener('click',async()=>{
-  const t=$('bomOut');
-  try{await navigator.clipboard.writeText(t.value);$('copyBtn').textContent='Copiado';}
-  catch{t.classList.remove('hidden');t.select();document.execCommand('copy');t.classList.add('hidden');$('copyBtn').textContent='Copiado';}
-  setTimeout(()=>$('copyBtn').textContent='Copiar como texto',1600);
-});
+/* ── ANUNCIOS PARA LECTOR DE PANTALLA (F17, T28) ──────────────────────────────────────
+   Solo cuando cambia el equipo o la puerta: anunciar cada tecla seria ruido que se apaga. */
+function anunciar(texto, forzar) {
+  const n = $('resAnuncio');
+  if (!n) return;
+  if (!forzar && texto === ultimoAnuncio) return;
+  ultimoAnuncio = texto;
+  n.textContent = '';
+  setTimeout(() => { n.textContent = texto; }, 30);
+}
+function anunciarCambio(r) {
+  const sel = r.seleccion;
+  const texto = sel
+    ? `${r.override && r.override.elegible ? 'Elegido a mano y validado' : 'Recomendado'}: ${sel.id}. Puerta de cotización: ${GATE[r.quoteGate].n}.`
+      + (r.override && !r.override.elegible ? ` ${r.override.modelo} no cumple el escenario: cotización bloqueada.` : '')
+      + (r.quoteGate === 'BLOCKED' && r.bloqueos[0] ? ` ${r.bloqueos[0].mensaje}` : '')
+    : `Sin modelo validado. ${r.bloqueos[0] ? r.bloqueos[0].mensaje : ''}`;
+  anunciar(texto);
+}
 
-$('xlsBtn').addEventListener('click',async()=>{
-  const b=$('xlsBtn');b.disabled=true;b.textContent='Generando…';
-  try{ await BOM.exportarExcel(bomFilas,bomMeta); b.textContent='Exportar a Excel'; }
-  catch(e){ b.textContent='Error al exportar'; console.error(e);
-    setTimeout(()=>b.textContent='Exportar a Excel',2200); }
-  b.disabled=false;
-});
+/* ── FUENTES DE ESTE CALCULO (F13, T24): generadas, nunca escritas a mano ─────────────── */
+function pintarFuentesCalculo(r) {
+  const caja = $('fuentesCalculo');
+  const nota = $('notaFuentes');
+  if (!caja) return;
+  const fs = FUENTES && FUENTES.fuentes ? FUENTES.fuentes : [];
+  const m = r.seleccion ? r.seleccion.modelo : null;
+  const cobertura = (campo) => `${MODELS.filter((x) => x[campo] != null).length}/${MODELS.length}`;
+  const eol = MODELS.filter((x) => x.eol || !x.hwSku).length;
+  caja.innerHTML = (fs.length
+    ? `<ul class="fuentes-list">${fs.map((f) => `<li><b>${esc(f.documento)}</b>${f.fecha ? ` — ${esc(f.fecha)}` : ' — sin fecha declarada'}`
+      + `${f.url ? ` · <a href="${esc(f.url)}" target="_blank" rel="noopener">documento</a>` : ''}<br>${esc(f.cubre || f.nota || '')}</li>`).join('')}</ul>`
+    : '<p class="hint">No se pudo leer la procedencia declarada del fabricante.</p>')
+    + `<p class="hint" style="margin-top:8px">Cobertura del catálogo servido, contada y no escrita: SSL ${cobertura('ssl')} · CPS ${cobertura('cps')} · túneles ${cobertura('tunGw')} · VDOM ${cobertura('vdomMax')} · puertos estructurados ${cobertura('puertos')} · disco ${cobertura('almacenamientoGB')}. `
+    + `${eol} modelo(s) fuera de venta <b>se muestran</b> como referencia de parque instalado y no se ofrecen en compra nueva.</p>`
+    + (m ? `<p class="hint">Procedencia campo a campo del <b>${esc(m.id)}</b>: pestaña «Dimensionar» → ficha → «Procedencia de las cifras de este equipo».</p>` : '');
+  if (nota) {
+    const tecnica = fs.find((f) => f.dominio !== 'precio');
+    const precios = fs.find((f) => f.dominio === 'precio');
+    nota.innerHTML = fs.length
+      ? `<b>Fuentes declaradas:</b> ${tecnica ? `${esc(tecnica.documento)} (${esc(tecnica.fecha || 'sin fecha')})` : '—'} · ${precios ? `${esc(precios.documento)} (${esc(precios.fecha || 'sin fecha')})` : '—'}. Detalle en la pestaña «Fuentes».`
+      : '';
+  }
+}
 
-(async function initApp(){
+/* ── BANNER DE ESTADO DE DATOS ───────────────────────────────────────────────────────── */
+function pintarBanner() {
+  const caja = $('dataBanner');
+  if (!caja || !MODELS.length) return;
+  const n = MODELS.length;
+  const cuenta = (campo) => MODELS.filter((m) => m[campo] != null && m[campo] !== false).length;
+  const conSsl = cuenta('ssl');
+  const precios = FUENTES && FUENTES.fuentes ? FUENTES.fuentes.find((f) => f.dominio === 'precio') : null;
+  const tecnica = FUENTES && FUENTES.fuentes ? FUENTES.fuentes.find((f) => f.dominio !== 'precio') : null;
+  const salud = precios ? R.saludPrecios(precios) : null;
+  const cls = !salud ? 'warn' : salud.bloquea ? 'bad' : (conSsl < n ? 'warn' : 'ok');
+  const item = (k, v, t) => `<span class="db-item" title="${esc(t || '')}"><span class="db-k">${esc(k)}</span><span class="db-v">${v}</span></span>`;
+  caja.innerHTML = item('Fuente técnica', tecnica ? esc(tecnica.documento) : '—', tecnica ? tecnica.nota || '' : '')
+    + item('Fecha', tecnica && tecnica.fecha ? esc(tecnica.fecha) : 'sin fecha')
+    + item('Precios', precios ? `${esc(precios.fecha || 'sin fecha')}${salud ? ` · ${esc(salud.estado)}` : ''}` : 'sin lista', salud ? salud.mensaje : '')
+    + item('Región', 'AMER', 'Los precios de lista de este catálogo son de la price list AMER.')
+    + item('Cobertura', `precio ${MODELS.filter((m) => m.elpN > 0).length}/${n} · cps ${cuenta('cps')}/${n} · SSL ${conSsl}/${n} · puertos ${cuenta('puertos')}/${n}`,
+      'Cuántos modelos traen cada campo. Se cuenta sobre el catálogo servido, no se declara.')
+    + (conSsl < n ? `<span class="db-item"><span class="db-v warn">La cifra oficial de inspección SSL está en ${conSsl} de ${n} modelos: el resto se aparta si se pide ese eje, en vez de estimarse.</span></span>` : '');
+  caja.className = `databanner ${cls}`;
+  caja.hidden = false;
+}
+
+// Catalogo completo (pestaña): se muestran tambien los fuera de venta, marcados.
+function renderCatalogo() {
+  const tbody = document.querySelector('#tbl-fortinet-cat tbody');
+  if (!tbody) return;
+  tbody.innerHTML = MODELS.map((m) => `<tr>
+    <td><code>${esc(m.id)}</code>${m.eol || !m.hwSku ? ' <span class="pillc" style="color:var(--red)">Fuera de venta</span>' : ''}</td><td>${esc(m.seg)}</td>
+    <td class="n">${esc(m.fw)}</td><td class="n">${esc(m.ips)}</td><td class="n">${esc(m.ngfw)}</td>
+    <td class="n">${esc(m.vpn)}</td><td>${esc(m.ifaces)}</td>
+    <td class="n" style="color:var(--amber);white-space:nowrap">${m.elp ? esc(m.elp) : '—'}</td>
+  </tr>`).join('');
+}
+
+// Selector de modelo: el catalogo completo por familia, con «seguir la recomendacion» primero.
+function serieFortinet(id) {
+  const mm = /(\d+)([GF])/.exec(id);
+  if (!mm) return 'Otros';
+  const n = parseInt(mm[1], 10);
+  if (mm[2] === 'G') return n >= 1000 ? 'FortiGate G — Data Center / Operador' : 'FortiGate G — Sucursal / SOHO';
+  if (n >= 7000) return 'FortiGate F — Chasis / Operador';
+  return n >= 1000 ? 'FortiGate F — Gama alta / Data Center' : 'FortiGate F — Sucursal / Mediana empresa';
+}
+function populatePickModel() {
+  const ORDEN = ['FortiGate G — Sucursal / SOHO', 'FortiGate G — Data Center / Operador', 'FortiGate F — Sucursal / Mediana empresa',
+    'FortiGate F — Gama alta / Data Center', 'FortiGate F — Chasis / Operador', 'Otros'];
+  const numDe = (id) => { const mm = /(\d+)/.exec(id); return mm ? parseInt(mm[1], 10) : 0; };
+  const grupos = new Map();
+  for (const m of MODELS) {
+    const g = serieFortinet(m.id);
+    if (!grupos.has(g)) grupos.set(g, []);
+    grupos.get(g).push(m);
+  }
+  const ordenados = [...grupos.entries()].sort((a, b) => ORDEN.indexOf(a[0]) - ORDEN.indexOf(b[0]));
+  for (const [, ms] of ordenados) ms.sort((a, b) => numDe(a.id) - numDe(b.id));
+  $('pickModel').innerHTML = '<option value="">Seguir la recomendación del motor</option>'
+    + ordenados.map(([g, ms]) => `<optgroup label="${esc(g)}">${ms.map((m) => `<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.seg)}${m.eol || !m.hwSku ? ' (fuera de venta)' : ''}</option>`).join('')}</optgroup>`).join('');
+}
+// El equipo elegido de un enlace: `pickModel`, o `verdict-sel` en los de antes de la etapa 7.
+function restaurarSeleccionDeUrl() {
+  const p = new URLSearchParams(location.search);
+  const id = p.get('pickModel') || p.get('verdict-sel');
+  if (id && MODELS.some((m) => m.id === id)) {
+    seleccionManual = id;
+    $('pickModel').value = id;
+  }
+}
+
+/* ══ ENLACE VERIFICABLE (T30) ══════════════════════════════════════════════════════════════
+   El enlace lleva la huella del escenario (`h`) y la version del catalogo (`ds`). Al abrirlo
+   se recalcula y se compara: si coinciden, el receptor ve EXACTAMENTE lo que vio el emisor;
+   si no, se dice cual de las dos cosas cambio. */
+function verificarEnlace() {
+  const p = new URLSearchParams(location.search);
+  const h = p.get('h');
+  const ds = p.get('ds');
+  if (!h && !ds) return;
+  const caja = $('accionesEnlace');
+  const msg = document.createElement('p');
+  msg.className = 'hint estado-verificacion';
+  msg.style.marginTop = '8px';
+  const hashOk = !h || (RES && RES.scenarioHash.slice(7, 7 + h.length) === h);
+  const dsOk = !ds || (CAT && CAT.datasetVersion === `fortinet@${ds}`);
+  if (hashOk && dsOk) {
+    msg.innerHTML = `<b>Enlace verificado:</b> el escenario y el catálogo coinciden con los de quien lo compartió (huella <code>${esc(h || '')}</code>).`;
+  } else {
+    msg.className += ' warn';
+    msg.innerHTML = (!dsOk ? `<b>El catálogo cambió desde que se compartió este enlace</b> (<code>${esc(ds)}</code> → <code>${esc((CAT.datasetVersion || '').replace(/^fortinet@/, ''))}</code>): el resultado puede diferir del que vio el emisor. ` : '')
+      + (!hashOk ? `<b>El escenario recalculado no coincide con el que se compartió</b> (huella <code>${esc(h)}</code> → <code>${esc(RES ? RES.scenarioHash.slice(7, 7 + h.length) : '—')}</code>): compruébalo con quien te lo pasó antes de cotizar.` : '');
+  }
+  if (caja) caja.appendChild(msg);
+}
+
+/* ENLACES DE ANTES DE LOS ACTIVADORES (etapa 7). Hasta el 23-sep el acceso remoto no tenia
+   casilla: bastaba con poner usuarios o caudal. Y los endpoints de EMS no se pedian: salian de
+   usuarios del sitio + remotos. Un enlace de entonces que aterrizara con el acceso remoto
+   inactivo, o con EMS pidiendo un dato que no trae, mostraria OTRO escenario sin decirlo —
+   peor que un 404—. Se reponen con la regla de entonces y se avisa por consola. */
+function migrarActivadores(p) {
+  const num = (k) => parseFloat(p.get(k)) || 0;
+  if (!p.has('chkRemoto') && (num('vpnUsers') > 0 || num('vpnMbps') > 0)) {
+    $('chkRemoto').checked = true;
+    $('chkRemoto').dispatchEvent(new Event('input', { bubbles: true }));
+    console.warn('[dimensionador-fortinet] Enlace anterior a la etapa 7: traia acceso remoto sin su casilla; se activo.');
+  }
+  if (p.get('chkEms') === '1' && !p.has('emsEndpoints')) {
+    const n = Math.round(num('users') + num('vpnUsers'));
+    if (n > 0) {
+      $('emsEndpoints').value = String(n);
+      $('emsEndpoints').dispatchEvent(new Event('input', { bubbles: true }));
+      console.warn('[dimensionador-fortinet] Enlace anterior a la etapa 7: los endpoints de EMS se derivaban de los usuarios;'
+        + ' se propuso esa cifra (', n, ') para confirmarla.');
+    }
+  }
+}
+
+/* ══ PANEL ANCLADO: su alto es lo que queda visible (F08, T26) ══════════════════════════ */
+let rafPanel = null;
+function ajustarPanel() {
+  rafPanel = null;
+  const p = $('dimRes');
+  if (!p) return;
+  if (window.matchMedia('(max-width: 880px)').matches || $('pane-calc').hidden) { p.style.height = ''; return; }
+  const top = Math.max(p.getBoundingClientRect().top, 12);
+  p.style.height = `${Math.max(360, window.innerHeight - top - 12)}px`;
+}
+const pedirAjuste = () => { if (!rafPanel) rafPanel = requestAnimationFrame(ajustarPanel); };
+window.addEventListener('scroll', pedirAjuste, { passive: true });
+window.addEventListener('resize', pedirAjuste);
+document.querySelector('.tabs').addEventListener('click', () => setTimeout(pedirAjuste, 0));
+// En movil los pasos son un acordeon unico: abrir uno pliega los demas (sin scroll anidado).
+document.querySelectorAll('.paso > details').forEach((d) => {
+  d.addEventListener('toggle', () => {
+    if (!d.open || !window.matchMedia('(max-width: 880px)').matches) return;
+    document.querySelectorAll('.paso > details').forEach((o) => { if (o !== d) o.open = false; });
+  });
+});
+// Lo que toca cada campo condicional, junto al campo (§10.3).
+function pintarAfecta() {
+  const porCampo = Object.fromEntries(M.REGLAS.map((r) => [r.campo, r.afecta || []]));
+  document.querySelectorAll('[data-afecta]').forEach((p) => {
+    const a = porCampo[p.dataset.afecta] || [];
+    p.textContent = a.length ? `Afecta a: ${a.map((k) => AFECTA_N[k] || (R.EJE_POR_K[k] ? R.EJE_POR_K[k].n : k)).join(', ')}` : '';
+  });
+}
+
+/* ══ ARRANQUE ═════════════════════════════════════════════════════════════════════════════ */
+(async function initApp() {
   const res = await fetch('/api/dimensionador/fortinet');
   const data = await res.json();
-  // Pendiente 34: el respaldo de ciclo de vida de ESTE fabricante, tal como lo declara
-  // `legacyData/fuentes.js` con sus `campos`. Sin el, la ficha dice «el catalogo no trae el
-  // ciclo de vida» en vez de afirmar vigencia por omision.
   FICHA.fijarCicloVida(data.cicloVida);
   MODELS = data.models;
   BUNDLES = data.bundles;
   CARE = data.care;
-  // Reglas comerciales servidas con el catalogo, no escritas en esta pagina.
   FUNCIONES = data.funciones || [];
   SERVICIOS_SDWAN = data.serviciosSdwan || [];
   TERMINOS = data.terminos || {};
-
-  // Las vistas se cargan ANTES del primer render: si llegaran despues, la tarjeta se
-  // pintaria una vez sin foto y otra con ella, que es justo el parpadeo que hace dudar de
-  // si el equipo tiene foto o no. Si el fetch falla, `vistas` queda en null y la ficha
-  // declara el hueco -nunca una imagen inventada-.
-  try{
-    const rv=await fetch('/data/fortinet-vistas-equipos.json');
-    if(rv.ok) VISTAS=await rv.json();
-  }catch{ VISTAS=null; }
-
+  CAT = { models: MODELS, bundles: BUNDLES, care: CARE, funciones: FUNCIONES, serviciosSdwan: SERVICIOS_SDWAN,
+    terminos: TERMINOS, fortios: data.fortios, datasetVersion: data.datasetVersion, fuentes: [] };
+  try {
+    const rv = await fetch('/data/fortinet-vistas-equipos.json');
+    if (rv.ok) VISTAS = await rv.json();
+  } catch { VISTAS = null; }
   populatePickModel();
-  render();
-  renderBom();
+  restaurarSeleccionDeUrl();
+  pintarAfecta();
   renderCatalogo();
-
-  // La procedencia llega DESPUES del catalogo y en su propia peticion: el banner y la puerta
-  // de exportacion la necesitan, pero el dimensionamiento no, asi que no se le hace esperar.
-  // Si /api/fuentes falla, el banner dice que no pudo leerla en vez de afirmar vigencia.
-  try{
+  evaluarYPintar();
+  // La procedencia llega despues y en su propia peticion: el banner, la vigencia de precios
+  // y la puerta la necesitan; el dimensionamiento no, asi que no se le hace esperar.
+  try {
     const rf = await fetch('/api/fuentes');
     const todas = await rf.json();
-    FUENTES = (todas && todas.fortinet) ? todas.fortinet : null;
-  }catch{ FUENTES = null; }
+    FUENTES = todas && todas.fortinet ? todas.fortinet : null;
+  } catch { FUENTES = null; }
+  CAT.fuentes = FUENTES && FUENTES.fuentes ? FUENTES.fuentes : [];
   pintarBanner();
-  renderBom();
-  // El contraste al subir una fuente oficial (pestaña "Fuentes", js/procedencia.js) necesita
-  // saber de dónde sacar los modelos de este fabricante para comparar.
-  PROCEDENCIA.registrarModelos('fortinet', () => MODELS.map(m => ({ model: m.id, ...m })));
-})();
+  evaluarYPintar();
+  verificarEnlace();
+  estadoActual = JSON.stringify(capturarCampos());
+  pedirAjuste();
+  PROCEDENCIA.registrarModelos('fortinet', () => MODELS.map((m) => ({ model: m.id, ...m })));
+}());
+// Añadir o quitar una referencia desde la ficha repinta la lista de materiales al momento.
+BOM.fijarRepintado(() => pintarBom());
 
-/* Enlace de eventos movido desde onclick= en el HTML, para permitir una CSP con
-   script-src 'self' que bloquea todo codigo en linea. */
-document.addEventListener('click', (e) => {
-  const abrir = e.target.closest('[data-abrir]');
-  if (abrir) { window.open(abrir.dataset.abrir, '_blank'); return; }
-  const id = e.target.closest('button,[id]')?.id;
-  // El boton #btnCsv desaparecio cuando js/bom.js centralizo la exportacion a Excel; la
-  // rama que lo atendia sobrevivio detras de un `typeof ... === 'function'` que jamas era
-  // cierto. La encontro el linter, no la vista: una rama muerta no se nota mirando.
-  if (id === 'btnImprimir') window.print();
-});
-
-/* ══ ESTADO ENLAZABLE Y PERSISTENTE ══
-   Antes, poner 2.500 Mbps y copiar la URL no servia de nada: quien la abria veia 500 Mbps y
-   otra recomendacion. Ahora el escenario viaja en la URL; ya no se guarda entre sesiones
-   (ver /js/estado.js). */
 document.addEventListener('DOMContentLoaded', () => {
-  // Estado v2: primero el builder queda con su fila por defecto; ESTADO repone
-  // #wanLinksData si el enlace es v2; si el enlace es v1 (?bw=…&pctOverlay=…) se migra a
-  // filas equivalentes avisando por consola; y al final se reconstruyen las filas desde la
-  // serializacion que haya quedado. El orden importa: sincronizarWanHidden() leeria las
-  // filas viejas y pisaria lo migrado.
+  // Estado v2: el builder nace con su fila; ESTADO repone #wanLinksData si el enlace es v2; si
+  // es v1 se migra; y al final se reconstruyen las filas desde lo que haya quedado.
   reconstruirWanDesdeHidden();
-  const st = ESTADO.vincular({ campos: CAMPOS_ESCENARIO, migrados: PARAMS_V1 });
+  ST = ESTADO.vincular({
+    campos: CAMPOS_ESCENARIO,
+    migrados: PARAMS_CONOCIDOS,
+    extrasNombres: ['h', 'ds'],
+    extras: () => (RES && CAT ? { h: RES.scenarioHash.slice(7, 23), ds: (CAT.datasetVersion || '').replace(/^fortinet@/, '') } : {}),
+  });
   const migrado = migrarEstadoV1();
   reconstruirWanDesdeHidden();
   if (migrado) $('wanLinksData').dispatchEvent(new Event('input', { bubbles: true }));
-  // El boton de enlace y el aviso de parametros desconocidos van AHORA dentro de la barra de
-  // acciones, con el cliente y la referencia (§7 del informe: «cliente, referencia, copiar,
-  // limpiar y estado guardado en una fila»). Antes se inyectaban debajo de las pestanas, en
-  // un tercer sitio: reproducir un escenario exigia saber donde mirar.
+  migrarActivadores(new URLSearchParams(location.search));
+  // Las variables de la pagina que viven fuera del DOM se leen de lo repuesto.
+  for (const [id, fija] of [['profileSeg', (v) => { profile = v; }], ['rolSeg', (v) => { rolSdwan = v; }], ['segSeg', (v) => { segMode = v; }]]) {
+    const a = $(id).querySelector('[aria-pressed="true"]');
+    if (a) fija(a.dataset.v);
+  }
   const caja = $('accionesEnlace');
   if (caja) {
     ESTADO.botonEnlace(caja);
-    ESTADO.avisoOrigen(caja, st);
+    ESTADO.avisoOrigen(caja, ST);
   }
-  actualizarEstadoGuardado(st);
-});
-
-/* ══ ESTADO GUARDADO Y «LIMPIAR» ═════════════════════════════════════════════════════════
-   El indicador dice de donde salio lo que hay en pantalla -un enlace compartido o los
-   valores por defecto-, porque son dos situaciones que se leen muy distinto: con la segunda
-   se esta empezando y con la primera se esta revisando lo que mando otra persona. */
-function actualizarEstadoGuardado(st){
-  const n=$('estadoGuardado'); if(!n) return;
-  n.textContent=(st&&st.origen)
-    ? 'Escenario repuesto desde un enlace compartido'
-    : 'Escenario nuevo — valores por defecto';
-}
-
-// «Limpiar» vuelve a los valores por defecto SIN recargar con el querystring puesto: recargar
-// repondria el enlace compartido y no limpiaria nada, que es el fallo obvio de hacerlo con
-// location.reload().
-$('btnLimpiar').addEventListener('click',()=>{
-  location.href = location.pathname;
-});
-
-/* ══ ENVIAR AL COTIZADOR ══
-   Solo esta pagina sabe que equipo esta elegido ahora mismo; el cotizador pone el precio y
-   el resto de la linea desde su propio catalogo. Ver bom.js. */
-document.addEventListener('DOMContentLoaded', () => {
+  $('estadoGuardado').textContent = ST && ST.origen ? 'Escenario repuesto desde un enlace compartido' : 'Escenario nuevo — valores por defecto';
+  // Envio al cotizador: con id propio para que la puerta lo gobierne, y confirmado por el
+  // servidor antes de escribir nada en la cola.
   BOM.montarBotonCotizador(() => {
-    const sel = document.getElementById('verdict-sel');
-    const elegido = (sel && sel.value) || (lastPick && lastPick.id) || null;
-    if (!elegido) return null;
-    const cant = document.getElementById('qty');
-    return { modelo: elegido, qty: Math.max(1, parseInt(cant && cant.value, 10) || 1),
-             de: document.title.split('—')[0].trim() };
-  });
+    if (!RES || !RES.seleccion || !RES.bom) return null;
+    return { modelo: RES.seleccion.id, qty: RES.bom.nodos, de: 'Fortinet FortiGate',
+      sinEquipo: ['renovacion', 'coterm'].includes(RES.snapshot.comercial.motivo) };
+  }, { id: 'btnACotizador', antes: () => confirmar('cotizador') });
+  if (RES) pintarBotones(RES);
 });
+
+// «Limpiar» vuelve a los valores por defecto SIN el querystring: recargar con el enlace
+// puesto lo repondria y no limpiaria nada.
+$('btnLimpiar').addEventListener('click', () => { location.href = location.pathname; });

@@ -14,6 +14,7 @@ const cotizadorRoutes = require('./routes/cotizador');
 const dimensionadorRoutes = require('./routes/dimensionador');
 const guiaRoutes = require('./routes/guia');
 const syncRoutes = require('./routes/sync');
+const fortinetRoutes = require('./routes/fortinet');
 const multer = require('multer');
 const fuentesSubidas = require('./fuentesSubidas');
 const { referenciasDe } = require('./services/referencias');
@@ -323,6 +324,9 @@ app.use('/api', catalogRoutes);
 app.use('/api', cotizadorRoutes);
 app.use('/api', dimensionadorRoutes);
 app.use('/api', guiaRoutes);
+// Evaluacion autoritativa del dimensionador FortiGate (etapa 7, 2026-09-23). Exige el mismo
+// permiso que las pantallas de herramientas: confirmar una exportacion es usar la herramienta.
+app.use('/api/v1/fortinet', exige('herramientas'), fortinetRoutes);
 // El permiso `sync` existia en ROLES desde que hubo roles, pero ninguna ruta lo exigia: un
 // permiso que no se comprueba es un permiso que no existe, igual que el conjunto inerte de
 // fuera de venta que ya se retiro. Va aqui, delante del router, para que ninguna ruta nueva

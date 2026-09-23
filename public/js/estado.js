@@ -112,8 +112,12 @@
     // ignorarlo, que es exactamente lo contrario de para lo que existe.
     const AJENOS = /^(utm_[a-z_]+|fbclid|gclid|mc_[a-z]+|ref|source|_ga)$/i;
     const migrados = cfg.migrados || [];
+    // Parametros que la PAGINA añade al enlace y no son campos del formulario (Fortinet los
+    // usa para la huella del escenario y la version del catalogo, 2026-09-23): tampoco son
+    // «parametros que esta pantalla ya no entiende».
+    const extrasNombres = cfg.extrasNombres || [];
     const ignorados = [...params.keys()].filter((k) => !campos.includes(k)
-      && !migrados.includes(k) && !AJENOS.test(k));
+      && !migrados.includes(k) && !extrasNombres.includes(k) && !AJENOS.test(k));
 
     // ── Arranque en blanco ──────────────────────────────────────────────────
     // Sin parámetros en la URL no hay nada que restaurar: se vacían los campos tecleables
@@ -192,7 +196,14 @@
       const datos = {};
       const qs = new URLSearchParams();
       for (const id of campos) {
-        const v = leer(document.getElementById(id));
+        const nodo = document.getElementById(id);
+        // UN CAMPO QUE NO APLICA NO VIAJA (informe del 23-sep, §10). La pagina marca con
+        // `data-inactivo` los grupos que su esquema de dependencias oculta: su valor se
+        // CONSERVA en el formulario para que el usuario lo recupere al reactivar la opcion,
+        // pero no entra en el calculo, y por la misma razon no entra en el enlace — si
+        // viajara, quien lo abre veria un parametro que no cuenta como si contara.
+        if (nodo && nodo.closest && nodo.closest('[data-inactivo]')) continue;
+        const v = leer(nodo);
         if (v == null || v === '') continue;
         // Solo viaja lo que difiere del valor por defecto. El resultado es `?bw=2500` en vez
         // de una tira de veinte pares, y quien recibe el enlace ve de un vistazo qué se
@@ -200,6 +211,13 @@
         if (v === defectos[id]) continue;
         datos[id] = v;
         qs.set(id, v);
+      }
+      // Lo que la pagina quiere que el enlace lleve ademas del formulario (la huella del
+      // escenario calculado, la version del catalogo). Va al final para que los campos se
+      // lean primero.
+      if (typeof cfg.extras === 'function' && qs.toString()) {
+        const extra = cfg.extras() || {};
+        for (const [k, v] of Object.entries(extra)) if (v != null && v !== '') qs.set(k, v);
       }
       // replaceState y no pushState: cada tecleo no debe crear una entrada en el historial,
       // o el botón "atrás" dejaría de servir para volver al portal.

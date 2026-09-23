@@ -138,12 +138,25 @@ module.exports = {
       const items = [...o.querySelectorAll('.calc-apartados .calc-lista li')];
       return items.map((li) => (li.querySelector('b') || {}).textContent || '');
     });
+    // LA REGLA NECESITA UN SUJETO, y desde el 2026-09-23 el portal puede no tenerlo: las
+    // fichas por serie completaron la cifra de TLS del 400F, 401F, 1000F y 1001F, y los dos
+    // FortiGate que siguen sin ella (100F y 200F) estan fuera de venta y el portal no los
+    // lista. Se cuenta sobre el MISMO catalogo que pinta la pantalla: con sujeto, Fortinet
+    // tiene que aparecer entre los apartados; sin el, se DICE que no se pudo comprobar aqui y
+    // donde queda vigilada — un comprobador que pasa sin comprobar nada es el que este
+    // repositorio no quiere tener.
+    const sinCifra = await p.evaluate(async () => {
+      const d = await (await fetch('/api/catalog', { credentials: 'same-origin' })).json();
+      return (d.fortinet || []).filter((x) => x.ssl == null).map((x) => x.model || x.id);
+    });
     const fortiApartado = apartados.some((v) => v.trim() === 'fortinet' || /fortinet/i.test(v));
     out.push({ n: 'un modelo sin cifra de TLS se aparta aunque su fabricante sí publique la capa',
-      ok: fortiApartado,
-      detalle: fortiApartado
-        ? 'Fortinet aparece entre los apartados: tiene modelos sin la cifra'
-        : `no aparece — se estaría sustituyendo por otra capa (apartados: ${apartados.join(', ') || 'ninguno'})` });
+      ok: sinCifra.length ? fortiApartado : true,
+      detalle: !sinCifra.length
+        ? 'SIN SUJETO en el catálogo de hoy: ningún FortiGate del portal carece de la cifra de TLS. No se comprobó aquí; la regla la fija test/calculadora.test.js con datos sintéticos'
+        : fortiApartado
+          ? `Fortinet aparece entre los apartados: ${sinCifra.join(', ')} no traen la cifra`
+          : `no aparece — se estaría sustituyendo por otra capa (sin cifra: ${sinCifra.join(', ')}; apartados: ${apartados.join(', ') || 'ninguno'})` });
     return out;
   },
 };

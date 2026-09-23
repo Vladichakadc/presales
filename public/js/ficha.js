@@ -87,6 +87,7 @@
 .ficha-refs-add{border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:3px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 7px;white-space:nowrap}
 .ficha-refs-add:hover{border-color:var(--red);color:var(--red)}
 .ficha-refs .vacio{padding:10px;color:var(--steel);font-size:12.5px}
+.ficha-ref-aviso{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);border:1px solid var(--amber);border-radius:2px;padding:0 4px;margin-left:4px;cursor:help;white-space:nowrap}
 .ficha-cands{margin:0 0 12px;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
 .ficha-cands.larga{max-height:232px;overflow-y:auto;scrollbar-width:thin}
 .ficha-cand{display:flex;align-items:center;gap:8px;width:100%;padding:7px 10px;border:0;border-top:1px solid var(--paper);background:var(--card);color:var(--ink);font-family:'Barlow',sans-serif;font-size:12.5px;text-align:left;cursor:pointer}
@@ -373,7 +374,9 @@
         + `${puedeAnadir ? '<th></th>' : ''}`
         + `</tr></thead><tbody>${lista.map((r, i) => `<tr>`
           + `<td class="sku">${r.sku ? esc(r.sku) : '<span style="color:var(--steel)">sin número de parte</span>'}</td>`
-          + `<td>${esc(r.d || '')}</td>`
+          // Una descripcion corregida al termino de su codigo (F18) se DICE: el texto original
+          // de la lista va en el aviso, no desaparece.
+          + `<td>${esc(r.d || '')}${r.aviso ? ` <span class="ficha-ref-aviso" title="${esc(r.aviso)}">texto corregido</span>` : ''}</td>`
           + `<td class="pre">${fmtPrecio(r.p)}</td>`
           // Ver la referencia no basta: lo que hace falta es poder meterla en la cotizacion.
           // El indice viaja en el boton porque el SKU puede ser null (las variantes de Aruba).

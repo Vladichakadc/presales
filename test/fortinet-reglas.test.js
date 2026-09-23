@@ -81,9 +81,11 @@ test('AT-02 · el 50G usa TP 1,1 G y SSL 1,3 G como ejes independientes', () => 
 
 test('AT-20 · sin cifra oficial de SSL el modelo se aparta con su motivo, no se imputa', () => {
   // El 200G dejo de servir de ejemplo el 2026-09-23: el Product Matrix SI publica su SSL
-  // (7.000 Mbps). El hueco quedo en los cinco modelos de la generacion F que esa edicion ya
-  // no lista, y esta prueba se muda a uno de ellos en vez de ablandarse.
-  const m = porId('FortiGate 600F');
+  // (7.000 Mbps). Ese mismo dia el 600F tambien: su ficha por serie (FG-600F-DAT-R23-202604)
+  // publica 9 Gbps y casa en cuatro anclas con el catalogo. El hueco quedo en el 100F y el
+  // 200F, cuya ficha da 404 (pendiente F6), y la prueba se muda a uno de ellos en vez de
+  // ablandarse.
+  const m = porId('FortiGate 100F');
   assert.strictEqual(m.ssl, null, 'el catalogo no trae SSL de este modelo');
   const r = R.evaluarModelo(m, { tp: 1000, ssl: 1000 });
   assert.strictEqual(r.estado, 'apartado');
@@ -306,16 +308,14 @@ test('AT-14 · un equipo sin SKU de hardware vigente bloquea la cotizacion y lo 
 });
 
 /* ══ AT-15 / AT-16 · puerta de exportacion ═════════════════════════════════════════════ */
-test('AT-15 · un escenario modificado despues del calculo invalida el BOM y cierra la exportacion', () => {
-  const e1 = { bw: 1000, capa: 'tp', ssl: true };
-  const h1 = R.huella(e1);
-  assert.strictEqual(h1, R.huella({ ssl: true, capa: 'tp', bw: 1000 }), 'el orden de claves no cambia la huella');
-  assert.notStrictEqual(h1, R.huella({ ...e1, bw: 1001 }));
-
-  const st = R.estadoEscenario({ hayCandidato: true, stale: true, bloqueos: [], avisos: [] });
-  assert.strictEqual(st.estado, 'bloqueado');
-  assert.strictEqual(st.puedeExportar, false);
-  assert.match(st.titulo, /modificado despues del calculo/);
+test('AT-15 · la huella identifica el escenario: el orden no la cambia, un dato si', () => {
+  // Desde el 2026-09-23 la huella la calcula el motor unico (SHA-256 canonico) y la compara el
+  // servidor antes de confirmar una salida comercial: un BOM construido sobre otro escenario
+  // no puede salir porque la huella que viaja con el ya no es la del escenario evaluado.
+  const M = require('../public/js/fortinet-motor.js');
+  const h1 = M.huella({ bw: 1000, capa: 'tp', ssl: true });
+  assert.strictEqual(h1, M.huella({ ssl: true, capa: 'tp', bw: 1000 }), 'el orden de claves no cambia la huella');
+  assert.notStrictEqual(h1, M.huella({ bw: 1001, capa: 'tp', ssl: true }));
 });
 
 test('AT-16 · una lista de precios vencida bloquea la exportacion comercial', () => {
@@ -332,17 +332,16 @@ test('AT-16 · una lista de precios vencida bloquea la exportacion comercial', (
   assert.strictEqual(R.saludPrecios({ fecha: null }).bloquea, true);
 });
 
-test('los seis estados del informe, y cual de ellos deja exportar', () => {
-  const base = { hayCandidato: true, stale: false, bloqueos: [], avisos: [] };
-  assert.strictEqual(R.estadoEscenario({ ...base, faltan: ['caudal WAN'] }).estado, 'borrador');
-  assert.strictEqual(R.estadoEscenario({ ...base, faltan: ['caudal WAN'] }).puedeCalcular, false);
-  assert.strictEqual(R.estadoEscenario({ ...base, hayCandidato: false }).estado, 'calculable');
-  assert.strictEqual(R.estadoEscenario({ ...base, hayCandidato: false }).puedeExportar, false);
-  assert.strictEqual(R.estadoEscenario({ ...base, bloqueos: [{ mensaje: 'x' }] }).puedeExportar, false);
-  assert.strictEqual(R.estadoEscenario({ ...base, avisos: [{ mensaje: 'y' }] }).estado, 'advertencia');
-  assert.strictEqual(R.estadoEscenario({ ...base, avisos: [{ mensaje: 'y' }] }).puedeExportar, true);
-  assert.strictEqual(R.estadoEscenario(base).estado, 'valido-comercial');
-  assert.strictEqual(R.estadoEscenario(base).puedeExportar, true);
+test('la puerta de cuatro estados del 23-sep sustituye a los seis del 22-sep, y cada una sabe que deja salir', () => {
+  // Las acciones por estado viven en el motor; aqui se fija el contrato que consumen todos los
+  // botones de la pagina y el endpoint del servidor.
+  const M = require('../public/js/fortinet-motor.js');
+  assert.deepStrictEqual(Object.keys(M.ACCIONES).sort(), ['BLOCKED', 'DRAFT', 'READY', 'WARNING']);
+  assert.deepStrictEqual(M.ACCIONES.BLOCKED, []);
+  assert.deepStrictEqual(M.ACCIONES.DRAFT, ['excel-borrador', 'copiar-borrador']);
+  for (const e of ['READY', 'WARNING']) {
+    for (const a of ['excel', 'copiar', 'cotizador', 'perfil', 'consolidar']) assert.ok(M.ACCIONES[e].includes(a), `${e} deja ${a}`);
+  }
 });
 
 /* ══ AT-17 · HA ════════════════════════════════════════════════════════════════════════ */
@@ -372,13 +371,17 @@ test('el campo ssl es null explicito donde el catalogo no lo trae, nunca undefin
     assert.ok(m.ssl === null || m.ssl > 0, `${m.id} tiene un ssl que no es ni null ni una cifra`);
   }
   const conDato = MODELS.filter((m) => m.ssl != null);
-  assert.strictEqual(conDato.length, 51, '51 modelos con cifra oficial: 27 filas del Matrix + 24 variantes con SSD');
-  // Los 7 que faltan son los cinco de la generacion F que la edicion de septiembre del Matrix
-  // ya no lista, mas sus dos variantes con SSD. Se enumeran a proposito: si manana uno
-  // apareciera o desapareciera, la prueba lo dice en vez de contar un total que cuadra.
+  assert.strictEqual(conDato.length, 56,
+    '56 modelos con cifra oficial: 27 filas del Matrix + 24 variantes + 3 fichas por serie (400F, 600F, 1000F) + 2 variantes (401F, 1001F)');
+  // Los 2 que faltan son los de ficha inalcanzable (404 en la URL por serie, pendiente F6). Se
+  // enumeran a proposito: si manana uno apareciera o desapareciera, la prueba lo dice en vez
+  // de contar un total que cuadra.
   const sinDato = MODELS.filter((m) => m.ssl == null).map((m) => m.id.replace('FortiGate ', ''));
-  assert.deepStrictEqual(sinDato.sort(),
-    ['1000F', '1001F', '100F', '200F', '400F', '401F', '600F'].sort());
+  assert.deepStrictEqual(sinDato.sort(), ['100F', '200F']);
+  // Y los de ficha declaran DE QUE ficha salen, no del Matrix.
+  for (const id of ['400F', '401F', '600F', '1000F', '1001F']) {
+    assert.match(porId(`FortiGate ${id}`).limitesDe.fuente, /^ficha por serie FG-/, id);
+  }
   // Las variantes con SSD heredan del modelo base por la regla ya declarada en el archivo.
   const pares = [['30G', '31G'], ['50G', '51G'], ['70G', '71G'], ['90G', '91G'],
     ['200G', '201G'], ['3500F', '3501F'], ['4800F', '4801F']];
@@ -509,10 +512,12 @@ test('AT-26 · FortiClient EMS entra con la cantidad de endpoints del dimensiona
   assert.strictEqual(ems.sku, null, 'este catalogo no trae un SKU de tramo pedible');
 });
 
-test('AT-27 · EMS sin SKU exacto BLOQUEA la exportacion, no avisa', () => {
+test('AT-27 · EMS sin SKU exacto cierra la cotizacion en firme, no avisa', () => {
   // Es la misma regla que los tres servicios avanzados de SD-WAN: una linea sin codigo
   // pedible no puede salir como cotizacion en firme. Inventar el tramo de 25/500/2.000
-  // endpoints seria exactamente el fallo del `FortiGate 2000F`.
+  // endpoints seria exactamente el fallo del `FortiGate 2000F`. Desde el 2026-09-23 el nivel
+  // de ese bloqueo es «borrador»: la propuesta sale como borrador tecnico y nunca al
+  // cotizador, que es lo que la puerta de cuatro estados llama DRAFT.
   const r = comercial({ endpointsEms: 500 });
   const b = r.bloqueos.find((x) => x.codigo === 'sin-sku-ems');
   assert.ok(b, 'tiene que bloquear');
@@ -625,12 +630,13 @@ test('los siete campos del Matrix llegan a los 58 modelos como null o como cifra
     }
   }
   const cuenta = (k) => MODELS.filter((m) => m[k] != null).length;
-  assert.strictEqual(cuenta('tunGw'), 51);
-  assert.strictEqual(cuenta('tunCli'), 51);
-  assert.strictEqual(cuenta('policies'), 51);
-  // sslVpn y sslVpnUsers van a 42 porque el documento imprime «—» en cinco modelos base
-  // (30G, 40F, 50G, 60F, 70G) y sus variantes. Ese hueco es del DOCUMENTO y se declara.
-  assert.strictEqual(cuenta('sslVpn'), 42);
-  assert.strictEqual(cuenta('sslVpnUsers'), 42);
-  assert.strictEqual(cuenta('vdomMax'), 49);
+  // 51 del Matrix + 5 de las fichas por serie de 400F, 600F y 1000F (con 401F y 1001F).
+  assert.strictEqual(cuenta('tunGw'), 56);
+  assert.strictEqual(cuenta('tunCli'), 56);
+  assert.strictEqual(cuenta('policies'), 56);
+  // sslVpn y sslVpnUsers: el documento imprime «—» en cinco modelos base (30G, 40F, 50G, 60F,
+  // 70G) y sus variantes. Ese hueco es del DOCUMENTO y se declara.
+  assert.strictEqual(cuenta('sslVpn'), 47);
+  assert.strictEqual(cuenta('sslVpnUsers'), 47);
+  assert.strictEqual(cuenta('vdomMax'), 54);
 });

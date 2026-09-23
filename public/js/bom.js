@@ -739,7 +739,7 @@
   async function exportarExcel(filasBase, meta) {
     const m = meta || {};
     await cargarExcelJS();
-    const { aoa, cols, dto, filaCabecera, filaTotal } = matrizExcel(filasBase, meta);
+    const { aoa, cols, filaCabecera, filaTotal } = matrizExcel(filasBase, meta);
 
     const libro = new global.ExcelJS.Workbook();
     // La cabecera de columnas queda fijada al desplazarse: en un BOM largo, la columna
@@ -895,10 +895,20 @@
      LO QUE NO VIAJA, Y ES UNA DECISION: la `nota` de cada fila. Esas notas llevan texto
      interno del dimensionador (rutas de `/datasheets/`, referencias a constantes del catalogo)
      y la cotizacion es el documento que ve el cliente. */
-  function acompanantes(modelo) {
+  function acompanantes(modelo, opciones) {
+    const o = opciones || {};
+    /* RENOVACION Y CO-TERM (Fortinet, 2026-09-23). La caja ya esta instalada y el BOM, a
+       proposito, no trae fila de equipo: se compran SOLO los servicios. Aqui no hay hardware
+       que excluir, asi que todo viaja como referencia — y el equipo NO viaja por su nombre,
+       porque el cotizador le pondria el precio del hardware a una renovacion. */
+    if (o.sinEquipo) {
+      const filas = filasCalculadas.filter((f) => f && f.cat !== 'Equipo' && (f.sku || f.desc));
+      return { filas, motivo: '', sinEquipo: true };
+    }
     const equipo = filasCalculadas.filter((f) => f && f.cat === 'Equipo');
     if (!equipo.length) return { filas: [], motivo: 'sin-equipo' };
-    if (!equipo.some((f) => normalizar(f.desc) === normalizar(modelo))) return { filas: [], motivo: 'otro-equipo' };
+    const propio = equipo.filter((f) => normalizar(f.desc) === normalizar(modelo));
+    if (!propio.length) return { filas: [], motivo: 'otro-equipo' };
     // Defensa de segundo orden: si una fila de otra categoria repite el SKU del hardware
     // (una variante, un repuesto listado aparte), no se manda — el cotizador la sumaria al
     // equipo que ya viaja por su nombre.
@@ -906,6 +916,16 @@
     const filas = filasCalculadas.filter((f) => f && f.cat !== 'Equipo'
       && (f.sku || f.desc)                       // una fila sin SKU ni descripcion no es una linea
       && !(f.sku && skusEquipo.has(f.sku)));
+    /* SKU COMBINADO (BDL) DE COMPRA NUEVA. Fortinet publica el equipo y su primer bundle en
+       UNA referencia (FG-90G-BDL-809-36 = equipo + Enterprise + FortiCare Premium). Esa fila
+       es el equipo, pero su precio NO es el del hardware: si viajara solo el nombre, el
+       cotizador pondria el precio de la caja desde `CATALOG` y la licencia y el soporte que
+       el BDL incluye desaparecerian de la cotizacion. Por eso viaja COMO REFERENCIA, con su
+       SKU y su precio, y el nombre suelto no viaja — si viajaran los dos, el hardware se
+       cotizaria dos veces. La descripcion sigue siendo el modelo: es lo que identifica la
+       linea del equipo en la cotizacion. */
+    const bdl = propio.find((f) => f.bdl && f.sku);
+    if (bdl) return { filas: [bdl].concat(filas), motivo: '', equipoComoRef: true };
     return { filas, motivo: '' };
   }
 
@@ -924,12 +944,17 @@
   function enviarACotizador(item) {
     try {
       const cola = JSON.parse(localStorage.getItem(ENTRADA) || '[]');
-      cola.push({ modelo: item.modelo, qty: item.qty || 1, nota: item.nota || '', de: item.de || '' });
-      const acomp = acompanantes(item.modelo);
+      const acomp = acompanantes(item.modelo, { sinEquipo: !!item.sinEquipo });
+      // El equipo viaja por su nombre salvo en dos casos: ya viaja como referencia (SKU
+      // combinado) o no se compra (renovacion, co-term).
+      if (!acomp.equipoComoRef && !acomp.sinEquipo) {
+        cola.push({ modelo: item.modelo, qty: item.qty || 1, nota: item.nota || '', de: item.de || '' });
+      }
       for (const f of acomp.filas) {
         // `cat` viaja para que la cotizacion agrupe la linea por lo que es (Licencias, Soporte,
         // Opticas) en vez de por «Referencia de pedido», que es de donde venia el canal.
-        cola.push({ ref: { sku: f.sku || null, d: f.desc || '', p: (f.unit == null ? null : f.unit), v: vendorPagina, cat: f.cat || '' },
+        cola.push({ ref: { sku: f.sku || null, d: f.desc || '', p: (f.unit == null ? null : f.unit), v: vendorPagina,
+          cat: f.bdl ? 'Equipo · SKU combinado (BDL)' : (f.cat || '') },
                     qty: f.qty || 1, de: item.de || '' });
       }
       const manuales = refsExtra();
@@ -943,7 +968,8 @@
             ? 'el BOM de esta pantalla no declara ninguna fila de categoria «Equipo».'
             : 'el BOM esta cotizando otro equipo distinto del que se manda.'));
       }
-      return { ok: true, lineas: 1 + acomp.filas.length + manuales.length, motivo: acomp.motivo };
+      const lineas = (acomp.equipoComoRef || acomp.sinEquipo ? 0 : 1) + acomp.filas.length + manuales.length;
+      return { ok: true, lineas, motivo: acomp.motivo };
     } catch {
       return { ok: false, lineas: 0, motivo: '' }; // almacenamiento deshabilitado: se avisa, no se finge que funciono
     }
@@ -1004,6 +1030,11 @@
     c.render();
   }
 
+  // Como repinta la pagina su BOM tras anadir o quitar una referencia, para las paginas que
+  // no pasan por `sincronizar` (Fortinet desde la etapa 7: su BOM sale del motor, no de un
+  // desplegable propio).
+  function fijarRepintado(fn) { repintar = typeof fn === 'function' ? fn : null; }
+
   // Suelta la eleccion manual: la usa el boton de volver al recomendado de cada pagina, y
   // hace falta al recargar un escenario desde la URL, porque reponer no es elegir.
   function soltarManual(selector) {
@@ -1030,19 +1061,39 @@
 
   // Inyecta el boton en la barra de acciones del BOM que las seis paginas ya comparten.
   // `obtener` lo aporta cada pagina porque solo ella sabe que equipo esta elegido ahora.
-  function montarBotonCotizador(obtener) {
+  //
+  // `opciones` (Fortinet, 2026-09-23) es opt-in y no cambia nada para las demas paginas:
+  //   · `id`    le da al boton un id propio, para que la PUERTA de la pagina lo pueda
+  //             deshabilitar. Sin id, la puerta de Fortinet deshabilitaba `#btnACotizador`
+  //             y el boton no lo tenia: el envio al cotizador no obedecia a la puerta (F04).
+  //   · `antes` es una comprobacion ASINCRONA que decide si el envio puede salir (la pagina
+  //             de Fortinet la confirma con el servidor). Si responde `{ok:false}`, no se
+  //             escribe nada en la cola y el boton dice por que.
+  function montarBotonCotizador(obtener, opciones) {
+    const o = opciones || {};
     const barra = document.querySelector('.bom-acciones');
-    if (!barra || barra.querySelector('.btn-cotizador')) return;
+    if (!barra || barra.querySelector('.btn-cotizador')) return null;
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'btn ghost btn-cotizador';
+    if (o.id) b.id = o.id;
     b.style.cssText = 'font-size:11px;padding:5px 11px';
     b.textContent = 'Enviar al cotizador';
-    b.addEventListener('click', () => {
+    const decir = (txt, ms) => { b.textContent = txt; setTimeout(() => { b.textContent = 'Enviar al cotizador'; }, ms); };
+    b.addEventListener('click', async () => {
+      if (b.disabled) return;
       const item = obtener();
-      if (!item || !item.modelo) { b.textContent = 'Sin equipo elegido'; setTimeout(() => { b.textContent = 'Enviar al cotizador'; }, 1800); return; }
+      if (!item || !item.modelo) { decir('Sin equipo elegido', 1800); return; }
+      if (typeof o.antes === 'function') {
+        b.disabled = true;
+        b.textContent = 'Confirmando…';
+        let v;
+        try { v = await o.antes(item); } catch { v = { ok: false, motivo: 'No se pudo confirmar' }; }
+        b.disabled = false;
+        if (!v || !v.ok) { decir((v && v.motivo) || 'Envío no permitido', 2600); return; }
+      }
       const r = enviarACotizador(item);
-      if (!r.ok) { b.textContent = 'No se pudo guardar'; setTimeout(() => { b.textContent = 'Enviar al cotizador'; }, 2200); return; }
+      if (!r.ok) { decir('No se pudo guardar', 2200); return; }
       // EL BOTON DICE CUANTO VIAJO, Y CUANDO VIAJO MENOS, POR QUE. Un «Enviado» a secas
       // ocultaria justo el caso en que la cotizacion sale incompleta — el mismo vicio que
       // `avisoDesvio` existe para evitar en la pantalla.
@@ -1053,6 +1104,7 @@
       setTimeout(() => { location.href = '/cotizador.html'; }, r.motivo ? 2200 : 500);
     });
     barra.appendChild(b);
+    return b;
   }
 
   // Delegacion en document y no en la tabla: el BOM se repinta entero en cada cambio de
@@ -1074,7 +1126,7 @@
 
   global.BOM = { renderTabla, exportarExcel, comoTexto, matrizExcel, money, esc, claveFila,
     enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar,
-    sincronizar, soltarManual, avisoDesvio,
+    sincronizar, soltarManual, avisoDesvio, fijarRepintado,
     agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor,
     perfiles, perfilesDe, guardarPerfil, quitarPerfil, consolidar,
     simuladorDescuento, tco };

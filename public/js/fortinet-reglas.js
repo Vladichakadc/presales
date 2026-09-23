@@ -112,6 +112,20 @@
     { k: 'vdom', n: 'Dominios virtuales', frase: 'los dominios virtuales', campo: 'vdomMax',
       dureza: 'dura', unidad: 'VDOM', configuracion: true,
       metodo: 'Virtual Domains (Max) (Product Matrix)' },
+    // ── ESCALA DEL SECURITY FABRIC (2026-09-23, hallazgo F15 del informe de auditoria) ────
+    // Cuantos FortiAP y FortiSwitch gestiona el equipo por FortiLink, y cuantos FortiToken
+    // puede registrar para el doble factor del acceso remoto. Son topes de plataforma que el
+    // Product Matrix publica por modelo (y las fichas por serie para 400F, 600F y 1000F), asi
+    // que van con `configuracion: true` por la misma razon que los tuneles.
+    { k: 'aps', n: 'FortiAP gestionados', frase: 'los FortiAP gestionados', campo: 'aps',
+      dureza: 'dura', unidad: 'FortiAP', configuracion: true,
+      metodo: 'Max FortiAPs (Total) (Product Matrix)' },
+    { k: 'switches', n: 'FortiSwitch gestionados', frase: 'los FortiSwitch gestionados', campo: 'switches',
+      dureza: 'dura', unidad: 'FortiSwitch', configuracion: true,
+      metodo: 'Max FortiSwitches (Product Matrix)' },
+    { k: 'tokens', n: 'FortiToken (doble factor)', frase: 'los FortiToken del acceso remoto', campo: 'tokens',
+      dureza: 'dura', unidad: 'FortiToken', configuracion: true,
+      metodo: 'Max FortiTokens (Product Matrix)' },
   ];
   // `escalaMbps` marca los ejes cuya demanda es PROPORCIONAL al caudal del sitio. Solo esos
   // sirven para responder «hasta cuantos Mbps aguanta este modelo en este escenario»: el
@@ -332,6 +346,7 @@
       return {
         codigo: 'bundle-excluido',
         bloquea: false,
+        nivel: 'warning',
         minimo: min.minimo,
         mensaje: `El bundle FortiGuard se ha excluido de la cotizacion, pero el escenario pide `
           + `${quien}, que necesita ${bundles[min.minimo].n}. La cotizacion cubre el equipo, `
@@ -344,6 +359,7 @@
     return {
       codigo: 'bundle-insuficiente',
       bloquea: true,
+      nivel: 'bloqueo',
       minimo: min.minimo,
       mensaje: `${bundles[elegido] ? bundles[elegido].n : elegido} no cubre `
         + `${nombres || min.servicios.join(', ')}. El bundle minimo para este escenario es `
@@ -378,6 +394,13 @@
        · el soporte incluido en el bundle no se vuelve a cotizar (era doble cobro real);
        · FortiConverter no se duplica cuando Enterprise ya lo trae;
        · el termino produce un SKU pedible en vez de `-DD`. */
+  // AVISOS QUE INFORMAN Y AVISOS QUE ADVIERTEN NO SON LO MISMO, y confundirlos dejaba la puerta
+  // siempre en «valido con advertencias»: «FortiCare Premium ya va dentro del bundle» es una
+  // explicacion, no un supuesto que alguien tenga que confirmar. Los de este conjunto no
+  // cambian el estado de la cotizacion; el resto (exclusiones, coberturas tomadas de un
+  // informe) si la dejan en WARNING, que es exportable pero con la advertencia estampada.
+  const AVISOS_INFO = new Set(['soporte-incluido', 'converter-incluido', 'elite-upgrade', 'ha-licencia-por-nodo', 'bdl']);
+
   function lineasComerciales(e) {
     const m = e.modelo;
     const bundles = e.bundles || {};
@@ -392,39 +415,77 @@
     const avisos = [];
     const bloqueos = [];
     const termino = `termino ${anios} ano${anios > 1 ? 's' : ''}`;
+    // Cada bloqueo declara su NIVEL: 'borrador' = falta un SKU o un precio pero el diseno es
+    // coherente (la propuesta sale como borrador tecnico y no va al cotizador); 'bloqueo' =
+    // la cotizacion no se puede pedir tal como esta (ninguna salida comercial).
+    const bloquear = (b) => bloqueos.push(Object.assign({ nivel: 'borrador' }, b));
+    const avisar = (a) => avisos.push(Object.assign({ nivel: AVISOS_INFO.has(a.codigo) ? 'info' : 'warning' }, a));
 
+    // Un precio que la price list declarada no trae se conserva de la edicion anterior y se
+    // marca (`tier.anterior`, ver legacyData/fortinet.js, hallazgo N02): se anota aqui cada
+    // vez que una linea lo usa, y la cotizacion sale como borrador diciendo cuales son.
+    const anteriores = [];
     const precio = (tier) => {
       if (!tier) return null;
-      const v = anios === 1 ? tier.y1 : anios === 5 ? tier.y5 : tier.y3;
+      const k = anios === 1 ? 'y1' : anios === 5 ? 'y5' : 'y3';
+      const v = tier[k];
+      if (v != null && tier.anterior && tier.anterior[k]) anteriores.push(tier.sku);
       return v == null ? null : v;
     };
 
+    // RENOVACION Y CO-TERM: la caja ya esta instalada. Cotizarla otra vez es el error que el
+    // informe del 23-sep describe como «usar un SKU de renovacion para una compra inicial»
+    // leido al reves: aqui se compran SOLO los servicios del equipo que ya existe.
+    const sinEquipo = !!e.sinEquipo;
+    const excluyeBundle = bundleCod === SIN_LINEA;
+    const bundle = excluyeBundle ? null : bundles[bundleCod];
+    const licTier = (lic && !excluyeBundle) ? lic[bundleCod] : null;
+
+    /* CONSTRUCCION BDL (compra nueva). La price list publica el equipo y su primer bundle en
+       UN SKU combinado (FG-90G-BDL-809-36 = equipo + Enterprise + FortiCare Premium, 3 anos),
+       y es la construccion que Fortinet preve para la primera compra: una linea en vez de dos.
+       NO ES MAS BARATA, y conviene no venderla asi: en la lista de septiembre el combinado
+       cuesta EXACTAMENTE equipo + bundle en los 162 casos (54 modelos x 3 terminos). Lo que
+       aporta es que se pide con un solo codigo y no se puede olvidar el bundle. Solo existe
+       para Enterprise y UTP -ATP no tiene combinado- y solo en compra nueva. */
+    const bdlTier = (e.construccion === 'bdl' && !sinEquipo && lic && bundle) ? lic[`${bundleCod}Bdl`] : null;
+    const usaBdl = !!(bdlTier && bdlTier.sku && m.hwSku);
+
     // ── Equipo ────────────────────────────────────────────────────────────────────────
-    filas.push({ cat: 'Equipo', desc: m.id, sku: m.hwSku || null, qty,
-      unit: m.elpN != null ? m.elpN : null,
-      nota: `${m.seg} · ${m.ifaces}${m.eol ? ' · DESCONTINUADO (EOL)' : ''}` });
-    if (!m.hwSku) {
-      bloqueos.push({ codigo: 'sin-sku-hardware',
-        mensaje: `${m.id} no tiene SKU de hardware vigente en el price list (equipo descontinuado): `
-          + 'sirve como referencia de un parque instalado, no como linea pedible.' });
+    if (usaBdl) {
+      const s = skuTermino(bdlTier.sku, anios, terminos);
+      if (!s.exacto) bloquear({ codigo: 'sku-dd', mensaje: `SKU combinado del equipo: ${s.motivo}.` });
+      filas.push({ cat: 'Equipo', desc: m.id, sku: s.sku, qty, unit: precio(bdlTier), bdl: true,
+        nota: `SKU combinado de compra nueva: equipo + ${bundle.n} + FortiCare Premium · ${termino}` });
+      avisar({ codigo: 'bdl',
+        mensaje: `Compra nueva: el equipo y ${bundle.n} van en el SKU combinado ${s.sku} (incluye FortiCare Premium), `
+          + 'que es la construccion que la price list publica para la primera compra. Una linea en vez de dos.' });
+    } else if (!sinEquipo) {
+      filas.push({ cat: 'Equipo', desc: m.id, sku: m.hwSku || null, qty,
+        unit: m.elpN != null ? m.elpN : null,
+        nota: `${m.seg} · ${m.ifaces}${m.eol ? ' · DESCONTINUADO (EOL)' : ''}` });
+      if (!m.hwSku) {
+        bloquear({ codigo: 'sin-sku-hardware',
+          mensaje: `${m.id} no tiene SKU de hardware vigente en el price list (equipo descontinuado): `
+            + 'sirve como referencia de un parque instalado, no como linea pedible.' });
+      }
     }
 
     // ── Bundle FortiGuard ─────────────────────────────────────────────────────────────
-    const excluyeBundle = bundleCod === SIN_LINEA;
-    const licTier = (lic && !excluyeBundle) ? lic[bundleCod] : null;
-    const bundle = excluyeBundle ? null : bundles[bundleCod];
     if (excluyeBundle) {
-      avisos.push({ codigo: 'bundle-excluido',
+      avisar({ codigo: 'bundle-excluido',
         mensaje: 'Bundle FortiGuard excluido de la cotizacion a peticion: no se cotiza ninguna '
           + 'suscripcion de seguridad. La cotizacion vale para un parque que ya la tiene vigente.' });
+    } else if (usaBdl) {
+      // Ya va dentro del SKU combinado: una segunda linea lo cobraria dos veces.
     } else if (!licTier) {
-      bloqueos.push({ codigo: 'sin-sku-bundle',
+      bloquear({ codigo: 'sin-sku-bundle',
         mensaje: `${bundle ? bundle.n : bundleCod} no tiene SKU vigente para ${m.id} en el price list.` });
       filas.push({ cat: 'Licencias FortiGuard', desc: bundle ? bundle.n : bundleCod, sku: null, qty, unit: null,
         nota: `${termino} · sin SKU vigente para este modelo` });
     } else {
       const s = skuTermino(licTier.sku, anios, terminos);
-      if (!s.exacto) bloqueos.push({ codigo: 'sku-dd', mensaje: `Bundle FortiGuard: ${s.motivo}.` });
+      if (!s.exacto) bloquear({ codigo: 'sku-dd', mensaje: `Bundle FortiGuard: ${s.motivo}.` });
       filas.push({ cat: 'Licencias FortiGuard', desc: bundle.n, sku: s.sku, qty, unit: precio(licTier),
         nota: `${termino} · ${bundle.svcs}` });
     }
@@ -438,7 +499,7 @@
     if (careCod === SIN_LINEA) {
       // Excluir el soporte SIN bundle que lo traiga deja un equipo sin cobertura ninguna, y
       // eso se dice distinto de excluirlo teniendo Premium incluido en el bundle.
-      avisos.push({ codigo: 'soporte-excluido',
+      avisar({ codigo: 'soporte-excluido',
         mensaje: incluyeSoporte
           ? `Soporte FortiCare excluido como linea propia: ${bundle.n} ya trae FortiCare Premium, `
             + 'asi que la cotizacion no pierde cobertura.'
@@ -447,30 +508,46 @@
     } else if (!incluyeSoporte) {
       // Sin bundle que lo traiga, el soporte es una linea propia y obligatoria.
       const s = careTier ? skuTermino(careTier.sku, anios, terminos) : { sku: null, exacto: false, motivo: 'sin SKU para este modelo' };
-      if (!s.exacto) bloqueos.push({ codigo: 'sku-soporte', mensaje: `Soporte FortiCare: ${s.motivo}.` });
+      if (!s.exacto) bloquear({ codigo: 'sku-soporte', mensaje: `Soporte FortiCare: ${s.motivo}.` });
       filas.push({ cat: 'Soporte', desc: nivelCare ? nivelCare.n : careCod, sku: s.sku, qty, unit: precio(careTier),
         nota: `${termino} · ${nivelCare ? nivelCare.sla : ''}` });
     } else if (careCod === 'fcpre') {
-      avisos.push({ codigo: 'soporte-incluido',
+      avisar({ codigo: 'soporte-incluido',
         mensaje: `FortiCare Premium ya va dentro de ${bundle.n}: no se cotiza una segunda linea de soporte. `
           + 'Antes se anadia siempre, y esa cotizacion cobraba el mismo soporte dos veces.' });
     } else if (careCod === 'fc247') {
-      avisos.push({ codigo: 'soporte-inferior',
+      avisar({ codigo: 'soporte-inferior',
         mensaje: `${nivelCare ? nivelCare.n : careCod} esta POR DEBAJO del FortiCare Premium que `
           + `${bundle.n} ya incluye: no se cotiza, porque bajar de nivel no es una opcion de compra. `
           + 'Para un soporte inferior habria que cotizar servicios sueltos sin bundle.' });
     } else {
-      // AT-04 + informe §12: Elite se representa como UPGRADE del Premium incluido, no como
-      // un contrato de soporte completo adicional.
-      const s = careTier ? skuTermino(careTier.sku, anios, terminos) : { sku: null, exacto: false, motivo: 'sin SKU para este modelo' };
-      if (!s.exacto) bloqueos.push({ codigo: 'sku-soporte', mensaje: `Soporte FortiCare: ${s.motivo}.` });
-      filas.push({ cat: 'Soporte', desc: `${nivelCare ? nivelCare.n : careCod} — upgrade sobre el Premium incluido en ${bundle.n}`,
-        sku: s.sku, qty, unit: precio(careTier),
-        nota: `${termino} · ${nivelCare ? nivelCare.sla : ''}` });
-      avisos.push({ codigo: 'elite-upgrade',
-        mensaje: 'FortiCare Elite se cotiza como mejora del Premium que el bundle ya trae. '
-          + 'El price list publica el SKU de Elite con su precio de servicio completo, no un diferencial: '
-          + 'confirmar con el distribuidor si se factura como delta o como reemplazo.' });
+      /* ELITE ES UNA MEJORA DEL PREMIUM INCLUIDO, Y LA PRICE LIST TRAE ESA MEJORA COMO SKU
+         PROPIO: «Upgrade FortiCare Premium to Elite (Require FortiCare Premium)», familia
+         -204. Hasta el 2026-09-23 se cotizaba el contrato Elite completo (-284) encima del
+         Premium y se advertia que «el price list publica el SKU de Elite con su precio de
+         servicio completo»; el documento publicaba la mejora, solo que nadie la habia leido.
+         En un 90G a tres anos son 409,80 USD de mejora frente a 1.639,20 de contrato. */
+      const upg = lic && lic.eliteUpg;
+      if (upg) {
+        const s = skuTermino(upg.sku, anios, terminos);
+        if (!s.exacto) bloquear({ codigo: 'sku-soporte', mensaje: `Mejora a FortiCare Elite: ${s.motivo}.` });
+        filas.push({ cat: 'Soporte', desc: `${nivelCare ? nivelCare.n : careCod} — upgrade sobre el Premium incluido en ${bundle.n}`,
+          sku: s.sku, qty, unit: precio(upg),
+          nota: `${termino} · SKU de mejora de la price list («Upgrade FortiCare Premium to Elite»)` });
+        avisar({ codigo: 'elite-upgrade',
+          mensaje: 'FortiCare Elite se cotiza como MEJORA del Premium que el bundle ya trae, con el SKU propio '
+            + 'de la price list (familia -204), no como un segundo contrato de soporte completo.' });
+      } else {
+        const s = careTier ? skuTermino(careTier.sku, anios, terminos) : { sku: null, exacto: false, motivo: 'sin SKU para este modelo' };
+        if (!s.exacto) bloquear({ codigo: 'sku-soporte', mensaje: `Soporte FortiCare: ${s.motivo}.` });
+        filas.push({ cat: 'Soporte', desc: `${nivelCare ? nivelCare.n : careCod} — upgrade sobre el Premium incluido en ${bundle.n}`,
+          sku: s.sku, qty, unit: precio(careTier),
+          nota: `${termino} · ${nivelCare ? nivelCare.sla : ''}` });
+        avisos.push({ codigo: 'elite-upgrade', nivel: 'warning',
+          mensaje: 'FortiCare Elite se cotiza como mejora del Premium que el bundle ya trae, pero la price list no '
+            + 'trae el SKU de mejora de este modelo: la linea lleva el contrato Elite completo. Confirmar con el '
+            + 'distribuidor si se factura como delta o como reemplazo.' });
+      }
     }
 
     // ── FortiConverter ────────────────────────────────────────────────────────────────
@@ -479,18 +556,18 @@
     const bundleTraeConverter = !!(bundle && (bundle.incluye || []).includes('forticonverter'));
     if (bundleTraeConverter) {
       if (e.converter) {
-        avisos.push({ codigo: 'converter-incluido',
+        avisar({ codigo: 'converter-incluido',
           mensaje: `FortiConverter ya va dentro de ${bundle.n}: no se anade una segunda linea.` });
       }
     } else if (e.converter) {
       if (lic && lic.converter) {
         const s = skuTermino(lic.converter.sku, anios, terminos);
-        if (!s.exacto) bloqueos.push({ codigo: 'sku-converter', mensaje: `FortiConverter: ${s.motivo}.` });
+        if (!s.exacto) bloquear({ codigo: 'sku-converter', mensaje: `FortiConverter: ${s.motivo}.` });
         filas.push({ cat: 'Servicios opcionales', desc: 'FortiConverter — migracion de configuracion',
           sku: s.sku, qty: 1, unit: lic.converter.fee,
           nota: 'Servicio unico, pedido a la carta. Migra desde Cisco ASA, Check Point o Palo Alto.' });
       } else {
-        bloqueos.push({ codigo: 'sin-sku-converter',
+        bloquear({ codigo: 'sin-sku-converter',
           mensaje: `El price list no trae SKU de FortiConverter para ${m.id}.` });
       }
     }
@@ -502,31 +579,122 @@
       filas.push({ cat: 'Servicios SD-WAN', desc: sv.n, sku: sv.sku || null, qty, unit: null,
         nota: sv.d });
       if (!sv.sku) {
-        bloqueos.push({ codigo: 'sin-sku-sdwan',
+        bloquear({ codigo: 'sin-sku-sdwan',
           mensaje: `«${sv.n}»: este repositorio no ha leido su SKU del Ordering Guide, asi que la linea `
             + 'no es pedible. Confirmarlo antes de exportar como cotizacion.' });
       }
     }
 
-    /* ── FORTICLIENT EMS: LICENCIA POR ENDPOINT, DERIVADA DEL DIMENSIONAMIENTO ────────
-       El unico bloque de licenciamiento cuya CANTIDAD sale de un campo del dimensionamiento
-       y no de una eleccion comercial: los endpoints son los usuarios ya declarados (los del
-       sitio mas los de acceso remoto). Pedirlos otra vez en el paso 4 habria sido un segundo
-       sitio con el mismo dato.
-       VA SIN SKU Y BLOQUEA, a proposito. Este catalogo trae el PATRON del codigo
-       (`FC1-10-EMS05-428-01-DD`, 25 endpoints) y no un codigo pedible: la linea entra con la
-       cantidad correcta para que la cotizacion no salga corta, y cierra la exportacion hasta
-       que alguien confirme el SKU del tramo en el Ordering Guide. Inventar el tramo seria el
-       fallo del `FortiGate 2000F`. */
+    /* ── FORTISASE: LICENCIA POR USUARIO, NO UNA CASILLA SUELTA (F10 del 23-sep) ──────────
+       El conector SD-WAN de arriba es por FortiGate; los usuarios de FortiSASE son otra linea,
+       con su cantidad. Edicion, tier, ancho incluido y minimo de compra no estan en este
+       catalogo: la linea entra con la cantidad para que la cotizacion no salga corta y deja
+       la propuesta en borrador hasta que alguien confirme el SKU. */
+    const sase = Math.max(0, parseInt(e.saseUsuarios, 10) || 0);
+    if (sase > 0) {
+      filas.push({ cat: 'Servicios SD-WAN', desc: 'FortiSASE — licencias de usuario', sku: null, qty: sase, unit: null,
+        nota: `${termino} · ${sase} usuario(s) declarados` });
+      bloquear({ codigo: 'sin-sku-sase',
+        mensaje: `FortiSASE para ${sase} usuario(s): edicion, tier, ancho incluido y minimo de compra no estan en este `
+          + 'catalogo. Confirmar el SKU en el Ordering Guide de FortiSASE antes de cotizar en firme.' });
+    }
+
+    /* ── FORTICLIENT EMS: LICENCIA POR ENDPOINT GESTIONADO ───────────────────────────────
+       La cantidad es la de ENDPOINTS GESTIONADOS que declara quien disena (F12 del 23-sep):
+       usuarios y endpoints no son lo mismo -un usuario tiene portatil y movil, un kiosco no
+       tiene usuario-, asi que la pagina sugiere la suma de usuarios pero no la impone.
+       VA SIN SKU, a proposito. Este catalogo trae el PATRON del codigo
+       (`FC1-10-EMS05-428-01-DD`, tramo de 25 endpoints) y no el del tramo que corresponde:
+       inventarlo seria el fallo del `FortiGate 2000F`. */
     const ems = Math.max(0, parseInt(e.endpointsEms, 10) || 0);
     if (ems > 0) {
+      const tramos = Math.ceil(ems / 25);
       filas.push({ cat: 'Licencias endpoint', desc: 'FortiClient EMS — ZTNA + VPN gestionado',
         sku: null, qty: ems, unit: null,
-        nota: `${termino} · ${ems} endpoint(s) declarados en el dimensionamiento` });
-      bloqueos.push({ codigo: 'sin-sku-ems',
+        nota: `${termino} · ${ems} endpoint(s) gestionados (${tramos} tramo(s) de 25 segun el patron del SKU)` });
+      bloquear({ codigo: 'sin-sku-ems',
         mensaje: `FortiClient EMS para ${ems} endpoint(s): este repositorio solo tiene el PATRON del SKU `
           + '(`FC1-10-EMS05-428-01-DD`, tramo de 25), no el codigo del tramo que corresponde. '
           + 'Confirmarlo en el Ordering Guide antes de exportar como cotizacion.' });
+    }
+
+    /* ── SANDBOX: TRES COSAS DISTINTAS CON EL MISMO NOMBRE (F11 del 23-sep) ──────────────
+         incluido  la deteccion en la nube que el informe de auditoria atribuye a los bundles
+                   (ref. [2]); no se cotiza linea, pero se ADVIERTE: el catalogo no detalla
+                   que trae AMP y la matriz de bundles no se leyo en este entorno.
+         ai        el servicio del FortiGate que la price list publica por modelo («FG AI based
+                   Sandbox SVC», familia -577): linea con SKU exacto.
+         dedicado  FortiSandbox como producto aparte (appliance, VM o FortiSandbox Cloud): su
+                   SKU no esta en este catalogo; entra la linea y la propuesta queda en borrador. */
+    if (e.sandbox === 'incluido') {
+      if (!bundle) {
+        bloqueos.push({ codigo: 'sandbox-sin-bundle', nivel: 'bloqueo',
+          mensaje: 'Sandbox «incluido en el bundle» pedido con el bundle excluido: sin bundle no hay cobertura '
+            + 'incluida. Elegir un bundle o cotizar el servicio de sandbox como linea propia.' });
+      } else {
+        avisar({ codigo: 'sandbox-incluido',
+          mensaje: `Deteccion sandbox en la nube cubierta por ${bundle.n} (servicio de proteccion antimalware): no se `
+            + 'cotiza linea aparte. El catalogo no detalla el contenido de ese servicio; la cobertura se toma del '
+            + 'informe de auditoria del 23-sep (ref. [2], matriz de bundles FortiGuard, no leida en este entorno). '
+            + 'Confirmarla antes de cotizar en firme.' });
+      }
+    } else if (e.sandbox === 'ai') {
+      const t = lic && lic.sandboxAi;
+      const s = t ? skuTermino(t.sku, anios, terminos) : { sku: null, exacto: false, motivo: `el price list no trae el servicio de sandbox para ${m.id}` };
+      if (!s.exacto) bloquear({ codigo: 'sin-sku-sandbox', mensaje: `Servicio de sandbox: ${s.motivo}.` });
+      filas.push({ cat: 'Servicios de seguridad', desc: 'FortiGuard AI-based Sandbox — servicio del FortiGate',
+        sku: s.sku, qty, unit: t ? precio(t) : null,
+        nota: `${termino} · price list: «FG AI based Sandbox SVC»` });
+    } else if (e.sandbox === 'dedicado') {
+      const mod = { appliance: 'appliance', vm: 'maquina virtual', cloud: 'FortiSandbox Cloud' }[e.sandboxModalidad] || 'modalidad sin declarar';
+      filas.push({ cat: 'Servicios de seguridad', desc: `FortiSandbox dedicado — ${mod}`, sku: null, qty: 1, unit: null,
+        nota: 'Producto aparte del FortiGate: se dimensiona por volumen de archivos, no por throughput del firewall.' });
+      bloquear({ codigo: 'sin-sku-sandbox-dedicado',
+        mensaje: `FortiSandbox dedicado (${mod}): este catalogo no trae sus SKU. La linea entra para que la cotizacion `
+          + 'no salga corta; confirmar el SKU y el dimensionamiento del FortiSandbox antes de cotizar en firme.' });
+    }
+
+    /* ── REGISTRO (logging) ────────────────────────────────────────────────────────────
+       La nube tiene SKU por modelo en la price list («Sub to CLD based Central Logging»,
+       familia -585). FortiAnalyzer es otro producto y se dimensiona por ingesta: su SKU no
+       esta aqui. El disco local no se cotiza: es una RESTRICCION del equipo, y la aplica el
+       motor al elegir candidatos. */
+    if (e.registro === 'nube') {
+      const t = lic && lic.logCloud;
+      const s = t ? skuTermino(t.sku, anios, terminos) : { sku: null, exacto: false, motivo: `el price list no trae el registro en la nube para ${m.id}` };
+      if (!s.exacto) bloquear({ codigo: 'sin-sku-registro', mensaje: `Registro en la nube: ${s.motivo}.` });
+      filas.push({ cat: 'Registro', desc: 'Registro central en la nube (logging)', sku: s.sku, qty, unit: t ? precio(t) : null,
+        nota: `${termino} · price list: «Sub to CLD based Central Logging»` });
+    } else if (e.registro === 'faz') {
+      const gb = Math.max(0, Number(e.registroGbDia) || 0);
+      filas.push({ cat: 'Registro', desc: 'FortiAnalyzer — appliance, VM o cloud', sku: null, qty: 1, unit: null,
+        nota: gb ? `Dimensionar por ingesta: ${gb} GB/dia declarados` : 'Dimensionar por GB/dia de ingesta' });
+      bloquear({ codigo: 'sin-sku-faz',
+        mensaje: 'FortiAnalyzer es un producto aparte que se dimensiona por GB/dia de ingesta, y este catalogo no trae '
+          + 'sus SKU. La linea entra para que la cotizacion no salga corta.' });
+    }
+
+    /* ── VDOM POR ENCIMA DE LOS INCLUIDOS (F15/T22) ──────────────────────────────────────
+       El documento publica «por defecto / maximo»; entre uno y otro se licencian. Por encima
+       del maximo ya lo aparta el motor. El SKU de la licencia de VDOM no esta en la price list
+       extraida: entra la linea con la cantidad y la propuesta queda en borrador. */
+    const vdomExtra = Math.max(0, parseInt(e.vdomsExtra, 10) || 0);
+    if (vdomExtra > 0) {
+      filas.push({ cat: 'Licencias', desc: `Licencia de VDOM adicionales (${vdomExtra} sobre los incluidos)`, sku: null,
+        qty: vdomExtra, unit: null, nota: 'Por encima de los dominios virtuales que el modelo trae incluidos.' });
+      bloquear({ codigo: 'sin-sku-vdom',
+        mensaje: `El diseno usa ${vdomExtra} VDOM por encima de los incluidos en el modelo, y la licencia se compra aparte: `
+          + 'la price list extraida no trae su SKU. Confirmarlo antes de cotizar en firme.' });
+    }
+
+    /* ── SEGUNDA FUENTE (alimentacion redundante con fuente opcional) ───────────────────
+       Un equipo con `redund: 'opcional'` sale de fabrica con UNA fuente y admite la segunda:
+       si el diseno exige redundancia, esa segunda fuente es una linea, no un supuesto. */
+    if (e.segundaFuente) {
+      filas.push({ cat: 'Alimentacion', desc: 'Segunda fuente / adaptador de alimentacion (redundancia)', sku: null,
+        qty, unit: null, nota: 'El equipo sale de fabrica con una sola fuente y admite la segunda.' });
+      bloquear({ codigo: 'sin-sku-fuente',
+        mensaje: `${m.id} admite una segunda fuente que no viene incluida, y su SKU no esta en este catalogo.` });
     }
 
     // ── HA ────────────────────────────────────────────────────────────────────────────
@@ -534,87 +702,28 @@
     // activo-pasivo depende del modelo y de la version de FortiOS, y este catalogo no trae
     // la elegibilidad: se DECLARA en vez de ofrecerse sin evidencia.
     if (qty > 1) {
-      avisos.push({ codigo: 'ha-licencia-por-nodo',
+      avisar({ codigo: 'ha-licencia-por-nodo',
         mensaje: `Cluster de ${qty} unidades: cada nodo lleva su propia suscripcion FortiGuard y su propio `
           + 'FortiCare. La excepcion de FortiGuard unico en activo-pasivo existe, pero depende del modelo y '
           + 'de la version de FortiOS y este catalogo no trae esa elegibilidad: confirmarla con Fortinet '
           + 'antes de quitar una licencia.' });
     }
 
-    return { filas, avisos, bloqueos, soporteIncluido: incluyeSoporte };
+    if (anteriores.length) {
+      bloquear({ codigo: 'precio-edicion-anterior',
+        mensaje: `${anteriores.length} precio(s) de esta lista salen de la price list de agosto (Main 080326): `
+          + `la de septiembre declarada como fuente no trae esas referencias (${anteriores.join(', ')}). `
+          + 'Confirmar el precio con el distribuidor antes de cotizar en firme.' });
+    }
+    return { filas, avisos, bloqueos, soporteIncluido: incluyeSoporte || usaBdl, bdl: usaBdl };
   }
 
-  /* ── 8 · ESTADO DEL ESCENARIO ─────────────────────────────────────────────────────────
-     Los seis estados del informe (§14). El orden importa: `bloqueado` gana sobre todo, y
-     `borrador` sobre cualquier cosa que pretenda calcular sin los datos minimos.
-
-     ESTO NO ES UN SEMAFORO DECORATIVO: de `puedeExportar` cuelgan Excel, imprimir y enviar
-     al cotizador. Lo que el informe llama «export gate» es que una propuesta que nadie
-     puede pedir no salga de la herramienta con aspecto de cotizacion. */
-  function estadoEscenario(e) {
-    const faltan = e.faltan || [];
-    const bloqueos = e.bloqueos || [];
-    const avisos = e.avisos || [];
-    if (faltan.length) {
-      return { estado: 'borrador', puedeCalcular: false, puedeExportar: false,
-        titulo: 'Borrador',
-        motivo: `Faltan datos minimos: ${faltan.join(', ')}.`,
-        detalle: 'Sin ellos no se calcula, y el BOM anterior no se conserva: una lista de materiales '
-          + 'que sobrevive a un escenario incompleto es una cotizacion de otra pregunta.' };
-    }
-    if (!e.hayCandidato) {
-      return { estado: 'calculable', puedeCalcular: true, puedeExportar: false,
-        titulo: 'Sin candidato tecnico',
-        motivo: 'Ningun modelo vigente supera todos los ejes del escenario.',
-        detalle: null };
-    }
-    if (e.stale) {
-      return { estado: 'bloqueado', puedeCalcular: true, puedeExportar: false,
-        titulo: 'Escenario modificado despues del calculo',
-        motivo: 'Los datos cambiaron y la lista de materiales corresponde al escenario anterior.',
-        detalle: 'Recalcular antes de exportar. Exportar aqui entregaria una cotizacion que no '
-          + 'corresponde a lo que la pantalla muestra.' };
-    }
-    if (bloqueos.length) {
-      return { estado: 'bloqueado', puedeCalcular: true, puedeExportar: false,
-        titulo: 'Bloqueado para cotizacion',
-        motivo: bloqueos[0].mensaje,
-        detalle: bloqueos.length > 1 ? `${bloqueos.length} bloqueos en total.` : null,
-        bloqueos };
-    }
-    if (avisos.length) {
-      return { estado: 'advertencia', puedeCalcular: true, puedeExportar: true,
-        titulo: 'Valido con advertencias',
-        motivo: avisos[0].mensaje,
-        detalle: `${avisos.length} advertencia(s) registradas con la propuesta.`,
-        avisos };
-    }
-    return { estado: 'valido-comercial', puedeCalcular: true, puedeExportar: true,
-      titulo: 'Valido para cotizacion',
-      motivo: 'Todas las lineas tienen SKU exacto y el escenario coincide con el calculo.',
-      detalle: null };
-  }
-
-  /* ── 9 · HUELLA DEL ESCENARIO ─────────────────────────────────────────────────────────
-     AT-15. La lista de materiales guarda la huella del escenario con el que se construyo;
-     si el escenario cambia despues, las dos dejan de coincidir y la exportacion se cierra.
-     FNV-1a sobre un JSON canonico: no necesita crypto (que en el navegador es asincrono) y
-     lo unico que se le pide es que dos escenarios distintos no se confundan. NO es un hash
-     criptografico y no se usa para nada que lo necesite. */
-  function huella(obj) {
-    const canon = (v) => {
-      if (v === null || typeof v !== 'object') return JSON.stringify(v == null ? null : v);
-      if (Array.isArray(v)) return `[${v.map(canon).join(',')}]`;
-      return `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${canon(v[k])}`).join(',')}}`;
-    };
-    const s = canon(obj);
-    let h = 0x811c9dc5;
-    for (let i = 0; i < s.length; i++) {
-      h ^= s.charCodeAt(i);
-      h = Math.imul(h, 0x01000193) >>> 0;
-    }
-    return h.toString(16).padStart(8, '0');
-  }
+  /* ── 8 y 9 · LA PUERTA DE COTIZACION Y LA HUELLA YA NO VIVEN AQUI ──────────────────────
+     Desde el 2026-09-23 las decide `fortinet-motor.js`, que es el mismo codigo en el navegador
+     y en el servidor: una puerta de CUATRO estados (READY, WARNING, DRAFT, BLOCKED) en vez de
+     los seis de la revision anterior, y una huella SHA-256 sobre el escenario normalizado en
+     vez del FNV-1a. Se retiraron de este archivo para que no queden dos implementaciones de la
+     misma decision: es como `llevarABom` acabo en seis copias que no hacian lo mismo. */
 
   /* ── 10 · SALUD DE LA FUENTE COMERCIAL ────────────────────────────────────────────────
      AT-16. Una fuente de precios vencida bloquea la exportacion de grado comercial; el
@@ -647,7 +756,7 @@
     demandaTrafico, capaEfectiva,
     evaluarModelo, evaluar, pct,
     bundleMinimo, validarBundle,
-    skuTermino, lineasComerciales,
-    estadoEscenario, huella, saludPrecios,
+    skuTermino, lineasComerciales, AVISOS_INFO,
+    saludPrecios,
   };
 }));
