@@ -19,7 +19,8 @@
     "vigia": "node scripts/vigia-fuentes.js",
     "manual": "node scripts/generar-manual-usuario.js",
     "pantallas": "node scripts/verificar-pantallas.js",
-    "skus": "node scripts/importar-skus-fortinet.js"
+    "skus": "node scripts/importar-skus-fortinet.js",
+    "puerta": "node scripts/puerta.js"
   },
   "engines": {
     "node": ">=20"
