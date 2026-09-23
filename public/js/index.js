@@ -157,6 +157,34 @@ function devsSeleccionados(){
     .map(d=>Object.assign({},d,{raw:Object.assign({ser:d.series},d.raw)}));
 }
 
+/* CUANTAS DE LAS CASILLAS QUE SE ESTAN MIRANDO SON UN HUECO DEL CATALOGO, dicho ENCIMA de
+   la tabla. El pie ya explicaba la diferencia entre «sin dato» y «no aplica»; lo que no
+   decía es cuántos hay ni cómo se reparten, y ese reparto es lo que puede volver engañosa
+   una comparación: de cuatro equipos, dos con media tabla vacía se leen como peores cuando
+   lo que pasa es que su fabricante publica menos. La primera lectura es la que manda delante
+   de un cliente, y es la equivocada.
+   Los `noAplica` se cuentan APARTE y se nombran aparte: ahí el concepto no existe para esa
+   clase de equipo, que no es un hueco de datos. */
+function cmpCobertura(secciones,devs){
+  const c=COMPARADOR.cobertura(secciones,devs);
+  if(!c.filas) return '';
+  if(!c.sinDato&&!c.noAplica) return `<p class="cmp-cobertura">El catálogo trae <b>las ${c.filas} filas</b> para los ${devs.length} equipos: la comparación va completa.</p>`;
+  const partes=[];
+  if(c.sinDato) partes.push(`<b>${c.sinDato}</b> ${c.sinDato===1?'casilla que el catálogo no trae':'casillas que el catálogo no trae'}`);
+  if(c.noAplica) partes.push(`<b>${c.noAplica}</b> donde la pregunta no va con ese tipo de equipo`);
+  let html=`<p class="cmp-cobertura">De las <b>${c.filas}</b> filas comparadas (${c.celdas} casillas): ${partes.join(' y ')}.`;
+  if(c.sinDato) html+=' <b>Un hueco no es una carencia del equipo</b>: es que su fabricante no publica esa cifra.';
+  html+='</p>';
+  // El desnivel es lo que el total no dice: si los huecos están repartidos o concentrados.
+  if(c.desnivel>=c.umbralDesnivel&&c.masHuecos&&c.menosHuecos){
+    html+=`<p class="cmp-cobertura cmp-desnivel"><b class="warn">Los huecos no están repartidos:</b>
+      <span class="calc-punto" style="background:${c.masHuecos.color}"></span>${esc(c.masHuecos.model)} deja <b>${c.masHuecos.sinDato}</b> sin dato
+      frente a <span class="calc-punto" style="background:${c.menosHuecos.color}"></span>${esc(c.menosHuecos.model)}, con <b>${c.menosHuecos.sinDato}</b>.
+      Leer la tabla de arriba abajo favorece <b>al que más publica</b>, no al mejor.</p>`;
+  }
+  return html;
+}
+
 /* Se pinta como MATRIZ —una fila por atributo, una columna por equipo— y no como una
    tarjeta por equipo. Con tarjetas, comparar un dato obligaba a buscarlo en cuatro sitios
    y compararlo de memoria, que es justo lo que un comparador tiene que ahorrar. */
@@ -194,6 +222,7 @@ function runCompare(){
   if(!filas) filas=`<tr><td colspan="${devs.length+1}" class="cmp-hueco">Estos equipos no se diferencian en ningún dato publicado.</td></tr>`;
 
   out.innerHTML=(aviso?`<p class="cmp-aviso">${aviso.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}</p>`:'')
+    +cmpCobertura(secciones,devs)
     +`<div class="cmp-scroll"><table class="cmp-tabla"><thead><tr><th scope="col" class="cmp-esq">Característica</th>${cabeceras}</tr></thead>`
     +`<tbody>${filas}</tbody></table></div>`
     +`<p class="cmp-pie"><b>sin dato</b> es que el catálogo no publica esa cifra para ese modelo; <b>no aplica</b> es que la pregunta no va con ese tipo de equipo. No son lo mismo y por eso se dicen distinto.</p>`;

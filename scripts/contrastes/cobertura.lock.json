@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "a26aaad",
+  "commit": "0162081",
   "fecha": "2026-09-23"
  },
  "umbralRozado": 25,
@@ -85,7 +85,7 @@
   {
    "modulo": "comparador.js",
    "estado": "rozado",
-   "total": 45,
+   "total": 46,
    "usadas": 2,
    "pct": 4
   },
@@ -169,8 +169,8 @@
   {
    "modulo": "index.js",
    "estado": "ejercitado",
-   "total": 56,
-   "usadas": 42,
+   "total": 57,
+   "usadas": 43,
    "pct": 75
   },
   {

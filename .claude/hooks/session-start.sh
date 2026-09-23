@@ -33,7 +33,28 @@ echo "[arranque] Instalando dependencias de npm..."
 # `npm install` y no `npm ci`: el estado del contenedor se cachea despues del hook, asi que
 # una instalacion incremental aprovecha esa cache. El fallo cerrado de `npm ci` ante un
 # package-lock.json desincronizado sigue donde importa, que es `.github/workflows/verificar.yml`.
+#
+# PERO ESE MISMO `npm install` REESCRIBE EL LOCK EN SILENCIO si alguien lo desincronizo, y
+# ahi esta el riesgo: el 1 de septiembre de 2026 un package.json y un package-lock.json que
+# no cuadraban tumbaron el despliegue y nadie se entero hasta el dia siguiente, porque el
+# unico que falla cerrado es el `npm ci` de CI — para entonces ya empujaste. Se compara el
+# lock antes y despues y se AVISA.
+lock_antes=""
+if [ -f package-lock.json ]; then
+  lock_antes=$(sha256sum package-lock.json | cut -d' ' -f1)
+fi
+
 npm install --no-audit --no-fund
+
+if [ -n "$lock_antes" ]; then
+  lock_despues=$(sha256sum package-lock.json | cut -d' ' -f1)
+  if [ "$lock_antes" != "$lock_despues" ]; then
+    echo "[arranque] AVISO: package-lock.json NO cuadraba con package.json y npm lo acaba de"
+    echo "[arranque]         reescribir. 'npm ci' habria fallado cerrado, asi que CI va a"
+    echo "[arranque]         ponerse rojo si empujas sin este archivo. Revisa el diff"
+    echo "[arranque]         ('git diff package-lock.json') y commitealo si es intencionado."
+  fi
+fi
 
 # La cadena de navegador la aporta la imagen del entorno, no el repositorio. Se comprueba en
 # el mismo orden en que la busca `scripts/ayuda/chromium.js`, para que lo que diga este

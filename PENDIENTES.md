@@ -4,7 +4,20 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-23 (**la Calculadora de Throughput del portal gana el perfil de
+Última revisión: 2026-09-23 (**las dos mejoras propuestas, ejecutadas, y el repo arranca solo
+en la web**. (1) **El Comparador dice cuántas casillas son un hueco del catálogo**: medido en
+pantalla, un 7750 SR-7s frente a un FortiGate 120G deja **9 de 19 filas sin dato contra 3**, así
+que leer la tabla de arriba abajo favorece al que más publica y no al mejor. Los `noAplica` se
+cuentan aparte, porque ahí el concepto no existe para esa clase de equipo. (2) **El hook de
+arranque avisa cuando `npm install` reescribe el lock**, que es el fallo que tumbó el despliegue
+del 1 de septiembre y del que solo se entera `npm ci` en CI, cuando ya empujaste — avisa y
+sigue, comprobado saboteando. (3) **`.claude/hooks/session-start.sh`**, registrado en
+`.claude/settings.json`: instala dependencias y comprueba Playwright y Chromium donde
+`scripts/ayuda/chromium.js` los busca; para que exista hubo que un-ignorar dos rutas del
+`.gitignore` respetando su motivo original, que sigue valiendo para `settings.local.json`.
+492 unitarios, 16/16 pantallas.)
+
+Revisión anterior: 2026-09-23 (**la Calculadora de Throughput del portal gana el perfil de
 inspección TLS** — la mejora propuesta al cerrar la entrega anterior, aplicada a petición del
 dueño. Esa pantalla ofrecía cinco perfiles y ninguno era el de descifrado HTTPS, así que
 respondía con la cifra de **Threat Protection**: el mismo defecto P0 que el dimensionador de
