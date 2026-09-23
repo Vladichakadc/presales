@@ -117,6 +117,22 @@ No build step for the frontend — `public/*.html` and `public/js/*.js` are serv
 
 Set `AUTH_PASSWORD` in `.env` before starting, or nobody can log in: locally the server only warns, but with `NODE_ENV=production` it refuses to boot rather than serving prices to the open web. The other auth variables (`AUTH_USER`, `SESSION_SECRET`, `AUTH_STATE_DIR`) are documented in `.env.example`.
 
+**Una sesión de Claude Code en la web arranca con el repo ya listo (2026-09-23).**
+`.claude/hooks/session-start.sh`, registrado en `.claude/settings.json`, corre `npm install` y
+**comprueba** que Playwright y Chromium están donde `scripts/ayuda/chromium.js` los busca. Sin
+él, cada sesión nueva descubría eso a los diez minutos, cuando `pantallas` o `e2e` fallaba por
+una dependencia ausente. **Tres cosas que no hace, a propósito**: no instala Playwright —está
+fuera de `package.json` por decisión declarada, así que aquí solo se comprueba y se dice qué
+falta—, no inventa `AUTH_PASSWORD` —el fallo cerrado en producción es deliberado y cada corrida
+genera la suya— y no siembra la base, que se puebla sola en el primer arranque. Solo actúa en
+remoto (`$CLAUDE_CODE_REMOTE`): en una máquina propia las dependencias ya están.
+**Y para que exista hubo que tocar el `.gitignore`**, que excluía todo `/.claude/` salvo las
+skills. El motivo escrito allí era que `settings.json` «acumula rutas absolutas de la máquina de
+cada quien», y eso sigue siendo cierto de **`settings.local.json`**, que es donde Claude Code
+guarda ese estado y que se mantiene ignorado. El `settings.json` versionado contiene una sola
+cosa: el registro del hook. Sin versionarlo, el hook viviría en el repositorio sin que nadie lo
+ejecutara.
+
 ```
 npm run verificar   # lint + pruebas, lo que hay que pasar antes de empujar
 npm test            # node --test, sin dependencias
