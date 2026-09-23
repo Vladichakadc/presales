@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "15af632",
+  "commit": "a26aaad",
   "fecha": "2026-09-23"
  },
  "umbralRozado": 25,
@@ -90,13 +90,6 @@
    "pct": 4
   },
   {
-   "modulo": "calculadora.js",
-   "estado": "rozado",
-   "total": 34,
-   "usadas": 2,
-   "pct": 6
-  },
-  {
    "modulo": "contraste.js",
    "estado": "rozado",
    "total": 11,
@@ -116,13 +109,6 @@
    "total": 34,
    "usadas": 18,
    "pct": 53
-  },
-  {
-   "modulo": "index.js",
-   "estado": "ejercitado",
-   "total": 46,
-   "usadas": 25,
-   "pct": 54
   },
   {
    "modulo": "bom.js",
@@ -160,6 +146,13 @@
    "pct": 71
   },
   {
+   "modulo": "calculadora.js",
+   "estado": "ejercitado",
+   "total": 47,
+   "usadas": 34,
+   "pct": 72
+  },
+  {
    "modulo": "estado.js",
    "estado": "ejercitado",
    "total": 23,
@@ -174,17 +167,17 @@
    "pct": 74
   },
   {
+   "modulo": "index.js",
+   "estado": "ejercitado",
+   "total": 56,
+   "usadas": 42,
+   "pct": 75
+  },
+  {
    "modulo": "dimensionador-nokia-7750sr.js",
    "estado": "ejercitado",
    "total": 50,
    "usadas": 40,
-   "pct": 80
-  },
-  {
-   "modulo": "fuentes.js",
-   "estado": "ejercitado",
-   "total": 5,
-   "usadas": 4,
    "pct": 80
   },
   {
@@ -193,6 +186,13 @@
    "total": 188,
    "usadas": 152,
    "pct": 81
+  },
+  {
+   "modulo": "fuentes.js",
+   "estado": "ejercitado",
+   "total": 5,
+   "usadas": 5,
+   "pct": 100
   }
  ]
 }

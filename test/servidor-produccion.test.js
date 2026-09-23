@@ -263,6 +263,7 @@ test('la calculadora no aparta un fabricante por un dato que el catálogo SI pub
     sdwan: { hw_ar: ['sdwan'], cisco: ['sdwan'], aruba: ['wanMax'] },
     ngfw: { fortinet: ['ngfw'], juniper: ['ips'] },
     tp: { fortinet: ['tp'], juniper: ['atp'] },
+    ssl: { fortinet: ['ssl'] },
   };
   for (const perfil of Object.keys(CALC.PERFILES)) {
     for (const a of CALC.evaluar(devs, perfil, 1).apartados) {
@@ -291,6 +292,35 @@ test('la calculadora no aparta un fabricante por un dato que el catálogo SI pub
   assert.ok(conCifra('ipsec', 'juniper') >= 5, 'los SRX de 2024 publican IPsec');
   assert.ok(conCifra('ngfw', 'juniper') >= 5, 'y su cifra de IPS');
   assert.ok(conCifra('sdwan', 'aruba') >= 5, 'EdgeConnect publica su rango de ancho de banda WAN');
+
+  /* PERFIL DE INSPECCION TLS (2026-09-23). Entro cuando `ssl` paso de 9 a 51 de 58 modelos
+     al leer el Product Matrix de septiembre; antes el perfil habria sido un hueco con 9
+     equipos dentro. Se afirma contra el servidor de verdad por lo mismo que el resto de este
+     caso: `ssl` llega a /api/catalog por la FUSION de la siembra -esta en los MODELS del
+     dimensionador, no en indexPR.js-, asi que un mapa escrito contra el archivo legacy lo
+     apartaria entero y esta prueba es lo unico que lo dice. */
+  assert.ok(conCifra('ssl', 'fortinet') >= 15, 'Fortinet publica SSL Inspection por modelo');
+
+  // LA REGLA, Y NO SOLO EL CONTEO: en inspeccion TLS no puede aparecer NINGUN equipo de otro
+  // fabricante, porque ninguno publica esa cifra. Si apareciera, el mapa estaria leyendo el
+  // campo de otra capa — que es el derate que este repositorio retiro del dimensionador.
+  const otrosEnSsl = CALC.evaluar(devs, 'ssl', 1).candidatos
+    .concat(CALC.evaluar(devs, 'ssl', 1).cortos)
+    .filter((f) => f.d.grupo !== 'fortinet');
+  assert.strictEqual(otrosEnSsl.length, 0,
+    `en inspeccion TLS solo compite quien publica la cifra; aparecieron ${otrosEnSsl.map((f) => f.d.model).join(', ')}`);
+
+  // Y LA COBERTURA SE MIDE CONTRA EL CATALOGO, NO SE DECLARA. Es lo que la pantalla pinta
+  // encima de la lista para que una lista corta se lea como «falta el dato» y no como «falta
+  // el equipo»; una lista de fabricantes escrita a mano se quedaria con los de ayer.
+  const cob = CALC.cobertura(devs, 'ssl');
+  assert.strictEqual(cob.conCifra, 1, 'hoy solo un fabricante publica la inspeccion TLS');
+  assert.ok(cob.fabricantes >= 7, 'y se compara contra los fabricantes que trae el catalogo');
+  assert.ok(cob.con > 0 && cob.con < cob.total, 'con cifra son algunos, no todos ni ninguno');
+  // El perfil de reenvio es el control: ahi lo publican todos, y la frase de la pantalla
+  // cambia. Sin este control, un `cobertura` roto que devolviera siempre 1 pasaria en verde.
+  const cobFwd = CALC.cobertura(devs, 'fwd');
+  assert.strictEqual(cobFwd.conCifra, cobFwd.fabricantes, 'la cifra de reenvio la publican todos');
 });
 
 test('referencias de pedido: bajo demanda, tras el muro y sin cruzar de fabricante', async () => {

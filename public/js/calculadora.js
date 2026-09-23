@@ -167,6 +167,29 @@
         juniper: (d) => ({ n: 'ATP', v: d.atp }),
       },
     },
+    // INSPECCIÓN TLS — VA AL FINAL, PERO NO ES EL ÚLTIMO PELDAÑO DE LA ESCALERA.
+    // Los cinco perfiles de arriba sí forman una escalera de profundidad creciente
+    // y caudal decreciente. Este NO: descifrar TLS es OTRA RUTA de proceso, con su
+    // propio silicio y su propia metodología, y el cociente ssl/tp del catálogo va
+    // de 0,52 (40F) a 1,18 (50G) — en el 50G, el 70G y el 90G el equipo aguanta MÁS
+    // inspección TLS que Threat Protection. Por eso no se deriva de `tp` con un
+    // factor: ese derate único vivió en el dimensionador de Fortinet hasta el
+    // 2026-09-22 y era su defecto P0, porque se equivoca en las DOS direcciones.
+    //
+    // HASTA EL 2026-09-23 ESTA PANTALLA NO PODÍA OFRECER EL PERFIL, y no por
+    // diseño: el catálogo solo traía `ssl` de 9 modelos. Al leer la tabla del
+    // Product Matrix de septiembre pasó a 51 de 58 (19 de los 21 que el portal
+    // lista), y con eso el perfil deja de ser un hueco lleno de apartados.
+    ssl: {
+      etq: 'Inspección TLS / SSL (descifrado en línea)',
+      mide: 'Lo que el equipo aguanta descifrando HTTPS en línea, con IPS activo y una mezcla de suites criptográficas. NO es un peldaño más de la escalera anterior ni una fracción de Threat Protection: es otra ruta de proceso y otra medición, y en varios modelos de este catálogo la cifra es MAYOR que la de Threat Protection. Hoy solo Fortinet la publica por modelo.',
+      falta: 'el catálogo no publica su cifra de inspección TLS',
+      capa: {
+        // Un solo lector a propósito. Añadir aquí a los otros siete con la cifra
+        // de otra capa sería exactamente el derate que este repositorio retiró.
+        fortinet: (d) => ({ n: 'SSL Inspection', v: d.ssl }),
+      },
+    },
   };
 
   // Requerimiento en Mbps. Se deja aquí para que la pantalla y la exportación
@@ -229,6 +252,40 @@
       .sort((a, b) => a.filas[0].mbps - b.filas[0].mbps);
   }
 
+  /* CUÁNTO DEL CATÁLOGO PUEDE RESPONDER ESTE PERFIL, ANTES DE ENSEÑAR LA LISTA.
+     El panel de apartados ya existía, pero va ABAJO: primero se lee una lista de
+     tres equipos de un solo fabricante y solo después se descubre que los otros
+     siete no se comprobaron. En los perfiles de inspección eso no es un detalle
+     —el de NGFW, que es el que viene marcado por defecto, aparta cinco de los
+     ocho grupos— y con la inspección TLS es el caso extremo: la publica UN
+     fabricante. Una lista corta sin ese encabezado se lee como «no hay equipo»
+     cuando lo que pasa es que «no hay dato», y son dos conclusiones opuestas: la
+     primera manda a subir de gama, la segunda a completar un documento.
+
+     SE MIDE CONTRA EL CATÁLOGO, NO SE DECLARA. Una lista escrita a mano de qué
+     fabricante publica qué capa se quedaría con los fabricantes de ayer — es la
+     forma exacta de `CISCO_EOL_MODELS`, que listaba modelos que ya no existían y
+     por eso no marcaba nada sin que nadie se enterara. */
+  function cobertura(devs, perfilId) {
+    const orden = [];
+    const mapa = {};
+    let con = 0;
+    for (const d of devs || []) {
+      const v = d.vendor;
+      if (!mapa[v]) { mapa[v] = { vendor: v, color: d.color, con: 0, de: 0 }; orden.push(v); }
+      mapa[v].de += 1;
+      if (capaDe(d, perfilId).mbps !== null) { mapa[v].con += 1; con += 1; }
+    }
+    const fabs = orden.map((v) => mapa[v]);
+    return {
+      total: (devs || []).length,
+      con,
+      fabricantes: fabs.length,
+      conCifra: fabs.filter((f) => f.con > 0).length,
+      porFabricante: fabs.slice().sort((a, b) => b.con - a.con || a.vendor.localeCompare(b.vendor)),
+    };
+  }
+
   // Los apartados se cuentan por fabricante: una lista de 40 modelos no informa,
   // «Nokia: 18 modelos» sí, y con el enlace a donde sí se dimensionan.
   function apartadosPorFabricante(apartados) {
@@ -282,6 +339,6 @@
 
   window.CALC = {
     PERFILES, HERRAMIENTA, mbps, fmt, requerimiento, capaDe, evaluar,
-    porFabricante, apartadosPorFabricante, avisoBases, csv,
+    cobertura, porFabricante, apartadosPorFabricante, avisoBases, csv,
   };
 }());

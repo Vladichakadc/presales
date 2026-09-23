@@ -4,7 +4,21 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-23 (**los límites del Product Matrix dejan de declararse y pasan a
+Última revisión: 2026-09-23 (**la Calculadora de Throughput del portal gana el perfil de
+inspección TLS** — la mejora propuesta al cerrar la entrega anterior, aplicada a petición del
+dueño. Esa pantalla ofrecía cinco perfiles y ninguno era el de descifrado HTTPS, así que
+respondía con la cifra de **Threat Protection**: el mismo defecto P0 que el dimensionador de
+Fortinet arrastró hasta el 2026-09-22, pero en la pantalla de portada. No se podía cerrar
+antes porque el catálogo solo traía `ssl` de 9 modelos. **Medido en la propia pantalla, se
+equivocaba en las dos direcciones**: a 175 Mbps proponía un 30G que solo hace 400 Mbps de TLS
+(corto) y a 500 Mbps proponía un 70G donde el 50G cumple (sobredimensionado). **Y entra con
+él una línea de cobertura encima de la lista, para los seis perfiles**, porque el riesgo
+declarado al proponer la mejora era real: con inspección TLS compite 1 de 7 fabricantes, y
+una lista corta sin explicación se lee como «no hay equipo» en vez de «no hay dato». 489 unitarios, 16/16 pantallas, **6/6 contrastes** —uno nuevo, `calculadora-ssl`— y 10/10
+baterías e2e. **El caso de contraste se endureció saboteando**: su primera versión pasaba en
+verde con el derate dentro.)
+
+Revisión anterior: 2026-09-23 (**los límites del Product Matrix dejan de declararse y pasan a
 comprobarse** — encargo del dueño: ejecutar los pendientes con el máximo esfuerzo y aplicar la
 mejora propuesta. **F1 cerrado**: la inspección SSL pasa de 9 a **51 de 58 modelos**, leída del
 PDF que ya estaba en la rama de transporte `fuente/fortinet-product-matrix` —no se descargó
@@ -1222,6 +1236,57 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### El portal dimensiona la inspección TLS con su propia cifra (2026-09-23)
+
+Petición del dueño: «aplica la mejora propuesta». Era esta, y su argumento era que el
+dimensionador de Fortinet acababa de ganar la cifra oficial de inspección TLS en 51 de 58
+modelos mientras **la pantalla de portada seguía respondiendo con Threat Protection**.
+
+**EL PERFIL NO ES UN PELDAÑO MÁS DE LA ESCALERA.** Los cinco que había sí forman una escalera
+de profundidad creciente; descifrar TLS es **otra ruta de proceso**, y el cociente ssl/tp de
+este catálogo va de 0,52 a 1,18 — en el 50G, el 70G y el 90G el equipo aguanta **más**
+inspección TLS que Threat Protection. Por eso no se deriva con un factor: ese derate único es
+exactamente lo que se retiró del dimensionador el día anterior.
+
+**MEDIDO EN LA PANTALLA, LOS DOS ERRORES OPUESTOS:**
+
+| Escenario | Respuesta anterior (Threat Protection) | Con su cifra propia |
+|---|---|---|
+| 175 Mbps (455 de requerimiento) | **30G** — hace 500 de TP y solo **400 de TLS** | **60F** (630) — la anterior se quedaba **corta** |
+| 500 Mbps (1,3 Gbps) | **70G** | **50G** — aguanta 1.300 de TLS contra 1.100 de TP: la anterior **sobredimensionaba una gama** |
+
+**Y LA LÍNEA DE COBERTURA, QUE ERA EL RIESGO DECLARADO AL PROPONER LA MEJORA.** Con inspección
+TLS compite **1 de 7 fabricantes**; el panel de apartados ya lo contaba pero va **al final**,
+así que primero se leían cinco equipos de un fabricante y solo al bajar se descubría que los
+otros siete no se habían comprobado. Ahora `CALC.cobertura()` lo dice **encima de la tabla**,
+para los seis perfiles —también para NGFW, que viene marcado por defecto y aparta cinco de los
+ocho grupos—, y **se mide contra el catálogo**: una lista de qué fabricante publica qué capa
+se quedaría con los fabricantes de ayer, que es la forma de `CISCO_EOL_MODELS`.
+
+**EL CASO DE CONTRASTE SE ENDURECIÓ SABOTEANDO, Y ESE ES EL HALLAZGO DEL DÍA.** La primera
+versión de `calculadora-ssl` pasaba **en verde** con el derate metido a mano dentro del lector
+—`d.ssl != null ? d.ssl : d.tp`—, porque los dos modelos Fortinet sin la cifra (100F y 200F)
+no son el más pequeño que cumple en ninguno de los seis escenarios. Un caso que pasa con el
+defecto dentro se porta igual que uno que no comprueba nada. La señal que sí cambia está en
+pantalla: **Fortinet tiene que aparecer entre los apartados de su propio perfil**, porque dos
+de sus modelos no traen la cifra; con la sustitución dentro desaparece de esa lista. Se afirma
+la relación y no el número 2, que cambiará el día que se cierre **F6**.
+
+**Lo que NO entró, y se declara.** La mejora se propuso como «el eje SSL y los límites de
+configuración». Los límites —túneles, VDOM, usuarios SSL-VPN— **no se llevaron a esta
+pantalla**: la calculadora responde una sola pregunta (caudal → equipo) y un conteo de túneles
+no es un caudal. Meterlos ahí habría duplicado el dimensionador en la portada. Viven donde se
+pueden contrastar contra un escenario completo, que es el paso 3 del dimensionador de
+Fortinet.
+
+**Verificación.** 489 unitarios, 16/16 pantallas, **6/6 contrastes sin discrepancias** y 10/10
+baterías e2e. El mapa de capas se afirma contra el **servidor real** (`test/servidor-produccion.test.js`)
+y no contra `legacyData/`: `ssl` llega a `/api/catalog` por la fusión de la siembra, y un mapa
+escrito contra `indexPR.js` apartaría el perfil entero — es el mismo fallo que ese caso ya
+cazó con el `sdwan` de Cisco. Esa prueba también **se comprobó saboteando**: añadir un segundo
+fabricante al perfil con la cifra de otra capa la pone roja nombrando los SRX que se colaron.
+
 
 ### Los límites del Product Matrix se comprueban: F1, F4 (casi entero) y F7 (2026-09-23)
 

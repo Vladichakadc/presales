@@ -243,6 +243,36 @@ function calcPanelFabricante(g,total){
   </div>`;
 }
 
+/* CUÁNTO DEL CATÁLOGO RESPONDE ESTE PERFIL, DICHO ANTES DE LA LISTA Y NO DESPUÉS.
+   El panel de apartados ya lo contaba, pero va al final: primero se leían tres
+   equipos de un solo fabricante y solo al bajar se descubría que los otros siete
+   no se habían comprobado. Con las capas de inspección eso no es un matiz —el
+   perfil NGFW, que viene marcado por defecto, aparta cinco de los ocho grupos— y
+   con la inspección TLS es el caso extremo: hoy la publica un solo fabricante.
+   Sin este encabezado, una lista corta se lee como «no hay equipo» cuando lo que
+   pasa es «no hay dato», y esas dos conclusiones mandan a sitios opuestos. */
+function calcCobertura(perfilId){
+  const c=CALC.cobertura(ALL,perfilId);
+  if(!c.total) return '';
+  const nombres=c.porFabricante.filter(f=>f.con>0).map(f=>esc(f.vendor));
+  // Tercer estado: que NADIE publique la capa no es que ningún equipo sirva.
+  if(!c.con) return `<p class="calc-capa calc-cobertura"><b class="warn">Ningún fabricante del catálogo publica esta cifra todavía.</b>
+    Los ${c.total} modelos se apartan con su motivo: es un hueco de datos, no de equipo.</p>`;
+  // La frase se arma por ramas y no con un `${}` en medio porque el verbo cambia: «la
+  // publican los 7 fabricantes» y «solo la publica 1 de los 7». Una plantilla única deja
+  // una de las dos mal concordada, y es texto que ve quien arma una propuesta.
+  const resto=c.total-c.con;
+  const quien=c.conCifra===c.fabricantes
+    ? `Esta cifra la publican <b>los ${c.fabricantes} fabricantes</b> del catálogo`
+    : c.conCifra===1
+      ? `Esta cifra solo la publica <b>1 de los ${c.fabricantes} fabricantes</b> del catálogo (${nombres[0]})`
+      : `Esta cifra la publican <b>${c.conCifra} de los ${c.fabricantes} fabricantes</b> del catálogo (${nombres.join(', ')})`;
+  const cola=resto===0 ? ''
+    : resto===1 ? ' El otro se aparta con su motivo — <b>no se dimensiona con la cifra de otra capa</b>.'
+      : ` Los otros <b>${resto}</b> se apartan con su motivo — <b>no se dimensionan con la cifra de otra capa</b>, así que si la lista de abajo sale corta es por falta de dato y no por falta de equipo.`;
+  return `<p class="calc-capa calc-cobertura">${quien}: <b>${c.con} de ${c.total} modelos</b>.${cola}</p>`;
+}
+
 function runCalc(){
   const ctx=ctxCalculo();
   const perfil=CALC.PERFILES[ctx.perfil];
@@ -260,6 +290,7 @@ function runCalc(){
     <div class="big-num">${fmtMbps(ctx.need)}</div>
     <p class="calc-detalle">${detalle}</p>
     <p class="calc-capa"><b>Se dimensiona contra la capa «${esc(perfil.etq)}».</b> ${esc(perfil.mide)}</p>
+    ${calcCobertura(ctx.perfil)}
   </div>`;
 
   if(res.candidatos.length){

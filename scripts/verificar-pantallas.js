@@ -342,7 +342,7 @@ const PANTALLAS = [
   {
     id: 'calculadora',
     url: '',
-    titulo: 'Calculadora de throughput — las cinco capas',
+    titulo: 'Calculadora de throughput — las seis capas',
     listo: '#calcProfile',
     async acciones(page) {
       await page.click('.nav-btn[data-page="calculadora"]');
