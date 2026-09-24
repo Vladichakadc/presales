@@ -1461,6 +1461,10 @@ línea del BOM o del cotizador, buscándolo por su SKU exacto, con el término r
   hoy de la lista: se cierra pasándola por un importador que extraiga esas filas por SKU exacto.
 - **Verificación**: 598 pruebas y lint, 17/17 pantallas, 7/7 contrastes y 15/15 baterías e2e.
   En pantalla, la línea de FortiConverter a 3 años ya sale como `FC-10-0071F-189-02-12`.
+- **En producción el 2026-09-24**: `main` avanzó de `b04def5` a `cf7d47e` (el cambio es
+  `63bb74e`). Railway `edb4afcd` en SUCCESS con `[seed]` y `Presales corriendo en`; `verificar`
+  (`36038065110`) y `pantallas` (`36038065108`, con contraste y e2e) en verde sobre ese commit,
+  y la sonda (`36038496822`) dio `/salud` 200 con 7 fabricantes y 228 modelos, y `/login` 200.
 
 ### Los documentos pendientes de Fortinet, traídos y leídos (2026-09-24)
 
