@@ -54,14 +54,6 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   t.ok(/SSL \d+\/\d+/.test(banner), 'el banner cuenta la cobertura real de `ssl` sobre el catálogo servido');
   t.ok(/vigente|vencida|sin fecha/.test(banner), 'el banner declara la vigencia de la lista de precios');
 
-  /* Los modelos sin cifra de inspeccion SSL, LEIDOS DEL CATALOGO y no escritos aqui: eran 7
-     con el Product Matrix de septiembre y son 2 (100F y 200F) desde que se leyeron las fichas
-     por serie del 400F, 600F y 1000F (2026-09-23). Una lista escrita a mano habria seguido
-     afirmando que el 400F no tiene la cifra. Se comparan por NOMBRE EXACTO y no por
-     subcadena: `/200F/` casa dentro de `3200F`. */
-  const SIN_CIFRA_SSL = require('../../server/seed/legacyData/fortinet.js').MODELS
-    .filter((m) => m.ssl == null).map((m) => m.id);
-
   /* ── AT-01 · SSL OFICIAL, NO UN DERATE ──────────────────────────────────────────────
      300 Mbps + 30 % de crecimiento = 390 Mbps. El 40F publica 600 Mbps de Threat Protection
      y 310 de SSL Inspection. El derate que esta página aplicaba (tp × 0,65 = 390) lo dejaba
@@ -78,29 +70,67 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   // que hay que fijar no es CUANTOS compiten sino QUE NINGUNO SIN LA CIFRA compita: esa es la
   // regla, y no caduca al completarse el catalogo.
   t.ok(sel40.length > 0, 'AT-01: hay candidatos con cifra oficial de SSL');
-  t.ok(!sel40.some((v) => SIN_CIFRA_SSL.includes(v)),
-    'AT-01: ningún modelo sin cifra oficial de SSL se cuela por su Threat Protection');
+  // «Ningun modelo SIN la cifra se cuela» se afirma en AT-20, sobre un catalogo con el SSL
+  // borrado: con el real (58 de 58 desde el 2026-09-24) pasaria en vacio.
   const ejes40 = await texto('#ejesPanel');
   t.ok(/Inspecci[oó]n SSL/i.test(ejes40), 'AT-01: el panel de utilización muestra el eje SSL');
-  t.ok(/apartados/.test(ejes40),
-    'AT-01: se dice cuántos modelos se apartaron por falta de cifra — una lista corta se explica');
 
   /* ── AT-20 · UN EJE SIN DATO APARTA, NO SE IMPUTA ───────────────────────────────────
-     A 4 Gbps el 600F sobra por Threat Protection (10,5 Gbps) y aun asi no puede competir,
-     porque su inspeccion SSL no esta publicada. Hasta el 2026-09-23 esta afirmacion se
-     apoyaba en que a 4 Gbps NADIE cumplia -la mayor cifra de SSL del catalogo eran los 2,6
-     Gbps del 90G-; al entrar la tabla del Product Matrix el 200G la cubre y ese cero dejo de
-     existir. La regla no cambio; la forma de afirmarla, si. Lo que NO puede pasar sigue
-     siendo que la pantalla presente la falta de DATO como falta de capacidad. */
-  await caudal(4000);
-  const sel4G = await page.$eval('#verdict-sel', (e) => [...e.options].map((o) => o.value));
-  t.ok(!sel4G.some((v) => SIN_CIFRA_SSL.includes(v)),
-    'AT-20: a 4 Gbps, un modelo sin cifra de SSL no entra aunque su Threat Protection sobre');
-  const ejes4G = await texto('#ejesPanel');
-  t.ok(/apartados/.test(ejes4G),
-    'AT-20: se declara cuántos se apartaron por falta de dato');
-  t.ok(/tarea de datos|no sustituye|PoC/i.test(ejes4G),
-    'AT-20: y distingue «el catálogo no lo trae» de «ningún equipo aguanta»');
+     Desde el 2026-09-24 los 58 modelos traen SSL (100F y 200F, de su ficha coreana): el
+     catalogo real ya no tiene a quien apartar, y estas afirmaciones se quedaron sin sujeto
+     —«se dice cuantos se apartaron» fallaba porque no se aparto ninguno, que es lo correcto—.
+     La regla no caduca con el dato: se conduce en una pagina APARTE con la respuesta de la
+     API interceptada y el SSL de esos dos BORRADO, la situacion para la que se escribio. La
+     pagina principal sigue con el catalogo real, para no mezclar un catalogo trucado con las
+     salidas comerciales que el servidor confirma mas abajo. */
+  {
+    const SIN = ['FortiGate 100F', 'FortiGate 200F'];
+    const pg = await browser.newPage();
+    await abrirSesion(pg);
+    let borrados = 0;
+    await pg.route('**/api/dimensionador/fortinet', async (route) => {
+      const r = await route.fetch();
+      const j = await r.json();
+      for (const m of j.models || []) if (SIN.includes(m.id)) { m.ssl = null; borrados += 1; }
+      await route.fulfill({ response: r, json: j });
+    });
+    await pg.goto(PAGINA, { waitUntil: 'domcontentloaded' });
+    await pg.waitForSelector('#wanBuilderFilas [data-campo=down]', { timeout: 20000 });
+    await asentar(pg);
+    await pg.selectOption('#motivoCompra', 'ampliacion');
+    await pg.check('#chkSsl');
+    // 1.000 Mbps y no 4.000: con el 30 % de crecimiento son 1.300, y el 200F (3.000 de Threat
+    // Protection) CABE por esa capa. Si queda fuera, es por el SSL que le falta; a 4 Gbps
+    // quedaria fuera por Threat Protection y la afirmacion pasaria por el motivo equivocado.
+    await pg.fill('#wanBuilderFilas [data-campo=down] >> nth=0', '1000');
+    await pg.dispatchEvent('#wanBuilderFilas [data-campo=down] >> nth=0', 'input');
+    await asentar(pg);
+    t.ok(borrados === SIN.length, `AT-20: la intercepción borró el SSL de ${borrados} de ${SIN.length} (sin esto no hay sujeto)`);
+    const opts = await pg.$eval('#verdict-sel', (e) => [...e.options].map((o) => o.value)).catch(() => []);
+    t.ok(!opts.some((v) => SIN.includes(v)),
+      'AT-20: a 1 Gbps, un modelo sin cifra de SSL no entra aunque su Threat Protection sobre');
+    const ejes = await pg.$eval('#ejesPanel', (e) => e.textContent || '').catch(() => '');
+    t.ok(/apartados/.test(ejes), 'AT-20: se declara cuántos se apartaron por falta de dato');
+    t.ok(/tarea de datos|no sustituye|PoC/i.test(ejes),
+      'AT-20: y distingue «el catálogo no lo trae» de «ningún equipo aguanta»');
+    await pg.close();
+    // CONTROL: el mismo escenario con el catalogo REAL ofrece el 200F. Sin esto, que no aparezca
+    // arriba podria deberse a cualquier otra cosa que no fuera el SSL borrado.
+    const ctl = await browser.newPage();
+    await abrirSesion(ctl);
+    await ctl.goto(PAGINA, { waitUntil: 'domcontentloaded' });
+    await ctl.waitForSelector('#wanBuilderFilas [data-campo=down]', { timeout: 20000 });
+    await asentar(ctl);
+    await ctl.selectOption('#motivoCompra', 'ampliacion');
+    await ctl.check('#chkSsl');
+    await ctl.fill('#wanBuilderFilas [data-campo=down] >> nth=0', '1000');
+    await ctl.dispatchEvent('#wanBuilderFilas [data-campo=down] >> nth=0', 'input');
+    await asentar(ctl);
+    const real = await ctl.$eval('#verdict-sel', (e) => [...e.options].map((o) => o.value)).catch(() => []);
+    t.ok(real.includes('FortiGate 200F'),
+      'AT-20 (control): con su SSL publicado (4 Gbps, ficha 2023) el 200F sí compite en ese escenario');
+    await ctl.close();
+  }
   await page.uncheck('#chkSsl');
   await asentar(page);
 
@@ -339,19 +369,49 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   t.ok(trasera && trasera.ancho > 0,
     `y esa figura CARGA de verdad, no es un hueco (natural ${trasera && trasera.ancho}px)`);
 
-  // El hueco honesto: el 100F no tiene datasheet por serie, así que NO tiene foto y lo dice.
-  // Está fuera de venta: desde la etapa 7 solo compite en ampliación de un parque instalado.
+  // EL 100F YA TIENE FIGURA (2026-09-24, pendiente F6): su datasheet coreano. Esta prueba
+  // afirmaba el hueco honesto sobre el 100F, y una prueba que afirma un hueco que ya no existe
+  // bloquea el arreglo. Se afirma ahora que la figura llega, y el hueco se sigue probando con
+  // la entrada del 100F BORRADA del mapa por intercepcion, que es la situacion para la que
+  // existe el aviso. Esta fuera de venta: solo compite en ampliacion de un parque instalado.
   await caudal(500);
   await page.selectOption('#motivoCompra', 'ampliacion');
   await asentar(page);
   await page.selectOption('#verdict-sel', 'FortiGate 100F');
   await asentar(page);
-  const hueco = await page.evaluate(() => ({
-    aviso: ((document.querySelector('.ficha-vista-vacia')) || {}).textContent || '',
-    foto: !!document.querySelector('.ficha-vista'),
-  }));
-  t.ok(!hueco.foto && /Sin foto oficial/.test(hueco.aviso),
-    'un modelo sin foto oficial DECLARA el hueco en vez de enseñar una parecida');
+  const f100 = await page.evaluate(() => {
+    const i = document.querySelector('.ficha-vista img');
+    return { src: i ? i.getAttribute('src') : '', aviso: !!document.querySelector('.ficha-vista-vacia') };
+  });
+  t.ok(/fg-100f-(front|rear)\.webp$/.test(f100.src) && !f100.aviso,
+    `el 100F muestra su figura oficial (${f100.src})`);
+  {
+    const pg = await browser.newPage();
+    await abrirSesion(pg);
+    let quitado = false;
+    await pg.route('**/data/fortinet-vistas-equipos.json', async (route) => {
+      const r = await route.fetch();
+      const j = await r.json();
+      quitado = delete j['FortiGate 100F'];
+      await route.fulfill({ response: r, json: j });
+    });
+    await pg.goto(PAGINA, { waitUntil: 'domcontentloaded' });
+    await pg.waitForSelector('#wanBuilderFilas [data-campo=down]', { timeout: 20000 });
+    await asentar(pg);
+    await pg.fill('#wanBuilderFilas [data-campo=down] >> nth=0', '500');
+    await pg.dispatchEvent('#wanBuilderFilas [data-campo=down] >> nth=0', 'input');
+    await pg.selectOption('#motivoCompra', 'ampliacion');
+    await asentar(pg);
+    await pg.selectOption('#verdict-sel', 'FortiGate 100F');
+    await asentar(pg);
+    const hueco = await pg.evaluate(() => ({
+      aviso: ((document.querySelector('.ficha-vista-vacia')) || {}).textContent || '',
+      foto: !!document.querySelector('.ficha-vista'),
+    }));
+    t.ok(quitado && !hueco.foto && /Sin foto oficial/.test(hueco.aviso),
+      'un modelo sin foto oficial DECLARA el hueco en vez de enseñar una parecida');
+    await pg.close();
+  }
 
   /* ── AT-29 a AT-33 · LOS LIMITES DEL PRODUCT MATRIX, CONDUCIDOS EN LA PANTALLA ───────
      Las reglas se afirman en `test/fortinet-reglas.test.js`; aqui se afirma que la PANTALLA

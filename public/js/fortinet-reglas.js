@@ -575,13 +575,31 @@
     // ── Servicios avanzados de SD-WAN ─────────────────────────────────────────────────
     // AT-07 y AT-08. La funcion base no se licencia; estos servicios si, y SOLO cuando el
     // diseno los usa. Tener dos WAN no deriva ninguno.
-    for (const sv of e.serviciosSdwan || []) {
-      filas.push({ cat: 'Servicios SD-WAN', desc: sv.n, sku: sv.sku || null, qty, unit: null,
-        nota: sv.d });
-      if (!sv.sku) {
+    // F2 (2026-09-24): los tres servicios NO son tres lineas. El Ordering Guide de Secure
+    // SD-WAN los vende en UN SKU por FortiGate, el «SD-WAN Service (Add-on)» (1387/1389), que
+    // es la forma para un equipo con bundle de seguridad —el caso de este BOM, que siempre lo
+    // lleva o lo excluye porque el parque ya lo tiene—. Ver SDWAN_SERVICIO en legacyData.
+    const svs = e.serviciosSdwan || [];
+    let sdwanSku = null;
+    if (svs.length) {
+      const svc = lic && lic.sdwanSvc;
+      const nombres = svs.map((sv) => sv.n).join(' · ');
+      if (svc && svc.addon) {
+        const s = skuTermino(svc.addon, anios, terminos);
+        sdwanSku = svc.addon;
+        if (!s.exacto) bloquear({ codigo: 'sku-dd', mensaje: `SD-WAN Service: ${s.motivo}.` });
+        filas.push({ cat: 'Servicios SD-WAN', desc: 'SD-WAN Service (add-on) — ' + nombres, sku: s.sku, qty, unit: null,
+          nota: `${termino} · un solo SKU cubre los tres servicios (${svc.fuente})` });
+        bloquear({ codigo: 'sin-precio-sdwan',
+          mensaje: `SD-WAN Service ${s.sku}: el SKU es el del Ordering Guide, pero la price list de septiembre no `
+            + 'trae su precio. Pedirlo al distribuidor antes de cotizar en firme.' });
+      } else {
+        filas.push({ cat: 'Servicios SD-WAN', desc: 'SD-WAN Service (add-on) — ' + nombres, sku: null, qty, unit: null,
+          nota: svs.map((sv) => sv.d).join(' ') });
         bloquear({ codigo: 'sin-sku-sdwan',
-          mensaje: `«${sv.n}»: este repositorio no ha leído su SKU del Ordering Guide, así que la línea `
-            + 'no es pedible. Confirmarlo antes de exportar como cotización.' });
+          mensaje: `SD-WAN Service para ${m.id}: `
+            + (svc && svc.motivo ? `${svc.motivo}.` : 'el Ordering Guide no publica el SKU de este modelo.')
+            + ' La línea no es pedible hasta confirmarlo.' });
       }
     }
 
@@ -597,6 +615,17 @@
       bloquear({ codigo: 'sin-sku-sase',
         mensaje: `FortiSASE para ${sase} usuario(s): edición, tier, ancho incluido y mínimo de compra no están en este `
           + 'catálogo. Confirmar el SKU en el Ordering Guide de FortiSASE antes de cotizar en firme.' });
+      /* El SD-WAN Service de gama 1389 (del 60G en adelante) YA TRAE plazas de FortiSASE
+         Standard, por tramo de modelo (FAQ del Ordering Guide de Secure SD-WAN, p. 10). No se
+         descuentan solas: el documento da tramos («60G+», «100F+»...) y no una tabla por
+         modelo, y asignar un modelo a un tramo seria deducirlo. Se AVISA, para que las plazas
+         incluidas no se paguen dos veces. */
+      if (sdwanSku && /-1389-/.test(sdwanSku)) {
+        avisar({ codigo: 'sase-incluido-sdwan',
+          mensaje: `El SD-WAN Service ${sdwanSku} ya incluye licencias FortiSASE Standard según la gama del equipo `
+            + '(Ordering Guide de Secure SD-WAN: 5 desde el 60G, 10 desde el 100F, 50 desde el 700G, 100 desde el 2500G). '
+            + `La línea de ${sase} usuario(s) no las descuenta: restarlas antes de cotizar para no pagarlas dos veces.` });
+      }
     }
 
     /* ── FORTICLIENT EMS: LICENCIA POR ENDPOINT GESTIONADO ───────────────────────────────

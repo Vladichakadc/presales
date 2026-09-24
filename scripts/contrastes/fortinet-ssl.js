@@ -105,10 +105,19 @@ module.exports = {
     // alli la comprobacion pasaria aunque el motor volviera a caer a Threat Protection. En
     // ampliacion los fuera de venta SI compiten, y a 1.000 Mbps el 200F sobra por Threat
     // Protection: si aparece entre los candidatos, se esta sustituyendo la cifra.
-    // La lista sale del CATALOGO, no de un literal: el dia que alguien complete esas fichas,
-    // la comprobacion se queda sin sujeto y lo dice en vez de pasar en falso.
-    const { MODELS } = require('../../server/seed/legacyData/fortinet.js');
-    const SIN_CIFRA = MODELS.filter((m) => m.ssl == null).map((m) => m.id);
+    // EL DIA LLEGO (2026-09-24): la ficha coreana de 100F y 200F completo su SSL y el catalogo
+    // real se quedo sin ningun modelo sin cifra. Esta comprobacion paso entonces EN FALSO
+    // —«ninguno de los 0 sin cifra aparece»— y por eso ya no se apoya en el catalogo: la
+    // respuesta de la API se intercepta y se BORRA el SSL de esos dos, que es exactamente la
+    // situacion para la que se escribio. Si la intercepcion no llega a aplicarse, falla.
+    const SIN_CIFRA = ['FortiGate 100F', 'FortiGate 200F'];
+    let borrados = 0;
+    await p.route('**/api/dimensionador/fortinet', async (route) => {
+      const r = await route.fetch();
+      const j = await r.json();
+      for (const m of j.models || []) if (SIN_CIFRA.includes(m.id)) { m.ssl = null; borrados += 1; }
+      await route.fulfill({ response: r, json: j });
+    });
     await p.goto(`${base}/dimensionador-fortinet-fortigate.html`, { waitUntil: 'domcontentloaded' });
     await pausa(p, 1400);
     await p.selectOption('#motivoCompra', 'ampliacion');
@@ -121,8 +130,11 @@ module.exports = {
     const opciones = await p.$eval('#verdict-sel', (e) => [...e.options].map((o) => o.value)).catch(() => []);
     const colados = opciones.filter((v) => SIN_CIFRA.includes(v));
     const fueraDeVentaCompiten = opciones.some((v) => ['FortiGate 600F', 'FortiGate 70F'].includes(v));
-    out.push({ n: 'un modelo sin cifra de SSL no se cuela por su Threat Protection (ampliación)', ok: !colados.length && fueraDeVentaCompiten,
-      detalle: colados.length ? `aparece ${colados.join(', ')}`
+    await p.unroute('**/api/dimensionador/fortinet');
+    out.push({ n: 'un modelo sin cifra de SSL no se cuela por su Threat Protection (ampliación)',
+      ok: borrados === SIN_CIFRA.length && !colados.length && fueraDeVentaCompiten,
+      detalle: borrados !== SIN_CIFRA.length ? `la intercepción borró ${borrados} de ${SIN_CIFRA.length}: la comprobación no tiene sujeto`
+        : colados.length ? `aparece ${colados.join(', ')}`
         : !fueraDeVentaCompiten ? 'en ampliación no compite ningún fuera de venta: la comprobación no tiene sujeto'
           : `ninguno de los ${SIN_CIFRA.length} sin cifra (${SIN_CIFRA.join(', ')}) aparece, y los fuera de venta con cifra sí compiten` });
     const txt = await p.$eval('#ejesPanel', (e) => e.textContent || '');

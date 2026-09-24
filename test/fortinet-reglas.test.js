@@ -80,13 +80,12 @@ test('AT-02 · el 50G usa TP 1,1 G y SSL 1,3 G como ejes independientes', () => 
 });
 
 test('AT-20 · sin cifra oficial de SSL el modelo se aparta con su motivo, no se imputa', () => {
-  // El 200G dejo de servir de ejemplo el 2026-09-23: el Product Matrix SI publica su SSL
-  // (7.000 Mbps). Ese mismo dia el 600F tambien: su ficha por serie (FG-600F-DAT-R23-202604)
-  // publica 9 Gbps y casa en cuatro anclas con el catalogo. El hueco quedo en el 100F y el
-  // 200F, cuya ficha da 404 (pendiente F6), y la prueba se muda a uno de ellos en vez de
-  // ablandarse.
-  const m = porId('FortiGate 100F');
-  assert.strictEqual(m.ssl, null, 'el catalogo no trae SSL de este modelo');
+  // El ejemplo se fue mudando a medida que llegaba el dato: el 200G (Product Matrix, 23-sep),
+  // el 600F (su ficha por serie, 23-sep) y por ultimo el 100F y el 200F (su ficha coreana,
+  // 24-sep). Con los 58 cubiertos, la regla se prueba sobre el 100F con el SSL BORRADO: una
+  // prueba que se queda sin sujeto no se ablanda ni se borra, se le da uno.
+  assert.strictEqual(porId('FortiGate 100F').ssl, 1000, 'el catalogo real ya trae el SSL del 100F');
+  const m = { ...porId('FortiGate 100F'), ssl: null };
   const r = R.evaluarModelo(m, { tp: 1000, ssl: 1000 });
   assert.strictEqual(r.estado, 'apartado');
   assert.match(r.motivo, /no trae Inspecci[oó]n SSL/);
@@ -96,9 +95,10 @@ test('AT-20 · sin cifra oficial de SSL el modelo se aparta con su motivo, no se
   assert.strictEqual(ssl.u, null, 'un eje sin dato no tiene utilizacion: no se inventa');
 });
 
-test('un eje blando sin dato (cps del 200F) NO aparta el modelo, pero se declara', () => {
-  const m = porId('FortiGate 200F');
-  assert.strictEqual(m.cps, null);
+test('un eje blando sin dato (cps) NO aparta el modelo, pero se declara', () => {
+  // Mismo caso: el 200F era el ejemplo real hasta que su ficha trajo 280.000 cps.
+  assert.strictEqual(porId('FortiGate 200F').cps, 280000);
+  const m = { ...porId('FortiGate 200F'), cps: null };
   const r = R.evaluarModelo(m, { tp: 1000, cps: 5000 });
   assert.strictEqual(r.estado, 'ok');
   assert.deepStrictEqual(r.sinComprobar, ['Sesiones nuevas / s']);
@@ -256,15 +256,51 @@ test('AT-07 · multi-WAN sin servicios cloud no fuerza Enterprise ni ningun bund
   assert.strictEqual(R.validarBundle('atp', [], FUNCIONES, BUNDLES), null);
 });
 
-test('AT-08 · monitoring u orquestacion derivan su entitlement, y sin SKU bloquean la exportacion', () => {
+test('AT-08 · monitoring u orquestacion derivan UNA linea con el SKU del Ordering Guide (F2)', () => {
   const svs = SERVICIOS_SDWAN.filter((s) => s.id === 'sdwanMon' || s.id === 'sdwanOrq');
   assert.strictEqual(svs.length, 2);
   const r = comercial({ serviciosSdwan: svs });
   const lineas = r.filas.filter((f) => f.cat === 'Servicios SD-WAN');
-  assert.strictEqual(lineas.length, 2);
-  // Este repositorio no ha leido esos SKU del Ordering Guide: la linea se declara sin SKU y
-  // la puerta de exportacion la bloquea, en vez de inventar un codigo con pinta de valido.
-  assert.strictEqual(r.bloqueos.filter((b) => b.codigo === 'sin-sku-sdwan').length, 2);
+  // Un SKU por FortiGate cubre los tres servicios: dos lineas lo cobrarian dos veces.
+  assert.strictEqual(lineas.length, 1);
+  assert.strictEqual(lineas[0].sku, 'FC-10-0090G-1389-02-36', 'el add-on del 90G a 3 anos, con el sufijo real');
+  assert.strictEqual(lineas[0].unit, null, 'la price list de septiembre no trae su precio: no se inventa');
+  assert.strictEqual(r.bloqueos.filter((b) => b.codigo === 'sin-sku-sdwan').length, 0);
+  assert.strictEqual(r.bloqueos.filter((b) => b.codigo === 'sin-precio-sdwan').length, 1);
+  assert.ok(r.bloqueos.every((b) => b.nivel === 'borrador'), 'falta un precio: borrador, no bloqueo');
+});
+
+test('F2 · el codigo del Ordering Guide solo se acepta si casa con el de la price list', () => {
+  // 20 de 23 casan. En el 70G, el 200G y el 4800F el documento imprime otro codigo que la
+  // price list: sin SKU y con el motivo, porque no se sabe cual es el pedible.
+  const conSku = MODELS.filter((m) => m.lic && m.lic.sdwanSvc && m.lic.sdwanSvc.addon);
+  assert.strictEqual(conSku.length, 20);
+  for (const id of ['70G', '200G', '4800F']) {
+    const m = porId(`FortiGate ${id}`);
+    assert.strictEqual(m.lic.sdwanSvc.addon, null, id);
+    assert.match(m.lic.sdwanSvc.motivo, /no se sabe cuál es el pedible/, id);
+    const r = comercial({ modelo: m, serviciosSdwan: SERVICIOS_SDWAN.slice(0, 1) });
+    assert.ok(r.bloqueos.some((b) => b.codigo === 'sin-sku-sdwan' && /price list usa/.test(b.mensaje)), id);
+  }
+  // El tramo lo decide el documento: 1387 hasta el 50G, 1389 desde el 70G.
+  assert.match(porId('FortiGate 40F').lic.sdwanSvc.addon, /-1387-02-DD$/);
+  assert.match(porId('FortiGate 80F').lic.sdwanSvc.addon, /-1389-02-DD$/);
+  // Cada SKU aceptado lleva el MISMO codigo de modelo que el bundle de la price list.
+  for (const m of conSku) {
+    const cod = /^FC-10-([A-Z0-9]+)-/.exec(m.lic.sdwanSvc.addon)[1];
+    assert.ok([m.lic.ent, m.lic.utp, m.lic.atp].some((t) => t && t.sku && t.sku.startsWith(`FC-10-${cod}-`)), m.id);
+  }
+});
+
+test('F2 · el SD-WAN Service de gama 1389 trae plazas de FortiSASE: se avisa, no se descuenta a ojo', () => {
+  const sase = SERVICIOS_SDWAN.filter((s) => s.id === 'sdwanSase');
+  // 90G: add-on 1389, que incluye plazas segun la gama. La linea de usuarios no se toca.
+  const r = comercial({ serviciosSdwan: sase, saseUsuarios: 20 });
+  assert.ok(r.avisos.some((a) => a.codigo === 'sase-incluido-sdwan' && /FC-10-0090G-1389-02-DD/.test(a.mensaje)));
+  assert.strictEqual(r.filas.find((f) => /FortiSASE — licencias/.test(f.desc)).qty, 20, 'no se descuentan plazas deducidas');
+  // 40F: add-on 1387, sin plazas incluidas. No hay nada que avisar.
+  const r40 = comercial({ modelo: porId('FortiGate 40F'), serviciosSdwan: sase, saseUsuarios: 20 });
+  assert.ok(!r40.avisos.some((a) => a.codigo === 'sase-incluido-sdwan'));
 });
 
 /* ══ AT-10 · SD-WAN no excluye por modelo ══════════════════════════════════════════════ */
@@ -371,15 +407,14 @@ test('el campo ssl es null explicito donde el catalogo no lo trae, nunca undefin
     assert.ok(m.ssl === null || m.ssl > 0, `${m.id} tiene un ssl que no es ni null ni una cifra`);
   }
   const conDato = MODELS.filter((m) => m.ssl != null);
-  assert.strictEqual(conDato.length, 56,
-    '56 modelos con cifra oficial: 27 filas del Matrix + 24 variantes + 3 fichas por serie (400F, 600F, 1000F) + 2 variantes (401F, 1001F)');
-  // Los 2 que faltan son los de ficha inalcanzable (404 en la URL por serie, pendiente F6). Se
-  // enumeran a proposito: si manana uno apareciera o desapareciera, la prueba lo dice en vez
-  // de contar un total que cuadra.
+  assert.strictEqual(conDato.length, 58,
+    '58 modelos con cifra oficial: 27 filas del Matrix + 24 variantes + 5 fichas por serie (100F, 200F, 400F, 600F, 1000F) + 2 variantes (401F, 1001F)');
+  // Ninguno sin dato desde el 2026-09-24. Se enumera igual: si manana uno lo perdiera, la
+  // prueba dice cual en vez de contar un total que cuadra.
   const sinDato = MODELS.filter((m) => m.ssl == null).map((m) => m.id.replace('FortiGate ', ''));
-  assert.deepStrictEqual(sinDato.sort(), ['100F', '200F']);
+  assert.deepStrictEqual(sinDato.sort(), []);
   // Y los de ficha declaran DE QUE ficha salen, no del Matrix.
-  for (const id of ['400F', '401F', '600F', '1000F', '1001F']) {
+  for (const id of ['100F', '200F', '400F', '401F', '600F', '1000F', '1001F']) {
     assert.match(porId(`FortiGate ${id}`).limitesDe.fuente, /^ficha por serie FG-/, id);
   }
   // Las variantes con SSD heredan del modelo base por la regla ya declarada en el archivo.
@@ -630,13 +665,14 @@ test('los siete campos del Matrix llegan a los 58 modelos como null o como cifra
     }
   }
   const cuenta = (k) => MODELS.filter((m) => m[k] != null).length;
-  // 51 del Matrix + 5 de las fichas por serie de 400F, 600F y 1000F (con 401F y 1001F).
-  assert.strictEqual(cuenta('tunGw'), 56);
-  assert.strictEqual(cuenta('tunCli'), 56);
-  assert.strictEqual(cuenta('policies'), 56);
+  // 51 del Matrix + 7 de las fichas por serie: 400F, 600F y 1000F con 401F y 1001F (en
+  // ingles) y 100F y 200F (en coreano, la inglesa da 404).
+  assert.strictEqual(cuenta('tunGw'), 58);
+  assert.strictEqual(cuenta('tunCli'), 58);
+  assert.strictEqual(cuenta('policies'), 58);
   // sslVpn y sslVpnUsers: el documento imprime «—» en cinco modelos base (30G, 40F, 50G, 60F,
   // 70G) y sus variantes. Ese hueco es del DOCUMENTO y se declara.
-  assert.strictEqual(cuenta('sslVpn'), 47);
-  assert.strictEqual(cuenta('sslVpnUsers'), 47);
-  assert.strictEqual(cuenta('vdomMax'), 54);
+  assert.strictEqual(cuenta('sslVpn'), 49);
+  assert.strictEqual(cuenta('sslVpnUsers'), 49);
+  assert.strictEqual(cuenta('vdomMax'), 56);
 });

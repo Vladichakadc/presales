@@ -52,8 +52,27 @@ test('cada figura declara su procedencia: de qué documento y de qué figura sal
   for (const [modelo, v] of entradas) {
     assert.ok(v.fuente && v.fuente.length > 15,
       `${modelo} no declara de qué documento salió su figura`);
-    assert.match(v.fuente, /Datasheet/i, `${modelo}: la procedencia no nombra el documento`);
-    assert.match(v.fuente, /p\. 7 «Hardware»/, `${modelo}: no dice de qué página del datasheet sale`);
+    // Datasheet por serie (p. 7 «Hardware», o p. 6 en la edicion coreana de 100F y 200F) o
+    // System Guide de chasis (7081F, 7121F): lo que se exige es el documento Y la pagina.
+    assert.match(v.fuente, /Datasheet|System Guide/i, `${modelo}: la procedencia no nombra el documento`);
+    assert.match(v.fuente, /p\. \d+/, `${modelo}: no dice de qué página sale`);
+  }
+});
+
+test('los cuatro que faltaban (F6) traen las dos caras y declaran lo que no es obvio', () => {
+  for (const m of ['FortiGate 100F', 'FortiGate 200F', 'FortiGate 7081F', 'FortiGate 7121F']) {
+    const v = VISTAS[m];
+    assert.ok(v && v.front && v.rear, `${m}: su documento publica las dos caras`);
+  }
+  // La edicion inglesa de 100F y 200F da 404: se dice que la figura sale de la coreana.
+  assert.match(VISTAS['FortiGate 100F'].fuente, /coreana/);
+  // El dibujo del 100F lleva otro rotulo en el chasis: se declara, no se calla.
+  assert.match(VISTAS['FortiGate 100F'].fuente, /212F/);
+  // En los chasis las caras vienen rotuladas y la frontal es una configuracion de ejemplo.
+  for (const m of ['FortiGate 7081F', 'FortiGate 7121F']) {
+    assert.match(VISTAS[m].fuente, /front panel/, m);
+    assert.match(VISTAS[m].fuente, /back panel/, m);
+    assert.match(VISTAS[m].fuente, /CONFIGURACIÓN DE EJEMPLO/, m);
   }
 });
 

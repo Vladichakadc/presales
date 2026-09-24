@@ -87,6 +87,14 @@ jobs:
               { archivo: 'og-secure-sdwan.pdf', tipo: 'pdf', pendiente: 'F2', urls: [
                 'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-secure-sdwan.pdf',
               ] },
+              // Condicion 2 del GO CONDICIONADO: la retirada del modo tunel de SSL-VPN se cito
+              // del informe y no se leyo. Es una pagina web, asi que se valida por su TEXTO: una
+              // pagina de error o un cascaron de JavaScript tambien responden 200.
+              { archivo: 'fortios-763-ssl-vpn-tunel.html', tipo: 'html', pendiente: 'GO-2',
+                debeContener: 'tunnel mode', urls: [
+                'https://docs.fortinet.com/document/fortigate/7.6.3/fortios-release-notes/173430/ssl-vpn-tunnel-mode-no-longer-supported',
+                'https://docs.fortinet.com/document/fortigate/7.6.6/fortios-release-notes/173430/ssl-vpn-tunnel-mode-replaced-with-ipsec-vpn',
+              ] },
             ];
             const informe = [];
             (async () => {
@@ -106,6 +114,10 @@ jobs:
                   // guardarlo dejaria un documento vacio con pinta de bueno.
                   if (doc.tipo === 'pdf' && buf.subarray(0, 4).toString() !== '%PDF') {
                     intentos.push({ url, status: res.status, firma: buf.subarray(0, 8).toString('hex'), nota: 'no es un PDF' });
+                    continue;
+                  }
+                  if (doc.debeContener && !buf.toString('utf8').toLowerCase().includes(doc.debeContener)) {
+                    intentos.push({ url, status: res.status, bytes: buf.length, nota: 'no contiene el texto esperado' });
                     continue;
                   }
                   fs.writeFileSync('fuente-fortinet/' + doc.archivo, buf);

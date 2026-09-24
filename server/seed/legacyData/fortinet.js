@@ -103,9 +103,10 @@
 // `npm run cps`: 400F/401F 500.000 y 600F 550.000, todas con su Concurrent Sessions casando
 // con el `sess` ya verificado -7,8 M y 8 M- ademas de ips, ngfw, tp y vpn. Sin un rechazo.
 //
-// Quedan 100F y 200F en null: no es bloqueo de acceso ni falta de documento, es que su ficha
-// por serie no esta en la URL que sigue el patron del resto. null no es "no tiene limite": la
-// pagina lo declara como dato ausente y no lo usa para filtrar.
+// 2026-09-24: los 2 que faltaban, de 56 a 58 de 58. 100F 56.000 y 200F 280.000, de su ficha
+// por serie en COREANO -la inglesa da 404 en todas las rutas, la coreana oficial sigue en el
+// CDN de fortinet.com-, con Concurrent Sessions, IPS, NGFW, Threat Protection e IPsec casando
+// con lo ya verificado (ver FICHAS_LIMITES, donde estan tambien sus limites de tuneles y SSL).
 // RAM por modelo NO existe en el Product Matrix: ese documento publica throughput por capa,
 // sesiones, cps, interfaces y consumo, no memoria. Fortinet no publica la RAM como
 // especificacion de dimensionamiento — el proxy de la capacidad de memoria es `sess`.
@@ -249,8 +250,8 @@ const MODELS=[
   // .github/workflows/traer-fortinet-psu.yml. Frase literal: «the device has two power
   // supplies that can be connected to different power sources». El documento no publica
   // consumo, asi que `watts` se queda fuera en vez de rellenarse a ojo.
-  {id:'FortiGate 100F', seg:'Sucursal med', fw:20000, ips:2600, ngfw:1600, tp:1000, vpn:11500, sess:1500000, cps:null, ifaces:'22 GE + 2x10GE SFP+', redund:true, psu:{watts:26.5, tipo:'doble fuente AC de serie, no intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'1,0 A @100 V · 0,5 A @240 V', texto:'Consumo medio 26.5 W y máximo 29.5 W. Las dos fuentes vienen de serie, pero no se cambian en caliente.'}},
-  {id:'FortiGate 200F', seg:'Sucursal gde', fw:27000, ips:5000, ngfw:3500, tp:3000, vpn:13000, sess:3000000, cps:null, ifaces:'16 GE + 4x10GE + 4 SFP', redund:true, psu:{watts:101.92, tipo:'doble fuente AC de serie, no intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'2 A @100 V · 1,2 A @240 V', texto:'Consumo medio 101.92 W y máximo 118.90 W. Las dos fuentes vienen de serie, pero no se cambian en caliente.'}},
+  {id:'FortiGate 100F', seg:'Sucursal med', fw:20000, ips:2600, ngfw:1600, tp:1000, vpn:11500, sess:1500000, cps:56000, ifaces:'22 GE + 2x10GE SFP+', redund:true, psu:{watts:26.5, tipo:'doble fuente AC de serie, no intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'1,0 A @100 V · 0,5 A @240 V', texto:'Consumo medio 26.5 W y máximo 29.5 W. Las dos fuentes vienen de serie, pero no se cambian en caliente.'}},
+  {id:'FortiGate 200F', seg:'Sucursal gde', fw:27000, ips:5000, ngfw:3500, tp:3000, vpn:13000, sess:3000000, cps:280000, ifaces:'16 GE + 4x10GE + 4 SFP', redund:true, psu:{watts:101.92, tipo:'doble fuente AC de serie, no intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'2 A @100 V · 1,2 A @240 V', texto:'Consumo medio 101.92 W y máximo 118.90 W. Las dos fuentes vienen de serie, pero no se cambian en caliente.'}},
   // Los tres siguientes, leidos de sus datasheets por serie (2026-09-03). Aqui `watts` SI es
   // consumo: el documento publica "AC Power Consumption (Average / Maximum)", que es lo que la
   // ficha rotula «Consumo tipico» -a diferencia de los 2.500 W del 7081F, que son capacidad.
@@ -465,8 +466,21 @@ for (const [base, lim] of Object.entries(MATRIX_LIMITES)) {
 // casan con la ficha. Se comprueban AQUI, al cargar, y no solo el dia de la transcripcion:
 // si alguien corrige un `sess` sin volver a leer la ficha, la tabla deja de aplicarse y lo
 // dice por consola, en vez de dejar cifras de otra revision pegadas a un modelo que cambio.
-// 100F y 200F siguen sin ficha: su URL por serie da 404 (pendiente F6).
+// 100F Y 200F (2026-09-24, pendiente F6): su ficha en ingles da 404 en todas las rutas que
+// sigue el resto -15 intentos en dos corridas-, pero Fortinet sigue publicando la COREANA
+// oficial en el mismo CDN (`data-sheets/ko_kr/ds-fortigate-{100f,200f}-series_ko.pdf`), traida
+// por `traer-fortinet-pendientes.yml` (corrida 35991156286). Es la misma tabla con las
+// etiquetas traducidas; los numeros no se traducen. Reconstruida por coordenadas (pagina 7) y
+// anclada con SEIS cifras ya verificadas por fila (fw, ips, ngfw, tp, vpn, sess): 12 de 12.
+// Aqui van las cuatro que comprueba el bucle. Es una revision de 2023 (R30 y R17), anterior a
+// la R42/R28 de 2025 de la que sale su consumo: el rendimiento casa en las seis, pero el
+// consumo del 100F NO (35,1 W en la R30 frente a 26,5 W en la R42 -Fortinet lo re-evaluo a la
+// baja-), asi que el consumo sigue saliendo de la R42 y de esta ficha solo se toma lo que casa.
 const FICHAS_LIMITES={
+  '100F':  {ficha:'FG-100F-DAT-R30-20230227 (ko_kr)', ancla:{sess:1500000, ips:2600, tp:1000, vpn:11500},
+            ssl: 1000, tunGw: 2000, tunCli: 16000, sslVpn:1000, sslVpnUsers:  500, policies: 10000, vdomMax: 10},
+  '200F':  {ficha:'FG-200F-DAT-R17-20230125 (ko_kr)', ancla:{sess:3000000, ips:5000, tp:3000, vpn:13000},
+            ssl: 4000, tunGw: 2000, tunCli: 16000, sslVpn:2000, sslVpnUsers:  500, policies: 10000, vdomMax: 10},
   '400F':  {ficha:'FG-400F-DAT-R22-202604', ancla:{sess:7800000, cps:500000, tp:9000,  vpn:55000},
             ssl: 8000, tunGw: 2000, tunCli: 50000, sslVpn:3600, sslVpnUsers: 5000, policies: 10000, vdomMax: 25},
   '600F':  {ficha:'FG-600F-DAT-R23-202604', ancla:{sess:8000000, cps:550000, tp:10500, vpn:55000},
@@ -703,6 +717,70 @@ for (const m of MODELS) {
   }
 }
 
+/* ── SD-WAN SERVICE: EL SKU DE LOS TRES SERVICIOS AVANZADOS (pendiente F2, 2026-09-24) ────────
+   Fuente: «Secure SD-WAN Ordering Guide» SDWAN-OG-R31-20260804 (paginas 3-6, tablas SERVICES),
+   traido por `traer-fortinet-pendientes.yml` (corrida 35991156286) y leido por coordenadas.
+   Lo confirma el «FortiGate Subscriptions and FortiGuard Bundles Ordering Guide» (mayo-2026,
+   p. 4): Underlay and Application Monitoring, Overlay Orchestration y el conector FortiSASE
+   llevan marca SOLO en la columna SD-WAN, ni a la carta ni en Enterprise/UTP/ATP. O sea que NO
+   son tres lineas con tres SKU: son UN SKU por FortiGate, en dos formas:
+     bundle  1337 (30G-60F) / 1329 (60G en adelante) — «including FortiCare», para el equipo
+             que no lleva otro bundle ni soporte;
+     add-on  1387 / 1389 — «a lower priced alternative for FortiGates with additional security
+             bundles already in place» (FAQ, p. 10). Es el que corresponde aqui: el BOM siempre
+             lleva un bundle de seguridad, o lo excluye porque el parque ya lo tiene.
+   LA PRICE LIST DE SEPTIEMBRE NO TRAE NINGUNO DE LOS DOS (0 referencias con -1329/-1337/-1387/
+   -1389 en fortinetSkus.js): el SKU es oficial y exacto, el PRECIO no esta, y la linea sale sin
+   cotizar en vez de con un precio de otra familia.
+   DOBLE ANCLAJE SOBRE EL CODIGO DE MODELO: el documento imprime el codigo dentro del SKU
+   (`FC-10-0090G-1389-02-DD`), y solo se acepta si es el MISMO que la price list firmada usa para
+   ese modelo (`codigoModelo`, arriba). Casan 20 de 23. Los 3 que no, se quedan sin SKU con su
+   motivo, porque no se sabe cual de los dos codigos es el pedible:
+     70G   el documento imprime FG70G (y en su propia tabla de renovacion, 0070G); la price list, GT70G.
+     200G  el documento imprime F200G; la price list, FG2HG.
+     4800F el documento imprime F481F bajo la columna del 4800F, y F481F es el codigo del 4801F.
+   Las variantes (31G, 91G, 401F...) no estan en esas tablas y se quedan sin SKU: el documento
+   las remite a la price list, y deducir su codigo seria inventarlo. */
+const SDWAN_SERVICIO={
+  fuente:'Secure SD-WAN Ordering Guide SDWAN-OG-R31-20260804',
+  porModelo:{
+    '30G':  ['FC-10-FG30G-1337-02-DD', 'FC-10-FG30G-1387-02-DD'],
+    '40F':  ['FC-10-0040F-1337-02-DD', 'FC-10-0040F-1387-02-DD'],
+    '50G':  ['FC-10-GT50G-1337-02-DD', 'FC-10-GT50G-1387-02-DD'],
+    '70G':  ['FC-10-FG70G-1329-02-DD', 'FC-10-FG70G-1389-02-DD'],
+    '80F':  ['FC-10-0080F-1329-02-DD', 'FC-10-0080F-1389-02-DD'],
+    '90G':  ['FC-10-0090G-1329-02-DD', 'FC-10-0090G-1389-02-DD'],
+    '120G': ['FC-10-F120G-1329-02-DD', 'FC-10-F120G-1389-02-DD'],
+    '200G': ['FC-10-F200G-1329-02-DD', 'FC-10-F200G-1389-02-DD'],
+    '400G': ['FC-10-FG4H0-1329-02-DD', 'FC-10-FG4H0-1389-02-DD'],
+    '700G': ['FC-10-G7H0G-1329-02-DD', 'FC-10-G7H0G-1389-02-DD'],
+    '900G': ['FC-10-FG9H0-1329-02-DD', 'FC-10-FG9H0-1389-02-DD'],
+    '1000F':['FC-10-F1K0F-1329-02-DD', 'FC-10-F1K0F-1389-02-DD'],
+    '1800F':['FC-10-F18HF-1329-02-DD', 'FC-10-F18HF-1389-02-DD'],
+    '2600F':['FC-10-F26HF-1329-02-DD', 'FC-10-F26HF-1389-02-DD'],
+    '3000F':['FC-10-F3K0F-1329-02-DD', 'FC-10-F3K0F-1389-02-DD'],
+    '3000G':['FC-10-G3K0G-1329-02-DD', 'FC-10-G3K0G-1389-02-DD'],
+    '3200F':['FC-10-F3K2F-1329-02-DD', 'FC-10-F3K2F-1389-02-DD'],
+    '3500G':['FC-10-G3K5G-1329-02-DD', 'FC-10-G3K5G-1389-02-DD'],
+    '3700F':['FC-10-F3K7F-1329-02-DD', 'FC-10-F3K7F-1389-02-DD'],
+    '3800G':['FC-10-3K80G-1329-02-DD', 'FC-10-3K80G-1389-02-DD'],
+    '4200F':['FC-10-F42HF-1329-02-DD', 'FC-10-F42HF-1389-02-DD'],
+    '4400F':['FC-10-F44HF-1329-02-DD', 'FC-10-F44HF-1389-02-DD'],
+    '4800F':['FC-10-F481F-1329-02-DD', 'FC-10-F481F-1389-02-DD'],
+  },
+};
+for (const m of MODELS) {
+  if (!m.lic) continue;
+  const fila=SDWAN_SERVICIO.porModelo[bareId(m.id)];
+  if (!fila) { m.lic.sdwanSvc=null; continue; }
+  const cod=codigoModelo(m.lic);
+  const impreso=/^FC-10-([A-Z0-9]+)-/.exec(fila[1])[1];
+  m.lic.sdwanSvc = impreso===cod
+    ? {bundle:fila[0], addon:fila[1], fuente:SDWAN_SERVICIO.fuente}
+    : {bundle:null, addon:null, fuente:SDWAN_SERVICIO.fuente,
+       motivo:`el Ordering Guide imprime el código ${impreso} y la price list usa ${cod || 'otro'} para este modelo: no se sabe cuál es el pedible`};
+}
+
 /* ── LICENCIAS REANCLADAS A LA PRICE LIST DECLARADA (hallazgo N02, 2026-09-23) ────────────
    LICENSES se transcribio de la «2026Q3 Main Price list 080326» (vigente desde el 03-ago),
    pero la fuente de precios que declara `fuentes.js` —y de la que salen el hardware de
@@ -906,5 +984,5 @@ const CARE={
   fcelite:{n:'FortiCare Elite',      sla:'FortiCare Premium + atención de tickets con prioridad Elite'},
 };
 
-module.exports = { MODELS, BUNDLES, CARE, LICENSES, HW_SKU, FUNCIONES, SERVICIOS_SDWAN, TERMINOS, MATRIX_LIMITES,
+module.exports = { MODELS, BUNDLES, CARE, LICENSES, HW_SKU, FUNCIONES, SERVICIOS_SDWAN, SDWAN_SERVICIO, TERMINOS, MATRIX_LIMITES,
   FICHAS_LIMITES, MATRIX_PLATAFORMA, FICHAS_PLATAFORMA, PUERTOS, FORTIOS, REANCLAJE };

@@ -397,10 +397,18 @@ test('invariante · un candidato con un eje insuficiente nunca es elegible', () 
 });
 
 test('invariante · un eje sin dato nunca se lee como cero ni como ilimitado', () => {
-  const r = evaluar(con(CU01(), { 'seguridad.funciones': ['chkAv', 'chkWeb', 'chkSsl'] }));
+  // Desde el 2026-09-24 los 58 modelos traen SSL (el 100F y el 200F, de su ficha coreana), asi
+  // que el catalogo real ya no tiene ningun hueco con el que probarlo. El invariante no caduca
+  // con el dato: se prueba sobre el mismo catalogo con el SSL del 100F BORRADO.
+  const sinSsl = { ...CAT, models: CAT.models.map((m) => (m.id === 'FortiGate 100F' ? { ...m, ssl: null } : m)) };
+  const esc = con(CU01(), { 'seguridad.funciones': ['chkAv', 'chkWeb', 'chkSsl'] });
+  const r = M.evaluar(esc, sinSsl, { hoy: '2026-09-23T00:00:00Z' });
   const c100 = r.candidatos.find((x) => x.id === 'FortiGate 100F');
-  assert.strictEqual(c100.eval.estado, 'apartado', 'el 100F no tiene cifra de SSL: se aparta');
+  assert.strictEqual(c100.eval.estado, 'apartado', 'sin cifra de SSL el 100F se aparta');
   assert.ok(!c100.elegible);
+  // Y con el dato real deja de apartarse POR ESE MOTIVO: la cifra se usa, no se ignora.
+  const real = evaluar(esc).candidatos.find((x) => x.id === 'FortiGate 100F');
+  assert.ok(!/no trae Inspecci/.test(real.eval.motivo || ''), 'con SSL publicado no se aparta por falta de SSL');
 });
 
 /* ── LO QUE SE AFINO AL CONDUCIR LA PANTALLA (etapa 7, misma fecha) ──────────────────────
