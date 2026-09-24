@@ -103,11 +103,10 @@ const CU01 = new URLSearchParams({
   const bloq = await texto('#resBloqueos');
   t.ok(/retirado en FortiOS 7\.6\.3/.test(bloq), 'T06: SSL-VPN en 7.6.3+ se bloquea con su causa');
   t.ok(/Cambiar a IPsec/.test(bloq), 'T06: y se ofrece IPsec como corrección');
-  // CU-05: «se explica el motivo con fuente». La regla de 7.6.3+ se leyó de las Release Notes
-  // el 2026-09-24 (antes era una cita del informe sin leer): la fuente se cita y ya NO se
-  // declara como no leída.
-  t.ok(/Fuente: .*7\.6\.3 Release Notes/.test(bloq) && !/no se leyó desde este entorno/.test(bloq),
-    'CU-05: el bloqueo cita su fuente leída, sin la advertencia de cita sin leer');
+  // CU-05: «se explica el motivo con fuente». Desde el 2026-09-24 la regla de 7.6.3+ está
+  // leída en las Release Notes 7.6.3, así que cita documento y página y ya no se disculpa.
+  t.ok(/Fuente: .*7\.6\.3 Release Notes, p\. 15/.test(bloq) && !/no se leyó desde este entorno/.test(bloq),
+    'CU-05: el bloqueo cita su fuente leída, con documento y página');
   {
     // Y una regla citada SIN leer se sigue declarando como tal: el catálogo real ya no tiene
     // ninguna, así que se devuelve la de 7.6.3+ a `leida:false` interceptando la API.

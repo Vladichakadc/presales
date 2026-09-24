@@ -121,7 +121,10 @@
 //   · 7081F — «up to six hot swappable 200-277V, 16A AC PSUs. The capacity of each PSU is
 //     2500W» + «You can add extra PSUs to provide redundancy» (7081F System Guide).
 //   · 7121F — «You can hot swap a PSU without powering down [...] as long as four PSUs are
-//     connected to power and operating normally» (7121F System Guide).
+//     connected to power and operating normally» (7121F System Guide). El 2026-09-24 se leyo
+//     la misma guia entera (7.4.4, docs.fortinet.com) y la p. 8 SI publica el maximo: «eight
+//     hot swappable 200-240 VAC [...] 2000W» en la generacion 1 y 2500W en la 2. Casa con el
+//     «8 PS» del Product Matrix (`fuentes` mas abajo): dos anclas, no una.
 // Los 2.500 W del 7081F son CAPACIDAD de cada fuente, no consumo del equipo, y por eso NO van
 // en `psu.watts`: la ficha rotula ese campo «Consumo tipico», asi que ponerlo ahi seria una
 // cifra falsa con apariencia correcta. Va en el texto, que es donde se puede decir que mide.
@@ -284,7 +287,7 @@ const MODELS=[
   // no van en `watts` -que la ficha rotula «Consumo tipico»- sino en el texto: seria una cifra
   // falsa con apariencia correcta, justo el error que este catalogo evita.
   {id:'FortiGate 7081F', seg:'Carrier / ISP', fw:1890000, ips:405000, ngfw:330000, tp:312000, vpn:378000, sess:600000000, cps:5400000, ifaces:'Chasis modular FPM (interfaces variables)', redund:true, psu:{tipo:'hasta 6 fuentes AC intercambiables en caliente', volts:'200-277 V, 16 A', texto:'Hasta seis fuentes AC de 2.500 W de capacidad cada una, intercambiables en caliente. Cuántas hacen falta depende de los módulos FIM y FPM instalados; se pueden añadir fuentes extra para redundancia y conectar cada una a una toma distinta.'}},
-  {id:'FortiGate 7121F', seg:'Carrier / National', fw:1890000, ips:675000, ngfw:550000, tp:520000, vpn:630000, sess:1000000000, cps:9000000, ifaces:'Chasis modular FPM (interfaces variables)', redund:true, psu:{tipo:'fuentes AC intercambiables en caliente', texto:'Se puede cambiar una fuente sin apagar el equipo mientras queden cuatro conectadas y funcionando; por debajo de cuatro, el chasis empieza a apagar módulos FPM. El documento leído no publica el número máximo de fuentes.'}},
+  {id:'FortiGate 7121F', seg:'Carrier / National', fw:1890000, ips:675000, ngfw:550000, tp:520000, vpn:630000, sess:1000000000, cps:9000000, ifaces:'Chasis modular FPM (interfaces variables)', redund:true, psu:{tipo:'hasta 8 fuentes AC intercambiables en caliente', volts:'200-240 V AC, 50-60 Hz', texto:'Hasta ocho fuentes intercambiables en caliente: de 2.000 W en la generación 1 y de 2.500 W en la 2 (FortiGate-7121F 7.4.4 System Guide, p. 8; leída el 2026-09-24). Cuántas hacen falta depende de los módulos FIM y FPM: con dos FIM-7921F y diez FPM-7620F son cinco de 2.000 W o cuatro de 2.500 W, y el resto de bahías sirve de redundancia (p. 24). Se puede cambiar una fuente sin apagar el equipo mientras queden cuatro conectadas y funcionando; por debajo de cuatro, el chasis empieza a apagar módulos FPM.'}},
 ];
 
 // SKU de hardware base (columna UNIT/SKU de la hoja "FortiGate"/"FortiGate Chassis Platforms").
@@ -642,15 +645,21 @@ for (const m of MODELS) if (/^FortiGate 8[01]F$/.test(m.id)) m.seg=m.seg.replace
      · 7.6.3 o superior: el modo tunel SSL-VPN se sustituye por IPsec en TODOS los modelos.
        Hasta el 2026-09-24 estaba transcrita del informe de auditoria SIN LEER (`leida:false`):
        `docs.fortinet.com` responde `connect_rejected` al proxy de egreso de este entorno. Ese
-       dia la trajo `traer-fortinet-pendientes.yml` desde Actions (corrida 35997261950) y se
-       leyo: dice exactamente lo que la regla aplicaba. Condicion 2 del GO CONDICIONADO.
+       dia se leyo por DOS vias independientes que casan: el PDF de las Release Notes de 7.6.3
+       (p. 15), desde una maquina sin ese proxy, y la pagina del mismo aviso, traida por
+       `traer-fortinet-pendientes.yml` desde Actions (corrida 35997261950). Condicion 2 del GO.
      · 7.6.0 a 7.6.2: SSL-VPN no soportado en modelos de 2 GB de RAM (nota 10 del Matrix).
        QUE MODELOS TIENEN 2 GB NO LO DECIA EL MATRIX, y la compatibilidad era «desconocida»
-       para todos. Las Release Notes de 7.6.0 (PDF de fortinetweb.s3, misma corrida) dan la
-       lista -40F y variantes, 60F, 61F- y la cierran: «FortiGate models not listed above will
-       continue to have SSL VPN web and tunnel mode support». La regla pasa a esos tres. El
-       camino `ram-2gb` del motor sigue existiendo para una regla por RAM sin lista de modelos,
-       y lo guarda una prueba sobre un catalogo sintetico.
+       para todos. Las Release Notes de 7.6.0 (PDF de fortinetweb.s3, pp. 10-11, misma corrida)
+       traen el aviso propio del SSL-VPN, con la lista -40F y variantes, 60F, 61F- y la frase
+       que la CIERRA: «FortiGate models not listed above will continue to have SSL VPN web and
+       tunnel mode support». La regla pasa a esos tres y el resto queda soportado. Una primera
+       lectura del mismo dia llego a la misma lista por la p. 16 de las de 7.6.3, pero esa frase
+       («impacts the FortiGate 40F and 60F series devices, along with their variants») es la del
+       aviso de FUNCIONES PROXY: misma familia de 2 GB, prueba indirecta, y sin la frase que
+       cierra la lista dejaba al resto en «desconocida». El camino `ram-2gb` del motor sigue
+       existiendo para una regla por RAM sin lista de modelos, y lo guarda una prueba sobre un
+       catalogo sintetico.
      · Serie 90G: SSL-VPN solo entre 7.0.12 y 7.0.15 (nota 11 del Matrix, leida, pegada a la
        celda del FG-90G). Ninguna de las ramas que ofrece esta herramienta cae en ese rango.
    Las ramas son tres a proposito: son las que las fuentes distinguen. Una lista de versiones
@@ -664,10 +673,10 @@ const FORTIOS={
   porDefecto:'7.6.3+',
   reglas:[
     {funcion:'sslvpn', versiones:['7.6.3+'], modelos:'*', estado:'retirada', sustituto:'ipsec',
-     fuente:'FortiOS 7.6.3 Release Notes, «SSL VPN tunnel mode replaced with IPsec VPN»: «Starting in FortiOS 7.6.3, the SSL VPN tunnel mode feature is replaced with IPsec VPN […] This applies to all FortiGate models.»',
+     fuente:'FortiOS 7.6.3 Release Notes, p. 15, «SSL VPN tunnel mode replaced with IPsec VPN»: «Starting in FortiOS 7.6.3, the SSL VPN tunnel mode feature is replaced with IPsec VPN [...] This applies to all FortiGate models.»',
      leida:true},
     {funcion:'sslvpn', versiones:['7.6.0-7.6.2'], modelos:['40F','60F','61F'], estado:'no-soportada', sustituto:'ipsec',
-     fuente:'FortiOS 7.6.0 Release Notes, «SSL VPN removed from 2GB RAM models for tunnel and web mode»: 40F y variantes, 60F y 61F; «FortiGate models not listed above will continue to have SSL VPN web and tunnel mode support» (y nota 10 del Product Matrix sept-2026)',
+     fuente:'FortiOS 7.6.0 Release Notes, pp. 10-11, «SSL VPN removed from 2GB RAM models for tunnel and web mode»: 40F y variantes, 60F y 61F; «FortiGate models not listed above will continue to have SSL VPN web and tunnel mode support» (y nota 10 del Product Matrix sept-2026)',
      leida:true},
     {funcion:'sslvpn', versiones:['7.4','7.6.0-7.6.2','7.6.3+'], modelos:['90G','91G'], estado:'no-soportada', sustituto:'ipsec',
      fuente:'Product Matrix sept-2026, nota 11 en la celda SSL VPN del FG-90G: «SSL VPN only supported between 7.0.12 and 7.0.15»',
@@ -722,29 +731,45 @@ for (const m of MODELS) {
 }
 
 /* ── SD-WAN SERVICE: EL SKU DE LOS TRES SERVICIOS AVANZADOS (pendiente F2, 2026-09-24) ────────
-   Fuente: «Secure SD-WAN Ordering Guide» SDWAN-OG-R31-20260804 (paginas 3-6, tablas SERVICES),
-   traido por `traer-fortinet-pendientes.yml` (corrida 35991156286) y leido por coordenadas.
-   Lo confirma el «FortiGate Subscriptions and FortiGuard Bundles Ordering Guide» (mayo-2026,
-   p. 4): Underlay and Application Monitoring, Overlay Orchestration y el conector FortiSASE
-   llevan marca SOLO en la columna SD-WAN, ni a la carta ni en Enterprise/UTP/ATP. O sea que NO
-   son tres lineas con tres SKU: son UN SKU por FortiGate, en dos formas:
-     bundle  1337 (30G-60F) / 1329 (60G en adelante) — «including FortiCare», para el equipo
-             que no lleva otro bundle ni soporte;
+   QUE ES CADA CODIGO lo dice el «Secure SD-WAN Ordering Guide» SDWAN-OG-R31-20260804 (paginas
+   3-6, tablas SERVICES, y FAQ, pp. 10-11), traido por `traer-fortinet-pendientes.yml` (corrida
+   35991156286) y leido por coordenadas. Lo confirma el «FortiGate Subscriptions and FortiGuard
+   Bundles Ordering Guide» (mayo-2026, p. 4): Underlay and Application Monitoring, Overlay
+   Orchestration y el conector FortiSASE llevan marca SOLO en la columna SD-WAN, ni a la carta ni
+   en Enterprise/UTP/ATP. O sea que NO son tres lineas con tres SKU: son UN SKU por FortiGate, en
+   dos formas:
+     bundle  1337 (por debajo del 60G) / 1329 (60G en adelante) — «The bundle includes everything
+             needed for SD-WAN deployments. FortiCare and FortiGuard services too. The bundles are
+             for FortiGates not procuring other additional bundles or support» (FAQ, p. 10);
      add-on  1387 / 1389 — «a lower priced alternative for FortiGates with additional security
-             bundles already in place» (FAQ, p. 10). Es el que corresponde aqui: el BOM siempre
-             lleva un bundle de seguridad, o lo excluye porque el parque ya lo tiene.
-   LA PRICE LIST DE SEPTIEMBRE NO TRAE NINGUNO DE LOS DOS (0 referencias con -1329/-1337/-1387/
-   -1389 en fortinetSkus.js): el SKU es oficial y exacto, el PRECIO no esta, y la linea sale sin
-   cotizar en vez de con un precio de otra familia.
-   DOBLE ANCLAJE SOBRE EL CODIGO DE MODELO: el documento imprime el codigo dentro del SKU
-   (`FC-10-0090G-1389-02-DD`), y solo se acepta si es el MISMO que la price list firmada usa para
-   ese modelo (`codigoModelo`, arriba). Casan 20 de 23. Los 3 que no, se quedan sin SKU con su
-   motivo, porque no se sabe cual de los dos codigos es el pedible:
-     70G   el documento imprime FG70G (y en su propia tabla de renovacion, 0070G); la price list, GT70G.
-     200G  el documento imprime F200G; la price list, FG2HG.
-     4800F el documento imprime F481F bajo la columna del 4800F, y F481F es el codigo del 4801F.
-   Las variantes (31G, 91G, 401F...) no estan en esas tablas y se quedan sin SKU: el documento
-   las remite a la price list, y deducir su codigo seria inventarlo. */
+             bundles already in place» (misma pagina). Es el que corresponde aqui: el BOM siempre
+             lleva un bundle de seguridad, o lo excluye porque el parque ya lo tiene vigente.
+   EL SKU Y EL PRECIO SALEN DE LA PRICE LIST FIRMADA (`fortinetSkus.js`), no del documento: son
+   las filas «SD-WAN BDL SVC» del bloque de cada equipo, con el codigo de modelo que usan TODAS
+   las demas licencias de ese equipo (`codigoModelo`, arriba) y su precio a 1, 3 y 5 anos. La
+   lista trae exactamente una familia de add-on por equipo —1387 o 1389, nunca las dos— en 54 de
+   58 modelos. Los cuatro restantes (70F, 100F, 200F y 600F) no tienen SKU de hardware vigente, y
+   sin ese ancla `npm run skus` no extrae su bloque: el catalogo no sabe si la lista trae su
+   SD-WAN Service, y se quedan sin SKU diciendo eso, no que la lista no lo tenga.
+   CORREGIDO EL MISMO DIA: la primera version de este bloque afirmaba que la price list «no trae
+   ninguno de los dos» y dejaba la linea sin precio, en borrador. Era falso. Se busco
+   `-1389-02-DD`, y la lista guarda el termino ya resuelto (`-02-12`, `-02-36`, `-02-60`): una
+   busqueda con el marcador del documento no podia encontrar nada. Lo vio otra sesion del mismo
+   dia, que conto dos candidatos «SD-WAN BDL SVC» por modelo sin poder decir cual era cual; el
+   Ordering Guide lo decide, y esa es la otra mitad del anclaje.
+   DOBLE ANCLAJE CONTRA EL DOCUMENTO, donde el documento lista el modelo (23 de las tablas):
+     · la FAMILIA tiene que coincidir —el documento y la lista ponen el corte en el mismo sitio—,
+       y si no coincide la linea se queda sin SKU: dos documentos oficiales que discrepan sobre
+       que se pide no se resuelven eligiendo uno;
+     · el CODIGO DE MODELO coincide en 20. En los otros 3 el documento imprime otro:
+         70G   FG70G (y en su propia tabla de renovacion, 0070G); la lista, GT70G.
+         200G  F200G; la lista, FG2HG.
+         4800F F481F bajo la columna del 4800F, que es el codigo del 4801F; la lista, F48HF.
+       Manda la lista: es el documento con el que se hace el pedido, y su codigo es el de todas
+       las demas licencias de ese equipo. Se declara en la linea, no se calla.
+   Las variantes (31G, 91G, 401F...) y los modelos que el documento no tabula (60F, 71F, 3500F,
+   los chasis) toman el SKU de la lista, que es exactamente a lo que el documento remite
+   («Refer to Price List»). */
 const SDWAN_SERVICIO={
   fuente:'Secure SD-WAN Ordering Guide SDWAN-OG-R31-20260804',
   porModelo:{
@@ -773,16 +798,51 @@ const SDWAN_SERVICIO={
     '4800F':['FC-10-F481F-1329-02-DD', 'FC-10-F481F-1389-02-DD'],
   },
 };
+// La familia de add-on que la price list trae para ese codigo de modelo, con su precio por
+// termino. Si trajera las dos (1387 y 1389) no se elige: seria decidir el tramo a ojo.
+const addonDeLista=(refs, cod)=>{
+  const re=new RegExp(`^(FC-10-${cod}-(1387|1389)-02)-(12|36|60)$`);
+  const porFam={};
+  for (const r of refs) {
+    const x=re.exec(r.sku);
+    if (!x) continue;
+    const f=porFam[x[2]]||(porFam[x[2]]={sku:`${x[1]}-DD`, fam:x[2]});
+    f[{12:'y1',36:'y3',60:'y5'}[x[3]]]=r.p;
+  }
+  const fams=Object.values(porFam);
+  if (fams.length!==1) return {tier:null, ambigua:fams.length>1};
+  const f=fams[0];
+  return {tier:{sku:f.sku, y1:f.y1==null?null:f.y1, y3:f.y3==null?null:f.y3, y5:f.y5==null?null:f.y5}, fam:f.fam};
+};
+const FUENTE_SDWAN=`${SDWAN_SERVICIO.fuente} (qué es cada familia) + price list sept-2026 (SKU y precio)`;
 for (const m of MODELS) {
   if (!m.lic) continue;
-  const fila=SDWAN_SERVICIO.porModelo[bareId(m.id)];
-  if (!fila) { m.lic.sdwanSvc=null; continue; }
   const cod=codigoModelo(m.lic);
-  const impreso=/^FC-10-([A-Z0-9]+)-/.exec(fila[1])[1];
-  m.lic.sdwanSvc = impreso===cod
-    ? {bundle:fila[0], addon:fila[1], fuente:SDWAN_SERVICIO.fuente}
-    : {bundle:null, addon:null, fuente:SDWAN_SERVICIO.fuente,
-       motivo:`el Ordering Guide imprime el código ${impreso} y la price list usa ${cod || 'otro'} para este modelo: no se sabe cuál es el pedible`};
+  const og=SDWAN_SERVICIO.porModelo[bareId(m.id)]||null;
+  const ogCod=og?/^FC-10-([A-Z0-9]+)-/.exec(og[1])[1]:null;
+  const ogFam=og?/-(1387|1389)-02-DD$/.exec(og[1])[1]:null;
+  const refs=SKUS_POR_MODELO[m.id]||[];
+  const lista=cod?addonDeLista(refs, cod):{tier:null};
+  if (!lista.tier) {
+    m.lic.sdwanSvc={addon:null, fuente:FUENTE_SDWAN,
+      motivo: lista.ambigua
+        ? 'la price list trae las dos familias de add-on (1387 y 1389) para este modelo y no se elige a ojo'
+        : !refs.length
+          ? 'el catálogo no trae el bloque de este modelo en la price list: sin SKU de hardware vigente no hay ancla con la que extraerlo (npm run skus)'
+          : 'la price list de septiembre no trae el SD-WAN Service de este modelo'};
+    continue;
+  }
+  if (og && ogFam!==lista.fam) {
+    m.lic.sdwanSvc={addon:null, fuente:FUENTE_SDWAN,
+      motivo:`el Ordering Guide pone este modelo en la familia ${ogFam} y la price list en la ${lista.fam}: dos documentos oficiales que discrepan no se resuelven eligiendo uno`};
+    continue;
+  }
+  m.lic.sdwanSvc={addon:lista.tier, fuente:FUENTE_SDWAN,
+    origen: !og ? 'lista' : ogCod===cod ? 'coincide' : 'otro-codigo',
+    nota: !og
+      ? 'el Ordering Guide no tabula este modelo y remite a la price list'
+      : ogCod===cod ? null
+      : `el Ordering Guide imprime ${ogCod}; se pide con ${cod}, el código de la price list firmada y de todas las demás licencias de este equipo`};
 }
 
 /* ── FORTICLIENT EMS Y FORTISASE: SKU DE SUS ORDERING GUIDES (2026-09-24) ─────────────────
@@ -801,8 +861,11 @@ for (const m of MODELS) {
                usuarios: 50-499 (FC2), 500-1.999 (FC3), 2.000-9.999 (FC4) y 10.000+ (FC5)
                («FortiSASE Ordering Guide», sep-2026, p. 3). La banda mas baja empieza en 50: por
                debajo no hay SKU publicado y la linea lo dice en vez de subir a 50 por su cuenta.
-   Ninguno de estos SKU esta en la price list de septiembre: la linea sale con SKU exacto y sin
-   precio, en borrador, igual que el SD-WAN Service. */
+   SU PRECIO NO ESTA EN ESTE CATALOGO, que no es lo mismo que decir que la price list no lo trae
+   (esa frase estuvo aqui y no se podia sostener): de la lista solo se extrajeron las filas que
+   nombran un FortiGate —`npm run skus` casa cada fila con el nombre del equipo—, y una licencia
+   de EMS o de FortiSASE no nombra ninguno. La lista completa no vive en el repositorio, asi que
+   desde aqui no se sabe si las trae. La linea sale con SKU exacto y sin precio, en borrador. */
 const EMS_LICENCIAS={
   fuente:'FortiClient Ordering Guide (abr-2026), p. 3 «Order Information: Device-based»',
   packs:[25, 500, 2000, 10000],

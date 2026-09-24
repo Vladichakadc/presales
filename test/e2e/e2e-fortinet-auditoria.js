@@ -250,12 +250,13 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   t.ok(skus5.some((s) => /-60$/.test(s)),
     'AT-06: cambiar a 5 años cambia el sufijo del SKU a 60 meses');
 
-  /* ── AT-08 · SERVICIO SD-WAN SIN SKU CONFIRMADO: SOLO BORRADOR TECNICO ─────────────
-     La funcion base no se licencia; estos servicios si, y este repositorio no ha leido su SKU
-     del Ordering Guide. Desde la etapa 7 eso ya no «cierra» la exportacion sin salida: deja la
-     propuesta en BORRADOR —se exporta un documento que se declara borrador en el titulo y en
-     cada nota— y cierra lo que no admite borrador (cotizador, perfiles). Y los servicios solo
-     existen con rol SD-WAN: sin el, ni se ven (T13). */
+  /* ── AT-08 · UN SERVICIO SD-WAN DERIVA UNA LINEA, CON SKU Y PRECIO DE LA LISTA ─────────
+     La funcion base no se licencia; estos servicios si, y solo existen con rol SD-WAN: sin el,
+     ni se ven (T13). Hasta el 2026-09-24 este bloque afirmaba que pedir uno dejaba la propuesta
+     en BORRADOR, porque su SKU no se habia leido. Ese dia llego el dato: el SD-WAN Service
+     lleva SKU y precio de la price list firmada. La afirmacion del BORRADOR no se borra, se le
+     da un sujeto: se conduce mas abajo en una pagina APARTE, con el SKU del servicio BORRADO
+     por intercepcion, que es la situacion para la que se escribio (mismo patron que AT-20). */
   await page.click('[data-tab=calc]');
   await asentar(page);
   t.ok(await page.$eval('#grpSdwan', (e) => e.hidden), 'T13: sin rol SD-WAN los servicios avanzados no se ven');
@@ -263,25 +264,71 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   await asentar(page);
   await page.check('#chkSdwanOrq');
   await asentar(page);
-  t.ok(/borrador/i.test(await texto('#gateResumen')), 'AT-08: un servicio SD-WAN sin SKU deja la puerta en BORRADOR');
-  t.ok(!(await page.$eval('#xlsBtn', (e) => e.disabled)) && /borrador/i.test(await texto('#xlsBtn')),
-    'AT-08: Excel sigue disponible, pero como «borrador técnico»');
-  t.ok(await page.$eval('#btnACotizador', (e) => e.disabled), 'AT-08: un borrador nunca va al cotizador');
-  t.ok(await page.$eval('#btnGuardarPerfil', (e) => e.disabled), 'AT-08: ni se guarda como perfil multi-sede');
-  const puertaSd = await texto('#exportGate');
-  t.ok(/Ordering Guide/.test(puertaSd), 'AT-08: y dice exactamente qué falta por confirmar');
-  /* ── AT-18 (etapa 7) · EL BORRADOR SE DECLARA DENTRO DEL DOCUMENTO ──────────────────
-     El override con motivo se retiro: el estado BORRADOR cubre el caso para el que existia
-     (mandar un documento de trabajo antes de tener el SKU) sin un segundo camino que se
-     salte la puerta. Lo que se afirma es que el documento lo dice. */
-  const txtBom = await page.$eval('#bomOut', (e) => e.value);
-  t.ok(/BORRADOR T[EÉ]CNICO/.test(txtBom) && /NO ES UNA COTIZACION EN FIRME/.test(txtBom),
-    'AT-18: el documento exportable se declara borrador en el título y en las notas');
-  t.ok(/Huella del escenario: sha256:[0-9a-f]{64}/.test(txtBom), 'AT-18: y lleva la huella completa del escenario');
-  t.ok(!(await page.$('#btnOverride')), 'AT-18: ya no existe un override que abra la puerta por fuera del motor');
+  await page.click('[data-tab=bom]');
+  await asentar(page);
+  const lineasSdwan = await page.$$eval('#bomTabla tbody tr', (trs) => trs
+    .filter((tr) => tr.children.length >= 5 && /^SD-WAN Service/.test((tr.querySelector('td b') || {}).textContent || ''))
+    .map((tr) => ({ sku: ((tr.children[1].querySelector('code')) || {}).textContent || '', unit: tr.children[3].textContent.trim() })));
+  t.ok(lineasSdwan.length === 1 && /^FC-10-[A-Z0-9]+-138[79]-02-60$/.test(lineasSdwan[0].sku)
+    && /\d/.test(lineasSdwan[0].unit) && !/consultar/i.test(lineasSdwan[0].unit),
+    `AT-08: una sola línea de SD-WAN Service, con SKU y precio de la lista firmada (${JSON.stringify(lineasSdwan)})`);
+  t.ok(!/SD-WAN Service/.test(await texto('#exportGate')), 'AT-08: y no deja nada por confirmar sobre el SD-WAN');
+  await page.click('[data-tab=calc]');
+  await asentar(page);
   await page.uncheck('#chkSdwanOrq');
   await page.click('#rolSeg button[data-v="none"]');
   await asentar(page);
+
+  /* ── AT-08 y AT-18 (etapa 7) · UN SERVICIO SIN SKU: SOLO BORRADOR TECNICO ─────────────
+     Desde la etapa 7 un SKU que falta ya no «cierra» la exportacion sin salida: deja la
+     propuesta en BORRADOR —se exporta un documento que se declara borrador en el titulo y en
+     cada nota— y cierra lo que no admite borrador (cotizador, perfiles). El override con
+     motivo se retiro: el BORRADOR cubre el caso para el que existia sin un segundo camino que
+     se salte la puerta. `borrados` prueba que la intercepcion se aplico; el control es la
+     pagina principal de arriba, que con el catalogo real no deja nada pendiente del SD-WAN. */
+  {
+    const pg = await browser.newPage();
+    await abrirSesion(pg);
+    let borrados = 0;
+    await pg.route('**/api/dimensionador/fortinet', async (route) => {
+      const r = await route.fetch();
+      const j = await r.json();
+      for (const m of j.models || []) {
+        if (m.lic && m.lic.sdwanSvc && m.lic.sdwanSvc.addon) {
+          m.lic.sdwanSvc = { addon: null, fuente: m.lic.sdwanSvc.fuente, motivo: 'SKU borrado por la prueba' };
+          borrados += 1;
+        }
+      }
+      await route.fulfill({ response: r, json: j });
+    });
+    await pg.goto(PAGINA, { waitUntil: 'domcontentloaded' });
+    await pg.waitForSelector('#wanBuilderFilas [data-campo=down]', { timeout: 20000 });
+    await asentar(pg);
+    // Una pagina nueva arranca sin caudal, y eso la deja BLOQUEADA antes de llegar a la regla
+    // que se prueba: sin este paso el BORRADOR no aparece por un motivo que no es el SD-WAN.
+    await pg.fill('#wanBuilderFilas [data-campo=down] >> nth=0', '500');
+    await pg.dispatchEvent('#wanBuilderFilas [data-campo=down] >> nth=0', 'input');
+    await asentar(pg);
+    await pg.click('#rolSeg button[data-v="spoke"]');
+    await asentar(pg);
+    await pg.check('#chkSdwanOrq');
+    await asentar(pg);
+    const txt = (sel) => pg.$eval(sel, (e) => e.textContent || '').catch(() => '');
+    t.ok(borrados > 0, `AT-08: la intercepción borró el SKU del SD-WAN Service de ${borrados} modelos (sin esto no hay sujeto)`);
+    t.ok(/borrador/i.test(await txt('#gateResumen')), 'AT-08: un servicio SD-WAN sin SKU deja la puerta en BORRADOR');
+    t.ok(!(await pg.$eval('#xlsBtn', (e) => e.disabled)) && /borrador/i.test(await txt('#xlsBtn')),
+      'AT-08: Excel sigue disponible, pero como «borrador técnico»');
+    t.ok(await pg.$eval('#btnACotizador', (e) => e.disabled), 'AT-08: un borrador nunca va al cotizador');
+    t.ok(await pg.$eval('#btnGuardarPerfil', (e) => e.disabled), 'AT-08: ni se guarda como perfil multi-sede');
+    t.ok(/SD-WAN Service para .*SKU borrado por la prueba/.test(await txt('#exportGate')),
+      'AT-08: y dice exactamente qué falta por confirmar');
+    const txtBom = await pg.$eval('#bomOut', (e) => e.value);
+    t.ok(/BORRADOR T[EÉ]CNICO/.test(txtBom) && /NO ES UNA COTIZACION EN FIRME/.test(txtBom),
+      'AT-18: el documento exportable se declara borrador en el título y en las notas');
+    t.ok(/Huella del escenario: sha256:[0-9a-f]{64}/.test(txtBom), 'AT-18: y lleva la huella completa del escenario');
+    t.ok(!(await pg.$('#btnOverride')), 'AT-18: ya no existe un override que abra la puerta por fuera del motor');
+    await pg.close();
+  }
 
   /* ── ALTERNATIVAS DE UN CLIC ────────────────────────────────────────────────────────
      «Candidato y dos alternativas» del informe. Una alternativa que hay que buscar en un
@@ -369,49 +416,51 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   t.ok(trasera && trasera.ancho > 0,
     `y esa figura CARGA de verdad, no es un hueco (natural ${trasera && trasera.ancho}px)`);
 
-  // EL 100F YA TIENE FIGURA (2026-09-24, pendiente F6): su datasheet coreano. Esta prueba
-  // afirmaba el hueco honesto sobre el 100F, y una prueba que afirma un hueco que ya no existe
-  // bloquea el arreglo. Se afirma ahora que la figura llega, y el hueco se sigue probando con
-  // la entrada del 100F BORRADA del mapa por intercepcion, que es la situacion para la que
-  // existe el aviso. Esta fuera de venta: solo compite en ampliacion de un parque instalado.
+  // El 100F era el hueco honesto: no tiene datasheet por serie (fortinet.com ya no lo publica,
+  // 404 también desde internet abierto). Desde el 2026-09-24 su figura sale de la QuickStart
+  // Guide oficial, y el pie tiene que DECIR que no es un datasheet. Está fuera de venta: desde
+  // la etapa 7 solo compite en ampliación de un parque instalado.
   await caudal(500);
   await page.selectOption('#motivoCompra', 'ampliacion');
   await asentar(page);
   await page.selectOption('#verdict-sel', 'FortiGate 100F');
   await asentar(page);
-  const f100 = await page.evaluate(() => {
-    const i = document.querySelector('.ficha-vista img');
-    return { src: i ? i.getAttribute('src') : '', aviso: !!document.querySelector('.ficha-vista-vacia') };
+  const cien = await page.evaluate(() => ({
+    src: ((document.querySelector('.ficha-vista img')) || { getAttribute: () => null }).getAttribute('src'),
+    pie: ((document.querySelector('.ficha-vista figcaption')) || {}).textContent || '',
+  }));
+  t.ok(/fg-100f-front\.webp$/.test(cien.src || ''), `el 100F ya sirve su figura oficial (${cien.src})`);
+  t.ok(/QuickStart Guide/.test(cien.pie) && /101F/.test(cien.pie),
+    'y el pie dice que sale de la QuickStart Guide y que dibuja un 101F');
+
+  // EL HUECO HONESTO SE SIGUE CONDUCIENDO, con un sujeto que no depende del catálogo del día:
+  // ya ningún FortiGate queda sin figura, así que se sirve el mapa de figuras SIN la entrada
+  // del 100F (mismo patrón que el caso `calculadora-ssl`, que inyecta un modelo sin cifra).
+  // `quitado` prueba que la intercepción se aplicó Y que la entrada existía: `delete` devuelve
+  // true aunque la clave no esté, así que se mira antes de borrar. Sin eso, un cambio de ruta o
+  // de clave del mapa dejaría la afirmación de abajo apoyada en otra cosa.
+  let quitado = false;
+  await page.route('**/data/fortinet-vistas-equipos.json', async (ruta) => {
+    const r = await ruta.fetch();
+    const mapa = await r.json();
+    quitado = 'FortiGate 100F' in mapa;
+    delete mapa['FortiGate 100F'];
+    await ruta.fulfill({ response: r, json: mapa });
   });
-  t.ok(/fg-100f-(front|rear)\.webp$/.test(f100.src) && !f100.aviso,
-    `el 100F muestra su figura oficial (${f100.src})`);
-  {
-    const pg = await browser.newPage();
-    await abrirSesion(pg);
-    let quitado = false;
-    await pg.route('**/data/fortinet-vistas-equipos.json', async (route) => {
-      const r = await route.fetch();
-      const j = await r.json();
-      quitado = delete j['FortiGate 100F'];
-      await route.fulfill({ response: r, json: j });
-    });
-    await pg.goto(PAGINA, { waitUntil: 'domcontentloaded' });
-    await pg.waitForSelector('#wanBuilderFilas [data-campo=down]', { timeout: 20000 });
-    await asentar(pg);
-    await pg.fill('#wanBuilderFilas [data-campo=down] >> nth=0', '500');
-    await pg.dispatchEvent('#wanBuilderFilas [data-campo=down] >> nth=0', 'input');
-    await pg.selectOption('#motivoCompra', 'ampliacion');
-    await asentar(pg);
-    await pg.selectOption('#verdict-sel', 'FortiGate 100F');
-    await asentar(pg);
-    const hueco = await pg.evaluate(() => ({
-      aviso: ((document.querySelector('.ficha-vista-vacia')) || {}).textContent || '',
-      foto: !!document.querySelector('.ficha-vista'),
-    }));
-    t.ok(quitado && !hueco.foto && /Sin foto oficial/.test(hueco.aviso),
-      'un modelo sin foto oficial DECLARA el hueco en vez de enseñar una parecida');
-    await pg.close();
-  }
+  await page.goto(`${BASE}/dimensionador-fortinet-fortigate.html`, { waitUntil: 'domcontentloaded' });
+  await asentar(page);
+  await caudal(500);
+  await page.selectOption('#motivoCompra', 'ampliacion');
+  await asentar(page);
+  await page.selectOption('#verdict-sel', 'FortiGate 100F');
+  await asentar(page);
+  const hueco = await page.evaluate(() => ({
+    aviso: ((document.querySelector('.ficha-vista-vacia')) || {}).textContent || '',
+    foto: !!document.querySelector('.ficha-vista'),
+  }));
+  await page.unroute('**/data/fortinet-vistas-equipos.json');
+  t.ok(quitado && !hueco.foto && /Sin foto oficial/.test(hueco.aviso),
+    'un modelo sin foto oficial DECLARA el hueco en vez de enseñar una parecida');
 
   /* ── AT-29 a AT-33 · LOS LIMITES DEL PRODUCT MATRIX, CONDUCIDOS EN LA PANTALLA ───────
      Las reglas se afirman en `test/fortinet-reglas.test.js`; aqui se afirma que la PANTALLA

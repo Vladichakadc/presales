@@ -91,6 +91,21 @@ const wan = (...links) => ({ v: 2, wanLinks: links.map((l, i) => ({ id: i + 1, m
   const m1b = await cargar({ users: 400, perUser: 5, wanLinksData: wan({ tipo: 'DIA', down: 1000 }) });
   t.ok(/no sostiene la demanda/.test(m1b.bom), 'M1: 2 Gbps de demanda sobre 1 Gbps de enlace sí lo dispara');
 
+  // ── Boost: el escenario que más túnel pide, no siempre la operación normal ───
+  // Con breakout, el túnel es el 30 % del caudal mientras quede Internet. Si cae el DIA y lo
+  // recoge un MPLS de respaldo, no queda Internet y el túnel lleva los 1.000 Mbps: 300 de
+  // Boost (3 bloques) y no 90 (1 bloque). Un 4G de respaldo no cambia nada: recoge el
+  // tráfico por Internet y el breakout sigue descargando.
+  const bloquesDe = (bom) => { const x = /(\d+) x\s+EdgeConnect Boost/.exec(bom); return x ? x[1] : null; };
+  const bMpls = await cargar({ famSeg: 'ec', chkBoost: 1, users: 100, perUser: 2,
+    wanLinksData: wan({ tipo: 'MPLS L3', down: 500 }, { tipo: 'DIA', down: 500 }, { tipo: 'MPLS L2', down: 500, rol: 'respaldo' }) });
+  const vMpls = (await page.textContent('#verdict')) || '';
+  t.ok(bloquesDe(bMpls.bom) === '3', `Boost con un MPLS de respaldo del DIA: 3 bloques por la falla (${bloquesDe(bMpls.bom)})`);
+  t.ok(/si cae el enlace 2/.test(vMpls), 'la ficha dice qué escenario gobierna el Boost');
+  const b4g = await cargar({ famSeg: 'ec', chkBoost: 1, users: 100, perUser: 2,
+    wanLinksData: wan({ tipo: 'MPLS L3', down: 500 }, { tipo: 'DIA', down: 500 }, { tipo: '4G/5G', down: 500, rol: 'respaldo' }) });
+  t.ok(bloquesDe(b4g.bom) === '1', `Boost con un 4G de respaldo: la operación normal, 1 bloque (${bloquesDe(b4g.bom)})`);
+
   t.ok(errores.length === 0, 'sin errores de JavaScript en la página' + (errores.length ? ': ' + errores.join(' | ') : ''));
   await browser.close();
   process.exit(t.resumen('e2e-aruba-respaldo'));

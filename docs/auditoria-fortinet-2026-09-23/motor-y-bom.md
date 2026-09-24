@@ -159,11 +159,14 @@ en standalone y 2 en HA.
   su tramo de GB/día son otro dimensionamiento, y el mensaje cita la tabla del guide.
 - **EMS** (desde el 2026-09-24): `emsEndpoints` más `emsDespliegue` (FortiClient Cloud u
   on-premise). Sale en packs de 25/500/2.000/10.000 del Ordering Guide de FortiClient, con SKU
-  exacto, y queda en borrador porque la lista de septiembre no trae su precio.
-- **Servicios SD-WAN** (desde el 2026-09-24): **un** SD-WAN Service add-on por equipo (1387/1389,
-  Ordering Guide de Secure SD-WAN), con SKU exacto en 20 de 23 modelos y sin precio en la lista.
+  exacto, y queda en borrador porque su precio no está en el catálogo: de la lista solo se
+  extraen las filas que nombran un FortiGate.
+- **Servicios SD-WAN** (desde el 2026-09-24): **un** SD-WAN Service add-on por equipo (1387/1389).
+  SKU y precio salen de la lista firmada, en 54 de 58 modelos; el Ordering Guide de Secure SD-WAN
+  dice qué familia es el add-on y se contrasta con ella. Con SKU y precio no queda en borrador;
+  los cuatro modelos sin bloque en la lista (70F, 100F, 200F y 600F) salen sin SKU, con su motivo.
 - **FortiSASE** (desde el 2026-09-24): edición por banda de usuarios (50-499 … 10.000+), con SKU
-  exacto y sin precio. Por debajo de 50 no hay SKU publicado.
+  exacto y sin precio en el catálogo. Por debajo de 50 no hay SKU publicado.
 - **VDOM** por encima de la cuota incluida: licencia en línea propia, sin SKU, en borrador. Por
   encima del máximo, el modelo se aparta.
 - **Segunda fuente** (`redund: 'opcional'` y PSU redundante pedida): línea sin SKU, en borrador.

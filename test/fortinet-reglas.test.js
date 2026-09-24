@@ -18,7 +18,8 @@ const assert = require('node:assert');
 const R = require('../public/js/fortinet-reglas.js');
 const fortinet = require('../server/seed/legacyData/fortinet.js');
 
-const { MODELS, BUNDLES, CARE, FUNCIONES, SERVICIOS_SDWAN, TERMINOS, EMS_LICENCIAS, SASE_USUARIOS } = fortinet;
+const { MODELS, BUNDLES, CARE, FUNCIONES, SERVICIOS_SDWAN, TERMINOS, EMS_LICENCIAS, SASE_USUARIOS, SDWAN_SERVICIO } = fortinet;
+const SKUS = require('../server/seed/legacyData/fortinetSkus.js');
 const porId = (id) => MODELS.find((m) => m.id === id);
 const CARE_KEY = { fc247: 'essential', fcpre: 'premium', fcelite: 'elite' };
 
@@ -258,7 +259,7 @@ test('AT-07 · multi-WAN sin servicios cloud no fuerza Enterprise ni ningun bund
   assert.strictEqual(R.validarBundle('atp', [], FUNCIONES, BUNDLES), null);
 });
 
-test('AT-08 · monitoring u orquestacion derivan UNA linea con el SKU del Ordering Guide (F2)', () => {
+test('AT-08 · monitoring u orquestacion derivan UNA linea, con SKU y precio de la price list (F2)', () => {
   const svs = SERVICIOS_SDWAN.filter((s) => s.id === 'sdwanMon' || s.id === 'sdwanOrq');
   assert.strictEqual(svs.length, 2);
   const r = comercial({ serviciosSdwan: svs });
@@ -266,32 +267,69 @@ test('AT-08 · monitoring u orquestacion derivan UNA linea con el SKU del Orderi
   // Un SKU por FortiGate cubre los tres servicios: dos lineas lo cobrarian dos veces.
   assert.strictEqual(lineas.length, 1);
   assert.strictEqual(lineas[0].sku, 'FC-10-0090G-1389-02-36', 'el add-on del 90G a 3 anos, con el sufijo real');
-  assert.strictEqual(lineas[0].unit, null, 'la price list de septiembre no trae su precio: no se inventa');
-  assert.strictEqual(r.bloqueos.filter((b) => b.codigo === 'sin-sku-sdwan').length, 0);
-  assert.strictEqual(r.bloqueos.filter((b) => b.codigo === 'sin-precio-sdwan').length, 1);
-  assert.ok(r.bloqueos.every((b) => b.nivel === 'borrador'), 'falta un precio: borrador, no bloqueo');
+  // El precio es el de la fila de la price list firmada para ese SKU y ese termino, no uno
+  // escrito aqui: si la lista se regenera, la prueba sigue a la lista.
+  const fila = SKUS['FortiGate 90G'].find((x) => x.sku === 'FC-10-0090G-1389-02-36');
+  assert.ok(fila && /SD-WAN BDL SVC/.test(fila.d), 'la price list trae esa fila como «SD-WAN BDL SVC»');
+  assert.strictEqual(lineas[0].unit, fila.p);
+  assert.strictEqual(r.bloqueos.filter((b) => /sdwan/.test(b.codigo)).length, 0, 'con SKU y precio no queda nada en borrador');
 });
 
-test('F2 · el codigo del Ordering Guide solo se acepta si casa con el de la price list', () => {
-  // 20 de 23 casan. En el 70G, el 200G y el 4800F el documento imprime otro codigo que la
-  // price list: sin SKU y con el motivo, porque no se sabe cual es el pedible.
+test('F2 · el SD-WAN Service sale de la price list y la familia se contrasta con el Ordering Guide', () => {
+  const svc = (id) => porId(`FortiGate ${id}`).lic.sdwanSvc;
   const conSku = MODELS.filter((m) => m.lic && m.lic.sdwanSvc && m.lic.sdwanSvc.addon);
-  assert.strictEqual(conSku.length, 20);
-  for (const id of ['70G', '200G', '4800F']) {
-    const m = porId(`FortiGate ${id}`);
-    assert.strictEqual(m.lic.sdwanSvc.addon, null, id);
-    assert.match(m.lic.sdwanSvc.motivo, /no se sabe cuál es el pedible/, id);
-    const r = comercial({ modelo: m, serviciosSdwan: SERVICIOS_SDWAN.slice(0, 1) });
-    assert.ok(r.bloqueos.some((b) => b.codigo === 'sin-sku-sdwan' && /price list usa/.test(b.mensaje)), id);
+  // 54 de 58: todos los que tienen bloque en la price list. No se fija por comodidad: es lo
+  // que dice la lista hoy, y si baja es que un modelo perdio su SKU sin que nadie lo decida.
+  assert.strictEqual(conSku.length, 54);
+  const porOrigen = (o) => conSku.filter((m) => m.lic.sdwanSvc.origen === o).length;
+  assert.strictEqual(porOrigen('coincide'), 20, 'el documento y la lista dan el MISMO SKU en 20 modelos');
+  assert.strictEqual(porOrigen('otro-codigo'), 3);
+  // Los tres en los que el documento imprime otro codigo se piden con el de la lista, y la
+  // linea lo DICE: callarlo haria parecer que el documento y la lista coinciden.
+  for (const [id, cod, impreso] of [['70G', 'GT70G', 'FG70G'], ['200G', 'FG2HG', 'F200G'], ['4800F', 'F48HF', 'F481F']]) {
+    assert.strictEqual(svc(id).addon.sku, `FC-10-${cod}-1389-02-DD`, id);
+    assert.match(svc(id).nota, new RegExp(`imprime ${impreso}; se pide con ${cod}`), id);
+    const r = comercial({ modelo: porId(`FortiGate ${id}`), serviciosSdwan: SERVICIOS_SDWAN.slice(0, 1) });
+    const linea = r.filas.find((f) => f.cat === 'Servicios SD-WAN');
+    assert.ok(linea.unit > 0 && new RegExp(`imprime ${impreso}`).test(linea.nota), id);
   }
-  // El tramo lo decide el documento: 1387 hasta el 50G, 1389 desde el 70G.
-  assert.match(porId('FortiGate 40F').lic.sdwanSvc.addon, /-1387-02-DD$/);
-  assert.match(porId('FortiGate 80F').lic.sdwanSvc.addon, /-1389-02-DD$/);
-  // Cada SKU aceptado lleva el MISMO codigo de modelo que el bundle de la price list.
+  // La familia la fija el documento y la lista la confirma: 1387 por debajo del 60G, 1389 desde ahi.
+  assert.match(svc('40F').addon.sku, /-1387-02-DD$/);
+  assert.match(svc('80F').addon.sku, /-1389-02-DD$/);
   for (const m of conSku) {
-    const cod = /^FC-10-([A-Z0-9]+)-/.exec(m.lic.sdwanSvc.addon)[1];
+    const og = SDWAN_SERVICIO.porModelo[m.id.replace('FortiGate ', '')];
+    if (og) assert.strictEqual(/-(1387|1389)-/.exec(m.lic.sdwanSvc.addon.sku)[1], /-(1387|1389)-/.exec(og[1])[1], m.id);
+    // Nunca el SKU de una variante: el codigo es el de las licencias ya verificadas del equipo.
+    const cod = /^FC-10-([A-Z0-9]+)-/.exec(m.lic.sdwanSvc.addon.sku)[1];
     assert.ok([m.lic.ent, m.lic.utp, m.lic.atp].some((t) => t && t.sku && t.sku.startsWith(`FC-10-${cod}-`)), m.id);
   }
+  // El 80F trae en su bloque las filas de F80FD, F80FP y F80FC: la suya es la de 0080F.
+  assert.strictEqual(svc('80F').addon.sku, 'FC-10-0080F-1389-02-DD');
+  // Y el precio de cada termino es el de ESE SKU. Mezclar las filas de las variantes daba una
+  // linea con el SKU de un producto y el precio de otro, el error que no se nota: se comprobo
+  // saboteando la busqueda para aceptar cualquier codigo, y hasta esta afirmacion pasaba en verde.
+  for (const m of conSku) {
+    const base = m.lic.sdwanSvc.addon.sku.replace(/-DD$/, '');
+    for (const [k, suf] of [['y1', '12'], ['y3', '36'], ['y5', '60']]) {
+      const fila = SKUS[m.id].find((x) => x.sku === `${base}-${suf}`);
+      assert.strictEqual(m.lic.sdwanSvc.addon[k], fila ? fila.p : null, `${m.id} ${k}`);
+    }
+  }
+  // Sin bloque en la price list no hay SKU, y el motivo dice por que no se sabe, no que no exista.
+  for (const id of ['70F', '100F', '200F', '600F']) {
+    assert.strictEqual(svc(id).addon, null, id);
+    assert.match(svc(id).motivo, /sin SKU de hardware vigente no hay ancla/, id);
+  }
+});
+
+test('F2 · la guarda del error que se cometio: la lista guarda el termino resuelto, no el DD', () => {
+  // La primera version de este bloque busco `-1389-02-DD` en la price list extraida, no
+  // encontro nada y afirmo que la lista no traia el SD-WAN Service. La lista guarda el termino
+  // resuelto; si algun dia guardara el marcador, `skuTermino` y los precios por termino se
+  // romperian en silencio. Esta prueba fija la forma de la que depende todo lo de arriba.
+  const todas = Object.values(SKUS).flat();
+  assert.ok(todas.some((r) => /-1389-02-36$/.test(r.sku)), 'hay filas del add-on con el termino resuelto');
+  assert.ok(!todas.some((r) => /-02-DD$/.test(r.sku)), 'ninguna fila de la lista lleva el marcador DD');
 });
 
 test('F2 · el SD-WAN Service de gama 1389 trae plazas de FortiSASE: se avisa, no se descuenta a ojo', () => {
@@ -575,7 +613,7 @@ test('EMS · packs del Ordering Guide de FortiClient, repartidos del mayor al me
   const lineas = nube.filas.filter((f) => f.cat === 'Licencias endpoint');
   assert.deepStrictEqual(lineas.map((f) => [f.sku, f.qty]),
     [['FC2-10-EMS05-428-01-36', 1], ['FC1-10-EMS05-428-01-36', 2]]);
-  assert.ok(lineas.every((f) => f.unit === null), 'la price list no trae su precio: no se inventa');
+  assert.ok(lineas.every((f) => f.unit === null), 'su precio no esta en el catalogo: no se inventa');
   assert.ok(!nube.bloqueos.some((b) => b.codigo === 'sin-sku-ems'));
   assert.ok(nube.bloqueos.some((b) => b.codigo === 'sin-precio-ems' && b.nivel === 'borrador'));
   const local = comercial({ endpointsEms: 25, emsDespliegue: 'onprem', anios: 1 });

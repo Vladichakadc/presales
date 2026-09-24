@@ -1527,9 +1527,10 @@ function estadoDerivado(){
   // que usa el dimensionado de Boost (share) — el tier ya NO lo usa (ver abajo).
   // R11/M9 (2026-09-24): el caudal es el de la OPERACIÓN NORMAL — solo los enlaces
   // activos. Un respaldo sigue en `wanLinks` porque ocupa puerto, óptica y la
-  // interconexión EdgeHA, pero no suma caudal, tier ni Boost: solo entra si cae un activo,
-  // y ninguna falla supera a la operación normal (ver ArubaReglas.escenariosUnderlay). Sin
-  // respaldos declarados las tres cifras son exactamente las de antes.
+  // interconexión EdgeHA, pero no suma caudal ni tier: solo entra si cae un activo, y
+  // ninguna falla supera a la operación normal en caudal (ver ArubaReglas.escenariosUnderlay).
+  // El Boost es otro eje y toma el máximo entre escenarios (ArubaReglas.escenarioBoost, más
+  // abajo). Sin respaldos declarados solo existe la normal y las cifras son las de antes.
   const wanLinks=leerWanLinks();
   const escenarios=ArubaReglas.escenariosUnderlay(wanLinks);
   const normal=escenarios[0];
@@ -1559,9 +1560,11 @@ function estadoDerivado(){
          SLA de enlace al 75 % de la guía SD-Branch, que el brief mantiene como referencia.
        · densidad_usuarios ← #perfilEntorno (intensivo → INTENSIVO_SAAS, 150 flujos/usuario). */
   const fecMode=$('fecMode').value;
-  const ing=MotorIngenieria.calcularRequerimientosIngenieria({
-    bw_mpls_mbps:mplsMbps,
-    bw_internet_mbps:inetMbps,
+  // Los mismos parámetros para cualquier reparto MPLS/Internet: la operación normal y, para
+  // el eje Boost, cada escenario de falla.
+  const motorDe=(mpls,inet)=>MotorIngenieria.calcularRequerimientosIngenieria({
+    bw_mpls_mbps:mpls,
+    bw_internet_mbps:inet,
     local_breakout_activo:breakout,
     perfil_trafico:($('selTrafico')&&$('selTrafico').value)||'ENTERPRISE_MIX',
     fec_activo:fecMode!=='off',
@@ -1571,6 +1574,7 @@ function estadoDerivado(){
     total_usuarios:users,
     densidad_usuarios:$('perfilEntorno').value==='intensivo'?'INTENSIVO_SAAS':'ESTANDAR',
   });
+  const ing=motorDe(mplsMbps,inetMbps);
   // Requerimiento de caudal del APPLIANCE EdgeConnect: con enlaces declarados manda el
   // motor — throughputDiseno YA viene dividido por IMIX y cargado con FEC, seguridad y
   // margen— multiplicado por los penalties de función que quedan fuera del motor. El
@@ -1630,13 +1634,16 @@ function estadoDerivado(){
   // Boost auto-dimensionado: 30 % del tráfico WAN privado, en bloques de 100 Mbps.
   // Sin suscripción no hay Boost (es un add-on suyo, no un producto independiente).
   const share=(caudalTotal>0&&breakout)?caudalEfectivo/caudalTotal:1;
+  // Eje Boost: el escenario que más túnel privado pide. Sin respaldos solo existe la
+  // normal, así que la cifra es la de siempre.
+  const eb=ArubaReglas.escenarioBoost(escenarios,e=>motorDe(e.mpls,e.inet).distribucion.bwTunelesPrivados);
   const boostMbps=(boost&&bundle)?ArubaReglas.boostMbpsSitio({
-    bwTunelesPrivados:ing.distribucion.bwTunelesPrivados, caudalTotal, users, perUser}):0;
+    bwTunelesPrivados:eb.mbps, caudalTotal, users, perUser}):0;
   const bloques=(boost&&bundle)?bloquesBoost(boostMbps):0;
   return {users,aps,perUser,head,boost,fec,perfil,needProc,wanNeed,tierCaudal,
     tasaFlujos,flujosReq,tier,tierAuto,onprem,bundle,central,termYrs,care,qty,bloques,
     wanLinks,caudalTotal,mplsMbps,inetMbps,breakout,caudalEfectivo,share,boostMbps,
-    ing,featurePenalty,haRegla,escenarios,respaldoMbps};
+    ing,featurePenalty,haRegla,escenarios,respaldoMbps,escBoost:eb.escenario,tunelBoost:eb.mbps};
 }
 
 /* ══ REVISIÓN DEL DISEÑO (par técnico automático, 2026-09-13 fase 10) ══
@@ -2125,7 +2132,7 @@ function render(){
       flags.push(`<b>Caudal WAN a contratar:</b> ${fmt(D.ing.tierLicenciaBwRequerido||wanNeed)} — el tier de la suscripción se tasa por el ancho de banda físico agregado (brief carrier-grade). El requerimiento de diseño del appliance es ${fmt(wanNeed)}.${trazaMotorHtml(D,wanNeed)||' El motor de ingeniería aplica el IMIX del perfil de tráfico, la paridad FEC del modo elegido, la estrategia de seguridad y el margen de crecimiento.'}${boost?` Con la reducción ${perfil.factor}:1 de Boost sobre ${esc(perfil.n.toLowerCase())} en el caudal derivado.`:''} Tier de suscripción: <b>${tier?esc(tier.n):'—'}</b>.`);
       if(boost&&D.bloques){
         const rec=ArubaReglas.boostRecMbps(m);
-        flags.push(`<b>Boost auto-dimensionado:</b> se licencia el 30 % del tráfico WAN privado que viaja por los túneles (${D.caudalTotal>0?`${fmt(D.ing.distribucion.bwTunelesPrivados)}${D.breakout&&D.inetMbps>0?' tras la descarga del breakout — regla 70/30 del brief':''}`:`${fmt(D.users*D.perUser)} de demanda estimada`}) = <b>${fmt(D.boostMbps)}</b>, en bloques de ${SIZING.boost.bloque} Mbps que forman un pool del fabric — para esta sede, <b>${D.bloques} bloque(s)</b>. Es tráfico actual: el pool se reasigna en minutos, así que no lleva margen de crecimiento.${rec!=null?` HPE recomienda Boost hasta <b>${fmt(rec)}</b> en el ${esc(m.id)}.`:''}`);
+        flags.push(`<b>Boost auto-dimensionado:</b> se licencia el 30 % del tráfico WAN privado que viaja por los túneles (${D.caudalTotal>0?`${fmt(D.tunelBoost)}${D.escBoost.id!=='normal'?` si cae el enlace ${D.escBoost.enlace}: su carga la recoge el respaldo y, sin Internet, el breakout ya no descarga el túnel — es el escenario que más túnel pide`:D.breakout&&D.inetMbps>0?' tras la descarga del breakout — regla 70/30 del brief':''}`:`${fmt(D.users*D.perUser)} de demanda estimada`}) = <b>${fmt(D.boostMbps)}</b>, en bloques de ${SIZING.boost.bloque} Mbps que forman un pool del fabric — para esta sede, <b>${D.bloques} bloque(s)</b>. Es tráfico actual: el pool se reasigna en minutos, así que no lleva margen de crecimiento.${rec!=null?` HPE recomienda Boost hasta <b>${fmt(rec)}</b> en el ${esc(m.id)}.`:''}`);
       }
       else if(!boost) flags.push('Admite Boost. Merece evaluarse si el tráfico es repetitivo (réplicas, backups, VDI, CIFS/SMB): reduce el caudal contratado, que a 3–5 años suele pesar más en el TCO que el propio equipo.');
       if(sobrado.includes(m.id)) flags.push(`<b class="warn">Sobredimensionado:</b> el requerimiento (${fmt(wanNeed)}) queda por debajo del suelo del rango publicado (${fmt(m.wanMin)}). Revisar el escalón inferior antes de cotizar.`);

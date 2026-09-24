@@ -594,27 +594,31 @@
     // F2 (2026-09-24): los tres servicios NO son tres lineas. El Ordering Guide de Secure
     // SD-WAN los vende en UN SKU por FortiGate, el «SD-WAN Service (Add-on)» (1387/1389), que
     // es la forma para un equipo con bundle de seguridad —el caso de este BOM, que siempre lo
-    // lleva o lo excluye porque el parque ya lo tiene—. Ver SDWAN_SERVICIO en legacyData.
+    // lleva o lo excluye porque el parque ya lo tiene—. El SKU y el PRECIO salen de la price
+    // list firmada, con la familia contrastada contra el documento. Ver SDWAN_SERVICIO.
     const svs = e.serviciosSdwan || [];
     let sdwanSku = null;
     if (svs.length) {
       const svc = lic && lic.sdwanSvc;
       const nombres = svs.map((sv) => sv.n).join(' · ');
       if (svc && svc.addon) {
-        const s = skuTermino(svc.addon, anios, terminos);
-        sdwanSku = svc.addon;
+        const s = skuTermino(svc.addon.sku, anios, terminos);
+        const unit = precio(svc.addon);
+        sdwanSku = svc.addon.sku;
         if (!s.exacto) bloquear({ codigo: 'sku-dd', mensaje: `SD-WAN Service: ${s.motivo}.` });
-        filas.push({ cat: 'Servicios SD-WAN', desc: 'SD-WAN Service (add-on) — ' + nombres, sku: s.sku, qty, unit: null,
-          nota: `${termino} · un solo SKU cubre los tres servicios (${svc.fuente})` });
-        bloquear({ codigo: 'sin-precio-sdwan',
-          mensaje: `SD-WAN Service ${s.sku}: el SKU es el del Ordering Guide, pero la price list de septiembre no `
-            + 'trae su precio. Pedirlo al distribuidor antes de cotizar en firme.' });
+        filas.push({ cat: 'Servicios SD-WAN', desc: 'SD-WAN Service (add-on) — ' + nombres, sku: s.sku, qty, unit,
+          nota: `${termino} · un solo SKU cubre los tres servicios${svc.nota ? ` · ${svc.nota}` : ''} (${svc.fuente})` });
+        if (unit == null) {
+          bloquear({ codigo: 'sin-precio-sdwan',
+            mensaje: `SD-WAN Service ${s.sku}: la price list trae este SKU pero no su precio para un término de `
+              + `${anios} año(s). Pedirlo al distribuidor antes de cotizar en firme.` });
+        }
       } else {
         filas.push({ cat: 'Servicios SD-WAN', desc: 'SD-WAN Service (add-on) — ' + nombres, sku: null, qty, unit: null,
           nota: svs.map((sv) => sv.d).join(' ') });
         bloquear({ codigo: 'sin-sku-sdwan',
           mensaje: `SD-WAN Service para ${m.id}: `
-            + (svc && svc.motivo ? `${svc.motivo}.` : 'el Ordering Guide no publica el SKU de este modelo.')
+            + (svc && svc.motivo ? `${svc.motivo}.` : 'el catálogo no trae su SKU.')
             + ' La línea no es pedible hasta confirmarlo.' });
       }
     }
@@ -624,7 +628,7 @@
        con su cantidad (F10 del 23-sep). Desde el 2026-09-24 el SKU sale de la tabla del
        Ordering Guide de FortiSASE: edicion (Standard, Advanced, Comprehensive) por banda de
        usuarios. Sin edicion no hay SKU; por debajo de la banda minima (50), tampoco, y se dice
-       en vez de subir la cantidad por su cuenta. El precio no esta en la price list. */
+       en vez de subir la cantidad por su cuenta. El precio no esta en este catalogo. */
     const sase = Math.max(0, parseInt(e.saseUsuarios, 10) || 0);
     if (sase > 0) {
       const tabla = e.sase || null;
@@ -655,8 +659,8 @@
         filas.push({ cat: 'Servicios SD-WAN', desc: `FortiSASE ${edN} — licencias de usuario`, sku: s.sku, qty: sase, unit: null,
           nota: `${termino} · ${sase} usuario(s), banda ${banda.desde}${banda.hasta == null ? '+' : `-${banda.hasta}`} (${tabla.fuente})` });
         bloquear({ codigo: 'sin-precio-sase',
-          mensaje: `FortiSASE ${s.sku}: el SKU es el del Ordering Guide, pero la price list de septiembre no trae su `
-            + 'precio. Pedirlo al distribuidor antes de cotizar en firme.' });
+          mensaje: `FortiSASE ${s.sku}: el SKU es el del Ordering Guide, pero su precio no está en este catálogo (de la `
+            + 'price list solo se extraen las filas que nombran un FortiGate). Pedirlo al distribuidor antes de cotizar en firme.' });
         if (ed === 'comprehensive' && tabla.comprehensivePopMinimo && sase < tabla.comprehensivePopMinimo) {
           avisar({ codigo: 'sase-pop-limitado',
             mensaje: `FortiSASE Comprehensive con ${sase} usuario(s): el Ordering Guide advierte que por debajo de `
@@ -712,9 +716,9 @@
             nota: `${termino} · ${ems} endpoint(s) gestionados: ${reparto} (${tabla.fuente})` });
         }
         bloquear({ codigo: 'sin-precio-ems',
-          mensaje: `FortiClient EMS (${reparto}): los SKU son los del Ordering Guide, pero la price list de septiembre `
-            + 'no trae su precio. Pedirlo al distribuidor antes de cotizar en firme; el precio decide también si '
-            + 'conviene subir al pack siguiente.' });
+          mensaje: `FortiClient EMS (${reparto}): los SKU son los del Ordering Guide, pero su precio no está en este `
+            + 'catálogo (de la price list solo se extraen las filas que nombran un FortiGate). Pedirlo al distribuidor '
+            + 'antes de cotizar en firme; el precio decide también si conviene subir al pack siguiente.' });
       }
     }
 

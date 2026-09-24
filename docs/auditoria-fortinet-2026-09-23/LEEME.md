@@ -70,9 +70,11 @@ reescribe. Lo que ha cambiado desde entonces:
    Railway. La sesión no pudo hacerlo; los pasos están en la sección 1 del mismo documento.
 5. **Datos que faltan: reducida.**
    - F6 cerrada: 100F y 200F con sus límites y su figura, y los chasis con figura.
-   - F2 con SKU exacto en 20 de 23 modelos.
+   - F2 cerrada: el SD-WAN Service lleva SKU **y precio** de la lista firmada en 54 de 58
+     modelos.
    - EMS y FortiSASE con SKU exacto.
-   - Lo que sigue en borrador es sobre todo **precio**, que la lista de septiembre no trae.
+   - Lo que sigue en borrador es sobre todo el **precio de EMS y FortiSASE**, que no está en el
+     catálogo: de la lista solo se extraen las filas que nombran un FortiGate.
    - Siguen igual: FortiAnalyzer y FortiSandbox dedicado (otro dimensionamiento), la licencia
      de VDOM adicional, el configurador de chasis y F4-resto.
 

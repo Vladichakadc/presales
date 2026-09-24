@@ -121,3 +121,32 @@ test('R11: solo respaldos deja la operacion normal en cero (la pagina pide un ac
   assert.strictEqual(esc[0].respaldo, 100);
   assert.strictEqual(esc.length, 1, 'sin activos no hay nada que se pueda caer');
 });
+
+// EL BOOST ES OTRO EJE (2026-09-24). La propiedad de arriba comprueba el caudal y el
+// throughput de diseño, y es cierta; lo que no comprobaba es el TÚNEL privado, que es de lo
+// que sale el Boost, y ahí una falla sí puede pedir más que la operación normal: con
+// breakout, el túnel es el 30 % del caudal solo mientras quede Internet.
+const tunel = (e) => calcularRequerimientosIngenieria({
+  bw_mpls_mbps: e.mpls, bw_internet_mbps: e.inet, local_breakout_activo: true, headroom_pct: 30,
+}).distribucion.bwTunelesPrivados;
+
+test('Boost: si cae el DIA y lo recoge un MPLS de respaldo, gobierna la falla (300 → 1.000 Mbps de túnel)', () => {
+  const esc = R.escenariosUnderlay([enlace(1, 'MPLS L3', 500), enlace(2, 'DIA', 500), enlace(3, 'MPLS L2', 500, 'respaldo')]);
+  assert.strictEqual(tunel(esc[0]), 300, 'operación normal: 30 % de 1.000 con breakout');
+  const eb = R.escenarioBoost(esc, tunel);
+  assert.strictEqual(eb.escenario.id, 'falla:2', 'el escenario que más túnel pide es la caída del DIA');
+  assert.strictEqual(eb.escenario.enlace, 2);
+  assert.strictEqual(eb.mbps, 1000);
+  assert.strictEqual(R.boostMbpsSitio({ bwTunelesPrivados: eb.mbps, caudalTotal: 1000 }), 300,
+    '300 Mbps de Boost (3 bloques) y no los 90 (1 bloque) de la operación normal');
+});
+
+test('Boost: sin respaldos, o con un 4G de respaldo, manda la operación normal (cifra de siempre)', () => {
+  const sinResp = R.escenariosUnderlay([enlace(1, 'MPLS L3', 500), enlace(2, 'DIA', 500)]);
+  const conCuatroG = R.escenariosUnderlay([enlace(1, 'MPLS L3', 500), enlace(2, 'DIA', 500), enlace(3, '4G/5G', 300, 'respaldo')]);
+  for (const esc of [sinResp, conCuatroG]) {
+    const eb = R.escenarioBoost(esc, tunel);
+    assert.strictEqual(eb.escenario.id, 'normal');
+    assert.strictEqual(eb.mbps, tunel(esc[0]));
+  }
+});

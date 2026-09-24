@@ -123,10 +123,10 @@ test('T06 · con FortiOS 7.6.3+ SSL-VPN esta retirado: bloquea y ofrece IPsec co
   assert.deepStrictEqual(b.correccion, { accion: 'cambiar', campo: 'remoto.metodo', valor: 'ipsec' });
   assert.ok(b.fuente, 'con su fuente');
   // Hasta el 2026-09-24 la regla era una cita del informe sin leer (`leida:false`). Ese dia se
-  // leyeron las Release Notes de 7.6.3 desde Actions, y dicen lo mismo: «This applies to all
-  // FortiGate models».
+  // leyeron las Release Notes de 7.6.3 por dos vias que casan, y dicen lo mismo: «This applies
+  // to all FortiGate models». El bloqueo lo dice con la cita literal y la pagina.
   assert.strictEqual(b.fuenteLeida, true, 'la regla se leyo del documento del fabricante');
-  assert.match(b.fuente, /FortiOS 7\.6\.3 Release Notes/);
+  assert.match(b.fuente, /7\.6\.3 Release Notes, p\. 15/, 'cita el documento y la pagina');
 });
 
 test('T06 · una regla CITADA y no leida se sigue declarando como tal (catalogo sintetico)', () => {
@@ -247,7 +247,7 @@ test('T12 · EMS se licencia por endpoints gestionados, independientes de los us
   assert.deepStrictEqual(ems.map((f) => [f.sku, f.qty]), [['FC1-10-EMS05-428-01-36', 17]],
     '420 endpoints, no 350 (300 locales + 50 remotos): 17 packs de 25');
   assert.match(ems[0].nota, /420 endpoint\(s\) gestionados: 17 × pack de 25/);
-  assert.strictEqual(r.quoteGate, 'DRAFT', 'SKU exacto sin precio en la lista: borrador, no cotizacion');
+  assert.strictEqual(r.quoteGate, 'DRAFT', 'SKU exacto sin precio en el catalogo: borrador, no cotizacion');
 });
 
 test('T13 · sin SD-WAN, hubs, spokes, overlay y servicios avanzados quedan inactivos y fuera de la huella', () => {
@@ -509,4 +509,27 @@ test('una alternativa del mismo silicio se explica por lo que la distingue, no c
   assert.match(a91.porQue, /misma capacidad que FortiGate 90G/);
   assert.match(a91.porQue, /disco local de \d+ GB/);
   assert.ok(!/\b0 % más/.test(a91.porQue));
+});
+
+test('R2 · en 7.6.0-7.6.2 la lista de modelos de 2 GB esta CERRADA, y la regla cita la frase que la cierra', () => {
+  // Nota 10 del Matrix: sin SSL-VPN desde 7.6.0 en los modelos de 2 GB. Una primera lectura
+  // del 2026-09-24 saco los modelos de la p. 16 de las Release Notes de 7.6.3 —series 40F y
+  // 60F— y dejo el resto en «desconocida», porque no figurar en esa frase no prueba tener mas
+  // RAM. Con ese documento era lo correcto: esa frase es la del aviso de funciones PROXY y no
+  // cierra ninguna lista. Las Release Notes de 7.6.0 (pp. 10-11) traen el aviso propio del
+  // SSL-VPN y SI la cierran. Que el resto quede soportado depende de esa frase, asi que la
+  // regla tiene que citarla: sin ella, «soportada» volveria a ser una deduccion por omision.
+  const regla = CAT.fortios.reglas.find((x) => x.funcion === 'sslvpn' && x.versiones.includes('7.6.0-7.6.2')
+    && Array.isArray(x.modelos) && x.modelos.includes('40F'));
+  assert.deepStrictEqual(regla.modelos, ['40F', '60F', '61F']);
+  assert.strictEqual(regla.leida, true);
+  assert.match(regla.fuente, /not listed above will continue to have SSL VPN web and tunnel mode support/);
+  const r = evaluar(con(CU01(), { 'remoto.metodo': 'sslvpn', 'software.fortiOS': '7.6.0-7.6.2' }));
+  for (const id of ['FortiGate 40F', 'FortiGate 60F', 'FortiGate 61F']) {
+    const c = r.candidatos.find((x) => x.id === id);
+    const b = c && c.bloqueos.find((x) => x.codigo === 'FORTIOS_INCOMPATIBLE');
+    assert.ok(b && !c.elegible, `${id}: bloqueado por RAM`);
+    assert.strictEqual(b.fuenteLeida, true);
+  }
+  assert.ok(!r.avisos.some((a) => a.codigo === 'FORTIOS_DESCONOCIDA'), 'con la lista cerrada, nada queda en «desconocida»');
 });

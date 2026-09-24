@@ -3,10 +3,10 @@ name: traer-fortinet-pendientes
 # Baja a una rama de transporte los documentos que quedan bloqueados del modulo Fortinet,
 # para poder leerlos desde una sesion que no tiene salida a los dominios del fabricante:
 #
-#   F6 · las fichas por serie del FortiGate 100F y 200F y los System Guide de los chasis
-#        7081F y 7121F, que son los 4 modelos sin ninguna figura de hardware. La pagina
-#        «Hardware» de una ficha por serie -pagina 7 en las 28 que ya se leyeron- es de donde
-#        salen las 68 figuras frontal/trasera que ya sirve el dimensionador.
+#   F6 · las fichas por serie del FortiGate 100F y 200F, sus QuickStart Guide y los System
+#        Guide de los chasis 7081F y 7121F, que eran los 4 modelos sin ninguna figura de
+#        hardware. La pagina «Hardware» de una ficha por serie -pagina 7 en las 28 que ya se
+#        leyeron- es de donde salen las 68 figuras frontal/trasera del resto.
 #   F2 · los Ordering Guide de FortiGuard y de Secure SD-WAN, de los que salen los SKU de los tres servicios
 #        avanzados de SD-WAN (Underlay & Application Monitoring, Overlay Orchestration,
 #        conector FortiSASE) que hoy van con `sku: null` y bloquean la exportacion.
@@ -115,6 +115,15 @@ jobs:
               ] },
               { archivo: 'og-fortianalyzer.pdf', tipo: 'pdf', pendiente: 'SKU', urls: [
                 'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-fortianalyzer.pdf',
+              ] },
+              // Las figuras de 100F y 200F que se sirven salen de sus QuickStart Guide, leidas el
+              // 2026-09-24 desde una maquina sin el proxy y sin guardar la URL. Se traen aqui para
+              // contrastar pagina y rotulo contra una segunda copia, y para que tengan URL vigilable.
+              { archivo: 'fg-100f-qsg.pdf', tipo: 'pdf', pendiente: 'F6', urls: [
+                'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/42d64717-83f1-11e9-81a4-00505692583a/FG-100F-QSG.pdf',
+              ] },
+              { archivo: 'fg-200f-qsg.pdf', tipo: 'pdf', pendiente: 'F6', urls: [
+                'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/89694abf-1ef2-11eb-96b9-00505692583a/FG-200F-Series-QSG.pdf',
               ] },
             ];
             const informe = [];

@@ -78,11 +78,11 @@ El veredicto de la auditoría del 23-sep es **GO CONDICIONADO**, con cinco condi
 
 Cerrado desde el 23-sep:
 - F6: el 100F y el 200F tienen `cps`, sus siete límites y su figura, y los chasis 7081F y 7121F tienen figura.
-- F2: SKU exacto del SD-WAN Service en 20 de 23 modelos.
+- F2: el SD-WAN Service lleva SKU y precio de la lista firmada en 54 de 58 modelos. La familia se contrasta con el Ordering Guide.
 - SKU exactos de FortiClient EMS (en packs) y de FortiSASE (por edición y banda).
 
 Sigue abierto:
-- Precios. **Ninguno de esos SKU trae precio** en la lista de septiembre, así que esas líneas siguen en borrador. Los precios los tiene el distribuidor.
+- Precio de EMS y FortiSASE. **No está en el catálogo**: de la lista solo se extraen las filas que nombran un FortiGate, y estas licencias no nombran ninguno. Esas líneas siguen en borrador.
 - FortiAnalyzer y FortiSandbox dedicado son otro dimensionamiento.
 - Licencia de VDOM adicional: sin SKU publicado.
 - 17 precios de licencia de la edición de agosto.
