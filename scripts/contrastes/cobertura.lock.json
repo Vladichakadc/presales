@@ -1,26 +1,12 @@
 {
  "medidoEn": {
-  "commit": "d486b1b",
-  "fecha": "2026-09-23"
+  "commit": "fa25c7a",
+  "fecha": "2026-09-24"
  },
  "umbralRozado": 25,
  "modulos": [
   {
-   "modulo": "aruba-reglas.js",
-   "estado": "sin conducir",
-   "total": null,
-   "usadas": null,
-   "pct": null
-  },
-  {
    "modulo": "cuenta.js",
-   "estado": "sin conducir",
-   "total": null,
-   "usadas": null,
-   "pct": null
-  },
-  {
-   "modulo": "dimensionador-aruba-edgeconnect.js",
    "estado": "sin conducir",
    "total": null,
    "usadas": null,
@@ -69,13 +55,6 @@
    "pct": null
   },
   {
-   "modulo": "motor-ingenieria.js",
-   "estado": "sin conducir",
-   "total": null,
-   "usadas": null,
-   "pct": null
-  },
-  {
    "modulo": "usuarios.js",
    "estado": "sin conducir",
    "total": null,
@@ -107,15 +86,8 @@
    "modulo": "procedencia.js",
    "estado": "ejercitado",
    "total": 34,
-   "usadas": 19,
-   "pct": 56
-  },
-  {
-   "modulo": "bom.js",
-   "estado": "ejercitado",
-   "total": 76,
-   "usadas": 44,
-   "pct": 58
+   "usadas": 18,
+   "pct": 53
   },
   {
    "modulo": "login.js",
@@ -132,11 +104,25 @@
    "pct": 61
   },
   {
+   "modulo": "bom.js",
+   "estado": "ejercitado",
+   "total": 78,
+   "usadas": 49,
+   "pct": 63
+  },
+  {
    "modulo": "tabla.js",
    "estado": "ejercitado",
    "total": 11,
    "usadas": 7,
    "pct": 64
+  },
+  {
+   "modulo": "dimensionador-aruba-edgeconnect.js",
+   "estado": "ejercitado",
+   "total": 357,
+   "usadas": 236,
+   "pct": 66
   },
   {
    "modulo": "fortinet-reglas.js",
@@ -153,13 +139,6 @@
    "pct": 72
   },
   {
-   "modulo": "ficha.js",
-   "estado": "ejercitado",
-   "total": 65,
-   "usadas": 47,
-   "pct": 72
-  },
-  {
    "modulo": "estado.js",
    "estado": "ejercitado",
    "total": 23,
@@ -167,11 +146,18 @@
    "pct": 74
   },
   {
+   "modulo": "ficha.js",
+   "estado": "ejercitado",
+   "total": 66,
+   "usadas": 49,
+   "pct": 74
+  },
+  {
    "modulo": "index.js",
    "estado": "ejercitado",
    "total": 57,
-   "usadas": 43,
-   "pct": 75
+   "usadas": 42,
+   "pct": 74
   },
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
@@ -195,10 +181,24 @@
    "pct": 83
   },
   {
+   "modulo": "aruba-reglas.js",
+   "estado": "ejercitado",
+   "total": 19,
+   "usadas": 17,
+   "pct": 89
+  },
+  {
    "modulo": "fuentes.js",
    "estado": "ejercitado",
    "total": 5,
    "usadas": 5,
+   "pct": 100
+  },
+  {
+   "modulo": "motor-ingenieria.js",
+   "estado": "ejercitado",
+   "total": 4,
+   "usadas": 4,
    "pct": 100
   }
  ]
