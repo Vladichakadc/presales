@@ -889,9 +889,10 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
   - **La figura** (otra sesión): los cuatro —100F, 200F, 7081F y 7121F— tienen frontal y trasera
     de las **guías oficiales de hardware** de docs.fortinet.com: la QuickStart Guide del 100F
     (p. 5, dibuja un **101F** de la misma serie, y el pie lo dice) y la del 200F (p. 6), y los
-    System Guide de los dos chasis (7.0.5 y 7.4.4), con las caras rotuladas literalmente. Los
-    System Guide que trajo el transporte son la misma versión y rotulan las mismas páginas: dos
-    copias que casan. Las dos QuickStart se añadieron al transporte para contrastarlas igual.
+    System Guide de los dos chasis (7.0.5 y 7.4.4), con las caras rotuladas literalmente. Todas
+    tienen ahora una segunda copia, traída por el transporte, que casa: los System Guide son la
+    misma versión y rotulan las mismas páginas, y las QuickStart (corrida `36033165475`) también;
+    el texto del propio dibujo del 100F dice «FortiGate 101F».
   - **Los datos** (esta sesión): la ficha por serie **en inglés** da 404 en todas las rutas,
     también desde internet abierto, pero la **coreana oficial** sigue en el CDN de fortinet.com y
     trae la tabla completa: `cps` y los siete límites, anclados 12 de 12. Su dibujo del 100F
@@ -1453,7 +1454,9 @@ lecturas se citan como anclas; donde una llegó más lejos, manda esa y se dice.
   ficha coreana del 100F rotula un 212F, y el de la QuickStart un 101F de la misma serie. Los
   System Guide del transporte son la misma versión y rotulan las mismas páginas que los que ella
   leyó, y casan también sus dos citas nuevas del 7121F (hasta ocho fuentes, p. 8; cuántas hacen
-  falta, p. 24). Las dos QuickStart se añadieron al transporte para tener la misma segunda copia.
+  falta, p. 24). Las dos QuickStart se trajeron después por el transporte (corrida
+  `36033165475`), sin URL que la otra sesión hubiera guardado: casan en página y rótulo, y la
+  figura servida es exactamente su dibujo.
 - **F2, cerrado entero.** Los tres servicios avanzados de SD-WAN no son tres líneas: son **un
   SKU por equipo**, el SD-WAN Service add-on.
   - **SKU y precio salen de la lista firmada**, en 54 de 58 modelos; la familia se contrasta con
