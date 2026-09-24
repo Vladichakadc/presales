@@ -1001,10 +1001,11 @@ const FUNCIONES=[
 // que se licencia aparte son estos servicios. Tener dos WAN NO obliga a Enterprise, y esa
 // suposicion es justo lo que el informe del 2026-09-22 manda retirar (AT-07).
 //
-// `sku:null` A PROPOSITO: el SKU exacto depende de la region, el modelo y el termino, y este
-// repositorio no lo ha leido del Ordering Guide. Una linea sin SKU exacto NO se puede
-// exportar como cotizacion -la puerta de exportacion lo bloquea- y eso es preferible a
-// inventar un codigo con pinta de valido, que es el fallo del «FortiGate 2000F».
+// `sku:null` A PROPOSITO, y desde el 2026-09-24 por otra razon: el Ordering Guide de Secure
+// SD-WAN no vende estos servicios uno a uno sino en UN SKU por FortiGate (el SD-WAN Service,
+// ver SDWAN_SERVICIO), asi que el codigo no es de cada servicio sino del equipo. Antes era
+// null porque nadie lo habia leido; una linea sin SKU exacto sigue sin poder exportarse como
+// cotizacion, que es preferible a inventar un codigo con pinta de valido (el «FortiGate 2000F»).
 const SERVICIOS_SDWAN=[
   {id:'sdwanMon', n:'SD-WAN Underlay and Application Monitoring Service', sku:null,
    d:'Base de datos de SLA, speed tests activos y monitoreo de aplicacion. Se deriva solo si el diseno usa esas funciones, no por tener varios enlaces.'},

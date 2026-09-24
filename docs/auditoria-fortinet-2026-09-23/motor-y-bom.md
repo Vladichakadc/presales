@@ -149,14 +149,21 @@ en standalone y 2 en HA.
   - Un nivel por debajo del incluido no se cotiza.
   - Sin bundle, FortiCare vuelve a ser línea propia.
 - **Sandbox**:
-  - `incluido`: sin línea, con aviso (la matriz de bundles no se leyó en este entorno).
+  - `incluido`: sin línea. «FortiGate Cloud Sandbox» va dentro de Advanced Malware Protection en
+    Enterprise, UTP y ATP según la matriz del Ordering Guide de FortiGuard, leída el 2026-09-24;
+    el aviso informa y cita esa fuente.
   - `ai`: familia 577, por modelo.
   - `dedicado`: pide modalidad y va en línea propia sin SKU, en borrador.
-- **Registro**: nube → familia 585; FortiAnalyzer → línea sin SKU, dimensionada por GB/día, en
-  borrador.
-- **EMS**: `emsEndpoints` declarados. Hay patrón de SKU (tramos de 25) pero no el código del
-  tramo, así que va en borrador.
-- **SASE y servicios SD-WAN**: sin SKU en el catálogo (F2), en borrador.
+- **Registro**: nube → familia 585, que es la suscripción por equipo de FortiAnalyzer Cloud
+  según su Ordering Guide; FortiAnalyzer en appliance o VM → línea sin SKU, en borrador. Su forma y
+  su tramo de GB/día son otro dimensionamiento, y el mensaje cita la tabla del guide.
+- **EMS** (desde el 2026-09-24): `emsEndpoints` más `emsDespliegue` (FortiClient Cloud u
+  on-premise). Sale en packs de 25/500/2.000/10.000 del Ordering Guide de FortiClient, con SKU
+  exacto, y queda en borrador porque la lista de septiembre no trae su precio.
+- **Servicios SD-WAN** (desde el 2026-09-24): **un** SD-WAN Service add-on por equipo (1387/1389,
+  Ordering Guide de Secure SD-WAN), con SKU exacto en 20 de 23 modelos y sin precio en la lista.
+- **FortiSASE** (desde el 2026-09-24): edición por banda de usuarios (50-499 … 10.000+), con SKU
+  exacto y sin precio. Por debajo de 50 no hay SKU publicado.
 - **VDOM** por encima de la cuota incluida: licencia en línea propia, sin SKU, en borrador. Por
   encima del máximo, el modelo se aparta.
 - **Segunda fuente** (`redund: 'opcional'` y PSU redundante pedida): línea sin SKU, en borrador.

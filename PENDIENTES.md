@@ -1347,7 +1347,8 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
 ## Decisiones que necesitan al dueño del producto
 
 **Las cuatro primeras están preparadas para resolverse en minutos en
-`docs/decisiones-del-dueno-2026-09-24.md`** (también publicado como página), con los pasos, lo
+`docs/decisiones-del-dueno-2026-09-24.md`** (también publicado como página privada,
+<https://claude.ai/artifact/Sw97q5rDmJ5KJCYbB2PWXJ>, que su dueño comparte), con los pasos, lo
 que ya se comprobó y lo que cuesta cada opción.
 
 - **Activar «Wait for CI» en Railway** (`presales-web` → *Settings* → *Source*). Medido el
