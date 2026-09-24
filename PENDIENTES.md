@@ -1488,7 +1488,15 @@ lecturas se citan como anclas; donde una llegó más lejos, manda esa y se dice.
   - Las unitarias prueban la misma regla sobre el modelo con el dato **borrado**.
   - El contraste y los e2e interceptan la API para recrear el hueco, y fallan si la
     intercepción no se aplica. Se comprobó saboteándola.
-- **Lo que no se pudo: «Wait for CI».** Ver *Decisiones que necesitan al dueño*.
+- **Lo que no se pudo: «Wait for CI».** Ver *Decisiones que necesitan al dueño*. Se reintentó
+  al cerrar la entrega y el agente de Railway sigue respondiendo «Agent usage limit reached».
+- **En producción el 2026-09-24.** `main` avanzó de `422defa` a `6af3e07` (la fusión es
+  `a5ec504`). Railway `7c40150d` en SUCCESS, con `[seed]` y `Presales corriendo en` en el
+  registro del contenedor. Sobre ese commit, `verificar` (`36034613497`) y `pantallas`
+  (`36034613654`: pantallas, contraste y e2e, 6 min 41 s) en verde, y la sonda (`36034760896`)
+  dio `/salud` 200 con 7 fabricantes y 228 modelos, y `/login` 200. **Y lo midió otra vez**:
+  el despliegue se creó a las 17:29:03 y quedó en SUCCESS a las 17:29:59, antes de que
+  `pantallas` terminara (17:35:49). Hasta que se active «Wait for CI», un rojo ahí no lo frena.
 
 ### Validación de pendientes: Boost por escenario, las cuatro figuras de F6, R1 y R2 en parte (2026-09-24)
 
