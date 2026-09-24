@@ -420,7 +420,7 @@ const PANTALLAS = [
     listo: '#movilidad',
     async acciones(page) {
       await rellena(page, '#downMbps', '350');
-      await page.selectOption('#movilidad', 'maritimo');
+      await page.selectOption('#movilidad', 'movimiento');
       await espera(page, 500);
       await this.exigeConTexto(page, '#verdict');
       await page.click('[data-tab="bom"]');

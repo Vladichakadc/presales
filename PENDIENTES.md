@@ -584,22 +584,25 @@ Cobertura actual por herramienta:
 | ~~Arista~~ | retirado | retirado | retirado | — |
 | **Starlink** | no | no (llega como referencias) | no | **sí** (nuevo, 2026-09-24 — 4 kits sin verificar) |
 
-**Starlink: el dimensionador existe, el dato está sin contrastar (2026-09-24).**
-`dimensionador-starlink-leo.html` elige el kit (Standard, Mini, Performance, Flat High
-Performance como línea anterior) y cuenta terminales por sitio. Lo que falta:
-- **Contrastar `server/seed/legacyData/starlink.js` con https://www.starlink.com/specifications.**
-  Bloqueado por egreso: desde este entorno `curl` a starlink.com no conecta (medido el
-  2026-09-24). Los campos en `null` —sobre todo del kit **Performance**: consumo, DC, IP,
-  dimensiones, cable— se muestran «no consta» y **apartan** el kit cuando el escenario los
-  pide (un presupuesto de potencia hoy aparta al Performance). El soporte en movimiento y
-  marítimo del **Mini** también va en `null`. Comando: bajar la ficha desde una máquina con
-  salida (o un workflow de Actions, como las de Fortinet) y transcribir con diff en git.
-- **Precios y SKU**: todos en `null`. Starlink tarifica por país; hace falta la lista del canal
+**Starlink: el dimensionador existe y su hardware está contrastado con las fichas oficiales (2026-09-24).**
+Lo que sigue abierto:
+- **Uso marítimo: ninguna ficha lo menciona**, así que el escenario marítimo hoy no recomienda
+  ningún kit (lo dice en pantalla). Hace falta un documento oficial que lo respalde; el
+  candidato es la página de Starlink Maritime. Se añade como URL candidata a
+  `scripts/traer-starlink.js` y se corre `traer-starlink.yml` desde Actions.
+- **Uso en movimiento de Standard, Mini, Enterprise y Flat High Performance**: sus fichas no lo
+  mencionan (solo la del Performance). Mismo camino.
+- **Cables más largos como accesorio**: ninguna ficha los documenta, y por eso un tendido de
+  más de 15 m aparta el Standard y lleva al Enterprise (50 m). Si Starlink publica la ficha
+  de un cable largo, se rellena `cableMaxM` y el motor lo usa sin tocar código.
+- **Precios y SKU**: todos en `null`. Las fichas no los publican; hace falta la lista del canal
   autorizado con el que se cotice.
+- **Vigilancia**: las cinco URL de las fichas no están en el vigía (`npm run vigia`), así que un
+  cambio de Starlink no avisaría. Requiere dar a Starlink su sitio en `legacyData/fuentes.js`,
+  que es parte de la integración de abajo.
 - **Integración con el resto del portal, sin hacer a propósito**: no está en la barra de
   fabricantes (`navegacion.js`), ni en `/api/catalog`, ni en `legacyData/fuentes.js`, ni en el
-  cotizador como equipo. Cada una toca conteos («7 fabricantes») que varias pruebas fijan; se
-  hace cuando el dato esté verificado, no antes.
+  cotizador como equipo. Cada una toca conteos («7 fabricantes») que varias pruebas fijan.
 
 5. **Completar el catálogo del dimensionador Juniper — parcialmente resuelto (2026-09-02),
    ver *Cerrado recientemente*.** La «SRX Series and vSRX Performance and Features Matrix» se
@@ -1334,6 +1337,19 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Catálogo Starlink contrastado con las fichas oficiales en PDF (2026-09-24)
+
+La mejora propuesta al cerrar la entrega anterior, aplicada. `traer-starlink.yml` (corrida
+35949951292) trajo desde Actions las cinco fichas oficiales de `api.starlink.com/public-files/`
+a la rama `fuente/starlink-specs`. **El riesgo declarado al proponerlo se cumplió y quedó
+cubierto**: la página de especificaciones es una aplicación de JavaScript, y sus nueve
+variantes respondieron 200 renderizadas en Chromium sin una sola cifra de ficha.
+`juzgarTexto()` las marcó vacías en vez de publicarlas como fuente. **Leer los PDF corrigió
+tres afirmaciones escritas a ojo**: un cable de 45 m que ninguna ficha documenta, el Flat High
+Performance como «línea anterior» y el soporte marítimo, que ninguna ficha menciona. **Añadió
+el kit Enterprise**, con 50 m de cable, que ahora es el recomendado para tendidos largos.
+584 unitarios (con la prueba del juicio, comprobada saboteando el umbral) y 17/17 pantallas.
 
 ### Dimensionador y BOM de Starlink LEO (2026-09-24)
 

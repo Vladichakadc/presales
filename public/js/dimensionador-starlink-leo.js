@@ -9,11 +9,11 @@
 // y declarado en pantalla. Por eso esta página no usa ficha.js (asume una capacidad
 // publicada contra la que comparar) y sí usa bom.js y estado.js.
 //
-// UN DATO QUE FALTA APARTA, NUNCA APRUEBA. El catálogo (legacyData/starlink.js) está sin
-// verificar y trae `null` donde no se conoce la cifra. Si el escenario pide un eje y el kit
-// no lo declara —en movimiento, DC, consumo—, el kit se aparta con su motivo en vez de darse
-// por bueno: recomendar un kit para un barco porque nadie escribió que no sirve es el dato
-// inventado que este catálogo prohíbe.
+// UN DATO QUE FALTA APARTA, NUNCA APRUEBA. El catálogo (legacyData/starlink.js) sale de las
+// fichas oficiales en PDF y trae `null` donde la ficha no dice nada. Si el escenario pide un
+// eje y el kit no lo declara —en movimiento, marítimo, DC, consumo, cable—, el kit se aparta
+// con su motivo en vez de darse por bueno: recomendar un kit para un barco porque ninguna
+// ficha dice que no sirve es el dato inventado que este catálogo prohíbe.
 
 (function () {
   const $ = (id) => document.getElementById(id);
@@ -49,6 +49,15 @@
     if (e.presupuestoW > 0) {
       if (!kit.watts) motivos.push('el catálogo no trae su consumo y hay un presupuesto de potencia');
       else if (kit.watts.max > e.presupuestoW) motivos.push(`consume hasta ${kit.watts.max} W y el presupuesto es de ${e.presupuestoW} W`);
+    }
+    // El tendido es un eje más. Un cable más largo que el de la caja solo salva el kit si la
+    // ficha documenta uno (`cableMaxM`); hoy ninguna lo hace, así que el tendido largo lleva
+    // al kit que trae el cable largo (Enterprise, 50 m) en vez de a un accesorio supuesto.
+    if (e.cableM > 0) {
+      if (kit.cableIncluidoM == null) motivos.push('el catálogo no trae la longitud de su cable');
+      else if (e.cableM > kit.cableIncluidoM && !(kit.cableMaxM != null && e.cableM <= kit.cableMaxM)) {
+        motivos.push(`el tendido de ${e.cableM} m supera los ${kit.cableIncluidoM} m de cable que trae y la ficha no documenta uno más largo`);
+      }
     }
     return { ok: motivos.length === 0, motivos };
   }
@@ -121,6 +130,9 @@
     if (r.terminalesSitio > 1) {
       filas.push({ cat: 'Integración', desc: `Router multi-WAN / SD-WAN para agregar ${r.terminalesSitio} terminales`, sku: null,
         qty: r.sitios, unit: null, nota: 'se dimensiona en el dimensionador del fabricante elegido' });
+    } else if (k.routerIncluido === false) {
+      filas.push({ cat: 'Integración', desc: 'Router para el sitio (el kit no trae router Wi-Fi)', sku: null,
+        qty: r.sitios, unit: null, nota: 'router del cliente, de Starlink o de otro fabricante' });
     }
     return filas;
   }
@@ -131,9 +143,10 @@
     if (!k) return out;
     if (r.manual && !r.elegidoCumple) out.push({ c: 'bad', t: `El ${k.nombre} elegido a mano no cumple este escenario: ${r.evaluados.find((x) => x.kit.id === k.id).motivos.join('; ')}.` });
     if (k.legacy) out.push({ c: 'warn', t: `El ${k.nombre} es una línea anterior: sirve para ampliar parque instalado, no para un diseño nuevo.` });
-    if (e.cableM > 0) {
-      if (k.cableIncluidoM == null) out.push({ c: 'warn', t: `El catálogo no trae la longitud de cable del ${k.nombre}: confirma que alcanza los ${e.cableM} m del tendido.` });
-      else if (k.cableMaxM != null && e.cableM > k.cableMaxM) out.push({ c: 'bad', t: `El tendido de ${e.cableM} m supera el cable más largo del fabricante (${k.cableMaxM} m): hace falta una solución de extensión que Starlink no soporta directamente.` });
+    // Sin router en la caja y un solo terminal por sitio, alguien tiene que poner uno: con
+    // varios terminales ya lo cubre la línea del agregador multi-WAN.
+    if (k.routerIncluido === false && r.terminalesSitio === 1) {
+      out.push({ c: 'warn', t: `El ${k.nombre} no trae router Wi-Fi: se conecta por Ethernet a un router del cliente o a uno de Starlink, que se cotiza aparte.` });
     }
     if (r.terminalesSitio > 1) out.push({ c: 'warn', t: `Varios terminales por sitio no suman caudal solos: hace falta un router multi-WAN o SD-WAN que balancee entre ellos, y el caudal agregado depende de la celda.` });
     if (e.rol === 'respaldo') out.push({ c: '', t: 'En respaldo, el caudal pedido es el que debe sostenerse durante la caída del enlace principal, no el habitual.' });
@@ -184,17 +197,27 @@
         + (e.downMbps || e.upMbps
           ? `<p>${r.terminalesSitio} terminal(es) por sitio (manda la ${r.manda}${e.redundancia ? ', +1 por N+1' : ''}) en ${r.sitios} sitio(s) · ${esc(MOVILIDAD[e.movilidad])}.</p>`
           : `<p>Kit elegido por las condiciones del sitio · ${esc(MOVILIDAD[e.movilidad])}. <b>Declara el caudal por sitio</b> para calcular cuántos terminales hacen falta; sin él se cuenta ${r.terminalesSitio} por sitio.</p>`);
+      const siNo = (v) => (v == null ? cifra(null) : (v ? 'sí' : 'no'));
+      // Una URL que no es https no se pinta como enlace: el catálogo es de este repositorio,
+      // pero la ficha es el sitio donde un dato ajeno acabaría ejecutándose.
+      const pdf = /^https:\/\//.test(k.fuenteUrl || '')
+        ? `<a href="${esc(k.fuenteUrl)}" target="_blank" rel="noopener">ficha oficial (PDF)</a>` : cifra(null);
       $('fichaKit').innerHTML = `<h2>${esc(k.nombre)}</h2><table><tbody>
         <tr><td>Uso</td><td>${esc(k.uso)}</td></tr>
         <tr><td>Consumo medio</td><td class="n">${k.watts ? `${k.watts.min}–${k.watts.max} W` : cifra(null)}</td></tr>
-        <tr><td>Alimentación DC</td><td>${k.dc == null ? cifra(null) : (k.dc ? 'sí' : 'no')}</td></tr>
-        <tr><td>En movimiento</td><td>${k.enMovimiento == null ? cifra(null) : (k.enMovimiento ? 'sí' : 'no')}</td></tr>
+        <tr><td>Alimentación DC</td><td>${siNo(k.dc)}</td></tr>
+        <tr><td>En movimiento</td><td>${siNo(k.enMovimiento)}</td></tr>
+        <tr><td>Marítimo</td><td>${siNo(k.maritimo)}</td></tr>
+        <tr><td>Campo de visión</td><td class="n">${cifra(k.campoVision)}</td></tr>
         <tr><td>Protección</td><td class="n">${cifra(k.ip)}</td></tr>
+        <tr><td>Temperatura de operación</td><td class="n">${cifra(k.temperatura)}</td></tr>
         <tr><td>Dimensiones</td><td class="n">${cifra(k.dimensiones)}</td></tr>
-        <tr><td>Peso</td><td class="n">${cifra(k.pesoKg, ' kg')}</td></tr>
+        <tr><td>Peso de la antena</td><td class="n">${cifra(k.pesoKg, ' kg')}</td></tr>
         <tr><td>Router</td><td>${cifra(k.router)}</td></tr>
-        <tr><td>Cable incluido</td><td class="n">${cifra(k.cableIncluidoM, ' m')}</td></tr>
-      </tbody></table>`;
+        <tr><td>Cable incluido</td><td>${k.cableIncluidoM == null ? cifra(null) : `<span class="n">${esc(k.cableIncluidoM)} m</span> · ${esc(k.cableTipo || '')}`}</td></tr>
+        <tr><td>Velocidad publicada</td><td>${k.velocidad ? esc(k.velocidad) : '<span class="nd">la ficha no publica una</span>'}</td></tr>
+        <tr><td>Fuente</td><td>${pdf}</td></tr>
+      </tbody></table>${k.nota ? `<p class="hint">${esc(k.nota)}</p>` : ''}`;
     }
 
     $('kitsTabla').innerHTML = `<table><thead><tr><th>Kit</th><th>Estado</th><th>Motivo</th></tr></thead><tbody>${

@@ -112,7 +112,7 @@ tr.sel td{background:#F4F6F9;font-weight:600}
         <option value="movimiento">En movimiento (vehículo terrestre)</option>
         <option value="maritimo">Marítimo</option>
       </select>
-      <p class="hint">En movimiento y marítimo solo admiten kits cuyo soporte oficial conste en el catálogo.</p>
+      <p class="hint">En movimiento y marítimo solo admiten kits cuya ficha lo diga. Hoy ninguna menciona el uso marítimo.</p>
     </div>
   </section>
 
@@ -164,8 +164,9 @@ tr.sel td{background:#F4F6F9;font-weight:600}
       <p class="hint">Vacío o 0 = sin límite. Con un presupuesto, un kit sin consumo publicado se aparta en vez de darse por bueno.</p>
     </div>
     <div class="field">
-      <label for="cableM">Tendido de cable antena → router (m)</label>
+      <label for="cableM">Tendido de cable desde la antena (m)</label>
       <input type="number" id="cableM" min="0" step="1" placeholder="p. ej. 10" autocomplete="off">
+      <p class="hint">Un tendido más largo que el cable que trae el kit lo aparta: ninguna ficha documenta un cable más largo como accesorio.</p>
     </div>
   </section>
 </div>
@@ -199,7 +200,7 @@ tr.sel td{background:#F4F6F9;font-weight:600}
 <div class="cols">
 <div>
   <div class="flag-ft">
-    <b>Aviso de preventa:</b> este catálogo está <b>sin verificar</b> contra la ficha oficial de Starlink y no hay lista de precios firmada. Starlink tarifica kit y plan por país: todas las líneas van «Consultar» y el BOM las cuenta como sin cotizar.
+    <b>Aviso de preventa:</b> las características de cada kit salen de las fichas oficiales de Starlink, pero <b>no hay lista de precios</b>: Starlink tarifica kit y plan por país. Todas las líneas van «Consultar» y el BOM las cuenta como sin cotizar.
   </div>
   <div class="flag-amber">
     Cuando hay más de un terminal por sitio, el router multi-WAN o SD-WAN que los agrega se dimensiona en el dimensionador del fabricante elegido (Fortinet, Cisco, Aruba…). Aquí solo se deja la línea para que la cotización no salga corta.
@@ -222,7 +223,7 @@ tr.sel td{background:#F4F6F9;font-weight:600}
 </div>
 
 <p class="note">
-<b>Fuentes:</b> <a href="https://www.starlink.com/specifications" target="_blank" rel="noopener">starlink.com/specifications</a> — datos generales de cada kit, <b>transcritos sin contrastar</b>: el entorno donde se construyó este catálogo tiene starlink.com bloqueado por política de egreso. Donde un dato no se conoce con seguridad, la ficha dice «no consta» en vez de rellenarlo. Precios y SKU: sin lista pública verificada.
+<b>Fuentes:</b> las fichas de especificaciones oficiales en PDF de cada kit (<a href="https://www.starlink.com/specifications" target="_blank" rel="noopener">starlink.com/specifications</a>), leídas el 2026-09-24. Donde una ficha no dice algo —el uso marítimo, por ejemplo, no lo menciona ninguna—, la página dice «no consta» y aparta el kit si el escenario lo pide, en vez de suponerlo. Precios y SKU: sin lista pública verificada.
 </p>
 
 </div><!-- /wrap -->
