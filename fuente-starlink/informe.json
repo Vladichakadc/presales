@@ -1,0 +1,262 @@
+{
+  "fecha": "2026-09-24T03:09:51.596Z",
+  "informe": [
+    {
+      "tipo": "pdf",
+      "archivo": "ficha-standard.pdf",
+      "guardado": true,
+      "intentos": [
+        {
+          "url": "https://api.starlink.com/public-files/specification_sheet_standard.pdf",
+          "status": 200,
+          "bytes": 1680317,
+          "guardado": true
+        }
+      ]
+    },
+    {
+      "tipo": "pdf",
+      "archivo": "ficha-mini.pdf",
+      "guardado": true,
+      "intentos": [
+        {
+          "url": "https://api.starlink.com/public-files/specification_sheet_mini.pdf",
+          "status": 200,
+          "bytes": 1169965,
+          "guardado": true
+        }
+      ]
+    },
+    {
+      "tipo": "pdf",
+      "archivo": "ficha-performance.pdf",
+      "guardado": true,
+      "intentos": [
+        {
+          "url": "https://api.starlink.com/public-files/specification_sheet_performance.pdf",
+          "status": 200,
+          "bytes": 785639,
+          "guardado": true
+        }
+      ]
+    },
+    {
+      "tipo": "pdf",
+      "archivo": "ficha-flat-high-performance.pdf",
+      "guardado": true,
+      "intentos": [
+        {
+          "url": "https://api.starlink.com/public-files/specification_sheet_flat_high_performance.pdf",
+          "status": 200,
+          "bytes": 691001,
+          "guardado": true
+        }
+      ]
+    },
+    {
+      "tipo": "pdf",
+      "archivo": "ficha-enterprise.pdf",
+      "guardado": true,
+      "intentos": [
+        {
+          "url": "https://api.starlink.com/public-files/specification_sheet_enterprise.pdf",
+          "status": 200,
+          "bytes": 174261,
+          "guardado": true
+        }
+      ]
+    },
+    {
+      "tipo": "pdf",
+      "archivo": "ficha-standard-actuated.pdf",
+      "guardado": false,
+      "intentos": [
+        {
+          "url": "https://api.starlink.com/public-files/specification_sheet_standard_actuated.pdf",
+          "status": 404
+        },
+        {
+          "url": "https://www.starlink.com/public-files/specification_sheet_standard_actuated.pdf",
+          "status": 404
+        }
+      ]
+    },
+    {
+      "tipo": "pagina",
+      "archivo": "pagina-especificaciones.txt",
+      "guardado": false,
+      "intentos": [
+        {
+          "url": "https://www.starlink.com/specifications",
+          "status": 200,
+          "nota": "no aparecio ninguna unidad de ficha en 25 s",
+          "caracteres": 809,
+          "ok": false,
+          "motivo": "solo 0 de 5 magnitudes de ficha (ninguna): parece un esqueleto o una pagina comercial",
+          "magnitudes": [],
+          "kits": [
+            "Standard"
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "pagina",
+      "archivo": "pagina-spec-1.txt",
+      "guardado": false,
+      "intentos": [
+        {
+          "url": "https://www.starlink.com/specifications?spec=1",
+          "status": 200,
+          "nota": "no aparecio ninguna unidad de ficha en 25 s",
+          "caracteres": 573,
+          "ok": false,
+          "motivo": "solo 0 de 5 magnitudes de ficha (ninguna): parece un esqueleto o una pagina comercial",
+          "magnitudes": [],
+          "kits": [
+            "Standard Actuated"
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "pagina",
+      "archivo": "pagina-spec-2.txt",
+      "guardado": false,
+      "intentos": [
+        {
+          "url": "https://www.starlink.com/specifications?spec=2",
+          "status": 200,
+          "nota": "no aparecio ninguna unidad de ficha en 25 s",
+          "caracteres": 681,
+          "ok": false,
+          "motivo": "solo 0 de 5 magnitudes de ficha (ninguna): parece un esqueleto o una pagina comercial",
+          "magnitudes": [],
+          "kits": [
+            "High Performance",
+            "Performance",
+            "Enterprise"
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "pagina",
+      "archivo": "pagina-spec-3.txt",
+      "guardado": false,
+      "intentos": [
+        {
+          "url": "https://www.starlink.com/specifications?spec=3",
+          "status": 200,
+          "nota": "no aparecio ninguna unidad de ficha en 25 s",
+          "caracteres": 1079,
+          "ok": false,
+          "motivo": "solo 0 de 5 magnitudes de ficha (ninguna): parece un esqueleto o una pagina comercial",
+          "magnitudes": [],
+          "kits": [
+            "Flat High Performance",
+            "Performance"
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "pagina",
+      "archivo": "pagina-spec-4.txt",
+      "guardado": false,
+      "intentos": [
+        {
+          "url": "https://www.starlink.com/specifications?spec=4",
+          "status": 200,
+          "nota": "no aparecio ninguna unidad de ficha en 25 s",
+          "caracteres": 809,
+          "ok": false,
+          "motivo": "solo 0 de 5 magnitudes de ficha (ninguna): parece un esqueleto o una pagina comercial",
+          "magnitudes": [],
+          "kits": [
+            "Standard"
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "pagina",
+      "archivo": "pagina-spec-5.txt",
+      "guardado": false,
+      "intentos": [
+        {
+          "url": "https://www.starlink.com/specifications?spec=5",
+          "status": 200,
+          "nota": "no aparecio ninguna unidad de ficha en 25 s",
+          "caracteres": 698,
+          "ok": false,
+          "motivo": "solo 0 de 5 magnitudes de ficha (ninguna): parece un esqueleto o una pagina comercial",
+          "magnitudes": [],
+          "kits": [
+            "Mini"
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "pagina",
+      "archivo": "pagina-spec-6.txt",
+      "guardado": false,
+      "intentos": [
+        {
+          "url": "https://www.starlink.com/specifications?spec=6",
+          "status": 200,
+          "nota": "no aparecio ninguna unidad de ficha en 25 s",
+          "caracteres": 922,
+          "ok": false,
+          "motivo": "solo 0 de 5 magnitudes de ficha (ninguna): parece un esqueleto o una pagina comercial",
+          "magnitudes": [],
+          "kits": [
+            "Enterprise"
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "pagina",
+      "archivo": "pagina-spec-7.txt",
+      "guardado": false,
+      "intentos": [
+        {
+          "url": "https://www.starlink.com/specifications?spec=7",
+          "status": 200,
+          "nota": "no aparecio ninguna unidad de ficha en 25 s",
+          "caracteres": 2003,
+          "ok": false,
+          "motivo": "solo 2 de 5 magnitudes de ficha (proteccion, grados): parece un esqueleto o una pagina comercial",
+          "magnitudes": [
+            "proteccion",
+            "grados"
+          ],
+          "kits": [
+            "Performance"
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "pagina",
+      "archivo": "pagina-spec-8.txt",
+      "guardado": false,
+      "intentos": [
+        {
+          "url": "https://www.starlink.com/specifications?spec=8",
+          "status": 200,
+          "nota": "no aparecio ninguna unidad de ficha en 25 s",
+          "caracteres": 759,
+          "ok": false,
+          "motivo": "solo 0 de 5 magnitudes de ficha (ninguna): parece un esqueleto o una pagina comercial",
+          "magnitudes": [],
+          "kits": [
+            "Mini"
+          ]
+        }
+      ]
+    }
+  ]
+}

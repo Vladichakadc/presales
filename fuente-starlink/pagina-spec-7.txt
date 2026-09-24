@@ -1,0 +1,46 @@
+Residential
+Roam
+Service Plans
+Resources
+
+Call (888) GO-STARLINK
+
+Personal
+Business
+Specifications
+Performance (Gen 3)
+​
+Performance (Gen 3)
+Applications
+
+Designed for resilient connectivity in remote areas and harsh environments, extreme weather, high-vibration settings, and in-motion usage.
+
+The Starlink Performance Kit is currently capable of download speeds up to 400+ Mbps for fast, reliable connectivity whenever you need it. Starlink is focused on making network enhancements which will enable gigabit speeds starting in the most remote places on Earth with the Performance Kit. Service plan upgrades will be available in 2026. No hardware changes needed.
+Capable of enduring winds up to 270+ kph (170+ mph) and temperatures from -40°C to 60°C (-40°F to 140°F).
+The Performance user terminal has enhanced IP rating and snow melting capacity. The Performance user terminal features an IP68 rating when unplugged and an IP69K rating when plugged in. Tested to 1 meter of water submersion for up to 30 minutes and pressure washing.
+The Advanced Power Supply included with the Starlink Performance Kit is rack-mountable, operates on both AC and DC power, and supports DC input with a backup battery for uninterrupted operation. It features smart diagnostics, a high-power PoE output, and a LAN port, offering real-time monitoring, seamless connectivity, and reliable performance for demanding network and industrial applications.
+Designed for 10-year mission life. See Durability Guide for more details.
+See Durability Guide
+What's in the box
+Kit contents
+Starlink
+Advanced Power Supply
+Performance Cable 25 m (82 ft)
+AC Power Cable 1.5 m (4.92 ft)
+DC Power Cable 1.5 m (4.92 ft)
+Ethernet Cable 5 m (16.5 ft)
+Resources
+Product Specifications
+Setup Guides
+Starlink App (iOS)
+Starlink App (Android)
+Support
+Product 3D Models
+Accessories Guide
+Starlink © 2026
+Starlink is a division of SpaceX. Visit us at spacex.com
+Careers
+Satellite Operators
+Authorized Resellers
+Privacy & Legal
+Privacy Preferences

@@ -1,0 +1,32 @@
+2026-09-24T03:09:51.596Z
+OK     pdf     ficha-standard.pdf
+        200  https://api.starlink.com/public-files/specification_sheet_standard.pdf
+OK     pdf     ficha-mini.pdf
+        200  https://api.starlink.com/public-files/specification_sheet_mini.pdf
+OK     pdf     ficha-performance.pdf
+        200  https://api.starlink.com/public-files/specification_sheet_performance.pdf
+OK     pdf     ficha-flat-high-performance.pdf
+        200  https://api.starlink.com/public-files/specification_sheet_flat_high_performance.pdf
+OK     pdf     ficha-enterprise.pdf
+        200  https://api.starlink.com/public-files/specification_sheet_enterprise.pdf
+FALLA  pdf     ficha-standard-actuated.pdf
+        404  https://api.starlink.com/public-files/specification_sheet_standard_actuated.pdf
+        404  https://www.starlink.com/public-files/specification_sheet_standard_actuated.pdf
+FALLA  pagina  pagina-especificaciones.txt
+        200  https://www.starlink.com/specifications  kits: Standard  magnitudes: 0  <- solo 0 de 5 magnitudes de ficha (ninguna): parece un esqueleto o una pagina comercial
+FALLA  pagina  pagina-spec-1.txt
+        200  https://www.starlink.com/specifications?spec=1  kits: Standard Actuated  magnitudes: 0  <- solo 0 de 5 magnitudes de ficha (ninguna): parece un esqueleto o una pagina comercial
+FALLA  pagina  pagina-spec-2.txt
+        200  https://www.starlink.com/specifications?spec=2  kits: High Performance, Performance, Enterprise  magnitudes: 0  <- solo 0 de 5 magnitudes de ficha (ninguna): parece un esqueleto o una pagina comercial
+FALLA  pagina  pagina-spec-3.txt
+        200  https://www.starlink.com/specifications?spec=3  kits: Flat High Performance, Performance  magnitudes: 0  <- solo 0 de 5 magnitudes de ficha (ninguna): parece un esqueleto o una pagina comercial
+FALLA  pagina  pagina-spec-4.txt
+        200  https://www.starlink.com/specifications?spec=4  kits: Standard  magnitudes: 0  <- solo 0 de 5 magnitudes de ficha (ninguna): parece un esqueleto o una pagina comercial
+FALLA  pagina  pagina-spec-5.txt
+        200  https://www.starlink.com/specifications?spec=5  kits: Mini  magnitudes: 0  <- solo 0 de 5 magnitudes de ficha (ninguna): parece un esqueleto o una pagina comercial
+FALLA  pagina  pagina-spec-6.txt
+        200  https://www.starlink.com/specifications?spec=6  kits: Enterprise  magnitudes: 0  <- solo 0 de 5 magnitudes de ficha (ninguna): parece un esqueleto o una pagina comercial
+FALLA  pagina  pagina-spec-7.txt
+        200  https://www.starlink.com/specifications?spec=7  kits: Performance  magnitudes: 2  <- solo 2 de 5 magnitudes de ficha (proteccion, grados): parece un esqueleto o una pagina comercial
+FALLA  pagina  pagina-spec-8.txt
+        200  https://www.starlink.com/specifications?spec=8  kits: Mini  magnitudes: 0  <- solo 0 de 5 magnitudes de ficha (ninguna): parece un esqueleto o una pagina comercial
