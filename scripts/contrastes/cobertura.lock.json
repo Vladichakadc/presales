@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "df45cba",
+  "commit": "4cb0fd7",
   "fecha": "2026-09-24"
  },
  "umbralRozado": 25,
@@ -134,8 +134,8 @@
   {
    "modulo": "dimensionador-aruba-edgeconnect.js",
    "estado": "ejercitado",
-   "total": 357,
-   "usadas": 236,
+   "total": 359,
+   "usadas": 238,
    "pct": 66
   },
   {
@@ -163,8 +163,8 @@
    "modulo": "index.js",
    "estado": "ejercitado",
    "total": 57,
-   "usadas": 43,
-   "pct": 75
+   "usadas": 42,
+   "pct": 74
   },
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
@@ -181,6 +181,13 @@
    "pct": 80
   },
   {
+   "modulo": "fuentes.js",
+   "estado": "ejercitado",
+   "total": 5,
+   "usadas": 4,
+   "pct": 80
+  },
+  {
    "modulo": "fortinet-motor.js",
    "estado": "ejercitado",
    "total": 109,
@@ -190,16 +197,9 @@
   {
    "modulo": "aruba-reglas.js",
    "estado": "ejercitado",
-   "total": 19,
-   "usadas": 17,
-   "pct": 89
-  },
-  {
-   "modulo": "fuentes.js",
-   "estado": "ejercitado",
-   "total": 5,
-   "usadas": 5,
-   "pct": 100
+   "total": 20,
+   "usadas": 18,
+   "pct": 90
   },
   {
    "modulo": "motor-ingenieria.js",
