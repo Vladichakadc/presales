@@ -905,6 +905,16 @@
       const filas = filasCalculadas.filter((f) => f && f.cat !== 'Equipo' && (f.sku || f.desc));
       return { filas, motivo: '', sinEquipo: true };
     }
+    /* FABRICANTE FUERA DE `CATALOG` (Starlink, 2026-09-24). El cotizador no lista sus kits,
+       asi que mandar el equipo por su nombre acabaria en «no encontrado» y la cotizacion
+       saldria sin el hardware. Aqui NO hay dos fuentes de verdad que proteger: el precio que
+       viaja es el de la fila (hoy `null`, «Consultar»), asi que TODO el BOM viaja como
+       referencia, equipo incluido, y el nombre suelto no viaja — viajarian los dos y el kit
+       se cotizaria dos veces. */
+    if (o.todoComoRef) {
+      const filas = filasCalculadas.filter((f) => f && (f.sku || f.desc));
+      return { filas, motivo: '', sinEquipo: true };
+    }
     const equipo = filasCalculadas.filter((f) => f && f.cat === 'Equipo');
     if (!equipo.length) return { filas: [], motivo: 'sin-equipo' };
     const propio = equipo.filter((f) => normalizar(f.desc) === normalizar(modelo));
@@ -944,7 +954,7 @@
   function enviarACotizador(item) {
     try {
       const cola = JSON.parse(localStorage.getItem(ENTRADA) || '[]');
-      const acomp = acompanantes(item.modelo, { sinEquipo: !!item.sinEquipo });
+      const acomp = acompanantes(item.modelo, { sinEquipo: !!item.sinEquipo, todoComoRef: !!item.todoComoRef });
       // El equipo viaja por su nombre salvo en dos casos: ya viaja como referencia (SKU
       // combinado) o no se compra (renovacion, co-term).
       if (!acomp.equipoComoRef && !acomp.sinEquipo) {

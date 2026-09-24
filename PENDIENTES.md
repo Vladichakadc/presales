@@ -584,6 +584,27 @@ Cobertura actual por herramienta:
 | **Juniper** | sí (22 modelos) | sí (21) | sí | **sí** (nuevo) |
 | **Nokia** | sí (18 modelos) | sí (18) | sí | **sí, dos** (18/18 — fabric 7220 IXR + agregación/core) |
 | ~~Arista~~ | retirado | retirado | retirado | — |
+| **Starlink** | no | no (llega como referencias) | no | **sí** (nuevo, 2026-09-24 — 4 kits sin verificar) |
+
+**Starlink: el dimensionador existe y su hardware está contrastado con las fichas oficiales (2026-09-24).**
+Lo que sigue abierto:
+- **Uso marítimo: ninguna ficha lo menciona**, así que el escenario marítimo hoy no recomienda
+  ningún kit (lo dice en pantalla). Hace falta un documento oficial que lo respalde; el
+  candidato es la página de Starlink Maritime. Se añade como URL candidata a
+  `scripts/traer-starlink.js` y se corre `traer-starlink.yml` desde Actions.
+- **Uso en movimiento de Standard, Mini, Enterprise y Flat High Performance**: sus fichas no lo
+  mencionan (solo la del Performance). Mismo camino.
+- **Cables más largos como accesorio**: ninguna ficha los documenta, y por eso un tendido de
+  más de 15 m aparta el Standard y lleva al Enterprise (50 m). Si Starlink publica la ficha
+  de un cable largo, se rellena `cableMaxM` y el motor lo usa sin tocar código.
+- **Precios y SKU**: todos en `null`. Las fichas no los publican; hace falta la lista del canal
+  autorizado con el que se cotice.
+- **Vigilancia**: las cinco URL de las fichas no están en el vigía (`npm run vigia`), así que un
+  cambio de Starlink no avisaría. Requiere dar a Starlink su sitio en `legacyData/fuentes.js`,
+  que es parte de la integración de abajo.
+- **Integración con el resto del portal, sin hacer a propósito**: no está en la barra de
+  fabricantes (`navegacion.js`), ni en `/api/catalog`, ni en `legacyData/fuentes.js`, ni en el
+  cotizador como equipo. Cada una toca conteos («7 fabricantes») que varias pruebas fijan.
 
 5. **Completar el catálogo del dimensionador Juniper — parcialmente resuelto (2026-09-02),
    ver *Cerrado recientemente*.** La «SRX Series and vSRX Performance and Features Matrix» se
@@ -1381,6 +1402,29 @@ las imágenes que cargan y el desplazamiento; quieta es todo a cero dos cuadros 
 3. **El runner reutilizaba `/tmp/e2e-auth`** —el `usuarios.json` era del 22-sep—, así que una
    corrida con otra clave no podía entrar y dos corridas a la vez compartían base. Cada corrida
    trae ahora su propio directorio temporal.
+
+### Catálogo Starlink contrastado con las fichas oficiales en PDF (2026-09-24)
+
+La mejora propuesta al cerrar la entrega anterior, aplicada. `traer-starlink.yml` (corrida
+35949951292) trajo desde Actions las cinco fichas oficiales de `api.starlink.com/public-files/`
+a la rama `fuente/starlink-specs`. **El riesgo declarado al proponerlo se cumplió y quedó
+cubierto**: la página de especificaciones es una aplicación de JavaScript, y sus nueve
+variantes respondieron 200 renderizadas en Chromium sin una sola cifra de ficha.
+`juzgarTexto()` las marcó vacías en vez de publicarlas como fuente. **Leer los PDF corrigió
+tres afirmaciones escritas a ojo**: un cable de 45 m que ninguna ficha documenta, el Flat High
+Performance como «línea anterior» y el soporte marítimo, que ninguna ficha menciona. **Añadió
+el kit Enterprise**, con 50 m de cable, que ahora es el recomendado para tendidos largos.
+584 unitarios (con la prueba del juicio, comprobada saboteando el umbral) y 17/17 pantallas.
+
+### Dimensionador y BOM de Starlink LEO (2026-09-24)
+
+Encargo del dueño: un botón «BOM Starlink» en el dashboard, la página y su BOM. La carpeta
+`starlink-leo-dimensionador` que se mencionó no existía en el entorno ni en GitHub, así que se
+escribió desde cero con la arquitectura del fabric Nokia 7220 (sin `ficha.js`: Starlink no
+publica una capacidad por terminal contra la que comparar). El caudal por terminal es un
+**supuesto declarado y editable** (100/10 Mbps). Un dato que falta **aparta** el kit con su
+motivo. Al cotizador viaja todo el BOM como referencias (`todoComoRef` en `bom.js`), porque el
+kit no está en `CATALOG`. 574 unitarios (9 nuevos) y 17/17 pantallas.
 
 ### Cierre de pendientes con lo que el repositorio ya tenía dentro (2026-09-24)
 

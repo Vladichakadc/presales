@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dimensionador y BOM Starlink — Enlace satelital LEO</title>
+<meta name="description" content="Dimensionamiento de enlaces satelitales Starlink de órbita baja: elección de kit según movilidad, energía y potencia, terminales por sitio y BOM.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" data-fuente>
+<style>
+:root{--paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;--red:#1B2433;--red-txt:#1B2433;--amber:#A45B00;--green:#1F6B4A;--card:#FFF}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1140px;margin:0 auto;padding:26px 18px 80px}
+.masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red-txt);font-weight:600;margin:0 0 6px}
+h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28px,5.5vw,48px);line-height:.98;text-transform:uppercase;margin:0}
+.sub{color:var(--steel);max-width:64ch;margin:8px 0 0;font-size:14.5px}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);text-decoration:none;margin-bottom:18px;transition:color .15s}
+.back-link:hover{color:var(--red-txt)}
+.tabs{display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--rule);margin-bottom:22px}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:11px 18px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.03em;text-transform:uppercase;color:var(--steel)}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--red)}
+.tabpane[hidden]{display:none}
+
+.cols{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:880px){.cols{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px;margin-bottom:16px}
+.panel h2{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.field{margin-bottom:16px}.field:last-child{margin-bottom:0}
+label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px}
+.hint{font-size:11.5px;color:var(--steel);margin-top:5px;line-height:1.4}
+.row{display:flex;gap:8px}.row .field{flex:1}
+input[type=number],select{width:100%;padding:9px 10px;border:1px solid var(--rule);border-radius:2px;background:#fff;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500}
+select{font-family:'Barlow',sans-serif;font-size:13.5px}
+input:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer;font-weight:500}
+.check input{margin:3px 0 0;accent-color:var(--red)}
+
+.verdict{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:20px;margin-bottom:16px}
+.verdict .tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 8px}
+.verdict .cifra{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(20px,3.6vw,30px);margin:0}
+.verdict .cifra em{font-style:normal;color:var(--red-txt)}
+.verdict p{font-size:13px;color:var(--steel);margin:8px 0 0}
+.warn{color:var(--amber)}
+.bad{color:#B00020}
+.ok{color:var(--green);font-weight:600}
+.nd{color:var(--steel);font-style:italic}
+#avisosBox ul{margin:0 0 16px;padding-left:18px;font-size:12.5px}
+#avisosBox li{margin-bottom:6px}
+.flag-ft{background:#FFF5F5;border:1px solid #FECACA;border-left:3px solid #B00020;border-radius:2px;padding:12px 14px;font-size:12.5px;line-height:1.5;margin-bottom:18px}
+.flag-ft b{color:#991b1b}
+.flag-amber{background:#FFFBEB;border:1px solid #FDE68A;border-left:3px solid var(--amber);border-radius:2px;padding:12px 14px;font-size:12.5px;line-height:1.5;margin-bottom:18px}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);font-weight:500;padding:0 8px 7px 0;border-bottom:1px solid var(--rule)}
+td{padding:8px 8px 8px 0;border-bottom:1px solid var(--paper);vertical-align:top}
+td.n{font-family:'IBM Plex Mono',monospace;font-size:12px}
+td.r{text-align:right}
+tr.sel td{background:#F4F6F9;font-weight:600}
+.note{margin-top:22px;font-size:12px;color:var(--steel);line-height:1.55;border-top:1px solid var(--rule);padding-top:14px}
+.note b{color:var(--ink)}
+.note a{color:var(--red-txt)}
+#bomOut{width:100%;height:240px;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:10px;border:1px solid var(--rule);border-radius:2px;margin-top:10px}
+.btn{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px;cursor:pointer}
+.btn.ghost{background:#fff;color:var(--ink)}
+.bom-acciones{display:flex;gap:6px;flex-wrap:wrap}
+.hidden{display:none!important}
+</style>
+<script src="/js/fuentes.js" defer></script>
+</head>
+<body>
+<div class="wrap">
+
+<a href="index.html" class="back-link">&#8592; Volver al Portal Presales</a>
+
+<header class="masthead">
+  <p class="eyebrow">Starlink &middot; Enlace satelital de órbita baja (LEO)</p>
+  <h1>Dimensionador<br>Starlink LEO</h1>
+  <p class="sub">Elige el kit según cómo se usa el sitio —fijo, portátil, en movimiento o marítimo—, la energía disponible y el presupuesto de potencia, y calcula cuántos terminales hacen falta por sitio para el caudal pedido. Starlink no publica un caudal garantizado por terminal: la cifra de planificación es un supuesto de esta herramienta, editable y declarado.</p>
+</header>
+
+<div class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-tab="calc">Dimensionar</button>
+  <button role="tab" aria-selected="false" data-tab="bom">Equipo y BOM</button>
+</div>
+
+<!-- ════ TAB 1 · CALCULADORA ════ -->
+<div class="tabpane" id="pane-calc">
+<div class="cols">
+<div>
+  <section class="panel">
+    <h2>1 · Sitio y uso</h2>
+    <div class="field">
+      <label for="sitios">Cantidad de sitios idénticos</label>
+      <input type="number" id="sitios" min="1" step="1" placeholder="1" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="rol">Rol del enlace</label>
+      <select id="rol">
+        <option value="principal" selected>Enlace principal</option>
+        <option value="respaldo">Respaldo de un enlace terrestre</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="movilidad">Movilidad</label>
+      <select id="movilidad">
+        <option value="fijo" selected>Sitio fijo</option>
+        <option value="portatil">Portátil (se instala y se retira)</option>
+        <option value="movimiento">En movimiento (vehículo terrestre)</option>
+        <option value="maritimo">Marítimo</option>
+      </select>
+      <p class="hint">En movimiento y marítimo solo admiten kits cuya ficha lo diga. Hoy ninguna menciona el uso marítimo.</p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>2 · Caudal</h2>
+    <div class="row">
+      <div class="field">
+        <label for="downMbps">Bajada por sitio (Mbps)</label>
+        <input type="number" id="downMbps" min="1" step="1" placeholder="p. ej. 100" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="upMbps">Subida por sitio (Mbps)</label>
+        <input type="number" id="upMbps" min="1" step="1" placeholder="p. ej. 10" autocomplete="off">
+      </div>
+    </div>
+    <div class="field">
+      <label class="check"><input type="checkbox" id="chkRedund"> <span>Redundancia N+1 — un terminal más por sitio</span></label>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="planDown">Planificación bajada / terminal</label>
+        <input type="number" id="planDown" min="1" step="1" placeholder="100" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="planUp">Planificación subida / terminal</label>
+        <input type="number" id="planUp" min="1" step="1" placeholder="10" autocomplete="off">
+      </div>
+    </div>
+    <p class="hint"><b>Supuesto de la herramienta, no cifra publicada:</b> Starlink da rangos típicos que dependen de la celda, la congestión y el plan. Vacíos valen 100 / 10 Mbps, deliberadamente conservadores; ajústalos si tienes una medición del sitio.</p>
+    <div class="field" style="margin-top:14px">
+      <label for="gbMes">Datos prioritarios por sitio (GB/mes)</label>
+      <input type="number" id="gbMes" min="0" step="10" placeholder="p. ej. 500" autocomplete="off">
+      <p class="hint">Orienta el plan de servicio; los tramos y precios de los planes varían por país.</p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>3 · Energía e instalación</h2>
+    <div class="field">
+      <label for="energia">Alimentación disponible</label>
+      <select id="energia">
+        <option value="ac" selected>AC (red eléctrica)</option>
+        <option value="dc">DC (batería, solar, vehículo)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="presupuestoW">Presupuesto de potencia por terminal (W)</label>
+      <input type="number" id="presupuestoW" min="0" step="5" placeholder="sin límite" autocomplete="off">
+      <p class="hint">Vacío o 0 = sin límite. Con un presupuesto, un kit sin consumo publicado se aparta en vez de darse por bueno.</p>
+    </div>
+    <div class="field">
+      <label for="cableM">Tendido de cable desde la antena (m)</label>
+      <input type="number" id="cableM" min="0" step="1" placeholder="p. ej. 10" autocomplete="off">
+      <p class="hint">Un tendido más largo que el cable que trae el kit lo aparta: ninguna ficha documenta un cable más largo como accesorio.</p>
+    </div>
+  </section>
+</div>
+
+<div>
+  <div class="verdict" id="verdict"></div>
+  <div id="avisosBox"></div>
+
+  <section class="panel">
+    <h2>Kit</h2>
+    <div class="field">
+      <label for="kitSel">Kit a cotizar</label>
+      <select id="kitSel"><option value="">Recomendado (automático)</option></select>
+      <p class="hint">Elegir otro kit a mano no cambia la recomendación: si no cumple, la página lo dice.</p>
+    </div>
+    <div id="kitsTabla"></div>
+  </section>
+
+  <section class="panel" id="fichaKit"></section>
+
+  <section class="panel">
+    <h2>Resumen de sizing</h2>
+    <div id="sizingBox"></div>
+  </section>
+</div>
+</div>
+</div>
+
+<!-- ════ TAB 2 · BOM ════ -->
+<div class="tabpane" id="pane-bom" hidden>
+<div class="cols">
+<div>
+  <div class="flag-ft">
+    <b>Aviso de preventa:</b> las características de cada kit salen de las fichas oficiales de Starlink, pero <b>no hay lista de precios</b>: Starlink tarifica kit y plan por país. Todas las líneas van «Consultar» y el BOM las cuenta como sin cotizar.
+  </div>
+  <div class="flag-amber">
+    Cuando hay más de un terminal por sitio, el router multi-WAN o SD-WAN que los agrega se dimensiona en el dimensionador del fabricante elegido (Fortinet, Cisco, Aruba…). Aquí solo se deja la línea para que la cotización no salga corta.
+  </div>
+</div>
+
+<div>
+  <section class="panel">
+    <h2>Lista de materiales
+      <span class="bom-acciones">
+        <button class="btn" id="xlsBtn" style="font-size:11px;padding:5px 11px">Exportar a Excel</button>
+        <button class="btn ghost" id="copyBtn" style="font-size:11px;padding:5px 11px">Copiar como texto</button>
+      </span>
+    </h2>
+    <div id="bomTabla"></div>
+    <textarea id="bomOut" readonly class="hidden" aria-label="BOM como texto"></textarea>
+  </section>
+</div>
+</div>
+</div>
+
+<p class="note">
+<b>Fuentes:</b> las fichas de especificaciones oficiales en PDF de cada kit (<a href="https://www.starlink.com/specifications" target="_blank" rel="noopener">starlink.com/specifications</a>), leídas el 2026-09-24. Donde una ficha no dice algo —el uso marítimo, por ejemplo, no lo menciona ninguna—, la página dice «no consta» y aparta el kit si el escenario lo pide, en vez de suponerlo. Precios y SKU: sin lista pública verificada.
+</p>
+
+</div><!-- /wrap -->
+<script src="/js/bom.js"></script>
+<script src="/js/estado.js"></script>
+<script src="/js/dimensionador-starlink-leo.js"></script>
+<script src="/js/navegacion.js"></script>
+</body>
+</html>

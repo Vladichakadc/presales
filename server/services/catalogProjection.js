@@ -567,6 +567,14 @@ async function toGuiaRoles() {
   return result;
 }
 
+// Starlink no pasa por la base: su catalogo son cuatro kits sin precio ni SKU verificados, y
+// se sirve desde legacyData igual que `toFuentes` y las referencias. Si algun dia entra al
+// cotizador, entonces si le tocara una fila de `Product`.
+function toDimensionadorStarlink() {
+  const { KITS, FUENTE } = require('../seed/legacyData/starlink');
+  return { models: KITS, fuente: FUENTE };
+}
+
 module.exports = {
   toDimensionadorNokiaRouter,
   getVendorsList,
@@ -581,5 +589,6 @@ module.exports = {
   toDimensionadorMikrotik,
   toDimensionadorAruba,
   toDimensionadorNokia,
+  toDimensionadorStarlink,
   toGuiaRoles,
 };

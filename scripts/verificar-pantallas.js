@@ -413,6 +413,22 @@ const PANTALLAS = [
     },
   },
   {
+    id: 'dim-starlink',
+    url: 'dimensionador-starlink-leo.html',
+    titulo: 'Dimensionador Starlink LEO',
+    // Como el fabric de Nokia, no elige un equipo con ficha.js: elige un kit y cuantos.
+    listo: '#movilidad',
+    async acciones(page) {
+      await rellena(page, '#downMbps', '350');
+      await page.selectOption('#movilidad', 'movimiento');
+      await espera(page, 500);
+      await this.exigeConTexto(page, '#verdict');
+      await page.click('[data-tab="bom"]');
+      await espera(page, 400);
+      await this.exigeConTexto(page, '#bomTabla');
+    },
+  },
+  {
     id: 'cotizador',
     url: 'cotizador.html',
     titulo: 'Cotizador BOM',
