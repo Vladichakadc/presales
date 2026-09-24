@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "4cb0fd7",
+  "commit": "63bb74e",
   "fecha": "2026-09-24"
  },
  "umbralRozado": 25,
@@ -181,13 +181,6 @@
    "pct": 80
   },
   {
-   "modulo": "fuentes.js",
-   "estado": "ejercitado",
-   "total": 5,
-   "usadas": 4,
-   "pct": 80
-  },
-  {
    "modulo": "fortinet-motor.js",
    "estado": "ejercitado",
    "total": 109,
@@ -200,6 +193,13 @@
    "total": 20,
    "usadas": 18,
    "pct": 90
+  },
+  {
+   "modulo": "fuentes.js",
+   "estado": "ejercitado",
+   "total": 5,
+   "usadas": 5,
+   "pct": 100
   },
   {
    "modulo": "motor-ingenieria.js",
