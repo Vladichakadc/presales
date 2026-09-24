@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "8ed7fad",
+  "commit": "7735aeb",
   "fecha": "2026-09-24"
  },
  "umbralRozado": 25,
@@ -125,18 +125,18 @@
    "pct": 64
   },
   {
+   "modulo": "fortinet-reglas.js",
+   "estado": "ejercitado",
+   "total": 37,
+   "usadas": 24,
+   "pct": 65
+  },
+  {
    "modulo": "dimensionador-aruba-edgeconnect.js",
    "estado": "ejercitado",
    "total": 357,
    "usadas": 236,
    "pct": 66
-  },
-  {
-   "modulo": "fortinet-reglas.js",
-   "estado": "ejercitado",
-   "total": 35,
-   "usadas": 24,
-   "pct": 69
   },
   {
    "modulo": "calculadora.js",

@@ -346,6 +346,10 @@ async function toDimensionadorFortinet() {
     // patron en una linea pedible.
     funciones: fortinetData.FUNCIONES,
     serviciosSdwan: fortinetData.SERVICIOS_SDWAN,
+    // Tablas de SKU de FortiClient EMS (packs) y FortiSASE (bandas de usuarios), de sus
+    // Ordering Guides: las lee la regla comercial para emitir el SKU exacto.
+    ems: fortinetData.EMS_LICENCIAS,
+    sase: fortinetData.SASE_USUARIOS,
     terminos: fortinetData.TERMINOS,
     // Compatibilidad FortiOS x funcion x modelo (hallazgo P0 F02 del 23-sep), con la fuente
     // de cada regla. La lee el mismo motor en la pagina y en /api/v1/fortinet/evaluations.

@@ -18,7 +18,7 @@ const assert = require('node:assert');
 const R = require('../public/js/fortinet-reglas.js');
 const fortinet = require('../server/seed/legacyData/fortinet.js');
 
-const { MODELS, BUNDLES, CARE, FUNCIONES, SERVICIOS_SDWAN, TERMINOS } = fortinet;
+const { MODELS, BUNDLES, CARE, FUNCIONES, SERVICIOS_SDWAN, TERMINOS, EMS_LICENCIAS, SASE_USUARIOS } = fortinet;
 const porId = (id) => MODELS.find((m) => m.id === id);
 const CARE_KEY = { fc247: 'essential', fcpre: 'premium', fcelite: 'elite' };
 
@@ -35,6 +35,8 @@ const comercial = (over) => R.lineasComerciales(Object.assign({
   terminos: TERMINOS,
   converter: false,
   serviciosSdwan: [],
+  ems: EMS_LICENCIAS,
+  sase: SASE_USUARIOS,
 }, over || {}));
 
 /* ══ AT-01 · SSL oficial, sin derate ═══════════════════════════════════════════════════
@@ -296,7 +298,11 @@ test('F2 · el SD-WAN Service de gama 1389 trae plazas de FortiSASE: se avisa, n
   const sase = SERVICIOS_SDWAN.filter((s) => s.id === 'sdwanSase');
   // 90G: add-on 1389, que incluye plazas segun la gama. La linea de usuarios no se toca.
   const r = comercial({ serviciosSdwan: sase, saseUsuarios: 20 });
-  assert.ok(r.avisos.some((a) => a.codigo === 'sase-incluido-sdwan' && /FC-10-0090G-1389-02-DD/.test(a.mensaje)));
+  const aviso = r.avisos.find((a) => a.codigo === 'sase-incluido-sdwan');
+  assert.ok(aviso && /FC-10-0090G-1389-02-DD/.test(aviso.mensaje));
+  // Los dos documentos oficiales no coinciden en el ultimo tramo: el aviso lo dice.
+  assert.match(aviso.mensaje, /1800F/);
+  assert.match(aviso.mensaje, /2500G/);
   assert.strictEqual(r.filas.find((f) => /FortiSASE — licencias/.test(f.desc)).qty, 20, 'no se descuentan plazas deducidas');
   // 40F: add-on 1387, sin plazas incluidas. No hay nada que avisar.
   const r40 = comercial({ modelo: porId('FortiGate 40F'), serviciosSdwan: sase, saseUsuarios: 20 });
@@ -539,25 +545,65 @@ test('AT-25 · sin ninguna funcion que licenciar, excluir el bundle no genera av
 
 test('AT-26 · FortiClient EMS entra con la cantidad de endpoints del dimensionamiento', () => {
   // La cantidad NO se pide en el paso 4: son los usuarios ya declarados. Un segundo campo
-  // para el mismo dato es como se desincronizan dos sitios con la misma cifra.
+  // para el mismo dato es como se desincronizan dos sitios con la misma cifra. Sin el
+  // despliegue declarado entra UNA linea con los endpoints y sin SKU.
   const r = comercial({ endpointsEms: 500 });
   const ems = r.filas.find((f) => f.cat === 'Licencias endpoint');
   assert.ok(ems, 'con endpoints declarados tiene que haber linea de EMS');
   assert.strictEqual(ems.qty, 500, 'la cantidad es el numero de endpoints, no las unidades de hardware');
-  assert.strictEqual(ems.sku, null, 'este catalogo no trae un SKU de tramo pedible');
+  assert.strictEqual(ems.sku, null, 'sin despliegue no hay SKU de pack');
 });
 
-test('AT-27 · EMS sin SKU exacto cierra la cotizacion en firme, no avisa', () => {
-  // Es la misma regla que los tres servicios avanzados de SD-WAN: una linea sin codigo
-  // pedible no puede salir como cotizacion en firme. Inventar el tramo de 25/500/2.000
-  // endpoints seria exactamente el fallo del `FortiGate 2000F`. Desde el 2026-09-23 el nivel
-  // de ese bloqueo es «borrador»: la propuesta sale como borrador tecnico y nunca al
-  // cotizador, que es lo que la puerta de cuatro estados llama DRAFT.
+test('AT-27 · EMS sin despliegue declarado cierra la cotizacion en firme y dice por que', () => {
+  // Es la misma regla que el resto: una linea sin codigo pedible no sale como cotizacion en
+  // firme. Desde el 2026-09-24 el codigo existe (Ordering Guide de FortiClient), pero depende
+  // del despliegue, y sin el no se elige uno a ojo.
   const r = comercial({ endpointsEms: 500 });
   const b = r.bloqueos.find((x) => x.codigo === 'sin-sku-ems');
   assert.ok(b, 'tiene que bloquear');
-  assert.match(b.mensaje, /PATRON|Ordering Guide/,
-    'y decir por que: hay patron, no codigo, y donde se confirma');
+  assert.match(b.mensaje, /despliegue/, 'y decir por que: falta el despliegue');
+});
+
+test('EMS · packs del Ordering Guide de FortiClient, repartidos del mayor al menor', () => {
+  assert.deepStrictEqual(R.packsEms(550, EMS_LICENCIAS.packs), [{ tam: 500, n: 1 }, { tam: 25, n: 2 }],
+    '550 = 1 x 500 + 2 x 25, el ejemplo del propio documento');
+  assert.deepStrictEqual(R.packsEms(350, EMS_LICENCIAS.packs), [{ tam: 25, n: 14 }]);
+  assert.deepStrictEqual(R.packsEms(480, EMS_LICENCIAS.packs), [{ tam: 500, n: 1 }], 'se redondea a 25: 480 son 500');
+  assert.deepStrictEqual(R.packsEms(12001, EMS_LICENCIAS.packs), [{ tam: 10000, n: 1 }, { tam: 2000, n: 1 }, { tam: 25, n: 1 }]);
+  // Con el despliegue, cada pack es una linea con su SKU exacto y el sufijo real del termino.
+  const nube = comercial({ endpointsEms: 550, emsDespliegue: 'cloud' });
+  const lineas = nube.filas.filter((f) => f.cat === 'Licencias endpoint');
+  assert.deepStrictEqual(lineas.map((f) => [f.sku, f.qty]),
+    [['FC2-10-EMS05-428-01-36', 1], ['FC1-10-EMS05-428-01-36', 2]]);
+  assert.ok(lineas.every((f) => f.unit === null), 'la price list no trae su precio: no se inventa');
+  assert.ok(!nube.bloqueos.some((b) => b.codigo === 'sin-sku-ems'));
+  assert.ok(nube.bloqueos.some((b) => b.codigo === 'sin-precio-ems' && b.nivel === 'borrador'));
+  const local = comercial({ endpointsEms: 25, emsDespliegue: 'onprem', anios: 1 });
+  assert.strictEqual(local.filas.find((f) => f.cat === 'Licencias endpoint').sku, 'FC1-10-EMS04-428-01-12', 'on-premise es EMS04');
+});
+
+test('FortiSASE · el SKU sale de la edicion y de la banda de usuarios del Ordering Guide', () => {
+  const sase = SERVICIOS_SDWAN.filter((x) => x.id === 'sdwanSase');
+  const lin = (r) => r.filas.find((f) => /FortiSASE .*licencias/.test(f.desc));
+  // Sin edicion: linea sin SKU y el motivo.
+  const sinEd = comercial({ serviciosSdwan: sase, saseUsuarios: 120 });
+  assert.strictEqual(lin(sinEd).sku, null);
+  assert.ok(sinEd.bloqueos.some((b) => b.codigo === 'sin-sku-sase' && /edición/.test(b.mensaje)));
+  // Banda 50-499 en Standard, 2.000-9.999 en Advanced.
+  const std = comercial({ serviciosSdwan: sase, saseUsuarios: 120, saseEdicion: 'standard' });
+  assert.strictEqual(lin(std).sku, 'FC2-10-EMS05-547-02-36');
+  assert.strictEqual(lin(std).qty, 120);
+  assert.ok(std.bloqueos.some((b) => b.codigo === 'sin-precio-sase'));
+  assert.strictEqual(lin(comercial({ serviciosSdwan: sase, saseUsuarios: 2500, saseEdicion: 'advanced' })).sku, 'FC4-10-EMS05-676-02-36');
+  // Por debajo de la banda minima no hay SKU, y no se sube a 50 por su cuenta.
+  const poco = comercial({ serviciosSdwan: sase, saseUsuarios: 20, saseEdicion: 'standard' });
+  assert.strictEqual(lin(poco).sku, null);
+  assert.strictEqual(lin(poco).qty, 20);
+  assert.ok(poco.bloqueos.some((b) => b.codigo === 'sase-bajo-minimo'));
+  // Comprehensive por debajo de 200 usuarios: el documento advierte de PoP limitados.
+  const comp = comercial({ serviciosSdwan: sase, saseUsuarios: 150, saseEdicion: 'comprehensive' });
+  assert.strictEqual(lin(comp).sku, 'FC2-10-EMS05-759-02-36');
+  assert.ok(comp.avisos.some((a) => a.codigo === 'sase-pop-limitado'));
 });
 
 test('AT-28 · sin endpoints declarados no aparece ninguna linea de endpoint', () => {

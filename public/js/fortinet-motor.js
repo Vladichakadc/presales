@@ -173,9 +173,10 @@
       motivo: E(['nueva', 'renovacion', 'ampliacion', 'coterm']), anios: E([1, 3, 5]),
       bundle: E(['ent', 'utp', 'atp', 'none']), soporte: E(['fc247', 'fcpre', 'fcelite', 'none']),
       converter: B, sdwan: L(['sdwanMon', 'sdwanOrq', 'sdwanSase']),
-      emsActivo: B, emsEndpoints: I(0, 1e7),
+      emsActivo: B, emsEndpoints: I(0, 1e7), emsDespliegue: E(['', 'cloud', 'onprem']),
       sandbox: E(['ninguno', 'incluido', 'ai', 'dedicado']), sandboxModalidad: E(['', 'appliance', 'vm', 'cloud']),
-      saseUsuarios: I(0, 1e7), serieInstalada: TX(120), justificacionEol: TX(500),
+      saseUsuarios: I(0, 1e7), saseEdicion: E(['', 'standard', 'advanced', 'comprehensive']),
+      serieInstalada: TX(120), justificacionEol: TX(500),
     },
     seleccion: { manual: { t: 'idModelo' } },
   };
@@ -194,7 +195,8 @@
     disponibilidad: { modo: 'standalone' },
     politica: { crecimientoPct: 30, techoPct: 100 },
     comercial: { motivo: 'nueva', anios: 3, bundle: 'ent', soporte: 'fcpre', converter: false, sdwan: [],
-      emsActivo: false, emsEndpoints: 0, sandbox: 'ninguno', sandboxModalidad: '', saseUsuarios: 0,
+      emsActivo: false, emsEndpoints: 0, emsDespliegue: '', sandbox: 'ninguno', sandboxModalidad: '', saseUsuarios: 0,
+      saseEdicion: '',
       serieInstalada: '', justificacionEol: '' },
     seleccion: { manual: null },
   };
@@ -295,6 +297,10 @@
     { campo: 'comercial.sdwan', visible: conSdwan, afecta: ['bom'] },
     { campo: 'comercial.saseUsuarios', visible: (s) => conSdwan(s) && s.comercial.sdwan.includes('sdwanSase'),
       requerido: (s) => conSdwan(s) && s.comercial.sdwan.includes('sdwanSase'), afecta: ['bom'] },
+    // La edicion decide el SKU de FortiSASE (Standard, Advanced o Comprehensive, por banda de
+    // usuarios): sin ella la linea no es pedible. Comercial: bloquea la cotizacion, no el diseno.
+    { campo: 'comercial.saseEdicion', visible: (s) => conSdwan(s) && s.comercial.sdwan.includes('sdwanSase'),
+      requerido: (s) => conSdwan(s) && s.comercial.sdwan.includes('sdwanSase'), afecta: ['bom'] },
     { campo: 'remoto.metodo', visible: (s) => s.remoto.activo, afecta: ['vpn', 'tunCli', 'sslVpnUsers', 'sslVpn'] },
     { campo: 'remoto.usuarios', visible: (s) => s.remoto.activo, requerido: (s) => s.remoto.activo,
       afecta: ['tunCli', 'sslVpnUsers', 'sess', 'tokens'] },
@@ -307,6 +313,8 @@
     { campo: 'fisico.registroDias', visible: (s) => s.fisico.registro === 'local',
       requerido: (s) => s.fisico.registro === 'local', afecta: ['almacenamiento'] },
     { campo: 'comercial.emsEndpoints', visible: (s) => s.comercial.emsActivo, requerido: (s) => s.comercial.emsActivo, afecta: ['bom'] },
+    // FortiClient Cloud (EMS05) o EMS on-premise (EMS04): el SKU de cada pack depende de esto.
+    { campo: 'comercial.emsDespliegue', visible: (s) => s.comercial.emsActivo, requerido: (s) => s.comercial.emsActivo, afecta: ['bom'] },
     { campo: 'comercial.sandbox', visible: (s) => s.seguridad.funciones.includes('chkSandbox'), afecta: ['bom'] },
     { campo: 'comercial.sandboxModalidad', visible: (s) => s.seguridad.funciones.includes('chkSandbox') && s.comercial.sandbox === 'dedicado',
       requerido: (s) => s.seguridad.funciones.includes('chkSandbox') && s.comercial.sandbox === 'dedicado', afecta: ['bom'] },
@@ -736,13 +744,13 @@
       qty: nodos, anios: c.anios, terminos: cat.terminos,
       converter: c.converter,
       serviciosSdwan: conSdwan(s) ? (cat.serviciosSdwan || []).filter((sv) => c.sdwan.includes(sv.id)) : [],
-      endpointsEms: c.emsActivo ? c.emsEndpoints : 0,
+      endpointsEms: c.emsActivo ? c.emsEndpoints : 0, emsDespliegue: c.emsDespliegue, ems: cat.ems,
       construccion, sinEquipo: ['renovacion', 'coterm'].includes(c.motivo),
       sandbox: c.sandbox === 'ninguno' ? null : c.sandbox, sandboxModalidad: c.sandboxModalidad,
       registro: s.fisico.registro, registroGbDia: s.fisico.registroGbDia,
       vdomsExtra,
       segundaFuente: s.fisico.psuRedundante && m.redund === 'opcional',
-      saseUsuarios: c.saseUsuarios,
+      saseUsuarios: c.saseUsuarios, saseEdicion: c.saseEdicion, sase: cat.sase,
     });
     // El bundle minimo NO se valida aqui: depende del escenario (funciones pedidas contra
     // bundle elegido) y no del modelo, asi que vive en `cerrar` y se declara tambien cuando
@@ -783,6 +791,7 @@
     'remoto.usuarios': 'usuarios de acceso remoto', 'fisico.registroGbDia': 'GB/día de registro',
     'fisico.registroDias': 'días de retención', 'comercial.emsEndpoints': 'endpoints gestionados de FortiClient EMS',
     'comercial.saseUsuarios': 'usuarios de FortiSASE', 'comercial.sandboxModalidad': 'modalidad del FortiSandbox dedicado',
+    'comercial.emsDespliegue': 'despliegue de FortiClient EMS', 'comercial.saseEdicion': 'edición de FortiSASE',
     'comercial.serieInstalada': 'modelo y número de serie instalado', 'comercial.justificacionEol': 'justificación del equipo fuera de venta',
   };
 

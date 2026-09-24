@@ -134,8 +134,10 @@ const UI = [
   ['comercial.converter', 'chkConverter', 'chk'],
   ['comercial.emsActivo', 'chkEms', 'chk'],
   ['comercial.emsEndpoints', 'emsEndpoints', 'num', 0],
+  ['comercial.emsDespliegue', 'emsDespliegue', 'txt'],
   ['comercial.sandboxModalidad', 'sandboxModalidad', 'txt'],
   ['comercial.saseUsuarios', 'saseUsuarios', 'num', 0],
+  ['comercial.saseEdicion', 'saseEdicion', 'txt'],
   ['comercial.serieInstalada', 'serieInstalada', 'txt'],
   ['comercial.justificacionEol', 'justificacionEol', 'txt'],
 ];
@@ -158,6 +160,7 @@ const CAMPO_N = {
   'seguridad.tlsCifradoPct': 'parte cifrada del tráfico', 'seguridad.tlsExentoPct': 'tráfico exento de inspección TLS',
   'fisico.registroGbDia': 'GB/día de registro', 'fisico.registroDias': 'días de retención',
   'comercial.emsEndpoints': 'endpoints de FortiClient EMS', 'comercial.sandbox': 'modo de FortiSandbox',
+  'comercial.emsDespliegue': 'despliegue de FortiClient EMS', 'comercial.saseEdicion': 'edición de FortiSASE',
   'comercial.sandboxModalidad': 'modalidad del FortiSandbox dedicado', 'comercial.serieInstalada': 'serie instalada',
   'comercial.justificacionEol': 'justificación del equipo fuera de venta', 'topologia.enlaces': 'enlaces WAN',
 };
@@ -183,8 +186,8 @@ const CAMPOS_ESCENARIO = ['nombreCliente', 'refProyecto', 'wanLinksData',
   'pt_rj45_1g', 'pt_rj45_10g', 'pt_sfp_1g', 'pt_sfpp_10g', 'pt_sfp28_25g', 'pt_qsfp28_100g',
   'poeW', 'chkPsuRed', 'registroDestino', 'registroGbDia', 'registroDias', 'head', 'techoUtil',
   'motivoCompra', 'serieInstalada', 'pickModel', 'justificacionEol', 'termYears', 'licBundle', 'careLevel',
-  'chkSdwanMon', 'chkSdwanOrq', 'chkSdwanSase', 'saseUsuarios', 'chkEms', 'emsEndpoints', 'chkConverter',
-  'selDescuento', 'dtoCustom'];
+  'chkSdwanMon', 'chkSdwanOrq', 'chkSdwanSase', 'saseUsuarios', 'saseEdicion', 'chkEms', 'emsEndpoints', 'emsDespliegue',
+  'chkConverter', 'selDescuento', 'dtoCustom'];
 // Los parametros del escenario ANTERIOR al builder (v1), que `migrarEstadoV1` convierte.
 const PARAMS_V1 = ['bw', 'unit', 'pctOverlay'];
 // Parametros viejos que esta pagina sabe leer sin denunciarlos como perdidos.
@@ -591,7 +594,7 @@ for (const id of NUMERICOS) { const n = $(id); if (n) n.addEventListener('input'
 const INMEDIATOS = ['fortiOS', 'modoInspeccion', 'chkHa', 'haModo', 'chkAv', 'chkWeb', 'chkIotDlp', 'chkSsl', 'pctCifrado',
   'pctTlsExento', 'chkSandbox', 'sandboxModo', 'sandboxModalidad', 'chkNoConcurrente', 'chkRemoto', 'vpnTipo', 'chkMfa',
   'chkPsuRed', 'registroDestino', 'techoUtil', 'motivoCompra', 'termYears', 'licBundle', 'careLevel',
-  'chkSdwanMon', 'chkSdwanOrq', 'chkSdwanSase', 'chkEms', 'chkConverter'];
+  'chkSdwanMon', 'chkSdwanOrq', 'chkSdwanSase', 'saseEdicion', 'chkEms', 'emsDespliegue', 'chkConverter'];
 for (const id of INMEDIATOS) { const n = $(id); if (n) n.addEventListener(n.tagName === 'SELECT' ? 'change' : 'input', () => programar(true, id)); }
 // Los selects tambien disparan `input` en los navegadores actuales; con `change` basta y
 // evita evaluar dos veces.
@@ -604,7 +607,7 @@ $('btnEmsSugerir').addEventListener('click', () => {
   const n = (parseInt($('users').value, 10) || 0) + ($('chkRemoto').checked ? (parseInt($('vpnUsers').value, 10) || 0) : 0);
   $('emsEndpoints').value = n ? String(n) : '';
   $('emsHint').innerHTML = n
-    ? `Sugerencia aplicada: <b>${cifra(n)}</b> = usuarios del sitio${$('chkRemoto').checked ? ' + remotos' : ''}. Ajústala a los endpoints que de verdad llevan FortiClient; se licencia en tramos de 25.`
+    ? `Sugerencia aplicada: <b>${cifra(n)}</b> = usuarios del sitio${$('chkRemoto').checked ? ' + remotos' : ''}. Ajústala a los endpoints que de verdad llevan FortiClient; se licencia en packs de 25, 500, 2.000 y 10.000.`
     : 'No hay usuarios declarados de los que partir: escribe la cifra de endpoints gestionados.';
   programar(true, 'emsEndpoints');
 });

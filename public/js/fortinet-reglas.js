@@ -385,6 +385,21 @@
     return { sku: sku.replace(/-DD$/, `-${t.sufijo}`), exacto: true, motivo: null, meses: t.meses };
   }
 
+  // Packs de FortiClient: los endpoints se redondean a 25 y se reparten del pack mayor al
+  // menor (550 = 1 x 500 + 2 x 25, el ejemplo del propio Ordering Guide). Subir de pack por
+  // precio no se decide aqui: el precio no esta en el catalogo.
+  function packsEms(endpoints, tamanos) {
+    const tams = (tamanos || []).slice().sort((a, b) => b - a);
+    const menor = tams[tams.length - 1] || 25;
+    let resto = Math.ceil(Math.max(0, endpoints) / menor) * menor;
+    const out = [];
+    for (const t of tams) {
+      const n = Math.floor(resto / t);
+      if (n > 0) { out.push({ tam: t, n }); resto -= n * t; }
+    }
+    return out;
+  }
+
   /* ── 7 · LINEAS COMERCIALES ───────────────────────────────────────────────────────────
      AT-04, AT-05, AT-06, AT-08, AT-17. Devuelve las filas del BOM en la forma neutra que
      comparten los siete dimensionadores ({cat, desc, sku, qty, unit, nota}) mas la lista de
@@ -399,7 +414,8 @@
   // explicacion, no un supuesto que alguien tenga que confirmar. Los de este conjunto no
   // cambian el estado de la cotizacion; el resto (exclusiones, coberturas tomadas de un
   // informe) si la dejan en WARNING, que es exportable pero con la advertencia estampada.
-  const AVISOS_INFO = new Set(['soporte-incluido', 'converter-incluido', 'elite-upgrade', 'ha-licencia-por-nodo', 'bdl']);
+  const AVISOS_INFO = new Set(['soporte-incluido', 'converter-incluido', 'elite-upgrade', 'ha-licencia-por-nodo', 'bdl',
+    'sandbox-incluido']);
 
   function lineasComerciales(e) {
     const m = e.modelo;
@@ -603,54 +619,100 @@
       }
     }
 
-    /* ── FORTISASE: LICENCIA POR USUARIO, NO UNA CASILLA SUELTA (F10 del 23-sep) ──────────
+    /* ── FORTISASE: LICENCIA POR USUARIO, CON EL SKU DE SU ORDERING GUIDE ─────────────────
        El conector SD-WAN de arriba es por FortiGate; los usuarios de FortiSASE son otra linea,
-       con su cantidad. Edicion, tier, ancho incluido y minimo de compra no estan en este
-       catalogo: la linea entra con la cantidad para que la cotizacion no salga corta y deja
-       la propuesta en borrador hasta que alguien confirme el SKU. */
+       con su cantidad (F10 del 23-sep). Desde el 2026-09-24 el SKU sale de la tabla del
+       Ordering Guide de FortiSASE: edicion (Standard, Advanced, Comprehensive) por banda de
+       usuarios. Sin edicion no hay SKU; por debajo de la banda minima (50), tampoco, y se dice
+       en vez de subir la cantidad por su cuenta. El precio no esta en la price list. */
     const sase = Math.max(0, parseInt(e.saseUsuarios, 10) || 0);
     if (sase > 0) {
-      filas.push({ cat: 'Servicios SD-WAN', desc: 'FortiSASE — licencias de usuario', sku: null, qty: sase, unit: null,
-        nota: `${termino} · ${sase} usuario(s) declarados` });
-      bloquear({ codigo: 'sin-sku-sase',
-        mensaje: `FortiSASE para ${sase} usuario(s): edición, tier, ancho incluido y mínimo de compra no están en este `
-          + 'catálogo. Confirmar el SKU en el Ordering Guide de FortiSASE antes de cotizar en firme.' });
+      const tabla = e.sase || null;
+      const ed = e.saseEdicion || '';
+      const edN = { standard: 'Standard', advanced: 'Advanced', comprehensive: 'Comprehensive' }[ed] || null;
+      const banda = tabla ? (tabla.bandas || []).find((x) => sase >= x.desde && (x.hasta == null || sase <= x.hasta)) : null;
+      if (!edN) {
+        filas.push({ cat: 'Servicios SD-WAN', desc: 'FortiSASE — licencias de usuario', sku: null, qty: sase, unit: null,
+          nota: `${termino} · ${sase} usuario(s) declarados · falta elegir la edición` });
+        bloquear({ codigo: 'sin-sku-sase',
+          mensaje: `FortiSASE para ${sase} usuario(s): el SKU depende de la edición (Standard, Advanced o Comprehensive) `
+            + 'y no está declarada.' });
+      } else if (!banda) {
+        filas.push({ cat: 'Servicios SD-WAN', desc: `FortiSASE ${edN} — licencias de usuario`, sku: null, qty: sase, unit: null,
+          nota: `${termino} · ${sase} usuario(s) declarados` });
+        bloquear({ codigo: 'sase-bajo-minimo',
+          mensaje: `FortiSASE para ${sase} usuario(s): la banda más baja que publica el Ordering Guide empieza en `
+            + `${tabla ? tabla.minimo : 50} usuarios, así que por debajo no hay SKU. Confirmar con el distribuidor si se cotiza `
+            + 'el mínimo de la banda.' });
+      } else {
+        const s = skuTermino(banda[ed], anios, terminos);
+        if (!s.exacto) bloquear({ codigo: 'sku-dd', mensaje: `FortiSASE: ${s.motivo}.` });
+        filas.push({ cat: 'Servicios SD-WAN', desc: `FortiSASE ${edN} — licencias de usuario`, sku: s.sku, qty: sase, unit: null,
+          nota: `${termino} · ${sase} usuario(s), banda ${banda.desde}${banda.hasta == null ? '+' : `-${banda.hasta}`} (${tabla.fuente})` });
+        bloquear({ codigo: 'sin-precio-sase',
+          mensaje: `FortiSASE ${s.sku}: el SKU es el del Ordering Guide, pero la price list de septiembre no trae su `
+            + 'precio. Pedirlo al distribuidor antes de cotizar en firme.' });
+        if (ed === 'comprehensive' && tabla.comprehensivePopMinimo && sase < tabla.comprehensivePopMinimo) {
+          avisar({ codigo: 'sase-pop-limitado',
+            mensaje: `FortiSASE Comprehensive con ${sase} usuario(s): el Ordering Guide advierte que por debajo de `
+              + `${tabla.comprehensivePopMinimo} usuarios la disponibilidad de PoP es limitada.` });
+        }
+      }
       /* El SD-WAN Service de gama 1389 (del 60G en adelante) YA TRAE plazas de FortiSASE
-         Standard, por tramo de modelo (FAQ del Ordering Guide de Secure SD-WAN, p. 10). No se
-         descuentan solas: el documento da tramos («60G+», «100F+»...) y no una tabla por
-         modelo, y asignar un modelo a un tramo seria deducirlo. Se AVISA, para que las plazas
-         incluidas no se paguen dos veces. */
+         Standard, por tramo de modelo. No se descuentan solas: los documentos dan tramos
+         («60G+», «100F+»...) y no una tabla por modelo, y ADEMAS NO COINCIDEN en el ultimo
+         tramo (FortiSASE, sep-2026: 100 desde el 1800F; Secure SD-WAN, ago-2026: desde el
+         2500G). Se AVISA, para que las plazas incluidas no se paguen dos veces. */
       if (sdwanSku && /-1389-/.test(sdwanSku)) {
         avisar({ codigo: 'sase-incluido-sdwan',
-          mensaje: `El SD-WAN Service ${sdwanSku} ya incluye licencias FortiSASE Standard según la gama del equipo `
-            + '(Ordering Guide de Secure SD-WAN: 5 desde el 60G, 10 desde el 100F, 50 desde el 700G, 100 desde el 2500G). '
-            + `La línea de ${sase} usuario(s) no las descuenta: restarlas antes de cotizar para no pagarlas dos veces.` });
+          mensaje: `El SD-WAN Service ${sdwanSku} ya incluye plazas de FortiSASE Standard según la gama del equipo: `
+            + '5 desde el 60G, 10 desde el 100F, 50 desde el 700G y 100 desde el 1800F según el Ordering Guide de FortiSASE '
+            + '(sep-2026); el de Secure SD-WAN (ago-2026) pone ese último tramo en el 2500G. '
+            + `La línea de ${sase} usuario(s) no las descuenta: restarlas antes de cotizar para no pagarlas dos veces `
+            + '(son plazas Standard: no sustituyen a las de otra edición).' });
       }
     }
 
-    /* ── FORTICLIENT EMS: LICENCIA POR ENDPOINT GESTIONADO ───────────────────────────────
+    /* ── FORTICLIENT EMS: LICENCIA POR ENDPOINT GESTIONADO, EN PACKS ──────────────────────
        La cantidad es la de ENDPOINTS GESTIONADOS que declara quien disena (F12 del 23-sep):
        usuarios y endpoints no son lo mismo -un usuario tiene portatil y movil, un kiosco no
        tiene usuario-, asi que la pagina sugiere la suma de usuarios pero no la impone.
-       VA SIN SKU, a proposito. Este catalogo trae el PATRON del codigo
-       (`FC1-10-EMS05-428-01-DD`, tramo de 25 endpoints) y no el del tramo que corresponde:
-       inventarlo seria el fallo del `FortiGate 2000F`. */
+       Desde el 2026-09-24 el SKU sale del Ordering Guide de FortiClient: packs de 25, 500,
+       2.000 y 10.000 endpoints, familia VPN/ZTNA (428), en FortiClient Cloud (EMS05) o en EMS
+       on-premise (EMS04). Sin despliegue declarado no hay SKU, y se dice. */
     const ems = Math.max(0, parseInt(e.endpointsEms, 10) || 0);
     if (ems > 0) {
-      const tramos = Math.ceil(ems / 25);
-      filas.push({ cat: 'Licencias endpoint', desc: 'FortiClient EMS — ZTNA + VPN gestionado',
-        sku: null, qty: ems, unit: null,
-        nota: `${termino} · ${ems} endpoint(s) gestionados (${tramos} tramo(s) de 25 según el patrón del SKU)` });
-      bloquear({ codigo: 'sin-sku-ems',
-        mensaje: `FortiClient EMS para ${ems} endpoint(s): este repositorio solo tiene el PATRON del SKU `
-          + '(`FC1-10-EMS05-428-01-DD`, tramo de 25), no el código del tramo que corresponde. '
-          + 'Confirmarlo en el Ordering Guide antes de exportar como cotización.' });
+      const tabla = e.ems || null;
+      const porPack = tabla && tabla.sku ? tabla.sku[e.emsDespliegue] : null;
+      const despN = { cloud: 'FortiClient Cloud', onprem: 'EMS on-premise' }[e.emsDespliegue] || null;
+      if (!porPack) {
+        filas.push({ cat: 'Licencias endpoint', desc: 'FortiClient EMS — VPN/ZTNA', sku: null, qty: ems, unit: null,
+          nota: `${termino} · ${ems} endpoint(s) gestionados · falta elegir el despliegue` });
+        bloquear({ codigo: 'sin-sku-ems',
+          mensaje: `FortiClient EMS para ${ems} endpoint(s): el SKU de cada pack depende del despliegue `
+            + '(FortiClient Cloud o EMS on-premise), y no está declarado.' });
+      } else {
+        const packs = packsEms(ems, tabla.packs);
+        const reparto = packs.map((p) => `${p.n} × pack de ${p.tam}`).join(' + ');
+        for (const p of packs) {
+          const s = skuTermino(porPack[p.tam], anios, terminos);
+          if (!s.exacto) bloquear({ codigo: 'sku-dd', mensaje: `FortiClient EMS: ${s.motivo}.` });
+          filas.push({ cat: 'Licencias endpoint', desc: `${despN} — VPN/ZTNA, pack de ${p.tam} endpoints`, sku: s.sku,
+            qty: p.n, unit: null,
+            nota: `${termino} · ${ems} endpoint(s) gestionados: ${reparto} (${tabla.fuente})` });
+        }
+        bloquear({ codigo: 'sin-precio-ems',
+          mensaje: `FortiClient EMS (${reparto}): los SKU son los del Ordering Guide, pero la price list de septiembre `
+            + 'no trae su precio. Pedirlo al distribuidor antes de cotizar en firme; el precio decide también si '
+            + 'conviene subir al pack siguiente.' });
+      }
     }
 
     /* ── SANDBOX: TRES COSAS DISTINTAS CON EL MISMO NOMBRE (F11 del 23-sep) ──────────────
-         incluido  la deteccion en la nube que el informe de auditoria atribuye a los bundles
-                   (ref. [2]); no se cotiza linea, pero se ADVIERTE: el catalogo no detalla
-                   que trae AMP y la matriz de bundles no se leyo en este entorno.
+         incluido  la deteccion en la nube que traen los bundles: «FortiGate Cloud Sandbox»
+                   va dentro de AMP en Enterprise, UTP y ATP. Hasta el 2026-09-24 se tomaba del
+                   informe de auditoria (ref. [2]) y se advertia; ese dia se leyo la matriz del
+                   Ordering Guide de FortiGuard y lo confirma. No se cotiza linea.
          ai        el servicio del FortiGate que la price list publica por modelo («FG AI based
                    Sandbox SVC», familia -577): linea con SKU exacto.
          dedicado  FortiSandbox como producto aparte (appliance, VM o FortiSandbox Cloud): su
@@ -662,10 +724,9 @@
             + 'incluida. Elegir un bundle o cotizar el servicio de sandbox como línea propia.' });
       } else {
         avisar({ codigo: 'sandbox-incluido',
-          mensaje: `Detección sandbox en la nube cubierta por ${bundle.n} (servicio de protección antimalware): no se `
-            + 'cotiza línea aparte. El catálogo no detalla el contenido de ese servicio; la cobertura se toma del '
-            + 'informe de auditoría del 23-sep (ref. [2], matriz de bundles FortiGuard, no leída en este entorno). '
-            + 'Confirmarla antes de cotizar en firme.' });
+          mensaje: `Detección sandbox en la nube cubierta por ${bundle.n}: «FortiGate Cloud Sandbox» va dentro de `
+            + 'Advanced Malware Protection en Enterprise, UTP y ATP (Ordering Guide de FortiGuard, mayo-2026, p. 3). '
+            + 'No se cotiza línea aparte.' });
       }
     } else if (e.sandbox === 'ai') {
       const t = lic && lic.sandboxAi;
@@ -679,8 +740,9 @@
       filas.push({ cat: 'Servicios de seguridad', desc: `FortiSandbox dedicado — ${mod}`, sku: null, qty: 1, unit: null,
         nota: 'Producto aparte del FortiGate: se dimensiona por volumen de archivos, no por throughput del firewall.' });
       bloquear({ codigo: 'sin-sku-sandbox-dedicado',
-        mensaje: `FortiSandbox dedicado (${mod}): este catálogo no trae sus SKU. La línea entra para que la cotización `
-          + 'no salga corta; confirmar el SKU y el dimensionamiento del FortiSandbox antes de cotizar en firme.' });
+        mensaje: `FortiSandbox dedicado (${mod}): su SKU sale de otro dimensionamiento. El Ordering Guide de FortiSandbox `
+          + '(sep-2026) lo fija por archivos/hora contra la cifra del datasheet, por las VM de detonación y por las '
+          + 'licencias de Windows/Office de esas VM. La línea entra para que la cotización no salga corta.' });
     }
 
     /* ── REGISTRO (logging) ────────────────────────────────────────────────────────────
@@ -699,8 +761,10 @@
       filas.push({ cat: 'Registro', desc: 'FortiAnalyzer — appliance, VM o cloud', sku: null, qty: 1, unit: null,
         nota: gb ? `Dimensionar por ingesta: ${gb} GB/día declarados` : 'Dimensionar por GB/día de ingesta' });
       bloquear({ codigo: 'sin-sku-faz',
-        mensaje: 'FortiAnalyzer es un producto aparte que se dimensiona por GB/día de ingesta, y este catálogo no trae '
-          + 'sus SKU. La línea entra para que la cotización no salga corta.' });
+        mensaje: 'FortiAnalyzer es un producto aparte, con su propio dimensionamiento. El Ordering Guide de FortiAnalyzer '
+          + '(jul-2026) lo vende como appliance (FAZ-300G a FAZ-3750G), VM por suscripción en tramos de 5, 50 y 500 '
+          + 'GB/día, o VM perpetua de 1 a 2.000 GB/día: la forma la decide quien diseña el registro. La línea entra '
+          + 'para que la cotización no salga corta.' });
     }
 
     /* ── VDOM POR ENCIMA DE LOS INCLUIDOS (F15/T22) ──────────────────────────────────────
@@ -785,7 +849,7 @@
     demandaTrafico, capaEfectiva,
     evaluarModelo, evaluar, pct,
     bundleMinimo, validarBundle,
-    skuTermino, lineasComerciales, AVISOS_INFO,
+    skuTermino, packsEms, lineasComerciales, AVISOS_INFO,
     saludPrecios,
   };
 }));

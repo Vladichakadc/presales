@@ -533,7 +533,7 @@ h1{font-size:clamp(24px,3.4vw,36px)}
           <option value="ai">Servicio de sandbox del FortiGate (SKU propio de la price list)</option>
           <option value="dedicado">FortiSandbox dedicado (producto aparte)</option>
         </select>
-        <p class="hint">Son tres cosas distintas con el mismo nombre. La cobertura «incluida» se toma del informe de auditoría y <b>se advierte</b>: este catálogo no detalla el contenido del servicio antimalware del bundle.</p>
+        <p class="hint">Son tres cosas distintas con el mismo nombre. La cobertura «incluida» es <b>FortiGate Cloud Sandbox</b>, que va dentro de Advanced Malware Protection en Enterprise, UTP y ATP según el Ordering Guide de FortiGuard.</p>
         <p class="afecta" data-afecta="comercial.sandbox"></p>
       </div>
       <div class="field" id="fldSandboxModalidad" data-regla="comercial.sandboxModalidad" hidden>
@@ -835,8 +835,18 @@ h1{font-size:clamp(24px,3.4vw,36px)}
       <div class="field sub" id="fldSase" data-regla="comercial.saseUsuarios" hidden>
         <label for="saseUsuarios">Usuarios de FortiSASE</label>
         <input type="number" id="saseUsuarios" min="1" step="1" autocomplete="off" placeholder="0">
-        <p class="hint">Obligatorio con el conector. Edición, tier y mínimo de compra no están en este catálogo: la línea entra y la propuesta queda en borrador hasta confirmar el SKU.</p>
+        <p class="hint">Obligatorio con el conector. El SKU sale de la edición y de la banda de usuarios del Ordering Guide de FortiSASE (la banda más baja empieza en 50); su precio no está en la lista de septiembre.</p>
         <p class="campo-error" data-error="comercial.saseUsuarios"></p>
+      </div>
+      <div class="field sub" id="fldSaseEdicion" data-regla="comercial.saseEdicion" hidden>
+        <label for="saseEdicion">Edición de FortiSASE</label>
+        <select id="saseEdicion">
+          <option value="" selected>— elegir —</option>
+          <option value="standard">Standard</option>
+          <option value="advanced">Advanced</option>
+          <option value="comprehensive">Comprehensive</option>
+        </select>
+        <p class="campo-error" data-error="comercial.saseEdicion"></p>
       </div>
     </div>
     <!-- EMS POR ENDPOINTS GESTIONADOS (F12): un campo propio con sugerencia, no una coercion
@@ -851,9 +861,19 @@ h1{font-size:clamp(24px,3.4vw,36px)}
         <input type="number" id="emsEndpoints" min="1" step="1" autocomplete="off" placeholder="0">
         <button type="button" class="btn ghost" id="btnEmsSugerir" style="font-size:11px;white-space:nowrap">Sugerir</button>
       </div>
-      <p class="hint" id="emsHint">Se licencia en tramos de 25. «Sugerir» propone usuarios del sitio + remotos como punto de partida; la cifra la confirmas tú.</p>
+      <p class="hint" id="emsHint">Se licencia en packs de 25, 500, 2.000 y 10.000 endpoints. «Sugerir» propone usuarios del sitio + remotos como punto de partida; la cifra la confirmas tú.</p>
       <p class="afecta" data-afecta="comercial.emsEndpoints"></p>
       <p class="campo-error" data-error="comercial.emsEndpoints"></p>
+    </div>
+    <div class="field sub" id="fldEmsDespliegue" data-regla="comercial.emsDespliegue" hidden>
+      <label for="emsDespliegue">Despliegue de EMS</label>
+      <select id="emsDespliegue">
+        <option value="" selected>— elegir —</option>
+        <option value="cloud">FortiClient Cloud (EMS alojado por Fortinet)</option>
+        <option value="onprem">EMS on-premise</option>
+      </select>
+      <p class="hint">Decide la familia del SKU de cada pack (EMS05 en la nube, EMS04 on-premise).</p>
+      <p class="campo-error" data-error="comercial.emsDespliegue"></p>
     </div>
     <div class="checks" style="margin-top:6px">
       <label class="check"><input type="checkbox" id="chkConverter"> <span>FortiConverter — migración de configuración<span class="sku">Servicio único. Enterprise Protection ya lo incluye: con ese bundle no se añade una segunda línea.</span></span></label>

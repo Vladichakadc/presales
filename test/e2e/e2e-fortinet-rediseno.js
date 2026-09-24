@@ -103,10 +103,33 @@ const CU01 = new URLSearchParams({
   const bloq = await texto('#resBloqueos');
   t.ok(/retirado en FortiOS 7\.6\.3/.test(bloq), 'T06: SSL-VPN en 7.6.3+ se bloquea con su causa');
   t.ok(/Cambiar a IPsec/.test(bloq), 'T06: y se ofrece IPsec como corrección');
-  // CU-05: «se explica el motivo con fuente». La regla de 7.6.3+ lleva `leida:false` en el
-  // catálogo (la cita el informe; el documento no se leyó desde aquí) y eso se declara.
-  t.ok(/Fuente: .*Release Notes/.test(bloq) && /no se leyó desde este entorno/.test(bloq),
-    'CU-05: el bloqueo cita su fuente y declara que el documento no se leyó');
+  // CU-05: «se explica el motivo con fuente». La regla de 7.6.3+ se leyó de las Release Notes
+  // el 2026-09-24 (antes era una cita del informe sin leer): la fuente se cita y ya NO se
+  // declara como no leída.
+  t.ok(/Fuente: .*7\.6\.3 Release Notes/.test(bloq) && !/no se leyó desde este entorno/.test(bloq),
+    'CU-05: el bloqueo cita su fuente leída, sin la advertencia de cita sin leer');
+  {
+    // Y una regla citada SIN leer se sigue declarando como tal: el catálogo real ya no tiene
+    // ninguna, así que se devuelve la de 7.6.3+ a `leida:false` interceptando la API.
+    const pg = await browser.newPage({ viewport: { width: 1440, height: 936 } });
+    await abrirSesion(pg);
+    let tocadas = 0;
+    await pg.route('**/api/dimensionador/fortinet', async (route) => {
+      const r = await route.fetch();
+      const j = await r.json();
+      for (const rg of (j.fortios && j.fortios.reglas) || []) {
+        if (rg.modelos === '*' && rg.versiones.includes('7.6.3+')) { rg.leida = false; tocadas += 1; }
+      }
+      await route.fulfill({ response: r, json: j });
+    });
+    await pg.goto(`${PAGINA}?${CU01}&vpnTipo=sslvpn`, { waitUntil: 'domcontentloaded' });
+    await pg.waitForSelector('#stickyReco', { timeout: 20000 });
+    await asentar(pg);
+    const b2 = await pg.$eval('#resBloqueos', (e) => (e.innerText || e.textContent || '').replace(/\s+/g, ' ')).catch(() => '');
+    t.ok(tocadas === 1 && /no se leyó desde este entorno/.test(b2),
+      `CU-05: una regla citada sin leer lo declara junto al bloqueo (reglas tocadas: ${tocadas})`);
+    await pg.close();
+  }
   await page.click('#resBloqueos [data-corregir]');
   await asentar(page);
   t.ok(await page.$eval('#vpnTipo', (s) => s.value) === 'ipsec' && (await estado()).reco === 'FortiGate 90G',
@@ -156,11 +179,17 @@ const CU01 = new URLSearchParams({
   await page.click('#btnEmsSugerir');
   await asentar(page);
   t.ok(await page.$eval('#emsEndpoints', (x) => x.value) === '350', 'T12: «Sugerir» propone usuarios + remotos, a la vista');
-  const ems = (await catsSb()).find((x) => /EMS/.test(x)) || '';
-  // La cantidad Y el tramo: con `|| ems.length > 0` esta aserción pasaba con cualquier fila
+  // Sin despliegue declarado la línea entra con los endpoints y sin SKU, y la puerta sigue
+  // cerrada: el despliegue decide el SKU de cada pack (Ordering Guide de FortiClient).
+  t.ok(!(await page.$eval('#fldEmsDespliegue', (x) => x.hidden)) && /Bloqueada/i.test((await estado()).gate),
+    'T12: EMS pide también el despliegue, que decide el SKU');
+  await page.selectOption('#emsDespliegue', 'cloud');
+  await asentar(page);
+  const ems = (await catsSb()).find((x) => /VPN\/ZTNA/.test(x)) || '';
+  // La cantidad Y el pack: con `|| ems.length > 0` esta aserción pasaba con cualquier fila
   // que mencionara EMS, así que no comprobaba que la cantidad fueran los endpoints declarados.
-  t.ok(/\b350\b/.test(ems) && /350 endpoint\(s\) gestionados \(14 tramo\(s\) de 25/.test(ems),
-    `T12: la línea de EMS entra con los 350 endpoints declarados y 14 tramos de 25 («${ems.replace(/\s+/g, ' ').slice(0, 140)}»)`);
+  t.ok(/FC1-10-EMS05-428-01-36/.test(ems) && /\b14\b/.test(ems),
+    `T12: los 350 endpoints entran como 14 packs de 25 con el SKU exacto de FortiClient Cloud («${ems.replace(/\s+/g, ' ').slice(0, 140)}»)`);
 
   /* ── T13 / T14 · FORMULARIO DINAMICO ─────────────────────────────────────────────── */
   await abrir(CU01);

@@ -640,13 +640,17 @@ for (const m of MODELS) if (/^FortiGate 8[01]F$/.test(m.id)) m.seg=m.seg.replace
    La pagina aceptaba SSL-VPN en modo tunel sin preguntar la version de FortiOS y recomendaba
    un 90G con sus 200 usuarios publicados. Tres reglas, y cada una con su procedencia REAL:
      · 7.6.3 o superior: el modo tunel SSL-VPN se sustituye por IPsec en TODOS los modelos.
-       Transcrita del informe de auditoria, que cita la release note de FortiOS 7.6.6 —
-       `docs.fortinet.com` responde `connect_rejected` al proxy de egreso de este entorno y
-       no se leyo el documento. Se declara, no se esconde.
-     · 7.6.0 en adelante: SSL-VPN no soportado en modelos de 2 GB de RAM (nota 10 del Matrix,
-       leida). QUE MODELOS TIENEN 2 GB NO LO DICE EL MATRIX, y la RAM no esta en este
-       catalogo: en esa rama la compatibilidad de un modelo con SSL-VPN publicado es
-       «desconocida», nunca «soportada» por omision.
+       Hasta el 2026-09-24 estaba transcrita del informe de auditoria SIN LEER (`leida:false`):
+       `docs.fortinet.com` responde `connect_rejected` al proxy de egreso de este entorno. Ese
+       dia la trajo `traer-fortinet-pendientes.yml` desde Actions (corrida 35997261950) y se
+       leyo: dice exactamente lo que la regla aplicaba. Condicion 2 del GO CONDICIONADO.
+     · 7.6.0 a 7.6.2: SSL-VPN no soportado en modelos de 2 GB de RAM (nota 10 del Matrix).
+       QUE MODELOS TIENEN 2 GB NO LO DECIA EL MATRIX, y la compatibilidad era «desconocida»
+       para todos. Las Release Notes de 7.6.0 (PDF de fortinetweb.s3, misma corrida) dan la
+       lista -40F y variantes, 60F, 61F- y la cierran: «FortiGate models not listed above will
+       continue to have SSL VPN web and tunnel mode support». La regla pasa a esos tres. El
+       camino `ram-2gb` del motor sigue existiendo para una regla por RAM sin lista de modelos,
+       y lo guarda una prueba sobre un catalogo sintetico.
      · Serie 90G: SSL-VPN solo entre 7.0.12 y 7.0.15 (nota 11 del Matrix, leida, pegada a la
        celda del FG-90G). Ninguna de las ramas que ofrece esta herramienta cae en ese rango.
    Las ramas son tres a proposito: son las que las fuentes distinguen. Una lista de versiones
@@ -660,16 +664,16 @@ const FORTIOS={
   porDefecto:'7.6.3+',
   reglas:[
     {funcion:'sslvpn', versiones:['7.6.3+'], modelos:'*', estado:'retirada', sustituto:'ipsec',
-     fuente:'Informe de auditoría 23-sep-2026, ref. [3]: FortiOS 7.6.6 Release Notes, «SSL VPN tunnel mode replaced with IPsec VPN»',
-     leida:false},
-    {funcion:'sslvpn', versiones:['7.6.0-7.6.2'], modelos:'ram-2gb', estado:'no-soportada', sustituto:'ipsec',
-     fuente:'Product Matrix sept-2026, nota 10: «SSL VPN not supported on FortiOS 7.6.0 and above, for models with 2GB RAM»',
+     fuente:'FortiOS 7.6.3 Release Notes, «SSL VPN tunnel mode replaced with IPsec VPN»: «Starting in FortiOS 7.6.3, the SSL VPN tunnel mode feature is replaced with IPsec VPN […] This applies to all FortiGate models.»',
+     leida:true},
+    {funcion:'sslvpn', versiones:['7.6.0-7.6.2'], modelos:['40F','60F','61F'], estado:'no-soportada', sustituto:'ipsec',
+     fuente:'FortiOS 7.6.0 Release Notes, «SSL VPN removed from 2GB RAM models for tunnel and web mode»: 40F y variantes, 60F y 61F; «FortiGate models not listed above will continue to have SSL VPN web and tunnel mode support» (y nota 10 del Product Matrix sept-2026)',
      leida:true},
     {funcion:'sslvpn', versiones:['7.4','7.6.0-7.6.2','7.6.3+'], modelos:['90G','91G'], estado:'no-soportada', sustituto:'ipsec',
      fuente:'Product Matrix sept-2026, nota 11 en la celda SSL VPN del FG-90G: «SSL VPN only supported between 7.0.12 and 7.0.15»',
      leida:true},
     {funcion:'proxy', versiones:['7.4','7.6.0-7.6.2','7.6.3+'], modelos:['30G','31G','40F','50G','51G','60F','61F'], estado:'limitada',
-     fuente:'Product Matrix sept-2026, nota 12: «Proxy features limited supported, refer to data sheet»',
+     fuente:'Product Matrix sept-2026, nota 12: «Proxy features limited supported, refer to data sheet»; para 40F y 60F, las FortiOS 7.6.0 Release Notes: sin funciones proxy desde 7.4.4 en los modelos de 2 GB de RAM',
      leida:true},
   ],
 };
@@ -780,6 +784,46 @@ for (const m of MODELS) {
     : {bundle:null, addon:null, fuente:SDWAN_SERVICIO.fuente,
        motivo:`el Ordering Guide imprime el código ${impreso} y la price list usa ${cod || 'otro'} para este modelo: no se sabe cuál es el pedible`};
 }
+
+/* ── FORTICLIENT EMS Y FORTISASE: SKU DE SUS ORDERING GUIDES (2026-09-24) ─────────────────
+   Las dos lineas entraban en el BOM con `sku: null` y dejaban la cotizacion en borrador: este
+   catalogo tenia el PATRON del codigo de EMS y ninguno de FortiSASE. Sus Ordering Guides los
+   publican como TABLA, y la tabla es determinista una vez que se sabe una cosa mas en cada caso:
+     EMS       el despliegue. FortiClient Cloud (EMS alojado por Fortinet) es la familia EMS05 y
+               EMS on-premise la EMS04; los dos en VPN/ZTNA, que es la licencia 428 (la 429 es
+               EPP/ATP y la 485 el servicio gestionado, otros productos). Se vende en PACKS de
+               25, 500, 2.000 y 10.000 endpoints («FortiClient Ordering Guide», abr-2026, p. 3).
+               Los endpoints se redondean a 25 y se reparten del pack mayor al menor: 550 son
+               1 x 500 + 2 x 25, exactamente el ejemplo del propio documento. Cuando conviene
+               subir de pack (20 packs de 25 frente a uno de 500) lo decide el PRECIO, que no esta
+               en este catalogo: se declara, no se optimiza a ciegas.
+     FortiSASE la edicion. Standard (547), Advanced (676) o Comprehensive (759), por BANDA de
+               usuarios: 50-499 (FC2), 500-1.999 (FC3), 2.000-9.999 (FC4) y 10.000+ (FC5)
+               («FortiSASE Ordering Guide», sep-2026, p. 3). La banda mas baja empieza en 50: por
+               debajo no hay SKU publicado y la linea lo dice en vez de subir a 50 por su cuenta.
+   Ninguno de estos SKU esta en la price list de septiembre: la linea sale con SKU exacto y sin
+   precio, en borrador, igual que el SD-WAN Service. */
+const EMS_LICENCIAS={
+  fuente:'FortiClient Ordering Guide (abr-2026), p. 3 «Order Information: Device-based»',
+  packs:[25, 500, 2000, 10000],
+  sku:{
+    cloud: {25:'FC1-10-EMS05-428-01-DD', 500:'FC2-10-EMS05-428-01-DD', 2000:'FC3-10-EMS05-428-01-DD', 10000:'FC4-10-EMS05-428-01-DD'},
+    onprem:{25:'FC1-10-EMS04-428-01-DD', 500:'FC2-10-EMS04-428-01-DD', 2000:'FC3-10-EMS04-428-01-DD', 10000:'FC4-10-EMS04-428-01-DD'},
+  },
+};
+const SASE_USUARIOS={
+  fuente:'FortiSASE Ordering Guide (sep-2026), p. 3 «Remote Users»',
+  minimo:50,
+  // Nota ➀ del documento: «Comprehensive subscriptions of less than 200 users have limited POP
+  // availability».
+  comprehensivePopMinimo:200,
+  bandas:[
+    {desde:50,    hasta:499,  standard:'FC2-10-EMS05-547-02-DD', advanced:'FC2-10-EMS05-676-02-DD', comprehensive:'FC2-10-EMS05-759-02-DD'},
+    {desde:500,   hasta:1999, standard:'FC3-10-EMS05-547-02-DD', advanced:'FC3-10-EMS05-676-02-DD', comprehensive:'FC3-10-EMS05-759-02-DD'},
+    {desde:2000,  hasta:9999, standard:'FC4-10-EMS05-547-02-DD', advanced:'FC4-10-EMS05-676-02-DD', comprehensive:'FC4-10-EMS05-759-02-DD'},
+    {desde:10000, hasta:null, standard:'FC5-10-EMS05-547-02-DD', advanced:'FC5-10-EMS05-676-02-DD', comprehensive:'FC5-10-EMS05-759-02-DD'},
+  ],
+};
 
 /* ── LICENCIAS REANCLADAS A LA PRICE LIST DECLARADA (hallazgo N02, 2026-09-23) ────────────
    LICENSES se transcribio de la «2026Q3 Main Price list 080326» (vigente desde el 03-ago),
@@ -984,5 +1028,5 @@ const CARE={
   fcelite:{n:'FortiCare Elite',      sla:'FortiCare Premium + atención de tickets con prioridad Elite'},
 };
 
-module.exports = { MODELS, BUNDLES, CARE, LICENSES, HW_SKU, FUNCIONES, SERVICIOS_SDWAN, SDWAN_SERVICIO, TERMINOS, MATRIX_LIMITES,
+module.exports = { MODELS, BUNDLES, CARE, LICENSES, HW_SKU, FUNCIONES, SERVICIOS_SDWAN, SDWAN_SERVICIO, EMS_LICENCIAS, SASE_USUARIOS, TERMINOS, MATRIX_LIMITES,
   FICHAS_LIMITES, MATRIX_PLATAFORMA, FICHAS_PLATAFORMA, PUERTOS, FORTIOS, REANCLAJE };

@@ -29,6 +29,7 @@ const CAT = {
     elpN: ((SKUS[m.id] || []).find((x) => x.sku === m.hwSku) || {}).p ?? null })),
   bundles: fortinet.BUNDLES, care: fortinet.CARE, funciones: fortinet.FUNCIONES,
   serviciosSdwan: fortinet.SERVICIOS_SDWAN, terminos: fortinet.TERMINOS, fortios: fortinet.FORTIOS,
+  ems: fortinet.EMS_LICENCIAS, sase: fortinet.SASE_USUARIOS,
   datasetVersion: 'fortinet@prueba',
 };
 const CU01 = () => ({
@@ -121,8 +122,20 @@ test('T06 · con FortiOS 7.6.3+ SSL-VPN esta retirado: bloquea y ofrece IPsec co
   assert.ok(b, 'bloqueo de escenario');
   assert.deepStrictEqual(b.correccion, { accion: 'cambiar', campo: 'remoto.metodo', valor: 'ipsec' });
   assert.ok(b.fuente, 'con su fuente');
-  // La regla sale de una cita del informe de auditoria (Release Notes 7.6.6) que no se leyo
-  // desde este entorno: el catalogo la marca `leida:false` y el bloqueo tiene que decirlo.
+  // Hasta el 2026-09-24 la regla era una cita del informe sin leer (`leida:false`). Ese dia se
+  // leyeron las Release Notes de 7.6.3 desde Actions, y dicen lo mismo: «This applies to all
+  // FortiGate models».
+  assert.strictEqual(b.fuenteLeida, true, 'la regla se leyo del documento del fabricante');
+  assert.match(b.fuente, /FortiOS 7\.6\.3 Release Notes/);
+});
+
+test('T06 · una regla CITADA y no leida se sigue declarando como tal (catalogo sintetico)', () => {
+  // El catalogo real ya no tiene reglas sin leer, y la distincion no puede caducar con el
+  // dato: se prueba con la de 7.6.3+ devuelta a `leida:false`.
+  const sinLeer = { ...CAT, fortios: { ...CAT.fortios,
+    reglas: CAT.fortios.reglas.map((r) => (r.versiones.includes('7.6.3+') && r.modelos === '*' ? { ...r, leida: false } : r)) } };
+  const r = M.evaluar(con(CU01(), { 'remoto.metodo': 'sslvpn', 'software.fortiOS': '7.6.3+' }), sinLeer, { hoy: '2026-09-23T00:00:00Z' });
+  const b = r.bloqueos.find((x) => x.codigo === 'fortios-funcion-retirada');
   assert.strictEqual(b.fuenteLeida, false, 'una cita no leida no se presenta como leida');
 });
 
@@ -135,16 +148,36 @@ test('T07 · 90G y 91G no admiten SSL-VPN en ninguna rama ofrecida aunque el Mat
       const b = c.bloqueos.find((x) => x.codigo === 'FORTIOS_INCOMPATIBLE');
       assert.ok(b, `${id} con ${v}`);
       assert.ok(!c.elegible);
-      // En 7.4 manda la nota 11 del Matrix, leida; en 7.6.3+ la regla retirada, citada.
-      assert.strictEqual(b.fuenteLeida, v !== '7.6.3+', `${id} con ${v}: ${b.fuente}`);
+      // Las tres reglas que aplican estan leidas: la nota 11 del Matrix en 7.4 y 7.6.0-7.6.2,
+      // y en 7.6.3+ la retirada general, leida de las Release Notes el 2026-09-24.
+      assert.strictEqual(b.fuenteLeida, true, `${id} con ${v}: ${b.fuente}`);
     }
   }
   const r74 = evaluar(con(CU01(), { 'remoto.metodo': 'sslvpn', 'software.fortiOS': '7.4' }));
   assert.strictEqual(r74.recomendacion.id, 'FortiGate 120G', 'en 7.4 otro modelo con SSL-VPN publicado lo cubre');
-  // En 7.6.0-7.6.2 la RAM decide y no esta en el catalogo: nunca «soportada» por omision.
+  // En 7.6.0-7.6.2 la RAM decidia y no estaba en el catalogo: todo salia «desconocida» y en
+  // borrador. Las Release Notes de 7.6.0 dan la lista CERRADA de modelos de 2 GB («FortiGate
+  // models not listed above will continue to have SSL VPN web and tunnel mode support»).
   const r760 = evaluar(con(CU01(), { 'remoto.metodo': 'sslvpn', 'software.fortiOS': '7.6.0-7.6.2' }));
-  assert.ok(r760.avisos.some((a) => a.codigo === 'FORTIOS_DESCONOCIDA'));
-  assert.strictEqual(r760.quoteGate, 'DRAFT', 'compatibilidad desconocida = confianza baja = solo borrador');
+  assert.ok(!r760.avisos.some((a) => a.codigo === 'FORTIOS_DESCONOCIDA'), 'ya no hay compatibilidad desconocida');
+  for (const id of ['FortiGate 40F', 'FortiGate 60F', 'FortiGate 61F']) {
+    const c = r760.candidatos.find((x) => x.id === id);
+    const b = c.bloqueos.find((x) => x.codigo === 'FORTIOS_INCOMPATIBLE');
+    assert.ok(b && b.fuenteLeida && /7\.6\.0 Release Notes/.test(b.fuente), `${id}: modelo de 2 GB, bloqueado con su fuente`);
+  }
+  assert.ok(!r760.candidatos.find((x) => x.id === 'FortiGate 120G').bloqueos.some((x) => x.codigo === 'FORTIOS_INCOMPATIBLE'),
+    'un modelo fuera de la lista conserva SSL-VPN en esa rama');
+});
+
+test('T07 · una regla por RAM SIN lista de modelos deja la compatibilidad en desconocida (catalogo sintetico)', () => {
+  // El camino `ram-2gb` ya no lo usa ninguna regla real. Se conserva para la proxima nota que
+  // hable de RAM sin decir que modelos, y esta prueba lo mantiene vivo: nunca «soportada» por
+  // omision.
+  const porRam = { ...CAT, fortios: { ...CAT.fortios,
+    reglas: CAT.fortios.reglas.map((r) => (r.versiones.join() === '7.6.0-7.6.2' && r.funcion === 'sslvpn' ? { ...r, modelos: 'ram-2gb' } : r)) } };
+  const r = M.evaluar(con(CU01(), { 'remoto.metodo': 'sslvpn', 'software.fortiOS': '7.6.0-7.6.2' }), porRam, { hoy: '2026-09-23T00:00:00Z' });
+  assert.ok(r.avisos.some((a) => a.codigo === 'FORTIOS_DESCONOCIDA'));
+  assert.strictEqual(r.quoteGate, 'DRAFT', 'compatibilidad desconocida = confianza baja = solo borrador');
 });
 
 test('T08 · IoT/DLP con UTP bloquea; con Enterprise no', () => {
@@ -183,7 +216,13 @@ test('compra nueva usa el SKU combinado BDL; la ampliacion cotiza equipo y bundl
 test('T10/T11 · sandbox incluido no crea linea; dedicado pide modalidad y va en linea propia', () => {
   const inc = evaluar(con(CU01(), { 'seguridad.funciones': ['chkAv', 'chkWeb', 'chkSsl', 'chkSandbox'], 'comercial.sandbox': 'incluido' }));
   assert.ok(!inc.bom.filas.some((f) => /Sandbox/i.test(f.desc)));
-  assert.ok(inc.avisos.some((a) => a.codigo === 'sandbox-incluido'), 'la cobertura se advierte, no se da por leida');
+  // La cobertura se leyo del Ordering Guide de FortiGuard (2026-09-24): el aviso INFORMA y
+  // cita el documento; ya no advierte de una matriz sin leer.
+  // Un aviso informativo no sube a la puerta: vive en los avisos del BOM.
+  const avInc = inc.bom.avisos.find((a) => a.codigo === 'sandbox-incluido');
+  assert.ok(avInc && avInc.nivel === 'info' && /Ordering Guide de FortiGuard/.test(avInc.mensaje),
+    'la cobertura incluida se cita del documento del fabricante');
+  assert.ok(!inc.avisos.some((a) => a.codigo === 'sandbox-incluido'), 'y no rebaja la puerta a «con advertencias»');
   const ded = evaluar(con(CU01(), { 'seguridad.funciones': ['chkAv', 'chkWeb', 'chkSsl', 'chkSandbox'], 'comercial.sandbox': 'dedicado' }));
   assert.ok(ded.faltan.includes('comercial.sandboxModalidad'), 'sin modalidad no se puede cotizar');
   assert.strictEqual(ded.quoteGate, 'BLOCKED');
@@ -199,11 +238,16 @@ test('T10/T11 · sandbox incluido no crea linea; dedicado pide modalidad y va en
 test('T12 · EMS se licencia por endpoints gestionados, independientes de los usuarios', () => {
   const sinDato = evaluar(con(CU01(), { 'comercial.emsActivo': true }));
   assert.ok(sinDato.faltan.includes('comercial.emsEndpoints'), 'con EMS activo, los endpoints son obligatorios');
-  const r = evaluar(con(CU01(), { 'comercial.emsActivo': true, 'comercial.emsEndpoints': 420 }));
-  const ems = r.bom.filas.find((f) => f.cat === 'Licencias endpoint');
-  assert.strictEqual(ems.qty, 420, 'no 350 (300 locales + 50 remotos)');
-  assert.match(ems.nota, /17 tramo/);
-  assert.strictEqual(r.quoteGate, 'DRAFT', 'sin SKU de tramo: borrador, no cotizacion');
+  assert.ok(sinDato.faltan.includes('comercial.emsDespliegue'), 'y el despliegue, que decide el SKU');
+  const sinDesp = evaluar(con(CU01(), { 'comercial.emsActivo': true, 'comercial.emsEndpoints': 420 }));
+  assert.strictEqual(sinDesp.quoteGate, 'BLOCKED', 'falta un dato comercial: la cotizacion se cierra, el diseno no');
+  assert.ok(sinDesp.seleccion, 'el diseno se sigue evaluando');
+  const r = evaluar(con(CU01(), { 'comercial.emsActivo': true, 'comercial.emsEndpoints': 420, 'comercial.emsDespliegue': 'cloud' }));
+  const ems = r.bom.filas.filter((f) => f.cat === 'Licencias endpoint');
+  assert.deepStrictEqual(ems.map((f) => [f.sku, f.qty]), [['FC1-10-EMS05-428-01-36', 17]],
+    '420 endpoints, no 350 (300 locales + 50 remotos): 17 packs de 25');
+  assert.match(ems[0].nota, /420 endpoint\(s\) gestionados: 17 × pack de 25/);
+  assert.strictEqual(r.quoteGate, 'DRAFT', 'SKU exacto sin precio en la lista: borrador, no cotizacion');
 });
 
 test('T13 · sin SD-WAN, hubs, spokes, overlay y servicios avanzados quedan inactivos y fuera de la huella', () => {
