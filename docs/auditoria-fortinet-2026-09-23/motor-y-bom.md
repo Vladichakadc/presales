@@ -106,7 +106,7 @@ La confianza empieza en **alta** y solo baja:
 | Puerta | Cuándo | Acciones |
 |---|---|---|
 | BLOCKED | Cualquier bloqueo: override no elegible, sin candidato, FortiOS incompatible, bundle por debajo del mínimo, dato comercial requerido que falta, chasis | Ninguna |
-| DRAFT | Un aviso de nivel `borrador` (falta un SKU o un precio pedible, precio de la edición anterior, lista vencida) o confianza baja | `excel-borrador`, `copiar-borrador` |
+| DRAFT | Un aviso de nivel `borrador` (falta un SKU o un precio pedible, un precio que la lista declarada no trae, lista vencida) o confianza baja | `excel-borrador`, `copiar-borrador` |
 | WARNING | Un aviso `warning` o confianza media | Excel, copiar, cotizador, perfil y consolidado, con la advertencia estampada |
 | READY | Nada de lo anterior | Todas |
 
@@ -174,9 +174,13 @@ en standalone y 2 en HA.
   **declara sin ofrecerse** (F3).
 - **Término**: el SKU resuelve el sufijo `-12`, `-36` o `-60` a partir del marcador `DD` del
   patrón. Un término sin equivalencia deja la línea no pedible y la cotización en borrador.
-- **Precio**: el de `LICENSES`, **reanclado** a la lista declarada, y el de `elpN` para el
-  hardware. Un precio de la edición anterior (`anterior`) deja borrador y dice cuál. Una lista
-  de más de 6 meses deja borrador.
+  FortiConverter no lleva término: la lista lo publica solo como `-12` («1 Year FCT SVC»).
+- **Precio**: **solo** el de la 2026Q3 Mid Price list_AMER_FINAL_EFF 090726.xlsx (regla del
+  dueño, 2026-09-24): `LICENSES` **reanclado** por SKU exacto, el hardware por su `hwSku`, y el
+  SD-WAN Service, la mejora a Elite, el sandbox, el registro en la nube y FortiConverter
+  leídos de lo que `npm run skus` extrajo de esa lista. Lo que la lista no trae sale **sin
+  precio** (`fueraDeLista`), deja borrador y dice cuál. Una lista de más de 6 meses deja
+  borrador.
 
 ## 6 · Guía operativa: importar y actualizar fuentes de Fortinet
 

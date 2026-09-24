@@ -437,15 +437,19 @@
     const bloquear = (b) => bloqueos.push(Object.assign({ nivel: 'borrador' }, b));
     const avisar = (a) => avisos.push(Object.assign({ nivel: AVISOS_INFO.has(a.codigo) ? 'info' : 'warning' }, a));
 
-    // Un precio que la price list declarada no trae se conserva de la edicion anterior y se
-    // marca (`tier.anterior`, ver legacyData/fortinet.js, hallazgo N02): se anota aqui cada
-    // vez que una linea lo usa, y la cotizacion sale como borrador diciendo cuales son.
-    const anteriores = [];
+    // Los precios salen SOLO de la 2026Q3 Mid Price list_AMER_FINAL_EFF 090726.xlsx
+    // (instruccion del dueño, 2026-09-24). Un precio que esa lista no trae ya no se conserva de
+    // otra edicion: el catalogo lo deja en null y lo marca (`tier.fueraDeLista`, ver
+    // legacyData/fortinet.js). Se anota aqui cada vez que una linea lo pide, con el SKU exacto
+    // del termino, y la cotizacion sale como borrador diciendo cuales son.
+    const fueraDeLista = [];
     const precio = (tier) => {
       if (!tier) return null;
       const k = anios === 1 ? 'y1' : anios === 5 ? 'y5' : 'y3';
       const v = tier[k];
-      if (v != null && tier.anterior && tier.anterior[k]) anteriores.push(tier.sku);
+      if (v == null && tier.fueraDeLista && tier.fueraDeLista[k]) {
+        fueraDeLista.push(skuTermino(tier.sku, anios, terminos).sku || tier.sku);
+      }
       return v == null ? null : v;
     };
 
@@ -576,15 +580,17 @@
           mensaje: `FortiConverter ya va dentro de ${bundle.n}: no se añade una segunda línea.` });
       }
     } else if (e.converter) {
-      if (lic && lic.converter) {
-        const s = skuTermino(lic.converter.sku, anios, terminos);
-        if (!s.exacto) bloquear({ codigo: 'sku-converter', mensaje: `FortiConverter: ${s.motivo}.` });
+      // El SKU es el EXACTO de la lista, el de 12 meses, sea cual sea el termino: la lista
+      // lo publica una sola vez por modelo («1 Year FCT SVC»). Aplicarle el sufijo del termino
+      // producia a 3 y 5 anos un SKU que la lista no tiene, con el precio del de 12 meses.
+      if (lic && lic.converter && lic.converter.sku) {
         filas.push({ cat: 'Servicios opcionales', desc: 'FortiConverter — migración de configuración',
-          sku: s.sku, qty: 1, unit: lic.converter.fee,
-          nota: 'Servicio único, pedido a la carta. Migra desde Cisco ASA, Check Point o Palo Alto.' });
+          sku: lic.converter.sku, qty: 1, unit: lic.converter.fee,
+          nota: 'Servicio único, pedido a la carta. Migra desde Cisco ASA, Check Point o Palo Alto. '
+            + 'La price list lo publica solo como «1 Year FCT SVC»: no cambia con el término de la cotización.' });
       } else {
         bloquear({ codigo: 'sin-sku-converter',
-          mensaje: `El price list no trae SKU de FortiConverter para ${m.id}.` });
+          mensaje: `La 2026Q3 Mid Price list no trae, en lo extraído, el FortiConverter de ${m.id}.` });
       }
     }
 
@@ -816,11 +822,11 @@
           + 'antes de quitar una licencia.' });
     }
 
-    if (anteriores.length) {
-      bloquear({ codigo: 'precio-edicion-anterior',
-        mensaje: `${anteriores.length} precio(s) de esta lista salen de la price list de agosto (Main 080326): `
-          + `la de septiembre declarada como fuente no trae esas referencias (${anteriores.join(', ')}). `
-          + 'Confirmar el precio con el distribuidor antes de cotizar en firme.' });
+    if (fueraDeLista.length) {
+      bloquear({ codigo: 'precio-fuera-de-lista',
+        mensaje: `${fueraDeLista.length} línea(s) sin precio: la 2026Q3 Mid Price list (AMER, 07-sep-2026), que es la `
+          + `única fuente de precios de este catálogo, no trae en lo extraído el precio de ${fueraDeLista.join(', ')}. `
+          + 'El de la edición de agosto ya no se usa. Pedirlo al distribuidor antes de cotizar en firme.' });
     }
     return { filas, avisos, bloqueos, soporteIncluido: incluyeSoporte || usaBdl, bdl: usaBdl };
   }

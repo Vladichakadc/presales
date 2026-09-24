@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-24 (**los documentos pendientes de Fortinet, traídos y leídos, y las decisiones humanas preparadas**, fusionado con el trabajo paralelo de otra sesión del mismo día. Encargo del dueño: activar «Wait for CI», leer la rama `fuente/fortinet-pendientes` y avanzar con lo que solo puede hacer una persona. **La rama no traía nada**: sus 15 URL se habían adivinado por patrón y dieron 404; buscadas las reales, tres corridas trajeron 12 documentos oficiales. **F6 cerrado**: 100F y 200F con `cps` y sus siete límites (ficha coreana oficial, anclada 12 de 12), y los cuatro modelos sin figura la tienen (QuickStart Guide del 100F y del 200F, System Guide de los chasis) — 58 de 58. **F2 cerrado entero**: un solo SD-WAN Service add-on por equipo, **con SKU y precio de la lista firmada** en 54 de 58 modelos, y la familia contrastada con el Ordering Guide. La primera versión lo dejaba sin precio porque buscó el SKU con el marcador `-DD` y la lista guarda el término resuelto. **SKU exactos de EMS (packs) y FortiSASE (edición y banda)**; su precio no está en el catálogo. **Condición 2 del GO cerrada**: la regla de SSL-VPN de 7.6.3+ está leída, y la de 7.6.0 deja de ser «desconocida» con la lista cerrada de modelos de 2 GB. **Aruba** (otra sesión): el Boost toma el escenario de falla que más túnel pide. **Railway: no se pudo** — el conector no expone el ajuste y su agente no tiene cuota; los pasos exactos y el análisis de los workflows están en `docs/decisiones-del-dueno-2026-09-24.md`, junto con la lista para aprobar el GO, el memo de M4 y el guion del lector de pantalla.)
+Última revisión: 2026-09-24 (**los precios de Fortinet, solo de la 2026Q3 Mid Price list**. Regla del dueño: «los precios debes tomarlos de 2026Q3 Mid Price list_AMER_FINAL_EFF 090726.xlsx». Auditado cada precio que puede llegar a una línea: 1.818 de licencias y servicios y 54 de hardware casan al céntimo con la lista, ninguno difiere. Lo que no cumplía, corregido: **17 precios de agosto** (renovaciones de 70F, 100F, 200F y 600F) salen ahora sin precio y en borrador, y **FortiConverter** cotizaba a 3 y 5 años un SKU que la lista no tiene. Una invariante nueva lo exige en cada `npm run verificar`. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-09-24 (**los documentos pendientes de Fortinet, traídos y leídos, y las decisiones humanas preparadas**, fusionado con el trabajo paralelo de otra sesión del mismo día. Encargo del dueño: activar «Wait for CI», leer la rama `fuente/fortinet-pendientes` y avanzar con lo que solo puede hacer una persona. **La rama no traía nada**: sus 15 URL se habían adivinado por patrón y dieron 404; buscadas las reales, tres corridas trajeron 12 documentos oficiales. **F6 cerrado**: 100F y 200F con `cps` y sus siete límites (ficha coreana oficial, anclada 12 de 12), y los cuatro modelos sin figura la tienen (QuickStart Guide del 100F y del 200F, System Guide de los chasis) — 58 de 58. **F2 cerrado entero**: un solo SD-WAN Service add-on por equipo, **con SKU y precio de la lista firmada** en 54 de 58 modelos, y la familia contrastada con el Ordering Guide. La primera versión lo dejaba sin precio porque buscó el SKU con el marcador `-DD` y la lista guarda el término resuelto. **SKU exactos de EMS (packs) y FortiSASE (edición y banda)**; su precio no está en el catálogo. **Condición 2 del GO cerrada**: la regla de SSL-VPN de 7.6.3+ está leída, y la de 7.6.0 deja de ser «desconocida» con la lista cerrada de modelos de 2 GB. **Aruba** (otra sesión): el Boost toma el escenario de falla que más túnel pide. **Railway: no se pudo** — el conector no expone el ajuste y su agente no tiene cuota; los pasos exactos y el análisis de los workflows están en `docs/decisiones-del-dueno-2026-09-24.md`, junto con la lista para aprobar el GO, el memo de M4 y el guion del lector de pantalla.)
 
 Revisión anterior: 2026-09-24 (**la batería e2e corre en CI** — la mejora propuesta al cerrar la entrega anterior, aprobada por el dueño. **Medir antes de cambiar corrigió la propuesta**: se dijo que las 219 pausas fijas darían rojos al azar en un ejecutor lento, y con la CPU del navegador a 4x y a 10x la batería vieja pasó entera. Las esperas pasan a `asentar(page)`, que espera a que la página termine lo que empezó, y se quedan por lo que sí se midió: 336 s → 114 s, y un fallo que dice qué quedó pendiente. Por el camino: **el paso de contraste en CI no podía fallar** (`| tee` sin `pipefail`), **Playwright en CI iba sin versión** (la corrida del 24-sep bajó Chromium 153 y su cobertura solo contó el último caso) y el runner reutilizaba `/tmp/e2e-auth` entre corridas. Ver *Cerrado recientemente*.)
 
@@ -870,9 +872,13 @@ riesgos R1–R11 en `docs/auditoria-fortinet-2026-09-23/LEEME.md`.
     detonación; forma y GB/día). El mensaje cita la tabla exacta de su Ordering Guide.
   - **Licencia de VDOM adicional** y **segunda fuente opcional**: sin SKU en ningún documento
     traído ni en lo que se extrajo de la price list.
-- **17 precios de licencias de la edición de agosto** (`anterior`). La lista de septiembre no
-  trae esos SKU; la línea sale en borrador y dice cuál. Se cierran con la próxima lista que los
-  traiga.
+- **17 líneas de renovación sin precio (70F, 100F, 200F y 600F)**, y el FortiConverter de esos
+  cuatro sin SKU. Hasta el 2026-09-24 llevaban el precio de la edición de **agosto**, marcado;
+  ese día el dueño fijó la regla —«los precios debes tomarlos de 2026Q3 Mid Price
+  list_AMER_FINAL_EFF 090726.xlsx»— y ahora salen **sin precio**, en borrador y diciendo cuál.
+  No se sabe si la lista de septiembre los trae: `npm run skus` no extrae el bloque de un modelo
+  sin SKU de hardware vigente. Se cierran pasando la lista por un importador que extraiga esas
+  filas por SKU exacto.
 - **Co-term sin prorrateo; heartbeat de HA sin modelar; ópticas de Fortinet fuera del
   catálogo.** Se declaran en la entrega (CU-03, CU-09 y CU-10 parciales) y no se inventan.
 - ~~**El caso `calculadora-ssl` se quedó sin sujeto.**~~ **Cerrado el 2026-09-24**: el caso
@@ -1425,6 +1431,36 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Los precios de Fortinet, solo de la 2026Q3 Mid Price list (2026-09-24)
+
+Regla del dueño: «Recuerda que los precios debes tomarlos de 2026Q3 Mid Price
+list_AMER_FINAL_EFF 090726.xlsx». Se auditó cada precio de Fortinet que puede llegar a una
+línea del BOM o del cotizador, buscándolo por su SKU exacto, con el término resuelto, en lo que
+`npm run skus` extrajo de esa lista.
+
+- **Casan 1.818 precios** de licencias, soporte, SKU combinados, SD-WAN Service, mejora a
+  Elite, sandbox y registro en la nube, y los **54 de hardware** del cotizador por su `hwSku`.
+  **Ninguno difiere.**
+- **Dos cosas no cumplían, y se corrigieron:**
+  - **17 precios de la «Main» de agosto** seguían en el catálogo, marcados `anterior`: las
+    renovaciones UTP, ATP y FortiCare de 70F, 100F, 200F y 600F. Ahora salen **sin precio**
+    («consultar»), con su SKU exacto, marcados `fueraDeLista` y en borrador. No se sabe si la
+    lista de septiembre los trae: `npm run skus` no extrae el bloque de un modelo sin SKU de
+    hardware vigente.
+  - **FortiConverter** llevaba el patrón `-DD`, y la línea le aplicaba el término de la
+    cotización. A 3 y 5 años emitía `…-189-02-36` y `-60`, que la lista no tiene, con el precio
+    del de 12 meses. La lista lo publica una sola vez por modelo («1 Year FCT SVC», 93 filas,
+    todas `-12`), y ese es ahora su SKU. Los cuatro modelos sin bloque se quedan sin él.
+- **Lo guarda una invariante**, «regla del dueño» en `test/fortinet-precios.test.js`: todo
+  precio que puede llegar a una línea tiene que existir en la lista con la misma cifra. **Se
+  comprobó saboteando**: con el precio de agosto conservado saltan tres pruebas, y sin el
+  anclaje de FortiConverter, otras tres.
+- **Se buscó el `.xlsx` en Drive y en el correo del dueño, y no está** en ninguno de los dos,
+  ni en el repositorio. Por eso lo que falta (esas 17 líneas, EMS y FortiSASE) no se pudo sacar
+  hoy de la lista: se cierra pasándola por un importador que extraiga esas filas por SKU exacto.
+- **Verificación**: 598 pruebas y lint, 17/17 pantallas, 7/7 contrastes y 15/15 baterías e2e.
+  En pantalla, la línea de FortiConverter a 3 años ya sale como `FC-10-0071F-189-02-12`.
 
 ### Los documentos pendientes de Fortinet, traídos y leídos (2026-09-24)
 

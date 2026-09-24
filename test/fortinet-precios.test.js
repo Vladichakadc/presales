@@ -8,10 +8,16 @@
         con el SKU combinado de compra nueva la diferencia llegaba entera al total.
    F18  una referencia de 60 meses se describe en la lista como «1 Year».
 
-   Lo que se fija aqui son INVARIANTES, no cifras: que todo precio que la lista declarada
-   trae coincide con ella, que lo que no trae se marca y bloquea la cotizacion en firme, y
-   que ninguna descripcion servida contradice el termino de su codigo. Si mañana se regenera
-   `fortinetSkus.js` con otra lista, estas pruebas siguen valiendo sin tocarlas. */
+   Y la regla del dueño (2026-09-24): «los precios debes tomarlos de 2026Q3 Mid Price
+   list_AMER_FINAL_EFF 090726.xlsx». Ese dia se retiraron los 17 precios de agosto que se
+   conservaban marcados, y FortiConverter dejo de cotizar a 3 y 5 anos un SKU que la lista no
+   tiene.
+
+   Lo que se fija aqui son INVARIANTES, no cifras: que todo precio que puede llegar a una linea
+   existe en la lista declarada con esa misma cifra, que lo que no trae sale sin precio y
+   bloquea la cotizacion en firme, y que ninguna descripcion servida contradice el termino de
+   su codigo. Si mañana se regenera `fortinetSkus.js` con otra lista, estas pruebas siguen
+   valiendo sin tocarlas. */
 const test = require('node:test');
 const assert = require('node:assert');
 
@@ -47,34 +53,100 @@ test('N02 · todo precio de LICENSES que la lista declarada trae coincide con el
   assert.deepStrictEqual(malos, []);
 });
 
-test('N02 · lo que la lista declarada no trae se conserva MARCADO, nunca como precio vigente', () => {
-  let sinMarca = 0;
+test('N02 · lo que la lista declarada no trae NO lleva precio: se marca, y el de agosto no se conserva', () => {
+  let conPrecio = 0;
   let marcados = 0;
   for (const m of F.MODELS) {
     if (!m.lic) continue;
-    for (const [, t] of tiersDe(m.lic)) {
+    for (const [k, t] of tiersDe(m.lic)) {
       if (!t || !t.sku) continue;
       for (const [y, suf] of TERMINOS) {
-        if (t[y] == null || DECLARADO.has(t.sku.replace(/-DD$/, `-${suf}`))) continue;
-        if (t.anterior && t.anterior[y]) marcados += 1; else sinMarca += 1;
+        if (DECLARADO.has(t.sku.replace(/-DD$/, `-${suf}`))) continue;
+        if (t[y] != null) conPrecio += 1;
+        if (t.fueraDeLista && t.fueraDeLista[y]) marcados += 1;
+        assert.ok(!t.anterior, `${m.id} ${k}: la marca de la edicion de agosto ya no existe`);
       }
     }
   }
-  assert.strictEqual(sinMarca, 0, 'un precio sin respaldo en la lista declarada tiene que ir marcado');
+  assert.strictEqual(conPrecio, 0, 'un precio sin fila en la lista declarada no puede llegar a una linea');
   assert.strictEqual(marcados, F.REANCLAJE.sinReferencia, 'el informe de reanclaje cuenta lo mismo que se marco');
+  assert.strictEqual(marcados, 17, 'los 17 de 70F, 100F, 200F y 600F: si cambia, que sea porque la lista los trae');
 });
 
-test('N02 · una linea con precio de la edicion anterior sale en borrador y dice cual', () => {
-  // El 70F es el caso real: fuera de venta, su renovacion UTP a 1 ano no esta en las
-  // referencias de septiembre.
+test('N02 · una linea sin precio en la lista sale sin precio, en borrador, y dice cual', () => {
+  // El 70F es el caso real: fuera de venta, su renovacion UTP a 1 ano no esta en lo extraido
+  // de la lista de septiembre. Antes salia con el precio de agosto; ahora sin ninguno.
   const m = F.MODELS.find((x) => x.id === 'FortiGate 70F');
-  assert.ok(m.lic.utp.anterior && m.lic.utp.anterior.y1, 'el 70F trae su UTP a 1 ano marcado');
+  assert.ok(m.lic.utp.fueraDeLista && m.lic.utp.fueraDeLista.y1, 'el 70F trae su UTP a 1 ano marcado');
   const r = R.lineasComerciales({ modelo: m, bundles: F.BUNDLES, care: F.CARE, bundle: 'utp', care_elegido: 'fcpre',
     careKey: 'premium', qty: 1, anios: 1, terminos: F.TERMINOS, sinEquipo: true });
-  const b = r.bloqueos.find((x) => x.codigo === 'precio-edicion-anterior');
-  assert.ok(b, 'la cotizacion no puede salir en firme con un precio de otra edicion');
+  const utp = r.filas.find((f) => f.cat === 'Licencias FortiGuard');
+  assert.strictEqual(utp.sku, 'FC-10-0070F-950-02-12', 'el SKU exacto se conserva: es lo que hay que pedir');
+  assert.strictEqual(utp.unit, null, 'y sin precio: el de agosto ya no se usa');
+  const b = r.bloqueos.find((x) => x.codigo === 'precio-fuera-de-lista');
+  assert.ok(b, 'la cotizacion no puede salir en firme con una linea sin precio');
   assert.strictEqual(b.nivel, 'borrador');
-  assert.match(b.mensaje, /FC-10-0070F-950-02-DD/);
+  assert.match(b.mensaje, /FC-10-0070F-950-02-12/);
+  assert.match(b.mensaje, /2026Q3 Mid Price list/);
+});
+
+test('regla del dueño · todo precio que puede llegar a una linea sale de la lista declarada, al centimo', () => {
+  // La auditoria del 2026-09-24 hecha prueba: cada precio del catalogo Fortinet que el BOM o
+  // el cotizador pueden usar se busca por su SKU EXACTO (con el termino resuelto) en lo que
+  // `npm run skus` extrajo de la 2026Q3 Mid Price list. Un precio sin fila, o con otra cifra,
+  // vendria de otra fuente, y eso es lo que la regla prohibe.
+  const malos = [];
+  let comprobados = 0;
+  const ver = (origen, sku, p) => {
+    if (p == null) return;
+    comprobados += 1;
+    const q = DECLARADO.get(sku);
+    if (q == null) malos.push(`${origen}: ${sku} no esta en la lista`);
+    else if (Math.abs(q - p) > 0.005) malos.push(`${origen}: ${p} frente a ${q} de la lista`);
+  };
+  for (const m of F.MODELS) {
+    const lic = m.lic || {};
+    const tiers = tiersDe(lic).concat([['eliteUpg', lic.eliteUpg], ['sandboxAi', lic.sandboxAi],
+      ['logCloud', lic.logCloud], ['sdwan', lic.sdwanSvc && lic.sdwanSvc.addon]]);
+    for (const [k, t] of tiers) {
+      if (!t || !t.sku) continue;
+      for (const [y, suf] of TERMINOS) ver(`${m.id} ${k} ${y}`, t.sku.replace(/-DD$/, `-${suf}`), t[y]);
+    }
+    if (lic.converter && lic.converter.sku) ver(`${m.id} converter`, lic.converter.sku, lic.converter.fee);
+  }
+  // El hardware del cotizador, por el SKU de hardware de cada modelo.
+  const C = require('../server/seed/legacyData/cotizadorCatalog.js');
+  const CAT = Array.isArray(C) ? C : (C.CATALOG || Object.values(C).find(Array.isArray));
+  const porId = new Map(F.MODELS.map((m) => [m.id, m]));
+  for (const x of CAT.filter((c) => /fortinet/i.test(c.vendor || ''))) {
+    const m = porId.get(x.model);
+    assert.ok(m && m.hwSku, `${x.model}: el cotizador cotiza un equipo sin SKU de hardware`);
+    ver(`cotizador ${x.model}`, m.hwSku, x.elpN);
+  }
+  assert.ok(comprobados > 1800, `se comprobaron ${comprobados} precios`);
+  assert.deepStrictEqual(malos, []);
+});
+
+test('FortiConverter · el SKU es el de 12 meses de la lista, sea cual sea el termino', () => {
+  // La lista lo publica una sola vez por modelo, «1 Year FCT SVC». A 3 y 5 anos el BOM
+  // emitia -36 y -60, que la lista no tiene, con el precio del de 12 meses.
+  const todas = Object.values(SKUS).flat().filter((r) => /-189-02-/.test(r.sku));
+  assert.ok(todas.length > 50 && todas.every((r) => /-189-02-12$/.test(r.sku)),
+    'la lista solo trae el converter a 12 meses; si un dia trae otros terminos, esta regla hay que revisarla');
+  const m = F.MODELS.find((x) => x.id === 'FortiGate 90G');
+  for (const anios of [1, 3, 5]) {
+    const r = R.lineasComerciales({ modelo: m, bundles: F.BUNDLES, care: F.CARE, bundle: 'utp', care_elegido: 'fcpre',
+      careKey: 'premium', qty: 1, anios, terminos: F.TERMINOS, converter: true });
+    const c = r.filas.find((f) => /FortiConverter/.test(f.desc));
+    assert.strictEqual(c.sku, 'FC-10-0090G-189-02-12', `a ${anios} ano(s)`);
+    assert.strictEqual(c.unit, DECLARADO.get('FC-10-0090G-189-02-12'));
+  }
+  // Un modelo cuyo bloque no se extrajo no inventa el SKU: la linea no se pide sin el.
+  const m70 = F.MODELS.find((x) => x.id === 'FortiGate 70F');
+  assert.strictEqual(m70.lic.converter.sku, null);
+  const r70 = R.lineasComerciales({ modelo: m70, bundles: F.BUNDLES, care: F.CARE, bundle: 'utp', care_elegido: 'fcpre',
+    careKey: 'premium', qty: 1, anios: 3, terminos: F.TERMINOS, converter: true, sinEquipo: true });
+  assert.ok(r70.bloqueos.some((b) => b.codigo === 'sin-sku-converter' && /2026Q3 Mid Price list/.test(b.mensaje)));
 });
 
 test('N02 · el SKU combinado cuesta lo mismo que equipo + bundle en toda la lista (no es un descuento)', () => {

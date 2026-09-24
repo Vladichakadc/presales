@@ -814,7 +814,7 @@ const addonDeLista=(refs, cod)=>{
   const f=fams[0];
   return {tier:{sku:f.sku, y1:f.y1==null?null:f.y1, y3:f.y3==null?null:f.y3, y5:f.y5==null?null:f.y5}, fam:f.fam};
 };
-const FUENTE_SDWAN=`${SDWAN_SERVICIO.fuente} (qué es cada familia) + price list sept-2026 (SKU y precio)`;
+const FUENTE_SDWAN=`${SDWAN_SERVICIO.fuente} (qué es cada familia) + 2026Q3 Mid Price list_AMER_FINAL_EFF 090726.xlsx (SKU y precio)`;
 for (const m of MODELS) {
   if (!m.lic) continue;
   const cod=codigoModelo(m.lic);
@@ -900,11 +900,15 @@ const SASE_USUARIOS={
    llegaba entera al total (90G, BDL Enterprise a 3 anos: 10.273,60 frente a 10.604,60).
 
    SE ANCLA POR SKU EXACTO, con su sufijo de termino, contra la lista declarada: donde la
-   referencia existe manda su precio; donde no existe, el precio de agosto se CONSERVA pero se
-   marca (`anterior`), y la linea que lo use sale como borrador diciendo por que. No se borra:
-   los 17 son renovaciones de equipos fuera de venta (70F, 100F, 200F, 600F), cuyo bloque el
-   importador de referencias no ancla porque no tienen SKU de hardware, asi que su ausencia
-   en `fortinetSkus.js` no prueba que la lista de septiembre no los traiga. */
+   referencia existe manda su precio. Donde no existe, el precio SE RETIRA y se marca
+   (`fueraDeLista`): instruccion del dueño del 2026-09-24, «los precios debes tomarlos de
+   2026Q3 Mid Price list_AMER_FINAL_EFF 090726.xlsx». Hasta ese dia el precio de agosto se
+   conservaba marcado (`anterior`) y la linea salia en borrador con esa cifra; ahora sale sin
+   precio («consultar»), en borrador y diciendo cual. Son 17, todos renovaciones de equipos
+   fuera de venta (70F, 100F, 200F, 600F): el importador de referencias no extrae su bloque
+   porque no tienen SKU de hardware con el que anclarlo, asi que su ausencia en
+   `fortinetSkus.js` no prueba que la lista de septiembre no los traiga. El SKU se conserva,
+   porque es el codigo que hay que pedirle al distribuidor; la cifra no. */
 const PRECIO_DECLARADO=new Map();
 for (const refs of Object.values(SKUS_POR_MODELO)) for (const r of refs) PRECIO_DECLARADO.set(r.sku, r.p);
 const REANCLAJE={reanclados:0, sinReferencia:0, iguales:0, ejemplos:[]};
@@ -921,7 +925,7 @@ const REANCLAJE={reanclados:0, sinReferencia:0, iguales:0, ejemplos:[]};
         if (t[y]==null) continue;
         const sku=t.sku.replace(/-DD$/, `-${suf}`);
         const p=PRECIO_DECLARADO.get(sku);
-        if (p==null) { (t.anterior=t.anterior||{})[y]=true; REANCLAJE.sinReferencia++; }
+        if (p==null) { t[y]=null; (t.fueraDeLista=t.fueraDeLista||{})[y]=true; REANCLAJE.sinReferencia++; }
         else if (Math.abs(p-t[y])>0.005) {
           if (REANCLAJE.ejemplos.length<5) REANCLAJE.ejemplos.push({sku, agosto:t[y], septiembre:p});
           t[y]=p; REANCLAJE.reanclados++;
@@ -929,6 +933,21 @@ const REANCLAJE={reanclados:0, sinReferencia:0, iguales:0, ejemplos:[]};
       }
     }
   }
+}
+
+/* ── FORTICONVERTER: EL SKU DE LA LISTA ES EL DE 12 MESES, SEA CUAL SEA EL TERMINO (2026-09-24) ──
+   LICENSES traia el converter como patron `FC-10-<modelo>-189-02-DD`, y la linea del BOM le
+   ponia el sufijo del termino de la cotizacion: a 3 anos emitia `...-189-02-36`. La lista de
+   septiembre lo publica UNA sola vez por modelo, como «1 Year FCT SVC» (`-12`, 93 filas y ni una
+   de 36 ni de 60 meses): es un servicio unico de migracion de configuracion. Asi que a 3 y 5
+   anos el BOM cotizaba un SKU que la lista no tiene, con el precio del de 12 meses. Se ancla al
+   SKU exacto de la lista y a su precio; donde la lista no lo trae, no hay SKU ni precio. */
+for (const m of MODELS) {
+  const c=m.lic&&m.lic.converter;
+  if (!c||!c.sku) continue;
+  const sku=c.sku.replace(/-DD$/, '-12');
+  const p=PRECIO_DECLARADO.get(sku);
+  m.lic.converter = p==null ? {sku:null, fee:null, fueraDeLista:true} : {sku, fee:p};
 }
 
 // Bundles de protección FortiGuard reales y vigentes (sufijos de SKU -809/-950/-928 en el price list AMER).

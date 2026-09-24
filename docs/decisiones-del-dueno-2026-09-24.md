@@ -85,7 +85,7 @@ Sigue abierto:
 - Precio de EMS y FortiSASE. **No está en el catálogo**: de la lista solo se extraen las filas que nombran un FortiGate, y estas licencias no nombran ninguno. Esas líneas siguen en borrador.
 - FortiAnalyzer y FortiSandbox dedicado son otro dimensionamiento.
 - Licencia de VDOM adicional: sin SKU publicado.
-- 17 precios de licencia de la edición de agosto.
+- 17 líneas de renovación de 70F, 100F, 200F y 600F, sin precio. Desde tu regla del 24-sep ya no llevan el de agosto, y la lista de septiembre no los trae en lo extraído.
 - El configurador de chasis no existe.
 - F4-resto: la *Maximum Values Table*.
 

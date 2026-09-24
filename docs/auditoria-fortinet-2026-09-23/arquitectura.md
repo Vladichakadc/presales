@@ -113,6 +113,11 @@ posteriori porque así no hay estado incoherente que validar.
 - Se reanclan 108; lo que la lista vigente no trae queda marcado `anterior` y deja borrador.
 - *Descartado:* borrarlo, que dejaría el BOM sin precio sin decir por qué; y dejarlo como
   vigente, que mentiría sobre la fecha.
+- **Revisado el 2026-09-24 por el dueño**: «los precios debes tomarlos de 2026Q3 Mid Price
+  list_AMER_FINAL_EFF 090726.xlsx». Lo que la lista no trae ya no conserva el precio de agosto:
+  sale **sin precio**, marcado `fueraDeLista`, con el SKU exacto y en borrador. La objeción de
+  arriba sigue atendida, porque la línea dice por qué no tiene precio. Y FortiConverter pasa a
+  su SKU exacto de la lista, el de 12 meses: a 3 y 5 años se cotizaba un SKU que no existe.
 
 **ADR-12 · En el término, el sufijo del código gobierna sobre el texto (F18).**
 El texto contradictorio se corrige al mostrarlo, conservando el original y el motivo. El
