@@ -582,6 +582,18 @@ test('EMS · packs del Ordering Guide de FortiClient, repartidos del mayor al me
   assert.strictEqual(local.filas.find((f) => f.cat === 'Licencias endpoint').sku, 'FC1-10-EMS04-428-01-12', 'on-premise es EMS04');
 });
 
+test('EMS y FortiSASE · sin la tabla en el catalogo lo dicen asi, no como un dato que falta al usuario', () => {
+  // Lo cazo el e2e T12: la pagina armaba su catalogo sin las tablas y la linea decia «falta
+  // elegir el despliegue» con el despliegue elegido. Un motivo equivocado manda a buscar el
+  // fallo en el sitio equivocado.
+  const ems = comercial({ endpointsEms: 50, emsDespliegue: 'cloud', ems: undefined });
+  assert.match(ems.bloqueos.find((b) => b.codigo === 'sin-sku-ems').mensaje, /no trae la tabla/);
+  const sase = comercial({ serviciosSdwan: SERVICIOS_SDWAN.filter((x) => x.id === 'sdwanSase'), saseUsuarios: 80,
+    saseEdicion: 'standard', sase: undefined });
+  assert.match(sase.bloqueos.find((b) => b.codigo === 'sin-sku-sase').mensaje, /no trae la tabla/);
+  assert.ok(!sase.bloqueos.some((b) => b.codigo === 'sase-bajo-minimo'), '80 usuarios no estan por debajo de ninguna banda');
+});
+
 test('FortiSASE · el SKU sale de la edicion y de la banda de usuarios del Ordering Guide', () => {
   const sase = SERVICIOS_SDWAN.filter((x) => x.id === 'sdwanSase');
   const lin = (r) => r.filas.find((f) => /FortiSASE .*licencias/.test(f.desc));

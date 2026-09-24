@@ -43,8 +43,6 @@ let MODELS = [];
 let BUNDLES = {};
 let CARE = {};
 let FUNCIONES = [];
-let SERVICIOS_SDWAN = [];
-let TERMINOS = {};
 let FUENTES = null; // procedencia del fabricante (/api/fuentes)
 let VISTAS = null; // figura oficial del equipo, frontal y trasera
 
@@ -1996,10 +1994,13 @@ function pintarAfecta() {
   BUNDLES = data.bundles;
   CARE = data.care;
   FUNCIONES = data.funciones || [];
-  SERVICIOS_SDWAN = data.serviciosSdwan || [];
-  TERMINOS = data.terminos || {};
-  CAT = { models: MODELS, bundles: BUNDLES, care: CARE, funciones: FUNCIONES, serviciosSdwan: SERVICIOS_SDWAN,
-    terminos: TERMINOS, fortios: data.fortios, datasetVersion: data.datasetVersion, fuentes: [] };
+  // El catalogo del motor en el navegador es EL MISMO que evalua el servidor, y se arma igual
+  // que alli (`{ ...proyeccion, fuentes }` en server/routes/fortinet.js): la respuesta entera, no
+  // una lista de claves copiada a mano. Con la lista, las tablas de EMS y FortiSASE llegaban a
+  // la API y no al motor de la pagina, y la pantalla cotizaba un BOM distinto del que confirma
+  // POST /api/v1/fortinet/evaluations sin que ninguna huella lo notara (lo cazo el e2e T12).
+  // Las fuentes llegan despues, de /api/fuentes.
+  CAT = { ...data, fuentes: [] };
   try {
     const rv = await fetch('/data/fortinet-vistas-equipos.json');
     if (rv.ok) VISTAS = await rv.json();

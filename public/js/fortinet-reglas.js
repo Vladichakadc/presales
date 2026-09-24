@@ -637,6 +637,11 @@
         bloquear({ codigo: 'sin-sku-sase',
           mensaje: `FortiSASE para ${sase} usuario(s): el SKU depende de la edición (Standard, Advanced o Comprehensive) `
             + 'y no está declarada.' });
+      } else if (!(tabla && tabla.bandas)) {
+        filas.push({ cat: 'Servicios SD-WAN', desc: `FortiSASE ${edN} — licencias de usuario`, sku: null, qty: sase, unit: null,
+          nota: `${termino} · ${sase} usuario(s) declarados · sin tabla de SKU en el catálogo` });
+        bloquear({ codigo: 'sin-sku-sase',
+          mensaje: `FortiSASE para ${sase} usuario(s): el catálogo servido no trae la tabla de SKU del Ordering Guide.` });
       } else if (!banda) {
         filas.push({ cat: 'Servicios SD-WAN', desc: `FortiSASE ${edN} — licencias de usuario`, sku: null, qty: sase, unit: null,
           nota: `${termino} · ${sase} usuario(s) declarados` });
@@ -686,11 +691,16 @@
       const porPack = tabla && tabla.sku ? tabla.sku[e.emsDespliegue] : null;
       const despN = { cloud: 'FortiClient Cloud', onprem: 'EMS on-premise' }[e.emsDespliegue] || null;
       if (!porPack) {
+        // Dos causas distintas y se dicen distinto: el dato que falta en el escenario, o la tabla
+        // que falta en el catalogo servido (que seria un fallo de este repositorio, no del usuario).
+        const sinTabla = !(tabla && tabla.sku);
         filas.push({ cat: 'Licencias endpoint', desc: 'FortiClient EMS — VPN/ZTNA', sku: null, qty: ems, unit: null,
-          nota: `${termino} · ${ems} endpoint(s) gestionados · falta elegir el despliegue` });
+          nota: `${termino} · ${ems} endpoint(s) gestionados · ${sinTabla ? 'sin tabla de SKU en el catálogo' : 'falta elegir el despliegue'}` });
         bloquear({ codigo: 'sin-sku-ems',
-          mensaje: `FortiClient EMS para ${ems} endpoint(s): el SKU de cada pack depende del despliegue `
-            + '(FortiClient Cloud o EMS on-premise), y no está declarado.' });
+          mensaje: sinTabla
+            ? `FortiClient EMS para ${ems} endpoint(s): el catálogo servido no trae la tabla de SKU del Ordering Guide.`
+            : `FortiClient EMS para ${ems} endpoint(s): el SKU de cada pack depende del despliegue `
+              + '(FortiClient Cloud o EMS on-premise), y no está declarado.' });
       } else {
         const packs = packsEms(ems, tabla.packs);
         const reparto = packs.map((p) => `${p.n} × pack de ${p.tam}`).join(' + ');

@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "7735aeb",
+  "commit": "45791a5",
   "fecha": "2026-09-24"
  },
  "umbralRozado": 25,
@@ -97,6 +97,13 @@
    "pct": 53
   },
   {
+   "modulo": "fortinet-reglas.js",
+   "estado": "ejercitado",
+   "total": 40,
+   "usadas": 24,
+   "pct": 60
+  },
+  {
    "modulo": "login.js",
    "estado": "ejercitado",
    "total": 5,
@@ -123,13 +130,6 @@
    "total": 11,
    "usadas": 7,
    "pct": 64
-  },
-  {
-   "modulo": "fortinet-reglas.js",
-   "estado": "ejercitado",
-   "total": 37,
-   "usadas": 24,
-   "pct": 65
   },
   {
    "modulo": "dimensionador-aruba-edgeconnect.js",
@@ -183,9 +183,9 @@
   {
    "modulo": "fortinet-motor.js",
    "estado": "ejercitado",
-   "total": 105,
-   "usadas": 87,
-   "pct": 83
+   "total": 109,
+   "usadas": 89,
+   "pct": 82
   },
   {
    "modulo": "aruba-reglas.js",

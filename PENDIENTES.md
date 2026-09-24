@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-24 (**la batería e2e corre en CI** — la mejora propuesta al cerrar la entrega anterior, aprobada por el dueño. **Medir antes de cambiar corrigió la propuesta**: se dijo que las 219 pausas fijas darían rojos al azar en un ejecutor lento, y con la CPU del navegador a 4x y a 10x la batería vieja pasó entera. Las esperas pasan a `asentar(page)`, que espera a que la página termine lo que empezó, y se quedan por lo que sí se midió: 336 s → 114 s, y un fallo que dice qué quedó pendiente. Por el camino: **el paso de contraste en CI no podía fallar** (`| tee` sin `pipefail`), **Playwright en CI iba sin versión** (la corrida del 24-sep bajó Chromium 153 y su cobertura solo contó el último caso) y el runner reutilizaba `/tmp/e2e-auth` entre corridas. Ver *Cerrado recientemente*.)
+Última revisión: 2026-09-24 (**los documentos pendientes de Fortinet, traídos y leídos, y las decisiones humanas preparadas**. Encargo del dueño: activar «Wait for CI», leer la rama `fuente/fortinet-pendientes` y avanzar con lo que solo puede hacer una persona. **La rama no traía nada**: sus 15 URL se habían adivinado por patrón y dieron 404; buscadas las reales, dos corridas trajeron 12 documentos oficiales. **F6 cerrado**: 100F y 200F con `cps`, sus siete límites y su figura (ficha coreana oficial, anclada 12 de 12), y los chasis 7081F/7121F con figura — 58 de 58. **F2 cerrado en lo que el documento resuelve**: un solo SKU de SD-WAN Service add-on por equipo, exacto en 20 de 23. **SKU exactos de EMS (packs) y FortiSASE (edición y banda)**; ninguno trae precio en la lista de septiembre. **Condición 2 del GO cerrada**: la regla de SSL-VPN de 7.6.3+ está leída, y la de 7.6.0 deja de ser «desconocida» con la lista de modelos de 2 GB. **Railway: no se pudo** — el conector no expone el ajuste y su agente no tiene cuota; los pasos exactos y el análisis de los workflows están en `docs/decisiones-del-dueno-2026-09-24.md`, junto con la lista para aprobar el GO, el memo de M4 y el guion del lector de pantalla.)
+
+Revisión anterior: 2026-09-24 (**la batería e2e corre en CI** — la mejora propuesta al cerrar la entrega anterior, aprobada por el dueño. **Medir antes de cambiar corrigió la propuesta**: se dijo que las 219 pausas fijas darían rojos al azar en un ejecutor lento, y con la CPU del navegador a 4x y a 10x la batería vieja pasó entera. Las esperas pasan a `asentar(page)`, que espera a que la página termine lo que empezó, y se quedan por lo que sí se midió: 336 s → 114 s, y un fallo que dice qué quedó pendiente. Por el camino: **el paso de contraste en CI no podía fallar** (`| tee` sin `pipefail`), **Playwright en CI iba sin versión** (la corrida del 24-sep bajó Chromium 153 y su cobertura solo contó el último caso) y el runner reutilizaba `/tmp/e2e-auth` entre corridas. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-09-24 (**cierre de pendientes con lo que el repositorio ya tenía dentro**. Encargo del dueño: cerrar todo lo abierto, buscar la forma de gestionar los bloqueos y desplegar. **Aruba**: el rol activo/respaldo en el Multi-Underlay Builder (R11/M9 — un 4G de respaldo subía el tier: $80.857 frente a $42.697 en el caso medido), y las fases 2 y 3 de su auditoría cerradas en código (A2, A3, A4, A5, A7, M1, M3, M5, M6, M7, M8, B1; M4 declarado, es regla del dueño). **Los datos que faltaban estaban en los PDF oficiales ya versionados** en `public/datasheets/`, leídos en local sin salir a internet: los SKU de Central por serie de gateway (91xx y 92xx tienen los suyos), el tope de 75 clientes de Foundation Base, la tabla AOS-8 del 9106, el throughput de IDS/IPS de cada gateway y la escala de túneles de cada headend (VSG SD-Branch, sep-2026). **Accesibilidad**: auditoría axe y zoom al 200 % automatizados sobre 17 estados de pantalla; encontró 13 fallos reales (contraste de los colores de marca, controles sin nombre, pestañas que desbordaban) y quedan en 0. **Un fallo del propio arnés**: tres baterías e2e nuevas salían en verde con fallos impresos; `resumen()` fija ahora el código de salida. **Bloqueado y declarado**: el ajuste de Railway y la lectura de la rama de transporte de Fortinet los denegó el control de permisos de la sesión (ver *Decisiones que necesitan al dueño*). **Alimentación**: los seis gateways Aruba desde los mismos PDF (Aruba 16/25). 565 unitarios, 16/16 pantallas, 7/7 contrastes y la batería e2e completa (14/14 scripts).)
 
@@ -828,14 +830,17 @@ riesgos R1–R11 en `docs/auditoria-fortinet-2026-09-23/LEEME.md`.
   `dcb662d9` en SUCCESS con `[seed]` y `listen`; sonda `/salud` 200 y `/login` 200. **Sigue
   abierta la aprobación explícita de arquitectura Fortinet** que pide el informe: la da una
   persona revisando `docs/auditoria-fortinet-2026-09-23/motor-y-bom.md`, no un despliegue.
-- **R1 · La retirada de SSL-VPN en modo túnel en FortiOS 7.6.3+ está citada, no leída.** Viene
-  de la referencia [3] del informe (Release Notes 7.6.6). `docs.fortinet.com` responde
-  `connect_rejected` al proxy de egreso. La regla lleva `leida:false` y la pantalla lo dice junto
-  al bloqueo. **Se cierra** leyendo las Release Notes 7.6.x desde una máquina con acceso y
-  pasando la regla a `leida:true` con la cita literal.
-- **R2 · «Modelos con 2 GB de RAM» (nota 10 del Matrix) no dice cuáles son.** En 7.6.0–7.6.2
-  la compatibilidad con SSL-VPN queda «desconocida», con confianza baja y la cotización en
-  borrador. Hace falta la RAM por modelo, que está en las fichas por serie.
+- ~~**R1 · La retirada de SSL-VPN en modo túnel en FortiOS 7.6.3+ está citada, no leída.**~~
+  **Cerrado el 2026-09-24**: la página de las Release Notes de 7.6.3 se trajo desde Actions
+  (`traer-fortinet-pendientes.yml`, corrida `35997261950`) y dice lo que la regla aplicaba,
+  «This applies to all FortiGate models». La regla pasa a `leida:true` con la cita literal; el
+  caso «citada y no leída» se sigue probando con un catálogo sintético y, en pantalla,
+  interceptando la API.
+- ~~**R2 · «Modelos con 2 GB de RAM» (nota 10 del Matrix) no dice cuáles son.**~~ **Cerrado el
+  2026-09-24**: las Release Notes de 7.6.0 (PDF de `fortinetweb.s3`) dan la lista —40F y
+  variantes, 60F, 61F— y la cierran: «FortiGate models not listed above will continue to have
+  SSL VPN web and tunnel mode support». La regla pasa a esos tres modelos y en 7.6.0–7.6.2 ya
+  no queda nada «desconocido».
 - ~~**Accesibilidad no ejecutada**~~ **La parte automática, cerrada el 2026-09-24**:
   `test/e2e/e2e-accesibilidad.js` pasa axe-core (WCAG 2.0/2.1 A y AA) por 17 estados de pantalla
   —incluidos escenarios con resultados y la pestaña de BOM— y comprueba el reflujo a 640 px (200 %
@@ -845,15 +850,18 @@ riesgos R1–R11 en `docs/auditoria-fortinet-2026-09-23/LEEME.md`.
   y las pestañas de cinco dimensionadores que desbordaban. **Sigue abierta, y es humana, la prueba
   con un lector de pantalla real** (NVDA, VoiceOver): axe comprueba la semántica que un lector
   necesita, no si lo que anuncia se entiende.
-- **SKU que dejan la cotización en borrador**, sin afectar al dimensionamiento:
-  - EMS por tramo: hay patrón, no el código del tramo;
-  - FortiSASE;
-  - FortiSandbox dedicado;
-  - FortiAnalyzer;
-  - licencia de VDOM adicional;
-  - segunda fuente opcional.
-
-  Van con `sku: null` declarado. Mismo transporte que F2: el Ordering Guide de FortiGuard.
+- **Lo que deja la cotización en borrador**, sin afectar al dimensionamiento (rev. 2026-09-24):
+  - **Precio, no SKU**: SD-WAN Service, FortiClient EMS y FortiSASE salen ya con su SKU exacto
+    de los Ordering Guides, pero **la lista de precios de septiembre no trae ninguno**. Se cierra
+    con la lista del distribuidor que los incluya.
+  - **SD-WAN Service de 70G, 200G y 4800F**: el Ordering Guide imprime un código de modelo que no
+    es el de la price list (FG70G/GT70G, F200G/FG2HG, F481F/F48HF), y no se sabe cuál es el
+    pedible. Lo confirma el distribuidor.
+  - **FortiSASE por debajo de 50 usuarios**: la banda publicada más baja empieza en 50.
+  - **FortiSandbox dedicado y FortiAnalyzer**: son otro dimensionamiento (archivos/hora y VM de
+    detonación; forma y GB/día). El mensaje cita la tabla exacta de su Ordering Guide.
+  - **Licencia de VDOM adicional** y **segunda fuente opcional**: sin SKU en ningún documento
+    traído ni en la price list.
 - **17 precios de licencias de la edición de agosto** (`anterior`). La lista de septiembre no
   trae esos SKU; la línea sale en borrador y dice cuál. Se cierran con la próxima lista que los
   traiga.
@@ -868,7 +876,14 @@ riesgos R1–R11 en `docs/auditoria-fortinet-2026-09-23/LEEME.md`.
 **Cerrados el 2026-09-23 (F1, F4 en su mayor parte, F7).** Ver `docs/rediseno-fortinet.md`,
 etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
 
-- **F6 · Los 4 modelos sin ninguna figura de hardware** (100F, 200F y los chasis 7081F y
+- ~~**F6 · Los 4 modelos sin ninguna figura de hardware**~~ **Cerrado el 2026-09-24**: el 100F y el
+  200F desde la página «Hardware» de su ficha por serie **coreana** oficial (la inglesa da 404 en
+  todas las rutas) y los chasis 7081F y 7121F desde sus System Guide, con las caras rotuladas
+  literalmente. 58 de 58 modelos con figura. El dibujo del 100F rotula «FortiGate 212F» en el
+  chasis y se declara; las frontales de los chasis son configuraciones de ejemplo y también se
+  declara. **Lo que sigue es la historia de cómo se llegó**, que conviene no repetir: la primera
+  corrida del workflow no trajo nada porque sus 15 URL se habían adivinado por patrón. Texto
+  original: (100F, 200F y los chasis 7081F y
   7121F). **Sigue bloqueado y el bloqueo se volvió a medir el 2026-09-23**: `www.fortinet.com`
   y `docs.fortinet.com` devuelven `connect_rejected` del proxy de egreso —denegación de
   política de la organización, no un fallo de red—. El datasheet por serie de 100F y 200F no
@@ -887,7 +902,12 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
   publicada. **Lo que falta es leerla**: desde la sesión, el control de permisos denegó traer
   esa rama, y no se intentó por otra vía. La lee el dueño (el resumen de la corrida dice qué
   documento bajó) o concede el permiso; después, la transcripción sigue su camino con anclaje.
-- **F2 · Los SKU de los tres servicios avanzados de SD-WAN** (Underlay & Application
+- ~~**F2 · Los SKU de los tres servicios avanzados de SD-WAN**~~ **Cerrado el 2026-09-24 en lo que
+  el documento resuelve**: el Ordering Guide de Secure SD-WAN (R31, ago-2026) no los vende como
+  tres líneas sino como **un SKU por equipo**, el SD-WAN Service add-on (1387 hasta el 50G, 1389
+  desde el 70G), y la matriz del Ordering Guide de FortiGuard lo confirma. Doble anclaje sobre el
+  código de modelo contra la price list firmada: 20 de 23; los tres que no casan se quedan sin SKU
+  con su motivo. Sin precio en la lista de septiembre. Texto original: (Underlay & Application
   Monitoring, Overlay Orchestration, conector FortiSASE), de la categoría «SD-WAN» del
   Ordering Guide de FortiGuard. **Se buscó en las ramas de transporte el 2026-09-23 y no está**:
   el `sd-wan-ordering-guide.pdf` que hay en `fuente/fortinet-product-matrix` es el de **Aruba**,
@@ -909,8 +929,11 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
 - **F5 · Si un derate publicado por Fortinet apareciera** para proxy, SIP, logging o HA
   activo-activo, entraría como dato con su fuente. Los del informe se excluyeron porque
   dependen del flujo, del perfil, del cifrado y de la configuración: no son constantes.
-- **De los 7 modelos que el Product Matrix de septiembre ya no lista quedan 2: el 100F y el
-  200F.** Los otros cinco (400F, 401F, 600F, 1000F y 1001F) se cerraron el 2026-09-23 en la
+- ~~**De los 7 modelos que el Product Matrix de septiembre ya no lista quedan 2: el 100F y el
+  200F.**~~ **Cerrado el 2026-09-24**: su ficha coreana oficial, anclada con seis cifras por fila
+  (12 de 12), trae `ssl`, `cps` y los siete límites; `FICHAS_LIMITES` vuelve a comprobar las
+  anclas en cada carga. El consumo del 100F **no** casa con esa revisión de 2023 y sigue saliendo
+  de la R42 de 2025. Texto original: Los otros cinco (400F, 401F, 600F, 1000F y 1001F) se cerraron el 2026-09-23 en la
   etapa 7 con sus fichas por serie (`FICHAS_LIMITES` en `fortinet.js`). Esas fichas ya estaban
   en las ramas de transporte y casaron 12 de 12 contra cuatro anclas, que se comprueban al
   cargar. El 100F y el 200F siguen **apartándose con su motivo** cuando un escenario pide esos
@@ -1134,7 +1157,13 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     parche (`e2e-ci.patch`) porque el token en uso no tiene scope «workflow» —
     aplicarlo es acción manual del dueño, junto a la de 33.
 
-33. **Railway no espera a CI (reformulado el 2026-09-24).** *Medido el 2026-09-23: el servicio
+33. **Railway no espera a CI (reformulado el 2026-09-24).** *Segundo intento el 2026-09-24, con
+    autorización expresa del dueño: tampoco fue posible. `describe-service` confirma
+    `checkSuites: false`; el conector de Railway no tiene ninguna herramienta que toque ese campo
+    y su agente volvió a responder «Agent usage limit reached» dos veces. Queda como un clic del
+    dueño, con los pasos, el requisito de permisos de la GitHub App y el análisis de los
+    workflows (qué correrá, qué no puede bloquearse y el caso límite de la vigía) en
+    `docs/decisiones-del-dueno-2026-09-24.md`, sección 1.* *Medido el 2026-09-23: el servicio
     `presales-web` tiene `source.checkSuites: false`, así que no espera ni a `verificar` ni a
     `pantallas` — el despliegue `dcb662d9` se creó antes de que `verificar` arrancara. **La
     acción que lo cierra es activar «Wait for CI»** en los ajustes del origen del servicio en
@@ -1317,18 +1346,29 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
 
 ## Decisiones que necesitan al dueño del producto
 
-- **Activar «Wait for CI» en Railway** (`presales-web` → ajustes del origen). Medido: hoy no
-  espera a nada. Es el cierre del punto 33. Desde la sesión no se pudo (2026-09-24). Con él,
-  cada despliegue esperaría al job de `pantallas` (pantallas + contraste + batería e2e), que es
-  el workflow más lento: esa espera es el precio de que un flujo roto no llegue a producción.
-- **Leer `fuente/fortinet-pendientes`, o conceder permiso para leerla.** El workflow corrió en
-  verde el 2026-09-23 (corrida `35934676181`); el control de permisos de la sesión denegó traer
-  la rama. De ahí salen F6 (figuras de 100F/200F/chasis), F2 (SKU de SD-WAN) y parte de los SKU
-  que dejan la cotización en borrador.
-- **M4 de Aruba**: si la descarga del breakout se limita a la capacidad de Internet (ver la
-  sección de Aruba).
+**Las cuatro primeras están preparadas para resolverse en minutos en
+`docs/decisiones-del-dueno-2026-09-24.md`** (también publicado como página), con los pasos, lo
+que ya se comprobó y lo que cuesta cada opción.
+
+- **Activar «Wait for CI» en Railway** (`presales-web` → *Settings* → *Source*). Medido el
+  2026-09-24: `source.checkSuites: false`. **Desde la sesión no se pudo, y se intentó con
+  autorización expresa del dueño**: el conector de Railway no expone ese ajuste y su agente
+  respondió dos veces «Agent usage limit reached»; no hay CLI ni token en el contenedor. **Se
+  comprobó que funcionará a la primera**: solo `verificar.yml` y `pantallas.yml` corren en push a
+  `main`, los dos con el `on: push` que Railway exige, ninguno cancela corridas por
+  `concurrency`, y la sonda es manual. Caso límite anotado: la vigía de los lunes. Coste: 6-7,5
+  minutos por despliegue. Cierra el punto 33 y la condición 4 del GO.
+- ~~**Leer `fuente/fortinet-pendientes`, o conceder permiso para leerla.**~~ **Hecho el
+  2026-09-24** con el «sí» del dueño: la rama no traía ningún documento (15 URL adivinadas, 15
+  404). Buscadas las reales, dos corridas trajeron 12 documentos oficiales y de ellos salieron
+  F6, F2, R1, R2 y los SKU de EMS y FortiSASE (ver *Cerrado recientemente*).
+- **M4 de Aruba**: si la descarga del breakout se limita a la capacidad de Internet. **Medido**:
+  solo mueve el Boost (en MPLS 1.000 + DIA 100, 1 bloque con la regla actual frente a 3
+  limitada). **Recomendación: limitarla**; decide el dueño.
 - **Aprobación de arquitectura Fortinet** sobre `docs/auditoria-fortinet-2026-09-23/motor-y-bom.md`,
-  que es la condición del GO CONDICIONADO.
+  que es la condición 1 del GO CONDICIONADO. Lista de comprobación en el documento de decisiones.
+- **Prueba con un lector de pantalla real** (NVDA o VoiceOver): guion de diez tareas con lo que
+  debería oírse y qué parte ya está automatizada, en el mismo documento.
 - **Si `agent-reach` se activa de verdad, con qué credenciales** (2026-09-22). La skill está
   instalada y declarada, pero **no se ha configurado ningún canal con login**, y esa parte no
   es un `npm install`: pide cookies de Twitter (`TWITTER_AUTH_TOKEN`, `TWITTER_CT0`), un
@@ -1345,6 +1385,52 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Los documentos pendientes de Fortinet, traídos y leídos (2026-09-24)
+
+Encargo del dueño, con un «sí» explícito para leer la rama de transporte que el control de
+permisos había denegado.
+
+- **La rama no traía nada.** `fuente/fortinet-pendientes` (corrida `35934676181`) solo tenía el
+  informe de la corrida: las 15 URL del workflow se habían **adivinado por patrón** y dieron 404
+  todas. Se buscaron las reales, y dos corridas nuevas (`35991156286` y `35997486119`, esta
+  última sobre la rama de trabajo, sin tocar producción) trajeron **12 documentos**, validados
+  por la firma del contenido y, en la página web, por su texto:
+  - las fichas por serie del 100F y el 200F;
+  - los System Guide del 7081F y el 7121F;
+  - los Ordering Guides de FortiGuard, Secure SD-WAN, FortiClient, FortiSASE, FortiSandbox y
+    FortiAnalyzer;
+  - las Release Notes de FortiOS 7.6.0 y 7.6.3.
+- **F6.** El 100F y el 200F no tienen ficha en inglés en ninguna ruta, pero la **coreana
+  oficial** sigue en el CDN de fortinet.com.
+  - Su tabla se reconstruyó por coordenadas y se ancló con seis cifras ya verificadas por fila:
+    12 de 12.
+  - Entran `cps` (56.000 y 280.000) y los siete límites. `cps` y `ssl` pasan a 58 de 58.
+  - El consumo del 100F **no** casa con esa revisión de 2023 y sigue saliendo de la de 2025.
+  - Las figuras cubren los 58 modelos, con los chasis incluidos. El dibujo del 100F rotula
+    «FortiGate 212F» y se declara.
+- **F2.** Los tres servicios avanzados de SD-WAN no son tres líneas: son **un SKU por equipo**,
+  el SD-WAN Service add-on.
+  - Casa con la price list en 20 de 23 modelos; los otros tres llevan su motivo.
+  - Lo que falta es el precio, no el código.
+  - Ese SKU ya incluye plazas de FortiSASE, y se avisa para no pagarlas dos veces. Los dos
+    documentos oficiales **discrepan** en el último tramo, y el aviso cita los dos.
+- **EMS y FortiSASE con SKU exacto.**
+  - EMS se reparte en packs de 25, 500, 2.000 y 10.000 endpoints, en la nube o on-premise.
+  - FortiSASE va por edición y por banda de usuarios.
+  - La pantalla pregunta el despliegue de EMS y la edición de FortiSASE.
+- **Condición 2 del GO, cerrada.** La regla de SSL-VPN de 7.6.3+ pasa a leída. La de 7.6.0 deja
+  de ser «desconocida»: las Release Notes dan la lista cerrada de modelos de 2 GB de RAM.
+- **La matriz de bundles FortiGuard, leída columna a columna, coincide con `BUNDLES.incluye`.**
+  El sandbox en la nube va incluido en los tres bundles, y su aviso deja de advertir y cita la
+  fuente.
+- **Lo que se destapó al llegar el dato.** Varias pruebas se quedaron sin sujeto, y **el
+  contraste `fortinet-ssl` pasaba en falso** («ninguno de los 0 sin cifra aparece»).
+  - Ninguna se ablandó.
+  - Las unitarias prueban la misma regla sobre el modelo con el dato **borrado**.
+  - El contraste y los e2e interceptan la API para recrear el hueco, y fallan si la
+    intercepción no se aplica. Se comprobó saboteándola.
+- **Lo que no se pudo: «Wait for CI».** Ver *Decisiones que necesitan al dueño*.
 
 ### La batería e2e corre en CI y espera a condiciones, no a relojes (2026-09-24)
 

@@ -53,6 +53,29 @@ un documento que no está en este entorno:
    - **se advierten con confianza media**: los topes de rutas, vecinos y VRF de la
      *Maximum Values Table* (F4-resto).
 
+**Estado de las condiciones a 2026-09-24.** La lista de arriba es la del veredicto y no se
+reescribe. Lo que ha cambiado desde entonces:
+
+1. **Aprobación de arquitectura: abierta.** La lista de comprobación para quien aprueba está en
+   `docs/decisiones-del-dueno-2026-09-24.md`, sección 2. Debajo de esta línea se anota el
+   resultado, con nombre y fecha.
+2. **Fuente citada y no leída: cerrada.** Las Release Notes de 7.6.3 se trajeron desde Actions
+   y dicen lo que la regla aplicaba: «This applies to all FortiGate models». La regla es
+   `leida:true`. Las de 7.6.0 dan además la lista cerrada de modelos de 2 GB de RAM, así que en
+   7.6.0–7.6.2 ya no hay compatibilidad «desconocida».
+3. **Accesibilidad: casi cerrada.** axe (WCAG 2.1 A/AA) y el reflujo a 640 px están
+   automatizados en `test/e2e/e2e-accesibilidad.js`. Falta el lector de pantalla real; su guion
+   está en la sección 4 del documento de decisiones.
+4. **Pruebas que no frenan el despliegue: abierta.** Depende de activar «Wait for CI» en
+   Railway. La sesión no pudo hacerlo; los pasos están en la sección 1 del mismo documento.
+5. **Datos que faltan: reducida.**
+   - F6 cerrada: 100F y 200F con sus límites y su figura, y los chasis con figura.
+   - F2 con SKU exacto en 20 de 23 modelos.
+   - EMS y FortiSASE con SKU exacto.
+   - Lo que sigue en borrador es sobre todo **precio**, que la lista de septiembre no trae.
+   - Siguen igual: FortiAnalyzer y FortiSandbox dedicado (otro dimensionamiento), la licencia
+     de VDOM adicional, el configurador de chasis y F4-resto.
+
 **Quién decide:** el dueño del repositorio (fusión y despliegue) y el arquitecto Fortinet que
 pide el informe (aprobación técnica). El siguiente paso verificable está en
 [*Cómo revisar y desplegar*](#cómo-revisar-y-desplegar).
