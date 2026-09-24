@@ -225,3 +225,21 @@ test('renovacion: sin fila de equipo viajan SOLO los servicios, y el nombre del 
   assert.ok(!cola.some((e) => e.modelo), 'una renovacion no cotiza la caja');
   assert.deepStrictEqual(llano(cola.map((e) => e.ref.sku)), ['FC-10-FG9HG-809-02-36', 'FC-10-FG9HG-204-02-36']);
 });
+
+test('fabricante fuera de CATALOG: todo el BOM viaja como referencia y el nombre suelto no', () => {
+  // Starlink no esta en el catalogo del cotizador: mandar el kit por su nombre acabaria en
+  // «no encontrado» y la cotizacion saldria sin el hardware.
+  const g = cargar('public/js/bom.js');
+  g.BOM.fijarVendor('Starlink');
+  g.BOM.renderTabla([
+    { cat: 'Equipo', desc: 'Starlink Standard (kit)', sku: null, qty: 2, unit: null, nota: '' },
+    { cat: 'Servicio', desc: 'Plan de servicio Starlink Business', sku: null, qty: 2, unit: null, nota: '' },
+  ], {});
+  const r = g.BOM.enviarACotizador({ modelo: 'Starlink Standard', qty: 2, de: 'Starlink', todoComoRef: true });
+  assert.strictEqual(r.ok, true);
+  assert.strictEqual(r.lineas, 2);
+  const cola = g.BOM.recogerEntrada();
+  assert.ok(!cola.some((e) => e.modelo), 'el kit no viaja ademas por su nombre');
+  assert.deepStrictEqual(llano(cola.map((e) => [e.ref.d, e.ref.cat, e.qty])),
+    [['Starlink Standard (kit)', 'Equipo', 2], ['Plan de servicio Starlink Business', 'Servicio', 2]]);
+});

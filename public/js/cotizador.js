@@ -77,7 +77,9 @@ const esc=s=>String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt
       // una licencia se presenta como «Licencias FortiGuard» y no como «Referencia de
       // pedido», que es de donde venia este canal. Distingue tambien la nota, porque las dos
       // procedencias no son la misma cosa: una la calculo el motor, la otra la anadio alguien.
-      bom.push({id: nextId++, vendor: hermano ? hermano.vendor : vend,
+      // Sin hermano en CATALOG (Starlink) el nombre llega en minusculas, porque `bom.js` lo
+      // guarda asi para separar las referencias por fabricante: se pinta con mayuscula inicial.
+      bom.push({id: nextId++, vendor: hermano ? hermano.vendor : vend.charAt(0).toUpperCase() + vend.slice(1),
         color: hermano ? hermano.color : 'var(--steel)', model: r.d || r.sku,
         seg: r.cat || 'Referencia de pedido', spec: r.sku || '', refSku: clave,
         elp: r.p == null ? 'Consultar' : ('~ $' + Number(r.p).toLocaleString('en-US')),

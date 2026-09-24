@@ -25,12 +25,12 @@ test('ninguna pantalla declara un campo de escenario que no existe', () => {
   assert.strictEqual(rotas.length, 0, `\n${detalle}\n`);
 });
 
-test('las ocho paginas de dimensionamiento entran en la comprobacion', () => {
+test('las nueve paginas de dimensionamiento (Starlink incluida) entran en la comprobacion', () => {
   // Sin esto, un fallo del parser que devolviera una lista vacia dejaria la prueba anterior en
   // verde sin haber mirado nada — el mismo modo de fallo que el conjunto inerte de
   // CISCO_EOL_MODELS, que se comportaba igual que uno que funciona.
   const filas = pantallas();
-  assert.strictEqual(filas.length, 8, `se esperaban 8 dimensionadores y se leyeron ${filas.length}`);
+  assert.strictEqual(filas.length, 9, `se esperaban 9 dimensionadores y se leyeron ${filas.length}`);
   for (const f of filas) {
     assert.ok(f.error || f.campos >= 4, `${f.pagina} declara ${f.campos} campos, sospechosamente pocos`);
   }

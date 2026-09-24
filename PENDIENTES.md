@@ -582,6 +582,24 @@ Cobertura actual por herramienta:
 | **Juniper** | sí (22 modelos) | sí (21) | sí | **sí** (nuevo) |
 | **Nokia** | sí (18 modelos) | sí (18) | sí | **sí, dos** (18/18 — fabric 7220 IXR + agregación/core) |
 | ~~Arista~~ | retirado | retirado | retirado | — |
+| **Starlink** | no | no (llega como referencias) | no | **sí** (nuevo, 2026-09-24 — 4 kits sin verificar) |
+
+**Starlink: el dimensionador existe, el dato está sin contrastar (2026-09-24).**
+`dimensionador-starlink-leo.html` elige el kit (Standard, Mini, Performance, Flat High
+Performance como línea anterior) y cuenta terminales por sitio. Lo que falta:
+- **Contrastar `server/seed/legacyData/starlink.js` con https://www.starlink.com/specifications.**
+  Bloqueado por egreso: desde este entorno `curl` a starlink.com no conecta (medido el
+  2026-09-24). Los campos en `null` —sobre todo del kit **Performance**: consumo, DC, IP,
+  dimensiones, cable— se muestran «no consta» y **apartan** el kit cuando el escenario los
+  pide (un presupuesto de potencia hoy aparta al Performance). El soporte en movimiento y
+  marítimo del **Mini** también va en `null`. Comando: bajar la ficha desde una máquina con
+  salida (o un workflow de Actions, como las de Fortinet) y transcribir con diff en git.
+- **Precios y SKU**: todos en `null`. Starlink tarifica por país; hace falta la lista del canal
+  autorizado con el que se cotice.
+- **Integración con el resto del portal, sin hacer a propósito**: no está en la barra de
+  fabricantes (`navegacion.js`), ni en `/api/catalog`, ni en `legacyData/fuentes.js`, ni en el
+  cotizador como equipo. Cada una toca conteos («7 fabricantes») que varias pruebas fijan; se
+  hace cuando el dato esté verificado, no antes.
 
 5. **Completar el catálogo del dimensionador Juniper — parcialmente resuelto (2026-09-02),
    ver *Cerrado recientemente*.** La «SRX Series and vSRX Performance and Features Matrix» se
@@ -1316,6 +1334,16 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Dimensionador y BOM de Starlink LEO (2026-09-24)
+
+Encargo del dueño: un botón «BOM Starlink» en el dashboard, la página y su BOM. La carpeta
+`starlink-leo-dimensionador` que se mencionó no existía en el entorno ni en GitHub, así que se
+escribió desde cero con la arquitectura del fabric Nokia 7220 (sin `ficha.js`: Starlink no
+publica una capacidad por terminal contra la que comparar). El caudal por terminal es un
+**supuesto declarado y editable** (100/10 Mbps). Un dato que falta **aparta** el kit con su
+motivo. Al cotizador viaja todo el BOM como referencias (`todoComoRef` en `bom.js`), porque el
+kit no está en `CATALOG`. 574 unitarios (9 nuevos) y 17/17 pantallas.
 
 ### Cierre de pendientes con lo que el repositorio ya tenía dentro (2026-09-24)
 
