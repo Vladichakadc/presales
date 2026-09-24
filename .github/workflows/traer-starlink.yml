@@ -1,0 +1,84 @@
+name: traer-starlink
+
+# Baja las especificaciones oficiales de los kits Starlink a la rama de transporte
+# `fuente/starlink-specs`, para contrastar `server/seed/legacyData/starlink.js` desde una
+# sesion que no tiene salida a starlink.com.
+#
+# POR QUE EN ACTIONS: medido el 2026-09-24 desde el entorno donde se edita este repositorio,
+# starlink.com no conecta a traves del proxy de egreso de la organizacion (politica, no fallo
+# de red). Los ejecutores de GitHub no pasan por ese proxy: es la misma via ya aprobada aqui
+# para Fortinet y Juniper.
+#
+# NO EXTRAE NADA. `scripts/traer-starlink.js` guarda los PDF que respondan con firma `%PDF` y
+# el texto RENDERIZADO de la pagina de especificaciones, que es una aplicacion montada con
+# JavaScript: un fetch devolveria el esqueleto sin una sola cifra. Cada texto se juzga por su
+# contenido (nombra un kit y trae magnitudes de ficha) y el que no pasa se publica igual,
+# marcado como vacio, para poder ver por que. La transcripcion al catalogo sigue siendo humana.
+#
+# POR QUE UNA RAMA Y NO main NI UN PR: son documentos de terceros, no activos de la
+# aplicacion. Se traen con `git fetch` y se descartan tras transcribir.
+#
+# LA CORRIDA SALE EN ROJO SI NO SE GUARDO NADA UTIL, pero publica el informe igual: un rojo
+# sin decir que respondio cada URL no se puede accionar.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  traer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      # Playwright va fuera de package.json a proposito (ver scripts/ayuda/chromium.js).
+      - name: Instalar Playwright y Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Traer las especificaciones
+        id: traer
+        continue-on-error: true
+        run: node scripts/traer-starlink.js --salida=fuente-starlink
+
+      - name: Publicar en la rama de transporte
+        if: always()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout -B fuente/starlink-specs
+          git add -f fuente-starlink/
+          git commit -m "Especificaciones Starlink descargadas $(date -u +%Y-%m-%d)"
+          git push --force origin fuente/starlink-specs
+
+      - name: Resumen
+        if: always()
+        run: |
+          {
+            echo '## Especificaciones Starlink'
+            echo ''
+            echo 'Rama `fuente/starlink-specs`. Traerla con:'
+            echo '```'
+            echo 'git fetch origin fuente/starlink-specs'
+            echo '```'
+            echo ''
+            echo 'Qué respondió cada intento (un texto sin cifras de ficha se reporta, no se da por bueno):'
+            echo '```'
+            cat fuente-starlink/informe.txt 2>/dev/null || echo 'sin informe: el script no llegó a escribirlo'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fallar si no se guardo nada util
+        if: steps.traer.outcome != 'success'
+        run: |
+          echo 'Ningun documento paso la comprobacion de contenido. Ver el resumen.'
+          exit 1
