@@ -21,7 +21,10 @@
         boostRecMbps     — el Boost recomendado por HPE de cada appliance, como numero,
                            para descartar el modelo que no lo sostiene.
    A1 · admiteDtd        — Dynamic Threat Defense no corre en EC-XS (doc oficial): filtro
-                           duro, no solo un aviso rojo debajo de la recomendacion. */
+                           duro, no solo un aviso rojo debajo de la recomendacion.
+   R11/M9 · escenariosUnderlay (2026-09-24) — un enlace de respaldo no suma en operacion
+                           normal: un 4G de backup inflaba el caudal, el tier y a veces el
+                           appliance. Misma regla que Fortinet (etapa 7). */
 (function(root, factory){
   const api = factory();
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -101,5 +104,44 @@
     return !!m && m.fam === 'ec' && m.dtd !== false;
   }
 
-  return { BOOST_CUOTA, tierParaCaudal, capacidadSo, boostMbpsSitio, boostRecMbps, admiteDtd };
+  // R11/M9 (2026-09-24). Escenarios de trafico del underlay, con la MISMA regla que
+  // `FortinetMotor.escenariosTrafico` (etapa 7 de Fortinet): un enlace de respaldo no suma en
+  // operacion normal; cuando cae un activo, su carga migra a los respaldos hasta su caudal, y
+  // lo que no cabe es `perdida`. El trafico que un respaldo recoge cuenta en la familia del
+  // RESPALDO: si cae el MPLS y lo cubre un 4G, ese caudal viaja por Internet.
+  //   · Sin ningun respaldo declarado devuelve solo la operacion normal, con las mismas sumas
+  //     de siempre: por eso los enlaces ya compartidos (que no traen `rol`) no cambian.
+  //   · Ninguna falla supera a la operacion normal (se quita un activo y entra como mucho su
+  //     mismo caudal), asi que el appliance, el tier y el Boost se dimensionan con `normal`;
+  //     las fallas sirven para decir cuanto se pierde si el respaldo no alcanza.
+  function escenariosUnderlay(wanLinks) {
+    const todos = wanLinks || [];
+    const enl = todos.filter((l) => l.down > 0);
+    const esMpls = (l) => /^MPLS/.test(l.tipo);
+    const act = enl.filter((l) => l.rol !== 'respaldo');
+    const resp = enl.filter((l) => l.rol === 'respaldo');
+    const suma = (arr) => arr.reduce((a, l) => a + l.down, 0);
+    const normal = { id: 'normal', n: 'Operación normal', mpls: suma(act.filter(esMpls)),
+      inet: suma(act.filter((l) => !esMpls(l))), respaldo: suma(resp), perdida: 0 };
+    normal.total = normal.mpls + normal.inet;
+    const out = [normal];
+    if (resp.length) {
+      act.forEach((L) => {
+        let pendiente = L.down;
+        let mpls = normal.mpls - (esMpls(L) ? L.down : 0);
+        let inet = normal.inet - (esMpls(L) ? 0 : L.down);
+        for (const Bk of resp) {
+          const mover = Math.min(pendiente, Bk.down);
+          if (esMpls(Bk)) mpls += mover; else inet += mover;
+          pendiente -= mover;
+        }
+        const i = todos.indexOf(L) + 1;
+        out.push({ id: `falla:${L.id}`, n: `Falla del enlace ${i} (${L.tipo})`, mpls, inet,
+          total: mpls + inet, perdida: pendiente, enlace: i, caidoMbps: L.down });
+      });
+    }
+    return out;
+  }
+
+  return { BOOST_CUOTA, tierParaCaudal, capacidadSo, boostMbpsSitio, boostRecMbps, admiteDtd, escenariosUnderlay };
 });

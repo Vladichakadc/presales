@@ -309,7 +309,10 @@ const MODELS = [
   // controladora). El selector «Sistema operativo de los gateways» de la página elige cuál
   // aplica. Antes el dimensionador filtraba con 32 y mandaba a un 9106 (US$9.228) una
   // sede de 40 APs que un 9012 (US$4.441) cubre en AOS 10.
-  {id:'Gateway 9004', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal peq',
+  // Alimentación (pendiente 15, 2026-09-24): leída en local de los PDF oficiales de
+  // public/datasheets/. HPE publica consumo MÁXIMO, no típico, así que va en el texto y no en
+  // psu.watts, que la ficha rotula «Consumo típico».
+  {id:'Gateway 9004', redund:false, psu:{tipo:'adaptador externo AC-DC 12 V DC, 2,5 A (JX990A, incluido en la caja)', volts:'90-264 V AC, 47-63 Hz', texto:'Datasheet de la serie 9000: «Power source: 12v DC, 2.5A AC-to-DC power adapter» y consumo máximo 25 W con USB; la PSNow dice «Each 9004 includes a JX990A power adapter supply in the box». Una sola fuente; el documento no publica una segunda entrada.'}, fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal peq',
    fw:4000, clients:2048, aps:128, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
    porSo:{aos10:{aps:128}, aos8:{aps:32}},
    ifaces:'4x GbE RJ45', hwSku:'R1B20A', skus:[{sku:'R1B20A',d:'9004 (US) · 4x GbE RJ45'}],
@@ -319,7 +322,7 @@ const MODELS = [
      ruido:'0 dBA (sin ventilador)', watts:'25 W máx.', dims:'3,82 × 19,85 × 15,31 cm', peso:'1,143 kg'},
    ds:'https://www.hpe.com/psnow/doc/a00091602enw', dsFile:'gateway-9004.pdf'},
 
-  {id:'Gateway 9004-LTE', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal peq + LTE',
+  {id:'Gateway 9004-LTE', redund:false, psu:{tipo:'adaptador externo AC-DC 12 V DC, 2,5 A (JX990A, incluido en la caja)', volts:'90-264 V AC, 47-63 Hz', texto:'Datasheet de la serie 9000 (columna 9004/9004-LTE): «Power source: 12v DC, 2.5A AC-to-DC power adapter», consumo máximo 25 W con USB; la PSNow dice «Each 9004-LTE includes a JX990A power adapter supply in the box». Una sola fuente; el documento no publica una segunda entrada.'}, fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal peq + LTE',
    fw:4000, clients:2048, aps:128, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
    porSo:{aos10:{aps:128}, aos8:{aps:32}},
    ifaces:'4x GbE RJ45 + LTE integrado (uplink dedicado o redundante)', hwSku:'R3V91A',
@@ -330,7 +333,7 @@ const MODELS = [
      ruido:'0 dBA (sin ventilador)', watts:'25 W máx.', dims:'3,82 × 19,85 × 15,31 cm', peso:'1,143 kg'},
    ds:'https://www.hpe.com/psnow/doc/a00091602enw', dsFile:'gateway-9004.pdf'},
 
-  {id:'Gateway 9012', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal med / gde',
+  {id:'Gateway 9012', redund:false, psu:{tipo:'fuente interna única', volts:'90-264 V AC, 47-63 Hz (3 A a 100 Vrms)', texto:'Datasheet de la serie 9000: «Power source: Internal Power Supply 90VAC–264VAC 47-63Hz 3A at 100Vrms», consumo máximo 160 W con 120 W de PoE. El documento no publica ranura para una segunda fuente.'}, fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal med / gde',
    fw:6000, clients:2048, aps:256, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
    porSo:{aos10:{aps:256}, aos8:{aps:32}},
    ifaces:'12x GbE RJ45 (6x PoE+)', hwSku:'R1B31A',
@@ -351,13 +354,13 @@ const MODELS = [
   // Central — la que aplica a este catálogo, no la fila separada "AOS-8" del mismo documento).
   // `greTuns` se deja en null a propósito: esa tabla no publica un tunel GRE aparte para
   // AOS-10, solo lo hace la sección AOS-8 (8K, solo 9106) que es otra arquitectura de gestión.
-  {id:'Gateway 9106', fam:'gw', rol:'sucursal', serie:'Serie 9100 Hybrid', seg:'Sucursal gde / Campus peq',
+  {id:'Gateway 9106', redund:false, psu:{tipo:'adaptador externo de 165 W (repuesto S0G32A), salida 54 V', volts:'100-240 V AC, 50-60 Hz', texto:'QuickSpecs de la serie 9100: «Power Supply Slots: -» (sin ranuras de fuente), «Power Source: 165W», consumo máximo 150 W. El repuesto es el «9106 Spare Power Adapter» S0G32A.'}, fam:'gw', rol:'sucursal', serie:'Serie 9100 Hybrid', seg:'Sucursal gde / Campus peq',
    fw:10000, clients:8000, aps:2000, fwSess:2000000, ipsecSess:16000, greTuns:null, boostMax:null,
-   // C3 (2026-09-17): las cifras son de la tabla AOS 10. La sección AOS-8 de la misma
-   // QuickSpecs no está transcrita: en AOS 8 el modelo se descarta y se dice por qué, en
-   // vez de afirmar con cifras de otra arquitectura que cumple.
-   porSo:{aos8:null},
-   porSoMotivo:{aos8:'el catálogo solo trae la tabla AOS 10 de las QuickSpecs 9100 — la capacidad en AOS 8 se confirma en su sección AOS-8 antes de cotizarlo'},
+   // C3 (2026-09-17): las cifras base son de la tabla AOS 10. La tabla «AOS-8 Specifications»
+   // de la misma QuickSpecs (p. 14, public/datasheets/serie-9100-hybrid-quickspecs.pdf) se
+   // transcribió el 2026-09-24, leída en local: 256 APs («Maximum APs (Campus or Remote)») y
+   // 8K usuarios/dispositivos concurrentes, clúster de 4. El 9114 figura «Not Supported».
+   porSo:{aos8:{aps:256, clients:8000}},
    ifaces:'2x SFP+ 10GbE + 2x combo SFP/RJ45 1GbE + 2x RJ45 1GbE con PoE hasta 60W',
    spec:{cluster:'Hasta 6 gateways por cluster (AOS 10)', tuneles:'20.000 túneles totales (AOS 10)',
      encTput:'GRE / AES-CBC-128/256 / AES-GCM-128/256: 10 Gbps (a velocidad de línea)',
@@ -366,7 +369,7 @@ const MODELS = [
    hwSku:'S5H02A', skus:[{sku:'S5H02A',d:'9106 (US) · 2x SFP+ · 2x Combo · 2x PoE'}],
    ds:'https://www.hpe.com/us/en/collaterals/collateral.a50006999enw.html', dsFile:'serie-9100-hybrid-quickspecs.pdf'},
 
-  {id:'Gateway 9114', fam:'gw', rol:'campus', serie:'Serie 9100 Hybrid', seg:'Campus peq / Sucursal grande',
+  {id:'Gateway 9114', redund:'opcional', psu:{tipo:'fuente modular de 250 W (X371, 12 V DC); la segunda es la JL085A', volts:'100-240 V AC, 50-60 Hz', texto:'QuickSpecs de la serie 9100: «Power Supply Slots: 1 + Redundant», «Power Source: 250-watt power supply», consumo máximo 185 W. La variante DC (R9M48A) lo dice literal: «Includes one DC power supply along with one open slot for redundancy». La fuente X371 de 250 W (JL085A) figura en «Power Options».'}, fam:'gw', rol:'campus', serie:'Serie 9100 Hybrid', seg:'Campus peq / Sucursal grande',
    fw:20000, clients:10000, aps:4000, fwSess:2000000, ipsecSess:32000, greTuns:null, boostMax:null,
    porSo:{aos8:null},
    porSoMotivo:{aos8:'no corre AOS 8: la matriz de sistema operativo lo lista solo en AOS 10 (10.5.0.1+)'},
@@ -379,7 +382,7 @@ const MODELS = [
    ds:'https://www.hpe.com/us/en/collaterals/collateral.a50006999enw.html', dsFile:'serie-9100-hybrid-quickspecs.pdf'},
 
   // ─── Serie 9200 · Campus Gateways ──────────────────────────────────────────
-  {id:'Gateway 9240', fam:'gw', rol:'campus', serie:'Serie 9200', seg:'Campus / Hub regional',
+  {id:'Gateway 9240', redund:'opcional', psu:{tipo:'fuente modular de 550 W AC (PSU-550-AC); la segunda es la R7J63A', volts:'100-240 V AC, 50-60 Hz', texto:'QuickSpecs y PSNow de la serie 9200: «Power supply slots: 1 + redundant», «Power source: 550-watt power supply»; consumo 115 W en reposo y 190 W a plena carga. La PSU-550-AC R7J63A figura como repuesto.'}, fam:'gw', rol:'campus', serie:'Serie 9200', seg:'Campus / Hub regional',
    fw:20000, clients:32000, aps:4000, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
    // C2 de la auditoría 2026-09-17: el catálogo cotizaba los SKU de licencia de AOS 10
    // (R8R41AAE/R8R42AAE, «9240 AOS10 Silver/Gold Capacity License» en la propia lista del
@@ -597,6 +600,33 @@ for (const m of MODELS) {
   m.eolAnnounced = EOL_ANNOUNCED[m.id] || null;
 }
 
+// IDS/IPS Y ESCALA DE HEADEND DE LOS GATEWAYS (2026-09-24, A2 y M8 de la auditoría del
+// 2026-09-17). FUENTE: «EdgeConnect SD-Branch» Validated Solution Guide de HPE (septiembre de
+// 2026, copia en public/datasheets/sd-branch-design-vsg.pdf), p. 63, tablas «HPE Aruba
+// Networking Branch Gateways» (fila «IDS/IPS throughput») y «HPE Aruba Networking Headend
+// Gateways» (fila «Maximum SD-WAN tunnels»). Leídas en local; las fichas de serie del repo no
+// publican la cifra de IDS/IPS. El 9004-LTE NO aparece en esa tabla y se queda sin cifra —no
+// se le copia la del 9004, aunque compartan plataforma—, igual que la línea 7000/7200, que
+// además no tiene nivel «+ Security» de Central. La tabla de headend trae también el 7280 y
+// los gateways virtuales (vGW 500M/2G/4G: 1.600/4.096/8.192 túneles), fuera de este catálogo.
+const GATEWAY_VSG = {
+  'Gateway 9004': {idsMbps:1100},
+  'Gateway 9012': {idsMbps:1100, vpncTuneles:512},
+  'Gateway 9106': {idsMbps:2500, vpncTuneles:8000},
+  'Gateway 9114': {idsMbps:4000, vpncTuneles:16000},
+  'Gateway 9240': {idsMbps:6000, vpncTuneles:32000},
+  '7240XM':       {vpncTuneles:6144},
+};
+for (const m of MODELS) {
+  const v = GATEWAY_VSG[m.id];
+  m.idsMbps = v && v.idsMbps != null ? v.idsMbps : null;
+  m.vpncTuneles = v && v.vpncTuneles != null ? v.vpncTuneles : null;
+  // La ficha lo pinta en la fila «IDS/IPS integrado» que EdgeConnect ya usaba.
+  if (m.idsMbps != null) {
+    m.spec = Object.assign({}, m.spec, { idsips: `Hasta ${String(m.idsMbps / 1000).replace('.', ',')} Gbps de throughput IDS/IPS (VSG SD-Branch, sep-2026) · licencia de Central «+ Security»` });
+  }
+}
+
 // Sucesor natural de cada gateway legacy (series 7000/7200) para el semáforo de ciclo de
 // vida del catálogo (fase 11, E5). INFERENCIA POR CAPACIDAD donde no hay documento — la
 // página lo etiqueta como «inferencia por capacidad, sin doc oficial» junto al dato.
@@ -609,6 +639,13 @@ const SUCESORES = {
   '7030': 'Gateway 9012',
   '7210': 'Gateway 9240',
   '7220': 'Gateway 9240',
+  // B1 de la auditoría 2026-09-17 (2026-09-24): el EC-XL salió de venta el 2026-03-31 y su
+  // entrada de la Product Lifecycle Policy no nombra reemplazo (EOL_ANNOUNCED.sucesor sigue
+  // en null: el documento no lo dice). Por capacidad, el EC-10150 es el appliance de la
+  // generación actual que cubre todo su rango (2-10 Gbps, hasta 12). El EC-L tiene el mismo
+  // rango pero es de la misma generación que el XL y arrastra señales de fin de venta de
+  // terceros sin confirmar (pendiente 16), así que no se propone como reemplazo.
+  'EC-XL': 'EC-10150',
 };
 for (const m of MODELS) {
   m.sucesor = SUCESORES[m.id] || null;
@@ -826,6 +863,47 @@ const CENTRAL_TIERS = {
     sku:{y1:'JZ118AAE', y3:'JZ119AAE', y5:'JZ120AAE'}, y1:1260, y3:2520, y5:3780},
   advanced:   {n:'Central Advanced',   d:'Añade analítica avanzada, AIOps y las capacidades de seguridad del nivel superior.',
     sku:{y1:'JZ121AAE', y3:'JZ122AAE', y5:'JZ123AAE'}, y1:1890, y3:3780, y5:5670},
+};
+
+// Central para gateways SD-Branch POR SERIE (2026-09-24, A2/A3/A4 de la auditoría del
+// 2026-09-17). Los SKU de arriba son los de la familia 90/70xx y se aplicaban a TODO gateway,
+// también a los 9106/9114 (serie 9100) y al 9240 (serie 9200), que tienen los suyos.
+// FUENTE: «HPE Aruba Networking Central SaaS subscriptions» (agosto de 2026, copia en
+// public/datasheets/central-suscripciones-saas.pdf), tablas 9 y 11 a 16, E-STU. La familia
+// 90/70xx, la 72xx y la Foundation Base casan además con el «Aruba SD-WAN Gateways Ordering
+// Guide» (a00075200enw, public/datasheets/sd-wan-ordering-guide.pdf), que es de 2020 y por
+// eso no trae las series 9100 y 9200. Leídos los dos en local el 2026-09-24.
+// SOLO SKU, NUNCA PRECIO: el precio sale de la lista del distribuidor ya cargada
+// (aruba-lista-precios-hpe.csv), que hoy solo tarifa la 90/70xx Foundation y Advanced —las de
+// CENTRAL_TIERS—. El resto va a «consultar» con su SKU exacto, que es lo que hay que pedir.
+// Reglas de aplicación de la tabla 9 del documento, declaradas aquí para no deducirlas:
+//   · «+Security» (IDS/IPS, antimalware): solo 90xx, 91xx y 92xx — ni 70xx ni 72xx.
+//   · Foundation Base: 7005, 7008, 9004, 9004-LTE y 9012, «limited to 75 client devices in
+//     the branch», y «applicable for branch gateways and not for VPN concentrators».
+//   · El término de 10 años existe en el documento pero la herramienta no lo ofrece.
+const CENTRAL_POR_SERIE = {
+  '90/70xx': {series:['Serie 7000', 'Serie 9000'],
+    foundation:        {n:'Central Foundation',            sku:{y1:'JZ118AAE', y3:'JZ119AAE', y5:'JZ120AAE', y7:'R0G52AAE'}},
+    advanced:          {n:'Central Advanced',              sku:{y1:'JZ121AAE', y3:'JZ122AAE', y5:'JZ123AAE', y7:'R0G54AAE'}},
+    foundationSec:     {n:'Central Foundation + Security', sku:{y1:'R4D98AAE', y3:'R4D99AAE', y5:'R4E00AAE', y7:'R4E01AAE'}, soloSeries:['Serie 9000']},
+    advancedSec:       {n:'Central Advanced + Security',   sku:{y1:'R4E03AAE', y3:'R4E04AAE', y5:'R4E05AAE', y7:'R4E06AAE'}, soloSeries:['Serie 9000']},
+    foundationBase:    {n:'Central Foundation Base',       sku:{y1:'JZ124AAE', y3:'JZ125AAE', y5:'JZ126AAE', y7:'R0G56AAE'},
+                        modelos:['7005', '7008', 'Gateway 9004', 'Gateway 9004-LTE', 'Gateway 9012'], maxClientes:75},
+    foundationBaseSec: {n:'Central Foundation Base + Security', sku:{y1:'R4D93AAE', y3:'R4D94AAE', y5:'R4D95AAE', y7:'R4D96AAE'},
+                        modelos:['Gateway 9004', 'Gateway 9004-LTE', 'Gateway 9012'], maxClientes:75},
+  },
+  '91xx': {series:['Serie 9100 Hybrid'],
+    foundation:    {n:'Central Foundation',            sku:{y1:'S0B88AAE', y3:'S0B89AAE', y5:'S0B90AAE', y7:'S0B91AAE'}},
+    advanced:      {n:'Central Advanced',              sku:{y1:'S0B98AAE', y3:'S0B99AAE', y5:'S0C00AAE', y7:'S0C01AAE'}},
+    foundationSec: {n:'Central Foundation + Security', sku:{y1:'S0B93AAE', y3:'S0B94AAE', y5:'S0B95AAE', y7:'S0B96AAE'}},
+    advancedSec:   {n:'Central Advanced + Security',   sku:{y1:'S0C03AAE', y3:'S0C04AAE', y5:'S0C05AAE', y7:'S0C06AAE'}},
+  },
+  '92/72xx': {series:['Serie 7200', 'Serie 9200'],
+    foundation:    {n:'Central Foundation',            sku:{y1:'JZ195AAE', y3:'JZ196AAE', y5:'JZ197AAE', y7:'R0G60AAE'}},
+    advanced:      {n:'Central Advanced',              sku:{y1:'JZ198AAE', y3:'JZ199AAE', y5:'JZ200AAE', y7:'R0G62AAE'}},
+    foundationSec: {n:'Central Foundation + Security', sku:{y1:'S0S50AAE', y3:'S0S51AAE', y5:'S0S52AAE', y7:'S0S53AAE'}, soloSeries:['Serie 9200']},
+    advancedSec:   {n:'Central Advanced + Security',   sku:{y1:'S0S55AAE', y3:'S0S56AAE', y5:'S0S57AAE', y7:'S0S58AAE'}, soloSeries:['Serie 9200']},
+  },
 };
 
 // ── Servicios de soporte ─────────────────────────────────────────────────────
@@ -1235,6 +1313,6 @@ const ACCESSORY_COMPAT = {
 
 module.exports = {
   MODELS, BUNDLES, CARE, CARE_SKU, LICENSES, LICENSES_HA, BW_TIERS, BOOST, FEC_OVERHEAD,
-  SOFTWARE, CENTRAL_TIERS, DATASHEETS, EOL_ANNOUNCED, OS_MATRIX,
+  SOFTWARE, CENTRAL_TIERS, CENTRAL_POR_SERIE, DATASHEETS, EOL_ANNOUNCED, OS_MATRIX,
   ARUBA_ACCESSORY_CATALOG, ACCESSORY_COMPAT, ARUBA_SSE, MICROBRANCH_UMBRALES, DTD_LICENSES,
 };

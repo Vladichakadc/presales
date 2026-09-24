@@ -487,6 +487,9 @@ async function toDimensionadorAruba() {
     licensesHa: arubaData.LICENSES_HA,
     software: arubaData.SOFTWARE,
     centralTiers: arubaData.CENTRAL_TIERS,
+    // SKU de Central por serie de gateway (A3, 2026-09-24): sin precio, el precio lo pone la
+    // lista cargada cuando lo trae.
+    centralPorSerie: arubaData.CENTRAL_POR_SERIE || {},
     datasheets,
     sizing: {
       bwTiers: arubaData.BW_TIERS,

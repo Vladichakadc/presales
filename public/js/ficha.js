@@ -54,7 +54,7 @@
 .ficha-sel select:focus{outline:2px solid var(--red);outline-offset:1px}
 .ficha-cuenta{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--steel)}
 .ficha-volver{flex:none;padding:7px 11px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
-.ficha-volver:hover{border-color:var(--red);color:var(--red)}
+.ficha-volver:hover{border-color:var(--red);color:var(--red-txt,var(--red))}
 .ficha-volver:focus-visible{outline:2px solid var(--red);outline-offset:1px}
 .ficha-desvio{font-size:12px;color:var(--steel);margin:0 0 10px;line-height:1.45}
 .ficha-sec{margin-top:14px}
@@ -66,7 +66,7 @@
 .ficha-tabla td.libre{text-align:left;font-family:'Barlow',sans-serif;font-size:12.5px}
 .ficha-nota{font-size:11.5px;color:var(--steel);margin:6px 0 0;line-height:1.45}
 .ficha-vacio{font-size:13.5px;color:var(--steel);margin:0}
-.ficha-rec{background:var(--red);color:#fff;border-radius:2px;padding:1px 6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-left:7px;vertical-align:2px}
+.ficha-rec{background:var(--red-txt,var(--red));color:#fff;border-radius:2px;padding:1px 6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-left:7px;vertical-align:2px}
 .ficha-ref{border:1px solid var(--rule);color:var(--steel);border-radius:2px;padding:1px 6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-left:7px;vertical-align:2px}
 .ficha-ref.fuera{background:var(--steel);color:var(--paper);border-color:var(--steel)}
 .ficha-aviso{font-size:12.5px;color:var(--steel);border-left:2px solid var(--steel);padding:5px 0 5px 9px;margin:9px 0 0;line-height:1.45}
@@ -85,7 +85,7 @@
 .ficha-refs .sku{font-family:'IBM Plex Mono',monospace;font-size:11.5px;white-space:nowrap;color:var(--ink)}
 .ficha-refs .pre{text-align:right;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:11.5px}
 .ficha-refs-add{border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:3px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 7px;white-space:nowrap}
-.ficha-refs-add:hover{border-color:var(--red);color:var(--red)}
+.ficha-refs-add:hover{border-color:var(--red);color:var(--red-txt,var(--red))}
 .ficha-refs .vacio{padding:10px;color:var(--steel);font-size:12.5px}
 .ficha-ref-aviso{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);border:1px solid var(--amber);border-radius:2px;padding:0 4px;margin-left:4px;cursor:help;white-space:nowrap}
 .ficha-cands{margin:0 0 12px;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
@@ -98,7 +98,7 @@
 .ficha-cand b{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;flex:none}
 .ficha-cand .cand-det{color:var(--steel);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
 .ficha-cand .cand-badge{flex:none;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;border-radius:2px;padding:1px 6px}
-.ficha-cand .cand-badge.rec{background:var(--red);color:#fff}
+.ficha-cand .cand-badge.rec{background:var(--red-txt,var(--red));color:#fff}
 .ficha-cand .cand-badge.fin{border:1px solid var(--rule);color:var(--steel)}
 .ficha-vista{margin:0 0 12px;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:var(--card)}
 .ficha-vista-img{display:flex;align-items:center;justify-content:center;padding:10px 12px 6px;min-height:96px;position:relative}
@@ -110,7 +110,7 @@
    Aruba declara «vistas» (regla del piloto) — otro fabricante que las declare la
    hereda sin tocar nada. */
 .ficha-vista-zoom{position:absolute;top:6px;right:6px;width:26px;height:26px;padding:0;border:1px solid var(--rule);border-radius:2px;background:var(--card);color:var(--steel);cursor:pointer;display:flex;align-items:center;justify-content:center}
-.ficha-vista-zoom:hover{border-color:var(--red);color:var(--red)}
+.ficha-vista-zoom:hover{border-color:var(--red);color:var(--red-txt,var(--red))}
 .ficha-vista-zoom:focus-visible{outline:2px solid var(--red);outline-offset:1px}
 .ficha-vista-zoom svg{width:14px;height:14px}
 .ficha-lupa{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -120,7 +120,7 @@
 .ficha-lupa-bar{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--rule)}
 .ficha-lupa-modelo{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);font-weight:600}
 .ficha-lupa-cerrar{margin-left:auto;width:28px;height:28px;padding:0;border:1px solid var(--rule);border-radius:2px;background:var(--card);color:var(--steel);font-size:15px;line-height:1;cursor:pointer}
-.ficha-lupa-cerrar:hover{border-color:var(--red);color:var(--red)}
+.ficha-lupa-cerrar:hover{border-color:var(--red);color:var(--red-txt,var(--red))}
 .ficha-lupa-cerrar:focus-visible{outline:2px solid var(--red);outline-offset:1px}
 .ficha-lupa-caja img{max-width:100%;max-height:calc(92vh - 110px);object-fit:contain;display:block;padding:14px 18px}
 .ficha-lupa figcaption{padding:8px 12px;border-top:1px solid var(--rule);font-size:11px;line-height:1.45;color:var(--steel)}
@@ -147,7 +147,7 @@
 .ficha-salto{margin:10px 0 0;text-align:center}
 .ficha-det{margin-top:14px;padding-top:4px;border-top:1px solid var(--rule)}
 .ficha-salto a{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);text-decoration:none;border-bottom:1px dashed var(--rule);padding-bottom:1px}
-.ficha-salto a:hover{color:var(--red);border-bottom-color:var(--red)}
+.ficha-salto a:hover{color:var(--red-txt,var(--red));border-bottom-color:var(--red)}
 `;
   if (!document.getElementById('ficha-estilos')) {
     const st = document.createElement('style');
@@ -826,7 +826,12 @@
         // del parque instalado. Opt-in como en avisoDe(): solo lo dicen los modelos que
         // lo traen; los demas no cambian.
         detalle: 'su fecha de ultimo pedido (' + eos.lastOrder + ') ya paso'
-          + (eos.endOfSupport ? ' · soporte del fabricante hasta el ' + eos.endOfSupport : '') };
+          + (eos.endOfSupport ? ' · soporte del fabricante hasta el ' + eos.endOfSupport : '')
+          // B1 (2026-09-24): un equipo fuera de venta sin reemplazo a la vista deja a quien
+          // amplia el parque sin salida. El del boletin manda; si el boletin no lo nombra, la
+          // inferencia por capacidad se muestra ROTULADA como tal, nunca como oficial.
+          + (eos.sucesor ? ' · sucesor: ' + eos.sucesor
+            : m.sucesor ? ' · sucesor natural: ' + m.sucesor + ' (inferencia por capacidad, sin doc oficial)' : '') };
     }
     if (m.eol) {
       return { estado: 'fuera', ...CICLO.fuera,

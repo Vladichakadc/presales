@@ -59,7 +59,7 @@ function renderCatalogo(){
   if (!tbodyAr || !tbodyWan) return;
   const marca = m => {
     const r = FICHA.rango(m);
-    return r === 2 ? ' <span class="pillc" style="color:var(--red)">Fuera de venta</span>'
+    return r === 2 ? ' <span class="pillc" style="color:var(--red-txt,var(--red))">Fuera de venta</span>'
       : r === 1 ? ' <span class="pillc">Línea anterior</span>' : '';
   };
   tbodyAr.innerHTML = MODELS.filter(m => m.cls === 'AR').map(m => `<tr>

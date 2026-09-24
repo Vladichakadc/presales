@@ -110,6 +110,9 @@ test('comparar detecta precio repo≠lista, cambio de CSV, PLC→ES, ausente y c
     ['NEW1', { desc: 'Aruba EdgeConnect 10900 SD-WAN Gateway', lp: 999, vigencia: '2026-01-01', plc: 'GA' }],
     ['NEW2', { desc: 'Aruba 10G SFP+ LC SR 300m MMF XCVR', lp: 500, vigencia: '2026-01-01', plc: 'GA' }],
     ['NEW3', { desc: 'Aruba 9240 Spare Fan', lp: 100, vigencia: '2026-01-01', plc: 'GA' }],
+    // A3 (2026-09-24): Central por serie — la descripción nombra la serie, no el modelo.
+    ['NEW4', { desc: 'HPE ANW 91xx SD-Branch Gateway Foundation 3-year Subscription E-STU', lp: 1, vigencia: '2026-01-01', plc: 'GA' }],
+    ['NEW5', { desc: 'Aruba 90xx Foundation plus Security 3yr E-STU', lp: 1, vigencia: '2026-01-01', plc: 'GA' }],
   ]);
   const csvActual = [
     { sku: 'AAA', mod: 'F1', desc: 'a', p: 100, vig: '2025-01-01', plc: 'GA' },
@@ -126,6 +129,7 @@ test('comparar detecta precio repo≠lista, cambio de CSV, PLC→ES, ausente y c
   assert.deepStrictEqual(d.nuevosCandidatos.edgeconnect.map((x) => x.sku), ['NEW1']);
   assert.deepStrictEqual(d.nuevosCandidatos.opticas.map((x) => x.sku), ['NEW2']);
   assert.deepStrictEqual(d.nuevosCandidatos.gateways.map((x) => x.sku), ['NEW3']);
+  assert.deepStrictEqual(d.nuevosCandidatos.central.map((x) => x.sku), ['NEW4', 'NEW5']);
 });
 
 test('generarCsv regenera desde la lista y conserva la fila de un SKU ausente', () => {

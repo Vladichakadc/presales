@@ -35,7 +35,7 @@
 .bom-cant{width:58px;padding:2px 4px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-align:right}
 .bom-cant:focus{outline:2px solid var(--red);outline-offset:1px}
 .bom-quitar{margin-left:6px;border:1px solid var(--rule);background:var(--card);color:var(--steel);border-radius:3px;cursor:pointer;font-size:12px;line-height:1;padding:1px 5px}
-.bom-quitar:hover{border-color:var(--red);color:var(--red)}
+.bom-quitar:hover{border-color:var(--red);color:var(--red-txt,var(--red))}
 .bom-aviso{font-size:11.5px;color:var(--amber);margin:10px 0 0;line-height:1.45}
 .bom-ctx{font-size:12.5px;color:var(--steel);margin:0 0 10px;padding-bottom:8px;border-bottom:1px solid var(--rule)}
 .bom-pend{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 5px;border-radius:2px;border:1px solid var(--amber);color:var(--amber);margin-left:6px;vertical-align:1px;white-space:nowrap}

@@ -7,7 +7,7 @@ const VENDORS=[
    desc:'Routers AR SD-WAN, plataformas A800 E y core NE8000. iMaster NCE, SRv6, FlexE, slicing de red.',
    series:['AR610','AR650','AR5710-S','AR5710-SE','AR6700-L','AR6700','AR8700','A800 E','NE8000 M','NE8000 F','NE8000 X'],
    tools:['Dimensionador BOM','Catálogo ópticas'],live:true},
-  {id:'cisco',name:'Cisco',accent:'#049FD9',icon:'CS',iconCls:'cs',
+  {id:'cisco',name:'Cisco',accent:'#049FD9',accentTxt:'#03739D',icon:'CS',iconCls:'cs',
    desc:'ISR 1000/4000, ASR 1000, Catalyst 8000. SD-WAN Viptela, Meraki, DNA Center automación.',
    series:['ISR 1000','ISR 4000','ASR 1000','Catalyst 8200','Catalyst 8300','Catalyst 8500'],
    tools:['Catálogo de equipos','Guía de selección'],live:false},
@@ -15,11 +15,11 @@ const VENDORS=[
    desc:'7750 SR core/edge, 7210 SAS acceso, 7250 IXR datacenter. SR OS con SR-MPLS, SRv6, EVPN.',
    series:['7750 SR-s','7750 SR-1','7750 SR-7/12/14','7210 SAS','7250 IXR'],
    tools:['Catálogo de equipos'],live:false},
-  {id:'fortinet',name:'Fortinet',accent:'#EE3124',icon:'FT',iconCls:'ft',
+  {id:'fortinet',name:'Fortinet',accent:'#EE3124',accentTxt:'#D41D10',icon:'FT',iconCls:'ft',
    desc:'FortiGate NGFW con SD-WAN integrado. Desde 40F hasta 7000. Security Fabric y FortiOS.',
    series:['40F–80F','100F–200F','400F–900F','1000F–3000F','4400F–7000F'],
    tools:['Catálogo de equipos','Sizing NGFW'],live:false},
-  {id:'juniper',name:'Juniper',accent:'#84B135',icon:'JN',iconCls:'jn',
+  {id:'juniper',name:'Juniper',accent:'#84B135',accentTxt:'#577423',icon:'JN',iconCls:'jn',
    desc:'MX edge/core, SRX NGFW, EX/QFX switching. Junos OS, Mist AI, Apstra intent-based networking.',
    series:['SRX 300','SRX 1500','SRX 4000','MX 204/304','MX 480/960','QFX 5000/10000'],
    tools:['Dimensionador y BOM','Catálogo de equipos'],live:true},
@@ -27,7 +27,7 @@ const VENDORS=[
    desc:'RouterOS v7: WireGuard, IPsec, BGP, MPLS, CAPsMAN. hEX SOHO → CCR2216 Core 100G. Precio-rendimiento líder.',
    series:['hEX','RB4011','RB5009','CCR2004','CCR2116','CCR2216','CHR'],
    tools:['Catálogo de equipos','RouterOS Features'],live:true},
-  {id:'aruba',name:'Aruba',accent:'#01A982',icon:'AB',iconCls:'ab',
+  {id:'aruba',name:'Aruba',accent:'#01A982',accentTxt:'#01795D',icon:'AB',iconCls:'ab',
    desc:'HPE Aruba Networking: EdgeConnect SD-WAN con Boost (optimización WAN en bloques de 100 Mbps agrupados como pool del fabric), gateways SD-Branch serie 9000 y campus serie 9200 con capacidad escalable por licencia.',
    series:['EdgeConnect EC-XS/S/M','EdgeConnect EC-L/XL','EC-V virtual','Serie 9000 SD-Branch','Serie 9200 campus'],
    tools:['Dimensionador y BOM','Guía de licencias'],live:true}
@@ -112,7 +112,7 @@ function renderDash(){
       <div class="card-accent" style="background:${v.accent}"></div>
       <div class="card-body">
         <div class="card-brand">
-          <div class="card-icon" style="background:${v.accent}">${v.icon}</div>
+          <div class="card-icon" style="background:${v.accentTxt||v.accent}">${v.icon}</div>
           <div class="card-name">${v.name}</div>
         </div>
         <div class="card-desc">${v.desc}</div>

@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-23 (**etapa 7 del dimensionador Fortinet: una sola verdad para recomendación, BOM y cotización** — el informe de auditoría en vivo del 23-sep y su prompt maestro. **Resultado: GO CONDICIONADO, en la rama `claude/laughing-babbage-pvpxyi`, sin fusionar ni desplegar**, porque el prompt lo prohíbe sin autorización expresa. Los cuatro P0 eran un solo defecto (varias verdades en la misma página) y los cierra un motor único, `fortinet-motor.js`, que es el mismo archivo en el navegador y en `POST /api/v1/fortinet/evaluations`. **T01–T30: 30/30 reportadas y aprobadas, cinco con un límite declarado.** Por el camino salieron cuatro defectos nuevos: N01 (error JS al abrir un enlace), N02 (108 precios de licencias con la lista de agosto), N03 (60 textos visibles sin tilde, entre ellos «termino 3 anos» en la nota que llega al Excel) y N04 (el bloqueo de SSL-VPN no pintaba su fuente). Entrega completa en `docs/auditoria-fortinet-2026-09-23/`. **542 unitarios, 16/16 pantallas, 6/6 contrastes y 11/11 baterías e2e.**)
+Última revisión: 2026-09-24 (**cierre de pendientes con lo que el repositorio ya tenía dentro**. Encargo del dueño: cerrar todo lo abierto, buscar la forma de gestionar los bloqueos y desplegar. **Aruba**: el rol activo/respaldo en el Multi-Underlay Builder (R11/M9 — un 4G de respaldo subía el tier: $80.857 frente a $42.697 en el caso medido), y las fases 2 y 3 de su auditoría cerradas en código (A2, A3, A4, A5, A7, M1, M3, M5, M6, M7, M8, B1; M4 declarado, es regla del dueño). **Los datos que faltaban estaban en los PDF oficiales ya versionados** en `public/datasheets/`, leídos en local sin salir a internet: los SKU de Central por serie de gateway (91xx y 92xx tienen los suyos), el tope de 75 clientes de Foundation Base, la tabla AOS-8 del 9106, el throughput de IDS/IPS de cada gateway y la escala de túneles de cada headend (VSG SD-Branch, sep-2026). **Accesibilidad**: auditoría axe y zoom al 200 % automatizados sobre 17 estados de pantalla; encontró 13 fallos reales (contraste de los colores de marca, controles sin nombre, pestañas que desbordaban) y quedan en 0. **Un fallo del propio arnés**: tres baterías e2e nuevas salían en verde con fallos impresos; `resumen()` fija ahora el código de salida. **Bloqueado y declarado**: el ajuste de Railway y la lectura de la rama de transporte de Fortinet los denegó el control de permisos de la sesión (ver *Decisiones que necesitan al dueño*). **Alimentación**: los seis gateways Aruba desde los mismos PDF (Aruba 16/25). 565 unitarios, 16/16 pantallas, 7/7 contrastes y la batería e2e completa (14/14 scripts).)
+
+Revisión anterior: 2026-09-23 (**etapa 7 del dimensionador Fortinet: una sola verdad para recomendación, BOM y cotización** — el informe de auditoría en vivo del 23-sep y su prompt maestro. **Resultado: GO CONDICIONADO**, primero en la rama `claude/laughing-babbage-pvpxyi` y desplegado ese mismo día (`f6f1952`, Railway `dcb662d9` en SUCCESS). Los cuatro P0 eran un solo defecto (varias verdades en la misma página) y los cierra un motor único, `fortinet-motor.js`, que es el mismo archivo en el navegador y en `POST /api/v1/fortinet/evaluations`. **T01–T30: 30/30 reportadas y aprobadas, cinco con un límite declarado.** Por el camino salieron cuatro defectos nuevos: N01 (error JS al abrir un enlace), N02 (108 precios de licencias con la lista de agosto), N03 (60 textos visibles sin tilde, entre ellos «termino 3 anos» en la nota que llega al Excel) y N04 (el bloqueo de SSL-VPN no pintaba su fuente). Entrega completa en `docs/auditoria-fortinet-2026-09-23/`. **542 unitarios, 16/16 pantallas, 6/6 contrastes y 11/11 baterías e2e.**)
 
 Revisión anterior: 2026-09-23 (**puntos 3 y 4 del orden de automatizaciones, activados**. (3)
 `self-learning` deja de estar muda: `.claude/hooks/aprendizaje.sh` escribe
@@ -764,66 +766,30 @@ de la auditoría, C3).** Las dos cifras eran ciertas, cada una en su arquitectur
 selector «Sistema operativo de los gateways» elige cuál aplica (`porSo` en `aruba.js`).
 La base del catálogo pasa a AOS 10, la que gestiona Central.
 
-## Fases 2 y 3 de la auditoría técnica del 2026-09-17 (pendientes)
+## Fases 2 y 3 de la auditoría técnica del 2026-09-17 — cerradas en código (2026-09-24)
 
 Documento: «Auditoría técnica — Dimensionador Aruba»
-(<https://claude.ai/code/artifact/73f4cc17-eb40-494c-9127-ac3eea6849a0>). La fase 1 está
-cerrada (ver *Cerrado recientemente*). Lo que queda, en el orden del plan:
+(<https://claude.ai/code/artifact/73f4cc17-eb40-494c-9127-ac3eea6849a0>). Todas las fases están
+cerradas en el código; el detalle, con su evidencia, en *Cerrado recientemente* (2026-09-24). Lo
+único que queda son **datos que tiene un tercero** y **una regla del dueño**:
 
-**Nuevo, de la auditoría de Fortinet del 2026-09-23: Aruba tiene el mismo defecto que F05.**
-`dimensionador-aruba-edgeconnect.js` calcula `caudalTotal = Σ down` sobre **todos** los enlaces
-del Multi-Underlay Builder. La fila no tiene rol activo/respaldo, así que un sitio con un 4G de
-respaldo suma ese enlace al caudal de operación normal. Puede sobredimensionar el appliance y el
-tier de suscripción. Fortinet ya lo resolvió en `escenariosTrafico` (normal, falla de cada
-enlace activo y failover): la demanda es el **máximo** entre escenarios y el requisito dice cuál
-lo gobierna. Portarlo es añadir `rol` a la fila de Aruba y derivar el caudal por escenario.
-**No se hizo en la entrega de Fortinet**, porque el alcance era ese módulo y cambiar el caudal de
-Aruba mueve su tier, su Boost y su BOM, y necesita su propio contraste antes/después. Es el
-riesgo R11 de `docs/auditoria-fortinet-2026-09-23/LEEME.md`.
-
-**Fase 2 · sincronización**
-- **A2** — elegir DTD o SSE con «Gateways sucursal» cambia la familia a EdgeConnect sin
-  avisar y no vuelve al quitarlo. Para 9004/9012 existe Central Foundation/Advanced *with
-  Security* (IDS/IPS): R4D98AAE… ya documentados en `CENTRAL_TIERS`, sin cablear.
-- ~~**A6** — «Enviar al cotizador» solo manda modelo y cantidad~~ **Cerrado (2026-09-18)**,
-  ver *Cerrado recientemente*. Viaja el BOM entero por el canal de referencias que el
-  cotizador ya tenía, y por el camino aparecieron dos fallos de dinero preexistentes en la
-  ingesta del cotizador (toda cotización al doble; las licencias de dos equipos fundidas).
-- **A7** — selector de ópticas desfasado del modelo al cambiar de arquetipo (medido en
-  producción, que corría `00ccc4b`). El plan 14 ya movió el pintado al final de
-  `poblarPickModel`: verificar si queda algo. Y la matriz: EC-S/M/L/XL solo tienen 1G TAA
-  (excluida), EC-10108 sin 1G, 9106/9114 sin ninguna óptica, sin medio SFP28 25G.
-- **M1** — aviso falso «el underlay no sostiene la demanda» en todo escenario con margen
-  (`caudalTotal < needProc`, y needProc ya lleva el margen).
-- **M3** — FEC: catálogo 10 % automático / 0 % desactivado; motor 15 % / 5 %.
-- **M4** — el breakout manda a Internet el 70 % del caudal TOTAL, MPLS incluido (regla del
-  brief: decisión del dueño). Boost ya usa `bwTunelesPrivados` del motor, así que un
-  cambio aquí se propaga solo.
-- **M5** — error JS `reading 'auto'` al abrir un enlace de escenario: los `.seg` se
-  restauran con click() antes de que llegue la API (SIZING vacío).
-- **M6** — con la página vacía el BOM muestra EC-XS con precio y «[OK] Diseño coherente»
-  mientras Dimensionar dice «SIN CANDIDATO» (`renderBom` cae a `MODELS[0]`).
-- ~~M2 (margen 0 % = 20 %)~~ ya corregido en `4965bea`; no había llegado a producción.
-
-**Fase 3 · licenciamiento fino**
-- **A3** — Central de gateways usa siempre SKU «7/90xx» (JZ118–JZ123AAE), también para
-  9106/9114/9240. 72xx/92xx: JZ195AAE… (documentado en `CENTRAL_TIERS`); campus en modo
-  WLAN: «Gateway WLAN Advanced». Validar el SKU de la serie 91xx con HPE.
-- **A4** — Foundation Base (≤75 clientes, JZ124AAE…) para 9004/9012 no se ofrece.
-- **A5** — los APs solo limitan el modelo: ni hardware ni suscripción Central por AP en el BOM.
-- **M7** — el BOM exportable lleva textos internos («CARE_SKU en aruba.js», «brief del
-  dueño», rutas /datasheets/).
-- **M8** — sin headend VPNC de SD-Branch ni clúster N+1 de campus.
-- **M9** — un enlace 4G de respaldo suma al tier.
-- **B1** — EC-XL fuera de venta sin sucesor declarado.
-
-**Datos abiertos por la fase 1**
-- Estado de venta de **7010, 7024, 7030, 7205 y 7240XM**: no se localizó boletín oficial;
-  siguen como línea anterior (y fuera del dimensionado en AOS 10).
-- **9106 en AOS 8**: la sección AOS-8 de las QuickSpecs 9100 no está transcrita; en AOS 8
-  el modelo se descarta con su motivo.
+- **M4 · la regla 70/30 del brief descarga el 70 % del caudal TOTAL, MPLS incluido.** No se
+  cambió: es decisión del dueño y una prueba la fija con su nombre. Ahora la revisión del
+  diseño **avisa** cuando esa descarga supera la capacidad de los enlaces de Internet (su propio
+  caso de prueba, MPLS 100 + Internet 200, saca 210 por un enlace de 200). **Decisión del dueño**:
+  limitar la descarga a `min(70 % del total, Internet)` o dejarla como está.
+- **Precios de Central por serie.** Los SKU oficiales de las series 91xx y 92/72xx, Foundation
+  Base y los «+ Security» ya están cableados (documento oficial de suscripciones de Central, en
+  el repo), pero la lista cargada solo tarifa la 90/70xx: van en «consultar» con su SKU. Se
+  cierran con la próxima importación de la lista del distribuidor (`npm run lista-aruba`), que
+  ahora los detecta como candidatos (cubo `central`).
 - **R8R13AAE / R8R14AAE** (Silver/Gold AOS 8 del 9240): sin List Price en la lista del
   distribuidor — «consultar» en el BOM.
+- **Estado de venta de 7010, 7024, 7030, 7205 y 7240XM**: no se localizó boletín oficial; siguen
+  como línea anterior. Los dominios de HPE bloquean la automatización (Akamai), incluso desde
+  Actions: necesita una persona con navegador.
+- ~~**9106 en AOS 8**~~ **Cerrado el 2026-09-24**: tabla «AOS-8 Specifications» de la QuickSpecs
+  9100 (p. 14), leída en local — 256 APs y 8K clientes; el 9114 «Not Supported».
 
 ## Lo que el informe de validación técnica de Fortinet deja abierto (rev. 2026-09-23)
 
@@ -834,11 +800,11 @@ recientemente* y `docs/rediseno-fortinet.md`, etapa 3). Lo que queda, con su mot
 **Y lo que deja abierto la auditoría en vivo del 23-sep (etapa 7, GO CONDICIONADO).** Detalle y
 riesgos R1–R11 en `docs/auditoria-fortinet-2026-09-23/LEEME.md`.
 
-- **Decisión del dueño: fusionar y desplegar la etapa 7.** Está en la rama
-  `claude/laughing-babbage-pvpxyi` y **no se fusionó**, porque el prompt de la auditoría prohíbe
-  desplegar sin autorización expresa. El informe pide además una **aprobación explícita de
-  arquitectura Fortinet** antes de salir. Los pasos exactos están en la sección *Cómo revisar y
-  desplegar* de la entrega.
+- ~~**Decisión del dueño: fusionar y desplegar la etapa 7.**~~ **Hecho el 2026-09-23**: `main`
+  avanzó de `ec2f803` a `f6f1952`; `verificar` y `pantallas` en verde sobre ese commit; Railway
+  `dcb662d9` en SUCCESS con `[seed]` y `listen`; sonda `/salud` 200 y `/login` 200. **Sigue
+  abierta la aprobación explícita de arquitectura Fortinet** que pide el informe: la da una
+  persona revisando `docs/auditoria-fortinet-2026-09-23/motor-y-bom.md`, no un despliegue.
 - **R1 · La retirada de SSL-VPN en modo túnel en FortiOS 7.6.3+ está citada, no leída.** Viene
   de la referencia [3] del informe (Release Notes 7.6.6). `docs.fortinet.com` responde
   `connect_rejected` al proxy de egreso. La regla lleva `leida:false` y la pantalla lo dice junto
@@ -847,8 +813,15 @@ riesgos R1–R11 en `docs/auditoria-fortinet-2026-09-23/LEEME.md`.
 - **R2 · «Modelos con 2 GB de RAM» (nota 10 del Matrix) no dice cuáles son.** En 7.6.0–7.6.2
   la compatibilidad con SSL-VPN queda «desconocida», con confianza baja y la cotización en
   borrador. Hace falta la RAM por modelo, que está en las fichas por serie.
-- **Accesibilidad no ejecutada:** lector de pantalla real, zoom al 200 % y auditoría automática
-  tipo axe. La semántica ARIA sí está verificada por e2e (T28/T29 y el roving tabindex).
+- ~~**Accesibilidad no ejecutada**~~ **La parte automática, cerrada el 2026-09-24**:
+  `test/e2e/e2e-accesibilidad.js` pasa axe-core (WCAG 2.0/2.1 A y AA) por 17 estados de pantalla
+  —incluidos escenarios con resultados y la pestaña de BOM— y comprueba el reflujo a 640 px (200 %
+  de zoom). Encontró 13 fallos reales y quedan en 0: contraste de los colores de marca (se añade
+  `--red-txt`, el tono de marca oscurecido lo justo, para texto; la marca pura queda para lo
+  decorativo), `#unit`/`#portVel`/`#sesUser`/título y fecha del cotizador sin nombre accesible,
+  y las pestañas de cinco dimensionadores que desbordaban. **Sigue abierta, y es humana, la prueba
+  con un lector de pantalla real** (NVDA, VoiceOver): axe comprueba la semántica que un lector
+  necesita, no si lo que anuncia se entiende.
 - **SKU que dejan la cotización en borrador**, sin afectar al dimensionamiento:
   - EMS por tramo: hay patrón, no el código del tramo;
   - FortiSASE;
@@ -863,10 +836,11 @@ riesgos R1–R11 en `docs/auditoria-fortinet-2026-09-23/LEEME.md`.
   traiga.
 - **Co-term sin prorrateo; heartbeat de HA sin modelar; ópticas de Fortinet fuera del
   catálogo.** Se declaran en la entrega (CU-03, CU-09 y CU-10 parciales) y no se inventan.
-- **El caso `calculadora-ssl` se quedó sin sujeto.** Ningún FortiGate *visible en el portal*
-  carece hoy de la cifra de TLS: el 100F y el 200F no aparecen allí. El caso lo reporta como
-  «SIN SUJETO» en vez de pasar en verde sin mirar. La regla la sigue fijando
-  `test/calculadora.test.js` con datos sintéticos.
+- ~~**El caso `calculadora-ssl` se quedó sin sujeto.**~~ **Cerrado el 2026-09-24**: el caso
+  intercepta `/api/catalog` en su navegador y añade un FortiGate sintético sin `ssl` a la
+  respuesta; comprueba el cableado real de la pantalla con un sujeto que no depende del catálogo
+  del día. **Probado saboteando**: con el lector de TLS cayendo a Threat Protection, la
+  comprobación sale en rojo.
 
 **Cerrados el 2026-09-23 (F1, F4 en su mayor parte, F7).** Ver `docs/rediseno-fortinet.md`,
 etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
@@ -885,8 +859,11 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
   **Ese workflow ya existe desde el 2026-09-23**: `.github/workflows/traer-fortinet-pendientes.yml`
   (`workflow_dispatch`) prueba las rutas conocidas de cada documento, publica lo que responde
   en `fuente/fortinet-pendientes` y **deja en el resumen qué código dio cada intento** — un
-  404 se reporta, no se da por bueno ni tumba la corrida. Lo que falta es lanzarlo y
-  transcribir, que es trabajo humano por diseño.
+  404 se reporta, no se da por bueno ni tumba la corrida. **2026-09-24: se lanzó y terminó en
+  verde** (corrida `35934676181`, 23:39 UTC); la rama `fuente/fortinet-pendientes` está
+  publicada. **Lo que falta es leerla**: desde la sesión, el control de permisos denegó traer
+  esa rama, y no se intentó por otra vía. La lee el dueño (el resumen de la corrida dice qué
+  documento bajó) o concede el permiso; después, la transcripción sigue su camino con anclaje.
 - **F2 · Los SKU de los tres servicios avanzados de SD-WAN** (Underlay & Application
   Monitoring, Overlay Orchestration, conector FortiSASE), de la categoría «SD-WAN» del
   Ordering Guide de FortiGuard. **Se buscó en las ramas de transporte el 2026-09-23 y no está**:
@@ -937,7 +914,10 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     EC-V, EC-XS-SP y Dynamic Threat Defense (no están en la lista del distribuidor).
 15. **Alimentación eléctrica: cobertura real, no completa.** La nueva sección «Alimentación
     eléctrica» de la ficha (agosto 2026) solo tiene dato donde el propio catálogo ya traía
-    una frase publicada — Cisco 21/21 (ya existía), Huawei 17/40, MikroTik 14/15, Aruba 6/21,
+    una frase publicada — Cisco 21/21 (ya existía), Huawei 17/40, MikroTik 14/15, **Aruba 16/25** (2026-09-24:
+    los seis gateways 9000/9100/9200, leídos de los PDF oficiales de `public/datasheets/`; los
+    nueve controladores AOS 8 7000/7200 siguen sin dato porque no hay documento suyo en el
+    repositorio),
     **Juniper 12/12 SRX** (2026-09-03, completo: ver *Cerrado recientemente*), **Fortinet
     58/58** (2026-09-11, completo: 70F, 100F y 200F cerrados — solo 7081F y 7121F quedan
     sin `watts` porque sus guías solo publican capacidad por fuente, decisión documentada)
@@ -1131,7 +1111,15 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     parche (`e2e-ci.patch`) porque el token en uso no tiene scope «workflow» —
     aplicarlo es acción manual del dueño, junto a la de 33.
 
-33. **Railway no espera a `pantallas`, solo a `verificar` (2026-09-13).** *Actualizado el
+33. **Railway no espera a CI (reformulado el 2026-09-24).** *Medido el 2026-09-23: el servicio
+    `presales-web` tiene `source.checkSuites: false`, así que no espera ni a `verificar` ni a
+    `pantallas` — el despliegue `dcb662d9` se creó antes de que `verificar` arrancara. **La
+    acción que lo cierra es activar «Wait for CI»** en los ajustes del origen del servicio en
+    Railway; con eso, un workflow en rojo salta el despliegue. Un required check de GitHub no lo
+    arregla solo: no frena lo que Railway no espera. Se intentó activar desde la sesión y no fue
+    posible (el agente de Railway rechazó por límite de uso y el control de permisos denegó
+    seguir por otra vía): es un clic del dueño.* Texto de la entrada original:
+    **Railway no espera a `pantallas`, solo a `verificar` (2026-09-13).** *Actualizado el
     2026-09-14: hay un segundo agujero, de otra clase, y ya está cerrado — un push de bot no
     creaba ningún check, así que Railway no esperaba a nada. Un required check tampoco lo
     habría cerrado: un push que no crea ningún check no puede fallarlo. El vigía abre PR desde
@@ -1302,6 +1290,16 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
 
 ## Decisiones que necesitan al dueño del producto
 
+- **Activar «Wait for CI» en Railway** (`presales-web` → ajustes del origen). Medido: hoy no
+  espera a nada. Es el cierre del punto 33. Desde la sesión no se pudo (2026-09-24).
+- **Leer `fuente/fortinet-pendientes`, o conceder permiso para leerla.** El workflow corrió en
+  verde el 2026-09-23 (corrida `35934676181`); el control de permisos de la sesión denegó traer
+  la rama. De ahí salen F6 (figuras de 100F/200F/chasis), F2 (SKU de SD-WAN) y parte de los SKU
+  que dejan la cotización en borrador.
+- **M4 de Aruba**: si la descarga del breakout se limita a la capacidad de Internet (ver la
+  sección de Aruba).
+- **Aprobación de arquitectura Fortinet** sobre `docs/auditoria-fortinet-2026-09-23/motor-y-bom.md`,
+  que es la condición del GO CONDICIONADO.
 - **Si `agent-reach` se activa de verdad, con qué credenciales** (2026-09-22). La skill está
   instalada y declarada, pero **no se ha configurado ningún canal con login**, y esa parte no
   es un `npm install`: pide cookies de Twitter (`TWITTER_AUTH_TOKEN`, `TWITTER_CT0`), un
@@ -1318,6 +1316,55 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Cierre de pendientes con lo que el repositorio ya tenía dentro (2026-09-24)
+
+Encargo del dueño: cerrar lo abierto, buscar la forma de gestionar los bloqueos y desplegar.
+**El hallazgo que cambió el alcance: varios datos «bloqueados» no lo estaban.** Los PDF oficiales
+de HPE ya estaban versionados en `public/datasheets/` y se leyeron en local, sin salir a
+internet: el documento de suscripciones de Central (agosto de 2026), el Ordering Guide de
+gateways SD-WAN, la QuickSpecs de la serie 9100 y el VSG de SD-Branch (septiembre de 2026).
+
+**ARUBA, RESPALDO (R11/M9).** La fila del builder gana `rol` (activo/respaldo) con la misma regla
+que Fortinet (`ArubaReglas.escenariosUnderlay`): el caudal, el tier y el Boost son los de la
+operación normal; un respaldo ocupa puerto y óptica, y si no cubre la caída de un activo la
+revisión declara la «continuidad parcial». Medido: DIA 1000 + 4G 200 pasaba a Foundation «sin
+límite» ($80.857); con el 4G como respaldo, 1 Gbps ($42.697). **El contraste nuevo
+`aruba-underlay`** (7 escenarios medidos sobre `f6f1952` antes del cambio) demuestra que un sitio
+sin respaldos sale idéntico, y se comprobó saboteando (3 discrepancias).
+
+**ARUBA, FASES 2 Y 3.**
+- M5: el error de JS al abrir un enlace antes de que llegue la API.
+- M6: la página vacía cotizaba un EC-XS por defecto; ahora dice «sin equipo que cotizar».
+- M1: aviso falso del underlay.
+- M3: dos cifras de FEC sin explicar; el requerimiento usa una sola regla y la pantalla rotula las dos.
+- M7: el exportable nombraba archivos y constantes del repo.
+- A7: un chasis sin jaulas SFP se recomendaba para fibra, el motivo real de la óptica que falta, y el medio SFP28 25G.
+- A2: el salto de familia se declara y se deshace; nueva estrategia «IDS/IPS en el gateway —
+  Central + Security», dimensionada contra el throughput de IDS/IPS oficial del VSG.
+- A3: SKU de Central por serie.
+- A4: Foundation Base, con el tope de 75 clientes del documento.
+- A5: los APs entran declarados.
+- M8: túneles por sede y headend VPNC sugerido en el consolidado, con la escala oficial.
+- B1: sucesor del EC-XL, rotulado como inferencia.
+
+**ACCESIBILIDAD.** `e2e-accesibilidad.js` (axe-core + reflujo a 640 px) encontró 13 fallos reales
+en 17 estados y quedan en 0. **Y un fallo del arnés**: tres baterías nuevas cerraban sin
+`process.exit(...)` y el runner las daba en verde con fallos impresos; `resumen()` fija ahora el
+código de salida.
+
+**ALIMENTACIÓN (pendiente 15).** Los seis gateways 9000/9100/9200 salen de los mismos PDF: el
+9004, el 9004-LTE, el 9012 y el 9106 son de fuente única (adaptador externo o fuente interna; el
+9106 publica «Power Supply Slots: -»), y el 9114 y el 9240 son `'opcional'` porque publican
+«Power Supply Slots: 1 + Redundant» con una sola fuente como *Power Source*. Aruba pasa de 10 a
+16 de 25. Los nueve controladores AOS 8 siguen sin dato: no hay documento suyo aquí.
+
+**OTROS.** `calculadora-ssl` con sujeto sintético (probado saboteando). La documentación de la
+etapa 7 dice ya el hecho del despliegue, y `CLAUDE.md` corrige lo que afirmaba de Railway.
+
+**NO SE HIZO, Y SE DICE.** El ajuste de Railway y la lectura de la rama de transporte de Fortinet
+los denegó el control de permisos de la sesión; no se buscó otra vía. Las ópticas, el heartbeat
+de HA y el prorrateo de co-term de Fortinet siguen sin dato en el repositorio.
 
 ### Etapa 7 del dimensionador Fortinet: una sola verdad, puerta única y formulario dinámico (2026-09-23)
 

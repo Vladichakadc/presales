@@ -210,6 +210,12 @@ const PATRONES_NUEVOS = {
   edgeconnect: /edgeconnect|\bsd-wan\b/i,
   opticas: /\bSFP28?\b|\bSFP\+\b|\bXCVR\b|\bDAC\b|transceiver/i,
   gateways: /\b(9004|9012|9106|9114|9240)\b/,
+  // Central por serie de gateway (A3, 2026-09-24): sus descripciones nombran la SERIE
+  // («Aruba 72xx Gateway Foundation», «90xx Foundation plus Security», «91xx SD-Branch
+  // Gateway Advanced»), nunca el modelo, así que el patrón de gateways no las veía. Los SKU
+  // oficiales ya están en CENTRAL_POR_SERIE de aruba.js; cuando la lista los tarife, salen
+  // aquí y una persona decide declararlos en el roster.
+  central: /\b(7\/90xx|90\/70xx|92\/72xx|70xx|72xx|90xx|91xx|92xx)\b.*\b(Foundation|Advanced)\b/i,
 };
 
 function comparar(roster, lista, csvActual) {
@@ -219,7 +225,7 @@ function comparar(roster, lista, csvActual) {
     csvVsLista: [],         // el CSV regenerado difiere del vigente
     plcTransiciones: [],    // GA→ES u otros cambios de ciclo de vida
     ausentesEnLista: [],    // el repo los cotiza pero la lista ya no los trae
-    nuevosCandidatos: { edgeconnect: [], opticas: [], gateways: [] },
+    nuevosCandidatos: { edgeconnect: [], opticas: [], gateways: [], central: [] },
   };
 
   const csvPorSku = new Map(csvActual.map((f) => [f.sku, f]));

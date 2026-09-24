@@ -60,6 +60,11 @@ function contador() {
       console.log(fallos.length
         ? `\n[${nombre}] RESULTADO: ${fallos.length} FALLO(S)`
         : `\n[${nombre}] RESULTADO: TODO VERDE`);
+      // El código de salida se fija AQUÍ además de devolverse (2026-09-24): tres baterías
+      // nuevas cerraban con `t.resumen(...)` sin `process.exit(...)`, y el runner las contaba
+      // en verde con 13 fallos impresos. Un comprobador que no comprueba se porta igual que
+      // uno que pasa; así el olvido ya no puede enmascarar un rojo.
+      if (fallos.length) process.exitCode = 1;
       return fallos.length ? 1 : 0;
     },
   };

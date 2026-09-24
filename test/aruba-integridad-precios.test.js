@@ -31,6 +31,7 @@ const FAMILIAS_CSV = new Set([
   'Suscripcion EdgeConnect Foundation HA', 'Suscripcion EdgeConnect Advanced HA',
   'Suscripcion EdgeConnect On-Premises', 'Suscripcion EdgeConnect On-Premises HA',
   'Boost EdgeConnect (SaaS)', 'Boost EdgeConnect (On-Premises)', 'Central (gateways 70xx/90xx)',
+  'Central (gateways 72xx/92xx)', 'Central (gateways 91xx)',
   'Accesorios EdgeConnect y gateways',
   'Dynamic Threat Defense (SaaS)', 'Dynamic Threat Defense (SaaS HA)',
   'Dynamic Threat Defense (On-Premises)', 'Dynamic Threat Defense (On-Premises HA)',
@@ -572,4 +573,56 @@ test('el catálogo maestro y el CSV del cotizador dicen lo mismo (misma fuente)'
     assert.strictEqual(fila.vig, a.vigencia, `${sku}: vigencia CSV «${fila.vig}» vs catálogo «${a.vigencia}»`);
     assert.strictEqual(fila.plc, a.plc, `${sku}: PLC CSV «${fila.plc}» vs catálogo «${a.plc}»`);
   }
+});
+
+// ── Central por serie de gateway (A3 de la auditoría 2026-09-17, 2026-09-24) ──
+// Los SKU de Central de la familia 90/70xx se aplicaban a TODO gateway, también a las series
+// 9100 y 9200, que tienen los suyos en el documento oficial de suscripciones de Central.
+const { CENTRAL_POR_SERIE } = require('../server/seed/legacyData/aruba');
+
+test('A3: toda serie de gateway del catálogo tiene su familia de Central', () => {
+  const series = [...new Set(MODELS.filter((m) => m.fam === 'gw').map((m) => m.serie))];
+  const cubiertas = new Set(Object.values(CENTRAL_POR_SERIE).flatMap((f) => f.series));
+  const huerfanas = series.filter((s) => !cubiertas.has(s));
+  assert.deepStrictEqual(huerfanas, [], 'un gateway sin familia de Central cotizaría la línea sin SKU');
+});
+
+test('A3: los SKU por serie tienen forma de SKU, no se repiten y cuelgan de series y modelos reales', () => {
+  const series = new Set(MODELS.map((m) => m.serie));
+  const ids = new Set(MODELS.map((m) => m.id));
+  const vistos = new Map(); const mal = [];
+  for (const [fam, f] of Object.entries(CENTRAL_POR_SERIE)) {
+    for (const s of f.series) if (!series.has(s)) mal.push(`${fam}: la serie «${s}» no existe`);
+    for (const [nivel, t] of Object.entries(f)) {
+      if (nivel === 'series') continue;
+      for (const s of t.soloSeries || []) if (!f.series.includes(s)) mal.push(`${fam}/${nivel}: soloSeries «${s}» fuera de la familia`);
+      for (const id of t.modelos || []) if (!ids.has(id)) mal.push(`${fam}/${nivel}: el modelo «${id}» no existe`);
+      for (const [term, sku] of Object.entries(t.sku)) {
+        if (!/^[A-Z0-9]{5}AAE$/.test(sku)) mal.push(`${fam}/${nivel}/${term}: «${sku}» no tiene forma de SKU E-STU`);
+        if (vistos.has(sku)) mal.push(`${sku} repetido en ${vistos.get(sku)} y ${fam}/${nivel}/${term}`);
+        vistos.set(sku, `${fam}/${nivel}/${term}`);
+      }
+    }
+  }
+  assert.deepStrictEqual(mal, []);
+});
+
+test('A3: la familia 90/70xx es exactamente la de CENTRAL_TIERS, que es la que tiene precio', () => {
+  for (const nivel of ['foundation', 'advanced']) {
+    for (const y of ['y1', 'y3', 'y5']) {
+      assert.strictEqual(CENTRAL_POR_SERIE['90/70xx'][nivel].sku[y], CENTRAL_TIERS[nivel].sku[y],
+        `${nivel}/${y}: el camino con precio verificado no puede separarse del mapa por serie`);
+    }
+  }
+});
+
+test('A3: «+ Security» solo donde el documento lo publica (90xx, 91xx, 92xx)', () => {
+  const conSec = new Set();
+  for (const f of Object.values(CENTRAL_POR_SERIE)) {
+    for (const nivel of ['foundationSec', 'advancedSec']) {
+      if (!f[nivel]) continue;
+      for (const s of f[nivel].soloSeries || f.series) conSec.add(s);
+    }
+  }
+  assert.deepStrictEqual([...conSec].sort(), ['Serie 9000', 'Serie 9100 Hybrid', 'Serie 9200']);
 });

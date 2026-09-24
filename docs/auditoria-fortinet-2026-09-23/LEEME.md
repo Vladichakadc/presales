@@ -2,9 +2,12 @@
 
 Documento de entrada: *Informe de auditoría y propuesta de rediseño dinámico del módulo
 Fortinet Presales* (auditoría en vivo del portal autenticado, 23-sep-2026), con el prompt
-maestro que lo acompañaba. Rama de trabajo: `claude/laughing-babbage-pvpxyi`. **No se fusionó a
-`main` ni se desplegó**: el prompt lo prohíbe sin autorización expresa, y en este repositorio
-empujar a `main` *es* desplegar (ver `CLAUDE.md`, *Deploying*).
+maestro que lo acompañaba. Rama de trabajo: `claude/laughing-babbage-pvpxyi`. **En producción
+desde el 2026-09-23**: `main` avanzó de `ec2f803` a `f6f1952` (avance rápido, sin reescribir
+nada); `verificar` y `pantallas` pasaron en `main` sobre ese commit; Railway desplegó
+`dcb662d9` en SUCCESS con `[seed]` y `Presales corriendo en` en los logs, y la sonda de Actions
+devolvió `/salud` 200 `{"ok":true,"fabricantes":7,"modelos":228}` y `/login` 200. El veredicto
+técnico sigue siendo GO CONDICIONADO: desplegar no cierra las condiciones de abajo.
 
 | Documento | Contenido |
 |---|---|
@@ -263,7 +266,7 @@ llegar el catálogo); en el después, ninguno.
 4. Pedir la revisión de arquitectura Fortinet sobre `motor-y-bom.md`: fórmulas, supuestos y
    límites.
 
-**Despliegue, solo con autorización expresa del dueño:**
+**Despliegue** (hecho el 2026-09-23 por avance rápido de `main`, sin PR; ver la cabecera):
 
 1. Abrir un PR de la rama a `main`. `verificar.yml` y `pantallas.yml` corren en el PR.
 2. Fusionar. **Ese push a `main` es el despliegue** (Railway `presales-web`).

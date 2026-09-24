@@ -1865,7 +1865,7 @@ function renderCatalogo() {
   const tbody = document.querySelector('#tbl-fortinet-cat tbody');
   if (!tbody) return;
   tbody.innerHTML = MODELS.map((m) => `<tr>
-    <td><code>${esc(m.id)}</code>${m.eol || !m.hwSku ? ' <span class="pillc" style="color:var(--red)">Fuera de venta</span>' : ''}</td><td>${esc(m.seg)}</td>
+    <td><code>${esc(m.id)}</code>${m.eol || !m.hwSku ? ' <span class="pillc" style="color:var(--red-txt,var(--red))">Fuera de venta</span>' : ''}</td><td>${esc(m.seg)}</td>
     <td class="n">${esc(m.fw)}</td><td class="n">${esc(m.ips)}</td><td class="n">${esc(m.ngfw)}</td>
     <td class="n">${esc(m.vpn)}</td><td>${esc(m.ifaces)}</td>
     <td class="n" style="color:var(--amber);white-space:nowrap">${m.elp ? esc(m.elp) : '—'}</td>

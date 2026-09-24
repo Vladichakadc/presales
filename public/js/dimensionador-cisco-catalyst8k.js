@@ -90,7 +90,7 @@ function renderCatalogo(){
   if(!tbody) return;
   tbody.innerHTML=MODELS.map(m=>{
     const r=FICHA.rango(m);
-    const marca=r===2?' <span class="pillc" style="color:var(--red)">Fuera de venta</span>'
+    const marca=r===2?' <span class="pillc" style="color:var(--red-txt,var(--red))">Fuera de venta</span>'
       :r===1?' <span class="pillc">Línea anterior</span>':'';
     return `<tr>
     <td><code>${esc(m.id)}</code>${marca}</td><td>${esc(m.ser)}</td><td>${esc(m.fam)}</td>

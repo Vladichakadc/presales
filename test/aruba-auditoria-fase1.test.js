@@ -112,7 +112,13 @@ test('C3: la serie 9000 gestiona 128/256 APs en AOS 10 y 32 en AOS 8', () => {
 test('C3: un gateway sin cifras para el SO elegido se declara, no se afirma', () => {
   const s8 = R.capacidadSo(porId('Gateway 9114'), 'aos8');
   assert.ok(s8.sinCifra && /AOS 8/.test(s8.motivo), 'el 9114 no corre AOS 8');
-  assert.ok(R.capacidadSo(porId('Gateway 9106'), 'aos8').sinCifra, '9106: el catálogo solo trae la tabla AOS 10');
+  // 2026-09-24: la tabla «AOS-8 Specifications» de la QuickSpecs 9100 (p. 14) se transcribió —
+  // antes el 9106 se declaraba sin cifra en AOS 8. Ahora trae la suya y el 9114 sigue sin
+  // correr AOS 8 («Not Supported» en esa misma tabla).
+  const s106 = R.capacidadSo(porId('Gateway 9106'), 'aos8');
+  assert.ok(!s106.sinCifra, '9106: en AOS 8 ya tiene cifras propias');
+  assert.strictEqual(s106.aps, 256, '9106 en AOS 8: 256 APs (QuickSpecs 9100, tabla AOS-8)');
+  assert.strictEqual(s106.clients, 8000, '9106 en AOS 8: 8K usuarios/dispositivos concurrentes');
   for (const m of aruba.MODELS.filter((x) => x.legacy)) {
     assert.ok(R.capacidadSo(m, 'aos10').sinCifra, `${m.id}: sus cifras son AOS 8`);
     assert.deepStrictEqual(R.capacidadSo(m, 'aos8'), {}, `${m.id}: en AOS 8 valen las cifras base`);

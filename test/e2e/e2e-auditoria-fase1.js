@@ -90,7 +90,10 @@ const wan = (...links) => ({ v: 2, wanLinks: links.map((l, i) => ({ id: i + 1, m
     t.ok(/^Gateway 90(04|12)$/.test(r10.pick), `H/AOS 10: 40 APs caben en la serie 9000 (${r10.pick}), antes 9106`);
     const r8 = await cargar({ ...base, soSeg: 'aos8' });
     t.ok(!/^Gateway 90/.test(r8.pick), `H/AOS 8: la serie 9000 (32 APs) ya no cumple (${r8.pick || 'sin candidato'})`);
-    t.ok(r8.pick !== 'Gateway 9114' && r8.pick !== 'Gateway 9106', 'H/AOS 8: 9106/9114 sin cifras AOS 8 no se proponen');
+    // 2026-09-24: la tabla AOS-8 de la QuickSpecs 9100 se transcribió (256 APs, 8K clientes):
+    // el 9106 deja de apartarse por falta de dato y cumple; el 9114 sigue sin correr AOS 8.
+    t.ok(r8.pick !== 'Gateway 9114', 'H/AOS 8: el 9114, que no corre AOS 8, no se propone');
+    t.ok(r8.pick === 'Gateway 9106', `H/AOS 8: el 9106, con su tabla AOS 8 transcrita, cumple (${r8.pick || 'sin candidato'})`);
   }
 
   // ── C5 · Un 7005 elegido a mano declara su fin de venta ─────────────────────

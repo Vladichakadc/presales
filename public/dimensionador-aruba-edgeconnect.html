@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" data-fuente>
 <style>
-:root{--paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;--red:#01A982;--amber:#A45B00;--green:#1F6B4A;--card:#FFF}
+:root{--paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;--red:#01A982;--red-txt:#01795D;--amber:#A45B00;--green:#1F6B4A;--card:#FFF}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
@@ -17,12 +17,12 @@ body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,san
    el recorrido del panel sticky «Equipos que cumplen» — ver el bloque de .cols abajo. */
 .wrap{max-width:1140px;margin:0 auto;padding:26px 18px 24px}
 .masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px}
-.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0 0 6px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red-txt);font-weight:600;margin:0 0 6px}
 h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28px,5.5vw,48px);line-height:.98;text-transform:uppercase;margin:0}
 .sub{color:var(--steel);max-width:64ch;margin:8px 0 0;font-size:14.5px}
 .back-link{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);text-decoration:none;margin-bottom:18px;transition:color .15s}
-.back-link:hover{color:var(--red)}
-.tabs{display:flex;gap:0;border-bottom:1px solid var(--rule);margin-bottom:22px}
+.back-link:hover{color:var(--red-txt)}
+.tabs{display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--rule);margin-bottom:22px} /* salta de línea en pantallas estrechas y al 200 % de zoom (WCAG 1.4.10, 2026-09-24) */
 .tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:11px 18px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.03em;text-transform:uppercase;color:var(--steel)}
 .tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--red)}
 .tabpane[hidden]{display:none}
@@ -39,7 +39,7 @@ h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28p
 .dot.ok{background:var(--ink)}
 .dot.pick{background:var(--red);width:11px;height:11px;bottom:32px;box-shadow:0 0 0 4px rgba(238,49,36,.18)}
 .need{position:absolute;top:0;bottom:26px;width:2px;background:var(--red);transform:translateX(-50%);transition:left .25s cubic-bezier(.2,.8,.2,1)}
-.need span{position:absolute;top:-2px;left:6px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;color:#fff;background:var(--red);padding:2px 6px;border-radius:2px}
+.need span{position:absolute;top:-2px;left:6px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;color:#fff;background:var(--red-txt);padding:2px 6px;border-radius:2px}
 .need.flip span{left:auto;right:6px}
 .pickLabel{position:absolute;bottom:52px;transform:translateX(-50%);white-space:nowrap;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;text-transform:uppercase}
 .legend{display:flex;gap:16px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--steel);letter-spacing:.06em;text-transform:uppercase}
@@ -135,7 +135,7 @@ input[type=range]{width:100%;accent-color:var(--red)}
 
 /* VERDICT */
 .verdict{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:22px;margin-bottom:16px}
-.tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red-txt);font-weight:600;margin:0}
 .model{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(22px,4vw,36px);line-height:1;text-transform:uppercase;margin:6px 0 2px}
 .family{color:var(--steel);font-size:13.5px;margin-bottom:16px}
 .meter{margin-bottom:12px}
@@ -158,13 +158,13 @@ input[type=range]{width:100%;accent-color:var(--red)}
 .bom-retirada:first-of-type{border-top:0}
 .bom-retirada s{flex:1}
 .bom-restaurar{border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:3px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 8px}
-.bom-restaurar:hover{border-color:var(--red);color:var(--red)}
+.bom-restaurar:hover{border-color:var(--red);color:var(--red-txt)}
 ul.clean{list-style:none;margin:0;padding:0}
 ul.clean li{padding-left:14px;position:relative;margin-bottom:9px;font-size:13.5px}
 ul.clean li:before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;background:var(--rule)}
 ul.clean li.on:before{background:var(--red)}
 .sku{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--steel);display:block;margin-top:2px}
-.req{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 5px;border-radius:2px;background:var(--red);color:#fff;margin-left:6px;vertical-align:1px}
+.req{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 5px;border-radius:2px;background:var(--red-txt);color:#fff;margin-left:6px;vertical-align:1px}
 .req.opt{background:var(--paper);color:var(--steel)}
 table{width:100%;border-collapse:collapse;font-size:12.5px}
 th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);font-weight:500;padding:0 8px 7px 0;border-bottom:1px solid var(--rule)}
@@ -199,7 +199,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
 .sku-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
 .sku-chip{padding:3px 9px;border:1px solid var(--rule);border-radius:11px;background:var(--card);color:var(--steel);font-family:'IBM Plex Mono',monospace;font-size:10px;cursor:pointer}
 .sku-chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-.sku-chip-n{opacity:.65}
+.sku-chip-n{font-weight:400} /* sin opacidad: al 65 % no llegaba a 4,5:1 (axe, 2026-09-24) */
 .sku-lista{max-height:380px;overflow:auto;border:1px solid var(--rule);border-radius:4px}
 .sku-grupo{position:sticky;top:0;background:var(--bg);font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel);font-weight:600;padding:7px 9px 5px;border-bottom:1px solid var(--rule);z-index:1}
 .sku-fila{display:flex;gap:10px;align-items:baseline;padding:6px 9px;border-bottom:1px solid var(--paper);font-size:12.5px}
@@ -215,9 +215,9 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
 .sku-fila-p{flex:0 0 88px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11.5px}
 .sku-fila-a{flex:0 0 80px;text-align:right}
 .sku-add{border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:3px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 8px}
-.sku-add:hover{border-color:var(--red);color:var(--red)}
+.sku-add:hover{border-color:var(--red);color:var(--red-txt)}
 .sku-enbom{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--amber);letter-spacing:.06em}
-.sku-fila.ya{opacity:.72}
+.sku-fila.ya{background:rgba(92,110,133,.07)} /* ya en la lista: se marca con fondo y con «En el BOM», no bajando la opacidad del texto por debajo de 4,5:1 (axe, 2026-09-24) */
 .btn{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px;cursor:pointer}
 .btn.ghost{background:#fff;color:var(--ink)}
 .pillc{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 4px;border-radius:2px;background:var(--paper);color:var(--steel)}
@@ -228,7 +228,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
 .tierRow .tv{font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-align:right;color:var(--steel)}
 .tierRow .tb{height:14px;background:var(--paper);border-radius:2px;overflow:hidden}
 .tierRow .tb i{display:block;height:100%;background:#B9C4D2;transition:width .3s}
-.tierRow.on .tn{color:var(--red)}
+.tierRow.on .tn{color:var(--red-txt)}
 .tierRow.on .tb i{background:var(--red)}
 .tierRow.on .tv{color:var(--ink);font-weight:600}
 .tierRow.off .tb i{background:#8FA3B8}
@@ -251,7 +251,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
 .wan-badge.cel{background:var(--amber);color:#fff}
 .wan-acc{margin-left:auto;display:flex;gap:6px}
 .wan-iconbtn{border:1px solid var(--rule);background:var(--card);color:var(--steel);border-radius:2px;cursor:pointer;font-size:13px;line-height:1;padding:4px 8px}
-.wan-iconbtn:hover{border-color:var(--red);color:var(--red)}
+.wan-iconbtn:hover{border-color:var(--red);color:var(--red-txt)}
 /* Grid de la tarjeta en DOS columnas (transporte+medio / bajada+subida): con cuatro
    columnas los inputs de Mbps quedaban tan estrechos que el número no se leía. */
 .wan-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:8px;align-items:end}
@@ -266,6 +266,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
 .wan-msg{font-size:11.5px;line-height:1.45;margin:8px 0 0}
 .wan-msg.err{color:#a4544e}
 .wan-msg.warn{color:var(--amber)}
+.fam-aviso{color:var(--amber);font-weight:600}
 /* Barra agregada viva bajo el builder (etapa A): Σ de caudales, desglose por familia,
    puertos WAN ocupados y semáforo de densidad contra el modelo seleccionado. */
 .wan-resumen{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;border:1px solid var(--rule);border-left:3px solid var(--ink);background:var(--card);border-radius:2px;padding:9px 12px;margin-top:12px;font-size:12.5px;line-height:1.5}
@@ -347,7 +348,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
   <div class="track" id="track"><div class="axis"></div><div class="need" id="need"><span id="needLbl">—</span></div><div class="pickLabel" id="pickLbl" style="display:none"></div></div>
   <div class="legend">
     <span><i></i>Capacidad publicada del modelo</span>
-    <span style="color:var(--red)"><i style="background:var(--red)"></i>Caudal WAN requerido</span>
+    <span style="color:var(--red-txt)"><i style="background:var(--red)"></i>Caudal WAN requerido</span>
   </div>
 </section>
 
@@ -375,6 +376,8 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
         <button type="button" data-v="campus" aria-pressed="false">Gateways<br>campus</button>
       </div>
       <p class="hint">Cada familia se dimensiona con lo que HPE publica para ella: EdgeConnect por <b>rango de caudal WAN</b>, los gateways por <b>throughput de firewall</b> y capacidad de clientes y APs. Solo EdgeConnect hace optimización WAN. Los gateways agrupan las series 9000, 9100 Hybrid, 9200 y las 7000/7200 de la línea anterior.</p>
+      <!-- A2 (2026-09-24): declara el salto automático de familia que provocan DTD y Boost. -->
+      <p class="hint fam-aviso" id="famAviso" role="status" hidden></p>
     </div>
     <div class="field">
       <label>Sistema operativo de los gateways</label>
@@ -414,6 +417,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
          viaja serializado (versión 2) en el input oculto #wanLinksData. -->
     <div class="field">
       <label>Enlaces WAN del sitio (underlay)</label>
+      <p class="hint">Cada enlace declara si es <b>activo</b> o de <b>respaldo</b>. El caudal, el tier de la suscripción y el Boost salen de la <b>operación normal</b> (solo los activos); un respaldo ocupa su puerto pero solo lleva tráfico, hasta su caudal, cuando cae un activo. Si el contrato usa ese enlace a la vez que los demás, márcalo como activo.</p>
       <div id="wanBuilder">
         <div id="wanBuilderFilas"></div>
         <button type="button" class="btn ghost" id="btnAddWan" style="font-size:11px;padding:5px 11px;margin-top:8px">+ Añadir enlace WAN</button>
@@ -506,6 +510,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
         <option value="none" selected>Sin inspección extra</option>
         <option value="sse">En la nube — HPE Aruba SSE</option>
         <option value="dtd">En el chasis — Dynamic Threat Defense</option>
+        <option value="gwsec">En el gateway — Central + Security (IDS/IPS)</option>
       </select>
       <p class="hint" id="secHint">El NGFW y la clasificación de aplicaciones (AppRF, ~3.500 apps) ya van en Foundation. Activa una estrategia solo si el diseño exige IDS/IPS o inspección en la nube.</p>
     </div>

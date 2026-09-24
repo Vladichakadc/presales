@@ -191,7 +191,7 @@ test('MikroTik: varias entradas de alimentacion no son doble fuente, y el CHR no
 
 test('Aruba: el EdgeConnect Hardware Reference separa adaptador, fuente unica y 1+1', () => {
   const { MODELS } = require('../server/seed/legacyData/aruba.js');
-  assert.strictEqual(MODELS.filter((m) => m.redund !== undefined).length, 10);
+  assert.strictEqual(MODELS.filter((m) => m.redund !== undefined).length, 16);
   assert.strictEqual(MODELS.find((m) => m.id === 'EC-XS').redund, false);
   assert.strictEqual(MODELS.find((m) => m.id === 'EC-S').redund, false);
   assert.strictEqual(MODELS.find((m) => m.id === 'EC-M').redund, true);
@@ -213,6 +213,34 @@ test('Aruba: el EdgeConnect Hardware Reference separa adaptador, fuente unica y 
       assert.ok(!('redund' in s) && !('psu' in s), `${m.id}: la alimentacion es del equipo, no del SKU`);
     }
   }
+});
+
+// ── Gateways Aruba (2026-09-24): de los PDF oficiales que el repositorio ya versiona ────────
+// El 9114 y el 9240 publican «Power Supply Slots: 1 + Redundant» y una sola fuente como
+// «Power Source»: salen con una y admiten la segunda, que es exactamente 'opcional'. Marcarlos
+// `true` prometeria una fuente que no viene en la caja; `false` negaria la ranura. El 9106
+// publica «Power Supply Slots: -»: adaptador externo, sin ranura. Y los controladores AOS 8
+// (7000/7200) siguen sin dato: no hay documento suyo en public/datasheets/, y rellenarlos por
+// parecido con la serie 9000 seria el dato inferido del tamano que esta seccion prohibe.
+test('Aruba: gateways 9000/9100/9200 con la alimentacion de su documento, y los AOS 8 sin rellenar', () => {
+  const { MODELS } = require('../server/seed/legacyData/aruba.js');
+  const por = (id) => MODELS.find((m) => m.id === id);
+  for (const id of ['Gateway 9004', 'Gateway 9004-LTE', 'Gateway 9012', 'Gateway 9106']) {
+    assert.strictEqual(por(id).redund, false, id);
+  }
+  for (const id of ['Gateway 9114', 'Gateway 9240']) {
+    assert.strictEqual(por(id).redund, 'opcional', id);
+    assert.match(por(id).psu.texto, /1 \+ [Rr]edundant/, `${id}: la cita que lo respalda viaja con el dato`);
+  }
+  // HPE publica consumo MAXIMO; la ficha rotula `watts` como «Consumo tipico».
+  for (const m of MODELS.filter((x) => x.fam === 'gw' && x.psu)) {
+    assert.strictEqual(m.psu.watts, undefined, `${m.id}: HPE publica maximos, no tipicos`);
+  }
+  for (const id of ['7005', '7008', '7010', '7024', '7030', '7205', '7210', '7220', '7240XM']) {
+    assert.strictEqual(por(id).redund, undefined, `${id}: sin documento en el repositorio, no se deduce`);
+  }
+  const f = FICHA.seccionAlimentacion(por('Gateway 9240'));
+  assert.match(f.filas[0][1], /Opcional/);
 });
 
 // ── Cisco: la pagina decia dos cosas sobre el mismo campo (2026-09-03) ────────────────────

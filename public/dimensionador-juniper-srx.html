@@ -9,18 +9,18 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" data-fuente>
 <style>
-:root{--paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;--red:#EE3124;--amber:#A45B00;--green:#1F6B4A;--card:#FFF}
+:root{--paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;--red:#EE3124;--red-txt:#D41D10;--amber:#A45B00;--green:#1F6B4A;--card:#FFF}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1140px;margin:0 auto;padding:26px 18px 80px}
 .masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px}
-.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0 0 6px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red-txt);font-weight:600;margin:0 0 6px}
 h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28px,5.5vw,48px);line-height:.98;text-transform:uppercase;margin:0}
 .sub{color:var(--steel);max-width:64ch;margin:8px 0 0;font-size:14.5px}
 .back-link{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);text-decoration:none;margin-bottom:18px;transition:color .15s}
-.back-link:hover{color:var(--red)}
-.tabs{display:flex;gap:0;border-bottom:1px solid var(--rule);margin-bottom:22px}
+.back-link:hover{color:var(--red-txt)}
+.tabs{display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--rule);margin-bottom:22px} /* salta de línea en pantallas estrechas y al 200 % de zoom (WCAG 1.4.10, 2026-09-24) */
 .tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:11px 18px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.03em;text-transform:uppercase;color:var(--steel)}
 .tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--red)}
 .tabpane[hidden]{display:none}
@@ -37,7 +37,7 @@ h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28p
 .dot.ok{background:var(--ink)}
 .dot.pick{background:var(--red);width:11px;height:11px;bottom:32px;box-shadow:0 0 0 4px rgba(238,49,36,.18)}
 .need{position:absolute;top:0;bottom:26px;width:2px;background:var(--red);transform:translateX(-50%);transition:left .25s cubic-bezier(.2,.8,.2,1)}
-.need span{position:absolute;top:-2px;left:6px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;color:#fff;background:var(--red);padding:2px 6px;border-radius:2px}
+.need span{position:absolute;top:-2px;left:6px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;color:#fff;background:var(--red-txt);padding:2px 6px;border-radius:2px}
 .need.flip span{left:auto;right:6px}
 .pickLabel{position:absolute;bottom:52px;transform:translateX(-50%);white-space:nowrap;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;text-transform:uppercase}
 .legend{display:flex;gap:16px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--steel);letter-spacing:.06em;text-transform:uppercase}
@@ -67,7 +67,7 @@ input[type=range]{width:100%;accent-color:var(--red)}
 
 /* VERDICT */
 .verdict{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:22px;margin-bottom:16px}
-.tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red-txt);font-weight:600;margin:0}
 .model{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(22px,4vw,36px);line-height:1;text-transform:uppercase;margin:6px 0 2px}
 .family{color:var(--steel);font-size:13.5px;margin-bottom:16px}
 .meter{margin-bottom:12px}
@@ -83,7 +83,7 @@ ul.clean li{padding-left:14px;position:relative;margin-bottom:9px;font-size:13.5
 ul.clean li:before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;background:var(--rule)}
 ul.clean li.on:before{background:var(--red)}
 .sku{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--steel);display:block;margin-top:2px}
-.req{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 5px;border-radius:2px;background:var(--red);color:#fff;margin-left:6px;vertical-align:1px}
+.req{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 5px;border-radius:2px;background:var(--red-txt);color:#fff;margin-left:6px;vertical-align:1px}
 .req.opt{background:var(--paper);color:var(--steel)}
 table{width:100%;border-collapse:collapse;font-size:12.5px}
 th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);font-weight:500;padding:0 8px 7px 0;border-bottom:1px solid var(--rule)}
@@ -109,7 +109,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 .tierRow .tv{font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-align:right;color:var(--steel)}
 .tierRow .tb{height:14px;background:var(--paper);border-radius:2px;overflow:hidden}
 .tierRow .tb i{display:block;height:100%;background:#B9C4D2;transition:width .3s}
-.tierRow.on .tn{color:var(--red)}
+.tierRow.on .tn{color:var(--red-txt)}
 .tierRow.on .tb i{background:var(--red)}
 .tierRow.on .tv{color:var(--ink);font-weight:600}
 .tierRow.off .tb i{background:#8FA3B8}
@@ -117,7 +117,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 .fuentes-list{font-size:13.5px;color:var(--steel);padding:0;margin:0 0 0 20px}
 .fuentes-list li{margin-bottom:8px}
 .fuentes-list a{color:var(--ink);text-decoration:none;font-weight:600}
-.fuentes-list a:hover{text-decoration:underline;color:var(--red)}
+.fuentes-list a:hover{text-decoration:underline;color:var(--red-txt)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <body>
@@ -157,7 +157,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       <label for="bw">Ancho de banda a proteger</label>
       <div class="row">
         <input type="number" id="bw" min="1" step="any" autocomplete="off">
-        <select id="unit" style="width:105px"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
+        <select id="unit" style="width:105px" aria-label="Unidad del caudal"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
       </div>
     </div>
 
@@ -192,7 +192,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <div class="field">
       <label for="users">Usuarios de la sede <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— opcional, para el eje de sesiones</span></label>
       <input type="number" id="users" min="0" step="10" autocomplete="off">
-      <input type="number" id="sesUser" min="0" step="1" style="margin-top:8px" autocomplete="off">
+      <input type="number" id="sesUser" min="0" step="1" style="margin-top:8px" autocomplete="off" aria-label="Sesiones concurrentes por usuario">
       <p class="hint">El segundo campo son las sesiones concurrentes por usuario (15&ndash;30 en un puesto corporativo). El eje solo se comprueba en los modelos cuyo catálogo trae la cifra de sesiones; en el resto se declara sin comprobar.</p>
     </div>
   </section>

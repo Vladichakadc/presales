@@ -134,29 +134,41 @@ module.exports = {
        sustitución dentro desaparece de esa lista. Se afirma la RELACIÓN —«el fabricante que
        publica la capa también tiene modelos sin ella»— y no el número 2, que cambiaría el día
        que alguien complete esas dos fichas por serie (pendiente F6). */
-    const apartados = await p.$eval('#calcOut', (o) => {
-      const items = [...o.querySelectorAll('.calc-apartados .calc-lista li')];
-      return items.map((li) => (li.querySelector('b') || {}).textContent || '');
+    // LA REGLA NECESITA UN SUJETO, y desde el 2026-09-23 el portal no lo tiene: las fichas por
+    // serie completaron la cifra de TLS del 400F, 401F, 1000F y 1001F, y los dos FortiGate que
+    // siguen sin ella (100F y 200F) están fuera de venta y el portal no los lista. Durante un
+    // día este caso lo dijo («SIN SUJETO») en vez de comprobarlo. DESDE EL 2026-09-24 EL SUJETO
+    // SE FABRICA: se intercepta /api/catalog en ESTE navegador y se añade un FortiGate
+    // sintético —copia de uno real, sin la cifra `ssl`— a la respuesta que recibe la pantalla.
+    // Lo que se prueba es el cableado real de la página (index.js → CALC → apartados), con un
+    // sujeto que no depende de cómo evolucione el catálogo. El servidor y los datos no se tocan.
+    const SINTETICO = 'FortiGate SIN-TLS (sintético del contraste)';
+    await p.route('**/api/catalog', async (route) => {
+      const resp = await route.fetch();
+      const d = await resp.json();
+      const forti = d.fortinet || [];
+      const base = forti.find((x) => x.ssl != null);
+      if (base) forti.push(Object.assign({}, base, { model: SINTETICO, id: SINTETICO, ssl: null }));
+      await route.fulfill({ response: resp, json: d });
     });
-    // LA REGLA NECESITA UN SUJETO, y desde el 2026-09-23 el portal puede no tenerlo: las
-    // fichas por serie completaron la cifra de TLS del 400F, 401F, 1000F y 1001F, y los dos
-    // FortiGate que siguen sin ella (100F y 200F) estan fuera de venta y el portal no los
-    // lista. Se cuenta sobre el MISMO catalogo que pinta la pantalla: con sujeto, Fortinet
-    // tiene que aparecer entre los apartados; sin el, se DICE que no se pudo comprobar aqui y
-    // donde queda vigilada — un comprobador que pasa sin comprobar nada es el que este
-    // repositorio no quiere tener.
-    const sinCifra = await p.evaluate(async () => {
-      const d = await (await fetch('/api/catalog', { credentials: 'same-origin' })).json();
-      return (d.fortinet || []).filter((x) => x.ssl == null).map((x) => x.model || x.id);
-    });
-    const fortiApartado = apartados.some((v) => v.trim() === 'fortinet' || /fortinet/i.test(v));
+    await p.goto(`${base}/`, { waitUntil: 'domcontentloaded' });
+    await pausa(p, 1600);
+    await p.click('.nav-btn[data-page="calculadora"]');
+    await pausa(p, 400);
+    await p.selectOption('#calcProfile', 'ssl');
+    await pausa(p, 300);
+    await p.click('#btnCalcular');
+    await pausa(p, 800);
+    const conSujeto = await p.$eval('#calcOut', (o) => [...o.querySelectorAll('.calc-apartados .calc-lista li')]
+      .map((li) => li.textContent.replace(/\s+/g, ' ').trim()));
+    await p.unroute('**/api/catalog');
+    const fortiLinea = conSujeto.find((t) => /fortinet/i.test(t)) || '';
+    const ok = /fortinet/i.test(fortiLinea);
     out.push({ n: 'un modelo sin cifra de TLS se aparta aunque su fabricante sí publique la capa',
-      ok: sinCifra.length ? fortiApartado : true,
-      detalle: !sinCifra.length
-        ? 'SIN SUJETO en el catálogo de hoy: ningún FortiGate del portal carece de la cifra de TLS. No se comprobó aquí; la regla la fija test/calculadora.test.js con datos sintéticos'
-        : fortiApartado
-          ? `Fortinet aparece entre los apartados: ${sinCifra.join(', ')} no traen la cifra`
-          : `no aparece — se estaría sustituyendo por otra capa (sin cifra: ${sinCifra.join(', ')}; apartados: ${apartados.join(', ') || 'ninguno'})` });
+      ok,
+      detalle: ok
+        ? `con un FortiGate sintético sin «ssl» inyectado en /api/catalog, Fortinet aparece entre los apartados (${fortiLinea.slice(0, 80)})`
+        : `no aparece — se estaría sustituyendo por otra capa (apartados: ${conSujeto.join(' | ') || 'ninguno'})` });
     return out;
   },
 };
