@@ -7,15 +7,17 @@
 
    Uso:  npm run e2e
    Vars: E2E_PORT (por defecto 4131), E2E_USER / E2E_PASSWORD (credenciales de la corrida,
-         nunca las de producción), E2E_SOLO=filtro para correr un solo script.
+         nunca las de producción), E2E_SOLO=filtro para correr un solo script,
+         E2E_LENTITUD=N para ralentizar N veces la CPU de cada página (ver ayuda.js).
 
-   NO forma parte de `npm run verificar`: necesita Playwright y un navegador, que no
-   caben en la verificación rápida que Railway espera en cada push. En CI vive como job
-   aparte (ver test/e2e/LEEME.md y el parche e2e-ci.patch entregado con el cambio). */
+   NO forma parte de `npm run verificar`: necesita Playwright y un navegador, que no caben
+   en la verificación rápida de cada push. Desde el 2026-09-24 corre en CI dentro del job de
+   `pantallas.yml`, que ya trae Playwright y Chromium (ver test/e2e/LEEME.md). */
 
-const { spawn, execSync } = require('child_process');
+const { spawn } = require('child_process');
 const fs = require('fs');
 const http = require('http');
+const os = require('os');
 const path = require('path');
 
 const RAIZ = path.join(__dirname, '..', '..');
@@ -58,7 +60,13 @@ function esperarServidor(intentos = 60) {
   }
 
   console.log(`[e2e] levantando el servidor en ${BASE} (AUTH de corrida, base efímera)…`);
-  // Base y auth en /tmp: la corrida nunca toca el datos.sqlite de desarrollo.
+  // Base y auth en un directorio PROPIO DE ESTA CORRIDA, que se borra al terminar: la corrida
+  // nunca toca el datos.sqlite de desarrollo. Hasta el 2026-09-24 eran rutas fijas en /tmp y
+  // el usuarios.json del 22-sep seguía allí: una corrida con otra E2E_PASSWORD no podía entrar
+  // (el almacén de usuarios solo se siembra desde AUTH_PASSWORD si el archivo NO existe) y dos
+  // corridas a la vez compartían base. Una corrida tiene que empezar de cero para no depender
+  // de la anterior.
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'e2e-presales-'));
   const servidor = spawn(process.execPath, ['server/server.js'], {
     cwd: RAIZ,
     detached: true, // grupo de proceso propio: al matar, muere el árbol entero
@@ -68,8 +76,8 @@ function esperarServidor(intentos = 60) {
       AUTH_USER: process.env.E2E_USER || 'presales',
       AUTH_PASSWORD: process.env.E2E_PASSWORD || 'e2e-local',
       SESSION_SECRET: 'secreto-solo-de-la-corrida-e2e',
-      DATABASE_PATH: '/tmp/e2e-presales.sqlite',
-      AUTH_STATE_DIR: '/tmp/e2e-auth',
+      DATABASE_PATH: path.join(tmp, 'catalogo.sqlite'),
+      AUTH_STATE_DIR: path.join(tmp, 'auth'),
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -102,7 +110,7 @@ function esperarServidor(intentos = 60) {
     rc = 2;
   } finally {
     apagar();
-    try { execSync('rm -f /tmp/e2e-presales.sqlite'); } catch { /* sin base que limpiar */ }
+    try { fs.rmSync(tmp, { recursive: true, force: true }); } catch { /* nada que limpiar */ }
   }
   console.log(rc === 0 ? '\n[e2e] TODA LA BATERÍA EN VERDE' : `\n[e2e] corrida con fallos (rc=${rc})`);
   process.exit(rc);

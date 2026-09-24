@@ -18,7 +18,7 @@
    <script>: la CSP de la aplicación (script-src 'self') bloquearía un script en línea, y
    relajarla para la prueba sería probar otra aplicación. */
 const fs = require('fs');
-const { cargarPlaywright, abrirSesion, BASE, contador } = require('./ayuda');
+const { cargarPlaywright, abrirSesion, BASE, asentar, contador } = require('./ayuda');
 
 const AXE = fs.readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
 
@@ -61,8 +61,8 @@ const GRAVES = new Set(['critical', 'serious']);
   await abrirSesion(page);
   for (const p of PANTALLAS) {
     await page.goto(BASE + p.ruta, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(1500);
-    if (p.pestana) { await page.click(`[data-tab="${p.pestana}"]`); await page.waitForTimeout(600); }
+    await asentar(page);
+    if (p.pestana) { await page.click(`[data-tab="${p.pestana}"]`); await asentar(page); }
     await page.evaluate(AXE);
     const r = await page.evaluate(() => axe.run(document, {
       runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
@@ -84,8 +84,8 @@ const GRAVES = new Set(['critical', 'serious']);
   await abrirSesion(zoom);
   for (const p of PANTALLAS) {
     await zoom.goto(BASE + p.ruta, { waitUntil: 'domcontentloaded' });
-    await zoom.waitForTimeout(1200);
-    if (p.pestana) { await zoom.click(`[data-tab="${p.pestana}"]`); await zoom.waitForTimeout(500); }
+    await asentar(zoom);
+    if (p.pestana) { await zoom.click(`[data-tab="${p.pestana}"]`); await asentar(zoom); }
     const m = await zoom.evaluate(() => ({ ancho: document.documentElement.scrollWidth, vista: window.innerWidth }));
     t.ok(m.ancho <= m.vista + 1, `zoom 200 % · ${p.n}: sin desplazamiento horizontal (${m.ancho} px de contenido en ${m.vista} px)`);
   }

@@ -5,7 +5,7 @@
    pantalla y en la lista de materiales. Cada escenario entra por el ENLACE del escenario
    (querystring), que es como un preventa se lo pasa a otro: así se prueba también que el
    selector de sistema operativo viaja en la URL. */
-const { cargarPlaywright, abrirDimensionador, BASE, contador } = require('./ayuda');
+const { cargarPlaywright, abrirDimensionador, BASE, asentar, contador } = require('./ayuda');
 
 const URL_DIM = BASE + '/dimensionador-aruba-edgeconnect.html';
 function enlace(p) {
@@ -28,7 +28,7 @@ const wan = (...links) => ({ v: 2, wanLinks: links.map((l, i) => ({ id: i + 1, m
   const cargar = async (p) => {
     await page.goto(enlace(p), { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#users', { timeout: 20000 });
-    await page.waitForTimeout(1500);
+    await asentar(page);
     return {
       pick: await page.inputValue('#pickModel'),
       bom: await page.inputValue('#bomOut'),
@@ -100,7 +100,7 @@ const wan = (...links) => ({ v: 2, wanLinks: links.map((l, i) => ({ id: i + 1, m
   {
     await cargar({ famSeg: 'sucursal', users: 20, perUser: 1, soSeg: 'aos8', wanLinksData: wan({ tipo: 'DIA', down: 50 }) });
     await page.selectOption('#pickModel', '7005');
-    await page.waitForTimeout(900);
+    await asentar(page);
     const v = (await page.textContent('#verdict')) || '';
     t.ok(/2022-10-31/.test(v) && /ya pas/.test(v), 'C5: el 7005 elegido a mano declara su último pedido (2022-10-31) ya vencido');
   }

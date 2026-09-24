@@ -3,7 +3,7 @@
    medio SFP 1G / SFP+ 10G → el BOM cotiza la óptica; con varias compatibles hay mensaje
    y select SIN opción por defecto (el tipo lo elige el usuario); hasta elegirla la línea
    queda PENDIENTE DE SELECCIÓN sin precio; RJ45 no pide nada. */
-const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
+const { cargarPlaywright, abrirDimensionador, asentar, contador } = require('./ayuda');
 
 (async () => {
   const { chromium } = cargarPlaywright();
@@ -16,9 +16,9 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   const fila = page.locator('.wan-fila').first();
   await fila.locator('select[data-campo=medio]').selectOption('SFP+ 10G');
   await fila.locator('input[data-campo=down]').fill('500');
-  await page.waitForTimeout(600);
+  await asentar(page);
   await page.selectOption('#pickModel', 'EC-10150'); // varias ópticas 10G compatibles
-  await page.waitForTimeout(800);
+  await asentar(page);
 
   t.ok(await page.isVisible('#sfpChooser'), 'el chooser aparece con un enlace SFP+ 10G');
   const txt = (await page.textContent('#sfpChooser')) || '';
@@ -28,26 +28,26 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   t.ok((await sel.inputValue()) === '', 'el select NO trae opción por defecto — la elige el usuario');
 
   await page.click('[data-tab=bom]');
-  await page.waitForTimeout(600);
+  await asentar(page);
   let bom = (await page.textContent('#pane-bom')) || '';
   t.ok(/PENDIENTE DE SELECCIÓN/.test(bom), 'BOM: óptica PENDIENTE DE SELECCIÓN sin precio hasta elegirla');
 
   await page.click('[data-tab=calc]');
-  await page.waitForTimeout(300);
+  await asentar(page);
   const primera = await sel.locator('option').nth(1).getAttribute('value');
   await sel.selectOption(primera);
-  await page.waitForTimeout(600);
+  await asentar(page);
   t.ok(new RegExp('sfpPickData=').test(page.url()), 'la elección viaja en la URL del escenario');
   await page.click('[data-tab=bom]');
-  await page.waitForTimeout(600);
+  await asentar(page);
   bom = (await page.textContent('#pane-bom')) || '';
   t.ok(!/PENDIENTE DE SELECCIÓN/.test(bom) && bom.includes(primera),
     `tras elegir, el BOM cotiza la óptica (${primera}) y el PENDIENTE desaparece`);
 
   await page.click('[data-tab=calc]');
-  await page.waitForTimeout(300);
+  await asentar(page);
   await fila.locator('select[data-campo=medio]').selectOption('RJ45');
-  await page.waitForTimeout(600);
+  await asentar(page);
   t.ok(await page.isHidden('#sfpChooser'), 'medio RJ45: sin óptica que pedir (chooser oculto)');
 
   await browser.close();
