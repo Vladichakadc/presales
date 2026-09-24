@@ -95,6 +95,27 @@ jobs:
                 'https://docs.fortinet.com/document/fortigate/7.6.3/fortios-release-notes/173430/ssl-vpn-tunnel-mode-no-longer-supported',
                 'https://docs.fortinet.com/document/fortigate/7.6.6/fortios-release-notes/173430/ssl-vpn-tunnel-mode-replaced-with-ipsec-vpn',
               ] },
+              // La regla de 7.6.0 (SSL-VPN retirado en los modelos de 2 GB de RAM) se aplicaba sin
+              // saber QUE modelos tienen 2 GB: el Product Matrix no publica la RAM. La lista esta
+              // en las Release Notes de 7.6.0, que docs.fortinet.com guarda como PDF en S3.
+              { archivo: 'fortios-760-release-notes.pdf', tipo: 'pdf', pendiente: 'GO-2',
+                debeContener: null, urls: [
+                'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/51fcbb4f-33ff-11ef-bfe5-fa163e15d75b/fortios-v7.6.0-release-notes.pdf',
+              ] },
+              // Los SKU que dejan la cotizacion en borrador ademas de F2: FortiClient EMS por
+              // tramo, FortiSASE, FortiSandbox dedicado y FortiAnalyzer.
+              { archivo: 'og-forticlient.pdf', tipo: 'pdf', pendiente: 'SKU', urls: [
+                'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-forticlient.pdf',
+              ] },
+              { archivo: 'og-fortisase.pdf', tipo: 'pdf', pendiente: 'SKU', urls: [
+                'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-fortisase.pdf',
+              ] },
+              { archivo: 'og-fortisandbox.pdf', tipo: 'pdf', pendiente: 'SKU', urls: [
+                'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-fortisandbox.pdf',
+              ] },
+              { archivo: 'og-fortianalyzer.pdf', tipo: 'pdf', pendiente: 'SKU', urls: [
+                'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-fortianalyzer.pdf',
+              ] },
             ];
             const informe = [];
             (async () => {
