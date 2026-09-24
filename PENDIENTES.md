@@ -592,6 +592,15 @@ Cobertura actual por herramienta:
 
 **Starlink: el dimensionador existe y su hardware está contrastado con las fichas oficiales (2026-09-24).**
 Lo que sigue abierto:
+- **Integración del módulo canónico `starlink-leo-dimensionador` v1.0.0 (prompt maestro del
+  2026-09-24) — bloqueada por falta de los archivos.** El prompt exige verificar el SHA-256 de
+  sus seis archivos (`app.js`, `index.html`, `styles.css`, `README.md`, `tests/run-tests.cjs`,
+  `dist/…presales.html`) antes de tocar nada, y no están ni en el entorno, ni en GitHub, ni en
+  Drive. **Decisión del dueño (2026-09-24): el módulo nuevo SUSTITUYE la página actual**,
+  conservando la URL `dimensionador-starlink-leo.html`; lo que la página actual trae y el
+  módulo no (Mini, Enterprise, tendido de cable, «no consta» marítimo) pasa a «mejoras futuras
+  no implementadas». Se cierra adjuntando la carpeta en la sesión o subiéndola a la rama
+  `fuente/starlink-leo-canonico`.
 - **Uso marítimo: ninguna ficha lo menciona**, así que el escenario marítimo hoy no recomienda
   ningún kit (lo dice en pantalla). Hace falta un documento oficial que lo respalde; el
   candidato es la página de Starlink Maritime. Se añade como URL candidata a
