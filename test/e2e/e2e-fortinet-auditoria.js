@@ -339,8 +339,34 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   t.ok(trasera && trasera.ancho > 0,
     `y esa figura CARGA de verdad, no es un hueco (natural ${trasera && trasera.ancho}px)`);
 
-  // El hueco honesto: el 100F no tiene datasheet por serie, así que NO tiene foto y lo dice.
-  // Está fuera de venta: desde la etapa 7 solo compite en ampliación de un parque instalado.
+  // El 100F era el hueco honesto: no tiene datasheet por serie (fortinet.com ya no lo publica,
+  // 404 también desde internet abierto). Desde el 2026-09-24 su figura sale de la QuickStart
+  // Guide oficial, y el pie tiene que DECIR que no es un datasheet. Está fuera de venta: desde
+  // la etapa 7 solo compite en ampliación de un parque instalado.
+  await caudal(500);
+  await page.selectOption('#motivoCompra', 'ampliacion');
+  await page.waitForTimeout(800);
+  await page.selectOption('#verdict-sel', 'FortiGate 100F');
+  await page.waitForTimeout(900);
+  const cien = await page.evaluate(() => ({
+    src: ((document.querySelector('.ficha-vista img')) || { getAttribute: () => null }).getAttribute('src'),
+    pie: ((document.querySelector('.ficha-vista figcaption')) || {}).textContent || '',
+  }));
+  t.ok(/fg-100f-front\.webp$/.test(cien.src || ''), `el 100F ya sirve su figura oficial (${cien.src})`);
+  t.ok(/QuickStart Guide/.test(cien.pie) && /101F/.test(cien.pie),
+    'y el pie dice que sale de la QuickStart Guide y que dibuja un 101F');
+
+  // EL HUECO HONESTO SE SIGUE CONDUCIENDO, con un sujeto que no depende del catálogo del día:
+  // ya ningún FortiGate queda sin figura, así que se sirve el mapa de figuras SIN la entrada
+  // del 100F (mismo patrón que el caso `calculadora-ssl`, que inyecta un modelo sin cifra).
+  await page.route('**/data/fortinet-vistas-equipos.json', async (ruta) => {
+    const r = await ruta.fetch();
+    const mapa = await r.json();
+    delete mapa['FortiGate 100F'];
+    await ruta.fulfill({ response: r, json: mapa });
+  });
+  await page.goto(`${BASE}/dimensionador-fortinet-fortigate.html`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1500);
   await caudal(500);
   await page.selectOption('#motivoCompra', 'ampliacion');
   await page.waitForTimeout(800);
@@ -350,6 +376,7 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
     aviso: ((document.querySelector('.ficha-vista-vacia')) || {}).textContent || '',
     foto: !!document.querySelector('.ficha-vista'),
   }));
+  await page.unroute('**/data/fortinet-vistas-equipos.json');
   t.ok(!hueco.foto && /Sin foto oficial/.test(hueco.aviso),
     'un modelo sin foto oficial DECLARA el hueco en vez de enseñar una parecida');
 

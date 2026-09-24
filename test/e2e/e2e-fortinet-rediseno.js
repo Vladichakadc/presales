@@ -103,10 +103,10 @@ const CU01 = new URLSearchParams({
   const bloq = await texto('#resBloqueos');
   t.ok(/retirado en FortiOS 7\.6\.3/.test(bloq), 'T06: SSL-VPN en 7.6.3+ se bloquea con su causa');
   t.ok(/Cambiar a IPsec/.test(bloq), 'T06: y se ofrece IPsec como corrección');
-  // CU-05: «se explica el motivo con fuente». La regla de 7.6.3+ lleva `leida:false` en el
-  // catálogo (la cita el informe; el documento no se leyó desde aquí) y eso se declara.
-  t.ok(/Fuente: .*Release Notes/.test(bloq) && /no se leyó desde este entorno/.test(bloq),
-    'CU-05: el bloqueo cita su fuente y declara que el documento no se leyó');
+  // CU-05: «se explica el motivo con fuente». Desde el 2026-09-24 la regla de 7.6.3+ está
+  // leída en las Release Notes 7.6.3, así que cita documento y página y ya no se disculpa.
+  t.ok(/Fuente: .*7\.6\.3 Release Notes, p\. 15/.test(bloq) && !/no se leyó desde este entorno/.test(bloq),
+    'CU-05: el bloqueo cita su fuente leída, con documento y página');
   await page.click('#resBloqueos [data-corregir]');
   await page.waitForTimeout(800);
   t.ok(await page.$eval('#vpnTipo', (s) => s.value) === 'ipsec' && (await estado()).reco === 'FortiGate 90G',

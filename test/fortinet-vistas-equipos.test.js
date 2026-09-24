@@ -52,8 +52,16 @@ test('cada figura declara su procedencia: de qué documento y de qué figura sal
   for (const [modelo, v] of entradas) {
     assert.ok(v.fuente && v.fuente.length > 15,
       `${modelo} no declara de qué documento salió su figura`);
-    assert.match(v.fuente, /Datasheet/i, `${modelo}: la procedencia no nombra el documento`);
-    assert.match(v.fuente, /p\. 7 «Hardware»/, `${modelo}: no dice de qué página del datasheet sale`);
+    // Casi todas salen de la página 7 «Hardware» del datasheet por serie. Las de los cuatro
+    // que no lo tienen (2026-09-24) salen de la guía oficial de hardware, y entonces el pie
+    // tiene que nombrar esa guía, la página y el rótulo literal de la figura.
+    if (/^Datasheet/.test(v.fuente)) {
+      assert.match(v.fuente, /p\. 7 «Hardware»/, `${modelo}: no dice de qué página del datasheet sale`);
+    } else {
+      assert.match(v.fuente, /(QuickStart Guide|System Guide) .*docs\.fortinet\.com/,
+        `${modelo}: la procedencia no nombra ni un datasheet ni una guía oficial de hardware`);
+      assert.match(v.fuente, /p\. \d+ «[^»]{8,}»/, `${modelo}: no cita la página y el rótulo literal de la figura`);
+    }
   }
 });
 
@@ -143,4 +151,17 @@ test('no hay figuras huérfanas: todo fichero fg-*.webp lo usa algún modelo', (
   for (const f of enDisco) {
     assert.ok(usadas.has(f), `${f} está en el repositorio y no lo usa ningún modelo — peso muerto`);
   }
+});
+
+test('los cuatro sin datasheet (100F, 200F, 7081F y 7121F) tienen las dos caras y declaran la guía', () => {
+  // Eran el hueco que la ficha declaraba desde el 2026-09-22. Sus figuras salen de las guías
+  // oficiales de hardware, no de un datasheet, y la del 100F dibuja un 101F: si el pie dejara
+  // de decirlo, se estaría enseñando otro equipo sin avisar.
+  for (const m of ['FortiGate 100F', 'FortiGate 200F', 'FortiGate 7081F', 'FortiGate 7121F']) {
+    const v = VISTAS[m];
+    assert.ok(v && v.front && v.rear, `${m}: le falta una cara`);
+    assert.doesNotMatch(v.fuente, /^Datasheet/, `${m}: no tiene datasheet por serie y el pie no puede decir que sale de uno`);
+  }
+  assert.match(VISTAS['FortiGate 100F'].fuente, /Unidad dibujada: FortiGate 101F/);
+  assert.match(VISTAS['FortiGate 7121F'].fuente, /generacion 1/);
 });

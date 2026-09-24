@@ -120,7 +120,10 @@
 //   · 7081F — «up to six hot swappable 200-277V, 16A AC PSUs. The capacity of each PSU is
 //     2500W» + «You can add extra PSUs to provide redundancy» (7081F System Guide).
 //   · 7121F — «You can hot swap a PSU without powering down [...] as long as four PSUs are
-//     connected to power and operating normally» (7121F System Guide).
+//     connected to power and operating normally» (7121F System Guide). El 2026-09-24 se leyo
+//     la misma guia entera (7.4.4, docs.fortinet.com) y la p. 8 SI publica el maximo: «eight
+//     hot swappable 200-240 VAC [...] 2000W» en la generacion 1 y 2500W en la 2. Casa con el
+//     «8 PS» del Product Matrix (`fuentes` mas abajo): dos anclas, no una.
 // Los 2.500 W del 7081F son CAPACIDAD de cada fuente, no consumo del equipo, y por eso NO van
 // en `psu.watts`: la ficha rotula ese campo «Consumo tipico», asi que ponerlo ahi seria una
 // cifra falsa con apariencia correcta. Va en el texto, que es donde se puede decir que mide.
@@ -283,7 +286,7 @@ const MODELS=[
   // no van en `watts` -que la ficha rotula «Consumo tipico»- sino en el texto: seria una cifra
   // falsa con apariencia correcta, justo el error que este catalogo evita.
   {id:'FortiGate 7081F', seg:'Carrier / ISP', fw:1890000, ips:405000, ngfw:330000, tp:312000, vpn:378000, sess:600000000, cps:5400000, ifaces:'Chasis modular FPM (interfaces variables)', redund:true, psu:{tipo:'hasta 6 fuentes AC intercambiables en caliente', volts:'200-277 V, 16 A', texto:'Hasta seis fuentes AC de 2.500 W de capacidad cada una, intercambiables en caliente. Cuántas hacen falta depende de los módulos FIM y FPM instalados; se pueden añadir fuentes extra para redundancia y conectar cada una a una toma distinta.'}},
-  {id:'FortiGate 7121F', seg:'Carrier / National', fw:1890000, ips:675000, ngfw:550000, tp:520000, vpn:630000, sess:1000000000, cps:9000000, ifaces:'Chasis modular FPM (interfaces variables)', redund:true, psu:{tipo:'fuentes AC intercambiables en caliente', texto:'Se puede cambiar una fuente sin apagar el equipo mientras queden cuatro conectadas y funcionando; por debajo de cuatro, el chasis empieza a apagar módulos FPM. El documento leído no publica el número máximo de fuentes.'}},
+  {id:'FortiGate 7121F', seg:'Carrier / National', fw:1890000, ips:675000, ngfw:550000, tp:520000, vpn:630000, sess:1000000000, cps:9000000, ifaces:'Chasis modular FPM (interfaces variables)', redund:true, psu:{tipo:'hasta 8 fuentes AC intercambiables en caliente', volts:'200-240 V AC, 50-60 Hz', texto:'Hasta ocho fuentes intercambiables en caliente: de 2.000 W en la generación 1 y de 2.500 W en la 2 (FortiGate-7121F 7.4.4 System Guide, p. 8; leída el 2026-09-24). Cuántas hacen falta depende de los módulos FIM y FPM: con dos FIM-7921F y diez FPM-7620F son cinco de 2.000 W o cuatro de 2.500 W, y el resto de bahías sirve de redundancia (p. 24). Se puede cambiar una fuente sin apagar el equipo mientras queden cuatro conectadas y funcionando; por debajo de cuatro, el chasis empieza a apagar módulos FPM.'}},
 ];
 
 // SKU de hardware base (columna UNIT/SKU de la hoja "FortiGate"/"FortiGate Chassis Platforms").
@@ -626,13 +629,16 @@ for (const m of MODELS) if (/^FortiGate 8[01]F$/.test(m.id)) m.seg=m.seg.replace
    La pagina aceptaba SSL-VPN en modo tunel sin preguntar la version de FortiOS y recomendaba
    un 90G con sus 200 usuarios publicados. Tres reglas, y cada una con su procedencia REAL:
      · 7.6.3 o superior: el modo tunel SSL-VPN se sustituye por IPsec en TODOS los modelos.
-       Transcrita del informe de auditoria, que cita la release note de FortiOS 7.6.6 —
-       `docs.fortinet.com` responde `connect_rejected` al proxy de egreso de este entorno y
-       no se leyo el documento. Se declara, no se esconde.
+       Hasta el 2026-09-24 estaba transcrita del informe de auditoria sin leer (el proxy de
+       egreso de aquel entorno rechazaba docs.fortinet.com); ese dia se leyo el documento
+       oficial —FortiOS 7.6.3 Release Notes, p. 15, desde una maquina sin ese proxy— y la
+       cita literal casa: la regla pasa a `leida:true`.
      · 7.6.0 en adelante: SSL-VPN no soportado en modelos de 2 GB de RAM (nota 10 del Matrix,
-       leida). QUE MODELOS TIENEN 2 GB NO LO DICE EL MATRIX, y la RAM no esta en este
-       catalogo: en esa rama la compatibilidad de un modelo con SSL-VPN publicado es
-       «desconocida», nunca «soportada» por omision.
+       leida). QUE MODELOS TIENEN 2 GB NO LO DICE EL MATRIX. Lo dicen, en parte, las mismas
+       Release Notes 7.6.3 (p. 16): el recorte de los modelos de 2 GB «impacts the FortiGate
+       40F and 60F series devices, along with their variants». Asi que 40F, 60F y 61F quedan
+       «no soportada» con las dos citas; el RESTO sigue «desconocida», porque no figurar en
+       esa frase no prueba tener mas RAM — nunca «soportada» por omision.
      · Serie 90G: SSL-VPN solo entre 7.0.12 y 7.0.15 (nota 11 del Matrix, leida, pegada a la
        celda del FG-90G). Ninguna de las ramas que ofrece esta herramienta cae en ese rango.
    Las ramas son tres a proposito: son las que las fuentes distinguen. Una lista de versiones
@@ -646,8 +652,13 @@ const FORTIOS={
   porDefecto:'7.6.3+',
   reglas:[
     {funcion:'sslvpn', versiones:['7.6.3+'], modelos:'*', estado:'retirada', sustituto:'ipsec',
-     fuente:'Informe de auditoría 23-sep-2026, ref. [3]: FortiOS 7.6.6 Release Notes, «SSL VPN tunnel mode replaced with IPsec VPN»',
-     leida:false},
+     fuente:'FortiOS 7.6.3 Release Notes, p. 15, «SSL VPN tunnel mode replaced with IPsec VPN»: «Starting in FortiOS 7.6.3, the SSL VPN tunnel mode feature is replaced with IPsec VPN [...] This applies to all FortiGate models.»',
+     leida:true},
+    // Va DELANTE de la regla 'ram-2gb': `compatibilidad()` devuelve la primera que nombra el
+    // modelo, y la de 2 GB solo deja «desconocida» a los que nadie nombra.
+    {funcion:'sslvpn', versiones:['7.6.0-7.6.2'], modelos:['40F','60F','61F'], estado:'no-soportada', sustituto:'ipsec',
+     fuente:'Product Matrix sept-2026, nota 10 («SSL VPN not supported on FortiOS 7.6.0 and above, for models with 2GB RAM») + FortiOS 7.6.3 Release Notes, p. 16: los modelos de 2 GB son «the FortiGate 40F and 60F series devices, along with their variants»',
+     leida:true},
     {funcion:'sslvpn', versiones:['7.6.0-7.6.2'], modelos:'ram-2gb', estado:'no-soportada', sustituto:'ipsec',
      fuente:'Product Matrix sept-2026, nota 10: «SSL VPN not supported on FortiOS 7.6.0 and above, for models with 2GB RAM»',
      leida:true},

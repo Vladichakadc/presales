@@ -24,7 +24,9 @@
                            duro, no solo un aviso rojo debajo de la recomendacion.
    R11/M9 · escenariosUnderlay (2026-09-24) — un enlace de respaldo no suma en operacion
                            normal: un 4G de backup inflaba el caudal, el tier y a veces el
-                           appliance. Misma regla que Fortinet (etapa 7). */
+                           appliance. Misma regla que Fortinet (etapa 7).
+        escenarioBoost   — el Boost toma el escenario que mas tunel pide: una falla no suma
+                           caudal, pero puede dejar el sitio sin breakout. */
 (function(root, factory){
   const api = factory();
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -111,9 +113,10 @@
   // RESPALDO: si cae el MPLS y lo cubre un 4G, ese caudal viaja por Internet.
   //   · Sin ningun respaldo declarado devuelve solo la operacion normal, con las mismas sumas
   //     de siempre: por eso los enlaces ya compartidos (que no traen `rol`) no cambian.
-  //   · Ninguna falla supera a la operacion normal (se quita un activo y entra como mucho su
-  //     mismo caudal), asi que el appliance, el tier y el Boost se dimensionan con `normal`;
-  //     las fallas sirven para decir cuanto se pierde si el respaldo no alcanza.
+  //   · Ninguna falla supera a la operacion normal EN CAUDAL (se quita un activo y entra como
+  //     mucho su mismo caudal), asi que el appliance y el tier se dimensionan con `normal`.
+  //     El Boost NO: depende del reparto MPLS/Internet, que una falla si mueve (ver
+  //     `escenarioBoost`). Las fallas dicen ademas cuanto se pierde si el respaldo no alcanza.
   function escenariosUnderlay(wanLinks) {
     const todos = wanLinks || [];
     const enl = todos.filter((l) => l.down > 0);
@@ -143,5 +146,20 @@
     return out;
   }
 
-  return { BOOST_CUOTA, tierParaCaudal, capacidadSo, boostMbpsSitio, boostRecMbps, admiteDtd, escenariosUnderlay };
+  // Eje Boost (2026-09-24). Con breakout, el tunel privado es el 30 % del caudal solo
+  // mientras quede Internet (motor-ingenieria.js); sin Internet es el caudal entero. Si cae
+  // el DIA y su carga la recoge un MPLS de respaldo, el tunel pasa de 300 a 1.000 Mbps con
+  // el mismo caudal total. `tunelDe(e)` da los Mbps de tunel de un escenario (los calcula el
+  // motor); gana el mayor y, en empate, la operacion normal, que va primera. Es la misma
+  // regla que Fortinet aplica a cada eje: la demanda es el maximo entre escenarios.
+  function escenarioBoost(escenarios, tunelDe) {
+    let mejor = null;
+    for (const e of escenarios || []) {
+      const mbps = tunelDe(e);
+      if (!mejor || mbps > mejor.mbps) mejor = { escenario: e, mbps };
+    }
+    return mejor;
+  }
+
+  return { BOOST_CUOTA, tierParaCaudal, capacidadSo, boostMbpsSitio, boostRecMbps, admiteDtd, escenariosUnderlay, escenarioBoost };
 });

@@ -121,9 +121,10 @@ test('T06 · con FortiOS 7.6.3+ SSL-VPN esta retirado: bloquea y ofrece IPsec co
   assert.ok(b, 'bloqueo de escenario');
   assert.deepStrictEqual(b.correccion, { accion: 'cambiar', campo: 'remoto.metodo', valor: 'ipsec' });
   assert.ok(b.fuente, 'con su fuente');
-  // La regla sale de una cita del informe de auditoria (Release Notes 7.6.6) que no se leyo
-  // desde este entorno: el catalogo la marca `leida:false` y el bloqueo tiene que decirlo.
-  assert.strictEqual(b.fuenteLeida, false, 'una cita no leida no se presenta como leida');
+  // Hasta el 2026-09-24 la regla era una cita del informe sin leer (`leida:false`); ese dia se
+  // leyeron las Release Notes 7.6.3 y la cita casa. El bloqueo lo dice con la cita literal.
+  assert.strictEqual(b.fuenteLeida, true, 'la regla se leyo en el documento oficial');
+  assert.match(b.fuente, /7\.6\.3 Release Notes, p\. 15/, 'cita el documento y la pagina');
 });
 
 test('T07 · 90G y 91G no admiten SSL-VPN en ninguna rama ofrecida aunque el Matrix publique su cifra', () => {
@@ -135,8 +136,8 @@ test('T07 · 90G y 91G no admiten SSL-VPN en ninguna rama ofrecida aunque el Mat
       const b = c.bloqueos.find((x) => x.codigo === 'FORTIOS_INCOMPATIBLE');
       assert.ok(b, `${id} con ${v}`);
       assert.ok(!c.elegible);
-      // En 7.4 manda la nota 11 del Matrix, leida; en 7.6.3+ la regla retirada, citada.
-      assert.strictEqual(b.fuenteLeida, v !== '7.6.3+', `${id} con ${v}: ${b.fuente}`);
+      // En 7.4 manda la nota 11 del Matrix; en 7.6.3+ la regla retirada. Las dos, leidas.
+      assert.strictEqual(b.fuenteLeida, true, `${id} con ${v}: ${b.fuente}`);
     }
   }
   const r74 = evaluar(con(CU01(), { 'remoto.metodo': 'sslvpn', 'software.fortiOS': '7.4' }));
@@ -457,4 +458,18 @@ test('una alternativa del mismo silicio se explica por lo que la distingue, no c
   assert.match(a91.porQue, /misma capacidad que FortiGate 90G/);
   assert.match(a91.porQue, /disco local de \d+ GB/);
   assert.ok(!/\b0 % más/.test(a91.porQue));
+});
+
+test('R2 · en 7.6.0-7.6.2, 40F/60F/61F no admiten SSL-VPN (2 GB, leido) y el resto sigue «desconocida»', () => {
+  // Nota 10 del Matrix: sin SSL-VPN desde 7.6.0 en los modelos de 2 GB. Release Notes 7.6.3,
+  // p. 16: esos modelos son las series 40F y 60F. Que un modelo NO figure en esa frase no
+  // prueba que tenga mas RAM, asi que los demas no pasan a «soportada».
+  const r = evaluar(con(CU01(), { 'remoto.metodo': 'sslvpn', 'software.fortiOS': '7.6.0-7.6.2' }));
+  for (const id of ['FortiGate 40F', 'FortiGate 60F', 'FortiGate 61F']) {
+    const c = r.candidatos.find((x) => x.id === id);
+    const b = c && c.bloqueos.find((x) => x.codigo === 'FORTIOS_INCOMPATIBLE');
+    assert.ok(b && !c.elegible, `${id}: bloqueado por RAM`);
+    assert.strictEqual(b.fuenteLeida, true);
+  }
+  assert.ok(r.avisos.some((a) => a.codigo === 'FORTIOS_DESCONOCIDA'), 'el resto sigue sin poder afirmarse');
 });

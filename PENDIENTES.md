@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-24 (**cierre de pendientes con lo que el repositorio ya tenía dentro**. Encargo del dueño: cerrar todo lo abierto, buscar la forma de gestionar los bloqueos y desplegar. **Aruba**: el rol activo/respaldo en el Multi-Underlay Builder (R11/M9 — un 4G de respaldo subía el tier: $80.857 frente a $42.697 en el caso medido), y las fases 2 y 3 de su auditoría cerradas en código (A2, A3, A4, A5, A7, M1, M3, M5, M6, M7, M8, B1; M4 declarado, es regla del dueño). **Los datos que faltaban estaban en los PDF oficiales ya versionados** en `public/datasheets/`, leídos en local sin salir a internet: los SKU de Central por serie de gateway (91xx y 92xx tienen los suyos), el tope de 75 clientes de Foundation Base, la tabla AOS-8 del 9106, el throughput de IDS/IPS de cada gateway y la escala de túneles de cada headend (VSG SD-Branch, sep-2026). **Accesibilidad**: auditoría axe y zoom al 200 % automatizados sobre 17 estados de pantalla; encontró 13 fallos reales (contraste de los colores de marca, controles sin nombre, pestañas que desbordaban) y quedan en 0. **Un fallo del propio arnés**: tres baterías e2e nuevas salían en verde con fallos impresos; `resumen()` fija ahora el código de salida. **Bloqueado y declarado**: el ajuste de Railway y la lectura de la rama de transporte de Fortinet los denegó el control de permisos de la sesión (ver *Decisiones que necesitan al dueño*). **Alimentación**: los seis gateways Aruba desde los mismos PDF (Aruba 16/25). 565 unitarios, 16/16 pantallas, 7/7 contrastes y la batería e2e completa (14/14 scripts).)
+Última revisión: 2026-09-24 (**validación de pendientes y ejecución de los que seguían abiertos**. Aruba: el Boost toma el escenario de falla que más túnel pide (un MPLS de respaldo del DIA lo lleva de 1 a 3 bloques; un sitio sin respaldo no cambia). **F6 cerrado**: los cuatro FortiGate sin figura la tienen, de las guías oficiales de hardware de docs.fortinet.com; la rama `fuente/fortinet-pendientes` no traía ningún documento y los datasheets de 100F y 200F ya no existen (404 desde internet abierto). **R1 cerrado** con la cita literal de las Release Notes 7.6.3 y **R2 en parte** (40F/60F/61F). F2 sigue abierto con candidatos localizados en la lista firmada. Detalle en *Cerrado recientemente*.)
+
+Revisión anterior: 2026-09-24 (**cierre de pendientes con lo que el repositorio ya tenía dentro**. Encargo del dueño: cerrar todo lo abierto, buscar la forma de gestionar los bloqueos y desplegar. **Aruba**: el rol activo/respaldo en el Multi-Underlay Builder (R11/M9 — un 4G de respaldo subía el tier: $80.857 frente a $42.697 en el caso medido), y las fases 2 y 3 de su auditoría cerradas en código (A2, A3, A4, A5, A7, M1, M3, M5, M6, M7, M8, B1; M4 declarado, es regla del dueño). **Los datos que faltaban estaban en los PDF oficiales ya versionados** en `public/datasheets/`, leídos en local sin salir a internet: los SKU de Central por serie de gateway (91xx y 92xx tienen los suyos), el tope de 75 clientes de Foundation Base, la tabla AOS-8 del 9106, el throughput de IDS/IPS de cada gateway y la escala de túneles de cada headend (VSG SD-Branch, sep-2026). **Accesibilidad**: auditoría axe y zoom al 200 % automatizados sobre 17 estados de pantalla; encontró 13 fallos reales (contraste de los colores de marca, controles sin nombre, pestañas que desbordaban) y quedan en 0. **Un fallo del propio arnés**: tres baterías e2e nuevas salían en verde con fallos impresos; `resumen()` fija ahora el código de salida. **Bloqueado y declarado**: el ajuste de Railway y la lectura de la rama de transporte de Fortinet los denegó el control de permisos de la sesión (ver *Decisiones que necesitan al dueño*). **Alimentación**: los seis gateways Aruba desde los mismos PDF (Aruba 16/25). 565 unitarios, 16/16 pantallas, 7/7 contrastes y la batería e2e completa (14/14 scripts).)
 
 Revisión anterior: 2026-09-23 (**etapa 7 del dimensionador Fortinet: una sola verdad para recomendación, BOM y cotización** — el informe de auditoría en vivo del 23-sep y su prompt maestro. **Resultado: GO CONDICIONADO**, primero en la rama `claude/laughing-babbage-pvpxyi` y desplegado ese mismo día (`f6f1952`, Railway `dcb662d9` en SUCCESS). Los cuatro P0 eran un solo defecto (varias verdades en la misma página) y los cierra un motor único, `fortinet-motor.js`, que es el mismo archivo en el navegador y en `POST /api/v1/fortinet/evaluations`. **T01–T30: 30/30 reportadas y aprobadas, cinco con un límite declarado.** Por el camino salieron cuatro defectos nuevos: N01 (error JS al abrir un enlace), N02 (108 precios de licencias con la lista de agosto), N03 (60 textos visibles sin tilde, entre ellos «termino 3 anos» en la nota que llega al Excel) y N04 (el bloqueo de SSL-VPN no pintaba su fuente). Entrega completa en `docs/auditoria-fortinet-2026-09-23/`. **542 unitarios, 16/16 pantallas, 6/6 contrastes y 11/11 baterías e2e.**)
 
@@ -823,14 +825,14 @@ riesgos R1–R11 en `docs/auditoria-fortinet-2026-09-23/LEEME.md`.
   `dcb662d9` en SUCCESS con `[seed]` y `listen`; sonda `/salud` 200 y `/login` 200. **Sigue
   abierta la aprobación explícita de arquitectura Fortinet** que pide el informe: la da una
   persona revisando `docs/auditoria-fortinet-2026-09-23/motor-y-bom.md`, no un despliegue.
-- **R1 · La retirada de SSL-VPN en modo túnel en FortiOS 7.6.3+ está citada, no leída.** Viene
-  de la referencia [3] del informe (Release Notes 7.6.6). `docs.fortinet.com` responde
-  `connect_rejected` al proxy de egreso. La regla lleva `leida:false` y la pantalla lo dice junto
-  al bloqueo. **Se cierra** leyendo las Release Notes 7.6.x desde una máquina con acceso y
-  pasando la regla a `leida:true` con la cita literal.
-- **R2 · «Modelos con 2 GB de RAM» (nota 10 del Matrix) no dice cuáles son.** En 7.6.0–7.6.2
-  la compatibilidad con SSL-VPN queda «desconocida», con confianza baja y la cotización en
-  borrador. Hace falta la RAM por modelo, que está en las fichas por serie.
+- ~~**R1 · La retirada de SSL-VPN en modo túnel en FortiOS 7.6.3+ está citada, no leída.**~~
+  **Cerrado el 2026-09-24**: se leyeron las Release Notes 7.6.3 (p. 15) y la cita casa
+  literalmente; la regla pasa a `leida:true`. Ver *Cerrado recientemente*.
+- **R2 · «Modelos con 2 GB de RAM» (nota 10 del Matrix) — cerrado en parte el 2026-09-24.**
+  Las Release Notes 7.6.3 (p. 16) nombran las series **40F y 60F**, así que 40F, 60F y 61F
+  pasan a «no soportada» en 7.6.0–7.6.2 con las dos citas. **Sigue abierto para el resto**: que
+  un modelo no figure en esa frase no prueba que tenga más RAM, y la cotización sigue en
+  borrador en esa rama. Se cierra con la RAM por modelo; las fichas por serie la publican.
 - ~~**Accesibilidad no ejecutada**~~ **La parte automática, cerrada el 2026-09-24**:
   `test/e2e/e2e-accesibilidad.js` pasa axe-core (WCAG 2.0/2.1 A y AA) por 17 estados de pantalla
   —incluidos escenarios con resultados y la pestaña de BOM— y comprueba el reflujo a 640 px (200 %
@@ -863,34 +865,28 @@ riesgos R1–R11 en `docs/auditoria-fortinet-2026-09-23/LEEME.md`.
 **Cerrados el 2026-09-23 (F1, F4 en su mayor parte, F7).** Ver `docs/rediseno-fortinet.md`,
 etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
 
-- **F6 · Los 4 modelos sin ninguna figura de hardware** (100F, 200F y los chasis 7081F y
-  7121F). **Sigue bloqueado y el bloqueo se volvió a medir el 2026-09-23**: `www.fortinet.com`
-  y `docs.fortinet.com` devuelven `connect_rejected` del proxy de egreso —denegación de
-  política de la organización, no un fallo de red—. El datasheet por serie de 100F y 200F no
-  está en la URL que sigue el patrón del resto (404 reportado, no dado por bueno) y los
-  *System Guide* de los dos chasis viven en `docs.fortinet.com`. **Se revisó la rama
-  `fuente/fortinet-psu` y NO sirve**: son páginas de sustitución de fuente de alimentación —una
-  de ellas del foro de la comunidad—, no la página «Hardware» de un datasheet, y su única
-  figura es un detalle de la PSU del 7081F. Usarla sería la «figura parecida» que esta ficha
-  no muestra. Se cierra publicando esos documentos en una rama `fuente/*` desde un ejecutor de
-  Actions y volviendo a correr la extracción. Mientras tanto la ficha declara el hueco.
-  **Ese workflow ya existe desde el 2026-09-23**: `.github/workflows/traer-fortinet-pendientes.yml`
-  (`workflow_dispatch`) prueba las rutas conocidas de cada documento, publica lo que responde
-  en `fuente/fortinet-pendientes` y **deja en el resumen qué código dio cada intento** — un
-  404 se reporta, no se da por bueno ni tumba la corrida. **2026-09-24: se lanzó y terminó en
-  verde** (corrida `35934676181`, 23:39 UTC); la rama `fuente/fortinet-pendientes` está
-  publicada. **Lo que falta es leerla**: desde la sesión, el control de permisos denegó traer
-  esa rama, y no se intentó por otra vía. La lee el dueño (el resumen de la corrida dice qué
-  documento bajó) o concede el permiso; después, la transcripción sigue su camino con anclaje.
+- ~~**F6 · Los 4 modelos sin ninguna figura de hardware**~~ **Cerrado el 2026-09-24**: los
+  cuatro (100F, 200F, 7081F y 7121F) tienen frontal y trasera, sacadas de las **guías oficiales
+  de hardware** de docs.fortinet.com (QuickStart Guide del 100F y del 200F, System Guide de los
+  dos chasis) y no de un datasheet, que no existe. Ver *Cerrado recientemente*.
+  **La rama `fuente/fortinet-pendientes` no traía ningún documento**: se leyó y es solo un
+  `informe.json` con los cinco intentos en 404. Las rutas del workflow estaban mal (los System
+  Guide viven en `/document/fortigate-7000/hardware/…`, no en `/document/fortigate-7000f/<versión>/…`),
+  y los datasheets de 100F y 200F dan 404 **también desde internet abierto**, sin proxy de
+  por medio: Fortinet ya no los publica.
 - **F2 · Los SKU de los tres servicios avanzados de SD-WAN** (Underlay & Application
   Monitoring, Overlay Orchestration, conector FortiSASE), de la categoría «SD-WAN» del
-  Ordering Guide de FortiGuard. **Se buscó en las ramas de transporte el 2026-09-23 y no está**:
-  el `sd-wan-ordering-guide.pdf` que hay en `fuente/fortinet-product-matrix` es el de **Aruba**,
-  no el de Fortinet — se leyeron sus 5 páginas para comprobarlo. Van con `sku: null`
-  **declarado**, así que pedir uno bloquea la exportación comercial, que es el comportamiento
-  correcto mientras no estén y mejor que inventar un código con pinta de válido (el fallo del
-  `FortiGate 2000F`). Mismo transporte y mismo bloqueo que F6, y el mismo workflow lo trae:
-  `traer-fortinet-pendientes.yml` incluye el Ordering Guide de FortiGuard entre sus descargas.
+  Ordering Guide de FortiGuard. **Sigue abierto, con un hallazgo nuevo (2026-09-24)**: la lista
+  de precios firmada que ya está extraída (`fortinetSkus.js`) trae **dos candidatos por modelo**
+  con la descripción «SD-WAN BDL SVC» —`FC-10-<modelo>-1337-02-DD` y `…-1387-02-DD`— y un
+  «FortiSASE Cloud Management SVC» (`…-595-02-DD`), pero la descripción **no dice** cuál es
+  «Underlay and Application Monitoring» y cuál «Overlay Orchestration». Asignarlos sería
+  inventar la correspondencia, así que van con `sku: null` declarado y la exportación comercial
+  sigue bloqueada al pedirlos. **Falta el Ordering Guide** para casar código y servicio: la
+  página de guías de pedido de fortinet.com carga la lista por JavaScript, y las tres rutas que
+  probó `traer-fortinet-pendientes.yml` dan 404 (el `sd-wan-ordering-guide.pdf` de
+  `fuente/fortinet-product-matrix` es el de **Aruba**). Se cierra con una persona que abra esa
+  guía en un navegador, o con el PDF que entregue el distribuidor.
 - **F3 · Elegibilidad de FortiGuard único en HA activo-pasivo**, por modelo y versión de
   FortiOS. La regla general —una licencia por nodo— está aplicada; la excepción se declara sin
   ofrecerse, porque este catálogo no trae de qué modelos y qué versiones se puede afirmar.
@@ -909,7 +905,10 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
   etapa 7 con sus fichas por serie (`FICHAS_LIMITES` en `fortinet.js`). Esas fichas ya estaban
   en las ramas de transporte y casaron 12 de 12 contra cuatro anclas, que se comprueban al
   cargar. El 100F y el 200F siguen **apartándose con su motivo** cuando un escenario pide esos
-  ejes: el mismo bloqueo que F6.
+  ejes. **Y el bloqueo cambió de naturaleza el 2026-09-24**: ya no es de red, porque sus
+  datasheets dan 404 también desde internet abierto (Fortinet ya no los publica), y sus
+  QuickStart Guide no traen límites. La única fuente oficial que queda es una copia archivada
+  del datasheet, y eso es justo lo que la regla de abajo no admite.
   **No se completan desde los espejos** con los que se leyó su alimentación el 2026-09-11. Un
   tope de túneles o de SSL es una restricción crítica, y el prompt de la auditoría del 23-sep
   prohíbe usar como autoridad una copia secundaria cuando existe el documento del fabricante.
@@ -1310,10 +1309,9 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
 
 - **Activar «Wait for CI» en Railway** (`presales-web` → ajustes del origen). Medido: hoy no
   espera a nada. Es el cierre del punto 33. Desde la sesión no se pudo (2026-09-24).
-- **Leer `fuente/fortinet-pendientes`, o conceder permiso para leerla.** El workflow corrió en
-  verde el 2026-09-23 (corrida `35934676181`); el control de permisos de la sesión denegó traer
-  la rama. De ahí salen F6 (figuras de 100F/200F/chasis), F2 (SKU de SD-WAN) y parte de los SKU
-  que dejan la cotización en borrador.
+- ~~**Leer `fuente/fortinet-pendientes`, o conceder permiso para leerla.**~~ **Hecho el
+  2026-09-24**: se leyó y no traía ningún documento (cinco 404 por rutas erróneas). F6 se cerró
+  por otra vía (guías oficiales de docs.fortinet.com); F2 sigue abierto (ver su entrada).
 - **M4 de Aruba**: si la descarga del breakout se limita a la capacidad de Internet (ver la
   sección de Aruba).
 - **Aprobación de arquitectura Fortinet** sobre `docs/auditoria-fortinet-2026-09-23/motor-y-bom.md`,
@@ -1334,6 +1332,68 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Validación de pendientes: Boost por escenario, las cuatro figuras de F6, R1 y R2 en parte (2026-09-24)
+
+Encargo del dueño: «valida los pendientes y ejecútalos si es que ya no se realizaron». Se
+validó cada uno contra `main` antes de tocar nada, y la mitad del trabajo fue descubrir que
+algunos «bloqueos» no eran lo que decía el registro.
+
+**1 · Aruba: el Boost toma el escenario que más túnel pide.** `fa25c7a` cerró el M9 dimensionando
+caudal, tier **y Boost** con la operación normal, y su comentario afirmaba que ninguna falla
+supera a la normal. Es cierto en caudal y falso en Boost: con breakout, el túnel es el 30 % del
+caudal solo mientras quede Internet. Medido con el propio código de `main`: MPLS 500 + DIA 500
+con un MPLS 500 de respaldo pide 300 Mbps de túnel en operación normal y **1.000** si cae el DIA
+(Boost 90 → 300 Mbps, 1 → 3 bloques). La prueba de propiedad del M9 comprobaba caudal y
+throughput de diseño, nunca el túnel, y por eso no lo vio. `ArubaReglas.escenarioBoost()` toma
+el máximo y, en empate, la normal; sin respaldos solo existe la normal, así que ningún sitio
+sin respaldo cambia (contraste `aruba-underlay` en verde, incluido su escenario con Boost). La
+ficha dice qué falla gobierna el Boost. **Comprobado saboteando**: con el Boost otra vez sobre
+la normal, `e2e-aruba-respaldo` sale en rojo.
+
+**2 · F6 cerrado: los cuatro FortiGate sin figura la tienen.** Primero, lo que había: la rama
+`fuente/fortinet-pendientes`, cuyo permiso de lectura figuraba como decisión del dueño, **no
+traía ningún documento**, solo un `informe.json` con los cinco intentos en 404. Las rutas del
+workflow estaban mal, y los datasheets de 100F y 200F dan 404 **también desde internet abierto**:
+Fortinet ya no los publica, así que no había datasheet que esperar. Desde una máquina sin el
+proxy se localizaron las guías oficiales de hardware en docs.fortinet.com y se leyeron:
+- **100F**: QuickStart Guide, p. 5 «Front/Rear - FG 100F Series». El chasis dibujado lleva el
+  rótulo **FortiGate 101F**, y el pie lo dice.
+- **200F**: QuickStart Guide, p. 6 «Front/Rear - FG 200F Series».
+- **7081F**: System Guide 7.0.5, p. 8 «front panel» y p. 12 «back panel».
+- **7121F**: System Guide 7.4.4, p. 9 «generation 1 front panel» y p. 13 «back panel».
+
+En las QuickStart la cara se decidió con la misma ancla que los otros 54: la trasera es la de
+«Redundant Power Supplies». Se recortaron del vector y van en WebP calidad 82, como las
+existentes (unos 700 KB los ocho ficheros). **58 de 58 modelos tienen figura**: 54 de datasheet
+y 4 de guía oficial. La prueba de procedencia exigía «Datasheet, p. 7 «Hardware»» a todas; ahora
+acepta también una guía oficial, siempre que el pie cite página y rótulo literal. El e2e que
+usaba el 100F como hueco honesto sigue conduciendo ese camino interceptando el mapa de figuras,
+el patrón de `calculadora-ssl`.
+
+De paso, la **p. 8 del System Guide del 7121F publica el máximo de fuentes** que el catálogo
+declaraba ausente: ocho, de 2.000 W en la generación 1 y de 2.500 W en la 2. Casa con el «8 PS»
+del Product Matrix: dos anclas.
+
+**3 · R1 cerrado.** Release Notes 7.6.3, p. 15: «Starting in FortiOS 7.6.3, the SSL VPN tunnel
+mode feature is replaced with IPsec VPN [...] This applies to all FortiGate models.» La regla
+pasa a `leida:true` con esa cita, y la pantalla deja de disculparse por no haberla leído.
+
+**4 · R2 cerrado en parte.** La p. 16 del mismo documento dice que el recorte de los modelos de
+2 GB «impacts the FortiGate 40F and 60F series devices, along with their variants». Con la nota
+10 del Matrix, **40F, 60F y 61F** pasan a «no soportada» en 7.6.0–7.6.2. El resto sigue en
+«desconocida»: no figurar en esa frase no prueba tener más RAM.
+
+**Lo que se validó y sigue abierto, con su motivo nuevo:**
+- **F2**: la lista firmada trae dos «SD-WAN BDL SVC» por modelo (`-1337-` y `-1387-`), pero no
+  dice cuál es cuál. Hace falta el Ordering Guide.
+- **Límites de 100F y 200F**: su única fuente oficial ya no existe.
+- **Decisiones del dueño**: «Wait for CI» en Railway, la aprobación de arquitectura Fortinet y
+  M4.
+
+**Verificación.** `npm run verificar` 584/584, `npm run pantallas` 17/17 y los contrastes y
+baterías e2e que se detallan en el cierre de la entrega. La cobertura del contraste no se
+regeneró: el Chromium de esta máquina mide mal, y ya se había descartado por eso.
 
 ### Dimensionador y BOM de Starlink LEO (2026-09-24)
 
