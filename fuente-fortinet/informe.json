@@ -1,0 +1,208 @@
+[
+  {
+    "archivo": "fg-100f-serie.pdf",
+    "pendiente": "F6",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/ds-fortigate-100f-series.pdf",
+        "status": 404
+      },
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/ds-fortigate-100f-series.pdf",
+        "status": 404
+      },
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-100f-series.pdf",
+        "status": 404
+      },
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/ko_kr/ds-fortigate-100f-series_ko.pdf",
+        "status": 200,
+        "bytes": 28635034,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fg-200f-serie.pdf",
+    "pendiente": "F6",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/ds-fortigate-200f-series.pdf",
+        "status": 404
+      },
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/ds-fortigate-200f-series.pdf",
+        "status": 404
+      },
+      {
+        "url": "https://community.fortinet.com/tpykb84852/attachments/tpykb84852/TKB20/2329/1/fortigate-200f-series.pdf",
+        "status": 404
+      },
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/ko_kr/ds-fortigate-200f-series_ko.pdf",
+        "status": 200,
+        "bytes": 29953505,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fg-7081f-system-guide.pdf",
+    "pendiente": "F6",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/17ef7271-b6d2-11ed-8e6d-fa163e15d75b/fortigate-7081F-system-guide.pdf",
+        "status": 200,
+        "bytes": 8339369,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fg-7121f-system-guide.pdf",
+    "pendiente": "F6",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/c7e69026-9283-11eb-b70b-00505692583a/fortigate-7121F-system-guide.pdf",
+        "status": 200,
+        "bytes": 10142578,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "og-fortiguard.pdf",
+    "pendiente": "F2",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-fortiguard.pdf",
+        "status": 200,
+        "bytes": 542393,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "og-secure-sdwan.pdf",
+    "pendiente": "F2",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-secure-sdwan.pdf",
+        "status": 200,
+        "bytes": 1091677,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fortios-763-ssl-vpn-tunel.html",
+    "pendiente": "GO-2",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://docs.fortinet.com/document/fortigate/7.6.3/fortios-release-notes/173430/ssl-vpn-tunnel-mode-no-longer-supported",
+        "status": 200,
+        "bytes": 540636,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fortios-760-release-notes.pdf",
+    "pendiente": "GO-2",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/51fcbb4f-33ff-11ef-bfe5-fa163e15d75b/fortios-v7.6.0-release-notes.pdf",
+        "status": 200,
+        "bytes": 1335383,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "og-forticlient.pdf",
+    "pendiente": "SKU",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-forticlient.pdf",
+        "status": 200,
+        "bytes": 632760,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "og-fortisase.pdf",
+    "pendiente": "SKU",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-fortisase.pdf",
+        "status": 200,
+        "bytes": 627184,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "og-fortisandbox.pdf",
+    "pendiente": "SKU",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-fortisandbox.pdf",
+        "status": 200,
+        "bytes": 162533,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "og-fortianalyzer.pdf",
+    "pendiente": "SKU",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-fortianalyzer.pdf",
+        "status": 200,
+        "bytes": 1504337,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fg-100f-qsg.pdf",
+    "pendiente": "F6",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/42d64717-83f1-11e9-81a4-00505692583a/FG-100F-QSG.pdf",
+        "status": 200,
+        "bytes": 5942011,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fg-200f-qsg.pdf",
+    "pendiente": "F6",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/89694abf-1ef2-11eb-96b9-00505692583a/FG-200F-Series-QSG.pdf",
+        "status": 200,
+        "bytes": 8311010,
+        "guardado": true
+      }
+    ]
+  }
+]
