@@ -12,17 +12,17 @@
      4. No romper el resto: con «Indiferente» los gateways siguen respondiendo, y con las
         hipótesis del motor al mínimo (IMIX 1,00 · FEC off · margen 0) el EC-10150 SÍ
         queda recomendado — la prueba viva de que la vía «revisar hipótesis» funciona. */
-const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
+const { cargarPlaywright, abrirDimensionador, asentar, trasNavegar, contador } = require('./ayuda');
 
 async function enlazar5000mas5000(page) {
   await page.locator('.wan-fila').first().locator('select[data-campo=tipo]').selectOption('MPLS L3');
   await page.locator('.wan-fila').first().locator('input[data-campo=down]').fill('5000');
   await page.click('#btnAddWan');
-  await page.waitForTimeout(300);
+  await asentar(page);
   const filas = page.locator('.wan-fila');
   await filas.nth(1).locator('select[data-campo=tipo]').selectOption('DIA');
   await filas.nth(1).locator('input[data-campo=down]').fill('5000');
-  await page.waitForTimeout(900);
+  await asentar(page);
 }
 
 (async () => {
@@ -41,7 +41,7 @@ async function enlazar5000mas5000(page) {
 
   // ── 1 · famSeg = EdgeConnect SD-WAN: el desbordamiento guiado ──────────────
   await page.click('#famSeg button[data-v=ec]');
-  await page.waitForTimeout(900);
+  await asentar(page);
   let verdict = (await page.textContent('#verdict')) || '';
   t.ok(/Ningún modelo cumple/.test(verdict), 'con 21,4 Gbps de requerimiento no hay appliance EC que cumpla (no se inventa capacidad)');
   t.ok(/supera el techo oficial de toda la línea EdgeConnect/.test(verdict), 'el veredicto declara el desbordamiento de la línea');
@@ -66,9 +66,9 @@ async function enlazar5000mas5000(page) {
   // OJO: la «REVISIÓN DEL DISEÑO» viaja en meta.notas → BOM.comoTexto → el textarea
   // #bomOut; su .value programático NO aparece en el textContent del panel.
   await page.selectOption('#pickModel', 'EC-10150');
-  await page.waitForTimeout(900);
+  await asentar(page);
   await page.click('[data-tab=bom]');
-  await page.waitForTimeout(700);
+  await asentar(page);
   const bomTxt = (await page.inputValue('#bomOut')) || '';
   t.ok(/Caudal WAN insuficiente/.test(bomTxt), 'con el EC-10150 elegido a mano, la revisión del diseño marca el exceso en rojo');
   t.ok(/Par HA 1\+1/.test(bomTxt), 'con HA pre-marcado, el BOM cotiza el par (1× estándar + 1× SKU HA del mismo tier)');
@@ -79,24 +79,24 @@ async function enlazar5000mas5000(page) {
 
   // Desmarcar HA contra la regla: se respeta (no se re-marca) y la revisión lo declara.
   await page.click('[data-tab=calc]');
-  await page.waitForTimeout(400);
+  await asentar(page);
   await page.click('#chkHa');
-  await page.waitForTimeout(700);
+  await asentar(page);
   t.ok(!(await page.isChecked('#chkHa')), 'desmarcar HA a mano se respeta aunque la regla siga activa');
   t.ok(!(await page.isVisible('#haAutoHint')), 'el hint de auto-marcado se oculta al desmarcar');
   await page.click('[data-tab=bom]');
-  await page.waitForTimeout(700);
+  await asentar(page);
   const bomSinHa = (await page.inputValue('#bomOut')) || '';
   t.ok(/SIN par HA/.test(bomSinHa) && !/Par HA 1\+1: 1x/.test(bomSinHa),
     'la revisión del diseño registra el sitio de 10 Gbps sin par HA (y ya no cotiza el segundo nodo)');
   await page.click('[data-tab=calc]');
-  await page.waitForTimeout(400);
+  await asentar(page);
   await page.click('#chkHa');
-  await page.waitForTimeout(500);
+  await asentar(page);
 
   // ── 2 · famSeg = Indiferente: los gateways siguen respondiendo ─────────────
   await page.click('#famSeg button[data-v=any]');
-  await page.waitForTimeout(900);
+  await asentar(page);
   verdict = (await page.textContent('#verdict')) || '';
   const pickAny = await page.inputValue('#pickModel');
   t.ok(!/Ningún modelo cumple/.test(verdict) && !!pickAny,
@@ -106,22 +106,22 @@ async function enlazar5000mas5000(page) {
   // motor. OJO: el pick manual de la §1 (EC-10150) SOBREVIVE al cambio de familia
   // por diseño, así que hay que elegir un gateway a mano para ver SU ficha.
   await page.selectOption('#pickModel', 'Gateway 9114');
-  await page.waitForTimeout(900);
+  await asentar(page);
   verdict = (await page.textContent('#verdict')) || '';
   t.ok(/La cuenta: 10,000 Mbps de enlaces × 1,30 margen = 13,000 Mbps/.test(verdict),
     'la ficha del gateway muestra la traza de proceso viva (enlaces × margen = requerimiento)');
   // Plan 17: la traza de proceso del gateway también viaja en su BOM exportado.
   await page.click('[data-tab=bom]');
-  await page.waitForTimeout(700);
+  await asentar(page);
   const bomGw = (await page.inputValue('#bomOut')) || '';
   t.ok(/Dimensionado \(proceso, fórmula histórica\): 10,000 Mbps de enlaces × 1,30 margen = 13,000 Mbps\./.test(bomGw),
     'el BOM del gateway exporta la traza de proceso en su revisión del diseño');
   await page.click('[data-tab=calc]');
-  await page.waitForTimeout(400);
+  await asentar(page);
   // Restauro el estado que la §3 asume (pick manual EC-10150 de la §1): el combo es
   // catálogo completo por diseño y el pick sobrevive al cambio de familia.
   await page.selectOption('#pickModel', 'EC-10150');
-  await page.waitForTimeout(700);
+  await asentar(page);
 
   // ── 3 · Hipótesis al mínimo: el EC-10150 sí queda recomendado ─────────────
   // Esta sección pescó un defecto REAL del motor (2026-09-16): `headroom_pct || 20`
@@ -137,7 +137,7 @@ async function enlazar5000mas5000(page) {
     el.value = '0';
     el.dispatchEvent(new el.ownerDocument.defaultView.Event('input', { bubbles: true }));
   });
-  await page.waitForTimeout(900);
+  await asentar(page);
   verdict = (await page.textContent('#verdict')) || '';
   const needMin = (await page.textContent('#needLbl')) || '';
   t.ok(/10[.,]5 Gbps/.test(needMin), 'el requerimiento baja a ≈10,5 Gbps con las hipótesis al mínimo (' + needMin.trim() + ')');
@@ -171,46 +171,44 @@ async function enlazar5000mas5000(page) {
   t.ok(/10G/.test(chooTxt) && /agregado/.test(chooTxt),
     'la velocidad recomendada (10G ≥ agregado de 10 Gbps) sale de los datos, no de un literal');
   await page.click('[data-tab=bom]');
-  await page.waitForTimeout(600);
+  await asentar(page);
   let bomHA = (await page.textContent('#pane-bom')) || '';
   t.ok(/Interconexión EdgeHA/.test(bomHA) && /PENDIENTE DE SELECCIÓN/.test(bomHA),
     'sin elección, la interconexión queda PENDIENTE declarada en el BOM (nunca una óptica inventada)');
   await page.click('[data-tab=calc]');
-  await page.waitForTimeout(300);
+  await asentar(page);
   const optHA = await selHA.locator('option').nth(1).getAttribute('value');
   await selHA.selectOption(optHA);
-  await page.waitForTimeout(800);
+  await asentar(page);
   const fichaOpt = (await page.textContent('#verdict')) || '';
   t.ok(fichaOpt.includes(optHA), 'la ficha muestra la óptica elegida para la interconexión (' + optHA + ')');
   await page.click('[data-tab=bom]');
-  await page.waitForTimeout(600);
+  await asentar(page);
   bomHA = (await page.textContent('#pane-bom')) || '';
   t.ok(bomHA.includes(optHA) && !/PENDIENTE DE SELECCIÓN/.test(bomHA),
     'tras elegir, el BOM cotiza la interconexión y el PENDIENTE desaparece');
   await page.click('[data-tab=calc]');
-  await page.waitForTimeout(300);
+  await asentar(page);
   // Y al apagar HA no queda nada que elegir: el chooser se oculta entero.
   await page.click('#chkHa');
-  await page.waitForTimeout(700);
+  await asentar(page);
   const fichaSinHA = (await page.textContent('#verdict')) || '';
   t.ok(!/Cableado del par EdgeHA/.test(fichaSinHA), 'al desmarcar HA con la ficha pintada, la sección EdgeHA desaparece');
   t.ok(await page.isHidden('#sfpChooser'), 'sin HA ni enlaces SFP, el chooser se oculta entero');
   await page.click('#chkHa');
-  await page.waitForTimeout(600);
+  await asentar(page);
   await page.click('[data-tab=bom]');
-  await page.waitForTimeout(600);
+  await asentar(page);
   const bomHA2 = (await page.textContent('#pane-bom')) || '';
   t.ok(bomHA2.includes(optHA), 'la elección de la interconexión sobrevive al ciclo HA off→on (estado en #sfpPickData)');
   await page.click('[data-tab=calc]');
-  await page.waitForTimeout(300);
+  await asentar(page);
 
   // ── 4 · Regresión: escenario pequeño sigue recomendando EC pequeño ────────
-  await page.click('#btnLimpiarEscenario');
-  await page.waitForSelector('#users', { timeout: 20000 });
-  await page.waitForTimeout(700);
+  await trasNavegar(page, () => page.click('#btnLimpiarEscenario'), { selector: '#users' });
   await page.click('#famSeg button[data-v=ec]');
   await page.locator('.wan-fila').first().locator('input[data-campo=down]').fill('200');
-  await page.waitForTimeout(900);
+  await asentar(page);
   const pickPeq = await page.inputValue('#pickModel');
   t.ok(/^EC-/.test(pickPeq), 'escenario pequeño: recomienda un EdgeConnect (' + pickPeq + ')');
   t.ok(!(await page.isChecked('#chkHa')), 'escenario pequeño: la regla HA no se dispara (un solo enlace de 200 Mbps)');

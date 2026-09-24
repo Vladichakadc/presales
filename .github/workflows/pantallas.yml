@@ -3,7 +3,8 @@ name: pantallas
 # Conduce TODAS las pantallas en un navegador de verdad, detras del muro de acceso, y sube
 # una captura de cada una. Es la mitad del pendiente 4 que faltaba.
 #
-# DESDE EL 2026-09-16 ESTE JOB HACE DOS COSAS, y son distintas a proposito:
+# DESDE EL 2026-09-16 ESTE JOB HACIA DOS COSAS, Y DESDE EL 2026-09-24 HACE TRES, distintas a
+# proposito:
 #   · `pantallas`  comprueba que NADA EXPLOTA -- sin errores de consola, sin peticiones
 #     fallidas al propio origen, sin contenedores vacios. No compara ninguna cifra, y no debe:
 #     una asercion sobre «3,1 Gbps» se romperia en cada cambio de catalogo, que es como se
@@ -11,8 +12,12 @@ name: pantallas
 #   · `contraste`  compara lo que la pantalla RECOMIENDA para un escenario ya medido contra
 #     la linea base de antes de un refactor. Eso no lo cubre ni `verificar` (funciones puras)
 #     ni `pantallas`, y es justo donde un refactor rompe en silencio.
-# Se quedan en el mismo job porque el contraste necesita exactamente lo que este ya monta:
-# Chromium, un servidor en modo produccion y una clave efimera.
+#   · `e2e`  conduce FLUJOS completos (elegir un equipo, cotizarlo, exportar el Excel, abrir un
+#     enlace compartido, la auditoria de accesibilidad) y afirma lo que la pantalla dice en
+#     cada paso. Hasta el 2026-09-24 solo corria cuando alguien se acordaba: tres de sus
+#     baterias salieron en verde con fallos impresos y nadie lo vio.
+# Se quedan en el mismo job porque los tres necesitan exactamente lo que este ya monta:
+# Chromium, un servidor y una clave efimera.
 #
 # POR QUE AQUI Y NO CONTRA UN SITIO DESPLEGADO. `DATABASE_PATH` va sin definir en produccion,
 # asi que la base es efimera y se resiembra desde `server/seed/legacyData/` en CADA
@@ -28,11 +33,13 @@ name: pantallas
 #
 # ESTE CHECK NO FRENA EL DESPLIEGUE, aunque esta cabecera lo afirmo hasta el 2026-09-13.
 # Medido ese dia: el commit 7fe786e desplego en Railway con estado SUCCESS teniendo este job en
-# rojo desde hacia cuatro dias -- Railway espera a `verificar` y no a este. Se deja escrito
-# porque una cabecera que promete una proteccion inexistente es peor que no prometer nada: haria
-# leer un rojo de aqui como «ya esta contenido, no llega a produccion», y si llega. Convertirlo
-# en required check de `main` es un ajuste de GitHub, no de este archivo, y esta abierto como
-# punto 33 de PENDIENTES.md.
+# rojo desde hacia cuatro dias. Y medido el 2026-09-23: Railway no espera a NINGUN workflow
+# (`checkSuites: false` en el servicio): el despliegue dcb662d9 termino de construir antes de
+# que `verificar` acabara. Se deja escrito porque una cabecera que promete una proteccion
+# inexistente es peor que no prometer nada: haria leer un rojo de aqui como «ya esta contenido,
+# no llega a produccion», y si llega. Lo cierra activar «Wait for CI» en el servicio de Railway
+# (punto 33 de PENDIENTES.md); con eso Railway esperaria a TODOS los workflows del commit,
+# este incluido.
 
 on:
   push:
@@ -63,9 +70,21 @@ jobs:
       # Playwright va con --no-save a proposito, igual que para `npm run manual`: un Chromium
       # descargado pesa cientos de MB y no tiene por que bajarse en cada `npm install` de este
       # repositorio, que no lo necesita para nada mas.
+      #
+      # Y VA FIJADO (2026-09-24). Sin version, cada corrida traia la ultima que hubiera en npm.
+      # La del 24-sep (35946092377) bajo Chromium 153 y su informe de cobertura solo conto los
+      # modulos del ULTIMO caso: 19 «sin conducir», entre ellos el dimensionador de Fortinet,
+      # que cinco casos de esa misma corrida conducen. La medicion local, con 1.56.1, suma entre
+      # paginas y da 8. Y ERA LA VERSION: con 1.56.1 fijado, la corrida 35985786379 vuelve a
+      # sumar y da 8 «sin conducir», lo mismo que en local. Una herramienta que cambia sola entre
+      # dos corridas del mismo commit es una fuente de rojos (o de verdes) que no dicen nada del
+      # codigo, y la bateria e2e —que espera a condiciones medidas en el navegador— es justo lo
+      # que no puede depender de eso. 1.56.1 es la version con la que se validan la bateria, las
+      # pantallas y el contraste; subirla es un commit, con su diff.
       - name: Traer Playwright y Chromium
+        id: playwright
         run: |
-          npm install --no-save playwright
+          npm install --no-save playwright@1.56.1
           npx playwright install --with-deps chromium
 
       - name: Arrancar el servidor en modo produccion
@@ -122,11 +141,20 @@ jobs:
       # declara por caso a proposito — un `cubre: ['bom.js']` escrito a mano da una cobertura
       # falsa, que es peor que no tener el dato. En el ejecutor el fichero NO se commitea (un
       # push de bot no dispara CI, ver la cabecera de vigia-fuentes.yml): viaja como artefacto.
+      #
+      # `set -o pipefail` (2026-09-24): sin `shell:` explicito GitHub corre `bash -e {0}`, SIN
+      # pipefail, asi que el codigo de salida de `... | tee` era el de tee. `contraste.js` sale
+      # con 1 si hay discrepancias y este paso habria salido VERDE igualmente: el log de la
+      # corrida 35946092377 muestra `shell: /usr/bin/bash -e {0}`. Hasta hoy no habia ocultado
+      # nada —esa corrida paso de verdad, 7 casos sin discrepancias—, pero un comprobador que no
+      # puede fallar se porta igual que uno que pasa.
       - name: Contrastar que los refactores no cambian lo que se recomienda
         if: ${{ !cancelled() && steps.servidor.conclusion == 'success' }}
         env:
           AUTH_USER: verificacion
-        run: node scripts/contraste.js --todos --base=http://127.0.0.1:4000 | tee contraste.txt
+        run: |
+          set -o pipefail
+          node scripts/contraste.js --todos --base=http://127.0.0.1:4000 | tee contraste.txt
 
       - name: Publicar el contraste en la corrida
         if: ${{ !cancelled() && hashFiles('contraste.txt') != '' }}
@@ -139,6 +167,38 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
+      # LA BATERIA E2E (2026-09-24). Levanta su PROPIO servidor (puerto 4131, base y usuarios en
+      # un directorio temporal de la corrida) y conduce los flujos completos, uno por script.
+      # Corre aunque las pantallas o el contraste fallen, por la misma razon que el contraste:
+      # tres informes en una corrida en vez de tres corridas para enterarse. Solo necesita que
+      # Playwright se haya instalado.
+      #
+      # POR QUE NO ES UN ROJO AL AZAR. La bateria espera a que la pagina TERMINE lo que empezo
+      # (test/e2e/ayuda.js, asentar) y no a un reloj, y se comprobo con la CPU del navegador
+      # ralentizada 4x y 10x (E2E_LENTITUD): pasa entera. La version anterior, de 219 pausas
+      # fijas, tambien pasaba —tenia margen—, pero tardaba 336 s donde esta tarda 114 y, si algo
+      # no llegaba, no decia que. Un rojo de este paso es un flujo roto, no una maquina lenta.
+      #
+      # La clave de la corrida se genera aqui y muere con ella, como la del servidor de arriba.
+      - name: Bateria e2e (flujos completos en el navegador)
+        if: ${{ !cancelled() && steps.playwright.conclusion == 'success' }}
+        run: |
+          set -o pipefail
+          E2E_PASSWORD="$(head -c 32 /dev/urandom | base64 | tr -d '/+=' | head -c 24)"
+          echo "::add-mask::$E2E_PASSWORD"
+          E2E_PASSWORD="$E2E_PASSWORD" npm run e2e 2>&1 | tee e2e.txt
+
+      - name: Publicar la bateria e2e en la corrida
+        if: ${{ !cancelled() && hashFiles('e2e.txt') != '' }}
+        run: |
+          {
+            echo '## Bateria e2e'
+            echo ''
+            echo '```'
+            grep -E '^(══|──|\[e2e)|RESULTADO|^FALLO' e2e.txt || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Capturas
         if: always()
         uses: actions/upload-artifact@v4
@@ -147,6 +207,7 @@ jobs:
           path: |
             capturas/
             contraste.txt
+            e2e.txt
             scripts/contrastes/cobertura.lock.json
           retention-days: 30
           if-no-files-found: warn

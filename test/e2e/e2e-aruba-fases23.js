@@ -16,7 +16,7 @@
      M7  el exportable llevaba textos internos del repositorio
      M8  VPNC de SD-Branch y N+1 de campus, declarados
      B1  EC-XL fuera de venta sin sucesor */
-const { cargarPlaywright, abrirDimensionador, BASE, contador } = require('./ayuda');
+const { cargarPlaywright, abrirDimensionador, BASE, asentar, contador } = require('./ayuda');
 
 const URL_DIM = BASE + '/dimensionador-aruba-edgeconnect.html';
 function enlace(p) {
@@ -39,7 +39,7 @@ const wan = (...links) => ({ v: 2, wanLinks: links.map((l, i) => ({ id: i + 1, m
   const cargar = async (p) => {
     await page.goto(p ? enlace(p) : URL_DIM, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#users', { timeout: 20000 });
-    await page.waitForTimeout(1500);
+    await asentar(page);
     return {
       pick: await page.inputValue('#pickModel'),
       bom: await page.inputValue('#bomOut'),
@@ -52,7 +52,7 @@ const wan = (...links) => ({ v: 2, wanLinks: links.map((l, i) => ({ id: i + 1, m
     await page.route('**/api/dimensionador/**', async (route) => { await new Promise((r) => setTimeout(r, 1500)); await route.continue(); });
     const antes = errores.length;
     await page.goto(enlace({ famSeg: 'ec', segSeg: 'hub', destSeg: 'cloud', fecMode: 'alto', wanLinksData: wan({ tipo: 'DIA', down: 300 }) }), { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(3500);
+    await asentar(page);
     await page.unroute('**/api/dimensionador/**');
     const nuevos = errores.slice(antes);
     t.ok(nuevos.length === 0, 'M5: abrir un enlace antes de que llegue la API ya no lanza «reading \'auto\'»' + (nuevos.length ? ': ' + nuevos.join(' | ') : ''));
@@ -73,25 +73,25 @@ const wan = (...links) => ({ v: 2, wanLinks: links.map((l, i) => ({ id: i + 1, m
   {
     await cargar({ wanLinksData: wan({ tipo: 'DIA', down: 300 }), users: 50, perUser: 2 });
     await page.click('#famSeg button[data-v="sucursal"]');
-    await page.waitForTimeout(500);
+    await asentar(page);
     await page.selectOption('#selSeguridad', 'dtd');
-    await page.waitForTimeout(700);
+    await asentar(page);
     const pulsado = await page.$eval('#famSeg [aria-pressed="true"]', (b) => b.dataset.v);
     const aviso = await page.$eval('#famAviso', (n) => (n.hidden ? '' : n.textContent));
     t.ok(pulsado === 'ec', `A2: con DTD la familia pasa a EdgeConnect (${pulsado})`);
     t.ok(/pasó a EdgeConnect SD-WAN porque Dynamic Threat Defense/.test(aviso) && /vuelve a «Gateways sucursal»/.test(aviso), 'A2: y lo dice bajo el selector');
     await page.selectOption('#selSeguridad', 'none');
-    await page.waitForTimeout(700);
+    await asentar(page);
     const vuelta = await page.$eval('#famSeg [aria-pressed="true"]', (b) => b.dataset.v);
     const avisoVuelta = await page.$eval('#famAviso', (n) => n.hidden);
     t.ok(vuelta === 'sucursal' && avisoVuelta, `A2: al quitar DTD vuelve a «Gateways sucursal» (${vuelta})`);
     // Una elección manual entretanto manda: no se deshace nada.
     await page.check('#chkBoost');
-    await page.waitForTimeout(500);
+    await asentar(page);
     await page.click('#famSeg button[data-v="any"]');
-    await page.waitForTimeout(500);
+    await asentar(page);
     await page.uncheck('#chkBoost');
-    await page.waitForTimeout(500);
+    await asentar(page);
     const manual = await page.$eval('#famSeg [aria-pressed="true"]', (b) => b.dataset.v);
     t.ok(manual === 'any', `A2: si alguien elige familia a mano entretanto, su elección se queda (${manual})`);
   }
@@ -115,9 +115,9 @@ const wan = (...links) => ({ v: 2, wanLinks: links.map((l, i) => ({ id: i + 1, m
   {
     await cargar({ users: 200, perUser: 1, wanLinksData: wan({ tipo: 'DIA', down: 300 }) });
     await page.click('#famSeg button[data-v="sucursal"]');
-    await page.waitForTimeout(400);
+    await asentar(page);
     await page.selectOption('#selSeguridad', 'gwsec');
-    await page.waitForTimeout(800);
+    await asentar(page);
     const fam = await page.$eval('#famSeg [aria-pressed="true"]', (b) => b.dataset.v);
     const pick = await page.inputValue('#pickModel');
     const bom = await page.inputValue('#bomOut');
@@ -127,16 +127,16 @@ const wan = (...links) => ({ v: 2, wanLinks: links.map((l, i) => ({ id: i + 1, m
     t.ok(!/Dynamic Threat Defense\s+[A-Z0-9]{6,}/.test(bom), 'A2: sin licencia DTD de EdgeConnect en un gateway');
     // Con la familia en EdgeConnect, IDS/IPS en el gateway abre a «Indiferente» y lo dice.
     await page.click('#famSeg button[data-v="ec"]');
-    await page.waitForTimeout(400);
+    await asentar(page);
     await page.selectOption('#selSeguridad', 'none');
-    await page.waitForTimeout(400);
+    await asentar(page);
     await page.selectOption('#selSeguridad', 'gwsec');
-    await page.waitForTimeout(700);
+    await asentar(page);
     const fam2 = await page.$eval('#famSeg [aria-pressed="true"]', (b) => b.dataset.v);
     const aviso2 = await page.$eval('#famAviso', (n) => (n.hidden ? '' : n.textContent));
     t.ok(fam2 === 'any' && /solo existe en los gateways SD-Branch/.test(aviso2), `A2: desde EdgeConnect abre a «Indiferente» y lo dice (${fam2})`);
     await page.selectOption('#selSeguridad', 'none');
-    await page.waitForTimeout(700);
+    await asentar(page);
     const fam3 = await page.$eval('#famSeg [aria-pressed="true"]', (b) => b.dataset.v);
     t.ok(fam3 === 'ec', `A2: y al quitarlo vuelve a EdgeConnect (${fam3})`);
     // Sede pequeña con IDS/IPS: se ofrece Foundation Base + Security.
@@ -230,13 +230,13 @@ const wan = (...links) => ({ v: 2, wanLinks: links.map((l, i) => ({ id: i + 1, m
     await page.evaluate(() => { try { localStorage.removeItem('presales-perfiles'); } catch { /* sin almacenamiento */ } });
     await cargar({ famSeg: 'sucursal', users: 100, perUser: 1, wanLinksData: wan({ tipo: 'DIA', down: 300 }, { tipo: '4G/5G', down: 50, rol: 'respaldo' }) });
     await page.click('[data-tab="bom"]'); // los perfiles viven en la pestaña de la lista de materiales
-    await page.waitForTimeout(300);
+    await asentar(page);
     await page.fill('#nombrePerfil', 'Sucursal tipo');
     await page.fill('#perfilSedes', '300');
     await page.click('#btnGuardarPerfil');
-    await page.waitForTimeout(500);
+    await asentar(page);
     await page.click('#btnConsolidar');
-    await page.waitForTimeout(700);
+    await asentar(page);
     const aviso = (await page.textContent('#avisoVpnc').catch(() => '')) || '';
     t.ok(/300 sedes con gateway de sucursal abren 600 túneles/.test(aviso), `M8: el consolidado suma los túneles (${aviso.slice(0, 90)})`);
     t.ok(/mínimo por túneles es el Gateway 9106 \(8,000 túneles/.test(aviso), 'M8: y sugiere el headend vigente más pequeño que los sostiene (9106), no el 7240XM de la línea anterior');
@@ -248,7 +248,7 @@ const wan = (...links) => ({ v: 2, wanLinks: links.map((l, i) => ({ id: i + 1, m
   {
     await cargar({ famSeg: 'ec', wanLinksData: wan({ tipo: 'DIA', medio: 'SFP+ 10G', down: 4000 }) });
     await page.selectOption('#pickModel', 'EC-XL');
-    await page.waitForTimeout(900);
+    await asentar(page);
     const txt = ((await page.textContent('#verdict')) || '') + ((await page.textContent('#pane-calc')) || '');
     t.ok(/sucesor natural: EC-10150 \(inferencia por capacidad, sin doc oficial\)/.test(txt), 'B1: el EC-XL fuera de venta muestra su sucesor, rotulado como inferencia');
   }

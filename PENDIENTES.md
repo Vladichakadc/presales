@@ -6,6 +6,8 @@ permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
 Última revisión: 2026-09-24 (**validación de pendientes y ejecución de los que seguían abiertos**. Aruba: el Boost toma el escenario de falla que más túnel pide (un MPLS de respaldo del DIA lo lleva de 1 a 3 bloques; un sitio sin respaldo no cambia). **F6 cerrado**: los cuatro FortiGate sin figura la tienen, de las guías oficiales de hardware de docs.fortinet.com; la rama `fuente/fortinet-pendientes` no traía ningún documento y los datasheets de 100F y 200F ya no existen (404 desde internet abierto). **R1 cerrado** con la cita literal de las Release Notes 7.6.3 y **R2 en parte** (40F/60F/61F). F2 sigue abierto con candidatos localizados en la lista firmada. Detalle en *Cerrado recientemente*.)
 
+Revisión anterior: 2026-09-24 (**la batería e2e corre en CI** — la mejora propuesta al cerrar la entrega anterior, aprobada por el dueño. **Medir antes de cambiar corrigió la propuesta**: se dijo que las 219 pausas fijas darían rojos al azar en un ejecutor lento, y con la CPU del navegador a 4x y a 10x la batería vieja pasó entera. Las esperas pasan a `asentar(page)`, que espera a que la página termine lo que empezó, y se quedan por lo que sí se midió: 336 s → 114 s, y un fallo que dice qué quedó pendiente. Por el camino: **el paso de contraste en CI no podía fallar** (`| tee` sin `pipefail`), **Playwright en CI iba sin versión** (la corrida del 24-sep bajó Chromium 153 y su cobertura solo contó el último caso) y el runner reutilizaba `/tmp/e2e-auth` entre corridas. Ver *Cerrado recientemente*.)
+
 Revisión anterior: 2026-09-24 (**cierre de pendientes con lo que el repositorio ya tenía dentro**. Encargo del dueño: cerrar todo lo abierto, buscar la forma de gestionar los bloqueos y desplegar. **Aruba**: el rol activo/respaldo en el Multi-Underlay Builder (R11/M9 — un 4G de respaldo subía el tier: $80.857 frente a $42.697 en el caso medido), y las fases 2 y 3 de su auditoría cerradas en código (A2, A3, A4, A5, A7, M1, M3, M5, M6, M7, M8, B1; M4 declarado, es regla del dueño). **Los datos que faltaban estaban en los PDF oficiales ya versionados** en `public/datasheets/`, leídos en local sin salir a internet: los SKU de Central por serie de gateway (91xx y 92xx tienen los suyos), el tope de 75 clientes de Foundation Base, la tabla AOS-8 del 9106, el throughput de IDS/IPS de cada gateway y la escala de túneles de cada headend (VSG SD-Branch, sep-2026). **Accesibilidad**: auditoría axe y zoom al 200 % automatizados sobre 17 estados de pantalla; encontró 13 fallos reales (contraste de los colores de marca, controles sin nombre, pestañas que desbordaban) y quedan en 0. **Un fallo del propio arnés**: tres baterías e2e nuevas salían en verde con fallos impresos; `resumen()` fija ahora el código de salida. **Bloqueado y declarado**: el ajuste de Railway y la lectura de la rama de transporte de Fortinet los denegó el control de permisos de la sesión (ver *Decisiones que necesitan al dueño*). **Alimentación**: los seis gateways Aruba desde los mismos PDF (Aruba 16/25). 565 unitarios, 16/16 pantallas, 7/7 contrastes y la batería e2e completa (14/14 scripts).)
 
 Revisión anterior: 2026-09-23 (**etapa 7 del dimensionador Fortinet: una sola verdad para recomendación, BOM y cotización** — el informe de auditoría en vivo del 23-sep y su prompt maestro. **Resultado: GO CONDICIONADO**, primero en la rama `claude/laughing-babbage-pvpxyi` y desplegado ese mismo día (`f6f1952`, Railway `dcb662d9` en SUCCESS). Los cuatro P0 eran un solo defecto (varias verdades en la misma página) y los cierra un motor único, `fortinet-motor.js`, que es el mismo archivo en el navegador y en `POST /api/v1/fortinet/evaluations`. **T01–T30: 30/30 reportadas y aprobadas, cinco con un límite declarado.** Por el camino salieron cuatro defectos nuevos: N01 (error JS al abrir un enlace), N02 (108 precios de licencias con la lista de agosto), N03 (60 textos visibles sin tilde, entre ellos «termino 3 anos» en la nota que llega al Excel) y N04 (el bloqueo de SSL-VPN no pintaba su fuente). Entrega completa en `docs/auditoria-fortinet-2026-09-23/`. **542 unitarios, 16/16 pantallas, 6/6 contrastes y 11/11 baterías e2e.**)
@@ -586,22 +588,25 @@ Cobertura actual por herramienta:
 | ~~Arista~~ | retirado | retirado | retirado | — |
 | **Starlink** | no | no (llega como referencias) | no | **sí** (nuevo, 2026-09-24 — 4 kits sin verificar) |
 
-**Starlink: el dimensionador existe, el dato está sin contrastar (2026-09-24).**
-`dimensionador-starlink-leo.html` elige el kit (Standard, Mini, Performance, Flat High
-Performance como línea anterior) y cuenta terminales por sitio. Lo que falta:
-- **Contrastar `server/seed/legacyData/starlink.js` con https://www.starlink.com/specifications.**
-  Bloqueado por egreso: desde este entorno `curl` a starlink.com no conecta (medido el
-  2026-09-24). Los campos en `null` —sobre todo del kit **Performance**: consumo, DC, IP,
-  dimensiones, cable— se muestran «no consta» y **apartan** el kit cuando el escenario los
-  pide (un presupuesto de potencia hoy aparta al Performance). El soporte en movimiento y
-  marítimo del **Mini** también va en `null`. Comando: bajar la ficha desde una máquina con
-  salida (o un workflow de Actions, como las de Fortinet) y transcribir con diff en git.
-- **Precios y SKU**: todos en `null`. Starlink tarifica por país; hace falta la lista del canal
+**Starlink: el dimensionador existe y su hardware está contrastado con las fichas oficiales (2026-09-24).**
+Lo que sigue abierto:
+- **Uso marítimo: ninguna ficha lo menciona**, así que el escenario marítimo hoy no recomienda
+  ningún kit (lo dice en pantalla). Hace falta un documento oficial que lo respalde; el
+  candidato es la página de Starlink Maritime. Se añade como URL candidata a
+  `scripts/traer-starlink.js` y se corre `traer-starlink.yml` desde Actions.
+- **Uso en movimiento de Standard, Mini, Enterprise y Flat High Performance**: sus fichas no lo
+  mencionan (solo la del Performance). Mismo camino.
+- **Cables más largos como accesorio**: ninguna ficha los documenta, y por eso un tendido de
+  más de 15 m aparta el Standard y lleva al Enterprise (50 m). Si Starlink publica la ficha
+  de un cable largo, se rellena `cableMaxM` y el motor lo usa sin tocar código.
+- **Precios y SKU**: todos en `null`. Las fichas no los publican; hace falta la lista del canal
   autorizado con el que se cotice.
+- **Vigilancia**: las cinco URL de las fichas no están en el vigía (`npm run vigia`), así que un
+  cambio de Starlink no avisaría. Requiere dar a Starlink su sitio en `legacyData/fuentes.js`,
+  que es parte de la integración de abajo.
 - **Integración con el resto del portal, sin hacer a propósito**: no está en la barra de
   fabricantes (`navegacion.js`), ni en `/api/catalog`, ni en `legacyData/fuentes.js`, ni en el
-  cotizador como equipo. Cada una toca conteos («7 fabricantes») que varias pruebas fijan; se
-  hace cuando el dato esté verificado, no antes.
+  cotizador como equipo. Cada una toca conteos («7 fabricantes») que varias pruebas fijan.
 
 5. **Completar el catálogo del dimensionador Juniper — parcialmente resuelto (2026-09-02),
    ver *Cerrado recientemente*.** La «SRX Series and vSRX Performance and Features Matrix» se
@@ -1135,7 +1140,11 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     Railway; con eso, un workflow en rojo salta el despliegue. Un required check de GitHub no lo
     arregla solo: no frena lo que Railway no espera. Se intentó activar desde la sesión y no fue
     posible (el agente de Railway rechazó por límite de uso y el control de permisos denegó
-    seguir por otra vía): es un clic del dueño.* Texto de la entrada original:
+    seguir por otra vía): es un clic del dueño. **Desde el 2026-09-24 ese clic frenaría tres
+    cosas y no dos**: el job de `pantallas` lleva ahora las pantallas, el contraste y la batería
+    e2e, y su paso de contraste ya puede fallar (antes `| tee` sin `pipefail` lo dejaba siempre
+    en verde). El coste es que cada despliegue espera a ese job, el más lento de los workflows
+    (ver *Cerrado recientemente*).* Texto de la entrada original:
     **Railway no espera a `pantallas`, solo a `verificar` (2026-09-13).** *Actualizado el
     2026-09-14: hay un segundo agujero, de otra clase, y ya está cerrado — un push de bot no
     creaba ningún check, así que Railway no esperaba a nada. Un required check tampoco lo
@@ -1308,7 +1317,9 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
 ## Decisiones que necesitan al dueño del producto
 
 - **Activar «Wait for CI» en Railway** (`presales-web` → ajustes del origen). Medido: hoy no
-  espera a nada. Es el cierre del punto 33. Desde la sesión no se pudo (2026-09-24).
+  espera a nada. Es el cierre del punto 33. Desde la sesión no se pudo (2026-09-24). Con él,
+  cada despliegue esperaría al job de `pantallas` (pantallas + contraste + batería e2e), que es
+  el workflow más lento: esa espera es el precio de que un flujo roto no llegue a producción.
 - ~~**Leer `fuente/fortinet-pendientes`, o conceder permiso para leerla.**~~ **Hecho el
   2026-09-24**: se leyó y no traía ningún documento (cinco 404 por rutas erróneas). F6 se cerró
   por otra vía (guías oficiales de docs.fortinet.com); F2 sigue abierto (ver su entrada).
@@ -1394,6 +1405,82 @@ pasa a `leida:true` con esa cita, y la pantalla deja de disculparse por no haber
 **Verificación.** `npm run verificar` 584/584, `npm run pantallas` 17/17 y los contrastes y
 baterías e2e que se detallan en el cierre de la entrega. La cobertura del contraste no se
 regeneró: el Chromium de esta máquina mide mal, y ya se había descartado por eso.
+
+### La batería e2e corre en CI y espera a condiciones, no a relojes (2026-09-24)
+
+La mejora propuesta al cerrar la entrega anterior, aprobada por el dueño: llevar `npm run e2e`
+a CI, que solo corría cuando alguien se acordaba (así salieron en verde tres baterías con fallos
+impresos). **Ahora es un paso del job de `pantallas`**, con su propio servidor en el puerto 4131
+y una clave generada en la corrida. **En el ejecutor tarda 1 min 50 s** (corrida
+`35985786379`, lanzada sobre la rama antes de fusionar: 15/15 en verde) y el job entero
+7 min 23 s. Un rojo ahí todavía no frena el despliegue (punto 33).
+
+**MEDIR ANTES DE CAMBIAR CORRIGIÓ LA PROPUESTA.** Se dijo que las 219 pausas fijas
+(`waitForTimeout(300…3500)`) había que sustituirlas antes porque en un ejecutor lento darían
+rojos al azar. Se midió ralentizando la CPU del navegador por el protocolo de depuración, sin
+tocar los scripts: **a 4x la batería vieja pasó entera (430 s) y a 10x también (630 s)**. Las
+pausas tenían margen, y la propuesta exageraba el riesgo; queda escrito así.
+
+**Por qué el cambio se queda igualmente, con lo que sí se midió.** `asentar(page)`
+(`test/e2e/ayuda.js`) espera a que la página termine lo que empezó: un rastreador que
+`abrirSesion()` instala antes que los scripts de la página cuenta la red y las lecturas de
+cuerpo en vuelo, los temporizadores de hasta 1 s, los cuadros de animación, las transiciones,
+las imágenes que cargan y el desplazamiento; quieta es todo a cero dos cuadros seguidos.
+- **Tiempo:** la batería pasa de **336 s a 114 s** a velocidad normal, y a 10x de 630 a 442 s.
+  Es el coste que se declaró para llevarla a CI, dividido por tres.
+- **Diagnóstico:** si la página no queda quieta, falla diciendo qué quedó pendiente, en vez de
+  una aserción roja sin explicación.
+- **Que no lee antes de tiempo:** la batería con 1,5 s añadidos tras cada espera da las mismas
+  afirmaciones, línea por línea.
+- **Su contrato se prueba aparte** (`e2e-asentar.js`, página sintética servida por Playwright):
+  espera a un temporizador corto y a una petición lenta, no a uno largo, no se cuelga con una
+  imagen diferida fuera de la vista y falla si la página no lleva rastreador. Comprobado
+  saboteando: el filtro de un solo borde y los temporizadores sin contar ponen en rojo,
+  cada uno, justo su caso.
+- **Lo que salió al medirlo:** la primera versión esperó 30 s a la foto diferida de un 50G que
+  había quedado 5.000 px **por encima** de la vista: solo miraba un borde. Y «Limpiar
+  escenario» de Aruba recarga la página, así que su `waitForSelector('#users')` se cumplía en la
+  página vieja; ahora se espera como navegación (`trasNavegar`).
+- **Las tipografías de Google se cortan en la batería**, para que una prueba de maquetación no
+  dependa de un tercero; las capturas con las tipografías reales siguen siendo las de
+  `pantallas`.
+
+**TRES DEFECTOS DE CI SALIERON POR EL CAMINO.**
+1. **El paso de contraste no podía fallar.** Sin `shell:` explícito, GitHub corre `bash -e`
+   sin `pipefail`, y `contraste.js | tee contraste.txt` devolvía el código de `tee`. El log de
+   la corrida `35946092377` muestra `shell: /usr/bin/bash -e {0}`. Hasta hoy no había ocultado
+   nada (esa corrida pasó de verdad), pero ahora lleva `set -o pipefail`. **Variantes
+   revisadas**: `verificar.yml` ya lo cubría con un `grep` sobre el contenido; `aplicar-propuesta`
+   lo tiene y lo mitigan su segunda barrera (`npm run verificar`) y la revisión humana del PR;
+   en los informativos (vigía, sondeo, candidatas, datasheets) seguir tras un código no nulo es
+   a propósito, porque el issue o el resumen se abren después.
+2. **Playwright en CI iba sin versión.** La corrida del 24-sep bajó Chromium 153 y su informe
+   de cobertura solo contó los módulos del último caso: 19 «sin conducir», entre ellos el
+   dimensionador de Fortinet, que cinco casos de esa corrida conducen; en local, con 1.56.1,
+   son 8. Va fijado a 1.56.1, la versión con la que se valida todo, y **era la versión**: con
+   ella la corrida `35985786379` vuelve a sumar entre páginas y da 8, como en local.
+3. **El runner reutilizaba `/tmp/e2e-auth`** —el `usuarios.json` era del 22-sep—, así que una
+   corrida con otra clave no podía entrar y dos corridas a la vez compartían base. Cada corrida
+   trae ahora su propio directorio temporal.
+
+**Y la auditoría de accesibilidad cubre ya la pantalla de Starlink**, que entró en `main` ese
+mismo día desde otra sesión: axe sin ninguna violación y sin desplazamiento horizontal a 640 px,
+en el cálculo y en la lista de materiales. Son 19 estados de pantalla y no 17, y como la batería
+corre ahora en CI, una regresión de accesibilidad en esa página ya no espera a que alguien se
+acuerde.
+
+### Catálogo Starlink contrastado con las fichas oficiales en PDF (2026-09-24)
+
+La mejora propuesta al cerrar la entrega anterior, aplicada. `traer-starlink.yml` (corrida
+35949951292) trajo desde Actions las cinco fichas oficiales de `api.starlink.com/public-files/`
+a la rama `fuente/starlink-specs`. **El riesgo declarado al proponerlo se cumplió y quedó
+cubierto**: la página de especificaciones es una aplicación de JavaScript, y sus nueve
+variantes respondieron 200 renderizadas en Chromium sin una sola cifra de ficha.
+`juzgarTexto()` las marcó vacías en vez de publicarlas como fuente. **Leer los PDF corrigió
+tres afirmaciones escritas a ojo**: un cable de 45 m que ninguna ficha documenta, el Flat High
+Performance como «línea anterior» y el soporte marítimo, que ninguna ficha menciona. **Añadió
+el kit Enterprise**, con 50 m de cable, que ahora es el recomendado para tendidos largos.
+584 unitarios (con la prueba del juicio, comprobada saboteando el umbral) y 17/17 pantallas.
 
 ### Dimensionador y BOM de Starlink LEO (2026-09-24)
 

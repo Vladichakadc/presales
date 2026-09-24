@@ -8,7 +8,7 @@
      4. el texto plano lo enumera en su sección (es lo que se pega en el correo);
      5. devolverla a la cifra del motor PODA el ajuste — no queda rastro en la URL;
      6. una cantidad fuera de rango no se puede escribir: se repone la calculada. */
-const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
+const { cargarPlaywright, abrirDimensionador, asentar, contador } = require('./ayuda');
 
 (async () => {
   const { chromium } = cargarPlaywright();
@@ -22,9 +22,9 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   // Escenario mínimo con BOM: usuarios + un enlace WAN (el motor necesita ambos).
   await page.fill('#users', '60');
   await page.locator('.wan-fila').first().locator('input[data-campo=down]').fill('200');
-  await page.waitForTimeout(800);
+  await asentar(page);
   await page.click('[data-tab=bom]');
-  await page.waitForTimeout(700);
+  await asentar(page);
 
   // 1 · el control existe en las líneas calculadas, con la cifra del motor
   const nAjustar = await page.locator('#bomTabla [data-bom-ajustar]').count();
@@ -37,7 +37,7 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   const subAntes = await primera.locator('xpath=ancestor::tr[1]').locator('td.r').last().textContent();
   await primera.fill(String(parseInt(calc, 10) + 2));
   await primera.press('Tab'); // el listener es change: se dispara al salir del campo
-  await page.waitForTimeout(700);
+  await asentar(page);
   const bomTxt = (await page.textContent('#pane-bom')) || '';
   ok(/Cantidad ajustada a mano — el cálculo decía \d+/.test(bomTxt), 'el badge declara el ajuste con la cifra del motor');
   const subDespues = await page.locator('#bomTabla [data-bom-ajustar]').first().locator('xpath=ancestor::tr[1]').locator('td.r').last().textContent();
@@ -47,9 +47,9 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   ok(/bomAjustes=/.test(page.url()), 'el ajuste viaja en la URL del escenario');
   await page.goto(page.url(), { waitUntil: 'domcontentloaded' }); // sin load: Google Fonts puede colgarlo (ver ayuda.js)
   await page.waitForSelector('#users', { timeout: 20000 });
-  await page.waitForTimeout(900);
+  await asentar(page);
   await page.click('[data-tab=bom]');
-  await page.waitForTimeout(700);
+  await asentar(page);
   const valorTrasRecarga = await page.locator('#bomTabla [data-bom-ajustar]').first().inputValue();
   ok(valorTrasRecarga === String(parseInt(calc, 10) + 2), 'tras recargar, la línea sigue ajustada (' + valorTrasRecarga + ')');
   ok(/Cantidad ajustada a mano/.test((await page.textContent('#pane-bom')) || ''), 'y el badge sobrevive con ella');
@@ -62,7 +62,7 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   const misma = page.locator('#bomTabla [data-bom-ajustar]').first();
   await misma.fill(calc);
   await misma.press('Tab');
-  await page.waitForTimeout(700);
+  await asentar(page);
   ok(!/Cantidad ajustada a mano/.test((await page.textContent('#pane-bom')) || ''), 'al volver a la cifra del motor el badge desaparece');
   const urlFinal = decodeURIComponent(page.url());
   ok(!/bomAjustes=%7B..|bomAjustes=\{..|\bbomAjustes=.*sku:/.test(urlFinal), 'y el ajuste se poda de la URL (no queda rastro)');
@@ -71,7 +71,7 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   const otra = page.locator('#bomTabla [data-bom-ajustar]').first();
   await otra.fill('0');
   await otra.press('Tab');
-  await page.waitForTimeout(500);
+  await asentar(page);
   ok((await page.locator('#bomTabla [data-bom-ajustar]').first().inputValue()) === calc, 'un 0 se repone a la cifra calculada (' + calc + ')');
   ok(!/bomAjustes=.*sku:/.test(decodeURIComponent(page.url())), 'y no queda ajuste escrito');
 

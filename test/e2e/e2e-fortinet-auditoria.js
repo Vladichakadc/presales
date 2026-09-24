@@ -16,7 +16,7 @@
 /* global document */
 /*   ↑ los callbacks de page.evaluate corren EN el navegador, no en Node; eslint los analiza
      como si fueran de este fichero. Mismo comentario que en e2e-sticky.js. */
-const { cargarPlaywright, abrirSesion, contador } = require('./ayuda');
+const { cargarPlaywright, abrirSesion, asentar, contador } = require('./ayuda');
 
 const BASE = process.env.E2E_BASE || 'http://localhost:4131';
 const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
@@ -34,12 +34,12 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   await abrirSesion(page);
   await page.goto(PAGINA, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#wanBuilderFilas [data-campo=down]', { timeout: 20000 });
-  await page.waitForTimeout(1200);
+  await asentar(page);
 
   const caudal = async (mbps) => {
     await page.fill('#wanBuilderFilas [data-campo=down] >> nth=0', String(mbps));
     await page.dispatchEvent('#wanBuilderFilas [data-campo=down] >> nth=0', 'input');
-    await page.waitForTimeout(600);
+    await asentar(page);
   };
   const elegido = () => page.$eval('#verdict-sel', (e) => e.value).catch(() => null);
   const nCandidatos = () => page.$eval('#verdict-sel', (e) => e.options.length).catch(() => 0);
@@ -68,7 +68,7 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
      JUSTO en el límite y lo daba por bueno; el dato oficial lo rechaza. */
   await caudal(300);
   await page.check('#chkSsl');
-  await page.waitForTimeout(700);
+  await asentar(page);
   const sel40 = await page.$eval('#verdict-sel', (e) => [...e.options].map((o) => o.value));
   t.ok(!sel40.includes('FortiGate 40F'),
     'AT-01: con inspección SSL a 390 Mbps, el 40F NO es candidato (su SSL oficial son 310 Mbps)');
@@ -102,7 +102,7 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   t.ok(/tarea de datos|no sustituye|PoC/i.test(ejes4G),
     'AT-20: y distingue «el catálogo no lo trae» de «ningún equipo aguanta»');
   await page.uncheck('#chkSsl');
-  await page.waitForTimeout(500);
+  await asentar(page);
 
   /* ── AT-11 · SIMULTANEIDAD DECLARADA, NUNCA `max` AUTOMÁTICO ────────────────────────
      El ejemplo recalculado del informe: 600 Mbps de Internet + 300 de inter-VLAN con 25 %
@@ -113,12 +113,12 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   await page.dispatchEvent('#interVlan', 'input');
   await page.fill('#head', '25');
   await page.dispatchEvent('#head', 'input');
-  await page.waitForTimeout(700);
+  await asentar(page);
   const sumado = await texto('#needLbl');
   const hint = await texto('#traficoHint');
   t.ok(/suma/i.test(hint), 'AT-11: por defecto los caminos se SUMAN, y la pantalla lo dice');
   await page.check('#chkNoConcurrente');
-  await page.waitForTimeout(700);
+  await asentar(page);
   const maximo = await texto('#needLbl');
   const hint2 = await texto('#traficoHint');
   t.ok(/m[aá]ximo/i.test(hint2),
@@ -128,26 +128,26 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   await page.uncheck('#chkNoConcurrente');
   await page.fill('#interVlan', '0');
   await page.dispatchEvent('#interVlan', 'input');
-  await page.waitForTimeout(600);
+  await asentar(page);
 
   /* ── TECHO DE UTILIZACIÓN: POLÍTICA SEPARADA DEL CRECIMIENTO ────────────────────────
      Con el mismo escenario, apretar el techo tiene que reducir la lista de candidatos. Si no
      lo hiciera, el control sería un adorno — que es peor que no tenerlo. */
   const antesTecho = await nCandidatos();
   await page.selectOption('#techoUtil', '60');
-  await page.waitForTimeout(700);
+  await asentar(page);
   const conTecho = await nCandidatos();
   t.ok(conTecho < antesTecho,
     `el techo de utilización recorta candidatos de verdad (${antesTecho} → ${conTecho})`);
   await page.selectOption('#techoUtil', '100');
-  await page.waitForTimeout(600);
+  await asentar(page);
 
   /* ── AT-03 · BUNDLE MÍNIMO QUE BLOQUEA, NO QUE AVISA ────────────────────────────────
      DLP e IoT Security solo existen en Enterprise. Elegir UTP no es una advertencia: es una
      cotización que no se puede pedir, así que la exportación se cierra. */
   await page.check('#chkIotDlp');
   await page.selectOption('#licBundle', 'utp');
-  await page.waitForTimeout(800);
+  await asentar(page);
   t.ok(await page.$eval('#xlsBtn', (e) => e.disabled),
     'AT-03: con UTP y DLP/IoT pedidos, «Exportar a Excel» queda DESHABILITADO');
   const puerta = await texto('#exportGate');
@@ -160,14 +160,14 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
     'AT-03 / T08: el bloqueo ofrece la corrección con un clic, no solo el motivo');
 
   await page.selectOption('#licBundle', 'ent');
-  await page.waitForTimeout(800);
+  await asentar(page);
   t.ok(!(await page.$eval('#xlsBtn', (e) => e.disabled)),
     'AT-03: con Enterprise Protection la exportación se vuelve a habilitar');
 
   /* ── AT-04 / AT-05 / AT-06 EN LA LISTA DE MATERIALES ────────────────────────────────
      Los tres P0 comerciales, sobre la tabla que de verdad se exporta. */
   await page.click('[data-tab=bom]');
-  await page.waitForTimeout(800);
+  await asentar(page);
   const categorias = () => page.$$eval('#bomTabla .bom-cat, #bomTabla tbody tr',
     (ns) => ns.map((n) => (n.textContent || '').trim().toUpperCase()));
   // La descripción del bundle Enterprise CONTIENE las palabras «FortiCare Premium» y
@@ -182,22 +182,22 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
     'AT-04: y se explica por qué, en vez de que la línea desaparezca sin más');
 
   await page.click('[data-tab=calc]');
-  await page.waitForTimeout(400);
+  await asentar(page);
   await page.check('#chkConverter');
-  await page.waitForTimeout(700);
+  await asentar(page);
   await page.click('[data-tab=bom]');
-  await page.waitForTimeout(600);
+  await asentar(page);
   const catsConv = await categorias();
   t.ok(!catsConv.some((c) => /^SERVICIOS OPCIONALES/.test(c)),
     'AT-05: pedir FortiConverter con Enterprise NO añade una segunda línea — el bundle ya lo trae');
 
   await page.click('[data-tab=calc]');
-  await page.waitForTimeout(300);
+  await asentar(page);
   await page.uncheck('#chkIotDlp');
   await page.selectOption('#licBundle', 'utp');
-  await page.waitForTimeout(700);
+  await asentar(page);
   await page.click('[data-tab=bom]');
-  await page.waitForTimeout(600);
+  await asentar(page);
   const catsUtp = await categorias();
   t.ok(catsUtp.some((c) => /^SERVICIOS OPCIONALES/.test(c)),
     'AT-05: fuera de Enterprise y pedido a mano, FortiConverter SÍ entra');
@@ -211,11 +211,11 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
     'AT-06: con término de 3 años los SKU llevan el sufijo de 36 meses');
 
   await page.click('[data-tab=calc]');
-  await page.waitForTimeout(300);
+  await asentar(page);
   await page.selectOption('#termYears', '5');
-  await page.waitForTimeout(700);
+  await asentar(page);
   await page.click('[data-tab=bom]');
-  await page.waitForTimeout(600);
+  await asentar(page);
   const skus5 = await page.$$eval('#bomTabla code', (ns) => ns.map((n) => n.textContent.trim()));
   t.ok(skus5.some((s) => /-60$/.test(s)),
     'AT-06: cambiar a 5 años cambia el sufijo del SKU a 60 meses');
@@ -227,12 +227,12 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
      cada nota— y cierra lo que no admite borrador (cotizador, perfiles). Y los servicios solo
      existen con rol SD-WAN: sin el, ni se ven (T13). */
   await page.click('[data-tab=calc]');
-  await page.waitForTimeout(300);
+  await asentar(page);
   t.ok(await page.$eval('#grpSdwan', (e) => e.hidden), 'T13: sin rol SD-WAN los servicios avanzados no se ven');
   await page.click('#rolSeg button[data-v="spoke"]');
-  await page.waitForTimeout(600);
+  await asentar(page);
   await page.check('#chkSdwanOrq');
-  await page.waitForTimeout(800);
+  await asentar(page);
   t.ok(/borrador/i.test(await texto('#gateResumen')), 'AT-08: un servicio SD-WAN sin SKU deja la puerta en BORRADOR');
   t.ok(!(await page.$eval('#xlsBtn', (e) => e.disabled)) && /borrador/i.test(await texto('#xlsBtn')),
     'AT-08: Excel sigue disponible, pero como «borrador técnico»');
@@ -251,13 +251,13 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   t.ok(!(await page.$('#btnOverride')), 'AT-18: ya no existe un override que abra la puerta por fuera del motor');
   await page.uncheck('#chkSdwanOrq');
   await page.click('#rolSeg button[data-v="none"]');
-  await page.waitForTimeout(600);
+  await asentar(page);
 
   /* ── ALTERNATIVAS DE UN CLIC ────────────────────────────────────────────────────────
      «Candidato y dos alternativas» del informe. Una alternativa que hay que buscar en un
      desplegable de 39 entradas no es una alternativa. */
   await page.click('[data-tab=calc]');
-  await page.waitForTimeout(400);
+  await asentar(page);
   await page.uncheck('#chkConverter');
   await caudal(1500);
   const antes = await elegido();
@@ -265,7 +265,7 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   t.ok(!!alt, 'el resumen fijo ofrece alternativas como botones');
   if (alt) {
     await alt.click();
-    await page.waitForTimeout(700);
+    await asentar(page);
     const despues = await elegido();
     t.ok(despues && despues !== antes,
       `pulsar una alternativa cambia el equipo evaluado (${antes} → ${despues})`);
@@ -291,9 +291,9 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
      modelos la tienen: ese número sube en cuanto alguien traiga los datasheets que faltan,
      y fijarlo pondría la prueba en rojo por una mejora. */
   await page.click('[data-tab=calc]');
-  await page.waitForTimeout(400);
+  await asentar(page);
   await caudal(2500);
-  await page.waitForTimeout(700);
+  await asentar(page);
   await page.evaluate(() => { const f = document.querySelector('.ficha-vista'); if (f) f.scrollIntoView({ block: 'center' }); });
   // `loading="lazy"`: la figura vive por encima del viewport hasta que se desplaza, así que
   // medir naturalWidth antes de eso da 0 y parece un fallo que no existe.
@@ -345,9 +345,9 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   // la etapa 7 solo compite en ampliación de un parque instalado.
   await caudal(500);
   await page.selectOption('#motivoCompra', 'ampliacion');
-  await page.waitForTimeout(800);
+  await asentar(page);
   await page.selectOption('#verdict-sel', 'FortiGate 100F');
-  await page.waitForTimeout(900);
+  await asentar(page);
   const cien = await page.evaluate(() => ({
     src: ((document.querySelector('.ficha-vista img')) || { getAttribute: () => null }).getAttribute('src'),
     pie: ((document.querySelector('.ficha-vista figcaption')) || {}).textContent || '',
@@ -366,12 +366,12 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
     await ruta.fulfill({ response: r, json: mapa });
   });
   await page.goto(`${BASE}/dimensionador-fortinet-fortigate.html`, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(1500);
+  await asentar(page);
   await caudal(500);
   await page.selectOption('#motivoCompra', 'ampliacion');
-  await page.waitForTimeout(800);
+  await asentar(page);
   await page.selectOption('#verdict-sel', 'FortiGate 100F');
-  await page.waitForTimeout(900);
+  await asentar(page);
   const hueco = await page.evaluate(() => ({
     aviso: ((document.querySelector('.ficha-vista-vacia')) || {}).textContent || '',
     foto: !!document.querySelector('.ficha-vista'),
@@ -385,13 +385,13 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
      las conduce: que los controles existen, que escriben el eje correcto y que lo que se lee
      junto al equipo es el contraste y no la declaracion sin comprobar de antes. */
   await page.goto(`${BASE}/dimensionador-fortinet-fortigate.html`, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(1500);
+  await asentar(page);
   await caudal(1);
   await page.click('#rolSeg button[data-v="hub"]');
-  await page.waitForTimeout(500);
+  await asentar(page);
   await page.fill('#sites', '190');
   await page.dispatchEvent('#sites', 'input');
-  await page.waitForTimeout(900);
+  await asentar(page);
   const tunTxt = await texto('#verdict');
   t.ok(/t[uú]neles publicados/.test(tunTxt) && /tope de plataforma/.test(tunTxt),
     'AT-29: el conteo de túneles se contrasta contra la cifra publicada del modelo');
@@ -400,28 +400,28 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   const reco190 = await page.$eval('#verdict-sel', (e) => e.value);
   await page.fill('#sites', '260');
   await page.dispatchEvent('#sites', 'input');
-  await page.waitForTimeout(900);
+  await asentar(page);
   const reco260 = await page.$eval('#verdict-sel', (e) => e.value);
   t.ok(reco190 === 'FortiGate 30G' && reco260 === 'FortiGate 120G',
     `AT-30: pasar de 190 a 260 spokes de 1 Mbps cambia el equipo por el TOPE DE TUNELES (${reco190} → ${reco260})`);
 
   // El acceso remoto va a un eje o al otro segun el modo, y son dos topes distintos.
   await page.goto(`${BASE}/dimensionador-fortinet-fortigate.html`, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(1500);
+  await asentar(page);
   await caudal(100);
   await page.check('#chkRemoto');
-  await page.waitForTimeout(300);
+  await asentar(page);
   await page.fill('#vpnUsers', '400');
   await page.dispatchEvent('#vpnUsers', 'input');
-  await page.waitForTimeout(800);
+  await asentar(page);
   const recoIpsec = await page.$eval('#verdict-sel', (e) => e.value);
   // T06: con FortiOS 7.6.3+ la opcion SSL-VPN esta deshabilitada; se diseña en 7.4.
   t.ok(await page.$eval('#vpnTipo option[value=sslvpn]', (o) => o.disabled),
     'T06: con FortiOS 7.6.3 o superior el modo túnel SSL-VPN no se puede elegir');
   await page.selectOption('#fortiOS', '7.4');
-  await page.waitForTimeout(400);
+  await asentar(page);
   await page.selectOption('#vpnTipo', 'sslvpn');
-  await page.waitForTimeout(900);
+  await asentar(page);
   const recoSsl = await page.$eval('#verdict-sel', (e) => e.value);
   t.ok(recoIpsec !== recoSsl,
     `AT-31: los mismos 400 remotos dan otro equipo segun el motor que los termina (${recoIpsec} → ${recoSsl})`);
@@ -430,11 +430,11 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
 
   // VDOM: un tope que este catálogo no tenía y que decide un diseño multi-tenant.
   await page.goto(`${BASE}/dimensionador-fortinet-fortigate.html`, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(1500);
+  await asentar(page);
   await caudal(100);
   await page.fill('#vdoms', '120');
   await page.dispatchEvent('#vdoms', 'input');
-  await page.waitForTimeout(900);
+  await asentar(page);
   // El 1000F y no el 1800F desde el 2026-09-23: su ficha por serie publica 250 VDOM y el
   // Product Matrix no lo listaba, así que antes se apartaba por no traer la cifra.
   t.ok(await page.$eval('#verdict-sel', (e) => e.value) === 'FortiGate 1000F',
@@ -443,7 +443,7 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
 
   // F7 · las excepciones TLS son un supuesto declarado, no una constante del fabricante.
   await page.goto(`${BASE}/dimensionador-fortinet-fortigate.html`, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(1500);
+  await asentar(page);
   // EL ESCENARIO DE AT-01, QUE ES DONDE EL EJE SSL MANDA DE VERDAD. 300 Mbps + 30 % dan 390:
   // el 40F publica 600 Mbps de Threat Protection y solo 310 de inspeccion SSL, asi que el eje
   // que lo saca es el de SSL y no el de la capa. Un caudal mayor no serviria para esto: alli
@@ -453,12 +453,12 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   t.ok(await page.$eval('#fldTlsExento', (e) => e.hidden),
     'F7: sin inspección SSL el control de excepciones TLS no se ve');
   await page.check('#chkSsl');
-  await page.waitForTimeout(800);
+  await asentar(page);
   t.ok(await page.$eval('#fldTlsExento', (e) => !e.hidden),
     'F7: el control de excepciones TLS aparece solo con la inspección SSL pedida');
   const sinExento = await page.$eval('#verdict-sel', (e) => [...e.options].map((o) => o.value));
   await page.selectOption('#pctTlsExento', '40');
-  await page.waitForTimeout(900);
+  await asentar(page);
   const conExento = await page.$eval('#verdict-sel', (e) => [...e.options].map((o) => o.value));
   t.ok(!sinExento.includes('FortiGate 40F') && conExento.includes('FortiGate 40F'),
     'F7: declarar un 40 % exento baja la demanda del eje SSL de 390 a 234 Mbps y el 40F (310) vuelve a caber');

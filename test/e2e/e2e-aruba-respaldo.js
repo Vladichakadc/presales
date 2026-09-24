@@ -7,7 +7,7 @@
    respaldo solo lleva tráfico si cae el DIA. Aquí se conduce la pantalla de verdad: el
    control de la fila, el tier, la barra resumen, el aviso de continuidad parcial, el enlace
    compartido (ida y vuelta) y que un enlace ANTIGUO, sin rol, se lee como todos activos. */
-const { cargarPlaywright, abrirDimensionador, BASE, contador } = require('./ayuda');
+const { cargarPlaywright, abrirDimensionador, BASE, asentar, contador } = require('./ayuda');
 
 const URL_DIM = BASE + '/dimensionador-aruba-edgeconnect.html';
 function enlace(p) {
@@ -36,7 +36,7 @@ const wan = (...links) => ({ v: 2, wanLinks: links.map((l, i) => ({ id: i + 1, m
   const cargar = async (p) => {
     await page.goto(enlace(p), { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#users', { timeout: 20000 });
-    await page.waitForTimeout(1500);
+    await asentar(page);
     return leer();
   };
 
@@ -48,7 +48,7 @@ const wan = (...links) => ({ v: 2, wanLinks: links.map((l, i) => ({ id: i + 1, m
 
   // ── Se marca el 4G como respaldo desde la fila, como lo haría una persona ────
   await page.selectOption('#wanBuilderFilas .wan-fila >> nth=1 >> [data-campo=rol]', 'respaldo');
-  await page.waitForTimeout(900);
+  await asentar(page);
   const conResp = await leer();
   t.ok(/1 Gbps/.test(conResp.tier) && !/Sin límite/.test(conResp.tier), `con el 4G de respaldo el tier baja a 1 Gbps (${conResp.tier.trim()})`);
   t.ok(/Σ 1000 Mbps/.test(conResp.resumen), 'la barra resumen suma solo el activo (Σ 1000 Mbps)');

@@ -11,7 +11,7 @@
    fin de soporte del boletín; el EC-XS, sin boletín y sin respaldo declarado a nivel de
    fabricante, sale en el TERCER ESTADO («Sin dato de ciclo de vida») — nunca verde por
    omisión y, sobre todo, NUNCA con una marca de fin de venta sacada de un agregador. */
-const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
+const { cargarPlaywright, abrirDimensionador, asentar, contador } = require('./ayuda');
 
 (async () => {
   const { chromium } = cargarPlaywright();
@@ -24,7 +24,7 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
 
   // Pestaña Catálogo: el semáforo por modelo.
   await page.click('[data-tab=cat]');
-  await page.waitForTimeout(700);
+  await asentar(page);
   const filaDe = async (id) => {
     const filas = await page.$$('#tbl-aruba-cat tbody tr');
     for (const f of filas) {
@@ -62,7 +62,7 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
 
   // El selector de equipo nombra la condición con la fecha ya vencida.
   await page.click('[data-tab=calc]');
-  await page.waitForTimeout(400);
+  await asentar(page);
   const etiquetaXL = await page.$eval('#pickModel option[value="EC-XL"]', (o) => o.textContent).catch(() => '');
   t.ok(/fin de venta vencido/.test(etiquetaXL),
     'el combo nombra al EC-XL «fin de venta vencido» (no «fin de venta» a secas: la fecha ya pasó)');
@@ -73,9 +73,9 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   // La ficha del EC-XL elegido declara la condición actual y el fin de soporte.
   await page.fill('#users', '60');
   await page.locator('.wan-fila').first().locator('input[data-campo=down]').fill('200');
-  await page.waitForTimeout(800);
+  await asentar(page);
   await page.selectOption('#pickModel', 'EC-XL');
-  await page.waitForTimeout(800);
+  await asentar(page);
   const ficha = (await page.textContent('#verdict')) || '';
   t.ok(/ya pasó/.test(ficha), 'la ficha del EC-XL declara que su fecha de último pedido ya pasó');
   t.ok(/2033-03-31/.test(ficha), 'la ficha declara el fin de soporte del fabricante (2033-03-31)');

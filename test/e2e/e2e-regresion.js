@@ -2,7 +2,7 @@
 /* E2E de regresión núcleo (pendiente #40): lo mínimo que nunca puede romperse — login,
    carga del dimensionador, recomendación con enlaces declarados, BOM con equipo y
    suscripción, término de 7 años disponible y UN solo botón de copiar enlace. */
-const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
+const { cargarPlaywright, abrirDimensionador, asentar, trasNavegar, contador } = require('./ayuda');
 
 (async () => {
   const { chromium } = cargarPlaywright();
@@ -19,27 +19,25 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
 
   await page.fill('#users', '60');
   await page.locator('.wan-fila').first().locator('input[data-campo=down]').fill('200');
-  await page.waitForTimeout(900);
+  await asentar(page);
   const modelo = await page.inputValue('#pickModel');
   t.ok(!!modelo, 'con enlaces declarados hay equipo recomendado (' + modelo + ')');
 
   await page.click('[data-tab=bom]');
-  await page.waitForTimeout(600);
+  await asentar(page);
   const bom = (await page.textContent('#pane-bom')) || '';
   t.ok(/Equipo/.test(bom) && bom.includes(modelo), 'el BOM cotiza el equipo recomendado');
   t.ok(/Suscripción SD-WAN/.test(bom), 'el BOM cotiza la suscripción EdgeConnect');
 
   await page.click('[data-tab=calc]');
-  await page.waitForTimeout(300);
+  await asentar(page);
   const siete = await page.locator('#termYears option[value="7"]').count();
   t.ok(siete === 1, 'el término de 7 años está disponible (#28)');
 
   const nCopiar = await page.$$eval('button', (bs) => bs.filter((b) => /copiar enlace/i.test(b.textContent || '')).length);
   t.ok(nCopiar === 1, 'un solo botón «Copiar enlace del escenario» (2026-09-15)');
 
-  await page.click('#btnLimpiarEscenario');
-  await page.waitForSelector('#users', { timeout: 20000 });
-  await page.waitForTimeout(600);
+  await trasNavegar(page, () => page.click('#btnLimpiarEscenario'), { selector: '#users' });
   t.ok((await page.inputValue('#users')) === '' && !/users=/.test(page.url()),
     '«Limpiar escenario» vuelve a los valores por defecto con la URL desnuda');
 

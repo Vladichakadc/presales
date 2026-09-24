@@ -14,7 +14,7 @@
    detalle sale de la tarjeta o si el sticky no se suelta al expandir, rompe aquí.
    Conserva además la regresión original (v29): el panel no se suelta antes del
    fondo de la página. */
-const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
+const { cargarPlaywright, abrirDimensionador, asentar, contador } = require('./ayuda');
 
 (async () => {
   const { chromium } = cargarPlaywright();
@@ -25,7 +25,7 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   await abrirDimensionador(page);
   await page.fill('#users', '300');
   await page.locator('.wan-fila').first().locator('input[data-campo=down]').fill('500');
-  await page.waitForTimeout(900);
+  await asentar(page);
 
   const PANEL = '.cols>.col-fijo';
   const sticky = await page.$eval(PANEL, (el) => getComputedStyle(el).position);
@@ -52,12 +52,12 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   const offsetNatural = await page.$eval(PANEL, (el) => el.offsetTop);
 
   await page.evaluate((y) => window.scrollTo(0, y), offsetNatural + 400);
-  await page.waitForTimeout(300);
+  await asentar(page);
   const topMedio = await topAl();
   t.ok(Math.abs(topMedio - 16) <= 2, `panel clavado a top:16 pasada su posición natural (top=${topMedio})`);
 
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  await page.waitForTimeout(400);
+  await asentar(page);
   const topFondo = await topAl();
   const sId = await page.evaluate(() => window.scrollY);
   t.ok(sId > 1000, `la página sí se desplazó hasta el fondo (scrollY=${sId})`);
@@ -89,9 +89,9 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   const salto = await page.$('#verdict .ficha-salto a');
   t.ok(!!salto, 'la tarjeta fija lleva el conmutador «Ver características del equipo ↓»');
   await page.evaluate(() => window.scrollTo(0, 0));
-  await page.waitForTimeout(200);
+  await asentar(page);
   await salto.click();
-  await page.waitForTimeout(900);
+  await asentar(page);
   const abierto = await page.evaluate(() => {
     const col = document.querySelector('.cols>.col-fijo');
     return {
@@ -113,7 +113,7 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
 
   // ── repliegue: vuelve el sticky y la tarjeta compacta ──
   await page.click('#verdict .ficha-salto a');
-  await page.waitForTimeout(600);
+  await asentar(page);
   const plegado = await page.evaluate(() => {
     const col = document.querySelector('.cols>.col-fijo');
     return {
@@ -132,7 +132,7 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
   const urlBase = await page.evaluate(() => window.location.href.split('?')[0] + '?' + window.location.search.replace(/^\?/, '').split('&').filter((p) => p && !p.startsWith('ficha=')).join('&'));
   await page.goto(urlBase + (urlBase.includes('?') && !urlBase.endsWith('?') ? '&' : '') + 'ficha=abierta', { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#users', { timeout: 20000 });
-  await page.waitForTimeout(1500);
+  await asentar(page);
   const deeplink = await page.evaluate(() => ({
     detVisible: !!document.getElementById('verdict-det') && !document.getElementById('verdict-det').hidden,
     claseExp: document.querySelector('.cols>.col-fijo').classList.contains('expandida'),
