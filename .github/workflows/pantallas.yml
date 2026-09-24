@@ -75,11 +75,12 @@ jobs:
       # La del 24-sep (35946092377) bajo Chromium 153 y su informe de cobertura solo conto los
       # modulos del ULTIMO caso: 19 «sin conducir», entre ellos el dimensionador de Fortinet,
       # que cinco casos de esa misma corrida conducen. La medicion local, con 1.56.1, suma entre
-      # paginas y da 8. Sea o no la version lo que lo explica, una herramienta que cambia sola
-      # entre dos corridas del mismo commit es una fuente de rojos (o de verdes) que no dicen
-      # nada del codigo, y la bateria e2e —que espera a condiciones medidas en el navegador— es
-      # justo lo que no puede depender de eso. 1.56.1 es la version con la que se validan la
-      # bateria, las pantallas y el contraste; subirla es un commit, con su diff.
+      # paginas y da 8. Y ERA LA VERSION: con 1.56.1 fijado, la corrida 35985786379 vuelve a
+      # sumar y da 8 «sin conducir», lo mismo que en local. Una herramienta que cambia sola entre
+      # dos corridas del mismo commit es una fuente de rojos (o de verdes) que no dicen nada del
+      # codigo, y la bateria e2e —que espera a condiciones medidas en el navegador— es justo lo
+      # que no puede depender de eso. 1.56.1 es la version con la que se validan la bateria, las
+      # pantallas y el contraste; subirla es un commit, con su diff.
       - name: Traer Playwright y Chromium
         id: playwright
         run: |

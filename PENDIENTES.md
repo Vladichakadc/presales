@@ -1330,7 +1330,9 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
 La mejora propuesta al cerrar la entrega anterior, aprobada por el dueño: llevar `npm run e2e`
 a CI, que solo corría cuando alguien se acordaba (así salieron en verde tres baterías con fallos
 impresos). **Ahora es un paso del job de `pantallas`**, con su propio servidor en el puerto 4131
-y una clave generada en la corrida. Un rojo ahí todavía no frena el despliegue (punto 33).
+y una clave generada en la corrida. **En el ejecutor tarda 1 min 50 s** (corrida
+`35985786379`, lanzada sobre la rama antes de fusionar: 15/15 en verde) y el job entero
+7 min 23 s. Un rojo ahí todavía no frena el despliegue (punto 33).
 
 **MEDIR ANTES DE CAMBIAR CORRIGIÓ LA PROPUESTA.** Se dijo que las 219 pausas fijas
 (`waitForTimeout(300…3500)`) había que sustituirlas antes porque en un ejecutor lento darían
@@ -1374,7 +1376,8 @@ las imágenes que cargan y el desplazamiento; quieta es todo a cero dos cuadros 
 2. **Playwright en CI iba sin versión.** La corrida del 24-sep bajó Chromium 153 y su informe
    de cobertura solo contó los módulos del último caso: 19 «sin conducir», entre ellos el
    dimensionador de Fortinet, que cinco casos de esa corrida conducen; en local, con 1.56.1,
-   son 8. Va fijado a 1.56.1, la versión con la que se valida todo.
+   son 8. Va fijado a 1.56.1, la versión con la que se valida todo, y **era la versión**: con
+   ella la corrida `35985786379` vuelve a sumar entre páginas y da 8, como en local.
 3. **El runner reutilizaba `/tmp/e2e-auth`** —el `usuarios.json` era del 22-sep—, así que una
    corrida con otra clave no podía entrar y dos corridas a la vez compartían base. Cada corrida
    trae ahora su propio directorio temporal.
