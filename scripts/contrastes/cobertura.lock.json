@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "fa25c7a",
+  "commit": "8ed7fad",
   "fecha": "2026-09-24"
  },
  "umbralRozado": 25,
@@ -42,6 +42,13 @@
   },
   {
    "modulo": "dimensionador-nokia-7220ixr.js",
+   "estado": "sin conducir",
+   "total": null,
+   "usadas": null,
+   "pct": null
+  },
+  {
+   "modulo": "dimensionador-starlink-leo.js",
    "estado": "sin conducir",
    "total": null,
    "usadas": null,
@@ -106,9 +113,9 @@
   {
    "modulo": "bom.js",
    "estado": "ejercitado",
-   "total": 78,
+   "total": 79,
    "usadas": 49,
-   "pct": 63
+   "pct": 62
   },
   {
    "modulo": "tabla.js",

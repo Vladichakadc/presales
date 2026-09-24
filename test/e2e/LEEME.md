@@ -38,7 +38,7 @@ abajo).
 | `e2e-aruba-fases23.js` | Las fases 2 y 3 de la auditoría del dimensionador Aruba (M5, M6, A2, A3, A4, A5, A7, M3, M4, M7, M8, B1), cada una con el escenario en que se encontró. |
 | `e2e-fortinet-auditoria.js` | El informe de validación técnica de Fortinet (AT-01…AT-34) conducido en la pantalla: que la página aplica las reglas que el módulo puro ya afirma. |
 | `e2e-fortinet-rediseno.js` | La etapa 7 de Fortinet: recomendación, selección, BOM y botones leyendo el mismo resultado, confirmación del servidor, panel anclado, móvil y enlace verificable (T01–T30). |
-| `e2e-accesibilidad.js` | axe-core (WCAG 2.1 A/AA) en 17 estados de pantalla y reflujo a 640 px (200 % de zoom). No sustituye la prueba con un lector de pantalla real. |
+| `e2e-accesibilidad.js` | axe-core (WCAG 2.1 A/AA) en 19 estados de pantalla —Starlink incluido desde el 2026-09-24— y reflujo a 640 px (200 % de zoom). No sustituye la prueba con un lector de pantalla real. |
 | `e2e-asentar.js` | El contrato de `asentar()`, sobre una página sintética: espera a un temporizador corto y a una petición lenta, no a uno largo, no se cuelga con una imagen diferida fuera de la vista y falla si la página no lleva rastreador. Comprobado saboteando el rastreador dos veces. |
 
 ## Dónde corre

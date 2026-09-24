@@ -1403,6 +1403,12 @@ las imágenes que cargan y el desplazamiento; quieta es todo a cero dos cuadros 
    corrida con otra clave no podía entrar y dos corridas a la vez compartían base. Cada corrida
    trae ahora su propio directorio temporal.
 
+**Y la auditoría de accesibilidad cubre ya la pantalla de Starlink**, que entró en `main` ese
+mismo día desde otra sesión: axe sin ninguna violación y sin desplazamiento horizontal a 640 px,
+en el cálculo y en la lista de materiales. Son 19 estados de pantalla y no 17, y como la batería
+corre ahora en CI, una regresión de accesibilidad en esa página ya no espera a que alguien se
+acuerde.
+
 ### Catálogo Starlink contrastado con las fichas oficiales en PDF (2026-09-24)
 
 La mejora propuesta al cerrar la entrega anterior, aplicada. `traer-starlink.yml` (corrida
