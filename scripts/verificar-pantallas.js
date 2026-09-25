@@ -413,6 +413,25 @@ const PANTALLAS = [
     },
   },
   {
+    id: 'dim-starlink',
+    url: 'dimensionador-starlink-leo.html',
+    titulo: 'Dimensionador Starlink LEO',
+    // Modulo canonico integrado sin cambios (prompt maestro del 2026-09-24): estado y
+    // recalculo propios, sin ficha.js ni el patron de pestanas de los demas dimensionadores.
+    listo: '#resultados',
+    async acciones(page) {
+      const antes = await page.$eval('#resultPlanName', (el) => el.textContent.trim()).catch(() => '');
+      await page.fill('#users', '400');
+      await page.dispatchEvent('#users', 'input');
+      await espera(page, 500);
+      const despues = await page.$eval('#resultPlanName', (el) => el.textContent.trim()).catch(() => '');
+      if (antes && antes === despues) {
+        throw new Error('el resultado no se repinto al mover usuarios (se quedo como estaba)');
+      }
+      await this.exigeConTexto(page, '#bomBody');
+    },
+  },
+  {
     id: 'cotizador',
     url: 'cotizador.html',
     titulo: 'Cotizador BOM',

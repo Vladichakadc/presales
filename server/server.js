@@ -15,6 +15,7 @@ const dimensionadorRoutes = require('./routes/dimensionador');
 const guiaRoutes = require('./routes/guia');
 const syncRoutes = require('./routes/sync');
 const fortinetRoutes = require('./routes/fortinet');
+const starlinkSizingRoutes = require('./routes/starlinkSizing');
 const multer = require('multer');
 const fuentesSubidas = require('./fuentesSubidas');
 const { referenciasDe } = require('./services/referencias');
@@ -324,6 +325,7 @@ app.use('/api', catalogRoutes);
 app.use('/api', cotizadorRoutes);
 app.use('/api', dimensionadorRoutes);
 app.use('/api', guiaRoutes);
+app.use('/api', starlinkSizingRoutes);
 // Evaluacion autoritativa del dimensionador FortiGate (etapa 7, 2026-09-23). Exige el mismo
 // permiso que las pantallas de herramientas: confirmar una exportacion es usar la herramienta.
 app.use('/api/v1/fortinet', exige('herramientas'), fortinetRoutes);

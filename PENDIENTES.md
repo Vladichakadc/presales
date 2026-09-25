@@ -588,36 +588,42 @@ Cobertura actual por herramienta:
 | **Juniper** | sí (22 modelos) | sí (21) | sí | **sí** (nuevo) |
 | **Nokia** | sí (18 modelos) | sí (18) | sí | **sí, dos** (18/18 — fabric 7220 IXR + agregación/core) |
 | ~~Arista~~ | retirado | retirado | retirado | — |
-| **Starlink** | no | no (llega como referencias) | no | **sí** (nuevo, 2026-09-24 — 4 kits sin verificar) |
+| **Starlink** | no | no (llega como referencias) | no | **sí** (módulo canónico integrado, 2026-09-24) |
 
-**Starlink: el dimensionador existe y su hardware está contrastado con las fichas oficiales (2026-09-24).**
-Lo que sigue abierto:
-- **Integración del módulo canónico `starlink-leo-dimensionador` v1.0.0 (prompt maestro del
-  2026-09-24) — bloqueada por falta de los archivos.** El prompt exige verificar el SHA-256 de
-  sus seis archivos (`app.js`, `index.html`, `styles.css`, `README.md`, `tests/run-tests.cjs`,
-  `dist/…presales.html`) antes de tocar nada, y no están ni en el entorno, ni en GitHub, ni en
-  Drive. **Decisión del dueño (2026-09-24): el módulo nuevo SUSTITUYE la página actual**,
-  conservando la URL `dimensionador-starlink-leo.html`; lo que la página actual trae y el
-  módulo no (Mini, Enterprise, tendido de cable, «no consta» marítimo) pasa a «mejoras futuras
-  no implementadas». Se cierra adjuntando la carpeta en la sesión o subiéndola a la rama
-  `fuente/starlink-leo-canonico`.
-- **Uso marítimo: ninguna ficha lo menciona**, así que el escenario marítimo hoy no recomienda
-  ningún kit (lo dice en pantalla). Hace falta un documento oficial que lo respalde; el
-  candidato es la página de Starlink Maritime. Se añade como URL candidata a
-  `scripts/traer-starlink.js` y se corre `traer-starlink.yml` desde Actions.
-- **Uso en movimiento de Standard, Mini, Enterprise y Flat High Performance**: sus fichas no lo
-  mencionan (solo la del Performance). Mismo camino.
-- **Cables más largos como accesorio**: ninguna ficha los documenta, y por eso un tendido de
-  más de 15 m aparta el Standard y lleva al Enterprise (50 m). Si Starlink publica la ficha
-  de un cable largo, se rellena `cableMaxM` y el motor lo usa sin tocar código.
-- **Precios y SKU**: todos en `null`. Las fichas no los publican; hace falta la lista del canal
-  autorizado con el que se cotice.
-- **Vigilancia**: las cinco URL de las fichas no están en el vigía (`npm run vigia`), así que un
-  cambio de Starlink no avisaría. Requiere dar a Starlink su sitio en `legacyData/fuentes.js`,
-  que es parte de la integración de abajo.
-- **Integración con el resto del portal, sin hacer a propósito**: no está en la barra de
-  fabricantes (`navegacion.js`), ni en `/api/catalog`, ni en `legacyData/fuentes.js`, ni en el
-  cotizador como equipo. Cada una toca conteos («7 fabricantes») que varias pruebas fijan.
+**Starlink: integración del módulo canónico `starlink-leo-dimensionador` v1.0.0 — cerrado
+(2026-09-24).** El bloqueo anterior («los seis archivos no están ni en el entorno, ni en
+GitHub, ni en Drive») se resolvió cuando el dueño los adjuntó en la sesión. Los seis SHA-256
+verificaron exactos contra la línea base del prompt maestro antes de tocar nada, y el motor
+(`app.js`) se integró **sin una sola línea distinta**: `public/js/dimensionador-starlink-leo.js`
+es copia byte a byte, requereable desde `server/services/starlinkSizing.js` para que
+`POST /api/sizing/starlink` recalcule con el mismo motor que ve el navegador (paridad
+frontend/backend, sección 4.3 del prompt). La carpeta `starlink-leo-dimensionador/` en la raíz
+del repo se conserva como línea base para repetir la verificación en el futuro, igual que
+`server/seed/legacyData/` conserva sus fuentes sin retipear. Reemplaza por completo el
+dimensionador anterior (Standard/Mini/Enterprise/Performance/Flat High Performance, cinco kits
+sin precio) — el motor canónico trae **dos** kits (Standard 4X, Performance) con **catálogo de
+precios COP real** (tarifa Local/Global Priority publicada), y `pricesVerified` sigue
+desmarcado por defecto porque ese precio de lista no incluye impuestos ni el descuento
+negociado del sitio, no porque el número sea inventado.
+
+Mejoras futuras no implementadas (declaradas, no aplicadas, por mandato del prompt maestro):
+- **Vigilancia**: las ocho `SOURCE_LINKS` del motor no están en `npm run vigia`
+  (`legacyData/fuentes.js`), así que un cambio de tarifa de Starlink no generaría aviso.
+- **Persistencia de escenarios**: no hay auditoría server-side de qué se cotizó (sección 15.3
+  del prompt); ningún otro dimensionador de este portal la tiene tampoco, así que no se creó
+  solo para este.
+- **A propósito sigue sin estar** en `navegacion.js`, `/api/catalog` ni el cotizador como
+  equipo — no es uno de los ocho fabricantes de equipo de red del portal, y sumarlo ahí rompería
+  los conteos que varias pruebas fijan (`fabricantes: 8`).
+- **Matriz T01–T62 del prompt**: automatizada la parte que vive en el motor puro (`plan`,
+  `roleFactor`, arquitectura, alertas, saneo del backend — `test/starlink-motor.test.js`) más la
+  paridad end-to-end contra el servidor real (`test/servidor-produccion.test.js`). Lo que es
+  puramente de navegador (grid responsive en los cinco anchos, impresión A4/Letter, lector de
+  pantalla, `prefers-reduced-motion`) se verificó a mano en Chromium (carga limpia, sin errores
+  de consola, recálculo en vivo, paridad frontend/backend en la app real) pero no quedó como
+  prueba automatizada — igual que `npm run manual` para el manual de usuario, es una verificación
+  que se repite pocas veces y automatizarla entera habría sido una inversión fuera de escala
+  para este cierre.
 
 5. **Completar el catálogo del dimensionador Juniper — parcialmente resuelto (2026-09-02),
    ver *Cerrado recientemente*.** La «SRX Series and vSRX Performance and Features Matrix» se
@@ -1440,6 +1446,28 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Integración del módulo canónico Starlink LEO v1.0.0 (2026-09-24)
+
+El pendiente que llevaba semanas bloqueado por «los archivos no están ni en el entorno, ni en
+GitHub, ni en Drive» se cerró cuando el dueño subió la carpeta `starlink-leo-dimensionador/` al
+repositorio. Los seis SHA-256 del prompt maestro de integración verificaron exactos byte a byte
+antes de tocar nada; el motor (`app.js`) se sirve sin una sola línea distinta en
+`public/js/dimensionador-starlink-leo.js`, y ese mismo archivo es el que
+`server/services/starlinkSizing.js` `require()` para `POST /api/sizing/starlink` — un solo
+motor, no dos implementaciones que puedan divergir. Reemplaza por completo el dimensionador
+anterior (cinco kits sin precio, escrito desde cero cuando los archivos no aparecían) por el
+canónico (dos kits, catálogo COP real, formulario de nueve secciones con recálculo en vivo).
+
+Verificado: las 47 aserciones canónicas siguen pasando sin tocarlas (`test/starlink-motor.test.js`
+las corre como línea base), más una matriz propia (T17/T18 diversidad, T19/T20 mínimos de
+arquitectura, T31 sin tráfico, T33 confianza, T41/T42 UPS/energía, saneo del backend contra
+entradas hostiles del prompt sección 19) y la paridad frontend/backend contra el servidor real.
+Probado a mano en Chromium: login → botón «BOM Starlink» → recálculo en vivo al cambiar usuarios
+(el plan salta de 1 TB a 6 TB, terminales de 7 a 11) → `/api/sizing/starlink` devuelve
+exactamente lo mismo que `window.StarlinkDimensioner.getResult()` en la misma sesión → BOM de 9
+líneas correctas. Cero errores de consola. `npm run verificar` en 590/590. Detalle completo,
+alcance de lo automatizado y lo verificado a mano en la sección de Starlink más arriba.
 
 ### Los precios de Fortinet, solo de la 2026Q3 Mid Price list (2026-09-24)
 
