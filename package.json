@@ -50,6 +50,6 @@
     "axe-core": "^4.13.0",
     "eslint": "^9.39.5",
     "nodemon": "^3.1.10",
-    "pdf-parse": "^1.1.1"
+    "pdf-parse": "^1.1.4"
   }
 }
