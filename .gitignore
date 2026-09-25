@@ -15,14 +15,24 @@ database.sqlite
 .kiro/
 .github/hooks/
 
-# De .claude solo se versionan las skills, que si son del proyecto y le sirven al equipo.
-# Queda fuera todo lo demas: learning/ y mcp-usage.jsonl son telemetria, y settings.json
-# acumula rutas absolutas de la maquina de cada quien (cache de npx, scratchpad de sesion),
-# asi que compartirlo genera conflictos en vez de ayudar.
+# De .claude se versiona lo que es del PROYECTO y le sirve al equipo: las skills, el hook de
+# arranque y el settings.json que lo registra. Queda fuera todo lo demas: learning/ y
+# mcp-usage.jsonl son telemetria de cada maquina.
+#
+# EL settings.json ESTABA EXCLUIDO Y AHORA NO, con el motivo original respetado. La regla
+# anterior decia que «acumula rutas absolutas de la maquina de cada quien (cache de npx,
+# scratchpad de sesion), asi que compartirlo genera conflictos». Eso es cierto de
+# settings.local.json, que es donde Claude Code escribe el estado por maquina, y ese sigue
+# ignorado. El settings.json versionado contiene UNA cosa —el registro del hook de
+# arranque— y sin el, el hook existiria en el repositorio sin que nadie lo ejecutara: un
+# comprobador que no comprueba se porta igual que uno que pasa.
 **/.claude/
 !/.claude/
 /.claude/*
 !/.claude/skills/
+!/.claude/hooks/
+!/.claude/settings.json
+/.claude/settings.local.json
 
 # Bytecode de Python (las skills traen scripts .py)
 __pycache__/
@@ -38,3 +48,5 @@ __pycache__/
 capturas/
 pantallas.sqlite
 .auth-pantallas/
+# El log del arranque que el propio job vuelca para comprobar `[seed]` y la linea de listen.
+arranque.log

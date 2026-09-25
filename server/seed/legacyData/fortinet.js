@@ -1,4 +1,5 @@
-// Verificado contra Fortinet Product Matrix, julio 2026 (fuente oficial):
+// Verificado contra Fortinet Product Matrix, edicion de septiembre de 2026 (PROMTX-2026-R176-SEP;
+// la de julio con la que se transcribio al principio fue contrastada contra esta el 2026-09-14):
 // https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf
 // Las 5 cifras publicadas, en orden de profundidad de inspección creciente y throughput
 // decreciente. Entender qué mide cada una es el 80% del dimensionamiento correcto:
@@ -14,10 +15,62 @@
 //        se debe usar para dimensionar de verdad. (Antes esta clave se llamaba `ssl`, lo que
 //        inducía a tratarla como "SSL Inspection Throughput" — un número distinto que
 //        Fortinet ya no publica por modelo en el Product Matrix.)
+//   ssl  SSL Inspection Throughput — IPS activado y un promedio de sesiones HTTPS con
+//        distintas suites criptograficas. ES UNA METRICA PROPIA, no una fraccion de `tp`:
+//        las metodologias son distintas y su cociente NO es constante entre plataformas
+//        (30G 500/400, 40F 600/310, 50G 1100/1300 — el 50G, el 70G y el 90G publican MAS
+//        SSL que Threat Protection, asi que cualquier derate fijo sobredimensiona ahi y
+//        subdimensiona en el 40F). Ver la PROCEDENCIA DE LA TABLA DEL MATRIX.
 //   sess Concurrent Sessions (valor base, sin licencia Hyperscale).
 //   cps  New Sessions/Sec (TCP) — sesiones NUEVAS por segundo. Es el eje de CPU, distinto del
 //        de memoria que mide `sess`: una sesion establecida cuesta memoria, abrirla cuesta
 //        ciclos. Cifra de modo flow; con inspeccion proxy cae, y Fortinet no publica cuanto.
+//
+// PROCEDENCIA DE LA TABLA DEL MATRIX — 51 de 58 modelos, y los otros 7 en null A PROPOSITO.
+// Hasta el 2026-09-22 esta pagina NO tenia el dato de inspeccion SSL: estimaba la cifra
+// aplicando un factor unico (0,65) sobre Threat Protection. El informe «Informe final de
+// validacion tecnica y plan de mejora del modulo Fortinet Presales» (22-sep-2026, seccion
+// 5.1) lo documenta como el defecto P0 del motor y publicaba cinco modelos que lo desmienten:
+//
+//     modelo   TP oficial   SSL oficial   TP x 0,55   TP x 0,65 (lo que hacia esta pagina)
+//     FG-30G     500 Mbps     400 Mbps     275 Mbps     325 Mbps   <- subdimensiona
+//     FG-40F     600 Mbps     310 Mbps     330 Mbps     390 Mbps   <- SOBREstima el equipo
+//     FG-50G   1.100 Mbps   1.300 Mbps     605 Mbps     715 Mbps   <- subdimensiona 1,8x
+//     FG-70G   1.300 Mbps   1.400 Mbps     715 Mbps     845 Mbps   <- subdimensiona
+//     FG-90G   2.200 Mbps   2.600 Mbps   1.210 Mbps   1.430 Mbps   <- subdimensiona 1,8x
+//
+// El cociente ssl/tp va de 0,52 (40F) a 1,18 (50G): no hay constante que lo describa, y en
+// tres de los cinco el equipo aguanta MAS SSL que Threat Protection. Un factor unico no es
+// "conservador": se equivoca en las dos direcciones, y en el 40F es el error caro -promete
+// 390 Mbps donde el equipo da 310-.
+//
+// EL 2026-09-23 LAS CIFRAS DEJARON DE ESTAR TRANSCRITAS DE UN INFORME Y PASARON A SALIR DEL
+// DOCUMENTO. `fortinet.com` y `docs.fortinet.com` siguen respondiendo `connect_rejected` al
+// proxy de egreso de este entorno (politica de la organizacion, no un fallo de red), asi que
+// no se bajo nada: el PDF ya estaba en el repositorio. Un ejecutor de GitHub Actions lo
+// publico el 2026-09-02 en la rama de transporte `fuente/fortinet-product-matrix`
+// (`fuente-fortinet/Fortinet_Product_Matrix.pdf`, edicion de septiembre de 2026,
+// PROMTX-2026-R176-SEP), que es de donde salieron `cps` y `sess` de 32 modelos. Se
+// reconstruyo la tabla por coordenadas de texto de sus paginas 1 a 3 y se transcribieron 27
+// filas de modelo con siete columnas cada una.
+//
+// EL DOBLE ANCLAJE DIO 27 DE 27 SIN UN SOLO RECHAZO. Es la misma regla que aplican
+// `npm run cps`, `juniper` y `huawei`, y es lo unico que prueba que ninguna fila se
+// desplazo al reconstruir la tabla desde un PDF: una fila solo se acepta si al menos dos de
+// sus columnas casan con lo ya verificado y ninguna lo contradice. Las anclas fueron
+// `Concurrent Sessions` y `New Sessions/Sec`, que este catalogo ya traia verificadas modelo
+// a modelo. De paso el documento CONFIRMA los cinco valores de inspeccion SSL que el informe
+// habia dado (30G 400, 40F 310, 50G 1300, 70G 1400, 90G 2600): la fuente primaria y la
+// secundaria coinciden exactamente, que es la comprobacion que no se habia podido hacer.
+//
+// LOS OTROS 7 QUEDAN EN null, Y null NO ES CERO NI ES "no tiene limite": es «el catalogo no
+// trae la cifra». Son 100F, 200F, 400F, 600F y 1000F con sus variantes 401F y 1001F, cinco
+// modelos de la generacion F que la edicion de septiembre del Matrix ya no lista —es un
+// «Top Selling Models Matrix», un subconjunto curado, no el catalogo completo—. El motor NO
+// los dimensiona con otra capa cuando se pide un eje que les falta: los APARTA CON SU MOTIVO
+// y pide PoC o revision senior, que es la misma regla que `dimensionador-juniper-srx.js`
+// aplica a `fw` y la calculadora a cada capa. Completarlos es leer las fichas por serie de
+// esos cinco modelos, que es otro documento y otro bloqueo (pendiente F6).
 //
 // PROCEDENCIA DE `cps` — leer antes de completar los que faltan.
 // El Product Matrix no es accesible desde el entorno donde se edita este catalogo: el proxy
@@ -50,9 +103,10 @@
 // `npm run cps`: 400F/401F 500.000 y 600F 550.000, todas con su Concurrent Sessions casando
 // con el `sess` ya verificado -7,8 M y 8 M- ademas de ips, ngfw, tp y vpn. Sin un rechazo.
 //
-// Quedan 100F y 200F en null: no es bloqueo de acceso ni falta de documento, es que su ficha
-// por serie no esta en la URL que sigue el patron del resto. null no es "no tiene limite": la
-// pagina lo declara como dato ausente y no lo usa para filtrar.
+// 2026-09-24: los 2 que faltaban, de 56 a 58 de 58. 100F 56.000 y 200F 280.000, de su ficha
+// por serie en COREANO -la inglesa da 404 en todas las rutas, la coreana oficial sigue en el
+// CDN de fortinet.com-, con Concurrent Sessions, IPS, NGFW, Threat Protection e IPsec casando
+// con lo ya verificado (ver FICHAS_LIMITES, donde estan tambien sus limites de tuneles y SSL).
 // RAM por modelo NO existe en el Product Matrix: ese documento publica throughput por capa,
 // sesiones, cps, interfaces y consumo, no memoria. Fortinet no publica la RAM como
 // especificacion de dimensionamiento — el proxy de la capacidad de memoria es `sess`.
@@ -67,7 +121,10 @@
 //   · 7081F — «up to six hot swappable 200-277V, 16A AC PSUs. The capacity of each PSU is
 //     2500W» + «You can add extra PSUs to provide redundancy» (7081F System Guide).
 //   · 7121F — «You can hot swap a PSU without powering down [...] as long as four PSUs are
-//     connected to power and operating normally» (7121F System Guide).
+//     connected to power and operating normally» (7121F System Guide). El 2026-09-24 se leyo
+//     la misma guia entera (7.4.4, docs.fortinet.com) y la p. 8 SI publica el maximo: «eight
+//     hot swappable 200-240 VAC [...] 2000W» en la generacion 1 y 2500W en la 2. Casa con el
+//     «8 PS» del Product Matrix (`fuentes` mas abajo): dos anclas, no una.
 // Los 2.500 W del 7081F son CAPACIDAD de cada fuente, no consumo del equipo, y por eso NO van
 // en `psu.watts`: la ficha rotula ese campo «Consumo tipico», asi que ponerlo ahi seria una
 // cifra falsa con apariencia correcta. Va en el texto, que es donde se puede decir que mide.
@@ -107,13 +164,25 @@
 // 3200F, 3500F, 3700F, 4200F, 4400F, 4800F y sus variantes, mas el 71F). El 4800F comparte
 // con el 3800G la exigencia de 200-240 V.
 //
-// UNA TRAMPA QUE VALE LA PENA RECORDAR: el archivo `fortigate-70f-series.pdf` NO es la ficha
-// del 70F. Es la del 71F -su portada lo dice y el 70F no aparece ni una sola vez en el
-// documento-, asi que aplicarle esas cifras habria sido creerle al nombre del archivo en vez
-// de a su contenido. El 70F se queda sin dato a proposito.
+// UNA TRAMPA QUE VALE LA PENA RECORDAR: el archivo `fortigate-70f-series.pdf` que sirve
+// fortinet.com NO es la ficha del 70F. Es la del 71F -su portada lo dice y el 70F no aparece
+// ni una sola vez en el documento-, asi que aplicarle esas cifras habria sido creerle al
+// nombre del archivo en vez de a su contenido.
+// RESUELTO el 2026-09-11 (decision del duenyo): la ficha combinada autentica 70F/71F SI
+// existe -revision FG-70F-DAT-R02-20221028- y su columna 70F ya esta transcrita (10.17 W /
+// 12.43 W, adaptador externo 12VDC 3A, sin segunda fuente). Antes de copiar nada se valido
+// la identidad del documento: su columna 71F (17.2 W / 18.7 W, 63.8 BTU/hr, 12VDC 3A)
+// coincide cifra a cifra con la ficha oficial del 71F servida por fortinet.com.
+// El mismo dia se completo el 200F (FG-200F-DAT-R28-20250407: 101.92 W / 118.90 W, doble
+// fuente AC de serie NO intercambiable en caliente, 1+1) y el consumo del 100F
+// (FG-100F-DAT-R42-20250407: 26.5 W / 29.5 W -Fortinet lo re-evaluo a la baja: la revision
+// R20-20210311 publicaba 35.1 W / 38.7 W-). fortinet.com responde con un reto JavaScript de
+// Akamai en las rutas de 100F y 200F, asi que se usaron espejos del PDF oficial y se
+// verifico el codigo de revision impreso en el propio documento.
 //
-// Quedan solo 2 modelos en `undefined` -«el catalogo no lo dice»-, nunca en `false`: el 70F
-// por lo anterior, y el 200F porque su ficha da 404 en las dos rutas.
+// Ya ningun modelo esta en `undefined` por alimentacion. Solo 2 quedan sin `watts` -el
+// 7081F y el 7121F, chassis cuyas guias solo publican CAPACIDAD por fuente, no consumo del
+// equipo (ver mas arriba)-, y eso es un hecho leido, no una ausencia de dato.
 // El salto fw -> tp es de un orden de magnitud (ej. 90G: 28 Gbps -> 2.2 Gbps). Ahí está el
 // error de preventa más común con FortiGate.
 // Corrige varios valores que no coincidían con el datasheet oficial (incl. 3000F y 7081F, que tenían ips/ngfw/ssl/vpn de otro modelo — 3200F y 7121F respectivamente — copiados por error) y agrega los modelos del datasheet que faltaban en el catálogo (700G, 3000G, 3500G, 3800G, 70F, 3200F, 3700F, 4200F).
@@ -175,7 +244,7 @@ const MODELS=[
   {id:'FortiGate 40F', seg:'SOHO', fw:5000, ips:1000, ngfw:800, tp:600, vpn:4400, sess:700000, cps:35000, ifaces:'5 GE', redund:false, psu:{watts:7.74, tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50/60 Hz', amps:'0,2 A @100 V · 0,1 A @240 V', texto:'Consumo medio 7.74 W y máximo 9.46 W. El datasheet no menciona una segunda fuente para este modelo.'}},
   {id:'FortiGate 60F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:700, vpn:6500, sess:700000, cps:35000, ifaces:'10 GE + Wi-Fi opcional', redund:false, psu:{watts:10.17, tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50/60 Hz', amps:'1,0 A @100 V · 0,6 A @240 V', texto:'Consumo medio 10.17 W y máximo 12.43 W. El datasheet no menciona una segunda fuente para este modelo.'}},
   {id:'FortiGate 61F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:700, vpn:6500, sess:700000, cps:35000, ifaces:'10 GE + Wi-Fi opcional + 128GB SSD onboard', redund:false, psu:{watts:17.2, tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50/60 Hz', amps:'1,0 A @100 V · 0,6 A @240 V', texto:'Consumo medio 17.2 W y máximo 18.7 W. El datasheet no menciona una segunda fuente para este modelo.'}},
-  {id:'FortiGate 70F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:800, vpn:6100, sess:1500000, cps:35000, ifaces:'10 GE RJ45'},
+  {id:'FortiGate 70F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:800, vpn:6100, sess:1500000, cps:35000, ifaces:'10 GE RJ45', redund:false, psu:{watts:10.17, tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50/60 Hz', amps:'1,0 A @100 V · 0,6 A @240 V', texto:'Consumo medio 10.17 W y máximo 12.43 W. El datasheet no menciona una segunda fuente para este modelo.'}},
   {id:'FortiGate 71F', seg:'Sucursal peq', fw:10000, ips:1400, ngfw:1000, tp:800, vpn:6100, sess:1500000, cps:35000, ifaces:'10 GE RJ45 + 128GB SSD onboard', redund:false, psu:{watts:17.2, tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50/60 Hz', amps:'1,0 A @100 V · 0,6 A @240 V', texto:'Consumo medio 17.2 W y máximo 18.7 W. El datasheet no menciona una segunda fuente para este modelo.'}},
   {id:'FortiGate 80F', seg:'Sucursal + PoE', fw:10000, ips:1400, ngfw:1000, tp:900, vpn:6500, sess:1500000, cps:45000, ifaces:'8 GE + 2 SFP', redund:'opcional', psu:{watts:12.69, tipo:'hasta dos adaptadores externos (viene uno)', volts:'100-240 V AC, 50/60 Hz', amps:'0,4 A @115 V · 0,2 A @230 V', texto:'Consumo medio 12.69 W y máximo 15.51 W. Admite un segundo adaptador para redundancia, que no viene incluido.'}},
   {id:'FortiGate 81F', seg:'Sucursal + PoE', fw:10000, ips:1400, ngfw:1000, tp:900, vpn:6500, sess:1500000, cps:45000, ifaces:'8 GE + 2 SFP + 128GB SSD onboard', redund:'opcional', psu:{watts:13.5, tipo:'hasta dos adaptadores externos (viene uno)', volts:'100-240 V AC, 50/60 Hz', amps:'0,4 A @115 V · 0,2 A @230 V', texto:'Consumo medio 13.5 W y máximo 16.5 W. Admite un segundo adaptador para redundancia, que no viene incluido.'}},
@@ -184,8 +253,8 @@ const MODELS=[
   // .github/workflows/traer-fortinet-psu.yml. Frase literal: «the device has two power
   // supplies that can be connected to different power sources». El documento no publica
   // consumo, asi que `watts` se queda fuera en vez de rellenarse a ojo.
-  {id:'FortiGate 100F', seg:'Sucursal med', fw:20000, ips:2600, ngfw:1600, tp:1000, vpn:11500, sess:1500000, cps:null, ifaces:'22 GE + 2x10GE SFP+', redund:true, psu:{tipo:'dos fuentes internas', texto:'Dos fuentes que se pueden conectar a tomas de energía distintas, para que el equipo siga en línea si una falla. El articulo leido no trae consumo; su datasheet por serie no se pudo abrir (la URL probada dio 404), asi que el dato queda pendiente, no descartado.'}},
-  {id:'FortiGate 200F', seg:'Sucursal gde', fw:27000, ips:5000, ngfw:3500, tp:3000, vpn:13000, sess:3000000, cps:null, ifaces:'16 GE + 4x10GE + 4 SFP'},
+  {id:'FortiGate 100F', seg:'Sucursal med', fw:20000, ips:2600, ngfw:1600, tp:1000, vpn:11500, sess:1500000, cps:56000, ifaces:'22 GE + 2x10GE SFP+', redund:true, psu:{watts:26.5, tipo:'doble fuente AC de serie, no intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'1,0 A @100 V · 0,5 A @240 V', texto:'Consumo medio 26.5 W y máximo 29.5 W. Las dos fuentes vienen de serie, pero no se cambian en caliente.'}},
+  {id:'FortiGate 200F', seg:'Sucursal gde', fw:27000, ips:5000, ngfw:3500, tp:3000, vpn:13000, sess:3000000, cps:280000, ifaces:'16 GE + 4x10GE + 4 SFP', redund:true, psu:{watts:101.92, tipo:'doble fuente AC de serie, no intercambiable en caliente (1+1)', volts:'100-240 V AC, 50/60 Hz', amps:'2 A @100 V · 1,2 A @240 V', texto:'Consumo medio 101.92 W y máximo 118.90 W. Las dos fuentes vienen de serie, pero no se cambian en caliente.'}},
   // Los tres siguientes, leidos de sus datasheets por serie (2026-09-03). Aqui `watts` SI es
   // consumo: el documento publica "AC Power Consumption (Average / Maximum)", que es lo que la
   // ficha rotula «Consumo tipico» -a diferencia de los 2.500 W del 7081F, que son capacidad.
@@ -218,7 +287,7 @@ const MODELS=[
   // no van en `watts` -que la ficha rotula «Consumo tipico»- sino en el texto: seria una cifra
   // falsa con apariencia correcta, justo el error que este catalogo evita.
   {id:'FortiGate 7081F', seg:'Carrier / ISP', fw:1890000, ips:405000, ngfw:330000, tp:312000, vpn:378000, sess:600000000, cps:5400000, ifaces:'Chasis modular FPM (interfaces variables)', redund:true, psu:{tipo:'hasta 6 fuentes AC intercambiables en caliente', volts:'200-277 V, 16 A', texto:'Hasta seis fuentes AC de 2.500 W de capacidad cada una, intercambiables en caliente. Cuántas hacen falta depende de los módulos FIM y FPM instalados; se pueden añadir fuentes extra para redundancia y conectar cada una a una toma distinta.'}},
-  {id:'FortiGate 7121F', seg:'Carrier / National', fw:1890000, ips:675000, ngfw:550000, tp:520000, vpn:630000, sess:1000000000, cps:9000000, ifaces:'Chasis modular FPM (interfaces variables)', redund:true, psu:{tipo:'fuentes AC intercambiables en caliente', texto:'Se puede cambiar una fuente sin apagar el equipo mientras queden cuatro conectadas y funcionando; por debajo de cuatro, el chasis empieza a apagar módulos FPM. El documento leído no publica el número máximo de fuentes.'}},
+  {id:'FortiGate 7121F', seg:'Carrier / National', fw:1890000, ips:675000, ngfw:550000, tp:520000, vpn:630000, sess:1000000000, cps:9000000, ifaces:'Chasis modular FPM (interfaces variables)', redund:true, psu:{tipo:'hasta 8 fuentes AC intercambiables en caliente', volts:'200-240 V AC, 50-60 Hz', texto:'Hasta ocho fuentes intercambiables en caliente: de 2.000 W en la generación 1 y de 2.500 W en la 2 (FortiGate-7121F 7.4.4 System Guide, p. 8; leída el 2026-09-24). Cuántas hacen falta depende de los módulos FIM y FPM: con dos FIM-7921F y diez FPM-7620F son cinco de 2.000 W o cuatro de 2.500 W, y el resto de bahías sirve de redundancia (p. 24). Se puede cambiar una fuente sin apagar el equipo mientras queden cuatro conectadas y funcionando; por debajo de cuatro, el chasis empieza a apagar módulos FPM.'}},
 ];
 
 // SKU de hardware base (columna UNIT/SKU de la hoja "FortiGate"/"FortiGate Chassis Platforms").
@@ -305,10 +374,580 @@ const LICENSES={
 const DATASHEET_URL = 'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf';
 
 const bareId=id=>id.replace('FortiGate ','');
+
+// ── LIMITES POR MODELO DEL PRODUCT MATRIX ────────────────────────────────
+// Siete cifras que el documento publica por modelo. Se asignan aqui y no modelo a modelo por
+// el mismo motivo que HW_SKU y ASIC_BY_MODEL: lo que importa de estos campos es CUANTOS
+// modelos los tienen, y una tabla al lado del bucle que pone null en todos los demas lo dice
+// de un vistazo. Ver «PROCEDENCIA DE LA TABLA DEL MATRIX» en la cabecera.
+//
+//   ssl          SSL Inspection Throughput (Mbps).
+//   tunGw        Max G/W to G/W IPsec Tunnels — tuneles sitio a sitio. Es el techo del
+//                overlay SD-WAN: un hub con N spokes necesita N tuneles de esta clase.
+//   tunCli       Max Client to G/W IPsec Tunnels — dial-up de cliente (FortiClient).
+//   sslVpn       SSL VPN Throughput (Mbps).
+//   sslVpnUsers  Concurrent SSL VPN Users (Recommended Maximum, Tunnel Mode).
+//   policies     Firewall Policies — tamano de la tabla de politicas.
+//   vdomMax      Virtual Domains (Max) — el documento publica «por defecto / maximo» y aqui
+//                se transcribe EL MAXIMO, que es el que limita un diseno multi-tenant.
+//
+// `null` ES «EL DOCUMENTO IMPRIME "—"», NUNCA «no tiene limite» NI CERO. Pasa en cinco
+// modelos para `sslVpn`/`sslVpnUsers` (30G, 40F, 50G, 60F, 70G) y en el 30G para `vdomMax`.
+// No se dedujo la causa: el motivo por el que Fortinet deja de publicar esa fila en parte de
+// la gama G no esta en el documento, y escribirlo aqui seria inventarlo.
+const MATRIX_LIMITES={
+  '30G':    {ssl:   400, tunGw:  200, tunCli:   250, sslVpn: null, sslVpnUsers: null, policies:  2000, vdomMax:null},
+  '40F':    {ssl:   310, tunGw:  200, tunCli:   250, sslVpn: null, sslVpnUsers: null, policies:  2000, vdomMax:  10},
+  '50G':    {ssl:  1300, tunGw:  200, tunCli:   250, sslVpn: null, sslVpnUsers: null, policies:  2000, vdomMax:   5},
+  '60F':    {ssl:   630, tunGw:  200, tunCli:   500, sslVpn: null, sslVpnUsers: null, policies:  2000, vdomMax:  10},
+  '70F':    {ssl:   700, tunGw:  200, tunCli:   500, sslVpn:  405, sslVpnUsers:  200, policies:  5000, vdomMax:  10},
+  '70G':    {ssl:  1400, tunGw:  200, tunCli:   500, sslVpn: null, sslVpnUsers: null, policies:  5000, vdomMax:  10},
+  '80F':    {ssl:   715, tunGw:  200, tunCli:  2500, sslVpn:  950, sslVpnUsers:  200, policies:  5000, vdomMax:  10},
+  '90G':    {ssl:  2600, tunGw:  200, tunCli:  2500, sslVpn: 1400, sslVpnUsers:  200, policies:  5000, vdomMax:  10},
+  '120G':   {ssl:  3000, tunGw: 2000, tunCli: 16000, sslVpn: 1500, sslVpnUsers:  500, policies: 10000, vdomMax:  10},
+  '200G':   {ssl:  7000, tunGw: 2000, tunCli: 16000, sslVpn: 3000, sslVpnUsers:  500, policies: 10000, vdomMax:  25},
+  '400G':   {ssl: 11500, tunGw: 2000, tunCli: 50000, sslVpn: 6100, sslVpnUsers: 5000, policies: 10000, vdomMax:  50},
+  '700G':   {ssl: 14000, tunGw: 2000, tunCli: 50000, sslVpn: 8000, sslVpnUsers:10000, policies: 30000, vdomMax:  50},
+  '900G':   {ssl: 16700, tunGw: 2000, tunCli: 50000, sslVpn:10000, sslVpnUsers:10000, policies: 50000, vdomMax:  50},
+  '1800F':  {ssl: 12000, tunGw:20000, tunCli:100000, sslVpn:11000, sslVpnUsers:10000, policies:100000, vdomMax: 250},
+  '2600F':  {ssl: 20000, tunGw:20000, tunCli:100000, sslVpn:16000, sslVpnUsers:30000, policies:100000, vdomMax: 500},
+  '3000F':  {ssl: 29000, tunGw:40000, tunCli:200000, sslVpn:11000, sslVpnUsers:30000, policies:200000, vdomMax: 500},
+  '3000G':  {ssl: 75000, tunGw:40000, tunCli:200000, sslVpn: 9000, sslVpnUsers:30000, policies:200000, vdomMax: 500},
+  '3200F':  {ssl: 29000, tunGw:40000, tunCli:200000, sslVpn:11000, sslVpnUsers:30000, policies:200000, vdomMax: 500},
+  '3500F':  {ssl: 63000, tunGw:40000, tunCli:200000, sslVpn:16000, sslVpnUsers:30000, policies:200000, vdomMax: 500},
+  '3500G':  {ssl:112000, tunGw:40000, tunCli:200000, sslVpn: 9800, sslVpnUsers:30000, policies:200000, vdomMax: 500},
+  '3700F':  {ssl: 55000, tunGw:40000, tunCli:200000, sslVpn:16000, sslVpnUsers:30000, policies:200000, vdomMax: 500},
+  '3800G':  {ssl:120000, tunGw:40000, tunCli:200000, sslVpn:27000, sslVpnUsers:30000, policies:400000, vdomMax: 500},
+  '4200F':  {ssl: 50000, tunGw:40000, tunCli:200000, sslVpn:16000, sslVpnUsers:30000, policies:400000, vdomMax: 500},
+  '4400F':  {ssl: 86000, tunGw:40000, tunCli:200000, sslVpn:16000, sslVpnUsers:30000, policies:400000, vdomMax: 500},
+  '4800F':  {ssl: 63000, tunGw:40000, tunCli:200000, sslVpn:18000, sslVpnUsers:30000, policies:400000, vdomMax: 500},
+  '7081F':  {ssl:324000, tunGw:40000, tunCli:260000, sslVpn:13700, sslVpnUsers:30000, policies:200000, vdomMax: 500},
+  '7121F':  {ssl:540000, tunGw:40000, tunCli:260000, sslVpn:13700, sslVpnUsers:30000, policies:200000, vdomMax: 500},
+};
+
+// Variantes con SSD onboard: mismo silicio y mismas cifras que su modelo base, que es el
+// unico que el Product Matrix publica. EL PARENTESCO SE DEDUCE DEL PROPIO CATALOGO —dos
+// modelos son hermanos si comparten fw, tp, vpn y sess— en vez de mantener aqui una segunda
+// lista que se desincronizaria al entrar un modelo nuevo. Es exactamente la regla que ya
+// aplica `scripts/importar-cps.js`, escrita una sola vez por fabricante y no dos.
+const CLAVES_MATRIX=['ssl','tunGw','tunCli','sslVpn','sslVpnUsers','policies','vdomMax'];
+const hermanasDe=(b)=>MODELS.filter((m)=>m!==b
+  && m.fw===b.fw && m.tp===b.tp && m.vpn===b.vpn && m.sess===b.sess);
+
 for (const m of MODELS) {
   m.hwSku=HW_SKU[bareId(m.id)]||null;
   m.lic=LICENSES[bareId(m.id)]||null;
   m.datasheetUrl=DATASHEET_URL;
+  // null EXPLICITO en los que no tienen fila: «el catalogo no trae la cifra», nunca «no aplica».
+  for (const k of CLAVES_MATRIX) m[k]=null;
+  m.matrixDe=null;
+}
+for (const [base, lim] of Object.entries(MATRIX_LIMITES)) {
+  const m=MODELS.find((x)=>bareId(x.id)===base);
+  // Un aviso y no un fallo silencioso, por lo mismo que `seedDimensionadorModels` avisa de un
+  // `eolModels` que no casa: una tabla que dejo de aplicarse se comporta igual que una que si.
+  if (!m) { console.warn(`[fortinet] MATRIX_LIMITES declara "${base}" y no hay tal modelo`); continue; }
+  for (const k of CLAVES_MATRIX) m[k]=lim[k];
+  for (const h of hermanasDe(m)) {
+    if (h.matrixDe || MATRIX_LIMITES[bareId(h.id)]) continue;
+    for (const k of CLAVES_MATRIX) h[k]=lim[k];
+    h.matrixDe=base;   // de quien lo heredo, para que la ficha lo pueda declarar
+  }
+}
+
+// ── LO QUE LAS FICHAS POR SERIE COMPLETAN DONDE EL MATRIX YA NO LLEGA (2026-09-23) ──────
+// El Product Matrix de septiembre es un «Top Selling Models Matrix» y ya no lista 400F,
+// 600F ni 1000F, asi que esos modelos -y sus variantes 401F y 1001F- se apartaban en cuanto
+// un escenario pedia SSL, tuneles o VDOM, con el motivo «el catalogo no trae la cifra». LA
+// CIFRA ESTABA EN EL REPOSITORIO: sus fichas por serie se trajeron el 2026-09-03 por la rama
+// de transporte `fuente/fortinet-datasheets` y `fuente/fortinet-serie` para leer la
+// alimentacion, y publican exactamente las mismas filas que el Matrix. Nadie las habia leido
+// para esto.
+//
+// DOBLE ANCLAJE, CUATRO ANCLAS, 12 DE 12. Una fila solo se acepta si las cifras que este
+// catalogo ya tenia verificadas -sesiones, sesiones nuevas/s, Threat Protection e IPsec-
+// casan con la ficha. Se comprueban AQUI, al cargar, y no solo el dia de la transcripcion:
+// si alguien corrige un `sess` sin volver a leer la ficha, la tabla deja de aplicarse y lo
+// dice por consola, en vez de dejar cifras de otra revision pegadas a un modelo que cambio.
+// 100F Y 200F (2026-09-24, pendiente F6): su ficha en ingles da 404 en todas las rutas que
+// sigue el resto -15 intentos en dos corridas-, pero Fortinet sigue publicando la COREANA
+// oficial en el mismo CDN (`data-sheets/ko_kr/ds-fortigate-{100f,200f}-series_ko.pdf`), traida
+// por `traer-fortinet-pendientes.yml` (corrida 35991156286). Es la misma tabla con las
+// etiquetas traducidas; los numeros no se traducen. Reconstruida por coordenadas (pagina 7) y
+// anclada con SEIS cifras ya verificadas por fila (fw, ips, ngfw, tp, vpn, sess): 12 de 12.
+// Aqui van las cuatro que comprueba el bucle. Es una revision de 2023 (R30 y R17), anterior a
+// la R42/R28 de 2025 de la que sale su consumo: el rendimiento casa en las seis, pero el
+// consumo del 100F NO (35,1 W en la R30 frente a 26,5 W en la R42 -Fortinet lo re-evaluo a la
+// baja-), asi que el consumo sigue saliendo de la R42 y de esta ficha solo se toma lo que casa.
+const FICHAS_LIMITES={
+  '100F':  {ficha:'FG-100F-DAT-R30-20230227 (ko_kr)', ancla:{sess:1500000, ips:2600, tp:1000, vpn:11500},
+            ssl: 1000, tunGw: 2000, tunCli: 16000, sslVpn:1000, sslVpnUsers:  500, policies: 10000, vdomMax: 10},
+  '200F':  {ficha:'FG-200F-DAT-R17-20230125 (ko_kr)', ancla:{sess:3000000, ips:5000, tp:3000, vpn:13000},
+            ssl: 4000, tunGw: 2000, tunCli: 16000, sslVpn:2000, sslVpnUsers:  500, policies: 10000, vdomMax: 10},
+  '400F':  {ficha:'FG-400F-DAT-R22-202604', ancla:{sess:7800000, cps:500000, tp:9000,  vpn:55000},
+            ssl: 8000, tunGw: 2000, tunCli: 50000, sslVpn:3600, sslVpnUsers: 5000, policies: 10000, vdomMax: 25},
+  '600F':  {ficha:'FG-600F-DAT-R23-202604', ancla:{sess:8000000, cps:550000, tp:10500, vpn:55000},
+            ssl: 9000, tunGw: 2000, tunCli: 50000, sslVpn:4300, sslVpnUsers:10000, policies: 30000, vdomMax: 50},
+  '1000F': {ficha:'FG-1000F-DAT-R17-202604', ancla:{sess:7500000, cps:650000, tp:13000, vpn:55000},
+            ssl:10000, tunGw:20000, tunCli:100000, sslVpn:5300, sslVpnUsers:10000, policies:100000, vdomMax:250},
+};
+for (const [base, lim] of Object.entries(FICHAS_LIMITES)) {
+  const m=MODELS.find((x)=>bareId(x.id)===base);
+  if (!m) { console.warn(`[fortinet] FICHAS_LIMITES declara "${base}" y no hay tal modelo`); continue; }
+  const discrepan=Object.entries(lim.ancla).filter(([k,v])=>m[k]!==v);
+  if (discrepan.length) {
+    console.warn(`[fortinet] la ficha ${lim.ficha} ya no casa con el catalogo en ${discrepan.map(([k])=>k).join(', ')}: `
+      +'no se aplica. Volver a leer la ficha antes de confiar en sus limites.');
+    continue;
+  }
+  for (const h of [m].concat(hermanasDe(m))) {
+    if (h.matrixDe || MATRIX_LIMITES[bareId(h.id)]) continue;
+    for (const k of CLAVES_MATRIX) h[k]=lim[k];
+    h.limitesDe={modelo:base, fuente:`ficha por serie ${lim.ficha}`};
+  }
+}
+// Procedencia por modelo de los siete limites, como DATO: la ficha del equipo dice de donde
+// sale cada cifra en vez de que haya que leer este comentario.
+for (const m of MODELS) {
+  if (m.limitesDe) continue;
+  if (MATRIX_LIMITES[bareId(m.id)]) m.limitesDe={modelo:bareId(m.id), fuente:'Product Matrix sept-2026'};
+  else if (m.matrixDe) m.limitesDe={modelo:m.matrixDe, fuente:'Product Matrix sept-2026 (variante del mismo silicio)'};
+  else m.limitesDe=null;
+}
+
+// ── PLATAFORMA POR MODELO: LO QUE EL MATRIX PUBLICA ADEMAS DEL RENDIMIENTO (2026-09-23) ──
+// Seis filas del Product Matrix de septiembre que el catalogo no traia y que el informe de
+// auditoria del 23-sep pide como restricciones (F06, F14, F15): VDOM incluidos, almacenamiento
+// local, variantes (PoE incluido), fuentes, formato y la escala del Security Fabric que el
+// equipo gestiona (FortiAP, FortiSwitch, FortiToken). Reconstruidas por coordenadas de texto
+// de las paginas 1-3, igual que MATRIX_LIMITES, y ANCLADAS COLUMNA A COLUMNA con la cifra de
+// SSL Inspection ya verificada: las 27 columnas casan.
+//
+//   almacen   [variante, GB] — el documento atribuye el disco a la VARIANTE, entre parentesis
+//             («120 GB (91G)»). Por eso el modelo base se queda en 0 GB y no en null: el
+//             documento dice cuanto disco tiene cada uno, y el base no tiene. `null` en la
+//             columna significa «—» (el 40F no tiene variante con disco).
+//   variantes lo que el documento lista como variantes de la serie. PoE ES UNA VARIANTE
+//             (FG-50G-SFP-POE, FG-70G-POE, FG-80F-POE), no una propiedad del SKU base: el
+//             catalogo rotulaba el 80F como «Sucursal + PoE» y su ficha publica «PoE/+ Ports
+//             — — 6 6 —», es decir, PoE solo en las variantes -POE.
+//   aps       Max FortiAPs (total / tunel) · switches Max FortiSwitches · tokens Max FortiTokens.
+//   notas     llamadas del documento que condicionan una funcion:
+//             11 «SSL VPN only supported between 7.0.12 and 7.0.15» — pegada a la celda SSL
+//                VPN del FG-90G. El informe citaba la release note 7.6.1; el Matrix es mas
+//                estricto y es el documento que ya respalda este catalogo.
+//             12 «Proxy features limited supported, refer to data sheet» — en la cabecera de
+//                30G, 40F, 50G y 60F.
+const MATRIX_PLATAFORMA={
+  '30G':  {vdomDef:null, almacen:['31G',30],    variantes:['WiFi'],                              fuentes:'Single AC PS',              formato:'Desktop', aps:16,   apsTun:8,    switches:8,   tokens:500,   notas:{proxy:12}},
+  '40F':  {vdomDef:10,   almacen:null,          variantes:['WiFi','3G4G'],                       fuentes:'Single AC PS',              formato:'Desktop', aps:16,   apsTun:8,    switches:8,   tokens:500,   notas:{proxy:12}},
+  '50G':  {vdomDef:5,    almacen:['51G',64],    variantes:['WiFi','DSL','SFP','POE','5G'],       fuentes:'Single AC PS',              formato:'Desktop', aps:16,   apsTun:8,    switches:8,   tokens:500,   notas:{proxy:12}},
+  '60F':  {vdomDef:10,   almacen:['61F',128],   variantes:['WiFi','Storage'],                    fuentes:'Single AC PS',              formato:'Desktop', aps:64,   apsTun:32,   switches:24,  tokens:500,   notas:{proxy:12}},
+  '70F':  {vdomDef:10,   almacen:['71F',128],   variantes:[],                                    fuentes:'Single AC PS',              formato:'Desktop', aps:64,   apsTun:32,   switches:24,  tokens:500,   notas:{}},
+  '70G':  {vdomDef:10,   almacen:['71G',64],    variantes:['WiFi','POE'],                        fuentes:'Single AC PS',              formato:'Desktop', aps:96,   apsTun:48,   switches:24,  tokens:500,   notas:{}},
+  '80F':  {vdomDef:10,   almacen:['81F',128],   variantes:['WiFi','3G4G','DSL','Bypass','Storage'], fuentes:'Single AC PS, dual inputs', formato:'Desktop', aps:96, apsTun:48, switches:24,  tokens:500,   notas:{}},
+  '90G':  {vdomDef:10,   almacen:['91G',120],   variantes:[],                                    fuentes:'Single AC PS, dual inputs', formato:'Desktop', aps:128,  apsTun:64,   switches:24,  tokens:500,   notas:{sslVpn:11}},
+  '120G': {vdomDef:10,   almacen:['121G',480],  variantes:[],                                    fuentes:'Dual AC PS',                formato:'1 RU',    aps:128,  apsTun:64,   switches:48,  tokens:5000,  notas:{}},
+  '200G': {vdomDef:10,   almacen:['201G',480],  variantes:[],                                    fuentes:'Dual AC PS',                formato:'1 RU',    aps:256,  apsTun:128,  switches:64,  tokens:5000,  notas:{}},
+  '400G': {vdomDef:10,   almacen:['401G',960],  variantes:[],                                    fuentes:'Dual AC PS',                formato:'1 RU',    aps:512,  apsTun:256,  switches:96,  tokens:5000,  notas:{}},
+  '700G': {vdomDef:10,   almacen:['701G',960],  variantes:[],                                    fuentes:'Dual AC PS',                formato:'1 RU',    aps:1024, apsTun:512,  switches:128, tokens:5000,  notas:{}},
+  '900G': {vdomDef:10,   almacen:['901G',960],  variantes:['DC'],                                fuentes:'Dual PS',                   formato:'1 RU',    aps:2048, apsTun:1024, switches:196, tokens:5000,  notas:{}},
+  '1800F':{vdomDef:10,   almacen:['1801F',1920],variantes:['DC'],                                fuentes:'Dual PS',                   formato:'2 RU',    aps:4096, apsTun:2048, switches:196, tokens:20000, notas:{}},
+  '2600F':{vdomDef:10,   almacen:['2601F',1920],variantes:['DC'],                                fuentes:'Dual PS',                   formato:'2 RU',    aps:4096, apsTun:2048, switches:196, tokens:20000, notas:{}},
+  '3000F':{vdomDef:10,   almacen:['3001F',1920],variantes:['DC'],                                fuentes:'Dual PS',                   formato:'2 RU',    aps:4096, apsTun:2048, switches:300, tokens:20000, notas:{}},
+  '3000G':{vdomDef:10,   almacen:['3001G',1920],variantes:[],                                    fuentes:'Dual PS',                   formato:'2 RU',    aps:4096, apsTun:2048, switches:300, tokens:20000, notas:{}},
+  '3200F':{vdomDef:10,   almacen:['3201F',1920],variantes:[],                                    fuentes:'Dual PS',                   formato:'2 RU',    aps:4096, apsTun:2048, switches:300, tokens:20000, notas:{}},
+  '3500F':{vdomDef:10,   almacen:['3501F',3840],variantes:[],                                    fuentes:'Dual PS',                   formato:'2 RU',    aps:4096, apsTun:2048, switches:300, tokens:20000, notas:{}},
+  '3500G':{vdomDef:10,   almacen:['3501G',3840],variantes:[],                                    fuentes:'Dual PS',                   formato:'2 RU',    aps:4096, apsTun:2048, switches:300, tokens:20000, notas:{}},
+  '3700F':{vdomDef:10,   almacen:['3701F',3840],variantes:[],                                    fuentes:'Dual PS',                   formato:'2 RU',    aps:4096, apsTun:2048, switches:300, tokens:20000, notas:{}},
+  '3800G':{vdomDef:10,   almacen:['3801G',3840],variantes:['DC'],                                fuentes:'4 PS',                      formato:'3 RU',    aps:8192, apsTun:4096, switches:300, tokens:20000, notas:{}},
+  '4200F':{vdomDef:10,   almacen:['4201F',3840],variantes:['DC'],                                fuentes:'Dual PS',                   formato:'3 RU',    aps:8192, apsTun:4096, switches:300, tokens:20000, notas:{}},
+  '4400F':{vdomDef:10,   almacen:['4401F',3840],variantes:['DC'],                                fuentes:'4 PS',                      formato:'4 RU',    aps:8192, apsTun:4096, switches:300, tokens:20000, notas:{}},
+  '4800F':{vdomDef:10,   almacen:['4801F',3840],variantes:['DC','NEBS'],                         fuentes:'4 PS',                      formato:'4 RU',    aps:8192, apsTun:4096, switches:300, tokens:20000, notas:{}},
+  // Los chasis publican el disco del propio chasis, sin variante: 4 x 4 TB SSD.
+  '7081F':{vdomDef:10,   almacen:['7081F',16000],variantes:['DC'],                               fuentes:'6 PS',                      formato:'12 RU',   aps:null, apsTun:null, switches:300, tokens:20000, notas:{}},
+  '7121F':{vdomDef:10,   almacen:['7121F',16000],variantes:['DC'],                               fuentes:'8 PS',                      formato:'16 RU',   aps:null, apsTun:null, switches:300, tokens:20000, notas:{}},
+};
+// Lo mismo desde las fichas por serie, para los tres que el Matrix ya no lista. El 601F no
+// esta en este catalogo: la ficha del 600F lo publica, pero aqui solo cuenta que el 600F
+// base no tiene disco.
+const FICHAS_PLATAFORMA={
+  '400F': {vdomDef:10, almacen:['401F',960],  variantes:[], aps:512,  apsTun:256,  switches:96,  tokens:5000,  notas:{}, ficha:'FG-400F-DAT-R22-202604'},
+  '600F': {vdomDef:10, almacen:['601F',480],  variantes:[], aps:1024, apsTun:512,  switches:128, tokens:5000,  notas:{}, ficha:'FG-600F-DAT-R23-202604'},
+  '1000F':{vdomDef:10, almacen:['1001F',960], variantes:[], aps:4096, apsTun:2048, switches:196, tokens:20000, notas:{}, ficha:'FG-1000F-DAT-R17-202604'},
+};
+
+/* PUERTOS ESTRUCTURADOS, SOLO DONDE LA FUENTE ES LIMPIA. `ifaces` es texto libre y en varios
+   modelos no cuenta nada («GE + SFP/SFP+ (alta densidad)» en el 120G), asi que comparar un
+   requerimiento de puertos contra el habria sido inventar la mitad del dato. Se estructuran
+   las ocho columnas de la pagina 1 del Matrix, cuya celda «Interfaces» es de una sola linea,
+   y el 120G, cuya ficha trae la tabla de hardware completa. Las celdas de las paginas 2 y 3 se
+   parten en varias lineas y se entremezclan entre columnas al extraerlas: es exactamente donde
+   se cuela una fila desplazada, y por eso esos modelos se quedan en null (el eje de puertos se
+   declara «no comprobado» para ellos, no se aprueba ni se rechaza a ciegas).
+   `medios` con dos valores = puerto de medio compartido («Shared Port Pairs»): cuenta como
+   UNO u OTRO, nunca como los dos a la vez. Los puertos de gestion y HA dedicados no entran. */
+const P=(n,vel,...medios)=>({n,vel,medios});
+const PUERTOS={
+  '30G':  {puertos:[P(4,1,'RJ45')],                         fuente:'Product Matrix sept-2026 (Interfaces)'},
+  '40F':  {puertos:[P(5,1,'RJ45')],                         fuente:'Product Matrix sept-2026 (Interfaces)'},
+  '50G':  {puertos:[P(5,1,'RJ45')],                         fuente:'Product Matrix sept-2026 (Interfaces)'},
+  '60F':  {puertos:[P(10,1,'RJ45')],                        fuente:'Product Matrix sept-2026 (Interfaces)'},
+  '70F':  {puertos:[P(10,1,'RJ45')],                        fuente:'Product Matrix sept-2026 (Interfaces)'},
+  '70G':  {puertos:[P(10,1,'RJ45')],                        fuente:'Product Matrix sept-2026 (Interfaces)'},
+  '80F':  {puertos:[P(8,1,'RJ45'), P(2,1,'RJ45','SFP')],     fuente:'Product Matrix sept-2026 (Interfaces: 8x GE RJ45, 2x Shared Port Pairs)'},
+  '90G':  {puertos:[P(8,1,'RJ45'), P(2,10,'RJ45','SFP+')],   fuente:'Product Matrix sept-2026 (Interfaces: 8x GE RJ45, 2x 10GE Shared Port Pairs)'},
+  '120G': {puertos:[P(16,1,'RJ45'), P(8,1,'SFP'), P(4,10,'SFP+')], fuente:'ficha por serie FG-120G-DAT-R18-202607 (Hardware Specifications)'},
+};
+
+for (const m of MODELS) {
+  const id=bareId(m.id);
+  // Una variante hereda la plataforma de su base (misma columna del documento); el disco no,
+  // porque el documento dice de quien es.
+  const baseId=[id, m.matrixDe, m.limitesDe&&m.limitesDe.modelo].find((x)=>x&&(MATRIX_PLATAFORMA[x]||FICHAS_PLATAFORMA[x]));
+  const pl=baseId?(MATRIX_PLATAFORMA[baseId]||FICHAS_PLATAFORMA[baseId]):null;
+  if (!pl) {
+    // 100F y 200F: sin ficha ni columna en el Matrix. null EXPLICITO en todo: «el catalogo no
+    // lo trae», nunca «no tiene».
+    Object.assign(m,{vdomDef:null, almacenamientoGB:null, poe:null, poeVariante:null, aps:null, apsTun:null,
+      switches:null, tokens:null, formato:null, notasMatrix:{}, plataformaFuente:null});
+  } else {
+    const [variante, gb]=pl.almacen||[null, 0];
+    Object.assign(m,{
+      vdomDef:pl.vdomDef,
+      // El disco es de la variante que el documento nombra; cualquier otro modelo de la
+      // columna -el base- publica 0 GB.
+      almacenamientoGB: variante===id ? gb : 0,
+      // Ningun SKU de este catalogo es una variante -POE: el base publica 0 W de PoE.
+      poe:false,
+      poeVariante:(pl.variantes||[]).includes('POE') || baseId==='80F',
+      aps:pl.aps, apsTun:pl.apsTun, switches:pl.switches, tokens:pl.tokens,
+      formato:pl.formato||null,
+      notasMatrix:pl.notas||{},
+      plataformaFuente:MATRIX_PLATAFORMA[baseId]?'Product Matrix sept-2026':`ficha por serie ${pl.ficha}`,
+    });
+  }
+  const pu=PUERTOS[baseId||id]||PUERTOS[id];
+  m.puertos=pu?pu.puertos:null;
+  m.puertosFuente=pu?pu.fuente:null;
+  // Los dos chasis no se pueden cotizar como una linea: necesitan FIM, FPM, fuentes,
+  // ventiladores y opticas, y este catalogo no trae ese configurador (F07).
+  m.modular=/^(7081F|7121F)$/.test(id);
+}
+// El 80F y el 81F se rotulaban «Sucursal + PoE». Su ficha (FG-80F-DAT-R47-202606) publica PoE
+// solo en las variantes -POE y el Matrix lo lista como variante: el SKU que este catalogo
+// cotiza (FG-80F / FG-81F) no tiene PoE. El rotulo era un dato falso con pinta de cierto.
+for (const m of MODELS) if (/^FortiGate 8[01]F$/.test(m.id)) m.seg=m.seg.replace(/\s*\+\s*PoE/i,'');
+
+/* ── COMPATIBILIDAD FortiOS × FUNCION × MODELO (hallazgo P0 F02 del 23-sep) ─────────────
+   La pagina aceptaba SSL-VPN en modo tunel sin preguntar la version de FortiOS y recomendaba
+   un 90G con sus 200 usuarios publicados. Tres reglas, y cada una con su procedencia REAL:
+     · 7.6.3 o superior: el modo tunel SSL-VPN se sustituye por IPsec en TODOS los modelos.
+       Hasta el 2026-09-24 estaba transcrita del informe de auditoria SIN LEER (`leida:false`):
+       `docs.fortinet.com` responde `connect_rejected` al proxy de egreso de este entorno. Ese
+       dia se leyo por DOS vias independientes que casan: el PDF de las Release Notes de 7.6.3
+       (p. 15), desde una maquina sin ese proxy, y la pagina del mismo aviso, traida por
+       `traer-fortinet-pendientes.yml` desde Actions (corrida 35997261950). Condicion 2 del GO.
+     · 7.6.0 a 7.6.2: SSL-VPN no soportado en modelos de 2 GB de RAM (nota 10 del Matrix).
+       QUE MODELOS TIENEN 2 GB NO LO DECIA EL MATRIX, y la compatibilidad era «desconocida»
+       para todos. Las Release Notes de 7.6.0 (PDF de fortinetweb.s3, pp. 10-11, misma corrida)
+       traen el aviso propio del SSL-VPN, con la lista -40F y variantes, 60F, 61F- y la frase
+       que la CIERRA: «FortiGate models not listed above will continue to have SSL VPN web and
+       tunnel mode support». La regla pasa a esos tres y el resto queda soportado. Una primera
+       lectura del mismo dia llego a la misma lista por la p. 16 de las de 7.6.3, pero esa frase
+       («impacts the FortiGate 40F and 60F series devices, along with their variants») es la del
+       aviso de FUNCIONES PROXY: misma familia de 2 GB, prueba indirecta, y sin la frase que
+       cierra la lista dejaba al resto en «desconocida». El camino `ram-2gb` del motor sigue
+       existiendo para una regla por RAM sin lista de modelos, y lo guarda una prueba sobre un
+       catalogo sintetico.
+     · Serie 90G: SSL-VPN solo entre 7.0.12 y 7.0.15 (nota 11 del Matrix, leida, pegada a la
+       celda del FG-90G). Ninguna de las ramas que ofrece esta herramienta cae en ese rango.
+   Las ramas son tres a proposito: son las que las fuentes distinguen. Una lista de versiones
+   mas fina solo daria precision a lo que el catalogo no sabe. */
+const FORTIOS={
+  versiones:[
+    {id:'7.4',         n:'FortiOS 7.4.x'},
+    {id:'7.6.0-7.6.2', n:'FortiOS 7.6.0 a 7.6.2'},
+    {id:'7.6.3+',      n:'FortiOS 7.6.3 o superior (rama vigente)'},
+  ],
+  porDefecto:'7.6.3+',
+  reglas:[
+    {funcion:'sslvpn', versiones:['7.6.3+'], modelos:'*', estado:'retirada', sustituto:'ipsec',
+     fuente:'FortiOS 7.6.3 Release Notes, p. 15, «SSL VPN tunnel mode replaced with IPsec VPN»: «Starting in FortiOS 7.6.3, the SSL VPN tunnel mode feature is replaced with IPsec VPN [...] This applies to all FortiGate models.»',
+     leida:true},
+    {funcion:'sslvpn', versiones:['7.6.0-7.6.2'], modelos:['40F','60F','61F'], estado:'no-soportada', sustituto:'ipsec',
+     fuente:'FortiOS 7.6.0 Release Notes, pp. 10-11, «SSL VPN removed from 2GB RAM models for tunnel and web mode»: 40F y variantes, 60F y 61F; «FortiGate models not listed above will continue to have SSL VPN web and tunnel mode support» (y nota 10 del Product Matrix sept-2026)',
+     leida:true},
+    {funcion:'sslvpn', versiones:['7.4','7.6.0-7.6.2','7.6.3+'], modelos:['90G','91G'], estado:'no-soportada', sustituto:'ipsec',
+     fuente:'Product Matrix sept-2026, nota 11 en la celda SSL VPN del FG-90G: «SSL VPN only supported between 7.0.12 and 7.0.15»',
+     leida:true},
+    {funcion:'proxy', versiones:['7.4','7.6.0-7.6.2','7.6.3+'], modelos:['30G','31G','40F','50G','51G','60F','61F'], estado:'limitada',
+     fuente:'Product Matrix sept-2026, nota 12: «Proxy features limited supported, refer to data sheet»; para 40F y 60F, las FortiOS 7.6.0 Release Notes: sin funciones proxy desde 7.4.4 en los modelos de 2 GB de RAM',
+     leida:true},
+  ],
+};
+
+/* ── TRES FAMILIAS DE SKU DEL PRICE LIST QUE EL BOM NECESITABA Y NO USABA ─────────────────
+   Salen de `fortinetSkus.js` —la price list que `fuentes.js` declara como fuente de precios,
+   la «Mid 090726» del 07-sep— y se leen por su codigo de familia en vez de copiarse a mano:
+     204  «Upgrade FortiCare Premium to Elite (Require FortiCare Premium)». El BOM cotizaba
+          Elite como el contrato completo (-284) encima del Premium que el bundle ya trae, y
+          lo advertia; el propio documento publica la MEJORA como SKU aparte.
+     577  «FG AI based Sandbox SVC» — el servicio de sandbox del FortiGate, por modelo.
+     585  «Sub to CLD based Central Logging» — registro central en la nube, por modelo.
+   Si una familia no esta para un modelo, el campo queda en null y la linea que lo pida sale
+   sin SKU, que es lo que cierra la puerta comercial. */
+const SKUS_POR_MODELO=require('./fortinetSkus.js');
+const FAMILIAS_EXTRA={eliteUpg:'204', sandboxAi:'577', logCloud:'585'};
+// El CODIGO DE MODELO de la price list (`0080F` en FC-10-0080F-809-02-DD) se toma de los SKU
+// que LICENSES ya tiene verificados, y la familia se busca SOLO con ese codigo. Las
+// referencias de un equipo traen tambien las de sus variantes -el 80F lleva F80FD, F80FP y
+// F80FC- y la primera version de este bucle se quedo con el SKU de una variante: una linea
+// con el precio de otro producto, que es el error que no se nota.
+const codigoModelo=(lic)=>{
+  for (const t of [lic.ent, lic.utp, lic.atp].concat(lic.care?Object.values(lic.care):[])) {
+    const x=t&&t.sku&&/^FC-10-([A-Z0-9]+)-/.exec(t.sku);
+    if (x) return x[1];
+  }
+  return null;
+};
+for (const m of MODELS) {
+  const refs=SKUS_POR_MODELO[m.id]||[];
+  if (!m.lic) continue;
+  const cod=codigoModelo(m.lic);
+  for (const [clave, fam] of Object.entries(FAMILIAS_EXTRA)) {
+    if (!cod) { m.lic[clave]=null; continue; }
+    const re=new RegExp(`^(FC-10-${cod}-${fam}-02)-(12|36|60)$`);
+    const t={};
+    let base=null;
+    for (const r of refs) {
+      const x=re.exec(r.sku);
+      if (!x) continue;
+      base=x[1];
+      t[{12:'y1',36:'y3',60:'y5'}[x[2]]]=r.p;
+    }
+    m.lic[clave]=base?{sku:`${base}-DD`, y1:t.y1==null?null:t.y1, y3:t.y3==null?null:t.y3, y5:t.y5==null?null:t.y5}:null;
+  }
+}
+
+/* ── SD-WAN SERVICE: EL SKU DE LOS TRES SERVICIOS AVANZADOS (pendiente F2, 2026-09-24) ────────
+   QUE ES CADA CODIGO lo dice el «Secure SD-WAN Ordering Guide» SDWAN-OG-R31-20260804 (paginas
+   3-6, tablas SERVICES, y FAQ, pp. 10-11), traido por `traer-fortinet-pendientes.yml` (corrida
+   35991156286) y leido por coordenadas. Lo confirma el «FortiGate Subscriptions and FortiGuard
+   Bundles Ordering Guide» (mayo-2026, p. 4): Underlay and Application Monitoring, Overlay
+   Orchestration y el conector FortiSASE llevan marca SOLO en la columna SD-WAN, ni a la carta ni
+   en Enterprise/UTP/ATP. O sea que NO son tres lineas con tres SKU: son UN SKU por FortiGate, en
+   dos formas:
+     bundle  1337 (por debajo del 60G) / 1329 (60G en adelante) — «The bundle includes everything
+             needed for SD-WAN deployments. FortiCare and FortiGuard services too. The bundles are
+             for FortiGates not procuring other additional bundles or support» (FAQ, p. 10);
+     add-on  1387 / 1389 — «a lower priced alternative for FortiGates with additional security
+             bundles already in place» (misma pagina). Es el que corresponde aqui: el BOM siempre
+             lleva un bundle de seguridad, o lo excluye porque el parque ya lo tiene vigente.
+   EL SKU Y EL PRECIO SALEN DE LA PRICE LIST FIRMADA (`fortinetSkus.js`), no del documento: son
+   las filas «SD-WAN BDL SVC» del bloque de cada equipo, con el codigo de modelo que usan TODAS
+   las demas licencias de ese equipo (`codigoModelo`, arriba) y su precio a 1, 3 y 5 anos. La
+   lista trae exactamente una familia de add-on por equipo —1387 o 1389, nunca las dos— en 54 de
+   58 modelos. Los cuatro restantes (70F, 100F, 200F y 600F) no tienen SKU de hardware vigente, y
+   sin ese ancla `npm run skus` no extrae su bloque: el catalogo no sabe si la lista trae su
+   SD-WAN Service, y se quedan sin SKU diciendo eso, no que la lista no lo tenga.
+   CORREGIDO EL MISMO DIA: la primera version de este bloque afirmaba que la price list «no trae
+   ninguno de los dos» y dejaba la linea sin precio, en borrador. Era falso. Se busco
+   `-1389-02-DD`, y la lista guarda el termino ya resuelto (`-02-12`, `-02-36`, `-02-60`): una
+   busqueda con el marcador del documento no podia encontrar nada. Lo vio otra sesion del mismo
+   dia, que conto dos candidatos «SD-WAN BDL SVC» por modelo sin poder decir cual era cual; el
+   Ordering Guide lo decide, y esa es la otra mitad del anclaje.
+   DOBLE ANCLAJE CONTRA EL DOCUMENTO, donde el documento lista el modelo (23 de las tablas):
+     · la FAMILIA tiene que coincidir —el documento y la lista ponen el corte en el mismo sitio—,
+       y si no coincide la linea se queda sin SKU: dos documentos oficiales que discrepan sobre
+       que se pide no se resuelven eligiendo uno;
+     · el CODIGO DE MODELO coincide en 20. En los otros 3 el documento imprime otro:
+         70G   FG70G (y en su propia tabla de renovacion, 0070G); la lista, GT70G.
+         200G  F200G; la lista, FG2HG.
+         4800F F481F bajo la columna del 4800F, que es el codigo del 4801F; la lista, F48HF.
+       Manda la lista: es el documento con el que se hace el pedido, y su codigo es el de todas
+       las demas licencias de ese equipo. Se declara en la linea, no se calla.
+   Las variantes (31G, 91G, 401F...) y los modelos que el documento no tabula (60F, 71F, 3500F,
+   los chasis) toman el SKU de la lista, que es exactamente a lo que el documento remite
+   («Refer to Price List»). */
+const SDWAN_SERVICIO={
+  fuente:'Secure SD-WAN Ordering Guide SDWAN-OG-R31-20260804',
+  porModelo:{
+    '30G':  ['FC-10-FG30G-1337-02-DD', 'FC-10-FG30G-1387-02-DD'],
+    '40F':  ['FC-10-0040F-1337-02-DD', 'FC-10-0040F-1387-02-DD'],
+    '50G':  ['FC-10-GT50G-1337-02-DD', 'FC-10-GT50G-1387-02-DD'],
+    '70G':  ['FC-10-FG70G-1329-02-DD', 'FC-10-FG70G-1389-02-DD'],
+    '80F':  ['FC-10-0080F-1329-02-DD', 'FC-10-0080F-1389-02-DD'],
+    '90G':  ['FC-10-0090G-1329-02-DD', 'FC-10-0090G-1389-02-DD'],
+    '120G': ['FC-10-F120G-1329-02-DD', 'FC-10-F120G-1389-02-DD'],
+    '200G': ['FC-10-F200G-1329-02-DD', 'FC-10-F200G-1389-02-DD'],
+    '400G': ['FC-10-FG4H0-1329-02-DD', 'FC-10-FG4H0-1389-02-DD'],
+    '700G': ['FC-10-G7H0G-1329-02-DD', 'FC-10-G7H0G-1389-02-DD'],
+    '900G': ['FC-10-FG9H0-1329-02-DD', 'FC-10-FG9H0-1389-02-DD'],
+    '1000F':['FC-10-F1K0F-1329-02-DD', 'FC-10-F1K0F-1389-02-DD'],
+    '1800F':['FC-10-F18HF-1329-02-DD', 'FC-10-F18HF-1389-02-DD'],
+    '2600F':['FC-10-F26HF-1329-02-DD', 'FC-10-F26HF-1389-02-DD'],
+    '3000F':['FC-10-F3K0F-1329-02-DD', 'FC-10-F3K0F-1389-02-DD'],
+    '3000G':['FC-10-G3K0G-1329-02-DD', 'FC-10-G3K0G-1389-02-DD'],
+    '3200F':['FC-10-F3K2F-1329-02-DD', 'FC-10-F3K2F-1389-02-DD'],
+    '3500G':['FC-10-G3K5G-1329-02-DD', 'FC-10-G3K5G-1389-02-DD'],
+    '3700F':['FC-10-F3K7F-1329-02-DD', 'FC-10-F3K7F-1389-02-DD'],
+    '3800G':['FC-10-3K80G-1329-02-DD', 'FC-10-3K80G-1389-02-DD'],
+    '4200F':['FC-10-F42HF-1329-02-DD', 'FC-10-F42HF-1389-02-DD'],
+    '4400F':['FC-10-F44HF-1329-02-DD', 'FC-10-F44HF-1389-02-DD'],
+    '4800F':['FC-10-F481F-1329-02-DD', 'FC-10-F481F-1389-02-DD'],
+  },
+};
+// La familia de add-on que la price list trae para ese codigo de modelo, con su precio por
+// termino. Si trajera las dos (1387 y 1389) no se elige: seria decidir el tramo a ojo.
+const addonDeLista=(refs, cod)=>{
+  const re=new RegExp(`^(FC-10-${cod}-(1387|1389)-02)-(12|36|60)$`);
+  const porFam={};
+  for (const r of refs) {
+    const x=re.exec(r.sku);
+    if (!x) continue;
+    const f=porFam[x[2]]||(porFam[x[2]]={sku:`${x[1]}-DD`, fam:x[2]});
+    f[{12:'y1',36:'y3',60:'y5'}[x[3]]]=r.p;
+  }
+  const fams=Object.values(porFam);
+  if (fams.length!==1) return {tier:null, ambigua:fams.length>1};
+  const f=fams[0];
+  return {tier:{sku:f.sku, y1:f.y1==null?null:f.y1, y3:f.y3==null?null:f.y3, y5:f.y5==null?null:f.y5}, fam:f.fam};
+};
+const FUENTE_SDWAN=`${SDWAN_SERVICIO.fuente} (qué es cada familia) + 2026Q3 Mid Price list_AMER_FINAL_EFF 090726.xlsx (SKU y precio)`;
+for (const m of MODELS) {
+  if (!m.lic) continue;
+  const cod=codigoModelo(m.lic);
+  const og=SDWAN_SERVICIO.porModelo[bareId(m.id)]||null;
+  const ogCod=og?/^FC-10-([A-Z0-9]+)-/.exec(og[1])[1]:null;
+  const ogFam=og?/-(1387|1389)-02-DD$/.exec(og[1])[1]:null;
+  const refs=SKUS_POR_MODELO[m.id]||[];
+  const lista=cod?addonDeLista(refs, cod):{tier:null};
+  if (!lista.tier) {
+    m.lic.sdwanSvc={addon:null, fuente:FUENTE_SDWAN,
+      motivo: lista.ambigua
+        ? 'la price list trae las dos familias de add-on (1387 y 1389) para este modelo y no se elige a ojo'
+        : !refs.length
+          ? 'el catálogo no trae el bloque de este modelo en la price list: sin SKU de hardware vigente no hay ancla con la que extraerlo (npm run skus)'
+          : 'la price list de septiembre no trae el SD-WAN Service de este modelo'};
+    continue;
+  }
+  if (og && ogFam!==lista.fam) {
+    m.lic.sdwanSvc={addon:null, fuente:FUENTE_SDWAN,
+      motivo:`el Ordering Guide pone este modelo en la familia ${ogFam} y la price list en la ${lista.fam}: dos documentos oficiales que discrepan no se resuelven eligiendo uno`};
+    continue;
+  }
+  m.lic.sdwanSvc={addon:lista.tier, fuente:FUENTE_SDWAN,
+    origen: !og ? 'lista' : ogCod===cod ? 'coincide' : 'otro-codigo',
+    nota: !og
+      ? 'el Ordering Guide no tabula este modelo y remite a la price list'
+      : ogCod===cod ? null
+      : `el Ordering Guide imprime ${ogCod}; se pide con ${cod}, el código de la price list firmada y de todas las demás licencias de este equipo`};
+}
+
+/* ── FORTICLIENT EMS Y FORTISASE: SKU DE SUS ORDERING GUIDES (2026-09-24) ─────────────────
+   Las dos lineas entraban en el BOM con `sku: null` y dejaban la cotizacion en borrador: este
+   catalogo tenia el PATRON del codigo de EMS y ninguno de FortiSASE. Sus Ordering Guides los
+   publican como TABLA, y la tabla es determinista una vez que se sabe una cosa mas en cada caso:
+     EMS       el despliegue. FortiClient Cloud (EMS alojado por Fortinet) es la familia EMS05 y
+               EMS on-premise la EMS04; los dos en VPN/ZTNA, que es la licencia 428 (la 429 es
+               EPP/ATP y la 485 el servicio gestionado, otros productos). Se vende en PACKS de
+               25, 500, 2.000 y 10.000 endpoints («FortiClient Ordering Guide», abr-2026, p. 3).
+               Los endpoints se redondean a 25 y se reparten del pack mayor al menor: 550 son
+               1 x 500 + 2 x 25, exactamente el ejemplo del propio documento. Cuando conviene
+               subir de pack (20 packs de 25 frente a uno de 500) lo decide el PRECIO, que no esta
+               en este catalogo: se declara, no se optimiza a ciegas.
+     FortiSASE la edicion. Standard (547), Advanced (676) o Comprehensive (759), por BANDA de
+               usuarios: 50-499 (FC2), 500-1.999 (FC3), 2.000-9.999 (FC4) y 10.000+ (FC5)
+               («FortiSASE Ordering Guide», sep-2026, p. 3). La banda mas baja empieza en 50: por
+               debajo no hay SKU publicado y la linea lo dice en vez de subir a 50 por su cuenta.
+   SU PRECIO NO ESTA EN ESTE CATALOGO, que no es lo mismo que decir que la price list no lo trae
+   (esa frase estuvo aqui y no se podia sostener): de la lista solo se extrajeron las filas que
+   nombran un FortiGate —`npm run skus` casa cada fila con el nombre del equipo—, y una licencia
+   de EMS o de FortiSASE no nombra ninguno. La lista completa no vive en el repositorio, asi que
+   desde aqui no se sabe si las trae. La linea sale con SKU exacto y sin precio, en borrador. */
+const EMS_LICENCIAS={
+  fuente:'FortiClient Ordering Guide (abr-2026), p. 3 «Order Information: Device-based»',
+  packs:[25, 500, 2000, 10000],
+  sku:{
+    cloud: {25:'FC1-10-EMS05-428-01-DD', 500:'FC2-10-EMS05-428-01-DD', 2000:'FC3-10-EMS05-428-01-DD', 10000:'FC4-10-EMS05-428-01-DD'},
+    onprem:{25:'FC1-10-EMS04-428-01-DD', 500:'FC2-10-EMS04-428-01-DD', 2000:'FC3-10-EMS04-428-01-DD', 10000:'FC4-10-EMS04-428-01-DD'},
+  },
+};
+const SASE_USUARIOS={
+  fuente:'FortiSASE Ordering Guide (sep-2026), p. 3 «Remote Users»',
+  minimo:50,
+  // Nota ➀ del documento: «Comprehensive subscriptions of less than 200 users have limited POP
+  // availability».
+  comprehensivePopMinimo:200,
+  bandas:[
+    {desde:50,    hasta:499,  standard:'FC2-10-EMS05-547-02-DD', advanced:'FC2-10-EMS05-676-02-DD', comprehensive:'FC2-10-EMS05-759-02-DD'},
+    {desde:500,   hasta:1999, standard:'FC3-10-EMS05-547-02-DD', advanced:'FC3-10-EMS05-676-02-DD', comprehensive:'FC3-10-EMS05-759-02-DD'},
+    {desde:2000,  hasta:9999, standard:'FC4-10-EMS05-547-02-DD', advanced:'FC4-10-EMS05-676-02-DD', comprehensive:'FC4-10-EMS05-759-02-DD'},
+    {desde:10000, hasta:null, standard:'FC5-10-EMS05-547-02-DD', advanced:'FC5-10-EMS05-676-02-DD', comprehensive:'FC5-10-EMS05-759-02-DD'},
+  ],
+};
+
+/* ── LICENCIAS REANCLADAS A LA PRICE LIST DECLARADA (hallazgo N02, 2026-09-23) ────────────
+   LICENSES se transcribio de la «2026Q3 Main Price list 080326» (vigente desde el 03-ago),
+   pero la fuente de precios que declara `fuentes.js` —y de la que salen el hardware de
+   `cotizadorCatalog.js` y las 6.849 referencias de `fortinetSkus.js`— es la «Mid Price list
+   090726» del 07-sep. Medido ese dia, SKU por SKU y termino por termino: de 1.193 precios,
+   108 diferian —los 78 de los SKU combinados BDL, porque el hardware cambio de precio entre
+   las dos ediciones, y los 30 del bundle y el soporte de los dos chasis (+15 %)— y 17 no
+   estan en las referencias de septiembre. Una misma cotizacion llevaba el equipo al precio de
+   septiembre y su licencia al de agosto, y con el SKU combinado de compra nueva la diferencia
+   llegaba entera al total (90G, BDL Enterprise a 3 anos: 10.273,60 frente a 10.604,60).
+
+   SE ANCLA POR SKU EXACTO, con su sufijo de termino, contra la lista declarada: donde la
+   referencia existe manda su precio. Donde no existe, el precio SE RETIRA y se marca
+   (`fueraDeLista`): instruccion del dueño del 2026-09-24, «los precios debes tomarlos de
+   2026Q3 Mid Price list_AMER_FINAL_EFF 090726.xlsx». Hasta ese dia el precio de agosto se
+   conservaba marcado (`anterior`) y la linea salia en borrador con esa cifra; ahora sale sin
+   precio («consultar»), en borrador y diciendo cual. Son 17, todos renovaciones de equipos
+   fuera de venta (70F, 100F, 200F, 600F): el importador de referencias no extrae su bloque
+   porque no tienen SKU de hardware con el que anclarlo, asi que su ausencia en
+   `fortinetSkus.js` no prueba que la lista de septiembre no los traiga. El SKU se conserva,
+   porque es el codigo que hay que pedirle al distribuidor; la cifra no. */
+const PRECIO_DECLARADO=new Map();
+for (const refs of Object.values(SKUS_POR_MODELO)) for (const r of refs) PRECIO_DECLARADO.set(r.sku, r.p);
+const REANCLAJE={reanclados:0, sinReferencia:0, iguales:0, ejemplos:[]};
+{
+  const vistos=new Set();
+  for (const m of MODELS) {
+    if (!m.lic) continue;
+    const tiers=[m.lic.ent, m.lic.utp, m.lic.atp, m.lic.entBdl, m.lic.utpBdl]
+      .concat(m.lic.care?Object.values(m.lic.care):[]);
+    for (const t of tiers) {
+      if (!t || !t.sku || vistos.has(t)) continue;
+      vistos.add(t);
+      for (const [y, suf] of [['y1','12'],['y3','36'],['y5','60']]) {
+        if (t[y]==null) continue;
+        const sku=t.sku.replace(/-DD$/, `-${suf}`);
+        const p=PRECIO_DECLARADO.get(sku);
+        if (p==null) { t[y]=null; (t.fueraDeLista=t.fueraDeLista||{})[y]=true; REANCLAJE.sinReferencia++; }
+        else if (Math.abs(p-t[y])>0.005) {
+          if (REANCLAJE.ejemplos.length<5) REANCLAJE.ejemplos.push({sku, agosto:t[y], septiembre:p});
+          t[y]=p; REANCLAJE.reanclados++;
+        } else REANCLAJE.iguales++;
+      }
+    }
+  }
+}
+
+/* ── FORTICONVERTER: EL SKU DE LA LISTA ES EL DE 12 MESES, SEA CUAL SEA EL TERMINO (2026-09-24) ──
+   LICENSES traia el converter como patron `FC-10-<modelo>-189-02-DD`, y la linea del BOM le
+   ponia el sufijo del termino de la cotizacion: a 3 anos emitia `...-189-02-36`. La lista de
+   septiembre lo publica UNA sola vez por modelo, como «1 Year FCT SVC» (`-12`, 93 filas y ni una
+   de 36 ni de 60 meses): es un servicio unico de migracion de configuracion. Asi que a 3 y 5
+   anos el BOM cotizaba un SKU que la lista no tiene, con el precio del de 12 meses. Se ancla al
+   SKU exacto de la lista y a su precio; donde la lista no lo trae, no hay SKU ni precio. */
+for (const m of MODELS) {
+  const c=m.lic&&m.lic.converter;
+  if (!c||!c.sku) continue;
+  const sku=c.sku.replace(/-DD$/, '-12');
+  const p=PRECIO_DECLARADO.get(sku);
+  m.lic.converter = p==null ? {sku:null, fee:null, fueraDeLista:true} : {sku, fee:p};
 }
 
 // Bundles de protección FortiGuard reales y vigentes (sufijos de SKU -809/-950/-928 en el price list AMER).
@@ -391,11 +1030,77 @@ for (const m of MODELS) {
   if (a) Object.assign(m, a);
 }
 
+// `incluye` ESTRUCTURA lo que `svcs` ya decia en prosa, y no es cosmetica: de aqui salen las
+// tres reglas comerciales que el informe del 2026-09-22 marco como P0 y que una cadena de
+// texto no puede sostener.
+//   1. BUNDLE MINIMO (AT-03). Una funcion pedida en el formulario se cubre con el bundle mas
+//      barato que la incluya; elegir uno por debajo se BLOQUEA en vez de avisarse. DLP e IoT
+//      Security solo estan en Enterprise, asi que «IoT Detection + DLP con UTP» no es una
+//      advertencia: es una cotizacion que no se puede pedir.
+//   2. FORTICARE PREMIUM NO SE COTIZA DOS VECES (AT-04). Los tres bundles lo incluyen, y el
+//      BOM anadia ademas una linea de soporte SIEMPRE: el cliente pagaba Premium dos veces.
+//   3. FORTICONVERTER NO SE DUPLICA (AT-05). Solo Enterprise lo trae; con Enterprise elegido
+//      la linea a la carta sobra, y fuera de Enterprise solo entra si alguien la pide.
+// `nivel` es el orden de cobertura para poder decir «este bundle esta por debajo del minimo»;
+// NO es orden de precio -ATP puede salir mas caro que UTP en algun modelo- y por eso no se
+// usa para recomendar el mas barato, solo para comparar coberturas.
 const BUNDLES={
-  utp:  {n:'UTP — Unified Threat Protection', svcs:'IPS, Advanced Malware Protection, Application Control, URL/DNS/Video Filtering, Antispam Service, FortiCare Premium'},
-  ent:  {n:'Enterprise Protection',           svcs:'IPS, DLP, AMP, Antispam, AI-Based Malware Prevention, Application Control, URL/DNS/Video Filtering, FortiConverter, IoT Security, Security Rating, FortiCare Premium'},
-  atp:  {n:'ATP — Advanced Threat Protection', svcs:'IPS, Advanced Malware Protection Service, Application Control, FortiCare Premium'},
+  utp:  {n:'UTP — Unified Threat Protection', nivel:2,
+         svcs:'IPS, Advanced Malware Protection, Application Control, URL/DNS/Video Filtering, Antispam Service, FortiCare Premium',
+         incluye:['ips','amp','appctrl','webfilter','antispam','forticare-premium']},
+  ent:  {n:'Enterprise Protection', nivel:3,
+         svcs:'IPS, DLP, AMP, Antispam, AI-Based Malware Prevention, Application Control, URL/DNS/Video Filtering, FortiConverter, IoT Security, Security Rating, FortiCare Premium',
+         incluye:['ips','amp','appctrl','webfilter','antispam','dlp','iot','securityrating','forticonverter','forticare-premium']},
+  atp:  {n:'ATP — Advanced Threat Protection', nivel:1,
+         svcs:'IPS, Advanced Malware Protection Service, Application Control, FortiCare Premium',
+         incluye:['ips','amp','appctrl','forticare-premium']},
 };
+
+// Catalogo de funciones de seguridad que el formulario puede pedir, como DATOS. Cada una
+// declara el servicio FortiGuard que consume (`servicio`, la clave que se cruza contra el
+// `incluye` de cada bundle) y el piso de capa de inspeccion que impone.
+// `servicio:null` = la funcion NO exige ningun servicio FortiGuard: es de FortiOS o se
+// cotiza como producto aparte, y por tanto NO puede elevar el bundle minimo. Confundir las
+// dos cosas es como se llega a «multi-WAN obliga a Enterprise», que el informe desmiente.
+const FUNCIONES=[
+  {id:'chkAv',     n:'Antivirus / Antimalware', servicio:'amp',       capa:'tp'},
+  {id:'chkWeb',    n:'Web Filtering / Application Control', servicio:'webfilter', capa:'ngfw'},
+  {id:'chkIotDlp', n:'IoT Detection + DLP',     servicio:'dlp',       capa:'tp',
+   tambien:['iot'], porQue:'DLP e IoT Security solo existen en Enterprise Protection'},
+  // La inspeccion TLS profunda es una funcion de FortiOS: no consume un servicio FortiGuard
+  // y por tanto NO eleva el bundle. Lo que si hace es cambiar el EJE contra el que se
+  // dimensiona -pasa a mandar la cifra oficial de SSL Inspection-, que es cosa del motor.
+  {id:'chkSsl',    n:'Inspeccion profunda SSL/TLS', servicio:null,    capa:'tp'},
+  // FortiSandbox analiza FUERA DE BANDA: ni eleva la capa ni entra en el bundle. Se cotiza
+  // como producto propio. Figura aqui para que la pagina no tenga una lista paralela.
+  {id:'chkSandbox',n:'FortiSandbox (analisis zero-day)', servicio:null, capa:null,
+   producto:'FortiSandbox', porQue:'analiza fuera de banda: no consume throughput ni entra en el bundle'},
+];
+
+// SERVICIOS AVANZADOS DE SD-WAN (categoria «SD-WAN» del Ordering Guide de FortiGuard).
+// EXISTEN PORQUE LA FUNCION BASE NO SE LICENCIA. Secure SD-WAN -seleccion dinamica de camino
+// por SLA, health checks, ADVPN- viene en FortiOS y se configura en cualquier FortiGate; lo
+// que se licencia aparte son estos servicios. Tener dos WAN NO obliga a Enterprise, y esa
+// suposicion es justo lo que el informe del 2026-09-22 manda retirar (AT-07).
+//
+// `sku:null` A PROPOSITO, y desde el 2026-09-24 por otra razon: el Ordering Guide de Secure
+// SD-WAN no vende estos servicios uno a uno sino en UN SKU por FortiGate (el SD-WAN Service,
+// ver SDWAN_SERVICIO), asi que el codigo no es de cada servicio sino del equipo. Antes era
+// null porque nadie lo habia leido; una linea sin SKU exacto sigue sin poder exportarse como
+// cotizacion, que es preferible a inventar un codigo con pinta de valido (el «FortiGate 2000F»).
+const SERVICIOS_SDWAN=[
+  {id:'sdwanMon', n:'SD-WAN Underlay and Application Monitoring Service', sku:null,
+   d:'Base de datos de SLA, speed tests activos y monitoreo de aplicacion. Se deriva solo si el diseno usa esas funciones, no por tener varios enlaces.'},
+  {id:'sdwanOrq', n:'SD-WAN Overlay Orchestration Service', sku:null,
+   d:'Orquestacion cloud de overlays (plantillas de hub-and-spoke y ADVPN desde el portal). Se deriva solo si el diseno la usa.'},
+  {id:'sdwanSase',n:'FortiSASE — conector SD-WAN (spoke)', sku:null,
+   d:'Conecta el FortiGate a FortiSASE como spoke. Se licencia por usuario segun el Ordering Guide, aparte del FortiGate.'},
+];
+
+// TERMINO -> sufijo real del SKU. En el price list de Fortinet el sufijo `DD` es el marcador
+// del PATRON («duracion»), no un codigo pedible: una cotizacion con `-DD` no se puede pasar a
+// un distribuidor. La equivalencia es meses, no anios, y por eso se declara en meses.
+const TERMINOS={1:{meses:12, sufijo:'12'}, 3:{meses:36, sufijo:'36'}, 5:{meses:60, sufijo:'60'}};
 
 // Niveles de soporte FortiCare tal como aparecen en el price list AMER (SKUs -314/-247/-284 por modelo, ver LICENSES).
 // Essential no incluye TAC 24x7 ni reemplazo de hardware — confirmar alcance exacto y SLA de RMA con Fortinet,
@@ -406,4 +1111,5 @@ const CARE={
   fcelite:{n:'FortiCare Elite',      sla:'FortiCare Premium + atención de tickets con prioridad Elite'},
 };
 
-module.exports = { MODELS, BUNDLES, CARE, LICENSES, HW_SKU };
+module.exports = { MODELS, BUNDLES, CARE, LICENSES, HW_SKU, FUNCIONES, SERVICIOS_SDWAN, SDWAN_SERVICIO, EMS_LICENCIAS, SASE_USUARIOS, TERMINOS, MATRIX_LIMITES,
+  FICHAS_LIMITES, MATRIX_PLATAFORMA, FICHAS_PLATAFORMA, PUERTOS, FORTIOS, REANCLAJE };

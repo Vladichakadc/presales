@@ -125,3 +125,72 @@ test('«solo diferencias» esconde lo que coincide, incluidos los huecos iguales
   igual(claves(todo), ['portada', 'seg']);
   igual(claves(dif), ['portada'], 'el segmento coincide y se oculta');
 });
+
+/* ── COBERTURA DE LA COMPARACION (2026-09-23) ─────────────────────────────────────────────
+   El pie de la tabla ya explicaba la DIFERENCIA entre «sin dato» y «no aplica»; lo que no
+   decia es cuantos hay ni como se reparten, y ese reparto es lo que puede volver enganosa
+   una comparacion delante de un cliente. */
+
+test('la cobertura cuenta los tres estados POR SEPARADO, y noAplica no es un hueco', () => {
+  // El Nokia trae capacidad de conmutacion y nada mas; el FortiGate trae media ficha. Es el
+  // caso real: dos clases de equipo distintas en la misma tabla.
+  const devs = [
+    dev('fortinet', { model: 'FortiGate 120G', fw: 39000, ngfw: 3100, tp: 2800, sess: 3000000 }),
+    dev('nokia', { model: '7750 SR-7s', cap: 6400 }),
+  ];
+  const secciones = COMPARADOR.filasVisibles(devs, false);
+  const c = COMPARADOR.cobertura(secciones, devs);
+
+  assert.ok(c.filas > 0, 'hay filas que comparar');
+  assert.strictEqual(c.celdas, c.filas * devs.length);
+  // La suma de los tres estados tiene que dar TODAS las casillas: si no, alguna se esta
+  // contando dos veces o ninguna, y el numero que se pinta encima de la tabla mentiria.
+  assert.strictEqual(c.dato + c.sinDato + c.noAplica, c.celdas,
+    'los tres estados suman las casillas, sin solapes ni huecos');
+
+  // LA REGLA: `noAplica` NO se cuenta como hueco de datos. El Nokia no tiene sesiones porque
+  // no es un cortafuegos con estado, y decir «falta el dato» ahi manda a buscar un documento
+  // que no existe — el mismo error del `noAplica` deducido que este comparador ya cometio.
+  assert.ok(c.noAplica > 0, 'el router de transporte aporta al menos un noAplica');
+  const nokia = c.porEquipo.find((e) => e.model === '7750 SR-7s');
+  assert.ok(nokia.noAplica > 0 && nokia.dato > 0, 'el Nokia tiene datos Y conceptos que no aplican');
+});
+
+test('el desnivel dice lo que el total no dice: si los huecos se concentran', () => {
+  // Dos FortiGate con la misma ficha: mismos huecos, desnivel cero. Ahi la tabla se puede
+  // leer de arriba abajo sin que favorezca a nadie.
+  const parejos = [
+    dev('fortinet', { model: 'A', fw: 4000, ngfw: 570, tp: 500 }),
+    dev('fortinet', { model: 'B', fw: 10000, ngfw: 1500, tp: 1300 }),
+  ];
+  const cPar = COMPARADOR.cobertura(COMPARADOR.filasVisibles(parejos, false), parejos);
+  assert.strictEqual(cPar.desnivel, 0, 'dos fichas igual de completas no tienen desnivel');
+
+  // Y uno con ficha completa contra otro casi vacio: ahi el desnivel es el hallazgo, porque
+  // leer la tabla de arriba abajo favorece AL QUE MAS PUBLICA, no al mejor.
+  const dispares = [
+    dev('fortinet', { model: 'Completo', fw: 39000, vpn: 35000, ips: 5300, ngfw: 3100, tp: 2800, ssl: 3000, sess: 3000000, cps: 140000, redund: true }),
+    dev('fortinet', { model: 'Pelado', fw: 39000 }),
+  ];
+  const cDis = COMPARADOR.cobertura(COMPARADOR.filasVisibles(dispares, false), dispares);
+  assert.ok(cDis.desnivel >= cDis.umbralDesnivel,
+    `el desnivel (${cDis.desnivel}) supera el umbral declarado (${cDis.umbralDesnivel})`);
+  assert.strictEqual(cDis.masHuecos.model, 'Pelado');
+  assert.strictEqual(cDis.menosHuecos.model, 'Completo');
+  // El umbral es la parte discutible y va declarada, como SEMANAS_TOLERADAS o el `rozado`.
+  assert.ok(cDis.umbralDesnivel > 0, 'el umbral se publica en el resultado, no queda escondido');
+});
+
+test('se cuenta sobre las secciones QUE SE PINTAN, no sobre otra lista', () => {
+  // Con «solo diferencias» la tabla esconde filas, y el recuento tiene que encoger con ella:
+  // contar sobre una lista distinta de la que se pinta dejaria que las dos se separaran sin
+  // que nadie lo notara.
+  const devs = [
+    dev('fortinet', { model: 'A', fw: 4000, ngfw: 570, tp: 500, sess: 600000 }),
+    dev('fortinet', { model: 'B', fw: 4000, ngfw: 570, tp: 1300, sess: 600000 }),
+  ];
+  const todas = COMPARADOR.cobertura(COMPARADOR.filasVisibles(devs, false), devs);
+  const soloDif = COMPARADOR.cobertura(COMPARADOR.filasVisibles(devs, true), devs);
+  assert.ok(soloDif.filas < todas.filas, 'al esconder lo que coincide, quedan menos filas');
+  assert.strictEqual(soloDif.celdas, soloDif.filas * devs.length);
+});

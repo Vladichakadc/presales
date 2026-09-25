@@ -10,16 +10,21 @@
     "test": "node --test test/*.test.js",
     "lint": "eslint .",
     "verificar": "npm run lint && npm test",
+    "e2e": "node test/e2e/run-e2e.js",
     "catalogo": "node scripts/catalogo-check.js",
     "datasheets": "node scripts/descargar-datasheets.js",
     "cps": "node scripts/importar-cps.js",
     "huawei": "node scripts/importar-huawei.js",
     "juniper": "node scripts/importar-juniper.js",
+    "lista-aruba": "node scripts/importar-lista-aruba.js",
     "propuesta": "node scripts/importar-propuesta.js",
     "vigia": "node scripts/vigia-fuentes.js",
+    "vigencia": "node scripts/vigencia-quickspecs.js",
     "manual": "node scripts/generar-manual-usuario.js",
     "pantallas": "node scripts/verificar-pantallas.js",
     "skus": "node scripts/importar-skus-fortinet.js",
+    "contraste": "node scripts/contraste.js",
+    "candidatas": "node scripts/probar-candidatas.js",
     "puerta": "node scripts/puerta.js"
   },
   "engines": {
@@ -32,6 +37,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.123.0",
     "dotenv": "^17.2.3",
+    "exceljs": "^4.4.0",
     "express": "^4.21.2",
     "headroom.js": "^0.12.0",
     "helmet": "^8.1.0",
@@ -41,7 +47,9 @@
     "xlsx": "npm:@e965/xlsx@^0.20.3"
   },
   "devDependencies": {
+    "axe-core": "^4.13.0",
     "eslint": "^9.39.5",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "pdf-parse": "^1.1.1"
   }
 }

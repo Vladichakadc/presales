@@ -6,6 +6,10 @@ const cotizadorCatalog = require('../seed/legacyData/cotizadorCatalog');
 const mikrotikData = require('../seed/legacyData/mikrotik');
 const arubaData = require('../seed/legacyData/aruba');
 const nokiaData = require('../seed/legacyData/nokia');
+const fortinetData = require('../seed/legacyData/fortinet');
+// El motor del dimensionador FortiGate se usa aqui solo por su SHA-256 canonico: la version
+// del catalogo tiene que calcularse con la MISMA funcion que la huella del escenario.
+const MOTOR_FORTINET = require('../../public/js/fortinet-motor.js');
 const { fuentesDe } = require('../seed/legacyData/fuentes');
 const fuentesSubidas = require('../fuentesSubidas');
 const fs = require('fs');
@@ -75,6 +79,84 @@ async function getVendorsList() {
 // Procedencia por fabricante, para que el portal pueda decir de que documento y de que fecha
 // salen las cifras que alguien esta a punto de citar en una propuesta. Sale de
 // legacyData/fuentes.js, que transcribe lo que ya estaba en las cabeceras de cada catalogo.
+// ESTADO DE VIGILANCIA DE CADA FUENTE. `fuentes.js` dice de que documento y de que fecha
+// salieron las cifras; el lock del vigia sabe ademas si ese documento SIGUE siendo el mismo.
+// Hasta el 2026-09-14 ese segundo dato no llegaba a ninguna pantalla: el Product Matrix de
+// Fortinet se republico y la pestana de procedencia seguia mostrando un "2026-07" tranquilo a
+// quien estaba a punto de citar una cifra delante de un cliente.
+//
+// TRES ESTADOS Y NINGUNO DEDUCIDO, la regla de `redund` y del comparador:
+//   verificada     el documento de hoy es el mismo contra el que se contrasto el catalogo
+//   cambió         se republico y todavia no lo ha contrastado nadie (con desde cuando)
+//   no comprobada  no hay medicion: sin URL publica que vigilar, o nunca se pudo leer
+// "No comprobada" NUNCA es verde. No saber no es estar bien, igual que una fuente sin fecha no
+// cuenta como reciente.
+//
+// El lock se lee una vez y se cachea: vive en git y la base es efimera, asi que solo cambia
+// con un despliegue. Que falte no es un error -- el repositorio funciona igual sin vigia.
+const RUTA_LOCK = pathMod.join(__dirname, '..', 'seed', 'legacyData', 'fuentes.lock.json');
+let lockCache;
+function lockVigia() {
+  if (lockCache === undefined) {
+    try {
+      lockCache = JSON.parse(fs.readFileSync(RUTA_LOCK, 'utf8')).documentos || {};
+    } catch {
+      lockCache = {};
+    }
+  }
+  return lockCache;
+}
+
+function vigilanciaDe(vendorCode, f) {
+  if (!f.url) return { estado: 'no comprobada', motivo: 'no hay URL pública que vigilar' };
+  // Una pagina marcada `estable: false` cambia de hash en cada peticion por marcas de tiempo y
+  // banners rotatorios, asi que el vigia la mide pero su resultado NO dice nada del dato. Que
+  // coincida no es "sin cambios": es que hoy tuvo suerte. Pintarla verde seria el mismo verde
+  // deducido que el "IPS: no aplica" del Catalyst 8300 -- y se detecto pintando la pantalla,
+  // no razonando sobre ella.
+  if (f.estable === false) {
+    return { estado: 'no comprobada', motivo: 'página dinámica: su hash cambia en cada petición y no dice nada del dato' };
+  }
+  const e = lockVigia()[`${vendorCode}::${f.url}`];
+  if (!e) return { estado: 'no comprobada', motivo: 'el vigía todavía no ha podido leerla' };
+  if (e.visto) {
+    return {
+      estado: 'cambió',
+      desde: e.pendienteDesde || e.visto.medido,
+      motivo: 'el documento oficial se republicó y aún no se ha contrastado con el catálogo',
+    };
+  }
+  return { estado: 'verificada', desde: e.medido };
+}
+
+// PENDIENTE 34 — QUE HACE FALTA PARA QUE UN MODELO PUEDA SALIR EN VERDE.
+//
+// El semaforo de ciclo de vida vivia solo en la pagina de Aruba y su rama por defecto era
+// VERDE: todo lo que no estuviera marcado `eol` o `legacy` salia como «Generacion actual».
+// Portarlo tal cual a los siete habria afirmado «se puede pedir» sobre 131 modelos que nadie
+// ha comprobado — el mismo error que el «IPS: no aplica» del Catalyst 8300, y mas caro,
+// porque lo que se afirma es que un equipo esta a la venta.
+//
+// LA AUSENCIA DE UN BOLETIN NO ES PRUEBA DE VIGENCIA. Solo lo es si alguien mira los
+// boletines de ese fabricante. Y eso ya esta declarado en el repositorio: una fuente de
+// `legacyData/fuentes.js` con `campos` que incluya `eolAnnounced` es exactamente «hay un
+// documento de fin de venta contrastado, de esta fecha». Se reutiliza esa declaracion en vez
+// de escribir una segunda lista de fabricantes, que es como se desincronizan dos sitios con
+// el mismo dato.
+//
+// Hoy la cumplen Cisco y Juniper. Los otros cinco reciben `respaldado: false` y su ficha
+// declara «el catalogo no trae el ciclo de vida» — el tercer estado que ya protege `redund`.
+function respaldoCicloVida(vendorCode) {
+  const f = fuentesDe(vendorCode).find((x) => Array.isArray(x.campos) && x.campos.includes('eolAnnounced'));
+  if (!f) {
+    return {
+      respaldado: false,
+      motivo: 'ninguna fuente declarada respalda el campo eolAnnounced de este fabricante',
+    };
+  }
+  return { respaldado: true, fuente: f.documento || null, fecha: f.fecha || null, url: f.url || null };
+}
+
 async function toFuentes() {
   const vendors = await Vendor.findAll({ order: [['name', 'ASC']] });
   const out = {};
@@ -83,7 +165,14 @@ async function toFuentes() {
     // procedencia transcrita del catálogo. Con el manifiesto vacío esto no añade nada, así que
     // el comportamiento por defecto no cambia.
     const cargadas = fuentesSubidas.comoProcedencia(v.code);
-    out[v.code] = { nombre: v.name, colorHex: v.colorHex, fuentes: [...cargadas, ...fuentesDe(v.code)] };
+    // Las cargadas a mano no las vigila nadie: viven en el volumen, no en la otra punta de
+    // una URL oficial. Se marcan como tales en vez de heredar un estado que nadie midio.
+    const propias = fuentesDe(v.code).map((f) => ({ ...f, vigilancia: vigilanciaDe(v.code, f) }));
+    const subidas = cargadas.map((f) => ({
+      ...f,
+      vigilancia: { estado: 'no comprobada', motivo: 'documento cargado a mano, no se vigila' },
+    }));
+    out[v.code] = { nombre: v.name, colorHex: v.colorHex, fuentes: [...subidas, ...propias] };
   }
   return out;
 }
@@ -220,9 +309,19 @@ async function toDimensionadorFortinet() {
   const vendorIds = await vendorIdMap();
   const vendorId = vendorIds.fortinet;
 
+  // El nombre y la descripcion salen de la base (se siembran ahi); el CONTENIDO ESTRUCTURADO
+  // del bundle sale de legacyData, con el precedente de `toFuentes` y `referencias.js`.
+  // Meterlo en la base obligaria a una columna nueva y a una migracion para un dato que no
+  // se consulta ni se filtra: solo lo leen las reglas comerciales, y ahi tiene que llegar
+  // COMO ESTA ESCRITO, porque de `incluye` cuelgan el bundle minimo (AT-03), el soporte que
+  // no se duplica (AT-04) y el FortiConverter que no se cotiza dos veces (AT-05).
   const bundles = await LicenseBundle.findAll({ where: { vendorId } });
   const bundlesOut = {};
-  for (const b of bundles) bundlesOut[b.code] = { n: b.name, svcs: b.description };
+  for (const b of bundles) {
+    const extra = fortinetData.BUNDLES[b.code] || {};
+    bundlesOut[b.code] = { n: b.name, svcs: b.description,
+      incluye: extra.incluye || [], nivel: extra.nivel || 0 };
+  }
 
   const tiers = await SupportTier.findAll({ where: { vendorId } });
   const care = {};
@@ -238,7 +337,31 @@ async function toDimensionadorFortinet() {
       elp: p.priceDisplay, elpN: p.priceNumeric,
     }));
 
-  return { models, bundles: bundlesOut, care };
+  const datos = {
+    models, bundles: bundlesOut, care,
+    // Reglas comerciales y de formulario como DATOS, no como listas repetidas en la pagina:
+    // el catalogo de funciones de seguridad con su servicio FortiGuard y su piso de capa,
+    // los servicios avanzados de SD-WAN (que existen porque la funcion base NO se licencia)
+    // y la equivalencia termino -> sufijo real de SKU, que es lo que convierte un `-DD` de
+    // patron en una linea pedible.
+    funciones: fortinetData.FUNCIONES,
+    serviciosSdwan: fortinetData.SERVICIOS_SDWAN,
+    // Tablas de SKU de FortiClient EMS (packs) y FortiSASE (bandas de usuarios), de sus
+    // Ordering Guides: las lee la regla comercial para emitir el SKU exacto.
+    ems: fortinetData.EMS_LICENCIAS,
+    sase: fortinetData.SASE_USUARIOS,
+    terminos: fortinetData.TERMINOS,
+    // Compatibilidad FortiOS x funcion x modelo (hallazgo P0 F02 del 23-sep), con la fuente
+    // de cada regla. La lee el mismo motor en la pagina y en /api/v1/fortinet/evaluations.
+    fortios: fortinetData.FORTIOS,
+  };
+  /* VERSION DEL CATALOGO, derivada del CONTENIDO y no de una fecha escrita a mano. Es lo que
+     el navegador envia al pedir una salida comercial: si el servidor tiene otro catalogo
+     -otro despliegue, una propuesta aplicada en local- lo dice en vez de confirmar un
+     resultado calculado sobre cifras que ya no son las vigentes. Una fecha escrita a mano se
+     olvida de cambiar; un hash del contenido no puede. */
+  datos.datasetVersion = `fortinet@${MOTOR_FORTINET.sha256(MOTOR_FORTINET.canon(datos)).slice(0, 16)}`;
+  return datos;
 }
 
 // MikroTik: ademas de modelos/opticas/soporte devuelve las constantes de dimensionamiento
@@ -331,6 +454,7 @@ async function toDimensionadorJuniper() {
 async function toDimensionadorAruba() {
   const vendorIds = await vendorIdMap();
   const vendorId = vendorIds.aruba;
+  const { optics, opticLabel } = await dimensionadorOptics(vendorId);
 
   const bundles = await LicenseBundle.findAll({ where: { vendorId } });
   const bundlesOut = {};
@@ -343,13 +467,14 @@ async function toDimensionadorAruba() {
   const locales = datasheetsLocales();
   const rutaLocal = (file) => (file && locales.has(file) ? `/datasheets/${file}` : null);
 
-  const products = await Product.findAll({ where: { vendorId } });
+  const products = await Product.findAll({ where: { vendorId }, include: [{ model: OpticCategory }] });
   const models = products
     .filter((p) => p.specs && p.specs.fam && ['sdwan', 'gateway'].includes(p.category))
     .map((p) => ({
       id: p.model, ...specWithoutGroup(p.specs), eol: p.eol,
       elp: p.priceDisplay, elpN: p.priceNumeric,
       dsLocal: rutaLocal(p.specs && p.specs.dsFile),
+      optics: p.OpticCategories.map((c) => c.code),
     }));
 
   // Cada documento lleva su copia local cuando esta descargada; la pagina prefiere esa y
@@ -361,17 +486,34 @@ async function toDimensionadorAruba() {
 
   return {
     models,
+    optics,
+    opticLabel,
     bundles: bundlesOut,
     care,
+    careSkus: arubaData.CARE_SKU,
     licenses: arubaData.LICENSES,
+    licensesHa: arubaData.LICENSES_HA,
     software: arubaData.SOFTWARE,
     centralTiers: arubaData.CENTRAL_TIERS,
+    // SKU de Central por serie de gateway (A3, 2026-09-24): sin precio, el precio lo pone la
+    // lista cargada cuando lo trae.
+    centralPorSerie: arubaData.CENTRAL_POR_SERIE || {},
     datasheets,
     sizing: {
       bwTiers: arubaData.BW_TIERS,
       boost: arubaData.BOOST,
       fec: arubaData.FEC_OVERHEAD,
     },
+    osMatrix: arubaData.OS_MATRIX || null,
+    accessories: arubaData.ARUBA_ACCESSORY_CATALOG || {},
+    accessoryCompat: arubaData.ACCESSORY_COMPAT || {},
+    // SSE va siempre en «consultar» (precio null: la lista vigente no lo trae) y
+    // microbranch son los umbrales del aviso de sede pequeña (2026-09-13).
+    sse: arubaData.ARUBA_SSE,
+    microbranch: arubaData.MICROBRANCH_UMBRALES,
+    // DTD sí está en la lista vigente (2026-09-14, pendiente #31): escalera plana por
+    // appliance, modalidad × término — ver DTD_LICENSES en aruba.js.
+    dtd: arubaData.DTD_LICENSES,
   };
 }
 
@@ -438,6 +580,7 @@ module.exports = {
   getVendorsList,
   toIndexPR,
   toFuentes,
+  respaldoCicloVida,
   toCotizadorCatalog,
   toDimensionadorHuawei,
   toDimensionadorCisco,

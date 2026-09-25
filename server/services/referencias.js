@@ -20,6 +20,7 @@
 // en cada arranque solo alargaria el despliegue.
 
 const fortinetSkus = require('../seed/legacyData/fortinetSkus.js');
+const terminoSku = require('./terminoSku');
 
 // El resto se carga en perezoso: solo Fortinet y Aruba tienen algo que dar hoy.
 const modelosDe = (archivo) => {
@@ -38,6 +39,10 @@ const ARUBA_LIST_PRICE = {
   JM962A: 2752, R9D72A: 1546, S0E22A: 4318, S0E23A: 5588, S3N73A: 13479,
   JZ872A: 21323, JZ878A: 34592, S0B67A: 46664, S2N65A: 47304,
   R1B20A: 2505, R3V91A: 3247, R1B31A: 4441, S5H02A: 9228, R9M45A: 19944, R7H95A: 37614,
+  // Serie 7000/7200 (2026-09-13, misma lista): solo la unidad REMANUFACTURADA HPE (sufijo
+  // AR) tiene List Price — la nueva no aparece en la lista. 7024 y 7240XM: ni una ni otra.
+  JW633AR: 1567, JX927AR: 2718, JW678AR: 4185, JW686AR: 7326,
+  JW735AR: 13609, JW743AR: 17798, JW751AR: 26699,
 };
 
 const SIN_REFERENCIAS = {
@@ -53,7 +58,9 @@ function referenciasDe(vendor, modeloId) {
   const id = String(modeloId || '');
 
   if (v === 'fortinet') {
-    const refs = fortinetSkus[id] || [];
+    // F18: el termino lo dice el codigo. Una descripcion que lo contradice se corrige a la
+    // vista (original en `dLista`, motivo en `aviso`); ver services/terminoSku.js.
+    const refs = (fortinetSkus[id] || []).map(terminoSku.normalizar);
     return {
       vendor: v,
       modelo: id,

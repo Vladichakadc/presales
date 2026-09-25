@@ -29,10 +29,10 @@ module.exports = [
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7210 SAS-Mxp',        seg:'Acceso / Agregación',     spec:'240 Gbps · 48x1GE + 4x10GE + 2x100GE · SR-MPLS',             elp:'~ $22,000',elpN:22000},
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7250 IXR-6e',         seg:'Leaf datacenter',         spec:'6.4 Tbps · 36x100GE o 12x400GE · SR Linux, EVPN-VXLAN',       elp:'~ $48,000',elpN:48000},
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7250 IXR-10e',        seg:'Spine datacenter',        spec:'12.8 Tbps · 36x400GE · SR Linux, EVPN-VXLAN',                 elp:'~ $85,000',elpN:85000},
-  {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-1s',          seg:'PE / Edge 2U',            spec:'1.2 Tbps · 36x100GE o 12x400GE · SR-MPLS, SRv6, FlexE',      elp:'~ $85,000',elpN:85000},
-  {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-2s',          seg:'Edge / Agregación',       spec:'4 Tbps · 144x100GE o 36x400GE · SR-MPLS, SRv6',              elp:'~ $140,000',elpN:140000},
-  {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-7s',          seg:'Core IP/MPLS',            spec:'19.2 Tbps · 7 slots IOM · SR-MPLS, SRv6, FlexE',              elp:'~ $220,000',elpN:220000},
-  {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-14s',         seg:'Core grande',             spec:'38.4 Tbps · 14 slots IOM · SR-MPLS, SRv6',                    elp:'~ $380,000',elpN:380000},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-1s',          seg:'PE / Edge 2U',            spec:'4.8 Tbps · 36x100GE o 12x400GE · SR-MPLS, SRv6, FlexE',      elp:'~ $85,000',elpN:85000},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-2s',          seg:'Edge / Agregación',       spec:'9.6 Tbps · 144x100GE o 36x400GE · SR-MPLS, SRv6',              elp:'~ $140,000',elpN:140000},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-7s',          seg:'Core IP/MPLS',            spec:'108 Tbps · 7 slots IOM · SR-MPLS, SRv6, FlexE',              elp:'~ $220,000',elpN:220000},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-14s',         seg:'Core grande',             spec:'216 Tbps · 14 slots IOM · SR-MPLS, SRv6',                    elp:'~ $380,000',elpN:380000},
   // Precios verificados contra "2026Q3 Mid Price list_AMER_FINAL_EFF 090726.xlsx" (Fortinet AMER price list
   // oficial, vigente desde 07-sep-2026). Sucede a la "Main" del 03-ago-2026, que era la fuente anterior: el
   // propio documento lo declara en su Cover Sheet ("Previous Version: Aug 3, 2026" -> "Current Version: Sep 7, 2026").
@@ -127,20 +127,24 @@ module.exports = [
   {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-10106',              seg:'Sucursal pequeña',              spec:'EdgeConnect SD-WAN · WAN 2 Mbps - 1 Gbps · SKU S0E22A',  elp:'~ $4,318', elpN:4318},
   {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-10108',              seg:'Sucursal mediana',              spec:'EdgeConnect SD-WAN · WAN 2 Mbps - 2 Gbps · SKU S0E23A',  elp:'~ $5,588', elpN:5588},
   {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-10150',              seg:'Datacenter / Hub grande',       spec:'EdgeConnect SD-WAN · WAN hasta 12 Gbps · SKU S2N65A',  elp:'~ $47,304',elpN:47304},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9004',          seg:'Sucursal peq',                  spec:'Serie 9000 · FW 4 Gbps · 2.048 clientes · 32 APs · SKU R1B20A',  elp:'~ $2,505', elpN:2505},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9004-LTE',      seg:'Sucursal peq + LTE',            spec:'Serie 9000 · FW 4 Gbps · 2.048 clientes · 32 APs · SKU R3V91A',  elp:'~ $3,247', elpN:3247},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9012',          seg:'Sucursal med / gde',            spec:'Serie 9000 · FW 6 Gbps · 2.048 clientes · 32 APs · SKU R1B31A',  elp:'~ $4,441', elpN:4441},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9004',          seg:'Sucursal peq',                  spec:'Serie 9000 · FW 4 Gbps · 2.048 clientes · 128 APs (AOS 10) · SKU R1B20A',  elp:'~ $2,505', elpN:2505},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9004-LTE',      seg:'Sucursal peq + LTE',            spec:'Serie 9000 · FW 4 Gbps · 2.048 clientes · 128 APs (AOS 10) · SKU R3V91A',  elp:'~ $3,247', elpN:3247},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9012',          seg:'Sucursal med / gde',            spec:'Serie 9000 · FW 6 Gbps · 2.048 clientes · 256 APs (AOS 10) · SKU R1B31A',  elp:'~ $4,441', elpN:4441},
   {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9106',          seg:'Sucursal gde / Campus peq',     spec:'Serie 9100 Hybrid · FW 10 Gbps · 8.000 clientes · 2.000 APs · SKU S5H02A',  elp:'~ $9,228', elpN:9228},
   {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9114',          seg:'Campus peq / Sucursal grande',  spec:'Serie 9100 Hybrid · FW 20 Gbps · 10.000 clientes · 4.000 APs · SKU R9M45A',  elp:'~ $19,944',elpN:19944},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9240',          seg:'Campus / Hub regional',         spec:'Serie 9200 · FW 20 Gbps · 16.000 clientes · 512 APs · SKU R7H95A',  elp:'~ $37,614',elpN:37614},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7005',                  seg:'Sucursal peq (fanless)',        spec:'Serie 7000 · FW 2 Gbps · 1.024 clientes · 16 APs',  elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7008',                  seg:'Sucursal peq + PoE',            spec:'Serie 7000 · FW 2 Gbps · 1.024 clientes · 16 APs',  elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7010',                  seg:'Sucursal med',                  spec:'Serie 7000 · FW 4 Gbps · 2.048 clientes · 32 APs',  elp:'Consultar',elpN:0},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9240',          seg:'Campus / Hub regional',         spec:'Serie 9200 · FW 20 Gbps · 32.000 clientes · 4.000 APs sin licencia (AOS 10) · SKU R7H95A',  elp:'~ $37,614',elpN:37614},
+  // Serie 7000/7200 (2026-09-13): la unidad NUEVA no esta en la lista del distribuidor;
+  // lo que tiene List Price es la unidad remanufacturada HPE (sufijo AR). Se cotiza esa y
+  // se declara "(Reman)" en la fila — ver aruba.js, skus de cada modelo. 7024 y 7240XM no
+  // tienen ni una ni otra en la lista: siguen en Consultar.
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7005',                  seg:'Sucursal peq (fanless)',        spec:'Serie 7000 · FW 2 Gbps · 1.024 clientes · 16 APs · SKU JW633AR (Reman)',  elp:'~ $1,567', elpN:1567},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7008',                  seg:'Sucursal peq + PoE',            spec:'Serie 7000 · FW 2 Gbps · 1.024 clientes · 16 APs · SKU JX927AR (Reman)',  elp:'~ $2,718', elpN:2718},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7010',                  seg:'Sucursal med',                  spec:'Serie 7000 · FW 4 Gbps · 2.048 clientes · 32 APs · SKU JW678AR (Reman)',  elp:'~ $4,185', elpN:4185},
   {vendor:'Aruba',   color:'#01A982',model:'Aruba 7024',                  seg:'Sucursal med · acceso unificado 24p', spec:'Serie 7000 · FW 4 Gbps · 2.048 clientes · 32 APs',  elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7030',                  seg:'Sucursal gde',                  spec:'Serie 7000 · FW 8 Gbps · 4.096 clientes · 64 APs',  elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7205',                  seg:'Campus med',                    spec:'Serie 7200 · FW 15 Gbps · 8.000 clientes · 256 APs',  elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7210',                  seg:'Campus gde',                    spec:'Serie 7200 · FW 20 Gbps · 16.000 clientes · 512 APs',  elp:'Consultar',elpN:0},
-  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7220',                  seg:'Campus grande / alta densidad', spec:'Serie 7200 · FW 40 Gbps · 24.000 clientes · 1.024 APs',  elp:'Consultar',elpN:0},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7030',                  seg:'Sucursal gde',                  spec:'Serie 7000 · FW 8 Gbps · 4.096 clientes · 64 APs · SKU JW686AR (Reman)',  elp:'~ $7,326', elpN:7326},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7205',                  seg:'Campus med',                    spec:'Serie 7200 · FW 15 Gbps · 8.000 clientes · 256 APs · SKU JW735AR (Reman)',  elp:'~ $13,609',elpN:13609},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7210',                  seg:'Campus gde',                    spec:'Serie 7200 · FW 20 Gbps · 16.000 clientes · 512 APs · SKU JW743AR (Reman)',  elp:'~ $17,798',elpN:17798},
+  {vendor:'Aruba',   color:'#01A982',model:'Aruba 7220',                  seg:'Campus grande / alta densidad', spec:'Serie 7200 · FW 40 Gbps · 24.000 clientes · 1.024 APs · SKU JW751AR (Reman)',  elp:'~ $26,699',elpN:26699},
   {vendor:'Aruba',   color:'#01A982',model:'Aruba 7240XM',                seg:'Campus máxima escala',          spec:'Serie 7200 · FW 40 Gbps · 32.000 clientes · 2.048 APs',  elp:'Consultar',elpN:0},
   // Ampliacion Juniper y Nokia (ago-2026), tomada de datasheets oficiales — ver la cabecera
   // de cada bloque en legacyData/indexPR.js para las URLs. Las cifras tecnicas estan
@@ -161,8 +165,8 @@ module.exports = [
   {vendor:'Juniper', color:'#84B135',model:'Juniper SSR1300',             seg:'DC / Campus mediano',     spec:'20 Gbps · SD-WAN sin túneles · concentrador',                 elp:'Consultar',elpN:0},
   {vendor:'Juniper', color:'#84B135',model:'Juniper SSR1400',             seg:'DC / Campus grande',      spec:'40 Gbps · SD-WAN sin túneles · hub regional',                 elp:'Consultar',elpN:0},
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7220 IXR-D1',           seg:'Acceso / Gestión DC',     spec:'88 Gbps · 48x1GE RJ45 + 4x SFP+ · SR Linux · 1U',             elp:'Consultar',elpN:0},
-  {vendor:'Nokia',  color:'#124191', model:'Nokia 7220 IXR-D2L',          seg:'Leaf datacenter',         spec:'4 Tbps · 48x25GE + 8x100GE + 2x10GE · SR Linux · 1U',         elp:'Consultar',elpN:0},
-  {vendor:'Nokia',  color:'#124191', model:'Nokia 7220 IXR-D3L',          seg:'Leaf / Spine compacto',   spec:'6.4 Tbps · 32x100GE QSFP28 + 2x SFP+ · SR Linux · 1U',        elp:'Consultar',elpN:0},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7220 IXR-D2L',          seg:'Leaf datacenter',         spec:'2 Tbps · 48x25GE + 8x100GE + 2x10GE · SR Linux · 1U',         elp:'Consultar',elpN:0},
+  {vendor:'Nokia',  color:'#124191', model:'Nokia 7220 IXR-D3L',          seg:'Leaf / Spine compacto',   spec:'3.2 Tbps · 32x100GE QSFP28 + 2x SFP+ · SR Linux · 1U',        elp:'Consultar',elpN:0},
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7220 IXR-D5',           seg:'Spine datacenter 400G',   spec:'12.8 Tbps · 32x400GE QSFP-DD + 2x SFP+ · SR Linux · 1U',      elp:'Consultar',elpN:0},
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7250 IXR-e2',           seg:'Cell site / Acceso',      spec:'800 Gbps · GE/10GE/25GE · SR-MPLS, SRv6, EVPN',               elp:'Consultar',elpN:0},
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7250 IXR-X1b',          seg:'Agregación / Edge',       spec:'7.2 Tbps · 24x100GE + 12x400GE · SR Linux · 1U',              elp:'Consultar',elpN:0},

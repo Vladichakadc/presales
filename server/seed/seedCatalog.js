@@ -365,8 +365,14 @@ async function seedCatalog() {
   // La categoría separa las familias porque no se dimensionan igual: 'sdwan' son los
   // EdgeConnect (se dimensionan por caudal WAN y admiten Boost) y 'gateway' los 9000 de
   // sucursal y el 9240 de campus (se dimensionan por throughput de firewall y clientes).
+  // Transceivers y DAC para las jaulas SFP/SFP+/SFP28 de EdgeConnect y de los gateways
+  // 9100/9200 (2026-09-11) — mismo patron que MikroTik: sin `parts`, solo `OPTICS` por
+  // categoria fisica. Ver la cabecera de OPTICS en aruba.js para la fuente y el alcance de
+  // la compatibilidad confirmada.
+  const arOpt = await seedOpticsAndParts(vendorIds.aruba, arubaData.OPTICS, null, false);
   await seedDimensionadorModels(vendorIds.aruba, arubaData.MODELS, {
     categoryFn: (item) => (item.fam === 'ec' ? 'sdwan' : 'gateway'),
+    opticCategoryIds: arOpt.opticCategoryIds,
   });
   await seedSupportTiers(vendorIds.aruba, arubaData.CARE);
   await seedLicenseBundles(vendorIds.aruba, arubaData.BUNDLES, false);

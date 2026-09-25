@@ -1,0 +1,291 @@
+{
+ "_procedencia": "Figuras oficiales de la pagina «Hardware» (pagina 7) de los datasheets por serie de FortiGate (fortinet.com), reextraidas el 2026-09-22 DESPUES de que el dueño del repositorio corrigiera la revision anterior: «si hay evidencia que existe las imagenes de la parte trasera», y la tenia. LA REVISION DEL 22-SEP POR LA MAÑANA MIRO SOLO LA PORTADA y comparo las paginas 3 y 5; concluyo que Fortinet no publica vista trasera y eso era FALSO. La pagina 7 de los 28 documentos es la pagina de hardware, con el diagrama de panel y sus llamadas numeradas, y CUATRO de ellos rotulan las caras literalmente («Front Panel» / «Rear Panel»: 400F, 400G, 700G y 900G). Es el equivalente exacto del «Front View»/«Rear View» del Hardware Reference de HPE con el que se construyo la tarjeta de Aruba. Resultado: 54 de 58 modelos con AMBAS caras, frente a la portada de marketing que era lo unico que se servia antes. COMO SE DECIDIO QUE CARA ES CADA UNA. Los 24 datasheets que no rotulan las caras se resolvieron con un ANCLA tomada de los cuatro que si: en esos cuatro, la cara rotulada trasera es exactamente la que lleva la entrada de alimentacion, las fuentes, los ventiladores o los SSD. No se dedujo del ORDEN en la pagina, que no es constante: el 120G y el 90G publican la trasera PRIMERO. Y en los equipos de sobremesa (30G, 40F, 50G, 60F, 70F, 70G, 80F, 90G) los rotulos del panel son TRAZOS VECTORIALES y no texto, asi que no hay lectura automatica posible: las 68 figuras se miraron una por una y la tabla de caras (`scripts/../caras`, transcrita al generar este fichero) se escribio a mano. Ahi la cara trasera es la que lleva el conector DC+12V. QUE UNIDAD DIBUJA CADA FIGURA: se leyo el rotulo del chasis en el propio dibujo y va en `fuente`; donde no era legible no se afirma nada. A diferencia de la portada -que retrata con frecuencia la VARIANTE CON SSD (la serie 1000F retrataba un 1001F)-, estos diagramas dibujan casi siempre el modelo base; el 400G y el 700G son la excepcion y dibujan el 401G y el 701G, y se declara. DOS TRASERAS EN 400F Y 900G: el documento publica la de la variante AC y la de la DC. Se sirve la AC, que es la configuracion por defecto, y se dice. EL 80F SE QUEDA SIN FRONTAL: su datasheet publica una sola figura para el 80F/81F y es la cara de conectores; las dos que traen frontal son de las variantes DSL y PoE, que son otro producto. Servirle la del DSL habria sido la foto de otro equipo. LOS CUATRO QUE NO TENIAN FIGURA (100F, 200F, 7081F y 7121F) la tienen desde el 2026-09-24, y NO de un datasheet: el del 100F y el del 200F dan 404 en ingles tambien desde internet abierto (medido sin proxy), y los chasis nunca tuvieron datasheet de serie. La edicion COREANA oficial de esa ficha si sigue en el CDN de fortinet.com y de ella salen los limites de los dos modelos, pero no su figura: su dibujo del 100F rotula otro equipo (FortiGate 212F). Salen de las guias oficiales de hardware de docs.fortinet.com (adjuntos en fortinetweb.s3.amazonaws.com/docs.fortinet.com): la QuickStart Guide del 100F (p. 5) y del 200F (p. 6), que rotulan la pagina «Front/Rear», y los System Guide del 7081F (p. 8 y 12) y del 7121F (p. 9 y 13), que rotulan cada figura «front panel» / «back panel» literalmente. En las QuickStart la cara se resolvio con la misma ANCLA que el resto: la trasera es la de «Redundant Power Supplies» (PSU1/PSU2). La primera corrida del transporte `fuente/fortinet-pendientes` (35934676181) NO trajo ningun documento: sus rutas se habian adivinado por patron y dieron 404. Con las rutas corregidas, las corridas 35991156286, 35997261950 y 35997486119 del mismo dia trajeron 12 documentos oficiales, entre ellos los dos System Guide: son las mismas versiones (7.0.5 y 7.4.4) y rotulan las mismas paginas que se citan aqui, asi que las figuras de los chasis tienen dos copias que casan. Las dos QuickStart Guide tambien, traidas despues por el transporte (corrida 36033165475): casan en pagina y rotulo, y el texto del propio dibujo del 100F dice «FortiGate 101F». LOS PDF NO SE BAJARON DESDE ESTE ENTORNO: el proxy de egreso devuelve 403 a fortinet.com, medido con agent-reach el mismo dia. Se trajeron por el mecanismo de transporte que este repositorio ya usa, las ramas `fuente/fortinet-serie`, `fuente/fortinet-serie-f` y `fuente/fortinet-datasheets`, publicadas por un ejecutor de GitHub Actions (mismo patron documentado en CLAUDE.md para `fuente/fortinet-product-matrix`). Renderizadas del vector a 1600 px de ancho, recortado el margen blanco, y guardadas en WebP calidad 82: 57 ficheros y 2,6 MB.",
+ "FortiGate 30G": {
+  "front": "/img/equipos/fg-30g-front.webp",
+  "rear": "/img/equipos/fg-30g-rear.webp",
+  "fuente": "Datasheet FortiGate/FortiWiFi 30G Series, p. 7 «Hardware» — «FortiGate FG-30G and FG-31G». Unidad dibujada: FortiGate 30G"
+ },
+ "FortiGate 31G": {
+  "front": "/img/equipos/fg-30g-front.webp",
+  "rear": "/img/equipos/fg-30g-rear.webp",
+  "fuente": "Datasheet FortiGate/FortiWiFi 30G Series, p. 7 «Hardware» — «FortiGate FG-30G and FG-31G». Unidad dibujada: FortiGate 30G"
+ },
+ "FortiGate 40F": {
+  "front": "/img/equipos/fg-40f-front.webp",
+  "rear": "/img/equipos/fg-40f-rear.webp",
+  "fuente": "Datasheet FortiGate/FortiWiFi 40F Series, p. 7 «Hardware» — «FortiGate 40F Series». Unidad dibujada: FortiGate 40F"
+ },
+ "FortiGate 50G": {
+  "front": "/img/equipos/fg-50g-front.webp",
+  "rear": "/img/equipos/fg-50g-rear.webp",
+  "fuente": "Datasheet FortiGate/FortiWiFi 50G Series, p. 7 «Hardware» — «FortiGate 50G/51G». Unidad dibujada: FortiGate 50G"
+ },
+ "FortiGate 51G": {
+  "front": "/img/equipos/fg-50g-front.webp",
+  "rear": "/img/equipos/fg-50g-rear.webp",
+  "fuente": "Datasheet FortiGate/FortiWiFi 50G Series, p. 7 «Hardware» — «FortiGate 50G/51G». Unidad dibujada: FortiGate 50G"
+ },
+ "FortiGate 60F": {
+  "front": "/img/equipos/fg-60f-front.webp",
+  "rear": "/img/equipos/fg-60f-rear.webp",
+  "fuente": "Datasheet FortiGate/FortiWiFi 60F Series, p. 7 «Hardware» — «FortiGate 60F/61F». Unidad dibujada: FortiGate 60F"
+ },
+ "FortiGate 61F": {
+  "front": "/img/equipos/fg-60f-front.webp",
+  "rear": "/img/equipos/fg-60f-rear.webp",
+  "fuente": "Datasheet FortiGate/FortiWiFi 60F Series, p. 7 «Hardware» — «FortiGate 60F/61F». Unidad dibujada: FortiGate 60F"
+ },
+ "FortiGate 70F": {
+  "front": "/img/equipos/fg-70f-front.webp",
+  "rear": "/img/equipos/fg-70f-rear.webp",
+  "fuente": "Datasheet FortiGate 70F Series, p. 7 «Hardware» — «FortiGate 71F». Unidad dibujada: FortiGate 71F"
+ },
+ "FortiGate 70G": {
+  "front": "/img/equipos/fg-70g-front.webp",
+  "rear": "/img/equipos/fg-70g-rear.webp",
+  "fuente": "Datasheet FortiGate/FortiWiFi 70G Series, p. 7 «Hardware» — «FortiGate 70G/71G». Unidad dibujada: FortiGate 70G"
+ },
+ "FortiGate 71F": {
+  "front": "/img/equipos/fg-70f-front.webp",
+  "rear": "/img/equipos/fg-70f-rear.webp",
+  "fuente": "Datasheet FortiGate 70F Series, p. 7 «Hardware» — «FortiGate 71F». Unidad dibujada: FortiGate 71F"
+ },
+ "FortiGate 71G": {
+  "front": "/img/equipos/fg-70g-front.webp",
+  "rear": "/img/equipos/fg-70g-rear.webp",
+  "fuente": "Datasheet FortiGate/FortiWiFi 70G Series, p. 7 «Hardware» — «FortiGate 70G/71G». Unidad dibujada: FortiGate 70G"
+ },
+ "FortiGate 80F": {
+  "rear": "/img/equipos/fg-80f-rear.webp",
+  "fuente": "Datasheet FortiGate/FortiWiFi 80F Series, p. 7 «Hardware» — «FortiGate 80F/81F». El documento NO publica vista frontal de este modelo"
+ },
+ "FortiGate 81F": {
+  "rear": "/img/equipos/fg-80f-rear.webp",
+  "fuente": "Datasheet FortiGate/FortiWiFi 80F Series, p. 7 «Hardware» — «FortiGate 80F/81F». El documento NO publica vista frontal de este modelo"
+ },
+ "FortiGate 90G": {
+  "front": "/img/equipos/fg-90g-front.webp",
+  "rear": "/img/equipos/fg-90g-rear.webp",
+  "fuente": "Datasheet FortiGate 90G Series, p. 7 «Hardware» — «FortiGate 90G/91G». Unidad dibujada: FortiGate 90G"
+ },
+ "FortiGate 91G": {
+  "front": "/img/equipos/fg-90g-front.webp",
+  "rear": "/img/equipos/fg-90g-rear.webp",
+  "fuente": "Datasheet FortiGate 90G Series, p. 7 «Hardware» — «FortiGate 90G/91G». Unidad dibujada: FortiGate 90G"
+ },
+ "FortiGate 120G": {
+  "front": "/img/equipos/fg-120g-front.webp",
+  "rear": "/img/equipos/fg-120g-rear.webp",
+  "fuente": "Datasheet FortiGate 120G Series, p. 7 «Hardware» — «FortiGate 120G/121G Series». Unidad dibujada: FortiGate 120G"
+ },
+ "FortiGate 121G": {
+  "front": "/img/equipos/fg-120g-front.webp",
+  "rear": "/img/equipos/fg-120g-rear.webp",
+  "fuente": "Datasheet FortiGate 120G Series, p. 7 «Hardware» — «FortiGate 120G/121G Series». Unidad dibujada: FortiGate 120G"
+ },
+ "FortiGate 200G": {
+  "front": "/img/equipos/fg-200g-front.webp",
+  "rear": "/img/equipos/fg-200g-rear.webp",
+  "fuente": "Datasheet FortiGate 200G Series, p. 7 «Hardware» — «FortiGate 200G Series». Unidad dibujada: FortiGate 200G"
+ },
+ "FortiGate 201G": {
+  "front": "/img/equipos/fg-200g-front.webp",
+  "rear": "/img/equipos/fg-200g-rear.webp",
+  "fuente": "Datasheet FortiGate 200G Series, p. 7 «Hardware» — «FortiGate 200G Series». Unidad dibujada: FortiGate 200G"
+ },
+ "FortiGate 400F": {
+  "front": "/img/equipos/fg-400f-front.webp",
+  "rear": "/img/equipos/fg-400f-rear.webp",
+  "fuente": "Datasheet FortiGate 400F Series, p. 7 «Hardware» — «FortiGate 400F/401F/-DC Series Front Panel» y «FortiGate 400F/401F AC Series Rear Panel». Unidad dibujada: FortiGate 400F. El documento publica ademas la trasera de la variante DC; se sirve la AC, la configuracion por defecto"
+ },
+ "FortiGate 400G": {
+  "front": "/img/equipos/fg-400g-front.webp",
+  "rear": "/img/equipos/fg-400g-rear.webp",
+  "fuente": "Datasheet FortiGate 400G Series, p. 7 «Hardware» — «FortiGate 400G and 401G Series, Front Panel» y «FortiGate 400G and 401G Series, Rear Panel». Unidad dibujada: FortiGate 401G"
+ },
+ "FortiGate 401F": {
+  "front": "/img/equipos/fg-400f-front.webp",
+  "rear": "/img/equipos/fg-400f-rear.webp",
+  "fuente": "Datasheet FortiGate 400F Series, p. 7 «Hardware» — «FortiGate 400F/401F/-DC Series Front Panel» y «FortiGate 400F/401F AC Series Rear Panel». Unidad dibujada: FortiGate 400F. El documento publica ademas la trasera de la variante DC; se sirve la AC, la configuracion por defecto"
+ },
+ "FortiGate 401G": {
+  "front": "/img/equipos/fg-400g-front.webp",
+  "rear": "/img/equipos/fg-400g-rear.webp",
+  "fuente": "Datasheet FortiGate 400G Series, p. 7 «Hardware» — «FortiGate 400G and 401G Series, Front Panel» y «FortiGate 400G and 401G Series, Rear Panel». Unidad dibujada: FortiGate 401G"
+ },
+ "FortiGate 600F": {
+  "front": "/img/equipos/fg-600f-front.webp",
+  "rear": "/img/equipos/fg-600f-rear.webp",
+  "fuente": "Datasheet FortiGate 600F Series, p. 7 «Hardware» — «FortiGate 600F Series». Unidad dibujada: FortiGate 600F"
+ },
+ "FortiGate 700G": {
+  "front": "/img/equipos/fg-700g-front.webp",
+  "rear": "/img/equipos/fg-700g-rear.webp",
+  "fuente": "Datasheet FortiGate 700G Series, p. 7 «Hardware» — «FortiGate 700G and 701G Series, Front Panel» y «FortiGate 700G and 701G Series, Rear Panel». Unidad dibujada: FortiGate 701G"
+ },
+ "FortiGate 701G": {
+  "front": "/img/equipos/fg-700g-front.webp",
+  "rear": "/img/equipos/fg-700g-rear.webp",
+  "fuente": "Datasheet FortiGate 700G Series, p. 7 «Hardware» — «FortiGate 700G and 701G Series, Front Panel» y «FortiGate 700G and 701G Series, Rear Panel». Unidad dibujada: FortiGate 701G"
+ },
+ "FortiGate 900G": {
+  "front": "/img/equipos/fg-900g-front.webp",
+  "rear": "/img/equipos/fg-900g-rear.webp",
+  "fuente": "Datasheet FortiGate 900G Series, p. 7 «Hardware» — «FortiGate 900G/-DC and 901G/-DC Series, Front Panel» y «FortiGate 900G and 901G Series, Rear Panel». Unidad dibujada: FortiGate 900G. El documento publica ademas la trasera de la variante DC; se sirve la AC, la configuracion por defecto"
+ },
+ "FortiGate 901G": {
+  "front": "/img/equipos/fg-900g-front.webp",
+  "rear": "/img/equipos/fg-900g-rear.webp",
+  "fuente": "Datasheet FortiGate 900G Series, p. 7 «Hardware» — «FortiGate 900G/-DC and 901G/-DC Series, Front Panel» y «FortiGate 900G and 901G Series, Rear Panel». Unidad dibujada: FortiGate 900G. El documento publica ademas la trasera de la variante DC; se sirve la AC, la configuracion por defecto"
+ },
+ "FortiGate 1000F": {
+  "front": "/img/equipos/fg-1000f-front.webp",
+  "rear": "/img/equipos/fg-1000f-rear.webp",
+  "fuente": "Datasheet FortiGate 1000F Series, p. 7 «Hardware» — «FortiGate 1000F Series». Unidad dibujada: FortiGate 1000F"
+ },
+ "FortiGate 1001F": {
+  "front": "/img/equipos/fg-1000f-front.webp",
+  "rear": "/img/equipos/fg-1000f-rear.webp",
+  "fuente": "Datasheet FortiGate 1000F Series, p. 7 «Hardware» — «FortiGate 1000F Series». Unidad dibujada: FortiGate 1000F"
+ },
+ "FortiGate 1800F": {
+  "front": "/img/equipos/fg-1800f-front.webp",
+  "rear": "/img/equipos/fg-1800f-rear.webp",
+  "fuente": "Datasheet FortiGate 1800F Series, p. 7 «Hardware» — «FortiGate 1800F Series». Unidad dibujada: FortiGate 1800F"
+ },
+ "FortiGate 1801F": {
+  "front": "/img/equipos/fg-1800f-front.webp",
+  "rear": "/img/equipos/fg-1800f-rear.webp",
+  "fuente": "Datasheet FortiGate 1800F Series, p. 7 «Hardware» — «FortiGate 1800F Series». Unidad dibujada: FortiGate 1800F"
+ },
+ "FortiGate 2600F": {
+  "front": "/img/equipos/fg-2600f-front.webp",
+  "rear": "/img/equipos/fg-2600f-rear.webp",
+  "fuente": "Datasheet FortiGate 2600F Series, p. 7 «Hardware» — «FortiGate 2600F Series». Unidad dibujada: FortiGate 2600F"
+ },
+ "FortiGate 2601F": {
+  "front": "/img/equipos/fg-2600f-front.webp",
+  "rear": "/img/equipos/fg-2600f-rear.webp",
+  "fuente": "Datasheet FortiGate 2600F Series, p. 7 «Hardware» — «FortiGate 2600F Series». Unidad dibujada: FortiGate 2600F"
+ },
+ "FortiGate 3000F": {
+  "front": "/img/equipos/fg-3000f-front.webp",
+  "rear": "/img/equipos/fg-3000f-rear.webp",
+  "fuente": "Datasheet FortiGate 3000F Series, p. 7 «Hardware» — «FortiGate 3000F Series». Unidad dibujada: FortiGate 3000F"
+ },
+ "FortiGate 3000G": {
+  "front": "/img/equipos/fg-3000g-front.webp",
+  "rear": "/img/equipos/fg-3000g-rear.webp",
+  "fuente": "Datasheet FortiGate 3000G Series, p. 7 «Hardware» — «FortiGate 3000G Series». Unidad dibujada: FortiGate 3000G"
+ },
+ "FortiGate 3001F": {
+  "front": "/img/equipos/fg-3000f-front.webp",
+  "rear": "/img/equipos/fg-3000f-rear.webp",
+  "fuente": "Datasheet FortiGate 3000F Series, p. 7 «Hardware» — «FortiGate 3000F Series». Unidad dibujada: FortiGate 3000F"
+ },
+ "FortiGate 3001G": {
+  "front": "/img/equipos/fg-3000g-front.webp",
+  "rear": "/img/equipos/fg-3000g-rear.webp",
+  "fuente": "Datasheet FortiGate 3000G Series, p. 7 «Hardware» — «FortiGate 3000G Series». Unidad dibujada: FortiGate 3000G"
+ },
+ "FortiGate 3200F": {
+  "front": "/img/equipos/fg-3200f-front.webp",
+  "rear": "/img/equipos/fg-3200f-rear.webp",
+  "fuente": "Datasheet FortiGate 3200F Series, p. 7 «Hardware» — «FortiGate 3200F Series». Unidad dibujada: FortiGate 3200F"
+ },
+ "FortiGate 3201F": {
+  "front": "/img/equipos/fg-3200f-front.webp",
+  "rear": "/img/equipos/fg-3200f-rear.webp",
+  "fuente": "Datasheet FortiGate 3200F Series, p. 7 «Hardware» — «FortiGate 3200F Series». Unidad dibujada: FortiGate 3200F"
+ },
+ "FortiGate 3500F": {
+  "front": "/img/equipos/fg-3500f-front.webp",
+  "rear": "/img/equipos/fg-3500f-rear.webp",
+  "fuente": "Datasheet FortiGate 3500F Series, p. 7 «Hardware» — «FortiGate 3500F Series». Unidad dibujada: FortiGate 3500F"
+ },
+ "FortiGate 3500G": {
+  "front": "/img/equipos/fg-3500g-front.webp",
+  "rear": "/img/equipos/fg-3500g-rear.webp",
+  "fuente": "Datasheet FortiGate 3500G Series, p. 7 «Hardware» — «FortiGate 3500G Series». Unidad dibujada: FortiGate 3500G"
+ },
+ "FortiGate 3501F": {
+  "front": "/img/equipos/fg-3500f-front.webp",
+  "rear": "/img/equipos/fg-3500f-rear.webp",
+  "fuente": "Datasheet FortiGate 3500F Series, p. 7 «Hardware» — «FortiGate 3500F Series». Unidad dibujada: FortiGate 3500F"
+ },
+ "FortiGate 3501G": {
+  "front": "/img/equipos/fg-3500g-front.webp",
+  "rear": "/img/equipos/fg-3500g-rear.webp",
+  "fuente": "Datasheet FortiGate 3500G Series, p. 7 «Hardware» — «FortiGate 3500G Series». Unidad dibujada: FortiGate 3500G"
+ },
+ "FortiGate 3700F": {
+  "front": "/img/equipos/fg-3700f-front.webp",
+  "rear": "/img/equipos/fg-3700f-rear.webp",
+  "fuente": "Datasheet FortiGate 3700F Series, p. 7 «Hardware» — «FortiGate 3700F Series». Unidad dibujada: FortiGate 3700F"
+ },
+ "FortiGate 3701F": {
+  "front": "/img/equipos/fg-3700f-front.webp",
+  "rear": "/img/equipos/fg-3700f-rear.webp",
+  "fuente": "Datasheet FortiGate 3700F Series, p. 7 «Hardware» — «FortiGate 3700F Series». Unidad dibujada: FortiGate 3700F"
+ },
+ "FortiGate 3800G": {
+  "front": "/img/equipos/fg-3800g-front.webp",
+  "rear": "/img/equipos/fg-3800g-rear.webp",
+  "fuente": "Datasheet FortiGate 3800G Series, p. 7 «Hardware» — «FortiGate 3800G Series»"
+ },
+ "FortiGate 3801G": {
+  "front": "/img/equipos/fg-3800g-front.webp",
+  "rear": "/img/equipos/fg-3800g-rear.webp",
+  "fuente": "Datasheet FortiGate 3800G Series, p. 7 «Hardware» — «FortiGate 3800G Series»"
+ },
+ "FortiGate 4200F": {
+  "front": "/img/equipos/fg-4200f-front.webp",
+  "rear": "/img/equipos/fg-4200f-rear.webp",
+  "fuente": "Datasheet FortiGate 4200F Series, p. 7 «Hardware» — «FortiGate 4200F Series». Unidad dibujada: FortiGate 4200F"
+ },
+ "FortiGate 4201F": {
+  "front": "/img/equipos/fg-4200f-front.webp",
+  "rear": "/img/equipos/fg-4200f-rear.webp",
+  "fuente": "Datasheet FortiGate 4200F Series, p. 7 «Hardware» — «FortiGate 4200F Series». Unidad dibujada: FortiGate 4200F"
+ },
+ "FortiGate 4400F": {
+  "front": "/img/equipos/fg-4400f-front.webp",
+  "rear": "/img/equipos/fg-4400f-rear.webp",
+  "fuente": "Datasheet FortiGate 4400F Series, p. 7 «Hardware» — «FortiGate 4400F Series». Unidad dibujada: FortiGate 4400F"
+ },
+ "FortiGate 4401F": {
+  "front": "/img/equipos/fg-4400f-front.webp",
+  "rear": "/img/equipos/fg-4400f-rear.webp",
+  "fuente": "Datasheet FortiGate 4400F Series, p. 7 «Hardware» — «FortiGate 4400F Series». Unidad dibujada: FortiGate 4400F"
+ },
+ "FortiGate 4800F": {
+  "front": "/img/equipos/fg-4800f-front.webp",
+  "rear": "/img/equipos/fg-4800f-rear.webp",
+  "fuente": "Datasheet FortiGate 4800F Series, p. 7 «Hardware» — «FortiGate 4800F/4801F Series». Unidad dibujada: FortiGate 4800F"
+ },
+ "FortiGate 4801F": {
+  "front": "/img/equipos/fg-4800f-front.webp",
+  "rear": "/img/equipos/fg-4800f-rear.webp",
+  "fuente": "Datasheet FortiGate 4800F Series, p. 7 «Hardware» — «FortiGate 4800F/4801F Series». Unidad dibujada: FortiGate 4800F"
+ },
+ "FortiGate 100F": {
+  "front": "/img/equipos/fg-100f-front.webp",
+  "rear": "/img/equipos/fg-100f-rear.webp",
+  "fuente": "QuickStart Guide FortiGate 100F Series (FG-100F y FG-101F; docs.fortinet.com, FG-100F-QSG.pdf), p. 5 «Front/Rear - FG 100F Series». Unidad dibujada: FortiGate 101F, la variante con SSD que cubre la misma guia. La trasera es la de «Redundant Power Supplies» (PSU1/PSU2). Sin datasheet en ingles (404 medido el 2026-09-24); la ficha coreana oficial si esta publicada, pero su dibujo rotula un FortiGate 212F."
+ },
+ "FortiGate 200F": {
+  "front": "/img/equipos/fg-200f-front.webp",
+  "rear": "/img/equipos/fg-200f-rear.webp",
+  "fuente": "QuickStart Guide FortiGate 200F Series (FG-200F y FG-201F; docs.fortinet.com, FG-200F-Series-QSG.pdf), p. 6 «Front/Rear - FG 200F Series». Unidad dibujada: FortiGate 200F. La trasera es la de «Redundant Power Supplies». Sin datasheet en ingles (404 medido el 2026-09-24); la ficha coreana oficial si esta publicada, y de ella salen sus limites, no su figura."
+ },
+ "FortiGate 7081F": {
+  "front": "/img/equipos/fg-7081f-front.webp",
+  "rear": "/img/equipos/fg-7081f-rear.webp",
+  "fuente": "FortiGate 7081F 7.0.5 System Guide (docs.fortinet.com), p. 8 «FortiGate 7081F front panel showing AC PSUs, two FIM-7941Fs, and six FPM-7620Fs» y p. 12 «FortiGate 7081F back panel». Unidad dibujada: FortiGate 7081F con una configuracion de modulos de ejemplo; la que se pida puede ser otra."
+ },
+ "FortiGate 7121F": {
+  "front": "/img/equipos/fg-7121f-front.webp",
+  "rear": "/img/equipos/fg-7121f-rear.webp",
+  "fuente": "FortiGate-7121F 7.4.4 System Guide (docs.fortinet.com), p. 9 «FortiGate 7121F generation 1 front panel, (showing AC PSUs, example module configuration)» y p. 13 «FortiGate 7121F back panel». Unidad dibujada: FortiGate 7121F de generacion 1 (fuentes de 2.000 W; la generacion 2 lleva 2.500 W) con una configuracion de modulos de ejemplo."
+ }
+}

@@ -115,6 +115,16 @@ test('ningun dimensionador se guarda su propia copia de la regla', () => {
 
   for (const f of paginas) {
     const src = fs.readFileSync(path.join(dir, f), 'utf8');
+    // FORTINET (etapa 7, 2026-09-23) YA NO TIENE UN DESPLEGABLE QUE COTICE «CUALQUIER EQUIPO».
+    // Su `#pickModel` pide al motor que revalide un modelo, y la lista de materiales sale
+    // SIEMPRE del modelo validado (`RES.bom`): el desvio que `sincronizar` y `avisoDesvio`
+    // gestionan no puede existir, porque no hay dos selectores. Lo que se exige alli es
+    // justo eso — y que no reaparezca un segundo selector con su propia regla.
+    if (f === 'dimensionador-fortinet-fortigate.js') {
+      assert.ok(/FortinetMotor\b/.test(src) && /RES\.bom/.test(src), `${f} construye el BOM desde el motor`);
+      assert.ok(!/BOM\.sincronizar\(/.test(src), `${f} no mantiene un segundo selector que se desincronice`);
+      continue;
+    }
     // El guard que causaba el fallo, en cualquiera de sus dos formas de espaciado.
     assert.ok(!/if\s*\(\s*!\s*sel\s*\|\|\s*sel\.value\s*===\s*id\s*\)\s*return/.test(src),
       `${f} ya no decide por su cuenta si repintar el BOM`);

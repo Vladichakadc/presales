@@ -90,7 +90,7 @@ function renderCatalogo(){
   if(!tbody) return;
   tbody.innerHTML=MODELS.map(m=>{
     const r=FICHA.rango(m);
-    const marca=r===2?' <span class="pillc" style="color:var(--red)">Fuera de venta</span>'
+    const marca=r===2?' <span class="pillc" style="color:var(--red-txt,var(--red))">Fuera de venta</span>'
       :r===1?' <span class="pillc">Línea anterior</span>':'';
     return `<tr>
     <td><code>${esc(m.id)}</code>${marca}</td><td>${esc(m.ser)}</td><td>${esc(m.fam)}</td>
@@ -112,6 +112,20 @@ function render(){
 
   $('headVal').textContent=Math.round(head*100)+' %';
   $('concVal').textContent=Math.round(conc*100)+' %';
+
+  // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): es el dato
+  // mínimo del dimensionamiento; sin él la página pide valores en vez de proponer un
+  // equipo a ciegas.
+  if(bw<=0){
+    lastPick=null; hayCandidato=false; sincronizarConBom(null);
+    const need=$('need'); need.style.left='0%'; $('needLbl').textContent='—';
+    $('track').querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
+    FICHA.render({vendor:'cisco', contenedor:'verdict', candidatos:[], recomendado:null,
+      vacioTitulo:'Ingrese valores para recomendar un equipo',
+      vacioDetalle:'<p style="margin:0;font-size:13.5px">Escriba el <b>ancho de banda</b> del sitio para que el dimensionador proponga los modelos que cumplen.</p>'});
+    $('verdict').style.borderLeftColor='var(--steel)';
+    return;
+  }
 
   // base throughput
   let baseMbps = bw * unit;
@@ -248,6 +262,7 @@ function render(){
         ['Puertos', esc(m.ports), true],
         ['Precio de lista ref.', m.elp?esc(m.elp):'Consultar CCW'],
       ]},
+      FICHA.seccionPuertos(m),
       FICHA.seccionAlimentacion(m),
       {titulo:'Licenciamiento propuesto', filas:[
         ['Suscripción DNA', esc(dnaNom)],
@@ -493,6 +508,10 @@ $('xlsBtn').addEventListener('click', async()=>{
 (async function initApp(){
   const res = await fetch('/api/dimensionador/cisco');
   const data = await res.json();
+  // Pendiente 34: el respaldo de ciclo de vida de ESTE fabricante, tal como lo declara
+  // `legacyData/fuentes.js` con sus `campos`. Sin el, la ficha dice «el catalogo no trae el
+  // ciclo de vida» en vez de afirmar vigencia por omision.
+  FICHA.fijarCicloVida(data.cicloVida);
   MODELS = data.models;
   OPTICS = data.optics;
   OPTIC_LABEL = data.opticLabel;
@@ -500,11 +519,17 @@ $('xlsBtn').addEventListener('click', async()=>{
   SMARTNET = data.smartnet;
   DNA_DESC = data.dnaDesc;
 
-  // Populate BOM model selector
+  // Populate BOM model selector — orden determinista por capacidad (fwd): la API puede
+  // servir el catalogo en cualquier orden y el combo no puede depender de eso. Series por
+  // su modelo de entrada; dentro de cada serie, de menor a mayor.
   $('pickModel').innerHTML = (() => {
+    const capDe=m=>m.fwd||m.ipsec||0;
     const groups={};
     MODELS.forEach(m=>{ (groups[m.ser]=groups[m.ser]||[]).push(m); });
-    return Object.entries(groups).map(([g,arr])=>
+    const ordenadas=Object.entries(groups);
+    for(const [,arr] of ordenadas) arr.sort((a,b)=>capDe(a)-capDe(b));
+    ordenadas.sort((a,b)=>Math.min(...a[1].map(capDe))-Math.min(...b[1].map(capDe)));
+    return ordenadas.map(([g,arr])=>
       `<optgroup label="${g}">${arr.map(m=>`<option value="${m.id}">${m.id} — ${m.fam}</option>`).join('')}</optgroup>`).join('');
   })();
 
@@ -546,7 +571,7 @@ document.addEventListener('DOMContentLoaded', () => {
     caja.style.cssText = 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px';
     anclaje.parentNode.insertBefore(caja, anclaje.nextSibling);
     ESTADO.botonEnlace(caja);
-    ESTADO.avisoOrigen(caja, st.origen);
+    ESTADO.avisoOrigen(caja, st);
   }
 });
 

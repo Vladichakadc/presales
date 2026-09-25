@@ -29,7 +29,7 @@ const dev = (grupo, vendor, raw) => ({
 });
 // Cifras reales de /api/catalog, transcritas para que la prueba no dependa de la siembra.
 const FG30G = dev('fortinet', 'Fortinet', { model: 'FortiGate 30G', fw: 4000, vpn: 3500, ngfw: 570, ips: 800, tp: 500 });
-const FG120G = dev('fortinet', 'Fortinet', { model: 'FortiGate 120G', fw: 39000, vpn: 35000, ngfw: 3100, ips: 5300, tp: 2800 });
+const FG120G = dev('fortinet', 'Fortinet', { model: 'FortiGate 120G', fw: 39000, vpn: 35000, ngfw: 3100, ips: 5300, tp: 2800, ssl: 3000 });
 const FG90G = dev('fortinet', 'Fortinet', { model: 'FortiGate 90G', fw: 28000, vpn: 25000, ngfw: 2500, ips: 4500, tp: 2200 });
 const IXRD1 = dev('nokia', 'Nokia', { model: '7220 IXR-D1', cap: 88 });
 const ECS = dev('aruba', 'Aruba', { model: 'EC-S', fwd: 3000, ipsec: 0, sdwan: 'Foundation/Advanced + Boost', wanMin: 10, wanMax: 3000 });
@@ -138,7 +138,7 @@ test('la base de la cifra se lee del propio catalogo, no se supone por la serie'
   assert.strictEqual(CALC.capaDe(SRX1600, 'fwd').mbps, 24000);
 });
 
-test('los cinco perfiles son cinco capas distintas del mismo equipo', () => {
+test('los seis perfiles son seis capas distintas del mismo equipo', () => {
   // El SRX1600 y el FortiGate 120G bajan capa a capa, y ese descenso es justo lo que la
   // pantalla ocultaba al dimensionarlo todo con la cifra de portada.
   const escalera = (d, capas) => capas.map((c) => CALC.capaDe(d, c).mbps);
@@ -148,12 +148,50 @@ test('los cinco perfiles son cinco capas distintas del mismo equipo', () => {
   assert.deepStrictEqual(fg, [39000, 35000, 3100, 2800]);
   // Doce veces entre la cifra que se cita y la que aguanta con inspeccion completa.
   assert.ok(fg[0] / fg[3] > 10);
-  // Y los cinco perfiles se declaran: etiqueta, que miden y como se dice el hueco.
+  /* Y LA INSPECCION TLS NO CONTINUA ESA ESCALERA, que es la razon de que tenga lector
+     propio en vez de derivarse de `tp` con un factor. En el 120G la cifra de TLS son 3.000
+     Mbps contra 2.800 de Threat Protection: el equipo aguanta MAS descifrando HTTPS que con
+     el stack completo, porque son dos rutas de proceso distintas. Colocarla como «el peldano
+     mas profundo», o aplicarle un derate sobre `tp`, produce un numero que el equipo supera
+     — y en el 40F el mismo derate produce uno que no alcanza (600 de TP contra 310 de TLS).
+     Un factor unico se equivoca en las DOS direcciones, que es el defecto P0 que el
+     dimensionador de Fortinet arrastro hasta el 2026-09-22. */
+  const ssl = CALC.capaDe(FG120G, 'ssl').mbps;
+  assert.strictEqual(ssl, 3000);
+  assert.ok(ssl > fg[3], 'el 120G aguanta MAS inspeccion TLS que Threat Protection');
+  assert.ok(ssl < fg[2], 'y menos que NGFW: no es ni el techo ni el suelo de la escalera');
+
+  // Y quien no publica la cifra se aparta CON SU MOTIVO, nunca con la de otra capa: el
+  // SRX1600 tiene `atp` y aun asi no puede competir en inspeccion TLS.
+  const sinDato = CALC.capaDe(SRX1600, 'ssl');
+  assert.strictEqual(sinDato.mbps, null);
+  assert.match(sinDato.motivo, /TLS/);
+
+  // Y los seis perfiles se declaran: etiqueta, que miden y como se dice el hueco.
   for (const k of Object.keys(CALC.PERFILES)) {
     const p = CALC.PERFILES[k];
     assert.ok(p.etq && p.mide.length > 60 && p.falta, `${k} se explica`);
     assert.ok(Object.keys(p.capa).length > 0, `${k} lee de algun catalogo`);
   }
+});
+
+test('la cobertura de una capa se mide contra el catalogo, no se declara', () => {
+  // Es lo que la pantalla pinta ENCIMA de la lista para que una lista corta se lea como
+  // «falta el dato» y no como «falta el equipo». Una lista de fabricantes escrita a mano se
+  // quedaria con los de ayer, que es la forma exacta de CISCO_EOL_MODELS.
+  const devs = [FG120G, FG90G, SRX1600, IXRD1, ECS];
+  const tls = CALC.cobertura(devs, 'ssl');
+  assert.strictEqual(tls.total, 5);
+  assert.strictEqual(tls.con, 1, 'solo el 120G del lote trae la cifra de TLS');
+  assert.strictEqual(tls.conCifra, 1, 'y solo un fabricante');
+  assert.strictEqual(tls.fabricantes, 4, 'contra los fabricantes que trae el lote');
+  assert.strictEqual(tls.porFabricante[0].vendor, 'Fortinet', 'el que la publica va primero');
+
+  // El control: en reenvio la publican todos, asi que la frase de la pantalla cambia. Sin
+  // este caso, un `cobertura` roto que devolviera siempre 1 pasaria en verde.
+  const fwd = CALC.cobertura(devs, 'fwd');
+  assert.strictEqual(fwd.con, fwd.total);
+  assert.strictEqual(fwd.conCifra, fwd.fabricantes);
 });
 
 test('el requerimiento se calcula en un solo sitio', () => {

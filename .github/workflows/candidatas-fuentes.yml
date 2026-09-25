@@ -1,0 +1,65 @@
+name: candidatas-fuentes
+
+# PENDIENTE 38 — mide POR QUE tres fuentes dan 403, en vez de darlo por sabido.
+#
+# El pendiente concluyo «es una restriccion del propio fabricante» porque el codigo llegaba
+# igual desde un ejecutor. Esa deduccion no descarta la explicacion mas simple: las tres URL
+# terminan en `/` y por tanto no son documentos sino directorios, y un CDN niega un listado de
+# directorio por configuracion, sin bloquear a nadie.
+#
+# Las dos hipotesis se distinguen con un GRUPO DE CONTROL: junto a cada URL bloqueada se pide
+# un ARCHIVO del mismo dominio -y cuando se puede, del mismo directorio- que este repositorio
+# ya sabe que se descarga. Si el control responde y la carpeta no, lo que falla es la forma de
+# la URL. Si falla el control tambien, entonces si es el fabricante.
+#
+# POR QUE AQUI. El proxy de egreso del entorno donde se edita este repositorio responde 403 a
+# estos dominios, asi que desde alli las dos hipotesis son indistinguibles. Los ejecutores no
+# pasan por ese proxy: misma via ya aprobada que usan vigia-fuentes.yml y sondeo-fuentes.yml.
+#
+# NO ESCRIBE NADA. Sustituir una URL en legacyData/fuentes.js es un commit que hace una
+# persona despues de abrir el documento, igual que `npm run vigia -- --revisado`.
+
+on:
+  workflow_dispatch:
+    inputs:
+      timeout:
+        description: 'Segundos de espera por peticion'
+        required: false
+        default: '20'
+
+permissions:
+  contents: read
+
+jobs:
+  probar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      - name: Probar las candidatas con su grupo de control
+        run: |
+          node scripts/probar-candidatas.js --timeout=${{ inputs.timeout || '20' }} | tee candidatas.txt
+          node scripts/probar-candidatas.js --json --timeout=${{ inputs.timeout || '20' }} > candidatas.json
+
+      - name: Publicar el informe en la corrida
+        run: |
+          {
+            echo '## Pendiente 38 — las tres fuentes en 403, con grupo de control'
+            echo ''
+            echo '```'
+            cat candidatas.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidatas-fuentes
+          path: |
+            candidatas.txt
+            candidatas.json

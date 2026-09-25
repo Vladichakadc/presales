@@ -67,7 +67,7 @@ function renderCatalogo(){
   if(!tbody) return;
   tbody.innerHTML=MODELS.map(m=>{
     const r=FICHA.rango(m);
-    const marca=r===2?' <span class="pillc" style="color:var(--red)">Fuera de venta</span>'
+    const marca=r===2?' <span class="pillc" style="color:var(--red-txt,var(--red))">Fuera de venta</span>'
       :r===1?' <span class="pillc">Línea anterior</span>':'';
     return `<tr>
     <td><code>${esc(m.id)}</code>${marca}</td><td>${esc(m.ser)}</td><td>${esc(m.seg)}</td>
@@ -163,6 +163,20 @@ function preferByMedia(list){
 function render(){
   $('headVal').textContent=Math.round((parseFloat($('head').value)||0))+' %';
   const req=requirements();
+  // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): es el dato
+  // mínimo del dimensionamiento; sin él la página pide valores en vez de proponer un
+  // equipo a ciegas.
+  if(req.mbps<=0){
+    lastPick=null; hayCandidato=false; sincronizarConBom(null);
+    const need=$('need'); need.style.left='0%'; $('needLbl').textContent='—';
+    $('track').querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
+    FICHA.render({vendor:'mikrotik', contenedor:'verdict', candidatos:[], recomendado:null,
+      vacioTitulo:'Ingrese valores para recomendar un equipo',
+      vacioDetalle:'<p style="margin:0;font-size:13.5px">Escriba el <b>ancho de banda</b> del sitio (y si aplica, los servicios BGP/PPPoE/CAPsMAN) para que el dimensionador proponga los modelos que cumplen.</p>'});
+    $('verdict').style.borderLeftColor='var(--steel)';
+    $('sizingBox').innerHTML='<p style="font-size:13.5px;color:var(--steel)">Ingrese valores para recomendar un equipo.</p>';
+    return;
+  }
   const {ok,reasons,poeNeed}=selectCandidates(req);
   const pick=preferByMedia(ok);
   lastPick=pick;
@@ -264,6 +278,7 @@ function render(){
         ['Puertos', esc(m.ports), true],
         ['Precio de lista ref.', m.elp?esc(m.elp):'Consultar distribuidor'],
       ]},
+      FICHA.seccionPuertos(m),
       FICHA.seccionAlimentacion(m),
       {titulo:'Licenciamiento propuesto', filas:[
         ['Nivel de licencia RouterOS', `Nivel ${m.lvl} — embebido en el hardware`],
@@ -325,7 +340,27 @@ function render(){
 
 /* ── BOM ───────────────────────────────────────────────────────────────────── */
 function populateSelects(){
-  $('pickModel').innerHTML=MODELS.map(m=>`<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.seg)}${m.eol?' (EOL)':m.legacy?' (legacy)':''}</option>`).join('');
+  // Combo agrupado por familia (ser): hEX, L009, RB4011, RB5009, CCR2004, CCR2116, CCR2216, CHR.
+  // Orden determinista por capacidad (fwd): la API puede servir el catalogo en cualquier
+  // orden y el combo no puede depender de eso. Familias por su modelo de entrada; dentro
+  // de cada familia, de menor a mayor. Lo virtual (CHR) va al final, no por capacidad
+  // sino por naturaleza: es la opcion cuando no se compra hardware.
+  const grupos=new Map();
+  for(const m of MODELS){
+    const g=m.ser||'Otros';
+    if(!grupos.has(g)) grupos.set(g,[]);
+    grupos.get(g).push(m);
+  }
+  const ordenados=[...grupos.entries()];
+  for(const [,ms] of ordenados) ms.sort((a,b)=>(a.fwd||0)-(b.fwd||0));
+  ordenados.sort((a,b)=>{
+    const ca=a[0]==='CHR'?Infinity:Math.min(...a[1].map(m=>m.fwd||0));
+    const cb=b[0]==='CHR'?Infinity:Math.min(...b[1].map(m=>m.fwd||0));
+    return ca-cb;
+  });
+  $('pickModel').innerHTML=ordenados.map(([g,ms])=>
+    `<optgroup label="${esc(g)}">`+ms.map(m=>`<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.seg)}${m.eol?' (EOL)':m.legacy?' (legacy)':''}</option>`).join('')+`</optgroup>`
+  ).join('');
   $('supportTier').innerHTML=Object.entries(SUPPORT).filter(([c])=>c!=='training')
     .map(([c,t])=>`<option value="${c}">${esc(t.n)}</option>`).join('');
   $('bomApModel').innerHTML=APS.map(a=>`<option value="${esc(a.sku)}">${esc(a.sku)} — ${money(a.price)}</option>`).join('');
@@ -503,6 +538,10 @@ $('xlsBtn').addEventListener('click',async()=>{
 (async function initApp(){
   const res=await fetch('/api/dimensionador/mikrotik');
   const data=await res.json();
+  // Pendiente 34: el respaldo de ciclo de vida de ESTE fabricante, tal como lo declara
+  // `legacyData/fuentes.js` con sus `campos`. Sin el, la ficha dice «el catalogo no trae el
+  // ciclo de vida» en vez de afirmar vigencia por omision.
+  FICHA.fijarCicloVida(data.cicloVida);
   MODELS=data.models; OPTICS=data.optics; OPTIC_LABEL=data.opticLabel;
   APS=data.accessPoints; SUPPORT=data.support; SIZING=data.sizing;
 
@@ -539,7 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
     caja.style.cssText = 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px';
     anclaje.parentNode.insertBefore(caja, anclaje.nextSibling);
     ESTADO.botonEnlace(caja);
-    ESTADO.avisoOrigen(caja, st.origen);
+    ESTADO.avisoOrigen(caja, st);
   }
 });
 

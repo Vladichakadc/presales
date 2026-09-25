@@ -24,13 +24,13 @@ module.exports = {
   ],
   core_router: [
     {v:'Huawei',  color:'#C7000B', model:'NetEngine NE8000 M8',    spec:'4.8 Tbps · 1086 Mpps · 8 tarjetas 400G', alt:'NE8000 M14 (7.2 Tbps)', elp:'~ $180,000'},
-    {v:'Nokia',   color:'#124191', model:'7750 SR-7s',             spec:'19.2 Tbps · 7 slots IOM · SR-MPLS, SRv6, FlexE', alt:'7750 SR-14s (38.4 Tbps)', elp:'~ $220,000'},
+    {v:'Nokia',   color:'#124191', model:'7750 SR-7s',             spec:'108 Tbps · 7 slots IOM · SR-MPLS, SRv6, FlexE', alt:'7750 SR-14s (216 Tbps)', elp:'~ $220,000'},
     {v:'Juniper', color:'#84B135', model:'MX480',                  spec:'7.7 Tbps · 6 MPC slots · core IP, LSR, peering, BNG', alt:'MX960 (19.2 Tbps)', elp:'~ $95,000'},
     {v:'Cisco',   color:'#049FD9', model:'Catalyst 8500-12X4QC',   spec:'20 Gbps · 12x10GE + 4x40GE · hub DC / edge', alt:'ASR 1006-X (100 Gbps, hasta EoS Jul 2026)', elp:'~ $58,000'},
   ],
   pe_router: [
     {v:'Huawei',  color:'#C7000B', model:'NetEngine A821 E',       spec:'72 Gbps · 108 Mpps · 2x10GE + 8 GE ópticas + SRv6, slicing', alt:'NE8000 M6 (320 Gbps)', elp:'~ $18,000'},
-    {v:'Nokia',   color:'#124191', model:'7750 SR-1s',             spec:'1.2 Tbps · 36x100GE o 12x400GE · SR-MPLS, SRv6, FlexE', alt:'7750 SR-2s (4 Tbps)', elp:'~ $85,000'},
+    {v:'Nokia',   color:'#124191', model:'7750 SR-1s',             spec:'4.8 Tbps · 36x100GE o 12x400GE · SR-MPLS, SRv6, FlexE', alt:'7750 SR-2s (9.6 Tbps)', elp:'~ $85,000'},
     {v:'Juniper', color:'#84B135', model:'MX204',                  spec:'400 Gbps · 4x100GE · 1U · edge routing, peering, DCI', alt:'MX304 (4.8 Tbps)', elp:'~ $32,000'},
     {v:'Cisco',   color:'#049FD9', model:'Catalyst 8500-12X4QC',   spec:'20 Gbps · hub DC / PE compacto · SD-WAN', alt:'ASR 1006-X (100 Gbps)', elp:'~ $58,000'},
   ],
@@ -52,13 +52,13 @@ module.exports = {
   ],
   aggregation: [
     {v:'Huawei',  color:'#C7000B', model:'NetEngine NE8000 M4',   spec:'2.4 Tbps · 405 Mpps · 4 tarjetas 400G · 2U', alt:'NE8000 M6 (320 Gbps compacto)', elp:'~ $95,000'},
-    {v:'Nokia',   color:'#124191', model:'7750 SR-2s',            spec:'4 Tbps · 144x100GE o 36x400GE · SR-MPLS, SRv6, EVPN', alt:'7750 SR-1s (1.2 Tbps)', elp:'~ $140,000'},
+    {v:'Nokia',   color:'#124191', model:'7750 SR-2s',            spec:'9.6 Tbps · 144x100GE o 36x400GE · SR-MPLS, SRv6, EVPN', alt:'7750 SR-1s (4.8 Tbps)', elp:'~ $140,000'},
     {v:'Juniper', color:'#84B135', model:'MX304',                 spec:'4.8 Tbps · MPC slots · 100/400GE · MPLS PE, broadband, 5G', alt:'MX480 (7.7 Tbps)', elp:'~ $65,000'},
     {v:'MikroTik',color:'#C8102E', model:'CCR2216-1G-12XS-2XQ',      spec:'100 Gbps FWD · 12x 25GE + 2x 100GE · 16 GB RAM · fuentes hot-swap', alt:'CCR2004-1G-12S+2XS (12 Gbps, 12x SFP+)', elp:'~ $5,999'},
   ],
   internet_gw: [
     {v:'Cisco',   color:'#049FD9', model:'Catalyst 8500-12X4QC',  spec:'20 Gbps · 12x10GE + 4x40GE · Internet Gateway / Peering', alt:'ASR 1006-X (100 Gbps, disponible hasta Jul 2026)', elp:'~ $58,000'},
-    {v:'Nokia',   color:'#124191', model:'7750 SR-1s',            spec:'1.2 Tbps · 36x100GE · border routing, BNG, peering', alt:'7750 SR-2s (4 Tbps)', elp:'~ $85,000'},
+    {v:'Nokia',   color:'#124191', model:'7750 SR-1s',            spec:'4.8 Tbps · 36x100GE · border routing, BNG, peering', alt:'7750 SR-2s (9.6 Tbps)', elp:'~ $85,000'},
     {v:'Juniper', color:'#84B135', model:'MX204',                 spec:'400 Gbps · 4x100GE · 1U · edge, peering, internet GW', alt:'MX304 (4.8 Tbps)', elp:'~ $32,000'},
     {v:'Huawei',  color:'#C7000B', model:'NetEngine NE8000 F1A',  spec:'2.4 Tbps · 1U · alta densidad · 1200 G/U', alt:'NE8000 M4 (2.4 Tbps modular)', elp:'~ $80,000'},
     {v:'MikroTik',color:'#C8102E', model:'CCR2116-12G-4S+',         spec:'24 Gbps FWD · IPsec 6.8 Gbps · 16 GB RAM para tabla BGP completa · fuente redundante', alt:'CCR2004-16G-2S+ (12 Gbps) para caudales menores', elp:'~ $999'},

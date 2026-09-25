@@ -59,7 +59,7 @@ function renderCatalogo(){
   if (!tbodyAr || !tbodyWan) return;
   const marca = m => {
     const r = FICHA.rango(m);
-    return r === 2 ? ' <span class="pillc" style="color:var(--red)">Fuera de venta</span>'
+    return r === 2 ? ' <span class="pillc" style="color:var(--red-txt,var(--red))">Fuera de venta</span>'
       : r === 1 ? ' <span class="pillc">Línea anterior</span>' : '';
   };
   tbodyAr.innerHTML = MODELS.filter(m => m.cls === 'AR').map(m => `<tr>
@@ -124,9 +124,16 @@ function render(){
   const ctx = {need, needMpps, raw, base, head, conc, sites, frame, pk, rows, wanOk};
   const licCtx = {need, aps, svc, pk};
   if(!raw || !fit.length || !pick){
-    drawVerdict(pick, next, ctx);
-    drawLicenses(pick, licCtx);
-    drawSupport(pick);
+    // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): ni veredicto
+    // ni licencias ni soporte ni escalera se pintan con un equipo — todo queda en estado
+    // vacío hasta que el usuario ingrese valores.
+    drawVerdict(raw ? pick : null, next, ctx);
+    drawLicenses(raw ? pick : null, licCtx);
+    drawSupport(raw ? pick : null);
+    if(!raw){
+      drawLadder(need, null, pk);
+      $('need').style.left='0%'; $('needLbl').textContent='—';
+    }
   } else {
     // Se adjunta la capacidad calculada al modelo para que la ficha no recalcule nada.
     const candidatos = fit.map(r => Object.assign({}, r.m, {__cap:r.cap, __isWan:r.isWan}));
@@ -158,7 +165,7 @@ function render(){
     pintarDependientes(elegido);
   }
   $('tbody').innerHTML = rows.map(r => {
-    const sel = pick && pick.m.id === r.m.id;
+    const sel = raw > 0 && pick && pick.m.id === r.m.id;
     return `<tr class="${sel ? 'sel' : ''}"><td>${r.m.id}</td><td><span class="pillc">${r.m.ser}</span></td>
       <td class="n">${fmt(r.isWan ? r.m.cap : r.m[pk])}</td><td class="n">${r.m.mpps != null ? r.m.mpps + ' Mpps' : '—'}</td>
       <td class="n">${r.m.lan || '—'}</td><td>${r.miss.length ? `<span style="color:var(--steel)">${r.miss[0]}</span>` : `<span style="color:var(--green);font-weight:600">Cumple</span>`}</td></tr>`;
@@ -226,6 +233,7 @@ function seccionesHuawei(m, c){
   if(m.elp) caract.push(['Precio de lista ref.', m.elp]);
   return [
     {titulo:'Características del equipo', filas:caract},
+    FICHA.seccionPuertos(m),
     FICHA.seccionAlimentacion(m),
     {titulo:'Licenciamiento propuesto', filas:lic,
      nota:'Todas las licencias se emiten contra el ESN del equipo y se descargan del portal ESDP de Huawei.'},
@@ -267,7 +275,7 @@ function drawLadder(need, pick, pk){
 
 function drawVerdict(pick, next, c){
   const v = $('verdict');
-  if(!c.raw){ v.innerHTML = `<p class="tag">Sin datos</p><div class="model">Ingresa un ancho de banda</div><p class="family">Escribe el caudal para empezar.</p>`; return; }
+  if(!c.raw){ v.innerHTML = `<p class="tag">Sin datos</p><div class="model">Ingrese valores para recomendar un equipo</div><p class="family">Escriba el <b>ancho de banda</b> del sitio para que el dimensionador proponga los modelos que cumplen.</p>`; return; }
   if(!pick){
     const over = c.rows.every(r => r.cap == null || r.cap < c.need);
     v.innerHTML = `<p class="tag">Sin coincidencias</p><div class="model">${over ? 'Fuera del catálogo' : 'Ajusta los filtros'}</div>
@@ -363,10 +371,17 @@ function drawSupport(pick){
 
 /* ════════ BOM ════════ */
 function populatePickModel(){
+  // Orden determinista por capacidad (fwd; cap en la serie WAN): la API puede servir el
+  // catalogo en cualquier orden y el combo no puede depender de eso. Series por su modelo
+  // de entrada; dentro de cada serie, de menor a mayor.
   $('pickModel').innerHTML = (() => {
+    const capDe = m => m.fwd || m.cap || 0;
     const groups = {};
     MODELS.forEach(m => { (groups[m.ser] = groups[m.ser] || []).push(m); });
-    return Object.entries(groups).map(([g, arr]) =>
+    const ordenadas = Object.entries(groups);
+    for (const [, arr] of ordenadas) arr.sort((a, b) => capDe(a) - capDe(b));
+    ordenadas.sort((a, b) => Math.min(...a[1].map(capDe)) - Math.min(...b[1].map(capDe)));
+    return ordenadas.map(([g, arr]) =>
       `<optgroup label="${g}">${arr.map(m => `<option value="${m.id}">${m.id} — ${m.fam}</option>`).join('')}</optgroup>`).join('');
   })();
 }
@@ -495,6 +510,10 @@ $('copyBtn').addEventListener('click', async () => {
 (async function initApp(){
   const res = await fetch('/api/dimensionador/huawei');
   const data = await res.json();
+  // Pendiente 34: el respaldo de ciclo de vida de ESTE fabricante, tal como lo declara
+  // `legacyData/fuentes.js` con sus `campos`. Sin el, la ficha dice «el catalogo no trae el
+  // ciclo de vida» en vez de afirmar vigencia por omision.
+  FICHA.fijarCicloVida(data.cicloVida);
   OPTICS = data.optics;
   OPTIC_LABEL = data.opticLabel;
   PARTS = data.parts;
@@ -543,7 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
     caja.style.cssText = 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px';
     anclaje.parentNode.insertBefore(caja, anclaje.nextSibling);
     ESTADO.botonEnlace(caja);
-    ESTADO.avisoOrigen(caja, st.origen);
+    ESTADO.avisoOrigen(caja, st);
   }
 });
 

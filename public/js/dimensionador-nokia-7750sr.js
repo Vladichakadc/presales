@@ -187,6 +187,22 @@
     return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">${li.join('')}</ul>`;
   }
 
+  // LA AUDITORIA DE PUERTOS YA NO VIVE AQUI (pendiente 35, 2026-09-16).
+  //
+  // Esta era la mejor de las ocho —configuraciones como ALTERNATIVAS y no acumulables, y un
+  // chasis modular apartado con su motivo en vez de colarse con una densidad inventada— y no
+  // la veia ningun otro fabricante, porque estaba dentro de este archivo. Subio a
+  // `FICHA.seccionPuertos`, que es el punto por el que pasan los siete dimensionadores.
+  //
+  // El flujo de `docs/portabilidad-aruba.md` no es «Aruba enseña a los siete»: la capa comun
+  // es algo A LO QUE CADA FABRICANTE APORTA LO QUE YA RESOLVIO. Aqui lo aporta Nokia.
+  //
+  // Se comprobo que esta pagina sigue diciendo EXACTAMENTE lo mismo: `npm run contraste --
+  // nokia-sr` lee el texto de la seccion en los tres casos que la regla distingue (varias
+  // configuraciones, una sola, y chasis modular) contra la linea base medida ANTES de mover
+  // nada. Un refactor que cambia un texto en silencio es indistinguible de uno que rompe.
+  const seccionPuertos = (m) => FICHA.seccionPuertos(m);
+
   function seccionesDe(m) {
     const filas = [
       ['Familia', esc((CATALOGO.plataformas[m.plat] || {}).n || m.ser)],
@@ -199,14 +215,7 @@
     ];
     const secciones = [{ titulo: 'Características', filas }];
 
-    secciones.push({
-      titulo: 'Densidad de puertos',
-      filas: m.configs
-        ? m.configs.map((c) => [`Configuración «${esc(c.n)}»`,
-          c.puertos.map((p) => `${p.cantidad} × ${p.veloc}GE`).join(' + ')])
-        : [['Densidad publicada', `<span class="warn">${esc(m.notaPuertos || 'el catálogo no la publica')}</span>`, true]]
-          .concat(m.slots ? [['Slots', `${m.slots.cantidad} × ${esc(m.slots.tipo)}, interfaces de hasta ${m.slots.hasta}GE`]] : []),
-    });
+    secciones.push(seccionPuertos(m));
 
     // La sección de alimentación aparece igual que en las otras páginas, aunque hoy salga
     // entera sin dato: la pregunta merece hacerse, y ficha.js la declara sin rodeos en vez
@@ -300,6 +309,10 @@
     montarSeg();
     const res = await fetch('/api/dimensionador/nokia-sr');
     CATALOGO = await res.json();
+    // Pendiente 34: el respaldo de ciclo de vida de ESTE fabricante, tal como lo declara
+    // `legacyData/fuentes.js` con sus `campos`. Sin el, la ficha dice «el catalogo no trae el
+    // ciclo de vida» en vez de afirmar vigencia por omision.
+    FICHA.fijarCicloVida(CATALOGO.cicloVida);
     renderCatalogo();
     PROCEDENCIA.registrarModelos('nokia', () => CATALOGO.models.map((m) => ({ model: m.id, ...m })));
 
@@ -316,7 +329,7 @@
       caja.style.cssText = 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px';
       anclaje.parentNode.insertBefore(caja, anclaje.nextSibling);
       ESTADO.botonEnlace(caja);
-      ESTADO.avisoOrigen(caja, st.origen);
+      ESTADO.avisoOrigen(caja, st);
     }
 
     render();
@@ -325,7 +338,7 @@
   // Se expone el motor -no el render- para que las reglas que de verdad importan se puedan
   // probar sin navegador: que las configuraciones de puertos son alternativas y no se suman,
   // y que un chasis modular se aparta con su motivo en vez de descartarse.
-  window.NOKIA_SR = { configQueCumple, sinDensidad, evaluar };
+  window.NOKIA_SR = { configQueCumple, sinDensidad, evaluar, seccionPuertos };
 
   // Solo arranca sobre su propia pagina. Sin esta guarda, cargar el fichero en cualquier otro
   // sitio -las pruebas lo hacen, para poder ejercitar el motor sin navegador- lanzaba un fetch

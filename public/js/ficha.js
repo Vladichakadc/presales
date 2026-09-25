@@ -22,7 +22,15 @@
 //     medidores: m => [{etq, val, tope, txt}],   // barras de holgura del modelo elegido
 //     secciones: m => [{titulo, filas:[[clave, valorHTML]], nota}],
 //     vendor: 'fortinet',           // fabricante, para pedir sus referencias de pedido
-//     alCambiar: id => {},          // se avisa a la pagina para sincronizar el BOM
+//     alCambiar: (id, origen) => {}, // se avisa a la pagina para sincronizar el BOM;
+//                                   //   origen: 'selector' | 'volver' | 'candidato'
+//     listaCandidatos: true,        // (opt-in) lista clicable de TODOS los que cumplen
+//     etiquetaCand: (m,i) => '',    // (opt-in) detalle de cada fila de esa lista
+//     vistas: {ID:{front,rear?}},   // (opt-in) foto oficial del equipo arriba, con
+//                                   //   conmutador frontal/trasera si hay ambas caras
+//     panelFijo: true,              // (opt-in) tarjeta compacta: lista sin scroll
+//     detalleExpandible: true,      //   interno; porQue+secciones se despliegan
+//                                   //   DENTRO de la tarjeta con un conmutador
 //   })
 //
 // La pagina conserva el motor de dimensionamiento; este modulo solo presenta. Ninguna
@@ -30,6 +38,12 @@
 
 (function (global) {
   'use strict';
+
+  // Despliegue de las características por tarjeta (opt-in detalleExpandible): vive
+  // FUERA del cfg porque la página repinta la tarjeta con cada cambio de entrada y
+  // el despliegue debe sobrevivir — si viajara en el DOM, cualquier retoque del
+  // escenario plegaría el detalle que el usuario acababa de abrir.
+  const estadoDet = {};
 
   // El estilo viaja con el modulo, como en bom.js, y usa las variables de color que cada
   // pagina ya declara en :root — asi cada fabricante conserva su acento sin configurar nada.
@@ -40,7 +54,7 @@
 .ficha-sel select:focus{outline:2px solid var(--red);outline-offset:1px}
 .ficha-cuenta{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--steel)}
 .ficha-volver{flex:none;padding:7px 11px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
-.ficha-volver:hover{border-color:var(--red);color:var(--red)}
+.ficha-volver:hover{border-color:var(--red);color:var(--red-txt,var(--red))}
 .ficha-volver:focus-visible{outline:2px solid var(--red);outline-offset:1px}
 .ficha-desvio{font-size:12px;color:var(--steel);margin:0 0 10px;line-height:1.45}
 .ficha-sec{margin-top:14px}
@@ -52,7 +66,7 @@
 .ficha-tabla td.libre{text-align:left;font-family:'Barlow',sans-serif;font-size:12.5px}
 .ficha-nota{font-size:11.5px;color:var(--steel);margin:6px 0 0;line-height:1.45}
 .ficha-vacio{font-size:13.5px;color:var(--steel);margin:0}
-.ficha-rec{background:var(--red);color:#fff;border-radius:2px;padding:1px 6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-left:7px;vertical-align:2px}
+.ficha-rec{background:var(--red-txt,var(--red));color:#fff;border-radius:2px;padding:1px 6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-left:7px;vertical-align:2px}
 .ficha-ref{border:1px solid var(--rule);color:var(--steel);border-radius:2px;padding:1px 6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-left:7px;vertical-align:2px}
 .ficha-ref.fuera{background:var(--steel);color:var(--paper);border-color:var(--steel)}
 .ficha-aviso{font-size:12.5px;color:var(--steel);border-left:2px solid var(--steel);padding:5px 0 5px 9px;margin:9px 0 0;line-height:1.45}
@@ -71,8 +85,69 @@
 .ficha-refs .sku{font-family:'IBM Plex Mono',monospace;font-size:11.5px;white-space:nowrap;color:var(--ink)}
 .ficha-refs .pre{text-align:right;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:11.5px}
 .ficha-refs-add{border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:3px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 7px;white-space:nowrap}
-.ficha-refs-add:hover{border-color:var(--red);color:var(--red)}
+.ficha-refs-add:hover{border-color:var(--red);color:var(--red-txt,var(--red))}
 .ficha-refs .vacio{padding:10px;color:var(--steel);font-size:12.5px}
+.ficha-ref-aviso{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);border:1px solid var(--amber);border-radius:2px;padding:0 4px;margin-left:4px;cursor:help;white-space:nowrap}
+.ficha-cands{margin:0 0 12px;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.ficha-cands.larga{max-height:232px;overflow-y:auto;scrollbar-width:thin}
+.ficha-cand{display:flex;align-items:center;gap:8px;width:100%;padding:7px 10px;border:0;border-top:1px solid var(--paper);background:var(--card);color:var(--ink);font-family:'Barlow',sans-serif;font-size:12.5px;text-align:left;cursor:pointer}
+.ficha-cand:first-child{border-top:0}
+.ficha-cand:hover{background:var(--paper)}
+.ficha-cand:focus-visible{outline:2px solid var(--red);outline-offset:-2px}
+.ficha-cand.on{background:var(--paper);box-shadow:inset 3px 0 0 var(--red)}
+.ficha-cand b{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;flex:none}
+.ficha-cand .cand-det{color:var(--steel);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.ficha-cand .cand-badge{flex:none;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;border-radius:2px;padding:1px 6px}
+.ficha-cand .cand-badge.rec{background:var(--red-txt,var(--red));color:#fff}
+.ficha-cand .cand-badge.fin{border:1px solid var(--rule);color:var(--steel)}
+.ficha-vista{margin:0 0 12px;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:var(--card)}
+.ficha-vista-img{display:flex;align-items:center;justify-content:center;padding:10px 12px 6px;min-height:96px;position:relative}
+.ficha-vista-img img{max-width:100%;max-height:150px;object-fit:contain;display:block;cursor:zoom-in}
+/* Lupa de la tarjeta gráfica (plan 19, 2026-09-18, petición del dueño): la tarjeta
+   sirve la foto a 150 px de alto; la lupa la trae al frente a su RESOLUCIÓN NATURAL
+   (los webp del repo son los originales extraídos de los documentos oficiales). El
+   botón habla el lenguaje de la página: borde --rule, acento --red al pasar. Hoy solo
+   Aruba declara «vistas» (regla del piloto) — otro fabricante que las declare la
+   hereda sin tocar nada. */
+.ficha-vista-zoom{position:absolute;top:6px;right:6px;width:26px;height:26px;padding:0;border:1px solid var(--rule);border-radius:2px;background:var(--card);color:var(--steel);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.ficha-vista-zoom:hover{border-color:var(--red);color:var(--red-txt,var(--red))}
+.ficha-vista-zoom:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+.ficha-vista-zoom svg{width:14px;height:14px}
+.ficha-lupa{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;padding:20px}
+.ficha-lupa[hidden]{display:none}
+.ficha-lupa-fondo{position:absolute;inset:0;background:rgba(14,26,43,.84)}
+.ficha-lupa-caja{position:relative;display:flex;flex-direction:column;max-width:min(1200px,94vw);max-height:92vh;background:var(--card);border:1px solid var(--rule);border-radius:4px;overflow:hidden;box-shadow:0 18px 60px rgba(14,26,43,.45)}
+.ficha-lupa-bar{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--rule)}
+.ficha-lupa-modelo{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);font-weight:600}
+.ficha-lupa-cerrar{margin-left:auto;width:28px;height:28px;padding:0;border:1px solid var(--rule);border-radius:2px;background:var(--card);color:var(--steel);font-size:15px;line-height:1;cursor:pointer}
+.ficha-lupa-cerrar:hover{border-color:var(--red);color:var(--red-txt,var(--red))}
+.ficha-lupa-cerrar:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+.ficha-lupa-caja img{max-width:100%;max-height:calc(92vh - 110px);object-fit:contain;display:block;padding:14px 18px}
+.ficha-lupa figcaption{padding:8px 12px;border-top:1px solid var(--rule);font-size:11px;line-height:1.45;color:var(--steel)}
+.ficha-vista-bar{display:flex;align-items:center;gap:10px;padding:0 12px 10px;flex-wrap:wrap}
+.ficha-vista-tabs{display:flex;gap:4px;flex:none}
+.ficha-vista-tab{padding:3px 10px;border:1px solid var(--rule);border-radius:2px;background:var(--card);color:var(--steel);font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.ficha-vista-tab.on{background:var(--ink);border-color:var(--ink);color:var(--card)}
+.ficha-vista figcaption{flex:1;min-width:180px;font-size:11px;line-height:1.45;color:var(--steel)}
+.ficha-vista-vacia{margin:0 0 12px;border:1px dashed var(--rule);border-radius:4px;padding:14px 12px;color:var(--steel);font-size:12px;line-height:1.5}
+.ficha-cands-mas{margin:-6px 0 12px;padding:0 2px;font-size:11px;color:var(--steel)}
+/* Semaforo de ciclo de vida (pendiente 34). Cinco estados; el gris usa --steel, que es el
+   color con el que el resto de este catalogo ya dice «sin dato». El verde NO es el estado por
+   defecto: se gana con un boletin fechado. */
+.ficha-ciclo{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.09em;text-transform:uppercase;font-weight:600}
+.ficha-ciclo i{display:inline-block;width:8px;height:8px;border-radius:50%;flex:none}
+.ficha-ciclo.ciclo-verde{color:var(--green)}.ficha-ciclo.ciclo-verde i{background:var(--green)}
+.ficha-ciclo.ciclo-ambar{color:var(--amber)}.ficha-ciclo.ciclo-ambar i{background:var(--amber)}
+.ficha-ciclo.ciclo-rojo{color:#a4544e}.ficha-ciclo.ciclo-rojo i{background:#a4544e}
+/* El gris va con el punto HUECO a proposito: «no consta» no es un estado del equipo sino del
+   catalogo, y un punto relleno lo leeria como un cuarto veredicto mas. */
+.ficha-ciclo.ciclo-gris{color:var(--steel)}.ficha-ciclo.ciclo-gris i{background:transparent;border:1.5px dashed var(--steel)}
+.ficha-ciclo-det{display:block;font-size:11.5px;line-height:1.45;color:var(--steel);margin-top:3px}
+.ficha-ciclo-caja{margin:9px 0 0}
+.ficha-salto{margin:10px 0 0;text-align:center}
+.ficha-det{margin-top:14px;padding-top:4px;border-top:1px solid var(--rule)}
+.ficha-salto a{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);text-decoration:none;border-bottom:1px dashed var(--rule);padding-bottom:1px}
+.ficha-salto a:hover{color:var(--red-txt,var(--red));border-bottom-color:var(--red)}
 `;
   if (!document.getElementById('ficha-estilos')) {
     const st = document.createElement('style');
@@ -83,6 +158,80 @@
 
   const esc = (s) => String(s == null ? '' : s)
     .replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* ── LUPA DE LA TARJETA GRÁFICA (plan 19, 2026-09-18, petición del dueño) ──────
+     La tarjeta sirve la foto del equipo a 150 px de alto; la lupa la trae al frente
+     a su RESOLUCIÓN NATURAL (los webp de /img/equipos son los originales extraídos
+     de los documentos oficiales — no hay versión «grande» aparte: la máxima calidad
+     ES el archivo). Un único lightbox por documento, creado al primer uso; guarda
+     los DATOS (frente/reverso/modelo/pie), nunca referencias al DOM de la tarjeta
+     (pintar() la reconstruye en cada render y la referencia quedaría huérfana).
+     Cierra con ×, Esc o clic en el fondo; ←/→ conmutan frontal/trasera cuando el
+     documento de origen publica ambas caras; el foco vuelve al botón que la abrió. */
+  const SVG_LUPA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>';
+  let lupaN = null, lupaOrigen = null, lupaDatos = null;
+  function nodoLupa() {
+    if (lupaN) return lupaN;
+    const n = document.createElement('div');
+    n.className = 'ficha-lupa'; n.id = 'fichaLupa'; n.hidden = true;
+    n.setAttribute('role', 'dialog');
+    n.setAttribute('aria-modal', 'true');
+    n.setAttribute('aria-label', 'Foto del equipo ampliada');
+    n.innerHTML = '<div class="ficha-lupa-fondo"></div><figure class="ficha-lupa-caja">'
+      + '<div class="ficha-lupa-bar"><span class="ficha-lupa-modelo"></span>'
+      + '<span class="ficha-vista-tabs" role="tablist" aria-label="Vistas del equipo"></span>'
+      + '<button type="button" class="ficha-lupa-cerrar" aria-label="Cerrar la vista ampliada">&times;</button></div>'
+      + '<img alt=""><figcaption></figcaption></figure>';
+    n.querySelector('.ficha-lupa-fondo').addEventListener('click', cerrarLupa);
+    n.querySelector('.ficha-lupa-cerrar').addEventListener('click', cerrarLupa);
+    document.body.appendChild(n);
+    lupaN = n;
+    return n;
+  }
+  function pintarLupa() {
+    const n = nodoLupa(), d = lupaDatos, img = n.querySelector('img');
+    const src = d.cual === 'rear' ? d.rear : d.front;
+    if (!src) return;
+    img.src = src;
+    img.alt = (d.cual === 'rear' ? 'Vista trasera del ' : 'Vista frontal del ') + d.modelo + ' — ampliada a tamaño completo';
+    n.querySelector('.ficha-lupa-modelo').textContent = d.modelo;
+    n.querySelector('figcaption').textContent = d.pie;
+    const tabs = n.querySelector('.ficha-vista-tabs');
+    if (d.front && d.rear) {
+      tabs.style.display = '';
+      tabs.innerHTML = ['front', 'rear'].map((c) =>
+        `<button type="button" class="ficha-vista-tab${c === d.cual ? ' on' : ''}" data-vista="${c}" role="tab" aria-selected="${c === d.cual}">${c === 'front' ? 'Frontal' : 'Trasera'}</button>`).join('');
+      tabs.querySelectorAll('.ficha-vista-tab').forEach((tb) =>
+        tb.addEventListener('click', () => { lupaDatos.cual = tb.dataset.vista; pintarLupa(); }));
+    } else { tabs.innerHTML = ''; tabs.style.display = 'none'; }
+  }
+  function abrirLupa(fig) {
+    const tabOn = fig.querySelector('.ficha-vista-tab.on');
+    lupaDatos = { front: fig.dataset.front || null, rear: fig.dataset.rear || null,
+      modelo: fig.dataset.modelo || '', pie: fig.dataset.pie || '',
+      // Sin pestañas (una sola cara) la lupa abre la que HAY, no `front` a ciegas.
+      cual: tabOn ? tabOn.dataset.vista : (fig.dataset.front ? 'front' : 'rear') };
+    lupaOrigen = fig.querySelector('.ficha-vista-zoom');
+    pintarLupa();
+    const n = nodoLupa();
+    n.hidden = false;
+    document.body.style.overflow = 'hidden';
+    n.querySelector('.ficha-lupa-cerrar').focus();
+  }
+  function cerrarLupa() {
+    if (!lupaN || lupaN.hidden) return;
+    lupaN.hidden = true;
+    document.body.style.overflow = '';
+    if (lupaOrigen) lupaOrigen.focus();
+  }
+  document.addEventListener('keydown', (e) => {
+    if (!lupaN || lupaN.hidden || !lupaDatos) return;
+    if (e.key === 'Escape') cerrarLupa();
+    if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && lupaDatos.rear) {
+      lupaDatos.cual = lupaDatos.cual === 'front' ? 'rear' : 'front';
+      pintarLupa();
+    }
+  });
 
   // ── REGLA TRANSVERSAL: FUERA DE VENTA SE MUESTRA, PERO NO SE RECOMIENDA ─────
   //
@@ -126,13 +275,24 @@
     const mk = marca(m);
     if (!mk) return '';
     if (m.eol) return 'Equipo <b>fuera de venta</b>. Se muestra como referencia para ampliar o reemplazar un parque ya instalado; no se propone para un diseño nuevo y por eso nunca sale recomendado.';
-    if (eosVencido(m)) return `Su <b>fecha de último pedido (${esc(m.eolAnnounced.lastOrder)}) ya pasó</b>: a efectos de un diseño nuevo está fuera de venta. Queda como referencia para el parque instalado.`;
+    if (eosVencido(m)) return `Su <b>fecha de último pedido (${esc(m.eolAnnounced.lastOrder)}) ya pasó</b>: a efectos de un diseño nuevo está fuera de venta. Queda como referencia para el parque instalado.`
+      // endOfSupport es opt-in (2026-09-13, Aruba EC-XL): si el catálogo declara hasta
+      // cuándo hay soporte, la ficha lo dice — es el dato que salva la renovación del
+      // parque ya instalado. Los modelos sin el campo no cambian.
+      + (m.eolAnnounced.endOfSupport ? ` El parque instalado conserva soporte del fabricante hasta el <b>${esc(m.eolAnnounced.endOfSupport)}</b>.` : '');
     if (m.legacy) return 'Pertenece a la <b>línea anterior</b>. Sigue en canal y es la respuesta natural para ampliar un parque instalado, pero solo se recomienda si ningún equipo de la generación actual cumple.';
     return `<b>Fin de venta anunciado</b> — último día de pedido: <b>${esc(m.eolAnnounced.lastOrder)}</b>. Hasta esa fecha se pide con normalidad; después dejará de proponerse solo.`;
   }
 
   // Estado por contenedor: permite varias fichas en una pagina sin que se pisen.
   const estado = {};
+
+  // El respaldo lo informa la pagina UNA VEZ tras su fetch (FICHA.fijarCicloVida), no en cada
+  // FICHA.render: hay veinte puntos de llamada entre los siete dimensionadores contando los
+  // estados vacios, y pasarlo en todos es exactamente como `llevarABom` acabo en seis copias
+  // que no hacian lo mismo. `null` mientras no se informe, que es el tercer estado.
+  let cicloVidaVendor = null;
+
 
   function medidorHtml(m) {
     const pct = m.tope > 0 ? Math.min((m.val / m.tope) * 100, 100) : 0;
@@ -143,10 +303,14 @@
 
   function seccionHtml(sec) {
     const filas = (sec.filas || []).filter((f) => f && f.length);
-    if (!filas.length && !sec.nota) return '';
+    if (!filas.length && !sec.nota && !sec.html) return '';
+    // `sec.html` (opt-in, 2026-09-13): bloque libre de la pagina — p.ej. la escalera de
+    // capacidad publicada de Aruba, que no cabe en una tabla clave/valor. Lo emite la
+    // pagina ya saneado; este modulo no lo toca. Va entre la tabla y la nota.
     return `<div class="ficha-sec"><h3>${esc(sec.titulo)}</h3>`
       + (filas.length ? `<table class="ficha-tabla"><tbody>${filas.map(([k, v, libre]) =>
         `<tr><td>${esc(k)}</td><td class="${libre ? 'libre' : ''}">${v == null ? '—' : v}</td></tr>`).join('')}</tbody></table>` : '')
+      + (sec.html || '')
       + (sec.nota ? `<p class="ficha-nota">${sec.nota}</p>` : '')
       + '</div>';
   }
@@ -163,6 +327,23 @@
   // SE CACHEA POR equipo porque cambiar de modelo y volver es el gesto normal de comparar dos
   // candidatos, y repetir la peticion cada vez haria parpadear la tabla sin motivo.
   const cacheRefs = new Map();
+
+  // DONDE SE PINTAN LAS REFERENCIAS. Por defecto, dentro de la propia ficha. Con `refsEn`
+  // la pagina las manda a un contenedor suyo -Fortinet las lleva al final de la pestana de
+  // lista de materiales, en el sitio y con el nombre que Aruba ya usaba-, y entonces la
+  // ficha NO emite su div interno: dos elementos con el mismo id harian que
+  // getElementById devolviera el primero del documento y la tabla se pintara en el sitio
+  // equivocado segun el orden del marcado, que es un fallo que no se ve hasta que alguien
+  // reordena una seccion.
+  function cajaRefs(cid) {
+    const cfg = estado[cid];
+    return document.getElementById((cfg && cfg.refsEn) || (cid + '-refs'));
+  }
+  function tituloRefs(cid) {
+    const cfg = estado[cid];
+    const t = cfg && 'refsTitulo' in cfg ? cfg.refsTitulo : 'Referencias de pedido';
+    return t ? `<h3>${esc(t)}</h3>` : '';
+  }
 
   const fmtPrecio = (p) => (p == null ? '—' : '$' + Number(p).toLocaleString('en-US'));
 
@@ -193,7 +374,9 @@
         + `${puedeAnadir ? '<th></th>' : ''}`
         + `</tr></thead><tbody>${lista.map((r, i) => `<tr>`
           + `<td class="sku">${r.sku ? esc(r.sku) : '<span style="color:var(--steel)">sin número de parte</span>'}</td>`
-          + `<td>${esc(r.d || '')}</td>`
+          // Una descripcion corregida al termino de su codigo (F18) se DICE: el texto original
+          // de la lista va en el aviso, no desaparece.
+          + `<td>${esc(r.d || '')}${r.aviso ? ` <span class="ficha-ref-aviso" title="${esc(r.aviso)}">texto corregido</span>` : ''}</td>`
           + `<td class="pre">${fmtPrecio(r.p)}</td>`
           // Ver la referencia no basta: lo que hace falta es poder meterla en la cotizacion.
           // El indice viaja en el boton porque el SKU puede ser null (las variantes de Aruba).
@@ -201,8 +384,13 @@
           + `</tr>`).join('')}</tbody></table></div>`
       : `<p class="vacio">Ninguna referencia coincide con la búsqueda.</p>`;
 
-    return `<h3>Referencias de pedido<span class="ficha-cuenta"> · ${lista.length}`
+    // `refsTitulo: null` suprime el encabezado: lo pone el contenedor externo (la seccion
+    // «Anadir a la lista de materiales»), y repetirlo daria dos titulos al mismo cuadro.
+    const tit = estado[cid] && 'refsTitulo' in estado[cid] ? estado[cid].refsTitulo : 'Referencias de pedido';
+    return (tit ? `<h3>${esc(tit)}<span class="ficha-cuenta"> · ${lista.length}`
       + `${lista.length !== datos.refs.length ? ` de ${datos.refs.length}` : ''}</span></h3>`
+      : `<p class="ficha-refs-cuenta">${lista.length}`
+      + `${lista.length !== datos.refs.length ? ` de ${datos.refs.length}` : ''} referencias</p>`)
       + `<div class="ficha-refs-barra">`
       + `<input type="search" id="${cid}-refq" placeholder="Buscar SKU o descripción…" value="${esc(filtro || '')}">`
       + chips + '</div>'
@@ -212,14 +400,14 @@
 
   function pintarRefs(cid) {
     const cfg = estado[cid];
-    const caja = document.getElementById(cid + '-refs');
+    const caja = cajaRefs(cid);
     if (!cfg || !caja) return;
     const datos = cfg._refs;
     if (!datos) return;
     if (!datos.refs.length) {
       // Un fabricante sin referencias lo DICE, en vez de dejar un hueco que se lee como si la
       // pantalla estuviera rota. Es el mismo criterio que «el catalogo no lo especifica».
-      caja.innerHTML = '<h3>Referencias de pedido</h3>'
+      caja.innerHTML = tituloRefs(cid)
         + `<p class="ficha-nota">${esc(datos.nota || 'El catálogo no trae referencias de pedido para este equipo.')}</p>`;
       return;
     }
@@ -264,8 +452,8 @@
     // tabla del equipo nuevo apareciera recortada por una busqueda que era del anterior.
     if (cfg._refClave !== clave) { cfg._refFiltro = ''; cfg._refTipo = null; cfg._refClave = clave; }
     if (cacheRefs.has(clave)) { cfg._refs = cacheRefs.get(clave); pintarRefs(cid); return; }
-    const caja = document.getElementById(cid + '-refs');
-    if (caja) caja.innerHTML = '<h3>Referencias de pedido</h3><p class="ficha-nota">Cargando…</p>';
+    const caja = cajaRefs(cid);
+    if (caja) caja.innerHTML = tituloRefs(cid) + '<p class="ficha-nota">Cargando…</p>';
     fetch(`/api/referencias/${encodeURIComponent(vendor)}/${encodeURIComponent(modelo)}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
@@ -275,10 +463,21 @@
         if (estado[cid] && estado[cid].seleccionado === modelo) { estado[cid]._refs = d; pintarRefs(cid); }
       })
       .catch(() => {
-        const c = document.getElementById(cid + '-refs');
-        if (c) c.innerHTML = '<h3>Referencias de pedido</h3><p class="ficha-nota">No se pudieron cargar las referencias de este equipo.</p>';
+        const c = cajaRefs(cid);
+        if (c) c.innerHTML = tituloRefs(cid) + '<p class="ficha-nota">No se pudieron cargar las referencias de este equipo.</p>';
       });
   }
+
+  // Una pagina con selector de equipo EXTERNO (Aruba, 2026-09-13) puede pedir que la
+  // ficha muestre un equipo que NO esta entre los candidatos: elegirlo a mano para
+  // cotizarlo es legitimo, y la alternativa —que la ficha salte al recomendado mientras
+  // el selector dice otra cosa— es justo el desajuste que este modulo existe para evitar.
+  // `incluir` lo mete en la lista como eleccion deliberada, con su aviso de desvio.
+  const conIncluir = (cfg) => (
+    cfg.incluir && !(cfg.candidatos || []).some((m) => m.id === cfg.incluir.id)
+      ? [cfg.incluir, ...(cfg.candidatos || [])]
+      : (cfg.candidatos || [])
+  );
 
   function pintar(cid) {
     const cfg = estado[cid];
@@ -294,10 +493,11 @@
       return;
     }
 
-    const sel = candidatos.find((m) => m.id === cfg.seleccionado) || candidatos[0];
+    const lista = conIncluir(cfg);
+    const sel = lista.find((m) => m.id === cfg.seleccionado) || lista[0];
     cfg.seleccionado = sel.id;
 
-    const opciones = candidatos.map((m, i) => {
+    const opciones = lista.map((m, i) => {
       const txt = cfg.etiqueta ? cfg.etiqueta(m, i) : m.id;
       const mk = marca(m);
       return `<option value="${esc(m.id)}"${m.id === sel.id ? ' selected' : ''}>`
@@ -313,25 +513,141 @@
     // siempre el mismo equipo sin decir que ya no era el que salia del dimensionamiento.
     const desviado = cfg.deliberada && recomendado && sel.id !== recomendado;
 
-    cont.innerHTML = `<p class="tag">Equipos que cumplen`
+    // `selector:false` (opt-in): la pagina tiene su propio selector de equipo fuera de la
+    // ficha — pintar otro aqui seria la duplicacion que la unificacion de Aruba vino a
+    // cerrar. El boton de volver al recomendado se mantiene, dentro del aviso de desvio.
+    const btnVolver = `<button type="button" class="ficha-volver" id="${cid}-volver">Volver al recomendado</button>`;
+    // Lista clicable de candidatos (opt-in `listaCandidatos`, peticion directa del dueno
+    // en Aruba, 2026-09-15): el contador «Equipos que cumplen · N» decia CUANTOS eran pero
+    // no CUALES, y sin verlos no habia forma de compararlos ni de elegir otro — habia que
+    // adivinarlos en un combo de catalogo entero mezclados con los que no cumplen. Cada
+    // fila declara modelo, detalle (segmento/capacidad, via `etiquetaCand` o `etiqueta`)
+    // y sus marcas (recomendado / fin de venta); el clic elige por el mismo cauce que el
+    // desplegable (alCambiar con origen 'candidato'). Con mas de 6, la caja crece con
+    // scroll para no comerse la ficha. Sin el flag, esta pagina se pinta igual que antes.
+    // Con `panelFijo` la lista NUNCA lleva scroll interno (`.larga`) ni crece sin tope:
+    // la petición del dueño (Aruba, 2026-09-16) es que la tarjeta quede clavada y ENTERA
+    // a la vista — el único scroll es el de la página, que gobierna la columna de
+    // configuración. Cuando cumplen más de 6 (umbral heredado de `.larga`), se muestran
+    // los 6 primeros —la comparación de preventa se hace entre los primeros escalones—
+    // y un pie honesto declara cuántos más cumplen y dónde verlos (el selector de
+    // equipo de la página los lista todos). Sin tope, la tarjeta superaría el viewport
+    // y volvería el mismo problema sin scroll que la trajo aquí.
+    const TOPE_PANEL_FIJO = 6;
+    const visibles = cfg.panelFijo ? lista.slice(0, TOPE_PANEL_FIJO) : lista;
+    const listaCands = cfg.listaCandidatos === true
+      ? `<div class="ficha-cands${lista.length > 6 && !cfg.panelFijo ? ' larga' : ''}" id="${cid}-cands" role="listbox" aria-label="Equipos que cumplen">`
+        + visibles.map((m, i) => {
+          const mk = marca(m);
+          const det = cfg.etiquetaCand ? cfg.etiquetaCand(m, i) : (cfg.etiqueta ? cfg.etiqueta(m, i) : '');
+          return `<button type="button" class="ficha-cand${m.id === sel.id ? ' on' : ''}" data-id="${esc(m.id)}" role="option" aria-selected="${m.id === sel.id}">`
+            + `<b>${esc(m.id)}</b><span class="cand-det">${esc(det)}</span>`
+            + (m.id === recomendado ? '<span class="cand-badge rec">recomendado</span>' : '')
+            + (mk ? `<span class="cand-badge fin">${esc(mk.t)}</span>` : '')
+            + '</button>';
+        }).join('') + '</div>'
+        + (cfg.panelFijo && lista.length > visibles.length
+          ? `<p class="ficha-cands-mas">+ ${lista.length - visibles.length} más que también cumplen — el selector de equipo del panel 1 los lista todos.</p>`
+          : '')
+      : '';
+    // Tarjeta gráfica del equipo (opt-in `vistas`, petición directa del dueño en Aruba,
+    // 2026-09-16): la foto oficial del modelo seleccionado corona la ficha, con
+    // conmutador frontal/trasera cuando el documento de origen publica ambas caras, y
+    // pie con tamaño y procedencia. Cambia con cada selección porque pintar() la
+    // reconstruye con el `sel` vigente. Si el modelo no tiene foto oficial en el
+    // repositorio se DECLARA el hueco — la regla del catálogo prohíbe un «parecido».
+    const mapaVistas = cfg.vistas && typeof cfg.vistas === 'object' ? cfg.vistas : null;
+    let vistaHtml = '';
+    if (mapaVistas) {
+      const v = mapaVistas[sel.id];
+      // Basta UNA cara: el documento manda. El datasheet de la serie 80F publica una
+      // sola figura del 80F/81F y es la de conectores, así que ese modelo entra con
+      // `rear` y sin `front`; exigir `front` lo habría dejado sin figura teniendo una
+      // oficial, o habría invitado a servirle la del 80F-DSL, que es otro producto.
+      if (v && (v.front || v.rear)) {
+        const cara0 = v.front ? 'front' : 'rear';
+        const tabs = (v.front && v.rear)
+          ? `<div class="ficha-vista-tabs" role="tablist" aria-label="Vistas del equipo">`
+            + `<button type="button" class="ficha-vista-tab on" data-vista="front" role="tab" aria-selected="true">Frontal</button>`
+            + `<button type="button" class="ficha-vista-tab" data-vista="rear" role="tab" aria-selected="false">Trasera</button></div>`
+          : '';
+        const pie = [v.tamano, v.fuente].filter(Boolean).map(esc).join(' · ');
+        // La lupa lee lo que necesita del dataset de la figura (frente, reverso, modelo
+        // y pie con procedencia): el lightbox es un singleton del documento y NO guarda
+        // referencias al DOM de la tarjeta — pintar() la reconstruye con cada render y
+        // una referencia guardada quedaría huérfana.
+        vistaHtml = `<figure class="ficha-vista" id="${cid}-vista"${v.front ? ` data-front="${esc(v.front)}"` : ''}${v.rear ? ` data-rear="${esc(v.rear)}"` : ''} data-modelo="${esc(sel.id)}" data-pie="${esc(pie)}">`
+          + `<div class="ficha-vista-img"><img src="${esc(v[cara0])}" alt="Vista ${cara0 === 'rear' ? 'trasera' : 'frontal'} del ${esc(sel.id)} — pulsa la lupa para ampliar" loading="lazy">`
+          + `<button type="button" class="ficha-vista-zoom" aria-label="Ampliar la foto del ${esc(sel.id)} a tamaño completo" title="Ampliar a tamaño completo">${SVG_LUPA}</button></div>`
+          + `<div class="ficha-vista-bar">${tabs}<figcaption>${pie}</figcaption></div>`
+          + `</figure>`;
+      } else {
+        vistaHtml = `<div class="ficha-vista-vacia">Sin foto oficial de este equipo en el repositorio — manda la ficha técnica de abajo.</div>`;
+      }
+    }
+
+    // Detalle expandible (opt-in `panelFijo` + `detalleExpandible`, Aruba 2026-09-16):
+    // la tarjeta clavada va compacta para caber en el viewport SIN scroll interno, y
+    // el porqué, las secciones largas y las referencias se DESPLIEGAN DENTRO de la
+    // propia tarjeta con el conmutador «Ver características del equipo ↓» — petición
+    // directa del dueño: las características en el mismo cuadro que recomienda el
+    // equipo, como estaban antes, sin llevarlo a otra página. Sin el opt-in, el
+    // detalle va en línea como siempre (el resto de dimensionadores no cambia).
+    const detExp = !!(cfg.panelFijo && cfg.detalleExpandible);
+    const detAbierto = detExp && !!estadoDet[cid];
+    const detalleHtml = (detExp
+        ? `<h2 class="ficha-det-tit">Características del equipo seleccionado — <b>${esc(sel.id)}</b></h2>` : '')
+      + (cfg.porQue ? `<div class="why">${cfg.porQue(sel)}</div>` : '')
+      + secciones
+      + (cfg.refsEn ? '' : `<div class="ficha-refs" id="${cid}-refs"></div>`);
+
+    cont.innerHTML = vistaHtml
+      + `<p class="tag">Equipos que cumplen`
       + `<span class="ficha-cuenta"> · ${candidatos.length}</span></p>`
-      + `<div class="ficha-sel"><label for="${cid}-sel">Equipo</label>`
-      + `<select id="${cid}-sel">${opciones}</select>`
-      + (desviado ? `<button type="button" class="ficha-volver" id="${cid}-volver">`
-        + `Volver al recomendado</button>` : '')
-      + '</div>'
+      + listaCands
+      + (cfg.selector === false ? '' :
+        `<div class="ficha-sel"><label for="${cid}-sel">Equipo</label>`
+        + `<select id="${cid}-sel">${opciones}</select>`
+        + (desviado ? btnVolver : '')
+        + '</div>')
       + (desviado ? `<p class="ficha-desvio">Estás viendo un equipo <b>elegido a mano</b>. `
         + `El dimensionamiento propone el <b>${esc(recomendado)}</b>; toda la ficha, el `
-        + `resumen y el BOM siguen al que tienes elegido.</p>` : '')
+        + `resumen y el BOM siguen al que tienes elegido. `
+        + (cfg.selector === false ? btnVolver : '') + '</p>' : '')
       + `<p class="model">${esc(cfg.titulo ? cfg.titulo(sel) : sel.id)}`
       + `${sel.id === recomendado ? '<span class="ficha-rec">recomendado</span>' : ''}`
       + `${mkSel ? `<span class="ficha-ref${mkSel.fuera ? ' fuera' : ''}">${esc(mkSel.t)}</span>` : ''}</p>`
       + `<p class="family">${esc(cfg.subtitulo ? cfg.subtitulo(sel) : '')}</p>`
+      // Ciclo de vida (pendiente 34): va ANTES del aviso porque responde a otra pregunta —
+      // el aviso dice que hacer con el equipo, esto dice en que estado esta. Se pinta siempre
+      // que la pagina informe `cicloVida`, incluido el tercer estado: un hueco se lee como
+      // «vigente» y eso es justo lo que este pendiente existe para evitar.
+      + (cicloVidaVendor || cfg.cicloVida ? `<p class="ficha-ciclo-caja">${cicloHtml(sel, cfg.cicloVida)}</p>` : '')
       + (mkSel ? `<p class="ficha-aviso">${avisoDe(sel)}</p>` : '')
       + medidores
-      + (cfg.porQue ? `<div class="why">${cfg.porQue(sel)}</div>` : '')
-      + secciones
-      + `<div class="ficha-refs" id="${cid}-refs"></div>`;
+      // Conmutador del detalle (2026-09-16): la compacta se paga en no encontrar la
+      // información si el detalle no está donde se mira. El enlace declara QUÉ hay y
+      // lo despliega en el mismo cuadro; el estado vive en estadoDet para sobrevivir
+      // a los repintados, y la página escucha el clic para soltar el sticky y para
+      // llevar el estado a la URL (?ficha=abierta).
+      + (detExp
+        ? `<p class="ficha-salto"><a href="#${cid}-det" id="${cid}-salto" role="button"`
+          + ` aria-expanded="${detAbierto}" aria-controls="${cid}-det">`
+          + `${detAbierto ? 'Ocultar características ↑' : 'Ver características del equipo ↓'}</a></p>`
+          + `<div class="ficha-det" id="${cid}-det"${detAbierto ? '' : ' hidden'}>${detalleHtml}</div>`
+        : detalleHtml);
+    const salto = document.getElementById(cid + '-salto');
+    if (salto && detExp) {
+      salto.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        const abierto = !estadoDet[cid];
+        estadoDet[cid] = abierto;
+        const det = document.getElementById(cid + '-det');
+        if (det) det.hidden = !abierto;
+        salto.setAttribute('aria-expanded', String(abierto));
+        salto.textContent = abierto ? 'Ocultar características ↑' : 'Ver características del equipo ↓';
+      });
+    }
 
     // Sin onchange= en linea: la CSP del sitio prohibe todo codigo inline.
     const nodo = document.getElementById(cid + '-sel');
@@ -343,8 +659,52 @@
         // recomendado no volvia nunca.
         cfg.deliberada = true;
         pintar(cid);
-        if (cfg.alCambiar) cfg.alCambiar(nodo.value);
+        if (cfg.alCambiar) cfg.alCambiar(nodo.value, 'selector');
       });
+    }
+    // Clic en la lista de candidatos: el mismo cauce que el desplegable (eleccion
+    // deliberada + alCambiar), con origen 'candidato' para que la pagina sepa que viene
+    // de la lista y sincronice su selector externo si lo tiene.
+    const cajaCands = document.getElementById(cid + '-cands');
+    if (cajaCands) {
+      cajaCands.querySelectorAll('.ficha-cand').forEach((b) => {
+        b.addEventListener('click', () => {
+          const id = b.dataset.id;
+          if (!id || id === cfg.seleccionado) return;
+          cfg.seleccionado = id;
+          cfg.deliberada = true;
+          pintar(cid);
+          if (cfg.alCambiar) cfg.alCambiar(id, 'candidato');
+        });
+      });
+    }
+    // Conmutador frontal/trasera de la tarjeta gráfica: solo cambia la foto, no toca la
+    // selección ni avisa a la página (vista, no estado). La próxima pintar() —por cambio
+    // de equipo o de datos— vuelve a la cara frontal, que es la que el documento oficial
+    // presenta primero.
+    const vistaNodo = document.getElementById(cid + '-vista');
+    if (vistaNodo) {
+      const imgNodo = vistaNodo.querySelector('img');
+      vistaNodo.querySelectorAll('.ficha-vista-tab').forEach((tb) => {
+        tb.addEventListener('click', () => {
+          const cual = tb.dataset.vista;
+          const src = cual === 'rear' ? vistaNodo.dataset.rear : vistaNodo.dataset.front;
+          if (!src || !imgNodo) return;
+          imgNodo.src = src;
+          imgNodo.alt = (cual === 'rear' ? 'Vista trasera del ' : 'Vista frontal del ') + sel.id;
+          vistaNodo.querySelectorAll('.ficha-vista-tab').forEach((x) => {
+            const on = x === tb;
+            x.classList.toggle('on', on);
+            x.setAttribute('aria-selected', on ? 'true' : 'false');
+          });
+        });
+      });
+      // Lupa (plan 19): el botón de la esquina y la propia foto abren la vista
+      // ampliada a resolución natural. El botón frena la propagación para no
+      // disparar dos veces el mismo diálogo.
+      const btnZoom = vistaNodo.querySelector('.ficha-vista-zoom');
+      if (btnZoom) btnZoom.addEventListener('click', (e) => { e.stopPropagation(); abrirLupa(vistaNodo); });
+      if (imgNodo) imgNodo.addEventListener('click', () => abrirLupa(vistaNodo));
     }
     // Salida del modo manual. Sin esto, apartarse del recomendado era una puerta de un solo
     // sentido: habia que acordarse de cual era y volver a buscarlo en una lista de 58.
@@ -354,13 +714,20 @@
         cfg.seleccionado = recomendado;
         cfg.deliberada = false;
         pintar(cid);
-        if (cfg.alCambiar) cfg.alCambiar(recomendado);
+        if (cfg.alCambiar) cfg.alCambiar(recomendado, 'volver');
       });
     }
 
     // Las referencias del equipo elegido. Solo si la pagina declara su fabricante: sin el no
     // hay a quien preguntar, y es preferible no pintar la seccion a pintarla vacia.
-    if (cfg.vendor) cargarRefs(cid, cfg.vendor, sel.id);
+    // Una pagina puede tener sus referencias integradas en otro componente (Aruba las lleva
+    // en la lista de materiales, 2026-09-13): con `refs:false` no se piden, y `refsNota`
+    // deja el cartel que dice donde estan, para que la seccion no desaparezca sin explicacion.
+    if (cfg.vendor && cfg.refs !== false) cargarRefs(cid, cfg.vendor, sel.id);
+    else if (cfg.refsNota) {
+      const caja = cajaRefs(cid);
+      if (caja) caja.innerHTML = tituloRefs(cid) + '<p class="ficha-nota">' + esc(cfg.refsNota) + '</p>';
+    }
   }
 
   // ── ALIMENTACION ELECTRICA: SI ES DE DOBLE FUENTE Y SUS CARACTERISTICAS ────────────────
@@ -415,12 +782,197 @@
     return { titulo: 'Alimentación eléctrica', filas, nota };
   }
 
+
+  /* == SEMAFORO DE CICLO DE VIDA (pendiente 34) ==============================
+     Vivia SOLO en la pagina de Aruba, y su rama por defecto era VERDE: cualquier modelo que
+     no estuviera marcado `eol` ni `legacy` salia como «Generacion actual». Portarlo tal cual a
+     los siete habria afirmado «se puede pedir» sobre 131 modelos que nadie ha comprobado — el
+     mismo error que el «IPS: no aplica» del Catalyst 8300, y mas caro, porque lo que se afirma
+     delante de un cliente es que el equipo esta a la venta.
+
+     LA AUSENCIA DE UN BOLETIN NO ES PRUEBA DE VIGENCIA. Solo lo es si alguien mira los
+     boletines de ese fabricante, y eso lo declara el servidor en `cicloVida.respaldado` a
+     partir de las `campos` de `legacyData/fuentes.js` (hoy: Cisco y Juniper). Sin respaldo, el
+     estado es el TERCER ESTADO — el mismo que protege `redund`— y nunca verde.
+
+     CINCO ESTADOS, y dos de ellos la version de Aruba fundia en uno:
+       rojo   · fuera de venta: `eol`, o `lastOrder` YA VENCIDO
+       rojo   · fuera de venta sin fecha publicada en el catalogo (`eol` binario)
+       ambar  · fin de venta ANUNCIADO y todavia pedible (hasta `lastOrder`)
+       ambar  · linea anterior (`legacy`)
+       verde  · vigente SEGUN un boletin fechado — se nombra cual y de cuando
+       gris   · el catalogo no trae el ciclo de vida de este fabricante
+     La copia de Aruba pintaba de rojo «Fin de venta — ultimo pedido X» tanto si la fecha habia
+     pasado como si no, y hasta esa fecha el equipo SE PIDE CON NORMALIDAD. `rango()` ya hacia
+     esa distincion; el semaforo no. Ahora los dos leen la misma regla.
+
+     `cicloVida` es opcional: una pagina que no lo pase obtiene el tercer estado, que es lo
+     correcto cuando no consta — nunca verde por omision. */
+  const CICLO = {
+    fuera:     { cls: 'rojo',  n: 'Fuera de venta' },
+    anunciado: { cls: 'ambar', n: 'Fin de venta anunciado' },
+    anterior:  { cls: 'ambar', n: 'Linea anterior' },
+    vigente:   { cls: 'verde', n: 'Vigente' },
+    sinDato:   { cls: 'gris',  n: 'Sin dato de ciclo de vida' },
+  };
+  function cicloDeVida(m, cicloVida) {
+    if (cicloVida === undefined) cicloVida = cicloVidaVendor;
+    if (!m) return { estado: 'sinDato', ...CICLO.sinDato, detalle: 'sin equipo seleccionado' };
+    const eos = m.eolAnnounced;
+    if (eos && eos.lastOrder && eosVencido(m)) {
+      return { estado: 'fuera', ...CICLO.fuera,
+        // 2026-09-16 (peticion del dueño: «resalta si hay equipos con esta condicion»):
+        // el fin de soporte del boletin se suma aqui — es el dato que salva la renovacion
+        // del parque instalado. Opt-in como en avisoDe(): solo lo dicen los modelos que
+        // lo traen; los demas no cambian.
+        detalle: 'su fecha de ultimo pedido (' + eos.lastOrder + ') ya paso'
+          + (eos.endOfSupport ? ' · soporte del fabricante hasta el ' + eos.endOfSupport : '')
+          // B1 (2026-09-24): un equipo fuera de venta sin reemplazo a la vista deja a quien
+          // amplia el parque sin salida. El del boletin manda; si el boletin no lo nombra, la
+          // inferencia por capacidad se muestra ROTULADA como tal, nunca como oficial.
+          + (eos.sucesor ? ' · sucesor: ' + eos.sucesor
+            : m.sucesor ? ' · sucesor natural: ' + m.sucesor + ' (inferencia por capacidad, sin doc oficial)' : '') };
+    }
+    if (m.eol) {
+      return { estado: 'fuera', ...CICLO.fuera,
+        detalle: 'el catalogo no trae la fecha de ultimo pedido' };
+    }
+    if (eos && eos.lastOrder) {
+      return { estado: 'anunciado', ...CICLO.anunciado,
+        detalle: 'se pide con normalidad hasta el ' + eos.lastOrder
+          + (eos.sucesor ? ' · sucesor: ' + eos.sucesor : '') };
+    }
+    if (m.legacy) {
+      return { estado: 'anterior', ...CICLO.anterior,
+        detalle: 'sigue en canal para ampliar parque instalado'
+          + (m.sucesor ? ' · sucesor natural: ' + m.sucesor + ' (inferencia por capacidad, sin doc oficial)' : '') };
+    }
+    // AQUI ESTA EL PENDIENTE 34. Antes esta rama devolvia verde siempre.
+    if (cicloVida && cicloVida.respaldado) {
+      return { estado: 'vigente', ...CICLO.vigente,
+        detalle: 'sin boletin de fin de venta en ' + (cicloVida.fuente || 'la fuente declarada')
+          + (cicloVida.fecha ? ' (' + cicloVida.fecha + ')' : '') };
+    }
+    return { estado: 'sinDato', ...CICLO.sinDato,
+      detalle: (cicloVida && cicloVida.motivo) || 'ninguna fuente declarada respalda el fin de venta de este fabricante' };
+  }
+  // Una linea lista para pintar. `esc` se aplica aqui y no en quien llama, para que no haya
+  // una copia que se olvide de escapar — el detalle lleva dentro nombres del catalogo.
+  function cicloHtml(m, cicloVida) {
+    const c = cicloDeVida(m, cicloVida);
+    return '<span class="ficha-ciclo ciclo-' + c.cls + '"><i></i>' + esc(c.n) + '</span>'
+      + '<span class="ficha-ciclo-det">' + esc(c.detalle) + '</span>';
+  }
+
+  /* == CONFIGURACION DE PUERTOS (pendiente 35) ===============================
+     LA REGLA LA APORTA NOKIA, NO ARUBA. `legacyData/nokia.js` es el unico catalogo de los
+     ocho que modela los puertos como DATO y no como texto, y lo hace con dos reglas que
+     salieron de estructurar material comercial y que ningun otro fabricante tenia resueltas:
+
+       1. LAS CONFIGURACIONES SON ALTERNATIVAS, NO ACUMULABLES. «36x100GE o 12x400GE» nunca
+          son 48 interfaces: el equipo se pide en UNA de ellas. Sumarlas prometeria una
+          densidad que no existe.
+       2. UN CHASIS MODULAR NO PUBLICA DENSIDAD. «7 slots IOM» dice cuantas tarjetas caben,
+          no cuantos puertos salen — eso depende de las tarjetas que se pidan, y este
+          catalogo no tiene el catalogo de tarjetas. Se aparta CON SU MOTIVO en vez de
+          colarse con una densidad inventada.
+
+     Por que sube aqui: el flujo de `docs/portabilidad-aruba.md` no es «Aruba enseña a los
+     siete», es que la capa comun es algo A LO QUE CADA FABRICANTE APORTA LO QUE YA RESOLVIO.
+     Vivia dentro de dimensionador-nokia-7750sr.js y por tanto no la veia nadie mas.
+
+     QUE VEN LOS OTROS SEIS, Y POR QUE NO ES UN PANEL VACIO. Sus catalogos traen los puertos
+     como texto libre (`ports` en Cisco/Huawei/MikroTik, `ifaces` en Fortinet/Juniper/Aruba):
+     se muestran, y la ficha DECLARA que no estan estructurados y que por eso no se puede
+     comprobar densidad contra un requerimiento. Eso no es un hueco: es la diferencia entre
+     «este equipo no tiene puertos» y «el catalogo no sabe contarlos», que es justo la
+     distincion que este repositorio protege en `redund` y en el comparador.
+
+     NO AUDITA NADA CONTRA UN ESCENARIO. La auditoria de Aruba (cuantos enlaces declarados
+     caben en el chasis) responde OTRA pregunta y se queda en su pagina: esto describe lo que
+     el equipo tiene. Mezclarlas habria metido un motor de calculo en un modulo de
+     presentacion, que es lo que el pendiente pedia no hacer. */
+  // El titulo va CON TILDE: es texto visible, y en este repositorio los comentarios van en
+  // ASCII pero lo que lee una persona va en español correcto. Lo cazo el contraste de Nokia
+  // al mover la regla, que es justo para lo que existe.
+  const PUERTOS_TIT = 'Configuración de puertos';
+  function seccionPuertos(m) {
+    if (!m) return { titulo: PUERTOS_TIT, filas: [] };
+    // 1 · Configuraciones alternativas (Nokia 7250 IXR / 7750 SR).
+    if (Array.isArray(m.configs) && m.configs.length) {
+      const varias = m.configs.length > 1;
+      return {
+        titulo: PUERTOS_TIT,
+        filas: m.configs.map((c, i) => [
+          varias ? 'Opción ' + (i + 1) + ' de ' + m.configs.length + ' · «' + c.n + '»' : '«' + c.n + '»',
+          (c.puertos || []).map((p) => p.cantidad + ' × ' + p.veloc + 'GE').join(' + '),
+        ]),
+        nota: varias
+          ? 'Son <b>alternativas, no acumulables</b>: el equipo se pide en una de ellas —'
+            + m.configs.map((c) => '«' + esc(c.n) + '»').join(' <b>o</b> ') + '— y nunca en varias a la vez.'
+          : null,
+      };
+    }
+    // 2 · Puertos estructurados de un equipo fijo (Nokia 7220 IXR).
+    if (Array.isArray(m.puertos) && m.puertos.length) {
+      return {
+        titulo: PUERTOS_TIT,
+        filas: m.puertos.map((p) => [
+          p.uso ? 'Puertos de ' + p.uso : 'Puertos',
+          p.cantidad + ' × ' + p.veloc + 'GE',
+        ]),
+        nota: null,
+      };
+    }
+    // 3 · Chasis modular: se publica lo que cabe, NO lo que sale.
+    if (m.slots) {
+      return {
+        titulo: PUERTOS_TIT,
+        filas: [['Slots', m.slots.cantidad + ' × ' + esc(m.slots.tipo)
+          + (m.slots.hasta ? ', interfaces de hasta ' + m.slots.hasta + 'GE' : '')]],
+        nota: '<span class="warn">' + esc(m.notaPuertos
+          || 'chasis modular: los slots dicen cuántas tarjetas caben, no cuántos puertos salen.')
+          + '</span>',
+      };
+    }
+    // 4 · UNA NOTA EXPLICITA DEL CATALOGO GANA AL TEXTO LIBRE. El 7250 IXR-e publica
+    // velocidades pero no densidad y lo dice en `notaPuertos`; su `ifaces` es texto comercial.
+    // Pintar ese texto como una fila «Interfaces» al lado de la nota lo haria leer como una
+    // densidad, que es justo lo que la nota niega. Quien declara, manda.
+    if (m.notaPuertos) {
+      return { titulo: PUERTOS_TIT, filas: [], nota: '<span class="warn">' + esc(m.notaPuertos) + '</span>' };
+    }
+    // 5 · El resto de los catalogos: texto libre. Se muestra Y SE DECLARA como tal.
+    const texto = m.ifaces || m.ports;
+    if (texto) {
+      return {
+        titulo: PUERTOS_TIT,
+        filas: [['Interfaces', esc(texto)]],
+        nota: 'El catálogo trae los puertos de este fabricante <b>como texto</b>, no como dato'
+          + ' estructurado, así que no se puede contrastar la densidad contra un requerimiento'
+          + ' — solo Nokia los publica estructurados en este catálogo.',
+      };
+    }
+    // 6 · Tercer estado. Ni afirma que no tenga puertos ni inventa una densidad.
+    return {
+      titulo: PUERTOS_TIT,
+      filas: [],
+      nota: '<span class="warn">el catálogo no trae la densidad de este equipo</span>',
+    };
+  }
   const API = {
     // La regla se expone para que las cinco paginas ordenen y elijan con el mismo criterio
     // en vez de reimplementarlo cada una a su manera, que es como se llego a tres.
     rango,
     recomendable,
     marca,
+    cicloDeVida,
+    cicloHtml,
+    seccionPuertos,
+    // La pagina lo llama una vez, con el `cicloVida` que le devuelve /api/dimensionador/<v>.
+    // Quien no lo llame no pinta nada: es lo correcto: un hueco no afirma vigencia, y una
+    // linea en gris sin que nadie haya decidido mostrarla seria ruido.
+    fijarCicloVida(datos) { cicloVidaVendor = datos || null; },
     seccionAlimentacion,
     // Ordena dejando primero lo vigente y al final lo que esta fuera de venta, conservando
     // el criterio propio de cada pagina (capacidad, precio, medio) como desempate.
@@ -468,8 +1020,9 @@
         deliberada = false;
       }
       // Si deja de cumplir al mover un parametro se vuelve al recomendado, en vez de dejar
-      // en pantalla la ficha de un equipo que ya no sirve.
-      if (!cfg.candidatos.some((m) => m.id === sel)) {
+      // en pantalla la ficha de un equipo que ya no sirve. La lista de la pagina puede
+      // incluir un elegido a mano fuera de los candidatos (`incluir`): ese si se conserva.
+      if (!conIncluir(cfg).some((m) => m.id === sel)) {
         sel = cfg.recomendado;
         deliberada = false;
       }

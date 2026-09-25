@@ -25,10 +25,26 @@
 // la serie 7000/7200) sigue sin precio, y el BOM declara esas líneas "sin cotizar" en vez de
 // inventar un importe.
 //
+// LIST PRICE DE SUSCRIPCIONES Y SERVICIOS (2026-09-13). LICENSES, BOOST, CENTRAL_TIERS y
+// las licencias perpetuas del 9240 llevan ahora SKU y List Price 1/3/5 años. Doble fuente:
+//   1. QuickSpecs oficial EdgeConnect SD-WAN (v18, 06-jul-2026 — DATASHEETS.ecQuickspecs)
+//      para la correspondencia SKU↔descripción, verificada además contra la copia publicada
+//      en hpe.com (a50004289enw) el mismo día.
+//   2. El mismo export de lista de precios del distribuidor ya descrito arriba para el
+//      List Price (solo SKU, descripción, List Price y vigencia — nunca el distribuidor
+//      ni su descuento). Punto de control externo: JZ118AAE aparece en tienda pública con
+//      LIST PRICE $1,260.00, idéntico al de la lista.
+// Lo que la lista no cubre sigue en null y se declara: EC-V, EC-XS-SP, Dynamic Threat
+// Defense y el Orchestrator cloud-hosted. Los SKU de Foundational Care SÍ salen de la
+// lista — van por VARIANTE de hardware, no por tier de caudal — y viven en CARE_SKU
+// (ver su comentario para la correspondencia fcnbd↔"NBD Exch" / fc247↔"4HR Onsite").
+//
 // CORRECCIONES RESPECTO A LA PRIMERA VERSIÓN DE ESTE ARCHIVO (documentadas a propósito):
 //   · Se elimina "EC-2XL": no existe en el portafolio. La gama va XS → S → M → L → XL.
 //   · Los niveles de suscripción no son "Base/Advanced" sino Foundation / Advanced /
-//     On-Premises, y los tiers de caudal publicados son 100 Mbps, 1 Gbps e ilimitado.
+//     On-Premises. Los tiers de caudal eran 100 Mbps, 1 Gbps e ilimitado; la revisión
+//     del 2026-09-13 de la lista oficial amplía Advanced y On-Premises a ocho niveles
+//     (20M→2G e ilimitado, ver BW_TIERS) — Foundation sigue en sus tres tiers.
 //   · El soporte no es "Pointnext Tech Care" sino HPE Aruba Networking Foundational Care.
 //   · El 9240 no es un gateway de sucursal sino de campus (serie 9200), y su capacidad la
 //     fija la licencia perpetua, no el hardware.
@@ -48,6 +64,10 @@
 const DATASHEETS = {
   ecHardware:  {n:'EdgeConnect Hardware Reference Guide (PDF)', url:'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/hardware/reference/EdgeConnect-Hardware-Reference_latest.pdf', file:'edgeconnect-hardware-reference.pdf'},
   ecQuickspecs:{n:'EdgeConnect SD-WAN QuickSpecs',              url:'https://www.hpe.com/us/en/collaterals/collateral.a50004289enw.html', file:'edgeconnect-quickspecs.pdf'},
+  // La política de ciclo de vida es la fuente del boletín EC-XL (EOL_ANNOUNCED). La URL
+  // es VIVA y cambia sin historial público: el 2026-09-16 ya no mostraba las líneas por
+  // modelo consultadas el 2026-09-13 — de ahí congelar una copia como las demás.
+  ecLifecycle: {n:'EdgeConnect — Product Lifecycle Policy (PDF)', url:'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/docs/eula/EC_LifecyclePolicy_latest.pdf', file:'edgeconnect-lifecycle-policy.pdf'},
   ecSpecSheet: {n:'EdgeConnect Spec Sheet (US)',                url:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', file:'edgeconnect-spec-sheet-us.pdf'},
   ecOverview:  {n:'EdgeConnect SD-WAN — página de producto',    url:'https://www.hpe.com/us/en/aruba-edgeconnect-sd-wan.html', file:'edgeconnect-overview.pdf'},
   ecXsSpec:    {n:'EdgeConnect EC-XS — spec sheet',            url:'https://www.hpe.com/psnow/doc/a00110177enw', file:'edgeconnect-xs-spec-sheet.pdf'},
@@ -121,9 +141,36 @@ const MODELS = [
   // exige antes de pisar un dato existente (misma regla que el SRX380 de Juniper) — así que
   // se deja sin tocar. Ver PENDIENTES.md, "Conflictos abiertos entre el catálogo y una ficha
   // oficial", para la decisión pendiente del dueño del catálogo.
+  // ── Campo `spec` (2026-09-13) ─────────────────────────────────────────────
+  // Características técnicas adicionales leídas de los datasheets oficiales, literales:
+  // · EdgeConnect: QuickSpecs HPE a50004289enw (tabla "Comparison" p.30 + fichas por
+  //   modelo) y EdgeConnect Hardware Reference (tablas de alimentación/físico pp.20-26,
+  //   ambiental p.33, ruido p.35) — copias locales en public/datasheets/.
+  // · Serie 9000: DS_9000Series (serie-9000-branch-gateways.pdf pp.5-7).
+  // · Serie 9100: QuickSpecs a50006999enw (serie-9100-hybrid-quickspecs.pdf pp.14-16).
+  // · Serie 9200: QuickSpecs serie 9200 (serie-9200-campus-gateways.pdf pp.9-11).
+  // · Series 7000/7200: DS_7000Series y DS_7200Series oficiales de Aruba (doble ancla:
+  //   dos copias independientes del mismo documento consultadas el 2026-09-13).
+  // `spec` NO sobrescribe ningún campo existente: solo añade lo que la ficha no tenía.
+  // Conflictos detectados y NO aplicados (quedan documentados en PENDIENTES.md):
+  // · 7010: el DS actual declara 8 Gbps de firewall y 64K sesiones; el catálogo conserva
+  //   4 Gbps / 32K del DS anterior (decisión del dueño: no tocar sin confirmación).
+  // · 7205: el DS declara 12 Gbps de firewall; el catálogo conserva 15 Gbps.
+  // · 7030: el DS declara 8x combo 1G (sin 10G); el texto de `ifaces` del catálogo
+  //   menciona "puertos 10G" — pendiente de corrección por el dueño.
+  // · EC-L: psu.texto cita 401 W; el QuickSpecs por modelo declara 404 W y el Hardware
+  //   Reference 440 W para la variante EC-L-P — se muestran ambos en spec.watts.
   {id:'EC-XS', redund:false, psu:{tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 23 W en la primera revisión de hardware y 34 W en las posteriores — HPE publica el requerimiento, no un consumo típico. Fuente única mediante adaptador externo, sin opción de segunda.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal peq / Oficina remota',
    wanMin:2, wanMax:200, boostMax:200,
+   // A1 de la auditoría 2026-09-17: Dynamic Threat Defense (IDS/IPS en el chasis) NO corre
+   // en EC-XS — doc oficial de IDS/IPS de Orchestrator y QuickSpecs («Advanced Security not
+   // supported on JM962A»). La página ya lo avisaba en rojo pero lo seguía RECOMENDANDO y
+   // cotizaba la licencia DTD; `dtd:false` lo convierte en filtro duro.
+   dtd:false,
    ifaces:'4x RJ45 10/100/1000 LAN/WAN + 2x RJ45 10/100/1000 gestión + serie RJ-45',
+   spec:{conexiones:'256.000', boostRec:'250 Mbps', idsips:'No — Dynamic Threat Defense (IDS/IPS) no corre en EC-XS', fru:'Ninguna',
+     mtbf:'162.171 h (18,5 años)', watts:'23 W (primera revisión HW) / 34 W (posteriores) — requerimiento de alimentación', btu:'116 BTU/h',
+     ruido:'40 dBA', peso:'1,59 kg (3,5 lb)'},
    // hwSku de la variante base completado el 2026-09-10 desde DATASHEETS.priceList (el
    // QuickSpecs no lo publica); EC-XS-SP y EC-XS-FIPS no aparecen como SKU propio en esa
    // fuente tampoco, así que siguen sin confirmar.
@@ -139,6 +186,11 @@ const MODELS = [
   {id:'EC-10104', redund:false, psu:{tipo:'adaptador externo, único', texto:'Fuente única — el QuickSpecs confirma que no hay segunda fuente pero no publica voltaje ni consumo.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal peq / oficina en casa',
    wanMin:2, wanMax:500, boostMax:500,
    ifaces:'4x RJ45 10/100/1000',
+   spec:{conexiones:'256.000', boostRec:'200 Mbps', idsips:'Sí', fru:'Ninguna',
+     ram:'ECC (HPE no publica la capacidad)', mtbf:'63 años',
+     watts:'48 W', btu:'163,78 BTU/h', ruido:'Sin ventilador (0 dBA)',
+     dims:'3,8 × 19,8 × 15,3 cm (1,50 × 7,81 × 6,03 in)', peso:'1,14 kg (2,52 lb)',
+     certs:'Cifrado de disco AES-128 · IPsec AES-256'},
    hwSku:'R9D72A', skus:[{sku:'R9D72A',d:'EdgeConnect 10104 · 4x RJ45 10/100/1000'},
                          {sku:'S3N78A',d:'EdgeConnect 10104 TAA · 4x RJ45'},
                          {sku:'S3N69A',d:'EdgeConnect 10104 NAL · 4x RJ45'}],
@@ -147,6 +199,9 @@ const MODELS = [
   {id:'EC-10106', redund:false, psu:{tipo:'adaptador externo, único (54 V)', texto:'Fuente única — el QuickSpecs confirma que no hay segunda fuente pero no publica el consumo.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal pequeña',
    wanMin:2, wanMax:1000, boostMax:1000,
    ifaces:'2x SFP+ 1/10G + 2x Combo (SFP/1GbE) + 2x GbE PoE+',
+   spec:{conexiones:'256.000', boostRec:'250 Mbps', idsips:'Sí', fru:'Ninguna',
+     ram:'16 GB ECC', mtbf:'125.075 h', watts:'165 W', btu:'563 BTU/h',
+     ruido:'42 dBA', peso:'2,30 kg (5,08 lb)'},
    hwSku:'S0E22A', skus:[{sku:'S0E22A',d:'EdgeConnect 10106 · 2x SFP+ · 2x Combo · 2x GbE PoE+'},
                          {sku:'S3N71A',d:'EdgeConnect 10106 NAL · 2x SFP+ · 2x Combo · 2x GbE PoE+'}],
    ds:'https://www.hpe.com/us/en/collaterals/collateral.a50004289enw.html', dsFile:null},
@@ -154,6 +209,9 @@ const MODELS = [
   {id:'EC-10108', redund:false, psu:{tipo:'adaptador externo, único (54 V)', texto:'Fuente única — el QuickSpecs confirma que no hay segunda fuente pero no publica el consumo.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal mediana',
    wanMin:2, wanMax:2000, boostMax:2000,
    ifaces:'2x SFP+ 1/10G + 2x Combo (SFP/1GbE) + 2x GbE PoE+',
+   spec:{conexiones:'256.000', boostRec:'500 Mbps', idsips:'Sí', fru:'Ninguna',
+     ram:'32 GB ECC', mtbf:'125.452 h', watts:'165 W', vlanMax:'128',
+     ruido:'42 dBA'},
    hwSku:'S0E23A', skus:[{sku:'S0E23A',d:'EdgeConnect 10108 · 2x SFP+ · 2x Combo · 2x GbE PoE+'},
                          {sku:'S3N72A',d:'EdgeConnect 10108 NAL · 2x SFP+ · 2x Combo · 2x GbE PoE+'}],
    ds:'https://www.hpe.com/us/en/collaterals/collateral.a50004289enw.html', dsFile:null},
@@ -161,13 +219,28 @@ const MODELS = [
   {id:'EC-S', redund:false, psu:{tipo:'fuente única interna, AC (S3N73A) o DC (S3N74A) según el SKU', volts:'100-240 V AC, 47-63 Hz', texto:'Requerimiento de alimentación 100 W — HPE publica el requerimiento, no un consumo típico. El EdgeConnect Hardware Reference confirma lo que el catálogo ya decía: una sola fuente por unidad. Las variantes EC-S-P sí traen 1+1 redundante (111 W en AC, 103 W en DC).'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal grande / Oficina remota',
    wanMin:10, wanMax:3000, boostMax:3000,
    ifaces:'8x RJ45 10/100/1000 + 4x SFP+ 1/10G',
+   spec:{conexiones:'256.000', boostRec:'500 Mbps', idsips:'Sí',
+     fru:'SSD y fuente de poder (variantes EC-S-P)', disco:'2x SSD (variantes EC-S-P)',
+     mtbf:'177.726 h (20 años)', watts:'100 W (EC-S, fuente única) · 111 W AC / 103 W DC a -48 V (EC-S-P, 1+1)',
+     ruido:'40 dBA', peso:'8,23 kg (18,14 lb)'},
+   // Variantes de pedido (2026-09-15, pendiente #27 — decisión delegada al arquitecto):
+   // el EC-S del catálogo YA es el EC-S-P; se añaden los SKU de canal no-NAL que el
+   // importador encontró en la lista (mismo equipo, mismos precios que los NAL, PLC GA).
+   // Fuera a propósito: JM778A (NFR — not-for-resale, PLC SA: no es vendible) y JM538AR
+   // (remanufacturado: el reman se oferta como tal, no como variante del modelo nuevo).
    hwSku:'S3N73A', skus:[{sku:'S3N73A',d:'EC-S-P · 4x SFP+ · 10x RJ45 · PSU AC · 2x SSD · NAL'},
-                         {sku:'S3N74A',d:'EC-S-P · 4x SFP+ · 10x RJ45 · PSU DC · 2x SSD · NAL'}],
+                         {sku:'S3N74A',d:'EC-S-P · 4x SFP+ · 10x RJ45 · PSU DC · 2x SSD · NAL'},
+                         {sku:'JM538A',d:'EC-S-P · PSU AC · canal no-NAL'},
+                         {sku:'JM769A',d:'EC-S-P-DC · PSU DC · canal no-NAL'}],
    ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
 
   {id:'EC-M', redund:true, psu:{tipo:'1+1 redundante, sustituible e intercambiable en caliente', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 126 W — HPE publica el requerimiento, no un consumo típico.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Hub / Sucursal grande',
    wanMin:50, wanMax:5000, boostMax:5000,
    ifaces:'8x RJ45 1GbE + 4x SFP+ 1/10G (SR o LR)',
+   spec:{conexiones:'2.000.000', boostRec:'1 Gbps', idsips:'Sí',
+     fru:'SSD y fuente de poder', disco:'960 GB SSD',
+     mtbf:'15 años', watts:'153 W (1+1)', btu:'522 BTU/h',
+     ruido:'44,3 dBA', peso:'8,21 kg (18,1 lb)'},
    hwSku:'JZ872A', skus:[{sku:'JZ872A',d:'EC-M-H · 8x RJ45 10/100/1000 · 4x SFP+ 1/10G'},
                          {sku:null,d:'EC-M-P-FIPS (validado FIPS 140)'}],
    ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
@@ -175,20 +248,26 @@ const MODELS = [
   {id:'EC-L', redund:true, psu:{tipo:'1+1 redundante, sustituible e intercambiable en caliente', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 401 W — HPE publica el requerimiento, no un consumo típico.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Datacenter / Hub grande',
    wanMin:2000, wanMax:10000, boostMax:10000,
    ifaces:'6x SFP+ 10G (SR o LR)',
+   spec:{conexiones:'2.000.000', boostRec:'1 Gbps', idsips:'Sí',
+     fru:'SSD y fuente de poder', disco:'960 GB SSD',
+     mtbf:'> 10 años', watts:'404 W (EC-L-H, QuickSpecs) · 440 W (EC-L-P, Hardware Reference)', btu:'1.379 BTU/h',
+     peso:'14,5 kg (32 lb)'},
    hwSku:'JZ878A', skus:[{sku:'JZ878A',d:'EC-L-H · 6x SFP+ 1/10G'}],
    ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
 
-  // SEÑAL SIN CONFIRMAR (2026-09-10): en el export de lista de precios del distribuidor (ver
-  // DATASHEETS.priceList), la fila de S0B67A SIN sufijo de país marca estado PLC "ES" (End of
-  // Sale) con vigencia 2026-06-30, mientras que las ~20 filas por país del mismo SKU (US, EU,
-  // BR...) marcan "GA". No se sabe si la fila sin sufijo es la maestra (y EC-XL ya estaría en
-  // salida) o un residuo desactualizado — un solo documento, y contradictorio consigo mismo,
-  // no alcanza para tocar nada (misma regla que el conflicto de wanMax de EC-XS). Se deja sin
-  // marcar como EOL; confirmar con HPE/el distribuidor antes de cotizar EC-XL en una propuesta
-  // nueva. Ver PENDIENTES.md, "Aruba: List Price real para EdgeConnect y gateways".
+  // FIN DE VENTA CONFIRMADO Y MARCADO (2026-09-13, decisión del dueño): ver EOL_ANNOUNCED
+  // al final de MODELS. La pista fue la fila de S0B67A sin sufijo de país con PLC "ES" en
+  // el export del distribuidor; la confirmación, la Product Lifecycle Policy oficial de
+  // EdgeConnect. Desde la marca, el EC-XL nunca sale recomendado para diseño nuevo (cae
+  // solo a rango 2 por fecha vencida, patrón ficha.js) y la página avisa en ámbar
+  // cualquier línea cotizada con PLC "ES" (fase 7: PLC_POR_SKU + bom-eos).
   {id:'EC-XL', fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Datacenter / Head-end de fabric',
    wanMin:2000, wanMax:10000, boostMax:10000,
    ifaces:'hasta 6x SFP+ 10G y/o SFP28 25G · network memory en flash PCIe · PSU y almacenamiento redundantes',
+   spec:{conexiones:'2.000.000', boostRec:'5 Gbps', idsips:'Sí',
+     fru:'SSD, NVMe y fuente de poder', disco:'960 GB SSD (ECOS) + 3,2 TB NVMe (Network Memory)',
+     mtbf:'> 10 años', watts:'438 – 480 W según variante (Hardware Reference)',
+     peso:'15,2 kg (33,5 lb)'},
    hwSku:'S0B67A', skus:[{sku:'S0B67A',d:'EC-XL-H-10G · 6x SFP+ 1/10G'},
                          {sku:'S3N77A',d:'EC-XL-H · 6x SFP28 · 2x NVMe · 2x PSU · 2x SSD · NAL'},
                          {sku:null,d:'EC-XL-P-FIPS (validado FIPS 140)'}],
@@ -203,6 +282,11 @@ const MODELS = [
   {id:'EC-10150', redund:true, psu:{tipo:'1+1 redundante (2x PSU)', texto:'Dos fuentes redundantes y dos SSD NVMe de sistema — el QuickSpecs confirma la redundancia pero no publica voltaje ni consumo.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Datacenter / Hub grande',
    wanMin:null, wanMax:12000, boostMax:12000,
    ifaces:'2x RJ45 10/100/1000 gestión + 8x SFP28 1/10/25G · 2x PSU',
+   spec:{conexiones:'2.000.000', boostRec:'8 Gbps', idsips:'Sí',
+     fru:'SSD, NVMe y fuente de poder', tuneles:'10.000 túneles IPsec', peers:'4.096 peers de fabric',
+     prefijos:'60.000 IPv4 / 30.000 IPv6', certs:'FIPS 140-2 Nivel 1 · NDcPP v2.2e · TPM 2.0',
+     mtbf:'300.236 h (sin almacenamiento)', watts:'423 W típico / 456 W máx. · PSU 800 W (1+1)',
+     ruido:'71,5 dBA', peso:'14,7 kg (32,4 lb)'},
    hwSku:'S2N65A', skus:[{sku:'S2N65A',d:'EdgeConnect 10150 · 8x SFP28 · 2x RJ45 · 2x PSU'}],
    ds:'https://www.hpe.com/us/en/collaterals/collateral.a50004289enw.html', dsFile:null},
 
@@ -215,21 +299,49 @@ const MODELS = [
   // ─── Serie 9000 · Branch Gateways (AOS 10, gestionados por Central) ─────────
   // hwSku completado el 2026-09-10 desde el QuickSpecs de la serie (SKU (US) base; el
   // documento trae ademas variantes RW/JP/IL/EG y TAA, no listadas por brevedad).
-  {id:'Gateway 9004', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal peq',
-   fw:4000, clients:2048, aps:32, fwSess:null, ipsecSess:2048, greTuns:544, boostMax:null,
+  // fwSess completado el 2026-09-13 desde el DS de la serie 9000 (tabla AOS 10: 128K
+  // sesiones de firewall).
+  // SISTEMA OPERATIVO (C3 de la auditoría 2026-09-17, resuelve el conflicto «aps 32 vs
+  // 128/256» que PENDIENTES.md dejaba al dueño): las dos cifras son ciertas, cada una en su
+  // arquitectura. El campo base `aps` pasa a la de AOS 10 (128 en 9004/9004-LTE, 256 en
+  // 9012 — tabla AOS 10 del DS de la serie 9000, la arquitectura que gestiona Central y
+  // la que usa este catálogo) y `porSo.aos8` superpone la de AOS 8 (32 APs en modo
+  // controladora). El selector «Sistema operativo de los gateways» de la página elige cuál
+  // aplica. Antes el dimensionador filtraba con 32 y mandaba a un 9106 (US$9.228) una
+  // sede de 40 APs que un 9012 (US$4.441) cubre en AOS 10.
+  // Alimentación (pendiente 15, 2026-09-24): leída en local de los PDF oficiales de
+  // public/datasheets/. HPE publica consumo MÁXIMO, no típico, así que va en el texto y no en
+  // psu.watts, que la ficha rotula «Consumo típico».
+  {id:'Gateway 9004', redund:false, psu:{tipo:'adaptador externo AC-DC 12 V DC, 2,5 A (JX990A, incluido en la caja)', volts:'90-264 V AC, 47-63 Hz', texto:'Datasheet de la serie 9000: «Power source: 12v DC, 2.5A AC-to-DC power adapter» y consumo máximo 25 W con USB; la PSNow dice «Each 9004 includes a JX990A power adapter supply in the box». Una sola fuente; el documento no publica una segunda entrada.'}, fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal peq',
+   fw:4000, clients:2048, aps:128, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
+   porSo:{aos10:{aps:128}, aos8:{aps:32}},
    ifaces:'4x GbE RJ45', hwSku:'R1B20A', skus:[{sku:'R1B20A',d:'9004 (US) · 4x GbE RJ45'}],
+   spec:{aps10:'128', cps:'130.000 sesiones nuevas/s', cluster:'Hasta 4 gateways por cluster · 8.192 clientes por cluster (AOS 10)',
+     vlanMax:'4.094', ospf:'8.000 rutas', acls:'2.678 entradas', dhcp:'4.000 clientes', bridge:'64.000 entradas',
+     fwSessSdwan:'64.000 sesiones activas de firewall en modo SD-WAN (doc oficial HPE a00099294en_us) — en conflicto con las 128.000 del datasheet AOS 10, ver PENDIENTES',
+     ruido:'0 dBA (sin ventilador)', watts:'25 W máx.', dims:'3,82 × 19,85 × 15,31 cm', peso:'1,143 kg'},
    ds:'https://www.hpe.com/psnow/doc/a00091602enw', dsFile:'gateway-9004.pdf'},
 
-  {id:'Gateway 9004-LTE', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal peq + LTE',
-   fw:4000, clients:2048, aps:32, fwSess:null, ipsecSess:2048, greTuns:544, boostMax:null,
+  {id:'Gateway 9004-LTE', redund:false, psu:{tipo:'adaptador externo AC-DC 12 V DC, 2,5 A (JX990A, incluido en la caja)', volts:'90-264 V AC, 47-63 Hz', texto:'Datasheet de la serie 9000 (columna 9004/9004-LTE): «Power source: 12v DC, 2.5A AC-to-DC power adapter», consumo máximo 25 W con USB; la PSNow dice «Each 9004-LTE includes a JX990A power adapter supply in the box». Una sola fuente; el documento no publica una segunda entrada.'}, fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal peq + LTE',
+   fw:4000, clients:2048, aps:128, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
+   porSo:{aos10:{aps:128}, aos8:{aps:32}},
    ifaces:'4x GbE RJ45 + LTE integrado (uplink dedicado o redundante)', hwSku:'R3V91A',
    skus:[{sku:'R3V91A',d:'9004-LTE (US) · 4x GbE RJ45 + LTE'}],
+   spec:{aps10:'128', cps:'130.000 sesiones nuevas/s', cluster:'Hasta 4 gateways por cluster · 8.192 clientes por cluster (AOS 10)',
+     vlanMax:'4.094', ospf:'8.000 rutas', acls:'2.678 entradas', dhcp:'4.000 clientes', bridge:'64.000 entradas',
+     lte:'Cat 12 · hasta 600 Mbps de bajada / 150 Mbps de subida',
+     ruido:'0 dBA (sin ventilador)', watts:'25 W máx.', dims:'3,82 × 19,85 × 15,31 cm', peso:'1,143 kg'},
    ds:'https://www.hpe.com/psnow/doc/a00091602enw', dsFile:'gateway-9004.pdf'},
 
-  {id:'Gateway 9012', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal med / gde',
-   fw:6000, clients:2048, aps:32, fwSess:null, ipsecSess:2048, greTuns:544, boostMax:null,
+  {id:'Gateway 9012', redund:false, psu:{tipo:'fuente interna única', volts:'90-264 V AC, 47-63 Hz (3 A a 100 Vrms)', texto:'Datasheet de la serie 9000: «Power source: Internal Power Supply 90VAC–264VAC 47-63Hz 3A at 100Vrms», consumo máximo 160 W con 120 W de PoE. El documento no publica ranura para una segunda fuente.'}, fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal med / gde',
+   fw:6000, clients:2048, aps:256, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
+   porSo:{aos10:{aps:256}, aos8:{aps:32}},
    ifaces:'12x GbE RJ45 (6x PoE+)', hwSku:'R1B31A',
    skus:[{sku:'R1B31A',d:'9012 (US) · 12x GbE · 6x PoE+'},{sku:'R1B37A',d:'9012 (RW) TAA · 12x GbE · 6x PoE+'}],
+   spec:{aps10:'256', cps:'130.000 sesiones nuevas/s', cluster:'Hasta 4 gateways por cluster · 8.192 clientes por cluster (AOS 10)',
+     vlanMax:'4.094', ospf:'8.000 rutas', acls:'2.678 entradas', dhcp:'4.000 clientes', bridge:'64.000 entradas',
+     fwSessSdwan:'64.000 sesiones activas de firewall en modo SD-WAN (doc oficial HPE a00099294en_us) — en conflicto con las 128.000 del datasheet AOS 10, ver PENDIENTES',
+     ruido:'29,1 – 63,5 dBA', watts:'160 W máx. (incluye 120 W de presupuesto PoE)', dims:'4,37 × 39,5 × 26 cm', peso:'3,42 kg'},
    ds:'https://www.arubanetworks.com/assets/ds/DS_9000Series.pdf', dsFile:'serie-9000-branch-gateways.pdf'},
 
   // ─── Serie 9100 · Hybrid Gateways ──────────────────────────────────────────
@@ -242,28 +354,72 @@ const MODELS = [
   // Central — la que aplica a este catálogo, no la fila separada "AOS-8" del mismo documento).
   // `greTuns` se deja en null a propósito: esa tabla no publica un tunel GRE aparte para
   // AOS-10, solo lo hace la sección AOS-8 (8K, solo 9106) que es otra arquitectura de gestión.
-  {id:'Gateway 9106', fam:'gw', rol:'sucursal', serie:'Serie 9100 Hybrid', seg:'Sucursal gde / Campus peq',
+  {id:'Gateway 9106', redund:false, psu:{tipo:'adaptador externo de 165 W (repuesto S0G32A), salida 54 V', volts:'100-240 V AC, 50-60 Hz', texto:'QuickSpecs de la serie 9100: «Power Supply Slots: -» (sin ranuras de fuente), «Power Source: 165W», consumo máximo 150 W. El repuesto es el «9106 Spare Power Adapter» S0G32A.'}, fam:'gw', rol:'sucursal', serie:'Serie 9100 Hybrid', seg:'Sucursal gde / Campus peq',
    fw:10000, clients:8000, aps:2000, fwSess:2000000, ipsecSess:16000, greTuns:null, boostMax:null,
+   // C3 (2026-09-17): las cifras base son de la tabla AOS 10. La tabla «AOS-8 Specifications»
+   // de la misma QuickSpecs (p. 14, public/datasheets/serie-9100-hybrid-quickspecs.pdf) se
+   // transcribió el 2026-09-24, leída en local: 256 APs («Maximum APs (Campus or Remote)») y
+   // 8K usuarios/dispositivos concurrentes, clúster de 4. El 9114 figura «Not Supported».
+   porSo:{aos8:{aps:256, clients:8000}},
    ifaces:'2x SFP+ 10GbE + 2x combo SFP/RJ45 1GbE + 2x RJ45 1GbE con PoE hasta 60W',
+   spec:{cluster:'Hasta 6 gateways por cluster (AOS 10)', tuneles:'20.000 túneles totales (AOS 10)',
+     encTput:'GRE / AES-CBC-128/256 / AES-GCM-128/256: 10 Gbps (a velocidad de línea)',
+     mtbf:'236.076 h', watts:'150 W', btu:'290 BTU/h', ruido:'54,6 dBA', peso:'2,305 kg',
+     extra:'Formato desktop · PoE hasta 60 W'},
    hwSku:'S5H02A', skus:[{sku:'S5H02A',d:'9106 (US) · 2x SFP+ · 2x Combo · 2x PoE'}],
    ds:'https://www.hpe.com/us/en/collaterals/collateral.a50006999enw.html', dsFile:'serie-9100-hybrid-quickspecs.pdf'},
 
-  {id:'Gateway 9114', fam:'gw', rol:'campus', serie:'Serie 9100 Hybrid', seg:'Campus peq / Sucursal grande',
+  {id:'Gateway 9114', redund:'opcional', psu:{tipo:'fuente modular de 250 W (X371, 12 V DC); la segunda es la JL085A', volts:'100-240 V AC, 50-60 Hz', texto:'QuickSpecs de la serie 9100: «Power Supply Slots: 1 + Redundant», «Power Source: 250-watt power supply», consumo máximo 185 W. La variante DC (R9M48A) lo dice literal: «Includes one DC power supply along with one open slot for redundancy». La fuente X371 de 250 W (JL085A) figura en «Power Options».'}, fam:'gw', rol:'campus', serie:'Serie 9100 Hybrid', seg:'Campus peq / Sucursal grande',
    fw:20000, clients:10000, aps:4000, fwSess:2000000, ipsecSess:32000, greTuns:null, boostMax:null,
+   porSo:{aos8:null},
+   porSoMotivo:{aos8:'no corre AOS 8: la matriz de sistema operativo lo lista solo en AOS 10 (10.5.0.1+)'},
    ifaces:'4x SFP+ 10GbE + 4x combo SFP/RJ45 1GbE + 1 slot de expansión',
+   spec:{cluster:'Hasta 6 gateways por cluster (AOS 10)', tuneles:'40.000 túneles totales (AOS 10)',
+     encTput:'GRE / AES-CBC-128/256 / AES-GCM-128/256: 20 Gbps (a velocidad de línea)',
+     mtbf:'280.165 h', watts:'185 W', btu:'631 BTU/h', ruido:'69 dBA', peso:'6,2 kg',
+     extra:'1U rack · 1 slot de expansión'},
    hwSku:'R9M45A', skus:[{sku:'R9M45A',d:'9114 · 4x SFP+ · 4x combo · 1 slot de expansión'}],
    ds:'https://www.hpe.com/us/en/collaterals/collateral.a50006999enw.html', dsFile:'serie-9100-hybrid-quickspecs.pdf'},
 
   // ─── Serie 9200 · Campus Gateways ──────────────────────────────────────────
-  {id:'Gateway 9240', fam:'gw', rol:'campus', serie:'Serie 9200', seg:'Campus / Hub regional',
-   fw:20000, clients:16000, aps:512, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+  {id:'Gateway 9240', redund:'opcional', psu:{tipo:'fuente modular de 550 W AC (PSU-550-AC); la segunda es la R7J63A', volts:'100-240 V AC, 50-60 Hz', texto:'QuickSpecs y PSNow de la serie 9200: «Power supply slots: 1 + redundant», «Power source: 550-watt power supply»; consumo 115 W en reposo y 190 W a plena carga. La PSU-550-AC R7J63A figura como repuesto.'}, fam:'gw', rol:'campus', serie:'Serie 9200', seg:'Campus / Hub regional',
+   fw:20000, clients:32000, aps:4000, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   // C2 de la auditoría 2026-09-17: el catálogo cotizaba los SKU de licencia de AOS 10
+   // (R8R41AAE/R8R42AAE, «9240 AOS10 Silver/Gold Capacity License» en la propia lista del
+   // distribuidor) con las capacidades de AOS 8 (512/1K/2K APs, 16K/24K/32K clientes). Con
+   // 12.000 clientes y 1.200 APs añadía una licencia Gold de US$19.995 que en AOS 10 no
+   // hace falta. Ahora cada sistema operativo trae SU tabla y SUS SKU:
+   //   · AOS 10 (base): DS serie 9200 + «AOS 10 Capacity Licenses» (techdocs HPE) —
+   //     Base 4K APs / 32K clientes / 20 Gbps; Silver 8K / 48K / 30 Gbps; Gold 16K / 64K /
+   //     40 Gbps. SKU R8R41AAE / R8R42AAE con su List Price. Silver y Gold NO admiten IDPS
+   //     (misma página oficial).
+   //   · AOS 8 (porSo.aos8): DS serie 9200, tabla AOS 8 — 512/1K/2K APs, 16K/24K/32K
+   //     clientes; reemplaza a 7210/7220/7240XM. SKU R8R13AAE / R8R14AAE (el boletín de fin
+   //     de venta del 7220 lo nombra: «9240 + Silver R8R13AAE»). Sin List Price en la lista
+   //     del distribuidor: van en «consultar», nunca con un precio inventado.
    licCap:[
-     {code:'hw',     n:'Solo hardware',             fw:20000, aps:512,  clients:16000},
-     {code:'silver', n:'+ licencia Silver (perp.)', fw:30000, aps:1000, clients:24000},
-     {code:'gold',   n:'+ licencia Gold (perp.)',   fw:40000, aps:2000, clients:32000},
+     {code:'hw',     n:'Solo hardware',             fw:20000, aps:4000,  clients:32000},
+     {code:'silver', n:'+ licencia Silver (perp.)', fw:30000, aps:8000,  clients:48000, sku:'R8R41AAE', elp:9995},
+     {code:'gold',   n:'+ licencia Gold (perp.)',   fw:40000, aps:16000, clients:64000, sku:'R8R42AAE', elp:19995},
    ],
+   porSo:{
+     aos10:{aps:4000, clients:32000, licCap:[
+       {code:'hw',     n:'Solo hardware',             fw:20000, aps:4000,  clients:32000},
+       {code:'silver', n:'+ licencia Silver (perp.)', fw:30000, aps:8000,  clients:48000, sku:'R8R41AAE', elp:9995},
+       {code:'gold',   n:'+ licencia Gold (perp.)',   fw:40000, aps:16000, clients:64000, sku:'R8R42AAE', elp:19995},
+     ]},
+     aos8:{aps:512, clients:16000, licCap:[
+       {code:'hw',     n:'Solo hardware',             fw:20000, aps:512,  clients:16000},
+       {code:'silver', n:'+ licencia Silver (perp.)', fw:30000, aps:1000, clients:24000, sku:'R8R13AAE', elp:null},
+       {code:'gold',   n:'+ licencia Gold (perp.)',   fw:40000, aps:2000, clients:32000, sku:'R8R14AAE', elp:null},
+     ]},
+   },
    ifaces:'4x SFP28 + 1 slot de expansión · 1U rack', hwSku:'R7H95A',
    skus:[{sku:'R7H95A',d:'9240 (US) · 4x SFP28 · 1 slot de expansión'}],
+   spec:{encTput:'AES-CCM: 20 / 28 / 30 Gbps según licencia Base / Silver / Gold',
+     ospf:'57.000 rutas', mtbf:'185.301 h', watts:'190 W máx. · PSU 550 W (ranuras 1+1)',
+     btu:'648 BTU/h', ruido:'65,2 dBA', peso:'8,2 kg (18,08 lb)',
+     extra:'AOS 10 por licencia (Base/Silver/Gold): 32K/48K/64K clientes · 4K/8K/16K APs · 4M sesiones · 32K/64K/128K IPsec · 40K/80K/160K túneles. Consola USB-C + RJ45 · OOBM RJ45 · 2x USB · 5 bandejas de ventilador.'},
    ds:'https://www.hpe.com/psnow/doc/PSN1014459233NGEN', dsFile:'serie-9200-campus-gateways.pdf'},
 
   // ─── Serie 7000 · Mobility Controllers de sucursal (AOS 8) ─────────────────
@@ -277,56 +433,263 @@ const MODELS = [
   {id:'7005', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal peq (fanless)',
    fw:2000, clients:1024, aps:16, fwSess:16384, ipsecSess:null, greTuns:null, boostMax:null,
    ifaces:'4x RJ45 10/100/1000 · sin ventilador · alimentable por PoE', hwSku:null,
-   skus:[{sku:null,d:'7005 (US / RW)'}],
+   spec:{encTput:'3DES/AES-CBC: 1,2 Gbps · AES-CCM: 1,6 Gbps',
+     ruido:'0 dBA (sin ventilador)', watts:'16,6 W máx. (con USB) · PoE PD (puerto 0) o adaptador 12 V 30 W',
+     btu:'51,18 BTU/h', dims:'4,1 × 20 × 20 cm', peso:'0,92 kg'},
+   // Remanufacturado HPE (2026-09-13, lista del distribuidor): la unidad nueva no está en
+   // la lista; el SKU reman sí, con List Price — ver cotizadorCatalog.js.
+   skus:[{sku:null,d:'7005 (US / RW)'},{sku:'JW633AR',d:'7005 remanufacturado HPE (Reman)'}],
    ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
 
   {id:'7008', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal peq + PoE',
    fw:2000, clients:1024, aps:16, fwSess:16384, ipsecSess:null, greTuns:null, boostMax:null,
    ifaces:'8x RJ45 10/100/1000 con PoE y PoE+ integrados · sin ventilador', hwSku:null,
-   skus:[{sku:null,d:'7008 (US / RW)'}],
+   spec:{encTput:'3DES/AES-CBC: 1,2 Gbps · AES-CCM: 1,6 Gbps',
+     ruido:'0 dBA (sin ventilador)', watts:'126 W máx. con PoE (26 W sin PoE) · fuente 150 W · PoE+ 100 W (8 puertos)',
+     btu:'430 BTU/h', dims:'4,2 × 20,52 × 20,32 cm', peso:'1,0 kg'},
+   skus:[{sku:null,d:'7008 (US / RW)'},{sku:'JX927AR',d:'7008 remanufacturado HPE (Reman)'}],
    ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
 
+  // ipsecSess/greTuns completados el 2026-09-13 desde el DS oficial de la serie 7000
+  // (tabla "Performance and capacity": 2.048 IPsec, 512 GRE, 2.048 SSL, 4.096 VLANs).
+  // Ese mismo DS declara 8 Gbps de firewall y 64K sesiones — conflicto con el fw:4000 /
+  // fwSess:32768 del catálogo (DS anterior): NO se sobrescribe, queda en PENDIENTES.md.
   {id:'7010', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal med',
-   fw:4000, clients:2048, aps:32, fwSess:32768, ipsecSess:null, greTuns:null, boostMax:null,
+   fw:4000, clients:2048, aps:32, fwSess:32768, ipsecSess:2048, greTuns:512, boostMax:null,
    ifaces:'16x RJ45 10/100/1000 + 2x SFP', hwSku:null,
-   skus:[{sku:null,d:'7010 (US / RW)'}],
+   spec:{encTput:'3DES: 2,4 Gbps · AES-CBC-256: 2,6 Gbps · AES-CCM: 3,4 Gbps · AES-GCM-256: 3,3 Gbps',
+     vlanMax:'4.096', ssl:'2.048 sesiones SSL', mtbf:'232.843 h',
+     watts:'190 W máx. (con PoE) · fuente interna · PoE+ 150 W (12 puertos)',
+     btu:'300 BTU/h', ruido:'39,8 – 58,6 dBA', dims:'4,42 × 31,75 × 33,7 cm', peso:'3,4 kg'},
+   skus:[{sku:null,d:'7010 (US / RW)'},{sku:'JW678AR',d:'7010 remanufacturado HPE (Reman)'}],
    ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
 
   {id:'7024', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal med · acceso unificado 24p',
    fw:4000, clients:2048, aps:32, fwSess:32768, ipsecSess:null, greTuns:null, boostMax:null,
    ifaces:'24x RJ45 10/100/1000 + 2x SFP+ 10G', hwSku:null,
+   spec:{encTput:'3DES/AES-CBC: 2,4 Gbps · AES-CCM: 3,4 Gbps', mtbf:'311.901 h',
+     watts:'450 W máx. (con PoE) · fuente interna · PoE+ 400 W (24 puertos)',
+     btu:'1.842 BTU/h', ruido:'34,3 – 71,2 dBA', dims:'4,37 × 44,2 × 31,3 cm', peso:'5,13 kg'},
    skus:[{sku:null,d:'7024 (US / RW)'}],
    ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
 
+  // ipsecSess/greTuns completados el 2026-09-13 desde el DS oficial de la serie 7000
+  // (4.096 IPsec, 1.024 GRE, 4.096 SSL, 4.096 VLANs). El DS declara 8x combo 1G sin
+  // puertos 10G — el `ifaces` del catálogo dice lo contrario: NO se toca, PENDIENTES.md.
   {id:'7030', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal gde',
-   fw:8000, clients:4096, aps:64, fwSess:65536, ipsecSess:null, greTuns:null, boostMax:null,
+   fw:8000, clients:4096, aps:64, fwSess:65536, ipsecSess:4096, greTuns:1024, boostMax:null,
    ifaces:'8x RJ45 10/100/1000 (combo) + puertos 10G', hwSku:null,
-   skus:[{sku:null,d:'7030 (US / RW)'}],
+   spec:{encTput:'3DES: 2,4 Gbps · AES-CBC-256: 2,6 Gbps · AES-CCM: 4,0 Gbps · AES-GCM-256: 3,4 Gbps',
+     vlanMax:'4.096', ssl:'4.096 sesiones SSL', mtbf:'390.679 h',
+     watts:'55 W máx. · fuente interna',
+     btu:'168 BTU/h', ruido:'29,1 – 57,4 dBA', dims:'4,4 × 30,5 × 21,1 cm', peso:'2,06 kg'},
+   skus:[{sku:null,d:'7030 (US / RW)'},{sku:'JW686AR',d:'7030 remanufacturado HPE (Reman)'}],
    ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
 
   // ─── Serie 7200 · Mobility Controllers de campus (AOS 8) ───────────────────
   // Sin URL de datasheet oficial confirmada en las fuentes consultadas: `ds` queda en null
   // y la pagina lo dice, en vez de enlazar una copia de tercero como si fuera oficial.
+  // fwSess/ipsecSess/greTuns y `spec` completados el 2026-09-13 desde el DS oficial
+  // DS_7200Series (tabla "Performance and capacity" + físico/ambiental), obtenido en dos
+  // copias independientes del mismo documento (doble ancla). Conflicto NO aplicado: el DS
+  // declara 12 Gbps de firewall para el 7205 y el catálogo conserva 15 Gbps (PENDIENTES.md).
   {id:'7205', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus med',
-   fw:15000, clients:8000, aps:256, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   fw:15000, clients:8000, aps:256, fwSess:1000000, ipsecSess:8192, greTuns:4096, boostMax:null,
    ifaces:'2x 10GBASE-X (SFP+) + 4x dual-media (1000BASE-X o 10/100/1000BASE-T)', hwSku:null,
-   skus:[{sku:null,d:'7205 (US / RW)'}], ds:null, dsFile:null},
+   spec:{encTput:'3DES / AES-CBC-256 / AES-CCM / AES-GCM-256: 5 Gbps',
+     vlanMax:'4.096', ssl:'4.096 sesiones SSL', tuneles:'4.096 puertos tunelizados',
+     mtbf:'129.597 h @ 40 °C', watts:'75,2 W máx. · PSU 350 W AC', ruido:'49,0 dBA',
+     dims:'4,4 × 44,2 × 33,4 cm', peso:'4,95 kg'},
+   skus:[{sku:null,d:'7205 (US / RW)'},{sku:'JW735AR',d:'7205 remanufacturado HPE (Reman)'}], ds:null, dsFile:null},
 
   {id:'7210', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus gde',
-   fw:20000, clients:16000, aps:512, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   fw:20000, clients:16000, aps:512, fwSess:2015291, ipsecSess:16384, greTuns:8192, boostMax:null,
    ifaces:'4x 10GBASE-X (SFP+)', hwSku:null,
-   skus:[{sku:null,d:'7210 (US / RW)'}], ds:null, dsFile:null},
+   spec:{encTput:'3DES: 7 Gbps · AES-CBC-256: 7 Gbps · AES-CCM: 6 Gbps · AES-GCM-256: 7 Gbps',
+     vlanMax:'4.096', ssl:'8.192 sesiones SSL', tuneles:'8.192 puertos tunelizados',
+     mtbf:'106.536 h @ 40 °C', watts:'110 W máx. · PSU 350 W AC', ruido:'46,9 dBA',
+     dims:'4,4 × 44,5 × 44,5 cm', peso:'7,45 kg'},
+   skus:[{sku:null,d:'7210 (US / RW)'},{sku:'JW743AR',d:'7210 remanufacturado HPE (Reman)'}], ds:null, dsFile:null},
 
   {id:'7220', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus grande / alta densidad',
-   fw:40000, clients:24000, aps:1024, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   fw:40000, clients:24000, aps:1024, fwSess:2015291, ipsecSess:24576, greTuns:16384, boostMax:null,
    ifaces:'4x 10GBASE-X (SFP+)', hwSku:null,
-   skus:[{sku:null,d:'7220 (US / RW)'}], ds:null, dsFile:null},
+   spec:{encTput:'3DES: 27 Gbps · AES-CBC-256: 24 Gbps · AES-CCM: 22 Gbps · AES-GCM-256: 26 Gbps',
+     vlanMax:'4.096', ssl:'8.192 sesiones SSL', tuneles:'12.288 puertos tunelizados',
+     mtbf:'113.751 h @ 40 °C', watts:'125 W máx. · PSU 350 W AC', ruido:'46,9 dBA',
+     dims:'4,4 × 44,2 × 40,1 cm', peso:'7,9 kg'},
+   skus:[{sku:null,d:'7220 (US / RW)'},{sku:'JW751AR',d:'7220 remanufacturado HPE (Reman)'}], ds:null, dsFile:null},
 
   {id:'7240XM', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus máxima escala',
-   fw:40000, clients:32000, aps:2048, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   fw:40000, clients:32000, aps:2048, fwSess:2015291, ipsecSess:32768, greTuns:32768, boostMax:null,
    ifaces:'4x 10GBASE-X (SFP+)', hwSku:null,
+   spec:{encTput:'3DES: 29 Gbps · AES-CBC-256: 31 Gbps · AES-CCM: 29 Gbps · AES-GCM-256: 35 Gbps',
+     vlanMax:'4.096', ssl:'8.192 sesiones SSL', tuneles:'16.384 puertos tunelizados',
+     mtbf:'116.590 h @ 40 °C', watts:'165 W máx. · PSU 350 W AC', ruido:'54,7 dBA',
+     dims:'4,4 × 44,5 × 44,5 cm', peso:'7,45 kg'},
    skus:[{sku:null,d:'7240XM (US / RW)'}], ds:null, dsFile:null},
 ];
+
+// ── Fin de venta confirmado (mismo patrón que Cisco) ─────────────────────────
+// Fuente OFICIAL: Product Lifecycle Policy de EdgeConnect (arubanetworking.hpe.com/
+// techdocs, EC_LifecyclePolicy_latest.pdf), consultada el 2026-09-13:
+//   · "EC-XL-H end of sale announcement. June 2025" (los agregadores la fijan el 30-jun).
+//   · "EC-XL-H end of sale (EoS). Mar 31, 2026" — último día de pedido. OJO: los
+//     checkers de terceros (router-switch, layer23) dicen 30-sep-2025; se usa la fecha
+//     del documento oficial, y ambas están ya vencidas a la fecha de la marca.
+//   · "Last date to renew HW Maintenance. Mar 31, 2030" (+4 años tras el EoS, renovación
+//     limitada a término de 1 año) y End of Support +7 años tras el EoS → 31-mar-2033.
+// El sucesor NO se declara: la política dice que la notificación nombra el reemplazo,
+// pero esa notificación no está publicada en las fuentes abiertas consultadas — poner
+// "EC-10150" sería inferirlo. Confirmar con el distribuidor (ver PENDIENTES.md).
+//
+// EC-XS VERIFICADO VIGENTE en fuentes oficiales el 2026-09-16 (petición directa del
+// dueño: «valida en las fuentes oficiales si el EC-XS sigue vigente o entró en EOL»):
+//   · QuickSpecs oficiales a50004289enw V18 (06-jul-2026, copia en el repo:
+//     public/datasheets/edgeconnect-quickspecs.pdf) — sección Configuration
+//     Information → BTO Models → «Extra Small»: "HPE Aruba Networking EC-XS 4x RJ45
+//     10/100/1000 SD-WAN Gateway NoLoc JM962A#AC3" ORDENABLE, igual que la variante
+//     NAL S3N70A y los accesorios JM965A/JM996A. Cero marcas de fin de venta en todo
+//     el documento. La versión ONLINE actual (hpe.com, consultada el mismo día)
+//     mantiene la misma línea.
+//   · Product Warranty Quick Reference oficial (a00143138enw): JM962A «Active»,
+//     garantía 1-Year, SIN fecha de End of Sale.
+//   · Política de ciclo de vida oficial (EC_LifecyclePolicy_latest.pdf, en vivo):
+//     la única mención al EC-XS es histórica — "The 4GB version of EC-XS was declared
+//     as End of Sale (EoS) on December 31, 2016" — una revisión de hardware antigua,
+//     no el modelo actual.
+//   · La señal de terceros (router-switch / layer23: anuncio 30-jun-2025, EoS
+//     31-ene-2026, EOSL 31-ene-2031, «EdgeConnect XS Gateway End of Sale
+//     Announcement») NO existe en ningún canal oficial (networkingsupport.hpe.com:
+//     0 resultados) y queda CONTRADECIDA por las QuickSpecs oficiales publicadas
+//     cinco meses DESPUÉS de esa supuesta fecha, que lo siguen listando ordenable.
+//   Veredicto: el EC-XS NO lleva marca de fin de venta. La casa nunca marca por
+//   agregadores — solo por documento del fabricante.
+// EC-L-H (JZ878A): misma señal de terceros (EoS 31-dic-2025) y mismo veredicto el
+// 2026-09-16 — ordenable en las QuickSpecs V18 (líneas "EC-L-H 6x SFP+ 1/10G SD-WAN
+// Gateway JZ878A" y su NoLoc). SIN confirmar por fuente oficial: no se marca.
+//
+// SERIES 7000 Y 7200 (C5 de la auditoría 2026-09-17). Se ofrecían como «línea anterior»
+// pedible, con List Price, cuando HPE ya las retiró de la venta. Boletines OFICIALES de fin
+// de venta (asp-documents.arubanetworks.com), leídos el 2026-09-17:
+//   · «End of Sale (EOS) External Announcement 7005/7008 Branch Controllers»: fin de venta
+//     31-oct-2022, fin de soporte 31-oct-2027. Reemplazos: 7005 → 9004; 7008 → 9012 (el
+//     mapa SUCESORES de abajo decía 9004 para el 7008 por inferencia: el boletín manda).
+//   · «End of Sale (EOS) External Announcement 7210/7220 Campus Controllers» (Rev4): último
+//     pedido 31-ene-2025, fin de soporte 31-ene-2030. Reemplazo: 9240; para el 7220, 9240 +
+//     licencia de capacidad Silver R8R13AAE (AOS 8).
+// 7010, 7024, 7030, 7205 y 7240XM NO se marcan: no se localizó boletín oficial para ellos
+// (el de «7240» de 2017 es la serie 7240 original, que el 7240XM reemplazó). Siguen como
+// línea anterior hasta que un documento del fabricante diga otra cosa (PENDIENTES.md).
+const EOS_7000_URL = 'https://asp-documents.arubanetworks.com/portals/0/el/EOS_Notice_7005-7008-Branch-Controllers.pdf';
+const EOS_7200_URL = 'https://asp-documents.arubanetworks.com/portals/0/7210%207220%20External%20EoS%20Updated%20Announcement%20Rev4.pdf';
+const EOL_ANNOUNCED = {
+  'EC-XL': {pid:'S0B67A', lastOrder:'2026-03-31', sucesor:null,
+            endOfSupport:'2033-03-31',
+            url:'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/docs/eula/EC_LifecyclePolicy_latest.pdf'},
+  '7005':  {pid:'JW633A-JW640A, JY849A', lastOrder:'2022-10-31', sucesor:'Gateway 9004',
+            endOfSupport:'2027-10-31', url:EOS_7000_URL},
+  '7008':  {pid:'JX925A-JX932A', lastOrder:'2022-10-31', sucesor:'Gateway 9012',
+            endOfSupport:'2027-10-31', url:EOS_7000_URL},
+  '7210':  {pid:'JW645A-JW648A, JW743A-JW750A, JW779A-JW782A, JY853A', lastOrder:'2025-01-31', sucesor:'Gateway 9240',
+            endOfSupport:'2030-01-31', url:EOS_7200_URL},
+  '7220':  {pid:'JW649A-JW652A, JW751A-JW757A', lastOrder:'2025-01-31', sucesor:'Gateway 9240 + licencia Silver R8R13AAE (AOS 8)',
+            endOfSupport:'2030-01-31', url:EOS_7200_URL},
+};
+for (const m of MODELS) {
+  m.eolAnnounced = EOL_ANNOUNCED[m.id] || null;
+}
+
+// IDS/IPS Y ESCALA DE HEADEND DE LOS GATEWAYS (2026-09-24, A2 y M8 de la auditoría del
+// 2026-09-17). FUENTE: «EdgeConnect SD-Branch» Validated Solution Guide de HPE (septiembre de
+// 2026, copia en public/datasheets/sd-branch-design-vsg.pdf), p. 63, tablas «HPE Aruba
+// Networking Branch Gateways» (fila «IDS/IPS throughput») y «HPE Aruba Networking Headend
+// Gateways» (fila «Maximum SD-WAN tunnels»). Leídas en local; las fichas de serie del repo no
+// publican la cifra de IDS/IPS. El 9004-LTE NO aparece en esa tabla y se queda sin cifra —no
+// se le copia la del 9004, aunque compartan plataforma—, igual que la línea 7000/7200, que
+// además no tiene nivel «+ Security» de Central. La tabla de headend trae también el 7280 y
+// los gateways virtuales (vGW 500M/2G/4G: 1.600/4.096/8.192 túneles), fuera de este catálogo.
+const GATEWAY_VSG = {
+  'Gateway 9004': {idsMbps:1100},
+  'Gateway 9012': {idsMbps:1100, vpncTuneles:512},
+  'Gateway 9106': {idsMbps:2500, vpncTuneles:8000},
+  'Gateway 9114': {idsMbps:4000, vpncTuneles:16000},
+  'Gateway 9240': {idsMbps:6000, vpncTuneles:32000},
+  '7240XM':       {vpncTuneles:6144},
+};
+for (const m of MODELS) {
+  const v = GATEWAY_VSG[m.id];
+  m.idsMbps = v && v.idsMbps != null ? v.idsMbps : null;
+  m.vpncTuneles = v && v.vpncTuneles != null ? v.vpncTuneles : null;
+  // La ficha lo pinta en la fila «IDS/IPS integrado» que EdgeConnect ya usaba.
+  if (m.idsMbps != null) {
+    m.spec = Object.assign({}, m.spec, { idsips: `Hasta ${String(m.idsMbps / 1000).replace('.', ',')} Gbps de throughput IDS/IPS (VSG SD-Branch, sep-2026) · licencia de Central «+ Security»` });
+  }
+}
+
+// Sucesor natural de cada gateway legacy (series 7000/7200) para el semáforo de ciclo de
+// vida del catálogo (fase 11, E5). INFERENCIA POR CAPACIDAD donde no hay documento — la
+// página lo etiqueta como «inferencia por capacidad, sin doc oficial» junto al dato.
+// Decisión del dueño (2026-09-13): mostrar la inferencia marcada vale más que no mostrar
+// nada. 7005/7008/7210/7220 ya tienen sucesor OFICIAL en su boletín (EOL_ANNOUNCED, arriba):
+// el 7008 se corrige a 9012 el 2026-09-17 (antes 9004, por inferencia).
+const SUCESORES = {
+  '7005': 'Gateway 9004',
+  '7008': 'Gateway 9012',
+  '7030': 'Gateway 9012',
+  '7210': 'Gateway 9240',
+  '7220': 'Gateway 9240',
+  // B1 de la auditoría 2026-09-17 (2026-09-24): el EC-XL salió de venta el 2026-03-31 y su
+  // entrada de la Product Lifecycle Policy no nombra reemplazo (EOL_ANNOUNCED.sucesor sigue
+  // en null: el documento no lo dice). Por capacidad, el EC-10150 es el appliance de la
+  // generación actual que cubre todo su rango (2-10 Gbps, hasta 12). El EC-L tiene el mismo
+  // rango pero es de la misma generación que el XL y arrastra señales de fin de venta de
+  // terceros sin confirmar (pendiente 16), así que no se propone como reemplazo.
+  'EC-XL': 'EC-10150',
+};
+for (const m of MODELS) {
+  m.sucesor = SUCESORES[m.id] || null;
+}
+
+// Sistema operativo de las series 7000/7200 (C3 de la auditoría 2026-09-17): todas sus
+// cifras de APs, clientes y firewall salen de los datasheets de Mobility Controller AOS 8.
+// Con el selector en AOS 10 no se puede afirmar que cumplan con cifras de otra
+// arquitectura — se descartan del dimensionado y se dice por qué (siguen en el catálogo y
+// en el selector de equipo para ampliar parque instalado).
+for (const m of MODELS) {
+  if (m.legacy && !m.porSo) {
+    m.porSo = {aos10:null};
+    m.porSoMotivo = {aos10:'sus cifras de capacidad son de AOS 8 (Mobility Controller); en AOS 10 el catálogo no las trae'};
+  }
+}
+
+// ── Matriz de versiones mínimas de sistema operativo (fase 11, E5) ───────────
+// Versión mínima de ECOS / AOS que soporta cada plataforma. Fuentes oficiales
+// (2026-09-13): release notes de ECOS 8.3/9.x y matriz de compatibilidad AOS 10
+// (10.3.1.1 SSR para 7000/7200/9000, 10.4.0.0 LSR para 9200, 10.5/10.6/10.7 para 9100).
+// `min: null` = la matriz de hardware no aplica (EC-V sigue el tren ECOS con matriz
+// propia de hipervisores).
+const OS_MATRIX = {
+  ecos: {
+    'EC-XS':   { min: '8.3.1.0', nota: 'PIDs 4 GB (200889/200900): N/A en 9.5+ · Next Gen 201694-001: mín. 8.3.4.0' },
+    'EC-10104':{ min: '9.1.3.0', nota: '9.2.3.0 en el tren 9.2 · N/A en 9.0/8.3' },
+    'EC-10106':{ min: '9.3.2.0', nota: '9.4.2.0 en el tren 9.4 · N/A en 9.2 y anteriores' },
+    'EC-10108':{ min: '9.3.4.0', nota: '9.4.3.0 / 9.5.1.0 en trenes posteriores · secure boot' },
+    'EC-10150':{ min: '9.5.3.0', nota: 'default shipping 9.5.3.2 · N/A en 9.4 y anteriores' },
+    'EC-S':    { min: '8.3.1.0', nota: 'EC-S-P: 8.3.1.5 / 8.3.2.1 / 8.3.3.0 (9.0.2.0 en tren 9.0)' },
+    'EC-M':    { min: '8.3.1.0', nota: 'EC-M-H: mín. 8.3.4.0' },
+    'EC-L':    { min: '8.3.1.0', nota: 'EC-L-H: mín. 8.3.4.0' },
+    'EC-XL':   { min: '8.3.1.0', nota: 'EC-XL-H: 8.3.4.0 · EC-XL-H-10G: 8.3.7.0' },
+    'EC-V':    { min: null,      nota: 'no aplica en la matriz de hardware: sigue el tren ECOS con matriz propia de hipervisores' },
+  },
+  aos: {
+    'Serie 7000': { a8: '8.0+ (máx. 8.13)', a10: '10.3.1.1+ (SSR)' },
+    'Serie 7200': { a8: '8.0+ (7280: 8.3+) · máx. 8.13', a10: '10.3.1.1+ (SSR)' },
+    'Serie 9000': { a8: '8.5+ (9004) · 8.7+ (9012)', a10: '10.3.1.1+ (SSR)' },
+    'Serie 9100': { a8: '8.13.1+ (9106 recientes)', a10: '10.5.0.1+ (9114) · 10.6.0.1+ (9106; SKUs S5Hxx: 10.7.2.0)' },
+    'Serie 9200': { a8: '8.10+ (9240)', a10: '10.4.0.0+ (LSR)' },
+  },
+};
 
 // ── Suscripción EdgeConnect ──────────────────────────────────────────────────
 //
@@ -334,30 +697,68 @@ const MODELS = [
 // SKU lleva el código del equipo embebido). En EdgeConnect va atada al CAUDAL del sitio,
 // así que dos sedes con el mismo appliance pueden llevar suscripciones distintas y subir
 // de caudal no obliga a cambiar el hardware mientras el equipo dé la talla.
+// La matriz que gobierna el licenciamiento automático (2026-09-13, refactor arquitectónico
+// pedido por el dueño — documento «Actúa como un Arquitecto de Soluciones de Redes») es la
+// oficial del QuickSpecs EdgeConnect SD-WAN v18, p.31, transcrita literal. Tres correcciones
+// a lo que la arquitectura proponía como disparadores de Advanced, documentadas porque la
+// fuente oficial manda:
+//   · El steering dinámico por SLA de aplicación (Dynamic Path Control) y TODAS las
+//     capacidades NGFW son de FOUNDATION («essential SD-WAN features and all of the
+//     advanced NGFW features», p.31): no fuerzan Advanced. La matriz los lista en ambos.
+//   · IDS/IPS NO va en ninguno de los dos niveles: es la licencia opcional aparte
+//     Dynamic Threat Defense (QuickSpecs p.32: «adds IDS/IPS, Adaptive DDoS, Smart SYN
+//     cookie and Secure web service»), sin SKU en la lista del distribuidor — consultar.
+//   · La salida directa a Internet con First-packet iQ y el service chaining a SSE son
+//     capacidades de PLATAFORMA (QuickSpecs p.4 y p.12), no un distintivo de nivel: la
+//     matriz oficial no los vincula a Advanced. Se retira esa afirmación del texto.
+//   Precisiones VSG/data sheet de suscripciones (validadas 2026-09-13, fase 10):
+//   · Foundation son exactamente 2 VRF (default y guest), no «un número limitado».
+//   · AppExpress: Foundation solo MONITORA; el steering de aplicaciones por AppExpress
+//     es Advanced/On-Prem. El steering básico por BIO (tunnel bonding/DPC) sí es común
+//     a todos los niveles — por eso DPC no fuerza Advanced.
+//   · On-Prem solo existe como «Advanced On-Prem» (no hay Foundation On-Prem) e INCLUYE
+//     el software de Orchestrator on-prem; el cliente aporta el alojamiento (VM, uptime,
+//     backup y actualizaciones) — data sheet a50010073enw.
 const BUNDLES = {
   foundation: {
     n: 'EdgeConnect Foundation',
-    svcs: 'Funciones SD-WAN esenciales más las capacidades NGFW avanzadas: Dynamic Path Control por SLA, '
-      + 'tunnel bonding de los enlaces WAN, Path Conditioning (FEC y corrección de orden de paquetes), '
-      + 'firewall con estado y orquestación centralizada desde EdgeConnect Orchestrator.',
+    svcs: 'Funciones SD-WAN esenciales más TODAS las capacidades NGFW avanzadas: steering dinámico por SLA '
+      + '(Dynamic Path Control), tunnel bonding, Path Conditioning (FEC y corrección de orden), firewall '
+      + 'con estado y Orchestrator cloud (Foundation OaaS). Hasta 3 Business Intent Overlays, 2 VRF '
+      + '(default y guest), topología hub-and-spoke (4 hubs por región), QoS esencial y retención '
+      + 'fundamental de datos. AppExpress en modo solo monitor. Tiers: 100 Mbps, 1 Gbps e ilimitado.',
   },
   advanced: {
     n: 'EdgeConnect Advanced',
-    svcs: 'Todo Foundation más routing dinámico, segmentación multi-overlay, salida directa a Internet con '
-      + 'First-packet iQ, service chaining hacia SSE/SASE de terceros y las funciones avanzadas de seguridad. '
-      + 'Es el nivel que pide un despliegue con segmentación real o integrado con un SSE.',
+    svcs: 'Todo Foundation más las funciones SD-WAN avanzadas: topología ilimitada, 64 VRFs y hasta 7 '
+      + 'Business Intent Overlays (segmentación multi-overlay real), QoS avanzada, retención ampliada '
+      + 'de datos, AppExpress con steering de aplicaciones y Orchestrator cloud (Advanced OaaS). '
+      + 'Tiers más finos: 20/50/100/200/500 Mbps, 1/2 Gbps e ilimitado. OJO: HPE no admite mezclar '
+      + 'niveles en un mismo fabric.',
   },
   onprem: {
     n: 'EdgeConnect On-Premises',
-    svcs: 'Variante para despliegues donde el Orchestrator vive en la infraestructura del cliente en lugar '
-      + 'de consumirse como servicio. Mismo alcance funcional; cambia el modelo de entrega y de consumo.',
+    svcs: 'Existe solo como «Advanced On-Prem» (no hay Foundation On-Prem): mismo alcance funcional '
+      + 'que Advanced e INCLUYE el software de Orchestrator on-prem; el cliente aporta el alojamiento '
+      + '(VM, disponibilidad, backup y actualizaciones). Cambia el modelo de entrega y de consumo.',
   },
 };
 
-// Tiers de caudal publicados. Son tres, no una escalera fina: 100 Mbps, 1 Gbps e ilimitado.
+// Tiers de caudal publicados (ampliado 2026-09-13). La lista de precios oficial publica
+// ocho niveles para Advanced y On-Premises: 20/50/100/200/500 Mbps, 1/2 Gbps e ilimitado
+// (verificado literal contra el export, filas «EC Adv 20Mb…», «EC ONP 20M…», etc.).
+// OJO: Foundation NO sigue esta escalera — la lista solo lo publica en 100 Mbps, 1 Gbps
+// e ilimitado (restricción oficial verificada el mismo día: no existe ninguna fila
+// «EC Fnd 20M/50M/200M/500M/2G»). LICENSES lo refleja y el motor debe bloquear los
+// tiers intermedios cuando el nivel es Foundation — no es un hueco de datos, es la oferta.
 const BW_TIERS = [
+  {code:'bw20',  n:'20 Mbps',             mbps:20},
+  {code:'bw50',  n:'50 Mbps',             mbps:50},
   {code:'bw100', n:'100 Mbps',            mbps:100},
+  {code:'bw200', n:'200 Mbps',            mbps:200},
+  {code:'bw500', n:'500 Mbps',            mbps:500},
   {code:'bw1g',  n:'1 Gbps',              mbps:1000},
+  {code:'bw2g',  n:'2 Gbps',              mbps:2000},
   {code:'bwunl', n:'Sin límite de caudal', mbps:null},
 ];
 
@@ -386,14 +787,34 @@ const BOOST = {
     + 'Add-on sobre Foundation o Advanced, licenciado en bloques de 100 Mbps que forman un pool del fabric '
     + 'y que Orchestrator reparte entre los sitios que lo aprovechan. Disponible como servicio (Boost-aaS) '
     + 'o como suscripción on-premises.',
-  // Reducción de tráfico WAN según el perfil de datos. Rango deliberadamente conservador:
-  // el ahorro real depende de cuánto se repita el contenido y solo una prueba con el
-  // tráfico del cliente lo confirma. NO es una cifra publicada por HPE: es un supuesto de
-  // trabajo de esta herramienta, y así se declara en la interfaz.
+  // Reducción de tráfico WAN según el perfil de datos. Ancla oficial localizada
+  // 2026-09-13 (caso de estudio HPE Aruba — Universal Health Services): con Boost,
+  // reducción de ~85 % para Microsoft 365 (≈6,7:1), ~45 % para Veeam (≈1,8:1) y ~40 %
+  // para CIFS (≈1,7:1). El technical paper oficial de WAN Optimization (a00110933enw)
+  // no publica ratios típicos y el «up to 99 %» del marketing histórico es un máximo,
+  // no un típico. Por eso `repetido` queda en 1,8 (el ancla oficial para CIFS/backups):
+  // el 3,5:1 anterior era un supuesto sin ancla que el caso oficial REFUTA para esas
+  // cargas. `generico` y `oficina` siguen siendo supuestos conservadores de trabajo.
+  // El ahorro real depende de cuánto se repita el contenido y solo una prueba con el
+  // tráfico del cliente lo confirma — así se declara en la interfaz.
   reduccion: {
     generico: {n:'Tráfico genérico mixto (web, SaaS)',    factor:1.3},
     oficina:  {n:'Ficheros de oficina y correo interno',  factor:2.0},
-    repetido: {n:'Réplicas, backups, VDI, CIFS/SMB',      factor:3.5},
+    repetido: {n:'Réplicas, backups, VDI, CIFS/SMB',      factor:1.8},
+  },
+  // SKU y List Price por bloque (2026-09-13 — doble fuente como LICENSES: QuickSpecs v18
+  // para SKU↔descripción, lista del distribuidor para el precio). El dimensionador consume
+  // el bloque de 100 Mbps; el de 10 Gbps existe para hubs grandes y se deja documentado.
+  // `saas` acompaña a Foundation/Advanced; `onprem` a la suscripción On-Premises.
+  // Término de 7 años (2026-09-15, pendiente #28): la lista publica y7 para los cuatro
+  // bloques (SaaS y On-Prem, 100 Mbps y 10 Gbps — vigencia 2026-06-01, PLC GA).
+  saas: {
+    bloque100: {sku:{y1:'S0Z71AAS', y3:'S0Z73AAS', y5:'S0Z75AAS', y7:'S0Z76AAS'}, y1:6552,   y3:19656,  y5:32760,   y7:45864},
+    bloque10g: {sku:{y1:'S0Z85AAS', y3:'S0Z87AAS', y5:'S0Z89AAS', y7:'S0Z90AAS'}, y1:327600, y3:982800, y5:1638000, y7:2293200},
+  },
+  onprem: {
+    bloque100: {sku:{y1:'S0Z99AAS', y3:'S1A01AAS', y5:'S1A03AAS', y7:'S1A04AAS'}, y1:6552,   y3:19656,  y5:32760,   y7:45864},
+    bloque10g: {sku:{y1:'S0Z23AAS', y3:'S0Z25AAS', y5:'S0Z27AAS', y7:'S0Z28AAS'}, y1:327600, y3:982800, y5:1638000, y7:2293200},
   },
 };
 
@@ -401,10 +822,16 @@ const BOOST = {
 // retransmisión, que es lo que permite sustituir MPLS por banda ancha o 5G manteniendo SLA
 // de aplicación. Cuesta ancho de banda: se suma al caudal, no se descuenta.
 // Los porcentajes son supuestos de trabajo de esta herramienta, no cifras publicadas.
+// Overhead de Path Conditioning (FEC). Anclas oficiales del VSG SD-Branch de HPE
+// (validadas 2026-09-13): ratio 1:8 = 12,5 % para aplicaciones en tiempo real y 1:4 = 25 %
+// para VoIP; el FEC de EdgeConnect es ADAPTATIVO — sin pérdida medida no genera overhead—,
+// y la política HA (1:1 = 50 % de caudal efectivo) NO se ofrece aquí porque la propia guía
+// la reserva para tráfico estrictamente de tiempo real. Satélite Starlink/LEO es transporte
+// soportado según la misma guía.
 const FEC_OVERHEAD = {
-  off:  {n:'Desactivado', pct:0,    d:'Enlaces limpios: MPLS dedicado o fibra sin pérdida medida.'},
-  auto: {n:'Automático',  pct:0.10, d:'Orchestrator ajusta la paridad según la pérdida medida. Es el modo habitual.'},
-  alto: {n:'Agresivo',    pct:0.25, d:'Enlaces con pérdida alta o variable: LTE/5G, satelital, banda ancha residencial.'},
+  off:  {n:'Desactivado', pct:0,    d:'Enlaces limpios: MPLS dedicado o fibra sin pérdida medida. Con FEC adaptativo, un enlace sin pérdida tampoco genera overhead.'},
+  auto: {n:'Automático',  pct:0.10, d:'Orchestrator ajusta la paridad según la pérdida medida. Es el modo habitual. Ancla oficial: ratio 1:8 = 12,5 % (VSG); el motor estima 10 % como caso típico.'},
+  alto: {n:'Agresivo',    pct:0.25, d:'Enlaces con pérdida alta o variable: LTE/5G, satelital (Starlink/LEO soportado según el VSG), banda ancha residencial. Ancla oficial: ratio 1:4 = 25 % para VoIP.'},
 };
 
 // ── Software del portafolio ──────────────────────────────────────────────────
@@ -422,9 +849,61 @@ const SOFTWARE = [
 ];
 
 // Niveles de suscripción de Central aplicables a los gateways.
+// SKU y List Price 1/3/5 años (2026-09-13, lista del distribuidor + SD-WAN Gateways
+// Ordering Guide — DATASHEETS.sdwanOrder). Los SKU cargados son los de gateway 70xx/90xx,
+// la línea SD-Branch que dimensiona esta herramienta. Variantes documentadas, no cargadas:
+//   · 72xx Foundation: JZ195AAE/JZ196AAE/JZ197AAE ($9,450/$18,900/$28,350).
+//   · 9004/9012 Foundation Base: JZ124AAE/JZ125AAE/JZ126AAE ($473/$945/$1,418).
+//   · Foundation+Security 90xx: R4D98AAE/R4D99AAE/R4E00AAE ($1,680/$3,360/$5,040);
+//     Foundation Base+Security: R4D93AAE/R4D94AAE/R4D95AAE ($893/$1,785/$2,678);
+//     Advanced+Security: R4E03AAE/R4E04AAE/R4E05AAE ($2,310/$4,620/$6,930).
+//   · Gateway virtual (vGW) 500M/2G/4G: R0X97-99AAE, R3V73-75AAE, R3V76-78AAE.
 const CENTRAL_TIERS = {
-  foundation: {n:'Central Foundation', d:'Gestión, monitorización y configuración del dispositivo.'},
-  advanced:   {n:'Central Advanced',   d:'Añade analítica avanzada, AIOps y las capacidades de seguridad del nivel superior.'},
+  foundation: {n:'Central Foundation', d:'Gestión, monitorización y configuración del dispositivo.',
+    sku:{y1:'JZ118AAE', y3:'JZ119AAE', y5:'JZ120AAE'}, y1:1260, y3:2520, y5:3780},
+  advanced:   {n:'Central Advanced',   d:'Añade analítica avanzada, AIOps y las capacidades de seguridad del nivel superior.',
+    sku:{y1:'JZ121AAE', y3:'JZ122AAE', y5:'JZ123AAE'}, y1:1890, y3:3780, y5:5670},
+};
+
+// Central para gateways SD-Branch POR SERIE (2026-09-24, A2/A3/A4 de la auditoría del
+// 2026-09-17). Los SKU de arriba son los de la familia 90/70xx y se aplicaban a TODO gateway,
+// también a los 9106/9114 (serie 9100) y al 9240 (serie 9200), que tienen los suyos.
+// FUENTE: «HPE Aruba Networking Central SaaS subscriptions» (agosto de 2026, copia en
+// public/datasheets/central-suscripciones-saas.pdf), tablas 9 y 11 a 16, E-STU. La familia
+// 90/70xx, la 72xx y la Foundation Base casan además con el «Aruba SD-WAN Gateways Ordering
+// Guide» (a00075200enw, public/datasheets/sd-wan-ordering-guide.pdf), que es de 2020 y por
+// eso no trae las series 9100 y 9200. Leídos los dos en local el 2026-09-24.
+// SOLO SKU, NUNCA PRECIO: el precio sale de la lista del distribuidor ya cargada
+// (aruba-lista-precios-hpe.csv), que hoy solo tarifa la 90/70xx Foundation y Advanced —las de
+// CENTRAL_TIERS—. El resto va a «consultar» con su SKU exacto, que es lo que hay que pedir.
+// Reglas de aplicación de la tabla 9 del documento, declaradas aquí para no deducirlas:
+//   · «+Security» (IDS/IPS, antimalware): solo 90xx, 91xx y 92xx — ni 70xx ni 72xx.
+//   · Foundation Base: 7005, 7008, 9004, 9004-LTE y 9012, «limited to 75 client devices in
+//     the branch», y «applicable for branch gateways and not for VPN concentrators».
+//   · El término de 10 años existe en el documento pero la herramienta no lo ofrece.
+const CENTRAL_POR_SERIE = {
+  '90/70xx': {series:['Serie 7000', 'Serie 9000'],
+    foundation:        {n:'Central Foundation',            sku:{y1:'JZ118AAE', y3:'JZ119AAE', y5:'JZ120AAE', y7:'R0G52AAE'}},
+    advanced:          {n:'Central Advanced',              sku:{y1:'JZ121AAE', y3:'JZ122AAE', y5:'JZ123AAE', y7:'R0G54AAE'}},
+    foundationSec:     {n:'Central Foundation + Security', sku:{y1:'R4D98AAE', y3:'R4D99AAE', y5:'R4E00AAE', y7:'R4E01AAE'}, soloSeries:['Serie 9000']},
+    advancedSec:       {n:'Central Advanced + Security',   sku:{y1:'R4E03AAE', y3:'R4E04AAE', y5:'R4E05AAE', y7:'R4E06AAE'}, soloSeries:['Serie 9000']},
+    foundationBase:    {n:'Central Foundation Base',       sku:{y1:'JZ124AAE', y3:'JZ125AAE', y5:'JZ126AAE', y7:'R0G56AAE'},
+                        modelos:['7005', '7008', 'Gateway 9004', 'Gateway 9004-LTE', 'Gateway 9012'], maxClientes:75},
+    foundationBaseSec: {n:'Central Foundation Base + Security', sku:{y1:'R4D93AAE', y3:'R4D94AAE', y5:'R4D95AAE', y7:'R4D96AAE'},
+                        modelos:['Gateway 9004', 'Gateway 9004-LTE', 'Gateway 9012'], maxClientes:75},
+  },
+  '91xx': {series:['Serie 9100 Hybrid'],
+    foundation:    {n:'Central Foundation',            sku:{y1:'S0B88AAE', y3:'S0B89AAE', y5:'S0B90AAE', y7:'S0B91AAE'}},
+    advanced:      {n:'Central Advanced',              sku:{y1:'S0B98AAE', y3:'S0B99AAE', y5:'S0C00AAE', y7:'S0C01AAE'}},
+    foundationSec: {n:'Central Foundation + Security', sku:{y1:'S0B93AAE', y3:'S0B94AAE', y5:'S0B95AAE', y7:'S0B96AAE'}},
+    advancedSec:   {n:'Central Advanced + Security',   sku:{y1:'S0C03AAE', y3:'S0C04AAE', y5:'S0C05AAE', y7:'S0C06AAE'}},
+  },
+  '92/72xx': {series:['Serie 7200', 'Serie 9200'],
+    foundation:    {n:'Central Foundation',            sku:{y1:'JZ195AAE', y3:'JZ196AAE', y5:'JZ197AAE', y7:'R0G60AAE'}},
+    advanced:      {n:'Central Advanced',              sku:{y1:'JZ198AAE', y3:'JZ199AAE', y5:'JZ200AAE', y7:'R0G62AAE'}},
+    foundationSec: {n:'Central Foundation + Security', sku:{y1:'S0S50AAE', y3:'S0S51AAE', y5:'S0S52AAE', y7:'S0S53AAE'}, soloSeries:['Serie 9200']},
+    advancedSec:   {n:'Central Advanced + Security',   sku:{y1:'S0S55AAE', y3:'S0S56AAE', y5:'S0S57AAE', y7:'S0S58AAE'}, soloSeries:['Serie 9200']},
+  },
 };
 
 // ── Servicios de soporte ─────────────────────────────────────────────────────
@@ -439,23 +918,401 @@ const CARE = {
           d:'Soporte técnico remoto y acceso a actualizaciones y parches para el software. Se contrata junto al de hardware.'},
 };
 
-// Licencias por tier de caudal. sku/precio en null: sin price list verificado (ver cabecera).
-// La estructura queda lista para rellenarse con la lista del distribuidor sin tocar la
-// página ni la proyección.
-function tierVacio() {
-  return {sku:null, y1:null, y3:null, y5:null};
-}
-const LICENSES = {};
-for (const t of BW_TIERS) {
-  LICENSES[t.code] = {
-    foundation: tierVacio(),
-    advanced: tierVacio(),
-    onprem: tierVacio(),
-    care: {fcnbd: tierVacio(), fc247: tierVacio(), fcsw: tierVacio()},
-  };
-}
+// ── SKU de Foundational Care por modelo (2026-09-13) ─────────────────────────
+// El servicio se vende atado a la VARIANTE de hardware, no al tier de caudal: cada modelo
+// tiene su propio juego de SKU por nivel y por duración (1/3/5 años). Fuente: el mismo
+// export de lista de precios del distribuidor ya descrito en la cabecera (solo SKU,
+// descripción, List Price y vigencia — nunca el distribuidor ni su descuento), filas
+// literales del PL "SD-WAN Support".
+//
+// Correspondencia con los niveles CARE de la app (decisión documentada, 2026-09-13):
+//   · fcnbd («24x7 / NBD HW — repuesto al siguiente día hábil») ↔ filas "FC NBD Exch"
+//     (Next Business Day Exchange: reemplazo de hardware al siguiente día hábil).
+//   · fc247 («24x7 HW — reparación in situ») ↔ filas "FC 4HR Onsite" (ingeniero en sitio
+//     en 4 horas). La app lo describe como reparación in situ; es la variante con onsite
+//     que publica la lista para estos modelos.
+// Lo que la lista NO cubre sigue en "consultar" a propósito:
+//   · fcsw: la lista no trae SKU de soporte de SOFTWARE para los EdgeConnect.
+//   · Gateways (9004/9012/9106/9114/9240): sus SKU de FC van por sub-variante de pedido
+//     (p. ej. 9240C vs 9240TAAC) y la app no modela esa sub-variante — mapear uno sería
+//     inventar la correspondencia.
+//   · EC-10150 fc247: la lista solo publica NBD Exch para el 10150 (no hay fila 4HR).
+// Estructura: [SKU, List Price USD] por duración; la descripción literal de cada fila es
+// "<Aruba|HPE ANW> <1Y|3Y|5Y> FC <NBD Exch|4HR Onsite> <variante> SVC".
+const CARE_SKU = {
+  'EC-XS':    {fcnbd:{y1:['H43W0E',277],  y3:['H43W1E',832],   y5:['H43W3E',1386]},
+               fc247:{y1:['H46D5E',454],  y3:['H46D6E',1227],  y5:['H46D7E',1931]}},
+  'EC-10104': {fcnbd:{y1:['H44Z4E',159],  y3:['H44Z5E',476],   y5:['H44Z7E',794]},
+               fc247:{y1:['H46E7E',225],  y3:['H46E8E',609],   y5:['H46E9E',958]}},
+  'EC-10106': {fcnbd:{y1:['H45D0E',446],  y3:['H45D1E',1339],  y5:['H45D3E',2231]},
+               fc247:{y1:['H46F3E',530],  y3:['H46F4E',1432],  y5:['H46F5E',2253]}},
+  'EC-10108': {fcnbd:{y1:['H45D4E',577],  y3:['H45D5E',1731],  y5:['H45D7E',2884]},
+               fc247:{y1:['H46F6E',831],  y3:['H46F7E',2245],  y5:['H46F8E',3533]}},
+  'EC-S':     {fcnbd:{y1:['H43N2E',1390], y3:['H43N3E',4170],  y5:['H43N5E',6950]},
+               fc247:{y1:['H46C9E',1675], y3:['H46D0E',4522],  y5:['H46D1E',7118]}},
+  'EC-M':     {fcnbd:{y1:['H43V0E',2197], y3:['H43V1E',6589],  y5:['H44F1E',10983]},
+               fc247:{y1:['H46D8E',2622], y3:['H46D9E',7078],  y5:['H46E0E',11142]}},
+  'EC-L':     {fcnbd:{y1:['H44F6E',3591], y3:['H44F7E',10773], y5:['H44E3E',17955]},
+               fc247:{y1:['H46E1E',5796], y3:['H46E2E',15648], y5:['H46E3E',24631]}},
+  'EC-XL':    {fcnbd:{y1:['H44Z0E',4813], y3:['H44Z1E',14440], y5:['H44Z3E',24066]},
+               fc247:{y1:['H46F0E',7811], y3:['H46F1E',21090], y5:['H46F2E',33197]}},
+  'EC-10150': {fcnbd:{y1:['H07BKE',4647], y3:['H07BLE',13942], y5:['H07BME',23238]}},
+};
+
+// Licencias por tier de caudal (2026-09-13). Cada suscripción tiene un SKU DISTINTO por
+// duración (1/3/5 años), así que `sku` va desglosado igual que el precio. Doble fuente,
+// ver cabecera: QuickSpecs oficial v18 para SKU↔descripción (verificado contra hpe.com),
+// lista del distribuidor para el List Price. La lista también publica SKU de 7 años, por
+// suscripción purga y de alta disponibilidad — consumidos desde el 2026-09-15 (pendiente
+// #28), con la cobertura exacta documentada junto a LICENSES.
+// Foundational Care NO se extiende a 7 años: la lista no trae «7Y FC» para los modelos
+// del catálogo (verificado 2026-09-15) — con término 7 la línea de soporte muestra
+// «consultar», nunca un SKU de otro término.
+//
+// El soporte NO va aquí: los SKU de Foundational Care (H43W0E, H44Z4E, H07BKE…) van
+// atados a la VARIANTE de hardware, no al tier de caudal — viven en CARE_SKU por modelo
+// (2026-09-13, ver su comentario para fuente y correspondencias).
+// Foundation no tiene tiers intermedios; el motor debe bloquearlos (restricción oficial
+// verificada en la lista 2026-09-13: solo existen filas Foundation de 100 Mbps, 1 Gbps
+// e ilimitado — ver el comentario de BW_TIERS). Advanced y On-Premises cubren los 8.
+// Término de 7 años (2026-09-15, pendiente #28 — el dueño lo pidió): la lista oficial
+// vigente SÍ publica y7, pero NO en todos los peldaños. Regla de la casa: donde la lista
+// no tiene fila de 7 años, y7 queda null («la lista no tiene el dato») y la interfaz
+// muestra «consultar / PENDIENTE DE COTIZACIÓN» — jamás un SKU o precio inventado.
+// Cobertura literal verificada contra el export (vigencia 2026-06-01, PLC GA):
+//   · Advanced SaaS: 20M→2G completo; ILIMITADO no (la lista solo trae «Adv HA UL 7yr»).
+//   · On-Premises no-HA: los 8 tiers COMPLETOS. Corrección 2026-09-16: la revisión del
+//     2026-09-15 dejó y7 null en 20/50/100/200/500/UL porque esas filas se describen
+//     «EC ONP 20M 7y E-STU» (sin «Gb» ni «yr Sub») y el filtro de aquel día no las vio;
+//     verificación literal 2026-09-16 (S1A85AAS, S1A99AAS, S1C04AAS, S1C18AAS, S0X98AAS,
+//     S0Z62AAS — todos PLC GA, vigencia 2026-06-01): la lista SÍ los publica y entran.
+//   · Foundation SaaS: 1G y UL; 100M no.
+const LICENSES = {
+  bw20: {
+    advanced:   {sku:{y1:'S1B06AAS', y3:'S1B08AAS', y5:'S1B10AAS', y7:'S1B11AAS'}, y1:900,  y3:2700,  y5:4500,  y7:6300},
+    onprem:     {sku:{y1:'S1A80AAS', y3:'S1A82AAS', y5:'S1A84AAS', y7:'S1A85AAS'}, y1:948,  y3:2844,  y5:4740,  y7:6636},
+  },
+  bw50: {
+    advanced:   {sku:{y1:'S1B20AAS', y3:'S1B22AAS', y5:'S1B24AAS', y7:'S1B25AAS'}, y1:1296, y3:3888,  y5:6480,  y7:9072},
+    onprem:     {sku:{y1:'S1A94AAS', y3:'S1A96AAS', y5:'S1A98AAS', y7:'S1A99AAS'}, y1:1356, y3:4068,  y5:6780,  y7:9492},
+  },
+  bw100: {
+    foundation: {sku:{y1:'S1C49AAS', y3:'S1C51AAS', y5:'S1C53AAS', y7:null},       y1:900,  y3:2700,  y5:4500,  y7:null},
+    advanced:   {sku:{y1:'S1B34AAS', y3:'S1B36AAS', y5:'S1B38AAS', y7:'S1B39AAS'}, y1:1848, y3:5544,  y5:9240,  y7:12936},
+    onprem:     {sku:{y1:'S1B99AAS', y3:'S1C01AAS', y5:'S1C03AAS', y7:'S1C04AAS'}, y1:1932, y3:5796,  y5:9660,  y7:13524},
+  },
+  bw200: {
+    advanced:   {sku:{y1:'S1B48AAS', y3:'S1B50AAS', y5:'S1B52AAS', y7:'S1B53AAS'}, y1:2604, y3:7812,  y5:13020, y7:18228},
+    onprem:     {sku:{y1:'S1C13AAS', y3:'S1C15AAS', y5:'S1C17AAS', y7:'S1C18AAS'}, y1:2736, y3:8208,  y5:13680, y7:19152},
+  },
+  bw500: {
+    advanced:   {sku:{y1:'S1B62AAS', y3:'S1B64AAS', y5:'S1B67AAS', y7:'S1B68AAS'}, y1:4572, y3:13716, y5:22860, y7:32004},
+    onprem:     {sku:{y1:'S0X93AAS', y3:'S0X95AAS', y5:'S0X97AAS', y7:'S0X98AAS'}, y1:4788, y3:14364, y5:23940, y7:33516},
+  },
+  bw1g: {
+    foundation: {sku:{y1:'S1A22AAS', y3:'S1A24AAS', y5:'S1A26AAS', y7:'S1A27AAS'}, y1:1680, y3:5040,  y5:8400,  y7:11760},
+    advanced:   {sku:{y1:'S1B77AAS', y3:'S1B79AAS', y5:'S1B81AAS', y7:'S1B82AAS'}, y1:6540, y3:19620, y5:32700, y7:45780},
+    onprem:     {sku:{y1:'S0Y07AAS', y3:'S0Y09AAS', y5:'S0Y11AAS', y7:'S0Y12AAS'}, y1:6864, y3:20592, y5:34320, y7:48048},
+  },
+  bw2g: {
+    advanced:   {sku:{y1:'S1B91AAS', y3:'S1B93AAS', y5:'S1B95AAS', y7:'S1B96AAS'}, y1:9384, y3:28152, y5:46920, y7:65688},
+    onprem:     {sku:{y1:'S0Y21AAS', y3:'S0Z45AAS', y5:'S0Z47AAS', y7:'S0Z48AAS'}, y1:9864, y3:29592, y5:49320, y7:69048},
+  },
+  bwunl: {
+    foundation: {sku:{y1:'S1A36AAS', y3:'S1A38AAS', y5:'S1A40AAS', y7:'S1A41AAS'}, y1:7848,  y3:23544, y5:39240,  y7:54936},
+    advanced:   {sku:{y1:'S1C35AAS', y3:'S1C37AAS', y5:'S1C39AAS', y7:null},       y1:23580, y3:70740, y5:117900, y7:null},
+    onprem:     {sku:{y1:'S0Z57AAS', y3:'S0Z59AAS', y5:'S0Z61AAS', y7:'S0Z62AAS'}, y1:24744, y3:74232, y5:123720, y7:173208},
+  },
+};
+
+// ── SKU de suscripción de ALTA DISPONIBILIDAD (2026-09-13) ───────────────────
+// Para un par HA 1+1, HPE publica un juego de SKU propio para el SEGUNDO nodo: la
+// notación «HA» del QuickSpecs (p.21-24: «Foundation High Availability 1Gbps… SaaS»).
+// El par se cotiza 1× suscripción estándar (LICENSES) + 1× suscripción HA (esta tabla).
+// Dato que conviene saber: el precio HA es IDÉNTICO al estándar, tier a tier y año a
+// año — lo que cambia es el SKU de pedido, no el importe. Invariante verificada literal
+// contra el export de lista de precios del distribuidor (misma fuente y misma regla de
+// extracción que LICENSES: solo SKU, descripción, List Price y vigencia 2026-06-01,
+// PLC GA) y extendida el 2026-09-13 a los 8 tiers de Advanced (20M→2G, filas
+// «EC Adv HA 20Mb…» … «EC Adv HA 2Gb…»).
+// Foundation HA mantiene solo sus 3 tiers (100 Mbps, 1 Gbps e ilimitado): la lista no
+// publica Foundation en los tiers intermedios, ni estándar ni HA (ver BW_TIERS).
+// On-Premises HA (2026-09-16, pendiente #17 CERRADO): el QuickSpecs EdgeConnect vigente
+// (a50004289enw) sí publica la escalera «EdgeConnect On-Premises High Availability
+// E-STU» para el segundo nodo — es la equivalencia buscada. Verificación literal de
+// doble ancla: (1) QuickSpecs lista las escaleras 20M/50M/100M/200M/500M/1G/2G/UL en
+// términos 1/3/5/7 años; (2) la lista del distribuidor tarifa los 32 SKU (PLC GA,
+// vigencia 2026-06-01) con la invariante de siempre — precio HA IDÉNTICO al estándar
+// on-prem del mismo tier y término, verificada celda a celda (32/32). El par on-prem
+// deja de cotizarse 2× estándar: usa su SKU HA propio, como las modalidades SaaS.
+// Término de 7 años en HA (2026-09-15, pendiente #28): la lista publica la escalera HA
+// COMPLETA en 7 años (Advanced 20M→UL y Foundation 100M/1G/UL), con la misma invariante
+// de siempre — precio HA idéntico al estándar, solo cambia el SKU de pedido. Verificado
+// literal contra el export (vigencia 2026-06-01, PLC GA).
+const LICENSES_HA = {
+  bw20: {
+    advanced:   {sku:{y1:'S1B13AAS', y3:'S1B15AAS', y5:'S1B17AAS', y7:'S1B18AAS'}, y1:900,  y3:2700,  y5:4500,  y7:6300},
+    onprem:     {sku:{y1:'S1A87AAS', y3:'S1A89AAS', y5:'S1A91AAS', y7:'S1A92AAS'}, y1:948,  y3:2844,  y5:4740,  y7:6636},
+  },
+  bw50: {
+    advanced:   {sku:{y1:'S1B27AAS', y3:'S1B29AAS', y5:'S1B31AAS', y7:'S1B32AAS'}, y1:1296, y3:3888,  y5:6480,  y7:9072},
+    onprem:     {sku:{y1:'S1B01AAS', y3:'S1B03AAS', y5:'S1B05AAS', y7:'S1B97AAS'}, y1:1356, y3:4068,  y5:6780,  y7:9492},
+  },
+  bw100: {
+    foundation: {sku:{y1:'S1C56AAS', y3:'S1A17AAS', y5:'S1A19AAS', y7:'S1A20AAS'}, y1:900,  y3:2700,  y5:4500,  y7:6300},
+    advanced:   {sku:{y1:'S1B41AAS', y3:'S1B43AAS', y5:'S1B45AAS', y7:'S1B46AAS'}, y1:1848, y3:5544,  y5:9240,  y7:12936},
+    onprem:     {sku:{y1:'S1C06AAS', y3:'S1C08AAS', y5:'S1C10AAS', y7:'S1C11AAS'}, y1:1932, y3:5796,  y5:9660,  y7:13524},
+  },
+  bw200: {
+    advanced:   {sku:{y1:'S1B55AAS', y3:'S1B57AAS', y5:'S1B59AAS', y7:'S1B60AAS'}, y1:2604, y3:7812,  y5:13020, y7:18228},
+    onprem:     {sku:{y1:'S1C20AAS', y3:'S1C22AAS', y5:'S1C24AAS', y7:'S1C25AAS'}, y1:2736, y3:8208,  y5:13680, y7:19152},
+  },
+  bw500: {
+    advanced:   {sku:{y1:'S1B70AAS', y3:'S1B72AAS', y5:'S1B74AAS', y7:'S1B75AAS'}, y1:4572, y3:13716, y5:22860, y7:32004},
+    onprem:     {sku:{y1:'S0Y00AAS', y3:'S0Y02AAS', y5:'S0Y04AAS', y7:'S0Y05AAS'}, y1:4788, y3:14364, y5:23940, y7:33516},
+  },
+  bw1g: {
+    foundation: {sku:{y1:'S1A29AAS', y3:'S1A31AAS', y5:'S1A33AAS', y7:'S1A34AAS'}, y1:1680, y3:5040,  y5:8400,  y7:11760},
+    advanced:   {sku:{y1:'S1B84AAS', y3:'S1B86AAS', y5:'S1B88AAS', y7:'S1B89AAS'}, y1:6540, y3:19620, y5:32700, y7:45780},
+    onprem:     {sku:{y1:'S0Y14AAS', y3:'S0Y16AAS', y5:'S0Y18AAS', y7:'S0Y19AAS'}, y1:6864, y3:20592, y5:34320, y7:48048},
+  },
+  bw2g: {
+    advanced:   {sku:{y1:'S1C28AAS', y3:'S1C30AAS', y5:'S1C32AAS', y7:'S1C33AAS'}, y1:9384, y3:28152, y5:46920, y7:65688},
+    onprem:     {sku:{y1:'S0Z50AAS', y3:'S0Z52AAS', y5:'S0Z54AAS', y7:'S0Z55AAS'}, y1:9864, y3:29592, y5:49320, y7:69048},
+  },
+  bwunl: {
+    foundation: {sku:{y1:'S1A43AAS', y3:'S1A45AAS', y5:'S1A77AAS', y7:'S1A78AAS'}, y1:7848,  y3:23544, y5:39240,  y7:54936},
+    advanced:   {sku:{y1:'S1C42AAS', y3:'S1C44AAS', y5:'S1C46AAS', y7:'S1C47AAS'}, y1:23580, y3:70740, y5:117900, y7:165060},
+    onprem:     {sku:{y1:'S0Z64AAS', y3:'S0Z66AAS', y5:'S0Z68AAS', y7:'S0Z69AAS'}, y1:24744, y3:74232, y5:123720, y7:173208},
+  },
+};
+
+// ── DTD · Dynamic Threat Defense (2026-09-14, pendiente #31) ─────────────────
+// DTD SÍ está en la lista de precios vigente (verificado 2026-09-14 contra el export,
+// PLC GA, vigencia 2026-06-01 — mismas reglas de extracción que LICENSES: solo SKU,
+// descripción, List Price y vigencia). Es una escalera PLANA por appliance: no tiene
+// tiers de caudal, así que la clave es modalidad × término, no tier. Misma forma de
+// hoja que LICENSES ({sku:{y1,y3,y5}, y1,y3,y5}) por clave saas/saasHa/onprem/onpremHa.
+//
+// Procedencia y alcance:
+//   · QuickSpecs EdgeConnect v18 p.32: DTD es licencia opcional INDEPENDIENTE del tier
+//     («adds IDS/IPS, Adaptive DDoS, Smart SYN cookie and Secure web service») — NO
+//     fuerza Advanced.
+//   · Invariante HA == estándar (igual que LICENSES_HA): la lista tarifa el SKU HA del
+//     segundo nodo exactamente igual que el estándar, solo cambia el número de parte.
+//   · La lista también trae término de 7 años (S0Z42AAS/S0Y29AAS/S0Y36AAS/S0Y43AAS,
+//     $2.604) y SKU de evaluación a $0 (S1C85AAS/S1C86AAS/S1C87AAS/S1C88AAS). Los de
+//     evaluación se excluyen a propósito: una evaluación a $0 no se cotiza.
+//   · 7 años (2026-09-15, pendiente #28 — el dueño lo pidió): la lista solo publica y7
+//     para DTD ON-PREMISES (estándar S0Y36AAS y HA S0Y43AAS, $2.604). DTD SaaS no tiene
+//     fila de 7 años en la lista → y7 null («consultar», nunca inventado).
+const DTD_LICENSES = {
+  saas:      {sku:{y1:'S0Z37AAS', y3:'S0Z39AAS', y5:'S0Z41AAS', y7:null},       y1:372, y3:1116, y5:1860, y7:null},
+  saasHa:    {sku:{y1:'S0Z44AAS', y3:'S0Y26AAS', y5:'S0Y28AAS', y7:null},       y1:372, y3:1116, y5:1860, y7:null},
+  onprem:    {sku:{y1:'S0Y31AAS', y3:'S0Y33AAS', y5:'S0Y35AAS', y7:'S0Y36AAS'}, y1:372, y3:1116, y5:1860, y7:2604},
+  onpremHa:  {sku:{y1:'S0Y38AAS', y3:'S0Y40AAS', y5:'S0Y42AAS', y7:'S0Y43AAS'}, y1:372, y3:1116, y5:1860, y7:2604},
+};
+
+// ── SSE (Secure Service Edge) y umbrales Microbranch (2026-09-13) ────────────
+// SSE es la línea «consultar» del portafolio: el SKU existe en el catálogo HPE pero NO
+// figura en la lista de precios vigente (verificado 2026-09-13: ninguna fila R8M36AAE
+// en el export). Regla de gobierno: precio null = «la lista no tiene el dato» — la
+// interfaz muestra «consultar» y jamás un importe inventado.
+const ARUBA_SSE = { sku: 'R8M36AAE', desc: 'HPE Aruba Networking SSE Complete Edition, per-user SaaS', precio: null, nota: 'No figura en la lista de precios vigente: línea «consultar», nunca precio inventado.' };
+
+// Umbrales del aviso Microbranch del dimensionador: sede pequeña (≤10 usuarios y
+// ≤50 Mbps de caudal) y, además, sin MPLS (MPLS == 0) — el caso en que un AP con
+// Microbranch puede sustituir al appliance dedicado. Son umbrales de trabajo de esta
+// herramienta (decisión de diseño 2026-09-13), no cifras publicadas por HPE.
+const MICROBRANCH_UMBRALES = { usuarios: 10, caudalMbps: 50 }; // banner si además MPLS == 0
+
+// ── Catálogo maestro de accesorios (fase 12, corregido 2026-09-13) ───────────
+// FUENTE OFICIAL: la lista de precios del distribuidor subida por el dueño — su
+// instrucción literal: «debes basarte en la lista de precios que te subí, esa es la
+// fuente oficial de los SKU y precios de lista». De ella se extraen ÚNICAMENTE
+// Product Number, Short Description, List Price, List Price Effective Date y PLC
+// Status (la regla de confidencialidad del repo prohíbe el resto de columnas).
+//
+// Esta lista CORRIGE al brief de la fase 12 en cuatro SKU y en todos los precios
+// (los del brief eran ~40-60 % más bajos — parecían precio neto o de otra fuente):
+//   · R1C72A es «AP-MNT-MP10-E» (montaje de APs, $415) — NO la PSU del 9240. La PSU
+//     real del 9240 es R7J63A «9240 550W AC Power supply» ($747).
+//   · R1B23A/R1B24A son gateways 9004 regionales (IL/EG, $2.505) — NO kits de rack.
+//     Los racks reales son R1B30A (9004) y R4X13A (9012).
+//   · JW084A es «7005-MNT-19» (rack del 7005, $282) — NO un cable de consola. La
+//     consola AP-CBL-SERU real es JY728A ($36).
+//   · JL747A es «1G SFP RJ45 T 100m Cat5e TAA» ($854) en estado ES — NO un 10G SR.
+//     Su sucesor GA es JL747B. Un SKU en ES no se oferta: queda en el catálogo para
+//     trazabilidad pero fuera de toda matriz de compatibilidad.
+//   · S2N67A es «EC 10150/10170 NM» ($9.096) — módulo del EC-10150/10170, NO un kit
+//     «EC 10010». La lista NO tiene kit de almacenamiento para EC-10106/10108, así
+//     que la sincronización Boost → NVMe de esos modelos se retira (PENDIENTES.md).
+//   · S1H24A (9240 1G cobre, nuevo) no figura en la lista; sí el reman S1H24AR.
+// Campos: name = Short Description literal de la lista; speed/media/reach cuando la
+// propia descripción los declara; category funcional en el resto; listPrice y
+// vigencia = List Price y su Effective Date; plc = PLC Status (GA / ES).
+const ARUBA_ACCESSORY_CATALOG = {
+  // ── Transceptores 1G SFP (cobre y fibra) ──
+  S3R03A: { name: 'HPE ANW EC 1G SFP RJ45 100m XCVR', speed: '1G', media: 'COPPER', reach: '100m', listPrice: 497, vigencia: '2025-06-01', plc: 'GA' },
+  J4858D: { name: 'Aruba 1G SFP LC SX 500m MMF XCVR', speed: '1G', media: 'MMF', reach: '500m', listPrice: 569, vigencia: '2023-04-01', plc: 'GA' },
+  J4859D: { name: 'Aruba 1G SFP LC LX 10km SMF XCVR', speed: '1G', media: 'SMF', reach: '10km', listPrice: 1184, vigencia: '2023-04-01', plc: 'GA' },
+  J4860D: { name: 'Aruba 1G SFP LC LH 70km SMF XCVR', speed: '1G', media: 'SMF', reach: '70km', listPrice: 5266, vigencia: '2022-11-01', plc: 'GA' },
+  JL745A: { name: 'Aruba 1G SFP LC SX 500m MMF TAA XCVR', speed: '1G', media: 'MMF_TAA', reach: '500m', listPrice: 842, vigencia: '2022-11-01', plc: 'GA' },
+  JL746A: { name: 'Aruba 1G SFP LC LX 10km SMF TAA XCVR', speed: '1G', media: 'SMF_TAA', reach: '10km', listPrice: 1789, vigencia: '2022-11-01', plc: 'GA' },
+  JL747A: { name: 'Aruba 1G SFP RJ45 T 100m Cat5e TAA XCVR', speed: '1G', media: 'COPPER_TAA', reach: '100m', listPrice: 854, vigencia: '2022-11-01', plc: 'ES' },
+  JL747B: { name: 'HPE ANW 1G SFP RJ45 100m TAA XCVR', speed: '1G', media: 'COPPER_TAA', reach: '100m', listPrice: 854, vigencia: '2024-05-06', plc: 'GA' },
+  // ── Transceptores y DAC 10G SFP+ ──
+  J9150D: { name: 'Aruba 10G SFP+ LC SR 300m MMF XCVR', speed: '10G', media: 'MMF', reach: '300m', listPrice: 2017, vigencia: '2023-04-01', plc: 'GA' },
+  J9151E: { name: 'Aruba 10G SFP+ LC LR 10km SMF XCVR', speed: '10G', media: 'SMF', reach: '10km', listPrice: 4878, vigencia: '2022-11-01', plc: 'GA' },
+  J9153D: { name: 'Aruba 10G SFP+ LC ER 40km SMF XCVR', speed: '10G', media: 'SMF', reach: '40km', listPrice: 11855, vigencia: '2022-11-01', plc: 'GA' },
+  JL748A: { name: 'Aruba 10G SFP+ LC SR 300m MMF TAA XCVR', speed: '10G', media: 'MMF_TAA', reach: '300m', listPrice: 3008, vigencia: '2022-11-01', plc: 'GA' },
+  J9281D: { name: 'Aruba 10G SFP+ to SFP+ 1m DAC Cable', speed: '10G', media: 'DAC', reach: '1m', listPrice: 262, vigencia: '2023-04-01', plc: 'GA' },
+  J9283D: { name: 'Aruba 10G SFP+ to SFP+ 3m DAC Cable', speed: '10G', media: 'DAC', reach: '3m', listPrice: 359, vigencia: '2022-11-01', plc: 'GA' },
+  J9285D: { name: 'Aruba 10G SFP+ to SFP+ 7m DAC Cable', speed: '10G', media: 'DAC', reach: '7m', listPrice: 490, vigencia: '2022-11-01', plc: 'GA' },
+  // Ópticas marca EdgeConnect (línea anterior EC-S/M/L/XL) y 10G cobre/TAA — añadidas
+  // 2026-09-13 tras cruzar la matriz oficial (HRG Rev S + QuickSpecs EC v18) con la
+  // lista: JM534A/JM535A son los «EC-SFP-LR/SR» del Hardware Reference; JL563C es el
+  // 10GBASE-T que el VSG certifica en EC-10108/10150; JL749A es el LR TAA del 9200.
+  JM534A: { name: 'Aruba EC-SFP-LR Single Mode SFP+', speed: '10G', media: 'SMF', reach: '10km', listPrice: 980, vigencia: '2025-06-01', plc: 'GA' },
+  JM535A: { name: 'Aruba EC-SFP-SR Multi Mode SFP+', speed: '10G', media: 'MMF', reach: '300m', listPrice: 657, vigencia: '2025-06-01', plc: 'GA' },
+  JL563C: { name: 'HPE ANW 10GBASE-T SFP+ RJ45 30m XCVR', speed: '10G', media: 'COPPER', reach: '30m', listPrice: 1982, vigencia: '2024-05-06', plc: 'GA' },
+  JL749A: { name: 'Aruba 10G SFP+ LC LR 10km SMF TAA XCVR', speed: '10G', media: 'SMF_TAA', reach: '10km', listPrice: 7318, vigencia: '2022-11-01', plc: 'GA' },
+  // ── Transceptores y DAC 25G SFP28 (EC-10150 y Gateway 9240) ──
+  JL484A: { name: 'Aruba 25G SFP28 LC SR 100m MMF XCVR', speed: '25G', media: 'MMF', reach: '100m', listPrice: 1846, vigencia: '2022-11-01', plc: 'GA' },
+  JL485A: { name: 'Aruba 25G SFP28 LC eSR 400m MMF XCVR', speed: '25G', media: 'MMF', reach: '400m', listPrice: 2245, vigencia: '2023-04-01', plc: 'GA' },
+  JL486A: { name: 'Aruba 25G SFP28 LC LR 10km SMF XCVR', speed: '25G', media: 'SMF', reach: '10km', listPrice: 5927, vigencia: '2022-11-01', plc: 'GA' },
+  JL487A: { name: 'Aruba 25G SFP28 to SFP28 0.65m DAC Cable', speed: '25G', media: 'DAC', reach: '0.65m', listPrice: 329, vigencia: '2022-11-01', plc: 'GA' },
+  JL488A: { name: 'Aruba 25G SFP28 to SFP28 3m DAC Cable', speed: '25G', media: 'DAC', reach: '3m', listPrice: 466, vigencia: '2022-11-01', plc: 'GA' },
+  JL489A: { name: 'Aruba 25G SFP28 to SFP28 5m DAC Cable', speed: '25G', media: 'DAC', reach: '5m', listPrice: 614, vigencia: '2022-11-01', plc: 'GA' },
+  // 25G marca EdgeConnect (EC-XL-H y hubs EC-10150) y TAA — cruce 2026-09-13:
+  // JM532A/JM533A son los «EC-SFP28-25G-LR/SR» del QuickSpecs EC (Hub Gateways
+  // Options); S2N63A es el 25G LR TAA de la matriz HRG Rev S.
+  JM532A: { name: 'Aruba EC-SFP28-25G-LR Single Mode SFP28', speed: '25G', media: 'SMF', reach: '10km', listPrice: 2608, vigencia: '2025-06-01', plc: 'GA' },
+  JM533A: { name: 'Aruba EC-SFP28-25G-SR Multi Mode SFP28', speed: '25G', media: 'MMF', reach: '100m', listPrice: 1471, vigencia: '2025-06-01', plc: 'GA' },
+  S2N63A: { name: 'HPE ANW 25G LR SFP28 LC 10km TAA XCVR', speed: '25G', media: 'SMF_TAA', reach: '10km', listPrice: 10259, vigencia: '2024-04-01', plc: 'GA' },
+  // ── Almacenamiento, fuentes, montaje y consola ──
+  // S2N67A: «NM» = NETWORK MEMORY, no «network module». El QuickSpecs EC v18 y la
+  // Install Guide del EC-10150 lo describen como «EdgeConnect 10150/10170 1.6TB
+  // Network Memory Drive Kit» (2x SSD NVMe): con él, WAN Optimization (Boost) llega
+  // a 8 Gbps en el EC-10150; sin él, 1 Gbps. Corregido 2026-09-13 — la lectura
+  // anterior («módulo de red») era una inferencia refutada por la fuente oficial.
+  S2N67A: { name: 'HPE ANW EC 10150/10170 NM', category: 'STORAGE', listPrice: 9096, vigencia: '2025-05-05', plc: 'GA' },
+  // Repuestos del tren de almacenamiento del EC-10150/10170 (misma fuente y cruce):
+  // S3R70A es el disco Network Memory de repuesto del kit S2N67A; S3P35A es el NVMe
+  // de arranque del EC-10012. Se ofertan solo en EC-10150.
+  S3R70A: { name: 'HPE ANW EC 10010 1.6TB NM Spare Drive', category: 'STORAGE', listPrice: 4668, vigencia: '2025-05-05', plc: 'GA' },
+  S3P35A: { name: 'HPE ANW EC 10012 480GB NVMe Boot Drv Kit', category: 'STORAGE', listPrice: 6463, vigencia: '2025-05-05', plc: 'GA' },
+  JZ889A: { name: 'Aruba EC-L/XL-H SSD', category: 'STORAGE', listPrice: 1207, vigencia: '2025-06-01', plc: 'GA' },
+  R7J63A: { name: '9240 550W AC Power supply', category: 'PSU', listPrice: 747, vigencia: '2023-04-01', plc: 'GA' },
+  JM779A: { name: 'Aruba EC-S-P AC PSU', category: 'PSU', listPrice: 1100, vigencia: '2025-06-01', plc: 'GA' },
+  JZ955A: { name: 'Aruba EC-M-H PSU', category: 'PSU', listPrice: 1097, vigencia: '2025-06-01', plc: 'GA' },
+  R1B30A: { name: 'Aruba 9004-MNT-19 Rack Mount Kit', category: 'MOUNT', listPrice: 282, vigencia: '2022-11-01', plc: 'GA' },
+  R3W17A: { name: 'Aruba 9004-LTE-MNT-19 Rack Mount Kit', category: 'MOUNT', listPrice: 282, vigencia: '2022-11-01', plc: 'GA' },
+  R4X13A: { name: 'Aruba 9012-MNT-19 Spare Rack Mount Kit', category: 'MOUNT', listPrice: 71, vigencia: '2022-11-01', plc: 'GA' },
+  JZ888A: { name: 'Aruba EC-L/XL-H Center Mount Kit', category: 'MOUNT', listPrice: 1043, vigencia: '2025-06-01', plc: 'GA' },
+  JZ893A: { name: 'Aruba EC-S-P Accesssory Kit', category: 'KIT', listPrice: 296, vigencia: '2025-06-01', plc: 'GA' },
+  JZ894A: { name: 'Aruba EC-M-H Accessory Kit', category: 'KIT', listPrice: 296, vigencia: '2025-06-01', plc: 'GA' },
+  // EC-10106/10108 y EC-XS (cruce 2026-09-13, QuickSpecs EC v18 + Hardware
+  // Accessories Guide PN 201911 Rev F): kit de accesorios (rack, pared y cables)
+  // y adaptador de corriente de repuesto. Cierran el pendiente de accesorios
+  // propios del EC-XS y de fuente/kit de la línea 101xx pequeña.
+  S2D96A: { name: 'HPE ANW EC-10108/EC-10106 Accessory Kit', category: 'KIT', listPrice: 120, vigencia: '2025-06-01', plc: 'GA' },
+  S2D95A: { name: 'HPE ANW EC-10108/EC-10106 54V PA', category: 'PSU', listPrice: 345, vigencia: '2025-06-01', plc: 'GA' },
+  JM965A: { name: 'Aruba EC-XS A1 Accessory Kit', category: 'KIT', listPrice: 365, vigencia: '2025-06-01', plc: 'GA' },
+  JM996A: { name: 'Aruba EC-XS A1 Power Adapter', category: 'PSU', listPrice: 296, vigencia: '2025-06-01', plc: 'GA' },
+  S2N64A: { name: 'HPE ANW 9114 Spare Fan Tray', category: 'FAN', listPrice: 182, vigencia: '2024-04-01', plc: 'GA' },
+  JY728A: { name: 'AP-CBL-SERU Console Adapter Cable', category: 'CABLE', listPrice: 36, vigencia: '2022-11-01', plc: 'GA' },
+  S1H24AR: { name: 'Aruba 9240 1G SFP RJ45 T 100m Reman XCVR', speed: '1G', media: 'COPPER', reach: '100m', listPrice: 353, vigencia: '2026-05-11', plc: 'GA' },
+  // ── Racks de la línea anterior 7000/7200 (parque instalado) ──
+  JW084A: { name: 'Aruba 7005-MNT-19 7005 Rack Mnt', category: 'MOUNT', listPrice: 282, vigencia: '2022-11-01', plc: 'GA' },
+  JX934A: { name: 'Aruba 7008-MNT-19 7008 Rack Mnt', category: 'MOUNT', listPrice: 492, vigencia: '2022-11-01', plc: 'GA' },
+  JW085A: { name: 'Aruba 7010-MNT-19 7010 Rack Mnt', category: 'MOUNT', listPrice: 106, vigencia: '2022-11-01', plc: 'GA' },
+  JW086A: { name: 'Aruba 7030-MNT-19 7030 Rack Mnt', category: 'MOUNT', listPrice: 106, vigencia: '2022-11-01', plc: 'GA' },
+  JW107A: { name: 'Aruba SPR-RK-MNT 7200/S3500 Rk Mount', category: 'MOUNT', listPrice: 106, vigencia: '2022-11-01', plc: 'GA' },
+};
+
+// Matriz modelo → accesorios ofertables. REESCRITA 2026-09-13 contra la matriz
+// oficial de transceptores, cruzada con la lista de precios (pedido del dueño:
+// «busca en la web los accesorios y compáralo con los SKU de la lista de precios»).
+// Fuentes oficiales citadas (todas HPE/Aruba, consultadas 2026-09-13):
+//   · VSG SD-Branch — Reference Architecture EdgeConnect (tabla de transceptores).
+//   · EdgeConnect Hardware Reference Guide Rev S (dic-2025), cap. «Pluggable
+//     Transceivers in EdgeConnect» — matriz por plataforma, incl. TAA y DAC.
+//   · EdgeConnect SD-WAN QuickSpecs v18 y 9200 Series Gateways QuickSpecs v14.
+//   · EC-10150 Install Guide (8 jaulas «1G SFP o 10G SFP+ o 25G SFP28»).
+//   · EdgeConnect Hardware Accessories Guide PN 201911 Rev F (kits y PSU).
+// Reglas que quedaron REFUTADAS por la fuente oficial y se corrigen aquí:
+//   · JL747B (1G cobre TAA): el HRG lo marca NO soportado en TODA la línea EC —
+//     sale de la matriz (queda en catálogo para trazabilidad, como JL747A).
+//   · J4860D (1G LH 70km) y J9285D (DAC 10G 7m): no aparecen en NINGUNA matriz EC
+//     — salen de la oferta EdgeConnect (J9285D sí está certificado en el 9240).
+//   · J9153D (10G ER 40km): el VSG lo certifica en EC-10106 pero NO en
+//     EC-10108/10150 — se retira de esos dos modelos.
+//   · JL485A/JL487A/JL488A (25G eSR y DAC 0,65/3 m): sin confirmación oficial en
+//     EC-10150 — se retiran de ese modelo (siguen certificados en el 9240).
+// Confirmaciones nuevas que AMPLÍAN la oferta:
+//   · EC-10108 sí acepta 25G (VSG: JL484A/JL486A/JL489A) y 10G cobre (JL563C).
+//   · EC-10150: JM532A/JM533A (EC-SFP28-25G), S2N63A (25G TAA) y JL563C (VSG/HRG).
+//   · Línea anterior: JM534A/JM535A (EC-SFP-LR/SR) en EC-S/M/L/XL; JL745A/JL746A/
+//     JL748A/JL749A según columna HRG (EC-M-H, EC-L-H, EC-XL-H-10G; en EC-S-P solo
+//     las 10G TAA). EC-XS no tiene ranuras de fibra (HRG) — solo kit y adaptador.
+//   · 9240: las ópticas 1G/10G del QuickSpecs 9200 v14 se añaden a las 25G y a la
+//     PSU que ya estaban (S1H24AR sigue siendo el cobre 1G específico).
+//   · S2N67A es el Network Memory Drive Kit del EC-10150 (Boost hasta 8 Gbps con
+//     él; 1 Gbps sin él — QuickSpecs v18 + Install Guide). S3R70A/S3P35A son sus
+//     repuestos oficiales. EC-10106/10108 NO tienen slot de almacenamiento
+//     (HRG Rev S: SSD interno de 120 GB no reemplazable) — Boost corre sobre el
+//     SSD interno hasta 250/500 Mbps; no existe kit y no se inventa.
+//   · 1G en EC-10108/10150: CONFLICTO documental oficial (VSG dice NO; HRG Rev S
+//     e Install Guide dicen SÍ con restricciones de puerto). Decisión de la casa:
+//     no se ofertan hasta que el distribuidor/HPE desempate — queda en PENDIENTES.
+//   · Un SKU en PLC «ES» NUNCA entra en la matriz (JL747A queda solo en catálogo).
+//   · Consola JY728A (AP-CBL-SERU) en el hardware de generación actual; los legacy
+//     7000/7200 solo ofrecen su rack de parque instalado.
+const ACCESSORY_COMPAT = {
+  'EC-10104': { items: ['JY728A'],
+    nota: 'Sin ranuras SFP (4x RJ45 — VSG y HRG Rev S). Solo cable de consola.' },
+  'EC-10106': { items: ['S3R03A','J4858D','J4859D','JL745A','JL746A','J9150D','J9151E','J9153D','JL748A','J9281D','J9283D','S2D96A','S2D95A','JY728A'],
+    nota: '2x SFP+ 1/10G + 2x combo (VSG/HRG; 1G solo en wan0/wan1). S2D96A es su kit oficial (rack/pared/cables) y S2D95A su adaptador 54 V de repuesto. Sin slot de almacenamiento: Boost corre sobre el SSD interno (hasta 250 Mbps).' },
+  'EC-10108': { items: ['J9150D','J9151E','JL748A','JL749A','J9281D','J9283D','JL484A','JL486A','JL489A','JL563C','S2D96A','S2D95A','JY728A'],
+    nota: '2x SFP+ 1/10G + 2x combo (VSG/HRG). El VSG certifica 25G (JL484A/JL486A/JL489A) y 10G cobre (JL563C); 1G está en conflicto documental (VSG no, HRG sí con restricciones) — no se oferta. S2D96A/S2D95A: kit y adaptador oficiales. Boost sobre SSD interno (hasta 500 Mbps).' },
+  'EC-10150': { items: ['J9150D','J9151E','JL748A','JL749A','J9281D','J9283D','JL484A','JL486A','JL489A','JL563C','JM532A','JM533A','S2N63A','S2N67A','S3R70A','S3P35A','JY728A'],
+    nota: '8 jaulas SFP+/SFP28 10/25G (Install Guide; 1G en conflicto documental — no se oferta). S2N67A es el Network Memory Drive Kit: con él Boost llega a 8 Gbps (1 Gbps sin él); S3R70A/S3P35A son sus repuestos. 2 PSU redundantes de fábrica.' },
+  'EC-XS': { items: ['JM965A','JM996A','JY728A'],
+    nota: 'Sin ranuras de fibra (HRG Rev S). JM965A es su kit oficial (adaptador, orejas de rack y cables — las orejas ya van en caja) y JM996A su adaptador de corriente externo de repuesto.' },
+  'EC-S': { items: ['JM779A','JZ893A','JM534A','JM535A','JL748A','JL749A','JY728A'],
+    nota: 'EC-S-P: 4x SFP+ 1/10G. Ópticas oficiales EC-SFP-SR/LR (JM535A/JM534A) y 10G TAA (JL748A/JL749A — HRG); las 1G TAA NO aplican en este modelo. JM779A: PSU AC (1+1); JZ893A: kit de accesorios.' },
+  'EC-M': { items: ['JZ955A','JZ894A','JM534A','JM535A','JL745A','JL746A','JL748A','JL749A','JY728A'],
+    nota: 'EC-M-H: 4x SFP+ 1/10G. Ópticas EC-SFP-SR/LR (JM535A/JM534A) y TAA 1G/10G (JL745A/JL746A/JL748A/JL749A — columna EC-M-P/EC-M-H del HRG). JZ955A: PSU; JZ894A: kit de accesorios.' },
+  'EC-L': { items: ['JZ889A','JZ888A','JM534A','JM535A','J9150D','J9151E','JL745A','JL746A','JL748A','JL749A','JY728A'],
+    nota: 'EC-L-H: 6x SFP+ 1/10G (HRG: no soporta SFP28). Ópticas EC-SFP-SR/LR, Aruba 10G SR/LR (J9150D/J9151E — QuickSpecs hub) y TAA 1G/10G. JZ889A: SSD oficial (Network Memory de Boost); JZ888A: montaje central.' },
+  'EC-XL': { items: ['JZ889A','JZ888A','JM534A','JM535A','J9150D','J9151E','JL745A','JL746A','JL748A','JL749A','JY728A'],
+    nota: 'EC-XL-H-10G: 6x SFP+ 1/10G, misma matriz HRG que EC-L-H. FIN DE VENTA (PLC «ES» del SKU base S0B67A en la lista oficial, vigencia 2025-06-01) — accesorios para parque instalado.' },
+  'Gateway 9004': { items: ['R1B30A','JY728A'],
+    nota: 'Sin ranuras SFP. Kit de rack 19" oficial R1B30A.' },
+  'Gateway 9004-LTE': { items: ['R3W17A','JY728A'],
+    nota: 'Sin ranuras SFP. Kit de rack 19" oficial R3W17A (variante LTE).' },
+  'Gateway 9012': { items: ['R4X13A','JY728A'],
+    nota: 'Sin ranuras SFP. Kit de rack 19" oficial R4X13A.' },
+  'Gateway 9106': { items: ['JY728A'],
+    nota: 'Sin accesorios propios en la lista de precios oficial — solo cable de consola.' },
+  'Gateway 9114': { items: ['S2N64A','JY728A'],
+    nota: 'Bandeja de ventiladores de repuesto oficial S2N64A.' },
+  'Gateway 9240': { items: ['S1H24AR','J4858D','J4859D','JL745A','JL746A','J9150D','J9151E','J9153D','JL749A','J9281D','J9283D','J9285D','JL484A','JL485A','JL486A','JL487A','JL488A','JL489A','R7J63A','JY728A'],
+    nota: '4x SFP28 1/10/25G (QuickSpecs 9200 v14: acepta SFP/SFP+/SFP28). 1+1 PSU: la 2ª fuente es la R7J63A (550 W). El cobre 1G S1H24A nuevo no figura en la lista — se ofrece el reman S1H24AR.' },
+  // Línea anterior (parque instalado): solo su kit de rack oficial.
+  '7005': { items: ['JW084A'], nota: 'Parque instalado: kit de rack 19" oficial.' },
+  '7008': { items: ['JX934A'], nota: 'Parque instalado: kit de rack 19" oficial.' },
+  '7010': { items: ['JW085A'], nota: 'Parque instalado: kit de rack 19" oficial.' },
+  '7030': { items: ['JW086A'], nota: 'Parque instalado: kit de rack 19" oficial.' },
+  '7205': { items: ['JW107A'], nota: 'Parque instalado: kit de rack oficial (SPR-RK-MNT).' },
+  '7210': { items: ['JW107A'], nota: 'Parque instalado: kit de rack oficial (SPR-RK-MNT).' },
+  '7220': { items: ['JW107A'], nota: 'Parque instalado: kit de rack oficial (SPR-RK-MNT).' },
+  '7240XM': { items: ['JW107A'], nota: 'Parque instalado: kit de rack oficial (SPR-RK-MNT).' },
+};
 
 module.exports = {
-  MODELS, BUNDLES, CARE, LICENSES, BW_TIERS, BOOST, FEC_OVERHEAD,
-  SOFTWARE, CENTRAL_TIERS, DATASHEETS,
+  MODELS, BUNDLES, CARE, CARE_SKU, LICENSES, LICENSES_HA, BW_TIERS, BOOST, FEC_OVERHEAD,
+  SOFTWARE, CENTRAL_TIERS, CENTRAL_POR_SERIE, DATASHEETS, EOL_ANNOUNCED, OS_MATRIX,
+  ARUBA_ACCESSORY_CATALOG, ACCESSORY_COMPAT, ARUBA_SSE, MICROBRANCH_UMBRALES, DTD_LICENSES,
 };

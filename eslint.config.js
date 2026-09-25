@@ -42,6 +42,16 @@ const globalsNavegador = {
   // APIs que las paginas se pasan entre si por `window`, ya que no hay sistema de modulos.
   FICHA: 'readonly', BOM: 'readonly', ESTADO: 'readonly', TABLA: 'readonly', COMPARADOR: 'readonly', CALC: 'readonly',
   CONTRASTE: 'readonly', NAVFAB: 'readonly', PROCEDENCIA: 'readonly',
+  // Motor de ingeniería carrier-grade (brief del dueño 2026-09-13): módulo UMD, global
+  // en el navegador y requireable desde Node en los tests.
+  MotorIngenieria: 'readonly',
+  // Reglas puras del dimensionador Aruba (fase 1 de la auditoria 2026-09-17), mismo
+  // patron UMD que MotorIngenieria: /js/aruba-reglas.js.
+  ArubaReglas: 'readonly',
+  // Reglas puras del dimensionador FortiGate (informe de validacion tecnica 2026-09-22),
+  // mismo patron UMD: /js/fortinet-reglas.js.
+  FortinetReglas: 'readonly',
+  FortinetMotor: 'readonly',
 };
 
 const reglas = {

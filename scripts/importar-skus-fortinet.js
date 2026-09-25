@@ -91,7 +91,21 @@ for (const m of M) {
   total += salida[m.id].length;
 }
 
+// VALIDADOR SEMANTICO (F18, 2026-09-23). El ancla del precio caza la fila desplazada, pero no
+// una descripcion que contradice su propio codigo: la lista de septiembre trae
+// `FG-90G-BDL-1082-60` descrito como «1 Year». No se rechaza —el SKU y el precio estan
+// anclados y son correctos—, se REPORTA aqui para que se vea el dia que entra, y el servicio
+// de referencias lo corrige a la vista al servirlo (server/services/terminoSku.js).
+const terminoSku = require('../server/services/terminoSku');
+const incoherentes = [];
+for (const [modelo, refs] of Object.entries(salida)) {
+  for (const r of refs) {
+    const v = terminoSku.validar(r);
+    if (!v.ok) incoherentes.push(`${modelo}: ${r.sku} dice ${v.mesesTexto} meses en el texto («${r.d}») y ${v.mesesSku} en el codigo`);
+  }
+}
 console.log(`modelos con referencias: ${Object.keys(salida).length} de ${M.filter((m) => m.hwSku).length}`);
+if (incoherentes.length) console.log('TERMINO INCOHERENTE ENTRE TEXTO Y CODIGO (se importa; el servicio lo corrige a la vista):\n  ' + incoherentes.join('\n  '));
 console.log(`referencias totales: ${total}`);
 if (rechazos.length) console.log('RECHAZOS (no se importan):\n  ' + rechazos.join('\n  '));
 if (dry) { console.log('\n--dry: no se escribio nada.'); process.exit(0); }

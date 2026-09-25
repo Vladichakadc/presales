@@ -263,6 +263,7 @@ test('la calculadora no aparta un fabricante por un dato que el catálogo SI pub
     sdwan: { hw_ar: ['sdwan'], cisco: ['sdwan'], aruba: ['wanMax'] },
     ngfw: { fortinet: ['ngfw'], juniper: ['ips'] },
     tp: { fortinet: ['tp'], juniper: ['atp'] },
+    ssl: { fortinet: ['ssl'] },
   };
   for (const perfil of Object.keys(CALC.PERFILES)) {
     for (const a of CALC.evaluar(devs, perfil, 1).apartados) {
@@ -291,6 +292,35 @@ test('la calculadora no aparta un fabricante por un dato que el catálogo SI pub
   assert.ok(conCifra('ipsec', 'juniper') >= 5, 'los SRX de 2024 publican IPsec');
   assert.ok(conCifra('ngfw', 'juniper') >= 5, 'y su cifra de IPS');
   assert.ok(conCifra('sdwan', 'aruba') >= 5, 'EdgeConnect publica su rango de ancho de banda WAN');
+
+  /* PERFIL DE INSPECCION TLS (2026-09-23). Entro cuando `ssl` paso de 9 a 51 de 58 modelos
+     al leer el Product Matrix de septiembre; antes el perfil habria sido un hueco con 9
+     equipos dentro. Se afirma contra el servidor de verdad por lo mismo que el resto de este
+     caso: `ssl` llega a /api/catalog por la FUSION de la siembra -esta en los MODELS del
+     dimensionador, no en indexPR.js-, asi que un mapa escrito contra el archivo legacy lo
+     apartaria entero y esta prueba es lo unico que lo dice. */
+  assert.ok(conCifra('ssl', 'fortinet') >= 15, 'Fortinet publica SSL Inspection por modelo');
+
+  // LA REGLA, Y NO SOLO EL CONTEO: en inspeccion TLS no puede aparecer NINGUN equipo de otro
+  // fabricante, porque ninguno publica esa cifra. Si apareciera, el mapa estaria leyendo el
+  // campo de otra capa — que es el derate que este repositorio retiro del dimensionador.
+  const otrosEnSsl = CALC.evaluar(devs, 'ssl', 1).candidatos
+    .concat(CALC.evaluar(devs, 'ssl', 1).cortos)
+    .filter((f) => f.d.grupo !== 'fortinet');
+  assert.strictEqual(otrosEnSsl.length, 0,
+    `en inspeccion TLS solo compite quien publica la cifra; aparecieron ${otrosEnSsl.map((f) => f.d.model).join(', ')}`);
+
+  // Y LA COBERTURA SE MIDE CONTRA EL CATALOGO, NO SE DECLARA. Es lo que la pantalla pinta
+  // encima de la lista para que una lista corta se lea como «falta el dato» y no como «falta
+  // el equipo»; una lista de fabricantes escrita a mano se quedaria con los de ayer.
+  const cob = CALC.cobertura(devs, 'ssl');
+  assert.strictEqual(cob.conCifra, 1, 'hoy solo un fabricante publica la inspeccion TLS');
+  assert.ok(cob.fabricantes >= 7, 'y se compara contra los fabricantes que trae el catalogo');
+  assert.ok(cob.con > 0 && cob.con < cob.total, 'con cifra son algunos, no todos ni ninguno');
+  // El perfil de reenvio es el control: ahi lo publican todos, y la frase de la pantalla
+  // cambia. Sin este control, un `cobertura` roto que devolviera siempre 1 pasaria en verde.
+  const cobFwd = CALC.cobertura(devs, 'fwd');
+  assert.strictEqual(cobFwd.conCifra, cobFwd.fabricantes, 'la cifra de reenvio la publican todos');
 });
 
 test('referencias de pedido: bajo demanda, tras el muro y sin cruzar de fabricante', async () => {
@@ -390,4 +420,108 @@ test('carga de fuente oficial: exige permiso sync, valida el tipo y aparece en /
   // Pero la procedencia del CATALOGO (legacyData/fuentes.js) sigue intacta: eso no se borra
   // desde la interfaz, se quita con un commit.
   assert.ok(tras.fortinet.fuentes.length >= 1, 'las fuentes del codigo no se tocan');
+});
+
+/* ══ API AUTORITATIVA DEL DIMENSIONADOR FORTIGATE (etapa 7, 2026-09-23) ════════════════════
+   El navegador calcula mientras se escribe; quien deja SALIR una cotizacion es el servidor,
+   con el mismo motor y su propio catalogo. Estas pruebas fijan el contrato que hace que eso
+   signifique algo: no confirma otra huella, no confirma otro catalogo, no deja pasar una
+   accion que la puerta no admite aunque el cliente la pida, rechaza lo que no conoce, y
+   deja rastro de cada accion comercial —solo la huella, nunca el escenario ni el cliente—. */
+const EVAL = `${BASE}/api/v1/fortinet/evaluations`;
+const CU01 = () => ({
+  topologia: { rol: 'spoke', hubs: 2, enlaces: [{ id: 1, tipo: 'DIA', down: 500, overlay: true }] },
+  trafico: { interVlanMbps: 200 },
+  seguridad: { capa: 'tp', funciones: ['chkAv', 'chkWeb', 'chkSsl'] },
+  remoto: { activo: true, metodo: 'ipsec', usuarios: 50, mbps: 100 },
+  escala: { usuarios: 300, sesionesPorUsuario: 75, vidaSesionS: 30 },
+  politica: { crecimientoPct: 30, techoPct: 70 },
+});
+const pedir = (cookie, cuerpo) => fetch(EVAL, { method: 'POST',
+  headers: { 'Content-Type': 'application/json', ...(cookie ? { cookie } : {}) }, body: JSON.stringify(cuerpo) });
+
+test('evaluaciones Fortinet: sin sesion no hay API, y con sesion el CU-01 da el 90G listo', async () => {
+  assert.strictEqual((await pedir(null, { scenario: CU01() })).status, 401);
+  const bruno = await sesionDe('bruno', 'contrasena-de-bruno-larga');
+  const res = await pedir(bruno, { scenario: CU01() });
+  assert.strictEqual(res.status, 200);
+  const r = await res.json();
+  assert.strictEqual(r.recommendation.id, 'FortiGate 90G');
+  assert.strictEqual(r.selectedValidatedModel.id, 'FortiGate 90G');
+  assert.strictEqual(r.bom.modelo, 'FortiGate 90G', 'el BOM sale del modelo validado');
+  assert.strictEqual(r.quoteGate, 'READY');
+  assert.match(r.scenarioHash, /^sha256:[0-9a-f]{64}$/);
+  assert.match(r.datasetVersion, /^fortinet@[0-9a-f]{16}$/);
+  assert.ok(!('models' in r), 'la respuesta no arrastra el catalogo entero');
+});
+
+test('evaluaciones Fortinet: una accion comercial se confirma, se audita y no se duplica', async () => {
+  const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
+  const base = await (await pedir(ana, { scenario: CU01() })).json();
+  const cuerpo = { scenario: CU01(), accion: 'excel', scenarioHash: base.scenarioHash,
+    datasetVersion: base.datasetVersion, idempotencyKey: 'prueba-excel-1' };
+  const ok = await pedir(ana, cuerpo);
+  assert.strictEqual(ok.status, 200);
+  const j = await ok.json();
+  assert.strictEqual(j.permitida, true);
+  assert.strictEqual(j.auditada, true);
+  const log = path.join(dir, 'auditoria', 'fortinet.jsonl');
+  const lineas = () => fs.readFileSync(log, 'utf8').trim().split('\n').map((l) => JSON.parse(l));
+  const ultima = lineas().pop();
+  assert.strictEqual(ultima.usuario, 'ana');
+  assert.strictEqual(ultima.accion, 'excel');
+  assert.strictEqual(ultima.scenarioHash, base.scenarioHash);
+  assert.ok(!('scenario' in ultima) && !JSON.stringify(ultima).includes('FortiGate 40F'),
+    'se guarda la huella, no el escenario');
+  // Doble clic o reintento de red: misma respuesta y ninguna linea nueva.
+  const n = lineas().length;
+  const otra = await (await pedir(ana, cuerpo)).json();
+  assert.strictEqual(otra.repetida, true);
+  assert.strictEqual(lineas().length, n);
+});
+
+test('evaluaciones Fortinet: huella, catalogo y puerta los decide el servidor, no el cliente', async () => {
+  const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
+  const base = await (await pedir(ana, { scenario: CU01() })).json();
+  // Otra huella: el servidor evaluo algo distinto de lo que muestra la pagina.
+  const h = await pedir(ana, { scenario: CU01(), accion: 'excel', scenarioHash: 'sha256:otra' });
+  assert.strictEqual(h.status, 409);
+  assert.strictEqual((await h.json()).codigo, 'huella-distinta');
+  // Otro catalogo: la pagina se cargo con cifras que ya no son las vigentes.
+  const d = await pedir(ana, { scenario: CU01(), accion: 'excel', datasetVersion: 'fortinet@0000000000000000' });
+  assert.strictEqual(d.status, 409);
+  assert.strictEqual((await d.json()).codigo, 'dataset-distinto');
+  // F01: un override que no cumple cierra la puerta aunque el cliente pida exportar.
+  const ov = await pedir(ana, { scenario: CU01(), requestedOverrideModel: 'FortiGate 40F', accion: 'cotizador' });
+  assert.strictEqual(ov.status, 409);
+  const jov = await ov.json();
+  assert.strictEqual(jov.codigo, 'puerta-cerrada');
+  assert.strictEqual(jov.quoteGate, 'BLOCKED');
+  assert.strictEqual(jov.selectedValidatedModel.id, 'FortiGate 90G', 'el validado sigue siendo el recomendado');
+  assert.ok(jov.override && jov.override.elegible === false && jov.override.deficit.some((x) => x.eje === 'tp'));
+  // DRAFT: un borrador tecnico sale; el cotizador, no.
+  const draft = { ...CU01(), escala: { ...CU01().escala, vdoms: 20 }, seleccion: { manual: 'FortiGate 200G' } };
+  assert.strictEqual((await pedir(ana, { scenario: draft, accion: 'cotizador' })).status, 409);
+  const borrador = await pedir(ana, { scenario: draft, accion: 'excel-borrador' });
+  assert.strictEqual(borrador.status, 200);
+  assert.strictEqual((await borrador.json()).quoteGate, 'DRAFT');
+  // Base de la comparacion: la huella del escenario limpio sigue confirmandose.
+  assert.strictEqual((await pedir(ana, { scenario: CU01(), scenarioHash: base.scenarioHash })).status, 200);
+});
+
+test('evaluaciones Fortinet: lo que no esta en el contrato se rechaza, no se ignora', async () => {
+  const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
+  const extra = await pedir(ana, { scenario: CU01(), precioEspecial: 1 });
+  assert.strictEqual(extra.status, 400);
+  assert.strictEqual((await extra.json()).codigo, 'campo-desconocido');
+  const campo = await pedir(ana, { scenario: { ...CU01(), descuento: 30 } });
+  assert.strictEqual(campo.status, 400);
+  const jc = await campo.json();
+  assert.strictEqual(jc.codigo, 'entrada-invalida');
+  assert.ok(jc.errores.some((e) => e.campo === 'descuento'));
+  const accion = await pedir(ana, { scenario: CU01(), accion: 'enviar-por-correo' });
+  assert.strictEqual(accion.status, 400);
+  assert.strictEqual((await accion.json()).codigo, 'accion-invalida');
+  const rango = await pedir(ana, { scenario: { ...CU01(), remoto: { activo: true, usuarios: -5 } } });
+  assert.strictEqual(rango.status, 400, 'un numero fuera de rango es un error con nombre, no un cero');
 });

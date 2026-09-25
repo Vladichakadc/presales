@@ -82,6 +82,10 @@ function capaEfectiva() {
   try {
     const r = await fetch('/api/dimensionador/juniper');
     const d = await r.json();
+    // Pendiente 34: el respaldo de ciclo de vida de ESTE fabricante, tal como lo declara
+    // `legacyData/fuentes.js` con sus `campos`. Sin el, la ficha dice «el catalogo no trae el
+    // ciclo de vida» en vez de afirmar vigencia por omision.
+    FICHA.fijarCicloVida(d.cicloVida);
     MODELS = d.models || []; SDWAN = d.sdwan || [];
     BUNDLES = d.bundles || {}; CARE = d.care || {};
   } catch {
@@ -125,7 +129,22 @@ function sincronizarConBom(m) {
   const lista = plat === 'srx' ? MODELS : SDWAN;
   const sel = $('pickModel');
   const antes = sel.value;
-  sel.innerHTML = lista.map((x) => `<option value="${esc(x.id)}">${esc(x.id)} — ${esc(x.seg)}</option>`).join('');
+  // Combo agrupado por familia (ser): SRX 300, SRX 1500, SRX 1600, SRX 2300, SRX 4000
+  // en la plataforma SRX; SSR 100 y SSR 1000 en la Session Smart. Orden determinista por
+  // capacidad (fw en SRX, cap en SSR): la API puede servir el catalogo en cualquier orden.
+  const capDe = (x) => (x.fw != null ? x.fw : (x.cap || 0));
+  const grupos = new Map();
+  for (const x of lista) {
+    const g = x.ser || 'Otros';
+    if (!grupos.has(g)) grupos.set(g, []);
+    grupos.get(g).push(x);
+  }
+  const ordenados = [...grupos.entries()];
+  for (const [, ms] of ordenados) ms.sort((a, b) => capDe(a) - capDe(b));
+  ordenados.sort((a, b) => Math.min(...a[1].map(capDe)) - Math.min(...b[1].map(capDe)));
+  sel.innerHTML = ordenados.map(([g, ms]) =>
+    `<optgroup label="${esc(g)}">` + ms.map((x) => `<option value="${esc(x.id)}">${esc(x.id)} — ${esc(x.seg)}</option>`).join('') + `</optgroup>`
+  ).join('');
   // Al reconstruir la lista se pierde el valor: se repone si ese equipo sigue existiendo en
   // la plataforma actual, para no tirar una eleccion manual al mover cualquier parametro.
   if (antes && lista.some((x) => x.id === antes)) sel.value = antes;
@@ -137,6 +156,22 @@ function render() {
   const head = (parseFloat($('head').value) || 0) / 100;
   $('headVal').textContent = `${Math.round(head * 100)} %`;
   const need = Math.round((parseFloat($('bw').value) || 0) * (parseFloat($('unit').value) || 1) * (1 + head));
+
+  // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): es el dato
+  // mínimo del dimensionamiento; sin él la página pide valores en vez de proponer un
+  // equipo a ciegas. Aplica a las dos plataformas (SRX y Session Smart).
+  if (need <= 0) {
+    lastPick = null; hayCandidato = false; sincronizarConBom(null);
+    FICHA.render({vendor:'juniper',
+      contenedor: 'verdict', candidatos: [], recomendado: null,
+      vacioTitulo: 'Ingrese valores para recomendar un equipo',
+      vacioDetalle: '<p style="margin:0;font-size:13.5px">Escriba el <b>ancho de banda</b> del sitio (y si aplica, usuarios y sesiones) para que el dimensionador proponga los modelos que cumplen.</p>',
+    });
+    $('perfTiers').innerHTML = '';
+    if ($('perfModel')) $('perfModel').textContent = '';
+    $('sizingBox').innerHTML = '<p style="font-size:13.5px;color:var(--steel)">Ingrese valores para recomendar un equipo.</p>';
+    return;
+  }
 
   if (plat === 'ssr') return renderSsr(need);
 
@@ -263,6 +298,7 @@ function seccionesDe(m) {
         ['Interfaces', esc(m.ifaces), true],
         ['Precio de lista ref.', '<span class="warn">sin lista de precios Juniper</span>'],
       ] },
+    FICHA.seccionPuertos(m),
     FICHA.seccionAlimentacion(m),
     { titulo: 'Licenciamiento propuesto',
       filas: [[esc(b.n || tier), esc(b.svcs || '')]],
@@ -334,7 +370,7 @@ function renderSsr(need) {
       filas: [['Serie', esc(m.ser)], ['Segmento', esc(m.seg)], ['Caudal', fmt(m.cap)],
         ['Interfaces', esc(m.ifaces), true],
         ['Precio de lista ref.', '<span class="warn">sin lista de precios Juniper</span>']] },
-      FICHA.seccionAlimentacion(m)],
+      FICHA.seccionPuertos(m), FICHA.seccionAlimentacion(m)],
     alCambiar: (id) => { $('pickModel').value = id; renderBom(); },
   });
   const m = SDWAN.find((x) => x.id === FICHA.elegido('verdict')) || pick;
@@ -424,7 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
     caja.style.cssText = 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px';
     anclaje.parentNode.insertBefore(caja, anclaje.nextSibling);
     ESTADO.botonEnlace(caja);
-    ESTADO.avisoOrigen(caja, st.origen);
+    ESTADO.avisoOrigen(caja, st);
   }
 });
 

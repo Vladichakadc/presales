@@ -99,13 +99,14 @@ test('la familia acota antes que el caudal', () => {
 });
 
 test('por encima del modelo mas grande no hay candidato, y no se redondea hacia abajo', () => {
-  // El 7750 SR-14s es el techo del catalogo con 38,4 Tbps. Pedir mas no puede devolver el
-  // mayor «por aproximacion»: repartir el trafico en varios equipos es una decision de diseno.
-  const r = NOKIA_SR.evaluar({ models: MODELS_ROUTER, need: 50000, portQty: 0, portVel: 100, familia: 'all' });
+  // El 7750 SR-14s es el techo del catalogo con 216 Tbps (system capacity FD, decision del
+  // duenyo 2026-09-11). Pedir mas no puede devolver el mayor «por aproximacion»: repartir
+  // el trafico en varios equipos es una decision de diseno.
+  const r = NOKIA_SR.evaluar({ models: MODELS_ROUTER, need: 216001, portQty: 0, portVel: 100, familia: 'all' });
   assert.strictEqual(r.candidatos.length, 0);
   assert.strictEqual(r.apartados.length, 0);
 
-  const justo = NOKIA_SR.evaluar({ models: MODELS_ROUTER, need: 38400, portQty: 0, portVel: 100, familia: 'all' });
+  const justo = NOKIA_SR.evaluar({ models: MODELS_ROUTER, need: 216000, portQty: 0, portVel: 100, familia: 'all' });
   assert.strictEqual(JSON.stringify(Array.prototype.map.call(justo.candidatos, (m) => m.id)),
     JSON.stringify(['7750 SR-14s']), 'la capacidad exacta si cumple: el corte es >=, no >');
 });

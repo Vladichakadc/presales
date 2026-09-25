@@ -9,6 +9,16 @@
 // (2026-09-10) ya no guarda nada en localStorage: cada inicio de sesión arranca en blanco,
 // salvo que la URL traiga parámetros.
 //
+// CAMPOS VACÍOS AL ENTRAR (decisión del dueño, 2026-09-12)
+// Los dimensionadores ya no traen valores de ejemplo precargados: los <input type="number">
+// del HTML van sin atributo value para que el usuario ingrese sus propias cifras desde cero.
+// Los motores ya toleran el vacío (parseFloat(...)||0), así que un campo sin rellenar cuenta
+// como 0 y el escenario simplemente no produce candidatos hasta que se teclea algo. Los
+// deslizadores (headroom, concurrencia...) sí conservan su posición inicial porque un slider
+// no puede estar "vacío". Además, este módulo borra los campos tecleables al cargar cuando la
+// URL no trae parámetros: es la red de seguridad contra el navegador, que repone lo último
+// tecleado al recargar o al volver con el botón atrás (bfcache) aunque no haya localStorage.
+//
 // POR QUÉ UN QUERYSTRING CORTO Y NO JSON EN BASE64
 // Estos enlaces se pegan en un chat. Un `?bw=2500&head=30` se lee, se edita a mano y no lo
 // parte ningún cliente de correo; un blob opaco de 400 caracteres, ninguna de las tres cosas.
@@ -22,6 +32,16 @@
 
 (function (global) {
   'use strict';
+
+  // Los nombres de parámetro que se muestran salen de la URL, y una URL la escribe quien
+  // manda el enlace: se escapan antes de pintarlos. La CSP de este sitio ya bloquearía un
+  // `onerror=` inyectado, pero apoyarse en ella para esto sería confiar la corrección de una
+  // pantalla a una cabecera de otra capa.
+  function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[c]));
+  }
 
   // Lee el valor de un control, sea del tipo que sea. Los grupos .seg no son controles de
   // formulario: son botones con aria-pressed, y el "valor" es el data-v del que está activo.
@@ -75,6 +95,56 @@
       for (const id of campos) if (params.has(id)) guardado[id] = params.get(id);
     }
 
+    // ── Parámetros que esta página ya no entiende ───────────────────────────
+    // UN ENLACE VIEJO NO PUEDE ATERRIZAR EN SILENCIO. Cuando una pantalla renombra o retira
+    // un control, los enlaces ya pegados en chats y correos siguen llegando con el parámetro
+    // antiguo: el emisor ve su escenario y el receptor ve otro, sin una sola señal de que
+    // algo se perdió. Es el mismo modo de fallo que `RENOMBRADAS` en `server.js` evita para
+    // el NOMBRE del archivo —«peor que un 404 porque no se nota»— y que nadie cubría para
+    // los PARÁMETROS. Ocurrió de verdad el 2026-09-13: el dimensionador Aruba cambió su
+    // campo `#bw` por el Multi-Underlay Builder, y solo se salvó porque alguien escribió a
+    // mano una migración para esa página. La regla general faltaba.
+    //
+    // QUÉ NO SE DENUNCIA, y por eso se compara contra una lista declarada y no contra todo
+    // lo que venga: lo que la página SÍ sabe migrar (`cfg.migrados`, que es como Aruba
+    // declara sus seis parámetros v1) y lo que nunca fue escenario —marcas de campaña y de
+    // seguimiento—. Un aviso que salta con un `?utm_source=…` pegado al enlace enseña a
+    // ignorarlo, que es exactamente lo contrario de para lo que existe.
+    const AJENOS = /^(utm_[a-z_]+|fbclid|gclid|mc_[a-z]+|ref|source|_ga)$/i;
+    const migrados = cfg.migrados || [];
+    // Parametros que la PAGINA añade al enlace y no son campos del formulario (Fortinet los
+    // usa para la huella del escenario y la version del catalogo, 2026-09-23): tampoco son
+    // «parametros que esta pantalla ya no entiende».
+    const extrasNombres = cfg.extrasNombres || [];
+    const ignorados = [...params.keys()].filter((k) => !campos.includes(k)
+      && !migrados.includes(k) && !extrasNombres.includes(k) && !AJENOS.test(k));
+
+    // ── Arranque en blanco ──────────────────────────────────────────────────
+    // Sin parámetros en la URL no hay nada que restaurar: se vacían los campos tecleables
+    // (números y texto) por si el navegador repuso lo último tecleado — lo hace al recargar
+    // y al volver con atrás/adelante (bfcache), sin pasar por localStorage. Los deslizadores,
+    // casillas, selects y grupos .seg conservan su posición inicial: no son campos "vaciables".
+    // El evento input avisa al motor de la página para que repinte con el escenario vacío.
+    function limpiarCamposTecleables() {
+      for (const id of campos) {
+        const nodo = document.getElementById(id);
+        if (!nodo || !nodo.tagName) continue;
+        if (nodo.tagName !== 'INPUT') continue;
+        if (nodo.type !== 'number' && nodo.type !== 'text') continue;
+        if (nodo.value === '') continue;
+        nodo.value = '';
+        nodo.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }
+    if (!origen) {
+      limpiarCamposTecleables();
+      // Con bfcache la página vuelve tal cual se dejó, sin recargar scripts: hay que limpiar
+      // en el pageshow, que es el único evento que sí se dispara al volver.
+      window.addEventListener('pageshow', (e) => {
+        if (e.persisted && !new URLSearchParams(location.search).toString()) limpiarCamposTecleables();
+      });
+    }
+
     const pendientesSeg = [];
     for (const id of campos) {
       if (!(id in guardado)) continue;
@@ -126,7 +196,14 @@
       const datos = {};
       const qs = new URLSearchParams();
       for (const id of campos) {
-        const v = leer(document.getElementById(id));
+        const nodo = document.getElementById(id);
+        // UN CAMPO QUE NO APLICA NO VIAJA (informe del 23-sep, §10). La pagina marca con
+        // `data-inactivo` los grupos que su esquema de dependencias oculta: su valor se
+        // CONSERVA en el formulario para que el usuario lo recupere al reactivar la opcion,
+        // pero no entra en el calculo, y por la misma razon no entra en el enlace — si
+        // viajara, quien lo abre veria un parametro que no cuenta como si contara.
+        if (nodo && nodo.closest && nodo.closest('[data-inactivo]')) continue;
+        const v = leer(nodo);
         if (v == null || v === '') continue;
         // Solo viaja lo que difiere del valor por defecto. El resultado es `?bw=2500` en vez
         // de una tira de veinte pares, y quien recibe el enlace ve de un vistazo qué se
@@ -134,6 +211,13 @@
         if (v === defectos[id]) continue;
         datos[id] = v;
         qs.set(id, v);
+      }
+      // Lo que la pagina quiere que el enlace lleve ademas del formulario (la huella del
+      // escenario calculado, la version del catalogo). Va al final para que los campos se
+      // lean primero.
+      if (typeof cfg.extras === 'function' && qs.toString()) {
+        const extra = cfg.extras() || {};
+        for (const [k, v] of Object.entries(extra)) if (v != null && v !== '') qs.set(k, v);
       }
       // replaceState y no pushState: cada tecleo no debe crear una entrada en el historial,
       // o el botón "atrás" dejaría de servir para volver al portal.
@@ -156,7 +240,7 @@
     });
     setTimeout(volcar, 0);
 
-    return { origen, volcar };
+    return { origen, volcar, ignorados };
   }
 
   // Botón "Copiar enlace". Se inyecta desde JavaScript y no desde el HTML de cada página
@@ -185,17 +269,42 @@
 
   // Aviso discreto de dónde salió lo que se está viendo. Sin esto, restaurar estado es
   // desconcertante: abres la herramienta y los campos no están donde los dejó el compañero.
-  function avisoOrigen(contenedor, origen) {
-    if (!origen) return;
+  //
+  // Acepta el estado que devuelve `vincular()` —de donde saca también los parámetros que la
+  // página ya no entiende— o, por compatibilidad, solo la cadena de origen.
+  function avisoOrigen(contenedor, estado) {
+    const info = (estado && typeof estado === 'object') ? estado : { origen: estado, ignorados: [] };
+    const ignorados = info.ignorados || [];
+    if (!info.origen && !ignorados.length) return;
     const host = typeof contenedor === 'string' ? document.getElementById(contenedor) : contenedor;
     if (!host) return;
-    const p = document.createElement('p');
-    p.className = 'hint estado-origen';
-    p.style.marginTop = '8px';
-    p.innerHTML = origen === 'enlace'
-      ? 'Estás viendo un escenario <b>recibido por enlace</b>. Cambia cualquier parámetro y el enlace se actualiza solo.'
-      : 'Se restauraron <b>los parámetros de tu última visita</b>. Cambia cualquiera y se guardan de nuevo.';
-    host.appendChild(p);
+    if (info.origen) {
+      const p = document.createElement('p');
+      p.className = 'hint estado-origen';
+      p.style.marginTop = '8px';
+      p.innerHTML = info.origen === 'enlace'
+        ? 'Estás viendo un escenario <b>recibido por enlace</b>. Cambia cualquier parámetro y el enlace se actualiza solo.'
+        : 'Se restauraron <b>los parámetros de tu última visita</b>. Cambia cualquiera y se guardan de nuevo.';
+      host.appendChild(p);
+    }
+    if (!ignorados.length) return;
+    // SE DICE CUÁLES, no solo que había alguno: quien recibe el enlace necesita saber qué
+    // parte del escenario NO le llegó para poder pedirla. Y se avisa aunque el enlace no
+    // traiga ningún campo reconocible —el caso peor, en el que la pantalla sale entera en
+    // blanco y sin el aviso no habría absolutamente nada que explicara por qué.
+    // Y se acota la lista: un enlace con veinte parámetros sueltos produciría un párrafo que
+    // nadie lee, y un aviso que no se lee no avisa.
+    const TOPE = 6;
+    const nombres = ignorados.slice(0, TOPE).map(esc).join('</b>, <b>');
+    const resto = ignorados.length > TOPE ? ` y ${ignorados.length - TOPE} más` : '';
+    const av = document.createElement('p');
+    av.className = 'hint estado-ignorados';
+    av.style.marginTop = '8px';
+    av.innerHTML = `Este enlace trae ${ignorados.length === 1 ? 'un parámetro que esta pantalla' : 'parámetros que esta pantalla'} `
+      + `ya no usa (<b>${nombres}</b>${resto}), así que esa parte del escenario `
+      + '<b>no se ha aplicado</b>. Puede venir de una versión anterior de la herramienta: '
+      + 'compruébalo con quien te lo pasó antes de cotizar sobre él.';
+    host.appendChild(av);
   }
 
   global.ESTADO = { vincular, botonEnlace, avisoOrigen };

@@ -7,7 +7,7 @@ const VENDORS=[
    desc:'Routers AR SD-WAN, plataformas A800 E y core NE8000. iMaster NCE, SRv6, FlexE, slicing de red.',
    series:['AR610','AR650','AR5710-S','AR5710-SE','AR6700-L','AR6700','AR8700','A800 E','NE8000 M','NE8000 F','NE8000 X'],
    tools:['Dimensionador BOM','Catálogo ópticas'],live:true},
-  {id:'cisco',name:'Cisco',accent:'#049FD9',icon:'CS',iconCls:'cs',
+  {id:'cisco',name:'Cisco',accent:'#049FD9',accentTxt:'#03739D',icon:'CS',iconCls:'cs',
    desc:'ISR 1000/4000, ASR 1000, Catalyst 8000. SD-WAN Viptela, Meraki, DNA Center automación.',
    series:['ISR 1000','ISR 4000','ASR 1000','Catalyst 8200','Catalyst 8300','Catalyst 8500'],
    tools:['Catálogo de equipos','Guía de selección'],live:false},
@@ -15,11 +15,11 @@ const VENDORS=[
    desc:'7750 SR core/edge, 7210 SAS acceso, 7250 IXR datacenter. SR OS con SR-MPLS, SRv6, EVPN.',
    series:['7750 SR-s','7750 SR-1','7750 SR-7/12/14','7210 SAS','7250 IXR'],
    tools:['Catálogo de equipos'],live:false},
-  {id:'fortinet',name:'Fortinet',accent:'#EE3124',icon:'FT',iconCls:'ft',
+  {id:'fortinet',name:'Fortinet',accent:'#EE3124',accentTxt:'#D41D10',icon:'FT',iconCls:'ft',
    desc:'FortiGate NGFW con SD-WAN integrado. Desde 40F hasta 7000. Security Fabric y FortiOS.',
    series:['40F–80F','100F–200F','400F–900F','1000F–3000F','4400F–7000F'],
    tools:['Catálogo de equipos','Sizing NGFW'],live:false},
-  {id:'juniper',name:'Juniper',accent:'#84B135',icon:'JN',iconCls:'jn',
+  {id:'juniper',name:'Juniper',accent:'#84B135',accentTxt:'#577423',icon:'JN',iconCls:'jn',
    desc:'MX edge/core, SRX NGFW, EX/QFX switching. Junos OS, Mist AI, Apstra intent-based networking.',
    series:['SRX 300','SRX 1500','SRX 4000','MX 204/304','MX 480/960','QFX 5000/10000'],
    tools:['Dimensionador y BOM','Catálogo de equipos'],live:true},
@@ -27,7 +27,7 @@ const VENDORS=[
    desc:'RouterOS v7: WireGuard, IPsec, BGP, MPLS, CAPsMAN. hEX SOHO → CCR2216 Core 100G. Precio-rendimiento líder.',
    series:['hEX','RB4011','RB5009','CCR2004','CCR2116','CCR2216','CHR'],
    tools:['Catálogo de equipos','RouterOS Features'],live:true},
-  {id:'aruba',name:'Aruba',accent:'#01A982',icon:'AB',iconCls:'ab',
+  {id:'aruba',name:'Aruba',accent:'#01A982',accentTxt:'#01795D',icon:'AB',iconCls:'ab',
    desc:'HPE Aruba Networking: EdgeConnect SD-WAN con Boost (optimización WAN en bloques de 100 Mbps agrupados como pool del fabric), gateways SD-Branch serie 9000 y campus serie 9200 con capacidad escalable por licencia.',
    series:['EdgeConnect EC-XS/S/M','EdgeConnect EC-L/XL','EC-V virtual','Serie 9000 SD-Branch','Serie 9200 campus'],
    tools:['Dimensionador y BOM','Guía de licencias'],live:true}
@@ -112,7 +112,7 @@ function renderDash(){
       <div class="card-accent" style="background:${v.accent}"></div>
       <div class="card-body">
         <div class="card-brand">
-          <div class="card-icon" style="background:${v.accent}">${v.icon}</div>
+          <div class="card-icon" style="background:${v.accentTxt||v.accent}">${v.icon}</div>
           <div class="card-name">${v.name}</div>
         </div>
         <div class="card-desc">${v.desc}</div>
@@ -157,6 +157,34 @@ function devsSeleccionados(){
     .map(d=>Object.assign({},d,{raw:Object.assign({ser:d.series},d.raw)}));
 }
 
+/* CUANTAS DE LAS CASILLAS QUE SE ESTAN MIRANDO SON UN HUECO DEL CATALOGO, dicho ENCIMA de
+   la tabla. El pie ya explicaba la diferencia entre «sin dato» y «no aplica»; lo que no
+   decía es cuántos hay ni cómo se reparten, y ese reparto es lo que puede volver engañosa
+   una comparación: de cuatro equipos, dos con media tabla vacía se leen como peores cuando
+   lo que pasa es que su fabricante publica menos. La primera lectura es la que manda delante
+   de un cliente, y es la equivocada.
+   Los `noAplica` se cuentan APARTE y se nombran aparte: ahí el concepto no existe para esa
+   clase de equipo, que no es un hueco de datos. */
+function cmpCobertura(secciones,devs){
+  const c=COMPARADOR.cobertura(secciones,devs);
+  if(!c.filas) return '';
+  if(!c.sinDato&&!c.noAplica) return `<p class="cmp-cobertura">El catálogo trae <b>las ${c.filas} filas</b> para los ${devs.length} equipos: la comparación va completa.</p>`;
+  const partes=[];
+  if(c.sinDato) partes.push(`<b>${c.sinDato}</b> ${c.sinDato===1?'casilla que el catálogo no trae':'casillas que el catálogo no trae'}`);
+  if(c.noAplica) partes.push(`<b>${c.noAplica}</b> donde la pregunta no va con ese tipo de equipo`);
+  let html=`<p class="cmp-cobertura">De las <b>${c.filas}</b> filas comparadas (${c.celdas} casillas): ${partes.join(' y ')}.`;
+  if(c.sinDato) html+=' <b>Un hueco no es una carencia del equipo</b>: es que su fabricante no publica esa cifra.';
+  html+='</p>';
+  // El desnivel es lo que el total no dice: si los huecos están repartidos o concentrados.
+  if(c.desnivel>=c.umbralDesnivel&&c.masHuecos&&c.menosHuecos){
+    html+=`<p class="cmp-cobertura cmp-desnivel"><b class="warn">Los huecos no están repartidos:</b>
+      <span class="calc-punto" style="background:${c.masHuecos.color}"></span>${esc(c.masHuecos.model)} deja <b>${c.masHuecos.sinDato}</b> sin dato
+      frente a <span class="calc-punto" style="background:${c.menosHuecos.color}"></span>${esc(c.menosHuecos.model)}, con <b>${c.menosHuecos.sinDato}</b>.
+      Leer la tabla de arriba abajo favorece <b>al que más publica</b>, no al mejor.</p>`;
+  }
+  return html;
+}
+
 /* Se pinta como MATRIZ —una fila por atributo, una columna por equipo— y no como una
    tarjeta por equipo. Con tarjetas, comparar un dato obligaba a buscarlo en cuatro sitios
    y compararlo de memoria, que es justo lo que un comparador tiene que ahorrar. */
@@ -194,6 +222,7 @@ function runCompare(){
   if(!filas) filas=`<tr><td colspan="${devs.length+1}" class="cmp-hueco">Estos equipos no se diferencian en ningún dato publicado.</td></tr>`;
 
   out.innerHTML=(aviso?`<p class="cmp-aviso">${aviso.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}</p>`:'')
+    +cmpCobertura(secciones,devs)
     +`<div class="cmp-scroll"><table class="cmp-tabla"><thead><tr><th scope="col" class="cmp-esq">Característica</th>${cabeceras}</tr></thead>`
     +`<tbody>${filas}</tbody></table></div>`
     +`<p class="cmp-pie"><b>sin dato</b> es que el catálogo no publica esa cifra para ese modelo; <b>no aplica</b> es que la pregunta no va con ese tipo de equipo. No son lo mismo y por eso se dicen distinto.</p>`;
@@ -243,6 +272,36 @@ function calcPanelFabricante(g,total){
   </div>`;
 }
 
+/* CUÁNTO DEL CATÁLOGO RESPONDE ESTE PERFIL, DICHO ANTES DE LA LISTA Y NO DESPUÉS.
+   El panel de apartados ya lo contaba, pero va al final: primero se leían tres
+   equipos de un solo fabricante y solo al bajar se descubría que los otros siete
+   no se habían comprobado. Con las capas de inspección eso no es un matiz —el
+   perfil NGFW, que viene marcado por defecto, aparta cinco de los ocho grupos— y
+   con la inspección TLS es el caso extremo: hoy la publica un solo fabricante.
+   Sin este encabezado, una lista corta se lee como «no hay equipo» cuando lo que
+   pasa es «no hay dato», y esas dos conclusiones mandan a sitios opuestos. */
+function calcCobertura(perfilId){
+  const c=CALC.cobertura(ALL,perfilId);
+  if(!c.total) return '';
+  const nombres=c.porFabricante.filter(f=>f.con>0).map(f=>esc(f.vendor));
+  // Tercer estado: que NADIE publique la capa no es que ningún equipo sirva.
+  if(!c.con) return `<p class="calc-capa calc-cobertura"><b class="warn">Ningún fabricante del catálogo publica esta cifra todavía.</b>
+    Los ${c.total} modelos se apartan con su motivo: es un hueco de datos, no de equipo.</p>`;
+  // La frase se arma por ramas y no con un `${}` en medio porque el verbo cambia: «la
+  // publican los 7 fabricantes» y «solo la publica 1 de los 7». Una plantilla única deja
+  // una de las dos mal concordada, y es texto que ve quien arma una propuesta.
+  const resto=c.total-c.con;
+  const quien=c.conCifra===c.fabricantes
+    ? `Esta cifra la publican <b>los ${c.fabricantes} fabricantes</b> del catálogo`
+    : c.conCifra===1
+      ? `Esta cifra solo la publica <b>1 de los ${c.fabricantes} fabricantes</b> del catálogo (${nombres[0]})`
+      : `Esta cifra la publican <b>${c.conCifra} de los ${c.fabricantes} fabricantes</b> del catálogo (${nombres.join(', ')})`;
+  const cola=resto===0 ? ''
+    : resto===1 ? ' El otro se aparta con su motivo — <b>no se dimensiona con la cifra de otra capa</b>.'
+      : ` Los otros <b>${resto}</b> se apartan con su motivo — <b>no se dimensionan con la cifra de otra capa</b>, así que si la lista de abajo sale corta es por falta de dato y no por falta de equipo.`;
+  return `<p class="calc-capa calc-cobertura">${quien}: <b>${c.con} de ${c.total} modelos</b>.${cola}</p>`;
+}
+
 function runCalc(){
   const ctx=ctxCalculo();
   const perfil=CALC.PERFILES[ctx.perfil];
@@ -260,6 +319,7 @@ function runCalc(){
     <div class="big-num">${fmtMbps(ctx.need)}</div>
     <p class="calc-detalle">${detalle}</p>
     <p class="calc-capa"><b>Se dimensiona contra la capa «${esc(perfil.etq)}».</b> ${esc(perfil.mide)}</p>
+    ${calcCobertura(ctx.perfil)}
   </div>`;
 
   if(res.candidatos.length){

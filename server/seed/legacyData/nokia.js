@@ -36,10 +36,15 @@ const MODELS = [
    cap:88, ifaces:'48x1GE RJ45 + 4x SFP+ · 1U'},
   {id:'7220 IXR-D2L', redund:true, psu:{tipo:'1+1 redundante, AC, DC o HVDC, intercambiable en caliente', volts:'AC 100-240 V · DC -48 a -60 V · HVDC 190-310 V', texto:'Fuentes de 650 W AC y 650 W DC. Es potencia de fuente y no consumo: el D3L, con 3,2 Tb/s frente a los 2,0 de este, declara exactamente la misma cifra.'}, ser:'7220 IXR', seg:'Leaf datacenter', rol:['leaf'],
    puertos:[{cantidad:48, veloc:25, uso:'acceso'}, {cantidad:8, veloc:100, uso:'fabric'}, {cantidad:2, veloc:10, uso:'gestion'}],
-   cap:4000, ifaces:'48x25GE SFP28 + 8x100GE QSFP28 + 2x10GE · 1U'},
+   cap:2000, ifaces:'48x25GE SFP28 + 8x100GE QSFP28 + 2x10GE · 1U'},
+  // CORREGIDO 2026-09-11 (decision del duenyo): el catalogo decia 4000 y la ficha oficial
+  // (nokia.com/asset/f/207599) dice "system capacity of 2.0 Tb/s FD". Lo confirma la suma
+  // de puertos: 48x25G + 8x100G = 2000 Gbps full-duplex. El 4000 contaba el caudal dos veces.
   {id:'7220 IXR-D3L', redund:true, psu:{tipo:'1+1 redundante, AC, DC o HVDC, intercambiable en caliente', volts:'AC 100-240 V · DC -48 a -60 V · HVDC 190-310 V', texto:'Fuentes de 650 W AC y 650 W DC — la misma cifra que el D2L pese a tener mas capacidad, lo que confirma que es potencia de fuente y no consumo.'}, ser:'7220 IXR', seg:'Leaf / Spine compacto', rol:['leaf', 'spine'],
    puertos:[{cantidad:32, veloc:100, uso:'ambos'}, {cantidad:2, veloc:10, uso:'gestion'}],
-   cap:6400, ifaces:'32x100GE QSFP28 + 2x SFP+ · 1U'},
+   cap:3200, ifaces:'32x100GE QSFP28 + 2x SFP+ · 1U'},
+  // CORREGIDO 2026-09-11 (decision del duenyo): misma correccion que el D2L. La ficha dice
+  // 3.2 Tb/s FD y la suma de puertos es 32x100G = 3200 Gbps full-duplex; 6400 era el doble.
   {id:'7220 IXR-D5', redund:true, psu:{tipo:'1+1 redundante, AC o DC, intercambiable en caliente', volts:'AC 100-240 V · DC -48 a -60 V', texto:'Fuentes de 1500 W AC y 1600 W DC — potencia de fuente, no consumo del equipo.'}, ser:'7220 IXR', seg:'Spine datacenter 400G', rol:['spine'],
    puertos:[{cantidad:32, veloc:400, uso:'fabric'}, {cantidad:2, veloc:10, uso:'gestion'}],
    cap:12800, ifaces:'32x400GE QSFP-DD + 2x SFP+ · 1U'},
@@ -82,7 +87,16 @@ const MODELS = [
 //      que admiten pero no cuantos puertos de cada una. Mismo trato: caudal si, puertos no.
 //
 // `cap` va en Gbps para que sea un numero comparable, aunque el material comercial lo cite en
-// Tbps: 6.4 Tbps son 6400. Es la capacidad de conmutacion del equipo.
+// Tbps: 3.2 Tbps son 3200. Es la capacidad de conmutacion del equipo.
+//
+// METRICA DE `cap` EN LOS 7750 SR-s (decision del duenyo, 2026-09-11). La ficha de la serie
+// publica dos cifras por modelo: "Interface capacity" (IA, la suma de lo que cabe por los
+// puertos) y "System capacity (FD; max)" (lo que el motor de conmutacion mueve de verdad,
+// full-duplex). El catalogo mezclaba las dos -SR-1s y SR-2s estaban en IA, SR-7s y SR-14s
+// en system capacity a medias-. Se adopta "System capacity (FD; max)" para los cuatro
+// (SR-1s 4.8, SR-2s 9.6, SR-7s 108, SR-14s 216 Tbps), porque el dimensionador ordena por
+// `cap` y la IA es agregacion estadistica sobresuscrita: prometeria un caudal que el equipo
+// no conmuta. La IA queda fuera a proposito.
 const PLATAFORMAS = {
   ixr:   { n: '7250 IXR', d: 'Agregacion y cell site. Routers de acceso y agregacion IP/MPLS, con los modelos de datacenter (6e/10e) sobre SR Linux.' },
   ixrx:  { n: '7250 IXR-X', d: 'Agregacion y spine de alta capacidad en formato fijo 1U, sobre SR Linux.' },
@@ -144,24 +158,24 @@ const MODELS_ROUTER = [
    slots:null, ru:1, velocidades:[10, 100],
    protos:'SR-MPLS, SRv6, EVPN, FlexAlgo', notaPuertos:null,
    ifaces:'36x10GE o 8x100GE · 1U'},
-  {id:'7750 SR-1s', plat:'sr', ser:'7750 SR-s', seg:'PE / Edge', cap:1200,
+  {id:'7750 SR-1s', plat:'sr', ser:'7750 SR-s', seg:'PE / Edge', cap:4800,
    configs:[{n:'36x100GE', puertos:[{cantidad:36, veloc:100}]},
             {n:'12x400GE', puertos:[{cantidad:12, veloc:400}]}],
    slots:null, ru:2, velocidades:[100, 400],
    protos:'SR-MPLS, SRv6, EVPN, FlexE', notaPuertos:null,
    ifaces:'36x100GE o 12x400GE · 2U'},
-  {id:'7750 SR-2s', plat:'sr', ser:'7750 SR-s', seg:'Edge / Agregacion', cap:4000,
+  {id:'7750 SR-2s', plat:'sr', ser:'7750 SR-s', seg:'Edge / Agregacion', cap:9600,
    configs:[{n:'144x100GE', puertos:[{cantidad:144, veloc:100}]},
             {n:'36x400GE', puertos:[{cantidad:36, veloc:400}]}],
    slots:null, ru:4, velocidades:[100, 400],
    protos:'SR-MPLS, SRv6, EVPN', notaPuertos:null,
    ifaces:'144x100GE o 36x400GE · 4U'},
-  {id:'7750 SR-7s', plat:'sr', ser:'7750 SR-s', seg:'Core IP/MPLS', cap:19200,
+  {id:'7750 SR-7s', plat:'sr', ser:'7750 SR-s', seg:'Core IP/MPLS', cap:108000,
    configs:null, slots:{cantidad:7, tipo:'IOM', hasta:400}, ru:null, velocidades:[400],
    protos:'SR-MPLS, SRv6, FlexE, EVPN',
    notaPuertos:'Chasis modular de 7 slots IOM con interfaces de hasta 400GE. La densidad depende de que IOM se pida.',
    ifaces:'7 slots IOM · hasta 400GE'},
-  {id:'7750 SR-14s', plat:'sr', ser:'7750 SR-s', seg:'Core grande', cap:38400,
+  {id:'7750 SR-14s', plat:'sr', ser:'7750 SR-s', seg:'Core grande', cap:216000,
    configs:null, slots:{cantidad:14, tipo:'IOM', hasta:400}, ru:null, velocidades:[400],
    protos:'SR-MPLS, SRv6, FlexE, EVPN',
    notaPuertos:'Chasis modular de 14 slots IOM con interfaces de hasta 400GE. La densidad depende de que IOM se pida.',

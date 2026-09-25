@@ -25,8 +25,8 @@ body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,san
 /* ── TOPBAR ── */
 .topbar{position:fixed;top:0;left:0;right:0;z-index:100;height:var(--header-h);background:var(--ink);display:flex;align-items:center;gap:16px;padding:0 20px;border-bottom:3px solid var(--red)}
 .logo{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:26px;text-transform:uppercase;letter-spacing:.04em;color:#fff;white-space:nowrap}
-.logo span{color:var(--red)}
-.tagline{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.38);white-space:nowrap}
+.logo span{color:#d6000c} /* rojo de marca aclarado lo justo para 3:1 sobre el fondo oscuro (texto grande) */
+.tagline{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.56);white-space:nowrap}
 .search-wrap{margin-left:auto;display:flex;align-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:3px;overflow:hidden}
 .search-wrap input{background:transparent;border:none;color:#fff;font-family:'Barlow',sans-serif;font-size:13px;padding:8px 12px;width:200px;outline:none}
 .search-wrap input::placeholder{color:rgba(255,255,255,.32)}
@@ -39,27 +39,30 @@ body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,san
 .sidebar{position:fixed;top:var(--header-h);left:0;bottom:0;width:var(--sidebar-w);background:var(--ink);overflow-y:auto;z-index:90;padding:10px 0;transition:transform .25s ease}
 .sidebar::-webkit-scrollbar{width:3px}
 .sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:2px}
-.sec-title{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.28);font-weight:600;margin:14px 0 5px;padding-left:22px}
+.sec-title{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.56);font-weight:600;margin:14px 0 5px;padding-left:22px}
 .nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;background:none;border:none;border-radius:3px;color:rgba(255,255,255,.6);cursor:pointer;font-family:'Barlow',sans-serif;font-size:13.5px;font-weight:500;text-align:left;transition:all .14s;white-space:nowrap;margin:1px 0}
 .nav-btn:hover{background:rgba(255,255,255,.06);color:#fff}
 .nav-btn.active{background:rgba(199,0,11,.22);color:#fff;font-weight:600}
 .access-summary{display:none;margin:10px 12px 6px;padding:10px 10px 9px;border:1px solid rgba(255,255,255,.1);border-left:2px solid var(--red);background:rgba(255,255,255,.035)}
 .access-summary strong{display:block;color:#fff;font-size:12.5px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.access-summary span{display:block;margin-top:3px;color:rgba(255,255,255,.38);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase}
-.nav-btn.nav-logout{margin-top:7px;border-top:1px solid rgba(255,255,255,.1);border-radius:0;padding-top:11px;color:rgba(255,255,255,.45)}
+.access-summary span{display:block;margin-top:3px;color:rgba(255,255,255,.58);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase}
+.nav-btn.nav-logout{margin-top:7px;border-top:1px solid rgba(255,255,255,.1);border-radius:0;padding-top:11px;color:rgba(255,255,255,.56)}
 .nav-btn.nav-logout .nav-icon{background:rgba(199,0,11,.16);color:#ff8d93}
 .nav-btn.nav-logout:hover{background:rgba(199,0,11,.14);color:#fff}
 .nav-icon{width:26px;height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;font-family:'Barlow Condensed',sans-serif;letter-spacing:.02em}
 .nav-icon.hw{background:#C7000B;color:#fff}
-.nav-icon.cs{background:#049FD9;color:#fff}
+/* Accesibilidad (2026-09-24, axe WCAG 2.1 AA): texto blanco sobre el color de marca pide 4,5:1 y
+   los tonos de marca no llegan (Cisco 3,0 · Fortinet 4,1 · Juniper 2,5 · Aruba 3,0). Se usa el tono
+   de marca oscurecido lo justo, con el mismo matiz; la marca pura queda para lo decorativo. */
+.nav-icon.cs{background:#03739D;color:#fff}
 .nav-icon.nk{background:#124191;color:#fff}
-.nav-icon.ft{background:#EE3124;color:#fff}
-.nav-icon.jn{background:#84B135;color:#fff}
+.nav-icon.ft{background:#D41D10;color:#fff}
+.nav-icon.jn{background:#577423;color:#fff}
 .nav-icon.ar{background:#4E5B6E;color:#fff}
 .nav-icon.mt{background:#C8102E;color:#fff}
-.nav-icon.ab{background:#01A982;color:#fff}
+.nav-icon.ab{background:#01795D;color:#fff}
 .nav-icon.tool{background:rgba(255,255,255,.1);color:var(--red)}
-.nav-badge{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:9px;background:rgba(255,255,255,.08);padding:2px 5px;border-radius:2px;color:rgba(255,255,255,.4)}
+.nav-badge{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:9px;background:rgba(255,255,255,.08);padding:2px 5px;border-radius:2px;color:rgba(255,255,255,.6)}
 
 /* ── MAIN ── */
 .main{margin-left:var(--sidebar-w);margin-top:var(--header-h);padding:28px 30px 80px;min-height:calc(100vh - var(--header-h))}
@@ -160,6 +163,9 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
 .calc-result .big-num{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:34px;line-height:1;margin:0 0 4px}
 .calc-detalle{color:var(--steel);font-size:13px;margin:4px 0 0}
 .calc-capa{margin:12px 0 0;padding-top:11px;border-top:1px solid var(--rule);font-size:12.5px;line-height:1.6;color:var(--ink)}
+.calc-cobertura{color:var(--steel);border-top-style:dashed;margin-top:10px;padding-top:9px}
+.cmp-cobertura{font-size:12.5px;line-height:1.6;color:var(--steel);margin:10px 0 0}
+.cmp-desnivel{margin-top:6px}
 .calc-punto{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:8px;vertical-align:1px}
 .calc-scroll{overflow-x:auto}
 .calc-tabla{width:100%;border-collapse:collapse;font-size:12.5px}
@@ -319,12 +325,12 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
     <a href="guia-diseno-interactiva.html" class="btn" style="text-decoration:none;font-size:12px;background:var(--amber);border-color:var(--amber);color:#fff">&#9672; Guía Interactiva</a>
     <a href="cotizador.html" class="btn" style="text-decoration:none;font-size:12px">&#9782; Cotizador BOM</a>
-    <a href="dimensionador-fortinet-fortigate.html" class="btn" style="text-decoration:none;font-size:12px;background:#EE3124;border-color:#EE3124;color:#fff">&#10697; BOM FortiGate</a>
-    <a href="dimensionador-cisco-catalyst8k.html" class="btn" style="text-decoration:none;font-size:12px;background:#049FD9;border-color:#049FD9;color:#fff">&#10697; BOM Cisco</a>
+    <a href="dimensionador-fortinet-fortigate.html" class="btn" style="text-decoration:none;font-size:12px;background:#D41D10;border-color:#D41D10;color:#fff">&#10697; BOM FortiGate</a>
+    <a href="dimensionador-cisco-catalyst8k.html" class="btn" style="text-decoration:none;font-size:12px;background:#03739D;border-color:#03739D;color:#fff">&#10697; BOM Cisco</a>
     <a href="dimensionador-huawei-netengine.html" class="btn" style="text-decoration:none;font-size:12px;background:#C7000B;border-color:#C7000B;color:#fff">&#10697; BOM Huawei</a>
-    <a href="dimensionador-juniper-srx.html" class="btn" style="text-decoration:none;font-size:12px;background:#84B135;border-color:#84B135;color:#fff">&#10697; BOM Juniper</a>
+    <a href="dimensionador-juniper-srx.html" class="btn" style="text-decoration:none;font-size:12px;background:#577423;border-color:#577423;color:#fff">&#10697; BOM Juniper</a>
     <a href="dimensionador-mikrotik-routeros.html" class="btn" style="text-decoration:none;font-size:12px;background:#C8102E;border-color:#C8102E;color:#fff">&#10697; BOM MikroTik</a>
-    <a href="dimensionador-aruba-edgeconnect.html" class="btn" style="text-decoration:none;font-size:12px;background:#01A982;border-color:#01A982;color:#fff">&#10697; BOM EdgeConnect</a>
+    <a href="dimensionador-aruba-edgeconnect.html" class="btn" style="text-decoration:none;font-size:12px;background:#01795D;border-color:#01795D;color:#fff">&#10697; BOM Aruba</a>
   </div>
   <p style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);margin:0 0 10px">Fabricantes</p>
   <div class="dash-grid" id="dashGrid"></div>
@@ -401,6 +407,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
           <option value="sdwan">SD-WAN (overlay)</option>
           <option value="ngfw" selected>Con inspección (NGFW / IPS)</option>
           <option value="tp">Inspección completa (Threat Protection / ATP)</option>
+          <option value="ssl">Inspección TLS / SSL (descifrado en línea)</option>
         </select>
       </div>
       <div class="field">

@@ -9,18 +9,20 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" data-fuente>
 <style>
-:root{--paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;--red:#01A982;--amber:#A45B00;--green:#1F6B4A;--card:#FFF}
+:root{--paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;--red:#01A982;--red-txt:#01795D;--amber:#A45B00;--green:#1F6B4A;--card:#FFF}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
-.wrap{max-width:1140px;margin:0 auto;padding:26px 18px 80px}
+/* padding inferior reducido de 80 a 24px (2026-09-14): la zona muerta bajo .cols recorta
+   el recorrido del panel sticky «Equipos que cumplen» — ver el bloque de .cols abajo. */
+.wrap{max-width:1140px;margin:0 auto;padding:26px 18px 24px}
 .masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px}
-.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0 0 6px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red-txt);font-weight:600;margin:0 0 6px}
 h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28px,5.5vw,48px);line-height:.98;text-transform:uppercase;margin:0}
 .sub{color:var(--steel);max-width:64ch;margin:8px 0 0;font-size:14.5px}
 .back-link{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);text-decoration:none;margin-bottom:18px;transition:color .15s}
-.back-link:hover{color:var(--red)}
-.tabs{display:flex;gap:0;border-bottom:1px solid var(--rule);margin-bottom:22px}
+.back-link:hover{color:var(--red-txt)}
+.tabs{display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--rule);margin-bottom:22px} /* salta de línea en pantallas estrechas y al 200 % de zoom (WCAG 1.4.10, 2026-09-24) */
 .tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:11px 18px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.03em;text-transform:uppercase;color:var(--steel)}
 .tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--red)}
 .tabpane[hidden]{display:none}
@@ -37,7 +39,7 @@ h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28p
 .dot.ok{background:var(--ink)}
 .dot.pick{background:var(--red);width:11px;height:11px;bottom:32px;box-shadow:0 0 0 4px rgba(238,49,36,.18)}
 .need{position:absolute;top:0;bottom:26px;width:2px;background:var(--red);transform:translateX(-50%);transition:left .25s cubic-bezier(.2,.8,.2,1)}
-.need span{position:absolute;top:-2px;left:6px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;color:#fff;background:var(--red);padding:2px 6px;border-radius:2px}
+.need span{position:absolute;top:-2px;left:6px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;color:#fff;background:var(--red-txt);padding:2px 6px;border-radius:2px}
 .need.flip span{left:auto;right:6px}
 .pickLabel{position:absolute;bottom:52px;transform:translateX(-50%);white-space:nowrap;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;text-transform:uppercase}
 .legend{display:flex;gap:16px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--steel);letter-spacing:.06em;text-transform:uppercase}
@@ -46,12 +48,78 @@ h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28p
 /* LAYOUT */
 .cols{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
 @media(max-width:880px){.cols{grid-template-columns:1fr}}
+/* «Equipos que cumplen» (.col-fijo) fijo mientras la columna de configuración se desplaza
+   (petición del dueño, 2026-09-14), SIN scroll interno (petición directa del dueño,
+   2026-09-16): ese scroll propio «no es funcional para los usuarios» — el único
+   scroll es el de la página. La tarjeta va COMPACTA (foto oficial + candidatos +
+   medidores) y las características se DESPLIEGAN DENTRO de la propia tarjeta con
+   «Ver características del equipo ↓» (petición directa del dueño, 2026-09-16:
+   «en el mismo cuadro donde recomiendas el equipo, como estaba antes — sin
+   llevarlo a otra página»). Una tarjeta expandida supera el viewport y un sticky
+   más alto que la pantalla deja su contenido inferior inalcanzable, así que al
+   expandirse la columna SUELTA el sticky (.expandida → position:static) y el
+   detalle se lee con el scroll normal de la página; al plegarse vuelve a clavarse.
+   La guardia E2E (e2e-sticky.js) exige: tarjeta plegada cabe en el viewport, sin
+   overflow interno, y al expandir el sticky se libera.
+   Solo escritorio — en móvil la columna fluye en orden natural. */
+@media(min-width:881px){
+  .cols>.col-fijo{position:sticky;top:16px}
+  .cols>.col-fijo.expandida{position:static}
+}
+/* La nota es fila del grid a todo lo ancho, DENTRO de .cols: alarga el grid y eso
+   mantiene clavada la columna derecha hasta el fondo (ver el comentario del sticky). */
+.cols>.note{grid-column:1/-1}
+/* Titular del detalle, en el lenguaje de los paneles de la página (.panel h2). */
+.ficha-det-tit{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:0 0 10px;font-weight:600}
+.ficha-det-tit b{color:var(--ink)}
+}
+/* Lista de materiales: una sola columna centrada, no el grid de dos del dimensionador —
+   los dos cuadros (añadir y lista) van al centro de la pantalla y al mismo ancho (2026-09-13). */
+.pane-centro{max-width:960px;margin:0 auto}
 .panel{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px;margin-bottom:16px}
 .panel h2{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .field{margin-bottom:16px}.field:last-child{margin-bottom:0}
 label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px}
 .hint{font-size:11.5px;color:var(--steel);margin-top:5px;line-height:1.4}
 .row{display:flex;gap:8px}
+/* Widget de barras WAN: contratado / util tras FEC / equivalente Boost (fase 11, 2026-09-13).
+   Paleta sobria acorde a la casa: acero, ambar y verde de baja saturacion. */
+.bw-row{display:grid;grid-template-columns:150px 1fr 74px;gap:10px;align-items:center;margin-bottom:8px}
+.bw-row:last-child{margin-bottom:0}
+.bw-lbl{font-size:11.5px;font-weight:600;color:var(--ink);line-height:1.25}
+.bw-track{height:14px;background:#efede9;border:1px solid var(--rule);border-radius:2px;overflow:hidden}
+.bw-track i{display:block;height:100%;border-radius:1px;transition:width .25s ease}
+.bw-val{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--steel);text-align:right;white-space:nowrap}
+.b1 i{background:#6b7f8f}
+.b2 i{background:#b98a3e}
+.b3 i{background:#5e8a68}
+/* Modal de accesorios y bloque TCO (fase 11, 2026-09-13) */
+#accModal{position:fixed;inset:0;background:rgba(28,25,23,.45);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
+#accModal[hidden]{display:none}
+.acc-caja{background:var(--card);border:1px solid var(--rule);border-radius:3px;max-width:640px;width:100%;max-height:86vh;overflow:auto;padding:20px}
+.acc-caja h3{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin:0 0 8px}
+.acc-fila{display:grid;grid-template-columns:1fr 96px 70px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--rule)}
+.acc-fila:last-child{border-bottom:0}
+.acc-fila .acc-d{font-size:12.5px}.acc-fila .acc-d code{font-size:11px}
+.acc-fila .acc-p{font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-align:right;color:var(--steel)}
+.acc-fila input[type=number]{padding:5px 6px;font-size:12.5px}
+.tco-tabla{width:100%;border-collapse:collapse;margin-top:6px}
+.tco-tabla th,.tco-tabla td{font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--rule);text-align:right}
+.tco-tabla th:first-child,.tco-tabla td:first-child{text-align:left}
+.tco-tabla thead th{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel)}
+/* Semáforo de ciclo de vida en el catálogo (fase 11, E5) */
+/* Las clases .sem-dot/.sem-verde/.sem-naranja/.sem-rojo se retiraron el 2026-09-16 con el
+   semaforo de ciclo de vida (pendiente 34): la regla vive en FICHA.cicloHtml y pinta
+   .ficha-ciclo, cuyo CSS inyecta el propio ficha.js. Dejarlas habria sido CSS inerte, que
+   es la misma forma del conjunto CISCO_EOL_MODELS: no hace nada y parece que si. */
+.sem-cel{font-size:11.5px;line-height:1.4}
+/* Delta de precios y salud de fuentes (fase 11, E5) */
+.delta-alza{color:#a4544e;font-weight:600}
+.delta-baja{color:#5e8a68;font-weight:600}
+.delta-nuevo{color:#6b7f8f;font-weight:600}
+.salud-ok{color:#5e8a68;font-weight:600}
+.salud-mal{color:#a4544e;font-weight:600}
+.salud-na{color:var(--steel)}
 input[type=number],select{width:100%;padding:9px 10px;border:1px solid var(--rule);border-radius:2px;background:#fff;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500}
 select{font-family:'Barlow',sans-serif;font-size:13.5px}
 input:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:1px}
@@ -67,7 +135,7 @@ input[type=range]{width:100%;accent-color:var(--red)}
 
 /* VERDICT */
 .verdict{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:22px;margin-bottom:16px}
-.tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red-txt);font-weight:600;margin:0}
 .model{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(22px,4vw,36px);line-height:1;text-transform:uppercase;margin:6px 0 2px}
 .family{color:var(--steel);font-size:13.5px;margin-bottom:16px}
 .meter{margin-bottom:12px}
@@ -78,12 +146,25 @@ input[type=range]{width:100%;accent-color:var(--red)}
 .bar i.tight{background:var(--amber)}.bar i.good{background:var(--green)}
 .why{border-top:1px solid var(--rule);padding-top:14px;font-size:13.5px;margin-top:4px}
 .warn{color:var(--amber)}
+/* Usuarios requeridos por SSE (2026-09-15): con la estrategia de seguridad «HPE Aruba
+   SSE» la cifra de usuarios ES la cantidad de licencias — sin ella la línea no se puede
+   cotizar, así que el campo lo grita en ámbar. */
+.req-sse-tag{color:var(--amber);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.field.req-sse input{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber)}
+/* Líneas retiradas del BOM (2026-09-15): omisiones restaurables, bajo la tabla. */
+.bom-retiradas{margin-top:10px;border:1px dashed var(--rule);border-radius:3px;padding:8px 12px;font-size:12px}
+.bom-retiradas summary{cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel)}
+.bom-retirada{display:flex;align-items:center;gap:8px;padding:4px 0;border-top:1px solid var(--paper);color:var(--steel)}
+.bom-retirada:first-of-type{border-top:0}
+.bom-retirada s{flex:1}
+.bom-restaurar{border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:3px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 8px}
+.bom-restaurar:hover{border-color:var(--red);color:var(--red-txt)}
 ul.clean{list-style:none;margin:0;padding:0}
 ul.clean li{padding-left:14px;position:relative;margin-bottom:9px;font-size:13.5px}
 ul.clean li:before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;background:var(--rule)}
 ul.clean li.on:before{background:var(--red)}
 .sku{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--steel);display:block;margin-top:2px}
-.req{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 5px;border-radius:2px;background:var(--red);color:#fff;margin-left:6px;vertical-align:1px}
+.req{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 5px;border-radius:2px;background:var(--red-txt);color:#fff;margin-left:6px;vertical-align:1px}
 .req.opt{background:var(--paper);color:var(--steel)}
 table{width:100%;border-collapse:collapse;font-size:12.5px}
 th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);font-weight:500;padding:0 8px 7px 0;border-bottom:1px solid var(--rule)}
@@ -99,6 +180,44 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 .flag-ft{background:#FFF5F5;border:1px solid #FECACA;border-left:3px solid var(--red);border-radius:2px;padding:12px 14px;font-size:12.5px;line-height:1.5;margin-bottom:18px}
 .flag-ft b{color:#991b1b}
 #bomOut{width:100%;height:200px;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:10px;border:1px solid var(--rule);border-radius:2px;margin-top:10px}
+/* Catálogo pedible → lista de materiales (2026-09-13) */
+#skuBuscar{width:100%;padding:7px 10px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink);font-family:'Barlow',sans-serif;font-size:13px;margin-bottom:8px}
+#skuBuscar:focus{outline:2px solid var(--red);outline-offset:1px}
+/* Licenciamiento automático (2026-09-13, refactor arquitectónico): el nivel deducido se
+   muestra con su porqué, en vez de pedirse en un selector manual. */
+.lic-auto{border:1px solid var(--rule);border-left:3px solid var(--red);background:#FAF7F2;padding:9px 12px;font-size:13px;line-height:1.55}
+.lic-auto b{font-weight:600}
+.lic-auto .lic-auto-porque{color:var(--steel);font-size:12px}
+details.adv{margin-top:14px;border-top:1px dashed var(--rule);padding-top:10px}
+details.adv summary{cursor:pointer;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);font-weight:600}
+details.adv summary:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+/* Cumplimiento Especial / Sector Público (brief 1.1c): submenú colapsable, cerrado por
+   defecto, que guarda el conmutador de variantes gubernamentales TAA/NAL/FIPS. */
+details.cumplimiento-especial{margin:8px 0;border:1px dashed var(--rule);border-radius:2px;padding:8px 10px}
+details.cumplimiento-especial summary{cursor:pointer;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);font-weight:600}
+details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.sku-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.sku-chip{padding:3px 9px;border:1px solid var(--rule);border-radius:11px;background:var(--card);color:var(--steel);font-family:'IBM Plex Mono',monospace;font-size:10px;cursor:pointer}
+.sku-chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.sku-chip-n{font-weight:400} /* sin opacidad: al 65 % no llegaba a 4,5:1 (axe, 2026-09-24) */
+.sku-lista{max-height:380px;overflow:auto;border:1px solid var(--rule);border-radius:4px}
+.sku-grupo{position:sticky;top:0;background:var(--bg);font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel);font-weight:600;padding:7px 9px 5px;border-bottom:1px solid var(--rule);z-index:1}
+.sku-fila{display:flex;gap:10px;align-items:baseline;padding:6px 9px;border-bottom:1px solid var(--paper);font-size:12.5px}
+.sku-fila:hover{background:var(--paper)}
+.sku-fila.es{background:#FDF6EC}
+.sku-plc-es{color:var(--amber);font-weight:600}
+.bom-desvio{font-size:12.5px;line-height:1.5;color:var(--steel);border-left:2px solid var(--amber);padding:6px 0 6px 10px;margin:8px 0 0}
+.bom-eos{font-size:12.5px;line-height:1.5;color:var(--amber);border-left:2px solid var(--amber);background:#FDF6EC;padding:6px 10px;margin:8px 0 0}
+.sku-fila-sku{flex:0 0 96px}
+.sku-fila-sku code{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowrap}
+.sku-fila-d{flex:1;min-width:0}
+.sku-fila-meta{display:block;font-size:10.5px;color:var(--steel)}
+.sku-fila-p{flex:0 0 88px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11.5px}
+.sku-fila-a{flex:0 0 80px;text-align:right}
+.sku-add{border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:3px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 8px}
+.sku-add:hover{border-color:var(--red);color:var(--red-txt)}
+.sku-enbom{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--amber);letter-spacing:.06em}
+.sku-fila.ya{background:rgba(92,110,133,.07)} /* ya en la lista: se marca con fondo y con «En el BOM», no bajando la opacidad del texto por debajo de 4,5:1 (axe, 2026-09-24) */
 .btn{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px;cursor:pointer}
 .btn.ghost{background:#fff;color:var(--ink)}
 .pillc{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 4px;border-radius:2px;background:var(--paper);color:var(--steel)}
@@ -109,11 +228,80 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 .tierRow .tv{font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-align:right;color:var(--steel)}
 .tierRow .tb{height:14px;background:var(--paper);border-radius:2px;overflow:hidden}
 .tierRow .tb i{display:block;height:100%;background:#B9C4D2;transition:width .3s}
-.tierRow.on .tn{color:var(--red)}
+.tierRow.on .tn{color:var(--red-txt)}
 .tierRow.on .tb i{background:var(--red)}
 .tierRow.on .tv{color:var(--ink);font-weight:600}
 .tierRow.off .tb i{background:#8FA3B8}
 .tierDrop{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--amber);margin:2px 0 9px 122px}
+/* ══ Refactor SPEC parte B (2026-09-13): multi-underlay builder, alertas del motor,
+   badge de nivel y modal del consolidado multi-sede. Misma paleta y lenguaje visual de
+   la página — sin frameworks nuevos. ══ */
+/* M1 · Multi-Underlay Builder (etapa A, 2026-09-14 — rediseño carrier-grade): cada
+   enlace WAN es una TARJETA con cabecera (Enlace N + badge de familia + duplicar/quitar),
+   grid de campos que colapsa a una columna en móvil, toggle «Simétrico», validación
+   inline y sufijo «Mbps» visible. */
+.wan-fila{border:1px solid var(--rule);border-radius:3px;background:var(--paper);padding:10px 12px 12px;margin-bottom:10px}
+.wan-fila select,.wan-fila input{padding:7px 8px;font-size:12px}
+.wan-fila input{font-family:'IBM Plex Mono',monospace;font-size:12.5px}
+.wan-cab{display:flex;align-items:center;gap:8px;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid var(--rule)}
+.wan-num{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:14px;letter-spacing:.04em;text-transform:uppercase}
+.wan-badge{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:2px;font-weight:600}
+.wan-badge.mpls{background:#3D5A80;color:#fff}
+.wan-badge.inet{background:var(--green);color:#fff}
+.wan-badge.cel{background:var(--amber);color:#fff}
+.wan-acc{margin-left:auto;display:flex;gap:6px}
+.wan-iconbtn{border:1px solid var(--rule);background:var(--card);color:var(--steel);border-radius:2px;cursor:pointer;font-size:13px;line-height:1;padding:4px 8px}
+.wan-iconbtn:hover{border-color:var(--red);color:var(--red-txt)}
+/* Grid de la tarjeta en DOS columnas (transporte+medio / bajada+subida): con cuatro
+   columnas los inputs de Mbps quedaban tan estrechos que el número no se leía. */
+.wan-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:8px;align-items:end}
+.wan-campo label{display:block;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--steel);margin-bottom:4px}
+.wan-bw{position:relative;display:block}
+.wan-bw input{padding-right:46px}
+.wan-sufijo{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.06em;color:var(--steel);pointer-events:none}
+.wan-bw input:disabled{background:var(--paper);color:var(--steel)}
+.wan-sim{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--steel);cursor:pointer;white-space:nowrap;grid-column:1/-1;padding-bottom:2px}
+.wan-sim input{margin:0;accent-color:var(--red)}
+.wan-fila input.wan-invalido{border-color:#a4544e;outline-color:#a4544e}
+.wan-msg{font-size:11.5px;line-height:1.45;margin:8px 0 0}
+.wan-msg.err{color:#a4544e}
+.wan-msg.warn{color:var(--amber)}
+.fam-aviso{color:var(--amber);font-weight:600}
+/* Barra agregada viva bajo el builder (etapa A): Σ de caudales, desglose por familia,
+   puertos WAN ocupados y semáforo de densidad contra el modelo seleccionado. */
+.wan-resumen{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;border:1px solid var(--rule);border-left:3px solid var(--ink);background:var(--card);border-radius:2px;padding:9px 12px;margin-top:12px;font-size:12.5px;line-height:1.5}
+/* Selector de óptica SFP por medio (SPEC B.1, 2026-09-15): mismo lenguaje visual que la
+   barra agregada (#wanResumen) — borde de acento a la izquierda, filas por medio. */
+.sfp-chooser{border:1px solid var(--rule);border-left:3px solid var(--ink);background:var(--card);border-radius:2px;padding:9px 12px;margin-top:8px;font-size:12.5px;line-height:1.5}
+.sfp-fila{padding:7px 0;border-top:1px dashed var(--rule)}
+.sfp-fila:first-of-type{border-top:0;padding-top:0}
+.sfp-fila-top{font-family:'IBM Plex Mono',monospace;font-size:12px;margin-bottom:5px}
+.sfp-fila select{width:100%;max-width:560px;margin-top:2px}
+.sfp-auto{font-size:12px}
+.sfp-auto code{font-family:'IBM Plex Mono',monospace;font-weight:600}
+.wan-resumen b{font-family:'IBM Plex Mono',monospace;font-size:12px}
+.wan-res-sep{color:var(--rule)}
+.wan-sem{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600}
+.wan-sem i{display:inline-block;width:8px;height:8px;border-radius:50%}
+.wan-sem.verde{color:var(--green)}.wan-sem.verde i{background:#5e8a68}
+.wan-sem.ambar{color:var(--amber)}.wan-sem.ambar i{background:#b98a3e}
+.wan-sem.rojo{color:#a4544e}.wan-sem.rojo i{background:#a4544e}
+@media(max-width:560px){.wan-grid{grid-template-columns:1fr}.wan-sim{padding-bottom:0}}
+/* Barra de contexto del escenario (etapa A / #39): cliente + referencia + copiar enlace */
+.esc-barra{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.esc-barra input{width:auto;flex:1 1 200px;min-width:150px}
+.esc-barra #copiadoMsg{margin:0;color:var(--green);font-weight:600}
+/* Banner Microbranch (M1): sugiere la arquitectura sin appliance cuando el sitio es pequeño */
+.banner-micro{border:1px solid var(--rule);border-left:3px solid var(--amber);background:#FDF6EC;border-radius:2px;padding:10px 12px;font-size:12.5px;line-height:1.5;margin-bottom:16px}
+/* Alerta de escalado de hardware (M2 · auditoría de puertos EC-10104) */
+.alerta-escalado{border:1px solid #FECACA;border-left:3px solid var(--red);background:#FFF5F5;border-radius:2px;padding:10px 12px;font-size:12.5px;line-height:1.5;margin-bottom:16px}
+.alerta-escalado b{color:#991b1b}
+/* Badge de nivel Advanced deducido (M3) */
+.badge-adv{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:2px;background:var(--amber);color:#fff;margin-left:8px;vertical-align:1px;font-weight:600}
+.badge-adv[hidden]{display:none}
+/* Modal del consolidado multi-sede (M6): reutiliza el patrón del modal de accesorios */
+#modalConsolidado{position:fixed;inset:0;background:rgba(28,25,23,.45);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
+#modalConsolidado[hidden]{display:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <script src="/js/fuentes.js" defer></script>
@@ -130,12 +318,12 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 </header>
 
 <div class="flag-ft">
-  <b>Estado de los datos.</b> Las cifras provienen de páginas de producto y de tienda oficiales de HPE/Aruba, y los <b>SKU de hardware son reales</b> (buy.hpe.com). Cada modelo enlaza su datasheet oficial. <b>15 modelos EdgeConnect/gateway tienen List Price real de HPE</b> (export de lista de precios de un distribuidor, sin su descuento negociado — ver pestaña Fuentes); el resto sigue "sin cotizar". Dos límites que conviene tener presentes: los PDF no se abrieron íntegramente al recopilar —conviene confirmar la fila exacta antes de cotizar— y el List Price no es precio neto ni cotización firme.
+  <b>Estado de los datos.</b> Las cifras provienen de páginas de producto y de tienda oficiales de HPE/Aruba, y los <b>SKU de hardware son reales</b> (buy.hpe.com). Cada modelo enlaza su datasheet oficial. <b>15 modelos EdgeConnect/gateway, 7 variantes TAA/NAL y el Foundational Care de los 9 EdgeConnect tienen List Price real de HPE</b> (export de lista de precios de un distribuidor, sin su descuento negociado — ver pestaña Fuentes); el resto sigue "sin cotizar". Dos límites que conviene tener presentes: los PDF no se abrieron íntegramente al recopilar —conviene confirmar la fila exacta antes de cotizar— y el List Price no es precio neto ni cotización firme.
 </div>
 
 <div class="tabs" role="tablist">
   <button role="tab" aria-selected="true" data-tab="calc">Dimensionar</button>
-  <button role="tab" aria-selected="false" data-tab="bom">Equipo y BOM</button>
+  <button role="tab" aria-selected="false" data-tab="bom">Lista de materiales</button>
   <button role="tab" aria-selected="false" data-tab="lic">Licencias y software</button>
   <button role="tab" aria-selected="false" data-tab="cat">Catálogo</button>
   <button role="tab" aria-selected="false" data-tab="src">Fuentes</button>
@@ -143,12 +331,24 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 
 <!-- ════ TAB 1 · CALCULADORA ════ -->
 <div class="tabpane" id="pane-calc">
+<!-- Contexto MSP del escenario (etapa A / pendiente #39, 2026-09-14): cliente y
+     referencia viajan en el estado v2 y en la URL, encabezan la lista de materiales y
+     la primera hoja del Excel. El botón copia la URL completa del escenario. -->
+<div class="esc-barra">
+  <input type="text" id="nombreCliente" placeholder="Nombre del cliente" aria-label="Nombre del cliente" autocomplete="off">
+  <input type="text" id="refProyecto" placeholder="Referencia del proyecto" aria-label="Referencia del proyecto" autocomplete="off">
+  <button type="button" class="btn ghost" id="btnCopiarEscenario">Copiar enlace del escenario</button>
+  <!-- «Limpiar escenario» (petición del dueño, 2026-09-15): el estado vive en la URL —
+       limpiar es volver a la URL desnuda y recargar con los valores por defecto. -->
+  <button type="button" class="btn ghost" id="btnLimpiarEscenario">Limpiar escenario</button>
+  <span id="copiadoMsg" class="hint" role="status" aria-live="polite"></span>
+</div>
 <section class="ladder">
   <p class="mono-lbl">Escala de capacidad — capacidad publicada de cada modelo vs. requerimiento (logarítmica)</p>
   <div class="track" id="track"><div class="axis"></div><div class="need" id="need"><span id="needLbl">—</span></div><div class="pickLabel" id="pickLbl" style="display:none"></div></div>
   <div class="legend">
     <span><i></i>Capacidad publicada del modelo</span>
-    <span style="color:var(--red)"><i style="background:var(--red)"></i>Caudal WAN requerido</span>
+    <span style="color:var(--red-txt)"><i style="background:var(--red)"></i>Caudal WAN requerido</span>
   </div>
 </section>
 
@@ -156,6 +356,17 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <div>
   <section class="panel">
     <h2>1 · Plataforma</h2>
+    <div class="field">
+      <label>Arquetipo de sede (persona Aruba)</label>
+      <div class="seg" id="personaSeg">
+        <button type="button" data-v="auto" aria-pressed="true">Libre</button>
+        <button type="button" data-v="micro" aria-pressed="false">Micro-Sucursal / Teletrabajador</button>
+        <button type="button" data-v="peq" aria-pressed="false">Sucursal pequeña / Retail</button>
+        <button type="button" data-v="med" aria-pressed="false">Sucursal mediana / Regional</button>
+        <button type="button" data-v="campus" aria-pressed="false">Campus / DC Hub</button>
+      </div>
+      <p class="hint" id="personaHint">Sin arquetipo: el dimensionador recorre todo el catálogo y manda el cálculo.</p>
+    </div>
     <div class="field">
       <label>Tipo de despliegue</label>
       <div class="seg" id="famSeg">
@@ -165,45 +376,100 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
         <button type="button" data-v="campus" aria-pressed="false">Gateways<br>campus</button>
       </div>
       <p class="hint">Cada familia se dimensiona con lo que HPE publica para ella: EdgeConnect por <b>rango de caudal WAN</b>, los gateways por <b>throughput de firewall</b> y capacidad de clientes y APs. Solo EdgeConnect hace optimización WAN. Los gateways agrupan las series 9000, 9100 Hybrid, 9200 y las 7000/7200 de la línea anterior.</p>
+      <!-- A2 (2026-09-24): declara el salto automático de familia que provocan DTD y Boost. -->
+      <p class="hint fam-aviso" id="famAviso" role="status" hidden></p>
     </div>
     <div class="field">
-      <label><input type="checkbox" id="chkBoost"> <span>Boost activo — optimización WAN<span class="sku" style="display:block;margin-top:2px">Reduce el caudal WAN que hay que contratar y, a cambio, exige más proceso al appliance. Se licencia en bloques de 100 Mbps que forman un pool del fabric.</span></span></label>
+      <label>Sistema operativo de los gateways</label>
+      <div class="seg" id="soSeg">
+        <button type="button" data-v="aos10" aria-pressed="true">AOS 10<br>(Central)</button>
+        <button type="button" data-v="aos8" aria-pressed="false">AOS 8<br>(Mobility Conductor)</button>
+      </div>
+      <p class="hint" id="soHint"><b>AOS 10</b>: gateways gestionados por HPE Aruba Networking Central. Serie 9000 hasta 128 APs (9004) / 256 (9012); 9240 Base 4.000 APs y 32.000 clientes, con licencias Silver/Gold AOS 10 (R8R41AAE/R8R42AAE). Las series 7000/7200 no se dimensionan aquí: sus cifras son de AOS 8. Solo afecta a los gateways; EdgeConnect corre ECOS.</p>
+    </div>
+    <div class="field">
+      <label>Destino del tráfico</label>
+      <div class="seg" id="destSeg">
+        <button type="button" data-v="hibrido" aria-pressed="true">Híbrido / DC privado</button>
+        <button type="button" data-v="cloud" aria-pressed="false">Cloud-First / SaaS</button>
+      </div>
+      <p class="hint" id="destHint">Tráfico intensivo en túneles del fabric hacia el datacenter propio, con Path Conditioning (FEC y corrección de orden de paquetes) sosteniendo el SLA de aplicación. <b>Cálculo:</b> sin sobrecoste — el throughput de diseño sale del motor de ingeniería tal cual (penalización de función ×1,00).</p>
+    </div>
+    <div class="field">
+      <label><input type="checkbox" id="chkBoost"> <span>Optimización y deduplicación de datos (Aruba Boost)<span class="sku" style="display:block;margin-top:2px">¿Aplicaciones con datos repetitivos —CIFS/SMB, transferencias masivas, réplicas— o enlaces de alta latencia / satelitales? Boost reduce el caudal WAN a contratar y, a cambio, exige más proceso al appliance. Los Mbps de Boost se calculan solos: el 30 % del tráfico WAN privado (regla de preventa declarada), licenciados en bloques de 100 Mbps que forman un pool del fabric.</span></span></label>
     </div>
     <div class="field">
       <label for="boostProfile">Perfil de datos (factor de reducción de Boost)</label>
       <select id="boostProfile">
         <option value="generico">Tráfico genérico mixto (web, SaaS) — 1.3:1</option>
         <option value="oficina" selected>Ficheros de oficina y correo interno — 2:1</option>
-        <option value="repetido">Réplicas, backups, VDI, CIFS/SMB — 3.5:1</option>
+        <option value="repetido">Réplicas, backups, VDI, CIFS/SMB — 1.8:1</option>
       </select>
-      <p class="hint">Supuesto de trabajo de esta herramienta, <b>no una cifra publicada por HPE</b>. El ahorro real depende de cuánto se repita el contenido y solo una prueba con el tráfico del cliente lo confirma.</p>
+      <p class="hint">El perfil de réplicas/backups/CIFS usa el ancla oficial del caso de estudio HPE Aruba (Universal Health Services: ~45 % Veeam, ~40 % CIFS ≈ 1.8:1); los demás perfiles son supuestos conservadores de trabajo, <b>no cifras publicadas</b>. <b>Dónde actúa este factor</b>: en el widget «Caudal contratado vs. rendimiento efectivo» (barra «Percibida con Boost»), en el caudal derivado cuando NO hay enlaces declarados y en la justificación de la ficha. <b>Dónde NO actúa, a propósito</b>: ni en el modelo del appliance (Boost exige MÁS proceso, no menos — la deduplicación la ejecuta el chasis) ni en el tier de la suscripción, que se licencia por el caudal WAN físico contratado al operador (regla oficial VSG). El ahorro real depende de cuánto se repita el contenido y solo una prueba con el tráfico del cliente lo confirma.</p>
     </div>
   </section>
 
   <section class="panel">
     <h2>2 · Tráfico y capacidad</h2>
+    <!-- M1 · Multi-Underlay Builder (refactor 2026-09-13, SPEC parte B): los enlaces WAN
+         del sitio se declaran como FILAS DINÁMICAS (tipo de transporte, medio del puerto y
+         caudal down/up) en vez de los antiguos inputs estáticos MPLS/Internet. El estado
+         viaja serializado (versión 2) en el input oculto #wanLinksData. -->
     <div class="field">
-      <label for="bw">Ancho de banda de aplicación</label>
-      <div class="row">
-        <input type="number" id="bw" value="500" min="1" step="any">
-        <select id="unit" style="width:105px"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
+      <label>Enlaces WAN del sitio (underlay)</label>
+      <p class="hint">Cada enlace declara si es <b>activo</b> o de <b>respaldo</b>. El caudal, el tier de la suscripción y el Boost salen de la <b>operación normal</b> (solo los activos); un respaldo ocupa su puerto pero solo lleva tráfico, hasta su caudal, cuando cae un activo. Si el contrato usa ese enlace a la vez que los demás, márcalo como activo.</p>
+      <div id="wanBuilder">
+        <div id="wanBuilderFilas"></div>
+        <button type="button" class="btn ghost" id="btnAddWan" style="font-size:11px;padding:5px 11px;margin-top:8px">+ Añadir enlace WAN</button>
       </div>
-      <p class="hint">Tráfico del lado LAN que el equipo debe procesar. No es lo mismo que el caudal WAN a contratar: FEC lo sube y Boost lo baja.</p>
+      <!-- Barra agregada viva (etapa A, 2026-09-14): Σ de caudales, desglose por familia,
+           puertos WAN ocupados y semáforo de densidad contra el modelo seleccionado. -->
+      <div id="wanResumen" class="wan-resumen" aria-live="polite" hidden></div>
+      <!-- Selector de óptica SFP por medio (SPEC B.1, 2026-09-15): con enlaces cuyo medio
+           es SFP 1G / SFP+ 10G, el BOM necesita la óptica. Si el catálogo ofrece varias
+           compatibles con el modelo, la elección (alcance/medio) es del usuario: aquí se
+           muestra el mensaje y el select SIN opción por defecto. Con una sola opción se
+           auto-selecciona y se declara; con ninguna, aviso. La elección viaja en
+           #sfpPickData (JSON {medio:sku}) dentro del estado del escenario. -->
+      <div id="sfpChooser" class="sfp-chooser" aria-live="polite" hidden></div>
+      <input type="hidden" id="wanLinksData">
+      <input type="hidden" id="sfpPickData">
+      <p class="hint">Cada enlace declara su transporte, el <b>medio del puerto</b> (RJ-45 u óptica SFP — alimenta la auditoría de puertos del chasis) y su caudal. La suscripción EdgeConnect se licencia por el <b>caudal WAN agregado del sitio</b> (MPLS + Internet — VSG oficial) y el appliance se dimensiona por ese agregado. Sin enlaces declarados, el tier se deriva del tráfico estimado (usuarios × Mbps/usuario).</p>
+    </div>
+    <div id="bannerMicrobranch" class="banner-micro" hidden>
+      <b>Perfil Microbranch:</b> considera Aruba Central + AP/9004 en vez de EdgeConnect dedicado — el túnel IPsec corre en el propio AP AOS-10 (persona Microbranch), sin appliance en el sitio.
     </div>
     <div class="field">
-      <label for="users">Usuarios / dispositivos concurrentes</label>
-      <input type="number" id="users" value="100" min="1" step="1">
-      <p class="hint">En los gateways esta cifra es además una <b>restricción dura de capacidad</b>: la serie 9000 soporta 2.048 clientes y la 9200 hasta 32.000 con licencia Gold.</p>
+      <label class="check"><input type="checkbox" id="chkBreakout" checked> <span>Local Breakout (internet local)<span class="sku">Regla del brief carrier-grade (2026-09-13): con salida local activa, el 70 % del caudal total sale local (SaaS y navegación) y el 30 % interno sigue por el túnel al datacenter. El appliance se dimensiona igualmente por el caudal agregado — regla oficial.</span></span></label>
+      <p class="hint" id="ahorroMpls"></p>
+    </div>
+    <div class="field" id="widgetPerf" hidden>
+      <label>Caudal contratado vs. rendimiento efectivo</label>
+      <div id="widgetPerfBarras"></div>
+      <p class="hint" id="widgetPerfImix" style="margin-top:8px"></p>
+    </div>
+    <div class="field">
+      <label for="users">Usuarios / dispositivos concurrentes <span class="req-sse-tag" id="usersReqTag" hidden>— define el nº de licencias SSE</span></label>
+      <input type="number" id="users" min="1" step="1" autocomplete="off">
+      <p class="hint" id="usersHint">Influye en tres cálculos: (1) los <b>flujos simultáneos</b> que debe sostener el appliance (regla 80/150 por usuario del VSG, vía el perfil de entorno); (2) sin enlaces declarados, el <b>tráfico estimado</b> del sitio (usuarios × Mbps/usuario) del que sale el tier; (3) en los gateways es una <b>restricción dura de capacidad</b>: la serie 9000 soporta 2.048 clientes y el 9240 32.000 sin licencia en AOS 10 (64.000 con Gold) o 16.000 en AOS 8 (32.000 con Gold) — según el sistema operativo del panel 1. Además, con estrategia de seguridad <b>HPE Aruba SSE</b> esta cifra ES la cantidad de licencias: SSE se suscribe por usuario (QuickSpecs SSE) y la línea del BOM no se puede cotizar sin ella.</p>
+    </div>
+    <div class="field">
+      <label for="perfilEntorno">Perfil de entorno — flujos simultáneos</label>
+      <select id="perfilEntorno">
+        <option value="estandar" selected>Estándar — ~80 flujos por usuario/dispositivo</option>
+        <option value="intensivo">Intensivo (apps SaaS concurrentes, video, VoIP) — ~150 flujos por usuario</option>
+      </select>
+      <p class="hint">El SD-WAN de Aruba se dimensiona por <b>flujos simultáneos</b>, no por túneles IPsec estáticos (el orquestador los gestiona dinámicamente según los overlays). Regla de trabajo declarada (brief del dueño, 2026-09-13): 80 flujos/usuario en entorno estándar y 150 en intensivo — punto medio del rango 80–100 / 150–200 documentado en fase 9; no existe cifra oficial HPE (SIN FUENTE, regla de preventa), y la calcula el motor de ingeniería. Además, el requerimiento de caudal del appliance sale ya degradado por el IMIX del perfil de tráfico (motor de ingeniería, brief carrier-grade), así que la comparación va contra el throughput nominal del chasis — la holgura ya va dentro.</p>
     </div>
     <div class="field">
       <label for="perUser">Mbps por usuario activo</label>
-      <input type="number" id="perUser" value="3" min="0" step="0.1">
+      <input type="number" id="perUser" min="0" step="0.1" autocomplete="off">
       <p class="hint">Regla habitual: 1–5 Mbps por usuario corporativo. <b>Bájala en campus grandes</b>: 20.000 dispositivos no generan 20.000 x 3 Mbps simultáneos, y aplicar la regla tal cual dispara el requerimiento a cifras que ningún equipo cumple. Ponla en 0 para dimensionar solo por el ancho de banda declarado arriba.</p>
     </div>
     <div class="field">
       <label for="aps">Puntos de acceso a gestionar</label>
-      <input type="number" id="aps" value="0" min="0" step="1">
-      <p class="hint">Deja 0 para omitirlo. Solo aplica a los gateways, que hacen de controladora: la serie 9000 soporta hasta 32 APs y la 9200 hasta 2.000 con licencia Gold.</p>
+      <input type="number" id="aps" min="0" step="1" autocomplete="off">
+      <p class="hint">Deja 0 para omitirlo. Solo aplica a los gateways, que hacen de controladora. En AOS 10: 128 APs el 9004, 256 el 9012 y 4.000 el 9240 sin licencia (16.000 con Gold). En AOS 8: 32 en la serie 9000 y 512 el 9240 (2.000 con Gold).</p>
     </div>
     <div class="field">
       <label for="fecMode">Path Conditioning (FEC)</label>
@@ -214,19 +480,46 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       </select>
       <p class="hint" id="fecHint">Orchestrator ajusta la paridad según la pérdida medida. Es el modo habitual.</p>
     </div>
+    <!-- Perfil de tráfico (brief carrier-grade 2026-09-13, SECCIÓN 1): alimenta el factor
+         IMIX del motor de ingeniería — /js/motor-ingenieria.js. -->
+    <div class="field">
+      <label for="selTrafico">Perfil de tráfico (mezcla IMIX)</label>
+      <select id="selTrafico">
+        <option value="ENTERPRISE_MIX" selected>Mezcla empresarial (IMIX estándar)</option>
+        <option value="VOIP_INTENSIVE">Voz intensiva (paquetes pequeños)</option>
+        <option value="BULK_BACKUP">Backup/réplica masiva</option>
+      </select>
+      <p class="hint">Degrada el IMIX del motor de ingeniería: <b>0,70</b> mezcla empresarial / <b>0,55</b> voz intensiva / <b>1,00</b> backup masivo — el requerimiento de caudal sale de <code>caudal ÷ IMIX</code>, así que la voz sube el dimensionado y el backup masivo lo deja en el físico (regla del brief carrier-grade, 2026-09-13).</p>
+    </div>
     <div class="field">
       <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
-      <input type="range" id="head" min="0" max="100" step="5" value="30">
+      <input type="range" id="head" min="0" max="100" step="5" value="30" autocomplete="off">
+      <p class="hint">Ancla oficial: la guía de diseño SD-Branch de HPE fija el SLA de utilización de enlace en <b>75 %</b> para las políticas DPS — operar por encima degrada voz y video. Un margen del 25-30 % deja el diseño en esa zona segura.</p>
     </div>
   </section>
 
   <section class="panel">
     <h2>3 · Funciones adicionales</h2>
     <div class="checks">
-      <label class="check"><input type="checkbox" id="chkSeg"> <span>Segmentación multi-overlay<span class="sku">Requiere EdgeConnect Advanced. Aísla invitados, IoT, PCI o filiales en overlays separados sobre el mismo transporte.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkBreakout"> <span>Salida directa a Internet + service chaining a SSE<span class="sku">First-packet iQ identifica la aplicación en el primer paquete y decide breakout local o reenvío al SSE. Requiere Advanced.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad (par de equipos)<span class="sku">Se requieren 2 unidades y cada una lleva su propia suscripción de sitio.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkSeg"> <span>Segmentación multi-overlay (más de 3 BIOs / VRFs)<span class="sku">Requiere EdgeConnect <b>Advanced</b>: Foundation se queda en 3 Business Intent Overlays y 2 VRF (default y guest) frente a 7 BIOs y 64 VRFs (QuickSpecs/VSG). Aísla invitados, IoT, PCI o filiales en overlays separados sobre el mismo transporte. En gateways deduce <b>Central Advanced</b> (segmentación de extremo a extremo / NetConductor).</span></span></label>
+      <label class="check"><input type="checkbox" id="chkTopo"> <span>Topología ilimitada (mesh o más de 4 hubs por región)<span class="sku">Requiere EdgeConnect <b>Advanced</b>: Foundation es hub-and-spoke con un máximo de 4 hubs por región (QuickSpecs). En gateways no cambia el nivel de Central.</span></span></label>
     </div>
+    <div class="field" style="margin-top:14px">
+      <label for="selSeguridad">Estrategia de seguridad (inspección avanzada)</label>
+      <select id="selSeguridad">
+        <option value="none" selected>Sin inspección extra</option>
+        <option value="sse">En la nube — HPE Aruba SSE</option>
+        <option value="dtd">En el chasis — Dynamic Threat Defense</option>
+        <option value="gwsec">En el gateway — Central + Security (IDS/IPS)</option>
+      </select>
+      <p class="hint" id="secHint">El NGFW y la clasificación de aplicaciones (AppRF, ~3.500 apps) ya van en Foundation. Activa una estrategia solo si el diseño exige IDS/IPS o inspección en la nube.</p>
+    </div>
+    <div class="checks" style="margin-top:14px">
+      <label class="check"><input type="checkbox" id="chkAiops"> <span>Analítica de experiencia y AIOps<span class="sku">No es un SKU aparte ni una línea más del BOM: es una <b>capacidad del nivel Advanced</b>. Al marcarla, la suscripción EdgeConnect y Aruba Central suben de Foundation a Advanced (la retención ampliada de datos es del nivel Advanced de EdgeConnect —QuickSpecs p.31— y en Central los AI Insights ampliados de WAN y la visibilidad UCC son del nivel Advanced; la retención de datos de Central es la misma en ambos niveles — tabla oficial). El cambio de nivel —y su precio— se ve en el panel 4 y en la lista de materiales.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad (HA 1+1)<span class="sku">Se cotizan 2 unidades. El segundo nodo lleva el SKU de alta disponibilidad del QuickSpecs —mismo tier, caudal y término— que la lista de precios documentada tarifa igual que el estándar, tanto en SaaS como en On-Premises (escalera HA E-STU verificada 2026-09-16).</span></span></label>
+      <p class="hint" id="haAutoHint" hidden><b>HA pre-marcado por la regla de preventa de la casa</b> (≥2 enlaces de ≥5 Gbps ⇒ el sitio concentra ≥10 Gbps y un chasis único sería un punto único de fallo): es EdgeHA, el diseño oficial de sucursal — cada transporte aterriza en un chasis del par y el enlace EdgeHA lleva los túneles de cada underlay a AMBOS appliances, sin switches WAN (VSG SD-Branch, fig. «EC HA»). Ojo: HA suma <b>disponibilidad, no caudal</b> — el VRRP manda todo el tráfico al activo y el standby solo toma el relevo en fallo, así que cada chasis del par se dimensiona al agregado completo. Puedes desmarcarlo; la revisión del diseño lo registrará.</p>
+    </div>
+    <p class="hint" style="margin-top:10px">El steering dinámico por SLA de aplicación (Dynamic Path Control) y las funciones NGFW ya los incluye <b>Foundation</b> — no obligan a subir de nivel (QuickSpecs v18, p.31).</p>
     <div class="field" style="margin-top:16px">
       <label>Segmento de instalación</label>
       <div class="seg" id="segSeg">
@@ -236,103 +529,141 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       </div>
     </div>
   </section>
-</div>
-
-<div>
-  <div class="verdict" id="verdict"></div>
-  </div>
 
   <section class="panel">
-    <h2>Capacidad publicada <span id="perfModel" style="font-weight:400;text-transform:none;letter-spacing:0"></span></h2>
-    <div id="perfTiers"></div>
-    <p class="hint" id="perfNote" style="margin-top:12px"></p>
-  </section>
-
-  <section class="panel">
-    <h2>Resumen de sizing</h2>
-    <div id="sizingBox"><p style="font-size:13.5px;color:var(--steel)">Completa los parámetros para ver el resumen.</p></div>
-  </section>
-
-  <div class="note">
-    <b>Nota metodológica.</b> El dimensionamiento separa dos números que otras plataformas funden en uno: lo que el <b>equipo procesa</b> (tráfico de aplicación, lado LAN) y lo que los <b>enlaces transportan</b> (caudal WAN, que es lo que se contrata al operador y lo que fija el tier de la suscripción). Path Conditioning sube el segundo —el FEC envía paquetes de paridad para reconstruir pérdidas sin esperar retransmisión, y esa paridad ocupa ancho de banda—, mientras que Boost lo baja, porque deduplica y comprime antes de que el tráfico salga. Boost, a cambio, exige más proceso al equipo. Por eso una sede con tráfico repetitivo puede justificar un appliance mayor y aun así salir más barata, si el ahorro de caudal contratado durante tres años supera la diferencia de hardware. Para EdgeConnect, HPE publica un <b>rango</b> de caudal por modelo y no un throughput único: quedar por debajo del suelo del rango señala sobredimensionamiento, y es tan accionable como pasarse del techo.
-  </div>
-</div>
-</div>
-</div>
-
-<!-- ════ TAB 2 · BOM ════ -->
-<div class="tabpane" id="pane-bom" hidden>
-<div class="cols">
-<div>
-  <section class="panel">
-    <h2>Selección de equipo</h2>
+    <h2>4 · Equipo y cotización</h2>
+    <div id="alertaEscalado" class="alerta-escalado" hidden>
+      <b>Hardware escalado</b> debido a requerimiento de densidad de puertos o interfaces ópticas SFP — el EC-10104 (4 puertos RJ-45, sin SFP) no cubre los enlaces declarados y el dimensionador propone el escalón superior.
+    </div>
     <div class="field">
       <label for="pickModel">Modelo</label>
       <select id="pickModel"></select>
+      <p class="hint">El selector <b>sigue al dimensionamiento</b>: propone el recomendado y marca los que cumplen. Cámbialo a mano para cotizar otro equipo —la ficha avisará del desvío y ofrecerá volver al recomendado.</p>
     </div>
-    <div class="field">
-      <label for="qty">Cantidad (unidades)</label>
-      <input type="number" id="qty" value="1" min="1">
-    </div>
+    <!-- Sin campo de cantidad (petición del dueño, 2026-09-15): en EdgeConnect un sitio
+         lleva UN appliance o un par HA 1+1 — no hay despliegues de 3+ por sitio en la
+         arquitectura oficial. Las unidades se deducen de la casilla HA (1 ó 2). -->
     <div class="field">
       <label for="termYears">Término de suscripción y soporte</label>
       <select id="termYears">
         <option value="1">1 año</option>
         <option value="3" selected>3 años</option>
         <option value="5">5 años</option>
+        <!-- 7 años (pendiente #28, 2026-09-15): la lista vigente sí publica términos de
+             7 años en varias escaleras; donde no los publica, la línea sale «a consultar»
+             (PENDIENTE DE COTIZACIÓN) en vez de heredar el precio de otro término. -->
+        <option value="7">7 años</option>
       </select>
     </div>
-    <div class="field" id="fldBundle">
-      <label for="licBundle">Nivel de suscripción EdgeConnect</label>
-      <select id="licBundle"></select>
+    <div class="field" id="fldSub">
+      <label>Suscripción EdgeConnect — asignada automáticamente <span id="badgeAdvanced" class="badge-adv" hidden>Licencia Advanced requerida por especificación oficial</span></label>
+      <div class="lic-auto" id="licAutoTxt"></div>
+      <div style="margin-top:10px">
+        <label for="selTier" style="font-size:12px">Tier de caudal de la suscripción</label>
+        <select id="selTier"></select>
+        <p class="hint">En «Automático» el tier sale del <b>caudal WAN agregado del módulo 2</b> (Σ de los enlaces declarados — regla oficial VSG) y su nombre se muestra en la propia opción. <b>El tier no dimensiona el equipo</b>: solo tarifa la suscripción; el appliance lo dimensiona el motor de ingeniería (IMIX, FEC, seguridad, margen). Elegir un tier superior al deducido es una decisión comercial de crecimiento — no cambia el modelo propuesto. Los tiers intermedios solo existen en <b>Advanced</b>: con Foundation quedan bloqueados (restricción oficial de la lista de precios).</p>
+      </div>
+      <label class="check" style="margin-top:8px"><input type="checkbox" id="chkNoSub"> <span class="sku">No incluir la suscripción: el equipo queda standalone, sin fabric gestionado ni ZTP — y tampoco se licencia Boost, que es un add-on de la suscripción.</span></label>
     </div>
-    <div class="field" id="fldBw">
-      <label for="bwTier">Tier de caudal del sitio</label>
-      <select id="bwTier"></select>
-      <p class="hint">La suscripción de EdgeConnect va por <b>caudal del sitio</b>, no por modelo de appliance. El dimensionador propone el tier según el caudal calculado; al cambiarlo a mano deja de proponerlo.</p>
-    </div>
-    <div class="field" id="fldBoost">
-      <label for="boostBlocks">Bloques de Boost (100 Mbps cada uno)</label>
-      <input type="number" id="boostBlocks" value="0" min="0" step="1">
-      <p class="hint">Se licencia una vez para todo el fabric y Orchestrator lo reparte entre las sedes que lo aprovechan. Por eso figura con cantidad 1 en el BOM aunque se coticen varias unidades.</p>
+    <div class="field" id="fldDualPsu" hidden>
+      <label class="check"><input type="checkbox" id="chkDualPsu"> <span>Segunda fuente de alimentación (PSU redundante)<span class="sku">Añade la PSU 550W AC R7J63A al Gateway 9240 para alimentación 1+1. En el EC-10150 no aplica: lleva doble PSU de fábrica.</span></span></label>
     </div>
     <div class="field" id="fldCentral" hidden>
-      <label for="centralTier">Suscripción HPE Aruba Networking Central</label>
-      <select id="centralTier"></select>
+      <label>Suscripción HPE Aruba Networking Central — asignada automáticamente</label>
+      <div class="lic-auto" id="centralAutoTxt"></div>
+      <label class="check" style="margin-top:8px"><input type="checkbox" id="chkNoCentral"> <span class="sku">No incluir Central: el gateway se queda en gestión local, sin la nube de HPE ni apertura de casos.</span></label>
     </div>
     <div class="field" id="fldCapTier" hidden>
-      <label for="licCapTier">Nivel de capacidad (licencia perpetua)</label>
-      <select id="licCapTier">
-        <option value="hw" selected>Solo hardware</option>
-        <option value="silver">Silver</option>
-        <option value="gold">Gold</option>
-      </select>
-      <p class="hint">En la serie 9200 la capacidad la fija la licencia, no el equipo: el mismo chasis entrega 20, 30 o 40 Gbps.</p>
+      <label>Nivel de capacidad (licencia perpetua) — asignado automáticamente</label>
+      <div class="lic-auto" id="capAutoTxt"></div>
+      <label class="check" style="margin-top:8px"><input type="checkbox" id="chkSoloHw"> <span class="sku">Cotizar solo hardware, sin la licencia de capacidad (la serie 9200 entrega 20 Gbps sin ella).</span></label>
     </div>
-    <div class="field">
+    <div class="field" id="fldCare">
       <label for="careLevel">Nivel de soporte HPE</label>
       <select id="careLevel"></select>
     </div>
+    <details class="adv">
+      <summary>Opciones avanzadas</summary>
+      <label class="check" style="margin-top:8px"><input type="checkbox" id="chkOnprem"> <span>Modalidad On-Premises (E-STU)<span class="sku">El Orchestrator vive en la infraestructura del cliente en vez de consumirse como servicio: cambia el juego de SKU de la suscripción y de Boost. En HA, el segundo nodo lleva el SKU HA E-STU del QuickSpecs (sección «On-Premises High Availability», verificada 2026-09-16), tarifado igual que el estándar.</span></span></label>
+      <p class="hint">Las variantes gubernamentales (TAA / NAL) no estorban en el catálogo: se ofrecen en la pestaña <b>Lista de materiales</b>, tras su propio conmutador.</p>
+    </details>
   </section>
 
-  <div class="flag-ft">
-    <b>Aviso de preventa:</b> las líneas de suscripción y soporte salen sin importe a propósito — no hay price list verificado para esas líneas. El equipo sí trae List Price de HPE cuando el modelo tiene SKU confirmado (15 de los EdgeConnect/gateway); es precio de lista sin el descuento del distribuidor, no una cotización firme. Detalle en la cabecera de <code>server/seed/legacyData/aruba.js</code>.
-  </div>
 </div>
 
-<div>
-  <div id="bomBody"></div>
+<div class="col-fijo">
+  <div class="verdict" id="verdict"></div>
+</div>
+
+<div class="note">
+  <b>Nota metodológica.</b> El dimensionamiento separa dos números que otras plataformas funden en uno: lo que el <b>equipo procesa</b> (tráfico de aplicación, lado LAN) y lo que los <b>enlaces transportan</b> (caudal WAN, que es lo que se contrata al operador y lo que fija el tier de la suscripción). Path Conditioning sube el segundo —el FEC envía paquetes de paridad para reconstruir pérdidas sin esperar retransmisión, y esa paridad ocupa ancho de banda—, mientras que Boost lo baja, porque deduplica y comprime antes de que el tráfico salga. Boost, a cambio, exige más proceso al equipo. Por eso una sede con tráfico repetitivo puede justificar un appliance mayor y aun así salir más barata, si el ahorro de caudal contratado durante tres años supera la diferencia de hardware. Para EdgeConnect, HPE publica un <b>rango</b> de caudal por modelo y no un throughput único: quedar por debajo del suelo del rango señala sobredimensionamiento, y es tan accionable como pasarse del techo.
+</div>
+</div>
+</div>
+
+<!-- ════ TAB 2 · BOM ════ -->
+<div class="tabpane" id="pane-bom" hidden>
+<div class="pane-centro">
   <section class="panel">
     <h2>Lista de materiales
       <span class="bom-acciones">
+        <button class="btn ghost" id="accBtn" style="font-size:11px;padding:5px 11px" hidden>Ópticas y accesorios</button>
         <button class="btn" id="xlsBtn" style="font-size:11px;padding:5px 11px">Exportar a Excel</button>
         <button class="btn ghost" id="copyBtn" style="font-size:11px;padding:5px 11px">Copiar como texto</button>
       </span>
     </h2>
+    <p class="hint" style="margin:0 0 10px">Toda la lista es editable: cada línea —la calcule el dimensionador o la añadas a mano— se quita con su botón ✕ y se restaura desde «Líneas retiradas», y la omisión viaja en el enlace del escenario. Las cantidades también se pueden ajustar (borde discontinuo): el ajuste queda declarado con la cifra que calculó el dimensionador, sobrevive a los cambios del escenario y viaja en el enlace; devolver la cantidad a la cifra calculada retira el ajuste. Las de las referencias añadidas a mano se ajustan con su stepper.</p>
+    <input type="hidden" id="bomOmitidas">
+    <input type="hidden" id="bomAjustes">
     <div id="bomTabla"></div>
+    <div id="bomRetiradas"></div>
     <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
   </section>
-</div>
+  <section class="panel">
+    <h2>Precio neto y TCO del sitio</h2>
+    <div class="field">
+      <!-- Lo rellena BOM.simuladorDescuento: los tramos y su aviso viven en js/bom.js
+           para que anadir el simulador a otra pantalla sea una linea, no doce de marcado
+           repetido en siete archivos que luego divergen. -->
+      <div id="cajaDescuento"></div>
+    </div>
+    <div id="tcoFin"></div>
+  </section>
+  <section class="panel">
+    <h2>Perfiles multi-sede</h2>
+    <p class="hint" style="margin:0 0 10px">Guarda el escenario actual como perfil («Tienda», «Oficina regional»…) con su número de sedes idénticas. El <b>BOM global consolidado</b> suma las líneas de todos los perfiles —equipo y suscripciones por sede, pool de Boost agregado del fabric, Orchestrator una sola vez— y se exporta aparte. Los perfiles viven en este navegador (localStorage) y conservan los precios del día en que se guardaron.</p>
+    <div class="row" style="margin-bottom:10px">
+      <input type="text" id="nombrePerfil" placeholder="Nombre del perfil — p. ej. Tienda" autocomplete="off">
+      <input type="number" id="perfilSedes" min="1" step="1" placeholder="Nº sedes" style="width:100px" autocomplete="off">
+      <button type="button" class="btn" id="btnGuardarPerfil" style="font-size:11px;padding:6px 12px;white-space:nowrap">Guardar perfil</button>
+    </div>
+    <div id="listaPerfiles"></div>
+    <div style="margin-top:10px">
+      <button type="button" class="btn" id="btnConsolidar" style="font-size:11px;padding:6px 12px" disabled>Consolidar BOM global</button>
+      <p class="hint" style="margin-top:6px">Abre el BOM agregado Σ(BOM del perfil × sedes) en una ventana aparte, con su exportación a Excel.</p>
+    </div>
+  </section>
+  <section class="panel" id="skuPanel">
+    <h2>Añadir a la lista de materiales</h2>
+    <!-- Movido al FINAL del tab (petición del dueño, 2026-09-15): primero se ve la
+         lista que el dimensionador propone; el catálogo para añadir a mano queda debajo. -->
+    <p class="hint" style="margin:0 0 10px">Todo el catálogo pedible de Aruba con su SKU y su List Price: hardware, remanufacturados, suscripciones EdgeConnect, Boost, Central y licencias perpetuas. Lo que añadas queda integrado en la lista de materiales —con stepper de cantidad y botón de quitar— y viaja con ella al Excel y al cotizador.</p>
+    <input type="search" id="skuBuscar" placeholder="Buscar por SKU o descripción…" aria-label="Buscar referencia por SKU o descripción">
+    <!-- Cumplimiento Especial / Sector Público (brief 1.1c, 2026-09-13): las variantes
+         gubernamentales viven tras un submenú colapsable, cerrado por defecto. Auditaron
+         también los modelos de #pickModel: ninguno es una variante TAA/NAL (son SKUs del
+         catálogo de precios, no modelos del dimensionador), así que el filtro del toggle
+         cubre todo lo que hay que esconder. -->
+    <details class="cumplimiento-especial">
+      <summary>Cumplimiento Especial / Sector Público</summary>
+      <p class="hint">Variantes TAA/NAL/FIPS para sector público y cumplimiento — Trade Agreements Act.</p>
+      <button type="button" id="skuTaa" class="btn ghost" style="font-size:11px;padding:5px 11px;margin:4px 0 0" aria-pressed="false">Variantes gubernamentales (TAA / NAL) · mostrar</button>
+    </details>
+    <div id="skuCatalogo"><p class="hint">Cargando catálogo de SKUs…</p></div>
+  </section>
+  <div class="flag-ft">
+    <b>Aviso de preventa:</b> el hardware, las suscripciones EdgeConnect/Boost/Central (incluidos los SKU de alta disponibilidad del segundo nodo) y el soporte Foundational Care de los EdgeConnect traen List Price de HPE verificado el 2026-09-13 (94 SKU en <code>public/datasheets/aruba-lista-precios-hpe.csv</code> más los SKU de servicio por modelo en <code>server/seed/legacyData/aruba.js</code>); es precio de lista sin el descuento del distribuidor, no una cotización firme. Lo que sigue sin precio verificado —EC-V, FC de software y FC de gateways— figura en «consultar» a propósito.
+  </div>
 </div>
 </div>
 
@@ -345,20 +676,23 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <thead><tr><th>Nivel</th><th>Qué incluye</th><th>Cuándo se necesita</th></tr></thead>
     <tbody>
       <tr><td><b>Foundation</b></td>
-          <td>Funciones SD-WAN esenciales más las capacidades NGFW avanzadas: Dynamic Path Control por SLA, tunnel bonding, Path Conditioning (FEC y corrección de orden), firewall con estado y Orchestrator</td>
-          <td>Sucursal que sustituye MPLS por banda ancha y necesita SLA de aplicación, sin segmentación ni breakout con service chaining</td></tr>
+          <td>Funciones SD-WAN esenciales más <b>todas</b> las capacidades NGFW avanzadas: steering dinámico por SLA (Dynamic Path Control), tunnel bonding, Path Conditioning (FEC y corrección de orden), firewall con estado y Orchestrator cloud (Foundation OaaS). Hasta 3 Business Intent Overlays, 2 VRF (default y guest), topología hub-and-spoke (4 hubs por región), QoS esencial, retención fundamental de datos y AppExpress en modo solo monitor</td>
+          <td>Sucursal que sustituye MPLS por banda ancha y necesita SLA de aplicación: el steering por SLA y el NGFW <b>ya están aquí</b> — no son motivo para subir de nivel (matriz oficial QuickSpecs v18, p.31)</td></tr>
       <tr><td><b>Advanced</b></td>
-          <td>Todo Foundation + routing dinámico, segmentación multi-overlay, salida directa a Internet con First-packet iQ y service chaining hacia SSE/SASE de terceros</td>
-          <td>La mayoría de despliegues reales: en cuanto hay VRF, BGP con el operador o integración con un SSE, Foundation se queda corto</td></tr>
+          <td>Todo Foundation más topología ilimitada, 64 VRFs y hasta 7 Business Intent Overlays (segmentación multi-overlay real), QoS avanzada, retención ampliada de datos, AppExpress con steering de aplicaciones y Orchestrator cloud (Advanced OaaS). Tiers más finos: 20/50/100/200/500 Mbps, 1/2 Gbps e ilimitado</td>
+          <td>Segmentación multi-overlay con más de 3 BIOs, topologías mesh o con más de 4 hubs por región, o analítica con retención ampliada. OJO: HPE no admite mezclar niveles en un mismo fabric</td></tr>
       <tr><td><b>On-Premises</b></td>
-          <td>Variante para despliegues donde el Orchestrator vive en la infraestructura del cliente en lugar de consumirse como servicio</td>
+          <td>Existe solo como «Advanced On-Prem» (no hay Foundation On-Prem): mismo alcance funcional que Advanced e <b>incluye el software de Orchestrator on-prem</b>; el cliente aporta el alojamiento —VM, disponibilidad, backup y actualizaciones (data sheet oficial)</td>
           <td>Sectores con requisitos de soberanía del dato o de operación sin dependencia de un SaaS</td></tr>
+      <tr><td><b>Dynamic Threat Defense</b><br><span style="font-family:'IBM Plex Mono',monospace;font-size:10px">licencia opcional aparte</span></td>
+          <td>Añade IDS/IPS, DDoS adaptativo (Adaptive DDoS, Smart SYN cookie) y clasificación web (Secure web service). Licencia separada de Foundation y Advanced (QuickSpecs p.32)</td>
+          <td>Cuando el diseño pide inspección avanzada de seguridad en el propio appliance. Con SKU y List Price en la lista vigente (escalera plana por appliance, 1/3/5 años — verificado 2026-09-14)</td></tr>
       <tr><td><b>Boost</b><br><span style="font-family:'IBM Plex Mono',monospace;font-size:10px">add-on de aceleración</span></td>
           <td>Optimización WAN: deduplicación Network Memory, compresión y aceleración TCP y de protocolos. Bloques de 100 Mbps agrupables como pool del fabric, como servicio (Boost-aaS) o suscripción on-premises</td>
-          <td>Sedes con tráfico repetitivo — réplicas, backups, VDI, ficheros compartidos</td></tr>
+          <td>Sedes con tráfico repetitivo — réplicas, backups, VDI, CIFS/SMB — o enlaces de alta latencia. El dimensionador lo auto-calcula: 30 % del tráfico WAN privado</td></tr>
     </tbody>
   </table></div>
-  <p class="hint" style="margin-top:10px">Orchestrator no se licencia por dispositivo gestionado, a diferencia de las plataformas de gestión que sí cobran por elemento.</p>
+  <p class="hint" style="margin-top:10px">El soporte (TAC 24/7 y actualizaciones de software) va <b>incluido en la suscripción</b>, y HPE no admite mezclar niveles Foundation/Advanced en un mismo fabric (QuickSpecs p.31, literal). Orchestrator no se licencia por dispositivo gestionado, a diferencia de las plataformas de gestión que sí cobran por elemento.</p>
 </section>
 
 <section class="panel">
@@ -377,6 +711,14 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
           <td>En una red de 60 sucursales donde solo 8 mueven ficheros pesados, se licencia para esas 8 — no para 60. Es el argumento económico central frente a un add-on por dispositivo</td></tr>
     </tbody>
   </table></div>
+  <div class="field" style="margin-top:14px">
+    <label for="poolSedes">Calculadora de pool — sedes que aprovechan Boost</label>
+    <div class="row">
+      <input type="number" id="poolSedes" min="1" step="1" placeholder="Nº de sedes" autocomplete="off">
+    </div>
+    <p class="hint">Toma los bloques por sede que el dimensionador acaba de calcular (30 % del tráfico WAN privado, en bloques de 100 Mbps) y los proyecta al fabric: el pool se licencia una vez y Orchestrator lo reparte.</p>
+    <div id="poolOut"></div>
+  </div>
 </section>
 
 <section class="panel">
@@ -397,7 +739,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
           <td>Identifica la aplicación en el primer paquete, antes de decidir camino</td>
           <td>La decisión de breakout local o reenvío al SSE no espera a que la sesión se establezca</td></tr>
       <tr><td><b>Convergencia SD-Branch</b></td>
-          <td>Los gateways de la serie 9000 terminan la WAN y actúan de controladora de hasta 32 APs desde el mismo equipo, gestionados por Central</td>
+          <td>Los gateways de la serie 9000 terminan la WAN y actúan de controladora de hasta 128 APs (9004) o 256 (9012) desde el mismo equipo, gestionados por Central en AOS 10 (32 en AOS 8)</td>
           <td>En sucursales pequeñas elimina una caja y un contrato. La contrapartida, que hay que decir: no hacen optimización WAN — si hace falta Boost, la respuesta es EdgeConnect</td></tr>
       <tr><td><b>Capacidad por licencia (serie 9200)</b></td>
           <td>El mismo chasis entrega 20 Gbps solo con hardware, 30 con licencia Silver y 40 con Gold, escalando también APs y dispositivos</td>
@@ -437,7 +779,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <section class="panel">
   <h2>Catálogo Aruba — Throughput de referencia <span style="font-weight:400;color:var(--steel)">— EdgeConnect Enterprise y gateways serie 9000</span></h2>
   <div class="scroll"><table data-ordenable id="tbl-aruba-cat">
-    <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Capacidad</th><th>Puertos</th></tr></thead>
+    <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Capacidad</th><th>Puertos</th><th>Ciclo de vida</th></tr></thead>
     <tbody></tbody>
   </table></div>
   <p style="font-size:11px;color:var(--steel);margin-top:10px">Las cifras de capacidad salen de datasheet público. 15 modelos tienen SKU y List Price de HPE confirmados (sin el descuento del distribuidor); el resto sigue sin precio. Confirmar con el distribuidor HPE autorizado antes de cotizar en firme.</p>
@@ -455,6 +797,22 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   <h2>Datasheets y documentación oficial</h2>
   <p class="gd">Documentos de HPE/Aruba en los que se apoya este catálogo. Conviene abrir el que corresponda y confirmar la fila exacta antes de emitir una propuesta.</p>
   <ul class="fuentes-list" id="dsList"></ul>
+  <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <button type="button" class="btn ghost" id="saludBtn" style="font-size:11px;padding:6px 12px">Comprobar salud de las fuentes</button>
+    <span class="hint">Re-corre el vigía contra cada URL pública ahora mismo (puede tardar ~45 s por fuente caída).</span>
+  </div>
+  <div id="saludOut" style="margin-top:10px"></div>
+</section>
+<section class="panel">
+  <h2>Versiones mínimas de sistema operativo</h2>
+  <p class="gd">Versión mínima de ECOS / AOS que soporta cada plataforma, según release notes y matrices de compatibilidad oficiales. Clave al planear un tech refresh o al mezclar hardware de distinta antigüedad bajo el mismo Orchestrator.</p>
+  <div id="osMatrix"></div>
+</section>
+<section class="panel">
+  <h2>Delta de precios — comparar una lista nueva</h2>
+  <p class="gd">Sube una lista de precios nueva (CSV con el mismo formato que la lista vigente: <code>sku,modelo_dimensionador,descripcion_hpe,list_price_usd,vigencia_list_price,estado_plc</code>) y compárala contra la que gobierna hoy el catálogo. Nada se persiste: es una comparación en memoria para decidir si conviene actualizar.</p>
+  <input type="file" id="deltaCsv" accept=".csv,text/csv" style="max-width:420px">
+  <div id="deltaOut" style="margin-top:10px"></div>
 </section>
 </div>
 
@@ -464,6 +822,41 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 </p>
 
 </div><!-- /wrap -->
+
+<!-- Modal de ópticas y accesorios (fase 12, corregido 2026-09-13): catálogo maestro
+     servido por el servidor con SKU, descripción, List Price, vigencia y PLC de la
+     lista de precios oficial del distribuidor; compatibilidad anclada al VSG oficial
+     EdgeConnect. Un SKU en PLC «ES» nunca se oferta. -->
+<div id="accModal" hidden>
+  <div class="acc-caja">
+    <h3>Ópticas y accesorios — <span id="accModelo"></span></h3>
+    <p class="hint" id="accHint"></p>
+    <div id="accLista"></div>
+    <p class="hint" style="margin-top:10px">SKU, descripción y «List Price» de la lista de precios oficial del distribuidor (2026-09-13) — la cifra firme la cierra tu distribuidor. Las variantes <b>TAA</b> cumplen el Trade Agreements Act (compra pública de EE.&nbsp;UU.). El cordón de alimentación localizado va <b>incluido por defecto</b> en el equipo (la opción #AC3 «NoLoc» es la que lo excluye — QuickSpecs).</p>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+      <button type="button" class="btn ghost" id="accCerrar" style="font-size:11px;padding:6px 12px">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal del BOM global consolidado (M6, SPEC parte B): agrega Σ(BOM del perfil × sedes)
+     de los perfiles multi-sede guardados en localStorage (arubaPerfilesV1), con las mismas
+     reglas del fabric que ya tenía el consolidado en línea — pool de Boost en una línea y
+     Orchestrator una sola vez — y exportación a Excel por el mecanismo XLSX común. -->
+<div id="modalConsolidado" hidden>
+  <div class="acc-caja" style="max-width:860px">
+    <h3>BOM global consolidado — perfiles multi-sede</h3>
+    <p class="hint" id="consolidadoSub"></p>
+    <div id="consolidadoTabla"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+      <button type="button" class="btn" id="xlsConsolidadoBtn" style="font-size:11px;padding:6px 12px">Exportar consolidado a Excel</button>
+      <button type="button" class="btn ghost" id="consolidadoCerrar" style="font-size:11px;padding:6px 12px">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/motor-ingenieria.js"></script>
+<script src="/js/aruba-reglas.js"></script>
 <script src="/js/bom.js"></script>
 <script src="/js/ficha.js"></script>
 <script src="/js/estado.js"></script>

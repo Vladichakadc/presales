@@ -9,17 +9,17 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" data-fuente>
 <style>
-:root{--paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;--red:#EE3124;--amber:#A45B00;--green:#1F6B4A;--card:#FFF}
+:root{--paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;--red:#EE3124;--red-txt:#D41D10;--amber:#A45B00;--green:#1F6B4A;--card:#FFF}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
-.wrap{max-width:1140px;margin:0 auto;padding:26px 18px 80px}
+.wrap{max-width:1480px;margin:0 auto;padding:22px 18px 24px}
 .masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px}
-.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0 0 6px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red-txt);font-weight:600;margin:0 0 6px}
 h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28px,5.5vw,48px);line-height:.98;text-transform:uppercase;margin:0}
 .sub{color:var(--steel);max-width:64ch;margin:8px 0 0;font-size:14.5px}
 .back-link{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);text-decoration:none;margin-bottom:18px;transition:color .15s}
-.back-link:hover{color:var(--red)}
+.back-link:hover{color:var(--red-txt)}
 .tabs{display:flex;gap:0;border-bottom:1px solid var(--rule);margin-bottom:22px}
 .tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:11px 18px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.03em;text-transform:uppercase;color:var(--steel)}
 .tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--red)}
@@ -37,7 +37,7 @@ h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28p
 .dot.ok{background:var(--ink)}
 .dot.pick{background:var(--red);width:11px;height:11px;bottom:32px;box-shadow:0 0 0 4px rgba(238,49,36,.18)}
 .need{position:absolute;top:0;bottom:26px;width:2px;background:var(--red);transform:translateX(-50%);transition:left .25s cubic-bezier(.2,.8,.2,1)}
-.need span{position:absolute;top:-2px;left:6px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;color:#fff;background:var(--red);padding:2px 6px;border-radius:2px}
+.need span{position:absolute;top:-2px;left:6px;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;color:#fff;background:var(--red-txt);padding:2px 6px;border-radius:2px}
 .need.flip span{left:auto;right:6px}
 .pickLabel{position:absolute;bottom:52px;transform:translateX(-50%);white-space:nowrap;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;text-transform:uppercase}
 .legend{display:flex;gap:16px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--steel);letter-spacing:.06em;text-transform:uppercase}
@@ -67,7 +67,7 @@ input[type=range]{width:100%;accent-color:var(--red)}
 
 /* VERDICT */
 .verdict{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:22px;margin-bottom:16px}
-.tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600;margin:0}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red-txt);font-weight:600;margin:0}
 .model{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(22px,4vw,36px);line-height:1;text-transform:uppercase;margin:6px 0 2px}
 .family{color:var(--steel);font-size:13.5px;margin-bottom:16px}
 .meter{margin-bottom:12px}
@@ -83,7 +83,7 @@ ul.clean li{padding-left:14px;position:relative;margin-bottom:9px;font-size:13.5
 ul.clean li:before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;background:var(--rule)}
 ul.clean li.on:before{background:var(--red)}
 .sku{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--steel);display:block;margin-top:2px}
-.req{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 5px;border-radius:2px;background:var(--red);color:#fff;margin-left:6px;vertical-align:1px}
+.req{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 5px;border-radius:2px;background:var(--red-txt);color:#fff;margin-left:6px;vertical-align:1px}
 .req.opt{background:var(--paper);color:var(--steel)}
 table{width:100%;border-collapse:collapse;font-size:12.5px}
 th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);font-weight:500;padding:0 8px 7px 0;border-bottom:1px solid var(--rule)}
@@ -109,17 +109,266 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 .tierRow .tv{font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-align:right;color:var(--steel)}
 .tierRow .tb{height:14px;background:var(--paper);border-radius:2px;overflow:hidden}
 .tierRow .tb i{display:block;height:100%;background:#B9C4D2;transition:width .3s}
-.tierRow.on .tn{color:var(--red)}
+.tierRow.on .tn{color:var(--red-txt)}
 .tierRow.on .tb i{background:var(--red)}
 .tierRow.on .tv{color:var(--ink);font-weight:600}
 .tierRow.off .tb i{background:#8FA3B8}
 .tierDrop{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--amber);margin:2px 0 9px 122px}
+.tco-tabla{width:100%;border-collapse:collapse;margin-top:6px}
+.tco-tabla th,.tco-tabla td{font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--rule);text-align:right}
+.tco-tabla th:first-child,.tco-tabla td:first-child{text-align:left}
+.acc-caja{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:20px;max-height:86vh;overflow:auto}
+/* ══ M1 · Multi-Underlay Builder (2026-09-16) ══
+   Mismo lenguaje visual que el de Aruba —tarjeta por enlace, cabecera con badge de
+   familia, validacion en linea, barra agregada viva— pero con la FILA de FortiGate, que
+   es mas corta a proposito: {transporte, bajada, overlay}. Ni medio de puerto ni subida.
+   El porque esta en el comentario del marcado. */
+.wan-fila{border:1px solid var(--rule);border-radius:3px;background:var(--paper);padding:10px 12px 12px;margin-bottom:10px}
+.wan-fila select,.wan-fila input{padding:7px 8px;font-size:12px}
+.wan-fila input[type=number]{font-family:'IBM Plex Mono',monospace;font-size:12.5px}
+.wan-cab{display:flex;align-items:center;gap:8px;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid var(--rule)}
+.wan-num{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:14px;letter-spacing:.04em;text-transform:uppercase}
+.wan-badge{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:2px;font-weight:600}
+.wan-badge.mpls{background:#3D5A80;color:#fff}
+.wan-badge.inet{background:var(--green);color:#fff}
+.wan-badge.cel{background:var(--amber);color:#fff}
+.wan-acc{margin-left:auto;display:flex;gap:6px}
+.wan-iconbtn{border:1px solid var(--rule);background:var(--card);color:var(--steel);border-radius:2px;cursor:pointer;font-size:13px;line-height:1;padding:4px 8px}
+.wan-iconbtn:hover{border-color:var(--red);color:var(--red-txt)}
+.wan-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:8px;align-items:end}
+.wan-campo label{display:block;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--steel);margin-bottom:4px}
+.wan-bw{position:relative;display:block}
+.wan-bw input{padding-right:46px;width:100%}
+.wan-sufijo{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.06em;color:var(--steel);pointer-events:none}
+.wan-ov{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--steel);cursor:pointer;grid-column:1/-1;padding-bottom:2px}
+.wan-ov input{margin:0;accent-color:var(--red)}
+.wan-ov.na{opacity:.55;cursor:default}
+.wan-fila input.wan-invalido{border-color:#a4544e;outline-color:#a4544e}
+.wan-msg{font-size:11.5px;line-height:1.45;margin:8px 0 0}
+.wan-msg.err{color:#a4544e}
+.wan-msg.warn{color:var(--amber)}
+.wan-resumen{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;border:1px solid var(--rule);border-left:3px solid var(--ink);background:var(--card);border-radius:2px;padding:9px 12px;margin-top:12px;font-size:12.5px;line-height:1.5}
+.wan-resumen b{font-family:'IBM Plex Mono',monospace;font-size:12px}
+.wan-res-sep{color:var(--rule)}
+@media(max-width:560px){.wan-grid{grid-template-columns:1fr}.wan-ov{padding-bottom:0}}
+#modalConsolidado{position:fixed;inset:0;background:rgba(28,25,23,.45);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
+#modalConsolidado[hidden]{display:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 .bom-desvio{font-size:12.5px;line-height:1.5;color:var(--steel);border-left:2px solid var(--amber);padding:6px 0 6px 10px;margin:8px 0 0}
 .fuentes-list{font-size:13.5px;color:var(--steel);padding:0;margin:0 0 0 20px}
 .fuentes-list li{margin-bottom:8px}
 .fuentes-list a{color:var(--ink);text-decoration:none;font-weight:600}
-.fuentes-list a:hover{text-decoration:underline;color:var(--red)}
+.fuentes-list a:hover{text-decoration:underline;color:var(--red-txt)}
+
+/* ══ REDISEÑO 2026-09-22 (informe de validación técnica, §7) ══════════════════════════
+   Se conserva el lenguaje visual de la página —tipografía, acentos, reglas— y se cambia la
+   JERARQUÍA: el estado del dato primero, el formulario plegado por pasos y la recomendación
+   fija a la vista mientras se mueven los parámetros. */
+
+/* Banner de estado de datos: responde «¿esto tiene grado comercial?» antes de mirar cifras. */
+.databanner{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;
+  border:1px solid var(--rule);border-left:3px solid var(--steel);
+  padding:10px 14px;margin:0 0 14px;font-size:12px;background:var(--paper2, transparent)}
+.databanner.ok{border-left-color:var(--green,#1a7f37)}
+.databanner.warn{border-left-color:var(--amber)}
+.databanner.bad{border-left-color:var(--red)}
+.databanner b{font-weight:700}
+.databanner .db-item{display:flex;gap:6px;align-items:baseline}
+.databanner .db-k{text-transform:uppercase;letter-spacing:.08em;font-size:9.5px;color:var(--steel)}
+.databanner .db-v{font-family:'IBM Plex Mono',monospace;font-size:11.5px}
+
+/* Barra de acciones en una fila. */
+.acciones-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 0}
+.acciones-bar input[type=text]{flex:1 1 180px;min-width:150px}
+.acciones-huecos{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.acciones-estado{font-size:11px;color:var(--steel);font-family:'IBM Plex Mono',monospace}
+
+/* Pasos plegables. El <summary> es nativo: plegar no necesita JavaScript, que la CSP
+   prohíbe en línea, y además conserva el teclado y el lector de pantalla gratis. */
+.paso > details > summary{cursor:pointer;list-style:none;display:block}
+.paso > details > summary::-webkit-details-marker{display:none}
+.paso > details > summary h2{display:flex;align-items:center;gap:10px;margin:0}
+.paso > details > summary h2::after{content:'';margin-left:auto;width:7px;height:7px;
+  border-right:1.5px solid var(--steel);border-bottom:1.5px solid var(--steel);
+  transform:rotate(45deg);transition:transform .15s;flex:none}
+.paso > details[open] > summary h2::after{transform:rotate(-135deg)}
+.paso > details > summary:hover h2{color:var(--red-txt)}
+.paso-cuerpo{margin-top:14px}
+.paso-chip{font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:2px 7px;border:1px solid var(--rule);white-space:nowrap}
+.paso-chip.ok{color:var(--steel)}
+.paso-chip.warn{color:var(--amber);border-color:var(--amber)}
+.paso-chip.bad{color:var(--red-txt);border-color:var(--red)}
+.paso-chip:empty{display:none}
+
+/* Cabecera del panel de decision: modelo validado, cumplimiento, cuello y alternativas. Ya
+   no necesita fijarse por su cuenta: vive en la cabecera del panel derecho, que es el que
+   esta anclado al viewport. */
+.sticky-reco{border-left:3px solid var(--red);
+  padding:4px 0 4px 12px;margin:0;
+  display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline}
+.sticky-reco .sr-modelo{font-weight:700;font-size:15px}
+.sticky-reco .sr-cuello{font-size:11.5px;color:var(--steel)}
+.sticky-reco .sr-cuello b{color:var(--red-txt)}
+.sticky-reco .sr-alts{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-left:auto}
+.sticky-reco .sr-alts span{font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--steel)}
+.sticky-reco .sr-alt{font-size:10.5px;padding:3px 9px;border:1px solid var(--rule);
+  background:none;cursor:pointer;font-family:'IBM Plex Mono',monospace;color:var(--ink)}
+.sticky-reco .sr-alt:hover{border-color:var(--amber);color:var(--amber)}
+
+
+/* Barras de utilización por eje. */
+.ejes{margin-top:14px;border:1px solid var(--rule)}
+.ejes h3{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);
+  margin:0;padding:9px 12px;border-bottom:1px solid var(--rule)}
+.eje{display:grid;grid-template-columns:minmax(96px,1fr) 2fr minmax(88px,auto);
+  gap:10px;align-items:center;padding:7px 12px;border-bottom:1px solid var(--rule);font-size:11.5px}
+.eje:last-child{border-bottom:0}
+.eje .en{font-weight:600}
+.eje .eb{height:7px;background:var(--rule);position:relative;overflow:hidden}
+.eje .eb i{display:block;height:100%;background:var(--steel)}
+.eje .ev{font-family:'IBM Plex Mono',monospace;text-align:right;white-space:nowrap}
+.eje.manda .eb i{background:var(--red)}
+.eje.manda .en{color:var(--red-txt)}
+.eje.alto .eb i{background:var(--amber)}
+.eje.sindato .eb{background:repeating-linear-gradient(45deg,var(--rule),var(--rule) 3px,transparent 3px,transparent 6px)}
+.eje.sindato .ev{color:var(--amber)}
+.ejes .eje-pie{padding:9px 12px;font-size:11px;color:var(--steel);border-top:1px solid var(--rule)}
+
+/* Controles del gráfico. */
+.ladder-cab{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.ladder-ctrl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:11px}
+.ladder-ctrl select{font-size:11px;padding:3px 6px}
+.ladder-ctrl label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel)}
+.ladder-check{margin:0}
+.ladder-check span{font-size:11px;text-transform:none;letter-spacing:0}
+.track .dot.alt{background:var(--amber);width:9px;height:9px;z-index:3}
+.track .altLabel{position:absolute;top:-30px;transform:translateX(-50%);font-size:9.5px;
+  font-family:'IBM Plex Mono',monospace;color:var(--amber);white-space:nowrap}
+
+/* Puerta de exportación. */
+.gate{border:1px solid var(--rule);border-left:3px solid var(--steel);padding:12px 14px;
+  margin:0 0 14px;font-size:12.5px}
+.gate.ok{border-left-color:var(--green,#1a7f37)}
+.gate.warn{border-left-color:var(--amber)}
+.gate.bad{border-left-color:var(--red)}
+.gate h3{margin:0 0 6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+.gate ul{margin:8px 0 0;padding-left:18px}
+.gate li{margin-bottom:4px}
+.gate .gate-ov{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.gate .gate-ov input[type=text]{flex:1 1 220px;font-size:11.5px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+
+
+/* ══ ETAPA 7 · SHELL DE DOS COLUMNAS (informe del 23-sep, §9) ═════════════════════════════
+   La izquierda es captura y se desplaza con la pagina; la derecha es DECISION y se queda
+   anclada al viewport con su propio scroll interno para los detalles. Se eligio que el
+   formulario use el scroll de la pagina y no uno propio: dos scrolls anidados en la misma
+   columna obligan a vaciar uno para mover el otro, y el dueño ya rechazo ese patron en
+   Aruba («el unico scroll es el de la pagina»). Lo que el informe exige —T26: la columna
+   izquierda se mueve sin mover el panel derecho— se cumple igual, y sin doble scroll.
+   ≥1200 px 40/60 · 881-1199 px 44/56 · ≤880 px una columna con resumen fijo abajo. */
+.dim{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,6fr);gap:20px;align-items:start}
+@media(max-width:1199px){.dim{grid-template-columns:minmax(0,44fr) minmax(0,56fr);gap:16px}}
+@media(max-width:880px){.dim{grid-template-columns:1fr}}
+.dim-form{min-width:0}
+.dim-res{min-width:0;background:var(--card);border:1px solid var(--rule);border-radius:3px;display:flex;flex-direction:column;margin-bottom:16px}
+@media(min-width:881px){
+  /* La altura exacta la ajusta la pagina a lo que queda visible bajo la cabecera (ver
+     ajustarPanel en el JS): con un calc fijo el pie —la puerta y «Revisar lista»— quedaba
+     debajo del borde hasta desplazar la pagina, y el pie es justo lo que no puede faltar. */
+  .dim-res{position:sticky;top:12px;height:calc(100vh - 24px)}
+  .res-cuerpo{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+}
+/* Cabecera, pestañas y pie NO se encogen: con `overflow-x:auto` la lista de pestañas tiene
+   alto minimo 0 y el flex la aplastaba hasta hacerla desaparecer. Solo el cuerpo cede. */
+.res-cab,.res-tabs,.res-pie{flex:none}
+.res-cab{padding:12px 14px 10px;border-bottom:1px solid var(--rule)}
+.res-tabs{display:flex;border-bottom:1px solid var(--rule);padding:0 6px;overflow-x:auto}
+.res-tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:8px 10px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:14px;letter-spacing:.03em;text-transform:uppercase;color:var(--steel);white-space:nowrap}
+.res-tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--red)}
+.res-tabs button:focus-visible,.tabs button:focus-visible{outline:2px solid var(--red);outline-offset:-2px}
+/* Por debajo de 1200 px el panel mide unos 540 px (y 350 en movil) y la quinta pestana quedaba
+   cortada: se podia desplazar, pero no se veia que existiera. Se compacta la fila en vez de
+   esconderla. Va DESPUES de la regla base a proposito: con la misma especificidad, gana la
+   ultima de la hoja. */
+@media(max-width:1199px){.res-tabs{padding:0 2px}.res-tabs button{padding:8px 5px;font-size:12px;letter-spacing:0}}
+/* En movil no caben ni compactadas (468 px en 352): pasan a dos filas, que se ven enteras. */
+@media(max-width:880px){.res-tabs{flex-wrap:wrap;overflow-x:visible}}
+.res-cuerpo{padding:12px 14px}
+.res-panel[hidden]{display:none}
+.res-panel:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.res-pie{border-top:1px solid var(--rule);padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.res-pie .gate-linea{flex:1 1 220px;font-size:12px;line-height:1.45}
+.vh{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Estado de la puerta: un solo vocabulario en toda la pagina. */
+.qg{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:2px;border:1px solid;white-space:nowrap}
+.qg-READY{color:var(--green);border-color:var(--green)}
+.qg-WARNING{color:var(--amber);border-color:var(--amber)}
+.qg-DRAFT{color:var(--steel);border-color:var(--steel)}
+.qg-BLOCKED{color:#fff;background:var(--red-txt);border-color:var(--red)}
+
+/* Override que no cumple y bloqueos con su correccion. */
+.override-aviso{border:1px solid var(--red);border-left:3px solid var(--red);background:#FFF5F5;padding:10px 12px;margin:10px 0 0;font-size:12.5px;line-height:1.5}
+.override-aviso table{margin-top:6px;font-size:12px}
+.res-bloqueos{margin:10px 0 0;padding:0;list-style:none;font-size:12.5px;line-height:1.45}
+.res-bloqueos .bloq-fuente{display:block;font-size:11px;color:var(--steel);margin-top:3px}
+.res-bloqueos li{padding:6px 0 6px 10px;border-left:2px solid var(--red);margin-bottom:6px}
+.res-bloqueos li.warning{border-left-color:var(--amber)}
+.res-bloqueos li.borrador{border-left-color:var(--steel)}
+.btn-corr{font-size:10.5px;padding:2px 8px;margin-left:6px;vertical-align:1px}
+.autocorr{border:1px solid var(--amber);border-left:3px solid var(--amber);padding:8px 10px;font-size:12.5px;margin:10px 0 0;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;line-height:1.45}
+.autocorr[hidden]{display:none}
+
+/* Campos: validacion en linea, obligatorios, y QUE EJE TOCA cada uno (§10.3 del informe). */
+.afecta{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--steel);margin:4px 0 0;letter-spacing:.02em}
+.afecta:empty{display:none}
+.campo-error{color:#a4544e;font-size:11.5px;margin:4px 0 0}
+.campo-error:empty{display:none}
+input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{border-color:#a4544e;outline-color:#a4544e}
+.obligatorio{font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--red-txt);margin-left:6px;font-weight:600}
+.field.falta input,.field.falta select,.field.falta textarea{border-color:var(--red)}
+input[type=text],textarea{width:100%;padding:9px 10px;border:1px solid var(--rule);border-radius:2px;background:#fff;color:var(--ink);font-family:'Barlow',sans-serif;font-size:13.5px}
+textarea{min-height:64px;resize:vertical}
+input[readonly]{background:var(--paper);color:var(--steel)}
+.field.sub{margin:6px 0 10px 22px}
+.grupo-cond{border-left:2px solid var(--rule);padding-left:12px;margin:6px 0 14px}
+.puertos-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media(max-width:560px){.puertos-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.puertos-grid label{font-size:11px;font-weight:600;margin-bottom:4px}
+
+/* Comparacion (shortlist) y requisitos. */
+.tabla-comp th,.tabla-comp td{font-size:12px}
+.tabla-comp td.n{text-align:right}
+.tabla-comp tr.rec td{background:#FFF8F7}
+.tabla-comp tr.sel td{font-weight:600}
+.req-tabla td.n{text-align:right;white-space:nowrap}
+.esc-tabla td.n{text-align:right;white-space:nowrap}
+.dl-supuestos{margin:8px 0 0;padding-left:18px;font-size:12.5px;color:var(--steel)}
+
+/* Resumen fijo abajo en movil: una linea, sin scroll anidado (T27). */
+.res-movil{display:none}
+@media(max-width:880px){
+  .res-movil{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;gap:10px;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--ink);color:#fff;font-size:13px}
+  .res-movil b{font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:.02em}
+  .res-movil a{color:#fff;font-weight:600;white-space:nowrap}
+  body{padding-bottom:64px}
+}
+
+/* Lista de materiales: una columna centrada, como Aruba. */
+.pane-centro{max-width:1040px;margin:0 auto}
+/* Cabecera compacta: en esta pagina el panel de decision tiene que entrar en la primera
+   pantalla, y un titular de dos lineas a 48 px lo empujaba 600 px hacia abajo. */
+h1{font-size:clamp(24px,3.4vw,36px)}
+.masthead{padding-bottom:10px;margin-bottom:14px}
+.back-link{margin-bottom:10px}
+/* Las pestañas superiores no desbordan la pagina en movil: se desplazan dentro de su fila. */
+.tabs{overflow-x:auto;scrollbar-width:thin;margin-bottom:16px}
+.tabs button{white-space:nowrap;flex:none}
+@media(max-width:560px){.tabs button{padding:9px 11px;font-size:14px}}
+.acciones-bar input[type=text]{width:auto;flex:1 1 180px;min-width:150px}
+.acciones-bar{margin:0 0 14px}
 </style>
 <script src="/js/fuentes.js" defer></script>
 </head>
@@ -130,36 +379,109 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 
 <header class="masthead">
   <p class="eyebrow">Fortinet &middot; Preventa NGFW &amp; SD-WAN &middot; Dimensionamiento y lista de materiales</p>
-  <h1>Dimensionador<br>y BOM FortiGate</h1>
-  <p class="sub">Sizing de NGFW considerando throughput de firewall, IPS, inspección SSL/TLS y perfil SD-WAN. Selecciona el modelo FortiGate óptimo y genera la lista de licencias FortiGuard y soporte FortiCare.</p>
+  <h1>Dimensionador y BOM FortiGate</h1>
+  <p class="sub">Dimensionamiento multieje de NGFW y SD-WAN —capa de inspección, SSL/TLS, IPsec, sesiones, túneles y plataforma— con una sola evaluación para la recomendación, la lista de materiales y la cotización.</p>
 </header>
 
-<div class="tabs" role="tablist">
-  <button role="tab" aria-selected="true" data-tab="calc">Dimensionar</button>
-  <button role="tab" aria-selected="false" data-tab="bom">Equipo y BOM</button>
-  <button role="tab" aria-selected="false" data-tab="lic">Licencias</button>
-  <button role="tab" aria-selected="false" data-tab="cat">Catálogo</button>
-  <button role="tab" aria-selected="false" data-tab="src">Fuentes</button>
+<!-- BANNER DE ESTADO DE DATOS (informe 2026-09-22, §7). Va BAJO EL HERO y no dentro de la
+     pestaña de Fuentes porque responde a «¿esto tiene grado comercial?», que es una pregunta
+     que se hace ANTES de mirar una cifra, no después. Lo pinta js/dimensionador-fortinet-fortigate.js
+     desde /api/fuentes y desde la cobertura real del catálogo — nunca desde un texto fijo. -->
+<div id="dataBanner" class="databanner" aria-live="polite" hidden></div>
+
+<div class="tabs" role="tablist" aria-label="Secciones del dimensionador">
+  <button type="button" role="tab" id="tab-calc" aria-controls="pane-calc" aria-selected="true" tabindex="0" data-tab="calc">Dimensionar</button>
+  <button type="button" role="tab" id="tab-bom" aria-controls="pane-bom" aria-selected="false" tabindex="-1" data-tab="bom">Lista de materiales</button>
+  <button type="button" role="tab" id="tab-lic" aria-controls="pane-lic" aria-selected="false" tabindex="-1" data-tab="lic">Licencias y software</button>
+  <button type="button" role="tab" id="tab-cat" aria-controls="pane-cat" aria-selected="false" tabindex="-1" data-tab="cat">Catálogo</button>
+  <button type="button" role="tab" id="tab-src" aria-controls="pane-src" aria-selected="false" tabindex="-1" data-tab="src">Fuentes</button>
 </div>
 
 <!-- ════ TAB 1 · CALCULADORA ════ -->
-<div class="tabpane" id="pane-calc">
-<section class="ladder">
-  <p class="mono-lbl">Escala de throughput NGFW — capacidad del modelo vs. requerimiento (logarítmica)</p>
-  <div class="track" id="track"><div class="axis"></div><div class="need" id="need"><span id="needLbl">—</span></div><div class="pickLabel" id="pickLbl" style="display:none"></div></div>
-  <div class="legend">
-    <span><i></i>Throughput FW / NGFW publicado</span>
-    <span style="color:var(--red)"><i style="background:var(--red)"></i>Requerimiento calculado</span>
+<div class="tabpane" id="pane-calc" role="tabpanel" aria-labelledby="tab-calc">
+  <!-- BARRA DE ACCIONES EN UNA FILA: identidad de la propuesta, enlace del escenario,
+       deshacer, limpiar y de donde salio lo que hay en pantalla. -->
+  <div class="acciones-bar" id="accionesBar">
+    <input type="text" id="nombreCliente" placeholder="Nombre del cliente" autocomplete="off" aria-label="Nombre del cliente">
+    <input type="text" id="refProyecto" placeholder="Referencia / proyecto" autocomplete="off" aria-label="Referencia o proyecto">
+    <span class="acciones-huecos" id="accionesEnlace"></span>
+    <button type="button" class="btn ghost" id="btnDeshacer" disabled title="Vuelve al escenario anterior a tu último cambio">Deshacer</button>
+    <button type="button" class="btn ghost" id="btnLimpiar" title="Vuelve todos los campos a su valor por defecto">Limpiar</button>
+    <span class="acciones-estado" id="estadoGuardado" aria-live="polite"></span>
   </div>
-</section>
 
-<div class="cols">
-<div>
-  <section class="panel">
-    <h2>1 · Tipo de inspección requerida</h2>
+<div class="dim" id="dimShell">
+<!-- ═══════════════ COLUMNA IZQUIERDA · CAPTURA ═══════════════
+     Cinco pasos plegables. Lo que no aplica al escenario NO se ve y NO cuenta: los grupos
+     marcados con `data-regla` los muestra u oculta el esquema de dependencias del motor
+     (FortinetMotor.REGLAS), el mismo que decide que entra en el calculo y en la huella. Un
+     valor oculto se conserva en el campo para recuperarlo al reactivar la opcion. -->
+<div class="dim-form" id="dimForm">
+  <section class="panel paso" id="paso1">
+    <details open>
+    <summary><h2>1 · Plataforma y rol <span class="paso-chip" id="chipPaso1"></span></h2></summary>
+    <div class="paso-cuerpo">
+    <p class="hint" style="margin:-4px 0 14px">Se acota <b>antes</b> que el caudal: el rol en la topología decide si el motor IPsec impone un segundo techo, la versión de FortiOS qué funciones existen, y el segmento qué gama compite.</p>
     <div class="field">
-      <label>Capa de inspección a dimensionar <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— es el punto de partida: las funciones que actives abajo pueden elevarla</span></label>
-      <div class="seg" id="profileSeg">
+      <label id="lblSegSeg">Segmento de instalación</label>
+      <div class="seg" id="segSeg" role="group" aria-labelledby="lblSegSeg">
+        <button type="button" data-v="branch" aria-pressed="true">Sucursal</button>
+        <button type="button" data-v="campus" aria-pressed="false">Campus / Hub</button>
+        <button type="button" data-v="dc"     aria-pressed="false">Datacenter / Carrier</button>
+      </div>
+    </div>
+    <div class="field" style="margin-top:16px">
+      <label id="lblRolSeg">Rol en la topología SD-WAN</label>
+      <div class="seg" id="rolSeg" role="group" aria-labelledby="lblRolSeg">
+        <button type="button" data-v="none"  aria-pressed="true">Sin SD-WAN</button>
+        <button type="button" data-v="spoke" aria-pressed="false">Spoke<br>(sucursal)</button>
+        <button type="button" data-v="hub"   aria-pressed="false">Hub<br>(concentrador)</button>
+      </div>
+      <p class="hint" id="rolHint">Solo perímetro: el tráfico no viaja por túneles del overlay, así que el techo lo fija únicamente la capa de inspección.</p>
+    </div>
+    <!-- VERSION DE FortiOS (hallazgo P0 F02 del 23-sep). Gobierna que funciones existen: el
+         modo tunel SSL-VPN se retiro en 7.6.3 y la serie 90G solo lo soporta en 7.0.12-7.0.15
+         (nota 11 del Product Matrix). Tres ramas, las que las fuentes distinguen. -->
+    <div class="field">
+      <label for="fortiOS">Versión de FortiOS del diseño</label>
+      <select id="fortiOS">
+        <option value="7.6.3+" selected>7.6.3 o superior (rama vigente)</option>
+        <option value="7.6.0-7.6.2">7.6.0 a 7.6.2</option>
+        <option value="7.4">7.4.x</option>
+      </select>
+      <p class="hint" id="fortiOSHint">Decide qué funciones están disponibles, no qué cifra aplica. En 7.6.3 o superior el acceso remoto SSL-VPN en modo túnel ya no existe: se diseña con IPsec.</p>
+    </div>
+    <div class="field">
+      <label for="modoInspeccion">Modo de inspección</label>
+      <select id="modoInspeccion">
+        <option value="flow" selected>Flow (el modo en que se miden las cifras publicadas)</option>
+        <option value="proxy">Proxy</option>
+      </select>
+      <p class="hint">Todas las cifras del Product Matrix se miden en <b>flow</b>. En proxy el rendimiento cae y Fortinet no publica cuánto: el resultado baja de confianza y pide PoC, y los modelos con soporte proxy limitado (nota 12 del Matrix) se apartan.</p>
+    </div>
+    <div class="checks">
+      <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad — par en clúster<span class="sku">Se cotizan <b>dos nodos</b> y la cantidad deja de ser editable: un clúster de uno no existe. Cada nodo lleva su propia suscripción FortiGuard. El clúster <b>no suma capacidad</b>: en el failover un nodo carga con todo.</span></span></label>
+    </div>
+    <div class="field sub" id="fldHaModo" data-regla="ha" hidden>
+      <label for="haModo">Modo del clúster</label>
+      <select id="haModo">
+        <option value="ha-ap" selected>Activo-pasivo (FGCP)</option>
+        <option value="ha-aa">Activo-activo</option>
+      </select>
+      <p class="hint">En activo-activo el clúster reparte sesiones, pero se dimensiona igual: <b>en el failover un nodo carga con todo</b>, y ese es el escenario que manda. No se aplica ningún «factor de reparto» que Fortinet no publique. Reserva dos interfaces para el heartbeat al declarar puertos en el paso 4.</p>
+    </div>
+    </div>
+    </details>
+  </section>
+
+  <section class="panel paso" id="paso2">
+    <details open>
+    <summary><h2>2 · Seguridad e inspección <span class="paso-chip" id="chipPaso2"></span></h2></summary>
+    <div class="paso-cuerpo">
+    <p class="hint" style="margin:-4px 0 14px">Las cifras publicadas miden rutas de procesamiento distintas, así que activar una función <b>no aplica un recargo</b>: cambia la cifra del datasheet que aplica.</p>
+    <div class="field">
+      <label id="lblProfileSeg">Capa de inspección a dimensionar <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— punto de partida: las funciones de abajo pueden elevarla</span></label>
+      <div class="seg" id="profileSeg" role="group" aria-labelledby="lblProfileSeg">
         <button type="button" data-v="fw"   aria-pressed="false">FW<br>puro</button>
         <button type="button" data-v="vpn"  aria-pressed="false">IPsec<br>VPN</button>
         <button type="button" data-v="ips"  aria-pressed="false">IPS</button>
@@ -167,139 +489,311 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
         <button type="button" data-v="tp"   aria-pressed="true">Threat<br>Prot.</button>
       </div>
       <p class="hint" id="profileHint">NGFW + antivirus + logging. Es el número realista de una sucursal con el stack de seguridad completo activo — el que se debe usar para dimensionar de verdad.</p>
-      <p class="hint" style="margin-top:6px">Las cinco cifras miden rutas de procesamiento distintas, no escenarios del mismo número. Por eso activar una función no aplica un recargo porcentual: <b>cambia la cifra del datasheet que aplica</b>. El motor toma siempre la capa más profunda entre la que elijas aquí y las que obliguen las funciones activas.</p>
+    </div>
+    <div class="checks">
+      <label class="check"><input type="checkbox" id="chkAv"> <span>Antivirus / Antimalware (FortiGuard AV)<span class="sku">Eleva el piso a <b>Threat Protection</b>: la inspección de archivos en línea saca la sesión del fast path del ASIC.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkWeb"> <span>Web Filtering / Application Control<span class="sku">Eleva el piso a <b>NGFW</b>. El filtrado web no está en ATP: con esta función el bundle mínimo es UTP.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkIotDlp"> <span>IoT Detection + DLP<span class="sku">Eleva el piso a <b>Threat Protection</b> y <b>fija el bundle mínimo en Enterprise Protection</b>: DLP e IoT Security no existen en UTP ni en ATP.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkSsl"> <span>Inspección profunda SSL/TLS<span class="sku">Pasa a dimensionar contra la cifra oficial de <b>SSL Inspection Throughput</b>, que es una medición propia y <b>no una fracción de Threat Protection</b>. Un modelo sin esa cifra <b>se aparta con su motivo</b>.</span></span></label>
+    </div>
+    <div class="grupo-cond">
+      <div class="field" id="fldTlsCifrado" data-regla="seguridad.tlsCifradoPct" hidden>
+        <label for="pctCifrado">Parte del tráfico que va cifrada (TLS)</label>
+        <select id="pctCifrado">
+          <option value="100" selected>100 % — todo el tráfico elegible (supuesto conservador)</option>
+          <option value="95">95 %</option>
+          <option value="90">90 %</option>
+          <option value="80">80 %</option>
+          <option value="70">70 %</option>
+        </select>
+        <p class="hint">El eje de inspección SSL se carga con el tráfico <b>que de verdad se descifra</b>: tráfico elegible × parte cifrada × parte no exenta.</p>
+        <p class="afecta" data-afecta="seguridad.tlsCifradoPct"></p>
+      </div>
+      <div class="field" id="fldTlsExento" data-regla="seguridad.tlsExentoPct" hidden>
+        <label for="pctTlsExento">Tráfico exento de inspección TLS por política</label>
+        <select id="pctTlsExento">
+          <option value="0" selected>0 % — se inspecciona todo (supuesto conservador)</option>
+          <option value="10">10 %</option>
+          <option value="20">20 % — banca, salud y SaaS de confianza en la lista de exclusión</option>
+          <option value="30">30 %</option>
+          <option value="40">40 %</option>
+        </select>
+        <p class="hint">Categorías con obligación legal, aplicaciones con <i>pinning</i> de certificado, tráfico de actualización: atraviesan el equipo pero <b>no consumen el motor de inspección SSL</b>. Lo declara quien diseña: <b>no es una constante de Fortinet</b>, y por eso el valor por defecto es 0 %.</p>
+        <p class="afecta" data-afecta="seguridad.tlsExentoPct"></p>
+      </div>
+    </div>
+    <div class="checks">
+      <label class="check"><input type="checkbox" id="chkSandbox"> <span>FortiSandbox (análisis de archivos zero-day)<span class="sku"><b>No eleva la capa:</b> analiza fuera de banda y no consume throughput del FortiGate.</span></span></label>
+    </div>
+    <div class="grupo-cond">
+      <div class="field" id="fldSandbox" data-regla="comercial.sandbox" hidden>
+        <label for="sandboxModo">Cómo se cubre el sandbox</label>
+        <select id="sandboxModo">
+          <option value="incluido" selected>Detección en la nube incluida en el bundle (sin línea aparte)</option>
+          <option value="ai">Servicio de sandbox del FortiGate (SKU propio de la price list)</option>
+          <option value="dedicado">FortiSandbox dedicado (producto aparte)</option>
+        </select>
+        <p class="hint">Son tres cosas distintas con el mismo nombre. La cobertura «incluida» es <b>FortiGate Cloud Sandbox</b>, que va dentro de Advanced Malware Protection en Enterprise, UTP y ATP según el Ordering Guide de FortiGuard.</p>
+        <p class="afecta" data-afecta="comercial.sandbox"></p>
+      </div>
+      <div class="field" id="fldSandboxModalidad" data-regla="comercial.sandboxModalidad" hidden>
+        <label for="sandboxModalidad">Modalidad del FortiSandbox dedicado</label>
+        <select id="sandboxModalidad">
+          <option value="" selected>— elegir —</option>
+          <option value="appliance">Appliance</option>
+          <option value="vm">Máquina virtual</option>
+          <option value="cloud">FortiSandbox Cloud</option>
+        </select>
+        <p class="campo-error" data-error="comercial.sandboxModalidad"></p>
+      </div>
+    </div>
+    </div>
+    </details>
+  </section>
+
+  <section class="panel paso" id="paso3">
+    <details open>
+    <summary><h2>3 · Tráfico y acceso remoto <span class="paso-chip" id="chipPaso3"></span></h2></summary>
+    <div class="paso-cuerpo">
+    <!-- M1 · Multi-Underlay Builder. Cada enlace declara transporte, caudal, si va por el
+         overlay y su ROL (activo o respaldo, F05): un respaldo no suma en operacion normal y
+         entra en el escenario de falla del enlace que sustituye. #bw, #unit y #pctOverlay
+         siguen como espejos ocultos que el builder calcula. -->
+    <div class="field">
+      <label><span id="bwLbl">Enlaces WAN del sitio (underlay)</span></label>
+      <div id="wanBuilder">
+        <div id="wanBuilderFilas"></div>
+        <button type="button" class="btn ghost" id="btnAddWan" style="font-size:11px;padding:5px 11px;margin-top:8px">+ Añadir enlace WAN</button>
+      </div>
+      <div id="wanResumen" class="wan-resumen" aria-live="polite" hidden></div>
+      <input type="hidden" id="wanLinksData">
+      <input type="hidden" id="bw" value="">
+      <input type="hidden" id="unit" value="1">
+      <input type="hidden" id="pctOverlay" value="100">
+      <p class="hint">Cada enlace declara su <b>transporte</b>, su <b>caudal de bajada</b>, si su tráfico <b>va por el overlay SD-WAN</b> y si es <b>activo o de respaldo</b>. El motor evalúa la operación normal (solo los activos) y la <b>falla de cada enlace activo</b>, cuya carga migra a los de respaldo hasta su capacidad: cada eje se dimensiona con el peor de esos escenarios.</p>
+      <p class="campo-error" data-error="topologia.enlaces"></p>
     </div>
     <div class="field">
-      <label><input type="checkbox" id="chkSsl"> <span>Inspección profunda SSL/TLS<span class="sku" style="display:block;margin-top:2px">Fuerza el piso a Threat Protection (no se puede inspeccionar TLS sin el stack completo) y aplica un castigo adicional estimado del 35%. Fortinet dejó de publicar una cifra de SSL Inspection por modelo en el Product Matrix.</span></span></label>
+      <label for="interVlan">Tráfico inter-VLAN / este-oeste inspeccionado (Mbps)</label>
+      <input type="number" id="interVlan" min="0" step="10" autocomplete="off" placeholder="0">
+      <label class="check" style="margin-top:8px"><input type="checkbox" id="chkNoConcurrente"> <span>Los picos de WAN e inter-VLAN <b>no</b> son concurrentes<span class="sku">Solo marcar si el diseño lo justifica. Sin marcar, los caminos se SUMAN.</span></span></label>
+      <p class="hint" id="traficoHint"></p>
+    </div>
+    <div class="field" id="fldAgg" data-regla="topologia.spokes" hidden>
+      <label for="sites">Spokes que concentra este hub</label>
+      <input type="number" id="sites" min="1" step="1" autocomplete="off">
+      <p class="hint">Fija el <b>caudal agregado</b> (caudal de una sede × spokes × simultaneidad) y el <b>número de túneles IPsec</b> que el hub termina, que se contrasta contra el máximo publicado del modelo. Con <b>ADVPN</b> los atajos spoke-a-spoke no cuentan contra el hub.</p>
+      <p class="afecta" data-afecta="topologia.spokes"></p>
+    </div>
+    <div class="field" id="fldHubs" data-regla="topologia.hubs" hidden>
+      <label for="hubs">Hubs / datacenters a los que cifra</label>
+      <input type="number" id="hubs" min="1" step="1" autocomplete="off">
+      <p class="hint">Túneles IPsec que levanta esta sucursal. Lo habitual es <b>2</b> (hub primario y secundario); con doble transporte activo-activo se duplica.</p>
+      <p class="afecta" data-afecta="topologia.hubs"></p>
+    </div>
+    <div class="field" id="fldConc" data-regla="topologia.simultaneidadPct" hidden>
+      <label for="conc">Simultaneidad: <span id="concVal" style="font-family:'IBM Plex Mono',monospace">35 %</span></label>
+      <input type="range" id="conc" min="5" max="100" step="5" value="35" autocomplete="off">
+      <p class="hint">Qué fracción del caudal de todas las sedes coincide en el pico. Es <b>el</b> parámetro que decide el tamaño de un concentrador.</p>
+      <p class="afecta" data-afecta="topologia.simultaneidadPct"></p>
+    </div>
+    <!-- ACCESO REMOTO CON ACTIVADOR PROPIO (F10). Sin la casilla, ninguno de sus campos
+         cuenta ni viaja en el enlace, aunque conserven lo tecleado. -->
+    <div class="checks">
+      <label class="check"><input type="checkbox" id="chkRemoto"> <span>Este equipo termina acceso remoto de usuarios<span class="sku">Teletrabajo y contratistas por VPN. Activa el método, los usuarios, el caudal y el doble factor.</span></span></label>
+    </div>
+    <div class="grupo-cond" id="grpRemoto">
+      <div class="field" id="fldVpnTipo" data-regla="remoto.metodo" hidden>
+        <label for="vpnTipo">Cómo termina el acceso remoto</label>
+        <select id="vpnTipo">
+          <option value="ipsec" selected>IPsec dial-up (FortiClient)</option>
+          <option value="sslvpn">SSL-VPN en modo túnel</option>
+        </select>
+        <p class="hint" id="vpnTipoHint">Son dos motores distintos del equipo y el Product Matrix publica un tope para cada uno: IPsec dial-up consume <i>Max Client to G/W IPsec Tunnels</i> y carga el eje IPsec; SSL-VPN consume <i>Concurrent SSL VPN Users</i> y su propio <i>SSL VPN Throughput</i>.</p>
+        <p class="afecta" data-afecta="remoto.metodo"></p>
+      </div>
+      <div class="field" id="fldVpnUsers" data-regla="remoto.usuarios" hidden>
+        <label for="vpnUsers">Usuarios de acceso remoto concurrentes</label>
+        <input type="number" id="vpnUsers" min="0" step="1" autocomplete="off" placeholder="0">
+        <p class="hint">Suman a la <b>tabla de sesiones</b> y se contrastan contra el tope del modelo —túneles de cliente o usuarios SSL-VPN, según el método—.</p>
+        <p class="afecta" data-afecta="remoto.usuarios"></p>
+        <p class="campo-error" data-error="remoto.usuarios"></p>
+      </div>
+      <div class="field" id="fldVpnMbps" data-regla="remoto.mbps" hidden>
+        <label for="vpnMbps">Caudal agregado de acceso remoto (Mbps)</label>
+        <input type="number" id="vpnMbps" min="0" step="10" autocomplete="off" placeholder="0">
+        <p class="hint">Lo que ese conjunto de usuarios mueve en el pico. Se inspecciona, así que suma al caudal de la capa efectiva; con IPsec carga además el eje IPsec, con SSL-VPN el de <i>SSL VPN Throughput</i>.</p>
+        <p class="afecta" data-afecta="remoto.mbps"></p>
+      </div>
+      <div class="field" id="fldMfa" data-regla="remoto.mfa" hidden>
+        <label class="check"><input type="checkbox" id="chkMfa"> <span>Doble factor con FortiToken<span class="sku">Cada usuario remoto ocupa un token; se contrasta contra el máximo de FortiTokens del modelo.</span></span></label>
+        <p class="afecta" data-afecta="remoto.mfa"></p>
+      </div>
+    </div>
+    </div>
+    </details>
+  </section>
+
+  <section class="panel paso" id="paso4">
+    <details open>
+    <summary><h2>4 · Escala, hardware y registro <span class="paso-chip" id="chipPaso4"></span></h2></summary>
+    <div class="paso-cuerpo">
+    <div class="field">
+      <label for="users">Usuarios / dispositivos concurrentes en el sitio</label>
+      <input type="number" id="users" min="0" step="1" autocomplete="off">
+      <p class="hint">Usuarios locales detrás del equipo. <b>No deriva caudal</b> —eso lo declaran los enlaces WAN—: alimenta la tabla de sesiones y el caudal de sesiones nuevas. <b>No se convierte en endpoints de FortiClient EMS</b>: esos se declaran aparte en el paso 5.</p>
     </div>
     <div class="field">
       <label for="sesUser">Sesiones concurrentes por usuario</label>
-      <input type="number" id="sesUser" value="20" min="0" step="1">
-      <p class="hint">Nadie sabe estimar «cuántas sesiones concurrentes necesito», pero todo el mundo puede estimar cuántas abre un usuario: 15–30 en un puesto corporativo, 50–100 con muchas apps SaaS y móviles, 5–10 en un dispositivo IoT. El total se calcula solo.</p>
+      <input type="number" id="sesUser" min="0" step="1" autocomplete="off">
+      <p class="hint">15–30 en un puesto corporativo, 50–100 con muchas apps SaaS y móviles, 5–10 en un dispositivo IoT.</p>
     </div>
     <div class="field">
-      <label for="sessNeed">Total de sesiones concurrentes <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— opcional, para forzar un valor</span></label>
-      <input type="number" id="sessNeed" value="0" min="0" step="1000">
-      <p class="hint">Deja 0 y se toma <b>usuarios x sesiones por usuario</b>. Ponle un valor solo si ya conoces la cifra agregada — típico en CGNAT o portales, donde se cuenta por suscriptor y no por usuario.</p>
+      <label for="sessNeed">Sesiones concurrentes medidas <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— opcional, sustituye a la estimación</span></label>
+      <input type="number" id="sessNeed" min="0" step="1000" autocomplete="off">
+      <p class="hint">Si ya conoces la cifra agregada (CGNAT, portales, un firewall en producción) manda sobre usuarios × sesiones. El crecimiento se le aplica igual.</p>
       <p class="hint" id="sesCalc" style="margin-top:6px"></p>
     </div>
     <div class="field">
       <label for="vidaSes">Vida media de una sesión <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— segundos</span></label>
-      <input type="number" id="vidaSes" value="30" min="1" step="1">
-      <p class="hint">De aquí sale el <b>segundo eje de sesiones</b>, el que de verdad aprieta: las <b>sesiones nuevas por segundo</b>. Si un usuario mantiene N sesiones abiertas y cada una dura V segundos, está abriendo N/V por segundo. 20–60 s es lo típico de navegación web y SaaS; baja a 2–5 s en tráfico de APIs o microservicios, que es donde este eje se dispara.</p>
+      <input type="number" id="vidaSes" min="1" step="1" autocomplete="off">
+      <p class="hint">De aquí sale el eje de <b>sesiones nuevas por segundo</b> cuando no hay medición: N sesiones de V segundos abren N/V por segundo. 20–60 s en navegación; 2–5 s en APIs y microservicios.</p>
+    </div>
+    <div class="field">
+      <label for="cpsMedido">Sesiones nuevas por segundo medidas <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— opcional</span></label>
+      <input type="number" id="cpsMedido" min="0" step="100" autocomplete="off">
+      <p class="hint">Un pico medido (inicio de jornada, reconexión tras una falla) manda sobre la derivación por vida media.</p>
       <p class="hint" id="cpsCalc" style="margin-top:6px"></p>
     </div>
     <div class="field">
-      <label>Cómo se declara el caudal</label>
-      <div class="seg" id="modoSeg">
-        <button type="button" data-v="link" aria-pressed="true">Enlace único</button>
-        <button type="button" data-v="agg"  aria-pressed="false">Agregado<br>(varias sedes)</button>
+      <label for="vdoms">Dominios virtuales (VDOM) del diseño</label>
+      <input type="number" id="vdoms" min="0" step="1" autocomplete="off" placeholder="0">
+      <p class="hint">Tope de plataforma: se compara contra el 100 % del máximo publicado. Por encima de los VDOM que el modelo incluye se cotiza la licencia de VDOM adicionales.</p>
+    </div>
+    <div class="row">
+      <div class="field" style="flex:1">
+        <label for="fortiAps">FortiAP gestionados</label>
+        <input type="number" id="fortiAps" min="0" step="1" autocomplete="off" placeholder="0">
       </div>
-      <p class="hint" id="modoHint">Un solo caudal, para dimensionar una sede o un perímetro de Internet.</p>
-    </div>
-    <div class="field">
-      <label for="bw"><span id="bwLbl">Ancho de banda de Internet / WAN</span></label>
-      <div class="row">
-        <input type="number" id="bw" value="500" min="1" step="any">
-        <select id="unit" style="width:105px"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
+      <div class="field" style="flex:1">
+        <label for="fortiSwitches">FortiSwitch gestionados</label>
+        <input type="number" id="fortiSwitches" min="0" step="1" autocomplete="off" placeholder="0">
       </div>
-      <p class="hint">En NGFW/SD-WAN, el throughput relevante es el tráfico que el FortiGate inspecciona, no solo el de WAN.</p>
     </div>
-    <div class="field" id="fldAgg" hidden>
-      <label for="sites">Número de sedes que concentra</label>
-      <input type="number" id="sites" value="20" min="1" step="1">
-      <p class="hint">Cada sede necesita su propio túnel del overlay. El límite de túneles por modelo hay que confirmarlo en el datasheet: no está en este catálogo.</p>
-    </div>
-    <div class="field" id="fldConc" hidden>
-      <label for="conc">Simultaneidad: <span id="concVal" style="font-family:'IBM Plex Mono',monospace">35 %</span></label>
-      <input type="range" id="conc" min="5" max="100" step="5" value="35">
-      <p class="hint">Qué fracción del caudal de todas las sedes coincide en el pico. Es <b>el</b> parámetro que decide el tamaño de un concentrador: sumarlas linealmente sobredimensiona y encarece la propuesta; usar el caudal de una sola sede la deja corta.</p>
-    </div>
-    <div class="field">
-      <label for="users">Usuarios / dispositivos concurrentes</label>
-      <input type="number" id="users" value="100" min="1" step="1">
-      <p class="hint">Se toma el mayor entre esta vía y el caudal declarado arriba, no la suma.</p>
-    </div>
-    <div class="field">
-      <label for="perUser">Mbps por usuario activo</label>
-      <input type="number" id="perUser" value="3" min="0" step="0.1">
-      <p class="hint">Regla habitual: 1–5 Mbps por usuario corporativo. <b>Bájala en campus grandes</b>: 5.000 usuarios a 3 Mbps dan 15 Gbps, cifra que no representa ningún consumo real y que desplaza el dimensionamiento a gama de datacenter. Ponla en 0 para dimensionar solo por el caudal.</p>
-    </div>
-    <div class="field">
-      <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
-      <input type="range" id="head" min="0" max="100" step="5" value="30">
-    </div>
-  </section>
+    <p class="hint" style="margin:-8px 0 16px">Se contrastan contra los máximos del Security Fabric que publica el Product Matrix por modelo.</p>
 
-  <section class="panel">
-    <h2>2 · Funciones adicionales</h2>
+    <!-- HARDWARE FISICO (F06). Puertos por tipo exacto -medio y velocidad-, PoE, fuente
+         redundante y registro local: restricciones que DESCARTAN un modelo aunque le sobre
+         capacidad. Un modelo cuyo catalogo no trae los puertos estructurados no se aprueba
+         por omision: se advierte y la confianza baja. -->
+    <div class="field">
+      <label>Puertos requeridos en el equipo</label>
+      <div class="puertos-grid">
+        <div><label for="pt_rj45_1g">RJ45 1 GE</label><input type="number" id="pt_rj45_1g" min="0" step="1" autocomplete="off" placeholder="0"></div>
+        <div><label for="pt_rj45_10g">RJ45 10 GE</label><input type="number" id="pt_rj45_10g" min="0" step="1" autocomplete="off" placeholder="0"></div>
+        <div><label for="pt_sfp_1g">SFP 1 GE</label><input type="number" id="pt_sfp_1g" min="0" step="1" autocomplete="off" placeholder="0"></div>
+        <div><label for="pt_sfpp_10g">SFP+ 10 GE</label><input type="number" id="pt_sfpp_10g" min="0" step="1" autocomplete="off" placeholder="0"></div>
+        <div><label for="pt_sfp28_25g">SFP28 25 GE</label><input type="number" id="pt_sfp28_25g" min="0" step="1" autocomplete="off" placeholder="0"></div>
+        <div><label for="pt_qsfp28_100g">QSFP28 100 GE</label><input type="number" id="pt_qsfp28_100g" min="0" step="1" autocomplete="off" placeholder="0"></div>
+      </div>
+      <p class="hint">Se comparan por <b>cantidad, velocidad y medio</b>: un puerto compartido RJ45/SFP cuenta para uno u otro, nunca para los dos, y una jaula SFP+ no se da por válida para un módulo de 1 GE sin que el fabricante lo publique. Incluye WAN, LAN y heartbeat de HA.</p>
+    </div>
+    <div class="field">
+      <label for="poeW">Potencia PoE requerida (W)</label>
+      <input type="number" id="poeW" min="0" step="5" autocomplete="off" placeholder="0">
+      <p class="hint">Un SKU base sin PoE no la cubre aunque su serie tenga una variante -POE: esa variante es otro producto. La alternativa habitual es un FortiSwitch PoE por FortiLink.</p>
+    </div>
     <div class="checks">
-      <label class="check"><input type="checkbox" id="chkAv"> <span>Antivirus / Antimalware (FortiGuard AV)<span class="sku">Eleva el piso a <b>Threat Protection</b>: la inspección de archivos en línea saca la sesión del fast path del ASIC, y esa es la cifra que pasa a aplicar.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkWeb"> <span>Web Filtering / Application Control<span class="sku">Eleva el piso a <b>NGFW</b>, que es la cifra que Fortinet mide con IPS + Application Control sobre Enterprise Mix.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkSandbox"> <span>FortiSandbox integrado (CASI / Cloud)<span class="sku"><b>No eleva la capa:</b> analiza fuera de banda, así que no consume throughput del FortiGate — solo añade latencia al primer encuentro de un archivo. Se cotiza aparte.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkIotDlp"> <span>IoT Detection + DLP<span class="sku">Eleva el piso a <b>Threat Protection</b>: corren sobre el stack completo. Requieren el bundle Enterprise Protection.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkHa"> <span>Alta disponibilidad — par en clúster<span class="sku">Se cotizan 2 unidades y cada una lleva su propia suscripción FortiGuard. En <b>activo-pasivo el clúster no suma capacidad</b>: el throughput sigue siendo el de una unidad, así que el dimensionamiento no cambia. En activo-activo hay reparto, pero solo sobre sesiones de inspección y lejos de ser lineal — esta herramienta no lo descuenta.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkPsuRed"> <span>Fuente de alimentación redundante<span class="sku">Aparta los modelos de una sola fuente fija. Si el equipo admite la segunda como opción, la línea entra en la cotización.</span></span></label>
     </div>
-    <div class="field" style="margin-top:16px">
-      <label>Rol en la topología SD-WAN</label>
-      <div class="seg" id="rolSeg">
-        <button type="button" data-v="none"  aria-pressed="true">Sin SD-WAN</button>
-        <button type="button" data-v="spoke" aria-pressed="false">Spoke<br>(sucursal)</button>
-        <button type="button" data-v="hub"   aria-pressed="false">Hub<br>(concentrador)</button>
+    <div class="field" style="margin-top:14px">
+      <label for="registroDestino">Registro (logging) del equipo</label>
+      <select id="registroDestino">
+        <option value="ninguno" selected>Sin requerimiento de registro</option>
+        <option value="local">Disco local del FortiGate</option>
+        <option value="nube">Registro en la nube (FortiGate Cloud)</option>
+        <option value="faz">FortiAnalyzer</option>
+        <option value="syslog">Syslog externo</option>
+      </select>
+    </div>
+    <div class="grupo-cond">
+      <div class="field" id="fldRegistroGb" data-regla="fisico.registroGbDia" hidden>
+        <label for="registroGbDia">Volumen de registro (GB/día)</label>
+        <input type="number" id="registroGbDia" min="0" step="1" autocomplete="off" placeholder="0">
+        <p class="afecta" data-afecta="fisico.registroGbDia"></p>
+        <p class="campo-error" data-error="fisico.registroGbDia"></p>
       </div>
-      <p class="hint" id="rolHint">Solo perímetro: el tráfico no viaja por túneles del overlay, así que el techo lo fija únicamente la capa de inspección.</p>
+      <div class="field" id="fldRegistroDias" data-regla="fisico.registroDias" hidden>
+        <label for="registroDias">Retención local (días)</label>
+        <input type="number" id="registroDias" min="0" step="1" autocomplete="off" placeholder="0">
+        <p class="hint">GB/día × días × crecimiento se compara contra el disco <b>bruto</b> publicado. Sin disco, se apartan: la alternativa es la variante con disco (los modelos terminados en 1) o un destino externo.</p>
+        <p class="afecta" data-afecta="fisico.registroDias"></p>
+        <p class="campo-error" data-error="fisico.registroDias"></p>
+      </div>
     </div>
-    <div class="field" id="fldOverlay" hidden>
-      <label for="pctOverlay">Tráfico por el overlay: <span id="pctOverlayVal" style="font-family:'IBM Plex Mono',monospace">100 %</span></label>
-      <input type="range" id="pctOverlay" min="0" max="100" step="5" value="100">
-      <p class="hint">La fracción que va cifrada al fabric. El resto sale por <b>breakout local</b> a Internet y no paga IPsec. Bajarlo es lo que hace que una sucursal con salida directa a SaaS no necesite un equipo mayor.</p>
+
+    <!-- CRECIMIENTO Y TECHO SON DOS POLITICAS DISTINTAS: el crecimiento infla la DEMANDA y el
+         techo limita la UTILIZACION admisible. Juntas multiplican, y la pagina lo dice. -->
+    <div class="field" style="margin-top:14px">
+      <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
+      <input type="range" id="head" min="0" max="100" step="5" value="30" autocomplete="off">
     </div>
     <div class="field">
-      <label>Segmento de instalación</label>
-      <div class="seg" id="segSeg">
-        <button type="button" data-v="branch" aria-pressed="true">Sucursal</button>
-        <button type="button" data-v="campus" aria-pressed="false">Campus / Hub</button>
-        <button type="button" data-v="dc"     aria-pressed="false">Datacenter / Carrier</button>
-      </div>
+      <label for="techoUtil">Techo de utilización de la capacidad publicada</label>
+      <select id="techoUtil">
+        <option value="100" selected>100 % — sin techo declarado (el margen de crecimiento es el colchón)</option>
+        <option value="80">80 % — servicio estándar</option>
+        <option value="70">70 % — servicio crítico (el supuesto del informe)</option>
+        <option value="60">60 % — misión crítica / picos mal caracterizados</option>
+      </select>
+      <p class="hint" id="multHint">Ninguna cifra del datasheet se mide con el equipo en producción: este techo dice hasta qué fracción se acepta diseñar, en todos los ejes de rendimiento por igual.</p>
     </div>
-  </section>
-</div>
-
-<div>
-  <div class="verdict" id="verdict"></div>
-  </div>
-
-  <section class="panel">
-    <h2>Rendimiento por capa de inspección <span id="perfModel" style="font-weight:400;text-transform:none;letter-spacing:0"></span></h2>
-    <div id="perfTiers"></div>
-    <p class="hint" id="perfNote" style="margin-top:12px"></p>
+    </div>
+    </details>
   </section>
 
-  <section class="panel">
-    <h2>Resumen de sizing</h2>
-    <div id="sizingBox"><p style="font-size:13.5px;color:var(--steel)">Completa los parámetros para ver el resumen.</p></div>
-  </section>
-
-  <div class="note">
-    <b>Nota metodológica.</b> Las cinco cifras que publica Fortinet no son escenarios alternativos del mismo número: miden rutas de procesamiento distintas. <b>Firewall</b> (1518 B UDP) e <b>IPsec VPN</b> (512 B) van descargadas al procesador de red del ASIC — la sesión no toca la CPU. En cuanto se aplica cualquier perfil de inspección, la sesión <b>sale del offload</b> y pasa por CPU con asistencia del content processor: ahí viven <b>IPS</b>, <b>NGFW</b> y <b>Threat Protection</b>, todas medidas con Enterprise Mix. Por eso dimensionar una sucursal con UTM completo contra la cifra de firewall puro subdimensiona por un orden de magnitud, y es el error de preventa más frecuente con FortiGate. Para inspección TLS profunda, Fortinet ya no publica un valor por modelo en el Product Matrix: esta herramienta aplica un derate estimado del 35% <b>sobre la capacidad</b> de Threat Protection —nunca sobre el requerimiento, que sobredimensionaría— y lo declara como estimación; validar con PoC antes de comprometerlo. Ninguna otra función aplica recargo: lo que hacen es <b>elevar el piso de capa</b>, porque las cifras de Enterprise Mix ya se miden con esas funciones activas y sumarles un porcentaje contaría dos veces lo mismo. Consultar el <b>FortiGate Datasheet</b> del modelo para sesiones nuevas por segundo y detalle de interfaces.
-  </div>
-</div>
-</div>
-</div>
-
-<!-- ════ TAB 2 · BOM ════ -->
-<div class="tabpane" id="pane-bom" hidden>
-<div class="cols">
-<div>
-  <section class="panel">
-    <h2>Selección de equipo</h2>
+  <section class="panel paso" id="paso5">
+    <details open>
+    <summary><h2>5 · Equipo y cotización <span class="paso-chip" id="chipPaso5"></span></h2></summary>
+    <div class="paso-cuerpo">
+    <!-- TIPO DE COMPRA (F14). No es la «transaccion» que se retiro en la etapa 5: aquella no
+         cambiaba nada; esta cambia QUE se cotiza (caja o solo servicios) y QUE equipos son
+         admisibles (un fuera de venta nunca en compra nueva). -->
+    <div class="field">
+      <label for="motivoCompra">Tipo de compra</label>
+      <select id="motivoCompra">
+        <option value="nueva" selected>Compra nueva</option>
+        <option value="ampliacion">Ampliación de un parque instalado</option>
+        <option value="renovacion">Renovación de servicios</option>
+        <option value="coterm">Co-term de servicios</option>
+      </select>
+      <p class="hint" id="motivoHint">Compra nueva: equipo y primer bundle en el SKU combinado de la price list; los equipos fuera de venta no se ofrecen.</p>
+    </div>
+    <div class="field" id="fldSerie" data-regla="comercial.serieInstalada" hidden>
+      <label for="serieInstalada">Modelo y número de serie instalados</label>
+      <input type="text" id="serieInstalada" maxlength="120" autocomplete="off" placeholder="p. ej. FG-90G · FG9HG0000000000">
+      <p class="hint">Una renovación se cotiza sobre la caja que existe: sin su serie no hay contrato que renovar.</p>
+      <p class="campo-error" data-error="comercial.serieInstalada"></p>
+    </div>
+    <!-- UN SOLO SELECTOR DE MODELO (§11.1 del informe: «se elimina la separacion entre
+         pickModel y verdict-sel»). Elegir aqui, en la ficha o en una alternativa es la MISMA
+         orden: pedir que el motor revalide ese equipo. Si no cumple, la recomendacion se
+         conserva, se muestra el deficit y la salida comercial queda bloqueada. -->
     <div class="field">
       <label for="pickModel">Modelo FortiGate</label>
-      <select id="pickModel"></select>
+      <select id="pickModel"><option value="" selected>Seguir la recomendación del motor</option></select>
+      <p class="hint" id="pickHint">Elegir otro modelo pide al motor que lo revalide: si no cumple, la lista de materiales sigue con el recomendado y la cotización se bloquea hasta volver.</p>
+    </div>
+    <div class="field" id="fldJustEol" data-regla="comercial.justificacionEol" hidden>
+      <label for="justificacionEol">Justificación del equipo fuera de venta</label>
+      <textarea id="justificacionEol" maxlength="500" placeholder="p. ej. ampliación de un clúster existente con el mismo modelo"></textarea>
+      <p class="hint">Solo se admite en ampliación, renovación o co-term, y el motivo viaja con la propuesta.</p>
+      <p class="campo-error" data-error="comercial.justificacionEol"></p>
     </div>
     <div class="field">
-      <label for="qty">Cantidad (unidades)</label>
-      <input type="number" id="qty" value="1" min="1">
+      <label for="qty">Unidades por sitio</label>
+      <input type="number" id="qty" readonly aria-describedby="qtyHint" value="1">
+      <p class="hint" id="qtyHint">Se deriva de la alta disponibilidad: 1 nodo, o 2 en clúster. Varias sedes se cotizan con los perfiles multi-sede de la lista de materiales.</p>
     </div>
     <div class="field">
       <label for="termYears">Término de licencias y soporte</label>
@@ -315,7 +809,9 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
         <option value="utp">UTP — Unified Threat Protection</option>
         <option value="ent" selected>Enterprise Protection</option>
         <option value="atp">ATP — Advanced Threat Protection</option>
+        <option value="none">No incluir — sin bundle FortiGuard</option>
       </select>
+      <p class="hint" id="bundleHint">«No incluir» cotiza el equipo sin suscripción de seguridad (parque con servicios vigentes, o hardware y servicios por vías distintas). Si el escenario pide funciones de inspección, la cotización lo <b>declara</b>.</p>
     </div>
     <div class="field">
       <label for="careLevel">Nivel de soporte FortiCare</label>
@@ -323,17 +819,170 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
         <option value="fc247">FortiCare Essential</option>
         <option value="fcpre" selected>FortiCare Premium</option>
         <option value="fcelite">FortiCare Elite</option>
+        <option value="none">No incluir — sin contrato FortiCare</option>
       </select>
+      <p class="hint">Los tres bundles ya traen <b>FortiCare Premium</b>: no se cotiza una segunda línea. Elite se cotiza como la <b>mejora</b> sobre ese Premium.</p>
     </div>
+    <div class="field" id="grpSdwan" data-regla="comercial.sdwan" hidden>
+      <label>Servicios avanzados de SD-WAN <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— un solo SKU por equipo (SD-WAN Service); la función base no se licencia</span></label>
+      <p class="hint" style="margin:0 0 8px">Secure SD-WAN —selección de camino por SLA, health checks, ADVPN— <b>viene en FortiOS</b>. Lo que se licencia son estos servicios, y solo si el diseño los usa.</p>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="chkSdwanMon"> <span>Underlay &amp; Application Monitoring</span></label>
+        <label class="check"><input type="checkbox" id="chkSdwanOrq"> <span>Overlay Orchestration</span></label>
+        <label class="check"><input type="checkbox" id="chkSdwanSase"> <span>FortiSASE — conector SD-WAN</span></label>
+      </div>
+      <p class="afecta" data-afecta="comercial.sdwan"></p>
+      <div class="field sub" id="fldSase" data-regla="comercial.saseUsuarios" hidden>
+        <label for="saseUsuarios">Usuarios de FortiSASE</label>
+        <input type="number" id="saseUsuarios" min="1" step="1" autocomplete="off" placeholder="0">
+        <p class="hint">Obligatorio con el conector. El SKU sale de la edición y de la banda de usuarios del Ordering Guide de FortiSASE (la banda más baja empieza en 50); su precio no está en la lista de septiembre.</p>
+        <p class="campo-error" data-error="comercial.saseUsuarios"></p>
+      </div>
+      <div class="field sub" id="fldSaseEdicion" data-regla="comercial.saseEdicion" hidden>
+        <label for="saseEdicion">Edición de FortiSASE</label>
+        <select id="saseEdicion">
+          <option value="" selected>— elegir —</option>
+          <option value="standard">Standard</option>
+          <option value="advanced">Advanced</option>
+          <option value="comprehensive">Comprehensive</option>
+        </select>
+        <p class="campo-error" data-error="comercial.saseEdicion"></p>
+      </div>
+    </div>
+    <!-- EMS POR ENDPOINTS GESTIONADOS (F12): un campo propio con sugerencia, no una coercion
+         de los usuarios. Un usuario tiene portatil y movil; un sitio tiene usuarios que no
+         llevan FortiClient. -->
+    <div class="checks">
+      <label class="check"><input type="checkbox" id="chkEms"> <span>FortiClient EMS — gestión de endpoints (ZTNA + VPN)</span></label>
+    </div>
+    <div class="field sub" id="fldEms" data-regla="comercial.emsEndpoints" hidden>
+      <label for="emsEndpoints">Endpoints gestionados</label>
+      <div class="row">
+        <input type="number" id="emsEndpoints" min="1" step="1" autocomplete="off" placeholder="0">
+        <button type="button" class="btn ghost" id="btnEmsSugerir" style="font-size:11px;white-space:nowrap">Sugerir</button>
+      </div>
+      <p class="hint" id="emsHint">Se licencia en packs de 25, 500, 2.000 y 10.000 endpoints. «Sugerir» propone usuarios del sitio + remotos como punto de partida; la cifra la confirmas tú.</p>
+      <p class="afecta" data-afecta="comercial.emsEndpoints"></p>
+      <p class="campo-error" data-error="comercial.emsEndpoints"></p>
+    </div>
+    <div class="field sub" id="fldEmsDespliegue" data-regla="comercial.emsDespliegue" hidden>
+      <label for="emsDespliegue">Despliegue de EMS</label>
+      <select id="emsDespliegue">
+        <option value="" selected>— elegir —</option>
+        <option value="cloud">FortiClient Cloud (EMS alojado por Fortinet)</option>
+        <option value="onprem">EMS on-premise</option>
+      </select>
+      <p class="hint">Decide la familia del SKU de cada pack (EMS05 en la nube, EMS04 on-premise).</p>
+      <p class="campo-error" data-error="comercial.emsDespliegue"></p>
+    </div>
+    <div class="checks" style="margin-top:6px">
+      <label class="check"><input type="checkbox" id="chkConverter"> <span>FortiConverter — migración de configuración<span class="sku">Servicio único. Enterprise Protection ya lo incluye: con ese bundle no se añade una segunda línea.</span></span></label>
+    </div>
+    </div>
+    </details>
   </section>
-
-  <div class="flag-ft">
-    <b>Aviso de preventa:</b> SKUs y precios de lista tomados del price list AMER vigente — verificar disponibilidad regional, término contratado y descuentos de canal con el distribuidor Fortinet autorizado antes de cotizar en firme.
-  </div>
 </div>
 
-<div>
+<!-- ═══════════════ COLUMNA DERECHA · DECISION ═══════════════
+     Anclada al viewport. Arriba, siempre visible: modelo, cumplimiento, cuello, alternativa y
+     bloqueos. En medio, pestañas con scroll propio. Abajo, la puerta de cotizacion. Todo sale
+     del MISMO resultado del motor que el BOM y las exportaciones. -->
+<aside class="dim-res" id="dimRes" aria-labelledby="resTitulo">
+  <div class="res-cab">
+    <h2 class="vh" id="resTitulo">Resultado del dimensionamiento</h2>
+    <div class="sticky-reco" id="stickyReco" hidden></div>
+    <div id="overrideAviso" class="override-aviso" hidden></div>
+    <div id="autoCorr" class="autocorr" hidden></div>
+    <ul id="resBloqueos" class="res-bloqueos" hidden></ul>
+    <p id="resAnuncio" class="vh" aria-live="polite" aria-atomic="true"></p>
+  </div>
+  <div class="res-tabs" role="tablist" aria-label="Detalle del resultado">
+    <button type="button" role="tab" id="rtab-reco" data-rtab="reco" aria-controls="rpanel-reco" aria-selected="true" tabindex="0">Recomendación</button>
+    <button type="button" role="tab" id="rtab-comp" data-rtab="comp" aria-controls="rpanel-comp" aria-selected="false" tabindex="-1">Comparar</button>
+    <button type="button" role="tab" id="rtab-req" data-rtab="req" aria-controls="rpanel-req" aria-selected="false" tabindex="-1">Requisitos</button>
+    <button type="button" role="tab" id="rtab-graf" data-rtab="graf" aria-controls="rpanel-graf" aria-selected="false" tabindex="-1">Gráfico</button>
+    <button type="button" role="tab" id="rtab-bomp" data-rtab="bomp" aria-controls="rpanel-bomp" aria-selected="false" tabindex="-1">BOM preliminar</button>
+  </div>
+  <div class="res-cuerpo" id="resCuerpo">
+    <section class="res-panel" role="tabpanel" id="rpanel-reco" aria-labelledby="rtab-reco" tabindex="0">
+      <div id="ejesPanel"></div>
+      <div class="verdict" id="verdict"></div>
+    </section>
+    <section class="res-panel" role="tabpanel" id="rpanel-comp" aria-labelledby="rtab-comp" tabindex="0" hidden>
+      <div id="shortlist"></div>
+    </section>
+    <section class="res-panel" role="tabpanel" id="rpanel-req" aria-labelledby="rtab-req" tabindex="0" hidden>
+      <div id="requisitos"></div>
+      <details class="note" style="margin-top:14px">
+        <summary><b>Nota metodológica</b></summary>
+        <p>Las cifras que publica Fortinet no son escenarios alternativos del mismo número: miden rutas de procesamiento distintas. <b>Firewall</b> (1518 B UDP) e <b>IPsec VPN</b> (512 B) van descargadas al procesador de red del ASIC. En cuanto se aplica un perfil de inspección, la sesión <b>sale del offload</b>: ahí viven <b>IPS</b>, <b>NGFW</b> y <b>Threat Protection</b>, medidas con Enterprise Mix. <b>SSL Inspection Throughput</b> es una medición propia —IPS sobre sesiones HTTPS con distintas suites— y <b>no una fracción de Threat Protection</b>: el cociente entre las dos va de 0,52 a 1,18, así que ningún derate fijo sirve. Donde el catálogo no trae una cifra, el modelo <b>se aparta con su motivo</b> y se pide PoC; nunca se sustituye por la de otra capa. Las funciones no suman recargos: <b>elevan el piso de capa</b>.</p>
+      </details>
+    </section>
+    <section class="res-panel" role="tabpanel" id="rpanel-graf" aria-labelledby="rtab-graf" tabindex="0" hidden>
+      <section class="ladder">
+        <div class="ladder-cab">
+          <p class="mono-lbl" id="trackLbl">Escala de capacidad — modelo vs. requerimiento (logarítmica)</p>
+          <span class="ladder-ctrl">
+            <label for="metricaEje">Métrica</label>
+            <select id="metricaEje" aria-label="Métrica del eje del gráfico">
+              <option value="auto" selected>La que dimensiona</option>
+              <option value="fw">Firewall</option>
+              <option value="vpn">IPsec VPN</option>
+              <option value="ips">IPS</option>
+              <option value="ngfw">NGFW</option>
+              <option value="tp">Threat Protection</option>
+              <option value="ssl">Inspección SSL</option>
+            </select>
+            <label class="check ladder-check"><input type="checkbox" id="chkVerEol"> <span>Ver fuera de venta</span></label>
+          </span>
+        </div>
+        <div class="track" id="track" role="img" aria-labelledby="trackLbl" aria-describedby="trackNota"><div class="axis"></div><div class="need" id="need"><span id="needLbl">—</span></div><div class="pickLabel" id="pickLbl" style="display:none"></div></div>
+        <div class="legend">
+          <span><i></i>Capacidad publicada del modelo</span>
+          <span style="color:var(--amber)"><i style="background:var(--amber)"></i>Alternativas</span>
+          <span style="color:var(--red-txt)"><i style="background:var(--red)"></i>Requerimiento calculado</span>
+        </div>
+        <p class="hint" id="trackNota" style="margin:8px 0 0"></p>
+        <details style="margin-top:10px">
+          <summary class="hint" style="cursor:pointer">Ver el gráfico como tabla</summary>
+          <div id="grafTabla"></div>
+        </details>
+      </section>
+      <section class="panel">
+        <h2>Rendimiento por capa de inspección <span id="perfModel" style="font-weight:400;text-transform:none;letter-spacing:0"></span></h2>
+        <div id="perfTiers"></div>
+        <p class="hint" id="perfNote" style="margin-top:12px"></p>
+      </section>
+    </section>
+    <section class="res-panel" role="tabpanel" id="rpanel-bomp" aria-labelledby="rtab-bomp" tabindex="0" hidden>
+      <div id="bomPreliminar"></div>
+    </section>
+  </div>
+  <div class="res-pie" id="resPie">
+    <div class="gate-linea" id="gateResumen" aria-live="polite"></div>
+    <button type="button" class="btn" id="btnRevisarBom" style="font-size:11px;padding:6px 12px">Revisar lista de materiales</button>
+  </div>
+</aside>
+</div>
+</div>
+
+<!-- Resumen de una linea en movil: el resultado sigue a la vista sin un segundo scroll. -->
+<div class="res-movil" id="resMovil" role="region" aria-label="Resumen del resultado"><span id="resMovilTxt">Declara los enlaces WAN</span><a href="#dimRes" id="resMovilIr">Ver resultado ↓</a></div>
+
+<!-- ════ TAB 2 · BOM ════ -->
+<div class="tabpane" id="pane-bom" role="tabpanel" aria-labelledby="tab-bom" hidden>
+<div class="pane-centro">
+  <div class="flag-ft" id="bomAvisoFuente">
+    <b>Aviso de preventa:</b> SKUs y precios de lista de la price list AMER que declara la pestaña «Fuentes» — verificar disponibilidad regional, término contratado y descuentos de canal con el distribuidor Fortinet autorizado antes de cotizar en firme.
+  </div>
+  <!-- LA LISTA DE MATERIALES SE CONSTRUYE DESDE EL MODELO VALIDADO Y SOLO DESDE EL (F01). No
+       hay un segundo selector aqui: el equipo lo decide el motor —o el override que el motor
+       revalido— en la pestaña de calculo. -->
   <div id="bomBody"></div>
+  <!-- PUERTA DE COTIZACION (F04). UN SOLO estado para todas las salidas: Excel, copiar,
+       enviar al cotizador, guardar perfil y consolidar preguntan lo mismo, y el servidor lo
+       confirma antes de que salga nada. -->
+  <div id="exportGate" class="gate" aria-live="polite"></div>
   <section class="panel">
     <h2>Lista de materiales
       <span class="bom-acciones">
@@ -342,14 +991,41 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       </span>
     </h2>
     <div id="bomTabla"></div>
-    <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
+    <textarea id="bomOut" readonly class="hidden" aria-hidden="true" tabindex="-1"></textarea>
   </section>
-</div>
+  <section class="panel">
+    <h2>Precio neto y TCO del sitio</h2>
+    <div class="field">
+      <div id="cajaDescuento"></div>
+    </div>
+    <div id="tcoFin"></div>
+    <p class="hint" style="margin-top:10px">En FortiGate el OPEX es el <b>bundle FortiGuard</b> y el <b>soporte FortiCare</b>, que son suscripciones por término; el equipo y los servicios únicos (FortiConverter) van en CAPEX. En compra nueva el equipo y su primer bundle van en el <b>SKU combinado</b>, que se cuenta como CAPEX porque se paga una vez.</p>
+  </section>
+  <section class="panel">
+    <h2>Perfiles multi-sede</h2>
+    <p class="hint" style="margin:0 0 10px">Guarda el escenario actual como perfil («Sucursal», «Hub regional»…) con su número de sedes idénticas. El <b>BOM global consolidado</b> suma las líneas de todos los perfiles —de cualquier fabricante— y se exporta aparte. Guardar y consolidar obedecen a la misma puerta de cotización que el Excel.</p>
+    <div class="row" style="margin-bottom:10px">
+      <input type="text" id="nombrePerfil" placeholder="Nombre del perfil — p. ej. Sucursal" autocomplete="off" aria-label="Nombre del perfil">
+      <input type="number" id="perfilSedes" min="1" step="1" placeholder="Nº sedes" style="width:100px" autocomplete="off" aria-label="Número de sedes">
+      <button type="button" class="btn" id="btnGuardarPerfil" style="font-size:11px;padding:6px 12px;white-space:nowrap">Guardar perfil</button>
+    </div>
+    <p class="hint" id="perfilMsg" aria-live="polite"></p>
+    <div id="listaPerfiles"></div>
+    <div style="margin-top:10px">
+      <button type="button" class="btn" id="btnConsolidar" style="font-size:11px;padding:6px 12px" disabled>Consolidar BOM global</button>
+      <p class="hint" style="margin-top:6px">Abre el BOM agregado Σ(BOM del perfil × sedes) en una ventana aparte, con su exportación a Excel.</p>
+    </div>
+  </section>
+  <section class="panel" id="skuPanel">
+    <h2>Añadir a la lista de materiales</h2>
+    <p class="hint" style="margin:0 0 10px">Las <b>6.849 referencias</b> de Fortinet extraídas de la misma price list que respalda los precios: hardware, bundles FortiCare y FortiGuard, licencias y SaaS. Se muestran las del <b>equipo validado</b> y cambian con él. Lo que añadas queda integrado en la lista de materiales —con cantidad editable y botón de quitar— y viaja con ella al Excel y al cotizador.</p>
+    <div class="ficha-refs" id="fortiRefs"></div>
+  </section>
 </div>
 </div>
 
 <!-- ════ TAB 3 · LICENCIAS ════ -->
-<div class="tabpane" id="pane-lic" hidden>
+<div class="tabpane" id="pane-lic" role="tabpanel" aria-labelledby="tab-lic" hidden>
 <section class="panel">
   <h2>Incluido en FortiOS — sin licencia adicional</h2>
   <p class="gd" style="font-size:12.5px;color:var(--steel);margin:0 0 12px">Buena parte de lo que otros fabricantes cobran como suscripción por dispositivo viene dentro del sistema operativo. Es el argumento económico más fuerte de Fortinet y donde más se abre la diferencia de TCO a 3–5 años, así que conviene tenerlo explícito al comparar propuestas.</p>
@@ -358,7 +1034,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <tbody>
       <tr><td><b>SD-WAN</b></td><td>Selección de camino por SLA, ADVPN para túneles dinámicos spoke-a-spoke, balanceo y failover por aplicación</td><td>Cisco Catalyst SD-WAN y Meraki lo licencian por dispositivo y por término</td></tr>
       <tr><td><b>ZTNA</b></td><td>Proxy de acceso y etiquetas de postura en el propio FortiGate</td><td>Suele venderse como producto o SKU aparte</td></tr>
-      <tr><td><b>VPN IPsec / SSL</b></td><td>Sin tope de túneles por licencia ni costo por usuario remoto en el gateway</td><td>Frecuentemente licenciado por usuario concurrente</td></tr>
+      <tr><td><b>VPN IPsec</b></td><td>Sin costo por usuario remoto en el gateway; el tope de túneles es de plataforma y se contrasta por modelo. El modo túnel SSL-VPN se retiró en FortiOS 7.6.3: el acceso remoto nuevo se diseña con IPsec</td><td>Frecuentemente licenciado por usuario concurrente</td></tr>
       <tr><td><b>VDOMs</b></td><td>Cuota base incluida por modelo (ampliable con SKU de VDOM adicionales)</td><td>Contextos virtuales suelen ser licencia aparte</td></tr>
       <tr><td><b>FortiLink</b></td><td>FortiSwitch y FortiAP se gestionan desde la CLI/GUI del FortiGate, sin controladora ni licencia de gestión por dispositivo</td><td>Cisco DNA Center / Meraki cobran licencia de gestión por switch y por AP</td></tr>
       <tr><td><b>Security Fabric</b></td><td>Topología, Security Rating y correlación entre productos Fortinet</td><td>Normalmente requiere plataforma de gestión licenciada</td></tr>
@@ -384,14 +1060,14 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
           <td>Todas — es el equipo completo</td></tr>
     </tbody>
   </table></div>
-  <p class="hint" style="margin-top:10px">El ASIC concreto de cada modelo aparece en la ficha del equipo (pestaña "Equipo y BOM"), verificado modelo por modelo contra la guía Hardware Acceleration de FortiOS y, para el 30G/31G, contra la tabla de hardware de su datasheet. Los 58 modelos del catálogo tienen dato verificado. Nótese que el 30G/31G, pese a ser serie G, usa SoC4/SP4 y no el SP5 — deducirlo por nomenclatura habría dado el silicio equivocado.</p>
+  <p class="hint" style="margin-top:10px">El ASIC concreto de cada modelo aparece en la ficha del equipo (pestaña «Lista de materiales»), verificado modelo por modelo contra la guía Hardware Acceleration de FortiOS y, para el 30G/31G, contra la tabla de hardware de su datasheet. Los 58 modelos del catálogo tienen dato verificado. Nótese que el 30G/31G, pese a ser serie G, usa SoC4/SP4 y no el SP5 — deducirlo por nomenclatura habría dado el silicio equivocado.</p>
 </section>
 
 <section class="panel">
   <h2>Guía de licencias FortiGuard y FortiCare</h2>
   <div class="grp">
     <h3>Bundles de protección FortiGuard</h3>
-    <p class="gd">Los 3 bundles vigentes en el price list AMER — cada uno con SKU y precio propio por modelo y término (ver pestaña "Equipo y BOM"). Los 3 incluyen FortiCare Premium.</p>
+    <p class="gd">Los 3 bundles vigentes en el price list AMER — cada uno con SKU y precio propio por modelo y término (ver pestaña «Lista de materiales»). Los 3 incluyen FortiCare Premium.</p>
     <div class="scroll"><table>
       <thead><tr><th>Bundle</th><th>Servicios incluidos</th><th>Caso de uso típico</th></tr></thead>
       <tbody>
@@ -430,7 +1106,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
         <tr><td>FortiManager</td><td><code>FMG-200G</code></td><td>$16,552</td><td>Appliance de entrada — 4x GE RJ45, 8 TB, gestiona hasta 30 dispositivos/VDOMs.</td></tr>
         <tr><td>FortiAnalyzer</td><td><code>FAZ-150G</code></td><td>$7,278</td><td>Appliance de entrada — 2x GE RJ45, 4 TB, hasta 25 GB/día de logs.</td></tr>
         <tr><td>FortiSASE</td><td><code>FC2-10-EMS05-547-02-DD</code></td><td>$90 / usuario / año</td><td>Standard Subscription, rango 50–499 usuarios. Incluye SASE, ZTNA, EPP y FortiCare Premium.</td></tr>
-        <tr><td>FortiConverter</td><td>Embebido por modelo</td><td>desde $50 (servicio único)</td><td>Migración de configuración desde Cisco ASA, Check Point, Palo Alto. SKU exacto por modelo en la pestaña "Equipo y BOM".</td></tr>
+        <tr><td>FortiConverter</td><td>Embebido por modelo</td><td>desde $50 (servicio único)</td><td>Migración de configuración desde Cisco ASA, Check Point, Palo Alto. SKU exacto por modelo en la pestaña «Lista de materiales».</td></tr>
       </tbody>
     </table></div>
   </div>
@@ -438,7 +1114,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 </div>
 
 <!-- ════ TAB 4 · CATÁLOGO ════ -->
-<div class="tabpane" id="pane-cat" hidden>
+<div class="tabpane" id="pane-cat" role="tabpanel" aria-labelledby="tab-cat" hidden>
 <section class="panel">
   <h2>Catálogo FortiGate — Throughput de referencia <span style="font-weight:400;color:var(--steel)">— Precio ref. USD incluido</span></h2>
   <div class="scroll"><table data-ordenable id="tbl-fortinet-cat">
@@ -450,36 +1126,49 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 </div>
 
 <!-- ════ TAB 5 · FUENTES ════ -->
-<div class="tabpane" id="pane-src" hidden>
+<div class="tabpane" id="pane-src" role="tabpanel" aria-labelledby="tab-src" hidden>
 <section class="panel">
   <h2>Procedencia verificada</h2>
   <p style="font-size:13px;color:var(--steel);margin-bottom:12px">De qué documento y de qué fecha salen las cifras de este catálogo. Se llena desde <code>/api/fuentes</code>; una fuente sin fecha o de más de seis meses se marca.</p>
   <div data-procedencia="fortinet">Cargando…</div>
 </section>
 <section class="panel">
-  <h2>Fuentes de Información y Precios</h2>
-  <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Toda la información técnica y los modelos mostrados en esta plataforma han sido filtrados para excluir equipos EOL/EOS (End of Life), basándonos en los siguientes canales oficiales:</p>
-  <ul class="fuentes-list">
-    <li><b>Fortinet Product Matrix (julio 2026):</b> <a href="https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf" target="_blank">Fortinet_Product_Matrix.pdf</a><br>Fuente oficial de especificaciones y throughput (FW/IPS/NGFW/IPsec VPN/sesiones) de las series FortiGate F y G.</li>
-    <li><b>2026Q3 Main Price list AMER (vigente desde 03-ago-2026):</b><br>Lista de precios oficial Fortinet AMER — fuente de los precios de referencia (ELP) y del estado EOL/End of Order de cada modelo.</li>
-    <li><b>Precios de Referencia (ELP):</b><br>MSRP del SKU de hardware base público de Fortinet. No incluye servicios FortiCare ni suscripciones UTP/ATP.</li>
-  </ul>
+  <h2>Fuentes de este cálculo</h2>
+  <!-- F13 del informe: aqui decia «Product Matrix (julio 2026)», «vigente desde 03-ago-2026» y
+       que el catalogo estaba «filtrado para excluir EOL», mientras el banner y la procedencia
+       decian septiembre y la pantalla mostraba equipos fuera de venta. Tres textos fijos que
+       contradecian al dato. Ahora se genera desde la procedencia declarada y desde el modelo
+       validado, campo por campo. -->
+  <div id="fuentesCalculo"><p class="hint">Cargando…</p></div>
 </section>
 </div>
 
-<p class="note">
-<b>Fuentes oficiales:</b>
-<a href="https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf" target="_blank" rel="noopener">Fortinet Product Matrix (julio 2026)</a> — throughput FW/IPS/NGFW/IPsec VPN y sesiones concurrentes de las series FortiGate F y G ·
-2026Q3 Main Price list AMER, vigente desde 03-ago-2026 — precios de referencia (ELP), estado EOL/End of Order, y SKUs/precios de hardware, bundles FortiGuard (UTP/Enterprise/ATP) y soporte FortiCare por modelo y término.
-</p>
+<p class="note" id="notaFuentes"></p>
 
 </div><!-- /wrap -->
+<div id="modalConsolidado" hidden>
+  <div class="acc-caja" style="max-width:860px">
+    <h3>BOM global consolidado — perfiles multi-sede</h3>
+    <p class="hint" id="consolidadoSub"></p>
+    <div id="consolidadoTabla"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+      <button type="button" class="btn" id="xlsConsolidadoBtn" style="font-size:11px;padding:6px 12px">Exportar consolidado a Excel</button>
+      <button type="button" class="btn ghost" id="consolidadoCerrar" style="font-size:11px;padding:6px 12px">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <script src="/js/bom.js"></script>
 <script src="/js/ficha.js"></script>
 <script src="/js/estado.js"></script>
 <script src="/js/tabla.js"></script>
 <script src="/js/contraste.js"></script>
 <script src="/js/procedencia.js"></script>
+<!-- Reglas puras del dimensionador (informe 2026-09-22). Van ANTES que la pagina, que
+     las consume, y son las mismas que afirma test/fortinet-reglas.test.js en Node. -->
+<script src="/js/fortinet-reglas.js"></script>
+<!-- El motor unico (etapa 7): el mismo archivo evalua aqui y en /api/v1/fortinet/evaluations. -->
+<script src="/js/fortinet-motor.js"></script>
 <script src="/js/dimensionador-fortinet-fortigate.js"></script>
 <script src="/js/navegacion.js"></script>
 </body>

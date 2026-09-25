@@ -1,0 +1,75 @@
+name: sondeo-fuentes
+
+# MIDE que fuentes son estables de verdad, en vez de creerse el campo `estable` de FUENTES.
+#
+# EL PROBLEMA. Ese campo se puso a mano y nadie lo re-comprueba: el mismo modo de fallo que
+# CISCO_EOL_MODELS, que vivio meses sin marcar nada. El boletin EOL de Cisco esta declarado
+# `estable: true` y lleva tres mediciones consecutivas cambiando de hash con los BYTES
+# IDENTICOS (173.913 las dos ultimas) -- la firma de una marca rotatoria de ancho fijo. Si eso
+# es cierto, sus alarmas son falsas; y apagarlas con `estable: false` dejaria las 8 fechas de
+# `eolAnnounced` de Cisco sin vigilancia, que son las que deciden si un equipo se puede pedir.
+#
+# COMO SE MIDE. Dos peticiones a la misma URL con unos segundos de diferencia. Lo que cambie
+# entre ellas no puede ser un cambio del fabricante. Se compara el hash de los bytes y el del
+# TEXTO (sin script, sin style, sin etiquetas), y cuando el texto difiere se imprime el primer
+# fragmento discrepante: "no coincide" sin decir en que no se puede accionar.
+#
+# POR QUE AQUI. El proxy de egreso del entorno donde se edita este repositorio responde 403 a
+# las nueve URLs. Los ejecutores de GitHub no pasan por ese proxy -misma via ya aprobada que
+# usan vigia-fuentes.yml y traer-fortinet-matrix.yml-. Si tampoco desde aqui se alcanzan, el
+# informe lo dice con su codigo en vez de dar la fuente por estable.
+#
+# NO ESCRIBE NADA. Ni el lock ni el catalogo: es una medicion para decidir, y la decision la
+# toma una persona leyendo este informe.
+
+on:
+  workflow_dispatch:
+    inputs:
+      espera:
+        description: 'Segundos entre las dos peticiones'
+        required: false
+        default: '10'
+
+permissions:
+  contents: read
+
+jobs:
+  sondear:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Sondear las fuentes
+        run: |
+          node scripts/vigia-fuentes.js --sondeo --espera=${{ inputs.espera || '10' }} | tee sondeo.txt
+          node scripts/vigia-fuentes.js --sondeo --json --espera=1 > sondeo.json
+
+      - name: Publicar el informe en la corrida
+        run: |
+          {
+            echo '## Sondeo de estabilidad de las fuentes'
+            echo ''
+            echo 'Dos peticiones seguidas por URL. Lo que cambie entre ellas es marcado volatil,'
+            echo 'no un cambio del fabricante.'
+            echo ''
+            echo '```'
+            cat sondeo.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sondeo-fuentes
+          path: |
+            sondeo.txt
+            sondeo.json

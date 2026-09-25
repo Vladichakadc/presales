@@ -230,6 +230,57 @@
     return vals.map((v, i) => (v === max ? i : -1)).filter((i) => i >= 0);
   }
 
+  /* CUANTO DE LO QUE SE ESTA MIRANDO ES DATO, Y CUANTO ES UN HUECO DEL CATALOGO.
+     El pie de la tabla ya explicaba la DIFERENCIA entre «sin dato» y «no aplica»; lo que no
+     decia es CUANTOS hay ni como se reparten. Y ese reparto es lo que puede volver enganosa
+     una comparacion: si de cuatro equipos dos tienen media tabla vacia, leerla de arriba
+     abajo los hace parecer peores cuando lo que pasa es que su fabricante publica menos.
+     La primera lectura es la que manda delante de un cliente, y es la equivocada.
+
+     LOS TRES ESTADOS SE CUENTAN POR SEPARADO, Y NO ES UN DETALLE. Meter `noAplica` en el
+     mismo saco que `sinDato` diria «faltan datos» donde el concepto sencillamente no existe
+     para esa clase de equipo —un router de transporte no tiene sesiones porque no es un
+     cortafuegos con estado—, que es la misma confusion que `NA` existe para evitar y el
+     error del `noAplica` deducido que este comparador ya cometio una vez.
+
+     SE MIDE SOBRE LAS SECCIONES YA CALCULADAS, no volviendo a calcularlas: contar sobre una
+     lista distinta de la que se pinta permitiria que el recuento y la tabla se separaran
+     sin que nadie lo notara. */
+  // Cuantos huecos de diferencia entre el equipo que mas publica y el que menos hacen que
+  // el desnivel merezca decirse. Es la parte discutible y va declarada, como el umbral del
+  // `rozado` en la cobertura del contraste: por debajo de tres es ruido de una fila suelta.
+  const DESNIVEL_QUE_IMPORTA = 3;
+
+  function cobertura(secciones, devs) {
+    const porEquipo = devs.map((d) => ({
+      model: d.model, vendor: d.vendor, color: d.color, dato: 0, sinDato: 0, noAplica: 0,
+    }));
+    let filas = 0;
+    for (const sec of secciones || []) {
+      for (const f of sec.filas) {
+        filas += 1;
+        devs.forEach((d, i) => { porEquipo[i][celda(f, d).estado] += 1; });
+      }
+    }
+    const suma = (k) => porEquipo.reduce((n, e) => n + e[k], 0);
+    const huecos = porEquipo.map((e) => e.sinDato);
+    const orden = porEquipo.slice().sort((a, b) => b.sinDato - a.sinDato);
+    return {
+      filas,
+      celdas: filas * devs.length,
+      dato: suma('dato'),
+      sinDato: suma('sinDato'),
+      noAplica: suma('noAplica'),
+      porEquipo,
+      // `desnivel` responde la pregunta que el total no responde: si los huecos estan
+      // repartidos o concentrados en un equipo.
+      desnivel: huecos.length ? Math.max.apply(null, huecos) - Math.min.apply(null, huecos) : 0,
+      umbralDesnivel: DESNIVEL_QUE_IMPORTA,
+      masHuecos: orden[0] || null,
+      menosHuecos: orden[orden.length - 1] || null,
+    };
+  }
+
   // El aviso que impide leer la tabla como si todas las cifras fueran comparables.
   function avisoBases(devs) {
     const grupos = [...new Set(devs.map((d) => (d.grupo === 'hw_wan' ? 'hw_ar' : d.grupo)))];
@@ -239,5 +290,5 @@
       + 'que va a hacer el equipo —inspección completa si va a inspeccionar— y no por la primera.';
   }
 
-  global.COMPARADOR = { SECCIONES, NA, celda, crudo, filasVisibles, mejores, avisoBases, mbps, capacidad, redundancia };
+  global.COMPARADOR = { SECCIONES, NA, celda, crudo, filasVisibles, cobertura, mejores, avisoBases, mbps, capacidad, redundancia };
 }(window));

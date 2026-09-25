@@ -7,13 +7,14 @@ const helmet = require('helmet');
 const auth = require('./auth');
 const { sequelize, Vendor, Product } = require('./models');
 const seedCatalog = require('./seed/seedCatalog');
-const { fuentesQueAvisan } = require('./seed/legacyData/fuentes');
+const { fuentesQueAvisan, FUENTES } = require('./seed/legacyData/fuentes');
 
 const catalogRoutes = require('./routes/catalog');
 const cotizadorRoutes = require('./routes/cotizador');
 const dimensionadorRoutes = require('./routes/dimensionador');
 const guiaRoutes = require('./routes/guia');
 const syncRoutes = require('./routes/sync');
+const fortinetRoutes = require('./routes/fortinet');
 const multer = require('multer');
 const fuentesSubidas = require('./fuentesSubidas');
 const { referenciasDe } = require('./services/referencias');
@@ -223,6 +224,14 @@ app.get('/vendor/xlsx.js', (req, res) => {
   res.sendFile(require.resolve('xlsx/dist/xlsx.full.min.js'));
 });
 
+// exceljs: escritor del Excel del BOM (plan 20, 2026-09-18) — SheetJS CE no incrusta
+// imágenes y las fotos oficiales del equipo viajan ahora con la propuesta. Mismo patrón
+// que xlsx.js: se sirve desde node_modules, cargada solo al pulsar «Exportar a Excel».
+app.get('/vendor/exceljs.js', (req, res) => {
+  res.type('application/javascript');
+  res.sendFile(require.resolve('exceljs/dist/exceljs.min.js'));
+});
+
 // headroom.js: oculta/muestra un encabezado fijo segun el sentido del scroll. Mismo patron
 // que xlsx.js — se sirve desde la dependencia instalada en vez de duplicar el archivo en
 // public/, asi que la version vive en un solo sitio (package.json).
@@ -270,6 +279,23 @@ app.get('/api/fuentes/:vendor/documento/:id', (req, res) => {
   res.sendFile(encontrado.ruta);
 });
 
+// Salud de las fuentes del fabricante: re-corre el vigía contra cada URL pública y
+// devuelve el estado por documento (leído / inalcanzable / sin-url). Consulta
+// explícita del usuario desde la pestaña «Fuentes» — no corre sola en segundo plano
+// porque cada revisión pega contra los servidores del fabricante.
+app.get('/api/fuentes/:vendor/salud', async (req, res) => {
+  const { vendor } = req.params;
+  const lista = FUENTES[vendor];
+  if (!lista) return res.status(400).json({ error: 'Fabricante no válido' });
+  const { revisar } = require('../scripts/vigia-fuentes');
+  const salida = [];
+  for (const f of lista) {
+    if (!f.url) { salida.push({ vendor, documento: f.documento, url: null, estado: 'sin-url', detalle: 'fuente interna sin URL pública — se vigila por commit' }); continue; }
+    salida.push(await revisar(vendor, f));
+  }
+  res.json({ vendor, revisadoEn: new Date().toISOString(), fuentes: salida });
+});
+
 // Borrar una fuente CARGADA. Exige `sync` igual que subirla: quitar la procedencia de un
 // fabricante es mantenimiento del catálogo, no consulta. Ocultar el botón a quien no lo tenga
 // es comodidad; esto es el control. Solo alcanza a los documentos subidos — los de
@@ -298,6 +324,9 @@ app.use('/api', catalogRoutes);
 app.use('/api', cotizadorRoutes);
 app.use('/api', dimensionadorRoutes);
 app.use('/api', guiaRoutes);
+// Evaluacion autoritativa del dimensionador FortiGate (etapa 7, 2026-09-23). Exige el mismo
+// permiso que las pantallas de herramientas: confirmar una exportacion es usar la herramienta.
+app.use('/api/v1/fortinet', exige('herramientas'), fortinetRoutes);
 // El permiso `sync` existia en ROLES desde que hubo roles, pero ninguna ruta lo exigia: un
 // permiso que no se comprueba es un permiso que no existe, igual que el conjunto inerte de
 // fuera de venta que ya se retiro. Va aqui, delante del router, para que ninguna ruta nueva
