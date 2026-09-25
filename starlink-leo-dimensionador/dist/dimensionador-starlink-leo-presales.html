@@ -1,0 +1,2293 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Dimensionador empresarial de datos prioritarios Starlink LEO para sedes corporativas.">
+  <title>Presales · Dimensionador Starlink LEO</title>
+  <style>
+:root {
+  --ink: #e8f0f7;
+  --ink-soft: #9eafbf;
+  --ink-muted: #708294;
+  --canvas: #071019;
+  --panel: #0b1621;
+  --panel-2: #101d29;
+  --panel-3: #132332;
+  --line: rgba(169, 195, 217, .16);
+  --line-strong: rgba(169, 195, 217, .28);
+  --accent: #4dd4ff;
+  --accent-2: #7b8cff;
+  --accent-soft: rgba(77, 212, 255, .12);
+  --green: #55e4a4;
+  --amber: #f7bd62;
+  --red: #ff6f7d;
+  --shadow: 0 24px 70px rgba(0, 0, 0, .28);
+  --radius-xl: 24px;
+  --radius-lg: 18px;
+  --radius-md: 13px;
+  --topbar-h: 78px;
+  --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { color-scheme: dark; background: var(--canvas); scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow: hidden;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 76% -10%, rgba(41, 113, 157, .24), transparent 35%),
+    linear-gradient(145deg, #08121b 0%, #061019 60%, #09141e 100%);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+button, input, select { font: inherit; }
+
+button, select { cursor: pointer; }
+
+a { color: var(--accent); }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 1000;
+  top: 10px;
+  left: 10px;
+  transform: translateY(-150%);
+  padding: 10px 14px;
+  border-radius: 9px;
+  color: #00131e;
+  background: var(--accent);
+  font-weight: 800;
+  transition: transform .2s ease;
+}
+
+.skip-link:focus { transform: translateY(0); }
+
+.topbar {
+  position: relative;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(280px, 1.5fr) minmax(250px, 1fr);
+  align-items: center;
+  gap: 24px;
+  height: var(--topbar-h);
+  padding: 0 26px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(7, 16, 25, .88);
+  backdrop-filter: blur(18px);
+}
+
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(77, 212, 255, .26);
+  border-radius: 13px;
+  color: var(--accent);
+  background: linear-gradient(145deg, rgba(77, 212, 255, .14), rgba(123, 140, 255, .08));
+  box-shadow: inset 0 0 25px rgba(77, 212, 255, .06);
+}
+
+.brand-mark svg { width: 31px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-width: 2; }
+.brand-mark circle { fill: currentColor; stroke: none; }
+.brand-lockup strong, .brand-lockup small { display: block; }
+.brand-lockup strong { font-size: 15px; letter-spacing: .02em; }
+.brand-lockup small { color: var(--ink-muted); font-size: 11px; }
+
+.topbar-title { text-align: center; }
+.topbar-title h1 { margin: 2px 0 0; font-size: clamp(16px, 2vw, 21px); font-weight: 700; letter-spacing: -.02em; }
+.eyebrow { color: var(--accent); font-size: 10px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+
+.topbar-actions { display: flex; justify-content: flex-end; gap: 9px; }
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 39px;
+  padding: 9px 15px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  color: var(--ink);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 760;
+  letter-spacing: .01em;
+  transition: transform .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease;
+}
+
+.button:hover { transform: translateY(-1px); }
+.button:focus-visible, .text-button:focus-visible, .icon-button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.button-primary { color: #00141f; background: linear-gradient(135deg, #6ddcff, #87a3ff); box-shadow: 0 10px 28px rgba(77, 212, 255, .16); }
+.button-secondary { border-color: rgba(77, 212, 255, .28); background: var(--accent-soft); }
+.button-ghost { border-color: var(--line); background: rgba(255, 255, 255, .025); }
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(440px, .93fr) minmax(520px, 1.3fr);
+  height: calc(100vh - var(--topbar-h));
+  overflow: hidden;
+}
+
+.config-panel,
+.results-panel {
+  min-width: 0;
+  height: 100%;
+}
+
+.config-panel {
+  position: relative;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: 24px 22px 24px 26px;
+  border-right: 1px solid var(--line);
+  background: rgba(8, 18, 27, .82);
+}
+
+.config-panel::-webkit-scrollbar,
+.results-scroll::-webkit-scrollbar { width: 10px; }
+.config-panel::-webkit-scrollbar-track,
+.results-scroll::-webkit-scrollbar-track { background: transparent; }
+.config-panel::-webkit-scrollbar-thumb,
+.results-scroll::-webkit-scrollbar-thumb { border: 3px solid transparent; border-radius: 99px; background: rgba(144, 171, 192, .28); background-clip: padding-box; }
+
+.config-header,
+.results-head,
+.progress-copy,
+.card-heading,
+.capacity-label,
+.app-card-head,
+.dialog-head,
+.dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.config-header h2,
+.results-head h2 { margin: 2px 0 0; font-size: 20px; letter-spacing: -.025em; }
+.step-label { color: var(--ink-muted); font-size: 10px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+
+.live-pill,
+.status-badge,
+.micro-badge,
+.issue-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex: 0 0 auto;
+  min-height: 27px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 820;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.live-pill { color: var(--green); border: 1px solid rgba(85, 228, 164, .24); background: rgba(85, 228, 164, .075); }
+.live-pill i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 5px rgba(85, 228, 164, .07); }
+
+.progress { margin: 20px 0 10px; }
+.progress-copy { margin-bottom: 7px; color: var(--ink-muted); font-size: 11px; }
+.progress-copy strong { color: var(--ink-soft); }
+.progress-track { height: 4px; overflow: hidden; border-radius: 99px; background: rgba(255, 255, 255, .06); }
+.progress-track span { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent-2), var(--accent)); transition: width .35s ease; }
+
+.form-section {
+  margin-top: 20px;
+  padding: 19px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(145deg, rgba(255, 255, 255, .025), rgba(255, 255, 255, .012));
+  box-shadow: inset 0 1px rgba(255, 255, 255, .025);
+}
+
+.section-heading { display: grid; grid-template-columns: 34px 1fr; gap: 11px; margin-bottom: 18px; }
+.section-number, .card-index {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(77, 212, 255, .24);
+  border-radius: 10px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  font-size: 10px;
+  font-weight: 850;
+}
+.section-heading h3 { margin: 0; font-size: 14px; }
+.section-heading p { margin: 2px 0 0; color: var(--ink-muted); font-size: 11px; }
+
+.field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+.field-span-2 { grid-column: 1 / -1; }
+
+.field,
+.mini-field,
+.example-picker { display: grid; gap: 6px; min-width: 0; }
+.field > span,
+.mini-field > span,
+.example-picker > span { color: var(--ink-soft); font-size: 10px; font-weight: 740; letter-spacing: .015em; }
+.field small { color: var(--ink-muted); font-size: 9px; line-height: 1.45; }
+
+input,
+select {
+  width: 100%;
+  min-width: 0;
+  height: 39px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  background: rgba(4, 12, 19, .68);
+  font-size: 11px;
+  transition: border-color .16s ease, background .16s ease, box-shadow .16s ease;
+}
+input:hover, select:hover { border-color: var(--line-strong); }
+input:focus, select:focus { border-color: rgba(77, 212, 255, .48); background: rgba(7, 19, 29, .96); box-shadow: 0 0 0 3px rgba(77, 212, 255, .07); }
+input:invalid { border-color: rgba(255, 111, 125, .48); }
+
+.input-suffix { position: relative; min-width: 0; }
+.input-suffix input { padding-right: 69px; }
+.input-suffix em {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  max-width: 58px;
+  transform: translateY(-50%);
+  overflow: hidden;
+  color: var(--ink-muted);
+  font-size: 9px;
+  font-style: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.dynamic-field[hidden], .app-config[hidden] { display: none !important; }
+
+.app-list { display: grid; gap: 10px; }
+.app-card {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: rgba(3, 11, 17, .34);
+  transition: border-color .18s ease, background .18s ease;
+}
+.app-card.is-active { border-color: rgba(77, 212, 255, .22); background: rgba(77, 212, 255, .025); }
+.app-card-head { min-height: 63px; padding: 11px 12px; }
+.app-card-head > div:nth-child(2) { flex: 1; min-width: 0; }
+.app-card h4 { margin: 0; font-size: 11px; }
+.app-card p { margin: 2px 0 0; color: var(--ink-muted); font-size: 9px; }
+.app-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, .045);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .05em;
+}
+.is-active .app-icon { color: var(--accent); background: var(--accent-soft); }
+
+.switch { position: relative; flex: 0 0 auto; width: 35px; height: 20px; }
+.switch input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.switch span { position: absolute; inset: 0; border: 1px solid var(--line); border-radius: 99px; background: rgba(255, 255, 255, .06); transition: all .18s ease; }
+.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 12px; height: 12px; border-radius: 50%; background: var(--ink-muted); transition: all .18s ease; }
+.switch input:checked + span { border-color: rgba(77, 212, 255, .38); background: rgba(77, 212, 255, .2); }
+.switch input:checked + span::after { left: 18px; background: var(--accent); box-shadow: 0 0 12px rgba(77, 212, 255, .45); }
+.switch input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.app-config {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px;
+  border-top: 1px solid var(--line);
+  background: rgba(0, 0, 0, .12);
+}
+.assumption { grid-column: 1 / -1; margin: 0 !important; color: var(--ink-muted) !important; font-size: 8.5px !important; }
+
+.check-field {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, .02);
+  cursor: pointer;
+}
+.check-field input { width: 16px; height: 16px; margin: 2px 0 0; accent-color: var(--accent); }
+.check-field strong, .check-field small { display: block; }
+.check-field strong { color: var(--ink-soft); font-size: 10px; }
+.check-field small { margin-top: 2px; color: var(--ink-muted); font-size: 8.5px; }
+
+.advanced-panel {
+  margin-top: 14px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, .012);
+}
+.advanced-panel summary { padding: 13px 15px; color: var(--ink-soft); font-size: 10px; font-weight: 780; cursor: pointer; }
+.advanced-content { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0 15px 15px; }
+.catalog-table-wrap { overflow-x: auto; }
+.catalog-table { width: 100%; border-collapse: collapse; font-size: 9px; }
+.catalog-table th, .catalog-table td { padding: 7px; border-bottom: 1px solid var(--line); text-align: left; }
+.catalog-table th { color: var(--ink-muted); font-weight: 750; }
+.catalog-table input { height: 33px; }
+
+.config-footer {
+  position: sticky;
+  z-index: 9;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) auto auto;
+  gap: 8px;
+  align-items: end;
+  margin: 18px -2px 0;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: rgba(9, 21, 31, .95);
+  box-shadow: 0 -15px 35px rgba(0, 0, 0, .22);
+  backdrop-filter: blur(15px);
+}
+
+.results-panel {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(7, 16, 25, .8), rgba(7, 16, 25, .8)),
+    radial-gradient(circle at 72% 5%, rgba(77, 212, 255, .13), transparent 26%),
+    radial-gradient(circle at 95% 55%, rgba(123, 140, 255, .08), transparent 30%);
+}
+
+.results-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: .28;
+  background-image:
+    linear-gradient(rgba(122, 151, 174, .045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(122, 151, 174, .045) 1px, transparent 1px);
+  background-size: 38px 38px;
+  pointer-events: none;
+}
+
+.results-scroll {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: 28px clamp(24px, 4vw, 54px) 55px;
+}
+
+.status-badge { border: 1px solid transparent; }
+.status-ready { color: var(--green); border-color: rgba(85, 228, 164, .26); background: rgba(85, 228, 164, .09); }
+.status-conditional { color: var(--amber); border-color: rgba(247, 189, 98, .28); background: rgba(247, 189, 98, .09); }
+.status-nogo { color: var(--red); border-color: rgba(255, 111, 125, .28); background: rgba(255, 111, 125, .09); }
+
+.recommendation-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  min-height: 210px;
+  margin-top: 20px;
+  padding: 26px;
+  overflow: hidden;
+  border: 1px solid rgba(77, 212, 255, .22);
+  border-radius: var(--radius-xl);
+  background:
+    linear-gradient(135deg, rgba(77, 212, 255, .11), transparent 45%),
+    linear-gradient(145deg, rgba(16, 31, 45, .96), rgba(7, 18, 28, .96));
+  box-shadow: var(--shadow), inset 0 1px rgba(255, 255, 255, .05);
+}
+
+.recommendation-copy { position: relative; z-index: 2; max-width: 620px; }
+.recommendation-kicker { color: var(--accent); font-size: 10px; font-weight: 830; letter-spacing: .12em; text-transform: uppercase; }
+.recommendation-copy h3 { margin: 9px 0 7px; font-size: clamp(24px, 4vw, 39px); line-height: 1.05; letter-spacing: -.055em; }
+.recommendation-copy p { max-width: 570px; margin: 0; color: var(--ink-soft); font-size: 12px; }
+.price-line { display: flex; align-items: baseline; gap: 7px; margin-top: 18px; }
+.price-line strong { font-size: 19px; }
+.price-line span { color: var(--ink-muted); font-size: 9px; }
+
+.recommendation-meta {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  align-self: stretch;
+  min-width: 150px;
+  border-left: 1px solid var(--line);
+}
+.recommendation-meta div { display: grid; align-content: center; padding-left: 20px; border-bottom: 1px solid var(--line); }
+.recommendation-meta div:last-child { border-bottom: 0; }
+.recommendation-meta span { color: var(--ink-muted); font-size: 8px; font-weight: 780; letter-spacing: .08em; text-transform: uppercase; }
+.recommendation-meta strong { margin-top: 2px; font-size: 13px; }
+
+.orbit-art { position: absolute; right: 82px; bottom: -120px; width: 320px; height: 320px; border: 1px solid rgba(77, 212, 255, .12); border-radius: 50%; opacity: .7; transform: rotate(-18deg); }
+.orbit-art::before, .orbit-art::after { content: ""; position: absolute; inset: 45px; border: 1px solid rgba(77, 212, 255, .1); border-radius: 50%; }
+.orbit-art::after { inset: 92px; }
+.orbit-art span { position: absolute; top: 43px; left: 44px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 23px var(--accent); }
+.orbit-art i { position: absolute; top: 106px; right: 33px; width: 4px; height: 4px; border-radius: 50%; background: var(--accent-2); }
+.orbit-art b { position: absolute; top: 38%; left: 42%; width: 52px; height: 52px; border: 1px solid rgba(255, 255, 255, .08); border-radius: 50%; background: rgba(255, 255, 255, .025); }
+
+.notice {
+  display: grid;
+  grid-template-columns: 25px 1fr;
+  gap: 11px;
+  align-items: start;
+  margin-top: 13px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, .025);
+}
+.notice > span { display: grid; place-items: center; width: 23px; height: 23px; border-radius: 50%; color: var(--accent); background: var(--accent-soft); font-size: 11px; font-weight: 850; }
+.notice p { margin: 1px 0 0; color: var(--ink-soft); font-size: 9px; }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 13px; }
+.kpi {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: rgba(13, 28, 40, .72);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .02);
+}
+.kpi span, .kpi strong, .kpi small { display: block; }
+.kpi span { min-height: 28px; color: var(--ink-muted); font-size: 8px; font-weight: 770; letter-spacing: .04em; text-transform: uppercase; }
+.kpi strong { margin-top: 5px; overflow: hidden; font-size: clamp(16px, 2.2vw, 22px); letter-spacing: -.035em; text-overflow: ellipsis; white-space: nowrap; }
+.kpi small { margin-top: 3px; color: var(--ink-muted); font-size: 8px; }
+
+.result-card {
+  margin-top: 13px;
+  padding: 19px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: rgba(11, 24, 35, .76);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .025);
+  backdrop-filter: blur(8px);
+}
+.card-heading > div:first-child { display: flex; align-items: center; gap: 10px; }
+.card-heading h3 { margin: 0; font-size: 13px; }
+.card-index { width: 25px; height: 25px; border-radius: 8px; }
+.micro-badge { color: var(--green); background: rgba(85, 228, 164, .08); }
+.micro-neutral { color: var(--ink-soft); background: rgba(255, 255, 255, .05); }
+.issue-count { min-width: 26px; padding-inline: 8px; color: var(--amber); background: rgba(247, 189, 98, .09); }
+
+.capacity-grid { display: grid; gap: 15px; margin-top: 18px; }
+.capacity-label { margin-bottom: 6px; color: var(--ink-soft); font-size: 9px; }
+.capacity-label strong { color: var(--ink); font-size: 9px; }
+.meter { height: 8px; overflow: hidden; border-radius: 99px; background: rgba(255, 255, 255, .055); }
+.meter span { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent-2), var(--accent)); transition: width .35s ease, background .2s ease; }
+.meter span.is-warning { background: linear-gradient(90deg, #e89a4d, var(--amber)); }
+.meter span.is-danger { background: linear-gradient(90deg, #d74660, var(--red)); }
+.card-footnote { margin: 13px 0 0; color: var(--ink-muted); font-size: 8.5px; }
+
+.architecture {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(70px, 1fr));
+  gap: 16px;
+  align-items: stretch;
+  margin-top: 18px;
+}
+.arch-node {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 74px;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  text-align: center;
+  background: rgba(255, 255, 255, .025);
+}
+.arch-node:not(:last-child)::after { content: ""; position: absolute; top: 50%; left: calc(100% + 1px); width: 15px; height: 1px; background: var(--line-strong); }
+.arch-node strong, .arch-node small { display: block; }
+.arch-node strong { font-size: 9px; }
+.arch-node small { margin-top: 3px; color: var(--ink-muted); font-size: 7.5px; }
+.arch-node.is-accent { border-color: rgba(77, 212, 255, .28); background: var(--accent-soft); }
+.arch-node.is-backup { border-color: rgba(123, 140, 255, .3); background: rgba(123, 140, 255, .08); }
+.reason-list { display: grid; gap: 7px; margin: 16px 0 0; padding: 0; list-style: none; }
+.reason-list li { position: relative; padding-left: 18px; color: var(--ink-soft); font-size: 9px; }
+.reason-list li::before { content: "✓"; position: absolute; left: 0; color: var(--green); font-weight: 900; }
+
+.text-button {
+  padding: 2px 0;
+  border: 0;
+  color: var(--accent);
+  background: transparent;
+  font-size: 9px;
+  font-weight: 780;
+}
+.text-button:hover { text-decoration: underline; }
+
+.table-wrap { overflow-x: auto; }
+.bom-table, .trace-table { width: 100%; margin-top: 13px; border-collapse: collapse; font-size: 9px; }
+.bom-table th, .bom-table td, .trace-table th, .trace-table td { padding: 9px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.bom-table th, .trace-table th { color: var(--ink-muted); font-size: 8px; font-weight: 770; letter-spacing: .05em; text-transform: uppercase; }
+.bom-table td:nth-child(2) { width: 62px; text-align: center; }
+.bom-table td:last-child, .trace-table td:first-child { color: var(--ink-soft); }
+.trace-table th:not(:first-child), .trace-table td:not(:first-child) { text-align: right; }
+.trace-table tfoot th { color: var(--ink); }
+
+.issue-list { display: grid; gap: 8px; margin-top: 14px; }
+.issue {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, .02);
+}
+.issue-icon { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 8px; font-size: 10px; font-weight: 850; }
+.issue strong, .issue p { display: block; margin: 0; }
+.issue strong { font-size: 9px; }
+.issue p { margin-top: 2px; color: var(--ink-muted); font-size: 8.5px; }
+.issue-warning .issue-icon { color: var(--amber); background: rgba(247, 189, 98, .1); }
+.issue-danger .issue-icon { color: var(--red); background: rgba(255, 111, 125, .1); }
+.issue-info .issue-icon { color: var(--accent); background: var(--accent-soft); }
+.issue-success .issue-icon { color: var(--green); background: rgba(85, 228, 164, .1); }
+
+.trace-card { padding: 0; }
+.trace-card summary { display: flex; align-items: center; justify-content: space-between; padding: 17px 19px; list-style: none; cursor: pointer; }
+.trace-card summary::-webkit-details-marker { display: none; }
+.trace-card summary > span { display: flex; align-items: center; gap: 10px; }
+.trace-card summary small { color: var(--accent); font-size: 8px; }
+.trace-body { padding: 0 19px 17px; }
+.formula-summary { margin: 10px 0 0; color: var(--ink-muted); font-size: 8.5px; }
+
+.results-footer { display: flex; justify-content: space-between; gap: 24px; align-items: start; padding: 19px 2px 0; }
+.results-footer p { max-width: 780px; margin: 0; color: var(--ink-muted); font-size: 8px; }
+
+dialog {
+  width: min(760px, calc(100vw - 30px));
+  max-height: min(760px, calc(100vh - 30px));
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 21px;
+  color: var(--ink);
+  background: #0c1924;
+  box-shadow: 0 35px 100px rgba(0, 0, 0, .58);
+}
+dialog::backdrop { background: rgba(1, 7, 12, .78); backdrop-filter: blur(5px); }
+.dialog-shell { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; max-height: inherit; }
+.dialog-head, .dialog-footer { padding: 18px 21px; border-bottom: 1px solid var(--line); }
+.dialog-footer { justify-content: flex-end; border-top: 1px solid var(--line); border-bottom: 0; }
+.dialog-head h2 { margin: 2px 0 0; font-size: 18px; }
+.icon-button { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 10px; color: var(--ink); background: rgba(255, 255, 255, .03); font-size: 20px; }
+.dialog-content { overflow-y: auto; padding: 6px 22px 22px; }
+.dialog-content section { padding-top: 16px; }
+.dialog-content h3 { margin: 0 0 8px; font-size: 12px; }
+.dialog-content p, .dialog-content li { color: var(--ink-soft); font-size: 10px; }
+.dialog-content ol, .dialog-content ul { display: grid; gap: 6px; padding-left: 19px; }
+.source-list a { font-weight: 720; }
+.source-date { color: var(--ink-muted) !important; font-size: 8.5px !important; }
+
+.toast {
+  position: fixed;
+  z-index: 100;
+  right: 20px;
+  bottom: 20px;
+  max-width: 350px;
+  padding: 12px 15px;
+  border: 1px solid rgba(77, 212, 255, .28);
+  border-radius: 12px;
+  color: var(--ink);
+  background: rgba(12, 29, 42, .96);
+  box-shadow: var(--shadow);
+  font-size: 10px;
+  opacity: 0;
+  transform: translateY(15px);
+  pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease;
+}
+.toast.is-visible { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 1120px) {
+  .workspace { grid-template-columns: minmax(400px, .9fr) minmax(480px, 1.1fr); }
+  .topbar { grid-template-columns: auto 1fr auto; }
+  .brand-lockup small { display: none; }
+  .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .architecture { grid-template-columns: repeat(3, minmax(90px, 1fr)); }
+  .arch-node:nth-child(3)::after { display: none; }
+}
+
+@media (max-width: 880px) {
+  body { overflow: auto; }
+  .topbar { position: sticky; top: 0; grid-template-columns: 1fr auto; height: auto; min-height: 70px; padding: 12px 16px; }
+  .topbar-title { display: none; }
+  .topbar-actions .button-ghost { display: none; }
+  .workspace { display: block; height: auto; overflow: visible; }
+  .config-panel, .results-panel { height: auto; overflow: visible; }
+  .config-panel { padding: 20px 16px 24px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .results-scroll { height: auto; overflow: visible; padding: 24px 16px 45px; }
+  .config-footer { position: static; bottom: auto; margin: 16px 0 0; }
+  .recommendation-card { grid-template-columns: 1fr; }
+  .recommendation-meta { grid-template-columns: repeat(3, 1fr); min-width: 0; border-top: 1px solid var(--line); border-left: 0; }
+  .recommendation-meta div { min-height: 62px; padding: 12px 8px 0; border-right: 1px solid var(--line); border-bottom: 0; text-align: center; }
+  .recommendation-meta div:last-child { border-right: 0; }
+}
+
+@media (max-width: 560px) {
+  .topbar-actions .button-primary { padding-inline: 11px; }
+  .field-grid, .app-config, .advanced-content { grid-template-columns: 1fr; }
+  .field-span-2, .assumption { grid-column: auto; }
+  .form-section { padding: 15px; }
+  .config-header { align-items: start; }
+  .live-pill { padding-inline: 8px; font-size: 8px; }
+  .config-footer { grid-template-columns: 1fr 1fr; }
+  .example-picker { grid-column: 1 / -1; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .kpi strong { font-size: 17px; }
+  .architecture { grid-template-columns: 1fr; }
+  .arch-node:not(:last-child)::after { top: 100%; left: 50%; width: 1px; height: 16px; }
+  .recommendation-card { padding: 21px; }
+  .recommendation-copy h3 { font-size: 29px; }
+  .results-footer { display: grid; gap: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+}
+
+@media print {
+  :root { color-scheme: light; --ink: #13212c; --ink-soft: #415361; --ink-muted: #657683; --line: #d9e0e5; --accent: #007da3; --panel: white; }
+  body { overflow: visible; color: #13212c; background: #fff; }
+  .topbar, .config-panel, .results-footer .text-button, .text-button, .toast { display: none !important; }
+  .workspace { display: block; height: auto; }
+  .results-panel, .results-scroll { height: auto; overflow: visible; background: #fff; }
+  .results-scroll { padding: 0; }
+  .results-panel::before, .orbit-art { display: none; }
+  .result-card, .recommendation-card, .kpi, .notice { break-inside: avoid; color: #13212c; background: #fff; box-shadow: none; }
+  .recommendation-card { margin-top: 12px; }
+  .results-head { padding-top: 12px; }
+  .trace-card { display: block; }
+  .trace-card summary { list-style: none; }
+  a { color: #007da3; }
+}
+
+</style>
+</head>
+<body>
+  <a class="skip-link" href="#resultados">Saltar a resultados</a>
+
+  <header class="topbar">
+    <div class="brand-lockup" aria-label="Presales - Ingeniería de soluciones">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 44 44" role="img">
+          <path d="M8 28c6-14 20-19 29-13"/>
+          <path d="M11 34c7-11 17-15 27-12"/>
+          <circle cx="10" cy="34" r="2.6"/>
+        </svg>
+      </span>
+      <span>
+        <strong>Presales</strong>
+        <small>Ingeniería de conectividad</small>
+      </span>
+    </div>
+    <div class="topbar-title">
+      <span class="eyebrow">Órbita terrestre baja · LEO</span>
+      <h1>Dimensionador empresarial Starlink</h1>
+    </div>
+    <div class="topbar-actions">
+      <button class="button button-ghost" id="btnMethod" type="button" aria-controls="methodDialog">Metodología</button>
+      <button class="button button-primary" id="btnPrint" type="button">Generar informe</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="config-panel" aria-label="Variables de dimensionamiento">
+      <div class="config-header">
+        <div>
+          <span class="step-label">Configuración técnica</span>
+          <h2>Caracterice la sede</h2>
+        </div>
+        <span class="live-pill"><i aria-hidden="true"></i> Cálculo en vivo</span>
+      </div>
+
+      <div class="progress" aria-label="Calidad de datos de entrada">
+        <div class="progress-copy">
+          <span>Completitud del escenario</span>
+          <strong id="progressText">0%</strong>
+        </div>
+        <div class="progress-track"><span id="progressBar"></span></div>
+      </div>
+
+      <form id="sizingForm" novalidate>
+        <section class="form-section" aria-labelledby="scenarioTitle">
+          <div class="section-heading">
+            <span class="section-number">01</span>
+            <div>
+              <h3 id="scenarioTitle">Escenario empresarial</h3>
+              <p>Defina el alcance operativo y la proyección de demanda.</p>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <label class="field field-span-2">
+              <span>Nombre de la sede</span>
+              <input id="siteName" name="siteName" type="text" value="Sede empresarial remota" maxlength="80">
+            </label>
+
+            <label class="field">
+              <span>Ámbito del servicio</span>
+              <select id="scope" name="scope">
+                <option value="local">Colombia · Prioridad local</option>
+                <option value="global">Internacional/marítimo · Prioridad global</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Función del enlace</span>
+              <select id="linkRole" name="linkRole">
+                <option value="primary">Enlace principal</option>
+                <option value="backup">Respaldo de otro operador</option>
+                <option value="temporary">Operación temporal/emergencia</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Criticidad del negocio</span>
+              <select id="criticality" name="criticality">
+                <option value="standard">Estándar · tolera interrupciones</option>
+                <option value="important" selected>Importante · continuidad requerida</option>
+                <option value="mission">Misión crítica · impacto alto</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Disponibilidad objetivo</span>
+              <select id="availability" name="availability">
+                <option value="99">99,0%</option>
+                <option value="99.5" selected>99,5%</option>
+                <option value="99.9">99,9%</option>
+                <option value="99.95">99,95% o superior</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Usuarios de la sede</span>
+              <div class="input-suffix"><input id="users" name="users" type="number" min="1" max="10000" step="1" value="45"><em>personas</em></div>
+            </label>
+
+            <label class="field">
+              <span>Concurrencia en hora pico</span>
+              <div class="input-suffix"><input id="concurrency" name="concurrency" type="number" min="5" max="100" step="1" value="65"><em>%</em></div>
+            </label>
+
+            <label class="field">
+              <span>Días operativos al mes</span>
+              <div class="input-suffix"><input id="workDays" name="workDays" type="number" min="1" max="31" step="1" value="22"><em>días</em></div>
+            </label>
+
+            <label class="field">
+              <span>Horas operativas al día</span>
+              <div class="input-suffix"><input id="workHours" name="workHours" type="number" min="1" max="24" step="0.5" value="9"><em>h</em></div>
+            </label>
+
+            <label class="field">
+              <span>Crecimiento a 12 meses</span>
+              <div class="input-suffix"><input id="growth" name="growth" type="number" min="0" max="200" step="1" value="20"><em>%</em></div>
+            </label>
+
+            <label class="field">
+              <span>Reserva de ingeniería</span>
+              <div class="input-suffix"><input id="headroom" name="headroom" type="number" min="5" max="100" step="1" value="25"><em>%</em></div>
+            </label>
+
+            <label class="field field-span-2 dynamic-field" data-show-when="linkRole:backup">
+              <span>Uso esperado del respaldo al mes</span>
+              <div class="input-suffix"><input id="failoverHours" name="failoverHours" type="number" min="1" max="744" step="1" value="12"><em>horas</em></div>
+              <small>La capacidad pico se conserva; la cuota mensual se ajusta al tiempo probable de contingencia.</small>
+            </label>
+          </div>
+        </section>
+
+        <section class="form-section" aria-labelledby="appsTitle">
+          <div class="section-heading">
+            <span class="section-number">02</span>
+            <div>
+              <h3 id="appsTitle">Aplicaciones y tráfico</h3>
+              <p>Active únicamente las cargas que cruzarán el enlace LEO.</p>
+            </div>
+          </div>
+
+          <div class="app-list">
+            <article class="app-card" data-app-card="office">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">OF</div>
+                <div><h4>Ofimática, web y SaaS</h4><p>Correo, navegación, CRM, ERP web y colaboración.</p></div>
+                <label class="switch"><input id="officeEnabled" type="checkbox" checked><span aria-hidden="true"></span><b class="sr-only">Activar ofimática y SaaS</b></label>
+              </div>
+              <div class="app-config" data-app-config="office">
+                <label class="mini-field"><span>Usuarios que la utilizan</span><div class="input-suffix"><input id="officeAdoption" type="number" min="0" max="100" value="100"><em>%</em></div></label>
+                <label class="mini-field"><span>Descarga media por usuario</span><div class="input-suffix"><input id="officeDown" type="number" min="0.01" max="20" step="0.01" value="0.22"><em>Mbps</em></div></label>
+                <label class="mini-field"><span>Subida media por usuario</span><div class="input-suffix"><input id="officeUp" type="number" min="0.01" max="20" step="0.01" value="0.08"><em>Mbps</em></div></label>
+                <p class="assumption">Supuesto editable para tráfico transaccional; debe sustituirse con telemetría cuando exista.</p>
+              </div>
+            </article>
+
+            <article class="app-card" data-app-card="video">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">VC</div>
+                <div><h4>Videoconferencia</h4><p>Teams, Zoom, Meet o Webex.</p></div>
+                <label class="switch"><input id="videoEnabled" type="checkbox" checked><span aria-hidden="true"></span><b class="sr-only">Activar videoconferencia</b></label>
+              </div>
+              <div class="app-config" data-app-config="video">
+                <label class="mini-field"><span>Calidad objetivo</span><select id="videoQuality"><option value="sd">Calidad estándar</option><option value="720" selected>HD 720p</option><option value="1080">Full HD 1080p</option></select></label>
+                <label class="mini-field"><span>Usuarios participantes</span><div class="input-suffix"><input id="videoAdoption" type="number" min="0" max="100" value="55"><em>%</em></div></label>
+                <label class="mini-field"><span>Horas por participante/día</span><div class="input-suffix"><input id="videoHours" type="number" min="0" max="12" step="0.25" value="1.25"><em>h</em></div></label>
+                <label class="mini-field"><span>Usuarios simultáneos al pico</span><div class="input-suffix"><input id="videoConcurrent" type="number" min="0" max="10000" value="8"><em>usuarios</em></div></label>
+                <p class="assumption">Perfiles basados en requisitos oficiales de Zoom; el motor agrega subida y descarga.</p>
+              </div>
+            </article>
+
+            <article class="app-card" data-app-card="voice">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">IP</div>
+                <div><h4>Telefonía IP</h4><p>Softphones, extensiones y centros de contacto.</p></div>
+                <label class="switch"><input id="voiceEnabled" type="checkbox" checked><span aria-hidden="true"></span><b class="sr-only">Activar telefonía IP</b></label>
+              </div>
+              <div class="app-config" data-app-config="voice">
+                <label class="mini-field"><span>Usuarios con voz</span><div class="input-suffix"><input id="voiceAdoption" type="number" min="0" max="100" value="45"><em>%</em></div></label>
+                <label class="mini-field"><span>Horas por usuario/día</span><div class="input-suffix"><input id="voiceHours" type="number" min="0" max="12" step="0.25" value="0.75"><em>h</em></div></label>
+                <label class="mini-field"><span>Llamadas simultáneas</span><div class="input-suffix"><input id="voiceConcurrent" type="number" min="0" max="10000" value="6"><em>llamadas</em></div></label>
+                <label class="mini-field"><span>Caudal por sentido</span><div class="input-suffix"><input id="voiceRate" type="number" min="0.03" max="1" step="0.01" value="0.10"><em>Mbps</em></div></label>
+              </div>
+            </article>
+
+            <article class="app-card" data-app-card="streaming">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">ST</div>
+                <div><h4>Video, capacitación y señalización</h4><p>Streaming corporativo o contenidos educativos.</p></div>
+                <label class="switch"><input id="streamEnabled" type="checkbox"><span aria-hidden="true"></span><b class="sr-only">Activar streaming</b></label>
+              </div>
+              <div class="app-config" data-app-config="streaming" hidden>
+                <label class="mini-field"><span>Resolución</span><select id="streamQuality"><option value="720">HD 720p · 2,5 Mbps</option><option value="1080" selected>HD 1080p · 5 Mbps</option><option value="4k">4K UHD · 20 Mbps</option></select></label>
+                <label class="mini-field"><span>Usuarios participantes</span><div class="input-suffix"><input id="streamAdoption" type="number" min="0" max="100" value="20"><em>%</em></div></label>
+                <label class="mini-field"><span>Horas por usuario/día</span><div class="input-suffix"><input id="streamHours" type="number" min="0" max="12" step="0.25" value="0.5"><em>h</em></div></label>
+                <label class="mini-field"><span>Streams simultáneos al pico</span><div class="input-suffix"><input id="streamConcurrent" type="number" min="0" max="10000" value="4"><em>streams</em></div></label>
+              </div>
+            </article>
+
+            <article class="app-card" data-app-card="cctv">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">CC</div>
+                <div><h4>CCTV o video hacia la nube</h4><p>Cámaras transmitidas fuera de la sede.</p></div>
+                <label class="switch"><input id="cctvEnabled" type="checkbox"><span aria-hidden="true"></span><b class="sr-only">Activar CCTV</b></label>
+              </div>
+              <div class="app-config" data-app-config="cctv" hidden>
+                <label class="mini-field"><span>Cámaras remotas</span><div class="input-suffix"><input id="cctvCameras" type="number" min="0" max="1000" value="8"><em>cámaras</em></div></label>
+                <label class="mini-field"><span>Bitrate medio por cámara</span><div class="input-suffix"><input id="cctvRate" type="number" min="0.1" max="50" step="0.1" value="1.5"><em>Mbps</em></div></label>
+                <label class="mini-field"><span>Transmisión diaria</span><div class="input-suffix"><input id="cctvHours" type="number" min="0" max="24" step="0.5" value="24"><em>h</em></div></label>
+                <label class="mini-field"><span>Días de transmisión/mes</span><div class="input-suffix"><input id="cctvDays" type="number" min="0" max="31" value="30"><em>días</em></div></label>
+                <p class="assumption">Use el bitrate real del VMS/codificador; resolución y escena modifican el consumo.</p>
+              </div>
+            </article>
+
+            <article class="app-card" data-app-card="backup">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">BK</div>
+                <div><h4>Copias de seguridad y nube</h4><p>Backups, sincronización y replicación.</p></div>
+                <label class="switch"><input id="backupEnabled" type="checkbox" checked><span aria-hidden="true"></span><b class="sr-only">Activar copias de seguridad</b></label>
+              </div>
+              <div class="app-config" data-app-config="backup">
+                <label class="mini-field"><span>Datos enviados por día</span><div class="input-suffix"><input id="backupGbDay" type="number" min="0" max="100000" step="0.5" value="8"><em>GB</em></div></label>
+                <label class="mini-field"><span>Ventana de transferencia</span><div class="input-suffix"><input id="backupWindow" type="number" min="0.5" max="24" step="0.5" value="6"><em>h</em></div></label>
+                <label class="mini-field"><span>Frecuencia</span><select id="backupFrequency"><option value="workdays" selected>Días operativos</option><option value="daily">Todos los días</option></select></label>
+              </div>
+            </article>
+
+            <article class="app-card" data-app-card="transfer">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">DT</div>
+                <div><h4>Transferencias y actualizaciones</h4><p>Archivos, imágenes, software y parches.</p></div>
+                <label class="switch"><input id="transferEnabled" type="checkbox"><span aria-hidden="true"></span><b class="sr-only">Activar transferencias</b></label>
+              </div>
+              <div class="app-config" data-app-config="transfer" hidden>
+                <label class="mini-field"><span>Volumen mensual</span><div class="input-suffix"><input id="transferGbMonth" type="number" min="0" max="1000000" step="1" value="100"><em>GB</em></div></label>
+                <label class="mini-field"><span>Dirección predominante</span><select id="transferDirection"><option value="down" selected>Descarga</option><option value="up">Subida</option><option value="balanced">Balanceada</option></select></label>
+                <label class="mini-field"><span>Ventana de mayor actividad</span><div class="input-suffix"><input id="transferWindow" type="number" min="1" max="744" step="1" value="40"><em>h/mes</em></div></label>
+              </div>
+            </article>
+
+            <article class="app-card" data-app-card="iot">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">IoT</div>
+                <div><h4>IoT, telemetría y monitoreo</h4><p>Sensores, controladores y equipos operacionales.</p></div>
+                <label class="switch"><input id="iotEnabled" type="checkbox"><span aria-hidden="true"></span><b class="sr-only">Activar IoT</b></label>
+              </div>
+              <div class="app-config" data-app-config="iot" hidden>
+                <label class="mini-field"><span>Dispositivos</span><div class="input-suffix"><input id="iotDevices" type="number" min="0" max="100000" value="60"><em>equipos</em></div></label>
+                <label class="mini-field"><span>Consumo por dispositivo/día</span><div class="input-suffix"><input id="iotMbDay" type="number" min="0" max="100000" step="1" value="20"><em>MB</em></div></label>
+                <label class="mini-field"><span>Caudal pico agregado</span><div class="input-suffix"><input id="iotPeak" type="number" min="0" max="1000" step="0.1" value="1"><em>Mbps</em></div></label>
+              </div>
+            </article>
+
+            <article class="app-card" data-app-card="guest">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">GW</div>
+                <div><h4>Wi-Fi de invitados</h4><p>Tráfico no corporativo con política separada.</p></div>
+                <label class="switch"><input id="guestEnabled" type="checkbox"><span aria-hidden="true"></span><b class="sr-only">Activar Wi-Fi de invitados</b></label>
+              </div>
+              <div class="app-config" data-app-config="guest" hidden>
+                <label class="mini-field"><span>Invitados por día</span><div class="input-suffix"><input id="guestUsers" type="number" min="0" max="10000" value="15"><em>usuarios</em></div></label>
+                <label class="mini-field"><span>Consumo por invitado/día</span><div class="input-suffix"><input id="guestGbDay" type="number" min="0" max="100" step="0.1" value="0.5"><em>GB</em></div></label>
+                <label class="mini-field"><span>Invitados simultáneos</span><div class="input-suffix"><input id="guestConcurrent" type="number" min="0" max="10000" value="6"><em>usuarios</em></div></label>
+                <label class="mini-field"><span>Límite por invitado</span><div class="input-suffix"><input id="guestRate" type="number" min="0.1" max="50" step="0.1" value="1"><em>Mbps</em></div></label>
+              </div>
+            </article>
+
+            <article class="app-card" data-app-card="manual">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">+</div>
+                <div><h4>Carga adicional conocida</h4><p>Demanda no representada en las categorías anteriores.</p></div>
+                <label class="switch"><input id="manualEnabled" type="checkbox"><span aria-hidden="true"></span><b class="sr-only">Activar carga adicional</b></label>
+              </div>
+              <div class="app-config" data-app-config="manual" hidden>
+                <label class="mini-field"><span>Consumo mensual</span><div class="input-suffix"><input id="manualGb" type="number" min="0" max="1000000" step="1" value="50"><em>GB</em></div></label>
+                <label class="mini-field"><span>Pico de descarga</span><div class="input-suffix"><input id="manualDown" type="number" min="0" max="10000" step="0.1" value="5"><em>Mbps</em></div></label>
+                <label class="mini-field"><span>Pico de subida</span><div class="input-suffix"><input id="manualUp" type="number" min="0" max="10000" step="0.1" value="2"><em>Mbps</em></div></label>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="form-section" aria-labelledby="siteTitle">
+          <div class="section-heading">
+            <span class="section-number">03</span>
+            <div>
+              <h3 id="siteTitle">Capacidad, instalación y resiliencia</h3>
+              <p>Valide las condiciones que pueden cambiar o bloquear la recomendación.</p>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <label class="field field-span-2">
+              <span>Perfil de capacidad por terminal</span>
+              <select id="speedProfile">
+                <option value="conservative" selected>No validado · extremo inferior publicado (50/10 Mbps)</option>
+                <option value="reference">Referencia de diseño · 100/15 Mbps</option>
+                <option value="upper">Escenario alto validado · 220/30 Mbps</option>
+                <option value="custom">Medición o Speed Map personalizada</option>
+              </select>
+              <small>El extremo alto no debe seleccionarse sin evidencia del sitio y de su franja horaria crítica.</small>
+            </label>
+
+            <label class="field dynamic-field" data-show-when="speedProfile:custom">
+              <span>Descarga validada</span>
+              <div class="input-suffix"><input id="customDown" type="number" min="1" max="1000" step="1" value="120"><em>Mbps</em></div>
+            </label>
+
+            <label class="field dynamic-field" data-show-when="speedProfile:custom">
+              <span>Subida validada</span>
+              <div class="input-suffix"><input id="customUp" type="number" min="1" max="500" step="1" value="20"><em>Mbps</em></div>
+            </label>
+
+            <label class="field">
+              <span>Utilización máxima de diseño</span>
+              <div class="input-suffix"><input id="maxUtilization" type="number" min="40" max="90" step="5" value="70"><em>%</em></div>
+            </label>
+
+            <label class="field">
+              <span>Arquitectura de continuidad</span>
+              <select id="redundancy">
+                <option value="auto" selected>Automática según criticidad</option>
+                <option value="single">Una sola línea Starlink</option>
+                <option value="dual">Dos líneas Starlink activas</option>
+                <option value="hybrid">Starlink + operador diverso</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Estudio de obstrucciones</span>
+              <select id="obstruction">
+                <option value="pending" selected>Pendiente de medición</option>
+                <option value="clear">100% despejado en Starlink App</option>
+                <option value="partial">Hay obstrucciones identificadas</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Calidad de energía</span>
+              <select id="powerQuality">
+                <option value="stable" selected>Red estable</option>
+                <option value="unstable">Red inestable o cortes frecuentes</option>
+                <option value="generator">Generador/microred</option>
+                <option value="solar">Sistema solar o DC</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Entorno físico</span>
+              <select id="environment">
+                <option value="normal" selected>Oficina o entorno normal</option>
+                <option value="remote">Remoto con difícil acceso</option>
+                <option value="coastal">Costero/corrosivo</option>
+                <option value="harsh">Industrial, vibración o clima severo</option>
+                <option value="extreme">Temperaturas o vientos extremos</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Tipo de instalación</span>
+              <select id="mobility">
+                <option value="fixed" selected>Fija en edificio o torre</option>
+                <option value="vehicle">Vehículo/en movimiento</option>
+                <option value="maritime">Marítima</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Área interior estimada</span>
+              <div class="input-suffix"><input id="area" type="number" min="20" max="1000000" step="10" value="600"><em>m²</em></div>
+            </label>
+
+            <label class="field">
+              <span>Número de pisos</span>
+              <div class="input-suffix"><input id="floors" type="number" min="1" max="100" step="1" value="1"><em>pisos</em></div>
+            </label>
+
+            <label class="field">
+              <span>Densidad de muros</span>
+              <select id="wallDensity"><option value="open">Espacio abierto</option><option value="medium" selected>Media</option><option value="dense">Alta/concreto</option></select>
+            </label>
+
+            <label class="field">
+              <span>Autonomía eléctrica objetivo</span>
+              <div class="input-suffix"><input id="upsMinutes" type="number" min="0" max="1440" step="15" value="60"><em>min</em></div>
+            </label>
+
+            <label class="check-field field-span-2">
+              <input id="pricesVerified" type="checkbox">
+              <span><strong>Precios verificados en portal o cotización vigente</strong><small>La lista precargada es una referencia pública consultada el 23 de septiembre de 2026.</small></span>
+            </label>
+          </div>
+        </section>
+
+        <details class="advanced-panel">
+          <summary>Parámetros avanzados y catálogo comercial</summary>
+          <div class="advanced-content">
+            <label class="field">
+              <span>Sobrecarga de protocolos y variabilidad</span>
+              <div class="input-suffix"><input id="protocolOverhead" type="number" min="0" max="40" step="1" value="10"><em>%</em></div>
+            </label>
+            <label class="field">
+              <span>Fecha de vigencia del catálogo</span>
+              <input id="catalogDate" type="date" value="2026-09-23">
+            </label>
+            <div class="catalog-table-wrap field-span-2">
+              <table class="catalog-table">
+                <thead><tr><th>Plan</th><th>Cuota</th><th>Precio mensual COP</th></tr></thead>
+                <tbody id="catalogEditor"></tbody>
+              </table>
+            </div>
+            <p class="assumption field-span-2">Los cambios se aplican al cálculo actual. Las tarifas pueden variar por dirección, impuestos, hardware, disponibilidad o cotización comercial.</p>
+          </div>
+        </details>
+      </form>
+
+      <div class="config-footer">
+        <label class="example-picker">
+          <span>Escenario de ejemplo</span>
+          <select id="exampleSelect">
+            <option value="office">Oficina rural · 25 usuarios</option>
+            <option value="branch">Sucursal crítica · 80 usuarios</option>
+            <option value="backup">Respaldo corporativo · 120 usuarios</option>
+            <option value="cctv">Operación industrial + CCTV</option>
+          </select>
+        </label>
+        <button class="button button-secondary" id="btnLoadExample" type="button">Cargar</button>
+        <button class="button button-ghost" id="btnReset" type="button">Restablecer</button>
+      </div>
+    </aside>
+
+    <section class="results-panel" id="resultados" tabindex="-1" aria-live="polite">
+      <div class="results-scroll">
+        <div class="results-head">
+          <div>
+            <span class="eyebrow">Recomendación calculada</span>
+            <h2 id="resultSiteName">Sede empresarial remota</h2>
+          </div>
+          <span class="status-badge status-conditional" id="statusBadge">Condicionada</span>
+        </div>
+
+        <article class="recommendation-card">
+          <div class="orbit-art" aria-hidden="true"><span></span><i></i><b></b></div>
+          <div class="recommendation-copy">
+            <span class="recommendation-kicker" id="resultPlanFamily">Prioridad local · Colombia</span>
+            <h3 id="resultPlanName">Local Priority 2 TB</h3>
+            <p id="resultPlanReason">La cuota cubre la demanda proyectada y la reserva de ingeniería.</p>
+            <div class="price-line"><strong id="resultPrice">$1.685.000</strong><span>COP/mes de referencia</span></div>
+          </div>
+          <div class="recommendation-meta">
+            <div><span>Terminales</span><strong id="resultTerminals">1</strong></div>
+            <div><span>Hardware</span><strong id="resultHardware">Performance</strong></div>
+            <div><span>Confianza</span><strong id="resultConfidence">Media</strong></div>
+          </div>
+        </article>
+
+        <div class="notice notice-info" id="catalogNotice">
+          <span aria-hidden="true">i</span>
+          <p><strong>Precio indicativo.</strong> Valide dirección, impuestos, elegibilidad, hardware y tarifa final en el portal de Starlink antes de emitir la propuesta.</p>
+        </div>
+
+        <div class="kpi-grid">
+          <article class="kpi"><span>Datos prioritarios requeridos</span><strong id="kpiData">0 GB</strong><small id="kpiDataNote">Incluye crecimiento y reserva</small></article>
+          <article class="kpi"><span>Pico de descarga</span><strong id="kpiDown">0 Mbps</strong><small id="kpiDownNote">Demanda agregada</small></article>
+          <article class="kpi"><span>Pico de subida</span><strong id="kpiUp">0 Mbps</strong><small id="kpiUpNote">Demanda agregada</small></article>
+          <article class="kpi"><span>Cuello de botella</span><strong id="kpiConstraint">Cuota</strong><small id="kpiConstraintNote">Factor dominante</small></article>
+        </div>
+
+        <article class="result-card">
+          <div class="card-heading">
+            <div><span class="card-index">A</span><h3>Capacidad y holgura</h3></div>
+            <span class="micro-badge" id="capacityBadge">Revisar</span>
+          </div>
+          <div class="capacity-grid">
+            <div class="capacity-row">
+              <div class="capacity-label"><span>Cuota prioritaria</span><strong id="quotaLabel">0 de 0 GB</strong></div>
+              <div class="meter"><span id="quotaMeter"></span></div>
+            </div>
+            <div class="capacity-row">
+              <div class="capacity-label"><span>Descarga de diseño</span><strong id="downLabel">0 de 0 Mbps</strong></div>
+              <div class="meter"><span id="downMeter"></span></div>
+            </div>
+            <div class="capacity-row">
+              <div class="capacity-label"><span>Subida de diseño</span><strong id="upLabel">0 de 0 Mbps</strong></div>
+              <div class="meter"><span id="upMeter"></span></div>
+            </div>
+          </div>
+          <p class="card-footnote" id="capacityFootnote">La capacidad por terminal se contrasta con un umbral de utilización conservador.</p>
+        </article>
+
+        <article class="result-card">
+          <div class="card-heading">
+            <div><span class="card-index">B</span><h3>Arquitectura recomendada</h3></div>
+            <span class="micro-badge micro-neutral" id="architectureBadge">Principal</span>
+          </div>
+          <div class="architecture" id="architectureDiagram" aria-label="Diagrama lógico de la solución"></div>
+          <ul class="reason-list" id="reasonList"></ul>
+        </article>
+
+        <article class="result-card">
+          <div class="card-heading">
+            <div><span class="card-index">C</span><h3>Lista base de materiales y servicios</h3></div>
+            <button class="text-button" id="btnExport" type="button">Exportar JSON</button>
+          </div>
+          <div class="table-wrap">
+            <table class="bom-table">
+              <thead><tr><th>Componente</th><th>Cant.</th><th>Justificación</th></tr></thead>
+              <tbody id="bomBody"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="result-card" id="issuesCard">
+          <div class="card-heading">
+            <div><span class="card-index">D</span><h3>Validaciones, riesgos y pendientes</h3></div>
+            <span class="issue-count" id="issueCount">0</span>
+          </div>
+          <div class="issue-list" id="issueList"></div>
+        </article>
+
+        <details class="result-card trace-card" open>
+          <summary><span><span class="card-index">E</span><strong>Trazabilidad del cálculo</strong></span><small>Ver desglose</small></summary>
+          <div class="trace-body">
+            <div class="table-wrap">
+              <table class="trace-table">
+                <thead><tr><th>Carga</th><th>GB/mes base</th><th>Pico ↓</th><th>Pico ↑</th></tr></thead>
+                <tbody id="traceBody"></tbody>
+                <tfoot><tr><th>Total con factores</th><th id="traceTotalGb">0</th><th id="traceTotalDown">0</th><th id="traceTotalUp">0</th></tr></tfoot>
+              </table>
+            </div>
+            <p id="formulaSummary" class="formula-summary"></p>
+          </div>
+        </details>
+
+        <footer class="results-footer">
+          <p>Herramienta de apoyo de preventa. La recomendación no constituye una garantía de desempeño ni sustituye el estudio de obstrucciones, la validación de cobertura, la prueba en sitio o la cotización contractual.</p>
+          <button class="text-button" id="btnSources" type="button" aria-controls="methodDialog">Fuentes y supuestos</button>
+        </footer>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="methodDialog">
+    <form method="dialog" class="dialog-shell">
+      <div class="dialog-head">
+        <div><span class="eyebrow">Ficha metodológica</span><h2>Cómo decide el dimensionador</h2></div>
+        <button class="icon-button" value="close" aria-label="Cerrar">×</button>
+      </div>
+      <div class="dialog-content">
+        <section>
+          <h3>Modelo de decisión</h3>
+          <ol>
+            <li>Convierte cada aplicación en consumo mensual y caudal simultáneo de subida y descarga.</li>
+            <li>Aplica crecimiento, reserva de ingeniería y sobrecarga de protocolos.</li>
+            <li>Selecciona la cuota prioritaria mínima que cubre la proyección, sin confundir cuota con velocidad.</li>
+            <li>Calcula terminales por el mayor de los límites de descarga, subida y continuidad.</li>
+            <li>Condiciona o bloquea el resultado si faltan obstrucciones, cobertura, energía o validaciones comerciales.</li>
+          </ol>
+        </section>
+        <section>
+          <h3>Supuestos esenciales</h3>
+          <ul>
+            <li>1 Mbps sostenido durante una hora equivale aproximadamente a 0,45 GB decimales.</li>
+            <li>El consumo prioritario considera tanto descarga como subida.</li>
+            <li>Los caudales publicados son variables; el perfil conservador usa el extremo inferior oficial de 50/10 Mbps.</li>
+            <li>Dos terminales Starlink mejoran capacidad o tolerancia de equipo, pero no sustituyen la diversidad de operador.</li>
+            <li>Una instalación empresarial debe validarse con cielo 100% despejado, prueba de hora pico, energía protegida y red LAN dimensionada.</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Fuentes oficiales principales</h3>
+          <ul class="source-list">
+            <li><a href="https://starlink.com/co/business" target="_blank" rel="noreferrer">Starlink Business Colombia</a> · oferta empresarial.</li>
+            <li><a href="https://starlink.com/public-files/Priority_Plan_Transition.pdf" target="_blank" rel="noreferrer">Priority Plan Transition</a> · bloques y precios públicos de referencia para Colombia.</li>
+            <li><a href="https://starlink.com/legal/documents/DOC-1728-44881-79" target="_blank" rel="noreferrer">Service Plan Descriptions</a> · precedencia de datos prioritarios.</li>
+            <li><a href="https://starlink.com/legal/documents/DOC-1722-29027-68" target="_blank" rel="noreferrer">Fair Use Policy</a> · gestión de consumo y top-ups.</li>
+            <li><a href="https://starlink.com/public-files/specification_sheet_performance.pdf" target="_blank" rel="noreferrer">Performance Kit Specifications</a> · ambiente, energía y capacidad del equipo.</li>
+            <li><a href="https://starlink.com/public-files/specification_sheet_standard.pdf" target="_blank" rel="noreferrer">Standard 4 X Specifications</a> · antena y router.</li>
+            <li><a href="https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0060748" target="_blank" rel="noreferrer">Zoom bandwidth requirements</a> · perfiles de videoconferencia.</li>
+            <li><a href="https://support.google.com/youtube/answer/78358?hl=es" target="_blank" rel="noreferrer">YouTube: velocidades recomendadas</a> · streaming 720p, 1080p y 4K.</li>
+            <li><a href="https://www.eutelsat.com/satellite-network/oneweb-leo-constellation" target="_blank" rel="noreferrer">Eutelsat OneWeb LEO</a> y <a href="https://www.aboutamazon.com/news/amazon-leo/amazon-leo-satellite-internet-ultra-pro" target="_blank" rel="noreferrer">Amazon Leo</a> · contraste tecnológico LEO.</li>
+          </ul>
+          <p class="source-date">Investigación actualizada: 23 de septiembre de 2026. Los valores comerciales deben verificarse antes de cada propuesta.</p>
+        </section>
+      </div>
+      <div class="dialog-footer"><button class="button button-primary" value="close">Entendido</button></div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+(() => {
+  "use strict";
+
+  const VERSION = "1.0.0";
+  const RESEARCH_DATE = "2026-09-23";
+  const GB_PER_MBPS_HOUR = 0.45;
+  const OFFICIAL_TYPICAL_MAX = { down: 220, up: 30 };
+
+  const DEFAULT_CATALOGS = Object.freeze({
+    local: Object.freeze([
+      Object.freeze({ id: "local-50", name: "Local Priority 50 GB", gb: 50, price: 203000 }),
+      Object.freeze({ id: "local-1000", name: "Local Priority 1 TB", gb: 1000, price: 905000 }),
+      Object.freeze({ id: "local-2000", name: "Local Priority 2 TB", gb: 2000, price: 1685000 }),
+      Object.freeze({ id: "local-6000", name: "Local Priority 6 TB", gb: 6000, price: 4805000 })
+    ]),
+    global: Object.freeze([
+      Object.freeze({ id: "global-50", name: "Global Priority 50 GB", gb: 50, price: 1300000 }),
+      Object.freeze({ id: "global-1000", name: "Global Priority 1 TB", gb: 1000, price: 5980000 }),
+      Object.freeze({ id: "global-5000", name: "Global Priority 5 TB", gb: 5000, price: 26780000 }),
+      Object.freeze({ id: "global-10000", name: "Global Priority 10 TB", gb: 10000, price: 52780000 }),
+      Object.freeze({ id: "global-15000", name: "Global Priority 15 TB", gb: 15000, price: 78780000 }),
+      Object.freeze({ id: "global-25000", name: "Global Priority 25 TB", gb: 25000, price: 130780000 })
+    ])
+  });
+
+  const VIDEO_PROFILES = Object.freeze({
+    sd: { label: "Video estándar", down: 0.6, up: 1.0 },
+    720: { label: "Videoconferencia HD 720p", down: 1.8, up: 2.6 },
+    1080: { label: "Videoconferencia Full HD 1080p", down: 3.0, up: 3.8 }
+  });
+
+  const STREAM_PROFILES = Object.freeze({
+    720: { label: "Streaming HD 720p", down: 2.5 },
+    1080: { label: "Streaming HD 1080p", down: 5.0 },
+    "4k": { label: "Streaming 4K UHD", down: 20.0 }
+  });
+
+  const SPEED_PROFILES = Object.freeze({
+    conservative: { label: "extremo inferior publicado", down: 50, up: 10, siteValidated: false },
+    reference: { label: "referencia de diseño", down: 100, up: 15, siteValidated: false },
+    upper: { label: "escenario alto declarado como validado", down: 220, up: 30, siteValidated: true }
+  });
+
+  const SOURCE_LINKS = Object.freeze([
+    "https://starlink.com/co/business",
+    "https://starlink.com/public-files/Priority_Plan_Transition.pdf",
+    "https://starlink.com/legal/documents/DOC-1728-44881-79",
+    "https://starlink.com/legal/documents/DOC-1722-29027-68",
+    "https://starlink.com/public-files/specification_sheet_performance.pdf",
+    "https://starlink.com/public-files/specification_sheet_standard.pdf",
+    "https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0060748",
+    "https://support.google.com/youtube/answer/78358?hl=es"
+  ]);
+
+  const $ = (id) => document.getElementById(id);
+  const value = (id) => $(id)?.value ?? "";
+  const checked = (id) => Boolean($(id)?.checked);
+  const number = (id, fallback = 0) => {
+    const parsed = Number.parseFloat(value(id));
+    return Number.isFinite(parsed) ? parsed : fallback;
+  };
+  const clamp = (n, min, max) => Math.min(Math.max(Number.isFinite(n) ? n : min, min), max);
+  const round = (n, digits = 1) => Number((Number.isFinite(n) ? n : 0).toFixed(digits));
+  const pct = (n) => clamp(n, 0, 100) / 100;
+  const factor = (percent) => 1 + Math.max(0, percent) / 100;
+  const deepCloneCatalogs = () => ({
+    local: DEFAULT_CATALOGS.local.map((plan) => ({ ...plan })),
+    global: DEFAULT_CATALOGS.global.map((plan) => ({ ...plan }))
+  });
+
+  let catalogs = deepCloneCatalogs();
+  let latestResult = null;
+  let toastTimer = null;
+
+  function formatCop(amount) {
+    return new Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP",
+      maximumFractionDigits: 0
+    }).format(amount || 0);
+  }
+
+  function formatNumber(amount, maxDigits = 1) {
+    return new Intl.NumberFormat("es-CO", {
+      maximumFractionDigits: maxDigits
+    }).format(Number.isFinite(amount) ? amount : 0);
+  }
+
+  function formatData(gb) {
+    if (gb >= 1000) return `${formatNumber(gb / 1000, 2)} TB`;
+    return `${formatNumber(gb, gb < 100 ? 1 : 0)} GB`;
+  }
+
+  function showToast(message) {
+    const toast = $("toast");
+    toast.textContent = message;
+    toast.classList.add("is-visible");
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => toast.classList.remove("is-visible"), 2600);
+  }
+
+  function readState() {
+    return {
+      siteName: value("siteName").trim() || "Sede sin nombre",
+      scope: value("scope"),
+      linkRole: value("linkRole"),
+      criticality: value("criticality"),
+      availability: number("availability", 99.5),
+      users: clamp(number("users", 1), 1, 10000),
+      concurrency: clamp(number("concurrency", 50), 5, 100),
+      workDays: clamp(number("workDays", 22), 1, 31),
+      workHours: clamp(number("workHours", 8), 1, 24),
+      growth: clamp(number("growth", 0), 0, 200),
+      headroom: clamp(number("headroom", 20), 5, 100),
+      failoverHours: clamp(number("failoverHours", 8), 1, 744),
+      protocolOverhead: clamp(number("protocolOverhead", 10), 0, 40),
+      applications: {
+        office: {
+          enabled: checked("officeEnabled"), adoption: clamp(number("officeAdoption"), 0, 100),
+          down: clamp(number("officeDown"), 0.01, 20), up: clamp(number("officeUp"), 0.01, 20)
+        },
+        video: {
+          enabled: checked("videoEnabled"), quality: value("videoQuality"),
+          adoption: clamp(number("videoAdoption"), 0, 100), hours: clamp(number("videoHours"), 0, 12),
+          concurrent: clamp(number("videoConcurrent"), 0, 10000)
+        },
+        voice: {
+          enabled: checked("voiceEnabled"), adoption: clamp(number("voiceAdoption"), 0, 100),
+          hours: clamp(number("voiceHours"), 0, 12), concurrent: clamp(number("voiceConcurrent"), 0, 10000),
+          rate: clamp(number("voiceRate"), 0.03, 1)
+        },
+        streaming: {
+          enabled: checked("streamEnabled"), quality: value("streamQuality"),
+          adoption: clamp(number("streamAdoption"), 0, 100), hours: clamp(number("streamHours"), 0, 12),
+          concurrent: clamp(number("streamConcurrent"), 0, 10000)
+        },
+        cctv: {
+          enabled: checked("cctvEnabled"), cameras: clamp(number("cctvCameras"), 0, 1000),
+          rate: clamp(number("cctvRate"), 0.1, 50), hours: clamp(number("cctvHours"), 0, 24),
+          days: clamp(number("cctvDays"), 0, 31)
+        },
+        backup: {
+          enabled: checked("backupEnabled"), gbDay: clamp(number("backupGbDay"), 0, 100000),
+          window: clamp(number("backupWindow"), 0.5, 24), frequency: value("backupFrequency")
+        },
+        transfer: {
+          enabled: checked("transferEnabled"), gbMonth: clamp(number("transferGbMonth"), 0, 1000000),
+          direction: value("transferDirection"), window: clamp(number("transferWindow"), 1, 744)
+        },
+        iot: {
+          enabled: checked("iotEnabled"), devices: clamp(number("iotDevices"), 0, 100000),
+          mbDay: clamp(number("iotMbDay"), 0, 100000), peak: clamp(number("iotPeak"), 0, 1000)
+        },
+        guest: {
+          enabled: checked("guestEnabled"), users: clamp(number("guestUsers"), 0, 10000),
+          gbDay: clamp(number("guestGbDay"), 0, 100), concurrent: clamp(number("guestConcurrent"), 0, 10000),
+          rate: clamp(number("guestRate"), 0.1, 50)
+        },
+        manual: {
+          enabled: checked("manualEnabled"), gb: clamp(number("manualGb"), 0, 1000000),
+          down: clamp(number("manualDown"), 0, 10000), up: clamp(number("manualUp"), 0, 10000)
+        }
+      },
+      speedProfile: value("speedProfile"),
+      customDown: clamp(number("customDown"), 1, 1000),
+      customUp: clamp(number("customUp"), 1, 500),
+      maxUtilization: clamp(number("maxUtilization"), 40, 90),
+      redundancy: value("redundancy"),
+      obstruction: value("obstruction"),
+      powerQuality: value("powerQuality"),
+      environment: value("environment"),
+      mobility: value("mobility"),
+      area: clamp(number("area"), 20, 1000000),
+      floors: clamp(number("floors"), 1, 100),
+      wallDensity: value("wallDensity"),
+      upsMinutes: clamp(number("upsMinutes"), 0, 1440),
+      pricesVerified: checked("pricesVerified"),
+      catalogDate: value("catalogDate") || RESEARCH_DATE
+    };
+  }
+
+  function appRow(key, label, gb, down, up, details = "") {
+    return {
+      key,
+      label,
+      gb: Math.max(0, gb || 0),
+      down: Math.max(0, down || 0),
+      up: Math.max(0, up || 0),
+      details
+    };
+  }
+
+  function calculateApplications(state) {
+    const rows = [];
+    const apps = state.applications;
+    const concurrentUsers = Math.ceil(state.users * pct(state.concurrency));
+
+    if (apps.office.enabled) {
+      const participants = state.users * pct(apps.office.adoption);
+      const activeAtPeak = concurrentUsers * pct(apps.office.adoption);
+      rows.push(appRow(
+        "office", "Ofimática, web y SaaS",
+        participants * state.workHours * state.workDays * (apps.office.down + apps.office.up) * GB_PER_MBPS_HOUR,
+        activeAtPeak * apps.office.down,
+        activeAtPeak * apps.office.up,
+        `${round(participants, 0)} usuarios · ${apps.office.down}/${apps.office.up} Mbps por usuario activo`
+      ));
+    }
+
+    if (apps.video.enabled) {
+      const profile = VIDEO_PROFILES[apps.video.quality] || VIDEO_PROFILES["720"];
+      const participants = state.users * pct(apps.video.adoption);
+      rows.push(appRow(
+        "video", profile.label,
+        participants * apps.video.hours * state.workDays * (profile.down + profile.up) * GB_PER_MBPS_HOUR,
+        apps.video.concurrent * profile.down,
+        apps.video.concurrent * profile.up,
+        `${round(participants, 0)} participantes · ${apps.video.concurrent} simultáneos`
+      ));
+    }
+
+    if (apps.voice.enabled) {
+      const participants = state.users * pct(apps.voice.adoption);
+      rows.push(appRow(
+        "voice", "Telefonía IP",
+        participants * apps.voice.hours * state.workDays * (apps.voice.rate * 2) * GB_PER_MBPS_HOUR,
+        apps.voice.concurrent * apps.voice.rate,
+        apps.voice.concurrent * apps.voice.rate,
+        `${apps.voice.concurrent} llamadas simultáneas · ${apps.voice.rate} Mbps por sentido`
+      ));
+    }
+
+    if (apps.streaming.enabled) {
+      const profile = STREAM_PROFILES[apps.streaming.quality] || STREAM_PROFILES["1080"];
+      const participants = state.users * pct(apps.streaming.adoption);
+      rows.push(appRow(
+        "streaming", profile.label,
+        participants * apps.streaming.hours * state.workDays * profile.down * GB_PER_MBPS_HOUR,
+        apps.streaming.concurrent * profile.down,
+        apps.streaming.concurrent * profile.down * 0.03,
+        `${apps.streaming.concurrent} streams simultáneos`
+      ));
+    }
+
+    if (apps.cctv.enabled) {
+      rows.push(appRow(
+        "cctv", "CCTV hacia nube/centro remoto",
+        apps.cctv.cameras * apps.cctv.rate * apps.cctv.hours * apps.cctv.days * GB_PER_MBPS_HOUR,
+        apps.cctv.cameras * apps.cctv.rate * 0.02,
+        apps.cctv.cameras * apps.cctv.rate,
+        `${apps.cctv.cameras} cámaras · ${apps.cctv.rate} Mbps por cámara`
+      ));
+    }
+
+    if (apps.backup.enabled) {
+      const days = apps.backup.frequency === "daily" ? 30 : state.workDays;
+      const uploadMbps = apps.backup.gbDay * 8000 / (apps.backup.window * 3600);
+      rows.push(appRow(
+        "backup", "Copias de seguridad y sincronización",
+        apps.backup.gbDay * days,
+        uploadMbps * 0.04,
+        uploadMbps,
+        `${apps.backup.gbDay} GB/día en ventana de ${apps.backup.window} h`
+      ));
+    }
+
+    if (apps.transfer.enabled) {
+      const aggregateRate = apps.transfer.gbMonth * 8000 / (apps.transfer.window * 3600);
+      let down = 0;
+      let up = 0;
+      if (apps.transfer.direction === "down") down = aggregateRate;
+      else if (apps.transfer.direction === "up") up = aggregateRate;
+      else { down = aggregateRate / 2; up = aggregateRate / 2; }
+      rows.push(appRow(
+        "transfer", "Transferencias y actualizaciones",
+        apps.transfer.gbMonth, down, up,
+        `${apps.transfer.gbMonth} GB/mes en ${apps.transfer.window} horas de mayor actividad`
+      ));
+    }
+
+    if (apps.iot.enabled) {
+      rows.push(appRow(
+        "iot", "IoT y telemetría",
+        apps.iot.devices * apps.iot.mbDay * 30 / 1000,
+        apps.iot.peak * 0.2,
+        apps.iot.peak,
+        `${apps.iot.devices} dispositivos · ${apps.iot.mbDay} MB/día cada uno`
+      ));
+    }
+
+    if (apps.guest.enabled) {
+      rows.push(appRow(
+        "guest", "Wi-Fi de invitados",
+        apps.guest.users * apps.guest.gbDay * state.workDays,
+        apps.guest.concurrent * apps.guest.rate,
+        apps.guest.concurrent * apps.guest.rate * 0.2,
+        `${apps.guest.users} invitados/día · límite ${apps.guest.rate} Mbps`
+      ));
+    }
+
+    if (apps.manual.enabled) {
+      rows.push(appRow(
+        "manual", "Carga adicional conocida",
+        apps.manual.gb,
+        apps.manual.down,
+        apps.manual.up,
+        "Entrada manual de preventa"
+      ));
+    }
+
+    return { rows, concurrentUsers };
+  }
+
+  function resolveSpeedProfile(state) {
+    if (state.speedProfile === "custom") {
+      return {
+        label: "medición personalizada",
+        down: state.customDown,
+        up: state.customUp,
+        siteValidated: true
+      };
+    }
+    return { ...(SPEED_PROFILES[state.speedProfile] || SPEED_PROFILES.conservative) };
+  }
+
+  function resolveArchitecture(state, capacityTerminals) {
+    let mode = state.redundancy;
+    if (mode === "auto") {
+      if (state.criticality === "mission" || state.availability >= 99.9) mode = "hybrid";
+      else if (capacityTerminals > 1) mode = "dual";
+      else mode = "single";
+    }
+
+    let starlinkTerminals = capacityTerminals;
+    if (mode === "single") starlinkTerminals = 1;
+    if (mode === "dual") starlinkTerminals = Math.max(2, capacityTerminals);
+    if (mode === "hybrid") starlinkTerminals = Math.max(1, capacityTerminals);
+
+    const labels = {
+      single: "Una línea Starlink",
+      dual: "Starlink activo-activo",
+      hybrid: "Starlink + operador diverso"
+    };
+
+    return {
+      mode,
+      label: labels[mode],
+      starlinkTerminals,
+      hasDiverseBackup: mode === "hybrid",
+      activeActive: mode === "dual" || starlinkTerminals > 1
+    };
+  }
+
+  function selectPlan(scope, requiredPerLineGb, activeCatalogs) {
+    const list = activeCatalogs[scope] || activeCatalogs.local;
+    const selected = list.find((plan) => plan.gb >= requiredPerLineGb);
+    if (selected) return { ...selected, overflowGb: 0, custom: false };
+    const largest = list[list.length - 1];
+    return {
+      ...largest,
+      name: `${largest.name} + capacidad adicional`,
+      overflowGb: Math.max(0, requiredPerLineGb - largest.gb),
+      custom: true
+    };
+  }
+
+  function resolveHardware(state, architecture) {
+    const performanceReasons = [];
+    if (state.mobility !== "fixed") performanceReasons.push("uso en movimiento");
+    if (state.environment !== "normal") performanceReasons.push("entorno exigente");
+    if (state.criticality === "mission") performanceReasons.push("operación de misión crítica");
+    if (state.availability >= 99.9) performanceReasons.push("objetivo elevado de continuidad");
+    if (architecture.starlinkTerminals > 1) performanceReasons.push("arquitectura multienlace");
+    if (state.users > 75) performanceReasons.push("escala empresarial");
+
+    if (performanceReasons.length) {
+      return {
+        name: "Performance Kit",
+        shortName: "Performance",
+        powerW: 100,
+        reason: `Se prioriza por ${performanceReasons.slice(0, 3).join(", ")}.`,
+        specs: "140° FoV · IP69K conectado · -40 a 60 °C · AC/DC"
+      };
+    }
+    return {
+      name: "Standard 4 X Kit",
+      shortName: "Standard 4 X",
+      powerW: 100,
+      reason: "Adecuado para una sede fija, de entorno normal y criticidad controlada.",
+      specs: "110° FoV · IP67 · -30 a 50 °C · Wi-Fi 6"
+    };
+  }
+
+  function calculateAccessPoints(state, concurrentUsers) {
+    const coverage = { open: 180, medium: 120, dense: 80 }[state.wallDensity] || 120;
+    const byArea = Math.ceil(state.area / coverage);
+    const byUsers = Math.ceil(concurrentUsers / 30);
+    return Math.max(1, state.floors, byArea, byUsers);
+  }
+
+  function calculateUps(state, terminalCount, hardware, accessPoints) {
+    const networkBaseW = 90;
+    const totalW = terminalCount * hardware.powerW + networkBaseW + accessPoints * 15;
+    const hours = state.upsMinutes / 60;
+    const requiredWh = totalW * hours / 0.85;
+    const requiredVa = totalW * 1.55;
+    const standards = [1000, 1500, 2200, 3000, 5000, 6000];
+    const selectedVa = standards.find((size) => size >= requiredVa) || Math.ceil(requiredVa / 1000) * 1000;
+    return { totalW: round(totalW, 0), requiredWh: round(requiredWh, 0), selectedVa };
+  }
+
+  function determineConstraint(quotaRatio, downRatio, upRatio) {
+    const candidates = [
+      { key: "quota", label: "Cuota mensual", ratio: quotaRatio },
+      { key: "down", label: "Descarga pico", ratio: downRatio },
+      { key: "up", label: "Subida pico", ratio: upRatio }
+    ];
+    return candidates.sort((a, b) => b.ratio - a.ratio)[0];
+  }
+
+  function issue(type, title, description, code) {
+    return { type, title, description, code };
+  }
+
+  function buildIssues(ctx) {
+    const { state, rows, speed, architecture, plan, requiredGb, requiredDown, requiredUp, capacityTerminals, quotaRatio, downRatio, upRatio } = ctx;
+    const issues = [];
+
+    if (!rows.length) {
+      issues.push(issue("danger", "No hay aplicaciones activas", "Active al menos una carga o incorpore una demanda manual para calcular el servicio.", "NO_TRAFFIC"));
+    }
+
+    if (state.obstruction === "partial") {
+      issues.push(issue("danger", "No-Go por obstrucciones", "Starlink exige un campo de visión despejado. Reubique o eleve el terminal y repita la verificación en la aplicación oficial.", "OBSTRUCTION_BLOCK"));
+    } else if (state.obstruction === "pending") {
+      issues.push(issue("warning", "Estudio de obstrucciones pendiente", "La recomendación permanece condicionada hasta confirmar un cielo 100% despejado en la ubicación definitiva.", "OBSTRUCTION_PENDING"));
+    } else {
+      issues.push(issue("success", "Campo de visión declarado como despejado", "Conserve la captura del estudio y la ubicación propuesta como evidencia de preventa.", "OBSTRUCTION_CLEAR"));
+    }
+
+    if (!speed.siteValidated) {
+      issues.push(issue("warning", "Capacidad no validada en la sede", `El cálculo usa ${speed.down}/${speed.up} Mbps (${speed.label}). Ejecute Speed Map y una prueba en hora pico.`, "SPEED_UNVALIDATED"));
+    } else if (speed.down > OFFICIAL_TYPICAL_MAX.down || speed.up > OFFICIAL_TYPICAL_MAX.up) {
+      issues.push(issue("warning", "Medición superior al rango típico publicado", "Conserve evidencia repetida por franja horaria y no convierta el máximo observado en compromiso contractual.", "SPEED_ABOVE_TYPICAL"));
+    }
+
+    if (!state.pricesVerified) {
+      issues.push(issue("warning", "Tarifa por verificar", "El valor precargado es una referencia pública; valide dirección, impuestos, disponibilidad y cotización antes de ofertar.", "PRICE_UNVERIFIED"));
+    }
+
+    if (plan.custom) {
+      issues.push(issue("danger", "La cuota excede el mayor paquete publicado", `Faltan aproximadamente ${formatData(plan.overflowGb)} por línea. Solicite bloques adicionales, redistribuya tráfico o diseñe más líneas.`, "PLAN_OVERFLOW"));
+    }
+
+    if (state.redundancy === "single" && capacityTerminals > 1) {
+      issues.push(issue("danger", "Una sola línea no satisface el pico", `La demanda requiere al menos ${capacityTerminals} líneas con el perfil de capacidad elegido.`, "SINGLE_CAPACITY_CONFLICT"));
+    }
+
+    if (state.availability >= 99.9 && !architecture.hasDiverseBackup) {
+      issues.push(issue("danger", "Falta diversidad de operador", "Para una meta de 99,9% o superior se recomienda un segundo medio independiente; dos antenas Starlink pueden compartir fallas correlacionadas.", "NO_CARRIER_DIVERSITY"));
+    }
+
+    if (state.criticality === "mission" && !architecture.hasDiverseBackup) {
+      issues.push(issue("danger", "Continuidad insuficiente para misión crítica", "Incorpore un enlace terrestre, celular, microondas u otro satélite con dominio de falla diferente.", "MISSION_NO_DIVERSITY"));
+    }
+
+    if (architecture.hasDiverseBackup) {
+      issues.push(issue("info", "Resiliencia híbrida propuesta", "Implemente SD-WAN con pruebas de salud de aplicación; el respaldo debe usar ruta, energía y operador distintos.", "HYBRID_READY"));
+    }
+
+    if (state.powerQuality !== "stable" && state.upsMinutes < 60) {
+      issues.push(issue("warning", "Autonomía eléctrica limitada", "La disponibilidad satelital no evita cortes por energía local. Aumente UPS/batería y valide puesta a tierra.", "POWER_RISK"));
+    }
+
+    if (upRatio >= 0.8) {
+      issues.push(issue(upRatio > 1 ? "danger" : "warning", "La subida es el factor restrictivo", `La carga consume ${formatNumber(upRatio * 100, 0)}% de la capacidad de diseño agregada de subida. Revise CCTV, backups y ventanas de sincronización.`, "UPLOAD_CONSTRAINT"));
+    }
+
+    if (quotaRatio >= 0.85) {
+      issues.push(issue(quotaRatio > 1 ? "danger" : "warning", "Cuota con poca holgura", `La proyección utiliza ${formatNumber(quotaRatio * 100, 0)}% del paquete agregado. Configure alertas y política de top-up.`, "QUOTA_HEADROOM"));
+    }
+
+    if (state.mobility === "maritime" && state.scope !== "global") {
+      issues.push(issue("danger", "Ámbito de plan incompatible", "El uso marítimo o internacional requiere validar Prioridad Global y las áreas autorizadas.", "MARITIME_SCOPE"));
+    }
+
+    if (state.linkRole === "backup") {
+      issues.push(issue("info", "Cuota modelada para contingencia", `El volumen mensual se ajustó a ${state.failoverHours} horas esperadas de failover; el pico conserva la carga completa.`, "BACKUP_FACTOR"));
+    }
+
+    if (requiredGb > 0 && requiredDown < 0.1 && requiredUp < 0.1) {
+      issues.push(issue("warning", "Consumo sin ventana de pico significativa", "Revise los parámetros manuales para evitar una cuota correcta con un caudal subestimado.", "NO_PEAK"));
+    }
+
+    return issues;
+  }
+
+  function calculateConfidence(state, speed, plan, issues) {
+    let score = 100;
+    if (state.obstruction === "pending") score -= 25;
+    if (state.obstruction === "partial") score -= 55;
+    if (!speed.siteValidated) score -= 20;
+    if (!state.pricesVerified) score -= 10;
+    if (plan.custom) score -= 20;
+    if (issues.some((item) => item.code === "SINGLE_CAPACITY_CONFLICT")) score -= 20;
+    score = clamp(score, 0, 100);
+    return {
+      score,
+      label: score >= 80 ? "Alta" : score >= 55 ? "Media" : "Baja"
+    };
+  }
+
+  function calculateCompleteness(state, speed) {
+    const checks = [
+      state.siteName.length > 2,
+      state.users > 0,
+      Object.values(state.applications).some((app) => app.enabled),
+      state.obstruction === "clear",
+      speed.siteValidated,
+      state.pricesVerified,
+      state.upsMinutes > 0,
+      state.area > 0,
+      state.redundancy !== "auto",
+      state.catalogDate.length > 0
+    ];
+    return Math.round(checks.filter(Boolean).length / checks.length * 100);
+  }
+
+  function buildBom(state, architecture, plan, hardware, accessPoints, ups) {
+    const rows = [
+      { item: `Terminal ${hardware.name}`, qty: architecture.starlinkTerminals, why: `${hardware.reason} ${hardware.specs}` },
+      { item: `Línea de servicio ${plan.name}`, qty: architecture.starlinkTerminals, why: `${formatData(plan.gb)} prioritarios por línea; validar tarifa y elegibilidad.` },
+      { item: "Montaje permanente, sellado y cableado certificado", qty: architecture.starlinkTerminals, why: "Ubicación elevada, campo de visión despejado y protección mecánica." },
+      { item: architecture.mode === "single" ? "Firewall/router empresarial" : "Firewall SD-WAN multi-WAN", qty: 1, why: architecture.mode === "single" ? "Políticas, VPN, QoS y observabilidad." : "Balanceo, failover, pruebas de salud y control de sesiones." },
+      { item: `Switch PoE administrable · mínimo ${nextSwitchPorts(accessPoints + 6)} puertos`, qty: 1, why: "Alimenta AP, segmenta VLAN y separa tráfico corporativo, IoT, CCTV e invitados." },
+      { item: "Puntos de acceso Wi-Fi empresariales", qty: accessPoints, why: "Estimación preliminar por área, pisos, muros y usuarios concurrentes; requiere site survey RF." },
+      { item: `UPS online ${ups.selectedVa} VA · batería útil ≥ ${ups.requiredWh} Wh`, qty: 1, why: `${state.upsMinutes} minutos de autonomía para una carga estimada de ${ups.totalW} W.` },
+      { item: "Protección contra sobretensión, tierra y protección exterior", qty: 1, why: "Reduce riesgos eléctricos y ambientales en antena y equipos de borde." },
+      { item: "Monitoreo WAN y consumo prioritario", qty: 1, why: "Alertas de cuota, latencia, pérdida, jitter, disponibilidad y uso de top-ups." }
+    ];
+
+    if (architecture.hasDiverseBackup) {
+      rows.splice(4, 0, { item: "Enlace de respaldo de operador diverso", qty: 1, why: "Diversidad de medio, ruta, energía y dominio de falla." });
+    }
+
+    if (state.environment === "remote" || state.criticality === "mission") {
+      rows.push({ item: "Kit de repuesto crítico", qty: 1, why: "Fuente, cables y elementos de montaje para reducir MTTR en sitio remoto." });
+    }
+
+    return rows;
+  }
+
+  function nextSwitchPorts(needed) {
+    return [8, 16, 24, 48].find((ports) => ports >= needed) || Math.ceil(needed / 48) * 48;
+  }
+
+  function calculateScenario(state, activeCatalogs = catalogs) {
+    const appCalculation = calculateApplications(state);
+    const fullMonthHours = Math.max(1, state.workDays * state.workHours);
+    const roleFactor = state.linkRole === "backup"
+      ? clamp(state.failoverHours / fullMonthHours, 0.001, 1)
+      : 1;
+
+    const rows = appCalculation.rows.map((row) => ({ ...row, gb: row.gb * roleFactor }));
+    const baseGb = rows.reduce((sum, row) => sum + row.gb, 0);
+    const baseDown = rows.reduce((sum, row) => sum + row.down, 0);
+    const baseUp = rows.reduce((sum, row) => sum + row.up, 0);
+    const aggregateFactor = factor(state.protocolOverhead) * factor(state.growth) * factor(state.headroom);
+    const requiredGb = baseGb * aggregateFactor;
+    const requiredDown = baseDown * aggregateFactor;
+    const requiredUp = baseUp * aggregateFactor;
+
+    const speed = resolveSpeedProfile(state);
+    const utilizationFactor = pct(state.maxUtilization);
+    const capacityPerTerminal = {
+      down: speed.down * utilizationFactor,
+      up: speed.up * utilizationFactor
+    };
+    const capacityTerminals = Math.max(1, Math.ceil(Math.max(
+      requiredDown / Math.max(capacityPerTerminal.down, 0.1),
+      requiredUp / Math.max(capacityPerTerminal.up, 0.1)
+    )));
+
+    const architecture = resolveArchitecture(state, capacityTerminals);
+    const dataDistributionLines = architecture.activeActive ? architecture.starlinkTerminals : 1;
+    const requiredPerLineGb = requiredGb / dataDistributionLines;
+    const plan = selectPlan(state.scope, requiredPerLineGb, activeCatalogs);
+    const aggregateQuotaGb = plan.gb * dataDistributionLines;
+    const totalMonthlyPrice = plan.price * architecture.starlinkTerminals;
+
+    const totalDesignCapacity = {
+      down: capacityPerTerminal.down * architecture.starlinkTerminals,
+      up: capacityPerTerminal.up * architecture.starlinkTerminals
+    };
+    const quotaRatio = requiredGb / Math.max(aggregateQuotaGb, 1);
+    const downRatio = requiredDown / Math.max(totalDesignCapacity.down, 0.1);
+    const upRatio = requiredUp / Math.max(totalDesignCapacity.up, 0.1);
+    const constraint = determineConstraint(quotaRatio, downRatio, upRatio);
+    const hardware = resolveHardware(state, architecture);
+    const accessPoints = calculateAccessPoints(state, appCalculation.concurrentUsers);
+    const ups = calculateUps(state, architecture.starlinkTerminals, hardware, accessPoints);
+
+    const issueContext = {
+      state, rows, speed, architecture, plan, requiredGb, requiredDown, requiredUp,
+      capacityTerminals, quotaRatio, downRatio, upRatio
+    };
+    const issues = buildIssues(issueContext);
+    const confidence = calculateConfidence(state, speed, plan, issues);
+    const hasDanger = issues.some((item) => item.type === "danger");
+    const hasWarning = issues.some((item) => item.type === "warning");
+    const status = hasDanger ? "nogo" : (hasWarning || confidence.score < 80 ? "conditional" : "ready");
+    const bom = buildBom(state, architecture, plan, hardware, accessPoints, ups);
+    const completeness = calculateCompleteness(state, speed);
+
+    return {
+      version: VERSION,
+      state,
+      rows,
+      concurrentUsers: appCalculation.concurrentUsers,
+      roleFactor,
+      factors: {
+        protocol: factor(state.protocolOverhead),
+        growth: factor(state.growth),
+        headroom: factor(state.headroom),
+        aggregate: aggregateFactor
+      },
+      base: { gb: baseGb, down: baseDown, up: baseUp },
+      required: { gb: requiredGb, down: requiredDown, up: requiredUp },
+      speed,
+      capacityPerTerminal,
+      totalDesignCapacity,
+      capacityTerminals,
+      architecture,
+      dataDistributionLines,
+      plan,
+      aggregateQuotaGb,
+      totalMonthlyPrice,
+      ratios: { quota: quotaRatio, down: downRatio, up: upRatio },
+      constraint,
+      hardware,
+      accessPoints,
+      ups,
+      issues,
+      confidence,
+      status,
+      bom,
+      completeness,
+      calculatedAt: new Date().toISOString()
+    };
+  }
+
+  function statusPresentation(status) {
+    if (status === "ready") return { label: "Apta para propuesta", className: "status-ready" };
+    if (status === "nogo") return { label: "No-Go técnico", className: "status-nogo" };
+    return { label: "Condicionada", className: "status-conditional" };
+  }
+
+  function renderMeter(element, ratio) {
+    const percent = clamp(ratio * 100, 0, 100);
+    element.style.width = `${percent}%`;
+    element.classList.toggle("is-warning", ratio >= 0.8 && ratio <= 1);
+    element.classList.toggle("is-danger", ratio > 1);
+  }
+
+  function renderArchitecture(result) {
+    const nodes = [
+      { title: `${result.state.users} usuarios`, detail: `${result.concurrentUsers} concurrentes`, className: "" },
+      { title: `${result.accessPoints} AP empresariales`, detail: "VLAN + QoS", className: "" },
+      { title: result.architecture.mode === "single" ? "Firewall" : "SD-WAN", detail: "Seguridad y políticas", className: "is-accent" },
+      { title: `${result.architecture.starlinkTerminals} × Starlink`, detail: result.hardware.shortName, className: "is-accent" }
+    ];
+    if (result.architecture.hasDiverseBackup) {
+      nodes.push({ title: "Operador diverso", detail: "Failover independiente", className: "is-backup" });
+    } else {
+      nodes.push({ title: "Internet/Cloud", detail: result.plan.name, className: "" });
+    }
+    $("architectureDiagram").innerHTML = nodes.map((node) => (
+      `<div class="arch-node ${node.className}"><div><strong>${node.title}</strong><small>${node.detail}</small></div></div>`
+    )).join("");
+  }
+
+  function renderReasons(result) {
+    const reasons = [
+      `${result.plan.name} cubre ${formatData(result.required.gb)} proyectados frente a ${formatData(result.aggregateQuotaGb)} agregados de prioridad.`,
+      `${result.capacityTerminals} terminal(es) son necesarios por capacidad; la arquitectura propuesta utiliza ${result.architecture.starlinkTerminals}.`,
+      `${result.hardware.name}: ${result.hardware.reason}`,
+      result.architecture.hasDiverseBackup
+        ? "La continuidad se apoya en un segundo operador para evitar un dominio de falla satelital compartido."
+        : "La arquitectura no incorpora diversidad de operador; evalúela si una interrupción afecta procesos esenciales.",
+      "El plan Priority permite configurar IPv4 pública, soporte priorizado y monitoreo empresarial; confirme condiciones vigentes por línea."
+    ];
+    $("reasonList").innerHTML = reasons.map((text) => `<li>${text}</li>`).join("");
+  }
+
+  function renderBom(result) {
+    $("bomBody").innerHTML = result.bom.map((row) => (
+      `<tr><td><strong>${row.item}</strong></td><td>${row.qty}</td><td>${row.why}</td></tr>`
+    )).join("");
+  }
+
+  function renderIssues(result) {
+    const symbols = { danger: "!", warning: "!", info: "i", success: "✓" };
+    $("issueList").innerHTML = result.issues.map((item) => (
+      `<article class="issue issue-${item.type}"><span class="issue-icon" aria-hidden="true">${symbols[item.type]}</span><div><strong>${item.title}</strong><p>${item.description}</p></div></article>`
+    )).join("");
+    $("issueCount").textContent = String(result.issues.length);
+  }
+
+  function renderTrace(result) {
+    $("traceBody").innerHTML = result.rows.length
+      ? result.rows.map((row) => (
+        `<tr title="${row.details}"><td>${row.label}</td><td>${formatNumber(row.gb, 1)}</td><td>${formatNumber(row.down, 1)} Mbps</td><td>${formatNumber(row.up, 1)} Mbps</td></tr>`
+      )).join("")
+      : `<tr><td colspan="4">No hay cargas activas.</td></tr>`;
+    $("traceTotalGb").textContent = formatData(result.required.gb);
+    $("traceTotalDown").textContent = `${formatNumber(result.required.down, 1)} Mbps`;
+    $("traceTotalUp").textContent = `${formatNumber(result.required.up, 1)} Mbps`;
+    const backupText = result.state.linkRole === "backup"
+      ? ` × factor de contingencia ${formatNumber(result.roleFactor, 3)}`
+      : "";
+    $("formulaSummary").textContent = `Demanda base${backupText} × protocolo ${formatNumber(result.factors.protocol, 2)} × crecimiento ${formatNumber(result.factors.growth, 2)} × reserva ${formatNumber(result.factors.headroom, 2)}. La selección final se valida de manera independiente contra cuota, descarga, subida, instalación y continuidad.`;
+  }
+
+  function renderResult(result) {
+    latestResult = result;
+    const status = statusPresentation(result.status);
+    const scopeLabel = result.state.scope === "global" ? "Prioridad global · internacional" : "Prioridad local · Colombia";
+
+    $("resultSiteName").textContent = result.state.siteName;
+    $("statusBadge").textContent = status.label;
+    $("statusBadge").className = `status-badge ${status.className}`;
+    $("resultPlanFamily").textContent = scopeLabel;
+    $("resultPlanName").textContent = result.plan.name;
+    $("resultPlanReason").textContent = result.plan.custom
+      ? "La demanda supera el mayor paquete del catálogo; requiere capacidad adicional o rediseño."
+      : `El paquete mínimo cubre ${formatData(result.required.gb)} de demanda prioritaria proyectada.`;
+    $("resultPrice").textContent = formatCop(result.totalMonthlyPrice);
+    $("resultTerminals").textContent = String(result.architecture.starlinkTerminals);
+    $("resultHardware").textContent = result.hardware.shortName;
+    $("resultConfidence").textContent = `${result.confidence.label} · ${result.confidence.score}%`;
+
+    $("catalogNotice").hidden = result.state.pricesVerified;
+    $("kpiData").textContent = formatData(result.required.gb);
+    $("kpiDown").textContent = `${formatNumber(result.required.down, 1)} Mbps`;
+    $("kpiUp").textContent = `${formatNumber(result.required.up, 1)} Mbps`;
+    $("kpiConstraint").textContent = result.constraint.label;
+    $("kpiConstraintNote").textContent = `${formatNumber(result.constraint.ratio * 100, 0)}% del umbral`;
+
+    $("quotaLabel").textContent = `${formatData(result.required.gb)} de ${formatData(result.aggregateQuotaGb)}`;
+    $("downLabel").textContent = `${formatNumber(result.required.down, 1)} de ${formatNumber(result.totalDesignCapacity.down, 1)} Mbps`;
+    $("upLabel").textContent = `${formatNumber(result.required.up, 1)} de ${formatNumber(result.totalDesignCapacity.up, 1)} Mbps`;
+    renderMeter($("quotaMeter"), result.ratios.quota);
+    renderMeter($("downMeter"), result.ratios.down);
+    renderMeter($("upMeter"), result.ratios.up);
+    const maxRatio = Math.max(result.ratios.quota, result.ratios.down, result.ratios.up);
+    $("capacityBadge").textContent = maxRatio > 1 ? "Insuficiente" : maxRatio >= 0.8 ? "Holgura baja" : "Con holgura";
+    $("capacityBadge").style.color = maxRatio > 1 ? "var(--red)" : maxRatio >= 0.8 ? "var(--amber)" : "var(--green)";
+    $("capacityFootnote").textContent = `Perfil ${result.speed.label}: ${result.speed.down}/${result.speed.up} Mbps por terminal, limitado al ${result.state.maxUtilization}% para diseño. No representa velocidad garantizada.`;
+
+    $("architectureBadge").textContent = result.architecture.label;
+    renderArchitecture(result);
+    renderReasons(result);
+    renderBom(result);
+    renderIssues(result);
+    renderTrace(result);
+
+    $("progressText").textContent = `${result.completeness}%`;
+    $("progressBar").style.width = `${result.completeness}%`;
+  }
+
+  function updateDynamicFields() {
+    document.querySelectorAll("[data-app-card]").forEach((card) => {
+      const key = card.dataset.appCard;
+      const toggle = card.querySelector('input[type="checkbox"]');
+      const config = document.querySelector(`[data-app-config="${key}"]`);
+      const active = Boolean(toggle?.checked);
+      card.classList.toggle("is-active", active);
+      if (config) config.hidden = !active;
+    });
+
+    document.querySelectorAll("[data-show-when]").forEach((element) => {
+      const [id, expected] = element.dataset.showWhen.split(":");
+      element.hidden = value(id) !== expected;
+    });
+  }
+
+  function recalculate() {
+    updateDynamicFields();
+    const state = readState();
+    renderResult(calculateScenario(state, catalogs));
+  }
+
+  function renderCatalogEditor() {
+    const rows = [];
+    for (const scope of ["local", "global"]) {
+      for (const plan of catalogs[scope]) {
+        rows.push(`<tr><td>${plan.name}<small style="display:block;color:var(--ink-muted)">${scope === "local" ? "Colombia" : "Global"}</small></td><td>${formatData(plan.gb)}</td><td><input type="number" min="0" step="1000" value="${plan.price}" data-catalog-scope="${scope}" data-catalog-id="${plan.id}" aria-label="Precio ${plan.name}"></td></tr>`);
+      }
+    }
+    $("catalogEditor").innerHTML = rows.join("");
+  }
+
+  function updateCatalogFromEditor(target) {
+    const scope = target.dataset.catalogScope;
+    const id = target.dataset.catalogId;
+    if (!scope || !id) return;
+    const plan = catalogs[scope].find((entry) => entry.id === id);
+    if (plan) plan.price = Math.max(0, Number.parseFloat(target.value) || 0);
+  }
+
+  const EXAMPLES = Object.freeze({
+    office: {
+      siteName: "Oficina rural · 25 usuarios", scope: "local", linkRole: "primary", criticality: "important", availability: "99.5",
+      users: 25, concurrency: 70, workDays: 22, workHours: 9, growth: 20, headroom: 25,
+      officeEnabled: true, officeAdoption: 100, officeDown: 0.18, officeUp: 0.06,
+      videoEnabled: true, videoQuality: "720", videoAdoption: 50, videoHours: 1, videoConcurrent: 5,
+      voiceEnabled: true, voiceAdoption: 50, voiceHours: 0.5, voiceConcurrent: 4, voiceRate: 0.1,
+      streamEnabled: false, cctvEnabled: false, backupEnabled: true, backupGbDay: 4, backupWindow: 6,
+      transferEnabled: false, iotEnabled: false, guestEnabled: true, guestUsers: 8, guestGbDay: 0.3, guestConcurrent: 3, guestRate: 1,
+      manualEnabled: false, speedProfile: "conservative", redundancy: "auto", obstruction: "pending", powerQuality: "stable",
+      environment: "normal", mobility: "fixed", area: 350, floors: 1, wallDensity: "medium", upsMinutes: 60, pricesVerified: false
+    },
+    branch: {
+      siteName: "Sucursal crítica · 80 usuarios", scope: "local", linkRole: "primary", criticality: "mission", availability: "99.9",
+      users: 80, concurrency: 70, workDays: 24, workHours: 11, growth: 25, headroom: 30,
+      officeEnabled: true, officeAdoption: 100, officeDown: 0.22, officeUp: 0.08,
+      videoEnabled: true, videoQuality: "720", videoAdoption: 65, videoHours: 1.5, videoConcurrent: 16,
+      voiceEnabled: true, voiceAdoption: 70, voiceHours: 1.2, voiceConcurrent: 15, voiceRate: 0.1,
+      streamEnabled: false, cctvEnabled: false, backupEnabled: true, backupGbDay: 15, backupWindow: 8,
+      transferEnabled: true, transferGbMonth: 250, transferDirection: "balanced", transferWindow: 60,
+      iotEnabled: true, iotDevices: 100, iotMbDay: 15, iotPeak: 1.5,
+      guestEnabled: true, guestUsers: 25, guestGbDay: 0.4, guestConcurrent: 10, guestRate: 1,
+      manualEnabled: false, speedProfile: "reference", redundancy: "hybrid", obstruction: "clear", powerQuality: "unstable",
+      environment: "remote", mobility: "fixed", area: 1200, floors: 2, wallDensity: "medium", upsMinutes: 120, pricesVerified: false
+    },
+    backup: {
+      siteName: "Respaldo corporativo · 120 usuarios", scope: "local", linkRole: "backup", criticality: "mission", availability: "99.9",
+      users: 120, concurrency: 60, workDays: 22, workHours: 10, growth: 15, headroom: 30, failoverHours: 10,
+      officeEnabled: true, officeAdoption: 100, officeDown: 0.2, officeUp: 0.07,
+      videoEnabled: true, videoQuality: "720", videoAdoption: 45, videoHours: 1, videoConcurrent: 18,
+      voiceEnabled: true, voiceAdoption: 60, voiceHours: 0.8, voiceConcurrent: 20, voiceRate: 0.1,
+      streamEnabled: false, cctvEnabled: false, backupEnabled: false, transferEnabled: false,
+      iotEnabled: false, guestEnabled: false, manualEnabled: false,
+      speedProfile: "conservative", redundancy: "hybrid", obstruction: "clear", powerQuality: "stable",
+      environment: "normal", mobility: "fixed", area: 1600, floors: 3, wallDensity: "dense", upsMinutes: 90, pricesVerified: false
+    },
+    cctv: {
+      siteName: "Operación industrial + CCTV", scope: "local", linkRole: "primary", criticality: "mission", availability: "99.9",
+      users: 40, concurrency: 75, workDays: 30, workHours: 24, growth: 20, headroom: 30,
+      officeEnabled: true, officeAdoption: 80, officeDown: 0.15, officeUp: 0.05,
+      videoEnabled: true, videoQuality: "720", videoAdoption: 30, videoHours: 0.5, videoConcurrent: 4,
+      voiceEnabled: true, voiceAdoption: 50, voiceHours: 0.5, voiceConcurrent: 5, voiceRate: 0.1,
+      streamEnabled: false, cctvEnabled: true, cctvCameras: 16, cctvRate: 1.5, cctvHours: 24, cctvDays: 30,
+      backupEnabled: true, backupGbDay: 20, backupWindow: 8, transferEnabled: false,
+      iotEnabled: true, iotDevices: 250, iotMbDay: 25, iotPeak: 3,
+      guestEnabled: false, manualEnabled: false, speedProfile: "reference", redundancy: "hybrid", obstruction: "pending",
+      powerQuality: "generator", environment: "harsh", mobility: "fixed", area: 2200, floors: 1, wallDensity: "open", upsMinutes: 180, pricesVerified: false
+    }
+  });
+
+  function setControl(id, newValue) {
+    const element = $(id);
+    if (!element) return;
+    if (element.type === "checkbox") element.checked = Boolean(newValue);
+    else element.value = String(newValue);
+  }
+
+  function loadExample(key) {
+    const example = EXAMPLES[key] || EXAMPLES.office;
+    Object.entries(example).forEach(([id, newValue]) => setControl(id, newValue));
+    updateDynamicFields();
+    recalculate();
+    showToast(`Escenario “${example.siteName}” cargado.`);
+  }
+
+  function resetAll() {
+    $("sizingForm").reset();
+    catalogs = deepCloneCatalogs();
+    renderCatalogEditor();
+    updateDynamicFields();
+    recalculate();
+    showToast("Valores iniciales restablecidos.");
+  }
+
+  function exportJson() {
+    if (!latestResult) return;
+    const payload = {
+      metadata: {
+        module: "Dimensionador empresarial Starlink LEO",
+        version: VERSION,
+        researchDate: RESEARCH_DATE,
+        catalogDate: latestResult.state.catalogDate,
+        disclaimer: "Resultado de apoyo de preventa; requiere validación física, técnica y comercial."
+      },
+      inputs: latestResult.state,
+      recommendation: {
+        status: latestResult.status,
+        plan: latestResult.plan,
+        terminals: latestResult.architecture.starlinkTerminals,
+        architecture: latestResult.architecture,
+        hardware: latestResult.hardware,
+        required: latestResult.required,
+        designCapacity: latestResult.totalDesignCapacity,
+        monthlyReferenceCop: latestResult.totalMonthlyPrice,
+        confidence: latestResult.confidence,
+        accessPoints: latestResult.accessPoints,
+        ups: latestResult.ups,
+        bom: latestResult.bom,
+        issues: latestResult.issues
+      },
+      trace: latestResult.rows,
+      sources: SOURCE_LINKS
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `dimensionamiento-starlink-${latestResult.state.siteName.toLowerCase().replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "sede"}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(link.href), 500);
+    showToast("Escenario y trazabilidad exportados en JSON.");
+  }
+
+  function openMethodology() {
+    const dialog = $("methodDialog");
+    if (typeof dialog.showModal === "function") dialog.showModal();
+  }
+
+  function attachEvents() {
+    $("sizingForm").addEventListener("input", (event) => {
+      if (event.target.matches("[data-catalog-id]")) updateCatalogFromEditor(event.target);
+      recalculate();
+    });
+    $("sizingForm").addEventListener("change", (event) => {
+      if (event.target.id === "mobility" && event.target.value === "maritime" && value("scope") !== "global") {
+        setControl("scope", "global");
+        showToast("Se cambió el ámbito a Prioridad Global para el escenario marítimo.");
+      }
+      recalculate();
+    });
+    $("btnLoadExample").addEventListener("click", () => loadExample(value("exampleSelect")));
+    $("btnReset").addEventListener("click", resetAll);
+    $("btnExport").addEventListener("click", exportJson);
+    $("btnPrint").addEventListener("click", () => window.print());
+    $("btnMethod").addEventListener("click", openMethodology);
+    $("btnSources").addEventListener("click", openMethodology);
+  }
+
+  function init() {
+    renderCatalogEditor();
+    attachEvents();
+    updateDynamicFields();
+    recalculate();
+    window.StarlinkDimensioner = Object.freeze({
+      version: VERSION,
+      researchDate: RESEARCH_DATE,
+      calculate: (state, customCatalogs = catalogs) => calculateScenario(state, customCatalogs),
+      getState: readState,
+      getResult: () => latestResult,
+      getCatalogs: () => JSON.parse(JSON.stringify(catalogs)),
+      defaults: { catalogs: DEFAULT_CATALOGS, videoProfiles: VIDEO_PROFILES, streamProfiles: STREAM_PROFILES }
+    });
+  }
+
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports = Object.freeze({
+      version: VERSION,
+      researchDate: RESEARCH_DATE,
+      calculate: calculateScenario,
+      createCatalogs: deepCloneCatalogs,
+      defaults: { catalogs: DEFAULT_CATALOGS, videoProfiles: VIDEO_PROFILES, streamProfiles: STREAM_PROFILES }
+    });
+    return;
+  }
+
+  if (typeof document === "undefined") return;
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Dimensionador empresarial de datos prioritarios Starlink LEO para sedes corporativas.">
+  <title>Presales · Dimensionador Starlink LEO</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#resultados">Saltar a resultados</a>
+
+  <header class="topbar">
+    <div class="brand-lockup" aria-label="Presales - Ingeniería de soluciones">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 44 44" role="img">
+          <path d="M8 28c6-14 20-19 29-13"/>
+          <path d="M11 34c7-11 17-15 27-12"/>
+          <circle cx="10" cy="34" r="2.6"/>
+        </svg>
+      </span>
+      <span>
+        <strong>Presales</strong>
+        <small>Ingeniería de conectividad</small>
+      </span>
+    </div>
+    <div class="topbar-title">
+      <span class="eyebrow">Órbita terrestre baja · LEO</span>
+      <h1>Dimensionador empresarial Starlink</h1>
+    </div>
+    <div class="topbar-actions">
+      <button class="button button-ghost" id="btnMethod" type="button" aria-controls="methodDialog">Metodología</button>
+      <button class="button button-primary" id="btnPrint" type="button">Generar informe</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="config-panel" aria-label="Variables de dimensionamiento">
+      <div class="config-header">
+        <div>
+          <span class="step-label">Configuración técnica</span>
+          <h2>Caracterice la sede</h2>
+        </div>
+        <span class="live-pill"><i aria-hidden="true"></i> Cálculo en vivo</span>
+      </div>
+
+      <div class="progress" aria-label="Calidad de datos de entrada">
+        <div class="progress-copy">
+          <span>Completitud del escenario</span>
+          <strong id="progressText">0%</strong>
+        </div>
+        <div class="progress-track"><span id="progressBar"></span></div>
+      </div>
+
+      <form id="sizingForm" novalidate>
+        <section class="form-section" aria-labelledby="scenarioTitle">
+          <div class="section-heading">
+            <span class="section-number">01</span>
+            <div>
+              <h3 id="scenarioTitle">Escenario empresarial</h3>
+              <p>Defina el alcance operativo y la proyección de demanda.</p>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <label class="field field-span-2">
+              <span>Nombre de la sede</span>
+              <input id="siteName" name="siteName" type="text" value="Sede empresarial remota" maxlength="80">
+            </label>
+
+            <label class="field">
+              <span>Ámbito del servicio</span>
+              <select id="scope" name="scope">
+                <option value="local">Colombia · Prioridad local</option>
+                <option value="global">Internacional/marítimo · Prioridad global</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Función del enlace</span>
+              <select id="linkRole" name="linkRole">
+                <option value="primary">Enlace principal</option>
+                <option value="backup">Respaldo de otro operador</option>
+                <option value="temporary">Operación temporal/emergencia</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Criticidad del negocio</span>
+              <select id="criticality" name="criticality">
+                <option value="standard">Estándar · tolera interrupciones</option>
+                <option value="important" selected>Importante · continuidad requerida</option>
+                <option value="mission">Misión crítica · impacto alto</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Disponibilidad objetivo</span>
+              <select id="availability" name="availability">
+                <option value="99">99,0%</option>
+                <option value="99.5" selected>99,5%</option>
+                <option value="99.9">99,9%</option>
+                <option value="99.95">99,95% o superior</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Usuarios de la sede</span>
+              <div class="input-suffix"><input id="users" name="users" type="number" min="1" max="10000" step="1" value="45"><em>personas</em></div>
+            </label>
+
+            <label class="field">
+              <span>Concurrencia en hora pico</span>
+              <div class="input-suffix"><input id="concurrency" name="concurrency" type="number" min="5" max="100" step="1" value="65"><em>%</em></div>
+            </label>
+
+            <label class="field">
+              <span>Días operativos al mes</span>
+              <div class="input-suffix"><input id="workDays" name="workDays" type="number" min="1" max="31" step="1" value="22"><em>días</em></div>
+            </label>
+
+            <label class="field">
+              <span>Horas operativas al día</span>
+              <div class="input-suffix"><input id="workHours" name="workHours" type="number" min="1" max="24" step="0.5" value="9"><em>h</em></div>
+            </label>
+
+            <label class="field">
+              <span>Crecimiento a 12 meses</span>
+              <div class="input-suffix"><input id="growth" name="growth" type="number" min="0" max="200" step="1" value="20"><em>%</em></div>
+            </label>
+
+            <label class="field">
+              <span>Reserva de ingeniería</span>
+              <div class="input-suffix"><input id="headroom" name="headroom" type="number" min="5" max="100" step="1" value="25"><em>%</em></div>
+            </label>
+
+            <label class="field field-span-2 dynamic-field" data-show-when="linkRole:backup">
+              <span>Uso esperado del respaldo al mes</span>
+              <div class="input-suffix"><input id="failoverHours" name="failoverHours" type="number" min="1" max="744" step="1" value="12"><em>horas</em></div>
+              <small>La capacidad pico se conserva; la cuota mensual se ajusta al tiempo probable de contingencia.</small>
+            </label>
+          </div>
+        </section>
+
+        <section class="form-section" aria-labelledby="appsTitle">
+          <div class="section-heading">
+            <span class="section-number">02</span>
+            <div>
+              <h3 id="appsTitle">Aplicaciones y tráfico</h3>
+              <p>Active únicamente las cargas que cruzarán el enlace LEO.</p>
+            </div>
+          </div>
+
+          <div class="app-list">
+            <article class="app-card" data-app-card="office">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">OF</div>
+                <div><h4>Ofimática, web y SaaS</h4><p>Correo, navegación, CRM, ERP web y colaboración.</p></div>
+                <label class="switch"><input id="officeEnabled" type="checkbox" checked><span aria-hidden="true"></span><b class="sr-only">Activar ofimática y SaaS</b></label>
+              </div>
+              <div class="app-config" data-app-config="office">
+                <label class="mini-field"><span>Usuarios que la utilizan</span><div class="input-suffix"><input id="officeAdoption" type="number" min="0" max="100" value="100"><em>%</em></div></label>
+                <label class="mini-field"><span>Descarga media por usuario</span><div class="input-suffix"><input id="officeDown" type="number" min="0.01" max="20" step="0.01" value="0.22"><em>Mbps</em></div></label>
+                <label class="mini-field"><span>Subida media por usuario</span><div class="input-suffix"><input id="officeUp" type="number" min="0.01" max="20" step="0.01" value="0.08"><em>Mbps</em></div></label>
+                <p class="assumption">Supuesto editable para tráfico transaccional; debe sustituirse con telemetría cuando exista.</p>
+              </div>
+            </article>
+
+            <article class="app-card" data-app-card="video">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">VC</div>
+                <div><h4>Videoconferencia</h4><p>Teams, Zoom, Meet o Webex.</p></div>
+                <label class="switch"><input id="videoEnabled" type="checkbox" checked><span aria-hidden="true"></span><b class="sr-only">Activar videoconferencia</b></label>
+              </div>
+              <div class="app-config" data-app-config="video">
+                <label class="mini-field"><span>Calidad objetivo</span><select id="videoQuality"><option value="sd">Calidad estándar</option><option value="720" selected>HD 720p</option><option value="1080">Full HD 1080p</option></select></label>
+                <label class="mini-field"><span>Usuarios participantes</span><div class="input-suffix"><input id="videoAdoption" type="number" min="0" max="100" value="55"><em>%</em></div></label>
+                <label class="mini-field"><span>Horas por participante/día</span><div class="input-suffix"><input id="videoHours" type="number" min="0" max="12" step="0.25" value="1.25"><em>h</em></div></label>
+                <label class="mini-field"><span>Usuarios simultáneos al pico</span><div class="input-suffix"><input id="videoConcurrent" type="number" min="0" max="10000" value="8"><em>usuarios</em></div></label>
+                <p class="assumption">Perfiles basados en requisitos oficiales de Zoom; el motor agrega subida y descarga.</p>
+              </div>
+            </article>
+
+            <article class="app-card" data-app-card="voice">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">IP</div>
+                <div><h4>Telefonía IP</h4><p>Softphones, extensiones y centros de contacto.</p></div>
+                <label class="switch"><input id="voiceEnabled" type="checkbox" checked><span aria-hidden="true"></span><b class="sr-only">Activar telefonía IP</b></label>
+              </div>
+              <div class="app-config" data-app-config="voice">
+                <label class="mini-field"><span>Usuarios con voz</span><div class="input-suffix"><input id="voiceAdoption" type="number" min="0" max="100" value="45"><em>%</em></div></label>
+                <label class="mini-field"><span>Horas por usuario/día</span><div class="input-suffix"><input id="voiceHours" type="number" min="0" max="12" step="0.25" value="0.75"><em>h</em></div></label>
+                <label class="mini-field"><span>Llamadas simultáneas</span><div class="input-suffix"><input id="voiceConcurrent" type="number" min="0" max="10000" value="6"><em>llamadas</em></div></label>
+                <label class="mini-field"><span>Caudal por sentido</span><div class="input-suffix"><input id="voiceRate" type="number" min="0.03" max="1" step="0.01" value="0.10"><em>Mbps</em></div></label>
+              </div>
+            </article>
+
+            <article class="app-card" data-app-card="streaming">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">ST</div>
+                <div><h4>Video, capacitación y señalización</h4><p>Streaming corporativo o contenidos educativos.</p></div>
+                <label class="switch"><input id="streamEnabled" type="checkbox"><span aria-hidden="true"></span><b class="sr-only">Activar streaming</b></label>
+              </div>
+              <div class="app-config" data-app-config="streaming" hidden>
+                <label class="mini-field"><span>Resolución</span><select id="streamQuality"><option value="720">HD 720p · 2,5 Mbps</option><option value="1080" selected>HD 1080p · 5 Mbps</option><option value="4k">4K UHD · 20 Mbps</option></select></label>
+                <label class="mini-field"><span>Usuarios participantes</span><div class="input-suffix"><input id="streamAdoption" type="number" min="0" max="100" value="20"><em>%</em></div></label>
+                <label class="mini-field"><span>Horas por usuario/día</span><div class="input-suffix"><input id="streamHours" type="number" min="0" max="12" step="0.25" value="0.5"><em>h</em></div></label>
+                <label class="mini-field"><span>Streams simultáneos al pico</span><div class="input-suffix"><input id="streamConcurrent" type="number" min="0" max="10000" value="4"><em>streams</em></div></label>
+              </div>
+            </article>
+
+            <article class="app-card" data-app-card="cctv">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">CC</div>
+                <div><h4>CCTV o video hacia la nube</h4><p>Cámaras transmitidas fuera de la sede.</p></div>
+                <label class="switch"><input id="cctvEnabled" type="checkbox"><span aria-hidden="true"></span><b class="sr-only">Activar CCTV</b></label>
+              </div>
+              <div class="app-config" data-app-config="cctv" hidden>
+                <label class="mini-field"><span>Cámaras remotas</span><div class="input-suffix"><input id="cctvCameras" type="number" min="0" max="1000" value="8"><em>cámaras</em></div></label>
+                <label class="mini-field"><span>Bitrate medio por cámara</span><div class="input-suffix"><input id="cctvRate" type="number" min="0.1" max="50" step="0.1" value="1.5"><em>Mbps</em></div></label>
+                <label class="mini-field"><span>Transmisión diaria</span><div class="input-suffix"><input id="cctvHours" type="number" min="0" max="24" step="0.5" value="24"><em>h</em></div></label>
+                <label class="mini-field"><span>Días de transmisión/mes</span><div class="input-suffix"><input id="cctvDays" type="number" min="0" max="31" value="30"><em>días</em></div></label>
+                <p class="assumption">Use el bitrate real del VMS/codificador; resolución y escena modifican el consumo.</p>
+              </div>
+            </article>
+
+            <article class="app-card" data-app-card="backup">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">BK</div>
+                <div><h4>Copias de seguridad y nube</h4><p>Backups, sincronización y replicación.</p></div>
+                <label class="switch"><input id="backupEnabled" type="checkbox" checked><span aria-hidden="true"></span><b class="sr-only">Activar copias de seguridad</b></label>
+              </div>
+              <div class="app-config" data-app-config="backup">
+                <label class="mini-field"><span>Datos enviados por día</span><div class="input-suffix"><input id="backupGbDay" type="number" min="0" max="100000" step="0.5" value="8"><em>GB</em></div></label>
+                <label class="mini-field"><span>Ventana de transferencia</span><div class="input-suffix"><input id="backupWindow" type="number" min="0.5" max="24" step="0.5" value="6"><em>h</em></div></label>
+                <label class="mini-field"><span>Frecuencia</span><select id="backupFrequency"><option value="workdays" selected>Días operativos</option><option value="daily">Todos los días</option></select></label>
+              </div>
+            </article>
+
+            <article class="app-card" data-app-card="transfer">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">DT</div>
+                <div><h4>Transferencias y actualizaciones</h4><p>Archivos, imágenes, software y parches.</p></div>
+                <label class="switch"><input id="transferEnabled" type="checkbox"><span aria-hidden="true"></span><b class="sr-only">Activar transferencias</b></label>
+              </div>
+              <div class="app-config" data-app-config="transfer" hidden>
+                <label class="mini-field"><span>Volumen mensual</span><div class="input-suffix"><input id="transferGbMonth" type="number" min="0" max="1000000" step="1" value="100"><em>GB</em></div></label>
+                <label class="mini-field"><span>Dirección predominante</span><select id="transferDirection"><option value="down" selected>Descarga</option><option value="up">Subida</option><option value="balanced">Balanceada</option></select></label>
+                <label class="mini-field"><span>Ventana de mayor actividad</span><div class="input-suffix"><input id="transferWindow" type="number" min="1" max="744" step="1" value="40"><em>h/mes</em></div></label>
+              </div>
+            </article>
+
+            <article class="app-card" data-app-card="iot">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">IoT</div>
+                <div><h4>IoT, telemetría y monitoreo</h4><p>Sensores, controladores y equipos operacionales.</p></div>
+                <label class="switch"><input id="iotEnabled" type="checkbox"><span aria-hidden="true"></span><b class="sr-only">Activar IoT</b></label>
+              </div>
+              <div class="app-config" data-app-config="iot" hidden>
+                <label class="mini-field"><span>Dispositivos</span><div class="input-suffix"><input id="iotDevices" type="number" min="0" max="100000" value="60"><em>equipos</em></div></label>
+                <label class="mini-field"><span>Consumo por dispositivo/día</span><div class="input-suffix"><input id="iotMbDay" type="number" min="0" max="100000" step="1" value="20"><em>MB</em></div></label>
+                <label class="mini-field"><span>Caudal pico agregado</span><div class="input-suffix"><input id="iotPeak" type="number" min="0" max="1000" step="0.1" value="1"><em>Mbps</em></div></label>
+              </div>
+            </article>
+
+            <article class="app-card" data-app-card="guest">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">GW</div>
+                <div><h4>Wi-Fi de invitados</h4><p>Tráfico no corporativo con política separada.</p></div>
+                <label class="switch"><input id="guestEnabled" type="checkbox"><span aria-hidden="true"></span><b class="sr-only">Activar Wi-Fi de invitados</b></label>
+              </div>
+              <div class="app-config" data-app-config="guest" hidden>
+                <label class="mini-field"><span>Invitados por día</span><div class="input-suffix"><input id="guestUsers" type="number" min="0" max="10000" value="15"><em>usuarios</em></div></label>
+                <label class="mini-field"><span>Consumo por invitado/día</span><div class="input-suffix"><input id="guestGbDay" type="number" min="0" max="100" step="0.1" value="0.5"><em>GB</em></div></label>
+                <label class="mini-field"><span>Invitados simultáneos</span><div class="input-suffix"><input id="guestConcurrent" type="number" min="0" max="10000" value="6"><em>usuarios</em></div></label>
+                <label class="mini-field"><span>Límite por invitado</span><div class="input-suffix"><input id="guestRate" type="number" min="0.1" max="50" step="0.1" value="1"><em>Mbps</em></div></label>
+              </div>
+            </article>
+
+            <article class="app-card" data-app-card="manual">
+              <div class="app-card-head">
+                <div class="app-icon" aria-hidden="true">+</div>
+                <div><h4>Carga adicional conocida</h4><p>Demanda no representada en las categorías anteriores.</p></div>
+                <label class="switch"><input id="manualEnabled" type="checkbox"><span aria-hidden="true"></span><b class="sr-only">Activar carga adicional</b></label>
+              </div>
+              <div class="app-config" data-app-config="manual" hidden>
+                <label class="mini-field"><span>Consumo mensual</span><div class="input-suffix"><input id="manualGb" type="number" min="0" max="1000000" step="1" value="50"><em>GB</em></div></label>
+                <label class="mini-field"><span>Pico de descarga</span><div class="input-suffix"><input id="manualDown" type="number" min="0" max="10000" step="0.1" value="5"><em>Mbps</em></div></label>
+                <label class="mini-field"><span>Pico de subida</span><div class="input-suffix"><input id="manualUp" type="number" min="0" max="10000" step="0.1" value="2"><em>Mbps</em></div></label>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="form-section" aria-labelledby="siteTitle">
+          <div class="section-heading">
+            <span class="section-number">03</span>
+            <div>
+              <h3 id="siteTitle">Capacidad, instalación y resiliencia</h3>
+              <p>Valide las condiciones que pueden cambiar o bloquear la recomendación.</p>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <label class="field field-span-2">
+              <span>Perfil de capacidad por terminal</span>
+              <select id="speedProfile">
+                <option value="conservative" selected>No validado · extremo inferior publicado (50/10 Mbps)</option>
+                <option value="reference">Referencia de diseño · 100/15 Mbps</option>
+                <option value="upper">Escenario alto validado · 220/30 Mbps</option>
+                <option value="custom">Medición o Speed Map personalizada</option>
+              </select>
+              <small>El extremo alto no debe seleccionarse sin evidencia del sitio y de su franja horaria crítica.</small>
+            </label>
+
+            <label class="field dynamic-field" data-show-when="speedProfile:custom">
+              <span>Descarga validada</span>
+              <div class="input-suffix"><input id="customDown" type="number" min="1" max="1000" step="1" value="120"><em>Mbps</em></div>
+            </label>
+
+            <label class="field dynamic-field" data-show-when="speedProfile:custom">
+              <span>Subida validada</span>
+              <div class="input-suffix"><input id="customUp" type="number" min="1" max="500" step="1" value="20"><em>Mbps</em></div>
+            </label>
+
+            <label class="field">
+              <span>Utilización máxima de diseño</span>
+              <div class="input-suffix"><input id="maxUtilization" type="number" min="40" max="90" step="5" value="70"><em>%</em></div>
+            </label>
+
+            <label class="field">
+              <span>Arquitectura de continuidad</span>
+              <select id="redundancy">
+                <option value="auto" selected>Automática según criticidad</option>
+                <option value="single">Una sola línea Starlink</option>
+                <option value="dual">Dos líneas Starlink activas</option>
+                <option value="hybrid">Starlink + operador diverso</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Estudio de obstrucciones</span>
+              <select id="obstruction">
+                <option value="pending" selected>Pendiente de medición</option>
+                <option value="clear">100% despejado en Starlink App</option>
+                <option value="partial">Hay obstrucciones identificadas</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Calidad de energía</span>
+              <select id="powerQuality">
+                <option value="stable" selected>Red estable</option>
+                <option value="unstable">Red inestable o cortes frecuentes</option>
+                <option value="generator">Generador/microred</option>
+                <option value="solar">Sistema solar o DC</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Entorno físico</span>
+              <select id="environment">
+                <option value="normal" selected>Oficina o entorno normal</option>
+                <option value="remote">Remoto con difícil acceso</option>
+                <option value="coastal">Costero/corrosivo</option>
+                <option value="harsh">Industrial, vibración o clima severo</option>
+                <option value="extreme">Temperaturas o vientos extremos</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Tipo de instalación</span>
+              <select id="mobility">
+                <option value="fixed" selected>Fija en edificio o torre</option>
+                <option value="vehicle">Vehículo/en movimiento</option>
+                <option value="maritime">Marítima</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Área interior estimada</span>
+              <div class="input-suffix"><input id="area" type="number" min="20" max="1000000" step="10" value="600"><em>m²</em></div>
+            </label>
+
+            <label class="field">
+              <span>Número de pisos</span>
+              <div class="input-suffix"><input id="floors" type="number" min="1" max="100" step="1" value="1"><em>pisos</em></div>
+            </label>
+
+            <label class="field">
+              <span>Densidad de muros</span>
+              <select id="wallDensity"><option value="open">Espacio abierto</option><option value="medium" selected>Media</option><option value="dense">Alta/concreto</option></select>
+            </label>
+
+            <label class="field">
+              <span>Autonomía eléctrica objetivo</span>
+              <div class="input-suffix"><input id="upsMinutes" type="number" min="0" max="1440" step="15" value="60"><em>min</em></div>
+            </label>
+
+            <label class="check-field field-span-2">
+              <input id="pricesVerified" type="checkbox">
+              <span><strong>Precios verificados en portal o cotización vigente</strong><small>La lista precargada es una referencia pública consultada el 23 de septiembre de 2026.</small></span>
+            </label>
+          </div>
+        </section>
+
+        <details class="advanced-panel">
+          <summary>Parámetros avanzados y catálogo comercial</summary>
+          <div class="advanced-content">
+            <label class="field">
+              <span>Sobrecarga de protocolos y variabilidad</span>
+              <div class="input-suffix"><input id="protocolOverhead" type="number" min="0" max="40" step="1" value="10"><em>%</em></div>
+            </label>
+            <label class="field">
+              <span>Fecha de vigencia del catálogo</span>
+              <input id="catalogDate" type="date" value="2026-09-23">
+            </label>
+            <div class="catalog-table-wrap field-span-2">
+              <table class="catalog-table">
+                <thead><tr><th>Plan</th><th>Cuota</th><th>Precio mensual COP</th></tr></thead>
+                <tbody id="catalogEditor"></tbody>
+              </table>
+            </div>
+            <p class="assumption field-span-2">Los cambios se aplican al cálculo actual. Las tarifas pueden variar por dirección, impuestos, hardware, disponibilidad o cotización comercial.</p>
+          </div>
+        </details>
+      </form>
+
+      <div class="config-footer">
+        <label class="example-picker">
+          <span>Escenario de ejemplo</span>
+          <select id="exampleSelect">
+            <option value="office">Oficina rural · 25 usuarios</option>
+            <option value="branch">Sucursal crítica · 80 usuarios</option>
+            <option value="backup">Respaldo corporativo · 120 usuarios</option>
+            <option value="cctv">Operación industrial + CCTV</option>
+          </select>
+        </label>
+        <button class="button button-secondary" id="btnLoadExample" type="button">Cargar</button>
+        <button class="button button-ghost" id="btnReset" type="button">Restablecer</button>
+      </div>
+    </aside>
+
+    <section class="results-panel" id="resultados" tabindex="-1" aria-live="polite">
+      <div class="results-scroll">
+        <div class="results-head">
+          <div>
+            <span class="eyebrow">Recomendación calculada</span>
+            <h2 id="resultSiteName">Sede empresarial remota</h2>
+          </div>
+          <span class="status-badge status-conditional" id="statusBadge">Condicionada</span>
+        </div>
+
+        <article class="recommendation-card">
+          <div class="orbit-art" aria-hidden="true"><span></span><i></i><b></b></div>
+          <div class="recommendation-copy">
+            <span class="recommendation-kicker" id="resultPlanFamily">Prioridad local · Colombia</span>
+            <h3 id="resultPlanName">Local Priority 2 TB</h3>
+            <p id="resultPlanReason">La cuota cubre la demanda proyectada y la reserva de ingeniería.</p>
+            <div class="price-line"><strong id="resultPrice">$1.685.000</strong><span>COP/mes de referencia</span></div>
+          </div>
+          <div class="recommendation-meta">
+            <div><span>Terminales</span><strong id="resultTerminals">1</strong></div>
+            <div><span>Hardware</span><strong id="resultHardware">Performance</strong></div>
+            <div><span>Confianza</span><strong id="resultConfidence">Media</strong></div>
+          </div>
+        </article>
+
+        <div class="notice notice-info" id="catalogNotice">
+          <span aria-hidden="true">i</span>
+          <p><strong>Precio indicativo.</strong> Valide dirección, impuestos, elegibilidad, hardware y tarifa final en el portal de Starlink antes de emitir la propuesta.</p>
+        </div>
+
+        <div class="kpi-grid">
+          <article class="kpi"><span>Datos prioritarios requeridos</span><strong id="kpiData">0 GB</strong><small id="kpiDataNote">Incluye crecimiento y reserva</small></article>
+          <article class="kpi"><span>Pico de descarga</span><strong id="kpiDown">0 Mbps</strong><small id="kpiDownNote">Demanda agregada</small></article>
+          <article class="kpi"><span>Pico de subida</span><strong id="kpiUp">0 Mbps</strong><small id="kpiUpNote">Demanda agregada</small></article>
+          <article class="kpi"><span>Cuello de botella</span><strong id="kpiConstraint">Cuota</strong><small id="kpiConstraintNote">Factor dominante</small></article>
+        </div>
+
+        <article class="result-card">
+          <div class="card-heading">
+            <div><span class="card-index">A</span><h3>Capacidad y holgura</h3></div>
+            <span class="micro-badge" id="capacityBadge">Revisar</span>
+          </div>
+          <div class="capacity-grid">
+            <div class="capacity-row">
+              <div class="capacity-label"><span>Cuota prioritaria</span><strong id="quotaLabel">0 de 0 GB</strong></div>
+              <div class="meter"><span id="quotaMeter"></span></div>
+            </div>
+            <div class="capacity-row">
+              <div class="capacity-label"><span>Descarga de diseño</span><strong id="downLabel">0 de 0 Mbps</strong></div>
+              <div class="meter"><span id="downMeter"></span></div>
+            </div>
+            <div class="capacity-row">
+              <div class="capacity-label"><span>Subida de diseño</span><strong id="upLabel">0 de 0 Mbps</strong></div>
+              <div class="meter"><span id="upMeter"></span></div>
+            </div>
+          </div>
+          <p class="card-footnote" id="capacityFootnote">La capacidad por terminal se contrasta con un umbral de utilización conservador.</p>
+        </article>
+
+        <article class="result-card">
+          <div class="card-heading">
+            <div><span class="card-index">B</span><h3>Arquitectura recomendada</h3></div>
+            <span class="micro-badge micro-neutral" id="architectureBadge">Principal</span>
+          </div>
+          <div class="architecture" id="architectureDiagram" aria-label="Diagrama lógico de la solución"></div>
+          <ul class="reason-list" id="reasonList"></ul>
+        </article>
+
+        <article class="result-card">
+          <div class="card-heading">
+            <div><span class="card-index">C</span><h3>Lista base de materiales y servicios</h3></div>
+            <button class="text-button" id="btnExport" type="button">Exportar JSON</button>
+          </div>
+          <div class="table-wrap">
+            <table class="bom-table">
+              <thead><tr><th>Componente</th><th>Cant.</th><th>Justificación</th></tr></thead>
+              <tbody id="bomBody"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="result-card" id="issuesCard">
+          <div class="card-heading">
+            <div><span class="card-index">D</span><h3>Validaciones, riesgos y pendientes</h3></div>
+            <span class="issue-count" id="issueCount">0</span>
+          </div>
+          <div class="issue-list" id="issueList"></div>
+        </article>
+
+        <details class="result-card trace-card" open>
+          <summary><span><span class="card-index">E</span><strong>Trazabilidad del cálculo</strong></span><small>Ver desglose</small></summary>
+          <div class="trace-body">
+            <div class="table-wrap">
+              <table class="trace-table">
+                <thead><tr><th>Carga</th><th>GB/mes base</th><th>Pico ↓</th><th>Pico ↑</th></tr></thead>
+                <tbody id="traceBody"></tbody>
+                <tfoot><tr><th>Total con factores</th><th id="traceTotalGb">0</th><th id="traceTotalDown">0</th><th id="traceTotalUp">0</th></tr></tfoot>
+              </table>
+            </div>
+            <p id="formulaSummary" class="formula-summary"></p>
+          </div>
+        </details>
+
+        <footer class="results-footer">
+          <p>Herramienta de apoyo de preventa. La recomendación no constituye una garantía de desempeño ni sustituye el estudio de obstrucciones, la validación de cobertura, la prueba en sitio o la cotización contractual.</p>
+          <button class="text-button" id="btnSources" type="button" aria-controls="methodDialog">Fuentes y supuestos</button>
+        </footer>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="methodDialog">
+    <form method="dialog" class="dialog-shell">
+      <div class="dialog-head">
+        <div><span class="eyebrow">Ficha metodológica</span><h2>Cómo decide el dimensionador</h2></div>
+        <button class="icon-button" value="close" aria-label="Cerrar">×</button>
+      </div>
+      <div class="dialog-content">
+        <section>
+          <h3>Modelo de decisión</h3>
+          <ol>
+            <li>Convierte cada aplicación en consumo mensual y caudal simultáneo de subida y descarga.</li>
+            <li>Aplica crecimiento, reserva de ingeniería y sobrecarga de protocolos.</li>
+            <li>Selecciona la cuota prioritaria mínima que cubre la proyección, sin confundir cuota con velocidad.</li>
+            <li>Calcula terminales por el mayor de los límites de descarga, subida y continuidad.</li>
+            <li>Condiciona o bloquea el resultado si faltan obstrucciones, cobertura, energía o validaciones comerciales.</li>
+          </ol>
+        </section>
+        <section>
+          <h3>Supuestos esenciales</h3>
+          <ul>
+            <li>1 Mbps sostenido durante una hora equivale aproximadamente a 0,45 GB decimales.</li>
+            <li>El consumo prioritario considera tanto descarga como subida.</li>
+            <li>Los caudales publicados son variables; el perfil conservador usa el extremo inferior oficial de 50/10 Mbps.</li>
+            <li>Dos terminales Starlink mejoran capacidad o tolerancia de equipo, pero no sustituyen la diversidad de operador.</li>
+            <li>Una instalación empresarial debe validarse con cielo 100% despejado, prueba de hora pico, energía protegida y red LAN dimensionada.</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Fuentes oficiales principales</h3>
+          <ul class="source-list">
+            <li><a href="https://starlink.com/co/business" target="_blank" rel="noreferrer">Starlink Business Colombia</a> · oferta empresarial.</li>
+            <li><a href="https://starlink.com/public-files/Priority_Plan_Transition.pdf" target="_blank" rel="noreferrer">Priority Plan Transition</a> · bloques y precios públicos de referencia para Colombia.</li>
+            <li><a href="https://starlink.com/legal/documents/DOC-1728-44881-79" target="_blank" rel="noreferrer">Service Plan Descriptions</a> · precedencia de datos prioritarios.</li>
+            <li><a href="https://starlink.com/legal/documents/DOC-1722-29027-68" target="_blank" rel="noreferrer">Fair Use Policy</a> · gestión de consumo y top-ups.</li>
+            <li><a href="https://starlink.com/public-files/specification_sheet_performance.pdf" target="_blank" rel="noreferrer">Performance Kit Specifications</a> · ambiente, energía y capacidad del equipo.</li>
+            <li><a href="https://starlink.com/public-files/specification_sheet_standard.pdf" target="_blank" rel="noreferrer">Standard 4 X Specifications</a> · antena y router.</li>
+            <li><a href="https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0060748" target="_blank" rel="noreferrer">Zoom bandwidth requirements</a> · perfiles de videoconferencia.</li>
+            <li><a href="https://support.google.com/youtube/answer/78358?hl=es" target="_blank" rel="noreferrer">YouTube: velocidades recomendadas</a> · streaming 720p, 1080p y 4K.</li>
+            <li><a href="https://www.eutelsat.com/satellite-network/oneweb-leo-constellation" target="_blank" rel="noreferrer">Eutelsat OneWeb LEO</a> y <a href="https://www.aboutamazon.com/news/amazon-leo/amazon-leo-satellite-internet-ultra-pro" target="_blank" rel="noreferrer">Amazon Leo</a> · contraste tecnológico LEO.</li>
+          </ul>
+          <p class="source-date">Investigación actualizada: 23 de septiembre de 2026. Los valores comerciales deben verificarse antes de cada propuesta.</p>
+        </section>
+      </div>
+      <div class="dialog-footer"><button class="button button-primary" value="close">Entendido</button></div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
