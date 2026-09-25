@@ -1607,8 +1607,10 @@ la normal, `e2e-aruba-respaldo` sale en rojo.
 **2 · F6 cerrado: los cuatro FortiGate sin figura la tienen.** Primero, lo que había: la rama
 `fuente/fortinet-pendientes`, cuyo permiso de lectura figuraba como decisión del dueño, **no
 traía ningún documento**, solo un `informe.json` con los cinco intentos en 404. Las rutas del
-workflow estaban mal, y los datasheets de 100F y 200F dan 404 **también desde internet abierto**:
-Fortinet ya no los publica, así que no había datasheet que esperar. Desde una máquina sin el
+workflow estaban mal, y el datasheet **en inglés** de 100F y 200F da 404 también desde internet
+abierto. (Aquí se escribió primero «Fortinet ya no los publica», y era falso: Fortinet mantiene
+la edición coreana, de la que salieron después sus límites; no rotula las caras, y por eso la
+figura sigue saliendo de la QuickStart Guide.) Desde una máquina sin el
 proxy se localizaron las guías oficiales de hardware en docs.fortinet.com y se leyeron:
 - **100F**: QuickStart Guide, p. 5 «Front/Rear - FG 100F Series». El chasis dibujado lleva el
   rótulo **FortiGate 101F**, y el pie lo dice.
