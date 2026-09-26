@@ -189,6 +189,14 @@ const TARDIOS = {
   },
 };
 
+// Paginas que a proposito no comparten estado por URL/localStorage via `ESTADO.vincular`.
+// Starlink es la unica: su motor (starlink-leo-dimensionador/app.js, integrado sin cambios por
+// mandato del prompt maestro del 2026-09-24) trae su propio ciclo de estado -ejemplos
+// precargados, restablecer, exportar JSON- y el contrato de integracion no pedia sumarlo al
+// mecanismo de enlace compartido de los demas dimensionadores. No es un hueco sin detectar:
+// esta declarado aqui para que la comprobacion no lo lea como un olvido.
+const SIN_ESTADO_COMPARTIDO = new Set(['dimensionador-starlink-leo.js']);
+
 function camposDeclarados(src) {
   const m = src.match(/ESTADO\.vincular\(\s*\{[\s\S]{0,160}?campos:\s*(\[[\s\S]*?\]|[A-Za-z_$][\w$]*)/);
   if (!m) return { error: 'no se encontro la llamada a ESTADO.vincular({campos:...})' };
@@ -213,6 +221,7 @@ function pantallas() {
     const pagina = archivo.replace(/\.js$/, '.html');
     const rutaHtml = path.join(dirPublic, pagina);
     if (!fs.existsSync(rutaHtml)) { filas.push({ pagina, error: 'no existe su HTML' }); continue; }
+    if (SIN_ESTADO_COMPARTIDO.has(archivo)) { filas.push({ pagina, campos: null, faltan: [], tardios: [] }); continue; }
     const { ids, error } = camposDeclarados(fs.readFileSync(path.join(dirPublic, 'js', archivo), 'utf8'));
     if (error) { filas.push({ pagina, error }); continue; }
     const html = fs.readFileSync(rutaHtml, 'utf8');

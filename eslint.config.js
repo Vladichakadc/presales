@@ -89,7 +89,24 @@ module.exports = [
   },
   {
     files: ['public/js/**/*.js'],
+    ignores: ['public/js/dimensionador-starlink-leo.js'],
     languageOptions: { ecmaVersion: 2023, sourceType: 'script', globals: globalsNavegador },
+    rules: reglas,
+  },
+  {
+    // Motor canonico integrado sin cambios (prompt maestro del 2026-09-24): el archivo es
+    // BYTE A BYTE el mismo que starlink-leo-dimensionador/app.js, y ese archivo es requereable
+    // desde Node (server/services/starlinkSizing.js) ademas de cargarse en el navegador — el
+    // mismo patron UMD que ya usan MotorIngenieria/ArubaReglas/FortinetReglas, salvo que aqui
+    // la excepcion se declara en la configuracion en vez de con un comentario `/* global */`
+    // dentro del archivo, porque anadir esa linea rompería la verificacion SHA-256 contra la
+    // linea base canonica que el mandato de integracion exige poder repetir.
+    files: ['public/js/dimensionador-starlink-leo.js'],
+    languageOptions: {
+      ecmaVersion: 2023,
+      sourceType: 'script',
+      globals: { ...globalsNavegador, module: 'writable', exports: 'writable' },
+    },
     rules: reglas,
   },
   {

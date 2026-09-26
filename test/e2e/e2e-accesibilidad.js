@@ -32,8 +32,6 @@ const PANTALLAS = [
   { n: 'Dimensionador Juniper', ruta: '/dimensionador-juniper-srx.html' },
   { n: 'Dimensionador Nokia 7750', ruta: '/dimensionador-nokia-7750sr.html' },
   { n: 'Dimensionador Nokia 7220', ruta: '/dimensionador-nokia-7220ixr.html' },
-  { n: 'Dimensionador Starlink', ruta: '/dimensionador-starlink-leo.html' },
-  { n: 'Dimensionador Starlink · lista de materiales', ruta: '/dimensionador-starlink-leo.html', pestana: 'bom' },
   { n: 'Cotizador', ruta: '/cotizador.html' },
   { n: 'Guía de diseño', ruta: '/guia-diseno-interactiva.html' },
   { n: 'Cuenta', ruta: '/cuenta' },

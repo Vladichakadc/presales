@@ -8,7 +8,6 @@ const {
   toDimensionadorAruba,
   toDimensionadorNokia,
   toDimensionadorNokiaRouter,
-  toDimensionadorStarlink,
   respaldoCicloVida,
 } = require('../services/catalogProjection');
 
@@ -25,7 +24,6 @@ const projections = {
   // Nokia tiene dos dimensionadores porque tiene dos preguntas: la 7220 IXR se disenya como
   // fabric (cuantos leafs y spines) y estos catorce se eligen de uno en uno por capacidad.
   'nokia-sr': toDimensionadorNokiaRouter,
-  starlink: toDimensionadorStarlink,
 };
 
 // El fabricante real de 'nokia-sr' es 'nokia': la clave de esta tabla nombra al DIMENSIONADOR

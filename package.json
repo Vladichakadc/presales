@@ -23,9 +23,9 @@
     "manual": "node scripts/generar-manual-usuario.js",
     "pantallas": "node scripts/verificar-pantallas.js",
     "skus": "node scripts/importar-skus-fortinet.js",
-    "traer-starlink": "node scripts/traer-starlink.js",
     "contraste": "node scripts/contraste.js",
-    "candidatas": "node scripts/probar-candidatas.js"
+    "candidatas": "node scripts/probar-candidatas.js",
+    "puerta": "node scripts/puerta.js"
   },
   "engines": {
     "node": ">=20"

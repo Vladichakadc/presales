@@ -525,3 +525,38 @@ test('evaluaciones Fortinet: lo que no esta en el contrato se rechaza, no se ign
   const rango = await pedir(ana, { scenario: { ...CU01(), remoto: { activo: true, usuarios: -5 } } });
   assert.strictEqual(rango.status, 400, 'un numero fuera de rango es un error con nombre, no un cero');
 });
+
+// T62 del prompt maestro de integracion de Starlink LEO (2026-09-24): frontend y backend deben
+// producir la MISMA recomendacion para el mismo estado. Aqui se prueba contra el servidor real
+// (no una llamada directa a la funcion) porque es la unica forma de probar tambien el muro de
+// sesion y el saneo de un payload que llega por HTTP, no ya como objeto JS de confianza.
+test('POST /api/sizing/starlink: exige sesion y recalcula igual que el motor del navegador', async () => {
+  const sinSesion = await fetch(`${BASE}/api/sizing/starlink`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}),
+  });
+  assert.strictEqual(sinSesion.status, 401);
+
+  const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
+  const entrada = { availability: 99.9, criticality: 'mission', users: 80, applications: { manual: { enabled: true, gb: 900, down: 40, up: 8 } } };
+  const res = await fetch(`${BASE}/api/sizing/starlink`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', cookie: ana },
+    body: JSON.stringify({ inputs: entrada }),
+  });
+  assert.strictEqual(res.status, 200);
+  const { state, result } = await res.json();
+
+  const engine = require('../public/js/dimensionador-starlink-leo.js');
+  const directo = engine.calculate(state, engine.createCatalogs());
+  // `calculatedAt` es la hora de cada llamada, no parte de la recomendacion: se compara aparte.
+  const sinHora = (r) => { const { calculatedAt, ...resto } = r; return resto; };
+  assert.deepStrictEqual(sinHora(result), sinHora(directo), 'el backend debe recalcular, no confiar en lo que enviara el navegador');
+
+  // Un cliente que intente enviar un resultado ya calculado (para inflar una cotizacion) no
+  // logra nada: el servidor solo mira `inputs`/`catalogSnapshot` y descarta el resto.
+  const intento = await fetch(`${BASE}/api/sizing/starlink`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', cookie: ana },
+    body: JSON.stringify({ inputs: entrada, plan: { name: 'Local Priority 50 GB', price: 1 }, status: 'ready' }),
+  });
+  assert.strictEqual(intento.status, 200);
+  assert.deepStrictEqual(sinHora((await intento.json()).result), sinHora(directo), 'los campos ajenos a inputs/catalogSnapshot se ignoran');
+});

@@ -416,16 +416,19 @@ const PANTALLAS = [
     id: 'dim-starlink',
     url: 'dimensionador-starlink-leo.html',
     titulo: 'Dimensionador Starlink LEO',
-    // Como el fabric de Nokia, no elige un equipo con ficha.js: elige un kit y cuantos.
-    listo: '#movilidad',
+    // Modulo canonico integrado sin cambios (prompt maestro del 2026-09-24): estado y
+    // recalculo propios, sin ficha.js ni el patron de pestanas de los demas dimensionadores.
+    listo: '#resultados',
     async acciones(page) {
-      await rellena(page, '#downMbps', '350');
-      await page.selectOption('#movilidad', 'movimiento');
+      const antes = await page.$eval('#resultPlanName', (el) => el.textContent.trim()).catch(() => '');
+      await page.fill('#users', '400');
+      await page.dispatchEvent('#users', 'input');
       await espera(page, 500);
-      await this.exigeConTexto(page, '#verdict');
-      await page.click('[data-tab="bom"]');
-      await espera(page, 400);
-      await this.exigeConTexto(page, '#bomTabla');
+      const despues = await page.$eval('#resultPlanName', (el) => el.textContent.trim()).catch(() => '');
+      if (antes && antes === despues) {
+        throw new Error('el resultado no se repinto al mover usuarios (se quedo como estaba)');
+      }
+      await this.exigeConTexto(page, '#bomBody');
     },
   },
   {

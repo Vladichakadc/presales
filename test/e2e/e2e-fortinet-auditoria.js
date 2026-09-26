@@ -416,9 +416,9 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   t.ok(trasera && trasera.ancho > 0,
     `y esa figura CARGA de verdad, no es un hueco (natural ${trasera && trasera.ancho}px)`);
 
-  // El 100F era el hueco honesto: no tiene datasheet por serie (fortinet.com ya no lo publica,
-  // 404 también desde internet abierto). Desde el 2026-09-24 su figura sale de la QuickStart
-  // Guide oficial, y el pie tiene que DECIR que no es un datasheet. Está fuera de venta: desde
+  // El 100F era el hueco honesto: su datasheet en inglés da 404 también desde internet abierto,
+  // y la edición coreana que Fortinet sí mantiene no rotula las caras. Desde el 2026-09-24 su
+  // figura sale de la QuickStart Guide oficial, y el pie tiene que DECIR que no es un datasheet. Está fuera de venta: desde
   // la etapa 7 solo compite en ampliación de un parque instalado.
   await caudal(500);
   await page.selectOption('#motivoCompra', 'ampliacion');

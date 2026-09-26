@@ -454,6 +454,7 @@ async function toDimensionadorJuniper() {
 async function toDimensionadorAruba() {
   const vendorIds = await vendorIdMap();
   const vendorId = vendorIds.aruba;
+  const { optics, opticLabel } = await dimensionadorOptics(vendorId);
 
   const bundles = await LicenseBundle.findAll({ where: { vendorId } });
   const bundlesOut = {};
@@ -466,13 +467,14 @@ async function toDimensionadorAruba() {
   const locales = datasheetsLocales();
   const rutaLocal = (file) => (file && locales.has(file) ? `/datasheets/${file}` : null);
 
-  const products = await Product.findAll({ where: { vendorId } });
+  const products = await Product.findAll({ where: { vendorId }, include: [{ model: OpticCategory }] });
   const models = products
     .filter((p) => p.specs && p.specs.fam && ['sdwan', 'gateway'].includes(p.category))
     .map((p) => ({
       id: p.model, ...specWithoutGroup(p.specs), eol: p.eol,
       elp: p.priceDisplay, elpN: p.priceNumeric,
       dsLocal: rutaLocal(p.specs && p.specs.dsFile),
+      optics: p.OpticCategories.map((c) => c.code),
     }));
 
   // Cada documento lleva su copia local cuando esta descargada; la pagina prefiere esa y
@@ -484,6 +486,8 @@ async function toDimensionadorAruba() {
 
   return {
     models,
+    optics,
+    opticLabel,
     bundles: bundlesOut,
     care,
     careSkus: arubaData.CARE_SKU,
@@ -571,14 +575,6 @@ async function toGuiaRoles() {
   return result;
 }
 
-// Starlink no pasa por la base: su catalogo son cuatro kits sin precio ni SKU verificados, y
-// se sirve desde legacyData igual que `toFuentes` y las referencias. Si algun dia entra al
-// cotizador, entonces si le tocara una fila de `Product`.
-function toDimensionadorStarlink() {
-  const { KITS, FUENTE } = require('../seed/legacyData/starlink');
-  return { models: KITS, fuente: FUENTE };
-}
-
 module.exports = {
   toDimensionadorNokiaRouter,
   getVendorsList,
@@ -593,6 +589,5 @@ module.exports = {
   toDimensionadorMikrotik,
   toDimensionadorAruba,
   toDimensionadorNokia,
-  toDimensionadorStarlink,
   toGuiaRoles,
 };
