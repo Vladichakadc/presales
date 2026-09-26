@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-24 (**los precios de Fortinet, solo de la 2026Q3 Mid Price list**. Regla del dueño: «los precios debes tomarlos de 2026Q3 Mid Price list_AMER_FINAL_EFF 090726.xlsx». Auditado cada precio que puede llegar a una línea: 1.818 de licencias y servicios y 54 de hardware casan al céntimo con la lista, ninguno difiere. Lo que no cumplía, corregido: **17 precios de agosto** (renovaciones de 70F, 100F, 200F y 600F) salen ahora sin precio y en borrador, y **FortiConverter** cotizaba a 3 y 5 años un SKU que la lista no tiene. Una invariante nueva lo exige en cada `npm run verificar`. Ver *Cerrado recientemente*.)
+Última revisión: 2026-09-26 (**CLAUDE.md nombra cada script de `package.json`, y `npm run verificar` lo exige** — la mejora propuesta al cerrar el `/init`, aprobada por el dueño. La prueba cazó un caso real antes de entrar: `npm run vigencia`, el vigilante de guías de pedido de Aruba, llevaba diez días sin una sola mención, y ahora tiene su párrafo junto al vigía. Antes, entre el 25 y el 26, una auditoría de prompts y el `/init` dejaron **dos parches propuestos sin aplicar**; ver *Decisiones que necesitan al dueño*. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-09-24 (**los precios de Fortinet, solo de la 2026Q3 Mid Price list**. Regla del dueño: «los precios debes tomarlos de 2026Q3 Mid Price list_AMER_FINAL_EFF 090726.xlsx». Auditado cada precio que puede llegar a una línea: 1.818 de licencias y servicios y 54 de hardware casan al céntimo con la lista, ninguno difiere. Lo que no cumplía, corregido: **17 precios de agosto** (renovaciones de 70F, 100F, 200F y 600F) salen ahora sin precio y en borrador, y **FortiConverter** cotizaba a 3 y 5 años un SKU que la lista no tiene. Una invariante nueva lo exige en cada `npm run verificar`. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-09-24 (**los documentos pendientes de Fortinet, traídos y leídos, y las decisiones humanas preparadas**, fusionado con el trabajo paralelo de otra sesión del mismo día. Encargo del dueño: activar «Wait for CI», leer la rama `fuente/fortinet-pendientes` y avanzar con lo que solo puede hacer una persona. **La rama no traía nada**: sus 15 URL se habían adivinado por patrón y dieron 404; buscadas las reales, tres corridas trajeron 12 documentos oficiales. **F6 cerrado**: 100F y 200F con `cps` y sus siete límites (ficha coreana oficial, anclada 12 de 12), y los cuatro modelos sin figura la tienen (QuickStart Guide del 100F y del 200F, System Guide de los chasis) — 58 de 58. **F2 cerrado entero**: un solo SD-WAN Service add-on por equipo, **con SKU y precio de la lista firmada** en 54 de 58 modelos, y la familia contrastada con el Ordering Guide. La primera versión lo dejaba sin precio porque buscó el SKU con el marcador `-DD` y la lista guarda el término resuelto. **SKU exactos de EMS (packs) y FortiSASE (edición y banda)**; su precio no está en el catálogo. **Condición 2 del GO cerrada**: la regla de SSL-VPN de 7.6.3+ está leída, y la de 7.6.0 deja de ser «desconocida» con la lista cerrada de modelos de 2 GB. **Aruba** (otra sesión): el Boost toma el escenario de falla que más túnel pide. **Railway: no se pudo** — el conector no expone el ajuste y su agente no tiene cuota; los pasos exactos y el análisis de los workflows están en `docs/decisiones-del-dueno-2026-09-24.md`, junto con la lista para aprobar el GO, el memo de M4 y el guion del lector de pantalla.)
 
@@ -1392,6 +1394,13 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
 <https://claude.ai/artifact/Sw97q5rDmJ5KJCYbB2PWXJ>, que su dueño comparte), con los pasos, lo
 que ya se comprobó y lo que cuesta cada opción.
 
+- **Qué hunks entran de los dos parches propuestos** (2026-09-25/26), entregados como archivos en la
+  conversación y sin aplicar. `prompt-audit.patch` trae 16 hallazgos: la sincronización con IA que
+  pinta «catálogo al día» ante un rechazo del modelo o un corte de `max_tokens`, el bloque de
+  Fortinet de CLAUDE.md que contradice el código, y cinco skills que actúan sobre cosas que aquí no
+  existen. `init-claude-md.patch` añade a CLAUDE.md cómo correr una sola prueba, la receta del
+  servidor local para `pantallas` y `contraste`, y el recorrido de un dato entre archivos. Si ya no
+  aplican limpios sobre `main`, se regeneran a partir de su contenido.
 - **Activar «Wait for CI» en Railway** (`presales-web` → *Settings* → *Source*). Medido el
   2026-09-24: `source.checkSuites: false`. **Desde la sesión no se pudo, y se intentó con
   autorización expresa del dueño**: el conector de Railway no expone ese ajuste y su agente
@@ -1431,6 +1440,22 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### CLAUDE.md nombra cada script de package.json, y una prueba lo exige (2026-09-26)
+
+Mejora propuesta al cerrar el `/init` de CLAUDE.md, aprobada por el dueño.
+
+- **`test/claude-md-comandos.test.js`** falla en `npm run verificar` si un script de
+  `package.json` no aparece como `npm run <nombre>` (o `npm start` / `npm test`) en ninguna parte
+  de CLAUDE.md. No exige el bloque de comandos: exigirlo haría engordar un archivo que ya pesa
+  demasiado, y la mención útil suele estar en la sección que explica el script.
+- **Cazó un caso real antes de entrar**: `npm run vigencia` no tenía ni una mención. Ahora tiene su
+  párrafo junto al vigía, comprobado ejecutándolo: 15 modelos cotejados en 4 guías oficiales, sin
+  alarmas.
+- **El sabotaje va dentro de la prueba**: un caso sintético exige que `npm run lista-aruba` no valga
+  por un script `lista`, ni `npm run e2e` por `e2`, ni la palabra «vigencia» suelta por
+  `npm run vigencia`.
+- **Verificación**: 600 pruebas y lint.
 
 ### Los precios de Fortinet, solo de la 2026Q3 Mid Price list (2026-09-24)
 

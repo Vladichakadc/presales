@@ -206,6 +206,11 @@ repositorio ya tuvo.** `no-undef` habría cazado el `BOM is not defined` del cot
 existen porque la CSP de este sitio los haría fallar solo en producción. No se activa nada de
 formato: reformatear produciría un diff enorme sin arreglar nada.
 
+**Cada script de `package.json` tiene que aparecer en este archivo, y `npm run verificar` lo
+exige** (`test/claude-md-comandos.test.js`). Vale cualquier sitio, no hace falta el bloque de
+comandos: un script que CLAUDE.md no menciona es uno que la siguiente sesión no sabe que existe.
+Lo cazó el día que entró: `npm run vigencia` llevaba diez días sin una sola mención.
+
 ## Deploying
 
 **Standing instruction from the repo owner: work goes to production.** Railway's `presales-web` service (project `Presales`, environment `production`) auto-deploys from `main`, so finishing a change means merging it to `main` and pushing — don't ask first and don't leave completed work parked on a branch. The permission to push `main` is granted; it is the deploy trigger.
@@ -252,6 +257,14 @@ What that does *not* license is shipping unverified work. The checks below are e
 **Lo pendiente se ve donde se mira y frena donde importa.** `npm run catalogo` gana la sección «FUENTES QUE CAMBIARON Y NADIE HA CONTRASTADO», y `test/fuentes-pendientes.test.js` la convierte en freno pasadas **4 semanas** (`SEMANAS_TOLERADAS`), por la misma regla que las pantallas: el inventario se corre cuando alguien se acuerda, `npm run verificar` corre en cada push. El umbral es la parte discutible y va declarada — sin él, que Fortinet publique un PDF un martes bloquearía trabajo que no tiene nada que ver; con él, hay un mes de margen y aun así no se puede ignorar sin límite.
 
 **Y cada fuente declara QUÉ campos respalda, no solo en prosa.** `cubre` se lee bien en pantalla pero no dice si un cambio toca tres campos o cincuenta y ocho modelos, y sin esa magnitud la cola de revisión se atiende por orden de llegada en vez de por lo que arriesga. `campos` lo declara y `npm run catalogo` lo cruza contra el catálogo de verdad: el boletín EOL de Cisco sale como «respalda `eolAnnounced` · 8 modelos», y ese 8 **sale del catálogo**, no de un número escrito a mano que se quedaría con los modelos de ayer. Tres reglas lo hacen dato y no adorno: un campo declarado tiene que existir en las claves reales de `MODELS`/`MODELS_ROUTER` de ese fabricante —declarar uno inventado rompe `npm run verificar`, comprobado saboteándolo—; **`campos: null` es «no consta», nunca «no afecta»**, el mismo tercer estado de `redund`, y obliga a declarar `dominio: 'precio'` (esas cifras viven en `cotizadorCatalog.js`, otra fuente de verdad) o un `porQue`; y la cola se ordena primero por vencimiento y después por cuántos modelos se quedan sin respaldo. Hoy 10 de 17 fuentes declaran su radio: las 7 restantes lo dicen en vez de rellenarse a ojo, porque mapear una fuente a un campo que no respalda manda a revisar las cifras equivocadas — el error del `noAplica` deducido.
+
+**`npm run vigencia` es la otra mitad del vigía, para Aruba.** El vigía dice que un documento
+cambió; este script dice qué cambió en lo que se puede pedir. Cruza el `hwSku` de cada EdgeConnect
+y de cada gateway 9000, 9100 y 9240 contra la sección de pedido de su guía oficial, en las copias
+de `public/datasheets/` —no sale a internet—, y separa tres estados: ordenable, mencionado fuera de
+la sección de pedido y ausente. Un modelo que deja de figurar como ordenable sin boletín de fin de
+venta en el catálogo es una **alarma** y sale con código 1. Nunca escribe la marca en el catálogo:
+una alarma es una orden de revisar el boletín a mano.
 
 
 Two constraints of the sandbox this repo is usually edited from, worth knowing before promising a verification you can't perform: `presales.up.railway.app` is blocked by egress policy in this environment specifically — GitHub Actions runners are not behind that proxy and reach it fine, which is what `.github/workflows/sonda-produccion.yml` uses to confirm `/salud` and `/login` respond after a deploy (2026-09-02, pendiente 4). That confirms the site is *alive*, not that a specific screen renders correctly.
