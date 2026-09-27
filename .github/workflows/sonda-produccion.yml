@@ -9,15 +9,26 @@ name: sonda-produccion
 # (DNS, TLS, el edge de Railway, el healthcheck). Este workflow pide la URL publica real desde
 # un ejecutor de GitHub Actions, que no pasa por ese proxy.
 #
-# Solo toca rutas PUBLICAS, sin sesion: /salud (declarada publica en server.js, responde
+# Todo lo pide SIN SESION: /salud (declarada publica en server.js, responde
 # {ok,fabricantes,modelos} o 503 si la base esta vacia) y /login (la unica pagina fuera del
 # muro de autenticacion). No inicia sesion -eso exigiria la contraseña real de produccion, que
 # este workflow no tiene ni debe tener- asi que confirma que el sitio responde de verdad, no
 # que cada pantalla funcione: esa comprobacion visual sigue necesitando a una persona, como ya
 # documentaba el pendiente 4.
+#
+# EL MURO DE ACCESO (2026-09-27). Que el sitio responda no dice que siga CERRADO, y hasta hoy
+# nada lo comprobaba contra el dominio real: `test/servidor-produccion.test.js` lo prueba contra
+# un servidor desechable, y `npm run puerta` -que pide sin cookie dos rutas protegidas y exige
+# un 401 en JSON y una redireccion a /login- no corria en ningun workflow. Un cambio que solo
+# existe en produccion (una variable, el edge) y abriera /api/catalog dejaria el catalogo de
+# precios a la vista sin que nada se pusiera en rojo. El segundo paso corre ese mismo script
+# contra produccion, tambien sin sesion y sin ningun secreto.
 
 on:
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   sondear:
@@ -25,6 +36,12 @@ jobs:
     timeout-minutes: 5
 
     steps:
+      # Solo hace falta leer `scripts/puerta.js`: ningun paso usa git despues, asi que el token
+      # no se deja guardado en la copia.
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
       - name: Pedir /salud y /login de verdad
         run: |
           node -e "
@@ -47,6 +64,18 @@ jobs:
             })();
           "
 
+      # Corre aunque /salud falle: una base vacia (503) no dice nada de si el muro sigue cerrado,
+      # y asi una sola corrida trae las dos mitades. `set -o pipefail` por lo mismo que en
+      # pantallas.yml: sin el, el codigo de salida de `... | tee` es el de tee y este paso no
+      # podria ponerse en rojo.
+      - name: Comprobar que el muro de acceso sigue cerrado (npm run puerta)
+        if: ${{ !cancelled() }}
+        env:
+          BASE_URL: https://presales.up.railway.app
+        run: |
+          set -o pipefail
+          npm run puerta 2>&1 | tee puerta.txt
+
       - name: Resumen
         if: always()
         run: |
@@ -55,5 +84,11 @@ jobs:
             echo ''
             echo '```json'
             cat sonda-resultado.json 2>/dev/null || echo '(sin resultado: revisar el paso anterior)'
+            echo '```'
+            echo ''
+            echo '### Muro de acceso (npm run puerta)'
+            echo ''
+            echo '```'
+            cat puerta.txt 2>/dev/null || echo '(sin resultado: revisar el paso anterior)'
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
