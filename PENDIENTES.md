@@ -1473,7 +1473,14 @@ Mejora propuesta al cerrar el `/init` de CLAUDE.md, aprobada por el dueño.
 - **El sabotaje va dentro de la prueba**: un caso sintético exige que `npm run lista-aruba` no valga
   por un script `lista`, ni `npm run e2e` por `e2`, ni la palabra «vigencia» suelta por
   `npm run vigencia`.
-- **Verificación**: 600 pruebas y lint.
+- **Verificación**: 600 pruebas y lint sobre `e8e2a34`, y 592 sobre la fusión: `main` sustituyó
+  las pruebas del Starlink anterior (`starlink.test.js`, `traer-starlink.test.js`) por las del
+  canónico (`starlink-motor.test.js`).
+- **En producción el 2026-09-26**: `main` avanzó de `5cf14c6` a `530a2da` (el cambio es `e8e2a34`
+  y la fusión, `530a2da`). Railway `1fb6f2ad` en SUCCESS con `[seed]` y `Presales corriendo en`;
+  `verificar` (`36264593439`) y `pantallas` (`36264593423`, con contraste y e2e) en verde sobre
+  ese commit, y la sonda (`36325891656`, el 27-sep) dio `/salud` 200 con 7 fabricantes y 228
+  modelos, y `/login` 200.
 
 ### Integración del módulo canónico Starlink LEO v1.0.0 (2026-09-24)
 
