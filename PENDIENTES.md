@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-26 (**CLAUDE.md nombra cada script de `package.json`, y `npm run verificar` lo exige** — la mejora propuesta al cerrar el `/init`, aprobada por el dueño. La prueba cazó un caso real antes de entrar: `npm run vigencia`, el vigilante de guías de pedido de Aruba, llevaba diez días sin una sola mención, y ahora tiene su párrafo junto al vigía. **Y al fusionar con `main` cazó el segundo**: `npm run puerta` (del 22-sep, llegado a `main` con la fusión del 24-sep) tampoco figuraba, y ahora es una comprobación más de Deploying. Antes, entre el 25 y el 26, una auditoría de prompts y el `/init` dejaron **dos parches propuestos sin aplicar**; ver *Decisiones que necesitan al dueño*. Ver *Cerrado recientemente*.)
+Última revisión: 2026-09-27 (**La sonda de producción comprueba también que el muro de acceso sigue cerrado**. Es la mejora propuesta al cerrar la entrega anterior, aprobada por el dueño. `sonda-produccion.yml` corre ahora `npm run puerta` contra el dominio real, sin sesión y sin ningún secreto. Hasta hoy el muro solo se probaba contra un servidor desechable y `puerta` no corría en ningún workflow, así que un cambio propio de producción que abriera `/api/catalog` no ponía nada en rojo. **De paso, `puerta` exige que el 401 llegue en JSON**, que su nombre prometía y no comprobaba, y deja de decir «abierta» ante cualquier fallo. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-09-26 (**CLAUDE.md nombra cada script de `package.json`, y `npm run verificar` lo exige** — la mejora propuesta al cerrar el `/init`, aprobada por el dueño. La prueba cazó un caso real antes de entrar: `npm run vigencia`, el vigilante de guías de pedido de Aruba, llevaba diez días sin una sola mención, y ahora tiene su párrafo junto al vigía. **Y al fusionar con `main` cazó el segundo**: `npm run puerta` (del 22-sep, llegado a `main` con la fusión del 24-sep) tampoco figuraba, y ahora es una comprobación más de Deploying. Antes, entre el 25 y el 26, una auditoría de prompts y el `/init` dejaron **dos parches propuestos sin aplicar**; ver *Decisiones que necesitan al dueño*. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-09-24 (**los precios de Fortinet, solo de la 2026Q3 Mid Price list**. Regla del dueño: «los precios debes tomarlos de 2026Q3 Mid Price list_AMER_FINAL_EFF 090726.xlsx». Auditado cada precio que puede llegar a una línea: 1.818 de licencias y servicios y 54 de hardware casan al céntimo con la lista, ninguno difiere. Lo que no cumplía, corregido: **17 precios de agosto** (renovaciones de 70F, 100F, 200F y 600F) salen ahora sin precio y en borrador, y **FortiConverter** cotizaba a 3 y 5 años un SKU que la lista no tiene. Una invariante nueva lo exige en cada `npm run verificar`. Ver *Cerrado recientemente*.)
 
@@ -1415,7 +1417,10 @@ que ya se comprobó y lo que cuesta cada opción.
   Fortinet de CLAUDE.md que contradice el código, y cinco skills que actúan sobre cosas que aquí no
   existen. `init-claude-md.patch` añade a CLAUDE.md cómo correr una sola prueba, la receta del
   servidor local para `pantallas` y `contraste`, y el recorrido de un dato entre archivos. Si ya no
-  aplican limpios sobre `main`, se regeneran a partir de su contenido.
+  aplican limpios sobre `main`, se regeneran a partir de su contenido: el 27-sep la cabecera de este
+  archivo cambió y el de la auditoría se regeneró como `prompt-audit-2026-09-27.patch`, con el
+  mismo contenido (14 archivos, +195/−289). Los dos aplican sobre el `main` que dejó esa entrega,
+  solos y combinados.
 - **Activar «Wait for CI» en Railway** (`presales-web` → *Settings* → *Source*). Medido el
   2026-09-24: `source.checkSuites: false`. **Desde la sesión no se pudo, y se intentó con
   autorización expresa del dueño**: el conector de Railway no expone ese ajuste y su agente
@@ -1455,6 +1460,39 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### La sonda de producción comprueba que el muro de acceso sigue cerrado (2026-09-27)
+
+Mejora propuesta al cerrar la entrega anterior, aprobada por el dueño.
+
+- **Qué cambia.** `sonda-produccion.yml` hace checkout y corre `npm run puerta` contra
+  `https://presales.up.railway.app`, después de pedir `/salud` y `/login`. Sin cookie,
+  `/api/catalog` tiene que dar 401 en JSON y `/cotizador.html` redirigir a `/login`. El resultado
+  sale en el resumen de la corrida.
+- **Por qué.** Nada comprobaba el muro contra el dominio real. `test/servidor-produccion.test.js`
+  lo prueba contra un servidor desechable, la sonda miraba solo las rutas públicas, y `puerta`,
+  que existía desde el 22-sep, no corría en ningún workflow. Un cambio propio de producción que
+  abriera `/api/catalog` habría dejado los precios a la vista sin ningún rojo.
+- **Corre aunque `/salud` falle**: una base vacía (503) no dice nada del muro, y así una corrida
+  trae las dos mitades. Sigue sin sesión y sin secretos: el workflow pasa a
+  `permissions: contents: read` y el checkout no deja el token guardado.
+- **`puerta` exige ahora que el 401 llegue en JSON.** Su nombre lo prometía y solo miraba el
+  código, así que un 401 en HTML pasaba; las pantallas leen `error` de esa respuesta para decir
+  por qué falló una acción. Y ya no dice «la puerta está abierta» ante cualquier fallo, sino
+  cuántas comprobaciones fallan: un 401 en HTML no abre nada, y esa palabra en el resumen de la
+  sonda haría buscar una fuga de precios que no existe.
+- **Sabotaje, contra un servidor falso.** Una API abierta (200), un 401 en HTML y una
+  redirección a otro sitio dan código 1 en el script y en el paso del workflow tal cual lo corre
+  GitHub (`bash -e`). El mismo paso **sin** `set -o pipefail` sale en verde en los tres, y por
+  eso lo lleva.
+- **Verificación**: contra un servidor local en modo producción, 4 de 4 y código 0; 592 pruebas
+  y lint; y la sonda lanzada sobre la rama antes de tocar `main` (`36346466334`) dio 4 de 4
+  contra producción: «La puerta esta cerrada en https://presales.up.railway.app».
+- **En producción el 2026-09-27**: `main` avanzó de `8b7b22c` a `81eb348`. Railway `de7e2bb5` en
+  SUCCESS con `[seed]` y `Presales corriendo en`; `verificar` (`36346497923`) y `pantallas`
+  (`36346497912`, con contraste y e2e) en verde sobre ese commit. La sonda ya con el paso nuevo,
+  lanzada sobre `main` tras el despliegue (`36346580812`), dio `/salud` 200 con 7 fabricantes y
+  228 modelos, `/login` 200 y el muro 4 de 4.
 
 ### CLAUDE.md nombra cada script de package.json, y una prueba lo exige (2026-09-26)
 
