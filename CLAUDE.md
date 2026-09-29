@@ -392,6 +392,16 @@ Aruba. Trae la matriz de qué aplica a quién con su motivo, las cifras medidas 
 `eolAnnounced` con fecha, SKU estructurados) y el orden de ejecución. De ahí salen los pendientes
 34 y 35.
 
+## Revisión del módulo Huawei
+
+`docs/revision-huawei-2026-09-29.md` — la revisión de arquitectura del dimensionador Huawei,
+contrastada contra Aruba. **El problema no es elegir el equipo, es la cifra**: una función activa
+(SD-WAN, UTM) no fija la capa que se dimensiona, la plataforma se deduce de siete casillas en vez
+de elegirse, y el BOM trata como obligatorias piezas que el catálogo solo declara compatibles.
+Las tres cosas vienen de la misma raíz: no hay un resultado único que consuman el cálculo, la
+ficha y el BOM. **No hay que portar de Aruba su motor de ingeniería**: Huawei ya publica sus cifras
+en IMIX, y dividirlas otra vez por 0,70 penalizaría dos veces. Plan H1–H5 en `PENDIENTES.md`.
+
 ## Conventions
 
 - **No inline JavaScript.** The CSP is `script-src 'self'`, so an inline `<script>` block or an `onclick=` attribute simply won't run: put behaviour in `public/js/` and wire handlers through the existing click delegation. Inline `style=` attributes are fine — `style-src` deliberately keeps `'unsafe-inline'`.

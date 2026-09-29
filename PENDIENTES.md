@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-27 (**La sonda de producción comprueba también que el muro de acceso sigue cerrado**. Es la mejora propuesta al cerrar la entrega anterior, aprobada por el dueño. `sonda-produccion.yml` corre ahora `npm run puerta` contra el dominio real, sin sesión y sin ningún secreto. Hasta hoy el muro solo se probaba contra un servidor desechable y `puerta` no corría en ningún workflow, así que un cambio propio de producción que abriera `/api/catalog` no ponía nada en rojo. **De paso, `puerta` exige que el 401 llegue en JSON**, que su nombre prometía y no comprobaba, y deja de decir «abierta» ante cualquier fallo. Ver *Cerrado recientemente*.)
+Última revisión: 2026-09-29 (**Revisión de arquitectura del dimensionador Huawei, contra Aruba** — encargo del dueño, solo análisis, sin tocar código: `docs/revision-huawei-2026-09-29.md`. Tres P0 medidos reproduciendo `render()`: SD-WAN marcado con perfil `fwd` dimensiona 2,1x corto, UTM no toca la capacidad, y el ×2 bidireccional por defecto no tiene fuente. Seis P1 del BOM, entre ellos que mete piezas alternativas como obligatorias y que pierde la licencia de rendimiento que el cálculo exige. Plan H1–H5 abierto abajo.)
+
+Revisión anterior: 2026-09-27 (**La sonda de producción comprueba también que el muro de acceso sigue cerrado**. Es la mejora propuesta al cerrar la entrega anterior, aprobada por el dueño. `sonda-produccion.yml` corre ahora `npm run puerta` contra el dominio real, sin sesión y sin ningún secreto. Hasta hoy el muro solo se probaba contra un servidor desechable y `puerta` no corría en ningún workflow, así que un cambio propio de producción que abriera `/api/catalog` no ponía nada en rojo. **De paso, `puerta` exige que el 401 llegue en JSON**, que su nombre prometía y no comprobaba, y deja de decir «abierta» ante cualquier fallo. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-09-26 (**CLAUDE.md nombra cada script de `package.json`, y `npm run verificar` lo exige** — la mejora propuesta al cerrar el `/init`, aprobada por el dueño. La prueba cazó un caso real antes de entrar: `npm run vigencia`, el vigilante de guías de pedido de Aruba, llevaba diez días sin una sola mención, y ahora tiene su párrafo junto al vigía. **Y al fusionar con `main` cazó el segundo**: `npm run puerta` (del 22-sep, llegado a `main` con la fusión del 24-sep) tampoco figuraba, y ahora es una comprobación más de Deploying. Antes, entre el 25 y el 26, una auditoría de prompts y el `/init` dejaron **dos parches propuestos sin aplicar**; ver *Decisiones que necesitan al dueño*. Ver *Cerrado recientemente*.)
 
@@ -484,6 +486,20 @@ muerta bajo .cols; E2E e2e-sticky.js 4/4). Anterior (2026-09-14): plan 3 — cer
 underlay.
 
 ---
+
+## Abierto: dimensionador Huawei, revisión de arquitectura (2026-09-29)
+
+Detalle, evidencia medida y plan en `docs/revision-huawei-2026-09-29.md`. Nada implementado:
+cada etapa espera la decisión del dueño. **H1 no cambia ninguna cifra** y es la que hace medible
+el resto, porque hoy `dimensionador-huawei-netengine.js` está **«sin conducir»** por el contraste.
+
+| Etapa | Qué cierra | Estado |
+|---|---|---|
+| H1 | `huawei-motor.js` con `evaluar()` y un solo resultado para cálculo, ficha y BOM; contraste `huawei` con línea base de `f2a939d` (H-08 licencia de rendimiento perdida en el BOM, H-09 dos cálculos) | propuesta |
+| H2 | Piso de capa por función: SD-WAN → `typ`, IPsec → `ipsec` (H-01, 2,1x corto hoy); UTM declarado sin cifra y BOM en borrador (H-02); ×2 bidireccional visible con su fuente o como supuesto (H-03) | propuesta |
+| H3 | Plataforma y rol antes que el caudal; FlexE/TPM/WAC como capacidades del modelo; `lan: null` en los hubs (H-04, H-05) | propuesta |
+| H4 | BOM gobernado: `rol` por pieza (incluida, redundancia, alternativa, condicional), ópticas por puerto declarado, HA, plazo, capa comercial de `bom.js` (H-06, H-07, H-12, H-13) | propuesta |
+| H5 | Datos: 27 de 40 modelos no casan con el cotizador, cifras del NE8000 M8/F8 distintas entre herramientas, M14 incoherente, túneles y sesiones del hub (H-10, H-11, H-14) | bloqueado en parte por la cuenta Huawei (pendiente 14) |
 
 ## En curso: plan de sincronismo y actualización continua (2026-09-02)
 
