@@ -83,6 +83,15 @@
         + (modelosConTope ? `${modelosConTope} modelos publican su tope de túneles y se comprueba; el resto no lo trae este catálogo.`
           : 'Este catálogo no trae el tope de túneles (ni el de sesiones) de ningún modelo: el equipo propuesto cumple por caudal y hay que confirmar el tope con su datasheet o el configurador de Huawei antes de cotizar.'));
     }
+    // ALTA DISPONIBILIDAD 1+1 (H-12). Regla de Aruba, aqui igual: el par suma DISPONIBILIDAD,
+    // no caudal. Un equipo lleva el trafico y el otro toma el relevo en fallo, asi que CADA
+    // uno se dimensiona al requerimiento completo (no a la mitad) y el BOM cotiza los dos.
+    // No sustituye a la fuente doble del chasis: son dos niveles de redundancia distintos.
+    const ha = !legado && !!esc.ha;
+    const unidades = ha ? 2 : 1;
+    const crit = parseInt(esc.crit, 10) || 0;
+    if (ha) avisos.push('Alta disponibilidad 1+1: se cotizan 2 equipos por sitio y cada uno se dimensiona al caudal completo, porque el par suma disponibilidad y no capacidad. Reserva un puerto para el enlace entre los dos equipos. No sustituye a la fuente de alimentación doble del chasis: son dos niveles de redundancia distintos.');
+    else if (!legado && crit >= 4) avisos.push('Criticidad «misión crítica» sin alta disponibilidad: con un solo equipo por sitio, una falla del chasis deja el sitio sin servicio hasta que llegue el repuesto. Marca «Alta disponibilidad 1+1» para cotizar el par.');
     if (svc.utm && !legado) avisos.push('UTM (IPS, filtrado URL, antivirus): este catálogo no trae cifra de inspección para ningún modelo AR. Se dimensiona contra SD-WAN típico y el resultado hay que confirmarlo con una prueba de concepto antes de cotizar.');
 
     const rows = modelos.map((m) => {
@@ -110,7 +119,7 @@
       || extras(a.m) - extras(b.m) || a.m.id.localeCompare(b.m.id, 'en', { numeric: true }));
     const pick = fit.find((r) => recomendable(r.m)) || null;
     const next = fit.filter((r) => recomendable(r.m))[1] || null;
-    return { raw, base, need, needMpps, mode, sites, conc, head, dirMult, frame, perfil, pk, ef, svc, want, aps, minLan, wanOk, tuneles, avisos, rows, fit, pick, next };
+    return { raw, base, need, needMpps, mode, sites, conc, head, dirMult, frame, perfil, pk, ef, svc, want, aps, minLan, wanOk, tuneles, ha, unidades, avisos, rows, fit, pick, next };
   }
 
   /* LICENCIAS. Una sola funcion para el calculo y el BOM: recibe la NECESIDAD del escenario,

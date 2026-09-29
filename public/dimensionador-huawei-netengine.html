@@ -232,6 +232,7 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
     </div>
     <div class="field">
       <div class="checks">
+        <label class="check"><input type="checkbox" id="chkHa"><span>Alta disponibilidad 1+1 (dos equipos por sitio)</span></label>
         <label class="check"><input type="checkbox" id="onsite"><span>Se requiere ingeniero en sitio</span></label>
         <label class="check"><input type="checkbox" id="remote"><span>Sitio remoto o logística de repuesto lenta</span></label>
       </div>
@@ -267,7 +268,7 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
     </div>
     <div class="field">
       <div class="row" style="gap:14px;flex-wrap:wrap">
-        <div style="flex:1;min-width:150px"><label for="qty">Cantidad de equipos</label><input type="number" id="qty" min="1" step="1" autocomplete="off"></div>
+        <div style="flex:1;min-width:150px"><label for="qty">Cantidad de sitios <span style="font-weight:400">(con alta disponibilidad se cotizan 2 equipos por sitio)</span></label><input type="number" id="qty" min="1" step="1" autocomplete="off"></div>
         <div style="flex:1;min-width:150px"><label for="optQty">Ópticas por equipo</label><input type="number" id="optQty" min="0" step="1" autocomplete="off"></div>
       </div>
     </div>

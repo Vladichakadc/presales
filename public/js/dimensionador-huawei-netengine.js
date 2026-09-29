@@ -39,7 +39,7 @@ $('dirSeg').addEventListener('click', e => {
   [...$('dirSeg').children].forEach(x => x.setAttribute('aria-pressed', x === b));
   dirMult = +b.dataset.v; render();
 });
-['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote']
+['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa']
   .forEach(id => $(id).addEventListener('input', render));
 ['pickModel','qty','optQty'].forEach(id => $(id).addEventListener('input', renderBom));
 
@@ -85,6 +85,7 @@ function render(){
     frame:$('frame').value, profile:$('profile').value, lan:$('lan').value, aps:$('aps').value,
     svc:{sdwan:$('sSdwan').checked, utm:$('sUtm').checked, slice:$('sSlice').checked},
     want:{poe:$('rPoe').checked, wan:$('rWan').checked, wifi:$('rWifi').checked},
+    ha:$('chkHa').checked, crit:$('crit').value,
   }, MODELS, {rango:FICHA.rango, recomendable:FICHA.recomendable});
   ultimaEval = ev;
   const {raw, base, need, needMpps, frame, pk, aps, svc, wanOk, rows, fit, pick, next} = ev;
@@ -335,7 +336,8 @@ function populatePickModel(){
 
 function renderBom(){
   const m = MODELS.find(x => x.id === $('pickModel').value) || MODELS[0];
-  const qty = Math.max(1, parseInt($('qty').value) || 1);
+  // Sitios x unidades por sitio: con HA 1+1 se cotizan dos equipos por sitio (motor: `unidades`).
+  const qty = Math.max(1, parseInt($('qty').value) || 1) * (ultimaEval ? ultimaEval.unidades : 1);
   const optQty = Math.max(0, parseInt($('optQty').value) || 0);
   const isWan = m.cls === 'WAN';
   const pick = {m, isWan, cap: isWan ? m.cap : (m.typ ?? m.ipsec ?? m.fwd)};
@@ -429,7 +431,8 @@ function filasBom(m, qty, optQty, piezas, lics, s){
     filas.push({cat:'Ópticas', desc:'Módulos ópticos — elegir velocidad, medio y alcance', sku:null, qty:optQty*qty, unit:null,
       nota:`Familias compatibles: ${fam}. El tipo se decide según el enlace; ver pestaña Catálogo de ópticas.`});
   }
-  lics.filter(l=>l.on).forEach(l=>filas.push({cat:'Licencias', desc:l.t, sku:null, qty, unit:null, nota:l.d||''}));
+  // SnS ya sale en Soporte: dejarlo tambien como licencia lo cotizaba dos veces.
+  lics.filter(l=>l.on && !/^SnS/.test(l.t)).forEach(l=>filas.push({cat:'Licencias', desc:l.t, sku:null, qty, unit:null, nota:l.d||''}));
   filas.push({cat:'Soporte', desc:s.n, sku:null, qty, unit:null, nota:`${s.sla} · 12 meses`});
   filas.push({cat:'Soporte', desc:'SnS — Software Subscription and Support', sku:null, qty, unit:null,
     nota:'Actualizaciones y parches de VRP. Va separada del paquete de hardware. 12 meses.'});
@@ -515,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // es la identidad bajo la que ya hay escenarios guardados en el navegador de quien usa
   // esto. Renombrarla por coherencia cosmetica le borraria el trabajo guardado a cambio de
   // nada, porque nadie ve esta cadena. El archivo se llama dimensionador-huawei-netengine.
-  const st = ESTADO.vincular({ campos: ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','dirSeg','modeSeg','verdict-sel'] });
+  const st = ESTADO.vincular({ campos: ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','dirSeg','modeSeg','verdict-sel'] });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');
@@ -537,7 +540,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const elegido = (sel && sel.value) || lastPick || null;
     if (!elegido) return null;
     const cant = document.getElementById('qty');
-    return { modelo: elegido, qty: Math.max(1, parseInt(cant && cant.value, 10) || 1),
+    return { modelo: elegido, qty: Math.max(1, parseInt(cant && cant.value, 10) || 1) * (ultimaEval ? ultimaEval.unidades : 1),
              de: document.title.split('—')[0].trim() };
   });
 });

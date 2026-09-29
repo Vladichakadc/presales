@@ -93,6 +93,28 @@ module.exports = {
     out.push({ n: 'H-11 · un hub de 100 sedes declara los 100 túneles y que falta el tope, sin apartar a nadie',
       ok: /100 túneles IPsec/.test(hub) && /no trae el tope/.test(hub) && recHub === 'AR6710-H4T4X2Y7',
       detalle: `recomendado ${recHub}; aviso ${/100 túneles/.test(hub) ? 'presente' : 'AUSENTE'}` });
+
+    await p.goto(`${base}/dimensionador-huawei-netengine.html`, { waitUntil: 'domcontentloaded' });
+    await pausa(p, 1400);
+    await p.fill('#bw', '500');
+    await p.dispatchEvent('#bw', 'input');
+    await pausa(p, 500);
+    await p.click('.tabs button[data-tab="bom"]');
+    await pausa(p, 300);
+    const sinHa = await p.$eval('#bomOut', (e) => e.value);
+    await p.click('.tabs button[data-tab="calc"]');
+    await p.check('#chkHa');
+    await pausa(p, 600);
+    await p.click('.tabs button[data-tab="bom"]');
+    await pausa(p, 300);
+    const conHa = await p.$eval('#bomOut', (e) => e.value);
+    const cant = (t) => (t.match(/^\s+(\d+) x\s+AR\S+/m) || [])[1];
+    const sns = (t) => (t.match(/^\s+\d+ x\s+SnS/gm) || []).length;
+    out.push({ n: 'H-12 · la alta disponibilidad 1+1 cotiza dos equipos por sitio, al mismo modelo',
+      ok: cant(sinHa) === '1' && cant(conHa) === '2',
+      detalle: `sin HA x${cant(sinHa)}, con HA x${cant(conHa)}` });
+    out.push({ n: 'BOM · SnS se cotiza una sola vez (antes salía como licencia y como soporte)',
+      ok: sns(conHa) === 1, detalle: `${sns(conHa)} línea(s) de SnS` });
     return out;
   },
 };

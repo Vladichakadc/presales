@@ -335,3 +335,15 @@ y lo marcado «falta» en H3 y H4.
 filtra por `tuneles` cuando un modelo lo publique (`null` es «no lo dice», nunca «sin límite»), y
 la prueba lo comprueba con un catálogo sintético. Sesiones concurrentes y nuevas por segundo no se
 piden: exigirían usuarios por sede, y derivarlos sería inventar un dato.
+
+**H-12 (2026-09-29).** `#chkHa` añade la alta disponibilidad 1+1: el motor devuelve `unidades: 2`,
+la necesidad no se reparte (cada equipo lleva el caudal completo) y el BOM y el envío al cotizador
+multiplican por sitios x unidades. Con criticidad «misión crítica» y sin HA, avisa. **De paso se
+corrigió que SnS salía dos veces en el BOM** (como licencia y como soporte).
+
+**Intento de traer los datos bloqueados, con `agent-browser` (2026-09-29).** Los trece hosts
+probados —nueve de Huawei (`e`, `support`, `info.support`, `download`, `carrier`, `consumer`, `www`,
+`forum` y `support.huawei.com.cn`), más `web.archive.org`, `archive.org`, `r.jina.ai` y
+`duckduckgo.com`— no responden: `CONNECT` 403 del proxy de egreso del proxy de egreso; el
+navegador lo ve como `ERR_TUNNEL_CONNECTION_FAILED`. Es política de la organización: no se rodea.
+No entró ninguna cifra al catálogo.

@@ -152,3 +152,23 @@ test('H-11 · la línea base legada no cambia', () => {
   assert.strictEqual(pick({ bw: 50, mode: 'agg', sites: 100 }, { legado: true }), 'AR6710-H4T4X2Y7');
   assert.strictEqual(M.evaluar(esc({ bw: 50, mode: 'agg', sites: 100 }), MODELS, { legado: true }).avisos.length, 0);
 });
+
+test('H-12 · HA 1+1: cada equipo se dimensiona al caudal completo y se cotizan dos', () => {
+  const sin = M.evaluar(esc({ bw: 500 }), MODELS);
+  const con = M.evaluar(esc({ bw: 500, ha: true }), MODELS);
+  assert.strictEqual(sin.unidades, 1);
+  assert.strictEqual(con.unidades, 2);
+  assert.strictEqual(con.need, sin.need, 'el par suma disponibilidad, no capacidad: la necesidad no se reparte');
+  assert.strictEqual(con.pick.m.id, sin.pick.m.id, 'el equipo no baja de gama por ser un par');
+  assert.ok(con.avisos.some((a) => /suma disponibilidad y no capacidad/.test(a)));
+});
+
+test('H-12 · misión crítica sin HA lo advierte; con HA no', () => {
+  assert.ok(M.evaluar(esc({ bw: 500, crit: 4 }), MODELS).avisos.some((a) => /sin alta disponibilidad/.test(a)));
+  assert.ok(!M.evaluar(esc({ bw: 500, crit: 4, ha: true }), MODELS).avisos.some((a) => /sin alta disponibilidad/.test(a)));
+  assert.ok(!M.evaluar(esc({ bw: 500, crit: 2 }), MODELS).avisos.some((a) => /sin alta disponibilidad/.test(a)));
+});
+
+test('H-12 · la línea base legada ignora la HA', () => {
+  assert.strictEqual(M.evaluar(esc({ bw: 500, ha: true }), MODELS, { legado: true }).unidades, 1);
+});
