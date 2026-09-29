@@ -319,3 +319,13 @@ hace medible todo lo demás.
   El catálogo no los trae y aquí no se inventan.
 - **Si la cifra del NE8000 M14 está mal.** Se marca como incoherente, pero la corrección llega
   por `npm run huawei`, con doble anclaje, igual que cualquier otra cifra del catálogo.
+
+---
+
+## Avance (2026-09-29, misma sesión)
+
+Se ejecutaron H1 y las partes de H2, H3 y H4 que no dependen de datos bloqueados:
+`public/js/huawei-motor.js`, `test/huawei-motor.test.js` (26 casos, con línea base del comportamiento
+anterior) y el contraste `scripts/contrastes/huawei.js`. Pantallas 17/17 y contraste sin discrepancias.
+Estado por hallazgo en `PENDIENTES.md`. Sin cerrar: H-03 (fuente del ×2), H-10/H-11/H-14 (datos)
+y lo marcado «falta» en H3 y H4.

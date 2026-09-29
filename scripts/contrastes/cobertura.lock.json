@@ -1,7 +1,7 @@
 {
  "medidoEn": {
-  "commit": "63bb74e",
-  "fecha": "2026-09-24"
+  "commit": "c3f054f",
+  "fecha": "2026-09-29"
  },
  "umbralRozado": 25,
  "modulos": [
@@ -14,13 +14,6 @@
   },
   {
    "modulo": "dimensionador-cisco-catalyst8k.js",
-   "estado": "sin conducir",
-   "total": null,
-   "usadas": null,
-   "pct": null
-  },
-  {
-   "modulo": "dimensionador-huawei-netengine.js",
    "estado": "sin conducir",
    "total": null,
    "usadas": null,
@@ -120,9 +113,9 @@
   {
    "modulo": "bom.js",
    "estado": "ejercitado",
-   "total": 79,
+   "total": 78,
    "usadas": 49,
-   "pct": 62
+   "pct": 63
   },
   {
    "modulo": "tabla.js",
@@ -186,6 +179,20 @@
    "total": 109,
    "usadas": 89,
    "pct": 82
+  },
+  {
+   "modulo": "dimensionador-huawei-netengine.js",
+   "estado": "ejercitado",
+   "total": 87,
+   "usadas": 76,
+   "pct": 87
+  },
+  {
+   "modulo": "huawei-motor.js",
+   "estado": "ejercitado",
+   "total": 17,
+   "usadas": 15,
+   "pct": 88
   },
   {
    "modulo": "aruba-reglas.js",

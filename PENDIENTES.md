@@ -489,16 +489,16 @@ underlay.
 
 ## Abierto: dimensionador Huawei, revisión de arquitectura (2026-09-29)
 
-Detalle, evidencia medida y plan en `docs/revision-huawei-2026-09-29.md`. Nada implementado:
-cada etapa espera la decisión del dueño. **H1 no cambia ninguna cifra** y es la que hace medible
-el resto, porque hoy `dimensionador-huawei-netengine.js` está **«sin conducir»** por el contraste.
+Detalle, evidencia medida y plan en `docs/revision-huawei-2026-09-29.md`. H1 y las partes de
+H2–H4 que no dependen de datos bloqueados están hechas y en la rama; lo marcado «falta» espera
+decisión del dueño o el datasheet de Huawei (pendiente 14).
 
 | Etapa | Qué cierra | Estado |
 |---|---|---|
-| H1 | `huawei-motor.js` con `evaluar()` y un solo resultado para cálculo, ficha y BOM; contraste `huawei` con línea base de `f2a939d` (H-08 licencia de rendimiento perdida en el BOM, H-09 dos cálculos) | propuesta |
-| H2 | Piso de capa por función: SD-WAN → `typ`, IPsec → `ipsec` (H-01, 2,1x corto hoy); UTM declarado sin cifra y BOM en borrador (H-02); ×2 bidireccional visible con su fuente o como supuesto (H-03) | propuesta |
-| H3 | Plataforma y rol antes que el caudal; FlexE/TPM/WAC como capacidades del modelo; `lan: null` en los hubs (H-04, H-05) | propuesta |
-| H4 | BOM gobernado: `rol` por pieza (incluida, redundancia, alternativa, condicional), ópticas por puerto declarado, HA, plazo, capa comercial de `bom.js` (H-06, H-07, H-12, H-13) | propuesta |
+| H1 | **Hecha (2026-09-29).** `public/js/huawei-motor.js` con `evaluar()` y `licencias()`: página y BOM consumen el mismo resultado (H-08, H-09). Contraste `huawei` con 6 escenarios que las correcciones no tocan, más 2 afirmaciones conducidas de lo que sí cambia; 26 unitarias en `test/huawei-motor.test.js`. Primer caso que conduce esta pantalla (estaba «sin conducir»). **Salió de paso un defecto propio**: ocho AR5710-S publican la misma cifra y el elegido dependía del orden en que la API sirve el catálogo; ahora el desempate es determinista | hecha |
+| H2 | **Hecha en parte.** SD-WAN y UTM fijan piso de capa `typ` (H-01, antes 2,1x corto) y la pantalla dice que la capa subió; UTM declara que no hay cifra de inspección y pide PoC (H-02). **Sigue abierto H-03**: el ×2 bidireccional por defecto no tiene fuente para la serie AR; no se cambia sin el datasheet | en parte |
+| H3 | **Hecha en parte.** Slicing FlexE aparta los AR; «Nodo de núcleo» solo compite NetEngine y ya no exige desmarcar SD-WAN; `lan: null` en los cuatro hubs deja de descartarlos (H-04, H-05). **Falta** el selector explícito de plataforma y rol y FlexE/TPM/WAC como capacidades del modelo | en parte |
+| H4 | **Hecha en parte.** BOM con papel por pieza: alternativas de MPU y fuente en una línea «elegir una», 5G y WSIC fuera si no se piden, doble fuente x2, ópticas en una línea a elegir (H-06, H-07 sin inventar código). **Faltan** ópticas por puerto declarado, HA, plazo y la capa comercial de `bom.js` (H-12, H-13) | en parte |
 | H5 | Datos: 27 de 40 modelos no casan con el cotizador, cifras del NE8000 M8/F8 distintas entre herramientas, M14 incoherente, túneles y sesiones del hub (H-10, H-11, H-14) | bloqueado en parte por la cuenta Huawei (pendiente 14) |
 
 ## En curso: plan de sincronismo y actualización continua (2026-09-02)

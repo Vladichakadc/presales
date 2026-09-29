@@ -5,7 +5,9 @@ let OPTIC_LABEL = {};
 let PARTS = {};
 let MODELS = [];
 
-const PROFILE = {fwd:'Forwarding (NAT+ACL+QoS, IMIX)', ipsec:'IPsec (IMIX)', typ:'SD-WAN típico (IPsec+QoS+SA+AppFlow, IMIX)'};
+const PROFILE = HuaweiMotor.PROFILE;
+let ultimaEval = null;
+const licensesFor = (pick, c) => HuaweiMotor.licencias(pick, c);
 let HICARE = {};
 
 const $ = id => document.getElementById(id);
@@ -41,12 +43,7 @@ $('dirSeg').addEventListener('click', e => {
   .forEach(id => $(id).addEventListener('input', render));
 ['pickModel','qty','optQty'].forEach(id => $(id).addEventListener('input', renderBom));
 
-function fmt(m){
-  if(m == null) return '—';
-  if(m >= 1000000) return (m/1000000).toFixed(m % 1000000 ? 2 : 0).replace(/\.00$/,'') + ' Tbps';
-  if(m >= 1000) return (m/1000).toFixed(m % 1000 ? 1 : 0) + ' Gbps';
-  return Math.round(m) + ' Mbps';
-}
+const fmt = HuaweiMotor.fmt;
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 
 // Catálogo Huawei, con las mismas dos tablas que antes vivían en la vista de Huawei del
@@ -79,42 +76,20 @@ const bomTag = arr => (arr && arr.length)
 
 /* ════════ CALCULADORA ════════ */
 function render(){
-  const raw = (parseFloat($('bw').value) || 0) * (+$('unit').value);
   const conc = +$('conc').value; $('concVal').textContent = conc + ' %';
   const head = +$('head').value; $('headVal').textContent = head + ' %';
-  const sites = parseInt($('sites').value) || 1;
-  const base = mode === 'agg' ? raw * sites * conc/100 : raw;
-  const need = base * dirMult * (1 + head/100);
-  const frame = +$('frame').value, needMpps = need / (frame * 8);
-  const pk = $('profile').value;
-  const minLan = parseInt($('lan').value) || 0, aps = parseInt($('aps').value) || 0;
-  const svc = {sdwan:$('sSdwan').checked, utm:$('sUtm').checked, slice:$('sSlice').checked};
-  const want = {poe:$('rPoe').checked, wan:$('rWan').checked, wifi:$('rWifi').checked};
-  const wanOk = (pk === 'fwd') && !svc.sdwan && !svc.utm && aps === 0 && !want.poe && !want.wan && !want.wifi;
-
-  const rows = MODELS.map(m => {
-    const isWan = m.cls === 'WAN', cap = isWan ? m.cap : m[pk], miss = [];
-    if(isWan && !wanOk) miss.push('serie de transporte: no hace SD-WAN, UTM ni WAC');
-    if(cap == null) miss.push('sin cifra publicada para este perfil');
-    else if(cap < need) miss.push('capacidad insuficiente');
-    if(isWan && m.mpps != null && m.mpps < needMpps) miss.push(`límite de paquetes: ${m.mpps} Mpps`);
-    if(want.poe && !m.poe) miss.push('sin PoE');
-    if(want.wan && !m.wan) miss.push('sin 4G/5G integrado');
-    if(want.wifi && !m.wifi) miss.push('sin Wi-Fi');
-    if((m.lan||0) < minLan) miss.push(`${m.lan||0} puertos LAN`);
-    if(!isWan && aps > (m.apsMax||0)) miss.push(`gestiona ${m.apsMax||0} APs`);
-    return {m, cap, miss, isWan};
-  });
-  // Mismo criterio que el resto de dimensionadores (regla comun en ficha.js): lo vigente
-  // primero, lo que este fuera de venta al final y nunca como recomendacion. Hoy ningun
-  // modelo Huawei de este catalogo lleva esa marca; queda aplicado para que marcarlo en
-  // los datos sea suficiente, sin volver a tocar esta pagina.
-  // Se ordena por el rango del MODELO, no de la fila: aqui los candidatos viajan envueltos
-  // en {m, cap, miss}, y pasarle la fila a la regla la dejaria mirando un objeto sin marcas.
-  const fit = rows.filter(r => !r.miss.length)
-    .sort((a, b) => FICHA.rango(a.m) - FICHA.rango(b.m) || a.cap - b.cap);
-  const pick = fit.find(r => FICHA.recomendable(r.m)) || null;
-  const next = fit.filter(r => FICHA.recomendable(r.m))[1] || null;
+  // Toda la decision sale de HuaweiMotor.evaluar (js/huawei-motor.js): la pagina y el BOM
+  // consumen el MISMO resultado en vez de releer el formulario cada uno por su lado.
+  const ev = HuaweiMotor.evaluar({
+    bw:$('bw').value, unit:$('unit').value, mode, sites:$('sites').value, conc, head, dirMult,
+    frame:$('frame').value, profile:$('profile').value, lan:$('lan').value, aps:$('aps').value,
+    svc:{sdwan:$('sSdwan').checked, utm:$('sUtm').checked, slice:$('sSlice').checked},
+    want:{poe:$('rPoe').checked, wan:$('rWan').checked, wifi:$('rWifi').checked},
+  }, MODELS, {rango:FICHA.rango, recomendable:FICHA.recomendable});
+  ultimaEval = ev;
+  const {raw, base, need, needMpps, frame, pk, aps, svc, wanOk, rows, fit, pick, next} = ev;
+  const sites = ev.sites;
+  $('avisosMotor').innerHTML = ev.avisos.map(a => `<p class="hint warn">${esc(a)}</p>`).join('');
 
   drawLadder(need, pick, pk);
 
@@ -308,34 +283,6 @@ function drawVerdict(pick, next, c){
     </ul></div>`;
 }
 
-function licensesFor(pick, c){
-  const m = pick.m, L = [];
-  if(m.boost && c.need > m.boost) L.push({on:1, t:'Licencia de rendimiento (Boost)', d:`Sin ella el ${m.id} entrega ${fmt(m.boost)}. La licencia lo lleva a ${fmt(m.fwd)}.`});
-  if(!pick.isWan){
-    if(c.pk !== 'fwd' || c.svc.sdwan){
-      L.push({on:1, t:'Licencia de función SD-WAN por equipo', d:'Habilita identificación de aplicaciones, selección inteligente de ruta y túneles gestionados.'});
-      L.push({on:1, t:'Suscripción iMaster NCE-WAN — 12 meses', d:'Controlador y gestión del overlay. Se licencia por nodo administrado.'});
-    }
-    if(c.svc.utm){
-      L.push({on:1, t:'Licencia de seguridad: IPS, filtrado URL y antivirus', d:'Funciones licenciadas aparte en la serie AR, no vienen activas.'});
-      L.push({on:1, t:'Suscripción de bases de firmas — 12 meses', d:'Sin firmas vigentes el IPS y el antivirus quedan sin actualizar.'});
-    }
-    if(c.aps > 0){
-      const extra = Math.max(0, c.aps - (m.apsFree||0));
-      L.push({on: extra > 0 ? 1 : 0, t: extra > 0 ? `Licencia de recursos AP — ${extra} APs adicionales` : 'Licencia de recursos AP no requerida',
-        d: extra > 0 ? `El ${m.id} gestiona ${m.apsFree} APs sin costo y llega a ${m.apsMax}.` : `Los ${c.aps} APs caben en los ${m.apsFree} gratuitos.`});
-    }
-  } else {
-    L.push({on:1, t:'Licencia base del sistema VRP por chasis', d:'Habilita el conjunto de funciones de la plataforma.'});
-    L.push({on:1, t:'Licencias de función de transporte: L3VPN, EVPN, SRv6', d:'Se licencian por funcionalidad activada.'});
-    if(c.svc.slice) L.push({on:1, t:'Licencia de slicing FlexE / SRv6', d:'Aislamiento duro de red y ajuste de ancho de banda por rebanada.'});
-    L.push({on:1, t:'Licencia de capacidad por puerto y tarjeta', d:'La capacidad se habilita por incrementos. Cotiza la densidad del año 1 y crece por licencia.'});
-    L.push({on:1, t:'Suscripción iMaster NCE — 12 meses', d:'Gestión, automatización y O&M proactiva del nodo.'});
-  }
-  L.push({on:1, t:'SnS — Software Subscription and Support, 12 meses', d:'Vía para actualizaciones y parches de VRP. Va separada del paquete de hardware.'});
-  L.push({on:0, t:'Registro de ESN', d:'Todas las licencias se emiten contra el ESN del equipo y se descargan del portal ESDP de Huawei.'});
-  return L;
-}
 function drawLicenses(pick, c){
   const ul = $('licList');
   if(!pick){ ul.innerHTML = '<li>Selecciona un escenario válido.</li>'; return; }
@@ -392,7 +339,11 @@ function renderBom(){
   const optQty = Math.max(0, parseInt($('optQty').value) || 0);
   const isWan = m.cls === 'WAN';
   const pick = {m, isWan, cap: isWan ? m.cap : (m.typ ?? m.ipsec ?? m.fwd)};
-  const lics = licensesFor(pick, {need:0, aps:parseInt($('aps').value)||0, svc:{sdwan:$('sSdwan').checked, utm:$('sUtm').checked, slice:$('sSlice').checked}, pk:$('profile').value});
+  // H-08: la necesidad y la capa son las del escenario evaluado; con need:0 la licencia de
+  // rendimiento (Boost) que el calculo exigia desaparecia del BOM y del Excel.
+  const ev = ultimaEval;
+  const lics = licensesFor(pick, {need:ev ? ev.need : 0, aps:ev ? ev.aps : 0,
+    svc:ev ? ev.svc : {sdwan:false, utm:false, slice:false}, pk:ev ? ev.pk : $('profile').value});
   const {s} = supportFor();
 
   let html = `${BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato})}<section class="panel">
@@ -411,14 +362,21 @@ function renderBom(){
     </tbody></table></div>
   </section>`;
 
-  // Componentes de hardware
-  const parts = (m.parts || []).map(k => PARTS[k]).filter(Boolean);
-  if(parts.length){
+  // Componentes de hardware: compatibles frente a lo que se pide (H-06)
+  const piezas = HuaweiMotor.piezasBom(m, PARTS, ultimaEval || {want:{}});
+  const fila = (p, estado) => `<tr><td><code>${esc(PARTS[p.codigo||p].sku)}</code></td><td>${bomTag(PARTS[p.codigo||p].bom)}</td><td>${esc(PARTS[p.codigo||p].d)}</td><td>${estado}</td></tr>`;
+  const compat = [
+    ...piezas.pedir.map(p => fila(p, 'Se pide' + ((p.qty||1) > 1 ? ` (x${p.qty})` : ''))),
+    ...piezas.elegir.flatMap(g => g.opciones.map(k => fila(k, `Elegir una — ${g.nombre.toLowerCase()}`))),
+    ...piezas.opcionales.map(p => fila(p, `Opcional: ${esc(p.motivo)}`)),
+    ...piezas.noAplican.map(p => fila(p, `No aplica: ${esc(p.motivo)}`)),
+  ];
+  if(compat.length){
     html += `<section class="panel"><h2>Componentes de hardware</h2><div class="scroll"><table>
-      <thead><tr><th>Designación</th><th>Código BOM</th><th>Descripción</th></tr></thead><tbody>
-      ${parts.map(p => `<tr><td><code>${esc(p.sku)}</code></td><td>${bomTag(p.bom)}</td><td>${esc(p.d)}</td></tr>`).join('')}
+      <thead><tr><th>Designación</th><th>Código BOM</th><th>Descripción</th><th>En el BOM</th></tr></thead><tbody>
+      ${compat.join('')}
     </tbody></table></div>
-    <p class="hint">Las fuentes y ventiladores redundantes se piden por separado del chasis. En equipos con esquema 1+1 o N+1 cotiza siempre el módulo de respaldo: es el componente que más falla en campo.</p></section>`;
+    <p class="hint">La lista es lo <b>compatible</b> con el chasis; el BOM solo pide lo marcado «Se pide» y deja una línea por cada alternativa a elegir. En equipos con esquema 1+1 o N+1 cotiza siempre el módulo de respaldo: es el componente que más falla en campo.</p></section>`;
   }
 
   // Ópticas
@@ -446,7 +404,7 @@ function renderBom(){
 
   $('bomBody').innerHTML = html;
 
-  const filas = filasBom(m, qty, optQty, parts, lics, s);
+  const filas = filasBom(m, qty, optQty, piezas, lics, s);
   const meta = metaBom(m);
   $('bomTabla').innerHTML = BOM.renderTabla(filas, {});
   $('bomOut').value = BOM.comoTexto(filas, meta);
@@ -456,17 +414,20 @@ function renderBom(){
 // Filas del BOM en el formato compartido de /js/bom.js. Huawei no publica precios de lista
 // abiertos, asi que casi todas las lineas salen sin cotizar a proposito: el modulo compartido
 // lo detecta y no finge un total.
-function filasBom(m, qty, optQty, parts, lics, s){
+function filasBom(m, qty, optQty, piezas, lics, s){
   const filas=[
     {cat:'Equipo', desc:m.id, sku:null, qty, unit:null, nota:`Serie ${m.ser} · ${m.fam} · ${m.ports}`},
   ];
-  parts.forEach(p=>filas.push({cat:'Componentes de hardware', desc:p.sku, sku:p.bom||null,
-    qty, unit:null, nota:p.d||''}));
+  // H-06: solo lo que se PIDE; lo que es una alternativa va en una sola linea «elegir una»
+  // (sin codigo, marcada por confirmar) y lo condicional o de ampliacion no se cotiza solo.
+  piezas.pedir.forEach(p=>{ const c=PARTS[p.codigo];
+    filas.push({cat:'Componentes de hardware', desc:c.sku, sku:c.bom||null, qty:qty*(p.qty||1), unit:null, nota:c.d||''}); });
+  piezas.elegir.forEach(g=>filas.push({cat:'Componentes de hardware', desc:`${g.nombre} — elegir una`, sku:null,
+    qty:qty*g.qty, unit:null, nota:'Opciones: '+g.opciones.map(k=>PARTS[k].sku).join(' · ')}));
   if(optQty>0){
-    (m.optics||[]).forEach(k=>(OPTICS[k]||[]).slice(0,1).forEach(o=>filas.push({
-      cat:'Ópticas', desc:`${OPTIC_LABEL[k]||k} — ${o.sku}`,
-      sku:(o.bom&&o.bom.length)?o.bom.join(' / '):null,
-      qty:optQty*qty, unit:null, nota:o.d||''})));
+    const fam=(m.optics||[]).map(k=>OPTIC_LABEL[k]||k).join(' · ');
+    filas.push({cat:'Ópticas', desc:'Módulos ópticos — elegir velocidad, medio y alcance', sku:null, qty:optQty*qty, unit:null,
+      nota:`Familias compatibles: ${fam}. El tipo se decide según el enlace; ver pestaña Catálogo de ópticas.`});
   }
   lics.filter(l=>l.on).forEach(l=>filas.push({cat:'Licencias', desc:l.t, sku:null, qty, unit:null, nota:l.d||''}));
   filas.push({cat:'Soporte', desc:s.n, sku:null, qty, unit:null, nota:`${s.sla} · 12 meses`});
