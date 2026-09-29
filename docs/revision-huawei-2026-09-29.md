@@ -347,3 +347,14 @@ probados —nueve de Huawei (`e`, `support`, `info.support`, `download`, `carrie
 `duckduckgo.com`— no responden: `CONNECT` 403 del proxy de egreso del proxy de egreso; el
 navegador lo ve como `ERR_TUNNEL_CONNECTION_FAILED`. Es política de la organización: no se rodea.
 No entró ninguna cifra al catálogo.
+
+**Segundo intento, con el conector Firecrawl (2026-09-29).** Una petición simple, sin proxy
+«stealth» ni sesión, a `e.huawei.com/en/products/routers/ar5710-s` responde 403. No se escaló a
+un proxy de evasión: la defensa de Akamai contra automatización es del fabricante (ver el pendiente
+14), y saltarla no es una vía que este repositorio adopte. El PDF de ciclo de vida de la serie
+AR5700/6700/8000 pide además la cuenta Huawei.
+
+**Lo que sí lo cierra:** una persona con su Huawei ID descarga desde su equipo el PDF «NetEngine
+AR5700&6700&8000 Series Routers Product Life Cycle» y los datasheets AR y NetEngine, y los deja en
+la sesión (o en Drive). Entran por `npm run huawei` con el doble anclaje de siempre.
+
