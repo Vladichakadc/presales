@@ -80,6 +80,19 @@ module.exports = {
     out.push({ n: 'H-08 · la licencia de rendimiento que exige el cálculo llega al BOM',
       ok: pick === 'AR651W-8P' && /rendimiento/i.test(bom),
       detalle: `equipo ${pick}; línea de rendimiento ${/rendimiento/i.test(bom) ? 'presente' : 'AUSENTE'}` });
+
+    await p.goto(`${base}/dimensionador-huawei-netengine.html`, { waitUntil: 'domcontentloaded' });
+    await pausa(p, 1400);
+    await p.click('#modeSeg button[data-v="agg"]');
+    await p.fill('#bw', '50');
+    await p.fill('#sites', '100');
+    await p.dispatchEvent('#sites', 'input');
+    await pausa(p, 600);
+    const hub = await p.$eval('#avisosMotor', (e) => e.textContent).catch(() => '');
+    const recHub = await p.$eval('#verdict-sel', (e) => e.value).catch(() => null);
+    out.push({ n: 'H-11 · un hub de 100 sedes declara los 100 túneles y que falta el tope, sin apartar a nadie',
+      ok: /100 túneles IPsec/.test(hub) && /no trae el tope/.test(hub) && recHub === 'AR6710-H4T4X2Y7',
+      detalle: `recomendado ${recHub}; aviso ${/100 túneles/.test(hub) ? 'presente' : 'AUSENTE'}` });
     return out;
   },
 };

@@ -124,3 +124,31 @@ test('el desempate es determinista: el orden en que la API sirve el catálogo no
   assert.strictEqual(a, b);
   assert.strictEqual(a, 'AR5710-S8T2S');
 });
+
+test('H-11 · un hub declara los túneles que se piden y que el catálogo no trae el tope', () => {
+  const r = M.evaluar(esc({ bw: 50, mode: 'agg', sites: 100 }), MODELS);
+  assert.strictEqual(r.tuneles, 100);
+  assert.ok(r.avisos.some((a) => /100 túneles IPsec/.test(a) && /no trae el tope/.test(a)));
+  assert.strictEqual(r.pick.m.id, 'AR6710-H4T4X2Y7', 'declarar no cambia la recomendación: sin dato no se aparta a nadie');
+});
+
+test('H-11 · fuera del modo agregado no se pide ningún túnel ni se avisa', () => {
+  const r = M.evaluar(esc({ bw: 50, sites: 100 }), MODELS);
+  assert.strictEqual(r.tuneles, 0);
+  assert.ok(!r.avisos.some((a) => /túneles/.test(a)));
+});
+
+test('H-11 · si un modelo publica su tope de túneles, se comprueba (catálogo sintético)', () => {
+  const sint = MODELS.map((m) => (m.id === 'AR6710-H4T4X2Y7' ? { ...m, tuneles: 50 } : m.id === 'AR8140-12G10XG' ? { ...m, tuneles: 4000 } : m));
+  const r = M.evaluar(esc({ bw: 50, mode: 'agg', sites: 100 }), sint);
+  assert.ok(r.rows.find((x) => x.m.id === 'AR6710-H4T4X2Y7').miss.some((t) => /50 túneles/.test(t)));
+  assert.ok(r.fit.some((x) => x.m.id === 'AR8140-12G10XG'));
+  assert.ok(r.avisos.some((a) => /publican su tope/.test(a)));
+  // el modelo que no lo publica (null) no se aparta: «no lo dice» no es «no soporta»
+  assert.ok(!r.rows.find((x) => x.m.id === 'AR5710-S8T2S').miss.some((t) => /túneles/.test(t)));
+});
+
+test('H-11 · la línea base legada no cambia', () => {
+  assert.strictEqual(pick({ bw: 50, mode: 'agg', sites: 100 }, { legado: true }), 'AR6710-H4T4X2Y7');
+  assert.strictEqual(M.evaluar(esc({ bw: 50, mode: 'agg', sites: 100 }), MODELS, { legado: true }).avisos.length, 0);
+});

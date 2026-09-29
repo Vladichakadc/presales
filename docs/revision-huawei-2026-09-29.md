@@ -329,3 +329,9 @@ Se ejecutaron H1 y las partes de H2, H3 y H4 que no dependen de datos bloqueados
 anterior) y el contraste `scripts/contrastes/huawei.js`. Pantallas 17/17 y contraste sin discrepancias.
 Estado por hallazgo en `PENDIENTES.md`. Sin cerrar: H-03 (fuente del ×2), H-10/H-11/H-14 (datos)
 y lo marcado «falta» en H3 y H4.
+
+**H-11, primera versión (2026-09-29).** El modo agregado declara los túneles IPsec que se piden
+(uno por sede) y que el catálogo no trae el tope de ningún modelo; no aparta a nadie. El motor ya
+filtra por `tuneles` cuando un modelo lo publique (`null` es «no lo dice», nunca «sin límite»), y
+la prueba lo comprueba con un catálogo sintético. Sesiones concurrentes y nuevas por segundo no se
+piden: exigirían usuarios por sede, y derivarlos sería inventar un dato.

@@ -68,6 +68,21 @@
       : (pk === 'fwd') && !svc.sdwan && !svc.utm && aps === 0 && !want.poe && !want.wan && !want.wifi;
     const avisos = [];
     if (ef.subida) avisos.push(`La capa dimensionada sube de «${PROFILE[perfil]}» a «${PROFILE[pk]}» porque ${ef.motivos.map((f) => ({ sdwan: 'SD-WAN', utm: 'UTM' }[f])).join(' y ')} está activo: una función activa fija la capa mínima, nunca se dimensiona con una más superficial.`);
+    // EJE DE HUB (H-11). En modo agregado cada sede termina un tunel IPsec en el equipo, y el
+    // caudal no lo dice: 100 sedes de 50 Mbps caben en un AR6710-H por caudal y nadie ha
+    // comprobado que aguante 100 tuneles. El catalogo NO trae el tope de tuneles de ningun
+    // modelo, asi que hoy se DECLARA (cuantos se piden y que falta el tope) y no se filtra;
+    // el dia que un modelo traiga `tuneles` numerico, el filtro de abajo lo aplica solo.
+    // `null` es «el catalogo no lo dice», nunca «sin limite». Las sesiones concurrentes y las
+    // nuevas por segundo no se piden aqui: exigirian usuarios por sede, que esta pantalla no
+    // pregunta, y derivarlas seria inventar un dato.
+    const tuneles = !legado && mode === 'agg' ? sites : 0;
+    const modelosConTope = tuneles ? modelos.filter((m) => m.cls !== 'WAN' && m.tuneles != null).length : 0;
+    if (tuneles) {
+      avisos.push(`Hub con ${tuneles} sede${tuneles === 1 ? '' : 's'}: se piden ${tuneles} túneles IPsec terminando en el equipo. `
+        + (modelosConTope ? `${modelosConTope} modelos publican su tope de túneles y se comprueba; el resto no lo trae este catálogo.`
+          : 'Este catálogo no trae el tope de túneles (ni el de sesiones) de ningún modelo: el equipo propuesto cumple por caudal y hay que confirmar el tope con su datasheet o el configurador de Huawei antes de cotizar.'));
+    }
     if (svc.utm && !legado) avisos.push('UTM (IPS, filtrado URL, antivirus): este catálogo no trae cifra de inspección para ningún modelo AR. Se dimensiona contra SD-WAN típico y el resultado hay que confirmarlo con una prueba de concepto antes de cotizar.');
 
     const rows = modelos.map((m) => {
@@ -83,6 +98,7 @@
       // `lan: null` es «el catalogo no lo dice» (puertos configurables en los hubs): no descarta.
       if (legado || m.lan != null) { if ((m.lan || 0) < minLan) miss.push(`${m.lan || 0} puertos LAN`); }
       if (!isWan && aps > (m.apsMax || 0)) miss.push(`gestiona ${m.apsMax || 0} APs`);
+      if (tuneles && !isWan && m.tuneles != null && m.tuneles < tuneles) miss.push(`soporta ${m.tuneles} túneles`);
       return { m, cap, miss, isWan };
     });
     // Se ordena por el rango del MODELO (no de la fila) y despues por capacidad.
@@ -94,7 +110,7 @@
       || extras(a.m) - extras(b.m) || a.m.id.localeCompare(b.m.id, 'en', { numeric: true }));
     const pick = fit.find((r) => recomendable(r.m)) || null;
     const next = fit.filter((r) => recomendable(r.m))[1] || null;
-    return { raw, base, need, needMpps, mode, sites, conc, head, dirMult, frame, perfil, pk, ef, svc, want, aps, minLan, wanOk, avisos, rows, fit, pick, next };
+    return { raw, base, need, needMpps, mode, sites, conc, head, dirMult, frame, perfil, pk, ef, svc, want, aps, minLan, wanOk, tuneles, avisos, rows, fit, pick, next };
   }
 
   /* LICENCIAS. Una sola funcion para el calculo y el BOM: recibe la NECESIDAD del escenario,
