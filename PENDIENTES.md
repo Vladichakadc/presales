@@ -501,6 +501,19 @@ decisión del dueño o el datasheet de Huawei (pendiente 14).
 | H4 | **Hecha en parte.** BOM con papel por pieza: alternativas de MPU y fuente en una línea «elegir una», 5G y WSIC fuera si no se piden, doble fuente x2, ópticas en una línea a elegir (H-06, H-07 sin inventar código). **HA 1+1 hecha (H-12, 2026-09-29)**: `#chkHa` (repone desde el enlace compartido y viaja como dos equipos al cotizador, conducido en el contraste `huawei`) cotiza dos equipos por sitio, cada uno al caudal completo (suma disponibilidad, no capacidad), y «misión crítica» sin HA lo advierte. **Salió de paso** que SnS se cotizaba dos veces (licencia y soporte). **Capa comercial hecha (H-13, 2026-09-29):** plazo de 1/3/5 años (`#anios`, el texto de cada suscripción dice el término real), precio de referencia del equipo tomado del cotizador (13 de los 40 modelos; el resto sale «consultar»), simulador de precio neto, TCO **declarado parcial** (solo el equipo tiene precio; licencias, suscripciones y soporte van «consultar») y perfiles multi-sede con consolidado. **Ópticas por enlace hechas (H-07, 2026-09-29):** cada módulo se declara (familia, modelo, cantidad por equipo), viaja en el enlace compartido (`#opticasData`) y entra al BOM con su código; una fila que ya no encaja tras cambiar de equipo sale como inválida, no se descarta. **Sigue sin existir la matriz de compatibilidad por chasis y versión de VRP** (el catálogo solo respalda la familia), y la pantalla lo dice | **hecha salvo datos** |
 | H5 | Datos: 27 de 40 modelos no casan con el cotizador, cifras del NE8000 M8/F8 distintas entre herramientas, M14 incoherente, el tope de túneles y sesiones por modelo (H-10, H-14; **H-11 declarado en pantalla el 2026-09-29**: el hub muestra cuántos túneles pide y que el catálogo no trae el tope, sin apartar a nadie; el filtro ya existe y se activa solo cuando un modelo traiga `tuneles`; las sesiones no se piden porque exigirían usuarios por sede) | bloqueado en parte por la cuenta Huawei (pendiente 14) |
 
+### Cotizador y dimensionador dicen cifras distintas del mismo equipo (2026-09-30, abierto)
+
+`npm run catalogo` lo mide ahora en la sección «COTIZADOR FRENTE A DIMENSIONADOR». Primera corrida:
+
+| Fabricante | Coinciden | Difieren | Qué hay que decidir |
+|---|---:|---:|---|
+| Cisco | 3/17 | **14** | ISR 1111, Catalyst 8200/8300/8500 y ASR 1006-X: `fwd` e `ipsec` del dimensionador no son las del texto del cotizador (el 8500-12X4QC dice 20 Gbps FWD en uno y 96 en el otro). Cuál es la buena lo dice la ficha de Cisco; es el mismo fabricante que ya tiene sus cifras de dimensionamiento contrastadas, así que lo probable es que el texto del cotizador esté desactualizado |
+| Huawei | 20/23 | 3 | NE8000 M8 (capacidad y Mpps) y F8 (capacidad): el cotizador parece citar la capacidad **ampliable** y el dimensionador la actual; ver las señales del pendiente 14 |
+| Juniper | 12/15 | 3 | SRX340 (4,7 frente a 3 Gbps de firewall), SRX4300 (90 frente a 98) y un IPsec |
+| Fortinet, Aruba, MikroTik, Nokia | todo | 0 | — |
+
+Corregir el texto del cotizador es cambiar lo que ve el cliente, así que se hace con la ficha oficial delante, no igualando un sitio al otro.
+
 ### Señales de terceros para el pendiente 14 — Huawei (2026-09-30, sin aplicar)
 
 Encargo del dueño: buscar los datos de Huawei en otras fuentes (YouTube u otras). **Nada entró a

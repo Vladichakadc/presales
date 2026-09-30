@@ -362,9 +362,125 @@ function coberturaContraste() {
   return { estado: 'medida', vigencia, head, ...d };
 }
 
+
+/* ── COTIZADOR FRENTE A DIMENSIONADOR ──────────────────────────────────────────────────────
+   QUE COMPRUEBA. El cotizador describe cada equipo con un texto comercial
+   («2.4 Tbps · 405 Mpps · 4 tarjetas 400G») y el dimensionador del mismo fabricante lleva las
+   cifras como campos. Son dos sitios con el mismo dato, y nada comprobaba que dijeran lo mismo:
+   la revision Huawei del 2026-09-29 encontro el NE8000 M8 con 4,8 Tbps en uno y 2,4 en el
+   otro (y una ficha de 2021 con 1,2), y el F8 con 12,8 frente a 6,4. Es la cifra que se pone
+   delante de un cliente.
+
+   COMO COMPARA. Se lee cada segmento del texto con una cifra de rendimiento y se casa con el
+   campo que cada fabricante declara en `CONTRASTE_COTIZADOR`. «Coincide» es dentro del
+   REDONDEO con que el cotizador la escribe: «0.6 Gbps» cubre de 550 a 650 Mbps, asi que los
+   570 del dimensionador coinciden; «300 Mbps» solo coincide con 300.
+
+   CINCO ESTADOS, Y NINGUNO SE DEDUCE. `coincide`, `difiere`, `sinDato` (el dimensionador no
+   trae ese campo: dice algo del catalogo, no del equipo), `ilegible` (el texto trae una cifra
+   que este informe no sabe a que campo corresponde) y `sinPareja` (el modelo del cotizador no
+   esta en el dimensionador). Lo que no se sabe leer NUNCA sale como «coincide»: un comprobador
+   que no comprueba se porta igual que uno que pasa.
+
+   ES UN INFORME, NO UN FRENO. No dice cual de las dos cifras es la buena —eso lo dice el
+   documento del fabricante— y un rojo en cada cambio de catalogo ensenaria a ignorarlo. */
+const CONTRASTE_COTIZADOR = {
+  huawei: { mod: 'huawei', listas: ['MODELS'], campos: { FWD: 'fwd', IPsec: 'ipsec', 'SD-WAN': 'typ', BASE: 'cap', Mpps: 'mpps' } },
+  cisco: { mod: 'cisco', listas: ['MODELS'], campos: { FWD: 'fwd', IPsec: 'ipsec', 'SD-WAN': 'sdwan' } },
+  fortinet: { mod: 'fortinet', listas: ['MODELS'], campos: { FW: 'fw', NGFW: 'ngfw', IPsec: 'vpn' } },
+  mikrotik: { mod: 'mikrotik', listas: ['MODELS'], campos: { FWD: 'fwd', IPsec: 'ipsec' } },
+  juniper: { mod: 'juniper', listas: ['MODELS'], campos: { FW: 'fw', IPsec: 'vpn' } },
+  aruba: { mod: 'aruba', listas: ['MODELS'], campos: { WAN_MIN: 'wanMin', WAN_MAX: 'wanMax', FW: 'fw' } },
+  // Nokia guarda la capacidad en Gbps (ver `legacyData/nokia.js`), no en Mbps.
+  nokia: { mod: 'nokia', listas: ['MODELS', 'MODELS_ROUTER'], campos: { BASE: 'cap' }, escala: { cap: 1000 } },
+};
+const UNIDAD_MBPS = { Mbps: 1, Gbps: 1000, Tbps: 1e6 };
+
+// La coma es separador de miles y el punto decimal, como en todo el catalogo.
+function cifraCotizador(txt, unidad) {
+  const limpio = String(txt).replace(/,/g, '');
+  const dec = (limpio.split('.')[1] || '').length;
+  const f = unidad ? UNIDAD_MBPS[unidad] : 1;
+  return { valor: Number(limpio) * f, tolerancia: 0.5 * Math.pow(10, -dec) * f };
+}
+
+function leerSpec(spec) {
+  const cifras = [];
+  const ilegibles = [];
+  const N = '([\\d.,]+)\\s*(Mbps|Gbps|Tbps)';
+  for (const crudo of String(spec || '').split('·')) {
+    const seg = crudo.trim();
+    let m = seg.match(/^([\d.,]+)\s*Mpps$/);
+    if (m) { cifras.push({ etiqueta: 'Mpps', texto: seg, ...cifraCotizador(m[1], null) }); continue; }
+    if (!/\b(Mbps|Gbps|Tbps)\b/.test(seg)) continue; // puertos, funciones, SKU: no es una cifra de rendimiento
+    if ((m = seg.match(new RegExp(`^WAN\\s+${N}\\s*-\\s*${N}$`)))) {
+      cifras.push({ etiqueta: 'WAN_MIN', texto: seg, ...cifraCotizador(m[1], m[2]) });
+      cifras.push({ etiqueta: 'WAN_MAX', texto: seg, ...cifraCotizador(m[3], m[4]) });
+    } else if ((m = seg.match(new RegExp(`^WAN hasta\\s+${N}$`)))) {
+      cifras.push({ etiqueta: 'WAN_MAX', texto: seg, ...cifraCotizador(m[1], m[2]) });
+    } else if ((m = seg.match(new RegExp(`^(FW|NGFW|IPsec|SD-WAN)\\s+${N}$`)))) {
+      cifras.push({ etiqueta: m[1], texto: seg, ...cifraCotizador(m[2], m[3]) });
+    } else if ((m = seg.match(new RegExp(`^${N}(?:\\s+(FWD))?$`)))) {
+      cifras.push({ etiqueta: m[3] ? 'FWD' : 'BASE', texto: seg, ...cifraCotizador(m[1], m[2]) });
+    } else {
+      ilegibles.push(seg);
+    }
+  }
+  return { cifras, ilegibles };
+}
+
+const PREFIJO_FABRICANTE = /^(juniper|aruba|netengine|cisco|fortinet|mikrotik|nokia|huawei)/;
+// La misma normalizacion que `BOM.normalizar` usa para el traspaso al cotizador.
+function normalizarModelo(nombre) {
+  const s = String(nombre || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  return s.replace(PREFIJO_FABRICANTE, '') || s;
+}
+
+function contrasteCotizador(opciones) {
+  const o = opciones || {};
+  const filas = o.cotizador || require('../server/seed/legacyData/cotizadorCatalog');
+  const cargarMod = o.cargar || cargar;
+  const mapa = o.mapa || CONTRASTE_COTIZADOR;
+  const out = [];
+  for (const [vendor, cfg] of Object.entries(mapa)) {
+    const mod = cargarMod(cfg.mod);
+    const r = { vendor, comparadas: 0, coincide: 0, difiere: [], sinDato: [], ilegible: [], sinPareja: [] };
+    if (!mod) { r.error = 'no se pudo cargar el catalogo del dimensionador'; out.push(r); continue; }
+    const porNombre = new Map();
+    for (const l of cfg.listas) for (const m of mod[l] || []) porNombre.set(normalizarModelo(m.id), m);
+    for (const row of filas.filter((x) => String(x.vendor || '').toLowerCase() === vendor)) {
+      const m = porNombre.get(normalizarModelo(row.model));
+      if (!m) { r.sinPareja.push(row.model); continue; }
+      const { cifras, ilegibles } = leerSpec(row.spec);
+      ilegibles.forEach((t) => r.ilegible.push({ modelo: row.model, texto: t }));
+      for (const c of cifras) {
+        const campo = cfg.campos[c.etiqueta];
+        if (!campo) { r.ilegible.push({ modelo: row.model, texto: c.texto }); continue; }
+        const bruto = m[campo];
+        if (bruto === null || bruto === undefined || typeof bruto !== 'number') {
+          r.sinDato.push({ modelo: row.model, campo, cotizador: c.texto });
+          continue;
+        }
+        const dim = bruto * ((cfg.escala && cfg.escala[campo]) || 1);
+        r.comparadas++;
+        if (Math.abs(dim - c.valor) <= c.tolerancia) r.coincide++;
+        else r.difiere.push({ modelo: row.model, campo, cotizador: c.texto, dimensionador: dim });
+      }
+    }
+    out.push(r);
+  }
+  return out;
+}
+
+function mbpsLegible(v) {
+  if (v >= 1e6) return `${+(v / 1e6).toFixed(2)} Tbps`;
+  if (v >= 1000) return `${+(v / 1000).toFixed(2)} Gbps`;
+  return `${v} Mbps`;
+}
+
 function informe() {
   return {
-    cobertura: cobertura(), cicloDeVida: cicloDeVida(), precios: precios(),
+    cobertura: cobertura(), cicloDeVida: cicloDeVida(), precios: precios(), contrasteCotizador: contrasteCotizador(),
     coberturaContraste: coberturaContraste(),
     pantallas: pantallas(), procedencia: procedencia(), fuentesPendientes: fuentesPendientes(),
   };
@@ -396,6 +512,14 @@ function imprimir(d) {
     console.log('\n== PRECIOS (sobre el catalogo del cotizador) ==');
     for (const f of d.precios) {
       console.log(`${f.vendor.padEnd(10)} ${f.con}/${f.de} con precio, ${f.sinCotizar} sin cotizar`);
+    }
+    console.log('\n== COTIZADOR FRENTE A DIMENSIONADOR: la misma cifra en dos sitios ==');
+    console.log('   Informe, no freno: dice DONDE difieren, no cual es la buena. Coincidir es dentro del redondeo del cotizador.\n');
+    for (const f of d.contrasteCotizador) {
+      if (f.error) { console.log(`${f.vendor.padEnd(10)} ${f.error}`); continue; }
+      console.log(`${f.vendor.padEnd(10)} ${f.coincide}/${f.comparadas} coinciden · ${f.difiere.length} difieren · ${f.sinDato.length} sin dato en el dimensionador · ${f.ilegible.length} no se pudieron leer · ${f.sinPareja.length} sin pareja`);
+      for (const x of f.difiere) console.log(`   DIFIERE  ${x.modelo}: cotizador «${x.cotizador}» · dimensionador ${x.campo} = ${x.campo === 'mpps' ? `${x.dimensionador} Mpps` : mbpsLegible(x.dimensionador)}`);
+      for (const x of f.ilegible) console.log(`   NO SE PUDO LEER  ${x.modelo}: «${x.texto}»`);
     }
     console.log('\n== PANTALLAS: campos declarados que no existen ==');
     console.log('   Cada dimensionador declara en ESTADO.vincular({campos}) los ids que viajan en el');
@@ -481,5 +605,6 @@ if (require.main === module) {
 
 module.exports = {
   informe, cobertura, cicloDeVida, precios, pantallas, procedencia,
+  contrasteCotizador, leerSpec, normalizarModelo, CONTRASTE_COTIZADOR,
   fuentesPendientes, SEMANAS_TOLERADAS, impactoDeFuentes, clavesDe,
 };
