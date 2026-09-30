@@ -384,3 +384,12 @@ la plataforma AR da el mismo AR6710-H entre 4, y NE8000 responde con un NE8000 M
 del modelo** solo donde el registro ya lo publica (A821 E); el resto es «no consta», no se aparta y
 va detrás del confirmado. El modo «Nodo de núcleo» se retiró: era la plataforma NE8000 escrita como
 modo de cálculo, y los enlaces y perfiles viejos con `modeSeg=core` se traducen solos.
+
+**Búsqueda en otras fuentes (2026-09-30).** A petición del dueño se buscó el pendiente 14 fuera de
+los dominios de Huawei. YouTube, Google, el foro de Huawei y los espejos de datasheets están
+bloqueados por el proxy de egreso (también para la lectura web de la sesión), así que solo hubo
+resúmenes de buscador: pistas con URL, no lecturas. Dos cambian la revisión: **H-03 tendría
+respaldo** (la ficha AR6710 declararía el SD-WAN como «suma de flujos bidireccionales», con el
+7 Gbps del AR6710-H que ya casa con el catálogo), y **H-14 se mueve del M14 al M8** (el M14 da
+2 Tbps actuales ampliables a 4,8; el M8 aparece con 1,2/2, 2,4 y 4,8 Tbps según la fuente). Nada se
+aplicó: la tabla con cada pista y el documento oficial donde confirmarla está en `PENDIENTES.md`.

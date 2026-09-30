@@ -501,6 +501,31 @@ decisión del dueño o el datasheet de Huawei (pendiente 14).
 | H4 | **Hecha en parte.** BOM con papel por pieza: alternativas de MPU y fuente en una línea «elegir una», 5G y WSIC fuera si no se piden, doble fuente x2, ópticas en una línea a elegir (H-06, H-07 sin inventar código). **HA 1+1 hecha (H-12, 2026-09-29)**: `#chkHa` (repone desde el enlace compartido y viaja como dos equipos al cotizador, conducido en el contraste `huawei`) cotiza dos equipos por sitio, cada uno al caudal completo (suma disponibilidad, no capacidad), y «misión crítica» sin HA lo advierte. **Salió de paso** que SnS se cotizaba dos veces (licencia y soporte). **Capa comercial hecha (H-13, 2026-09-29):** plazo de 1/3/5 años (`#anios`, el texto de cada suscripción dice el término real), precio de referencia del equipo tomado del cotizador (13 de los 40 modelos; el resto sale «consultar»), simulador de precio neto, TCO **declarado parcial** (solo el equipo tiene precio; licencias, suscripciones y soporte van «consultar») y perfiles multi-sede con consolidado. **Ópticas por enlace hechas (H-07, 2026-09-29):** cada módulo se declara (familia, modelo, cantidad por equipo), viaja en el enlace compartido (`#opticasData`) y entra al BOM con su código; una fila que ya no encaja tras cambiar de equipo sale como inválida, no se descarta. **Sigue sin existir la matriz de compatibilidad por chasis y versión de VRP** (el catálogo solo respalda la familia), y la pantalla lo dice | **hecha salvo datos** |
 | H5 | Datos: 27 de 40 modelos no casan con el cotizador, cifras del NE8000 M8/F8 distintas entre herramientas, M14 incoherente, el tope de túneles y sesiones por modelo (H-10, H-14; **H-11 declarado en pantalla el 2026-09-29**: el hub muestra cuántos túneles pide y que el catálogo no trae el tope, sin apartar a nadie; el filtro ya existe y se activa solo cuando un modelo traiga `tuneles`; las sesiones no se piden porque exigirían usuarios por sede) | bloqueado en parte por la cuenta Huawei (pendiente 14) |
 
+### Señales de terceros para el pendiente 14 — Huawei (2026-09-30, sin aplicar)
+
+Encargo del dueño: buscar los datos de Huawei en otras fuentes (YouTube u otras). **Nada entró a
+`legacyData/`**: el contenedor y la lectura web no llegan a YouTube, Google, el foro de Huawei ni a
+los espejos de datasheets (`entec.cz`, `data.nag.wiki`, `manuals.plus`, `ycict.net`, todos
+`EGRESS_BLOCKED`), así que lo único disponible fue el **resumen de un buscador**, que es una pista y
+no una lectura. Se anotan con el documento oficial donde confirmarlas:
+
+| Hallazgo (según el buscador) | Casa con el catálogo | Qué confirma o cambia | Documento oficial a leer |
+|---|---|---|---|
+| Nota de la ficha AR6710: el rendimiento SD-WAN (EVPN+IPsec+QoS) es «la suma de flujos bidireccionales» | El mismo resumen da 7 Gbps SD-WAN IMIX al AR6710-H4T4X2Y7, que es el `typ: 7000` ya verificado | **Respaldaría H-03**: el ×2 por defecto sería correcto para SD-WAN | «NetEngine AR6710-H Series Data Sheet R25C10», e.huawei.com/en/documents/products/enterprise-network/c63ee1473b9147a4b6a50dc64c8f1bcd |
+| NE8000 M14: «hasta 2 Tbps, ampliable a 4,8 Tbps» | `cap: 2000000` (2 Tbps) coincide | **H-14 del M14 explicado**: no es un error, es la capacidad actual frente a la ampliable | «NetEngine 8000 M14 Datasheet», e.huawei.com/en/documents/products/enterprise-network/f4f1a7b9424a44ff9770b75a19eb5d2e |
+| NE8000 M8: «hasta 1,2 Tbps, ampliable a 2 Tbps» (ficha de 2021) | **No casa**: el dimensionador dice 2,4 Tbps y el cotizador 4,8 Tbps | El sospechoso pasa a ser el **M8**, con tres cifras distintas; puede haber dos generaciones | «NetEngine 8000 M8 Datasheet», e.huawei.com/en/documents/products/enterprise-network/e9dd06e260b64df683f6221fc8442cbf |
+| AR8140: SD-WAN 12–20 Gbps IMIX y 25–36 Gbps a 1.400 bytes | `typ: 12000` coincide; `fwd: 25000` coincide con la cifra **SD-WAN de 1.400 bytes**, no con reenvío NAT+ACL+QoS IMIX | Si se confirma, el `fwd` del AR8140 mide otra cosa que la etiqueta de la pantalla | Ficha AR8100 de e.huawei.com |
+| AR651: SD-WAN 800 Mbps IMIX (AR651C: 600) | Sin ancla: `typ` es `null` y el resumen no da otra columna de la fila | Llenaría el `typ` que hoy aparta a la serie AR650 | «Huawei NetEngine AR650 Series Datasheet 20250810-v3», e.huawei.com/marketingcloud |
+| Ciclo de vida (EOM/EOS) de AR5700/6700/8000 y NE8000 | — | **No apareció ninguna fecha pública**; Info-Finder y el tablón de avisos piden cuenta | Tablón «Routers — Life Cycle Notices» de support.huawei.com, con Huawei ID |
+
+**YouTube**: el buscador lista vídeos oficiales de Huawei (presentación del AR5710, el AR6710 en
+banca, el AR5710I-RU-NRGL), pero son material comercial sin tablas de rendimiento y el dominio está
+bloqueado desde aquí. No aportan cifras.
+
+**Qué hace falta para aplicarlas**: que una persona con acceso abra esos cuatro PDF, confirme cada
+cifra y la pase por `npm run huawei` (doble anclaje). Una cifra que el buscador resume no se escribe
+en el catálogo: puede mezclar documentos o ediciones, y el caso del M8 muestra que pasa.
+
 ## En curso: plan de sincronismo y actualización continua (2026-09-02)
 
 Aprobado por el dueño del repo con la instrucción de avanzar con todas las fases y subirlas
