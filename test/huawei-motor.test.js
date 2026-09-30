@@ -180,3 +180,12 @@ test('H-12 · el aviso de fuentes redundantes solo sale si el catálogo lo decla
   const ar = M.evaluar(esc({ bw: 500, ha: true }), MODELS);
   assert.ok(!ar.avisos.some((a) => /ya declara fuentes redundantes/.test(a)), 'redund ausente no se lee como false ni como true');
 });
+
+test('H-13 · el plazo de las suscripciones sale en el texto de cada línea', () => {
+  const r = M.evaluar(esc({ bw: 500 }), MODELS);
+  const t = (anios) => M.licencias(r.pick, { need: r.need, aps: 0, svc: r.svc, pk: r.pk, anios }).map((l) => l.t).join(' | ');
+  assert.match(t(1), /NCE-WAN — 12 meses/);
+  assert.match(t(3), /NCE-WAN — 36 meses/);
+  assert.match(t(5), /SnS — Software Subscription and Support, 60 meses/);
+  assert.match(t(undefined), /12 meses/, 'sin plazo declarado rige el año de siempre');
+});

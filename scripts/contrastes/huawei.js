@@ -133,6 +133,31 @@ module.exports = {
     const fila = await p.$$eval('tr', (trs) => trs.filter((t) => /AR651W-8P/.test(t.textContent)).map((t) => t.innerText.replace(/\s+/g, ' ')));
     out.push({ n: 'H-12 · al enviar al cotizador con HA viajan dos equipos',
       ok: fila.length > 0 && /−\s*2\s*\+/.test(fila[0]), detalle: fila.length ? fila[0].slice(0, 110) : 'la fila del equipo no llegó al cotizador' });
+
+    // H-13: capa comercial de bom.js. El equipo trae precio de referencia del cotizador, el
+    // plazo cambia el texto de las suscripciones y el perfil multi-sede multiplica por sedes.
+    await p.goto(`${base}/dimensionador-huawei-netengine.html?bw=450&profile=fwd&sSdwan=0&rPoe=1&rWifi=1&anios=3`, { waitUntil: 'domcontentloaded' });
+    await pausa(p, 1800);
+    await p.click('.tabs button[data-tab="bom"]');
+    await pausa(p, 400);
+    const tco = await p.$eval('#tcoFin', (e) => e.innerText.replace(/\s+/g, ' ')).catch(() => '');
+    const bomTxt = await p.$eval('#bomOut', (e) => e.value);
+    out.push({ n: 'H-13 · el TCO declara que es parcial y cuenta las líneas sin precio',
+      ok: /TCO a 3 años \(parcial\)/.test(tco) && /\d+ línea\(s\) sin precio/.test(tco), detalle: tco.slice(0, 120) });
+    out.push({ n: 'H-13 · un plazo de 3 años se ve como 36 meses en las suscripciones y el soporte',
+      ok: /36 meses/.test(bomTxt) && !/12 meses/.test(bomTxt), detalle: /36 meses/.test(bomTxt) ? '36 meses presente' : 'sigue en 12 meses' });
+    await p.fill('#nombrePerfil', 'Sucursal');
+    await p.fill('#perfilSedes', '5');
+    await p.click('#btnGuardarPerfil');
+    await pausa(p, 300);
+    await p.click('#btnConsolidar');
+    await pausa(p, 400);
+    const cons = await p.$eval('#consolidadoTabla', (e) => e.innerText.replace(/\s+/g, ' ')).catch(() => '');
+    // Sin cifras del catalogo: la relacion es subtotal = 5 x precio unitario, sea cual sea el precio.
+    const mc = cons.match(/AR651W-8P[^$]*— 5 \$([\d,]+) \$([\d,]+)/);
+    const num = (x) => Number(String(x).replace(/,/g, ''));
+    out.push({ n: 'H-13 · el perfil multi-sede multiplica el equipo por sus sedes en el consolidado',
+      ok: !!mc && num(mc[2]) === 5 * num(mc[1]), detalle: mc ? `5 x $${mc[1]} = $${mc[2]}` : cons.slice(0, 140) });
     return out;
   },
 };

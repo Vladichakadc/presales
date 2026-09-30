@@ -11,6 +11,8 @@ const licensesFor = (pick, c) => HuaweiMotor.licencias(pick, c);
 let HICARE = {};
 
 const $ = id => document.getElementById(id);
+// Plazo de suscripciones y soporte (1, 3 o 5 anos), del selector #anios.
+const aniosSel = () => Math.max(1, parseInt($('anios').value, 10) || 1);
 let dirMult = 2, mode = 'link', lastPick = null;
 // Si el dimensionamiento se quedo sin candidato, el BOM tiene que DECIRLO.
 let hayCandidato = true;
@@ -39,7 +41,7 @@ $('dirSeg').addEventListener('click', e => {
   [...$('dirSeg').children].forEach(x => x.setAttribute('aria-pressed', x === b));
   dirMult = +b.dataset.v; render();
 });
-['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa']
+['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios']
   .forEach(id => $(id).addEventListener('input', render));
 ['pickModel','qty','optQty'].forEach(id => $(id).addEventListener('input', renderBom));
 
@@ -98,7 +100,7 @@ function render(){
   // El veredicto pasa a ser un desplegable con todos los que cumplen; licencias, soporte
   // y BOM siguen al equipo ELEGIDO. Ver /js/ficha.js.
   const ctx = {need, needMpps, raw, base, head, conc, sites, frame, pk, rows, wanOk};
-  const licCtx = {need, aps, svc, pk};
+  const licCtx = {need, aps, svc, pk, anios:aniosSel()};
   if(!raw || !fit.length || !pick){
     // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): ni veredicto
     // ni licencias ni soporte ni escalera se pintan con un equipo — todo queda en estado
@@ -307,7 +309,7 @@ function drawSupport(pick){
   const {s, alt} = supportFor();
   box.innerHTML = `
     <div class="model" style="font-size:26px;margin-bottom:2px">${s.n}</div>
-    <p class="family" style="margin-bottom:14px"><span class="pillc">${s.sla}</span> · término 12 meses · ${pick.m.id}</p>
+    <p class="family" style="margin-bottom:14px"><span class="pillc">${s.sla}</span> · término ${aniosSel() * 12} meses · ${pick.m.id}</p>
     <p style="font-size:13.5px;margin:0 0 14px">${s.d}</p>
     <ul class="clean" style="font-size:13.5px">
       <li class="on"><b>Alternativa a evaluar:</b> ${alt.n} (${alt.sla})<span class="sku">Compara el diferencial contra el costo por hora de indisponibilidad del sitio.</span></li>
@@ -334,6 +336,41 @@ function populatePickModel(){
   })();
 }
 
+/* ── CAPA COMERCIAL (bom.js) ──────────────────────────────────────────────────────────────
+   El precio del EQUIPO sale del cotizador (`/api/cotizador/catalog`, fuente unica de precios),
+   casado por nombre normalizado; no se copia a este catalogo. Es una estimacion de referencia
+   sin descuentos ni impuestos, y lo dice cada fila. Licencias, suscripciones y soporte no
+   tienen precio publicado: salen «consultar» y el TCO se declara parcial. */
+let PRECIO_REF = {};
+async function cargarPreciosRef(){
+  try {
+    const r = await fetch('/api/cotizador/catalog');
+    if(!r.ok) return;
+    const lista = await r.json();
+    PRECIO_REF = {};
+    (lista || []).filter(x => x.vendor === 'Huawei' && x.elpN > 0).forEach(x => { PRECIO_REF[BOM.normalizar(x.model)] = x.elpN; });
+  } catch { /* sin precios de referencia: el BOM sigue, con el equipo en «consultar» */ }
+}
+const OPEX_HUAWEI = ['Soporte'];
+const VENDOR = 'huawei';
+const DTO = BOM.simuladorDescuento('cajaDescuento', () => renderBom());
+const dtoActual = () => (DTO ? DTO.valor() : 0);
+const dtoEtiqueta = () => (DTO ? DTO.etiqueta() : null);
+
+function pintarTco(filas){
+  const anios = aniosSel(), dto = dtoActual();
+  const fin = BOM.tco(filas, {opex:OPEX_HUAWEI, anios});
+  const hayPrecios = fin.capex > 0 || fin.opexTermino > 0;
+  const net = v => (dto > 0 ? `<td><b>${BOM.money(v * (1 - dto))}</b></td>` : '');
+  $('tcoFin').innerHTML = hayPrecios
+    ? `<table class="tco-tabla"><thead><tr><th>Pie de la lista de materiales</th><th>Subtotal Lista</th>${dto > 0 ? '<th>Subtotal Neto</th>' : ''}</tr></thead><tbody>`
+      + `<tr><td><b>CAPEX</b> — equipo y lo que no es recurrente</td><td>${BOM.money(fin.capex)}</td>${net(fin.capex)}</tr>`
+      + `<tr><td><b>OPEX anual</b> — soporte ÷ ${anios} año${anios > 1 ? 's' : ''}</td><td>${BOM.money(fin.opexAnual)}</td>${net(fin.opexAnual)}</tr>`
+      + `<tr><td><b>TCO a ${anios} año${anios > 1 ? 's' : ''}</b> (parcial)</td><td><b>${BOM.money(fin.tco)}</b></td>${net(fin.tco)}</tr></tbody></table>`
+      + `<p class="hint" style="margin-top:8px"><b>TCO parcial:</b> ${fin.sinPrecio} línea(s) sin precio no entran en la suma. El neto es un simulador genérico de tramos partner, no el descuento real del distribuidor Huawei.</p>`
+    : '<p class="hint">Sin precios suficientes para calcular el TCO: este equipo no tiene precio de referencia en el cotizador.</p>';
+}
+
 function renderBom(){
   const m = MODELS.find(x => x.id === $('pickModel').value) || MODELS[0];
   // Sitios x unidades por sitio: con HA 1+1 se cotizan dos equipos por sitio (motor: `unidades`).
@@ -344,7 +381,7 @@ function renderBom(){
   // H-08: la necesidad y la capa son las del escenario evaluado; con need:0 la licencia de
   // rendimiento (Boost) que el calculo exigia desaparecia del BOM y del Excel.
   const ev = ultimaEval;
-  const lics = licensesFor(pick, {need:ev ? ev.need : 0, aps:ev ? ev.aps : 0,
+  const lics = licensesFor(pick, {anios:aniosSel(), need:ev ? ev.need : 0, aps:ev ? ev.aps : 0,
     svc:ev ? ev.svc : {sdwan:false, utm:false, slice:false}, pk:ev ? ev.pk : $('profile').value});
   const {s} = supportFor();
 
@@ -400,17 +437,19 @@ function renderBom(){
   // Soporte
   html += `<section class="panel"><h2>Servicio de soporte</h2><div class="scroll"><table>
     <thead><tr><th>Servicio</th><th>SLA</th><th>Término</th><th>Cantidad</th></tr></thead><tbody>
-    <tr><td>${s.n}</td><td class="n">${s.sla}</td><td class="n">12 meses</td><td class="n">${qty}</td></tr>
-    <tr><td>SnS — Software Subscription and Support</td><td class="n">Actualizaciones de VRP</td><td class="n">12 meses</td><td class="n">${qty}</td></tr>
+    <tr><td>${s.n}</td><td class="n">${s.sla}</td><td class="n">${aniosSel() * 12} meses</td><td class="n">${qty}</td></tr>
+    <tr><td>SnS — Software Subscription and Support</td><td class="n">Actualizaciones de VRP</td><td class="n">${aniosSel() * 12} meses</td><td class="n">${qty}</td></tr>
   </tbody></table></div></section>`;
 
   $('bomBody').innerHTML = html;
 
   const filas = filasBom(m, qty, optQty, piezas, lics, s);
   const meta = metaBom(m);
-  $('bomTabla').innerHTML = BOM.renderTabla(filas, {});
+  $('bomTabla').innerHTML = BOM.renderTabla(filas, {dto:dtoActual()});
+  pintarTco(filas);
   $('bomOut').value = BOM.comoTexto(filas, meta);
   bomFilas = filas; bomMeta = meta;
+  pintarPerfiles();
 }
 
 // Filas del BOM en el formato compartido de /js/bom.js. Huawei no publica precios de lista
@@ -418,7 +457,8 @@ function renderBom(){
 // lo detecta y no finge un total.
 function filasBom(m, qty, optQty, piezas, lics, s){
   const filas=[
-    {cat:'Equipo', desc:m.id, sku:null, qty, unit:null, nota:`Serie ${m.ser} · ${m.fam} · ${m.ports}`},
+    {cat:'Equipo', desc:m.id, sku:null, qty, unit:PRECIO_REF[BOM.normalizar(m.id)] ?? null,
+      nota:`Serie ${m.ser} · ${m.fam} · ${m.ports}`+(PRECIO_REF[BOM.normalizar(m.id)] != null ? ' · Precio de referencia estimado del cotizador, sin descuentos ni impuestos.' : '')},
   ];
   // H-06: solo lo que se PIDE; lo que es una alternativa va en una sola linea «elegir una»
   // (sin codigo, marcada por confirmar) y lo condicional o de ampliacion no se cotiza solo.
@@ -433,14 +473,16 @@ function filasBom(m, qty, optQty, piezas, lics, s){
   }
   // SnS ya sale en Soporte: dejarlo tambien como licencia lo cotizaba dos veces.
   lics.filter(l=>l.on && !/^SnS/.test(l.t)).forEach(l=>filas.push({cat:'Licencias', desc:l.t, sku:null, qty, unit:null, nota:l.d||''}));
-  filas.push({cat:'Soporte', desc:s.n, sku:null, qty, unit:null, nota:`${s.sla} · 12 meses`});
+  filas.push({cat:'Soporte', desc:s.n, sku:null, qty, unit:null, nota:`${s.sla} · ${aniosSel() * 12} meses`});
   filas.push({cat:'Soporte', desc:'SnS — Software Subscription and Support', sku:null, qty, unit:null,
-    nota:'Actualizaciones y parches de VRP. Va separada del paquete de hardware. 12 meses.'});
+    nota:'Actualizaciones y parches de VRP. Va separada del paquete de hardware. '+(aniosSel() * 12)+' meses.'});
   return filas;
 }
 
 function metaBom(m){
+  const d = dtoActual();
   return {
+    ...(d > 0 ? {dto:d, dtoEtq:dtoEtiqueta()} : {}),
     titulo:`Lista de materiales — ${m.id}`,
     subtitulo:`Serie ${m.ser} · ${m.fam}`,
     archivo:`BOM_${m.id}`,
@@ -470,6 +512,97 @@ $('copyBtn').addEventListener('click', async () => {
   setTimeout(() => $('copyBtn').textContent = 'Copiar como texto', 1600);
 });
 
+
+/* ── PERFILES MULTI-SEDE ────────────────────────────────────────────────────────────────
+   Misma clave compartida que los demas fabricantes (`BOM.perfiles`): un despliegue real mezcla
+   marcas. Cargar es de Huawei (los campos son ids de ESTA pagina); consolidar no. Aqui todo se
+   multiplica por sedes: el modelo comercial de Huawei no declara pools ni lineas unicas. */
+const CAMPOS_PERFIL = ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','qty','optQty'];
+const SEGS_PERFIL = ['modeSeg','dirSeg'];
+function capturarCampos(){
+  const v = {};
+  CAMPOS_PERFIL.forEach(id => { const n = $(id); if(n) v[id] = n.type === 'checkbox' ? n.checked : n.value; });
+  SEGS_PERFIL.forEach(id => { const a = $(id).querySelector('[aria-pressed="true"]'); v[id] = a ? a.dataset.v : null; });
+  return v;
+}
+function aplicarCampos(v){
+  CAMPOS_PERFIL.forEach(id => {
+    const n = $(id);
+    if(!n || v[id] == null) return;
+    if(n.type === 'checkbox') n.checked = !!v[id]; else n.value = v[id];
+  });
+  // Los grupos .seg guardan su valor en una variable de la pagina: solo su manejador la actualiza.
+  SEGS_PERFIL.forEach(id => { const b = v[id] != null && $(id).querySelector(`[data-v="${v[id]}"]`); if(b) b.click(); });
+  render();
+}
+function pintarPerfiles(){
+  const caja = $('listaPerfiles');
+  if(!caja) return;
+  const l = BOM.perfilesDe(VENDOR);
+  caja.innerHTML = l.length
+    ? '<table class="tco-tabla"><thead><tr><th>Perfil</th><th>Sedes</th><th>Modelo</th><th>Guardado</th><th></th></tr></thead><tbody>'
+      + l.map(x => `<tr><td><b>${esc(x.nombre)}</b></td><td>${x.sedes}</td><td>${esc(x.modelo)}</td><td>${esc(x.fecha || '—')}</td>`
+        + `<td><button type="button" class="btn ghost" data-perfil-cargar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Cargar</button> `
+        + `<button type="button" class="btn ghost" data-perfil-borrar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Eliminar</button></td></tr>`).join('')
+      + '</tbody></table>'
+    : '<p class="hint">Sin perfiles guardados todavía.</p>';
+  $('btnConsolidar').disabled = !BOM.perfiles().length;
+}
+$('btnGuardarPerfil').addEventListener('click', () => {
+  const nombre = $('nombrePerfil').value.trim();
+  const sedes = Math.max(0, parseInt($('perfilSedes').value, 10) || 0);
+  if(!nombre || !sedes){ $('perfilMsg').textContent = 'Pon un nombre y el número de sedes idénticas.'; $('nombrePerfil').focus(); return; }
+  if(!bomFilas.length || !hayCandidato){ $('perfilMsg').textContent = 'No hay un equipo dimensionado que guardar: ajusta el escenario primero.'; return; }
+  const m = MODELS.find(x => x.id === $('pickModel').value);
+  BOM.guardarPerfil({nombre, sedes, modelo:m ? m.id : $('pickModel').value, vendor:VENDOR, fecha:new Date().toISOString().slice(0, 10),
+    version:1, campos:capturarCampos(), filas:JSON.parse(JSON.stringify(bomFilas))});
+  $('nombrePerfil').value = ''; $('perfilSedes').value = '';
+  $('perfilMsg').textContent = `Perfil «${nombre}» guardado con ${sedes} sede(s).`;
+  pintarPerfiles();
+});
+$('listaPerfiles').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if(!b) return;
+  if(b.dataset.perfilCargar != null){
+    const x = BOM.perfilesDe(VENDOR).find(y => y.id === b.dataset.perfilCargar);
+    if(x && x.campos) aplicarCampos(x.campos);
+  } else if(b.dataset.perfilBorrar != null){
+    BOM.quitarPerfil(b.dataset.perfilBorrar);
+    pintarPerfiles();
+  }
+});
+function consolidarPerfiles(){
+  const l = BOM.perfiles();
+  const {filas, totalSedes, fabricantes} = BOM.consolidar(l, {agregadas:[], unicas:[]});
+  const multi = fabricantes.length > 1;
+  const meta = {
+    titulo:`BOM global consolidado — ${l.length} perfil(es), ${totalSedes} sedes`,
+    subtitulo:l.map(x => `${x.nombre} ×${x.sedes} (${x.modelo})`).join(' · '),
+    archivo:multi ? 'BOM_global_multifabricante' : 'BOM_global_huawei',
+    sinRefs:true,
+    notas:['REGLAS DE CONSOLIDACION (Huawei):',
+      '  Equipo, componentes, licencias y soporte: cantidad del perfil x sedes del perfil.',
+      '  Los codigos BOM de 8 digitos siguen por confirmar; el precio del equipo es una referencia estimada.'],
+  };
+  if(multi) meta.notas.push(`  MULTI-FABRICANTE: ${fabricantes.join(', ')}.`);
+  const d = dtoActual();
+  if(d > 0){ meta.dto = d; meta.dtoEtq = dtoEtiqueta(); }
+  return {filas, meta, totalSedes, fabricantes};
+}
+$('btnConsolidar').addEventListener('click', () => {
+  const {filas, meta, totalSedes, fabricantes} = consolidarPerfiles();
+  if(!totalSedes) return;
+  $('consolidadoSub').textContent = `${meta.subtitulo} — ${totalSedes} sedes en total`;
+  $('consolidadoTabla').innerHTML = (fabricantes.length > 1 ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${esc(fabricantes.join(', '))}).</p>` : '')
+    + BOM.renderTabla(filas, {dto:dtoActual(), sinRefs:true});
+  $('modalConsolidado').hidden = false;
+  $('xlsConsolidadoBtn').onclick = () => BOM.exportarExcel(filas, meta);
+  $('consolidadoCerrar').focus();
+});
+$('consolidadoCerrar').addEventListener('click', () => { $('modalConsolidado').hidden = true; $('btnConsolidar').focus(); });
+$('modalConsolidado').addEventListener('click', e => { if(e.target === $('modalConsolidado')) $('modalConsolidado').hidden = true; });
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && !$('modalConsolidado').hidden) $('modalConsolidado').hidden = true; });
+
 /* ════════ CATÁLOGO DE ÓPTICAS ════════ */
 (async function initApp(){
   const res = await fetch('/api/dimensionador/huawei');
@@ -484,6 +617,7 @@ $('copyBtn').addEventListener('click', async () => {
   MODELS = data.models;
   HICARE = data.hicare;
 
+  await cargarPreciosRef();
   populatePickModel();
   $('opticsAll').innerHTML = Object.keys(OPTICS).map(k => `
     <div class="grp"><h3>${OPTIC_LABEL[k]}</h3>
@@ -518,7 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // es la identidad bajo la que ya hay escenarios guardados en el navegador de quien usa
   // esto. Renombrarla por coherencia cosmetica le borraria el trabajo guardado a cambio de
   // nada, porque nadie ve esta cadena. El archivo se llama dimensionador-huawei-netengine.
-  const st = ESTADO.vincular({ campos: ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','dirSeg','modeSeg','verdict-sel'] });
+  const st = ESTADO.vincular({ campos: ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','selDescuento','dtoCustom','dirSeg','modeSeg','verdict-sel'] });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');

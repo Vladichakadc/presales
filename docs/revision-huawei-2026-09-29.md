@@ -358,3 +358,13 @@ AR5700/6700/8000 pide además la cuenta Huawei.
 AR5700&6700&8000 Series Routers Product Life Cycle» y los datasheets AR y NetEngine, y los deja en
 la sesión (o en Drive). Entran por `npm run huawei` con el doble anclaje de siempre.
 
+
+**H-13, capa comercial (2026-09-29).** El dimensionador monta lo que `bom.js` ya daba a Aruba y
+Fortinet: plazo de suscripciones y soporte (1, 3 o 5 años, con el término real en el texto de cada
+línea), simulador de precio neto, TCO y perfiles multi-sede con BOM consolidado. **Dos decisiones
+que conviene conocer.** (1) El precio del equipo se toma del cotizador (`/api/cotizador/catalog`,
+la fuente única de precios) casando por nombre normalizado, y no se copia al catálogo: cubre 13 de
+los 40 modelos y es una estimación sin descuentos ni impuestos, cosa que dice cada fila. (2) El TCO
+se declara **parcial** en el propio pie: licencias, suscripciones y soporte no tienen precio
+publicado, así que la suma cubre el equipo y cuenta cuántas líneas quedan fuera. Un total que
+pareciera completo sería el dato inventado que este catálogo prohíbe.

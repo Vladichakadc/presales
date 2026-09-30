@@ -131,15 +131,17 @@
      porque la de rendimiento depende de ella (H-08: el BOM la pasaba en 0 y la perdia). */
   function licencias(pick, c) {
     const m = pick.m, L = [];
+    // Plazo de las suscripciones (1, 3 o 5 anos): el texto de cada linea dice el termino real.
+    const T = `${12 * (parseInt(c.anios, 10) || 1)} meses`;
     if (m.boost && c.need > m.boost) L.push({ on: 1, t: 'Licencia de rendimiento (Boost)', d: `Sin ella el ${m.id} entrega ${fmt(m.boost)}. La licencia lo lleva a ${fmt(m.fwd)}.` });
     if (!pick.isWan) {
       if (c.pk !== 'fwd' || c.svc.sdwan) {
         L.push({ on: 1, t: 'Licencia de función SD-WAN por equipo', d: 'Habilita identificación de aplicaciones, selección inteligente de ruta y túneles gestionados.' });
-        L.push({ on: 1, t: 'Suscripción iMaster NCE-WAN — 12 meses', d: 'Controlador y gestión del overlay. Se licencia por nodo administrado.' });
+        L.push({ on: 1, t: `Suscripción iMaster NCE-WAN — ${T}`, d: 'Controlador y gestión del overlay. Se licencia por nodo administrado.' });
       }
       if (c.svc.utm) {
         L.push({ on: 1, t: 'Licencia de seguridad: IPS, filtrado URL y antivirus', d: 'Funciones licenciadas aparte en la serie AR, no vienen activas.' });
-        L.push({ on: 1, t: 'Suscripción de bases de firmas — 12 meses', d: 'Sin firmas vigentes el IPS y el antivirus quedan sin actualizar.' });
+        L.push({ on: 1, t: `Suscripción de bases de firmas — ${T}`, d: 'Sin firmas vigentes el IPS y el antivirus quedan sin actualizar.' });
       }
       if (c.aps > 0) {
         const extra = Math.max(0, c.aps - (m.apsFree || 0));
@@ -151,9 +153,9 @@
       L.push({ on: 1, t: 'Licencias de función de transporte: L3VPN, EVPN, SRv6', d: 'Se licencian por funcionalidad activada.' });
       if (c.svc.slice) L.push({ on: 1, t: 'Licencia de slicing FlexE / SRv6', d: 'Aislamiento duro de red y ajuste de ancho de banda por rebanada.' });
       L.push({ on: 1, t: 'Licencia de capacidad por puerto y tarjeta', d: 'La capacidad se habilita por incrementos. Cotiza la densidad del año 1 y crece por licencia.' });
-      L.push({ on: 1, t: 'Suscripción iMaster NCE — 12 meses', d: 'Gestión, automatización y O&M proactiva del nodo.' });
+      L.push({ on: 1, t: `Suscripción iMaster NCE — ${T}`, d: 'Gestión, automatización y O&M proactiva del nodo.' });
     }
-    L.push({ on: 1, t: 'SnS — Software Subscription and Support, 12 meses', d: 'Vía para actualizaciones y parches de VRP. Va separada del paquete de hardware.' });
+    L.push({ on: 1, t: `SnS — Software Subscription and Support, ${T}`, d: 'Vía para actualizaciones y parches de VRP. Va separada del paquete de hardware.' });
     L.push({ on: 0, t: 'Registro de ESN', d: 'Todas las licencias se emiten contra el ESN del equipo y se descargan del portal ESDP de Huawei.' });
     return L;
   }
