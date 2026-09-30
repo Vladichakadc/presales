@@ -119,6 +119,11 @@
       || extras(a.m) - extras(b.m) || a.m.id.localeCompare(b.m.id, 'en', { numeric: true }));
     const pick = fit.find((r) => recomendable(r.m)) || null;
     const next = fit.filter((r) => recomendable(r.m))[1] || null;
+    // Un equipo que el catalogo declara con doble fuente (`redund: true`) ya cubre esa falla:
+    // el par protege ante la perdida del chasis completo. Solo se dice si el dato existe.
+    if (ha && pick && pick.m.redund === true) {
+      avisos.push(`El ${pick.m.id} ya declara fuentes redundantes en el catálogo: el par 1+1 protege ante la pérdida del equipo completo, no solo de una fuente.`);
+    }
     return { raw, base, need, needMpps, mode, sites, conc, head, dirMult, frame, perfil, pk, ef, svc, want, aps, minLan, wanOk, tuneles, ha, unidades, avisos, rows, fit, pick, next };
   }
 

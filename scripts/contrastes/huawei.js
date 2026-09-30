@@ -115,6 +115,24 @@ module.exports = {
       detalle: `sin HA x${cant(sinHa)}, con HA x${cant(conHa)}` });
     out.push({ n: 'BOM · SnS se cotiza una sola vez (antes salía como licencia y como soporte)',
       ok: sns(conHa) === 1, detalle: `${sns(conHa)} línea(s) de SnS` });
+
+    // El enlace compartido repone la HA, y al enviar al cotizador viajan los dos equipos.
+    await p.goto(`${base}/dimensionador-huawei-netengine.html?bw=450&profile=fwd&sSdwan=0&rPoe=1&rWifi=1&chkHa=1`, { waitUntil: 'domcontentloaded' });
+    await pausa(p, 1800);
+    const haRestaurada = await p.$eval('#chkHa', (e) => e.checked).catch(() => false);
+    const equipoUrl = await p.$eval('#verdict-sel', (e) => e.value).catch(() => null);
+    out.push({ n: 'H-12 · un enlace compartido repone la alta disponibilidad',
+      ok: haRestaurada && equipoUrl === 'AR651W-8P', detalle: `chkHa ${haRestaurada}; equipo ${equipoUrl}` });
+    await p.click('.tabs button[data-tab="bom"]');
+    await pausa(p, 400);
+    await Promise.all([
+      p.waitForURL((u) => /cotizador/.test(u.pathname), { timeout: 10000 }).catch(() => {}),
+      p.click('.btn-cotizador'),
+    ]);
+    await pausa(p, 1500);
+    const fila = await p.$$eval('tr', (trs) => trs.filter((t) => /AR651W-8P/.test(t.textContent)).map((t) => t.innerText.replace(/\s+/g, ' ')));
+    out.push({ n: 'H-12 · al enviar al cotizador con HA viajan dos equipos',
+      ok: fila.length > 0 && /−\s*2\s*\+/.test(fila[0]), detalle: fila.length ? fila[0].slice(0, 110) : 'la fila del equipo no llegó al cotizador' });
     return out;
   },
 };

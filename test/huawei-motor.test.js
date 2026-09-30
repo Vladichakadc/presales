@@ -172,3 +172,11 @@ test('H-12 · misión crítica sin HA lo advierte; con HA no', () => {
 test('H-12 · la línea base legada ignora la HA', () => {
   assert.strictEqual(M.evaluar(esc({ bw: 500, ha: true }), MODELS, { legado: true }).unidades, 1);
 });
+
+test('H-12 · el aviso de fuentes redundantes solo sale si el catálogo lo declara', () => {
+  const hub = M.evaluar(esc({ bw: 6000, profile: 'fwd', svc: { sdwan: false }, ha: true }), MODELS);
+  assert.strictEqual(hub.pick.m.id, 'AR8140-12G10XG');
+  assert.ok(hub.avisos.some((a) => /ya declara fuentes redundantes/.test(a)));
+  const ar = M.evaluar(esc({ bw: 500, ha: true }), MODELS);
+  assert.ok(!ar.avisos.some((a) => /ya declara fuentes redundantes/.test(a)), 'redund ausente no se lee como false ni como true');
+});
