@@ -375,3 +375,12 @@ las familias que el catálogo lista como compatibles con el equipo, y una fila q
 al cambiar de modelo sale como inválida en vez de desaparecer. **Lo que no se puede dar:** una
 matriz de compatibilidad por chasis y por versión de VRP; el catálogo solo respalda el nivel de
 familia, y la pantalla pide confirmar el modelo exacto contra el Hardware Description.
+
+**H3, plataforma antes que el caudal (2026-09-30).** `#platSeg` elige NetEngine AR, A800 E o
+NE8000 antes de calcular (`HuaweiMotor.PLATAFORMAS`). Solo compiten los modelos de esa línea, y lo
+que no aplica se oculta con `data-inactivo`: conserva su valor, sale del cálculo y del enlace
+compartido. Con 2 Gbps de reenvío la línea base mezclaba 21 candidatos de AR y de transporte; ahora
+la plataforma AR da el mismo AR6710-H entre 4, y NE8000 responde con un NE8000 M1A. **FlexE es dato
+del modelo** solo donde el registro ya lo publica (A821 E); el resto es «no consta», no se aparta y
+va detrás del confirmado. El modo «Nodo de núcleo» se retiró: era la plataforma NE8000 escrita como
+modo de cálculo, y los enlaces y perfiles viejos con `modeSeg=core` se traducen solos.

@@ -14,6 +14,8 @@ const $ = id => document.getElementById(id);
 // Plazo de suscripciones y soporte (1, 3 o 5 anos), del selector #anios.
 const aniosSel = () => Math.max(1, parseInt($('anios').value, 10) || 1);
 let dirMult = 2, mode = 'link', lastPick = null;
+// Plataforma elegida ANTES que el caudal (etapa H3): ar | a800 | ne8000.
+let plataforma = 'ar';
 // Si el dimensionamiento se quedo sin candidato, el BOM tiene que DECIRLO.
 let hayCandidato = true;
 let bomFilas = [], bomMeta = {};
@@ -24,16 +26,41 @@ document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click
   ['calc','bom','optics','cat','src'].forEach(t => $('pane-' + t).hidden = (t !== b.dataset.tab));
 }));
 
+// Rotulos que dependen de la plataforma y del modo: el mismo numero significa cosas distintas
+// en un AR de sucursal (enlace contratado) y en un NE8000 (trafico que conmuta el nodo).
+const PLAT_HINT = {
+  ar:'Router empresarial y SD-WAN: se dimensiona por throughput de servicio IMIX de la capa que pida el tráfico.',
+  a800:'Acceso de operador (CPE y cell site): se dimensiona por capacidad de conmutación y Mpps. SD-WAN, UTM y WAC no aplican.',
+  ne8000:'Agregación y núcleo IP/MPLS: se dimensiona por capacidad de conmutación y Mpps. El techo real lo fijan las tarjetas de línea.',
+};
+function rotular(){
+  const transporte = plataforma !== 'ar';
+  $('aggBlock').classList.toggle('hidden', mode !== 'agg');
+  $('bwLabel').textContent = mode === 'agg' ? 'Ancho de banda por sede' : transporte ? 'Tráfico que debe conmutar el nodo' : 'Ancho de banda contratado';
+  $('modeHint').textContent = mode === 'agg'
+    ? (transporte ? 'Suma el tráfico de las sedes que agrega este nodo, aplicando simultaneidad.' : 'Suma los enlaces de todas las sucursales que terminan en este equipo, aplicando simultaneidad.')
+    : transporte ? 'Tráfico total del nodo. Se contrasta contra capacidad de conmutación y Mpps.' : 'Un solo enlace WAN terminando en el equipo.';
+  $('platHint').textContent = PLAT_HINT[plataforma];
+  // Lo que no aplica a la plataforma se oculta y se marca `data-inactivo`: conserva su valor,
+  // sale del calculo (el motor lo normaliza) y estado.js no lo pone en el enlace.
+  const ar = $('grpAr'), tr = $('grpTransporte');
+  ar.hidden = transporte; tr.hidden = !transporte;
+  if(transporte){ ar.setAttribute('data-inactivo', '1'); tr.removeAttribute('data-inactivo'); }
+  else { tr.setAttribute('data-inactivo', '1'); ar.removeAttribute('data-inactivo'); }
+  $('serviciosHint').hidden = !transporte;
+}
+$('platSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  [...$('platSeg').children].forEach(x => x.setAttribute('aria-pressed', x === b));
+  plataforma = b.dataset.v;
+  rotular();
+  render();
+});
 $('modeSeg').addEventListener('click', e => {
   const b = e.target.closest('button'); if(!b) return;
   [...$('modeSeg').children].forEach(x => x.setAttribute('aria-pressed', x === b));
   mode = b.dataset.v;
-  $('aggBlock').classList.toggle('hidden', mode !== 'agg');
-  $('bwLabel').textContent = mode === 'agg' ? 'Ancho de banda por sede' : mode === 'core' ? 'Tráfico agregado del nodo' : 'Ancho de banda contratado';
-  $('modeHint').textContent = mode === 'agg'
-    ? 'Suma los enlaces de todas las sucursales que terminan en este equipo, aplicando simultaneidad.'
-    : mode === 'core' ? 'Capacidad total que debe conmutar el nodo. Se contrasta contra capacidad de conmutación y Mpps.'
-    : 'Un solo enlace WAN terminando en el equipo.';
+  rotular();
   render();
 });
 $('dirSeg').addEventListener('click', e => {
@@ -87,7 +114,7 @@ function render(){
     frame:$('frame').value, profile:$('profile').value, lan:$('lan').value, aps:$('aps').value,
     svc:{sdwan:$('sSdwan').checked, utm:$('sUtm').checked, slice:$('sSlice').checked},
     want:{poe:$('rPoe').checked, wan:$('rWan').checked, wifi:$('rWifi').checked},
-    ha:$('chkHa').checked, crit:$('crit').value,
+    ha:$('chkHa').checked, crit:$('crit').value, plataforma,
   }, MODELS, {rango:FICHA.rango, recomendable:FICHA.recomendable});
   ultimaEval = ev;
   const {raw, base, need, needMpps, frame, pk, aps, svc, wanOk, rows, fit, pick, next} = ev;
@@ -99,7 +126,7 @@ function render(){
   // ── Presentacion ──────────────────────────────────────────────────────────
   // El veredicto pasa a ser un desplegable con todos los que cumplen; licencias, soporte
   // y BOM siguen al equipo ELEGIDO. Ver /js/ficha.js.
-  const ctx = {need, needMpps, raw, base, head, conc, sites, frame, pk, rows, wanOk};
+  const ctx = {need, needMpps, raw, base, head, conc, sites, frame, pk, rows, wanOk, plataforma:ev.plataforma};
   const licCtx = {need, aps, svc, pk, anios:aniosSel()};
   if(!raw || !fit.length || !pick){
     // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): ni veredicto
@@ -234,7 +261,7 @@ function drawLadder(need, pick, pk){
     const d = document.createElement('div'); d.className = 'tick'; d.style.left = pos(v) + '%';
     d.innerHTML = `<i></i><b>${l}</b>`; t.appendChild(d);
   });
-  MODELS.forEach(m => {
+  MODELS.filter(HuaweiMotor.PLATAFORMAS[plataforma].de).forEach(m => {
     const c = m.cls === 'WAN' ? m.cap : m[pk]; if(c == null) return;
     const d = document.createElement('div');
     d.className = 'dot' + (m.cls === 'WAN' ? ' wan' : '') + (pick && pick.m.id === m.id ? ' pick' : (c >= need ? ' ok' : ''));
@@ -256,10 +283,11 @@ function drawVerdict(pick, next, c){
   if(!c.raw){ v.innerHTML = `<p class="tag">Sin datos</p><div class="model">Ingrese valores para recomendar un equipo</div><p class="family">Escriba el <b>ancho de banda</b> del sitio para que el dimensionador proponga los modelos que cumplen.</p>`; return; }
   if(!pick){
     const over = c.rows.every(r => r.cap == null || r.cap < c.need);
-    v.innerHTML = `<p class="tag">Sin coincidencias</p><div class="model">${over ? 'Fuera del catálogo' : 'Ajusta los filtros'}</div>
-      <p class="family">${over ? `El requerimiento de ${fmt(c.need)} supera al NE8000 X16. A este nivel se resuelve con varios chasis en paralelo.`
-      : c.wanOk ? 'Ningún modelo cumple capacidad y requisitos a la vez.'
-      : 'Con SD-WAN, UTM o WAC habilitados solo compite la serie AR, y ninguno cubre este caudal. Para transporte puro desmarca esas funciones.'}</p>
+    const P = HuaweiMotor.PLATAFORMAS[c.plataforma] || {n:'la plataforma'};
+    const mayor = c.rows.filter(r => r.cap != null).sort((a, b) => b.cap - a.cap)[0];
+    v.innerHTML = `<p class="tag">Sin coincidencias</p><div class="model">${over ? 'Fuera de la plataforma' : 'Ajusta los filtros'}</div>
+      <p class="family">${over ? `El requerimiento de ${fmt(c.need)} supera al mayor equipo de ${esc(P.n)}${mayor ? ` (${esc(mayor.m.id)}, ${fmt(mayor.cap)})` : ''}. ${c.plataforma === 'ne8000' ? 'A este nivel se resuelve con varios chasis en paralelo.' : 'Revisa si corresponde otra plataforma o repartir el tráfico entre varios equipos.'}`
+      : `Ningún modelo de ${esc(P.n)} cumple capacidad y requisitos a la vez.`}</p>
       <div class="why"><b>Requerimiento:</b> ${fmt(c.need)} · ${c.needMpps.toFixed(2)} Mpps a ${c.frame} bytes.</div>`;
     return;
   }
@@ -579,14 +607,16 @@ $('copyBtn').addEventListener('click', async () => {
    marcas. Cargar es de Huawei (los campos son ids de ESTA pagina); consolidar no. Aqui todo se
    multiplica por sedes: el modelo comercial de Huawei no declara pools ni lineas unicas. */
 const CAMPOS_PERFIL = ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','qty','opticasData'];
-const SEGS_PERFIL = ['modeSeg','dirSeg'];
+const SEGS_PERFIL = ['platSeg','modeSeg','dirSeg'];
 function capturarCampos(){
   const v = {};
   CAMPOS_PERFIL.forEach(id => { const n = $(id); if(n) v[id] = n.type === 'checkbox' ? n.checked : n.value; });
   SEGS_PERFIL.forEach(id => { const a = $(id).querySelector('[aria-pressed="true"]'); v[id] = a ? a.dataset.v : null; });
   return v;
 }
-function aplicarCampos(v){
+function aplicarCampos(v0){
+  // Un perfil de antes de H3 con «nodo de núcleo» se carga como plataforma NE8000.
+  const v = v0 && v0.modeSeg === 'core' ? {...v0, modeSeg:'link', platSeg:v0.platSeg || 'ne8000'} : (v0 || {});
   CAMPOS_PERFIL.forEach(id => {
     const n = $(id);
     if(!n || v[id] == null) return;
@@ -713,7 +743,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // es la identidad bajo la que ya hay escenarios guardados en el navegador de quien usa
   // esto. Renombrarla por coherencia cosmetica le borraria el trabajo guardado a cambio de
   // nada, porque nadie ve esta cadena. El archivo se llama dimensionador-huawei-netengine.
-  const st = ESTADO.vincular({ campos: ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','opticasData','selDescuento','dtoCustom','dirSeg','modeSeg','verdict-sel'] });
+  // Enlaces anteriores a la etapa H3: `modeSeg=core` era «nodo de núcleo», que ahora es la
+  // plataforma NE8000 con cálculo de enlace. Se traduce en vez de dejar el enlace mudo.
+  const qs0 = new URLSearchParams(location.search);
+  const veniaDeCore = qs0.get('modeSeg') === 'core' && !qs0.has('platSeg');
+  const st = ESTADO.vincular({ campos: ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','opticasData','selDescuento','dtoCustom','platSeg','dirSeg','modeSeg','verdict-sel'] });
+  if (veniaDeCore) {
+    $('platSeg').querySelector('[data-v="ne8000"]').click();
+    $('modeSeg').querySelector('[data-v="link"]').click();
+    console.info('[huawei] enlace con modeSeg=core traducido a la plataforma NE8000.');
+  }
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');

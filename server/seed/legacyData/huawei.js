@@ -62,6 +62,8 @@ const PARTS = {
 };
 
 // Actualizado con datasheets oficiales de Huawei — Fase 2 verificación (Ago 2026)
+// `flexe: true` solo donde el propio registro ya lo publica («FlexE con granularidad Mbps» en el
+// A821 E); en el resto queda sin declarar, que es «no consta» y no «no lo soporta» (2026-09-30).
 const MODELS = [
 {id:'AR611', cls:'AR', ser:'AR610', fam:'SOHO / oficina pequeña', fwd:300, ipsec:200, typ:null, mpps:null, lan:8, poe:0, wan:0, wifi:0, apsFree:0, apsMax:0, boost:0,
  ports:'1 x GE combo WAN, 8 x GE LAN', optics:['ge'], parts:['RACK','CONSOLE']},
@@ -123,7 +125,7 @@ const MODELS = [
 {id:'NetEngine A822 E', cls:'WAN', ser:'A800 E', fam:'CPE de acceso de mayor densidad, 1U', cap:20000, mpps:4.4, lan:0, poe:0, wan:0, wifi:0,
  ports:'1U · 33.2 W típicos · 32 G/U · SRv6, EVPN · fuente AC 120 W integrada', optics:['ge','sfp10'], parts:['RACK','CONSOLE'],
  redund:false, psu:{watts:120, tipo:'AC integrada', texto:'Fuente AC de 120 W integrada — única, no redundante.'}},
-{id:'NetEngine A821 E', cls:'WAN', ser:'A800 E', fam:'Acceso 10GE con slicing FlexE, 1U', cap:72000, mpps:108, lan:0, poe:0, wan:0, wifi:0,
+{id:'NetEngine A821 E', cls:'WAN', ser:'A800 E', fam:'Acceso 10GE con slicing FlexE, 1U', cap:72000, mpps:108, flexe:true, lan:0, poe:0, wan:0, wifi:0,
  ports:'2 x 10GE/GE + 8 x GE óptico + 8 x GE eléctrico · FlexE con granularidad Mbps · 70 W típicos', optics:['sfp10','ge'], parts:['RACK','CONSOLE'],
  psu:{watts:70}},
 

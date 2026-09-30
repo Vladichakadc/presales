@@ -58,12 +58,54 @@ test('H-02 · UTM declara que no hay cifra de inspección y no finge una', () =>
   assert.ok(!sin.avisos.some((a) => /prueba de concepto/.test(a)));
 });
 
-test('H-04 · slicing FlexE aparta la serie AR; nodo de núcleo solo compite NetEngine', () => {
-  const s = M.evaluar(esc({ bw: 1000, profile: 'fwd', svc: { slice: true } }), MODELS);
-  assert.ok(s.rows.filter((r) => !r.isWan).every((r) => r.miss.length));
-  const n = M.evaluar(esc({ bw: 5000, mode: 'core' }), MODELS);
-  assert.ok(n.pick && n.pick.isWan, 'con SD-WAN marcado por defecto, el nodo de núcleo sigue teniendo respuesta');
-  assert.ok(n.rows.filter((r) => !r.isWan).every((r) => r.miss.length));
+test('H3 · la plataforma se elige antes que el caudal: solo compiten los modelos de esa línea', () => {
+  const de = (plataforma, o) => M.evaluar(esc({ bw: 2000, profile: 'fwd', svc: {}, plataforma, ...o }), MODELS);
+  const ar = de('ar'), ne = de('ne8000'), a8 = de('a800');
+  assert.ok(ar.rows.every((r) => r.m.cls === 'AR'), 'AR: solo serie AR');
+  assert.ok(ne.rows.every((r) => /^NE8000/.test(r.m.ser)), 'NE8000: solo NE8000');
+  assert.ok(a8.rows.every((r) => r.m.ser === 'A800 E'), 'A800 E: solo A800 E');
+  assert.strictEqual(ar.pick.m.id, 'AR6710-H4T4X2Y7');
+  assert.strictEqual(ne.pick.m.id, 'NE8000 M1A');
+  assert.strictEqual(a8.pick.m.id, 'NetEngine A813 E');
+});
+
+test('H3 · antes, con reenvío puro, un AR y un NE8000 competían en la misma lista (legado)', () => {
+  const r = M.evaluar(esc({ bw: 2000, profile: 'fwd', svc: {} }), MODELS, { legado: true });
+  assert.ok(r.fit.some((x) => x.isWan) && r.fit.some((x) => !x.isWan), 'la línea base mezclaba familias');
+});
+
+test('H3 · en transporte, SD-WAN, UTM, WAC, PoE, 4G/5G, Wi-Fi y LAN no entran en el cálculo', () => {
+  const r = M.evaluar(esc({ bw: 2000, plataforma: 'ne8000', svc: { sdwan: true, utm: true }, want: { poe: true, wifi: true }, aps: 50, lan: 24 }), MODELS);
+  assert.ok(r.pick, 'las funciones AR no vacían la plataforma de transporte');
+  assert.strictEqual(r.pick.m.id, 'NE8000 M1A');
+  assert.ok(!r.avisos.some((a) => /sube de|UTM/.test(a)));
+});
+
+test('H3 · en la serie AR el slicing FlexE no entra en el cálculo', () => {
+  const con = M.evaluar(esc({ bw: 1000, profile: 'fwd', svc: { slice: true } }), MODELS);
+  const sin = M.evaluar(esc({ bw: 1000, profile: 'fwd', svc: {} }), MODELS);
+  assert.strictEqual(con.pick.m.id, sin.pick.m.id);
+  assert.strictEqual(con.svc.slice, false);
+});
+
+test('H3 · FlexE: lo confirmado va antes que lo que no consta, y no se aparta a nadie', () => {
+  const r = M.evaluar(esc({ bw: 1000, plataforma: 'a800', svc: { slice: true } }), MODELS);
+  assert.strictEqual(r.pick.m.id, 'NetEngine A821 E', 'el único A800 E que declara FlexE');
+  assert.strictEqual(r.fit.length, 4, 'los que no lo declaran siguen elegibles');
+  assert.ok(r.avisos.some((a) => /FlexE/.test(a) && /no consta/.test(a)));
+  const ne = M.evaluar(esc({ bw: 1000, plataforma: 'ne8000', svc: { slice: true } }), MODELS);
+  assert.ok(ne.avisos.some((a) => /ningún modelo de esta plataforma lo declara/.test(a)));
+});
+
+test('H3 · un escenario viejo con modo «core» se lee como plataforma NE8000', () => {
+  const r = M.evaluar(esc({ bw: 5000, mode: 'core' }), MODELS);
+  assert.strictEqual(r.plataforma, 'ne8000');
+  assert.ok(r.pick && r.pick.isWan);
+});
+
+test('H3 · los túneles del hub solo se piden en la serie AR', () => {
+  assert.strictEqual(M.evaluar(esc({ bw: 50, mode: 'agg', sites: 100, plataforma: 'ne8000' }), MODELS).tuneles, 0);
+  assert.strictEqual(M.evaluar(esc({ bw: 50, mode: 'agg', sites: 100 }), MODELS).tuneles, 100);
 });
 
 test('H-05 · lan:null es «el catálogo no lo dice» y no descarta a los hubs', () => {

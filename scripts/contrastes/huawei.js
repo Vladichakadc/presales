@@ -9,14 +9,16 @@
  * `test/huawei-motor.test.js`, donde el cambio es la afirmacion; aqui lo que se afirma es que
  * el resto sigue igual, y de paso es el primer caso que CONDUCE esta pantalla, que figuraba
  * «sin conducir» en la cobertura del contraste.
+ *
+ * ETAPA H3 (2026-09-30): dos escenarios de la linea base original —2 y 6 Gbps de reenvio sin
+ * SD-WAN— salieron de ella A PROPOSITO. Medidos en f2a939d daban 21 y 17 candidatos porque la
+ * serie AR y la de transporte competian en la misma lista; con la plataforma elegida antes que
+ * el caudal eso es justo lo que ya no pasa. Se conservan como afirmaciones del cambio en
+ * `extra()`: mismo recomendado en la plataforma AR, y la respuesta de NE8000 y A800 E aparte.
  */
 const BASE_LINEA = [
   { n: '500 Mbps SD-WAN típico', bw: 500, perfil: 'typ', sdwan: true, poe: false, wifi: false, wan: false,
     recomendado: 'AR6710-L14T2X4', need: '1.3 Gbps', nCandidatos: 5 },
-  { n: '2 Gbps reenvío sin SD-WAN', bw: 2000, perfil: 'fwd', sdwan: false, poe: false, wifi: false, wan: false,
-    recomendado: 'AR6710-H4T4X2Y7', need: '5.2 Gbps', nCandidatos: 21 },
-  { n: '6 Gbps reenvío sin SD-WAN (entra NetEngine)', bw: 6000, perfil: 'fwd', sdwan: false, poe: false, wifi: false, wan: false,
-    recomendado: 'AR8140-12G10XG', need: '15.6 Gbps', nCandidatos: 17 },
   { n: '450 Mbps con PoE y Wi-Fi', bw: 450, perfil: 'fwd', sdwan: false, poe: true, wifi: true, wan: false,
     recomendado: 'AR651W-8P', need: '1.2 Gbps', nCandidatos: 1 },
   { n: '300 Mbps IPsec sin SD-WAN', bw: 300, perfil: 'ipsec', sdwan: false, poe: false, wifi: false, wan: false,
@@ -33,6 +35,7 @@ module.exports = {
   baseLinea: BASE_LINEA,
 
   async preparar(p, e, { pausa }) {
+    await p.click('#platSeg button[data-v="ar"]');
     await p.fill('#bw', String(e.bw));
     await p.selectOption('#profile', e.perfil);
     for (const [id, on] of [['#sSdwan', e.sdwan], ['#rPoe', e.poe], ['#rWifi', e.wifi], ['#rWan', e.wan]]) {
@@ -55,6 +58,34 @@ module.exports = {
   // afirmacion; el resto del caso prueba que nada mas se movio.
   async extra(p, { base, pausa }) {
     const out = [];
+    // H3: la plataforma se elige antes que el caudal. 2 Gbps de reenvio sin SD-WAN: en la linea
+    // base (f2a939d) salia AR6710-H4T4X2Y7 entre 21 candidatos que mezclaban AR y NetEngine.
+    const plat = async (v, bw) => {
+      await p.goto(`${base}/dimensionador-huawei-netengine.html?bw=${bw}&profile=fwd&sSdwan=0&platSeg=${v}`, { waitUntil: 'domcontentloaded' });
+      await pausa(p, 1600);
+      return {
+        rec: await p.$eval('#verdict-sel', (e) => e.value).catch(() => null),
+        opciones: await p.$eval('#verdict-sel', (e) => [...e.options].map((o) => o.value)).catch(() => []),
+      };
+    };
+    const ar2 = await plat('ar', 2000);
+    out.push({ n: 'H3 · 2 Gbps de reenvío en plataforma AR: mismo recomendado que la línea base, y solo compiten AR',
+      ok: ar2.rec === 'AR6710-H4T4X2Y7' && ar2.opciones.length > 0 && ar2.opciones.every((v) => /^AR/.test(v)),
+      detalle: `${ar2.rec}; ${ar2.opciones.length} candidatos, ${ar2.opciones.filter((v) => !/^AR/.test(v)).length} de otra familia` });
+    const ar6 = await plat('ar', 6000);
+    out.push({ n: 'H3 · 6 Gbps de reenvío en plataforma AR: mismo recomendado que la línea base',
+      ok: ar6.rec === 'AR8140-12G10XG' && ar6.opciones.every((v) => /^AR/.test(v)), detalle: `${ar6.rec}; ${ar6.opciones.length} candidatos` });
+    const ne2 = await plat('ne8000', 2000);
+    out.push({ n: 'H3 · la misma demanda en NE8000 se responde con un NE8000, no con un AR',
+      ok: !!ne2.rec && /^NE8000/.test(ne2.rec) && ne2.opciones.every((v) => /^NE8000/.test(v)), detalle: `${ne2.rec}; ${ne2.opciones.length} candidatos` });
+    // Un enlace viejo con modeSeg=core aterriza en NE8000, no en la serie AR.
+    await p.goto(`${base}/dimensionador-huawei-netengine.html?bw=5000&modeSeg=core`, { waitUntil: 'domcontentloaded' });
+    await pausa(p, 1600);
+    const platCore = await p.$eval('#platSeg [aria-pressed="true"]', (e) => e.dataset.v).catch(() => null);
+    const recCore = await p.$eval('#verdict-sel', (e) => e.value).catch(() => null);
+    out.push({ n: 'H3 · un enlace viejo con «nodo de núcleo» se traduce a la plataforma NE8000',
+      ok: platCore === 'ne8000' && /^NE8000/.test(recCore || ''), detalle: `plataforma ${platCore}; ${recCore}` });
+
     await p.goto(`${base}/dimensionador-huawei-netengine.html`, { waitUntil: 'domcontentloaded' });
     await pausa(p, 1400);
     await p.fill('#bw', '500');

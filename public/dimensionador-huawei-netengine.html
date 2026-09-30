@@ -153,13 +153,21 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
 <div class="cols">
 <div>
   <section class="panel">
-    <h2>1 · Cómo se dimensiona</h2>
+    <h2>1 · Plataforma y cálculo</h2>
+    <div class="field">
+      <label>Plataforma</label>
+      <div class="seg" id="platSeg">
+        <button type="button" data-v="ar" aria-pressed="true">NetEngine AR<br>SD-WAN y sucursal</button>
+        <button type="button" data-v="a800" aria-pressed="false">A800 E<br>acceso de operador</button>
+        <button type="button" data-v="ne8000" aria-pressed="false">NE8000<br>agregación y núcleo</button>
+      </div>
+      <p class="hint" id="platHint">Router empresarial y SD-WAN: se dimensiona por throughput de servicio IMIX de la capa que pida el tráfico.</p>
+    </div>
     <div class="field">
       <label>Base de cálculo</label>
       <div class="seg" id="modeSeg">
         <button type="button" data-v="link" aria-pressed="true">Enlace<br>único</button>
         <button type="button" data-v="agg" aria-pressed="false">Agregado<br>multi-sede</button>
-        <button type="button" data-v="core" aria-pressed="false">Nodo de<br>núcleo</button>
       </div>
       <p class="hint" id="modeHint">Un solo enlace WAN terminando en el equipo.</p>
     </div>
@@ -203,6 +211,8 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
 
   <section class="panel">
     <h2>2 · Servicios</h2>
+    <p class="hint" id="serviciosHint" hidden>SD-WAN, UTM, WAC, PoE, 4G/5G, Wi-Fi y puertos LAN son funciones de la serie AR: en una plataforma de transporte no aplican y no entran en el cálculo (sus valores se conservan).</p>
+    <div id="grpAr">
     <div class="field">
       <label for="profile">Perfil de tratamiento del tráfico</label>
       <select id="profile">
@@ -216,7 +226,6 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
       <div class="checks">
         <label class="check"><input type="checkbox" id="sSdwan" checked><span>SD-WAN gestionado por iMaster NCE</span></label>
         <label class="check"><input type="checkbox" id="sUtm"><span>Seguridad UTM: IPS, filtrado URL, antivirus</span></label>
-        <label class="check"><input type="checkbox" id="sSlice"><span>SRv6 / slicing FlexE / EVPN de transporte</span></label>
         <label class="check"><input type="checkbox" id="rPoe"><span>PoE/PoE++ integrado</span></label>
         <label class="check"><input type="checkbox" id="rWan"><span>4G/5G integrado como respaldo</span></label>
         <label class="check"><input type="checkbox" id="rWifi"><span>Wi-Fi integrado</span></label>
@@ -224,6 +233,16 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
     </div>
     <div class="field"><label for="lan">Puertos LAN mínimos</label><input type="number" id="lan" min="0" step="1" autocomplete="off"></div>
     <div class="field"><label for="aps">APs gestionados (WAC)</label><input type="number" id="aps" min="0" step="1" autocomplete="off"></div>
+    </div>
+    <div id="grpTransporte" hidden data-inactivo="1">
+    <div class="field">
+      <label>Funciones de transporte</label>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="sSlice"><span>SRv6 / slicing FlexE / EVPN de transporte</span></label>
+      </div>
+      <p class="hint">FlexE solo se da por confirmado donde el catálogo lo declara; el resto se muestra como «no consta» y no se aparta.</p>
+    </div>
+    </div>
   </section>
 
   <section class="panel">

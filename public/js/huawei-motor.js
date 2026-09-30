@@ -19,6 +19,19 @@
   if (root) root.HuaweiMotor = api;
 })(typeof window !== 'undefined' ? window : globalThis, function () {
 
+  /* PLATAFORMA ANTES QUE EL CAUDAL (H-04, etapa H3). Tres lineas que no son intercambiables
+     aunque coincidan en Gbps: la serie AR es CPE/SD-WAN empresarial y se mide por throughput de
+     servicio IMIX; A800 E es acceso de operador (CPE, cell site) y NE8000 es agregacion y nucleo
+     IP/MPLS, las dos medidas por capacidad de conmutacion y Mpps. Antes la familia se DEDUCIA de
+     siete casillas (`wanOk`), y con reenvio puro un AR y un NE8000 competian en la misma lista
+     ordenada por cifras que no se miden igual. Es la regla que Cisco (`PLATAFORMAS`) y Nokia (dos
+     paginas) ya aplican. */
+  const PLATAFORMAS = {
+    ar: { n: 'NetEngine AR', d: 'SD-WAN y router de sucursal o hub', de: (m) => m.cls === 'AR' },
+    a800: { n: 'NetEngine A800 E', d: 'acceso de operador (CPE y cell site)', de: (m) => m.ser === 'A800 E' },
+    ne8000: { n: 'NetEngine 8000', d: 'agregación y núcleo IP/MPLS', de: (m) => /^NE8000/.test(m.ser || '') },
+  };
+
   const CAPAS = ['fwd', 'ipsec', 'typ'];
   const PROFUNDIDAD = { fwd: 0, ipsec: 1, typ: 2 };
   const PROFILE = { fwd: 'Forwarding (NAT+ACL+QoS, IMIX)', ipsec: 'IPsec (IMIX)', typ: 'SD-WAN típico (IPsec+QoS+SA+AppFlow, IMIX)' };
@@ -56,15 +69,21 @@
     const perfil = CAPAS.includes(esc.profile) ? esc.profile : 'typ';
     const svc = { sdwan: !!(esc.svc && esc.svc.sdwan), utm: !!(esc.svc && esc.svc.utm), slice: !!(esc.svc && esc.svc.slice) };
     const want = { poe: !!(esc.want && esc.want.poe), wan: !!(esc.want && esc.want.wan), wifi: !!(esc.want && esc.want.wifi) };
-    const minLan = parseInt(esc.lan, 10) || 0;
-    const aps = parseInt(esc.aps, 10) || 0;
     // `legado: true` reproduce el comportamiento anterior a la revision (linea base del contraste).
     const legado = !!o.legado;
-    const nucleo = !legado && mode === 'core';
-    const ef = legado ? { capa: perfil, motivos: [], subida: false } : capaEfectiva(perfil, svc);
+    // Sin plataforma declarada: el modo «core» de los enlaces viejos era el nodo de nucleo.
+    const plataforma = legado ? null : (PLATAFORMAS[esc.plataforma] ? esc.plataforma : (mode === 'core' ? 'ne8000' : 'ar'));
+    const transporte = plataforma === 'a800' || plataforma === 'ne8000';
+    const minLan = transporte ? 0 : (parseInt(esc.lan, 10) || 0);
+    const aps = transporte ? 0 : (parseInt(esc.aps, 10) || 0);
+    // Lo que no aplica a la plataforma sale del calculo (la pagina lo marca `data-inactivo` y
+    // conserva el valor): SD-WAN, UTM, WAC, PoE, 4G/5G, Wi-Fi, LAN y perfil son de la serie AR;
+    // el slicing FlexE es de la red de transporte.
+    if (!legado && transporte) { svc.sdwan = false; svc.utm = false; want.poe = false; want.wan = false; want.wifi = false; }
+    if (!legado && !transporte) svc.slice = false;
+    const ef = legado ? { capa: perfil, motivos: [], subida: false } : transporte ? { capa: 'fwd', motivos: [], subida: false } : capaEfectiva(perfil, svc);
     const pk = ef.capa;
-    // Nodo de nucleo: la plataforma la fija el modo (solo NetEngine) y SD-WAN/UTM/APs no le aplican.
-    const wanOk = nucleo ? !(want.poe || want.wan || want.wifi)
+    const wanOk = !legado ? transporte
       : (pk === 'fwd') && !svc.sdwan && !svc.utm && aps === 0 && !want.poe && !want.wan && !want.wifi;
     const avisos = [];
     if (ef.subida) avisos.push(`La capa dimensionada sube de «${PROFILE[perfil]}» a «${PROFILE[pk]}» porque ${ef.motivos.map((f) => ({ sdwan: 'SD-WAN', utm: 'UTM' }[f])).join(' y ')} está activo: una función activa fija la capa mínima, nunca se dimensiona con una más superficial.`);
@@ -76,7 +95,7 @@
     // `null` es «el catalogo no lo dice», nunca «sin limite». Las sesiones concurrentes y las
     // nuevas por segundo no se piden aqui: exigirian usuarios por sede, que esta pantalla no
     // pregunta, y derivarlas seria inventar un dato.
-    const tuneles = !legado && mode === 'agg' ? sites : 0;
+    const tuneles = !legado && mode === 'agg' && plataforma === 'ar' ? sites : 0;
     const modelosConTope = tuneles ? modelos.filter((m) => m.cls !== 'WAN' && m.tuneles != null).length : 0;
     if (tuneles) {
       avisos.push(`Hub con ${tuneles} sede${tuneles === 1 ? '' : 's'}: se piden ${tuneles} túneles IPsec terminando en el equipo. `
@@ -94,9 +113,9 @@
     else if (!legado && crit >= 4) avisos.push('Criticidad «misión crítica» sin alta disponibilidad: con un solo equipo por sitio, una falla del chasis deja el sitio sin servicio hasta que llegue el repuesto. Marca «Alta disponibilidad 1+1» para cotizar el par.');
     if (svc.utm && !legado) avisos.push('UTM (IPS, filtrado URL, antivirus): este catálogo no trae cifra de inspección para ningún modelo AR. Se dimensiona contra SD-WAN típico y el resultado hay que confirmarlo con una prueba de concepto antes de cotizar.');
 
-    const rows = modelos.map((m) => {
+    const enPlataforma = legado ? modelos : modelos.filter(PLATAFORMAS[plataforma].de);
+    const rows = enPlataforma.map((m) => {
       const isWan = m.cls === 'WAN', cap = isWan ? m.cap : m[pk], miss = [];
-      if (!legado && !isWan && (nucleo || svc.slice)) miss.push(nucleo ? 'serie AR: no es un nodo de núcleo' : 'serie AR: no hace slicing FlexE/SRv6');
       if (isWan && !wanOk) miss.push('serie de transporte: no hace SD-WAN, UTM ni WAC');
       if (cap == null) miss.push('sin cifra publicada para este perfil');
       else if (cap < need) miss.push('capacidad insuficiente');
@@ -115,16 +134,27 @@
     // desempate el elegido dependia del ORDEN en que la API sirve el catalogo. Gana el que trae
     // menos extras que nadie pidio (PoE, 4G/5G, Wi-Fi, puertos) y despues el id en orden natural (S8… antes que S10…).
     const extras = (m) => (m.poe ? 1 : 0) + (m.wan ? 1 : 0) + (m.wifi ? 1 : 0) + (m.lan || 0) / 100;
-    const fit = rows.filter((r) => !r.miss.length).sort((a, b) => rango(a.m) - rango(b.m) || a.cap - b.cap
+    // Con slicing pedido, lo CONFIRMADO va antes que lo que no consta: no se aparta a nadie, pero
+    // no se recomienda un equipo sin FlexE declarado habiendo uno que si lo declara.
+    const flexeAntes = (a, b) => (!legado && transporte && svc.slice ? (b.m.flexe === true) - (a.m.flexe === true) : 0);
+    const fit = rows.filter((r) => !r.miss.length).sort((a, b) => rango(a.m) - rango(b.m) || flexeAntes(a, b) || a.cap - b.cap
       || extras(a.m) - extras(b.m) || a.m.id.localeCompare(b.m.id, 'en', { numeric: true }));
     const pick = fit.find((r) => recomendable(r.m)) || null;
     const next = fit.filter((r) => recomendable(r.m))[1] || null;
+    // FLEXE: solo se afirma donde el catalogo lo dice (`flexe: true`); `undefined` es «no consta»,
+    // no «no lo soporta», asi que no aparta a nadie: lo declara.
+    if (!legado && transporte && svc.slice) {
+      const con = enPlataforma.filter((x) => x.flexe === true).map((x) => x.id);
+      avisos.push(con.length
+        ? `Slicing FlexE: en esta plataforma el catálogo lo declara en ${con.join(', ')}; en el resto no consta, así que confírmalo en su datasheet antes de proponerlo.`
+        : 'Slicing FlexE: ningún modelo de esta plataforma lo declara en el catálogo. No se aparta a nadie por eso; confírmalo en el datasheet del equipo propuesto.');
+    }
     // Un equipo que el catalogo declara con doble fuente (`redund: true`) ya cubre esa falla:
     // el par protege ante la perdida del chasis completo. Solo se dice si el dato existe.
     if (ha && pick && pick.m.redund === true) {
       avisos.push(`El ${pick.m.id} ya declara fuentes redundantes en el catálogo: el par 1+1 protege ante la pérdida del equipo completo, no solo de una fuente.`);
     }
-    return { raw, base, need, needMpps, mode, sites, conc, head, dirMult, frame, perfil, pk, ef, svc, want, aps, minLan, wanOk, tuneles, ha, unidades, avisos, rows, fit, pick, next };
+    return { raw, base, need, needMpps, mode, sites, conc, head, dirMult, frame, perfil, pk, ef, svc, want, aps, minLan, wanOk, plataforma, transporte, tuneles, ha, unidades, avisos, rows, fit, pick, next };
   }
 
   /* LICENCIAS. Una sola funcion para el calculo y el BOM: recibe la NECESIDAD del escenario,
@@ -222,5 +252,5 @@
     return Math.round(m) + ' Mbps';
   }
 
-  return { CAPAS, PROFILE, PISO_POR_FUNCION, capaEfectiva, evaluar, licencias, piezasBom, opticasBom, ROL_PIEZA, fmt };
+  return { PLATAFORMAS, CAPAS, PROFILE, PISO_POR_FUNCION, capaEfectiva, evaluar, licencias, piezasBom, opticasBom, ROL_PIEZA, fmt };
 });

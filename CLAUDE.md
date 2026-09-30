@@ -401,6 +401,9 @@ de elegirse, y el BOM trata como obligatorias piezas que el catálogo solo decla
 Las tres cosas vienen de la misma raíz: no hay un resultado único que consuman el cálculo, la
 ficha y el BOM. **No hay que portar de Aruba su motor de ingeniería**: Huawei ya publica sus cifras
 en IMIX, y dividirlas otra vez por 0,70 penalizaría dos veces. Plan H1–H5 en `PENDIENTES.md`.
+**Desde el 2026-09-30 la plataforma se elige antes que el caudal**, como en Cisco: `#platSeg`
+(NetEngine AR, A800 E, NE8000) y `HuaweiMotor.PLATAFORMAS` en `public/js/huawei-motor.js`, que es
+el único sitio que decide equipo, licencias, piezas y ópticas para la página y el BOM.
 
 ## Conventions
 
