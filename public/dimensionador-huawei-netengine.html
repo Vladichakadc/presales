@@ -280,9 +280,16 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
     <div class="field">
       <div class="row" style="gap:14px;flex-wrap:wrap">
         <div style="flex:1;min-width:150px"><label for="qty">Cantidad de sitios <span style="font-weight:400">(con alta disponibilidad se cotizan 2 equipos por sitio)</span></label><input type="number" id="qty" min="1" step="1" autocomplete="off"></div>
-        <div style="flex:1;min-width:150px"><label for="optQty">Ópticas por equipo</label><input type="number" id="optQty" min="0" step="1" autocomplete="off"></div>
       </div>
     </div>
+  </section>
+
+  <section class="panel">
+    <h2>Ópticas por enlace</h2>
+    <p class="hint" style="margin:0 0 10px">Declara cada módulo que el sitio necesita: familia, modelo y cantidad <b>por equipo</b> (cada extremo del enlace lleva el suyo). Solo se ofrecen las familias que el catálogo lista como compatibles con el equipo elegido; <b>no hay matriz por chasis ni por versión de VRP</b>, así que confirma el modelo exacto contra el Hardware Description antes de pedir.</p>
+    <input type="hidden" id="opticasData">
+    <div id="opticasFilas"></div>
+    <button type="button" class="btn ghost" id="btnAddOptica" style="font-size:11px;padding:6px 12px">+ Añadir óptica</button>
   </section>
 
   <div id="bomBody"></div>

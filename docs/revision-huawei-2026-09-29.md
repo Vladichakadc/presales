@@ -368,3 +368,10 @@ los 40 modelos y es una estimación sin descuentos ni impuestos, cosa que dice c
 se declara **parcial** en el propio pie: licencias, suscripciones y soporte no tienen precio
 publicado, así que la suma cubre el equipo y cuenta cuántas líneas quedan fuera. Un total que
 pareciera completo sería el dato inventado que este catálogo prohíbe.
+
+**H-07, ópticas por enlace (2026-09-29).** El BOM ya no toma una óptica arbitraria por familia:
+cada fila declara familia, modelo y cantidad por equipo (`HuaweiMotor.opticasBom`). Solo se ofrecen
+las familias que el catálogo lista como compatibles con el equipo, y una fila que deja de encajar
+al cambiar de modelo sale como inválida en vez de desaparecer. **Lo que no se puede dar:** una
+matriz de compatibilidad por chasis y por versión de VRP; el catálogo solo respalda el nivel de
+familia, y la pantalla pide confirmar el modelo exacto contra el Hardware Description.

@@ -196,6 +196,25 @@
     return { pedir, elegir, opcionales, noAplican };
   }
 
+  /* OPTICAS POR ENLACE (H-07). Antes el BOM tomaba una optica arbitraria de cada familia y la
+     multiplicaba por un contador suelto: el medio y el alcance los decidia el orden del catalogo.
+     Ahora cada fila DECLARA familia, modelo de optica y cantidad por equipo. Lo unico que el
+     catalogo respalda es a nivel de FAMILIA (`optics` del modelo: «este chasis admite 10GE
+     SFP+»); no hay matriz por chasis y por version de VRP, y eso se dice en pantalla. Una fila
+     que ya no encaja (cambio de equipo) NO se descarta en silencio: sale como invalida. */
+  function opticasBom(m, declaradas, opticas) {
+    const validas = [], invalidas = [];
+    (declaradas || []).forEach((d) => {
+      const qty = Math.max(0, parseInt(d.qty, 10) || 0);
+      if (!qty) return;
+      const o = ((opticas || {})[d.fam] || []).find((x) => x.sku === d.sku);
+      if (!(m.optics || []).includes(d.fam)) invalidas.push({ ...d, qty, motivo: `el ${m.id} no lista la familia «${d.fam}» como compatible` });
+      else if (!o) invalidas.push({ ...d, qty, motivo: 'la óptica elegida no está en el catálogo' });
+      else validas.push({ fam: d.fam, o, qty });
+    });
+    return { validas, invalidas };
+  }
+
   function fmt(m) {
     if (m == null) return '—';
     if (m >= 1000000) return (m / 1000000).toFixed(m % 1000000 ? 2 : 0).replace(/\.00$/, '') + ' Tbps';
@@ -203,5 +222,5 @@
     return Math.round(m) + ' Mbps';
   }
 
-  return { CAPAS, PROFILE, PISO_POR_FUNCION, capaEfectiva, evaluar, licencias, piezasBom, ROL_PIEZA, fmt };
+  return { CAPAS, PROFILE, PISO_POR_FUNCION, capaEfectiva, evaluar, licencias, piezasBom, opticasBom, ROL_PIEZA, fmt };
 });

@@ -189,3 +189,31 @@ test('H-13 · el plazo de las suscripciones sale en el texto de cada línea', ()
   assert.match(t(5), /SnS — Software Subscription and Support, 60 meses/);
   assert.match(t(undefined), /12 meses/, 'sin plazo declarado rige el año de siempre');
 });
+
+const { OPTICS } = require('../server/seed/legacyData/huawei.js');
+const ar = MODELS.find((m) => m.id === 'AR5710-S8T2X');
+
+test('H-07 · cada fila declarada entra al BOM con su óptica y su cantidad', () => {
+  const r = M.opticasBom(ar, [{ fam: 'sfp10', sku: 'OMXD30000', qty: 2 }, { fam: 'ge', sku: 'SFP-GE-LX-SM1310', qty: 1 }], OPTICS);
+  assert.deepStrictEqual(r.validas.map((v) => [v.fam, v.o.sku, v.qty]), [['sfp10', 'OMXD30000', 2], ['ge', 'SFP-GE-LX-SM1310', 1]]);
+  assert.strictEqual(r.invalidas.length, 0);
+});
+
+test('H-07 · una familia que el equipo no lista sale como inválida, no se descarta en silencio', () => {
+  const r = M.opticasBom(ar, [{ fam: 'qsfp100', sku: 'QSFP28-100G-SR4', qty: 1 }], OPTICS);
+  assert.strictEqual(r.validas.length, 0);
+  assert.strictEqual(r.invalidas.length, 1);
+  assert.match(r.invalidas[0].motivo, /no lista la familia/);
+});
+
+test('H-07 · una óptica que no existe en el catálogo es inválida, y cantidad 0 no cuenta', () => {
+  const r = M.opticasBom(ar, [{ fam: 'sfp10', sku: 'INVENTADA', qty: 1 }, { fam: 'sfp10', sku: 'OMXD30000', qty: 0 }], OPTICS);
+  assert.strictEqual(r.validas.length, 0);
+  assert.strictEqual(r.invalidas.length, 1);
+  assert.match(r.invalidas[0].motivo, /no está en el catálogo/);
+});
+
+test('H-07 · sin filas declaradas no se pide ninguna óptica', () => {
+  const r = M.opticasBom(ar, [], OPTICS);
+  assert.deepStrictEqual(r, { validas: [], invalidas: [] });
+});

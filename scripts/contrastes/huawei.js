@@ -158,6 +158,26 @@ module.exports = {
     const num = (x) => Number(String(x).replace(/,/g, ''));
     out.push({ n: 'H-13 · el perfil multi-sede multiplica el equipo por sus sedes en el consolidado',
       ok: !!mc && num(mc[2]) === 5 * num(mc[1]), detalle: mc ? `5 x $${mc[1]} = $${mc[2]}` : cons.slice(0, 140) });
+
+    // H-07: las opticas se declaran por enlace; el BOM ya no inventa una por familia.
+    await p.goto(`${base}/dimensionador-huawei-netengine.html?bw=450&profile=fwd&sSdwan=0&rPoe=1&rWifi=1`, { waitUntil: 'domcontentloaded' });
+    await pausa(p, 1800);
+    await p.click('.tabs button[data-tab="bom"]');
+    await pausa(p, 300);
+    const sinOpt = await p.$eval('#bomOut', (e) => e.value);
+    await p.click('#btnAddOptica');
+    await pausa(p, 300);
+    const skuElegido = await p.$eval('#opticasFilas [data-campo=sku]', (e) => e.value);
+    await p.fill('#opticasFilas [data-campo=qty]', '3');
+    await p.dispatchEvent('#opticasFilas [data-campo=qty]', 'change');
+    await pausa(p, 300);
+    const conOpt = await p.$eval('#bomOut', (e) => e.value);
+    const linea = (t) => (t.match(/^\s+(\d+) x\s+\S.*?(?=\s{2,})/gm) || []).find((l) => l.includes(skuElegido));
+    out.push({ n: 'H-07 · sin ópticas declaradas el BOM no pide ninguna',
+      ok: !/Módulos ópticos|ÓPTICAS/i.test(sinOpt), detalle: /ÓPTICAS/i.test(sinOpt) ? 'aparece una sección de ópticas' : 'sin sección de ópticas' });
+    out.push({ n: 'H-07 · una óptica declarada entra al BOM con su modelo y su cantidad por equipo',
+      ok: !!skuElegido && /ÓPTICAS/i.test(conOpt) && /^\s+3 x\s/m.test(conOpt.split(/ÓPTICAS/i)[1] || '') && !!linea(conOpt),
+      detalle: `${skuElegido}: ${linea(conOpt) || 'línea no encontrada'}` });
     return out;
   },
 };

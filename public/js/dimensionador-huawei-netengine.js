@@ -43,7 +43,7 @@ $('dirSeg').addEventListener('click', e => {
 });
 ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios']
   .forEach(id => $(id).addEventListener('input', render));
-['pickModel','qty','optQty'].forEach(id => $(id).addEventListener('input', renderBom));
+['pickModel','qty'].forEach(id => $(id).addEventListener('input', renderBom));
 
 const fmt = HuaweiMotor.fmt;
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
@@ -371,11 +371,71 @@ function pintarTco(filas){
     : '<p class="hint">Sin precios suficientes para calcular el TCO: este equipo no tiene precio de referencia en el cotizador.</p>';
 }
 
+
+/* ── OPTICAS POR ENLACE: estado y constructor ─────────────────────────────────────────────
+   El estado vive en #opticasData (JSON [{fam, sku, qty}]) para que viaje en el enlace
+   compartido, como el `sfpPickData` de Aruba. El constructor se repinta solo cuando cambia
+   el equipo o se anade/quita una fila; editar una celda no destruye el foco. */
+let opticasModelo = null;
+function leerOpticas(){
+  try { const v = JSON.parse($('opticasData').value || '[]'); return Array.isArray(v) ? v : []; } catch { return []; }
+}
+function escribirOpticas(a){ $('opticasData').value = JSON.stringify(a); }
+function pintarOpticasFilas(m){
+  const filas = leerOpticas();
+  const caja = $('opticasFilas');
+  const firma = m.id + '|' + JSON.stringify(filas);
+  if(opticasModelo === firma) return;
+  opticasModelo = firma;
+  const fams = m.optics || [];
+  caja.innerHTML = filas.length ? filas.map((f, i) => {
+    const ok = fams.includes(f.fam);
+    return `<div class="row" data-optica="${i}" style="gap:8px;flex-wrap:wrap;margin-bottom:8px;align-items:center">
+      <select data-campo="fam" aria-label="Familia de la óptica ${i + 1}">${[...new Set([...fams, f.fam])].map(k => `<option value="${esc(k)}"${k === f.fam ? ' selected' : ''}>${esc(OPTIC_LABEL[k] || k)}</option>`).join('')}</select>
+      <select data-campo="sku" aria-label="Modelo de la óptica ${i + 1}">${(OPTICS[f.fam] || []).map(o => `<option value="${esc(o.sku)}"${o.sku === f.sku ? ' selected' : ''}>${esc(o.sku)} — ${esc(o.d)}</option>`).join('')}</select>
+      <input type="number" data-campo="qty" min="1" step="1" value="${Number(f.qty) || 1}" style="width:80px" aria-label="Cantidad por equipo de la óptica ${i + 1}">
+      <button type="button" class="btn ghost" data-quitar-optica="${i}" style="font-size:10px;padding:3px 8px">Quitar</button>
+      ${ok ? '' : `<span class="warn" style="font-size:12px">${esc(m.id)} no lista esta familia</span>`}
+    </div>`;
+  }).join('') : '<p class="hint">Sin ópticas declaradas: el BOM no pide ninguna.</p>';
+}
+$('btnAddOptica').addEventListener('click', () => {
+  const m = MODELS.find(x => x.id === $('pickModel').value) || MODELS[0];
+  const fam = (m.optics || [])[0];
+  if(!fam){ return; }
+  const filas = leerOpticas();
+  filas.push({fam, sku:(OPTICS[fam] || [])[0].sku, qty:1});
+  escribirOpticas(filas);
+  renderBom();
+});
+$('opticasFilas').addEventListener('click', e => {
+  const b = e.target.closest('[data-quitar-optica]');
+  if(!b) return;
+  const filas = leerOpticas();
+  filas.splice(+b.dataset.quitarOptica, 1);
+  escribirOpticas(filas);
+  renderBom();
+});
+$('opticasFilas').addEventListener('change', e => {
+  const fila = e.target.closest('[data-optica]');
+  if(!fila) return;
+  const filas = leerOpticas();
+  const f = filas[+fila.dataset.optica];
+  if(!f) return;
+  const campo = e.target.dataset.campo;
+  if(campo === 'fam'){ f.fam = e.target.value; f.sku = (OPTICS[f.fam] || [])[0].sku; }
+  else if(campo === 'sku') f.sku = e.target.value;
+  else if(campo === 'qty') f.qty = Math.max(1, parseInt(e.target.value, 10) || 1);
+  escribirOpticas(filas);
+  renderBom();
+});
+
 function renderBom(){
   const m = MODELS.find(x => x.id === $('pickModel').value) || MODELS[0];
   // Sitios x unidades por sitio: con HA 1+1 se cotizan dos equipos por sitio (motor: `unidades`).
   const qty = Math.max(1, parseInt($('qty').value) || 1) * (ultimaEval ? ultimaEval.unidades : 1);
-  const optQty = Math.max(0, parseInt($('optQty').value) || 0);
+  pintarOpticasFilas(m);
+  const opt = HuaweiMotor.opticasBom(m, leerOpticas(), OPTICS);
   const isWan = m.cls === 'WAN';
   const pick = {m, isWan, cap: isWan ? m.cap : (m.typ ?? m.ipsec ?? m.fwd)};
   // H-08: la necesidad y la capa son las del escenario evaluado; con need:0 la licencia de
@@ -420,9 +480,11 @@ function renderBom(){
 
   // Ópticas
   html += `<section class="panel"><h2>Módulos ópticos compatibles</h2>`;
+  if(opt.invalidas.length) html += `<p class="warn" style="font-size:12.5px">${opt.invalidas.map(i => esc(i.motivo)).join(' · ')}: esa fila no entra en el BOM hasta que la cambies.</p>`;
   (m.optics || []).forEach(k => {
+    const n = opt.validas.filter(v => v.fam === k).reduce((t, v) => t + v.qty, 0);
     html += `<div class="grp"><h3>${OPTIC_LABEL[k]}</h3>
-      <p class="gd">Cantidad estimada: <b>${optQty * qty}</b> módulos (${optQty} por equipo x ${qty}). Recuerda que cada extremo del enlace necesita el suyo.</p>
+      <p class="gd">${n ? `Declaradas: <b>${n * qty}</b> módulos (${n} por equipo x ${qty}).` : 'Ninguna declarada para esta familia.'}</p>
       <div class="scroll"><table><thead><tr><th>Designación</th><th>Código BOM</th><th>Descripción</th></tr></thead><tbody>
       ${OPTICS[k].map(o => `<tr><td><code>${esc(o.sku)}</code></td><td>${bomTag(o.bom)}</td><td>${esc(o.d)}</td></tr>`).join('')}
       </tbody></table></div></div>`;
@@ -443,7 +505,7 @@ function renderBom(){
 
   $('bomBody').innerHTML = html;
 
-  const filas = filasBom(m, qty, optQty, piezas, lics, s);
+  const filas = filasBom(m, qty, opt.validas, piezas, lics, s);
   const meta = metaBom(m);
   $('bomTabla').innerHTML = BOM.renderTabla(filas, {dto:dtoActual()});
   pintarTco(filas);
@@ -455,7 +517,7 @@ function renderBom(){
 // Filas del BOM en el formato compartido de /js/bom.js. Huawei no publica precios de lista
 // abiertos, asi que casi todas las lineas salen sin cotizar a proposito: el modulo compartido
 // lo detecta y no finge un total.
-function filasBom(m, qty, optQty, piezas, lics, s){
+function filasBom(m, qty, opticas, piezas, lics, s){
   const filas=[
     {cat:'Equipo', desc:m.id, sku:null, qty, unit:PRECIO_REF[BOM.normalizar(m.id)] ?? null,
       nota:`Serie ${m.ser} · ${m.fam} · ${m.ports}`+(PRECIO_REF[BOM.normalizar(m.id)] != null ? ' · Precio de referencia estimado del cotizador, sin descuentos ni impuestos.' : '')},
@@ -466,11 +528,10 @@ function filasBom(m, qty, optQty, piezas, lics, s){
     filas.push({cat:'Componentes de hardware', desc:c.sku, sku:c.bom||null, qty:qty*(p.qty||1), unit:null, nota:c.d||''}); });
   piezas.elegir.forEach(g=>filas.push({cat:'Componentes de hardware', desc:`${g.nombre} — elegir una`, sku:null,
     qty:qty*g.qty, unit:null, nota:'Opciones: '+g.opciones.map(k=>PARTS[k].sku).join(' · ')}));
-  if(optQty>0){
-    const fam=(m.optics||[]).map(k=>OPTIC_LABEL[k]||k).join(' · ');
-    filas.push({cat:'Ópticas', desc:'Módulos ópticos — elegir velocidad, medio y alcance', sku:null, qty:optQty*qty, unit:null,
-      nota:`Familias compatibles: ${fam}. El tipo se decide según el enlace; ver pestaña Catálogo de ópticas.`});
-  }
+  // H-07: una linea por optica DECLARADA (familia, modelo, cantidad por equipo), con su codigo.
+  opticas.forEach(v => filas.push({cat:'Ópticas', desc:`${OPTIC_LABEL[v.fam] || v.fam} — ${v.o.sku}`,
+    sku:(v.o.bom && v.o.bom.length) ? v.o.bom.join(' / ') : null, qty:v.qty*qty, unit:null,
+    nota:`${v.o.d || ''} · cada extremo del enlace necesita el suyo`}));
   // SnS ya sale en Soporte: dejarlo tambien como licencia lo cotizaba dos veces.
   lics.filter(l=>l.on && !/^SnS/.test(l.t)).forEach(l=>filas.push({cat:'Licencias', desc:l.t, sku:null, qty, unit:null, nota:l.d||''}));
   filas.push({cat:'Soporte', desc:s.n, sku:null, qty, unit:null, nota:`${s.sla} · ${aniosSel() * 12} meses`});
@@ -517,7 +578,7 @@ $('copyBtn').addEventListener('click', async () => {
    Misma clave compartida que los demas fabricantes (`BOM.perfiles`): un despliegue real mezcla
    marcas. Cargar es de Huawei (los campos son ids de ESTA pagina); consolidar no. Aqui todo se
    multiplica por sedes: el modelo comercial de Huawei no declara pools ni lineas unicas. */
-const CAMPOS_PERFIL = ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','qty','optQty'];
+const CAMPOS_PERFIL = ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','qty','opticasData'];
 const SEGS_PERFIL = ['modeSeg','dirSeg'];
 function capturarCampos(){
   const v = {};
@@ -652,7 +713,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // es la identidad bajo la que ya hay escenarios guardados en el navegador de quien usa
   // esto. Renombrarla por coherencia cosmetica le borraria el trabajo guardado a cambio de
   // nada, porque nadie ve esta cadena. El archivo se llama dimensionador-huawei-netengine.
-  const st = ESTADO.vincular({ campos: ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','selDescuento','dtoCustom','dirSeg','modeSeg','verdict-sel'] });
+  const st = ESTADO.vincular({ campos: ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','opticasData','selDescuento','dtoCustom','dirSeg','modeSeg','verdict-sel'] });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');
