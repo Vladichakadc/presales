@@ -1,7 +1,7 @@
 {
  "medidoEn": {
-  "commit": "c3f054f",
-  "fecha": "2026-09-29"
+  "commit": "7f2835e",
+  "fecha": "2026-09-30"
  },
  "umbralRozado": 25,
  "modulos": [
@@ -104,25 +104,18 @@
    "pct": 60
   },
   {
-   "modulo": "cotizador.js",
-   "estado": "ejercitado",
-   "total": 51,
-   "usadas": 31,
-   "pct": 61
-  },
-  {
-   "modulo": "bom.js",
-   "estado": "ejercitado",
-   "total": 78,
-   "usadas": 49,
-   "pct": 63
-  },
-  {
    "modulo": "tabla.js",
    "estado": "ejercitado",
    "total": 11,
    "usadas": 7,
    "pct": 64
+  },
+  {
+   "modulo": "cotizador.js",
+   "estado": "ejercitado",
+   "total": 51,
+   "usadas": 33,
+   "pct": 65
   },
   {
    "modulo": "dimensionador-aruba-edgeconnect.js",
@@ -132,18 +125,18 @@
    "pct": 66
   },
   {
+   "modulo": "bom.js",
+   "estado": "ejercitado",
+   "total": 80,
+   "usadas": 54,
+   "pct": 68
+  },
+  {
    "modulo": "calculadora.js",
    "estado": "ejercitado",
    "total": 47,
    "usadas": 34,
    "pct": 72
-  },
-  {
-   "modulo": "estado.js",
-   "estado": "ejercitado",
-   "total": 23,
-   "usadas": 17,
-   "pct": 74
   },
   {
    "modulo": "ficha.js",
@@ -181,18 +174,25 @@
    "pct": 82
   },
   {
-   "modulo": "dimensionador-huawei-netengine.js",
-   "estado": "ejercitado",
-   "total": 87,
-   "usadas": 76,
-   "pct": 87
-  },
-  {
    "modulo": "huawei-motor.js",
    "estado": "ejercitado",
-   "total": 17,
-   "usadas": 15,
-   "pct": 88
+   "total": 28,
+   "usadas": 23,
+   "pct": 82
+  },
+  {
+   "modulo": "dimensionador-huawei-netengine.js",
+   "estado": "ejercitado",
+   "total": 131,
+   "usadas": 110,
+   "pct": 84
+  },
+  {
+   "modulo": "estado.js",
+   "estado": "ejercitado",
+   "total": 25,
+   "usadas": 21,
+   "pct": 84
   },
   {
    "modulo": "aruba-reglas.js",
