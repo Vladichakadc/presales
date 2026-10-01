@@ -1,0 +1,132 @@
+name: traer-cisco-huawei
+
+# Baja a una rama de transporte los documentos oficiales que hacen falta para dos cosas que
+# este repositorio NO puede resolver leyendo un resumen de buscador:
+#
+#   CISCO · las 14 cifras en que el cotizador y el dimensionador no coinciden (`npm run
+#           catalogo`, seccion «COTIZADOR FRENTE A DIMENSIONADOR»). Hasta resolverlas con la
+#           ficha, ninguna de las dos se puede declarar buena, y el cotizador no puede tomar
+#           la cifra del dimensionador sin riesgo de propagar una mala.
+#   HUAWEI · los boletines de fin de venta (EOM) del AR651/AR651W y la consulta de ciclo de
+#           vida de Info-Finder. Desde el entorno de edicion `support.huawei.com` e
+#           `info.support.huawei.com` responden `connect_rejected` del proxy de egreso; aqui se
+#           prueba desde un ejecutor, y si Huawei pide sesion o el CDN lo corta, el informe lo
+#           dice con su codigo en vez de guardarlo.
+#
+# NO EXTRAE NADA. La lectura sigue siendo humana y el dato entra por los importadores con
+# doble anclaje (`npm run huawei -- eox.csv --eol` para el ciclo de vida). Las URL salieron
+# de BUSCAR cada documento el 2026-10-01, no de adivinarlas por patron: la primera corrida de
+# `traer-fortinet-pendientes.yml` adivino quince y dieron 404 las quince.
+#
+# LA FIRMA DEL CONTENIDO MANDA SOBRE EL CODIGO HTTP. Una pagina HTML se valida por un texto
+# que solo puede estar en el documento correcto: un 200 con la pagina de login o con un
+# cascaron de JavaScript no es el boletin.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  traer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      - name: Descargar los documentos
+        run: |
+          node -e "
+            const fs = require('fs');
+            const DOCS = [
+              { archivo: 'cisco-isr1000-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C1111-8P', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.html',
+              ] },
+              { archivo: 'cisco-c8200-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8200L', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8200-series-edge-platforms/nb-06-cat8200-series-edge-plat-ds-cte-en.html',
+              ] },
+              { archivo: 'cisco-c8300-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8300-1N1S-6T', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8300-series-edge-platforms/datasheet-c78-744088.html',
+              ] },
+              { archivo: 'cisco-c8500-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8500-12X4QC', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8500-series-edge-platforms/datasheet-c78-744089.html',
+              ] },
+              { archivo: 'cisco-asr1000-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'ESP200', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/datasheet-c78-731632.html',
+              ] },
+              { archivo: 'huawei-ar600-ciclo-de-vida.html', tipo: 'html', para: 'HUAWEI', debeContener: 'EOM', urls: [
+                'https://support.huawei.com/enterprise/en/routers/ar611-pid-253265923/bulletins?type=life-cycle-notices',
+                'https://support.huawei.com/enterprise/en/bulletins-product/life-cycle-notices/routers-pid-1482607112869',
+              ] },
+              { archivo: 'huawei-ar610-infofinder.html', tipo: 'html', para: 'HUAWEI', debeContener: 'EOM', urls: [
+                'https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers/ar610-pid-253265923/eom-eofs-and-eos-date',
+              ] },
+            ];
+            const informe = [];
+            (async () => {
+              fs.mkdirSync('fuente-cisco-huawei', { recursive: true });
+              for (const doc of DOCS) {
+                const intentos = [];
+                let guardado = false;
+                for (const url of doc.urls) {
+                  let res;
+                  try {
+                    res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (presales-traer-fuente/1.0)' } });
+                  } catch (e) { intentos.push({ url, error: String(e.message || e) }); continue; }
+                  if (!res.ok) { intentos.push({ url, status: res.status }); continue; }
+                  const buf = Buffer.from(await res.arrayBuffer());
+                  if (doc.tipo === 'pdf' && buf.subarray(0, 4).toString() !== '%PDF') {
+                    intentos.push({ url, status: res.status, firma: buf.subarray(0, 8).toString('hex'), nota: 'no es un PDF' });
+                    continue;
+                  }
+                  if (doc.debeContener && !buf.toString('utf8').includes(doc.debeContener)) {
+                    intentos.push({ url, status: res.status, bytes: buf.length, nota: 'no contiene el texto esperado' });
+                    continue;
+                  }
+                  fs.writeFileSync('fuente-cisco-huawei/' + doc.archivo, buf);
+                  intentos.push({ url, status: res.status, bytes: buf.length, guardado: true });
+                  guardado = true;
+                  break;
+                }
+                informe.push({ archivo: doc.archivo, para: doc.para, guardado, intentos });
+              }
+              fs.writeFileSync('fuente-cisco-huawei/informe.json', JSON.stringify(informe, null, 2));
+              for (const d of informe) {
+                console.log((d.guardado ? 'OK   ' : 'FALLA') + '  ' + d.para + '  ' + d.archivo);
+                for (const i of d.intentos) console.log('        ' + (i.status || i.error) + '  ' + i.url + (i.nota ? '  <- ' + i.nota : ''));
+              }
+            })().catch((e) => { console.error(e); process.exit(1); });
+          "
+
+      - name: Publicar en la rama de transporte
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout -B fuente/cisco-huawei
+          git add fuente-cisco-huawei/
+          git commit -m "Fichas de Cisco y boletines de Huawei descargados $(date -u +%Y-%m-%d)"
+          git push --force origin fuente/cisco-huawei
+
+      - name: Resumen
+        run: |
+          {
+            echo '## Fichas de Cisco y boletines de Huawei'
+            echo ''
+            echo 'Rama `fuente/cisco-huawei`. Traerla con `git fetch origin fuente/cisco-huawei`.'
+            echo ''
+            echo '```'
+            node -e "
+              const inf = require('./fuente-cisco-huawei/informe.json');
+              for (const d of inf) {
+                console.log((d.guardado ? 'OK   ' : 'FALLA') + '  ' + d.para + '  ' + d.archivo);
+                for (const i of d.intentos) console.log('        ' + (i.status || i.error) + '  ' + i.url + (i.nota ? '  <- ' + i.nota : ''));
+              }
+            "
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
