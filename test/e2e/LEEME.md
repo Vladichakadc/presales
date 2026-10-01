@@ -40,6 +40,7 @@ abajo).
 | `e2e-fortinet-rediseno.js` | La etapa 7 de Fortinet: recomendación, selección, BOM y botones leyendo el mismo resultado, confirmación del servidor, panel anclado, móvil y enlace verificable (T01–T30). |
 | `e2e-accesibilidad.js` | axe-core (WCAG 2.1 A/AA) en 17 estados de pantalla y reflujo a 640 px (200 % de zoom). No sustituye la prueba con un lector de pantalla real. |
 | `e2e-asentar.js` | El contrato de `asentar()`, sobre una página sintética: espera a un temporizador corto y a una petición lenta, no a uno largo, no se cuelga con una imagen diferida fuera de la vista y falla si la página no lleva rastreador. Comprobado saboteando el rastreador dos veces. |
+| `e2e-entradas-limite.js` | Entradas límite en los nueve dimensionadores (2026-10-01): caudal y sedes negativos se leen como ninguno o como una sede, el formulario vacío de Nokia 7750 SR no recomienda, ningún «null/undefined/NaN» en las pestañas que lee el usuario (salvo «Fuentes», que cita campos a propósito), y un enlace con cada modo en la URL abre sin excepciones. Nació de un recorrido con valores límite que encontró seis errores que ninguna otra batería veía. |
 
 ## Dónde corre
 

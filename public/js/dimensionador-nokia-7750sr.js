@@ -96,7 +96,8 @@
   }
 
   function requerimiento() {
-    const bw = (parseFloat($('bw').value) || 0) * (parseFloat($('unit').value) || 1);
+    // Un caudal negativo cuenta como ninguno: si no, la ficha decía «Requerimiento -6 Gbps».
+    const bw = Math.max(0, (parseFloat($('bw').value) || 0) * (parseFloat($('unit').value) || 1));
     const head = (parseFloat($('head').value) || 0) / 100;
     return Math.round(bw * (1 + head));
   }
@@ -117,6 +118,20 @@
     lastPick = pick;
 
     renderApartados(apartados, portQty, portVel);
+
+    // Sin caudal ni puertos no hay nada que dimensionar, como en los demás dimensionadores:
+    // antes el formulario vacío recomendaba el 7250 IXR-e con catorce «equipos que cumplen».
+    if (need <= 0 && portQty <= 0) {
+      lastPick = null;
+      FICHA.render({vendor:'nokia',
+        contenedor: 'verdict', candidatos: [], recomendado: null,
+        vacioTitulo: 'Ingrese valores para recomendar un equipo',
+        vacioDetalle: '<p style="margin:0;font-size:13.5px">Escriba el <b>caudal</b> del enlace o los <b>puertos</b> que necesita para que el dimensionador proponga los modelos que cumplen.</p>',
+      });
+      $('sizingBox').innerHTML = '<p style="font-size:13.5px;color:var(--steel)">Ingrese valores para recomendar un equipo.</p>';
+      renderBom(null);
+      return;
+    }
 
     if (!pick) {
       FICHA.render({vendor:'nokia', 

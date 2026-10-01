@@ -91,7 +91,7 @@ function renderCatalogo(){
   tbodyAr.innerHTML = MODELS.filter(m => m.cls === 'AR').map(m => `<tr>
     <td><code>${esc(m.id)}</code>${marca(m)}</td><td>${esc(m.ser)}</td><td>${esc(m.fam)}</td>
     <td class="n">${fmt(m.fwd)}</td><td class="n">${m.ipsec ? fmt(m.ipsec) : '—'}</td>
-    <td class="n">${m.lan}</td><td>${esc(m.ports)}</td>
+    <td class="n">${m.lan ?? '—'}</td><td>${esc(m.ports)}</td>
   </tr>`).join('');
   tbodyWan.innerHTML = MODELS.filter(m => m.cls === 'WAN').map(m => `<tr>
     <td><code>${esc(m.id)}</code>${marca(m)}</td><td>${esc(m.ser)}</td><td>${esc(m.fam)}</td>
@@ -429,6 +429,7 @@ function pintarOpticasFilas(m){
 }
 $('btnAddOptica').addEventListener('click', () => {
   const m = MODELS.find(x => x.id === $('pickModel').value) || MODELS[0];
+  if(!m) return;
   const fam = (m.optics || [])[0];
   if(!fam){ return; }
   const filas = leerOpticas();
@@ -460,6 +461,9 @@ $('opticasFilas').addEventListener('change', e => {
 
 function renderBom(){
   const m = MODELS.find(x => x.id === $('pickModel').value) || MODELS[0];
+  // Sin catálogo todavía no hay nada que pintar (MikroTik y Aruba ya lo guardaban): un enlace
+  // compartido repone los .seg con un click que llega antes que el fetch, y aquí reventaba.
+  if(!m) return;
   // Sitios x unidades por sitio: con HA 1+1 se cotizan dos equipos por sitio (motor: `unidades`).
   const qty = Math.max(1, parseInt($('qty').value) || 1) * (ultimaEval ? ultimaEval.unidades : 1);
   pintarOpticasFilas(m);

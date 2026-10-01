@@ -107,7 +107,8 @@ function render(){
   const unit=parseFloat($('unit').value);
   const head=(parseFloat($('head').value)||0)/100;
   const conc=(parseFloat($('conc').value)||40)/100;
-  const sites=parseInt($('sites').value)||1;
+  // Menos de una sede no es un agregado: con -5 el requerimiento salía en -13000 Mbps y recomendaba.
+  const sites=Math.max(1,parseInt($('sites').value)||1);
   const profile=$('profile').value;
 
   $('headVal').textContent=Math.round(head*100)+' %';
@@ -363,6 +364,9 @@ function renderTrack(profile, needMbps, xPct, needPct){
 /* ── RENDER BOM ── */
 function renderBom(){
   const m=MODELS.find(x=>x.id===$('pickModel').value)||MODELS[0];
+  // Sin catálogo todavía no hay nada que pintar (MikroTik y Aruba ya lo guardaban): un enlace
+  // compartido repone los .seg con un click que llega antes que el fetch, y aquí reventaba.
+  if(!m) return;
   const qty=Math.max(1,parseInt($('qty').value)||1);
   const nimQty=Math.max(0,parseInt($('nimQty').value)||0);
   const optQty=Math.max(0,parseInt($('optQty').value)||0);

@@ -259,3 +259,25 @@ test('H-07 · sin filas declaradas no se pide ninguna óptica', () => {
   const r = M.opticasBom(ar, [], OPTICS);
   assert.deepStrictEqual(r, { validas: [], invalidas: [] });
 });
+
+// Encontrado el 2026-10-01 recorriendo la pantalla con valores límite: con -5 Mbps la página
+// decía «Requiere -13 Mbps» y recomendaba un AR5710, porque solo trataba el 0 como «sin datos».
+test('un caudal negativo cuenta como ninguno: nunca se dimensiona contra un requerimiento negativo', () => {
+  const neg = M.evaluar(esc({ bw: -5 }), MODELS);
+  const cero = M.evaluar(esc({ bw: 0 }), MODELS);
+  assert.strictEqual(neg.raw, 0);
+  assert.ok(neg.need >= 0 && neg.needMpps >= 0, `need ${neg.need}, needMpps ${neg.needMpps}`);
+  assert.deepStrictEqual([neg.need, neg.pick && neg.pick.m.id], [cero.need, cero.pick && cero.pick.m.id]);
+  const agregado = M.evaluar(esc({ bw: -50, mode: 'agg', sites: 10 }), MODELS);
+  assert.strictEqual(agregado.need, 0);
+});
+
+test('un hub con menos de una sede se lee como una: ni requerimiento negativo ni «-5 túneles»', () => {
+  const neg = M.evaluar(esc({ bw: 50, mode: 'agg', sites: -5 }), MODELS);
+  const una = M.evaluar(esc({ bw: 50, mode: 'agg', sites: 1 }), MODELS);
+  assert.strictEqual(neg.sites, 1);
+  assert.strictEqual(neg.tuneles, 1);
+  assert.ok(neg.need > 0, `need ${neg.need}`);
+  assert.deepStrictEqual([neg.need, neg.pick && neg.pick.m.id], [una.need, una.pick && una.pick.m.id]);
+  assert.ok(!neg.avisos.some((a) => /-\d/.test(a)), neg.avisos.join(' | '));
+});

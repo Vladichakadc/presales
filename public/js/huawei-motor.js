@@ -58,8 +58,11 @@
     const rango = o.rango || (() => 0);
     const recomendable = o.recomendable || ((m) => rango(m) < 2);
     const mode = esc.mode || 'link';
-    const raw = (Number(esc.bw) || 0) * (Number(esc.unit) || 1);
-    const sites = parseInt(esc.sites, 10) || 1;
+    // Un caudal negativo no es un escenario: se lee como «sin caudal», que la página ya trata
+    // como «ingrese valores». Sin el tope, -5 Mbps dimensionaba contra -13 Mbps y recomendaba.
+    const raw = Math.max(0, (Number(esc.bw) || 0) * (Number(esc.unit) || 1));
+    // Menos de una sede no es un hub: con -5 el requerimiento salía negativo y el aviso pedía «-5 túneles».
+    const sites = Math.max(1, parseInt(esc.sites, 10) || 1);
     const conc = Number(esc.conc); const head = Number(esc.head);
     const dirMult = Number(esc.dirMult) || 2;
     const frame = Number(esc.frame) || 340;

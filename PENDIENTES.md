@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-01 (**El cotizador deja de citar cifras que el dimensionador contradice, y el fin de venta se aplica en todas las pantallas.** Las 14 diferencias de Cisco se resolvieron con sus cinco fichas oficiales, traídas por Actions (`traer-cisco-huawei.yml`): **seis cifras del dimensionador prometían más de lo publicado** —el C8300-2N2S-6T daba 5 Gbps de SD-WAN y la ficha publica 1,8 IMIX, y por eso salía **recomendado** para un sitio de 1 Gbps que no aguanta— y se bajaron; el texto del cotizador se alineó y Cisco queda 17/17. Lo que sigue en disputa (Huawei 3, Juniper 3) ya no se cita: sale «en revisión» con las dos cifras en el título. **Validación del fin de venta**: el dimensionador sí lo marca en Cisco, Juniper y Aruba, y en Huawei declara «sin dato» (0 de 40) en vez de pintar verde; pero **el portal y el cotizador no aplicaban la fecha vencida**: listaban diez equipos con el último pedido ya pasado (los ASR 1000, el EC-XL, cuatro controladoras AOS 8, y el SRX1500/SRX4100 por una fila con otro espaciado). Y el importador `--eol` de Huawei habría tomado **EOS (fin de soporte) por último pedido**; corregido, y aparta los boletines de versión de software.)
+Última revisión: 2026-10-01 (**Revisión de los dimensionadores con valores límite: seis errores corregidos.** Encargo del dueño: revisar el dimensionador y corregir lo que tuviera. Con todas las baterías en verde, recorrer las nueve pantallas con valores límite en cada control encontró seis: un caudal o unas sedes negativos que se dimensionaban («Requiere -13 Mbps», «-13000 Mbps», «-5 túneles»), el formulario vacío de Nokia 7750 SR recomendando un equipo, «null» en el catálogo de Huawei y en una nota de Aruba, y **una excepción al abrir cualquier enlace compartido con un modo en la URL en Huawei y Cisco** (15 de 60 enlaces). Los guarda una batería e2e nueva, comprobada revirtiendo cada arreglo. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-01 (**El cotizador deja de citar cifras que el dimensionador contradice, y el fin de venta se aplica en todas las pantallas.** Las 14 diferencias de Cisco se resolvieron con sus cinco fichas oficiales, traídas por Actions (`traer-cisco-huawei.yml`): **seis cifras del dimensionador prometían más de lo publicado** —el C8300-2N2S-6T daba 5 Gbps de SD-WAN y la ficha publica 1,8 IMIX, y por eso salía **recomendado** para un sitio de 1 Gbps que no aguanta— y se bajaron; el texto del cotizador se alineó y Cisco queda 17/17. Lo que sigue en disputa (Huawei 3, Juniper 3) ya no se cita: sale «en revisión» con las dos cifras en el título. **Validación del fin de venta**: el dimensionador sí lo marca en Cisco, Juniper y Aruba, y en Huawei declara «sin dato» (0 de 40) en vez de pintar verde; pero **el portal y el cotizador no aplicaban la fecha vencida**: listaban diez equipos con el último pedido ya pasado (los ASR 1000, el EC-XL, cuatro controladoras AOS 8, y el SRX1500/SRX4100 por una fila con otro espaciado). Y el importador `--eol` de Huawei habría tomado **EOS (fin de soporte) por último pedido**; corregido, y aparta los boletines de versión de software.)
 
 Revisión anterior: 2026-09-30 (**Dimensionador Huawei a producción, y el cotizador contrastado con los dimensionadores.** Llega a `main` el trabajo de la revisión Huawei: motor único (`huawei-motor.js`), piso de capa por función, plataforma elegida antes que el caudal, BOM gobernado (piezas con papel, ópticas por enlace), alta disponibilidad 1+1, túneles del hub declarados y la capa comercial de `bom.js`. `npm run catalogo` gana la sección «COTIZADOR FRENTE A DIMENSIONADOR»: 14 diferencias en Cisco, 3 en Huawei y 3 en Juniper, abiertas abajo. El pendiente 14 sigue bloqueado por la cuenta Huawei, con las señales de terceros anotadas.)
 
@@ -1573,6 +1575,47 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Revisión de los dimensionadores con valores límite: seis errores corregidos (2026-10-01)
+
+Encargo del dueño: «revisa el dimensionador, si tiene algún error, corrígelo». CI estaba en verde
+sobre `fc1e31d` (verificar, pantallas con contraste y e2e, y la sonda), así que se buscó por otro
+lado. Se recorrieron las nueve pantallas en Chromium con valores límite (`0`, `-5`, vacío, `0.5`,
+`1e9`, texto) en cada control de cada pestaña, en cada modo y con cada casilla marcada, y se buscó
+texto de código (`null`, `undefined`, `NaN`), cifras negativas, cantidades del BOM que no fueran
+enteros positivos y excepciones. Seis errores, ninguno visto por las baterías existentes:
+
+1. **Un caudal negativo se dimensionaba** en Huawei y Nokia 7750 SR. Con -5 Mbps, Huawei decía
+   «Requiere -13 Mbps» y recomendaba un AR5710; Nokia, «Requerimiento -6 Gbps». Los demás ya lo
+   trataban como «ingrese valores». Ahora un caudal negativo cuenta como ninguno (`huawei-motor.js`
+   y `requerimiento()` de Nokia).
+2. **Unas sedes negativas en modo agregado** daban un requerimiento negativo en Huawei y Cisco
+   («-13000 Mbps» y el aviso «se piden -5 túneles IPsec»). Ahora se leen como una sede.
+3. **El formulario vacío de Nokia 7750 SR recomendaba el 7250 IXR-e** con catorce «equipos que
+   cumplen», sin caudal ni puertos pedidos. Ahora pide los valores como los demás; con solo
+   puertos pedidos sigue recomendando, porque la densidad dimensiona.
+4. **«null» en la pestaña Catálogo de Huawei**, en los puertos LAN de cuatro modelos que el
+   catálogo no publica (AR6710-H4T4X2Y7, AR8140-12G10XG, AR8140-T-12G10XG, AR8700-8). Ahora «—».
+5. **«precio null» en una nota para el cliente** al pie de la lista de materiales de Aruba (la SSE
+   sin precio). Ahora «sin precio en la lista».
+6. **Excepción al abrir un enlace compartido con un modo en la URL** en Huawei y Cisco: 15 de 60
+   enlaces (`modeSeg`, `platSeg`, `dirSeg`, `critSeg`, cualquier valor). El enlace repone los
+   grupos segmentados con un click sintético que llega antes que el catálogo, y el BOM se pintaba
+   con la lista de modelos vacía (`reading 'id'`). MikroTik y Aruba ya tenían la guarda; ahora la
+   tienen los cuatro.
+
+- **Los guarda `test/e2e/e2e-entradas-limite.js`**, que corre en CI con el resto de la batería, y
+  dos pruebas unitarias del motor Huawei. Se comprobó revirtiendo cada arreglo: la batería da los
+  fallos de cada uno (8 en la primera tanda, 2 con el de Aruba y 7 con los de Huawei y Cisco).
+- **Lo que no se cambió, a propósito**: Fortinet bloquea un valor fuera de rango con un mensaje
+  que nombra el campo por su ruta interna (`escala.usuarios: -5 fuera de [0, 100000000]`) y ofrece
+  «Ir al campo». Funciona y bloquea bien; nombrarlo por su etiqueta es mejora, no arreglo.
+- **Diferencias de datos que no son de código**: `npm run catalogo` sigue mostrando 3 cifras de
+  Huawei (NE8000 M8 y F8) y 3 de Juniper (SRX340, SRX4300) distintas entre cotizador y
+  dimensionador. Ya estaban anotadas (H5 y la tabla del 2026-10-01) y se cierran con la ficha
+  oficial, no deduciendo cuál es la buena.
+- **Verificación**: 661 pruebas y lint; 17/17 pantallas, 8 contrastes sin discrepancias y 16/16
+  baterías e2e contra un servidor local en modo producción.
 
 ### Una sola cifra entre cotizador y dimensionador, y el fin de venta en todas las pantallas (2026-10-01)
 
