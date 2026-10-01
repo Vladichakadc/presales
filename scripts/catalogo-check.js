@@ -384,99 +384,12 @@ function coberturaContraste() {
 
    ES UN INFORME, NO UN FRENO. No dice cual de las dos cifras es la buena —eso lo dice el
    documento del fabricante— y un rojo en cada cambio de catalogo ensenaria a ignorarlo. */
-const CONTRASTE_COTIZADOR = {
-  huawei: { mod: 'huawei', listas: ['MODELS'], campos: { FWD: 'fwd', IPsec: 'ipsec', 'SD-WAN': 'typ', BASE: 'cap', Mpps: 'mpps' } },
-  cisco: { mod: 'cisco', listas: ['MODELS'], campos: { FWD: 'fwd', IPsec: 'ipsec', 'SD-WAN': 'sdwan' } },
-  fortinet: { mod: 'fortinet', listas: ['MODELS'], campos: { FW: 'fw', NGFW: 'ngfw', IPsec: 'vpn' } },
-  mikrotik: { mod: 'mikrotik', listas: ['MODELS'], campos: { FWD: 'fwd', IPsec: 'ipsec' } },
-  juniper: { mod: 'juniper', listas: ['MODELS'], campos: { FW: 'fw', IPsec: 'vpn' } },
-  aruba: { mod: 'aruba', listas: ['MODELS'], campos: { WAN_MIN: 'wanMin', WAN_MAX: 'wanMax', FW: 'fw' } },
-  // Nokia guarda la capacidad en Gbps (ver `legacyData/nokia.js`), no en Mbps.
-  nokia: { mod: 'nokia', listas: ['MODELS', 'MODELS_ROUTER'], campos: { BASE: 'cap' }, escala: { cap: 1000 } },
-};
-const UNIDAD_MBPS = { Mbps: 1, Gbps: 1000, Tbps: 1e6 };
-
-// La coma es separador de miles y el punto decimal, como en todo el catalogo.
-function cifraCotizador(txt, unidad) {
-  const limpio = String(txt).replace(/,/g, '');
-  const dec = (limpio.split('.')[1] || '').length;
-  const f = unidad ? UNIDAD_MBPS[unidad] : 1;
-  return { valor: Number(limpio) * f, tolerancia: 0.5 * Math.pow(10, -dec) * f };
-}
-
-function leerSpec(spec) {
-  const cifras = [];
-  const ilegibles = [];
-  const N = '([\\d.,]+)\\s*(Mbps|Gbps|Tbps)';
-  for (const crudo of String(spec || '').split('·')) {
-    const seg = crudo.trim();
-    let m = seg.match(/^([\d.,]+)\s*Mpps$/);
-    if (m) { cifras.push({ etiqueta: 'Mpps', texto: seg, ...cifraCotizador(m[1], null) }); continue; }
-    if (!/\b(Mbps|Gbps|Tbps)\b/.test(seg)) continue; // puertos, funciones, SKU: no es una cifra de rendimiento
-    if ((m = seg.match(new RegExp(`^WAN\\s+${N}\\s*-\\s*${N}$`)))) {
-      cifras.push({ etiqueta: 'WAN_MIN', texto: seg, ...cifraCotizador(m[1], m[2]) });
-      cifras.push({ etiqueta: 'WAN_MAX', texto: seg, ...cifraCotizador(m[3], m[4]) });
-    } else if ((m = seg.match(new RegExp(`^WAN hasta\\s+${N}$`)))) {
-      cifras.push({ etiqueta: 'WAN_MAX', texto: seg, ...cifraCotizador(m[1], m[2]) });
-    } else if ((m = seg.match(new RegExp(`^(FW|NGFW|IPsec|SD-WAN)\\s+${N}$`)))) {
-      cifras.push({ etiqueta: m[1], texto: seg, ...cifraCotizador(m[2], m[3]) });
-    } else if ((m = seg.match(new RegExp(`^${N}(?:\\s+(FWD))?$`)))) {
-      cifras.push({ etiqueta: m[3] ? 'FWD' : 'BASE', texto: seg, ...cifraCotizador(m[1], m[2]) });
-    } else {
-      ilegibles.push(seg);
-    }
-  }
-  return { cifras, ilegibles };
-}
-
-const PREFIJO_FABRICANTE = /^(juniper|aruba|netengine|cisco|fortinet|mikrotik|nokia|huawei)/;
-// La misma normalizacion que `BOM.normalizar` usa para el traspaso al cotizador.
-function normalizarModelo(nombre) {
-  const s = String(nombre || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  return s.replace(PREFIJO_FABRICANTE, '') || s;
-}
-
-function contrasteCotizador(opciones) {
-  const o = opciones || {};
-  const filas = o.cotizador || require('../server/seed/legacyData/cotizadorCatalog');
-  const cargarMod = o.cargar || cargar;
-  const mapa = o.mapa || CONTRASTE_COTIZADOR;
-  const out = [];
-  for (const [vendor, cfg] of Object.entries(mapa)) {
-    const mod = cargarMod(cfg.mod);
-    const r = { vendor, comparadas: 0, coincide: 0, difiere: [], sinDato: [], ilegible: [], sinPareja: [] };
-    if (!mod) { r.error = 'no se pudo cargar el catalogo del dimensionador'; out.push(r); continue; }
-    const porNombre = new Map();
-    for (const l of cfg.listas) for (const m of mod[l] || []) porNombre.set(normalizarModelo(m.id), m);
-    for (const row of filas.filter((x) => String(x.vendor || '').toLowerCase() === vendor)) {
-      const m = porNombre.get(normalizarModelo(row.model));
-      if (!m) { r.sinPareja.push(row.model); continue; }
-      const { cifras, ilegibles } = leerSpec(row.spec);
-      ilegibles.forEach((t) => r.ilegible.push({ modelo: row.model, texto: t }));
-      for (const c of cifras) {
-        const campo = cfg.campos[c.etiqueta];
-        if (!campo) { r.ilegible.push({ modelo: row.model, texto: c.texto }); continue; }
-        const bruto = m[campo];
-        if (bruto === null || bruto === undefined || typeof bruto !== 'number') {
-          r.sinDato.push({ modelo: row.model, campo, cotizador: c.texto });
-          continue;
-        }
-        const dim = bruto * ((cfg.escala && cfg.escala[campo]) || 1);
-        r.comparadas++;
-        if (Math.abs(dim - c.valor) <= c.tolerancia) r.coincide++;
-        else r.difiere.push({ modelo: row.model, campo, cotizador: c.texto, dimensionador: dim });
-      }
-    }
-    out.push(r);
-  }
-  return out;
-}
-
-function mbpsLegible(v) {
-  if (v >= 1e6) return `${+(v / 1e6).toFixed(2)} Tbps`;
-  if (v >= 1000) return `${+(v / 1000).toFixed(2)} Gbps`;
-  return `${v} Mbps`;
-}
+// El casado, la lectura del texto y la comparacion viven en `server/services/cifrasCotizador.js`,
+// que es tambien lo que decide que muestra el cotizador: el informe y la pantalla no pueden
+// discrepar sobre que es pareja de que.
+const {
+  CONTRASTE_COTIZADOR, leerSpec, normalizarModelo, contrasteCotizador, mbpsLegible,
+} = require('../server/services/cifrasCotizador');
 
 function informe() {
   return {

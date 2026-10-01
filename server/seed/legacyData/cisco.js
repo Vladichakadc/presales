@@ -28,9 +28,11 @@ const EOL_ANNOUNCED = {
                                  url:'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500l-8s4x-4t2x-c8300-1n1s-6t-eol.html'},
   'Catalyst 8300-2N2S-6T':      {pid:'C8300-2N2S-6T', lastOrder:'2027-07-31', sucesor:'Cisco Secure Router (G2)',
                                  url:'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html'},
-  // Fin de venta ya vencido: solo referencia para parque instalado.
+  // Fin de venta anunciado y todavia pedible hasta el 31-ene-2027.
   'Catalyst 8500-12X4QC':       {pid:'C8500-12X4QC',  lastOrder:'2027-01-31', sucesor:null,
                                  url:'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500-12x-c8500-12x4qc-eol.html'},
+  // Fin de venta ya vencido en los tres ASR: solo referencia para parque instalado. Desde el
+  // 2026-10-01 el portal y el cotizador tambien los retiran (`fueraDeVenta` en catalogProjection).
   'ASR 1001-X':                 {pid:'ASR1001-X',     lastOrder:'2022-08-01', sucesor:null,
                                  url:'https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/asr1001-x-1002-x-eol.html'},
   'ASR 1002-HX':                {pid:'ASR1002-HX',    lastOrder:'2025-03-31', sucesor:null,
@@ -38,24 +40,53 @@ const EOL_ANNOUNCED = {
   'ASR 1006-X':                 {pid:'ASR1006-X',     lastOrder:'2026-07-31', sucesor:null,
                                  url:'https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/asr1006-x-chassis-eol.html'},
 };
+// CONTRASTE CON LAS FICHAS OFICIALES (2026-10-01). `npm run catalogo` encontro 14 cifras en
+// que este catalogo y el del cotizador no coincidian, y ninguna de las dos se podia dar por
+// buena sin el documento. Las cinco fichas se trajeron con `traer-cisco-huawei.yml` (rama de
+// transporte `fuente/cisco-huawei`, corrida 36849891379) y se leyeron tabla por tabla:
+//   ISR 1000      datasheet-c78-739512   tablas 25-26 (C111x-8P, 512 B)
+//   Catalyst 8200 nb-06-cat8200-series-edge-plat-ds-cte-en   tablas 3 y 5
+//   Catalyst 8300 datasheet-c78-744088   tablas 3 y 5
+//   Catalyst 8500 datasheet-c78-744089   tablas 5a y 5c
+//   ASR 1000      datasheet-c78-731632   (ESP200: 200 Gbps sin cifrar, 78 Gbps IPsec 1400 B)
+// LA REGLA QUE SE APLICO: la pagina rotula estos campos como IMIX ("Forwarding (bidireccional
+// IMIX)", "IPsec VPN (IMIX)", "SD-WAN ... IMIX"), asi que donde la ficha publica la cifra IMIX
+// el campo lleva ESA; y una cifra que supera todo lo que la ficha publica, en cualquier base,
+// se baja a lo publicado. Seis correcciones, todas a la baja y todas del lado peligroso —un
+// equipo que promete mas de lo que da sale recomendado para un sitio que no aguanta—:
+//   C8300-2N2S-6T  sdwan 5000 -> 1800 (IMIX, tabla 3) e ipsec 5000 -> 1900 (IMIX, tabla 5).
+//                  Prometia 2,8 veces lo publicado en el unico perfil en que se vende.
+//   C8300-1N1S-6T  ipsec 2000 -> 1900 (IMIX, tabla 5)
+//   C8200          ipsec 1000 ->  900 (IMIX; 1000 es la cifra a 1400 B)
+//   C8200L         ipsec  500 ->  400 (IMIX; 500 es la cifra a 1400 B)
+//   ISR 1111X-8P   ipsec  800 ->  600 (la ficha da 600 a 512 B multi-tunel y 679 IMIX en un
+//                  solo tunel; 800 no sale en ninguna base. La X es solo memoria: mismo rendimiento)
+// LO QUE SE DEJO A PROPOSITO, Y POR QUE. Ninguna de las cinco fichas publica forwarding IMIX:
+// solo a 1400 B (8200: 3,8 Gbps; 8300: 19,7; 8500-12X4QC: 197) o a 512 B (C111x-8P: 1.800 Mbps).
+// Meter esas cifras en un campo IMIX mezclaria bases —el error del `fwd`/`typ` de Huawei—, y
+// las de aqui quedan POR DEBAJO de lo publicado, que es el lado conservador. Lo mismo con el
+// IPsec del 8500-12X4QC (96 Gbps aqui, 135 Gbps a 1400 B en la ficha, sin IMIX publicado) y con
+// el del ISR 1111-8P (200 Mbps aqui, 600 a 512 B: puede ser el tope sin licencia HSEC, y no se
+// sube sin leerlo). El ASR 1006-X coincide con la ficha (ESP200). Todas quedan declaradas en
+// PENDIENTES.md con su cifra oficial, para que nadie las tome por verificadas en IMIX.
 const MODELS = [
   // ISR 1000
   {id:'ISR 1111-8P',      ser:'ISR 1000', fam:'Sucursal muy pequeña / SOHO',           fwd:300,  ipsec:200, sdwan:null, aps:0,    redund:false, lte:false,
    ports:'1 GE WAN combo + 8 GE LAN · 1 NIM slot', nim:1, sm:0, optics:['sfp1g'], parts:['LIC-HSEC','NIM-4G-LTE']},
-  {id:'ISR 1111X-8P',     ser:'ISR 1000', fam:'Sucursal pequeña con HSEC',              fwd:800,  ipsec:800, sdwan:null, aps:0,    redund:false, lte:false,
+  {id:'ISR 1111X-8P',     ser:'ISR 1000', fam:'Sucursal pequeña con HSEC',              fwd:800,  ipsec:600, sdwan:null, aps:0,    redund:false, lte:false,
    ports:'2 GE WAN combo + 8 GE LAN · 1 NIM slot', nim:1, sm:0, optics:['sfp1g'], parts:['LIC-HSEC','NIM-4G-LTE']},
   {id:'ISR 1116-4P',      ser:'ISR 1000', fam:'Sucursal + LTE integrado',               fwd:300,  ipsec:200, sdwan:null, aps:0,    redund:false, lte:true,
    ports:'4 GE WAN + LTE integrado · 1 NIM slot', nim:1, sm:0, optics:['sfp1g'], parts:['LIC-HSEC']},
   // Catalyst 8000 (Reemplazo de ISR 4000) — elp/elpN verificados contra export real de CCW (17-ago-2026, ver
   // nota de fuentes al final del archivo). Fin de venta anunciado en 8200L/8200/8300-1N1S-6T/8300-2N2S-6T,
   // ver EOL_ANNOUNCED — sucesor confirmado: Cisco Secure Router (G2), ver bloque siguiente.
-  {id:'Catalyst 8200L',   ser:'Catalyst 8000', fam:'Sucursal SD-WAN compacta',          fwd:500,  ipsec:500, sdwan:400,  aps:50,  redund:false, lte:false,
+  {id:'Catalyst 8200L',   ser:'Catalyst 8000', fam:'Sucursal SD-WAN compacta',          fwd:500,  ipsec:400, sdwan:400,  aps:50,  redund:false, lte:false,
    ports:'4 GE WAN + 8 GE LAN + 2 SFP · 1 NIM', nim:1, sm:0, optics:['sfp1g'], parts:['DNA-ADVANTAGE','C8200L-NIM-1X']},
-  {id:'Catalyst 8200',    ser:'Catalyst 8000', fam:'Sucursal SD-WAN estándar',          fwd:1000, ipsec:1000, sdwan:900, aps:100, redund:false, lte:false,
+  {id:'Catalyst 8200',    ser:'Catalyst 8000', fam:'Sucursal SD-WAN estándar',          fwd:1000, ipsec:900, sdwan:900, aps:100, redund:false, lte:false,
    ports:'4 GE WAN + 2 NIM · IOS XE SD-WAN nativo', nim:2, sm:0, optics:['sfp1g','sfp10g'], parts:['DNA-ADVANTAGE','C8200-NIM-2G'], elp:'$6,967.76', elpN:6967.76},
-  {id:'Catalyst 8300-1N1S-6T', ser:'Catalyst 8000', fam:'Hub regional SD-WAN',         fwd:2000, ipsec:2000, sdwan:1800, aps:500, redund:true,  lte:false,
+  {id:'Catalyst 8300-1N1S-6T', ser:'Catalyst 8000', fam:'Hub regional SD-WAN',         fwd:2000, ipsec:1900, sdwan:1800, aps:500, redund:true,  lte:false,
    ports:'6 GE + 2 SFP+ + 1 NIM + 1 SM · mod. fuente', nim:1, sm:1, optics:['sfp1g','sfp10g'], parts:['DNA-ADVANTAGE','C8300-NIM-2X'], elp:'$21,286.41', elpN:21286.41},
-  {id:'Catalyst 8300-2N2S-6T', ser:'Catalyst 8000', fam:'Hub regional SD-WAN doble NIM',fwd:5000, ipsec:5000, sdwan:5000, aps:1000,redund:true,  lte:false,
+  {id:'Catalyst 8300-2N2S-6T', ser:'Catalyst 8000', fam:'Hub regional SD-WAN doble NIM',fwd:5000, ipsec:1900, sdwan:1800, aps:1000,redund:true,  lte:false,
    ports:'6 GE + 2 SFP+ + 2 NIM + 2 SM', nim:2, sm:2, optics:['sfp1g','sfp10g'], parts:['DNA-ADVANTAGE','C8300-NIM-2X'], elp:'$29,026.93', elpN:29026.93},
   {id:'Catalyst 8500-12X4QC',  ser:'Catalyst 8000', fam:'Hub DC / Edge de alto rendimiento',fwd:96000,ipsec:96000,sdwan:31900,aps:2000,redund:true,lte:false,
    ports:'12x10GE SFP+ + 4x40GE QSFP · modular', nim:0, sm:0, optics:['sfp10g','qsfp40g','qsfp100g'], parts:['DNA-ADVANTAGE']},

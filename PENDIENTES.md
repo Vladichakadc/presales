@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-09-30 (**Dimensionador Huawei a producción, y el cotizador contrastado con los dimensionadores.** Llega a `main` el trabajo de la revisión Huawei: motor único (`huawei-motor.js`), piso de capa por función, plataforma elegida antes que el caudal, BOM gobernado (piezas con papel, ópticas por enlace), alta disponibilidad 1+1, túneles del hub declarados y la capa comercial de `bom.js`. `npm run catalogo` gana la sección «COTIZADOR FRENTE A DIMENSIONADOR»: 14 diferencias en Cisco, 3 en Huawei y 3 en Juniper, abiertas abajo. El pendiente 14 sigue bloqueado por la cuenta Huawei, con las señales de terceros anotadas.)
+Última revisión: 2026-10-01 (**El cotizador deja de citar cifras que el dimensionador contradice, y el fin de venta se aplica en todas las pantallas.** Las 14 diferencias de Cisco se resolvieron con sus cinco fichas oficiales, traídas por Actions (`traer-cisco-huawei.yml`): **seis cifras del dimensionador prometían más de lo publicado** —el C8300-2N2S-6T daba 5 Gbps de SD-WAN y la ficha publica 1,8 IMIX, y por eso salía **recomendado** para un sitio de 1 Gbps que no aguanta— y se bajaron; el texto del cotizador se alineó y Cisco queda 17/17. Lo que sigue en disputa (Huawei 3, Juniper 3) ya no se cita: sale «en revisión» con las dos cifras en el título. **Validación del fin de venta**: el dimensionador sí lo marca en Cisco, Juniper y Aruba, y en Huawei declara «sin dato» (0 de 40) en vez de pintar verde; pero **el portal y el cotizador no aplicaban la fecha vencida**: listaban diez equipos con el último pedido ya pasado (los ASR 1000, el EC-XL, cuatro controladoras AOS 8, y el SRX1500/SRX4100 por una fila con otro espaciado). Y el importador `--eol` de Huawei habría tomado **EOS (fin de soporte) por último pedido**; corregido, y aparta los boletines de versión de software.)
+
+Revisión anterior: 2026-09-30 (**Dimensionador Huawei a producción, y el cotizador contrastado con los dimensionadores.** Llega a `main` el trabajo de la revisión Huawei: motor único (`huawei-motor.js`), piso de capa por función, plataforma elegida antes que el caudal, BOM gobernado (piezas con papel, ópticas por enlace), alta disponibilidad 1+1, túneles del hub declarados y la capa comercial de `bom.js`. `npm run catalogo` gana la sección «COTIZADOR FRENTE A DIMENSIONADOR»: 14 diferencias en Cisco, 3 en Huawei y 3 en Juniper, abiertas abajo. El pendiente 14 sigue bloqueado por la cuenta Huawei, con las señales de terceros anotadas.)
 
 Revisión anterior: 2026-09-29 (**Revisión de arquitectura del dimensionador Huawei, contra Aruba** — encargo del dueño, solo análisis, sin tocar código: `docs/revision-huawei-2026-09-29.md`. Tres P0 medidos reproduciendo `render()`: SD-WAN marcado con perfil `fwd` dimensiona 2,1x corto, UTM no toca la capacidad, y el ×2 bidireccional por defecto no tiene fuente. Seis P1 del BOM, entre ellos que mete piezas alternativas como obligatorias y que pierde la licencia de rendimiento que el cálculo exige. Plan H1–H5 abierto abajo.)
 
@@ -503,18 +505,73 @@ decisión del dueño o el datasheet de Huawei (pendiente 14).
 | H4 | **Hecha en parte.** BOM con papel por pieza: alternativas de MPU y fuente en una línea «elegir una», 5G y WSIC fuera si no se piden, doble fuente x2, ópticas en una línea a elegir (H-06, H-07 sin inventar código). **HA 1+1 hecha (H-12, 2026-09-29)**: `#chkHa` (repone desde el enlace compartido y viaja como dos equipos al cotizador, conducido en el contraste `huawei`) cotiza dos equipos por sitio, cada uno al caudal completo (suma disponibilidad, no capacidad), y «misión crítica» sin HA lo advierte. **Salió de paso** que SnS se cotizaba dos veces (licencia y soporte). **Capa comercial hecha (H-13, 2026-09-29):** plazo de 1/3/5 años (`#anios`, el texto de cada suscripción dice el término real), precio de referencia del equipo tomado del cotizador (13 de los 40 modelos; el resto sale «consultar»), simulador de precio neto, TCO **declarado parcial** (solo el equipo tiene precio; licencias, suscripciones y soporte van «consultar») y perfiles multi-sede con consolidado. **Ópticas por enlace hechas (H-07, 2026-09-29):** cada módulo se declara (familia, modelo, cantidad por equipo), viaja en el enlace compartido (`#opticasData`) y entra al BOM con su código; una fila que ya no encaja tras cambiar de equipo sale como inválida, no se descarta. **Sigue sin existir la matriz de compatibilidad por chasis y versión de VRP** (el catálogo solo respalda la familia), y la pantalla lo dice | **hecha salvo datos** |
 | H5 | Datos: 27 de 40 modelos no casan con el cotizador, cifras del NE8000 M8/F8 distintas entre herramientas, M14 incoherente, el tope de túneles y sesiones por modelo (H-10, H-14; **H-11 declarado en pantalla el 2026-09-29**: el hub muestra cuántos túneles pide y que el catálogo no trae el tope, sin apartar a nadie; el filtro ya existe y se activa solo cuando un modelo traiga `tuneles`; las sesiones no se piden porque exigirían usuarios por sede) | bloqueado en parte por la cuenta Huawei (pendiente 14) |
 
-### Cotizador y dimensionador dicen cifras distintas del mismo equipo (2026-09-30, abierto)
+### Cotizador y dimensionador dicen cifras distintas del mismo equipo (abierto desde 2026-09-30; Cisco cerrado el 2026-10-01)
 
-`npm run catalogo` lo mide ahora en la sección «COTIZADOR FRENTE A DIMENSIONADOR». Primera corrida:
+`npm run catalogo` lo mide en la sección «COTIZADOR FRENTE A DIMENSIONADOR», y desde el 2026-10-01
+**el cotizador no cita una cifra en disputa**: `server/services/cifrasCotizador.js` la compara en
+cada petición y, si no coincide, el segmento sale «FWD en revisión» con las dos cifras en el título.
+El informe y la pantalla usan el mismo módulo, así que no pueden discrepar sobre qué es pareja de qué.
 
-| Fabricante | Coinciden | Difieren | Qué hay que decidir |
+| Fabricante | Coinciden | Difieren | Estado |
 |---|---:|---:|---|
-| Cisco | 3/17 | **14** | ISR 1111, Catalyst 8200/8300/8500 y ASR 1006-X: `fwd` e `ipsec` del dimensionador no son las del texto del cotizador (el 8500-12X4QC dice 20 Gbps FWD en uno y 96 en el otro). Cuál es la buena lo dice la ficha de Cisco; es el mismo fabricante que ya tiene sus cifras de dimensionamiento contrastadas, así que lo probable es que el texto del cotizador esté desactualizado |
-| Huawei | 20/23 | 3 | NE8000 M8 (capacidad y Mpps) y F8 (capacidad): el cotizador parece citar la capacidad **ampliable** y el dimensionador la actual; ver las señales del pendiente 14 |
-| Juniper | 12/15 | 3 | SRX340 (4,7 frente a 3 Gbps de firewall), SRX4300 (90 frente a 98) y un IPsec |
+| Cisco | **17/17** | 0 | **Cerrado** con las cinco fichas oficiales (rama `fuente/cisco-huawei`, corrida 36849891379). Seis cifras del dimensionador bajadas porque prometían más de lo publicado; el texto del cotizador alineado. Ver abajo lo que se dejó a propósito |
+| Huawei | 20/23 | 3 | NE8000 M8 (capacidad y Mpps) y F8 (capacidad). **El M8 del dimensionador trae exactamente las cifras del F1A (2,4 Tbps y 453 Mpps)**, que huele a fila copiada; la ficha de 2021 dice 1,2 Tbps. Se lee con la ficha oficial (pendiente 14). En el cotizador salen «en revisión» |
+| Juniper | 12/15 | 3 | SRX340 (4,7 frente a 3 Gbps de firewall; IPsec 733 frente a 600) y SRX4300 (90 frente a 98). **Las dos son oficiales y de ediciones distintas**: el dimensionador sale de la matriz de 2020 con doble anclaje y el cotizador del datasheet vigente de la línea SRX300. Hay que decidir cuál manda, no cuál está mal. En el cotizador salen «en revisión» |
 | Fortinet, Aruba, MikroTik, Nokia | todo | 0 | — |
 
-Corregir el texto del cotizador es cambiar lo que ve el cliente, así que se hace con la ficha oficial delante, no igualando un sitio al otro.
+**Cisco: lo que la ficha publica y el catálogo NO lleva, a propósito.** La página rotula los tres
+campos como IMIX. Donde la ficha publica IMIX, el campo lleva esa cifra; donde solo publica 1.400 o
+512 bytes, meterla mezclaría bases (el error del `fwd`/`typ` de Huawei), y la del catálogo queda
+**por debajo**, que es el lado conservador. Quedan así:
+
+| Modelo | Campo | Catálogo | Ficha oficial |
+|---|---|---:|---|
+| ISR 1111-8P / 1111X-8P | fwd | 300 / 800 Mbps | 1.800 Mbps a 512 B (tabla 26, mismo rendimiento en los dos: la X es memoria) |
+| ISR 1111-8P | ipsec | 200 Mbps | 600 Mbps a 512 B; puede ser el tope sin licencia HSEC, sin leer |
+| Catalyst 8200 / 8200L | fwd | 1 Gbps / 500 Mbps | 3,8 Gbps a 1.400 B en los dos (tabla 5) |
+| Catalyst 8300-1N1S-6T / 2N2S-6T | fwd | 2 / 5 Gbps | 19,7 Gbps a 1.400 B en los dos (tabla 5) |
+| Catalyst 8500-12X4QC | fwd / ipsec | 96 / 96 Gbps | 197 / 135 Gbps a 1.400 B (tabla 5c); 96 es su SD-WAN a 1.400 B, sin IMIX publicado |
+
+Subirlas cambia qué equipo se recomienda en el perfil de reenvío (más pequeño), así que es una
+decisión, no una corrección: si se quiere, se añade un campo a 1.400 B y la página dice con cuál
+dimensiona. **El ASR 1006-X coincide con la ficha** (ESP200: 200 Gbps sin cifrar, 78 IPsec).
+
+### Fin de venta: qué marca cada pantalla (validado el 2026-10-01)
+
+Encargo del dueño: «valida si el dimensionador ya marca o reconoce si el equipo está EOS o EOL».
+
+| Fabricante | Modelos con fecha | Dimensionador | Portal y cotizador |
+|---|---:|---|---|
+| Cisco | 8 | Lo marca: el 8500-12X4QC «fin de venta anunciado», los tres ASR rojos y nunca recomendados | **Corregido hoy**: el portal listaba los tres ASR y el cotizador ofrecía el ASR 1006-X |
+| Juniper | 2 | Lo marca: SRX1500 y SRX4100 «fin de venta vencido» (15-abr-2026) | **Corregido hoy**: seguían en los dos como «SRX 1500»/«SRX 4100» — la fila con espacio no era la que traía el aviso |
+| Aruba | 5 | Lo marca (EC-XL, 7005, 7008, 7210, 7220) | **Corregido hoy**: el portal los listaba |
+| **Huawei** | **0 de 40** | **No puede marcar nada**, y lo dice: gris, «ninguna fuente declarada respalda el campo eolAnnounced de este fabricante» — nunca verde | Sin datos que aplicar |
+| Fortinet, MikroTik, Nokia | `eol` binario o ninguno | Gris donde no hay fuente | — |
+
+**El defecto del importador, cerrado antes de que se use.** En Huawei **EOS es fin del soporte, no
+de la venta**: el último pedido es **EOM** (End of Marketing), luego vienen EOFS y EOS. `npm run
+huawei -- eox.csv --eol` buscaba la fecha con `/…|eos|end of sale/` y no reconocía «EOM», así que
+una exportación de Info-Finder con sus tres columnas habría cargado el EOS —años después— como
+último pedido. Ahora toma EOM, guarda EOS como `endOfSupport` (que `ficha.js` ya pinta), rechaza un
+archivo sin EOM y **aparta toda fila que nombre una versión de software** (`V800R023C00`), porque
+Huawei publica en la misma lista el fin de vida de cada versión y el del equipo.
+
+**Lo que se buscó en la web para Huawei, y por qué no entra.** WebSearch funciona; `support.huawei.com`
+e `info.support.huawei.com` dan `EGRESS_BLOCKED`, y **desde Actions responden 200 con un cascarón de
+JavaScript sin el boletín** (corrida 36849891379: 25 KB y 73 KB sin «EOM» dentro; Info-Finder 3,4 KB).
+Firecrawl respondió 403. Pistas del buscador, por confirmar con Huawei ID:
+
+| Pista | Casa con el catálogo | Qué significaría |
+|---|---|---|
+| «EOM&EOS Announcement for HUAWEI AR651 and AR651W», publicado el 17 o el 21 de julio de 2026 (el buscador da las dos fechas) | **AR651** sí; el AR651W-8P es otro PID | El AR651 tendría fin de venta anunciado. **Sin la fecha de EOM no se puede cargar**, y el propio desacuerdo de fechas es razón para no copiar el resumen |
+| EOFS/EOS de NE8000 M1A/M1C/M1D/M4/M6/M8/M14 y F1A/F8 «V800R023C00», 2026-07-16 | Todos los NE8000 | **Es de la versión de software, no del chasis**: no marca nada (el importador ya lo aparta) |
+| EOM de AR600/6100/6200/6300 V300R021C00/C10, 2023-06-29 | AR611, AR617VW-LTE4, AR651 | También de versión de software |
+| ENEWS2000011312: EOM de AR6120, AR6121, AR6140, AR651C… | Ninguno: el catálogo no tiene esos modelos (AR651C ≠ AR651) | Nada que aplicar |
+| A800 E (A813/A816/A821/A822), AR5710, AR6710, AR8140 | — | Ningún boletín de hardware encontrado |
+
+Para cerrarlo hace falta una persona con Huawei ID: exportar de Info-Finder EOM/EOFS/EOS de los 40
+modelos (`npm run huawei -- --plantilla` genera la hoja con las columnas `EOM` y `EOS`) y cargarla
+con `npm run huawei -- huawei-eox.csv --eol`. Hasta entonces el gris es la respuesta correcta.
 
 ### Señales de terceros para el pendiente 14 — Huawei (2026-09-30, sin aplicar)
 
@@ -531,7 +588,7 @@ no una lectura. Se anotan con el documento oficial donde confirmarlas:
 | NE8000 M8: «hasta 1,2 Tbps, ampliable a 2 Tbps» (ficha de 2021) | **No casa**: el dimensionador dice 2,4 Tbps y el cotizador 4,8 Tbps | El sospechoso pasa a ser el **M8**, con tres cifras distintas; puede haber dos generaciones | «NetEngine 8000 M8 Datasheet», e.huawei.com/en/documents/products/enterprise-network/e9dd06e260b64df683f6221fc8442cbf |
 | AR8140: SD-WAN 12–20 Gbps IMIX y 25–36 Gbps a 1.400 bytes | `typ: 12000` coincide; `fwd: 25000` coincide con la cifra **SD-WAN de 1.400 bytes**, no con reenvío NAT+ACL+QoS IMIX | Si se confirma, el `fwd` del AR8140 mide otra cosa que la etiqueta de la pantalla | Ficha AR8100 de e.huawei.com |
 | AR651: SD-WAN 800 Mbps IMIX (AR651C: 600) | Sin ancla: `typ` es `null` y el resumen no da otra columna de la fila | Llenaría el `typ` que hoy aparta a la serie AR650 | «Huawei NetEngine AR650 Series Datasheet 20250810-v3», e.huawei.com/marketingcloud |
-| Ciclo de vida (EOM/EOS) de AR5700/6700/8000 y NE8000 | — | **No apareció ninguna fecha pública**; Info-Finder y el tablón de avisos piden cuenta | Tablón «Routers — Life Cycle Notices» de support.huawei.com, con Huawei ID |
+| Ciclo de vida (EOM/EOS) de AR5700/6700/8000 y NE8000 | — | **No apareció ninguna fecha pública de hardware**; ver «Fin de venta: qué marca cada pantalla» (2026-10-01) para el AR651 y los boletines de versión | Tablón «Routers — Life Cycle Notices» de support.huawei.com, con Huawei ID |
 
 **YouTube**: el buscador lista vídeos oficiales de Huawei (presentación del AR5710, el AR6710 en
 banca, el AR5710I-RU-NRGL), pero son material comercial sin tablas de rendimiento y el dominio está
@@ -1516,6 +1573,29 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Una sola cifra entre cotizador y dimensionador, y el fin de venta en todas las pantallas (2026-10-01)
+
+Mejora propuesta al cerrar la entrega anterior: «que el cotizador tome la cifra del dimensionador».
+Su riesgo declarado era propagar una cifra mala, y se resolvió leyendo antes los documentos.
+
+- **`traer-cisco-huawei.yml`** baja las cinco fichas de Cisco a la rama `fuente/cisco-huawei`,
+  validando cada página por un texto que solo está en el documento correcto. Las de Huawei vuelven
+  como cascarón de JavaScript y el informe lo dice.
+- **Seis cifras de Cisco bajadas** (C8300-2N2S-6T SD-WAN 5 → 1,8 Gbps e IPsec 5 → 1,9; C8300-1N1S-6T,
+  C8200, C8200L e ISR 1111X-8P en IPsec), todas del lado peligroso. **Medido en Chromium, antes y
+  después**: con 1 Gbps de sitio (2,6 Gbps de requerimiento) en perfil SD-WAN o IPsec, el
+  dimensionador **recomendaba el C8300-2N2S-6T**, que según su ficha hace 1,8 Gbps de SD-WAN y 1,9 de
+  IPsec en IMIX: corto en un 30 %. Ahora recomienda el C8355-G2. Cisco pasa de 3/17 a 17/17.
+- **`server/services/cifrasCotizador.js`**: casado, lectura y comparación en un solo módulo para el
+  informe y para la proyección. Lo que difiere se retira del texto («en revisión») y la fila lleva
+  `enRevision`; el cotizador lo pone en el título de la celda.
+- **`fueraDeVenta()` en `catalogProjection.js`**: la misma regla que `FICHA.rango()`, casando las
+  dos filas de un mismo equipo sin separadores. Retira del portal y del cotizador diez equipos con el
+  último pedido vencido. Lo prueba `servidor-produccion.test.js` contra la regla de `ficha.js`.
+- **`npm run huawei --eol`**: EOM es el último pedido, EOS va a `endOfSupport`, sin EOM se rechaza y
+  una fila de versión de software se aparta. Cuatro pruebas nuevas.
+- 659 unitarias (10 nuevas), 17/17 pantallas, 8/8 contrastes, la batería e2e y `npm run puerta` en verde.
 
 ### La sonda de producción comprueba que el muro de acceso sigue cerrado (2026-09-27)
 

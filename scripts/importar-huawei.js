@@ -177,33 +177,86 @@ function informeCobertura() {
 // Se guarda como eolAnnounced con su fecha real, NO como una marca fija: la regla de
 // ficha.js compara esa fecha contra la de hoy, asi que un equipo deja de proponerse solo el
 // dia que vence su ultimo pedido, sin que nadie tenga que volver a editar el catalogo.
-function aplicarEol(filas) {
+//
+// EN HUAWEI «EOS» NO ES FIN DE VENTA (corregido el 2026-10-01). Su ciclo de vida tiene tres
+// fechas: EOM (End of Marketing, el ultimo pedido), EOFS (fin del soporte completo) y EOS (End
+// of Service, el fin del soporte). La primera version buscaba la columna de fecha con
+// `/last order|...|eos|end of sale/` y no reconocia «EOM» en absoluto, asi que una exportacion
+// de Info-Finder con sus tres columnas habria cargado la fecha de EOS como ultimo pedido: años
+// de retraso, con el equipo ofrecido como pedible mucho despues de dejar de venderse. Ahora
+// el ultimo pedido es EOM (o «last order»/«end of sale»), y un archivo que solo trae EOS o EOFS
+// se rechaza diciendo por que, en vez de adivinar. La de EOS se guarda aparte, como
+// `endOfSupport` (el campo que `ficha.js` ya pinta), que es lo que importa a quien amplia un parque instalado.
+//
+// UN BOLETIN DE VERSION DE SOFTWARE NO ES EL FIN DE VENTA DEL EQUIPO. Huawei publica en la
+// misma lista el EOM del hardware y el de cada version (V800R023C00, V300R021C10...): medido el
+// 2026-10-01, los avisos de 2026 de la serie NE8000 son de la version V800R023C00, no de los
+// chasis. Cargar uno de esos marcaria fuera de venta un equipo que se sigue vendiendo con la
+// version siguiente. Una fila que nombra una version se aparta con su motivo — la misma regla
+// que ya aplica la tabla de fin de vida de Juniper, que mezcla paquetes de software y chasis.
+const RE_VERSION = /\bV\d{3}R\d{3}(C\d{2,3})?/i;
+const RE_ULTIMO_PEDIDO = /\beom\b|end of marketing|last order|[uú]ltimo pedido|end of sale|fin de venta/;
+const RE_FIN_SERVICIO = /\beos\b|end of service|fin de servicio/;
+
+function leerEol(filas) {
   const cab = filas[0].map((c) => String(c || '').toLowerCase());
   const col = (re) => cab.findIndex((c) => re.test(c));
   const cModelo = col(/model|modelo|producto|equipo/);
-  const cFecha = col(/last order|ultimo pedido|último pedido|eos|end of sale/);
+  const cFecha = col(RE_ULTIMO_PEDIDO);
+  const cServicio = cab.findIndex((c, i) => i !== cFecha && RE_FIN_SERVICIO.test(c));
   const cSucesor = col(/sucesor|successor|replacement|reemplazo/);
   const cUrl = col(/url|bolet|bulletin|enlace|link/);
-  if (cModelo < 0 || cFecha < 0) {
-    console.error('Faltan columnas. Se necesitan al menos "modelo" y "last order / ultimo pedido".');
-    process.exit(1);
+  const cVersion = col(/versi[oó]n|release|software/);
+  if (cModelo < 0) return { error: 'Falta la columna de modelo.' };
+  if (cFecha < 0) {
+    const soloSoporte = cab.some((c) => RE_FIN_SERVICIO.test(c) || /\beofs\b/.test(c));
+    return {
+      error: soloSoporte
+        ? 'El archivo trae fechas de EOS/EOFS pero no la de ultimo pedido. En Huawei EOS es el fin del SOPORTE, no de la venta: la fecha de ultimo pedido es la columna EOM (End of Marketing).'
+        : 'Falta la columna de ultimo pedido (EOM / End of Marketing / last order / ultimo pedido).',
+    };
   }
 
   const aceptadas = [];
   const apartadas = [];
   for (const fila of filas.slice(1)) {
-    const m = porClave.get(claveModelo(fila[cModelo]));
-    if (!m) { apartadas.push({ id: fila[cModelo], motivo: 'no esta en el catalogo' }); continue; }
+    const nombre = fila[cModelo];
+    const version = fila.find((c) => RE_VERSION.test(String(c || '')))
+      || (cVersion >= 0 && String(fila[cVersion] || '').trim());
+    if (version) {
+      apartadas.push({ id: nombre, motivo: `es el ciclo de vida de una version de software (${String(version).match(RE_VERSION) ? String(version).match(RE_VERSION)[0] : version}), no del equipo` });
+      continue;
+    }
+    const m = porClave.get(claveModelo(nombre));
+    if (!m) { apartadas.push({ id: nombre, motivo: 'no esta en el catalogo' }); continue; }
     const fecha = String(fila[cFecha] || '').trim();
     if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
       apartadas.push({ id: m.id, motivo: `fecha "${fecha}" no es ISO (AAAA-MM-DD)` });
       continue;
     }
+    const servicio = cServicio >= 0 ? String(fila[cServicio] || '').trim() : '';
+    if (servicio && !/^\d{4}-\d{2}-\d{2}$/.test(servicio)) {
+      apartadas.push({ id: m.id, motivo: `fecha de fin de servicio "${servicio}" no es ISO (AAAA-MM-DD)` });
+      continue;
+    }
+    if (servicio && servicio < fecha) {
+      apartadas.push({ id: m.id, motivo: `el fin de servicio (${servicio}) es anterior al ultimo pedido (${fecha}): columnas cambiadas` });
+      continue;
+    }
     aceptadas.push({
-      id: m.id, lastOrder: fecha,
+      id: m.id, lastOrder: fecha, endOfSupport: servicio || null,
       sucesor: cSucesor >= 0 ? (fila[cSucesor] || '').trim() || null : null,
       url: cUrl >= 0 ? (fila[cUrl] || '').trim() || null : null,
     });
+  }
+  return { aceptadas, apartadas };
+}
+
+function aplicarEol(filas) {
+  const { error, aceptadas, apartadas } = leerEol(filas);
+  if (error) {
+    console.error(error);
+    process.exit(1);
   }
 
   console.log(`\n== FIN DE VENTA ==\n${aceptadas.length} aceptada(s), ${apartadas.length} apartada(s).\n`);
@@ -221,6 +274,7 @@ function aplicarEol(filas) {
     if (inicio < 0) continue;
     if (texto.slice(inicio, inicio + 400).includes('eolAnnounced')) continue;
     const campos = [`pid:'${a.id}'`, `lastOrder:'${a.lastOrder}'`,
+      ...(a.endOfSupport ? [`endOfSupport:'${a.endOfSupport}'`] : []),
       `sucesor:${a.sucesor ? `'${a.sucesor.replace(/'/g, "\\'")}'` : 'null'}`,
       `url:${a.url ? `'${a.url.replace(/'/g, "\\'")}'` : 'null'}`];
     const insercion = `{id:'${a.id}', eolAnnounced:{${campos.join(', ')}},`;
@@ -327,8 +381,8 @@ function escribirPlantillas() {
     csv.push([m.id, m.fwd == null ? '' : m.fwd, m.typ == null ? '' : m.typ,
       m.ipsec == null ? '' : m.ipsec, m.mpps == null ? '' : m.mpps, faltan.join(' ')]);
   }
-  const eox = [['Modelo', 'Last Order (AAAA-MM-DD)', 'Sucesor', 'URL del boletin']];
-  for (const m of MODELS) eox.push([m.id, '', '', '']);
+  const eox = [['Modelo', 'EOM - ultimo pedido (AAAA-MM-DD)', 'EOS - fin de servicio (AAAA-MM-DD)', 'Sucesor', 'URL del boletin']];
+  for (const m of MODELS) eox.push([m.id, '', '', '', '']);
 
   const escribir = (nombre, tabla) => {
     const texto = tabla.map((f) => f.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n') + '\n';
@@ -360,4 +414,4 @@ if (require.main === module) {
   else aplicarCifras(filas);
 }
 
-module.exports = { claveModelo, aNumero, leerCabecera, resolverUnidad };
+module.exports = { claveModelo, aNumero, leerCabecera, resolverUnidad, leerEol };

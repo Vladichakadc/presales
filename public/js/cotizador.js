@@ -258,6 +258,17 @@ function vaciarBom(){
   renderBom();
 }
 
+// Una cifra que el dimensionador contradice no se cita: el servidor la sustituye por «FWD en
+// revisión» (ver server/services/cifrasCotizador.js). El texto ya lo dice; el título dice por
+// qué, con las dos cifras en disputa, para quien tenga que contrastarlas con la ficha.
+function tituloRevision(item){
+  const c = CATALOG.find(x => x.vendor === item.vendor && x.model === item.model);
+  if(!c || !c.enRevision || !c.enRevision.length) return '';
+  const t = 'Cifra en revisión: ' + c.enRevision.map(r => `el cotizador decía ${r.cotizador} y el dimensionador ${r.dimensionador}`).join('; ')
+    + '. Hasta contrastarla con la ficha del fabricante no se cita ninguna de las dos.';
+  return ` title="${esc(t).replace(/"/g, '&quot;')}"`;
+}
+
 function renderBom(){
   guardarBom();
   const empty = bom.length===0;
@@ -271,7 +282,7 @@ function renderBom(){
         <td><div class="td-vendor"><span class="v-dot" style="background:${item.color}"></span>${esc(item.vendor)}</div></td>
         <td><div class="td-model">${esc(item.model)}</div></td>
         <td><div class="td-seg">${esc(item.seg)}</div></td>
-        <td><div class="td-spec">${esc(item.spec)}</div></td>
+        <td><div class="td-spec"${tituloRevision(item)}>${esc(item.spec)}</div></td>
         <td class="td-elp">${esc(item.elp)}</td>
         <td>
           <div class="qty-ctrl">

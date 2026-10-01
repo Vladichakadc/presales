@@ -560,3 +560,49 @@ test('POST /api/sizing/starlink: exige sesion y recalcula igual que el motor del
   assert.strictEqual(intento.status, 200);
   assert.deepStrictEqual(sinHora((await intento.json()).result), sinHora(directo), 'los campos ajenos a inputs/catalogSnapshot se ignoran');
 });
+
+test('fin de venta: el portal y el cotizador retiran lo que el dimensionador ya no recomienda', async () => {
+  // Medido el 2026-10-01: el portal listaba como vigentes ocho equipos con el ultimo pedido
+  // vencido y el cotizador ofrecia el ASR 1006-X («hasta EoS Jul-2026») y, por una fila con
+  // otro espaciado, el SRX 1500 y el SRX 4100. El dimensionador los degradaba solo; las otras
+  // dos pantallas solo miraban `eol`. Se pregunta al servidor de verdad porque el fallo vivia
+  // en la FUSION de dos filas del mismo equipo, que solo existe tras la siembra.
+  const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
+  const cot = await (await fetch(`${BASE}/api/cotizador/catalog`, { headers: { cookie: ana } })).json();
+  const PR = await (await fetch(`${BASE}/api/catalog`, { headers: { cookie: ana } })).json();
+  const enCotizador = new Set(cot.map((c) => c.model));
+  const enPortal = new Set(Object.values(PR).flat().map((p) => p.model));
+
+  const { cargar } = require('./ayuda/navegador.js');
+  const { FICHA } = cargar('public/js/ficha.js');
+  const { normalizarModelo } = require('../server/services/cifrasCotizador');
+  const vencidos = ['cisco', 'juniper', 'aruba'].flatMap((v) => require(`../server/seed/legacyData/${v}`).MODELS)
+    .filter((m) => m.eolAnnounced && FICHA.rango(m) === 2);
+  assert.ok(vencidos.length >= 10, `hay modelos con el ultimo pedido vencido (${vencidos.length})`);
+  for (const m of vencidos) {
+    const clave = normalizarModelo(m.id);
+    for (const nombre of [...enCotizador]) assert.notStrictEqual(normalizarModelo(nombre), clave, `${nombre} sigue en el cotizador con el ultimo pedido vencido`);
+    for (const nombre of [...enPortal]) assert.notStrictEqual(normalizarModelo(nombre), clave, `${nombre} sigue en el portal con el ultimo pedido vencido`);
+  }
+  // Un fin de venta anunciado y TODAVIA pedible sigue ofreciendose: hasta esa fecha se pide.
+  const anunciados = require('../server/seed/legacyData/cisco').MODELS.filter((m) => m.eolAnnounced && FICHA.rango(m) < 2);
+  for (const m of anunciados) assert.ok(enCotizador.has(m.id) || !require('../server/seed/legacyData/cotizadorCatalog').some((r) => r.model === m.id), `${m.id} se puede pedir todavia y desaparecio del cotizador`);
+});
+
+test('el cotizador no cita una cifra de rendimiento que el dimensionador contradice', async () => {
+  const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
+  const cot = await (await fetch(`${BASE}/api/cotizador/catalog`, { headers: { cookie: ana } })).json();
+  const { contrasteCotizador } = require('../server/services/cifrasCotizador');
+  const difieren = contrasteCotizador().flatMap((r) => r.difiere);
+  for (const d of difieren) {
+    const fila = cot.find((c) => c.model === d.modelo);
+    if (!fila) continue; // retirado por fin de venta
+    assert.ok(!fila.spec.includes(d.cotizador), `${d.modelo} sigue citando «${d.cotizador}» frente a ${d.dimensionador} Mbps del dimensionador`);
+    assert.match(fila.spec, /en revisión/);
+    assert.ok(fila.enRevision.some((r) => r.cotizador === d.cotizador), `${d.modelo} no explica la cifra retirada`);
+  }
+  // Lo que coincide se cita intacto: Cisco quedo alineado con sus fichas el 2026-10-01.
+  const c8200 = cot.find((c) => c.model === 'Catalyst 8200');
+  assert.strictEqual(c8200.spec, '1 Gbps FWD · IPsec 900 Mbps · SD-WAN nativo · 2 NIM');
+  assert.strictEqual(c8200.enRevision, undefined);
+});

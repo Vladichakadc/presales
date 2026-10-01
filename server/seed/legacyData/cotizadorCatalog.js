@@ -16,15 +16,20 @@ module.exports = [
   {vendor:'Huawei', color:'#C7000B', model:'NetEngine NE8000 M8',       seg:'Agregación grande 3U',    spec:'4.8 Tbps · 1086 Mpps · 8 tarjetas 400G',                      elp:'~ $180,000',elpN:180000},
   {vendor:'Huawei', color:'#C7000B', model:'NetEngine NE8000 F1A',      seg:'Alta densidad 1U',        spec:'2.4 Tbps · 453 Mpps · 1U · 1200 G/U',                         elp:'~ $80,000',elpN:80000},
   {vendor:'Huawei', color:'#C7000B', model:'NetEngine NE8000 F8',       seg:'Núcleo compacto 13U',     spec:'12.8 Tbps · 2035 Mpps · 8 tarjetas 800G',                     elp:'~ $380,000',elpN:380000},
-  {vendor:'Cisco',  color:'#049FD9', model:'ISR 1111-8P',               seg:'Sucursal SOHO',           spec:'300 Mbps FWD · IPsec 100 Mbps · 8 GE + 1 NIM',               elp:'~ $1,800', elpN:1800},
-  {vendor:'Cisco',  color:'#049FD9', model:'ISR 1111X-8P',              seg:'Sucursal pequeña',        spec:'500 Mbps FWD · IPsec 200 Mbps · HSEC habilitado',             elp:'~ $2,800', elpN:2800},
+  // Las cifras de rendimiento de Cisco se alinearon el 2026-10-01 con las del dimensionador,
+  // despues de contrastar las dos contra las fichas oficiales (ver la cabecera de
+  // legacyData/cisco.js): las de aqui venian de la copia estatica de antes de la Fase 2 y no
+  // coincidian en 14 de 17. El cotizador comprueba en cada peticion que sigan coincidiendo y
+  // retira la que no (`server/services/cifrasCotizador.js`).
+  {vendor:'Cisco',  color:'#049FD9', model:'ISR 1111-8P',               seg:'Sucursal SOHO',           spec:'300 Mbps FWD · IPsec 200 Mbps · 8 GE + 1 NIM',               elp:'~ $1,800', elpN:1800},
+  {vendor:'Cisco',  color:'#049FD9', model:'ISR 1111X-8P',              seg:'Sucursal pequeña',        spec:'800 Mbps FWD · IPsec 600 Mbps · HSEC habilitado',             elp:'~ $2,800', elpN:2800},
   {vendor:'Cisco',  color:'#049FD9', model:'ISR 1116-4P',               seg:'Sucursal + LTE',          spec:'300 Mbps FWD · 4 GE + LTE integrado · 1 NIM',                 elp:'~ $2,200', elpN:2200},
-  {vendor:'Cisco',  color:'#049FD9', model:'Catalyst 8200L',            seg:'Sucursal SD-WAN compacta',spec:'800 Mbps FWD · IPsec 600 Mbps · 4 GE + 1 NIM',               elp:'~ $2,200', elpN:2200},
-  {vendor:'Cisco',  color:'#049FD9', model:'Catalyst 8200',             seg:'Sucursal SD-WAN estándar',spec:'1.5 Gbps FWD · IPsec 1 Gbps · SD-WAN nativo · 2 NIM',         elp:'~ $4,500', elpN:4500},
-  {vendor:'Cisco',  color:'#049FD9', model:'Catalyst 8300-1N1S-6T',     seg:'Hub regional SD-WAN',     spec:'5 Gbps FWD · IPsec 2.5 Gbps · 6 GE + 1 NIM + 1 SM',          elp:'~ $9,800', elpN:9800},
-  {vendor:'Cisco',  color:'#049FD9', model:'Catalyst 8300-2N2S-6T',     seg:'Hub SD-WAN doble NIM',    spec:'10 Gbps FWD · IPsec 4 Gbps · 6 GE + 2 NIM + 2 SM',           elp:'~ $16,500',elpN:16500},
-  {vendor:'Cisco',  color:'#049FD9', model:'Catalyst 8500-12X4QC',      seg:'Hub DC / Edge',           spec:'20 Gbps FWD · IPsec 8 Gbps · 12x10GE + 4x40GE',              elp:'~ $58,000',elpN:58000},
-  {vendor:'Cisco',  color:'#049FD9', model:'ASR 1006-X',                seg:'Core WAN (hasta EoS Jul-2026)',spec:'100 Gbps FWD · IPsec 20 Gbps · 6 slots modular',         elp:'~ $145,000',elpN:145000},
+  {vendor:'Cisco',  color:'#049FD9', model:'Catalyst 8200L',            seg:'Sucursal SD-WAN compacta',spec:'500 Mbps FWD · IPsec 400 Mbps · 4 GE + 1 NIM',               elp:'~ $2,200', elpN:2200},
+  {vendor:'Cisco',  color:'#049FD9', model:'Catalyst 8200',             seg:'Sucursal SD-WAN estándar',spec:'1 Gbps FWD · IPsec 900 Mbps · SD-WAN nativo · 2 NIM',         elp:'~ $4,500', elpN:4500},
+  {vendor:'Cisco',  color:'#049FD9', model:'Catalyst 8300-1N1S-6T',     seg:'Hub regional SD-WAN',     spec:'2 Gbps FWD · IPsec 1.9 Gbps · 6 GE + 1 NIM + 1 SM',          elp:'~ $9,800', elpN:9800},
+  {vendor:'Cisco',  color:'#049FD9', model:'Catalyst 8300-2N2S-6T',     seg:'Hub SD-WAN doble NIM',    spec:'5 Gbps FWD · IPsec 1.9 Gbps · 6 GE + 2 NIM + 2 SM',           elp:'~ $16,500',elpN:16500},
+  {vendor:'Cisco',  color:'#049FD9', model:'Catalyst 8500-12X4QC',      seg:'Hub DC / Edge',           spec:'96 Gbps FWD · IPsec 96 Gbps · 12x10GE + 4x40GE',              elp:'~ $58,000',elpN:58000},
+  {vendor:'Cisco',  color:'#049FD9', model:'ASR 1006-X',                seg:'Core WAN (hasta EoS Jul-2026)',spec:'200 Gbps FWD · IPsec 78 Gbps · 6 slots modular',         elp:'~ $145,000',elpN:145000},
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7210 SAS-Sx',         seg:'Acceso Ethernet',         spec:'48 Gbps · 24x1GE + 6x10GE · MPLS, Eth OAM',                  elp:'~ $8,500', elpN:8500},
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7210 SAS-Mxp',        seg:'Acceso / Agregación',     spec:'240 Gbps · 48x1GE + 4x10GE + 2x100GE · SR-MPLS',             elp:'~ $22,000',elpN:22000},
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7250 IXR-6e',         seg:'Leaf datacenter',         spec:'6.4 Tbps · 36x100GE o 12x400GE · SR Linux, EVPN-VXLAN',       elp:'~ $48,000',elpN:48000},

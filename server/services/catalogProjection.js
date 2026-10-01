@@ -12,6 +12,7 @@ const fortinetData = require('../seed/legacyData/fortinet');
 const MOTOR_FORTINET = require('../../public/js/fortinet-motor.js');
 const { fuentesDe } = require('../seed/legacyData/fuentes');
 const fuentesSubidas = require('../fuentesSubidas');
+const cifras = require('./cifrasCotizador');
 const fs = require('fs');
 const pathMod = require('path');
 
@@ -37,6 +38,36 @@ function normalizeName(model) {
     if (s.startsWith(p)) { s = s.slice(p.length); break; }
   }
   return s.toLowerCase();
+}
+
+// Fuera de venta: la MISMA regla que `FICHA.rango()` aplica en los dimensionadores — `eol`, o
+// un `eolAnnounced` cuya fecha de ultimo pedido ya paso. Hasta el 2026-10-01 el portal y el
+// cotizador solo miraban `eol`, asi que un fin de venta anunciado se quedaba ofrecido para
+// siempre una vez vencido: medido ese dia, el portal listaba como vigentes ocho equipos cuyo
+// ultimo pedido ya habia pasado (tres ASR 1000 de Cisco, el EC-XL y cuatro controladoras AOS 8
+// de Aruba) y el cotizador ofrecia el ASR 1006-X, cuyo segmento decia literalmente «hasta EoS
+// Jul-2026». El dimensionador los degradaba solo; las otras dos pantallas no. Una prueba exige
+// que esta funcion y la de `ficha.js` digan lo mismo de cada modelo del catalogo.
+function fueraDeVenta(eol, specs, ahora = Date.now()) {
+  if (eol) return true;
+  const f = specs && specs.eolAnnounced && specs.eolAnnounced.lastOrder;
+  if (!f) return false;
+  const t = Date.parse(f);
+  return Number.isFinite(t) && t < ahora;
+}
+
+// El mismo equipo puede vivir en dos filas: la del portal («SRX 1500», con espacio) y la del
+// dimensionador («SRX1500»), que es la que trae el boletin de fin de venta. Medido el
+// 2026-10-01: el SRX1500 y el SRX4100 tenian el ultimo pedido vencido desde el 15-abr-2026 y
+// seguian en el portal y en el cotizador, porque la fila con el aviso no era la que se pintaba.
+// Se casan con la normalizacion del traspaso dimensionador -> cotizador (sin separadores ni
+// prefijo de fabricante), siempre dentro del mismo fabricante.
+function clavesFueraDeVenta(products) {
+  const out = new Set();
+  for (const p of products) {
+    if (fueraDeVenta(p.eol, p.specs)) out.add(`${p.vendorId}::${cifras.normalizarModelo(p.model)}`);
+  }
+  return out;
 }
 
 // Etiquetas legibles para categorias de opticas — estaticas, iguales en todos los
@@ -181,8 +212,9 @@ async function toFuentes() {
 async function toIndexPR() {
   const products = await Product.findAll();
   const result = { hw_ar: [], hw_wan: [], cisco: [], nokia: [], fortinet: [], juniper: [], mikrotik: [], aruba: [] };
+  const fuera = clavesFueraDeVenta(products);
   for (const p of products) {
-    if (p.eol) continue;
+    if (fuera.has(`${p.vendorId}::${cifras.normalizarModelo(p.model)}`)) continue;
     const group = p.specs && p.specs.prGroup;
     if (!group || !(group in result)) continue;
     const entry = { model: p.model, ...specWithoutGroup(p.specs) };
@@ -205,22 +237,32 @@ async function toCotizadorCatalog() {
   const products = await Product.findAll();
   const byKey = {};
   for (const p of products) byKey[`${p.vendorId}::${normalizeName(p.model)}`] = p;
+  const fuera = clavesFueraDeVenta(products);
+  const indice = cifras.indiceDimensionador();
 
   const out = [];
   for (const row of cotizadorCatalog) {
     const vendor = vendorByCode[row.vendor.toLowerCase()];
     if (!vendor) continue;
     const product = byKey[`${vendor.id}::${normalizeName(row.model)}`];
-    if (product && product.eol) continue;
-    out.push({
+    const clave = cifras.normalizarModelo(row.model);
+    if (fuera.has(`${vendor.id}::${clave}`)) continue;
+    // Las cifras de rendimiento se contrastan con las del dimensionador en cada peticion:
+    // una que no coincide no se cita (ver `cifrasCotizador.proyectarFila`).
+    const pareja = indice[vendor.code] ? indice[vendor.code].get(clave) : null;
+    const { spec, enRevision } = cifras.proyectarFila(
+      (product && product.specSummary) || row.spec, pareja, cifras.CONTRASTE_COTIZADOR[vendor.code]);
+    const item = {
       vendor: vendor.name,
       color: vendor.colorHex,
       model: row.model,
       seg: row.seg,
-      spec: (product && product.specSummary) || row.spec,
+      spec,
       elp: (product && product.priceDisplay) || row.elp,
       elpN: (product && product.priceNumeric != null) ? product.priceNumeric : row.elpN,
-    });
+    };
+    if (enRevision.length) item.enRevision = enRevision;
+    out.push(item);
   }
   return out;
 }
@@ -582,6 +624,7 @@ module.exports = {
   toFuentes,
   respaldoCicloVida,
   toCotizadorCatalog,
+  fueraDeVenta,
   toDimensionadorHuawei,
   toDimensionadorCisco,
   toDimensionadorFortinet,

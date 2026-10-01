@@ -69,3 +69,35 @@ test('el informe corre sobre el catálogo real y cubre a los siete fabricantes',
     assert.strictEqual(x.coincide + x.difiere.length, x.comparadas);
   }
 });
+
+// ── La pantalla: que cifra se cita ─────────────────────────────────────────────
+const { proyectarFila, CONTRASTE_COTIZADOR } = require('../server/services/cifrasCotizador');
+
+test('proyectarFila deja intacto lo que coincide, y los puertos siempre', () => {
+  const m = { id: 'X', fwd: 1300, ipsec: 800, typ: 620 };
+  const spec = '1.3 Gbps FWD · IPsec 800 Mbps · SD-WAN 620 Mbps · 8 GE';
+  assert.deepStrictEqual(proyectarFila(spec, m, CONTRASTE_COTIZADOR.huawei), { spec, enRevision: [] });
+});
+
+test('proyectarFila retira la cifra que difiere y dice cuales estaban en disputa', () => {
+  const m = { id: 'NE8000 M8', cap: 2400000, mpps: 453 };
+  const r = proyectarFila('4.8 Tbps · 1086 Mpps · 8 tarjetas 400G', m, CONTRASTE_COTIZADOR.huawei);
+  assert.strictEqual(r.spec, 'Capacidad en revisión · Mpps en revisión · 8 tarjetas 400G');
+  assert.deepStrictEqual(r.enRevision, [
+    { campo: 'cap', cotizador: '4.8 Tbps', dimensionador: '2.4 Tbps' },
+    { campo: 'mpps', cotizador: '1086 Mpps', dimensionador: '453 Mpps' },
+  ]);
+});
+
+test('proyectarFila: un rango WAN con un extremo en disputa se retira entero, una sola vez', () => {
+  const m = { id: 'EC', wanMin: 10, wanMax: 2000 };
+  const r = proyectarFila('EdgeConnect · WAN 10 Mbps - 3 Gbps · SKU S1', m, CONTRASTE_COTIZADOR.aruba);
+  assert.strictEqual(r.spec, 'EdgeConnect · WAN en revisión · SKU S1');
+  assert.strictEqual(r.enRevision.length, 1);
+});
+
+test('proyectarFila: sin pareja o sin dato no hay nada que contrastar, y no se toca', () => {
+  const spec = '300 Mbps FWD · IPsec 200 Mbps';
+  assert.deepStrictEqual(proyectarFila(spec, null, CONTRASTE_COTIZADOR.cisco), { spec, enRevision: [] });
+  assert.deepStrictEqual(proyectarFila(spec, { id: 'X', fwd: null, ipsec: null }, CONTRASTE_COTIZADOR.cisco), { spec, enRevision: [] });
+});
