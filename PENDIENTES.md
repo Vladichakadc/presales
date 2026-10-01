@@ -1616,6 +1616,11 @@ enteros positivos y excepciones. Seis errores, ninguno visto por las baterías e
   oficial, no deduciendo cuál es la buena.
 - **Verificación**: 661 pruebas y lint; 17/17 pantallas, 8 contrastes sin discrepancias y 16/16
   baterías e2e contra un servidor local en modo producción.
+- **En producción el 2026-10-01**: `main` avanzó de `fc1e31d` a `3fb179d`. Railway `1daab87f` en
+  SUCCESS con `[seed]` y `Presales corriendo en`; `verificar` (`36923357535`) y `pantallas`
+  (`36923357456`: pantallas, contraste y la batería e2e con la nueva) en verde sobre ese commit, y
+  la sonda (`36924359928`) dio `/salud` 200 con 7 fabricantes y 228 modelos, `/login` 200 y el
+  muro de acceso 4 de 4.
 
 ### Una sola cifra entre cotizador y dimensionador, y el fin de venta en todas las pantallas (2026-10-01)
 
