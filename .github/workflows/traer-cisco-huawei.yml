@@ -80,6 +80,10 @@ jobs:
               { archivo: 'huawei-ne8000-f8-ds-universal.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
                 'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/e679822234f94651b2c2153c21a6621b/M2T1A669N893162565584830493/NetEngine%208000%20F8%20Universal%20Service%20Router%20Datasheet.pdf',
               ] },
+              { archivo: 'huawei-ne8000-m-serie.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Mpps', urls: [
+                'https://carrier.huawei.com/en/products/fixed-network/data-communication/router/NetEngine-8000-Series-Router/NetEngine-8000-M-Series',
+                'https://support.huawei.com/enterprise/en/doc/EDOC1100518177/e4ccf4a0/netengine-8000-m8',
+              ] },
               { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
                 'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
                 'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
