@@ -1676,6 +1676,10 @@ Mejora propuesta al cerrar la entrega anterior.
   todos cazados: sobre el lock real, `pdf-parse` contra el espejo del 16 de septiembre, `express`
   apuntando al archivo de otro paquete y `multer` sin huella; sobre la comprobación, mirar solo el
   servidor, ignorar el alias y no anclar la huella.
+- **Comprobado en CI y en producción.** `verificar` corrió las 7 pruebas nuevas sobre `d16bc4e`,
+  con Node 24 y 735 en verde, y `pantallas` también salió en verde. Railway `c486529b` en
+  SUCCESS, con `[seed]` y el arranque. La sonda corrió sola tras el despliegue (`37003305818`) y
+  pasó.
 
 ### Cada despliegue se comprueba y avisa solo (2026-10-02)
 
