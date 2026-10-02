@@ -9,7 +9,10 @@ name: traer-cisco-huawei
 #           la cifra del dimensionador sin riesgo de propagar una mala.
 #   HUAWEI · los boletines de fin de venta (EOM) del AR651/AR651W y la consulta de ciclo de
 #           vida de Info-Finder. Y desde el 2026-10-02, las fichas del NE8000 M8 y F8, cuyas
-#           cifras de capacidad tampoco coinciden entre el cotizador y el dimensionador.
+#           cifras de capacidad tampoco coinciden entre el cotizador y el dimensionador, y la
+#           del M14: el dimensionador dice 2 Tbps y la guia de diseno 7,2. De la ficha del M14
+#           solo se conoce la pagina de documentos (el identificador del material); la URL del
+#           PDF se DESCUBRE en esa pagina, no se adivina por patron.
 #   JUNIPER · el datasheet vigente de la linea SRX300 (2026-10-02): el cotizador cita del
 #           SRX340 4,7 Gbps y 733 Mbps y el dimensionador 3 Gbps y 600 Mbps de la matriz de
 #           2020. Las dos son oficiales; hay que leer la tabla entera para decidir cual manda. Desde el entorno de edicion `support.huawei.com` e
@@ -80,6 +83,11 @@ jobs:
               { archivo: 'huawei-ne8000-f8-ds-universal.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
                 'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/e679822234f94651b2c2153c21a6621b/M2T1A669N893162565584830493/NetEngine%208000%20F8%20Universal%20Service%20Router%20Datasheet.pdf',
               ] },
+              { archivo: 'huawei-ne8000-m14-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'f4f1a7b9424a44ff9770b75a19eb5d2e', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/f4f1a7b9424a44ff9770b75a19eb5d2e',
+              ] },
+              { archivo: 'huawei-ne8000-m14-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+                descubrir: { de: 'huawei-ne8000-m14-documento.html', material: 'Material/f4f1a7b9424a44ff9770b75a19eb5d2e/' } },
               { archivo: 'huawei-ne8000-m-serie.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Mpps', urls: [
                 'https://carrier.huawei.com/en/products/fixed-network/data-communication/router/NetEngine-8000-Series-Router/NetEngine-8000-M-Series',
                 'https://support.huawei.com/enterprise/en/doc/EDOC1100518177/e4ccf4a0/netengine-8000-m8',
@@ -95,6 +103,30 @@ jobs:
               for (const doc of DOCS) {
                 const intentos = [];
                 let guardado = false;
+                if (doc.descubrir) {
+                  const origen = 'fuente-cisco-huawei/' + doc.descubrir.de;
+                  if (!fs.existsSync(origen)) {
+                    intentos.push({ url: doc.descubrir.de, error: 'la pagina donde descubrir la URL no se guardo' });
+                  } else {
+                    const BS = String.fromCharCode(92);
+                    const pagina = fs.readFileSync(origen, 'utf8').split(BS + 'u002F').join('/').split(BS + '/').join('/');
+                    const vistos = new Set();
+                    let i = pagina.indexOf(doc.descubrir.material);
+                    while (i >= 0) {
+                      let fin = i;
+                      while (fin < pagina.length && !'\x22\x27<>\n'.includes(pagina[fin])) fin++;
+                      let ruta = pagina.slice(i, fin);
+                      try { ruta = encodeURI(decodeURI(ruta)); } catch (e) { ruta = encodeURI(ruta); }
+                      if (ruta.toLowerCase().endsWith('.pdf') && !vistos.has(ruta)) {
+                        vistos.add(ruta);
+                        doc.urls.push('https://e-file.huawei.com/marketingcloud/pep/asset/20000001/' + ruta);
+                        doc.urls.push('https://e.huawei.com/marketingcloud/pep/asset/20000001/' + ruta);
+                      }
+                      i = pagina.indexOf(doc.descubrir.material, i + 1);
+                    }
+                    if (!doc.urls.length) intentos.push({ url: doc.descubrir.de, error: 'la pagina no enlaza ningun PDF de ese material' });
+                  }
+                }
                 for (const url of doc.urls) {
                   let res;
                   try {
