@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-01 (**Revisión de los dimensionadores con valores límite: seis errores corregidos.** Encargo del dueño: revisar el dimensionador y corregir lo que tuviera. Con todas las baterías en verde, recorrer las nueve pantallas con valores límite en cada control encontró seis: un caudal o unas sedes negativos que se dimensionaban («Requiere -13 Mbps», «-13000 Mbps», «-5 túneles»), el formulario vacío de Nokia 7750 SR recomendando un equipo, «null» en el catálogo de Huawei y en una nota de Aruba, y **una excepción al abrir cualquier enlace compartido con un modo en la URL en Huawei y Cisco** (15 de 60 enlaces). Los guarda una batería e2e nueva, comprobada revirtiendo cada arreglo. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-02 (**El recorrido de valores límite pasa a ser una comprobación semanal, y su primera corrida encontró un error real.** Es la mejora propuesta al cerrar la entrega anterior, aprobada por el dueño. `npm run limites` recorre los nueve dimensionadores con valores límite en cada control y cada modo, y `limites.yml` lo corre los miércoles y lleva los hallazgos a un issue sin frenar despliegues. Sobre `main` encontró «Puertos undefined × undefinedGE» en la ficha de los 17 FortiGate con puertos estructurados, en producción desde la etapa 7: corregido en `ficha.js`, con la prueba que pasaba en falso endurecida. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-01 (**Revisión de los dimensionadores con valores límite: seis errores corregidos.** Encargo del dueño: revisar el dimensionador y corregir lo que tuviera. Con todas las baterías en verde, recorrer las nueve pantallas con valores límite en cada control encontró seis: un caudal o unas sedes negativos que se dimensionaban («Requiere -13 Mbps», «-13000 Mbps», «-5 túneles»), el formulario vacío de Nokia 7750 SR recomendando un equipo, «null» en el catálogo de Huawei y en una nota de Aruba, y **una excepción al abrir cualquier enlace compartido con un modo en la URL en Huawei y Cisco** (15 de 60 enlaces). Los guarda una batería e2e nueva, comprobada revirtiendo cada arreglo. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-01 (**El cotizador deja de citar cifras que el dimensionador contradice, y el fin de venta se aplica en todas las pantallas.** Las 14 diferencias de Cisco se resolvieron con sus cinco fichas oficiales, traídas por Actions (`traer-cisco-huawei.yml`): **seis cifras del dimensionador prometían más de lo publicado** —el C8300-2N2S-6T daba 5 Gbps de SD-WAN y la ficha publica 1,8 IMIX, y por eso salía **recomendado** para un sitio de 1 Gbps que no aguanta— y se bajaron; el texto del cotizador se alineó y Cisco queda 17/17. Lo que sigue en disputa (Huawei 3, Juniper 3) ya no se cita: sale «en revisión» con las dos cifras en el título. **Validación del fin de venta**: el dimensionador sí lo marca en Cisco, Juniper y Aruba, y en Huawei declara «sin dato» (0 de 40) en vez de pintar verde; pero **el portal y el cotizador no aplicaban la fecha vencida**: listaban diez equipos con el último pedido ya pasado (los ASR 1000, el EC-XL, cuatro controladoras AOS 8, y el SRX1500/SRX4100 por una fila con otro espaciado). Y el importador `--eol` de Huawei habría tomado **EOS (fin de soporte) por último pedido**; corregido, y aparta los boletines de versión de software.)
 
@@ -1575,6 +1577,47 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### El recorrido de valores límite, cada semana; su primera corrida encontró un error real (2026-10-02)
+
+Mejora propuesta al cerrar la entrega anterior y aprobada por el dueño: convertir el recorrido que
+encontró los seis errores del 2026-10-01 en una comprobación del repositorio, que se repita sola.
+
+- **Qué se añadió.**
+  - `npm run limites` (`test/e2e/recorrido-limites.js`) recorre cada `public/dimensionador-*.html`,
+    sacando la lista del disco.
+  - En cada pestaña activa cada modo, mete valores límite en cada campo numérico y abre la página
+    por enlace con cada modo en la URL.
+  - Las reglas (qué es un hallazgo, qué se exceptúa y por qué) viven en `test/e2e/limites-reglas.js`
+    y las prueba `npm run verificar`.
+  - `.github/workflows/limites.yml` lo corre los miércoles.
+- **Termina en verde aunque haya hallazgos.** Van a un issue con la etiqueta `recorrido-limites`,
+  por el caso límite de «Wait for CI», anotado junto al de la vigía en
+  `docs/decisiones-del-dueno-2026-09-24.md`.
+- **Su primera corrida sobre `main` encontró un error en producción desde el 2026-09-23.**
+  - **Qué se veía:** la ficha de los 17 FortiGate con puertos estructurados (del 30G al 120G, con sus
+    variantes) decía «Puertos undefined × undefinedGE».
+  - **La causa:** `ficha.js` leía la forma de Fortinet (`{n, vel, medios}`) con las claves de Nokia
+    (`{cantidad, veloc}`).
+  - **Por qué no lo veía ninguna batería:** el escenario por defecto de Fortinet recomienda un modelo
+    sin puertos estructurados. Y la prueba que debía guardarlo afirmaba `includes('GE')`, que
+    «undefinedGE» cumple.
+  - **El arreglo:** se leen las dos formas y el par de medio compartido se rotula («2 × 1GE RJ45 o
+    SFP», con su nota). Un grupo que no se deja leer cae al texto libre en vez de pintarse a medias.
+  - **Qué lo fija:** dos pruebas unitarias y un caso e2e. Con el `ficha.js` anterior fallan los tres.
+- **Comprobado que detecta.** Con tres arreglos del 2026-10-01 revertidos en Huawei, el recorrido
+  encuentra los tres: 7 cifras negativas, 4 «null» y la excepción del enlace.
+- **La revisión diferencial cambió el workflow antes de empujar** (skill `differential-review`).
+  - **Dos jobs.** El que ejecuta npm, Playwright y Chromium no tiene permiso de escritura. El que
+    escribe el issue no ejecuta nada de eso y valida el resultado antes de usarlo. En un mismo job,
+    un paso anterior podría leer el token del siguiente.
+  - **El texto de la pantalla va al issue en código en línea.** La ficha de Fortinet dice «1,0 A
+    @100 V», y ese `@100` habría mencionado a un usuario real de GitHub.
+  - **El cuerpo se corta antes del límite de GitHub.** Un issue que no se puede crear es un aviso
+    perdido.
+- **Verificación.** 675 pruebas y lint; 17/17 pantallas, 8 contrastes y 16/16 baterías e2e contra
+  un servidor local en modo producción. El recorrido completo sale sin hallazgos: 9
+  dimensionadores, 104 campos, 1.320 acciones.
 
 ### Revisión de los dimensionadores con valores límite: seis errores corregidos (2026-10-01)
 

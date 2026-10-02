@@ -50,6 +50,10 @@ de Railway ni token. No se buscó otra vía.
   despliegue y la vigía fallara, el despliegue se saltaría. La vigía sale con código 0 salvo un
   error inesperado del script, así que es improbable. Si pasa, el remedio es volver a desplegar
   ese commit.
+- **El mismo caso límite, segundo workflow (2026-10-02)**: `limites.yml` (el recorrido de valores
+  límite) corre los miércoles a las 07:00 UTC. Se diseñó con la misma regla: los hallazgos van a
+  un issue con la etiqueta `recorrido-limites` y la corrida termina en verde; solo se pone en
+  rojo si el recorrido no llega a terminar, que es un fallo del arnés. Mismo remedio.
 
 **Coste**: cada despliegue espera al job de `pantallas` (pantallas, contraste y batería e2e),
 que tarda entre 6 y 7,5 minutos según las corridas medidas. Si las comprobaciones no terminan en

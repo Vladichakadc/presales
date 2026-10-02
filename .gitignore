@@ -50,3 +50,7 @@ pantallas.sqlite
 .auth-pantallas/
 # El log del arranque que el propio job vuelca para comprobar `[seed]` y la linea de listen.
 arranque.log
+
+# Resultado del recorrido de valores límite (`npm run limites`): se regenera en cada corrida y
+# en CI viaja como artefacto; versionarlo daría un diff en cada recorrido sin decir nada nuevo.
+/.limites/

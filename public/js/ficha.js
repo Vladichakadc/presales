@@ -896,6 +896,15 @@
   // ASCII pero lo que lee una persona va en español correcto. Lo cazo el contraste de Nokia
   // al mover la regla, que es justo para lo que existe.
   const PUERTOS_TIT = 'Configuración de puertos';
+  // Un grupo de puertos en cualquiera de las dos formas del catalogo, o null si no trae una
+  // cantidad y una velocidad que sean numeros: el null es lo que impide pintar «undefined».
+  function grupoPuertos(p) {
+    if (!p || typeof p !== 'object') return null;
+    const cantidad = p.cantidad != null ? p.cantidad : p.n;
+    const veloc = p.veloc != null ? p.veloc : p.vel;
+    if (!(Number.isFinite(cantidad) && cantidad > 0 && Number.isFinite(veloc) && veloc > 0)) return null;
+    return { cantidad, veloc, uso: p.uso || null, medios: Array.isArray(p.medios) && p.medios.length ? p.medios : null };
+  }
   function seccionPuertos(m) {
     if (!m) return { titulo: PUERTOS_TIT, filas: [] };
     // 1 · Configuraciones alternativas (Nokia 7250 IXR / 7750 SR).
@@ -913,16 +922,30 @@
           : null,
       };
     }
-    // 2 · Puertos estructurados de un equipo fijo (Nokia 7220 IXR).
+    // 2 · Puertos estructurados de un equipo fijo. El catalogo tiene DOS formas y las dos son
+    // dato: la del Nokia 7220 IXR ({cantidad, veloc, uso}) y la de Fortinet ({n, vel, medios},
+    // etapa 7), que anade el medio y el «Shared Port Pair». Leer la de Fortinet con las claves
+    // de Nokia pinto «Puertos undefined × undefinedGE» en 17 FortiGate durante nueve dias; lo
+    // encontro el recorrido de valores limite el 2026-10-02. Por eso un grupo que no se deja
+    // leer no se pinta a medias: la seccion cae al texto libre de abajo.
     if (Array.isArray(m.puertos) && m.puertos.length) {
-      return {
-        titulo: PUERTOS_TIT,
-        filas: m.puertos.map((p) => [
-          p.uso ? 'Puertos de ' + p.uso : 'Puertos',
-          p.cantidad + ' × ' + p.veloc + 'GE',
-        ]),
-        nota: null,
-      };
+      const grupos = m.puertos.map(grupoPuertos);
+      if (grupos.every(Boolean)) {
+        const compartidos = grupos.some((g) => g.medios && g.medios.length > 1);
+        return {
+          titulo: PUERTOS_TIT,
+          filas: grupos.map((g) => [
+            g.uso ? 'Puertos de ' + esc(g.uso) : g.medios && g.medios.length > 1 ? 'Puertos de medio compartido' : 'Puertos',
+            g.cantidad + ' × ' + g.veloc + 'GE' + (g.medios ? ' ' + g.medios.map(esc).join(' o ') : ''),
+          ]),
+          // Un par compartido es UN puerto con dos medios: se usa con uno o con el otro, nunca
+          // con los dos. Es la misma regla que las configuraciones alternativas de arriba.
+          nota: compartidos
+            ? 'Un puerto de <b>medio compartido</b> («Shared Port Pair») se usa con uno solo de sus medios'
+              + ' a la vez, así que cuenta una sola vez.'
+            : null,
+        };
+      }
     }
     // 3 · Chasis modular: se publica lo que cabe, NO lo que sale.
     if (m.slots) {
@@ -948,9 +971,10 @@
       return {
         titulo: PUERTOS_TIT,
         filas: [['Interfaces', esc(texto)]],
-        nota: 'El catálogo trae los puertos de este fabricante <b>como texto</b>, no como dato'
-          + ' estructurado, así que no se puede contrastar la densidad contra un requerimiento'
-          + ' — solo Nokia los publica estructurados en este catálogo.',
+        // «De este equipo» y no «de este fabricante»: desde la etapa 7 hay FortiGate con los
+        // puertos estructurados y otros sin ellos, asi que ya no es una propiedad de la marca.
+        nota: 'El catálogo trae los puertos de este equipo <b>como texto</b>, no como dato'
+          + ' estructurado, así que no se puede contrastar la densidad contra un requerimiento.',
       };
     }
     // 6 · Tercer estado. Ni afirma que no tenga puertos ni inventa una densidad.

@@ -54,6 +54,35 @@ Un rojo de ese paso **no frena el despliegue** todavía: Railway no espera a nin
 (medido el 2026-09-23). Lo frenará el día que se active «Wait for CI» en el servicio
 (pendiente 33 de `PENDIENTES.md`).
 
+## El recorrido de valores límite (`npm run limites`)
+
+`recorrido-limites.js` **no es parte de la batería**: no empieza por `e2e-`, así que `npm run e2e`
+no lo corre. Lo lanza `npm run limites`, que pide al runner ese script por nombre
+(`node test/e2e/run-e2e.js recorrido-limites.js`) y así usa el mismo servidor desechable.
+
+- **Qué hace.** Recorre cada `public/dimensionador-*.html`, sacando la lista del disco. En cada
+  pestaña activa cada modo (botones de grupo, opciones de desplegable, casillas) y mete
+  `-5`, `0`, `0.5`, `1e9`, vacío y `abc` en cada campo numérico que aparece. Al final abre la página
+  por enlace con cada modo en la URL.
+- **Qué busca.** Excepciones, errores de consola y peticiones fallidas del propio origen, texto
+  del código (`null`, `undefined`, `NaN`), cantidades negativas con unidad, notación exponencial,
+  cantidades del BOM que no son enteros positivos y una página que no se asienta.
+- **Dónde están las reglas.** En `limites-reglas.js`, que no necesita navegador y lo prueba
+  `test/limites-reglas.test.js` en cada `npm run verificar`. Lo que es correcto se declara en
+  `EXCEPCIONES` con su motivo. Una excepción que en una corrida no casa con nada se reporta como
+  hallazgo propio.
+- **Qué deja.** `.limites/resultado.json` (ignorado por git, o la ruta de `LIMITES_SALIDA`), y
+  sale con 1 si hay hallazgos. `LIMITES_SOLO=huawei` recorre solo los dimensionadores cuyo
+  nombre lo contenga.
+- **Dónde corre.** Los miércoles, en `.github/workflows/limites.yml`, que **termina en verde**
+  y lleva los hallazgos a un issue con la etiqueta `recorrido-limites`. Solo se pone en rojo si
+  el arnés falla: el recorrido no termina o su resultado no tiene la forma esperada. Son dos
+  jobs: el que recorre no tiene permiso de escritura, y el que escribe el issue no ejecuta el
+  navegador ni las dependencias.
+- **Qué hacer con un hallazgo.** Corregir el código y fijar el caso en `e2e-entradas-limite.js`,
+  que sí corre en cada push. Así se hizo con el primero: «Puertos undefined × undefinedGE» en
+  la ficha de 17 FortiGate (2026-10-02).
+
 ## Esperar a una condición, no a un reloj
 
 Hasta el 2026-09-24 los scripts esperaban con 219 pausas fijas (`waitForTimeout(300…3500)`)

@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "verificar": "npm run lint && npm test",
     "e2e": "node test/e2e/run-e2e.js",
+    "limites": "node test/e2e/run-e2e.js recorrido-limites.js",
     "catalogo": "node scripts/catalogo-check.js",
     "datasheets": "node scripts/descargar-datasheets.js",
     "cps": "node scripts/importar-cps.js",

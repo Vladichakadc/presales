@@ -98,7 +98,48 @@ test('los otros seis fabricantes no reciben un panel vacío: el texto libre se m
   assert.match(sec.nota, /no se puede contrastar la densidad/);
 
   // Fortinet usa `ifaces` en vez de `ports`: las dos claves valen, porque el catálogo las
-  // nombra distinto y eso es del catálogo, no del equipo.
-  const forti = require('../server/seed/legacyData/fortinet.js').MODELS[0];
-  assert.ok(FICHA.seccionPuertos(forti).filas[0][1].includes('GE'));
+  // nombra distinto y eso es del catálogo, no del equipo. El 100F no trae puertos
+  // estructurados (su columna del Matrix se parte en varias líneas), así que es el que cae aquí.
+  const f100 = require('../server/seed/legacyData/fortinet.js').MODELS.find((m) => m.id === 'FortiGate 100F');
+  const s100 = FICHA.seccionPuertos(f100);
+  assert.strictEqual(s100.filas[0][0], 'Interfaces');
+  assert.strictEqual(s100.filas[0][1], f100.ifaces.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+});
+
+// Hasta el 2026-10-02 aquí había `includes('GE')` sobre el 30G, y pasaba con «undefined ×
+// undefinedGE» en pantalla: la ficha leía los puertos de Fortinet ({n, vel, medios}) con las
+// claves de Nokia ({cantidad, veloc}). Lo encontró el recorrido de valores límite. Ahora se
+// exige el texto entero, y sobre todos los FortiGate que traen puertos estructurados.
+test('los puertos estructurados de Fortinet se leen con su forma, sin «undefined»', () => {
+  const { FICHA } = cargar('public/js/ficha.js');
+  const { MODELS } = require('../server/seed/legacyData/fortinet.js');
+  const conPuertos = MODELS.filter((m) => Array.isArray(m.puertos) && m.puertos.length);
+  assert.ok(conPuertos.length >= 17, `hay ${conPuertos.length} FortiGate con puertos estructurados`);
+  for (const m of conPuertos) {
+    const sec = FICHA.seccionPuertos(m);
+    const texto = JSON.stringify(sec);
+    assert.ok(!/undefined|NaN|null ×/.test(texto), `${m.id}: ${texto}`);
+    assert.strictEqual(sec.filas.length, m.puertos.length, `${m.id}: una fila por grupo`);
+  }
+  const de = (id) => FICHA.seccionPuertos(MODELS.find((m) => m.id === id));
+  assert.strictEqual(de('FortiGate 60F').filas.map((f) => f.join(': ')).join(' | '), 'Puertos: 10 × 1GE RJ45');
+  assert.strictEqual(de('FortiGate 60F').nota, null, 'sin pares compartidos no hay nota');
+  // El 80F: «8x GE RJ45, 2x Shared Port Pairs». Un par compartido es UN puerto con dos medios.
+  const s80 = de('FortiGate 80F');
+  assert.strictEqual(s80.filas.map((f) => f.join(': ')).join(' | '),
+    'Puertos: 8 × 1GE RJ45 | Puertos de medio compartido: 2 × 1GE RJ45 o SFP');
+  assert.match(s80.nota, /medio compartido.*se usa con uno solo de sus medios a la vez, así que cuenta una sola vez/);
+  assert.strictEqual(de('FortiGate 120G').filas.map((f) => f[1]).join(' + '), '16 × 1GE RJ45 + 8 × 1GE SFP + 4 × 10GE SFP+');
+});
+
+test('un grupo de puertos que no se deja leer no se pinta a medias: cae al texto libre', () => {
+  const { FICHA } = cargar('public/js/ficha.js');
+  for (const raro of [[{ n: 4 }], [{ cantidad: 'cuatro', veloc: 1 }], [{ vel: 10, medios: ['SFP+'] }], [null]]) {
+    const sec = FICHA.seccionPuertos({ id: 'X', ifaces: '4 GE RJ45', puertos: raro });
+    assert.strictEqual(sec.filas.map((f) => f.join(': ')).join(' | '), 'Interfaces: 4 GE RJ45', JSON.stringify(raro));
+    assert.ok(!JSON.stringify(sec).includes('undefined'), JSON.stringify(raro));
+  }
+  // La forma del Nokia 7220 IXR sigue valiendo, con su uso rotulado.
+  const nokia = FICHA.seccionPuertos({ id: 'X', puertos: [{ cantidad: 48, veloc: 25, uso: 'acceso' }] });
+  assert.strictEqual(nokia.filas.map((f) => f.join(': ')).join(' | '), 'Puertos de acceso: 48 × 25GE');
 });

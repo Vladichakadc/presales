@@ -5,7 +5,8 @@
    pisen el puerto) y apaga el servidor pase lo que pase. El código de salida es 1 si
    cualquier script falla — es lo que CI espera para marcar la corrida en rojo.
 
-   Uso:  npm run e2e
+   Uso:  npm run e2e                               (la batería: todos los e2e-*.js)
+         node test/e2e/run-e2e.js <script.js> ...     (scripts concretos, p. ej. npm run limites)
    Vars: E2E_PORT (por defecto 4131), E2E_USER / E2E_PASSWORD (credenciales de la corrida,
          nunca las de producción), E2E_SOLO=filtro para correr un solo script,
          E2E_LENTITUD=N para ralentizar N veces la CPU de cada página (ver ayuda.js).
@@ -50,7 +51,18 @@ function esperarServidor(intentos = 60) {
   // servidor quedaría colgado. La carga vive en ayuda.js (mensaje de instalación claro).
   require('./ayuda').cargarPlaywright();
 
-  const scripts = fs.readdirSync(__dirname)
+  // Scripts pedidos por nombre (`node test/e2e/run-e2e.js recorrido-limites.js`): así corre el
+  // recorrido de valores límite (`npm run limites`) con el mismo servidor desechable, sin entrar
+  // en la batería de cada push. Sin argumentos, la batería de siempre: todos los e2e-*.js.
+  const pedidos = process.argv.slice(2);
+  for (const p of pedidos) {
+    // Sin barras (nada fuera de test/e2e/) y nunca el propio runner, que se lanzaría a sí mismo.
+    if (!/^[\w-]+\.js$/.test(p) || p === path.basename(__filename) || !fs.existsSync(path.join(__dirname, p))) {
+      console.error(`«${p}» no es un script de test/e2e/ que se pueda ejecutar`);
+      process.exit(2);
+    }
+  }
+  const scripts = pedidos.length ? pedidos : fs.readdirSync(__dirname)
     .filter((f) => /^e2e-.*\.js$/.test(f))
     .filter((f) => !process.env.E2E_SOLO || f.includes(process.env.E2E_SOLO))
     .sort();

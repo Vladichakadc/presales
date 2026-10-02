@@ -11,7 +11,9 @@
    («-13000 Mbps», «-5 túneles IPsec»): se leen como una sede. (6) Y al probar esos enlaces
    salió el más grave: cualquier enlace compartido con un modo en la URL (`modeSeg`, `platSeg`,
    `dirSeg`, `critSeg`) lanzaba una excepción en Huawei y Cisco, porque el BOM se pintaba
-   antes de que llegara el catálogo.
+   antes de que llegara el catálogo. (7) El 2026-10-02, el primer recorrido semanal
+   (`recorrido-limites.js`) encontró «Puertos undefined × undefinedGE» en la ficha de 17
+   FortiGate, abierta por enlace a 500 Mbps.
    La regla que se fija es la de los demás dimensionadores: sin caudal (o con uno negativo) no
    se recomienda nada y la pantalla pide los valores; y ningún texto interno del código
    («null», «undefined», «NaN») llega a una pestaña que lee el usuario. */
@@ -99,6 +101,23 @@ const CAUDAL_NEGATIVO = /(?<![\w\-/.:°])-\d[\d.,]*\s?(?:Mbps|Gbps|Tbps)/;
     });
     t.ok(!/\bnull\b/.test(tabla), 'Huawei · la tabla del catálogo AR no contiene «null»');
     t.ok(fila === '—', `Huawei · el AR8700-8 (sin puertos LAN en el catálogo) muestra «—» (muestra «${fila}»)`);
+  }
+
+  // ── Fortinet: los puertos estructurados se leen con su forma (2026-10-02) ──────────────
+  // El primer recorrido semanal (`npm run limites`) encontró «Puertos undefined × undefinedGE»
+  // en la ficha de los 17 FortiGate con puertos estructurados: `ficha.js` los leía con las
+  // claves de Nokia. Se fija con el 80F, que además trae dos pares de medio compartido.
+  {
+    await abrir('dimensionador-fortinet-fortigate.html?bw=500&segSeg=branch&pickModel=' + encodeURIComponent('FortiGate 80F'));
+    const seccion = await page.evaluate(() => {
+      const t = document.body.innerText;
+      const i = t.search(/configuración de puertos/i);
+      if (i < 0) return '';
+      const j = t.slice(i).search(/alimentación eléctrica/i);
+      return t.slice(i, j < 0 ? i + 300 : i + j).replace(/\s+/g, ' ');
+    });
+    t.ok(/8 × 1GE RJ45/.test(seccion) && /2 × 1GE RJ45 o SFP/.test(seccion) && !TEXTO_DE_CODIGO.test(seccion),
+      `Fortinet · el 80F muestra sus puertos y su par compartido, sin texto de código («${seccion.slice(0, 160)}»)`);
   }
 
   // ── Ningún texto interno del código en las pestañas que lee el usuario ─────────────────

@@ -1,0 +1,166 @@
+name: limites
+
+# RECORRIDO DE VALORES LIMITE (2026-10-02). Recorre cada public/dimensionador-*.html metiendo
+# valores limite en cada campo numerico, con cada modo, opcion y casilla que un usuario puede
+# tocar, y abre la pagina por enlace con cada modo en la URL (test/e2e/recorrido-limites.js).
+# El 2026-10-01 ese recorrido, hecho a mano, encontro seis errores con todas las baterias en
+# verde; aqui corre solo cada semana, para los campos y modos que se anadan despues. No compara
+# ninguna cifra del catalogo: eso es del contraste.
+#
+# POR QUE NO EN CADA PUSH. Tarda varios minutos, y lo que ya se encontro lo fija
+# test/e2e/e2e-entradas-limite.js, que si corre en cada push dentro del job de pantallas.
+#
+# TERMINA EN VERDE AUNQUE HAYA HALLAZGOS, A PROPOSITO. Los hallazgos van a un issue con la
+# etiqueta recorrido-limites (si ya hay uno abierto se comenta, no se abre otro; si la corrida
+# sale limpia, se comenta y se cierra). Una corrida programada se asocia al commit de la cabeza
+# de main, y el dia que Railway espere a CI (pendiente 33) una corrida en rojo sobre un commit
+# que aun espera su despliegue lo saltaria: el mismo caso limite que la vigia de los lunes, ver
+# docs/decisiones-del-dueno-2026-09-24.md. Solo se pone en rojo si falla el arnes: el
+# recorrido no llega a terminar, o su resultado no tiene la forma esperada. Eso hay que verlo.
+#
+# SIN SECRETOS. El runner (test/e2e/run-e2e.js) levanta un servidor desechable con una base y
+# una clave que se generan aqui y mueren con la corrida.
+#
+# DOS JOBS, A PROPOSITO (revision diferencial del 2026-10-02). El que recorre ejecuta npm ci,
+# Playwright con apt y un navegador; el que escribe el issue tiene `issues: write`. En un mismo
+# job, un proceso de un paso anterior puede leer el token del paso siguiente (va en el entorno
+# de ese proceso), asi que el permiso vive en otro job, que no instala nada: solo baja el modulo
+# que redacta el issue y el resultado, y comprueba la forma del resultado antes de usarlo.
+
+on:
+  schedule:
+    - cron: '0 7 * * 3'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recorrer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      # Ningun paso usa git despues del checkout: el token no se deja guardado en la copia.
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # La misma version fijada que pantallas.yml, por el mismo motivo (ver su comentario):
+      # una herramienta que cambia sola entre dos corridas da rojos que no dicen nada del codigo.
+      - name: Traer Playwright y Chromium
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+
+      # El codigo de salida se guarda y no se propaga: 1 son hallazgos, que van al issue. Si el
+      # recorrido no termina no hay limites.json, y eso es lo que mira el ultimo paso.
+      # `set -o pipefail` para que `| tee` no se trague el codigo, como en pantallas.yml.
+      - name: Recorrer los dimensionadores con valores límite
+        id: recorrido
+        env:
+          LIMITES_SALIDA: ${{ github.workspace }}/limites.json
+        run: |
+          set -o pipefail
+          E2E_PASSWORD="$(head -c 32 /dev/urandom | base64 | tr -d '/+=' | head -c 24)"
+          echo "::add-mask::$E2E_PASSWORD"
+          rc=0
+          E2E_PASSWORD="$E2E_PASSWORD" npm run limites 2>&1 | tee limites.txt || rc=$?
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+
+      - name: Publicar el recorrido en la corrida
+        if: ${{ !cancelled() }}
+        run: |
+          {
+            echo '## Recorrido de valores límite'
+            echo ''
+            echo '```'
+            grep -E '^\[limites\]|^FALLO' limites.txt || echo '(sin salida del recorrido)'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Guardar el resultado
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: limites
+          path: |
+            limites.json
+            limites.txt
+          if-no-files-found: ignore
+
+      # El unico rojo de este workflow: un recorrido que no termina es un fallo del arnes, y
+      # sin resultado el job del issue no tiene nada que contar.
+      - name: Fallar solo si el recorrido no terminó
+        if: ${{ !cancelled() }}
+        run: |
+          if [ ! -f limites.json ]; then
+            echo "El recorrido no terminó (rc=${{ steps.recorrido.outputs.rc }}): no hay limites.json. Ver el log del paso del recorrido."
+            exit 1
+          fi
+          echo "Recorrido terminado (rc=${{ steps.recorrido.outputs.rc }}). Los hallazgos, si los hay, van al issue recorrido-limites."
+
+  informar:
+    needs: recorrer
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      # Solo el modulo que redacta el issue, sin dependencias: aqui no se ejecuta nada mas.
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            test/e2e/limites-reglas.js
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: limites
+
+      # Si ya hay un issue abierto se comenta, no se abre otro; si la corrida sale limpia, se
+      # comenta y se cierra. El resultado se lee como JSON y se valida: es un dato, no codigo.
+      - name: Abrir, comentar o cerrar el issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const R = require('./test/e2e/limites-reglas.js');
+            const r = JSON.parse(fs.readFileSync('limites.json', 'utf8'));
+            const malo = R.validarResultado(r);
+            if (malo) {
+              core.setFailed(`limites.json no tiene la forma esperada (${malo}): no se escribe ningún issue.`);
+              return;
+            }
+            const repo = { owner: context.repo.owner, repo: context.repo.repo };
+            const enlace = `${context.serverUrl}/${repo.owner}/${repo.repo}/actions/runs/${context.runId}`;
+            const abiertos = await github.rest.issues.listForRepo({ ...repo, state: 'open', labels: 'recorrido-limites' });
+            // La API de issues devuelve tambien los PR con esa etiqueta: no son el aviso.
+            const abierto = abiertos.data.find((i) => !i.pull_request);
+            if (!r.hallazgos.length) {
+              if (abierto) {
+                await github.rest.issues.createComment({ ...repo, issue_number: abierto.number, body: R.comentarioLimpio(r, enlace) });
+                await github.rest.issues.update({ ...repo, issue_number: abierto.number, state: 'closed', state_reason: 'completed' });
+              }
+              core.info('Sin hallazgos.');
+              return;
+            }
+            const cuerpo = R.cuerpoIssue(r, enlace);
+            if (abierto) {
+              await github.rest.issues.createComment({ ...repo, issue_number: abierto.number, body: cuerpo });
+              core.info(`Hallazgos comentados en #${abierto.number}.`);
+            } else {
+              const nuevo = await github.rest.issues.create({ ...repo, title: R.tituloIssue(r), body: cuerpo, labels: ['recorrido-limites'] });
+              core.info(`Hallazgos en el issue nuevo #${nuevo.data.number}.`);
+            }
