@@ -55,7 +55,7 @@ jobs:
       hay: ${{ steps.cambio.outputs.hay }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -121,7 +121,7 @@ jobs:
 
     steps:
       # Con credenciales: este job empuja la rama. Nada de lo que corre aquí viene de fuera.
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v5
         with:

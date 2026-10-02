@@ -43,7 +43,7 @@ jobs:
 
     steps:
       # Ningun paso usa git despues del checkout: el token no se deja guardado en la copia.
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -119,7 +119,7 @@ jobs:
 
     steps:
       # Solo el modulo que redacta el issue, sin dependencias: aqui no se ejecuta nada mas.
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
           sparse-checkout: |
