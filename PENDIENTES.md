@@ -4,7 +4,11 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-02 (**El lock solo descarga del registro oficial de npm.** Es la mejora propuesta al cerrar la entrega anterior. El 16 de septiembre el lock resolvía cuatro paquetes contra un espejo inalcanzable, y producción pasó 13 horas sin cambios; se corrigió a mano y no quedó ninguna prueba. Ahora `test/lock-origen.test.js` exige, en `npm run verificar`, que cada entrada se descargue de `registry.npmjs.org`, del archivo de su nombre y su versión, con huella sha512. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-02 (**Los jobs de navegador pasan a Ubuntu 26, y el cotizador y el dimensionador dicen la misma cifra en los siete fabricantes.** Ubuntu 26: medido antes de moverse, Playwright 1.63 pasaba todo pero la cobertura del contraste volvía a contar solo el último caso; la 1.61.1 da lo mismo que en local, y `contraste.js` ya no escribe una cobertura que contradice la corrida. Huawei y Juniper: sus fichas oficiales, traídas por Actions, cerraron las seis diferencias. En Juniper mandó el datasheet vigente de la línea SRX300 frente a la matriz de 2020, y eso cerró de paso la disputa del SRX380. Y preguntando a la API en vez de leer archivos salió más: el cotizador citaba en seis líneas de Huawei el texto de la guía de diseño (el M8, «1086 Mpps» sin fuente), y la guía recomendaba tres equipos fuera de venta. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-02 (**Cuatro cierres sobre lo desplegado.** La auditoría de prompts y el `/init`, aplicados; `DATABASE_PATH` medido sin leer secretos (`./database.sqlite`, efímera) y el arranque lo dice en una línea `[db]`; Railway consulta `/salud` antes de dar por bueno un despliegue; y el M4 de Aruba decidido: el breakout no descarga más de lo que cabe por Internet. Dependabot #8 y #9 entraron con ellos. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-02 (**El lock solo descarga del registro oficial de npm.** Es la mejora propuesta al cerrar la entrega anterior. El 16 de septiembre el lock resolvía cuatro paquetes contra un espejo inalcanzable, y producción pasó 13 horas sin cambios; se corrigió a mano y no quedó ninguna prueba. Ahora `test/lock-origen.test.js` exige, en `npm run verificar`, que cada entrada se descargue de `registry.npmjs.org`, del archivo de su nombre y su versión, con huella sha512. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-02 (**Cada despliegue se comprueba y avisa solo.** Es la mejora propuesta al cerrar la entrega anterior. Railway publicaba en GitHub el estado de cada despliegue y nada lo escuchaba: 10 despliegues fallidos sin aviso, y producción 23 y 13 horas sin cambios el 1 y el 16 de septiembre. Ahora `sonda-produccion.yml` escucha esos estados. Tras un despliegue sano corre la sonda; un despliegue fallido, o una sonda en rojo, abre un issue con la etiqueta `despliegue`, que se cierra solo con el siguiente despliegue sano. Ver *Cerrado recientemente*.)
 
@@ -523,9 +527,9 @@ decisión del dueño o el datasheet de Huawei (pendiente 14).
 | H2 | **Hecha en parte.** SD-WAN y UTM fijan piso de capa `typ` (H-01, antes 2,1x corto) y la pantalla dice que la capa subió; UTM declara que no hay cifra de inspección y pide PoC (H-02). **Sigue abierto H-03**: el ×2 bidireccional por defecto no tiene fuente para la serie AR; no se cambia sin el datasheet | en parte |
 | H3 | **Hecha (2026-09-30).** Selector de plataforma `#platSeg` (NetEngine AR · A800 E · NE8000) elegido antes que el caudal: solo compiten los modelos de esa línea, y lo que no aplica (SD-WAN, UTM, WAC, PoE, 4G/5G, Wi-Fi, LAN en transporte; FlexE en AR) se oculta con `data-inactivo`, conserva su valor y sale del cálculo y del enlace. FlexE pasa a dato del modelo (`flexe: true` solo en el A821 E, que lo publica); el resto es «no consta», no se aparta y va detrás del confirmado. El modo «Nodo de núcleo» se retiró y los enlaces y perfiles viejos con `modeSeg=core` se traducen a NE8000. Dos escenarios de la línea base del contraste (2 y 6 Gbps de reenvío) salieron de ella a propósito y quedan como afirmaciones del cambio. TPM queda fuera: la pantalla no lo pide como requisito | hecha |
 | H4 | **Hecha en parte.** BOM con papel por pieza: alternativas de MPU y fuente en una línea «elegir una», 5G y WSIC fuera si no se piden, doble fuente x2, ópticas en una línea a elegir (H-06, H-07 sin inventar código). **HA 1+1 hecha (H-12, 2026-09-29)**: `#chkHa` (repone desde el enlace compartido y viaja como dos equipos al cotizador, conducido en el contraste `huawei`) cotiza dos equipos por sitio, cada uno al caudal completo (suma disponibilidad, no capacidad), y «misión crítica» sin HA lo advierte. **Salió de paso** que SnS se cotizaba dos veces (licencia y soporte). **Capa comercial hecha (H-13, 2026-09-29):** plazo de 1/3/5 años (`#anios`, el texto de cada suscripción dice el término real), precio de referencia del equipo tomado del cotizador (13 de los 40 modelos; el resto sale «consultar»), simulador de precio neto, TCO **declarado parcial** (solo el equipo tiene precio; licencias, suscripciones y soporte van «consultar») y perfiles multi-sede con consolidado. **Ópticas por enlace hechas (H-07, 2026-09-29):** cada módulo se declara (familia, modelo, cantidad por equipo), viaja en el enlace compartido (`#opticasData`) y entra al BOM con su código; una fila que ya no encaja tras cambiar de equipo sale como inválida, no se descarta. **Sigue sin existir la matriz de compatibilidad por chasis y versión de VRP** (el catálogo solo respalda la familia), y la pantalla lo dice | **hecha salvo datos** |
-| H5 | Datos: 27 de 40 modelos no casan con el cotizador, cifras del NE8000 M8/F8 distintas entre herramientas, M14 incoherente, el tope de túneles y sesiones por modelo (H-10, H-14; **H-11 declarado en pantalla el 2026-09-29**: el hub muestra cuántos túneles pide y que el catálogo no trae el tope, sin apartar a nadie; el filtro ya existe y se activa solo cuando un modelo traiga `tuneles`; las sesiones no se piden porque exigirían usuarios por sede) | bloqueado en parte por la cuenta Huawei (pendiente 14) |
+| H5 | Datos: 27 de 40 modelos no casan con el cotizador, M14 incoherente (las cifras del NE8000 M8/F8 entre herramientas se cerraron el 2026-10-02 con sus fichas oficiales), el tope de túneles y sesiones por modelo (H-10, H-14; **H-11 declarado en pantalla el 2026-09-29**: el hub muestra cuántos túneles pide y que el catálogo no trae el tope, sin apartar a nadie; el filtro ya existe y se activa solo cuando un modelo traiga `tuneles`; las sesiones no se piden porque exigirían usuarios por sede) | bloqueado en parte por la cuenta Huawei (pendiente 14) |
 
-### Cotizador y dimensionador dicen cifras distintas del mismo equipo (abierto desde 2026-09-30; Cisco cerrado el 2026-10-01)
+### Cotizador y dimensionador dicen cifras distintas del mismo equipo (cerrado: Cisco el 2026-10-01, Huawei y Juniper el 2026-10-02)
 
 `npm run catalogo` lo mide en la sección «COTIZADOR FRENTE A DIMENSIONADOR», y desde el 2026-10-01
 **el cotizador no cita una cifra en disputa**: `server/services/cifrasCotizador.js` la compara en
@@ -535,8 +539,8 @@ El informe y la pantalla usan el mismo módulo, así que no pueden discrepar sob
 | Fabricante | Coinciden | Difieren | Estado |
 |---|---:|---:|---|
 | Cisco | **17/17** | 0 | **Cerrado** con las cinco fichas oficiales (rama `fuente/cisco-huawei`, corrida 36849891379). Seis cifras del dimensionador bajadas porque prometían más de lo publicado; el texto del cotizador alineado. Ver abajo lo que se dejó a propósito |
-| Huawei | 20/23 | 3 | NE8000 M8 (capacidad y Mpps) y F8 (capacidad). **El M8 del dimensionador trae exactamente las cifras del F1A (2,4 Tbps y 453 Mpps)**, que huele a fila copiada; la ficha de 2021 dice 1,2 Tbps. Se lee con la ficha oficial (pendiente 14). En el cotizador salen «en revisión» |
-| Juniper | 12/15 | 3 | SRX340 (4,7 frente a 3 Gbps de firewall; IPsec 733 frente a 600) y SRX4300 (90 frente a 98). **Las dos son oficiales y de ediciones distintas**: el dimensionador sale de la matriz de 2020 con doble anclaje y el cotizador del datasheet vigente de la línea SRX300. Hay que decidir cuál manda, no cuál está mal. En el cotizador salen «en revisión» |
+| Huawei | **22/22** | 0 | **Cerrado el 2026-10-02** con las fichas oficiales del M8 y el F8 (ver *Cerrado recientemente*). El M8 llevaba la fila del F1A; con la IPU-2T4 conmuta 4,8 Tbps. El F8 llevaba su capacidad de puertos (6,4 Tbps) y conmuta 12,8. Ninguna ficha publica Mpps: el del M8 queda en null y sale de la comparación |
+| Juniper | **15/15** | 0 | **Cerrado el 2026-10-02**: manda el documento más reciente. La línea SRX300 entera pasa al datasheet vigente (traído por Actions), que además cierra la disputa del SRX380; el SRX4300 ya llevaba 98 Gbps en el dimensionador desde el 2026-09-11 y el que estaba atrás era el texto del cotizador |
 | Fortinet, Aruba, MikroTik, Nokia | todo | 0 | — |
 
 **Cisco: lo que la ficha publica y el catálogo NO lleva, a propósito.** La página rotula los tres
@@ -605,7 +609,7 @@ no una lectura. Se anotan con el documento oficial donde confirmarlas:
 |---|---|---|---|
 | Nota de la ficha AR6710: el rendimiento SD-WAN (EVPN+IPsec+QoS) es «la suma de flujos bidireccionales» | El mismo resumen da 7 Gbps SD-WAN IMIX al AR6710-H4T4X2Y7, que es el `typ: 7000` ya verificado | **Respaldaría H-03**: el ×2 por defecto sería correcto para SD-WAN | «NetEngine AR6710-H Series Data Sheet R25C10», e.huawei.com/en/documents/products/enterprise-network/c63ee1473b9147a4b6a50dc64c8f1bcd |
 | NE8000 M14: «hasta 2 Tbps, ampliable a 4,8 Tbps» | `cap: 2000000` (2 Tbps) coincide | **H-14 del M14 explicado**: no es un error, es la capacidad actual frente a la ampliable | «NetEngine 8000 M14 Datasheet», e.huawei.com/en/documents/products/enterprise-network/f4f1a7b9424a44ff9770b75a19eb5d2e |
-| NE8000 M8: «hasta 1,2 Tbps, ampliable a 2 Tbps» (ficha de 2021) | **No casa**: el dimensionador dice 2,4 Tbps y el cotizador 4,8 Tbps | El sospechoso pasa a ser el **M8**, con tres cifras distintas; puede haber dos generaciones | «NetEngine 8000 M8 Datasheet», e.huawei.com/en/documents/products/enterprise-network/e9dd06e260b64df683f6221fc8442cbf |
+| NE8000 M8: «hasta 1,2 Tbps, ampliable a 2 Tbps» (ficha de 2021) | **No casa**: el dimensionador dice 2,4 Tbps y el cotizador 4,8 Tbps | El sospechoso pasa a ser el **M8**, con tres cifras distintas; puede haber dos generaciones. **Leída la ficha oficial el 2026-10-02: eran dos generaciones de tarjeta de control** (IPU-1T2 2,4 Tbps de conmutación, IPU-2T4 4,8 Tbps), y la fila del catálogo es la IPU-2T4 | «NetEngine 8000 M8 Datasheet», e.huawei.com/en/documents/products/enterprise-network/e9dd06e260b64df683f6221fc8442cbf |
 | AR8140: SD-WAN 12–20 Gbps IMIX y 25–36 Gbps a 1.400 bytes | `typ: 12000` coincide; `fwd: 25000` coincide con la cifra **SD-WAN de 1.400 bytes**, no con reenvío NAT+ACL+QoS IMIX | Si se confirma, el `fwd` del AR8140 mide otra cosa que la etiqueta de la pantalla | Ficha AR8100 de e.huawei.com |
 | AR651: SD-WAN 800 Mbps IMIX (AR651C: 600) | Sin ancla: `typ` es `null` y el resumen no da otra columna de la fila | Llenaría el `typ` que hoy aparta a la serie AR650 | «Huawei NetEngine AR650 Series Datasheet 20250810-v3», e.huawei.com/marketingcloud |
 | Ciclo de vida (EOM/EOS) de AR5700/6700/8000 y NE8000 | — | **No apareció ninguna fecha pública de hardware**; ver «Fin de venta: qué marca cada pantalla» (2026-10-01) para el AR651 y los boletines de versión | Tablón «Routers — Life Cycle Notices» de support.huawei.com, con Huawei ID |
@@ -1534,18 +1538,28 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     bloqueado desde el sandbox (2026-09-16); cierra bajando el DS oficial de la
     serie 7000/7200 desde una máquina con acceso y repitiendo este mismo patrón.
 
-## Abierto: pasar los jobs de navegador a Ubuntu 26 (2026-10-02)
+## Abierto: la guía de diseño y el portal, frente al catálogo (2026-10-02)
 
-Sin prisa: `ubuntu-24.04` sigue disponible en GitHub, y `pantallas` y `limites` corren ahí fijados
-desde el 2026-10-02 (ver *Cerrado recientemente*). Moverse pide una versión de Playwright que
-soporte Ubuntu 26.04: la 1.56.1 no lo soporta («Playwright does not support chromium on
-ubuntu26.04-x64», corrida `36970442567`). El camino:
-1. Subir Playwright en los dos workflows.
-2. Lanzar `pantallas` a mano con `imagen: ubuntu-26.04`.
-3. Mover la imagen fijada en el mismo commit.
+Salió al cerrar Huawei y Juniper, preguntando a la API en vez de leer los archivos. Lo que se
+arregló ese día está en *Cerrado recientemente*; esto es lo que queda:
 
-Y antes de cambiar la versión de Playwright, lo que dice `pantallas.yml`: otra versión de
-Chromium ya cambió una vez la cobertura del contraste.
+- **El informe compara el cotizador con el dimensionador, y nada más.** El portal (`indexPR.js`)
+  y la guía (`guiaRoles.js`) también citan cifras, y no se contrastan. El caso medido: el NE8000
+  M14 sale con 7,2 Tbps en el portal y en la guía («alternativa: NE8000 M14 (7,2 Tbps)») y con
+  2 Tbps en el dimensionador, que es el que dimensiona.
+- **La guía conserva textos que ya no muestra.** 30 de sus 36 entradas que casan con un equipo del
+  cotizador traen otro texto, y 4 otro precio; la guía pinta los del catálogo, así que no se ven.
+  Pero algunos llevan cifras que el cierre de Cisco retiró («Catalyst 8300-2N2S-6T · Forwarding
+  10 Gbps» frente a los 5 publicados) o precios viejos (FortiGate 400F a 7.500 frente a 17.570 de
+  la lista firmada). Si el equipo saliera del catálogo, volverían a pintarse.
+- **Los equipos que solo viven en la guía llevan cifras sin fuente declarada**: 7750 SR-7s
+  («108 Tbps»), MX480, QFX, CloudEngine y los controladores SD-WAN.
+- **El FortiGate 100F y el 600F salen con la ficha en blanco en la guía**: el producto existe
+  (del dimensionador) sin texto comercial, porque no están en la lista Mid de precios.
+
+Cerrarlo es extender `CONTRASTE_COTIZADOR` (o una sección hermana) al portal y a la guía, y decidir
+qué texto pinta la guía cuando el catálogo no trae uno. **Es decisión de alcance, no corrección**:
+la guía es material de diseño, no de cotización, y el dueño puede preferir que solo nombre equipos.
 
 ## Limpieza
 
@@ -1630,6 +1644,91 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Los jobs de navegador, en Ubuntu 26, y una cobertura que ya no puede mentir (2026-10-02)
+
+- **Qué pasaba.** `ubuntu-latest` pasa a Ubuntu 26 el 19 de octubre. `pantallas` y `limites` iban
+  fijados en `ubuntu-24.04` con Playwright 1.56.1, que no soporta la imagen nueva.
+- **Medido antes de moverse**, lanzando `pantallas` a mano con el selector de imagen:
+  - **Playwright 1.63.0** (`37011333490`): pantallas, contraste y e2e en verde, pero la cobertura
+    volvió a contar solo el último caso, 21 «sin conducir» frente a 8. Desde la 1.62, Playwright
+    deja activado RenderDocument en Chromium, y cada navegación abre un documento cuyo V8 no
+    conserva la cobertura del anterior: el síntoma del 24 de septiembre.
+  - **Playwright 1.61.1** (`37014083115`): la primera versión que reconoce `ubuntu26.04-x64` y
+    todavía lo desactiva. 17 pantallas, 8 contrastes sin discrepancias, la batería e2e entera y
+    8 «sin conducir», como en local.
+- **Hecho.** `pantallas` (por defecto y en el selector) y el job `recorrer` de `limites` pasan a
+  `ubuntu-26.04` con Playwright 1.61.1, en un mismo commit. El selector conserva `ubuntu-24.04`
+  para medir hacia atrás.
+- **El fallo ya no pasa en silencio.** Las dos veces que la cobertura contó solo la última página
+  se vio comparando a mano con la medición local. Ahora `contraste.js --todos` contrasta la medida
+  contra la propia corrida: si sale «sin conducir» el script de una pantalla que un caso condujo,
+  no escribe el lock y sale con 1 (`incoherencias` en `scripts/ayuda/cobertura.js`).
+  - Comprobado de punta a punta reiniciando la cobertura en cada navegación, que es la firma de
+    RenderDocument: nombra las cuatro pantallas, no toca el lock y sale con 1, con los 8 casos
+    sin discrepancias.
+  - Tres pruebas nuevas en `test/contraste-cobertura.test.js`, una de ellas sobre el lock
+    versionado. Dos sabotajes del freno, cazados.
+- **De paso**, la cabecera de `pantallas.yml` decía que `DATABASE_PATH` va sin definir en
+  producción. CLAUDE.md ya lo había corregido; ahora la cabecera dice lo medido.
+
+### El cotizador cita su propio texto, y la guía deja de recomendar equipos fuera de venta (2026-10-02)
+
+- **Cómo salió.** Comprobando por la API, no por los archivos, que el NE8000 M8 ya no citaba
+  Mpps. Seguía citando «1086 Mpps», y no venía del cotizador.
+- **La causa.** La guía de diseño nombra «NetEngine NE8000 M8» lo que el catálogo guarda como
+  «NE8000 M8». `seedRoleRecommendations` lo buscaba por nombre exacto, no lo encontraba y creaba un
+  segundo producto con el texto de la guía; el cotizador casa por nombre normalizado y se quedaba
+  con ese. Seis líneas de Huawei salían con el texto de la guía. `npm run catalogo` decía «22/22
+  coinciden» porque lee el archivo, y el archivo estaba bien.
+- **El arreglo.** La guía casa como casa el cotizador y solo crea el producto que de verdad no
+  existe. Medido antes y después contra la API: cambian exactamente esas seis líneas del
+  cotizador y seis entradas de la guía (que ahora pintan el texto del catálogo); portal y
+  dimensionadores, idénticos; precios y alternativas de la guía, idénticos.
+- **Y la guía aplica la regla de fin de venta.** Recomendaba el SRX 1500, el SRX 4100 y el EC-XL,
+  con el último pedido vencido, mientras su cabecera promete «equipos activos (no EOL/EOS)».
+  `toGuiaRoles()` los retira con la misma normalización que el portal y el cotizador.
+- **Lo guarda `test/servidor-produccion.test.js`**, contra el servidor real: cada línea del
+  cotizador sin cifra en revisión cita su texto de `cotizadorCatalog.js`, y la guía no recomienda
+  nada con el último pedido vencido. Dos sabotajes (volver a casar por nombre exacto, quitar la
+  regla de la guía), cazados.
+- **Lo que queda** está en *Abierto: la guía de diseño y el portal, frente al catálogo*.
+
+### Huawei y Juniper: el cotizador y el dimensionador, con la misma cifra (2026-10-02)
+
+- **Qué quedaba.** Tres diferencias en Huawei (NE8000 M8 y F8) y tres en Juniper (SRX300, SRX 320
+  y SRX4300). El cotizador las mostraba «en revisión».
+- **Cómo se leyó.** `juniper.net` y los dominios de Huawei están bloqueados por el proxy de egreso
+  de este entorno. Las fichas llegaron por `traer-cisco-huawei.yml` a la rama de transporte
+  `fuente/cisco-huawei` (corrida `37011208335`), validadas por su contenido.
+- **Juniper: manda el documento más reciente.** El datasheet vigente de la línea SRX300
+  (© 1999-2025) da cifras más altas que la matriz de 2020 con la que se había «corregido» la línea
+  el 2026-09-02. Se aplicó con `npm run juniper --force`, anclado por las columnas que ya casaban:
+  - SRX300 y SRX320: 1,9 Gbps de firewall, 600 Mbps en IMIX y 336 de IPsec.
+  - SRX340: 4,7 Gbps, 1,1 en IMIX y 733 Mbps de IPsec. SRX345: 1,5 Gbps en IMIX y 977 de IPsec.
+  - **SRX380: la disputa se cierra.** El datasheet confirma los 20/6,5/4,4 Gbps guardados y le da
+    380.000 sesiones y 50.000 conexiones por segundo.
+  - SRX4300: el texto del cotizador decía 90 Gbps; el dimensionador ya llevaba los 98 de su ficha
+    vigente desde el 2026-09-11.
+- **La lección, escrita en `legacyData/juniper.js`.** El doble anclaje caza una fila desplazada, no
+  una edición vieja: la fila de la matriz estaba bien alineada y era de 2020. Eso lo decide la
+  fecha del documento.
+- **Huawei.** La ficha del M8 publica la conmutación por tarjeta de control (IPU-480 960 Gbps,
+  IPU-1T2 2,4 Tbps, IPU-2T4 4,8 Tbps), y la fila del catálogo es la IPU-2T4: 4,8 Tbps. Llevaba la
+  fila exacta del F1A (2,4 Tbps y 453 Mpps). El F8 llevaba 6,4 Tbps, su capacidad de puertos;
+  conmuta 12,8 en la versión 6.4T.
+  - **Ninguna ficha publica Mpps.** El del M8 queda en null: el cotizador decía 1.086 y nada lo
+    respalda. El del F8 sigue con la verificación de la Fase 2.
+  - **La identidad se comprobó por el contenido.** El título de los dos PDF dice «NetEngine 8000
+    M4», una plantilla; el texto nombra su modelo y ningún otro.
+- **La procedencia, como datos.** Tres fuentes nuevas en `legacyData/fuentes.js` (el datasheet
+  SRX300 y las dos fichas NE8000). La matriz de Juniper acota lo que todavía respalda: el SRX1500
+  y el `atp` del 340 y el 345.
+- **Resultado.** `npm run catalogo`: los siete fabricantes coinciden enteros (Huawei 22/22,
+  Juniper 15/15). Los 8 contrastes, sin discrepancias con los datos nuevos.
+- **Lo que no cierra.** El NE8000 M14 sigue incoherente: 2 Tbps en el dimensionador y 7,2 en el
+  portal, que este informe no compara. El resto de Mpps de NetEngine tampoco tiene ficha leída.
+  Sigue en H5 y en el pendiente 14.
 
 ### M4 de Aruba: el breakout no descarga más de lo que cabe por Internet (2026-10-02)
 

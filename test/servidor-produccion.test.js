@@ -619,10 +619,16 @@ test('fin de venta: el portal y el cotizador retiran lo que el dimensionador ya 
   const vencidos = ['cisco', 'juniper', 'aruba'].flatMap((v) => require(`../server/seed/legacyData/${v}`).MODELS)
     .filter((m) => m.eolAnnounced && FICHA.rango(m) === 2);
   assert.ok(vencidos.length >= 10, `hay modelos con el ultimo pedido vencido (${vencidos.length})`);
+  // La guia de diseno recomendaba el SRX 1500, el SRX 4100 y el EC-XL hasta el 2026-10-02: es la
+  // pantalla que mas claramente RECOMIENDA, y la regla no la cubria.
+  const guia = await (await fetch(`${BASE}/api/guia/roles`, { headers: { cookie: ana } })).json();
+  const enGuia = new Set(Object.values(guia).flat().map((e) => e.model));
+  assert.ok(enGuia.size > 30, `la guia sigue recomendando (${enGuia.size} equipos)`);
   for (const m of vencidos) {
     const clave = normalizarModelo(m.id);
     for (const nombre of [...enCotizador]) assert.notStrictEqual(normalizarModelo(nombre), clave, `${nombre} sigue en el cotizador con el ultimo pedido vencido`);
     for (const nombre of [...enPortal]) assert.notStrictEqual(normalizarModelo(nombre), clave, `${nombre} sigue en el portal con el ultimo pedido vencido`);
+    for (const nombre of [...enGuia]) assert.notStrictEqual(normalizarModelo(nombre), clave, `${nombre} sigue recomendado en la guia con el ultimo pedido vencido`);
   }
   // Un fin de venta anunciado y TODAVIA pedible sigue ofreciendose: hasta esa fecha se pide.
   const anunciados = require('../server/seed/legacyData/cisco').MODELS.filter((m) => m.eolAnnounced && FICHA.rango(m) < 2);
@@ -645,4 +651,29 @@ test('el cotizador no cita una cifra de rendimiento que el dimensionador contrad
   const c8200 = cot.find((c) => c.model === 'Catalyst 8200');
   assert.strictEqual(c8200.spec, '1 Gbps FWD · IPsec 900 Mbps · SD-WAN nativo · 2 NIM');
   assert.strictEqual(c8200.enRevision, undefined);
+});
+
+test('el cotizador cita el texto de su propio catalogo, no el de otra pantalla', async () => {
+  // Medido el 2026-10-02: seis lineas de Huawei salian con el texto de la guia de diseno, y la del
+  // NE8000 M8 citaba «1086 Mpps», que ningun documento respalda. La guia nombraba «NetEngine
+  // NE8000 M8» lo que el catalogo guarda como «NE8000 M8»; la siembra creaba un segundo producto
+  // con el texto de la guia, y el cotizador, que casa por nombre normalizado, se quedaba con el.
+  // El informe de `npm run catalogo` no podia verlo: lee el archivo, y el archivo estaba bien.
+  // Por eso se pregunta al servidor: el fallo solo existe tras la siembra.
+  const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
+  const cot = await (await fetch(`${BASE}/api/cotizador/catalog`, { headers: { cookie: ana } })).json();
+  const archivo = require('../server/seed/legacyData/cotizadorCatalog');
+  let comparadas = 0;
+  for (const fila of cot) {
+    if (fila.enRevision) continue; // la cifra en disputa se retira: lo prueba el caso anterior
+    const propia = archivo.find((r) => r.vendor.toLowerCase() === fila.vendor.toLowerCase() && r.model === fila.model);
+    assert.ok(propia, `${fila.model} no esta en cotizadorCatalog.js`);
+    assert.strictEqual(fila.spec, propia.spec, `${fila.model} cita otro texto que el de su catalogo`);
+    comparadas++;
+  }
+  assert.ok(comparadas > 100, `solo se compararon ${comparadas} lineas`);
+  // Y la guia apunta a ese mismo equipo, no a una copia con su propio texto.
+  const guia = await (await fetch(`${BASE}/api/guia/roles`, { headers: { cookie: ana } })).json();
+  const m8 = Object.values(guia).flat().find((e) => /NE8000 M8$/.test(e.model));
+  assert.strictEqual(m8.spec, archivo.find((r) => r.model === 'NetEngine NE8000 M8').spec);
 });

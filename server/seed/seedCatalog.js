@@ -255,23 +255,34 @@ async function seedLicenseBundles(vendorId, bundles, descOnly) {
   }
 }
 
+// UNA FILA POR EQUIPO (2026-10-02). La guia nombra con el prefijo comercial («NetEngine NE8000
+// M8») lo que el catalogo ya guarda sin el («NE8000 M8»). Buscarlo por nombre exacto creaba un
+// SEGUNDO producto con el texto de la guia, y como el cotizador casa por nombre normalizado, el
+// duplicado ganaba: seis lineas de Huawei salian con el texto de la guia, y la del M8 citaba
+// «1086 Mpps» sin documento que lo respaldara. Ahora se casa como casa el cotizador, y solo se
+// crea el producto que de verdad no existe (los que solo viven en la guia: controladores SD-WAN,
+// MX, QFX, CloudEngine...).
 async function seedRoleRecommendations(vendorIds) {
+  const porClave = new Map();
+  for (const p of await Product.findAll()) porClave.set(`${p.vendorId}::${normalizeName(p.model)}`, p);
   for (const [role, entries] of Object.entries(guiaRoles)) {
     for (const entry of entries) {
       const code = vendorCodeFromDisplayName(entry.v);
       const vendorId = vendorIds[code];
       if (!vendorId) continue;
-      const [product] = await Product.findOrCreate({
-        where: { vendorId, model: entry.model },
-        defaults: {
+      const clave = `${vendorId}::${normalizeName(entry.model)}`;
+      let product = porClave.get(clave);
+      if (!product) {
+        product = await Product.create({
           vendorId,
           model: entry.model,
           category: 'other',
           specs: {},
           specSummary: entry.spec,
           priceDisplay: entry.elp,
-        },
-      });
+        });
+        porClave.set(clave, product);
+      }
       await RoleRecommendation.findOrCreate({
         where: { role, productId: product.id },
         defaults: { role, productId: product.id, altText: entry.alt, note: null },

@@ -597,13 +597,19 @@ async function toDimensionadorNokiaRouter() {
 }
 
 // guia-diseno-interactiva.html EQ shape: {role: [{v,color,model,spec,alt,elp}, ...]}
+// La guia RECOMIENDA, asi que aplica la misma regla de fin de venta que el portal y el cotizador
+// (2026-10-02): hasta ese dia recomendaba el SRX 1500 y el SRX 4100 (ultimo pedido el
+// 2026-04-15) y el EC-XL. El aviso vive en la fila del dimensionador («SRX1500») y la guia
+// apunta a la del portal («SRX 1500»), asi que se casan con la misma normalizacion.
 async function toGuiaRoles() {
   const recs = await RoleRecommendation.findAll({
     include: [{ model: Product, include: [{ model: Vendor }] }],
     order: [['id', 'ASC']],
   });
+  const fuera = clavesFueraDeVenta(await Product.findAll());
   const result = {};
   for (const r of recs) {
+    if (fuera.has(`${r.Product.vendorId}::${cifras.normalizarModelo(r.Product.model)}`)) continue;
     if (!result[r.role]) result[r.role] = [];
     result[r.role].push({
       v: r.Product.Vendor.name,
