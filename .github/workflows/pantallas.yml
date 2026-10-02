@@ -47,13 +47,29 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      # Para medir la imagen siguiente antes de moverse a ella, sin tocar este archivo: se lanza
+      # a mano eligiendola aqui. Push y PR corren siempre en la fijada (ver runs-on).
+      imagen:
+        description: Imagen del ejecutor
+        type: choice
+        default: ubuntu-24.04
+        options:
+          - ubuntu-24.04
+          - ubuntu-26.04
 
 permissions:
   contents: read
 
 jobs:
   pantallas:
-    runs-on: ubuntu-latest
+    # La imagen va fijada, como Playwright, y por la misma razon: `npx playwright install
+    # --with-deps` instala paquetes del sistema con apt, y sus nombres cambian de una version de
+    # Ubuntu a otra. Con `ubuntu-latest`, el 19 de octubre de 2026 este job habria pasado a
+    # Ubuntu 26 sin un solo cambio en el repositorio. Moverse es un commit que sube imagen y
+    # Playwright a la vez, despues de medir la nueva con el selector de arriba
+    # (test/workflows-imagen.test.js lo exige).
+    runs-on: ${{ inputs.imagen || 'ubuntu-24.04' }}
     timeout-minutes: 20
 
     steps:

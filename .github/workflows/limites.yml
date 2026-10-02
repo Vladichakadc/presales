@@ -37,7 +37,8 @@ permissions:
 
 jobs:
   recorrer:
-    runs-on: ubuntu-latest
+    # Fijada como en pantallas.yml: instala paquetes del sistema con apt (playwright --with-deps).
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
 
     steps:
