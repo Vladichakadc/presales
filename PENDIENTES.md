@@ -1535,8 +1535,9 @@ runtime (Node 20 sin soporte y el `nixpacks.toml` que nadie leía) se cerró ese
 - **Railpack instala con `npm install`, no con `npm ci`.** Un `package-lock.json` que no cuadre
   con `package.json` ya no frena el despliegue, como lo frenó el 1 de septiembre: se resolvería
   dentro del contenedor, con versiones que CI no probó. `verificar` sí corre `npm ci`, pero
-  Railway no lo espera (punto 33). Cambiarlo es configuración de Railpack, y `railpack.com` da
-  403 desde este entorno (política de egreso): su sintaxis no se leyó aquí.
+  Railway no lo espera (punto 33). **Cómo se cambia, ya leído** en la documentación oficial de
+  Railway (`docs.railway.com/builds/build-configuration`, accesible desde aquí, a diferencia de
+  `railpack.com`): la variable de servicio `RAILPACK_INSTALL_CMD`.
 - **`npm audit` reportaba 2 avisos altos y 2 moderados y nada lo decía en voz alta**: cerrado el
   mismo día (ver *Cerrado recientemente*).
 
@@ -1587,11 +1588,13 @@ que ya se comprobó y lo que cuesta cada opción.
   y un documento que cambie no conserva su fecha de pendiente de una semana a otra. El PR no lo abre
   Actions a propósito: el ajuste que lo permitiría también le deja aprobar PR, y conviene dejarlo
   apagado.
-- **Revisar y fusionar los PR de Dependabot** (2026-10-02): #1 y #2 (`actions/setup-node` y
-  `actions/checkout`, abiertos desde el 2 de septiembre), #7 (el grupo de producción, desde el 18)
-  y #8 (`pdf-parse`, desde el 21). La red de actualizaciones existía, pero no llegaba a `main`. Desde
-  hoy, `verificar` frena en cualquiera de ellos si trae un aviso alto. `multer` ya está al día en
-  `main` (2.4.0), así que Dependabot rehará el #7 con lo que quede.
+- **Revisar y fusionar los PR de Dependabot** (2026-10-02):
+  - #1 y #2 (`actions/setup-node` y `actions/checkout`), abiertos desde el 2 de septiembre;
+  - #8 (`pdf-parse`), desde el 21;
+  - #9 (`express` y `@anthropic-ai/sdk`), que sustituye al #7 del 18 de septiembre: ese día
+    `multer` llegó a `main` por el freno de `npm audit`.
+  - La red de actualizaciones existía, pero no llegaba a `main`. Desde hoy, `verificar` frena en
+    cualquiera de ellos si trae un aviso alto.
 - **Activar «Wait for CI» en Railway** (`presales-web` → *Settings* → *Source*). Medido el
   2026-09-24: `source.checkSuites: false`. **Desde la sesión no se pudo, y se intentó con
   autorización expresa del dueño**: el conector de Railway no expone ese ajuste y su agente
@@ -1670,6 +1673,17 @@ Mejora propuesta al cerrar la entrega anterior.
   - si `npm audit` no responde o no se puede leer, frena con 2.
   - **Reproducido**: sobre el lock de antes del arreglo sale con 1 y señala los 3 avisos altos
     (dos de `brace-expansion` y uno de `undici`), más 5 informativos. Sobre el de ahora, 0.
+- **CI en la rama antes de `main`** (`36974092545`, Node 24 y `ubuntu-24.04`): en verde entero con
+  el lock nuevo. En local: 718 pruebas, el arranque en producción, 17/17 pantallas, 8 contrastes y
+  16/16 e2e.
+- **En producción (2026-10-02).** `7c7781e`, Railway `c7aa221e` en SUCCESS. Su construcción instala
+  365 paquetes y dice «found 0 vulnerabilities», y el arranque trae `[seed]` y
+  `Presales corriendo en`.
+  - `verificar` (`36974756956`) en verde, con el paso «Auditoría de dependencias» ya como freno, y
+    `pantallas` (`36974756864`) en verde.
+  - La sonda (`36975410113`): `/salud`, `/login` y el muro, en verde.
+  - Dependabot cerró el #7 por superado y abrió el #9 con las dos actualizaciones que quedan
+    (`express` y `@anthropic-ai/sdk`).
 - **Lo que lo guarda.** `test/auditar-dependencias.test.js`, 9 casos con informes sintéticos y un
   `npm` falso delante en el `PATH`, para no dejar en el script un atajo que salte la auditoría.
   Comprobado saboteando las seis formas de aflojarlo:
