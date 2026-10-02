@@ -51,7 +51,7 @@ jobs:
           persist-credentials: false
 
       # Sin `npm ci`: el descargador solo usa modulos de Node y el manifiesto de aruba.js.
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version-file: package.json
 
@@ -104,7 +104,7 @@ jobs:
       # Con credenciales: este job empuja la rama. Nada de lo que corre aqui viene de fuera.
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version-file: package.json
 

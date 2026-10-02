@@ -54,7 +54,7 @@ jobs:
 
       # Sin `npm ci` a proposito: scripts/vigia-fuentes.js solo usa fs, path, crypto y fetch.
       # Si algun dia necesita un paquete, este job falla en rojo con MODULE_NOT_FOUND y se ve.
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version-file: package.json
 
@@ -103,7 +103,7 @@ jobs:
       # fuera del repositorio.
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version-file: package.json
 
