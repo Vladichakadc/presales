@@ -22,43 +22,44 @@
 // en campos distintos en vez de guardar "la cifra de firewall".
 //
 // PROCEDENCIA Y CÓMO SE ACEPTÓ CADA NÚMERO
-// El documento que lo trae todo junto es la "SRX Series and vSRX Performance and Features
-// Matrix" / "Security Products Comparison Chart" (juniper.net/content/dam/www/assets/
-// datasheets/us/en/security/security-products-comparison-chart.pdf). El proxy de egreso del
-// entorno donde se edita este repositorio responde 403 a juniper.net, igual que a
-// fortinet.com — pero 2026-09-02 se trajo igual, vía GitHub Actions (que no pasa por ese
-// proxy) a una rama de transporte, mismo patrón que cerró el `cps` de Fortinet.
+// LA LÍNEA SRX300 (300/320/340/345/380) SALE DE SU DATASHEET VIGENTE, «SRX300 Line of
+// Firewalls for the Branch Datasheet» (juniper.net/gb/en/products/security/srx-series/
+// srx300-line-firewalls-branch-datasheet.html, © 1999-2025). El proxy de egreso del entorno
+// donde se edita este repositorio responde 403 a juniper.net, así que se trajo el 2026-10-02
+// por `traer-cisco-huawei.yml` (corrida 37011208335) a la rama de transporte
+// `fuente/cisco-huawei`, y se aplicó con `npm run juniper --force`. Su tabla «Performance and
+// Scale» da, para 300/320/340/345/380:
+//   firewall 1.518 B   1.900 / 1.900 / 4.700 / 5.000 / 20.000 Mbps
+//   firewall IMIX        600 /   600 / 1.100 / 1.500 /  6.500
+//   IPsec 1.400 B        336 /   336 /   733 /   977 /  4.400
+//   IPsec IMIX           116 /   116 /   239 /   325 /  1.400
+//   IPS recomendado      200 /   200 /   400 /   600 /  2.000
+//   sesiones          64.000 / 64.000 / 256.000 / 375.000 / 380.000
+//   conexiones/s       5.000 /  5.000 /  10.000 /  15.000 /  50.000
+// Cada fila entró anclada por las columnas que ya casaban: vpnImix, ips, sess y cps en
+// 300/320/340/345; fw, fwImix, vpn, vpnImix e ips en el SRX380, que solo ganó sess y cps.
 //
-// ANTES de esa lectura, buena parte de estas cifras se habían reconstruido por búsqueda y
-// solo se aceptaron cuando formaban una SERIE INTERNAMENTE COHERENTE a lo largo de la línea
-// de producto. Con el documento real en mano, esa reconstrucción resultó ACERTADA en unos
-// campos y EQUIVOCADA en otros — la coherencia de una serie no garantiza que sea la serie
-// correcta, solo que es plausible. Concretamente:
-//   - fw, vpn e ips de la línea SRX300 (300/320/340/345) SÍ coincidían exactamente.
-//   - fwImix de esa misma línea NO: el documento trae 500/500/1.000/1.700/4.000 Mbps para
-//     300/320/340/345/380, no los 600/600/1.100/1.500/6.500 que se habían reconstruido.
-//     Corregido para 300/320/340/345 (2026-09-02, `npm run juniper --force`, ancladas por
-//     fw+vpn+ips ya coincidentes). El de SRX380 sigue en null: ver más abajo.
-//   - SRX1500 — el modelo que este catálogo documentaba como "el único con la fila
-//     completa"— tenía `vpn` y `sess` equivocados (3.000 Mbps / 512.000 sesiones reconstruidos
-//     frente a 1.300 Mbps / 2.000.000 del documento real; fw, fwImix, ips y atp sí coincidían).
-//     Corregidos con el mismo `--force`, anclados por esos cuatro campos coincidentes.
-//   - `cps` de toda la línea SRX300 más SRX1500 no existía en ninguna reconstrucción previa:
-//     lo trae el documento (Connections/sec) y se aplicó sin conflicto.
+// ESE DATASHEET SUSTITUYE A LA MATRIZ DE 2020 EN ESTA LÍNEA. La «SRX Series and vSRX
+// Performance and Features Matrix» (juniper.net/content/dam/www/assets/datasheets/us/en/
+// security/security-products-comparison-chart.pdf), traída el 2026-09-02 por el mismo camino,
+// es una edición anterior con cifras más bajas: Juniper re-evaluó al alza con Junos más
+// reciente, lo mismo que se vio el 2026-09-11 en el SRX1600, el SRX2300 y el SRX4300. La
+// matriz sigue respaldando lo que el datasheet no publica: el SRX1500 entero (vpn 1.300 Mbps y
+// 2.000.000 de sesiones se corrigieron con ella) y el `atp` del SRX340 y del SRX345 (180 y
+// 230 Mbps). El datasheet vigente no trae esa capa para la línea 300: su «Secure Web Access
+// firewall» (171/171/280/295/1.800, con SecIntel y filtrado de URL) no incluye la protección
+// contra malware, así que no es el mismo stack y no se transcribe como `atp`.
 //
-// SRX380 QUEDA A PROPÓSITO SIN TOCAR EN fw/fwImix/vpn, aunque el documento SÍ trae una fila
-// para él (10 Gbps / 4 Gbps / 3,5 Gbps / 2 Gbps de fw/fwImix/vpn/ips) que contradice los
-// 20/6,5/4,4/2 Gbps ya guardados. De los cuatro campos leídos solo `ips` coincide — un único
-// anclaje, por debajo del doble anclaje que este catálogo exige por diseño para pisar un dato
-// existente. La cabecera anterior de este archivo ya documentaba la ambigüedad ("para el
-// SRX380 aparecieron 10 y 20 Gbps de firewall, 3,5/4,4/5 Gbps de IPsec y 2 y 4 Gbps de IPS"):
-// el documento real confirma que 10, 3,5 y 2 eran las cifras correctas y 20/4,4 la
-// reconstrucción equivocada, pero corregirlo aquí exigiría `--sin-contraste` sobre un único
-// anclaje, y esa responsabilidad es de quien decide, no de una corrida automática. Igual de
-// interesante: el documento SÍ confirma 380.000 sesiones concurrentes para el SRX380 (el valor
-// "más plausible" que la cabecera anterior ya sospechaba frente al descartado 4.000.000), pero
-// como sess/atp/cps de esa fila dependen del mismo anclaje de fw/fwImix/vpn, quedan igual sin
-// aplicar hasta que se resuelva junto con el resto de la fila.
+// LO QUE ENSEÑÓ, PORQUE EL 2026-09-02 SE HIZO AL REVÉS. Esa lectura de la matriz «corrigió» el
+// fwImix de la línea 300 de 600/600/1.100/1.500 a 500/500/1.000/1.700, y dejó el SRX380 «en
+// disputa» porque la matriz le daba 10/4/3,5 Gbps de fw/fwImix/vpn frente a los 20/6,5/4,4
+// guardados. Los valores descartados eran los de la edición vigente. El doble anclaje no podía
+// verlo: la fila de la matriz no estaba desplazada, era vieja. **El anclaje caza la fila
+// desplazada; la edición la decide la fecha del documento**, y entre dos documentos oficiales
+// del fabricante manda el más reciente. Antes de esa lectura, estas cifras se habían
+// reconstruido por búsqueda mezclando las dos ediciones —fw y vpn de la vieja, fwImix de la
+// vigente—: la coherencia de una serie dice que es plausible, no que salga de un solo
+// documento.
 //
 // LA GENERACIÓN 2024, Y EL MÉTODO DE MEDIDA QUE LO EXPLICABA TODO (2026-09-03)
 // SRX1600, SRX2300 y SRX4300 se habían quedado solo con `fw` porque la matriz de 2020 no
@@ -108,10 +109,11 @@
 // acepta una fila si al menos dos de sus columnas casan con lo que este catálogo ya trae
 // verificado y ninguna lo contradice**. Ese doble anclaje es lo que caza la fila desplazada,
 // que es el modo de fallo real de transcribir 96 números a mano: una cifra suelta siempre
-// parece plausible, el resto de su fila no. SRX380 (arriba) y los cuatro modelos que hoy solo
-// tienen `fw` (SRX4300, SRX4700, SRX4100, SRX4200) no llegan a ese anclaje y el importador los
-// aparta hasta que se pasa `--sin-contraste` a propósito. `npm run juniper -- --check`
-// imprime la cobertura casilla por casilla.
+// parece plausible, el resto de su fila no. Una fila que no llega a ese anclaje se aparta
+// hasta que se pasa `--sin-contraste` a propósito. `--force` es otra cosa: pisa las cifras que
+// difieren en una fila que SÍ ancla, y es lo que corresponde cuando el documento es una
+// edición más reciente que la que se transcribió (la línea SRX300, arriba).
+// `npm run juniper -- --check` imprime la cobertura casilla por casilla.
 //
 // PRECIOS: TODOS `null`. No hay lista de precios de Juniper en el material disponible. El
 // BOM cuenta las líneas sin cotizar y avisa, en vez de mostrar un total que parece completo.
@@ -179,29 +181,24 @@
 
 const MODELS = [
   // ── Línea SRX300: sucursal ────────────────────────────────────────────────
-  // 300/320/340/345 verificados contra el documento real 2026-09-02 (ver PROCEDENCIA):
-  // fw/vpn/ips ya estaban bien, fwImix se corrigió y sess/cps/atp se completaron. El SRX380
-  // de esta misma línea SÍ tiene fila en el documento pero queda sin tocar: ver la nota de
-  // PROCEDENCIA sobre por qué su fw/fwImix/vpn no supera el doble anclaje.
+  // Los cinco, del datasheet vigente de la línea (2026-10-02, ver PROCEDENCIA). El `atp` del
+  // 340 y del 345 sigue siendo de la matriz de 2020: el datasheet no publica esa capa.
   {id:'SRX300', redund:false, psu:{tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50-60 Hz', amps:'1 A máximo (pico de arranque 7 A a 220 V)', texto:'Se alimenta con el adaptador que viene con el equipo, sin opción de una segunda fuente. La guía de hardware no publica consumo para este modelo.'}, ser:'SRX 300', seg:'SOHO / Teletrabajo',
-   fw:1000, fwImix:500, vpn:300, vpnImix:116, ips:200, atp:null, sess:64000, cps:5000,
+   fw:1900, fwImix:600, vpn:336, vpnImix:116, ips:200, atp:null, sess:64000, cps:5000,
    ifaces:'8x GE (6 RJ45 + 2 SFP)'},
   {id:'SRX320', redund:false, psu:{tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50-60 Hz', amps:'1,3 A máximo (modelo sin PoE) o 3,25 A (modelo PoE)', texto:'Adaptador externo, sin opción de una segunda fuente. La guía publica dos consumos medios según la variante — 46 W sin PoE y 221 W con PoE — y como este catálogo tiene una sola entrada SRX320 no se declara ninguno como el consumo típico del modelo.'}, ser:'SRX 300', seg:'Sucursal pequeña',
-   fw:1000, fwImix:500, vpn:300, vpnImix:116, ips:200, atp:null, sess:64000, cps:5000,
+   fw:1900, fwImix:600, vpn:336, vpnImix:116, ips:200, atp:null, sess:64000, cps:5000,
    ifaces:'8x GE + 2 ranuras MPIM'},
   {id:'SRX340', redund:false, psu:{watts:122, tipo:'fuente interna fija, única, no reemplazable en campo', volts:'100-240 V AC, 50-60 Hz, 1 a 1,5 A', texto:'Consumo medio 122 W. La fuente va fija en el chasis con una sola entrada AC, así que no admite una segunda.'}, ser:'SRX 300', seg:'Sucursal mediana',
-   fw:3000, fwImix:1000, vpn:600, vpnImix:239, ips:400, atp:180, sess:256000, cps:10000,
+   fw:4700, fwImix:1100, vpn:733, vpnImix:239, ips:400, atp:180, sess:256000, cps:10000,
    ifaces:'16x GE + 4 ranuras MPIM'},
   {id:'SRX345', redund:'opcional', psu:{watts:122, tipo:'una fuente AC de serie, admite dos (RE-SRX345-DUAL-AC)', volts:'100-240 V AC, 50-60 Hz, 1 a 1,5 A', texto:'Consumo medio 122 W. Se vende con una sola fuente o con dos; con las dos instaladas, si una falla la otra asume la carga sin interrupción.'}, ser:'SRX 300', seg:'Sucursal grande',
-   fw:5000, fwImix:1700, vpn:800, vpnImix:325, ips:600, atp:230, sess:375000, cps:15000,
+   fw:5000, fwImix:1500, vpn:977, vpnImix:325, ips:600, atp:230, sess:375000, cps:15000,
    ifaces:'16x GE + 4 ranuras MPIM'},
-  // fw/fwImix/vpn EN DISPUTA (ver PROCEDENCIA): el documento real de 2026-09-02 trae
-  // 10/4/3,5 Gbps para este modelo, no los 20/6,5/4,4 de abajo. Solo `ips` de esa fila
-  // coincide con lo ya guardado — un único anclaje, por debajo del doble que este catálogo
-  // exige para pisar un dato existente — así que se deja sin tocar a propósito en vez de
-  // corregirse con `--sin-contraste` bajo responsabilidad de esta sesión.
+  // La disputa de fw/fwImix/vpn se cerró el 2026-10-02: el datasheet vigente confirma los
+  // 20/6,5/4,4 Gbps guardados, y los 10/4/3,5 de la matriz de 2020 eran la edición anterior.
   {id:'SRX380', ser:'SRX 300', seg:'Sucursal grande / PoE',
-   fw:20000, fwImix:6500, vpn:4400, vpnImix:1400, ips:2000, atp:null, sess:null, cps:null,
+   fw:20000, fwImix:6500, vpn:4400, vpnImix:1400, ips:2000, atp:null, sess:380000, cps:50000,
    ifaces:'16x GE PoE+ + 4x 10GE SFP+ · fuente redundante',
    redund:true, psu:{texto:'Fuente redundante, según el datasheet Juniper del SRX380.'}},
 
@@ -212,11 +209,9 @@ const MODELS = [
    ifaces:'16x GE + 4x 10GE SFP+ · 1U'},
 
   // ── Generación 2024 ───────────────────────────────────────────────────────
-  // Traen sesiones y conexiones por segundo publicadas, que la línea de sucursal no tiene.
-  // Las cifras de inspección (IPS, ATP) NO se pudieron confirmar: para el SRX1600 apareció
-  // "21 Gbps de IPS" sobre un firewall de 24 Gbps, lo que contradice de plano la premisa de
-  // que inspeccionar cuesta capacidad. Un dato que se contradice con la física del producto
-  // no se registra: queda en null y el motor lo declara sin comprobar.
+  // De sus fichas por modelo (2026-09-03, revisión vigente el 2026-09-11). `ips` y `atp`
+  // transcriben el método CPS: el «21 Gbps de IPS sobre un firewall de 24» que esta nota daba
+  // por imposible era el método TPS, otra medida (ver PROCEDENCIA).
   {id:'SRX1600', redund:'opcional', psu:{watts:137, tipo:'una fuente de serie, admite una segunda (1+1)', volts:'100-127 V AC (5,5 A) o 200-240 V AC (3 A), 50-60 Hz', texto:'Consumo medio 137 W y máximo 162 W, sobre fuentes de 450 W. Juniper lo envía con una sola fuente y la segunda se pide aparte. Cada fuente necesita su propio interruptor.'}, ser:'SRX 1600', seg:'Campus / DC empresarial',
    fw:24000, fwImix:12000, vpn:18000, vpnImix:8000, ips:4500, atp:2000, sess:2000000, cps:170000,
    ifaces:'25GE · MACsec a velocidad de línea · 1U'},

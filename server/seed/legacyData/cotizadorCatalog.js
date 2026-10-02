@@ -13,7 +13,7 @@ module.exports = [
   {vendor:'Huawei', color:'#C7000B', model:'NetEngine A811 E',          seg:'CPE acceso SRv6',         spec:'20 Gbps · 4.4 Mpps · SRv6, L2/L3VPN, IFIT',                  elp:'~ $8,500', elpN:8500},
   {vendor:'Huawei', color:'#C7000B', model:'NetEngine A821 E',          seg:'Acceso 10GE + FlexE',     spec:'72 Gbps · 108 Mpps · 2x10GE + 8 GE ópticas',                 elp:'~ $18,000',elpN:18000},
   {vendor:'Huawei', color:'#C7000B', model:'NetEngine NE8000 M4',       seg:'Agregación 2U',           spec:'2.4 Tbps · 405 Mpps · 4 tarjetas 400G',                       elp:'~ $95,000',elpN:95000},
-  {vendor:'Huawei', color:'#C7000B', model:'NetEngine NE8000 M8',       seg:'Agregación grande 3U',    spec:'4.8 Tbps · 1086 Mpps · 8 tarjetas 400G',                      elp:'~ $180,000',elpN:180000},
+  {vendor:'Huawei', color:'#C7000B', model:'NetEngine NE8000 M8',       seg:'Agregación grande 3U',    spec:'4.8 Tbps · 8 tarjetas 400G con IPU-2T4',                      elp:'~ $180,000',elpN:180000},
   {vendor:'Huawei', color:'#C7000B', model:'NetEngine NE8000 F1A',      seg:'Alta densidad 1U',        spec:'2.4 Tbps · 453 Mpps · 1U · 1200 G/U',                         elp:'~ $80,000',elpN:80000},
   {vendor:'Huawei', color:'#C7000B', model:'NetEngine NE8000 F8',       seg:'Núcleo compacto 13U',     spec:'12.8 Tbps · 2035 Mpps · 8 tarjetas 800G',                     elp:'~ $380,000',elpN:380000},
   // Las cifras de rendimiento de Cisco se alinearon el 2026-10-01 con las del dimensionador,
@@ -106,7 +106,7 @@ module.exports = [
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 4201F', seg:'DC core', spec:'FW 800 Gbps · NGFW 47 Gbps · IPsec 210 Gbps · 8x100GE QSFP28/40GE + 18x25GE SFP28 + 2x 1.92TB SSD onboard', elp:'~ $332,287', elpN:332287},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 4401F', seg:'DC core', spec:'FW 1.1 Tbps · NGFW 82 Gbps · IPsec 310 Gbps · 12x100GE QSFP28/40GE + 20x25GE SFP28 + 2x 1.92TB SSD onboard', elp:'~ $424,829', elpN:424829},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 4801F', seg:'Hyperscale DC', spec:'FW 3.1 Tbps · NGFW 77 Gbps · IPsec 800 Gbps · 8x400GE + 12x50GE SFP56 + 2x 1.92TB SSD onboard', elp:'~ $458,040', elpN:458040},
-  {vendor:'Juniper', color:'#84B135',model:'Juniper SRX 320',           seg:'SOHO / Sucursal',         spec:'FW 1 Gbps · 8 GE · SD-WAN, UTM, routing',                     elp:'~ $1,800', elpN:1800},
+  {vendor:'Juniper', color:'#84B135',model:'Juniper SRX 320',           seg:'SOHO / Sucursal',         spec:'FW 1.9 Gbps · 8 GE · SD-WAN, UTM, routing',                     elp:'~ $1,800', elpN:1800},
   {vendor:'Juniper', color:'#84B135',model:'Juniper SRX 345',           seg:'Sucursal mediana',        spec:'FW 5 Gbps · 16 GE + 4 MPIM · NGFW, SD-WAN, IPsec',            elp:'~ $3,500', elpN:3500},
   {vendor:'Juniper', color:'#84B135',model:'Juniper SRX 1500',          seg:'Sucursal grande',         spec:'FW 9 Gbps · 16 GE + 4x10GE SFP+ · NGFW, campus edge',         elp:'~ $12,000',elpN:12000},
   {vendor:'Juniper', color:'#84B135',model:'Juniper SRX 4100',          seg:'DC Edge',                 spec:'FW 40 Gbps · 8x10GE + 2x40GE · NGFW, IPsec concentrador',     elp:'~ $28,000',elpN:28000},
@@ -157,12 +157,12 @@ module.exports = [
   // material disponible, asi que van como 'Consultar' con elpN:0 y el BOM las cuenta como
   // sin cotizar, igual que Aruba. Inventar un precio plausible es el fallo que este
   // catalogo ya cometio una vez.
-  {vendor:'Juniper', color:'#84B135',model:'Juniper SRX300',              seg:'SOHO / Teletrabajo',      spec:'FW 1 Gbps · IPsec 300 Mbps · 8 GE',                           elp:'Consultar',elpN:0},
+  {vendor:'Juniper', color:'#84B135',model:'Juniper SRX300',              seg:'SOHO / Teletrabajo',      spec:'FW 1.9 Gbps · IPsec 336 Mbps · 8 GE',                           elp:'Consultar',elpN:0},
   {vendor:'Juniper', color:'#84B135',model:'Juniper SRX340',              seg:'Sucursal mediana',        spec:'FW 4.7 Gbps · IPsec 733 Mbps · 16 GE + 4 MPIM',               elp:'Consultar',elpN:0},
   {vendor:'Juniper', color:'#84B135',model:'Juniper SRX380',              seg:'Sucursal grande / PoE',   spec:'FW 20 Gbps · IPsec 4.4 Gbps · 16x1GE PoE+ + 4x10GE',          elp:'Consultar',elpN:0},
   {vendor:'Juniper', color:'#84B135',model:'Juniper SRX1600',             seg:'Campus / DC empresarial', spec:'FW 24 Gbps · 25GE · MACsec a velocidad de línea · 1U',        elp:'Consultar',elpN:0},
   {vendor:'Juniper', color:'#84B135',model:'Juniper SRX2300',             seg:'Campus grande / DC',      spec:'FW 39 Gbps · 100GE · MACsec a velocidad de línea · 1U',       elp:'Consultar',elpN:0},
-  {vendor:'Juniper', color:'#84B135',model:'Juniper SRX4300',             seg:'DC Edge',                 spec:'FW 90 Gbps · 100GE · MACsec a velocidad de línea · 1U',       elp:'Consultar',elpN:0},
+  {vendor:'Juniper', color:'#84B135',model:'Juniper SRX4300',             seg:'DC Edge',                 spec:'FW 98 Gbps · 100GE · MACsec a velocidad de línea · 1U',       elp:'Consultar',elpN:0},
   {vendor:'Juniper', color:'#84B135',model:'Juniper SRX4700',            seg:'Cloud / Service Provider', spec:'FW 1.4 Tbps · 400GE · MACsec a velocidad de línea · 1U',      elp:'Consultar',elpN:0},
   {vendor:'Juniper', color:'#84B135',model:'Juniper SSR120',              seg:'Sucursal pequeña SD-WAN', spec:'1.5 Gbps · SD-WAN sin túneles · gestión Mist',                elp:'Consultar',elpN:0},
   {vendor:'Juniper', color:'#84B135',model:'Juniper SSR130',              seg:'Sucursal mediana SD-WAN', spec:'2 Gbps · SD-WAN sin túneles · gestión Mist',                  elp:'Consultar',elpN:0},

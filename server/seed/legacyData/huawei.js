@@ -150,13 +150,26 @@ const MODELS = [
 {id:'NE8000 F1A', cls:'WAN', ser:'NE8000 F', fam:'Agregación fija de alta densidad, 1U', cap:2400000, mpps:453, lan:0, poe:0, wan:0, wifi:0,
  ports:'1U · 1200 G/U, la mayor densidad por unidad de rack · fuentes 1+1 · 325 W típicos', optics:['qsfp100','sfp25','sfp10'], parts:['RACK','CONSOLE'],
  redund:true, psu:{watts:325, tipo:'AC/DC', texto:'Fuentes 1+1 · 325 W típicos.'}},
-{id:'NE8000 M8', cls:'WAN', ser:'NE8000 M', fam:'Agregación, 3U, hasta 8 tarjetas', cap:2400000, mpps:453, lan:0, poe:0, wan:0, wifi:0,
+// NE8000 M8 y F8 (2026-10-02): capacidad leída de su ficha oficial en e.huawei.com (PDF generado
+// el 2025-06-12 el del M8 y el 2025-02-27 el del F8, los dos «© 2022»), traída por
+// `traer-cisco-huawei.yml` a la rama de transporte. La identidad se comprobó por el contenido y
+// no por el título del PDF, que en los dos dice «NetEngine 8000 M4» (una plantilla). `cap` es
+// conmutación, como en el resto de NetEngine (docs/revision-huawei-2026-09-29.md). El M8 la
+// publica POR TARJETA DE CONTROL: IPU-480 960 Gbps, IPU-1T2 2,4 Tbps e IPU-2T4 4,8 Tbps; los
+// «2,4 Tbps» de su portada son capacidad de puertos, la mitad. Esta fila describe la IPU-2T4
+// —tarjetas de 400 G y los 774 W típicos de esa columna—, así que su conmutación es 4,8 Tbps.
+// Llevaba 2,4 Tbps y 453 Mpps, la fila exacta del F1A. La ficha no publica Mpps, y ni esos 453
+// ni los 1.086 del cotizador tienen un documento que los respalde: `mpps` queda en null.
+{id:'NE8000 M8', cls:'WAN', ser:'NE8000 M', fam:'Agregación, 3U, hasta 8 tarjetas', cap:4800000, mpps:null, lan:0, poe:0, wan:0, wifi:0,
  ports:'3U · 8 tarjetas DC / 6 AC de 400 G · MPU y SFU 1:1 · 774.3 W típicos', optics:['qsfp100','sfp25','sfp10','ge'], parts:['RACK','CONSOLE'],
  psu:{watts:774.3}},
 {id:'NE8000 M14', cls:'WAN', ser:'NE8000 M', fam:'Agregación grande, 5U, 14 tarjetas', cap:2000000, mpps:1117, lan:0, poe:0, wan:0, wifi:0,
  ports:'5U · 14 tarjetas DC de 400 G · MPU y SFU 1:1 · fuentes 1+1 · 865.8 W típicos', optics:['qsfp100','sfp25','sfp10','ge'], parts:['RACK','CONSOLE'],
  redund:true, psu:{watts:865.8, tipo:'DC', texto:'Fuentes 1+1 · 865.8 W típicos.'}},
-{id:'NE8000 F8', cls:'WAN', ser:'NE8000 F', fam:'Núcleo compacto, 13U', cap:6400000, mpps:2035, lan:0, poe:0, wan:0, wifi:0,
+// F8: la ficha publica conmutación de 4 Tbps (versión 2T) y 12,8 Tbps (versión 6.4T). Esta fila
+// es la 6.4T —tarjetas de 800 G— y llevaba 6,4 Tbps, que es su capacidad de PUERTOS, otra base:
+// la mitad de la conmutación, que cuenta los dos sentidos.
+{id:'NE8000 F8', cls:'WAN', ser:'NE8000 F', fam:'Núcleo compacto, 13U', cap:12800000, mpps:2035, lan:0, poe:0, wan:0, wifi:0,
  ports:'13U · 8 tarjetas de 800 G · MPU y SFU 1:1 · hasta 5+1 DC o 3+3 AC · 2370 W típicos', optics:['qsfpdd400','qsfp100','sfp25','sfp10'], parts:['RACK','CONSOLE'],
  redund:true, psu:{watts:2370, tipo:'DC o AC', texto:'Hasta 5+1 DC o 3+3 AC · 2370 W típicos — el esquema exacto depende de la configuración pedida.'}},
 {id:'NE8000 X4', cls:'WAN', ser:'NE8000 X', fam:'Núcleo WAN / DCI, 9.8U', cap:173150000, mpps:24424, lan:0, poe:0, wan:0, wifi:0,

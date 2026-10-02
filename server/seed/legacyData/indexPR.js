@@ -24,7 +24,7 @@ hw_wan:[
   {model:'NE8000 M6',ser:'NE8000 M',seg:'Agregación compacta 2U',cap:'320 Gbps',mpps:72,ports:'2U · 6 tarjetas DC 50G · MPU 1:1'},
   {model:'NE8000 M4',ser:'NE8000 M',seg:'Agregación 2U',cap:'2.4 Tbps',mpps:405,ports:'2U · 4 tarjetas de 400G'},
   {model:'NE8000 F1A',ser:'NE8000 F',seg:'Alta densidad 1U',cap:'2.4 Tbps',mpps:453,ports:'1U · 1200 G/U — mayor densidad/rack'},
-  {model:'NE8000 M8',ser:'NE8000 M',seg:'Agregación grande 3U',cap:'4.8 Tbps',mpps:1086,ports:'3U · 8 tarjetas de 400G · MPU y SFU 1:1'},
+  {model:'NE8000 M8',ser:'NE8000 M',seg:'Agregación grande 3U',cap:'4.8 Tbps',mpps:null,ports:'3U · 8 tarjetas de 400G · MPU y SFU 1:1'},
   {model:'NE8000 M14',ser:'NE8000 M',seg:'Agregación 5U 14 slots',cap:'7.2 Tbps',mpps:1117,ports:'5U · 14 tarjetas de 400G'},
   {model:'NE8000 F8',ser:'NE8000 F',seg:'Núcleo compacto 13U',cap:'12.8 Tbps',mpps:2035,ports:'13U · 8 tarjetas de 800G · hasta 5+1 DC'},
   {model:'NE8000 X4',ser:'NE8000 X',seg:'Núcleo / DCI 9.8U',cap:'173 Tbps',mpps:24424,ports:'4 tarjetas de 19.2T · SFU 7+1'},
@@ -119,7 +119,7 @@ fortinet:[
   {model:'FortiGate 7121F',seg:'Carrier / National',fw:'1.89 Tbps',ips:'675 Gbps',ngfw:'550 Gbps',vpn:'630 Gbps',ifaces:'Chasis FPM',elp:'~ $630,630'},
 ],
 juniper:[
-  {model:'SRX 320',ser:'SRX 300',seg:'SOHO / Sucursal',cap:'1 Gbps FW',ports:'8 GE',use:'SD-WAN, UTM, branch routing'},
+  {model:'SRX 320',ser:'SRX 300',seg:'SOHO / Sucursal',cap:'1.9 Gbps FW',ports:'8 GE',use:'SD-WAN, UTM, branch routing'},
   {model:'SRX 345',ser:'SRX 300',seg:'Sucursal mediana',cap:'5 Gbps FW',ports:'16 GE + 4 MPIM',use:'NGFW, SD-WAN, IPsec'},
   {model:'SRX 1500',ser:'SRX 1500',seg:'Sucursal grande',cap:'9 Gbps FW',ports:'16 GE + 4x10GE SFP+',use:'NGFW, campus edge'},
   {model:'SRX 4100',ser:'SRX 4000',seg:'DC Edge',cap:'40 Gbps FW',ports:'8x10GE + 2x40GE',use:'NGFW, IPsec concentrador'},
@@ -132,7 +132,7 @@ juniper:[
   // ── Linea SRX de sucursal (SRX300) ────────────────────────────────────────
   // Cifras de firewall e IPsec del datasheet oficial "SRX300 Line of Firewalls for the
   // Branch": juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html
-  {model:'SRX300',ser:'SRX 300',seg:'SOHO / Teletrabajo',cap:'1 Gbps FW',ports:'8 GE',use:'FW 1 Gbps · IPsec 300 Mbps · sucursal pequena'},
+  {model:'SRX300',ser:'SRX 300',seg:'SOHO / Teletrabajo',cap:'1.9 Gbps FW',ports:'8 GE',use:'FW 1.9 Gbps · IPsec 336 Mbps · sucursal pequena'},
   {model:'SRX340',ser:'SRX 300',seg:'Sucursal mediana',cap:'4.7 Gbps FW',ports:'16 GE + 4 MPIM',use:'FW 4.7 Gbps · IPsec 733 Mbps · switching y WAN integrados'},
   {model:'SRX380',ser:'SRX 300',seg:'Sucursal grande / PoE',cap:'20 Gbps FW',ports:'16x1GE PoE+ + 4x10GE · fuente redundante',use:'FW 20 Gbps · IPsec 4.4 Gbps · mayor densidad de la linea 300'},
   // ── Generacion SRX 2024 (SRX1600 / 2300 / 4300 / 4700) ────────────────────
@@ -142,7 +142,7 @@ juniper:[
   // asi que se mantienen en el catalogo sin marcar. Ver PENDIENTES.md.
   {model:'SRX1600',ser:'SRX 1600',seg:'Campus / DC empresarial',cap:'24 Gbps FW',ports:'25GE · MACsec a velocidad de linea · 1U',use:'NGFW, campus edge, MACsec'},
   {model:'SRX2300',ser:'SRX 2300',seg:'Campus grande / DC',cap:'39 Gbps FW',ports:'100GE · MACsec a velocidad de linea · 1U',use:'NGFW, agregacion de seguridad'},
-  {model:'SRX4300',ser:'SRX 4000',seg:'DC Edge',cap:'90 Gbps FW',ports:'100GE · MACsec a velocidad de linea · 1U',use:'NGFW, concentrador IPsec, DC edge'},
+  {model:'SRX4300',ser:'SRX 4000',seg:'DC Edge',cap:'98 Gbps FW',ports:'100GE · MACsec a velocidad de linea · 1U',use:'NGFW, concentrador IPsec, DC edge'},
   {model:'SRX4700',ser:'SRX 4000',seg:'Cloud / Service Provider',cap:'1.4 Tbps FW',ports:'400GE · MACsec a velocidad de linea · 1U',use:'NGFW de maxima densidad por unidad de rack'},
   // ── Session Smart Router (SD-WAN sin tuneles) ─────────────────────────────
   // Es la respuesta SD-WAN vigente de Juniper, gestionada desde Mist: no usa tuneles, enruta
