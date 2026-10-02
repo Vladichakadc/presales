@@ -59,7 +59,7 @@ jobs:
       # una herramienta que cambia sola entre dos corridas da rojos que no dicen nada del codigo.
       - name: Traer Playwright y Chromium
         run: |
-          npm install --no-save playwright@1.56.1
+          npm install --no-save playwright@1.63.0
           npx playwright install --with-deps chromium
 
       # El codigo de salida se guarda y no se propaga: 1 son hallazgos, que van al issue. Si el
