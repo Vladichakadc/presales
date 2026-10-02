@@ -43,8 +43,17 @@ de Railway ni token. No se buscó otra vía.
   interruptor.
 - Ninguno usa `concurrency`. Según la documentación de Railway, una corrida cancelada solo
   bloquea si ninguna otra del mismo commit pasó.
-- La sonda de producción (`sonda-produccion.yml`) es manual (`workflow_dispatch`), así que no
-  puede bloquear su propio despliegue.
+- La sonda de producción (`sonda-produccion.yml`) no puede bloquear su propio despliegue.
+  **Desde el 2026-10-02 corre sola**, con el `deployment_status` que Railway publica en GitHub,
+  y se revisó otra vez contra las reglas que da la documentación de Railway:
+  - Su corrida se asocia al commit del despliegue, y ese commit ya se desplegó: no espera nada.
+  - En los estados que no son finales sus jobs se saltan, y Railway dice que un workflow
+    saltado nunca bloquea.
+  - Se pone en rojo solo si el dominio falla después de desplegar. Ese rojo solo podría frenar
+    otro despliegue del mismo commit, que es justo el que rompió producción.
+  - Una corrida manual sí se asocia a la cabeza de `main`, como la vigía. Si alguien la lanza
+    mientras un commit espera y producción está caída, ese despliegue se saltaría. Mismo remedio
+    que la vigía: volver a desplegar. Y ya no hace falta lanzarla a mano tras desplegar.
 - **Caso límite**: `vigia-fuentes.yml` corre los lunes a las 06:00 UTC, y su corrida se asocia
   al commit que esté en la cabeza de `main`. Si ese commit estuviera todavía esperando su
   despliegue y la vigía fallara, el despliegue se saltaría. Si pasa, el remedio es volver a

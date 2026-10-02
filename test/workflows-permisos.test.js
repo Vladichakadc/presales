@@ -35,6 +35,7 @@ const SEPARADOS = [
   ['limites.yml', 'recorrer', 'informar', /issues: write/],
   ['aplicar-propuesta.yml', 'aplicar', 'publicar', /contents: write/],
   ['datasheets-aruba.yml', 'descargar', 'publicar', /contents: write/],
+  ['sonda-produccion.yml', 'sondear', 'avisar', /issues: write/],
 ];
 
 test('el job que ejecuta código de fuera no tiene escritura; el que la tiene no instala nada', () => {
@@ -73,7 +74,7 @@ test('lo que corre en los jobs sin npm ci no necesita paquetes de npm', () => {
   // importador carga el catálogo del fabricante con una ruta calculada, así que esos módulos se
   // nombran a mano.
   const entradas = [
-    'scripts/vigia-fuentes.js', 'scripts/vigia-publicar.js', 'test/e2e/limites-reglas.js',
+    'scripts/vigia-fuentes.js', 'scripts/vigia-publicar.js', 'test/e2e/limites-reglas.js', 'scripts/aviso-despliegue.js',
     'scripts/empujar-rama.js', 'scripts/publicar-datasheets.js', 'scripts/descargar-datasheets.js',
     'scripts/importar-propuesta.js', 'scripts/leer-propuesta.js',
     ...['huawei', 'cisco', 'fortinet', 'mikrotik', 'aruba', 'juniper', 'nokia'].map((v) => `server/seed/legacyData/${v}.js`),

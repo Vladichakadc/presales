@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-02 (**Railway instala con `npm ci`.** Es la mejora propuesta al cerrar la entrega anterior. Con `npm install`, un lock descuadrado se resolvía dentro del contenedor con versiones que CI no había probado; ahora la construcción falla y producción sigue con lo anterior. Lo hace la variable de servicio `RAILPACK_INSTALL_CMD`, según la documentación de Railway, y lo confirma el log de construcción (`▸ install $ npm ci`). **Al leer la configuración en vivo salió algo que `CLAUDE.md` afirmaba al revés**: el servicio no tiene `healthcheckPath`. **Y al cerrar se midió que Railway avisa a GitHub de cada despliegue y que nada escucha ese aviso**: 10 despliegues fallidos sin que nadie se enterara. Ver *Cerrado recientemente* y *Abierto: cómo construye Railway producción*.)
+Última revisión: 2026-10-02 (**Cada despliegue se comprueba y avisa solo.** Es la mejora propuesta al cerrar la entrega anterior. Railway publicaba en GitHub el estado de cada despliegue y nada lo escuchaba: 10 despliegues fallidos sin aviso, y producción 23 y 13 horas sin cambios el 1 y el 16 de septiembre. Ahora `sonda-produccion.yml` escucha esos estados. Tras un despliegue sano corre la sonda; un despliegue fallido, o una sonda en rojo, abre un issue con la etiqueta `despliegue`, que se cierra solo con el siguiente despliegue sano. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-02 (**Railway instala con `npm ci`.** Es la mejora propuesta al cerrar la entrega anterior. Con `npm install`, un lock descuadrado se resolvía dentro del contenedor con versiones que CI no había probado; ahora la construcción falla y producción sigue con lo anterior. Lo hace la variable de servicio `RAILPACK_INSTALL_CMD`, según la documentación de Railway, y lo confirma el log de construcción (`▸ install $ npm ci`). **Al leer la configuración en vivo salió algo que `CLAUDE.md` afirmaba al revés**: el servicio no tiene `healthcheckPath`. **Y al cerrar se midió que Railway avisa a GitHub de cada despliegue y que nada escucha ese aviso**: 10 despliegues fallidos sin que nadie se enterara. Ver *Cerrado recientemente* y *Abierto: cómo construye Railway producción*.)
 
 Revisión anterior: 2026-10-02 (**`npm audit` en cero y convertido en freno.** Es la mejora propuesta al cerrar la entrega anterior. El paso de `verificar` era informativo y convivían 2 avisos altos y 2 moderados, todos con arreglo. `npm audit fix` los cerró tocando solo el lock (7 paquetes cambian y 3 salen). `npm run auditar` falla cerrado: un aviso alto frena salvo excepción declarada con caducidad, y no poder auditar también frena. Sobre el lock de antes frena con los 3 avisos altos. Ver *Cerrado recientemente*.)
 
@@ -1549,18 +1551,6 @@ recientemente*: el runtime (Node 20 sin soporte, el `nixpacks.toml` que nadie le
   definida.** La siembra corre en cada despliegue (`[seed] Catalogo inicial poblado`), así que la
   base sigue comportándose como efímera. No se leyó el valor a propósito: el listado de variables
   trae también los secretos. Lo comprueba el dueño en el panel.
-- **Railway avisa a GitHub de cada despliegue, y nada escucha ese aviso (medido el 2026-10-02).**
-  Por cada despliegue, `railway-app[bot]` crea en GitHub un *deployment* «Presales / production»
-  con su estado: `in_progress`, `success`, `failure` o `inactive`. De los 246 que hay desde el 19
-  de agosto, **10 terminaron en `failure`, y ninguno avisó a nadie**:
-  - el del 1 de septiembre (`187a4dd`, el lock descuadrado) dejó producción sin cambios unas 23
-    horas;
-  - los ocho seguidos del 16 de septiembre (de `b4e8c4e` a `8fb58a8`, el lock contra un espejo)
-    la dejaron unas 13.
-
-  Con `npm ci`, un lock roto hace fallar la construcción y producción sigue con lo anterior. Es lo
-  correcto, pero pasa **en silencio**. Y la sonda solo corre a mano, así que un despliegue que no
-  viene de un push no lo comprueba nadie. Así fue el de `RAILPACK_INSTALL_CMD`.
 - **Nada impide que el lock resuelva contra otro registro.** Fue la causa del 16 de septiembre.
   `package-lock.json` traía cuatro paquetes con `resolved` en `npm.mirrors.msh.team`, el espejo
   del entorno donde se añadieron. Se corrigió a mano el 17 y no quedó ninguna prueba. Hoy los 366
@@ -1629,7 +1619,8 @@ que ya se comprobó y lo que cuesta cada opción.
   respondió dos veces «Agent usage limit reached»; no hay CLI ni token en el contenedor. **Se
   comprobó que funcionará a la primera**: solo `verificar.yml` y `pantallas.yml` corren en push a
   `main`, los dos con el `on: push` que Railway exige, ninguno cancela corridas por
-  `concurrency`, y la sonda es manual. Caso límite anotado: la vigía de los lunes. Coste: 6-7,5
+  `concurrency`, y la sonda solo corre sobre un commit ya desplegado (revisado el 2026-10-02, al
+  hacerla automática). Caso límite anotado: la vigía de los lunes. Coste: 6-7,5
   minutos por despliegue, lo que tarda el job de `pantallas` (pantallas, contraste y batería
   e2e), el más lento: esa espera es el precio de que un flujo roto no llegue a producción.
   Cierra el punto 33 y la condición 4 del GO.
@@ -1662,6 +1653,42 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Cada despliegue se comprueba y avisa solo (2026-10-02)
+
+Mejora propuesta al cerrar la entrega anterior.
+
+- **El hueco.** Railway publica en GitHub el estado de cada despliegue, y nada lo escuchaba.
+  - De 246 despliegues desde el 19 de agosto, 10 terminaron en `failure` sin avisar a nadie.
+  - El 1 de septiembre producción pasó unas 23 horas sin cambios, y el 16 unas 13, con ocho
+    fallos seguidos.
+  - La sonda solo corría a mano, así que un despliegue sin push, como el de
+    `RAILPACK_INSTALL_CMD`, no lo comprobaba nadie.
+- **El cambio.** `sonda-produccion.yml` escucha `deployment_status` en dos jobs:
+  - `sondear` no tiene permisos de escritura ni lee el evento. Corre la sonda cuando Railway da
+    `success`, y repite `/salud` hasta seis veces, cada 10 s, por si el dominio tarda en servir
+    el contenedor nuevo.
+  - `avisar` solo tiene `issues: write` y no instala nada. Abre o comenta el issue `despliegue`
+    si el despliegue falló o la sonda no pasó. Lo cierra cuando un despliegue posterior termina
+    bien y la sonda pasa.
+  - Decide y redacta `scripts/aviso-despliegue.js`. Solo cuenta lo que crea `railway-app[bot]`
+    para producción, por el id del entorno o por su nombre. Del evento usa el estado, el commit
+    y el enlace a Railway, validados. La descripción, que es texto libre, no se usa nunca.
+  - A mano, la entrada `simulacro` recorre el camino del fallo con un issue marcado
+    «[Simulacro]».
+- **Rojo o verde.** La sonda se pone en rojo si el dominio falla tras desplegar. La corrida va
+  sobre el commit ya desplegado, así que no puede saltar el despliegue de otro el día que Railway
+  espere a CI. El análisis de «Wait for CI» se rehízo con las reglas de la documentación de
+  Railway (`docs/decisiones-del-dueno-2026-09-24.md`).
+- **Comprobado en local.**
+  - `test/aviso-despliegue.test.js`: 10 casos, con eventos de la misma forma que los reales.
+  - `test/workflows-permisos.test.js` cuenta ya la sonda entre los workflows con permisos
+    separados.
+  - Ocho sabotajes del módulo y del workflow, todos cazados. Dos de ellos, el enlace a Railway
+    sin anclar por delante o por detrás, pasaban con la primera versión de la prueba, y se
+    endureció.
+- **Lo que no ve.** Si Railway dejara de publicar estos estados en GitHub, el aviso callaría, y
+  ninguna prueba lo vería.
 
 ### Railway instala con `npm ci` (2026-10-02)
 

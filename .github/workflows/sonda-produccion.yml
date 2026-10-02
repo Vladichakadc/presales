@@ -23,17 +23,54 @@ name: sonda-produccion
 # existe en produccion (una variable, el edge) y abriera /api/catalog dejaria el catalogo de
 # precios a la vista sin que nada se pusiera en rojo. El segundo paso corre ese mismo script
 # contra produccion, tambien sin sesion y sin ningun secreto.
+#
+# TRAS CADA DESPLIEGUE, SOLA (2026-10-02). Hasta ese dia solo corria a mano, y Railway ya
+# publicaba en GitHub el estado de cada despliegue sin que nada lo escuchara: de 246
+# despliegues, 10 terminaron en `failure` sin avisar a nadie, y produccion paso unas 23 horas
+# sin cambios el 1 de septiembre y unas 13 el 16. Ahora escucha `deployment_status`:
+#   - `success` de Railway en produccion: corre la sonda. Si pasa, cierra el aviso abierto; si
+#     no, abre o comenta un issue con la etiqueta `despliegue`.
+#   - `failure` o `error`: abre o comenta el aviso. Produccion sigue con el despliegue anterior.
+#   - Cualquier otro estado no hace nada: los jobs se saltan.
+# Que el estado venga de Railway y sea de produccion lo decide scripts/aviso-despliegue.js, que
+# trata el evento como un dato de fuera. A mano, la entrada `simulacro` recorre el camino del
+# fallo de verdad, con un issue que lo dice en el titulo, para comprobar que el aviso funciona.
+#
+# EN ROJO CUANDO LA SONDA FALLA, Y SOBRE EL COMMIT YA DESPLEGADO. La corrida se asocia al commit
+# del despliegue, que ya no espera nada, asi que no puede saltar el despliegue de otro commit
+# el dia que Railway espere a CI (docs/decisiones-del-dueno-2026-09-24.md). Segun la
+# documentacion de Railway, un workflow saltado nunca bloquea, y estas corridas salen saltadas
+# en cada estado que no es final. El aviso de un despliegue fallido sale en verde: su trabajo
+# es avisar, y si no puede avisar se pone en rojo.
+#
+# DOS JOBS, COMO limites.yml. El que sondea no tiene permiso de escritura ni lee el evento. El
+# que escribe el issue tiene `issues: write`, no instala nada y solo ejecuta el modulo que
+# decide y redacta.
 
 on:
+  deployment_status:
   workflow_dispatch:
+    inputs:
+      simulacro:
+        description: 'Simulacro: abre el aviso de un despliegue fallido para comprobar que funciona (se cierra solo con el siguiente despliegue sano)'
+        type: choice
+        default: ninguno
+        options:
+          - ninguno
+          - despliegue-fallido
 
 permissions:
   contents: read
 
 jobs:
   sondear:
+    # A mano, siempre. Tras un despliegue, solo cuando Railway lo da por terminado bien.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.deployment_status.state == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    outputs:
+      salud: ${{ steps.salud.outcome }}
+      muro: ${{ steps.muro.outcome }}
 
     steps:
       # Solo hace falta leer `scripts/puerta.js`: ningun paso usa git despues, asi que el token
@@ -42,19 +79,33 @@ jobs:
         with:
           persist-credentials: false
 
+      # Tras un despliegue, el dominio puede tardar unos segundos en servir el contenedor nuevo:
+      # se repite mientras /salud no de 200, como mucho seis veces, cada 10 s.
       - name: Pedir /salud y /login de verdad
+        id: salud
         run: |
           node -e "
             (async () => {
               const base = 'https://presales.up.railway.app';
-              const resultados = [];
-              for (const ruta of ['/salud', '/login']) {
-                try {
-                  const r = await fetch(base + ruta, { redirect: 'manual' });
-                  const texto = await r.text();
-                  resultados.push({ ruta, status: r.status, bytes: texto.length, cuerpo: ruta === '/salud' ? texto.slice(0, 300) : undefined });
-                } catch (e) {
-                  resultados.push({ ruta, error: String(e.message || e) });
+              const espera = (ms) => new Promise((r) => setTimeout(r, ms));
+              const INTENTOS = 6;
+              let resultados = [];
+              for (let intento = 1; intento <= INTENTOS; intento++) {
+                resultados = [];
+                for (const ruta of ['/salud', '/login']) {
+                  try {
+                    const r = await fetch(base + ruta, { redirect: 'manual' });
+                    const texto = await r.text();
+                    resultados.push({ ruta, status: r.status, bytes: texto.length, cuerpo: ruta === '/salud' ? texto.slice(0, 300) : undefined });
+                  } catch (e) {
+                    resultados.push({ ruta, error: String(e.message || e) });
+                  }
+                }
+                const s = resultados.find((r) => r.ruta === '/salud');
+                if (s && s.status === 200) break;
+                if (intento < INTENTOS) {
+                  console.log('Intento ' + intento + ' de ' + INTENTOS + ': /salud no dio 200; se repite en 10 s.');
+                  await espera(10000);
                 }
               }
               console.log(JSON.stringify(resultados, null, 2));
@@ -69,6 +120,7 @@ jobs:
       # pantallas.yml: sin el, el codigo de salida de `... | tee` es el de tee y este paso no
       # podria ponerse en rojo.
       - name: Comprobar que el muro de acceso sigue cerrado (npm run puerta)
+        id: muro
         if: ${{ !cancelled() }}
         env:
           BASE_URL: https://presales.up.railway.app
@@ -92,3 +144,73 @@ jobs:
             cat puerta.txt 2>/dev/null || echo '(sin resultado: revisar el paso anterior)'
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+  avisar:
+    needs: sondear
+    # Solo en los estados finales de un despliegue, o en un simulacro. `!cancelled()` para que
+    # corra tambien cuando la sonda fallo o se salto, que es justo cuando hay que avisar.
+    if: >-
+      ${{ !cancelled() && (github.event.deployment_status.state == 'success' ||
+      github.event.deployment_status.state == 'failure' ||
+      github.event.deployment_status.state == 'error' ||
+      inputs.simulacro == 'despliegue-fallido') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      # Solo el modulo que decide y redacta, sin dependencias: aqui no se ejecuta nada mas.
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            scripts/aviso-despliegue.js
+          sparse-checkout-cone-mode: false
+
+      # El evento se lee de `context.payload` dentro del modulo, que lo valida; nada del evento
+      # se interpola en el script. Si ya hay un aviso abierto se comenta, no se abre otro.
+      - name: Abrir, comentar o cerrar el aviso de despliegue
+        uses: actions/github-script@v7
+        env:
+          SONDA: ${{ needs.sondear.result }}
+          SALUD: ${{ needs.sondear.outputs.salud }}
+          MURO: ${{ needs.sondear.outputs.muro }}
+        with:
+          script: |
+            const A = require('./scripts/aviso-despliegue.js');
+            const evento = A.leerEvento(context.eventName, context.payload, context.sha);
+            const d = A.decidir(evento, { resultado: process.env.SONDA, salud: process.env.SALUD, muro: process.env.MURO });
+            core.info(`Decisión: ${d.accion} (${d.motivo}).`);
+            if (d.accion === 'nada') return;
+            const { owner, repo } = context.repo;
+            const urls = {
+              repo: `${context.serverUrl}/${owner}/${repo}`,
+              corrida: `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`,
+            };
+            // La API de issues devuelve tambien los PR con la etiqueta: no son el aviso.
+            const abiertos = await github.rest.issues.listForRepo({ owner, repo, state: 'open', labels: A.ETIQUETA });
+            const abierto = abiertos.data.find((i) => !i.pull_request);
+            if (d.accion === 'cerrar') {
+              if (!abierto) { core.info('Sin aviso abierto que cerrar.'); return; }
+              await github.rest.issues.createComment({ owner, repo, issue_number: abierto.number, body: A.comentarioCierre(d, urls) });
+              await github.rest.issues.update({ owner, repo, issue_number: abierto.number, state: 'closed', state_reason: 'completed' });
+              core.info(`Cerrado el aviso #${abierto.number}.`);
+              return;
+            }
+            const cuerpo = A.cuerpoIssue(d, urls);
+            if (abierto) {
+              await github.rest.issues.createComment({ owner, repo, issue_number: abierto.number, body: cuerpo });
+              core.warning(`${A.tituloIssue(d)}: comentado en el aviso #${abierto.number}.`);
+            } else {
+              const nuevo = await github.rest.issues.create({ owner, repo, title: A.tituloIssue(d), body: cuerpo, labels: [A.ETIQUETA] });
+              // GitHub descarta en silencio una etiqueta que no deja poner al crear el issue, y sin
+              // ella el siguiente aviso no encontraria este ni lo cerraria. Si falta, se pone aparte;
+              // si eso tambien falla, el paso se pone en rojo.
+              if (!nuevo.data.labels.some((l) => (typeof l === 'string' ? l : l.name) === A.ETIQUETA)) {
+                core.info('El issue se creó sin la etiqueta: se añade aparte.');
+                await github.rest.issues.addLabels({ owner, repo, issue_number: nuevo.data.number, labels: [A.ETIQUETA] });
+              }
+              core.warning(`${A.tituloIssue(d)}: aviso #${nuevo.data.number}.`);
+            }
