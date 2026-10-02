@@ -1540,6 +1540,14 @@ que ya se comprobó y lo que cuesta cada opción.
   archivo cambió y el de la auditoría se regeneró como `prompt-audit-2026-09-27.patch`, con el
   mismo contenido (14 archivos, +195/−289). Los dos aplican sobre el `main` que dejó esa entrega,
   solos y combinados.
+- **Abrir y fusionar el PR del lock de la vigía** (2026-10-02). La corrida del 2 de octubre dejó lo
+  medido en la rama `vigia/fuentes`, un solo commit del vigía sobre `main` que solo toca
+  `fuentes.lock.json`: pasa de 9 a 19 entradas y no tiene ningún pendiente. El enlace para abrir el PR
+  está en el issue #5. **Mientras no se fusione, la vigía mide contra el lock del 14 de septiembre**:
+  cada lunes vuelve a dar las mismas diez primeras mediciones y las mismas cinco migraciones a texto,
+  y un documento que cambie no conserva su fecha de pendiente de una semana a otra. El PR no lo abre
+  Actions a propósito: el ajuste que lo permitiría también le deja aprobar PR, y conviene dejarlo
+  apagado.
 - **Activar «Wait for CI» en Railway** (`presales-web` → *Settings* → *Source*). Medido el
   2026-09-24: `source.checkSuites: false`. **Desde la sesión no se pudo, y se intentó con
   autorización expresa del dueño**: el conector de Railway no expone ese ajuste y su agente
@@ -1648,6 +1656,19 @@ empujar a `main`, y aquí eso es desplegar.
   fallido sin salida, rama retenida y sin issue abierto. Los nueve escriben lo que deben, o nada
   cuando no hay nada que contar.
 - **Verificación.** 686 pruebas y lint.
+- **En producción el 2026-10-02.**
+  - `main` avanzó de `8f8f177` a `98c6191`. Railway `f9123624` llegó a SUCCESS, con `[seed]` y
+    `Presales corriendo en`.
+  - `verificar` (`36960983525`) y `pantallas` (`36960983507`) quedaron en verde.
+  - **La primera corrida de la vigía nueva** (`36960989867`, lanzada a mano sobre `main`) terminó
+    en verde en sus dos jobs, después de dos lunes en rojo.
+    - `medir`: 0 cambios, 10 primeras mediciones y 1 inalcanzable (la guía SD-Branch de HPE,
+      HTTP 403), con cinco entradas antiguas migradas a texto.
+    - `publicar`: validó, empujó `vigia/fuentes` (`ac729dc`, un solo commit sobre `98c6191` que
+      solo toca el lock: de 9 a 19 entradas) y comentó el issue #5 con el inalcanzable y el
+      enlace para abrir el PR.
+  - La sonda (`36961611628`) dio `/salud` 200 con 7 fabricantes y 228 modelos, `/login` 200 y el
+    muro de acceso 4 de 4.
 
 ### El recorrido de valores límite, cada semana; su primera corrida encontró un error real (2026-10-02)
 
