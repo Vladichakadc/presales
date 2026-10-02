@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-02 (**Producción y CI en Node 24 LTS, con la versión declarada una sola vez.** Es la mejora propuesta al cerrar la entrega anterior. Producción corría Node 20.20.2, sin soporte desde el 30 de abril: Railway construye con Railpack, que la toma de `engines.node`, y con `>=20` eligió la más baja. El `nixpacks.toml` que parecía fijarla no lo leía nadie. Ahora `engines.node` es `"24"`, los workflows la leen de ahí y una prueba se pone en rojo el día que esa versión pierda el soporte. Node 24 trae npm 11, que pide aprobar qué dependencias ejecutan código al instalarse: `sqlite3` va aprobada fijada a su versión. Verificado entero con Node 24 antes de desplegar, y en producción con Node 24.21.0 desde `299ba98`, según el log de construcción de Railway. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-02 (**Los jobs de navegador fijan su imagen, después de medir que en Ubuntu 26 se habrían roto.** Es la mejora propuesta al cerrar la entrega anterior. GitHub avisa de que `ubuntu-latest` pasa a Ubuntu 26 el 19 de octubre. Lanzado `pantallas` en `ubuntu-26.04`, Playwright 1.56.1 responde «Playwright does not support chromium on ubuntu26.04-x64». Ahora `pantallas` y `limites` corren en `ubuntu-24.04`, fijada junto a Playwright. `pantallas` deja medir la imagen siguiente con un selector al lanzarlo a mano, y una prueba exige las dos cosas. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-02 (**Producción y CI en Node 24 LTS, con la versión declarada una sola vez.** Es la mejora propuesta al cerrar la entrega anterior. Producción corría Node 20.20.2, sin soporte desde el 30 de abril: Railway construye con Railpack, que la toma de `engines.node`, y con `>=20` eligió la más baja. El `nixpacks.toml` que parecía fijarla no lo leía nadie. Ahora `engines.node` es `"24"`, los workflows la leen de ahí y una prueba se pone en rojo el día que esa versión pierda el soporte. Node 24 trae npm 11, que pide aprobar qué dependencias ejecutan código al instalarse: `sqlite3` va aprobada fijada a su versión. Verificado entero con Node 24 antes de desplegar, y en producción con Node 24.21.0 desde `299ba98`, según el log de construcción de Railway. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-02 (**Los otros dos workflows que escriben en el repositorio, con el mismo arreglo que la vigía.** Es la mejora propuesta al cerrar la entrega anterior. `aplicar-propuesta.yml`, la vía documentada para llevar al catálogo lo que propone la IA, no se había ejecutado nunca y habría fallado la primera vez al crear el PR. `datasheets-aruba.yml` ya había fallado así. Ahora los dos corren en dos jobs con permisos separados, el que escribe valida lo que recibe, y las tres ramas de bot se empujan con un solo script probado contra un remoto git real. De paso se cerró un comando de shell que llevaba dentro el fabricante de la propuesta, un texto que viene de la IA. Ver *Cerrado recientemente*. **Y al confirmar el despliegue, el log de construcción de Railway enseñó algo que no estaba registrado**: producción corre Node 20.20.2, sin soporte desde el 30 de abril de 2026, y `nixpacks.toml` ya no lo lee nadie. Ver *Abierto: cómo construye Railway producción*.)
 
@@ -1549,15 +1551,18 @@ runtime (Node 20 sin soporte y el `nixpacks.toml` que nadie leía) se cerró ese
   - `moment` (moderado, transitivo, con arreglo): recorrido de rutas con un nombre de *locale*
     que no es texto (GHSA-4p3w-j4w9-5jqw).
 
-## Abierto: el ejecutor de CI cambia de Ubuntu el 19 de octubre (2026-10-02)
+## Abierto: pasar los jobs de navegador a Ubuntu 26 (2026-10-02)
 
-Lo avisa GitHub en las anotaciones de cada corrida (leído en `36968253618`): «The ubuntu-latest
-label will migrate to Ubuntu 26 beginning October 19, 2026» (actions/runner-images#14748). Los 13
-workflows usan `ubuntu-latest`. **Solo dos instalan paquetes del sistema**: `pantallas.yml` y
-`limites.yml`, con `npx playwright install --with-deps chromium` y Playwright fijado en 1.56.1. Es
-justo lo que depende de los nombres de paquete de cada versión de Ubuntu. Que esa versión de
-Playwright sepa instalar Chromium en Ubuntu 26 **no está medido**. Si no sabe, `pantallas` se pone
-en rojo en cada push a partir de ese día, por algo que no es del código.
+Sin prisa: `ubuntu-24.04` sigue disponible en GitHub, y `pantallas` y `limites` corren ahí fijados
+desde el 2026-10-02 (ver *Cerrado recientemente*). Moverse pide una versión de Playwright que
+soporte Ubuntu 26.04: la 1.56.1 no lo soporta («Playwright does not support chromium on
+ubuntu26.04-x64», corrida `36970442567`). El camino:
+1. Subir Playwright en los dos workflows.
+2. Lanzar `pantallas` a mano con `imagen: ubuntu-26.04`.
+3. Mover la imagen fijada en el mismo commit.
+
+Y antes de cambiar la versión de Playwright, lo que dice `pantallas.yml`: otra versión de
+Chromium ya cambió una vez la cobertura del contraste.
 
 ## Limpieza
 
@@ -1632,6 +1637,41 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Los jobs de navegador fijan su imagen, medido que en Ubuntu 26 se rompían (2026-10-02)
+
+Mejora propuesta al cerrar la entrega anterior. Salió de las anotaciones de una corrida de CI:
+«The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026».
+
+- **El filo.** Playwright va fijado en 1.56.1 para que dos corridas del mismo commit den lo
+  mismo, pero la imagen sobre la que instala sus paquetes del sistema (`--with-deps`, con apt)
+  flotaba con `ubuntu-latest`. Una pieza fija sobre otra que cambia sola, en una fecha que el
+  repositorio no controla.
+- **Medido antes de decidir, no supuesto.** `pantallas.yml` gana un selector de imagen al
+  lanzarlo a mano, y se lanzó sobre la rama en las dos:
+  - `ubuntu-26.04` (`36970442567`): la imagen ya existe, y el job cae en «Traer Playwright y
+    Chromium»: «BEWARE: your OS is not officially supported by Playwright… Cannot install
+    dependencies for ubuntu26.04-x64 with Playwright 1.56.1… ERROR: Playwright does not support
+    chromium on ubuntu26.04-x64». **Desde el 19 de octubre, `pantallas` habría salido en rojo en
+    cada push, y el recorrido de los miércoles también**, por algo ajeno al código.
+  - `ubuntu-24.04` (`36970444868`): en verde entero (Playwright, pantallas, contraste y e2e).
+- **Lo que cambió.**
+  - `pantallas` y el job `recorrer` de `limites` fijan `ubuntu-24.04`. Los demás workflows no
+    instalan paquetes del sistema y siguen en `ubuntu-latest`, a propósito: fijar sin motivo es
+    mantenimiento sin beneficio.
+  - El selector se queda: medir la imagen siguiente es lanzar `pantallas` a mano, sin tocar el
+    YAML.
+  - El paso «Log del servidor si algo falló» sumaba un segundo rojo cuando el servidor no había
+    llegado a arrancar (`cat: arranque.log: No such file or directory`), y distraía del primero.
+    Ahora lo dice y no falla. Al escribirlo se coló un «: » en un `run:` de una línea, y la
+    prueba de los workflows lo cazó antes del commit, que es para lo que existe.
+- **Lo que lo guarda.** `test/workflows-imagen.test.js`, 3 casos:
+  - un job que instala paquetes del sistema fija su imagen;
+  - esos jobs comparten imagen y versión de Playwright;
+  - el selector ofrece por defecto la imagen fijada.
+  - Comprobado saboteando las cinco formas de deshacerlo: `limites` de vuelta a `ubuntu-latest`,
+    imágenes distintas, versiones de Playwright distintas, la expresión de `pantallas` cayendo a
+    `ubuntu-latest` y el selector ofreciendo otra imagen por defecto.
 
 ### Producción y CI en Node 24 LTS, con la versión declarada una sola vez (2026-10-02)
 
@@ -1713,7 +1753,7 @@ para confirmar aquel despliegue.
   - Vuelta atrás si hiciera falta: el rollback de Railway al despliegue `1d9388f9` (Node 20), o
     un `git revert`.
 - **Lo que salió por el camino**, abierto arriba en *Abierto: cómo construye Railway
-  producción* y en *Abierto: el ejecutor de CI cambia de Ubuntu*:
+  producción*. El cambio de Ubuntu del ejecutor se cerró ese mismo día (ver la entrada de arriba):
   - Railpack instala con `npm install`, no con `npm ci`.
   - `npm audit` da 2 avisos altos y 2 moderados, con el mismo resultado en npm 10 y en npm 11.
     El comentario del paso informativo de `verificar.yml` hablaba de «2 moderados»: ahora no

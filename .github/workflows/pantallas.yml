@@ -269,6 +269,9 @@ jobs:
             echo '_El servidor corre en el propio ejecutor con `NODE_ENV=production` y la base sembrada desde `legacyData/`, que es exactamente lo que sirve produccion: la base alli es efimera y se resiembra en cada despliegue._'
           } >> "$GITHUB_STEP_SUMMARY"
 
+      # Si lo que fallo fue antes del arranque (Playwright, por ejemplo), no hay log que mostrar,
+      # y este paso no debe sumar un segundo rojo que distraiga del primero.
       - name: Log del servidor si algo fallo
         if: failure()
-        run: cat arranque.log
+        run: |
+          cat arranque.log 2>/dev/null || echo '(el servidor no llego a arrancar: el fallo esta en un paso anterior)'
