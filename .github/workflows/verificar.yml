@@ -31,6 +31,21 @@ jobs:
           node-version-file: package.json
           cache: npm
 
+      # El Node del runner tiene que ser el de engines.node, que es el que elige Railpack en
+      # produccion: si setup-node resolviera otro, esta corrida no probaria lo que se despliega.
+      # La version queda como anotacion de la corrida.
+      - name: Comprobar que corre el Node de engines.node
+        run: |
+          node -e "
+            const mayor = process.versions.node.split('.')[0];
+            const declarada = require('./package.json').engines.node;
+            console.log('::notice title=Node::' + process.version + ' (engines.node ' + declarada + ')');
+            if (mayor !== declarada) {
+              console.log('::error::El runner corre Node ' + process.version + ' y engines.node dice ' + declarada);
+              process.exit(1);
+            }
+          "
+
       # npm ci falla cerrado si package.json y package-lock.json no coinciden. Eso es una
       # virtud, no un estorbo: es exactamente el desajuste que tumbo el despliegue del 1 de
       # septiembre, y aqui se ve en un PR en vez de en produccion.

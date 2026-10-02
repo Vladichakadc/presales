@@ -74,6 +74,12 @@ test('cada setup-node lee la versión de package.json, y ninguno la fija', () =>
     });
   }
   assert.ok(pasos >= 15, `se esperaban al menos 15 pasos de setup-node y hay ${pasos}`);
+  // Y los dos que corren en cada push a main comprueban, ya en el runner, que corre esa versión.
+  for (const yml of ['verificar.yml', 'pantallas.yml']) {
+    const texto = fs.readFileSync(path.join(WORKFLOWS, yml), 'utf8');
+    assert.match(texto, /name: Comprobar que corre el Node de engines\.node/, `${yml} no comprueba qué Node corre`);
+    assert.match(texto, /if \(mayor !== declarada\)[\s\S]*?process\.exit\(1\)/, `${yml} comprueba la versión pero no falla si no es la declarada`);
+  }
 });
 
 test('ningún otro archivo declara la versión de Node, y el lock dice lo mismo', () => {

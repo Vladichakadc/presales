@@ -1641,7 +1641,11 @@ para confirmar aquel despliegue.
   - `engines.node` pasa a `"24"`, una versión mayor sin rango, y es la única declaración. Node
     24 es LTS con soporte hasta el 30 de abril de 2028. Node 26 no se eligió: no es LTS hasta el
     28 de octubre.
-  - Los 15 `setup-node` leen la versión con `node-version-file: package.json`.
+  - Los 15 `setup-node` leen la versión con `node-version-file: package.json`. Y `verificar` y
+    `pantallas`, que corren en cada push a `main`, comprueban ya en el runner que el Node que
+    corre es el declarado, y lo dejan como anotación de la corrida. Leer el log para saberlo no
+    servía: el host de descarga de logs de Actions está bloqueado por egreso desde este entorno,
+    y una comprobación que depende de que alguien lea un log no comprueba nada.
   - `nixpacks.toml`, retirado. El lock, regenerado con npm: solo cambia su campo `engines`.
 - **Node 24 trae npm 11, y npm 11 pide aprobar qué dependencias ejecutan código al instalarse
   (`allowScripts`).** Medido con npm 11.19:
@@ -1666,9 +1670,10 @@ para confirmar aquel despliegue.
     aprobada en su versión exacta, y ninguna aprobación sin fijar, vieja o denegando algo que
     hace falta. Cuando Dependabot suba `sqlite3`, se pone en rojo hasta que una persona revise
     y apruebe esa versión.
-  - Comprobado saboteando las once formas de volver atrás, y cada una la caza su regla:
+  - Comprobado saboteando las doce formas de volver atrás, y cada una la caza su regla:
     - el rango, Node 20, un workflow con su versión, `nixpacks.toml` de vuelta, el lock
-      desalineado y un bloque `volta` en `package.json`;
+      desalineado, un bloque `volta` en `package.json` y un paso de comprobación que ya no
+      falla;
     - sin aprobar, otra versión aprobada, aprobada sin versión, denegada y una aprobación de
       algo que no está instalado.
 - **La revisión diferencial encontró un hueco antes de empujar.** `setup-node` lee `volta.node`
