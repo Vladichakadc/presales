@@ -1532,22 +1532,6 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     bloqueado desde el sandbox (2026-09-16); cierra bajando el DS oficial de la
     serie 7000/7200 desde una máquina con acceso y repitiendo este mismo patrón.
 
-## Abierto: cómo construye Railway producción (2026-10-02)
-
-Salió al confirmar el despliegue de `ab1b8c0`, leyendo el log de construcción de `60579d25`, y al
-leer la configuración en vivo del servicio. Lo cerrado ese mismo día está en *Cerrado
-recientemente*: el runtime (Node 20 sin soporte, el `nixpacks.toml` que nadie leía), `npm audit` y
-`npm install` en lugar de `npm ci`; el healthcheck, unas horas después. Queda esto:
-
-- **`DATABASE_PATH` figura entre las variables del servicio, y `CLAUDE.md` decía que no estaba
-  definida.** La siembra corre en cada despliegue (`[seed] Catalogo inicial poblado`), así que la
-  base sigue comportándose como efímera. No se leyó el valor a propósito: el listado de variables
-  trae también los secretos. **Desde el 2026-10-02 el arranque lo dice sin leer ningún secreto**:
-  la línea `[db] SQLite en <ruta>` da la ruta y si el catálogo se sembró o se reutilizó, y en
-  producción un catálogo reutilizado avisa, porque significa que los cambios de `legacyData/` de
-  ese despliegue no llegaron. `CLAUDE.md` ya no afirma que la variable falte. Se cierra al leer la
-  línea en el primer despliegue con ella.
-
 ## Abierto: pasar los jobs de navegador a Ubuntu 26 (2026-10-02)
 
 Sin prisa: `ubuntu-24.04` sigue disponible en GitHub, y `pantallas` y `limites` corren ahí fijados
@@ -1593,12 +1577,14 @@ que ya se comprobó y lo que cuesta cada opción.
   usa el job que publica, y pasa de 9 a 19 entradas sin ningún pendiente. Se copió el archivo en
   vez de cerrar un PR: el clon de la sesión es superficial y llevarse el commit daba conflictos
   falsos en 17 archivos. Ver *Cerrado recientemente*.
-- **Revisar y fusionar los PR de Dependabot** (2026-10-02):
-  - ~~#1 y #2 (`actions/setup-node` y `actions/checkout`), abiertos desde el 2 de septiembre~~:
-    superados el 2026-10-02 al fijar las acciones por commit en su v7 (ver *Cerrado recientemente*);
-  - #8 (`pdf-parse`), desde el 21;
-  - #9 (`express` y `@anthropic-ai/sdk`), que sustituye al #7 del 18 de septiembre: ese día
-    `multer` llegó a `main` por el freno de `npm audit`.
+- ~~**Revisar y fusionar los PR de Dependabot**~~ **Hecho el 2026-10-02** (ver *Cerrado
+  recientemente*):
+  - #1 y #2 (`actions/setup-node` y `actions/checkout`), abiertos desde el 2 de septiembre:
+    superados al fijar las acciones por commit en su v7. Se dejan para que Dependabot los cierre
+    solo: cerrarlos a mano le haría ignorar esa versión;
+  - #8 (`pdf-parse` 1.1.4) y #9 (`express` 4.22.3 y `@anthropic-ai/sdk` 0.129.0), llevados a
+    `main` con sus mismos archivos y comprobados. El #9 sustituía al #7 del 18 de septiembre: ese
+    día `multer` llegó a `main` por el freno de `npm audit`.
   - La red de actualizaciones existía, pero no llegaba a `main`. Desde hoy, `verificar` frena en
     cualquiera de ellos si trae un aviso alto.
 - **Activar «Wait for CI» en Railway** (`presales-web` → *Settings* → *Source*). Medido el
@@ -1641,6 +1627,35 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### `DATABASE_PATH`, medido sin leer secretos, y Dependabot #8 y #9 (2026-10-02)
+
+- **Lo que dice la variable.** `CLAUDE.md` afirmaba que `DATABASE_PATH` va sin definir en
+  producción, y figura entre las variables del servicio. Su valor no se leyó del listado de
+  variables, porque trae también los secretos. Desde `076648d` el arranque lo dice, y el
+  despliegue `07a13512` escribió «[db] SQLite en ./database.sqlite: catálogo sembrado desde
+  legacyData/ en este arranque». Es el mismo valor que `.env.example`: un archivo dentro del
+  contenedor, fuera del volumen `/data`. Por eso la base es efímera y cada despliegue siembra.
+  `CLAUDE.md` lo dice ya así, con el valor.
+- **El riesgo que queda vigilado.** La siembra solo corre con la base vacía. Si alguien apuntara
+  `DATABASE_PATH` al volumen, cada despliegue seguiría sirviendo el catálogo anterior y los
+  cambios de `legacyData/` no llegarían, sin un solo error. Ahora el arranque lo avisa en
+  producción, y `test/servidor-produccion.test.js` arranca dos veces sobre la misma base para
+  probarlo. Dos sabotajes cazados.
+- **Dependabot #9: `express` 4.22.3 y `@anthropic-ai/sdk` 0.129.0.** Los archivos de paquetes de
+  `main` eran los mismos que la base del PR, así que se llevaron tal cual. El lock ya traía `qs`
+  6.16.0 y `path-to-regexp` 0.1.13, las versiones que pide el `express` nuevo. Con el SDK nuevo,
+  la petición capturada sin red es idéntica y las cuatro respuestas se resuelven igual. Las notas
+  de la 0.129.0 deprecan `betas` en los métodos de modelos GA, no en `beta.messages`, que es el
+  que se usa aquí.
+- **Dependabot #8: `pdf-parse` 1.1.4.** Es una versión nueva de una línea que no publicaba nada
+  desde 2018, que es justo la forma de una toma de control de un paquete, así que se comparó el
+  contenido de los dos archivos. Lo publica el mismo autor, las copias de pdf.js que lleva son
+  idénticas, no añade scripts de instalación y solo quita el modo de depuración (el que leía un
+  PDF de prueba al importarse desde ciertas rutas) y dos `debugger`. `npm run vigencia`, que es
+  quien lo usa, lee con él las cuatro guías de HPE.
+- **Comprobado.** 747 pruebas en verde, `npm run auditar` en cero y `lock-origen` y
+  `scripts-instalacion` en verde.
 
 ### Railway consulta `/salud` antes de dar por bueno un despliegue (2026-10-02)
 
@@ -2041,8 +2056,9 @@ para confirmar aquel despliegue.
     muro de acceso 4 de 4.
   - Vuelta atrás si hiciera falta: el rollback de Railway al despliegue `1d9388f9` (Node 20), o
     un `git revert`.
-- **Lo que salió por el camino**, abierto arriba en *Abierto: cómo construye Railway
-  producción*. El cambio de Ubuntu del ejecutor se cerró ese mismo día (ver la entrada de arriba):
+- **Lo que salió por el camino**, que se abrió en *Abierto: cómo construye Railway producción* y
+  se cerró entero ese mismo día (ver las entradas de arriba), igual que el cambio de Ubuntu del
+  ejecutor:
   - Railpack instala con `npm install`, no con `npm ci`.
   - `npm audit` da 2 avisos altos y 2 moderados, con el mismo resultado en npm 10 y en npm 11.
     El comentario del paso informativo de `verificar.yml` hablaba de «2 moderados»: ahora no
