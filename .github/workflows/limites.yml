@@ -38,7 +38,8 @@ permissions:
 jobs:
   recorrer:
     # Fijada como en pantallas.yml: instala paquetes del sistema con apt (playwright --with-deps).
-    runs-on: ubuntu-24.04
+    # Se mueve con ella y con la version de Playwright, en el mismo commit.
+    runs-on: ubuntu-26.04
     timeout-minutes: 40
 
     steps:

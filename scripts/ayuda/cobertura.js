@@ -84,4 +84,31 @@ function informe(filas, medidoEn) {
   };
 }
 
-module.exports = { agregar, informe, UMBRAL_ROZADO };
+/* LA MEDIDA SE CONTRASTA CONTRA LA PROPIA CORRIDA (2026-10-02). Cada caso conduce su pantalla,
+ * y el script de `X.html` es `js/X.js` (la convencion de public/). Si ese modulo sale «sin
+ * conducir», la corrida SI lo cargo y la medida no lo vio: el informe esta mal, no el caso.
+ *
+ * Es la firma de un fallo medido dos veces: la corrida del 24-sep (Chromium 153) y la de
+ * Playwright 1.63 del 2-oct. Desde que Chromium abre un documento nuevo en cada navegacion
+ * (RenderDocument), la cobertura solo conserva la ULTIMA pagina, y el informe daba por «sin
+ * conducir» dimensionadores que cinco casos acababan de conducir. Las dos veces se vio
+ * comparando a mano contra la medicion local; un informe asi no se escribe, se dice.
+ *
+ * Devuelve [{pagina, modulo}] con cada pantalla conducida cuyo script no aparece. Una pagina
+ * sin script propio en public/js/ no se juzga: no hay nada que esperar de ella. */
+function incoherencias(filas, paginas) {
+  const sinConducir = new Set(filas.filter((f) => f.estado === 'sin conducir').map((f) => f.modulo));
+  const existentes = new Set(filas.map((f) => f.modulo));
+  const out = [];
+  const vistas = new Set();
+  for (const pagina of paginas || []) {
+    const base = String(pagina).split(/[?#]/)[0].split('/').pop();
+    const modulo = base.replace(/\.html?$/, '') + '.js';
+    if (vistas.has(modulo)) continue;
+    vistas.add(modulo);
+    if (existentes.has(modulo) && sinConducir.has(modulo)) out.push({ pagina: base, modulo });
+  }
+  return out;
+}
+
+module.exports = { agregar, informe, incoherencias, UMBRAL_ROZADO };

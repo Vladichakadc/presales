@@ -19,9 +19,11 @@ name: pantallas
 # Se quedan en el mismo job porque los tres necesitan exactamente lo que este ya monta:
 # Chromium, un servidor y una clave efimera.
 #
-# POR QUE AQUI Y NO CONTRA UN SITIO DESPLEGADO. `DATABASE_PATH` va sin definir en produccion,
-# asi que la base es efimera y se resiembra desde `server/seed/legacyData/` en CADA
-# despliegue: lo que pinta una pantalla es funcion del commit, no del entorno. Este job
+# POR QUE AQUI Y NO CONTRA UN SITIO DESPLEGADO. La base de produccion es efimera: `DATABASE_PATH`
+# apunta a un archivo dentro del contenedor (`./database.sqlite`, leido de la linea [db] del
+# arranque el 2026-10-02), que no sobrevive al despliegue, asi que se resiembra desde
+# `server/seed/legacyData/` en CADA despliegue: lo que pinta una pantalla es funcion del commit,
+# no del entorno. Este job
 # arranca ESE MISMO COMMIT con NODE_ENV=production, asi que renderiza exactamente los mismos
 # datos que produccion. La alternativa que se estudio -un entorno de staging en Railway- habria
 # anadido una segunda copia publica del catalogo de PRECIOS, tras una contrasena guardada en
@@ -53,10 +55,10 @@ on:
       imagen:
         description: Imagen del ejecutor
         type: choice
-        default: ubuntu-24.04
+        default: ubuntu-26.04
         options:
-          - ubuntu-24.04
           - ubuntu-26.04
+          - ubuntu-24.04
 
 permissions:
   contents: read
@@ -68,8 +70,9 @@ jobs:
     # Ubuntu a otra. Con `ubuntu-latest`, el 19 de octubre de 2026 este job habria pasado a
     # Ubuntu 26 sin un solo cambio en el repositorio. Moverse es un commit que sube imagen y
     # Playwright a la vez, despues de medir la nueva con el selector de arriba
-    # (test/workflows-imagen.test.js lo exige).
-    runs-on: ${{ inputs.imagen || 'ubuntu-24.04' }}
+    # (test/workflows-imagen.test.js lo exige). Asi se paso de ubuntu-24.04 a ubuntu-26.04 el
+    # 2026-10-02, medida antes en la corrida 37014083115.
+    runs-on: ${{ inputs.imagen || 'ubuntu-26.04' }}
     timeout-minutes: 20
 
     steps:
@@ -110,8 +113,17 @@ jobs:
       # sumar y da 8 «sin conducir», lo mismo que en local. Una herramienta que cambia sola entre
       # dos corridas del mismo commit es una fuente de rojos (o de verdes) que no dicen nada del
       # codigo, y la bateria e2e —que espera a condiciones medidas en el navegador— es justo lo
-      # que no puede depender de eso. 1.56.1 es la version con la que se validan la bateria, las
-      # pantallas y el contraste; subirla es un commit, con su diff.
+      # que no puede depender de eso. Subirla es un commit, con su diff.
+      #
+      # 1.61.1 DESDE EL 2026-10-02, con la imagen en ubuntu-26.04. La 1.56.1 no soporta Ubuntu 26
+      # (corrida 36970442567). La 1.63.0 si, y pasa pantallas, contraste y e2e, pero la cobertura
+      # volvio a contar solo el ultimo caso: 21 «sin conducir» (37011333490). Desde la 1.62,
+      # Playwright deja activado RenderDocument en Chromium, y cada navegacion abre un documento
+      # cuyo V8 no conserva la cobertura del anterior. La 1.61.1 es la primera que reconoce
+      # ubuntu26.04-x64 y todavia lo desactiva: 8 «sin conducir», como en local (37014083115).
+      # Subir de la 1.61 pide antes resolver eso. Si se sube sin resolverlo, ya no pasa en
+      # silencio: `contraste.js` se niega a escribir una cobertura que da por «sin conducir» la
+      # pantalla que un caso acaba de conducir, y este paso sale en rojo.
       - name: Traer Playwright y Chromium
         id: playwright
         run: |

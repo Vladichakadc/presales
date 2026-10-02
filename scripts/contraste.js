@@ -39,10 +39,22 @@ const modulosExistentes = () => fs.readdirSync(PUBLIC_JS).filter((f) => f.endsWi
 
 const LOCK = path.join(DIR, 'cobertura.lock.json');
 
-function escribirCobertura(crudo) {
+// Devuelve false si la medida contradice la corrida, y entonces NO escribe el lock: un
+// artefacto que da por «sin conducir» la pantalla que se acaba de conducir se leeria como un
+// hecho (`npm run catalogo` lo pinta), y no lo es.
+function escribirCobertura(crudo, paginas) {
   let commit = null;
   try { commit = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim(); } catch { commit = null; }
   const filas = cobertura.agregar(crudo, modulosExistentes());
+  const malas = cobertura.incoherencias(filas, paginas);
+  if (malas.length) {
+    console.log('\nCOBERTURA DE public/js/ — NO SE ESCRIBE: la medida contradice la corrida');
+    for (const m of malas) console.log(`  ! ${m.modulo} sale «sin conducir» y esta corrida condujo ${m.pagina}`);
+    console.log('  La cobertura no se acumula entre navegaciones: solo cuenta la ultima pagina.');
+    console.log('  Causa medida (2026-10-02): Playwright 1.62 o posterior deja activado RenderDocument');
+    console.log('  en Chromium. Ver la version fijada en .github/workflows/pantallas.yml.');
+    return false;
+  }
   const informe = cobertura.informe(filas, { commit, fecha: new Date().toISOString().slice(0, 10) });
   fs.writeFileSync(LOCK, JSON.stringify(informe, null, 1) + '\n');
 
@@ -56,6 +68,7 @@ function escribirCobertura(crudo) {
     console.log(`  ${f.estado === 'ejercitado' ? ' ' : '!'} ${f.modulo.padEnd(36)}${cifra}  ${det}`);
   }
   console.log(`\n  ${sinConducir.length} sin conducir · ${rozados.length} rozado(s) · escrito en ${path.relative(process.cwd(), LOCK)}`);
+  return true;
 }
 
 (async () => {
@@ -81,7 +94,12 @@ function escribirCobertura(crudo) {
 
   // La cobertura solo se escribe con `--todos`: medirla con un caso suelto daria un informe
   // que dice que los demas modulos estan sin conducir, y eso seria falso — no se corrieron.
-  if (todos && crudo) escribirCobertura(crudo);
+  // Una medida que contradice la corrida cuenta como fallo: el paso de CI se pone en rojo en
+  // vez de publicar un informe falso en verde.
+  if (todos && crudo) {
+    const paginas = lista.map((nombre) => require(path.join(DIR, nombre)).pagina);
+    if (!escribirCobertura(crudo, paginas)) fallos++;
+  }
   if (lista.length > 1) {
     console.log('\n' + '═'.repeat(72));
     console.log(rotos.length

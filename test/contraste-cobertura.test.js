@@ -11,7 +11,7 @@
 // Chromium reporte bien (eso es la corrida) ni que la cifra sea buena (eso es una decisión).
 const test = require('node:test');
 const assert = require('node:assert');
-const { agregar, informe, UMBRAL_ROZADO } = require('../scripts/ayuda/cobertura');
+const { agregar, informe, incoherencias, UMBRAL_ROZADO } = require('../scripts/ayuda/cobertura');
 
 // Forma mínima de lo que devuelve `page.coverage.stopJSCoverage()`.
 const entrada = (modulo, fns) => ({
@@ -81,6 +81,52 @@ test('el informe lleva su procedencia dentro', () => {
   assert.strictEqual(d.medidoEn.commit, 'abc1234');
   assert.strictEqual(d.medidoEn.fecha, '2026-09-16');
   assert.strictEqual(d.umbralRozado, UMBRAL_ROZADO, 'el umbral viaja con el dato: sin él, el estado no se puede reinterpretar');
+});
+
+test('una medida que da por «sin conducir» la pantalla que se condujo es incoherente', () => {
+  // La firma medida el 24-sep (Chromium 153) y el 2-oct (Playwright 1.63): cada navegación abre
+  // un documento nuevo y la cobertura solo conserva la ÚLTIMA página. Aquí se reproduce: tres
+  // casos conducen Fortinet, Huawei y Nokia, y solo llega lo de Nokia.
+  const modulos = ['dimensionador-fortinet-fortigate.js', 'dimensionador-huawei-netengine.js', 'dimensionador-nokia-7750sr.js', 'ficha.js'];
+  const soloLaUltima = agregar([
+    entrada('dimensionador-nokia-7750sr.js', [[0, 1], [10, 1]]),
+    entrada('ficha.js', [[0, 1]]),
+  ], modulos);
+  const paginas = ['dimensionador-fortinet-fortigate.html', 'dimensionador-huawei-netengine.html', 'dimensionador-nokia-7750sr.html'];
+  assert.deepStrictEqual(incoherencias(soloLaUltima, paginas).map((m) => m.modulo),
+    ['dimensionador-fortinet-fortigate.js', 'dimensionador-huawei-netengine.js']);
+
+  // Y la corrida sana, la que acumula entre navegaciones, no da ninguna.
+  const acumulada = agregar([
+    entrada('dimensionador-fortinet-fortigate.js', [[0, 1]]),
+    entrada('dimensionador-huawei-netengine.js', [[0, 1]]),
+    entrada('dimensionador-nokia-7750sr.js', [[0, 1]]),
+  ], modulos);
+  assert.deepStrictEqual(incoherencias(acumulada, paginas), []);
+});
+
+test('la coherencia solo juzga lo que la corrida condujo', () => {
+  const filas = agregar([entrada('index.js', [[0, 1]])], ['index.js', 'cuenta.js', 'otra.js']);
+  // Un módulo sin conducir que ninguna pantalla del contraste carga es un hueco real del
+  // contraste, no una medida rota: se informa, no frena.
+  assert.deepStrictEqual(incoherencias(filas, ['index.html']), []);
+  // Una página sin script propio en public/js/ no tiene nada que esperar; la ruta y la consulta
+  // no cambian qué módulo es; y una página repetida se juzga una vez.
+  assert.deepStrictEqual(incoherencias(filas, ['sin-script.html']), []);
+  assert.deepStrictEqual(incoherencias(filas, ['/otra.html?bw=500', 'otra.html']), [{ pagina: 'otra.html', modulo: 'otra.js' }]);
+});
+
+test('el lock del repositorio es coherente con los casos que lo midieron', () => {
+  // El artefacto versionado tiene que poder haber salido de una corrida sana: ninguna pantalla
+  // que un caso conduce puede figurar en él como «sin conducir».
+  const fs = require('fs');
+  const path = require('path');
+  const ruta = path.join(__dirname, '..', 'scripts', 'contrastes', 'cobertura.lock.json');
+  if (!fs.existsSync(ruta)) return;
+  const d = JSON.parse(fs.readFileSync(ruta, 'utf8'));
+  const dir = path.join(__dirname, '..', 'scripts', 'contrastes');
+  const paginas = fs.readdirSync(dir).filter((f) => f.endsWith('.js')).map((f) => require(path.join(dir, f)).pagina);
+  assert.deepStrictEqual(incoherencias(d.modulos, paginas), []);
 });
 
 test('el artefacto del repositorio, si está, tiene la forma que el inventario espera', () => {
