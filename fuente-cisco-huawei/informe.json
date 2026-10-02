@@ -1,0 +1,202 @@
+[
+  {
+    "archivo": "cisco-isr1000-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.html",
+        "status": 200,
+        "bytes": 694501,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-c8200-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8200-series-edge-platforms/nb-06-cat8200-series-edge-plat-ds-cte-en.html",
+        "status": 200,
+        "bytes": 237539,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-c8300-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8300-series-edge-platforms/datasheet-c78-744088.html",
+        "status": 200,
+        "bytes": 297570,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-c8500-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8500-series-edge-platforms/datasheet-c78-744089.html",
+        "status": 200,
+        "bytes": 308311,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-asr1000-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/datasheet-c78-731632.html",
+        "status": 200,
+        "bytes": 395497,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar600-ciclo-de-vida.html",
+    "para": "HUAWEI",
+    "guardado": false,
+    "intentos": [
+      {
+        "url": "https://support.huawei.com/enterprise/en/routers/ar611-pid-253265923/bulletins?type=life-cycle-notices",
+        "status": 200,
+        "bytes": 25028,
+        "nota": "no contiene el texto esperado"
+      },
+      {
+        "url": "https://support.huawei.com/enterprise/en/bulletins-product/life-cycle-notices/routers-pid-1482607112869",
+        "status": 200,
+        "bytes": 73381,
+        "nota": "no contiene el texto esperado"
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar610-infofinder.html",
+    "para": "HUAWEI",
+    "guardado": false,
+    "intentos": [
+      {
+        "url": "https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers/ar610-pid-253265923/eom-eofs-and-eos-date",
+        "status": 200,
+        "bytes": 3417,
+        "nota": "no contiene el texto esperado"
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-m8-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/e9dd06e260b64df683f6221fc8442cbf/M3T1A590N1140253824460255266/NetEngine%208000%20M8%20Universal%20Service%20Router%20Datasheet.pdf",
+        "status": 200,
+        "bytes": 514517,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-f8-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/49184bd3a3c54e4b90f6d73b55ba1558/M3T1A590N1101892422391505075/NetEngine%208000%20F8%20Datasheet.pdf",
+        "status": 200,
+        "bytes": 455262,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-f8-ds-universal.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/e679822234f94651b2c2153c21a6621b/M2T1A669N893162565584830493/NetEngine%208000%20F8%20Universal%20Service%20Router%20Datasheet.pdf",
+        "status": 200,
+        "bytes": 443948,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-m14-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/f4f1a7b9424a44ff9770b75a19eb5d2e",
+        "status": 200,
+        "bytes": 330388,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-m14-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/f4f1a7b9424a44ff9770b75a19eb5d2e/M3T1A590N1267221252983996547/NetEngine%208000%20M14%20Universal%20Service%20Router%20Datasheet.pdf",
+        "status": 200,
+        "bytes": 446839,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-m-serie.html",
+    "para": "HUAWEI",
+    "guardado": false,
+    "intentos": [
+      {
+        "url": "https://carrier.huawei.com/en/products/fixed-network/data-communication/router/NetEngine-8000-Series-Router/NetEngine-8000-M-Series",
+        "status": 200,
+        "bytes": 86688,
+        "nota": "no contiene el texto esperado"
+      },
+      {
+        "url": "https://support.huawei.com/enterprise/en/doc/EDOC1100518177/e4ccf4a0/netengine-8000-m8",
+        "status": 200,
+        "bytes": 3800,
+        "nota": "no contiene el texto esperado"
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-srx300-ds.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html",
+        "status": 200,
+        "bytes": 39717,
+        "nota": "no contiene el texto esperado"
+      },
+      {
+        "url": "https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html",
+        "status": 200,
+        "bytes": 765790,
+        "guardado": true
+      }
+    ]
+  }
+]
