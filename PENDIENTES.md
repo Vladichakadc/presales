@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-02 (**Los jobs de navegador fijan su imagen, después de medir que en Ubuntu 26 se habrían roto.** Es la mejora propuesta al cerrar la entrega anterior. GitHub avisa de que `ubuntu-latest` pasa a Ubuntu 26 el 19 de octubre. Lanzado `pantallas` en `ubuntu-26.04`, Playwright 1.56.1 responde «Playwright does not support chromium on ubuntu26.04-x64». Ahora `pantallas` y `limites` corren en `ubuntu-24.04`, fijada junto a Playwright. `pantallas` deja medir la imagen siguiente con un selector al lanzarlo a mano, y una prueba exige las dos cosas. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-02 (**`npm audit` en cero y convertido en freno.** Es la mejora propuesta al cerrar la entrega anterior. El paso de `verificar` era informativo y convivían 2 avisos altos y 2 moderados, todos con arreglo. `npm audit fix` los cerró tocando solo el lock (7 paquetes cambian y 3 salen). `npm run auditar` falla cerrado: un aviso alto frena salvo excepción declarada con caducidad, y no poder auditar también frena. Sobre el lock de antes frena con los 3 avisos altos. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-02 (**Los jobs de navegador fijan su imagen, después de medir que en Ubuntu 26 se habrían roto.** Es la mejora propuesta al cerrar la entrega anterior. GitHub avisa de que `ubuntu-latest` pasa a Ubuntu 26 el 19 de octubre. Lanzado `pantallas` en `ubuntu-26.04`, Playwright 1.56.1 responde «Playwright does not support chromium on ubuntu26.04-x64». Ahora `pantallas` y `limites` corren en `ubuntu-24.04`, fijada junto a Playwright. `pantallas` deja medir la imagen siguiente con un selector al lanzarlo a mano, y una prueba exige las dos cosas. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-02 (**Producción y CI en Node 24 LTS, con la versión declarada una sola vez.** Es la mejora propuesta al cerrar la entrega anterior. Producción corría Node 20.20.2, sin soporte desde el 30 de abril: Railway construye con Railpack, que la toma de `engines.node`, y con `>=20` eligió la más baja. El `nixpacks.toml` que parecía fijarla no lo leía nadie. Ahora `engines.node` es `"24"`, los workflows la leen de ahí y una prueba se pone en rojo el día que esa versión pierda el soporte. Node 24 trae npm 11, que pide aprobar qué dependencias ejecutan código al instalarse: `sqlite3` va aprobada fijada a su versión. Verificado entero con Node 24 antes de desplegar, y en producción con Node 24.21.0 desde `299ba98`, según el log de construcción de Railway. Ver *Cerrado recientemente*.)
 
@@ -1535,21 +1537,8 @@ runtime (Node 20 sin soporte y el `nixpacks.toml` que nadie leía) se cerró ese
   dentro del contenedor, con versiones que CI no probó. `verificar` sí corre `npm ci`, pero
   Railway no lo espera (punto 33). Cambiarlo es configuración de Railpack, y `railpack.com` da
   403 desde este entorno (política de egreso): su sintaxis no se leyó aquí.
-- **`npm audit` reporta 2 avisos altos y 2 moderados, y nada lo dice en voz alta.** El paso de
-  `verificar.yml` es informativo (`continue-on-error`), y su comentario hablaba de «2 avisos
-  moderados» de la Fase 0: se había quedado viejo. Medido el 2026-10-02 sobre el mismo lock, con
-  el mismo resultado en npm 10 y en npm 11:
-  - `brace-expansion` (alto, transitivo, con arreglo): denegación de servicio por recursión sin
-    límite en grupos anidados (GHSA-qhr7-859c-m2p7 y GHSA-6j4f-fj2g-mc7p), más una expansión de
-    coste cuadrático, moderada (GHSA-q2hr-2g5m-vwhr).
-  - `undici` (alto, transitivo, con arreglo): denegación de servicio con un subprotocolo de
-    WebSocket no pedido (GHSA-rfgv-xxqx-mfg5), más otra moderada en la descompresión de WebSocket
-    (GHSA-3wwx-pv8p-q78v) y una baja de partición de respuestas (GHSA-r53p-7pc4-xj5r).
-  - `multer` (moderado, **directo**, con arreglo): denegación de servicio por escrituras huérfanas
-    al abortar una subida (GHSA-3pph-fpjx-jg34). Es el que recibe los adjuntos de
-    `/api/sync` y `/api/fuentes`, tras el muro y con el permiso `sync`.
-  - `moment` (moderado, transitivo, con arreglo): recorrido de rutas con un nombre de *locale*
-    que no es texto (GHSA-4p3w-j4w9-5jqw).
+- **`npm audit` reportaba 2 avisos altos y 2 moderados y nada lo decía en voz alta**: cerrado el
+  mismo día (ver *Cerrado recientemente*).
 
 ## Abierto: pasar los jobs de navegador a Ubuntu 26 (2026-10-02)
 
@@ -1598,6 +1587,11 @@ que ya se comprobó y lo que cuesta cada opción.
   y un documento que cambie no conserva su fecha de pendiente de una semana a otra. El PR no lo abre
   Actions a propósito: el ajuste que lo permitiría también le deja aprobar PR, y conviene dejarlo
   apagado.
+- **Revisar y fusionar los PR de Dependabot** (2026-10-02): #1 y #2 (`actions/setup-node` y
+  `actions/checkout`, abiertos desde el 2 de septiembre), #7 (el grupo de producción, desde el 18)
+  y #8 (`pdf-parse`, desde el 21). La red de actualizaciones existía, pero no llegaba a `main`. Desde
+  hoy, `verificar` frena en cualquiera de ellos si trae un aviso alto. `multer` ya está al día en
+  `main` (2.4.0), así que Dependabot rehará el #7 con lo que quede.
 - **Activar «Wait for CI» en Railway** (`presales-web` → *Settings* → *Source*). Medido el
   2026-09-24: `source.checkSuites: false`. **Desde la sesión no se pudo, y se intentó con
   autorización expresa del dueño**: el conector de Railway no expone ese ajuste y su agente
@@ -1637,6 +1631,54 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### `npm audit` en cero y convertido en freno (2026-10-02)
+
+Mejora propuesta al cerrar la entrega anterior.
+
+- **El fallo abierto.** El paso «Auditoría de dependencias (informativa)» de `verificar.yml` corría
+  `npm audit --audit-level=high` con `continue-on-error: true`. Medido ese día: salía con código 1
+  por dos avisos altos y la corrida seguía en verde. El comentario hablaba de «2 avisos moderados»
+  de la Fase 0: se había quedado viejo, y nadie lo leía.
+- **Inventario, con su impacto real** (con `insecure-defaults` y `supply-chain-risk-auditor`):
+  - `undici` (alto, en producción): llega por `sqlite3 → node-gyp`, que solo se usa si hay que
+    compilar `sqlite3` al instalar. Sus avisos son del cliente de WebSocket y de los reintentos,
+    que `node-gyp` no usa.
+  - `brace-expansion` (alto): solo en desarrollo (ESLint), con patrones que escribimos nosotros.
+  - `multer` (moderado, directo): el ataque son escrituras huérfanas en disco, y las dos rutas de
+    subida usan `memoryStorage`, tras el muro y con el permiso `sync`.
+  - `moment` (moderado, vía `sequelize`): exige un nombre de *locale* controlado por quien ataca,
+    y la aplicación nunca lo pasa.
+  - Ninguno era explotable en este uso. Por eso mismo hacía falta el freno: el día que uno lo
+    sea, nada lo habría dicho.
+- **El arreglo, con npm y sin tocar versiones a mano.** `npm audit fix` dejó 0 avisos tocando
+  solo `package-lock.json`, porque los rangos de `package.json` ya admitían las versiones
+  corregidas:
+  - `brace-expansion` 1.1.18 → 1.1.21 (tres copias) y 5.0.9 → 5.0.12;
+  - `moment` 2.30.1 → 2.31.0, `multer` 2.3.0 → 2.4.0 y `undici` 6.28.0 → 6.29.0;
+  - salen `concat-stream`, `buffer-from` y `typedarray`, de las que `multer` 2.4.0 ya no
+    depende: menos superficie.
+  - npm 11 (el de CI y producción) deja ese lock igual y también audita 0, así que npm 10 y npm 11
+    no se pelean por él.
+- **El freno, `npm run auditar`** (`scripts/auditar-dependencias.js`), que `verificar` corre sin
+  `continue-on-error`:
+  - un aviso alto o crítico frena, y moderados y bajos se listan;
+  - la salida es una excepción declarada en `EXCEPCIONES`, con GHSA, paquete, motivo y caducidad
+    de 90 días como mucho;
+  - una excepción caducada, demasiado lejana, mal escrita o que ya no casa con ningún aviso,
+    frena;
+  - si `npm audit` no responde o no se puede leer, frena con 2.
+  - **Reproducido**: sobre el lock de antes del arreglo sale con 1 y señala los 3 avisos altos
+    (dos de `brace-expansion` y uno de `undici`), más 5 informativos. Sobre el de ahora, 0.
+- **Lo que lo guarda.** `test/auditar-dependencias.test.js`, 9 casos con informes sintéticos y un
+  `npm` falso delante en el `PATH`, para no dejar en el script un atajo que salte la auditoría.
+  Comprobado saboteando las seis formas de aflojarlo:
+  - que solo frenen los críticos;
+  - que una excepción que no casa deje de frenar;
+  - quitar el tope de 90 días;
+  - dar por limpio lo que no se pudo leer;
+  - leer un informe de error como vacío;
+  - devolver `continue-on-error` al paso.
 
 ### Los jobs de navegador fijan su imagen, medido que en Ubuntu 26 se rompían (2026-10-02)
 

@@ -80,9 +80,10 @@ jobs:
           curl -fsS --retry 5 --retry-connrefused http://127.0.0.1:4000/salud | tee salud.json
           grep -q '"ok":true' salud.json || { echo '/salud no responde ok'; exit 1; }
 
-      # Informativo: no frena el push. Lo que reporta cambia con cada aviso nuevo de la base de
-      # npm, asi que el recuento de hoy no vive aqui sino en PENDIENTES.md (medido el 2026-10-02:
-      # el mismo resultado con npm 10 y con npm 11 sobre el mismo lock).
-      - name: Auditoria de dependencias (informativa)
-        continue-on-error: true
-        run: npm audit --audit-level=high
+      # El freno de las dependencias (scripts/auditar-dependencias.js): un aviso alto o critico
+      # pone esta corrida en rojo, salvo que este declarado en EXCEPCIONES con su motivo y una
+      # caducidad de 90 dias como mucho. Si npm audit no responde, tambien: no poder comprobar no
+      # es estar limpio. Hasta el 2026-10-02 este paso era informativo (continue-on-error) y
+      # convivieron dos avisos altos con arreglo publicado sin que nada lo dijera.
+      - name: Auditoria de dependencias
+        run: npm run auditar

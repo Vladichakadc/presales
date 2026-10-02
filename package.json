@@ -26,7 +26,8 @@
     "skus": "node scripts/importar-skus-fortinet.js",
     "contraste": "node scripts/contraste.js",
     "candidatas": "node scripts/probar-candidatas.js",
-    "puerta": "node scripts/puerta.js"
+    "puerta": "node scripts/puerta.js",
+    "auditar": "node scripts/auditar-dependencias.js"
   },
   "engines": {
     "node": "24"
