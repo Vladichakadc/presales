@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-02 (**Cada despliegue se comprueba y avisa solo.** Es la mejora propuesta al cerrar la entrega anterior. Railway publicaba en GitHub el estado de cada despliegue y nada lo escuchaba: 10 despliegues fallidos sin aviso, y producción 23 y 13 horas sin cambios el 1 y el 16 de septiembre. Ahora `sonda-produccion.yml` escucha esos estados. Tras un despliegue sano corre la sonda; un despliegue fallido, o una sonda en rojo, abre un issue con la etiqueta `despliegue`, que se cierra solo con el siguiente despliegue sano. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-02 (**El lock solo descarga del registro oficial de npm.** Es la mejora propuesta al cerrar la entrega anterior. El 16 de septiembre el lock resolvía cuatro paquetes contra un espejo inalcanzable, y producción pasó 13 horas sin cambios; se corrigió a mano y no quedó ninguna prueba. Ahora `test/lock-origen.test.js` exige, en `npm run verificar`, que cada entrada se descargue de `registry.npmjs.org`, del archivo de su nombre y su versión, con huella sha512. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-02 (**Cada despliegue se comprueba y avisa solo.** Es la mejora propuesta al cerrar la entrega anterior. Railway publicaba en GitHub el estado de cada despliegue y nada lo escuchaba: 10 despliegues fallidos sin aviso, y producción 23 y 13 horas sin cambios el 1 y el 16 de septiembre. Ahora `sonda-produccion.yml` escucha esos estados. Tras un despliegue sano corre la sonda; un despliegue fallido, o una sonda en rojo, abre un issue con la etiqueta `despliegue`, que se cierra solo con el siguiente despliegue sano. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-02 (**Railway instala con `npm ci`.** Es la mejora propuesta al cerrar la entrega anterior. Con `npm install`, un lock descuadrado se resolvía dentro del contenedor con versiones que CI no había probado; ahora la construcción falla y producción sigue con lo anterior. Lo hace la variable de servicio `RAILPACK_INSTALL_CMD`, según la documentación de Railway, y lo confirma el log de construcción (`▸ install $ npm ci`). **Al leer la configuración en vivo salió algo que `CLAUDE.md` afirmaba al revés**: el servicio no tiene `healthcheckPath`. **Y al cerrar se midió que Railway avisa a GitHub de cada despliegue y que nada escucha ese aviso**: 10 despliegues fallidos sin que nadie se enterara. Ver *Cerrado recientemente* y *Abierto: cómo construye Railway producción*.)
 
@@ -1551,13 +1553,6 @@ recientemente*: el runtime (Node 20 sin soporte, el `nixpacks.toml` que nadie le
   definida.** La siembra corre en cada despliegue (`[seed] Catalogo inicial poblado`), así que la
   base sigue comportándose como efímera. No se leyó el valor a propósito: el listado de variables
   trae también los secretos. Lo comprueba el dueño en el panel.
-- **Nada impide que el lock resuelva contra otro registro.** Fue la causa del 16 de septiembre.
-  `package-lock.json` traía cuatro paquetes con `resolved` en `npm.mirrors.msh.team`, el espejo
-  del entorno donde se añadieron. Se corrigió a mano el 17 y no quedó ninguna prueba. Hoy los 366
-  `resolved` apuntan a `registry.npmjs.org` y llevan `integrity`. Con `npm ci`, el lock decide qué
-  se instala en producción. Un espejo alcanzable pasaría todas las comprobaciones, con las
-  `integrity` de **sus** paquetes. Lo cierra una prueba en `npm run verificar` que exija
-  `https://registry.npmjs.org/` e `integrity` en cada entrada.
 
 ## Abierto: pasar los jobs de navegador a Ubuntu 26 (2026-10-02)
 
@@ -1653,6 +1648,34 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### El lock solo descarga del registro oficial de npm (2026-10-02)
+
+Mejora propuesta al cerrar la entrega anterior.
+
+- **El hueco.** Con `npm ci` en Railway, lo que corre en producción es lo que dice
+  `package-lock.json`. Nada comprobaba de dónde descarga cada entrada.
+  - El 16 de septiembre el lock resolvía cuatro paquetes contra `npm.mirrors.msh.team`, el espejo
+    del entorno donde se añadieron. Ocho despliegues fallaron y producción pasó unas 13 horas sin
+    cambios. Se corrigió a mano el 17, sin dejar prueba.
+  - El caso peor no falla: con un espejo alcanzable el despliegue sale bien, y la huella es la del
+    archivo del espejo, así que no protege nada. El aviso de despliegue no lo vería.
+- **El cambio.** `test/lock-origen.test.js`, en `npm run verificar`:
+  - cada entrada se descarga de `https://registry.npmjs.org/`, del archivo de **su** nombre y
+    **su** versión. Apuntar al archivo de otro paquete es la forma conocida de colar una
+    dependencia en un lock;
+  - un alias (`"xlsx": "npm:@e965/xlsx"`) se comprueba contra el paquete que declara en `name`;
+  - la huella es sha512;
+  - no pasan un enlace local, un workspace, `http`, `git`, `file:` ni un `.npmrc` que cambie el
+    registro. Lo empaquetado dentro de otro paquete sí, porque lo cubre la huella del padre;
+  - un lock que no es de la versión 2 o 3 no se puede comprobar, y no pasa.
+- **Medido antes de escribirlo.** Lock versión 3 con 366 entradas: todas con la forma exacta y
+  huella sha512. Ninguna es un enlace, un workspace o un paquete empaquetado dentro de otro. Hay un
+  alias, `xlsx`.
+- **Comprobado en local.** 7 casos, con un lock sintético de la forma del real. Seis sabotajes,
+  todos cazados: sobre el lock real, `pdf-parse` contra el espejo del 16 de septiembre, `express`
+  apuntando al archivo de otro paquete y `multer` sin huella; sobre la comprobación, mirar solo el
+  servidor, ignorar el alias y no anclar la huella.
 
 ### Cada despliegue se comprueba y avisa solo (2026-10-02)
 
