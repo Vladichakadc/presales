@@ -1665,6 +1665,12 @@ Mejora propuesta al cerrar la entrega anterior. Salió de las anotaciones de una
     llegado a arrancar (`cat: arranque.log: No such file or directory`), y distraía del primero.
     Ahora lo dice y no falla. Al escribirlo se coló un «: » en un `run:` de una línea, y la
     prueba de los workflows lo cazó antes del commit, que es para lo que existe.
+- **En producción y en CI (2026-10-02).** `a9665ad`, Railway `71a51c1a` en SUCCESS con `[seed]` y
+  `Presales corriendo en`.
+  - Sobre `main`, `verificar` (`36971126090`) en verde, y `pantallas` (`36971126056`) en verde
+    **en `ubuntu-24.04`**: en un `push` la expresión cae en la imagen fijada, como se esperaba.
+  - `limites`, lanzado a mano para no esperar al miércoles (`36971756159`): `recorrer` en verde
+    en `ubuntu-24.04`, ya con Node 24, e `informar` respondió «Sin hallazgos.».
 - **Lo que lo guarda.** `test/workflows-imagen.test.js`, 3 casos:
   - un job que instala paquetes del sistema fija su imagen;
   - esos jobs comparten imagen y versión de Playwright;
