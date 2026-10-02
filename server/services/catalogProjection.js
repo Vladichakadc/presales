@@ -209,6 +209,9 @@ async function toFuentes() {
 }
 
 // index.html PR shape: {hw_ar:[...], hw_wan:[...], cisco:[...], nokia:[...], fortinet:[...], juniper:[...], mikrotik:[...], aruba:[...]}
+// Los grupos del portal se llaman como su fabricante salvo los dos de Huawei.
+const VENDOR_DE_GRUPO = { hw_ar: 'huawei', hw_wan: 'huawei' };
+
 async function toIndexPR() {
   const products = await Product.findAll();
   const result = { hw_ar: [], hw_wan: [], cisco: [], nokia: [], fortinet: [], juniper: [], mikrotik: [], aruba: [] };
@@ -218,6 +221,14 @@ async function toIndexPR() {
     const group = p.specs && p.specs.prGroup;
     if (!group || !(group in result)) continue;
     const entry = { model: p.model, ...specWithoutGroup(p.specs) };
+    // El portal lee un numero como Mbps, y la siembra le funde las cifras del dimensionador en
+    // la unidad de cada uno: la capacidad de Nokia llegaba en Gbps y la calculadora trataba un
+    // 7250 IXR-e de 300 Gbps como uno de 300 Mbps (medido el 2026-10-02). La unidad la declara
+    // `cifrasCotizador`, que es tambien lo que la compara.
+    const vendor = VENDOR_DE_GRUPO[group] || group;
+    for (const [campo, v] of Object.entries(entry)) {
+      if (typeof v === 'number') entry[campo] = cifras.aMbps(vendor, campo, v);
+    }
     if (p.priceDisplay) entry.elp = p.priceDisplay;
     result[group].push(entry);
   }
@@ -607,18 +618,39 @@ async function toGuiaRoles() {
     order: [['id', 'ASC']],
   });
   const fuera = clavesFueraDeVenta(await Product.findAll());
+  const indice = cifras.indiceDimensionador();
   const result = {};
   for (const r of recs) {
     if (fuera.has(`${r.Product.vendorId}::${cifras.normalizarModelo(r.Product.model)}`)) continue;
     if (!result[r.role]) result[r.role] = [];
-    result[r.role].push({
+    // La misma regla que el cotizador, en la ficha y en la alternativa: una cifra que el
+    // dimensionador contradice no se cita, y una alternativa fuera de venta no se recomienda
+    // (ver `cifrasCotizador.proyectarGuia`).
+    const vendor = r.Product.Vendor.code;
+    const porNombre = indice[vendor] || null;
+    const g = cifras.proyectarGuia(
+      { spec: r.Product.specSummary || '', alt: r.altText || '' },
+      {
+        vendor,
+        porNombre,
+        pareja: porNombre ? porNombre.get(cifras.normalizarModelo(r.Product.model)) : null,
+        fuera: (m) => fuera.has(`${r.Product.vendorId}::${cifras.normalizarModelo(m.id)}`),
+      },
+    );
+    const item = {
       v: r.Product.Vendor.name,
       color: r.Product.Vendor.colorHex,
       model: r.Product.model,
-      spec: r.Product.specSummary || '',
-      alt: r.altText || '',
+      spec: g.spec,
+      alt: g.alt,
       elp: r.Product.priceDisplay || 'Consultar',
-    });
+    };
+    if (g.enRevision.length) item.enRevision = g.enRevision;
+    if (g.altRetirada) item.altRetirada = g.altRetirada;
+    // Un equipo que solo vive en la guia (la siembra lo crea con categoria 'other') trae cifras
+    // que ninguna pantalla puede contrastar, y la guia lo dice junto a ellas.
+    if (r.Product.category === 'other') item.soloGuia = true;
+    result[r.role].push(item);
   }
   return result;
 }

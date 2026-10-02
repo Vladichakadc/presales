@@ -389,7 +389,46 @@ function coberturaContraste() {
 // discrepar sobre que es pareja de que.
 const {
   CONTRASTE_COTIZADOR, leerSpec, normalizarModelo, contrasteCotizador, mbpsLegible,
+  contrastePortal, contrasteGuia,
 } = require('../server/services/cifrasCotizador');
+
+/* ── PORTAL Y GUIA FRENTE AL DIMENSIONADOR (2026-10-02) ─────────────────────────────────────
+   LO MISMO QUE LA SECCION DEL COTIZADOR, PERO SOBRE LO QUE SIRVE EL SERVIDOR. El portal y la
+   guia reciben filas que la siembra FUNDE con las del dimensionador, y es en esa fusion donde se
+   perdian cosas que ningun archivo muestra: la capacidad de Nokia llegaba en Gbps a un portal
+   que lee Mbps, y «SRX 345» se quedaba sin el IPsec de «SRX345». Por eso aqui no se leen los
+   archivos: `scripts/ayuda/pantallas-servidas.js` siembra una base EN MEMORIA con la misma
+   `seedCatalog()` del arranque y devuelve lo que sirven `/api/catalog` y `/api/guia/roles`.
+   Cuesta unos dos segundos, y si no se puede medir se dice: nunca sale como «coincide».
+
+   En el portal cuenta un sexto estado, `calla`: el dimensionador trae una cifra que el portal no
+   da, que en la calculadora es un equipo apartado por un dato que si existe. En la guia, lo que
+   difiere ya llega «en revision» —la proyeccion aplica la regla del cotizador— y aqui se cuenta;
+   y una alternativa fuera de venta llega retirada. Lo que no tiene pareja en el dimensionador
+   (el MX, el QFX, CloudEngine) se lista: son cifras que ninguna pantalla puede contrastar. */
+const { execFileSync } = require('child_process');
+
+function pantallasServidas() {
+  try {
+    const salida = execFileSync(process.execPath, [path.join(__dirname, 'ayuda', 'pantallas-servidas.js')], {
+      encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    return JSON.parse(salida);
+  } catch (e) {
+    const detalle = String((e && e.stderr) || (e && e.message) || e).trim().split('\n').slice(-3).join(' | ');
+    return { error: `no se pudo sembrar la base en memoria: ${detalle}` };
+  }
+}
+
+function contrastePantallas(servidas) {
+  const d = servidas || pantallasServidas();
+  if (d.error) return { error: d.error };
+  const fuera = new Set((d.fueraDeVenta || []).map((x) => `${x.vendor}::${x.clave}`));
+  return {
+    portal: contrastePortal(d.portal),
+    guia: contrasteGuia(d.guia, { fuera: (vendor, m) => fuera.has(`${vendor}::${normalizarModelo(m.id)}`) }),
+  };
+}
 
 function informe() {
   return {
@@ -397,6 +436,32 @@ function informe() {
     coberturaContraste: coberturaContraste(),
     pantallas: pantallas(), procedencia: procedencia(), fuentesPendientes: fuentesPendientes(),
   };
+}
+
+function imprimirPantallas(cp) {
+  const cifra = (campo, v) => (campo === 'mpps' ? `${v} Mpps` : mbpsLegible(v));
+  console.log('\n== PORTAL Y GUIA FRENTE AL DIMENSIONADOR: lo que reciben las pantallas ==');
+  console.log('   Medido sobre lo que sirve el servidor (una siembra en memoria), no sobre los archivos:');
+  console.log('   la fusion de la siembra es donde el portal perdia las unidades de Nokia y el IPsec del SRX 345.\n');
+  if (cp.error) { console.log(`   NO SE PUDO MEDIR: ${cp.error}`); return; }
+  for (const f of cp.portal) {
+    if (f.error) { console.log(`   ${f.grupo.padEnd(9)} ${f.error}`); continue; }
+    console.log(`   portal ${f.grupo.padEnd(9)} ${f.coincide}/${f.comparadas} coinciden · ${f.difiere.length} difieren · ${f.calla.length} callan · ${f.sinDato.length} sin dato · ${f.ilegible.length} no se pudieron leer · ${f.sinPareja.length} sin pareja`);
+    for (const x of f.difiere) console.log(`      DIFIERE  ${x.modelo}: portal ${x.campo} «${x.portal}» · dimensionador ${x.destino} = ${cifra(x.destino, x.dimensionador)}`);
+    for (const x of f.calla) console.log(`      CALLA    ${x.modelo}: el dimensionador trae ${x.destino} = ${cifra(x.destino, x.dimensionador)} y el portal no lo da`);
+    for (const x of f.ilegible) console.log(`      NO SE PUDO LEER  ${x.modelo}: ${x.campo} «${x.texto}»`);
+  }
+  const g = cp.guia;
+  console.log(`\n   guia ${g.entradas} entradas · ${g.coincide}/${g.comparadas} cifras coinciden · ${g.enRevision.length} en revision · ${g.altRetiradas.length} alternativas fuera de venta · ${g.sinDato.length} sin dato · ${g.ilegible.length} no se pudieron leer · ${g.sinFicha.length} sin ficha`);
+  for (const x of g.enRevision) console.log(`      EN REVISION  ${x.rol} · ${x.modelo} (${x.donde}${x.alternativa ? ` ${x.alternativa}` : ''}): la guia decia ${x.citado} y el dimensionador ${x.dimensionador}${x.sinRetirar ? ' — Y LA PANTALLA LA SIGUE CITANDO' : ''}`);
+  for (const x of g.altRetiradas) console.log(`      FUERA DE VENTA  ${x.rol} · ${x.modelo}: la alternativa ${x.alternativa}${x.sinRetirar ? ' — Y LA PANTALLA LA SIGUE RECOMENDANDO' : ' no se pinta'}`);
+  for (const x of g.ilegible) console.log(`      NO SE PUDO LEER  ${x.rol} · ${x.modelo}: «${x.texto}»`);
+  for (const x of g.sinFicha) console.log(`      SIN FICHA  ${x.rol} · ${x.modelo}: la guia lo recomienda sin texto`);
+  if (g.fichaSinPareja.length || g.altSinPareja.length) {
+    console.log(`   Sin pareja en el dimensionador, asi que no se pueden contrastar (${g.fichaSinPareja.length} fichas, ${g.altSinPareja.length} alternativas):`);
+    for (const x of g.fichaSinPareja) console.log(`      ${x.rol} · ${x.modelo}: ${x.cifras.join(', ')}`);
+    for (const x of g.altSinPareja) console.log(`      ${x.rol} · alternativa «${x.alternativa}»`);
+  }
 }
 
 function barra(pct) {
@@ -434,6 +499,7 @@ function imprimir(d) {
       for (const x of f.difiere) console.log(`   DIFIERE  ${x.modelo}: cotizador «${x.cotizador}» · dimensionador ${x.campo} = ${x.campo === 'mpps' ? `${x.dimensionador} Mpps` : mbpsLegible(x.dimensionador)}`);
       for (const x of f.ilegible) console.log(`   NO SE PUDO LEER  ${x.modelo}: «${x.texto}»`);
     }
+    if (d.contrastePantallas) imprimirPantallas(d.contrastePantallas);
     console.log('\n== PANTALLAS: campos declarados que no existen ==');
     console.log('   Cada dimensionador declara en ESTADO.vincular({campos}) los ids que viajan en el');
     console.log('   enlace compartido. Uno que ya no exista deja de reponerse, y el enlace llega mudo.\n');
@@ -512,6 +578,7 @@ function imprimir(d) {
 
 if (require.main === module) {
   const d = informe();
+  if (!SOLO_FUENTES) d.contrastePantallas = contrastePantallas();
   if (JSON_OUT) console.log(JSON.stringify(d, null, 2));
   else imprimir(d);
 }
@@ -519,5 +586,6 @@ if (require.main === module) {
 module.exports = {
   informe, cobertura, cicloDeVida, precios, pantallas, procedencia,
   contrasteCotizador, leerSpec, normalizarModelo, CONTRASTE_COTIZADOR,
+  pantallasServidas, contrastePantallas,
   fuentesPendientes, SEMANAS_TOLERADAS, impactoDeFuentes, clavesDe,
 };

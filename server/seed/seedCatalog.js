@@ -14,6 +14,7 @@ const mikrotikData = require('./legacyData/mikrotik');
 const arubaData = require('./legacyData/aruba');
 const nokiaData = require('./legacyData/nokia');
 const guiaRoles = require('./legacyData/guiaRoles');
+const cifras = require('../services/cifrasCotizador');
 
 // eolModels: modelos que el catalogo lista pero que ya no se venden. Marca `eol` sobre el
 // Product y ahi acaba: cotizador.html e index.html los ocultan, el dimensionador los sigue
@@ -183,8 +184,19 @@ async function seedOpticsAndParts(vendorId, OPTICS, PARTS, partsAreDescOnly) {
 // Huawei AR-series models), or creates a new row when it doesn't — a real naming
 // drift between the two legacy files (e.g. Huawei WAN-series id sets differ),
 // disclosed and left for Phase 2's research pass to fully reconcile.
+//
+// LA GEMELA DEL PORTAL (2026-10-02). Cuando el nombre exacto no casa, la fila del portal que es
+// el mismo equipo con otra grafia («SRX 345» frente a «SRX345») se quedaba sin las cifras del
+// dimensionador: el portal no tenia su IPsec ni su IPS, y la calculadora lo apartaba diciendo
+// que el catalogo no publica esas capas. Ahora recibe las mismas cifras que recibe una fila que
+// casa exacta, pero conserva su nombre y su categoria: el dimensionador sigue leyendo su propia
+// fila, y la del portal no aparece en el (filtra por categoria). Se casa con la normalizacion
+// del cotizador y del fin de venta, y solo si hay UNA gemela: dos serian una ambiguedad, y se
+// dice en el arranque en vez de elegir una.
 async function seedDimensionadorModels(vendorId, models, { opticCategoryIds = {}, partIds = {}, eolModels = new Set(), etiqueta = 'sin etiqueta', categoryFn }) {
   const casados = new Set();
+  const delPortal = (await Product.findAll({ where: { vendorId } }))
+    .filter((p) => p.specs && p.specs.prGroup);
   for (const item of models) {
     const { id: model, optics, parts, ...specs } = item;
     if (eolModels.has(model)) casados.add(model);
@@ -199,6 +211,16 @@ async function seedDimensionadorModels(vendorId, models, { opticCategoryIds = {}
         eol: eolModels.has(model),
       },
     });
+    if (created) {
+      const clave = cifras.normalizarModelo(model);
+      const gemelas = delPortal.filter((p) => p.model !== model && cifras.normalizarModelo(p.model) === clave);
+      if (gemelas.length === 1) {
+        await gemelas[0].update({ specs: { ...(gemelas[0].specs || {}), ...specs } });
+      } else if (gemelas.length > 1) {
+        console.warn(`[seed] ${model}: ${gemelas.length} filas del portal casan por nombre `
+          + `(${gemelas.map((g) => g.model).join(', ')}); ninguna recibe sus cifras.`);
+      }
+    }
     if (!created) {
       const mergedSpecs = { ...(product.specs || {}), ...specs };
       // La categoria tambien se corrige: backfillPricesFromCotizador crea las filas que solo

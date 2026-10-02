@@ -39,7 +39,10 @@ const CONTRASTE_COTIZADOR = {
   cisco: { mod: 'cisco', listas: ['MODELS'], campos: { FWD: 'fwd', IPsec: 'ipsec', 'SD-WAN': 'sdwan' } },
   fortinet: { mod: 'fortinet', listas: ['MODELS'], campos: { FW: 'fw', NGFW: 'ngfw', IPsec: 'vpn' } },
   mikrotik: { mod: 'mikrotik', listas: ['MODELS'], campos: { FWD: 'fwd', IPsec: 'ipsec' } },
-  juniper: { mod: 'juniper', listas: ['MODELS'], campos: { FW: 'fw', IPsec: 'vpn' } },
+  // Los Session Smart Router (lista SDWAN) se citan sin etiqueta («1.5 Gbps · SD-WAN sin
+  // túneles»): esa cifra es su `cap`, el caudal SD-WAN con el que se dimensionan. Hasta el
+  // 2026-10-02 la lista no estaba aquí y sus cinco líneas salían «sin pareja».
+  juniper: { mod: 'juniper', listas: ['MODELS', 'SDWAN'], campos: { FW: 'fw', IPsec: 'vpn', BASE: 'cap' } },
   aruba: { mod: 'aruba', listas: ['MODELS'], campos: { WAN_MIN: 'wanMin', WAN_MAX: 'wanMax', FW: 'fw' } },
   // Nokia guarda la capacidad en Gbps (ver `legacyData/nokia.js`), no en Mbps.
   nokia: { mod: 'nokia', listas: ['MODELS', 'MODELS_ROUTER'], campos: { BASE: 'cap' }, escala: { cap: 1000 } },
@@ -193,7 +196,266 @@ function contrasteCotizador(opciones) {
   return out;
 }
 
+/* ── EL PORTAL Y LA GUIA, FRENTE AL DIMENSIONADOR (2026-10-02) ───────────────────────────────
+   POR QUE. El cotizador no es la unica pantalla que cita cifras: el portal (la calculadora y el
+   comparador leen `/api/catalog`) y la guia de diseno (`/api/guia/roles`) tambien. Y aqui no
+   basta con leer los archivos: lo que recibe cada pantalla sale de la SIEMBRA, que funde la fila
+   del portal con la del dimensionador del mismo equipo. Medido el 2026-10-02 sobre la API:
+     - la fusion dejaba la capacidad de Nokia en Gbps —como la guarda `legacyData/nokia.js`—
+       donde todo el portal lee Mbps, y la calculadora trataba un 7250 IXR-e de 300 Gbps como
+       uno de 300 Mbps;
+     - «SRX 345» no casaba con «SRX345», asi que el portal no tenia su IPsec ni su IPS y la
+       calculadora lo apartaba diciendo que el catalogo no publica esas cifras.
+   Ninguna de las dos se ve en `indexPR.js`, que dice «300 Gbps» y tiene razon. Por eso
+   `contrastePortal` y `contrasteGuia` reciben LO QUE SIRVE EL SERVIDOR, no los archivos.
+
+   EN EL PORTAL, SEIS ESTADOS: los cinco del cotizador mas `calla` —el dimensionador trae una
+   cifra que el portal no da—, que en la calculadora es un equipo apartado por un dato que si
+   existe. EN LA GUIA, la ficha se lee como el texto del cotizador, y la alternativa
+   («NE8000 M14 (7.2 Tbps)») cita la cifra de OTRO equipo, que tambien se casa y se contrasta.
+   Una alternativa fuera de venta tiene estado propio: la guia promete equipos activos. */
+
+// Unidades. Todo el portal lee un numero como Mbps (calculadora y comparador); el
+// dimensionador de Nokia guarda la capacidad en Gbps. `escala` es el unico sitio que lo sabe.
+function aMbps(vendor, campo, valor) {
+  const cfg = CONTRASTE_COTIZADOR[vendor];
+  const f = (cfg && cfg.escala && cfg.escala[campo]) || 1;
+  return typeof valor === 'number' ? valor * f : valor;
+}
+
+// Que campo del dimensionador respalda cada cifra que el portal entrega, grupo por grupo. Una
+// lista es «el primero que el modelo traiga»: la cifra de portada de Aruba es el techo WAN en
+// un EdgeConnect y el firewall en un gateway; la de Juniper, el firewall de un SRX y el caudal
+// de un Session Smart Router.
+const CONTRASTE_PORTAL = {
+  hw_ar: { vendor: 'huawei', campos: { fwd: 'fwd', ipsec: 'ipsec', sdwan: 'typ' } },
+  hw_wan: { vendor: 'huawei', campos: { cap: 'cap', mpps: 'mpps' } },
+  cisco: { vendor: 'cisco', campos: { fwd: 'fwd', ipsec: 'ipsec', sdwan: 'sdwan', cap: 'fwd' } },
+  nokia: { vendor: 'nokia', campos: { cap: 'cap' } },
+  fortinet: { vendor: 'fortinet', campos: { fw: 'fw', ips: 'ips', ngfw: 'ngfw', tp: 'tp', ssl: 'ssl', vpn: 'vpn' } },
+  juniper: { vendor: 'juniper', campos: { cap: ['fw', 'cap'], fw: 'fw', vpn: 'vpn', ips: 'ips', atp: 'atp' } },
+  mikrotik: { vendor: 'mikrotik', campos: { fwd: 'fwd', ipsec: 'ipsec' } },
+  aruba: { vendor: 'aruba', campos: { fwd: ['wanMax', 'fw'], fw: 'fw', wanMax: 'wanMax' } },
+};
+
+// Una cifra del portal tal como la leen la calculadora y el comparador: un numero son Mbps
+// (Mpps en `mpps`) y un texto se lee por su unidad («5 Gbps FW»). Cero, vacio y los textos sin
+// un digito («—», «Sí», «N/A») son la forma en que el portal dice que no la da.
+function sinCifra(v) {
+  return v === null || v === undefined || v === 0 || (typeof v === 'string' && !/\d/.test(v));
+}
+function cifraPortal(v) {
+  if (typeof v === 'number') {
+    const dec = (String(v).split('.')[1] || '').length;
+    return { valor: v, tolerancia: 0.5 * Math.pow(10, -dec) };
+  }
+  const m = String(v).trim().match(/^([\d.,]+)\s*(Mbps|Gbps|Tbps)\b/);
+  return m ? cifraCotizador(m[1], m[2]) : null;
+}
+
+// `portal` es la respuesta de `/api/catalog` (o `toIndexPR()`).
+function contrastePortal(portal, opciones) {
+  const o = opciones || {};
+  const indice = o.indice || indiceDimensionador({ cargar: o.cargar });
+  const mapa = o.mapa || CONTRASTE_PORTAL;
+  const out = [];
+  for (const [grupo, cfg] of Object.entries(mapa)) {
+    const r = { grupo, vendor: cfg.vendor, comparadas: 0, coincide: 0, difiere: [], sinDato: [], ilegible: [], calla: [], sinPareja: [] };
+    const porNombre = indice[cfg.vendor];
+    if (!porNombre) { r.error = 'no se pudo cargar el catalogo del dimensionador'; out.push(r); continue; }
+    for (const fila of (portal && portal[grupo]) || []) {
+      const m = porNombre.get(normalizarModelo(fila.model));
+      if (!m) { r.sinPareja.push(fila.model); continue; }
+      // Se agrupa por campo del DIMENSIONADOR: un dato que el portal da en algun campo no esta
+      // callado aunque otro campo que podria llevarlo venga vacio (el Gateway 9106 de Aruba
+      // trae `fwd: 0` y `fw: 10000`, y la calculadora lee `fw`).
+      const porDestino = new Map();
+      for (const [campo, d] of Object.entries(cfg.campos)) {
+        const destino = Array.isArray(d) ? (d.find((c) => typeof m[c] === 'number') || d[0]) : d;
+        if (!porDestino.has(destino)) porDestino.set(destino, []);
+        porDestino.get(destino).push(campo);
+      }
+      for (const [destino, campos] of porDestino) {
+        const dim = typeof m[destino] === 'number' ? aMbps(cfg.vendor, destino, m[destino]) : null;
+        let cita = false;
+        for (const campo of campos) {
+          const v = fila[campo];
+          if (sinCifra(v)) continue;
+          cita = true;
+          const c = cifraPortal(v);
+          if (!c) { r.ilegible.push({ modelo: fila.model, campo, texto: String(v) }); continue; }
+          if (dim === null) { r.sinDato.push({ modelo: fila.model, campo, destino, portal: v }); continue; }
+          r.comparadas++;
+          if (Math.abs(dim - c.valor) <= c.tolerancia) r.coincide++;
+          else r.difiere.push({ modelo: fila.model, campo, destino, portal: v, dimensionador: dim });
+        }
+        if (!cita && dim !== null) r.calla.push({ modelo: fila.model, destino, dimensionador: dim });
+      }
+    }
+    out.push(r);
+  }
+  return out;
+}
+
+// La cifra sin etiqueta de una alternativa es la de portada de cada fabricante. Se toma el
+// primer campo que traiga el modelo, asi un AR y un NE8000 de Huawei se leen cada uno con el suyo.
+const PORTADA = {
+  huawei: ['cap', 'fwd'], cisco: ['fwd'], fortinet: ['fw'], juniper: ['fw', 'cap'],
+  mikrotik: ['fwd'], aruba: ['wanMax', 'fw'], nokia: ['cap'],
+};
+// Una etiqueta tras la cifra («80 Gbps FW», «29 Gbps NGFW») dice que campo es, con el mapa del
+// cotizador de cada fabricante. «WAN» es la cifra de portada de EdgeConnect, y una palabra en
+// minusculas («2.4 Tbps modular») es prosa, no etiqueta. Una etiqueta que no se reconoce no se
+// adivina: la alternativa queda «ilegible».
+const CAMPO_ETIQUETA = { FW: 'fw', FWD: 'fwd' };
+const ETIQUETA_PORTADA = new Set(['WAN']);
+const ROTULO_CAMPO = { cap: 'capacidad', fwd: 'FWD', fw: 'FW', wanMax: 'WAN', ngfw: 'NGFW', vpn: 'IPsec', ipsec: 'IPsec', typ: 'SD-WAN', sdwan: 'SD-WAN' };
+
+// «<modelo> (<cifra>[ <etiqueta>][ resto])[ resto]». El modelo es el prefijo MAS LARGO del texto
+// anterior al parentesis que casa con un equipo del fabricante: el catalogo es un conjunto
+// cerrado, asi que no hace falta adivinar donde acaba el nombre. Solo se lee la primera
+// alternativa —en «RB4011iGS+ (5.6 Gbps) o RB5009UPr+ con PoE-out» se contrasta el RB4011—, y la
+// cifra cuenta solo si va pegada al modelo.
+function leerAlternativa(alt, porNombre) {
+  const texto = String(alt || '');
+  const abre = texto.indexOf('(');
+  const cabeza = (abre >= 0 ? texto.slice(0, abre) : texto).trim();
+  const palabras = cabeza.split(/\s+/).filter(Boolean);
+  let modelo = null;
+  let pareja = null;
+  for (let n = palabras.length; n > 0 && !pareja; n--) {
+    const candidato = palabras.slice(0, n).join(' ');
+    const m = porNombre ? porNombre.get(normalizarModelo(candidato)) : null;
+    if (m) { modelo = candidato; pareja = m; }
+  }
+  let cifra = null;
+  if (abre >= 0 && (!modelo || modelo === cabeza)) {
+    const resto = texto.slice(abre + 1);
+    const c = resto.match(/^\s*([\d.,]+)\s*(Mbps|Gbps|Tbps)/);
+    if (c) {
+      const blanco = c[0].length - c[0].trimStart().length;
+      const tras = resto.slice(c[0].length).match(/^\s+([A-Za-z][\w-]*)/);
+      cifra = {
+        texto: c[0].trim(), unidad: c[2],
+        etiqueta: tras ? tras[1] : null,
+        inicio: abre + 1 + blanco,
+        finCifra: abre + 1 + c[0].length,
+        finEtiqueta: abre + 1 + c[0].length + (tras ? tras[0].length : 0),
+        ...cifraCotizador(c[1], c[2]),
+      };
+    }
+  }
+  return { modelo, pareja, cifra };
+}
+
+// Que campo nombra la cifra de una alternativa, y hasta donde llega el texto que la cita.
+function campoDeCifra(cifra, vendor) {
+  const e = cifra.etiqueta;
+  const mapa = (CONTRASTE_COTIZADOR[vendor] || {}).campos || {};
+  if (e && (mapa[e] || CAMPO_ETIQUETA[e])) {
+    return { candidatos: [mapa[e] || CAMPO_ETIQUETA[e]], texto: `${cifra.texto} ${e}`, fin: cifra.finEtiqueta };
+  }
+  if (!e || ETIQUETA_PORTADA.has(e) || /^[a-z]/.test(e)) {
+    const conEtiqueta = e && ETIQUETA_PORTADA.has(e);
+    return {
+      candidatos: PORTADA[vendor] || [],
+      texto: conEtiqueta ? `${cifra.texto} ${e}` : cifra.texto,
+      fin: conEtiqueta ? cifra.finEtiqueta : cifra.finCifra,
+    };
+  }
+  return null;
+}
+
+// El estado de la alternativa de una entrada de la guia. `fuera(m)` dice si el modelo del
+// dimensionador esta fuera de venta: es la regla de `ficha.js`, que la proyeccion aplica.
+function contrastarAlternativa(alt, vendor, porNombre, fuera) {
+  const a = leerAlternativa(alt, porNombre);
+  if (!a.pareja) return { ...a, estado: a.cifra ? 'sinPareja' : 'sinCifra' };
+  if (fuera && fuera(a.pareja)) return { ...a, estado: 'fueraDeVenta' };
+  if (!a.cifra) return { ...a, estado: 'sinCifra' };
+  const lectura = campoDeCifra(a.cifra, vendor);
+  if (!lectura) return { ...a, estado: 'ilegible' };
+  const cifra = { ...a.cifra, texto: lectura.texto, fin: lectura.fin };
+  const campo = lectura.candidatos.find((c) => typeof a.pareja[c] === 'number');
+  if (!campo) return { ...a, cifra, campo: lectura.candidatos[0], estado: 'sinDato' };
+  const dim = aMbps(vendor, campo, a.pareja[campo]);
+  return { ...a, cifra, campo, dimensionador: dim, estado: Math.abs(dim - cifra.valor) <= cifra.tolerancia ? 'coincide' : 'difiere' };
+}
+
+// Lo que pinta la guia, con la regla del cotizador: una cifra en disputa no se cita —ni la de
+// la ficha ni la de la alternativa— y una alternativa fuera de venta no se recomienda. Lo que
+// se retira queda dicho en `enRevision` y `altRetirada`, para la pantalla y para el informe.
+function proyectarGuia(entrada, ctx) {
+  const { vendor, pareja, porNombre, fuera } = ctx || {};
+  const ficha = proyectarFila(entrada.spec, pareja, CONTRASTE_COTIZADOR[vendor]);
+  const enRevision = ficha.enRevision.map((r) => ({ donde: 'ficha', campo: r.campo, citado: r.cotizador, dimensionador: r.dimensionador }));
+  let alt = entrada.alt || '';
+  let altRetirada = null;
+  const a = contrastarAlternativa(alt, vendor, porNombre, fuera);
+  if (a.estado === 'fueraDeVenta') {
+    altRetirada = { modelo: a.modelo, motivo: 'fuera de venta' };
+    alt = '';
+  } else if (a.estado === 'difiere') {
+    enRevision.push({ donde: 'alternativa', modelo: a.modelo, campo: a.campo, citado: a.cifra.texto, dimensionador: mbpsLegible(a.dimensionador) });
+    alt = `${alt.slice(0, a.cifra.inicio)}${ROTULO_CAMPO[a.campo] || a.campo} en revisión${alt.slice(a.cifra.fin)}`;
+  }
+  return { spec: ficha.spec, alt, enRevision, altRetirada };
+}
+
+// `guia` es la respuesta de `/api/guia/roles` (o `toGuiaRoles()`), donde la proyeccion ya
+// aplico la regla: lo que difiere llega como «en revision» con su explicacion, y una
+// alternativa fuera de venta llega retirada. Se cuenta lo que se contrasto y lo que no se pudo.
+function contrasteGuia(guia, opciones) {
+  const o = opciones || {};
+  const indice = o.indice || indiceDimensionador({ cargar: o.cargar });
+  const r = {
+    entradas: 0, comparadas: 0, coincide: 0, enRevision: [], sinDato: [], ilegible: [],
+    fichaSinPareja: [], altSinPareja: [], altRetiradas: [], sinFicha: [],
+  };
+  for (const [rol, lista] of Object.entries(guia || {})) {
+    for (const e of lista) {
+      r.entradas++;
+      const vendor = String(e.v || '').toLowerCase();
+      const porNombre = indice[vendor] || null;
+      const pareja = porNombre ? porNombre.get(normalizarModelo(e.model)) : null;
+      if (!String(e.spec || '').trim()) r.sinFicha.push({ rol, modelo: e.model });
+      for (const x of e.enRevision || []) {
+        r.enRevision.push({ rol, modelo: e.model, donde: x.donde, alternativa: x.modelo || null, campo: x.campo, citado: x.citado, dimensionador: x.dimensionador });
+      }
+      if (e.altRetirada) r.altRetiradas.push({ rol, modelo: e.model, alternativa: e.altRetirada.modelo, motivo: e.altRetirada.motivo });
+      if (pareja) {
+        for (const c of contrastarFila(e.spec, pareja, CONTRASTE_COTIZADOR[vendor])) {
+          if (c.estado === 'ilegible') r.ilegible.push({ rol, modelo: e.model, texto: c.texto });
+          else if (c.estado === 'sinDato') r.sinDato.push({ rol, modelo: e.model, campo: c.campo, citado: c.texto });
+          else { r.comparadas++; if (c.estado === 'coincide') r.coincide++; }
+        }
+      } else {
+        const { cifras } = leerSpec(e.spec);
+        if (cifras.length) r.fichaSinPareja.push({ rol, modelo: e.model, cifras: cifras.map((c) => c.texto) });
+      }
+      // `o.fuera(vendor, m)` es la misma regla de fin de venta; con ella, una alternativa fuera de
+      // venta que la proyeccion dejara pasar tambien se cuenta.
+      const fuera = o.fuera ? (m) => o.fuera(vendor, m) : null;
+      const a = contrastarAlternativa(e.alt, vendor, porNombre, fuera);
+      if (a.estado === 'fueraDeVenta') r.altRetiradas.push({ rol, modelo: e.model, alternativa: a.modelo, motivo: 'fuera de venta', sinRetirar: true });
+      else if (a.estado === 'sinPareja') r.altSinPareja.push({ rol, modelo: e.model, alternativa: e.alt });
+      else if (a.estado === 'ilegible') r.ilegible.push({ rol, modelo: e.model, texto: e.alt });
+      else if (a.estado === 'sinDato') r.sinDato.push({ rol, modelo: a.modelo, campo: a.campo, citado: a.cifra.texto });
+      else if (a.estado === 'coincide' || a.estado === 'difiere') {
+        r.comparadas++;
+        if (a.estado === 'coincide') r.coincide++;
+        // Un «difiere» aqui es que la proyeccion no aplico la regla: lo que se sirve ya no
+        // deberia citar ninguna cifra en disputa.
+        else r.enRevision.push({ rol, modelo: e.model, donde: 'alternativa', alternativa: a.modelo, campo: a.campo, citado: a.cifra.texto, dimensionador: mbpsLegible(a.dimensionador), sinRetirar: true });
+      }
+    }
+  }
+  return r;
+}
+
 module.exports = {
   CONTRASTE_COTIZADOR, leerSpec, normalizarModelo, indiceDimensionador,
   contrastarFila, proyectarFila, contrasteCotizador, mbpsLegible,
+  aMbps, CONTRASTE_PORTAL, contrastePortal,
+  leerAlternativa, contrastarAlternativa, proyectarGuia, contrasteGuia,
 };

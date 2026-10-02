@@ -263,16 +263,32 @@ function showRec(node){
 
   document.getElementById('recVendors').innerHTML = recs.map(r=>`
     <div class="vendor-rec">
-      <div class="vendor-head" style="background:${r.color}">
-        <span style="font-size:13px">${r.v}</span>
+      <div class="vendor-head" style="background:${esc(r.color)}">
+        <span style="font-size:13px">${esc(r.v)}</span>
       </div>
       <div class="vendor-body">
-        <div class="rec-model">${r.model}</div>
-        <div class="rec-spec">${r.spec}</div>
-        <span class="elp-tag">Ref. precio: ${r.elp}</span>
-        <div class="rec-alt"><b>Alternativa:</b> ${r.alt}</div>
+        <div class="rec-model">${esc(r.model)}</div>
+        <div class="rec-spec"${tituloRevision(r, 'ficha')}>${esc(r.spec)}</div>
+        ${r.soloGuia ? '<div class="rec-nota">Fuera del catálogo: cifras sin contrastar</div>' : ''}
+        <span class="elp-tag">Ref. precio: ${esc(r.elp)}</span>
+        ${r.alt ? `<div class="rec-alt"${tituloRevision(r, 'alternativa')}><b>Alternativa:</b> ${esc(r.alt)}</div>` : ''}
       </div>
     </div>`).join('');
+}
+
+// Los textos llegan del catalogo y se pintan como texto, no como HTML.
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+// Una cifra que el dimensionador contradice llega como «en revisión» (la misma regla que el
+// cotizador); el título dice qué decía la guía y qué dice el dimensionador.
+function tituloRevision(r, donde){
+  const items = (r.enRevision || []).filter(x => x.donde === donde);
+  if(!items.length) return '';
+  const t = 'Cifra en revisión: ' + items.map(x => `la guía decía ${x.citado} y el dimensionador ${x.dimensionador}`).join('; ')
+    + '. Hasta contrastarla con la ficha del fabricante no se cita ninguna de las dos.';
+  return ` title="${esc(t)}"`;
 }
 
 /* ══════════════════════════════════════════════

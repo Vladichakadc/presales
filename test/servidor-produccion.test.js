@@ -677,3 +677,79 @@ test('el cotizador cita el texto de su propio catalogo, no el de otra pantalla',
   const m8 = Object.values(guia).flat().find((e) => /NE8000 M8$/.test(e.model));
   assert.strictEqual(m8.spec, archivo.find((r) => r.model === 'NetEngine NE8000 M8').spec);
 });
+
+test('el portal sirve las cifras del dimensionador, en la unidad que lee la calculadora', async () => {
+  // Medido el 2026-10-02 en el navegador: la calculadora trataba un 7250 IXR-e de 300 Gbps como uno
+  // de 300 Mbps, porque la siembra le fundia al portal la capacidad de Nokia en Gbps; y apartaba el
+  // SRX 345 «porque el catalogo no publica su IPsec», porque «SRX 345» no casaba con «SRX345».
+  // Ninguna de las dos cosas esta en un archivo: solo existen tras la siembra.
+  const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
+  const PR = await (await fetch(`${BASE}/api/catalog`, { headers: { cookie: ana } })).json();
+  const { contrastePortal } = require('../server/services/cifrasCotizador');
+  const r = contrastePortal(PR);
+  const malas = r.flatMap((g) => [
+    ...g.difiere.map((x) => `${g.grupo} · ${x.modelo}: ${x.campo} ${x.portal} frente a ${x.dimensionador} Mbps`),
+    ...g.calla.map((x) => `${g.grupo} · ${x.modelo}: el portal no da ${x.destino} y el dimensionador si`),
+    ...g.ilegible.map((x) => `${g.grupo} · ${x.modelo}: ${x.campo} «${x.texto}» no se sabe leer`),
+  ]);
+  assert.deepStrictEqual(malas, [], 'el portal y el dimensionador no dicen lo mismo (npm run catalogo)');
+  assert.ok(r.reduce((n, g) => n + g.comparadas, 0) > 300, 'se compararon pocas cifras: el contraste no esta mirando');
+
+  const nokia = require('../server/seed/legacyData/nokia');
+  const ixr = PR.nokia.find((p) => p.model === '7250 IXR-e');
+  assert.strictEqual(ixr.cap, nokia.MODELS_ROUTER.find((m) => m.id === '7250 IXR-e').cap * 1000, 'la capacidad de Nokia llega en Mbps');
+  const juniper = require('../server/seed/legacyData/juniper').MODELS.find((m) => m.id === 'SRX345');
+  const srx = PR.juniper.find((p) => p.model === 'SRX 345');
+  assert.deepStrictEqual([srx.vpn, srx.ips, srx.atp], [juniper.vpn, juniper.ips, juniper.atp], 'la fila del portal recibe las cifras de su gemela');
+  // Y la gemela no aparece dos veces en el dimensionador: conserva su categoria del portal.
+  const dim = await (await fetch(`${BASE}/api/dimensionador/juniper`, { headers: { cookie: ana } })).json();
+  assert.deepStrictEqual(dim.models.filter((m) => /^SRX ?345$/.test(m.id)).map((m) => m.id), ['SRX345']);
+});
+
+test('la guia de diseno pinta el texto del catalogo y no cita ni recomienda lo que el catalogo descarta', async () => {
+  const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
+  const guia = await (await fetch(`${BASE}/api/guia/roles`, { headers: { cookie: ana } })).json();
+  const cot = await (await fetch(`${BASE}/api/cotizador/catalog`, { headers: { cookie: ana } })).json();
+  const archivo = require('../server/seed/legacyData/guiaRoles');
+  const { contrasteGuia, normalizarModelo } = require('../server/services/cifrasCotizador');
+  const servidas = Object.values(guia).flat();
+
+  // Cada rol conserva sus fabricantes: retirar un equipo fuera de venta sin sustituirlo dejo el
+  // rol de NGFW sin FortiGate ni SRX hasta el 2026-10-02.
+  for (const [rol, lista] of Object.entries(archivo)) {
+    assert.deepStrictEqual((guia[rol] || []).map((e) => e.v), lista.map((e) => e.v), `${rol}: la guia perdio una recomendacion`);
+  }
+  // Ninguna ficha en blanco, y la del catalogo es la misma que cita el cotizador, regla incluida.
+  for (const e of servidas) {
+    assert.ok(String(e.spec).trim(), `${e.model} se recomienda sin texto`);
+    const linea = cot.find((c) => c.vendor === e.v && normalizarModelo(c.model) === normalizarModelo(e.model));
+    if (linea) assert.strictEqual(e.spec, linea.spec, `${e.model}: la guia y el cotizador citan textos distintos`);
+  }
+  // El texto propio del archivo solo lo llevan los equipos fuera del catalogo, y es el que se pinta.
+  for (const [rol, lista] of Object.entries(archivo)) {
+    for (const e of lista) {
+      const s = guia[rol].find((x) => x.model === e.model || normalizarModelo(x.model) === normalizarModelo(e.model));
+      assert.strictEqual(Boolean(s.soloGuia), e.spec !== undefined, `${rol} · ${e.model}: ${s.soloGuia ? 'no casa con el catalogo' : 'casa con el catalogo y trae un texto que no se ve'}`);
+      if (e.spec !== undefined) assert.strictEqual(s.spec, e.spec);
+    }
+  }
+  // Lo que el servidor deja pasar se cuenta con la misma regla que el informe. Fuera de venta, sin
+  // mirar la base: un equipo del portal que el portal ya no sirve (el portal retira lo que esta
+  // fuera de venta, conjunto de Fortinet incluido) o uno cuyo ultimo pedido vencio (`ficha.js`).
+  const PR = await (await fetch(`${BASE}/api/catalog`, { headers: { cookie: ana } })).json();
+  const grupo = (g) => (g === 'hw_ar' || g === 'hw_wan' ? 'huawei' : g);
+  const claves = (obj) => new Set(Object.entries(obj).flatMap(([g, filas]) => filas.map((f) => `${grupo(g)}::${normalizarModelo(f.model)}`)));
+  const vigentes = claves(PR);
+  const delPortal = claves(require('../server/seed/legacyData/indexPR'));
+  const { FICHA } = require('./ayuda/navegador.js').cargar('public/js/ficha.js');
+  const fuera = (vendor, m) => {
+    const clave = `${vendor}::${normalizarModelo(m.id)}`;
+    return (delPortal.has(clave) && !vigentes.has(clave)) || FICHA.rango(m) === 2;
+  };
+  assert.ok(fuera('fortinet', { id: 'FortiGate 600F' }) && fuera('cisco', { id: 'ASR 1006-X', eolAnnounced: { lastOrder: '2026-07-31' } }),
+    'la regla de fin de venta de esta prueba no reconoce los casos conocidos');
+  const r = contrasteGuia(guia, { fuera });
+  assert.deepStrictEqual(r.enRevision.filter((x) => x.sinRetirar), [], 'la guia cita una cifra que el dimensionador contradice');
+  assert.deepStrictEqual(r.altRetiradas.filter((x) => x.sinRetirar), [], 'la guia recomienda como alternativa un equipo fuera de venta');
+  assert.ok(r.comparadas > 60, `solo se contrastaron ${r.comparadas} cifras de la guia`);
+});

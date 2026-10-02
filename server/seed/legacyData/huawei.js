@@ -163,9 +163,18 @@ const MODELS = [
 {id:'NE8000 M8', cls:'WAN', ser:'NE8000 M', fam:'Agregación, 3U, hasta 8 tarjetas', cap:4800000, mpps:null, lan:0, poe:0, wan:0, wifi:0,
  ports:'3U · 8 tarjetas DC / 6 AC de 400 G · MPU y SFU 1:1 · 774.3 W típicos', optics:['qsfp100','sfp25','sfp10','ge'], parts:['RACK','CONSOLE'],
  psu:{watts:774.3}},
-{id:'NE8000 M14', cls:'WAN', ser:'NE8000 M', fam:'Agregación grande, 5U, 14 tarjetas', cap:2000000, mpps:1117, lan:0, poe:0, wan:0, wifi:0,
- ports:'5U · 14 tarjetas DC de 400 G · MPU y SFU 1:1 · fuentes 1+1 · 865.8 W típicos', optics:['qsfp100','sfp25','sfp10','ge'], parts:['RACK','CONSOLE'],
- redund:true, psu:{watts:865.8, tipo:'DC', texto:'Fuentes 1+1 · 865.8 W típicos.'}},
+// M14 (2026-10-02): su ficha oficial (PDF generado el 2026-05-27, «© 2025»), traída por el mismo
+// camino que la del M8 y con la misma plantilla en el título («NetEngine 8000 M4»; el texto nombra
+// el M14 doce veces y el M4 ninguna). Publica la conmutación POR TARJETA DE CONTROL: IPU-1T2
+// 2,4 Tbps, IPU-2T 4 Tbps e IPU-3T6 7,2 Tbps, con tarjetas de 400 G las dos últimas. La fila
+// llevaba 2 Tbps, que no es ninguna de las tres —es la capacidad de PUERTOS de la IPU-2T, la
+// mitad—, mientras el portal y la guía decían 7,2. Como el M8, la fila describe la tarjeta de
+// control más alta: IPU-3T6, 7,2 Tbps y sus 931 W típicos (los 865,8 W que llevaba no salen en
+// ninguna columna de esta edición). La ficha no publica Mpps: los 1.117 siguen, como los del F8,
+// con la verificación de la Fase 2 detrás.
+{id:'NE8000 M14', cls:'WAN', ser:'NE8000 M', fam:'Agregación grande, 5U, 14 tarjetas', cap:7200000, mpps:1117, lan:0, poe:0, wan:0, wifi:0,
+ ports:'5U · 14 tarjetas DC de 400 G con IPU-3T6 · MPU y SFU 1:1 · fuentes 1+1 · 931 W típicos', optics:['qsfp100','sfp25','sfp10','ge'], parts:['RACK','CONSOLE'],
+ redund:true, psu:{watts:931, tipo:'DC', texto:'Fuentes 1+1 · 931 W típicos con IPU-3T6.'}},
 // F8: la ficha publica conmutación de 4 Tbps (versión 2T) y 12,8 Tbps (versión 6.4T). Esta fila
 // es la 6.4T —tarjetas de 800 G— y llevaba 6,4 Tbps, que es su capacidad de PUERTOS, otra base:
 // la mitad de la conmutación, que cuenta los dos sentidos.

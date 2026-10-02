@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-02 (**Los jobs de navegador pasan a Ubuntu 26, y el cotizador y el dimensionador dicen la misma cifra en los siete fabricantes.** Ubuntu 26: medido antes de moverse, Playwright 1.63 pasaba todo pero la cobertura del contraste volvía a contar solo el último caso; la 1.61.1 da lo mismo que en local, y `contraste.js` ya no escribe una cobertura que contradice la corrida. Huawei y Juniper: sus fichas oficiales, traídas por Actions, cerraron las seis diferencias. En Juniper mandó el datasheet vigente de la línea SRX300 frente a la matriz de 2020, y eso cerró de paso la disputa del SRX380. Y preguntando a la API en vez de leer archivos salió más: el cotizador citaba en seis líneas de Huawei el texto de la guía de diseño (el M8, «1086 Mpps» sin fuente), y la guía recomendaba tres equipos fuera de venta. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-02 (**El portal y la guía, contrastados con el dimensionador sobre lo que sirve el servidor.** Es la mejora propuesta al cerrar la entrega anterior. `npm run catalogo` siembra una base en memoria y compara lo que reciben las pantallas, y la primera medida encontró dos errores en producción que ningún archivo mostraba: la calculadora leía la capacidad de Nokia mil veces más pequeña (un 7250 IXR-e de 300 Gbps como uno de 300 Mbps) y apartaba el SRX 320, el 345 y el 4200 «por falta de dato» teniendo su IPsec en el catálogo. La guía aplica ahora la regla del cotizador, recupera los fabricantes que perdió al retirar equipos fuera de venta y deja de guardar 30 textos y 4 precios que nadie veía. Y el NE8000 M14 se cerró con su ficha oficial: 7,2 Tbps con IPU-3T6, no 2. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-02 (**Los jobs de navegador pasan a Ubuntu 26, y el cotizador y el dimensionador dicen la misma cifra en los siete fabricantes.** Ubuntu 26: medido antes de moverse, Playwright 1.63 pasaba todo pero la cobertura del contraste volvía a contar solo el último caso; la 1.61.1 da lo mismo que en local, y `contraste.js` ya no escribe una cobertura que contradice la corrida. Huawei y Juniper: sus fichas oficiales, traídas por Actions, cerraron las seis diferencias. En Juniper mandó el datasheet vigente de la línea SRX300 frente a la matriz de 2020, y eso cerró de paso la disputa del SRX380. Y preguntando a la API en vez de leer archivos salió más: el cotizador citaba en seis líneas de Huawei el texto de la guía de diseño (el M8, «1086 Mpps» sin fuente), y la guía recomendaba tres equipos fuera de venta. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-02 (**Cuatro cierres sobre lo desplegado.** La auditoría de prompts y el `/init`, aplicados; `DATABASE_PATH` medido sin leer secretos (`./database.sqlite`, efímera) y el arranque lo dice en una línea `[db]`; Railway consulta `/salud` antes de dar por bueno un despliegue; y el M4 de Aruba decidido: el breakout no descarga más de lo que cabe por Internet. Dependabot #8 y #9 entraron con ellos. Ver *Cerrado recientemente*.)
 
@@ -527,7 +529,7 @@ decisión del dueño o el datasheet de Huawei (pendiente 14).
 | H2 | **Hecha en parte.** SD-WAN y UTM fijan piso de capa `typ` (H-01, antes 2,1x corto) y la pantalla dice que la capa subió; UTM declara que no hay cifra de inspección y pide PoC (H-02). **Sigue abierto H-03**: el ×2 bidireccional por defecto no tiene fuente para la serie AR; no se cambia sin el datasheet | en parte |
 | H3 | **Hecha (2026-09-30).** Selector de plataforma `#platSeg` (NetEngine AR · A800 E · NE8000) elegido antes que el caudal: solo compiten los modelos de esa línea, y lo que no aplica (SD-WAN, UTM, WAC, PoE, 4G/5G, Wi-Fi, LAN en transporte; FlexE en AR) se oculta con `data-inactivo`, conserva su valor y sale del cálculo y del enlace. FlexE pasa a dato del modelo (`flexe: true` solo en el A821 E, que lo publica); el resto es «no consta», no se aparta y va detrás del confirmado. El modo «Nodo de núcleo» se retiró y los enlaces y perfiles viejos con `modeSeg=core` se traducen a NE8000. Dos escenarios de la línea base del contraste (2 y 6 Gbps de reenvío) salieron de ella a propósito y quedan como afirmaciones del cambio. TPM queda fuera: la pantalla no lo pide como requisito | hecha |
 | H4 | **Hecha en parte.** BOM con papel por pieza: alternativas de MPU y fuente en una línea «elegir una», 5G y WSIC fuera si no se piden, doble fuente x2, ópticas en una línea a elegir (H-06, H-07 sin inventar código). **HA 1+1 hecha (H-12, 2026-09-29)**: `#chkHa` (repone desde el enlace compartido y viaja como dos equipos al cotizador, conducido en el contraste `huawei`) cotiza dos equipos por sitio, cada uno al caudal completo (suma disponibilidad, no capacidad), y «misión crítica» sin HA lo advierte. **Salió de paso** que SnS se cotizaba dos veces (licencia y soporte). **Capa comercial hecha (H-13, 2026-09-29):** plazo de 1/3/5 años (`#anios`, el texto de cada suscripción dice el término real), precio de referencia del equipo tomado del cotizador (13 de los 40 modelos; el resto sale «consultar»), simulador de precio neto, TCO **declarado parcial** (solo el equipo tiene precio; licencias, suscripciones y soporte van «consultar») y perfiles multi-sede con consolidado. **Ópticas por enlace hechas (H-07, 2026-09-29):** cada módulo se declara (familia, modelo, cantidad por equipo), viaja en el enlace compartido (`#opticasData`) y entra al BOM con su código; una fila que ya no encaja tras cambiar de equipo sale como inválida, no se descarta. **Sigue sin existir la matriz de compatibilidad por chasis y versión de VRP** (el catálogo solo respalda la familia), y la pantalla lo dice | **hecha salvo datos** |
-| H5 | Datos: 27 de 40 modelos no casan con el cotizador, M14 incoherente (las cifras del NE8000 M8/F8 entre herramientas se cerraron el 2026-10-02 con sus fichas oficiales), el tope de túneles y sesiones por modelo (H-10, H-14; **H-11 declarado en pantalla el 2026-09-29**: el hub muestra cuántos túneles pide y que el catálogo no trae el tope, sin apartar a nadie; el filtro ya existe y se activa solo cuando un modelo traiga `tuneles`; las sesiones no se piden porque exigirían usuarios por sede) | bloqueado en parte por la cuenta Huawei (pendiente 14) |
+| H5 | Datos: 27 de 40 modelos no casan con el cotizador, M14 incoherente (cerrado el 2026-10-02 con su ficha oficial, como las del NE8000 M8/F8: 7,2 Tbps con IPU-3T6), el tope de túneles y sesiones por modelo (H-10, H-14; **H-11 declarado en pantalla el 2026-09-29**: el hub muestra cuántos túneles pide y que el catálogo no trae el tope, sin apartar a nadie; el filtro ya existe y se activa solo cuando un modelo traiga `tuneles`; las sesiones no se piden porque exigirían usuarios por sede) | bloqueado en parte por la cuenta Huawei (pendiente 14) |
 
 ### Cotizador y dimensionador dicen cifras distintas del mismo equipo (cerrado: Cisco el 2026-10-01, Huawei y Juniper el 2026-10-02)
 
@@ -608,7 +610,7 @@ no una lectura. Se anotan con el documento oficial donde confirmarlas:
 | Hallazgo (según el buscador) | Casa con el catálogo | Qué confirma o cambia | Documento oficial a leer |
 |---|---|---|---|
 | Nota de la ficha AR6710: el rendimiento SD-WAN (EVPN+IPsec+QoS) es «la suma de flujos bidireccionales» | El mismo resumen da 7 Gbps SD-WAN IMIX al AR6710-H4T4X2Y7, que es el `typ: 7000` ya verificado | **Respaldaría H-03**: el ×2 por defecto sería correcto para SD-WAN | «NetEngine AR6710-H Series Data Sheet R25C10», e.huawei.com/en/documents/products/enterprise-network/c63ee1473b9147a4b6a50dc64c8f1bcd |
-| NE8000 M14: «hasta 2 Tbps, ampliable a 4,8 Tbps» | `cap: 2000000` (2 Tbps) coincide | **H-14 del M14 explicado**: no es un error, es la capacidad actual frente a la ampliable | «NetEngine 8000 M14 Datasheet», e.huawei.com/en/documents/products/enterprise-network/f4f1a7b9424a44ff9770b75a19eb5d2e |
+| NE8000 M14: «hasta 2 Tbps, ampliable a 4,8 Tbps» | `cap: 2000000` (2 Tbps) coincide | **Leída la ficha oficial el 2026-10-02: el resumen confundía bases.** La ficha publica conmutación por tarjeta de control (IPU-1T2 2,4 Tbps, IPU-2T 4 Tbps, IPU-3T6 7,2 Tbps); los 2 Tbps son la capacidad de puertos de la IPU-2T. La fila pasa a 7,2 Tbps | «NetEngine 8000 M14 Datasheet», e.huawei.com/en/documents/products/enterprise-network/f4f1a7b9424a44ff9770b75a19eb5d2e |
 | NE8000 M8: «hasta 1,2 Tbps, ampliable a 2 Tbps» (ficha de 2021) | **No casa**: el dimensionador dice 2,4 Tbps y el cotizador 4,8 Tbps | El sospechoso pasa a ser el **M8**, con tres cifras distintas; puede haber dos generaciones. **Leída la ficha oficial el 2026-10-02: eran dos generaciones de tarjeta de control** (IPU-1T2 2,4 Tbps de conmutación, IPU-2T4 4,8 Tbps), y la fila del catálogo es la IPU-2T4 | «NetEngine 8000 M8 Datasheet», e.huawei.com/en/documents/products/enterprise-network/e9dd06e260b64df683f6221fc8442cbf |
 | AR8140: SD-WAN 12–20 Gbps IMIX y 25–36 Gbps a 1.400 bytes | `typ: 12000` coincide; `fwd: 25000` coincide con la cifra **SD-WAN de 1.400 bytes**, no con reenvío NAT+ACL+QoS IMIX | Si se confirma, el `fwd` del AR8140 mide otra cosa que la etiqueta de la pantalla | Ficha AR8100 de e.huawei.com |
 | AR651: SD-WAN 800 Mbps IMIX (AR651C: 600) | Sin ancla: `typ` es `null` y el resumen no da otra columna de la fila | Llenaría el `typ` que hoy aparta a la serie AR650 | «Huawei NetEngine AR650 Series Datasheet 20250810-v3», e.huawei.com/marketingcloud |
@@ -1556,28 +1558,20 @@ publicar estos estados en GitHub, el aviso callaría»), visto por primera vez:
   por ejemplo, una corrida programada que compare el commit desplegado con la cabeza de `main`.
   Con un solo caso en 46 corridas, no compensa todavía.
 
-## Abierto: la guía de diseño y el portal, frente al catálogo (2026-10-02)
+## Abierto: lo que la guía recomienda fuera del catálogo (2026-10-02)
 
-Salió al cerrar Huawei y Juniper, preguntando a la API en vez de leer los archivos. Lo que se
-arregló ese día está en *Cerrado recientemente*; esto es lo que queda:
+Lo que quedaba del bloque «la guía de diseño y el portal, frente al catálogo» se cerró ese mismo
+día (ver *Cerrado recientemente*). Queda lo que ninguna comprobación puede cerrar desde aquí:
 
-- **El informe compara el cotizador con el dimensionador, y nada más.** El portal (`indexPR.js`)
-  y la guía (`guiaRoles.js`) también citan cifras, y no se contrastan. El caso medido: el NE8000
-  M14 sale con 7,2 Tbps en el portal y en la guía («alternativa: NE8000 M14 (7,2 Tbps)») y con
-  2 Tbps en el dimensionador, que es el que dimensiona.
-- **La guía conserva textos que ya no muestra.** 30 de sus 36 entradas que casan con un equipo del
-  cotizador traen otro texto, y 4 otro precio; la guía pinta los del catálogo, así que no se ven.
-  Pero algunos llevan cifras que el cierre de Cisco retiró («Catalyst 8300-2N2S-6T · Forwarding
-  10 Gbps» frente a los 5 publicados) o precios viejos (FortiGate 400F a 7.500 frente a 17.570 de
-  la lista firmada). Si el equipo saliera del catálogo, volverían a pintarse.
-- **Los equipos que solo viven en la guía llevan cifras sin fuente declarada**: 7750 SR-7s
-  («108 Tbps»), MX480, QFX, CloudEngine y los controladores SD-WAN.
-- **El FortiGate 100F y el 600F salen con la ficha en blanco en la guía**: el producto existe
-  (del dimensionador) sin texto comercial, porque no están en la lista Mid de precios.
-
-Cerrarlo es extender `CONTRASTE_COTIZADOR` (o una sección hermana) al portal y a la guía, y decidir
-qué texto pinta la guía cuando el catálogo no trae uno. **Es decisión de alcance, no corrección**:
-la guía es material de diseño, no de cotización, y el dueño puede preferir que solo nombre equipos.
+- **Nueve equipos de la guía no tienen pareja en ningún dimensionador**, así que sus cifras no se
+  contrastan: los MX de Juniper (MX204, MX304, MX480, que sí están en el cotizador), el AR8700-10, y
+  los que solo viven en la guía —QFX 5100-48S-6Q, QFX 10002-36Q, CloudEngine 6870, CloudEngine 9860
+  y USG6000E—. Estos cinco la guía los marca «Fuera del catálogo: cifras sin contrastar» y van a
+  «Consultar»: los precios que llevaban no tenían documento detrás. Nueve alternativas están en el
+  mismo caso (MX960, QFX 5120-32C, CE8850, CE9800...). `npm run catalogo` las lista.
+- **Cerrarlo es una decisión de alcance**: o se dan de alta esos equipos en un dimensionador con su
+  ficha oficial (los dominios de Juniper y Huawei están bloqueados aquí; van por Actions), o la guía
+  deja de recomendar lo que el catálogo no cubre.
 
 ## Limpieza
 
@@ -1663,6 +1657,43 @@ que ya se comprobó y lo que cuesta cada opción.
 
 ## Cerrado recientemente
 
+### El portal y la guía, frente al dimensionador, sobre lo que sirve el servidor (2026-10-02)
+
+Era la mejora propuesta al cerrar la entrega anterior, y el bloque abierto «la guía de diseño y el
+portal, frente al catálogo».
+
+- **El informe mide lo servido, no los archivos.** `npm run catalogo` gana la sección «PORTAL Y GUÍA
+  FRENTE AL DIMENSIONADOR». `scripts/ayuda/pantallas-servidas.js` siembra una base en memoria con la
+  misma `seedCatalog()` del arranque y devuelve lo que sirven `/api/catalog` y `/api/guia/roles`.
+- **Y por eso encontró dos errores en producción que ningún archivo mostraba**, confirmados en el
+  navegador:
+  - **Nokia, mil veces más pequeño.** La siembra le fundía al portal la capacidad del dimensionador,
+    que va en Gbps, y la calculadora y el comparador leen Mbps: un 7250 IXR-e de 300 Gbps salía como
+    uno de 300 Mbps. Ahora `toIndexPR()` convierte con la escala de `cifrasCotizador.aMbps()`.
+  - **El SRX 320, el 345 y el 4200, apartados por un dato que existía.** «SRX 345» no casaba con
+    «SRX345», y el portal se quedaba sin su IPsec, IPS y ATP. La siembra funde ahora esas cifras en
+    la gemela del portal, que conserva su nombre y su categoría.
+- **La guía aplica la regla del cotizador**: una cifra que el dimensionador contradice sale «en
+  revisión», también en la alternativa, y una alternativa fuera de venta no se pinta. La primera
+  medida dio cuatro cifras en disputa y cuatro alternativas fuera de venta (el 600F y tres veces el
+  ASR 1006-X).
+- **El archivo de la guía, limpio.** 30 textos y 4 precios que nadie veía salieron de las entradas
+  que casan con el catálogo, y los cinco equipos que se retiraron por fin de venta tienen sustituto
+  vigente, con el motivo en la cabecera de `guiaRoles.js`. Los roles recuperan sus fabricantes. Los
+  equipos que solo viven en la guía van a «Consultar» y llevan una nota.
+- **El archivo del portal, alineado.** Diecisiete cifras de `indexPR.js` que la siembra pisaba ya no
+  coincidían (el Catalyst 8300-2N2S-6T con 10 Gbps de forwarding frente a los 5 de su ficha); una
+  prueba exige ahora que no se separen.
+- **NE8000 M14**, con su ficha oficial (PDF del 2026-05-27, traído por Actions; la URL se descubrió en
+  la página de documentos de Huawei): conmutación de 2,4, 4 o 7,2 Tbps según la tarjeta de control.
+  La fila pasa de 2 a 7,2 Tbps (IPU-3T6, como la del M8 es la IPU-2T4) y de 865,8 a 931 W típicos.
+- **Resultado.** Portal: 371 de 371 cifras coinciden, ninguna callada. Guía: 48 recomendaciones, 89
+  de 89 cifras coinciden, ninguna en revisión. Cotizador: los Session Smart Router entran en el
+  contraste (Juniper, de 15 a 20).
+- **Comprobado saboteando** cada arreglo: sin la conversión de unidades, sin la gemela y sin la
+  regla de la guía, las pruebas nuevas se ponen en rojo con el equipo y la cifra.
+
+
 ### Los jobs de navegador, en Ubuntu 26, y una cobertura que ya no puede mentir (2026-10-02)
 
 - **Qué pasaba.** `ubuntu-latest` pasa a Ubuntu 26 el 19 de octubre. `pantallas` y `limites` iban
@@ -1746,7 +1777,8 @@ que ya se comprobó y lo que cuesta cada opción.
   Juniper 15/15). Los 8 contrastes, sin discrepancias con los datos nuevos.
 - **Lo que no cierra.** El NE8000 M14 sigue incoherente: 2 Tbps en el dimensionador y 7,2 en el
   portal, que este informe no compara. El resto de Mpps de NetEngine tampoco tiene ficha leída.
-  Sigue en H5 y en el pendiente 14.
+  Sigue en H5 y en el pendiente 14. *(El M14 se cerró ese mismo día con su ficha oficial, y el
+  informe ya compara el portal: ver «El portal y la guía, frente al dimensionador».)*
 
 ### M4 de Aruba: el breakout no descarga más de lo que cabe por Internet (2026-10-02)
 
