@@ -1687,6 +1687,18 @@ Mejora propuesta al cerrar la entrega anterior.
   - Ocho sabotajes del módulo y del workflow, todos cazados. Dos de ellos, el enlace a Railway
     sin anclar por delante o por detrás, pasaban con la primera versión de la prueba, y se
     endureció.
+- **Comprobado en producción, de punta a punta.**
+  - El simulacro, lanzado desde la rama (corrida `37000162445`), abrió el issue #10 con la
+    etiqueta puesta al crearlo. `issues: write` basta para ponerla: la salvaguarda de `addLabels`,
+    añadida por la revisión diferencial, no hizo falta y se queda.
+  - El despliegue de `2e3f465` (Railway `aefb12c8`, SUCCESS, con `[seed]` y el arranque) publicó
+    `in_progress` y `success`. La corrida del primero (`37001233020`) salió `skipped`, que según
+    Railway nunca bloquea. La del segundo (`37001348984`) corrió la sonda en verde y cerró el #10
+    con su comentario, 17 s después del `success`.
+  - `verificar` y `pantallas`, en verde sobre `2e3f465`.
+- **Lo que salió por el camino.** En la corrida, GitHub avisa de que `actions/github-script@v7`
+  apunta a Node 20 y la fuerza a correr en Node 24. Pasa igual en `limites` y en la vigía. Hoy
+  funciona; las subidas de versión de las acciones las propone Dependabot (#1 y #2 abiertos).
 - **Lo que no ve.** Si Railway dejara de publicar estos estados en GitHub, el aviso callaría, y
   ninguna prueba lo vería.
 
