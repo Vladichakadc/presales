@@ -1,68 +1,68 @@
-// Copiado tal cual de index.html const PR={...} (lineas 686-774).
+// Copiado de index.html const PR={...} (lineas 686-774) en la migracion.
 //
-// LO QUE SIRVE EL PORTAL NO ES ESTE ARCHIVO ENTERO (2026-10-02). La siembra funde cada fila con la
-// del dimensionador del mismo equipo, y las cifras que los dos traen con el mismo nombre (`fwd`,
-// `ipsec`, `cap`, `fw`...) se pisan con las del dimensionador, que es el que dimensiona. Aqui se
-// mantienen ALINEADAS con el, no por adorno: una fila que deje de casar volveria a pintar la suya.
-// Hasta ese dia diecisiete no coincidian (el Catalyst 8300-2N2S-6T con 10 Gbps de forwarding
-// frente a los 5 de su ficha), y `test/catalogo-contraste-pantallas.test.js` lo frena desde
-// entonces. Lo que solo vive aqui (el `cap` de texto de Cisco y Juniper, el `sdwan` de los AR) se
-// contrasta igual: `npm run catalogo`, seccion «PORTAL Y GUIA FRENTE AL DIMENSIONADOR».
+// UNA SOLA COPIA DE CADA CIFRA (2026-10-02). La siembra funde cada fila con la del dimensionador
+// del mismo equipo, y las cifras que los dos traen con el mismo nombre (`fwd`, `ipsec`, `cap`,
+// `fw`...) se pisan con las del dimensionador, que es el que dimensiona. Aqui estaban repetidas:
+// 234 cifras que nadie veia —diecisiete ya no coincidian, el Catalyst 8300-2N2S-6T con 10 Gbps de
+// forwarding frente a los 5 de su ficha— y que habia que corregir en dos sitios cada vez que se
+// leia una ficha (el NE8000 M14 en tres). Ahora las pone solo la siembra. Si una fila pierde su
+// pareja en el dimensionador, el portal la pintaria sin cifra en vez de con una vieja, y lo frena
+// `test/catalogo-contraste-pantallas.test.js`; si la conserva pero la siembra no le funde las
+// cifras, lo frena `test/servidor-produccion.test.js` («calla»).
+//
+// LO QUE QUEDA AQUI ES LO QUE EL DIMENSIONADOR NO TRAE: el texto descriptivo, el precio de
+// referencia, las cifras de los equipos que no tienen pareja (AR6300, AR8700-10, NetEngine A811 E,
+// la linea MX de Juniper) y las que el portal escribe con otro nombre (el `cap` de texto de Cisco y
+// de los SRX, el `sdwan` de los AR, el `fwd` de Aruba). Esas se contrastan con el dimensionador en
+// `npm run catalogo` (seccion «PORTAL Y GUIA FRENTE AL DIMENSIONADOR»), y
+// `test/catalogo-contraste-pantallas.test.js` exige que coincidan y que no vuelva a repetirse
+// ninguna. Las ocho filas duplicadas de Cisco, que la siembra ignoraba enteras, se quitaron.
 module.exports = {
 hw_ar:[
-  {model:'AR611',ser:'AR610',seg:'SOHO',fwd:300,ipsec:200,sdwan:'—',lan:8,ports:'1 GE WAN + 8 GE LAN'},
-  {model:'AR617VW-LTE4',ser:'AR610',seg:'SOHO + móvil',fwd:300,ipsec:200,sdwan:'—',lan:8,ports:'GE + VDSL + LTE + Wi-Fi'},
-  {model:'AR651',ser:'AR650',seg:'Sucursal pequeña',fwd:2000,ipsec:0,sdwan:'—',lan:8,ports:'2 GE WAN + 8 GE LAN'},
-  {model:'AR651W-8P',ser:'AR650',seg:'Sucursal + PoE + Wi-Fi',fwd:2000,ipsec:0,sdwan:'—',lan:8,ports:'2 GE WAN + 8 GE PoE + Wi-Fi'},
-  {model:'AR5710-S8T2X',ser:'AR5710-S',seg:'Sucursal mediana',fwd:1300,ipsec:800,sdwan:'620 Mbps',lan:8,ports:'2x10GE WAN + 8 GE LAN'},
-  {model:'AR5710-S8P2X',ser:'AR5710-S',seg:'Sucursal mediana + PoE++',fwd:1300,ipsec:800,sdwan:'620 Mbps',lan:8,ports:'2x10GE WAN + 8 GE PoE++'},
-  {model:'AR5710-S8T2XE',ser:'AR5710-SE',seg:'Sucursal reforzada',fwd:1500,ipsec:800,sdwan:'720 Mbps',lan:8,ports:'2x10GE WAN + 8 GE LAN · 4 GB RAM'},
-  {model:'AR5710-S8T2XE-NRGL',ser:'AR5710-SE',seg:'Sucursal + 5G integrado',fwd:1500,ipsec:800,sdwan:'720 Mbps',lan:8,ports:'2x10GE WAN + 5G SA/NSA · 2 SIM'},
-  {model:'AR5710-S8T1XWE-NRGL',ser:'AR5710-SE',seg:'Todo en uno Wi-Fi 7 + 5G',fwd:1500,ipsec:800,sdwan:'720 Mbps',lan:8,ports:'1x10GE WAN + 5G + Wi-Fi 7 doble banda'},
-  {model:'AR5710-S28T2S2XE4',ser:'AR5710-SE',seg:'Sucursal grande 24p',fwd:1500,ipsec:800,sdwan:'720 Mbps',lan:24,ports:'2x10GE + 2 GE WAN + 24 GE LAN + 4 SIC'},
-  {model:'AR6710-L8T3TS1X2',ser:'AR6700-L',seg:'Campus pequeño',fwd:2000,ipsec:1600,sdwan:'1200 Mbps',lan:9,ports:'1x10GE + 2 GE WAN + 9 GE LAN + SIC'},
-  {model:'AR6710-L26T2X4',ser:'AR6700-L',seg:'Campus mediano 24p',fwd:2000,ipsec:1600,sdwan:'1200 Mbps',lan:24,ports:'2x10GE + 2 GE WAN + 24 GE LAN'},
-  {model:'AR6710-L50T2X4',ser:'AR6700-L',seg:'Campus mediano 48p',fwd:2000,ipsec:1600,sdwan:'1200 Mbps',lan:48,ports:'2x10GE + 2 GE WAN + 48 GE LAN'},
+  {model:'AR611',ser:'AR610',seg:'SOHO',sdwan:'—',ports:'1 GE WAN + 8 GE LAN'},
+  {model:'AR617VW-LTE4',ser:'AR610',seg:'SOHO + móvil',sdwan:'—',ports:'GE + VDSL + LTE + Wi-Fi'},
+  {model:'AR651',ser:'AR650',seg:'Sucursal pequeña',sdwan:'—',ports:'2 GE WAN + 8 GE LAN'},
+  {model:'AR651W-8P',ser:'AR650',seg:'Sucursal + PoE + Wi-Fi',sdwan:'—',ports:'2 GE WAN + 8 GE PoE + Wi-Fi'},
+  {model:'AR5710-S8T2X',ser:'AR5710-S',seg:'Sucursal mediana',sdwan:'620 Mbps',ports:'2x10GE WAN + 8 GE LAN'},
+  {model:'AR5710-S8P2X',ser:'AR5710-S',seg:'Sucursal mediana + PoE++',sdwan:'620 Mbps',ports:'2x10GE WAN + 8 GE PoE++'},
+  {model:'AR5710-S8T2XE',ser:'AR5710-SE',seg:'Sucursal reforzada',sdwan:'720 Mbps',ports:'2x10GE WAN + 8 GE LAN · 4 GB RAM'},
+  {model:'AR5710-S8T2XE-NRGL',ser:'AR5710-SE',seg:'Sucursal + 5G integrado',sdwan:'720 Mbps',ports:'2x10GE WAN + 5G SA/NSA · 2 SIM'},
+  {model:'AR5710-S8T1XWE-NRGL',ser:'AR5710-SE',seg:'Todo en uno Wi-Fi 7 + 5G',sdwan:'720 Mbps',ports:'1x10GE WAN + 5G + Wi-Fi 7 doble banda'},
+  {model:'AR5710-S28T2S2XE4',ser:'AR5710-SE',seg:'Sucursal grande 24p',sdwan:'720 Mbps',ports:'2x10GE + 2 GE WAN + 24 GE LAN + 4 SIC'},
+  {model:'AR6710-L8T3TS1X2',ser:'AR6700-L',seg:'Campus pequeño',sdwan:'1200 Mbps',ports:'1x10GE + 2 GE WAN + 9 GE LAN + SIC'},
+  {model:'AR6710-L26T2X4',ser:'AR6700-L',seg:'Campus mediano 24p',sdwan:'1200 Mbps',ports:'2x10GE + 2 GE WAN + 24 GE LAN'},
+  {model:'AR6710-L50T2X4',ser:'AR6700-L',seg:'Campus mediano 48p',sdwan:'1200 Mbps',ports:'2x10GE + 2 GE WAN + 48 GE LAN'},
   {model:'AR6300',ser:'AR6700',seg:'Campus grande / Hub',fwd:5000,ipsec:4000,sdwan:'3000 Mbps',lan:24,ports:'4x10GE + 24 GE LAN + WSIC slots'},
   {model:'AR8700-10',ser:'AR8700',seg:'Hub / Gateway Modular',fwd:20000,ipsec:12000,sdwan:'8000 Mbps',lan:48,ports:'Chasis modular 10 slots FIC/SIC'},
 ],
 hw_wan:[
   {model:'NetEngine A811 E',ser:'A800 E',seg:'CPE acceso',cap:'20 Gbps',mpps:4.4,ports:'1U · SRv6, L2/L3VPN, EVPN, IFIT · fuente AC 120W'},
-  {model:'NetEngine A813 E',ser:'A800 E',seg:'CPE acceso multiservicio',cap:'20 Gbps',mpps:4.4,ports:'1U · slicing, SRv6, IFIT · fuente AC 120W'},
-  {model:'NetEngine A821 E',ser:'A800 E',seg:'Acceso 10GE + FlexE',cap:'72 Gbps',mpps:108,ports:'2x10GE + 8 GE ópt + 8 GE elec · 70W'},
-  {model:'NE8000 M6',ser:'NE8000 M',seg:'Agregación compacta 2U',cap:'320 Gbps',mpps:72,ports:'2U · 6 tarjetas DC 50G · MPU 1:1'},
-  {model:'NE8000 M4',ser:'NE8000 M',seg:'Agregación 2U',cap:'2.4 Tbps',mpps:405,ports:'2U · 4 tarjetas de 400G'},
-  {model:'NE8000 F1A',ser:'NE8000 F',seg:'Alta densidad 1U',cap:'2.4 Tbps',mpps:453,ports:'1U · 1200 G/U — mayor densidad/rack'},
-  {model:'NE8000 M8',ser:'NE8000 M',seg:'Agregación grande 3U',cap:'4.8 Tbps',mpps:null,ports:'3U · 8 tarjetas de 400G · MPU y SFU 1:1'},
-  {model:'NE8000 M14',ser:'NE8000 M',seg:'Agregación 5U 14 slots',cap:'7.2 Tbps',mpps:1117,ports:'5U · 14 tarjetas de 400G'},
-  {model:'NE8000 F8',ser:'NE8000 F',seg:'Núcleo compacto 13U',cap:'12.8 Tbps',mpps:2035,ports:'13U · 8 tarjetas de 800G · hasta 5+1 DC'},
-  {model:'NE8000 X4',ser:'NE8000 X',seg:'Núcleo / DCI 9.8U',cap:'173 Tbps',mpps:24424,ports:'4 tarjetas de 19.2T · SFU 7+1'},
-  {model:'NE8000 X8',ser:'NE8000 X',seg:'Núcleo WAN 15.8U',cap:'346 Tbps',mpps:48848,ports:'8 tarjetas de 19.2T · SFU 7+1'},
-  {model:'NE8000 X16',ser:'NE8000 X',seg:'Core máxima capacidad 32.3U',cap:'692.6 Tbps',mpps:97280,ports:'16 tarjetas 14.4T · hasta 42x400GE'},
+  {model:'NetEngine A813 E',ser:'A800 E',seg:'CPE acceso multiservicio',ports:'1U · slicing, SRv6, IFIT · fuente AC 120W'},
+  {model:'NetEngine A821 E',ser:'A800 E',seg:'Acceso 10GE + FlexE',ports:'2x10GE + 8 GE ópt + 8 GE elec · 70W'},
+  {model:'NE8000 M6',ser:'NE8000 M',seg:'Agregación compacta 2U',ports:'2U · 6 tarjetas DC 50G · MPU 1:1'},
+  {model:'NE8000 M4',ser:'NE8000 M',seg:'Agregación 2U',ports:'2U · 4 tarjetas de 400G'},
+  {model:'NE8000 F1A',ser:'NE8000 F',seg:'Alta densidad 1U',ports:'1U · 1200 G/U — mayor densidad/rack'},
+  {model:'NE8000 M8',ser:'NE8000 M',seg:'Agregación grande 3U',ports:'3U · 8 tarjetas de 400G · MPU y SFU 1:1'},
+  {model:'NE8000 M14',ser:'NE8000 M',seg:'Agregación 5U 14 slots',ports:'5U · 14 tarjetas de 400G'},
+  {model:'NE8000 F8',ser:'NE8000 F',seg:'Núcleo compacto 13U',ports:'13U · 8 tarjetas de 800G · hasta 5+1 DC'},
+  {model:'NE8000 X4',ser:'NE8000 X',seg:'Núcleo / DCI 9.8U',ports:'4 tarjetas de 19.2T · SFU 7+1'},
+  {model:'NE8000 X8',ser:'NE8000 X',seg:'Núcleo WAN 15.8U',ports:'8 tarjetas de 19.2T · SFU 7+1'},
+  {model:'NE8000 X16',ser:'NE8000 X',seg:'Core máxima capacidad 32.3U',ports:'16 tarjetas 14.4T · hasta 42x400GE'},
 ],
 cisco:[
-  {model:'ISR 1111-8P',ser:'ISR 1000',seg:'Sucursal pequeña',fwd:'300 Mbps',ipsec:'200 Mbps',ports:'8 GE + 2 SFP',sdwan:'Sí',elp:'~ $1,800'},
-  {model:'ISR 1111X-8P',ser:'ISR 1000',seg:'Sucursal pequeña',fwd:'800 Mbps',ipsec:'600 Mbps',ports:'8 GE + 2 SFP',sdwan:'Sí',elp:'~ $2,800'},
-  {model:'ISR 1116-4P',ser:'ISR 1000',seg:'Sucursal + LTE',fwd:'300 Mbps',ipsec:'200 Mbps',ports:'4 GE + LTE',sdwan:'Sí',elp:'~ $2,200'},
-  {model:'Catalyst 8200',ser:'Catalyst 8000',seg:'Sucursal mediana',fwd:'1 Gbps',ipsec:'900 Mbps',ports:'4 GE + 2 NIM',sdwan:'Sí (nativo)',elp:'~ $4,500'},
-  {model:'Catalyst 8300-1N1S-6T',ser:'Catalyst 8000',seg:'Sucursal grande',fwd:'2 Gbps',ipsec:'1.9 Gbps',ports:'6 GE + 2 NIM + SM',sdwan:'Sí',elp:'~ $9,800'},
-  {model:'Catalyst 8300-2N2S-6T',ser:'Catalyst 8000',seg:'Hub regional',fwd:'5 Gbps',ipsec:'1.9 Gbps',ports:'6 GE + 2 NIM + 2 SM',sdwan:'Sí',elp:'~ $16,500'},
-  {model:'Catalyst 8500-12X4QC',ser:'Catalyst 8000',seg:'Hub datacenter / Agregación',fwd:'96 Gbps',ipsec:'96 Gbps',ports:'12x10GE + 4x40GE',sdwan:'Sí',elp:'~ $58,000'},
-  {model:'ASR 1006-X',ser:'ASR 1000',seg:'DC Core',fwd:'200 Gbps',ipsec:'78 Gbps',ports:'6 slots modular · hasta 100GE',sdwan:'Sí',elp:'~ $145,000'},
-  // ISR 1000
-  {model:'ISR 1111-8P',ser:'ISR 1000',seg:'Sucursal muy pequeña',cap:'300 Mbps',ports:'8 GE LAN',protos:'IPSec, HSEC'},
-  {model:'ISR 1111X-8P',ser:'ISR 1000',seg:'Sucursal pequeña',cap:'800 Mbps',ports:'8 GE LAN',protos:'IPSec, HSEC'},
-  {model:'ISR 1116-4P',ser:'ISR 1000',seg:'Sucursal + LTE',cap:'300 Mbps',ports:'LTE integrado',protos:'IPSec'},
+  {model:'ISR 1111-8P',ser:'ISR 1000',seg:'Sucursal pequeña',ports:'8 GE + 2 SFP',elp:'~ $1,800'},
+  {model:'ISR 1111X-8P',ser:'ISR 1000',seg:'Sucursal pequeña',ports:'8 GE + 2 SFP',elp:'~ $2,800'},
+  {model:'ISR 1116-4P',ser:'ISR 1000',seg:'Sucursal + LTE',ports:'4 GE + LTE',elp:'~ $2,200'},
+  {model:'Catalyst 8200',ser:'Catalyst 8000',seg:'Sucursal mediana',ports:'4 GE + 2 NIM',elp:'~ $4,500'},
+  {model:'Catalyst 8300-1N1S-6T',ser:'Catalyst 8000',seg:'Sucursal grande',ports:'6 GE + 2 NIM + SM',elp:'~ $9,800'},
+  {model:'Catalyst 8300-2N2S-6T',ser:'Catalyst 8000',seg:'Hub regional',ports:'6 GE + 2 NIM + 2 SM',elp:'~ $16,500'},
+  {model:'Catalyst 8500-12X4QC',ser:'Catalyst 8000',seg:'Hub datacenter / Agregación',ports:'12x10GE + 4x40GE',elp:'~ $58,000'},
+  {model:'ASR 1006-X',ser:'ASR 1000',seg:'DC Core',ports:'6 slots modular · hasta 100GE',elp:'~ $145,000'},
   // Catalyst 8000
   {model:'Catalyst 8200L',ser:'Catalyst 8000',seg:'Sucursal SD-WAN compacta',cap:'500 Mbps',ports:'4 GE WAN',protos:'SD-WAN, IPSec'},
-  {model:'Catalyst 8200',ser:'Catalyst 8000',seg:'Sucursal SD-WAN estándar',cap:'1 Gbps',ports:'4 GE WAN + NIM',protos:'SD-WAN, IPSec'},
-  {model:'Catalyst 8300-1N1S-6T',ser:'Catalyst 8000',seg:'Hub regional',cap:'2 Gbps',ports:'6 GE + 2 SFP+',protos:'SD-WAN, IPSec'},
-  {model:'Catalyst 8300-2N2S-6T',ser:'Catalyst 8000',seg:'Hub regional doble',cap:'5 Gbps',ports:'6 GE + 2 SFP+',protos:'SD-WAN, IPSec'},
-  {model:'Catalyst 8500-12X4QC',ser:'Catalyst 8000',seg:'Hub DC / Edge',cap:'96 Gbps',ports:'12x10GE SFP+',protos:'SD-WAN, IPSec'},
   // ASR 1000
   {model:'ASR 1001-X',ser:'ASR 1000',seg:'WAN Edge compacto',cap:'20 Gbps',ports:'6 GE',protos:'IPSec'},
   {model:'ASR 1002-HX',ser:'ASR 1000',seg:'WAN Edge',cap:'35 Gbps',ports:'4x10GE',protos:'IPSec'},
-  {model:'ASR 1006-X',ser:'ASR 1000',seg:'Core WAN modular',cap:'200 Gbps',ports:'Modular',protos:'IPSec'},
   // Meraki
   {model:'Meraki MX67',ser:'Meraki MX',seg:'Sucursal pequeña',cap:'600 Mbps',ports:'4 GE LAN',protos:'Auto VPN, SD-WAN'},
   {model:'Meraki MX68',ser:'Meraki MX',seg:'Sucursal pequeña + LTE',cap:'600 Mbps',ports:'10 GE LAN',protos:'Auto VPN, SD-WAN'},
@@ -74,58 +74,58 @@ cisco:[
   {model:'Meraki MX450',ser:'Meraki MX',seg:'Datacenter / Hub',cap:'5 Gbps',ports:'8 GE LAN',protos:'Auto VPN, SD-WAN'},
 ],
 nokia:[
-  {model:'7250 IXR-e',ser:'7250 IXR',seg:'Cell Site / Edge compacto',cap:'300 Gbps',ports:'GE / 10GE',protos:'SR-MPLS, EVPN'},
-  {model:'7250 IXR-6e',ser:'7250 IXR',seg:'Leaf datacenter',cap:'6.4 Tbps',ports:'36x100GE o 12x400GE · 1U',protos:'SR Linux, EVPN-VXLAN, ECMP'},
-  {model:'7250 IXR-10e',ser:'7250 IXR',seg:'Spine datacenter',cap:'12.8 Tbps',ports:'36x400GE · 1U',protos:'SR Linux, EVPN-VXLAN'},
-  {model:'7750 SR-1',ser:'7750 SR',seg:'PE compacto / Edge',cap:'400 Gbps',ports:'36x10GE o 8x100GE · 1U',protos:'SR-MPLS, SRv6, EVPN, FlexAlgo'},
-  {model:'7750 SR-1s',ser:'7750 SR-s',seg:'PE / Edge',cap:'4.8 Tbps',ports:'36x100GE o 12x400GE · 2U',protos:'SR-MPLS, SRv6, EVPN, FlexE'},
-  {model:'7750 SR-2s',ser:'7750 SR-s',seg:'Edge / Agregación',cap:'9.6 Tbps',ports:'144x100GE o 36x400GE · 4U',protos:'SR-MPLS, SRv6, EVPN'},
-  {model:'7750 SR-7s',ser:'7750 SR-s',seg:'Core IP/MPLS',cap:'108 Tbps',ports:'7 slots IOM · hasta 400GE',protos:'SR-MPLS, SRv6, FlexE, EVPN'},
-  {model:'7750 SR-14s',ser:'7750 SR-s',seg:'Core grande',cap:'216 Tbps',ports:'14 slots IOM · hasta 400GE',protos:'SR-MPLS, SRv6, FlexE, EVPN'},
+  {model:'7250 IXR-e',ser:'7250 IXR',seg:'Cell Site / Edge compacto',ports:'GE / 10GE',protos:'SR-MPLS, EVPN'},
+  {model:'7250 IXR-6e',ser:'7250 IXR',seg:'Leaf datacenter',ports:'36x100GE o 12x400GE · 1U',protos:'SR Linux, EVPN-VXLAN, ECMP'},
+  {model:'7250 IXR-10e',ser:'7250 IXR',seg:'Spine datacenter',ports:'36x400GE · 1U',protos:'SR Linux, EVPN-VXLAN'},
+  {model:'7750 SR-1',ser:'7750 SR',seg:'PE compacto / Edge',ports:'36x10GE o 8x100GE · 1U',protos:'SR-MPLS, SRv6, EVPN, FlexAlgo'},
+  {model:'7750 SR-1s',ser:'7750 SR-s',seg:'PE / Edge',ports:'36x100GE o 12x400GE · 2U',protos:'SR-MPLS, SRv6, EVPN, FlexE'},
+  {model:'7750 SR-2s',ser:'7750 SR-s',seg:'Edge / Agregación',ports:'144x100GE o 36x400GE · 4U',protos:'SR-MPLS, SRv6, EVPN'},
+  {model:'7750 SR-7s',ser:'7750 SR-s',seg:'Core IP/MPLS',ports:'7 slots IOM · hasta 400GE',protos:'SR-MPLS, SRv6, FlexE, EVPN'},
+  {model:'7750 SR-14s',ser:'7750 SR-s',seg:'Core grande',ports:'14 slots IOM · hasta 400GE',protos:'SR-MPLS, SRv6, FlexE, EVPN'},
   // ── 7220 IXR: fabric de datacenter sobre SR Linux ─────────────────────────
   // nokia.com/data-center-networks/data-center-fabric/7220-interconnect-router/
-  // Capacidad de sistema segun datasheet de las series 7220 IXR-D y 7220 IXR-H.
-  {model:'7220 IXR-D1',ser:'7220 IXR',seg:'Acceso / Gestion DC',cap:'88 Gbps',ports:'48x1GE RJ45 + 4x SFP+ · 1U',protos:'SR Linux, EVPN-VXLAN'},
-  {model:'7220 IXR-D2L',ser:'7220 IXR',seg:'Leaf datacenter',cap:'2 Tbps',ports:'48x25GE SFP28 + 8x100GE QSFP28 + 2x10GE · 1U',protos:'SR Linux, EVPN-VXLAN'},
-  {model:'7220 IXR-D3L',ser:'7220 IXR',seg:'Leaf / Spine compacto',cap:'3.2 Tbps',ports:'32x100GE QSFP28 + 2x SFP+ · 1U',protos:'SR Linux, EVPN-VXLAN'},
-  {model:'7220 IXR-D5',ser:'7220 IXR',seg:'Spine datacenter 400G',cap:'12.8 Tbps',ports:'32x400GE QSFP-DD + 2x SFP+ · 1U',protos:'SR Linux, EVPN-VXLAN'},
+  // La capacidad la trae `nokia.js`, de los datasheets de las series 7220 IXR-D y 7220 IXR-H.
+  {model:'7220 IXR-D1',ser:'7220 IXR',seg:'Acceso / Gestion DC',ports:'48x1GE RJ45 + 4x SFP+ · 1U',protos:'SR Linux, EVPN-VXLAN'},
+  {model:'7220 IXR-D2L',ser:'7220 IXR',seg:'Leaf datacenter',ports:'48x25GE SFP28 + 8x100GE QSFP28 + 2x10GE · 1U',protos:'SR Linux, EVPN-VXLAN'},
+  {model:'7220 IXR-D3L',ser:'7220 IXR',seg:'Leaf / Spine compacto',ports:'32x100GE QSFP28 + 2x SFP+ · 1U',protos:'SR Linux, EVPN-VXLAN'},
+  {model:'7220 IXR-D5',ser:'7220 IXR',seg:'Spine datacenter 400G',ports:'32x400GE QSFP-DD + 2x SFP+ · 1U',protos:'SR Linux, EVPN-VXLAN'},
   // ── 7250 IXR: agregacion y transporte IP ──────────────────────────────────
   // Datasheets: nokia.com/asset/206825 (IXR-e/e2) y nokia.com/asset/214173 (IXR-X)
-  {model:'7250 IXR-e2',ser:'7250 IXR',seg:'Cell site / Acceso',cap:'800 Gbps',ports:'GE / 10GE / 25GE',protos:'SR-MPLS, SRv6, EVPN'},
-  {model:'7250 IXR-X1b',ser:'7250 IXR-X',seg:'Agregacion / Edge',cap:'7.2 Tbps',ports:'24x100GE QSFP28 + 12x400GE QSFP-DD · 1U',protos:'SR Linux, SR-MPLS, EVPN'},
-  {model:'7250 IXR-X3b',ser:'7250 IXR-X',seg:'Spine / Core DC',cap:'14.4 Tbps',ports:'36x400GE QSFP-DD · 1U',protos:'SR Linux, SR-MPLS, EVPN'},
-  {model:'7250 IXR-R6dl',ser:'7250 IXR-R',seg:'Agregacion modular',cap:'2.4 Tbps',ports:'6 slots · 4x400GE QSFP-DD · 7U',protos:'SR-MPLS, SRv6, EVPN, interfaces TDM heredadas'},
+  {model:'7250 IXR-e2',ser:'7250 IXR',seg:'Cell site / Acceso',ports:'GE / 10GE / 25GE',protos:'SR-MPLS, SRv6, EVPN'},
+  {model:'7250 IXR-X1b',ser:'7250 IXR-X',seg:'Agregacion / Edge',ports:'24x100GE QSFP28 + 12x400GE QSFP-DD · 1U',protos:'SR Linux, SR-MPLS, EVPN'},
+  {model:'7250 IXR-X3b',ser:'7250 IXR-X',seg:'Spine / Core DC',ports:'36x400GE QSFP-DD · 1U',protos:'SR Linux, SR-MPLS, EVPN'},
+  {model:'7250 IXR-R6dl',ser:'7250 IXR-R',seg:'Agregacion modular',ports:'6 slots · 4x400GE QSFP-DD · 7U',protos:'SR-MPLS, SRv6, EVPN, interfaces TDM heredadas'},
   // ── 7750 SR-1x: servicio de borde de alta densidad ────────────────────────
   // Datasheet: nokia.com/asset/212738
-  {model:'7750 SR-1x-48D',ser:'7750 SR-1x',seg:'PE / Edge alta densidad',cap:'6 Tbps',ports:'48x400GE QSFP-DD o 192x100GE · 2U',protos:'SR-MPLS, SRv6, EVPN, FlexE'},
-  {model:'7750 SR-1x-92S',ser:'7750 SR-1x',seg:'PE / Edge multiservicio',cap:'6 Tbps',ports:'12x400GE + 80x100GE SFP-DD · 2U',protos:'SR-MPLS, SRv6, EVPN, FlexE'},
+  {model:'7750 SR-1x-48D',ser:'7750 SR-1x',seg:'PE / Edge alta densidad',ports:'48x400GE QSFP-DD o 192x100GE · 2U',protos:'SR-MPLS, SRv6, EVPN, FlexE'},
+  {model:'7750 SR-1x-92S',ser:'7750 SR-1x',seg:'PE / Edge multiservicio',ports:'12x400GE + 80x100GE SFP-DD · 2U',protos:'SR-MPLS, SRv6, EVPN, FlexE'},
 ],
 // elp verificado contra "2026Q3 Main Price list_AMER_FINAL_EFF 080326.xlsx" (Fortinet AMER price list oficial). cotizadorCatalog.js gana en el merge final para modelos que matchean por nombre; se corrige aquí también para no dejar cifras contradictorias entre archivos.
 fortinet:[
-  {model:'FortiGate 30G',seg:'SOHO / Teletrabajo',fw:'4 Gbps',ips:'800 Mbps',ngfw:'570 Mbps',vpn:'3.5 Gbps',ifaces:'4 GE',elp:'~ $634'},
-  {model:'FortiGate 50G',seg:'SOHO / Sucursal peq',fw:'5 Gbps',ips:'2.2 Gbps',ngfw:'1.2 Gbps',vpn:'4.5 Gbps',ifaces:'5 GE',elp:'~ $994'},
-  {model:'FortiGate 70G',seg:'Sucursal pequeña',fw:'10 Gbps',ips:'2.5 Gbps',ngfw:'1.5 Gbps',vpn:'7.1 Gbps',ifaces:'8 GE',elp:'~ $1,420'},
-  {model:'FortiGate 90G',seg:'Sucursal mediana',fw:'28 Gbps',ips:'4.5 Gbps',ngfw:'2.5 Gbps',vpn:'25 Gbps',ifaces:'8 GE + 2x10GE',elp:'~ $3,307'},
-  {model:'FortiGate 120G',seg:'Sucursal grande',fw:'39 Gbps',ips:'5.3 Gbps',ngfw:'3.1 Gbps',vpn:'35 Gbps',ifaces:'GE + SFP/SFP+',elp:'~ $4,792'},
-  {model:'FortiGate 200G',seg:'Campus / Agregación',fw:'39 Gbps',ips:'9 Gbps',ngfw:'7 Gbps',vpn:'36 Gbps',ifaces:'10GE + GE SFP + RJ45',elp:'~ $11,477'},
-  {model:'FortiGate 900G',seg:'DC Edge / Enterprise',fw:'164 Gbps',ips:'42 Gbps',ngfw:'31 Gbps',vpn:'55 Gbps',ifaces:'25GE + 10GE + SFP + RJ45',elp:'~ $41,580'},
-  {model:'FortiGate 40F',seg:'SOHO / Teletrabajo',fw:'5 Gbps',ips:'1 Gbps',ngfw:'800 Mbps',vpn:'4.4 Gbps',ifaces:'5 GE',elp:'~ $759'},
-  {model:'FortiGate 60F',seg:'Sucursal pequeña',fw:'10 Gbps',ips:'1.4 Gbps',ngfw:'1 Gbps',vpn:'6.5 Gbps',ifaces:'10 GE + Wi-Fi opt.',elp:'~ $990'},
-  {model:'FortiGate 71F',seg:'Sucursal pequeña',fw:'10 Gbps',ips:'1.4 Gbps',ngfw:'1 Gbps',vpn:'6.1 Gbps',ifaces:'10 GE + 128GB SSD',elp:'~ $1,348'},
-  {model:'FortiGate 80F',seg:'Sucursal + PoE',fw:'10 Gbps',ips:'1.4 Gbps',ngfw:'1 Gbps',vpn:'6.5 Gbps',ifaces:'8 GE + 2 SFP',elp:'~ $1,852'},
-  {model:'FortiGate 100F',seg:'Sucursal mediana',fw:'20 Gbps',ips:'2.6 Gbps',ngfw:'1.6 Gbps',vpn:'11.5 Gbps',ifaces:'22 GE + 2x10GE',elp:'Descontinuado (EOL)'},
-  {model:'FortiGate 200F',seg:'Sucursal grande',fw:'27 Gbps',ips:'5 Gbps',ngfw:'3 Gbps',vpn:'13 Gbps',ifaces:'16 GE + 4x10GE',elp:'Descontinuado (EOL)'},
-  {model:'FortiGate 400F',seg:'Campus / Agregación',fw:'80 Gbps',ips:'12 Gbps',ngfw:'10 Gbps',vpn:'55 Gbps',ifaces:'8 GE + 8 SFP + 8x10GE',elp:'~ $17,570'},
-  {model:'FortiGate 600F',seg:'Campus / DC Edge',fw:'139 Gbps',ips:'14 Gbps',ngfw:'11 Gbps',vpn:'55 Gbps',ifaces:'4x25GE + 16x10GE',elp:'Descontinuado (EOL)'},
-  {model:'FortiGate 1000F',seg:'DC Edge',fw:'198 Gbps',ips:'19 Gbps',ngfw:'15 Gbps',vpn:'55 Gbps',ifaces:'4x100GE + 16x25GE + 16x10GE',elp:'~ $61,318'},
-  {model:'FortiGate 1800F',seg:'DC / Enterprise',fw:'198 Gbps',ips:'22 Gbps',ngfw:'17 Gbps',vpn:'55 Gbps',ifaces:'4x100GE + 16x25GE + 16x10GE',elp:'~ $65,843'},
-  {model:'FortiGate 2600F',seg:'DC / Carrier',fw:'198 Gbps',ips:'31 Gbps',ngfw:'27 Gbps',vpn:'55 Gbps',ifaces:'4x100GE + 16x25GE + 16x10GE',elp:'~ $86,420'},
-  {model:'FortiGate 3000F',seg:'Carrier grade',fw:'397 Gbps',ips:'36 Gbps',ngfw:'34 Gbps',vpn:'105 Gbps',ifaces:'4x400GE + 4x100GE + 16x25GE',elp:'~ $129,596'},
-  {model:'FortiGate 3500F',seg:'DC Core',fw:'595 Gbps',ips:'72 Gbps',ngfw:'65 Gbps',vpn:'165 Gbps',ifaces:'Chasis modular',elp:'~ $284,130'},
-  {model:'FortiGate 4400F',seg:'DC Core',fw:'1.1 Tbps',ips:'94 Gbps',ngfw:'82 Gbps',vpn:'310 Gbps',ifaces:'Chasis modular',elp:'~ $417,701'},
-  {model:'FortiGate 4800F',seg:'Hyperscale DC',fw:'3.1 Tbps',ips:'87 Gbps',ngfw:'77 Gbps',vpn:'800 Gbps',ifaces:'Chasis multi-Tbps',elp:'~ $451,440'},
-  {model:'FortiGate 7081F',seg:'Carrier / ISP',fw:'1.89 Tbps',ips:'405 Gbps',ngfw:'330 Gbps',vpn:'378 Gbps',ifaces:'Chasis FPM',elp:'~ $387,090'},
-  {model:'FortiGate 7121F',seg:'Carrier / National',fw:'1.89 Tbps',ips:'675 Gbps',ngfw:'550 Gbps',vpn:'630 Gbps',ifaces:'Chasis FPM',elp:'~ $630,630'},
+  {model:'FortiGate 30G',seg:'SOHO / Teletrabajo',ifaces:'4 GE',elp:'~ $634'},
+  {model:'FortiGate 50G',seg:'SOHO / Sucursal peq',ifaces:'5 GE',elp:'~ $994'},
+  {model:'FortiGate 70G',seg:'Sucursal pequeña',ifaces:'8 GE',elp:'~ $1,420'},
+  {model:'FortiGate 90G',seg:'Sucursal mediana',ifaces:'8 GE + 2x10GE',elp:'~ $3,307'},
+  {model:'FortiGate 120G',seg:'Sucursal grande',ifaces:'GE + SFP/SFP+',elp:'~ $4,792'},
+  {model:'FortiGate 200G',seg:'Campus / Agregación',ifaces:'10GE + GE SFP + RJ45',elp:'~ $11,477'},
+  {model:'FortiGate 900G',seg:'DC Edge / Enterprise',ifaces:'25GE + 10GE + SFP + RJ45',elp:'~ $41,580'},
+  {model:'FortiGate 40F',seg:'SOHO / Teletrabajo',ifaces:'5 GE',elp:'~ $759'},
+  {model:'FortiGate 60F',seg:'Sucursal pequeña',ifaces:'10 GE + Wi-Fi opt.',elp:'~ $990'},
+  {model:'FortiGate 71F',seg:'Sucursal pequeña',ifaces:'10 GE + 128GB SSD',elp:'~ $1,348'},
+  {model:'FortiGate 80F',seg:'Sucursal + PoE',ifaces:'8 GE + 2 SFP',elp:'~ $1,852'},
+  {model:'FortiGate 100F',seg:'Sucursal mediana',ifaces:'22 GE + 2x10GE',elp:'Descontinuado (EOL)'},
+  {model:'FortiGate 200F',seg:'Sucursal grande',ifaces:'16 GE + 4x10GE',elp:'Descontinuado (EOL)'},
+  {model:'FortiGate 400F',seg:'Campus / Agregación',ifaces:'8 GE + 8 SFP + 8x10GE',elp:'~ $17,570'},
+  {model:'FortiGate 600F',seg:'Campus / DC Edge',ifaces:'4x25GE + 16x10GE',elp:'Descontinuado (EOL)'},
+  {model:'FortiGate 1000F',seg:'DC Edge',ifaces:'4x100GE + 16x25GE + 16x10GE',elp:'~ $61,318'},
+  {model:'FortiGate 1800F',seg:'DC / Enterprise',ifaces:'4x100GE + 16x25GE + 16x10GE',elp:'~ $65,843'},
+  {model:'FortiGate 2600F',seg:'DC / Carrier',ifaces:'4x100GE + 16x25GE + 16x10GE',elp:'~ $86,420'},
+  {model:'FortiGate 3000F',seg:'Carrier grade',ifaces:'4x400GE + 4x100GE + 16x25GE',elp:'~ $129,596'},
+  {model:'FortiGate 3500F',seg:'DC Core',ifaces:'Chasis modular',elp:'~ $284,130'},
+  {model:'FortiGate 4400F',seg:'DC Core',ifaces:'Chasis modular',elp:'~ $417,701'},
+  {model:'FortiGate 4800F',seg:'Hyperscale DC',ifaces:'Chasis multi-Tbps',elp:'~ $451,440'},
+  {model:'FortiGate 7081F',seg:'Carrier / ISP',ifaces:'Chasis FPM',elp:'~ $387,090'},
+  {model:'FortiGate 7121F',seg:'Carrier / National',ifaces:'Chasis FPM',elp:'~ $630,630'},
 ],
 juniper:[
   {model:'SRX 320',ser:'SRX 300',seg:'SOHO / Sucursal',cap:'1.9 Gbps FW',ports:'8 GE',use:'SD-WAN, UTM, branch routing'},
@@ -156,38 +156,39 @@ juniper:[
   // ── Session Smart Router (SD-WAN sin tuneles) ─────────────────────────────
   // Es la respuesta SD-WAN vigente de Juniper, gestionada desde Mist: no usa tuneles, enruta
   // por sesion. Datasheet: juniper.net/us/en/products/routers/session-smart-router.html
-  {model:'SSR120',ser:'SSR 100',seg:'Sucursal pequena SD-WAN',cap:'1.5 Gbps',ports:'GE',use:'SD-WAN sin tuneles, gestion Mist'},
-  {model:'SSR130',ser:'SSR 100',seg:'Sucursal mediana SD-WAN',cap:'2 Gbps',ports:'GE a velocidad de linea',use:'SD-WAN sin tuneles, gestion Mist'},
-  {model:'SSR1200',ser:'SSR 1000',seg:'Sucursal grande / DC pequeno',cap:'10 Gbps',ports:'GE / 10GE',use:'SD-WAN sin tuneles, hub de sucursales'},
-  {model:'SSR1300',ser:'SSR 1000',seg:'DC / Campus mediano',cap:'20 Gbps',ports:'10GE en NIC',use:'SD-WAN sin tuneles, concentrador'},
-  {model:'SSR1400',ser:'SSR 1000',seg:'DC / Campus grande',cap:'40 Gbps',ports:'10/25GE en NIC',use:'SD-WAN sin tuneles, hub regional'},
+  {model:'SSR120',ser:'SSR 100',seg:'Sucursal pequena SD-WAN',ports:'GE',use:'SD-WAN sin tuneles, gestion Mist'},
+  {model:'SSR130',ser:'SSR 100',seg:'Sucursal mediana SD-WAN',ports:'GE a velocidad de linea',use:'SD-WAN sin tuneles, gestion Mist'},
+  {model:'SSR1200',ser:'SSR 1000',seg:'Sucursal grande / DC pequeno',ports:'GE / 10GE',use:'SD-WAN sin tuneles, hub de sucursales'},
+  {model:'SSR1300',ser:'SSR 1000',seg:'DC / Campus mediano',ports:'10GE en NIC',use:'SD-WAN sin tuneles, concentrador'},
+  {model:'SSR1400',ser:'SSR 1000',seg:'DC / Campus grande',ports:'10/25GE en NIC',use:'SD-WAN sin tuneles, hub regional'},
 ],
 // ── MikroTik ──────────────────────────────────────────────────────────────────
-// Datos técnicos verificados contra datasheets oficiales mikrotik.com (2024-2025).
-// RouterOS v7.x en todos los equipos actuales. ELP orientativo USD lista pública.
+// Las cifras (forwarding, IPsec) las trae `mikrotik.js`, verificadas contra los datasheets
+// oficiales de mikrotik.com (2024-2025). RouterOS v7.x en todos los equipos actuales. ELP
+// orientativo USD lista pública.
 mikrotik:[
   // ── hEX / RB (SOHO / Home) ──
-  {model:'hEX RB750Gr3',ser:'hEX',seg:'SOHO / Home',fwd:1000,ipsec:470,sdwan:'CHR/OVPN',ports:'5x GE',elp:'~ $59'},
-  {model:'hEX S RB760iGS',ser:'hEX',seg:'SOHO + SFP',fwd:1000,ipsec:470,sdwan:'CHR/OVPN',ports:'5x GE + 1x SFP',elp:'~ $79'},
-  {model:'hEX lite RB750r2',ser:'hEX',seg:'Hogar / Básico',fwd:100,ipsec:70,sdwan:'—',ports:'5x FE',elp:'~ $29'},
-  {model:'L009UiGS-2HaxD',ser:'L009',seg:'SOHO / Sucursal peq + Wi-Fi 6',fwd:2000,ipsec:900,sdwan:'WireGuard / OVPN',ports:'8x GE + 1x 2.5G + 1x SFP + Wi-Fi 6',elp:'~ $125'},
+  {model:'hEX RB750Gr3',ser:'hEX',seg:'SOHO / Home',sdwan:'CHR/OVPN',ports:'5x GE',elp:'~ $59'},
+  {model:'hEX S RB760iGS',ser:'hEX',seg:'SOHO + SFP',sdwan:'CHR/OVPN',ports:'5x GE + 1x SFP',elp:'~ $79'},
+  {model:'hEX lite RB750r2',ser:'hEX',seg:'Hogar / Básico',sdwan:'—',ports:'5x FE',elp:'~ $29'},
+  {model:'L009UiGS-2HaxD',ser:'L009',seg:'SOHO / Sucursal peq + Wi-Fi 6',sdwan:'WireGuard / OVPN',ports:'8x GE + 1x 2.5G + 1x SFP + Wi-Fi 6',elp:'~ $125'},
   // ── RB4011 (Sucursal Pequeña) ──
-  {model:'RB4011iGS+',ser:'RB4011',seg:'Sucursal pequeña',fwd:5600,ipsec:1800,sdwan:'CHR/OVPN',ports:'10x GE + 1x SFP+',elp:'~ $200'},
-  {model:'RB4011iGS+RM',ser:'RB4011',seg:'Sucursal pequeña rackmount',fwd:5600,ipsec:1800,sdwan:'CHR/OVPN',ports:'10x GE + 1x SFP+',elp:'~ $215'},
+  {model:'RB4011iGS+',ser:'RB4011',seg:'Sucursal pequeña',sdwan:'CHR/OVPN',ports:'10x GE + 1x SFP+',elp:'~ $200'},
+  {model:'RB4011iGS+RM',ser:'RB4011',seg:'Sucursal pequeña rackmount',sdwan:'CHR/OVPN',ports:'10x GE + 1x SFP+',elp:'~ $215'},
   // ── RB5009 (Sucursal Mediana) ──
-  {model:'RB5009UG+S+IN',ser:'RB5009',seg:'Sucursal mediana',fwd:8800,ipsec:2400,sdwan:'WireGuard nativo',ports:'7x GE + 1x 2.5G + 1x SFP+',elp:'~ $190'},
-  {model:'RB5009UPr+S+IN',ser:'RB5009',seg:'Sucursal mediana + PoE-out',fwd:8800,ipsec:2400,sdwan:'WireGuard nativo',ports:'7x GE PoE-out + 1x 2.5G + 1x SFP+',elp:'~ $239'},
+  {model:'RB5009UG+S+IN',ser:'RB5009',seg:'Sucursal mediana',sdwan:'WireGuard nativo',ports:'7x GE + 1x 2.5G + 1x SFP+',elp:'~ $190'},
+  {model:'RB5009UPr+S+IN',ser:'RB5009',seg:'Sucursal mediana + PoE-out',sdwan:'WireGuard nativo',ports:'7x GE PoE-out + 1x 2.5G + 1x SFP+',elp:'~ $239'},
   // ── CCR2004 (Sucursal Grande / Hub) ──
-  {model:'CCR2004-1G-12S+2XS',ser:'CCR2004',seg:'Sucursal grande / Agregación',fwd:12000,ipsec:4200,sdwan:'WireGuard / OVPN',ports:'1x GE + 12x SFP+ + 2x SFP28 (25G)',elp:'~ $699'},
-  {model:'CCR2004-16G-2S+',ser:'CCR2004',seg:'Hub campus',fwd:12000,ipsec:4200,sdwan:'WireGuard / OVPN',ports:'16x GE + 2x SFP+',elp:'~ $659'},
+  {model:'CCR2004-1G-12S+2XS',ser:'CCR2004',seg:'Sucursal grande / Agregación',sdwan:'WireGuard / OVPN',ports:'1x GE + 12x SFP+ + 2x SFP28 (25G)',elp:'~ $699'},
+  {model:'CCR2004-16G-2S+',ser:'CCR2004',seg:'Hub campus',sdwan:'WireGuard / OVPN',ports:'16x GE + 2x SFP+',elp:'~ $659'},
   // ── CCR2116 (Hub Regional) ──
-  {model:'CCR2116-12G-4S+',ser:'CCR2116',seg:'Hub regional / DC Edge',fwd:24000,ipsec:6800,sdwan:'WireGuard / OVPN / CAPsMAN',ports:'12x GE + 4x SFP+',elp:'~ $999'},
+  {model:'CCR2116-12G-4S+',ser:'CCR2116',seg:'Hub regional / DC Edge',sdwan:'WireGuard / OVPN / CAPsMAN',ports:'12x GE + 4x SFP+',elp:'~ $999'},
   // ── CCR2216 (Core WAN) ──
-  {model:'CCR2216-1G-12XS-2XQ',ser:'CCR2216',seg:'Core WAN / ISP',fwd:100000,ipsec:15000,sdwan:'WireGuard / BGP ECMP',ports:'1x GE mgmt + 12x 25GE (SFP28) + 2x 100GE (QSFP28)',elp:'~ $5,999'},
+  {model:'CCR2216-1G-12XS-2XQ',ser:'CCR2216',seg:'Core WAN / ISP',sdwan:'WireGuard / BGP ECMP',ports:'1x GE mgmt + 12x 25GE (SFP28) + 2x 100GE (QSFP28)',elp:'~ $5,999'},
   // ── CHR (RouterOS Virtual) ──
-  {model:'CHR P1',ser:'CHR',seg:'Virtual — licencia perpetua 1 Gbps',fwd:1000,ipsec:400,sdwan:'WireGuard / OVPN / L2TP',ports:'ilimitadas vNIC (cap. 1 Gbps)',elp:'~ $45'},
-  {model:'CHR P10',ser:'CHR',seg:'Virtual — licencia perpetua 10 Gbps',fwd:10000,ipsec:3000,sdwan:'WireGuard / OVPN / L2TP',ports:'ilimitadas vNIC (cap. 10 Gbps)',elp:'~ $95'},
-  {model:'CHR P-Unlimited',ser:'CHR',seg:'Virtual — sin límite de throughput',fwd:999999,ipsec:30000,sdwan:'WireGuard / OVPN / L2TP',ports:'ilimitadas vNIC (sin cap.)',elp:'~ $250'},
+  {model:'CHR P1',ser:'CHR',seg:'Virtual — licencia perpetua 1 Gbps',sdwan:'WireGuard / OVPN / L2TP',ports:'ilimitadas vNIC (cap. 1 Gbps)',elp:'~ $45'},
+  {model:'CHR P10',ser:'CHR',seg:'Virtual — licencia perpetua 10 Gbps',sdwan:'WireGuard / OVPN / L2TP',ports:'ilimitadas vNIC (cap. 10 Gbps)',elp:'~ $95'},
+  {model:'CHR P-Unlimited',ser:'CHR',seg:'Virtual — sin límite de throughput',sdwan:'WireGuard / OVPN / L2TP',ports:'ilimitadas vNIC (sin cap.)',elp:'~ $250'},
 ],
 aruba:[
   {model:'EC-XS',ser:'EdgeConnect',seg:'Sucursal peq / Oficina remota',fwd:200,ipsec:0,sdwan:'Foundation/Advanced + Boost',ports:'4x RJ45 10/100/1000 LAN/WAN + 2x RJ45 10/100/1000 gestión + serie RJ-45',elp:'Consultar'},

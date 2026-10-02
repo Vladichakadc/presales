@@ -456,6 +456,6 @@ function contrasteGuia(guia, opciones) {
 module.exports = {
   CONTRASTE_COTIZADOR, leerSpec, normalizarModelo, indiceDimensionador,
   contrastarFila, proyectarFila, contrasteCotizador, mbpsLegible,
-  aMbps, CONTRASTE_PORTAL, contrastePortal,
+  aMbps, CONTRASTE_PORTAL, contrastePortal, sinCifra,
   leerAlternativa, contrastarAlternativa, proyectarGuia, contrasteGuia,
 };

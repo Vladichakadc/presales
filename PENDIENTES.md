@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-02 (**El portal y la guía, contrastados con el dimensionador sobre lo que sirve el servidor.** Es la mejora propuesta al cerrar la entrega anterior. `npm run catalogo` siembra una base en memoria y compara lo que reciben las pantallas, y la primera medida encontró dos errores en producción que ningún archivo mostraba: la calculadora leía la capacidad de Nokia mil veces más pequeña (un 7250 IXR-e de 300 Gbps como uno de 300 Mbps) y apartaba el SRX 320, el 345 y el 4200 «por falta de dato» teniendo su IPsec en el catálogo. La guía aplica ahora la regla del cotizador, recupera los fabricantes que perdió al retirar equipos fuera de venta y deja de guardar 30 textos y 4 precios que nadie veía. Y el NE8000 M14 se cerró con su ficha oficial: 7,2 Tbps con IPU-3T6, no 2. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-02 (**Una sola copia de cada cifra del portal.** Es la mejora propuesta al cerrar la entrega anterior. `indexPR.js` repetía 234 cifras que la siembra pisa con las del dimensionador, y diecisiete ya no coincidían: había que corregir cada ficha en dos sitios. Se quitaron, con ocho filas duplicadas de Cisco que la siembra ignoraba enteras, y la API sirve exactamente lo mismo (12 de 12 respuestas idénticas). Una prueba exige que no vuelvan y que ninguna fila sin pareja se quede sin cifras. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-02 (**El portal y la guía, contrastados con el dimensionador sobre lo que sirve el servidor.** Es la mejora propuesta al cerrar la entrega anterior. `npm run catalogo` siembra una base en memoria y compara lo que reciben las pantallas, y la primera medida encontró dos errores en producción que ningún archivo mostraba: la calculadora leía la capacidad de Nokia mil veces más pequeña (un 7250 IXR-e de 300 Gbps como uno de 300 Mbps) y apartaba el SRX 320, el 345 y el 4200 «por falta de dato» teniendo su IPsec en el catálogo. La guía aplica ahora la regla del cotizador, recupera los fabricantes que perdió al retirar equipos fuera de venta y deja de guardar 30 textos y 4 precios que nadie veía. Y el NE8000 M14 se cerró con su ficha oficial: 7,2 Tbps con IPU-3T6, no 2. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-02 (**Los jobs de navegador pasan a Ubuntu 26, y el cotizador y el dimensionador dicen la misma cifra en los siete fabricantes.** Ubuntu 26: medido antes de moverse, Playwright 1.63 pasaba todo pero la cobertura del contraste volvía a contar solo el último caso; la 1.61.1 da lo mismo que en local, y `contraste.js` ya no escribe una cobertura que contradice la corrida. Huawei y Juniper: sus fichas oficiales, traídas por Actions, cerraron las seis diferencias. En Juniper mandó el datasheet vigente de la línea SRX300 frente a la matriz de 2020, y eso cerró de paso la disputa del SRX380. Y preguntando a la API en vez de leer archivos salió más: el cotizador citaba en seis líneas de Huawei el texto de la guía de diseño (el M8, «1086 Mpps» sin fuente), y la guía recomendaba tres equipos fuera de venta. Ver *Cerrado recientemente*.)
 
@@ -1656,6 +1658,25 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Una sola copia de cada cifra del portal (2026-10-02)
+
+Era la mejora propuesta al cerrar «El portal y la guía, frente al dimensionador».
+
+- **El problema.** La siembra funde cada fila de `indexPR.js` con la del dimensionador del mismo
+  equipo y pisa las cifras que los dos traen con el mismo nombre. Eran 234 copias que nadie veía;
+  diecisiete ya no coincidían, y cada ficha leída había que corregirla en dos sitios (el NE8000 M14,
+  en tres).
+- **Lo hecho.** Las 234 salieron, con las ocho filas duplicadas de Cisco que la siembra ignoraba
+  enteras (las crea con la primera fila del mismo nombre). En el archivo queda lo que el
+  dimensionador no trae: el texto, el precio, las cifras de los equipos sin pareja (AR6300,
+  AR8700-10, NetEngine A811 E, la línea MX) y las que el portal escribe con otro nombre.
+- **Sin cambio en lo servido.** Doce respuestas de la API (portal, cotizador, guía y los
+  dimensionadores) comparadas antes y después: idénticas.
+- **Lo guarda** `test/catalogo-contraste-pantallas.test.js`, por las dos caras: una fila con pareja
+  no repite sus cifras, una sin pareja no se queda sin ellas, y ningún grupo repite un equipo.
+  Comprobado saboteando las tres. El primer sabotaje de la fila huérfana pasó en verde, porque la
+  prueba contaba el «—» de SD-WAN como una cifra; ahora usa la misma regla que el contraste.
 
 ### El portal y la guía, frente al dimensionador, sobre lo que sirve el servidor (2026-10-02)
 

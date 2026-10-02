@@ -130,16 +130,55 @@ test('el informe de la guia cuenta lo que la pantalla retiro y delata lo que dej
 });
 
 test('el archivo del portal no dice otra cosa que el dimensionador', () => {
-  // La siembra pisa con las del dimensionador las cifras que los dos traen, asi que una fila del
-  // portal que no coincida no se ve... hasta el dia en que deja de casar y vuelve a pintarse la
-  // suya. El 2026-10-02 eran diecisiete, entre ellas el Catalyst 8300-2N2S-6T con 10 Gbps de
-  // forwarding frente a los 5 de su ficha.
+  // Lo que el portal escribe con otro nombre que el dimensionador (el `cap` de texto de los SRX y de
+  // Cisco, el `sdwan` de los AR, el `fwd` de Aruba) no lo pisa la siembra: se sirve tal cual, asi
+  // que tiene que decir lo mismo. Las cifras con el mismo nombre ya no estan aqui (prueba
+  // siguiente); el 2026-10-02 diecisiete no coincidian, entre ellas el Catalyst 8300-2N2S-6T con 10
+  // Gbps de forwarding frente a los 5 de su ficha.
   const portal = require('../server/seed/legacyData/indexPR');
   const malas = contrastePortal(portal).flatMap((r) => [
     ...r.difiere.map((x) => `${r.grupo} · ${x.modelo}: ${x.campo} «${x.portal}» frente a ${x.dimensionador} Mbps del dimensionador`),
     ...r.ilegible.map((x) => `${r.grupo} · ${x.modelo}: ${x.campo} «${x.texto}» no se sabe leer`),
   ]);
   assert.deepStrictEqual(malas, [], 'alinea legacyData/indexPR.js con el dimensionador (npm run catalogo)');
+});
+
+test('una fila del portal que casa con el dimensionador no repite sus cifras, y una sin pareja conserva las suyas', () => {
+  // La siembra pisa con las del dimensionador las cifras que los dos traen con el mismo nombre, asi
+  // que repetirlas aqui era guardar una copia que nadie ve y que hay que corregir en dos sitios
+  // (234 hasta el 2026-10-02). El reves tambien vale: una fila sin cifras propias que pierde su
+  // pareja —un `id` renombrado en el dimensionador— se serviria sin ninguna, y aqui se ve antes.
+  const portal = require('../server/seed/legacyData/indexPR');
+  const { CONTRASTE_PORTAL, indiceDimensionador, sinCifra } = require('../server/services/cifrasCotizador');
+  const indice = indiceDimensionador();
+  const CIFRAS = ['fwd', 'ipsec', 'sdwan', 'typ', 'cap', 'mpps', 'fw', 'ips', 'ngfw', 'tp', 'ssl', 'vpn', 'atp', 'wanMax', 'wanMin', 'lan'];
+  const repetidas = [];
+  const huerfanas = [];
+  for (const [grupo, filas] of Object.entries(portal)) {
+    const cfg = CONTRASTE_PORTAL[grupo];
+    for (const f of filas) {
+      const pareja = indice[cfg.vendor].get(normalizarModelo(f.model));
+      if (pareja) {
+        for (const k of CIFRAS) if (k in f && k in pareja) repetidas.push(`${grupo} · ${f.model}: ${k}`);
+      } else if (Object.keys(cfg.campos).every((k) => sinCifra(f[k]))) {
+        // «—», «Sí» o un cero no son una cifra: el AR617VW-LTE4 sin pareja seguiria teniendo su
+        // `sdwan: '—'` y la calculadora no tendria nada que leer.
+        huerfanas.push(`${grupo} · ${f.model}`);
+      }
+    }
+  }
+  assert.deepStrictEqual(repetidas, [], 'la cifra ya la trae el dimensionador: quitala de indexPR.js');
+  assert.deepStrictEqual(huerfanas, [], 'sin pareja en el dimensionador y sin cifras propias: el portal la serviria vacia');
+});
+
+test('el portal no repite un equipo dentro de un grupo', () => {
+  // La siembra crea el producto con la primera fila y descarta en silencio las siguientes del mismo
+  // nombre: hasta el 2026-10-02 ocho filas de Cisco eran asi, con su propio texto y su propio `cap`.
+  const portal = require('../server/seed/legacyData/indexPR');
+  for (const [grupo, filas] of Object.entries(portal)) {
+    const nombres = filas.map((f) => f.model);
+    assert.deepStrictEqual(nombres.filter((n, i) => nombres.indexOf(n) !== i), [], `${grupo} repite equipos`);
+  }
 });
 
 test('una entrada de la guia lleva texto y precio propios solo si el equipo no esta en el catalogo', () => {
