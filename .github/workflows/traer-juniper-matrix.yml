@@ -27,7 +27,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version-file: package.json
 
       # La URL sale de FUENTES (server/seed/legacyData/fuentes.js), la misma que usa
       # npm run vigia: no hay una segunda lista de URLs que se pueda desincronizar.

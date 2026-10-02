@@ -53,7 +53,7 @@ jobs:
       # Sin `npm ci`: el descargador solo usa modulos de Node y el manifiesto de aruba.js.
       - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version-file: package.json
 
       # El script comprueba la firma %PDF del contenido y reporta aparte las URL que devuelven
       # una pagina de aterrizaje. Informativo a proposito: una URL que falla se cuenta en el
@@ -106,7 +106,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version-file: package.json
 
       # Fuera del repositorio: el artefacto no puede caer sobre un archivo del checkout.
       - name: Bajar lo descargado

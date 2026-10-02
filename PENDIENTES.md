@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-02 (**Los otros dos workflows que escriben en el repositorio, con el mismo arreglo que la vigía.** Es la mejora propuesta al cerrar la entrega anterior. `aplicar-propuesta.yml`, la vía documentada para llevar al catálogo lo que propone la IA, no se había ejecutado nunca y habría fallado la primera vez al crear el PR. `datasheets-aruba.yml` ya había fallado así. Ahora los dos corren en dos jobs con permisos separados, el que escribe valida lo que recibe, y las tres ramas de bot se empujan con un solo script probado contra un remoto git real. De paso se cerró un comando de shell que llevaba dentro el fabricante de la propuesta, un texto que viene de la IA. Ver *Cerrado recientemente*. **Y al confirmar el despliegue, el log de construcción de Railway enseñó algo que no estaba registrado**: producción corre Node 20.20.2, sin soporte desde el 30 de abril de 2026, y `nixpacks.toml` ya no lo lee nadie. Ver *Abierto: cómo construye Railway producción*.)
+Última revisión: 2026-10-02 (**Producción y CI en Node 24 LTS, con la versión declarada una sola vez.** Es la mejora propuesta al cerrar la entrega anterior. Producción corría Node 20.20.2, sin soporte desde el 30 de abril: Railway construye con Railpack, que la toma de `engines.node`, y con `>=20` eligió la más baja. El `nixpacks.toml` que parecía fijarla no lo leía nadie. Ahora `engines.node` es `"24"`, los workflows la leen de ahí y una prueba se pone en rojo el día que esa versión pierda el soporte. Node 24 trae npm 11, que pide aprobar qué dependencias ejecutan código al instalarse: `sqlite3` va aprobada fijada a su versión. Verificado entero con Node 24 antes de desplegar. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-02 (**Los otros dos workflows que escriben en el repositorio, con el mismo arreglo que la vigía.** Es la mejora propuesta al cerrar la entrega anterior. `aplicar-propuesta.yml`, la vía documentada para llevar al catálogo lo que propone la IA, no se había ejecutado nunca y habría fallado la primera vez al crear el PR. `datasheets-aruba.yml` ya había fallado así. Ahora los dos corren en dos jobs con permisos separados, el que escribe valida lo que recibe, y las tres ramas de bot se empujan con un solo script probado contra un remoto git real. De paso se cerró un comando de shell que llevaba dentro el fabricante de la propuesta, un texto que viene de la IA. Ver *Cerrado recientemente*. **Y al confirmar el despliegue, el log de construcción de Railway enseñó algo que no estaba registrado**: producción corre Node 20.20.2, sin soporte desde el 30 de abril de 2026, y `nixpacks.toml` ya no lo lee nadie. Ver *Abierto: cómo construye Railway producción*.)
 
 Revisión anterior: 2026-10-02 (**La vigía de fuentes, en dos jobs con permisos separados, y en verde después de tres semanas sin avisar.** Es la mejora propuesta al cerrar la entrega anterior. Al ejecutarla se midió que la vigía llevaba dos corridas en rojo, la del 21 y la del 28 de septiembre: GitHub no deja que Actions cree el PR del lock, y el push de la rama se rechazaba. Como el job se cortaba ahí, el issue no se actualizaba. Ahora `medir` no tiene permisos ni instala nada, y `publicar` valida lo medido antes de copiarlo, empuja la rama con la lease bien puesta y enlaza el PR en el issue. Ver *Cerrado recientemente*.)
 
@@ -1522,27 +1524,30 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
 
 ## Abierto: cómo construye Railway producción (2026-10-02)
 
-Salió al confirmar el despliegue de `ab1b8c0`, leyendo el log de construcción de `60579d25`.
-Nada de esto estaba registrado.
+Salió al confirmar el despliegue de `ab1b8c0`, leyendo el log de construcción de `60579d25`. El
+runtime (Node 20 sin soporte y el `nixpacks.toml` que nadie leía) se cerró ese mismo día: ver
+*Cerrado recientemente*. Queda esto:
 
-- **Railway construye con Railpack 0.40.1, no con Nixpacks.** `nixpacks.toml`
-  (`nixPkgs = ["nodejs_20"]`) ya no lo lee nadie: es configuración que parece mandar y no
-  manda. La documentación oficial de Railway confirma que el constructor es Railpack y que se
-  configura por variables o por su propio archivo.
-- **Producción corre Node 20.20.2, sin soporte desde el 30 de abril de 2026.** Railpack lo
-  elige de `engines.node` (`>=20`), y lo dice en el log: `package.json > engines > node
-  (>=20)`. Sin parches de seguridad para el proceso que sirve la lista de precios tras el muro,
-  incluidos su parser HTTP y el `crypto` con el que se firman las sesiones. CI corre la misma
-  versión (`node-version: 20`, 15 veces en los workflows) y las comprobaciones de esta sesión
-  corren en Node 22.22.2.
 - **Railpack instala con `npm install`, no con `npm ci`.** Un `package-lock.json` que no cuadre
   con `package.json` ya no frena el despliegue, como lo frenó el 1 de septiembre: se resolvería
   dentro del contenedor, con versiones que CI no probó. `verificar` sí corre `npm ci`, pero
-  Railway no lo espera (punto 33).
-- **Qué lo cierra**: la mejora propuesta al cerrar esta entrega (una sola versión de Node con
-  soporte, declarada donde la leen Railpack y `setup-node`). Sin aplicar; decide el dueño.
-  `railpack.com` da 403 desde este entorno (política de egreso), así que la sintaxis exacta de su
-  archivo de configuración no se leyó aquí.
+  Railway no lo espera (punto 33). Cambiarlo es configuración de Railpack, y `railpack.com` da
+  403 desde este entorno (política de egreso): su sintaxis no se leyó aquí.
+- **`npm audit` reporta 2 avisos altos y 2 moderados, y nada lo dice en voz alta.** El paso de
+  `verificar.yml` es informativo (`continue-on-error`), y su comentario hablaba de «2 avisos
+  moderados» de la Fase 0: se había quedado viejo. Medido el 2026-10-02 sobre el mismo lock, con
+  el mismo resultado en npm 10 y en npm 11:
+  - `brace-expansion` (alto, transitivo, con arreglo): denegación de servicio por recursión sin
+    límite en grupos anidados (GHSA-qhr7-859c-m2p7 y GHSA-6j4f-fj2g-mc7p), más una expansión de
+    coste cuadrático, moderada (GHSA-q2hr-2g5m-vwhr).
+  - `undici` (alto, transitivo, con arreglo): denegación de servicio con un subprotocolo de
+    WebSocket no pedido (GHSA-rfgv-xxqx-mfg5), más otra moderada en la descompresión de WebSocket
+    (GHSA-3wwx-pv8p-q78v) y una baja de partición de respuestas (GHSA-r53p-7pc4-xj5r).
+  - `multer` (moderado, **directo**, con arreglo): denegación de servicio por escrituras huérfanas
+    al abortar una subida (GHSA-3pph-fpjx-jg34). Es el que recibe los adjuntos de
+    `/api/sync` y `/api/fuentes`, tras el muro y con el permiso `sync`.
+  - `moment` (moderado, transitivo, con arreglo): recorrido de rutas con un nombre de *locale*
+    que no es texto (GHSA-4p3w-j4w9-5jqw).
 
 ## Limpieza
 
@@ -1617,6 +1622,72 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Producción y CI en Node 24 LTS, con la versión declarada una sola vez (2026-10-02)
+
+Mejora propuesta al cerrar la entrega anterior. Salió de leer el log de construcción de Railway
+para confirmar aquel despliegue.
+
+- **Lo que estaba pasando.**
+  - **Railway construye con Railpack 0.40.1, no con Nixpacks.** `nixpacks.toml`
+    (`nixPkgs = ["nodejs_20"]`) no lo leía nadie.
+  - **Railpack toma Node de `engines.node`, y con `>=20` eligió la más baja: Node 20.20.2.** Es
+    la última de su línea (24 de marzo), y la línea terminó el 30 de abril de 2026 según el
+    calendario oficial (`nodejs/Release`, `schedule.json`). Cinco meses sin parches de
+    seguridad para el proceso que sirve la lista de precios, y nada lo dijo.
+  - **La versión vivía en tres sitios que no coincidían**: `nixpacks.toml` (20, inerte), cada
+    workflow (`node-version: 20`, 15 veces) y este entorno (Node 22).
+- **Lo que cambió.**
+  - `engines.node` pasa a `"24"`, una versión mayor sin rango, y es la única declaración. Node
+    24 es LTS con soporte hasta el 30 de abril de 2028. Node 26 no se eligió: no es LTS hasta el
+    28 de octubre.
+  - Los 15 `setup-node` leen la versión con `node-version-file: package.json`.
+  - `nixpacks.toml`, retirado. El lock, regenerado con npm: solo cambia su campo `engines`.
+- **Node 24 trae npm 11, y npm 11 pide aprobar qué dependencias ejecutan código al instalarse
+  (`allowScripts`).** Medido con npm 11.19:
+  - sin el campo, o con otra versión aprobada, el script corre y npm avisa;
+  - aprobado con su versión exacta, corre sin aviso;
+  - denegado, se salta en silencio y `npm ci` sale con 0 **sin el binario de `sqlite3`**.
+  - Su documentación anuncia que lo no aprobado se bloqueará.
+  - `sqlite3` es la única dependencia no opcional con script de instalación, y el suyo baja un
+    binario nativo de GitHub que corre dentro del servidor. Con los criterios de
+    `supply-chain-risk-auditor` (lo mantiene una organización y está al día, pero tiene 10
+    personas con permiso de publicación y ejecuta código nativo), se aprobó **fijado a su
+    versión**, que es lo que npm hace por defecto.
+- **Lo que lo guarda.**
+  - `test/version-node.test.js`, 5 casos:
+    - una versión mayor sin rango;
+    - LTS con soporte hoy, según las fechas oficiales copiadas en la prueba. **El 30 de abril
+      de 2028 se pone en rojo sola**;
+    - los bordes del calendario;
+    - ningún workflow fija la suya;
+    - ningún otro archivo declara otra, y el lock dice lo mismo.
+  - `test/scripts-instalacion.test.js`, 2 casos: cada dependencia con script de instalación,
+    aprobada en su versión exacta, y ninguna aprobación sin fijar, vieja o denegando algo que
+    hace falta. Cuando Dependabot suba `sqlite3`, se pone en rojo hasta que una persona revise
+    y apruebe esa versión.
+  - Comprobado saboteando las once formas de volver atrás, y cada una la caza su regla:
+    - el rango, Node 20, un workflow con su versión, `nixpacks.toml` de vuelta, el lock
+      desalineado y un bloque `volta` en `package.json`;
+    - sin aprobar, otra versión aprobada, aprobada sin versión, denegada y una aprobación de
+      algo que no está instalado.
+- **La revisión diferencial encontró un hueco antes de empujar.** `setup-node` lee `volta.node`
+  antes que `engines.node`, y Railpack no. Un bloque `volta` futuro habría vuelto a separar CI y
+  producción sin que nada lo dijera. La prueba rechaza ahora `volta` y `devEngines`.
+- **Verificado entero con Node 24.21.0 antes de desplegar**, bajado de nodejs.org con su
+  SHA-256 comprobado contra `SHASUMS256.txt`, en una copia aparte del repositorio:
+  - `npm ci` con npm 11.19, y `sqlite3` carga (SQLite 3.52.0). Y `npm install`, que es lo que
+    corre Railpack: el binario queda, sin aviso, y el lock no cambia;
+  - 706 pruebas y lint sin errores;
+  - el arranque en modo producción, sin un solo aviso de obsolescencia: `[seed]`, escucha en su
+    puerto, `/salud` con 7 fabricantes y 228 modelos, y el muro 4 de 4;
+  - 17/17 pantallas, 8 contrastes sin discrepancias y 16/16 scripts e2e.
+- **Lo que salió por el camino**, abierto arriba en *Abierto: cómo construye Railway
+  producción*:
+  - Railpack instala con `npm install`, no con `npm ci`.
+  - `npm audit` da 2 avisos altos y 2 moderados, con el mismo resultado en npm 10 y en npm 11.
+    El comentario del paso informativo de `verificar.yml` hablaba de «2 moderados»: ahora no
+    lleva cifras, que caducan, y remite aquí.
 
 ### Los otros dos workflows que escriben en el repositorio, con el arreglo de la vigía (2026-10-02)
 

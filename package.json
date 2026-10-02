@@ -29,7 +29,7 @@
     "puerta": "node scripts/puerta.js"
   },
   "engines": {
-    "node": ">=20"
+    "node": "24"
   },
   "overrides": {
     "qs": "^6.16.0",
@@ -52,5 +52,8 @@
     "eslint": "^9.39.5",
     "nodemon": "^3.1.10",
     "pdf-parse": "^1.1.1"
+  },
+  "allowScripts": {
+    "sqlite3@6.0.1": true
   }
 }

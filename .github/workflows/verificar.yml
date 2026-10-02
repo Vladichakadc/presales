@@ -28,7 +28,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version-file: package.json
           cache: npm
 
       # npm ci falla cerrado si package.json y package-lock.json no coinciden. Eso es una
@@ -65,9 +65,9 @@ jobs:
           curl -fsS --retry 5 --retry-connrefused http://127.0.0.1:4000/salud | tee salud.json
           grep -q '"ok":true' salud.json || { echo '/salud no responde ok'; exit 1; }
 
-      # Informativo por ahora. La Fase 0 dejo el arbol en 2 avisos moderados (sequelize por
-      # uuid, sin arreglo sin saltar a Sequelize 7), asi que exigir cero aqui bloquearia
-      # cada push por algo que no se puede cerrar todavia.
+      # Informativo: no frena el push. Lo que reporta cambia con cada aviso nuevo de la base de
+      # npm, asi que el recuento de hoy no vive aqui sino en PENDIENTES.md (medido el 2026-10-02:
+      # el mismo resultado con npm 10 y con npm 11 sobre el mismo lock).
       - name: Auditoria de dependencias (informativa)
         continue-on-error: true
         run: npm audit --audit-level=high

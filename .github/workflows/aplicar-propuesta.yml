@@ -61,7 +61,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version-file: package.json
           cache: npm
 
       - name: Instalar dependencias
@@ -125,7 +125,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version-file: package.json
 
       # Fuera del repositorio: el artefacto no puede caer sobre un archivo del checkout.
       - name: Bajar el parche verificado

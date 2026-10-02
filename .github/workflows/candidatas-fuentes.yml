@@ -40,7 +40,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version-file: package.json
 
       - name: Probar las candidatas con su grupo de control
         run: |

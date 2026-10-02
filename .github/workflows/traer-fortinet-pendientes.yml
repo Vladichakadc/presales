@@ -46,7 +46,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version-file: package.json
 
       - name: Descargar los documentos que faltan
         run: |
