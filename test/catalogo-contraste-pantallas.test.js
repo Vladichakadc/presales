@@ -129,6 +129,56 @@ test('el informe de la guia cuenta lo que la pantalla retiro y delata lo que dej
   assert.deepStrictEqual(r.sinFicha.map((x) => x.modelo), ['NE8000 M8']);
 });
 
+test('el hueco de la alternativa sale con la cifra del dimensionador, y lo que no hay se dice', () => {
+  const indice = {
+    ...indiceDe('huawei', [{ id: 'NE8000 M6', cap: 320000 }, { id: 'NE8000 M4', cap: 2400000 }, { id: 'AR651W-8P', fwd: 2000 }]),
+    ...indiceDe('fortinet', [{ id: 'FortiGate 700G', fw: 164000, ngfw: 29000 }, { id: 'FortiGate 70G', fw: 7500 }]),
+    ...indiceDe('nokia', [{ id: '7750 SR-14s', cap: 216000 }]),
+    ...indiceDe('aruba', [{ id: 'EC-M', wanMax: 5000 }]),
+  };
+  const de = (vendor, alt, fuera) => proyectarGuia({ spec: '', alt }, { vendor, porNombre: indice[vendor], fuera });
+  // Portada, etiqueta, prosa dentro y fuera del parentesis, y la escala de Nokia (Gbps).
+  assert.strictEqual(de('huawei', 'NE8000 M6 ({cifra} compacto)').alt, 'NE8000 M6 (320 Gbps compacto)');
+  assert.strictEqual(de('huawei', 'AR651W-8P ({cifra FWD})').alt, 'AR651W-8P (2 Gbps FWD)');
+  assert.strictEqual(de('fortinet', 'FortiGate 700G ({cifra NGFW})').alt, 'FortiGate 700G (29 Gbps NGFW)');
+  assert.strictEqual(de('fortinet', 'FortiGate 700G ({cifra})').alt, 'FortiGate 700G (164 Gbps)', 'sin etiqueta, la de portada');
+  assert.strictEqual(de('nokia', '7750 SR-14s ({cifra})').alt, '7750 SR-14s (216 Tbps)', 'Nokia guarda Gbps');
+  assert.strictEqual(de('aruba', 'EC-M ({cifra WAN}) si el hub no pasa de esa cifra').alt, 'EC-M (5 Gbps WAN) si el hub no pasa de esa cifra');
+  assert.deepStrictEqual(de('fortinet', 'FortiGate 700G ({cifra NGFW})').altCifra, { modelo: 'FortiGate 700G', campo: 'ngfw', estado: 'catalogo' });
+
+  // Lo que no se puede rellenar sale «sin dato», nunca con el hueco ni con la cifra de otro campo.
+  const sinCampo = de('fortinet', 'FortiGate 70G ({cifra NGFW})');
+  assert.deepStrictEqual([sinCampo.alt, sinCampo.altCifra.estado], ['FortiGate 70G (NGFW sin dato)', 'sinDato']);
+  const etiqueta = de('fortinet', 'FortiGate 700G ({cifra IPS})');
+  assert.deepStrictEqual([etiqueta.alt, etiqueta.altCifra.estado], ['FortiGate 700G (IPS sin dato)', 'ilegible']);
+  const sinPareja = de('huawei', 'AR6300 ({cifra})');
+  assert.deepStrictEqual([sinPareja.alt, sinPareja.altCifra], ['AR6300 (cifra sin dato)', { modelo: 'AR6300', campo: null, estado: 'sinPareja' }]);
+  const suelto = de('huawei', 'NE8000 M6 con mas puertos ({cifra})');
+  assert.deepStrictEqual([suelto.alt, suelto.altCifra.estado], ['NE8000 M6 con mas puertos (cifra sin dato)', 'ilegible'], 'un hueco que no abre el parentesis del modelo no se sabe de quien es');
+
+  // Fuera de venta no se pinta, ni con la cifra del catalogo.
+  const retirada = de('huawei', 'NE8000 M4 ({cifra} modular)', (m) => m.id === 'NE8000 M4');
+  assert.deepStrictEqual([retirada.alt, retirada.altCifra, retirada.altRetirada], ['', null, { modelo: 'NE8000 M4', motivo: 'fuera de venta' }]);
+  // Una cifra escrita se sigue contrastando: es la de una alternativa sin pareja, o un error.
+  assert.strictEqual(de('huawei', 'NE8000 M6 (300 Gbps)').alt, 'NE8000 M6 (capacidad en revisión)');
+});
+
+test('el informe cuenta aparte la cifra que puso el catalogo y delata el hueco que no se relleno', () => {
+  const indice = indiceDe('juniper', [{ id: 'SRX2300', fw: 39000 }, { id: 'SRX4300', fw: 98000 }]);
+  const guia = { hub: [
+    { v: 'Juniper', model: 'SRX1600', spec: '', alt: 'SRX2300 (39 Gbps FW)', altCifra: { modelo: 'SRX2300', campo: 'fw', estado: 'catalogo' } },
+    { v: 'Juniper', model: 'SRX1600', spec: '', alt: 'SRX4300 (FW sin dato)', altCifra: { modelo: 'SRX4300', campo: 'fw', estado: 'sinDato' } },
+    { v: 'Juniper', model: 'SRX1600', spec: '', alt: 'SRX4300 ({cifra FW})' },
+    // La proyeccion dice que la cifra es del catalogo y no lo es: un fallo suyo, no una disputa.
+    { v: 'Juniper', model: 'SRX1600', spec: '', alt: 'SRX4300 (40 Gbps FW)', altCifra: { modelo: 'SRX4300', campo: 'fw', estado: 'catalogo' } },
+  ] };
+  const r = contrasteGuia(guia, { indice });
+  assert.strictEqual(r.altDelCatalogo, 1, 'la cifra puesta por el catalogo no cuenta como contrastada');
+  assert.deepStrictEqual(r.altSinCifra.map((x) => x.estado), ['sinDato', 'sin rellenar']);
+  assert.deepStrictEqual(r.enRevision.map((x) => [x.alternativa, x.sinRetirar]), [['SRX4300', true]]);
+  assert.strictEqual(r.comparadas, 1);
+});
+
 test('el archivo del portal no dice otra cosa que el dimensionador', () => {
   // Lo que el portal escribe con otro nombre que el dimensionador (el `cap` de texto de los SRX y de
   // Cisco, el `sdwan` de los AR, el `fwd` de Aruba) no lo pisa la siembra: se sirve tal cual, asi
@@ -201,4 +251,32 @@ test('una entrada de la guia lleva texto y precio propios solo si el equipo no e
       assert.strictEqual(e.color, undefined, `${rol} · ${e.model}: el color es el del fabricante en la base`);
     }
   }
+});
+
+test('una alternativa de la guia no copia la cifra de un equipo del dimensionador, y su hueco se rellena', () => {
+  // La que nombra un equipo con pareja deja un hueco —`{cifra}` o `{cifra FW}`— y la proyeccion
+  // pone la del dimensionador: copiarla aqui era corregirla a mano con cada ficha (treinta hasta el
+  // 2026-10-02). Y un hueco que el dimensionador no pudiera rellenar saldria «sin dato» en la
+  // pantalla, asi que se exige aqui, en milisegundos, que todos se rellenen.
+  const guia = require('../server/seed/legacyData/guiaRoles');
+  const { indiceDimensionador } = require('../server/services/cifrasCotizador');
+  const indice = indiceDimensionador();
+  const copias = [];
+  const huecos = [];
+  let rellenos = 0;
+  for (const [rol, lista] of Object.entries(guia)) {
+    for (const e of lista) {
+      const vendor = e.v.toLowerCase();
+      const porNombre = indice[vendor] || null;
+      const a = leerAlternativa(e.alt, porNombre);
+      if (a.cifra && a.pareja) copias.push(`${rol} · ${e.alt}`);
+      if (!a.hueco) continue;
+      const g = proyectarGuia({ spec: '', alt: e.alt }, { vendor, porNombre });
+      if (g.altCifra && g.altCifra.estado === 'catalogo') rellenos++;
+      else huecos.push(`${rol} · ${e.alt}: ${g.altCifra ? g.altCifra.estado : 'sin proyectar'}`);
+    }
+  }
+  assert.deepStrictEqual(copias, [], 'escribe {cifra} o {cifra ETIQUETA}: la cifra la pone el dimensionador');
+  assert.deepStrictEqual(huecos, [], 'un hueco que el dimensionador no puede rellenar sale «sin dato» en la guia');
+  assert.ok(rellenos > 25, `solo ${rellenos} alternativas llevan hueco`);
 });

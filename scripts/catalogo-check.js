@@ -405,7 +405,9 @@ const {
    da, que en la calculadora es un equipo apartado por un dato que si existe. En la guia, lo que
    difiere ya llega «en revision» —la proyeccion aplica la regla del cotizador— y aqui se cuenta;
    y una alternativa fuera de venta llega retirada. Lo que no tiene pareja en el dimensionador
-   (el MX, el QFX, CloudEngine) se lista: son cifras que ninguna pantalla puede contrastar. */
+   (el MX, el QFX, CloudEngine) se lista: son cifras que ninguna pantalla puede contrastar. La
+   alternativa que nombra un equipo del dimensionador lleva la cifra de ese equipo, puesta por la
+   proyeccion: se cuenta aparte y no como contrastada, porque es la misma copia. */
 const { execFileSync } = require('child_process');
 
 function pantallasServidas() {
@@ -452,9 +454,12 @@ function imprimirPantallas(cp) {
     for (const x of f.ilegible) console.log(`      NO SE PUDO LEER  ${x.modelo}: ${x.campo} «${x.texto}»`);
   }
   const g = cp.guia;
-  console.log(`\n   guia ${g.entradas} entradas · ${g.coincide}/${g.comparadas} cifras coinciden · ${g.enRevision.length} en revision · ${g.altRetiradas.length} alternativas fuera de venta · ${g.sinDato.length} sin dato · ${g.ilegible.length} no se pudieron leer · ${g.sinFicha.length} sin ficha`);
+  console.log(`\n   guia ${g.entradas} entradas · ${g.coincide}/${g.comparadas} cifras coinciden · ${g.altDelCatalogo} alternativas con la cifra del dimensionador · ${g.enRevision.length} en revision · ${g.altRetiradas.length} alternativas fuera de venta · ${g.altSinCifra.length} huecos sin cifra · ${g.sinDato.length} sin dato · ${g.ilegible.length} no se pudieron leer · ${g.sinFicha.length} sin ficha`);
   for (const x of g.enRevision) console.log(`      EN REVISION  ${x.rol} · ${x.modelo} (${x.donde}${x.alternativa ? ` ${x.alternativa}` : ''}): la guia decia ${x.citado} y el dimensionador ${x.dimensionador}${x.sinRetirar ? ' — Y LA PANTALLA LA SIGUE CITANDO' : ''}`);
   for (const x of g.altRetiradas) console.log(`      FUERA DE VENTA  ${x.rol} · ${x.modelo}: la alternativa ${x.alternativa}${x.sinRetirar ? ' — Y LA PANTALLA LA SIGUE RECOMENDANDO' : ' no se pinta'}`);
+  // Un hueco que el dimensionador no puede rellenar (sin pareja, sin ese campo, etiqueta que no
+  // se reconoce) sale «sin dato» en pantalla: la alternativa perdio la cifra que daba su motivo.
+  for (const x of g.altSinCifra) console.log(`      HUECO SIN CIFRA  ${x.rol} · ${x.modelo}: «${x.alternativa}» (${x.estado})`);
   for (const x of g.ilegible) console.log(`      NO SE PUDO LEER  ${x.rol} · ${x.modelo}: «${x.texto}»`);
   for (const x of g.sinFicha) console.log(`      SIN FICHA  ${x.rol} · ${x.modelo}: la guia lo recomienda sin texto`);
   if (g.fichaSinPareja.length || g.altSinPareja.length) {

@@ -213,7 +213,14 @@ function contrasteCotizador(opciones) {
    cifra que el portal no da—, que en la calculadora es un equipo apartado por un dato que si
    existe. EN LA GUIA, la ficha se lee como el texto del cotizador, y la alternativa
    («NE8000 M14 (7.2 Tbps)») cita la cifra de OTRO equipo, que tambien se casa y se contrasta.
-   Una alternativa fuera de venta tiene estado propio: la guia promete equipos activos. */
+   Una alternativa fuera de venta tiene estado propio: la guia promete equipos activos.
+
+   Y DESDE EL 2026-10-02 LA ALTERNATIVA NO COPIA ESA CIFRA: si nombra un equipo del dimensionador,
+   escribe un hueco —`{cifra}` para la de portada, `{cifra FW}` para la de esa etiqueta— y la
+   proyeccion lo rellena con la del dimensionador (`rellenarHueco`). Era la ultima copia de una
+   cifra del dimensionador en `guiaRoles.js`: treinta alternativas que habia que corregir a mano
+   con cada ficha, como la del NE8000 M14 ese mismo dia. Una alternativa SIN pareja (el MX, el QFX,
+   CloudEngine) conserva su cifra escrita, porque no hay otra. */
 
 // Unidades. Todo el portal lee un numero como Mbps (calculadora y comparador); el
 // dimensionador de Nokia guarda la capacidad en Gbps. `escala` es el unico sitio que lo sabe.
@@ -311,11 +318,16 @@ const CAMPO_ETIQUETA = { FW: 'fw', FWD: 'fwd' };
 const ETIQUETA_PORTADA = new Set(['WAN']);
 const ROTULO_CAMPO = { cap: 'capacidad', fwd: 'FWD', fw: 'FW', wanMax: 'WAN', ngfw: 'NGFW', vpn: 'IPsec', ipsec: 'IPsec', typ: 'SD-WAN', sdwan: 'SD-WAN' };
 
+// El hueco de una alternativa: `{cifra}` o `{cifra ETIQUETA}`, con las etiquetas de las cifras
+// escritas («FW», «FWD», «NGFW», «WAN»).
+const HUECO = /\{cifra(?:\s+([A-Za-z][\w-]*))?\}/;
+
 // «<modelo> (<cifra>[ <etiqueta>][ resto])[ resto]». El modelo es el prefijo MAS LARGO del texto
 // anterior al parentesis que casa con un equipo del fabricante: el catalogo es un conjunto
 // cerrado, asi que no hace falta adivinar donde acaba el nombre. Solo se lee la primera
 // alternativa —en «RB4011iGS+ (5.6 Gbps) o RB5009UPr+ con PoE-out» se contrasta el RB4011—, y la
-// cifra cuenta solo si va pegada al modelo.
+// cifra cuenta solo si va pegada al modelo. Lo mismo vale para el hueco: `pegado` dice si abre el
+// parentesis del modelo, que es lo unico que permite saber de que equipo es la cifra.
 function leerAlternativa(alt, porNombre) {
   const texto = String(alt || '');
   const abre = texto.indexOf('(');
@@ -327,6 +339,14 @@ function leerAlternativa(alt, porNombre) {
     const candidato = palabras.slice(0, n).join(' ');
     const m = porNombre ? porNombre.get(normalizarModelo(candidato)) : null;
     if (m) { modelo = candidato; pareja = m; }
+  }
+  let hueco = null;
+  const h = texto.match(HUECO);
+  if (h) {
+    hueco = {
+      etiqueta: h[1] || null, inicio: h.index, fin: h.index + h[0].length,
+      pegado: abre >= 0 && h.index > abre && !texto.slice(abre + 1, h.index).trim() && (!modelo || modelo === cabeza),
+    };
   }
   let cifra = null;
   if (abre >= 0 && (!modelo || modelo === cabeza)) {
@@ -345,33 +365,71 @@ function leerAlternativa(alt, porNombre) {
       };
     }
   }
-  return { modelo, pareja, cifra };
+  return { modelo, pareja, cifra, hueco, cabeza };
+}
+
+// Los campos del dimensionador que nombra una etiqueta: la del mapa del cotizador de ese
+// fabricante, la de portada si no hay etiqueta (o es «WAN»), y `null` si no se reconoce.
+function candidatosDeEtiqueta(etiqueta, vendor) {
+  const mapa = (CONTRASTE_COTIZADOR[vendor] || {}).campos || {};
+  if (etiqueta && (mapa[etiqueta] || CAMPO_ETIQUETA[etiqueta])) return [mapa[etiqueta] || CAMPO_ETIQUETA[etiqueta]];
+  if (!etiqueta || ETIQUETA_PORTADA.has(etiqueta)) return PORTADA[vendor] || [];
+  return null;
 }
 
 // Que campo nombra la cifra de una alternativa, y hasta donde llega el texto que la cita.
 function campoDeCifra(cifra, vendor) {
   const e = cifra.etiqueta;
-  const mapa = (CONTRASTE_COTIZADOR[vendor] || {}).campos || {};
-  if (e && (mapa[e] || CAMPO_ETIQUETA[e])) {
-    return { candidatos: [mapa[e] || CAMPO_ETIQUETA[e]], texto: `${cifra.texto} ${e}`, fin: cifra.finEtiqueta };
+  const prosa = Boolean(e) && /^[a-z]/.test(e);
+  const candidatos = candidatosDeEtiqueta(prosa ? null : e, vendor);
+  if (!candidatos) return null;
+  const conEtiqueta = Boolean(e) && !prosa;
+  return {
+    candidatos,
+    texto: conEtiqueta ? `${cifra.texto} ${e}` : cifra.texto,
+    fin: conEtiqueta ? cifra.finEtiqueta : cifra.finCifra,
+  };
+}
+
+// La cifra de un equipo del dimensionador como la escribe la guia: «39 Gbps», «7.2 Tbps».
+function textoCifra(vendor, campo, valor) {
+  return campo === 'mpps' ? `${valor} Mpps` : mbpsLegible(aMbps(vendor, campo, valor));
+}
+
+// El hueco relleno con la cifra del dimensionador. Si no se puede —el modelo no tiene pareja, la
+// etiqueta no se reconoce, el hueco no va pegado al modelo o el equipo no trae ese campo— dice
+// «sin dato» en su lugar: un hueco nunca llega a la pantalla, y lo que no hay no se inventa.
+// `estado` cuenta cual de los casos fue (`catalogo` es el relleno), para el informe y las pruebas.
+function rellenarHueco(a, vendor) {
+  const { etiqueta, pegado } = a.hueco;
+  const candidatos = pegado ? candidatosDeEtiqueta(etiqueta, vendor) : null;
+  let estado = 'catalogo';
+  let campo = null;
+  if (!a.pareja) estado = 'sinPareja';
+  else if (!candidatos) estado = 'ilegible';
+  else {
+    campo = candidatos.find((c) => typeof a.pareja[c] === 'number') || null;
+    if (!campo) estado = 'sinDato';
   }
-  if (!e || ETIQUETA_PORTADA.has(e) || /^[a-z]/.test(e)) {
-    const conEtiqueta = e && ETIQUETA_PORTADA.has(e);
-    return {
-      candidatos: PORTADA[vendor] || [],
-      texto: conEtiqueta ? `${cifra.texto} ${e}` : cifra.texto,
-      fin: conEtiqueta ? cifra.finEtiqueta : cifra.finCifra,
-    };
-  }
-  return null;
+  const cifra = estado === 'catalogo'
+    ? `${textoCifra(vendor, campo, a.pareja[campo])}${etiqueta && campo !== 'mpps' ? ` ${etiqueta}` : ''}`
+    : `${etiqueta || 'cifra'} sin dato`;
+  const texto = String(a.texto);
+  return {
+    alt: `${texto.slice(0, a.hueco.inicio)}${cifra}${texto.slice(a.hueco.fin)}`,
+    // Sin pareja no se sabe que campo seria: la portada de un AR y la de un NE8000 son distintas.
+    altCifra: { modelo: a.modelo || a.cabeza, campo: campo || (a.pareja && candidatos ? candidatos[0] : null), estado },
+  };
 }
 
 // El estado de la alternativa de una entrada de la guia. `fuera(m)` dice si el modelo del
-// dimensionador esta fuera de venta: es la regla de `ficha.js`, que la proyeccion aplica.
+// dimensionador esta fuera de venta: es la regla de `ficha.js`, que la proyeccion aplica, y va
+// antes que el hueco porque una alternativa fuera de venta no se pinta con ninguna cifra.
 function contrastarAlternativa(alt, vendor, porNombre, fuera) {
-  const a = leerAlternativa(alt, porNombre);
+  const a = { ...leerAlternativa(alt, porNombre), texto: String(alt || '') };
+  if (a.pareja && fuera && fuera(a.pareja)) return { ...a, estado: 'fueraDeVenta' };
+  if (a.hueco) return { ...a, estado: 'hueco' };
   if (!a.pareja) return { ...a, estado: a.cifra ? 'sinPareja' : 'sinCifra' };
-  if (fuera && fuera(a.pareja)) return { ...a, estado: 'fueraDeVenta' };
   if (!a.cifra) return { ...a, estado: 'sinCifra' };
   const lectura = campoDeCifra(a.cifra, vendor);
   if (!lectura) return { ...a, estado: 'ilegible' };
@@ -384,22 +442,26 @@ function contrastarAlternativa(alt, vendor, porNombre, fuera) {
 
 // Lo que pinta la guia, con la regla del cotizador: una cifra en disputa no se cita —ni la de
 // la ficha ni la de la alternativa— y una alternativa fuera de venta no se recomienda. Lo que
-// se retira queda dicho en `enRevision` y `altRetirada`, para la pantalla y para el informe.
+// se retira queda dicho en `enRevision` y `altRetirada`, para la pantalla y para el informe; y
+// una alternativa con hueco sale con la cifra del dimensionador, dicho en `altCifra`.
 function proyectarGuia(entrada, ctx) {
   const { vendor, pareja, porNombre, fuera } = ctx || {};
   const ficha = proyectarFila(entrada.spec, pareja, CONTRASTE_COTIZADOR[vendor]);
   const enRevision = ficha.enRevision.map((r) => ({ donde: 'ficha', campo: r.campo, citado: r.cotizador, dimensionador: r.dimensionador }));
   let alt = entrada.alt || '';
   let altRetirada = null;
+  let altCifra = null;
   const a = contrastarAlternativa(alt, vendor, porNombre, fuera);
   if (a.estado === 'fueraDeVenta') {
     altRetirada = { modelo: a.modelo, motivo: 'fuera de venta' };
     alt = '';
+  } else if (a.estado === 'hueco') {
+    ({ alt, altCifra } = rellenarHueco(a, vendor));
   } else if (a.estado === 'difiere') {
     enRevision.push({ donde: 'alternativa', modelo: a.modelo, campo: a.campo, citado: a.cifra.texto, dimensionador: mbpsLegible(a.dimensionador) });
     alt = `${alt.slice(0, a.cifra.inicio)}${ROTULO_CAMPO[a.campo] || a.campo} en revisión${alt.slice(a.cifra.fin)}`;
   }
-  return { spec: ficha.spec, alt, enRevision, altRetirada };
+  return { spec: ficha.spec, alt, enRevision, altRetirada, altCifra };
 }
 
 // `guia` es la respuesta de `/api/guia/roles` (o `toGuiaRoles()`), donde la proyeccion ya
@@ -411,6 +473,7 @@ function contrasteGuia(guia, opciones) {
   const r = {
     entradas: 0, comparadas: 0, coincide: 0, enRevision: [], sinDato: [], ilegible: [],
     fichaSinPareja: [], altSinPareja: [], altRetiradas: [], sinFicha: [],
+    altDelCatalogo: 0, altSinCifra: [],
   };
   for (const [rol, lista] of Object.entries(guia || {})) {
     for (const e of lista) {
@@ -437,7 +500,15 @@ function contrasteGuia(guia, opciones) {
       // venta que la proyeccion dejara pasar tambien se cuenta.
       const fuera = o.fuera ? (m) => o.fuera(vendor, m) : null;
       const a = contrastarAlternativa(e.alt, vendor, porNombre, fuera);
+      const delCatalogo = e.altCifra && e.altCifra.estado === 'catalogo';
       if (a.estado === 'fueraDeVenta') r.altRetiradas.push({ rol, modelo: e.model, alternativa: a.modelo, motivo: 'fuera de venta', sinRetirar: true });
+      // Un hueco que llega a la pantalla, o uno que la proyeccion no pudo rellenar, es una
+      // alternativa sin cifra que el archivo prometia: se lista aparte.
+      else if (a.estado === 'hueco') r.altSinCifra.push({ rol, modelo: e.model, alternativa: e.alt, estado: 'sin rellenar' });
+      else if (e.altCifra && !delCatalogo) r.altSinCifra.push({ rol, modelo: e.model, alternativa: e.alt, estado: e.altCifra.estado });
+      // La cifra que puso el catalogo es la del dimensionador: no es una segunda copia, asi que no
+      // se cuenta como contrastada. Solo un «difiere» delataria que la proyeccion la escribio mal.
+      else if (delCatalogo && a.estado === 'coincide') r.altDelCatalogo++;
       else if (a.estado === 'sinPareja') r.altSinPareja.push({ rol, modelo: e.model, alternativa: e.alt });
       else if (a.estado === 'ilegible') r.ilegible.push({ rol, modelo: e.model, texto: e.alt });
       else if (a.estado === 'sinDato') r.sinDato.push({ rol, modelo: a.modelo, campo: a.campo, citado: a.cifra.texto });
@@ -457,5 +528,5 @@ module.exports = {
   CONTRASTE_COTIZADOR, leerSpec, normalizarModelo, indiceDimensionador,
   contrastarFila, proyectarFila, contrasteCotizador, mbpsLegible,
   aMbps, CONTRASTE_PORTAL, contrastePortal, sinCifra,
-  leerAlternativa, contrastarAlternativa, proyectarGuia, contrasteGuia,
+  leerAlternativa, contrastarAlternativa, proyectarGuia, contrasteGuia, textoCifra,
 };

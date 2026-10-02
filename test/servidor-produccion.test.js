@@ -751,5 +751,10 @@ test('la guia de diseno pinta el texto del catalogo y no cita ni recomienda lo q
   const r = contrasteGuia(guia, { fuera });
   assert.deepStrictEqual(r.enRevision.filter((x) => x.sinRetirar), [], 'la guia cita una cifra que el dimensionador contradice');
   assert.deepStrictEqual(r.altRetiradas.filter((x) => x.sinRetirar), [], 'la guia recomienda como alternativa un equipo fuera de venta');
-  assert.ok(r.comparadas > 60, `solo se contrastaron ${r.comparadas} cifras de la guia`);
+  assert.ok(r.comparadas > 50, `solo se contrastaron ${r.comparadas} cifras de la guia`);
+  // La alternativa que nombra un equipo del dimensionador sale con la cifra de ese equipo, puesta
+  // por el servidor: ningun hueco llega a la pantalla y ninguno se queda «sin dato».
+  assert.deepStrictEqual(servidas.filter((e) => /[{}]/.test(e.alt)).map((e) => e.alt), [], 'un hueco llega a la pantalla');
+  assert.deepStrictEqual(r.altSinCifra, [], 'una alternativa perdio la cifra que el archivo le dejaba al dimensionador');
+  assert.ok(r.altDelCatalogo > 25, `solo ${r.altDelCatalogo} alternativas llevan la cifra del dimensionador`);
 });

@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-02 (**Una sola copia de cada cifra del portal.** Es la mejora propuesta al cerrar la entrega anterior. `indexPR.js` repetía 234 cifras que la siembra pisa con las del dimensionador, y diecisiete ya no coincidían: había que corregir cada ficha en dos sitios. Se quitaron, con ocho filas duplicadas de Cisco que la siembra ignoraba enteras, y la API sirve exactamente lo mismo (12 de 12 respuestas idénticas). Una prueba exige que no vuelvan y que ninguna fila sin pareja se quede sin cifras. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-02 (**La cifra de cada alternativa de la guía la pone el dimensionador.** Es la continuación de la entrega anterior y la última copia de una cifra del dimensionador en `guiaRoles.js`: treinta alternativas la escribían a mano, y la del NE8000 M14 hubo que corregirla ese mismo día. Ahora dejan un hueco que la proyección rellena, la guía servida es idéntica (48 de 48 entradas) y una prueba exige que no vuelva ninguna copia ni quede un hueco sin rellenar. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-02 (**Una sola copia de cada cifra del portal.** Es la mejora propuesta al cerrar la entrega anterior. `indexPR.js` repetía 234 cifras que la siembra pisa con las del dimensionador, y diecisiete ya no coincidían: había que corregir cada ficha en dos sitios. Se quitaron, con ocho filas duplicadas de Cisco que la siembra ignoraba enteras, y la API sirve exactamente lo mismo (12 de 12 respuestas idénticas). Una prueba exige que no vuelvan y que ninguna fila sin pareja se quede sin cifras. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-02 (**El portal y la guía, contrastados con el dimensionador sobre lo que sirve el servidor.** Es la mejora propuesta al cerrar la entrega anterior. `npm run catalogo` siembra una base en memoria y compara lo que reciben las pantallas, y la primera medida encontró dos errores en producción que ningún archivo mostraba: la calculadora leía la capacidad de Nokia mil veces más pequeña (un 7250 IXR-e de 300 Gbps como uno de 300 Mbps) y apartaba el SRX 320, el 345 y el 4200 «por falta de dato» teniendo su IPsec en el catálogo. La guía aplica ahora la regla del cotizador, recupera los fabricantes que perdió al retirar equipos fuera de venta y deja de guardar 30 textos y 4 precios que nadie veía. Y el NE8000 M14 se cerró con su ficha oficial: 7,2 Tbps con IPU-3T6, no 2. Ver *Cerrado recientemente*.)
 
@@ -1570,7 +1572,8 @@ día (ver *Cerrado recientemente*). Queda lo que ninguna comprobación puede cer
   los que solo viven en la guía —QFX 5100-48S-6Q, QFX 10002-36Q, CloudEngine 6870, CloudEngine 9860
   y USG6000E—. Estos cinco la guía los marca «Fuera del catálogo: cifras sin contrastar» y van a
   «Consultar»: los precios que llevaban no tenían documento detrás. Nueve alternativas están en el
-  mismo caso (MX960, QFX 5120-32C, CE8850, CE9800...). `npm run catalogo` las lista.
+  mismo caso (MX960, QFX 5120-32C, CE8850, CE9800...), y son las únicas que conservan su cifra
+  escrita: las demás la toman del dimensionador. `npm run catalogo` las lista.
 - **Cerrarlo es una decisión de alcance**: o se dan de alta esos equipos en un dimensionador con su
   ficha oficial (los dominios de Juniper y Huawei están bloqueados aquí; van por Actions), o la guía
   deja de recomendar lo que el catálogo no cubre.
@@ -1658,6 +1661,27 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### La cifra de cada alternativa de la guía la pone el dimensionador (2026-10-02)
+
+Es lo que quedaba de «una sola copia de cada cifra», en el otro archivo que la repetía.
+
+- **El problema.** Treinta alternativas de `guiaRoles.js` («SRX2300 (39 Gbps FW)») copiaban la cifra
+  de un equipo del dimensionador. Se contrastaban y salían «en revisión» si no coincidían, así que
+  no mentían; pero cada ficha corregida obligaba a corregirlas a mano, y la del NE8000 M14 hubo que
+  corregirla ese mismo día.
+- **Lo hecho.** La alternativa deja un hueco pegado al modelo —`{cifra}` para la de portada,
+  `{cifra FW}` para la de esa etiqueta— y `cifrasCotizador.proyectarGuia` lo rellena con la del
+  dimensionador; la entrada servida lo dice en `altCifra`. Lo que no se puede rellenar sale «sin
+  dato», nunca con el hueco ni con la cifra de otro campo, y una alternativa fuera de venta sigue
+  sin pintarse. Las nueve alternativas sin pareja conservan su cifra escrita.
+- **Sin cambio en lo servido.** La guía, comparada antes y después: 48 de 48 entradas idénticas,
+  y el portal igual. `npm run catalogo` cuenta ahora 59 cifras contrastadas y 30 puestas por el
+  dimensionador, aparte, porque son la misma copia.
+- **Lo guardan** `test/catalogo-contraste-pantallas.test.js` (las reglas con catálogos sintéticos y
+  el contrato del archivo por sus dos caras) y `test/servidor-produccion.test.js` (ningún hueco en
+  la pantalla, ninguno «sin dato»). Comprobado con cuatro sabotajes: una cifra copiada, un hueco
+  que no se puede rellenar, la escala de Nokia olvidada y la proyección sin rellenar.
 
 ### Una sola copia de cada cifra del portal (2026-10-02)
 

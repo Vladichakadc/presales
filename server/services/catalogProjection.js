@@ -624,8 +624,9 @@ async function toGuiaRoles() {
     if (fuera.has(`${r.Product.vendorId}::${cifras.normalizarModelo(r.Product.model)}`)) continue;
     if (!result[r.role]) result[r.role] = [];
     // La misma regla que el cotizador, en la ficha y en la alternativa: una cifra que el
-    // dimensionador contradice no se cita, y una alternativa fuera de venta no se recomienda
-    // (ver `cifrasCotizador.proyectarGuia`).
+    // dimensionador contradice no se cita, y una alternativa fuera de venta no se recomienda.
+    // La alternativa que nombra un equipo del dimensionador no trae su cifra escrita: la pone
+    // el dimensionador en su hueco (ver `cifrasCotizador.proyectarGuia`).
     const vendor = r.Product.Vendor.code;
     const porNombre = indice[vendor] || null;
     const g = cifras.proyectarGuia(
@@ -647,6 +648,8 @@ async function toGuiaRoles() {
     };
     if (g.enRevision.length) item.enRevision = g.enRevision;
     if (g.altRetirada) item.altRetirada = g.altRetirada;
+    // La cifra de la alternativa la puso el dimensionador: dice de que equipo y de que campo.
+    if (g.altCifra) item.altCifra = g.altCifra;
     // Un equipo que solo vive en la guia (la siembra lo crea con categoria 'other') trae cifras
     // que ninguna pantalla puede contrastar, y la guia lo dice junto a ellas.
     if (r.Product.category === 'other') item.soloGuia = true;
