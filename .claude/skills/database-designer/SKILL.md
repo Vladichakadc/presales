@@ -1,10 +1,6 @@
 ---
 name: database-designer
-description: database-designer
----
-﻿---
-name: "database-designer"
-description: "Use when the user asks to design database schemas, plan data migrations, optimize queries, choose between SQL and NoSQL, or model data relationships."
+description: "Use when the user asks to design database schemas, plan data migrations, optimize queries, choose between SQL and NoSQL, or model data relationships. In this repository that means the Sequelize models in server/models/ and the seed that fills them."
 ---
 
 # Database Designer - POWERFUL Tier Skill

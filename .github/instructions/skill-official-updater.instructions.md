@@ -1,8 +1,8 @@
 ---
 name: "skill-official-updater"
-description: "At the start of a new session, do a cheap check for new or updated official Anthropic skills (github.com/anthropics/skills) and automatically add or update them in skills_library/ (no user prompt). Also use on explicit request (\"check for official skill updates\", \"sync official skills\")."
+description: "Check github.com/anthropics/skills for new or updated official Anthropic skills and sync them into a skills library that has skills_library/. Use on explicit request (\"check for official skill updates\", \"sync official skills\"). This repository has no skills_library/ (its skills live in .claude/skills/, copied by hand from the sibling repository's library), so here report what changed upstream and let the user decide what to copy; do not create skills_library/."
 applyTo: "**/*"
-deployedAt: "2026-08-17T15:32:38.855Z"
+deployedAt: "2026-10-02T12:39:41.975Z"
 ---
 
 # skill-official-updater
@@ -36,16 +36,16 @@ same-named skill in `skills_library/` that ISN'T listed there is assumed to
 be a hand-written/customized skill and must never be overwritten without an
 explicit user decision.
 
-## 1. Cheap check (every session)
+## 1. Cheap check
 
 **Automation:** When the Claude Skills extension is active and this workspace
 has `skills_library/`, it installs a Claude Code `SessionStart` hook
 (`official-skills-watch.js`) that runs the check below on `startup`,
 `resume`, and `clear`. If updates exist, the hook injects context telling
-you to read this skill and **sync immediately** — do not ask the user which
-skills to pull.
+you to read this skill and sync. Without that hook, run the check only when
+the user asks for it.
 
-Manual / fallback (same logic):
+On request (same logic):
 
 ```sh
 git ls-remote https://github.com/anthropics/skills.git HEAD

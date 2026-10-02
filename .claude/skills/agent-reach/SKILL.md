@@ -1,21 +1,24 @@
 ---
 name: agent-reach
 description: >
-  MUST USE when user wants to research/search/look up/find anything on the
-  internet — e.g. "research this topic", "do a deep dive on X", "search the
-  web for X", "see what people say about X", "look this up".
-
-  Also MUST USE when user mentions any platform or shares any URL/link:
-  Twitter/X, Reddit, Facebook, Instagram, YouTube, GitHub, Bilibili, XiaoHongShu,
-  Xiaoyuzhou Podcast, LinkedIn/Boss直聘/jobs/recruiting, V2EX, Xueqiu (stocks), RSS.
+  Use to research a topic across social and content platforms — see what
+  people say about X, follow a thread, pull a video transcript or a feed — on
+  Twitter/X, Reddit, Facebook, Instagram, YouTube, Bilibili, XiaoHongShu,
+  Xiaoyuzhou Podcast, LinkedIn/Boss直聘/jobs/recruiting, V2EX, Xueqiu (stocks)
+  or RSS, plus Exa web search.
 
   16 platforms, multi-backend routing (OpenCLI / per-platform CLIs / APIs).
   Zero config for 6 channels. Run `agent-reach doctor --json` to see which
   backend serves each platform right now.
 
+  Every backend needs outbound access to its platform. In a container whose
+  egress proxy blocks them — this repository's cloud sessions block all 16 —
+  it cannot fetch anything; use the session's own web search and fetch tools.
+
   NOT for: writing reports/analysis/translation (this skill only FETCHES
-  internet content); posting/commenting/liking (write operations); platforms
-  that already have a dedicated skill installed (prefer that skill).
+  internet content); posting/commenting/liking (write operations); GitHub
+  repositories, PRs and Actions (use the GitHub tools); platforms that already
+  have a dedicated skill installed (prefer that skill).
 metadata:
   homepage: https://github.com/Panniantong/Agent-Reach
 ---

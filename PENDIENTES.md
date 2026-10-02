@@ -1,7 +1,7 @@
 # Pendientes
 
-Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cualquier
-tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
+Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos abiertos que la
+tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
 Última revisión: 2026-10-02 (**El lock solo descarga del registro oficial de npm.** Es la mejora propuesta al cerrar la entrega anterior. El 16 de septiembre el lock resolvía cuatro paquetes contra un espejo inalcanzable, y producción pasó 13 horas sin cambios; se corrigió a mano y no quedó ninguna prueba. Ahora `test/lock-origen.test.js` exige, en `npm run verificar`, que cada entrada se descargue de `registry.npmjs.org`, del archivo de su nombre y su versión, con huella sha512. Ver *Cerrado recientemente*.)
@@ -1582,8 +1582,10 @@ Chromium ya cambió una vez la cobertura del contraste.
 <https://claude.ai/artifact/Sw97q5rDmJ5KJCYbB2PWXJ>, que su dueño comparte), con los pasos, lo
 que ya se comprobó y lo que cuesta cada opción.
 
-- **Qué hunks entran de los dos parches propuestos** (2026-09-25/26), entregados como archivos en la
-  conversación y sin aplicar. `prompt-audit.patch` trae 16 hallazgos: la sincronización con IA que
+- ~~**Qué hunks entran de los dos parches propuestos**~~ **Hecho el 2026-10-02**, con el encargo
+  del dueño de ejecutar los pendientes: entraron todos, con tres correcciones de hecho y las copias
+  para Copilot regeneradas (ver *Cerrado recientemente*). Lo que decía este punto (2026-09-25/26):
+  los dos parches llegaron como archivos en la conversación y sin aplicar. `prompt-audit.patch` trae 16 hallazgos: la sincronización con IA que
   pinta «catálogo al día» ante un rechazo del modelo o un corte de `max_tokens`, el bloque de
   Fortinet de CLAUDE.md que contradice el código, y cinco skills que actúan sobre cosas que aquí no
   existen. `init-claude-md.patch` añade a CLAUDE.md cómo correr una sola prueba, la receta del
@@ -1646,6 +1648,46 @@ que ya se comprobó y lo que cuesta cada opción.
 
 ## Cerrado recientemente
 
+### La auditoría de prompts y el `/init`, aplicados (2026-10-02)
+
+Era una decisión del dueño (qué hunks entraban) y entró con su encargo de ejecutar los pendientes.
+Los dos parches seguían aplicando sobre `main` salvo el de `PENDIENTES.md`, que se pasó a mano.
+
+- **La sincronización con IA ya no dice «catálogo al día» sin haber analizado nada.**
+  - Un rechazo del modelo (`stop_reason: refusal`) devolvía una lista vacía, y el panel pintaba
+    «El catálogo parece estar actualizado». Un corte en `max_tokens` hacía lo mismo. Ahora son
+    `RechazoIA` (422) y `RespuestaCortada` (502), con su mensaje en el panel.
+  - La llamada lleva `fallbacks: "default"`: si los clasificadores declinan, que con cortafuegos,
+    IPS y VPN puede pasar con un documento legítimo, la API reintenta en el modelo de respaldo
+    dentro de la misma llamada.
+  - `max_tokens` pasa de 32.000 a 64.000, porque en Opus 5 el pensamiento cuenta dentro del tope.
+  - Sin adjunto, el modelo sabe que su única fuente es lo que recuerde y que solo cite una URL
+    que conozca.
+- **Comprobado sin red y sin gastar crédito.** Un `fetch` falso capturó la petición que arma el
+  SDK 0.123.0: va a `/v1/messages?beta=true` con la cabecera `anthropic-beta:
+  server-side-fallback-2026-07-01`, `fallbacks: "default"` y el `output_config` del esquema. Cuatro
+  respuestas reproducidas: normal, respaldo a mitad del JSON (se une en una sola lista), rechazo y
+  corte. 746 pruebas en verde.
+- **CLAUDE.md.** Las siete entradas históricas de Fortinet pasan a una, «el módulo, tal como está
+  hoy»; la historia sigue en `docs/` y aquí. El título sube al principio, y entran los comandos para
+  correr una sola pieza, la receta del servidor local y el recorrido de un dato entre archivos.
+  **Tres afirmaciones de los parches eran falsas y se corrigieron midiendo**:
+  - `bom.js` no lo cargan «nueve dimensionadores»: son ocho y el cotizador, porque Starlink no lo
+    usa;
+  - el catálogo de Starlink no se sirve desde `legacyData/`: vive en su módulo canónico;
+  - tres referencias apuntaban a entradas de Fortinet que la fusión había retirado.
+- **Skills.** `context-mode` se retira, como antes `data-viz-charts` y `web-page-builder`:
+  describía comandos que aquí no existen (`/context-mode snapshot save`, `/gsd`, `/claude-men`).
+  `code-review-guide`, `self-learning`, `skill-feedback-adaptation` y `skill-official-updater` dejan
+  de mandar a herramientas ausentes. Las descripciones de `agent-browser` y `agent-reach` ya no
+  piden que se las prefiera a todo, y CLAUDE.md lo dice. Volver atrás es copiar la skill del repo
+  hermano.
+- **Las copias para Copilot.** Siete skills tienen copia en `.github/instructions/`, que generaba
+  una extensión que aquí no corre, y la auditoría cambió tres de ellas. `scripts/copilot-instrucciones.js`
+  las regenera con el mismo formato: sobre el `main` anterior daba las siete idénticas a lo que había
+  generado la extensión. `test/copilot-instrucciones.test.js` frena en `npm run verificar` una copia
+  o una fila del índice que no coincida. Dos sabotajes cazados, uno en una copia y otro en el índice.
+
 ### Las acciones de GitHub, fijadas por commit y en Node 24 (2026-10-02)
 
 Mejora propuesta al cerrar la entrega anterior, más los PR #1 y #2 de Dependabot y el aviso de
@@ -1677,6 +1719,9 @@ Node 20, que eran el mismo cambio.
   cazados: etiqueta flotante, dos versiones, acción de terceros y sin comentario de versión.
 - **El commit de cada versión** salió de `git ls-remote --tags`: la API de GitHub de la sesión
   solo ve este repositorio.
+- **Comprobado en CI y en producción** sobre `0e070ab`: `verificar` y `pantallas` en verde con
+  las acciones nuevas. Railway `826c65fc` llegó a SUCCESS, con `[seed]` y el arranque en el log, y
+  la sonda automática pasó tras el despliegue.
 
 ### El lock de la vigía, en main (2026-10-02)
 

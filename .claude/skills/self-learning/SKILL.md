@@ -139,16 +139,12 @@ work.
 
 ## 3. After running something non-trivial
 
-Append a record to `runs.jsonl` with the outcome. When token/cost data is
-available, also record prediction accuracy via the repo helper (from project
-root):
-
-```bash
-py -c "from cost_learning import record_cost_outcome; record_cost_outcome('skill-name', expected_cost=0.25, actual_cost=0.31, success=True)"
-```
-
-This writes to `.claude/learning/cost-learning.jsonl` and updates
-`~/.claude/learning/cost-models.json` multipliers for future estimates.
+In this repository every `npm run …` is recorded by `.claude/hooks/aprendizaje.sh`:
+PreToolUse opens the run in `en-curso.jsonl`, PostToolUse closes it in `runs.jsonl`
+with `rc: 0` and its duration, and the session-start hook settles any run left open
+as `rc: 1`. Don't append those by hand — they would be counted twice. Append a
+record to `runs.jsonl` only for other non-trivial commands or skills whose outcome
+is worth keeping.
 
 Then regenerate `patterns.md` (see structure below) by aggregating all
 records:

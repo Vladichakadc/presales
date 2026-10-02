@@ -203,6 +203,8 @@ catálogo cuando el problema es la clave:
 | «La `ANTHROPIC_API_KEY` configurada no es válida (401)…» | 503 | La variable está pero la API la rechaza | Revisar el valor: clave de API vigente (`sk-ant-api…`), sin espacios ni saltos de línea al pegarla, del mismo espacio de trabajo |
 | «La cuenta de la API de IA no tiene saldo suficiente…» | 503 | La clave es válida pero la cuenta no tiene crédito (400 «credit balance is too low») | Añadir créditos en la consola de Anthropic (Plans & Billing) |
 | «…límite de uso (429)…» | 429 | Límite transitorio de la API | Esperar unos segundos y reintentar |
+| «La IA declinó analizar esta petición…» | 422 | Los clasificadores de seguridad rechazaron la petición (`stop_reason: refusal`); con cortafuegos, IPS y VPN puede pasar con documentos legítimos. La llamada lleva `fallbacks: "default"`, así que la API ya reintentó en el modelo de respaldo: este error significa que declinaron los dos. **No significa que el catálogo esté al día** | Reintentar; si se repite con el mismo documento, probar con otro documento o por partes |
+| «La respuesta de la IA se cortó antes de terminar…» | 502 | Se agotó `max_tokens`, que en Opus 5 cuenta el pensamiento y la respuesta juntos, antes de cerrar la lista. **No significa que el catálogo esté al día** | Reintentar con un documento más corto o partido |
 | «Error analizando con IA» | 500 | Cualquier otra cosa | Revisar los logs del servidor (`[AI Sync] Error llamando a Claude`) |
 
 El detalle completo del fallo siempre queda en los logs del contenedor con el prefijo

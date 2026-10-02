@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const {
-  analyzeCatalog, SinClave, ClaveInvalida, LimiteIA, SinSaldo,
+  analyzeCatalog, SinClave, ClaveInvalida, LimiteIA, SinSaldo, RechazoIA, RespuestaCortada,
 } = require('../services/aiSync');
 const { tipoPorFirma } = require('../services/firmaArchivo');
 const { Product, Vendor, LicenseBundle, SupportTier, Part } = require('../models');
@@ -115,6 +115,8 @@ router.post('/sync/analyze', upload.single('datasheet'), async (req, res) => {
       return res.status(503).json({ error: err.message });
     }
     if (err instanceof LimiteIA) return res.status(429).json({ error: err.message });
+    if (err instanceof RechazoIA) return res.status(422).json({ error: err.message });
+    if (err instanceof RespuestaCortada) return res.status(502).json({ error: err.message });
     console.error('[Sync Route Error]', err);
     res.status(500).json({ error: 'Error analizando con IA' });
   }

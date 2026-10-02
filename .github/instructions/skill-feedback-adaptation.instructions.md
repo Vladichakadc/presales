@@ -1,11 +1,11 @@
 ---
 name: "skill-feedback-adaptation"
-description: "AUTO-START on new agent session/window (injected by profile-init-watch for Claude, Cursor, Kiro, Copilot) and on new tasks — analyze the prompt and repo, write task-skill-proposals.json, then read top proposed skills before other work. Also register user disagreement into skill-feedback.jsonl when the user says no, not, wrong, stop, or disagrees with agent output."
+description: "Record user disagreement with the agent's output into .claude/learning/skill-feedback.jsonl, attributed to the skill that drove it, and propose skills for a task when the user asks which ones fit. Use when the user rejects or corrects what the agent just did or said, or asks which skills apply to the current task."
 applyTo:
   - **/.claude/learning/skill-feedback.jsonl
   - **/.claude/learning/task-skill-proposals.json
   - **/.claude/learning/**
-deployedAt: "2026-08-17T15:32:38.855Z"
+deployedAt: "2026-10-02T12:39:41.973Z"
 ---
 
 # skill-feedback-adaptation
@@ -19,29 +19,14 @@ Track when users push back on agent answers or skill-driven behavior, surface
 inefficiency in the Usage Report dashboard, and propose skills when a new task
 starts.
 
-## AUTO-START (new session / new task)
+## When this runs here
 
-**Run immediately — before any other task work — when any of these is true:**
-
-- Session hook injects `[Claude Skills] NEW SESSION` (Claude Code SessionStart,
-  Cursor `sessionStart`, Kiro `sessionStart`, Copilot SessionStart via
-  `profile-init-watch.js`).
-- User opens a **new chat** or describes a **new task** (feature, bug, review,
-  assessment) in their first message.
-- User asks which skills fit the current task.
-
-**Do this first:**
-
-1. Read this skill (you are here).
-2. Check `.claude/learning/task-skill-proposals.json` — if `generatedAt` is **<24h old** and
-   `claudeSkills.features.deterministicTaskProposals` is on (default), the extension already
-   refreshed proposals and auto-applied skills. **Skip section 3** unless the user starts a
-   clearly new task.
-3. Otherwise run **section 3** — overwrite proposals for the user's actual task.
-4. **Do not** read top `SKILL.md` files when auto-apply already enabled them — only read a
-   skill when the task needs guidance you lack.
-
-Do not skip step 2 when proposals already exist on disk.
+The session-start automation this skill was written for — the Claude Skills VS Code
+extension, `profile-init-watch.js` injecting `[Claude Skills] NEW SESSION`, proposals
+refreshed on disk — is not installed in this repository, whose sessions run Claude Code
+on the web. Nothing here starts it at session start. Record feedback (section 1) when the
+user rejects or corrects the agent's output, and propose skills (section 3) when the user
+asks which skills fit the task.
 
 ## Storage layout
 
@@ -61,10 +46,10 @@ Both files are machine-local (same as `runs.jsonl`). Do not commit them.
 **When to record:** The user's latest message expresses disagreement with what
 the agent just did or said — not merely asking a clarifying question.
 
-Common signals (case-insensitive, at start or embedded):
-`no`, `nope`, `not that`, `not what`, `wrong`, `incorrect`, `don't`, `do not`,
-`stop`, `bad idea`, `that's not`, `disagree`, `actually,`, `you missed`,
-`you forgot`, `instead`.
+Judge by meaning, not by keywords. This repository is worked in Spanish, where «no»
+opens instructions as often as disagreements («no pares hasta…», «no despliegues sin
+autorización»): an instruction phrased in the negative is not feedback. Record only when
+the message rejects or corrects something the agent did or said.
 
 **Steps:**
 
@@ -83,14 +68,8 @@ Common signals (case-insensitive, at start or embedded):
 
 3. Optionally append an `E-NN` entry to `session-learnings.md` if the correction
    reveals a durable fix (see [[self-learning]]).
-4. Briefly acknowledge: feedback recorded for `<skill>` — it will appear in the
-   Usage Report inefficiency panel.
-
-**CLI helper** (from project root):
-
-```bash
-py record_feedback.py ci-pipeline-debug --signal "no" --user-text "no wrong job" --context "Suggested wrong CI stage"
-```
+4. Briefly acknowledge: feedback recorded for `<skill>`; [[skill-usage-insights]]
+   reads it when reporting on skills.
 
 ## 2. Dashboard inefficiency (extension)
 
@@ -103,8 +82,8 @@ The VS Code **Usage Report** reads `skill-feedback.jsonl` and shows an
 - Skills with 3+ negative reports are prioritized.
 
 You do not need to regenerate this manually — the extension computes it on
-report open. After recording feedback, tell the user they can open
-**Claude Skills: Show Usage Report** to see updated scores.
+report open. Mention the report only to users who run that extension; this
+repository's web sessions don't have it.
 
 ### High token usage notification
 
@@ -124,9 +103,8 @@ Manual apply: **Claude Skills: Apply Suggested Skills for Current Task**.
 
 ## 3. Propose skills for a new task
 
-**When to run:** AUTO-START (above), user starts a clearly **new task** (new
-feature, bug area, refactor scope) — especially the first message describing
-what they want to build or fix — or asks "which skills should I use for this?".
+**When to run:** the user asks which skills fit the task ("which skills should I
+use for this?").
 
 **Steps:**
 

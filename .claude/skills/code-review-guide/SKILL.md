@@ -344,14 +344,8 @@ fi
 # 3. Review rápido
 /review
 
-# 4. GSD workflow
-/gsd --task "refactor completado"
-
-# 5. Ultra review antes de PR
+# 4. Ultra review antes de PR
 /ultrareview
-
-# 6. Mentoría en findings
-/claude-men --topic "architectural-patterns"
 ```
 
 ---
@@ -378,5 +372,3 @@ fi
 ## Vea También
 
 - `/skill-creator` - Crear custom review skills
-- `/gsd` - Ejecutar fixes de review
-- `/claude-men` - Aprender de findings

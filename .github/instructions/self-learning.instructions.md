@@ -2,7 +2,7 @@
 name: "self-learning"
 description: "Maintain a project-local self-learning base of task/command outcomes — record successes and failures with timestamps, durations, and fixes; generate a patterns report (pass rates, recurring errors, known fixes); and surface a learned hint before retrying something that failed before. Use at the start of a session to check learned hints, after running a non-trivial command/skill to record the outcome, when asked \"what failed before\" or \"what did we learn\", or to record a manual decision/learning."
 applyTo: "**/*"
-deployedAt: "2026-08-17T15:32:38.854Z"
+deployedAt: "2026-10-02T12:39:41.967Z"
 ---
 
 # self-learning
@@ -138,16 +138,12 @@ work.
 
 ## 3. After running something non-trivial
 
-Append a record to `runs.jsonl` with the outcome. When token/cost data is
-available, also record prediction accuracy via the repo helper (from project
-root):
-
-```bash
-py -c "from cost_learning import record_cost_outcome; record_cost_outcome('skill-name', expected_cost=0.25, actual_cost=0.31, success=True)"
-```
-
-This writes to `.claude/learning/cost-learning.jsonl` and updates
-`~/.claude/learning/cost-models.json` multipliers for future estimates.
+In this repository every `npm run …` is recorded by `.claude/hooks/aprendizaje.sh`:
+PreToolUse opens the run in `en-curso.jsonl`, PostToolUse closes it in `runs.jsonl`
+with `rc: 0` and its duration, and the session-start hook settles any run left open
+as `rc: 1`. Don't append those by hand — they would be counted twice. Append a
+record to `runs.jsonl` only for other non-trivial commands or skills whose outcome
+is worth keeping.
 
 Then regenerate `patterns.md` (see structure below) by aggregating all
 records:
