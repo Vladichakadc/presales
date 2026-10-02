@@ -1687,12 +1687,6 @@ const REGLAS_DISENO=[
   // Local Breakout sin Internet es una incoherencia de diseno: no hay salida local.
   {nivel:'aviso', cuando:(D,m)=>D.breakout&&D.inetMbps<=0&&D.caudalTotal>0,
    texto:()=>'Local Breakout activo pero el sitio no tiene enlace de Internet declarado: no hay salida local para el trafico SaaS — declara un DIA/banda ancha o desmarca el breakout.'},
-  // M4 (auditoría 2026-09-17): la regla del brief descarga el 70 % del caudal TOTAL, MPLS
-  // incluido. Cuando eso supera la capacidad de los enlaces de Internet, la descarga declarada
-  // no cabe físicamente por ellos. La regla es decisión del dueño y no se toca aquí; lo que sí
-  // se hace es decirlo, con las dos cifras, para que la propuesta no lo prometa.
-  {nivel:'aviso', cuando:(D,m)=>D.breakout&&D.inetMbps>0&&D.ing&&D.ing.distribucion.bwLocalInternet>D.inetMbps,
-   texto:(D,m)=>`Breakout por encima de Internet: el criterio de diseño 70/30 descarga ${fmt(D.ing.distribucion.bwLocalInternet)} (70 % del caudal total, MPLS incluido) y los enlaces de Internet del sitio suman ${fmt(D.inetMbps)}. El exceso (${fmt(D.ing.distribucion.bwLocalInternet-D.inetMbps)}) seguiría por el túnel: revisa la mezcla de tráfico antes de dimensionar el Boost con esta regla.`},
   // SSE con todo el trafico tunelizado al DC: el breakout es precisamente lo que da
   // sentido a la inspeccion en la nube (el trafico sale local hacia el PoP SSE).
   {nivel:'aviso', cuando:(D,m)=>secMode==='sse'&&!(D.breakout&&D.inetMbps>0),
@@ -1773,8 +1767,12 @@ function pintarWidgetPerf(D){
   const ah=$('ahorroMpls');
   if(D.breakout&&D.inetMbps>0&&D.caudalTotal>0){
     // Distribución 70/30 sobre el caudal TOTAL (brief carrier-grade 2026-09-13): la calcula
-    // el motor de ingeniería — 70 % SaaS/navegación sale local, 30 % interno hacia el DC.
-    ah.innerHTML=`El breakout local descarga ≈<b>${fmt(D.ing.distribucion.bwLocalInternet)}</b> del overlay (70 % del caudal total sale local — regla del brief carrier-grade); el túnel al DC sostiene ≈<b>${fmt(D.ing.distribucion.bwTunelesPrivados)}</b>.`;
+    // el motor de ingeniería — 70 % SaaS/navegación sale local, 30 % interno hacia el DC —, y
+    // la descarga no pasa de lo que caben los enlaces de Internet (M4, 2026-10-02).
+    const dist=D.ing.distribucion;
+    ah.innerHTML=dist.breakoutLimitado
+      ?`El breakout local descarga ≈<b>${fmt(dist.bwLocalInternet)}</b>, lo que caben los enlaces de Internet (el 70 % del caudal total serían ${fmt(D.caudalTotal*0.70)}); el túnel al DC sostiene ≈<b>${fmt(dist.bwTunelesPrivados)}</b>, con lo que no cabe por Internet.`
+      :`El breakout local descarga ≈<b>${fmt(dist.bwLocalInternet)}</b> del overlay (70 % del caudal total sale local — regla del brief carrier-grade); el túnel al DC sostiene ≈<b>${fmt(dist.bwTunelesPrivados)}</b>.`;
   }else if(D.breakout&&D.inetMbps<=0&&D.caudalTotal>0){
     ah.textContent='Breakout activo pero sin enlace de Internet declarado: no hay salida local — añade un DIA/banda ancha en el builder.';
   }else{
@@ -2132,7 +2130,7 @@ function render(){
       flags.push(`<b>Caudal WAN a contratar:</b> ${fmt(D.ing.tierLicenciaBwRequerido||wanNeed)} — el tier de la suscripción se tasa por el ancho de banda físico agregado (brief carrier-grade). El requerimiento de diseño del appliance es ${fmt(wanNeed)}.${trazaMotorHtml(D,wanNeed)||' El motor de ingeniería aplica el IMIX del perfil de tráfico, la paridad FEC del modo elegido, la estrategia de seguridad y el margen de crecimiento.'}${boost?` Con la reducción ${perfil.factor}:1 de Boost sobre ${esc(perfil.n.toLowerCase())} en el caudal derivado.`:''} Tier de suscripción: <b>${tier?esc(tier.n):'—'}</b>.`);
       if(boost&&D.bloques){
         const rec=ArubaReglas.boostRecMbps(m);
-        flags.push(`<b>Boost auto-dimensionado:</b> se licencia el 30 % del tráfico WAN privado que viaja por los túneles (${D.caudalTotal>0?`${fmt(D.tunelBoost)}${D.escBoost.id!=='normal'?` si cae el enlace ${D.escBoost.enlace}: su carga la recoge el respaldo y, sin Internet, el breakout ya no descarga el túnel — es el escenario que más túnel pide`:D.breakout&&D.inetMbps>0?' tras la descarga del breakout — regla 70/30 del brief':''}`:`${fmt(D.users*D.perUser)} de demanda estimada`}) = <b>${fmt(D.boostMbps)}</b>, en bloques de ${SIZING.boost.bloque} Mbps que forman un pool del fabric — para esta sede, <b>${D.bloques} bloque(s)</b>. Es tráfico actual: el pool se reasigna en minutos, así que no lleva margen de crecimiento.${rec!=null?` HPE recomienda Boost hasta <b>${fmt(rec)}</b> en el ${esc(m.id)}.`:''}`);
+        flags.push(`<b>Boost auto-dimensionado:</b> se licencia el 30 % del tráfico WAN privado que viaja por los túneles (${D.caudalTotal>0?`${fmt(D.tunelBoost)}${D.escBoost.id!=='normal'?` si cae el enlace ${D.escBoost.enlace}: su carga la recoge el respaldo y, sin Internet, el breakout ya no descarga el túnel — es el escenario que más túnel pide`:D.breakout&&D.inetMbps>0?(D.ing&&D.ing.distribucion.breakoutLimitado?' tras la descarga del breakout, limitada a lo que caben los enlaces de Internet':' tras la descarga del breakout — regla 70/30 del brief'):''}`:`${fmt(D.users*D.perUser)} de demanda estimada`}) = <b>${fmt(D.boostMbps)}</b>, en bloques de ${SIZING.boost.bloque} Mbps que forman un pool del fabric — para esta sede, <b>${D.bloques} bloque(s)</b>. Es tráfico actual: el pool se reasigna en minutos, así que no lleva margen de crecimiento.${rec!=null?` HPE recomienda Boost hasta <b>${fmt(rec)}</b> en el ${esc(m.id)}.`:''}`);
       }
       else if(!boost) flags.push('Admite Boost. Merece evaluarse si el tráfico es repetitivo (réplicas, backups, VDI, CIFS/SMB): reduce el caudal contratado, que a 3–5 años suele pesar más en el TCO que el propio equipo.');
       if(sobrado.includes(m.id)) flags.push(`<b class="warn">Sobredimensionado:</b> el requerimiento (${fmt(wanNeed)}) queda por debajo del suelo del rango publicado (${fmt(m.wanMin)}). Revisar el escalón inferior antes de cotizar.`);

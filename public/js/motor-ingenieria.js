@@ -34,9 +34,20 @@
   function calcularRequerimientosIngenieria(params) {
     const totalBwFisico = params.bw_mpls_mbps + params.bw_internet_mbps;
     let bwLocalInternet = 0, bwTunelesPrivados = 0;
+    let breakoutLimitado = false;
     if (params.local_breakout_activo && params.bw_internet_mbps > 0) {
-      bwLocalInternet = totalBwFisico * 0.70;   // 70 % SaaS/navegación sale local
-      bwTunelesPrivados = totalBwFisico * 0.30; // 30 % interno hacia el DC
+      // 70 % SaaS/navegación sale local y 30 % interno va al DC, pero lo que sale en local solo
+      // cabe por los enlaces de Internet (M4, decidido el 2026-10-02). Si el 70 % del total no
+      // cabe, la descarga es la capacidad de Internet y el resto sigue por el túnel, que es
+      // justo el tráfico que optimiza Boost. Cuando cabe, las cifras son las de siempre.
+      if (totalBwFisico * 0.70 <= params.bw_internet_mbps) {
+        bwLocalInternet = totalBwFisico * 0.70;
+        bwTunelesPrivados = totalBwFisico * 0.30;
+      } else {
+        breakoutLimitado = true;
+        bwLocalInternet = params.bw_internet_mbps;
+        bwTunelesPrivados = totalBwFisico - params.bw_internet_mbps;
+      }
     } else { bwTunelesPrivados = totalBwFisico; }
     let factorIMIX = 0.70;
     if (params.perfil_trafico === 'VOIP_INTENSIVE') factorIMIX = 0.55;
@@ -61,7 +72,7 @@
     // sea auditable tal cual salió (8.000 ÷ 0,70 × 1,15 × 1,35 × 1,30 ≈ 23.066) y nadie
     // confunda un techo de ingeniería declarado con un fallo de filtrado del catálogo.
     return { throughputDisenoMbps, flujosRequeridos, tierLicenciaBwRequerido: totalBwFisico,
-             distribucion: { bwLocalInternet, bwTunelesPrivados, totalBwFisico },
+             distribucion: { bwLocalInternet, bwTunelesPrivados, totalBwFisico, breakoutLimitado },
              traza: { bwFisico: totalBwFisico, factorIMIX, overheadFEC, factorSeguridad, factorHeadroom } };
   }
 

@@ -12,7 +12,7 @@
      A5  los APs no aparecían en la lista de materiales
      A7  ópticas: chasis sin SFP recomendados para fibra, motivo real y medio SFP28 25G
      M3  dos cifras de FEC sin explicar
-     M4  breakout 70/30 por encima de la capacidad de Internet
+     M4  breakout 70/30 por encima de la capacidad de Internet (limitado desde el 2026-10-02)
      M7  el exportable llevaba textos internos del repositorio
      M8  VPNC de SD-Branch y N+1 de campus, declarados
      B1  EC-XL fuera de venta sin sucesor */
@@ -187,12 +187,22 @@ const wan = (...links) => ({ v: 2, wanLinks: links.map((l, i) => ({ id: i + 1, m
     t.ok(/ancla VSG/.test(widget) && /reserva FEC del motor \(15 %\)/.test(widget), 'M3: el widget rotula el ancla VSG y la reserva del motor');
   }
 
-  // ── M4 · el breakout que no cabe por Internet se dice ────────────────────────
+  // ── M4 · el breakout no descarga más de lo que cabe por Internet ─────────────
+  // Hasta el 2026-10-02 la pantalla avisaba y dejaba la cuenta igual; ahora el motor limita la
+  // descarga a la capacidad de Internet y lo que no cabe va por el túnel, que es lo que
+  // licencia Boost. La tabla es la de la decisión (docs/decisiones-del-dueno-2026-09-24.md).
   {
-    const r = await cargar({ wanLinksData: wan({ tipo: 'MPLS L3', down: 1000 }, { tipo: 'DIA', down: 100 }) });
-    t.ok(/Breakout por encima de Internet/.test(r.bom), 'M4: MPLS 1000 + DIA 100 declara que el 70 % no cabe por Internet');
-    const ok = await cargar({ wanLinksData: wan({ tipo: 'MPLS L3', down: 100 }, { tipo: 'DIA', down: 1000 }) });
-    t.ok(!/Breakout por encima de Internet/.test(ok.bom), 'M4: y no lo dice cuando sí cabe');
+    const bloquesDe = (bom) => { const x = /(\d+) x\s+EdgeConnect Boost/.exec(bom); return x ? x[1] : null; };
+    const r = await cargar({ famSeg: 'ec', chkBoost: 1, wanLinksData: wan({ tipo: 'MPLS L3', down: 1000 }, { tipo: 'DIA', down: 100 }) });
+    const hint = (await page.textContent('#ahorroMpls')) || '';
+    t.ok(/lo que caben los enlaces de Internet/.test(hint), `M4: el hint dice que la descarga está limitada por Internet («${hint.slice(0, 90)}»)`);
+    t.ok(bloquesDe(r.bom) === '3', `M4: MPLS 1000 + DIA 100 licencia 3 bloques de Boost por 1.000 de túnel (${bloquesDe(r.bom)})`);
+    t.ok(!/Breakout por encima de Internet/.test(r.bom), 'M4: el aviso de antes ya no hace falta');
+    // Control: cuando el 70 % sí cabe por Internet, la regla de siempre (1.100 → 330 de túnel).
+    const ok = await cargar({ famSeg: 'ec', chkBoost: 1, wanLinksData: wan({ tipo: 'MPLS L3', down: 100 }, { tipo: 'DIA', down: 1000 }) });
+    const hintOk = (await page.textContent('#ahorroMpls')) || '';
+    t.ok(/regla del brief/.test(hintOk) && !/lo que caben/.test(hintOk), 'M4: cuando cabe, el hint es el de siempre');
+    t.ok(bloquesDe(ok.bom) === '1', `M4: y el Boost sale de los 330 de siempre, 1 bloque (${bloquesDe(ok.bom)})`);
   }
 
   // ── M7 · nada interno en el exportable ───────────────────────────────────────

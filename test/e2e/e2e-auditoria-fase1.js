@@ -64,7 +64,9 @@ const wan = (...links) => ({ v: 2, wanLinks: links.map((l, i) => ({ id: i + 1, m
       chkSeg: 1, chkHa: 1,
       wanLinksData: wan({ tipo: 'MPLS L3', medio: 'SFP 1G', down: 1000 }, { tipo: 'DIA', medio: 'SFP 1G', down: 1000 }) });
     const m = /(\d+) x\s+EdgeConnect Boost/.exec(r.bom);
-    t.ok(m && m[1] === '2', `E: Boost = 2 bloques (30 % de los 600 Mbps del túnel), antes 10 (${m ? m[1] : 'sin línea'})`);
+    // Con la regla M4 (2026-10-02) el túnel lleva también los 400 Mbps del 70 % que no caben
+    // por el DIA de 1 Gbps: 1.000 de túnel, 3 bloques. Con el 70/30 sin límite eran 600 y 2.
+    t.ok(m && m[1] === '3', `E: Boost = 3 bloques (30 % de los 1.000 Mbps del túnel), antes 10 (${m ? m[1] : 'sin línea'})`);
     t.ok(r.pick === 'EC-M', `E: el EC-M sigue cubriendo el hub (${r.pick})`);
   }
 

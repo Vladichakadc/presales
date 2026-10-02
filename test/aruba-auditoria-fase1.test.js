@@ -130,8 +130,12 @@ test('C3: un gateway sin cifras para el SO elegido se declara, no se afirma', ()
 });
 
 // ── C4 ───────────────────────────────────────────────────────────────────────
-test('C4: Boost sobre el trafico de los tuneles — escenario E pasa de 10 bloques a 2', () => {
+test('C4: Boost sobre el trafico de los tuneles — escenario E pasa de 10 bloques a 3', () => {
   // Escenario E de la auditoría: MPLS 1G + DIA 1G, breakout activo, 800 usuarios x 3 Mbps.
+  // Con la regla 70/30 sin límite el túnel eran 600 Mbps y salían 2 bloques; desde el
+  // 2026-10-02 (M4) la descarga local no pasa de lo que cabe por Internet (1.000 de los 1.400
+  // del 70 %), y los 400 que no caben siguen por el túnel: 1.000 Mbps, 3 bloques. Lo que la
+  // auditoría pescó sigue fijado: el Boost sale del túnel, no del caudal total (10 bloques).
   const ing = calcularRequerimientosIngenieria({
     bw_mpls_mbps: 1000, bw_internet_mbps: 1000, local_breakout_activo: true,
     perfil_trafico: 'ENTERPRISE_MIX', fec_activo: true, enlace_calidad: 'NORMAL',
@@ -139,9 +143,9 @@ test('C4: Boost sobre el trafico de los tuneles — escenario E pasa de 10 bloqu
   });
   const mbps = R.boostMbpsSitio({ bwTunelesPrivados: ing.distribucion.bwTunelesPrivados,
     caudalTotal: 2000, users: 800, perUser: 3 });
-  assert.strictEqual(ing.distribucion.bwTunelesPrivados, 600, 'la misma cifra que el hint del breakout');
-  assert.strictEqual(mbps, 180, '30 % de 600 Mbps');
-  assert.strictEqual(Math.max(1, Math.ceil(mbps / aruba.BOOST.bloque)), 2, '2 bloques de 100 Mbps, no 10');
+  assert.strictEqual(ing.distribucion.bwTunelesPrivados, 1000, 'la misma cifra que el hint del breakout');
+  assert.strictEqual(mbps, 300, '30 % de 1.000 Mbps');
+  assert.strictEqual(Math.max(1, Math.ceil(mbps / aruba.BOOST.bloque)), 3, '3 bloques de 100 Mbps, no 10');
   // Sin enlaces declarados: 30 % de la demanda actual, sin margen.
   assert.strictEqual(R.boostMbpsSitio({ caudalTotal: 0, users: 100, perUser: 2 }), 60);
 });

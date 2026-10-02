@@ -136,6 +136,11 @@ Solo esa línea convierte el GO CONDICIONADO en GO. Un despliegue no lo hace.
 
 ## 3. M4 de Aruba: ¿la descarga del Local Breakout se limita a la capacidad de Internet?
 
+> **Decidido el 2026-10-02: B**, con el encargo del dueño de ejecutar los pendientes. Está en
+> `motor-ingenieria.js` y en «Cerrado recientemente» de `PENDIENTES.md`. Al medirlo salió que el
+> alcance es mayor que el que se describe abajo: cambia toda sede con breakout cuyo Internet sea
+> menor que 2,33 veces su MPLS, no solo las de mucho MPLS. Volver atrás es la opción A.
+
 **La regla actual** es la del brief: con Local Breakout, el 70 % del caudal **total, MPLS
 incluido**, sale en local y el 30 % va por túnel al datacenter (`motor-ingenieria.js`). Cuando
 el MPLS es grande y el Internet pequeño, esa regla hace salir en local más tráfico del que caben

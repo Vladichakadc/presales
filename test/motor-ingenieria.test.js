@@ -43,11 +43,13 @@ test('fórmula determinista: caso base calculado a mano = 540 Mbps', () => {
   assert.strictEqual(r.throughputDisenoMbps, Math.ceil((300 / 0.70) * 1.05 * 1.00 * 1.20));
 });
 
-test('Local Breakout reparte 70/30 sobre el caudal TOTAL físico', () => {
-  const r = calcularRequerimientosIngenieria({ ...BASE, local_breakout_activo: true });
-  assert.strictEqual(r.distribucion.totalBwFisico, 300);
-  assert.strictEqual(r.distribucion.bwLocalInternet, 300 * 0.70);
-  assert.strictEqual(r.distribucion.bwTunelesPrivados, 300 * 0.30);
+test('Local Breakout reparte 70/30 sobre el caudal TOTAL físico cuando cabe por Internet', () => {
+  // 100 MPLS + 500 Internet: el 70 % de 600 son 420, que caben por los 500 de Internet.
+  const r = calcularRequerimientosIngenieria({ ...BASE, bw_internet_mbps: 500, local_breakout_activo: true });
+  assert.strictEqual(r.distribucion.totalBwFisico, 600);
+  assert.strictEqual(r.distribucion.bwLocalInternet, 600 * 0.70);
+  assert.strictEqual(r.distribucion.bwTunelesPrivados, 600 * 0.30);
+  assert.strictEqual(r.distribucion.breakoutLimitado, false);
   // Sin breakout, TODO el caudal va por túneles privados (full backhaul al DC).
   const s = calcularRequerimientosIngenieria(BASE);
   assert.strictEqual(s.distribucion.bwLocalInternet, 0);
@@ -56,6 +58,33 @@ test('Local Breakout reparte 70/30 sobre el caudal TOTAL físico', () => {
   const sinInet = calcularRequerimientosIngenieria({ ...BASE, bw_internet_mbps: 0, local_breakout_activo: true });
   assert.strictEqual(sinInet.distribucion.bwLocalInternet, 0);
   assert.strictEqual(sinInet.distribucion.bwTunelesPrivados, 100);
+});
+
+test('M4: la descarga local no pasa de lo que caben los enlaces de Internet; el resto va por el túnel', () => {
+  // POR QUÉ. La regla del brief descargaba el 70 % del caudal TOTAL, MPLS incluido, aunque por
+  // los enlaces de Internet no cupiera: con MPLS 1.000 + DIA 100 prometía 770 Mbps de salida
+  // local por un enlace de 100, y el túnel —lo que optimiza Boost— salía en 330 en vez de 1.000.
+  // Decidido el 2026-10-02 (opción B de docs/decisiones-del-dueno-2026-09-24.md, apartado 3).
+  // Los tres casos son la tabla de esa decisión.
+  const caso = (mpls, inet) => calcularRequerimientosIngenieria({ ...BASE, bw_mpls_mbps: mpls, bw_internet_mbps: inet, local_breakout_activo: true }).distribucion;
+  const bloquesBoost = (tunel) => Math.max(1, Math.ceil((tunel * 0.30) / 100));
+  for (const [mpls, inet, local, tunel, bloques] of [
+    [1000, 100, 100, 1000, 3],
+    [500, 500, 500, 500, 2],
+    [100, 200, 200, 100, 1],
+  ]) {
+    const d = caso(mpls, inet);
+    assert.strictEqual(d.bwLocalInternet, local, `MPLS ${mpls} + DIA ${inet}: local`);
+    assert.strictEqual(d.bwTunelesPrivados, tunel, `MPLS ${mpls} + DIA ${inet}: túnel`);
+    assert.strictEqual(d.bwLocalInternet + d.bwTunelesPrivados, mpls + inet, 'no se pierde ni se inventa caudal');
+    assert.strictEqual(d.breakoutLimitado, true);
+    assert.strictEqual(bloquesBoost(d.bwTunelesPrivados), bloques, `MPLS ${mpls} + DIA ${inet}: bloques de Boost`);
+  }
+  // El throughput de diseño no se mueve: sale del caudal total, no del reparto.
+  assert.strictEqual(
+    calcularRequerimientosIngenieria({ ...BASE, bw_mpls_mbps: 1000, bw_internet_mbps: 100, local_breakout_activo: true }).throughputDisenoMbps,
+    calcularRequerimientosIngenieria({ ...BASE, bw_mpls_mbps: 1000, bw_internet_mbps: 100 }).throughputDisenoMbps,
+  );
 });
 
 test('el IMIX degrada según el perfil: VOIP_INTENSIVE > ENTERPRISE > BULK_BACKUP', () => {

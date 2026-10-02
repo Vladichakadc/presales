@@ -955,8 +955,10 @@ Documento: «Auditoría técnica — Dimensionador Aruba»
 cerradas en el código; el detalle, con su evidencia, en *Cerrado recientemente* (2026-09-24). Lo
 único que queda son **datos que tiene un tercero** y **una regla del dueño**:
 
-- **M4 · la regla 70/30 del brief descarga el 70 % del caudal TOTAL, MPLS incluido.** No se
-  cambió: es decisión del dueño y una prueba la fija con su nombre. Ahora la revisión del
+- ~~**M4 · la regla 70/30 del brief descarga el 70 % del caudal TOTAL, MPLS incluido.**~~
+  **Decidido el 2026-10-02: opción B**, con el encargo del dueño de ejecutar los pendientes (ver
+  *Cerrado recientemente*). Lo que decía este punto: no se cambió porque es decisión del dueño y
+  una prueba la fija con su nombre. Ahora la revisión del
   diseño **avisa** cuando esa descarga supera la capacidad de los enlaces de Internet (su propio
   caso de prueba, MPLS 100 + Internet 200, saca 210 por un enlace de 200). **Decisión del dueño**:
   limitar la descarga a `min(70 % del total, Internet)` o dejarla como está.
@@ -1604,9 +1606,10 @@ que ya se comprobó y lo que cuesta cada opción.
   Buscadas las reales, tres corridas (`35991156286`, `35997261950` y `35997486119`) trajeron 12
   documentos oficiales, y de ellos salieron F2, los límites de 100F y 200F, R1, R2 y los SKU de
   EMS y FortiSASE (ver *Cerrado recientemente*).
-- **M4 de Aruba**: si la descarga del breakout se limita a la capacidad de Internet. **Medido**:
-  solo mueve el Boost (en MPLS 1.000 + DIA 100, 1 bloque con la regla actual frente a 3
-  limitada). **Recomendación: limitarla**; decide el dueño. Ver la sección de Aruba.
+- ~~**M4 de Aruba**: si la descarga del breakout se limita a la capacidad de Internet.~~
+  **Hecho el 2026-10-02: opción B**, la recomendada, con el encargo del dueño de ejecutar los
+  pendientes. Volver a la regla anterior es la opción A del documento de decisiones. Ver
+  *Cerrado recientemente*.
 - **Aprobación de arquitectura Fortinet** sobre `docs/auditoria-fortinet-2026-09-23/motor-y-bom.md`,
   que es la condición 1 del GO CONDICIONADO. Lista de comprobación en el documento de decisiones.
 - **Prueba con un lector de pantalla real** (NVDA o VoiceOver): guion de diez tareas con lo que
@@ -1627,6 +1630,33 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### M4 de Aruba: el breakout no descarga más de lo que cabe por Internet (2026-10-02)
+
+Era una decisión del dueño con la opción B recomendada (`docs/decisiones-del-dueno-2026-09-24.md`,
+apartado 3), y entra con su encargo de ejecutar los pendientes.
+
+- **El hueco.** La regla del brief descargaba en local el 70 % del caudal total, MPLS incluido,
+  aunque no cupiera por los enlaces de Internet: con MPLS 1.000 + DIA 100 prometía 770 Mbps de
+  salida local por un enlace de 100. El túnel, que es lo que licencia Boost, salía en 330 en vez
+  de 1.000, y la cotización salía corta sin que nadie lo notara. La pantalla solo avisaba.
+- **El cambio.** `motor-ingenieria.js` descarga `min(70 % del total, Internet)` y lo que no cabe
+  sigue por el túnel; `distribucion.breakoutLimitado` lo dice. El hint del breakout y la
+  explicación del Boost lo cuentan con las dos cifras, y el aviso se retira porque ya no hace
+  falta.
+- **Qué mueve, medido.** Solo el Boost: el throughput de diseño y el tier salen del caudal total.
+  La tabla de la decisión sale igual (MPLS 1.000 + DIA 100: de 1 bloque a 3; MPLS 500 + DIA 500:
+  de 1 a 2; MPLS 100 + DIA 200: 1). **El memorándum se quedaba corto en el alcance**: no cambian
+  solo las sedes «con mucho MPLS», sino toda sede con breakout cuyo Internet sea menor que 2,33
+  veces su MPLS. Por eso el escenario E de la auditoría (MPLS 1G + DIA 1G) pasa de 2 bloques a 3,
+  y la operación normal con MPLS 500 + DIA 500, de 1 a 2.
+- **Comprobado.** Cuatro pruebas fijaban la regla anterior y se actualizaron, cada una con el
+  motivo escrito: `motor-ingenieria`, el C4 de `aruba-auditoria-fase1`, `aruba-underlay-rol` y
+  las baterías e2e de M4, respaldo y fase 1. 748 unitarios y la batería e2e completa en verde.
+  El contraste `aruba-underlay` da 7 de 7 sin una discrepancia, porque ninguno de sus casos
+  combina Boost con más MPLS que el 70 % que cabe por Internet. `pantallas`, 17 de 17.
+- **Riesgo declarado.** Un enlace ya compartido de una sede así abre ahora con más Boost. Es el
+  arreglo, pero quien tenga cotizaciones guardadas de esas sedes debería volver a generarlas.
 
 ### `DATABASE_PATH`, medido sin leer secretos, y Dependabot #8 y #9 (2026-10-02)
 
