@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-02 (**`npm audit` en cero y convertido en freno.** Es la mejora propuesta al cerrar la entrega anterior. El paso de `verificar` era informativo y convivían 2 avisos altos y 2 moderados, todos con arreglo. `npm audit fix` los cerró tocando solo el lock (7 paquetes cambian y 3 salen). `npm run auditar` falla cerrado: un aviso alto frena salvo excepción declarada con caducidad, y no poder auditar también frena. Sobre el lock de antes frena con los 3 avisos altos. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-02 (**Railway instala con `npm ci`.** Es la mejora propuesta al cerrar la entrega anterior. Con `npm install`, un lock descuadrado se resolvía dentro del contenedor con versiones que CI no había probado; ahora la construcción falla y producción sigue con lo anterior. Lo hace la variable de servicio `RAILPACK_INSTALL_CMD`, según la documentación de Railway, y lo confirma el log de construcción (`▸ install $ npm ci`). **Al leer la configuración en vivo salió algo que `CLAUDE.md` afirmaba al revés**: el servicio no tiene `healthcheckPath`. Ver *Cerrado recientemente* y *Abierto: cómo construye Railway producción*.)
+
+Revisión anterior: 2026-10-02 (**`npm audit` en cero y convertido en freno.** Es la mejora propuesta al cerrar la entrega anterior. El paso de `verificar` era informativo y convivían 2 avisos altos y 2 moderados, todos con arreglo. `npm audit fix` los cerró tocando solo el lock (7 paquetes cambian y 3 salen). `npm run auditar` falla cerrado: un aviso alto frena salvo excepción declarada con caducidad, y no poder auditar también frena. Sobre el lock de antes frena con los 3 avisos altos. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-02 (**Los jobs de navegador fijan su imagen, después de medir que en Ubuntu 26 se habrían roto.** Es la mejora propuesta al cerrar la entrega anterior. GitHub avisa de que `ubuntu-latest` pasa a Ubuntu 26 el 19 de octubre. Lanzado `pantallas` en `ubuntu-26.04`, Playwright 1.56.1 responde «Playwright does not support chromium on ubuntu26.04-x64». Ahora `pantallas` y `limites` corren en `ubuntu-24.04`, fijada junto a Playwright. `pantallas` deja medir la imagen siguiente con un selector al lanzarlo a mano, y una prueba exige las dos cosas. Ver *Cerrado recientemente*.)
 
@@ -1528,18 +1530,22 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
 
 ## Abierto: cómo construye Railway producción (2026-10-02)
 
-Salió al confirmar el despliegue de `ab1b8c0`, leyendo el log de construcción de `60579d25`. El
-runtime (Node 20 sin soporte y el `nixpacks.toml` que nadie leía) se cerró ese mismo día: ver
-*Cerrado recientemente*. Queda esto:
+Salió al confirmar el despliegue de `ab1b8c0`, leyendo el log de construcción de `60579d25`, y al
+leer la configuración en vivo del servicio. Lo cerrado ese mismo día está en *Cerrado
+recientemente*: el runtime (Node 20 sin soporte, el `nixpacks.toml` que nadie leía), `npm audit` y
+`npm install` en lugar de `npm ci`. Queda esto:
 
-- **Railpack instala con `npm install`, no con `npm ci`.** Un `package-lock.json` que no cuadre
-  con `package.json` ya no frena el despliegue, como lo frenó el 1 de septiembre: se resolvería
-  dentro del contenedor, con versiones que CI no probó. `verificar` sí corre `npm ci`, pero
-  Railway no lo espera (punto 33). **Cómo se cambia, ya leído** en la documentación oficial de
-  Railway (`docs.railway.com/builds/build-configuration`, accesible desde aquí, a diferencia de
-  `railpack.com`): la variable de servicio `RAILPACK_INSTALL_CMD`.
-- **`npm audit` reportaba 2 avisos altos y 2 moderados y nada lo decía en voz alta**: cerrado el
-  mismo día (ver *Cerrado recientemente*).
+- **El servicio no tiene `healthcheckPath`, y `CLAUDE.md` decía que sí.** Leído con
+  `describe-service` y con `get-service-config`: en `deploy` no figura ningún healthcheck. `/salud`
+  existe y responde 503 si la base está vacía, pero Railway no lo consulta. Un contenedor que
+  arranca y después no sirve **sí** sustituye al que funcionaba; lo único que protege es que la
+  construcción falle antes. `CLAUDE.md` ya lo dice como es. El conector permite fijarlo
+  (`update-service` con `healthcheckPath`), pero es otro cambio de producción y nadie lo ha
+  aprobado.
+- **`DATABASE_PATH` figura entre las variables del servicio, y `CLAUDE.md` dice que no está
+  definida.** La siembra corre en cada despliegue (`[seed] Catalogo inicial poblado`), así que la
+  base sigue comportándose como efímera. No se leyó el valor a propósito: el listado de variables
+  trae también los secretos. Lo comprueba el dueño en el panel.
 
 ## Abierto: pasar los jobs de navegador a Ubuntu 26 (2026-10-02)
 
@@ -1634,6 +1640,34 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Railway instala con `npm ci` (2026-10-02)
+
+Mejora propuesta al cerrar la entrega anterior.
+
+- **El hueco.** Railpack instalaba con `npm install`. Si `package.json` y el lock no cuadran,
+  `npm install` resuelve dentro del contenedor con versiones que CI no probó y que el freno de
+  dependencias nunca vio, y despliega. `npm ci` falla, y entonces la construcción falla y
+  producción sigue con el despliegue anterior: es lo que tumbó, y así protegió, el despliegue del
+  1 de septiembre.
+- **Medido antes de tocar nada, con npm 11 (el de Railpack).** Con una dependencia en
+  `package.json` que el lock no trae, `npm ci` sale con 1 («can only install packages when your
+  package.json and package-lock.json are in sync», `EUSAGE`) y `npm install` con 0. Con el lock en
+  regla, `npm ci` instala los 365 paquetes.
+- **El cambio.** La variable de servicio `RAILPACK_INSTALL_CMD=npm ci`, que la documentación oficial
+  de Railway da para eso (`docs.railway.com/builds/build-configuration`; `railpack.com` sigue dando
+  403 desde aquí). Se leyó antes la configuración en vivo del servicio, y no había ninguna variable
+  de Railpack que pisar.
+- **El riesgo que se temía no apareció.** Railpack crea `node_modules/.cache` y `npm ci` borra
+  `node_modules` al empezar. El típico `EBUSY` habría hecho fallar la construcción, con producción
+  intacta, y se habría quitado la variable. No ocurrió.
+- **Confirmado en producción.** El despliegue `276a3475`, que Railway lanzó al poner la variable:
+  - su log de construcción dice `node │ 24.21.0` y `▸ install $ npm ci`;
+  - el paso termina con «added 365 packages… found 0 vulnerabilities»;
+  - SUCCESS, con `[seed]` y `Presales corriendo en` en el log de arranque;
+  - la sonda (`36995427877`): `/salud`, `/login` y el muro de acceso, en verde.
+- **Vive fuera del repositorio**, así que ninguna prueba la ve. `CLAUDE.md` dice cómo confirmarla
+  (la línea del log) y cómo deshacerla (borrar la variable en el servicio).
 
 ### `npm audit` en cero y convertido en freno (2026-10-02)
 
