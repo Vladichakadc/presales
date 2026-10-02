@@ -1538,7 +1538,7 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     bloqueado desde el sandbox (2026-09-16); cierra bajando el DS oficial de la
     serie 7000/7200 desde una máquina con acceso y repitiendo este mismo patrón.
 
-## Abierto: un despliegue sano cuyo `success` no llegó a GitHub (2026-10-02)
+## Vigilar: un despliegue sano cuyo `success` no llegó a GitHub (2026-10-02)
 
 El punto ciego que *Cada despliegue se comprueba y avisa solo* declaraba («si Railway dejara de
 publicar estos estados en GitHub, el aviso callaría»), visto por primera vez:
@@ -1549,10 +1549,12 @@ publicar estos estados en GitHub, el aviso callaría»), visto por primera vez:
   sonda automática no corrió. En el despliegue anterior (`f4b2d95`) llegó en 5 segundos.
 - **Cómo se cubrió.** Con la sonda lanzada a mano (corrida 44): `/salud` 200 con 222 modelos,
   `/login` 200 y la puerta cerrada.
-- **Qué falta saber.** Si es un retraso puntual o un estado que Railway ya no publica. El
-  despliegue siguiente lo dice. Si se repite, la sonda necesita un respaldo que no dependa del
-  evento: por ejemplo, una corrida programada que compare el commit desplegado con la cabeza
-  de `main`.
+- **Lo que dijo el siguiente.** El despliegue `511cb8d2` (commit `6e9cd03`) llegó a SUCCESS a las
+  17:58:19 y su `success` sí se publicó: la sonda corrió sola 5 segundos después (corrida 46, en
+  verde). Fue un fallo puntual de Railway, no un estado que haya dejado de publicar.
+- **Qué hacer si se repite.** La sonda necesita entonces un respaldo que no dependa del evento:
+  por ejemplo, una corrida programada que compare el commit desplegado con la cabeza de `main`.
+  Con un solo caso en 46 corridas, no compensa todavía.
 
 ## Abierto: la guía de diseño y el portal, frente al catálogo (2026-10-02)
 
