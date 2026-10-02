@@ -617,6 +617,18 @@ a producción. El plan completo, con el diagnóstico y la evidencia de cada hall
 | 2 | `FUENTES` por fabricante, `npm run catalogo`, importador de propuestas de la IA, salida estructurada, importador Huawei | **hecha** |
 | 3 | Vigía de fuentes semanal fuera del proxy de egreso | **hecha** |
 
+**Abierto (2026-10-02): dos workflows más intentan crear un PR desde Actions, y GitHub no lo
+permite en este repositorio.** Salió al arreglar la vigía, que fallaba por lo mismo.
+
+- **`datasheets-aruba.yml`.** Su última corrida (`33670075726`, 2026-09-02) bajó los datasheets y
+  falló en el paso «Abrir el PR» (`peter-evans/create-pull-request@v7`).
+- **`aplicar-propuesta.yml`.** Es la vía documentada en `docs/sincronizacion.md` para llevar a
+  `legacyData/` lo que propone la sincronización con IA, y llama a `github.rest.pulls.create`. No
+  se ha ejecutado nunca, así que fallará igual la primera vez que alguien la use.
+- **El arreglo es el de la vigía**: empujar la rama y dejar el enlace para abrir el PR en el resumen
+  de la corrida. El ajuste «Allow GitHub Actions to create and approve pull requests» conviene
+  dejarlo apagado, porque encendido también deja a Actions aprobar PR.
+
 ---
 
 ## Lo primero: el alta de usuarios — cerrado
