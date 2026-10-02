@@ -38,7 +38,7 @@ jobs:
     steps:
       # Solo hace falta leer `scripts/puerta.js`: ningun paso usa git despues, asi que el token
       # no se deja guardado en la copia.
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
 
