@@ -19,6 +19,7 @@
 //     npm run vigia -- --json                la misma salida como JSON, para el workflow
 //     npm run vigia -- --revisado <v> <url>  declara que una persona ya contrasto el cambio
 //     npm run vigia -- --sondeo             mide que fuentes son estables de verdad
+//     npm run vigia -- --resumen vigia.json el resumen legible de una corrida ya hecha
 //
 // EL TERCER ESTADO, Y POR QUE HIZO FALTA (2026-09-14)
 // Hasta hoy `--escribir` guardaba el hash nuevo de TODO documento legible, incluidos los que
@@ -511,6 +512,21 @@ if (require.main === module) {
     }
     console.log(`[vigia] "${r.documento}" queda verificado contra ${r.hash.slice(0, 16)}.`);
     console.log('        El cambio del lock deja diff en git: commitealo con el dato que entró.');
+    process.exit(0);
+  }
+
+  // `--resumen <vigia.json>`: el resumen legible de una corrida YA HECHA, sin volver a la red.
+  // El workflow pedia los documentos dos veces -una con `--escribir` y otra para el resumen-,
+  // y la segunda comparaba contra el lock que la primera acababa de escribir: el resumen de
+  // la corrida del 2026-09-28 decia «0 primera(s) medición(es)» con once fuentes medidas por
+  // primera vez. Ahora el resumen y el issue cuentan la misma corrida.
+  const j = args.indexOf('--resumen');
+  if (j >= 0) {
+    if (!args[j + 1]) {
+      console.error('Uso: node scripts/vigia-fuentes.js --resumen <vigia.json>');
+      process.exit(1);
+    }
+    imprimir(JSON.parse(fs.readFileSync(args[j + 1], 'utf8')));
     process.exit(0);
   }
 

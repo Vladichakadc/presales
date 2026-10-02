@@ -12,6 +12,27 @@ name: vigia-fuentes
 # NO EXTRAE DATOS. Compara hashes y avisa. La lectura del documento sigue siendo humana y el
 # dato entra por npm run cps / juniper / huawei, que contrastan antes de escribir: extraer
 # una tabla de un PDF automaticamente es justo donde se cuelan las filas desplazadas.
+#
+# DOS JOBS (2026-10-02). Hasta ese dia un solo job tenia `contents: write`, `issues: write` y
+# `pull-requests: write`, dejaba el token guardado en .git/config y, con el, corria `npm ci`
+# (que ejecuta los scripts de instalacion de cada dependencia) y procesaba lo que devolvian
+# seis dominios de fabricantes. Una dependencia comprometida podia leer ese token y empujar a
+# main, que en este repositorio es desplegar en produccion. Ahora:
+#   - `medir` solo puede leer, no guarda el token y no instala nada: el script solo usa
+#     modulos de Node y `fetch`. Deja lo medido como artefacto.
+#   - `publicar` tiene los permisos y no ejecuta nada que venga de fuera: baja el artefacto
+#     FUERA del repositorio, lo valida contra el lock de main (scripts/vigia-publicar.js:
+#     la corrida no puede dar por verificado un documento que cambio) y solo entonces copia
+#     el lock, empuja la rama y escribe el issue. Corre aunque `medir` falle, y cualquier
+#     fallo (la medicion, la descarga, la validacion o el push) acaba escrito en el issue.
+#
+# Y SE MIDIO QUE LA VIGIA LLEVABA TRES SEMANAS SIN AVISAR. La corrida del 2026-09-21 empujo la
+# rama y fallo al crear el PR («GitHub Actions is not permitted to create or approve pull
+# requests»: un ajuste del repositorio que esta apagado, y que si se enciende tambien deja a
+# Actions APROBAR PR). La del 2026-09-28 fallo antes, en el push («stale info»: con la rama ya
+# creada, `--force-with-lease` sin valor esperado no tiene contra que comparar en un checkout
+# que solo trae main). Como el job se cortaba ahi, el issue no se actualizaba. Ahora el PR no
+# se crea desde aqui: el issue y el resumen de la corrida llevan el enlace para abrirlo.
 
 on:
   schedule:
@@ -19,189 +40,202 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  issues: write
-  pull-requests: write
+  contents: read
 
 jobs:
-  vigilar:
+  medir:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
+      # Sin `npm ci` a proposito: scripts/vigia-fuentes.js solo usa fs, path, crypto y fetch.
+      # Si algun dia necesita un paquete, este job falla en rojo con MODULE_NOT_FOUND y se ve.
       - uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: npm
-
-      - name: Instalar dependencias
-        run: npm ci
 
       # --escribir actualiza fuentes.lock.json con lo medido. Sin eso el vigia compararia
       # siempre contra un lock vacio, reportaria "primera medicion" cada semana y no
-      # detectaria un cambio jamas — un vigia que no recuerda no vigila.
+      # detectaria un cambio jamas — un vigia que no recuerda no vigila. El resumen legible
+      # sale del MISMO JSON (--resumen) y no de una segunda pasada por la red.
       - name: Revisar las fuentes
-        id: vigia
         run: |
           node scripts/vigia-fuentes.js --json --escribir > vigia.json
-          node scripts/vigia-fuentes.js | tee resumen.txt
-          node -e "
-            const d = require('./vigia.json');
-            const fs = require('fs');
-            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'cambiados=' + d.cambiados.length + '\n');
-            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'inalcanzables=' + d.inalcanzables.length + '\n');
-          "
-
-      # EL LOCK VA POR PULL REQUEST Y NO POR PUSH A main (2026-09-14).
-      #
-      # MEDIDO: el commit 61dedc65 de este mismo workflow se desplego en Railway con SUCCESS
-      # SIN que corrieran ni `verificar` ni `pantallas` -- no existe ninguna corrida de esos dos
-      # para ese SHA. La causa es de GitHub: los eventos disparados con el GITHUB_TOKEN por
-      # defecto no crean corridas nuevas, para evitar bucles recursivos. Asi que la red que
-      # describe CLAUDE.md tiene aqui un agujero DISTINTO del pendiente 33: Railway no espera a
-      # un check que nunca llega a crearse.
-      #
-      # Por PR el camino a main pasa por una persona, y eso lo cierra EN CUALQUIERA DE LOS DOS
-      # CASOS posibles: si el PR de bot crea corridas en estado "pendiente de aprobacion", un
-      # mantenedor las aprueba y CI corre sobre el PR; y si no crea ninguna, el merge lo hace
-      # una persona y ESE push a main si dispara verificar y pantallas, que es el check que
-      # Railway espera. El arreglo no depende de cual de los dos sea, y bien esta, porque no se
-      # pudo confirmar desde este entorno: docs.github.com responde 403 por politica de egreso,
-      # y un 403 de politica se reporta, no se rodea.
-      #
-      # Un PAT o un App token harian que el push disparara los workflows, pero meten un secreto
-      # de larga vida con escritura sobre main: peor, y la misma forma que este repositorio ya
-      # rechazo al descartar el entorno de staging.
-      #
-      # Y de paso deja de redesplegar produccion cada semana por un archivo que el servidor no
-      # lee: el lock solo lo consultan el propio vigia y `npm run catalogo`.
-      #
-      # Se hace `git add` ANTES de comprobar si hay cambios: `git diff` no ve un archivo sin
-      # seguimiento, asi que en la primera corrida -justo cuando el lock todavia no existe y es
-      # cuando mas importa guardarlo- habria dicho "sin cambios" y no habria guardado nada.
-      - name: Guardar lo medido en una rama
-        id: guardar
-        run: |
-          git add -- server/seed/legacyData/fuentes.lock.json
-          if git diff --cached --quiet -- server/seed/legacyData/fuentes.lock.json; then
-            echo 'El lock no cambio; no hay nada que guardar.'
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          # Una sola rama reutilizada, por lo mismo que se reutiliza el issue abierto: una rama
-          # por semana acumularia PR que nadie cierra. --force-with-lease y no --force: si
-          # alguien empujo a esa rama a mano, se prefiere fallar a pisarselo.
-          git checkout -B vigia/fuentes
-          git commit -m 'vigia: actualiza el hash de las fuentes medidas'
-          git push --force-with-lease origin vigia/fuentes
-          echo 'rama=vigia/fuentes' >> "$GITHUB_OUTPUT"
-
-      - name: Abrir o actualizar el PR del lock
-        if: steps.guardar.outputs.rama != ''
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { owner, repo } = context.repo;
-            const abiertos = await github.rest.pulls.list({
-              owner, repo, state: 'open', head: `${owner}:vigia/fuentes`,
-            });
-            if (abiertos.data.length) {
-              core.info(`Ya hay PR abierto: #${abiertos.data[0].number}. La rama se actualizo.`);
-              return;
-            }
-            const cuerpo = [
-              'Corrida semanal del vigia. **Este PR solo mueve `fuentes.lock.json`**: no toca el',
-              'catalogo ni ninguna cifra.',
-              '',
-              'Un documento que el vigia vio CAMBIAR conserva su `hashVerificado` y queda en la',
-              'cola de revision hasta que una persona lo contraste: el lock ya no se traga el',
-              'cambio que acaba de denunciar. Para cerrarlo, abre el documento, aplica el dato con',
-              'su importador (`npm run cps` / `juniper` / `huawei`) y despues declara la revision:',
-              '',
-              '    npm run vigia -- --revisado <fabricante> <url>',
-              '',
-              'El detalle de que cambio esta en el issue con la etiqueta `vigia-fuentes`.',
-              '',
-              '---',
-              '_Generado por [Claude Code](https://claude.ai/code)_',
-            ].join('\n');
-            const pr = await github.rest.pulls.create({
-              owner, repo, head: 'vigia/fuentes', base: 'main',
-              title: 'vigia: actualiza el hash de las fuentes medidas',
-              body: cuerpo,
-            });
-            core.info(`PR abierto: #${pr.data.number}`);
+          node scripts/vigia-fuentes.js --resumen vigia.json | tee resumen.txt
 
       - name: Publicar el resumen en la corrida
         run: |
           {
-            echo '## Vigia de fuentes'
+            echo '## Vigía de fuentes'
             echo '```'
             cat resumen.txt
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # Solo se abre issue cuando hay algo que hacer. Un documento sin cambios no merece
-      # ruido semanal: el resumen de la corrida ya deja constancia de que se miro.
-      - name: Abrir issue si alguna fuente cambio o no se pudo leer
-        if: steps.vigia.outputs.cambiados != '0' || steps.vigia.outputs.inalcanzables != '0'
+      - name: Guardar lo medido para el job que publica
+        uses: actions/upload-artifact@v4
+        with:
+          name: vigia
+          path: |
+            vigia.json
+            server/seed/legacyData/fuentes.lock.json
+          if-no-files-found: error
+
+  # Corre aunque `medir` falle: una corrida que no termina tiene que decirlo en el issue, que es
+  # donde se mira. Un rojo que solo se ve entrando en Actions es como la vigia paso tres
+  # semanas sin avisar.
+  publicar:
+    needs: medir
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: read
+
+    steps:
+      # Con credenciales: este job empuja la rama del lock. Nada de lo que corre aqui viene de
+      # fuera del repositorio.
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      # Fuera del repositorio: lo que trae el artefacto no puede caer encima de un archivo del
+      # checkout (un hook de git, un script) antes de validarse.
+      - name: Bajar lo medido
+        id: bajar
+        if: ${{ needs.medir.result == 'success' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: vigia
+          path: ${{ runner.temp }}/vigia
+
+      - name: Validar lo medido y traer el lock
+        id: validar
+        if: ${{ steps.bajar.outcome == 'success' }}
+        run: node scripts/vigia-publicar.js "$RUNNER_TEMP/vigia"
+
+      # EL LOCK VA POR UNA RAMA Y UN PR, NO POR PUSH A main (2026-09-14).
+      #
+      # MEDIDO: el commit 61dedc65 de este mismo workflow se desplego en Railway con SUCCESS
+      # SIN que corrieran ni `verificar` ni `pantallas`: los eventos disparados con el
+      # GITHUB_TOKEN por defecto no crean corridas nuevas, para evitar bucles recursivos. Asi
+      # que Railway no espera a un check que nunca llega a crearse. Por PR el camino a main
+      # pasa por una persona, y el merge de esa persona SI dispara verificar y pantallas.
+      #
+      # Un PAT o un App token harian que el push disparara los workflows, pero meten un secreto
+      # de larga vida con escritura sobre main: peor, y la misma forma que este repositorio ya
+      # rechazo al descartar el entorno de staging.
+      #
+      # Se hace `git add` ANTES de comprobar si hay cambios: `git diff` no ve un archivo sin
+      # seguimiento, asi que en la primera corrida -justo cuando el lock todavia no existe y es
+      # cuando mas importa guardarlo- habria dicho "sin cambios" y no habria guardado nada.
+      #
+      # LA LEASE LLEVA EL VALOR ESPERADO. Una sola rama reutilizada, reconstruida cada semana
+      # sobre main, y se sobrescribe solo si su cabeza es un commit del propio vigia: si una
+      # persona empujo encima, no se pisa (el aviso lo dice y lo medido queda en el artefacto).
+      # Sin rama remota, la lease vacia exige que siga sin existir.
+      - name: Guardar lo medido en una rama
+        id: guardar
+        if: ${{ steps.validar.outcome == 'success' }}
+        run: |
+          git add -- server/seed/legacyData/fuentes.lock.json
+          if git diff --cached --quiet -- server/seed/legacyData/fuentes.lock.json; then
+            echo 'El lock no cambió; no hay nada que guardar.'
+            echo 'estado=sin-cambios' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout -B vigia/fuentes
+          git commit -q -m 'vigia: actualiza el hash de las fuentes medidas'
+          esperado=''
+          if git fetch -q --depth=1 origin '+refs/heads/vigia/fuentes:refs/remotes/origin/vigia/fuentes' 2>/dev/null; then
+            autor="$(git log -1 --format=%ae refs/remotes/origin/vigia/fuentes)"
+            if [ "$autor" != 'github-actions[bot]@users.noreply.github.com' ]; then
+              echo '::warning::La rama vigia/fuentes tiene encima un commit que no es del vigía: no se pisa.'
+              echo "Autor de ese commit: $autor"
+              echo 'estado=retenida' >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            esperado="$(git rev-parse refs/remotes/origin/vigia/fuentes)"
+          fi
+          if ! git push -q --force-with-lease="vigia/fuentes:$esperado" origin vigia/fuentes; then
+            echo 'estado=fallida' >> "$GITHUB_OUTPUT"
+            echo '::error::No se pudo empujar la rama vigia/fuentes. El issue se escribe igual.'
+            exit 1
+          fi
+          echo 'Lo medido está en la rama vigia/fuentes.'
+          echo 'estado=empujada' >> "$GITHUB_OUTPUT"
+
+      # El PR no se crea desde aqui: el ajuste que lo permitiria tambien deja a Actions aprobar
+      # PR. Se busca el que haya abierto una persona y, si no hay, se da el enlace para abrirlo.
+      # Se escribe en el issue cuando hay algo que hacer: un documento que cambio o que no se
+      # pudo leer, un push rechazado, o una corrida que no llego a publicarse. Un documento sin
+      # cambios no merece ruido semanal.
+      - name: Enlazar el PR del lock y escribir el issue
+        if: ${{ !cancelled() }}
         uses: actions/github-script@v7
+        env:
+          MEDIR: ${{ needs.medir.result }}
+          BAJAR: ${{ steps.bajar.outcome }}
+          VALIDAR: ${{ steps.validar.outcome }}
+          GUARDAR: ${{ steps.guardar.outcome }}
+          ESTADO_LOCK: ${{ steps.guardar.outputs.estado }}
         with:
           script: |
             const fs = require('fs');
-            const d = JSON.parse(fs.readFileSync('vigia.json', 'utf8'));
-            const lineas = [];
-
-            if (d.cambiados.length) {
-              lineas.push('## Fuentes que cambiaron', '');
-              lineas.push('El documento oficial ya no es el mismo que se uso para verificar el catalogo.');
-              lineas.push('Abrirlo, leerlo y aplicar el dato con el importador que corresponda');
-              lineas.push('(`npm run cps`, `npm run juniper`, `npm run huawei`), que contrasta antes de escribir.', '');
-              for (const r of d.cambiados) {
-                lineas.push(`- **${r.vendor}** — ${r.documento}`);
-                lineas.push(`  - ${r.url}`);
-                lineas.push(`  - medido antes: \`${(r.hashPrevio || '').slice(0, 16)}\` el ${r.medidoAntes || 'desconocido'}`);
-                lineas.push(`  - ahora: \`${r.hash.slice(0, 16)}\` (${r.bytes} bytes)`);
+            const V = require('./scripts/vigia-publicar.js');
+            const { owner, repo } = context.repo;
+            const corrida = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+            const dir = `${process.env.RUNNER_TEMP}/vigia`;
+            // Se reutiliza el issue abierto si ya existe, para no acumular uno por semana. La API
+            // de issues devuelve tambien los PR con la etiqueta: no son el aviso.
+            const escribir = async (titulo, cuerpo) => {
+              const abiertos = await github.rest.issues.listForRepo({ owner, repo, state: 'open', labels: 'vigia-fuentes' });
+              const abierto = abiertos.data.find((i) => !i.pull_request);
+              if (abierto) {
+                await github.rest.issues.createComment({ owner, repo, issue_number: abierto.number, body: cuerpo });
+                core.info(`Comentado el issue #${abierto.number}.`);
+              } else {
+                const nuevo = await github.rest.issues.create({ owner, repo, title: titulo, body: cuerpo, labels: ['vigia-fuentes'] });
+                core.info(`Abierto el issue #${nuevo.data.number}.`);
               }
-              lineas.push('');
+            };
+            const { MEDIR, BAJAR, VALIDAR } = process.env;
+            if (MEDIR !== 'success' || BAJAR !== 'success' || VALIDAR !== 'success') {
+              let motivo = MEDIR !== 'success' ? `la medición no terminó (${MEDIR})`
+                : BAJAR !== 'success' ? 'no se pudo bajar lo medido' : 'la validación no terminó';
+              try { motivo = JSON.parse(fs.readFileSync(`${dir}/rechazo.json`, 'utf8')).motivo; } catch { /* sin motivo escrito */ }
+              await escribir(V.TITULO_FALLO, V.cuerpoFallo(motivo, corrida));
+              core.warning(`La corrida no se publicó: ${motivo}`);
+              return;
             }
-
-            if (d.inalcanzables.length) {
-              lineas.push('## Fuentes que no se pudieron leer', '');
-              lineas.push('Esto **no** es "sin cambios": es que no se pudo comprobar. Un 403 es politica de');
-              lineas.push('egreso y se reporta, no se rodea — en ese caso el pendiente vuelve a la ruta A de');
-              lineas.push('`IMPORTAR-CATALOGO.md`, correrlo desde una maquina propia.', '');
-              for (const r of d.inalcanzables) {
-                lineas.push(`- **${r.vendor}** — ${r.documento}: ${r.detalle}`);
-                lineas.push(`  - ${r.url}`);
-              }
-              lineas.push('');
+            const inf = JSON.parse(fs.readFileSync(`${dir}/informe.json`, 'utf8'));
+            // Un paso que falla puede no dejar su salida: el resultado del paso manda.
+            const estado = process.env.GUARDAR === 'failure' ? 'fallida' : (process.env.ESTADO_LOCK || 'sin-cambios');
+            let enlace = null;
+            if (estado === 'empujada') {
+              const abiertos = await github.rest.pulls.list({ owner, repo, state: 'open', head: `${owner}:${V.RAMA}` });
+              enlace = abiertos.data.length
+                ? `ya está abierto el PR #${abiertos.data[0].number}.`
+                : `[abrir el PR](${context.serverUrl}/${owner}/${repo}/compare/main...${V.RAMA}?expand=1).`;
             }
-
-            lineas.push('---');
-            lineas.push('_Generado por [Claude Code](https://claude.ai/code)_');
-
-            const titulo = d.cambiados.length
-              ? `Fuentes del catalogo: ${d.cambiados.length} cambiaron`
-              : `Fuentes del catalogo: ${d.inalcanzables.length} no se pudieron leer`;
-
-            // Se reutiliza el issue abierto si ya existe, para no acumular uno por semana.
-            const abiertos = await github.rest.issues.listForRepo({
-              owner: context.repo.owner, repo: context.repo.repo,
-              state: 'open', labels: 'vigia-fuentes',
-            });
-            const cuerpo = lineas.join('\n');
-            if (abiertos.data.length) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner, repo: context.repo.repo,
-                issue_number: abiertos.data[0].number, body: cuerpo,
-              });
-            } else {
-              await github.rest.issues.create({
-                owner: context.repo.owner, repo: context.repo.repo,
-                title: titulo, body: cuerpo, labels: ['vigia-fuentes'],
-              });
+            const resumen = {
+              empujada: `En la rama ${V.RAMA}: ${enlace}`,
+              retenida: `La rama ${V.RAMA} tiene un commit que no es del vigía y no se pisó.`,
+              fallida: `No se pudo empujar la rama ${V.RAMA}: lo medido está en el artefacto de la corrida.`,
+            };
+            await core.summary.addHeading('Lock de esta corrida', 3).addRaw(resumen[estado] || 'El lock no cambió.').write();
+            if (!V.hayQueAvisar(inf, { estado })) {
+              core.info('Ninguna fuente cambió ni quedó sin leer: no hace falta escribir en el issue.');
+              return;
             }
+            await escribir(V.tituloIssue(inf), V.cuerpoIssue(inf, { estado, enlace }));

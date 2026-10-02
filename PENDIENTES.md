@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-02 (**El recorrido de valores límite pasa a ser una comprobación semanal, y su primera corrida encontró un error real.** Es la mejora propuesta al cerrar la entrega anterior, aprobada por el dueño. `npm run limites` recorre los nueve dimensionadores con valores límite en cada control y cada modo, y `limites.yml` lo corre los miércoles y lleva los hallazgos a un issue sin frenar despliegues. Sobre `main` encontró «Puertos undefined × undefinedGE» en la ficha de los 17 FortiGate con puertos estructurados, en producción desde la etapa 7: corregido en `ficha.js`, con la prueba que pasaba en falso endurecida. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-02 (**La vigía de fuentes, en dos jobs con permisos separados, y en verde después de tres semanas sin avisar.** Es la mejora propuesta al cerrar la entrega anterior. Al ejecutarla se midió que la vigía llevaba dos corridas en rojo, la del 21 y la del 28 de septiembre: GitHub no deja que Actions cree el PR del lock, y el push de la rama se rechazaba. Como el job se cortaba ahí, el issue no se actualizaba. Ahora `medir` no tiene permisos ni instala nada, y `publicar` valida lo medido antes de copiarlo, empuja la rama con la lease bien puesta y enlaza el PR en el issue. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-02 (**El recorrido de valores límite pasa a ser una comprobación semanal, y su primera corrida encontró un error real.** Es la mejora propuesta al cerrar la entrega anterior, aprobada por el dueño. `npm run limites` recorre los nueve dimensionadores con valores límite en cada control y cada modo, y `limites.yml` lo corre los miércoles y lleva los hallazgos a un issue sin frenar despliegues. Sobre `main` encontró «Puertos undefined × undefinedGE» en la ficha de los 17 FortiGate con puertos estructurados, en producción desde la etapa 7: corregido en `ficha.js`, con la prueba que pasaba en falso endurecida. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-01 (**Revisión de los dimensionadores con valores límite: seis errores corregidos.** Encargo del dueño: revisar el dimensionador y corregir lo que tuviera. Con todas las baterías en verde, recorrer las nueve pantallas con valores límite en cada control encontró seis: un caudal o unas sedes negativos que se dimensionaban («Requiere -13 Mbps», «-13000 Mbps», «-5 túneles»), el formulario vacío de Nokia 7750 SR recomendando un equipo, «null» en el catálogo de Huawei y en una nota de Aruba, y **una excepción al abrir cualquier enlace compartido con un modo en la URL en Huawei y Cisco** (15 de 60 enlaces). Los guarda una batería e2e nueva, comprobada revirtiendo cada arreglo. Ver *Cerrado recientemente*.)
 
@@ -1577,6 +1579,75 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### La vigía de fuentes, en dos jobs y otra vez avisando (2026-10-02)
+
+Mejora propuesta al cerrar la entrega anterior: separar los permisos de `vigia-fuentes.yml` como
+los de `limites.yml`. Hasta ese día, un solo job con `contents: write`, `issues: write` y
+`pull-requests: write` dejaba el token guardado en `.git/config`. Con el token ahí corría
+`npm ci`, que ejecuta los scripts de instalación de cada dependencia (sqlite3 tiene uno), y se
+procesaban las respuestas de seis dominios de fabricantes. Una dependencia comprometida podía
+empujar a `main`, y aquí eso es desplegar.
+
+- **Al ejecutarla apareció algo peor: la vigía llevaba tres semanas sin avisar.**
+  - **21 de septiembre:** empujó la rama y falló al crear el PR del lock, con «GitHub Actions is
+    not permitted to create or approve pull requests». Es un ajuste del repositorio, y está
+    apagado.
+  - **28 de septiembre:** falló antes, en el push, con «stale info». `--force-with-lease` sin
+    valor esperado no tiene contra qué comparar en un checkout que solo trae `main`, y la rama
+    ya existía.
+  - **La consecuencia:** el job se cortaba ahí y el issue no se actualizaba. La ruta del PR,
+    introducida el 14 de septiembre, no funcionó ni una vez.
+- **Dos jobs.**
+  - **`medir`:** solo lectura, sin guardar el token y sin `npm ci`, porque el script solo usa
+    `fs`, `path`, `crypto` y `fetch`. Deja lo medido como artefacto.
+  - **`publicar`:** tiene los permisos y no ejecuta nada de fuera. Baja el artefacto **fuera**
+    del repositorio, para que nada caiga sobre un hook de git, y lo valida contra el lock de
+    `main` (`scripts/vigia-publicar.js`). Solo entonces copia el lock, empuja la rama y escribe
+    el issue.
+- **La validación es el tercer estado del lock, comprobado en la frontera.**
+  - **Qué exige:** el lock solo crece; en una fuente estable `hashVerificado` no se mueve, porque
+    eso lo hace una persona con `--revisado`; `pendienteDesde` no se reinicia; y una fuente
+    retirada no se toca.
+  - **Qué no puede pasar entonces:** que una corrida manipulada dé por verificado un documento
+    que cambió y apague la alarma.
+  - **Del informe:** cada fuente citada tiene que estar en `FUENTES`, y el texto del issue se toma
+    de ahí, no del informe.
+- **La revisión diferencial endureció tres cosas antes de empujar** (skill `differential-review`).
+  - **El cambio de clase era una puerta trasera.** Declarar «ahora se vigila el texto» abría una
+    línea base nueva con cualquier hash, y por ahí una corrida manipulada podía apagar una alarma
+    pendiente. El único cambio de clase que la corrida hace sola es la migración de las entradas
+    antiguas, sin `clase`, a `texto`. Cualquier otro lo decide una persona.
+  - **El lock no admite texto libre.** `documento` es el de `FUENTES` o el que ya había, y `visto`
+    no admite campos de más.
+  - **Todo fallo llega al issue.** `publicar` corre aunque `medir` falle. Escribe en el issue si la
+    medición no terminó, si no se pudo bajar, si la validación rechazó (con el motivo en código) o
+    si el push falló aunque no haya hallazgos. Es la lección de las tres semanas: un rojo que solo
+    se ve entrando en Actions no avisa.
+- **El PR ya no lo crea Actions**, porque el ajuste que lo permitiría también le deja aprobar PR.
+  - La rama se empuja con la lease que espera la cabeza actual. Solo se sobrescribe si esa cabeza
+    es del propio vigía: un commit de una persona no se pisa, y el aviso lo dice.
+  - El issue y el resumen de la corrida llevan el enlace para abrir el PR. El camino a `main`
+    sigue pasando por una persona.
+- **El resumen de la corrida cuenta la misma corrida que el issue.** El workflow pedía cada
+  documento dos veces, y la segunda comparaba contra el lock que la primera acababa de escribir:
+  el resumen del 28 de septiembre decía «0 primera(s) medición(es)» con once fuentes medidas por
+  primera vez. `npm run vigia -- --resumen vigia.json` lo imprime desde el JSON, sin volver a la
+  red.
+- **Qué lo guarda.** `test/vigia-publicar.test.js`, con 11 casos:
+  - la validación acepta lo que producen `clasificar` y `aplicarAlLock` de verdad, semana tras
+    semana y sobre el lock real, y rechaza trece manipulaciones;
+  - el CLI que rechaza sale con 1, deja el motivo y no toca el lock del repositorio;
+  - todo fallo produce un aviso;
+  - nada de lo que corren los dos jobs necesita un paquete de npm;
+  - y la separación de permisos de los dos workflows no se deshace sin que una prueba lo diga.
+  - Comprobado saboteando: sin la regla de `hashVerificado`, o con `medir` con escritura, cae la
+    prueba que corresponde.
+- **El script del paso del issue se simuló fuera de GitHub.** Se extrajo del YAML y se ejecutó con
+  dobles en nueve escenarios: los tres fallos, cambio con y sin PR abierto, sin novedades, push
+  fallido sin salida, rama retenida y sin issue abierto. Los nueve escriben lo que deben, o nada
+  cuando no hay nada que contar.
+- **Verificación.** 686 pruebas y lint.
 
 ### El recorrido de valores límite, cada semana; su primera corrida encontró un error real (2026-10-02)
 

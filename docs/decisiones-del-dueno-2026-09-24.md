@@ -47,9 +47,15 @@ de Railway ni token. No se buscó otra vía.
   puede bloquear su propio despliegue.
 - **Caso límite**: `vigia-fuentes.yml` corre los lunes a las 06:00 UTC, y su corrida se asocia
   al commit que esté en la cabeza de `main`. Si ese commit estuviera todavía esperando su
-  despliegue y la vigía fallara, el despliegue se saltaría. La vigía sale con código 0 salvo un
-  error inesperado del script, así que es improbable. Si pasa, el remedio es volver a desplegar
-  ese commit.
+  despliegue y la vigía fallara, el despliegue se saltaría. Si pasa, el remedio es volver a
+  desplegar ese commit.
+  **Y pasó dos lunes seguidos sin que nadie lo viera** (medido el 2026-10-02): las corridas del
+  21 y del 28 de septiembre terminaron en rojo, la primera al crear el PR del lock (GitHub no
+  deja que Actions cree PR en este repositorio) y la segunda al empujar la rama. Con «Wait for
+  CI» activo, un despliegue pendiente esos lunes se habría saltado. Se corrigió el mismo día:
+  la vigía ya no crea el PR y empuja la rama con la lease bien puesta. Desde entonces solo se
+  pone en rojo si su script falla, si lo medido no pasa la validación del job que publica o si
+  el push se rechaza; en este último caso el issue se escribe igual.
 - **El mismo caso límite, segundo workflow (2026-10-02)**: `limites.yml` (el recorrido de valores
   límite) corre los miércoles a las 07:00 UTC. Se diseñó con la misma regla: los hallazgos van a
   un issue con la etiqueta `recorrido-limites` y la corrida termina en verde; solo se pone en
