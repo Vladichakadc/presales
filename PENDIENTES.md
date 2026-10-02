@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-02 (**Producción y CI en Node 24 LTS, con la versión declarada una sola vez.** Es la mejora propuesta al cerrar la entrega anterior. Producción corría Node 20.20.2, sin soporte desde el 30 de abril: Railway construye con Railpack, que la toma de `engines.node`, y con `>=20` eligió la más baja. El `nixpacks.toml` que parecía fijarla no lo leía nadie. Ahora `engines.node` es `"24"`, los workflows la leen de ahí y una prueba se pone en rojo el día que esa versión pierda el soporte. Node 24 trae npm 11, que pide aprobar qué dependencias ejecutan código al instalarse: `sqlite3` va aprobada fijada a su versión. Verificado entero con Node 24 antes de desplegar. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-02 (**Producción y CI en Node 24 LTS, con la versión declarada una sola vez.** Es la mejora propuesta al cerrar la entrega anterior. Producción corría Node 20.20.2, sin soporte desde el 30 de abril: Railway construye con Railpack, que la toma de `engines.node`, y con `>=20` eligió la más baja. El `nixpacks.toml` que parecía fijarla no lo leía nadie. Ahora `engines.node` es `"24"`, los workflows la leen de ahí y una prueba se pone en rojo el día que esa versión pierda el soporte. Node 24 trae npm 11, que pide aprobar qué dependencias ejecutan código al instalarse: `sqlite3` va aprobada fijada a su versión. Verificado entero con Node 24 antes de desplegar, y en producción con Node 24.21.0 desde `299ba98`, según el log de construcción de Railway. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-02 (**Los otros dos workflows que escriben en el repositorio, con el mismo arreglo que la vigía.** Es la mejora propuesta al cerrar la entrega anterior. `aplicar-propuesta.yml`, la vía documentada para llevar al catálogo lo que propone la IA, no se había ejecutado nunca y habría fallado la primera vez al crear el PR. `datasheets-aruba.yml` ya había fallado así. Ahora los dos corren en dos jobs con permisos separados, el que escribe valida lo que recibe, y las tres ramas de bot se empujan con un solo script probado contra un remoto git real. De paso se cerró un comando de shell que llevaba dentro el fabricante de la propuesta, un texto que viene de la IA. Ver *Cerrado recientemente*. **Y al confirmar el despliegue, el log de construcción de Railway enseñó algo que no estaba registrado**: producción corre Node 20.20.2, sin soporte desde el 30 de abril de 2026, y `nixpacks.toml` ya no lo lee nadie. Ver *Abierto: cómo construye Railway producción*.)
 
@@ -1549,6 +1549,16 @@ runtime (Node 20 sin soporte y el `nixpacks.toml` que nadie leía) se cerró ese
   - `moment` (moderado, transitivo, con arreglo): recorrido de rutas con un nombre de *locale*
     que no es texto (GHSA-4p3w-j4w9-5jqw).
 
+## Abierto: el ejecutor de CI cambia de Ubuntu el 19 de octubre (2026-10-02)
+
+Lo avisa GitHub en las anotaciones de cada corrida (leído en `36968253618`): «The ubuntu-latest
+label will migrate to Ubuntu 26 beginning October 19, 2026» (actions/runner-images#14748). Los 13
+workflows usan `ubuntu-latest`. **Solo dos instalan paquetes del sistema**: `pantallas.yml` y
+`limites.yml`, con `npx playwright install --with-deps chromium` y Playwright fijado en 1.56.1. Es
+justo lo que depende de los nombres de paquete de cada versión de Ubuntu. Que esa versión de
+Playwright sepa instalar Chromium en Ubuntu 26 **no está medido**. Si no sabe, `pantallas` se pone
+en rojo en cada push a partir de ese día, por algo que no es del código.
+
 ## Limpieza
 
 11. **Nada abierto.** Los cuatro puntos que vivían aquí (el sufijo `-v3_1`, el conjunto
@@ -1687,12 +1697,29 @@ para confirmar aquel despliegue.
   - el arranque en modo producción, sin un solo aviso de obsolescencia: `[seed]`, escucha en su
     puerto, `/salud` con 7 fabricantes y 228 modelos, y el muro 4 de 4;
   - 17/17 pantallas, 8 contrastes sin discrepancias y 16/16 scripts e2e.
+- **CI en Node 24 sobre la rama, antes de tocar `main`.** `pantallas.yml` se lanzó sobre la rama
+  (`36968253618`), porque `main` despliega sin esperar a CI. Salió en verde con la anotación «Node
+  v24.21.0 (engines.node 24)», y en verde la comprobación de versión, `npm ci`, las pantallas, el
+  contraste y la batería e2e.
+- **En producción (2026-10-02).** `299ba98`, Railway `da3d1f79` en SUCCESS.
+  - Su log de construcción dice `node │ 24.21.0 │ package.json > engines > node (24)`: la misma
+    versión exacta verificada en local y en CI.
+  - `npm install` instaló 368 paquetes sin avisos de scripts ni de `engines`.
+  - El log de arranque trae `[seed]` y `Presales corriendo en`, sin errores ni avisos.
+  - `verificar` (`36968857246`, anotada «v24.21.0 (engines.node 24)») y `pantallas`
+    (`36968857136`) en verde sobre `main`.
+  - La sonda (`36969469033`): `/salud` 200 con 7 fabricantes y 228 modelos, `/login` 200 y el
+    muro de acceso 4 de 4.
+  - Vuelta atrás si hiciera falta: el rollback de Railway al despliegue `1d9388f9` (Node 20), o
+    un `git revert`.
 - **Lo que salió por el camino**, abierto arriba en *Abierto: cómo construye Railway
-  producción*:
+  producción* y en *Abierto: el ejecutor de CI cambia de Ubuntu*:
   - Railpack instala con `npm install`, no con `npm ci`.
   - `npm audit` da 2 avisos altos y 2 moderados, con el mismo resultado en npm 10 y en npm 11.
     El comentario del paso informativo de `verificar.yml` hablaba de «2 moderados»: ahora no
     lleva cifras, que caducan, y remite aquí.
+  - Las anotaciones de la corrida avisan de que `ubuntu-latest` pasa a Ubuntu 26 desde el 19 de
+    octubre.
 
 ### Los otros dos workflows que escriben en el repositorio, con el arreglo de la vigía (2026-10-02)
 
