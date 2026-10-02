@@ -12,7 +12,7 @@ commit desplegado.
 `https://presales.up.railway.app/dimensionador-aruba-edgeconnect.html`. Ese dominio está
 **bloqueado por la política de egreso de este entorno** (el túnel del proxy se queda sin
 respuesta) y no se rodea. Se usó el equivalente que este repositorio ya estableció al cerrar el
-pendiente 4: `DATABASE_PATH` va sin definir en producción, la base es efímera y se resiembra
+pendiente 4: la base de producción es efímera (no sobrevive al despliegue) y se resiembra
 desde `legacyData/` en cada despliegue, así que **arrancar el mismo commit en local renderiza
 exactamente los mismos datos**. Las dos páginas se condujeron en Chromium y de ahí salen las
 cifras de abajo.

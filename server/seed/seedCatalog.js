@@ -280,9 +280,11 @@ async function seedRoleRecommendations(vendorIds) {
   }
 }
 
+// Devuelve si sembró: `false` es que la base ya traía catálogo y no se tocó (ver `start()` en
+// server.js, que lo dice en el arranque).
 async function seedCatalog() {
   const existingVendors = await Vendor.count();
-  if (existingVendors > 0) return;
+  if (existingVendors > 0) return false;
 
   const vendorIds = await seedVendors();
 
@@ -423,6 +425,7 @@ async function seedCatalog() {
   await seedRoleRecommendations(vendorIds);
 
   console.log('[seed] Catalogo inicial poblado desde datos legacy.');
+  return true;
 }
 
 module.exports = seedCatalog;

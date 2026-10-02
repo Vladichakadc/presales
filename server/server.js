@@ -377,7 +377,17 @@ function avisarDeFuentes() {
 
 async function start() {
   await sequelize.sync();
-  await seedCatalog();
+  const sembrada = await seedCatalog();
+  // Dónde vive la base y si este arranque la sembró. En producción la base tiene que salir
+  // vacía en cada despliegue: la siembra solo corre con la base vacía, así que una base que
+  // sobrevive (DATABASE_PATH dentro del volumen, por ejemplo) sigue sirviendo el catálogo de
+  // antes y los cambios de legacyData/ de este commit no llegan. Se avisa en vez de fallar:
+  // el sitio funciona, pero con datos viejos.
+  const base = sequelize.options.storage;
+  console.log(`[db] SQLite en ${base}: ${sembrada ? 'catálogo sembrado desde legacyData/ en este arranque' : 'catálogo reutilizado de un arranque anterior'}.`);
+  if (!sembrada && process.env.NODE_ENV === 'production') {
+    console.warn('[db] La base ya traía catálogo y no se volvió a sembrar: los cambios de legacyData/ de este despliegue NO están en producción. Revisa DATABASE_PATH: la base tiene que ser efímera.');
+  }
   avisarDeFuentes();
   // Sin contrasena no se puede autenticar a nadie: se falla cerrado en produccion en lugar
   // de arrancar un sitio con precios abierto al publico.

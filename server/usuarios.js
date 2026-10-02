@@ -2,9 +2,9 @@
 // perímetro" en "control de identidad", que era la salvedad declarada en la cabecera de
 // auth.js desde el primer día.
 //
-// POR QUÉ UN ARCHIVO Y NO UNA TABLA. La base SQLite de este proyecto es EFÍMERA: no se fija
-// DATABASE_PATH en producción, así que Railway la recrea y la resiembra desde los seeds en
-// cada despliegue. Guardar ahí las credenciales significaría perderlas en el siguiente
+// POR QUÉ UN ARCHIVO Y NO UNA TABLA. La base SQLite de este proyecto es EFÍMERA: en producción
+// no sobrevive al despliegue, así que se recrea y se resiembra desde los seeds en cada
+// despliegue (la línea `[db]` del arranque dice dónde vive y si se sembró). Guardar ahí las credenciales significaría perderlas en el siguiente
 // deploy. Los usuarios viven, como ya vivía la contraseña compartida, en AUTH_STATE_DIR,
 // que sí es un volumen persistente. Si algún día el catálogo pasa a una base persistente,
 // éste es el módulo que se reemplaza, y sólo éste.

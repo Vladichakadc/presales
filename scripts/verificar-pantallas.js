@@ -12,8 +12,8 @@
 // de una plantilla de JS (que la CSP bloquea solo en el navegador), un gateway filtrado por
 // su capacidad de hardware. Las tres arrancan el servidor sin un solo error en el log.
 //
-// POR QUE CORRE EN EL EJECUTOR Y NO CONTRA UN SITIO DESPLEGADO. `DATABASE_PATH` va sin
-// definir en produccion, asi que la base es efimera y se resiembra desde
+// POR QUE CORRE EN EL EJECUTOR Y NO CONTRA UN SITIO DESPLEGADO. La base de produccion es
+// efimera (no sobrevive al despliegue: lo dice la linea `[db]` del arranque) y se resiembra desde
 // `server/seed/legacyData/` en CADA despliegue: lo que pinta una pantalla es funcion del
 // commit, no del entorno. Un arranque de este mismo commit en el ejecutor de Actions —que
 // `verificar.yml` ya hace— renderiza exactamente los mismos datos que produccion. Montar un

@@ -1537,22 +1537,16 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
 Salió al confirmar el despliegue de `ab1b8c0`, leyendo el log de construcción de `60579d25`, y al
 leer la configuración en vivo del servicio. Lo cerrado ese mismo día está en *Cerrado
 recientemente*: el runtime (Node 20 sin soporte, el `nixpacks.toml` que nadie leía), `npm audit` y
-`npm install` en lugar de `npm ci`. Queda esto:
+`npm install` en lugar de `npm ci`; el healthcheck, unas horas después. Queda esto:
 
-- **El servicio no tiene `healthcheckPath`, y `CLAUDE.md` decía que sí.** Leído con
-  `describe-service` y con `get-service-config`: en `deploy` no figura ningún healthcheck. `/salud`
-  existe y responde 503 si la base está vacía, pero Railway no lo consulta. Un contenedor que
-  arranca y después no sirve **sí** sustituye al que funcionaba; lo único que protege es que la
-  construcción falle antes. `CLAUDE.md` ya lo dice como es. El conector permite fijarlo
-  (`update-service` con `healthcheckPath`), pero es otro cambio de producción y nadie lo ha
-  aprobado. **Y con un volumen montado, como este (`/data`), no da lo que suele prometer**: según
-  la documentación de Railway, dos despliegues no pueden montar el mismo volumen, así que cada
-  despliegue tiene una caída breve aunque haya healthcheck y el anterior no sigue sirviendo. Lo
-  que sí daría es marcar FAILED un despliegue que no responda 2xx en el plazo.
-- **`DATABASE_PATH` figura entre las variables del servicio, y `CLAUDE.md` dice que no está
+- **`DATABASE_PATH` figura entre las variables del servicio, y `CLAUDE.md` decía que no estaba
   definida.** La siembra corre en cada despliegue (`[seed] Catalogo inicial poblado`), así que la
   base sigue comportándose como efímera. No se leyó el valor a propósito: el listado de variables
-  trae también los secretos. Lo comprueba el dueño en el panel.
+  trae también los secretos. **Desde el 2026-10-02 el arranque lo dice sin leer ningún secreto**:
+  la línea `[db] SQLite en <ruta>` da la ruta y si el catálogo se sembró o se reutilizó, y en
+  producción un catálogo reutilizado avisa, porque significa que los cambios de `legacyData/` de
+  ese despliegue no llegaron. `CLAUDE.md` ya no afirma que la variable falte. Se cierra al leer la
+  línea en el primer despliegue con ella.
 
 ## Abierto: pasar los jobs de navegador a Ubuntu 26 (2026-10-02)
 
@@ -1647,6 +1641,23 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Railway consulta `/salud` antes de dar por bueno un despliegue (2026-10-02)
+
+- **El hueco.** La configuración en vivo del servicio no tenía `healthcheckPath`, aunque
+  `CLAUDE.md` afirmaba que sí. Un contenedor que arrancaba y después no servía podía sustituir al
+  que funcionaba: lo único que protegía era que la construcción fallara antes.
+- **El cambio.** `healthcheckPath: /salud` en los ajustes del servicio, con el conector de Railway
+  y el encargo del dueño de ejecutar los pendientes. No vive en el repositorio, porque no hay
+  `railway.json`. `/salud` es pública y responde 503 si el catálogo no se sembró.
+- **Comprobado.** El primer despliegue con él, `826c65fc` (`0e070ab`), lo pasó. Su log de
+  construcción dice «Path: /salud» y «[1/1] Healthcheck succeeded!», y `get-service-config` lo
+  muestra en `deploy`.
+- **Lo que no da.** Con el volumen montado en `/data`, según la documentación de Railway, dos
+  despliegues no pueden montar el mismo volumen, así que cada despliegue sigue teniendo una caída
+  breve. Lo que sí da es marcar FAILED un despliegue que no responda 2xx en el plazo, y un
+  despliegue FAILED hace saltar el aviso de la sonda. Un healthcheck fallido de verdad no se ha
+  visto todavía.
 
 ### La auditoría de prompts y el `/init`, aplicados (2026-10-02)
 
