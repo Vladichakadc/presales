@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-02 (**Railway instala con `npm ci`.** Es la mejora propuesta al cerrar la entrega anterior. Con `npm install`, un lock descuadrado se resolvía dentro del contenedor con versiones que CI no había probado; ahora la construcción falla y producción sigue con lo anterior. Lo hace la variable de servicio `RAILPACK_INSTALL_CMD`, según la documentación de Railway, y lo confirma el log de construcción (`▸ install $ npm ci`). **Al leer la configuración en vivo salió algo que `CLAUDE.md` afirmaba al revés**: el servicio no tiene `healthcheckPath`. Ver *Cerrado recientemente* y *Abierto: cómo construye Railway producción*.)
+Última revisión: 2026-10-02 (**Railway instala con `npm ci`.** Es la mejora propuesta al cerrar la entrega anterior. Con `npm install`, un lock descuadrado se resolvía dentro del contenedor con versiones que CI no había probado; ahora la construcción falla y producción sigue con lo anterior. Lo hace la variable de servicio `RAILPACK_INSTALL_CMD`, según la documentación de Railway, y lo confirma el log de construcción (`▸ install $ npm ci`). **Al leer la configuración en vivo salió algo que `CLAUDE.md` afirmaba al revés**: el servicio no tiene `healthcheckPath`. **Y al cerrar se midió que Railway avisa a GitHub de cada despliegue y que nada escucha ese aviso**: 10 despliegues fallidos sin que nadie se enterara. Ver *Cerrado recientemente* y *Abierto: cómo construye Railway producción*.)
 
 Revisión anterior: 2026-10-02 (**`npm audit` en cero y convertido en freno.** Es la mejora propuesta al cerrar la entrega anterior. El paso de `verificar` era informativo y convivían 2 avisos altos y 2 moderados, todos con arreglo. `npm audit fix` los cerró tocando solo el lock (7 paquetes cambian y 3 salen). `npm run auditar` falla cerrado: un aviso alto frena salvo excepción declarada con caducidad, y no poder auditar también frena. Sobre el lock de antes frena con los 3 avisos altos. Ver *Cerrado recientemente*.)
 
@@ -1541,11 +1541,33 @@ recientemente*: el runtime (Node 20 sin soporte, el `nixpacks.toml` que nadie le
   arranca y después no sirve **sí** sustituye al que funcionaba; lo único que protege es que la
   construcción falle antes. `CLAUDE.md` ya lo dice como es. El conector permite fijarlo
   (`update-service` con `healthcheckPath`), pero es otro cambio de producción y nadie lo ha
-  aprobado.
+  aprobado. **Y con un volumen montado, como este (`/data`), no da lo que suele prometer**: según
+  la documentación de Railway, dos despliegues no pueden montar el mismo volumen, así que cada
+  despliegue tiene una caída breve aunque haya healthcheck y el anterior no sigue sirviendo. Lo
+  que sí daría es marcar FAILED un despliegue que no responda 2xx en el plazo.
 - **`DATABASE_PATH` figura entre las variables del servicio, y `CLAUDE.md` dice que no está
   definida.** La siembra corre en cada despliegue (`[seed] Catalogo inicial poblado`), así que la
   base sigue comportándose como efímera. No se leyó el valor a propósito: el listado de variables
   trae también los secretos. Lo comprueba el dueño en el panel.
+- **Railway avisa a GitHub de cada despliegue, y nada escucha ese aviso (medido el 2026-10-02).**
+  Por cada despliegue, `railway-app[bot]` crea en GitHub un *deployment* «Presales / production»
+  con su estado: `in_progress`, `success`, `failure` o `inactive`. De los 246 que hay desde el 19
+  de agosto, **10 terminaron en `failure`, y ninguno avisó a nadie**:
+  - el del 1 de septiembre (`187a4dd`, el lock descuadrado) dejó producción sin cambios unas 23
+    horas;
+  - los ocho seguidos del 16 de septiembre (de `b4e8c4e` a `8fb58a8`, el lock contra un espejo)
+    la dejaron unas 13.
+
+  Con `npm ci`, un lock roto hace fallar la construcción y producción sigue con lo anterior. Es lo
+  correcto, pero pasa **en silencio**. Y la sonda solo corre a mano, así que un despliegue que no
+  viene de un push no lo comprueba nadie. Así fue el de `RAILPACK_INSTALL_CMD`.
+- **Nada impide que el lock resuelva contra otro registro.** Fue la causa del 16 de septiembre.
+  `package-lock.json` traía cuatro paquetes con `resolved` en `npm.mirrors.msh.team`, el espejo
+  del entorno donde se añadieron. Se corrigió a mano el 17 y no quedó ninguna prueba. Hoy los 366
+  `resolved` apuntan a `registry.npmjs.org` y llevan `integrity`. Con `npm ci`, el lock decide qué
+  se instala en producción. Un espejo alcanzable pasaría todas las comprobaciones, con las
+  `integrity` de **sus** paquetes. Lo cierra una prueba en `npm run verificar` que exija
+  `https://registry.npmjs.org/` e `integrity` en cada entrada.
 
 ## Abierto: pasar los jobs de navegador a Ubuntu 26 (2026-10-02)
 
