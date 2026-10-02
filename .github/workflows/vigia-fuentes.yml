@@ -134,46 +134,16 @@ jobs:
       # de larga vida con escritura sobre main: peor, y la misma forma que este repositorio ya
       # rechazo al descartar el entorno de staging.
       #
-      # Se hace `git add` ANTES de comprobar si hay cambios: `git diff` no ve un archivo sin
-      # seguimiento, asi que en la primera corrida -justo cuando el lock todavia no existe y es
-      # cuando mas importa guardarlo- habria dicho "sin cambios" y no habria guardado nada.
-      #
-      # LA LEASE LLEVA EL VALOR ESPERADO. Una sola rama reutilizada, reconstruida cada semana
-      # sobre main, y se sobrescribe solo si su cabeza es un commit del propio vigia: si una
-      # persona empujo encima, no se pisa (el aviso lo dice y lo medido queda en el artefacto).
-      # Sin rama remota, la lease vacia exige que siga sin existir.
+      # El push, el que fallaba con «stale info», vive ahora en scripts/empujar-rama.js,
+      # compartido con aplicar-propuesta y datasheets-aruba: hace `git add` antes de mirar si
+      # hay cambios (un archivo sin seguimiento no sale en `git diff`), reconstruye la rama
+      # sobre main, la empuja con la lease que espera la cabeza actual y no pisa un commit que
+      # no sea del bot. Deja `estado` (empujada, sin-cambios, retenida o fallida).
       - name: Guardar lo medido en una rama
         id: guardar
         if: ${{ steps.validar.outcome == 'success' }}
         run: |
-          git add -- server/seed/legacyData/fuentes.lock.json
-          if git diff --cached --quiet -- server/seed/legacyData/fuentes.lock.json; then
-            echo 'El lock no cambió; no hay nada que guardar.'
-            echo 'estado=sin-cambios' >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git checkout -B vigia/fuentes
-          git commit -q -m 'vigia: actualiza el hash de las fuentes medidas'
-          esperado=''
-          if git fetch -q --depth=1 origin '+refs/heads/vigia/fuentes:refs/remotes/origin/vigia/fuentes' 2>/dev/null; then
-            autor="$(git log -1 --format=%ae refs/remotes/origin/vigia/fuentes)"
-            if [ "$autor" != 'github-actions[bot]@users.noreply.github.com' ]; then
-              echo '::warning::La rama vigia/fuentes tiene encima un commit que no es del vigía: no se pisa.'
-              echo "Autor de ese commit: $autor"
-              echo 'estado=retenida' >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-            esperado="$(git rev-parse refs/remotes/origin/vigia/fuentes)"
-          fi
-          if ! git push -q --force-with-lease="vigia/fuentes:$esperado" origin vigia/fuentes; then
-            echo 'estado=fallida' >> "$GITHUB_OUTPUT"
-            echo '::error::No se pudo empujar la rama vigia/fuentes. El issue se escribe igual.'
-            exit 1
-          fi
-          echo 'Lo medido está en la rama vigia/fuentes.'
-          echo 'estado=empujada' >> "$GITHUB_OUTPUT"
+          node scripts/empujar-rama.js --rama vigia/fuentes --mensaje 'vigia: actualiza el hash de las fuentes medidas' -- server/seed/legacyData/fuentes.lock.json
 
       # El PR no se crea desde aqui: el ajuste que lo permitiria tambien deja a Actions aprobar
       # PR. Se busca el que haya abierto una persona y, si no hay, se da el enlace para abrirlo.

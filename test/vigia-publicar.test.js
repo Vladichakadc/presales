@@ -1,10 +1,10 @@
 'use strict';
 // La vigía en dos jobs (2026-10-02): `medir` no tiene permisos y `publicar` no ejecuta nada de
 // fuera, y valida lo que `medir` le pasa antes de copiarlo al repositorio. Estas pruebas fijan
-// tres cosas: que la validación ACEPTA todo lo que la corrida de verdad produce (si no, la
-// vigía se pondría en rojo sola, que es justo lo que le pasó tres semanas), que RECHAZA lo que
-// solo una corrida manipulada produciría, y que la separación de permisos no se deshace sin
-// que una prueba lo diga.
+// dos cosas: que la validación ACEPTA todo lo que la corrida de verdad produce (si no, la
+// vigía se pondría en rojo sola, que es justo lo que le pasó tres semanas), y que RECHAZA lo
+// que solo una corrida manipulada produciría. La separación de permisos de los workflows la
+// guarda `test/workflows-permisos.test.js`.
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -218,40 +218,4 @@ test('--resumen cuenta la misma corrida que el JSON, sin volver a la red', () =>
   const r = spawnSync(process.execPath, [path.join(RAIZ, 'scripts/vigia-fuentes.js'), '--resumen', path.join(dir, 'vigia.json')], { encoding: 'utf8' });
   assert.strictEqual(r.status, 0, r.stderr);
   assert.match(r.stdout, /0 cambio\(s\), 2 primera\(s\) medición\(es\), 0 inalcanzable\(s\)\./);
-});
-
-test('lo que corre en los dos jobs no necesita paquetes de npm: ninguno los instala', () => {
-  const internos = new Set(require('module').builtinModules);
-  for (const archivo of ['scripts/vigia-fuentes.js', 'scripts/vigia-publicar.js', 'server/seed/legacyData/fuentes.js', 'test/e2e/limites-reglas.js']) {
-    const fuente = fs.readFileSync(path.join(RAIZ, archivo), 'utf8');
-    for (const [, m] of fuente.matchAll(/require\(\s*['"]([^'"]+)['"]\s*\)/g)) {
-      assert.ok(m.startsWith('.') || internos.has(m.replace(/^node:/, '')), `${archivo} requiere «${m}», que el job no tiene instalado`);
-    }
-  }
-});
-
-test('la separación de permisos no se deshace sin que esta prueba lo diga', () => {
-  // Cada job, por su texto: el que ejecuta código de fuera no tiene permisos de escritura ni
-  // guarda el token, y el que los tiene no instala nada.
-  const jobs = (yml) => {
-    // Sin comentarios: «Sin `npm ci` a propósito» no es instalar nada.
-    const texto = fs.readFileSync(path.join(RAIZ, '.github/workflows', yml), 'utf8').replace(/^\s*#.*\n/gm, '');
-    const cab = texto.slice(0, texto.indexOf('\njobs:'));
-    const out = { cab };
-    const partes = texto.slice(texto.indexOf('\njobs:')).split(/\n {2}(?=[a-z][\w-]*:\n)/);
-    for (const p of partes.slice(1)) out[p.slice(0, p.indexOf(':'))] = p;
-    return out;
-  };
-  const instala = /npm (?:ci|install)|npx /;
-  const v = jobs('vigia-fuentes.yml');
-  assert.match(v.cab, /permissions:\n {2}contents: read\n/);
-  assert.ok(!/: write/.test(v.medir) && /persist-credentials: false/.test(v.medir) && !instala.test(v.medir), 'medir: sin escritura, sin token guardado y sin instalar');
-  assert.ok(/contents: write/.test(v.publicar) && !instala.test(v.publicar), 'publicar: con permisos y sin instalar nada');
-  assert.match(v.publicar, /path: \$\{\{ runner\.temp \}\}\/vigia/, 'el artefacto se baja fuera del repositorio');
-  // El job y su paso del issue corren aunque algo falle: un rojo que no llega al issue no avisa.
-  assert.ok((v.publicar.match(/if: \$\{\{ !cancelled\(\) \}\}/g) || []).length >= 2, 'publicar escribe en el issue aunque falle la medición');
-  const l = jobs('limites.yml');
-  assert.match(l.cab, /permissions:\n {2}contents: read\n/);
-  assert.ok(!/: write/.test(l.recorrer) && /persist-credentials: false/.test(l.recorrer), 'recorrer: sin escritura');
-  assert.ok(/issues: write/.test(l.informar) && !instala.test(l.informar), 'informar: con permisos y sin instalar nada');
 });

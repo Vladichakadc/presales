@@ -26,7 +26,7 @@ en la base de producción no persiste** — el cambio se perdería en el siguien
 | **Analizar** (`POST /api/sync/analyze`) | Lee el catálogo vigente + el documento y llama a la IA. Devuelve una lista de cambios. **No escribe nada.** | Sí | Sí |
 | **Aplicar a base local** (`POST /api/sync/apply`) | Escribe los cambios en la base SQLite. Solo para iterar en local. | **No** (503) | Sí |
 | **Descargar propuesta** (cliente) | Serializa los cambios al JSON que consume el importador. | Sí | Sí |
-| **Aplicar de verdad** (`aplicar-propuesta.yml`) | Aplica la propuesta sobre `legacyData/` con anclaje y abre un PR. | — (corre en Actions) | — |
+| **Aplicar de verdad** (`aplicar-propuesta.yml`) | Aplica la propuesta sobre `legacyData/` con anclaje y la deja en una rama con el enlace para abrir el PR. | — (corre en Actions) | — |
 
 Analizar es seguro en producción y además es lo correcto: como la base es lo que se sembró
 desde `legacyData/`, analizarla es analizar exactamente lo que se está sirviendo. Y falla
@@ -42,9 +42,9 @@ tenerla.
    │ Analizar (IA)        │              │ aplicar-propuesta.yml         │
    │  ↓ cambios           │  descargar   │  1. importar-propuesta --aplicar (con anclaje)
    │ Descargar propuesta ─┼──JSON──────► │  2. npm run verificar         │
-   └──────────────────────┘   pegas el   │  3. abre PR sobre legacyData/ │
+   └──────────────────────┘   pegas el   │  3. rama propuesta/… + enlace │
                                JSON       └───────────────┬───────────────┘
-                                                          │  revisas el diff
+                                                          │  abres el PR y revisas el diff
                                                           ▼
                                                     merge → deploy
 ```
@@ -54,8 +54,26 @@ tenerla.
 2. **Descargar propuesta**: baja un `propuesta-<fabricante>-<fecha>.json`.
 3. En GitHub → **Actions → aplicar-propuesta → Run workflow**, y pega el contenido del JSON.
    (Se puede hacer desde la app de GitHub en el móvil.)
-4. El workflow aplica **solo lo que ancla**, corre `npm run verificar`, y si todo pasa **abre
-   un PR**. Revisas el diff y lo fusionas; Railway despliega desde `main`.
+4. El workflow aplica **solo lo que ancla**, corre `npm run verificar` y, si todo pasa, deja el
+   cambio en la rama `propuesta/<fabricante>-<corrida>`. **El resumen de la corrida trae el
+   enlace para abrir el PR**: lo abres, revisas el diff y lo fusionas; Railway despliega desde
+   `main`.
+
+   El PR no lo abre Actions porque en este repositorio GitHub no lo permite («GitHub Actions is
+   not permitted to create or approve pull requests»), y el ajuste que lo permitiría también deja
+   a Actions *aprobar* PR. Hasta el 2026-10-02 el workflow intentaba crearlo, y habría fallado la
+   primera vez que alguien lo usara: no se había ejecutado nunca, y `datasheets-aruba.yml` ya
+   había fallado así.
+
+   **Corre en dos jobs.** `aplicar` instala dependencias, aplica y verifica sin permiso de
+   escritura, y deja el diff como parche. `publicar` tiene el permiso y no instala nada: vuelve a
+   aplicar la propuesta con el importador, exige que el resultado sea byte a byte el parche que
+   pasó `npm run verificar`, y empuja la rama (`scripts/empujar-rama.js`). Lo que llega a la rama
+   lo escribe siempre código del repositorio: los archivos de `legacyData/` son módulos que el
+   servidor ejecuta, y aplicar el parche del otro job dejaría que un paquete de npm comprometido
+   colara una línea de código donde el importador solo cambia un valor. Tampoco puede leer el
+   token, que vive en el otro job. El fabricante de la propuesta se comprueba al principio de
+   cada job (`scripts/leer-propuesta.js`): tiene que ser uno de los que conoce el importador.
 
 El token con permiso de escritura al repositorio vive **en Actions**, nunca en el servicio
 desplegado — que es el que sirve los precios detrás del muro de acceso. Enviar ese token al
@@ -79,7 +97,7 @@ valor que va a sustituir, mucho menos.
   una cadena de confianza: se guarda como texto, nunca como código.
 
 Y `npm run verificar` dentro del workflow es el segundo muro: si la escritura dejara un archivo
-inválido, las pruebas no pasan y el PR no se abre.
+inválido, las pruebas no pasan y no se publica ninguna rama.
 
 ## Cargar la fuente oficial sin IA (por fabricante)
 

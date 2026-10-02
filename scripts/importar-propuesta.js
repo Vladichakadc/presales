@@ -212,4 +212,4 @@ reportan pero nunca se escriben solas.`);
   aplicar(entrada);
 }
 
-module.exports = { anclar, mismoValor, escribirCampo, literalJs };
+module.exports = { ARCHIVOS, anclar, mismoValor, escribirCampo, literalJs };

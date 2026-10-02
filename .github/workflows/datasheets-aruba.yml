@@ -1,19 +1,28 @@
 name: datasheets-aruba
 
-# Baja los PDF de datasheet de HPE Aruba y abre un PR con ellos (pendiente 3).
+# Baja los PDF de datasheet de HPE Aruba y los deja en una rama para revisarlos (pendiente 3).
 #
 # POR QUE EN UN WORKFLOW Y NO A MANO
-# `public/datasheets/` va vacio porque el entorno donde se edita este repositorio tiene
-# bloqueados los dominios de HPE por politica de egreso. La corrida del vigia del 2 de
-# septiembre de 2026 demostro que los ejecutores de GitHub SI los alcanzan (las seis fuentes
-# se leyeron sin un solo 403), asi que la descarga se puede hacer aqui.
+# El entorno donde se edita este repositorio tiene bloqueados los dominios de HPE por politica
+# de egreso. La corrida del vigia del 2 de septiembre de 2026 demostro que los ejecutores de
+# GitHub SI los alcanzan, asi que la descarga se puede hacer aqui.
 #
-# POR QUE UN PR Y NO UN COMMIT DIRECTO
+# POR QUE UNA RAMA Y NO UN COMMIT DIRECTO
 # `public/datasheets/LEEME.md` avisa de que commitear estos PDF engorda el repositorio de
 # forma permanente, y que conviene mirar el tamano total antes. Esa es una decision del dueno
-# del repo, no del workflow: se deja el PR preparado con el peso medido en la descripcion y
-# se merge o no. Lo que si es cierto es que sin commitearlos produccion no los sirve, porque
+# del repo, no del workflow: se deja la rama preparada con el peso medido en el resumen y se
+# fusiona o no. Lo que si es cierto es que sin commitearlos produccion no los sirve, porque
 # el contenedor de Railway se reconstruye desde git en cada despliegue.
+#
+# DOS JOBS (2026-10-02), por lo mismo que la vigia de fuentes. `descargar` baja de HPE sin
+# permiso de escritura y sin guardar el token, y deja como artefacto solo los PDF nuevos o
+# cambiados. `publicar` tiene el permiso y no ejecuta nada de fuera: comprueba que cada archivo
+# este en el manifiesto DATASHEETS, empiece por la firma %PDF- y no pase de 30 MB
+# (scripts/publicar-datasheets.js), y empuja la rama datasheets/aruba (scripts/empujar-rama.js).
+#
+# EL PR NO LO ABRE ACTIONS. La corrida del 2026-09-02 bajo los PDF y fallo en «Abrir el PR»:
+# en este repositorio GitHub no deja que Actions cree PR, y el ajuste que lo permitiria tambien
+# le deja aprobarlos. El resumen de la corrida trae el enlace para abrirlo.
 #
 # Manual a proposito: no tiene schedule. Los datasheets no cambian cada semana, y el vigia ya
 # avisa cuando la pagina de HPE cambia.
@@ -27,57 +36,110 @@ on:
         default: false
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   descargar:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    outputs:
+      hay: ${{ steps.nuevos.outputs.hay }}
 
     steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      # Sin `npm ci`: el descargador solo usa modulos de Node y el manifiesto de aruba.js.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      # El script comprueba la firma %PDF del contenido y reporta aparte las URL que devuelven
+      # una pagina de aterrizaje. Informativo a proposito: una URL que falla se cuenta en el
+      # resumen y no tumba la corrida; lo que si se bajo se publica igual.
+      - name: Descargar los datasheets
+        env:
+          FORZAR: ${{ inputs.force && '--force' || '' }}
+        run: |
+          rc=0
+          node scripts/descargar-datasheets.js $FORZAR > descarga.txt 2>&1 || rc=$?
+          cat descarga.txt
+          echo "Codigo de salida del descargador: $rc"
+
+      - name: Separar lo nuevo o cambiado
+        id: nuevos
+        run: |
+          mkdir -p nuevos
+          git ls-files --others --modified --exclude-standard -- 'public/datasheets/*.pdf' | while read -r f; do cp "$f" nuevos/; done
+          n="$(find nuevos -type f | wc -l)"
+          if [ "$n" -gt 0 ]; then echo 'hay=1' >> "$GITHUB_OUTPUT"; else echo 'hay=0' >> "$GITHUB_OUTPUT"; fi
+          {
+            echo '## Datasheets de Aruba'
+            echo ''
+            echo "$n PDF nuevo(s) o cambiado(s) respecto a main."
+            echo ''
+            echo '```'
+            tail -n 40 descarga.txt | tr '`' "'"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Guardar lo descargado para el job que publica
+        if: steps.nuevos.outputs.hay == '1'
+        uses: actions/upload-artifact@v4
+        with:
+          name: datasheets
+          path: nuevos/
+          if-no-files-found: error
+
+  publicar:
+    needs: descargar
+    if: ${{ needs.descargar.outputs.hay == '1' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
+    steps:
+      # Con credenciales: este job empuja la rama. Nada de lo que corre aqui viene de fuera.
       - uses: actions/checkout@v5
 
       - uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: npm
 
-      - name: Instalar dependencias
-        run: npm ci
-
-      # El script comprueba la firma %PDF del contenido y reporta aparte las URL que
-      # devuelven una pagina de aterrizaje, en vez de guardar un HTML con extension .pdf.
-      - name: Descargar los datasheets
-        id: bajar
-        run: |
-          node scripts/descargar-datasheets.js ${{ inputs.force && '--force' || '' }} | tee descarga.txt
-          echo "peso=$(du -sh public/datasheets | cut -f1)" >> "$GITHUB_OUTPUT"
-          echo "cuantos=$(find public/datasheets -name '*.pdf' | wc -l)" >> "$GITHUB_OUTPUT"
-
-      - name: Abrir el PR
-        uses: peter-evans/create-pull-request@v7
+      # Fuera del repositorio: el artefacto no puede caer sobre un archivo del checkout.
+      - name: Bajar lo descargado
+        uses: actions/download-artifact@v4
         with:
-          branch: datasheets/aruba
-          title: 'Datasheets de Aruba descargados (pendiente 3)'
-          commit-message: 'Anade los PDF de datasheet de HPE Aruba'
-          add-paths: public/datasheets
-          body: |
-            Cierra el **pendiente 3**: `public/datasheets/` iba vacío porque los dominios de
-            HPE están bloqueados por la política de egreso del entorno donde se edita este
-            repositorio. Los ejecutores de GitHub sí los alcanzan.
+          name: datasheets
+          path: ${{ runner.temp }}/datasheets
 
-            - **${{ steps.bajar.outputs.cuantos }} PDF**, **${{ steps.bajar.outputs.peso }}** en total.
+      - name: Validar y copiar los PDF
+        id: validar
+        run: node scripts/publicar-datasheets.js "$RUNNER_TEMP/datasheets"
 
-            Antes de mergear, lo que avisa `public/datasheets/LEEME.md`: estos documentos
-            engordan el repositorio de forma permanente. La contrapartida es que **sin
-            commitearlos producción no los sirve**, porque el contenedor de Railway se
-            reconstruye desde git en cada despliegue; mientras no estén, la página enlaza la
-            URL de HPE y la herramienta funciona igual.
+      - name: Guardar en una rama
+        id: guardar
+        run: node scripts/empujar-rama.js --rama datasheets/aruba --mensaje 'Añade los PDF de datasheet de HPE Aruba' -- public/datasheets
 
-            La lista de documentos sale de `DATASHEETS` en `server/seed/legacyData/aruba.js`,
-            la misma fuente que consume la aplicación: no hay un segundo listado que se
-            desincronice.
-
-            ---
-            _Generado por [Claude Code](https://claude.ai/code)_
+      - name: Enlazar el PR
+        if: ${{ !cancelled() && steps.guardar.outcome != 'skipped' }}
+        env:
+          ESTADO: ${{ steps.guardar.outputs.estado }}
+          CUANTOS: ${{ steps.validar.outputs.cuantos }}
+          PESO: ${{ steps.validar.outputs.peso }}
+        run: |
+          {
+            echo '## Datasheets de Aruba: publicación'
+            echo ''
+            echo "$CUANTOS PDF validados, $PESO."
+            case "$ESTADO" in
+              empujada)
+                echo "Están en la rama \`datasheets/aruba\`: [abrir el PR]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/compare/main...datasheets/aruba?expand=1)."
+                echo 'Antes de fusionar, lo que avisa public/datasheets/LEEME.md: estos documentos engordan el repositorio para siempre.' ;;
+              retenida) echo 'La rama datasheets/aruba tiene encima un commit que no es del bot y no se pisó.' ;;
+              sin-cambios) echo 'Los PDF validados coinciden con los de main: no hay nada que guardar.' ;;
+              *) echo "No se pudo empujar la rama (estado: ${ESTADO:-desconocido}). El motivo está en el paso anterior." ;;
+            esac
+          } >> "$GITHUB_STEP_SUMMARY"

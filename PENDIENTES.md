@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-02 (**La vigía de fuentes, en dos jobs con permisos separados, y en verde después de tres semanas sin avisar.** Es la mejora propuesta al cerrar la entrega anterior. Al ejecutarla se midió que la vigía llevaba dos corridas en rojo, la del 21 y la del 28 de septiembre: GitHub no deja que Actions cree el PR del lock, y el push de la rama se rechazaba. Como el job se cortaba ahí, el issue no se actualizaba. Ahora `medir` no tiene permisos ni instala nada, y `publicar` valida lo medido antes de copiarlo, empuja la rama con la lease bien puesta y enlaza el PR en el issue. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-02 (**Los otros dos workflows que escriben en el repositorio, con el mismo arreglo que la vigía.** Es la mejora propuesta al cerrar la entrega anterior. `aplicar-propuesta.yml`, la vía documentada para llevar al catálogo lo que propone la IA, no se había ejecutado nunca y habría fallado la primera vez al crear el PR. `datasheets-aruba.yml` ya había fallado así. Ahora los dos corren en dos jobs con permisos separados, el que escribe valida lo que recibe, y las tres ramas de bot se empujan con un solo script probado contra un remoto git real. De paso se cerró un comando de shell que llevaba dentro el fabricante de la propuesta, un texto que viene de la IA. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-02 (**La vigía de fuentes, en dos jobs con permisos separados, y en verde después de tres semanas sin avisar.** Es la mejora propuesta al cerrar la entrega anterior. Al ejecutarla se midió que la vigía llevaba dos corridas en rojo, la del 21 y la del 28 de septiembre: GitHub no deja que Actions cree el PR del lock, y el push de la rama se rechazaba. Como el job se cortaba ahí, el issue no se actualizaba. Ahora `medir` no tiene permisos ni instala nada, y `publicar` valida lo medido antes de copiarlo, empuja la rama con la lease bien puesta y enlaza el PR en el issue. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-02 (**El recorrido de valores límite pasa a ser una comprobación semanal, y su primera corrida encontró un error real.** Es la mejora propuesta al cerrar la entrega anterior, aprobada por el dueño. `npm run limites` recorre los nueve dimensionadores con valores límite en cada control y cada modo, y `limites.yml` lo corre los miércoles y lleva los hallazgos a un issue sin frenar despliegues. Sobre `main` encontró «Puertos undefined × undefinedGE» en la ficha de los 17 FortiGate con puertos estructurados, en producción desde la etapa 7: corregido en `ficha.js`, con la prueba que pasaba en falso endurecida. Ver *Cerrado recientemente*.)
 
@@ -617,17 +619,8 @@ a producción. El plan completo, con el diagnóstico y la evidencia de cada hall
 | 2 | `FUENTES` por fabricante, `npm run catalogo`, importador de propuestas de la IA, salida estructurada, importador Huawei | **hecha** |
 | 3 | Vigía de fuentes semanal fuera del proxy de egreso | **hecha** |
 
-**Abierto (2026-10-02): dos workflows más intentan crear un PR desde Actions, y GitHub no lo
-permite en este repositorio.** Salió al arreglar la vigía, que fallaba por lo mismo.
-
-- **`datasheets-aruba.yml`.** Su última corrida (`33670075726`, 2026-09-02) bajó los datasheets y
-  falló en el paso «Abrir el PR» (`peter-evans/create-pull-request@v7`).
-- **`aplicar-propuesta.yml`.** Es la vía documentada en `docs/sincronizacion.md` para llevar a
-  `legacyData/` lo que propone la sincronización con IA, y llama a `github.rest.pulls.create`. No
-  se ha ejecutado nunca, así que fallará igual la primera vez que alguien la use.
-- **El arreglo es el de la vigía**: empujar la rama y dejar el enlace para abrir el PR en el resumen
-  de la corrida. El ajuste «Allow GitHub Actions to create and approve pull requests» conviene
-  dejarlo apagado, porque encendido también deja a Actions aprobar PR.
+**Cerrado el 2026-10-02: los dos workflows que intentaban crear un PR desde Actions ya no lo
+hacen** (`datasheets-aruba.yml` y `aplicar-propuesta.yml`). Ver *Cerrado recientemente*.
 
 ---
 
@@ -1599,6 +1592,76 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Los otros dos workflows que escriben en el repositorio, con el arreglo de la vigía (2026-10-02)
+
+Mejora propuesta al cerrar la entrega anterior: llevar el arreglo de la vigía a
+`aplicar-propuesta.yml` y `datasheets-aruba.yml`, que chocaban con el mismo ajuste de GitHub.
+
+- **Lo que estaba roto.**
+  - **`datasheets-aruba.yml`:** su última corrida (`33670075726`, 2026-09-02) bajó los PDF y
+    falló en «Abrir el PR».
+  - **`aplicar-propuesta.yml`:** es la vía documentada para llevar a `legacyData/` lo que propone
+    la sincronización con IA, y no se había ejecutado nunca: habría fallado igual la primera vez.
+  - **Los dos** corrían `npm ci` en el mismo job que tenía el token de escritura guardado (en
+    `datasheets-aruba` ni siquiera hacía falta: el descargador solo usa módulos de Node).
+- **Lo que salió al leerlo: un comando de shell con texto de la IA dentro.** `aplicar-propuesta`
+  metía el `vendor` de la propuesta en `git checkout -B propuesta/${vendor}…` y en el mensaje del
+  commit, por `execSync`. La propuesta la genera una IA que pudo leer un documento subido por
+  cualquiera. No era explotable solo porque el importador no aplica nada con un fabricante
+  desconocido, y entonces nunca se llegaba a ese paso: una defensa por casualidad.
+  - Ahora `scripts/leer-propuesta.js` exige al principio un fabricante que conozca el importador.
+  - `git` se llama con argumentos, sin shell.
+- **Un solo script para empujar las tres ramas de bot** (`scripts/empujar-rama.js`), en vez de
+  tres copias.
+  - Empuja con la lease que espera la cabeza actual, o que la rama no exista.
+  - Reconstruye la rama sobre `main`.
+  - No pisa una rama cuyo último commit no sea del bot. Mira el **committer** y no el autor,
+    porque `peter-evans/create-pull-request` firmaba como autor a quien lanzaba el workflow, y
+    así la rama `datasheets/aruba` del 2 de septiembre se reconoce como del bot.
+  - **El bot tiene dos correos, y eso salió de contrastar con la rama real, no de la prueba.**
+    peter-evans firmaba como committer `41898282+github-actions[bot]@…`, y este script firma
+    sin el número. La primera versión solo conocía el suyo, y su prueba de la rama de
+    peter-evans firmaba con ese mismo correo, así que pasaba. Leída la cabeza real de
+    `datasheets/aruba` (`94dddb1`), el script la habría dado por de una persona y no la habría
+    reconstruido nunca. Ahora reconoce los dos, y la prueba firma con el correo numerado.
+- **Dos jobs en cada workflow, como la vigía.**
+  - **`aplicar-propuesta`.** `aplicar` instala dependencias, aplica con anclaje y pasa
+    `npm run verificar` sin permiso de escritura, y deja el diff como parche. `publicar` no
+    instala nada: **vuelve a aplicar la propuesta con el importador** y exige que el resultado sea
+    byte a byte el parche verificado. La primera versión aplicaba ese parche tras validar que solo
+    modificara archivos `.js` de `legacyData/`. La revisión diferencial la cambió antes de
+    empujar: esos archivos son módulos que el servidor ejecuta, así que un `npm ci` comprometido
+    podía colar una línea de código dentro de un archivo permitido. Ahora lo que llega a la rama
+    lo escribe siempre código del repositorio, y eso solo funciona porque el importador es
+    determinista, que es lo que prueba una de las pruebas nuevas.
+  - **`datasheets-aruba`.** `descargar` baja de HPE sin permisos y sin `npm ci`, y deja solo los
+    PDF nuevos o cambiados. `publicar` (`scripts/publicar-datasheets.js`) copia un archivo solo si
+    su nombre está en `DATASHEETS`, empieza por `%PDF-` y no pasa de 30 MB.
+- **El PR lo abre una persona.** El resumen de cada corrida trae el enlace.
+- **Qué lo guarda.**
+  - `test/empujar-rama.test.js`, 6 casos contra un remoto git de verdad, incluido el «stale
+    info» que tumbó la vigía.
+  - `test/artefactos-publicar.test.js`, 4 casos: el fabricante, que el importador da el mismo
+    parche byte a byte en dos copias del repositorio, y los PDF.
+  - `test/workflows-permisos.test.js`, 5 casos que pasan a cubrir los cuatro workflows:
+    - el job que ejecuta código de fuera no tiene escritura;
+    - ninguno intenta crear un PR desde Actions;
+    - lo que corre sin `npm ci` no necesita paquetes, recorriendo todo lo que carga;
+    - el job que publica una propuesta la vuelve a aplicar y compara, y no aplica el parche del
+      otro;
+    - un `run:` de una línea no lleva «: ». Se coló escribiendo estos mismos archivos y el YAML
+      dejó de cargar.
+  - Comprobado saboteando cada regla central:
+    - la lease sin valor esperado reproduce el fallo de la vigía;
+    - mirar el autor rompe la rama de `peter-evans`, y conocer un solo correo del bot también;
+    - volver a aplicar el parche del otro job, el PDF sin firma y el `run:` con «: » caen también.
+- **Simulación de punta a punta en local, sobre datos reales del repositorio.** Una propuesta
+  anclada (un cambio de MikroTik que nunca salió de una carpeta temporal) pasó por los dos jobs:
+  fabricante validado, cambio aplicado, parche de una línea, la misma propuesta aplicada en un
+  checkout limpio y push a un remoto desechable con el bot como committer.
+- **Verificación.** 699 pruebas y lint sin errores (el único aviso es del módulo Starlink
+  canónico, que no se toca).
 
 ### La vigía de fuentes, en dos jobs y otra vez avisando (2026-10-02)
 
