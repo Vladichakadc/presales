@@ -1592,15 +1592,11 @@ que ya se comprobó y lo que cuesta cada opción.
   archivo cambió y el de la auditoría se regeneró como `prompt-audit-2026-09-27.patch`, con el
   mismo contenido (14 archivos, +195/−289). Los dos aplican sobre el `main` que dejó esa entrega,
   solos y combinados.
-- **Abrir y fusionar el PR del lock de la vigía** (2026-10-02). La corrida del 2 de octubre dejó lo
-  medido en la rama `vigia/fuentes`, un solo commit del vigía sobre `main` que solo toca
-  `fuentes.lock.json`: pasa de 9 a 19 entradas y no tiene ningún pendiente. La segunda corrida de
-  ese día, ya con `scripts/empujar-rama.js`, la reconstruyó sobre el `main` nuevo (`540e7f6`). El enlace para abrir el PR
-  está en el issue #5. **Mientras no se fusione, la vigía mide contra el lock del 14 de septiembre**:
-  cada lunes vuelve a dar las mismas diez primeras mediciones y las mismas cinco migraciones a texto,
-  y un documento que cambie no conserva su fecha de pendiente de una semana a otra. El PR no lo abre
-  Actions a propósito: el ajuste que lo permitiría también le deja aprobar PR, y conviene dejarlo
-  apagado.
+- ~~**Abrir y fusionar el PR del lock de la vigía**~~ **Hecho el 2026-10-02**, con el encargo del
+  dueño de ejecutar los pendientes. El lock de `540e7f6` se validó con el mismo `validarLock` que
+  usa el job que publica, y pasa de 9 a 19 entradas sin ningún pendiente. Se copió el archivo en
+  vez de cerrar un PR: el clon de la sesión es superficial y llevarse el commit daba conflictos
+  falsos en 17 archivos. Ver *Cerrado recientemente*.
 - **Revisar y fusionar los PR de Dependabot** (2026-10-02):
   - #1 y #2 (`actions/setup-node` y `actions/checkout`), abiertos desde el 2 de septiembre;
   - #8 (`pdf-parse`), desde el 21;
@@ -1648,6 +1644,26 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### El lock de la vigía, en main (2026-10-02)
+
+Pendiente del dueño, ejecutado con su encargo de ese día.
+
+- **Qué era.** La corrida de la vigía del 2 de octubre dejó lo medido en la rama `vigia/fuentes`
+  (`540e7f6`, un solo commit del bot que solo toca `fuentes.lock.json`). Mientras no llegara a
+  `main`, la vigía seguía midiendo contra el lock del 14 de septiembre.
+- **Validado antes de copiarlo.** Con `validarLock` de `scripts/vigia-publicar.js`, el mismo que
+  usa el job que publica, contra el lock de `main`, que no había cambiado desde la base de la rama:
+  - los cuatro PDF que ya se vigilaban conservan su `hashVerificado`: no cambió ningún documento;
+  - cinco páginas HTML pasan a vigilarse por su texto. Es la única migración que el validador
+    acepta, y abre una línea base nueva;
+  - diez entradas nuevas, la primera medición de las fuentes añadidas el 24 de septiembre;
+  - ningún documento queda pendiente de contrastar.
+- **Cómo.** Se copió el archivo de la rama y no el commit: el clon de la sesión es superficial y
+  git no veía la historia común, así que daba conflictos falsos en 17 archivos (y quería
+  resucitar `nixpacks.toml`). Se abortó sin tocar nada.
+- **El issue #5 se cierra a mano**: la vigía no cierra su issue cuando una corrida sale limpia,
+  solo deja de escribir en él.
 
 ### El lock solo descarga del registro oficial de npm (2026-10-02)
 
