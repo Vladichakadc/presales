@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
 tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-02 (**Los otros dos workflows que escriben en el repositorio, con el mismo arreglo que la vigía.** Es la mejora propuesta al cerrar la entrega anterior. `aplicar-propuesta.yml`, la vía documentada para llevar al catálogo lo que propone la IA, no se había ejecutado nunca y habría fallado la primera vez al crear el PR. `datasheets-aruba.yml` ya había fallado así. Ahora los dos corren en dos jobs con permisos separados, el que escribe valida lo que recibe, y las tres ramas de bot se empujan con un solo script probado contra un remoto git real. De paso se cerró un comando de shell que llevaba dentro el fabricante de la propuesta, un texto que viene de la IA. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-02 (**Los otros dos workflows que escriben en el repositorio, con el mismo arreglo que la vigía.** Es la mejora propuesta al cerrar la entrega anterior. `aplicar-propuesta.yml`, la vía documentada para llevar al catálogo lo que propone la IA, no se había ejecutado nunca y habría fallado la primera vez al crear el PR. `datasheets-aruba.yml` ya había fallado así. Ahora los dos corren en dos jobs con permisos separados, el que escribe valida lo que recibe, y las tres ramas de bot se empujan con un solo script probado contra un remoto git real. De paso se cerró un comando de shell que llevaba dentro el fabricante de la propuesta, un texto que viene de la IA. Ver *Cerrado recientemente*. **Y al confirmar el despliegue, el log de construcción de Railway enseñó algo que no estaba registrado**: producción corre Node 20.20.2, sin soporte desde el 30 de abril de 2026, y `nixpacks.toml` ya no lo lee nadie. Ver *Abierto: cómo construye Railway producción*.)
 
 Revisión anterior: 2026-10-02 (**La vigía de fuentes, en dos jobs con permisos separados, y en verde después de tres semanas sin avisar.** Es la mejora propuesta al cerrar la entrega anterior. Al ejecutarla se midió que la vigía llevaba dos corridas en rojo, la del 21 y la del 28 de septiembre: GitHub no deja que Actions cree el PR del lock, y el push de la rama se rechazaba. Como el job se cortaba ahí, el issue no se actualizaba. Ahora `medir` no tiene permisos ni instala nada, y `publicar` valida lo medido antes de copiarlo, empuja la rama con la lease bien puesta y enlaza el PR en el issue. Ver *Cerrado recientemente*.)
 
@@ -1520,6 +1520,30 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     bloqueado desde el sandbox (2026-09-16); cierra bajando el DS oficial de la
     serie 7000/7200 desde una máquina con acceso y repitiendo este mismo patrón.
 
+## Abierto: cómo construye Railway producción (2026-10-02)
+
+Salió al confirmar el despliegue de `ab1b8c0`, leyendo el log de construcción de `60579d25`.
+Nada de esto estaba registrado.
+
+- **Railway construye con Railpack 0.40.1, no con Nixpacks.** `nixpacks.toml`
+  (`nixPkgs = ["nodejs_20"]`) ya no lo lee nadie: es configuración que parece mandar y no
+  manda. La documentación oficial de Railway confirma que el constructor es Railpack y que se
+  configura por variables o por su propio archivo.
+- **Producción corre Node 20.20.2, sin soporte desde el 30 de abril de 2026.** Railpack lo
+  elige de `engines.node` (`>=20`), y lo dice en el log: `package.json > engines > node
+  (>=20)`. Sin parches de seguridad para el proceso que sirve la lista de precios tras el muro,
+  incluidos su parser HTTP y el `crypto` con el que se firman las sesiones. CI corre la misma
+  versión (`node-version: 20`, 15 veces en los workflows) y las comprobaciones de esta sesión
+  corren en Node 22.22.2.
+- **Railpack instala con `npm install`, no con `npm ci`.** Un `package-lock.json` que no cuadre
+  con `package.json` ya no frena el despliegue, como lo frenó el 1 de septiembre: se resolvería
+  dentro del contenedor, con versiones que CI no probó. `verificar` sí corre `npm ci`, pero
+  Railway no lo espera (punto 33).
+- **Qué lo cierra**: la mejora propuesta al cerrar esta entrega (una sola versión de Node con
+  soporte, declarada donde la leen Railpack y `setup-node`). Sin aplicar; decide el dueño.
+  `railpack.com` da 403 desde este entorno (política de egreso), así que la sintaxis exacta de su
+  archivo de configuración no se leyó aquí.
+
 ## Limpieza
 
 11. **Nada abierto.** Los cuatro puntos que vivían aquí (el sufijo `-v3_1`, el conjunto
@@ -1547,7 +1571,8 @@ que ya se comprobó y lo que cuesta cada opción.
   solos y combinados.
 - **Abrir y fusionar el PR del lock de la vigía** (2026-10-02). La corrida del 2 de octubre dejó lo
   medido en la rama `vigia/fuentes`, un solo commit del vigía sobre `main` que solo toca
-  `fuentes.lock.json`: pasa de 9 a 19 entradas y no tiene ningún pendiente. El enlace para abrir el PR
+  `fuentes.lock.json`: pasa de 9 a 19 entradas y no tiene ningún pendiente. La segunda corrida de
+  ese día, ya con `scripts/empujar-rama.js`, la reconstruyó sobre el `main` nuevo (`540e7f6`). El enlace para abrir el PR
   está en el issue #5. **Mientras no se fusione, la vigía mide contra el lock del 14 de septiembre**:
   cada lunes vuelve a dar las mismas diez primeras mediciones y las mismas cinco migraciones a texto,
   y un documento que cambie no conserva su fecha de pendiente de una semana a otra. El PR no lo abre
@@ -1662,6 +1687,30 @@ Mejora propuesta al cerrar la entrega anterior: llevar el arreglo de la vigía a
   checkout limpio y push a un remoto desechable con el bot como committer.
 - **Verificación.** 699 pruebas y lint sin errores (el único aviso es del módulo Starlink
   canónico, que no se toca).
+- **En producción (2026-10-02).** `ab1b8c0`, Railway `60579d25` en SUCCESS con `[seed]` y
+  `Presales corriendo en`. `verificar` (`36964361699`) y `pantallas` (`36964361635`) en verde.
+  - **La vigía, ya con el script compartido** (`36964407570`), en verde en sus dos jobs, con
+    estado `empujada`. Reconstruyó `vigia/fuentes` de `ac729dc` a `540e7f6`: un solo commit del
+    bot sobre `ab1b8c0`, que solo toca el lock. Es justo el caso que daba «stale info», con la
+    rama ya existente y un checkout que solo trae `main`. El issue #5, comentado con el enlace.
+  - **`aplicar-propuesta`** (`36964403945`), con la propuesta vacía
+    `{"vendor":"aruba","cambios":[]}`. `aplicar` en verde (fabricante leído, «Nada que
+    escribir») y `publicar` saltado, como debe. **No se probó con un cambio real, a propósito**:
+    no hay ninguna corrección pendiente con su documento, y una inventada para probar es el dato
+    falso que este catálogo prohíbe. La mitad que publica la cubren la simulación local y la
+    prueba de determinismo. La primera propuesta real será su primera corrida en GitHub, y si
+    algo no casa falla cerrado, sin publicar nada.
+  - **`datasheets-aruba`** (`36964405685`), sin forzar. `descargar` en verde y `publicar` saltado,
+    porque no había nada nuevo. De los 7 documentos del manifiesto que faltan en `main`, 2 son
+    páginas de aterrizaje (`support.hpe.com`). Los otros 5 no se pudieron bajar ni desde el
+    runner: 4 dieron 403 (`arubanetworking.hpe.com` y `arubanetworks.com`) y `hpe.com` no
+    respondió a tiempo. El descargador salió con 1 y el workflow lo cuenta en el resumen en vez
+    de caerse, a propósito.
+  - **La rama vieja `datasheets/aruba` sigue como la dejó el 2 de septiembre**: un solo PDF
+    (`sd-wan-ordering-guide.pdf`), idéntico al de `main`. La próxima corrida que publique la
+    reconstruirá sin perder nada, y eso es lo que habría impedido el correo del bot sin número.
+  - La sonda (`36965014834`): `/salud` 200 con 7 fabricantes y 228 modelos, `/login` 200 y el
+    muro de acceso 4 de 4.
 
 ### La vigía de fuentes, en dos jobs y otra vez avisando (2026-10-02)
 
