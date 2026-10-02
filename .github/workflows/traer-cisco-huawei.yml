@@ -8,7 +8,11 @@ name: traer-cisco-huawei
 #           ficha, ninguna de las dos se puede declarar buena, y el cotizador no puede tomar
 #           la cifra del dimensionador sin riesgo de propagar una mala.
 #   HUAWEI · los boletines de fin de venta (EOM) del AR651/AR651W y la consulta de ciclo de
-#           vida de Info-Finder. Desde el entorno de edicion `support.huawei.com` e
+#           vida de Info-Finder. Y desde el 2026-10-02, las fichas del NE8000 M8 y F8, cuyas
+#           cifras de capacidad tampoco coinciden entre el cotizador y el dimensionador.
+#   JUNIPER · el datasheet vigente de la linea SRX300 (2026-10-02): el cotizador cita del
+#           SRX340 4,7 Gbps y 733 Mbps y el dimensionador 3 Gbps y 600 Mbps de la matriz de
+#           2020. Las dos son oficiales; hay que leer la tabla entera para decidir cual manda. Desde el entorno de edicion `support.huawei.com` e
 #           `info.support.huawei.com` responden `connect_rejected` del proxy de egreso; aqui se
 #           prueba desde un ejecutor, y si Huawei pide sesion o el CDN lo corta, el informe lo
 #           dice con su codigo en vez de guardarlo.
@@ -66,6 +70,19 @@ jobs:
               ] },
               { archivo: 'huawei-ar610-infofinder.html', tipo: 'html', para: 'HUAWEI', debeContener: 'EOM', urls: [
                 'https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers/ar610-pid-253265923/eom-eofs-and-eos-date',
+              ] },
+              { archivo: 'huawei-ne8000-m8-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+                'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/e9dd06e260b64df683f6221fc8442cbf/M3T1A590N1140253824460255266/NetEngine%208000%20M8%20Universal%20Service%20Router%20Datasheet.pdf',
+              ] },
+              { archivo: 'huawei-ne8000-f8-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+                'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/49184bd3a3c54e4b90f6d73b55ba1558/M3T1A590N1101892422391505075/NetEngine%208000%20F8%20Datasheet.pdf',
+              ] },
+              { archivo: 'huawei-ne8000-f8-ds-universal.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+                'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/e679822234f94651b2c2153c21a6621b/M2T1A669N893162565584830493/NetEngine%208000%20F8%20Universal%20Service%20Router%20Datasheet.pdf',
+              ] },
+              { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
+                'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
+                'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
               ] },
             ];
             const informe = [];
