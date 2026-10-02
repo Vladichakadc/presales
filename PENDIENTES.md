@@ -1618,6 +1618,19 @@ encontró los seis errores del 2026-10-01 en una comprobación del repositorio, 
 - **Verificación.** 675 pruebas y lint; 17/17 pantallas, 8 contrastes y 16/16 baterías e2e contra
   un servidor local en modo producción. El recorrido completo sale sin hallazgos: 9
   dimensionadores, 104 campos, 1.320 acciones.
+- **En producción el 2026-10-02.**
+  - `main` avanzó de `6e0bab6` a `b89d36c`. Railway `71177412` llegó a SUCCESS, con `[seed]` y
+    `Presales corriendo en`.
+  - `verificar` (`36956365398`) y `pantallas` (`36956365345`) quedaron en verde sobre ese commit.
+  - **La primera corrida de `limites.yml`** (`36956373550`, lanzada a mano sobre `main`) terminó
+    en verde en sus dos jobs. `recorrer` dio en el runner las mismas cifras que en local, sin
+    hallazgos: 9 dimensionadores, 104 campos y 1.320 acciones en 287 s. `informar` validó el
+    resultado y respondió «Sin hallazgos.», sin issue que abrir.
+  - La sonda (`36956997196`) dio `/salud` 200 con 7 fabricantes y 228 modelos, `/login` 200 y el
+    muro de acceso 4 de 4.
+  - Aviso no bloqueante en los logs: `upload-artifact@v4`, `download-artifact@v4` y
+    `github-script@v7` apuntan a Node 20 y GitHub las ejecuta en Node 24. El ecosistema
+    `github-actions` ya está en Dependabot (mensual), que es por donde llegará la versión nueva.
 
 ### Revisión de los dimensionadores con valores límite: seis errores corregidos (2026-10-01)
 
