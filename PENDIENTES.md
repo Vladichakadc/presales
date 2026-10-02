@@ -1598,7 +1598,8 @@ que ya se comprobó y lo que cuesta cada opción.
   vez de cerrar un PR: el clon de la sesión es superficial y llevarse el commit daba conflictos
   falsos en 17 archivos. Ver *Cerrado recientemente*.
 - **Revisar y fusionar los PR de Dependabot** (2026-10-02):
-  - #1 y #2 (`actions/setup-node` y `actions/checkout`), abiertos desde el 2 de septiembre;
+  - ~~#1 y #2 (`actions/setup-node` y `actions/checkout`), abiertos desde el 2 de septiembre~~:
+    superados el 2026-10-02 al fijar las acciones por commit en su v7 (ver *Cerrado recientemente*);
   - #8 (`pdf-parse`), desde el 21;
   - #9 (`express` y `@anthropic-ai/sdk`), que sustituye al #7 del 18 de septiembre: ese día
     `multer` llegó a `main` por el freno de `npm audit`.
@@ -1644,6 +1645,38 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Las acciones de GitHub, fijadas por commit y en Node 24 (2026-10-02)
+
+Mejora propuesta al cerrar la entrega anterior, más los PR #1 y #2 de Dependabot y el aviso de
+Node 20, que eran el mismo cambio.
+
+- **El hueco.** Los workflows hacían 47 referencias a cinco acciones oficiales por etiqueta
+  (`@v5`, `@v4`, `@v7`), y una etiqueta es un puntero que su dueño puede mover a otro commit. Así
+  se comprometió `tj-actions/changed-files` en 2025. Nueve workflows tienen permiso de escritura y
+  corren estas acciones junto al token. Además, `upload-artifact@v4`, `download-artifact@v4` y
+  `github-script@v7` apuntaban a Node 20, y GitHub las forzaba a correr en Node 24.
+- **El cambio.** Cada referencia pasa a `actions/<acción>@<commit> # vX.Y.Z`, en las últimas
+  versiones mayores, todas en Node 24:
+  - `checkout` v7.0.1 y `setup-node` v7.0.0, que son los PR #1 y #2;
+  - `upload-artifact` v7.0.1 y `download-artifact` v8.0.1;
+  - `github-script` v9.0.0.
+- **Leído antes de subir.** Las notas de cada versión mayor y su `action.yml`. Ninguna rompe lo que
+  se usa aquí:
+  - `checkout` v6 guarda las credenciales en otro archivo, y `git push` sigue funcionando sin
+    cambios, también desde `scripts/empujar-rama.js`, que trabaja en el mismo directorio. La v7
+    solo bloquea `pull_request_target`, que no se usa;
+  - `setup-node` v6 activa la caché sola solo si `package.json` declara `packageManager`, que
+    aquí no se declara;
+  - `download-artifact` v8 da error si el hash del artefacto no casa, que es más seguro;
+  - `github-script` v9 rompe `require('@actions/github')` y declarar `getOctokit`, y ninguno de
+    los tres scripts lo hace;
+  - todos los parámetros que se pasan siguen existiendo.
+- **Guardado.** `test/workflows-acciones.test.js` exige la forma, la misma versión en todos los
+  workflows, solo acciones oficiales y que Dependabot vigile `github-actions`. Cuatro sabotajes
+  cazados: etiqueta flotante, dos versiones, acción de terceros y sin comentario de versión.
+- **El commit de cada versión** salió de `git ls-remote --tags`: la API de GitHub de la sesión
+  solo ve este repositorio.
 
 ### El lock de la vigía, en main (2026-10-02)
 

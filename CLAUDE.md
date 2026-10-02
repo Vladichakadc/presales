@@ -303,6 +303,12 @@ Two constraints of the sandbox this repo is usually edited from, worth knowing b
   - **Qué cuenta.** El archivo de otro paquete en una entrada es la forma conocida de colar una dependencia en un lock. Un alias (`"xlsx": "npm:@e965/xlsx"`) declara su paquete real en `name`, y se comprueba contra ese.
   - **Qué no pasa.** Un enlace local, un workspace, `http`, `git`, `file:` y un `.npmrc` que cambie el registro.
   - **Medido.** Las 366 entradas cumplen la forma exacta. Seis sabotajes, cazados.
+- **Y las acciones de GitHub van fijadas por commit, no por etiqueta** (2026-10-02). Eran el único código que entraba en CI por una referencia que puede cambiar: una etiqueta es un puntero que su dueño puede mover. `test/workflows-acciones.test.js` exige:
+  - cada `uses:` con la forma `actions/<acción>@<commit> # vX.Y.Z`, y la misma versión en todos los workflows;
+  - solo acciones oficiales de GitHub: una de terceros se decide y se declara;
+  - que Dependabot siga vigilando `github-actions`, que es quien propone el commit siguiente.
+  - **Versiones.** Se fijaron en las últimas mayores, todas en Node 24: `checkout` v7.0.1, `setup-node` v7.0.0, `upload-artifact` v7.0.1, `download-artifact` v8.0.1 y `github-script` v9.0.0. Se leyeron sus notas de versión antes de subirlas, y ninguna rompe lo que se usa aquí.
+  - **El commit de cada versión** se saca con `git ls-remote --tags https://github.com/actions/<acción>`. La API de GitHub de la sesión solo ve este repositorio.
 
 **El freno de las dependencias: `npm run auditar` (2026-10-02).** `verificar.yml` corría `npm audit --audit-level=high` con `continue-on-error`, así que un aviso alto nunca ponía nada en rojo, y así convivieron dos altos y dos moderados, todos con arreglo publicado. Era un control de seguridad que fallaba abierto. Ahora `scripts/auditar-dependencias.js` falla cerrado y `verificar` lo corre sin `continue-on-error`:
 - **Un aviso alto o crítico frena**; moderados y bajos se listan sin frenar. Si `npm audit` no responde o devuelve algo ilegible, también frena: no poder comprobar no es estar limpio.

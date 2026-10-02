@@ -75,7 +75,7 @@ jobs:
     steps:
       # Solo hace falta leer `scripts/puerta.js`: ningun paso usa git despues, asi que el token
       # no se deja guardado en la copia.
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -162,7 +162,7 @@ jobs:
 
     steps:
       # Solo el modulo que decide y redacta, sin dependencias: aqui no se ejecuta nada mas.
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           sparse-checkout: |
@@ -172,7 +172,7 @@ jobs:
       # El evento se lee de `context.payload` dentro del modulo, que lo valida; nada del evento
       # se interpola en el script. Si ya hay un aviso abierto se comenta, no se abre otro.
       - name: Abrir, comentar o cerrar el aviso de despliegue
-        uses: actions/github-script@v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           SONDA: ${{ needs.sondear.result }}
           SALUD: ${{ needs.sondear.outputs.salud }}
