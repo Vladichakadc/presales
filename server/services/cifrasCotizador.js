@@ -167,7 +167,60 @@ function proyectarFila(spec, m, cfg) {
   return { spec: segmentos.join('·'), enRevision };
 }
 
-// El informe de `npm run catalogo`: lo mismo, contado por fabricante.
+/* ── EL HUECO DEL COTIZADOR (2026-10-03) ──────────────────────────────────────────────────────
+   UNA SOLA COPIA. El texto de una linea cuyo equipo tiene pareja en el dimensionador no escribe
+   sus cifras: deja un hueco con el nombre del campo del dimensionador —«{fwd} FWD · IPsec {ipsec}
+   · 6 GE»— y la siembra lo rellena (`seedCatalog.backfillPricesFromCotizador`), asi que el
+   cotizador, la guia y cualquier otra pantalla reciben el texto ya escrito. Medido el dia que
+   entro: de 293 cifras del cotizador que casaban con el dimensionador, 286 eran copias exactas,
+   5 estaban redondeadas al alza (la de mas, el NGFW del FortiGate 30G: «0.6 Gbps» frente a 570
+   Mbps) y 2 a la baja; cada ficha corregida obligaba a corregir los dos archivos, y mientras tanto
+   el cotizador citaba «en revision» delante del cliente. Una linea sin pareja conserva sus cifras
+   escritas, porque son las unicas.
+   Un hueco que no se puede rellenar —sin pareja, sin ese campo o con un nombre que el fabricante
+   no declara— no llega a la pantalla: su segmento entero dice «<rotulo> sin dato», como el «en
+   revision» de `proyectarFila`, y `npm run catalogo` lo lista. */
+const ROTULO_SEGMENTO = {
+  cap: 'Capacidad', fwd: 'FWD', ipsec: 'IPsec', typ: 'SD-WAN', sdwan: 'SD-WAN', mpps: 'Mpps',
+  fw: 'FW', ngfw: 'NGFW', vpn: 'IPsec', wanMin: 'WAN', wanMax: 'WAN',
+};
+const HUECO_CAMPO = /\{([^{}]*)\}/g;
+
+// `m` es el modelo del dimensionador (o null), `vendor` el codigo del fabricante y `cfg` su mapa
+// (por defecto el de `CONTRASTE_COTIZADOR`, el mismo que lee `contrastarFila`, escala incluida).
+// Devuelve el texto relleno y un estado por hueco: `catalogo` (relleno), `sinPareja`, `sinDato`
+// o `ilegible`.
+function rellenarSpec(spec, m, vendor, cfg) {
+  const texto = String(spec || '');
+  if (!texto.includes('{')) return { spec: texto, huecos: [] };
+  const conf = cfg || CONTRASTE_COTIZADOR[vendor] || {};
+  const campos = new Set(Object.values(conf.campos || {}));
+  const cifra = (campo, v) => (campo === 'mpps' ? `${v} Mpps` : mbpsLegible(v * ((conf.escala && conf.escala[campo]) || 1)));
+  const huecos = [];
+  const segmentos = texto.split('·').map((crudo) => {
+    let falta = null;
+    const lleno = crudo.replace(HUECO_CAMPO, (todo, nombre) => {
+      const campo = nombre.trim();
+      let estado = 'catalogo';
+      if (!campos.has(campo)) estado = 'ilegible';
+      else if (!m) estado = 'sinPareja';
+      else if (typeof m[campo] !== 'number') estado = 'sinDato';
+      huecos.push({ campo, estado });
+      if (estado === 'catalogo') return cifra(campo, m[campo]);
+      if (!falta) falta = campo;
+      return todo;
+    });
+    if (!falta) return lleno;
+    const lead = crudo.match(/^\s*/)[0];
+    const trail = crudo.match(/\s*$/)[0];
+    return `${lead}${ROTULO_SEGMENTO[falta] || 'Cifra'} sin dato${trail}`;
+  });
+  return { spec: segmentos.join('·'), huecos };
+}
+
+// El informe de `npm run catalogo`: lo mismo, contado por fabricante. Las cifras que pone el
+// dimensionador en un hueco no se cuentan como contrastadas, porque son la misma copia: van
+// aparte, y un hueco que no se rellena se lista.
 function contrasteCotizador(opciones) {
   const o = opciones || {};
   const filas = o.cotizador || require('../seed/legacyData/cotizadorCatalog');
@@ -175,11 +228,18 @@ function contrasteCotizador(opciones) {
   const indice = indiceDimensionador({ cargar: o.cargar, mapa });
   const out = [];
   for (const [vendor, cfg] of Object.entries(mapa)) {
-    const r = { vendor, comparadas: 0, coincide: 0, difiere: [], sinDato: [], ilegible: [], sinPareja: [] };
+    const r = {
+      vendor, comparadas: 0, coincide: 0, difiere: [], sinDato: [], ilegible: [], sinPareja: [],
+      delDimensionador: 0, huecosSinCifra: [],
+    };
     const porNombre = indice[vendor];
     if (!porNombre) { r.error = 'no se pudo cargar el catalogo del dimensionador'; out.push(r); continue; }
     for (const row of filas.filter((x) => String(x.vendor || '').toLowerCase() === vendor)) {
-      const m = porNombre.get(normalizarModelo(row.model));
+      const m = porNombre.get(normalizarModelo(row.model)) || null;
+      for (const h of rellenarSpec(row.spec, m, vendor, cfg).huecos) {
+        if (h.estado === 'catalogo') r.delDimensionador++;
+        else r.huecosSinCifra.push({ modelo: row.model, campo: h.campo, estado: h.estado });
+      }
       if (!m) { r.sinPareja.push(row.model); continue; }
       for (const e of contrastarFila(row.spec, m, cfg)) {
         if (e.estado === 'ilegible') r.ilegible.push({ modelo: row.model, texto: e.texto });
@@ -528,5 +588,5 @@ module.exports = {
   CONTRASTE_COTIZADOR, leerSpec, normalizarModelo, indiceDimensionador,
   contrastarFila, proyectarFila, contrasteCotizador, mbpsLegible,
   aMbps, CONTRASTE_PORTAL, contrastePortal, sinCifra,
-  leerAlternativa, contrastarAlternativa, proyectarGuia, contrasteGuia, textoCifra,
+  leerAlternativa, contrastarAlternativa, proyectarGuia, contrasteGuia, textoCifra, rellenarSpec,
 };

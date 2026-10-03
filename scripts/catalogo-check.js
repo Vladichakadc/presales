@@ -496,11 +496,14 @@ function imprimir(d) {
     for (const f of d.precios) {
       console.log(`${f.vendor.padEnd(10)} ${f.con}/${f.de} con precio, ${f.sinCotizar} sin cotizar`);
     }
-    console.log('\n== COTIZADOR FRENTE A DIMENSIONADOR: la misma cifra en dos sitios ==');
-    console.log('   Informe, no freno: dice DONDE difieren, no cual es la buena. Coincidir es dentro del redondeo del cotizador.\n');
+    console.log('\n== COTIZADOR FRENTE A DIMENSIONADOR: una sola copia de cada cifra ==');
+    console.log('   Una linea con pareja deja un hueco y la siembra pone la cifra del dimensionador; se contrasta lo que');
+    console.log('   queda escrito. Informe, no freno: dice DONDE difieren, no cual es la buena (lo dice el documento).\n');
     for (const f of d.contrasteCotizador) {
       if (f.error) { console.log(`${f.vendor.padEnd(10)} ${f.error}`); continue; }
-      console.log(`${f.vendor.padEnd(10)} ${f.coincide}/${f.comparadas} coinciden · ${f.difiere.length} difieren · ${f.sinDato.length} sin dato en el dimensionador · ${f.ilegible.length} no se pudieron leer · ${f.sinPareja.length} sin pareja`);
+      console.log(`${f.vendor.padEnd(10)} ${f.coincide}/${f.comparadas} coinciden · ${f.delDimensionador} puestas por el dimensionador · ${f.difiere.length} difieren · ${f.sinDato.length} sin dato en el dimensionador · ${f.ilegible.length} no se pudieron leer · ${f.sinPareja.length} sin pareja`);
+      // Un hueco que no se rellena sale «sin dato» en el cotizador: la linea perdio una cifra.
+      for (const x of f.huecosSinCifra) console.log(`   HUECO SIN CIFRA  ${x.modelo}: {${x.campo}} (${x.estado})`);
       for (const x of f.difiere) console.log(`   DIFIERE  ${x.modelo}: cotizador «${x.cotizador}» · dimensionador ${x.campo} = ${x.campo === 'mpps' ? `${x.dimensionador} Mpps` : mbpsLegible(x.dimensionador)}`);
       for (const x of f.ilegible) console.log(`   NO SE PUDO LEER  ${x.modelo}: «${x.texto}»`);
     }

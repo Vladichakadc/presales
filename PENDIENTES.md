@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-02 (**La guía pinta el rol que servía sin enseñarlo, y `pantallas` conduce sus fichas.** Comprobando en el navegador la entrega anterior salió que el rol `internet_gw` —cinco recomendaciones— no lo pintaba ningún nodo de las seis topologías, y que ninguna comprobación de navegador pulsaba un nodo de la guía. Ahora es el nodo INTERNET GW de MPLS L3VPN, una prueba exige que cada rol tenga nodo y cada nodo recomendaciones, y `pantallas` pulsa todos. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-03 (**Una sola copia de cada cifra también en el cotizador.** Es la mejora propuesta al cerrar la entrega anterior. `cotizadorCatalog.js` repetía 293 cifras del dimensionador, siete de ellas redondeadas; ahora deja un hueco que la siembra rellena, las siete citan la cifra exacta y lo demás que se sirve sale idéntico. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-02 (**La guía pinta el rol que servía sin enseñarlo, y `pantallas` conduce sus fichas.** Comprobando en el navegador la entrega anterior salió que el rol `internet_gw` —cinco recomendaciones— no lo pintaba ningún nodo de las seis topologías, y que ninguna comprobación de navegador pulsaba un nodo de la guía. Ahora es el nodo INTERNET GW de MPLS L3VPN, una prueba exige que cada rol tenga nodo y cada nodo recomendaciones, y `pantallas` pulsa todos. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-02 (**La cifra de cada alternativa de la guía la pone el dimensionador.** Es la continuación de la entrega anterior y la última copia de una cifra del dimensionador en `guiaRoles.js`: treinta alternativas la escribían a mano, y la del NE8000 M14 hubo que corregirla ese mismo día. Ahora dejan un hueco que la proyección rellena, la guía servida es idéntica (48 de 48 entradas) y una prueba exige que no vuelva ninguna copia ni quede un hueco sin rellenar. Ver *Cerrado recientemente*.)
 
@@ -1663,6 +1665,31 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Una sola copia de cada cifra también en el cotizador (2026-10-03)
+
+Era la mejora propuesta al cerrar la entrega de la guía.
+
+- **El problema.** `cotizadorCatalog.js` repetía 293 cifras del dimensionador: 286 exactas, 5
+  redondeadas al alza (la de más, el NGFW del FortiGate 30G: «0.6 Gbps» frente a 570 Mbps) y 2 a
+  la baja (el FW del 4400F y el 4401F: «1.1 Tbps» frente a 1,15). Cada ficha corregida obligaba a
+  corregir los dos archivos, y mientras tanto el cotizador citaba «en revisión» delante del
+  cliente.
+- **Lo hecho.** Una línea con pareja deja un hueco con el nombre del campo («{fwd} FWD · IPsec
+  {ipsec}») y la siembra lo rellena una sola vez (`cifrasCotizador.rellenarSpec`), así que el
+  cotizador, la guía y lo demás que lee `specSummary` reciben el texto ya escrito. Lo que no se
+  puede rellenar dice «<rótulo> sin dato» en su segmento y la siembra lo avisa por consola. Las
+  nueve líneas sin pareja conservan sus cifras escritas.
+- **Lo que cambia en pantalla, medido.** De doce proyecciones de la API, once salen idénticas. En
+  el cotizador cambian ocho líneas de Fortinet: las siete redondeadas citan la cifra exacta, que es
+  la que eligió el equipo, y el 40F pasa de «0.8 Gbps» a «800 Mbps», con el mismo valor. Si se
+  prefiere la cifra comercial redondeada, es esta decisión la que se revierte.
+- **Lo guardan** `test/catalogo-contraste-cotizador.test.js` (las reglas con catálogos sintéticos
+  y el contrato del archivo por sus dos caras) y `test/servidor-produccion.test.js` (ninguna llave
+  en el cotizador ni en la guía, el texto servido es el del archivo relleno, y nada queda en
+  revisión por un relleno mal escrito). Comprobado con cuatro sabotajes: una cifra copiada, un
+  hueco sin campo, la siembra sin rellenar y la escala de Nokia olvidada; el último solo lo veía
+  la prueba unitaria hasta que se añadió la comprobación sobre lo servido.
 
 ### La guía pinta el rol de Internet gateway, y `pantallas` conduce sus fichas (2026-10-02)
 

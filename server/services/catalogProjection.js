@@ -261,8 +261,10 @@ async function toCotizadorCatalog() {
     // Las cifras de rendimiento se contrastan con las del dimensionador en cada peticion:
     // una que no coincide no se cita (ver `cifrasCotizador.proyectarFila`).
     const pareja = indice[vendor.code] ? indice[vendor.code].get(clave) : null;
-    const { spec, enRevision } = cifras.proyectarFila(
-      (product && product.specSummary) || row.spec, pareja, cifras.CONTRASTE_COTIZADOR[vendor.code]);
+    // La siembra ya relleno los huecos del texto; sin producto, se rellenan aqui con la misma
+    // regla, para que un hueco nunca llegue a la pantalla.
+    const texto = (product && product.specSummary) || cifras.rellenarSpec(row.spec, pareja || null, vendor.code).spec;
+    const { spec, enRevision } = cifras.proyectarFila(texto, pareja, cifras.CONTRASTE_COTIZADOR[vendor.code]);
     const item = {
       vendor: vendor.name,
       color: vendor.colorHex,

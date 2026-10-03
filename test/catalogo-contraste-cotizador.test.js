@@ -101,3 +101,65 @@ test('proyectarFila: sin pareja o sin dato no hay nada que contrastar, y no se t
   assert.deepStrictEqual(proyectarFila(spec, null, CONTRASTE_COTIZADOR.cisco), { spec, enRevision: [] });
   assert.deepStrictEqual(proyectarFila(spec, { id: 'X', fwd: null, ipsec: null }, CONTRASTE_COTIZADOR.cisco), { spec, enRevision: [] });
 });
+
+// ── Una sola copia: el hueco que rellena la siembra (2026-10-03) ──────────────────────────────
+const { rellenarSpec, indiceDimensionador, contrastarFila } = require('../server/services/cifrasCotizador');
+
+test('el hueco del cotizador sale con la cifra del dimensionador, escala y Mpps incluidas', () => {
+  const cfg = { campos: { FWD: 'fwd', IPsec: 'ipsec', BASE: 'cap', Mpps: 'mpps', WAN_MIN: 'wanMin', WAN_MAX: 'wanMax' }, escala: { cap: 1000 } };
+  const m = { id: 'X', fwd: 1300, ipsec: 800, cap: 2400, mpps: 405, wanMin: 10, wanMax: 3000 };
+  assert.strictEqual(rellenarSpec('{fwd} FWD · IPsec {ipsec} · 8 GE', m, 'acme', cfg).spec, '1.3 Gbps FWD · IPsec 800 Mbps · 8 GE');
+  assert.strictEqual(rellenarSpec('{cap} · {mpps} · 4 tarjetas 400G', m, 'acme', cfg).spec, '2.4 Tbps · 405 Mpps · 4 tarjetas 400G', 'la capacidad en Gbps con su escala');
+  assert.strictEqual(rellenarSpec('EdgeConnect · WAN {wanMin} - {wanMax}', m, 'acme', cfg).spec, 'EdgeConnect · WAN 10 Mbps - 3 Gbps');
+  assert.deepStrictEqual(rellenarSpec('FW 4 Gbps · 4 GE', m, 'acme', cfg), { spec: 'FW 4 Gbps · 4 GE', huecos: [] }, 'sin hueco, intacto');
+  // Lo que se rellena coincide con el dimensionador al releerlo: la pantalla no lo pondra «en revision».
+  const lleno = rellenarSpec('{fwd} FWD · IPsec {ipsec}', { id: 'X', fwd: 1234, ipsec: 1250 }, 'huawei').spec;
+  assert.deepStrictEqual(proyectarFila(lleno, { id: 'X', fwd: 1234, ipsec: 1250 }, CONTRASTE_COTIZADOR.huawei).enRevision, []);
+});
+
+test('un hueco que no se puede rellenar no llega a la pantalla: su segmento dice «sin dato»', () => {
+  const cfg = { campos: { FWD: 'fwd', IPsec: 'ipsec' } };
+  const r = rellenarSpec('{fwd} FWD · IPsec {ipsec} · {ngfw} · {xyz} · 8 GE', { id: 'X', fwd: 1300 }, 'acme', cfg);
+  assert.strictEqual(r.spec, '1.3 Gbps FWD · IPsec sin dato · NGFW sin dato · Cifra sin dato · 8 GE');
+  assert.deepStrictEqual(r.huecos.map((h) => h.estado), ['catalogo', 'sinDato', 'ilegible', 'ilegible'], 'un campo que el fabricante no declara no se adivina');
+  const sinPareja = rellenarSpec('{fwd} FWD · 8 GE', null, 'acme', cfg);
+  assert.deepStrictEqual([sinPareja.spec, sinPareja.huecos[0].estado], ['FWD sin dato · 8 GE', 'sinPareja']);
+});
+
+test('el informe cuenta aparte las cifras que pone el dimensionador y lista el hueco que no se rellena', () => {
+  const r = correr([{ id: 'X1', fw: 570, cap: 2000 }], [
+    { vendor: 'Acme', model: 'X1', spec: 'FW {fw} · {cap} · 4 GE' },
+    { vendor: 'Acme', model: 'X1', spec: 'FW 0.6 Gbps' },
+    { vendor: 'Acme', model: 'Fantasma', spec: 'FW {fw}' },
+  ]);
+  assert.strictEqual(r.delDimensionador, 2, 'la cifra que pone el dimensionador no es una segunda copia');
+  assert.deepStrictEqual([r.comparadas, r.coincide], [1, 1], 'lo que queda escrito se sigue contrastando');
+  assert.deepStrictEqual(r.huecosSinCifra.map((x) => [x.modelo, x.estado]), [['Fantasma', 'sinPareja']]);
+});
+
+test('una linea con pareja no copia una cifra que el dimensionador ya trae, y cada hueco se rellena', () => {
+  // Las dos caras del contrato, sobre el archivo real: copiarla aqui es corregirla en dos sitios
+  // con cada ficha (293 copias hasta el 2026-10-03), y un hueco sin rellenar sale «sin dato».
+  const filas = require('../server/seed/legacyData/cotizadorCatalog');
+  const indice = indiceDimensionador();
+  const copias = [];
+  const huecos = [];
+  let rellenos = 0;
+  for (const row of filas) {
+    const vendor = String(row.vendor).toLowerCase();
+    const cfg = CONTRASTE_COTIZADOR[vendor];
+    if (!cfg) continue;
+    const m = indice[vendor].get(normalizarModelo(row.model)) || null;
+    for (const h of rellenarSpec(row.spec, m, vendor).huecos) {
+      if (h.estado === 'catalogo') rellenos++;
+      else huecos.push(`${row.model}: {${h.campo}} (${h.estado})`);
+    }
+    if (!m) continue;
+    for (const e of contrastarFila(row.spec, m, cfg)) {
+      if (e.estado === 'coincide' || e.estado === 'difiere') copias.push(`${row.model}: «${e.texto}» (${e.campo})`);
+    }
+  }
+  assert.deepStrictEqual(copias, [], 'escribe el hueco {campo}: la cifra la pone el dimensionador');
+  assert.deepStrictEqual(huecos, [], 'un hueco que el dimensionador no puede rellenar sale «sin dato» en el cotizador');
+  assert.ok(rellenos > 250, `solo ${rellenos} cifras del cotizador las pone el dimensionador`);
+});

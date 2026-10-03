@@ -106,17 +106,27 @@ async function backfillPricesFromCotizador(vendorIds) {
     byVendorNormName[key] = p;
   }
 
+  // El texto del cotizador no copia las cifras del dimensionador: deja un hueco por cifra
+  // («{fwd} FWD») y aqui se rellena con la de su pareja, una sola vez, para que todas las
+  // pantallas que leen `specSummary` reciban el texto ya escrito (ver `cifras.rellenarSpec`).
+  const indice = cifras.indiceDimensionador();
   for (const row of cotizadorCatalog) {
     const code = vendorCodeFromDisplayName(row.vendor);
     const vendorId = vendorIds[code];
     if (!vendorId) continue;
+    const pareja = indice[code] ? indice[code].get(cifras.normalizarModelo(row.model)) || null : null;
+    const relleno = cifras.rellenarSpec(row.spec, pareja, code);
+    for (const h of relleno.huecos.filter((x) => x.estado !== 'catalogo')) {
+      console.warn(`[seed] cotizador: «${row.model}» deja el hueco {${h.campo}} sin cifra (${h.estado}); la linea dice «sin dato».`);
+    }
+    const spec = relleno.spec;
     const key = `${vendorId}::${normalizeName(row.model)}`;
     const product = byVendorNormName[key];
     if (product) {
       await product.update({
         priceDisplay: row.elp,
         priceNumeric: row.elpN,
-        specSummary: row.spec,
+        specSummary: spec,
       });
     } else {
       // No matching Product from PR — insert the cotizador-only row so cotizador.html
@@ -135,7 +145,7 @@ async function backfillPricesFromCotizador(vendorIds) {
         where: { vendorId, model: row.model },
         defaults: {
           vendorId, model: row.model, category: 'router',
-          specs: {}, specSummary: row.spec,
+          specs: {}, specSummary: spec,
           priceDisplay: row.elp, priceNumeric: row.elpN,
         },
       });

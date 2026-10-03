@@ -651,6 +651,11 @@ test('el cotizador no cita una cifra de rendimiento que el dimensionador contrad
   const c8200 = cot.find((c) => c.model === 'Catalyst 8200');
   assert.strictEqual(c8200.spec, '1 Gbps FWD · IPsec 900 Mbps · SD-WAN nativo · 2 NIM');
   assert.strictEqual(c8200.enRevision, undefined);
+  // Y desde el 2026-10-03 la cifra de una linea con pareja la pone el dimensionador, asi que lo
+  // servido no puede quedar en revision salvo que el relleno la escriba mal: una escala de Nokia
+  // olvidada citaria «6.4 Gbps» por 6,4 Tbps, y esto es lo que lo dice sobre el catalogo real.
+  assert.deepStrictEqual(cot.filter((c) => c.enRevision && !difieren.some((d) => d.modelo === c.model)).map((c) => `${c.model}: ${c.spec}`), [],
+    'el relleno del hueco escribe una cifra que el dimensionador contradice');
 });
 
 test('el cotizador cita el texto de su propio catalogo, no el de otra pantalla', async () => {
@@ -663,19 +668,30 @@ test('el cotizador cita el texto de su propio catalogo, no el de otra pantalla',
   const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
   const cot = await (await fetch(`${BASE}/api/cotizador/catalog`, { headers: { cookie: ana } })).json();
   const archivo = require('../server/seed/legacyData/cotizadorCatalog');
+  // Desde el 2026-10-03 el archivo deja un hueco donde la cifra la pone el dimensionador: el texto
+  // que se cita es el del archivo con esos huecos rellenos, y ningun hueco llega a la pantalla.
+  const { rellenarSpec, indiceDimensionador, normalizarModelo } = require('../server/services/cifrasCotizador');
+  const indice = indiceDimensionador();
+  const escrito = (r) => {
+    const vendor = r.vendor.toLowerCase();
+    return rellenarSpec(r.spec, (indice[vendor] && indice[vendor].get(normalizarModelo(r.model))) || null, vendor).spec;
+  };
+  assert.deepStrictEqual(cot.filter((f) => /[{}]/.test(f.spec)).map((f) => f.spec), [], 'un hueco llega al cotizador');
+  assert.ok(archivo.filter((r) => /\{\w+\}/.test(r.spec)).length > 100, 'el archivo ya no deja huecos: esta prueba no mira lo que dice mirar');
   let comparadas = 0;
   for (const fila of cot) {
     if (fila.enRevision) continue; // la cifra en disputa se retira: lo prueba el caso anterior
     const propia = archivo.find((r) => r.vendor.toLowerCase() === fila.vendor.toLowerCase() && r.model === fila.model);
     assert.ok(propia, `${fila.model} no esta en cotizadorCatalog.js`);
-    assert.strictEqual(fila.spec, propia.spec, `${fila.model} cita otro texto que el de su catalogo`);
+    assert.strictEqual(fila.spec, escrito(propia), `${fila.model} cita otro texto que el de su catalogo`);
     comparadas++;
   }
   assert.ok(comparadas > 100, `solo se compararon ${comparadas} lineas`);
   // Y la guia apunta a ese mismo equipo, no a una copia con su propio texto.
   const guia = await (await fetch(`${BASE}/api/guia/roles`, { headers: { cookie: ana } })).json();
   const m8 = Object.values(guia).flat().find((e) => /NE8000 M8$/.test(e.model));
-  assert.strictEqual(m8.spec, archivo.find((r) => r.model === 'NetEngine NE8000 M8').spec);
+  assert.strictEqual(m8.spec, escrito(archivo.find((r) => r.model === 'NetEngine NE8000 M8')));
+  assert.deepStrictEqual(Object.values(guia).flat().filter((e) => /[{}]/.test(e.spec)).map((e) => e.spec), [], 'un hueco llega a la guia');
 });
 
 test('el portal sirve las cifras del dimensionador, en la unidad que lee la calculadora', async () => {
