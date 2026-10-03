@@ -280,3 +280,46 @@ test('una alternativa de la guia no copia la cifra de un equipo del dimensionado
   assert.deepStrictEqual(huecos, [], 'un hueco que el dimensionador no puede rellenar sale «sin dato» en la guia');
   assert.ok(rellenos > 25, `solo ${rellenos} alternativas llevan hueco`);
 });
+
+test('un equipo sin pareja en el dimensionador dice lo mismo en el portal y en el cotizador', () => {
+  // Con pareja, la cifra la pone el dimensionador en los dos sitios (2026-10-03). Sin pareja —el
+  // AR6300, el AR8700-10, el A811 E y la linea MX— cada archivo conserva la suya, y nada las
+  // comparaba: son dos copias del mismo dato. Se casan por el campo del dimensionador que las dos
+  // declaran, con el redondeo de la que menos decimales escribe.
+  const {
+    CONTRASTE_COTIZADOR, CONTRASTE_PORTAL, indiceDimensionador, leerSpec, sinCifra, cifraPortal,
+  } = require('../server/services/cifrasCotizador');
+  const cotizador = require('../server/seed/legacyData/cotizadorCatalog');
+  const portal = require('../server/seed/legacyData/indexPR');
+  const indice = indiceDimensionador();
+  const enPortal = new Map();
+  for (const [grupo, filas] of Object.entries(portal)) {
+    const vendor = CONTRASTE_PORTAL[grupo].vendor;
+    for (const f of filas) enPortal.set(`${vendor}::${normalizarModelo(f.model)}`, { grupo, fila: f });
+  }
+  const campoDelPortal = (grupo, destino) => Object.entries(CONTRASTE_PORTAL[grupo].campos)
+    .find(([, d]) => (Array.isArray(d) ? d.includes(destino) : d === destino));
+  const difieren = [];
+  let comparadas = 0;
+  for (const row of cotizador) {
+    const vendor = String(row.vendor).toLowerCase();
+    const cfg = CONTRASTE_COTIZADOR[vendor];
+    if (!cfg || indice[vendor].get(normalizarModelo(row.model))) continue;
+    const p = enPortal.get(`${vendor}::${normalizarModelo(row.model)}`);
+    if (!p) continue;
+    for (const c of leerSpec(row.spec).cifras) {
+      const destino = cfg.campos[c.etiqueta];
+      const par = destino && campoDelPortal(p.grupo, destino);
+      if (!par || sinCifra(p.fila[par[0]])) continue;
+      const v = p.fila[par[0]];
+      const enElPortal = cifraPortal(v);
+      if (!enElPortal) { difieren.push(`${row.model}: el portal escribe «${v}» y no se sabe leer`); continue; }
+      comparadas++;
+      if (Math.abs(enElPortal.valor - c.valor) > Math.max(c.tolerancia, enElPortal.tolerancia)) {
+        difieren.push(`${row.model}: cotizador «${c.texto}» frente a portal ${par[0]} «${v}»`);
+      }
+    }
+  }
+  assert.deepStrictEqual(difieren, [], 'el mismo equipo dice dos cifras distintas en el portal y en el cotizador');
+  assert.ok(comparadas > 8, `solo se compararon ${comparadas} cifras de equipos sin pareja`);
+});

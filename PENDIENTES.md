@@ -1690,6 +1690,11 @@ Era la mejora propuesta al cerrar la entrega de la guía.
   revisión por un relleno mal escrito). Comprobado con cuatro sabotajes: una cifra copiada, un
   hueco sin campo, la siembra sin rellenar y la escala de Nokia olvidada; el último solo lo veía
   la prueba unitaria hasta que se añadió la comprobación sobre lo servido.
+- **Y la última copia sin contrastar.** Los siete equipos sin pareja que están a la vez en el
+  portal y en el cotizador (AR6300, AR8700-10, A811 E y los cuatro MX) conservan su cifra en los
+  dos archivos, y nada las comparaba. Hoy coinciden las doce; una prueba de
+  `test/catalogo-contraste-pantallas.test.js` lo exige desde ahora, comprobada saboteando el IPsec
+  del AR6300.
 
 ### La guía pinta el rol de Internet gateway, y `pantallas` conduce sus fichas (2026-10-02)
 
