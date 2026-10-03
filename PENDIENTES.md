@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-02 (**La cifra de cada alternativa de la guía la pone el dimensionador.** Es la continuación de la entrega anterior y la última copia de una cifra del dimensionador en `guiaRoles.js`: treinta alternativas la escribían a mano, y la del NE8000 M14 hubo que corregirla ese mismo día. Ahora dejan un hueco que la proyección rellena, la guía servida es idéntica (48 de 48 entradas) y una prueba exige que no vuelva ninguna copia ni quede un hueco sin rellenar. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-02 (**La guía pinta el rol que servía sin enseñarlo, y `pantallas` conduce sus fichas.** Comprobando en el navegador la entrega anterior salió que el rol `internet_gw` —cinco recomendaciones— no lo pintaba ningún nodo de las seis topologías, y que ninguna comprobación de navegador pulsaba un nodo de la guía. Ahora es el nodo INTERNET GW de MPLS L3VPN, una prueba exige que cada rol tenga nodo y cada nodo recomendaciones, y `pantallas` pulsa todos. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-02 (**La cifra de cada alternativa de la guía la pone el dimensionador.** Es la continuación de la entrega anterior y la última copia de una cifra del dimensionador en `guiaRoles.js`: treinta alternativas la escribían a mano, y la del NE8000 M14 hubo que corregirla ese mismo día. Ahora dejan un hueco que la proyección rellena, la guía servida es idéntica (48 de 48 entradas) y una prueba exige que no vuelva ninguna copia ni quede un hueco sin rellenar. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-02 (**Una sola copia de cada cifra del portal.** Es la mejora propuesta al cerrar la entrega anterior. `indexPR.js` repetía 234 cifras que la siembra pisa con las del dimensionador, y diecisiete ya no coincidían: había que corregir cada ficha en dos sitios. Se quitaron, con ocho filas duplicadas de Cisco que la siembra ignoraba enteras, y la API sirve exactamente lo mismo (12 de 12 respuestas idénticas). Una prueba exige que no vuelvan y que ninguna fila sin pareja se quede sin cifras. Ver *Cerrado recientemente*.)
 
@@ -1661,6 +1663,29 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### La guía pinta el rol de Internet gateway, y `pantallas` conduce sus fichas (2026-10-02)
+
+Salió al comprobar en el navegador la entrega anterior (la cifra de cada alternativa), pulsando cada
+nodo de cada topología.
+
+- **Un rol servido que nadie veía.** `guiaRoles.js` recomendaba cinco equipos para `internet_gw`
+  (Catalyst 8500-12X4QC, 7750 SR-1s, MX204, NE8000 F1A, CCR2116) y ningún nodo de las seis
+  topologías tenía ese `eqRole`: el servidor las servía, una prueba las protegía y la pantalla no
+  las enseñaba. Venía así desde la transcripción del HTML original.
+- **Lo hecho.** La topología MPLS L3VPN gana el nodo INTERNET GW («Peering / Tránsito»), colgado
+  del P Core por BGP: es la salida a Internet de la red del proveedor, y el diagrama tenía hueco
+  arriba entre los dos PE. `test/guia-topologias.test.js` cruza los dos archivos en las dos
+  direcciones: cada rol con recomendaciones tiene nodo, y cada nodo con equipo tiene
+  recomendaciones.
+- **Y la guía se conduce de verdad.** El caso de la guía en `npm run pantallas` solo esperaba la
+  carga, así que las fichas —donde se pintan la regla del cotizador y la cifra de cada
+  alternativa— no las pintaba ninguna comprobación de navegador. Ahora pulsa cada nodo con equipo
+  de cada topología y exige tarjetas de fabricante, no texto: «No hay recomendaciones configuradas
+  para este rol» también es texto.
+- **Comprobado saboteando**: un nodo con un rol que no existe pone en rojo la prueba (las dos
+  direcciones) y `pantallas` («#recVendors sin recomendaciones (mpls · igw)»). Accesibilidad (axe)
+  en verde con el nodo nuevo.
 
 ### La cifra de cada alternativa de la guía la pone el dimensionador (2026-10-02)
 

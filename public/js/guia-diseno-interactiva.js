@@ -72,8 +72,13 @@ const TOPOS = [
       {id:'ce3',   x:400, y:240, w:100, h:40, label:'CE 3',   role:'Customer Edge',   color:'#5C6E85', eqRole:'branch_router'},
       {id:'ce4',   x:530, y:320, w:100, h:40, label:'CE 4',   role:'Customer Edge',   color:'#5C6E85', eqRole:'branch_router'},
       {id:'agg',   x:300, y:360, w:100, h:36, label:'AGG',    role:'Aggregation',     color:'#A45B00', eqRole:'aggregation'},
+      // El rol `internet_gw` tenia recomendaciones y ningun nodo que las pintara hasta el
+      // 2026-10-02 (ver `test/guia-topologias.test.js`): es la salida a Internet de la red del
+      // proveedor, colgada del core.
+      {id:'igw',   x:290, y:10,  w:120, h:44, label:'INTERNET GW', role:'Peering / Tránsito', color:'#0E1A2B', eqRole:'internet_gw'},
     ],
     links:[
+      {f:'p1',t:'igw',label:'BGP'},
       {f:'pe1',t:'p1',label:'LSP'},{f:'pe2',t:'p1',label:'LSP'},
       {f:'pe1',t:'ce1',label:'VRF A'},{f:'pe1',t:'ce2',label:'VRF B'},
       {f:'pe2',t:'ce3',label:'VRF A'},{f:'pe2',t:'ce4',label:'VRF B'},

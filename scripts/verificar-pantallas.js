@@ -451,8 +451,36 @@ const PANTALLAS = [
     id: 'guia',
     url: 'guia-diseno-interactiva.html',
     titulo: 'Guia de diseno interactiva',
-    listo: 'body',
-    async acciones(page) { await espera(page, 600); },
+    listo: '.node-box',
+    // Cada nodo con equipo de cada topologia tiene que pintar sus recomendaciones. Hasta el
+    // 2026-10-02 este caso solo esperaba la carga, asi que las fichas de la guia —donde se pintan
+    // la regla del cotizador, la cifra de cada alternativa y los equipos fuera del catalogo— no
+    // las conducia ninguna comprobacion de navegador. Un nodo con equipo lleva el circulo blanco
+    // que `drawTopo` pinta solo si tiene `eqRole`; los de la red (INTERNET, MPLS) no recomiendan.
+    async acciones(page) {
+      await espera(page, 400);
+      const pestanas = await page.$$eval('.topo-tab', (els) => els.map((e) => e.dataset.id));
+      if (pestanas.length < 2) throw new Error(`la guia pinto ${pestanas.length} topologias`);
+      for (const topo of pestanas) {
+        await page.click(`.topo-tab[data-id="${topo}"]`);
+        await espera(page, 150);
+        const nodos = await page.$$eval('.node-box', (els) => els.filter((e) => e.querySelector('circle')).map((e) => e.dataset.id));
+        if (!nodos.length) throw new Error(`la topologia ${topo} no tiene ningun nodo con equipo`);
+        for (const nodo of nodos) {
+          await page.click(`.node-box[data-id="${nodo}"]`);
+          await espera(page, 120);
+          // Tarjetas, no texto: «No hay recomendaciones configuradas para este rol» tambien es
+          // texto, y es lo que sale si `/api/guia/roles` falla o el rol se queda sin equipos.
+          const tarjetas = await page.$$eval('#recVendors .vendor-rec', (els) => els.length);
+          if (!tarjetas) throw new Error(`#recVendors sin recomendaciones (${topo} · ${nodo})`);
+        }
+      }
+      // La captura queda con el primer nodo de la primera topologia elegido.
+      await page.click(`.topo-tab[data-id="${pestanas[0]}"]`);
+      await espera(page, 150);
+      await page.click('.node-box');
+      await espera(page, 300);
+    },
   },
   {
     id: 'cuenta',
