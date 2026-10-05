@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-03 (**Una sola copia de cada cifra también en el cotizador.** Es la mejora propuesta al cerrar la entrega anterior. `cotizadorCatalog.js` repetía 293 cifras del dimensionador, siete de ellas redondeadas; ahora deja un hueco que la siembra rellena, las siete citan la cifra exacta y lo demás que se sirve sale idéntico. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-05 (**Auditoría de prompts con el subcomando `prompt-audit` de la skill `claude-api`, sobre `main` en `738aa80`.** Propone y no aplica: informe y parche en `docs/prompt-audit-2026-10-05/`. La auditoría del 25-sep ya estaba aplicada desde `40e4d47`, así que no se repite. Lo nuevo: **todo `.txt` subido a «Sincronizar» falla**, porque viaja en base64 con `text/plain` y la API solo admite base64 para PDF; **seis afirmaciones de `CLAUDE.md` que el código contradice** (tres símbolos y un workflow de Fortinet que ya no existen, y tres recuentos atrasados); y el análisis no registra cuántos tokens cuesta. Con el parche aplicado pasan 779/779 pruebas. Ver *Decisiones que necesitan al dueño*.)
+
+Revisión anterior: 2026-10-03 (**Una sola copia de cada cifra también en el cotizador.** Es la mejora propuesta al cerrar la entrega anterior. `cotizadorCatalog.js` repetía 293 cifras del dimensionador, siete de ellas redondeadas; ahora deja un hueco que la siembra rellena, las siete citan la cifra exacta y lo demás que se sirve sale idéntico. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-02 (**La guía pinta el rol que servía sin enseñarlo, y `pantallas` conduce sus fichas.** Comprobando en el navegador la entrega anterior salió que el rol `internet_gw` —cinco recomendaciones— no lo pintaba ningún nodo de las seis topologías, y que ninguna comprobación de navegador pulsaba un nodo de la guía. Ahora es el nodo INTERNET GW de MPLS L3VPN, una prueba exige que cada rol tenga nodo y cada nodo recomendaciones, y `pantallas` pulsa todos. Ver *Cerrado recientemente*.)
 
@@ -1597,6 +1599,15 @@ día (ver *Cerrado recientemente*). Queda lo que ninguna comprobación puede cer
 <https://claude.ai/artifact/Sw97q5rDmJ5KJCYbB2PWXJ>, que su dueño comparte), con los pasos, lo
 que ya se comprobó y lo que cuesta cada opción.
 
+- **Qué hunks entran de la auditoría de prompts del 2026-10-05** (`docs/prompt-audit-2026-10-05/`).
+  Diez hunks en tres archivos, sin aplicar; `git apply --check` confirma que aplican limpios sobre
+  `738aa80` y con ellos pasan las 779 pruebas. Tres decisiones distintas: el `.txt` de la
+  sincronización (un fallo real, con su prueba), el log de tokens por análisis, y seis frases de
+  `CLAUDE.md` que el código contradice. Quedan **sin hunk** dos propuestas más grandes: sacar de
+  `CLAUDE.md` la crónica que `PENDIENTES.md` ya guarda (187 KB que se cargan en cada sesión) y
+  dejar que el contraste determinista de `contraste.js` haga el trabajo del modelo con CSV y XLSX.
+  Y una migración aparte: `claude-opus-5` → Claude Opus 5.5, más barato pero con otro esfuerzo por
+  defecto.
 - ~~**Qué hunks entran de los dos parches propuestos**~~ **Hecho el 2026-10-02**, con el encargo
   del dueño de ejecutar los pendientes: entraron todos, con tres correcciones de hecho y las copias
   para Copilot regeneradas (ver *Cerrado recientemente*). Lo que decía este punto (2026-09-25/26):
