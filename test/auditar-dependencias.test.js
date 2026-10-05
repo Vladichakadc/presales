@@ -111,11 +111,14 @@ function correr(salidaNpm, codigoNpm = 1) {
 }
 
 test('la línea de comandos: limpio sale 0, un alto sale 1, sin informe sale 2', () => {
-  const limpio = correr(JSON.stringify(informe([])), 0);
-  assert.strictEqual(limpio.status, 0, limpio.stderr);
+  // El script lee las EXCEPCIONES reales, y una que no casa con ningún aviso frena. Así que el
+  // informe «limpio» trae los avisos que hoy están declarados, y nada más.
+  const declarados = A.EXCEPCIONES.map((e) => [e.paquete, [aviso(e.paquete, 'high', e.id)]]);
+  const limpio = correr(JSON.stringify(informe(declarados)), 0);
+  assert.strictEqual(limpio.status, 0, limpio.stdout + limpio.stderr);
   assert.match(limpio.stdout, /0 aviso\(s\) que frenan/);
   assert.match(limpio.resumen, /## Auditoría de dependencias/);
-  const alto = correr(JSON.stringify(informe([['undici', [aviso('undici', 'high', ALTO)]]])));
+  const alto = correr(JSON.stringify(informe([...declarados, ['undici', [aviso('undici', 'high', ALTO)]]])));
   assert.strictEqual(alto.status, 1);
   assert.match(alto.stdout, /Frenan:\n {2}ALTO {2}undici/);
   for (const nada of ['', 'npm ERR! network request failed', JSON.stringify({ error: { code: 'EAI_AGAIN', summary: 'sin red' } })]) {
@@ -132,4 +135,16 @@ test('verificar.yml corre el freno, y sin continue-on-error', () => {
   assert.ok(paso, 'verificar.yml no corre npm run auditar');
   assert.ok(!/continue-on-error/.test(paso), 'el paso de auditoría vuelve a ser informativo: un aviso alto no pondría nada en rojo');
   assert.ok(!/npm audit\b/.test(yml.replace(paso, '')), 'otro paso corre npm audit por su cuenta, fuera del freno');
+});
+
+test('la línea no promete un arreglo que npm audit fix no aplica', () => {
+  // Con el aviso de braces del 2026-10-05, npm proponía bajar nodemon a la 1.14.10: un cambio de
+  // versión mayor, que `npm audit fix` no hace. La línea decía «arreglo: npm audit fix».
+  const via = [aviso('braces', 'high', ALTO)];
+  const linea = (fix) => A.informar(A.evaluar(informe([['braces', via, fix]]), [], HOY));
+  assert.match(linea(true), /\(arreglo: npm audit fix\)/);
+  assert.match(linea({ name: 'nodemon', version: '1.14.10', isSemVerMajor: true }),
+    /\(sin arreglo directo: npm solo propone nodemon 1\.14\.10, un cambio de versión mayor\)/);
+  assert.match(linea({ name: 'nodemon', version: '3.1.15', isSemVerMajor: false }), /\(arreglo: npm audit fix, que deja nodemon en 3\.1\.15\)/);
+  assert.match(linea(false), /\(sin arreglo publicado\)/);
 });

@@ -22,11 +22,19 @@
 const fs = require('fs');
 const { spawnSync } = require('child_process');
 
-// Avisos altos o críticos que se aceptan por un tiempo, con su motivo. Vacío desde el 2026-10-02:
-// los cuatro avisos de ese día tenían arreglo y se cerraron con `npm audit fix`.
+// Avisos altos o críticos que se aceptan por un tiempo, con su motivo. Vacío del 2026-10-02 al
+// 2026-10-05: los cuatro avisos del 2 de octubre tenían arreglo y se cerraron con `npm audit fix`.
 //   { id: 'GHSA-xxxx-xxxx-xxxx', paquete: 'nombre', motivo: 'por qué no se puede arreglar aún
 //     o por qué no aplica aquí', caduca: 'AAAA-MM-DD' }
-const EXCEPCIONES = [];
+const EXCEPCIONES = [
+  { id: 'GHSA-vfj7-8cjw-p6xm', paquete: 'braces',
+    motivo: 'Sin versión arreglada: la 3.0.3 es la última publicada y está en el rango (<=3.0.3), y lo único que '
+      + 'propone npm es bajar nodemon de la 3.1.14 a la 1.14.10. Llega solo por nodemon -> chokidar, una '
+      + 'dependencia de desarrollo que vigila archivos en `npm run dev`: el servidor no la carga y los '
+      + 'patrones que expande los escribe quien desarrolla, no un usuario. La salida definitiva es cambiar '
+      + 'nodemon por `node --watch`, que quita la cadena entera.',
+    caduca: '2027-01-03' },
+];
 
 const FRENAN = new Set(['high', 'critical']);
 const NOMBRE = { critical: 'CRÍTICO', high: 'ALTO', moderate: 'moderado', low: 'bajo', info: 'info' };
@@ -34,6 +42,20 @@ const MAX_DIAS = 90;
 const GHSA = /^GHSA-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}$/;
 
 const masDias = (hoy, dias) => new Date(Date.parse(`${hoy}T00:00:00Z`) + dias * 86400000).toISOString().slice(0, 10);
+
+// Qué dice npm del arreglo, sin prometer más de lo que hace `npm audit fix` (2026-10-05). Un
+// objeto en `fixAvailable` es un cambio de versión de una dependencia directa; si es de versión
+// mayor, `npm audit fix` no lo aplica. Con el aviso de `braces` de ese día, el «arreglo» era bajar
+// nodemon de la 3.1.14 a la 1.14.10, y la línea decía «arreglo: npm audit fix».
+function arregloDe(fix) {
+  if (fix === true) return 'arreglo: npm audit fix';
+  if (fix && typeof fix === 'object') {
+    return fix.isSemVerMajor
+      ? `sin arreglo directo: npm solo propone ${fix.name} ${fix.version}, un cambio de versión mayor`
+      : `arreglo: npm audit fix, que deja ${fix.name} en ${fix.version}`;
+  }
+  return 'sin arreglo publicado';
+}
 
 // Los avisos del informe de `npm audit --json`, uno por identificador y paquete. En `via`, un
 // objeto es un aviso; una cadena es otro paquete vulnerable por el que se llega a este, y ese ya
@@ -51,7 +73,7 @@ function avisosDe(informe) {
       if (vistos.has(clave)) continue;
       vistos.set(clave, {
         id, paquete: a.name, gravedad: a.severity, titulo: a.title || '', url: a.url || '',
-        rango: a.range || '', arreglo: Boolean(v.fixAvailable),
+        rango: a.range || '', arreglo: arregloDe(v.fixAvailable),
       });
     }
   }
@@ -83,7 +105,7 @@ function evaluar(informe, excepciones = EXCEPCIONES, hoy = new Date().toISOStrin
   };
 }
 
-const linea = (a) => `  ${NOMBRE[a.gravedad] || a.gravedad}  ${a.paquete}  ${a.id}  ${a.titulo}${a.arreglo ? '  (arreglo: npm audit fix)' : '  (sin arreglo publicado)'}`;
+const linea = (a) => `  ${NOMBRE[a.gravedad] || a.gravedad}  ${a.paquete}  ${a.id}  ${a.titulo}  (${a.arreglo})`;
 
 function informar(r) {
   const out = [];
