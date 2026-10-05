@@ -9,16 +9,21 @@
 //
 //   · CICLO DE VIDA — 0 de 40 modelos marcados, mientras Cisco tiene 8. Es el hueco mas caro
 //     de todos: una propuesta con un equipo descatalogado se cae en la mesa del cliente.
-//   · `typ` e `ipsec` en las NetEngine, `mpps` en los AR.
+//   · `typ` e `ipsec` en las NetEngine. (`mpps` en los AR no: sus fichas no lo publican, y
+//     el `typ` de los 23 AR quedo completo el 2026-10-05 con las fichas de serie.)
 //
-// EL PORTAFOLIO COMERCIAL NO SIRVE PARA DIMENSIONAR, y por eso este script separa `fwd` de
-// `typ`. e.huawei.com publica la cifra de paquetes grandes: en el AR5710-S son 1300 Mbps
-// frente a los 620 tipicos, un factor 2,1. Es el mismo modo de fallo que en el SRX380 vale
-// un factor 10 y que en el FortiGate 60F valio 14,3x.
+// EL REENVIO NO SIRVE PARA DIMENSIONAR SD-WAN, y por eso este script separa `fwd` de `typ`.
+// En el AR5710-S son 1.300 Mbps de reenvio (NAT + ACL + QoS) frente a 620 de SD-WAN tipico
+// (IPsec + QoS + SA + AppFlow), un factor 2,1. Las dos cifras son IMIX segun su ficha R25C10:
+// lo que cambia es lo que el equipo hace con cada paquete, no el tamano del paquete. (Hasta el
+// 2026-10-05 este comentario decia que los 1.300 eran «la cifra de paquetes grandes»; la ficha
+// lo desmiente.) Es el mismo modo de fallo que en el SRX380 vale un factor 10 y que en el
+// FortiGate 60F valio 14,3x.
 //
 //     npm run huawei -- --check                 que falta, casilla por casilla
 //     npm run huawei -- specs.xlsx --dry        que haria, sin escribir
 //     npm run huawei -- specs.xlsx              aplica
+//     npm run huawei -- specs.xlsx --force      corrige una cifra que difiere, con dos anclas
 //     npm run huawei -- eox.csv --eol           carga fin de venta en vez de cifras
 //
 // QUE FORMATO ACEPTA
@@ -52,11 +57,19 @@ const TOLERANCIA = 0.02;
 
 // Campos importables. `fwd` y `typ` van separados a proposito: son dos mediciones distintas
 // y confundirlas es el error de preventa que este catalogo evita.
+//
+// LA CABECERA LITERAL DE HUAWEI TIENE QUE CAER EN SU CAMPO (2026-10-05). La regla de `typ`
+// aceptaba «imix» a secas, y la ficha de Huawei escribe «Forwarding performance (NAT + ACL +
+// QoS, IMIX)»: como `typ` se mira primero, el reenvio se cargaba como SD-WAN tipico. Y la
+// tabla trae tres filas mas que no son ninguno de estos campos: «SD-WAN IPsec performance»
+// (solo IPsec, la que el AR8700-8 llevaba como `typ`), «SD-WAN performance» (IPsec + QoS) y
+// las de paquete fijo (512 o 1400 bytes), que miden otra base. Ahora `typ` exige «typical» o
+// «tipico», IPsec no acepta una cabecera de SD-WAN y una cabecera de paquete fijo se ignora.
 const CAMPOS = [
-  { campo: 'typ', tipo: 'tput', et: 'Throughput tipico (IMIX)', re: (c) => /typical|tipico|típico|imix/.test(c) },
-  { campo: 'ipsec', tipo: 'tput', et: 'IPsec VPN', re: (c) => /ipsec|vpn/.test(c) },
+  { campo: 'typ', tipo: 'tput', et: 'Throughput tipico (IMIX)', re: (c) => /typical|tipico|típico/.test(c) },
+  { campo: 'ipsec', tipo: 'tput', et: 'IPsec VPN', re: (c) => /ipsec|vpn/.test(c) && !/sd-?wan/.test(c) },
   { campo: 'mpps', tipo: 'conteo', et: 'Mpps', re: (c) => /mpps|packet.*rate|paquetes/.test(c) },
-  { campo: 'fwd', tipo: 'tput', et: 'Forwarding (paquetes grandes)', re: (c) => /forwarding|throughput|rendimiento|capacidad/.test(c) },
+  { campo: 'fwd', tipo: 'tput', et: 'Forwarding (NAT+ACL+QoS, IMIX)', re: (c) => /forwarding|throughput|rendimiento|capacidad/.test(c) },
 ];
 
 // "Huawei AR 5710-S" / "AR5710-S8T2S" / "NetEngine A821 E" -> clave comparable.
@@ -97,6 +110,7 @@ function leerCabecera(cab) {
   norm.forEach((c, i) => {
     if (!c) return;
     if (colModelo < 0 && /model|modelo|producto|product|equipo/.test(c)) { colModelo = i; return; }
+    if (/\d+\s*-?\s*bytes?\b/.test(c) && !/imix/.test(c)) { ignoradas.push(cab[i]); return; }
     const regla = CAMPOS.find((f) => !usados.has(f.campo) && f.re(c));
     if (!regla) { ignoradas.push(cab[i]); return; }
     usados.add(regla.campo);
@@ -122,29 +136,49 @@ function aNumero(txt, entero) {
   return NaN;
 }
 
+// La unidad escrita en la celda manda sobre la de la columna (2026-10-05). `aNumero` la quita
+// para leer el numero, y la columna la deduce contrastando con lo verificado; pero cuando la
+// cifra que se corrige es justo la que difiere, ese contraste no tiene donde apoyarse y «15.5
+// Gbps» entraba como 15,5 Mbps.
+function unidadDeCelda(txt) {
+  const s = String(txt == null ? '' : txt).toLowerCase();
+  if (/\b(gbps|gb\/s)\b/.test(s)) return 1000;
+  if (/\b(mbps|mb\/s)\b/.test(s)) return 1;
+  return null;
+}
+
 const casa = (a, b) => Math.abs(a - b) <= Math.max(1, Math.abs(b) * TOLERANCIA);
 const fmt = (n) => Number(n).toLocaleString('es-ES');
 
 // La unidad la manda la cabecera; si calla, se deduce contrastando con lo ya verificado, en
 // vez de multiplicar por mil a ojo.
-function resolverUnidad(col, filas, colModelo) {
+function resolverUnidad(col, filas, colModelo, indice = porClave) {
   if (col.tipo !== 'tput') return { factor: 1, como: 'conteo' };
   if (col.unidadDeclarada) return { factor: col.unidadDeclarada, como: 'declarada en la cabecera' };
   const votos = { 1: 0, 1000: 0 };
+  const conUnidad = filas.filter((f) => unidadDeCelda(f[col.i])).length;
   for (const fila of filas) {
-    const m = porClave.get(claveModelo(fila[colModelo]));
+    const m = indice.get(claveModelo(fila[colModelo]));
     if (!m) continue;
     const ref = m[col.campo];
     if (ref == null) continue;
     const v = aNumero(fila[col.i], false);
-    if (v == null || Number.isNaN(v)) continue;
+    if (v == null || Number.isNaN(v) || unidadDeCelda(fila[col.i])) continue;
     if (casa(v, ref)) votos[1]++;
     else if (casa(v * 1000, ref)) votos[1000]++;
   }
   if (votos[1000] > votos[1]) return { factor: 1000, como: 'deducida por contraste (venia en Gbps)' };
   if (votos[1] > 0) return { factor: 1, como: 'deducida por contraste (ya venia en Mbps)' };
+  if (conUnidad && conUnidad === filas.filter((f) => aNumero(f[col.i], false) != null).length) {
+    return { factor: 1, como: 'la escribe cada celda' };
+  }
   return { factor: 1, como: 'sin contraste posible; se asume Mbps' };
 }
+
+// Un hueco que el fabricante no publica no es un hueco que se pueda llenar, y el inventario lo
+// dice en vez de pedirlo. Medido el 2026-10-05 en las cinco fichas de serie (AR610, AR650,
+// AR5710-S, AR6710-H y AR8000): ninguna publica Mpps.
+const NO_PUBLICA_AR = { mpps: '(las fichas AR no publican Mpps: leidas las cinco series el 2026-10-05)' };
 
 function informeCobertura() {
   console.log('\n== COBERTURA DEL CATALOGO HUAWEI ==\n');
@@ -155,7 +189,8 @@ function informeCobertura() {
     console.log(`${etiqueta} — ${grupo.length} modelos`);
     for (const c of campos) {
       const con = grupo.filter((m) => m[c] != null).length;
-      console.log(`   ${c.padEnd(6)} ${String(con).padStart(3)}/${String(grupo.length).padEnd(3)}`);
+      const nota = (etiqueta === 'AR' && NO_PUBLICA_AR[c]) ? `  ${NO_PUBLICA_AR[c]}` : '';
+      console.log(`   ${c.padEnd(6)} ${String(con).padStart(3)}/${String(grupo.length).padEnd(3)}${nota}`);
     }
   }
   const eol = MODELS.filter((m) => m.eol || m.eolAnnounced).length;
@@ -286,52 +321,74 @@ function aplicarEol(filas) {
 }
 
 // ── Cifras ──────────────────────────────────────────────────────────────────
-function aplicarCifras(filas) {
+// --force CORRIGE, COMO EN JUNIPER (2026-10-05). Hasta ese dia solo saltaba el minimo de
+// anclas, y una fila con una cifra distinta se apartaba siempre: no habia forma de corregir un
+// dato verificado que la ficha vigente contradice (el `typ` del AR8700-8, 24 Gbps en el
+// catalogo y 15,5 en su ficha R25C10). Ahora pisa la cifra que difiere, pero sigue exigiendo
+// dos anclas en las OTRAS columnas: para corregir un dato hay que demostrar primero que la fila
+// es la del equipo correcto. Saltarse el anclaje es otra cosa, y es `--sin-contraste`.
+function evaluarCifras(filas, { force = false, sinContraste = false } = {}, modelos = null) {
+  const indice = modelos ? new Map(modelos.map((m) => [claveModelo(m.id), m])) : porClave;
   const { colModelo, columnas, ignoradas } = leerCabecera(filas[0]);
-  if (colModelo < 0) { console.error('No se encontro la columna de modelo en la cabecera.'); process.exit(1); }
-  if (!columnas.length) { console.error('Ninguna columna reconocida. Cabeceras vistas: ' + filas[0].join(' | ')); process.exit(1); }
-  if (ignoradas.length) console.log(`Columnas ignoradas: ${ignoradas.join(', ')}`);
+  if (colModelo < 0) return { error: 'No se encontro la columna de modelo en la cabecera.' };
+  if (!columnas.length) return { error: 'Ninguna columna reconocida. Cabeceras vistas: ' + filas[0].join(' | ') };
 
   const cuerpo = filas.slice(1);
-  const unidades = new Map(columnas.map((c) => [c.campo, resolverUnidad(c, cuerpo, colModelo)]));
-  for (const c of columnas) console.log(`  ${c.et}: unidad ${unidades.get(c.campo).como}`);
+  const unidades = new Map(columnas.map((c) => [c.campo, resolverUnidad(c, cuerpo, colModelo, indice)]));
 
   const aceptadas = [];
   const apartadas = [];
   for (const fila of cuerpo) {
-    const m = porClave.get(claveModelo(fila[colModelo]));
+    const m = indice.get(claveModelo(fila[colModelo]));
     if (!m) { apartadas.push({ id: fila[colModelo], motivo: 'no esta en el catalogo' }); continue; }
 
     let anclas = 0;
-    let contradice = null;
+    let ilegible = null;
+    const choques = [];
     const nuevos = [];
     for (const c of columnas) {
       const crudo = aNumero(fila[c.i], c.tipo === 'conteo');
       if (crudo === null) continue;
-      if (Number.isNaN(crudo)) { contradice = `${c.et}: celda ilegible "${fila[c.i]}"`; break; }
-      const valor = c.tipo === 'tput' ? crudo * unidades.get(c.campo).factor : crudo;
+      if (Number.isNaN(crudo)) { ilegible = `${c.et}: celda ilegible "${fila[c.i]}"`; break; }
+      const factor = unidadDeCelda(fila[c.i]) || unidades.get(c.campo).factor;
+      const valor = c.tipo === 'tput' ? Math.round(crudo * factor * 1000) / 1000 : crudo;
       const ref = m[c.campo];
-      if (ref != null) {
-        if (casa(valor, ref)) anclas++;
-        else { contradice = `${c.et}: la fila dice ${fmt(valor)} y el catalogo ${fmt(ref)}`; break; }
-      } else {
-        nuevos.push({ campo: c.campo, et: c.et, valor });
-      }
+      if (ref == null) nuevos.push({ campo: c.campo, et: c.et, valor });
+      else if (casa(valor, ref)) anclas++;
+      else choques.push({ campo: c.campo, et: c.et, valor, pisa: ref });
     }
 
-    if (contradice) { apartadas.push({ id: m.id, motivo: contradice }); continue; }
-    if (!nuevos.length) { apartadas.push({ id: m.id, motivo: 'no aporta nada nuevo' }); continue; }
-    if (anclas < ANCLAS_MINIMAS && !SIN_CONTRASTE && !FORCE) {
+    if (ilegible) { apartadas.push({ id: m.id, motivo: ilegible }); continue; }
+    if (choques.length && !force) {
+      apartadas.push({ id: m.id, motivo: choques.map((c) => `${c.et}: la fila dice ${fmt(c.valor)} y el catalogo ${fmt(c.pisa)}`).join(' | ')
+        + ' — parece una fila desplazada; si de verdad el catalogo esta mal, --force lo corrige' });
+      continue;
+    }
+    const cambios = [...nuevos, ...choques];
+    if (!cambios.length) {
+      apartadas.push({ id: m.id, motivo: anclas ? `confirma el catalogo (${anclas} columna(s) casan): nada que escribir` : 'no aporta nada nuevo' });
+      continue;
+    }
+    if (anclas < ANCLAS_MINIMAS && !sinContraste) {
       apartadas.push({ id: m.id, motivo: `solo ${anclas} ancla(s); hacen falta ${ANCLAS_MINIMAS}` });
       continue;
     }
-    aceptadas.push({ id: m.id, anclas, nuevos });
+    aceptadas.push({ id: m.id, anclas, nuevos: cambios });
   }
+  return { columnas, ignoradas, unidades, aceptadas, apartadas };
+}
+
+function aplicarCifras(filas) {
+  const r = evaluarCifras(filas, { force: FORCE, sinContraste: SIN_CONTRASTE });
+  if (r.error) { console.error(r.error); process.exit(1); }
+  const { columnas, ignoradas, unidades, aceptadas, apartadas } = r;
+  if (ignoradas.length) console.log(`Columnas ignoradas: ${ignoradas.join(', ')}`);
+  for (const c of columnas) console.log(`  ${c.et}: unidad ${unidades.get(c.campo).como}`);
 
   console.log(`\n== CIFRAS ==\n${aceptadas.length} fila(s) aceptada(s), ${apartadas.length} apartada(s).\n`);
   for (const a of aceptadas) {
     console.log(`  ${a.id}  (${a.anclas} ancla(s))`);
-    for (const n of a.nuevos) console.log(`     ${n.et}: ${fmt(n.valor)}`);
+    for (const n of a.nuevos) console.log(`     ${n.et}: ${n.pisa != null ? `${fmt(n.pisa)} -> ` : ''}${fmt(n.valor)}`);
   }
   for (const a of apartadas) console.log(`  [fuera] ${a.id} — ${a.motivo}`);
 
@@ -414,4 +471,4 @@ if (require.main === module) {
   else aplicarCifras(filas);
 }
 
-module.exports = { claveModelo, aNumero, leerCabecera, resolverUnidad, leerEol };
+module.exports = { claveModelo, aNumero, leerCabecera, resolverUnidad, leerEol, evaluarCifras };

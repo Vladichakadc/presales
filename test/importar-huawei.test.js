@@ -7,7 +7,7 @@
 // la unidad se deduce mal, el anclaje compara peras con manzanas y deja de proteger.
 const test = require('node:test');
 const assert = require('node:assert');
-const { claveModelo, aNumero, leerCabecera, resolverUnidad } = require('../scripts/importar-huawei');
+const { claveModelo, aNumero, leerCabecera, resolverUnidad, evaluarCifras } = require('../scripts/importar-huawei');
 
 test('el nombre del modelo normaliza entre las formas que usa Huawei', () => {
   assert.strictEqual(claveModelo('AR611'), 'AR611');
@@ -112,4 +112,82 @@ test('--eol aparta una fila con el fin de servicio antes del ultimo pedido: colu
   const r = leerEol([['Modelo', 'EOM Date', 'EOS Date'], ['AR651', '2031-07-31', '2026-12-31']]);
   assert.deepStrictEqual(r.aceptadas, []);
   assert.match(r.apartadas[0].motivo, /columnas cambiadas/);
+});
+
+// La tabla de rendimiento de las fichas AR, con sus cabeceras literales (R25C10, 2026-10-05).
+// Trae nueve filas de cifras y solo tres son campos del catalogo; las otras seis miden otra
+// cosa (otro escenario o un paquete fijo) y tienen que quedarse fuera.
+const CABECERA_HUAWEI = [
+  'Model',
+  'Forwarding performance (NAT + ACL + QoS, IMIX)',
+  'IPsec performance (IMIX)',
+  'IPsec performance (512 bytes)',
+  'SD-WAN IPsec performance* (IMIX)',
+  'SD-WAN IPsec performance* (512 bytes)',
+  'SD-WAN performance** (IMIX)',
+  'SD-WAN performance** (512 bytes)',
+  'SD-WAN typical performance*** (IMIX)',
+  'SD-WAN typical performance*** (512 bytes)',
+];
+
+test('la cabecera literal de Huawei cae en su campo: el reenvio IMIX no es el SD-WAN tipico', () => {
+  const { columnas, ignoradas } = leerCabecera(CABECERA_HUAWEI);
+  const porCampo = Object.fromEntries(columnas.map((c) => [c.campo, CABECERA_HUAWEI[c.i]]));
+  assert.deepStrictEqual(porCampo, {
+    fwd: 'Forwarding performance (NAT + ACL + QoS, IMIX)',
+    ipsec: 'IPsec performance (IMIX)',
+    typ: 'SD-WAN typical performance*** (IMIX)',
+  });
+  // «SD-WAN IPsec performance» es la fila que el AR8700-8 llevaba como `typ` (24 Gbps).
+  assert.ok(ignoradas.includes('SD-WAN IPsec performance* (IMIX)'));
+  assert.ok(ignoradas.includes('SD-WAN performance** (IMIX)'));
+  for (const h of ignoradas) assert.ok(!/typical.*IMIX\)$/.test(h) || /bytes/.test(h), h);
+});
+
+// Catalogo sintetico: las pruebas no se ponen rojas el dia que alguien corrige un dato.
+const CATALOGO = [
+  { id: 'AR9990', fwd: 30000, ipsec: 20000, typ: 24000, mpps: null },
+  { id: 'AR9991', fwd: 2000, ipsec: 2000, typ: null, mpps: null },
+];
+const fila = (modelo, fwd, ipsec, typ) => [modelo, fwd, ipsec, '', '', '', '', '', typ, ''];
+
+test('sin --force, una cifra que difiere aparta la fila entera: parece una fila desplazada', () => {
+  const r = evaluarCifras([CABECERA_HUAWEI, fila('AR9990', '30 Gbps', '20 Gbps', '15.5 Gbps')], {}, CATALOGO);
+  assert.deepStrictEqual(r.aceptadas, []);
+  assert.match(r.apartadas[0].motivo, /la fila dice 15\.500 y el catalogo 24\.000 .*--force lo corrige/);
+});
+
+test('--force pisa la cifra que difiere cuando las otras dos columnas anclan', () => {
+  const r = evaluarCifras([CABECERA_HUAWEI, fila('AR9990', '30 Gbps', '20 Gbps', '15.5 Gbps')], { force: true }, CATALOGO);
+  assert.deepStrictEqual(r.apartadas, []);
+  assert.strictEqual(r.aceptadas[0].anclas, 2);
+  assert.deepStrictEqual(r.aceptadas[0].nuevos.map((n) => [n.campo, n.valor, n.pisa]), [['typ', 15500, 24000]]);
+});
+
+test('--force no salta el anclaje: con una sola columna que casa, no corrige nada', () => {
+  const r = evaluarCifras([CABECERA_HUAWEI, fila('AR9990', '30 Gbps', '', '15.5 Gbps')], { force: true }, CATALOGO);
+  assert.deepStrictEqual(r.aceptadas, []);
+  assert.match(r.apartadas[0].motivo, /solo 1 ancla/);
+  // Saltarse el anclaje es otra decision, con otro nombre.
+  const s = evaluarCifras([CABECERA_HUAWEI, fila('AR9990', '30 Gbps', '', '15.5 Gbps')], { force: true, sinContraste: true }, CATALOGO);
+  assert.strictEqual(s.aceptadas.length, 1);
+});
+
+test('un hueco se llena con dos anclas, y la unidad sale de la cabecera o del contraste', () => {
+  const r = evaluarCifras([CABECERA_HUAWEI, fila('AR9991', '2 Gbps', '2 Gbps', '600 Mbps')], {}, CATALOGO);
+  assert.deepStrictEqual(r.aceptadas[0].nuevos.map((n) => [n.campo, n.valor]), [['typ', 600]]);
+  assert.strictEqual(r.aceptadas[0].anclas, 2);
+});
+
+test('el orden de las columnas no decide: la de SD-WAN o la de paquete fijo no roban el campo', () => {
+  // Una hoja copiada a mano no tiene por que traer el orden de la ficha. Si la columna de
+  // paquete fijo o la de SD-WAN llega primero, el campo tiene que seguir siendo el de IMIX.
+  const cab = ['Modelo', 'Forwarding performance (1400 bytes)', 'SD-WAN IPsec performance (IMIX)',
+    'Forwarding performance (NAT + ACL + QoS, IMIX)', 'IPsec performance (IMIX)'];
+  const { columnas } = leerCabecera(cab);
+  const porCampo = Object.fromEntries(columnas.map((c) => [c.campo, cab[c.i]]));
+  assert.deepStrictEqual(porCampo, {
+    fwd: 'Forwarding performance (NAT + ACL + QoS, IMIX)',
+    ipsec: 'IPsec performance (IMIX)',
+  });
 });

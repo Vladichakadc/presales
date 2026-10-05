@@ -15,7 +15,10 @@ const pick = (o, opc) => { const r = M.evaluar(esc(o), MODELS, opc); return r.pi
 const LEGADO = [
   ['500 Mbps SD-WAN', {}, 'AR6710-L14T2X4'],
   ['500 Mbps SD-WAN, total agregado', { dirMult: 1 }, 'AR5710-S8T2XE'],
-  ['50 Mbps SD-WAN', { bw: 50 }, 'AR5710-S8T2S'],
+  // Medido en f2a939d con el AR651 sin `typ`, salia el AR5710-S8T2S. Desde el 2026-10-05 el
+  // AR651 trae los 600 Mbps de su ficha (AR650, 20250810-v3) y es el mas pequeno que cumple,
+  // tambien por el camino legado: lo que cambio es el dato, no el motor.
+  ['50 Mbps SD-WAN', { bw: 50 }, 'AR651'],
   ['perfil fwd + SD-WAN marcado', { profile: 'fwd' }, 'AR5710-S8T2S'],
   ['perfil ipsec + SD-WAN', { profile: 'ipsec' }, 'AR6710-L8T3TS1X2'],
   ['UTM + SD-WAN 300 Mbps', { bw: 300, svc: { sdwan: true, utm: true } }, 'AR6710-L8T3TS1X2'],

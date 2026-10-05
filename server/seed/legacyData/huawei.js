@@ -64,14 +64,28 @@ const PARTS = {
 // Actualizado con datasheets oficiales de Huawei — Fase 2 verificación (Ago 2026)
 // `flexe: true` solo donde el propio registro ya lo publica («FlexE con granularidad Mbps» en el
 // A821 E); en el resto queda sin declarar, que es «no consta» y no «no lo soporta» (2026-09-30).
+//
+// CONTRASTE CON LAS FICHAS DE SERIE DE LA LINEA AR (2026-10-05). Cinco fichas oficiales
+// (AR610 R26C00, AR650 20250810-v3, AR5710-S, AR6710-H y AR8000 R25C10), traidas por Actions y
+// leidas con PDF4me y con pdf-parse; la procedencia de cada una, en `fuentes.js`. Entraron por
+// `npm run huawei`, anclando cada fila en el reenvio y el IPsec, que casaron en las 23 filas AR.
+//   · `typ` es la fila «SD-WAN typical performance (IMIX)»: IPsec + QoS + SA + AppFlow, la suma de
+//     los dos sentidos. No es «SD-WAN IPsec performance» (solo IPsec) ni «SD-WAN performance».
+//   · AR8700-8: llevaba 24 Gbps, que es la fila «SD-WAN IPsec» de su propia tabla; su SD-WAN
+//     tipico es 15,5. El dimensionador lo recomendaba entre 16,9 y 20,8 Gbps de demanda (6,5 a
+//     8 Gbps por sentido con el margen por defecto), donde su ficha no llega.
+//   · AR8140 y AR8140-T: 12 -> 15 Gbps, la cifra de la edicion R25C10.
+//   · AR611, AR617VW-LTE4 (50 Mbps), AR651 y AR651W-8P (600 Mbps): `typ` era null y se apartaban
+//     del perfil SD-WAN. Con esto los 23 AR tienen las tres cifras.
+//   · Ninguna ficha AR publica Mpps: el `mpps: null` de los AR es lo que dice el fabricante.
 const MODELS = [
-{id:'AR611', cls:'AR', ser:'AR610', fam:'SOHO / oficina pequeña', fwd:300, ipsec:200, typ:null, mpps:null, lan:8, poe:0, wan:0, wifi:0, apsFree:0, apsMax:0, boost:0,
+{id:'AR611', cls:'AR', ser:'AR610', fam:'SOHO / oficina pequeña', fwd:300, ipsec:200, typ:50, mpps:null, lan:8, poe:0, wan:0, wifi:0, apsFree:0, apsMax:0, boost:0,
  ports:'1 x GE combo WAN, 8 x GE LAN', optics:['ge'], parts:['RACK','CONSOLE']},
-{id:'AR617VW-LTE4', cls:'AR', ser:'AR610', fam:'Sucursal pequeña con respaldo móvil', fwd:300, ipsec:200, typ:null, mpps:null, lan:8, poe:0, wan:1, wifi:1, apsFree:0, apsMax:0, boost:0,
+{id:'AR617VW-LTE4', cls:'AR', ser:'AR610', fam:'Sucursal pequeña con respaldo móvil', fwd:300, ipsec:200, typ:50, mpps:null, lan:8, poe:0, wan:1, wifi:1, apsFree:0, apsMax:0, boost:0,
  ports:'1 x GE combo + VDSL 35B + LTE, Wi-Fi', optics:['ge'], parts:['RACK','CONSOLE']},
-{id:'AR651', cls:'AR', ser:'AR650', fam:'Sucursal pequeña', fwd:2000, ipsec:2000, typ:null, mpps:null, lan:8, poe:0, wan:0, wifi:0, apsFree:0, apsMax:0, boost:1000,
+{id:'AR651', cls:'AR', ser:'AR650', fam:'Sucursal pequeña', fwd:2000, ipsec:2000, typ:600, mpps:null, lan:8, poe:0, wan:0, wifi:0, apsFree:0, apsMax:0, boost:1000,
  ports:'2 x GE combo WAN, 8 x GE LAN', optics:['ge'], parts:['RACK','CONSOLE']},
-{id:'AR651W-8P', cls:'AR', ser:'AR650', fam:'Sucursal pequeña con PoE y Wi-Fi', fwd:2000, ipsec:2000, typ:null, mpps:null, lan:8, poe:1, wan:0, wifi:1, apsFree:0, apsMax:0, boost:1000,
+{id:'AR651W-8P', cls:'AR', ser:'AR650', fam:'Sucursal pequeña con PoE y Wi-Fi', fwd:2000, ipsec:2000, typ:600, mpps:null, lan:8, poe:1, wan:0, wifi:1, apsFree:0, apsMax:0, boost:1000,
  ports:'2 x GE combo WAN, 8 x GE LAN PoE, Wi-Fi', optics:['ge'], parts:['RACK','CONSOLE']},
 {id:'AR5710-S8T2S', cls:'AR', ser:'AR5710-S', fam:'Sucursal mediana, uplink GE óptico', fwd:1300, ipsec:800, typ:620, mpps:null, lan:8, poe:0, wan:0, wifi:0, apsFree:16, apsMax:32, boost:0,
  ports:'2 x GE SFP WAN, 8 x GE eléctricos LAN', optics:['ge'], parts:['RACK','CONSOLE','RU5G']},
@@ -105,15 +119,15 @@ const MODELS = [
  ports:'2 x 10GE óptico + 2 x GE WAN, 4 x GE combo + 8 x GE LAN, 4 x SIC, 0/2 WSIC', optics:['sfp10','ge'], parts:['PAC350','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE']},
 {id:'AR6710-H4T4X2Y7', cls:'AR', ser:'AR6700-H', fam:'Casa matriz / campus grande', fwd:13000, ipsec:10000, typ:7000, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:32, apsMax:512, boost:0,
  ports:'2 x 25GE SFP28 + 4 x 10GE SFP+ + 4 x GE · 6 x SIC, 1/4 WSIC · reemplaza AR6280/AR6300', optics:['sfp25','sfp10','ge'], parts:['PAC350','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE']},
-{id:'AR8140-12G10XG', cls:'AR', ser:'AR8000', fam:'Hub SD-WAN / borde de campus grande', fwd:25000, ipsec:20000, typ:12000, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:32, apsMax:1024, boost:0,
+{id:'AR8140-12G10XG', cls:'AR', ser:'AR8000', fam:'Hub SD-WAN / borde de campus grande', fwd:25000, ipsec:20000, typ:15000, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:32, apsMax:1024, boost:0,
  ports:'10 x 10GE óptico + 8 x GE combo + 4 x GE · 4 x SIC, 0/2 WSIC · doble fuente 350 W', optics:['sfp10','ge'], parts:['PAC350','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
  redund:true, psu:{watts:350, tipo:'AC-DC (PAC350S12-CR)', volts:'90–290 V', amps:'salida 12 V / 29,2 A',
   texto:'Doble fuente 350 W — el catálogo publica dos PAC350S12-CR (90–290 V, salida 12 V / 29.2 A) para el AR8140.'}},
-{id:'AR8140-T-12G10XG', cls:'AR', ser:'AR8000', fam:'Hub SD-WAN con TPM', fwd:25000, ipsec:20000, typ:12000, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:32, apsMax:1024, boost:0,
+{id:'AR8140-T-12G10XG', cls:'AR', ser:'AR8000', fam:'Hub SD-WAN con TPM', fwd:25000, ipsec:20000, typ:15000, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:32, apsMax:1024, boost:0,
  ports:'Igual al AR8140 más módulo de plataforma confiable (TPM)', optics:['sfp10','ge'], parts:['PAC350','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
  redund:true, psu:{watts:350, tipo:'AC-DC (PAC350S12-CR)', volts:'90–290 V', amps:'salida 12 V / 29,2 A',
   texto:'Igual al AR8140-12G10XG: doble fuente 350 W (PAC350S12-CR, 90–290 V, salida 12 V / 29.2 A).'}},
-{id:'AR8700-8', cls:'AR', ser:'AR8700', fam:'Hub SD-WAN de alta disponibilidad', fwd:30000, ipsec:20000, typ:24000, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:32, apsMax:1024, boost:0,
+{id:'AR8700-8', cls:'AR', ser:'AR8700', fam:'Hub SD-WAN de alta disponibilidad', fwd:30000, ipsec:20000, typ:15500, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:32, apsMax:1024, boost:0,
  ports:'Doble MPU, sin interrupción de servicio en conmutación · 24 Gbps SD-WAN IPsec IMIX', optics:['sfp25','sfp10','ge'], parts:['MPU100','MPU100T','PAC1000','PAC600','PDC1000','FAN240','RACK','CONSOLE']},
 
 {id:'NetEngine A816 E', cls:'WAN', ser:'A800 E', fam:'CPE de acceso, 1U, consumo mínimo', cap:20000, mpps:4.4, lan:0, poe:0, wan:0, wifi:0,

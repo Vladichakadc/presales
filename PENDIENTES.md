@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-05 (**Auditoría de prompts con el subcomando `prompt-audit` de la skill `claude-api`, sobre `main` en `738aa80`.** Propone y no aplica: informe y parche en `docs/prompt-audit-2026-10-05/`. La auditoría del 25-sep ya estaba aplicada desde `40e4d47`, así que no se repite. Lo nuevo: **todo `.txt` subido a «Sincronizar» falla**, porque viaja en base64 con `text/plain` y la API solo admite base64 para PDF; **seis afirmaciones de `CLAUDE.md` que el código contradice** (tres símbolos y un workflow de Fortinet que ya no existen, y tres recuentos atrasados); y el análisis no registra cuántos tokens cuesta. Con el parche aplicado pasan 779/779 pruebas. Ver *Decisiones que necesitan al dueño*.)
+Última revisión: 2026-10-05, tarde (**Las fichas de serie de los AR de Huawei, leídas con PDF4me y con la copia de Actions.** Los 23 AR tienen ya reenvío, IPsec y SD-WAN típico: se llenaron cuatro `typ` vacíos (AR611 y AR617VW-LTE4 a 50 Mbps, AR651 y AR651W-8P a 600) y se corrigieron tres. El **AR8700-8** llevaba 24 Gbps, que es la fila «SD-WAN IPsec» de su propia tabla; su SD-WAN típico es 15,5, y el dimensionador lo recomendaba entre 16,9 y 20,8 Gbps de demanda, donde no llega. Para cargarlo hubo que arreglar el importador: `--force` no corregía nada y la cabecera literal de Huawei caía en el campo equivocado. Ninguna ficha AR publica Mpps. **El ciclo de vida (EOM/EOS) sigue bloqueado por la cuenta Huawei.** De paso, `verificar` estaba en rojo en `main` por un aviso nuevo de `braces` sin arreglo: excepción declarada hasta el 2027-01-03. Juniper SRX340/SRX4300 ya estaba cerrado desde el 2026-10-02. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-05 (**Auditoría de prompts con el subcomando `prompt-audit` de la skill `claude-api`, sobre `main` en `738aa80`.** Propone y no aplica: informe y parche en `docs/prompt-audit-2026-10-05/`. La auditoría del 25-sep ya estaba aplicada desde `40e4d47`, así que no se repite. Lo nuevo: **todo `.txt` subido a «Sincronizar» falla**, porque viaja en base64 con `text/plain` y la API solo admite base64 para PDF; **seis afirmaciones de `CLAUDE.md` que el código contradice** (tres símbolos y un workflow de Fortinet que ya no existen, y tres recuentos atrasados); y el análisis no registra cuántos tokens cuesta. Con el parche aplicado pasan 779/779 pruebas. Ver *Decisiones que necesitan al dueño*.)
 
 Revisión anterior: 2026-10-03 (**Una sola copia de cada cifra también en el cotizador.** Es la mejora propuesta al cerrar la entrega anterior. `cotizadorCatalog.js` repetía 293 cifras del dimensionador, siete de ellas redondeadas; ahora deja un hueco que la siembra rellena, las siete citan la cifra exacta y lo demás que se sirve sale idéntico. Ver *Cerrado recientemente*.)
 
@@ -619,11 +621,11 @@ no una lectura. Se anotan con el documento oficial donde confirmarlas:
 
 | Hallazgo (según el buscador) | Casa con el catálogo | Qué confirma o cambia | Documento oficial a leer |
 |---|---|---|---|
-| Nota de la ficha AR6710: el rendimiento SD-WAN (EVPN+IPsec+QoS) es «la suma de flujos bidireccionales» | El mismo resumen da 7 Gbps SD-WAN IMIX al AR6710-H4T4X2Y7, que es el `typ: 7000` ya verificado | **Respaldaría H-03**: el ×2 por defecto sería correcto para SD-WAN | «NetEngine AR6710-H Series Data Sheet R25C10», e.huawei.com/en/documents/products/enterprise-network/c63ee1473b9147a4b6a50dc64c8f1bcd |
+| Nota de la ficha AR6710: el rendimiento SD-WAN (EVPN+IPsec+QoS) es «la suma de flujos bidireccionales» | El mismo resumen da 7 Gbps SD-WAN IMIX al AR6710-H4T4X2Y7, que es el `typ: 7000` ya verificado | **Respaldaría H-03**: el ×2 por defecto sería correcto para SD-WAN. **Leída la ficha R25C10 el 2026-10-05: lo confirma.** Las notas al pie de las cinco fichas AR dicen que las tres cifras SD-WAN son «the combined total of traffic in inbound and outbound directions», y que la típica es IPsec + QoS + SA + AppFlow | «NetEngine AR6710-H Series Data Sheet R25C10», e.huawei.com/en/documents/products/enterprise-network/c63ee1473b9147a4b6a50dc64c8f1bcd |
 | NE8000 M14: «hasta 2 Tbps, ampliable a 4,8 Tbps» | `cap: 2000000` (2 Tbps) coincide | **Leída la ficha oficial el 2026-10-02: el resumen confundía bases.** La ficha publica conmutación por tarjeta de control (IPU-1T2 2,4 Tbps, IPU-2T 4 Tbps, IPU-3T6 7,2 Tbps); los 2 Tbps son la capacidad de puertos de la IPU-2T. La fila pasa a 7,2 Tbps | «NetEngine 8000 M14 Datasheet», e.huawei.com/en/documents/products/enterprise-network/f4f1a7b9424a44ff9770b75a19eb5d2e |
 | NE8000 M8: «hasta 1,2 Tbps, ampliable a 2 Tbps» (ficha de 2021) | **No casa**: el dimensionador dice 2,4 Tbps y el cotizador 4,8 Tbps | El sospechoso pasa a ser el **M8**, con tres cifras distintas; puede haber dos generaciones. **Leída la ficha oficial el 2026-10-02: eran dos generaciones de tarjeta de control** (IPU-1T2 2,4 Tbps de conmutación, IPU-2T4 4,8 Tbps), y la fila del catálogo es la IPU-2T4 | «NetEngine 8000 M8 Datasheet», e.huawei.com/en/documents/products/enterprise-network/e9dd06e260b64df683f6221fc8442cbf |
-| AR8140: SD-WAN 12–20 Gbps IMIX y 25–36 Gbps a 1.400 bytes | `typ: 12000` coincide; `fwd: 25000` coincide con la cifra **SD-WAN de 1.400 bytes**, no con reenvío NAT+ACL+QoS IMIX | Si se confirma, el `fwd` del AR8140 mide otra cosa que la etiqueta de la pantalla | Ficha AR8100 de e.huawei.com |
-| AR651: SD-WAN 800 Mbps IMIX (AR651C: 600) | Sin ancla: `typ` es `null` y el resumen no da otra columna de la fila | Llenaría el `typ` que hoy aparta a la serie AR650 | «Huawei NetEngine AR650 Series Datasheet 20250810-v3», e.huawei.com/marketingcloud |
+| AR8140: SD-WAN 12–20 Gbps IMIX y 25–36 Gbps a 1.400 bytes | `typ: 12000` coincide; `fwd: 25000` coincide con la cifra **SD-WAN de 1.400 bytes**, no con reenvío NAT+ACL+QoS IMIX | Si se confirma, el `fwd` del AR8140 mide otra cosa que la etiqueta de la pantalla. **Leída la ficha R25C10 el 2026-10-05: no se confirma.** Los 25 Gbps son el reenvío NAT+ACL+QoS IMIX, así que `fwd` estaba bien; el que cambia es `typ`, de 12 a 15 Gbps, y el AR8700-8 de 24 a 15,5 | Ficha AR8100 de e.huawei.com |
+| AR651: SD-WAN 800 Mbps IMIX (AR651C: 600) | Sin ancla: `typ` es `null` y el resumen no da otra columna de la fila | Llenaría el `typ` que hoy aparta a la serie AR650. **Leída la ficha el 2026-10-05: el resumen mezclaba filas.** 800 Mbps es «SD-WAN performance» (IPsec + QoS); el SD-WAN típico es 600, el mismo para toda la serie, y es el que entró, anclado en reenvío e IPsec | «Huawei NetEngine AR650 Series Datasheet 20250810-v3», e.huawei.com/marketingcloud |
 | Ciclo de vida (EOM/EOS) de AR5700/6700/8000 y NE8000 | — | **No apareció ninguna fecha pública de hardware**; ver «Fin de venta: qué marca cada pantalla» (2026-10-01) para el AR651 y los boletines de versión | Tablón «Routers — Life Cycle Notices» de support.huawei.com, con Huawei ID |
 
 **YouTube**: el buscador lista vídeos oficiales de Huawei (presentación del AR5710, el AR6710 en
@@ -719,6 +721,18 @@ con una URL de control (`example.com`) que falló igual, y confirmado por el pro
 sirve desde una máquina que no esté detrás de este proxy**, que es donde tiene sentido usarla.
 Desde esta sesión, la vía que sí funciona sigue siendo GitHub Actions.
 
+**PDF4me sí lee desde fuera, y tiene dos límites (2026-10-05).** Es un conector de claude.ai, no
+un servidor dentro del sandbox, así que sus llamadas no pasan por el proxy: con una URL pública
+(`file_url`) descarga el PDF desde sus propios servidores. Leyó cinco fichas de Huawei directamente
+de `e.huawei.com`, y el tamaño que dio (514.517 bytes la del M8) coincide con la copia de Actions.
+**Primer límite**: cuando el resultado es grande lo devuelve como enlace en `api.pdf4me.com`, y
+ese dominio lo deniega el proxy de egreso (`CONNECT tunnel failed, response 403`); hay que pedirle
+la parte que interesa con `extract_text_by_expression`, que la devuelve en la respuesta.
+**Segundo**: se desconectó a mitad de sesión pidiendo volver a iniciar sesión, cosa que una sesión
+no interactiva no puede hacer. Por eso **no sustituye a Actions**: es una segunda lectura útil,
+y la copia con su hash sigue llegando por `traer-cisco-huawei.yml`. Nunca se le manda un documento
+de canal (la lista de precios del distribuidor de Aruba): es un servicio externo.
+
 El procedimiento completo —incluido qué viaja de local a producción y por qué no es la base
 de datos— está en [`IMPORTAR-CATALOGO.md`](IMPORTAR-CATALOGO.md).
 
@@ -727,7 +741,7 @@ de datos— está en [`IMPORTAR-CATALOGO.md`](IMPORTAR-CATALOGO.md).
 | ~~2~~ | ~~`cps` en 37 de los 58 FortiGate~~ **Resuelto (2026-09-02)**, y ampliado el 2026-09-03 de 53 a **56 de 58** leyendo las fichas por serie de 400F y 600F. Quedan 100F y 200F, cuyas fichas no están en la URL que sigue el patrón del resto (404, reportado). | — | resuelto vía Actions |
 | ~~3~~ | **~~PDFs de datasheets de Aruba~~ Resuelto (2026-09-11): 18/24, ver *Cerrado recientemente*.** Los 6 que quedaban atascados bajaron en sesión nueva con Chrome real: `ecQuickspecs`, `ecXlSpec`, `gw9000`, `gw9100`, `gw9200Qs` y `sdBranchVsg`. La cuota de `psnow/downloadDoc` efectivamente se había reseteado al día siguiente. De los 6 que faltan: 4 nunca fueron PDFs (páginas de documentación en vivo), 1 URL murió (`ecSpecSheet`, 404 genuino, hay que buscar el reemplazo) y 1 exige cuenta de soporte HPE (`gw9000Spec`). El método completo quedó documentado en `public/datasheets/LEEME.md`. | Nada pendiente salvo decidir el reemplazo de `ecSpecSheet` y conseguir una cuenta HPE para `gw9000Spec`. | — |
 | — | **Bytes del PDF «EdgeConnect Product Lifecycle Policy»** (entrada `ecLifecycle` en DATASHEETS, plan 10 del 2026-09-16). La entrada ya existe y la pestaña de fuentes enlaza la URL oficial; falta la copia congelada en `public/datasheets/edgeconnect-lifecycle-policy.pdf`. | `npm run datasheets` desde una máquina con salida (o navegador real) y commit del PDF — el mecanismo es el de siempre, la pared es la misma de los otros seis datasheets sin copia | El proxy de egreso responde 403 a `arubanetworking.hpe.com`; desde GitHub Actions la cuota de HPE se agota con ráfagas |
-| 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ` y las 23 AR no traen `mpps`. El motor no inventa: muestra lo que hay. | **El importador ya existe, y desde el 2026-09-04 también la plantilla**: `npm run huawei -- --check` inventaría los huecos y `npm run huawei -- --plantilla` escribe `huawei-specs.csv` y `huawei-eox.csv` ya con los 40 modelos y las cabeceras que el importador reconoce, así que el trabajo en la página se reduce a pegar cifras. Luego `npm run huawei -- huawei-specs.csv --dry` para el ensayo, sin `--dry` para aplicar, y `npm run huawei -- huawei-eox.csv --eol` para el fin de venta. **2026-09-10: el bloqueo de Akamai no es contra todo navegador** — con Chrome real (no Playwright/Actions) `support.huawei.com/enterprise/en/bulletins/` carga completo y sin captcha, con buscador por modelo (`AR6700` → 11 avisos con fecha real). Dos obstáculos nuevos, distintos del bloqueo anterior: el **contenido** de cada aviso exige cuenta Huawei (candado visible, no se intentó sortear), y lo que se ve en la lista son ciclos de vida de **versiones de software** (`V600R023C00`…), no de hardware — puede que ni sea la categoría correcta para lo que el catálogo modela (fin de venta del equipo físico). "PCN" (Product Change Notice) sí es a nivel de hardware pero no lista una categoría de routers en este momento. **2026-09-16: la categoría correcta ya no es una duda.** La búsqueda web localizó el documento oficial «Huawei NetEngine AR5700&6700&8000 Series Routers Product Life Cycle» (e.huawei.com, 2023-10-20) — ciclo de vida de **hardware**, exactamente lo que el catálogo modela — y al abrirlo pide contraseña: el contenido sigue tras la cuenta Huawei, como se sospechaba. El tablón de routers «Life Cycle Notices» existe y declara 450 avisos (la página carga; el índice es dinámico). Conclusión: el bloqueo ya no es la categoría ni el buscador, es solo la cuenta. **2026-09-29, reintentado con `agent-browser`:** `e.huawei.com`, `support.huawei.com`, `info.support.huawei.com`, `download.huawei.com`, `carrier.huawei.com` y los archivos web dan `CONNECT` 403 del proxy de egreso (`ERR_TUNNEL_CONNECTION_FAILED` en el navegador); política de la organización, no se rodea. Desde una máquina con salida: `npm run huawei -- --plantilla`. | Cuenta Huawei Enterprise para abrir el PDF «NetEngine AR5700&6700&8000 Series Routers Product Life Cycle» (e.huawei.com) y el tablón de routers — la categoría de hardware quedó confirmada el 2026-09-16, ya no hace falta aclararla |
+| 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ`. El motor no inventa: muestra lo que hay. **2026-10-05: las cifras de los AR quedaron cerradas** con sus fichas de serie, que no piden cuenta: `typ` 23/23 (cuatro huecos llenos y tres corregidos, el AR8700-8 entre ellos), y `mpps` no lo publica ninguna ficha AR, así que no es un hueco. Queda la ficha del AR6710-L, sin URL oficial localizada: sus cuatro filas no se volvieron a contrastar. **El ciclo de vida sigue igual de bloqueado**: las páginas de boletines y de Info-Finder llegan a Actions como cascarón sin fechas (corrida `37363110274`). | **El importador ya existe, y desde el 2026-09-04 también la plantilla**: `npm run huawei -- --check` inventaría los huecos y `npm run huawei -- --plantilla` escribe `huawei-specs.csv` y `huawei-eox.csv` ya con los 40 modelos y las cabeceras que el importador reconoce, así que el trabajo en la página se reduce a pegar cifras. Luego `npm run huawei -- huawei-specs.csv --dry` para el ensayo, sin `--dry` para aplicar, y `npm run huawei -- huawei-eox.csv --eol` para el fin de venta. **2026-09-10: el bloqueo de Akamai no es contra todo navegador** — con Chrome real (no Playwright/Actions) `support.huawei.com/enterprise/en/bulletins/` carga completo y sin captcha, con buscador por modelo (`AR6700` → 11 avisos con fecha real). Dos obstáculos nuevos, distintos del bloqueo anterior: el **contenido** de cada aviso exige cuenta Huawei (candado visible, no se intentó sortear), y lo que se ve en la lista son ciclos de vida de **versiones de software** (`V600R023C00`…), no de hardware — puede que ni sea la categoría correcta para lo que el catálogo modela (fin de venta del equipo físico). "PCN" (Product Change Notice) sí es a nivel de hardware pero no lista una categoría de routers en este momento. **2026-09-16: la categoría correcta ya no es una duda.** La búsqueda web localizó el documento oficial «Huawei NetEngine AR5700&6700&8000 Series Routers Product Life Cycle» (e.huawei.com, 2023-10-20) — ciclo de vida de **hardware**, exactamente lo que el catálogo modela — y al abrirlo pide contraseña: el contenido sigue tras la cuenta Huawei, como se sospechaba. El tablón de routers «Life Cycle Notices» existe y declara 450 avisos (la página carga; el índice es dinámico). Conclusión: el bloqueo ya no es la categoría ni el buscador, es solo la cuenta. **2026-09-29, reintentado con `agent-browser`:** `e.huawei.com`, `support.huawei.com`, `info.support.huawei.com`, `download.huawei.com`, `carrier.huawei.com` y los archivos web dan `CONNECT` 403 del proxy de egreso (`ERR_TUNNEL_CONNECTION_FAILED` en el navegador); política de la organización, no se rodea. Desde una máquina con salida: `npm run huawei -- --plantilla`. | Cuenta Huawei Enterprise para abrir el PDF «NetEngine AR5700&6700&8000 Series Routers Product Life Cycle» (e.huawei.com) y el tablón de routers — la categoría de hardware quedó confirmada el 2026-09-16, ya no hace falta aclararla |
 | 4 | **~~Comprobar el sitio en vivo tras desplegar~~ Cerrado (2026-09-04)**, ver *Cerrado recientemente*. Eran dos preguntas distintas y ahora las cubren dos workflows: `sonda-produccion.yml` confirma desde fuera de este entorno que el dominio público responde de verdad (`/salud` y `/login`, sin sesión), y **`pantallas.yml`** conduce las 15 pantallas detrás del muro en un Chromium de verdad y sube una captura de cada una. No hace falta producción para lo segundo: la base es efímera y se resiembra desde `legacyData/` en cada despliegue, así que lo que pinta una pantalla es función del commit. | Nada pendiente de ingeniería. Queda el **juicio**: mirar las capturas del artefacto y decidir si la pantalla dice lo que se le quiere decir a un cliente. | — |
 
 ## Fabricantes sin dimensionador
@@ -1676,6 +1690,52 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Las fichas de serie de los AR de Huawei, y el importador que no podía cargarlas (2026-10-05)
+
+Encargo del dueño: ejecutar el pendiente 14 (Huawei), la decisión pendiente de Juniper y probar
+PDF4me.
+
+- **Juniper SRX340/SRX4300 ya estaba cerrado.** Se cerró el 2026-10-02 con el datasheet vigente
+  de la línea SRX300 (ver más abajo), y `npm run catalogo` da 0 diferencias. El resumen de la
+  entrega anterior lo listó como abierto: estaba desactualizado.
+- **Qué se leyó.** Las fichas de serie AR610 (R26C00, 2026-09-28), AR650 (20250810-v3), AR5710-S,
+  AR6710-H y AR8000 (R25C10). Las URL oficiales salieron de buscar cada documento; la del AR610 se
+  descubrió en su página de documentos, como la del M14. Dos lecturas: PDF4me, que las descarga
+  desde fuera del proxy, y `pdf-parse` sobre la copia que trajo `traer-cisco-huawei.yml` (corrida
+  `37363110274`, rama `fuente/cisco-huawei`). Coinciden. El AR610 solo tiene la segunda, porque
+  PDF4me se desconectó antes, pero sus siete columnas dicen lo mismo.
+- **Qué entró**, por `npm run huawei`, con reenvío e IPsec como anclas en las 23 filas:
+  - AR611 y AR617VW-LTE4: `typ` 50 Mbps. AR651 y AR651W-8P: `typ` 600 Mbps. Eran null, y el
+    perfil SD-WAN los apartaba.
+  - AR8140 y AR8140-T: `typ` 12 → 15 Gbps.
+  - **AR8700-8: `typ` 24 → 15,5 Gbps.** Los 24 son la fila «SD-WAN IPsec performance» de su
+    propia tabla, y el texto de puertos del catálogo ya decía «24 Gbps SD-WAN IPsec IMIX». Medido
+    con el motor: entre 6,5 y 8 Gbps por sentido (16,9 a 20,8 Gbps con el margen por defecto) se
+    recomendaba el AR8700-8; ahora la pantalla dice que ningún AR llega y nombra su tope. A 5 Gbps
+    pasa del AR8700-8 al AR8140, que cumple con su cifra.
+  - Las once AR5710-S/SE y el AR6710-H se confirman tal cual.
+  - Ninguna de las cinco fichas publica Mpps: `npm run huawei -- --check` lo dice en vez de pedirlo.
+- **El importador no podía cargarlas, y eran tres fallos.** (1) `--force` solo saltaba el mínimo de
+  anclas, y una cifra que difería apartaba la fila siempre; ahora corrige como en Juniper, con dos
+  anclas en las otras columnas. (2) «Forwarding performance (NAT + ACL + QoS, IMIX)» caía en `typ`,
+  que reclamaba todo lo que dijera «IMIX»; y «SD-WAN IPsec» podía robar el IPsec. (3) «15.5 Gbps»
+  en una celda se leía como 15,5 Mbps: la unidad de la celda se descartaba, y la deducción por
+  columna no tiene en qué apoyarse justo en la cifra que se corrige. Seis sabotajes, cazados; dos
+  de ellos solo después de añadir el caso con las columnas en otro orden.
+- **El portal** escribe su propio texto SD-WAN para los AR, y los cuatro que tenían «—» dicen ahora
+  la cifra del dimensionador (lo exige `test/servidor-produccion.test.js`). La línea base legada
+  «50 Mbps SD-WAN» del motor pasa al AR651: cambió el dato, no el motor.
+- **Procedencia**: las cinco fichas entran en `fuentes.js` con su fecha de generación y los campos
+  que respaldan. La vigía medirá su hash el lunes.
+- **`verificar` estaba en rojo en `main`** (corrida `37358700356`) por un aviso alto nuevo de
+  `braces` (GHSA-vfj7-8cjw-p6xm) sin versión arreglada, que llega solo por `nodemon` → `chokidar`.
+  Excepción declarada en `scripts/auditar-dependencias.js` hasta el 2027-01-03, y la línea del freno
+  ya no dice «arreglo: npm audit fix» cuando npm solo propone un cambio de versión mayor (bajar
+  `nodemon` a la 1.14.10). La PR de Dependabot de esa mañana estaba roja por lo mismo.
+- **Lo que sigue abierto**: el ciclo de vida de los 40 Huawei (la cuenta Huawei), las cifras de las
+  NetEngine, la ficha del AR6710-L (sin URL oficial) y cambiar `nodemon` por `node --watch` antes de
+  que caduque la excepción.
 
 ### Una sola copia de cada cifra también en el cotizador (2026-10-03)
 

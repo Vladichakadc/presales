@@ -19,10 +19,10 @@
 // ninguna. Las ocho filas duplicadas de Cisco, que la siembra ignoraba enteras, se quitaron.
 module.exports = {
 hw_ar:[
-  {model:'AR611',ser:'AR610',seg:'SOHO',sdwan:'—',ports:'1 GE WAN + 8 GE LAN'},
-  {model:'AR617VW-LTE4',ser:'AR610',seg:'SOHO + móvil',sdwan:'—',ports:'GE + VDSL + LTE + Wi-Fi'},
-  {model:'AR651',ser:'AR650',seg:'Sucursal pequeña',sdwan:'—',ports:'2 GE WAN + 8 GE LAN'},
-  {model:'AR651W-8P',ser:'AR650',seg:'Sucursal + PoE + Wi-Fi',sdwan:'—',ports:'2 GE WAN + 8 GE PoE + Wi-Fi'},
+  {model:'AR611',ser:'AR610',seg:'SOHO',sdwan:'50 Mbps',ports:'1 GE WAN + 8 GE LAN'},
+  {model:'AR617VW-LTE4',ser:'AR610',seg:'SOHO + móvil',sdwan:'50 Mbps',ports:'GE + VDSL + LTE + Wi-Fi'},
+  {model:'AR651',ser:'AR650',seg:'Sucursal pequeña',sdwan:'600 Mbps',ports:'2 GE WAN + 8 GE LAN'},
+  {model:'AR651W-8P',ser:'AR650',seg:'Sucursal + PoE + Wi-Fi',sdwan:'600 Mbps',ports:'2 GE WAN + 8 GE PoE + Wi-Fi'},
   {model:'AR5710-S8T2X',ser:'AR5710-S',seg:'Sucursal mediana',sdwan:'620 Mbps',ports:'2x10GE WAN + 8 GE LAN'},
   {model:'AR5710-S8P2X',ser:'AR5710-S',seg:'Sucursal mediana + PoE++',sdwan:'620 Mbps',ports:'2x10GE WAN + 8 GE PoE++'},
   {model:'AR5710-S8T2XE',ser:'AR5710-SE',seg:'Sucursal reforzada',sdwan:'720 Mbps',ports:'2x10GE WAN + 8 GE LAN · 4 GB RAM'},
