@@ -10,7 +10,7 @@ lleva al lado cómo se comprobó.
 
 | # | Decisión | Quién | Tiempo | Qué cierra |
 |---|---|---|---|---|
-| 1 | Activar «Wait for CI» en Railway | Dueño del repositorio | 2 min | Pendiente 33 y condición 4 del GO |
+| 1 | ~~Activar «Wait for CI» en Railway~~ **Hecho**: el 2026-10-05 el servicio da `checkSuites: true` y un `verificar` en rojo saltó un despliegue | Dueño del repositorio | 2 min | Pendiente 33 y condición 4 del GO |
 | 2 | Aprobar o no el GO CONDICIONADO de Fortinet | Arquitecto Fortinet | 30-45 min | Condición 1 del GO |
 | 3 | Regla 70/30 de Aruba (M4) | Dueño del producto | 5 min | M4 |
 | 4 | Prueba con un lector de pantalla real | Cualquier persona con NVDA o VoiceOver | 45 min | Última parte de la condición 3 del GO |

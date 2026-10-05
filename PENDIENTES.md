@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-05, tarde (**Las fichas de serie de los AR de Huawei, leídas con PDF4me y con la copia de Actions.** Los 23 AR tienen ya reenvío, IPsec y SD-WAN típico: se llenaron cuatro `typ` vacíos (AR611 y AR617VW-LTE4 a 50 Mbps, AR651 y AR651W-8P a 600) y se corrigieron tres. El **AR8700-8** llevaba 24 Gbps, que es la fila «SD-WAN IPsec» de su propia tabla; su SD-WAN típico es 15,5, y el dimensionador lo recomendaba entre 16,9 y 20,8 Gbps de demanda, donde no llega. Para cargarlo hubo que arreglar el importador: `--force` no corregía nada y la cabecera literal de Huawei caía en el campo equivocado. Ninguna ficha AR publica Mpps. **El ciclo de vida (EOM/EOS) sigue bloqueado por la cuenta Huawei.** De paso, `verificar` estaba en rojo en `main` por un aviso nuevo de `braces` sin arreglo: excepción declarada hasta el 2027-01-03. Juniper SRX340/SRX4300 ya estaba cerrado desde el 2026-10-02. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-05, tarde (**Las fichas de serie de los AR de Huawei, leídas con PDF4me y con la copia de Actions.** Los 23 AR tienen ya reenvío, IPsec y SD-WAN típico: se llenaron cuatro `typ` vacíos (AR611 y AR617VW-LTE4 a 50 Mbps, AR651 y AR651W-8P a 600) y se corrigieron tres. El **AR8700-8** llevaba 24 Gbps, que es la fila «SD-WAN IPsec» de su propia tabla; su SD-WAN típico es 15,5, y el dimensionador lo recomendaba entre 16,9 y 20,8 Gbps de demanda, donde no llega. Para cargarlo hubo que arreglar el importador: `--force` no corregía nada y la cabecera literal de Huawei caía en el campo equivocado. Ninguna ficha AR publica Mpps. **El ciclo de vida (EOM/EOS) sigue bloqueado por la cuenta Huawei.** De paso, `verificar` estaba en rojo en `main` por un aviso nuevo de `braces` sin arreglo: excepción declarada hasta el 2027-01-03. **Y ese rojo descubrió que Railway ya espera a CI** (`checkSuites: true`): el despliegue anterior quedó SKIPPED. Se cierra el punto 33. Juniper SRX340/SRX4300 ya estaba cerrado desde el 2026-10-02. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-05 (**Auditoría de prompts con el subcomando `prompt-audit` de la skill `claude-api`, sobre `main` en `738aa80`.** Propone y no aplica: informe y parche en `docs/prompt-audit-2026-10-05/`. La auditoría del 25-sep ya estaba aplicada desde `40e4d47`, así que no se repite. Lo nuevo: **todo `.txt` subido a «Sincronizar» falla**, porque viaja en base64 con `text/plain` y la API solo admite base64 para PDF; **seis afirmaciones de `CLAUDE.md` que el código contradice** (tres símbolos y un workflow de Fortinet que ya no existen, y tres recuentos atrasados); y el análisis no registra cuántos tokens cuesta. Con el parche aplicado pasan 779/779 pruebas. Ver *Decisiones que necesitan al dueño*.)
 
@@ -1385,7 +1385,7 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     parche (`e2e-ci.patch`) porque el token en uso no tiene scope «workflow» —
     aplicarlo es acción manual del dueño, junto a la de 33.
 
-33. **Railway no espera a CI (reformulado el 2026-09-24).** *Segundo intento el 2026-09-24, con
+33. **~~Railway no espera a CI~~ Cerrado: desde el 2026-10-05, a más tardar, sí espera.** `get-service-config` da `source.checkSuites: true` (no consta quién lo activó ni cuándo; el 2026-09-24 era `false`). Visto funcionar el mismo día: el despliegue de `2dbf766` quedó SKIPPED con `verificar` en rojo, y el de `4d7ff20` esperó en WAITING a `verificar` y `pantallas`. Ver *Cerrado recientemente*. Lo que sigue es la historia. *Segundo intento el 2026-09-24, con
     autorización expresa del dueño: tampoco fue posible. `describe-service` confirma
     `checkSuites: false`; el conector de Railway no tiene ninguna herramienta que toque ese campo
     y su agente volvió a responder «Agent usage limit reached» dos veces. Queda como un clic del
@@ -1649,7 +1649,7 @@ que ya se comprobó y lo que cuesta cada opción.
     día `multer` llegó a `main` por el freno de `npm audit`.
   - La red de actualizaciones existía, pero no llegaba a `main`. Desde hoy, `verificar` frena en
     cualquiera de ellos si trae un aviso alto.
-- **Activar «Wait for CI» en Railway** (`presales-web` → *Settings* → *Source*). Medido el
+- **~~Activar «Wait for CI» en Railway~~ Hecho**: el 2026-10-05 el servicio da `checkSuites: true`, y ese día un `verificar` en rojo saltó un despliegue (punto 33). Lo que sigue es como estaba. (`presales-web` → *Settings* → *Source*). Medido el
   2026-09-24: `source.checkSuites: false`. **Desde la sesión no se pudo, y se intentó con
   autorización expresa del dueño**: el conector de Railway no expone ese ajuste y su agente
   respondió dos veces «Agent usage limit reached»; no hay CLI ni token en el contenedor. **Se
@@ -1733,6 +1733,10 @@ PDF4me.
   Excepción declarada en `scripts/auditar-dependencias.js` hasta el 2027-01-03, y la línea del freno
   ya no dice «arreglo: npm audit fix» cuando npm solo propone un cambio de versión mayor (bajar
   `nodemon` a la 1.14.10). La PR de Dependabot de esa mañana estaba roja por lo mismo.
+- **Railway ya espera a CI** (`checkSuites: true`): por eso el despliegue de `2dbf766` quedó
+  SKIPPED con ese rojo, y producción siguió en `738aa80` hasta este push. El de `4d7ff20` esperó en
+  WAITING a `verificar` y `pantallas` (con `verificar` ya en verde y `pantallas` en curso al escribir esto). Cierra el punto 33 y la condición 4 del GO de
+  Fortinet; `CLAUDE.md` decía lo contrario y se corrigió.
 - **Lo que sigue abierto**: el ciclo de vida de los 40 Huawei (la cuenta Huawei), las cifras de las
   NetEngine, la ficha del AR6710-L (sin URL oficial) y cambiar `nodemon` por `node --watch` antes de
   que caduque la excepción.
