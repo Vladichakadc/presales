@@ -12,7 +12,9 @@ name: traer-cisco-huawei
 #           cifras de capacidad tampoco coinciden entre el cotizador y el dimensionador, y la
 #           del M14: el dimensionador dice 2 Tbps y la guia de diseno 7,2. De la ficha del M14
 #           solo se conoce la pagina de documentos (el identificador del material); la URL del
-#           PDF se DESCUBRE en esa pagina, no se adivina por patron.
+#           PDF se DESCUBRE en esa pagina, no se adivina por patron. Y desde el 2026-10-05, las
+#           fichas de las series AR (AR610, AR650, AR5710-S, AR6710-H, AR8000): el `typ` vacio del
+#           AR611 y del AR651, y el del AR8700-8, que el catalogo daba como 24 Gbps.
 #   JUNIPER · el datasheet vigente de la linea SRX300 (2026-10-02): el cotizador cita del
 #           SRX340 4,7 Gbps y 733 Mbps y el dimensionador 3 Gbps y 600 Mbps de la matriz de
 #           2020. Las dos son oficiales; hay que leer la tabla entera para decidir cual manda. Desde el entorno de edicion `support.huawei.com` e
@@ -91,6 +93,23 @@ jobs:
               { archivo: 'huawei-ne8000-m-serie.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Mpps', urls: [
                 'https://carrier.huawei.com/en/products/fixed-network/data-communication/router/NetEngine-8000-Series-Router/NetEngine-8000-M-Series',
                 'https://support.huawei.com/enterprise/en/doc/EDOC1100518177/e4ccf4a0/netengine-8000-m8',
+              ] },
+              { archivo: 'huawei-ar650-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+                'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/c42dc1420bae4b5cb6188ae903e43fd0/M3T1A590N1161701582779183172/Huawei%20NetEngine%20AR650%20Series%20Enterprise%20Routers%20Datasheet_20250810-v3.pdf',
+              ] },
+              { archivo: 'huawei-ar610-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'e1fc81f9c69d43eb96d1190f77711067', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/e1fc81f9c69d43eb96d1190f77711067',
+              ] },
+              { archivo: 'huawei-ar610-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+                descubrir: { de: 'huawei-ar610-documento.html', material: 'Material/e1fc81f9c69d43eb96d1190f77711067/' } },
+              { archivo: 'huawei-ar5710-s-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+                'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/5ed29e82ccc645fb94689a1fbd26bee7/M3T1A590N1245441110459510930/Huawei%20NetEngine%20AR5710-S%20Series%20Enterprise%20Router%20Data%20Sheet-R25C10.pdf',
+              ] },
+              { archivo: 'huawei-ar6710-h-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+                'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/c63ee1473b9147a4b6a50dc64c8f1bcd/M3T1A590N1244327824896741626/Huawei%20NetEngine%20AR6710-H%20Series%20Enterprise%20Router%20Data%20Sheet-R25C10.pdf',
+              ] },
+              { archivo: 'huawei-ar8000-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+                'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/eeda8c0f3659461cbe23ad0a36bc7d78/M3T1A590N1244677017247076576/Huawei%20NetEngine%20AR8000%20Series%20Enterprise%20Router%20Data%20Sheet-R25C10.pdf',
               ] },
               { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
                 'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
