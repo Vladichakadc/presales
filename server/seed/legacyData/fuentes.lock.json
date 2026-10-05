@@ -5,134 +5,162 @@
       "hashVerificado": "242a6eba814f3583d658e267934447c6cb21481f03cdfab83d9e821708e72624",
       "clase": "bytes",
       "bytes": 123387,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-05T14:02:33.697Z"
     },
     "cisco::https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html": {
       "documento": "Boletines oficiales de fin de venta (EOL)",
       "hashVerificado": "8b7d2e78821894b29222b5958987f45771a1cb620988c41ec5446a2db8f2e893",
       "clase": "texto",
-      "bytes": 173909,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "bytes": 173911,
+      "medido": "2026-10-05T14:02:33.697Z"
     },
     "juniper::https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/security-products-comparison-chart.pdf": {
       "documento": "SRX Series and vSRX Performance and Features Matrix",
       "hashVerificado": "ac24c11aae0cf0ef594227b1ebfd4d4a335969f34f2e8a3c8da118af1bb9d5e0",
       "clase": "bytes",
       "bytes": 392019,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-05T14:02:33.697Z"
     },
     "mikrotik::https://mikrotik.com/products": {
       "documento": "Datasheets publicos y MSRP de mikrotik.com",
       "hashVerificado": "60297d782cae84b3ea2bbd73157ed988cfbf19b55c7c59aa568f268f17034d42",
       "clase": "texto",
       "bytes": 476385,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-05T14:02:33.697Z"
     },
     "aruba::https://www.hpe.com/us/en/networking.html": {
       "documento": "Paginas de producto y tienda oficiales de HPE/Aruba",
-      "hashVerificado": "add187962f6e03f97be3de310c387887fa2f5f3821d45b9c742dc9f383052096",
+      "hashVerificado": "6e73f386b22d7b2877333e81f74c3804a74afdf3d99a8ce69413c6d2a3a7653e",
       "clase": "texto",
-      "bytes": 335783,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "bytes": 335421,
+      "medido": "2026-10-05T14:02:33.697Z"
     },
     "nokia::https://www.nokia.com/networks/ip-networks/": {
       "documento": "Datasheets oficiales de producto",
       "hashVerificado": "4131a1bf41760f439b6a6921d47fe9ed5aca202bdf3e75ae53d845ee2ab5e772",
       "clase": "texto",
-      "bytes": 306308,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "bytes": 306310,
+      "medido": "2026-10-05T14:02:33.697Z"
     },
     "cisco::https://www.cisco.com/c/dam/en/us/products/collateral/routers/secure-routers/8300-series-secure-routers-ds.pdf": {
       "documento": "Cisco 8300 Series Secure Routers Data Sheet",
       "hashVerificado": "815494c6a4b7c876ff28b501a539424c5ec78c7995b8e471602837023359374e",
       "clase": "bytes",
       "bytes": 804120,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-05T14:02:33.697Z"
     },
     "juniper::https://support.juniper.net/support/eol/product/srx_series/": {
       "documento": "SRX Series Hardware Dates & Milestones",
       "hashVerificado": "c3b1c5da2877300ea66ffac68a84e566f903bc7c987cb5e321ea7b64a5ec1ae1",
       "clase": "texto",
       "bytes": 104777,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-05T14:02:33.697Z"
     },
     "nokia::https://www.nokia.com/asset/f/207599/": {
       "documento": "Fichas de serie de Nokia (7220 IXR-D, 7750 SR-1x, 7750 SR-s, 7250 IXR-e)",
       "hashVerificado": "8294ee4f52397023cd63c0a4912a4a12ac907f5cac05946f7c7ccb97645df71d",
       "clase": "bytes",
       "bytes": 818294,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-05T14:02:33.697Z"
     },
     "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/ko_kr/ds-fortigate-100f-series_ko.pdf": {
       "documento": "Fichas por serie de FortiGate 100F y 200F, edicion coreana oficial (FG-100F-DAT-R30-20230227, FG-200F-DAT-R17-20230125)",
       "hashVerificado": "5f833b82422b1cfa1eb910b2916fe4231f4ed5c1479d990161a0da4d1e5c039e",
       "clase": "bytes",
       "bytes": 28635034,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-05T14:02:33.697Z"
     },
     "fortinet::https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/42d64717-83f1-11e9-81a4-00505692583a/FG-100F-QSG.pdf": {
       "documento": "QuickStart Guide FortiGate 100F Series y FortiGate 200F Series",
       "hashVerificado": "1e28fd9d8a949830554e58a32b9563841a26ba1fbf2468cb002d612fe63ea1ff",
       "clase": "bytes",
       "bytes": 5942011,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-05T14:02:33.697Z"
     },
     "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-secure-sdwan.pdf": {
       "documento": "Secure SD-WAN Ordering Guide (SDWAN-OG-R31-20260804)",
       "hashVerificado": "b5c35f97d868b3555bb6dec73c224d32ecba743eb48c790d21d52f9141991e99",
       "clase": "bytes",
       "bytes": 1091677,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-05T14:02:33.697Z"
     },
     "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-fortiguard.pdf": {
       "documento": "FortiGate Subscriptions and FortiGuard Bundles Ordering Guide",
       "hashVerificado": "6956386f29998b926bceb43e3afdcd24f5d0696acea4ad9fa4f89489e2ff7718",
       "clase": "bytes",
       "bytes": 542393,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-05T14:02:33.697Z"
     },
     "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-forticlient.pdf": {
       "documento": "FortiClient Ordering Guide",
       "hashVerificado": "a743cbf6f808d0736a61411814d1acdf5afbee5214bd2c4abccb8f3c287a5503",
       "clase": "bytes",
       "bytes": 632760,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-05T14:02:33.697Z"
     },
     "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-fortisase.pdf": {
       "documento": "FortiSASE Ordering Guide",
       "hashVerificado": "7c93b656a7f191884b25e60cfdcedb60cfb480471e2cdeb344e3274861d65e8b",
       "clase": "bytes",
       "bytes": 627184,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-05T14:02:33.697Z"
     },
     "fortinet::https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/51fcbb4f-33ff-11ef-bfe5-fa163e15d75b/fortios-v7.6.0-release-notes.pdf": {
       "documento": "FortiOS 7.6 Release Notes (7.6.0 y 7.6.3)",
       "hashVerificado": "411229fc403b82bc173df77d1a600bbcd45462942445237879250e3505580bf8",
       "clase": "bytes",
       "bytes": 1325974,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-05T14:02:33.697Z"
     },
     "fortinet::https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/c7e69026-9283-11eb-b70b-00505692583a/fortigate-7121F-system-guide.pdf": {
       "documento": "FortiGate 7081F System Guide (7.0.5) y FortiGate-7121F System Guide (7.4.4)",
       "hashVerificado": "6ffc7a1a1c13e224f9d5f8137cbd8536b29950cdbfbef7cb68ac3dfd1d1939af",
       "clase": "bytes",
       "bytes": 10142578,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-05T14:02:33.697Z"
     },
     "juniper::https://www.juniper.net/documentation/us/en/hardware/srx1600/index.html": {
       "documento": "Hardware guides por modelo (SRX300/320/340/345/1500/1600/2300/4100/4200/4300/4700)",
       "hashVerificado": "217679ceb7a8f90c49a3f6e6116308a070836ad60853a3bd57d57d0d756212e8",
       "clase": "texto",
       "bytes": 9734,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-05T14:02:33.697Z"
     },
     "juniper::https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx1600-firewall-datasheet.pdf": {
       "documento": "Fichas por modelo de la generacion 2024 (SRX1600, SRX2300, SRX4300)",
       "hashVerificado": "2175d9142d15811c57eb9562163fb91a242b1cc87166ac705fe20e28f04474fb",
       "clase": "bytes",
       "bytes": 484008,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-05T14:02:33.697Z"
+    },
+    "juniper::https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html": {
+      "documento": "SRX300 Line of Firewalls for the Branch Datasheet",
+      "hashVerificado": "7080f664dac5fb5db5af596bdb8a9d0f5f4fbe0d3e34334c4eefbd3dd5b37122",
+      "clase": "texto",
+      "bytes": 765790,
+      "medido": "2026-10-05T14:02:33.697Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/e9dd06e260b64df683f6221fc8442cbf/M3T1A590N1140253824460255266/NetEngine%208000%20M8%20Universal%20Service%20Router%20Datasheet.pdf": {
+      "documento": "NetEngine 8000 M8 Universal Service Router Datasheet",
+      "hashVerificado": "002d48718689267fa7d4eb265746bc5919fb2dca9fd93e4a05da6f348993a9ee",
+      "clase": "bytes",
+      "bytes": 514517,
+      "medido": "2026-10-05T14:02:33.697Z"
+    },
+    "huawei::https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/49184bd3a3c54e4b90f6d73b55ba1558/M3T1A590N1101892422391505075/NetEngine%208000%20F8%20Datasheet.pdf": {
+      "documento": "NetEngine 8000 F8 Datasheet",
+      "hashVerificado": "107811c85e1d1a3c23de811ae41e022b5fc0a2331421f3f0718f49cfd094e232",
+      "clase": "bytes",
+      "bytes": 455262,
+      "medido": "2026-10-05T14:02:33.697Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/f4f1a7b9424a44ff9770b75a19eb5d2e/M3T1A590N1267221252983996547/NetEngine%208000%20M14%20Universal%20Service%20Router%20Datasheet.pdf": {
+      "documento": "NetEngine 8000 M14 Universal Service Router Datasheet",
+      "hashVerificado": "16afc5d6081ac348b22100120a0d93aa8d7081fbddd6968bf1c8bafece5369be",
+      "clase": "bytes",
+      "bytes": 446839,
+      "medido": "2026-10-05T14:02:33.697Z"
     }
   },
-  "revisado": "2026-10-02T04:24:40.380Z"
+  "revisado": "2026-10-05T14:02:33.697Z"
 }
