@@ -24,17 +24,12 @@ const { spawnSync } = require('child_process');
 
 // Avisos altos o críticos que se aceptan por un tiempo, con su motivo. Vacío del 2026-10-02 al
 // 2026-10-05: los cuatro avisos del 2 de octubre tenían arreglo y se cerraron con `npm audit fix`.
+// Del 2026-10-05 al 2026-10-06 tuvo una, `braces` (GHSA-vfj7-8cjw-p6xm), sin versión arreglada y
+// solo por nodemon -> chokidar; se retiró al cambiar nodemon por `node --watch`, que quita la
+// cadena entera. Forma de una entrada:
 //   { id: 'GHSA-xxxx-xxxx-xxxx', paquete: 'nombre', motivo: 'por qué no se puede arreglar aún
 //     o por qué no aplica aquí', caduca: 'AAAA-MM-DD' }
-const EXCEPCIONES = [
-  { id: 'GHSA-vfj7-8cjw-p6xm', paquete: 'braces',
-    motivo: 'Sin versión arreglada: la 3.0.3 es la última publicada y está en el rango (<=3.0.3), y lo único que '
-      + 'propone npm es bajar nodemon de la 3.1.14 a la 1.14.10. Llega solo por nodemon -> chokidar, una '
-      + 'dependencia de desarrollo que vigila archivos en `npm run dev`: el servidor no la carga y los '
-      + 'patrones que expande los escribe quien desarrolla, no un usuario. La salida definitiva es cambiar '
-      + 'nodemon por `node --watch`, que quita la cadena entera.',
-    caduca: '2027-01-03' },
-];
+const EXCEPCIONES = [];
 
 const FRENAN = new Set(['high', 'critical']);
 const NOMBRE = { critical: 'CRÍTICO', high: 'ALTO', moderate: 'moderado', low: 'bajo', info: 'info' };

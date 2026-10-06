@@ -6,7 +6,7 @@
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
-    "dev": "nodemon server/server.js",
+    "dev": "node --watch server/server.js",
     "test": "node --test test/*.test.js",
     "lint": "eslint .",
     "verificar": "npm run lint && npm test",
@@ -51,7 +51,6 @@
   "devDependencies": {
     "axe-core": "^4.13.0",
     "eslint": "^9.39.5",
-    "nodemon": "^3.1.10",
     "pdf-parse": "^1.1.4"
   },
   "allowScripts": {
