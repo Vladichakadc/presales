@@ -20,8 +20,10 @@
                            margen, penalizaciones y una cuota de breakout invertida.
         boostRecMbps     — el Boost recomendado por HPE de cada appliance, como numero,
                            para descartar el modelo que no lo sostiene.
-   A1 · admiteDtd        — Dynamic Threat Defense no corre en EC-XS (doc oficial): filtro
-                           duro, no solo un aviso rojo debajo de la recomendacion.
+   A1 · admiteDtd        — Dynamic Threat Defense solo en EdgeConnect y no en el modelo
+                           marcado `dtd:false`: filtro duro, no solo un aviso rojo. Hasta el
+                           2026-10-06 lo estaba el EC-XS entero; la doc oficial solo exceptua
+                           sus PN 200889 y 200900, y el vigente publica su capacidad IDS/IPS.
    R11/M9 · escenariosUnderlay (2026-09-24) — un enlace de respaldo no suma en operacion
                            normal: un 4G de backup inflaba el caudal, el tier y a veces el
                            appliance. Misma regla que Fortinet (etapa 7).
@@ -101,7 +103,8 @@
   }
 
   // A1. ¿Admite Dynamic Threat Defense (IDS/IPS en el chasis)? Solo EdgeConnect, y no el
-  // modelo que el catalogo marca `dtd:false` (EC-XS, doc oficial de IDS/IPS).
+  // modelo que el catalogo marque `dtd:false`. La capacidad publicada (idsMbps) la comprueba
+  // la pagina, porque depende del escenario.
   function admiteDtd(m) {
     return !!m && m.fam === 'ec' && m.dtd !== false;
   }

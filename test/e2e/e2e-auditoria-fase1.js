@@ -52,10 +52,27 @@ const wan = (...links) => ({ v: 2, wanLinks: links.map((l, i) => ({ id: i + 1, m
   {
     const r = await cargar({ famSeg: 'ec', users: 8, perUser: 2, selSeguridad: 'dtd',
       wanLinksData: wan({ tipo: 'Banda Ancha', down: 40, up: 10, simetrico: false }) });
-    t.ok(r.pick && r.pick !== 'EC-XS', `D: con DTD ya no recomienda EC-XS (${r.pick})`);
+    // Desde el 2026-10-06 el EC-XS sí admite DTD (su spec sheet publica 300 Mbps de IDS/IPS en
+    // línea), pero el más pequeño que cumple sigue siendo el EC-10104.
+    t.ok(r.pick === 'EC-10104', `D: con DTD recomienda el EC-10104 (${r.pick})`);
     t.ok(/EdgeConnect Foundation — 100 Mbps\s+S1C\d{2}AAS/.test(r.bom), 'D: Foundation 100 Mbps con SKU (antes «Foundation 50 Mbps»)');
     t.ok(/Dynamic Threat Defense/.test(r.bom) && !/\[ROJO\] Dynamic Threat Defense/.test(r.bom),
       'D: DTD cotizado sobre un modelo que sí lo corre, sin alerta roja');
+  }
+
+  // ── EC-XS con DTD (2026-10-06): lo admite, con su capacidad IDS/IPS como techo ──
+  {
+    const bajo = await cargar({ famSeg: 'ec', users: 8, perUser: 2, selSeguridad: 'dtd',
+      wanLinksData: wan({ tipo: 'Banda Ancha', down: 40, up: 10, simetrico: false }) });
+    const opciones = await page.$$eval('#verdict-sel option', (os) => os.map((o) => o.value));
+    t.ok(opciones.includes('EC-XS'), `DTD a 40 Mbps: el EC-XS es candidato (${opciones.join(', ')})`);
+    t.ok(!/Por la capacidad de IDS\/IPS de Dynamic Threat Defense/.test(bajo.verdict), 'y nada lo aparta por IDS/IPS');
+    const alto = await cargar({ famSeg: 'ec', users: 8, perUser: 2, selSeguridad: 'dtd',
+      wanLinksData: wan({ tipo: 'DIA', down: 200 }) });
+    const ops2 = await page.$$eval('#verdict-sel option', (os) => os.map((o) => o.value));
+    t.ok(!ops2.includes('EC-XS'), `DTD a 200 Mbps: el EC-XS ya no es candidato (${ops2.join(', ')})`);
+    t.ok(/Por la capacidad de IDS\/IPS de Dynamic Threat Defense[^.]*EC-XS[^.]*en línea 300/.test(alto.verdict.replace(/\s+/g, ' ')),
+      'y la ficha dice por qué: su IDS/IPS en línea de 300 Mbps, con la cifra');
   }
 
   // ── C4 · Escenario E: hub MPLS 1G + DIA 1G, Boost, segmentación, HA ────────

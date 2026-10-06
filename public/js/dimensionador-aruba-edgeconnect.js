@@ -435,7 +435,7 @@ const SEC_HINT={
   none:'El NGFW y la clasificación de aplicaciones (AppRF, ~3.500 apps) ya van en Foundation. Activa una estrategia solo si el diseño exige IDS/IPS o inspección en la nube.',
   sse:'HPE Aruba Networking SSE (ex-Axis): ZTNA, SWG, CASB y DEM en suscripción POR USUARIO — paquetes oficiales Foundation ZTNA / Foundation SWG / Foundation Plus / Advanced / Advanced Plus (QuickSpecs SSE a50009212enw). EdgeConnect monta los túneles IPsec orquestados y AppExpress elige el mejor PoP. Entra en la lista como «consultar»: HPE no publica List Price de SSE.',
   gwsec:'IDS/IPS, antimalware y panel de seguridad EN el gateway SD-Branch: la suscripción de Central pasa a su nivel «+ Security» (Foundation o Advanced), que HPE publica para las series 9000, 9100 y 9200 — no para 7000/7200 ni para EdgeConnect, donde la vía es Dynamic Threat Defense. El gateway se dimensiona contra su throughput de IDS/IPS oficial (VSG SD-Branch, sep-2026: 9004/9012 1,1 Gbps, 9106 2,5, 9114 4 y 9240 6 Gbps), no contra el de firewall; el 9004-LTE no publica esa cifra y se aparta. Los SKU son los oficiales de cada serie; su precio se confirma con el distribuidor (la lista cargada no los trae).',
-  dtd:'Dynamic Threat Defense: IDS/IPS, DDoS adaptativo y clasificación web EN el chasis EdgeConnect — licencia opcional aparte de Foundation/Advanced (QuickSpecs p.32), con SKU y List Price en la lista vigente (escalera plana por appliance, 2026-06-01): se cotiza por appliance y término. Regla de dimensionado del arquitecto (SIN FUENTE oficial): reserva un 35 % adicional de capacidad de proceso para la inspección. No corre en EC-XS (doc oficial) y exige familia EdgeConnect.',
+  dtd:'Dynamic Threat Defense: IDS/IPS, DDoS adaptativo y clasificación web EN el chasis EdgeConnect — licencia opcional aparte de Foundation/Advanced (QuickSpecs p.32), con SKU y List Price en la lista vigente (escalera plana por appliance, 2026-06-01): se cotiza por appliance y término. Regla de dimensionado del arquitecto (SIN FUENTE oficial): reserva un 35 % adicional de capacidad de proceso para la inspección. En el EC-XS vigente, IDS/IPS hasta 300 Mbps en línea (spec sheet); no corre en los EC-XS de PN 200889 y 200900 (doc oficial). Exige familia EdgeConnect.',
 };
 // Factor IMIX (brief del duenyo 2026-09-13, SIN FUENTE oficial): el throughput nominal de
 // datasheet se mide en laboratorio (UDP de paquete grande); con mezcla real de Internet
@@ -1388,7 +1388,7 @@ function bloquesBoost(mbps){
 // Flujos simultáneos que publica cada fuente: EdgeConnect los da como «conexiones
 // simultáneas» del datasheet (spec.conexiones, texto con miles); los gateways como
 // sesiones de firewall (fwSess, ya numérico). null = la fuente no lo publica para ese
-// modelo (EC-V, 9240) y el motor lo declara en vez de inventarlo.
+// modelo (EC-V) y el motor lo declara en vez de inventarlo.
 function flujosDe(m){
   if(m.fam==='ec'){
     const s=m.spec&&m.spec.conexiones;
@@ -1669,11 +1669,16 @@ const REGLAS_DISENO=[
   // (La antigua alerta «HA exige exactamente 2 unidades y la cantidad es N» desapareció
   // el 2026-09-15: sin campo de cantidad, las unidades se deducen de HA — 1 ó 2 — y la
   // contradicción ya no es alcanzable.)
-  // IDS/IPS no corre en EC-XS (doc oficial Orchestrator/IDS: PN 200889/200900 sin soporte;
-  // en EC-V exige min. 4 vCPU y 16 GB RAM). Marcar DTD con un EC-XS seleccionado es un
-  // diseno imposible — hay que subir de modelo o quitar la funcion.
+  // IDS/IPS no corre en el EdgeConnect que el catálogo marque `dtd:false` (hoy ninguno: la
+  // documentación del Orchestrator solo exceptúa los EC-XS de PN 200889 y 200900, revisiones
+  // antiguas; en EC-V exige mín. 4 vCPU y 16 GB RAM). Y donde el fabricante publica la
+  // capacidad de IDS/IPS, el caudal a inspeccionar no puede pasarla.
   {nivel:'rojo', cuando:(D,m)=>m.fam==='ec'&&secMode==='dtd'&&!ArubaReglas.admiteDtd(m),
-   texto:()=>'Dynamic Threat Defense (IDS/IPS) NO corre en EC-XS segun la documentacion oficial de HPE: sube de modelo (EC-10104 en adelante) o cambia la estrategia de seguridad.'},
+   texto:(D,m)=>`Dynamic Threat Defense (IDS/IPS) NO corre en ${m.id} según la documentación oficial de HPE: sube de modelo o cambia la estrategia de seguridad.`},
+  {nivel:'rojo', cuando:(D,m)=>m.fam==='ec'&&secMode==='dtd'&&m.idsMbps!=null&&m.idsMbps*IMIX_FACTOR<D.needProc,
+   texto:(D,m)=>`IDS/IPS insuficiente: ${m.id} inspecciona hasta ${fmt(m.idsMbps)} en línea (spec sheet; ×${IMIX_FACTOR} IMIX) y el escenario necesita ${fmt(D.needProc)}.`},
+  {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&secMode==='dtd'&&Array.isArray(m.idsPnExcluidos)&&m.idsPnExcluidos.length>0,
+   texto:(D,m)=>`${m.id} con Dynamic Threat Defense: la documentación de HPE exceptúa los de PN ${m.idsPnExcluidos.join(' y ')} (revisiones antiguas de hardware). Una unidad nueva corre IDS/IPS; si se amplía un parque instalado, confirma el número de parte de cada unidad.`},
   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&D.boost&&!D.bundle,
    texto:()=>'Boost marcado pero EXCLUIDO: es un add-on de la suscripcion EdgeConnect — sin ella no hay fabric que optimizar.'},
   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&secMode==='dtd'&&!D.bundle,
@@ -1934,7 +1939,7 @@ function render(){
   const outBySinSfp=[];
   // gwsec (2026-09-24): gateways sin nivel «+ Security» en el documento oficial (7000/7200),
   // y los que no llegan (o no publican) el throughput de IDS/IPS del VSG.
-  const outBySinSec=[], outByIds=[];
+  const outBySinSec=[], outByIds=[], outByIdsEc=[];
   // M2 · Auditoría de puertos (SPEC B.3): el EC-10104 (4× RJ-45, sin SFP) queda descartado
   // si los enlaces declarados no caben en sus puertos o alguno es óptico. Se anota si el
   // modelo habría sido candidato sin esta regla: es lo que dispara #alertaEscalado.
@@ -1946,10 +1951,15 @@ function render(){
     if(personaMode!=='auto'&&personaMode!=='micro'&&PERSONA_MODELOS[personaMode]
       &&!PERSONA_MODELOS[personaMode].includes(m.id)){ outByPersona++; return false; }
     if(boost&&m.boostMax==null){ outByBoost++; return false; }
-    // A1: Dynamic Threat Defense solo corre en EdgeConnect y NO en EC-XS (`dtd:false`, doc
-    // oficial de IDS/IPS). Antes era un aviso rojo debajo de un EC-XS que seguía saliendo
+    // A1: Dynamic Threat Defense solo corre en EdgeConnect, y no en el modelo que el catálogo
+    // marque `dtd:false`. Antes era un aviso rojo debajo de un equipo que seguía saliendo
     // RECOMENDADO y cotizaba la licencia DTD.
     if(secMode==='dtd'&&!ArubaReglas.admiteDtd(m)){ if(m.fam==='ec') outByDtd.push(m.id); return false; }
+    // Y donde el fabricante publica la capacidad de IDS/IPS del EdgeConnect (hoy el EC-XS, en
+    // su spec sheet: 300 Mbps en línea), es un techo duro, con la misma degradación IMIX que el
+    // eje de IDS/IPS de los gateways (2026-10-06). Sin cifra, sigue la reserva del motor.
+    if(secMode==='dtd'&&m.fam==='ec'&&m.idsMbps!=null&&m.idsMbps*IMIX_FACTOR<needProc){
+      outByIdsEc.push({id:m.id, motivo:`IDS/IPS en línea ${fmt(m.idsMbps)} (×${IMIX_FACTOR} IMIX) por debajo de ${fmt(needProc)}`}); return false; }
     // IDS/IPS en el gateway (gwsec, 2026-09-24): solo los gateways cuya serie tiene nivel
     // «+ Security» en el documento oficial de Central (9000, 9100, 9200). EdgeConnect lo hace
     // con DTD y la línea 7000/7200 no tiene ese nivel.
@@ -1980,7 +1990,7 @@ function render(){
     if(cMax!=null&&users&&cMax<users){ outByClients++; return false; }
     if(aMax!=null&&aps&&aMax<aps){ outByAps++; return false; }
     // Flujos simultáneos: el chasis debe soportar con holgura los flujos calculados.
-    // null (EC-V, 9240) = la fuente no publica el dato: no descarta, se declara.
+    // null (EC-V) = la fuente no publica el dato: no descarta, se declara.
     const fl=flujosDe(m);
     if(flujosReq>0&&fl!=null&&fl<flujosReq){ outByFlujos++; return false; }
     // C4: el Boost que necesita la sede no puede superar el que HPE recomienda optimizar
@@ -2086,6 +2096,7 @@ function render(){
     if(outByPuertos) why.push(`<li><b>EC-10104</b> descartado por la auditoría de puertos: los enlaces declarados necesitan más de 4 puertos o alguno es óptico (SFP) y el 10104 solo trae 4× RJ-45. El escalón superior (EC-10106) ya añade jaulas SFP+.</li>`);
     if(outBySinSec.length) why.push(`<li><b>${outBySinSec.map(esc).join(', ')}</b> descartado${outBySinSec.length>1?'s':''} para IDS/IPS en el gateway: su serie no tiene nivel «+ Security» de Central en el documento oficial de HPE (solo 9000, 9100 y 9200).</li>`);
     if(outByIds.length) why.push(`<li>Por el eje de IDS/IPS (cifra oficial del VSG SD-Branch): ${outByIds.map(x=>`<b>${esc(x.id)}</b> — ${esc(x.motivo)}`).join('; ')}.</li>`);
+    if(outByIdsEc.length) why.push(`<li>Por la capacidad de IDS/IPS de Dynamic Threat Defense (cifra oficial de su spec sheet): ${outByIdsEc.map(x=>`<b>${esc(x.id)}</b> — ${esc(x.motivo)}`).join('; ')}.</li>`);
     if(secMode==='gwsec'&&famMode==='ec') why.push('<li>IDS/IPS en el gateway no aplica a EdgeConnect (allí la vía es Dynamic Threat Defense): con la familia en EdgeConnect no queda ningún candidato.</li>');
     if(outBySinSfp.length) why.push(`<li><b>${outBySinSfp.map(esc).join(', ')}</b> descartado${outBySinSfp.length>1?'s':''} por la auditoría de puertos: los enlaces de fibra declarados no caben en sus jaulas — sin SFP, o sin SFP28 para los de 25G — según su ficha y su matriz oficial de ópticas.</li>`);
     if(outBySinDato) why.push(`<li><b>${outBySinDato}</b> modelo(s) sin cifra de throughput publicada en las fuentes consultadas (serie 9100). Aparecen en la pestaña "Equipo y BOM" y su capacidad hay que confirmarla en las QuickSpecs.</li>`);
@@ -2112,7 +2123,7 @@ function render(){
     if(m.clients!=null) out.push({etq:'Clientes soportados', val:users, tope:clientesMax(m)||0,
       txt:(users?miles(users)+' / ':'')+miles(clientesMax(m))});
     // Flujos simultáneos: la métrica que de verdad gobierna el SD-WAN de Aruba (refactor
-    // arquitectónico 2026-09-13). null en la fuente (EC-V, 9240) = no se pinta el medidor,
+    // arquitectónico 2026-09-13). null en la fuente (EC-V) = no se pinta el medidor,
     // se declara en el «por qué» en vez de inventar la cifra.
     const fl=flujosDe(m);
     if(flujosReq>0&&fl!=null) out.push({etq:'Flujos simultáneos', val:flujosReq, tope:fl,

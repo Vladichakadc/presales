@@ -55,12 +55,14 @@ test('fuentesDe resuelve el estado y tolera un fabricante desconocido', () => {
 });
 
 test('los fabricantes sin fecha documentada se declaran, no se rellenan', () => {
-  // MikroTik y Aruba: sus cabeceras no fechan la revision, y eso se conserva tal cual en
-  // vez de inventar un mes. Es el hueco que el aviso del arranque hace visible.
-  for (const code of ['mikrotik', 'aruba']) {
-    const sinFecha = fuentesDe(code, AHORA).filter((f) => f.estado === 'sin fecha');
-    assert.ok(sinFecha.length > 0, `${code} declara que su fuente no trae fecha`);
-  }
+  // MikroTik: su cabecera no fecha la revision, y eso se conserva tal cual en vez de inventar
+  // un mes. Es el hueco que el aviso del arranque hace visible.
+  const sinFecha = fuentesDe('mikrotik', AHORA).filter((f) => f.estado === 'sin fecha');
+  assert.ok(sinFecha.length > 0, 'mikrotik declara que su fuente no trae fecha');
+  // Aruba estuvo aqui hasta el 2026-10-06: su fuente sin fecha («Paginas de producto») se
+  // sustituyo por los documentos que se cotejaron fila a fila. Lo que se cierra con un
+  // documento no vuelve a abrirse rellenando una fecha.
+  assert.deepStrictEqual(fuentesDe('aruba', AHORA).filter((f) => f.estado === 'sin fecha'), []);
 });
 
 test('fuentesQueAvisan recoge solo lo que no esta vigente, con su fabricante', () => {
@@ -70,9 +72,9 @@ test('fuentesQueAvisan recoge solo lo que no esta vigente, con su fabricante', (
     assert.ok(a.vendor, 'el aviso dice de que fabricante es');
     assert.ok(a.documento, 'y de que documento');
   }
-  // Con las fechas de hoy, MikroTik y Aruba tienen que estar entre los avisos.
+  // Con las fechas de hoy, MikroTik (sin fecha) tiene que estar entre los avisos.
   const conAviso = new Set(avisos.map((a) => a.vendor));
-  assert.ok(conAviso.has('mikrotik') && conAviso.has('aruba'));
+  assert.ok(conAviso.has('mikrotik'));
 });
 
 test('ninguna URL registrada es inventada: o es http(s) o es null', () => {

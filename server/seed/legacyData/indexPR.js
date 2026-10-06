@@ -191,7 +191,7 @@ mikrotik:[
   {model:'CHR P-Unlimited',ser:'CHR',seg:'Virtual — sin límite de throughput',sdwan:'WireGuard / OVPN / L2TP',ports:'ilimitadas vNIC (sin cap.)',elp:'~ $250'},
 ],
 aruba:[
-  {model:'EC-XS',ser:'EdgeConnect',seg:'Sucursal peq / Oficina remota',fwd:200,ipsec:0,sdwan:'Foundation/Advanced + Boost',ports:'4x RJ45 10/100/1000 LAN/WAN + 2x RJ45 10/100/1000 gestión + serie RJ-45',elp:'Consultar'},
+  {model:'EC-XS',ser:'EdgeConnect',seg:'Sucursal peq / Oficina remota',fwd:1000,ipsec:0,sdwan:'Foundation/Advanced + Boost',ports:'4x RJ45 10/100/1000 LAN/WAN + 2x RJ45 10/100/1000 gestión + serie RJ-45',elp:'Consultar'},
   // Los 4 siguientes se sumaron el 2026-09-10 junto con la fila homonima en aruba.js — sin
   // esto backfillPricesFromCotizador no tenia fila de PR que igualar por nombre y creaba una
   // fila fantasma con el nombre completo de cotizadorCatalog.js ("Aruba EC-10104") en vez de

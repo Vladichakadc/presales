@@ -101,9 +101,13 @@ test('C3: la serie 9000 gestiona 128/256 APs en AOS 10 y 32 en AOS 8', () => {
   assert.strictEqual(R.capacidadSo(porId('Gateway 9004'), 'aos10').aps, 128);
   assert.strictEqual(R.capacidadSo(porId('Gateway 9004-LTE'), 'aos10').aps, 128);
   assert.strictEqual(R.capacidadSo(porId('Gateway 9012'), 'aos10').aps, 256);
-  for (const id of ['Gateway 9004', 'Gateway 9004-LTE', 'Gateway 9012']) {
+  for (const id of ['Gateway 9004', 'Gateway 9012']) {
     assert.strictEqual(R.capacidadSo(porId(id), 'aos8').aps, 32, `${id} en AOS 8`);
   }
+  // El 9004-LTE no corre AOS 8 (ficha de la serie, p. 5: «Not supported», 2026-10-06): sin
+  // cifras para ese sistema, como el 9114.
+  assert.strictEqual(porId('Gateway 9004-LTE').porSo.aos8, null);
+  assert.match(porId('Gateway 9004-LTE').porSoMotivo.aos8, /Not supported/);
   // Escenario H: 40 APs caben en un 9012 (y un 9004) en AOS 10 — antes se escalaba a 9106.
   assert.ok(R.capacidadSo(porId('Gateway 9012'), 'aos10').aps >= 40);
   assert.ok(R.capacidadSo(porId('Gateway 9012'), 'aos8').aps < 40);
@@ -193,13 +197,32 @@ test('C5: 7005/7008/7210/7220 llevan su boletin oficial y ya no se recomiendan',
 });
 
 // ── A1 ───────────────────────────────────────────────────────────────────────
-test('A1: Dynamic Threat Defense es filtro duro — ni EC-XS ni gateways', () => {
-  assert.strictEqual(R.admiteDtd(porId('EC-XS')), false);
-  assert.ok(!/^S/.test(porId('EC-XS').spec.idsips), 'la ficha del EC-XS ya no afirma IDS/IPS');
-  for (const id of ['EC-10104', 'EC-10106', 'EC-S', 'EC-M', 'EC-10150', 'EC-V']) {
+test('A1: Dynamic Threat Defense es filtro duro — ni el EdgeConnect marcado `dtd:false` ni gateways', () => {
+  // El sujeto de la regla es sintético desde el 2026-10-06: el EC-XS que la estrenó resultó
+  // admitir IDS/IPS (ver la prueba siguiente), y la regla sigue siendo la misma.
+  assert.strictEqual(R.admiteDtd({ id: 'EC-sintético', fam: 'ec', dtd: false }), false);
+  for (const id of ['EC-XS', 'EC-10104', 'EC-10106', 'EC-S', 'EC-M', 'EC-10150', 'EC-V']) {
     assert.strictEqual(R.admiteDtd(porId(id)), true, id);
   }
   assert.strictEqual(R.admiteDtd(porId('Gateway 9004')), false, 'DTD es licencia EdgeConnect');
+  assert.ok(!aruba.MODELS.some((m) => m.dtd === false), 'hoy ningún modelo del catálogo lleva la marca');
+});
+
+test('EC-XS: rango de su spec sheet y del QuickSpecs, y DTD acotado por su capacidad IDS/IPS publicada', () => {
+  // Dos documentos oficiales independientes (spec sheet a00110177ENW Rev. 3 y QuickSpecs v18,
+  // p. 30): «2 to 1000 Mbps». El catálogo decía 200, de páginas de producto.
+  const xs = porId('EC-XS');
+  assert.strictEqual(xs.wanMin, 2);
+  assert.strictEqual(xs.wanMax, 1000);
+  // La doc de IDS/IPS del Orchestrator exceptúa solo los PN 200889 y 200900; la spec sheet
+  // vigente publica 300 Mbps en línea, y es lo que acota DTD (no la cifra de performant).
+  assert.strictEqual(xs.idsMbps, 300);
+  assert.deepStrictEqual(xs.idsPnExcluidos, ['200889', '200900']);
+  assert.match(xs.spec.idsips, /^Sí — hasta 300 Mbps en línea/);
+  // Ningún otro EdgeConnect publica capacidad IDS/IPS en el material versionado: no se rellena.
+  for (const m of aruba.MODELS.filter((x) => x.fam === 'ec' && x.id !== 'EC-XS')) {
+    assert.strictEqual(m.idsMbps, null, m.id + ': sin cifra publicada, sin cifra');
+  }
 });
 
 // ── Contrato de la pagina ────────────────────────────────────────────────────

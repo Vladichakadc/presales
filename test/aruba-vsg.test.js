@@ -18,11 +18,15 @@ test('VSG p.63: throughput de IDS/IPS de los cinco gateways que lo publica', () 
 
 test('VSG p.63: sin cifra no se copia la del hermano (9004-LTE) ni se inventa (7000/7200, EdgeConnect)', () => {
   assert.strictEqual(porId('Gateway 9004-LTE').idsMbps, null, 'el 9004-LTE no está en la tabla del VSG');
-  for (const m of aruba.MODELS.filter((x) => x.legacy || x.fam === 'ec')) assert.strictEqual(m.idsMbps, null, m.id);
+  // Un EdgeConnect solo trae cifra si su propio documento la publica: desde el 2026-10-06 el
+  // EC-XS, de su spec sheet (300 Mbps en línea). La tabla del VSG no se la da a ninguno.
+  for (const m of aruba.MODELS.filter((x) => x.legacy || x.fam === 'ec')) {
+    assert.strictEqual(m.idsMbps, m.id === 'EC-XS' ? 300 : null, m.id);
+  }
 });
 
 test('VSG p.63: la inspección rinde menos que el firewall publicado (18-30 %)', () => {
-  for (const m of aruba.MODELS.filter((x) => x.idsMbps != null)) {
+  for (const m of aruba.MODELS.filter((x) => x.fam === 'gw' && x.idsMbps != null)) {
     const r = m.idsMbps / m.fw;
     assert.ok(r > 0.15 && r < 0.35, `${m.id}: IDS/IPS ${m.idsMbps} sobre firewall ${m.fw} = ${r.toFixed(2)}`);
   }

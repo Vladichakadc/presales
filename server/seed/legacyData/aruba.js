@@ -10,11 +10,20 @@
 // estimación. Cada modelo lleva en `ds` la URL de su datasheet o spec sheet oficial para
 // contrastar, y DATASHEETS reúne los documentos de referencia del portafolio.
 //
-// Límite honesto de esta revisión: los PDF no pudieron abrirse directamente desde el
+// Límite honesto de la primera revisión: los PDF no pudieron abrirse directamente desde el
 // entorno donde se hizo la recopilación (bloqueo de egreso de red), así que las cifras se
 // tomaron de las descripciones publicadas en esas páginas oficiales y NO de la lectura
-// íntegra del datasheet. Sirven para elegir modelo y armar el alcance; antes de emitir una
-// propuesta hay que abrir el PDF enlazado y confirmar la fila exacta.
+// íntegra del datasheet.
+//
+// YA NO ES ASÍ (2026-10-06). Los documentos oficiales están en public/datasheets/ y las
+// cifras de capacidad se cotejaron fila a fila contra ellos: los nueve EdgeConnect contra el
+// QuickSpecs v18 (tabla «Comparison», p. 30) y la spec sheet del EC-XS; los gateways 9000,
+// 9100 y 9200 contra sus fichas de serie y QuickSpecs; la línea 7000/7200 contra sus
+// QuickSpecs. Salieron cuatro diferencias, corregidas con el documento: el rango WAN del
+// EC-XS (2-1000 Mbps, no 2-200), su IDS/IPS (sí corre en el vigente; la excepción oficial es
+// de dos números de parte antiguos), el 9004-LTE en AOS 8 (no lo soporta) y las sesiones del
+// 9240 (4M, que el catálogo tenía en null). La procedencia de cada grupo está en
+// legacyData/fuentes.js, ya con fecha.
 //
 // LIST PRICE (2026-09-10). Los 15 modelos EdgeConnect/gateway con SKU confirmado (ver
 // `hwSku` en cada fila) tienen List Price real de HPE, extraído de un export de lista de
@@ -140,12 +149,13 @@ const DATASHEETS = {
 //        referencias reales.
 const MODELS = [
   // ─── EdgeConnect SD-WAN ────────────────────────────────────────────────────
-  // CONFLICTO SIN RESOLVER (2026-09-10): el QuickSpecs oficial de abajo (v18, 06-jul-2026)
-  // publica el rango de EC-XS como 2-1000 Mbps, el doble del wanMax:200 de esta fila. Un solo
-  // documento contradice lo ya verificado — por debajo del doble anclaje que este catálogo
-  // exige antes de pisar un dato existente (misma regla que el SRX380 de Juniper) — así que
-  // se deja sin tocar. Ver PENDIENTES.md, "Conflictos abiertos entre el catálogo y una ficha
-  // oficial", para la decisión pendiente del dueño del catálogo.
+  // RESUELTO (2026-10-06): el rango WAN del EC-XS. El catálogo decía 2-200 Mbps, de páginas de
+  // producto; el QuickSpecs oficial (v18, tabla «Comparison» p. 30) y la spec sheet del propio
+  // EC-XS (a00110177ENW Rev. 3, 2025, p. 2), dos documentos independientes y ya versionados en
+  // public/datasheets/, publican los dos «2 to 1000 Mbps (bidirectional)». Con el doble ancla
+  // que este catálogo exige, manda el documento. El resto de la tabla p. 30 (rango, conexiones,
+  // optimización recomendada e interfaces de los nueve EdgeConnect) se cotejó el mismo día y
+  // casa con estas filas.
   // ── Campo `spec` (2026-09-13) ─────────────────────────────────────────────
   // Características técnicas adicionales leídas de los datasheets oficiales, literales:
   // · EdgeConnect: QuickSpecs HPE a50004289enw (tabla "Comparison" p.30 + fichas por
@@ -157,23 +167,26 @@ const MODELS = [
   // · Series 7000/7200: DS_7000Series y DS_7200Series oficiales de Aruba (doble ancla:
   //   dos copias independientes del mismo documento consultadas el 2026-09-13).
   // `spec` NO sobrescribe ningún campo existente: solo añade lo que la ficha no tenía.
-  // Conflictos detectados y NO aplicados (quedan documentados en PENDIENTES.md):
-  // · 7010: el DS actual declara 8 Gbps de firewall y 64K sesiones; el catálogo conserva
-  //   4 Gbps / 32K del DS anterior (decisión del dueño: no tocar sin confirmación).
-  // · 7205: el DS declara 12 Gbps de firewall; el catálogo conserva 15 Gbps.
-  // · 7030: el DS declara 8x combo 1G (sin 10G); el texto de `ifaces` del catálogo
-  //   menciona "puertos 10G" — pendiente de corrección por el dueño.
+  // Los conflictos del 7010, el 7205 y el 7030 que esta nota dejaba abiertos se resolvieron el
+  // 2026-10-06 con el QuickSpecs vigente de HPE (ver la cabecera de la serie 7000).
+  // Sigue mostrándose sin pisar:
   // · EC-L: psu.texto cita 401 W; el QuickSpecs por modelo declara 404 W y el Hardware
   //   Reference 440 W para la variante EC-L-P — se muestran ambos en spec.watts.
   {id:'EC-XS', redund:false, psu:{tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 23 W en la primera revisión de hardware y 34 W en las posteriores — HPE publica el requerimiento, no un consumo típico. Fuente única mediante adaptador externo, sin opción de segunda.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal peq / Oficina remota',
-   wanMin:2, wanMax:200, boostMax:200,
-   // A1 de la auditoría 2026-09-17: Dynamic Threat Defense (IDS/IPS en el chasis) NO corre
-   // en EC-XS — doc oficial de IDS/IPS de Orchestrator y QuickSpecs («Advanced Security not
-   // supported on JM962A»). La página ya lo avisaba en rojo pero lo seguía RECOMENDANDO y
-   // cotizaba la licencia DTD; `dtd:false` lo convierte en filtro duro.
-   dtd:false,
+   wanMin:2, wanMax:1000, boostMax:1000,
+   // IDS/IPS (2026-10-06). La auditoría A1 (2026-09-17) lo apartó entero de Dynamic Threat
+   // Defense con `dtd:false`. Leída completa, la documentación de IDS/IPS del Orchestrator
+   // (arubanetworking.hpe.com/techdocs/sdwan/docs/orch/configuration/overlays/ids/, traída por
+   // traer-cisco-huawei.yml) exceptúa solo «EC-XS (part numbers 200889 and 200900 only)», dos
+   // revisiones de hardware antiguas. La spec sheet vigente (Rev. 3, que describe el PN 201571)
+   // publica «IDS/IPS capacity (Inline mode) up to 300 Mbps» y «(Performant mode) up to 600
+   // Mbps», y el QuickSpecs v18 dice «IDS/IPS: Yes». `idsMbps` es la de modo en línea, la que
+   // bloquea: con DTD, el caudal a inspeccionar no puede pasar de ahí, y el motor lo aparta con
+   // su motivo. Lo que no se puede saber desde el catálogo es la revisión de una unidad ya
+   // instalada: la ficha lo dice.
+   idsMbps:300, idsPnExcluidos:['200889', '200900'],
    ifaces:'4x RJ45 10/100/1000 LAN/WAN + 2x RJ45 10/100/1000 gestión + serie RJ-45',
-   spec:{conexiones:'256.000', boostRec:'250 Mbps', idsips:'No — Dynamic Threat Defense (IDS/IPS) no corre en EC-XS', fru:'Ninguna',
+   spec:{conexiones:'256.000', boostRec:'250 Mbps', idsips:'Sí — hasta 300 Mbps en línea y 600 Mbps en modo performant (spec sheet Rev. 3); no corre en los EC-XS de PN 200889 y 200900, revisiones antiguas de hardware', fru:'Ninguna',
      mtbf:'162.171 h (18,5 años)', watts:'23 W (primera revisión HW) / 34 W (posteriores) — requerimiento de alimentación', btu:'116 BTU/h',
      ruido:'40 dBA', peso:'1,59 kg (3,5 lb)'},
    // hwSku de la variante base completado el 2026-09-10 desde DATASHEETS.priceList (el
@@ -329,7 +342,11 @@ const MODELS = [
 
   {id:'Gateway 9004-LTE', redund:false, psu:{tipo:'adaptador externo AC-DC 12 V DC, 2,5 A (JX990A, incluido en la caja)', volts:'90-264 V AC, 47-63 Hz', texto:'Datasheet de la serie 9000 (columna 9004/9004-LTE): «Power source: 12v DC, 2.5A AC-to-DC power adapter», consumo máximo 25 W con USB; la PSNow dice «Each 9004-LTE includes a JX990A power adapter supply in the box». Una sola fuente; el documento no publica una segunda entrada.'}, fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal peq + LTE',
    fw:4000, clients:2048, aps:128, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
-   porSo:{aos10:{aps:128}, aos8:{aps:32}},
+   // AOS 8 (2026-10-06): la ficha de la serie 9000 (p. 5, «AOS‑8 specifications») dice del
+   // 9004-LTE «Minimum supported software version: Not supported», y su tabla AOS 8 solo trae
+   // columnas para el 9004 y el 9012. El catálogo le daba 32 APs en AOS 8, copiados del 9004.
+   porSo:{aos10:{aps:128}, aos8:null},
+   porSoMotivo:{aos8:'no corre AOS 8: la ficha de la serie 9000 (p. 5) lo da como «Not supported»'},
    ifaces:'4x GbE RJ45 + LTE integrado (uplink dedicado o redundante)', hwSku:'R3V91A',
    skus:[{sku:'R3V91A',d:'9004-LTE (US) · 4x GbE RJ45 + LTE'}],
    spec:{aps10:'128', cps:'130.000 sesiones nuevas/s', cluster:'Hasta 4 gateways por cluster · 8.192 clientes por cluster (AOS 10)',
@@ -346,6 +363,7 @@ const MODELS = [
    spec:{aps10:'256', cps:'130.000 sesiones nuevas/s', cluster:'Hasta 4 gateways por cluster · 8.192 clientes por cluster (AOS 10)',
      vlanMax:'4.094', ospf:'8.000 rutas', acls:'2.678 entradas', dhcp:'4.000 clientes', bridge:'64.000 entradas',
      fwSessSdwan:'64.000 sesiones activas de firewall en modo SD-WAN (doc oficial HPE a00099294en_us) — en conflicto con las 128.000 del datasheet AOS 10, ver PENDIENTES',
+     aps8:'32 en AOS 8; la ficha de la serie publica 64 desde AOS 8.12 (nota 1, p. 5) y el catálogo usa 32, que vale para cualquier versión',
      ruido:'29,1 – 63,5 dBA', watts:'160 W máx. (incluye 120 W de presupuesto PoE)', dims:'4,37 × 39,5 × 26 cm', peso:'3,42 kg'},
    ds:'https://www.arubanetworks.com/assets/ds/DS_9000Series.pdf', dsFile:'serie-9000-branch-gateways.pdf'},
 
@@ -388,7 +406,10 @@ const MODELS = [
 
   // ─── Serie 9200 · Campus Gateways ──────────────────────────────────────────
   {id:'Gateway 9240', redund:'opcional', psu:{tipo:'fuente modular de 550 W AC (PSU-550-AC); la segunda es la R7J63A', volts:'100-240 V AC, 50-60 Hz', texto:'QuickSpecs y PSNow de la serie 9200: «Power supply slots: 1 + redundant», «Power source: 550-watt power supply»; consumo 115 W en reposo y 190 W a plena carga. La PSU-550-AC R7J63A figura como repuesto.'}, fam:'gw', rol:'campus', serie:'Serie 9200', seg:'Campus / Hub regional',
-   fw:20000, clients:32000, aps:4000, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+   // fwSess e ipsecSess (2026-10-06): la tabla «Performance» del QuickSpecs de la serie 9200
+   // (p. 9, AOS 10) publica «Maximum datapath / firewall sessions: 4M» en las tres licencias y
+   // «Concurrent IPSec tunnels» 32K/64K/128K; aquí va la del hardware base, como fw/clients/aps.
+   fw:20000, clients:32000, aps:4000, fwSess:4000000, ipsecSess:32000, greTuns:null, boostMax:null,
    // C2 de la auditoría 2026-09-17: el catálogo cotizaba los SKU de licencia de AOS 10
    // (R8R41AAE/R8R42AAE, «9240 AOS10 Silver/Gold Capacity License» en la propia lista del
    // distribuidor) con las capacidades de AOS 8 (512/1K/2K APs, 16K/24K/32K clientes). Con
@@ -666,10 +687,13 @@ const GATEWAY_VSG = {
 };
 for (const m of MODELS) {
   const v = GATEWAY_VSG[m.id];
-  m.idsMbps = v && v.idsMbps != null ? v.idsMbps : null;
+  // Un EdgeConnect que publica su propia capacidad de IDS/IPS la trae en su fila (el EC-XS, de
+  // su spec sheet, desde el 2026-10-06): esta tabla es la de los gateways y no la pisa.
+  const propia = m.fam === 'ec' && m.idsMbps != null ? m.idsMbps : null;
+  m.idsMbps = v && v.idsMbps != null ? v.idsMbps : propia;
   m.vpncTuneles = v && v.vpncTuneles != null ? v.vpncTuneles : null;
   // La ficha lo pinta en la fila «IDS/IPS integrado» que EdgeConnect ya usaba.
-  if (m.idsMbps != null) {
+  if (v && v.idsMbps != null) {
     m.spec = Object.assign({}, m.spec, { idsips: `Hasta ${String(m.idsMbps / 1000).replace('.', ',')} Gbps de throughput IDS/IPS (VSG SD-Branch, sep-2026) · licencia de Central «+ Security»` });
   }
 }

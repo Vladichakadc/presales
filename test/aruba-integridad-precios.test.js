@@ -374,9 +374,9 @@ test('invariante DTD: el SKU HA cuesta exactamente lo mismo que el estandar', ()
 test('todo modelo publica sus flujos simultaneos o declara por que no', () => {
   // El dimensionador filtra por flujos simultaneos (Simultaneous Flows), no por tuneles
   // IPsec: un modelo sin dato de flujos no puede validarse y pasaria de contrabando.
-  // EC-V es virtual (depende del hipervisor) y el Gateway 9240 no publica sesiones de
-  // firewall en su QuickSpecs — ambos declarados a proposito.
-  const SIN_FLUJOS_DECLARADO = new Set(['EC-V', 'Gateway 9240']);
+  // EC-V es virtual (depende del hipervisor): declarado a proposito. El Gateway 9240 estuvo
+  // aqui hasta el 2026-10-06, cuando se leyo que su QuickSpecs (p. 9) si publica 4M sesiones.
+  const SIN_FLUJOS_DECLARADO = new Set(['EC-V']);
   const mal = [];
   for (const m of MODELS) {
     if (SIN_FLUJOS_DECLARADO.has(m.id)) continue;
