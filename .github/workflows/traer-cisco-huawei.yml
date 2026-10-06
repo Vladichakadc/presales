@@ -39,13 +39,93 @@ name: traer-cisco-huawei
 on:
   workflow_dispatch:
 
+# Solo el job que publica en la rama de transporte escribe; el que instala Playwright, no.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
+  # LAS PAGINAS QUE SOLO EXISTEN DESPUES DE EJECUTAR SU JAVASCRIPT (2026-10-06). Las
+  # descripciones de hardware de support.huawei.com dicen cuantas fuentes vienen de serie en
+  # cada AR, que modulo usa cada chasis y la capacidad bidireccional de cada A800 E. Pedidas
+  # con fetch devolvieron once veces un 200 de 3.800 bytes: el cascaron de la aplicacion, sin
+  # el documento (la firma del contenido lo freno, como debia). Aqui las abre un Chromium y se
+  # guarda el texto de cada marco, los enlaces del indice y las peticiones que hizo la pagina.
+  # SIN permiso de escritura y sin token guardado: este job instala Playwright, y una
+  # dependencia comprometida no debe tener a mano un token que empuje. El que escribe (traer)
+  # no instala nada y solo copia lo que este deja como artefacto.
+  renderizar:
+    # Fijada como en pantallas.yml y limites.yml: instala paquetes del sistema con apt.
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: package.json
+
+      # La misma version fijada que pantallas.yml y limites.yml. Sin npm ci: el script solo
+      # necesita Playwright y modulos de Node.
+      - name: Traer Playwright y Chromium
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.61.1
+          npx playwright install --with-deps chromium
+
+      - name: Abrir las paginas en Chromium
+        run: |
+          cat > "$RUNNER_TEMP/lista.json" <<'LISTA'
+          [
+            { "archivo": "huawei-hw-ar-indice.json", "debeContener": "Hardware Description",
+              "url": "https://support.huawei.com/enterprise/en/doc/EDOC1100213474" },
+            { "archivo": "huawei-hw-ar6700-serie.json", "debeContener": "AR6710",
+              "url": "https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3aeeb6f6" },
+            { "archivo": "huawei-hw-ar6710-h.json", "debeContener": "AR6710-H4T4X2Y7",
+              "url": "https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3e859eec/ar6710-h4t4x2y7" },
+            { "archivo": "huawei-hw-ar-fuentes.json", "debeContener": "PAC",
+              "url": "https://support.huawei.com/enterprise/en/doc/EDOC1100213474/ab8a01a0/power-supplies" },
+            { "archivo": "huawei-hw-ar5710-s8t2x.json", "debeContener": "AR5710-S8T2X",
+              "url": "https://support.huawei.com/enterprise/en/doc/EDOC1100213474/83b51c8e/ar5710-s8t2x" },
+            { "archivo": "huawei-hw-ar-pdc240.json", "debeContener": "PDC240",
+              "url": "https://support.huawei.com/enterprise/en/doc/EDOC1100213474/b0b2d650/pdc240s12-cn-function-module-dc-psu-pdc240s12-cn-240w-dc-power-module" },
+            { "archivo": "huawei-hw-a800e-indice.json", "debeContener": "Hardware Description",
+              "url": "https://support.huawei.com/enterprise/en/doc/EDOC1100382345" },
+            { "archivo": "huawei-hw-a821e.json", "debeContener": "A821",
+              "url": "https://support.huawei.com/enterprise/en/doc/EDOC1100382345/741ce6d4/netengine-a821-e" },
+            { "archivo": "huawei-hw-ne8000-m-indice.json", "debeContener": "Hardware Description",
+              "url": "https://support.huawei.com/enterprise/en/doc/EDOC1100410973" },
+            { "archivo": "huawei-hw-ne8000-m1c.json", "debeContener": "Dimensions",
+              "url": "https://support.huawei.com/enterprise/en/doc/EDOC1100410973/3a272bf2/netengine-8000-m1c" },
+            { "archivo": "huawei-hw-ne8000-m6.json", "debeContener": "Dimensions",
+              "url": "https://support.huawei.com/enterprise/en/doc/EDOC1100410973/374d9a7" },
+            { "archivo": "huawei-hw-ne8000-m1d.json", "debeContener": "Dimensions",
+              "url": "https://support.huawei.com/enterprise/en/doc/EDOC1100382052/a443be51/netengine-8000-m1d" },
+            { "archivo": "huawei-hw-ne8000-m1a-spec.json", "debeContener": "Dimensions",
+              "url": "https://support.huawei.com/enterprise/en/doc/EDOC1100149051/ffddecf7/technical-specifications" },
+            { "archivo": "huawei-hw-ne8000-m1a-r23.json", "debeContener": "DPD63",
+              "url": "https://support.huawei.com/enterprise/en/doc/EDOC1100382050/c4a47481/dpd63-8-8-dc-pdb" }
+          ]
+          LISTA
+          node scripts/renderizar-documentos.js --lista "$RUNNER_TEMP/lista.json" --salida render
+
+      - name: Guardar lo renderizado
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: render
+          path: render/
+          if-no-files-found: ignore
+
   traer:
+    # Corre aunque el render falle: las fichas PDF no dependen de el.
+    needs: renderizar
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -53,6 +133,16 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: package.json
+
+      # Son datos (JSON con texto y enlaces) y no se ejecutan: solo viajan a la rama de
+      # transporte. Si el render no dejo artefacto, la descarga falla y el resto sigue.
+      - name: Traer lo renderizado
+        if: ${{ needs.renderizar.result != 'skipped' }}
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: render
+          path: fuente-cisco-huawei/render
 
       - name: Descargar los documentos
         run: |
@@ -198,43 +288,6 @@ jobs:
                 'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/1ff4ee729369411ba9288d36e86e3474/M3T1A590N1149651611493585023/NetEngine%20A821%20E%20Datasheet%20V800R025C00.pptx',
                 'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/1ff4ee729369411ba9288d36e86e3474/M3T1A590N1149651611493585023/NetEngine%20A821%20E%20Datasheet%20V800R025C00.pptx',
               ] },
-              // 2026-10-06 (noche): las descripciones de hardware de support.huawei.com, que dicen cuantas
-              // fuentes vienen de serie y que modulo usa cada chasis, y la capacidad bidireccional de
-              // la A800 E y el consumo por variante de las NE8000 M1. Primera tanda: paginas conocidas,
-              // tambien para descubrir en su indice los enlaces a las de los demas modelos.
-              { archivo: 'huawei-hw-ar6700-serie.html', tipo: 'html', para: 'HUAWEI', debeContener: 'AR6710', urls: [
-                'https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3aeeb6f6',
-              ] },
-              { archivo: 'huawei-hw-ar6710-h.html', tipo: 'html', para: 'HUAWEI', debeContener: 'AR6710-H4T4X2Y7', urls: [
-                'https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3e859eec/ar6710-h4t4x2y7',
-              ] },
-              { archivo: 'huawei-hw-ar-fuentes.html', tipo: 'html', para: 'HUAWEI', debeContener: 'PAC', urls: [
-                'https://support.huawei.com/enterprise/en/doc/EDOC1100213474/ab8a01a0/power-supplies',
-              ] },
-              { archivo: 'huawei-hw-ar5710-s8t2x.html', tipo: 'html', para: 'HUAWEI', debeContener: 'AR5710-S8T2X', urls: [
-                'https://support.huawei.com/enterprise/en/doc/EDOC1100213474/83b51c8e/ar5710-s8t2x',
-              ] },
-              { archivo: 'huawei-hw-ar-pdc240.html', tipo: 'html', para: 'HUAWEI', debeContener: 'PDC240', urls: [
-                'https://support.huawei.com/enterprise/en/doc/EDOC1100213474/b0b2d650/pdc240s12-cn-function-module-dc-psu-pdc240s12-cn-240w-dc-power-module',
-              ] },
-              { archivo: 'huawei-hw-a821e.html', tipo: 'html', para: 'HUAWEI', debeContener: 'A821', urls: [
-                'https://support.huawei.com/enterprise/en/doc/EDOC1100382345/741ce6d4/netengine-a821-e',
-              ] },
-              { archivo: 'huawei-hw-ne8000-m1c.html', tipo: 'html', para: 'HUAWEI', debeContener: 'M1C', urls: [
-                'https://support.huawei.com/enterprise/en/doc/EDOC1100410973/3a272bf2/netengine-8000-m1c',
-              ] },
-              { archivo: 'huawei-hw-ne8000-m6.html', tipo: 'html', para: 'HUAWEI', debeContener: 'M6', urls: [
-                'https://support.huawei.com/enterprise/en/doc/EDOC1100410973/374d9a7',
-              ] },
-              { archivo: 'huawei-hw-ne8000-m1d.html', tipo: 'html', para: 'HUAWEI', debeContener: 'M1D', urls: [
-                'https://support.huawei.com/enterprise/en/doc/EDOC1100382052/a443be51/netengine-8000-m1d',
-              ] },
-              { archivo: 'huawei-hw-ne8000-m1a-spec.html', tipo: 'html', para: 'HUAWEI', debeContener: 'M1A', urls: [
-                'https://support.huawei.com/enterprise/en/doc/EDOC1100149051/ffddecf7/technical-specifications',
-              ] },
-              { archivo: 'huawei-hw-ne8000-m1a-r23.html', tipo: 'html', para: 'HUAWEI', debeContener: 'M1A', urls: [
-                'https://support.huawei.com/enterprise/en/doc/EDOC1100382050/c4a47481/dpd63-8-8-dc-pdb',
-              ] },
               { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
                 'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
                 'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
@@ -322,6 +375,12 @@ jobs:
               for (const d of inf) {
                 console.log((d.guardado ? 'OK   ' : 'FALLA') + '  ' + d.para + '  ' + d.archivo);
                 for (const i of d.intentos) console.log('        ' + (i.status || i.error) + '  ' + i.url + (i.nota ? '  <- ' + i.nota : ''));
+              }
+              const fs = require('fs');
+              const r = './fuente-cisco-huawei/render/informe-render.json';
+              if (!fs.existsSync(r)) console.log('RENDER  sin informe: el job renderizar no dejo artefacto');
+              else for (const d of require(r)) {
+                console.log((d.encontrado ? 'OK   ' : 'FALLA') + '  RENDER  ' + d.archivo + '  (' + (d.status || d.error) + ', ' + d.caracteres + ' caracteres, ' + d.enlaces + ' enlaces)');
               }
             "
             echo '```'
