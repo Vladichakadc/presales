@@ -303,27 +303,27 @@ jobs:
                 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7005.htm',
               ] },
               { archivo: 'aruba-7005-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
-                descubrirEnlace: { de: 'aruba-7005-pagina.html', contiene: 'IG', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7005.htm' } },
+                descubrirEnlace: { de: 'aruba-7005-pagina.html', contiene: '/ig/', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7005.htm' } },
               { archivo: 'aruba-7008-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7008', urls: [
                 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7008.htm',
               ] },
               { archivo: 'aruba-7008-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
-                descubrirEnlace: { de: 'aruba-7008-pagina.html', contiene: 'IG', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7008.htm' } },
+                descubrirEnlace: { de: 'aruba-7008-pagina.html', contiene: '/ig/', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7008.htm' } },
               { archivo: 'aruba-7010-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7010', urls: [
                 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7010.htm',
               ] },
               { archivo: 'aruba-7010-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
-                descubrirEnlace: { de: 'aruba-7010-pagina.html', contiene: 'IG', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7010.htm' } },
+                descubrirEnlace: { de: 'aruba-7010-pagina.html', contiene: '/ig/', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7010.htm' } },
               { archivo: 'aruba-7030-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7030', urls: [
                 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7030.htm',
               ] },
               { archivo: 'aruba-7030-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
-                descubrirEnlace: { de: 'aruba-7030-pagina.html', contiene: 'IG', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7030.htm' } },
+                descubrirEnlace: { de: 'aruba-7030-pagina.html', contiene: '/ig/', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7030.htm' } },
               { archivo: 'aruba-7205-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7205', urls: [
                 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7205.htm',
               ] },
               { archivo: 'aruba-7205-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
-                descubrirEnlace: { de: 'aruba-7205-pagina.html', contiene: 'IG', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7205.htm' } },
+                descubrirEnlace: { de: 'aruba-7205-pagina.html', contiene: '/ig/', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7205.htm' } },
               { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
                 'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
                 'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',

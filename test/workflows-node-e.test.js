@@ -77,6 +77,8 @@ test('ningún `node -e "..."` de un workflow deja a bash ejecutar o expandir alg
 });
 
 test('el detector ve lo que tiene que ver', () => {
+  // Es el texto de un workflow, no una plantilla de JS: los ${...} son literales a propósito.
+  // eslint-disable-next-line no-template-curly-in-string
   const run = 'node -e "\n  // ruta `a.js` y $HOME\n  console.log(\\`ok \\${x}\\`);\n  const v = \'${{ github.ref }}\';\n"';
   const [cuerpo] = scriptsNodeE(run);
   const malos = peligrosos(cuerpo);
