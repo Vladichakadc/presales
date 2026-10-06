@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-06 (**Las figuras de los equipos Huawei, como en Aruba y Fortinet.** Encargo del dueño. 32 de los 40 modelos tienen ya su figura oficial en la ficha —frontal, y también trasera en los dos AR610 que la publican—, con lupa, tamaño y procedencia, y viaja en el Excel del BOM. Salen de trece documentos de Huawei traídos por Actions (cinco nuevos: NE8000 M1A, M1D-B, M6, serie X y A800 E). Los ocho sin figura (los cuatro AR6710-L y las M1C, M1D, M4 y F1A) muestran el aviso honesto: no hay documento suyo en el repositorio. **Leer las figuras corrigió dos datos que la tarjeta contradecía**: la A800 E se pide con una o dos fuentes y el catálogo decía «fuente única» y pintaba 120 W de «consumo típico» en equipos de 24 a 35 W; y el AR611 y el AR617VW-LTE4 tienen 4 puertos LAN, no 8, que es un filtro duro del motor. **Y dejó cuatro discrepancias sin aplicar**, en *Lo que dejaron las figuras de Huawei*. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-06 (**Las figuras de los equipos Huawei, como en Aruba y Fortinet.** Encargo del dueño. 32 de los 40 modelos tienen ya su figura oficial en la ficha —frontal, y también trasera en los dos AR610 que la publican—, con lupa, tamaño y procedencia, y viaja en el Excel del BOM. Salen de trece documentos de Huawei traídos por Actions (cinco nuevos: NE8000 M1A, M1D-B, M6, serie X y A800 E). Los ocho sin figura (los cuatro AR6710-L y las M1C, M1D, M4 y F1A) muestran el aviso honesto: no hay documento suyo en el repositorio. **Leer las figuras corrigió dos datos que la tarjeta contradecía**: la A800 E se pide con una o dos fuentes y el catálogo decía «fuente única» y pintaba 120 W de «consumo típico» en equipos de 24 a 35 W; y el AR611 y el AR617VW-LTE4 tienen 4 puertos LAN, no 8, que es un filtro duro del motor. **Y dejó cuatro discrepancias sin aplicar**, en *Lo que dejaron las figuras de Huawei*. De paso, un aviso **crítico** nuevo de `proxy-addr` frenó el primer despliegue: se actualizó a la 2.0.8. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-05, tarde (**Las fichas de serie de los AR de Huawei, leídas con PDF4me y con la copia de Actions.** Los 23 AR tienen ya reenvío, IPsec y SD-WAN típico: se llenaron cuatro `typ` vacíos (AR611 y AR617VW-LTE4 a 50 Mbps, AR651 y AR651W-8P a 600) y se corrigieron tres. El **AR8700-8** llevaba 24 Gbps, que es la fila «SD-WAN IPsec» de su propia tabla; su SD-WAN típico es 15,5, y el dimensionador lo recomendaba entre 16,9 y 20,8 Gbps de demanda, donde no llega. Para cargarlo hubo que arreglar el importador: `--force` no corregía nada y la cabecera literal de Huawei caía en el campo equivocado. Ninguna ficha AR publica Mpps. **El ciclo de vida (EOM/EOS) sigue bloqueado por la cuenta Huawei.** De paso, `verificar` estaba en rojo en `main` por un aviso nuevo de `braces` sin arreglo: excepción declarada hasta el 2027-01-03. **Y ese rojo descubrió que Railway ya espera a CI** (`checkSuites: true`): el despliegue anterior quedó SKIPPED. Se cierra el punto 33. Juniper SRX340/SRX4300 ya estaba cerrado desde el 2026-10-02. Ver *Cerrado recientemente*.)
 
@@ -1757,6 +1757,15 @@ en Aruba y Fortinet».
   `test/e2e/e2e-huawei-vistas.js` (la cadena completa en Chromium: la figura carga, las dos caras,
   la lupa, el Excel con las dos imágenes y el hueco honesto con el mapa interceptado). Las dos se
   comprobaron saboteándolas.
+- **El primer push quedó sin desplegar, y no por este cambio.** `verificar` salió en rojo en CI
+  (corrida `37403805555`) por un aviso **crítico** publicado esa misma noche: `proxy-addr`
+  (GHSA-jqcg-44mw-7w3h, CVSS 9,1), suplantación de IP a través de una subred de confianza IPv4
+  mapeada en IPv6. Llega por `express`, y es la pieza con la que Express calcula `req.ip`, que es
+  de lo que vive el contador de intentos de login por IP. El freno hizo lo que debía y Railway no
+  desplegó. Tenía arreglo dentro del rango de `express`: `proxy-addr` 2.0.7 → 2.0.8 en el lock,
+  con `npm update` (integridad comprobada contra el registro), `npm ci` limpio, 796/796 y el
+  arranque en producción con el muro cerrado. El `npm run verificar` local no lo vio porque la
+  auditoría es un paso aparte de CI (`npm run auditar`); se corre a mano antes de empujar.
 
 ### Las fichas de serie de los AR de Huawei, y el importador que no podía cargarlas (2026-10-05)
 
