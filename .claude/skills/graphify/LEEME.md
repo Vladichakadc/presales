@@ -92,5 +92,30 @@ anotar aquí la versión y las huellas nuevas.
   `cotizadorCatalog.js`, `indexPR.js`, `guiaRoles.js`). Las cifras se preguntan a esos archivos,
   a `npm run catalogo` o al servidor, nunca al grafo.
 
+## Qué lee el grafo, medido archivo por archivo (2026-10-06)
+
+Cruzando `git ls-files` con el `source_file` de cada nodo, sobre el grafo hecho en `HEAD`:
+**234 de 604 archivos versionados**.
+
+| Grupo | Archivos | Por qué |
+|---|---:|---|
+| Código JS | 203 de 203 | Todo, con AST local. 6 de ellos son catálogos de datos y no dan símbolos |
+| Markdown del proyecto | 26 | Por su estructura (títulos y enlaces), sin la pasada semántica |
+| Scripts `.sh` y `package.json` | 5 | Código |
+| Excluidos por `.graphifyignore` | 326 | Skills de terceros (159), imágenes (129), PDF de fabricantes (20), tipografías (11), copia de Starlink (7) |
+| **Fuera sin pasada semántica** | 44 | Las 16 páginas HTML, los 14 workflows YAML, 7 JSON de datos, el PDF del manual y cuatro sueltos |
+
+Las páginas HTML y los workflows son para graphify **documentos**: solo entran con `/graphify .`,
+que lanza subagentes a leer cada uno con el modelo. Los documentos del proyecto suman unas 220.000
+palabras (markdown 166.000, HTML 40.000, YAML 14.000): leerlos así cuesta tokens de verdad, y es
+una decisión del dueño, no algo que haga un arranque.
+
+## La CLI al arrancar
+
+`.claude/hooks/graphify-cli.sh`, que llama `session-start.sh`, compara `graphify --version` con
+el sello `.graphify_version` de esta carpeta: si falta, dice el comando fijado; si es otra versión,
+avisa. No instala nada. Lo guarda `test/graphify-cli-hook.test.js` con un `graphify` falso en el
+`PATH`.
+
 **El grafo es un mapa para orientarse, no una fuente.** Ninguna cifra ni ninguna decisión sale de
 él: sale del archivo al que apunta.

@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-06, quinta entrega (**La skill `graphify`, instalada sin su modo «siempre activo».** Encargo del dueño: «Instálala https://github.com/Graphify-Labs/graphify.git». Se instaló la skill (`.claude/skills/graphify/`, 0.9.77, revisada antes y con su huella fijada) y la CLI fijada a esa versión. **`graphify install --project` hizo más de lo que dice su README**: registró hooks `PreToolUse` en `.claude/settings.json` y escribió una sección en `CLAUDE.md`; se deshizo, y una prueba lo frena si vuelve sin decidirse. Medido sobre este repositorio: el grafo del código se hace en 15 s y en local, enlaza bien el servidor y no los módulos del navegador. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
+Última revisión: 2026-10-06, sexta entrega (**Los pendientes de graphify, ejecutados, y medido qué lee el grafo.** Encargo del dueño: «Ejecuta todos los pendientes y confírmame si el grafo ya está leyendo todo el proyecto». **No lo lee todo: 234 de 604 archivos versionados**, todo el código JS y el markdown por su estructura; las 16 páginas HTML y los 14 workflows solo entran con la pasada semántica, que es decisión del dueño por su coste. **El arranque comprueba la CLI de graphify** contra la versión revisada y dice el comando fijado. **PDF4me no está resuelto**: sus herramientas se listan, pero al usarlas piden volver a iniciar sesión. Lo de Huawei sigue bloqueado por el fabricante y por la cuenta. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
+
+Revisión anterior: 2026-10-06, quinta entrega (**La skill `graphify`, instalada sin su modo «siempre activo».** Encargo del dueño: «Instálala https://github.com/Graphify-Labs/graphify.git». Se instaló la skill (`.claude/skills/graphify/`, 0.9.77, revisada antes y con su huella fijada) y la CLI fijada a esa versión. **`graphify install --project` hizo más de lo que dice su README**: registró hooks `PreToolUse` en `.claude/settings.json` y escribió una sección en `CLAUDE.md`; se deshizo, y una prueba lo frena si vuelve sin decidirse. Medido sobre este repositorio: el grafo del código se hace en 15 s y en local, enlaza bien el servidor y no los módulos del navegador. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
 
 Revisión anterior: 2026-10-06, cuarta entrega (**Las páginas de producto oficiales de Huawei cierran tres pendientes, y la potencia de salida de las fuentes pasa a ser un dato.** Encargo del dueño: buscar en la web con `agent-reach` (o en YouTube) las fichas de Huawei que faltan, sin volver a las páginas bloqueadas. **`agent-reach` no puede desde aquí, medido otra vez**: Jina Reader, Exa, YouTube y V2EX dan `000` en el proxy; se buscó con la búsqueda de la sesión, que es lo que la propia skill indica. La búsqueda llevó a las **páginas de producto de `e.huawei.com`**, que Actions sí trae: la de la A800 E publica **20 / 72 / 20 / 20 Gbps y 4,4 / 108 / 4,4 / 4,4 Mpps**, exactamente lo que llevaba el catálogo sin documento, y la de NE8000 respalda los **74,8 W del M1A y los 124,5 W del M1D** y da al **M8 1.086 Mpps**, que tenía en null. Sus resúmenes de buscador no se tomaron como fuente (le daban al M1A 865,8 W, que son del M14). **La mejora propuesta, hecha**: `psu.salida` en los ocho AR cuyas fuentes decide el BOM, en la ficha como «Potencia de salida de cada fuente», separada del consumo, y la invariante la lee del catálogo en vez de una tabla copiada en la prueba. Ver *Cerrado recientemente* y *Lo que queda abierto de las fichas Huawei*.)
 
@@ -1645,6 +1647,13 @@ día (ver *Cerrado recientemente*). Queda lo que ninguna comprobación puede cer
 
 ## Decisiones que necesitan al dueño del producto
 
+- **¿Que el grafo de graphify lea también los documentos?** (2026-10-06). Hoy lee el código y la
+  estructura del markdown, 234 de 604 archivos. Las páginas HTML, los workflows y el contenido de
+  los documentos solo entran con `/graphify .`, que lanza subagentes a leer unas 220.000 palabras
+  (`PENDIENTES.md` son 86.000). Limitado a HTML y YAML serían unas 54.000. Lo que da: preguntas que
+  crucen la pantalla, su workflow y su documento. Lo que cuesta: tokens en cada reconstrucción, y
+  aristas INFERRED que salen del modelo, no del archivo.
+
 - **graphify en modo «siempre activo»** (2026-10-06). Se instaló solo la skill. El modo siempre
   activo (`graphify claude install --project`) haría que cada sesión consultara el grafo antes de
   leer archivos y lo reconstruyera tras cada cambio, con hooks que exigen la CLI instalada en la
@@ -1735,6 +1744,34 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Qué lee el grafo de graphify, y la CLI comprobada al arrancar (2026-10-06, sexta entrega)
+
+Encargo del dueño: «Ejecuta todos los pendientes y confírmame si el grafo ya está leyendo todo el
+proyecto».
+
+- **El grafo no lee todo el proyecto, y está medido.** Cruzando `git ls-files` con el
+  `source_file` de cada nodo, sobre el grafo rehecho en `HEAD`: **234 de 604 archivos**.
+  - **Dentro**: los 203 archivos JS (6 son catálogos de datos de `legacyData/` y no dan
+    símbolos), 26 markdown por su estructura, los `.sh` y `package.json`.
+  - **Fuera a propósito (326)**, por `.graphifyignore`: las skills de terceros, las imágenes, los
+    PDF de fabricantes, las tipografías y la copia de Starlink.
+  - **Fuera porque graphify los trata como documentos (44)**: las 16 páginas HTML, los 14
+    workflows YAML, 7 JSON de datos y el PDF del manual. Solo entran con `/graphify .`, que lee
+    unas 220.000 palabras con subagentes: queda como decisión del dueño.
+  - Y dentro de lo que lee, no enlaza las llamadas entre módulos de `public/js/`, que se hablan
+    por globales del navegador (medido en la entrega anterior).
+- **El arranque comprueba la CLI de graphify** (`.claude/hooks/graphify-cli.sh`, llamado desde
+  `session-start.sh`): compara `graphify --version` con el sello de la skill revisada; si falta,
+  dice `uv tool install "graphifyy==0.9.77"`, y si es otra versión, avisa. No instala nada.
+  Evita que la skill, al no encontrarla, se instale sola la última versión sin fijar. Lo guarda
+  `test/graphify-cli-hook.test.js` con un `graphify` falso en el `PATH` (comprobado quitando el
+  aviso: se pone en rojo).
+- **PDF4me no está resuelto.** Sus herramientas aparecieron en la sesión, pero la primera llamada
+  respondió que hay que volver a iniciar sesión: el conector se reautoriza en los ajustes de
+  conectores de claude.ai.
+- **Huawei, sin cambios**: las guías de hardware las niega Akamai al acceso automatizado y el ciclo
+  de vida exige la cuenta de Info-Finder. No se volvieron a pedir páginas bloqueadas.
 
 ### La skill graphify (2026-10-06, quinta entrega)
 
