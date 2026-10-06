@@ -1,0 +1,1607 @@
+[
+  {
+    "archivo": "cisco-isr1000-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.html",
+        "status": 200,
+        "bytes": 735946,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-c8200-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8200-series-edge-platforms/nb-06-cat8200-series-edge-plat-ds-cte-en.html",
+        "status": 200,
+        "bytes": 277819,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-c8300-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8300-series-edge-platforms/datasheet-c78-744088.html",
+        "status": 200,
+        "bytes": 337893,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-c8500-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8500-series-edge-platforms/datasheet-c78-744089.html",
+        "status": 200,
+        "bytes": 308311,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-asr1000-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/datasheet-c78-731632.html",
+        "status": 200,
+        "bytes": 445294,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar600-ciclo-de-vida.html",
+    "para": "HUAWEI",
+    "guardado": false,
+    "intentos": [
+      {
+        "url": "https://support.huawei.com/enterprise/en/routers/ar611-pid-253265923/bulletins?type=life-cycle-notices",
+        "status": 200,
+        "bytes": 25028,
+        "nota": "no contiene el texto esperado"
+      },
+      {
+        "url": "https://support.huawei.com/enterprise/en/bulletins-product/life-cycle-notices/routers-pid-1482607112869",
+        "status": 200,
+        "bytes": 73381,
+        "nota": "no contiene el texto esperado"
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar610-infofinder.html",
+    "para": "HUAWEI",
+    "guardado": false,
+    "intentos": [
+      {
+        "url": "https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers/ar610-pid-253265923/eom-eofs-and-eos-date",
+        "status": 200,
+        "bytes": 3417,
+        "nota": "no contiene el texto esperado"
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-m8-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/e9dd06e260b64df683f6221fc8442cbf/M3T1A590N1140253824460255266/NetEngine%208000%20M8%20Universal%20Service%20Router%20Datasheet.pdf",
+        "status": 200,
+        "bytes": 514517,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-f8-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/49184bd3a3c54e4b90f6d73b55ba1558/M3T1A590N1101892422391505075/NetEngine%208000%20F8%20Datasheet.pdf",
+        "status": 200,
+        "bytes": 455262,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-f8-ds-universal.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/e679822234f94651b2c2153c21a6621b/M2T1A669N893162565584830493/NetEngine%208000%20F8%20Universal%20Service%20Router%20Datasheet.pdf",
+        "status": 200,
+        "bytes": 443948,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-m14-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/f4f1a7b9424a44ff9770b75a19eb5d2e",
+        "status": 200,
+        "bytes": 330390,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-m14-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/f4f1a7b9424a44ff9770b75a19eb5d2e/M3T1A590N1267221252983996547/NetEngine%208000%20M14%20Universal%20Service%20Router%20Datasheet.pdf",
+        "status": 200,
+        "bytes": 446839,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-m-serie.html",
+    "para": "HUAWEI",
+    "guardado": false,
+    "intentos": [
+      {
+        "url": "https://carrier.huawei.com/en/products/fixed-network/data-communication/router/NetEngine-8000-Series-Router/NetEngine-8000-M-Series",
+        "status": 200,
+        "bytes": 86688,
+        "nota": "no contiene el texto esperado"
+      },
+      {
+        "url": "https://support.huawei.com/enterprise/en/doc/EDOC1100518177/e4ccf4a0/netengine-8000-m8",
+        "status": 200,
+        "bytes": 3800,
+        "nota": "no contiene el texto esperado"
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar650-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/c42dc1420bae4b5cb6188ae903e43fd0/M3T1A590N1161701582779183172/Huawei%20NetEngine%20AR650%20Series%20Enterprise%20Routers%20Datasheet_20250810-v3.pdf",
+        "status": 200,
+        "bytes": 462611,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar610-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/e1fc81f9c69d43eb96d1190f77711067",
+        "status": 200,
+        "bytes": 330581,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar610-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/e1fc81f9c69d43eb96d1190f77711067/M3T1A590N1311347926431838457/Huawei%20NetEngine%20AR610%20Series%20Enterprise%20Routers%20Datasheet-R26C00.pdf",
+        "status": 200,
+        "bytes": 594411,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar5710-s-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/5ed29e82ccc645fb94689a1fbd26bee7/M3T1A590N1245441110459510930/Huawei%20NetEngine%20AR5710-S%20Series%20Enterprise%20Router%20Data%20Sheet-R25C10.pdf",
+        "status": 200,
+        "bytes": 646624,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar6710-h-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/c63ee1473b9147a4b6a50dc64c8f1bcd/M3T1A590N1244327824896741626/Huawei%20NetEngine%20AR6710-H%20Series%20Enterprise%20Router%20Data%20Sheet-R25C10.pdf",
+        "status": 200,
+        "bytes": 511989,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar8000-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/eeda8c0f3659461cbe23ad0a36bc7d78/M3T1A590N1244677017247076576/Huawei%20NetEngine%20AR8000%20Series%20Enterprise%20Router%20Data%20Sheet-R25C10.pdf",
+        "status": 200,
+        "bytes": 709373,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-m6-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/b50df453e4bf4ca4b99ef855437e8cc9/M3T1A590N1140254128116289674/NetEngine%208000%20M6%20Universal%20Service%20Router%20Datasheet.pdf",
+        "status": 200,
+        "bytes": 340235,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-x-brochure.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/02d9fbd0807243b5b37d66759665d25a/M3T1A590N1069280707103375400/NetEngine%208000%20X%20Series%20Brochure.pdf",
+        "status": 200,
+        "bytes": 284918,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-m1a-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/cf634dea810542f1b578ec2a48992ce5",
+        "status": 200,
+        "bytes": 330399,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-m1a-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/cf634dea810542f1b578ec2a48992ce5/M3T1A590N1228070746570178625/NetEngine%208000%20M1A%20Universal%20Service%20Router%20Datasheet.pdf",
+        "status": 200,
+        "bytes": 464338,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-m1d-b-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/d90f145262704e7d98541b3fe592120d",
+        "status": 200,
+        "bytes": 330137,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-m1d-b-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/d90f145262704e7d98541b3fe592120d/M3T1A590N1140257116414410888/NetEngine%208000%20M1D-B%20Universal%20Service%20Router%20Datasheet.pdf",
+        "status": 200,
+        "bytes": 718562,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-a800e-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/06048a7a12954961b5017a6459145905",
+        "status": 200,
+        "bytes": 326992,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-a800e-brochure.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/06048a7a12954961b5017a6459145905/M3T1A590N1063508522362871854/NetEngine%20A800%20E%20Series%20Brochure.pdf",
+        "status": 200,
+        "bytes": 1617696,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar6710-l-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/04c9821faf16492ea6cadb03722f97ce",
+        "status": 200,
+        "bytes": 326475,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar6710-l-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/04c9821faf16492ea6cadb03722f97ce/M3T1A590N1311283223945314586/Huawei%20NetEngine%20AR6710-L%20Series%20Enterprise%20Router%20Data%20Sheet-R26C00.pdf",
+        "status": 200,
+        "bytes": 789463,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-m1c-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/material/enterprise/4a59d6b44470458491311a5793c9ccb6",
+        "status": 200,
+        "bytes": 330070,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-m1c-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/4a59d6b44470458491311a5793c9ccb6/M3T1A590N1140256107802820723/NetEngine%208000%20M1C%20Universal%20Service%20Router%20Datasheet.pdf",
+        "status": 200,
+        "bytes": 491866,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-m4-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/4f9698f641b04f0da9a6ec7a5ddcf78b",
+        "status": 200,
+        "bytes": 330305,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-m4-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/4f9698f641b04f0da9a6ec7a5ddcf78b/M3T1A590N1279110148257448048/NetEngine%208000%20M4%20Universal%20Service%20Router%20Datasheet.pdf",
+        "status": 200,
+        "bytes": 646637,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-m1d-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/fba94a0ac23f4dd883d0df9493eb0ed5/M3T1A590N1140256736524767245/NetEngine%208000%20M1D%20Universal%20Service%20Router%20Datasheet.pdf",
+        "status": 200,
+        "bytes": 594605,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-f1a-8h20q-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/9d1e5a135656419fb90354e8c68136eb/M3T1A590N1167033276639785031/NetEngine%208000%20F1A-8H20Q%20Datasheet%20V800R024C10.pdf",
+        "status": 200,
+        "bytes": 381000,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000e-f1a-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/cc79caaffb574b87985a8c3526649ae9/M3T1A590N1101938675746685128/NetEngine%208000E%20F1A%20Datasheet.pdf",
+        "status": 200,
+        "bytes": 380335,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-a816e-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/56584a8272b44e61be416b1afc0eb241",
+        "status": 200,
+        "bytes": 329933,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-a816e-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/56584a8272b44e61be416b1afc0eb241/M3T1A590N1117254686652182733/NetEngine%20A816%20E%20Datasheet%20V800R024C10.pdf",
+        "status": 200,
+        "bytes": 288854,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-a813e-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/fd349b57d667437c99c0e8f1108aa246",
+        "status": 200,
+        "bytes": 329710,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-a813e-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/fd349b57d667437c99c0e8f1108aa246/M3T1A590N1142133084730556495/NetEngine%20A813%20E%20Datasheet%20V800R025C00.pdf",
+        "status": 200,
+        "bytes": 321950,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-a822e-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/b61bc5869a67495888e7b2e4210ebb37",
+        "status": 200,
+        "bytes": 259667,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-a822e-ds.pptx",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/b61bc5869a67495888e7b2e4210ebb37/M3T1A590N1144953970340237579/NetEngine%20A822%20E%20Datasheet%20V800R025C00.pptx",
+        "status": 200,
+        "bytes": 767491,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-a821e-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/1ff4ee729369411ba9288d36e86e3474",
+        "status": 200,
+        "bytes": 259667,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-a821e-ds.pptx",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/1ff4ee729369411ba9288d36e86e3474/M3T1A590N1149651611493585023/NetEngine%20A821%20E%20Datasheet%20V800R025C00.pptx",
+        "status": 200,
+        "bytes": 1018639,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-a800-producto.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/products/routers/netengine-a800",
+        "status": 200,
+        "bytes": 263498,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-producto.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/products/routers/ne8000",
+        "status": 200,
+        "bytes": 298161,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar6700-producto.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/products/routers/netengine-ar6700",
+        "status": 200,
+        "bytes": 264779,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar8700-producto.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/products/routers/netengine-ar8700",
+        "status": 200,
+        "bytes": 262136,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-spv-811ac338.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/811ac3380ca7453fa9fd7edf8dbad52c",
+        "status": 200,
+        "bytes": 330009,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-spv-5cb30774.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/material/enterprise/5cb3077476e2493aac3972db0663066a",
+        "status": 200,
+        "bytes": 330443,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-spv-ecb4d450.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/ecb4d45066bf4b629f4783bca1b846f9",
+        "status": 200,
+        "bytes": 330161,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-spv-960a6a66.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/960a6a66b96547eebb830949dce209ae",
+        "status": 200,
+        "bytes": 330167,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-spv-1e3d1fc4.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/1e3d1fc4b14e4782846c8731be090909",
+        "status": 200,
+        "bytes": 330629,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-spv-90f6fd47.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/material/enterprise/90f6fd472b63452da07ec6e9faf5f261",
+        "status": 200,
+        "bytes": 330200,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-spv-f693e277.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/others/f693e27702504d748be545b1caa77854",
+        "status": 200,
+        "bytes": 332978,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-spv-729aba28.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/material/enterprise/729aba28dcdc41c5a608dc1859eb3211",
+        "status": 200,
+        "bytes": 330652,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-spv-f65d1efd.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/f65d1efd2cc24c2e882d5268ab74e419",
+        "status": 200,
+        "bytes": 330567,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-spv-1eb8951b.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/others/1eb8951bd3fa4220a01a401b3b345add",
+        "status": 200,
+        "bytes": 332055,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-routers-listado.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/products/routers",
+        "status": 200,
+        "bytes": 308303,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-carrier-ne8000.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://carrier.huawei.com/en/products/fixed-network/data-communication/router/NetEngine-8000-Series-Router",
+        "status": 200,
+        "bytes": 73400,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-carrier-ne8000-x.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://carrier.huawei.com/en/products/fixed-network/data-communication/router/NetEngine-8000-Series-Router/NetEngine-8000-X-series",
+        "status": 200,
+        "bytes": 86513,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-x-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/b67577cb8f4f4dc68c091d8d9e8fb429",
+        "status": 200,
+        "bytes": 259963,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-x-ds.pptx",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/b67577cb8f4f4dc68c091d8d9e8fb429/M3T1A590N1113914198691180598/NetEngine%208000%20X%20Series%20Router%20Datasheet%20V8R024C10.pptx",
+        "status": 200,
+        "bytes": 843459,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar-estante.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/material/bookshelf/bookshelfview/20190907/436e499e649743f1b9c4c633f80797f4",
+        "status": 200,
+        "bytes": 611234,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-series",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/products/routers/ne8000e",
+        "status": 200,
+        "bytes": 302288,
+        "guardado": true,
+        "como": "huawei-series/ne8000e.html"
+      },
+      {
+        "url": "https://e.huawei.com/en/products/routers/ne8000",
+        "status": 200,
+        "bytes": 298161,
+        "guardado": true,
+        "como": "huawei-series/ne8000.html"
+      },
+      {
+        "url": "https://e.huawei.com/en/products/routers/netengine-a800",
+        "status": 200,
+        "bytes": 263498,
+        "guardado": true,
+        "como": "huawei-series/netengine-a800.html"
+      },
+      {
+        "url": "https://e.huawei.com/en/products/routers/netengine-ar8700",
+        "status": 200,
+        "bytes": 262136,
+        "guardado": true,
+        "como": "huawei-series/netengine-ar8700.html"
+      },
+      {
+        "url": "https://e.huawei.com/en/products/routers/netengine-ar8000",
+        "status": 200,
+        "bytes": 260359,
+        "guardado": true,
+        "como": "huawei-series/netengine-ar8000.html"
+      },
+      {
+        "url": "https://e.huawei.com/en/products/routers/netengine-ar6700",
+        "status": 200,
+        "bytes": 264779,
+        "guardado": true,
+        "como": "huawei-series/netengine-ar6700.html"
+      },
+      {
+        "url": "https://e.huawei.com/en/products/routers/ar5710-s",
+        "status": 200,
+        "bytes": 298256,
+        "guardado": true,
+        "como": "huawei-series/ar5710-s.html"
+      },
+      {
+        "url": "https://e.huawei.com/en/products/routers/netengine-ar5700",
+        "status": 200,
+        "bytes": 271892,
+        "guardado": true,
+        "como": "huawei-series/netengine-ar5700.html"
+      },
+      {
+        "url": "https://e.huawei.com/en/products/routers/netengine-ar650",
+        "status": 200,
+        "bytes": 272995,
+        "guardado": true,
+        "como": "huawei-series/netengine-ar650.html"
+      },
+      {
+        "url": "https://e.huawei.com/en/products/routers/netengine-ar610",
+        "status": 200,
+        "bytes": 272945,
+        "guardado": true,
+        "como": "huawei-series/netengine-ar610.html"
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-img",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/2000000101/images/products/routers/ar5710-s/ar5710-s.png",
+        "status": 200,
+        "bytes": 119452,
+        "guardado": true,
+        "como": "huawei-img/routers__ar5710-s__ar5710-s.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/2000000101/images/products/routers/ar5710-s/en-overview-1.png",
+        "status": 200,
+        "bytes": 75630,
+        "guardado": true,
+        "como": "huawei-img/routers__ar5710-s__en-overview-1.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/2000000101/images/products/routers/ar5710-s/en-overview-2.png",
+        "status": 200,
+        "bytes": 65755,
+        "guardado": true,
+        "como": "huawei-img/routers__ar5710-s__en-overview-2.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/2000000101/images/products/routers/ar5710-s/en-overview-3.png",
+        "status": 200,
+        "bytes": 55338,
+        "guardado": true,
+        "como": "huawei-img/routers__ar5710-s__en-overview-3.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/2000000101/images/products/routers/ar5710-s/en-overview-4.png",
+        "status": 200,
+        "bytes": 62996,
+        "guardado": true,
+        "como": "huawei-img/routers__ar5710-s__en-overview-4.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/2000000101/images/products/routers/ar5710-s/overview-v2.png",
+        "status": 200,
+        "bytes": 124465,
+        "guardado": true,
+        "como": "huawei-img/routers__ar5710-s__overview-v2.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/2000000101/images/products/routers/ar5710-s/overview-2.png",
+        "status": 200,
+        "bytes": 109763,
+        "guardado": true,
+        "como": "huawei-img/routers__ar5710-s__overview-2.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/ar5710s/ar5710-s-overview-pc1.png",
+        "status": 200,
+        "bytes": 28652,
+        "guardado": true,
+        "como": "huawei-img/routers__ar5710s__ar5710-s-overview-pc1.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/ar5710s/ar5710-s-overview-pc2.png",
+        "status": 200,
+        "bytes": 37572,
+        "guardado": true,
+        "como": "huawei-img/routers__ar5710s__ar5710-s-overview-pc2.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/2000000101/images/products/routers/ar5710-s/ar5710-soverview-3.png",
+        "status": 200,
+        "bytes": 21042,
+        "guardado": true,
+        "como": "huawei-img/routers__ar5710-s__ar5710-soverview-3.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/2000000101/images/products/routers/ar5710-s/ar5710-soverview-4.png",
+        "status": 200,
+        "bytes": 18112,
+        "guardado": true,
+        "como": "huawei-img/routers__ar5710-s__ar5710-soverview-4.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/ar5710s/068-rich-protocol-interface.png",
+        "status": 200,
+        "bytes": 902,
+        "guardado": true,
+        "como": "huawei-img/routers__ar5710s__068-rich-protocol-interface.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/ar5710s/0010-fusion-load.png",
+        "status": 200,
+        "bytes": 1161,
+        "guardado": true,
+        "como": "huawei-img/routers__ar5710s__0010-fusion-load.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/ar5710s/0170-full-scene-access.png",
+        "status": 200,
+        "bytes": 2062,
+        "guardado": true,
+        "como": "huawei-img/routers__ar5710s__0170-full-scene-access.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/ne8000-all.png",
+        "status": 200,
+        "bytes": 60459,
+        "guardado": true,
+        "como": "huawei-img/products__routers__ne8000-all.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/ne8000/ne8000-all.png",
+        "status": 200,
+        "bytes": 60459,
+        "guardado": true,
+        "como": "huawei-img/routers__ne8000__ne8000-all.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/ne8000/ne8000-m14.png",
+        "status": 200,
+        "bytes": 47828,
+        "guardado": true,
+        "como": "huawei-img/routers__ne8000__ne8000-m14.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/ne8000/ne8000-m8.png",
+        "status": 200,
+        "bytes": 45069,
+        "guardado": true,
+        "como": "huawei-img/routers__ne8000__ne8000-m8.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/ne8000/ne8000-m6.png",
+        "status": 200,
+        "bytes": 40074,
+        "guardado": true,
+        "como": "huawei-img/routers__ne8000__ne8000-m6.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/ne8000/ne8000-m1a.png",
+        "status": 200,
+        "bytes": 98606,
+        "guardado": true,
+        "como": "huawei-img/routers__ne8000__ne8000-m1a.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/ne8000/ne8000-f1a.png",
+        "status": 200,
+        "bytes": 36701,
+        "guardado": true,
+        "como": "huawei-img/routers__ne8000__ne8000-f1a.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/ne8000/ne8000-f8-1.png",
+        "status": 200,
+        "bytes": 161675,
+        "guardado": true,
+        "como": "huawei-img/routers__ne8000__ne8000-f8-1.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/ne8000/netengine-8000-m1d-b.png",
+        "status": 200,
+        "bytes": 119864,
+        "guardado": true,
+        "como": "huawei-img/routers__ne8000__netengine-8000-m1d-b.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/ne8000/netengine-8000-m4.png",
+        "status": 200,
+        "bytes": 38934,
+        "guardado": true,
+        "como": "huawei-img/routers__ne8000__netengine-8000-m4.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/ne8000/45-powerful-platform-compatibility.png",
+        "status": 200,
+        "bytes": 1069,
+        "guardado": true,
+        "como": "huawei-img/routers__ne8000__45-powerful-platform-compatibility.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/ne8000/014-ultra-wide-internet.png",
+        "status": 200,
+        "bytes": 1673,
+        "guardado": true,
+        "como": "huawei-img/routers__ne8000__014-ultra-wide-internet.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/ne8000/0129-business-continuity.png",
+        "status": 200,
+        "bytes": 2050,
+        "guardado": true,
+        "como": "huawei-img/routers__ne8000__0129-business-continuity.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/netenginea800/product-en-0927.png",
+        "status": 200,
+        "bytes": 106278,
+        "guardado": true,
+        "como": "huawei-img/routers__netenginea800__product-en-0927.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/netenginea800/044-flexible-networking.png",
+        "status": 200,
+        "bytes": 2268,
+        "guardado": true,
+        "como": "huawei-img/routers__netenginea800__044-flexible-networking.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/netenginea800/069-cloud-centralized-management.png",
+        "status": 200,
+        "bytes": 1834,
+        "guardado": true,
+        "como": "huawei-img/routers__netenginea800__069-cloud-centralized-management.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/netenginea800/097-user-experience.png",
+        "status": 200,
+        "bytes": 1385,
+        "guardado": true,
+        "como": "huawei-img/routers__netenginea800__097-user-experience.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/netenginea800/036-plug-and-play.png",
+        "status": 200,
+        "bytes": 1396,
+        "guardado": true,
+        "como": "huawei-img/routers__netenginea800__036-plug-and-play.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/2000000101/images/products/routers/netengine-ar5700/overview.png",
+        "status": 200,
+        "bytes": 179824,
+        "guardado": true,
+        "como": "huawei-img/routers__netengine-ar5700__overview.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/netengineAr5700/bg-ar5700.jpg",
+        "status": 200,
+        "bytes": 97330,
+        "guardado": true,
+        "como": "huawei-img/routers__netengineAr5700__bg-ar5700.jpg"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/2000000101/images/products/routers/netengine-ar5700/en-overview-1.png",
+        "status": 200,
+        "bytes": 68119,
+        "guardado": true,
+        "como": "huawei-img/routers__netengine-ar5700__en-overview-1.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/2000000101/images/products/routers/netengine-ar5700/en-overview-2.png",
+        "status": 200,
+        "bytes": 68371,
+        "guardado": true,
+        "como": "huawei-img/routers__netengine-ar5700__en-overview-2.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/2000000101/images/products/routers/netengine-ar5700/en-overview-3.png",
+        "status": 200,
+        "bytes": 67820,
+        "guardado": true,
+        "como": "huawei-img/routers__netengine-ar5700__en-overview-3.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/2000000101/images/products/routers/netengine-ar5700/en-overview-4.png",
+        "status": 200,
+        "bytes": 71878,
+        "guardado": true,
+        "como": "huawei-img/routers__netengine-ar5700__en-overview-4.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/2000000101/images/products/routers/netengine-ar5700/en-overview-5.png",
+        "status": 200,
+        "bytes": 77181,
+        "guardado": true,
+        "como": "huawei-img/routers__netengine-ar5700__en-overview-5.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/2000000101/images/products/routers/netengine-ar5700/en-overview-6.png",
+        "status": 200,
+        "bytes": 77367,
+        "guardado": true,
+        "como": "huawei-img/routers__netengine-ar5700__en-overview-6.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/netengineAr5700/085-ronghe.png",
+        "status": 200,
+        "bytes": 2370,
+        "guardado": true,
+        "como": "huawei-img/routers__netengineAr5700__085-ronghe.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/netengineAr5700/082-safety-and-more-testing.png",
+        "status": 200,
+        "bytes": 1351,
+        "guardado": true,
+        "como": "huawei-img/routers__netengineAr5700__082-safety-and-more-testing.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/2000000101/images/products/routers/netengine-ar610/netengine-ar610.png",
+        "status": 200,
+        "bytes": 100052,
+        "guardado": true,
+        "como": "huawei-img/routers__netengine-ar610__netengine-ar610.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/2000000101/images/products/routers/netengine-ar6700/netengine-ar6700-list.png",
+        "status": 200,
+        "bytes": 83409,
+        "guardado": true,
+        "como": "huawei-img/routers__netengine-ar6700__netengine-ar6700-list.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/netenginear6700/netengine-ar6700.png",
+        "status": 200,
+        "bytes": 43082,
+        "guardado": true,
+        "como": "huawei-img/routers__netenginear6700__netengine-ar6700.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/netenginear8000/netengine-ar8000.png",
+        "status": 200,
+        "bytes": 33259,
+        "guardado": true,
+        "como": "huawei-img/routers__netenginear8000__netengine-ar8000.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/2000000101/images/products/routers/netengine-ar8000/netengine-ar8700.png",
+        "status": 200,
+        "bytes": 153859,
+        "guardado": true,
+        "como": "huawei-img/routers__netengine-ar8000__netengine-ar8700.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/netenginear8700/netengine-ar8700.png",
+        "status": 200,
+        "bytes": 153859,
+        "guardado": true,
+        "como": "huawei-img/routers__netenginear8700__netengine-ar8700.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/netenginear8700/high-performance.png",
+        "status": 200,
+        "bytes": 1507,
+        "guardado": true,
+        "como": "huawei-img/routers__netenginear8700__high-performance.png"
+      },
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/products/routers/netenginear8700/09-full-protection.png",
+        "status": 200,
+        "bytes": 1821,
+        "guardado": true,
+        "como": "huawei-img/routers__netenginear8700__09-full-protection.png"
+      },
+      {
+        "url": "https://carrier.huawei.com/~/media/cnbgv2/images/products/network/ne8000/8000-960.png",
+        "status": 200,
+        "bytes": 497263,
+        "guardado": true,
+        "como": "huawei-img/network__ne8000__8000-960.png"
+      },
+      {
+        "url": "https://carrier.huawei.com/~/media/cnbgv2/images/products/network/ne8000/02x.png",
+        "status": 200,
+        "bytes": 302786,
+        "guardado": true,
+        "como": "huawei-img/network__ne8000__02x.png"
+      },
+      {
+        "url": "https://carrier.huawei.com/~/media/cnbgv2/images/products/network/ne8000/m.png",
+        "status": 200,
+        "bytes": 256007,
+        "guardado": true,
+        "como": "huawei-img/network__ne8000__m.png"
+      },
+      {
+        "url": "https://carrier.huawei.com/~/media/cnbgv2/images/products/network/ne8000/f1a_960x540.jpg",
+        "status": 200,
+        "bytes": 208253,
+        "guardado": true,
+        "como": "huawei-img/network__ne8000__f1a_960x540.jpg"
+      },
+      {
+        "url": "https://carrier.huawei.com/~/media/cnbgv2/images/products/network/ne8000/960/x4x81.png",
+        "status": 200,
+        "bytes": 521842,
+        "guardado": true,
+        "como": "huawei-img/ne8000__960__x4x81.png"
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-orch-ids.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/sdwan/docs/orch/configuration/overlays/ids/",
+        "status": 200,
+        "bytes": 115672,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-ec-ciclo-de-vida.pdf",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/docs/eula/EC_LifecyclePolicy_latest.pdf",
+        "status": 200,
+        "bytes": 182041,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-controladores-portal.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/controller-top.htm",
+        "status": 200,
+        "bytes": 27933,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-7024-ig.pdf",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/hardware/controllers/7024/ig/Aruba-7024IG_EN.pdf",
+        "status": 200,
+        "bytes": 1511602,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-psnow-c05272689.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/doc/c05272689",
+        "status": 200,
+        "bytes": 45390,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-psnow-c05272677.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/doc/c05272677",
+        "status": 200,
+        "bytes": 127207,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-7000-serie-ds.pdf",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/downloadDoc/Aruba%207000%20Series%20Mobility%20Controllers-c05272689.pdf?id=c05272689.pdf&isFutureVersion=true&ver=13&form=false&preview=false&print=&hf=regular&r=&section=&prelaunchSection=&softrollSection=&deepLink=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&originalObjectName=&isLinearized=false&contentDisposition=attachment",
+        "status": 200,
+        "bytes": 387802,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-7200-serie-ds.pdf",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/downloadDoc/HPE%20Aruba%20Networking%207200%20Series%20Mobility%20Controllers-c05272677.pdf?id=c05272677.pdf&isFutureVersion=true&ver=14&form=false&preview=false&print=&hf=regular&r=&section=&prelaunchSection=&softrollSection=&deepLink=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&originalObjectName=&isLinearized=false&contentDisposition=attachment",
+        "status": 200,
+        "bytes": 608021,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-portal-toc.js",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Data/Tocs/product_toc__con_gat__controller.js",
+        "status": 200,
+        "bytes": 360,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-portal-toc-chunk0.js",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Data/Tocs/product_toc__con_gat__controller_Chunk0.js",
+        "status": 200,
+        "bytes": 2004,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-7024-pagina.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7024.htm",
+        "status": 200,
+        "bytes": 29704,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-7005-pagina.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7005.htm",
+        "status": 200,
+        "bytes": 29762,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-7005-ig.pdf",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.arubanetworks.com/techdocs/hardware/controllers/7005/ig/7005_IG_poster_Rev02_EN.pdf",
+        "status": 200,
+        "bytes": 1587875,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-7008-pagina.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7008.htm",
+        "status": 200,
+        "bytes": 30868,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-7008-ig.pdf",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.arubanetworks.com/techdocs/hardware/controllers/7008/ig/7008_IG_poster_Rev01_EN.pdf",
+        "status": 200,
+        "bytes": 1216434,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-7010-pagina.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7010.htm",
+        "status": 200,
+        "bytes": 29452,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-7010-ig.pdf",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.arubanetworks.com/techdocs/hardware/controllers/7010/ig/Aruba%207010%20Installation%20Guide_EN.pdf",
+        "status": 200,
+        "bytes": 2548007,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-7030-pagina.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7030.htm",
+        "status": 200,
+        "bytes": 29793,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-7030-ig.pdf",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.arubanetworks.com/techdocs/hardware/controllers/7030/ig/Aruba%207030%20Controller%20IG_EN.pdf",
+        "status": 200,
+        "bytes": 2260904,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-7205-pagina.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7205.htm",
+        "status": 200,
+        "bytes": 29791,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-7205-ig.pdf",
+    "para": "ARUBA",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.arubanetworks.com/techdocs/hardware/controllers/7205/ig/7205-IG-EN.pdf",
+        "status": 200,
+        "bytes": 1368031,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-srx300-ds.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html",
+        "status": 200,
+        "bytes": 39712,
+        "nota": "no contiene el texto esperado"
+      },
+      {
+        "url": "https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html",
+        "status": 200,
+        "bytes": 765790,
+        "guardado": true
+      }
+    ]
+  }
+]

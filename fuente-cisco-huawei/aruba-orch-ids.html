@@ -1,0 +1,1060 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en-US">
+
+<head>
+  <!-- Disable cahcing in page... -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+  <meta http-equiv="Pragma" content="no-cache"/>
+  <meta http-equiv="Expires" content="0"/>
+  
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+
+  <link rel="stylesheet" href="/techdocs/sdwan/assets/css/just-the-docs-default.css">
+
+  <link rel="stylesheet" href="/techdocs/sdwan/assets/css/just-the-docs-head-nav.css" id="jtd-head-nav-stylesheet">
+  
+  <!-- KAPA AI HEREE-->
+
+  <!-- END KAPA AI  -->
+
+  <!-- PoC Widget: Required dependencies, in this exact order -->
+  <meta name="sysid" content="18">
+  <link rel="stylesheet" href="https://apps.juniper.net/assets/public/css/feedback-widget-bundle.css">
+  <script src="https://www.juniper.net/etc.clientlibs/clientlibs/granite/jquery.min.js"></script>
+  <script src="https://apps.juniper.net/assets/public/js/feedback-widget-bundle.js"></script>
+  <!-- End PoC Widget -->
+
+  <script async="true"
+src="https://widget.kapa.ai/kapa-widget.bundle.js"
+data-website-id="3c0b7746-b5aa-4561-89ae-476c9010c019"
+    data-project-name="HPE Aruba Networking EdgeConnect SD-WAN"
+    data-modal-title="Ask AI"
+    data-project-color="#000000"
+    data-project-logo="https://learningportal.juniper.net/juniper/resources/images/logo/chat-bubble-icon.svg"
+    data-modal-disclaimer="This conversation will be monitored and recorded. Any information you provide will be subject to our [Privacy Notice](https://www.hpe.com/us/en/legal/privacy.html) and may be used for quality assurance purposes. Do not include any personal or sensitive information. Ask AI can make mistakes. Verify generated output for accuracy. See [Terms of Use](https://www.juniper.net/content/dam/www/assets/legal/us/en/digital-assistant-terms-of-use.pdf)."
+    data-modal-header-bg-color="#292D3A"
+    data-modal-title-color="#FFFFFF"
+    data-hyperlink-color="#01A982"
+    data-modal-image-width="38"
+    data-modal-image-height="34"
+    data-font-family="Metric, -apple-system, BlinkMacSystemFont, system-ui, Roboto, Segoe UI, Helvetica Neue, Lucida Grande, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol"
+    data-font-size-xs="10px"
+    data-font-size-sm="14px"
+    data-font-size-md="14px"
+    data-font-size-lg="14px"
+    data-font-size-xl="16px"
+    data-modal-disclaimer-font-size="6px"
+    data-modal-example-questions-title="How can I help you today?"
+    data-modal-example-questions="Explain route lookup precedence in the EdgeConnect., When should I use EdgeHA vs. Traditional HA?, How do templates work?, How do I configure URL Filtering? "
+    data-example-question-button-bg-color="#FFFFFF"
+    data-example-question-button-hover-bg-color="#F7F7F7"
+    data-example-question-button-text-color="#292D3A"
+    data-example-question-button-font-size="16px"
+    data-example-question-button-border="3px solid #01A982"
+    data-example-question-button-border-radius="100px"
+    data-example-question-button-height="50px"	
+    data-submit-query-button-bg-color="#01A982"
+    data-modal-ask-ai-input-placeholder="Ask me anything about HPE Aruba Networking EdgeConnect SD-WAN documentation."
+    data-user-analytics-fingerprint-enabled="true"
+    data-search-result-primary-title-font-size="16px"
+    data-modal-title-font-size="16px"
+    data-button-text-font-size="16px"
+    data-search-result-secondary-title-font-size="14px"
+    data-search-ask-ai-secondary-text-font-size="14px"
+    data-search-ask-ai-cta-text-font-size="14px"
+    data-search-ask-ai-cta-hover-bg-color="#000000"
+    data-answer-cta-button-enabled="false"
+    data-answer-cta-button-font-size="10px"
+	data-answer-cta-button-text-color="#000000"
+    data-answer-cta-button-text="Contact Sales or Support \u2794"
+    data-answer-cta-button-hover-bg-color="#01A982"
+    data-answer-cta-button-bg-color="#FFFFFF"
+    data-answer-cta-button-border-radius="100px"	
+    data-answer-cta-button-border="4px solid #01A982"	
+    data-answer-cta-button-height="45px"
+    data-answer-cta-button-width="220px"
+	data-thread-clear-button-font-size="14px"
+    data-thread-clear-button-icon-size="2rem"
+    data-thread-clear-button-text-color="#FFFFFF"
+    data-thread-clear-button-active-text-color="#000000"
+    data-thread-clear-button-bg-color="#000000"
+    data-thread-clear-button-active-bg-color="#FFFFFF"
+    data-thread-clear-button-active-hover-bg-color="#FFFFFF"
+    data-thread-clear-button-hover-bg-color="#FFFFFF"
+	data-thread-clear-button-border="2px solid #000000"
+    data-conversation-button-height="40px" 
+    data-answer-copy-button-font-size="14px"
+    data-answer-copy-button-icon-size="2rem"
+    data-answer-copy-button-text-color="#FFFFFF"
+    data-answer-copy-button-active-text-color="#000000"
+    data-answer-copy-button-bg-color="#000000"
+    data-answer-copy-button-active-bg-color="#FFFFFF"
+    data-answer-copy-button-active-hover-bg-color="#FFFFFF"
+    data-answer-copy-button-hover-bg-color="#FFFFFF"
+	data-answer-copy-button-border="2px solid #000000"
+    data-answer-feedback-button-height="24px"
+    data-answer-feedback-button-font-size="14px"
+    data-answer-feedback-button-icon-size="2rem"
+    data-answer-feedback-button-text-color="#FFFFFF"
+    data-answer-feedback-button-active-text-color="#000000"
+    data-answer-feedback-button-bg-color="#000000"
+    data-answer-feedback-button-active-bg-color="#FFFFFF"
+    data-answer-feedback-button-active-hover-bg-color="#FFFFFF"
+    data-answer-feedback-button-hover-bg-color="#FFFFFF"
+	data-answer-feedback-button-border="2px solid #000000"
+    data-query-input-font-size="14px"
+    data-search-show-more-button-hover-bg-color="#000000"
+    data-scale-factor="1.6"
+    data-deep-thinking-button-icon-size="1.6rem"
+	data-button-text-color="#FFFFFF"
+data-button-height="5rem"
+data-button-width="4.5rem"
+data-button-position-bottom="50px"
+data-view-mode="sidebar"
+data-modal-size="500px"
+data-launcher-button-image-height="24"
+data-launcher-button-image-width="24"
+data-modal-title-font-size="12px"
+data-conversation-button-label-hidden="false"
+  data-modal-x-offset="0"
+  data-modal-y-offset="6vh"
+  data-modal-inner-justify-content="center"
+  >
+  </script>
+
+
+  
+  <!-- START ANALYTICS SCRIPT -->
+  <script type="text/javascript" async defer 
+      src="https://www.hpe.com/global/metrics/easy/basic_measurement.js">
+  </script>
+  <!-- END ANALYTICS SCRIPT -->
+  
+  
+  <style id="jtd-nav-activation">
+  
+
+    .site-nav > ul.nav-list:first-child > li > a,
+    .site-nav > ul.nav-list:first-child > li > ul > li > a,
+    
+    .site-nav > ul.nav-list:first-child > li > ul > li > ul > li:not(:nth-child(16)) > a,
+    .site-nav > ul.nav-list:first-child > li > ul > li > ul > li > ul > li a {
+      background-image: none;
+    }
+
+    .site-nav > ul.nav-list:not(:first-child) a,
+    .site-nav li.external a {
+      background-image: none;
+    }
+
+    .site-nav > ul.nav-list:first-child > li:nth-child(6) > ul > li:nth-child(14) > ul > li:nth-child(16) > a {
+      font-weight: 600;
+      text-decoration: none;
+    }.site-nav > ul.nav-list:first-child > li:nth-child(6) > button svg,
+    .site-nav > ul.nav-list:first-child > li:nth-child(6) > ul > li:nth-child(14) > button svg,
+    .site-nav > ul.nav-list:first-child > li:nth-child(6) > ul > li:nth-child(14) > ul > li:nth-child(16) > button svg {
+      transform: rotate(-90deg);
+    }.site-nav > ul.nav-list:first-child > li.nav-list-item:nth-child(6) > ul.nav-list,
+    .site-nav > ul.nav-list:first-child > li.nav-list-item:nth-child(6) > ul.nav-list > li.nav-list-item:nth-child(14) > ul.nav-list,
+    .site-nav > ul.nav-list:first-child > li.nav-list-item:nth-child(6) > ul.nav-list > li.nav-list-item:nth-child(14) > ul.nav-list > li.nav-list-item:nth-child(16) > ul.nav-list {
+      display: block;
+    }
+  </style>
+
+  
+
+  
+    <script src="/techdocs/sdwan/assets/js/vendor/lunr.min.js"></script>
+  
+
+  <script src="/techdocs/sdwan/assets/js/just-the-docs.js"></script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+
+  <link rel="icon" href="/techdocs/sdwan/favicon.ico" type="image/x-icon">
+
+
+
+  <!-- Begin Jekyll SEO tag v2.9.1 -->
+<title>Intrusion Detection/Prevention System | HPE Networking Orchestrator Docs</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Intrusion Detection/Prevention System" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="These pages provide technical guidance about specific areas of functionality in the Aruba EdgeConnect SD-WAN Edge Platform." />
+<meta name="twitter:description" property="og:description" content="These pages provide technical guidance about specific areas of functionality in the Aruba EdgeConnect SD-WAN Edge Platform." />
+<link rel="canonical" href="https://www.arubanetworks.com/techdocs/sdwan/docs/orch/configuration/overlays/ids/" />
+<meta property="og:url" content="https://www.arubanetworks.com/techdocs/sdwan/docs/orch/configuration/overlays/ids/" />
+<meta property="og:site_name" content="HPE Networking Orchestrator Docs" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Intrusion Detection/Prevention System" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"These pages provide technical guidance about specific areas of functionality in the Aruba EdgeConnect SD-WAN Edge Platform.","headline":"Intrusion Detection/Prevention System","url":"https://www.arubanetworks.com/techdocs/sdwan/docs/orch/configuration/overlays/ids/"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+  <!-- Makes the page reload the css and javascript -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+<link rel="stylesheet" type="text/css" href="https://h50007.www5.hpe.com/hfws-static/5/css/hpe-hfws-hf.css">
+  <script type="text/javascript" src="https://h50007.www5.hpe.com/hfws-static/5/js/hpe-mini-cart.js"></script>
+  <script type="text/javascript" src="https://h50007.www5.hpe.com/hfws-static/5/js/hpe-hfws-hf.js"></script>
+
+
+  <script src="https://h50007.www5.hpe.com/hfws-static/js/framework/jquery/v-3-6-0/jquery.js"></script>
+  <script src="https://h50007.www5.hpe.com/hfws/us/en/hpe/latest.r/root?contentType=js&switchToCHF=true&hide_country_selector=true&hide_main_nav=true&hide_search=true&hide_cart=true&hide_sign_in=true&hide_cube_menu=true&header_logo=hpe&slim_footer=true"></script>
+
+
+  <meta content="IE=edge" http-equiv="X-UA-Compatible" /> <!-- Metadata tag value "ie=edge" -->
+
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+  <meta charset="UTF-8"> <!-- Metadata tag for "Character set" -->
+
+  <meta name="company_code" content="hpe"/> <!-- Meta tag Company_Code -->
+
+<!-- Section 4 – Metadata -->
+  <meta content="hpe.1.0" name="hp_design_version" /> <!-- Metadata tag value "Design-Version" -->
+  <!-- Web Service Version already getting injected? --> 
+  <meta content="HPE enterprise services cloud services, infrastructure cloud services, application services, enterprise-grade cloud solutions" name="keywords" /> <!-- Metadata tag value "Keywords" -->
+  <meta content="presales.selection" name="lifecycle" /> <!-- Metadata tag value "Lifecycle" -->
+  <meta content="follow, index" name="robots" /> <!-- Metadata tag value "Robots" -->
+  <meta content="Segment Neutral" name="segment" /> <!-- Metadata tag value "Segments" -->
+  <meta content="Scanners — Landing Page" name="simple_title" />
+  <meta content="Non-targeted" name="user_profile" />
+  <meta content="us" name="target_country" /> <!-- Metadata tag value "Target-Country" -->
+  <meta content="R2515" name="web_section_id" /> <!-- Metadata tag value "Web-Section-ID" -->
+
+<!-- Section 9 – Metrics tag  -->
+  <script type="text/javascript" src="https://www.hpe.com/global/metrics/easy/basic_measurement.js" async defer ></script>
+
+
+</head>
+
+
+
+<body onload="setScrollOnPageLoad()" >
+
+    <!-- Adding for diff -->
+    <div class="container">
+        
+        <div id="header" class="header">
+	</div> <!-- end header -->
+        
+        <div class="content">
+          
+          <div id="left-div">
+          
+              <!-- HPE Aruba networking logo -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+  <symbol id="svg-link" viewBox="0 0 24 24">
+  <title>Link</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-link">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+  </svg>
+</symbol>
+
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+  <title>Menu</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu">
+    <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+</symbol>
+
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+  <title>Expand</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+    <polyline points="9 18 15 12 9 6"></polyline>
+  </svg>
+</symbol>
+
+  <!-- Feather. MIT License: https://github.com/feathericons/feather/blob/master/LICENSE -->
+<symbol id="svg-external-link" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-external-link">
+  <title id="svg-external-link-title">(external link)</title>
+  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line>
+</symbol>
+
+  
+    <symbol id="svg-doc" viewBox="0 0 24 24">
+  <title>Document</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file">
+    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline>
+  </svg>
+</symbol>
+
+    <symbol id="svg-search" viewBox="0 0 24 24">
+  <title>Search</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search">
+    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+  </svg>
+</symbol>
+
+  
+  
+    <!-- Bootstrap Icons. MIT License: https://github.com/twbs/icons/blob/main/LICENSE.md -->
+<symbol id="svg-copy" viewBox="0 0 16 16">
+  <title>Copy</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+  </svg>
+</symbol>
+<symbol id="svg-copied" viewBox="0 0 16 16">
+  <title>Copied</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-check-fill" viewBox="0 0 16 16">
+    <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3Zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3Z"/>
+    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5v-1Zm6.854 7.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708Z"/>
+  </svg>
+</symbol>
+
+  
+</svg>
+
+	    <!-- Side-Bar -->
+            
+              
+<div class="side-bar" >
+
+  <div class="site-header" role="banner">
+    <a href="/techdocs/sdwan/" class="site-title lh-tight">
+  HPE Networking Orchestrator Docs
+
+</a>
+    <button id="menu-button" class="site-button btn-reset" aria-label="Toggle menu" aria-pressed="false">
+      <svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><use xlink:href="#svg-menu"></use></svg>
+    </button>
+  </div> <!-- site-header -->
+
+  <div id="menu-scroll-box">
+  
+    <nav role="navigation" aria-label="Main" id="site-nav" class="site-nav" onscroll="recordScrollOnMove()">
+  
+
+  
+  
+    <ul class="nav-list"><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Home category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/" class="nav-list-link">Home</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/user-guides/" class="nav-list-link">User Guides</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/release-notes/" class="nav-list-link">Release Notes</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/mibs/" class="nav-list-link">MIBs</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/hardware/" class="nav-list-link">Hardware Documentation</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/cli/" class="nav-list-link">CLI Reference</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/home-test-drives/" class="nav-list-link">Test Drives</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Compliance category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/fips/" class="nav-list-link">Compliance</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/fips/userguidance/" class="nav-list-link">FIPS User Guidance</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/fips/cc/" class="nav-list-link">Common Criteria User Guidance</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/fips/standards/" class="nav-list-link">Technical Standards Compliance</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/fips/algorithms/" class="nav-list-link">Security Algorithms and Cipher Profiles</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Deployment Guides category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/deployments/" class="nav-list-link">Deployment Guides</a><ul class="nav-list"><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Deployment Guides (HTML) category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/deployments/deploy-html/" class="nav-list-link">Deployment Guides (HTML)</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/deployments/deploy-html/usb-ztp/" class="nav-list-link">USB-Based Zero Touch Provisioning</a></li></ul></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/deployments/deploy-pdf/" class="nav-list-link">Deployment Guides (PDF)</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Integration Guides category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/integrations/" class="nav-list-link">Integration Guides</a><ul class="nav-list"><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Integration Guides (HTML) category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/integrations/integrate-html/" class="nav-list-link">Integration Guides (HTML)</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/integrations/integrate-html/service-now/" class="nav-list-link">ServiceNow Integration with Orchestrator</a></li></ul></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/integrations/integrate-pdf/" class="nav-list-link">Integration Guides (PDF)</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Solution Guides category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/solutions/" class="nav-list-link">Solution Guides</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/solutions/solutions-html/" class="nav-list-link">Solution Guides (HTML)</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/solutions/solutions-pdf/" class="nav-list-link">Solution Guides (PDF)</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Using SD-WAN Orchestrator category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/" class="nav-list-link">Using SD-WAN Orchestrator</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/new/" class="nav-list-link">What's New</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/get-started/" class="nav-list-link">Getting Started</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/sase-copilot/" class="nav-list-link">SASE Copilot</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/themes/" class="nav-list-link">Light or Dark Theme</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/menus/" class="nav-list-link">Menu Options</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/" class="nav-list-link">Monitoring</a></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Monitoring > Summary category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/monitoring/summary/" class="nav-list-link">Monitoring > Summary</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/summary/dashboard/" class="nav-list-link">Dashboard</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/summary/topology/" class="nav-list-link">Topology</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/summary/health-map/" class="nav-list-link">Health Map</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/summary/alarms/" class="nav-list-link">Alarms</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/summary/routenexthop/" class="nav-list-link">Route Next Hops</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/summary/route-label-status/" class="nav-list-link">Route Label Status</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/summary/appliance-power-consumption/" class="nav-list-link">Appliance Power Consumption</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Monitoring > Security category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/monitoring/security/" class="nav-list-link">Monitoring > Security</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/security/firewall-drops/" class="nav-list-link">Firewall Drops</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/security/fpp-top-talkers/" class="nav-list-link">Protection Profile Top Talkers</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/security/protection-profile-trends/" class="nav-list-link">Protection Profile Trends</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/security/flow-baselines/" class="nav-list-link">Flow Baselines</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/security/flow-baseline-trends/" class="nav-list-link">Flow Baseline Trends</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/security/internal-ip-reputation/" class="nav-list-link">Internal IP Reputation</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/security/secure-web-services-top-talkers/" class="nav-list-link">Secure Web Services Top Talkers</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/security/security-log-viewer/" class="nav-list-link">Security Log Viewer</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Monitoring > Performance category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/monitoring/performance/" class="nav-list-link">Monitoring > Performance</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/performance/availability/" class="nav-list-link">Availability</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/performance/appexpress-summary/" class="nav-list-link">AppExpress Summary</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/performance/ip-sla-summary/" class="nav-list-link">IP SLA Summary</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/performance/internet-breakout/" class="nav-list-link">Internet Breakout Trends</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/performance/application-summary/" class="nav-list-link">Application Performance Summary</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/performance/application-trends/" class="nav-list-link">Application Performance Trends</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Monitoring > Reporting category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/monitoring/reporting/" class="nav-list-link">Monitoring > Reporting</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/reporting/schedule-run/" class="nav-list-link">Schedule and Run Reports</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/reporting/view-reports/" class="nav-list-link">View Reports</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/reporting/scheduled-historical/" class="nav-list-link">Scheduled and Historical Jobs</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/reporting/metered-usage-reports/" class="nav-list-link">Metered Usage Reports</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Monitoring > Bandwidth category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/" class="nav-list-link">Monitoring > Bandwidth</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/overlay-int-transport/" class="nav-list-link">Overlay Interface Transport</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/int-summary/" class="nav-list-link">Interface Bandwidth Summary</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/int-bw-trends/" class="nav-list-link">Interface Bandwidth Trends</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/app-bw/" class="nav-list-link">Application Bandwidth Summary</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/app-pie-charts/" class="nav-list-link">Application Bandwidth Pie Charts</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/app-trends/" class="nav-list-link">Application Bandwidth Trends</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/users-summary/" class="nav-list-link">User Bandwidth Summary</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/users-pie-charts/" class="nav-list-link">User Bandwidth Pie Charts</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/users-trends/" class="nav-list-link">User Bandwidth Trends</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/top-talkers/" class="nav-list-link">Top Talkers</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/top-domains/" class="nav-list-link">Top Domains</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/top-countries/" class="nav-list-link">Top Countries</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/top-ports/" class="nav-list-link">Top Ports</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/traffic-behavior/" class="nav-list-link">Traffic Behavior</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/appliance-bw/" class="nav-list-link">Appliance Bandwidth Summary</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/appliance-bw-trends/" class="nav-list-link">Appliance Bandwidth Trends</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/appliance-packet-counts/" class="nav-list-link">Appliance Packet Counts</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/tunnel-bw/" class="nav-list-link">Tunnel Bandwidth Summary</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/tunnel-pie-charts/" class="nav-list-link">Tunnel Bandwidth Pie Charts</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/tunnel-bw-trends/" class="nav-list-link">Tunnel Bandwidth Trends</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/tunnel-packet-counts/" class="nav-list-link">Tunnel Packet Counts</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/flows/" class="nav-list-link">Flows</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/appliance-flow-counts/" class="nav-list-link">Appliance Flow Counts</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/appliance-flow-trends/" class="nav-list-link">Appliance Flow Trends</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/tunnel-flows/" class="nav-list-link">Tunnel Flows</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/dscp-bw/" class="nav-list-link">DSCP Bandwidth Summary</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/dscp-pie-charts/" class="nav-list-link">DSCP Bandwidth Pie Charts</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/dscp-trends/" class="nav-list-link">DSCP Bandwidth Trends</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/traffic-class-bw/" class="nav-list-link">Traffic Class Bandwidth Summary</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/qos-traffic-class-pie-charts/" class="nav-list-link">Traffic Class Bandwidth Pie Charts</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/shaper-bandwidth-summary/" class="nav-list-link">Shaper Bandwidth Summary</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/shaper-bandwidth-trends/" class="nav-list-link">Shaper Bandwidth Trends</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/bandwidth/wan-optimization/" class="nav-list-link">WAN Optimization</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Monitoring > Tunnel Health category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/monitoring/tunnel-health/" class="nav-list-link">Monitoring > Tunnel Health</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/tunnel-health/live-view/" class="nav-list-link">Live View</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/tunnel-health/loss-summary/" class="nav-list-link">Loss Summary</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/tunnel-health/loss-trends/" class="nav-list-link">Loss Trends</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/tunnel-health/jitter-summary/" class="nav-list-link">Jitter Summary</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/tunnel-health/jitter-trends/" class="nav-list-link">Jitter Trends</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/tunnel-health/latency-summary/" class="nav-list-link">Latency Summary</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/tunnel-health/latency-trends/" class="nav-list-link">Latency Trends</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/tunnel-health/oo-packets-summary/" class="nav-list-link">Out of Order Packets Summary</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/tunnel-health/oo-packets-trends/" class="nav-list-link">Out of Order Packets Trends</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/tunnel-health/mos-summary/" class="nav-list-link">MOS Summary</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/tunnel-health/mos-trends/" class="nav-list-link">MOS Trends</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/monitoring/tunnel-health/tunnels-summary/" class="nav-list-link">Tunnels Summary</a></li></ul></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/" class="nav-list-link">Configuration</a></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Configuration > Overlays & Security category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/configuration/overlays/" class="nav-list-link">Configuration > Overlays & Security</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/bios/" class="nav-list-link">Business Intent Overlays</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/apply-overlays/" class="nav-list-link">Apply Overlays</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/interface-labels/" class="nav-list-link">Interface Labels</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/route-labels/" class="nav-list-link">Route Labels</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/hubs/" class="nav-list-link">Hubs</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/dep-profiles/" class="nav-list-link">Deployment Profiles</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/deploy-edgeha/" class="nav-list-link">Deployment - EdgeHA</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/internal-subnets/" class="nav-list-link">Internal Subnets</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/global-firewall-policies/" class="nav-list-link">Global Firewall Policies</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/fw-zones/" class="nav-list-link">Firewall Zone Definition</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/appliance-security-policies/" class="nav-list-link">Appliance Security Policies</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/fw-protection-profiles/" class="nav-list-link">Firewall Protection Profiles</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/ipsec-psk/" class="nav-list-link">Schedule IPSec Key Rotation</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/inbound-port-forwarding/" class="nav-list-link">Inbound Port Forwarding</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/adv-sec-settings/" class="nav-list-link">Advanced Security Settings</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/ids/" class="nav-list-link">Intrusion Detection/Prevention System</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/ids-ips-profiles/" class="nav-list-link">Signature Profiles</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/roles/" class="nav-list-link">Roles</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/trust-store/" class="nav-list-link">Trust Store</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/end-entity-tab/" class="nav-list-link">End Entity Certificates Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/clients-table/" class="nav-list-link">Clients Table</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/nac/" class="nav-list-link">Network Access Control (NAC)</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/secure-web-services/" class="nav-list-link">Secure Web Services</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/cipher-settings/" class="nav-list-link">Cipher Settings</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/ssl-certs/" class="nav-list-link">SSL WAN Optimization Certificates</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/ssl-ca-certs/" class="nav-list-link">SSL WAN Optimization CA Certificates Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/discoverd-appliances/" class="nav-list-link">Discovered Appliances</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/preconfiguration/" class="nav-list-link">Preconfigure Appliances</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/appliance-wizard/" class="nav-list-link">Appliance Wizard</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/licenses/" class="nav-list-link">Licenses</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/cloud-portal/" class="nav-list-link">Cloud Portal</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Configuration > Networking category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/configuration/network/" class="nav-list-link">Configuration > Networking</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/deployment/" class="nav-list-link">Deployment Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/interfaces/" class="nav-list-link">Interfaces Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/vrrp/" class="nav-list-link">VRRP Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/dns-proxy/" class="nav-list-link">DNS Proxy</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/nat/" class="nav-list-link">Branch NAT</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/pppoe/" class="nav-list-link">PPPoE Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/usblte-tab/" class="nav-list-link">USB LTE Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/loopback-ints/" class="nav-list-link">Loopback Interfaces</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/loopback-orch/" class="nav-list-link">Loopback Orchestration</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/virt-tun-interfaces/" class="nav-list-link">Virtual Tunnel Interfaces (VTI)</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/dhcp-manager/" class="nav-list-link">DHCP Manager</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/dhcp-server-defaults/" class="nav-list-link">DHCP Server Defaults</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/dhcp-leases/" class="nav-list-link">DHCP Leases</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/dhcp-failover/" class="nav-list-link">DHCP Failover</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/dhcp-failover-state/" class="nav-list-link">DHCP Failover State</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/link-agg/" class="nav-list-link">Link Aggregation</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/cluster-profiles/" class="nav-list-link">Cluster Profiles</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/clusters/" class="nav-list-link">Clusters</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/bridge-groups/" class="nav-list-link">Bridge Groups</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/regions/" class="nav-list-link">Regions</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/regional-routing/" class="nav-list-link">Regional Routing</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/routing-seg/" class="nav-list-link">Routing Segmentation</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/mgmt-svcs/" class="nav-list-link">Management Services</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/inter-seg-dnat/" class="nav-list-link">Inter-Segment Routing and DNAT Exceptions</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/inter-seg-snat/" class="nav-list-link">Inter-Segment SNAT Exceptions</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/bgp/" class="nav-list-link">BGP Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/bgp-asn-pool/" class="nav-list-link">BGP ASN Global Pool</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/routes/" class="nav-list-link">Routes Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/ospf/" class="nav-list-link">OSPF Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/bfd/" class="nav-list-link">BFD Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/multicast/" class="nav-list-link">Multicast</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/peer-priority/" class="nav-list-link">Peer Priority Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/admin-dist/" class="nav-list-link">Admin Distance Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/mgmt-routes/" class="nav-list-link">Management Routes Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/vxlan/" class="nav-list-link">VXLAN Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/arp/" class="nav-list-link">ARP Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/tunnels/" class="nav-list-link">Tunnels Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/schedule-auto-mtu/" class="nav-list-link">Schedule Auto MTU Discovery</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/tunnel-trouble/" class="nav-list-link">Tunnel Troubleshooting</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/network/tunnel-exception/" class="nav-list-link">Tunnel Exception</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Configuration > Policies category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/configuration/policy/" class="nav-list-link">Configuration > Policies</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/policy/route-policies/" class="nav-list-link">Route Policies Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/policy/qos-policies/" class="nav-list-link">QoS Policies Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/policy/schedule-qos-map/" class="nav-list-link">Schedule QoS Map Activation</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/policy/opt-policies/" class="nav-list-link">Optimization Policies Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/policy/access-lists/" class="nav-list-link">Access Lists Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/policy/address-groups/" class="nav-list-link">Address Groups</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/policy/svc-groups/" class="nav-list-link">Service Groups</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/policy/shaper/" class="nav-list-link">Shaper Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/policy/app-defs/" class="nav-list-link">Application Definitions</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/policy/app-groups/" class="nav-list-link">Application Groups Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/policy/appexpress-groups/" class="nav-list-link">AppExpress Groups Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/policy/apply-appexpress-groups/" class="nav-list-link">Apply AppExpress Groups Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/policy/tcas/" class="nav-list-link">Threshold Crossing Alerts Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/policy/ipsla/" class="nav-list-link">IP SLA</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Configuration > Templates category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/configuration/templates/" class="nav-list-link">Configuration > Templates</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/system/" class="nav-list-link">System Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/auth-radius-tacacs/" class="nav-list-link">Auth/Radius/TACACS+ Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/nac/" class="nav-list-link">Network Access Control (NAC) Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/appliance-ip-allow-list/" class="nav-list-link">Appliance IP Allow List Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/flow-export/" class="nav-list-link">Flow Export Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/fppt/" class="nav-list-link">Firewall Protection Profiles Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/logging/" class="nav-list-link">Logging Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/banner-msgs/" class="nav-list-link">Banner Messages Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/https-cert/" class="nav-list-link">HTTPS Certificate Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/password-settings/" class="nav-list-link">Password Settings Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/user-mgmt/" class="nav-list-link">User Management Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/dns/" class="nav-list-link">DNS Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/date-time/" class="nav-list-link">Date/Time Setting</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/snmp/" class="nav-list-link">SNMP Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/ssl-certs/" class="nav-list-link">SSL WAN Optimization Certificates Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/ssl-ca-certs/" class="nav-list-link">SSL WAN Optimization CA Certificates Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/multicast/" class="nav-list-link">Multicast Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/vrrp/" class="nav-list-link">VRRP Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/peer-priority/" class="nav-list-link">Peer Priority Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/route-redist/" class="nav-list-link">Route Redistribution Maps Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/routes/" class="nav-list-link">Routes Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/bgp/" class="nav-list-link">BGP Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/ospf/" class="nav-list-link">OSPF Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/bfd/" class="nav-list-link">BFD Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/vxlan/" class="nav-list-link">VXLAN Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/admin-dist/" class="nav-list-link">Admin Distance Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/access-lists/" class="nav-list-link">Access Lists Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/route-policies/" class="nav-list-link">Route Policies Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/qos-policies/" class="nav-list-link">QoS Policies Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/opt-policies/" class="nav-list-link">Optimization Policies Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/tcas/" class="nav-list-link">Threshold Crossing Alerts Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/security-policies/" class="nav-list-link">Security Policies Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/dns-proxy/" class="nav-list-link">DNS Proxy Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/shaper/" class="nav-list-link">Shaper Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/mgmt-svcs/" class="nav-list-link">Management Services Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/cli/" class="nav-list-link">CLI Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/session-mgmt/" class="nav-list-link">Session Management Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/secure-web-services/" class="nav-list-link">Secure Web Services Template</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/templates/apply-template-groups/" class="nav-list-link">Apply Template Groups</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Configuration > Cloud Services category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/configuration/cloud/" class="nav-list-link">Configuration > Cloud Services</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/cloud/aws-tgnm/" class="nav-list-link">AWS Network Manager</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/cloud/azure-network-manager/" class="nav-list-link">Azure Network Manager</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/cloud/hpe-sse/" class="nav-list-link">HPE SSE</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/cloud/o365/" class="nav-list-link">Microsoft Office 365</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/cloud/zscaler/" class="nav-list-link">Zscaler Internet Access</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/cloud/netskope/" class="nav-list-link">Netskope</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/cloud/service-orch/" class="nav-list-link">Service Orchestration</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/cloud/cloud-hubs/" class="nav-list-link">Deploy Cloud Hubs</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/cloud/cloud-hubs-aws/" class="nav-list-link">Deploy Cloud Hubs in AWS</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/cloud/cloud-hubs-azure/" class="nav-list-link">Deploy Cloud Hubs in Azure</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/cloud/cloud-hubs-gcp/" class="nav-list-link">Deploy Cloud Hubs in GCP</a></li></ul></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/" class="nav-list-link">Administration</a></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Administration > General Settings category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/administration/general/" class="nav-list-link">Administration > General Settings</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/general/appliance-user-accts/" class="nav-list-link">Appliance Users</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/general/auth-radius-tacacs/" class="nav-list-link">Auth/RADIUS/TACACS+ Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/general/appliance-ip-allow-list/" class="nav-list-link">Appliance IP Allow List</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/general/appliance-password-settings/" class="nav-list-link">Appliance Password Settings</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/general/date-time/" class="nav-list-link">Date/Time Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/general/dns/" class="nav-list-link">DNS (Domain Name Servers) Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/general/snmp/" class="nav-list-link">SNMP</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/general/flow-export/" class="nav-list-link">Flow Export Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/general/logging/" class="nav-list-link">Logging Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/general/banners/" class="nav-list-link">Banners Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/general/https-certs/" class="nav-list-link">HTTPS Certificate Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/general/orch-reach/" class="nav-list-link">Orchestrator Reachabililty Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/general/custom-appliance-tags/" class="nav-list-link">Custom Appliance Tags</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Administration > Software category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/administration/sw-mgmt/" class="nav-list-link">Administration > Software</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/sw-mgmt/sys-info/" class="nav-list-link">System Information</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/sw-mgmt/sw-versions/" class="nav-list-link">Software Versions</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/sw-mgmt/upgrade-appliance-sw/" class="nav-list-link">Upgrade Appliance Software</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/sw-mgmt/appliance-config-backup/" class="nav-list-link">Appliance Configuration Backup</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/sw-mgmt/view-config-history/" class="nav-list-link">View Configuration History</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/sw-mgmt/restore-backup/" class="nav-list-link">Appliance Restore and Reboot</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/sw-mgmt/remove-appliance/" class="nav-list-link">Remove Appliance from Orchestrator</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/sw-mgmt/remove-appliance-from-account/" class="nav-list-link">Remove Appliance from Orchestrator and Account</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Administration > Tools category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/administration/tools/" class="nav-list-link">Administration > Tools</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/tools/sync-appliance-config/" class="nav-list-link">Synchronize Appliance Configuration</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/tools/broadcast-cli/" class="nav-list-link">Broadcast CLI Commands</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/tools/link-integrity/" class="nav-list-link">Link Integrity Test</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/tools/disk-mgmt/" class="nav-list-link">Disk Management</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/tools/erase-nm/" class="nav-list-link">Erase Network Memory</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/tools/reboot-shut-down/" class="nav-list-link">Reboot or Shut Down an Appliance</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/tools/schedule-reboot/" class="nav-list-link">Schedule an Appliance Reboot</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/tools/reachability-status/" class="nav-list-link">Reachability Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/administration/tools/active-sessions/" class="nav-list-link">Active Sessions Tab</a></li></ul></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/" class="nav-list-link">Orchestrator</a></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Orchestrator > Orchestrator Server category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/orchestrator/server/" class="nav-list-link">Orchestrator > Orchestrator Server</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/server/view-server-info/" class="nav-list-link">View Orchestrator Server Information</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/server/restart-reboot/" class="nav-list-link">Restart, Reboot, or Shutdown</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/server/orch-ha/" class="nav-list-link">Orchestrator High Availability</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/server/manage-users/" class="nav-list-link">Orchestrator Users</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/server/rbac/" class="nav-list-link">Role Based Access Control</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/server/remote-auth/" class="nav-list-link">Authentication</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/server/api-key/" class="nav-list-link">API Key</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/server/change-password/" class="nav-list-link">Change Password</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/server/cloud-portal/" class="nav-list-link">Cloud Portal</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/server/air-gap/" class="nav-list-link">Air-Gap</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/server/audit-logs/" class="nav-list-link">Audit Logs</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/server/orchestration/" class="nav-list-link">Orchestration Settings</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/server/maint-mode/" class="nav-list-link">Maintenance Mode</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/server/tunnel-settings/" class="nav-list-link">Tunnel Settings Tab</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/server/blueprint/" class="nav-list-link">Orchestrator Blueprint Export</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/server/brand/" class="nav-list-link">Brand Customization</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Orchestrator > Software & Setup category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/orchestrator/sw-setup/" class="nav-list-link">Orchestrator > Software & Setup</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/sw-setup/upgrade-orch/" class="nav-list-link">Upgrade Orchestrator Software</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/sw-setup/check-for-updates/" class="nav-list-link">Check for Orchestrator and Appliance Software Updates</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/sw-setup/backup/" class="nav-list-link">Back Up on Demand</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/sw-setup/schedule-backup/" class="nav-list-link">Schedule Orchestrator Backup</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/sw-setup/schedule-stats-backup/" class="nav-list-link">Schedule Stats Collector Backup</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/sw-setup/smtp-server/" class="nav-list-link">SMTP Server Settings</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/sw-setup/proxy-config/" class="nav-list-link">Proxy Configuration</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/sw-setup/orch-https/" class="nav-list-link">Orchestrator HTTPS Certificate</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/sw-setup/schedule-timezone/" class="nav-list-link">Timezone for Scheduled Jobs</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/sw-setup/advanced-props/" class="nav-list-link">Orchestrator Advanced Properties</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/sw-setup/ip-allow-list/" class="nav-list-link">IP Allow List</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/sw-setup/orch-wizard/" class="nav-list-link">Orchestrator Setup</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/sw-setup/avail-time-settings/" class="nav-list-link">Availability Time Settings</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/sw-setup/stats-retention/" class="nav-list-link">Statistics Retention</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/sw-setup/stats-collector/" class="nav-list-link">Stats Collector Configuration</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/sw-setup/notification-banner/" class="nav-list-link">Notification Banner</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/sw-setup/change-stats-collector-log-level/" class="nav-list-link">Change Stats Collector Log Level</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Orchestrator > HPE Integration Services category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/orchestrator/aruba-central/" class="nav-list-link">Orchestrator > HPE Integration Services</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/aruba-central/site-mapping/" class="nav-list-link">HPE ANW Central Site Mapping</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/aruba-central/cppm/" class="nav-list-link">ClearPass Policy Manager</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/orchestrator/aruba-central/hpe-anw-central/" class="nav-list-link">HPE Aruba Networking Central</a></li></ul></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/" class="nav-list-link">Support</a></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Support > Technical Assistance category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/support/tech-assistance/" class="nav-list-link">Support > Technical Assistance</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/tech-assistance/sup-appliances/" class="nav-list-link">Tech Support - Appliances</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/tech-assistance/sup-orch/" class="nav-list-link">Tech Support - Orchestrator</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/tech-assistance/portal-login/" class="nav-list-link">Log In to the Support Portal</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/tech-assistance/xfer-progress/" class="nav-list-link">Monitor Transfer Progress</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/tech-assistance/pcap/" class="nav-list-link">Packet Capture</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/tech-assistance/upload-files/" class="nav-list-link">Upload Local Files</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/tech-assistance/create-case/" class="nav-list-link">Create a Support Case</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/tech-assistance/partition-mgmt/" class="nav-list-link">Partition Management</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/tech-assistance/log-receivers/" class="nav-list-link">Orchestrator Remote Log Receivers</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/tech-assistance/remote-log-msgs/" class="nav-list-link">Remote Log Messages</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/tech-assistance/routing-peers/" class="nav-list-link">Routing Peer Table</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/tech-assistance/rma/" class="nav-list-link">RMA Wizard</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Support > User Documentation category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/support/user-doc/" class="nav-list-link">Support > User Documentation</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/user-doc/alarm-desc/" class="nav-list-link">Alarm Descriptions</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/user-doc/policies/" class="nav-list-link">Built-in Policies</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Support > Reporting category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch/support/reporting/" class="nav-list-link">Support > Reporting</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/reporting/drop-trends/" class="nav-list-link">Dropped Packet Trends</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/reporting/mem-trends/" class="nav-list-link">Appliance Memory Trends</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/reporting/sys-perf/" class="nav-list-link">System Performance</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/reporting/sys-poe-state/" class="nav-list-link">System PoE State</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/reporting/cpu-usage/" class="nav-list-link">Appliance CPU Usage</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/reporting/appliance-hardware-debug/" class="nav-list-link">Appliance Hardware Debug</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/reporting/orch-debug/" class="nav-list-link">Orchestrator Debug</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/reporting/ipsec-udp/" class="nav-list-link">IPSec UDP Status</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/reporting/unver-emails/" class="nav-list-link">Unverified Emails</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/reporting/orch-debug-log-level/" class="nav-list-link">Orchestrator Debug Log Level</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch/support/reporting/live-tail-logger/" class="nav-list-link">Live Tail Logger</a></li></ul></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Install, Upgrade, Move, and Restore SD-WAN Orchestrator category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch-install-upgrade/" class="nav-list-link">Install, Upgrade, Move, and Restore SD-WAN Orchestrator</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch-install-upgrade/getting-started/" class="nav-list-link">Getting Started</a></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Deploy SD-WAN Orchestrator category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch-install-upgrade/deploy/" class="nav-list-link">Deploy SD-WAN Orchestrator</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch-install-upgrade/deploy/on-prem/" class="nav-list-link">On-Prem Orchestrator - Download, Deploy, and Install</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch-install-upgrade/deploy/iaas/" class="nav-list-link">Orchestrator in IaaS - Deploy</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Configure Orchestrator category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/orch-install-upgrade/config-orch/" class="nav-list-link">Configure Orchestrator</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch-install-upgrade/config-orch/change-shell-admin-root-pw/" class="nav-list-link">Change the SSH Shell Admin and Root Passwords</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch-install-upgrade/config-orch/config-orch-with-utility/" class="nav-list-link">Configure Orchestrator Using the CLI Utility</a></li></ul></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch-install-upgrade/apply-security-patches/" class="nav-list-link">Apply Linux Security Patches</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch-install-upgrade/set-up-stats-coll/" class="nav-list-link">Set Up Distributed Stats Collector (Version 9.2.1 through 9.5.x)</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch-install-upgrade/migrate-centos-rockylinux/" class="nav-list-link">Migrate CentOS to Rocky Linux</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch-install-upgrade/upgrade-orch-or-stats-coll/" class="nav-list-link">Upgrade Orchestrator or Stats Collectors</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch-install-upgrade/move-backup-restore/" class="nav-list-link">Move or Restore Orchestrator</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/orch-install-upgrade/stats-coll-migrate/" class="nav-list-link">Migrate Stats Collectors to 9.6.0 On-Prem Orchestrator</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Unified Fabric Deployment Guide category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/unified-fabric/" class="nav-list-link">Unified Fabric Deployment Guide</a><ul class="nav-list"><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Unified Fabric Overview category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/unified-fabric/overview/" class="nav-list-link">Unified Fabric Overview</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/unified-fabric/overview/overlay-tunnel-orchestrator/" class="nav-list-link">Overlay Tunnel Orchestrator (OTO)</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/unified-fabric/overview/overlay-route-orchestrator/" class="nav-list-link">Overlay Route Orchestrator (ORO)</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/unified-fabric/overview/use-cases/" class="nav-list-link">Use Cases for Unified Fabric</a></li></ul></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/unified-fabric/getting-started/" class="nav-list-link">Getting Started</a></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Set up HPE GreenLake Cloud Platform category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/unified-fabric/set-up-greenlake/" class="nav-list-link">Set up HPE GreenLake Cloud Platform</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/unified-fabric/set-up-greenlake/register-ec-gateways-in-greenlake/" class="nav-list-link">Register EdgeConnect Gateways in HPE GreenLake Cloud</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/unified-fabric/set-up-greenlake/apply-subscription-license/" class="nav-list-link">Apply Subscription License to the EdgeConnect Gateways</a></li></ul></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/unified-fabric/configure-orchestrator/" class="nav-list-link">Configure EdgeConnect SD-WAN Orchestrator</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/unified-fabric/configure-aruba-central/" class="nav-list-link">Configure HPE Aruba Networking Central</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/unified-fabric/troubleshooting/" class="nav-list-link">Monitoring and Troubleshooting</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/unified-fabric/related-documents/" class="nav-list-link">Related Documents</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in System Requirements and Compatibility category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/sysreq/" class="nav-list-link">System Requirements and Compatibility</a><ul class="nav-list"><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Compatibility Guides category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/sysreq/compat/" class="nav-list-link">Compatibility Guides</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/sysreq/compat/comp_matrix/" class="nav-list-link">ECOS Compatibility Matrix</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/sysreq/compat/ecos_orch/" class="nav-list-link">ECOS and Orchestrator Release Compatibility</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in System Requirements category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/sysreq/sys-req-html/" class="nav-list-link">System Requirements</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/sysreq/sys-req-html/ecv-cloud-host-sys-req/" class="nav-list-link">EdgeConnect Virtual (EC-V) Cloud Host System Requirements</a></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in EdgeConnect Virtual (EC-V) Host System Requirements category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/sysreq/sys-req-html/ecv-hypervisor-sys-req/" class="nav-list-link">EdgeConnect Virtual (EC-V) Host System Requirements</a><ul class="nav-list"></ul></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/sysreq/sys-req-html/orch-host-sys-req_9.5.XandEarlier/" class="nav-list-link">Orchestrator Host System Requirements — On-Prem for Release 9.5.X and Earlier</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/sysreq/sys-req-html/orch-host-sys-req_9.6.0andLater/" class="nav-list-link">Orchestrator Host System Requirements — On-Prem for Release 9.6.0 and Later</a></li></ul></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Best Practices, Tech Tips, and Other Guides category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/best-practices/" class="nav-list-link">Best Practices, Tech Tips, and Other Guides</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/best-practices/scan-guidance/" class="nav-list-link">Scan Guidance</a></li></ul></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/test-drive/" class="nav-list-link">SD-WAN Test Drive</a></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in EdgeConnect Operational Troubleshooting category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/troubleshooting/" class="nav-list-link">EdgeConnect Operational Troubleshooting</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/troubleshooting/support/" class="nav-list-link">Working with Support</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/troubleshooting/diagnostics/" class="nav-list-link">Basic Diagnostics</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/troubleshooting/workflow/" class="nav-list-link">Troubleshooting Workflow</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/troubleshooting/add_appliance/" class="nav-list-link">Adding a New Appliance</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/troubleshooting/licensing/" class="nav-list-link">Licensing</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/troubleshooting/alarms/" class="nav-list-link">Alarms</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/troubleshooting/flow_monitoring/" class="nav-list-link">Flow Monitoring</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/troubleshooting/routing/" class="nav-list-link">Routing</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/troubleshooting/tcp-ip-ports/" class="nav-list-link">Orchestrator and EdgeConnect TCP/IP Ports</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/troubleshooting/tunnels/" class="nav-list-link">Tunnels</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/troubleshooting/overlay_troubleshooting/" class="nav-list-link">Overlay Troubleshooting</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/troubleshooting/replacement/" class="nav-list-link">Replace an Appliance</a></li></ul></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/videos/" class="nav-list-link">How To and Technical Videos</a></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in FAQs category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/faqs/" class="nav-list-link">FAQs</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/faqs/ecv-aws/" class="nav-list-link">AWS One-click EC-V</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Security Advisories category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/advisories/" class="nav-list-link">Security Advisories</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/advisories/instructions/" class="nav-list-link">Special Advisory Instructions</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/advisories/archive/" class="nav-list-link">Archive</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Orchestrator and EdgeConnect Logging category" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg>
+      </button><a href="/techdocs/sdwan/docs/white-paper/" class="nav-list-link">Orchestrator and EdgeConnect Logging</a><ul class="nav-list"><li class="nav-list-item"><a href="/techdocs/sdwan/docs/white-paper/orchestrator-logs/" class="nav-list-link">Orchestrator Logs</a></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/white-paper/appliance-logs/" class="nav-list-link">EdgeConnect Appliance Logs</a></li></ul></li><li class="nav-list-item"><a href="/techdocs/sdwan/docs/eula/" class="nav-list-link">Support</a></li></ul>
+  
+</nav>
+</div> <!-- end menu-scroll-box -->
+
+
+
+
+
+  
+  
+    
+        <div id="footer-stack-container">
+  <div class="footer-stack" id="footer-a">
+    <a href="https://www.arubanetworks.com/techdocs/sdwan-PDFs/open-source/Open_Source_Code.pdf" target="_blank">Open Source Code</a>
+  </div>
+  <div class="footer-stack" id="footer-b">
+    <a href="https://www.arubanetworks.com/techdocs/sdwan-PDFs/docs/tm/trademark-acknowledgements.htm" target="_blank">Trademark Acknowledgements</a>
+  </div>
+  <div class="footer-stack" id="footer-c">
+    <a href="https://www.arubanetworks.com/assets/legal/EULA.pdf" target="_blank">HPE Networking EULA</a>
+  </div>
+</div>
+
+<style>
+#footer-stack-container{
+  font-size: 12px !important;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, ‘Metric Light’, Arial, sans-serif;  
+  padding-left: 2rem;
+}
+
+.footer-stack{
+  
+}
+
+#footer-a{}
+#footer-b{}
+#footer-c{}
+
+.footer-content ul > li::before {
+  position: absolute;
+  margin-left: -1.4em;
+  color: #959396;
+  content: "";
+}
+</style> 
+
+    
+  
+</div><!--  end side-bar -->
+
+
+            
+
+	  </div> <!-- End left div -->
+          
+	  <div id="right-div">
+          
+            <div class="main" id="top">
+             
+
+<div id="main-header" class="main-header main-width">
+
+  
+    
+
+<div class="search" role="search">
+  <div class="search-input-wrap">
+    <input type="text" id="search-input" class="search-input" tabindex="0" placeholder="Search HPE Networking Orchestrator Docs" aria-label="Search HPE Networking Orchestrator Docs" autocomplete="off">
+    <label for="search-input" class="search-label"><svg aria-label="search_aria_label" aria-description="svg_desc" viewBox="0 0 24 24" class="search-icon"><use xlink:href="#svg-search"></use></svg></label>
+  </div>
+  <div id="search-results" class="search-results"></div>
+</div>
+
+  
+  
+  
+</div>
+
+              <div class="main-content-wrap">
+               <nav aria-label="Breadcrumb" class="breadcrumb-nav">
+  <ol class="breadcrumb-nav-list">
+    <li class="breadcrumb-nav-list-item"><a href="/techdocs/sdwan/docs/orch/">Using SD-WAN Orchestrator</a></li>
+    <li class="breadcrumb-nav-list-item"><a href="/techdocs/sdwan/docs/orch/configuration/overlays/">Configuration > Overlays & Security</a></li>
+    <li class="breadcrumb-nav-list-item"><span>Intrusion Detection/Prevention System</span></li>
+  </ol>
+</nav>
+
+
+		
+                <div id="main-content" class="main-content main-width">
+		
+                  <main>
+                    
+                    <h1 id="intrusion-detectionprevention-system">
+  
+  
+    <a href="#intrusion-detectionprevention-system" class="anchor-heading" aria-labelledby="intrusion-detectionprevention-system"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Intrusion Detection/Prevention System
+  
+  
+</h1>
+    
+
+<p><em>Configuration &gt; Overlays &amp; Security &gt; Security &gt; IDS/IPS</em></p>
+
+<p>The Intrusion Detection/Prevention System (IDS/IPS) can monitor traffic for potential threats and malicious activity. It generates threat events based on preconfigured rules. Packets are copied and inspected against signatures downloaded to Orchestrator from the Cloud Portal. Orchestrator sends to appliances the signature file and any rules that have been added to the allow list.</p>
+
+<ul>
+  <li>
+    <p>IDS designates traffic for inspection. To enable IDS:</p>
+
+    <ul>
+      <li>
+        <p>For the zone-based firewall security policy, select <strong>Inspect</strong> as the action to apply to traffic that matches the rule. Matching traffic will be inspected by IDS/IPS. For details, see <a href="../../../configuration/overlays/appliance-security-policies/">Appliance Security Policies</a>.</p>
+      </li>
+      <li>
+        <p>On the Apply IDS/IPS dialog box, select the <strong>IDS/IPS Mode</strong> check box, and then select <strong>IDS Only</strong>. For details, see <a href="#applyidsips">Apply IDS/IPS on Appliances</a> below.</p>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>IPS designates traffic for inspection as well as protection. To enable IPS:</p>
+
+    <ul>
+      <li>
+        <p>For the zone-based firewall security policy, select <strong>Inspect</strong> as the action to apply to traffic that matches the rule. Matching traffic will be inspected by IDS/IPS . For details, <a href="../../../configuration/overlays/appliance-security-policies/">Appliance Security Policies</a>.</p>
+      </li>
+      <li>
+        <p>On the Apply IDS/IPS dialog box, select the <strong>IDS/IPS Mode</strong> check box, and then select <strong>IPS-Performant</strong> or <strong>IPS-Inline</strong>. IPS protects traffic by matching a signature, and then performing a configured action (Drop, Inspect, or Allow). For details, see <a href="#applyidsips">Apply IDS/IPS on Appliances</a> below.</p>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<p>Use the Intrusion Detection/Prevention tab to view IDS/IPS status, IPS/IDS state (IDS Enabled, IPS-Performant Enabled, IPS-Inline Enabled, and Disabled), signature profile information, appliance eligibility to run IDS/IPS, signature family and version, and IDS/IPS operational statistics. You can also modify the IDS/IPS configuration for appliances selected in the appliance tree.</p>
+
+<p>The Auto updates ON and OFF buttons enable you to control whether signatures should be automatically updated. By setting this to OFF, you can make informed decisions before proceeding with signature updates. To make this evaluation, use the Signature History subtab to examine the differences between the signature rules in the latest active signature version on Cloud Portal and the production rules in your current signature version in Orchestrator.</p>
+
+<p><img src="../../../media/ids_ips_tab.png" alt="img" /></p>
+
+<div class="table-wrapper"><table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Field</th>
+      <th style="text-align: left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">Appliance</td>
+      <td style="text-align: left">Name of the appliance.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Status</td>
+      <td style="text-align: left">Status of IDS/IPS for the appliance, such as <strong>Not Eligible</strong>, <strong>Protecting Traffic</strong>, or <strong>License applied but EC Not Eligible</strong>.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">IDS/IPS State</td>
+      <td style="text-align: left">State of IDS/IPS on the appliance (<strong>IDS Enabled</strong>, <strong>IPS-Performant Enabled</strong>, <strong>IPS-Inline Enabled</strong>, or <strong>Disabled</strong>).</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Profile</td>
+      <td style="text-align: left">IDS/IPS signature profile applied to the appliance.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Eligible</td>
+      <td style="text-align: left">Indicates whether the appliance is eligible to enable IDS/IPS. For more information, see <a href="#prereqs">Prerequisites for IDS/IPS</a> below.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Licensed</td>
+      <td style="text-align: left">Indicates whether the appliance is licensed to run IDS/IPS.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Engine Version</td>
+      <td style="text-align: left">IDS/IPS engine version.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Signature Family</td>
+      <td style="text-align: left">Proofpoint ETPro signature family, such as 4.x, 5.x, or 7.x.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Signature Version</td>
+      <td style="text-align: left">IDS/IPS signature version, such as 10500 or 10729.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Inspected pkts/sec (last 5 min)</td>
+      <td style="text-align: left">Number of packets inspected in the previous five minutes.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Threats detected (last 5 min)</td>
+      <td style="text-align: left">Number of threats detected in the previous five minutes.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Over Subscription Drops</td>
+      <td style="text-align: left">Number of dropped kernel flows (cumulative since IDS/IPS has been active) due to traffic oversubscription. This field displays the cumulative count of such dropped packets since IDS/IPS was enabled.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">IPS Flow Drops</td>
+      <td style="text-align: left">Number of dropped flows. These are drops that IPS does based on rule-based drops. This drop count is per minute.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Events</td>
+      <td style="text-align: left">Click the info icon to view the most recent IDS/IPS events on the appliance. Click Export CSV to save the data to a CSV file.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Stats</td>
+      <td style="text-align: left">Click the stats icon to view the following IDS/IPS statistics for the appliance: IPS Flow Drops per minute, Packets per second sent to the IDS/IPS, Threats Detected, Bits per second sent to the IDS/IPS, and Over Subscription Drops (Cumulative).</td>
+    </tr>
+  </tbody>
+</table></div>
+<h2 id="prereqs">
+  
+  
+    <a href="#prereqs" class="anchor-heading" aria-labelledby="prereqs"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Prerequisites for IDS/IPS
+  
+  
+</h2>
+    
+
+<ul>
+  <li>
+    <p>IDS/IPS can be enabled on the following ECOS releases and appliances.</p>
+
+    <p>For IDS:</p>
+
+    <ul>
+      <li>
+        <p>ECOS 9.1.x.x or later for all EdgeConnect appliances <em>except EC-XS (part numbers 200889 and 200900 only) and EC-US</em></p>
+      </li>
+      <li>
+        <p>ECOS 9.1.x.x or later for EC-V deployments (minimum of 4 cores and 16 GB of RAM required)</p>
+      </li>
+    </ul>
+
+    <p>For IDS/IPS:</p>
+
+    <ul>
+      <li>
+        <p>ECOS 9.2.x.x or later for all EdgeConnect appliances <em>except EC-XS (part numbers 200889 and 200900 only) and EC-US</em></p>
+      </li>
+      <li>
+        <p>ECOS 9.2.x.x or later for EC-V deployments (minimum of 4 cores and 16 GB of RAM required)</p>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>IDS/IPS can be enabled only on appliances running ECOS 9.1.0.0 or later. Appliances running an earlier version of ECOS will not be shown on the Intrusion Detection/Prevention tab.</p>
+  </li>
+  <li>
+    <p>IDS/IPS is a licensed feature and can be enabled only on appliances that have been assigned the Advanced Security license. Refer to the help information for the Licenses tab (Configuration &gt; Overlays &amp; Security &gt; Licensing &gt; Licenses).</p>
+  </li>
+</ul>
+
+<div class="note"></div>
+<p><strong>NOTE:</strong> IDS/IPS alarms are logged in standard syslog format. You can configure a logging facility for IDS/IPS and remote log receiver to send logs to a third party for additional review and analytics. See <a href="#advanalytics">Advanced Reporting and Analytics</a> below.</p>
+<h2 id="applyidsips">
+  
+  
+    <a href="#applyidsips" class="anchor-heading" aria-labelledby="applyidsips"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Apply IDS/IPS on Appliances
+  
+  
+</h2>
+    
+
+<p>You can turn on or off IDS/IPS for appliances displayed in the table. You can also apply a different signature profile to the appliances. Orchestrator provides a Default signature profile.</p>
+
+<ol>
+  <li>
+    <p>Click <strong>Apply IDS/IPS on Appliances</strong>.</p>
+
+    <p>The Apply IDS/IPS dialog box opens.</p>
+  </li>
+  <li>
+    <p>To apply or remove IDS/IPS, select the <strong>IDS/IPS Mode</strong> check box, and then select one of the following:</p>
+
+    <ul>
+      <li>
+        <p><strong>Off</strong> to turn off IDS and IPS for all appliances.</p>
+      </li>
+      <li>
+        <p><strong>IDS Only</strong> to enable IDS on the appliances.</p>
+      </li>
+      <li>
+        <p><strong>IPS-Performant</strong> to enable IPS-Performant on the appliances.</p>
+      </li>
+      <li>
+        <p><strong>IPS-Inline</strong> to enable IPS-Inline on the appliances.</p>
+
+        <div class="note"></div>
+        <p><strong>NOTE:</strong> IPS-Inline mode can be applied only to appliances on ECOS version 9.4.1.0 or later. Appliances on earlier versions will ignore this mode.</p>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>To apply a different signature profile, select the <strong>Profile</strong> check box, and then select the appropriate signature family from the first drop-down list. The second drop-down list includes the Orchestrator-provided default profile that corresponds to the signature family you selected (<em>Default</em> for 4.x, <em>Default_S5</em> for 5.x, or <em>Default_S7</em> for 7.x) and any other signature profiles you have created. Select the signature profile you want to use. For more information about signature profiles, see <a href="#sigprofs">Manage Signature Profiles</a> below.</p>
+  </li>
+  <li>
+    <p>The Modification column displays the proposed changes, if any, for the appliances. To apply your changes, click <strong>Save</strong>. Or, to close the dialog box without making any changes, click <strong>Cancel</strong>.</p>
+  </li>
+</ol>
+<h2 id="sigprofs">
+  
+  
+    <a href="#sigprofs" class="anchor-heading" aria-labelledby="sigprofs"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Manage Signature Profiles
+  
+  
+</h2>
+    
+
+<p>Signature profiles enable you to configure rules that are downloaded from the signature set on the Cloud Portal. Orchestrator provides the following default signature profiles:</p>
+
+<ul>
+  <li>
+    <p>For the 4.x signature family, the <em>Default</em> signature profile</p>
+  </li>
+  <li>
+    <p>For the 5.x signature family, the <em>Default_S5</em> signature profile</p>
+
+    <div class="note"></div>
+    <p><strong>NOTE:</strong> 5.x profiles can be applied only to appliances running IDS/IPS Engine Version 6.x.</p>
+  </li>
+  <li>
+    <p>For the 7.x signature family, the <em>Default_S7</em> signature profile</p>
+
+    <div class="note"></div>
+    <p><strong>NOTE:</strong> 7.x profiles can be applied only to appliances running IDS/IPS Engine Version 7.x.</p>
+  </li>
+</ul>
+
+<p>These default profiles include default settings for the signature rules. Default profiles are automatically used across all appliances. You can create additional signature profiles and override default rule settings by choosing different actions as needed. To open the Signature Profiles tab, click <strong>Signature Profiles</strong>. For information about creating signature profiles and modifying their rules, refer to the help information for the <a href="../ids-ips-profiles/">Signature Profiles</a> tab.</p>
+<h2 id="update-signatures-on-appliances">
+  
+  
+    <a href="#update-signatures-on-appliances" class="anchor-heading" aria-labelledby="update-signatures-on-appliances"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Update Signatures on Appliances
+  
+  
+</h2>
+    
+
+<p>You can immediately update signatures on your appliances or schedule the updates to occur when convenient for your organization—on a daily, weekly, monthly, or yearly basis.</p>
+
+<p>To immediately update your appliances with signature updates, ensure that <strong>Auto updates</strong> is set to ON, and then click <strong>Update Signatures</strong>. Orchestrator checks for any signature updates and pushes them to the appliances. This might take some time. You can check the audit log for status updates.</p>
+
+<div class="note"></div>
+<p><strong>NOTE:</strong> If Auto updates is set to OFF when you click Update Signatures, the signatures will be downloaded but not activated on Orchestrator. This enables you to make informed decisions before proceeding with signature updates. Use the Signature History subtab to examine the differences between the signature rules in the latest active signature version on Cloud Portal and the production rules in your current signature version in Orchestrator. After evaluating, you can activate and push them to the appliances by setting <strong>Auto updates</strong> to ON and clicking <strong>Update Signatures</strong>.</p>
+
+<p>To update based on a schedule:</p>
+
+<ol>
+  <li>
+    <p>Click <strong>Signature Scheduler</strong>.</p>
+
+    <p>The Signature Scheduler dialog box opens.</p>
+
+    <p><img src="../../../media/ids_ips_signature_scheduler.png" alt="img" /></p>
+  </li>
+  <li>
+    <p>Click the edit icon.</p>
+
+    <p>The Schedule dialog box opens.</p>
+
+    <p><img src="../../../media/ids_ips_schedule.png" alt="img" /></p>
+  </li>
+  <li>
+    <p>Click <strong>Daily</strong>, <strong>Weekly</strong>, <strong>Monthly</strong>, or <strong>Yearly</strong>.</p>
+  </li>
+  <li>
+    <p>Specify the appropriate schedule criteria, and then click <strong>OK</strong>.</p>
+  </li>
+  <li>
+    <p>On the Signature Scheduler dialog box, click <strong>Save</strong>.</p>
+
+    <p>Orchestrator will automatically update your appliances according to your specified schedule.</p>
+  </li>
+</ol>
+
+<div class="note"></div>
+<p><strong>NOTE:</strong> The time zone displayed in Signature Scheduler reflects the global time zone setting for scheduled jobs and reports (Orchestrator &gt; Software &amp; Setup &gt; Setup &gt; Timezone for Scheduled Jobs). The time zone displayed on the calendar when you click the calendar icon on the Schedule dialog box reflects your local time zone.</p>
+
+<p><img src="../../../media/ids_ips_timezones.png" alt="img" /></p>
+<h2 id="view-signature-history">
+  
+  
+    <a href="#view-signature-history" class="anchor-heading" aria-labelledby="view-signature-history"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> View Signature History
+  
+  
+</h2>
+    
+
+<p>You can view a history of signature versions on your Orchestrator, including both the current and previous versions. Select the signature family from the drop-down menu at the top (such as 4.x, 5.x, or 7.x) to access the signature history. This provides the history for the past five signature versions for each active signature family on the network. You can also review the differences between:</p>
+
+<ul>
+  <li>
+    <p>A signature version listed in the top table and the preceding listed version.</p>
+  </li>
+  <li>
+    <p>The current version (listed in the top table) and the active signature version on cloud portal (listed in the bottom table). To view these differences, Auto updates must be set to OFF on the Intrusion Detection/Prevention tab.</p>
+  </li>
+</ul>
+
+<p>Differences shown include modified, deleted, and added rules.</p>
+
+<ol>
+  <li>
+    <p>Click <strong>Signature History</strong>.</p>
+
+    <p>The Signature History dialog box opens with a historical table of signature versions displayed based on signature family.</p>
+
+    <p><img src="../../../media/ids_ips_signature_history.png" alt="img" /></p>
+
+    <p>You can select a different signature family from the <strong>Signature Family</strong> drop-down list.</p>
+
+    <p>The Level column indicates the rules package applied to the IDS/IPS subsystem with varying levels of rules that control the strictness of inspection on the device. This setting does not indicate a restriction level on IPS usage. Rather, it specifies the intensity of IDS/IPS inspection (from lenient to strict) based on the selected rules package. Only the Strict rule package is currently supported. The Updated Date column indicates when the signature version was last updated.</p>
+
+    <p>The bottom table (Active signature on cloud portal) shows the active signature version on the Cloud Portal.</p>
+  </li>
+  <li>
+    <p>To view the differences, click the appropriate chart icon in the Diff column.</p>
+
+    <p>The Signature Family dialog box opens.</p>
+
+    <div class="note"></div>
+    <p><strong>NOTE:</strong> The title of this dialog box varies based on the signature family selected on the Signature History dialog box.</p>
+
+    <p><img src="../../../media/ids_ips_signature_history_detail.png" alt="img" /></p>
+
+    <p>Use the tabs on this dialog box to view lists of new, modified, or deleted signatures in the signature version compared to the previous one.</p>
+  </li>
+</ol>
+<h2 id="specify-traffic-to-be-inspected">
+  
+  
+    <a href="#specify-traffic-to-be-inspected" class="anchor-heading" aria-labelledby="specify-traffic-to-be-inspected"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Specify Traffic to Be Inspected
+  
+  
+</h2>
+    
+
+<p>You can specify the traffic to be inspected according to source and destination zone, as well as specify detailed match criteria, using Appliance Security Policies (Configuration &gt; Overlays &amp; Security &gt; Security &gt; Appliance Security Policies).</p>
+
+<p><img src="../../../media/ids_select_inspect.png" alt="img" /></p>
+
+<p>With the addition of IDS/IPS, firewall actions have the following meanings:</p>
+
+<ul>
+  <li>
+    <p><strong>allow:</strong> Allow traffic and do not inspect.</p>
+  </li>
+  <li>
+    <p><strong>deny:</strong> Deny traffic and do not inspect.</p>
+  </li>
+  <li>
+    <p><strong>inspect:</strong> Allow traffic and inspect.</p>
+  </li>
+</ul>
+
+<div class="note"></div>
+<p><strong>NOTE:</strong> No traffic will be inspected until rules with the inspect action are specified in the security policy.</p>
+
+<p>For more information, see the following tabs in Orchestrator:</p>
+
+<ul>
+  <li>
+    <p><strong>Templates (Security Policies)</strong>: Configuration &gt; Templates &amp; Policies &gt; Templates</p>
+  </li>
+  <li>
+    <p><strong>Routing Segmentation</strong>: Configuration &gt; Networking &gt; Routing &gt; Routing Segmentation (VRF)</p>
+  </li>
+</ul>
+<h2 id="advanalytics">
+  
+  
+    <a href="#advanalytics" class="anchor-heading" aria-labelledby="advanalytics"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Advanced Reporting and Analytics
+  
+  
+</h2>
+    
+
+<p>For users who are using or trying Splunk, you can install the HPE Aruba Networking EdgeConnect Security App for Splunk application to enable advanced reporting and analytics using the IDS/IPS alarms forwarded from EdgeConnect appliances. Search Splunkbase for “EdgeConnect” or click <a href="https://splunkbase.splunk.com/apps/#/search/edgeconnect/">this link</a> to search in your browser.</p>
+
+<p><img src="../../../media/ids_splunk_app.png" alt="img" /></p>
+
+<p>Follow the instructions provided to install and configure the application.</p>
+
+                    
+
+                    
+                      
+                    
+                  </main>
+                </div>
+              </div>
+            </div>
+
+	  </div> <!-- End right div -->
+	</div> <!-- End content -->
+        
+        <div id="footer" class="footer">
+        <!-- HFWS will insert its footer here -->
+	</div><!-- end footer -->
+        
+    </div>
+</body>
+    <style>
+        html, body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: inherit;
+            line-height: 1.4;
+            color: #5c5962;
+	    margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden; /* Prevent scrollbars on the body */
+            scroll-padding-top: 80px; /* Same as the header's height */
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* Occupy full viewport height */
+        }
+
+        .header {
+            height: 80px;
+            padding: 0px;
+            flex-shrink: 0; /* Prevent header from shrinking */
+        }
+        .content {
+            flex-grow: 1; /* Allow content to take up remaining space */
+            overflow-y: hidden; /* Enable scrolling within content if needed */
+            overflow-x: hidden; /* Hide horizontal scrollbar for content */
+        
+	    display: flex;
+            justify-content: space-between;
+            align-items: center;
+	}
+
+        .footer {
+            padding: 0px;
+            flex-shrink: 0; /* Prevent footer from shrinking */
+        }
+        #side-bar-logo{
+	
+	}
+	/* Left and Right Columns in Center Div */
+        #left-div {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 35%;
+            padding: 0px;
+        }
+
+        #right-div {
+            overflow-x: auto;
+            height: 100%;
+            width: 100%;
+            padding-right: 200px;
+        }
+        #left-div-orch {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 35%;
+            padding: 0px;
+	    overflow: hidden;
+        }
+        #right-div-orch {
+            overflow-x: auto;
+            height: 100%;
+            width: 100%;
+            padding-right: 5px;
+        }
+	.site-nav{
+	    padding-top: 0px;
+	    padding-bottom: 0px;
+	}
+
+	.main-width {
+	    width: 850px;
+	}
+	.main-width-orch{
+	
+	}
+
+    .left_example {
+      display: flex;
+      flex-direction: column;
+    }
+    /* Left area */
+    .left-top, .left-bottom {
+      /*background-color: #eee;*/
+      text-align: center;
+      padding: 10px;
+    }
+
+    .left-top {
+      flex-shrink: 0; /* Fixed height */
+    }
+
+    .left-bottom {
+      flex-shrink: 0; /* Fixed height */
+    }
+
+    .left-center {
+      flex: 1;
+      overflow-y: auto; /* Scrollable */
+      padding: 10px;
+      /*background-color: #f9f9f9;*/
+    }
+    </style>
+
+
+<script>
+function recordScrollOnMove(){
+    const element = document.getElementById("site-nav");
+    let y = element.scrollTop;
+    sessionStorage.setItem('scrollpos', element.scrollTop);
+    console.log(y);
+}
+
+function setScrollOnPageLoad(){
+    var scrollpos = sessionStorage.getItem('scrollpos');
+    const element = document.getElementById("site-nav");
+    if (scrollpos) {
+        element.scrollTo(0, scrollpos);
+    }
+}
+</script>
+
+
+</html>
+
