@@ -210,7 +210,8 @@ test('MikroTik: varias entradas de alimentacion no son doble fuente, y el CHR no
 
 test('Aruba: el EdgeConnect Hardware Reference separa adaptador, fuente unica y 1+1', () => {
   const { MODELS } = require('../server/seed/legacyData/aruba.js');
-  assert.strictEqual(MODELS.filter((m) => m.redund !== undefined).length, 16);
+  // 16 hasta el 2026-10-06; ese dia entraron ocho controladores AOS 8 con sus guias (abajo).
+  assert.strictEqual(MODELS.filter((m) => m.redund !== undefined).length, 24);
   assert.strictEqual(MODELS.find((m) => m.id === 'EC-XS').redund, false);
   assert.strictEqual(MODELS.find((m) => m.id === 'EC-S').redund, false);
   assert.strictEqual(MODELS.find((m) => m.id === 'EC-M').redund, true);
@@ -238,10 +239,13 @@ test('Aruba: el EdgeConnect Hardware Reference separa adaptador, fuente unica y 
 // El 9114 y el 9240 publican «Power Supply Slots: 1 + Redundant» y una sola fuente como
 // «Power Source»: salen con una y admiten la segunda, que es exactamente 'opcional'. Marcarlos
 // `true` prometeria una fuente que no viene en la caja; `false` negaria la ranura. El 9106
-// publica «Power Supply Slots: -»: adaptador externo, sin ranura. Y los controladores AOS 8
-// (7000/7200) siguen sin dato: no hay documento suyo en public/datasheets/, y rellenarlos por
-// parecido con la serie 9000 seria el dato inferido del tamano que esta seccion prohibe.
-test('Aruba: gateways 9000/9100/9200 con la alimentacion de su documento, y los AOS 8 sin rellenar', () => {
+// publica «Power Supply Slots: -»: adaptador externo, sin ranura. Los controladores AOS 8
+// (7000/7200) siguieron sin dato hasta tener documento propio (2026-10-06): rellenarlos por
+// parecido con la serie 9000 era el dato inferido del tamano que esta seccion prohibe. Ahora
+// cada uno lleva la frase de su guia de instalacion o del QuickSpecs de su serie, y el 7005,
+// que se alimenta por PoE o con un adaptador sin que ningun documento diga si admite los dos a
+// la vez, sigue sin constar: dos entradas no son dos fuentes.
+test('Aruba: gateways 9000/9100/9200 y controladores AOS 8 con la alimentacion de su documento', () => {
   const { MODELS } = require('../server/seed/legacyData/aruba.js');
   const por = (id) => MODELS.find((m) => m.id === id);
   for (const id of ['Gateway 9004', 'Gateway 9004-LTE', 'Gateway 9012', 'Gateway 9106']) {
@@ -255,9 +259,22 @@ test('Aruba: gateways 9000/9100/9200 con la alimentacion de su documento, y los 
   for (const m of MODELS.filter((x) => x.fam === 'gw' && x.psu)) {
     assert.strictEqual(m.psu.watts, undefined, `${m.id}: HPE publica maximos, no tipicos`);
   }
-  for (const id of ['7005', '7008', '7010', '7024', '7030', '7205', '7210', '7220', '7240XM']) {
-    assert.strictEqual(por(id).redund, undefined, `${id}: sin documento en el repositorio, no se deduce`);
+  const integrada = { '7010': 225, '7024': 580, '7030': 80, '7205': 180 };
+  for (const [id, w] of Object.entries(integrada)) {
+    assert.strictEqual(por(id).redund, false, id);
+    assert.ok(por(id).psu.texto.includes(`integrated AC power supply of ${w}W`), `${id}: la cita de su guia viaja con el dato`);
   }
+  assert.strictEqual(por('7008').redund, false);
+  assert.match(por('7008').psu.texto, /54V DC, 2\.78A AC-to-DC power adapter/);
+  for (const id of ['7210', '7220', '7240XM']) {
+    assert.strictEqual(por(id).redund, 'opcional', id);
+    assert.match(por(id).psu.texto, /Includes one 350W AC power supply/, `${id}: viene con una`);
+    assert.match(por(id).psu.texto, /May be used as a redundant power supply/, `${id}: y admite la segunda`);
+  }
+  assert.strictEqual(por('7005').redund, undefined, '7005: PoE o 12 V no dice si van a la vez; no se deduce');
+  assert.match(por('7005').psu.texto, /PoE or 12v/);
+  // La fuente de 350 W era de la 7210/7220/7240XM: el 7205 lleva la suya, integrada, de 180 W.
+  assert.doesNotMatch(por('7205').spec.watts, /350/);
   const f = FICHA.seccionAlimentacion(por('Gateway 9240'));
   assert.match(f.filas[0][1], /Opcional/);
 });

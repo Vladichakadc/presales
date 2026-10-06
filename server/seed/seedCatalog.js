@@ -416,6 +416,9 @@ async function seedCatalog() {
   // la compatibilidad confirmada.
   const arOpt = await seedOpticsAndParts(vendorIds.aruba, arubaData.OPTICS, null, false);
   await seedDimensionadorModels(vendorIds.aruba, arubaData.MODELS, {
+    // Retirados por HPE sin fecha de ultimo pedido (2026-10-06): ver aruba.js.
+    eolModels: new Set(Object.keys(arubaData.RETIRADOS_SIN_FECHA)),
+    etiqueta: 'Aruba',
     categoryFn: (item) => (item.fam === 'ec' ? 'sdwan' : 'gateway'),
     opticCategoryIds: arOpt.opticCategoryIds,
   });

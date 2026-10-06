@@ -1,7 +1,10 @@
 # Datasheets oficiales de HPE Aruba Networking
 
-**18 de los 24 documentos ya están aquí** (2026-09-11); el resto sigue enlazando la URL de
-HPE. Para traer más o refrescar versiones:
+**21 de los 28 documentos del manifiesto ya están aquí** (2026-10-06; el 2026-09-11 eran 18
+de 24); el resto sigue enlazando la URL de HPE. Los dos últimos son los QuickSpecs de las
+series 7000 y 7200 (`serie-7000-quickspecs.pdf`, `serie-7200-quickspecs.pdf`), retirados por
+HPE pero publicados para consulta, de los que salen las cifras y el retiro de la línea AOS 8.
+Para traer más o refrescar versiones:
 
 ```
 npm run datasheets
@@ -46,6 +49,11 @@ Las dos tandas que faltaban se hicieron con un Chrome real (2026-09-10, 9 docume
 - **`www.arubanetworks.com/assets/ds/DS_9000Series.pdf` ya no es un PDF**: redirige al
   visor `psnow/doc/a00067608enw` («HPE Aruba Networking 9000 Series Gateway»). Ojo, es un
   documento distinto del `a00067607enw` que ya estaba (`serie-9000-psnow.pdf`).
+
+- **Desde Actions, psnow sí entrega el PDF con un `fetch` normal** (2026-10-06): basta pedir
+  la página `psnow/doc/<id>` (HTML), leer en ella la URL `downloadDoc/...` que enlaza y
+  pedir esa. Así trajo `traer-cisco-huawei.yml` los dos QuickSpecs de la línea AOS 8
+  (corrida 37504395999), sin navegador.
 
 ## Cómo funciona
 

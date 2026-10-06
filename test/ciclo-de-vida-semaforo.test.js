@@ -69,6 +69,16 @@ test('`eol` binario sin fecha es rojo y DECLARA que la fecha no está, en vez de
   assert.match(c.detalle, /no trae la fecha/i);
 });
 
+test('`eol` sin fecha conserva el sucesor inferido, rotulado como inferencia (B1, AOS 8 de Aruba)', () => {
+  // El 7030 lo mostraba mientras era línea anterior; HPE lo retiró sin fecha (2026-10-06) y
+  // no puede perder el reemplazo justo al dejar de venderse.
+  const c = FICHA.cicloDeVida({ id: '7030', eol: true, legacy: true, sucesor: 'Gateway 9012' }, SIN_RESPALDO);
+  assert.strictEqual(c.estado, 'fuera');
+  assert.match(c.detalle, /no trae la fecha/);
+  assert.match(c.detalle, /sucesor natural: Gateway 9012 \(inferencia por capacidad, sin doc oficial\)/);
+  assert.doesNotMatch(FICHA.cicloDeVida({ id: 'Y', eol: true }, SIN_RESPALDO).detalle, /sucesor/, 'sin sucesor no se inventa uno');
+});
+
 test('`legacy` es ámbar aunque el fabricante no tenga respaldo: es un dato positivo del catálogo', () => {
   // El tercer estado cubre la AUSENCIA de información. Una marca que el catálogo sí trae se
   // muestra siempre: no depende de que exista un boletín de fin de venta.

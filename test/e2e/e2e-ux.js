@@ -145,11 +145,32 @@ const XLSX = require('xlsx');
   // ··· volver al recomendado y probar el hueco honesto con un modelo sin foto
   await page.click('#verdict-volver');
   await asentar(page);
-  // (2026-09-16, pendiente #41: EC-S/M/L/XL ya TIENEN foto oficial del Hardware
-  //  Reference Rev V — el hueco honesto se prueba con la serie 7000, que sigue sin
-  //  foto en el repo por el bloqueo de egreso a los dominios de HPE)
+  // (2026-10-06, pendiente #41 cerrado: la serie 7000/7200 tiene ya sus figuras oficiales,
+  //  de su guía de instalación o del QuickSpecs de la 7200, y los 25 modelos Aruba tienen
+  //  figura. El 7005 enseña la suya; el hueco honesto se prueba con el mismo 7005 quitado
+  //  del mapa de vistas, como en e2e-huawei-vistas.)
   await page.selectOption('#pickModel', '7005');
   await asentar(page);
+  ok(await page.locator('#verdict .ficha-vista img').count() === 1, 'el 7005 enseña su figura oficial');
+  const pie7005 = ((await page.textContent('#verdict .ficha-vista figcaption')) || '').replace(/\s+/g, ' ');
+  ok(/Guía de instalación del 7005/.test(pie7005) && /no fotografía/.test(pie7005),
+    'y el pie dice de qué documento sale y que es una ilustración, no una foto: ' + pie7005.slice(0, 90));
+  ok(await page.locator('#verdict .ficha-vista-tab').count() === 2, 'el 7005 trae frontal y trasera');
+  let quitado = false;
+  await page.route('**/data/aruba-vistas-equipos.json', async (ruta) => {
+    const r = await ruta.fetch();
+    const mapa = await r.json();
+    quitado = '7005' in mapa;
+    delete mapa['7005'];
+    await ruta.fulfill({ response: r, json: mapa });
+  });
+  await trasNavegar(page, () => page.reload({ waitUntil: 'domcontentloaded' }), { selector: '#users' });
+  await page.click('[data-tab=calc]').catch(() => {});
+  await asentar(page);
+  await page.selectOption('#pickModel', '7005');
+  await asentar(page);
+  await page.unroute('**/data/aruba-vistas-equipos.json');
+  ok(quitado, 'la intercepción se aplicó: el mapa traía el 7005 y se le quitó');
   ok(await page.locator('#verdict .ficha-vista-vacia').count() === 1,
     'un modelo sin foto oficial declara el hueco, no enseña una foto prestada');
   const txtVacio = (await page.textContent('#verdict .ficha-vista-vacia')) || '';

@@ -1,5 +1,5 @@
 {
- "_procedencia": "Fotos extraídas de documentos oficiales HPE Aruba ya versionados en public/datasheets/ (2026-09-16). EdgeConnect (incluidos los legacy EC-S/M/L/XL): edgeconnect-hardware-reference.pdf (Rev V, ago-2026), vistas etiquetadas «— Front View»/«— Rear View» en pp.42-52 (1010x/XS) y pp.55, 63, 77, 92 (EC-S/M/L/XL); la figura frontal de EC-L y EC-XL es LA MISMA en el documento oficial (pp.77 y 92) — se sirve un único archivo ec-lxl-front.webp citando ambas páginas. Serie 9000: serie-9000-branch-gateways.pdf (figuras 1-3, p.3; la 9012 tiene cara de puertos y cara LED). Serie 9100: serie-9100-hybrid-quickspecs.pdf p.2 (foto de familia — chasis común 9106/9114). Serie 9200: serie-9200-quickspecs.pdf (9240). EC-V: appliance virtual sin chasis — pictograma propio rotulado «REPRESENTACIÓN — NO ES UNA FOTO» (hardware inexistente; guía EC-V en Azure en el repo). Dimensiones: QuickSpecs/DS oficiales citados en cada entrada; solo se publican donde la atribución por modelo es directa — los legacy EC-S/M/L/XL no traen dimensiones en los documentos del repo, solo peso (catálogo del dimensionador). Series 7000/7200: sin foto oficial en el repo y sin egreso a los dominios de HPE (2026-09-16) — mantienen el aviso honesto. Sin foto oficial en el repo → la ficha muestra un aviso honesto, nunca una foto «parecida» (regla del catálogo).",
+ "_procedencia": "Fotos extraídas de documentos oficiales HPE Aruba ya versionados en public/datasheets/ (2026-09-16). EdgeConnect (incluidos los legacy EC-S/M/L/XL): edgeconnect-hardware-reference.pdf (Rev V, ago-2026), vistas etiquetadas «— Front View»/«— Rear View» en pp.42-52 (1010x/XS) y pp.55, 63, 77, 92 (EC-S/M/L/XL); la figura frontal de EC-L y EC-XL es LA MISMA en el documento oficial (pp.77 y 92) — se sirve un único archivo ec-lxl-front.webp citando ambas páginas. Serie 9000: serie-9000-branch-gateways.pdf (figuras 1-3, p.3; la 9012 tiene cara de puertos y cara LED). Serie 9100: serie-9100-hybrid-quickspecs.pdf p.2 (foto de familia — chasis común 9106/9114). Serie 9200: serie-9200-quickspecs.pdf (9240). EC-V: appliance virtual sin chasis — pictograma propio rotulado «REPRESENTACIÓN — NO ES UNA FOTO» (hardware inexistente; guía EC-V en Azure en el repo). Dimensiones: QuickSpecs/DS oficiales citados en cada entrada; solo se publican donde la atribución por modelo es directa — los legacy EC-S/M/L/XL no traen dimensiones en los documentos del repo, solo peso (catálogo del dimensionador). Series 7000/7200 (2026-10-06, traídas por traer-cisco-huawei.yml desde la web oficial de HPE Aruba): 7005, 7008, 7010, 7024, 7030 y 7205 con las figuras «Front Panel»/«Back Panel» de su guía de instalación, que son ilustraciones con rótulos y no fotografías (las del 7030 son vectoriales y se rasterizaron a 160 ppp); 7210, 7220 y 7240XM con las fotos «Front/Back: 7210/7220/7240» del QuickSpecs de la serie 7200 (psnow c05272677), a su resolución nativa de 74 px de alto, un solo archivo para los tres. La cara la decide el rótulo del documento: en el 7008 la «Front Panel» es la de los LED y la trasera la de los puertos y la toma de 54 V. Sin foto oficial en el repo → la ficha muestra un aviso honesto, nunca una foto «parecida» (regla del catálogo).",
  "EC-XS": {
   "front": "/img/equipos/ec-xs-front.webp",
   "rear": "/img/equipos/ec-xs-rear.webp",
@@ -89,5 +89,59 @@
   "front": "/img/equipos/ec-v-front.webp",
   "fuente": "Pictograma propio rotulado «REPRESENTACIÓN — NO ES UNA FOTO»: el EC-V es software, no tiene chasis (guía de despliegue EC-V en Azure, en el repositorio)",
   "tamano": "Sin dimensiones físicas — appliance virtual (vNIC/vCPU según hipervisor y tier de licencia)"
+ },
+ "7005": {
+  "front": "/img/equipos/gw-7005-front.webp",
+  "rear": "/img/equipos/gw-7005-rear.webp",
+  "fuente": "Guía de instalación del 7005 (cartel Rev 02), figuras 1 y 2 — ilustración oficial con sus rótulos, no fotografía",
+  "tamano": "4,1 × 20 × 20 cm · 0,92 kg — sobremesa, sin ventilador (QuickSpecs de la serie 7000, p. 11)"
+ },
+ "7008": {
+  "front": "/img/equipos/gw-7008-front.webp",
+  "rear": "/img/equipos/gw-7008-rear.webp",
+  "fuente": "Guía de instalación del 7008 (cartel Rev 01), figuras 1 y 2: la «Front Panel» es la de los LED y la «Back Panel» la de los puertos y la toma de 54 V — ilustración oficial, no fotografía",
+  "tamano": "4,2 × 20,32 × 20,32 cm · 1,0 kg — sobremesa, sin ventilador (QuickSpecs de la serie 7000, p. 11)"
+ },
+ "7010": {
+  "front": "/img/equipos/gw-7010-front.webp",
+  "rear": "/img/equipos/gw-7010-rear.webp",
+  "fuente": "Guía de instalación del 7010, figuras 1 y 2, p. 8 — ilustración oficial con sus rótulos numerados, no fotografía",
+  "tamano": "4,42 × 31,75 × 33,7 cm · 3,4 kg — 1U (QuickSpecs de la serie 7000, p. 11)"
+ },
+ "7024": {
+  "front": "/img/equipos/gw-7024-front.webp",
+  "rear": "/img/equipos/gw-7024-rear.webp",
+  "fuente": "Guía de instalación del 7024 (HPE, mar-2025), figuras 1 y 2, p. 8 — ilustración oficial con sus rótulos, no fotografía",
+  "tamano": "4,37 × 44,2 × 31,3 cm · 5,127 kg — 1U (QuickSpecs de la serie 7000, p. 11)"
+ },
+ "7030": {
+  "front": "/img/equipos/gw-7030-front.webp",
+  "rear": "/img/equipos/gw-7030-rear.webp",
+  "fuente": "Guía de instalación del 7030 (HPE, nov-2024), figuras 1 y 2, p. 8 — ilustración oficial con sus rótulos, no fotografía",
+  "tamano": "4,4 × 30,5 × 21,1 cm · 2,06 kg — 1U (QuickSpecs de la serie 7000, p. 11)"
+ },
+ "7205": {
+  "front": "/img/equipos/gw-7205-front.webp",
+  "rear": "/img/equipos/gw-7205-rear.webp",
+  "fuente": "Guía de instalación del 7205 (HPE, mar-2025), figuras 1 y 2, p. 11 — ilustración oficial con sus rótulos, no fotografía",
+  "tamano": "4,4 × 44,2 × 33,4 cm · 4,95 kg — 1U (QuickSpecs de la serie 7200, p. 17)"
+ },
+ "7210": {
+  "front": "/img/equipos/gw-72xx-front.webp",
+  "rear": "/img/equipos/gw-72xx-rear.webp",
+  "fuente": "QuickSpecs de la serie 7200, p. 1: fotos «Front/Back: 7210/7220/7240» (la trasera lleva las dos fuentes; de serie viene una)",
+  "tamano": "4,4 × 44,5 × 44,5 cm · 7,45 kg — 1U (catálogo, DS serie 7200)"
+ },
+ "7220": {
+  "front": "/img/equipos/gw-72xx-front.webp",
+  "rear": "/img/equipos/gw-72xx-rear.webp",
+  "fuente": "QuickSpecs de la serie 7200, p. 1: fotos «Front/Back: 7210/7220/7240» (la trasera lleva las dos fuentes; de serie viene una)",
+  "tamano": "4,4 × 44,2 × 40,1 cm · 7,9 kg — 1U (catálogo, DS serie 7200)"
+ },
+ "7240XM": {
+  "front": "/img/equipos/gw-72xx-front.webp",
+  "rear": "/img/equipos/gw-72xx-rear.webp",
+  "fuente": "QuickSpecs de la serie 7200, p. 1: fotos «Front/Back: 7210/7220/7240» (la trasera lleva las dos fuentes; de serie viene una). La 7240XM no figura en el rótulo; el documento le da los ventiladores, la fuente y los accesorios de la 7240",
+  "tamano": "4,4 × 44,5 × 44,5 cm · 7,45 kg — 1U (catálogo, DS serie 7200)"
  }
 }

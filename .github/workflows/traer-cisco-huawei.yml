@@ -303,27 +303,27 @@ jobs:
                 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7005.htm',
               ] },
               { archivo: 'aruba-7005-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
-                descubrirEnlace: { de: 'aruba-7005-pagina.html', contiene: '/ig/', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7005.htm' } },
+                descubrirEnlace: { de: 'aruba-7005-pagina.html', contiene: '/ig/', dominios: ['arubanetworks.com', 'hpe.com'], base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7005.htm' } },
               { archivo: 'aruba-7008-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7008', urls: [
                 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7008.htm',
               ] },
               { archivo: 'aruba-7008-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
-                descubrirEnlace: { de: 'aruba-7008-pagina.html', contiene: '/ig/', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7008.htm' } },
+                descubrirEnlace: { de: 'aruba-7008-pagina.html', contiene: '/ig/', dominios: ['arubanetworks.com', 'hpe.com'], base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7008.htm' } },
               { archivo: 'aruba-7010-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7010', urls: [
                 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7010.htm',
               ] },
               { archivo: 'aruba-7010-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
-                descubrirEnlace: { de: 'aruba-7010-pagina.html', contiene: '/ig/', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7010.htm' } },
+                descubrirEnlace: { de: 'aruba-7010-pagina.html', contiene: '/ig/', dominios: ['arubanetworks.com', 'hpe.com'], base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7010.htm' } },
               { archivo: 'aruba-7030-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7030', urls: [
                 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7030.htm',
               ] },
               { archivo: 'aruba-7030-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
-                descubrirEnlace: { de: 'aruba-7030-pagina.html', contiene: '/ig/', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7030.htm' } },
+                descubrirEnlace: { de: 'aruba-7030-pagina.html', contiene: '/ig/', dominios: ['arubanetworks.com', 'hpe.com'], base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7030.htm' } },
               { archivo: 'aruba-7205-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7205', urls: [
                 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7205.htm',
               ] },
               { archivo: 'aruba-7205-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
-                descubrirEnlace: { de: 'aruba-7205-pagina.html', contiene: '/ig/', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7205.htm' } },
+                descubrirEnlace: { de: 'aruba-7205-pagina.html', contiene: '/ig/', dominios: ['arubanetworks.com', 'hpe.com'], base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7205.htm' } },
               { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
                 'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
                 'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
@@ -371,8 +371,15 @@ jobs:
                     const vistos = new Set();
                     for (const m of pagina.matchAll(/href=['\x22]([^'\x22<>]+?[.]pdf)['\x22]/gi)) {
                       if (!m[1].includes(de.contiene)) continue;
-                      const abs = new URL(m[1], de.base).href;
-                      if (!vistos.has(abs)) { vistos.add(abs); doc.urls.push(abs); }
+                      const abs = new URL(m[1], de.base);
+                      // Solo del fabricante: la pagina es contenido de fuera y no elige a que
+                      // dominio va el ejecutor (que tiene permiso de escritura).
+                      const h = abs.hostname;
+                      if (!de.dominios.some((d) => h === d || h.endsWith('.' + d))) {
+                        intentos.push({ url: abs.href, error: 'fuera de los dominios del fabricante, no se pide' });
+                        continue;
+                      }
+                      if (!vistos.has(abs.href)) { vistos.add(abs.href); doc.urls.push(abs.href); }
                     }
                     doc.urls.sort((x, y) => (y.includes('_EN') ? 1 : 0) - (x.includes('_EN') ? 1 : 0));
                     if (!doc.urls.length) intentos.push({ url: de.de, error: 'la pagina no enlaza ningun PDF con ' + de.contiene });

@@ -11,7 +11,7 @@
    fin de soporte del boletín; el EC-XS, sin boletín y sin respaldo declarado a nivel de
    fabricante, sale en el TERCER ESTADO («Sin dato de ciclo de vida») — nunca verde por
    omisión y, sobre todo, NUNCA con una marca de fin de venta sacada de un agregador. */
-const { cargarPlaywright, abrirDimensionador, asentar, contador } = require('./ayuda');
+const { cargarPlaywright, abrirDimensionador, asentar, trasNavegar, BASE, contador } = require('./ayuda');
 
 (async () => {
   const { chromium } = cargarPlaywright();
@@ -51,14 +51,16 @@ const { cargarPlaywright, abrirDimensionador, asentar, contador } = require('./a
     'EC-XS: tercer estado honesto (sin boletín respaldado a nivel fabricante) — nunca verde por omisión');
 
   // C5 de la auditoría 2026-09-17: el 7005 tiene boletín oficial de fin de venta
-  // (31-oct-2022, soporte hasta 31-oct-2027) — rojo con sus fechas. El 7010, sin boletín
-  // localizado, conserva el ámbar de línea anterior.
+  // (31-oct-2022, soporte hasta 31-oct-2027) — rojo con sus fechas. El 7010 no tiene boletín
+  // con fecha, pero desde el 2026-10-06 la página oficial de psnow de su serie lo da por
+  // retirado: rojo, y diciendo que la fecha no está (antes era el ejemplo de línea anterior).
   const l7005 = await filaDe('7005');
   t.ok(l7005 && l7005.includes('Fuera de venta') && l7005.includes('2022-10-31'),
     '7005: fuera de venta con la fecha de su boletín oficial (2022-10-31)');
   t.ok(l7005 && l7005.includes('2027-10-31'), '7005: el semáforo suma el fin de soporte (2027-10-31)');
-  const leg = await filaDe('7010');
-  t.ok(leg && /L.nea anterior/.test(leg), 'el 7010 (sin boletín localizado) conserva su semáforo ámbar de línea anterior');
+  const l7010 = await filaDe('7010');
+  t.ok(l7010 && l7010.includes('Fuera de venta') && /no trae la fecha/.test(l7010),
+    '7010: retirado por HPE sin fecha — rojo, y declara que el catálogo no trae la fecha');
 
   // El selector de equipo nombra la condición con la fecha ya vencida.
   await page.click('[data-tab=calc]');
@@ -79,6 +81,27 @@ const { cargarPlaywright, abrirDimensionador, asentar, contador } = require('./a
   const ficha = (await page.textContent('#verdict')) || '';
   t.ok(/ya pasó/.test(ficha), 'la ficha del EC-XL declara que su fecha de último pedido ya pasó');
   t.ok(/2033-03-31/.test(ficha), 'la ficha declara el fin de soporte del fabricante (2033-03-31)');
+
+  // El ámbar de «línea anterior» se queda sin sujeto real en Aruba: toda la línea AOS 8 está
+  // ya fuera de venta. No se borra la comprobación, se le da un sujeto: la misma página con el
+  // 7030 devuelto a línea anterior (sin `eol`), que es como estaba hasta el 2026-10-06.
+  let devuelto = false;
+  await page.route('**/api/dimensionador/aruba', async (ruta) => {
+    const r = await ruta.fetch();
+    const datos = await r.json();
+    const lista = Array.isArray(datos.models) ? datos.models : (Array.isArray(datos.MODELS) ? datos.MODELS : []);
+    for (const m of lista) if (m.id === '7030' && m.eol) { m.eol = false; devuelto = true; }
+    await ruta.fulfill({ response: r, json: datos });
+  });
+  await trasNavegar(page, () => page.goto(BASE + '/dimensionador-aruba-edgeconnect.html', { waitUntil: 'domcontentloaded' }), { selector: '#users' });
+  await asentar(page);
+  await page.click('[data-tab=cat]');
+  await asentar(page);
+  const leg = await filaDe('7030');
+  await page.unroute('**/api/dimensionador/aruba');
+  t.ok(devuelto, 'la intercepción se aplicó: el 7030 llegaba con eol y se le quitó');
+  t.ok(leg && /L.nea anterior/.test(leg), 'un AOS 8 sin marca de fin de venta conserva el ámbar de línea anterior');
+  t.ok(leg && /sucesor natural: Gateway 9012/.test(leg), 'y nombra su sucesor inferido, rotulado como inferencia');
 
   await browser.close();
   process.exit(t.resumen('e2e-ciclo-vida'));

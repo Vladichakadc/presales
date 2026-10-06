@@ -180,10 +180,16 @@ test('C5: 7005/7008/7210/7220 llevan su boletin oficial y ya no se recomiendan',
     assert.strictEqual(FICHA.recomendable(m), false, `${id}: fuera de venta nunca se recomienda`);
   }
   assert.strictEqual(porId('7008').sucesor, 'Gateway 9012', 'el boletín reemplaza el 7008 por el 9012, no por el 9004');
-  // Sin boletín localizado: siguen como línea anterior, sin marca inventada.
+  // Sin boletín con fecha: no se inventa un `lastOrder`. Pero desde el 2026-10-06 la página
+  // oficial de psnow de su serie los da por retirados, y van como fuera de venta sin fecha.
+  const { RETIRADOS_SIN_FECHA } = require('../server/seed/legacyData/aruba');
   for (const id of ['7010', '7024', '7030', '7205', '7240XM']) {
-    assert.strictEqual(porId(id).eolAnnounced, null, `${id}: sin boletín oficial, sin marca`);
+    assert.strictEqual(porId(id).eolAnnounced, null, `${id}: sin boletín con fecha, sin fecha inventada`);
+    assert.match(RETIRADOS_SIN_FECHA[id], /^https:\/\/www\.hpe\.com\/psnow\/doc\/c052726(89|77)$/, `${id}: retirado, con la página oficial que lo dice`);
+    assert.strictEqual(FICHA.recomendable({ ...porId(id), eol: true }), false, `${id}: fuera de venta nunca se recomienda`);
   }
+  assert.deepStrictEqual(Object.keys(RETIRADOS_SIN_FECHA).sort(), ['7010', '7024', '7030', '7205', '7240XM'],
+    'los que tienen boletín con fecha (7005, 7008, 7210, 7220) ya caen por su lastOrder y no se repiten aquí');
 });
 
 // ── A1 ───────────────────────────────────────────────────────────────────────

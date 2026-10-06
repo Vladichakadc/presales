@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-06, sexta entrega (**Los pendientes de graphify, ejecutados, y medido qué lee el grafo.** Encargo del dueño: «Ejecuta todos los pendientes y confírmame si el grafo ya está leyendo todo el proyecto». **No lo lee todo: 234 de 604 archivos versionados**, todo el código JS y el markdown por su estructura; las 16 páginas HTML y los 14 workflows solo entran con la pasada semántica, que es decisión del dueño por su coste. **El arranque comprueba la CLI de graphify** contra la versión revisada y dice el comando fijado. **PDF4me no está resuelto**: sus herramientas se listan, pero al usarlas piden volver a iniciar sesión. Lo de Huawei sigue bloqueado por el fabricante y por la cuenta. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
+Última revisión: 2026-10-06, séptima entrega (**La línea AOS 8 de Aruba, desde sus documentos oficiales, y el grafo de graphify que avisa cuando está viejo.** Encargo del dueño: «Ejecuta los pendientes y la mejora propuesta, si encuentras más mejoras ejecútalas». **La mejora**: el arranque avisa cuando `graphify-out/graph.json` se hizo sobre otro commit que `HEAD`. **El pendiente 41 se cerró por un camino que no se había probado**: el workflow de transporte trajo desde el portal oficial de HPE Aruba las guías de instalación de seis controladores y, de psnow, los QuickSpecs de las series 7000 y 7200. Los 25 modelos Aruba tienen figura. **Y esos documentos dijeron más**: HPE da por retirada la línea entera («no longer available for sale»), así que 7010, 7024, 7030, 7205 y 7240XM pasan a fuera de venta sin fecha; corrigen cifras que venían de copias de terceros (el 7010 y el 7024 hacen 8 Gbps de firewall, no 4; el 7205, 12 y no 15); y dan la alimentación de ocho de los nueve (Aruba 24/25). Por el camino, un comentario con comillas invertidas que bash ejecutaba dentro de un `node -e`: corregido, y una prueba lo frena en todos los workflows. **Queda una decisión del dueño**: si el cotizador ofrece las unidades Reman de la línea retirada. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
+
+Revisión anterior: 2026-10-06, sexta entrega (**Los pendientes de graphify, ejecutados, y medido qué lee el grafo.** Encargo del dueño: «Ejecuta todos los pendientes y confírmame si el grafo ya está leyendo todo el proyecto». **No lo lee todo: 234 de 604 archivos versionados**, todo el código JS y el markdown por su estructura; las 16 páginas HTML y los 14 workflows solo entran con la pasada semántica, que es decisión del dueño por su coste. **El arranque comprueba la CLI de graphify** contra la versión revisada y dice el comando fijado. **PDF4me no está resuelto**: sus herramientas se listan, pero al usarlas piden volver a iniciar sesión. Lo de Huawei sigue bloqueado por el fabricante y por la cuenta. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
 
 Revisión anterior: 2026-10-06, quinta entrega (**La skill `graphify`, instalada sin su modo «siempre activo».** Encargo del dueño: «Instálala https://github.com/Graphify-Labs/graphify.git». Se instaló la skill (`.claude/skills/graphify/`, 0.9.77, revisada antes y con su huella fijada) y la CLI fijada a esa versión. **`graphify install --project` hizo más de lo que dice su README**: registró hooks `PreToolUse` en `.claude/settings.json` y escribió una sección en `CLAUDE.md`; se deshizo, y una prueba lo frena si vuelve sin decidirse. Medido sobre este repositorio: el grafo del código se hace en 15 s y en local, enlaza bien el servidor y no los módulos del navegador. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
 
@@ -1006,9 +1008,9 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
 
 | Modelo | Campo | Catálogo | Ficha oficial |
 |---|---|---|---|
-| 7010 | `fw` / `fwSess` | 4 Gbps / 32.768 | **8 Gbps / 65.536** (DS serie 7000 vigente) |
-| 7205 | `fw` | 15 Gbps | **12 Gbps** (DS serie 7200) |
-| 7030 | `ifaces` | «8x combo + puertos 10G» | **8x combo 1G, sin 10G** (DS serie 7000) |
+| ~~7010~~ | `fw` / `fwSess` | 4 Gbps / 32.768 | **8 Gbps / 65.536** — **aplicado el 2026-10-06** con el QuickSpecs vigente de HPE |
+| ~~7205~~ | `fw` | 15 Gbps | **12 Gbps** — **aplicado el 2026-10-06**, mismo documento |
+| ~~7030~~ | `ifaces` | «8x combo + puertos 10G» | **8x combo 1G, sin 10G** — **aplicado el 2026-10-06**: QuickSpecs y guía de instalación |
 | EC-L | `psu.texto` watts | 401 W | **404 W** (QuickSpecs) / **440 W** (Hardware Ref., EC-L-P) |
 | Gateway 9004/9012 | `fwSess` | 128.000 (datasheet AOS 10) | **64.000 en modo SD-WAN** (doc oficial a00099294en_us, validado 2026-09-13) — expuesto en `spec.fwSessSdwan` sin pisar el dato; si el dueño decide que el filtro de flujos use la cifra SD-WAN conservadora, se cambia `fwSess` y se ajusta el test de flujos |
 
@@ -1038,7 +1040,9 @@ cerradas en el código; el detalle, con su evidencia, en *Cerrado recientemente*
   ahora los detecta como candidatos (cubo `central`).
 - **R8R13AAE / R8R14AAE** (Silver/Gold AOS 8 del 9240): sin List Price en la lista del
   distribuidor — «consultar» en el BOM.
-- **Estado de venta de 7010, 7024, 7030, 7205 y 7240XM**: no se localizó boletín oficial; siguen
+- ~~**Estado de venta de 7010, 7024, 7030, 7205 y 7240XM**~~ **Cerrado el 2026-10-06**: las
+  páginas oficiales de psnow de sus dos series los dan por retirados; van como fuera de venta
+  sin fecha (ver *Cerrado recientemente*). Lo que decía este punto: no se localizó boletín oficial; siguen
   como línea anterior. Los dominios de HPE bloquean la automatización (Akamai), incluso desde
   Actions: necesita una persona con navegador.
 - ~~**9106 en AOS 8**~~ **Cerrado el 2026-09-24**: tabla «AOS-8 Specifications» de la QuickSpecs
@@ -1227,10 +1231,11 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     EC-V, EC-XS-SP y Dynamic Threat Defense (no están en la lista del distribuidor).
 15. **Alimentación eléctrica: cobertura real, no completa.** La nueva sección «Alimentación
     eléctrica» de la ficha (agosto 2026) solo tiene dato donde el propio catálogo ya traía
-    una frase publicada — Cisco 21/21 (ya existía), Huawei 17/40, MikroTik 14/15, **Aruba 16/25** (2026-09-24:
-    los seis gateways 9000/9100/9200, leídos de los PDF oficiales de `public/datasheets/`; los
-    nueve controladores AOS 8 7000/7200 siguen sin dato porque no hay documento suyo en el
-    repositorio),
+    una frase publicada — Cisco 21/21 (ya existía), Huawei 17/40, MikroTik 14/15, **Aruba 24/25** (2026-09-24:
+    los seis gateways 9000/9100/9200, leídos de los PDF oficiales de `public/datasheets/`;
+    2026-10-06: ocho controladores AOS 8 con su guía de instalación y el QuickSpecs de la 7200.
+    Queda el 7005, que se alimenta por PoE o con un adaptador de 12 V sin que ningún documento
+    diga si admite los dos a la vez),
     **Juniper 12/12 SRX** (2026-09-03, completo: ver *Cerrado recientemente*), **Fortinet
     58/58** (2026-09-11, completo: 70F, 100F y 200F cerrados — solo 7081F y 7121F quedan
     sin `watts` porque sus guías solo publican capacidad por fuente, decisión documentada)
@@ -1586,7 +1591,7 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     bytes— y de la estabilidad de ese documento no hay ninguna medición porque nadie puede
     leerlo. Declararla sería el campo puesto a ojo que este repositorio persigue. Cierra desde
     una máquina con acceso a los dominios de HPE.
-41. **Fotos oficiales de los modelos legacy (2026-09-16, nace con la tarjeta gráfica de la
+41. **~~Fotos oficiales de los modelos legacy~~ Resuelto (2026-10-06)** (2026-09-16, nace con la tarjeta gráfica de la
     ficha; CERRADO PARCIAL el mismo día).** ~~EC-S, EC-M, EC-L, EC-XL~~ y ~~EC-V~~
     resueltos: el supuesto original («el Hardware Reference solo publica las variantes
     -P/-H») era FALSO — el documento tiene secciones propias del modelo base con sus
@@ -1598,7 +1603,10 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     doble página declarada. El EC-V, al no tener chasis, lleva pictograma propio
     rotulado «REPRESENTACIÓN — NO ES UNA FOTO». Esos documentos no publican las
     dimensiones de los legacy: el pie declara el peso (catálogo) y dice que las
-    dimensiones no están en el repo. **Sigue abierto: serie 7000/7200** — no hay
+    dimensiones no están en el repo. **Cerrado el 2026-10-06 también para la serie
+    7000/7200** (ver *Cerrado recientemente*): los nueve tienen figura, de su guía de
+    instalación o del QuickSpecs de la 7200, y los 25 modelos Aruba tienen la suya. Lo que
+    decía: **Sigue abierto: serie 7000/7200** — no hay
     fuente oficial con fotos en el repo y el egreso a los dominios de HPE está
     bloqueado desde el sandbox (2026-09-16); cierra bajando el DS oficial de la
     serie 7000/7200 desde una máquina con acceso y repitiendo este mismo patrón.
@@ -1709,6 +1717,17 @@ que ya se comprobó y lo que cuesta cada opción.
   **Hecho el 2026-10-02: opción B**, la recomendada, con el encargo del dueño de ejecutar los
   pendientes. Volver a la regla anterior es la opción A del documento de decisiones. Ver
   *Cerrado recientemente*.
+- **¿Ofrece el cotizador las unidades remanufacturadas de HPE de la línea AOS 8?** (2026-10-06).
+  La lista del distribuidor trae con List Price las Reman (SKU `…AR`) de 7005, 7008, 7010, 7030,
+  7205, 7210 y 7220, y el cotizador las tenía como líneas «(Reman)». La regla de fuera de venta
+  casa por modelo, así que oculta la Reman cuando se retira la unidad nueva: pasaba ya con 7005,
+  7008, 7210 y 7220 desde el 2026-10-01 (último pedido vencido) sin que nadie lo notara, y desde
+  hoy también con 7010, 7030 y 7205 (retirados por HPE). Dos opciones: **(A) dejarlo así**, coherente
+  con que la línea esté retirada, y la Reman se cotiza a mano; **(B) que una fila «(Reman)» no
+  caiga por el retiro de la unidad nueva**, porque es otro SKU que la lista sí vende. Coste de B:
+  una excepción en `fueraDeVenta()` de `catalogProjection.js` y su prueba en
+  `servidor-produccion.test.js`; riesgo, que la excepción se generalice a cualquier texto que
+  diga «Reman». Recomendación: B, si las Reman siguen en la próxima lista del distribuidor.
 - **Aprobación de arquitectura Fortinet** sobre `docs/auditoria-fortinet-2026-09-23/motor-y-bom.md`,
   que es la condición 1 del GO CONDICIONADO. Lista de comprobación en el documento de decisiones.
 - **Prueba con un lector de pantalla real** (NVDA o VoiceOver): guion de diez tareas con lo que
@@ -1729,6 +1748,54 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### La línea AOS 8 de Aruba desde sus documentos oficiales, y el grafo que avisa cuando está viejo (2026-10-06, séptima entrega)
+
+Encargo del dueño: «Ejecuta los pendientes y la mejora propuesta, si encuentras más mejoras
+ejecútalas».
+
+- **La mejora propuesta: el grafo de graphify avisa cuando está viejo.** `.claude/hooks/graphify-cli.sh`
+  compara el `built_at_commit` de `graphify-out/graph.json` con `HEAD` y, si cambió algún archivo,
+  dice cuántos y da `graphify update .`. El aviso propio de graphify vive en el modo siempre activo,
+  que no se instaló. Un commit que no cambia nada no avisa; uno que el clon no tiene, sí. Medido en
+  la sesión: «6 archivo(s)», los mismos que `git diff --name-only`; y lo dijo solo al reanudarla.
+  `test/graphify-cli-hook.test.js` lo prueba sobre un repositorio temporal, comprobado con tres
+  sabotajes (sin comparar, patrón laxo, avisar con cero cambios).
+- **Pendiente 41 cerrado: los nueve controladores AOS 8 tienen figura.** No hacía falta una persona con
+  navegador. `traer-cisco-huawei.yml` (rama de transporte) trajo:
+  - el índice del portal de documentación de hardware de HPE Aruba, que enlaza una página por
+    controlador; cada página enlaza su guía de instalación, y el workflow pide el PDF que la página
+    enlaza (`descubrirEnlace`), con la del 7024 como control;
+  - las páginas de psnow de las series 7000 y 7200, y de ellas los QuickSpecs (`downloadDoc/...`),
+    que un `fetch` normal descarga desde Actions.
+
+  7005, 7008, 7010, 7024, 7030 y 7205 llevan las figuras «Front/Back Panel» de su guía, que son
+  ilustraciones con rótulos y lo dice el pie; las del 7030 son vectoriales y se rasterizaron.
+  7210, 7220 y 7240XM llevan las fotos del QuickSpecs de la 7200, rotuladas «7210/7220/7240», y el
+  pie de la 7240XM dice que no figura en el rótulo. `e2e-ux` comprueba que el 7005 enseña la suya y
+  prueba el hueco honesto quitándolo del mapa por intercepción.
+- **La línea entera está retirada, y lo dice HPE.** Las dos páginas de psnow: «the base products listed
+  herein are now considered obsolete and are no longer available for sale». 7005, 7008, 7210 y 7220
+  ya caían por su `lastOrder`; 7010, 7024, 7030, 7205 y 7240XM, sin boletín con fecha, van en
+  `RETIRADOS_SIN_FECHA` (`aruba.js`), que la siembra aplica como `eol`. La ficha dice «el catálogo no
+  trae la fecha» y desde hoy conserva el sucesor inferido en ese estado (el 7030 lo tenía como línea
+  anterior y lo habría perdido; prueba nueva en `ciclo-de-vida-semaforo`, comprobada saboteándola).
+  `e2e-ciclo-vida` pasa el ejemplo de ámbar del 7010 a un 7030 devuelto a línea anterior por intercepción.
+- **El QuickSpecs vigente corrigió cifras que venían de copias de terceros del DS anterior**, y cerró los
+  tres conflictos que esperaban «confirmación»: firewall del 7005 y el 7008 (2 → 4 Gbps), del 7010 y el
+  7024 (4 → 8) y del 7205 (15 → 12); 64K sesiones en toda la serie 7000 (cuatro llevaban 16K o 32K);
+  IPsec y GRE del 7005, el 7008 y el 7024, que no tenían cifra; clientes exactos de la 7200; el cifrado,
+  fila a fila; y el 7030 sin puertos de 10G (lo repite su guía). El portal y el cotizador repetían esas
+  cifras y `catalogo-contraste-pantallas` lo cazó: alineados.
+- **La alimentación de ocho de los nueve**, de su guía de instalación: una sola fuente en 7008 (adaptador de
+  54 V), 7010 (225 W integrada), 7024 (580 W), 7030 (80 W) y 7205 (180 W; su `spec` decía «PSU 350 W»,
+  que es la de la 7210); y 7210, 7220 y 7240XM `'opcional'`. Aruba pasa de 16/25 a 24/25.
+- **Por el camino, un fallo mío y su freno.** Un comentario del workflow llevaba rutas entre comillas
+  invertidas dentro de `node -e "..."`, y bash las ejecutaba (corrida `37504707952`: «Default.js: command
+  not found», en verde). `test/workflows-node-e.test.js` frena una comilla invertida o un `$` sin escapar
+  en cualquier workflow, y se puso en rojo sobre ese commit.
+- **Abierto como decisión**: el cotizador oculta las unidades Reman con precio de la línea retirada (ver
+  *Decisiones que necesitan al dueño*).
 
 ### Qué lee el grafo de graphify, y la CLI comprobada al arrancar (2026-10-06, sexta entrega)
 

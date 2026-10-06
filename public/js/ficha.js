@@ -842,8 +842,12 @@
             : m.sucesor ? ' · sucesor natural: ' + m.sucesor + ' (inferencia por capacidad, sin doc oficial)' : '') };
     }
     if (m.eol) {
+      // El sucesor inferido viaja tambien aqui (B1): los AOS 8 de Aruba que HPE retiro sin
+      // fecha (2026-10-06) lo mostraban mientras eran linea anterior, y no pueden perderlo
+      // justo al dejar de venderse.
       return { estado: 'fuera', ...CICLO.fuera,
-        detalle: 'el catalogo no trae la fecha de ultimo pedido' };
+        detalle: 'el catalogo no trae la fecha de ultimo pedido'
+          + (m.sucesor ? ' · sucesor natural: ' + m.sucesor + ' (inferencia por capacidad, sin doc oficial)' : '') };
     }
     if (eos && eos.lastOrder) {
       return { estado: 'anunciado', ...CICLO.anunciado,

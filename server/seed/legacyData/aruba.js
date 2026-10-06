@@ -79,6 +79,11 @@ const DATASHEETS = {
   gw9000Spec:  {n:'Serie 9000 — especificaciones (soporte HPE)', url:'https://support.hpe.com/hpesc/public/docDisplay?docId=a00099295en_us&docLocale=en_US', file:'serie-9000-especificaciones.pdf'},
   gw9100:      {n:'Serie 9100 — Hybrid Gateways, QuickSpecs', url:'https://www.hpe.com/us/en/collaterals/collateral.a50006999enw.html', file:'serie-9100-hybrid-quickspecs.pdf'},
   gw7000:      {n:'Serie 7000 — Mobility Controllers, especificaciones (soporte HPE)', url:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', file:'serie-7000-especificaciones.pdf'},
+  // QuickSpecs oficiales de las dos series AOS 8 (2026-10-06), retirados por HPE pero
+  // publicados en psnow para consulta: de ellos salen las cifras, el retiro y las fotos de la
+  // 7200. Traidos por traer-cisco-huawei.yml (la URL de descarga la enlaza la propia pagina).
+  gw7000qs:    {n:'Serie 7000 — QuickSpecs (HPE, retirado)', url:'https://www.hpe.com/psnow/doc/c05272689', file:'serie-7000-quickspecs.pdf'},
+  gw7200qs:    {n:'Serie 7200 — QuickSpecs (HPE, retirado)', url:'https://www.hpe.com/psnow/doc/c05272677', file:'serie-7200-quickspecs.pdf'},
   gw9200Qs:    {n:'Serie 9200 — Campus Gateways, QuickSpecs', url:'https://www.hpe.com/psnow/doc/a50004272enw.html', file:'serie-9200-quickspecs.pdf'},
   gwSoportados:{n:'Gateways soportados en SD-Branch — enumeración oficial', url:'https://arubanetworking.hpe.com/techdocs/central/latest/content/sd-branch/overview/supported_gateways.htm', file:'gateways-soportados-sd-branch.pdf'},
   gw9200:      {n:'Serie 9200 — Campus Gateways, data sheet',    url:'https://www.hpe.com/psnow/doc/PSN1014459233NGEN', file:'serie-9200-campus-gateways.pdf'},
@@ -427,107 +432,135 @@ const MODELS = [
   // cumplen, y solo propone esta linea si nada mas encaja o si se pide expresamente. Sin
   // esa preferencia recomendaba un 7005 para una sucursal de 1.5 Gbps por ser el candidato
   // mas pequeno, que es exactamente el consejo equivocado para un despliegue nuevo.
-  // Linea anterior a los gateways AOS 10, todavia vigente en canal y muy presente en
-  // parque instalado. Se incluye porque una preventa real se cruza con ella
-  // constantemente, y omitirla obligaba a salirse de la herramienta.
+  // Linea anterior a los gateways AOS 10, muy presente en parque instalado. Se incluye
+  // porque una preventa real se cruza con ella constantemente, y omitirla obligaba a
+  // salirse de la herramienta.
+  //
+  // RETIRADA POR HPE, Y LAS CIFRAS DE SU QUICKSPECS (2026-10-06). Las paginas oficiales de
+  // psnow de las dos series («Aruba 7000 Series Mobility Controllers», c05272689, y «HPE Aruba
+  // Networking 7200 Series Mobility Controllers», c05272677) dicen: «RETIRED: This document has
+  // been officially retired, and the base products listed herein are now considered obsolete
+  // and are no longer available for sale». Los cinco sin boletin con fecha van en
+  // RETIRADOS_SIN_FECHA (abajo); 7005, 7008, 7210 y 7220 ya caian por su `lastOrder`. Del
+  // mismo QuickSpecs (serie 7000 de oct-2023, serie 7200 de feb-2024; traidos por
+  // traer-cisco-huawei.yml, copia en public/datasheets/) salen las cifras que corrigen lo que
+  // venia de copias de terceros del DS anterior. Lo que cambia, para poder volver atras:
+  //   7005 y 7008: fw 2 -> 4 Gbps, fwSess 16.384 -> 64K, IPsec null -> 1.024, GRE null -> 256.
+  //   7010 y 7024: fw 4 -> 8 Gbps, fwSess 32.768 -> 64K (7024 tambien IPsec 2.048 y GRE 512).
+  //   7030: ifaces sin puertos de 10G (8 dual-media 1G; su guia de instalacion lo repite).
+  //   7205: fw 15 -> 12 Gbps. 7205/7210/7220/7240XM: clientes exactos (8.192 ... 32.768).
+  //   Cifrado: el de 7005, 7008, 7024, 7210, 7220 y 7240XM, fila a fila.
+  // Eran los conflictos que PENDIENTES.md dejaba al dueño «sin confirmacion»: la confirmacion
+  // es el documento vigente del propio HPE, y entre dos documentos oficiales manda el mas
+  // reciente. La alimentacion sale de la guia de instalacion de cada uno (el 7205 trae una
+  // fuente integrada de 180 W; la de 350 W que decia su spec es la de 7210/7220/7240XM).
   {id:'7005', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal peq (fanless)',
-   fw:2000, clients:1024, aps:16, fwSess:16384, ipsecSess:null, greTuns:null, boostMax:null,
+   psu:{tipo:'adaptador AC-DC de 12 V DC, 2 A, o PoE (PD) por el puerto 0', texto:'Guía de instalación del 7005: «12V DC power interface, supports powering through an 12V DC, 2A AC-to-DC power adapter» y «PoE support on port 0: supports PoE-PD IEEE 802.3af/at»; el QuickSpecs, «Power Source: PoE or 12v - 30W». Son dos formas de alimentarlo y ninguno de los dos documentos dice si admite las dos a la vez, así que la redundancia no consta.'},
+   fw:4000, clients:1024, aps:16, fwSess:65536, ipsecSess:1024, greTuns:256, boostMax:null,
    ifaces:'4x RJ45 10/100/1000 · sin ventilador · alimentable por PoE', hwSku:null,
-   spec:{encTput:'3DES/AES-CBC: 1,2 Gbps · AES-CCM: 1,6 Gbps',
+   spec:{encTput:'3DES: 1,2 Gbps · AES-CBC-256: 1,3 Gbps · AES-CCM: 2,0 Gbps · AES-GCM-256: 1,7 Gbps', mtbf:'323.896 h',
      ruido:'0 dBA (sin ventilador)', watts:'16,6 W máx. (con USB) · PoE PD (puerto 0) o adaptador 12 V 30 W',
      btu:'51,18 BTU/h', dims:'4,1 × 20 × 20 cm', peso:'0,92 kg'},
    // Remanufacturado HPE (2026-09-13, lista del distribuidor): la unidad nueva no está en
    // la lista; el SKU reman sí, con List Price — ver cotizadorCatalog.js.
    skus:[{sku:null,d:'7005 (US / RW)'},{sku:'JW633AR',d:'7005 remanufacturado HPE (Reman)'}],
-   ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
+   ds:'https://www.hpe.com/psnow/doc/c05272689', dsFile:'serie-7000-quickspecs.pdf'},
 
   {id:'7008', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal peq + PoE',
-   fw:2000, clients:1024, aps:16, fwSess:16384, ipsecSess:null, greTuns:null, boostMax:null,
+   redund:false, psu:{tipo:'adaptador externo AC-DC de 54 V DC, 2,78 A (150 W)', texto:'Guía de instalación del 7008: «54V DC power interface, supports powering through an 54V DC, 2.78A AC-to-DC power adapter», con una sola toma DC en la trasera; el QuickSpecs, «Power Source: 150-watt power supply». Una sola fuente; ninguno de los dos documentos publica una segunda entrada.'},
+   fw:4000, clients:1024, aps:16, fwSess:65536, ipsecSess:1024, greTuns:256, boostMax:null,
    ifaces:'8x RJ45 10/100/1000 con PoE y PoE+ integrados · sin ventilador', hwSku:null,
-   spec:{encTput:'3DES/AES-CBC: 1,2 Gbps · AES-CCM: 1,6 Gbps',
+   spec:{encTput:'3DES: 1,2 Gbps · AES-CBC-256: 1,3 Gbps · AES-CCM: 2,0 Gbps · AES-GCM-256: 1,7 Gbps', mtbf:'300.000 h',
      ruido:'0 dBA (sin ventilador)', watts:'126 W máx. con PoE (26 W sin PoE) · fuente 150 W · PoE+ 100 W (8 puertos)',
-     btu:'430 BTU/h', dims:'4,2 × 20,52 × 20,32 cm', peso:'1,0 kg'},
+     btu:'430 BTU/h', dims:'4,2 × 20,32 × 20,32 cm', peso:'1,0 kg'},
    skus:[{sku:null,d:'7008 (US / RW)'},{sku:'JX927AR',d:'7008 remanufacturado HPE (Reman)'}],
-   ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
+   ds:'https://www.hpe.com/psnow/doc/c05272689', dsFile:'serie-7000-quickspecs.pdf'},
 
   // ipsecSess/greTuns completados el 2026-09-13 desde el DS oficial de la serie 7000
   // (tabla "Performance and capacity": 2.048 IPsec, 512 GRE, 2.048 SSL, 4.096 VLANs).
-  // Ese mismo DS declara 8 Gbps de firewall y 64K sesiones — conflicto con el fw:4000 /
-  // fwSess:32768 del catálogo (DS anterior): NO se sobrescribe, queda en PENDIENTES.md.
+  // fw y fwSess, del QuickSpecs vigente de HPE desde el 2026-10-06 (ver la cabecera).
   {id:'7010', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal med',
-   fw:4000, clients:2048, aps:32, fwSess:32768, ipsecSess:2048, greTuns:512, boostMax:null,
+   redund:false, psu:{tipo:'fuente AC integrada de 225 W', volts:'100-240 V AC, 50-60 Hz, 3,5 A máx.', texto:'Guía de instalación del 7010: «equipped with an integrated AC power supply of 225W. The integrated power supply supports 75W of system power and 150W of PoE power». Una sola fuente integrada.'},
+   fw:8000, clients:2048, aps:32, fwSess:65536, ipsecSess:2048, greTuns:512, boostMax:null,
    ifaces:'16x RJ45 10/100/1000 + 2x SFP', hwSku:null,
    spec:{encTput:'3DES: 2,4 Gbps · AES-CBC-256: 2,6 Gbps · AES-CCM: 3,4 Gbps · AES-GCM-256: 3,3 Gbps',
      vlanMax:'4.096', ssl:'2.048 sesiones SSL', mtbf:'232.843 h',
      watts:'190 W máx. (con PoE) · fuente interna · PoE+ 150 W (12 puertos)',
      btu:'300 BTU/h', ruido:'39,8 – 58,6 dBA', dims:'4,42 × 31,75 × 33,7 cm', peso:'3,4 kg'},
    skus:[{sku:null,d:'7010 (US / RW)'},{sku:'JW678AR',d:'7010 remanufacturado HPE (Reman)'}],
-   ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
+   ds:'https://www.hpe.com/psnow/doc/c05272689', dsFile:'serie-7000-quickspecs.pdf'},
 
   {id:'7024', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal med · acceso unificado 24p',
-   fw:4000, clients:2048, aps:32, fwSess:32768, ipsecSess:null, greTuns:null, boostMax:null,
+   redund:false, psu:{tipo:'fuente AC integrada de 580 W', volts:'115-230 V AC, 47-63 Hz, 6,3 A', texto:'Guía de instalación del 7024: «equipped with an integrated AC power supply of 580W. The integrated power supply supports 400W of PoE power and 180W of system power». Una sola fuente integrada.'},
+   fw:8000, clients:2048, aps:32, fwSess:65536, ipsecSess:2048, greTuns:512, boostMax:null,
    ifaces:'24x RJ45 10/100/1000 + 2x SFP+ 10G', hwSku:null,
-   spec:{encTput:'3DES/AES-CBC: 2,4 Gbps · AES-CCM: 3,4 Gbps', mtbf:'311.901 h',
+   spec:{encTput:'3DES: 2,4 Gbps · AES-CBC-256: 2,6 Gbps · AES-CCM: 3,4 Gbps · AES-GCM-256: 3,3 Gbps', mtbf:'311.901 h',
      watts:'450 W máx. (con PoE) · fuente interna · PoE+ 400 W (24 puertos)',
      btu:'1.842 BTU/h', ruido:'34,3 – 71,2 dBA', dims:'4,37 × 44,2 × 31,3 cm', peso:'5,13 kg'},
    skus:[{sku:null,d:'7024 (US / RW)'}],
-   ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
+   ds:'https://www.hpe.com/psnow/doc/c05272689', dsFile:'serie-7000-quickspecs.pdf'},
 
   // ipsecSess/greTuns completados el 2026-09-13 desde el DS oficial de la serie 7000
-  // (4.096 IPsec, 1.024 GRE, 4.096 SSL, 4.096 VLANs). El DS declara 8x combo 1G sin
-  // puertos 10G — el `ifaces` del catálogo dice lo contrario: NO se toca, PENDIENTES.md.
+  // (4.096 IPsec, 1.024 GRE, 4.096 SSL, 4.096 VLANs). Sin puertos de 10G: el QuickSpecs
+  // («10G Ports: N/A») y su guia de instalacion («8 x dual media ports (10/100/1000BASE-T
+  // and 1000BASE-X)») lo dicen los dos (2026-10-06).
   {id:'7030', fam:'gw', legacy:true, rol:'sucursal', serie:'Serie 7000', seg:'Sucursal gde',
+   redund:false, psu:{tipo:'fuente AC integrada de 80 W', volts:'100-240 V AC, 50-60 Hz, 2 A', texto:'Guía de instalación del 7030: «equipped with an integrated AC power supply of 80W». Una sola fuente integrada.'},
    fw:8000, clients:4096, aps:64, fwSess:65536, ipsecSess:4096, greTuns:1024, boostMax:null,
-   ifaces:'8x RJ45 10/100/1000 (combo) + puertos 10G', hwSku:null,
+   ifaces:'8x dual-media (10/100/1000BASE-T o 1000BASE-X por SFP) · sin puertos de 10G', hwSku:null,
    spec:{encTput:'3DES: 2,4 Gbps · AES-CBC-256: 2,6 Gbps · AES-CCM: 4,0 Gbps · AES-GCM-256: 3,4 Gbps',
      vlanMax:'4.096', ssl:'4.096 sesiones SSL', mtbf:'390.679 h',
      watts:'55 W máx. · fuente interna',
      btu:'168 BTU/h', ruido:'29,1 – 57,4 dBA', dims:'4,4 × 30,5 × 21,1 cm', peso:'2,06 kg'},
    skus:[{sku:null,d:'7030 (US / RW)'},{sku:'JW686AR',d:'7030 remanufacturado HPE (Reman)'}],
-   ds:'https://support.hpe.com/hpesc/public/docDisplay?docId=c05330596&docLocale=en_US', dsFile:'serie-7000-especificaciones.pdf'},
+   ds:'https://www.hpe.com/psnow/doc/c05272689', dsFile:'serie-7000-quickspecs.pdf'},
 
   // ─── Serie 7200 · Mobility Controllers de campus (AOS 8) ───────────────────
-  // Sin URL de datasheet oficial confirmada en las fuentes consultadas: `ds` queda en null
-  // y la pagina lo dice, en vez de enlazar una copia de tercero como si fuera oficial.
+  // `ds` es el QuickSpecs oficial de HPE (psnow c05272677, feb-2024), desde el 2026-10-06;
+  // hasta entonces no habia URL oficial confirmada y quedaba en null.
   // fwSess/ipsecSess/greTuns y `spec` completados el 2026-09-13 desde el DS oficial
   // DS_7200Series (tabla "Performance and capacity" + físico/ambiental), obtenido en dos
-  // copias independientes del mismo documento (doble ancla). Conflicto NO aplicado: el DS
-  // declara 12 Gbps de firewall para el 7205 y el catálogo conserva 15 Gbps (PENDIENTES.md).
+  // copias independientes del mismo documento (doble ancla). El 2026-10-06 el QuickSpecs
+  // confirmo los 12 Gbps de firewall del 7205 y se aplicaron (ver la cabecera de la serie 7000).
   {id:'7205', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus med',
-   fw:15000, clients:8000, aps:256, fwSess:1000000, ipsecSess:8192, greTuns:4096, boostMax:null,
+   redund:false, psu:{tipo:'fuente AC integrada de 180 W', volts:'100-240 V AC, 50-60 Hz, 2,2 A', texto:'Guía de instalación del 7205: «equipped with an integrated AC power supply of 180W». Una sola fuente integrada; las «Power Options» del QuickSpecs de la serie 7200 (fuente redundante) son solo para 7210, 7220, 7240, 7240XM y 7280.'},
+   fw:12000, clients:8192, aps:256, fwSess:1000000, ipsecSess:8192, greTuns:4096, boostMax:null,
    ifaces:'2x 10GBASE-X (SFP+) + 4x dual-media (1000BASE-X o 10/100/1000BASE-T)', hwSku:null,
    spec:{encTput:'3DES / AES-CBC-256 / AES-CCM / AES-GCM-256: 5 Gbps',
      vlanMax:'4.096', ssl:'4.096 sesiones SSL', tuneles:'4.096 puertos tunelizados',
-     mtbf:'129.597 h @ 40 °C', watts:'75,2 W máx. · PSU 350 W AC', ruido:'49,0 dBA',
+     mtbf:'129.597 h @ 40 °C', watts:'75,2 W máx. · fuente AC integrada de 180 W', ruido:'49,0 dBA',
      dims:'4,4 × 44,2 × 33,4 cm', peso:'4,95 kg'},
-   skus:[{sku:null,d:'7205 (US / RW)'},{sku:'JW735AR',d:'7205 remanufacturado HPE (Reman)'}], ds:null, dsFile:null},
+   skus:[{sku:null,d:'7205 (US / RW)'},{sku:'JW735AR',d:'7205 remanufacturado HPE (Reman)'}], ds:'https://www.hpe.com/psnow/doc/c05272677', dsFile:'serie-7200-quickspecs.pdf'},
 
   {id:'7210', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus gde',
-   fw:20000, clients:16000, aps:512, fwSess:2015291, ipsecSess:16384, greTuns:8192, boostMax:null,
+   redund:'opcional', psu:{tipo:'una fuente PSU-350-AC de 350 W de serie; admite la segunda (JW657A)', texto:'QuickSpecs de la serie 7200: cada controlador «Includes one 350W AC power supply», y la «Aruba PSU-350-AC 7200 Series 350W AC Power Supply» (JW657A) «May be used as a redundant power supply or field-replaceable spare for 7200 Series»; «Power Options — For 7210, 7220, 7240, 7240XM, 7280 (Min 0 // max 1)».'},
+   fw:20000, clients:16384, aps:512, fwSess:2015291, ipsecSess:16384, greTuns:8192, boostMax:null,
    ifaces:'4x 10GBASE-X (SFP+)', hwSku:null,
-   spec:{encTput:'3DES: 7 Gbps · AES-CBC-256: 7 Gbps · AES-CCM: 6 Gbps · AES-GCM-256: 7 Gbps',
+   spec:{encTput:'3DES: 7 Gbps · AES-CBC-256: 7 Gbps · AES-CCM: 7 Gbps · AES-GCM-256: 7 Gbps',
      vlanMax:'4.096', ssl:'8.192 sesiones SSL', tuneles:'8.192 puertos tunelizados',
      mtbf:'106.536 h @ 40 °C', watts:'110 W máx. · PSU 350 W AC', ruido:'46,9 dBA',
      dims:'4,4 × 44,5 × 44,5 cm', peso:'7,45 kg'},
-   skus:[{sku:null,d:'7210 (US / RW)'},{sku:'JW743AR',d:'7210 remanufacturado HPE (Reman)'}], ds:null, dsFile:null},
+   skus:[{sku:null,d:'7210 (US / RW)'},{sku:'JW743AR',d:'7210 remanufacturado HPE (Reman)'}], ds:'https://www.hpe.com/psnow/doc/c05272677', dsFile:'serie-7200-quickspecs.pdf'},
 
   {id:'7220', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus grande / alta densidad',
-   fw:40000, clients:24000, aps:1024, fwSess:2015291, ipsecSess:24576, greTuns:16384, boostMax:null,
+   redund:'opcional', psu:{tipo:'una fuente PSU-350-AC de 350 W de serie; admite la segunda (JW657A)', texto:'QuickSpecs de la serie 7200: cada controlador «Includes one 350W AC power supply», y la «Aruba PSU-350-AC 7200 Series 350W AC Power Supply» (JW657A) «May be used as a redundant power supply or field-replaceable spare for 7200 Series»; «Power Options — For 7210, 7220, 7240, 7240XM, 7280 (Min 0 // max 1)».'},
+   fw:40000, clients:24576, aps:1024, fwSess:2015291, ipsecSess:24576, greTuns:16384, boostMax:null,
    ifaces:'4x 10GBASE-X (SFP+)', hwSku:null,
-   spec:{encTput:'3DES: 27 Gbps · AES-CBC-256: 24 Gbps · AES-CCM: 22 Gbps · AES-GCM-256: 26 Gbps',
+   spec:{encTput:'3DES: 25 Gbps · AES-CBC-256: 22 Gbps · AES-CCM: 20 Gbps · AES-GCM-256: 26 Gbps',
      vlanMax:'4.096', ssl:'8.192 sesiones SSL', tuneles:'12.288 puertos tunelizados',
      mtbf:'113.751 h @ 40 °C', watts:'125 W máx. · PSU 350 W AC', ruido:'46,9 dBA',
      dims:'4,4 × 44,2 × 40,1 cm', peso:'7,9 kg'},
-   skus:[{sku:null,d:'7220 (US / RW)'},{sku:'JW751AR',d:'7220 remanufacturado HPE (Reman)'}], ds:null, dsFile:null},
+   skus:[{sku:null,d:'7220 (US / RW)'},{sku:'JW751AR',d:'7220 remanufacturado HPE (Reman)'}], ds:'https://www.hpe.com/psnow/doc/c05272677', dsFile:'serie-7200-quickspecs.pdf'},
 
   {id:'7240XM', fam:'gw', legacy:true, rol:'campus', serie:'Serie 7200', seg:'Campus máxima escala',
-   fw:40000, clients:32000, aps:2048, fwSess:2015291, ipsecSess:32768, greTuns:32768, boostMax:null,
+   redund:'opcional', psu:{tipo:'una fuente PSU-350-AC de 350 W de serie; admite la segunda (JW657A)', texto:'QuickSpecs de la serie 7200: cada controlador «Includes one 350W AC power supply», y la «Aruba PSU-350-AC 7200 Series 350W AC Power Supply» (JW657A) «May be used as a redundant power supply or field-replaceable spare for 7200 Series»; «Power Options — For 7210, 7220, 7240, 7240XM, 7280 (Min 0 // max 1)».'},
+   fw:40000, clients:32768, aps:2048, fwSess:2015291, ipsecSess:32768, greTuns:32768, boostMax:null,
    ifaces:'4x 10GBASE-X (SFP+)', hwSku:null,
-   spec:{encTput:'3DES: 29 Gbps · AES-CBC-256: 31 Gbps · AES-CCM: 29 Gbps · AES-GCM-256: 35 Gbps',
+   spec:{encTput:'3DES: 28 Gbps · AES-CBC-256: 30 Gbps · AES-CCM: 29 Gbps · AES-GCM-256: 35 Gbps',
      vlanMax:'4.096', ssl:'8.192 sesiones SSL', tuneles:'16.384 puertos tunelizados',
      mtbf:'116.590 h @ 40 °C', watts:'165 W máx. · PSU 350 W AC', ruido:'54,7 dBA',
      dims:'4,4 × 44,5 × 44,5 cm', peso:'7,45 kg'},
-   skus:[{sku:null,d:'7240XM (US / RW)'}], ds:null, dsFile:null},
+   skus:[{sku:null,d:'7240XM (US / RW)'}], ds:'https://www.hpe.com/psnow/doc/c05272677', dsFile:'serie-7200-quickspecs.pdf'},
 ];
 
 // ── Fin de venta confirmado (mismo patrón que Cisco) ─────────────────────────
@@ -578,9 +611,10 @@ const MODELS = [
 //   · «End of Sale (EOS) External Announcement 7210/7220 Campus Controllers» (Rev4): último
 //     pedido 31-ene-2025, fin de soporte 31-ene-2030. Reemplazo: 9240; para el 7220, 9240 +
 //     licencia de capacidad Silver R8R13AAE (AOS 8).
-// 7010, 7024, 7030, 7205 y 7240XM NO se marcan: no se localizó boletín oficial para ellos
-// (el de «7240» de 2017 es la serie 7240 original, que el 7240XM reemplazó). Siguen como
-// línea anterior hasta que un documento del fabricante diga otra cosa (PENDIENTES.md).
+// 7010, 7024, 7030, 7205 y 7240XM no tienen boletín con fecha (el de «7240» de 2017 es la
+// serie 7240 original, que el 7240XM reemplazó). Hasta el 2026-10-06 seguían como línea
+// anterior; ese día las páginas oficiales de psnow de sus dos series los dieron por retirados
+// (ver la cabecera de la serie 7000), y van en RETIRADOS_SIN_FECHA, debajo.
 const EOS_7000_URL = 'https://asp-documents.arubanetworks.com/portals/0/el/EOS_Notice_7005-7008-Branch-Controllers.pdf';
 const EOS_7200_URL = 'https://asp-documents.arubanetworks.com/portals/0/7210%207220%20External%20EoS%20Updated%20Announcement%20Rev4.pdf';
 const EOL_ANNOUNCED = {
@@ -599,6 +633,19 @@ const EOL_ANNOUNCED = {
 for (const m of MODELS) {
   m.eolAnnounced = EOL_ANNOUNCED[m.id] || null;
 }
+
+// FUERA DE VENTA SIN FECHA (2026-10-06). HPE los da por retirados sin publicar el último día
+// de pedido, así que no son un `eolAnnounced` (que exige `lastOrder`) sino un `eol` binario, el
+// que `FICHA.rango()` lee como «fuera de venta, el catálogo no trae la fecha». La siembra lo
+// aplica (`eolModels`) y avisa si un nombre deja de casar con el catálogo. El valor es la
+// página que lo dice.
+const RETIRADOS_SIN_FECHA = {
+  '7010':   'https://www.hpe.com/psnow/doc/c05272689',
+  '7024':   'https://www.hpe.com/psnow/doc/c05272689',
+  '7030':   'https://www.hpe.com/psnow/doc/c05272689',
+  '7205':   'https://www.hpe.com/psnow/doc/c05272677',
+  '7240XM': 'https://www.hpe.com/psnow/doc/c05272677',
+};
 
 // IDS/IPS Y ESCALA DE HEADEND DE LOS GATEWAYS (2026-09-24, A2 y M8 de la auditoría del
 // 2026-09-17). FUENTE: «EdgeConnect SD-Branch» Validated Solution Guide de HPE (septiembre de
@@ -1313,6 +1360,6 @@ const ACCESSORY_COMPAT = {
 
 module.exports = {
   MODELS, BUNDLES, CARE, CARE_SKU, LICENSES, LICENSES_HA, BW_TIERS, BOOST, FEC_OVERHEAD,
-  SOFTWARE, CENTRAL_TIERS, CENTRAL_POR_SERIE, DATASHEETS, EOL_ANNOUNCED, OS_MATRIX,
+  SOFTWARE, CENTRAL_TIERS, CENTRAL_POR_SERIE, DATASHEETS, EOL_ANNOUNCED, RETIRADOS_SIN_FECHA, OS_MATRIX,
   ARUBA_ACCESSORY_CATALOG, ACCESSORY_COMPAT, ARUBA_SSE, MICROBRANCH_UMBRALES, DTD_LICENSES,
 };
