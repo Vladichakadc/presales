@@ -269,12 +269,27 @@ jobs:
                 'https://carrier.huawei.com/en/products/fixed-network/data-communication/router/NetEngine-8000-Series-Router',
                 'https://carrier.huawei.com/en/products/fixed-network/data-communication/router/NetEngine-8000-Series-Router/NetEngine-8000-M-Series',
               ] },
+              { archivo: 'huawei-carrier-ne8000-x.html', tipo: 'html', para: 'HUAWEI', debeContener: 'NetEngine 8000 X', urls: [
+                'https://carrier.huawei.com/en/products/fixed-network/data-communication/router/NetEngine-8000-Series-Router/NetEngine-8000-X-series',
+              ] },
+              // La serie X tiene ficha propia ademas del folleto (que la publica a 233-303 px):
+              // la dio la busqueda el 2026-10-06; el PDF se descubre en su pagina de documentos.
+              { archivo: 'huawei-ne8000-x-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'b67577cb8f4f4dc68c091d8d9e8fb429', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/b67577cb8f4f4dc68c091d8d9e8fb429',
+              ] },
+              { archivo: 'huawei-ne8000-x-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+                descubrir: { de: 'huawei-ne8000-x-documento.html', material: 'Material/b67577cb8f4f4dc68c091d8d9e8fb429/' } },
+              // Las paginas de serie van en datos del listado, no siempre en un href: se busca la
+              // ruta en el texto, y solo las de las series que el catalogo vende.
               { archivo: 'huawei-series', tipo: 'paginas', para: 'HUAWEI', urls: [],
                 descubrirPiezas: { de: ['huawei-routers-listado.html'], base: 'https://e.huawei.com/en/products/routers',
-                  dominios: ['e.huawei.com'], prefijo: ['en', 'products', 'routers'], max: 40 } },
+                  dominios: ['e.huawei.com'], prefijo: ['en', 'products', 'routers'], max: 40,
+                  solo: ['netengine-ar610', 'netengine-ar650', 'ar5710-s', 'netengine-ar5700', 'netengine-ar6700',
+                    'netengine-ar8000', 'netengine-ar8700', 'netengine-a800', 'ne8000', 'ne8000e'] } },
               { archivo: 'huawei-img', tipo: 'imagenes', para: 'HUAWEI', urls: [],
                 descubrirPiezas: { de: ['huawei-series', 'huawei-ne8000-producto.html', 'huawei-a800-producto.html',
-                  'huawei-ar6700-producto.html', 'huawei-ar8700-producto.html', 'huawei-carrier-ne8000.html'],
+                  'huawei-ar6700-producto.html', 'huawei-ar8700-producto.html', 'huawei-carrier-ne8000.html',
+                  'huawei-carrier-ne8000-x.html'],
                   base: 'https://e.huawei.com/', dominios: ['huawei.com'],
                   contiene: ['/products/', '/productcontenthubdata/', '/productsandsolutions/'], max: 150 } },
               // 2026-10-06 (septima): ARUBA, las figuras de los controladores AOS 8 (pendiente 41).
@@ -434,10 +449,11 @@ jobs:
                   const usados = new Set();
                   for (const ruta of paginas) {
                     const texto = fs.readFileSync(ruta, 'utf8');
-                    const re = esImg ? /(?:https?:)?[/][/][^\x22'\s()<>]+?[.](?:png|jpe?g|webp)/gi : /href=['\x22]([^'\x22<>#?]+)['\x22]/gi;
+                    const re = esImg ? /(?:https?:)?[/][/][^\x22'\s()<>]+?[.](?:png|jpe?g|webp)/gi
+                      : new RegExp('(?:https?:[/][/][A-Za-z0-9.-]+)?[/]' + cfg.prefijo.join('[/]') + '[/][A-Za-z0-9][A-Za-z0-9/-]*', 'g');
                     for (const m of texto.matchAll(re)) {
                       let u;
-                      try { u = new URL(esImg ? m[0] : m[1], cfg.base); } catch (e) { continue; }
+                      try { u = new URL(m[0], cfg.base); } catch (e) { continue; }
                       if (u.protocol !== 'https:' && u.protocol !== 'http:') continue;
                       u.protocol = 'https:';
                       if (!cfg.dominios.some((d) => u.hostname === d || u.hostname.endsWith('.' + d))) continue;
@@ -449,6 +465,7 @@ jobs:
                       } else {
                         const largo = cfg.prefijo.length;
                         if (seg.length < largo + 1 || seg.length > largo + 2 || cfg.prefijo.some((p, i) => seg[i] !== p)) continue;
+                        if (cfg.solo && !cfg.solo.includes(seg[largo])) continue;
                       }
                       if (piezas.has(u.href)) continue;
                       const base = (esImg ? seg.slice(-3).join('__') : seg.slice(cfg.prefijo.length).join('__') + '.html')
@@ -464,7 +481,10 @@ jobs:
                     if (n >= cfg.max) { intentos.push({ url, error: 'pasado el tope de ' + cfg.max + ', no se pide' }); continue; }
                     let res;
                     try {
-                      res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (presales-traer-fuente/1.0)' } });
+                      // Con Referer de su propio sitio: el CDN de carrier.huawei.com niega con 403
+                      // la imagen pedida sin el (corrida 37514205499).
+                      res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (presales-traer-fuente/1.0)',
+                        'Referer': new URL(url).origin + '/' } });
                     } catch (e) { intentos.push({ url, error: String(e.message || e) }); continue; }
                     if (!res.ok) { intentos.push({ url, status: res.status }); continue; }
                     const buf = Buffer.from(await res.arrayBuffer());
