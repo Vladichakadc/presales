@@ -273,12 +273,20 @@ jobs:
                 'https://carrier.huawei.com/en/products/fixed-network/data-communication/router/NetEngine-8000-Series-Router/NetEngine-8000-X-series',
               ] },
               // La serie X tiene ficha propia ademas del folleto (que la publica a 233-303 px):
-              // la dio la busqueda el 2026-10-06; el PDF se descubre en su pagina de documentos.
+              // la dio la busqueda el 2026-10-06. Su pagina de documentos no enlaza un PDF sino
+              // una presentacion, como la A821 E y la A822 E (corrida 37515043606).
               { archivo: 'huawei-ne8000-x-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'b67577cb8f4f4dc68c091d8d9e8fb429', urls: [
                 'https://e.huawei.com/en/documents/products/enterprise-network/b67577cb8f4f4dc68c091d8d9e8fb429',
               ] },
-              { archivo: 'huawei-ne8000-x-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
-                descubrir: { de: 'huawei-ne8000-x-documento.html', material: 'Material/b67577cb8f4f4dc68c091d8d9e8fb429/' } },
+              { archivo: 'huawei-ne8000-x-ds.pptx', tipo: 'pptx', para: 'HUAWEI', debeContener: '[Content_Types].xml', urls: [
+                'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/b67577cb8f4f4dc68c091d8d9e8fb429/M3T1A590N1113914198691180598/NetEngine%208000%20X%20Series%20Router%20Datasheet%20V8R024C10.pptx',
+                'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/b67577cb8f4f4dc68c091d8d9e8fb429/M3T1A590N1113914198691180598/NetEngine%208000%20X%20Series%20Router%20Datasheet%20V8R024C10.pptx',
+              ] },
+              // El estante de fichas AR de e.huawei.com, que nombra otras revisiones de la del
+              // AR610: la vigente publica el AR611 a 293 x 46 px.
+              { archivo: 'huawei-ar-estante.html', tipo: 'html', para: 'HUAWEI', debeContener: 'AR', urls: [
+                'https://e.huawei.com/en/material/bookshelf/bookshelfview/20190907/436e499e649743f1b9c4c633f80797f4',
+              ] },
               // Las paginas de serie van en datos del listado, no siempre en un href: se busca la
               // ruta en el texto, y solo las de las series que el catalogo vende.
               { archivo: 'huawei-series', tipo: 'paginas', para: 'HUAWEI', urls: [],
@@ -292,6 +300,13 @@ jobs:
                   'huawei-carrier-ne8000-x.html'],
                   base: 'https://e.huawei.com/', dominios: ['huawei.com'],
                   contiene: ['/products/', '/productcontenthubdata/', '/productsandsolutions/'], max: 150 } },
+              // 2026-10-06 (octava): ARUBA, la pagina de IDS/IPS del Orchestrator. La auditoria A1
+              // aparto el EC-XS de Dynamic Threat Defense con esta documentacion, y la spec sheet
+              // vigente del EC-XS (a00110177ENW Rev. 3) publica capacidad IDS/IPS: se lee entera
+              // para ver a que numeros de parte se refiere la restriccion.
+              { archivo: 'aruba-orch-ids.html', tipo: 'html', para: 'ARUBA', debeContener: 'EC-XS', urls: [
+                'https://arubanetworking.hpe.com/techdocs/sdwan/docs/orch/configuration/overlays/ids/',
+              ] },
               // 2026-10-06 (septima): ARUBA, las figuras de los controladores AOS 8 (pendiente 41).
               // El portal de documentacion de hardware de HPE Aruba enlaza la guia de instalacion
               // de cada controlador; la del 7024 la dio la busqueda. Las demas se leen en el
