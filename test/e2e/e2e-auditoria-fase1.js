@@ -61,18 +61,29 @@ const wan = (...links) => ({ v: 2, wanLinks: links.map((l, i) => ({ id: i + 1, m
   }
 
   // ── EC-XS con DTD (2026-10-06): lo admite, con su capacidad IDS/IPS como techo ──
+  // El combo lista todos los modelos y marca los que cumplen; los apartados solo se explican
+  // cuando no queda ningún candidato, así que lo que se mira es la marca y la revisión del
+  // diseño que viaja con el BOM.
+  const marcaDe = (id) => page.$eval('#pickModel', (s, v) => {
+    const o = [...s.options].find((x) => x.value === v); return o ? o.textContent : '';
+  }, id);
   {
     const bajo = await cargar({ famSeg: 'ec', users: 8, perUser: 2, selSeguridad: 'dtd',
       wanLinksData: wan({ tipo: 'Banda Ancha', down: 40, up: 10, simetrico: false }) });
-    const opciones = await page.$$eval('#verdict-sel option', (os) => os.map((o) => o.value));
-    t.ok(opciones.includes('EC-XS'), `DTD a 40 Mbps: el EC-XS es candidato (${opciones.join(', ')})`);
-    t.ok(!/Por la capacidad de IDS\/IPS de Dynamic Threat Defense/.test(bajo.verdict), 'y nada lo aparta por IDS/IPS');
-    const alto = await cargar({ famSeg: 'ec', users: 8, perUser: 2, selSeguridad: 'dtd',
+    t.ok(/ · cumple| · recomendado/.test(await marcaDe('EC-XS')), `DTD a 40 Mbps: el EC-XS cumple (${await marcaDe('EC-XS')})`);
+    t.ok(!/\[ROJO\] (Dynamic Threat Defense|IDS\/IPS)/.test(bajo.bom), 'y nada lo marca en rojo por IDS/IPS');
+    const forzado = await cargar({ famSeg: 'ec', users: 8, perUser: 2, selSeguridad: 'dtd', pickModel: 'EC-XS',
+      wanLinksData: wan({ tipo: 'Banda Ancha', down: 40, up: 10, simetrico: false }) });
+    t.ok(/EC-XS con Dynamic Threat Defense: la documentación de HPE exceptúa los de PN 200889 y 200900/.test(forzado.bom),
+      'elegido a mano, el BOM avisa de confirmar el número de parte en un parque instalado');
+  }
+  {
+    await cargar({ famSeg: 'ec', users: 8, perUser: 2, selSeguridad: 'dtd', wanLinksData: wan({ tipo: 'DIA', down: 200 }) });
+    t.ok(!/ · cumple| · recomendado/.test(await marcaDe('EC-XS')), `DTD a 200 Mbps: el EC-XS ya no cumple (${await marcaDe('EC-XS')})`);
+    const forzado = await cargar({ famSeg: 'ec', users: 8, perUser: 2, selSeguridad: 'dtd', pickModel: 'EC-XS',
       wanLinksData: wan({ tipo: 'DIA', down: 200 }) });
-    const ops2 = await page.$$eval('#verdict-sel option', (os) => os.map((o) => o.value));
-    t.ok(!ops2.includes('EC-XS'), `DTD a 200 Mbps: el EC-XS ya no es candidato (${ops2.join(', ')})`);
-    t.ok(/Por la capacidad de IDS\/IPS de Dynamic Threat Defense[^.]*EC-XS[^.]*en línea 300/.test(alto.verdict.replace(/\s+/g, ' ')),
-      'y la ficha dice por qué: su IDS/IPS en línea de 300 Mbps, con la cifra');
+    t.ok(/\[ROJO\] IDS\/IPS insuficiente: EC-XS inspecciona hasta 300 Mbps en línea/.test(forzado.bom.replace(/\s+/g, ' ')),
+      'y elegido a mano, la revisión del diseño lo marca en rojo con la cifra de su spec sheet');
   }
 
   // ── C4 · Escenario E: hub MPLS 1G + DIA 1G, Boost, segmentación, HA ────────
