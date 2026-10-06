@@ -183,14 +183,21 @@ jobs:
               { archivo: 'huawei-a822e-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'b61bc5869a67495888e7b2e4210ebb37', urls: [
                 'https://e.huawei.com/en/documents/products/enterprise-network/b61bc5869a67495888e7b2e4210ebb37',
               ] },
-              { archivo: 'huawei-a822e-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
-                descubrir: { de: 'huawei-a822e-documento.html', material: 'Material/b61bc5869a67495888e7b2e4210ebb37/' } },
+              // La A822 E y la A821 E solo publican su ficha como presentacion (.pptx): la pagina de
+              // documentos no enlaza ningun PDF de ese material (corrida 37405345929). Un .pptx es
+              // un zip, y su indice de contenido es la firma que se exige.
+              { archivo: 'huawei-a822e-ds.pptx', tipo: 'pptx', para: 'HUAWEI', debeContener: '[Content_Types].xml', urls: [
+                'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/b61bc5869a67495888e7b2e4210ebb37/M3T1A590N1144953970340237579/NetEngine%20A822%20E%20Datasheet%20V800R025C00.pptx',
+                'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/b61bc5869a67495888e7b2e4210ebb37/M3T1A590N1144953970340237579/NetEngine%20A822%20E%20Datasheet%20V800R025C00.pptx',
+              ] },
               { archivo: 'huawei-a821e-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: '1ff4ee729369411ba9288d36e86e3474', urls: [
                 'https://e.huawei.com/en/documents/products/enterprise-network/1ff4ee729369411ba9288d36e86e3474',
                 'https://e.huawei.com/en/material/enterprise/1ff4ee729369411ba9288d36e86e3474',
               ] },
-              { archivo: 'huawei-a821e-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
-                descubrir: { de: 'huawei-a821e-documento.html', material: 'Material/1ff4ee729369411ba9288d36e86e3474/' } },
+              { archivo: 'huawei-a821e-ds.pptx', tipo: 'pptx', para: 'HUAWEI', debeContener: '[Content_Types].xml', urls: [
+                'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/1ff4ee729369411ba9288d36e86e3474/M3T1A590N1149651611493585023/NetEngine%20A821%20E%20Datasheet%20V800R025C00.pptx',
+                'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/1ff4ee729369411ba9288d36e86e3474/M3T1A590N1149651611493585023/NetEngine%20A821%20E%20Datasheet%20V800R025C00.pptx',
+              ] },
               { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
                 'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
                 'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
