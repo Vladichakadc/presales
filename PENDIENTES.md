@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-06, séptima entrega (**La línea AOS 8 de Aruba, desde sus documentos oficiales, y el grafo de graphify que avisa cuando está viejo.** Encargo del dueño: «Ejecuta los pendientes y la mejora propuesta, si encuentras más mejoras ejecútalas». **La mejora**: el arranque avisa cuando `graphify-out/graph.json` se hizo sobre otro commit que `HEAD`. **El pendiente 41 se cerró por un camino que no se había probado**: el workflow de transporte trajo desde el portal oficial de HPE Aruba las guías de instalación de seis controladores y, de psnow, los QuickSpecs de las series 7000 y 7200. Los 25 modelos Aruba tienen figura. **Y esos documentos dijeron más**: HPE da por retirada la línea entera («no longer available for sale»), así que 7010, 7024, 7030, 7205 y 7240XM pasan a fuera de venta sin fecha; corrigen cifras que venían de copias de terceros (el 7010 y el 7024 hacen 8 Gbps de firewall, no 4; el 7205, 12 y no 15); y dan la alimentación de ocho de los nueve (Aruba 24/25). Por el camino, un comentario con comillas invertidas que bash ejecutaba dentro de un `node -e`: corregido, y una prueba lo frena en todos los workflows. **Queda una decisión del dueño**: si el cotizador ofrece las unidades Reman de la línea retirada. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
+Última revisión: 2026-10-06, octava entrega (**Las figuras de Huawei sin pérdida, Aruba cotejada contra sus PDF y los pendientes con recomendación, ejecutados.** Encargo del dueño: «Aumenta la calidad de los gráficos de Huawei y ejecuta las mejoras propuestas y ejecuta los pendientes como un arquitecto senior». **Figuras de Huawei**: las 42 estaban en WebP con pérdida sobre imágenes que las fichas ya traen en JPEG (de 32 a 44 dB de PSNR contra el original); ahora son los píxeles exactos de su documento. El F8 pasa a 620 × 767 desde su ficha de 2023, comprobado que es el mismo dibujo, y una figura vertical sube a 260 px de alto en la tarjeta. Se buscaron versiones mayores de las 42 en 238 imágenes de 30 documentos y en las fotos de producto de e.huawei.com: no hay más. **La mejora propuesta**: Aruba cotejada fila a fila contra sus PDF, con la fuente sin fecha retirada; salieron el rango del EC-XS (2-1.000 Mbps), que el EC-XS sí corre IDS/IPS (la auditoría A1 lo había apartado por dos números de parte antiguos), el 9004-LTE sin AOS 8 y las sesiones del 9240. **Pendientes**: H-03 de Huawei, el 16 de Aruba (la política de ciclo de vida no confirma los fines de venta de terceros), las Reman (opción B) y la auditoría de prompts del 2026-10-05. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-06, séptima entrega (**La línea AOS 8 de Aruba, desde sus documentos oficiales, y el grafo de graphify que avisa cuando está viejo.** Encargo del dueño: «Ejecuta los pendientes y la mejora propuesta, si encuentras más mejoras ejecútalas». **La mejora**: el arranque avisa cuando `graphify-out/graph.json` se hizo sobre otro commit que `HEAD`. **El pendiente 41 se cerró por un camino que no se había probado**: el workflow de transporte trajo desde el portal oficial de HPE Aruba las guías de instalación de seis controladores y, de psnow, los QuickSpecs de las series 7000 y 7200. Los 25 modelos Aruba tienen figura. **Y esos documentos dijeron más**: HPE da por retirada la línea entera («no longer available for sale»), así que 7010, 7024, 7030, 7205 y 7240XM pasan a fuera de venta sin fecha; corrigen cifras que venían de copias de terceros (el 7010 y el 7024 hacen 8 Gbps de firewall, no 4; el 7205, 12 y no 15); y dan la alimentación de ocho de los nueve (Aruba 24/25). Por el camino, un comentario con comillas invertidas que bash ejecutaba dentro de un `node -e`: corregido, y una prueba lo frena en todos los workflows. **Queda una decisión del dueño**: si el cotizador ofrece las unidades Reman de la línea retirada. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
 
 Revisión anterior: 2026-10-06, sexta entrega (**Los pendientes de graphify, ejecutados, y medido qué lee el grafo.** Encargo del dueño: «Ejecuta todos los pendientes y confírmame si el grafo ya está leyendo todo el proyecto». **No lo lee todo: 234 de 604 archivos versionados**, todo el código JS y el markdown por su estructura; las 16 páginas HTML y los 14 workflows solo entran con la pasada semántica, que es decisión del dueño por su coste. **El arranque comprueba la CLI de graphify** contra la versión revisada y dice el comando fijado. **PDF4me no está resuelto**: sus herramientas se listan, pero al usarlas piden volver a iniciar sesión. Lo de Huawei sigue bloqueado por el fabricante y por la cuenta. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
 
@@ -552,7 +554,7 @@ decisión del dueño o el datasheet de Huawei (pendiente 14).
 | Etapa | Qué cierra | Estado |
 |---|---|---|
 | H1 | **Hecha (2026-09-29).** `public/js/huawei-motor.js` con `evaluar()` y `licencias()`: página y BOM consumen el mismo resultado (H-08, H-09). Contraste `huawei` con 6 escenarios que las correcciones no tocan, más 2 afirmaciones conducidas de lo que sí cambia; 26 unitarias en `test/huawei-motor.test.js`. Primer caso que conduce esta pantalla (estaba «sin conducir»). **Salió de paso un defecto propio**: ocho AR5710-S publican la misma cifra y el elegido dependía del orden en que la API sirve el catálogo; ahora el desempate es determinista | hecha |
-| H2 | **Hecha en parte.** SD-WAN y UTM fijan piso de capa `typ` (H-01, antes 2,1x corto) y la pantalla dice que la capa subió; UTM declara que no hay cifra de inspección y pide PoC (H-02). **Sigue abierto H-03**: el ×2 bidireccional por defecto no tiene fuente para la serie AR; no se cambia sin el datasheet | en parte |
+| H2 | **Hecha en parte.** SD-WAN y UTM fijan piso de capa `typ` (H-01, antes 2,1x corto) y la pantalla dice que la capa subió; UTM declara que no hay cifra de inspección y pide PoC (H-02). ~~Sigue abierto H-03~~ **H-03 cerrado el 2026-10-06**: las seis fichas AR dicen de sus cifras SD-WAN e IPsec que son «combined total of traffic in inbound and outbound directions»; el ×2 se queda y la traza cita con qué se respalda en cada capa (`HuaweiMotor.respaldoBidireccional`) | hecha |
 | H3 | **Hecha (2026-09-30).** Selector de plataforma `#platSeg` (NetEngine AR · A800 E · NE8000) elegido antes que el caudal: solo compiten los modelos de esa línea, y lo que no aplica (SD-WAN, UTM, WAC, PoE, 4G/5G, Wi-Fi, LAN en transporte; FlexE en AR) se oculta con `data-inactivo`, conserva su valor y sale del cálculo y del enlace. FlexE pasa a dato del modelo (`flexe: true` solo en el A821 E, que lo publica); el resto es «no consta», no se aparta y va detrás del confirmado. El modo «Nodo de núcleo» se retiró y los enlaces y perfiles viejos con `modeSeg=core` se traducen a NE8000. Dos escenarios de la línea base del contraste (2 y 6 Gbps de reenvío) salieron de ella a propósito y quedan como afirmaciones del cambio. TPM queda fuera: la pantalla no lo pide como requisito | hecha |
 | H4 | **Hecha en parte.** BOM con papel por pieza: alternativas de MPU y fuente en una línea «elegir una», 5G y WSIC fuera si no se piden, doble fuente x2, ópticas en una línea a elegir (H-06, H-07 sin inventar código). **HA 1+1 hecha (H-12, 2026-09-29)**: `#chkHa` (repone desde el enlace compartido y viaja como dos equipos al cotizador, conducido en el contraste `huawei`) cotiza dos equipos por sitio, cada uno al caudal completo (suma disponibilidad, no capacidad), y «misión crítica» sin HA lo advierte. **Salió de paso** que SnS se cotizaba dos veces (licencia y soporte). **Capa comercial hecha (H-13, 2026-09-29):** plazo de 1/3/5 años (`#anios`, el texto de cada suscripción dice el término real), precio de referencia del equipo tomado del cotizador (13 de los 40 modelos; el resto sale «consultar»), simulador de precio neto, TCO **declarado parcial** (solo el equipo tiene precio; licencias, suscripciones y soporte van «consultar») y perfiles multi-sede con consolidado. **Ópticas por enlace hechas (H-07, 2026-09-29):** cada módulo se declara (familia, modelo, cantidad por equipo), viaja en el enlace compartido (`#opticasData`) y entra al BOM con su código; una fila que ya no encaja tras cambiar de equipo sale como inválida, no se descarta. **Sigue sin existir la matriz de compatibilidad por chasis y versión de VRP** (el catálogo solo respalda la familia), y la pantalla lo dice | **hecha salvo datos** |
 | H5 | Datos: 27 de 40 modelos no casan con el cotizador, M14 incoherente (cerrado el 2026-10-02 con su ficha oficial, como las del NE8000 M8/F8: 7,2 Tbps con IPU-3T6), el tope de túneles y sesiones por modelo (H-10, H-14; **H-11 declarado en pantalla el 2026-09-29**: el hub muestra cuántos túneles pide y que el catálogo no trae el tope, sin apartar a nadie; el filtro ya existe y se activa solo cuando un modelo traiga `tuneles`; las sesiones no se piden porque exigirían usuarios por sede) | bloqueado en parte por la cuenta Huawei (pendiente 14) |
@@ -986,10 +988,10 @@ Cómo se decidió (registro del razonamiento original):
    agregación/core ordena por `cap` y la «Interface capacity» es agregación estadística
    sobresuscrita. Quedó documentada en la cabecera de `nokia.js`.
 
-**Aruba — un campo, encontrado el 2026-09-10 al ampliar el catálogo EdgeConnect** (ver
-*Cerrado recientemente*). El QuickSpecs oficial vigente (v18, 06-jul-2026) contradice el
-`wanMax` de EC-XS con un solo documento — por debajo del doble anclaje que esta tabla exige
-antes de pisar un dato existente — así que se deja sin tocar.
+**~~Aruba — un campo, encontrado el 2026-09-10 al ampliar el catálogo EdgeConnect~~ Resuelto
+(2026-10-06)**: el segundo documento existía y estaba ya en `public/datasheets/`, la spec sheet
+del propio EC-XS (a00110177ENW Rev. 3), que publica también «2 to 1000 Mbps». Con el doble
+anclaje, `wanMax` pasa a 1.000. Ver *Cerrado recientemente*.
 
 | Modelo | Campo | Catálogo | Ficha oficial |
 |---|---|---|---|
@@ -1279,7 +1281,13 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     modelos. Cómo cerrarlo: desde una máquina con acceso, abrir las URL de arriba, confirmar
     el texto exacto y transcribirlo a `redund`/`psu` en `fortinet.js` con el mismo cuidado que
     Huawei — cita literal, nunca inferido del tamaño o la gama del equipo.
-16. **Señales de fin de venta de terceros en EC-L-H y EC-XS (2026-09-13).** Al verificar
+16. **~~Señales de fin de venta de terceros en EC-L-H y EC-XS (2026-09-13)~~ Resuelto
+    (2026-10-06): no se confirman.** La Product Lifecycle Policy oficial de EdgeConnect (edición
+    del 12-feb-2026, traída por `traer-cisco-huawei.yml`, que esta vez sí llegó) declara fin de
+    venta solo del EC-US y del EC-XL-H, y del EC-XS retira únicamente la versión de 4 GB (PN 200889
+    y 200900, en 2016). No nombra el EC-L-H. Es posterior a las fechas de terceros y sí trae el
+    anuncio de junio de 2025 del EC-XL-H, así que ninguno de los dos se marca. Lo que sigue es
+    como estaba. Al verificar
     las fechas oficiales del EC-XL, los verificadores de ciclo de vida de terceros
     (router-switch.com, layer23-switch.com) daban también fin de venta a **EC-L-H
     (JZ878A, EoS 2025-12-31)** y **EC-XS (JM962A, EoS 2026-01-31)**. Ninguna de las dos
@@ -1660,7 +1668,12 @@ día (ver *Cerrado recientemente*). Queda lo que ninguna comprobación puede cer
 <https://claude.ai/artifact/Sw97q5rDmJ5KJCYbB2PWXJ>, que su dueño comparte), con los pasos, lo
 que ya se comprobó y lo que cuesta cada opción.
 
-- **Qué hunks entran de la auditoría de prompts del 2026-10-05** (`docs/prompt-audit-2026-10-05/`).
+- ~~**Qué hunks entran de la auditoría de prompts del 2026-10-05**~~ **Hecho el 2026-10-06**, con
+  el encargo del dueño de ejecutar los pendientes: el arreglo del `.txt` y el log de tokens entraron
+  con su prueba, y las seis frases de `CLAUDE.md` se corrigieron a mano porque el archivo había
+  cambiado. **Siguen como propuesta del dueño** las dos sin hunk (adelgazar `CLAUDE.md` y que el
+  contraste determinista sustituya al modelo con CSV y XLSX) y la migración de modelo de la
+  sincronización. Lo que decía este punto: (`docs/prompt-audit-2026-10-05/`).
   Diez hunks en tres archivos, sin aplicar; `git apply --check` confirma que aplican limpios sobre
   `738aa80` y con ellos pasan las 779 pruebas. Tres decisiones distintas: el `.txt` de la
   sincronización (un fallo real, con su prueba), el log de tokens por análisis, y seis frases de
@@ -1717,7 +1730,10 @@ que ya se comprobó y lo que cuesta cada opción.
   **Hecho el 2026-10-02: opción B**, la recomendada, con el encargo del dueño de ejecutar los
   pendientes. Volver a la regla anterior es la opción A del documento de decisiones. Ver
   *Cerrado recientemente*.
-- **¿Ofrece el cotizador las unidades remanufacturadas de HPE de la línea AOS 8?** (2026-10-06).
+- ~~**¿Ofrece el cotizador las unidades remanufacturadas de HPE de la línea AOS 8?**~~ **Hecho el
+  2026-10-06: opción B**, la recomendada, con el encargo del dueño de ejecutar los pendientes (ver
+  *Cerrado recientemente*). La excepción es de datos: la fila tiene que citar un SKU `…AR` que la
+  lista versionada vende. Lo que decía este punto (2026-10-06):
   La lista del distribuidor trae con List Price las Reman (SKU `…AR`) de 7005, 7008, 7010, 7030,
   7205, 7210 y 7220, y el cotizador las tenía como líneas «(Reman)». La regla de fuera de venta
   casa por modelo, así que oculta la Reman cuando se retira la unidad nueva: pasaba ya con 7005,
@@ -1748,6 +1764,60 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Las figuras de Huawei sin pérdida, Aruba contra sus PDF, y los pendientes con recomendación (2026-10-06, octava entrega)
+
+Encargo del dueño: «Aumenta la calidad de los gráficos de Huawei y ejecuta las mejoras propuestas y
+ejecuta los pendientes como un arquitecto senior».
+
+- **Lo que se midió antes de tocar nada.** En el navegador, la mayoría de las figuras de Huawei se
+  ven bien a tamaño de tarjeta. Lo que fallaba era otra cosa:
+  - **Las 42 estaban en WebP con pérdida**, sobre imágenes que las fichas ya traen en JPEG: una
+    segunda pérdida. Medido contra el original, entre 32 y 44 dB de PSNR; los rótulos de puertos
+    de la AR5710-S8T2S, a 32,5 dB, salían emborronados.
+  - **Las verticales se pintaban en una franja**: el F8 a 121 × 150 en una tarjeta de 700.
+- **Lo que se hizo.**
+  - Cada figura son ahora **los píxeles exactos de la imagen incrustada en su documento**,
+    compuesta sobre blanco con su `/SMask` y deshaciendo el `/Matte` (color premultiplicado,
+    ISO 32000, 11.6.5.3). Se comprobó píxel a píxel al guardarla. Pesan 3,1 MB en vez de 1,2, y la
+    tarjeta carga una sola cada vez. La prueba exige `VP8L` y se puso en rojo guardando una con
+    pérdida.
+  - **El F8 pasa a 620 × 767** desde su ficha de marzo de 2023: es el mismo dibujo que la de
+    febrero de 2025 rotula «F8(AC)» a 296 px (reducido, correlaciona 0,975). Se sirve la variante
+    AC, y el pie lo dice.
+  - **Una figura más alta que ancha sube su tope de 150 a 260 px** en la tarjeta (`ficha.js`). Lo
+    comparten todos los dimensionadores; la e2e de Huawei lo comprueba con el F8 y el M1A apaisado,
+    y se puso en rojo quitando la regla.
+- **Lo que se buscó y no existe.** Versiones mayores del mismo dibujo de las otras 41, entre 238
+  imágenes de 30 documentos (incluida la ficha `.pptx` de la serie X, que las publica más pequeñas
+  que el folleto) y las fotos de las páginas de producto de e.huawei.com y carrier.huawei.com. Esas
+  fotos son renders en perspectiva, de grupo o sin modelo identificable (la de la serie AR610
+  dibuja un equipo con cuatro antenas que no es el AR611), y usarlas sería poner una «parecida».
+  El workflow de transporte aprendió a descubrir las páginas de serie y bajar sus imágenes, solo de
+  dominios de Huawei y validadas por su firma; carrier.huawei.com pedía un `Referer`.
+- **La mejora propuesta: Aruba contra sus PDF oficiales.** Los nueve EdgeConnect contra el
+  QuickSpecs v18 y la spec sheet del EC-XS; los gateways 9000, 9100 y 9200 contra sus fichas.
+  Cuatro diferencias, corregidas con el documento:
+  - **EC-XS: rango WAN de 2 a 1.000 Mbps**, no 200. Era el conflicto abierto desde el 2026-09-10:
+    el segundo documento estaba ya en `public/datasheets/`.
+  - **EC-XS: Dynamic Threat Defense sí corre.** La auditoría A1 lo apartó entero; leída entera, la
+    documentación de IDS/IPS del Orchestrator solo exceptúa los PN 200889 y 200900, revisiones de
+    2016. El filtro binario pasa a ser su capacidad publicada (300 Mbps en línea) como techo duro,
+    con un aviso de confirmar el PN en un parque instalado. Los ocho contrastes siguen sin
+    discrepancias, y la e2e se puso en rojo quitando el filtro.
+  - **9004-LTE: no corre AOS 8** («Not supported»), y el catálogo le daba 32 APs.
+  - **9240: 4M sesiones y 32K túneles IPsec**, que estaban en `null`.
+  - La fuente «Páginas de producto», sin fecha, se sustituye por los documentos cotejados.
+- **Pendientes ejecutados.**
+  - **H-03 de Huawei**: el ×2 bidireccional, respaldado por las notas al pie de las fichas AR.
+  - **Pendiente 16 de Aruba**: la Product Lifecycle Policy de EdgeConnect llegó por el workflow y
+    no confirma los fines de venta de terceros del EC-L-H y el EC-XS.
+  - **Reman, opción B**: el cotizador sigue ofreciendo las siete Reman de la línea AOS 8 que la
+    lista vende, por SKU y no por texto.
+  - **Auditoría de prompts del 2026-10-05**: el `.txt` de la sincronización, el log de tokens y
+    seis frases de `CLAUDE.md` que el código contradecía.
+- **Verificado**: 828 pruebas, `auditar` sin avisos, arranque en producción con `[seed]`, puerta
+  cerrada, 17/17 pantallas, los ocho contrastes uno a uno y la batería e2e.
 
 ### La línea AOS 8 de Aruba desde sus documentos oficiales, y el grafo que avisa cuando está viejo (2026-10-06, séptima entrega)
 
