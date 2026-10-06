@@ -307,6 +307,12 @@ jobs:
               { archivo: 'aruba-orch-ids.html', tipo: 'html', para: 'ARUBA', debeContener: 'EC-XS', urls: [
                 'https://arubanetworking.hpe.com/techdocs/sdwan/docs/orch/configuration/overlays/ids/',
               ] },
+              // Y la politica de ciclo de vida de EdgeConnect (pendiente 16 de «Datos por confirmar»):
+              // terceros dan fin de venta al EC-L-H y al EC-XS, y el 2026-09-16 este PDF dio 403.
+              // Vive en el mismo techdocs que ya sirvio el Hardware Reference desde Actions.
+              { archivo: 'aruba-ec-ciclo-de-vida.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+                'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/docs/eula/EC_LifecyclePolicy_latest.pdf',
+              ] },
               // 2026-10-06 (septima): ARUBA, las figuras de los controladores AOS 8 (pendiente 41).
               // El portal de documentacion de hardware de HPE Aruba enlaza la guia de instalacion
               // de cada controlador; la del 7024 la dio la busqueda. Las demas se leen en el
