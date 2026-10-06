@@ -16,7 +16,7 @@ delete process.env.ANTHROPIC_API_KEY;
 const { ROLES } = require('../server/usuarios');
 const { tipoPorFirma } = require('../server/services/firmaArchivo');
 const {
-  analyzeCatalog, cambiosDeRespuesta, SinClave, ClaveInvalida, LimiteIA, SinSaldo, RechazoIA,
+  analyzeCatalog, cambiosDeRespuesta, bloqueAdjunto, SinClave, ClaveInvalida, LimiteIA, SinSaldo, RechazoIA,
   RespuestaCortada, errorDeIA,
 } = require('../server/services/aiSync');
 
@@ -119,4 +119,14 @@ test('la firma del contenido decide el tipo, no la extension ni el mimetype', ()
   assert.strictEqual(tipoPorFirma(zip, 'matrix.pdf'), null);
   assert.strictEqual(tipoPorFirma(binario, 'matrix.pdf'), null);
   assert.strictEqual(tipoPorFirma(Buffer.alloc(0), 'vacio.pdf'), null);
+});
+
+test('un .txt viaja como documento de texto, no como base64 con media_type de texto', () => {
+  // La API solo acepta base64 con application/pdf; un texto en base64 con text/plain se
+  // rechazaba y el panel mostraba un error genérico para todo .txt subido.
+  const txt = bloqueAdjunto({ tipo: 'txt', buffer: Buffer.from('FortiGate 60F  10 Gbps') });
+  assert.deepStrictEqual(txt.source, { type: 'text', media_type: 'text/plain', data: 'FortiGate 60F  10 Gbps' });
+  const pdf = bloqueAdjunto({ tipo: 'pdf', buffer: Buffer.from('%PDF-1.7') });
+  assert.strictEqual(pdf.source.type, 'base64');
+  assert.strictEqual(pdf.source.media_type, 'application/pdf');
 });

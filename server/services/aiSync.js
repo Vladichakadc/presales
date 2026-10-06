@@ -203,6 +203,16 @@ function textoDelAdjunto(file) {
   return null;
 }
 
+// El adjunto como bloque `document`. Un PDF va en base64; un texto plano no: la API solo
+// acepta base64 con media_type application/pdf, y el texto va como fuente `text` con su
+// contenido tal cual (BetaBase64PDFSource y BetaPlainTextSource en los tipos del SDK).
+function bloqueAdjunto(file) {
+  if (file.tipo === 'txt') {
+    return { type: 'document', source: { type: 'text', media_type: 'text/plain', data: file.buffer.toString('utf8') } };
+  }
+  return { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: file.buffer.toString('base64') } };
+}
+
 async function analyzeCatalog(vendor, catalogData, file) {
   const anthropic = anthropicCliente();
   const { equipment, licenses, supportTiers, parts } = catalogData;
@@ -225,14 +235,7 @@ async function analyzeCatalog(vendor, catalogData, file) {
     if (hoja !== null) {
       contenido.push({ type: 'text', text: `CONTENIDO DEL EXCEL/CSV ADJUNTO:\n${hoja}` });
     } else {
-      contenido.push({
-        type: 'document',
-        source: {
-          type: 'base64',
-          media_type: file.tipo === 'txt' ? 'text/plain' : 'application/pdf',
-          data: file.buffer.toString('base64'),
-        },
-      });
+      contenido.push(bloqueAdjunto(file));
     }
     contenido.push({
       type: 'text',
@@ -272,11 +275,15 @@ async function analyzeCatalog(vendor, catalogData, file) {
     console.error('[AI Sync] Error llamando a Claude:', err);
     throw errorDeIA(err);
   }
+  // Lo que costó el análisis, en el log del servicio: sin esta línea no se sabe si la caché
+  // del catálogo se aprovecha ni cuánto pesa cada documento.
+  const u = response.usage || {};
+  console.log(`[AI Sync] ${vendor}: ${u.input_tokens || 0} tokens de entrada (+${u.cache_read_input_tokens || 0} leídos de caché, ${u.cache_creation_input_tokens || 0} escritos), ${u.output_tokens || 0} de salida`);
   // Fuera del try: un rechazo es un error propio y errorDeIA lo aplanaría en uno genérico.
   return cambiosDeRespuesta(response);
 }
 
 module.exports = {
-  analyzeCatalog, cambiosDeRespuesta, SinClave, ClaveInvalida, LimiteIA, SinSaldo, RechazoIA,
+  analyzeCatalog, cambiosDeRespuesta, bloqueAdjunto, SinClave, ClaveInvalida, LimiteIA, SinSaldo, RechazoIA,
   RespuestaCortada, errorDeIA, ESQUEMA_CAMBIOS,
 };
