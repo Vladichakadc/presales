@@ -198,6 +198,43 @@ jobs:
                 'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/1ff4ee729369411ba9288d36e86e3474/M3T1A590N1149651611493585023/NetEngine%20A821%20E%20Datasheet%20V800R025C00.pptx',
                 'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/1ff4ee729369411ba9288d36e86e3474/M3T1A590N1149651611493585023/NetEngine%20A821%20E%20Datasheet%20V800R025C00.pptx',
               ] },
+              // 2026-10-06 (noche): las descripciones de hardware de support.huawei.com, que dicen cuantas
+              // fuentes vienen de serie y que modulo usa cada chasis, y la capacidad bidireccional de
+              // la A800 E y el consumo por variante de las NE8000 M1. Primera tanda: paginas conocidas,
+              // tambien para descubrir en su indice los enlaces a las de los demas modelos.
+              { archivo: 'huawei-hw-ar6700-serie.html', tipo: 'html', para: 'HUAWEI', debeContener: 'AR6710', urls: [
+                'https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3aeeb6f6',
+              ] },
+              { archivo: 'huawei-hw-ar6710-h.html', tipo: 'html', para: 'HUAWEI', debeContener: 'AR6710-H4T4X2Y7', urls: [
+                'https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3e859eec/ar6710-h4t4x2y7',
+              ] },
+              { archivo: 'huawei-hw-ar-fuentes.html', tipo: 'html', para: 'HUAWEI', debeContener: 'PAC', urls: [
+                'https://support.huawei.com/enterprise/en/doc/EDOC1100213474/ab8a01a0/power-supplies',
+              ] },
+              { archivo: 'huawei-hw-ar5710-s8t2x.html', tipo: 'html', para: 'HUAWEI', debeContener: 'AR5710-S8T2X', urls: [
+                'https://support.huawei.com/enterprise/en/doc/EDOC1100213474/83b51c8e/ar5710-s8t2x',
+              ] },
+              { archivo: 'huawei-hw-ar-pdc240.html', tipo: 'html', para: 'HUAWEI', debeContener: 'PDC240', urls: [
+                'https://support.huawei.com/enterprise/en/doc/EDOC1100213474/b0b2d650/pdc240s12-cn-function-module-dc-psu-pdc240s12-cn-240w-dc-power-module',
+              ] },
+              { archivo: 'huawei-hw-a821e.html', tipo: 'html', para: 'HUAWEI', debeContener: 'A821', urls: [
+                'https://support.huawei.com/enterprise/en/doc/EDOC1100382345/741ce6d4/netengine-a821-e',
+              ] },
+              { archivo: 'huawei-hw-ne8000-m1c.html', tipo: 'html', para: 'HUAWEI', debeContener: 'M1C', urls: [
+                'https://support.huawei.com/enterprise/en/doc/EDOC1100410973/3a272bf2/netengine-8000-m1c',
+              ] },
+              { archivo: 'huawei-hw-ne8000-m6.html', tipo: 'html', para: 'HUAWEI', debeContener: 'M6', urls: [
+                'https://support.huawei.com/enterprise/en/doc/EDOC1100410973/374d9a7',
+              ] },
+              { archivo: 'huawei-hw-ne8000-m1d.html', tipo: 'html', para: 'HUAWEI', debeContener: 'M1D', urls: [
+                'https://support.huawei.com/enterprise/en/doc/EDOC1100382052/a443be51/netengine-8000-m1d',
+              ] },
+              { archivo: 'huawei-hw-ne8000-m1a-spec.html', tipo: 'html', para: 'HUAWEI', debeContener: 'M1A', urls: [
+                'https://support.huawei.com/enterprise/en/doc/EDOC1100149051/ffddecf7/technical-specifications',
+              ] },
+              { archivo: 'huawei-hw-ne8000-m1a-r23.html', tipo: 'html', para: 'HUAWEI', debeContener: 'M1A', urls: [
+                'https://support.huawei.com/enterprise/en/doc/EDOC1100382050/c4a47481/dpd63-8-8-dc-pdb',
+              ] },
               { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
                 'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
                 'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
