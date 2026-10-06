@@ -1765,7 +1765,10 @@ ejecútalas».
   navegador. `traer-cisco-huawei.yml` (rama de transporte) trajo:
   - el índice del portal de documentación de hardware de HPE Aruba, que enlaza una página por
     controlador; cada página enlaza su guía de instalación, y el workflow pide el PDF que la página
-    enlaza (`descubrirEnlace`), con la del 7024 como control;
+    enlaza (`descubrirEnlace`), con la del 7024 como control. Solo pide enlaces de
+    `arubanetworks.com` y `hpe.com`, porque la página es contenido de fuera y el ejecutor tiene
+    escritura. El portal los enlaza por `http`, así que el workflow los pide antes por `https`, y
+    las seis guías llegaron así con los mismos bytes (corrida `37511306029`);
   - las páginas de psnow de las series 7000 y 7200, y de ellas los QuickSpecs (`downloadDoc/...`),
     que un `fetch` normal descarga desde Actions.
 
