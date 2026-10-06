@@ -103,6 +103,10 @@
 .ficha-vista{margin:0 0 12px;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:var(--card)}
 .ficha-vista-img{display:flex;align-items:center;justify-content:center;padding:10px 12px 6px;min-height:96px;position:relative}
 .ficha-vista-img img{max-width:100%;max-height:150px;object-fit:contain;display:block;cursor:zoom-in}
+/* Un chasis vertical (el NetEngine 8000 F8, la serie X) a 150 px de alto es una franja de
+   120 px de ancho en una tarjeta de 700: el tope de 150 px está pensado para paneles de 1U.
+   Las figuras más altas que anchas lo suben a 260 (2026-10-06); nunca pasan de su tamaño. */
+.ficha-vista-img img.ficha-vista-alta{max-height:260px}
 /* Lupa de la tarjeta gráfica (plan 19, 2026-09-18, petición del dueño): la tarjeta
    sirve la foto a 150 px de alto; la lupa la trae al frente a su RESOLUCIÓN NATURAL
    (los webp del repo son los originales extraídos de los documentos oficiales). El
@@ -685,6 +689,11 @@
     const vistaNodo = document.getElementById(cid + '-vista');
     if (vistaNodo) {
       const imgNodo = vistaNodo.querySelector('img');
+      // Cada cara se mide al cargar: la trasera puede ser apaisada y la frontal no.
+      const medir = () => {
+        if (imgNodo && imgNodo.naturalWidth) imgNodo.classList.toggle('ficha-vista-alta', imgNodo.naturalHeight > imgNodo.naturalWidth);
+      };
+      if (imgNodo) { imgNodo.addEventListener('load', medir); if (imgNodo.complete) medir(); }
       vistaNodo.querySelectorAll('.ficha-vista-tab').forEach((tb) => {
         tb.addEventListener('click', () => {
           const cual = tb.dataset.vista;

@@ -108,6 +108,28 @@ async function mirarFigura(page) {
   t.ok(quitado && !hueco.hay && /Sin foto oficial/.test(hueco.vacia),
     'un modelo sin figura oficial DECLARA el hueco en vez de enseñar la de un hermano de serie');
 
+  // UN CHASIS VERTICAL NO SE QUEDA EN UNA FRANJA (2026-10-06). El tope de 150 px de alto es
+  // para paneles de 1U; el F8 (620 × 767 desde su ficha de 2023) a ese tope medía 121 px de
+  // ancho. Las figuras más altas que anchas suben a 260, y las apaisadas no cambian.
+  const pintada = async () => page.evaluate(() => {
+    const i = globalThis.document.querySelector('#verdict .ficha-vista img');
+    const r = i ? i.getBoundingClientRect() : { width: 0, height: 0 };
+    return { natural: i ? [i.naturalWidth, i.naturalHeight] : [0, 0], alto: Math.round(r.height), alta: !!(i && i.classList.contains('ficha-vista-alta')) };
+  });
+  await trasNavegar(page, () => page.goto(BASE + '/dimensionador-huawei-netengine.html?bw=10&platSeg=ne8000', { waitUntil: 'domcontentloaded' }), { selector: '#verdict-sel' });
+  await asentar(page);
+  await page.selectOption('#verdict-sel', 'NE8000 F8');
+  await asentar(page);
+  await mirarFigura(page);
+  const f8 = await pintada();
+  t.ok(f8.natural[0] === 620 && f8.natural[1] === 767, `el F8 sirve la figura de 620 × 767 de su ficha de 2023 (${f8.natural.join(' × ')})`);
+  t.ok(f8.alta && f8.alto > 150 && f8.alto <= 260, `y en la tarjeta pasa del tope de 150 px de alto (${f8.alto} px)`);
+  await page.selectOption('#verdict-sel', 'NE8000 M1A');
+  await asentar(page);
+  await mirarFigura(page);
+  const m1a = await pintada();
+  t.ok(!m1a.alta && m1a.alto <= 150, `un panel apaisado (M1A) sigue en su tope de 150 px (${m1a.alto} px)`);
+
   await browser.close();
   process.exit(t.resumen('e2e-huawei-vistas'));
 })().catch((e) => { console.error('ERROR E2E:', e.message); process.exit(2); });
