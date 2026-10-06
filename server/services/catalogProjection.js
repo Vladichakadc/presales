@@ -87,7 +87,7 @@ function skusVendiblesAruba() {
       const c = linea.split(',');
       if (c.length >= 6 && c[0] && Number(c[3]) > 0 && c[c.length - 1].trim() !== 'ES') skusListaAruba.add(c[0].trim());
     }
-  } catch (e) { /* sin lista, ninguna Reman se salva: falla cerrado */ }
+  } catch { /* sin lista, ninguna Reman se salva: falla cerrado */ }
   return skusListaAruba;
 }
 function remanVendible(vendorCode, spec) {
