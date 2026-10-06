@@ -117,5 +117,16 @@ el sello `.graphify_version` de esta carpeta: si falta, dice el comando fijado; 
 avisa. No instala nada. Lo guarda `test/graphify-cli-hook.test.js` con un `graphify` falso en el
 `PATH`.
 
+**Y avisa cuando el grafo es de otro commit** (2026-10-06). graphify guarda en `graph.json` el
+commit sobre el que se hizo (`built_at_commit`), y su propio aviso de grafo viejo vive en el modo
+siempre activo, que aquí no se instaló. El arranque compara ese commit con `HEAD` y, si cambió algún
+archivo, dice cuántos y da el comando: `graphify update .` (unos 13 s, sin LLM). Un commit que no
+cambia nada, o un grafo sin commit registrado, no avisa; un commit que el clon no tiene, sí. Medido
+en la sesión que lo escribió: el grafo era de `ff54b51`, `HEAD` era `bae4ad9`, y el aviso dijo «6
+archivo(s)», los mismos que `git diff --name-only`. **Lo que no ve**: los cambios sin commitear,
+que tampoco están en el grafo. La prueba usa un repositorio temporal, porque el `graphify-out/` de
+cada máquina es de cualquier día, y se comprobó saboteando la comparación, el patrón y la rama del
+commit desconocido.
+
 **El grafo es un mapa para orientarse, no una fuente.** Ninguna cifra ni ninguna decisión sale de
 él: sale del archivo al que apunta.

@@ -260,20 +260,20 @@ jobs:
               // El portal de documentacion de hardware de HPE Aruba enlaza la guia de instalacion
               // de cada controlador; la del 7024 la dio la busqueda. Las demas se leen en el
               // portal antes de pedirlas, no se adivinan por el patron de esa URL.
-              // La primera corrida (37493689965) trajo la guia del 7024, y el portal respondio 200 con
-              // 27.933 bytes sin la cadena «7024»: se guarda si enlaza algun PDF, para leer que enlaza.
-              // Los dos de psnow los asocio la busqueda a las series 7000 y 7200; que documento es
-              // cada uno se lee al recibirlo, no se supone.
-              { archivo: 'aruba-controladores-portal.html', tipo: 'html', para: 'ARUBA', debeContener: '.pdf', urls: [
+              // La primera corrida (37493689965) trajo la guia del 7024; el portal respondio 200 con
+              // 27.933 bytes sin «7024» ni ningun «.pdf» (37494434563), y psnow da su pagina de
+              // aterrizaje en HTML. Las tres se guardan sin exigir texto, solo para LEER que enlazan:
+              // la URL de cada documento sale de ahi, no de un patron.
+              { archivo: 'aruba-controladores-portal.html', tipo: 'html', para: 'ARUBA', urls: [
                 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/controller-top.htm',
               ] },
               { archivo: 'aruba-7024-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
                 'https://arubanetworking.hpe.com/techdocs/hardware/controllers/7024/ig/Aruba-7024IG_EN.pdf',
               ] },
-              { archivo: 'aruba-psnow-c05272689.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+              { archivo: 'aruba-psnow-c05272689.html', tipo: 'html', para: 'ARUBA', urls: [
                 'https://www.hpe.com/psnow/doc/c05272689',
               ] },
-              { archivo: 'aruba-psnow-c05272677.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+              { archivo: 'aruba-psnow-c05272677.html', tipo: 'html', para: 'ARUBA', urls: [
                 'https://www.hpe.com/psnow/doc/c05272677',
               ] },
               { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
