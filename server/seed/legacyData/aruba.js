@@ -636,6 +636,14 @@ const MODELS = [
 // serie 7240 original, que el 7240XM reemplazó). Hasta el 2026-10-06 seguían como línea
 // anterior; ese día las páginas oficiales de psnow de sus dos series los dieron por retirados
 // (ver la cabecera de la serie 7000), y van en RETIRADOS_SIN_FECHA, debajo.
+// EdgeConnect (2026-10-06): la «Product Lifecycle Policy» oficial de EdgeConnect (edición del
+// 12-feb-2026, traída por traer-cisco-huawei.yml; el 2026-09-16 había dado 403) declara solo
+// dos fines de venta: el EC-US (31-ene-2025, fuera de este catálogo) y el EC-XL-H (31-mar-2026,
+// abajo). Del EC-XS retira únicamente la versión de 4 GB (PN 200889 y 200900, en 2016) y manda
+// renovarla al «latest version of EC-XS or EC-10106». NO nombra el EC-L-H. Los rastreadores de
+// terceros que daban fin de venta al EC-L-H (dic-2025) y al EC-XS (ene-2026) no se confirman: esta
+// edición, posterior a esas fechas, sí recoge el anuncio de junio de 2025 del EC-XL-H y no los
+// trae. Ninguno de los dos se marca.
 const EOS_7000_URL = 'https://asp-documents.arubanetworks.com/portals/0/el/EOS_Notice_7005-7008-Branch-Controllers.pdf';
 const EOS_7200_URL = 'https://asp-documents.arubanetworks.com/portals/0/7210%207220%20External%20EoS%20Updated%20Announcement%20Rev4.pdf';
 const EOL_ANNOUNCED = {
