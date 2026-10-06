@@ -280,7 +280,7 @@ jobs:
               // la URL se copio de ahi, con el titulo y la version que la pagina declara. El portal es
               // una ayuda MadCap que pinta su lista desde los indices de Data/Tocs: se traen para leer
               // en ellos la pagina de cada controlador. El nombre del indice lo declara la propia pagina
-              // (`Data/Tocs/product_toc__con_gat__controller.js`); `Default.js` dio 404 (37504395999).
+              // (Data/Tocs/product_toc__con_gat__controller.js); Default.js dio 404 (37504395999).
               { archivo: 'aruba-7000-serie-ds.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
                 'https://www.hpe.com/psnow/downloadDoc/Aruba%207000%20Series%20Mobility%20Controllers-c05272689.pdf?id=c05272689.pdf&isFutureVersion=true&ver=13&form=false&preview=false&print=&hf=regular&r=&section=&prelaunchSection=&softrollSection=&deepLink=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&originalObjectName=&isLinearized=false&contentDisposition=attachment',
               ] },
@@ -293,6 +293,37 @@ jobs:
               { archivo: 'aruba-portal-toc-chunk0.js', tipo: 'html', para: 'ARUBA', urls: [
                 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Data/Tocs/product_toc__con_gat__controller_Chunk0.js',
               ] },
+              // El indice (37504707952) enlaza una pagina por controlador; cada una enlaza su guia de
+              // instalacion. Se guarda la pagina y se pide el PDF que ella enlaza: la del 7024 sirve de
+              // control, porque su guia ya se conoce.
+              { archivo: 'aruba-7024-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7024', urls: [
+                'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7024.htm',
+              ] },
+              { archivo: 'aruba-7005-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7005', urls: [
+                'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7005.htm',
+              ] },
+              { archivo: 'aruba-7005-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
+                descubrirEnlace: { de: 'aruba-7005-pagina.html', contiene: 'IG', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7005.htm' } },
+              { archivo: 'aruba-7008-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7008', urls: [
+                'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7008.htm',
+              ] },
+              { archivo: 'aruba-7008-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
+                descubrirEnlace: { de: 'aruba-7008-pagina.html', contiene: 'IG', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7008.htm' } },
+              { archivo: 'aruba-7010-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7010', urls: [
+                'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7010.htm',
+              ] },
+              { archivo: 'aruba-7010-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
+                descubrirEnlace: { de: 'aruba-7010-pagina.html', contiene: 'IG', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7010.htm' } },
+              { archivo: 'aruba-7030-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7030', urls: [
+                'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7030.htm',
+              ] },
+              { archivo: 'aruba-7030-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
+                descubrirEnlace: { de: 'aruba-7030-pagina.html', contiene: 'IG', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7030.htm' } },
+              { archivo: 'aruba-7205-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7205', urls: [
+                'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7205.htm',
+              ] },
+              { archivo: 'aruba-7205-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
+                descubrirEnlace: { de: 'aruba-7205-pagina.html', contiene: 'IG', base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7205.htm' } },
               { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
                 'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
                 'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
@@ -326,6 +357,25 @@ jobs:
                       i = pagina.indexOf(doc.descubrir.material, i + 1);
                     }
                     if (!doc.urls.length) intentos.push({ url: doc.descubrir.de, error: 'la pagina no enlaza ningun PDF de ese material' });
+                  }
+                }
+                if (doc.descubrirEnlace) {
+                  // Generico: los PDF que ENLAZA una pagina ya guardada, cuya ruta contiene el texto
+                  // pedido; relativos a la URL de esa pagina, y primero los que estan en ingles.
+                  const de = doc.descubrirEnlace;
+                  const origen = 'fuente-cisco-huawei/' + de.de;
+                  if (!fs.existsSync(origen)) {
+                    intentos.push({ url: de.de, error: 'la pagina donde descubrir la URL no se guardo' });
+                  } else {
+                    const pagina = fs.readFileSync(origen, 'utf8');
+                    const vistos = new Set();
+                    for (const m of pagina.matchAll(/href=['\x22]([^'\x22<>]+?[.]pdf)['\x22]/gi)) {
+                      if (!m[1].includes(de.contiene)) continue;
+                      const abs = new URL(m[1], de.base).href;
+                      if (!vistos.has(abs)) { vistos.add(abs); doc.urls.push(abs); }
+                    }
+                    doc.urls.sort((x, y) => (y.includes('_EN') ? 1 : 0) - (x.includes('_EN') ? 1 : 0));
+                    if (!doc.urls.length) intentos.push({ url: de.de, error: 'la pagina no enlaza ningun PDF con ' + de.contiene });
                   }
                 }
                 for (const url of doc.urls) {
