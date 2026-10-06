@@ -1647,21 +1647,6 @@ día (ver *Cerrado recientemente*). Queda lo que ninguna comprobación puede cer
 
 ## Decisiones que necesitan al dueño del producto
 
-- **¿Que el grafo de graphify lea también los documentos?** (2026-10-06). Hoy lee el código y la
-  estructura del markdown, 234 de 604 archivos. Las páginas HTML, los workflows y el contenido de
-  los documentos solo entran con `/graphify .`, que lanza subagentes a leer unas 220.000 palabras
-  (`PENDIENTES.md` son 86.000). Limitado a HTML y YAML serían unas 54.000. Lo que da: preguntas que
-  crucen la pantalla, su workflow y su documento. Lo que cuesta: tokens en cada reconstrucción, y
-  aristas INFERRED que salen del modelo, no del archivo.
-
-- **graphify en modo «siempre activo»** (2026-10-06). Se instaló solo la skill. El modo siempre
-  activo (`graphify claude install --project`) haría que cada sesión consultara el grafo antes de
-  leer archivos y lo reconstruyera tras cada cambio, con hooks que exigen la CLI instalada en la
-  máquina. A favor: menos lecturas en preguntas de arquitectura. En contra: falla en una sesión o un
-  ejecutor sin la CLI, no enlaza los módulos del navegador, y antepone un mapa a la fuente en un
-  repositorio cuya regla es leer el documento. Si se decide, `test/graphify-instalacion.test.js`
-  se ajusta en el mismo commit.
-
 **Las cuatro primeras están preparadas para resolverse en minutos en
 `docs/decisiones-del-dueno-2026-09-24.md`** (también publicado como página privada,
 <https://claude.ai/artifact/Sw97q5rDmJ5KJCYbB2PWXJ>, que su dueño comparte), con los pasos, lo
@@ -1770,6 +1755,11 @@ proyecto».
 - **PDF4me no está resuelto.** Sus herramientas aparecieron en la sesión, pero la primera llamada
   respondió que hay que volver a iniciar sesión: el conector se reautoriza en los ajustes de
   conectores de claude.ai.
+- **Decidido por el dueño ese mismo día**, preguntado con las dos opciones y su coste:
+  el grafo se queda **solo con el código** (`graphify update .`, local y sin coste; los
+  documentos se leen directamente cuando hacen falta) y **no se activa el modo «siempre
+  activo»** (solo la skill, a demanda con `/graphify`). `test/graphify-instalacion.test.js`
+  sigue frenando que ese modo se cuele con una actualización.
 - **Huawei, sin cambios**: las guías de hardware las niega Akamai al acceso automatizado y el ciclo
   de vida exige la cuenta de Info-Finder. No se volvieron a pedir páginas bloqueadas.
 
