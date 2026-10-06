@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-06, tarde (**Los pendientes de las figuras de Huawei, ejecutados.** Encargo del dueño: «ejecuta los pendientes y súbelo a producción». Los **40 de 40** modelos tienen figura: se trajeron trece documentos más (AR6710-L R26C00, NE8000 M1C, M1D, M4 y F1A, y las fichas individuales de las cuatro A800 E, dos de ellas solo en `.pptx`). Las fichas corrigieron datos: el **AR6710-L26T2X4 y el L50T2X4 reenvían 3,2 Gbps** (no 2), el **NE8000 M1A conmuta 352 Gbps** (no 176, y por eso el NE8000 más pequeño que cumple pasa a ser el M6), y la **A800 E sale de sus fichas y no del folleto de 2022**, que había hecho cambiar por la mañana los 33,2 W de la A822 E por 35 (revertido). La **alimentación de los AR** entra desde sus fichas (Huawei, 35 de 40 con `redund`), y el **AR8140 pintaba 350 W de consumo** cuando es la potencia de cada fuente (168 W). **`nodemon` sale** por `node --watch`, y con él el aviso de `braces`: el freno de dependencias queda sin excepciones. **PDF4me**: conectado en la cuenta, pero sus herramientas no llegaron a esta sesión; no hizo falta, los documentos los trae el workflow. Ver *Cerrado recientemente* y *Lo que queda abierto de las fichas Huawei*.)
+Última revisión: 2026-10-06, noche (**El BOM de Huawei pide lo que dicen las fichas de pedido de los AR.** Encargo del dueño: ejecutar los pendientes y la mejora propuesta, y lo que salga por el camino. La mejora —traer las guías de hardware de los AR— **se intentó dos veces y no se puede**: `support.huawei.com` da a `fetch` un 200 con el cascarón de la aplicación y a Chromium sin cabeza un 403 «Access Denied» de Akamai en las catorce páginas, y eso es el fabricante negando el acceso automatizado, no se rodea. **Pero las fichas que ya respaldan el catálogo bastaban para cinco correcciones del BOM**: el AR8700-8 se cotizaba sin la SPU-700H, que lleva todos sus puertos; el AR6710-H sin su placa de control SRU-700S y con una fuente de 350 W que no es la suya; y el AR6710-L14 y el L8T3 pedían una PAC350 y una PAC180 que no casan con sus 150 y 70 W. Una prueba nueva exige que la potencia de cada fuente pedida sea una de las que publica la ficha. **Y `pre-push.sh` avisa también cuando falta un `npm run auditar` reciente**, que es lo que dejó pasar el aviso de `proxy-addr` por la tarde. Ver *Cerrado recientemente* y *Lo que queda abierto de las fichas Huawei*.)
+
+Revisión anterior: 2026-10-06, tarde (**Los pendientes de las figuras de Huawei, ejecutados.** Encargo del dueño: «ejecuta los pendientes y súbelo a producción». Los **40 de 40** modelos tienen figura: se trajeron trece documentos más (AR6710-L R26C00, NE8000 M1C, M1D, M4 y F1A, y las fichas individuales de las cuatro A800 E, dos de ellas solo en `.pptx`). Las fichas corrigieron datos: el **AR6710-L26T2X4 y el L50T2X4 reenvían 3,2 Gbps** (no 2), el **NE8000 M1A conmuta 352 Gbps** (no 176, y por eso el NE8000 más pequeño que cumple pasa a ser el M6), y la **A800 E sale de sus fichas y no del folleto de 2022**, que había hecho cambiar por la mañana los 33,2 W de la A822 E por 35 (revertido). La **alimentación de los AR** entra desde sus fichas (Huawei, 35 de 40 con `redund`), y el **AR8140 pintaba 350 W de consumo** cuando es la potencia de cada fuente (168 W). **`nodemon` sale** por `node --watch`, y con él el aviso de `braces`: el freno de dependencias queda sin excepciones. **PDF4me**: conectado en la cuenta, pero sus herramientas no llegaron a esta sesión; no hizo falta, los documentos los trae el workflow. Ver *Cerrado recientemente* y *Lo que queda abierto de las fichas Huawei*.)
 
 Revisión anterior: 2026-10-06 (**Las figuras de los equipos Huawei, como en Aruba y Fortinet.** Encargo del dueño. 32 de los 40 modelos tienen ya su figura oficial en la ficha —frontal, y también trasera en los dos AR610 que la publican—, con lupa, tamaño y procedencia, y viaja en el Excel del BOM. Salen de trece documentos de Huawei traídos por Actions (cinco nuevos: NE8000 M1A, M1D-B, M6, serie X y A800 E). Los ocho sin figura (los cuatro AR6710-L y las M1C, M1D, M4 y F1A) muestran el aviso honesto: no hay documento suyo en el repositorio. **Leer las figuras corrigió dos datos que la tarjeta contradecía**: la A800 E se pide con una o dos fuentes y el catálogo decía «fuente única» y pintaba 120 W de «consumo típico» en equipos de 24 a 35 W; y el AR611 y el AR617VW-LTE4 tienen 4 puertos LAN, no 8, que es un filtro duro del motor. **Y dejó cuatro discrepancias sin aplicar**, en *Lo que dejaron las figuras de Huawei*. De paso, un aviso **crítico** nuevo de `proxy-addr` frenó el primer despliegue: se actualizó a la 2.0.8. Ver *Cerrado recientemente*.)
 
@@ -561,11 +563,16 @@ recientemente*). Lo que las fichas no resuelven:
   remite a Info-Finder), y el catálogo 124,5. No se tocó.
 - **El consumo del NE8000 M1A**: su ficha da 89,21 W, idéntico al céntimo al del M1C, y no se
   tomó por ser plantilla copiada; el catálogo sigue con 74,8 W sin documento detrás.
-- **Las fuentes que el BOM pide para el AR6710-L.** El L14T2X4 publica «Dual power supplies, not
-  hot-swappable» y 150 W de salida en AC, y el L8T3TS1X2 70 W sin redundancia, pero sus piezas
-  del catálogo son una PAC350 y una PAC180. Hay que leer la guía de hardware antes de quitarlas.
 - **Cinco AR que admiten dos fuentes sin decir cuántas vienen** (AR6710-L26/L50/L14, AR6710-H,
-  AR8700-8): quedan en «no consta». Lo resuelve la lista de piezas o la guía de hardware.
+  AR8700-8): quedan en «no consta». **El código de la fuente del AR6710-H** (300 W AC / 260 W DC)
+  tampoco lo publica su ficha, y su línea del BOM lo dice. Los dos los resuelve la guía de
+  hardware, y **esa no se puede traer desde aquí ni desde Actions** (medido el 2026-10-06, noche:
+  a `fetch` le llega un 200 con el cascarón de la aplicación, corrida 37453468795, y a Chromium
+  sin cabeza un 403 «Access Denied» de Akamai en las catorce páginas, corrida 37454219168). Hace
+  falta alguien que la abra en un navegador con su cuenta, o el configurador de Huawei.
+- **Si la primera SRU-700S viene con el AR6710-H.** Su ficha hace de la placa de control un paso
+  de pedido aparte, y el BOM pide una con la nota; si el configurador la trae dentro del equipo,
+  esa línea sobra.
 
 ### Cotizador y dimensionador dicen cifras distintas del mismo equipo (cerrado: Cisco el 2026-10-01, Huawei y Juniper el 2026-10-02)
 
@@ -1714,6 +1721,49 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### El BOM de Huawei, contra la «Ordering Information» de sus fichas (2026-10-06, noche)
+
+Encargo del dueño: «ejecutar los pendientes y la mejora propuesta; si encuentras mejoras por el
+camino, ejecútalas como un arquitecto senior». La mejora propuesta era traer las guías de hardware
+de los AR para saber cuántas fuentes vienen de serie y qué módulo usa cada uno.
+
+- **La guía de hardware no se puede traer, y está medido.** Primera tanda con `fetch` desde
+  `traer-cisco-huawei.yml`: once 200 de 3.800 bytes, el cascarón de la aplicación sin el
+  documento (corrida 37453468795; la firma del contenido lo frenó). Segunda, con un job nuevo que
+  las abría en Chromium sin permiso de escritura: un 403 «Access Denied» de Akamai en las catorce
+  (corrida 37454219168). Es el fabricante negando el acceso automatizado: no se rodea. El job, su
+  script y su prueba se retiraron (quedan en `b1d57b5`) y la medida está en la cabecera del
+  workflow.
+- **Las fichas que ya respaldaban el catálogo bastaban para cinco correcciones del BOM.** Su
+  sección «Ordering Information» y su fila «Maximum output power»:
+  - **AR8700-8**: se pide como «assembly chassis» y la **SPU-700H** lleva todos sus puertos de
+    servicio. El BOM cotizaba un chasis sin puertos. Ahora la pide siempre.
+  - **AR6710-H**: la placa de control **SRU-700S** es un paso de pedido aparte («main control
+    board selection») y no se pedía. Su fuente es de **300 W AC / 260 W DC**, no la PAC350 de
+    350 W; como la ficha no publica su código, la línea dice «código por confirmar» en vez de
+    citar el de otro equipo.
+  - **AR6710-L14T2X4** (150 W, «not hot-swappable») y **L8T3TS1X2** (70 W, sin redundancia):
+    pedían una PAC350 y una PAC180. Sus fuentes no son módulos que se pidan aparte, y ya no piden
+    fuente. La PAC180 sale del catálogo: no la usa ningún otro equipo.
+  - **Una o dos placas de control**: las dos fichas dejan elegir. La MPU del AR8700-8 sigue en
+    dos (son las que dan la conmutación sin corte) y la línea lo dice, con la nota al pie de la
+    ficha: con SD-WAN, las dos exigen la versión 25.1 o posterior.
+- **Lo guarda una invariante** en `test/huawei-motor.test.js`: la potencia de cada fuente que
+  pide el BOM tiene que ser una de las que publica la ficha del equipo (transcritas en la prueba,
+  con su documento). Las tres fuentes equivocadas salieron de esa comparación. **La primera
+  versión pasaba en falso**: leía `psu.texto`, y ese texto cita los 350 W de la PAC350 para
+  explicar por qué no es la suya. Comprobada después saboteando dos veces (la PAC350 de vuelta en
+  el AR6710-H y en el L8T3). `fuentes.js` declara que esas tres fichas respaldan `parts`.
+- **`pre-push.sh` avisa también de `npm run auditar`.** Por la tarde, un aviso crítico nuevo
+  de `proxy-addr` puso `verificar` en rojo después de empujar, y Railway saltó el despliegue.
+  La auditoría no va dentro de `verificar` (necesita el registro de npm), así que el hook la
+  compara contra el lock y contra el reloj (12 horas). `test/pre-push-hook.test.js` conduce el
+  hook con el JSON real sobre un repositorio temporal; hasta hoy no lo probaba nada. Dos de sus
+  ocho casos fallan con el hook anterior.
+- Comprobado: `npm run verificar` (808/808), `npm run auditar` (0 avisos), arranque en
+  producción, `npm run pantallas` (17/17), los ocho casos de `npm run contraste`, la batería
+  `npm run e2e` entera y `npm run puerta`. El BOM de los dos equipos, conducido en Chromium.
 
 ### Los pendientes de las figuras de Huawei, ejecutados (2026-10-06, tarde)
 
