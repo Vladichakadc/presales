@@ -70,6 +70,32 @@ function clavesFueraDeVenta(products) {
   return out;
 }
 
+// UNIDADES REMANUFACTURADAS (decision del dueno, opcion B, 2026-10-06). La regla de fuera de
+// venta casa por modelo, asi que retirar la unidad nueva ocultaba tambien la fila del cotizador
+// que cotiza la Reman de HPE, otro SKU que la lista del distribuidor si vende: pasaba con la
+// linea AOS 8 de Aruba. La excepcion no la decide un texto: la fila tiene que citar un SKU
+// acabado en «AR» que esa lista (la version extraida en public/datasheets/) traiga con List
+// Price y sin PLC «ES» (fin de venta). Si la proxima lista no los trae, la fila vuelve a caer
+// sola. El portal y la guia no la usan: alli se ve el equipo, no una referencia de pedido.
+let skusListaAruba = null;
+function skusVendiblesAruba() {
+  if (skusListaAruba) return skusListaAruba;
+  skusListaAruba = new Set();
+  try {
+    const csv = fs.readFileSync(pathMod.join(__dirname, '..', '..', 'public', 'datasheets', 'aruba-lista-precios-hpe.csv'), 'utf8');
+    for (const linea of csv.split(/\r?\n/).slice(1)) {
+      const c = linea.split(',');
+      if (c.length >= 6 && c[0] && Number(c[3]) > 0 && c[c.length - 1].trim() !== 'ES') skusListaAruba.add(c[0].trim());
+    }
+  } catch (e) { /* sin lista, ninguna Reman se salva: falla cerrado */ }
+  return skusListaAruba;
+}
+function remanVendible(vendorCode, spec) {
+  if (vendorCode !== 'aruba') return null;
+  const m = /SKU ([A-Z0-9]+AR) \(Reman\)/.exec(String(spec || ''));
+  return m && skusVendiblesAruba().has(m[1]) ? m[1] : null;
+}
+
 // Etiquetas legibles para categorias de opticas — estaticas, iguales en todos los
 // vendors que las usan (huawei/cisco), por eso viven aqui y no en la DB.
 const OPTIC_LABEL = {
@@ -257,7 +283,8 @@ async function toCotizadorCatalog() {
     if (!vendor) continue;
     const product = byKey[`${vendor.id}::${normalizeName(row.model)}`];
     const clave = cifras.normalizarModelo(row.model);
-    if (fuera.has(`${vendor.id}::${clave}`)) continue;
+    const reman = fuera.has(`${vendor.id}::${clave}`) ? remanVendible(vendor.code, row.spec) : null;
+    if (fuera.has(`${vendor.id}::${clave}`) && !reman) continue;
     // Las cifras de rendimiento se contrastan con las del dimensionador en cada peticion:
     // una que no coincide no se cita (ver `cifrasCotizador.proyectarFila`).
     const pareja = indice[vendor.code] ? indice[vendor.code].get(clave) : null;
@@ -275,6 +302,7 @@ async function toCotizadorCatalog() {
       elpN: (product && product.priceNumeric != null) ? product.priceNumeric : row.elpN,
     };
     if (enRevision.length) item.enRevision = enRevision;
+    if (reman) item.reman = reman;
     out.push(item);
   }
   return out;

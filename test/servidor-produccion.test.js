@@ -624,11 +624,28 @@ test('fin de venta: el portal y el cotizador retiran lo que el dimensionador ya 
   const guia = await (await fetch(`${BASE}/api/guia/roles`, { headers: { cookie: ana } })).json();
   const enGuia = new Set(Object.values(guia).flat().map((e) => e.model));
   assert.ok(enGuia.size > 30, `la guia sigue recomendando (${enGuia.size} equipos)`);
+  // Salvo la unidad REMANUFACTURADA (opcion B del dueno, 2026-10-06): es otro SKU, y la fila
+  // sigue si lo cita y la lista del distribuidor lo vende. Tiene que decirlo.
+  const reman = new Set(cot.filter((c) => c.reman).map((c) => c.model));
+  for (const c of cot.filter((x) => x.reman)) {
+    assert.match(c.spec, new RegExp('SKU ' + c.reman + ' \\(Reman\\)'), `${c.model}: la fila Reman dice su SKU`);
+  }
   for (const m of vencidos) {
     const clave = normalizarModelo(m.id);
-    for (const nombre of [...enCotizador]) assert.notStrictEqual(normalizarModelo(nombre), clave, `${nombre} sigue en el cotizador con el ultimo pedido vencido`);
+    for (const nombre of [...enCotizador]) {
+      if (reman.has(nombre)) continue;
+      assert.notStrictEqual(normalizarModelo(nombre), clave, `${nombre} sigue en el cotizador con el ultimo pedido vencido`);
+    }
     for (const nombre of [...enPortal]) assert.notStrictEqual(normalizarModelo(nombre), clave, `${nombre} sigue en el portal con el ultimo pedido vencido`);
     for (const nombre of [...enGuia]) assert.notStrictEqual(normalizarModelo(nombre), clave, `${nombre} sigue recomendado en la guia con el ultimo pedido vencido`);
+  }
+  // Las siete Reman de la linea AOS 8 que la lista vende siguen cotizables, y solo como Reman.
+  const csv = require('fs').readFileSync(require('path').join(__dirname, '..', 'public', 'datasheets', 'aruba-lista-precios-hpe.csv'), 'utf8');
+  for (const [modelo, sku] of [['Aruba 7005', 'JW633AR'], ['Aruba 7008', 'JX927AR'], ['Aruba 7010', 'JW678AR'], ['Aruba 7030', 'JW686AR'],
+    ['Aruba 7205', 'JW735AR'], ['Aruba 7210', 'JW743AR'], ['Aruba 7220', 'JW751AR']]) {
+    assert.ok(new RegExp('^' + sku + ',').test(csv.split('\n').find((l) => l.startsWith(sku + ',')) || ''), `${sku} esta en la lista`);
+    const fila = cot.find((c) => c.model === modelo);
+    assert.ok(fila && fila.reman === sku, `${modelo}: la Reman ${sku} sigue en el cotizador (${fila ? fila.reman : 'no esta'})`);
   }
   // Un fin de venta anunciado y TODAVIA pedible sigue ofreciendose: hasta esa fecha se pide.
   const anunciados = require('../server/seed/legacyData/cisco').MODELS.filter((m) => m.eolAnnounced && FICHA.rango(m) < 2);
