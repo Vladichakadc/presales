@@ -1735,7 +1735,7 @@ PDF4me.
   `nodemon` a la 1.14.10). La PR de Dependabot de esa mañana estaba roja por lo mismo.
 - **Railway ya espera a CI** (`checkSuites: true`): por eso el despliegue de `2dbf766` quedó
   SKIPPED con ese rojo, y producción siguió en `738aa80` hasta este push. El de `4d7ff20` esperó en
-  WAITING a `verificar` y `pantallas` (con `verificar` ya en verde y `pantallas` en curso al escribir esto). Cierra el punto 33 y la condición 4 del GO de
+  WAITING a `verificar` y `pantallas` y desplegó cuando las dos salieron en verde: empezó a construir a las 22:22:19 UTC, al terminar `pantallas`, y llegó a SUCCESS con `[seed]` y `Presales corriendo en` a las 22:23:42. Cierra el punto 33 y la condición 4 del GO de
   Fortinet; `CLAUDE.md` decía lo contrario y se corrigió.
 - **Lo que sigue abierto**: el ciclo de vida de los 40 Huawei (la cuenta Huawei), las cifras de las
   NetEngine, la ficha del AR6710-L (sin URL oficial) y cambiar `nodemon` por `node --watch` antes de
