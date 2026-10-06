@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-06, cuarta entrega (**Las páginas de producto oficiales de Huawei cierran tres pendientes, y la potencia de salida de las fuentes pasa a ser un dato.** Encargo del dueño: buscar en la web con `agent-reach` (o en YouTube) las fichas de Huawei que faltan, sin volver a las páginas bloqueadas. **`agent-reach` no puede desde aquí, medido otra vez**: Jina Reader, Exa, YouTube y V2EX dan `000` en el proxy; se buscó con la búsqueda de la sesión, que es lo que la propia skill indica. La búsqueda llevó a las **páginas de producto de `e.huawei.com`**, que Actions sí trae: la de la A800 E publica **20 / 72 / 20 / 20 Gbps y 4,4 / 108 / 4,4 / 4,4 Mpps**, exactamente lo que llevaba el catálogo sin documento, y la de NE8000 respalda los **74,8 W del M1A y los 124,5 W del M1D** y da al **M8 1.086 Mpps**, que tenía en null. Sus resúmenes de buscador no se tomaron como fuente (le daban al M1A 865,8 W, que son del M14). **La mejora propuesta, hecha**: `psu.salida` en los ocho AR cuyas fuentes decide el BOM, en la ficha como «Potencia de salida de cada fuente», separada del consumo, y la invariante la lee del catálogo en vez de una tabla copiada en la prueba. Ver *Cerrado recientemente* y *Lo que queda abierto de las fichas Huawei*.)
+Última revisión: 2026-10-06, quinta entrega (**La skill `graphify`, instalada sin su modo «siempre activo».** Encargo del dueño: «Instálala https://github.com/Graphify-Labs/graphify.git». Se instaló la skill (`.claude/skills/graphify/`, 0.9.77, revisada antes y con su huella fijada) y la CLI fijada a esa versión. **`graphify install --project` hizo más de lo que dice su README**: registró hooks `PreToolUse` en `.claude/settings.json` y escribió una sección en `CLAUDE.md`; se deshizo, y una prueba lo frena si vuelve sin decidirse. Medido sobre este repositorio: el grafo del código se hace en 15 s y en local, enlaza bien el servidor y no los módulos del navegador. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
+
+Revisión anterior: 2026-10-06, cuarta entrega (**Las páginas de producto oficiales de Huawei cierran tres pendientes, y la potencia de salida de las fuentes pasa a ser un dato.** Encargo del dueño: buscar en la web con `agent-reach` (o en YouTube) las fichas de Huawei que faltan, sin volver a las páginas bloqueadas. **`agent-reach` no puede desde aquí, medido otra vez**: Jina Reader, Exa, YouTube y V2EX dan `000` en el proxy; se buscó con la búsqueda de la sesión, que es lo que la propia skill indica. La búsqueda llevó a las **páginas de producto de `e.huawei.com`**, que Actions sí trae: la de la A800 E publica **20 / 72 / 20 / 20 Gbps y 4,4 / 108 / 4,4 / 4,4 Mpps**, exactamente lo que llevaba el catálogo sin documento, y la de NE8000 respalda los **74,8 W del M1A y los 124,5 W del M1D** y da al **M8 1.086 Mpps**, que tenía en null. Sus resúmenes de buscador no se tomaron como fuente (le daban al M1A 865,8 W, que son del M14). **La mejora propuesta, hecha**: `psu.salida` en los ocho AR cuyas fuentes decide el BOM, en la ficha como «Potencia de salida de cada fuente», separada del consumo, y la invariante la lee del catálogo en vez de una tabla copiada en la prueba. Ver *Cerrado recientemente* y *Lo que queda abierto de las fichas Huawei*.)
 
 Revisión anterior: 2026-10-06, noche (**El BOM de Huawei pide lo que dicen las fichas de pedido de los AR.** Encargo del dueño: ejecutar los pendientes y la mejora propuesta, y lo que salga por el camino. La mejora —traer las guías de hardware de los AR— **se intentó dos veces y no se puede**: `support.huawei.com` da a `fetch` un 200 con el cascarón de la aplicación y a Chromium sin cabeza un 403 «Access Denied» de Akamai en las catorce páginas, y eso es el fabricante negando el acceso automatizado, no se rodea. **Pero las fichas que ya respaldan el catálogo bastaban para cinco correcciones del BOM**: el AR8700-8 se cotizaba sin la SPU-700H, que lleva todos sus puertos; el AR6710-H sin su placa de control SRU-700S y con una fuente de 350 W que no es la suya; y el AR6710-L14 y el L8T3 pedían una PAC350 y una PAC180 que no casan con sus 150 y 70 W. Una prueba nueva exige que la potencia de cada fuente pedida sea una de las que publica la ficha. **Y `pre-push.sh` avisa también cuando falta un `npm run auditar` reciente**, que es lo que dejó pasar el aviso de `proxy-addr` por la tarde. Ver *Cerrado recientemente* y *Lo que queda abierto de las fichas Huawei*.)
 
@@ -1643,6 +1645,14 @@ día (ver *Cerrado recientemente*). Queda lo que ninguna comprobación puede cer
 
 ## Decisiones que necesitan al dueño del producto
 
+- **graphify en modo «siempre activo»** (2026-10-06). Se instaló solo la skill. El modo siempre
+  activo (`graphify claude install --project`) haría que cada sesión consultara el grafo antes de
+  leer archivos y lo reconstruyera tras cada cambio, con hooks que exigen la CLI instalada en la
+  máquina. A favor: menos lecturas en preguntas de arquitectura. En contra: falla en una sesión o un
+  ejecutor sin la CLI, no enlaza los módulos del navegador, y antepone un mapa a la fuente en un
+  repositorio cuya regla es leer el documento. Si se decide, `test/graphify-instalacion.test.js`
+  se ajusta en el mismo commit.
+
 **Las cuatro primeras están preparadas para resolverse en minutos en
 `docs/decisiones-del-dueno-2026-09-24.md`** (también publicado como página privada,
 <https://claude.ai/artifact/Sw97q5rDmJ5KJCYbB2PWXJ>, que su dueño comparte), con los pasos, lo
@@ -1725,6 +1735,37 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### La skill graphify (2026-10-06, quinta entrega)
+
+Encargo del dueño: «Instálala https://github.com/Graphify-Labs/graphify.git».
+
+- **Qué es.** Convierte el repositorio en un grafo de conocimiento que se consulta en vez de buscar
+  con grep (`graphify query`, `path`, `explain`); el código se analiza en local con tree-sitter,
+  sin LLM. La skill se dispara con `/graphify`.
+- **Se revisó antes de instalarla**: el repositorio en el commit `5c7b847` (0.9.77), su
+  `install.py` y su `SKILL.md`. La CLI se instaló **fijada a esa versión** desde PyPI
+  (`graphifyy`, que pasa por el proxy), y se comprobó que el paquete instalado es el código
+  revisado: la misma `skill.md` por SHA-256 y los mismos módulos.
+- **`graphify install --project` hizo más de lo que dice su README.** Además de copiar la skill,
+  registró hooks `PreToolUse` sobre Bash, Grep, Read y Glob en `.claude/settings.json` y escribió
+  una sección `## graphify` en el `CLAUDE.md` raíz. En el código está claro: para Claude Code,
+  la instalación de proyecto llama también a `claude_install`, y no hay opción para instalar solo
+  la skill. **Se deshizo con git**: el hook llama a un comando que no está en el repositorio, y la
+  regla antepone un grafo construido otro día a la fuente. Es una decisión aparte del dueño.
+- **Lo guarda `test/graphify-instalacion.test.js`**: la huella de la skill revisada (si una
+  actualización la cambia, alguien la lee y la anota), el modo siempre activo ausente y el grafo
+  fuera de git. Comprobado: repetir la instalación y tocar un carácter de la skill la ponen en rojo.
+- **Medido sobre este repositorio.** `graphify update .`: 15 s, 2.827 nodos, 4.772 aristas, con un
+  `.graphifyignore` que quita el markdown de las demás skills (sin él, 4.490 nodos, y las
+  consultas traían ruido de `code-review-guide`). Enlaza bien el servidor: `explain
+  "rellenarSpec"` da quién la llama, las pruebas que la importan y dónde la citan `CLAUDE.md` y
+  este archivo. **No enlaza los módulos de `public/js/`**, que se hablan por globales del
+  navegador: no vio que el dimensionador de Huawei llama a `HuaweiMotor.piezasBom`. Los catálogos
+  de `legacyData/` no dan símbolos: las cifras se preguntan a esos archivos, no al grafo.
+- **Lo que no persiste.** La CLI vive en la máquina: en una sesión en la nube hay que instalarla
+  otra vez (`uv tool install "graphifyy==0.9.77"`). Si la skill no la encuentra, se instala sola
+  sin fijar versión: por eso conviene instalarla fijada antes.
 
 ### Las páginas de producto oficiales de Huawei, y la potencia de salida como dato (2026-10-06, cuarta entrega)
 

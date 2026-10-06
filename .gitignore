@@ -54,3 +54,8 @@ arranque.log
 # Resultado del recorrido de valores límite (`npm run limites`): se regenera en cada corrida y
 # en CI viaja como artefacto; versionarlo daría un diff en cada recorrido sin decir nada nuevo.
 /.limites/
+
+# Salida de graphify (.claude/skills/graphify): el grafo se construye en cada maquina con
+# `graphify update .` y caduca con el codigo. Versionarlo seria presentar un mapa de ayer
+# como el de hoy.
+graphify-out/

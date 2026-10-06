@@ -1,0 +1,10 @@
+# Lo que no entra en el grafo de graphify (.claude/skills/graphify). Se suma al .gitignore.
+# Las skills instaladas: su markdown es de otros proyectos, no de este, y en la primera
+# corrida metia nodos de .claude/skills/code-review-guide en preguntas sobre la ficha.
+.claude/skills/
+# Copia byte a byte del modulo canonico de Starlink: duplicaria cada nodo del servido.
+starlink-leo-dimensionador/
+# Documentos y binarios de fabricantes y tipografias: no son codigo ni documentacion propia.
+public/datasheets/
+public/img/
+docs/manual-usuario/fonts/
