@@ -12,7 +12,7 @@
 // conserva su cifra escrita, porque es la unica. `test/catalogo-contraste-cotizador.test.js`
 // exige las dos caras: ni una cifra copiada que el dimensionador ya trae, ni un hueco sin rellenar.
 module.exports = [
-  {vendor:'Huawei', color:'#C7000B', model:'NetEngine AR611',           seg:'SOHO / Acceso',           spec:'{fwd} FWD · 1 GE WAN + 8 GE LAN',                          elp:'~ $520',   elpN:520},
+  {vendor:'Huawei', color:'#C7000B', model:'NetEngine AR611',           seg:'SOHO / Acceso',           spec:'{fwd} FWD · 1 GE WAN + 4 GE LAN',                          elp:'~ $520',   elpN:520},
   {vendor:'Huawei', color:'#C7000B', model:'NetEngine AR617VW-LTE4',    seg:'SOHO + LTE + Wi-Fi',      spec:'{fwd} FWD · GE + VDSL + LTE + Wi-Fi',                      elp:'~ $780',   elpN:780},
   {vendor:'Huawei', color:'#C7000B', model:'NetEngine AR651',           seg:'Sucursal pequeña',        spec:'{fwd} FWD · 2 GE WAN + 8 GE LAN',                            elp:'~ $950',   elpN:950},
   {vendor:'Huawei', color:'#C7000B', model:'NetEngine AR651W-8P',       seg:'Sucursal + PoE + Wi-Fi',  spec:'{fwd} FWD · 8 GE PoE++ + Wi-Fi',                             elp:'~ $1,200', elpN:1200},

@@ -767,7 +767,7 @@
     });
 
     // Fotos oficiales del equipo (plan 20): solo viajan cuando la página las declara en
-    // meta.fotos — hoy únicamente Aruba, por la regla del piloto.
+    // meta.fotos: Aruba, Fortinet y Huawei.
     if (m.fotos && m.fotos.front) {
       const incrustadas = await hojaDeFotos(libro, m.fotos);
       if (incrustadas > 0) {

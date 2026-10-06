@@ -106,9 +106,9 @@
 /* Lupa de la tarjeta gráfica (plan 19, 2026-09-18, petición del dueño): la tarjeta
    sirve la foto a 150 px de alto; la lupa la trae al frente a su RESOLUCIÓN NATURAL
    (los webp del repo son los originales extraídos de los documentos oficiales). El
-   botón habla el lenguaje de la página: borde --rule, acento --red al pasar. Hoy solo
-   Aruba declara «vistas» (regla del piloto) — otro fabricante que las declare la
-   hereda sin tocar nada. */
+   botón habla el lenguaje de la página: borde --rule, acento --red al pasar. Aruba la
+   estrenó (regla del piloto); Fortinet (2026-09-22) y Huawei (2026-10-06) la heredaron
+   declarando «vistas», sin tocar nada aquí. */
 .ficha-vista-zoom{position:absolute;top:6px;right:6px;width:26px;height:26px;padding:0;border:1px solid var(--rule);border-radius:2px;background:var(--card);color:var(--steel);cursor:pointer;display:flex;align-items:center;justify-content:center}
 .ficha-vista-zoom:hover{border-color:var(--red);color:var(--red-txt,var(--red))}
 .ficha-vista-zoom:focus-visible{outline:2px solid var(--red);outline-offset:1px}

@@ -4,6 +4,10 @@ let OPTICS = {};
 let OPTIC_LABEL = {};
 let PARTS = {};
 let MODELS = [];
+// Figura oficial de cada equipo (frontal y, donde el documento la publica, trasera), con su
+// procedencia: /data/huawei-vistas-equipos.json. La pinta FICHA (opt-in `vistas`, como en
+// Aruba y Fortinet) y viaja al Excel como `meta.fotos`.
+let VISTAS = null;
 
 const PROFILE = HuaweiMotor.PROFILE;
 let ultimaEval = null;
@@ -159,6 +163,7 @@ function render(){
       medidores: m => medidoresHuawei(m, ctx),
       porQue: m => porQueHuawei(m, ctx, next),
       secciones: m => seccionesHuawei(m, licCtx),
+      vistas: VISTAS,
       alCambiar: id => {
         const m = candidatos.find(x => x.id === id);
         if(!m) return;
@@ -574,11 +579,13 @@ function filasBom(m, qty, opticas, piezas, lics, s){
 
 function metaBom(m){
   const d = dtoActual();
+  const v = (VISTAS || {})[m.id];
   return {
     ...(d > 0 ? {dto:d, dtoEtq:dtoEtiqueta()} : {}),
     titulo:`Lista de materiales — ${m.id}`,
     subtitulo:`Serie ${m.ser} · ${m.fam}`,
     archivo:`BOM_${m.id}`,
+    ...(v && v.front ? {fotos:{modelo:m.id, front:v.front, rear:v.rear || null, pie:[v.tamano, v.fuente].filter(Boolean).join(' · ')}} : {}),
     notas:[
       '',
       'NOTAS DE PREVENTA',
@@ -711,6 +718,11 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape' && !$('modalCo
   PARTS = data.parts;
   MODELS = data.models;
   HICARE = data.hicare;
+  // Sin el mapa la pagina funciona igual: la ficha simplemente no pinta la tarjeta grafica.
+  try {
+    const rv = await fetch('/data/huawei-vistas-equipos.json');
+    if (rv.ok) VISTAS = await rv.json();
+  } catch { VISTAS = null; }
 
   await cargarPreciosRef();
   populatePickModel();

@@ -19,7 +19,7 @@
 // ninguna. Las ocho filas duplicadas de Cisco, que la siembra ignoraba enteras, se quitaron.
 module.exports = {
 hw_ar:[
-  {model:'AR611',ser:'AR610',seg:'SOHO',sdwan:'50 Mbps',ports:'1 GE WAN + 8 GE LAN'},
+  {model:'AR611',ser:'AR610',seg:'SOHO',sdwan:'50 Mbps',ports:'1 GE WAN + 4 GE LAN'},
   {model:'AR617VW-LTE4',ser:'AR610',seg:'SOHO + móvil',sdwan:'50 Mbps',ports:'GE + VDSL + LTE + Wi-Fi'},
   {model:'AR651',ser:'AR650',seg:'Sucursal pequeña',sdwan:'600 Mbps',ports:'2 GE WAN + 8 GE LAN'},
   {model:'AR651W-8P',ser:'AR650',seg:'Sucursal + PoE + Wi-Fi',sdwan:'600 Mbps',ports:'2 GE WAN + 8 GE PoE + Wi-Fi'},

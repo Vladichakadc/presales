@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-05, tarde (**Las fichas de serie de los AR de Huawei, leídas con PDF4me y con la copia de Actions.** Los 23 AR tienen ya reenvío, IPsec y SD-WAN típico: se llenaron cuatro `typ` vacíos (AR611 y AR617VW-LTE4 a 50 Mbps, AR651 y AR651W-8P a 600) y se corrigieron tres. El **AR8700-8** llevaba 24 Gbps, que es la fila «SD-WAN IPsec» de su propia tabla; su SD-WAN típico es 15,5, y el dimensionador lo recomendaba entre 16,9 y 20,8 Gbps de demanda, donde no llega. Para cargarlo hubo que arreglar el importador: `--force` no corregía nada y la cabecera literal de Huawei caía en el campo equivocado. Ninguna ficha AR publica Mpps. **El ciclo de vida (EOM/EOS) sigue bloqueado por la cuenta Huawei.** De paso, `verificar` estaba en rojo en `main` por un aviso nuevo de `braces` sin arreglo: excepción declarada hasta el 2027-01-03. **Y ese rojo descubrió que Railway ya espera a CI** (`checkSuites: true`): el despliegue anterior quedó SKIPPED. Se cierra el punto 33. Juniper SRX340/SRX4300 ya estaba cerrado desde el 2026-10-02. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-06 (**Las figuras de los equipos Huawei, como en Aruba y Fortinet.** Encargo del dueño. 32 de los 40 modelos tienen ya su figura oficial en la ficha —frontal, y también trasera en los dos AR610 que la publican—, con lupa, tamaño y procedencia, y viaja en el Excel del BOM. Salen de trece documentos de Huawei traídos por Actions (cinco nuevos: NE8000 M1A, M1D-B, M6, serie X y A800 E). Los ocho sin figura (los cuatro AR6710-L y las M1C, M1D, M4 y F1A) muestran el aviso honesto: no hay documento suyo en el repositorio. **Leer las figuras corrigió dos datos que la tarjeta contradecía**: la A800 E se pide con una o dos fuentes y el catálogo decía «fuente única» y pintaba 120 W de «consumo típico» en equipos de 24 a 35 W; y el AR611 y el AR617VW-LTE4 tienen 4 puertos LAN, no 8, que es un filtro duro del motor. **Y dejó cuatro discrepancias sin aplicar**, en *Lo que dejaron las figuras de Huawei*. Ver *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-05, tarde (**Las fichas de serie de los AR de Huawei, leídas con PDF4me y con la copia de Actions.** Los 23 AR tienen ya reenvío, IPsec y SD-WAN típico: se llenaron cuatro `typ` vacíos (AR611 y AR617VW-LTE4 a 50 Mbps, AR651 y AR651W-8P a 600) y se corrigieron tres. El **AR8700-8** llevaba 24 Gbps, que es la fila «SD-WAN IPsec» de su propia tabla; su SD-WAN típico es 15,5, y el dimensionador lo recomendaba entre 16,9 y 20,8 Gbps de demanda, donde no llega. Para cargarlo hubo que arreglar el importador: `--force` no corregía nada y la cabecera literal de Huawei caía en el campo equivocado. Ninguna ficha AR publica Mpps. **El ciclo de vida (EOM/EOS) sigue bloqueado por la cuenta Huawei.** De paso, `verificar` estaba en rojo en `main` por un aviso nuevo de `braces` sin arreglo: excepción declarada hasta el 2027-01-03. **Y ese rojo descubrió que Railway ya espera a CI** (`checkSuites: true`): el despliegue anterior quedó SKIPPED. Se cierra el punto 33. Juniper SRX340/SRX4300 ya estaba cerrado desde el 2026-10-02. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-05 (**Auditoría de prompts con el subcomando `prompt-audit` de la skill `claude-api`, sobre `main` en `738aa80`.** Propone y no aplica: informe y parche en `docs/prompt-audit-2026-10-05/`. La auditoría del 25-sep ya estaba aplicada desde `40e4d47`, así que no se repite. Lo nuevo: **todo `.txt` subido a «Sincronizar» falla**, porque viaja en base64 con `text/plain` y la API solo admite base64 para PDF; **seis afirmaciones de `CLAUDE.md` que el código contradice** (tres símbolos y un workflow de Fortinet que ya no existen, y tres recuentos atrasados); y el análisis no registra cuántos tokens cuesta. Con el parche aplicado pasan 779/779 pruebas. Ver *Decisiones que necesitan al dueño*.)
 
@@ -542,6 +544,29 @@ decisión del dueño o el datasheet de Huawei (pendiente 14).
 | H3 | **Hecha (2026-09-30).** Selector de plataforma `#platSeg` (NetEngine AR · A800 E · NE8000) elegido antes que el caudal: solo compiten los modelos de esa línea, y lo que no aplica (SD-WAN, UTM, WAC, PoE, 4G/5G, Wi-Fi, LAN en transporte; FlexE en AR) se oculta con `data-inactivo`, conserva su valor y sale del cálculo y del enlace. FlexE pasa a dato del modelo (`flexe: true` solo en el A821 E, que lo publica); el resto es «no consta», no se aparta y va detrás del confirmado. El modo «Nodo de núcleo» se retiró y los enlaces y perfiles viejos con `modeSeg=core` se traducen a NE8000. Dos escenarios de la línea base del contraste (2 y 6 Gbps de reenvío) salieron de ella a propósito y quedan como afirmaciones del cambio. TPM queda fuera: la pantalla no lo pide como requisito | hecha |
 | H4 | **Hecha en parte.** BOM con papel por pieza: alternativas de MPU y fuente en una línea «elegir una», 5G y WSIC fuera si no se piden, doble fuente x2, ópticas en una línea a elegir (H-06, H-07 sin inventar código). **HA 1+1 hecha (H-12, 2026-09-29)**: `#chkHa` (repone desde el enlace compartido y viaja como dos equipos al cotizador, conducido en el contraste `huawei`) cotiza dos equipos por sitio, cada uno al caudal completo (suma disponibilidad, no capacidad), y «misión crítica» sin HA lo advierte. **Salió de paso** que SnS se cotizaba dos veces (licencia y soporte). **Capa comercial hecha (H-13, 2026-09-29):** plazo de 1/3/5 años (`#anios`, el texto de cada suscripción dice el término real), precio de referencia del equipo tomado del cotizador (13 de los 40 modelos; el resto sale «consultar»), simulador de precio neto, TCO **declarado parcial** (solo el equipo tiene precio; licencias, suscripciones y soporte van «consultar») y perfiles multi-sede con consolidado. **Ópticas por enlace hechas (H-07, 2026-09-29):** cada módulo se declara (familia, modelo, cantidad por equipo), viaja en el enlace compartido (`#opticasData`) y entra al BOM con su código; una fila que ya no encaja tras cambiar de equipo sale como inválida, no se descarta. **Sigue sin existir la matriz de compatibilidad por chasis y versión de VRP** (el catálogo solo respalda la familia), y la pantalla lo dice | **hecha salvo datos** |
 | H5 | Datos: 27 de 40 modelos no casan con el cotizador, M14 incoherente (cerrado el 2026-10-02 con su ficha oficial, como las del NE8000 M8/F8: 7,2 Tbps con IPU-3T6), el tope de túneles y sesiones por modelo (H-10, H-14; **H-11 declarado en pantalla el 2026-09-29**: el hub muestra cuántos túneles pide y que el catálogo no trae el tope, sin apartar a nadie; el filtro ya existe y se activa solo cuando un modelo traiga `tuneles`; las sesiones no se piden porque exigirían usuarios por sede) | bloqueado en parte por la cuenta Huawei (pendiente 14) |
+
+### Lo que dejaron las figuras de Huawei (2026-10-06, sin aplicar)
+
+Para las figuras se trajeron cinco documentos nuevos (fichas de NE8000 M1A, M1D-B y M6, y los
+folletos de la serie X y de la A800 E). Se leyeron, y estas cifras no casan con el catálogo. **No
+se aplicaron**: no eran el encargo, y varias piden decidir qué edición manda.
+
+- **Ocho modelos sin figura**: los cuatro AR6710-L y las NE8000 M1C, M1D, M4 y F1A. No hay
+  ningún documento oficial suyo en el repositorio. Se cierra igual que los cinco de este día:
+  encontrar su página en `e.huawei.com/en/documents/products/enterprise-network/<id>` y añadirla
+  a `traer-cisco-huawei.yml` con `descubrir`. La ficha ya muestra el aviso honesto.
+- **Capacidad de la A800 E.** El folleto da 14 G de conmutación al A813 E y 32 G al A822 E; el
+  catálogo, 20 G a los dos (y 20 G y 4,4 Mpps al A816 E, que parecen un valor de relleno). Al
+  A816 E le da «64-172 Gbit/s» y «112-246 Mpps» con 4 + 4 puertos GE, que no es posible: hace
+  falta su ficha o Info-Finder. El A821 E casa (72 G).
+- **NE8000 M1A.** Su ficha publica 352 Gbps de conmutación y 89,21 W típicos; el catálogo trae
+  176 G (la capacidad de puertos que cita su texto de presentación) y 74,8 W. Es el mismo criterio
+  que se corrigió en el M8, el F8 y el M14 (capacidad de conmutación, no de puertos).
+- **La alimentación de los AR.** Las fichas AR5710-S publican «One built-in power module (AC)»
+  en las de 321 mm y «Built-in dual power modules (AC)» en la S28 y la S52; las del AR6710-H y el
+  AR8000, «Dual power modules (AC/DC)». El catálogo solo trae `redund` en el AR8140. Antes de
+  marcar `true` hay que leer si las dos vienen de serie o una es opcional, como se hizo con
+  Juniper.
 
 ### Cotizador y dimensionador dicen cifras distintas del mismo equipo (cerrado: Cisco el 2026-10-01, Huawei y Juniper el 2026-10-02)
 
@@ -1690,6 +1715,48 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Las figuras de los equipos Huawei, como en Aruba y Fortinet (2026-10-06)
+
+Encargo del dueño: «sube la gráfica de los equipos al dimensionador de Huawei tal cual como está
+en Aruba y Fortinet».
+
+- **Qué hay.** `public/data/huawei-vistas-equipos.json` y 33 webp `hw-*.webp` (920 KB). La ficha
+  pinta la tarjeta gráfica con lupa, tamaño y procedencia (`vistas`, el mismo opt-in que Aruba y
+  Fortinet), y el Excel del BOM lleva la hoja «Fotos del equipo» (`meta.fotos`). **32 de 40
+  modelos**; los ocho que faltan muestran «Sin foto oficial de este equipo en el repositorio».
+- **De dónde.** Trece documentos oficiales: los cinco de los AR y los tres de las NE8000 M8, M14 y
+  F8 que ya estaban, más las fichas de NE8000 M1A, M1D-B y M6 y los folletos de la serie X y de la
+  A800 E, que se añadieron a `traer-cisco-huawei.yml` (corrida `37401011603`; Huawei da 403 en el
+  proxy de este entorno). Son las imágenes raster del PDF a su resolución nativa, extraídas con
+  pdf.js en Chromium: la lupa no puede enseñar más de lo que trae el documento, y en la serie X
+  son 233-303 px.
+- **Qué modelo y qué cara.** Cada `fuente` cita documento, página y rótulo literal, y se miraron
+  una por una (en las AR5710-S se leyó la placa del modelo en el propio dibujo). El ancla de las
+  caras es de Huawei: las fichas del AR6710-H y del AR8000 sitúan los puertos «on the front panel»,
+  y el AR6710-H lleva las fuentes en esa misma cara, así que la regla de Fortinet (la trasera lleva
+  la alimentación) no se traslada. Solo el AR611 y el AR617VW-LTE4 traen dos vistas; ahí la trasera
+  es la de la toma de 12 V DC, y aparece primero en la página.
+- **Variantes declaradas.** Las NE8000 sirven la figura DC y dicen que existe la AC; las A800 E, la
+  de una fuente AC, y nombran «Dual AC» y «AC+DC». El AR8140 y el AR8140-T llevan la misma figura,
+  píxel a píxel, en su ficha: un archivo para los dos, y el pie lo dice. El F8 da sus medidas en el
+  orden del documento, que las rotula Al × An × Fo cuando 13U son 578 mm de alto.
+- **Dos datos que la tarjeta contradecía, corregidos con el documento.** La A800 E: `redund:false`
+  («fija y única») y `psu.watts:120`, que la ficha rotula «Consumo típico», en equipos de 24 a
+  35 W; el folleto publica «Power Redundancy: Single AC / Dual AC / AC+DC». Ahora son `'opcional'`
+  con el consumo del folleto, y el A822 E pasa de 33,2 a 35 W (los 33,2 no tienen documento). El
+  AR611 y el AR617VW-LTE4: `lan` 8 → 4, en el catálogo, el portal y el cotizador; su ficha dice
+  «4 x GE electrical» y su trasera dibuja cuatro. `lan` es un filtro duro: con 8, el AR611 salía
+  recomendado para un sitio que pide seis puertos LAN.
+- **Procedencia.** Las cinco fuentes nuevas entran en `fuentes.js` (la de la A800 E respalda
+  `redund` y `psu`; las otras cuatro, solo figuras, con su `porQue`), y las ocho que ya estaban
+  dicen que respaldan también la figura.
+- **Lo guardan** `test/huawei-vistas-equipos.test.js` (11 casos: ficheros WebP que existen,
+  modelos del catálogo, rótulo que nombra al propio modelo por igualdad y no por prefijo, variantes,
+  el archivo compartido, sin huérfanos, la página cableada) y la batería
+  `test/e2e/e2e-huawei-vistas.js` (la cadena completa en Chromium: la figura carga, las dos caras,
+  la lupa, el Excel con las dos imágenes y el hueco honesto con el mapa interceptado). Las dos se
+  comprobaron saboteándolas.
 
 ### Las fichas de serie de los AR de Huawei, y el importador que no podía cargarlas (2026-10-05)
 

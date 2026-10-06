@@ -78,11 +78,26 @@ const PARTS = {
 //   · AR611, AR617VW-LTE4 (50 Mbps), AR651 y AR651W-8P (600 Mbps): `typ` era null y se apartaban
 //     del perfil SD-WAN. Con esto los 23 AR tienen las tres cifras.
 //   · Ninguna ficha AR publica Mpps: el `mpps: null` de los AR es lo que dice el fabricante.
+//   · AR611 y AR617VW-LTE4: `lan` 8 -> 4 (2026-10-06). La ficha AR610 R26C00 publica «Fixed LAN
+//     ports: 4 x GE electrical» en los dos, y su tabla de pedido lo repite («1*GE COMBO WAN,
+//     4*GE LAN»); la trasera que dibuja tiene cuatro puertos LAN. `lan` es un filtro duro del
+//     motor: con 8, el AR611 salia recomendado para un sitio que pide 6 puertos LAN.
+//
+// ALIMENTACION DE LA A800 E (2026-10-06). El folleto oficial NetEngine A800 E Series (traido por
+// `traer-cisco-huawei.yml` para la figura de cada equipo) publica para los cuatro modelos «Power
+// Redundancy: Single AC / Dual AC / AC+DC», y este registro decia `redund:false` («fija y unica»)
+// y `psu.watts:120`, que la ficha rotula «Consumo tipico» en equipos de 24 a 35 W. Ahora son
+// `'opcional'` —se pide con una fuente o con dos, segun la variante— con el consumo tipico del
+// folleto. El A822 E pasa de 33,2 a 35 W: los 33,2 no tienen documento en el repositorio. Los
+// 120 W de fuente integrada se quedan en el texto de puertos y la ficha dice que el folleto no
+// los publica. NO se toco la capacidad: el folleto da 14 G al A813 E, 32 G al A822 E y 72 G al
+// A821 E, frente a 20 / 20 / 72 aqui, y al A816 E «64-172 Gbit/s» y «112-246 Mpps» con 8 puertos
+// GE, que no es posible; queda en PENDIENTES.md.
 const MODELS = [
-{id:'AR611', cls:'AR', ser:'AR610', fam:'SOHO / oficina pequeña', fwd:300, ipsec:200, typ:50, mpps:null, lan:8, poe:0, wan:0, wifi:0, apsFree:0, apsMax:0, boost:0,
- ports:'1 x GE combo WAN, 8 x GE LAN', optics:['ge'], parts:['RACK','CONSOLE']},
-{id:'AR617VW-LTE4', cls:'AR', ser:'AR610', fam:'Sucursal pequeña con respaldo móvil', fwd:300, ipsec:200, typ:50, mpps:null, lan:8, poe:0, wan:1, wifi:1, apsFree:0, apsMax:0, boost:0,
- ports:'1 x GE combo + VDSL 35B + LTE, Wi-Fi', optics:['ge'], parts:['RACK','CONSOLE']},
+{id:'AR611', cls:'AR', ser:'AR610', fam:'SOHO / oficina pequeña', fwd:300, ipsec:200, typ:50, mpps:null, lan:4, poe:0, wan:0, wifi:0, apsFree:0, apsMax:0, boost:0,
+ ports:'1 x GE combo WAN, 4 x GE LAN', optics:['ge'], parts:['RACK','CONSOLE']},
+{id:'AR617VW-LTE4', cls:'AR', ser:'AR610', fam:'Sucursal pequeña con respaldo móvil', fwd:300, ipsec:200, typ:50, mpps:null, lan:4, poe:0, wan:1, wifi:1, apsFree:0, apsMax:0, boost:0,
+ ports:'1 x GE combo + VDSL2 + LTE, 4 x GE LAN, 2 x FXS, Wi-Fi', optics:['ge'], parts:['RACK','CONSOLE']},
 {id:'AR651', cls:'AR', ser:'AR650', fam:'Sucursal pequeña', fwd:2000, ipsec:2000, typ:600, mpps:null, lan:8, poe:0, wan:0, wifi:0, apsFree:0, apsMax:0, boost:1000,
  ports:'2 x GE combo WAN, 8 x GE LAN', optics:['ge'], parts:['RACK','CONSOLE']},
 {id:'AR651W-8P', cls:'AR', ser:'AR650', fam:'Sucursal pequeña con PoE y Wi-Fi', fwd:2000, ipsec:2000, typ:600, mpps:null, lan:8, poe:1, wan:0, wifi:1, apsFree:0, apsMax:0, boost:1000,
@@ -132,16 +147,16 @@ const MODELS = [
 
 {id:'NetEngine A816 E', cls:'WAN', ser:'A800 E', fam:'CPE de acceso, 1U, consumo mínimo', cap:20000, mpps:4.4, lan:0, poe:0, wan:0, wifi:0,
  ports:'1U · 24 W típicos · SRv6, L2VPN/L3VPN, EVPN, IFIT · fuente AC 120 W integrada', optics:['ge','sfp10'], parts:['RACK','CONSOLE'],
- redund:false, psu:{watts:120, tipo:'AC integrada', texto:'Fuente AC de 120 W integrada — el catálogo no menciona una segunda fuente, es fija y única.'}},
+ redund:'opcional', psu:{watts:24, tipo:'AC; doble AC o AC + DC según la variante', texto:'Se pide en tres variantes: una fuente AC, doble AC o AC + DC (folleto NetEngine A800 E Series, «Power Redundancy»). 24 W típicos. La fuente AC de 120 W integrada que trae este registro no la publica el folleto.'}},
 {id:'NetEngine A813 E', cls:'WAN', ser:'A800 E', fam:'CPE de acceso multiservicio, 1U', cap:20000, mpps:4.4, lan:0, poe:0, wan:0, wifi:0,
  ports:'1U · 32.7 W típicos · slicing, SRv6, IFIT · fuente AC 120 W integrada, adaptador DC opcional', optics:['ge','sfp10'], parts:['RACK','CONSOLE'],
- redund:false, psu:{watts:120, tipo:'AC integrada (adaptador DC opcional)', texto:'Fuente AC de 120 W integrada, con adaptador DC opcional — única, no redundante.'}},
+ redund:'opcional', psu:{watts:32.7, tipo:'AC; doble AC o AC + DC según la variante', texto:'Se pide en tres variantes: una fuente AC, doble AC o AC + DC (folleto NetEngine A800 E Series, «Power Redundancy»). 32,7 W típicos. La fuente AC de 120 W integrada que trae este registro no la publica el folleto.'}},
 {id:'NetEngine A822 E', cls:'WAN', ser:'A800 E', fam:'CPE de acceso de mayor densidad, 1U', cap:20000, mpps:4.4, lan:0, poe:0, wan:0, wifi:0,
- ports:'1U · 33.2 W típicos · 32 G/U · SRv6, EVPN · fuente AC 120 W integrada', optics:['ge','sfp10'], parts:['RACK','CONSOLE'],
- redund:false, psu:{watts:120, tipo:'AC integrada', texto:'Fuente AC de 120 W integrada — única, no redundante.'}},
+ ports:'1U · 35 W típicos · 32 G/U · SRv6, EVPN · fuente AC 120 W integrada', optics:['ge','sfp10'], parts:['RACK','CONSOLE'],
+ redund:'opcional', psu:{watts:35, tipo:'AC; doble AC o AC + DC según la variante', texto:'Se pide en tres variantes: una fuente AC, doble AC o AC + DC (folleto NetEngine A800 E Series, «Power Redundancy»). 35 W típicos según el folleto; este registro decía 33,2 W sin documento en el repositorio que lo respalde. La fuente AC de 120 W integrada que trae este registro no la publica el folleto.'}},
 {id:'NetEngine A821 E', cls:'WAN', ser:'A800 E', fam:'Acceso 10GE con slicing FlexE, 1U', cap:72000, mpps:108, flexe:true, lan:0, poe:0, wan:0, wifi:0,
  ports:'2 x 10GE/GE + 8 x GE óptico + 8 x GE eléctrico · FlexE con granularidad Mbps · 70 W típicos', optics:['sfp10','ge'], parts:['RACK','CONSOLE'],
- psu:{watts:70}},
+ redund:'opcional', psu:{watts:70, tipo:'AC; doble AC o AC + DC según la variante', texto:'Se pide en tres variantes: una fuente AC, doble AC o AC + DC (folleto NetEngine A800 E Series, «Power Redundancy»). 69,87 W típicos.'}},
 
 {id:'NE8000 M6', cls:'WAN', ser:'NE8000 M', fam:'Agregación compacta, 2U', cap:320000, mpps:72, lan:0, poe:0, wan:0, wifi:0,
  ports:'2U · 6 tarjetas DC / 4 AC de 50 G · MPU 1:1 · fuentes 1+1 · 205.8 W típicos', optics:['sfp10','sfp25','ge'], parts:['RACK','CONSOLE'],
