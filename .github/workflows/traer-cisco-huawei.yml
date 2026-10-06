@@ -379,7 +379,14 @@ jobs:
                         intentos.push({ url: abs.href, error: 'fuera de los dominios del fabricante, no se pide' });
                         continue;
                       }
-                      if (!vistos.has(abs.href)) { vistos.add(abs.href); doc.urls.push(abs.href); }
+                      // El portal enlaza las guias por http; se pide antes por https, y http
+                      // queda de respaldo, porque el PDF solo se valida por su firma.
+                      if (abs.protocol !== 'http:' && abs.protocol !== 'https:') continue;
+                      const seguro = new URL(abs.href);
+                      seguro.protocol = 'https:';
+                      for (const u of [seguro.href, abs.href]) {
+                        if (!vistos.has(u)) { vistos.add(u); doc.urls.push(u); }
+                      }
                     }
                     doc.urls.sort((x, y) => (y.includes('_EN') ? 1 : 0) - (x.includes('_EN') ? 1 : 0));
                     if (!doc.urls.length) intentos.push({ url: de.de, error: 'la pagina no enlaza ningun PDF con ' + de.contiene });
