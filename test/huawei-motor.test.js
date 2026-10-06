@@ -163,6 +163,58 @@ test('H-06 · doble fuente declarada (redund:true) pide dos; una sola fuente pid
   assert.strictEqual(piezas('AR6710-L26T2X4').pedir.find((x) => x.codigo === 'PAC350').qty, 1);
 });
 
+// LA SECCION «ORDERING INFORMATION» DE LAS FICHAS (2026-10-06): el BOM cotizaba un AR8700-8 sin
+// la SPU-700H, que lleva todos sus puertos, y un AR6710-H sin su placa de control.
+test('Ordering Information · el AR8700-8 pide la SPU-700H, y la MPU dice que la ficha deja una o dos', () => {
+  const p = piezas('AR8700-8');
+  const spu = p.pedir.find((x) => x.codigo === 'SPU700H');
+  assert.ok(spu && spu.qty === 1, 'el chasis se vende sin puertos: la SPU se pide siempre');
+  assert.match(spu.nota, /assembly chassis/);
+  const mpu = p.elegir.find((g) => g.grupo === 'mpu');
+  assert.match(mpu.nota, /una o dos MPU/);
+  assert.match(mpu.nota, /25\.1/, 'dos MPU con SD-WAN exigen la 25.1: la ficha lo dice en su nota al pie');
+});
+
+test('Ordering Information · el AR6710-H pide su placa de control (SRU-700S) y una fuente que no es la PAC350', () => {
+  const p = piezas('AR6710-H4T4X2Y7');
+  const sru = p.pedir.find((x) => x.codigo === 'SRU700S');
+  assert.ok(sru && sru.qty === 1);
+  assert.match(sru.nota, /single or dual main control boards/);
+  assert.ok(p.pedir.some((x) => x.codigo === 'PSU6710H'));
+  assert.ok(!p.pedir.some((x) => x.codigo === 'PAC350'));
+});
+
+// La potencia máxima de salida que publica cada ficha de serie AR, fila «Maximum output power»:
+// AR6710-L R26C00, AR6710-H R25C10 y AR8000 R25C10. Se transcribe aquí y no se lee de `psu.texto`,
+// porque ese texto también cita la potencia de la pieza equivocada para explicar por qué no es la
+// suya, y la primera versión de esta prueba pasaba en falso por eso.
+const SALIDA_FICHA = {
+  'AR6710-L8T3TS1X2': [70], 'AR6710-L14T2X4': [150], 'AR6710-L26T2X4': [350, 240], 'AR6710-L50T2X4': [350, 240],
+  'AR6710-H4T4X2Y7': [300, 260], 'AR8140-12G10XG': [350, 240], 'AR8140-T-12G10XG': [350, 240], 'AR8700-8': [600, 1000],
+};
+
+test('una fuente del BOM no contradice la potencia que publica la ficha del equipo', () => {
+  // La PAC180 del AR6710-L8T3 (70 W en su ficha), la PAC350 del L14 (150 W) y la del AR6710-H
+  // (300 W AC / 260 W DC) salieron así: el código de la pieza lleva su potencia, y la ficha
+  // publica la de las fuentes del equipo. Si no casan, la pieza es de otro equipo.
+  for (const m of MODELS) {
+    for (const k of m.parts || []) {
+      const w = Number((k.match(/^P[AD]C(\d+)$/) || [])[1]);
+      if (!w) continue;
+      assert.ok(SALIDA_FICHA[m.id], `${m.id}: pide ${k} y la prueba no tiene la potencia que publica su ficha`);
+      assert.ok(SALIDA_FICHA[m.id].includes(w), `${m.id}: pide ${k} (${w} W) y su ficha publica ${SALIDA_FICHA[m.id].join(' / ')} W`);
+    }
+  }
+});
+
+test('el AR6710-L14 y el L8T3 no piden fuente: las suyas no son módulos que se pidan aparte', () => {
+  for (const id of ['AR6710-L14T2X4', 'AR6710-L8T3TS1X2']) {
+    const p = piezas(id);
+    assert.ok(![...p.pedir, ...p.elegir.flatMap((g) => g.opciones.map((codigo) => ({ codigo })))].some((x) => /^P[AD]C|^PSU/.test(x.codigo)), id);
+    assert.match(MODELS.find((m) => m.id === id).psu.texto, /El BOM no pide fuente/);
+  }
+});
+
 test('H-06 · todo código de parts del catálogo tiene un papel declarado (nada cae al valor por defecto)', () => {
   const sinRol = [...new Set(MODELS.flatMap((m) => m.parts || []))].filter((k) => !M.ROL_PIEZA[k]);
   assert.deepStrictEqual(sinRol, []);

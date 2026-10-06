@@ -46,13 +46,15 @@ const OPTIC_LABEL = {ge:'GE — SFP / eSFP', sfp10:'10GE — SFP+', sfp25:'25GE 
 
 const PARTS = {
   PAC350:{sku:'PAC350S12-CR', bom:null, d:'Fuente AC-DC 350 W · 90–290 V · salida 12 V / 29.2 A · rango –25 a 55 °C'},
-  PAC180:{sku:'PAC180S12-CN', bom:null, d:'Fuente AC 180 W'},
   PAC1000:{sku:'PAC1000S56-EB', bom:null, d:'Fuente AC y 240 V DC de 1000 W · chasis 66 mm · flujo trasero-frontal'},
   PAC600:{sku:'PAC600S56-EB', bom:null, d:'Fuente AC y 240 V DC de 600 W · chasis 66 mm · flujo trasero-frontal'},
   PDC1000:{sku:'PDC1000S56-EB', bom:null, d:'Fuente DC PoE de 1000 W · chasis 66 mm · flujo trasero-frontal'},
   FAN240:{sku:'FAN-240SN-B', bom:null, d:'Módulo de ventilación de una capa con tres ventiladores'},
   MPU100:{sku:'MPU-100', bom:null, d:'Unidad de procesamiento principal del AR8700 · en pareja para redundancia'},
   MPU100T:{sku:'MPU-100-T', bom:null, d:'MPU del AR8700 con módulo de plataforma confiable (TPM)'},
+  SPU700H:{sku:'SPU-700H', bom:null, d:'Unidad de servicio del AR8700 (Service Process Unit) · 1 x 40GE QSFP+, 8 x 10GE SFP+, 8 x GE combo'},
+  SRU700S:{sku:'SRU-700S', bom:null, d:'Placa de servicio y enrutamiento del AR6710-H (Service and Router Unit) · 2 x 25GE SFP28, 4 x 10GE SFP+, 4 x GE RJ45, 1 x USB 3.0'},
+  PSU6710H:{sku:'Fuente del AR6710-H (código por confirmar)', bom:null, d:'Extraíble en caliente. La ficha AR6710-H R25C10 publica 300 W de salida en AC y 260 W en DC, no el código de pedido'},
   WSIC4GE:{sku:'AR6000-WSIC-4GE-C-V2', bom:null, d:'Tarjeta WAN de 4 puertos GE combo · ocupa 1 slot WSIC'},
   WSIC8GE:{sku:'WSIC-8GE-T-V2', bom:null, d:'Tarjeta WAN de 8 puertos GE eléctricos · ocupa 1 slot WSIC'},
   SICNR:{sku:'AR6000-SIC-NR-102-V2', bom:null, d:'Tarjeta 5G NR / LTE / WCDMA · ocupa 2 slots SIC'},
@@ -108,6 +110,19 @@ const PARTS = {
 // que admite dos, no que vengan las dos, y marcarlo `true` haria que el BOM pidiera dos fuentes:
 // esos modelos (AR6710-L26/L50/L14, AR6710-H, AR8700-8) quedan sin `redund`, con la frase literal
 // en `psu.texto`. Los 350 W del AR8140 eran la potencia de cada fuente; su consumo tipico es 168.
+// LAS PIEZAS DE PEDIDO DE LOS AR (2026-10-06, noche), de la «Ordering Information» y la fila
+// «Maximum output power» de esas mismas fichas. Las guias de hardware de support.huawei.com, que
+// darian el codigo de cada modulo, las niega Akamai al acceso automatizado (ver la cabecera de
+// traer-cisco-huawei.yml). Cinco correcciones, y ninguna inventa un codigo:
+//  - AR8700-8: se pide como «assembly chassis» y la SPU-700H lleva todos sus puertos; el BOM
+//    cotizaba un chasis sin puertos. Entra SPU700H, que se pide siempre.
+//  - AR6710-H: la placa de control SRU-700S es un paso de pedido aparte («main control board
+//    selection»), y no se pedia. Su fuente es de 300 W AC / 260 W DC, no la PAC350 de 350 W; la
+//    ficha no publica su codigo, y la linea lo dice (PSU6710H) en vez de citar el de otro equipo.
+//  - AR6710-L14T2X4 (150 W, «not hot-swappable») y L8T3TS1X2 (70 W, sin redundancia): sus fuentes
+//    no son modulos que se pidan aparte, y el BOM pedia una PAC350 y una PAC180. Ya no piden fuente.
+// `test/huawei-motor.test.js` guarda que la potencia de cada fuente pedida sea una de las que
+// publica la ficha del equipo; las tres salieron de esa comparacion.
 const MODELS = [
 {id:'AR611', cls:'AR', ser:'AR610', fam:'SOHO / oficina pequeña', fwd:300, ipsec:200, typ:50, mpps:null, lan:4, poe:0, wan:0, wifi:0, apsFree:0, apsMax:0, boost:0,
  ports:'1 x GE combo WAN, 4 x GE LAN', optics:['ge'], parts:['RACK','CONSOLE'],
@@ -155,8 +170,8 @@ const MODELS = [
  ports:'2 x 10GE SFP+ + 4 x GE WAN, 48 x GE LAN, 4 x SIC', optics:['sfp10','ge'], parts:['SICNR','RACK','CONSOLE'],
  redund:true, psu:{watts:53, tipo:'AC integrada, doble', texto:'Dos fuentes AC integradas («Built-in dual power modules (AC)»); 53 W típicos (ficha AR5710-S R25C10).'}},
 {id:'AR6710-L8T3TS1X2', cls:'AR', ser:'AR6700-L', fam:'Campus pequeño', fwd:2000, ipsec:1600, typ:1200, mpps:null, lan:9, poe:0, wan:0, wifi:0, apsFree:32, apsMax:128, boost:0,
- ports:'1 x 10GE óptico + 2 x GE combo WAN, 1 x GE combo + 8 x GE LAN, 2 x SIC, 0/1 WSIC', optics:['sfp10','ge'], parts:['PAC180','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
- redund:false, psu:{watts:27, tipo:'AC integrada', texto:'Sin redundancia de fuente («Power supply redundancy: N/A»), 70 W de salida máxima en AC; 27 W típicos (ficha AR6710-L R26C00).'}},
+ ports:'1 x 10GE óptico + 2 x GE combo WAN, 1 x GE combo + 8 x GE LAN, 2 x SIC, 0/1 WSIC', optics:['sfp10','ge'], parts:['WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
+ redund:false, psu:{watts:27, tipo:'AC integrada', texto:'Sin redundancia de fuente («Power supply redundancy: N/A»), 70 W de salida máxima en AC; 27 W típicos (ficha AR6710-L R26C00). El BOM no pide fuente: la PAC180S12-CN que listaba el catálogo es de 180 W.'}},
 {id:'AR6710-L26T2X4', cls:'AR', ser:'AR6700-L', fam:'Campus mediano, 24 puertos', fwd:3200, ipsec:1600, typ:1200, mpps:null, lan:24, poe:0, wan:0, wifi:0, apsFree:32, apsMax:128, boost:0,
  ports:'2 x 10GE óptico + 2 x GE WAN, 24 x GE LAN, 4 x SIC, 0/2 WSIC', optics:['sfp10','ge'], parts:['PAC350','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
  psu:{watts:68, tipo:'AC o DC', texto:'«Dual power supplies, hot-swappable» (350 W AC / 240 W DC de salida): admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. 68 W típicos (ficha AR6710-L R26C00).'}},
@@ -164,11 +179,11 @@ const MODELS = [
  ports:'2 x 10GE óptico + 2 x GE WAN, 48 x GE LAN, 4 x SIC, 0/2 WSIC', optics:['sfp10','ge'], parts:['PAC350','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
  psu:{watts:83, tipo:'AC o DC', texto:'«Dual power supplies, hot-swappable» (350 W AC / 240 W DC de salida): admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. 83 W típicos (ficha AR6710-L R26C00).'}},
 {id:'AR6710-L14T2X4', cls:'AR', ser:'AR6700-L', fam:'Campus mediano de alto caudal', fwd:4000, ipsec:2500, typ:1800, mpps:null, lan:12, poe:0, wan:0, wifi:0, apsFree:32, apsMax:128, boost:0,
- ports:'2 x 10GE óptico + 2 x GE WAN, 4 x GE combo + 8 x GE LAN, 4 x SIC, 0/2 WSIC', optics:['sfp10','ge'], parts:['PAC350','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
- psu:{watts:41, tipo:'AC', texto:'«Dual power supplies, not hot-swappable», 150 W de salida máxima en AC; 41 W típicos (ficha AR6710-L R26C00). No se marca: con dos fuentes declaradas el BOM pediría dos PAC350, y esa salida de 150 W no es la de una PAC350.'}},
+ ports:'2 x 10GE óptico + 2 x GE WAN, 4 x GE combo + 8 x GE LAN, 4 x SIC, 0/2 WSIC', optics:['sfp10','ge'], parts:['WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
+ psu:{watts:41, tipo:'AC', texto:'«Dual power supplies, not hot-swappable», 150 W de salida máxima en AC; 41 W típicos (ficha AR6710-L R26C00). El BOM no pide fuente: la PAC350S12-CR que listaba el catálogo es un módulo de 350 W extraíble en caliente, y la ficha publica 150 W y fuentes que no lo son. No se marca la redundancia: la ficha no dice si las dos vienen montadas.'}},
 {id:'AR6710-H4T4X2Y7', cls:'AR', ser:'AR6700-H', fam:'Casa matriz / campus grande', fwd:13000, ipsec:10000, typ:7000, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:32, apsMax:512, boost:0,
- ports:'2 x 25GE SFP28 + 4 x 10GE SFP+ + 4 x GE · 6 x SIC, 1/4 WSIC · reemplaza AR6280/AR6300', optics:['sfp25','sfp10','ge'], parts:['PAC350','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
- psu:{watts:83, tipo:'AC o DC', texto:'«Dual power supplies, hot-swappable» (300 W AC / 260 W DC de salida): admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. 83 W típicos con una SRU y 145 W con dos (ficha AR6710-H R25C10).'}},
+ ports:'2 x 25GE SFP28 + 4 x 10GE SFP+ + 4 x GE · 6 x SIC, 1/4 WSIC · reemplaza AR6280/AR6300', optics:['sfp25','sfp10','ge'], parts:['SRU700S','PSU6710H','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
+ psu:{watts:83, tipo:'AC o DC', texto:'«Dual power supplies, hot-swappable» (300 W AC / 260 W DC de salida): admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. 83 W típicos con una SRU y 145 W con dos (ficha AR6710-H R25C10). La PAC350S12-CR que listaba el catálogo es de 350 W y no es la suya; el código de su fuente de 300 W no lo publica la ficha.'}},
 {id:'AR8140-12G10XG', cls:'AR', ser:'AR8000', fam:'Hub SD-WAN / borde de campus grande', fwd:25000, ipsec:20000, typ:15000, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:32, apsMax:1024, boost:0,
  ports:'10 x 10GE óptico + 8 x GE combo + 4 x GE · 4 x SIC, 0/2 WSIC · doble fuente 350 W', optics:['sfp10','ge'], parts:['PAC350','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
  redund:true, psu:{watts:168, tipo:'AC-DC (PAC350S12-CR)', volts:'90–290 V', amps:'salida 12 V / 29,2 A',
@@ -178,7 +193,7 @@ const MODELS = [
  redund:true, psu:{watts:168, tipo:'AC-DC (PAC350S12-CR)', volts:'90–290 V', amps:'salida 12 V / 29,2 A',
   texto:'Igual al AR8140-12G10XG: doble fuente de 350 W (PAC350S12-CR, 90–290 V, salida 12 V / 29.2 A). 168 W típicos (ficha AR8000 R25C10).'}},
 {id:'AR8700-8', cls:'AR', ser:'AR8700', fam:'Hub SD-WAN de alta disponibilidad', fwd:30000, ipsec:20000, typ:15500, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:32, apsMax:1024, boost:0,
- ports:'Doble MPU, sin interrupción de servicio en conmutación · 24 Gbps SD-WAN IPsec IMIX', optics:['sfp25','sfp10','ge'], parts:['MPU100','MPU100T','PAC1000','PAC600','PDC1000','FAN240','RACK','CONSOLE'],
+ ports:'Doble MPU, sin interrupción de servicio en conmutación · 24 Gbps SD-WAN IPsec IMIX', optics:['sfp25','sfp10','ge'], parts:['SPU700H','MPU100','MPU100T','PAC1000','PAC600','PDC1000','FAN240','RACK','CONSOLE'],
  psu:{watts:221, tipo:'AC, HVDC o DC', texto:'«Dual power supplies, hot-swappable», con módulos de 600 o 1000 W: admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. 221 W típicos con SPU, dos MPU y ventiladores (ficha AR8000 R25C10).'}},
 
 {id:'NetEngine A816 E', cls:'WAN', ser:'A800 E', fam:'CPE de acceso, 1U, consumo mínimo', cap:20000, mpps:4.4, lan:0, poe:0, wan:0, wifi:0,

@@ -197,17 +197,27 @@
      pida: el BOM metia todas como obligatorias (en el AR8700-8, dos MPU y tres tipos de fuente;
      en el AR6710, las dos WSIC y la tarjeta 5G sin haberla pedido). Cada codigo declara aqui su
      papel; lo que depende de una eleccion se agrupa en UNA linea «elegir una», nunca se decide
-     por el usuario. El papel NO viene de la base: es una regla de pedido, no un dato del equipo. */
+     por el usuario. El papel NO viene de la base: es una regla de pedido, no un dato del equipo.
+     LO QUE DICE LA SECCION «ORDERING INFORMATION» DE CADA FICHA (2026-10-06). El AR8700-8 se pide
+     como «assembly chassis» y la SPU-700H es la que lleva TODOS los puertos de servicio: el BOM
+     cotizaba un chasis sin puertos. La placa de control del AR6710-H (SRU-700S) es un paso de
+     pedido aparte, y el BOM no la pedia. Y las dos fichas dejan elegir UNA o DOS placas de
+     control: se dice en la linea, con lo que cambia (`nota`), en vez de fijarlo sin explicarlo. */
   const ROL_PIEZA = {
-    PAC350: { grupo: 'fuente' }, PAC180: { grupo: 'fuente' }, PAC1000: { grupo: 'fuente' },
-    PAC600: { grupo: 'fuente' }, PDC1000: { grupo: 'fuente' },
+    PAC350: { grupo: 'fuente' }, PAC1000: { grupo: 'fuente' },
+    PAC600: { grupo: 'fuente' }, PDC1000: { grupo: 'fuente' }, PSU6710H: { grupo: 'fuente' },
     MPU100: { grupo: 'mpu' }, MPU100T: { grupo: 'mpu' },
+    SPU700H: { nota: 'obligatoria: el AR8700-8 se pide como chasis sin puertos («assembly chassis») y la SPU lleva todos los de servicio (ficha AR8000 R25C10)' },
+    SRU700S: { nota: 'la ficha hace de la placa de control un paso de pedido aparte y deja elegir una o dos («Select a single or dual main control boards»); con dos, 145 W típicos en vez de 83 (ficha AR6710-H R25C10)' },
     FAN240: { incluida: true }, RACK: { incluida: true }, CONSOLE: { incluida: true },
     WSIC4GE: { opcional: 'ampliación WAN por tarjeta WSIC' }, WSIC8GE: { opcional: 'ampliación WAN por tarjeta WSIC' },
     SICNR: { condicional: 'wan', motivo: 'solo si se pide 4G/5G integrado' },
     RU5G: { condicional: 'wan', motivo: 'solo si se pide 4G/5G (unidad remota externa)' },
   };
   const NOMBRE_GRUPO = { fuente: 'Fuente de alimentación', mpu: 'Unidad de procesamiento (MPU)' };
+  const NOTA_GRUPO = {
+    mpu: 'la ficha deja pedir una o dos MPU; se cotizan dos, que son las que dan la conmutación sin corte, y con SD-WAN las dos exigen la versión 25.1 o posterior (ficha AR8000 R25C10)',
+  };
 
   function piezasBom(m, partsCat, ev) {
     const codigos = (m.parts || []).filter((k) => partsCat[k]);
@@ -218,13 +228,14 @@
       if (r.grupo) (grupos[r.grupo] = grupos[r.grupo] || []).push(k);
       else if (r.condicional) (ev.want[r.condicional] ? pedir : noAplican).push({ codigo: k, motivo: r.motivo });
       else if (r.opcional) opcionales.push({ codigo: k, motivo: r.opcional });
-      else pedir.push({ codigo: k, qty: 1 });
+      else pedir.push(r.nota ? { codigo: k, qty: 1, nota: r.nota } : { codigo: k, qty: 1 });
     }
     for (const [g, ks] of Object.entries(grupos)) {
       // Un solo codigo en el grupo: no hay nada que elegir. Doble fuente declarada: se piden 2.
       const qty = g === 'mpu' ? 2 : (m.redund === true ? 2 : 1);
-      if (ks.length === 1) pedir.push({ codigo: ks[0], qty });
-      else elegir.push({ grupo: g, nombre: NOMBRE_GRUPO[g] || g, opciones: ks, qty });
+      const nota = NOTA_GRUPO[g] ? { nota: NOTA_GRUPO[g] } : {};
+      if (ks.length === 1) pedir.push({ codigo: ks[0], qty, ...nota });
+      else elegir.push({ grupo: g, nombre: NOMBRE_GRUPO[g] || g, opciones: ks, qty, ...nota });
     }
     return { pedir, elegir, opcionales, noAplican };
   }

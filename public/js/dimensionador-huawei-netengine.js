@@ -502,8 +502,8 @@ function renderBom(){
   const piezas = HuaweiMotor.piezasBom(m, PARTS, ultimaEval || {want:{}});
   const fila = (p, estado) => `<tr><td><code>${esc(PARTS[p.codigo||p].sku)}</code></td><td>${bomTag(PARTS[p.codigo||p].bom)}</td><td>${esc(PARTS[p.codigo||p].d)}</td><td>${estado}</td></tr>`;
   const compat = [
-    ...piezas.pedir.map(p => fila(p, 'Se pide' + ((p.qty||1) > 1 ? ` (x${p.qty})` : ''))),
-    ...piezas.elegir.flatMap(g => g.opciones.map(k => fila(k, `Elegir una — ${g.nombre.toLowerCase()}`))),
+    ...piezas.pedir.map(p => fila(p, 'Se pide' + ((p.qty||1) > 1 ? ` (x${p.qty})` : '') + (p.nota ? `<br><span style="color:var(--steel);font-size:11.5px">${esc(p.nota)}</span>` : ''))),
+    ...piezas.elegir.flatMap(g => g.opciones.map(k => fila(k, `Elegir una — ${g.nombre.toLowerCase()}` + (g.qty > 1 ? ` (x${g.qty})` : '') + (g.nota ? `<br><span style="color:var(--steel);font-size:11.5px">${esc(g.nota)}</span>` : '')))),
     ...piezas.opcionales.map(p => fila(p, `Opcional: ${esc(p.motivo)}`)),
     ...piezas.noAplican.map(p => fila(p, `No aplica: ${esc(p.motivo)}`)),
   ];
@@ -562,9 +562,9 @@ function filasBom(m, qty, opticas, piezas, lics, s){
   // H-06: solo lo que se PIDE; lo que es una alternativa va en una sola linea «elegir una»
   // (sin codigo, marcada por confirmar) y lo condicional o de ampliacion no se cotiza solo.
   piezas.pedir.forEach(p=>{ const c=PARTS[p.codigo];
-    filas.push({cat:'Componentes de hardware', desc:c.sku, sku:c.bom||null, qty:qty*(p.qty||1), unit:null, nota:c.d||''}); });
+    filas.push({cat:'Componentes de hardware', desc:c.sku, sku:c.bom||null, qty:qty*(p.qty||1), unit:null, nota:[c.d, p.nota].filter(Boolean).join(' · ')}); });
   piezas.elegir.forEach(g=>filas.push({cat:'Componentes de hardware', desc:`${g.nombre} — elegir una`, sku:null,
-    qty:qty*g.qty, unit:null, nota:'Opciones: '+g.opciones.map(k=>PARTS[k].sku).join(' · ')}));
+    qty:qty*g.qty, unit:null, nota:'Opciones: '+g.opciones.map(k=>PARTS[k].sku).join(' · ')+(g.nota ? ' · '+g.nota : '')}));
   // H-07: una linea por optica DECLARADA (familia, modelo, cantidad por equipo), con su codigo.
   opticas.forEach(v => filas.push({cat:'Ópticas', desc:`${OPTIC_LABEL[v.fam] || v.fam} — ${v.o.sku}`,
     sku:(v.o.bom && v.o.bom.length) ? v.o.bom.join(' / ') : null, qty:v.qty*qty, unit:null,
