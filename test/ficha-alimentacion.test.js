@@ -84,13 +84,20 @@ test('sin modelo no revienta', () => {
 // No inventa cifras: cada modelo con dato viene de una frase ya publicada en el propio
 // legacyData (fuentes 1+1, doble fuente, PSU redundantes...), nunca de una suposicion sobre
 // el tamano o la gama del equipo.
-test('Huawei: los AR8140 (doble fuente 350 W) quedan marcados; un AR sin mencion de fuente queda sin dato', () => {
+test('Huawei: los AR8140 (doble fuente) quedan marcados; un AR que admite dos fuentes sin decir cuántas trae queda sin dato', () => {
   const { MODELS } = require('../server/seed/legacyData/huawei.js');
   const ar8140 = MODELS.find((m) => m.id === 'AR8140-12G10XG');
   assert.strictEqual(ar8140.redund, true);
-  assert.strictEqual(ar8140.psu.watts, 350);
-  const ar611 = MODELS.find((m) => m.id === 'AR611');
-  assert.strictEqual(ar611.redund, undefined, 'AR611 no menciona fuente en el catalogo: no se debe inventar');
+  // 2026-10-06: decia 350 W, que es la potencia de cada fuente y no el consumo; la ficha AR8000
+  // R25C10 da 168 W tipicos, y la seccion los rotula «Consumo tipico».
+  assert.strictEqual(ar8140.psu.watts, 168);
+  // El AR611 tenia aqui el papel de «no menciona fuente»: desde ese dia su ficha (AR610 R26C00)
+  // y su vista trasera dicen que lleva una sola entrada de 12 V. El tercer estado lo guarda ahora
+  // el AR6710-H: «Dual power supplies, hot-swappable» dice que admite dos, no que vengan dos.
+  assert.strictEqual(MODELS.find((m) => m.id === 'AR611').redund, false);
+  const ar6710h = MODELS.find((m) => m.id === 'AR6710-H4T4X2Y7');
+  assert.strictEqual(ar6710h.redund, undefined, 'admite dos fuentes sin decir cuántas trae: no se debe inventar');
+  assert.match(ar6710h.psu.texto, /Dual power supplies, hot-swappable/);
 });
 
 test('Cisco: redund sigue con cobertura completa (no se toco el dato, solo se movio la seccion)', () => {

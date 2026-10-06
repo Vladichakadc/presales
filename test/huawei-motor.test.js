@@ -24,7 +24,10 @@ const LEGADO = [
   ['UTM + SD-WAN 300 Mbps', { bw: 300, svc: { sdwan: true, utm: true } }, 'AR6710-L8T3TS1X2'],
   ['2 Gbps fwd sin SD-WAN', { bw: 2000, profile: 'fwd', svc: { sdwan: false } }, 'AR6710-H4T4X2Y7'],
   ['6 Gbps fwd sin SD-WAN', { bw: 6000, profile: 'fwd', svc: { sdwan: false } }, 'AR8140-12G10XG'],
-  ['1 Gbps fwd + slicing', { bw: 1000, profile: 'fwd', svc: { sdwan: false, slice: true } }, 'AR6710-L14T2X4'],
+  // Medido en f2a939d salia el AR6710-L14T2X4 (4 Gbps). Desde el 2026-10-06 la ficha AR6710-L
+  // R26C00 da 3,2 Gbps de reenvio al L26T2X4 (el catalogo decia 2), y cumple los 2,6 Gbps de
+  // demanda siendo mas pequeno: otra vez cambio el dato, no el motor.
+  ['1 Gbps fwd + slicing', { bw: 1000, profile: 'fwd', svc: { sdwan: false, slice: true } }, 'AR6710-L26T2X4'],
   ['hub 100 sedes x 50 Mbps', { bw: 50, mode: 'agg', sites: 100 }, 'AR6710-H4T4X2Y7'],
   ['SD-WAN 500 Mbps + 8 LAN', { lan: 8 }, 'AR6710-L14T2X4'],
   ['SD-WAN 2 Gbps + 8 LAN', { bw: 2000, dirMult: 1, lan: 8 }, null],
@@ -68,7 +71,10 @@ test('H3 · la plataforma se elige antes que el caudal: solo compiten los modelo
   assert.ok(ne.rows.every((r) => /^NE8000/.test(r.m.ser)), 'NE8000: solo NE8000');
   assert.ok(a8.rows.every((r) => r.m.ser === 'A800 E'), 'A800 E: solo A800 E');
   assert.strictEqual(ar.pick.m.id, 'AR6710-H4T4X2Y7');
-  assert.strictEqual(ne.pick.m.id, 'NE8000 M1A');
+  // Hasta el 2026-10-06 salia el NE8000 M1A, con 176 Gbps. Su ficha da 352 de conmutacion (los
+  // 176 eran la capacidad de puertos), y el mas pequeno que cumple pasa a ser el M6 (320): cambio
+  // el dato, no la regla de la plataforma, que es lo que esta prueba guarda.
+  assert.strictEqual(ne.pick.m.id, 'NE8000 M6');
   assert.strictEqual(a8.pick.m.id, 'NetEngine A813 E');
 });
 
@@ -80,7 +86,7 @@ test('H3 · antes, con reenvío puro, un AR y un NE8000 competían en la misma l
 test('H3 · en transporte, SD-WAN, UTM, WAC, PoE, 4G/5G, Wi-Fi y LAN no entran en el cálculo', () => {
   const r = M.evaluar(esc({ bw: 2000, plataforma: 'ne8000', svc: { sdwan: true, utm: true }, want: { poe: true, wifi: true }, aps: 50, lan: 24 }), MODELS);
   assert.ok(r.pick, 'las funciones AR no vacían la plataforma de transporte');
-  assert.strictEqual(r.pick.m.id, 'NE8000 M1A');
+  assert.strictEqual(r.pick.m.id, 'NE8000 M6', 'el mismo que sin esas funciones (ver la prueba anterior)');
   assert.ok(!r.avisos.some((a) => /sube de|UTM/.test(a)));
 });
 

@@ -12,9 +12,9 @@
 //      cara, y el pie tiene que decir cuál se sirve;
 //   3. el AR8140 y el AR8140-T comparten la MISMA figura en su ficha, y se dice.
 //
-// LO QUE NO SE AFIRMA: cuántos modelos tienen figura. Sube en cuanto alguien traiga la ficha
-// de los AR6710-L o de las M1C, M1D, M4 y F1A, y una prueba que lo fijara se pondría roja por
-// una mejora.
+// LO QUE NO SE AFIRMA: cuántos modelos tienen figura. Hoy son los 40 (desde la tarde del
+// 2026-10-06), pero un modelo nuevo entrará sin ella hasta que alguien traiga su ficha, y una
+// prueba que lo fijara se pondría roja por un alta legítima.
 
 const test = require('node:test');
 const assert = require('node:assert');
@@ -59,7 +59,7 @@ test('ninguna entrada vacía: un modelo sin figura no está en el mapa', () => {
 
 test('cada figura cita su documento, la página y el rótulo literal, y trae el tamaño', () => {
   for (const [modelo, v] of entradas) {
-    assert.match(v.fuente || '', /^(Data ?[Ss]heet|NetEngine) .+, p\. \d+ — «[^»]{6,}»\. \S/,
+    assert.match(v.fuente || '', /^(Data ?[Ss]heet|NetEngine) .+, (p\.|diapositiva) \d+ — «[^»]{6,}»\. \S/,
       `${modelo}: la procedencia no dice documento, página y rótulo («${v.fuente}»)`);
     assert.match(v.tamano || '', /\d+(,\d+)? × \d+(,\d+)? × \d+(,\d+)? mm/, `${modelo}: falta el tamaño`);
   }
@@ -99,7 +99,7 @@ test('las variantes de alimentación se nombran: DC en las NetEngine 8000, una f
     }
     if (/^NetEngine A8\d\d E$/.test(modelo)) {
       assert.match(v.fuente, /una fuente AC/, `${modelo}: no dice qué variante dibuja`);
-      assert.match(v.fuente, /Dual AC/, `${modelo}: no nombra las otras variantes`);
+      assert.match(v.fuente, /doble AC/, `${modelo}: no nombra las otras variantes`);
     }
   }
 });
