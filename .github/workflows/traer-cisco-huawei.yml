@@ -204,6 +204,53 @@ jobs:
                 'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/1ff4ee729369411ba9288d36e86e3474/M3T1A590N1149651611493585023/NetEngine%20A821%20E%20Datasheet%20V800R025C00.pptx',
                 'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/1ff4ee729369411ba9288d36e86e3474/M3T1A590N1149651611493585023/NetEngine%20A821%20E%20Datasheet%20V800R025C00.pptx',
               ] },
+              // 2026-10-06 (noche): paginas de e.huawei.com, NO de support.huawei.com (esas las niega
+              // Akamai, ver la cabecera). Las de producto, para leer en el texto oficial la capacidad
+              // por modelo de la A800 E y la alimentacion de las NE8000 y los AR. Las «Single-page
+              // view» las senalo la busqueda al preguntar por las fuentes de los AR6710 y el AR8700:
+              // se guardan solo si enlazan su documento (Material/), para leer cual es antes de bajarlo.
+              { archivo: 'huawei-a800-producto.html', tipo: 'html', para: 'HUAWEI', debeContener: 'A821', urls: [
+                'https://e.huawei.com/en/products/routers/netengine-a800',
+              ] },
+              { archivo: 'huawei-ne8000-producto.html', tipo: 'html', para: 'HUAWEI', debeContener: 'M1A', urls: [
+                'https://e.huawei.com/en/products/routers/ne8000',
+              ] },
+              { archivo: 'huawei-ar6700-producto.html', tipo: 'html', para: 'HUAWEI', debeContener: 'AR6710', urls: [
+                'https://e.huawei.com/en/products/routers/netengine-ar6700',
+              ] },
+              { archivo: 'huawei-ar8700-producto.html', tipo: 'html', para: 'HUAWEI', debeContener: 'AR8700', urls: [
+                'https://e.huawei.com/en/products/routers/netengine-ar8700',
+              ] },
+              { archivo: 'huawei-spv-811ac338.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/811ac3380ca7453fa9fd7edf8dbad52c',
+              ] },
+              { archivo: 'huawei-spv-5cb30774.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+                'https://e.huawei.com/en/material/enterprise/5cb3077476e2493aac3972db0663066a',
+              ] },
+              { archivo: 'huawei-spv-ecb4d450.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/ecb4d45066bf4b629f4783bca1b846f9',
+              ] },
+              { archivo: 'huawei-spv-960a6a66.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/960a6a66b96547eebb830949dce209ae',
+              ] },
+              { archivo: 'huawei-spv-1e3d1fc4.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/1e3d1fc4b14e4782846c8731be090909',
+              ] },
+              { archivo: 'huawei-spv-90f6fd47.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+                'https://e.huawei.com/en/material/enterprise/90f6fd472b63452da07ec6e9faf5f261',
+              ] },
+              { archivo: 'huawei-spv-f693e277.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+                'https://e.huawei.com/en/documents/others/f693e27702504d748be545b1caa77854',
+              ] },
+              { archivo: 'huawei-spv-729aba28.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+                'https://e.huawei.com/en/material/enterprise/729aba28dcdc41c5a608dc1859eb3211',
+              ] },
+              { archivo: 'huawei-spv-f65d1efd.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/f65d1efd2cc24c2e882d5268ab74e419',
+              ] },
+              { archivo: 'huawei-spv-1eb8951b.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+                'https://e.huawei.com/en/documents/others/1eb8951bd3fa4220a01a401b3b345add',
+              ] },
               { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
                 'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
                 'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
