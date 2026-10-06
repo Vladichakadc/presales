@@ -26,6 +26,11 @@ name: traer-cisco-huawei
 #           bytes, el cascaron de la aplicacion sin el documento (corrida 37453468795); abiertas
 #           con Chromium sin cabeza, un 403 «Access Denied» de Akamai en las catorce (corrida
 #           37454219168). Es el fabricante quien niega el acceso automatizado, y no se rodea.
+#   ARUBA · las guias de instalacion de los controladores 7000/7200 (2026-10-06, pendiente 41):
+#           sus vistas frontal y trasera van a la tarjeta grafica del dimensionador, que hoy
+#           muestra el aviso honesto en esos nueve modelos. El dominio de HPE esta bloqueado
+#           desde el entorno de edicion; `arubanetworking.hpe.com/techdocs` ya sirvio desde
+#           Actions el EdgeConnect Hardware Reference.
 #   JUNIPER · el datasheet vigente de la linea SRX300 (2026-10-02): el cotizador cita del
 #           SRX340 4,7 Gbps y 733 Mbps y el dimensionador 3 Gbps y 600 Mbps de la matriz de
 #           2020. Las dos son oficiales; hay que leer la tabla entera para decidir cual manda. Desde el entorno de edicion `support.huawei.com` e
@@ -250,6 +255,16 @@ jobs:
               ] },
               { archivo: 'huawei-spv-1eb8951b.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
                 'https://e.huawei.com/en/documents/others/1eb8951bd3fa4220a01a401b3b345add',
+              ] },
+              // 2026-10-06 (septima): ARUBA, las figuras de los controladores AOS 8 (pendiente 41).
+              // El portal de documentacion de hardware de HPE Aruba enlaza la guia de instalacion
+              // de cada controlador; la del 7024 la dio la busqueda. Las demas se leen en el
+              // portal antes de pedirlas, no se adivinan por el patron de esa URL.
+              { archivo: 'aruba-controladores-portal.html', tipo: 'html', para: 'ARUBA', debeContener: '7024', urls: [
+                'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/controller-top.htm',
+              ] },
+              { archivo: 'aruba-7024-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+                'https://arubanetworking.hpe.com/techdocs/hardware/controllers/7024/ig/Aruba-7024IG_EN.pdf',
               ] },
               { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
                 'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
