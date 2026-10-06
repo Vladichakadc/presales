@@ -42,6 +42,35 @@ test('cada figura declarada existe de verdad en el repositorio', () => {
   }
 });
 
+test('cada figura es WebP SIN pérdida: los píxeles del documento, sin segunda generación (2026-10-06)', () => {
+  // Las fichas traen las figuras en JPEG. Guardarlas en WebP con pérdida era una segunda
+  // pérdida sobre la primera: medido contra el original, de 32 a 44 dB de PSNR, con los rótulos
+  // de los puertos de la AR5710-S8T2S emborronados. Un WebP sin pérdida lleva el bloque `VP8L`
+  // (directo o dentro de un `VP8X`); uno con pérdida, `VP8 `.
+  for (const [modelo, v] of entradas) {
+    for (const cara of ['front', 'rear']) {
+      if (!v[cara]) continue;
+      const buf = fs.readFileSync(path.join(RAIZ, 'public', v[cara]));
+      assert.ok(buf.includes(Buffer.from('VP8L')) && !buf.includes(Buffer.from('VP8 ')),
+        `${modelo}: ${v[cara]} está guardado con pérdida — regenerarlo sin pérdida desde su documento`);
+    }
+  }
+});
+
+test('el F8 sirve el dibujo de su ficha de 2023, al doble de resolución que la de 2025', () => {
+  // Las dos fichas oficiales publican el mismo dibujo de la variante AC (reducido, correlaciona
+  // 0,975): la de 2025 a 296 px y la de 2023 a 620. La figura no cambia de equipo, gana detalle.
+  const v = VISTAS['NE8000 F8'];
+  const buf = fs.readFileSync(path.join(RAIZ, 'public', v.front));
+  // Ancho y alto del lienzo de un WebP sin pérdida: 14 bits cada uno, tras la firma 0x2f.
+  const i = buf.indexOf(Buffer.from('VP8L')) + 8;
+  assert.strictEqual(buf[i], 0x2f);
+  const bits = buf.readUInt32LE(i + 1);
+  assert.deepStrictEqual([(bits & 0x3fff) + 1, ((bits >> 14) & 0x3fff) + 1], [620, 767]);
+  assert.match(v.fuente, /Service Router \(marzo de 2023\), p\. 1 — «NetEngine 8000 F8 service router»/);
+  assert.match(v.fuente, /variante AC/);
+});
+
 test('cada modelo con figura existe en el catálogo', () => {
   const ids = new Set(MODELS.map((m) => m.id));
   for (const [modelo] of entradas) {
@@ -71,7 +100,8 @@ test('el rótulo citado nombra al propio modelo, no a un hermano de serie', () =
   // espacios, sin el prefijo de la línea y sin lo que va entre paréntesis.
   // Igualdad exacta y no prefijo: con un prefijo, «AR5710-S8T2X» casaría con el rótulo del
   // «AR5710-S8T2XE», el ancla-subcadena que este repositorio ya pagó dos veces.
-  const clave = (s) => s.replace(/\(.*?\)|（.*?）/g, '').replace(/NetEngine|NE|Router/g, '').replace(/[\s*]/g, '').toLowerCase();
+  // La ficha de 2023 del F8 rotula «NetEngine 8000 F8 service router», en minúscula.
+  const clave = (s) => s.replace(/\(.*?\)|（.*?）/g, '').replace(/\s*service router/i, '').replace(/NetEngine|NE|Router/g, '').replace(/[\s*]/g, '').toLowerCase();
   for (const [modelo, v] of entradas) {
     const rotulo = (v.fuente.match(/«([^»]+)»/) || [])[1] || '';
     const nombres = rotulo.split(' / ').map(clave);
@@ -94,8 +124,13 @@ test('los AR610 publican dos vistas y la trasera es la de la toma de alimentaci�
 test('las variantes de alimentación se nombran: DC en las NetEngine 8000, una fuente AC en las A800 E', () => {
   for (const [modelo, v] of entradas) {
     if (/^NE8000 [MF]/.test(modelo)) {
-      assert.match(v.fuente, /variante DC/, `${modelo}: no dice qué variante dibuja`);
-      assert.match(v.fuente, /también la AC/, `${modelo}: no dice que el documento trae también la AC`);
+      // La DC, salvo el F8, que sirve la AC porque es la que existe a más resolución
+      // (2026-10-06): sea cual sea, el pie dice cuál dibuja y que el documento trae la otra.
+      const m = /variante (DC|AC)/.exec(v.fuente);
+      assert.ok(m, `${modelo}: no dice qué variante dibuja`);
+      const otra = m[1] === 'DC' ? 'AC' : 'DC';
+      assert.match(v.fuente, new RegExp('también la ' + otra), `${modelo}: no dice que el documento trae también la ${otra}`);
+      if (modelo !== 'NE8000 F8') assert.strictEqual(m[1], 'DC', `${modelo}: se sirve la DC`);
     }
     if (/^NetEngine A8\d\d E$/.test(modelo)) {
       assert.match(v.fuente, /una fuente AC/, `${modelo}: no dice qué variante dibuja`);
