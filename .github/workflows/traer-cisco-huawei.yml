@@ -279,7 +279,8 @@ jobs:
               // 2026-10-06 (corrida 37502072088): cada pagina de psnow enlaza su PDF en «downloadDoc/...»;
               // la URL se copio de ahi, con el titulo y la version que la pagina declara. El portal es
               // una ayuda MadCap que pinta su lista desde los indices de Data/Tocs: se traen para leer
-              // en ellos la pagina de cada controlador.
+              // en ellos la pagina de cada controlador. El nombre del indice lo declara la propia pagina
+              // (`Data/Tocs/product_toc__con_gat__controller.js`); `Default.js` dio 404 (37504395999).
               { archivo: 'aruba-7000-serie-ds.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
                 'https://www.hpe.com/psnow/downloadDoc/Aruba%207000%20Series%20Mobility%20Controllers-c05272689.pdf?id=c05272689.pdf&isFutureVersion=true&ver=13&form=false&preview=false&print=&hf=regular&r=&section=&prelaunchSection=&softrollSection=&deepLink=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&originalObjectName=&isLinearized=false&contentDisposition=attachment',
               ] },
@@ -287,10 +288,10 @@ jobs:
                 'https://www.hpe.com/psnow/downloadDoc/HPE%20Aruba%20Networking%207200%20Series%20Mobility%20Controllers-c05272677.pdf?id=c05272677.pdf&isFutureVersion=true&ver=14&form=false&preview=false&print=&hf=regular&r=&section=&prelaunchSection=&softrollSection=&deepLink=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&originalObjectName=&isLinearized=false&contentDisposition=attachment',
               ] },
               { archivo: 'aruba-portal-toc.js', tipo: 'html', para: 'ARUBA', urls: [
-                'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Data/Tocs/Default.js',
+                'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Data/Tocs/product_toc__con_gat__controller.js',
               ] },
               { archivo: 'aruba-portal-toc-chunk0.js', tipo: 'html', para: 'ARUBA', urls: [
-                'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Data/Tocs/Default_Chunk0.js',
+                'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Data/Tocs/product_toc__con_gat__controller_Chunk0.js',
               ] },
               { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
                 'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
