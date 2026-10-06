@@ -155,6 +155,12 @@ en CI, y para entonces ya empujaste. **Avisa, no bloquea** —responde `ask` con
 dentro—, por el mismo razonamiento del override con motivo del dimensionador Fortinet: un
 bloqueo rígido se rodea con una variable de entorno y entonces la advertencia se pierde entera.
 Sin registro todavía se calla, en vez de dar una alarma que nadie puede atender.
+**Desde el 2026-10-06 mira también `npm run auditar`**, que no va dentro de `verificar` (necesita
+el registro de npm) y que CI corre fallando cerrado: ese día un aviso crítico nuevo de
+`proxy-addr` puso `verificar` en rojo después de empujar. La auditoría caduca si el lock cambió
+después o si tiene más de 12 horas, porque la base de avisos cambia cada día; si nunca se corrió
+ninguna, no dice nada de ella. Lo guarda `test/pre-push-hook.test.js`, que conduce el hook con
+el JSON real sobre un repositorio temporal (antes no lo probaba nada).
 
 **Y los dos comparten `lib-comando.js`, que distingue un comando que SE EJECUTA de uno que solo
 se menciona.** No es una precaución teórica: la primera versión casaba con un `grep` sobre el
