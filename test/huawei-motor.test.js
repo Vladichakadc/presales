@@ -350,3 +350,20 @@ test('un hub con menos de una sede se lee como una: ni requerimiento negativo ni
   assert.deepStrictEqual([neg.need, neg.pick && neg.pick.m.id], [una.need, una.pick && una.pick.m.id]);
   assert.ok(!neg.avisos.some((a) => /-\d/.test(a)), neg.avisos.join(' | '));
 });
+
+// H-03 (2026-10-06): el ×2 por defecto, con su porqué por capa. Las seis fichas AR dicen de sus
+// cifras SD-WAN e IPsec que son «combined total of traffic in inbound and outbound directions»;
+// del reenvío no dicen nada, y eso se declara en vez de afirmarlo.
+test('H-03: el ×2 bidireccional cita la nota al pie de las fichas AR solo donde la ficha lo dice', () => {
+  for (const capa of ['ipsec', 'typ']) {
+    const r = M.respaldoBidireccional(capa, false);
+    assert.strictEqual(r.documento, true, capa);
+    assert.match(r.texto, /combined total of traffic in inbound and outbound directions/);
+  }
+  const fwd = M.respaldoBidireccional('fwd', false);
+  assert.strictEqual(fwd.documento, false, 'del reenvío la ficha no dice nada');
+  assert.match(fwd.texto, /no dice/);
+  const sw = M.respaldoBidireccional('fwd', true);
+  assert.strictEqual(sw.documento, false);
+  assert.match(sw.texto, /convención del sector/);
+});

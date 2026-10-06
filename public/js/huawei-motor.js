@@ -259,6 +259,21 @@
     return { validas, invalidas };
   }
 
+  /* H-03 (cerrado el 2026-10-06). ¿Con qué se respalda dimensionar contra la SUMA de las dos
+     direcciones? Las seis fichas de la línea AR (AR610 y AR6710-L de R26C00; AR5710-S, AR6710-H
+     y AR8000 de R25C10; AR650 de 20250810) lo dicen literal en la nota al pie de su tabla, de
+     sus tres cifras SD-WAN —IPsec, IPsec + QoS y la típica—: «This specification applies to the
+     combined total of traffic in inbound and outbound directions». Del reenvío (NAT + ACL + QoS)
+     no dicen nada, y la conmutación de las NE8000 es la convención del sector. Devuelve si hay
+     documento y el texto que la traza pinta: el ×2 por defecto sigue igual, ahora con su porqué. */
+  function respaldoBidireccional(capa, esConmutacion) {
+    if (esConmutacion) return { documento: false, texto: 'la capacidad de conmutación se publica como suma de las dos direcciones, que es la convención del sector' };
+    if (capa === 'ipsec' || capa === 'typ') {
+      return { documento: true, texto: 'las fichas de la línea AR lo dicen de esta cifra: «combined total of traffic in inbound and outbound directions» (nota al pie de su tabla de rendimiento)' };
+    }
+    return { documento: false, texto: 'la ficha no dice si el reenvío (NAT + ACL + QoS) se mide por dirección o sumado: el ×2 es la convención de la página, y «Total agregado» lo quita' };
+  }
+
   function fmt(m) {
     if (m == null) return '—';
     if (m >= 1000000) return (m / 1000000).toFixed(m % 1000000 ? 2 : 0).replace(/\.00$/, '') + ' Tbps';
@@ -266,5 +281,5 @@
     return Math.round(m) + ' Mbps';
   }
 
-  return { PLATAFORMAS, CAPAS, PROFILE, PISO_POR_FUNCION, capaEfectiva, evaluar, licencias, piezasBom, opticasBom, ROL_PIEZA, fmt };
+  return { PLATAFORMAS, CAPAS, PROFILE, PISO_POR_FUNCION, capaEfectiva, evaluar, licencias, piezasBom, opticasBom, ROL_PIEZA, respaldoBidireccional, fmt };
 });

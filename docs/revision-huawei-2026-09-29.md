@@ -105,7 +105,12 @@ IPsec: el dato no está en el catálogo, y la página no lo dice.
   - Apartar todos los AR dejaría UTM sin respuesta posible. Declarar y frenar la exportación es
     la salida que ya usa Fortinet: un dato técnico que falta impide cotizar sin aviso.
 
-**H-03 · El ×2 bidireccional por defecto no tiene fuente declarada.**
+**H-03 · El ×2 bidireccional por defecto no tiene fuente declarada.** *Cerrado el 2026-10-06:* las
+seis fichas de la línea AR, leídas, dicen de sus tres cifras SD-WAN (IPsec, IPsec + QoS y la
+típica) que «apply to the combined total of traffic in inbound and outbound directions». El ×2 por
+defecto se queda, y la traza dice con qué se respalda en cada capa
+(`HuaweiMotor.respaldoBidireccional`): con la nota al pie en `ipsec` y `typ`; como convención
+declarada en el reenvío, del que la ficha no dice nada, y en la conmutación de las NE8000.
 - `#dirSeg` arranca en «Por dirección» y duplica la necesidad, porque la página afirma que
   «Huawei publica throughput y capacidad de conmutación como suma bidireccional».
 - Para la **conmutación** del NE8000 eso es la convención del sector.
@@ -327,7 +332,7 @@ hace medible todo lo demás.
 Se ejecutaron H1 y las partes de H2, H3 y H4 que no dependen de datos bloqueados:
 `public/js/huawei-motor.js`, `test/huawei-motor.test.js` (26 casos, con línea base del comportamiento
 anterior) y el contraste `scripts/contrastes/huawei.js`. Pantallas 17/17 y contraste sin discrepancias.
-Estado por hallazgo en `PENDIENTES.md`. Sin cerrar: H-03 (fuente del ×2), H-10/H-11/H-14 (datos)
+Estado por hallazgo en `PENDIENTES.md`. Sin cerrar: H-10/H-11/H-14 (datos); H-03 se cerró el 2026-10-06 con las fichas AR
 y lo marcado «falta» en H3 y H4.
 
 **H-11, primera versión (2026-09-29).** El modo agregado declara los túneles IPsec que se piden

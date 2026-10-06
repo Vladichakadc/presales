@@ -210,7 +210,7 @@ function porQueHuawei(m, c, next){
   const usePps = (m.mpps != null) ? Math.min(100, c.needMpps / m.mpps * 100) : null;
   return `<b>Cómo se llegó a ${fmt(c.need)}</b><ul>
       ${mode === 'agg' ? `<li>${c.sites} sedes x ${fmt(c.raw)} x ${c.conc} % de simultaneidad = <b>${fmt(c.base)}</b> agregados.</li>` : `<li>Caudal base: <b>${fmt(c.raw)}</b>.</li>`}
-      ${dirMult === 2 ? `<li>Medido por dirección, se dimensiona contra la suma bidireccional: <b>${fmt(c.base*2)}</b>.</li>` : `<li>Tomado como total agregado, sin duplicar.</li>`}
+      ${dirMult === 2 ? `<li>Medido por dirección, se dimensiona contra la suma bidireccional: <b>${fmt(c.base*2)}</b> — ${HuaweiMotor.respaldoBidireccional(c.pk, !!m.__isWan).texto}.</li>` : `<li>Tomado como total agregado, sin duplicar.</li>`}
       <li>Más ${c.head} % de margen: <b>${fmt(c.need)}</b> · <b>${c.needMpps.toFixed(2)} Mpps</b>.</li>
       <li>${m.id} publica <b>${fmt(cap)}</b> en ${metric.toLowerCase()}.</li>
       <li>${m.ports}</li>
@@ -308,7 +308,7 @@ function drawVerdict(pick, next, c){
     ${usePps != null ? `<div class="meter"><b><span>Reenvío a ${c.frame} bytes</span><em>${usePps.toFixed(0)} % de ${m.mpps} Mpps</em></b><div class="bar"><i class="${ppsCls}" style="width:${usePps}%"></i></div></div>` : ''}
     <div class="why"><b>Cómo se llegó a ${fmt(c.need)}</b><ul>
       ${mode === 'agg' ? `<li>${c.sites} sedes x ${fmt(c.raw)} x ${c.conc} % de simultaneidad = <b>${fmt(c.base)}</b> agregados.</li>` : `<li>Caudal base: <b>${fmt(c.raw)}</b>.</li>`}
-      ${dirMult === 2 ? `<li>Medido por dirección, se dimensiona contra la suma bidireccional: <b>${fmt(c.base*2)}</b>.</li>` : `<li>Tomado como total agregado, sin duplicar.</li>`}
+      ${dirMult === 2 ? `<li>Medido por dirección, se dimensiona contra la suma bidireccional: <b>${fmt(c.base*2)}</b> — ${HuaweiMotor.respaldoBidireccional(c.pk, !!pick.isWan).texto}.</li>` : `<li>Tomado como total agregado, sin duplicar.</li>`}
       <li>Más ${c.head} % de margen: <b>${fmt(c.need)}</b> · <b>${c.needMpps.toFixed(2)} Mpps</b>.</li>
       <li>${m.id} publica <b>${fmt(cap)}</b> en ${metric.toLowerCase()}.</li>
       <li>${m.ports}</li>
