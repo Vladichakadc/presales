@@ -16,7 +16,10 @@ name: traer-cisco-huawei
 #           fichas de las series AR (AR610, AR650, AR5710-S, AR6710-H, AR8000): el `typ` vacio del
 #           AR611 y del AR651, y el del AR8700-8, que el catalogo daba como 24 Gbps. Y las
 #           fichas de NE8000 M6, M1A, M1D-B, serie X y A800 E: sus figuras oficiales van a la
-#           tarjeta grafica del dimensionador (2026-10-06).
+#           tarjeta grafica del dimensionador (2026-10-06). Esa misma tarde, las de los ocho que
+#           se quedaron sin figura (AR6710-L, NE8000 M1C, M1D, M4 y F1A) y las fichas
+#           individuales de la A800 E, porque el folleto de la serie da al A816 E una capacidad
+#           imposible para sus ocho puertos GE.
 #   JUNIPER · el datasheet vigente de la linea SRX300 (2026-10-02): el cotizador cita del
 #           SRX340 4,7 Gbps y 733 Mbps y el dimensionador 3 Gbps y 600 Mbps de la matriz de
 #           2020. Las dos son oficiales; hay que leer la tabla entera para decidir cual manda. Desde el entorno de edicion `support.huawei.com` e
@@ -135,6 +138,59 @@ jobs:
               ] },
               { archivo: 'huawei-a800e-brochure.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
                 descubrir: { de: 'huawei-a800e-documento.html', material: 'Material/06048a7a12954961b5017a6459145905/' } },
+              // 2026-10-06 (tarde): los ocho modelos que se quedaron sin figura, y las fichas
+              // individuales de la A800 E, que deciden la capacidad que el folleto da mal.
+              { archivo: 'huawei-ar6710-l-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: '04c9821faf16492ea6cadb03722f97ce', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/04c9821faf16492ea6cadb03722f97ce',
+                'https://e.huawei.com/cz/documents/products/enterprise-network/04c9821faf16492ea6cadb03722f97ce',
+              ] },
+              { archivo: 'huawei-ar6710-l-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+                descubrir: { de: 'huawei-ar6710-l-documento.html', material: 'Material/04c9821faf16492ea6cadb03722f97ce/' } },
+              { archivo: 'huawei-ne8000-m1c-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: '4a59d6b44470458491311a5793c9ccb6', urls: [
+                'https://e.huawei.com/en/material/enterprise/4a59d6b44470458491311a5793c9ccb6',
+                'https://e.huawei.com/en/documents/products/enterprise-network/4a59d6b44470458491311a5793c9ccb6',
+              ] },
+              { archivo: 'huawei-ne8000-m1c-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+                descubrir: { de: 'huawei-ne8000-m1c-documento.html', material: 'Material/4a59d6b44470458491311a5793c9ccb6/' } },
+              { archivo: 'huawei-ne8000-m4-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: '4f9698f641b04f0da9a6ec7a5ddcf78b', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/4f9698f641b04f0da9a6ec7a5ddcf78b',
+                'https://e.huawei.com/en/material/enterprise/4f9698f641b04f0da9a6ec7a5ddcf78b',
+              ] },
+              { archivo: 'huawei-ne8000-m4-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+                descubrir: { de: 'huawei-ne8000-m4-documento.html', material: 'Material/4f9698f641b04f0da9a6ec7a5ddcf78b/' } },
+              { archivo: 'huawei-ne8000-m1d-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+                'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/fba94a0ac23f4dd883d0df9493eb0ed5/M3T1A590N1140256736524767245/NetEngine%208000%20M1D%20Universal%20Service%20Router%20Datasheet.pdf',
+                'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/fba94a0ac23f4dd883d0df9493eb0ed5/M3T1A590N1140256736524767245/NetEngine%208000%20M1D%20Universal%20Service%20Router%20Datasheet.pdf',
+              ] },
+              { archivo: 'huawei-ne8000-f1a-8h20q-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+                'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/9d1e5a135656419fb90354e8c68136eb/M3T1A590N1167033276639785031/NetEngine%208000%20F1A-8H20Q%20Datasheet%20V800R024C10.pdf',
+                'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/9d1e5a135656419fb90354e8c68136eb/M3T1A590N1167033276639785031/NetEngine%208000%20F1A-8H20Q%20Datasheet%20V800R024C10.pdf',
+              ] },
+              { archivo: 'huawei-ne8000e-f1a-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+                'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/cc79caaffb574b87985a8c3526649ae9/M3T1A590N1101938675746685128/NetEngine%208000E%20F1A%20Datasheet.pdf',
+                'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/cc79caaffb574b87985a8c3526649ae9/M3T1A590N1101938675746685128/NetEngine%208000E%20F1A%20Datasheet.pdf',
+              ] },
+              { archivo: 'huawei-a816e-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: '56584a8272b44e61be416b1afc0eb241', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/56584a8272b44e61be416b1afc0eb241',
+              ] },
+              { archivo: 'huawei-a816e-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+                descubrir: { de: 'huawei-a816e-documento.html', material: 'Material/56584a8272b44e61be416b1afc0eb241/' } },
+              { archivo: 'huawei-a813e-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'fd349b57d667437c99c0e8f1108aa246', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/fd349b57d667437c99c0e8f1108aa246',
+              ] },
+              { archivo: 'huawei-a813e-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+                descubrir: { de: 'huawei-a813e-documento.html', material: 'Material/fd349b57d667437c99c0e8f1108aa246/' } },
+              { archivo: 'huawei-a822e-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'b61bc5869a67495888e7b2e4210ebb37', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/b61bc5869a67495888e7b2e4210ebb37',
+              ] },
+              { archivo: 'huawei-a822e-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+                descubrir: { de: 'huawei-a822e-documento.html', material: 'Material/b61bc5869a67495888e7b2e4210ebb37/' } },
+              { archivo: 'huawei-a821e-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: '1ff4ee729369411ba9288d36e86e3474', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/1ff4ee729369411ba9288d36e86e3474',
+                'https://e.huawei.com/en/material/enterprise/1ff4ee729369411ba9288d36e86e3474',
+              ] },
+              { archivo: 'huawei-a821e-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+                descubrir: { de: 'huawei-a821e-documento.html', material: 'Material/1ff4ee729369411ba9288d36e86e3474/' } },
               { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
                 'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
                 'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
