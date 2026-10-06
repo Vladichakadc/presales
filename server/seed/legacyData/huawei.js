@@ -95,14 +95,21 @@ const PARTS = {
 // estaban, y manda la mas reciente. Tambien la A821 E: su ficha publica 6 x 10GE + 4 GE/FE
 // opticos + 8 electricos, no la composicion del folleto. Los 120 W de fuente integrada se quedan
 // en el texto de puertos y la ficha dice que ningun documento los publica.
-// LA CAPACIDAD DE LA A800 E NO LA PUBLICA NINGUNA FICHA. Solo el folleto, y mezclando criterios:
+// LA CAPACIDAD DE LA A800 E NO LA PUBLICA NINGUNA FICHA, pero si su pagina de producto (2026-10-06,
+// noche: e.huawei.com/en/products/routers/netengine-a800, tabla «Specifications», traida por Actions):
+// 20 / 72 / 20 / 20 Gbps y 4,4 / 108 / 4,4 / 4,4 Mpps, exactamente lo que ya llevaba el catalogo. No
+// era relleno: le faltaba el documento. Lo que sigue es lo que se escribio antes de leerla.
+// El folleto, mezclando criterios:
 // 14 G al A813 E y 32 G al A822 E (la suma de sus puertos en un sentido) frente a 72 G al A821 E
 // (los dos sentidos), y al A816 E «64-172 Gbit/s» y «112-246 Mpps» con 4 + 4 puertos GE, que no
 // es posible. Se quedan 20 / 20 / 20 / 72 aqui, y queda en PENDIENTES.md.
 // NE8000 M1A (2026-10-06): 176 -> 352 Gbps, la capacidad de conmutacion de su ficha; los 176 eran
 // la capacidad de puertos que cita su presentacion, el mismo error que ya se corrigio en el M8,
 // el F8 y el M14. Su consumo NO se toca: la ficha da 89,21 W, identico al centesimo al del M1C,
-// cuya ficha si lo desglosa por configuracion; en el M1A es la plantilla copiada.
+// cuya ficha si lo desglosa por configuracion; en el M1A es la plantilla copiada. Los 74,8 W del
+// catalogo los respalda la pagina de producto de la serie (2026-10-06, noche), como los 124,5 W del M1D.
+// Y esa misma pagina da al M8 1.086 Mpps en la columna de sus 4,8 Tbps y 774,3 W (la IPU-2T4 de la
+// fila): es la cifra que el catalogo tenia en null. El resto de lo que dice, en fuentes.js.
 // AR6710-L26T2X4 y L50T2X4 (2026-10-06): reenvio 2 -> 3,2 Gbps, de la ficha AR6710-L R26C00, con
 // `npm run huawei -- --force` anclado en IPsec y SD-WAN tipico, que casaban.
 // ALIMENTACION DE LOS AR (2026-10-06), de sus fichas de serie: `redund` solo donde la ficha dice
@@ -171,30 +178,30 @@ const MODELS = [
  redund:true, psu:{watts:53, tipo:'AC integrada, doble', texto:'Dos fuentes AC integradas («Built-in dual power modules (AC)»); 53 W típicos (ficha AR5710-S R25C10).'}},
 {id:'AR6710-L8T3TS1X2', cls:'AR', ser:'AR6700-L', fam:'Campus pequeño', fwd:2000, ipsec:1600, typ:1200, mpps:null, lan:9, poe:0, wan:0, wifi:0, apsFree:32, apsMax:128, boost:0,
  ports:'1 x 10GE óptico + 2 x GE combo WAN, 1 x GE combo + 8 x GE LAN, 2 x SIC, 0/1 WSIC', optics:['sfp10','ge'], parts:['WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
- redund:false, psu:{watts:27, tipo:'AC integrada', texto:'Sin redundancia de fuente («Power supply redundancy: N/A»), 70 W de salida máxima en AC; 27 W típicos (ficha AR6710-L R26C00). El BOM no pide fuente: la PAC180S12-CN que listaba el catálogo es de 180 W.'}},
+ redund:false, psu:{watts:27, salida:[{w:70, tipo:'AC'}], tipo:'AC integrada', texto:'Sin redundancia de fuente («Power supply redundancy: N/A»), 70 W de salida máxima en AC; 27 W típicos (ficha AR6710-L R26C00). El BOM no pide fuente: la PAC180S12-CN que listaba el catálogo es de 180 W.'}},
 {id:'AR6710-L26T2X4', cls:'AR', ser:'AR6700-L', fam:'Campus mediano, 24 puertos', fwd:3200, ipsec:1600, typ:1200, mpps:null, lan:24, poe:0, wan:0, wifi:0, apsFree:32, apsMax:128, boost:0,
  ports:'2 x 10GE óptico + 2 x GE WAN, 24 x GE LAN, 4 x SIC, 0/2 WSIC', optics:['sfp10','ge'], parts:['PAC350','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
- psu:{watts:68, tipo:'AC o DC', texto:'«Dual power supplies, hot-swappable» (350 W AC / 240 W DC de salida): admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. 68 W típicos (ficha AR6710-L R26C00).'}},
+ psu:{watts:68, salida:[{w:350, tipo:'AC'}, {w:240, tipo:'DC'}], tipo:'AC o DC', texto:'«Dual power supplies, hot-swappable» (350 W AC / 240 W DC de salida): admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. 68 W típicos (ficha AR6710-L R26C00).'}},
 {id:'AR6710-L50T2X4', cls:'AR', ser:'AR6700-L', fam:'Campus mediano, 48 puertos', fwd:3200, ipsec:1600, typ:1200, mpps:null, lan:48, poe:0, wan:0, wifi:0, apsFree:32, apsMax:128, boost:0,
  ports:'2 x 10GE óptico + 2 x GE WAN, 48 x GE LAN, 4 x SIC, 0/2 WSIC', optics:['sfp10','ge'], parts:['PAC350','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
- psu:{watts:83, tipo:'AC o DC', texto:'«Dual power supplies, hot-swappable» (350 W AC / 240 W DC de salida): admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. 83 W típicos (ficha AR6710-L R26C00).'}},
+ psu:{watts:83, salida:[{w:350, tipo:'AC'}, {w:240, tipo:'DC'}], tipo:'AC o DC', texto:'«Dual power supplies, hot-swappable» (350 W AC / 240 W DC de salida): admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. 83 W típicos (ficha AR6710-L R26C00).'}},
 {id:'AR6710-L14T2X4', cls:'AR', ser:'AR6700-L', fam:'Campus mediano de alto caudal', fwd:4000, ipsec:2500, typ:1800, mpps:null, lan:12, poe:0, wan:0, wifi:0, apsFree:32, apsMax:128, boost:0,
  ports:'2 x 10GE óptico + 2 x GE WAN, 4 x GE combo + 8 x GE LAN, 4 x SIC, 0/2 WSIC', optics:['sfp10','ge'], parts:['WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
- psu:{watts:41, tipo:'AC', texto:'«Dual power supplies, not hot-swappable», 150 W de salida máxima en AC; 41 W típicos (ficha AR6710-L R26C00). El BOM no pide fuente: la PAC350S12-CR que listaba el catálogo es un módulo de 350 W extraíble en caliente, y la ficha publica 150 W y fuentes que no lo son. No se marca la redundancia: la ficha no dice si las dos vienen montadas.'}},
+ psu:{watts:41, salida:[{w:150, tipo:'AC'}], tipo:'AC', texto:'«Dual power supplies, not hot-swappable», 150 W de salida máxima en AC; 41 W típicos (ficha AR6710-L R26C00). El BOM no pide fuente: la PAC350S12-CR que listaba el catálogo es un módulo de 350 W extraíble en caliente, y la ficha publica 150 W y fuentes que no lo son. No se marca la redundancia: la ficha no dice si las dos vienen montadas.'}},
 {id:'AR6710-H4T4X2Y7', cls:'AR', ser:'AR6700-H', fam:'Casa matriz / campus grande', fwd:13000, ipsec:10000, typ:7000, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:32, apsMax:512, boost:0,
  ports:'2 x 25GE SFP28 + 4 x 10GE SFP+ + 4 x GE · 6 x SIC, 1/4 WSIC · reemplaza AR6280/AR6300', optics:['sfp25','sfp10','ge'], parts:['SRU700S','PSU6710H','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
- psu:{watts:83, tipo:'AC o DC', texto:'«Dual power supplies, hot-swappable» (300 W AC / 260 W DC de salida): admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. 83 W típicos con una SRU y 145 W con dos (ficha AR6710-H R25C10). La PAC350S12-CR que listaba el catálogo es de 350 W y no es la suya; el código de su fuente de 300 W no lo publica la ficha.'}},
+ psu:{watts:83, salida:[{w:300, tipo:'AC'}, {w:260, tipo:'DC'}], tipo:'AC o DC', texto:'«Dual power supplies, hot-swappable» (300 W AC / 260 W DC de salida): admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. 83 W típicos con una SRU y 145 W con dos (ficha AR6710-H R25C10). La PAC350S12-CR que listaba el catálogo es de 350 W y no es la suya; el código de su fuente de 300 W no lo publica la ficha.'}},
 {id:'AR8140-12G10XG', cls:'AR', ser:'AR8000', fam:'Hub SD-WAN / borde de campus grande', fwd:25000, ipsec:20000, typ:15000, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:32, apsMax:1024, boost:0,
  ports:'10 x 10GE óptico + 8 x GE combo + 4 x GE · 4 x SIC, 0/2 WSIC · doble fuente 350 W', optics:['sfp10','ge'], parts:['PAC350','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
- redund:true, psu:{watts:168, tipo:'AC-DC (PAC350S12-CR)', volts:'90–290 V', amps:'salida 12 V / 29,2 A',
+ redund:true, psu:{watts:168, salida:[{w:350, tipo:'AC'}, {w:350, tipo:'HVDC'}, {w:240, tipo:'DC'}], tipo:'AC-DC (PAC350S12-CR)', volts:'90–290 V', amps:'salida 12 V / 29,2 A',
   texto:'Doble fuente de 350 W — el catálogo publica dos PAC350S12-CR (90–290 V, salida 12 V / 29.2 A) para el AR8140; la ficha AR8000 R25C10 dice «Dual power supplies, hot-swappable». 168 W típicos: los 350 W eran la potencia de cada fuente, no el consumo.'}},
 {id:'AR8140-T-12G10XG', cls:'AR', ser:'AR8000', fam:'Hub SD-WAN con TPM', fwd:25000, ipsec:20000, typ:15000, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:32, apsMax:1024, boost:0,
  ports:'Igual al AR8140 más módulo de plataforma confiable (TPM)', optics:['sfp10','ge'], parts:['PAC350','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
- redund:true, psu:{watts:168, tipo:'AC-DC (PAC350S12-CR)', volts:'90–290 V', amps:'salida 12 V / 29,2 A',
+ redund:true, psu:{watts:168, salida:[{w:350, tipo:'AC'}, {w:350, tipo:'HVDC'}, {w:240, tipo:'DC'}], tipo:'AC-DC (PAC350S12-CR)', volts:'90–290 V', amps:'salida 12 V / 29,2 A',
   texto:'Igual al AR8140-12G10XG: doble fuente de 350 W (PAC350S12-CR, 90–290 V, salida 12 V / 29.2 A). 168 W típicos (ficha AR8000 R25C10).'}},
 {id:'AR8700-8', cls:'AR', ser:'AR8700', fam:'Hub SD-WAN de alta disponibilidad', fwd:30000, ipsec:20000, typ:15500, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:32, apsMax:1024, boost:0,
  ports:'Doble MPU, sin interrupción de servicio en conmutación · 24 Gbps SD-WAN IPsec IMIX', optics:['sfp25','sfp10','ge'], parts:['SPU700H','MPU100','MPU100T','PAC1000','PAC600','PDC1000','FAN240','RACK','CONSOLE'],
- psu:{watts:221, tipo:'AC, HVDC o DC', texto:'«Dual power supplies, hot-swappable», con módulos de 600 o 1000 W: admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. 221 W típicos con SPU, dos MPU y ventiladores (ficha AR8000 R25C10).'}},
+ psu:{watts:221, salida:[{w:600, tipo:'AC'}, {w:600, tipo:'HVDC'}, {w:1000, tipo:'AC'}, {w:1000, tipo:'HVDC'}, {w:1000, tipo:'DC'}], tipo:'AC, HVDC o DC', texto:'«Dual power supplies, hot-swappable», con módulos de 600 o 1000 W: admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. 221 W típicos con SPU, dos MPU y ventiladores (ficha AR8000 R25C10).'}},
 
 {id:'NetEngine A816 E', cls:'WAN', ser:'A800 E', fam:'CPE de acceso, 1U, consumo mínimo', cap:20000, mpps:4.4, lan:0, poe:0, wan:0, wifi:0,
  ports:'1U · 24 W típicos · SRv6, L2VPN/L3VPN, EVPN, IFIT · fuente AC 120 W integrada', optics:['ge','sfp10'], parts:['RACK','CONSOLE'],
@@ -239,8 +246,11 @@ const MODELS = [
 // «2,4 Tbps» de su portada son capacidad de puertos, la mitad. Esta fila describe la IPU-2T4
 // —tarjetas de 400 G y los 774 W típicos de esa columna—, así que su conmutación es 4,8 Tbps.
 // Llevaba 2,4 Tbps y 453 Mpps, la fila exacta del F1A. La ficha no publica Mpps, y ni esos 453
-// ni los 1.086 del cotizador tienen un documento que los respalde: `mpps` queda en null.
-{id:'NE8000 M8', cls:'WAN', ser:'NE8000 M', fam:'Agregación, 3U, hasta 8 tarjetas', cap:4800000, mpps:null, lan:0, poe:0, wan:0, wifi:0,
+// ni los 1.086 del cotizador tenian un documento que los respaldara: `mpps` quedo en null.
+// 2026-10-06 (noche): la pagina de producto de la serie (e.huawei.com, tabla «Specifications»)
+// publica 1.086 Mpps en la columna del M8 junto a 4,8 Tbps y 774,3 W, que son esta configuracion.
+// Ahora si hay documento, y la cifra entra.
+{id:'NE8000 M8', cls:'WAN', ser:'NE8000 M', fam:'Agregación, 3U, hasta 8 tarjetas', cap:4800000, mpps:1086, lan:0, poe:0, wan:0, wifi:0,
  ports:'3U · 8 tarjetas DC / 6 AC de 400 G · MPU y SFU 1:1 · 774.3 W típicos', optics:['qsfp100','sfp25','sfp10','ge'], parts:['RACK','CONSOLE'],
  redund:true, psu:{watts:774.3, tipo:'AC o DC', texto:'Fuentes 1+1 («Redundant power supply: 1+1» en la variante AC y en la DC, ficha NE8000 M8) · 774,3 W típicos con IPU-2T4.'}},
 // M14 (2026-10-02): su ficha oficial (PDF generado el 2026-05-27, «© 2025»), traída por el mismo

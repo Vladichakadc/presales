@@ -773,6 +773,14 @@
             : (redund ? 'Sí — de serie' : 'No — fuente única')))],
     ];
     if (psu.watts != null) filas.push(['Consumo típico', `${psu.watts} W`]);
+    // La potencia de SALIDA de cada fuente no es lo que consume el equipo: el AR8140 pintaba
+    // como consumo los 350 W de cada una de sus fuentes, y su consumo típico es 168. Va en su
+    // propia fila y con otro rótulo (2026-10-06). Es la cifra con la que se comprueba que la
+    // fuente que pide el BOM es la del equipo.
+    if (Array.isArray(psu.salida) && psu.salida.length) {
+      filas.push(['Potencia de salida de cada fuente',
+        psu.salida.map((s) => `${esc(String(s.w))} W${s.tipo ? ' ' + esc(s.tipo) : ''}`).join(' · ')]);
+    }
     if (psu.tipo) filas.push(['Tipo de fuente', esc(psu.tipo)]);
     if (psu.volts) filas.push(['Rango de entrada', esc(psu.volts)]);
     if (psu.amps) filas.push(['Corriente', esc(psu.amps)]);

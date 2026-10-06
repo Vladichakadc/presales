@@ -46,6 +46,16 @@ Dicho de otra forma: **aquí esta skill se dispara pero no puede cumplir**. Sirv
 una máquina con salida a internet (el portátil de quien use Claude Code), no desde este
 contenedor.
 
+## Medido otra vez el 2026-10-06
+
+A petición del dueño («revisando en la web con el skill agent-reach las fichas técnicas de Huawei
+que faltan, o busca en YouTube»). La CLI `agent-reach` no está instalada en el contenedor, y los
+caminos sin configuración siguen cortados: `r.jina.ai`, `mcp.exa.ai`, `api.exa.ai`,
+`youtube.com` y `v2ex.com` responden `000` en el proxy; `pypi.org` da 200. Se hizo lo que dice
+la propia descripción de la skill: buscar con la búsqueda de la sesión. Lo que se encontró de
+oficial (las páginas de producto de `e.huawei.com`) se trajo por `traer-cisco-huawei.yml` y se
+leyó en la página, no en el resumen del buscador, que se equivocaba de modelo.
+
 ## `pip install agent-reach` INSTALA OTRO PROYECTO
 
 Comprobado el 2026-09-22, y conviene no olvidarlo porque falla en silencio:

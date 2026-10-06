@@ -4,7 +4,9 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
 
-Última revisión: 2026-10-06, noche (**El BOM de Huawei pide lo que dicen las fichas de pedido de los AR.** Encargo del dueño: ejecutar los pendientes y la mejora propuesta, y lo que salga por el camino. La mejora —traer las guías de hardware de los AR— **se intentó dos veces y no se puede**: `support.huawei.com` da a `fetch` un 200 con el cascarón de la aplicación y a Chromium sin cabeza un 403 «Access Denied» de Akamai en las catorce páginas, y eso es el fabricante negando el acceso automatizado, no se rodea. **Pero las fichas que ya respaldan el catálogo bastaban para cinco correcciones del BOM**: el AR8700-8 se cotizaba sin la SPU-700H, que lleva todos sus puertos; el AR6710-H sin su placa de control SRU-700S y con una fuente de 350 W que no es la suya; y el AR6710-L14 y el L8T3 pedían una PAC350 y una PAC180 que no casan con sus 150 y 70 W. Una prueba nueva exige que la potencia de cada fuente pedida sea una de las que publica la ficha. **Y `pre-push.sh` avisa también cuando falta un `npm run auditar` reciente**, que es lo que dejó pasar el aviso de `proxy-addr` por la tarde. Ver *Cerrado recientemente* y *Lo que queda abierto de las fichas Huawei*.)
+Última revisión: 2026-10-06, cuarta entrega (**Las páginas de producto oficiales de Huawei cierran tres pendientes, y la potencia de salida de las fuentes pasa a ser un dato.** Encargo del dueño: buscar en la web con `agent-reach` (o en YouTube) las fichas de Huawei que faltan, sin volver a las páginas bloqueadas. **`agent-reach` no puede desde aquí, medido otra vez**: Jina Reader, Exa, YouTube y V2EX dan `000` en el proxy; se buscó con la búsqueda de la sesión, que es lo que la propia skill indica. La búsqueda llevó a las **páginas de producto de `e.huawei.com`**, que Actions sí trae: la de la A800 E publica **20 / 72 / 20 / 20 Gbps y 4,4 / 108 / 4,4 / 4,4 Mpps**, exactamente lo que llevaba el catálogo sin documento, y la de NE8000 respalda los **74,8 W del M1A y los 124,5 W del M1D** y da al **M8 1.086 Mpps**, que tenía en null. Sus resúmenes de buscador no se tomaron como fuente (le daban al M1A 865,8 W, que son del M14). **La mejora propuesta, hecha**: `psu.salida` en los ocho AR cuyas fuentes decide el BOM, en la ficha como «Potencia de salida de cada fuente», separada del consumo, y la invariante la lee del catálogo en vez de una tabla copiada en la prueba. Ver *Cerrado recientemente* y *Lo que queda abierto de las fichas Huawei*.)
+
+Revisión anterior: 2026-10-06, noche (**El BOM de Huawei pide lo que dicen las fichas de pedido de los AR.** Encargo del dueño: ejecutar los pendientes y la mejora propuesta, y lo que salga por el camino. La mejora —traer las guías de hardware de los AR— **se intentó dos veces y no se puede**: `support.huawei.com` da a `fetch` un 200 con el cascarón de la aplicación y a Chromium sin cabeza un 403 «Access Denied» de Akamai en las catorce páginas, y eso es el fabricante negando el acceso automatizado, no se rodea. **Pero las fichas que ya respaldan el catálogo bastaban para cinco correcciones del BOM**: el AR8700-8 se cotizaba sin la SPU-700H, que lleva todos sus puertos; el AR6710-H sin su placa de control SRU-700S y con una fuente de 350 W que no es la suya; y el AR6710-L14 y el L8T3 pedían una PAC350 y una PAC180 que no casan con sus 150 y 70 W. Una prueba nueva exige que la potencia de cada fuente pedida sea una de las que publica la ficha. **Y `pre-push.sh` avisa también cuando falta un `npm run auditar` reciente**, que es lo que dejó pasar el aviso de `proxy-addr` por la tarde. Ver *Cerrado recientemente* y *Lo que queda abierto de las fichas Huawei*.)
 
 Revisión anterior: 2026-10-06, tarde (**Los pendientes de las figuras de Huawei, ejecutados.** Encargo del dueño: «ejecuta los pendientes y súbelo a producción». Los **40 de 40** modelos tienen figura: se trajeron trece documentos más (AR6710-L R26C00, NE8000 M1C, M1D, M4 y F1A, y las fichas individuales de las cuatro A800 E, dos de ellas solo en `.pptx`). Las fichas corrigieron datos: el **AR6710-L26T2X4 y el L50T2X4 reenvían 3,2 Gbps** (no 2), el **NE8000 M1A conmuta 352 Gbps** (no 176, y por eso el NE8000 más pequeño que cumple pasa a ser el M6), y la **A800 E sale de sus fichas y no del folleto de 2022**, que había hecho cambiar por la mañana los 33,2 W de la A822 E por 35 (revertido). La **alimentación de los AR** entra desde sus fichas (Huawei, 35 de 40 con `redund`), y el **AR8140 pintaba 350 W de consumo** cuando es la potencia de cada fuente (168 W). **`nodemon` sale** por `node --watch`, y con él el aviso de `braces`: el freno de dependencias queda sin excepciones. **PDF4me**: conectado en la cuenta, pero sus herramientas no llegaron a esta sesión; no hizo falta, los documentos los trae el workflow. Ver *Cerrado recientemente* y *Lo que queda abierto de las fichas Huawei*.)
 
@@ -549,27 +551,29 @@ decisión del dueño o el datasheet de Huawei (pendiente 14).
 | H4 | **Hecha en parte.** BOM con papel por pieza: alternativas de MPU y fuente en una línea «elegir una», 5G y WSIC fuera si no se piden, doble fuente x2, ópticas en una línea a elegir (H-06, H-07 sin inventar código). **HA 1+1 hecha (H-12, 2026-09-29)**: `#chkHa` (repone desde el enlace compartido y viaja como dos equipos al cotizador, conducido en el contraste `huawei`) cotiza dos equipos por sitio, cada uno al caudal completo (suma disponibilidad, no capacidad), y «misión crítica» sin HA lo advierte. **Salió de paso** que SnS se cotizaba dos veces (licencia y soporte). **Capa comercial hecha (H-13, 2026-09-29):** plazo de 1/3/5 años (`#anios`, el texto de cada suscripción dice el término real), precio de referencia del equipo tomado del cotizador (13 de los 40 modelos; el resto sale «consultar»), simulador de precio neto, TCO **declarado parcial** (solo el equipo tiene precio; licencias, suscripciones y soporte van «consultar») y perfiles multi-sede con consolidado. **Ópticas por enlace hechas (H-07, 2026-09-29):** cada módulo se declara (familia, modelo, cantidad por equipo), viaja en el enlace compartido (`#opticasData`) y entra al BOM con su código; una fila que ya no encaja tras cambiar de equipo sale como inválida, no se descarta. **Sigue sin existir la matriz de compatibilidad por chasis y versión de VRP** (el catálogo solo respalda la familia), y la pantalla lo dice | **hecha salvo datos** |
 | H5 | Datos: 27 de 40 modelos no casan con el cotizador, M14 incoherente (cerrado el 2026-10-02 con su ficha oficial, como las del NE8000 M8/F8: 7,2 Tbps con IPU-3T6), el tope de túneles y sesiones por modelo (H-10, H-14; **H-11 declarado en pantalla el 2026-09-29**: el hub muestra cuántos túneles pide y que el catálogo no trae el tope, sin apartar a nadie; el filtro ya existe y se activa solo cuando un modelo traiga `tuneles`; las sesiones no se piden porque exigirían usuarios por sede) | bloqueado en parte por la cuenta Huawei (pendiente 14) |
 
-### Lo que queda abierto de las fichas Huawei (2026-10-06, tarde)
+### Lo que queda abierto de las fichas Huawei (2026-10-06, cuarta entrega)
 
-Las cuatro discrepancias que dejaron las figuras se cerraron esa misma tarde (ver *Cerrado
-recientemente*). Lo que las fichas no resuelven:
+La capacidad de la A800 E y el consumo del M1A y el M1D se cerraron con las páginas de producto
+de `e.huawei.com` (ver *Cerrado recientemente*). Lo que queda:
 
-- **La capacidad de la A800 E no la publica ninguna ficha.** Las cuatro individuales (A816 E
-  V800R024C10, A813 E, A822 E y A821 E V800R025C00) callan, y el folleto de 2022 mezcla criterios
-  (14 G de puertos en un sentido en la A813 E, 72 G en los dos en la A821 E, y «64-172 Gbit/s» en
-  una A816 E de ocho puertos GE). El catálogo sigue con 20 / 20 / 20 / 72 G y 4,4 Mpps en las
-  tres primeras, que tienen pinta de relleno. Se cierra con Info-Finder (cuenta Huawei).
-- **El consumo del NE8000 M1D**: su ficha da 125,1 W en el resumen y 132,2 W en la tabla (que
-  remite a Info-Finder), y el catálogo 124,5. No se tocó.
-- **El consumo del NE8000 M1A**: su ficha da 89,21 W, idéntico al céntimo al del M1C, y no se
-  tomó por ser plantilla copiada; el catálogo sigue con 74,8 W sin documento detrás.
+- **Dos cifras de la página de producto de NE8000 que no se tomaron**, porque la ficha por modelo
+  describe mejor la fila: el consumo del M14 (865,8 W en la página; su ficha da 486 / 968 / 931 W
+  por tarjeta de control y la fila es la IPU-3T6) y la conmutación del F8 (28,86 Tbps en la página,
+  con las mismas 8 tarjetas de 800 G; la ficha da 12,8 Tbps a la versión 6.4T, que es la base del
+  resto de la serie). Si Huawei publica una ficha nueva del F8, se vuelve a mirar.
 - **Cinco AR que admiten dos fuentes sin decir cuántas vienen** (AR6710-L26/L50/L14, AR6710-H,
   AR8700-8): quedan en «no consta». **El código de la fuente del AR6710-H** (300 W AC / 260 W DC)
   tampoco lo publica su ficha, y su línea del BOM lo dice. Los dos los resuelve la guía de
   hardware, y **esa no se puede traer desde aquí ni desde Actions** (medido el 2026-10-06, noche:
   a `fetch` le llega un 200 con el cascarón de la aplicación, corrida 37453468795, y a Chromium
   sin cabeza un 403 «Access Denied» de Akamai en las catorce páginas, corrida 37454219168). Hace
-  falta alguien que la abra en un navegador con su cuenta, o el configurador de Huawei.
+  falta alguien que la abra en un navegador con su cuenta, o el configurador de Huawei. **Una pista
+  para quien la abra**: el resumen del buscador de esa página dice que el AR6710-H tiene dos
+  ranuras de fuente para la **PAC300S12-CL** (300 W AC) y la **PDC260S12-CL**, que cuadra con los
+  300 / 260 W de su ficha. No entra en el catálogo: es un resumen de buscador de una página que
+  no se ha podido leer. Con la página delante, es cambiar `PSU6710H` por esas dos piezas.
+  La página de producto del AR8700 dice «1:1 power redundancy design»: admite la redundancia, no
+  dice cuántas fuentes trae, así que el AR8700-8 sigue en «no consta».
 - **Si la primera SRU-700S viene con el AR6710-H.** Su ficha hace de la placa de control un paso
   de pedido aparte, y el BOM pide una con la nota; si el configurador la trae dentro del equipo,
   esa línea sobra.
@@ -1721,6 +1725,46 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Las páginas de producto oficiales de Huawei, y la potencia de salida como dato (2026-10-06, cuarta entrega)
+
+Encargo del dueño: «revisando en la web con el skill agent-reach las fichas técnicas de Huawei que
+faltan, o busca en YouTube, y ejecuta los pendientes y la mejora propuesta como un arquitecto senior;
+no intentes más las páginas que están bloqueadas».
+
+- **`agent-reach`, medido otra vez: no puede desde este contenedor.** La CLI no está instalada, y
+  sus caminos sin configuración —Jina Reader, Exa (`mcp.exa.ai`, `api.exa.ai`), YouTube y V2EX—
+  dan `000` en el proxy de egreso; solo pasa `pypi.org`. Su propia descripción dice que en ese
+  caso se usen la búsqueda y la lectura de la sesión, y eso se hizo. YouTube no devolvió ningún
+  vídeo útil, y un vídeo de terceros no sería fuente en ningún caso. `support.huawei.com` no se
+  volvió a pedir.
+- **La búsqueda llevó a las páginas de producto de `e.huawei.com`, y esas Actions sí las trae**
+  (`traer-cisco-huawei.yml`, corrida 37461520276). Se leyeron sus tablas «Specifications», no los
+  resúmenes del buscador, que se equivocaban: le daban al M1A 865,8 W, que son los del M14.
+  - **A800 E**: 20 / 72 / 20 / 20 Gbps de conmutación y 4,4 / 108 / 4,4 / 4,4 Mpps (A813 E, A821 E,
+    A822 E, A816 E). **Es exactamente lo que llevaba el catálogo**: no era relleno, le faltaba el
+    documento. Se cierra el pendiente.
+  - **NE8000**: casa con el catálogo en las X, el M6, el M4, los cuatro M1 y el F1A, y respalda los
+    **74,8 W del M1A** y los **124,5 W del M1D** (dos pendientes cerrados) y los 1.117 Mpps del M14 y
+    los 2.035 del F8, que venían de la Fase 2 sin documento citado. Da al **M8 1.086 Mpps** en la
+    misma columna que sus 4,8 Tbps y 774,3 W, que son la configuración IPU-2T4 de la fila: entran
+    (el M8 tenía `mpps` en null, y ahora su ficha mide el reenvío, «9 % de 1086 Mpps» a 100 Gbps).
+    Dos cifras de la página no se tomaron, y quedan escritas en *Lo que queda abierto*.
+  - Las diez «Single-page view» que también señaló la búsqueda eran fichas de switches y puntos de
+    acceso: ruido del buscador, descartadas.
+  - Las dos páginas entran en `fuentes.js` con lo que respaldan y lo que no.
+- **La mejora propuesta, hecha: la potencia de salida de las fuentes es un dato.** `psu.salida`
+  (`[{w, tipo}]`) en los ocho AR cuyas fuentes decide el BOM, transcrita de la fila «Maximum output
+  power» de sus fichas. La ficha la pinta como **«Potencia de salida de cada fuente»**, en su propia
+  fila y separada del «Consumo típico» (el AR8140: 168 W de consumo, 350 W AC · 350 W HVDC · 240 W
+  DC de salida), comprobado en Chromium. La invariante del BOM la lee del catálogo en vez de la
+  tabla copiada en la prueba, y una prueba nueva exige que cada fuente dé más de lo que consume el
+  equipo, que es lo que habría cazado el error del AR8140. Comprobado manipulando los datos: la
+  PAC350 de vuelta en el AR6710-H y el consumo cruzado con la salida en el AR8140 ponen en rojo
+  cuatro pruebas.
+- Comprobado: `npm run verificar` (810/810), `npm run auditar` (0 avisos), arranque en producción,
+  `npm run pantallas` (17/17), los ocho casos de `npm run contraste`, la batería `npm run e2e`
+  entera y `npm run puerta`. `npm run catalogo` sigue sin diferencias entre pantallas.
 
 ### El BOM de Huawei, contra la «Ordering Information» de sus fichas (2026-10-06, noche)
 

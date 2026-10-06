@@ -64,6 +64,18 @@ test('la fila de corriente no promete que el valor sea una salida', () => {
   }
 });
 
+test('la potencia de salida de cada fuente va en su propia fila, separada del consumo', () => {
+  // El AR8140 pintaba como consumo los 350 W de cada fuente (su consumo típico es 168).
+  const { MODELS: HW } = require('../server/seed/legacyData/huawei.js');
+  const sec = FICHA.seccionAlimentacion(HW.find((m) => m.id === 'AR8140-12G10XG'));
+  const fila = (k) => (Array.prototype.find.call(sec.filas, (f) => f[0] === k) || [])[1];
+  assert.strictEqual(fila('Consumo típico'), '168 W');
+  assert.strictEqual(fila('Potencia de salida de cada fuente'), '350 W AC · 350 W HVDC · 240 W DC');
+  // Sin el dato, la fila no aparece: no se rellena con nada.
+  const sin = FICHA.seccionAlimentacion({ id: 'X', redund: true, psu: { watts: 10 } });
+  assert.ok(!Array.prototype.some.call(sin.filas, (f) => f[0] === 'Potencia de salida de cada fuente'));
+});
+
 test('sin psu.watts no aparece la fila de consumo (no se rellena con 0)', () => {
   const sec = FICHA.seccionAlimentacion({ id: 'X', redund: true, psu: {} });
   assert.strictEqual(sec.filas.length, 1);

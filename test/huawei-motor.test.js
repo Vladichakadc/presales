@@ -184,15 +184,11 @@ test('Ordering Information · el AR6710-H pide su placa de control (SRU-700S) y 
   assert.ok(!p.pedir.some((x) => x.codigo === 'PAC350'));
 });
 
-// La potencia máxima de salida que publica cada ficha de serie AR, fila «Maximum output power»:
-// AR6710-L R26C00, AR6710-H R25C10 y AR8000 R25C10. Se transcribe aquí y no se lee de `psu.texto`,
-// porque ese texto también cita la potencia de la pieza equivocada para explicar por qué no es la
-// suya, y la primera versión de esta prueba pasaba en falso por eso.
-const SALIDA_FICHA = {
-  'AR6710-L8T3TS1X2': [70], 'AR6710-L14T2X4': [150], 'AR6710-L26T2X4': [350, 240], 'AR6710-L50T2X4': [350, 240],
-  'AR6710-H4T4X2Y7': [300, 260], 'AR8140-12G10XG': [350, 240], 'AR8140-T-12G10XG': [350, 240], 'AR8700-8': [600, 1000],
-};
-
+// La potencia de salida de cada fuente es un dato del catálogo (`psu.salida`), transcrito de la
+// fila «Maximum output power» de cada ficha de serie AR (AR6710-L R26C00, AR6710-H R25C10 y AR8000
+// R25C10). Hasta el 2026-10-06 vivía copiado en esta prueba, y antes la prueba lo leía de
+// `psu.texto` y pasaba en falso: ese texto cita también la potencia de la pieza equivocada para
+// explicar por qué no es la suya.
 test('una fuente del BOM no contradice la potencia que publica la ficha del equipo', () => {
   // La PAC180 del AR6710-L8T3 (70 W en su ficha), la PAC350 del L14 (150 W) y la del AR6710-H
   // (300 W AC / 260 W DC) salieron así: el código de la pieza lleva su potencia, y la ficha
@@ -201,8 +197,20 @@ test('una fuente del BOM no contradice la potencia que publica la ficha del equi
     for (const k of m.parts || []) {
       const w = Number((k.match(/^P[AD]C(\d+)$/) || [])[1]);
       if (!w) continue;
-      assert.ok(SALIDA_FICHA[m.id], `${m.id}: pide ${k} y la prueba no tiene la potencia que publica su ficha`);
-      assert.ok(SALIDA_FICHA[m.id].includes(w), `${m.id}: pide ${k} (${w} W) y su ficha publica ${SALIDA_FICHA[m.id].join(' / ')} W`);
+      const salida = ((m.psu || {}).salida || []).map((s) => s.w);
+      assert.ok(salida.length, `${m.id}: pide ${k} y el catálogo no dice qué potencia de salida publica su ficha (psu.salida)`);
+      assert.ok(salida.includes(w), `${m.id}: pide ${k} (${w} W) y su ficha publica ${salida.join(' / ')} W`);
+    }
+  }
+});
+
+test('la potencia de salida no se confunde con el consumo: cada fuente da más de lo que gasta el equipo', () => {
+  // El error que ya tuvo el AR8140: 350 W de cada fuente pintados como consumo típico. Si alguien
+  // vuelve a cruzar los dos campos, la salida quedaría por debajo del consumo, que es imposible.
+  for (const m of MODELS.filter((x) => x.psu && x.psu.salida)) {
+    for (const s of m.psu.salida) {
+      assert.ok(Number.isFinite(s.w) && s.w > 0 && s.tipo, `${m.id}: salida mal formada`);
+      if (m.psu.watts != null) assert.ok(s.w > m.psu.watts, `${m.id}: una fuente de ${s.w} W no alimenta un consumo típico de ${m.psu.watts} W`);
     }
   }
 });
