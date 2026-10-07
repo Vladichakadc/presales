@@ -120,8 +120,9 @@ let bomFilas=[], bomMeta={};
    comparación down===up (un enlace declarado igual en ambos sentidos ES simétrico). */
 const TIPOS_WAN=['MPLS L3','MPLS L2','DIA','Banda Ancha','4G/5G'];
 // A7 (2026-09-24): SFP28 25G entra como medio. El catálogo de accesorios ya traía las
-// ópticas 25G con su velocidad y su compatibilidad oficial por modelo (EC-10108 según el
-// VSG, EC-10150 y 9240): faltaba poder declarar el enlace.
+// ópticas 25G con su velocidad y su compatibilidad oficial por modelo (EC-10150 y 9240;
+// el EC-10108 las perdió el 2026-10-07: el Hardware Reference Rev V dice «No» y su ficha no
+// tiene SFP28): faltaba poder declarar el enlace.
 const MEDIOS_WAN=['RJ45','SFP 1G','SFP+ 10G','SFP28 25G'];
 let wanSeq=0; // ids únicos de fila dentro de la sesión
 // Familia del transporte para el badge de la tarjeta (MPLS / Internet / celular).
@@ -449,10 +450,11 @@ const IMIX_FACTOR=0.70;
 /* ══ ÓPTICAS Y ACCESORIOS (fase 12, 2026-09-13) ══
    Catálogo MAESTRO del dueño (ARUBA_ACCESSORY_CATALOG + ACCESSORY_COMPAT en aruba.js),
    servido por la proyección del dimensionador — la página ya no mantiene precios ni
-   matriz propios. La compatibilidad sigue anclada al VSG oficial (1G solo EC-10106;
-   10G/DAC en 10106/10108/10150; EC-10104 sin SFP; 9240 = 4x SFP28) y a lo declarado en
-   el brief (25G → EC-10150/9240; NVMe Boost → S2N67A; PSU 9240 → R1C72A; racks 9004/
-   9012). Sustituye a los precios provisionales de partner de la fase 11 (E3). */
+   matriz propios. En la línea EC-10xxx la compatibilidad está anclada al Hardware
+   Reference Rev V (2026-10-07: 1G y 10G en 10106/10108/10150, 25G solo en el 10150; el
+   VSG remite a esa guía), y en el resto a sus fuentes de siempre (EC-10104 sin SFP; 9240 =
+   4x SFP28; NVMe Boost → S2N67A; racks 9004/9012). Un accesorio sin precio en la lista
+   cargada (R9Y49A) se ofrece en «consultar», nunca con una cifra inventada. */
 let ACCESSORY_CATALOG={}, ACCESSORY_COMPAT={};
 // Selección viva del modal: sku → cantidad. Se depura al cambiar de modelo para no
 // cotizar una óptica incompatible con el equipo elegido.
@@ -480,15 +482,13 @@ function opticasPorVelocidad(modeloId, speed){
   return cfg.items.map(sku=>({sku, a:ACCESSORY_CATALOG[sku]}))
     .filter(x=>x.a&&x.a.speed===speed&&x.a.media!=='DAC'&&!/_TAA$/.test(x.a.media||'')&&x.a.plc!=='ES');
 }
-// A7 (2026-09-24): «no admite ópticas» era falso en dos de los tres casos en que salía. Un
-// chasis sin jaulas SFP no admite ninguna; pero el 9106 SÍ tiene jaulas y lo que falta es que
-// la lista oficial le asigne ópticas, y en el EC-10108/10150 el 1G está en conflicto documental
-// (pendiente 24). Son tres respuestas distintas que mandan a sitios distintos.
+// A7 (2026-09-24): «no admite ópticas» era falso cuando lo que faltaba era el dato. Un chasis
+// sin jaulas SFP no admite ninguna; el 9106 SÍ tiene jaulas y lo que falta es que la lista
+// oficial le asigne ópticas. Son dos respuestas distintas que mandan a sitios distintos. (La
+// tercera, el 1G del EC-10108/10150 en conflicto documental, se cerró el 2026-10-07 con el
+// Hardware Reference Rev V: hoy esos dos modelos sí tienen ópticas de 1G.)
 function motivoSinOptica(m, medio){
   if(sinJaulasSfp(m)) return `El ${m.id} no tiene jaulas SFP según su ficha (${m.ifaces}): el enlace ${medio} no cabe — cambia el medio a RJ-45 o el modelo.`;
-  const nota=((ACCESSORY_COMPAT||{})[m.id]||{}).nota||'';
-  if(medio==='SFP 1G'&&/1G.*conflicto documental/i.test(nota))
-    return `1G en el ${m.id} está en conflicto documental oficial (el VSG dice que no; el Hardware Reference, que sí con restricciones): no se oferta hasta que HPE o el distribuidor lo desempate. Declara ese enlace en 10G o en RJ-45.`;
   return `El catálogo no trae ninguna óptica ${medio} compatible con el ${m.id} en la lista oficial: la línea no se cotiza. Confírmala con el distribuidor antes de emitir la propuesta.`;
 }
 function opticasPara(modeloId, medio){
@@ -1466,9 +1466,23 @@ function auditarPuertos(modelo, wanLinks){
     sfp28,
   };
 }
-// Límite de jaulas SFP por chasis para el aviso de densidad (SPEC B.3): EC-10106/10108
-// (2 jaulas SFP+), EC-10150 (8 jaulas SFP+/SFP28) y Gateway 9240 (4 jaulas SFP28).
-const SFP_DENSIDAD={'EC-10106':2,'EC-10108':2,'EC-10150':8,'Gateway 9240':4};
+// Jaulas SFP por chasis para el aviso de densidad (SPEC B.3): EC-10150 (8 jaulas SFP+/SFP28)
+// y Gateway 9240 (4 jaulas SFP28). El EC-10106/10108 tiene CUATRO, no dos (corregido el
+// 2026-10-07 con el Hardware Reference Rev V, p. 31): dos SFP+ de 1/10G en wan0/wan1 y dos
+// combo de 1G en lan2/wan2. Hasta ese día el 1G no se ofertaba en el 10108 y contar dos no
+// se notaba; con el 1G cotizable, cuatro enlaces de 1G en un 10108 caben y avisarlos era falso,
+// y un tercer enlace de 10G no cabe aunque el total sí.
+const SFP_JAULAS={'EC-10106':{total:4,de10g:2},'EC-10108':{total:4,de10g:2},'EC-10150':{total:8},'Gateway 9240':{total:4}};
+// Una sola regla para los tres sitios que la pintan (auditoría, ficha y revisión del diseño):
+// el texto del exceso, o null si los enlaces SFP declarados caben.
+function excesoJaulas(modelo, wanLinks){
+  const j=modelo&&SFP_JAULAS[modelo.id]; if(!j) return null;
+  const sfp=(wanLinks||[]).filter(l=>(l.down>0||l.up>0)&&/^SFP/.test(l.medio));
+  if(sfp.length>j.total) return `${sfp.length} enlaces SFP sobre ${j.total} jaulas del ${modelo.id}`;
+  const rapidos=sfp.filter(l=>l.medio!=='SFP 1G').length;
+  if(j.de10g!=null&&rapidos>j.de10g) return `${rapidos} enlaces de 10G sobre ${j.de10g} jaulas SFP+ del ${modelo.id} (wan0/wan1; las otras ${j.total-j.de10g} son combo de 1G)`;
+  return null;
+}
 // Semáforo de densidad de puertos (etapa A, 2026-09-14): UNA SOLA regla con tres
 // niveles, usada tanto por el escalado del dimensionador (rojo = el modelo queda
 // descartado y se escala) como por la barra agregada #wanResumen. Así el aviso que ve
@@ -1493,9 +1507,9 @@ function evaluarPuertos(modelo, wanLinks){
     // certificada por la matriz oficial de ópticas del modelo.
     nivel='rojo';
     motivo=`El ${modelo.id} no tiene jaulas SFP28 (${modelo.ifaces}) ni ópticas de 25G en su matriz oficial: los enlaces de 25G declarados no caben.`;
-  }else if(modelo&&SFP_DENSIDAD[modelo.id]!=null&&a.sfp>SFP_DENSIDAD[modelo.id]){
+  }else if(excesoJaulas(modelo,wanLinks)){
     nivel='ambar';
-    motivo=`Densidad de ópticas: ${a.sfp} enlaces SFP sobre ${SFP_DENSIDAD[modelo.id]} jaulas del chasis — recablea algún enlace a RJ-45/DAC o revisa el medio declarado.`;
+    motivo=`Densidad de ópticas: ${excesoJaulas(modelo,wanLinks)} — recablea algún enlace a RJ-45/DAC o revisa el medio declarado.`;
   }
   return {...a, nivel, motivo};
 }
@@ -1735,8 +1749,8 @@ const REGLAS_DISENO=[
   // M2 · Avisos de densidad de ópticas (SPEC B.3): superar las jaulas SFP del chasis no
   // descarta el modelo (siempre se puede recablear un enlace a RJ-45 o DAC), pero hay que
   // verlo antes de cotizar las ópticas.
-  {nivel:'aviso', cuando:(D,m)=>SFP_DENSIDAD[m.id]!=null&&auditarPuertos(m,D.wanLinks).sfp>SFP_DENSIDAD[m.id],
-   texto:(D,m)=>`Densidad de ópticas: el escenario declara ${auditarPuertos(m,D.wanLinks).sfp} enlaces SFP y ${m.id} tiene ${SFP_DENSIDAD[m.id]} jaulas — recablea algún enlace a RJ-45/DAC o revisa el medio declarado en el builder.`},
+  {nivel:'aviso', cuando:(D,m)=>!!excesoJaulas(m,D.wanLinks),
+   texto:(D,m)=>`Densidad de ópticas: el escenario declara ${excesoJaulas(m,D.wanLinks)} — recablea algún enlace a RJ-45/DAC o revisa el medio declarado en el builder.`},
   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&D.bundle==='onprem',
    texto:()=>'Modalidad On-Premises: el software de Orchestrator va incluido en la suscripcion, pero el ALOJAMIENTO (VM, uptime, backup y upgrades) corre por cuenta del cliente — dimensionarlo en la propuesta.'},
   {nivel:'ok', cuando:(D,m)=>m.fam==='ec'&&D.onprem&&$('chkHa').checked&&D.qty===2,
@@ -2168,9 +2182,9 @@ function render(){
     if(m.licCap&&nivel) flags.push(`<b>Capacidad por licencia (${esc(SO_NOMBRE[soMode]||soMode)}):</b> escala sin cambiar de hardware. Para ${fmt(req)} hace falta el nivel <b>${esc(nivel.n)}</b> (${fmt(nivel.fw)}, ${miles(nivel.aps)} APs, ${miles(nivel.clients)} dispositivos).${soMode==='aos10'&&nivel.code!=='hw'?' En AOS 10 las licencias Silver y Gold no admiten IDPS (HPE, «AOS 10 Capacity Licenses»).':''}`);
     // M2 · Aviso de densidad de ópticas (SPEC B.3), visible en la ficha — la misma regla
     // va además a la «revisión del diseño» de la exportación (REGLAS_DISENO).
-    const sfpN=auditarPuertos(m,D.wanLinks).sfp;
-    if(SFP_DENSIDAD[m.id]!=null&&sfpN>SFP_DENSIDAD[m.id])
-      flags.push(`<b class="warn">Densidad de ópticas:</b> el escenario declara ${sfpN} enlaces SFP y ${m.id} tiene ${SFP_DENSIDAD[m.id]} jaulas — recablea algún enlace a RJ-45/DAC o revisa el medio declarado en el builder.`);
+    const exceso=excesoJaulas(m,D.wanLinks);
+    if(exceso)
+      flags.push(`<b class="warn">Densidad de ópticas:</b> el escenario declara ${esc(exceso)} — recablea algún enlace a RJ-45/DAC o revisa el medio declarado en el builder.`);
     // M4 · EC-10150: doble PSU de fábrica (texto informativo, SPEC B.5) — no hay segunda
     // fuente que cotizar, a diferencia del Gateway 9240, que sí la ofrece (#chkDualPsu).
     if(m.id==='EC-10150') flags.push('<b>Alimentación:</b> el EC-10150 lleva <b>doble PSU redundante de fábrica</b> — no hay segunda fuente que cotizar. Lo que sí puede necesitar es el kit Network Memory S2N67A si se licencia Boost por encima de 1 Gbps (el motor lo añade solo).');

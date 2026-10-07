@@ -50,6 +50,40 @@ const { cargarPlaywright, abrirDimensionador, asentar, contador } = require('./a
   await asentar(page);
   t.ok(await page.isHidden('#sfpChooser'), 'medio RJ45: sin óptica que pedir (chooser oculto)');
 
+  // Pendiente 24 (2026-10-07): el 1G del EC-10108 deja de estar «en conflicto documental» —
+  // el Hardware Reference Rev V lo da por bueno— y se cotiza como en el 10106.
+  await fila.locator('select[data-campo=medio]').selectOption('SFP 1G');
+  await asentar(page);
+  await page.selectOption('#pickModel', 'EC-10108');
+  await asentar(page);
+  const txt1g = (await page.textContent('#sfpChooser')) || '';
+  t.ok(!/conflicto documental/.test(txt1g), 'EC-10108 en 1G: ya no dice «conflicto documental»');
+  const ops1g = await page.$$eval('#sfpChooser select[data-sfp-medio] option', (os) => os.map((o) => o.value).filter(Boolean));
+  t.ok(['S3R03A', 'J4858D', 'J4859D'].every((s) => ops1g.includes(s)),
+    `EC-10108 en 1G: ofrece el cobre y las dos fibras de 1G (${ops1g.join(', ')})`);
+
+  // Y su densidad: cuatro jaulas (dos SFP+ en wan0/wan1 y dos combo de 1G), no dos. Cuatro
+  // enlaces de 1G caben sin aviso; tres de 10G no, aunque el total sí.
+  const anadir = async () => { await page.click('#btnAddWan'); await asentar(page); };
+  for (let i = 0; i < 3; i++) await anadir();
+  const filas = page.locator('.wan-fila');
+  for (let i = 0; i < 4; i++) {
+    await filas.nth(i).locator('select[data-campo=medio]').selectOption('SFP 1G');
+    await filas.nth(i).locator('input[data-campo=down]').fill('100');
+  }
+  await asentar(page);
+  await page.selectOption('#pickModel', 'EC-10108');
+  await asentar(page);
+  let ficha = (await page.textContent('#pane-calc')) || '';
+  t.ok(!/Densidad de ópticas/.test(ficha), 'EC-10108 con cuatro enlaces de 1G: caben, sin aviso de densidad');
+  for (let i = 0; i < 3; i++) await filas.nth(i).locator('select[data-campo=medio]').selectOption('SFP+ 10G');
+  await asentar(page);
+  await page.selectOption('#pickModel', 'EC-10108');
+  await asentar(page);
+  ficha = (await page.textContent('#pane-calc')) || '';
+  t.ok(/3 enlaces de 10G sobre 2 jaulas SFP\+ del EC-10108/.test(ficha),
+    'EC-10108 con tres enlaces de 10G: avisa que solo hay dos jaulas SFP+');
+
   await browser.close();
   process.exit(t.resumen('e2e-sfp'));
 })().catch((e) => { console.error('ERROR E2E:', e.message); process.exit(2); });

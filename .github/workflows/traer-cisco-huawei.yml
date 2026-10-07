@@ -49,6 +49,15 @@ name: traer-cisco-huawei
 
 on:
   workflow_dispatch:
+    inputs:
+      solo:
+        description: 'Archivos a traer, separados por comas (vacio = todos). Las entradas que descubren algo en otra deben ir con ella.'
+        required: false
+        default: ''
+      rama:
+        description: 'Rama de transporte de destino (fuente/...). Una rama propia no pisa lo traido antes en fuente/cisco-huawei.'
+        required: false
+        default: 'fuente/cisco-huawei'
 
 permissions:
   contents: write
@@ -66,6 +75,8 @@ jobs:
           node-version-file: package.json
 
       - name: Descargar los documentos
+        env:
+          SOLO: ${{ inputs.solo }}
         run: |
           node -e "
             const fs = require('fs');
@@ -385,11 +396,59 @@ jobs:
                 'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
                 'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
               ] },
+              // HUAWEI, OTRAS VIAS (2026-10-07, encargo del dueno: lo que Akamai bloquea, buscarlo por
+              // otro camino legitimo). Nada de esto rodea la defensa de Huawei: el Wayback Machine
+              // sirve la copia que el archivo de Internet guardo de la pagina publica, desde sus
+              // propios servidores; y la herramienta EOX es una pagina publica del fabricante que
+              // aqui se pide como cualquier otra. Primero los indices (CDX): dicen que paginas de la
+              // descripcion de hardware y de la herramienta EOX guardo el archivo y en que fecha. Luego
+              // la copia en bruto (id_) de las paginas que hacen falta, y la de control (AR6710-H), cuyo
+              // contenido ya se leyo por PDF4me: si la de control no trae el texto, las demas tampoco.
+              { archivo: 'huawei-hd-cdx.json', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://web.archive.org/cdx/search/cdx?url=support.huawei.com/enterprise/en/doc/EDOC1100213474/*&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=5000',
+              ] },
+              { archivo: 'huawei-hedex-cdx.json', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://web.archive.org/cdx/search/cdx?url=support.huawei.com/hedex/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&filter=original:.*EDOC1100213474.*&limit=3000',
+              ] },
+              { archivo: 'huawei-eox-cdx.json', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://web.archive.org/cdx/search/cdx?url=support.huawei.com/eoxtoolwebsite/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=3000',
+              ] },
+              { archivo: 'huawei-infofinder-cdx.json', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://web.archive.org/cdx/search/cdx?url=info.support.huawei.com/info-finder/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&filter=original:.*%28eom%7Clife%7Ceox%29.*&limit=3000',
+              ] },
+              { archivo: 'huawei-hd-ar6710-h-archivo.html', tipo: 'html', para: 'HUAWEI', debeContener: 'PAC300S12', urls: [
+                'https://web.archive.org/web/2026id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3e859eec/ar6710-h4t4x2y7',
+                'https://web.archive.org/web/2025id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3e859eec/ar6710-h4t4x2y7',
+              ] },
+              { archivo: 'huawei-hd-ar6710-l26-archivo.html', tipo: 'html', para: 'HUAWEI', debeContener: 'L26T2X4', urls: [
+                'https://web.archive.org/web/2026id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/5d943f96/ar6710-l26t2x4',
+                'https://web.archive.org/web/2025id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/5d943f96/ar6710-l26t2x4',
+              ] },
+              { archivo: 'huawei-hd-ar6710-l50-archivo.html', tipo: 'html', para: 'HUAWEI', debeContener: 'L50T2X4', urls: [
+                'https://web.archive.org/web/2026id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/b4f79aa3/ar6710-l50t2x4',
+                'https://web.archive.org/web/2025id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/b4f79aa3/ar6710-l50t2x4',
+              ] },
+              { archivo: 'huawei-hd-vivo.html', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3e859eec/ar6710-h4t4x2y7',
+              ] },
+              { archivo: 'huawei-hd-scripts', tipo: 'scripts', para: 'HUAWEI', urls: [],
+                descubrirPiezas: { de: ['huawei-hd-vivo.html'], base: 'https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3e859eec/ar6710-h4t4x2y7',
+                  dominios: ['support.huawei.com', 'res-static.hc-cdn.cn', 'hc-cdn.cn'], max: 25 } },
+              { archivo: 'huawei-eox-herramienta.html', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://support.huawei.com/eoxtoolwebsite/en/tool/product-lifecycle-query-assistant',
+              ] },
+              { archivo: 'huawei-eox-scripts', tipo: 'scripts', para: 'HUAWEI', urls: [],
+                descubrirPiezas: { de: ['huawei-eox-herramienta.html'], base: 'https://support.huawei.com/eoxtoolwebsite/en/tool/product-lifecycle-query-assistant',
+                  dominios: ['support.huawei.com', 'res-static.hc-cdn.cn', 'hc-cdn.cn'], max: 25 } },
             ];
+            const SOLO = (process.env.SOLO || '').split(',').map((x) => x.trim()).filter(Boolean);
+            const faltan = SOLO.filter((x) => !DOCS.some((d) => d.archivo === x));
+            if (faltan.length) { console.error('Entradas que no existen: ' + faltan.join(', ')); process.exit(1); }
+            const ELEGIDOS = SOLO.length ? DOCS.filter((d) => SOLO.includes(d.archivo)) : DOCS;
             const informe = [];
             (async () => {
               fs.mkdirSync('fuente-cisco-huawei', { recursive: true });
-              for (const doc of DOCS) {
+              for (const doc of ELEGIDOS) {
                 const intentos = [];
                 let guardado = false;
                 if (doc.descubrir) {
@@ -457,6 +516,9 @@ jobs:
                   // de piezas y de tamano, y cada pieza se valida por su firma, no por la extension.
                   const cfg = doc.descubrirPiezas;
                   const esImg = doc.tipo === 'imagenes';
+                  // Los scripts (2026-10-07) se piden para LEER de donde saca sus datos una pagina
+                  // que llega como cascaron; no se ejecutan en ningun momento.
+                  const esJs = doc.tipo === 'scripts';
                   const carpeta = 'fuente-cisco-huawei/' + doc.archivo;
                   fs.mkdirSync(carpeta, { recursive: true });
                   const paginas = [];
@@ -470,17 +532,20 @@ jobs:
                   const usados = new Set();
                   for (const ruta of paginas) {
                     const texto = fs.readFileSync(ruta, 'utf8');
-                    const re = esImg ? /(?:https?:)?[/][/][^\x22'\s()<>]+?[.](?:png|jpe?g|webp)/gi
+                    const re = esJs ? /src=[\x22']([^\x22'<>\s]+?[.]js(?:[?][^\x22'<>\s]*)?)[\x22']/gi
+                      : esImg ? /(?:https?:)?[/][/][^\x22'\s()<>]+?[.](?:png|jpe?g|webp)/gi
                       : new RegExp('(?:https?:[/][/][A-Za-z0-9.-]+)?[/]' + cfg.prefijo.join('[/]') + '[/][A-Za-z0-9][A-Za-z0-9/-]*', 'g');
                     for (const m of texto.matchAll(re)) {
                       let u;
-                      try { u = new URL(m[0], cfg.base); } catch (e) { continue; }
+                      try { u = new URL(esJs ? m[1] : m[0], cfg.base); } catch (e) { continue; }
                       if (u.protocol !== 'https:' && u.protocol !== 'http:') continue;
                       u.protocol = 'https:';
                       if (!cfg.dominios.some((d) => u.hostname === d || u.hostname.endsWith('.' + d))) continue;
                       const camino = u.pathname.toLowerCase();
                       const seg = u.pathname.split('/').filter(Boolean);
-                      if (esImg) {
+                      if (esJs) {
+                        // sin filtro de camino: el dominio ya esta acotado y hay tope de piezas
+                      } else if (esImg) {
                         if (!cfg.contiene.some((c) => camino.includes(c))) continue;
                         if (/icon|logo|opacity|background|banner|[/]bg[.]/.test(camino)) continue;
                       } else {
@@ -489,7 +554,7 @@ jobs:
                         if (cfg.solo && !cfg.solo.includes(seg[largo])) continue;
                       }
                       if (piezas.has(u.href)) continue;
-                      const base = (esImg ? seg.slice(-3).join('__') : seg.slice(cfg.prefijo.length).join('__') + '.html')
+                      const base = (esJs ? seg.slice(-3).join('__') : esImg ? seg.slice(-3).join('__') : seg.slice(cfg.prefijo.length).join('__') + '.html')
                         .replace(/[^A-Za-z0-9._-]/g, '_').slice(-150);
                       let nombre = base;
                       for (let k = 2; usados.has(nombre); k++) nombre = k + '_' + base;
@@ -510,7 +575,9 @@ jobs:
                     if (!res.ok) { intentos.push({ url, status: res.status }); continue; }
                     const buf = Buffer.from(await res.arrayBuffer());
                     const hex = buf.subarray(0, 4).toString('hex');
-                    const firma = esImg
+                    const firma = esJs
+                      ? !/^[\s\uFEFF]*</.test(buf.subarray(0, 512).toString('utf8'))
+                      : esImg
                       ? hex === '89504e47' || hex.startsWith('ffd8ff')
                         || (buf.subarray(0, 4).toString() === 'RIFF' && buf.subarray(8, 12).toString() === 'WEBP')
                       : /<html/i.test(buf.subarray(0, 4096).toString('utf8'));
@@ -556,20 +623,26 @@ jobs:
           "
 
       - name: Publicar en la rama de transporte
+        env:
+          RAMA: ${{ inputs.rama }}
         run: |
+          # La rama llega como entrada del formulario: solo se acepta una rama de transporte.
+          [[ "$RAMA" =~ ^fuente/[a-z0-9-]+$ ]] || { echo "rama no valida: $RAMA"; exit 1; }
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git checkout -B fuente/cisco-huawei
+          git checkout -B "$RAMA"
           git add fuente-cisco-huawei/
           git commit -m "Fichas de Cisco y boletines de Huawei descargados $(date -u +%Y-%m-%d)"
-          git push --force origin fuente/cisco-huawei
+          git push --force origin "$RAMA"
 
       - name: Resumen
+        env:
+          RAMA: ${{ inputs.rama }}
         run: |
           {
             echo '## Fichas de Cisco y boletines de Huawei'
             echo ''
-            echo 'Rama `fuente/cisco-huawei`. Traerla con `git fetch origin fuente/cisco-huawei`.'
+            echo "Rama \`$RAMA\`. Traerla con \`git fetch origin $RAMA\`."
             echo ''
             echo '```'
             node -e "

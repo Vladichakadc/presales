@@ -1,9 +1,12 @@
 # Datasheets oficiales de HPE Aruba Networking
 
-**21 de los 28 documentos del manifiesto ya están aquí** (2026-10-06; el 2026-09-11 eran 18
-de 24); el resto sigue enlazando la URL de HPE. Los dos últimos son los QuickSpecs de las
-series 7000 y 7200 (`serie-7000-quickspecs.pdf`, `serie-7200-quickspecs.pdf`), retirados por
-HPE pero publicados para consulta, de los que salen las cifras y el retiro de la línea AOS 8.
+**22 de los 28 documentos del manifiesto ya están aquí** (2026-10-07; el 2026-09-11 eran 18
+de 24); el resto sigue enlazando la URL de HPE. El último es la *Product Lifecycle Policy* de
+EdgeConnect (`edgeconnect-lifecycle-policy.pdf`, `ecLifecycle`), traída por
+`traer-cisco-huawei.yml` desde `arubanetworking.hpe.com/techdocs` (SHA-256 `04b5b8d0…b042`).
+Antes llegaron los QuickSpecs de las series 7000 y 7200 (`serie-7000-quickspecs.pdf`,
+`serie-7200-quickspecs.pdf`), retirados por HPE pero publicados para consulta, de los que
+salen las cifras y el retiro de la línea AOS 8.
 Para traer más o refrescar versiones:
 
 ```

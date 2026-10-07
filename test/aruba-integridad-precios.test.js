@@ -417,9 +417,12 @@ test('el overhead FEC esta anclado a los ratios oficiales del VSG (1:8 y 1:4)', 
 // SKU en fin de venta (PLC «ES») ofertado, o una discrepancia de precio entre el
 // catálogo maestro y el CSV del cotizador (dos vistas de la MISMA fuente).
 
-test('el catálogo maestro cubre los 53 accesorios extraídos de la lista oficial', () => {
+test('el catálogo maestro cubre los 53 accesorios extraídos de la lista oficial, y R9Y49A sin precio', () => {
+  // 53 con su fila de la lista y uno más (R9Y49A, pendiente 25) cuya compatibilidad es oficial
+  // pero cuya fila de la lista no está transcrita: va «consultar», con el motivo declarado.
   const skus = Object.keys(ARUBA_ACCESSORY_CATALOG);
-  assert.strictEqual(skus.length, 53, `se esperaban 53 SKUs de la lista oficial, hay ${skus.length}`);
+  assert.strictEqual(skus.length, 54, `se esperaban 54 SKUs (53 de la lista + R9Y49A), hay ${skus.length}`);
+  assert.deepStrictEqual(skus.filter((k) => ARUBA_ACCESSORY_CATALOG[k].sinPrecio), ['R9Y49A']);
   for (const obligatorio of ['S3R03A', 'J4858D', 'J4859D', 'J4860D', 'JL745A', 'JL746A',
     'JL747A', 'JL747B', 'J9150D', 'J9151E', 'J9153D', 'JL748A', 'J9281D', 'J9283D', 'J9285D',
     'JM534A', 'JM535A', 'JL563C', 'JL749A',
@@ -434,6 +437,15 @@ test('el catálogo maestro cubre los 53 accesorios extraídos de la lista oficia
 test('todo accesorio tiene descripción oficial, List Price, vigencia y PLC conocido', () => {
   for (const [sku, a] of Object.entries(ARUBA_ACCESSORY_CATALOG)) {
     assert.ok(a.name && a.name.length > 10, `${sku}: falta la descripción oficial de la lista`);
+    if (a.sinPrecio) {
+      // Sin precio solo con el motivo escrito, y entonces sin ninguna cifra a medias: un
+      // precio sin vigencia o una vigencia sin precio se leerían como un dato verificado.
+      assert.ok(a.sinPrecio.length > 20, `${sku}: «sinPrecio» tiene que decir por qué`);
+      assert.strictEqual(a.listPrice, null, `${sku}: declara sinPrecio y trae precio`);
+      assert.strictEqual(a.vigencia, null, `${sku}: declara sinPrecio y trae vigencia`);
+      assert.ok(a.speed || a.category, `${sku}: debe declarar speed (transceptor/DAC) o category (funcional)`);
+      continue;
+    }
     assert.ok(typeof a.listPrice === 'number' && a.listPrice > 0, `${sku}: List Price inválido (${a.listPrice})`);
     assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(a.vigencia || ''), `${sku}: vigencia List Price inválida (${a.vigencia})`);
     assert.ok(PLC_CONOCIDOS.has(a.plc), `${sku}: PLC desconocido (${a.plc}) — decidir cómo se pinta antes de aceptarlo`);
@@ -476,36 +488,39 @@ test('el tren Network Memory del EC-10150 (S2N67A y sus repuestos) solo se ofrec
   }
 });
 
-test('la matriz de ópticas reproduce la compatibilidad oficial citada (2026-09-13)', () => {
-  // Codifica la matriz del bloque de comentarios de ACCESSORY_COMPAT: VSG SD-Branch,
-  // HRG Rev S, QuickSpecs EC v18 y 9200 v14. Cada SKU va EXACTAMENTE donde la fuente
-  // oficial lo certifica — ni una plataforma más (inferencia) ni una menos.
+test('la matriz de ópticas reproduce la compatibilidad oficial citada (Hardware Reference Rev V)', () => {
+  // Codifica la matriz del bloque de comentarios de ACCESSORY_COMPAT: Hardware Reference Rev V
+  // (ago-2026: p. 122, 125 y 126, que mandan en la línea EC-10xxx porque el VSG remite a
+  // ella), VSG SD-Branch, QuickSpecs EC v18 y 9200 v14. Cada SKU va EXACTAMENTE donde la
+  // fuente oficial lo certifica — ni una plataforma más (inferencia) ni una menos.
+  const EC10 = ['EC-10106', 'EC-10108', 'EC-10150'];
   const matriz = {
-    S3R03A: ['EC-10106'],                                  // 1G cobre EC (VSG/HRG)
-    J4858D: ['EC-10106', 'Gateway 9240'],                  // 1G SX (VSG/HRG + QS 9200)
-    J4859D: ['EC-10106', 'Gateway 9240'],                  // 1G LX (ídem)
+    S3R03A: EC10,                                          // 1G cobre EC (Rev V p. 126; pendiente 24)
+    J4858D: [...EC10, 'Gateway 9240'],                     // 1G SX (Rev V p. 126 + QS 9200)
+    J4859D: [...EC10, 'Gateway 9240'],                     // 1G LX (ídem)
     J4860D: [],                                            // sin matriz oficial: no se oferta
-    JL745A: ['EC-10106', 'EC-M', 'EC-L', 'EC-XL', 'Gateway 9240'],   // 1G SX TAA (HRG + QS 9200)
-    JL746A: ['EC-10106', 'EC-M', 'EC-L', 'EC-XL', 'Gateway 9240'],   // 1G LX TAA (ídem)
+    JL745A: [...EC10, 'EC-M', 'EC-L', 'EC-XL', 'Gateway 9240'],   // 1G SX TAA (Rev V p. 125 + QS 9200)
+    JL746A: [...EC10, 'EC-M', 'EC-L', 'EC-XL', 'Gateway 9240'],   // 1G LX TAA (ídem)
+    R9Y49A: ['EC-L', 'EC-XL'],                             // EC-SFP-1000BT (Rev V p. 126; pendiente 25)
     JL747B: [],                                            // HRG: NO soportado en toda la línea EC
     S1H24AR: ['Gateway 9240'],                             // cobre 1G específico del 9240
     J9150D: ['EC-10106', 'EC-10108', 'EC-10150', 'EC-L', 'EC-XL', 'Gateway 9240'],
     J9151E: ['EC-10106', 'EC-10108', 'EC-10150', 'EC-L', 'EC-XL', 'Gateway 9240'],
     J9153D: ['EC-10106', 'Gateway 9240'],                  // VSG: NO en EC-10108/10150
     JL748A: ['EC-10106', 'EC-10108', 'EC-10150', 'EC-S', 'EC-M', 'EC-L', 'EC-XL'], // 10G SR TAA (HRG); 9240 sin confirmar
-    JL749A: ['EC-10108', 'EC-10150', 'EC-S', 'EC-M', 'EC-L', 'EC-XL', 'Gateway 9240'], // 10G LR TAA (HRG + QS 9200)
+    JL749A: [...EC10, 'EC-S', 'EC-M', 'EC-L', 'EC-XL', 'Gateway 9240'], // 10G LR TAA (Rev V p. 125-126 + QS 9200)
     J9281D: ['EC-10106', 'EC-10108', 'EC-10150', 'Gateway 9240'],    // DAC 10G 1m (HRG + QS 9200)
     J9283D: ['EC-10106', 'EC-10108', 'EC-10150', 'Gateway 9240'],    // DAC 10G 3m (ídem)
     J9285D: ['Gateway 9240'],                              // DAC 10G 7m: solo 9200 lo certifica
-    JL563C: ['EC-10108', 'EC-10150'],                      // 10GBASE-T (VSG)
+    JL563C: [],                                            // 10GBASE-T: «X» en la Rev V p. 122
     JM534A: ['EC-S', 'EC-M', 'EC-L', 'EC-XL'],             // EC-SFP-LR línea anterior (HRG/QS)
     JM535A: ['EC-S', 'EC-M', 'EC-L', 'EC-XL'],             // EC-SFP-SR línea anterior (ídem)
-    JL484A: ['EC-10108', 'EC-10150', 'Gateway 9240'],      // 25G SR (VSG + QS 9200)
+    JL484A: ['EC-10150', 'Gateway 9240'],                  // 25G SR (Rev V: «No» en 10106/10108)
     JL485A: ['Gateway 9240'],                              // 25G eSR: solo 9200 confirmado
-    JL486A: ['EC-10108', 'EC-10150', 'Gateway 9240'],      // 25G LR (VSG + QS 9200)
+    JL486A: ['EC-10150', 'Gateway 9240'],                  // 25G LR (ídem)
     JL487A: ['Gateway 9240'],                              // DAC 25G 0,65m: solo 9200 confirmado
     JL488A: ['Gateway 9240'],                              // DAC 25G 3m: ídem
-    JL489A: ['EC-10108', 'EC-10150', 'Gateway 9240'],      // DAC 25G 5m (VSG + QS 9200)
+    JL489A: ['EC-10150', 'Gateway 9240'],                  // DAC 25G 5m (ídem)
     JM532A: ['EC-10150'],                                  // EC-SFP28-25G-LR (QS hub)
     JM533A: ['EC-10150'],                                  // EC-SFP28-25G-SR (ídem)
     S2N63A: ['EC-10150'],                                  // 25G LR TAA (HRG)
@@ -566,6 +581,12 @@ test('el catálogo maestro y el CSV del cotizador dicen lo mismo (misma fuente)'
   // lo que esta prueba existe para impedir.
   for (const [sku, a] of Object.entries(ARUBA_ACCESSORY_CATALOG)) {
     const fila = porSku.get(sku);
+    if (a.sinPrecio) {
+      // Cuando el importador traiga su fila al CSV, esta prueba se pone en rojo hasta que el
+      // catálogo maestro copie la misma cifra, vigencia y PLC y retire «sinPrecio».
+      assert.ok(!fila, `${sku}: el CSV ya trae su fila ($${fila && fila.p}); cópiala al catálogo maestro y quita sinPrecio`);
+      continue;
+    }
     assert.ok(fila, `${sku}: está en el catálogo maestro pero no en el CSV del cotizador`);
     assert.strictEqual(fila.mod, 'Accesorios EdgeConnect y gateways',
       `${sku}: familia CSV «${fila.mod}» en vez de «Accesorios EdgeConnect y gateways»`);
