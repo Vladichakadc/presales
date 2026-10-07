@@ -4,7 +4,7 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-07, décima entrega (**Huawei por otras vías, segunda vuelta, y dos mejoras que impiden que algo se quede a medias sin avisar.** Encargo del dueño: buscar otras fuentes para las fuentes de alimentación de cinco AR mientras PDF4me no esté, buscar en la web el ciclo de vida de Huawei, ejecutar la mejora propuesta y cualquier otra que salga. **Fuentes de los AR: siguen en «no consta»**, por política de egreso y del fabricante: los únicos documentos que lo dicen están en `support.huawei.com` (proxy 403 aquí, Akamai o cascarón desde Actions); PDF4me volvió conectado pero falla con cualquier URL, también `example.com`; la Security Target de Common Criteria de los AR6700/AR8000 deja el hardware fuera de su alcance. **Ciclo de vida: sigue en la cuenta.** Info-Finder pide sesión también bajo `support.huawei.com/enterprise/en/info-finder/` (corrida 37613969445), y el archivo no guarda ninguna página de nuestros routers; el buscador indexa fechas del AR611 y el AR617VW que **no entran** (ver *Señales de terceros para el pendiente 14*). **Mejoras hechas**: `npm run catalogo` lista lo que va «consultar» a propósito con su motivo y avisa si el CSV ya trae la fila; `npm run lista-aruba` separa esos accesorios de las ausencias y dice qué copiar a `aruba.js`; y el workflow de transporte ya no da por guardada la pantalla de inicio de sesión de Huawei, que en la corrida de hoy había salido «OK» cinco veces. Detalle en *Cerrado recientemente*.)
+Última revisión: 2026-10-07, décima entrega (**Huawei por otras vías, segunda vuelta, y dos mejoras que impiden que algo se quede a medias sin avisar.** Encargo del dueño: buscar otras fuentes para las fuentes de alimentación de cinco AR mientras PDF4me no esté, buscar en la web el ciclo de vida de Huawei, ejecutar la mejora propuesta y cualquier otra que salga. **Fuentes de los AR: siguen en «no consta»**, por política de egreso y del fabricante: los únicos documentos que lo dicen están en `support.huawei.com` (proxy 403 aquí, Akamai o cascarón desde Actions); PDF4me volvió conectado pero falla con cualquier URL, también `example.com`; la Security Target de Common Criteria de los AR6700/AR8000 deja el hardware fuera de su alcance. **Ciclo de vida: sigue en la cuenta.** Info-Finder pide sesión también bajo `support.huawei.com/enterprise/en/info-finder/` (corrida 37613969445), y el archivo no guarda ninguna página de nuestros routers; el buscador indexa fechas del AR611 y el AR617VW que **no entran** (ver *Señales de terceros para el pendiente 14*). **Mejoras hechas**: `npm run catalogo` lista lo que va «consultar» a propósito con su motivo y avisa si el CSV ya trae la fila; `npm run lista-aruba` separa esos accesorios de las ausencias y dice qué copiar a `aruba.js`; y el workflow de transporte ya no da por guardada la pantalla de inicio de sesión de Huawei, que en la corrida de hoy había salido «OK» cinco veces, y todo lo que se pide para explorar sale EXPL, no OK. Detalle en *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-07, novena entrega (**Los pendientes que dependían del dueño, ejecutados con su aprobación, y Huawei y Aruba por otras vías.** Encargo del dueño: ejecutar lo pendiente, buscar otra vía a lo que bloquea Akamai y al ciclo de vida de Huawei, ejecutar los puntos 24, 25 y 26 de Aruba, y la aprobación de seis decisiones. **Aruba 24-26 cerrados con el Hardware Reference Rev V** (ago-2026, al que remite el VSG): 1G en EC-10108/10150, el 10108 sin 25G ni 10GBASE-T, R9Y49A en EC-L/EC-XL sin precio, JZ889A confirmado por el QuickSpecs v18, y el EC-10106/10108 con cuatro jaulas SFP, no dos. **Huawei**: PDF4me renderizó la página oficial del AR6710-H y dio los códigos de su fuente (PAC300S12-CL, PDC260S12-CL/-DL); el Wayback Machine solo guarda el cascarón, la herramienta EOX ya no existe e Info-Finder pide sesión, así que el ciclo de vida sigue necesitando una cuenta. **Decisiones**: Fortinet aprobado (GO); batería `e2e-lector-virtual.js` con cuatro defectos de accesibilidad corregidos; `agent-reach` con sus credenciales fuera del repositorio; la guía puede citar equipos fuera del catálogo; `CLAUDE.md` de 202 a 33,5 KB con la crónica en `docs/`; la sincronización contrasta las hojas sin IA y migra a Claude Opus 5.5. Detalle en *Cerrado recientemente*.)
 
@@ -589,11 +589,19 @@ de `e.huawei.com` (ver *Cerrado recientemente*). Lo que queda:
   Actions) nombra el AR8140 y los AR6710-L26/L50 pero declara el hardware fuera de su alcance; las
   fichas (R25C10/R26C00) no listan fuentes en la «Host Ordering Information»; Info-Finder (también
   su «Hardware Center») pide sesión; el buscador solo indexa las páginas de `support.huawei.com`.
+  **Esa noche, la cuarta ronda (corrida 37623790083, rama `fuente/huawei-cuarta-via`)**: las
+  páginas estáticas de HedEx (`info.support.huawei.com/hedex/api/pages/…`), que el buscador aún
+  indexa, ya sirven el cascarón del portal de soporte (Nuxt, sin documento), y la herramienta de
+  configuración de hardware Info+ responde «没有找到产品数据». **Las páginas del L14 y del AR8700-8 no
+  las indexa ningún buscador**: solo se llega a ellas por el índice de la descripción de hardware.
+  Las que sí tienen URL y cubren a los cinco: el capítulo «Power Supplies» de esa descripción
+  (`support.huawei.com/enterprise/en/doc/EDOC1100213474/ab8a01a0/power-supplies`) y la guía de
+  instalación y mantenimiento (EDOC1100316397, que trata el L14, los L26/L50 y el AR8700-8).
   **Bloqueado por política de egreso (`support.huawei.com`)**. **Cómo se cierra**, desde una
-  máquina con navegador y salida: abrir las páginas del L26, L50 y AR6710-H de la descripción de
-  hardware (EDOC1100213474), y buscar en su índice las del L14 y el AR8700-8, y anotar en
-  `server/seed/legacyData/huawei.js` (`redund` y `psu.texto`) lo que digan de las fuentes de serie;
-  o probar PDF4me con `example.com` y, si responde, renderizarlas. La guía de hardware **no se puede traer desde aquí
+  máquina con navegador y salida: abrir esas dos y las páginas del L26, L50 y AR6710-H de la
+  descripción de hardware (EDOC1100213474), y anotar en `server/seed/legacyData/huawei.js`
+  (`redund` y `psu.texto`) lo que digan de las fuentes de serie; o probar PDF4me con
+  `example.com` y, si responde, renderizarlas. La guía de hardware **no se puede traer desde aquí
   ni desde Actions** (medido el 2026-10-06, noche:
   a `fetch` le llega un 200 con el cascarón de la aplicación, corrida 37453468795, y a Chromium
   sin cabeza un 403 «Access Denied» de Akamai en las catorce páginas, corrida 37454219168). Hace
@@ -1829,7 +1837,14 @@ web el ciclo de vida de Huawei, ejecutar la mejora propuesta y cualquier otra qu
   exploración no exigen un texto. Ahora el workflow reconoce esa pantalla y la reporta como tal, sin
   guardarla. `test/traer-pantalla-login.test.js` lee la expresión del propio workflow y la pasa por la
   pantalla de Huawei y por páginas buenas (saboteada: salta).
-- **Fuentes de serie de los cinco AR: bloqueadas.** Ver *Lo que queda abierto de las fichas Huawei*.
+- **Y la mejora que propuse al cerrar, hecha en la misma entrega** (el dueño pidió no esperar al
+  informe): cada entrada HTML de un transporte declara el texto que prueba que es el documento
+  (`debeContener`) o que es una exploración; el workflow se niega a correr si alguna no lo dice, y el
+  informe dice **EXPL**, no OK, para lo explorado. Las 25 entradas de exploración quedan marcadas;
+  `test/traer-exploracion.test.js` lo vigila en los dos workflows de transporte (saboteado: salta). La
+  primera corrida con la regla (37623790083) ya separa las cuatro exploraciones.
+- **Fuentes de serie de los cinco AR: bloqueadas.** Ver *Lo que queda abierto de las fichas Huawei*;
+  la cuarta ronda (HedEx e Info+) tampoco llega.
   La corrida 37613969445 (rama `fuente/huawei-tercera-via`) trajo la Security Target de Common
   Criteria —sin hardware— y confirmó el inicio de sesión de Info-Finder por su segunda ruta.
 - **Ciclo de vida: bloqueado por la cuenta**, con una pista seria del buscador (AR617VW fuera de venta
