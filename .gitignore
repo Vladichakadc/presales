@@ -59,3 +59,10 @@ arranque.log
 # `graphify update .` y caduca con el codigo. Versionarlo seria presentar un mapa de ayer
 # como el de hoy.
 graphify-out/
+
+# agent-reach (activación aprobada el 2026-10-07): sus credenciales viven en ~/.agent-reach/ de
+# quien la usa; si alguien la ejecuta dentro del repositorio, ni su directorio ni un volcado de
+# cookies pueden acabar en un commit. test/agent-reach-credenciales.test.js lo vigila.
+.agent-reach/
+*.cookies
+cookies.txt

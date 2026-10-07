@@ -94,10 +94,32 @@ proyecto es pasarle a un agente su guía de instalación:
    documento que puede cambiar cualquier día. Se leyó el del commit `a19a171`; el de
    mañana puede decir otra cosa.
 
+## Activación aprobada por el dueño (2026-10-07), y dónde viven las credenciales
+
+El dueño aprobó activarla **con credenciales**. Eso no cambia lo medido arriba: desde un contenedor
+de Claude Code en la nube no trae nada, así que se activa **en la máquina de una persona con salida
+a internet**, y lo que traiga sigue siendo lectura humana. Las reglas, para que activarla no abra una
+fuga:
+
+- **Las credenciales viven solo en `~/.agent-reach/`** (el directorio que el upstream declara como
+  suyo) o en el entorno de la shell de esa persona. **Nunca** en este repositorio, en su `.env`, en los
+  secretos de GitHub ni en un chat. `.gitignore` ignora `.agent-reach/` y los archivos de cookies por si
+  alguien la ejecuta dentro del repositorio, y `test/agent-reach-credenciales.test.js` frena en
+  `npm run verificar` un archivo versionado con un `TWITTER_AUTH_TOKEN` o un `TWITTER_CT0` con valor.
+- **Cuentas dedicadas, no las personales**: las cookies de Twitter (`TWITTER_AUTH_TOKEN`,
+  `TWITTER_CT0`) son la sesión entera de esa cuenta; si se filtran, se filtra la cuenta. Se renuevan
+  cerrando esa sesión.
+- **El Chrome con depuración (`127.0.0.1:9222`, para Boss直聘) es un perfil aparte**, escuchando solo en
+  `127.0.0.1`: ese puerto da control total del navegador a cualquier proceso local. La sesión de Chrome
+  para Xiaohongshu, Facebook e Instagram, también un perfil aparte, no el del día a día.
+- **La instalación, fijada al commit que se leyó** (`a19a171`), no a la rama:
+  `pip install git+https://github.com/Panniantong/agent-reach@a19a171`. Subir de versión es volver a
+  leer su guía antes.
+
 ## Cómo comprobar que sirve, el día que se use desde una máquina con salida
 
 ```bash
-pip install git+https://github.com/Panniantong/agent-reach   # NO 'pip install agent-reach'
+pip install git+https://github.com/Panniantong/agent-reach@a19a171   # NO 'pip install agent-reach'
 agent-reach --version        # tiene que decir 1.5.x, no 0.1.0
 agent-reach list --all       # tiene que listar las 16 plataformas, no 2
 agent-reach doctor --json    # qué backend sirve cada plataforma ahora mismo
