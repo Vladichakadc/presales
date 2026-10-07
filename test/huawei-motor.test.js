@@ -180,8 +180,10 @@ test('Ordering Information · el AR6710-H pide su placa de control (SRU-700S) y 
   const sru = p.pedir.find((x) => x.codigo === 'SRU700S');
   assert.ok(sru && sru.qty === 1);
   assert.match(sru.nota, /single or dual main control boards/);
-  assert.ok(p.pedir.some((x) => x.codigo === 'PSU6710H'));
-  assert.ok(!p.pedir.some((x) => x.codigo === 'PAC350'));
+  // Su fuente se elige entre AC y DC, con los códigos de su descripción de hardware (2026-10-07).
+  const fuente = p.elegir.find((g) => g.grupo === 'fuente');
+  assert.deepStrictEqual(fuente && fuente.opciones, ['PAC300', 'PDC260', 'PDC260DL']);
+  assert.ok(![...p.pedir.map((x) => x.codigo), ...fuente.opciones].includes('PAC350'));
 });
 
 // La potencia de salida de cada fuente es un dato del catálogo (`psu.salida`), transcrito de la
@@ -195,7 +197,7 @@ test('una fuente del BOM no contradice la potencia que publica la ficha del equi
   // publica la de las fuentes del equipo. Si no casan, la pieza es de otro equipo.
   for (const m of MODELS) {
     for (const k of m.parts || []) {
-      const w = Number((k.match(/^P[AD]C(\d+)$/) || [])[1]);
+      const w = Number((k.match(/^P[AD]C(\d+)(?:[A-Z]{2})?$/) || [])[1]);
       if (!w) continue;
       const salida = ((m.psu || {}).salida || []).map((s) => s.w);
       assert.ok(salida.length, `${m.id}: pide ${k} y el catálogo no dice qué potencia de salida publica su ficha (psu.salida)`);

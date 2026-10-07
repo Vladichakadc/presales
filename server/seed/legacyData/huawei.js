@@ -54,7 +54,13 @@ const PARTS = {
   MPU100T:{sku:'MPU-100-T', bom:null, d:'MPU del AR8700 con módulo de plataforma confiable (TPM)'},
   SPU700H:{sku:'SPU-700H', bom:null, d:'Unidad de servicio del AR8700 (Service Process Unit) · 1 x 40GE QSFP+, 8 x 10GE SFP+, 8 x GE combo'},
   SRU700S:{sku:'SRU-700S', bom:null, d:'Placa de servicio y enrutamiento del AR6710-H (Service and Router Unit) · 2 x 25GE SFP28, 4 x 10GE SFP+, 4 x GE RJ45, 1 x USB 3.0'},
-  PSU6710H:{sku:'Fuente del AR6710-H (código por confirmar)', bom:null, d:'Extraíble en caliente. La ficha AR6710-H R25C10 publica 300 W de salida en AC y 260 W en DC, no el código de pedido'},
+  // Las tres fuentes del AR6710-H (2026-10-07): «Applicable power modules» de su página en la
+  // descripción de hardware de Huawei (EDOC1100213474, actualizada el 2026-07-23), leída renderizada
+  // por PDF4me. Su ficha solo publicaba la potencia (300 W AC / 260 W DC), y hasta ese día la línea
+  // decía «código por confirmar» en vez de citar la PAC350, que es de otro equipo.
+  PAC300:{sku:'PAC300S12-CL', bom:null, d:'Fuente AC de 300 W · extraíble en caliente · la del AR6710-H (descripción de hardware de Huawei)'},
+  PDC260:{sku:'PDC260S12-CL', bom:null, d:'Fuente DC de 260 W · extraíble en caliente · la del AR6710-H (descripción de hardware de Huawei)'},
+  PDC260DL:{sku:'PDC260S12-DL', bom:null, d:'Fuente DC de 260 W · extraíble en caliente · con la versión V600R024C00SPC100 pide el parche V600R024HP1502 o posterior (descripción de hardware de Huawei)'},
   WSIC4GE:{sku:'AR6000-WSIC-4GE-C-V2', bom:null, d:'Tarjeta WAN de 4 puertos GE combo · ocupa 1 slot WSIC'},
   WSIC8GE:{sku:'WSIC-8GE-T-V2', bom:null, d:'Tarjeta WAN de 8 puertos GE eléctricos · ocupa 1 slot WSIC'},
   SICNR:{sku:'AR6000-SIC-NR-102-V2', bom:null, d:'Tarjeta 5G NR / LTE / WCDMA · ocupa 2 slots SIC'},
@@ -125,7 +131,9 @@ const PARTS = {
 //    cotizaba un chasis sin puertos. Entra SPU700H, que se pide siempre.
 //  - AR6710-H: la placa de control SRU-700S es un paso de pedido aparte («main control board
 //    selection»), y no se pedia. Su fuente es de 300 W AC / 260 W DC, no la PAC350 de 350 W; la
-//    ficha no publica su codigo, y la linea lo dice (PSU6710H) en vez de citar el de otro equipo.
+//    ficha no publica su codigo, y la linea lo decia en vez de citar el de otro equipo. Desde el
+//    2026-10-07 lo da su pagina de la descripcion de hardware: PAC300S12-CL en AC, y PDC260S12-CL
+//    o PDC260S12-DL en DC.
 //  - AR6710-L14T2X4 (150 W, «not hot-swappable») y L8T3TS1X2 (70 W, sin redundancia): sus fuentes
 //    no son modulos que se pidan aparte, y el BOM pedia una PAC350 y una PAC180. Ya no piden fuente.
 // `test/huawei-motor.test.js` guarda que la potencia de cada fuente pedida sea una de las que
@@ -189,8 +197,8 @@ const MODELS = [
  ports:'2 x 10GE óptico + 2 x GE WAN, 4 x GE combo + 8 x GE LAN, 4 x SIC, 0/2 WSIC', optics:['sfp10','ge'], parts:['WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
  psu:{watts:41, salida:[{w:150, tipo:'AC'}], tipo:'AC', texto:'«Dual power supplies, not hot-swappable», 150 W de salida máxima en AC; 41 W típicos (ficha AR6710-L R26C00). El BOM no pide fuente: la PAC350S12-CR que listaba el catálogo es un módulo de 350 W extraíble en caliente, y la ficha publica 150 W y fuentes que no lo son. No se marca la redundancia: la ficha no dice si las dos vienen montadas.'}},
 {id:'AR6710-H4T4X2Y7', cls:'AR', ser:'AR6700-H', fam:'Casa matriz / campus grande', fwd:13000, ipsec:10000, typ:7000, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:32, apsMax:512, boost:0,
- ports:'2 x 25GE SFP28 + 4 x 10GE SFP+ + 4 x GE · 6 x SIC, 1/4 WSIC · reemplaza AR6280/AR6300', optics:['sfp25','sfp10','ge'], parts:['SRU700S','PSU6710H','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
- psu:{watts:83, salida:[{w:300, tipo:'AC'}, {w:260, tipo:'DC'}], tipo:'AC o DC', texto:'«Dual power supplies, hot-swappable» (300 W AC / 260 W DC de salida): admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. 83 W típicos con una SRU y 145 W con dos (ficha AR6710-H R25C10). La PAC350S12-CR que listaba el catálogo es de 350 W y no es la suya; el código de su fuente de 300 W no lo publica la ficha.'}},
+ ports:'2 x 25GE SFP28 + 4 x 10GE SFP+ + 4 x GE · 6 x SIC, 1/4 WSIC · reemplaza AR6280/AR6300', optics:['sfp25','sfp10','ge'], parts:['SRU700S','PAC300','PDC260','PDC260DL','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
+ psu:{watts:83, salida:[{w:300, tipo:'AC'}, {w:260, tipo:'DC'}], tipo:'AC o DC', texto:'«Dual power supplies, hot-swappable» (300 W AC / 260 W DC de salida): admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. 83 W típicos con una SRU y 145 W con dos (ficha AR6710-H R25C10). La PAC350S12-CR que listaba el catálogo es de 350 W y no es la suya: su descripción de hardware (EDOC1100213474, 2026-07-23) da la PAC300S12-CL en AC y la PDC260S12-CL o la PDC260S12-DL en DC, con dos ranuras de fuente («Number of power modules 2», «Double AC power modules (1+1)»), sin decir cuántas vienen.'}},
 {id:'AR8140-12G10XG', cls:'AR', ser:'AR8000', fam:'Hub SD-WAN / borde de campus grande', fwd:25000, ipsec:20000, typ:15000, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:32, apsMax:1024, boost:0,
  ports:'10 x 10GE óptico + 8 x GE combo + 4 x GE · 4 x SIC, 0/2 WSIC · doble fuente 350 W', optics:['sfp10','ge'], parts:['PAC350','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
  redund:true, psu:{watts:168, salida:[{w:350, tipo:'AC'}, {w:350, tipo:'HVDC'}, {w:240, tipo:'DC'}], tipo:'AC-DC (PAC350S12-CR)', volts:'90–290 V', amps:'salida 12 V / 29,2 A',

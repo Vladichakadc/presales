@@ -205,10 +205,11 @@
      control: se dice en la linea, con lo que cambia (`nota`), en vez de fijarlo sin explicarlo. */
   const ROL_PIEZA = {
     PAC350: { grupo: 'fuente' }, PAC1000: { grupo: 'fuente' },
-    PAC600: { grupo: 'fuente' }, PDC1000: { grupo: 'fuente' }, PSU6710H: { grupo: 'fuente' },
+    PAC600: { grupo: 'fuente' }, PDC1000: { grupo: 'fuente' },
+    PAC300: { grupo: 'fuente' }, PDC260: { grupo: 'fuente' }, PDC260DL: { grupo: 'fuente' },
     MPU100: { grupo: 'mpu' }, MPU100T: { grupo: 'mpu' },
     SPU700H: { nota: 'obligatoria: el AR8700-8 se pide como chasis sin puertos («assembly chassis») y la SPU lleva todos los de servicio (ficha AR8000 R25C10)' },
-    SRU700S: { nota: 'la ficha hace de la placa de control un paso de pedido aparte y deja elegir una o dos («Select a single or dual main control boards»); con dos, 145 W típicos en vez de 83 (ficha AR6710-H R25C10)' },
+    SRU700S: { nota: 'la ficha hace de la placa de control un paso de pedido aparte y deja elegir una o dos («Select a single or dual main control boards»); con dos, 145 W típicos en vez de 83 (ficha AR6710-H R25C10), y las dos del mismo modelo desde la V600R024C00 (descripción de hardware)' },
     FAN240: { incluida: true }, RACK: { incluida: true }, CONSOLE: { incluida: true },
     WSIC4GE: { opcional: 'ampliación WAN por tarjeta WSIC' }, WSIC8GE: { opcional: 'ampliación WAN por tarjeta WSIC' },
     SICNR: { condicional: 'wan', motivo: 'solo si se pide 4G/5G integrado' },
