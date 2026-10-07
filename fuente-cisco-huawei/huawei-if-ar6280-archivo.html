@@ -1,0 +1,1419 @@
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=10">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>  Info-Finder (Online Tools) Lifecycle Query</title>
+	<link href="https://www.huawei.com/favicon.ico" type="image/x-icon" rel="icon"/>
+	<link href="https://www.huawei.com/favicon.ico" type="image/x-icon" rel="shortcut icon"/>
+	<link href="https://www.huawei.com/favicon.ico" type="image/x-icon" rel="Bookmark"/>
+<link type="text/css" rel="stylesheet" href="/info-finder/pages/node_modules/jquery-ui/dist/themes/base/jquery-ui.min.css"/>
+<link type="text/css" rel="stylesheet" href="/info-finder/pages/node_modules/bootstrap/dist/css/bootstrap.min.css" defer="defer"/>
+<link type="text/css" rel="stylesheet"
+		  href="/info-finder/pages/commonFile/css/common-all.css?v=1756983936051"/>
+<link type="text/css" rel="stylesheet"
+          href="/info-finder/pages/commonFile/plugIn/filter/filter-css.css?v=1756983936051"/>
+<link type="text/css" rel="stylesheet"
+          href="/info-finder/pages/commonFile/plugIn/pagination/style.css?v=1756983936051"/>
+
+<link type="text/css"  rel="stylesheet"
+	      href="/info-finder/pages/node_modules/@ztree/ztree_v3/css/zTreeStyle/zTreeStyle.css"/>
+<link rel="stylesheet"
+          href="/info-finder/pages/QuickQuery/tools/css/infoEox_UX.css?v=1756983936051" />
+<link rel="stylesheet"
+          href="/info-finder/pages/QuickQuery/common/css/calendar.css" />
+<script src="/info-finder/pages/node_modules/jquery/dist/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="/info-finder/pages/node_modules/jquery-ui/dist/jquery-ui.min.js" type="text/javascript" charset="utf-8"></script><script type="text/javascript" src="/info-finder/pages/commonFile/plugIn/multiDropDownBox/multiDropdownBox.js?v=1756983936051">
+</script>
+</head>
+<body>
+
+<input id="isLoginForDownload" value='' style="display: none;"></input>
+
+
+<input id="common-chang-path" type="hidden" value="/info-finder" />
+<input type="hidden" id="lang" value='en'/>
+<input id="domain" type="hidden" value="0"/>
+<input id="domainStr" type="hidden" value="enterprise"/>
+<input style="display: none;" id="buildVersion" value='?v=1756983936051'>
+
+<input id="whichPage" type="hidden" value="search-center-overViewUX">
+
+<input id="isTest" type="hidden" value="pro">
+<input id="getEnDataFromGraph" value="" style="display: none"/>
+
+<input id ="topicType" value='eox' style="display: none";></input>
+<input id="surveyModule" value="eox" type="hidden"/>
+<input id="userId" value='anonymous' style="display: none;"></input>
+
+<input id="i18n_publics" value="Version" style="display: none;"></input>
+<input id="i18n_versions" value="All" style="display: none;"></input>
+<input id="i18n_selectVersion" value="Please Select Version" style="display: none;"></input>
+
+<input id="mid_more" value="more" style="display: none;"></input>
+<input id="mid_less" value="less" style="display: none;"></input>
+<input id="bulletins-module" type="hidden" value="eox" />
+<!-- 意见反馈 -->
+<!-- getProductInfoByToolAndPbiId方法需要参数 -->
+<input id="subSeriesPbiId" value='23772823' style="display:none;"/>
+<input id="seriesPbiId" value='256863201' style="display:none;"/>
+<input id="modelPbiId" value='23924290' style="display:none;"/>
+
+
+<input id="i18n_productModel" value="Product Model" style="display: none;"></input>
+<input id="i18n_eom" value="End of Marketing (EOM)" style="display: none;"></input>
+<input id="i18n_eos" value="End of Service and Support (EOS)" style="display: none;"></input>
+<input id="i18n_productVersion" value="Product Version" style="display: none;"></input>
+<input id="i18n_eofs" value="End of Full Support (EOFS)" style="display: none;"></input>
+<input id="i18n_status" value="Life Cycle Status" style="display: none;"></input>
+
+
+<input id="i18n_reference" value="Note:</wrap>
+1. On the Query by Product tab page, you can query the planned EOM date, EOS date, and life cycle status by product. On the Query by Version tab page, you can query the planned EOM date, EOFS date, EOS date, and life cycle status by version. </wrap>
+2. Generally, Huawei releases a life cycle announcement six months prior to the planned EOM/EOFS/EOS date. EOM, EOFS, and EOS dates are displayed as Not announced if the planned EOM date is more than six months in the future." style="display: none;"></input>
+<input id="i18n_reference_huawei" value="Notes:</wrap>
+1.This tool can be used to query the planned EOM, EOFS, and EOS dates of a product or a software version.</wrap>" style="display: none;"></input>
+<input id="i18n_newtopic" value="3. EOM: End of Marketing &nbsp; EOFS: End of Full Support &nbsp;  EOS: End of Service and Support. " style="display: none;"></input>
+<input id="i18n_newtopic_huawei" value="2.EOM: End of Marketing &nbsp; EOFS: End of Full Support &nbsp;  EOS: End of Service and Support. " style="display: none;"></input>
+<input id="i18n_reference_infofinderBack" value="If you want to perform extensive searches such as checking the hardware/software EOM and EOS details about multiple products, use" style="display: none;"></input>
+<input id="i18n_reference_toolLink" value="Huawei EOM, EOFS, and EOS Date Query for Network Products." style="display: none;"></input>
+
+<input id="contextPathInput" value="/info-finder" type="hidden"/>
+
+
+<input id="i18n_publics" value="Version" style="display: none;"></input>
+<input id="i18n_selectVersion" value="Please Select Version" style="display: none;"></input>
+<input id="i18n_versions" value="All" style="display: none;"></input>
+<input id="typeproduct_model" value="Product model" style="display: none;"></input>
+<input id="typeproduct_version" value="Type Product Version" style="display: none;"></input>
+<input id="selectproduct_version" value="Product lifecycle" style="display: none;"></input>
+<input id="selectproduct_soft" value="Software version lifecycle" style="display: none;"></input>
+<input id="last_version" value="(Latest version)" style="display: none;"></input>
+<input id="softWareSwitch" value="" style="display: none;"></input>
+<input id="inputtextPro"  style="display: none;" value="Enter a product keyword" />
+<input id="inputtextKey"  style="display: none;" value="Enter a version keyword" />
+
+<input id="allSelect-li" type="hidden" value="All" />
+<input id="EOMSelect-li" type="hidden" value="End of Marketing (EOM)" />
+<input id="EOSSelect-li" type="hidden" value="End of Service and Support (EOS)" />
+<input id="EOSFSelect-li" type="hidden" value="End of Full Support (EOFS)" />
+
+<input id="referer" value='' style="display:none;"/>
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
+<style type="text/css">
+	body {
+		background-attachment:fixed;
+	}
+	#top {
+		position:fixed;
+		bottom:20px;
+		right:20px;
+		background-color: #EEE;
+		cursor: pointer;
+		_position:absolute;
+		z-index:999;
+	}
+	.myclearfix{text-decoration:underline;color:#f00;cursor: pointer;}
+
+</style>
+
+<link type="text/css" rel="stylesheet" href="/info-finder/pages/commonFile/css/infoHead.css?v=1756983936051" />
+
+
+<link rel="preload" href="/info-finder/pages/commonFile/css/share.css?v=1756983936051" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="/info-finder/pages/commonFile/css/share.css?v=1756983936051"></noscript>
+
+<input id="i18n_systembusy" type="hidden" name="i18n_systembusy" value="The system is busy. Try again later."/>
+<input id="enterpriseurl" value='e.huawei.com' type="hidden"/>
+<input id="supporturl" value='support.huawei.com' type="hidden"/>
+
+<input id="isTest" type="hidden" value="pro">
+<input id="mySpaceAndRedirectUrl" value="" type="hidden"/>
+<input type="hidden" id="language" value="en" />
+<input type="hidden" id="domainStr" value="enterprise" />
+<input type="hidden" id="userInfo" value="" />
+<input type="hidden" id="i18n-login" value="Login" />
+<input type="hidden" id="i18n-logout" value="Logout" />
+<input id="uniqueUrl" type="hidden" value="search"/>
+<input id="thisPage" value="UXtools" style="display: none"/>
+<input id="isTest" value="pro" style="display: none"/>
+
+<input id="isBulltinsHide" value="0" type="hidden"/>
+<input id="reLoginTips" value="Login timed out. Please log in again." type="hidden"/>
+<input id="solutionUrl" value="//info.support.huawei.com/network/ptmngsys/Web/solution/" style="display: none"/>
+<input type="hidden" id="isLogin" value />
+<input type="hidden" id="loginPreURL" value />
+
+<input id="page_id"  type="hidden" value=''/>
+
+<input id="pdu_name"  type="hidden" value=''/>
+
+<input id="uem_test_code"  type="hidden" value=''/>
+<input id="uem_code"  type="hidden" value=''/>
+
+<div id="productInfoTool" style="display: none">{"accessPermissions":"1","board":"","createBy":"","createTime":"2023-01-29 02:43:50.0","deleted":0,"domain":"0","id":0,"isCustomizing":"","isDxp":"N","iskl":"N","isyqf":"Y","lang":"en","lastUpdateBy":"","lastUpdateTime":"2024-11-22 03:30:21.0","mappingProductLevel":"model","md5":"899085431CADE9DD19FA17BC89237D90","minGranularity":"AR6280","model":"AR6280","offeringLevel":"","originModelId":"23924290","originSeriesId":"256863201","originSubSeriesId":"23772823","originVersionId":"252602823","pbiCode":"","pbiId":"252602823","pbiModel":"AR6280","pbiModelId":"23924290","pbiName":"AR6280 V300R019C10","pbiProductId":"23924290","pbiProductName":"AR6280","pbiSeries":"AR600&6100&6200&6300","pbiSeriesId":"256863201","pbiSubSeries":"AR6200","pbiSubSeriesId":"23772823","productFamily1":"Enterprise Network","productFamily1Id":"0","productFamily2":"Routers","productFamily2Id":"1482607112869","productFamily3":"Access Routers","productFamily3Id":"1558745770695","series":"AR600&6100&6200&6300","subSeries":"AR6200","toolId":"eox","version":"AR6280 V300R019C10","versionFullName":"AR6280 V300R019C10","versionNickName":"","versionPbiId":"252602823","versionShortName":"V300R019C10","visible":0}</div>
+<input id="pc3FamilyInfo" type="hidden" value="Access Routers" />
+<input id="isHideModelSelect"  type="hidden" value='Y'/>
+<input id="isHideCategorySelect"  type="hidden" value='Y'/>
+<input id="categoryName" type="hidden" value="routers">
+<input id="mappingProductLevel" type="hidden" value="model">
+<input id="pageType" type="hidden" value="search-center">
+<!-- UEM埋码可能用到的自定义数据 -->
+<input id="referer" value='' type="hidden"/>
+<input id="hidden_o3" value='' type="hidden"/>
+
+<div id="uemIdMap" style="display: none">{
+    "license": {
+        "pageId": "P30AF777DACF0B4",
+        "change": "P30AF777DACF0B4_C30AD5625B000FF",
+        "search": "P30AF777DACF0B4_C30AD56238AF707",
+        "export": "P30AF777DACF0B4_C30AD56286D8C78",
+        "compareChange": "P30AF777DACF0B4_C369448F56D0564",
+        "compareExport": "P30AF777DACF0B4_C369462C3911925"
+    },
+    "alarm": {
+        "pageId": "P30AF77796A4AAF",
+        "change": "P30AF77796A4AAF_C30AD562523BD37",
+        "search": "P30AF77796A4AAF_C30AD5627EF87B8",
+        "export": "P30AF77796A4AAF_C30AD562869A818"
+    },
+    "command": {
+        "pageId": "P30AF777CC3A382",
+        "change": "P30AF777CC3A382_C30AD5626F621B4",
+        "search": "P30AF777CC3A382_C30AD56267C9846",
+        "export": "P30AF777CC3A382_C30AD56271C2478"
+    },
+    "log": {
+        "pageId": "P30AF777AD81CAF",
+        "change": "P30AF777AD81CAF_C30AD5625C61E14",
+        "search": "P30AF777AD81CAF_C30AD5626C21ABD",
+        "export": "P30AF777AD81CAF_C30AD5623F239DB"
+    },
+    "mib": {
+        "pageId": "P30AF777C1AE8E7",
+        "change": "P30AF777C1AE8E7_C30AD5625F455CA",
+        "search": "P30AF777C1AE8E7_C30AD5625946B64",
+        "export": "P30AF777C1AE8E7_C30AD562798CDCA"
+    },
+    "speccenter": {
+        "pageId": "P35F982B486A8AE",
+        "queryChange": "P35F982B486A8AE_C36342765EAE1B8",
+        "exportChange": "P35F982B486A8AE_C363736ADBBFF37",
+        "compareChange": "P35F982B486A8AE_C3637A8CA578E0E",
+        "changeTab": "P35F982B486A8AE_C363566D0CC6FA2",
+        "keyExport": "P35F982B486A8AE_C363080B3A21095",
+        "allExport": "P35F982B486A8AE_C36338E990A2C9C",
+        "compareExport": "P35F982B486A8AE_C3637451EC1A240",
+        "compareOnly": "P35F982B486A8AE_C3633EAEE41A586",
+        "queryOnly": "P35F982B486A8AE_C3637975C2B7DDE",
+        "onlyDiff": "P35F982B486A8AE_C3633F2A766A072"
+    },
+    "hardwarecenter": {
+        "pageId": "P7D11FBF634F227",
+        "productChange": "P7D11FBF634F227_C3634B833146751",
+        "componentChange":"P7D11FBF634F227_C54F7F3478F9408",
+        "search": "P7D11FBF634F227_C36311517DB3CF8",
+        "autoComplete": "P7D11FBF634F227_C36366F8DB035FF",
+        "detail": "P7D11FBF634F227_C3ECACB38A9969E",
+        "bundle": "P7D11FBF634F227_C3ECB2CF02A858D",
+        "card":"P7D11FBF634F227_C54F812D933DB5B",
+        "noData":"P7D11FBF634F227_C54F468CF2B68B3"
+    },
+    "eox": {
+        "pageId": "P35FD4609257BCF",
+        "versionChange": "P35FD4609257BCF_C3635B1C646AF3A",
+        "productChange": "P35FD4609257BCF_C3631E8E14DE913",
+        "versionSearch": "P35FD4609257BCF_C3635DA06692A24",
+        "productSearch": "P35FD4609257BCF_C363223D9825341",
+        "productFilter": "P35FD4609257BCF_C3632695D0A3B45",
+        "versionFilter": "P35FD4609257BCF_C36326C0E5AF467"
+    },
+    "web3d": {
+        "pageId": "P35F982B788DD97",
+        "productChange": "P35F982B788DD97_C36364EC95C59E7",
+        "componentChange":"",
+        "search": "P35F982B788DD97_C3632A637DC9AB4",
+        "autoComplete": "P35F982B788DD97_C363659B52815FA",
+        "card":"P35F982B788DD97_C54F5AE505152EF",
+        "noData":"P35F982B788DD97_C54F95FEAB733EC"
+    },
+    "image": {
+        "pageId": "P7D11FBF8E77008",
+        "change": "P7D11FBF8E77008_C363304AAC21E13",
+        "search": "P7D11FBF8E77008_C3636821D81758D",
+        "autoComplete": "P7D11FBF8E77008_C363686EE67E3C1",
+        "download": "P7D11FBF8E77008_C36367F13B304FD",
+        "card":"P7D11FBF8E77008_C54F4B3105360AA",
+        "noData":"P7D11FBF8E77008_C54F86662DFF78B"
+    },
+    "hdcfg": {
+        "pageId": "P7D11FBF6F61101",
+        "change": "P7D11FBF6F61101_C36369BC8202E69",
+        "search": "P7D11FBF6F61101_C36369B703F5DFE",
+        "autoComplete": "P7D11FBF6F61101_C36369FE69C0BA8",
+        "card":"P7D11FBF6F61101_C54F5C54A646D97",
+        "noData":"P7D11FBF6F61101_C54F97A59C2DE62"
+    },
+    "productOverView": {
+        "pageId": "P7D11FBF6F02C85",
+        "skip": "P7D11FBF6F02C85_C3EE45C5395FC86"
+    },
+    "packetformat": {
+        "pageId": "P3EDD9D4A61074D",
+        "search": "P3EDD9D4A61074D_C3EE45C4FBE374F",
+        "view": "P3EDD9D4A61074D_C3EE45C5189CA8C"
+    },
+    "informationSearchCenterAllTool": {
+        "pageId": "P3EDD9D4B3BD408"
+    },
+    "informationProductSelect": {
+        "pageId": "P3EDD9D49763525",
+        "search": "P3EDD9D49763525_C3EE45C4EB2C0B8"
+    },
+    "informationManual": {
+        "pageId": "P4C553553F3D712",
+        "configurationFileImporte": "P4C553553F3D712_C4DD823C732D557",
+        "preview": "P4C553553F3D712_C4DD823C93F5B33",
+        "downloadIMG": "P4C553553F3D712_C4DD823CA986C25",
+        "calculation": "P4C553553F3D712_C4DD823C732D557",
+        "clearConfiguration": "P4C553553F3D712_C4DD823C5D30594",
+        "inputSingle": "P4C553553F3D712_C4DD823C4ED3E55",
+        "inputBatch": "P4C553553F3D712_C4DD823C69E2EFF"
+    },
+	"vqt2RecVersion": {
+        "pageId": "P64049F5404C3D2",
+        "filer": "P64049F5404C3D2_C6847A7312132AB",
+		"search": "P64049F5404C3D2_C6847AD596440F3",
+		"link": "P64049F5404C3D2_C684B5A820E402A"
+    },
+	"vqt2AcApMap": {
+        "pageId": "P72303D275DECBF",
+        "export": "P72303D275DECBF_C7230523101FC5F"
+}
+}</div>
+<input id="dialog-title" value="Tips" style="display: none"/>
+<input id="dialog-message-nologin" value="Log in to obtain more information." style="display: none"/>
+
+   <input id="dialog-message-unknow" value="First go to the support website to log in. If you can log in successfully, your account has been registered on the support website." style="display: none"/>
+
+<input id="dialog-message-uplevel" value="You do not have the permission of Huawei engineers. To obtain more information, you are advised to escalate your permission." style="display: none"/>
+<input id="dialog-btn-login" value="Login" style="display: none"/>
+<input id="dialog-btn-go" value="Go" style="display: none"/>
+<input id="dialog-btn-uplevel" value="Escalate Permission" style="display: none"/>
+<input id="dialog-btn-close" value="Close" style="display: none"/>
+<input id="dialog-time-before" value="Automatically close after " style="display: none"/>
+<input id="dialog-time-after" value=" seconds" style="display: none"/>
+<input id="dialog-support-url" value="" style="display: none"/>
+<input id="dialog-support-email-title" value="Permission Escalation Application for Your Approval" style="display: none"/>
+<input id="dialog-support-email-abstract" value="[Cause]%0d%0a
+Partner employees (IDs starting with WX, KF, or 8) and ODs (IDs starting with 300) have partner permissions on the enterprise technical support website by default. %0d%0a
+Some data on Info-Finder can only be accessed by users with the permission of Huawei engineers.%0d%0a
+Please approve this application so that partner employees can access such data.
+Thank you!%0d%0a
+%0d%0a
+[Applicant]%0d%0a
+Your name and ID" style="display: none"/>
+<input id="dialog-support-email-to" value="Your Huawei supervisor's email or ID" style="display: none"/>
+<input id="dialog-support-email-cc" value="e.support@huawei.com" style="display: none"/>
+<input id="dialog-message-uat-getAccount" value="" style="display: none"/>
+
+<input id="solution_jump_flag" value="true" type="hidden">
+<input id="solution_new_version" value="CloudCampus V100R023C10,SD-WAN V100R024C10,HiSec V100R024C10" type="hidden">
+
+<div id="solution_new_series" style="display: none">["CloudCampus","CloudFabric","SD-WAN","CloudCampus SOHO","CloudCampus SME","HiSec","Energy","能源","数字政府","金融","交通","教育","医疗","智能制造","Government & Public Security","Transportation Solution","Energy Solution","Manufacturing Solution","Finance solution","Medical solution"]</div>
+<input id="solution_jump" value="CloudCampus" type="hidden" />
+<input id="solution_jump_tools_url" value="/info-finder/vue/search-center/en/enterprise/speccenter/query" type="hidden" />
+
+<input id="solution_jump_tools_url_vid" value="/info-finder/vue/search-center/en/enterprise/speccenter/queryNew/cloudcampus-vid-252464771" type="hidden" />
+<input id="solution_jump_center_url" value="/info-finder/vue/search-center/en/enterprise/solution/cloudcampus-pid-C00000009238/speccenter/queryNew" type="hidden" />
+
+
+   <input id="i18n_isLogin" value='false' style="display:none;"/>
+
+
+
+
+<div id="headerTop">
+	<div class="headerTopLogo">
+		<div class="header-left">
+			<img src="/info-finder/pages/commonFile/img/logo_new1.png" alt="">
+		</div>
+	</div>
+	<div class="headerTop">
+		<div class="header-right">
+			<a href="https://support.huawei.com/enterprise/en/index.html" class="Tech_support" target="_blank" rel="noopener noreferrer">Technical Support</a>
+			<span class="login-line"></span>
+			
+			
+            
+			<div style="position: relative;display: none" class="bulletin-nav"><a href="/info-finder/vue/bulletins/en/enterprise/index" class="notification" id="notify" target="_blank" rel="noopener noreferrer">Bulletins</a>
+			<div class="dialogTip" id="bullentins-tip" style="display: none"></div>
+			</div>
+			<span class="login-line bulletin-nav"></span>
+			<div style="position: relative;" class="helpCenter-nav">
+				<a href="/info-finder/vue/help-center/en/enterprise/index" class="notification" id="notify" target="_blank" rel="noopener noreferrer">Help Center</a>
+			</div>
+			<span class="login-line"></span>
+			
+				<span  class="lang">
+							<em class="lang-select" onclick="showlangSelect(event,this)"><em class="lang-name"></em><i class="select-down"></i></em>
+							<ul class="lang-val lang-val-en">
+								<li class="new-change-lang" id="new-change-zh" lang="zh">中文</li>
+								<li class="new-change-lang" id="new-change-en" lang="en">English</li>
+							</ul>
+						</span>
+
+			<span class="login-line"></span>
+			
+			<span class="login-logout">
+				<a href id="login" rel="noopener noreferrer">
+					<span id="ehead_login"></span>
+				</a>
+			</span>
+			<div class="dialogTip" id="change-userLevel-tip" style="display: none"></div>
+		</div>
+	</div>
+</div>
+
+<div id="headerDIV">
+	<div id="headerPosition">
+		<div class="headerLogo-con">
+			<div class="header-logo">
+				<a href="/info-finder/en/enterprise/index" rel="noopener noreferrer"></a>
+			</div>
+		</div>
+		<div class="header enterprise" style="width:100%">
+			<div class="header-wrapper">
+				<div class="header-left" style="display: none">
+					<div></div>
+				</div>
+				<div class="header-con">
+					<div class="header-mid header_en header_enterprise">
+						
+						    <a href="/info-finder/vue/en/enterprise/index" class="nav openSearch" rel="noopener noreferrer">Home</a>
+						
+						
+							<a href="/info-finder/vue/search-center/en/enterprise/index" class="nav search-center" rel="noopener noreferrer">Search Center</a>
+							<a href="/info-finder/encyclopedia/en/index.html" class="nav encyclopedia" rel="noopener noreferrer">IP Encyclopedia</a>
+							<a href="/info-finder/vue/en/enterprise/onlinecourses/list/hot" class="nav course" rel="noopener noreferrer">Online Courses<i></i></a>
+							
+							
+						        <a href="/info-finder/vue/intelligent-assistance/en/index" class="nav bidding" rel="noopener noreferrer">Intelligent Model Selection</a>
+							
+						
+						
+
+				</div>
+					<div class="iphone-btn">
+						<span></span>
+					</div>
+                </div>
+			</div>
+		</div>
+		<div class="headerSearch">
+			<div class="headerSearch_box">
+				<span class="saerch-box-ForIndex-img"></span>
+				<span class="saerch-box-ForIndex-search">Search</span>
+			</div>
+		</div>
+	</div>
+
+</div>
+
+<div id="iphone-nav">
+	<div class="ip-head">
+		<span></span>
+	</div>
+	<div class="ip-nav">
+		
+		    <a href="/info-finder/vue/en/enterprise/index" class="nav">Home</a>
+		
+		<a href="/info-finder/search-center/en/enterprise/index" class="nav">Search Center</a>
+		
+			<a href="/info-finder/encyclopedia/en/index.html" class="nav">IP Encyclopedia</a>
+			<a href="/info-finder/vue/en/enterprise/mbOnlineCourses/list/hot" class="nav" rel="noopener noreferrer">Online Courses</a>
+			<a href="/info-finder/vue/intelligent-assistance/en/index" class="nav bidding" rel="noopener noreferrer">Intelligent Model Selection</a>
+		
+		
+	</div>
+	<div class="ip-footer">
+		<em class="lang-select" onclick="showlangSelect(event,this)"><span class="ip-chang-lang"></span><i class="select-down"></i></em>
+		<ul class="lang-val lang-val-en">
+			<li class="new-change-lang" id="ip-change-zh" lang="zh">中文</li>
+			<li class="new-change-lang" id="ip-change-en" lang="en">English</li>
+		</ul>
+		<span class="ip-right">
+		  <span id="login-logout-mobile">
+			<a href  id="login-mobile" rel="noopener noreferrer">
+			 <span id="ehead-login-mobile">Login</span>
+			</a>
+		 </span>
+	  </span>
+	</div>
+</div>
+<div id="common-reLogin-pop">
+	
+
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=10">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<div class="common-dialog-box" style="display: none">
+    
+    <div class="tips-dialog-box">
+        <div class="selectBox-head" style="font-size:16px">
+            <span class="selectBox-tips-icon"></span>
+            <span class="selectBox-head-title">Tips</span><span class="selectBox-head-icon"></span>
+        </div>
+        <div class="select-con">
+            <div class="tips-dialog-content"></div>
+        </div>
+        <div class="tips-dialog-footer">
+            <span class="sure-btn">OK</span>
+            <span class="cancel-btn">Cancel</span>
+        </div>
+    </div>
+</div>
+</div>
+<div id="bullentins-popWindow" class="common-dialog-box"  style="display: none">
+</div>
+<div id="header-searchPop" style="display: none;">
+</div>
+<div id="header-searchPop-mask" style="display: none;"></div>
+
+
+
+
+    
+
+
+<link rel="stylesheet" type="text/css"
+      href="/info-finder/pages/commonFile/plugIn/searchProducts/searchProducts.css?v=1756983936051">
+<link type="text/css" rel="stylesheet"
+      href="/info-finder/pages/QuickQuery/newSearchCenter/css/infoHeader.css?v=1756983936051"/>
+<input id="urlStyle" type="hidden" value="">
+<input id="newModule-support" type="hidden" value="Bidding Support">
+<input id="newModule-design" type="hidden" value="Solution Design">
+<input id="newModule-om" type="hidden" value="O&M">
+<input id="auto_before1" type="hidden" value="No results found,"/>
+<input id="auto_after1" type="hidden" value="Enter a correct product series name or product model, such as S12700 or NE40E-X16."/>
+
+<div class="layout-breadcrumb">
+    <div class="cistern clearfix">
+        <ul></ul>
+    </div>
+</div>
+<div id="infoHeadBanner">
+    <div class="infoHead-image"></div>
+    <div class="infoHead-con">
+        <div class="head-left">
+            
+            
+            
+            <a class="head-name" pbiId="23924290" rel="noopener noreferrer">AR6280</a>
+            
+            <a class="changeBtn"><i class="change"></i>Change Product</a>
+        </div>
+        <div class="change-group" style="display: none">
+            <input class="change-input" placeholder="Enter a product series name or model, for example: S12700.">
+            <em class="closeBtn"></em>
+            <ul class="select-down" style="display: none"></ul>
+        </div>
+    </div>
+    <div id="infoToolCon" class="all-tools" style="display: none">
+        <div class="allTool-con">
+            <div class="allTool-title common-tools"></div>
+            <div class="allTool-list common-tools"></div>
+        </div>
+    </div>
+</div>
+
+
+
+<div id='eoxUXTools'>
+ 	<div class="info-cat-nameabc">
+		<div class="toolNameClass">
+		    <span class="infoIcon"></span><span class="toolName">Lifecycle Query</span>
+		</div>
+		<div class="spec-nav">
+	        <ul>
+	            <li id="specProduct-nav" class="tab-item" type="hStatus"><a>Query by Product</a><em></em></li>
+	            <li id="specVersion-nav" class="tab-item" type="sStatus"><a>Query by Software Version</a><em></em></li>
+	        </ul>
+	    </div>
+		<div id="spec-container" class="specEoxPage">
+	        <div class="spec-con specProduct-nav selected">
+
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=10">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+<link rel="stylesheet" href="/info-finder/pages/commonFile/plugIn/multiDropDownBox/multidDropdownBox.css?v=1756983936051"/>
+<link rel="stylesheet" href="/info-finder/pages/QuickQuery/tools/css/specProductUX.css?v=1756983936051" />
+<input id="auto_before" type="hidden"  value="No results found," />
+<input id="auto_after" type="hidden" value="Enter a correct product series name or product model, such as S12700 or NE40E-X16." />
+<input id="search_keys" type="hidden" value="Keywords:" />
+<input id="search_placeholder" type="hidden" value="Enter a product keyword" />
+<input id="search_btn" type="hidden" value="Query" />
+<input id="multiBox-family" type="hidden" value="Product Family" />
+<input id="multiBox-series" type="hidden" value="Series" />
+<input id="multiBox-subSeries" type="hidden" value="Sub-series" />
+<input id="multiBox-model" type="hidden" value="Model" />
+
+
+
+
+<div class="multiGroup-dropdown product_status" id="multiDropdownGroup_eoxProduct">
+    
+
+    <div class="info-cat-select" id="common-key-select-eoxProduct" >
+        <span>Keywords:</span>
+        <div class="select-con">
+            <div class="select-group" id="keyword-select-eoxProduct"><input class="select-input" placeholder="Enter a product keyword"><i class="search"></i></div>
+        </div>
+    </div>
+    
+    <div class="info-cat-select" id="productStatu-select-eoxProduct" >
+        <span>Filter</span>
+        <div class="select-module2">
+	   	 <dl>
+			<dd>
+	            <div class="input-select2 new-click-class">
+	            	<input  type="text" id="eoxProductStatusType" class="modelproInput" name="country" readonly placeholder="Select life cycle status">
+	            	<i class="iconfont icon-down"></i>
+	            	<ul class="" style="">
+	            	<li class="allSelect" value="all">All</li>
+	            	<li class="EOMSelect" value="eom">End of Marketing (EOM)</li>
+	            	<li class="EOSSelect" value="eos">End of Service and Support (EOS)</li>
+	            	<li class="EOSFSelect" value="eofs" style="display:none;">End of Full Support (EOFS)</li>
+	            	</ul> 
+	             </div>
+	          </dd>
+	      </dl>
+	      <div class="date-box clearfix">
+	          <div class="date-input start-date">
+				  <input type="text" class="start-calendar" name="from" readonly="readonly" placeholder="From" disabled=true>
+				  <em class="icon_calendar"></em>
+			  </div>
+		      <div class="date-input end-date">
+				  <input type="text" class="end-calendar" name="to" readonly="readonly" placeholder="To" disabled=true>
+				  <em class="icon_calendar"></em>
+			  </div>
+	      </div>
+	   </div>
+	   
+	   <div class="select-con select-product-search">
+           <a class="search-btn" id="productSearch-btn">Query</a>
+       </div>
+       <div class="eoxSet eox-pc-set en">
+			<a class="eoxProductReset" href="javascript:void(0);">
+			    <span>
+			        <img class="resetFilter" src="/info-finder/pages/QuickQuery/tools/img/resetFilter.png">
+			    </span>
+		 		<span>
+		 		    Reset
+		 		</span>
+		 	</a>
+	    </div>
+    
+    </div>
+</div>
+
+
+<div id= "excelDiv" style="display: none"></div>
+
+
+<script type="text/javascript"
+        src="/info-finder/pages/QuickQuery/tools/js/specProduct.js?v=1756983936051"  charset="utf-8">
+</script></div>
+	        <div class="spec-con specVersion-nav" style="display:none;">
+
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=10">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+<link rel="stylesheet" href="/info-finder/pages/commonFile/plugIn/multiDropDownBox/multidDropdownBox.css?v=1756983936051"/>
+<link rel="stylesheet" href="/info-finder/pages/QuickQuery/tools/css/specVersionUX.css?v=1756983936051" />
+<input id="auto_before" type="hidden"  value="No results found," />
+<input id="auto_after" type="hidden" value="Enter a correct product series name or product model, such as S12700 or NE40E-X16." />
+<input id="search_keys" type="hidden" value="Keywords:" />
+<input id="search_placeholder" type="hidden" value="Enter a product keyword" />
+<input id="search_btn" type="hidden" value="Query" />
+<input id="multiBox-family" type="hidden" value="Product Family" />
+<input id="multiBox-series" type="hidden" value="Series" />
+<input id="multiBox-subSeries" type="hidden" value="Sub-series" />
+<input id="multiBox-model" type="hidden" value="Model" />
+<input id="select-allVersion" type="hidden" value="All" />
+
+
+
+
+
+<div class="multiGroup-dropdown version_status" id="multiDropdownGroup_eoxVersion">
+    
+
+
+    <div class="info-cat-select" id="version-group-eoxVersion">
+            <span>Version:</span>
+            <div class="select-con">
+                <div class="select-group" id="version-select-eoxVersion" ><input class="select-input" readonly placeholder="Select a Version"><i></i>
+                    <ul style="display: none" class="select-down"></ul>
+                </div>
+            </div>
+        </div>
+    <div class="info-cat-select" id="common-key-select-eoxVersion" >
+        <span>Keywords:</span>
+        <div class="select-con">
+            <div class="select-group" id="keyword-select-eoxVersion"><input class="select-input" placeholder="Enter a product keyword"><i class="search"></i></div>
+        </div>
+    </div>
+    
+    <div class="info-cat-select" id="productStatu-select-eoxVersion" >
+        <span>Filter</span>
+        <div class="select-module2">
+	   	 <dl>
+			<dd>
+	            <div class="input-select2 new-click-class">
+	            	<input  type="text" id="eoxVersionStatusType" class="modelproInput" name="country" readonly placeholder="Select life cycle status">
+	            	<i class="iconfont icon-down"></i>
+	            	<ul class="" style="">
+	            	<li class="allSelect" value="all">All</li>
+	            	<li class="EOMSelect" value="eom">End of Marketing (EOM)</li>
+	            	<li class="EOSSelect" value="eos">End of Service and Support (EOS)</li>
+	            	<li class="EOSFSelect" value="eofs" style="display:none;">End of Full Support (EOFS)</li>
+	            	</ul> 
+	             </div>
+	          </dd>
+	      </dl>
+	      <div class="date-box clearfix">
+	          <div class="date-input start-date">
+				  <input type="text" class="start-calendar" name="from" readonly="readonly" placeholder="From" disabled=true>
+				  <em class="icon_calendar"></em>
+			  </div>
+		      <div class="date-input end-date">
+				  <input type="text" class="end-calendar" name="to" readonly="readonly" placeholder="To" disabled=true>
+				  <em class="icon_calendar"></em>
+			  </div>
+	      </div>
+	   </div>
+	   
+	   <div class="select-con select-version-search">
+          <a class="search-btn" id="versionSearch-btn">Query</a>
+       </div>
+       <div class="eoxSet eox-pc-set">
+			<a class="eoxVersionReset" href="javascript:void(0);">
+			    <span>
+			        <img class="resetFilter" src="/info-finder/pages/QuickQuery/tools/img/resetFilter.png">
+			    </span>
+		 		<span>
+		 		    Reset
+		 		</span>
+		 	</a>
+	    </div>
+    </div>
+</div>
+
+
+<div id= "excelDiv" style="display: none"></div>
+
+
+<script type="text/javascript"
+        src="/info-finder/pages/QuickQuery/tools/js/specVersion.js?v=1756983936051"  charset="utf-8">
+</script></div>
+	    </div>
+
+	    <!-- 结果展示 -->
+	    <div class="info-pic-default">
+			<div class="info-result-title">
+				<div class="info-result-title clearfix">
+				    <div class="info-result-title-left" style="display:none;">
+					    <p class=""> Note: For more life cycle information, see
+							<a class="toTech_support_note" href="javascript:void(0);" style="color:#2A5DB0;padding-right:10px;margin-top:4px;">
+								<span>Life Cycle Notices</span>
+								<em class="info-result-share"></em>
+							</a>
+					    </p>
+					</div>
+					
+					<div class="infoMDownLoad-div" onclick="javascript:queryEoxDataDownLoad();" title="You are not logged in. Please log in to download.">
+					
+			            <img src="/info-finder/pages/QuickQuery/tools/img/infom-download.png">
+			            <span>Export Data
+			                <em class="lock" style=""></em>
+			            </span>
+			        </div>
+			    </div>
+			</div>
+			<div class="info-result-container-box">
+				<div class="info-result-th">
+					<ul class="th-template">
+						<li class="modelName">
+							<div class="result-marketing">
+							    <span class="leftBorderContent result-title"></span>
+							</div>
+						</li>
+						<li class="eom">
+							<div class="result-marketing">
+							    <span class="leftBorderSpan"></span>
+							    <span class="result-marketing  result-title leftBorderContent"></span>
+							</div>
+							<ul>
+								<li></li>
+								<li></li>
+							</ul>
+						</li>
+						<li class="eofs">
+							<div class="result-marketing">
+							    <span class="leftBorderSpan"></span>
+							    <span class="result-marketing  result-title leftBorderContent"></span>
+							</div>
+							<ul>
+								<li></li>
+								<li></li>
+							</ul>
+						</li>
+						<li class="eos">
+							<div class="result-marketing">
+							    <span class="leftBorderSpan"></span>
+							    <span class="result-marketing  result-title leftBorderContent"></span>
+							</div>
+							<ul>
+								<li></li>
+								<li></li>
+							</ul>
+						</li>
+						<li class="eox">
+							<div class="result-marketing">
+							    <span class="leftBorderSpan"></span>
+							    <span class="result-marketing  result-title leftBorderContent"></span>
+							</div>
+							<ul>
+								<li></li>
+								<li></li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+				<div class="info-result-tr">
+						<ul class="tr-template">
+							<li class="mib_pModel"></li>
+							<li class="pModel"></li>
+							<li class="mib_eom"></li>
+							<li class="mib_eomIntended"></li>
+							<li class="eomIntended"></li>
+							<li class="mib_eomFormal"></li>
+							<li class="eomFormal"></li>
+							<li class="mib_eofs"></li>
+							<li class="mib_eofsIntended"></li>
+							<li class="eofsIntended"></li>
+							<li class="mib_eofsFormal"></li>
+							<li class="eofsFormal"></li>
+							<li class="mib_eos"></li>
+							<li class="mib_eosIntended"></li>
+							<li class="eosIntended"></li>
+							<li class="mib_eosFormal"></li>
+							<li class="eosFormal"></li>
+
+							<li class="mib_eox"></li>
+							<li class="mib_eoxIntended"></li>
+							<li class="eoxIntended"></li>
+							<li class="mib_eoxFormal"></li>
+							<li class="eoxFormal"></li>
+							<li class="info-querys-more"></li>
+						</ul>
+						<ul class="info-result-even">
+						</ul>
+				</div>
+                <!--表格内容为空 提示语-->
+                <div class="license-infom-tool-data-without-tips" style="display: none">
+				    <p>No data available</p>
+			    </div>
+			</div>
+
+			<!-- 分页 -->
+            <div id="reverse-page"></div>
+
+			<!-- note提示 -->
+			<div class="info-result-note"></div>
+		</div>
+
+	</div>
+
+</div>
+
+
+
+<div class="foot">
+	<div id="footerDIV"><!--footer         Start-->
+
+<style>
+    .editPageButtom:not(:last-child) > div { float: left; }
+</style>
+
+
+
+
+
+<div class="ebg-footer">
+    <div class="link-group">
+        <div class="cistern">
+            <div class="con">
+                <div class="right">
+    <div class="footer-share">
+        <!--<div class="app">
+            <span class="foot-code lazyload">
+                <label>Enterprise App</label><a href="http://enterprise.huawei.com/topic/2014APP/index.html" target="_blank" rel="nofollow"><img class="lazy" alt="Enterprise APP" src="" data-original="http://e-file.huawei.com/-/media/EBG/Images/common/about-ebg/EBGAPP-201404.png?h=81&amp;la=en&amp;w=81" /></a></span>
+        </div>-->
+        <div class="share-wrap">
+            <label>Follow Us</label>
+            <ul class="clearfix">
+                <li><a rel="nofollow noopener noreferrer" href="https://www.facebook.com/HuaweiEnterprise" target="_blank"><em class="iconfont icon-f"></em></a></li>
+                <li><a rel="nofollow noopener noreferrer" href="https://www.linkedin.com/company/huawei-enterprise" target="_blank"><em class="iconfont icon-linkin"></em></a></li>
+                <li><a rel="nofollow noopener noreferrer" href="https://twitter.com/#!/HuaweiEnt" target="_blank"><em class="iconfont icon-t1"></em></a></li>
+                <li><a rel="nofollow noopener noreferrer" href="https://www.youtube.com/user/HuaweiEnterprise" target="_blank"><em class="iconfont icon-youtube3"></em></a></li>
+                <li><a rel="nofollow noopener noreferrer" href="https://www.instagram.com/huaweient" target="_blank"><em class="iconfont icon-instagram"></em></a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+                <div class="left">
+                    <div class="link-set" id="footers">
+                        
+                            
+                                    <ul class="clearfix">
+                                        <li>
+                                            <h6>
+                                                About Huawei
+                                            </h6>
+                                        </li>
+                                        
+                                                
+                                                    <li>
+                                            <a href="https://www.huawei.com/en/about-huawei" data-id="{D409BBE2-CAFA-4238-BF6B-0404ACAAD5AE}" rel="nofollow noopener noreferrer" target="_blank">
+                                                            About Huawei
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                                
+                                                    <li>
+                                                        <a href="//e.huawei.com/en/about/huawei-enterprise" rel="nofollow" data-id="{3885C101-CD3A-49E3-959C-89D964841AA2}">
+                                                            About Huawei Enterprise
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                                
+                                                    <li>
+                                                        <a href="//e.huawei.com/en/branch-office-query" rel="nofollow" data-id="{C0579CEF-5A52-4762-8525-84F26F4F37E5}">
+                                                            Branch Office
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                                
+                                                    <li>
+                                                        <a href="//e.huawei.com/en/news" rel="nofollow" data-id="{76BB049C-B5C4-4A2F-84FC-9D25EF98A5C5}">
+                                                            News Room
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                                
+                                                    <li>
+                                                        <a href="//e.huawei.com/en/events" rel="nofollow" data-id="{0970FECF-44A5-4626-B1E6-16F18E21B7C4}">
+                                                            Huawei Events
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                                
+                                                    <li>
+                                                        <a href="https://www.huawei.com/en/facts" rel="nofollow noopener noreferrer" data-id="{E1E737D7-E752-41FC-ADC3-F12E557620E2}" target="_blank">
+                                                            Huawei Facts
+                                                        </a>
+                                                    </li>
+                                                
+                                    </ul>
+                                
+                                    <ul class="clearfix">
+                                        <li>
+                                            <h6>
+                                                How to Buy
+                                            </h6>
+                                        </li>
+                                        
+                                                
+                                                    <li>
+                                                        <a href="//e.huawei.com/en/get-price-info" rel="nofollow" data-id="{8F5AE213-F748-4BD3-8477-CCBF67356D60}">
+                                                            Get Pricing
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                                
+                                                    <li>
+                                                        <a href="https://e.huawei.com/customercenter" rel="nofollow" data-id="{9C0D0F1B-6BA9-4574-B7D0-FFE1DD71E5AE}">
+                                                            eDeal Ordering System
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                                
+                                                    <li>
+                                                        <a href="https://partner.huawei.com/web/worldwide/channel-find-partner" rel="nofollow" data-id="{26352090-7F82-4B4B-B26B-93ECD84C58E9}">
+                                                            Find a Reseller
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                    </ul>
+                                
+                                    <ul class="clearfix">
+                                        <li>
+                                            <h6>
+                                                Partner
+                                            </h6>
+                                        </li>
+                                        
+                                                
+                                                    <li>
+                                                        <a href="https://partner.huawei.com/en_US/web/worldwide" rel="nofollow" data-id="{5F504B63-B53D-4923-AADD-108E06E01320}">
+                                                            Become a Partner
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                                
+                                                    <li>
+                                                        <a href="https://support.huawei.com/learning/NavigationAction!createNavi?navId=TRAIN_PARTNER&amp;lang=en" rel="nofollow noopener noreferrer" data-id="{E3058FFB-CD71-482E-9B53-AD9DE686B206}" target="_blank">
+                                                            Partner Training
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                                
+                                                    <li>
+                                                        <a href="https://partner.huawei.com/web/worldwide/partner-policy" rel="nofollow" data-id="{4045B77F-BBB3-4936-9067-D60F51CB8183}">
+                                                            Partner Policy
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                                
+                                                    <li>
+                                                        <a href="https://e.huawei.com/en/partner/marketing" rel="nofollow noopener noreferrer" data-id="{A1344ABA-92C3-4616-A2DA-5EA11F9FD959}">
+                                                            Partner Marketing
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                    </ul>
+                                
+                                    <ul class="clearfix">
+                                        <li>
+                                            <h6>
+                                                Resources
+                                            </h6>
+                                        </li>
+                                        
+                                                
+                                                    <li>
+                                                        <a href="https://e.huawei.com/en/webinar" data-id="{579B6081-E0CE-4F47-9983-84B22FE5D59E}" target="_blank" rel="noopener noreferrer">
+                                                            Webinar
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                                
+                                                    <li>
+                                                        <a href="//e.huawei.com/en/eblog" data-id="{E8E3CF1F-8EA7-4F59-8B80-407A653ECB18}">
+                                                            eBlog
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                                
+                                                    <li>
+                                                        <a href="//e.huawei.com/en/material/MaterialList" data-id="{657D2F16-B683-4833-9245-84DFE3F4394A}">
+                                                            Resource Center
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                                
+                                                    <li>
+                                                        <a href="//e.huawei.com/en/videolist" data-id="{5DFDAEC7-6BB6-4A32-B598-4C43BFAD8225}">
+                                                            Video Library
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                                
+                                                    <li>
+                                                        <a href="//e.huawei.com/en/publications" data-id="{F5E084B6-41E6-4A02-AF33-C60F72C29D80}">
+                                                            Publications
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                                
+                                                    <li>
+                                                        <a href="//e.huawei.com/en/customer-success-stories" data-id="{2D58EE6B-2147-49A6-982D-6230A7E1989F}">
+                                                            Case Studies
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                                
+                                                    <li>
+                                                        <a href="https://e.huawei.com/en/publications/global/ict-new-horizons-podcasts" data-id="{F9E02543-2FE1-40FF-99D3-D4920CFA91EA}">
+                                                            ICT Insights Podcast
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                    </ul>
+                                
+                                    <ul class="clearfix">
+                                        <li>
+                                            <h6>
+                                                Others
+                                            </h6>
+                                        </li>
+                                        
+                                                
+                                                    <li>
+                                            <a href="https://forum.huawei.com/enterprise/en/index.html" data-id="{FF22C3F6-B724-4A18-BC29-FA3E508CF62E}" rel="noopener noreferrer" target="_blank">
+                                                            Support Community
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                                
+                                                    <li>
+                                                        <a href="https://intl.huaweicloud.com" rel="nofollow noopener noreferrer" data-id="{844918F5-26B4-43DC-8A3D-89638675957E}" target="_blank">
+                                                            HUAWEI CLOUD
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                                
+                                                    <li>
+                                                        <a href="https://solar.huawei.com/eu" rel="nofollow noopener noreferrer" data-id="{E22E3FFC-FFB0-439D-B644-6110C9FB9ED3}" target="_blank">
+                                                            FusionSolar Smart PV
+                                                        </a>
+                                                    </li>
+                                                
+                                            
+                                    </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="copyright">
+        <div class="cistern">
+            <div class="con clearfix">
+                <p>
+                    <span id="bottom_1_tCopyRight">Copyright © 2023 Huawei Technologies Co., Ltd. All rights reserved.</span>
+                </p>
+                <ul>
+                    
+                        
+                                <li>
+                             <a class="lazyload-v2" id="foot-info-privacy" onclick="goToPrivacy()" rel="nofollow noopener noreferrer" style="position: relative;">
+                                        Privacy Policy
+        <img data-original="https://support.huawei.com/enterpriseindex/layout/v4/img/new_lb.png" style="position:absolute;top:-8px;left: 35px;width: 24px;height:13px;" />
+                                    </a>
+                                </li>
+                                <span>|</span>
+                            <li>
+                                 <a class="lazyload-v2" onclick="goToCookies()" rel="nofollow noopener noreferrer" style="position: relative;">
+                                        Cookie Settings
+          <img data-original="https://support.huawei.com/enterpriseindex/layout/v4/img/new_lb.png" style="position:absolute;top:-8px;left: 80px;width: 24px;height:13px;" />
+                                    </a>
+                                </li>
+                                <span>|</span>
+                                <li>
+                                <a href="https://www.huawei.com/en/legal" rel="nofollow noopener noreferrer" target="_blank">
+                                        Terms of use
+                                    </a>
+                                </li>
+                                <span>|</span>
+                            
+                                <li>
+                                    <a href="//e.huawei.com/en/rss" rel="nofollow">
+                                        RSS Subscribe
+                                    </a>
+                                </li>
+                                <span>|</span>
+                            
+                                <li>
+                                <a href="https://support.huawei.com/enterprise/en/sitemap.html">
+                                        Sitemap
+                                    </a>
+                                </li>
+                                <span>|</span>
+                            
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!--设置个性化脚本-->
+<script type="text/javascript"> var digitalData = JSON.parse('{"attributes":[{"category":"User Journey","name":"Buyer Cycle","score":"1","min":"1","max":"100"}]}');</script>
+
+
+
+
+    <!-- footer        END-->
+</div>
+</div>
+
+
+
+
+
+
+<input id="right_collapse" type="hidden" value="Collapse">
+<input id="right_expand" type="hidden" value="Expand">
+
+<div id="doc_feedback" style="display:none;"></div>
+<div id="survey_feedback" style="display:none;"></div>
+<div id="email_subscribe" style="display:none;"></div>
+
+<div class="right-layer en" id="feedDiv">
+    <ul class="right-con">
+        <li data-v-38c32d27="" class="right_item helpCenter normal" style="display:none">
+            <a data-v-38c32d27="" class="text">Help Center</a>
+            <div class="svg-icon right_icon"
+                 style="background-image: url(/info-finder/pages/commonFile/commonIcon/ic_help_center.svg)"></div>
+        </li>
+        <li data-v-38c32d27="" class="right_item subscribe normal" style="display: none">
+            <a data-v-38c32d27="" class="text">Subscribe</a>
+            <div class="svg-icon right_icon"
+                 style="background-image: url(/info-finder/pages/commonFile/commonIcon/ic_envelope_lined.svg)"></div>
+        </li>
+        <li data-v-38c32d27="" class="right_item surVey normal" style="display: none;">
+            <a data-v-38c32d27="" class="text">Survey</a>
+            <div class="svg-icon right_icon"
+                 style="background-image: url(/info-finder/pages/commonFile/commonIcon/ic_public_emoji.svg)"></div>
+        </li>
+        <li data-v-38c32d27="" class="right_item help normal" style="display: none;">
+            <a data-v-38c32d27="" class="text">Help</a>
+            <div class="svg-icon right_icon"
+                 style="background-image: url(/info-finder/pages/commonFile/commonIcon/ic_indication_help_lined.svg)"></div>
+        </li>
+        <li data-v-38c32d27="" class="right_item normal">
+            
+            
+                <a href="https://support.huawei.com/iknow/?source=SupportE"
+                   target="_blank" rel="noopener noreferrer"
+                   class="text">Service</a>
+            
+            <div class="svg-icon right_icon"
+                 style="background-image: url(/info-finder/pages/commonFile/commonIcon/ic_headphones_mic_lined.svg)"></div>
+        </li>
+        <li data-v-38c32d27="" class="right_item share_btn normal">
+            <a data-v-38c32d27="" class="text">Share</a>
+            <div class="svg-icon right_icon"
+                 style="background-image: url(/info-finder/pages/commonFile/commonIcon/ic_share_lined.svg)"></div>
+        </li>
+        <li data-v-38c32d27="" class="right_item normal" id="feedback">
+            <a data-v-38c32d27="" class="text">Feed-back</a>
+            <div class="svg-icon right_icon"
+                 style="background-image: url(/info-finder/pages/commonFile/commonIcon/ic_feedback_lined.svg)"></div>
+        </li>
+        <li data-v-38c32d27="" class="right_item fold">
+            <div data-v-38c32d27="" class="text">Collapse</div>
+            <i data-v-38c32d27="" class="el-icon right_icon">
+                <div class="svg-icon right_icon"></div>
+            </i>
+        </li>
+    </ul>
+    <div data-v-38c32d27="" class="share"><span data-v-38c32d27="">Share link to</span>
+        <ul data-v-38c32d27="">
+            
+                <li class="inHerf">
+                    <div class="svg-icon right_icon"
+                         style="background-image: url(/info-finder/pages/commonFile/commonIcon/share_in.svg)"></div>
+                </li>
+            
+            
+            
+                <li class="emailHerf">
+                    <a class="svg-icon right_icon" title="Info-Finder: The New Way to Find Information - Huawei"
+                       value="Huawei Info-Finder offers a more convenient and efficient information experience, including info search, IP encyclopedia, and intelligent Q%26A. Try it here:" rel="noopener noreferrer"
+                       style="background-image: url(/info-finder/pages/commonFile/commonIcon/ic_envelope_lined.svg)"
+                       target="_blank"></a>
+                </li>
+                <li class="sina">
+                    <a class="svg-icon right_icon" rel="noopener noreferrer"
+                       value="https://service.weibo.com/share/share.php?url&type=3&count=1&appkey=&title=Info-Finder: The New Way to Find Information - Huawei%0d%0a
+https://info.support.huawei.com/network/info-finder/enterprise/en/index.html"
+                       target="_blank"
+                       style="background-image: url(/info-finder/pages/commonFile/commonIcon/share_weibo.svg)"></a>
+                </li>
+            
+        </ul>
+    </div>
+    <!-- 移动端-意见反馈悬浮框  -->
+    <div class="more-contacts" style="display: none">
+        <div class="ebg-btn-box J-contact-us">
+            <a class="ebg-btn-bg-red-l ebg-common-event" id="feedback2" href="javascript:;" data-eventcat="contact_us"
+               data-eventact="enter" data-eventlbl="contact us" data-eventval="" data-clickname="contact_us"
+               data-clicktype="enter">
+                <span>Feedback</span>
+                <em class="info-contacts"></em>
+            </a>
+        </div>
+    </div>
+</div>
+<link type="text/css" rel="stylesheet"
+      href="/info-finder/pages/QuickQuery/common/css/cookieStatement.css" async>
+<!-- JSåºå -->
+<script type="text/javascript">
+    var uemScript = document.createElement('script');
+    var CookieStateMentObj;
+    var cookieOptions;
+    window.addEventListener('load', function (event) {
+        // å è½½uemçä»£ç 
+        // ç¤ºä¾:
+        const ops = {"language": "en", "version": "3", "domain":0};
+        const script1 = document.createElement('script');
+        script1.src = $('#common-chang-path').val() + '/pages/QuickQuery/common/js/cookieStatement.js';
+        script1.async = true;
+        document.getElementsByTagName('body')[0].appendChild(script1);
+        script1.onload = function () {
+            const script2 = document.createElement('script');
+            script2.src = $('#common-chang-path').val() + '/pages/QuickQuery/common/js/cookieStatementTool.js';
+            script2.async = true;
+            document.getElementsByTagName('body')[0].appendChild(script2);
+            script2.onload = function () {
+                uemScript.id = 'uem_f';
+                uemScript.src = $('#isTest').val() == 'uat' ? $('#common-chang-path').val() + '/pages/QuickQuery/tools/js/uem_test.js' : $('#common-chang-path').val() + '/pages/QuickQuery/tools/js/uem_product.js';
+                uemScript.async = true;
+                document.getElementsByTagName('body')[0].appendChild(uemScript);
+                if ($('#modelNum').val() == 1 || $('#lang').val() == 'zh') {
+                    return;
+                }
+                const cookieStatement = new CookieStatementTool(ops);
+                // cookie ç­¾ç½²
+                cookieStatement.init();
+                CookieStateMentObj = cookieStatement;
+                cookieOptions = ops;
+            }
+        }
+    });
+
+    function loadJs(url) {
+        const script = document.createElement('script');
+        script.src = url;
+        script.async = true;
+        document.getElementsByTagName('body')[0].appendChild(script);
+        return script;
+    }
+
+    function checkUemEnable(v, l) {
+        const lang = $('#lang').val() ? $('#lang').val() : l;
+        if (!$('#modelNum').val() == 1 && lang != 'zh') { // éè¦cookieç­¾ç½²çï¼ååæ­¢ueméé
+            window.hwa("setEnable", getCookieCheck(v, lang))
+        }
+    }
+
+    function getCookieCheck(v, l) {
+        const version = cookieOptions ? cookieOptions.version : v;
+        const ls = cookieOptions ? cookieOptions.language : l;
+        const lang = ls === 'en' ? 'ENG' : 'CHN';
+        const keys = "hw_privacy_cookie_esddp__".concat(lang, "_").concat(version);
+        const isCookies = decodeURIComponent(getInfoCookie(keys));
+        return isCookies && isCookies[0] === '{' && JSON.parse(isCookies).Analytics ? true : false
+    }
+</script>
+
+
+
+</body>
+
+<!-- datePicker里面需要使用 -->
+<script type="text/javascript">
+	var sui = sui || {};
+	sui.search = sui.search || {};
+	sui.cbb = sui.cbb || {};
+</script>
+<script src="/info-finder/pages/commonFile/js/common-all.js?v=1756983936051"></script>
+<script src="/info-finder/pages/QuickQuery/tools/js/string-patch.js" type="text/javascript" charset="utf-8"></script>
+<script src="/info-finder/pages/QuickQuery/tools/js/highLightUtil.js" type="text/javascript" charset="utf-8"></script>
+
+
+<script src="/info-finder/pages/commonFile/js/infoHead.js?v=1756983936051"></script>
+<script src="/info-finder/pages/commonFile/js/share.js?v=1756983936051"></script>
+<script src="/info-finder/pages/OpenSearch/openSearchJsp/common/js/SearchPlugin.js?v=1756983936051"></script>
+
+<script type="text/javascript"
+		src="/info-finder/pages/commonFile/plugIn/searchProducts/searchProducts.js?v=1756983936051"></script>
+<script type="text/javascript"
+		src="/info-finder/pages/QuickQuery/tools/common/commonUrl.js?v=1756983936051"></script>
+
+
+<script type="text/javascript"
+		src="/info-finder/pages/QuickQuery/newSearchCenter/js/infoHeader.js?v=1756983936051"></script>
+
+ <!--  CBB插件 -->
+
+
+<script type="text/javascript"
+        src="/info-finder/pages/commonFile/plugIn/filter/filter.js?v=1756983936051"></script>
+
+
+<script type="text/javascript"
+        src="/info-finder/pages/commonFile/plugIn/pagination/pagination.js?v=1756983936051"></script>
+<script src="/info-finder/pages/QuickQuery/tools/js/infoEox_UX.js?v=1756983936051" type="text/javascript" charset="utf-8"></script>
+
+<!-- 时间控件 -->
+<script src="/info-finder/pages/QuickQuery/common/js/datePicker/cal.js" type="text/javascript" charset="utf-8"></script>
+<script src="/info-finder/pages/QuickQuery/common/js/datePicker/dateFormat.js" type="text/javascript" charset="utf-8"></script>
+<script src="/info-finder/pages/QuickQuery/common/js/datePicker/calendar.js" type="text/javascript" charset="utf-8"></script>
+
+
+
+	<script src="/info-finder/pages/QuickQuery/common/js/datePicker/res/datepicker_en.js" type="text/javascript" charset="utf-8"></script>
+
+</html>
+

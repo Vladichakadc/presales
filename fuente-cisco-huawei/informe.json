@@ -1,0 +1,99 @@
+[
+  {
+    "archivo": "huawei-if-ar6280-archivo.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://web.archive.org/web/20250906065723id_/https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers/ar6280-pid-23924290/eom-eofs-and-eos-date",
+        "status": 200,
+        "bytes": 68266,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-if-eoxlist-archivo.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://web.archive.org/web/20250324092928id_/https://info.support.huawei.com/info-finder/eox/getEoxList",
+        "status": 200,
+        "bytes": 207,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-if-ar5700-6700-8000.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers/ar5700-6700-8000-pid-256863203/eom-eofs-and-eos-date",
+        "status": 200,
+        "bytes": 3417,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-if-ne8000-f1a.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers/netengine-8000-f1a-8h20q-pid-250517169/eom-eofs-and-eos-date",
+        "status": 200,
+        "bytes": 3417,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-if-routers.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers",
+        "status": 200,
+        "bytes": 5804,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-if-herramienta.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://info.support.huawei.com/info-finder/tool/en/enterprise/eom-eofs-and-eos-date/product",
+        "status": 200,
+        "bytes": 3417,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-if-scripts",
+    "para": "HUAWEI",
+    "guardado": false,
+    "intentos": [
+      {
+        "url": "https://info.support.huawei.com/uniportal1/js/authCommons.js?ver=IDAAS_V3R8",
+        "status": 200,
+        "bytes": 91294,
+        "nota": "la firma no es la esperada"
+      },
+      {
+        "url": "https://info.support.huawei.com/uniportal1/js/vue.min.js?ver=IDAAS_V3R8",
+        "status": 200,
+        "bytes": 91294,
+        "nota": "la firma no es la esperada"
+      }
+    ]
+  }
+]
