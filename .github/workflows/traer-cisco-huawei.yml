@@ -665,6 +665,13 @@ jobs:
                     intentos.push({ url, status: res.status, firma: buf.subarray(0, 8).toString('hex'), nota: 'no es un PDF' });
                     continue;
                   }
+                  // Un 200 con la pantalla de inicio de sesion no es el documento: el 2026-10-07 cinco
+                  // entradas de Info-Finder sin texto exigido salieron como guardadas con los 3417 B del
+                  // IDaaS de Huawei. Se dice lo que es, y no se guarda como si fuera el boletin.
+                  if (doc.tipo !== 'pdf' && /uniportal1[/]js[/]authCommons|IDAAS_V[0-9]|loginTitle/.test(buf.subarray(0, 8192).toString('utf8'))) {
+                    intentos.push({ url, status: res.status, bytes: buf.length, nota: 'pantalla de inicio de sesion (IDaaS), no el documento' });
+                    continue;
+                  }
                   if (doc.debeContener && !buf.toString('utf8').includes(doc.debeContener)) {
                     intentos.push({ url, status: res.status, bytes: buf.length, nota: 'no contiene el texto esperado' });
                     continue;

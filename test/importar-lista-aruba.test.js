@@ -140,6 +140,26 @@ test('comparar detecta precio repo≠lista, cambio de CSV, PLC→ES, ausente y c
   assert.deepStrictEqual(d.nuevosCandidatos.central.map((x) => x.sku), ['NEW4', 'NEW5']);
 });
 
+test('un accesorio «consultar» no es una ausencia, y que la lista lo traiga se dice con lo que hay que copiar', () => {
+  // 2026-10-07: el R9Y49A va sin precio porque su fila no está transcrita. Si la lista sigue
+  // sin traerlo, no es «el repo lo cotiza y la lista ya no»: no se cotiza. Si lo trae, el diff
+  // dice qué copiar a aruba.js, y el dry-run sale con 2 aunque nada más cambie.
+  const roster = [
+    { sku: 'AAA', familia: 'F1', precioRepo: null, origen: 'accesorio', sinPrecio: 'sin fila transcrita' },
+    { sku: 'BBB', familia: 'F1', precioRepo: null, origen: 'accesorio', sinPrecio: 'sin fila transcrita' },
+  ];
+  const lista = new Map([['AAA', { desc: 'a', lp: 123, vigencia: '2026-09-01', plc: 'GA' }]]);
+  const d = comparar(roster, lista, []);
+  assert.deepStrictEqual(d.sinPrecioConFila.map((x) => [x.sku, x.precioLista, x.vigencia, x.plc]), [['AAA', 123, '2026-09-01', 'GA']]);
+  assert.deepStrictEqual(d.sinPrecioSinFila.map((x) => x.sku), ['BBB']);
+  assert.deepStrictEqual(d.ausentesEnLista, [], 'un accesorio sin precio que la lista no trae no es una ausencia');
+  assert.deepStrictEqual(d.preciosRepoVsLista, [], 'no hay precio del repo que confrontar');
+
+  // Y el roster real lleva la marca del R9Y49A.
+  const real = construirRoster(arubaData).filter((r) => r.sinPrecio).map((r) => r.sku);
+  assert.deepStrictEqual(real, Object.entries(arubaData.ARUBA_ACCESSORY_CATALOG).filter(([, a]) => a.sinPrecio).map(([k]) => k));
+});
+
 test('generarCsv regenera desde la lista y conserva la fila de un SKU ausente', () => {
   const roster = [
     { sku: 'AAA', familia: 'F1', precioRepo: null, origen: 'modelo' },

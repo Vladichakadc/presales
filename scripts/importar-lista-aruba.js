@@ -112,8 +112,8 @@ function parsearLista(ruta) {
 // Boost, Central, capacidad y accesorios): el diff lo confronta con la lista.
 function construirRoster(arubaData) {
   const roster = [];
-  const push = (sku, familia, precioRepo, origen) => {
-    if (sku) roster.push({ sku, familia, precioRepo: precioRepo ?? null, origen });
+  const push = (sku, familia, precioRepo, origen, extra) => {
+    if (sku) roster.push({ sku, familia, precioRepo: precioRepo ?? null, origen, ...extra });
   };
 
   const esLineaActual = (id) => /^EC-|^Gateway /.test(id);
@@ -199,8 +199,11 @@ function construirRoster(arubaData) {
     for (const s of m.skus || []) if (s.sku) push(s.sku, m.id, null, 'legacy-reman');
   }
   // 2.9 · Catálogo maestro de accesorios
+  // Un accesorio con `sinPrecio` (R9Y49A, 2026-10-07) entra igual: el roster es como el
+  // importador encuentra su fila el dia que la lista la traiga. Lleva el motivo para que el
+  // diff lo separe de los que se cotizan.
   for (const [sku, a] of Object.entries(arubaData.ARUBA_ACCESSORY_CATALOG)) {
-    push(sku, 'Accesorios EdgeConnect y gateways', a.listPrice, 'accesorio');
+    push(sku, 'Accesorios EdgeConnect y gateways', a.listPrice, 'accesorio', a.sinPrecio ? { sinPrecio: a.sinPrecio } : undefined);
   }
   return roster;
 }
@@ -225,12 +228,22 @@ function comparar(roster, lista, csvActual) {
     csvVsLista: [],         // el CSV regenerado difiere del vigente
     plcTransiciones: [],    // GA→ES u otros cambios de ciclo de vida
     ausentesEnLista: [],    // el repo los cotiza pero la lista ya no los trae
+    // Accesorios «consultar» (`sinPrecio` en aruba.js). Que la lista no los traiga es lo
+    // esperado, no una ausencia; que los traiga es la noticia: hay que copiar la fila al
+    // catalogo maestro y quitar la marca, A MANO — este script nunca escribe aruba.js.
+    sinPrecioConFila: [],
+    sinPrecioSinFila: [],
     nuevosCandidatos: { edgeconnect: [], opticas: [], gateways: [], central: [] },
   };
 
   const csvPorSku = new Map(csvActual.map((f) => [f.sku, f]));
   for (const r of roster) {
     const l = lista.get(r.sku);
+    if (r.sinPrecio) {
+      if (l) diff.sinPrecioConFila.push({ sku: r.sku, familia: r.familia, precioLista: l.lp, vigencia: l.vigencia, plc: l.plc || '', motivo: r.sinPrecio });
+      else diff.sinPrecioSinFila.push({ sku: r.sku, familia: r.familia, motivo: r.sinPrecio });
+      continue;
+    }
     if (!l) { diff.ausentesEnLista.push({ sku: r.sku, familia: r.familia, origen: r.origen }); continue; }
     if (r.precioRepo !== null && r.precioRepo !== l.lp) {
       diff.preciosRepoVsLista.push({
@@ -333,6 +346,13 @@ function main(argv) {
   for (const d of diff.plcTransiciones) console.log(`    ${d.sku} [${d.familia}] GA → ${d.a} (vig. ${d.vigencia})`);
   console.log(`· SKU del roster ausentes de la lista: ${diff.ausentesEnLista.length}`);
   for (const d of diff.ausentesEnLista) console.log(`    ${d.sku} [${d.familia}] (${d.origen})`);
+  console.log(`· Accesorios «consultar» que la lista YA tarifa (copiar a aruba.js a mano): ${diff.sinPrecioConFila.length}`);
+  for (const d of diff.sinPrecioConFila) {
+    console.log(`    ${d.sku} → listPrice: ${d.precioLista}, vigencia: '${d.vigencia}', plc: '${d.plc}', y quitar sinPrecio`);
+  }
+  if (diff.sinPrecioSinFila.length) {
+    console.log(`· Accesorios «consultar» que la lista sigue sin traer (siguen sin precio): ${diff.sinPrecioSinFila.map((d) => d.sku).join(', ')}`);
+  }
   console.log('· Candidatos nuevos en la lista (revisión humana — no entran solos):');
   for (const [cubo, items] of Object.entries(diff.nuevosCandidatos)) {
     console.log(`    ${cubo}: ${items.length}`);
@@ -346,7 +366,7 @@ function main(argv) {
   }
 
   const hayDiferencias = diff.preciosRepoVsLista.length + diff.csvVsLista.length
-    + diff.plcTransiciones.length + diff.ausentesEnLista.length > 0;
+    + diff.plcTransiciones.length + diff.ausentesEnLista.length + diff.sinPrecioConFila.length > 0;
 
   if (aplicar) {
     const csv = generarCsv(roster, lista, csvActual);
@@ -354,6 +374,10 @@ function main(argv) {
     console.log(`\nCSV regenerado con --aplicar: ${CSV_RUTA}`);
     console.log('Recuerda: los precios declarados en aruba.js NO los toca este script —');
     console.log('revísalos contra el diff y haz tu commit gobernado (el test de coherencia vigila).');
+    if (diff.sinPrecioConFila.length) {
+      console.log(`El CSV ya trae la fila de ${diff.sinPrecioConFila.map((d) => d.sku).join(', ')}: npm run verificar queda en rojo`);
+      console.log('hasta que aruba.js copie su precio, vigencia y PLC y retire «sinPrecio» (ver arriba).');
+    }
     return 0;
   }
   console.log('\nDry-run: no se escribió nada. Revisa el diff y relanza con --aplicar para regenerar el CSV.');
