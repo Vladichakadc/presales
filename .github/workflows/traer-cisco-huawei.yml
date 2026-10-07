@@ -332,16 +332,16 @@ jobs:
               // 27.933 bytes sin «7024» ni ningun «.pdf» (37494434563), y psnow da su pagina de
               // aterrizaje en HTML. Las tres se guardan sin exigir texto, solo para LEER que enlazan:
               // la URL de cada documento sale de ahi, no de un patron.
-              { archivo: 'aruba-controladores-portal.html', tipo: 'html', para: 'ARUBA', urls: [
+              { archivo: 'aruba-controladores-portal.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
                 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/controller-top.htm',
               ] },
               { archivo: 'aruba-7024-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
                 'https://arubanetworking.hpe.com/techdocs/hardware/controllers/7024/ig/Aruba-7024IG_EN.pdf',
               ] },
-              { archivo: 'aruba-psnow-c05272689.html', tipo: 'html', para: 'ARUBA', urls: [
+              { archivo: 'aruba-psnow-c05272689.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
                 'https://www.hpe.com/psnow/doc/c05272689',
               ] },
-              { archivo: 'aruba-psnow-c05272677.html', tipo: 'html', para: 'ARUBA', urls: [
+              { archivo: 'aruba-psnow-c05272677.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
                 'https://www.hpe.com/psnow/doc/c05272677',
               ] },
               // 2026-10-06 (corrida 37502072088): cada pagina de psnow enlaza su PDF en «downloadDoc/...»;
@@ -355,10 +355,10 @@ jobs:
               { archivo: 'aruba-7200-serie-ds.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
                 'https://www.hpe.com/psnow/downloadDoc/HPE%20Aruba%20Networking%207200%20Series%20Mobility%20Controllers-c05272677.pdf?id=c05272677.pdf&isFutureVersion=true&ver=14&form=false&preview=false&print=&hf=regular&r=&section=&prelaunchSection=&softrollSection=&deepLink=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&originalObjectName=&isLinearized=false&contentDisposition=attachment',
               ] },
-              { archivo: 'aruba-portal-toc.js', tipo: 'html', para: 'ARUBA', urls: [
+              { archivo: 'aruba-portal-toc.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
                 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Data/Tocs/product_toc__con_gat__controller.js',
               ] },
-              { archivo: 'aruba-portal-toc-chunk0.js', tipo: 'html', para: 'ARUBA', urls: [
+              { archivo: 'aruba-portal-toc-chunk0.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
                 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Data/Tocs/product_toc__con_gat__controller_Chunk0.js',
               ] },
               // El indice (37504707952) enlaza una pagina por controlador; cada una enlaza su guia de
@@ -404,16 +404,16 @@ jobs:
               // descripcion de hardware y de la herramienta EOX guardo el archivo y en que fecha. Luego
               // la copia en bruto (id_) de las paginas que hacen falta, y la de control (AR6710-H), cuyo
               // contenido ya se leyo por PDF4me: si la de control no trae el texto, las demas tampoco.
-              { archivo: 'huawei-hd-cdx.json', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-hd-cdx.json', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://web.archive.org/cdx/search/cdx?url=support.huawei.com/enterprise/en/doc/EDOC1100213474/*&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=5000',
               ] },
-              { archivo: 'huawei-hedex-cdx.json', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-hedex-cdx.json', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://web.archive.org/cdx/search/cdx?url=support.huawei.com/hedex/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&filter=original:.*EDOC1100213474.*&limit=3000',
               ] },
-              { archivo: 'huawei-eox-cdx.json', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-eox-cdx.json', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://web.archive.org/cdx/search/cdx?url=support.huawei.com/eoxtoolwebsite/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=3000',
               ] },
-              { archivo: 'huawei-infofinder-cdx.json', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-infofinder-cdx.json', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://web.archive.org/cdx/search/cdx?url=info.support.huawei.com/info-finder/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&filter=original:.*%28eom%7Clife%7Ceox%29.*&limit=3000',
               ] },
               { archivo: 'huawei-hd-ar6710-h-archivo.html', tipo: 'html', para: 'HUAWEI', debeContener: 'PAC300S12', urls: [
@@ -428,13 +428,13 @@ jobs:
                 'https://web.archive.org/web/2026id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/b4f79aa3/ar6710-l50t2x4',
                 'https://web.archive.org/web/2025id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/b4f79aa3/ar6710-l50t2x4',
               ] },
-              { archivo: 'huawei-hd-vivo.html', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-hd-vivo.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3e859eec/ar6710-h4t4x2y7',
               ] },
               { archivo: 'huawei-hd-scripts', tipo: 'scripts', para: 'HUAWEI', urls: [],
                 descubrirPiezas: { de: ['huawei-hd-vivo.html'], base: 'https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3e859eec/ar6710-h4t4x2y7',
                   dominios: ['support.huawei.com', 'res-static.hc-cdn.cn', 'hc-cdn.cn'], max: 25 } },
-              { archivo: 'huawei-eox-herramienta.html', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-eox-herramienta.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://support.huawei.com/eoxtoolwebsite/en/tool/product-lifecycle-query-assistant',
               ] },
               // Segunda ronda (2026-10-07): la herramienta EOX de support.huawei.com ya no existe (su URL
@@ -443,22 +443,22 @@ jobs:
               // Info-Finder si sirve sus paginas de ciclo de vida desde el servidor (JSP), con el mismo
               // pid que las paginas de soporte: 256863203 es la serie AR5700/6700/8000 y 250517169 el
               // NE8000 F1A. La de un AR6280 guardada por el archivo sirve para ver la forma de la pagina.
-              { archivo: 'huawei-if-ar6280-archivo.html', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-if-ar6280-archivo.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://web.archive.org/web/20250906065723id_/https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers/ar6280-pid-23924290/eom-eofs-and-eos-date',
               ] },
-              { archivo: 'huawei-if-eoxlist-archivo.html', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-if-eoxlist-archivo.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://web.archive.org/web/20250324092928id_/https://info.support.huawei.com/info-finder/eox/getEoxList',
               ] },
-              { archivo: 'huawei-if-ar5700-6700-8000.html', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-if-ar5700-6700-8000.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers/ar5700-6700-8000-pid-256863203/eom-eofs-and-eos-date',
               ] },
-              { archivo: 'huawei-if-ne8000-f1a.html', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-if-ne8000-f1a.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers/netengine-8000-f1a-8h20q-pid-250517169/eom-eofs-and-eos-date',
               ] },
-              { archivo: 'huawei-if-routers.html', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-if-routers.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers',
               ] },
-              { archivo: 'huawei-if-herramienta.html', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-if-herramienta.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://info.support.huawei.com/info-finder/tool/en/enterprise/eom-eofs-and-eos-date/product',
               ] },
               { archivo: 'huawei-if-scripts', tipo: 'scripts', para: 'HUAWEI', urls: [],
@@ -474,35 +474,59 @@ jobs:
               // con un 403, eso es lo que se reporta. Los indices del archivo dicen si alguna de esas
               // rutas quedo guardada. La Security Target de Common Criteria del software de los
               // AR6700/AR8000 la redacta Huawei y la publica el portal de Common Criteria.
-              { archivo: 'huawei-if3-ar6280-soporte.html', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-if3-ar6280-soporte.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://support.huawei.com/enterprise/en/info-finder/routers/ar6280-pid-23924290/eom-eofs-and-eos-date',
               ] },
-              { archivo: 'huawei-if3-ar610-soporte.html', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-if3-ar610-soporte.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://support.huawei.com/enterprise/en/info-finder/routers/ar610-pid-253265923/eom-eofs-and-eos-date',
               ] },
-              { archivo: 'huawei-if3-ar651-soporte.html', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-if3-ar651-soporte.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://support.huawei.com/enterprise/en/info-finder/routers/ar651-pid-23924233/eom-eofs-and-eos-date',
               ] },
-              { archivo: 'huawei-if3-ar5700-soporte.html', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-if3-ar5700-soporte.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://support.huawei.com/enterprise/en/info-finder/routers/ar5700-6700-8000-pid-256863203/eom-eofs-and-eos-date',
               ] },
-              { archivo: 'huawei-if3-ar6710-h-vue.html', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-if3-ar6710-h-vue.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://info.support.huawei.com/info-finder/vue/search-center/en/enterprise/routers/ar6710-h4t4x2y7-pid-C00000019260',
               ] },
-              { archivo: 'huawei-if3-soporte-cdx.json', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-if3-soporte-cdx.json', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://web.archive.org/cdx/search/cdx?url=support.huawei.com/enterprise/en/info-finder/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=3000',
               ] },
-              { archivo: 'huawei-if3-routers-cdx.json', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-if3-routers-cdx.json', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://web.archive.org/cdx/search/cdx?url=info.support.huawei.com/info-finder/search-center/en/enterprise/routers/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=3000',
               ] },
-              { archivo: 'huawei-if3-vue-cdx.json', tipo: 'html', para: 'HUAWEI', urls: [
+              { archivo: 'huawei-if3-vue-cdx.json', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://web.archive.org/cdx/search/cdx?url=info.support.huawei.com/info-finder/vue/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=3000',
+              ] },
+              // Cuarta ronda (2026-10-07, noche): Huawei sirve su documentacion HedEx tambien como
+              // paginas estaticas en info.support.huawei.com/hedex/api/pages/<EDOC>/<codigo>/<ed>/,
+              // sin el visor que pide el token. Dos paginas de hardware de los AR de otra familia
+              // (EDOC1100331435) dicen si esa ruta es publica desde un ejecutor; el indice del
+              // archivo, que documentos de hardware tiene guardados y con que codigo. Y la
+              // herramienta de configuracion de hardware Info+, que el buscador indexa.
+              { archivo: 'huawei-hedex-tipos-fuente.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+                'https://info.support.huawei.com/hedex/api/pages/EDOC1100331435/AEM10132/04/resources/dc/dc_ar_hw_020055.html',
+              ] },
+              { archivo: 'huawei-hedex-pac60.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+                'https://info.support.huawei.com/hedex/api/pages/EDOC1100331435/AEM10132/05/resources/ar_power_02131664.html',
+              ] },
+              { archivo: 'huawei-hedex-hw-cdx.json', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+                'https://web.archive.org/cdx/search/cdx?url=info.support.huawei.com/hedex/api/pages/&matchType=prefix&output=json&fl=timestamp,original,statuscode,length&filter=original:.*%28_hw_%7Chardware%7Cpower%7Cpac%7Cpdc%29.*&collapse=urlkey&limit=3000',
+              ] },
+              { archivo: 'huawei-infoplus-hdcfg.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+                'https://info.support.huawei.com/network/hdcfg/manual?id=13660&domain=0&lang=zh&hidden=3',
               ] },
               { archivo: 'cc-huawei-ar6700-ar8000-st.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
                 'https://commoncriteriaportal.org/files/epfiles/huawei-netengine-ar6700ar8000-series-routers-yunshan-software-v600r021c10spc100-v1.1.pdf',
                 'https://www.commoncriteriaportal.org/files/epfiles/huawei-netengine-ar6700ar8000-series-routers-yunshan-software-v600r021c10spc100-v1.1.pdf',
               ] },
             ];
+            // Una pagina HTML se valida por un texto que solo puede estar en el documento correcto
+            // (debeContener). La que se pide para ver que hay —un indice del archivo, una pagina de
+            // control— se declara exploracion, y el informe la dice EXPL, no OK: el 2026-10-07 cinco
+            // pantallas de inicio de sesion salieron OK porque nada distinguia una cosa de la otra.
+            const sinFirma = DOCS.filter((d) => d.tipo === 'html' && !d.debeContener && !d.exploracion).map((d) => d.archivo);
+            if (sinFirma.length) { console.error('Entradas html sin debeContener ni exploracion: ' + sinFirma.join(', ')); process.exit(1); }
             const SOLO = (process.env.SOLO || '').split(',').map((x) => x.trim()).filter(Boolean);
             const faltan = SOLO.filter((x) => !DOCS.some((d) => d.archivo === x));
             if (faltan.length) { console.error('Entradas que no existen: ' + faltan.join(', ')); process.exit(1); }
@@ -677,15 +701,15 @@ jobs:
                     continue;
                   }
                   fs.writeFileSync('fuente-cisco-huawei/' + doc.archivo, buf);
-                  intentos.push({ url, status: res.status, bytes: buf.length, guardado: true });
+                  intentos.push({ url, status: res.status, bytes: buf.length, guardado: true, verificado: !doc.exploracion });
                   guardado = true;
                   break;
                 }
-                informe.push({ archivo: doc.archivo, para: doc.para, guardado, intentos });
+                informe.push({ archivo: doc.archivo, para: doc.para, guardado, exploracion: !!doc.exploracion, intentos });
               }
               fs.writeFileSync('fuente-cisco-huawei/informe.json', JSON.stringify(informe, null, 2));
               for (const d of informe) {
-                console.log((d.guardado ? 'OK   ' : 'FALLA') + '  ' + d.para + '  ' + d.archivo);
+                console.log((d.guardado ? (d.exploracion ? 'EXPL ' : 'OK   ') : 'FALLA') + '  ' + d.para + '  ' + d.archivo);
                 for (const i of d.intentos) console.log('        ' + (i.status || i.error) + '  ' + i.url + (i.nota ? '  <- ' + i.nota : ''));
               }
             })().catch((e) => { console.error(e); process.exit(1); });
@@ -717,7 +741,7 @@ jobs:
             node -e "
               const inf = require('./fuente-cisco-huawei/informe.json');
               for (const d of inf) {
-                console.log((d.guardado ? 'OK   ' : 'FALLA') + '  ' + d.para + '  ' + d.archivo);
+                console.log((d.guardado ? (d.exploracion ? 'EXPL ' : 'OK   ') : 'FALLA') + '  ' + d.para + '  ' + d.archivo);
                 for (const i of d.intentos) console.log('        ' + (i.status || i.error) + '  ' + i.url + (i.nota ? '  <- ' + i.nota : ''));
               }
             "
