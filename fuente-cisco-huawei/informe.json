@@ -1,0 +1,62 @@
+[
+  {
+    "archivo": "huawei-hedex-tipos-fuente.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://info.support.huawei.com/hedex/api/pages/EDOC1100331435/AEM10132/04/resources/dc/dc_ar_hw_020055.html",
+        "status": 200,
+        "bytes": 91294,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-hedex-pac60.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://info.support.huawei.com/hedex/api/pages/EDOC1100331435/AEM10132/05/resources/ar_power_02131664.html",
+        "status": 200,
+        "bytes": 91294,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-hedex-hw-cdx.json",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://web.archive.org/cdx/search/cdx?url=info.support.huawei.com/hedex/api/pages/&matchType=prefix&output=json&fl=timestamp,original,statuscode,length&filter=original:.*%28_hw_%7Chardware%7Cpower%7Cpac%7Cpdc%29.*&collapse=urlkey&limit=3000",
+        "status": 200,
+        "bytes": 1915,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-infoplus-hdcfg.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://info.support.huawei.com/network/hdcfg/manual?id=13660&domain=0&lang=zh&hidden=3",
+        "status": 200,
+        "bytes": 1046,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  }
+]
