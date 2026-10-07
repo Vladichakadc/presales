@@ -192,7 +192,17 @@ function renderCatalog(){
 }
 
 /* ══ ADD / REMOVE ══ */
+// Lo que se anuncia al lector de pantalla tras el próximo repintado: qué cambió, y después el
+// total. El primer repintado (el BOM restaurado al cargar) no se anuncia: no lo hizo nadie.
+let anuncioPendiente = '';
+let ultimoAnuncio = null;
+function anunciar(frase){
+  if(ultimoAnuncio !== null && frase !== ultimoAnuncio && $('anuncioCotizador')) $('anuncioCotizador').textContent = frase;
+  ultimoAnuncio = frase;
+}
+
 function addItem(item){
+  anuncioPendiente = `Añadido ${item.model}. `;
   // Check if already in BOM and increment qty instead
   const existing = bom.find(b=>b.model===item.model && b.vendor===item.vendor);
   if(existing){ existing.qty++; renderBom(); return; }
@@ -206,7 +216,11 @@ function addCustomItem(){
   renderBom();
 }
 
-function removeItem(id){ bom = bom.filter(b=>b.id!==id); renderBom(); }
+function removeItem(id){
+  const quitado = bom.find(b=>b.id===id);
+  if(quitado) anuncioPendiente = `Quitado ${quitado.model}. `;
+  bom = bom.filter(b=>b.id!==id); renderBom();
+}
 function setQty(id, delta){
   const item = bom.find(b=>b.id===id);
   if(!item) return;
@@ -313,7 +327,7 @@ function renderBom(){
 function fmtUSD(n){ return '~ $'+n.toLocaleString('en-US'); }
 
 function renderSummary(){
-  if(bom.length===0) return;
+  if(bom.length===0){ anunciar(`${anuncioPendiente}La cotización está vacía.`); anuncioPendiente = ''; return; }
   const lines = bom.length;
   const units = bom.reduce((s,b)=>s+b.qty, 0);
   const total = bom.reduce((s,b)=>s+(b.elpN*b.qty),0);
@@ -322,6 +336,8 @@ function renderSummary(){
   $('sumUnits').textContent = units;
   $('sumTotal').textContent = total>0 ? fmtUSD(total) : '—';
   $('sumVendors').textContent = vendors.length ? vendors.join(' · ') : '—';
+  anunciar(`${anuncioPendiente}${lines} línea${lines===1?'':'s'}, ${units} unidad${units===1?'':'es'}, total de referencia ${total>0 ? `${total.toLocaleString('en-US')} dólares` : 'sin precio'}.`);
+  anuncioPendiente = '';
 }
 
 /* ══ EXPORT CSV ══ */

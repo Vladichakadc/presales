@@ -119,7 +119,7 @@
           <span class="navfab-nombre">${esc(fab.nombre)}</span>
         </span>
         <span class="navfab-pasos">${pasos.map((p) => `<button type="button"
-          class="navfab-paso${p.k === paso ? ' aqui' : ''}" data-navfab-paso="${esc(p.k)}"
+          class="navfab-paso${p.k === paso ? ' aqui' : ''}" data-navfab-paso="${esc(p.k)}"${p.k === paso ? ' aria-current="step"' : ''}
           ${p.ok ? '' : `disabled title="${esc(p.no || '')}"`}>${esc(p.txt)}</button>`).join('')}</span>
         <span class="navfab-conteo">${i + 1} / ${FABRICANTES.length}</span>
       </div>

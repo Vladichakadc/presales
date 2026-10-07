@@ -649,6 +649,7 @@ function pintarPerfiles(){
       + '</tbody></table>'
     : '<p class="hint">Sin perfiles guardados todavía.</p>';
   $('btnConsolidar').disabled = !BOM.perfiles().length;
+  $('btnConsolidar').title = BOM.perfiles().length ? '' : 'Guarda al menos un perfil de sede para consolidar el BOM global.';
 }
 $('btnGuardarPerfil').addEventListener('click', () => {
   const nombre = $('nombrePerfil').value.trim();

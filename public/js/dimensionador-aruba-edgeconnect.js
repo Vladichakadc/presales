@@ -316,12 +316,16 @@ function migrarEstadoV1(){
   $('wanLinksData').value=JSON.stringify({v:2, wanLinks:links});
   return true;
 }
+// La fila que aparece o desaparece se dice a un lector de pantalla (prueba de lector, T8): sin
+// esto, el único anuncio era la suma de caudales, que no cambia hasta declarar el de la fila.
+function anunciarWan(texto){ if($('wanAnuncio')) $('wanAnuncio').textContent=texto; }
 $('btnAddWan').addEventListener('click',()=>{
   const links=leerWanLinks();
   links.push({id:++wanSeq, tipo:'DIA', medio:'RJ45', down:0, up:0, simetrico:true});
   pintarWanFilas(links);
   sincronizarWanHidden();
   render();
+  anunciarWan(`Enlace ${links.length} añadido: DIA por RJ45, sin caudal todavía. Declara su tipo, su medio y su caudal.`);
 });
 // Delegación: cualquier cambio en una fila (tipo, medio, down, up, simetrico) se aplica
 // SOBRE LA PROPIA TARJETA (sin repintarla — se conserva el foco), valida en línea,
@@ -375,10 +379,12 @@ $('wanBuilder').addEventListener('click',e=>{
   if(!b) return;
   let links=leerWanLinks().filter(l=>l.id!==parseInt(b.dataset.wanQuitar));
   // La última fila no se quita: se queda vacía.
-  if(!links.length) links=[{id:++wanSeq, tipo:'DIA', medio:'RJ45', down:0, up:0, simetrico:true}];
+  const vaciada=!links.length;
+  if(vaciada) links=[{id:++wanSeq, tipo:'DIA', medio:'RJ45', down:0, up:0, simetrico:true}];
   pintarWanFilas(links);
   sincronizarWanHidden();
   render();
+  anunciarWan(vaciada?'El último enlace no se quita: queda vacío.':`Enlace quitado. Quedan ${links.length}.`);
 });
 
 // «Copiar enlace del escenario» (etapa A / pendiente #39, 2026-09-14): la URL ya lleva
@@ -844,6 +850,7 @@ function pintarPerfiles(){
       +'</tbody></table>'
     :'<p class="hint">Sin perfiles guardados todavía.</p>';
   $('btnConsolidar').disabled=!l.length;
+  $('btnConsolidar').title=l.length?'':'Guarda al menos un perfil de sede para consolidar el BOM global.';
 }
 $('listaPerfiles').addEventListener('click',e=>{
   const b=e.target.closest('button'); if(!b) return;

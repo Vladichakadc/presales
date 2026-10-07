@@ -41,7 +41,8 @@ code{font-family:'IBM Plex Mono',monospace;font-size:11.5px;background:var(--pap
   <h1>Acceso</h1>
   <p class="sub">Esta herramienta contiene precios de lista y condiciones comerciales. El acceso es restringido.</p>
 
-  <div id="aviso"></div>
+  <!-- role="alert": un error de acceso se anuncia sin mover el foco (prueba de lector, T1). -->
+  <div id="aviso" role="alert" aria-atomic="true"></div>
 
   <form id="form" method="post" action="/login" autocomplete="on">
     <div class="field">

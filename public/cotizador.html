@@ -125,6 +125,7 @@ tbody td{padding:8px 10px;vertical-align:middle}
   body{font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 </style>
 <script src="/js/fuentes.js" defer></script>
 </head>
@@ -203,6 +204,9 @@ tbody td{padding:8px 10px;vertical-align:middle}
         </table>
       </div>
     </div>
+    <!-- Lo que cambia en la cotización, dicho a un lector de pantalla (prueba de lector, T9): el
+         total de la barra son cifras sueltas que, anunciadas solas, no se entienden. -->
+    <p id="anuncioCotizador" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
     <div class="summary-bar" id="summaryBar" style="display:none">
       <div class="sum-item"><span class="sum-label">Líneas</span><span class="sum-val" id="sumLines">0</span></div>
       <div class="sum-item"><span class="sum-label">Unidades</span><span class="sum-val" id="sumUnits">0</span></div>

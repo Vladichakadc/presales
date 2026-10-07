@@ -30,4 +30,8 @@ $('form').addEventListener('submit', async (e) => {
   $('password').value = '';
   $('btn').disabled = false;
   $('btn').textContent = 'Entrar';
+  // Deshabilitar el botón mientras se verifica le quita el foco, y el lector se quedaba sin saber
+  // dónde estaba. El error ya lo anuncia #aviso (role="alert"); el foco vuelve a la contraseña,
+  // que es lo que hay que volver a escribir.
+  $('password').focus();
 });

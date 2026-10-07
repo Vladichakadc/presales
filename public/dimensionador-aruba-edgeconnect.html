@@ -303,6 +303,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
 #modalConsolidado{position:fixed;inset:0;background:rgba(28,25,23,.45);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
 #modalConsolidado[hidden]{display:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+.vh{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 </style>
 <script src="/js/fuentes.js" defer></script>
 </head>
@@ -425,6 +426,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
       <!-- Barra agregada viva (etapa A, 2026-09-14): Σ de caudales, desglose por familia,
            puertos WAN ocupados y semáforo de densidad contra el modelo seleccionado. -->
       <div id="wanResumen" class="wan-resumen" aria-live="polite" hidden></div>
+      <p id="wanAnuncio" class="vh" aria-live="polite" aria-atomic="true"></p>
       <!-- Selector de óptica SFP por medio (SPEC B.1, 2026-09-15): con enlaces cuyo medio
            es SFP 1G / SFP+ 10G, el BOM necesita la óptica. Si el catálogo ofrece varias
            compatibles con el modelo, la elección (alcance/medio) es del usuario: aquí se

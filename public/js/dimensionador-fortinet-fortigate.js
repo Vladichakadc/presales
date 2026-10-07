@@ -1549,6 +1549,8 @@ function pintarBotones(r) {
   const motivo = r.quoteGate === 'BLOCKED' ? 'La puerta de cotización está bloqueada: revisa sus motivos.'
     : r.quoteGate === 'DRAFT' ? 'Borrador técnico: no sale al cotizador ni a perfiles.' : '';
   for (const b of [x, c, cot, $('btnGuardarPerfil'), $('btnConsolidar')]) if (b) b.title = b.disabled ? motivo : '';
+  // Consolidar también se apaga sin perfiles, y entonces la puerta no es el motivo.
+  if ($('btnConsolidar').disabled && !BOM.perfiles().length) $('btnConsolidar').title = 'Guarda al menos un perfil de sede para consolidar el BOM global.';
 }
 
 /* CONFIRMACION DEL SERVIDOR. El navegador puede decir que si; quien deja salir la
@@ -1695,7 +1697,7 @@ function pintarPerfiles() {
         + `<button type="button" class="btn ghost" data-perfil-borrar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Eliminar</button></td></tr>`).join('')
       + '</tbody></table>'
     : '<p class="hint">Sin perfiles guardados todavía.</p>';
-  if (RES) $('btnConsolidar').disabled = !M.permite(RES, 'consolidar') || !BOM.perfiles().length;
+  if (RES) pintarBotones(RES);
 }
 $('listaPerfiles').addEventListener('click', (e) => {
   const b = e.target.closest('button');
