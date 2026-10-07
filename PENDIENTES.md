@@ -697,7 +697,12 @@ AR611 caería en diciembre. **No entra**: es el resumen de un buscador de una p�
 (Info-Finder devuelve el inicio de sesión de Huawei por sus dos rutas, corrida 37613969445). Quien
 tenga Huawei ID la abre, y con la página delante es `npm run huawei -- eox.csv --eol` con esas dos
 filas (EOM y EOS). Mientras, la ficha del AR611 y del AR617VW-LTE4 dice lo que dice para todo Huawei:
-que el catálogo no trae su ciclo de vida.
+que el catálogo no trae su ciclo de vida. **Matiz oficial (ficha «NetEngine AR610 Series» R26C00, en
+`fuente/cisco-huawei`)**: sigue listando el AR611 y el **AR617VW-LTE4**, con la nota «NetEngine
+AR617VW-LTE4 is sold only in Latin America»; la pista del buscador habla del AR617VW y del
+-LTE4EA, que son otros PID. Una ficha no da fechas de fin de venta, así que esto no confirma ni
+descarta nada: rebaja la alarma sobre el modelo del catálogo, y el AR611 sigue con la pista de
+diciembre.
 
 Encargo del dueño: buscar los datos de Huawei en otras fuentes (YouTube u otras). **Nada entró a
 `legacyData/`**: el contenedor y la lectura web no llegan a YouTube, Google, el foro de Huawei ni a
