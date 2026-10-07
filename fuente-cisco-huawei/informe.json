@@ -1,0 +1,119 @@
+[
+  {
+    "archivo": "huawei-if3-ar6280-soporte.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://support.huawei.com/enterprise/en/info-finder/routers/ar6280-pid-23924290/eom-eofs-and-eos-date",
+        "status": 200,
+        "bytes": 3417,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-if3-ar610-soporte.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://support.huawei.com/enterprise/en/info-finder/routers/ar610-pid-253265923/eom-eofs-and-eos-date",
+        "status": 200,
+        "bytes": 3417,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-if3-ar651-soporte.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://support.huawei.com/enterprise/en/info-finder/routers/ar651-pid-23924233/eom-eofs-and-eos-date",
+        "status": 200,
+        "bytes": 3417,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-if3-ar5700-soporte.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://support.huawei.com/enterprise/en/info-finder/routers/ar5700-6700-8000-pid-256863203/eom-eofs-and-eos-date",
+        "status": 200,
+        "bytes": 3417,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-if3-ar6710-h-vue.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://info.support.huawei.com/info-finder/vue/search-center/en/enterprise/routers/ar6710-h4t4x2y7-pid-C00000019260",
+        "status": 200,
+        "bytes": 5804,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-if3-soporte-cdx.json",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://web.archive.org/cdx/search/cdx?url=support.huawei.com/enterprise/en/info-finder/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=3000",
+        "status": 200,
+        "bytes": 16108,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-if3-routers-cdx.json",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://web.archive.org/cdx/search/cdx?url=info.support.huawei.com/info-finder/search-center/en/enterprise/routers/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=3000",
+        "status": 200,
+        "bytes": 2643,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-if3-vue-cdx.json",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://web.archive.org/cdx/search/cdx?url=info.support.huawei.com/info-finder/vue/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=3000",
+        "status": 200,
+        "bytes": 396444,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cc-huawei-ar6700-ar8000-st.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://commoncriteriaportal.org/files/epfiles/huawei-netengine-ar6700ar8000-series-routers-yunshan-software-v600r021c10spc100-v1.1.pdf",
+        "status": 200,
+        "bytes": 1469976,
+        "guardado": true
+      }
+    ]
+  }
+]

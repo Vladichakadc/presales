@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta http-equiv="x-ua-compatible" content="ie=7" />
+    <meta http-equiv="x-ua-compatible" content="ie=6" />
+    <title v-text="loginTitle"></title>
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
+    <script src="/uniportal1/js/authCommons.js?ver=IDAAS_V3R8" type="text/javascript"></script>
+    <script src="/uniportal1/js/vue.min.js?ver=IDAAS_V3R8" type="text/javascript"></script>
+  </head>
+  <body>
+    <div id="app"></div>
+  
+  <script>
+    new Vue({
+      el: '#app',
+      data: function() {
+        return {}
+      },
+      methods: {
+        isInIframe: function () {
+          return self !== top;
+        },
+        checkIsPC: function() {
+          const vm = this;
+          var wap = getURLQueryParam('wap');
+          // 加延迟，防止office（excel、word等）直接执行了代码，执行跳转页面时会通过浏览器打开移动端页面，从而总共打开了2个页签（1个pc一个移动）
+          setTimeout(function(){
+            if (vm.isInIframe()) {
+                handleRouterParams('/uniportal1/login-pc.html');
+            }
+            const userAgent = navigator.userAgent;
+            if (
+              document.body.clientWidth <= 768 ||
+              (wap && wap == 1) ||
+              /Android|webOS|iPhone|iPad/i.test(userAgent) ||
+              (/ArkWeb/i.test(userAgent) && /Phone|Tablet/i.test(userAgent))
+            ){
+              // 用户直接访问文根的情况下会返回login.html的内容，会导致在苹果浏览器中无法后退到其他页面，通过true标记来使用location.replace方法
+              handleRouterParams('/uniportal1/login-mobile.html', true);
+            } else {
+              handleRouterParams('/uniportal1/login-pc.html');
+            }
+          }, 200);
+        },
+      },
+      mounted: function() {
+        const index = location.href.indexOf('?');
+        // 1. #?...
+        // 2 #...
+          // 后端存在重定向的路由模式为hash的情况，需要将#删掉
+        if (index > -1 ) {
+          if(location.href[index-1] === '#') {
+            const newHref = location.href.substring(0, index-1) + location.href.substring(index)
+            history.pushState('','',newHref);
+          }
+        }  else {
+          const index1 = location.href.indexOf('#');
+          if (index1 > -1) {
+            const newHref = location.href.substring(0, index-1) + location.href.substring(index+1)
+            history.pushState('','',newHref);
+          }
+        }
+        
+        let url = urlDelParam(location.href, 'maskUid');
+        url = urlDelParam(url, 'mfaKey');
+        history.pushState('','',url);
+        
+				if((window.sessionStorage && window.sessionStorage.getItem('uniportalLoginPage'))) {
+						window.sessionStorage.removeItem('uniportalLoginPage');
+				}
+				if(window.localStorage && window.localStorage.getItem('uniportalLoginPage')) {
+						window.localStorage.removeItem('uniportalLoginPage');
+				}
+        this.checkIsPC();
+      }
+    })
+
+  </script>
+  </body>
+</html>
