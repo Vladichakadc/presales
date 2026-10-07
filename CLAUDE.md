@@ -205,10 +205,13 @@ dominios de HPE, Huawei, Fortinet, Juniper y otros fabricantes: **un 403 del pro
 la organización y se reporta, no se rodea**. Los ejecutores de GitHub Actions sí llegan, y los
 documentos se traen con workflows de transporte (`traer-cisco-huawei.yml` —con `solo` y `rama`—,
 `traer-fortinet-pendientes.yml`, `candidatas-fuentes.yml`…) a ramas `fuente/*` que se leen y se
-descartan; el workflow no da por guardada una pantalla de inicio de sesión (`test/traer-pantalla-login.test.js`).
+descartan; el workflow no da por guardada una pantalla de inicio de sesión (`test/traer-pantalla-login.test.js`),
+y cada entrada HTML declara `debeContener` o `exploracion: true`: lo explorado sale EXPL, no OK
+(`test/traer-exploracion.test.js`).
 Huawei (`support.huawei.com`) y HPE (`buy.hpe.com`) niegan además el navegador
 automatizado con Akamai, y eso tampoco se rodea; desde el 2026-10-07 Info-Finder pide iniciar
-sesión, también bajo `support.huawei.com/enterprise/en/info-finder/`. PDF4me (conector de claude.ai,
+sesión, también bajo `support.huawei.com/enterprise/en/info-finder/`, y las páginas estáticas de
+HedEx (`info.support.huawei.com/hedex/api/pages/…`) ya solo sirven el cascarón del portal. PDF4me (conector de claude.ai,
 fuera del sandbox) lee una URL pública desde sus servidores,
 pero su salida vive en `api.pdf4me.com`, que el proxy deniega: se le pide el texto con
 `extract_text_by_expression`, nunca se le manda un documento de canal (la lista del distribuidor).
