@@ -1,6 +1,8 @@
 'use strict';
 const { Anthropic } = require('@anthropic-ai/sdk');
 const xlsx = require('xlsx');
+// La regla de «qué cuenta como cambio» al contrastar una hoja, la misma del navegador.
+const CONTRASTE = require('../../public/js/contraste.js');
 
 // Sin clave no hay analisis: se falla cerrado, igual que el servidor con AUTH_PASSWORD.
 //
@@ -95,11 +97,24 @@ function errorDeIA(err) {
   return new Error('No se pudo analizar el catálogo con IA.');
 }
 
-const MODELO = 'claude-opus-5';
-// Opus 5 piensa por defecto, y max_tokens topa pensamiento MÁS respuesta: con un Product
-// Matrix entero, el pensamiento puede comerse el tope antes de escribir la lista. Solo se
-// cobra lo que se genera, así que un tope holgado no encarece la llamada normal.
+// Claude Opus 5.5 desde el 2026-10-07 (propuesta 11 de la auditoría de prompts, aprobada por el
+// dueño): es el sucesor de Opus 5 a menor precio (4/20 frente a 5/25 dólares por millón de
+// tokens; la caché leída, a 0,20) y, según su documentación, cita menos cifras que los
+// documentos no respaldan — que es lo que este análisis no se puede permitir. La llamada no
+// usaba nada que Opus 5.5 rechace: ni `thinking` desactivado ni `tool_choice` forzado, y es
+// de un solo turno, así que el pensamiento ligado a la conversación no entra en juego.
+const MODELO = 'claude-opus-5-5';
+// El pensamiento no se puede apagar en Opus 5.5, y max_tokens topa pensamiento MÁS respuesta:
+// con un Product Matrix entero, el pensamiento puede comerse el tope antes de escribir la
+// lista. Solo se cobra lo que se genera, así que un tope holgado no encarece la llamada normal.
 const MAX_TOKENS = 64000;
+// ESFUERZO EXPLÍCITO, porque el valor por defecto cambió: Opus 5 pensaba en `high` y Opus 5.5
+// en `medium`. Se queda en `high` a propósito: la guía de Anthropic dice que `medium` en Opus
+// 5.5 ya rinde más que `high` en Opus 5, pero eso no se ha medido aquí (no hay clave en el
+// entorno de edición), y esta llamada es de poco volumen y de las que no pueden equivocarse:
+// sus cifras acaban delante de un cliente. Bajar a `medium` es lo primero que hay que probar
+// cuando haya un conjunto de documentos con el que comparar las dos salidas.
+const ESFUERZO = 'high';
 
 let cliente = null;
 function anthropicCliente() {
@@ -180,7 +195,7 @@ function cambiosDeRespuesta(response) {
   }
   if (response.stop_reason === 'max_tokens') throw new RespuestaCortada();
   // Con output_config el texto es el JSON del esquema. Se unen los bloques `text` en orden:
-  // sin respaldo hay uno solo (detrás de los `thinking`, que Opus 5 emite por defecto), y si
+  // sin respaldo hay uno solo (detrás de los `thinking`, que Opus 5.5 emite siempre), y si
   // el modelo declina a mitad y responde el de respaldo, el contenido trae el tramo del
   // primero, un bloque `fallback` y la continuación del segundo.
   const texto = response.content.filter((b) => b.type === 'text').map((b) => b.text).join('');
@@ -213,7 +228,7 @@ function bloqueAdjunto(file) {
   return { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: file.buffer.toString('base64') } };
 }
 
-async function analyzeCatalog(vendor, catalogData, file) {
+async function analyzeCatalog(vendor, catalogData, file, notaHoja) {
   const anthropic = anthropicCliente();
   const { equipment, licenses, supportTiers, parts } = catalogData;
 
@@ -234,6 +249,7 @@ async function analyzeCatalog(vendor, catalogData, file) {
     const hoja = textoDelAdjunto(file);
     if (hoja !== null) {
       contenido.push({ type: 'text', text: `CONTENIDO DEL EXCEL/CSV ADJUNTO:\n${hoja}` });
+      if (notaHoja) contenido.push({ type: 'text', text: notaHoja });
     } else {
       contenido.push(bloqueAdjunto(file));
     }
@@ -267,6 +283,7 @@ async function analyzeCatalog(vendor, catalogData, file) {
       system: [{ type: 'text', text: SISTEMA, cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: contenido }],
       output_config: {
+        effort: ESFUERZO,
         format: { type: 'json_schema', schema: ESQUEMA_CAMBIOS },
       },
     });
@@ -283,7 +300,85 @@ async function analyzeCatalog(vendor, catalogData, file) {
   return cambiosDeRespuesta(response);
 }
 
+// LA HOJA SE CONTRASTA SIN IA, Y AL MODELO SOLO LLEGA LO QUE ESE CONTRASTE NO SABE LEER
+// (2026-10-07, propuesta 10 de la auditoría de prompts, aprobada por el dueño). Con un CSV o un
+// XLSX la llamada hacía un trabajo determinista: casar columnas reconocibles contra el catálogo,
+// que es lo que `contraste.js` ya hace en el navegador sin crédito. Ahora:
+//   · un PDF, un texto o una hoja sin columna de modelo ni de SKU van al modelo como antes;
+//   · una hoja se contrasta aquí, y sus cambios salen con `origen: 'contraste'`;
+//   · si todas sus columnas se reconocen, el modelo no se llama (ni hace falta la clave);
+//   · si alguna no se reconoce, el modelo recibe SOLO la columna clave y esas columnas, y lo
+//     que proponga sale con `origen: 'ia'`; sin clave, se dice qué columnas quedan sin leer.
+// Las altas que el contraste encuentra se informan y no entran en `changes`: dar de alta un
+// modelo nunca se aplica solo. Una lista vacía con columnas sin leer NO es «el catálogo está
+// al día», y `contraste.ia` lo dice para que el panel no lo afirme.
+function filasDeHoja(file) {
+  const libro = xlsx.read(file.buffer, { type: 'buffer' });
+  const hoja = libro.Sheets[libro.SheetNames[0]];
+  return hoja ? xlsx.utils.sheet_to_json(hoja, { defval: '' }) : [];
+}
+
+function cambioDeContraste(c) {
+  return {
+    target: 'product',
+    type: 'UPDATE',
+    id: c.id,
+    field: c.field,
+    oldValue: c.oldValue === null || c.oldValue === undefined ? 'N/A' : String(c.oldValue),
+    newValue: String(c.newValue),
+    reason: `Contraste sin IA del documento adjunto: su columna del campo «${c.field}» trae otro valor.`,
+    sourceUrl: '',
+    origen: 'contraste',
+  };
+}
+
+async function analizarDocumento(vendor, catalogData, file) {
+  const esHoja = file && (file.tipo === 'xlsx' || file.tipo === 'csv');
+  if (!esHoja) {
+    const cambios = await analyzeCatalog(vendor, catalogData, file);
+    return { changes: cambios.map((c) => ({ ...c, origen: 'ia' })), contraste: null };
+  }
+  const filas = filasDeHoja(file);
+  const det = CONTRASTE.contrastar({ modelos: catalogData.equipment, filas });
+  if (det.error) {
+    // Sin columna clave el contraste no sabe a qué equipo va cada fila: la hoja entera va al
+    // modelo, como antes, y se dice por qué.
+    const cambios = await analyzeCatalog(vendor, catalogData, file);
+    return { changes: cambios.map((c) => ({ ...c, origen: 'ia' })), contraste: { error: det.error, ia: 'hoja-entera' } };
+  }
+  const resumen = {
+    filas: filas.length,
+    columnaClave: det.columnaClave,
+    modo: det.modo,
+    columnasUsadas: det.columnasUsadas,
+    columnasIgnoradas: det.columnasIgnoradas,
+    altas: det.altas.map((a) => a.id),
+    sinCambio: det.sinCambio,
+    sinCasar: det.sinCasar,
+  };
+  const deterministas = det.cambios.map(cambioDeContraste);
+  if (!det.columnasIgnoradas.length) return { changes: deterministas, contraste: { ...resumen, ia: 'no-hace-falta' } };
+  if (!process.env.ANTHROPIC_API_KEY) return { changes: deterministas, contraste: { ...resumen, ia: 'sin-clave' } };
+
+  const columnas = [det.columnaClave, ...det.columnasIgnoradas];
+  const reducida = filas.map((f) => Object.fromEntries(columnas.map((c) => [c, f[c]])));
+  const csv = xlsx.utils.sheet_to_csv(xlsx.utils.json_to_sheet(reducida, { header: columnas }));
+  const nota = `De la hoja adjunta solo se te pasan la columna que identifica el equipo («${det.columnaClave}») `
+    + `y las que el contraste automático no reconoció (${det.columnasIgnoradas.map((c) => `«${c}»`).join(', ')}). `
+    + `Las demás (${det.columnasUsadas.map((c) => `«${c}»`).join(', ') || 'ninguna'}) ya se contrastaron sin IA: `
+    + 'propón solo lo que salga de estas columnas.';
+  const delModelo = await analyzeCatalog(vendor, catalogData, { tipo: 'csv', buffer: Buffer.from(csv, 'utf8') }, nota);
+  // Lo que el contraste ya resolvió manda: si el modelo propone el mismo equipo y campo, se queda
+  // la versión determinista.
+  const vistos = new Set(deterministas.map((c) => `${c.id}|${c.field}`));
+  const ia = delModelo.filter((c) => !vistos.has(`${c.id}|${c.field}`)).map((c) => ({ ...c, origen: 'ia' }));
+  return { changes: [...deterministas, ...ia], contraste: { ...resumen, ia: 'columnas-no-reconocidas' } };
+}
+
+// Para las pruebas: un cliente de mentira que no sale a la red.
+function _clienteDePrueba(c) { cliente = c; }
+
 module.exports = {
-  analyzeCatalog, cambiosDeRespuesta, bloqueAdjunto, SinClave, ClaveInvalida, LimiteIA, SinSaldo, RechazoIA,
-  RespuestaCortada, errorDeIA, ESQUEMA_CAMBIOS,
+  analyzeCatalog, analizarDocumento, cambiosDeRespuesta, bloqueAdjunto, SinClave, ClaveInvalida, LimiteIA, SinSaldo, RechazoIA,
+  RespuestaCortada, errorDeIA, ESQUEMA_CAMBIOS, MODELO, ESFUERZO, _clienteDePrueba,
 };

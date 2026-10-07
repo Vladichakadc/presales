@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const {
-  analyzeCatalog, SinClave, ClaveInvalida, LimiteIA, SinSaldo, RechazoIA, RespuestaCortada,
+  analizarDocumento, SinClave, ClaveInvalida, LimiteIA, SinSaldo, RechazoIA, RespuestaCortada,
 } = require('../services/aiSync');
 const { tipoPorFirma } = require('../services/firmaArchivo');
 const { Product, Vendor, LicenseBundle, SupportTier, Part } = require('../models');
@@ -101,11 +101,13 @@ router.post('/sync/analyze', upload.single('datasheet'), async (req, res) => {
 
     const hasAnyData = catalogData.equipment.length || catalogData.licenses.length || catalogData.supportTiers.length || catalogData.parts.length;
     if (!hasAnyData) {
-      return res.json({ changes: [] });
+      return res.json({ changes: [], contraste: null });
     }
 
-    const changes = await analyzeCatalog(vendor, catalogData, req.file);
-    res.json({ changes });
+    // Una hoja (CSV/XLSX) se contrasta primero sin IA y al modelo solo llega lo que ese
+    // contraste no reconoce; un PDF o un texto van al modelo enteros (ver analizarDocumento).
+    const { changes, contraste } = await analizarDocumento(vendor, catalogData, req.file);
+    res.json({ changes, contraste });
   } catch (err) {
     // Errores propios de aiSync, cada uno con su HTTP: config (503) frente a transitorio (429)
     // frente a lo desconocido (500). Antes todo lo que no fuera SinClave caía en el 500

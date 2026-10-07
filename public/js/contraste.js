@@ -1,6 +1,7 @@
 'use strict';
-// Contraste de un documento cargado (Excel/CSV) contra el catálogo vigente, EN EL NAVEGADOR y
-// SIN IA. Enseña qué trae de nuevo el documento y qué se actualizaría; el pintado y el parseo
+/* global module */
+// Contraste de un documento cargado (Excel/CSV) contra el catálogo vigente, SIN IA: en el
+// navegador al cargar una fuente, y en el servidor antes de que la sincronización llame al modelo. Enseña qué trae de nuevo el documento y qué se actualizaría; el pintado y el parseo
 // del archivo viven en js/index.js. Aquí está la regla de qué cuenta como cambio.
 //
 // POR QUE SOLO HOJAS, NO PDF. Casar una tabla ya estructurada (filas y columnas con cabecera)
@@ -188,5 +189,10 @@
     };
   }
 
-  window.CONTRASTE = { normalizarModelo, mismoValor, contrastar, comoPropuesta, campoDe, camposDelCatalogo };
+  // El mismo archivo corre en el navegador y en el servidor (2026-10-07, propuesta 10 de la
+  // auditoría de prompts): la sincronización contrasta aquí las hojas antes de llamar a la IA,
+  // y una sola regla de «qué cuenta como cambio» no puede vivir en dos copias.
+  const API = { normalizarModelo, mismoValor, contrastar, comoPropuesta, campoDe, camposDelCatalogo };
+  if (typeof module === 'object' && module.exports) module.exports = API;
+  if (typeof window !== 'undefined') window.CONTRASTE = API;
 }());

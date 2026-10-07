@@ -413,20 +413,37 @@ async function openSyncModal() {
   } catch { /* si no se puede leer, se asume local: el peor caso es ofrecer un boton de mas */ }
 
   const analizar = document.getElementById('btnAnalizarSync');
+  // Sin clave, una hoja Excel/CSV se contrasta igual (sin IA); un PDF, un texto o el análisis
+  // sin adjunto fallan cerrado con 503. Se dice antes de pulsar, sin bloquear lo que sí funciona.
+  analizar.disabled = false;
   if (!syncEstado.tieneClave) {
-    // Sin clave el analisis falla cerrado con 503; se dice antes en vez de dejar pulsar.
-    analizar.disabled = true;
     document.getElementById('syncResult').innerHTML = '<p style="color:var(--amber);font-weight:600">'
-      + 'Falta <code>ANTHROPIC_API_KEY</code> en este servidor, así que el análisis con IA no puede correr aquí. '
-      + 'Pídele al administrador que la configure, o ejecuta la sincronización en local.</p>';
-  } else {
-    analizar.disabled = false;
+      + 'Falta <code>ANTHROPIC_API_KEY</code> en este servidor. Una hoja Excel o CSV se contrasta igual, sin IA; '
+      + 'un PDF, un texto o el análisis sin adjunto necesitan la clave. Pídele al administrador que la configure, '
+      + 'o ejecuta la sincronización en local.</p>';
   }
 }
 
 function closeSyncModal() {
   document.getElementById('syncModal').style.display = 'none';
   pendingChanges = [];
+}
+
+// Qué hizo el contraste sin IA con la hoja adjunta, en una línea. Los nombres de columna y de
+// modelo vienen del documento que subió alguien: se escapan como todo lo demás.
+function resumenContraste(c) {
+  if (!c) return '';
+  if (c.error) return `<p class="calc-resto">${escapeHtml(c.error)}: la hoja entera se analizó con IA.</p>`;
+  const lista = (xs) => xs.map((x) => `«${escapeHtml(x)}»`).join(', ');
+  const partes = [`Contraste sin IA de ${c.filas} fila(s) por la columna «${escapeHtml(c.columnaClave)}»`];
+  if (c.columnasUsadas.length) partes.push(`columnas reconocidas: ${lista(c.columnasUsadas)}`);
+  if (c.columnasIgnoradas.length) {
+    partes.push(`no reconocidas: ${lista(c.columnasIgnoradas)} — ${c.ia === 'sin-clave'
+      ? '<b>sin leer</b>, porque no hay clave de IA'
+      : 'las leyó la IA, que solo recibió esas columnas y la del modelo'}`);
+  }
+  if (c.altas.length) partes.push(`modelos que no están en el catálogo (no se dan de alta solos): ${lista(c.altas.slice(0, 8))}${c.altas.length > 8 ? '…' : ''}`);
+  return `<p class="calc-resto">${partes.join('; ')}.</p>`;
 }
 
 // Descarga la propuesta con la forma exacta que espera `npm run propuesta` y el workflow
@@ -454,7 +471,7 @@ async function analyzeSync() {
   const btn = document.getElementById('btnApplySync');
   const btnDesc = document.getElementById('btnDescargarPropuesta');
 
-  resultDiv.innerHTML = '<p>Analizando catálogo con IA (esto puede tardar unos segundos o minutos si el archivo es grande)...</p>';
+  resultDiv.innerHTML = '<p>Analizando el catálogo (una hoja Excel/CSV se contrasta primero sin IA; con un PDF o con columnas que no se reconocen interviene la IA y puede tardar unos minutos)...</p>';
   btn.style.display = 'none';
   btnDesc.style.display = 'none';
   
@@ -478,14 +495,21 @@ async function analyzeSync() {
     }
     const data = await res.json();
     pendingChanges = data.changes;
-    
+    const resumen = resumenContraste(data.contraste);
+    // Una lista vacía solo es «al día» si se leyó todo: con columnas que nadie leyó (sin clave
+    // de IA) lo que se puede decir es que lo reconocido coincide, no que el catálogo esté al día.
+    const quedaSinLeer = data.contraste && data.contraste.ia === 'sin-clave';
+
     if (pendingChanges.length === 0) {
-      resultDiv.innerHTML = '<p>El catálogo parece estar actualizado. No se encontraron discrepancias obvias.</p>';
+      resultDiv.innerHTML = resumen + (quedaSinLeer
+        ? '<p>Las columnas reconocidas coinciden con el catálogo. Las que no se reconocieron <b>no se han leído</b>: no se puede afirmar que el catálogo esté al día.</p>'
+        : '<p>El catálogo parece estar actualizado. No se encontraron discrepancias obvias.</p>');
       return;
     }
     
     const TARGET_LABELS = { product: 'Equipo', license: 'Licencia', supportTier: 'Soporte', part: 'SKU' };
-    let html = '<table class="diff-table"><tr><th>Categoría</th><th>Tipo</th><th>Modelo</th><th>Campo</th><th>Valor Anterior</th><th>Valor Nuevo Propuesto</th><th>Razón</th><th>Fuente</th></tr>';
+    const ORIGEN = { contraste: 'Sin IA', ia: 'IA' };
+    let html = resumen + '<table class="diff-table"><tr><th>Origen</th><th>Categoría</th><th>Tipo</th><th>Modelo</th><th>Campo</th><th>Valor Anterior</th><th>Valor Nuevo Propuesto</th><th>Razón</th><th>Fuente</th></tr>';
     pendingChanges.forEach(c => {
       const typeBadge = c.type === 'NEW'
         ? '<span style="background:var(--green);color:#fff;padding:2px 6px;border-radius:3px;font-size:11px">NUEVO</span>'
@@ -497,6 +521,7 @@ async function analyzeSync() {
       const sourceLink = isSafeUrl ? `<a href="${escapeHtml(c.sourceUrl)}" target="_blank" rel="noopener noreferrer" style="color:var(--red);text-decoration:underline">Enlace</a>` : 'N/A';
 
       html += `<tr>
+        <td>${escapeHtml(ORIGEN[c.origen] || 'IA')}</td>
         <td>${escapeHtml(targetLabel)}</td>
         <td>${typeBadge}</td>
         <td><strong>${escapeHtml(c.id)}</strong></td>
