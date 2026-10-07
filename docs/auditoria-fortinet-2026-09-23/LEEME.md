@@ -7,7 +7,8 @@ desde el 2026-09-23**: `main` avanzó de `ec2f803` a `f6f1952` (avance rápido, 
 nada); `verificar` y `pantallas` pasaron en `main` sobre ese commit; Railway desplegó
 `dcb662d9` en SUCCESS con `[seed]` y `Presales corriendo en` en los logs, y la sonda de Actions
 devolvió `/salud` 200 `{"ok":true,"fabricantes":7,"modelos":228}` y `/login` 200. El veredicto
-técnico sigue siendo GO CONDICIONADO: desplegar no cierra las condiciones de abajo.
+técnico fue GO CONDICIONADO hasta el 2026-10-07, cuando el dueño aprobó la arquitectura y pasó
+a **GO** (ver *Resultado*): desplegar no cerraba las condiciones de abajo, la aprobación sí.
 
 | Documento | Contenido |
 |---|---|
@@ -16,7 +17,7 @@ técnico sigue siendo GO CONDICIONADO: desplegar no cierra las condiciones de ab
 | [`motor-y-bom.md`](motor-y-bom.md) | Fórmulas, supuestos, políticas y límites del motor; BOM y licencias; guía operativa de importación y fuentes |
 | [Página de resumen](https://claude.ai/artifact/TFLrckSY8gwNwkwfX3um6o) (privada; su dueño la comparte) | Resumen ejecutivo y **capturas antes/después** en escritorio, resolución intermedia y móvil. No están en git: ver *Capturas antes/después* |
 
-## Resultado: GO CONDICIONADO
+## Resultado: GO CONDICIONADO → GO (aprobado el 2026-10-07)
 
 **Los cuatro P0 están cerrados y verificados en tres capas**: funciones puras, el servidor real
 en modo producción interrogado por HTTP, y Chromium. La recomendación, la selección, el
@@ -59,6 +60,11 @@ reescribe. Lo que ha cambiado desde entonces:
 1. **Aprobación de arquitectura: abierta.** La lista de comprobación para quien aprueba está en
    `docs/decisiones-del-dueno-2026-09-24.md`, sección 2. Debajo de esta línea se anota el
    resultado, con nombre y fecha.
+
+   > **«Aprobado»** — Vladichakadc, dueño del repositorio, el 2026-10-07, en la sesión de Claude
+   > Code en que aprobó las decisiones pendientes («Aprobar la arquitectura de Fortinet»).
+   > Con esta línea el veredicto pasa a **GO**. Lo que sigue abierto de las condiciones 3 y 5
+   > no es un P0 y se sigue en `PENDIENTES.md`.
 2. **Fuente citada y no leída: cerrada.** Las Release Notes de 7.6.3 se trajeron desde Actions
    y dicen lo que la regla aplicaba: «This applies to all FortiGate models». La regla es
    `leida:true`. Las de 7.6.0 dan además la lista cerrada de modelos de 2 GB de RAM, así que en
@@ -66,8 +72,9 @@ reescribe. Lo que ha cambiado desde entonces:
 3. **Accesibilidad: casi cerrada.** axe (WCAG 2.1 A/AA) y el reflujo a 640 px están
    automatizados en `test/e2e/e2e-accesibilidad.js`. Falta el lector de pantalla real; su guion
    está en la sección 4 del documento de decisiones.
-4. **Pruebas que no frenan el despliegue: abierta.** Depende de activar «Wait for CI» en
-   Railway. La sesión no pudo hacerlo; los pasos están en la sección 1 del mismo documento.
+4. **Pruebas que no frenan el despliegue: cerrada (2026-10-05).** El servicio da
+   `checkSuites: true` («Wait for CI» activo) y ese día un `verificar` en rojo saltó un
+   despliegue. Pantallas, contrastes y e2e van en el job de `pantallas`, al que Railway espera.
 5. **Datos que faltan: reducida.**
    - F6 cerrada: 100F y 200F con sus límites y su figura, y los chasis con figura.
    - F2 cerrada: el SD-WAN Service lleva SKU **y precio** de la lista firmada en 54 de 58

@@ -437,6 +437,33 @@ jobs:
               { archivo: 'huawei-eox-herramienta.html', tipo: 'html', para: 'HUAWEI', urls: [
                 'https://support.huawei.com/eoxtoolwebsite/en/tool/product-lifecycle-query-assistant',
               ] },
+              // Segunda ronda (2026-10-07): la herramienta EOX de support.huawei.com ya no existe (su URL
+              // sirve el portal general y el archivo registra un 301 en 2023), y el visor de documentos
+              // pide un token CSRF a su API: esas llamadas no se reconstruyen, seria rodear la proteccion.
+              // Info-Finder si sirve sus paginas de ciclo de vida desde el servidor (JSP), con el mismo
+              // pid que las paginas de soporte: 256863203 es la serie AR5700/6700/8000 y 250517169 el
+              // NE8000 F1A. La de un AR6280 guardada por el archivo sirve para ver la forma de la pagina.
+              { archivo: 'huawei-if-ar6280-archivo.html', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://web.archive.org/web/20250906065723id_/https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers/ar6280-pid-23924290/eom-eofs-and-eos-date',
+              ] },
+              { archivo: 'huawei-if-eoxlist-archivo.html', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://web.archive.org/web/20250324092928id_/https://info.support.huawei.com/info-finder/eox/getEoxList',
+              ] },
+              { archivo: 'huawei-if-ar5700-6700-8000.html', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers/ar5700-6700-8000-pid-256863203/eom-eofs-and-eos-date',
+              ] },
+              { archivo: 'huawei-if-ne8000-f1a.html', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers/netengine-8000-f1a-8h20q-pid-250517169/eom-eofs-and-eos-date',
+              ] },
+              { archivo: 'huawei-if-routers.html', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers',
+              ] },
+              { archivo: 'huawei-if-herramienta.html', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://info.support.huawei.com/info-finder/tool/en/enterprise/eom-eofs-and-eos-date/product',
+              ] },
+              { archivo: 'huawei-if-scripts', tipo: 'scripts', para: 'HUAWEI', urls: [],
+                descubrirPiezas: { de: ['huawei-if-herramienta.html', 'huawei-if-ar5700-6700-8000.html'], base: 'https://info.support.huawei.com/info-finder/tool/en/enterprise/eom-eofs-and-eos-date/product',
+                  dominios: ['info.support.huawei.com'], max: 25 } },
               { archivo: 'huawei-eox-scripts', tipo: 'scripts', para: 'HUAWEI', urls: [],
                 descubrirPiezas: { de: ['huawei-eox-herramienta.html'], base: 'https://support.huawei.com/eoxtoolwebsite/en/tool/product-lifecycle-query-assistant',
                   dominios: ['support.huawei.com', 'res-static.hc-cdn.cn', 'hc-cdn.cn'], max: 25 } },
