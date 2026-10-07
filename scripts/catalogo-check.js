@@ -134,6 +134,52 @@ function precios() {
     .sort((a, b) => a.vendor.localeCompare(b.vendor));
 }
 
+/* ── SIN PRECIO A PROPOSITO: el «consultar» que lleva motivo ──────────────────
+   QUE MIRA. Todo objeto de `legacyData/` con `sinPrecio` (hoy el R9Y49A de Aruba, desde el
+   2026-10-07): un accesorio con compatibilidad oficial cuya fila de la lista firmada no esta
+   transcrita. El BOM lo pinta «consultar»; aqui se lista con su motivo para que no se quede asi
+   por olvido el dia que la lista lo traiga.
+
+   POR QUE SE RECORRE TODO Y NO SOLO ARUBA. El patron se estreno en Aruba, pero nada impide que
+   el siguiente salga en otro fabricante; un inventario que solo mira donde ya hubo uno no ve el
+   segundo. Y un `sinPrecio` sin motivo escrito sale como tal: es un precio que falta sin decir
+   por que.
+
+   Y SI EL CSV YA LO TRAE, SE DICE. `npm run lista-aruba -- --aplicar` escribe la fila en el CSV
+   del cotizador, pero nunca toca `aruba.js`: hasta que alguien copie el precio y quite la marca,
+   `test/aruba-integridad-precios.test.js` queda en rojo. Esta seccion dice que copiar. */
+function sinPrecioDeclarado() {
+  const dir = path.join(__dirname, '..', 'server', 'seed', 'legacyData');
+  let csvAruba = new Map();
+  try {
+    const { parsearCsv, CSV_RUTA } = require('./importar-lista-aruba');
+    csvAruba = new Map(parsearCsv(CSV_RUTA).map((f) => [f.sku, f]));
+  } catch { /* sin CSV no hay fila que avisar; la seccion sigue listando */ }
+  const filas = [];
+  for (const archivo of fs.readdirSync(dir).filter((f) => f.endsWith('.js')).sort()) {
+    const modulo = archivo.replace(/\.js$/, '');
+    const mod = cargar(modulo);
+    if (!mod) continue;
+    const vistos = new Set();
+    const recorrer = (v, ruta) => {
+      if (!v || typeof v !== 'object' || vistos.has(v)) return;
+      vistos.add(v);
+      if (Object.prototype.hasOwnProperty.call(v, 'sinPrecio') && v.sinPrecio) {
+        const clave = ruta.split('.').pop();
+        const fila = modulo === 'aruba' ? csvAruba.get(clave) : undefined;
+        filas.push({
+          modulo, ruta,
+          motivo: typeof v.sinPrecio === 'string' && v.sinPrecio.trim() ? v.sinPrecio : null,
+          filaCsv: fila ? { p: fila.p, vig: fila.vig, plc: fila.plc } : null,
+        });
+      }
+      for (const [k, x] of Object.entries(v)) recorrer(x, ruta ? `${ruta}.${k}` : k);
+    };
+    recorrer(mod, '');
+  }
+  return filas;
+}
+
 /* ── PANTALLAS: un campo declarado que ya no existe ───────────────────────────
    QUE COMPRUEBA. Cada dimensionador le pasa a `ESTADO.vincular({campos})` la lista de ids
    cuyo valor viaja en el enlace compartido. Si alguien renombra o retira un control y no
@@ -434,7 +480,8 @@ function contrastePantallas(servidas) {
 
 function informe() {
   return {
-    cobertura: cobertura(), cicloDeVida: cicloDeVida(), precios: precios(), contrasteCotizador: contrasteCotizador(),
+    cobertura: cobertura(), cicloDeVida: cicloDeVida(), precios: precios(), sinPrecio: sinPrecioDeclarado(),
+    contrasteCotizador: contrasteCotizador(),
     coberturaContraste: coberturaContraste(),
     pantallas: pantallas(), procedencia: procedencia(), fuentesPendientes: fuentesPendientes(),
   };
@@ -495,6 +542,19 @@ function imprimir(d) {
     console.log('\n== PRECIOS (sobre el catalogo del cotizador) ==');
     for (const f of d.precios) {
       console.log(`${f.vendor.padEnd(10)} ${f.con}/${f.de} con precio, ${f.sinCotizar} sin cotizar`);
+    }
+    console.log('\n== SIN PRECIO A PROPOSITO: «consultar» con motivo ==');
+    console.log('   No es un hueco que rellenar a ojo: el precio entra cuando la lista firmada traiga la fila.\n');
+    if (!d.sinPrecio.length) console.log('   Ninguno.');
+    for (const f of d.sinPrecio) {
+      console.log(`${f.modulo.padEnd(10)} ${f.ruta}`);
+      console.log(`           ${f.motivo ? `motivo: ${f.motivo}` : 'SIN MOTIVO ESCRITO: un precio que falta sin decir por que'}`);
+      if (f.filaCsv) {
+        console.log(`           EL CSV DEL COTIZADOR YA TRAE SU FILA ($${f.filaCsv.p}, vig. ${f.filaCsv.vig}, PLC ${f.filaCsv.plc || 's/d'}):`);
+        console.log('           copia precio, vigencia y PLC al catalogo y quita «sinPrecio»');
+      } else if (f.modulo === 'aruba') {
+        console.log('           la lista versionada no trae su fila: npm run lista-aruba -- <lista.txt> la busca (sin --aplicar no escribe)');
+      }
     }
     console.log('\n== COTIZADOR FRENTE A DIMENSIONADOR: una sola copia de cada cifra ==');
     console.log('   Una linea con pareja deja un hueco y la siembra pone la cifra del dimensionador; se contrasta lo que');
@@ -592,7 +652,7 @@ if (require.main === module) {
 }
 
 module.exports = {
-  informe, cobertura, cicloDeVida, precios, pantallas, procedencia,
+  informe, cobertura, cicloDeVida, precios, sinPrecioDeclarado, pantallas, procedencia,
   contrasteCotizador, leerSpec, normalizarModelo, CONTRASTE_COTIZADOR,
   pantallasServidas, contrastePantallas,
   fuentesPendientes, SEMANAS_TOLERADAS, impactoDeFuentes, clavesDe,

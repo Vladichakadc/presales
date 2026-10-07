@@ -205,12 +205,15 @@ dominios de HPE, Huawei, Fortinet, Juniper y otros fabricantes: **un 403 del pro
 la organización y se reporta, no se rodea**. Los ejecutores de GitHub Actions sí llegan, y los
 documentos se traen con workflows de transporte (`traer-cisco-huawei.yml` —con `solo` y `rama`—,
 `traer-fortinet-pendientes.yml`, `candidatas-fuentes.yml`…) a ramas `fuente/*` que se leen y se
-descartan. Huawei (`support.huawei.com`) y HPE (`buy.hpe.com`) niegan además el navegador
+descartan; el workflow no da por guardada una pantalla de inicio de sesión (`test/traer-pantalla-login.test.js`).
+Huawei (`support.huawei.com`) y HPE (`buy.hpe.com`) niegan además el navegador
 automatizado con Akamai, y eso tampoco se rodea; desde el 2026-10-07 Info-Finder pide iniciar
-sesión. PDF4me (conector de claude.ai, fuera del sandbox) lee una URL pública desde sus servidores,
+sesión, también bajo `support.huawei.com/enterprise/en/info-finder/`. PDF4me (conector de claude.ai,
+fuera del sandbox) lee una URL pública desde sus servidores,
 pero su salida vive en `api.pdf4me.com`, que el proxy deniega: se le pide el texto con
-`extract_text_by_expression`, nunca se le manda un documento de canal (la lista del distribuidor),
-y se desconecta pidiendo reautorización. Firecrawl corre dentro del sandbox y su dominio está
+`extract_text_by_expression`, nunca se le manda un documento de canal (la lista del distribuidor).
+Se comprueba con `example.com` antes de culpar al fabricante: el 2026-10-07 volvió conectado y
+fallaba con cualquier URL. Firecrawl corre dentro del sandbox y su dominio está
 denegado.
 
 ## Arquitectura
@@ -406,8 +409,9 @@ Módulos compartidos:
 - **`npm run catalogo`**: cobertura por campo, ciclo de vida, precios y procedencia; **pantallas**
   (los `campos` de `ESTADO.vincular()` contra los `id=` de su HTML; lo que crea un módulo se declara
   en `TARDIOS` con su ancla); **cotizador y portal frente al dimensionador**, sobre lo que sirve el
-  servidor (`scripts/ayuda/pantallas-servidas.js` siembra una base en memoria); cobertura del
-  contraste; fuentes que cambiaron sin contrastar.
+  servidor (`scripts/ayuda/pantallas-servidas.js` siembra una base en memoria); lo que va
+  «consultar» a propósito (`sinPrecio` en cualquier `legacyData/`, con su motivo, y si el CSV ya trae
+  su fila); cobertura del contraste; fuentes que cambiaron sin contrastar.
 - **Vigía** (`npm run vigia`, `vigia-fuentes.yml` los lunes en dos jobs: `medir` sin escritura,
   `publicar` sin instalar nada y validando el lock). **Tres estados en el lock**: `hashVerificado`
   (lo que una persona contrastó, no se mueve solo), `visto` y `pendienteDesde`; se limpia con

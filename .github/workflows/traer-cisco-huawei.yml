@@ -467,6 +467,41 @@ jobs:
               { archivo: 'huawei-eox-scripts', tipo: 'scripts', para: 'HUAWEI', urls: [],
                 descubrirPiezas: { de: ['huawei-eox-herramienta.html'], base: 'https://support.huawei.com/eoxtoolwebsite/en/tool/product-lifecycle-query-assistant',
                   dominios: ['support.huawei.com', 'res-static.hc-cdn.cn', 'hc-cdn.cn'], max: 25 } },
+              // Tercera ronda (2026-10-07, tarde): el buscador indexa Info-Finder tambien bajo
+              // support.huawei.com/enterprise/en/info-finder/ (la del AR6280 es la de control), y el
+              // centro de hardware y las fichas «vue» de los AR6710. Se piden como cualquier pagina
+              // publica, sin cabeceras de navegador ni token: si responden con el inicio de sesion o
+              // con un 403, eso es lo que se reporta. Los indices del archivo dicen si alguna de esas
+              // rutas quedo guardada. La Security Target de Common Criteria del software de los
+              // AR6700/AR8000 la redacta Huawei y la publica el portal de Common Criteria.
+              { archivo: 'huawei-if3-ar6280-soporte.html', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://support.huawei.com/enterprise/en/info-finder/routers/ar6280-pid-23924290/eom-eofs-and-eos-date',
+              ] },
+              { archivo: 'huawei-if3-ar610-soporte.html', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://support.huawei.com/enterprise/en/info-finder/routers/ar610-pid-253265923/eom-eofs-and-eos-date',
+              ] },
+              { archivo: 'huawei-if3-ar651-soporte.html', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://support.huawei.com/enterprise/en/info-finder/routers/ar651-pid-23924233/eom-eofs-and-eos-date',
+              ] },
+              { archivo: 'huawei-if3-ar5700-soporte.html', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://support.huawei.com/enterprise/en/info-finder/routers/ar5700-6700-8000-pid-256863203/eom-eofs-and-eos-date',
+              ] },
+              { archivo: 'huawei-if3-ar6710-h-vue.html', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://info.support.huawei.com/info-finder/vue/search-center/en/enterprise/routers/ar6710-h4t4x2y7-pid-C00000019260',
+              ] },
+              { archivo: 'huawei-if3-soporte-cdx.json', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://web.archive.org/cdx/search/cdx?url=support.huawei.com/enterprise/en/info-finder/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=3000',
+              ] },
+              { archivo: 'huawei-if3-routers-cdx.json', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://web.archive.org/cdx/search/cdx?url=info.support.huawei.com/info-finder/search-center/en/enterprise/routers/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=3000',
+              ] },
+              { archivo: 'huawei-if3-vue-cdx.json', tipo: 'html', para: 'HUAWEI', urls: [
+                'https://web.archive.org/cdx/search/cdx?url=info.support.huawei.com/info-finder/vue/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=3000',
+              ] },
+              { archivo: 'cc-huawei-ar6700-ar8000-st.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+                'https://commoncriteriaportal.org/files/epfiles/huawei-netengine-ar6700ar8000-series-routers-yunshan-software-v600r021c10spc100-v1.1.pdf',
+                'https://www.commoncriteriaportal.org/files/epfiles/huawei-netengine-ar6700ar8000-series-routers-yunshan-software-v600r021c10spc100-v1.1.pdf',
+              ] },
             ];
             const SOLO = (process.env.SOLO || '').split(',').map((x) => x.trim()).filter(Boolean);
             const faltan = SOLO.filter((x) => !DOCS.some((d) => d.archivo === x));
@@ -628,6 +663,13 @@ jobs:
                   const buf = Buffer.from(await res.arrayBuffer());
                   if (doc.tipo === 'pdf' && buf.subarray(0, 4).toString() !== '%PDF') {
                     intentos.push({ url, status: res.status, firma: buf.subarray(0, 8).toString('hex'), nota: 'no es un PDF' });
+                    continue;
+                  }
+                  // Un 200 con la pantalla de inicio de sesion no es el documento: el 2026-10-07 cinco
+                  // entradas de Info-Finder sin texto exigido salieron como guardadas con los 3417 B del
+                  // IDaaS de Huawei. Se dice lo que es, y no se guarda como si fuera el boletin.
+                  if (doc.tipo !== 'pdf' && /uniportal1[/]js[/]authCommons|IDAAS_V[0-9]|loginTitle/.test(buf.subarray(0, 8192).toString('utf8'))) {
+                    intentos.push({ url, status: res.status, bytes: buf.length, nota: 'pantalla de inicio de sesion (IDaaS), no el documento' });
                     continue;
                   }
                   if (doc.debeContener && !buf.toString('utf8').includes(doc.debeContener)) {
