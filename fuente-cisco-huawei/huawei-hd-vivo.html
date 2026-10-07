@@ -1,0 +1,44 @@
+<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/supportview/lst/assets/ico/favicon-CRizumJi.ico"><title></title><script>(function () {
+        function isIe() {
+          return window.navigator.userAgent.indexOf("MSIE") > 0 || window.navigator.userAgent.indexOf("Trident") > 0;
+        }
+        // 判断时间是否超过一天
+        function overOneDay() {
+          return new Date().getTime() - (localStorage.getItem("lastVisitTime") || 0) > 1000 * 60 * 60 * 24;
+        }
+        if (isIe() && overOneDay()) {
+          // 区分运营商和企业网
+          location.href =
+            "/ecolumnsweb/" +
+            ("enterprise" || "enterprise") +
+            "/browser-tips?redirect=" +
+            encodeURIComponent(location.href);
+        }
+      })();</script><script>function laterLoad(src, isScript, isModule) {
+        var node;
+        if (isScript) {
+          node = document.createElement("script");
+          node.type = "text/javascript";
+          if (isModule) {
+            node.type = "module" ;
+            node.crossOrigin = "";
+          } else {
+            node.noModule = true
+          }
+          node.async = true;
+          node.src = src;
+        } else {
+          node = document.createElement("link");
+          if (isModule) {
+            node.rel = "modulepreload";
+            node.crossOrigin = "";
+          } else {
+            node.rel = "stylesheet";
+          }
+          node.href = src;
+        }
+
+        window.addEventListener("load", () => {
+          document.getElementsByTagName("head")[0].appendChild(node);
+        });
+      }</script><script type="module">import.meta.url;import("_").catch(()=>1);(async function*(){})().next();if(location.protocol!="file:"){window.__vite_is_modern_browser=true}</script><script type="module">!function(){if(window.__vite_is_modern_browser)return;console.warn("vite: loading legacy chunks, syntax error above and the same error below should be ignored");var e=document.getElementById("vite-legacy-polyfill"),n=document.createElement("script");n.src=e.src,n.onload=function(){System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))},document.body.appendChild(n)}();</script><script>laterLoad('/supportview/lst/js/polyfills-CxB_lKhg.js', true, true);</script><script>laterLoad('/supportview/lst/js/index-DZnaEfkk.js', true, true);</script><script>laterLoad('/supportview/lst/js/polyfills-legacy-BB2M42Ws.js', true, false);</script><script>laterLoad('/supportview/lst/assets/css/_element-plus-CPJhNHzB.css', false);</script><script>laterLoad('/supportview/lst/assets/css/index-CuqKpRcw.css', false);</script><script>laterLoad('/supportview/lst/js/_@vue-zQVFX31c.js', false, true);</script><script>laterLoad('/supportview/lst/js/_axios-DKS35TLd.js', false, true);</script><script>laterLoad('/supportview/lst/js/_element-plus-DoCPV5b9.js', false, true);</script><script>laterLoad('/supportview/lst/js/_vue-i18n-D8ji-M0T.js', false, true);</script><script>laterLoad('/supportview/lst/js/_vue-router-DIngdriN.js', false, true);</script></head><body><div id="App"></div><script nomodule="">!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",(function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()}),!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script><script nomodule="" crossorigin="" id="vite-legacy-entry" data-src="/supportview/lst/js/index-legacy-BLqmQylV.js">System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))</script></body></html>

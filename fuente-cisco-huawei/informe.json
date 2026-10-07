@@ -1,0 +1,162 @@
+[
+  {
+    "archivo": "huawei-hd-cdx.json",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://web.archive.org/cdx/search/cdx?url=support.huawei.com/enterprise/en/doc/EDOC1100213474/*&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=5000",
+        "status": 200,
+        "bytes": 1447,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-hedex-cdx.json",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://web.archive.org/cdx/search/cdx?url=support.huawei.com/hedex/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&filter=original:.*EDOC1100213474.*&limit=3000",
+        "status": 200,
+        "bytes": 3,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-eox-cdx.json",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://web.archive.org/cdx/search/cdx?url=support.huawei.com/eoxtoolwebsite/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=3000",
+        "status": 200,
+        "bytes": 4591,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-infofinder-cdx.json",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://web.archive.org/cdx/search/cdx?url=info.support.huawei.com/info-finder/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&filter=original:.*%28eom%7Clife%7Ceox%29.*&limit=3000",
+        "status": 200,
+        "bytes": 8084,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-hd-ar6710-h-archivo.html",
+    "para": "HUAWEI",
+    "guardado": false,
+    "intentos": [
+      {
+        "url": "https://web.archive.org/web/2026id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3e859eec/ar6710-h4t4x2y7",
+        "status": 200,
+        "bytes": 3342,
+        "nota": "no contiene el texto esperado"
+      },
+      {
+        "url": "https://web.archive.org/web/2025id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3e859eec/ar6710-h4t4x2y7",
+        "status": 200,
+        "bytes": 3342,
+        "nota": "no contiene el texto esperado"
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-hd-ar6710-l26-archivo.html",
+    "para": "HUAWEI",
+    "guardado": false,
+    "intentos": [
+      {
+        "url": "https://web.archive.org/web/2026id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/5d943f96/ar6710-l26t2x4",
+        "status": 200,
+        "bytes": 3689,
+        "nota": "no contiene el texto esperado"
+      },
+      {
+        "url": "https://web.archive.org/web/2025id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/5d943f96/ar6710-l26t2x4",
+        "status": 200,
+        "bytes": 3689,
+        "nota": "no contiene el texto esperado"
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-hd-ar6710-l50-archivo.html",
+    "para": "HUAWEI",
+    "guardado": false,
+    "intentos": [
+      {
+        "url": "https://web.archive.org/web/2026id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/b4f79aa3/ar6710-l50t2x4",
+        "status": 200,
+        "bytes": 3689,
+        "nota": "no contiene el texto esperado"
+      },
+      {
+        "url": "https://web.archive.org/web/2025id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/b4f79aa3/ar6710-l50t2x4",
+        "status": 200,
+        "bytes": 3689,
+        "nota": "no contiene el texto esperado"
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-hd-vivo.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3e859eec/ar6710-h4t4x2y7",
+        "status": 200,
+        "bytes": 3800,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-hd-scripts",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://support.huawei.com/supportview/lst/js/index-legacy-BLqmQylV.js",
+        "status": 200,
+        "bytes": 221062,
+        "guardado": true,
+        "como": "huawei-hd-scripts/lst__js__index-legacy-BLqmQylV.js"
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-eox-herramienta.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "intentos": [
+      {
+        "url": "https://support.huawei.com/eoxtoolwebsite/en/tool/product-lifecycle-query-assistant",
+        "status": 200,
+        "bytes": 26142,
+        "guardado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-eox-scripts",
+    "para": "HUAWEI",
+    "guardado": false,
+    "intentos": [
+      {
+        "url": "huawei-eox-herramienta.html",
+        "error": "no se encontro ninguna pieza"
+      }
+    ]
+  }
+]
