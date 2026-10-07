@@ -92,7 +92,15 @@ test('construirRoster cubre exactamente los SKU del CSV vigente', () => {
   }
   // Y al revés: el roster no declara nada que el CSV no refleje
   assert.strictEqual(enRoster.size, roster.length, 'sin SKU duplicados en el roster');
-  for (const r of roster) assert.ok(csv.some((f) => f.sku === r.sku), `${r.sku} del roster debe tener fila en el CSV`);
+  // Salvo un accesorio que declara `sinPrecio` (R9Y49A, 2026-10-07): está en el roster A PROPÓSITO,
+  // porque es así como el importador traerá su fila cuando se corra con la lista; hasta entonces
+  // no la tiene, y el catálogo maestro lo dice.
+  const sinPrecio = new Set(Object.entries(arubaData.ARUBA_ACCESSORY_CATALOG).filter(([, a]) => a.sinPrecio).map(([k]) => k));
+  for (const k of sinPrecio) assert.ok(enRoster.has(k), `${k} (sin precio) tiene que estar en el roster para que el importador traiga su fila`);
+  for (const r of roster) {
+    if (sinPrecio.has(r.sku)) continue;
+    assert.ok(csv.some((f) => f.sku === r.sku), `${r.sku} del roster debe tener fila en el CSV`);
+  }
 });
 
 test('comparar detecta precio repo≠lista, cambio de CSV, PLC→ES, ausente y candidatos', () => {

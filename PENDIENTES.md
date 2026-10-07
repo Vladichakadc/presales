@@ -2,9 +2,11 @@
 
 Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos abiertos que la
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
-permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
+permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-06, octava entrega (**Las figuras de Huawei sin pérdida, Aruba cotejada contra sus PDF y los pendientes con recomendación, ejecutados.** Encargo del dueño: «Aumenta la calidad de los gráficos de Huawei y ejecuta las mejoras propuestas y ejecuta los pendientes como un arquitecto senior». **Figuras de Huawei**: las 42 estaban en WebP con pérdida sobre imágenes que las fichas ya traen en JPEG (de 32 a 44 dB de PSNR contra el original); ahora son los píxeles exactos de su documento. El F8 pasa a 620 × 767 desde su ficha de 2023, comprobado que es el mismo dibujo, y una figura vertical sube a 260 px de alto en la tarjeta. Se buscaron versiones mayores de las 42 en 238 imágenes de 30 documentos y en las fotos de producto de e.huawei.com: no hay más. **La mejora propuesta**: Aruba cotejada fila a fila contra sus PDF, con la fuente sin fecha retirada; salieron el rango del EC-XS (2-1.000 Mbps), que el EC-XS sí corre IDS/IPS (la auditoría A1 lo había apartado por dos números de parte antiguos), el 9004-LTE sin AOS 8 y las sesiones del 9240. **Pendientes**: H-03 de Huawei, el 16 de Aruba (la política de ciclo de vida no confirma los fines de venta de terceros), las Reman (opción B) y la auditoría de prompts del 2026-10-05. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-07, novena entrega (**Los pendientes que dependían del dueño, ejecutados con su aprobación, y Huawei y Aruba por otras vías.** Encargo del dueño: ejecutar lo pendiente, buscar otra vía a lo que bloquea Akamai y al ciclo de vida de Huawei, ejecutar los puntos 24, 25 y 26 de Aruba, y la aprobación de seis decisiones. **Aruba 24-26 cerrados con el Hardware Reference Rev V** (ago-2026, al que remite el VSG): 1G en EC-10108/10150, el 10108 sin 25G ni 10GBASE-T, R9Y49A en EC-L/EC-XL sin precio, JZ889A confirmado por el QuickSpecs v18, y el EC-10106/10108 con cuatro jaulas SFP, no dos. **Huawei**: PDF4me renderizó la página oficial del AR6710-H y dio los códigos de su fuente (PAC300S12-CL, PDC260S12-CL/-DL); el Wayback Machine solo guarda el cascarón, la herramienta EOX ya no existe e Info-Finder pide sesión, así que el ciclo de vida sigue necesitando una cuenta. **Decisiones**: Fortinet aprobado (GO); batería `e2e-lector-virtual.js` con cuatro defectos de accesibilidad corregidos; `agent-reach` con sus credenciales fuera del repositorio; la guía puede citar equipos fuera del catálogo; `CLAUDE.md` de 202 a 33,5 KB con la crónica en `docs/`; la sincronización contrasta las hojas sin IA y migra a Claude Opus 5.5. Detalle en *Cerrado recientemente*.)
+
+Revisión anterior: 2026-10-06, octava entrega (**Las figuras de Huawei sin pérdida, Aruba cotejada contra sus PDF y los pendientes con recomendación, ejecutados.** Encargo del dueño: «Aumenta la calidad de los gráficos de Huawei y ejecuta las mejoras propuestas y ejecuta los pendientes como un arquitecto senior». **Figuras de Huawei**: las 42 estaban en WebP con pérdida sobre imágenes que las fichas ya traen en JPEG (de 32 a 44 dB de PSNR contra el original); ahora son los píxeles exactos de su documento. El F8 pasa a 620 × 767 desde su ficha de 2023, comprobado que es el mismo dibujo, y una figura vertical sube a 260 px de alto en la tarjeta. Se buscaron versiones mayores de las 42 en 238 imágenes de 30 documentos y en las fotos de producto de e.huawei.com: no hay más. **La mejora propuesta**: Aruba cotejada fila a fila contra sus PDF, con la fuente sin fecha retirada; salieron el rango del EC-XS (2-1.000 Mbps), que el EC-XS sí corre IDS/IPS (la auditoría A1 lo había apartado por dos números de parte antiguos), el 9004-LTE sin AOS 8 y las sesiones del 9240. **Pendientes**: H-03 de Huawei, el 16 de Aruba (la política de ciclo de vida no confirma los fines de venta de terceros), las Reman (opción B) y la auditoría de prompts del 2026-10-05. Ver *Cerrado recientemente*.)
 
 Revisión anterior: 2026-10-06, séptima entrega (**La línea AOS 8 de Aruba, desde sus documentos oficiales, y el grafo de graphify que avisa cuando está viejo.** Encargo del dueño: «Ejecuta los pendientes y la mejora propuesta, si encuentras más mejoras ejecútalas». **La mejora**: el arranque avisa cuando `graphify-out/graph.json` se hizo sobre otro commit que `HEAD`. **El pendiente 41 se cerró por un camino que no se había probado**: el workflow de transporte trajo desde el portal oficial de HPE Aruba las guías de instalación de seis controladores y, de psnow, los QuickSpecs de las series 7000 y 7200. Los 25 modelos Aruba tienen figura. **Y esos documentos dijeron más**: HPE da por retirada la línea entera («no longer available for sale»), así que 7010, 7024, 7030, 7205 y 7240XM pasan a fuera de venta sin fecha; corrigen cifras que venían de copias de terceros (el 7010 y el 7024 hacen 8 Gbps de firewall, no 4; el 7205, 12 y no 15); y dan la alimentación de ocho de los nueve (Aruba 24/25). Por el camino, un comentario con comillas invertidas que bash ejecutaba dentro de un `node -e`: corregido, y una prueba lo frena en todos los workflows. **Queda una decisión del dueño**: si el cotizador ofrece las unidades Reman de la línea retirada. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
 
@@ -569,10 +571,18 @@ de `e.huawei.com` (ver *Cerrado recientemente*). Lo que queda:
   por tarjeta de control y la fila es la IPU-3T6) y la conmutación del F8 (28,86 Tbps en la página,
   con las mismas 8 tarjetas de 800 G; la ficha da 12,8 Tbps a la versión 6.4T, que es la base del
   resto de la serie). Si Huawei publica una ficha nueva del F8, se vuelve a mirar.
+- ~~**El código de la fuente del AR6710-H**~~ **Cerrado el 2026-10-07**: su página de la
+  descripción de hardware (EDOC1100213474, actualizada el 2026-07-23), renderizada por PDF4me, da
+  la PAC300S12-CL en AC y la PDC260S12-CL o la PDC260S12-DL en DC, y el BOM las ofrece como
+  «elegir una». La pista del buscador era correcta, pero no entró hasta leer la página.
 - **Cinco AR que admiten dos fuentes sin decir cuántas vienen** (AR6710-L26/L50/L14, AR6710-H,
-  AR8700-8): quedan en «no consta». **El código de la fuente del AR6710-H** (300 W AC / 260 W DC)
-  tampoco lo publica su ficha, y su línea del BOM lo dice. Los dos los resuelve la guía de
-  hardware, y **esa no se puede traer desde aquí ni desde Actions** (medido el 2026-10-06, noche:
+  AR8700-8): quedan en «no consta». La página del AR6710-H tampoco lo dice («Number of power
+  modules 2» son las ranuras). Las páginas del L26 y el L50 tienen URL conocida desde el
+  2026-10-07 (el índice del Wayback Machine las lista: `.../5d943f96/ar6710-l26t2x4` y
+  `.../b4f79aa3/ar6710-l50t2x4`), pero PDF4me falló después con todas las URL, también con
+  `example.com`, y se desconectó pidiendo reautorización. **Cómo se cierra**: reautorizar PDF4me en
+  los conectores de claude.ai y renderizarlas. La guía de hardware **no se puede traer desde aquí
+  ni desde Actions** (medido el 2026-10-06, noche:
   a `fetch` le llega un 200 con el cascarón de la aplicación, corrida 37453468795, y a Chromium
   sin cabeza un 403 «Access Denied» de Akamai en las catorce páginas, corrida 37454219168). Hace
   falta alguien que la abra en un navegador con su cuenta, o el configurador de Huawei. **Una pista
@@ -584,7 +594,9 @@ de `e.huawei.com` (ver *Cerrado recientemente*). Lo que queda:
   dice cuántas fuentes trae, así que el AR8700-8 sigue en «no consta».
 - **Si la primera SRU-700S viene con el AR6710-H.** Su ficha hace de la placa de control un paso
   de pedido aparte, y el BOM pide una con la nota; si el configurador la trae dentro del equipo,
-  esa línea sobra.
+  esa línea sobra. La descripción de hardware llama al equipo «AR6710-H4T4X2Y7 assembly chassis»
+  (PN 02355VGU), como el AR8700-8 que se pide sin placas, lo que apunta a que no viene; no lo dice
+  con todas las letras, así que la línea se queda con su nota.
 
 ### Cotizador y dimensionador dicen cifras distintas del mismo equipo (cerrado: Cisco el 2026-10-01, Huawei y Juniper el 2026-10-02)
 
@@ -783,8 +795,8 @@ de datos— está en [`IMPORTAR-CATALOGO.md`](IMPORTAR-CATALOGO.md).
 |---|---|---|---|
 | ~~2~~ | ~~`cps` en 37 de los 58 FortiGate~~ **Resuelto (2026-09-02)**, y ampliado el 2026-09-03 de 53 a **56 de 58** leyendo las fichas por serie de 400F y 600F. Quedan 100F y 200F, cuyas fichas no están en la URL que sigue el patrón del resto (404, reportado). | — | resuelto vía Actions |
 | ~~3~~ | **~~PDFs de datasheets de Aruba~~ Resuelto (2026-09-11): 18/24, ver *Cerrado recientemente*.** Los 6 que quedaban atascados bajaron en sesión nueva con Chrome real: `ecQuickspecs`, `ecXlSpec`, `gw9000`, `gw9100`, `gw9200Qs` y `sdBranchVsg`. La cuota de `psnow/downloadDoc` efectivamente se había reseteado al día siguiente. De los 6 que faltan: 4 nunca fueron PDFs (páginas de documentación en vivo), 1 URL murió (`ecSpecSheet`, 404 genuino, hay que buscar el reemplazo) y 1 exige cuenta de soporte HPE (`gw9000Spec`). El método completo quedó documentado en `public/datasheets/LEEME.md`. | Nada pendiente salvo decidir el reemplazo de `ecSpecSheet` y conseguir una cuenta HPE para `gw9000Spec`. | — |
-| — | **Bytes del PDF «EdgeConnect Product Lifecycle Policy»** (entrada `ecLifecycle` en DATASHEETS, plan 10 del 2026-09-16). La entrada ya existe y la pestaña de fuentes enlaza la URL oficial; falta la copia congelada en `public/datasheets/edgeconnect-lifecycle-policy.pdf`. | `npm run datasheets` desde una máquina con salida (o navegador real) y commit del PDF — el mecanismo es el de siempre, la pared es la misma de los otros seis datasheets sin copia | El proxy de egreso responde 403 a `arubanetworking.hpe.com`; desde GitHub Actions la cuota de HPE se agota con ráfagas |
-| 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ`. El motor no inventa: muestra lo que hay. **2026-10-05: las cifras de los AR quedaron cerradas** con sus fichas de serie, que no piden cuenta: `typ` 23/23 (cuatro huecos llenos y tres corregidos, el AR8700-8 entre ellos), y `mpps` no lo publica ninguna ficha AR, así que no es un hueco. La ficha del AR6710-L (R26C00) llegó el 2026-10-06 y corrigió el reenvío del L26T2X4 y el L50T2X4; las 23 filas AR están contrastadas. **El ciclo de vida sigue igual de bloqueado**: las páginas de boletines y de Info-Finder llegan a Actions como cascarón sin fechas (corrida `37363110274`). | **El importador ya existe, y desde el 2026-09-04 también la plantilla**: `npm run huawei -- --check` inventaría los huecos y `npm run huawei -- --plantilla` escribe `huawei-specs.csv` y `huawei-eox.csv` ya con los 40 modelos y las cabeceras que el importador reconoce, así que el trabajo en la página se reduce a pegar cifras. Luego `npm run huawei -- huawei-specs.csv --dry` para el ensayo, sin `--dry` para aplicar, y `npm run huawei -- huawei-eox.csv --eol` para el fin de venta. **2026-09-10: el bloqueo de Akamai no es contra todo navegador** — con Chrome real (no Playwright/Actions) `support.huawei.com/enterprise/en/bulletins/` carga completo y sin captcha, con buscador por modelo (`AR6700` → 11 avisos con fecha real). Dos obstáculos nuevos, distintos del bloqueo anterior: el **contenido** de cada aviso exige cuenta Huawei (candado visible, no se intentó sortear), y lo que se ve en la lista son ciclos de vida de **versiones de software** (`V600R023C00`…), no de hardware — puede que ni sea la categoría correcta para lo que el catálogo modela (fin de venta del equipo físico). "PCN" (Product Change Notice) sí es a nivel de hardware pero no lista una categoría de routers en este momento. **2026-09-16: la categoría correcta ya no es una duda.** La búsqueda web localizó el documento oficial «Huawei NetEngine AR5700&6700&8000 Series Routers Product Life Cycle» (e.huawei.com, 2023-10-20) — ciclo de vida de **hardware**, exactamente lo que el catálogo modela — y al abrirlo pide contraseña: el contenido sigue tras la cuenta Huawei, como se sospechaba. El tablón de routers «Life Cycle Notices» existe y declara 450 avisos (la página carga; el índice es dinámico). Conclusión: el bloqueo ya no es la categoría ni el buscador, es solo la cuenta. **2026-09-29, reintentado con `agent-browser`:** `e.huawei.com`, `support.huawei.com`, `info.support.huawei.com`, `download.huawei.com`, `carrier.huawei.com` y los archivos web dan `CONNECT` 403 del proxy de egreso (`ERR_TUNNEL_CONNECTION_FAILED` en el navegador); política de la organización, no se rodea. Desde una máquina con salida: `npm run huawei -- --plantilla`. | Cuenta Huawei Enterprise para abrir el PDF «NetEngine AR5700&6700&8000 Series Routers Product Life Cycle» (e.huawei.com) y el tablón de routers — la categoría de hardware quedó confirmada el 2026-09-16, ya no hace falta aclararla |
+| ~~—~~ | **~~Bytes del PDF «EdgeConnect Product Lifecycle Policy»~~ Resuelto (2026-10-07)**: `traer-cisco-huawei.yml` lo trajo desde `arubanetworking.hpe.com/techdocs` y está en `public/datasheets/edgeconnect-lifecycle-policy.pdf` (SHA-256 `04b5b8d0…b042`). Lo que decía: (entrada `ecLifecycle` en DATASHEETS, plan 10 del 2026-09-16). La entrada ya existe y la pestaña de fuentes enlaza la URL oficial; falta la copia congelada en `public/datasheets/edgeconnect-lifecycle-policy.pdf`. | `npm run datasheets` desde una máquina con salida (o navegador real) y commit del PDF — el mecanismo es el de siempre, la pared es la misma de los otros seis datasheets sin copia | El proxy de egreso responde 403 a `arubanetworking.hpe.com`; desde GitHub Actions la cuota de HPE se agota con ráfagas |
+| 14 | **Ciclo de vida y cifras finas del catálogo Huawei.** 40 modelos cargados y ninguno marcado como fuera de venta, mientras Cisco tiene 8; las 17 NetEngine no traen `fwd`, `ipsec` ni `typ`. El motor no inventa: muestra lo que hay. **2026-10-05: las cifras de los AR quedaron cerradas** con sus fichas de serie, que no piden cuenta: `typ` 23/23 (cuatro huecos llenos y tres corregidos, el AR8700-8 entre ellos), y `mpps` no lo publica ninguna ficha AR, así que no es un hueco. La ficha del AR6710-L (R26C00) llegó el 2026-10-06 y corrigió el reenvío del L26T2X4 y el L50T2X4; las 23 filas AR están contrastadas. **El ciclo de vida sigue igual de bloqueado**: las páginas de boletines y de Info-Finder llegan a Actions como cascarón sin fechas (corrida `37363110274`). | **El importador ya existe, y desde el 2026-09-04 también la plantilla**: `npm run huawei -- --check` inventaría los huecos y `npm run huawei -- --plantilla` escribe `huawei-specs.csv` y `huawei-eox.csv` ya con los 40 modelos y las cabeceras que el importador reconoce, así que el trabajo en la página se reduce a pegar cifras. Luego `npm run huawei -- huawei-specs.csv --dry` para el ensayo, sin `--dry` para aplicar, y `npm run huawei -- huawei-eox.csv --eol` para el fin de venta. **2026-09-10: el bloqueo de Akamai no es contra todo navegador** — con Chrome real (no Playwright/Actions) `support.huawei.com/enterprise/en/bulletins/` carga completo y sin captcha, con buscador por modelo (`AR6700` → 11 avisos con fecha real). Dos obstáculos nuevos, distintos del bloqueo anterior: el **contenido** de cada aviso exige cuenta Huawei (candado visible, no se intentó sortear), y lo que se ve en la lista son ciclos de vida de **versiones de software** (`V600R023C00`…), no de hardware — puede que ni sea la categoría correcta para lo que el catálogo modela (fin de venta del equipo físico). "PCN" (Product Change Notice) sí es a nivel de hardware pero no lista una categoría de routers en este momento. **2026-09-16: la categoría correcta ya no es una duda.** La búsqueda web localizó el documento oficial «Huawei NetEngine AR5700&6700&8000 Series Routers Product Life Cycle» (e.huawei.com, 2023-10-20) — ciclo de vida de **hardware**, exactamente lo que el catálogo modela — y al abrirlo pide contraseña: el contenido sigue tras la cuenta Huawei, como se sospechaba. El tablón de routers «Life Cycle Notices» existe y declara 450 avisos (la página carga; el índice es dinámico). Conclusión: el bloqueo ya no es la categoría ni el buscador, es solo la cuenta. **2026-09-29, reintentado con `agent-browser`:** `e.huawei.com`, `support.huawei.com`, `info.support.huawei.com`, `download.huawei.com`, `carrier.huawei.com` y los archivos web dan `CONNECT` 403 del proxy de egreso (`ERR_TUNNEL_CONNECTION_FAILED` en el navegador); política de la organización, no se rodea. Desde una máquina con salida: `npm run huawei -- --plantilla`. **2026-10-07, otras vías, por encargo del dueño:** la herramienta pública de fechas (`support.huawei.com/eoxtoolwebsite/.../product-lifecycle-query-assistant`) ya no existe: su URL sirve el portal general, y el archivo web registra un 301 en 2023. Info-Finder genera sus páginas en el servidor, con el mismo `pid` que soporte (256863203 la serie AR5700/6700/8000), pero desde Actions **devuelve la pantalla de inicio de sesión de Huawei (IDaaS)** (corrida 37557206356); el Wayback Machine no guarda ninguna página de ciclo de vida de nuestros routers (su `getEoxList` archivado es de un switch CE6870), y la búsqueda web no encuentra ningún aviso de fin de venta de las series del catálogo. Según la propia Info-Finder, Huawei anuncia el EOM seis meses antes de la fecha. Nada de esto se rodea: el muro es la cuenta. | Cuenta Huawei Enterprise para abrir el PDF «NetEngine AR5700&6700&8000 Series Routers Product Life Cycle» (e.huawei.com) y el tablón de routers — la categoría de hardware quedó confirmada el 2026-09-16, ya no hace falta aclararla |
 | 4 | **~~Comprobar el sitio en vivo tras desplegar~~ Cerrado (2026-09-04)**, ver *Cerrado recientemente*. Eran dos preguntas distintas y ahora las cubren dos workflows: `sonda-produccion.yml` confirma desde fuera de este entorno que el dominio público responde de verdad (`/salud` y `/login`, sin sesión), y **`pantallas.yml`** conduce las 15 pantallas detrás del muro en un Chromium de verdad y sube una captura de cada una. No hace falta producción para lo segundo: la base es efímera y se resiembra desde `legacyData/` en cada despliegue, así que lo que pinta una pantalla es función del commit. | Nada pendiente de ingeniería. Queda el **juicio**: mirar las capturas del artefacto y decidir si la pantalla dice lo que se le quiere decir a un cliente. | — |
 
 ## Fabricantes sin dimensionador
@@ -1354,14 +1366,14 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     «NM» = **Network Memory** — es el «10150/10170 1.6TB Network Memory Drive Kit» del
     QuickSpecs v18 (con él, Boost llega a 8 Gbps en el EC-10150; 1 Gbps sin él), con
     S3R70A/S3P35A como repuestos oficiales. Reclasificado a STORAGE en el catálogo.
-24. **1G en EC-10108 y EC-10150: conflicto documental oficial (2026-09-13).** El VSG
+24. **~~1G en EC-10108 y EC-10150: conflicto documental oficial~~ Resuelto (2026-10-07)**, ver *Cerrado recientemente*: el Hardware Reference Rev V (ago-2026), al que remite el propio VSG, da «Yes» a las 1G en los dos. Lo que decía (2026-09-13): El VSG
     SD-Branch dice NO; el Hardware Reference Guide Rev S y la Install Guide del 10150
     dicen SÍ con restricciones de puerto (solo wan0/wan1). Decisión de la casa: no se
     ofertan ópticas 1G en esos modelos hasta que el distribuidor o HPE TAC desempate —
     ofertar en conflicto documental es apostar el pedido. Cómo se cierra: una respuesta
     escrita del distribuidor/HPE; entonces se añaden las 1G al modelo que proceda y se
     ajusta el test de la matriz.
-25. **Transceptores ANW genéricos y EC-SFP-1000BT en la lista, sin matriz para nuestros
+25. **~~Transceptores ANW genéricos y EC-SFP-1000BT~~ Resuelto (2026-10-07)**, ver *Cerrado recientemente*: J9153E y J8177E no aparecen en ninguna matriz EC (se quedan fuera); R9Y49A va en EC-L-H y EC-XL-H-10G según el Rev V, sin precio hasta transcribir su fila. Lo que decía: **Transceptores ANW genéricos y EC-SFP-1000BT en la lista, sin matriz para nuestros
     modelos (2026-09-13).** El cruce lista ∩ compatibilidad localizó: **J8177E** «HPE
     ANW 1G SFP RJ45 100m» ($473) y **J9153E** «HPE ANW 10G ER SFP+ 40km» ($11.855 —
     mismo precio que J9153D, vigencia 2026: probable rebranding ANW del mismo
@@ -1378,7 +1390,7 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     hipótesis de rebranding reforzada, pendiente de confirmación del distribuidor.
     Cómo se cierra: preguntar al distribuidor si J9153E sustituye a J9153D (y J8177E a
     S3R03A) en las matrices EC/9200, y confirmar la matriz por modelo de R9Y49A.
-26. **S0W40A «EC-NX-SSD-A2» no está en la lista del distribuidor (2026-09-13).** El
+26. **~~S0W40A «EC-NX-SSD-A2» no está en la lista del distribuidor~~ Resuelto (2026-10-07)**: el QuickSpecs v18 (jul-2026) publica como repuesto el JZ889A, que es el que ya se oferta, y no menciona el S0W40A. Lo que decía (2026-09-13): El
     Accessories Guide Rev F lo da como repuesto SSD actual de la línea -H (EC-M/L/L-H/
     XL/XL-H, 480 GB), pero no tiene fila en la lista — el catálogo sigue ofertando
     JZ889A (que sí está, $1.207). Si el distribuidor confirma que S0W40A sustituye a
@@ -1637,7 +1649,12 @@ publicar estos estados en GitHub, el aviso callaría»), visto por primera vez:
   por ejemplo, una corrida programada que compare el commit desplegado con la cabeza de `main`.
   Con un solo caso en 46 corridas, no compensa todavía.
 
-## Abierto: lo que la guía recomienda fuera del catálogo (2026-10-02)
+## ~~Abierto~~ Decidido: lo que la guía recomienda fuera del catálogo (2026-10-02)
+
+**Decidido por el dueño el 2026-10-07: la guía puede citar equipos fuera del catálogo.** Se quedan
+como están: marcados «Fuera del catálogo: cifras sin contrastar» y a «Consultar». Si algún día se
+quieren contrastar, el camino es darlos de alta en un dimensionador con su ficha oficial. Lo que
+decía:
 
 Lo que quedaba del bloque «la guía de diseño y el portal, frente al catálogo» se cerró ese mismo
 día (ver *Cerrado recientemente*). Queda lo que ninguna comprobación puede cerrar desde aquí:
@@ -1671,9 +1688,9 @@ que ya se comprobó y lo que cuesta cada opción.
 - ~~**Qué hunks entran de la auditoría de prompts del 2026-10-05**~~ **Hecho el 2026-10-06**, con
   el encargo del dueño de ejecutar los pendientes: el arreglo del `.txt` y el log de tokens entraron
   con su prueba, y las seis frases de `CLAUDE.md` se corrigieron a mano porque el archivo había
-  cambiado. **Siguen como propuesta del dueño** las dos sin hunk (adelgazar `CLAUDE.md` y que el
-  contraste determinista sustituya al modelo con CSV y XLSX) y la migración de modelo de la
-  sincronización. Lo que decía este punto: (`docs/prompt-audit-2026-10-05/`).
+  cambiado. **Las tres restantes, aprobadas y hechas el 2026-10-07**: `CLAUDE.md` adelgazado, el
+  contraste determinista para las hojas y la migración a Claude Opus 5.5 (ver *Cerrado
+  recientemente*). Lo que decía este punto: (`docs/prompt-audit-2026-10-05/`).
   Diez hunks en tres archivos, sin aplicar; `git apply --check` confirma que aplican limpios sobre
   `738aa80` y con ellos pasan las 779 pruebas. Tres decisiones distintas: el `.txt` de la
   sincronización (un fallo real, con su prueba), el log de tokens por análisis, y seis frases de
@@ -1744,11 +1761,16 @@ que ya se comprobó y lo que cuesta cada opción.
   una excepción en `fueraDeVenta()` de `catalogProjection.js` y su prueba en
   `servidor-produccion.test.js`; riesgo, que la excepción se generalice a cualquier texto que
   diga «Reman». Recomendación: B, si las Reman siguen en la próxima lista del distribuidor.
-- **Aprobación de arquitectura Fortinet** sobre `docs/auditoria-fortinet-2026-09-23/motor-y-bom.md`,
-  que es la condición 1 del GO CONDICIONADO. Lista de comprobación en el documento de decisiones.
-- **Prueba con un lector de pantalla real** (NVDA o VoiceOver): guion de diez tareas con lo que
-  debería oírse y qué parte ya está automatizada, en el mismo documento.
-- **Si `agent-reach` se activa de verdad, con qué credenciales** (2026-09-22). La skill está
+- ~~**Aprobación de arquitectura Fortinet**~~ **Aprobada el 2026-10-07**: anotada en el LEEME de la
+  auditoría; el veredicto pasa a GO.
+- ~~**Prueba con un lector de pantalla real**~~ **Aprobada el 2026-10-07**, y hecha la parte que
+  puede hacer una máquina: `e2e-lector-virtual.js` (ver *Cerrado recientemente*). **Sigue abierto**:
+  que una persona oiga esas frases con NVDA o VoiceOver y diga si se entienden (guion en el
+  documento de decisiones).
+- ~~**Si `agent-reach` se activa de verdad, con qué credenciales**~~ **Aprobado el 2026-10-07**: se
+  activa desde la máquina de una persona con salida, con las credenciales en `~/.agent-reach/`,
+  cuentas y perfiles dedicados y la instalación fijada a `a19a171` (su `LEEME.md`). Lo que decía
+  (2026-09-22): La skill está
   instalada y declarada, pero **no se ha configurado ningún canal con login**, y esa parte no
   es un `npm install`: pide cookies de Twitter (`TWITTER_AUTH_TOKEN`, `TWITTER_CT0`), un
   Chrome dedicado con el puerto de depuración `127.0.0.1:9222` para Boss直聘, y la sesión de
@@ -1764,6 +1786,72 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Los pendientes del dueño, ejecutados con su aprobación; Aruba 24-26 y Huawei por otras vías (2026-10-07, novena entrega)
+
+Encargo del dueño: ejecutar lo pendiente, «si está bloqueado por Akamai busca otras opciones, lo
+mismo para el ciclo de vida de Huawei», ejecutar los puntos 24, 25 y 26, y aprobadas seis
+decisiones (arquitectura Fortinet, prueba con lector, credenciales de agent-reach, guía fuera del
+catálogo, las tres propuestas de la auditoría de prompts).
+
+- **Aruba 24, 25 y 26, con el documento que manda modelo a modelo.** El repositorio ya versionaba
+  el Hardware Reference **Rev V** (ago-2026), más reciente que la Rev S que citaba el pendiente, con
+  tablas «Yes/No» explícitas por modelo (p. 122, 125 y 126). El VSG de sep-2026 dice otra cosa del
+  EC-10108, pero su propia tabla remite a esa guía, y el hardware le da la razón: el QuickSpecs v18
+  da al 10108 «2x 1G/10G SFP+, 2x Combo (SFP/1GbE)», sin SFP28. Regla aplicada: un «No» explícito
+  retira, un «Yes» añade, y donde la guía calla se conserva lo decidido antes.
+  - EC-10108 y EC-10150 **ganan las ópticas de 1G**; el 10108 **pierde las 25G y el 10GBASE-T**
+    (no tiene SFP28: un 25G en ese chasis era imposible) y el 10150 el 10GBASE-T. El 10106 gana
+    JL749A. S2N63A se queda donde estaba: la Rev V se contradice en el 10106/10108.
+  - **R9Y49A** (EC-SFP-1000BT) entra en EC-L-H y EC-XL-H-10G, **sin precio**: su fila de la lista
+    del distribuidor no está transcrita (se vio a $650 el 2026-09-13, sin vigencia) y la lista nunca
+    entra al repositorio. Va «consultar», con `sinPrecio` declarado, y la prueba de integridad exige
+    copiar su fila el día que el CSV la traiga. J9153E y J8177E no aparecen en ninguna matriz EC.
+  - **JZ889A confirmado** como el SSD de repuesto: es el que publica el QuickSpecs v18; S0W40A no.
+  - **De paso, un defecto**: el EC-10106/10108 tiene **cuatro** jaulas SFP (dos SFP+ en wan0/wan1,
+    dos combo de 1G en lan2/wan2), y el dimensionador contaba dos. Con el 1G cotizable, cuatro enlaces
+    de 1G se habrían avisado en falso. Ahora una sola regla (`excesoJaulas`) para la auditoría, la
+    ficha y la revisión del diseño, que avisa también de un tercer enlace de 10G.
+  - La *Product Lifecycle Policy* de EdgeConnect, que la rama de transporte ya traía, queda
+    versionada en `public/datasheets/`.
+  - Lo guardan la prueba de la matriz (`aruba-integridad-precios`) y `e2e-sfp`, comprobada
+    saboteando la regla de jaulas.
+- **Huawei: otras vías, sin rodear nada.**
+  - **PDF4me renderizó la página oficial** del AR6710-H en la descripción de hardware: «Applicable
+    power modules: PDC260S12-CL, PAC300S12-CL (300W AC Power Module), PDC260S12-DL». La línea «código
+    por confirmar» pasa a «elegir una» entre esas tres, y la prueba de potencia mira también los
+    códigos con sufijo. No hay copia con hash: la salida de PDF4me vive en `api.pdf4me.com`, que el
+    proxy deniega, y `fuentes.js` lo dice.
+  - El índice del **Wayback Machine** (leído por PDF4me y por Actions) dio las URL reales de las
+    páginas del AR6710-L26/L50, el AR8140 y la MPU-100, pero el archivo solo guardó el cascarón de la
+    aplicación. PDF4me falló después con todas las URL y se desconectó: falta renderizar esas dos.
+  - **Ciclo de vida**: la herramienta EOX pública ya no existe, **Info-Finder pide sesión** y el
+    archivo no guarda nada de nuestros routers. El visor de documentos pide un token CSRF a su API, y
+    reconstruir esas llamadas sería rodear la protección: no se hizo. Sigue bloqueado por la cuenta.
+  - `traer-cisco-huawei.yml` acepta `solo` (qué entradas traer) y `rama` (a qué rama de transporte),
+    y sabe traer los scripts de una página para leer de dónde saca sus datos.
+- **Fortinet: aprobado.** La línea está en el LEEME de la auditoría y el veredicto pasa a **GO**.
+- **Prueba con lector de pantalla: la parte de la máquina.** `test/e2e/e2e-lector-virtual.js`
+  recorre el guion sobre el árbol de accesibilidad que Chromium entrega a NVDA y VoiceOver, escucha
+  las regiones vivas e imprime la frase que se oiría. Encontró y se corrigieron: el error de acceso
+  sin `role="alert"` y el foco perdido al reactivar el botón; el paso actual de la barra sin
+  `aria-current`; «Consolidar BOM global» apagado sin decir por qué (en Fortinet, Aruba y Huawei);
+  y el builder de Aruba, que no anunciaba la fila añadida. El cotizador anuncia ahora la línea y el
+  total (T9 no estaba automatizado). Comprobada saboteando la alerta y el anuncio.
+- **agent-reach**: activación aprobada desde una máquina con salida, con las credenciales en
+  `~/.agent-reach/`; `.gitignore` y `test/agent-reach-credenciales.test.js` frenan que una cookie de
+  sesión acabe en un commit.
+- **La guía puede citar equipos fuera del catálogo**: se quedan marcados y a «Consultar».
+- **Auditoría de prompts, las tres que faltaban:**
+  - **`CLAUDE.md` de 202 a 33,5 KB**: las reglas vigentes con su porqué; la crónica entera en
+    `docs/claude-md-cronica.md`.
+  - **Las hojas se contrastan sin IA** en el servidor, con el mismo `contraste.js` del navegador:
+    sin llamada si se reconocen todas las columnas, y el modelo solo ve las que no. El panel ya no
+    dice «al día» con columnas sin leer. `test/sync-contraste.test.js`, saboteado dos veces.
+  - **La sincronización migra a Claude Opus 5.5** con `effort: 'high'` explícito (su valor por
+    defecto bajó a `medium`); la llamada no usaba nada que el modelo nuevo rechace.
+- **Lo que no se pudo**: borrar `/gcli.bak` de la raíz del contenedor (lo impide una comprobación de
+  seguridad; no está en el repositorio y desaparece con el contenedor).
 
 ### Las figuras de Huawei sin pérdida, Aruba contra sus PDF, y los pendientes con recomendación (2026-10-06, octava entrega)
 

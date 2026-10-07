@@ -22,9 +22,12 @@ function conValor(texto) {
 }
 
 test('la comprobación distingue el nombre de la variable de una credencial con valor', () => {
-  assert.deepStrictEqual(conValor('pide TWITTER_AUTH_TOKEN y TWITTER_CT0'), []);
-  assert.deepStrictEqual(conValor('TWITTER_CT0=a1b2c3d4e5f6'), ['TWITTER_CT0']);
-  assert.deepStrictEqual(conValor('{"TWITTER_AUTH_TOKEN": "f00ba4f00ba4f00ba4"}'), ['TWITTER_AUTH_TOKEN']);
+  // Los ejemplos se arman en tiempo de ejecución: escritos literales, este mismo archivo sería
+  // una «credencial con valor» para la prueba de abajo.
+  const [token, ct0] = VARIABLES;
+  assert.deepStrictEqual(conValor(`pide ${token} y ${ct0}`), []);
+  assert.deepStrictEqual(conValor(`${ct0}=${'a1b2'.repeat(3)}`), ['TWITTER_CT0']);
+  assert.deepStrictEqual(conValor(`{"${token}": "${'f00b'.repeat(4)}"}`), ['TWITTER_AUTH_TOKEN']);
 });
 
 test('ningún archivo versionado trae una credencial de agent-reach con valor', () => {

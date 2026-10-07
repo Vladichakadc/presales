@@ -11,9 +11,9 @@ lleva al lado cómo se comprobó.
 | # | Decisión | Quién | Tiempo | Qué cierra |
 |---|---|---|---|---|
 | 1 | ~~Activar «Wait for CI» en Railway~~ **Hecho**: el 2026-10-05 el servicio da `checkSuites: true` y un `verificar` en rojo saltó un despliegue | Dueño del repositorio | 2 min | Pendiente 33 y condición 4 del GO |
-| 2 | Aprobar o no el GO CONDICIONADO de Fortinet | Arquitecto Fortinet | 30-45 min | Condición 1 del GO |
+| 2 | ~~Aprobar o no el GO CONDICIONADO de Fortinet~~ **Aprobado el 2026-10-07** por el dueño: el veredicto pasa a GO | Arquitecto Fortinet | 30-45 min | Condición 1 del GO |
 | 3 | Regla 70/30 de Aruba (M4) | Dueño del producto | 5 min | M4 |
-| 4 | Prueba con un lector de pantalla real | Cualquier persona con NVDA o VoiceOver | 45 min | Última parte de la condición 3 del GO |
+| 4 | Prueba con un lector de pantalla real — **aprobada el 2026-10-07**; su parte automatizable corre en `e2e-lector-virtual.js`, y oírla sigue siendo de una persona | Cualquier persona con NVDA o VoiceOver | 45 min | Última parte de la condición 3 del GO |
 
 ---
 
@@ -81,6 +81,11 @@ estado `WAITING` hasta que terminan `verificar` y `pantallas`. También se puede
 ---
 
 ## 2. GO CONDICIONADO de Fortinet: lista para aprobar
+
+> **Aprobado el 2026-10-07** por el dueño del repositorio, que aprobó en la sesión de Claude Code
+> «Aprobar la arquitectura de Fortinet». La línea está en la sección *Resultado* del LEEME de la
+> auditoría, y el veredicto pasa a **GO**. Lo que queda de las condiciones 3 y 5 no es un P0 y se
+> sigue en `PENDIENTES.md`.
 
 El veredicto de la auditoría del 23-sep es **GO CONDICIONADO**, con cinco condiciones
 (`docs/auditoria-fortinet-2026-09-23/LEEME.md`). Así están hoy:
@@ -186,6 +191,20 @@ sesión siguiendo este apartado.
 
 ## 4. Prueba con un lector de pantalla real
 
+> **Aprobada el 2026-10-07.** En el entorno de Claude Code no hay un lector de pantalla, así que se
+> hizo la parte que una máquina puede hacer: `test/e2e/e2e-lector-virtual.js` recorre T1-T5 y
+> T7-T9 sobre el árbol de accesibilidad que Chromium entrega a NVDA y VoiceOver, escucha las
+> regiones vivas e imprime la frase que se oiría (T6 y T10 ya los cubrían `e2e-fortinet-ssl` y
+> `e2e-accesibilidad`). Encontró cuatro defectos, corregidos el mismo día:
+> - **T1**: el error de acceso no era una alerta y el foco se perdía al reactivar el botón.
+> - **T2**: el paso actual de la barra de fabricante no se anunciaba como actual.
+> - **T7**: «Consolidar BOM global» se apagaba sin decir por qué.
+> - **T8**: añadir o quitar un enlace del Multi-Underlay Builder no se anunciaba.
+>
+> Y **T9**, que estaba «No» automatizado, anuncia ahora la línea y el total. Lo que sigue siendo
+> de una persona: oír esas frases con NVDA o VoiceOver y decir si se entienden, con la tabla de
+> abajo.
+
 axe comprueba la semántica que un lector necesita, pero no si lo que anuncia se entiende. Esta
 prueba la hace una persona. El entorno es uno de estos dos:
 - NVDA con Firefox o Chrome (Windows);
@@ -206,7 +225,7 @@ La columna «Automatizado» dice qué parte ya comprueba la batería e2e: lo que
 | T6 | Con SSL-VPN y FortiOS 7.6.3+, llegar al bloqueo y usar «Cambiar a IPsec» | El bloqueo se anuncia con su causa y su fuente. El botón dice lo que hace. Tras usarlo, se anuncia el equipo nuevo. | Texto del bloqueo (e2e) |
 | T7 | Pestaña de BOM: leer la tabla e intentar exportar con la puerta cerrada | La tabla tiene encabezados de columna. Un botón deshabilitado dice por qué. | Tabla (axe) |
 | T8 | Aruba: añadir un enlace en el Multi-Underlay Builder | La fila nueva se anuncia, y sus campos tienen etiqueta. | Etiquetas (axe) |
-| T9 | Cotizador: añadir un equipo y leer el total | La línea añadida y el total nuevo se pueden encontrar sin perderse. | No |
+| T9 | Cotizador: añadir un equipo y leer el total | La línea añadida y el total nuevo se pueden encontrar sin perderse. | Anuncio de la línea y el total (lector virtual) |
 | T10 | Repetir T3 con el navegador al 200 % de zoom | Nada queda fuera de la vista ni oculta el foco. | Reflujo a 640 px (e2e) |
 
 **Cómo registrar el resultado.** Anotar por cada tarea el lector y el navegador, el resultado

@@ -3,10 +3,12 @@
 Documentación oficial del módulo. Explica **qué hace**, **por qué está partido en dos mitades**
 y **cómo se publica un cambio** — desde el panel del portal o desde la línea de comandos.
 
-El módulo revisa el catálogo de un fabricante con la IA (Claude) y propone correcciones:
-métricas técnicas desactualizadas, precios, licencias, niveles de soporte y SKUs, más modelos
-que falten. Opcionalmente se le sube un documento de referencia (datasheet o lista de precios)
-del que extrae los valores exactos.
+El módulo revisa el catálogo de un fabricante y propone correcciones: métricas técnicas
+desactualizadas, precios, licencias, niveles de soporte y SKUs, más modelos que falten.
+Opcionalmente se le sube un documento de referencia (datasheet o lista de precios) del que
+extrae los valores exactos. **Una hoja (Excel/CSV) se contrasta primero sin IA**; la IA (Claude
+Opus 5.5, `claude-opus-5-5`, con esfuerzo `high` explícito) lee los PDF, los textos y las columnas
+de una hoja que el contraste no reconoce. Ver *Documentos que acepta*.
 
 ## Regla de oro
 
@@ -170,7 +172,15 @@ El tipo se decide **leyendo la firma del contenido** (`server/services/firmaArch
 extensión que declara el navegador —esa la controla quien sube el archivo—:
 
 - **PDF** (`%PDF`) → va como documento a la IA.
-- **Excel `.xlsx`** (firma ZIP `PK`) y **CSV/TSV** → se convierten a texto tabular con SheetJS.
+- **Excel `.xlsx`** (firma ZIP `PK`) y **CSV/TSV** → **se contrastan sin IA** en el servidor, con
+  la misma regla que la ventana de contraste del navegador (`public/js/contraste.js`), desde el
+  2026-10-07. Si reconoce todas las columnas, no hay llamada al modelo ni hace falta la clave.
+  Si alguna no se reconoce, el modelo recibe **solo** la columna que identifica el equipo y las
+  no reconocidas; sin clave, el panel dice cuáles quedaron sin leer y **no** afirma que el
+  catálogo esté al día. Cada cambio lleva su `origen` («Sin IA» o «IA»), lo resuelto sin IA manda
+  si el modelo propone el mismo campo, y las altas se informan sin entrar en los cambios. Una hoja
+  sin columna de modelo ni de SKU va entera a la IA, como antes. Lo guarda
+  `test/sync-contraste.test.js`.
 - **Texto `.txt`** → va como documento de texto plano.
 
 Cualquier otra cosa recibe **415** en vez de mandarse a la IA como un binario etiquetado de PDF.
@@ -187,8 +197,8 @@ La propuesta es lo que descarga el panel, o un `{ "vendor": "...", "cambios": [ 
 ## Configuración en producción
 
 Para que **Analizar** funcione en el servicio desplegado hay que definir `ANTHROPIC_API_KEY` en
-las variables de Railway. Sin ella, el panel lo dice y no deja pulsar Analizar (el servidor
-respondería 503). El permiso `sync` (hoy solo el rol administrador) es lo que da acceso al panel
+las variables de Railway. Sin ella, el panel lo dice: una hoja Excel/CSV se contrasta igual, y lo
+que necesita la IA (un PDF, un texto, el análisis sin adjunto) responde 503. El permiso `sync` (hoy solo el rol administrador) es lo que da acceso al panel
 y a estas rutas. **Una variable nueva solo la toma el proceso tras un arranque nuevo**: Railway
 redespliega al guardarla, así que espera a que el deploy llegue a SUCCESS antes de probar.
 
@@ -204,7 +214,7 @@ catálogo cuando el problema es la clave:
 | «La cuenta de la API de IA no tiene saldo suficiente…» | 503 | La clave es válida pero la cuenta no tiene crédito (400 «credit balance is too low») | Añadir créditos en la consola de Anthropic (Plans & Billing) |
 | «…límite de uso (429)…» | 429 | Límite transitorio de la API | Esperar unos segundos y reintentar |
 | «La IA declinó analizar esta petición…» | 422 | Los clasificadores de seguridad rechazaron la petición (`stop_reason: refusal`); con cortafuegos, IPS y VPN puede pasar con documentos legítimos. La llamada lleva `fallbacks: "default"`, así que la API ya reintentó en el modelo de respaldo: este error significa que declinaron los dos. **No significa que el catálogo esté al día** | Reintentar; si se repite con el mismo documento, probar con otro documento o por partes |
-| «La respuesta de la IA se cortó antes de terminar…» | 502 | Se agotó `max_tokens`, que en Opus 5 cuenta el pensamiento y la respuesta juntos, antes de cerrar la lista. **No significa que el catálogo esté al día** | Reintentar con un documento más corto o partido |
+| «La respuesta de la IA se cortó antes de terminar…» | 502 | Se agotó `max_tokens`, que en Opus 5.5 cuenta el pensamiento (que no se puede apagar) y la respuesta juntos, antes de cerrar la lista. **No significa que el catálogo esté al día** | Reintentar con un documento más corto o partido |
 | «Error analizando con IA» | 500 | Cualquier otra cosa | Revisar los logs del servidor (`[AI Sync] Error llamando a Claude`) |
 
 El detalle completo del fallo siempre queda en los logs del contenedor con el prefijo
