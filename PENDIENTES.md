@@ -601,7 +601,11 @@ de `e.huawei.com` (ver *Cerrado recientemente*). Lo que queda:
   máquina con navegador y salida: abrir esas dos y las páginas del L26, L50 y AR6710-H de la
   descripción de hardware (EDOC1100213474), y anotar en `server/seed/legacyData/huawei.js`
   (`redund` y `psu.texto`) lo que digan de las fuentes de serie; o probar PDF4me con
-  `example.com` y, si responde, renderizarlas. La guía de hardware **no se puede traer desde aquí
+  `example.com` y, si responde, renderizarlas. **18:23 UTC, a petición del dueño**: PDF4me
+  reconectado y con sus herramientas cargadas en la sesión, pero **todas sus operaciones fallan**:
+  `convert_url_to_pdf` con `example.com`, `wikipedia.org` y la página del L26, y
+  `extract_text_by_expression` sobre un PDF público de `e.huawei.com`. Es el servicio, no Huawei ni
+  la autorización; queda reintentar otro día. La guía de hardware **no se puede traer desde aquí
   ni desde Actions** (medido el 2026-10-06, noche:
   a `fetch` le llega un 200 con el cascarón de la aplicación, corrida 37453468795, y a Chromium
   sin cabeza un 403 «Access Denied» de Akamai en las catorce páginas, corrida 37454219168). Hace
