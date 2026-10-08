@@ -1,0 +1,56 @@
+[
+  {
+    "archivo": "huawei-imagelib-ne.html",
+    "para": "HUAWEI",
+    "guardado": false,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://info.support.huawei.com/network/imagelib/getImagePartList?product_family=Router&product_type=NE+Series&lang=en",
+        "status": 504
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-imagelib-ar.html",
+    "para": "HUAWEI",
+    "guardado": false,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://info.support.huawei.com/network/imagelib/getImagePartList?product_family=Router&product_type=AR+Series&lang=en",
+        "status": 504
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-imagelib-raiz.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://info.support.huawei.com/network/imagelib/index?lang=en",
+        "status": 200,
+        "bytes": 5804,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-material-ne8000-fotos.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/material/enterprise/ff6b9c516d604e50ae3af6702b583740",
+        "status": 200,
+        "bytes": 258211,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  }
+]
