@@ -516,6 +516,23 @@ jobs:
               { archivo: 'huawei-infoplus-hdcfg.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://info.support.huawei.com/network/hdcfg/manual?id=13660&domain=0&lang=zh&hidden=3',
               ] },
+              // Quinta ronda (2026-10-08, figuras): la biblioteca de imagenes de producto de Huawei
+              // (info.support.huawei.com/network/imagelib/, fotos HD de frontal y trasera y plantillas
+              // Visio) y la coleccion de fotos del NetEngine 8000 del centro de materiales de
+              // e.huawei.com. Primero se mira que devuelven; los archivos se piden en otra ronda.
+              { archivo: 'huawei-imagelib-ne.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+                'https://info.support.huawei.com/network/imagelib/getImagePartList?product_family=Router&product_type=NE+Series&lang=en',
+              ] },
+              { archivo: 'huawei-imagelib-ar.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+                'https://info.support.huawei.com/network/imagelib/getImagePartList?product_family=Router&product_type=AR+Series&lang=en',
+              ] },
+              { archivo: 'huawei-imagelib-raiz.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+                'https://info.support.huawei.com/network/imagelib/index?lang=en',
+                'https://info.support.huawei.com/network/imagelib/',
+              ] },
+              { archivo: 'huawei-material-ne8000-fotos.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+                'https://e.huawei.com/en/material/enterprise/ff6b9c516d604e50ae3af6702b583740',
+              ] },
               { archivo: 'cc-huawei-ar6700-ar8000-st.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
                 'https://commoncriteriaportal.org/files/epfiles/huawei-netengine-ar6700ar8000-series-routers-yunshan-software-v600r021c10spc100-v1.1.pdf',
                 'https://www.commoncriteriaportal.org/files/epfiles/huawei-netengine-ar6700ar8000-series-routers-yunshan-software-v600r021c10spc100-v1.1.pdf',
