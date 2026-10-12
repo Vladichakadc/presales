@@ -20,8 +20,11 @@ const LEGADO = [
   // tambien por el camino legado: lo que cambio es el dato, no el motor.
   ['50 Mbps SD-WAN', { bw: 50 }, 'AR651'],
   ['perfil fwd + SD-WAN marcado', { profile: 'fwd' }, 'AR5710-S8T2S'],
-  ['perfil ipsec + SD-WAN', { profile: 'ipsec' }, 'AR6710-L8T3TS1X2'],
-  ['UTM + SD-WAN 300 Mbps', { bw: 300, svc: { sdwan: true, utm: true } }, 'AR6710-L8T3TS1X2'],
+  // Hasta el 2026-10-12 salia el AR6710-L8T3TS1X2 (SD-WAN tipico 1,2 Gbps): las AR5710-S se
+  // quedaban en 720 Mbps. La ficha AR5710-H R26C00 trae nueve modelos con 900 Mbps tipicos, que
+  // cumplen la demanda siendo de una serie mas pequena: cambio el dato, no el motor.
+  ['perfil ipsec + SD-WAN', { profile: 'ipsec' }, 'AR5710-H4T4N2X'],
+  ['UTM + SD-WAN 300 Mbps', { bw: 300, svc: { sdwan: true, utm: true } }, 'AR5710-H4T4N2X'],
   ['2 Gbps fwd sin SD-WAN', { bw: 2000, profile: 'fwd', svc: { sdwan: false } }, 'AR6710-H4T4X2Y7'],
   ['6 Gbps fwd sin SD-WAN', { bw: 6000, profile: 'fwd', svc: { sdwan: false } }, 'AR8140-12G10XG'],
   // Medido en f2a939d salia el AR6710-L14T2X4 (4 Gbps). Desde el 2026-10-06 la ficha AR6710-L

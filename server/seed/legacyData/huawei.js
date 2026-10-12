@@ -184,6 +184,41 @@ const MODELS = [
 {id:'AR5710-S52T2XE4', cls:'AR', ser:'AR5710-SE', fam:'Sucursal grande, 48 puertos', fwd:1500, ipsec:800, typ:720, mpps:null, lan:48, poe:0, wan:0, wifi:0, apsFree:16, apsMax:64, boost:0,
  ports:'2 x 10GE SFP+ + 4 x GE WAN, 48 x GE LAN, 4 x SIC', optics:['sfp10','ge'], parts:['SICNR','RACK','CONSOLE'],
  redund:true, psu:{watts:53, tipo:'AC integrada, doble', texto:'Dos fuentes AC integradas («Built-in dual power modules (AC)»); 53 W típicos (ficha AR5710-S R25C10).'}},
+// AR5710-H (2026-10-12): serie nueva, de «Huawei NetEngine AR5710-H Series Enterprise Router Data
+// Sheet-R26C00», que la página de la familia en e.huawei.com/en/products/routers enlaza y el
+// repositorio no tenía (traída por traer-cisco-huawei.yml, rama fuente/huawei-familias-2026-10-12).
+// Las nueve filas comparten las cifras de la serie: 4 Gbps de reenvío (NAT+ACL+QoS, IMIX, con
+// «cambio manual al modo de reenvío por hardware»), 1,6 Gbps de IPsec IMIX y 900 Mbps de SD-WAN
+// típico IMIX. Las tres son los mismos tres campos que ya usan las AR5710-S, no 512 bytes ni 1420.
+// `mpps` queda en null: la ficha no publica paquetes por segundo. El consumo es el «Typical power
+// consumption» de cada columna; la fuente es integrada («Built-in»), no se pide aparte.
+{id:'AR5710-H8T2TS1', cls:'AR', ser:'AR5710-H', fam:'Sucursal mediana, WAN combo GE', fwd:4000, ipsec:1600, typ:900, mpps:null, lan:8, poe:0, wan:0, wifi:0, apsFree:32, apsMax:64, boost:0,
+ ports:'2 x GE combo WAN, 8 x GE eléctricos LAN, 1 ranura MIC', optics:['ge'], parts:['RACK','CONSOLE','RU5G'],
+ redund:false, psu:{watts:25, tipo:'AC integrada', texto:'Una fuente AC integrada de 100-240 V; 25 W típicos, 36 W de salida máxima (ficha AR5710-H R26C00).'}},
+{id:'AR5710-H8T2TS1-T', cls:'AR', ser:'AR5710-H', fam:'Sucursal mediana con TPM', fwd:4000, ipsec:1600, typ:900, mpps:null, lan:8, poe:0, wan:0, wifi:0, apsFree:32, apsMax:64, boost:0,
+ ports:'2 x GE combo WAN, 8 x GE eléctricos LAN, 1 ranura MIC · TPM', optics:['ge'], parts:['RACK','CONSOLE','RU5G'],
+ redund:false, psu:{watts:25, tipo:'AC integrada', texto:'Una fuente AC integrada de 100-240 V; 25 W típicos, 36 W de salida máxima (ficha AR5710-H R26C00).'}},
+{id:'AR5710-H4T4N2X', cls:'AR', ser:'AR5710-H', fam:'Sucursal mediana, WAN 10GE', fwd:4000, ipsec:1600, typ:900, mpps:null, lan:8, poe:0, wan:0, wifi:0, apsFree:32, apsMax:64, boost:0,
+ ports:'2 x 10GE SFP+ WAN, 4 x 2.5GE + 4 x GE eléctricos LAN', optics:['sfp10','ge'], parts:['RACK','CONSOLE','RU5G'],
+ redund:false, psu:{watts:32, tipo:'AC integrada', texto:'Una fuente AC integrada de 100-240 V; 32 W típicos, 32 W de salida máxima (ficha AR5710-H R26C00).'}},
+{id:'AR5710-H4T4N2X-LTE4EA', cls:'AR', ser:'AR5710-H', fam:'Sucursal mediana con LTE', fwd:4000, ipsec:1600, typ:900, mpps:null, lan:8, poe:0, wan:1, wifi:0, apsFree:32, apsMax:64, boost:0,
+ ports:'2 x 10GE SFP+ WAN, LTE4EA con 2 SIM activo/standby, 4 x 2.5GE + 4 x GE eléctricos LAN', optics:['sfp10','ge'], parts:['RACK','CONSOLE','RU5G'],
+ redund:false, psu:{watts:36, tipo:'AC integrada', texto:'Una fuente AC integrada de 100-240 V; 36 W típicos, 70 W de salida máxima (ficha AR5710-H R26C00).'}},
+{id:'AR5710-H2T4N2X-NRGL', cls:'AR', ser:'AR5710-H', fam:'Sucursal con 5G integrado', fwd:4000, ipsec:1600, typ:900, mpps:null, lan:6, poe:0, wan:1, wifi:0, apsFree:32, apsMax:64, boost:0,
+ ports:'2 x 10GE SFP+ WAN, 5G SA/NSA con 2 SIM activo/standby, 4 x 2.5GE + 2 x GE eléctricos LAN', optics:['sfp10','ge'], parts:['RACK','CONSOLE','RU5G'],
+ redund:false, psu:{watts:35, tipo:'AC integrada', texto:'Una fuente AC integrada de 100-240 V; 35 W típicos, 70 W de salida máxima (ficha AR5710-H R26C00).'}},
+{id:'AR5710-H2T4PN2X-NRGL', cls:'AR', ser:'AR5710-H', fam:'Sucursal con PoE++ y 5G', fwd:4000, ipsec:1600, typ:900, mpps:null, lan:6, poe:1, wan:1, wifi:0, apsFree:32, apsMax:64, boost:0,
+ ports:'2 x 10GE SFP+ WAN, 5G SA/NSA con 2 SIM, 4 x 2.5GE PoE++ + 2 x GE LAN · PoE 130 W total', optics:['sfp10','ge'], parts:['RACK','CONSOLE','RU5G'],
+ redund:false, psu:{watts:36, tipo:'AC integrada', texto:'Una fuente AC integrada de 100-240 V; 36 W típicos sin carga PoE y 190 W de consumo máximo con ella (ficha AR5710-H R26C00).'}},
+{id:'AR5710-H2T4N2XW', cls:'AR', ser:'AR5710-H', fam:'Todo en uno con Wi-Fi 7', fwd:4000, ipsec:1600, typ:900, mpps:null, lan:6, poe:0, wan:0, wifi:1, apsFree:32, apsMax:64, boost:0,
+ ports:'2 x 10GE combo WAN, 4 x 2.5GE + 2 x GE LAN, Wi-Fi 7 doble banda, hasta 256 usuarios', optics:['sfp10','ge'], parts:['RACK','CONSOLE','RU5G'],
+ redund:false, psu:{watts:32.59, tipo:'AC integrada', texto:'Una fuente AC integrada de 100-240 V; 32,59 W típicos, 70 W de salida máxima (ficha AR5710-H R26C00).'}},
+{id:'AR5710-H2T4N2XW-NRGL', cls:'AR', ser:'AR5710-H', fam:'Todo en uno: Wi-Fi 7 y 5G', fwd:4000, ipsec:1600, typ:900, mpps:null, lan:6, poe:0, wan:1, wifi:1, apsFree:32, apsMax:64, boost:0,
+ ports:'2 x 10GE combo WAN, 5G SA/NSA con 2 SIM, 4 x 2.5GE + 2 x GE LAN, Wi-Fi 7 doble banda, hasta 256 usuarios', optics:['sfp10','ge'], parts:['RACK','CONSOLE','RU5G'],
+ redund:false, psu:{watts:34.93, tipo:'AC integrada', texto:'Una fuente AC integrada de 100-240 V; 34,93 W típicos, 70 W de salida máxima (ficha AR5710-H R26C00).'}},
+{id:'AR5710-H2T4N2XW-Q', cls:'AR', ser:'AR5710-H', fam:'Todo en uno con Wi-Fi 7, sin ventilador', fwd:4000, ipsec:1600, typ:900, mpps:null, lan:6, poe:0, wan:0, wifi:1, apsFree:32, apsMax:64, boost:0,
+ ports:'2 x 10GE combo WAN, 4 x 2.5GE + 2 x GE LAN, Wi-Fi 7 doble banda, hasta 256 usuarios · disipación natural', optics:['sfp10','ge'], parts:['RACK','CONSOLE','RU5G'],
+ redund:false, psu:{watts:32.56, tipo:'AC integrada', texto:'Una fuente AC integrada de 100-240 V; 32,56 W típicos, 70 W de salida máxima (ficha AR5710-H R26C00).'}},
 {id:'AR6710-L8T3TS1X2', cls:'AR', ser:'AR6700-L', fam:'Campus pequeño', fwd:2000, ipsec:1600, typ:1200, mpps:null, lan:9, poe:0, wan:0, wifi:0, apsFree:32, apsMax:128, boost:0,
  ports:'1 x 10GE óptico + 2 x GE combo WAN, 1 x GE combo + 8 x GE LAN, 2 x SIC, 0/1 WSIC', optics:['sfp10','ge'], parts:['WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
  redund:false, psu:{watts:27, salida:[{w:70, tipo:'AC'}], tipo:'AC integrada', texto:'Sin redundancia de fuente («Power supply redundancy: N/A»), 70 W de salida máxima en AC; 27 W típicos (ficha AR6710-L R26C00). El BOM no pide fuente: la PAC180S12-CN que listaba el catálogo es de 180 W.'}},
