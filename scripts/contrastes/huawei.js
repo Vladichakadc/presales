@@ -22,9 +22,9 @@ const BASE_LINEA = [
   { n: '450 Mbps con PoE y Wi-Fi', bw: 450, perfil: 'fwd', sdwan: false, poe: true, wifi: true, wan: false,
     recomendado: 'AR651W-8P', need: '1.2 Gbps', nCandidatos: 1 },
   { n: '300 Mbps IPsec sin SD-WAN', bw: 300, perfil: 'ipsec', sdwan: false, poe: false, wifi: false, wan: false,
-    recomendado: 'AR5710-S8T2S', need: '780 Mbps', nCandidatos: 21 },
+    recomendado: 'AR5710-S8T2S', need: '780 Mbps', nCandidatos: 30 },  // 21 hasta el 2026-10-12: +9 AR5710-H
   { n: '300 Mbps con 4G/5G integrado', bw: 300, perfil: 'fwd', sdwan: false, poe: false, wifi: false, wan: true,
-    recomendado: 'AR5710-S8T2X-LTE4EA', need: '780 Mbps', nCandidatos: 4 },
+    recomendado: 'AR5710-S8T2X-LTE4EA', need: '780 Mbps', nCandidatos: 8 },  // 4 hasta el 2026-10-12: +4 AR5710-H con celular
 ];
 
 module.exports = {
