@@ -88,7 +88,7 @@ test('ninguna entrada vacía: un modelo sin figura no está en el mapa', () => {
 
 test('cada figura cita su documento, la página y el rótulo literal, y trae el tamaño', () => {
   for (const [modelo, v] of entradas) {
-    assert.match(v.fuente || '', /^(Data ?[Ss]heet|NetEngine) .+, (p\.|diapositiva) \d+ — «[^»]{6,}»\. \S/,
+    assert.match(v.fuente || '', /^((Data ?[Ss]heet|NetEngine) .+, (p\.|diapositiva) \d+|Galería de imágenes de productos de Info-Finder \(\d+(-\d+)?\)) — «[^»]{6,}»\. \S/,
       `${modelo}: la procedencia no dice documento, página y rótulo («${v.fuente}»)`);
     assert.match(v.tamano || '', /\d+(,\d+)? × \d+(,\d+)? × \d+(,\d+)? mm/, `${modelo}: falta el tamaño`);
   }
