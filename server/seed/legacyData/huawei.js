@@ -219,6 +219,21 @@ const MODELS = [
 {id:'AR5710-H2T4N2XW-Q', cls:'AR', ser:'AR5710-H', fam:'Todo en uno con Wi-Fi 7, sin ventilador', fwd:4000, ipsec:1600, typ:900, mpps:null, lan:6, poe:0, wan:0, wifi:1, apsFree:32, apsMax:64, boost:0,
  ports:'2 x 10GE combo WAN, 4 x 2.5GE + 2 x GE LAN, Wi-Fi 7 doble banda, hasta 256 usuarios · disipación natural', optics:['sfp10','ge'], parts:['RACK','CONSOLE','RU5G'],
  redund:false, psu:{watts:32.56, tipo:'AC integrada', texto:'Una fuente AC integrada de 100-240 V; 32,56 W típicos, 70 W de salida máxima (ficha AR5710-H R26C00).'}},
+// AR5710I-RU-NRGL, AR6121E y AR6140E-9G-2AC (2026-10-12): de «Huawei NetEngine AR5710I-RU-NRGL
+// Enterprise Router Data Sheet-R26C00» y «Huawei NetEngine AR6000 Series Enterprise Routers
+// Datasheet-R26C00», enlazadas desde las paginas de familia de e.huawei.com y traidas por
+// traer-cisco-huawei.yml (rama fuente/huawei-familias-2026-10-12). `mpps` en null: no publican
+// paquetes por segundo. En el AR6000 la ficha no dice cuantos APs gestiona su WAC, asi que
+// `apsFree`/`apsMax` quedan en null (sin dato) y no en 0 («no gestiona APs»).
+{id:'AR5710I-RU-NRGL', cls:'AR', ser:'AR5710-I', fam:'Industrial IP65 con 5G, para poste o pared', fwd:1500, ipsec:800, typ:720, mpps:null, lan:2, poe:0, wan:1, wifi:0, apsFree:16, apsMax:64, boost:0,
+ ports:'1 x 2.5GE eléctrico + 1 x 10GE SFP+ (WAN o LAN), 5G SA/NSA con 2 SIM, antenas 5G/LTE integradas · IP65, –40 a +65 °C', optics:['sfp10','ge'], parts:[],
+ redund:false, psu:{watts:15, tipo:'PoE (–48 V DC) o adaptador AC externo', texto:'Una entrada: PoE (–42,5 a –57 V DC) o adaptador AC (90–270 V); 15 W típicos y 18,5 W de máximo, sin ventilador (ficha AR5710I-RU-NRGL R26C00).'}},
+{id:'AR6121E', cls:'AR', ser:'AR6000', fam:'Sucursal modular con ranuras SIC y WSIC', fwd:2000, ipsec:2000, typ:800, mpps:null, lan:9, poe:0, wan:0, wifi:0, apsFree:null, apsMax:null, boost:0,
+ ports:'2 x GE combo + 1 x 10GE SFP+ WAN, 1 x GE combo + 8 x GE LAN · 2 ranuras SIC y 1 WSIC', optics:['sfp10','ge'], parts:['RACK','CONSOLE','RU5G'],
+ redund:false, psu:{watts:28, tipo:'AC integrada', texto:'Una fuente AC de 100-240 V, sin redundancia; 28 W típicos y 33 W de máximo (ficha AR6000 R26C00).'}},
+{id:'AR6140E-9G-2AC', cls:'AR', ser:'AR6000', fam:'Sucursal modular con doble fuente', fwd:2000, ipsec:2000, typ:800, mpps:null, lan:5, poe:0, wan:0, wifi:0, apsFree:null, apsMax:null, boost:0,
+ ports:'2 x GE SFP + 2 x GE eléctricos WAN, 2 x GE SFP + 3 x GE eléctricos LAN · 4 ranuras SIC y hasta 2 WSIC', optics:['ge'], parts:['RACK','CONSOLE','RU5G'],
+ redund:true, psu:{watts:22, tipo:'AC, dos módulos', texto:'Dos módulos de alimentación AC (redundancia 1+1, «Dual power modules»); 22 W típicos y 28 W de máximo (ficha AR6000 R26C00).'}},
 {id:'AR6710-L8T3TS1X2', cls:'AR', ser:'AR6700-L', fam:'Campus pequeño', fwd:2000, ipsec:1600, typ:1200, mpps:null, lan:9, poe:0, wan:0, wifi:0, apsFree:32, apsMax:128, boost:0,
  ports:'1 x 10GE óptico + 2 x GE combo WAN, 1 x GE combo + 8 x GE LAN, 2 x SIC, 0/1 WSIC', optics:['sfp10','ge'], parts:['WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
  redund:false, psu:{watts:27, salida:[{w:70, tipo:'AC'}], tipo:'AC integrada', texto:'Sin redundancia de fuente («Power supply redundancy: N/A»), 70 W de salida máxima en AC; 27 W típicos (ficha AR6710-L R26C00). El BOM no pide fuente: la PAC180S12-CN que listaba el catálogo es de 180 W.'}},
@@ -333,5 +348,87 @@ const HICARE = {
   onsiteStd:{n:'Hi-Care Onsite Standard', sla:'9x5xNBD + ingeniero 9x5', d:'Añade especialista de campo en horario laboral al reemplazo del siguiente día hábil.'},
   onsitePre:{n:'Hi-Care Onsite Premier', sla:'24x7x4H + ingeniero 24x7', d:'Repuesto en 4 horas e ingeniero en sitio 24x7. El nivel para hubs, núcleo y salida de datacenter.'}
 };
+
+// FICHA TECNICA DEL FABRICANTE (2026-10-12). Lo que la tarjeta del equipo muestra ademas de las
+// cifras que dimensionan: las demas capas de rendimiento con su tamano de paquete, la memoria, las
+// dimensiones, la envolvente electrica y la ambiental. Cada valor se copia de la tabla de su
+// ficha, columna por columna, sin convertir; lo que la ficha no publica no se escribe. Solo estan
+// las series cuya ficha esta en el repositorio leida con esta estructura (AR5710-H, AR5710I-RU,
+// AR6000); las demas se amplian cuando se relean sus fichas. `rev` es la edicion del documento.
+const F_H = (mod) => ({
+  rev: 'R26C00', doc: 'Huawei NetEngine AR5710-H Series Enterprise Router Data Sheet-R26C00',
+  grupos: [
+    {t: 'Rendimiento por tamaño de paquete', f: [
+      ['Reenvío IPv4, 512 bytes', mod.fwd512],
+      ['IPsec, IMIX', '1,6 Gbps'], ['IPsec, 512 bytes', '2 Gbps'], ['IPsec, 1420 bytes', '5 Gbps'],
+      ['SD-WAN IPsec, IMIX / 512 B / 1400 B', '2 / 2,6 / 5,2 Gbps'],
+      ['SD-WAN (IPsec + QoS), IMIX / 512 B / 1400 B', '1,5 / 2,2 / 3,8 Gbps'],
+      ['SD-WAN típico, IMIX / 512 B / 1400 B', '900 Mbps / 1,2 / 3 Gbps'],
+    ]},
+    {t: 'Hardware', f: [
+      ['Puertos WAN fijos', mod.wan], ['Puertos LAN fijos', mod.lan],
+      ...(mod.extra || []),
+      ['Memoria / flash', '4 GB / 2 GB'], ['Consola / USB', '1 x RJ45 / 1 x USB 2.0'],
+      ['Dimensiones (Al × An × Fo)', mod.dim], ['Peso sin embalaje', mod.peso], ['Montaje', 'Rack (1U), mesa o pared'],
+    ]},
+    {t: 'Alimentación y ambiente', f: [
+      ['Tensión de entrada', '100–240 V, 50/60 Hz'], ['Corriente máxima', mod.amp],
+      ['Potencia de salida máxima', mod.salida], ['Consumo típico / máximo', mod.consumo],
+      ['Ventilación', mod.vent], ['Ruido', mod.ruido],
+      ['Temperatura de operación', '0 °C a 45 °C'], ['Humedad', '5 % a 95 % sin condensación'],
+      ['Altitud', '< 5000 m'], ['Temperatura de almacenamiento', '–40 °C a +70 °C'],
+    ]},
+  ],
+});
+const F_AR6 = (o) => ({
+  rev: 'R26C00', doc: 'Huawei NetEngine AR6000 Series Enterprise Routers Datasheet-R26C00',
+  grupos: [
+    {t: 'Rendimiento por tamaño de paquete', f: [
+      ['Reenvío IPv4, IMIX', '3.800 Mbps'], ['IPsec, IMIX / 1400 B', '2 / 4 Gbps'],
+      ['SD-WAN IPsec, IMIX / 1400 B', '1,5 / 4,5 Gbps'], ['SD-WAN (IPsec + QoS), IMIX / 1400 B', '1,2 / 1,85 Gbps'],
+      ['SD-WAN típico, IMIX / 1400 B', '800 Mbps / 1,8 Gbps'],
+    ]},
+    {t: 'Hardware', f: [
+      ['Puertos WAN fijos', o.wan], ['Puertos LAN fijos', o.lan], ['Ranuras', o.slots],
+      ['Memoria / flash', '4 GB / 1 GB'], ['Consola / USB', '1 x RJ45 / ' + o.usb], ['Cambio en caliente', 'Compatible'],
+      ['Dimensiones (Al × An × Fo)', o.dim], ['Peso sin embalaje', o.peso], ['Montaje', o.montaje + ' (1U)'],
+    ]},
+    {t: 'Alimentación y ambiente', f: [
+      ['Tensión de entrada', '100–240 V, 50/60 Hz'], ['Corriente máxima', '2 A'], ['Potencia de salida máxima', '70 W'],
+      ['Consumo típico / máximo', o.consumo], ['Redundancia de alimentación', o.red],
+      ['Ventilación', 'Ventiladores integrados fijos, flujo izquierda a derecha'], ['Ruido', '49,9 dB(A)'],
+      ['Temperatura de operación', '0 °C a 45 °C'], ['Humedad', '5 % a 95 % sin condensación'],
+      ['Altitud', '< 5000 m'], ['Temperatura de almacenamiento', '–40 °C a +70 °C'],
+    ]},
+  ],
+});
+const FICHAS = {
+  'AR5710-H8T2TS1': F_H({fwd512:'10 Gbps', wan:'2 x GE combo', lan:'8 x GE eléctricos', extra:[['Ranura MIC','1 x MIC'],['Gestión de APs (incluidos / máximo)','32 / 64']], dim:'44,0 × 300,0 × 220,3 mm', peso:'1,8 kg', amp:'1 A', salida:'36 W', consumo:'25 W / 29 W', vent:'Ventiladores integrados fijos, flujo izquierda a derecha', ruido:'41,9 dB(A)'}),
+  'AR5710-H8T2TS1-T': F_H({fwd512:'10 Gbps', wan:'2 x GE combo', lan:'8 x GE eléctricos', extra:[['Ranura MIC','1 x MIC'],['TPM','Sí'],['Gestión de APs (incluidos / máximo)','32 / 64']], dim:'44,0 × 300,0 × 220,3 mm', peso:'1,8 kg', amp:'1 A', salida:'36 W', consumo:'25 W / 29 W', vent:'Ventiladores integrados fijos, flujo izquierda a derecha', ruido:'41,9 dB(A)'}),
+  'AR5710-H4T4N2X': F_H({fwd512:'13 Gbps', wan:'2 x 10GE SFP+', lan:'4 x 2.5GE + 4 x GE eléctricos', extra:[['Gestión de APs (incluidos / máximo)','32 / 64']], dim:'43,6 × 320 × 210 mm', peso:'1,937 kg', amp:'0,8 A', salida:'32 W', consumo:'32 W / 38 W', vent:'Ventiladores integrados fijos, flujo izquierda a derecha', ruido:'50 dB(A)'}),
+  'AR5710-H4T4N2X-LTE4EA': F_H({fwd512:'13 Gbps', wan:'2 x 10GE SFP+ · LTE4EA con 2 SIM', lan:'4 x 2.5GE + 4 x GE eléctricos', extra:[['Gestión de APs (incluidos / máximo)','32 / 64']], dim:'43,6 × 320 × 210 mm', peso:'2,145 kg', amp:'2 A', salida:'70 W', consumo:'36 W / 43 W', vent:'Ventiladores integrados fijos, flujo izquierda a derecha', ruido:'50 dB(A)'}),
+  'AR5710-H2T4N2X-NRGL': F_H({fwd512:'13 Gbps', wan:'2 x 10GE SFP+ · 5G SA/NSA con 2 SIM', lan:'4 x 2.5GE + 2 x GE eléctricos', extra:[['Gestión de APs (incluidos / máximo)','32 / 64']], dim:'43,6 × 320 × 210 mm', peso:'2,327 kg', amp:'2 A', salida:'70 W', consumo:'35 W / 42 W', vent:'Ventiladores integrados fijos, flujo izquierda a derecha', ruido:'50 dB(A)'}),
+  'AR5710-H2T4PN2X-NRGL': F_H({fwd512:'13 Gbps', wan:'2 x 10GE SFP+ · 5G SA/NSA con 2 SIM', lan:'4 x 2.5GE PoE++ + 2 x GE eléctricos', extra:[['PoE','130 W en total: PoE 15,4 W en hasta 4 puertos, PoE+ 30 W en hasta 4, PoE++ 60 W en hasta 2 o 90 W en 1'],['Gestión de APs (incluidos / máximo)','32 / 64']], dim:'43,6 × 320 × 210 mm', peso:'2,602 kg', amp:'3 A', salida:'70 W', consumo:'36 W / 190 W (con PoE)', vent:'Ventiladores integrados fijos, flujo izquierda a derecha', ruido:'50 dB(A)'}),
+  'AR5710-H2T4N2XW': F_H({fwd512:'13 Gbps', wan:'2 x 10GE combo', lan:'4 x 2.5GE + 2 x GE eléctricos', extra:[['Wi-Fi 7','Doble banda 2,4 y 5 GHz, 802.11a/b/g/n/ac/ax/be, hasta 256 usuarios, 3,57 Gbps de pico (690 Mbps a 2,4 GHz y 2,88 Gbps a 5 GHz)'],['Gestión de APs (incluidos / máximo)','32 / 64']], dim:'43,6 × 320 × 210 mm', peso:'2,2 kg', amp:'2 A', salida:'70 W', consumo:'32,59 W / 47,8 W', vent:'Ventiladores integrados fijos, flujo izquierda a derecha', ruido:'50 dB(A)'}),
+  'AR5710-H2T4N2XW-NRGL': F_H({fwd512:'13 Gbps', wan:'2 x 10GE combo · 5G SA/NSA con 2 SIM', lan:'4 x 2.5GE + 2 x GE eléctricos', extra:[['Wi-Fi 7','Doble banda 2,4 y 5 GHz, 802.11a/b/g/n/ac/ax/be, hasta 256 usuarios, 3,57 Gbps de pico'],['Gestión de APs (incluidos / máximo)','32 / 64']], dim:'43,6 × 320 × 210 mm', peso:'2,264 kg', amp:'2 A', salida:'70 W', consumo:'34,93 W / 53 W', vent:'Ventiladores integrados fijos, flujo izquierda a derecha', ruido:'50 dB(A)'}),
+  'AR5710-H2T4N2XW-Q': F_H({fwd512:'13 Gbps', wan:'2 x 10GE combo', lan:'4 x 2.5GE + 2 x GE eléctricos', extra:[['Wi-Fi 7','Doble banda 2,4 y 5 GHz, 802.11a/b/g/n/ac/ax/be, hasta 256 usuarios, 3,57 Gbps de pico'],['Gestión de APs (incluidos / máximo)','32 / 64']], dim:'43,6 × 320 × 210 mm', peso:'2,869 kg', amp:'1 A', salida:'70 W', consumo:'32,56 W / 46,2 W', vent:'Sin ventilador: disipación natural', ruido:'0 dB(A)'}),
+  'AR5710I-RU-NRGL': {rev:'R26C00', doc:'Huawei NetEngine AR5710I-RU-NRGL Enterprise Router Data Sheet-R26C00', grupos:[
+    {t:'Rendimiento por tamaño de paquete', f:[
+      ['Reenvío IPv4, 512 bytes','13 Gbps'], ['IPsec, IMIX','800 Mbps'], ['IPsec, 512 bytes','1 Gbps'], ['IPsec, 1420 bytes','2,5 Gbps'],
+      ['SD-WAN IPsec, 512 B / 1400 B','1,7 / 2,5 Gbps'], ['SD-WAN (IPsec + QoS), 512 B / 1400 B','1,4 / 2,3 Gbps'],
+      ['SD-WAN típico, IMIX / 512 B / 1400 B','720 Mbps / 1 / 2 Gbps']]},
+    {t:'Hardware', f:[
+      ['Puertos fijos (WAN o LAN)','1 x 2.5GE eléctrico + 1 x 10GE SFP+'], ['5G integrado','SA/NSA, 2 SIM activo/standby; pico teórico SA 5,4 Gbps bajada y 500 Mbps subida'],
+      ['Memoria / flash','4 GB / 1 GB NAND'], ['Consola / USB','USB 3.0 tipo A / 1 x USB 2.0'],
+      ['Dimensiones (Al × An × Fo)','80,0 × 240,0 × 200,0 mm'], ['Peso sin embalaje','2,21 kg'], ['Montaje','Poste, pared o mesa'], ['Protección','IP65']]},
+    {t:'Alimentación y ambiente', f:[
+      ['Entrada','PoE –48 V DC (–42,5 a –57 V) o adaptador AC 110–220 V'], ['Consumo típico / máximo','15 W / 18,5 W'],
+      ['Ventilación','Sin ventilador'], ['Ruido','0 dB(A)'], ['Temperatura de operación','–40 °C a +65 °C (sin radiación solar directa)'],
+      ['Humedad','5 % a 95 % sin condensación'], ['Altitud','< 5000 m'], ['Temperatura de almacenamiento','–40 °C a +85 °C']]},
+  ]},
+  'AR6121E': F_AR6({wan:'2 x GE combo + 1 x 10GE SFP+ (compatible con GE SFP)', lan:'1 x GE combo + 8 x GE eléctricos (todos conmutables a WAN)', slots:'2 x SIC, WSIC 0 / 1', usb:'2 x USB 2.0', dim:'44,4 × 442,0 × 220,4 mm', peso:'3,2 kg', montaje:'Rack, mesa o pared', consumo:'28 W / 33 W', red:'Sin redundancia'}),
+  'AR6140E-9G-2AC': F_AR6({wan:'2 x GE SFP + 2 x GE eléctricos', lan:'2 x GE SFP + 3 x GE eléctricos (todos conmutables a WAN)', slots:'4 x SIC, WSIC 0 / 2', usb:'1 x USB 2.0', dim:'44,4 × 442,0 × 428,2 mm', peso:'5,35 kg', montaje:'Rack', consumo:'22 W / 28 W', red:'Dos módulos de alimentación'}),
+};
+for (const m of MODELS) if (FICHAS[m.id]) m.ficha = FICHAS[m.id];
 
 module.exports = { OPTICS, OPTIC_LABEL, PARTS, MODELS, HICARE };

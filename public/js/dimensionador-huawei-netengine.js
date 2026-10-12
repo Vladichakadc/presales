@@ -241,8 +241,17 @@ function seccionesHuawei(m, c){
   }
   caract.push(['Puertos', m.ports, true]);
   if(m.elp) caract.push(['Precio de lista ref.', m.elp]);
+  // Ficha técnica ampliada (2026-10-12): lo que la ficha del fabricante publica además de las
+  // cifras que dimensionan. Solo los modelos cuya ficha se leyó con esa estructura la traen;
+  // para el resto no se pinta nada, que es honesto: el catálogo no la tiene.
+  const fichaTec = m.ficha ? m.ficha.grupos.map((g, i) => ({
+    titulo: 'Ficha técnica · ' + g.t,
+    filas: g.f.map(([k, v]) => [k, esc(v)]),
+    nota: i === 0 ? 'Valores copiados de «' + esc(m.ficha.doc) + '» (edición ' + esc(m.ficha.rev) + '), columna de este modelo.' : '',
+  })) : [];
   return [
     {titulo:'Características del equipo', filas:caract},
+    ...fichaTec,
     FICHA.seccionPuertos(m),
     FICHA.seccionAlimentacion(m),
     {titulo:'Licenciamiento propuesto', filas:lic,
