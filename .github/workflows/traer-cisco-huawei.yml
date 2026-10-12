@@ -520,6 +520,38 @@ jobs:
                 'https://commoncriteriaportal.org/files/epfiles/huawei-netengine-ar6700ar8000-series-routers-yunshan-software-v600r021c10spc100-v1.1.pdf',
                 'https://www.commoncriteriaportal.org/files/epfiles/huawei-netengine-ar6700ar8000-series-routers-yunshan-software-v600r021c10spc100-v1.1.pdf',
               ] },
+              // 2026-10-12: fichas que las paginas de familia de e.huawei.com/en/products/routers
+              // enlazan y que el repositorio no tenia (barrido de las 21 familias con sesion).
+              { archivo: 'huawei-ar6000-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'b67ae821185b4ae68465a9494e6e3b81', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/b67ae821185b4ae68465a9494e6e3b81',
+              ] },
+              { archivo: 'huawei-ar6000-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+                descubrir: { de: 'huawei-ar6000-documento.html', material: 'Material/b67ae821185b4ae68465a9494e6e3b81/' } },
+              { archivo: 'huawei-ar5710i-ru-nrgl-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: '16333c5bd2dc442ba180ef2fecc2d317', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/16333c5bd2dc442ba180ef2fecc2d317',
+              ] },
+              { archivo: 'huawei-ar5710i-ru-nrgl-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+                descubrir: { de: 'huawei-ar5710i-ru-nrgl-documento.html', material: 'Material/16333c5bd2dc442ba180ef2fecc2d317/' } },
+              { archivo: 'huawei-ar5710-h-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'cf32710e9bd1417b9a9f16577d65257a', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/cf32710e9bd1417b9a9f16577d65257a',
+              ] },
+              { archivo: 'huawei-ar5710-h-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+                descubrir: { de: 'huawei-ar5710-h-documento.html', material: 'Material/cf32710e9bd1417b9a9f16577d65257a/' } },
+              { archivo: 'huawei-ar502h-v2-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: '4cca978bb8e74d2390504b091884b299', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/4cca978bb8e74d2390504b091884b299',
+              ] },
+              { archivo: 'huawei-ar502h-v2-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+                descubrir: { de: 'huawei-ar502h-v2-documento.html', material: 'Material/4cca978bb8e74d2390504b091884b299/' } },
+              { archivo: 'huawei-ar6700v-l-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: '38fc9bf1621e4da1be2124f1a0682d46', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/38fc9bf1621e4da1be2124f1a0682d46',
+              ] },
+              { archivo: 'huawei-ar6700v-l-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+                descubrir: { de: 'huawei-ar6700v-l-documento.html', material: 'Material/38fc9bf1621e4da1be2124f1a0682d46/' } },
+              { archivo: 'huawei-ne8000-f1a-c-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'b4d387a588a44b67b8a55e9c63847336', urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/b4d387a588a44b67b8a55e9c63847336',
+              ] },
+              { archivo: 'huawei-ne8000-f1a-c-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+                descubrir: { de: 'huawei-ne8000-f1a-c-documento.html', material: 'Material/b4d387a588a44b67b8a55e9c63847336/' } },
             ];
             // Una pagina HTML se valida por un texto que solo puede estar en el documento correcto
             // (debeContener). La que se pide para ver que hay —un indice del archivo, una pagina de
