@@ -109,7 +109,7 @@ async function mirarFigura(page) {
     'un modelo sin figura oficial DECLARA el hueco en vez de enseñar la de un hermano de serie');
 
   // UN CHASIS VERTICAL NO SE QUEDA EN UNA FRANJA (2026-10-06). El tope de 150 px de alto es
-  // para paneles de 1U; el F8 (620 × 767 desde su ficha de 2023) a ese tope medía 121 px de
+  // para paneles de 1U; el F8 (620 × 767 desde su ficha de 2023, y 1.028 × 1.230 desde la galería de Info-Finder el 2026-10-12) a ese tope medía 121 px de
   // ancho. Las figuras más altas que anchas suben a 260, y las apaisadas no cambian.
   const pintada = async () => page.evaluate(() => {
     const i = globalThis.document.querySelector('#verdict .ficha-vista img');
@@ -122,7 +122,7 @@ async function mirarFigura(page) {
   await asentar(page);
   await mirarFigura(page);
   const f8 = await pintada();
-  t.ok(f8.natural[0] === 620 && f8.natural[1] === 767, `el F8 sirve la figura de 620 × 767 de su ficha de 2023 (${f8.natural.join(' × ')})`);
+  t.ok(f8.natural[0] === 1028 && f8.natural[1] === 1230, `el F8 sirve el render de 1028 × 1230 de la galería de Info-Finder (${f8.natural.join(' × ')})`);
   t.ok(f8.alta && f8.alto > 150 && f8.alto <= 260, `y en la tarjeta pasa del tope de 150 px de alto (${f8.alto} px)`);
   await page.selectOption('#verdict-sel', 'NE8000 M1A');
   await asentar(page);
