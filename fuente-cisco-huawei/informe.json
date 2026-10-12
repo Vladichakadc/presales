@@ -1,0 +1,182 @@
+[
+  {
+    "archivo": "huawei-ar6000-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/b67ae821185b4ae68465a9494e6e3b81",
+        "status": 200,
+        "bytes": 330586,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar6000-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/b67ae821185b4ae68465a9494e6e3b81/M3T1A590N1311296491069919315/Huawei%20NetEngine%20AR6000%20Series%20Enterprise%20Routers%20Datasheet-R26C00.pdf",
+        "status": 200,
+        "bytes": 482563,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar5710i-ru-nrgl-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/16333c5bd2dc442ba180ef2fecc2d317",
+        "status": 200,
+        "bytes": 329821,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar5710i-ru-nrgl-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/16333c5bd2dc442ba180ef2fecc2d317/M3T1A590N1311286109356806258/Huawei%20NetEngine%20AR5710I-RU-NRGL%20Enterprise%20Router%20Data%20Sheet-R26C00.pdf",
+        "status": 200,
+        "bytes": 490288,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar5710-h-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/cf32710e9bd1417b9a9f16577d65257a",
+        "status": 200,
+        "bytes": 330626,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar5710-h-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/cf32710e9bd1417b9a9f16577d65257a/M3T1A590N1315338736208527473/Huawei%20NetEngine%20AR5710-H%20Series%20Enterprise%20Router%20Data%20Sheet-R26C00.pdf",
+        "status": 200,
+        "bytes": 681004,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar502h-v2-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/4cca978bb8e74d2390504b091884b299",
+        "status": 200,
+        "bytes": 330712,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar502h-v2-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/4cca978bb8e74d2390504b091884b299/M3T1A590N1314888556208275475/Huawei%20NetEngine%20AR502H-V2%20Series%20Enterprise%20Router%20Data%20Sheet.pdf",
+        "status": 200,
+        "bytes": 725478,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar6700v-l-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/38fc9bf1621e4da1be2124f1a0682d46",
+        "status": 200,
+        "bytes": 330488,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar6700v-l-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/38fc9bf1621e4da1be2124f1a0682d46/M3T1A590N1311350166408065076/Huawei%20NetEngine%20AR6700V-L%20Virtual%20Router%20Data%20Sheet-R26C00.pdf",
+        "status": 200,
+        "bytes": 392559,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-f1a-c-documento.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/b4d387a588a44b67b8a55e9c63847336",
+        "status": 200,
+        "bytes": 329834,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ne8000-f1a-c-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/b4d387a588a44b67b8a55e9c63847336/M3T1A590N1101968838491570407/NetEngine%208000%20F1A-C%20Datasheet.pdf",
+        "status": 200,
+        "bytes": 382394,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
