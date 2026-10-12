@@ -57,17 +57,17 @@ test('cada figura es WebP SIN pérdida: los píxeles del documento, sin segunda 
   }
 });
 
-test('el F8 sirve el dibujo de su ficha de 2023, al doble de resolución que la de 2025', () => {
-  // Las dos fichas oficiales publican el mismo dibujo de la variante AC (reducido, correlaciona
-  // 0,975): la de 2025 a 296 px y la de 2023 a 620. La figura no cambia de equipo, gana detalle.
+test('el F8 sirve el render de la galería de Info-Finder, a más resolución que el dibujo de sus fichas', () => {
+  // Las fichas de 2023 (620 px) y 2025 (296 px) publican el mismo dibujo de la variante AC; la galería
+  // de Info-Finder trae el chasis completo con tarjetas de ejemplo a 1.028 × 1.230 px (2026-10-12).
   const v = VISTAS['NE8000 F8'];
   const buf = fs.readFileSync(path.join(RAIZ, 'public', v.front));
   // Ancho y alto del lienzo de un WebP sin pérdida: 14 bits cada uno, tras la firma 0x2f.
   const i = buf.indexOf(Buffer.from('VP8L')) + 8;
   assert.strictEqual(buf[i], 0x2f);
   const bits = buf.readUInt32LE(i + 1);
-  assert.deepStrictEqual([(bits & 0x3fff) + 1, ((bits >> 14) & 0x3fff) + 1], [620, 767]);
-  assert.match(v.fuente, /Service Router \(marzo de 2023\), p\. 1 — «NetEngine 8000 F8 service router»/);
+  assert.deepStrictEqual([(bits & 0x3fff) + 1, ((bits >> 14) & 0x3fff) + 1], [1028, 1230]);
+  assert.match(v.fuente, /Galería de imágenes de productos de Info-Finder \(02354QJB\) — «NetEngine 8000 F8»/);
   assert.match(v.fuente, /variante AC/);
 });
 
@@ -129,7 +129,7 @@ test('las variantes de alimentación se nombran: DC en las NetEngine 8000, una f
       const m = /variante (DC|AC)/.exec(v.fuente);
       assert.ok(m, `${modelo}: no dice qué variante dibuja`);
       const otra = m[1] === 'DC' ? 'AC' : 'DC';
-      assert.match(v.fuente, new RegExp('también la ' + otra), `${modelo}: no dice que el documento trae también la ${otra}`);
+      assert.match(v.fuente, new RegExp('(también la|no publica por separado la) ' + otra), `${modelo}: no dice que el documento trae también la ${otra}`);
       if (modelo !== 'NE8000 F8') assert.strictEqual(m[1], 'DC', `${modelo}: se sirve la DC`);
     }
     if (/^NetEngine A8\d\d E$/.test(modelo)) {
