@@ -209,6 +209,31 @@ module.exports = {
     out.push({ n: 'H-07 · una óptica declarada entra al BOM con su modelo y su cantidad por equipo',
       ok: !!skuElegido && /ÓPTICAS/i.test(conOpt) && /^\s+3 x\s/m.test(conOpt.split(/ÓPTICAS/i)[1] || '') && !!linea(conOpt),
       detalle: `${skuElegido}: ${linea(conOpt) || 'línea no encontrada'}` });
+    // SUPUESTOS DE DISEÑO (2026-10-12). Se afirman las CIFRAS DE LA FORMULA, que no dependen del
+    // catalogo: un cambio de la formula (o de un porcentaje por defecto) salta aqui y hay que
+    // actualizarlo A PROPOSITO, con su motivo.
+    const sup = async (query) => {
+      await p.goto(`${base}/dimensionador-huawei-netengine.html?${query}`, { waitUntil: 'domcontentloaded' });
+      await pausa(p, 1800);
+      return {
+        need: await p.$eval('#needLbl', (e) => e.textContent.replace(/^Requiere\s*/, '')).catch(() => null),
+        avisos: await p.$eval('#avisosMotor', (e) => e.textContent).catch(() => ''),
+        dist: await p.$eval('#distrib', (e) => (e.hidden ? '' : e.textContent.replace(/\s+/g, ' '))).catch(() => ''),
+      };
+    };
+    const voip = await sup('bw=200&trafico=voip');
+    out.push({ n: 'Supuestos · perfil VoIP: 200 Mbps × 2 × 1,3 ÷ 0,55 = 945 Mbps', ok: voip.need === '945 Mbps' && /supuesto de diseño/.test(voip.avisos), detalle: `necesidad ${voip.need}` });
+    const fec = await sup('bw=300&fec=1');
+    out.push({ n: 'Supuestos · A-FEC: 300 Mbps × 2 × 1,3 × 1,2 = 936 Mbps', ok: fec.need === '936 Mbps' && /A-FEC activo: \+20 %/.test(fec.avisos), detalle: `necesidad ${fec.need}` });
+    const utm = await sup('bw=300&sUtm=1');
+    out.push({ n: 'Supuestos · UTM: 780 Mbps × 1,45 = 1,1 Gbps, rotulado como supuesto y no como cifra de Huawei',
+      ok: utm.need === '1.1 Gbps' && /\+45 %/.test(utm.avisos) && /no una cifra de Huawei/.test(utm.avisos), detalle: `necesidad ${utm.need}` });
+    const dia = await sup('bw=200&sDia=1');
+    out.push({ n: 'Supuestos · breakout 70/30: 400 Mbps físicos, 280 Mbps a Internet en claro',
+      ok: /Internet en claro \(DIA\): 280 Mbps/.test(dia.dist) && /Local Internet Breakout/.test(dia.avisos), detalle: dia.dist.slice(0, 110) });
+    const ngfw = await sup('bw=800&sUtm=1');
+    out.push({ n: 'Supuestos · inspección por encima de 1 Gbps: recomienda un firewall HiSecEngine USG dedicado',
+      ok: /HiSecEngine USG6000E\/USG6000F/.test(ngfw.avisos), detalle: /USG/.test(ngfw.avisos) ? 'recomendación presente' : 'AUSENTE' });
     return out;
   },
 };

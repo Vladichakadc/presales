@@ -153,6 +153,7 @@
     if (dia) avisos.push(`Local Internet Breakout: el ${diaPct} % del tráfico sale a Internet en claro y solo el ${100 - diaPct} % cruza los túneles cifrados. El equipo debe reenviar todo el tráfico (reenvío) y cifrar solo esa parte (capa SD-WAN/IPsec). El reparto es un supuesto declarado.`);
 
     const enPlataforma = legado ? modelos : modelos.filter(PLATAFORMAS[plataforma].de);
+    const sinDatoAps = new Set();
     const rows = enPlataforma.map((m) => {
       const isWan = m.cls === 'WAN', cap = isWan ? m.cap : m[pk], miss = [];
       if (isWan && !wanOk) miss.push('serie de transporte: no hace SD-WAN, UTM ni WAC');
@@ -165,7 +166,10 @@
       if (want.wifi && !m.wifi) miss.push('sin Wi-Fi');
       // `lan: null` es «el catalogo no lo dice» (puertos configurables en los hubs): no descarta.
       if (legado || m.lan != null) { if ((m.lan || 0) < minLan) miss.push(`${m.lan || 0} puertos LAN`); }
-      if (!isWan && aps > (m.apsMax || 0)) miss.push(`gestiona ${m.apsMax || 0} APs`);
+      // `apsMax: null` es «la ficha no dice cuantos APs gestiona» (AR6000): no descarta, se declara.
+      // Antes se leia como 0 y un modelo sin dato salia «gestiona 0 APs», que es falso.
+      if (!isWan && aps > 0 && m.apsMax != null && aps > m.apsMax) miss.push(`gestiona ${m.apsMax} APs`);
+      if (!isWan && aps > 0 && m.apsMax === null) sinDatoAps.add(m.id);
       if (tuneles && !isWan && m.tuneles != null && m.tuneles < tuneles) miss.push(`soporta ${m.tuneles} túneles`);
       return { m, cap, miss, isWan };
     });
@@ -181,6 +185,9 @@
       || extras(a.m) - extras(b.m) || a.m.id.localeCompare(b.m.id, 'en', { numeric: true }));
     const pick = fit.find((r) => recomendable(r.m)) || null;
     const next = fit.filter((r) => recomendable(r.m))[1] || null;
+    if (!legado && aps > 0 && pick && sinDatoAps.has(pick.m.id)) {
+      avisos.push(`El ${pick.m.id} no publica cuántos APs gestiona su WAC: no se descarta por eso, pero confírmalo con su ficha antes de proponer ${aps} APs.`);
+    }
     // FLEXE: solo se afirma donde el catalogo lo dice (`flexe: true`); `undefined` es «no consta»,
     // no «no lo soporta», asi que no aparta a nadie: lo declara.
     if (!legado && transporte && svc.slice) {

@@ -461,3 +461,17 @@ test('2026-10-12 · la memoria técnica declara sus supuestos y trae las cuatro 
   assert.match(md, /BTU\/h/);
   assert.match(md, /consultar/);
 });
+
+test('2026-10-12 · apsMax null (AR6000) no descarta por «0 APs»: se declara que no consta', () => {
+  const r = M.evaluar({ ...ESC_BASE, bw: 100, aps: 40, svc: { sdwan: false }, profile: 'fwd' }, MODELS, { rango: () => 0 });
+  const ar6121 = r.rows.find((x) => x.m.id === 'AR6121E');
+  assert.ok(ar6121 && !ar6121.miss.some((x) => /APs/.test(x)), 'AR6121E no se aparta por gestionar 0 APs');
+  // Un modelo con tope numérico que no llega sigue apartándose.
+  const s8 = r.rows.find((x) => x.m.id === 'AR5710-S8T2S');
+  assert.ok(s8.miss.some((x) => /gestiona 32 APs/.test(x)));
+  // Si el elegido no publica el dato, se dice.
+  const solo6121 = M.evaluar({ ...ESC_BASE, bw: 100, aps: 40, svc: { sdwan: false }, profile: 'fwd' },
+    MODELS.filter((m) => m.id === 'AR6121E'), { rango: () => 0 });
+  assert.strictEqual(solo6121.pick.m.id, 'AR6121E');
+  assert.ok(solo6121.avisos.some((a) => /no publica cuántos APs gestiona/.test(a)));
+});
