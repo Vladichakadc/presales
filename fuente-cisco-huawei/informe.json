@@ -1,0 +1,645 @@
+[
+  {
+    "archivo": "huawei-a816e-documento.html",
+    "para": "HUAWEI",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/56584a8272b44e61be416b1afc0eb241",
+        "status": 200,
+        "bytes": 254039,
+        "nota": "no contiene el texto esperado"
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-a816e-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "huawei-a816e-documento.html",
+        "error": "la pagina donde descubrir la URL no se guardo"
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-routers-listado.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://mikrotik.com/products/group/ethernet-routers",
+        "status": 200,
+        "bytes": 448970,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-routers",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://mikrotik.com/product/hex_s_2025",
+        "status": 200,
+        "bytes": 369976,
+        "guardado": true,
+        "como": "mikrotik-routers/hex_s_2025.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/rb5009ug_s_in",
+        "status": 200,
+        "bytes": 378040,
+        "guardado": true,
+        "como": "mikrotik-routers/rb5009ug_s_in.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/rb5009upr_s_in",
+        "status": 200,
+        "bytes": 385239,
+        "guardado": true,
+        "como": "mikrotik-routers/rb5009upr_s_in.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/rds2216",
+        "status": 200,
+        "bytes": 464604,
+        "guardado": true,
+        "como": "mikrotik-routers/rds2216.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/rb5009_out",
+        "status": 200,
+        "bytes": 393230,
+        "guardado": true,
+        "como": "mikrotik-routers/rb5009_out.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/rb4011igs_rm",
+        "status": 200,
+        "bytes": 375379,
+        "guardado": true,
+        "como": "mikrotik-routers/rb4011igs_rm.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/l009uigs_rm",
+        "status": 200,
+        "bytes": 370834,
+        "guardado": true,
+        "como": "mikrotik-routers/l009uigs_rm.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/hex_2024",
+        "status": 200,
+        "bytes": 335274,
+        "guardado": true,
+        "como": "mikrotik-routers/hex_2024.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/ccr2216_1g_12xs_2xq",
+        "status": 200,
+        "bytes": 391513,
+        "guardado": true,
+        "como": "mikrotik-routers/ccr2216_1g_12xs_2xq.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/ccr2116_12g_4splus",
+        "status": 200,
+        "bytes": 364707,
+        "guardado": true,
+        "como": "mikrotik-routers/ccr2116_12g_4splus.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/RB750r2",
+        "status": 200,
+        "bytes": 325341,
+        "guardado": true,
+        "como": "mikrotik-routers/RB750r2.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/RB750Gr3",
+        "status": 200,
+        "bytes": 347869,
+        "guardado": true,
+        "como": "mikrotik-routers/RB750Gr3.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/RB750UPr2",
+        "status": 200,
+        "bytes": 340445,
+        "guardado": true,
+        "como": "mikrotik-routers/RB750UPr2.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/hex_s",
+        "status": 200,
+        "bytes": 361572,
+        "guardado": true,
+        "como": "mikrotik-routers/hex_s.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/RB960PGS",
+        "status": 200,
+        "bytes": 359042,
+        "guardado": true,
+        "como": "mikrotik-routers/RB960PGS.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/RB960PGS-PB",
+        "status": 200,
+        "bytes": 369156,
+        "guardado": true,
+        "como": "mikrotik-routers/RB960PGS-PB.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/ccr2004_1g_2xs_pcie",
+        "status": 200,
+        "bytes": 352086,
+        "guardado": true,
+        "como": "mikrotik-routers/ccr2004_1g_2xs_pcie.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/rb1100ahx4",
+        "status": 200,
+        "bytes": 344301,
+        "guardado": true,
+        "como": "mikrotik-routers/rb1100ahx4.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/RB1100Dx4",
+        "status": 200,
+        "bytes": 373224,
+        "guardado": true,
+        "como": "mikrotik-routers/RB1100Dx4.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/ccr2004_16g_2splus",
+        "status": 200,
+        "bytes": 359516,
+        "guardado": true,
+        "como": "mikrotik-routers/ccr2004_16g_2splus.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/ccr2004_16g_2s_pc",
+        "status": 200,
+        "bytes": 356640,
+        "guardado": true,
+        "como": "mikrotik-routers/ccr2004_16g_2s_pc.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/ccr2004_1g_12s_2xs",
+        "status": 200,
+        "bytes": 374482,
+        "guardado": true,
+        "como": "mikrotik-routers/ccr2004_1g_12s_2xs.html"
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-sfp-listado.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://mikrotik.com/products/group/sfp-qsfp",
+        "status": 200,
+        "bytes": 287229,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-sfp",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://mikrotik.com/product/hs_85dlc05d",
+        "status": 200,
+        "bytes": 275220,
+        "guardado": true,
+        "como": "mikrotik-sfp/hs_85dlc05d.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/hs_31dlc20d",
+        "status": 200,
+        "bytes": 275264,
+        "guardado": true,
+        "como": "mikrotik-sfp/hs_31dlc20d.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/hs_55dlc80d",
+        "status": 200,
+        "bytes": 296000,
+        "guardado": true,
+        "como": "mikrotik-sfp/hs_55dlc80d.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/hs_2733lc20d",
+        "status": 200,
+        "bytes": 277468,
+        "guardado": true,
+        "como": "mikrotik-sfp/hs_2733lc20d.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/s_2733lc10d",
+        "status": 200,
+        "bytes": 295096,
+        "guardado": true,
+        "como": "mikrotik-sfp/s_2733lc10d.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/xs_31lc20d",
+        "status": 200,
+        "bytes": 306323,
+        "guardado": true,
+        "como": "mikrotik-sfp/xs_31lc20d.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/S-31DLC20D-181",
+        "status": 200,
+        "bytes": 337237,
+        "guardado": true,
+        "como": "mikrotik-sfp/S-31DLC20D-181.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/S-RJ01",
+        "status": 200,
+        "bytes": 328210,
+        "guardado": true,
+        "como": "mikrotik-sfp/S-RJ01.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/xs_da0001",
+        "status": 200,
+        "bytes": 309016,
+        "guardado": true,
+        "como": "mikrotik-sfp/xs_da0001.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/s_55dlc80d",
+        "status": 200,
+        "bytes": 327642,
+        "guardado": true,
+        "como": "mikrotik-sfp/s_55dlc80d.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/xs_da0003",
+        "status": 200,
+        "bytes": 309016,
+        "guardado": true,
+        "como": "mikrotik-sfp/xs_da0003.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/xq_da0001",
+        "status": 200,
+        "bytes": 273459,
+        "guardado": true,
+        "como": "mikrotik-sfp/xq_da0001.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/s_ao0005",
+        "status": 200,
+        "bytes": 302451,
+        "guardado": true,
+        "como": "mikrotik-sfp/s_ao0005.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/Splus85DLC03D",
+        "status": 200,
+        "bytes": 317547,
+        "guardado": true,
+        "como": "mikrotik-sfp/Splus85DLC03D.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/xq_da0003",
+        "status": 200,
+        "bytes": 273473,
+        "guardado": true,
+        "como": "mikrotik-sfp/xq_da0003.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/xq_cm0000_xs_",
+        "status": 200,
+        "bytes": 268821,
+        "guardado": true,
+        "como": "mikrotik-sfp/xq_cm0000_xs_.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/xs_85lc01d",
+        "status": 200,
+        "bytes": 269293,
+        "guardado": true,
+        "como": "mikrotik-sfp/xs_85lc01d.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/s_rj10",
+        "status": 200,
+        "bytes": 295480,
+        "guardado": true,
+        "como": "mikrotik-sfp/s_rj10.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/s_31dlc10d",
+        "status": 200,
+        "bytes": 314921,
+        "guardado": true,
+        "como": "mikrotik-sfp/s_31dlc10d.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/S-3553LC20D",
+        "status": 200,
+        "bytes": 337650,
+        "guardado": true,
+        "como": "mikrotik-sfp/S-3553LC20D.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/ddq_da0001",
+        "status": 200,
+        "bytes": 266705,
+        "guardado": true,
+        "como": "mikrotik-sfp/ddq_da0001.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/dq_bc0003_dsplus",
+        "status": 200,
+        "bytes": 266558,
+        "guardado": true,
+        "como": "mikrotik-sfp/dq_bc0003_dsplus.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/s_4554lc80d",
+        "status": 200,
+        "bytes": 327508,
+        "guardado": true,
+        "como": "mikrotik-sfp/s_4554lc80d.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/xq_85mp01d",
+        "status": 200,
+        "bytes": 274759,
+        "guardado": true,
+        "como": "mikrotik-sfp/xq_85mp01d.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/ddq_da0003",
+        "status": 200,
+        "bytes": 266074,
+        "guardado": true,
+        "como": "mikrotik-sfp/ddq_da0003.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/xs_31lc10d",
+        "status": 200,
+        "bytes": 310011,
+        "guardado": true,
+        "como": "mikrotik-sfp/xs_31lc10d.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/ddq_85mp01d",
+        "status": 200,
+        "bytes": 265616,
+        "guardado": true,
+        "como": "mikrotik-sfp/ddq_85mp01d.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/xq_31lc02d",
+        "status": 200,
+        "bytes": 272152,
+        "guardado": true,
+        "como": "mikrotik-sfp/xq_31lc02d.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/xs_2733lc15d",
+        "status": 200,
+        "bytes": 320816,
+        "guardado": true,
+        "como": "mikrotik-sfp/xs_2733lc15d.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/xq_31lc10d",
+        "status": 200,
+        "bytes": 273560,
+        "guardado": true,
+        "como": "mikrotik-sfp/xq_31lc10d.html"
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-l009-2haxd.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://mikrotik.com/product/l009uigs_2haxd_in",
+        "status": 200,
+        "bytes": 374058,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-manuales",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://manual.mikrotik.com/hardware/rb1100-series/",
+        "status": 200,
+        "bytes": 46702,
+        "guardado": true,
+        "como": "mikrotik-manuales/rb1100-series.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/hex/",
+        "status": 200,
+        "bytes": 47573,
+        "guardado": true,
+        "como": "mikrotik-manuales/hex.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/hex-poe-lite/",
+        "status": 200,
+        "bytes": 42736,
+        "guardado": true,
+        "como": "mikrotik-manuales/hex-poe-lite.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/hex-lite/",
+        "status": 200,
+        "bytes": 44697,
+        "guardado": true,
+        "como": "mikrotik-manuales/hex-lite.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/powerbox-pro/",
+        "status": 200,
+        "bytes": 52855,
+        "guardado": true,
+        "como": "mikrotik-manuales/powerbox-pro.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/hex-poe/",
+        "status": 200,
+        "bytes": 47401,
+        "guardado": true,
+        "como": "mikrotik-manuales/hex-poe.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/ccr2004-16g-2s-plus-pc/",
+        "status": 200,
+        "bytes": 54071,
+        "guardado": true,
+        "como": "mikrotik-manuales/ccr2004-16g-2s-plus-pc.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/ccr2004-16g-2s-plus/",
+        "status": 200,
+        "bytes": 45086,
+        "guardado": true,
+        "como": "mikrotik-manuales/ccr2004-16g-2s-plus.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/ccr2004-1g-12s-plus-2xs/",
+        "status": 200,
+        "bytes": 53843,
+        "guardado": true,
+        "como": "mikrotik-manuales/ccr2004-1g-12s-plus-2xs.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/ccr2004-1g-2xs-pcie/",
+        "status": 200,
+        "bytes": 52987,
+        "guardado": true,
+        "como": "mikrotik-manuales/ccr2004-1g-2xs-pcie.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/ccr2116-12g-4s-plus/",
+        "status": 200,
+        "bytes": 49859,
+        "guardado": true,
+        "como": "mikrotik-manuales/ccr2116-12g-4s-plus.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/ccr2216-1g-12xs-2xq/",
+        "status": 200,
+        "bytes": 37954,
+        "guardado": true,
+        "como": "mikrotik-manuales/ccr2216-1g-12xs-2xq.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/hex-refresh/",
+        "status": 200,
+        "bytes": 33738,
+        "guardado": true,
+        "como": "mikrotik-manuales/hex-refresh.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/hex-s/",
+        "status": 200,
+        "bytes": 54714,
+        "guardado": true,
+        "como": "mikrotik-manuales/hex-s.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/hex-s-2025/",
+        "status": 200,
+        "bytes": 48167,
+        "guardado": true,
+        "como": "mikrotik-manuales/hex-s-2025.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/l009uigs-rm/",
+        "status": 200,
+        "bytes": 40394,
+        "guardado": true,
+        "como": "mikrotik-manuales/l009uigs-rm.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/rb4011igs-plus-rm/",
+        "status": 200,
+        "bytes": 46237,
+        "guardado": true,
+        "como": "mikrotik-manuales/rb4011igs-plus-rm.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/rb5009upr-plus-s-plus-out/",
+        "status": 200,
+        "bytes": 38355,
+        "guardado": true,
+        "como": "mikrotik-manuales/rb5009upr-plus-s-plus-out.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/rb5009ug-plus-s-plus-in/",
+        "status": 200,
+        "bytes": 40489,
+        "guardado": true,
+        "como": "mikrotik-manuales/rb5009ug-plus-s-plus-in.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/rb5009upr-plus-s-plus-in/",
+        "status": 200,
+        "bytes": 40536,
+        "guardado": true,
+        "como": "mikrotik-manuales/rb5009upr-plus-s-plus-in.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/rose-data-server/",
+        "status": 200,
+        "bytes": 43183,
+        "guardado": true,
+        "como": "mikrotik-manuales/rose-data-server.html"
+      },
+      {
+        "url": "https://manual.mikrotik.com/hardware/l009uigs-2haxd-in/",
+        "status": 200,
+        "bytes": 40030,
+        "guardado": true,
+        "como": "mikrotik-manuales/l009uigs-2haxd-in.html"
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-manuales-sfp",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://manual.mikrotik.com/hardware/s-3553lc20d/",
+        "status": 200,
+        "bytes": 25118,
+        "guardado": true,
+        "como": "mikrotik-manuales-sfp/s-3553lc20d.html"
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-psnow-a00109847enw.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/doc/a00109847enw",
+        "status": 200,
+        "bytes": 121209,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  }
+]
