@@ -118,6 +118,7 @@ const UI = [
   ['escala.vdoms', 'vdoms', 'num', 0],
   ['escala.fortiAps', 'fortiAps', 'num', 0],
   ['escala.fortiSwitches', 'fortiSwitches', 'num', 0],
+  ['escala.bgpPeers', 'bgpPeers', 'num', 0],
   ['fisico.poeW', 'poeW', 'num', 0],
   ['fisico.psuRedundante', 'chkPsuRed', 'chk'],
   ['fisico.registro', 'registroDestino', 'txt'],
@@ -180,7 +181,7 @@ const CAMPOS_ESCENARIO = ['nombreCliente', 'refProyecto', 'wanLinksData',
   'chkSandbox', 'sandboxModo', 'sandboxModalidad',
   'interVlan', 'chkNoConcurrente', 'sites', 'hubs', 'conc',
   'chkRemoto', 'vpnTipo', 'vpnUsers', 'vpnMbps', 'chkMfa',
-  'users', 'sesUser', 'sessNeed', 'vidaSes', 'cpsMedido', 'vdoms', 'fortiAps', 'fortiSwitches',
+  'users', 'sesUser', 'sessNeed', 'vidaSes', 'cpsMedido', 'vdoms', 'fortiAps', 'fortiSwitches', 'bgpPeers',
   'pt_rj45_1g', 'pt_rj45_10g', 'pt_sfp_1g', 'pt_sfpp_10g', 'pt_sfp28_25g', 'pt_qsfp28_100g',
   'poeW', 'chkPsuRed', 'registroDestino', 'registroGbDia', 'registroDias', 'head', 'techoUtil',
   'motivoCompra', 'serieInstalada', 'pickModel', 'justificacionEol', 'termYears', 'licBundle', 'careLevel',
@@ -1053,6 +1054,8 @@ function porQueDe(r, c) {
   }
   const vd = eje('vdom');
   if (vd) flags.push(`<b>Segmentación:</b> ${cifra(vd.req)} VDOM declarados. ${contraste(vd, 'el máximo de dominios virtuales')} Es un tope de plataforma: el techo de utilización no se le aplica.${m.vdomDef != null && vd.req > m.vdomDef ? ` El modelo incluye ${m.vdomDef}: los ${vd.req - m.vdomDef} de más se cotizan como licencia de VDOM adicionales.` : ''}`);
+  const bgp = eje('bgpPeers');
+  if (bgp) flags.push(`<b>Plano de control:</b> ${cifra(bgp.req)} vecino(s) BGP${rolSdwan === 'hub' ? ' (uno por spoke si el overlay lleva BGP)' : ''}. ${contraste(bgp, 'el máximo de vecinos BGP')} Es un tope de configuración de FortiOS 7.6.7, no una medición: no se le aplica el techo de utilización.`);
   for (const k of ['aps', 'switches']) { const e = eje(k); if (e) flags.push(`<b>${esc(e.n)}:</b> ${cifra(e.req)} declarados. ${contraste(e, `el máximo de ${e.unidad}`)}`); }
   // Restricciones fisicas: el modelo es elegible, asi que las cumple; se dice contra que dato.
   if (M.TIPOS_PUERTO.some((t) => s.fisico.puertos[t.k] > 0)) {
@@ -1120,6 +1123,7 @@ function seccionesDe(r, m) {
       ['PoE', m.poe == null ? sinDato : m.poe ? 'sí' : (m.poeVariante ? 'no en el SKU base (existe variante -POE)' : 'no')],
       ['FortiAP gestionados (túnel)', m.aps != null ? `${cifra(m.aps)}${m.apsTun != null ? ` (${cifra(m.apsTun)})` : ''}` : sinDato],
       ['FortiSwitch / FortiToken', `${m.switches != null ? cifra(m.switches) : '—'} / ${m.tokens != null ? cifra(m.tokens) : '—'}`],
+      ['Vecinos BGP (máximo de configuración)', m.bgpPeers != null ? `${cifra(m.bgpPeers)} <span class="sku">${esc(m.bgpDe ? m.bgpDe.fuente : '')}</span>` : `${sinDato} — la Maximum Values Table de FortiOS 7.6.7 no lo lista o no casa con el catálogo`],
       ['Formato', m.formato ? esc(m.formato) : '—'],
     ] },
     FICHA.seccionPuertos(m),

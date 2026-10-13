@@ -681,6 +681,11 @@ h1{font-size:clamp(24px,3.4vw,36px)}
       </div>
     </div>
     <p class="hint" style="margin:-8px 0 16px">Se contrastan contra los máximos del Security Fabric que publica el Product Matrix por modelo.</p>
+    <div class="field">
+      <label for="bgpPeers">Vecinos BGP del diseño</label>
+      <input type="number" id="bgpPeers" min="0" step="1" autocomplete="off" placeholder="0">
+      <p class="hint">Tope de configuración de la Maximum Values Table de FortiOS 7.6.7, contra el 100 %. En un hub con BGP sobre el overlay, uno por spoke. Las rutas aprendidas y las adyacencias OSPF no se comprueban: Fortinet no las publica por modelo.</p>
+    </div>
 
     <!-- HARDWARE FISICO (F06). Puertos por tipo exacto -medio y velocidad-, PoE, fuente
          redundante y registro local: restricciones que DESCARTAN un modelo aunque le sobre

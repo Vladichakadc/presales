@@ -56,6 +56,15 @@ const BASE_LINEA = [
     recomendado: 'FortiGate 200G', nCandidatos: 38 },
   { n: '120 VDOM', rol: 'none', vdoms: 120, bw: 100, techo: '100',
     recomendado: 'FortiGate 1000F', nCandidatos: 28 },
+  // VECINOS BGP (2026-10-13, F4-resto): la Maximum Values Table de FortiOS 7.6.7. El par fija
+  // el tope: 1000 vecinos caben en todo lo que la tabla lista (1000 es el minimo de la gama) y
+  // solo apartan a los que NO tienen dato -400G, 3000G, 3500G, 3800G y sus variantes, 7081F y 7121F, porque un
+  // eje duro sin cifra aparta-; 1001 saca ademas a todos los de 1000 y el recomendado sube al
+  // 1000F (5000). Medido en la pantalla el dia del cambio.
+  { n: '1000 vecinos BGP — caben en el minimo de la tabla', rol: 'none', bgpPeers: 1000, bw: 100, techo: '100',
+    recomendado: 'FortiGate 30G', nCandidatos: 44 },
+  { n: '1001 vecinos BGP — el tope de 1000 saca a la gama baja', rol: 'none', bgpPeers: 1001, bw: 100, techo: '100',
+    recomendado: 'FortiGate 1000F', nCandidatos: 20 },
   // EL CONTROL. Mismo caudal, sin declarar ningun limite: compiten los 54 vigentes (los 4
   // fuera de venta no son candidatos en compra nueva desde la etapa 7). Sin el, un motor
   // que se rompiera y apartara a todo el mundo daria listas cortas en los seis de arriba y
@@ -90,6 +99,7 @@ module.exports = {
     if (e.vpnTipo) { await p.selectOption('#vpnTipo', e.vpnTipo); await pausa(p, 200); }
     if (e.vpnUsers) { await p.fill('#vpnUsers', String(e.vpnUsers)); await p.dispatchEvent('#vpnUsers', 'input'); await pausa(p, 300); }
     if (e.vdoms) { await p.fill('#vdoms', String(e.vdoms)); await p.dispatchEvent('#vdoms', 'input'); await pausa(p, 300); }
+    if (e.bgpPeers) { await p.fill('#bgpPeers', String(e.bgpPeers)); await p.dispatchEvent('#bgpPeers', 'input'); await pausa(p, 300); }
     if (e.techo !== '100') { await p.selectOption('#techoUtil', e.techo); await pausa(p, 300); }
   },
 

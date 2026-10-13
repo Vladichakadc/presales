@@ -515,6 +515,86 @@ for (const m of MODELS) {
   else m.limitesDe=null;
 }
 
+// ── VECINOS BGP: LA «MAXIMUM VALUES TABLE» DE FORTIOS 7.6.7 (2026-10-13, pendiente F4-resto) ──
+// El Product Matrix no publica la escala del plano de control. La Maximum Values Table
+// (docs.fortinet.com/max-value-table) si: es la tabla OFICIAL de cuantas entradas admite cada
+// objeto de configuracion, por modelo y por version. La pagina es una aplicacion que pide sus
+// filas a `docs.fortinet.com/api/tools/max-values` (leido en su script, corrida 38450065531); la
+// respuesta para los 56 FortiGate vigentes del catalogo en FortiOS 7.6.7 la trajo
+// `traer-cisco-huawei.yml` (rama fuente/fortinet-mvt-datos-2026-10-13, corrida 38452268834) y
+// esta tabla sale de ella por programa, no a ojo.
+//
+// QUE SE TOMA Y QUE NO, Y POR QUE:
+//   bgpPeers  `router.bgp:neighbor`, ambito GLOBAL: cuantos vecinos BGP admite el equipo. Es el
+//             tope que pesa en un hub SD-WAN con BGP sobre el overlay (un vecino por spoke).
+//   NO entran, aunque la tabla tenga filas con su nombre:
+//   - `router.ospf:neighbor` (10 en todos): son los vecinos OSPF DECLARADOS A MANO (redes NBMA),
+//     no las adyacencias que el equipo puede formar. Usarlo apartaria cualquier modelo de un
+//     diseno con once routers OSPF, que es falso.
+//   - `router.bgp:vrf` (12800 en todos): entradas de configuracion VRF dentro de BGP, no el
+//     numero de VRF del equipo.
+//   - las RUTAS: la tabla publica rutas ESTATICAS por VDOM (`router.static`), no el tamano de
+//     la tabla de rutas aprendidas por BGP u OSPF. Ese dato sigue sin fuente.
+//
+// DOBLE ANCLAJE POR COLUMNA. La respuesta es una matriz de valores sin cabecera de modelo:
+// la columna la da el orden en que se piden. Cada fila de abajo lleva dos cifras de la misma
+// respuesta que este catalogo ya tenia verificadas (`policies` = `firewall.policy` y `tunGw` =
+// `vpn.ipsec.phase1`), y se comprueban AL CARGAR: si no casan las dos, la fila no se aplica.
+// El dia de la lectura casaron 26 de 27 columnas en `policies` y 27 de 27 en `tunGw`.
+// Fuera de la tabla, a proposito:
+//   - 3800G: la MVT 7.6.7 da 200.000 politicas y el Product Matrix de septiembre 400.000. Un
+//     ancla contradice: no se aplica (su 13.000 de BGP no se toma).
+//   - 400G, 3000G y 3500G: la tabla de 7.6.7 imprime «-» en todas sus filas (no los lista en
+//     esa version). Quedan sin dato, no con el de otra version.
+//   - 7081F y 7121F: la tabla no los lista.
+// Las variantes con disco (31G, 61F, 401F...) heredan de su base por `hermanasDe`, y la
+// propia respuesta lo confirma: cada variante da exactamente lo mismo que su base en BGP.
+const MVT_FUENTE='Maximum Values Table, FortiOS 7.6.7';
+const MVT_LIMITES={
+  '30G':   {bgpPeers:1000,  ancla:{policies:2000,   tunGw:200}},
+  '40F':   {bgpPeers:1000,  ancla:{policies:2000,   tunGw:200}},
+  '50G':   {bgpPeers:1000,  ancla:{policies:2000,   tunGw:200}},
+  '60F':   {bgpPeers:1000,  ancla:{policies:2000,   tunGw:200}},
+  '70F':   {bgpPeers:1000,  ancla:{policies:5000,   tunGw:200}},
+  '70G':   {bgpPeers:1000,  ancla:{policies:5000,   tunGw:200}},
+  '80F':   {bgpPeers:1000,  ancla:{policies:5000,   tunGw:200}},
+  '90G':   {bgpPeers:1000,  ancla:{policies:5000,   tunGw:200}},
+  '100F':  {bgpPeers:1000,  ancla:{policies:10000,  tunGw:2000}},
+  '120G':  {bgpPeers:1000,  ancla:{policies:10000,  tunGw:2000}},
+  '200F':  {bgpPeers:1000,  ancla:{policies:10000,  tunGw:2000}},
+  '200G':  {bgpPeers:1000,  ancla:{policies:10000,  tunGw:2000}},
+  '400F':  {bgpPeers:1000,  ancla:{policies:10000,  tunGw:2000}},
+  '600F':  {bgpPeers:1000,  ancla:{policies:30000,  tunGw:2000}},
+  '700G':  {bgpPeers:1000,  ancla:{policies:30000,  tunGw:2000}},
+  '900G':  {bgpPeers:1000,  ancla:{policies:50000,  tunGw:2000}},
+  '1000F': {bgpPeers:5000,  ancla:{policies:100000, tunGw:20000}},
+  '1800F': {bgpPeers:5000,  ancla:{policies:100000, tunGw:20000}},
+  '2600F': {bgpPeers:5000,  ancla:{policies:100000, tunGw:20000}},
+  '3000F': {bgpPeers:13000, ancla:{policies:200000, tunGw:40000}},
+  '3200F': {bgpPeers:13000, ancla:{policies:200000, tunGw:40000}},
+  '3500F': {bgpPeers:13000, ancla:{policies:200000, tunGw:40000}},
+  '3700F': {bgpPeers:13000, ancla:{policies:200000, tunGw:40000}},
+  '4200F': {bgpPeers:13000, ancla:{policies:400000, tunGw:40000}},
+  '4400F': {bgpPeers:13000, ancla:{policies:400000, tunGw:40000}},
+  '4800F': {bgpPeers:13000, ancla:{policies:400000, tunGw:40000}},
+};
+for (const m of MODELS) { m.bgpPeers=null; m.bgpDe=null; }
+for (const [base, fila] of Object.entries(MVT_LIMITES)) {
+  const m=MODELS.find((x)=>bareId(x.id)===base);
+  if (!m) { console.warn(`[fortinet] MVT_LIMITES declara "${base}" y no hay tal modelo`); continue; }
+  const discrepan=Object.entries(fila.ancla).filter(([k,v])=>m[k]!==v);
+  if (discrepan.length) {
+    console.warn(`[fortinet] la ${MVT_FUENTE} ya no casa con el catalogo en ${base} (${discrepan.map(([k])=>k).join(', ')}): `
+      +'no se aplica. Volver a traer la tabla antes de confiar en sus vecinos BGP.');
+    continue;
+  }
+  for (const h of [m].concat(hermanasDe(m))) {
+    if (h.bgpDe) continue;
+    h.bgpPeers=fila.bgpPeers;
+    h.bgpDe={modelo:base, fuente:MVT_FUENTE+(h===m?'':' (variante del mismo silicio)')};
+  }
+}
+
 // ── PLATAFORMA POR MODELO: LO QUE EL MATRIX PUBLICA ADEMAS DEL RENDIMIENTO (2026-09-23) ──
 // Seis filas del Product Matrix de septiembre que el catalogo no traia y que el informe de
 // auditoria del 23-sep pide como restricciones (F06, F14, F15): VDOM incluidos, almacenamiento
@@ -1112,4 +1192,4 @@ const CARE={
 };
 
 module.exports = { MODELS, BUNDLES, CARE, LICENSES, HW_SKU, FUNCIONES, SERVICIOS_SDWAN, SDWAN_SERVICIO, EMS_LICENCIAS, SASE_USUARIOS, TERMINOS, MATRIX_LIMITES,
-  FICHAS_LIMITES, MATRIX_PLATAFORMA, FICHAS_PLATAFORMA, PUERTOS, FORTIOS, REANCLAJE };
+  FICHAS_LIMITES, MATRIX_PLATAFORMA, FICHAS_PLATAFORMA, PUERTOS, FORTIOS, REANCLAJE, MVT_LIMITES };

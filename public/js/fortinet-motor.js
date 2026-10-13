@@ -161,7 +161,7 @@
     remoto: { activo: B, metodo: E(['ipsec', 'sslvpn']), usuarios: I(0, 1e7), mbps: N(0, 1e8), mfa: B },
     escala: { usuarios: I(0, 1e8), sesionesPorUsuario: I(0, 1e5), sesionesMedidas: I(0, 1e11),
       vidaSesionS: I(1, 86400), cpsMedido: I(0, 1e10), vdoms: I(0, 100000),
-      fortiAps: I(0, 1e6), fortiSwitches: I(0, 1e6) },
+      fortiAps: I(0, 1e6), fortiSwitches: I(0, 1e6), bgpPeers: I(0, 1e6) },
     fisico: {
       puertos: Object.fromEntries(TIPOS_PUERTO.map((p) => [p.k, I(0, 10000)])),
       poeW: N(0, 1e6), psuRedundante: B,
@@ -189,7 +189,7 @@
     seguridad: { capa: 'tp', funciones: [], tlsCifradoPct: 100, tlsExentoPct: 0 },
     remoto: { activo: false, metodo: 'ipsec', usuarios: 0, mbps: 0, mfa: false },
     escala: { usuarios: 0, sesionesPorUsuario: 0, sesionesMedidas: 0, vidaSesionS: 30, cpsMedido: 0,
-      vdoms: 0, fortiAps: 0, fortiSwitches: 0 },
+      vdoms: 0, fortiAps: 0, fortiSwitches: 0, bgpPeers: 0 },
     fisico: { puertos: Object.fromEntries(TIPOS_PUERTO.map((p) => [p.k, 0])), poeW: 0, psuRedundante: false,
       registro: 'ninguno', registroGbDia: 0, registroDias: 0 },
     disponibilidad: { modo: 'standalone' },
@@ -461,6 +461,7 @@
     if (s.escala.vdoms > 0) d.vdom = s.escala.vdoms;
     if (s.escala.fortiAps > 0) d.aps = s.escala.fortiAps;
     if (s.escala.fortiSwitches > 0) d.switches = s.escala.fortiSwitches;
+    if (s.escala.bgpPeers > 0) d.bgpPeers = s.escala.bgpPeers;
     return { d, sess, cps, tunGw };
   }
 

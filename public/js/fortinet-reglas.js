@@ -126,6 +126,14 @@
     { k: 'tokens', n: 'FortiToken (doble factor)', frase: 'los FortiToken del acceso remoto', campo: 'tokens',
       dureza: 'dura', unidad: 'FortiToken', configuracion: true,
       metodo: 'Max FortiTokens (Product Matrix)' },
+    // ── PLANO DE CONTROL (2026-10-13, pendiente F4-resto) ───────────────────────────────
+    // Vecinos BGP de la Maximum Values Table de FortiOS 7.6.7 (`router.bgp:neighbor`). Las
+    // otras dos piezas del pendiente NO entran: la tabla no publica rutas aprendidas, y su
+    // fila de vecinos OSPF son los declarados a mano (NBMA), no las adyacencias. Ver
+    // MVT_LIMITES en legacyData/fortinet.js.
+    { k: 'bgpPeers', n: 'Vecinos BGP', frase: 'los vecinos BGP', campo: 'bgpPeers',
+      dureza: 'dura', unidad: 'vecinos', configuracion: true,
+      metodo: 'router.bgp:neighbor (Maximum Values Table, FortiOS 7.6.7)' },
   ];
   // `escalaMbps` marca los ejes cuya demanda es PROPORCIONAL al caudal del sitio. Solo esos
   // sirven para responder «hasta cuantos Mbps aguanta este modelo en este escenario»: el
