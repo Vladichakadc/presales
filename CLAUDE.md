@@ -100,6 +100,7 @@ npm run contraste -- nokia-sr --base=http://127.0.0.1:4000          # un caso de
 
 # Importadores: anclan contra lo ya verificado antes de escribir en legacyData/
 npm run cps         # cps de Fortinet desde el Product Matrix (ancla contra sess)
+npm run matrix      # contrasta una edición del Product Matrix (PDF) celda a celda; solo compara
 npm run juniper     # cifras de la línea SRX
 npm run mikrotik    # matriz de pruebas de las fichas de MikroTik (carpeta de HTML traída; --check, --dry)
 npm run huawei      # cifras y fin de venta de Huawei (--check, --plantilla, --eol, --force)
@@ -450,7 +451,9 @@ Módulos compartidos:
   `npm run vigia -- --revisado <fabricante> <url>`. Vigila el texto en HTML, los bytes en PDF y,
   en las 20 fichas de MikroTik, **los datos transcritos** (`vigilar: 'ficha-mikrotik'`: la huella de
   lo que `npm run mikrotik` lee, que al transcribir deja el lock verificado);
-  `--sondeo` mide qué varía entre dos peticiones. **Un documento inalcanzable no es uno sin
+  `--sondeo` mide qué varía entre dos peticiones. Cuando cambia el Product Matrix de Fortinet,
+  `npm run matrix -- <pdf>` lo compara con el catálogo por coordenadas (no escribe nada) antes del
+  `--revisado`. **Un documento inalcanzable no es uno sin
   cambios**, y un 403 no prueba quién bloquea (`npm run candidatas`). Pasadas 4 semanas sin
   contrastar, `verificar` frena (`SEMANAS_TOLERADAS`).
 - **Contraste** (`npm run contraste`, dentro del job de `pantallas`): cada caso de

@@ -15,6 +15,7 @@
     "catalogo": "node scripts/catalogo-check.js",
     "datasheets": "node scripts/descargar-datasheets.js",
     "cps": "node scripts/importar-cps.js",
+    "matrix": "node scripts/contrastar-matrix.js",
     "huawei": "node scripts/importar-huawei.js",
     "juniper": "node scripts/importar-juniper.js",
     "mikrotik": "node scripts/importar-mikrotik.js",

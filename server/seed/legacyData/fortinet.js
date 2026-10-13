@@ -1,5 +1,7 @@
-// Verificado contra Fortinet Product Matrix, edicion de septiembre de 2026 (PROMTX-2026-R176-SEP;
-// la de julio con la que se transcribio al principio fue contrastada contra esta el 2026-09-14):
+// Verificado contra Fortinet Product Matrix, edicion de OCTUBRE de 2026 (PROMTX-2026-R177-OCT),
+// contrastada celda a celda con `npm run matrix` el 2026-10-13: 621 cifras de 27 modelos casan, y
+// la unica que cambio respecto de la de septiembre (PROMTX-2026-R176-SEP) es el 400G, 30.000
+// politicas. La de septiembre se contrasto a su vez contra la de julio el 2026-09-14.
 // https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf
 // Las 5 cifras publicadas, en orden de profundidad de inspección creciente y throughput
 // decreciente. Entender qué mide cada una es el 80% del dimensionamiento correcto:
@@ -458,7 +460,7 @@ for (const [base, lim] of Object.entries(MATRIX_LIMITES)) {
 }
 
 // ── LO QUE LAS FICHAS POR SERIE COMPLETAN DONDE EL MATRIX YA NO LLEGA (2026-09-23) ──────
-// El Product Matrix de septiembre es un «Top Selling Models Matrix» y ya no lista 400F,
+// El Product Matrix (septiembre y octubre) es un «Top Selling Models Matrix» y no lista 400F,
 // 600F ni 1000F, asi que esos modelos -y sus variantes 401F y 1001F- se apartaban en cuanto
 // un escenario pedia SSL, tuneles o VDOM, con el motivo «el catalogo no trae la cifra». LA
 // CIFRA ESTABA EN EL REPOSITORIO: sus fichas por serie se trajeron el 2026-09-03 por la rama
@@ -512,8 +514,8 @@ for (const [base, lim] of Object.entries(FICHAS_LIMITES)) {
 // sale cada cifra en vez de que haya que leer este comentario.
 for (const m of MODELS) {
   if (m.limitesDe) continue;
-  if (MATRIX_LIMITES[bareId(m.id)]) m.limitesDe={modelo:bareId(m.id), fuente:'Product Matrix sept-2026'};
-  else if (m.matrixDe) m.limitesDe={modelo:m.matrixDe, fuente:'Product Matrix sept-2026 (variante del mismo silicio)'};
+  if (MATRIX_LIMITES[bareId(m.id)]) m.limitesDe={modelo:bareId(m.id), fuente:'Product Matrix oct-2026'};
+  else if (m.matrixDe) m.limitesDe={modelo:m.matrixDe, fuente:'Product Matrix oct-2026 (variante del mismo silicio)'};
   else m.limitesDe=null;
 }
 
@@ -544,7 +546,7 @@ for (const m of MODELS) {
 // `vpn.ipsec.phase1`), y se comprueban AL CARGAR: si no casan las dos, la fila no se aplica.
 // El dia de la lectura casaron 26 de 27 columnas en `policies` y 27 de 27 en `tunGw`.
 // Fuera de la tabla, a proposito:
-//   - 3800G: la MVT 7.6.7 da 200.000 politicas y el Product Matrix de septiembre 400.000. Un
+//   - 3800G: la MVT 7.6.7 da 200.000 politicas y el Product Matrix de octubre 400.000. Un
 //     ancla contradice: no se aplica (su 13.000 de BGP no se toma).
 //   - 400G, 3000G y 3500G: la tabla de 7.6.7 imprime «-» en todas sus filas (no los lista en
 //     esa version). Quedan sin dato, no con el de otra version.
@@ -598,7 +600,7 @@ for (const [base, fila] of Object.entries(MVT_LIMITES)) {
 }
 
 // ── PLATAFORMA POR MODELO: LO QUE EL MATRIX PUBLICA ADEMAS DEL RENDIMIENTO (2026-09-23) ──
-// Seis filas del Product Matrix de septiembre que el catalogo no traia y que el informe de
+// Seis filas del Product Matrix (transcritas de la de septiembre; la de octubre las repite) que el catalogo no traia y que el informe de
 // auditoria del 23-sep pide como restricciones (F06, F14, F15): VDOM incluidos, almacenamiento
 // local, variantes (PoE incluido), fuentes, formato y la escala del Security Fabric que el
 // equipo gestiona (FortiAP, FortiSwitch, FortiToken). Reconstruidas por coordenadas de texto
@@ -671,14 +673,14 @@ const FICHAS_PLATAFORMA={
    UNO u OTRO, nunca como los dos a la vez. Los puertos de gestion y HA dedicados no entran. */
 const P=(n,vel,...medios)=>({n,vel,medios});
 const PUERTOS={
-  '30G':  {puertos:[P(4,1,'RJ45')],                         fuente:'Product Matrix sept-2026 (Interfaces)'},
-  '40F':  {puertos:[P(5,1,'RJ45')],                         fuente:'Product Matrix sept-2026 (Interfaces)'},
-  '50G':  {puertos:[P(5,1,'RJ45')],                         fuente:'Product Matrix sept-2026 (Interfaces)'},
-  '60F':  {puertos:[P(10,1,'RJ45')],                        fuente:'Product Matrix sept-2026 (Interfaces)'},
-  '70F':  {puertos:[P(10,1,'RJ45')],                        fuente:'Product Matrix sept-2026 (Interfaces)'},
-  '70G':  {puertos:[P(10,1,'RJ45')],                        fuente:'Product Matrix sept-2026 (Interfaces)'},
-  '80F':  {puertos:[P(8,1,'RJ45'), P(2,1,'RJ45','SFP')],     fuente:'Product Matrix sept-2026 (Interfaces: 8x GE RJ45, 2x Shared Port Pairs)'},
-  '90G':  {puertos:[P(8,1,'RJ45'), P(2,10,'RJ45','SFP+')],   fuente:'Product Matrix sept-2026 (Interfaces: 8x GE RJ45, 2x 10GE Shared Port Pairs)'},
+  '30G':  {puertos:[P(4,1,'RJ45')],                         fuente:'Product Matrix oct-2026 (Interfaces)'},
+  '40F':  {puertos:[P(5,1,'RJ45')],                         fuente:'Product Matrix oct-2026 (Interfaces)'},
+  '50G':  {puertos:[P(5,1,'RJ45')],                         fuente:'Product Matrix oct-2026 (Interfaces)'},
+  '60F':  {puertos:[P(10,1,'RJ45')],                        fuente:'Product Matrix oct-2026 (Interfaces)'},
+  '70F':  {puertos:[P(10,1,'RJ45')],                        fuente:'Product Matrix oct-2026 (Interfaces)'},
+  '70G':  {puertos:[P(10,1,'RJ45')],                        fuente:'Product Matrix oct-2026 (Interfaces)'},
+  '80F':  {puertos:[P(8,1,'RJ45'), P(2,1,'RJ45','SFP')],     fuente:'Product Matrix oct-2026 (Interfaces: 8x GE RJ45, 2x Shared Port Pairs)'},
+  '90G':  {puertos:[P(8,1,'RJ45'), P(2,10,'RJ45','SFP+')],   fuente:'Product Matrix oct-2026 (Interfaces: 8x GE RJ45, 2x 10GE Shared Port Pairs)'},
   '120G': {puertos:[P(16,1,'RJ45'), P(8,1,'SFP'), P(4,10,'SFP+')], fuente:'ficha por serie FG-120G-DAT-R18-202607 (Hardware Specifications)'},
 };
 
@@ -706,7 +708,7 @@ for (const m of MODELS) {
       aps:pl.aps, apsTun:pl.apsTun, switches:pl.switches, tokens:pl.tokens,
       formato:pl.formato||null,
       notasMatrix:pl.notas||{},
-      plataformaFuente:MATRIX_PLATAFORMA[baseId]?'Product Matrix sept-2026':`ficha por serie ${pl.ficha}`,
+      plataformaFuente:MATRIX_PLATAFORMA[baseId]?'Product Matrix oct-2026':`ficha por serie ${pl.ficha}`,
     });
   }
   const pu=PUERTOS[baseId||id]||PUERTOS[id];
@@ -758,13 +760,13 @@ const FORTIOS={
      fuente:'FortiOS 7.6.3 Release Notes, p. 15, «SSL VPN tunnel mode replaced with IPsec VPN»: «Starting in FortiOS 7.6.3, the SSL VPN tunnel mode feature is replaced with IPsec VPN [...] This applies to all FortiGate models.»',
      leida:true},
     {funcion:'sslvpn', versiones:['7.6.0-7.6.2'], modelos:['40F','60F','61F'], estado:'no-soportada', sustituto:'ipsec',
-     fuente:'FortiOS 7.6.0 Release Notes, pp. 10-11, «SSL VPN removed from 2GB RAM models for tunnel and web mode»: 40F y variantes, 60F y 61F; «FortiGate models not listed above will continue to have SSL VPN web and tunnel mode support» (y nota 10 del Product Matrix sept-2026)',
+     fuente:'FortiOS 7.6.0 Release Notes, pp. 10-11, «SSL VPN removed from 2GB RAM models for tunnel and web mode»: 40F y variantes, 60F y 61F; «FortiGate models not listed above will continue to have SSL VPN web and tunnel mode support» (y nota 10 del Product Matrix oct-2026, igual que en la de septiembre)',
      leida:true},
     {funcion:'sslvpn', versiones:['7.4','7.6.0-7.6.2','7.6.3+'], modelos:['90G','91G'], estado:'no-soportada', sustituto:'ipsec',
-     fuente:'Product Matrix sept-2026, nota 11 en la celda SSL VPN del FG-90G: «SSL VPN only supported between 7.0.12 and 7.0.15»',
+     fuente:'Product Matrix oct-2026, nota 11 en la celda SSL VPN del FG-90G: «SSL VPN only supported between 7.0.12 and 7.0.15»',
      leida:true},
     {funcion:'proxy', versiones:['7.4','7.6.0-7.6.2','7.6.3+'], modelos:['30G','31G','40F','50G','51G','60F','61F'], estado:'limitada',
-     fuente:'Product Matrix sept-2026, nota 12: «Proxy features limited supported, refer to data sheet»; para 40F y 60F, las FortiOS 7.6.0 Release Notes: sin funciones proxy desde 7.4.4 en los modelos de 2 GB de RAM',
+     fuente:'Product Matrix oct-2026, nota 12: «Proxy features limited supported, refer to data sheet»; para 40F y 60F, las FortiOS 7.6.0 Release Notes: sin funciones proxy desde 7.4.4 en los modelos de 2 GB de RAM',
      leida:true},
   ],
 };
