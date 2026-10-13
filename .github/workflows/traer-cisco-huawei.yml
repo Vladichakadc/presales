@@ -338,6 +338,21 @@ jobs:
               { archivo: 'mikrotik-routers', tipo: 'paginas', para: 'MIKROTIK', urls: [],
                 descubrirPiezas: { de: ['mikrotik-routers-listado.html'], base: 'https://mikrotik.com/products/group/ethernet-routers',
                   dominios: ['mikrotik.com'], prefijo: ['product'], max: 45 } },
+              // Primera corrida (38394703476): el descubrimiento no admitia «_» en la ruta y trunco
+              // hex_s, rb5009ug_s_in... en /product/hex, /product/rb5009ug (404). Ya lo admite.
+              // Los AP de CAPsMAN y las opticas del BOM salen de sus listados, igual que los routers.
+              { archivo: 'mikrotik-wifi-listado.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+                'https://mikrotik.com/products/group/indoor-wireless',
+              ] },
+              { archivo: 'mikrotik-wifi', tipo: 'paginas', para: 'MIKROTIK', urls: [],
+                descubrirPiezas: { de: ['mikrotik-wifi-listado.html'], base: 'https://mikrotik.com/products/group/indoor-wireless',
+                  dominios: ['mikrotik.com'], prefijo: ['product'], max: 45 } },
+              { archivo: 'mikrotik-sfp-listado.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+                'https://mikrotik.com/products/group/sfp-qsfp',
+              ] },
+              { archivo: 'mikrotik-sfp', tipo: 'paginas', para: 'MIKROTIK', urls: [],
+                descubrirPiezas: { de: ['mikrotik-sfp-listado.html'], base: 'https://mikrotik.com/products/group/sfp-qsfp',
+                  dominios: ['mikrotik.com'], prefijo: ['product'], max: 90 } },
               { archivo: 'mikrotik-licencias.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
                 'https://help.mikrotik.com/docs/spaces/ROS/pages/328149/RouterOS+license+keys',
                 'https://help.mikrotik.com/docs/display/ROS/RouterOS+license+keys',
@@ -687,7 +702,7 @@ jobs:
                     const texto = fs.readFileSync(ruta, 'utf8');
                     const re = esJs ? /src=[\x22']([^\x22'<>\s]+?[.]js(?:[?][^\x22'<>\s]*)?)[\x22']/gi
                       : esImg ? /(?:https?:)?[/][/][^\x22'\s()<>]+?[.](?:png|jpe?g|webp)/gi
-                      : new RegExp('(?:https?:[/][/][A-Za-z0-9.-]+)?[/]' + cfg.prefijo.join('[/]') + '[/][A-Za-z0-9][A-Za-z0-9/-]*', 'g');
+                      : new RegExp('(?:https?:[/][/][A-Za-z0-9.-]+)?[/]' + cfg.prefijo.join('[/]') + '[/][A-Za-z0-9][A-Za-z0-9_/-]*', 'g');
                     for (const m of texto.matchAll(re)) {
                       let u;
                       try { u = new URL(esJs ? m[1] : m[0], cfg.base); } catch (e) { continue; }
