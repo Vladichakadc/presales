@@ -132,6 +132,126 @@
       "clase": "bytes",
       "bytes": 484008,
       "medido": "2026-10-02T04:24:40.380Z"
+    },
+    "mikrotik::https://mikrotik.com/product/RB750Gr3": {
+      "documento": "Ficha de producto MikroTik RB750Gr3",
+      "hashVerificado": "0abe9ef312c91d758765695438ebfcdc7448695d8800cd9303cf86374a32236f",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
+    },
+    "mikrotik::https://mikrotik.com/product/RB750UPr2": {
+      "documento": "Ficha de producto MikroTik RB750UPr2",
+      "hashVerificado": "e479801ec6839ede3fbf2bf67c1f4c25f57806fe3548eee5b7fa70980bc46634",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
+    },
+    "mikrotik::https://mikrotik.com/product/RB750r2": {
+      "documento": "Ficha de producto MikroTik RB750r2",
+      "hashVerificado": "64181d16f4201c611121f8e26815f7d2b6e1df8a9c08f29ab1e8eb519814b68e",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
+    },
+    "mikrotik::https://mikrotik.com/product/RB960PGS-PB": {
+      "documento": "Ficha de producto MikroTik RB960PGS-PB",
+      "hashVerificado": "451f444b7b240dc99647644891fd377cdd937a9113594c7a798209b3d923c93a",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
+    },
+    "mikrotik::https://mikrotik.com/product/RB960PGS": {
+      "documento": "Ficha de producto MikroTik RB960PGS",
+      "hashVerificado": "e3dc29618f98d0ea7375001ff7bfdf8310bc3bc746a5c6ca0703d8ee415fa1d8",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
+    },
+    "mikrotik::https://mikrotik.com/product/ccr2004_16g_2s_pc": {
+      "documento": "Ficha de producto MikroTik CCR2004-16G-2S+PC",
+      "hashVerificado": "f4152318e3f75622a2bed92b39c7f3fa1452b9bb165e09f4cb906cc048932b5f",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
+    },
+    "mikrotik::https://mikrotik.com/product/ccr2004_16g_2splus": {
+      "documento": "Ficha de producto MikroTik CCR2004-16G-2S+",
+      "hashVerificado": "62ed08eca7363975dbc74bb5d79129860eddf1426104e695813d4bb7dab6f57b",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
+    },
+    "mikrotik::https://mikrotik.com/product/ccr2004_1g_12s_2xs": {
+      "documento": "Ficha de producto MikroTik CCR2004-1G-12S+2XS",
+      "hashVerificado": "37909be33f36cd25e019084cb52f784da75856c9688ad503e881bb0bfcb203d2",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
+    },
+    "mikrotik::https://mikrotik.com/product/ccr2116_12g_4splus": {
+      "documento": "Ficha de producto MikroTik CCR2116-12G-4S+",
+      "hashVerificado": "56f79440ef1824c153a7ef0fe1dea095dd0ba473b36f260bb57382fa5345a30d",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
+    },
+    "mikrotik::https://mikrotik.com/product/ccr2216_1g_12xs_2xq": {
+      "documento": "Ficha de producto MikroTik CCR2216-1G-12XS-2XQ",
+      "hashVerificado": "3c964274f9e382d09e2a7957d462097d01cd755002f6b36f2d617c9f1432046b",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
+    },
+    "mikrotik::https://mikrotik.com/product/hex_2024": {
+      "documento": "Ficha de producto MikroTik E50UG",
+      "hashVerificado": "65993fd8f9bcd2b95b4d0fac5f8e2aef9b1e155bd5ccd603d2451ed394314946",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
+    },
+    "mikrotik::https://mikrotik.com/product/hex_s": {
+      "documento": "Ficha de producto MikroTik RB760iGS",
+      "hashVerificado": "f7b803c2ad2d2a39c5fd14a3d7527e4422af57ccf291d06bc3da5f71cc9d1114",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
+    },
+    "mikrotik::https://mikrotik.com/product/hex_s_2025": {
+      "documento": "Ficha de producto MikroTik E60iUGS",
+      "hashVerificado": "e472aff0e8163d64f3c962aab285ceed3a11b895476950e6cbbd8077056ab287",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
+    },
+    "mikrotik::https://mikrotik.com/product/l009uigs_2haxd_in": {
+      "documento": "Ficha de producto MikroTik L009UiGS-2HaxD-IN",
+      "hashVerificado": "7f456413c70a90745bc76efbf23d21233d03936a75b141c182b5a9df4c21b4b3",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
+    },
+    "mikrotik::https://mikrotik.com/product/l009uigs_rm": {
+      "documento": "Ficha de producto MikroTik L009UiGS-RM",
+      "hashVerificado": "53b32082d46a0a01691fe8e3b092a4ac363b1b025a05bb1ab00652d83b7ce15a",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
+    },
+    "mikrotik::https://mikrotik.com/product/rb1100ahx4": {
+      "documento": "Ficha de producto MikroTik RB1100x4",
+      "hashVerificado": "7bf1ae1597f9d71c0b44948037457852e77028202b9b660beb1a4f96e5fe3669",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
+    },
+    "mikrotik::https://mikrotik.com/product/rb4011igs_rm": {
+      "documento": "Ficha de producto MikroTik RB4011iGS+RM",
+      "hashVerificado": "42016b192a50e51f07b1df4e281426199829f726ab2ac9fe91d28f7388d54145",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
+    },
+    "mikrotik::https://mikrotik.com/product/rb5009_out": {
+      "documento": "Ficha de producto MikroTik RB5009UPr+S+OUT",
+      "hashVerificado": "533314281442ec8e6fc8050a004bc46dcefe2bb96b081fe191d922960c23f74f",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
+    },
+    "mikrotik::https://mikrotik.com/product/rb5009ug_s_in": {
+      "documento": "Ficha de producto MikroTik RB5009UG+S+IN",
+      "hashVerificado": "339a354f606827176a5284200075080a3b0ba996a514994ae85f157ee66ecba0",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
+    },
+    "mikrotik::https://mikrotik.com/product/rb5009upr_s_in": {
+      "documento": "Ficha de producto MikroTik RB5009UPr+S+IN",
+      "hashVerificado": "7a8d6d7b8745e9964be75527c3462c16e9d6752116cff6dafaa1d58f085ab5bb",
+      "clase": "datos",
+      "medido": "2026-10-13T13:16:54.290Z"
     }
   },
   "revisado": "2026-10-02T04:24:40.380Z"

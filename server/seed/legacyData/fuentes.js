@@ -64,6 +64,24 @@ const ANTIGUEDAD_AVISO_MESES = 6;
 
 // `fecha` en ISO. Solo el mes cuando la cabecera solo da el mes ("julio 2026"), el dia
 // completo cuando lo da ("17-ago-2026"). Nunca se completa el dia a ojo.
+// LAS FICHAS DE MIKROTIK, UNA A UNA (2026-10-13). La fuente general vigilaba solo la portada
+// de productos: un cambio en la tabla de pruebas o en el precio de un equipo no lo avisaba nadie.
+// Ahora cada ficha transcrita es una fuente vigilada por sus DATOS (`vigilar: 'ficha-mikrotik'`):
+// el vigia relee la pagina con el mismo lector que `npm run mikrotik` y compara la huella de lo
+// que el catalogo usa, no el HTML. Se generan desde `mikrotikPruebas.js` para que no exista una
+// segunda lista de URLs que se desincronice. `campos: null` a proposito: cada ficha respalda UN
+// modelo, y declarar `fwd` aqui contaria los veinte equipos por cada una.
+const { FICHAS: FICHAS_MIKROTIK } = require('./mikrotikPruebas');
+const documentoFichaMikrotik = (codigo) => `Ficha de producto MikroTik ${codigo}`;
+const fichasMikrotik = () => Object.entries(FICHAS_MIKROTIK).map(([codigo, f]) => ({
+  documento: documentoFichaMikrotik(codigo),
+  url: f.url, estable: true, fecha: null, hash: null,
+  vigilar: 'ficha-mikrotik', codigo,
+  campos: null, porQue: `respalda un solo modelo (${codigo}); la procedencia por modelo es dato: la URL de cada ficha en mikrotikPruebas.js`,
+  cubre: `tabla de pruebas RFC 2544, CPU, nucleos, RAM, nivel de licencia y «Suggested price» del ${codigo}`,
+  nota: 'Vigilada por sus DATOS, no por el HTML: el vigia lee la pagina con el lector de `npm run mikrotik` y compara la huella de lo transcrito. Si cambia, se relee con `npm run mikrotik`, que vuelve a anclar y deja el lock verificado. Sin fecha: MikroTik no la publica en la ficha.',
+}));
+
 const FUENTES = {
   fortinet: [
     { documento: 'Fortinet Product Matrix',
@@ -322,6 +340,7 @@ const FUENTES = {
       campos: null, porQue: 'respalda LICENSE_LEVELS (topes de tuneles PPPoE/PPTP/L2TP/OpenVPN y usuarios HotSpot por nivel) y el tope y precio de las licencias CHR, que son tablas del dimensionador y no campos de MODELS',
       cubre: 'topes por nivel 4/5/6 (nivel 4: 200 tuneles PPPoE/PPTP/L2TP/OpenVPN y 200 usuarios HotSpot; nivel 5: 500, OpenVPN sin tope y 500; nivel 6 sin tope), que los niveles no aplican a CHR, y las licencias CHR Free (1 Mbps), P1 (1 Gbps, $45), P10 (10 Gbps, $95) y P-Unlimited ($250), con prueba de 60 dias',
       nota: 'Traidas el 2026-10-13 por traer-cisco-huawei.yml (rama fuente/mikrotik-2026-10-13; la de CHR desde manual.mikrotik.com/docs/getting-started/routeros-licensing/chr/chr-licensing/). Corrigieron dos textos de la pagina: «CHR Free sin tope, limitado a 60 dias» (es 1 Mbps por interfaz y sin caducidad; los 60 dias son la prueba de los niveles de pago) y «todas las CHR son nivel 6» (los niveles no aplican a CHR). Y el nivel 5, que el catalogo daba con 500 tuneles OpenVPN: no tiene tope.' },
+    ...fichasMikrotik(),
   ],
 
   aruba: [
@@ -416,4 +435,4 @@ function fuentesQueAvisan(ahora = new Date()) {
   return avisos;
 }
 
-module.exports = { FUENTES, ANTIGUEDAD_AVISO_MESES, mesesDesde, estadoFuente, fuentesDe, fuentesQueAvisan };
+module.exports = { FUENTES, ANTIGUEDAD_AVISO_MESES, mesesDesde, estadoFuente, fuentesDe, fuentesQueAvisan, documentoFichaMikrotik };

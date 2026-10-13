@@ -56,6 +56,9 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { FUENTES } = require('../server/seed/legacyData/fuentes');
+// El lector de las fichas de MikroTik: el mismo que transcribe, para que la huella que se vigila
+// sea la misma que la que el importador deja verificada. Solo usa modulos de Node.
+const { leerFicha: leerFichaMikrotik, huellaFicha } = require('./importar-mikrotik');
 
 const LOCK = path.join(__dirname, '..', 'server', 'seed', 'legacyData', 'fuentes.lock.json');
 const args = process.argv.slice(2);
@@ -164,6 +167,19 @@ async function revisar(vendor, f, opts) {
     const cuerpo = Buffer.from(await res.arrayBuffer());
     const tipo = res.headers.get('content-type') || null;
     const texto = textoNormalizado(cuerpo, tipo);
+    // LA TERCERA CLASE: DATOS (2026-10-13). Una ficha de MikroTik se vigila por lo que el
+    // catalogo transcribe de ella (tabla de pruebas, CPU, RAM, nivel, precio), no por su texto,
+    // que trae carruseles de otros productos. Si la pagina ya no se puede leer como la ficha de
+    // ese equipo NO es «sin cambios»: es ilegible, y se dice.
+    let datos = null;
+    if (f.vigilar === 'ficha-mikrotik') {
+      const { ficha, errores } = leerFichaMikrotik(cuerpo.toString('utf8'));
+      if (!ficha || errores.length || (f.codigo && ficha.codigo !== f.codigo)) {
+        const motivo = !ficha ? (errores[0] || 'sin ficha') : errores.length ? errores.slice(0, 2).join('; ') : `es la ficha de ${ficha.codigo}`;
+        return { ...base, estado: 'inalcanzable', detalle: `la página no se lee como la ficha de ${f.codigo}: ${motivo}` };
+      }
+      datos = huellaFicha(ficha);
+    }
     return {
       ...base,
       estado: 'leido',
@@ -177,8 +193,8 @@ async function revisar(vendor, f, opts) {
       // 15 s de diferencia y NINGUNA cambia de texto. El boletin EOL de Cisco llevaba tres
       // semanas de alarmas falsas por eso. En un PDF no hay texto normalizable sin un parser,
       // asi que se siguen vigilando los bytes -- y ahi son estables, tambien medido.
-      hashVigilado: texto === null ? sha(cuerpo) : sha(texto),
-      clase: texto === null ? 'bytes' : 'texto',
+      hashVigilado: datos !== null ? datos : texto === null ? sha(cuerpo) : sha(texto),
+      clase: datos !== null ? 'datos' : texto === null ? 'bytes' : 'texto',
       texto: (opts && opts.conTexto) ? texto : undefined,
     };
   } catch (err) {
@@ -397,6 +413,8 @@ async function sondear(segundos) {
         bytesB: b.bytes,
         hashIgual: a.hash === b.hash,
         hashTextoIgual: a.hashTexto !== null && a.hashTexto === b.hashTexto,
+        clase: a.clase,
+        vigiladoIgual: a.hashVigilado === b.hashVigilado,
         hayTexto: a.hashTexto !== null,
         // Cuando el texto difiere, el primer trozo que no casa. Sin esto, "el texto tambien
         // varia" no dice si es una fecha, un contador de visitas o el documento entero.
@@ -417,6 +435,11 @@ function imprimirSondeo(filas) {
       console.log(`          inalcanzable: ${r.detalle}`);
       continue;
     }
+    if (r.clase === 'datos') {
+      console.log(`${r.vigiladoIgual ? '[ datos]' : '[VOLATIL]'} ${r.vendor.padEnd(9)} ${r.documento}`);
+      console.log(`          declarado estable: ${r.estable ? 'si' : 'no'} · medido: ${r.vigiladoIgual ? 'DATOS ESTABLES' : 'los DATOS varian entre dos peticiones'} (bytes ${r.bytesA} / ${r.bytesB})`);
+      continue;
+    }
     const veredicto = r.hashIgual ? 'ESTABLE en bytes'
       : (r.hashTextoIgual ? 'bytes volatiles, TEXTO ESTABLE'
         : (r.hayTexto ? 'texto TAMBIEN volatil' : 'bytes volatiles (no es HTML: sin texto que comparar)'));
@@ -430,7 +453,7 @@ function imprimirSondeo(filas) {
       console.log(`            B: …${r.difiereEn.b}…`);
     }
   }
-  const mal = filas.filter((r) => r.estado === 'leido' && r.estable && !r.hashIgual);
+  const mal = filas.filter((r) => r.estado === 'leido' && r.estable && !(r.clase === 'datos' ? r.vigiladoIgual : r.hashIgual));
   if (mal.length) {
     console.log(`\n${mal.length} fuente(s) declaradas estables que NO lo son. Cada alarma suya puede ser falsa.`);
     for (const r of mal) {

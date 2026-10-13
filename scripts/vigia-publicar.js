@@ -57,7 +57,7 @@ function entradaMal(e) {
   if (typeof e.documento !== 'string' || e.documento.length > 300) return 'documento';
   const n = normalizarEntrada(e);
   if (!HEX64.test(n.hashVerificado || '')) return 'hashVerificado';
-  if (e.clase != null && e.clase !== 'bytes' && e.clase !== 'texto') return 'clase';
+  if (e.clase != null && !['bytes', 'texto', 'datos'].includes(e.clase)) return 'clase';
   if (e.bytes != null && !esEntero(e.bytes)) return 'bytes';
   if (e.medido != null && !ISO.test(e.medido)) return 'medido';
   if (e.visto != null) {

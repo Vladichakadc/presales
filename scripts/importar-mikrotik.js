@@ -36,6 +36,25 @@ const fs = require('fs');
 const path = require('path');
 
 const DESTINO = path.join(__dirname, '..', 'server', 'seed', 'legacyData', 'mikrotikPruebas.js');
+const LOCK = path.join(__dirname, '..', 'server', 'seed', 'legacyData', 'fuentes.lock.json');
+
+// LA HUELLA DE UNA FICHA (2026-10-13). Lo que el vigia compara cada semana no es el HTML de la
+// pagina —que lleva carruseles de «productos relacionados» y cambia sin que cambie el equipo—
+// sino exactamente lo que este importador transcribe: codigo, precio, CPU, nucleos, RAM, nivel
+// y la matriz de pruebas. Una sola funcion para los dos lados: si el vigia y el importador
+// hashearan cosas distintas, una relectura correcta seguiria dando la alarma por pendiente.
+// JSON canonico (claves ordenadas): el orden de construccion del objeto no puede mover el hash.
+const CAMPOS_HUELLA = ['codigo', 'url', 'precio', 'cpu', 'arq', 'nucleos', 'mhz', 'ram', 'lvl', 'ruteo', 'puente', 'ipsec'];
+function canonico(x) {
+  if (Array.isArray(x)) return `[${x.map(canonico).join(',')}]`;
+  if (x && typeof x === 'object') return `{${Object.keys(x).sort().map((k) => `${JSON.stringify(k)}:${canonico(x[k])}`).join(',')}}`;
+  return JSON.stringify(x === undefined ? null : x);
+}
+function huellaFicha(ficha) {
+  const o = {};
+  for (const k of CAMPOS_HUELLA) o[k] = ficha[k] === undefined ? null : ficha[k];
+  return require('crypto').createHash('sha256').update(canonico(o)).digest('hex');
+}
 
 const decodificar = (s) => s
   .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
@@ -231,6 +250,7 @@ function main() {
   const porCodigo = new Map(MODELS.filter((m) => m.codigo).map((m) => [m.codigo, m]));
   const nuevas = { ...previas };
   let aplicadas = 0; let rechazadas = 0;
+  const aplicadasCodigos = [];
   for (const f of archivos(rutas)) {
     const { ficha, errores } = leerFicha(fs.readFileSync(f, 'utf8'));
     const nombre = path.basename(f);
@@ -248,6 +268,7 @@ function main() {
     }
     const { spec, ...limpia } = ficha;
     nuevas[ficha.codigo] = limpia;
+    aplicadasCodigos.push(ficha.codigo);
     aplicadas++;
     console.log(`${a.ok ? 'OK        ' : 'FORZADA   '} ${nombre} -> ${modelo.id} (casan ${a.casan.join(', ')}${a.chocan.length ? `; chocan ${a.chocan.join(', ')}` : ''})`);
   }
@@ -260,8 +281,27 @@ function main() {
   if (!aplicadas) return;
   fs.writeFileSync(DESTINO, serializar(ordenadas, leido));
   console.log(`Escrito ${path.relative(process.cwd(), DESTINO)}`);
+  // Transcribir una ficha ES contrastarla: lo verificado pasa a ser exactamente lo transcrito, y
+  // el vigia compara contra eso. Es el `--revisado` de estas fuentes, hecho en el mismo acto que
+  // mete el dato; por separado, uno de los dos se olvida (la prueba lo frena).
+  const n = verificarEnLock(aplicadasCodigos.map((c) => ({ codigo: c, ...nuevas[c] })));
+  console.log(`Lock del vigia: ${n} ficha(s) verificadas con la huella de lo transcrito.`);
+}
+
+function verificarEnLock(fichas, ruta) {
+  const { documentoFichaMikrotik } = require('../server/seed/legacyData/fuentes');
+  let lock;
+  try { lock = JSON.parse(fs.readFileSync(ruta || LOCK, 'utf8')); } catch { lock = { documentos: {} }; }
+  const ahora = new Date().toISOString();
+  for (const f of fichas) {
+    lock.documentos[`mikrotik::${f.url}`] = {
+      documento: documentoFichaMikrotik(f.codigo), hashVerificado: huellaFicha(f), clase: 'datos', medido: ahora,
+    };
+  }
+  fs.writeFileSync(ruta || LOCK, `${JSON.stringify(lock, null, 2)}\n`);
+  return fichas.length;
 }
 
 if (require.main === module) main();
 
-module.exports = { leerFicha, lecturas, par, anclar };
+module.exports = { leerFicha, lecturas, par, anclar, huellaFicha, canonico, verificarEnLock, CAMPOS_HUELLA };
