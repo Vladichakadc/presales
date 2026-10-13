@@ -1,0 +1,17 @@
+[
+  {
+    "archivo": "mikrotik-compatibilidad.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://manual.mikrotik.com/docs/7.25/wired-connections/mikrotik-wired-interface-compatibility",
+        "status": 200,
+        "bytes": 401574,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
