@@ -7,6 +7,10 @@ const M=MikrotikMotor;
 let profile='fwd', media='any', modo='sitio', trama=M.TRAMA_DEFECTO, lastPick=null;
 let hayCandidato=true;
 let bomFilas=[], bomMeta={}, ultimaEval=null;
+// Figuras oficiales de cada equipo (2026-10-13): la galeria «Product images» de su ficha en
+// mikrotik.com, en alta resolucion. Mapa y procedencia en /data/mikrotik-vistas-equipos.json;
+// las pinta FICHA (opt-in `vistas`, como en Aruba, Fortinet y Huawei) y viajan al Excel.
+let VISTAS=null;
 const VENDOR='mikrotik';
 
 // El equipo del dimensionamiento se lleva solo al BOM. La regla vive en js/bom.js —
@@ -296,6 +300,7 @@ function render(){
 
   const elegidoId=FICHA.render({vendor:'mikrotik',
     contenedor:'verdict',
+    vistas:VISTAS||{},
     candidatos:ev.fit.map(r=>r.m),
     recomendado:pick.id,
     etiqueta:m=>{const r=filaDe(m)||{};return `${m.id} — ${m.seg} · ${fmt(r.cap)}${m.elp?' · '+m.elp:''}`;},
@@ -501,6 +506,9 @@ function renderBom(){
       '  El nivel de licencia viene grabado en el hardware y no se puede subir por software.',
     ].filter(n=>n!==null),
   };
+  const v=VISTAS&&VISTAS[m.id];
+  if(v&&v.front) meta.fotos={modelo:m.id, origen:'Galería oficial de la ficha de producto en mikrotik.com', front:v.front, rear:v.rear||null,
+    pie:[v.tamano,v.fuente].filter(Boolean).join(' · ')};
   const d=dtoActual();
   if(d>0){ meta.dto=d; meta.dtoEtq=DTO.etiqueta(); }
 
@@ -563,6 +571,11 @@ $('memoriaBtn').addEventListener('click',()=>{
   FICHA.fijarCicloVida(data.cicloVida);
   MODELS=data.models; OPTICS=data.optics; OPTIC_LABEL=data.opticLabel;
   APS=data.accessPoints; SUPPORT=data.support; SIZING=data.sizing;
+  // Sin el mapa la pagina funciona igual: la ficha declara que no hay figura, nunca inventa una.
+  try {
+    const rv=await fetch('/data/mikrotik-vistas-equipos.json');
+    if(rv.ok) VISTAS=await rv.json();
+  } catch { VISTAS=null; }
 
   populateSelects();
   renderLicTables();

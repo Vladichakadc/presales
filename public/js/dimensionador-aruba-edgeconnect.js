@@ -2966,7 +2966,7 @@ function renderBom(){
   // honesto, no se inventa una imagen.
   const vBom=(FICHA_CFG.vistas||{})[m.id];
   const fotosBom=vBom&&vBom.front
-    ?{modelo:m.id, front:vBom.front, rear:vBom.rear||null,
+    ?{modelo:m.id, origen:'Extraídas de los documentos oficiales de HPE', front:vBom.front, rear:vBom.rear||null,
       pie:[vBom.tamano,vBom.fuente].filter(Boolean).join(' · ')}
     :null;
   const meta={

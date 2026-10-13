@@ -1469,7 +1469,7 @@ function documentoMeta(r, confirmacion) {
     titulo: `${borrador ? 'BORRADOR TÉCNICO — ' : ''}Lista de materiales — ${m.id}`,
     subtitulo: `${m.seg} · FortiOS · ${r.bom.nodos} nodo(s) · término ${anios} año${anios > 1 ? 's' : ''}`,
     archivo: `${borrador ? 'BORRADOR_' : ''}BOM_${m.id}`,
-    ...(v && v.front ? { fotos: { modelo: m.id, front: v.front, rear: v.rear || null, pie: [v.tamano, v.fuente].filter(Boolean).join(' · ') } } : {}),
+    ...(v && v.front ? { fotos: { modelo: m.id, origen: 'Extraídas de los documentos oficiales de Fortinet', front: v.front, rear: v.rear || null, pie: [v.tamano, v.fuente].filter(Boolean).join(' · ') } } : {}),
     notas: [
       '',
       ...(borrador ? ['BORRADOR TECNICO: NO ES UNA COTIZACION EN FIRME. Falta, para cotizar:',

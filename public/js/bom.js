@@ -735,7 +735,9 @@
     pon('FOTOS OFICIALES DEL EQUIPO RECOMENDADO', true);
     pon(`Modelo: ${fotos.modelo}`);
     if (fotos.pie) pon(fotos.pie);
-    pon('Extraídas de los documentos oficiales de HPE versionados en la herramienta — la misma fuente que la ficha en pantalla.');
+    // El origen lo declara cada pagina (`fotos.origen`): hasta el 2026-10-13 esta linea decia
+    // «documentos oficiales de HPE» tambien en el Excel de Fortinet, Huawei y MikroTik.
+    pon(`${fotos.origen || 'Extraídas de los documentos oficiales del fabricante'} versionados en la herramienta — la misma fuente que la ficha en pantalla.`);
     r++;
     let incrustadas = 0;
     for (const [cara, src] of [['frontal', fotos.front], ['trasera', fotos.rear]]) {

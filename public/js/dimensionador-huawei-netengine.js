@@ -677,7 +677,7 @@ function metaBom(m){
     titulo:`Lista de materiales — ${m.id}`,
     subtitulo:`Serie ${m.ser} · ${m.fam}`,
     archivo:`BOM_${m.id}`,
-    ...(v && v.front ? {fotos:{modelo:m.id, front:v.front, rear:v.rear || null, pie:[v.tamano, v.fuente].filter(Boolean).join(' · ')}} : {}),
+    ...(v && v.front ? {fotos:{modelo:m.id, origen:'Extraídas de los documentos oficiales de Huawei', front:v.front, rear:v.rear || null, pie:[v.tamano, v.fuente].filter(Boolean).join(' · ')}} : {}),
     notas:[
       '',
       'NOTAS DE PREVENTA',
