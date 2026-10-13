@@ -1,0 +1,17 @@
+[
+  {
+    "archivo": "huawei-a800-documentos.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/06048a7a12954961b5017a6459145905",
+        "status": 200,
+        "bytes": 326993,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  }
+]
