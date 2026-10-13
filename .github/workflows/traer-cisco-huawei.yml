@@ -383,6 +383,15 @@ jobs:
               { archivo: 'mikrotik-manuales-sfp', tipo: 'paginas', para: 'MIKROTIK', urls: [],
                 descubrirPiezas: { de: ['mikrotik-sfp'], base: 'https://mikrotik.com/',
                   dominios: ['manual.mikrotik.com'], prefijo: ['hardware'], max: 45 } },
+              // 2026-10-13 (pendiente F4-resto de Fortinet): la «Maximum Values Table» de FortiOS
+              // (rutas, vecinos BGP/OSPF y VRF por modelo). La pagina es una aplicacion: se trae su
+              // HTML y sus scripts para LEER de donde saca los datos; los scripts no se ejecutan.
+              { archivo: 'fortinet-mvt.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+                'https://docs.fortinet.com/max-value-table',
+              ] },
+              { archivo: 'fortinet-mvt-js', tipo: 'scripts', para: 'FORTINET', urls: [],
+                descubrirPiezas: { de: ['fortinet-mvt.html'], base: 'https://docs.fortinet.com/max-value-table',
+                  dominios: ['docs.fortinet.com', 'fortinet.com'], max: 20 } },
               // 2026-10-13 (segundo enlace WAN y opticas por equipo): la matriz OFICIAL de que
               // modulo va en que equipo. Sustituye a la vieja tabla del wiki, que ya solo remite aqui.
               { archivo: 'mikrotik-compatibilidad.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'S+RJ10', urls: [
