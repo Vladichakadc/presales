@@ -18,10 +18,13 @@ test('VSG p.63: throughput de IDS/IPS de los cinco gateways que lo publica', () 
 
 test('VSG p.63: sin cifra no se copia la del hermano (9004-LTE) ni se inventa (7000/7200, EdgeConnect)', () => {
   assert.strictEqual(porId('Gateway 9004-LTE').idsMbps, null, 'el 9004-LTE no está en la tabla del VSG');
-  // Un EdgeConnect solo trae cifra si su propio documento la publica: desde el 2026-10-06 el
-  // EC-XS, de su spec sheet (300 Mbps en línea). La tabla del VSG no se la da a ninguno.
+  // Un EdgeConnect solo trae cifra si su propio documento la publica: el EC-XS de su spec sheet
+  // (2026-10-06) y los demás de la data sheet de la línea (2026-10-13). La tabla del VSG no se
+  // la da a ninguno: un EdgeConnect fuera de esos documentos sigue sin cifra.
+  const PROPIA = { 'EC-XS': 300, 'EC-10104': 300, 'EC-10106': 750, 'EC-10108': 1000, 'EC-S': 1000,
+    'EC-M': 2500, 'EC-L': 4000, 'EC-XL': 4000, 'EC-10150': 5000 };
   for (const m of aruba.MODELS.filter((x) => x.legacy || x.fam === 'ec')) {
-    assert.strictEqual(m.idsMbps, m.id === 'EC-XS' ? 300 : null, m.id);
+    assert.strictEqual(m.idsMbps, PROPIA[m.id] ?? null, m.id);
   }
 });
 

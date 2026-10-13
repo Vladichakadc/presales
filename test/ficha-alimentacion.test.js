@@ -185,11 +185,15 @@ test('el cuarto estado se pinta distinto de si, de no y de «no lo dice»', () =
 test('MikroTik: varias entradas de alimentacion no son doble fuente, y el CHR no tiene ninguna', () => {
   const { MODELS } = require('../server/seed/legacyData/mikrotik.js');
   // 14 hasta el 2026-10-13; ese dia entraron ocho modelos del listado oficial y salio el
-  // RB4011iGS+ sin ficha. El CCR2004-1G-12S+2XS y el RB1100AHx4 declaran 2 entradas AC y no
-  // ranuras de fuente: su redundancia queda «no consta» (sin `redund`), no `true` a ojo.
-  assert.strictEqual(MODELS.filter((m) => m.redund !== undefined).length, 21);
+  // RB4011iGS+ sin ficha. El CCR2004-1G-12S+2XS y el RB1100AHx4 quedaron «no consta» hasta que
+  // se leyeron sus manuales (manual.mikrotik.com, el mismo dia): la doble fuente la dicen la
+  // descripcion de su ficha («dual redundant power supply») y el manual («for failover
+  // purposes» y «dual integrated power supply units»). Ya son 23 de 23, y cada una lo cita.
+  assert.strictEqual(MODELS.filter((m) => m.redund !== undefined).length, MODELS.length);
   for (const id of ['CCR2004-1G-12S+2XS', 'RB1100AHx4']) {
-    assert.strictEqual(MODELS.find((m) => m.id === id).redund, undefined, id);
+    const m = MODELS.find((x) => x.id === id);
+    assert.strictEqual(m.redund, true, id);
+    assert.match(m.psu.texto, /«dual redundant power suppl.*manual/, `${id}: sin la cita de ficha y manual`);
   }
 
   // El RB5009 tiene TRES entradas (jack, PoE-IN, terminal) sobre UNA fuente interna: eso

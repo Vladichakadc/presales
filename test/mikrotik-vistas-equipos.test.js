@@ -77,3 +77,36 @@ test('la página de la ficha casa con el código del modelo: la URL de su figura
     assert.strictEqual(url.toLowerCase(), FICHAS[m.codigo].url.toLowerCase(), `${modelo}: figura de otra ficha`);
   }
 });
+
+// Vista previa (2026-10-13, pendiente «peso de las figuras»): la tarjeta pinta una copia ligera
+// y la lupa y el Excel siguen con el original. Lo que se fija: que la previa exista, que sea con
+// pérdida y ligera (si no, no tiene sentido), y que salga de SU original: mismas proporciones.
+// Una previa de otra foto, o de otra cara, se vería en la tarjeta y no en la lupa.
+function lienzoConPerdida(buf) {
+  const i = buf.indexOf(Buffer.from('VP8 '));
+  return [buf.readUInt16LE(i + 14) & 0x3fff, buf.readUInt16LE(i + 16) & 0x3fff];
+}
+test('cada figura tiene su vista previa: con pérdida, de 1.200 px como mucho y del mismo dibujo', () => {
+  let total = 0;
+  for (const [modelo, v] of entradas) {
+    for (const cara of ['front', 'rear']) {
+      if (!v[cara]) { assert.ok(!v[cara + 'Prev'], `${modelo}: previa de una cara que no tiene`); continue; }
+      assert.strictEqual(v[cara + 'Prev'], v[cara].replace(/\.webp$/, '.prev.webp'), `${modelo}: la previa de ${cara} no es la de su original`);
+      const buf = fs.readFileSync(path.join(RAIZ, 'public', v[cara + 'Prev']));
+      assert.ok(buf.includes(Buffer.from('VP8 ')), `${modelo}: la previa de ${cara} no es con pérdida`);
+      total += buf.length;
+      const [w, h] = lienzoConPerdida(buf);
+      const [W, H] = lienzo(fs.readFileSync(path.join(RAIZ, 'public', v[cara])));
+      assert.ok(w <= 1200, `${modelo}: previa de ${w} px de ancho`);
+      assert.ok(Math.abs(w / h - W / H) < 0.01, `${modelo}: la previa de ${cara} (${w} × ${h}) no tiene las proporciones de su original (${W} × ${H})`);
+    }
+  }
+  assert.ok(total < 2 * 1024 * 1024, `las previas suman ${total} B: dejan de ser ligeras`);
+});
+
+test('la tarjeta pinta la previa y la lupa abre el original', () => {
+  const ficha = fs.readFileSync(path.join(RAIZ, 'public/js/ficha.js'), 'utf8');
+  assert.match(ficha, /data-front-prev=/);
+  assert.match(ficha, /<img src="\$\{esc\(prev\(cara0\)\)\}"/);
+  assert.match(ficha, /lupaDatos = \{ front: fig\.dataset\.front \|\| null, rear: fig\.dataset\.rear \|\| null/);
+});

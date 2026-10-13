@@ -383,7 +383,9 @@ Módulos compartidos:
   contra su rango WAN publicado; los gateways 9000/9100/9200, contra firewall, clientes y APs, con la
   capacidad del 9200 ligada a la licencia. Boost en bloques de 100 Mbps, un pool por fabric, máximo
   entre escenarios de falla; el breakout no descarga más de lo que cabe por Internet (M4). Central
-  por serie (`CENTRAL_POR_SERIE`); IDS/IPS con su cifra (`idsMbps`; DTD solo en EdgeConnect). La línea
+  por serie (`CENTRAL_POR_SERIE`); IDS/IPS con su cifra (`idsMbps`, la de modo en línea: los
+  gateways del VSG, los EdgeConnect de su data sheet `a00109847enw` y el EC-XS de su spec sheet;
+  DTD solo en EdgeConnect). La línea
   AOS 8 (7000/7200) está **fuera de venta** (por fecha o por `RETIRADOS_SIN_FECHA`), visible para el
   parque instalado; sus **Reman** (SKU `…AR`) se siguen cotizando si la lista versionada los trae.
   **Ópticas de la línea EC-10xxx según el Hardware Reference Rev V** (ago-2026; el VSG remite a
@@ -414,7 +416,8 @@ Módulos compartidos:
   vatios. Niveles de licencia de la tabla oficial (el 5 no limita OpenVPN; CHR no tiene niveles).
   Figuras de la galería de cada ficha (`public/data/mikrotik-vistas-equipos.json`), sin pérdida y a
   resolución nativa; la galería no rotula la cara: se decide mirándola, y sin trasera no se sirve la
-  de un hermano.
+  de un hermano. La tarjeta pinta una previa con pérdida (`frontPrev`/`rearPrev`, opt-in de
+  `ficha.js`) y la lupa y el Excel el original. Perfiles multi-sede como Huawei (`BOM.perfiles`).
 - **Nokia**: dos dimensionadores — 7750 SR / 7250 IXR (equipo, por plataforma; chasis modulares
   apartados por densidad) y 7220 IXR (fabric). Capacidad en Gbps; `aMbps()` es el único que lo sabe.
 - **Starlink LEO**: módulo canónico integrado byte a byte (`starlink-leo-dimensionador/` es la línea

@@ -19,7 +19,7 @@ desde una máquina con salida a internet.
 
 De los 6 que faltan, **4 nunca fueron PDFs** (`ecOverview`, `gw7000`, `gwSoportados` y
 `orchDocs` son páginas de documentación en vivo, tal como las describe el manifiesto), **1
-URL murió** (`ecSpecSheet`, 404 genuino: hay que buscar el reemplazo) y **1 exige cuenta de
+URL murió** (`ecSpecSheet`, 404 genuino; **reemplazada el 2026-10-13** por la data sheet de la línea en psnow, `a00109847enw` Rev. 8, que es `edgeconnect-data-sheet.pdf`) y **1 exige cuenta de
 soporte HPE** (`gw9000Spec`: `support.hpe.com/hpesc/public/docDisplay?docId=a00099295en_us`
 se abre en el navegador pero no ofrece descarga sin login).
 

@@ -1,108 +1,140 @@
 {
- "_procedencia": "Figuras oficiales de los 20 routers fisicos del catalogo MikroTik, de la galeria «Product images» de la ficha de cada uno en mikrotik.com (2026-10-13). LOS PNG NO SE BAJARON DESDE ESTE ENTORNO: el proxy de egreso responde 403 a mikrotik.com y a cdn.mikrotik.com. Los trajo traer-cisco-huawei.yml (entrada mikrotik-img) a las ramas de transporte fuente/mikrotik-figuras-2026-10-13 y fuente/mikrotik-figuras-2-2026-10-13 (corridas 38403511548 y 38404641378): solo las imagenes <id>_hi_res.png que la propia ficha enlaza como «Download Full Size», descubiertas en la pagina y no adivinadas. QUE CARA ES CADA UNA: la galeria NO la rotula («Product image» en todas) y mezcla el equipo con accesorios (tornillos, fuente, cable, escuadras), la base, la tapa superior e infografias; la cara se decidio MIRANDO cada imagen. Frontal = la cara de puertos; trasera = la cara opuesta (fuentes, disipador, placa de montaje). Donde la galeria solo trae la cara de puertos (hEX, hEX PoE, RB5009 de interior) no hay trasera, y no se sirve la de un hermano. El pie dice si la vista es recta o en perspectiva. COMO SE GUARDARON: compuestas sobre blanco desde su canal alfa, recortado solo el margen blanco (3 % de holgura), SIN reescalar, y en WebP SIN PERDIDA, comprobado pixel a pixel al guardar: los pixeles son los del PNG oficial. Pesan unos 33 MB las 31; la tarjeta carga una cada vez.",
- "hEX lite RB750r2": {
-  "front": "/img/equipos/mt-rb750r2-front.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/RB750r2 — «RB750r2». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 1041_hi_res.png (2248 × 2248 px, servida a 2246 × 1071). Vista recta de la cara de puertos.",
-  "tamano": "113 × 89 × 28 mm (ficha oficial)"
- },
- "hEX PoE lite RB750UPr2": {
-  "front": "/img/equipos/mt-rb750upr2-front.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/RB750UPr2 — «RB750UPr2». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 1085_hi_res.png (3600 × 1834 px, servida a 2328 × 1153). Vista recta de la cara de puertos.",
-  "tamano": "113 × 89 × 28 mm (ficha oficial)"
- },
- "hEX RB750Gr3": {
-  "front": "/img/equipos/mt-rb750gr3-front.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/RB750Gr3 — «RB750Gr3». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 1405_hi_res.png (3840 × 2444 px, servida a 2922 × 1429). Vista recta, algo desde arriba, de la cara de puertos.",
-  "tamano": "113 × 89 × 28 mm (ficha oficial)"
- },
- "hEX E50UG": {
-  "front": "/img/equipos/mt-e50ug-front.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/hex_2024 — «E50UG». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2409_hi_res.png (2079 × 1070 px, servida a 1901 × 891). Vista recta de la cara de puertos.",
-  "tamano": "113 × 89 × 28 mm (ficha oficial)"
- },
- "hEX S RB760iGS": {
-  "front": "/img/equipos/mt-rb760igs-front.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/hex_s — «RB760iGS». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 1539_hi_res.png (2560 × 1592 px, servida a 1777 × 844). Vista recta de la cara de puertos.",
-  "tamano": "113 × 89 × 28 mm (ficha oficial)"
- },
- "hEX S E60iUGS": {
-  "front": "/img/equipos/mt-e60iugs-front.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/hex_s_2025 — «E60iUGS». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2458_hi_res.png (2666 × 1109 px, servida a 2523 × 965). Vista recta de la cara de puertos."
- },
- "hEX PoE RB960PGS": {
-  "front": "/img/equipos/mt-rb960pgs-front.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/RB960PGS — «RB960PGS». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 1220_hi_res.png (1920 × 1406 px, servida a 1377 × 797). Vista recta de la cara de puertos."
- },
- "PowerBox Pro RB960PGS-PB": {
-  "front": "/img/equipos/mt-rb960pgs-pb-front.webp",
-  "rear": "/img/equipos/mt-rb960pgs-pb-rear.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/RB960PGS-PB — «RB960PGS-PB». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 1296_hi_res.png (1023 × 1383 px, servida a 694 × 1207); trasera 1297_hi_res.png (1180 × 1763 px, servida a 892 × 1554). Frontal: la tapa (los puertos quedan debajo); trasera: la placa de montaje.",
-  "tamano": "125 × 52 × 225 mm (ficha oficial)"
- },
- "L009UiGS-2HaxD": {
-  "front": "/img/equipos/mt-l009uigs-2haxd-in-front.webp",
-  "rear": "/img/equipos/mt-l009uigs-2haxd-in-rear.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/l009uigs_2haxd_in — «L009UiGS-2HaxD-IN». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2263_hi_res.png (3500 × 3000 px, servida a 2450 × 2115); trasera 2264_hi_res.png (3052 × 2236 px, servida a 2734 × 1916). Vistas rectas, con las antenas montadas."
- },
- "L009UiGS-RM": {
-  "front": "/img/equipos/mt-l009uigs-rm-front.webp",
-  "rear": "/img/equipos/mt-l009uigs-rm-rear.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/l009uigs_rm — «L009UiGS-RM». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2267_hi_res.png (3330 × 1233 px, servida a 3027 × 929); trasera 2268_hi_res.png (3243 × 1175 px, servida a 3036 × 868). Vistas rectas."
- },
- "RB4011iGS+RM": {
-  "front": "/img/equipos/mt-rb4011igsplusrm-front.webp",
-  "rear": "/img/equipos/mt-rb4011igsplusrm-rear.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/rb4011igs_rm — «RB4011iGS+RM». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 1640_hi_res.png (2560 × 1592 px, servida a 2392 × 435); trasera 1641_hi_res.png (2560 × 1592 px, servida a 2083 × 376). Vistas rectas con las orejas de rack.",
-  "tamano": "228 × 120 × 30 mm (ficha oficial)"
- },
- "RB1100AHx4": {
-  "front": "/img/equipos/mt-rb1100x4-front.webp",
-  "rear": "/img/equipos/mt-rb1100x4-rear.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/rb1100ahx4 — «RB1100x4». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 1344_hi_res.png (3840 × 2649 px, servida a 3664 × 787); trasera 1345_hi_res.png (3840 × 2649 px, servida a 3376 × 743). Vistas rectas.",
-  "tamano": "443 × 148 × 44 mm (ficha oficial)"
- },
- "RB5009UG+S+IN": {
-  "front": "/img/equipos/mt-rb5009ugplussplusin-front.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/rb5009ug_s_in — «RB5009UG+S+IN». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2065_hi_res.png (3500 × 2200 px, servida a 3032 × 1445). Vista en perspectiva de la cara de puertos: la galería no trae una recta.",
-  "tamano": "220 × 125 × 22 mm (ficha oficial)"
- },
- "RB5009UPr+S+IN": {
-  "front": "/img/equipos/mt-rb5009uprplussplusin-front.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/rb5009upr_s_in — «RB5009UPr+S+IN». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2192_hi_res.png (3492 × 1080 px, servida a 3400 × 987). Vista recta, algo desde arriba, de la cara de puertos."
- },
- "RB5009UPr+S+OUT": {
-  "front": "/img/equipos/mt-rb5009uprplussplusout-front.webp",
-  "rear": "/img/equipos/mt-rb5009uprplussplusout-rear.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/rb5009_out — «RB5009UPr+S+OUT». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2253_hi_res.png (3000 × 2406 px, servida a 3000 × 2279); trasera 2251_hi_res.png (1717 × 2450 px, servida a 1560 × 2294). Vistas en perspectiva: frontal con la tapa abierta sobre los puertos; trasera, el disipador y los anclajes."
- },
- "CCR2004-16G-2S+": {
-  "front": "/img/equipos/mt-ccr2004-16g-2splus-front.webp",
-  "rear": "/img/equipos/mt-ccr2004-16g-2splus-rear.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/ccr2004_16g_2splus — «CCR2004-16G-2S+». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2563_hi_res.png (3683 × 1051 px, servida a 3402 × 770); trasera 2095_hi_res.png (3500 × 2000 px, servida a 3416 × 766). Vistas rectas; la trasera con sus dos fuentes.",
-  "tamano": "443 × 210 × 44 mm (ficha oficial)"
- },
- "CCR2004-16G-2S+PC": {
-  "front": "/img/equipos/mt-ccr2004-16g-2spluspc-front.webp",
-  "rear": "/img/equipos/mt-ccr2004-16g-2spluspc-rear.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/ccr2004_16g_2s_pc — «CCR2004-16G-2S+PC». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2634_hi_res.png (3000 × 2500 px, servida a 2857 × 927); trasera 2639_hi_res.png (3000 × 2500 px, servida a 2842 × 980). Vistas rectas; la trasera con el disipador pasivo.",
-  "tamano": "272 × 195 × 44 mm (ficha oficial)"
- },
- "CCR2004-1G-12S+2XS": {
-  "front": "/img/equipos/mt-ccr2004-1g-12splus2xs-front.webp",
-  "rear": "/img/equipos/mt-ccr2004-1g-12splus2xs-rear.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/ccr2004_1g_12s_2xs — «CCR2004-1G-12S+2XS». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 1937_hi_res.png (3722 × 1657 px, servida a 2942 × 879); trasera 1936_hi_res.png (3744 × 1687 px, servida a 2967 × 911). Vistas rectas.",
-  "tamano": "443 × 224 × 44 mm (ficha oficial)"
- },
- "CCR2116-12G-4S+": {
-  "front": "/img/equipos/mt-ccr2116-12g-4splus-front.webp",
-  "rear": "/img/equipos/mt-ccr2116-12g-4splus-rear.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/ccr2116_12g_4splus — «CCR2116-12G-4S+». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2625_hi_res.png (3500 × 1600 px, servida a 3352 × 735); trasera 2116_hi_res.png (3500 × 1600 px, servida a 3385 × 711). Vistas rectas; la trasera con sus dos fuentes.",
-  "tamano": "443 × 199 × 44 mm (ficha oficial)"
- },
- "CCR2216-1G-12XS-2XQ": {
-  "front": "/img/equipos/mt-ccr2216-1g-12xs-2xq-front.webp",
-  "rear": "/img/equipos/mt-ccr2216-1g-12xs-2xq-rear.webp",
-  "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/ccr2216_1g_12xs_2xq — «CCR2216-1G-12XS-2XQ». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2123_hi_res.png (3000 × 1600 px, servida a 2843 × 809); trasera 2124_hi_res.png (3000 × 1600 px, servida a 2805 × 880). Vistas rectas; la trasera con sus dos fuentes y cuatro ventiladores.",
-  "tamano": "443 × 367 × 44 mm (ficha oficial)"
- }
+  "_procedencia": "Figuras oficiales de los 20 routers fisicos del catalogo MikroTik, de la galeria «Product images» de la ficha de cada uno en mikrotik.com (2026-10-13). LOS PNG NO SE BAJARON DESDE ESTE ENTORNO: el proxy de egreso responde 403 a mikrotik.com y a cdn.mikrotik.com. Los trajo traer-cisco-huawei.yml (entrada mikrotik-img) a las ramas de transporte fuente/mikrotik-figuras-2026-10-13 y fuente/mikrotik-figuras-2-2026-10-13 (corridas 38403511548 y 38404641378): solo las imagenes <id>_hi_res.png que la propia ficha enlaza como «Download Full Size», descubiertas en la pagina y no adivinadas. QUE CARA ES CADA UNA: la galeria NO la rotula («Product image» en todas) y mezcla el equipo con accesorios (tornillos, fuente, cable, escuadras), la base, la tapa superior e infografias; la cara se decidio MIRANDO cada imagen. Frontal = la cara de puertos; trasera = la cara opuesta (fuentes, disipador, placa de montaje). Donde la galeria solo trae la cara de puertos (hEX, hEX PoE, RB5009 de interior) no hay trasera, y no se sirve la de un hermano. El pie dice si la vista es recta o en perspectiva. COMO SE GUARDARON: compuestas sobre blanco desde su canal alfa, recortado solo el margen blanco (3 % de holgura), SIN reescalar, y en WebP SIN PERDIDA, comprobado pixel a pixel al guardar: los pixeles son los del PNG oficial. Pesan unos 33 MB las 31; la tarjeta carga una cada vez.",
+  "_previa": "frontPrev y rearPrev: vista previa con pérdida (WebP calidad 82, ancho máximo 1.200 px) generada del original sin pérdida. La tarjeta pinta la previa; la lupa y el Excel usan el original, que es el que conserva los píxeles del documento.",
+  "hEX lite RB750r2": {
+    "front": "/img/equipos/mt-rb750r2-front.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/RB750r2 — «RB750r2». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 1041_hi_res.png (2248 × 2248 px, servida a 2246 × 1071). Vista recta de la cara de puertos.",
+    "tamano": "113 × 89 × 28 mm (ficha oficial)",
+    "frontPrev": "/img/equipos/mt-rb750r2-front.prev.webp"
+  },
+  "hEX PoE lite RB750UPr2": {
+    "front": "/img/equipos/mt-rb750upr2-front.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/RB750UPr2 — «RB750UPr2». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 1085_hi_res.png (3600 × 1834 px, servida a 2328 × 1153). Vista recta de la cara de puertos.",
+    "tamano": "113 × 89 × 28 mm (ficha oficial)",
+    "frontPrev": "/img/equipos/mt-rb750upr2-front.prev.webp"
+  },
+  "hEX RB750Gr3": {
+    "front": "/img/equipos/mt-rb750gr3-front.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/RB750Gr3 — «RB750Gr3». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 1405_hi_res.png (3840 × 2444 px, servida a 2922 × 1429). Vista recta, algo desde arriba, de la cara de puertos.",
+    "tamano": "113 × 89 × 28 mm (ficha oficial)",
+    "frontPrev": "/img/equipos/mt-rb750gr3-front.prev.webp"
+  },
+  "hEX E50UG": {
+    "front": "/img/equipos/mt-e50ug-front.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/hex_2024 — «E50UG». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2409_hi_res.png (2079 × 1070 px, servida a 1901 × 891). Vista recta de la cara de puertos.",
+    "tamano": "113 × 89 × 28 mm (ficha oficial)",
+    "frontPrev": "/img/equipos/mt-e50ug-front.prev.webp"
+  },
+  "hEX S RB760iGS": {
+    "front": "/img/equipos/mt-rb760igs-front.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/hex_s — «RB760iGS». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 1539_hi_res.png (2560 × 1592 px, servida a 1777 × 844). Vista recta de la cara de puertos.",
+    "tamano": "113 × 89 × 28 mm (ficha oficial)",
+    "frontPrev": "/img/equipos/mt-rb760igs-front.prev.webp"
+  },
+  "hEX S E60iUGS": {
+    "front": "/img/equipos/mt-e60iugs-front.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/hex_s_2025 — «E60iUGS». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2458_hi_res.png (2666 × 1109 px, servida a 2523 × 965). Vista recta de la cara de puertos.",
+    "frontPrev": "/img/equipos/mt-e60iugs-front.prev.webp"
+  },
+  "hEX PoE RB960PGS": {
+    "front": "/img/equipos/mt-rb960pgs-front.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/RB960PGS — «RB960PGS». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 1220_hi_res.png (1920 × 1406 px, servida a 1377 × 797). Vista recta de la cara de puertos.",
+    "frontPrev": "/img/equipos/mt-rb960pgs-front.prev.webp"
+  },
+  "PowerBox Pro RB960PGS-PB": {
+    "front": "/img/equipos/mt-rb960pgs-pb-front.webp",
+    "rear": "/img/equipos/mt-rb960pgs-pb-rear.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/RB960PGS-PB — «RB960PGS-PB». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 1296_hi_res.png (1023 × 1383 px, servida a 694 × 1207); trasera 1297_hi_res.png (1180 × 1763 px, servida a 892 × 1554). Frontal: la tapa (los puertos quedan debajo); trasera: la placa de montaje.",
+    "tamano": "125 × 52 × 225 mm (ficha oficial)",
+    "frontPrev": "/img/equipos/mt-rb960pgs-pb-front.prev.webp",
+    "rearPrev": "/img/equipos/mt-rb960pgs-pb-rear.prev.webp"
+  },
+  "L009UiGS-2HaxD": {
+    "front": "/img/equipos/mt-l009uigs-2haxd-in-front.webp",
+    "rear": "/img/equipos/mt-l009uigs-2haxd-in-rear.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/l009uigs_2haxd_in — «L009UiGS-2HaxD-IN». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2263_hi_res.png (3500 × 3000 px, servida a 2450 × 2115); trasera 2264_hi_res.png (3052 × 2236 px, servida a 2734 × 1916). Vistas rectas, con las antenas montadas.",
+    "frontPrev": "/img/equipos/mt-l009uigs-2haxd-in-front.prev.webp",
+    "rearPrev": "/img/equipos/mt-l009uigs-2haxd-in-rear.prev.webp"
+  },
+  "L009UiGS-RM": {
+    "front": "/img/equipos/mt-l009uigs-rm-front.webp",
+    "rear": "/img/equipos/mt-l009uigs-rm-rear.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/l009uigs_rm — «L009UiGS-RM». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2267_hi_res.png (3330 × 1233 px, servida a 3027 × 929); trasera 2268_hi_res.png (3243 × 1175 px, servida a 3036 × 868). Vistas rectas.",
+    "frontPrev": "/img/equipos/mt-l009uigs-rm-front.prev.webp",
+    "rearPrev": "/img/equipos/mt-l009uigs-rm-rear.prev.webp"
+  },
+  "RB4011iGS+RM": {
+    "front": "/img/equipos/mt-rb4011igsplusrm-front.webp",
+    "rear": "/img/equipos/mt-rb4011igsplusrm-rear.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/rb4011igs_rm — «RB4011iGS+RM». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 1640_hi_res.png (2560 × 1592 px, servida a 2392 × 435); trasera 1641_hi_res.png (2560 × 1592 px, servida a 2083 × 376). Vistas rectas con las orejas de rack.",
+    "tamano": "228 × 120 × 30 mm (ficha oficial)",
+    "frontPrev": "/img/equipos/mt-rb4011igsplusrm-front.prev.webp",
+    "rearPrev": "/img/equipos/mt-rb4011igsplusrm-rear.prev.webp"
+  },
+  "RB1100AHx4": {
+    "front": "/img/equipos/mt-rb1100x4-front.webp",
+    "rear": "/img/equipos/mt-rb1100x4-rear.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/rb1100ahx4 — «RB1100x4». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 1344_hi_res.png (3840 × 2649 px, servida a 3664 × 787); trasera 1345_hi_res.png (3840 × 2649 px, servida a 3376 × 743). Vistas rectas.",
+    "tamano": "443 × 148 × 44 mm (ficha oficial)",
+    "frontPrev": "/img/equipos/mt-rb1100x4-front.prev.webp",
+    "rearPrev": "/img/equipos/mt-rb1100x4-rear.prev.webp"
+  },
+  "RB5009UG+S+IN": {
+    "front": "/img/equipos/mt-rb5009ugplussplusin-front.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/rb5009ug_s_in — «RB5009UG+S+IN». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2065_hi_res.png (3500 × 2200 px, servida a 3032 × 1445). Vista en perspectiva de la cara de puertos: la galería no trae una recta.",
+    "tamano": "220 × 125 × 22 mm (ficha oficial)",
+    "frontPrev": "/img/equipos/mt-rb5009ugplussplusin-front.prev.webp"
+  },
+  "RB5009UPr+S+IN": {
+    "front": "/img/equipos/mt-rb5009uprplussplusin-front.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/rb5009upr_s_in — «RB5009UPr+S+IN». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2192_hi_res.png (3492 × 1080 px, servida a 3400 × 987). Vista recta, algo desde arriba, de la cara de puertos.",
+    "frontPrev": "/img/equipos/mt-rb5009uprplussplusin-front.prev.webp"
+  },
+  "RB5009UPr+S+OUT": {
+    "front": "/img/equipos/mt-rb5009uprplussplusout-front.webp",
+    "rear": "/img/equipos/mt-rb5009uprplussplusout-rear.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/rb5009_out — «RB5009UPr+S+OUT». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2253_hi_res.png (3000 × 2406 px, servida a 3000 × 2279); trasera 2251_hi_res.png (1717 × 2450 px, servida a 1560 × 2294). Vistas en perspectiva: frontal con la tapa abierta sobre los puertos; trasera, el disipador y los anclajes.",
+    "frontPrev": "/img/equipos/mt-rb5009uprplussplusout-front.prev.webp",
+    "rearPrev": "/img/equipos/mt-rb5009uprplussplusout-rear.prev.webp"
+  },
+  "CCR2004-16G-2S+": {
+    "front": "/img/equipos/mt-ccr2004-16g-2splus-front.webp",
+    "rear": "/img/equipos/mt-ccr2004-16g-2splus-rear.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/ccr2004_16g_2splus — «CCR2004-16G-2S+». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2563_hi_res.png (3683 × 1051 px, servida a 3402 × 770); trasera 2095_hi_res.png (3500 × 2000 px, servida a 3416 × 766). Vistas rectas; la trasera con sus dos fuentes.",
+    "tamano": "443 × 210 × 44 mm (ficha oficial)",
+    "frontPrev": "/img/equipos/mt-ccr2004-16g-2splus-front.prev.webp",
+    "rearPrev": "/img/equipos/mt-ccr2004-16g-2splus-rear.prev.webp"
+  },
+  "CCR2004-16G-2S+PC": {
+    "front": "/img/equipos/mt-ccr2004-16g-2spluspc-front.webp",
+    "rear": "/img/equipos/mt-ccr2004-16g-2spluspc-rear.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/ccr2004_16g_2s_pc — «CCR2004-16G-2S+PC». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2634_hi_res.png (3000 × 2500 px, servida a 2857 × 927); trasera 2639_hi_res.png (3000 × 2500 px, servida a 2842 × 980). Vistas rectas; la trasera con el disipador pasivo.",
+    "tamano": "272 × 195 × 44 mm (ficha oficial)",
+    "frontPrev": "/img/equipos/mt-ccr2004-16g-2spluspc-front.prev.webp",
+    "rearPrev": "/img/equipos/mt-ccr2004-16g-2spluspc-rear.prev.webp"
+  },
+  "CCR2004-1G-12S+2XS": {
+    "front": "/img/equipos/mt-ccr2004-1g-12splus2xs-front.webp",
+    "rear": "/img/equipos/mt-ccr2004-1g-12splus2xs-rear.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/ccr2004_1g_12s_2xs — «CCR2004-1G-12S+2XS». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 1937_hi_res.png (3722 × 1657 px, servida a 2942 × 879); trasera 1936_hi_res.png (3744 × 1687 px, servida a 2967 × 911). Vistas rectas.",
+    "tamano": "443 × 224 × 44 mm (ficha oficial)",
+    "frontPrev": "/img/equipos/mt-ccr2004-1g-12splus2xs-front.prev.webp",
+    "rearPrev": "/img/equipos/mt-ccr2004-1g-12splus2xs-rear.prev.webp"
+  },
+  "CCR2116-12G-4S+": {
+    "front": "/img/equipos/mt-ccr2116-12g-4splus-front.webp",
+    "rear": "/img/equipos/mt-ccr2116-12g-4splus-rear.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/ccr2116_12g_4splus — «CCR2116-12G-4S+». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2625_hi_res.png (3500 × 1600 px, servida a 3352 × 735); trasera 2116_hi_res.png (3500 × 1600 px, servida a 3385 × 711). Vistas rectas; la trasera con sus dos fuentes.",
+    "tamano": "443 × 199 × 44 mm (ficha oficial)",
+    "frontPrev": "/img/equipos/mt-ccr2116-12g-4splus-front.prev.webp",
+    "rearPrev": "/img/equipos/mt-ccr2116-12g-4splus-rear.prev.webp"
+  },
+  "CCR2216-1G-12XS-2XQ": {
+    "front": "/img/equipos/mt-ccr2216-1g-12xs-2xq-front.webp",
+    "rear": "/img/equipos/mt-ccr2216-1g-12xs-2xq-rear.webp",
+    "fuente": "Galería oficial «Product images» de la ficha https://mikrotik.com/product/ccr2216_1g_12xs_2xq — «CCR2216-1G-12XS-2XQ». PNG de alta resolución de cdn.mikrotik.com, sin reescalar ni recomprimir (solo recortado el margen blanco): frontal 2123_hi_res.png (3000 × 1600 px, servida a 2843 × 809); trasera 2124_hi_res.png (3000 × 1600 px, servida a 2805 × 880). Vistas rectas; la trasera con sus dos fuentes y cuatro ventiladores.",
+    "tamano": "443 × 367 × 44 mm (ficha oficial)",
+    "frontPrev": "/img/equipos/mt-ccr2216-1g-12xs-2xq-front.prev.webp",
+    "rearPrev": "/img/equipos/mt-ccr2216-1g-12xs-2xq-rear.prev.webp"
+  }
 }

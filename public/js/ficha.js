@@ -580,8 +580,12 @@
         // y pie con procedencia): el lightbox es un singleton del documento y NO guarda
         // referencias al DOM de la tarjeta — pintar() la reconstruye con cada render y
         // una referencia guardada quedaría huérfana.
-        vistaHtml = `<figure class="ficha-vista" id="${cid}-vista"${v.front ? ` data-front="${esc(v.front)}"` : ''}${v.rear ? ` data-rear="${esc(v.rear)}"` : ''} data-modelo="${esc(sel.id)}" data-pie="${esc(pie)}">`
-          + `<div class="ficha-vista-img"><img src="${esc(v[cara0])}" alt="Vista ${cara0 === 'rear' ? 'trasera' : 'frontal'} del ${esc(sel.id)} — pulsa la lupa para ampliar" loading="lazy">`
+        // Vista previa (opt-in `frontPrev`/`rearPrev`, MikroTik 2026-10-13): la tarjeta pinta
+        // una copia ligera con pérdida y la lupa abre el original sin pérdida, que es el que
+        // conserva los píxeles del documento. Sin previa, la tarjeta pinta el original.
+        const prev = (cara) => v[cara + 'Prev'] || v[cara];
+        vistaHtml = `<figure class="ficha-vista" id="${cid}-vista"${v.front ? ` data-front="${esc(v.front)}" data-front-prev="${esc(prev('front'))}"` : ''}${v.rear ? ` data-rear="${esc(v.rear)}" data-rear-prev="${esc(prev('rear'))}"` : ''} data-modelo="${esc(sel.id)}" data-pie="${esc(pie)}">`
+          + `<div class="ficha-vista-img"><img src="${esc(prev(cara0))}" alt="Vista ${cara0 === 'rear' ? 'trasera' : 'frontal'} del ${esc(sel.id)} — pulsa la lupa para ampliar" loading="lazy">`
           + `<button type="button" class="ficha-vista-zoom" aria-label="Ampliar la foto del ${esc(sel.id)} a tamaño completo" title="Ampliar a tamaño completo">${SVG_LUPA}</button></div>`
           + `<div class="ficha-vista-bar">${tabs}<figcaption>${pie}</figcaption></div>`
           + `</figure>`;
@@ -697,7 +701,7 @@
       vistaNodo.querySelectorAll('.ficha-vista-tab').forEach((tb) => {
         tb.addEventListener('click', () => {
           const cual = tb.dataset.vista;
-          const src = cual === 'rear' ? vistaNodo.dataset.rear : vistaNodo.dataset.front;
+          const src = cual === 'rear' ? vistaNodo.dataset.rearPrev : vistaNodo.dataset.frontPrev;
           if (!src || !imgNodo) return;
           imgNodo.src = src;
           imgNodo.alt = (cual === 'rear' ? 'Vista trasera del ' : 'Vista frontal del ') + sel.id;

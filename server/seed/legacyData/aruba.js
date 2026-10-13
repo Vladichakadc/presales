@@ -77,7 +77,9 @@ const DATASHEETS = {
   // es VIVA y cambia sin historial público: el 2026-09-16 ya no mostraba las líneas por
   // modelo consultadas el 2026-09-13 — de ahí congelar una copia como las demás.
   ecLifecycle: {n:'EdgeConnect — Product Lifecycle Policy (PDF)', url:'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/docs/eula/EC_LifecyclePolicy_latest.pdf', file:'edgeconnect-lifecycle-policy.pdf'},
-  ecSpecSheet: {n:'EdgeConnect Spec Sheet (US)',                url:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', file:'edgeconnect-spec-sheet-us.pdf'},
+  // La «EdgeConnect US Spec Sheet» de arubanetworks.com dio 404 (2026-09-11); su sucesora es la
+  // data sheet de la línea en psnow (Rev. 8, jul-2026), traída el 2026-10-13.
+  ecSpecSheet: {n:'EdgeConnect — data sheet (HPE, a00109847enw Rev. 8)', url:'https://www.hpe.com/psnow/doc/a00109847enw', file:'edgeconnect-data-sheet.pdf'},
   ecOverview:  {n:'EdgeConnect SD-WAN — página de producto',    url:'https://www.hpe.com/us/en/aruba-edgeconnect-sd-wan.html', file:'edgeconnect-overview.pdf'},
   ecXsSpec:    {n:'EdgeConnect EC-XS — spec sheet',            url:'https://www.hpe.com/psnow/doc/a00110177enw', file:'edgeconnect-xs-spec-sheet.pdf'},
   ecXlSpec:    {n:'EdgeConnect EC-XL — spec sheet',            url:'https://www.arubanetworks.com/resource/edgeconnect-xl-spec-sheet/', file:'edgeconnect-xl-spec-sheet.pdf'},
@@ -250,7 +252,7 @@ const MODELS = [
                          {sku:'S3N74A',d:'EC-S-P · 4x SFP+ · 10x RJ45 · PSU DC · 2x SSD · NAL'},
                          {sku:'JM538A',d:'EC-S-P · PSU AC · canal no-NAL'},
                          {sku:'JM769A',d:'EC-S-P-DC · PSU DC · canal no-NAL'}],
-   ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
+   ds:'https://www.hpe.com/psnow/doc/a00109847enw', dsFile:'edgeconnect-data-sheet.pdf'},
 
   {id:'EC-M', redund:true, psu:{tipo:'1+1 redundante, sustituible e intercambiable en caliente', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 126 W — HPE publica el requerimiento, no un consumo típico.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Hub / Sucursal grande',
    wanMin:50, wanMax:5000, boostMax:5000,
@@ -261,7 +263,7 @@ const MODELS = [
      ruido:'44,3 dBA', peso:'8,21 kg (18,1 lb)'},
    hwSku:'JZ872A', skus:[{sku:'JZ872A',d:'EC-M-H · 8x RJ45 10/100/1000 · 4x SFP+ 1/10G'},
                          {sku:null,d:'EC-M-P-FIPS (validado FIPS 140)'}],
-   ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
+   ds:'https://www.hpe.com/psnow/doc/a00109847enw', dsFile:'edgeconnect-data-sheet.pdf'},
 
   {id:'EC-L', redund:true, psu:{tipo:'1+1 redundante, sustituible e intercambiable en caliente', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 401 W — HPE publica el requerimiento, no un consumo típico.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Datacenter / Hub grande',
    wanMin:2000, wanMax:10000, boostMax:10000,
@@ -271,7 +273,7 @@ const MODELS = [
      mtbf:'> 10 años', watts:'404 W (EC-L-H, QuickSpecs) · 440 W (EC-L-P, Hardware Reference)', btu:'1.379 BTU/h',
      peso:'14,5 kg (32 lb)'},
    hwSku:'JZ878A', skus:[{sku:'JZ878A',d:'EC-L-H · 6x SFP+ 1/10G'}],
-   ds:'https://www.arubanetworks.com/resource/edgeconnect-us-spec-sheet', dsFile:'edgeconnect-spec-sheet-us.pdf'},
+   ds:'https://www.hpe.com/psnow/doc/a00109847enw', dsFile:'edgeconnect-data-sheet.pdf'},
 
   // FIN DE VENTA CONFIRMADO Y MARCADO (2026-09-13, decisión del dueño): ver EOL_ANNOUNCED
   // al final de MODELS. La pista fue la fila de S0B67A sin sufijo de país con PLC "ES" en
@@ -693,6 +695,25 @@ const GATEWAY_VSG = {
   'Gateway 9240': {idsMbps:6000, vpncTuneles:32000},
   '7240XM':       {vpncTuneles:6144},
 };
+// IDS/IPS DE EDGECONNECT (2026-10-13). FUENTE: data sheet «HPE Networking EdgeConnect»
+// (a00109847enw, Rev. 8, 7-jul-2026, traída de psnow por traer-cisco-huawei.yml, corrida
+// 38423580897; copia en public/datasheets/edgeconnect-data-sheet.pdf), tablas 1 y 2: «IDS/IPS
+// capacity (Inline mode) up to» y «(Performant mode) up to». Mismo criterio que el EC-XS:
+// `idsMbps` es la de modo en línea, la que bloquea con DTD. Antes estos ocho no traían cifra y
+// el motor no les ponía techo. La ficha publica las variantes vigentes (S-P, M-H, L-H, XL-H),
+// que son las que el catálogo modela como EC-S, EC-M, EC-L y EC-XL; los rangos WAN, las
+// conexiones simultáneas y el Boost recomendado de esas mismas tablas casan con el catálogo.
+const EC_IDS_DATASHEET = {
+  'EC-10104': [300, 400], 'EC-10106': [750, 1000], 'EC-10108': [1000, 1500], 'EC-S': [1000, 1500],
+  'EC-M': [2500, 4000], 'EC-L': [4000, 7500], 'EC-XL': [4000, 7500], 'EC-10150': [5000, 10000],
+};
+const gbps = (mbps) => mbps >= 1000 ? `${String(mbps / 1000).replace('.', ',')} Gbps` : `${mbps} Mbps`;
+for (const m of MODELS) {
+  const d = EC_IDS_DATASHEET[m.id];
+  if (!d || m.fam !== 'ec' || m.idsMbps != null) continue;
+  m.idsMbps = d[0];
+  m.spec = Object.assign({}, m.spec, { idsips: `Sí — hasta ${gbps(d[0])} en línea y ${gbps(d[1])} en modo performant (data sheet a00109847enw Rev. 8, jul-2026)` });
+}
 for (const m of MODELS) {
   const v = GATEWAY_VSG[m.id];
   // Un EdgeConnect que publica su propia capacidad de IDS/IPS la trae en su fila (el EC-XS, de
