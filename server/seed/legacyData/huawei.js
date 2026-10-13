@@ -429,6 +429,191 @@ const FICHAS = {
   'AR6121E': F_AR6({wan:'2 x GE combo + 1 x 10GE SFP+ (compatible con GE SFP)', lan:'1 x GE combo + 8 x GE eléctricos (todos conmutables a WAN)', slots:'2 x SIC, WSIC 0 / 1', usb:'2 x USB 2.0', dim:'44,4 × 442,0 × 220,4 mm', peso:'3,2 kg', montaje:'Rack, mesa o pared', consumo:'28 W / 33 W', red:'Sin redundancia'}),
   'AR6140E-9G-2AC': F_AR6({wan:'2 x GE SFP + 2 x GE eléctricos', lan:'2 x GE SFP + 3 x GE eléctricos (todos conmutables a WAN)', slots:'4 x SIC, WSIC 0 / 2', usb:'1 x USB 2.0', dim:'44,4 × 442,0 × 428,2 mm', peso:'5,35 kg', montaje:'Rack', consumo:'22 W / 28 W', red:'Dos módulos de alimentación'}),
 };
+// Constructor general de la tarjeta «Ficha técnica» (2026-10-12, segunda tanda): tres grupos, con el
+// documento y su edición. Las series anteriores (F_H, F_AR6) quedan como estaban.
+const F_GEN = (doc, rev, rend, hw, ele) => ({rev, doc, grupos: [
+  {t: 'Rendimiento publicado', f: rend},
+  {t: 'Hardware', f: hw},
+  {t: 'Alimentación y ambiente', f: ele},
+]});
+// AR5710-S y AR5710-SE: «Huawei NetEngine AR5710-S Series Enterprise Router Data Sheet-R25C10».
+const DOC_S = 'Huawei NetEngine AR5710-S Series Enterprise Router Data Sheet-R25C10';
+const REND_S = [['Reenvío (NAT + ACL + QoS), IMIX', '1,3 Gbps'], ['IPsec, IMIX / 512 B', '800 Mbps / 1 Gbps'],
+  ['SD-WAN IPsec, IMIX / 512 B', '1 / 1,2 Gbps'], ['SD-WAN (IPsec + QoS), IMIX / 512 B', '800 Mbps / 1 Gbps'],
+  ['SD-WAN típico, IMIX / 512 B', '620 / 700 Mbps']];
+const REND_SE = [['Reenvío (NAT + ACL + QoS), IMIX', '1,5 Gbps'], ['IPsec, IMIX / 512 B', '800 Mbps / 1 Gbps'],
+  ['SD-WAN IPsec, IMIX / 512 B', '1,2 / 1,7 Gbps'], ['SD-WAN (IPsec + QoS), IMIX / 512 B', '1 / 1,4 Gbps'],
+  ['SD-WAN típico, IMIX / 512 B', '720 / 900 Mbps']];
+const HW_S = (o) => [['Puertos WAN fijos', o.wan], ['Puertos LAN fijos', o.lan], ...(o.extra || []),
+  ['Gestión de APs (incluidos / máximo)', o.aps || '16 / 32'], ['Memoria', o.mem || '2 GB'],
+  ['Consola / USB', '1 x RJ45 / 1 x USB 2.0'], ['Dimensiones (Al × An × Fo)', o.dim || '43,6 × 321 × 210 mm'],
+  ['Peso sin embalaje', o.peso], ['Montaje', o.montaje || 'Rack (1U) o mesa']];
+const ELE_S = (o) => [['Tensión de entrada', '100–240 V, 50/60 Hz'], ['Corriente máxima', o.amp],
+  ['Potencia de salida máxima', o.salida], ['Consumo típico / máximo', o.consumo],
+  ['Ventilación', o.fan || 'Sin ventilador: disipación natural'], ['Ruido', o.ruido || '—'],
+  ['Temperatura de operación', '0 °C a 45 °C'], ['Humedad', '5 % a 95 % sin condensación'],
+  ['Altitud', '< 5000 m'], ['Temperatura de almacenamiento', '–40 °C a +70 °C']];
+const COMBO = '2 x 10GE SFP+/2.5GE eléctrico combo';
+const L44 = '4 x GE eléctricos + 4 x GE combo';
+const PoE130 = ['PoE', '130 W en total: PoE 15,4 W en hasta 4 puertos, PoE+ 30 W en hasta 4, PoE++ 60 W en hasta 2 o 90 W en 1'];
+Object.assign(FICHAS, {
+  'AR5710-S8T2S': F_GEN(DOC_S, 'R25C10', REND_S, HW_S({wan: '2 x GE SFP', lan: '8 x GE eléctricos', peso: '1,79 kg'}), ELE_S({amp: '0,8 A', salida: '32 W', consumo: '14,6 W / 16 W'})),
+  'AR5710-S8T2X': F_GEN(DOC_S, 'R25C10', REND_S, HW_S({wan: COMBO, lan: L44, peso: '1,902 kg'}), ELE_S({amp: '0,8 A', salida: '32 W', consumo: '12 W / 15 W'})),
+  'AR5710-S8P2X': F_GEN(DOC_S, 'R25C10', REND_S, HW_S({wan: COMBO, lan: L44, extra: [PoE130], peso: '2,402 kg'}), ELE_S({amp: '3 A', salida: '180 W', consumo: '157 W / 162 W (con PoE)', fan: 'Ventiladores integrados fijos, flujo izquierda a derecha', ruido: '50 dB(A)'})),
+  'AR5710-S8T2X-LTE4EA': F_GEN(DOC_S, 'R25C10', REND_S, HW_S({wan: COMBO + ' · LTE4EA con 2 SIM', lan: L44, peso: '1,978 kg'}), ELE_S({amp: '1 A', salida: '32 W', consumo: '14 W / 19 W'})),
+  'AR5710-S10T1X2': F_GEN(DOC_S, 'R25C10', REND_S, HW_S({wan: '1 x 10GE SFP+/2.5GE combo + 2 x GE eléctricos', lan: L44, extra: [['Ranuras SIC', '2 x SIC']], dim: '43,6 × 442 × 220 mm', peso: '3,18 kg'}), ELE_S({amp: '2 A', salida: '70 W', consumo: '15 W / 20 W', fan: 'Ventiladores integrados fijos, flujo izquierda a derecha', ruido: '50 dB(A)'})),
+  'AR5710-S8T2XE': F_GEN(DOC_S, 'R25C10', REND_SE, HW_S({wan: COMBO, lan: L44, aps: '16 / 64', mem: '4 GB', peso: '1,902 kg'}), ELE_S({amp: '0,8 A', salida: '32 W', consumo: '12 W / 15 W'})),
+  'AR5710-S8T2XE-NRGL': F_GEN(DOC_S, 'R25C10', REND_SE, HW_S({wan: COMBO + ' · 5G SA/NSA con 2 SIM', lan: '8 x GE eléctricos', aps: '16 / 64', mem: '4 GB', peso: '2,250 kg'}), ELE_S({amp: '0,8 A', salida: '32 W', consumo: '20 W / 24 W'})),
+  'AR5710-S8P2XE-NRGL': F_GEN(DOC_S, 'R25C10', REND_SE, HW_S({wan: COMBO + ' · 5G SA/NSA con 2 SIM', lan: '8 x GE eléctricos (4 PoE++)', extra: [PoE130], aps: '16 / 64', mem: '4 GB', peso: '2,696 kg'}), ELE_S({amp: '3 A', salida: '180 W', consumo: '25 W / 176 W (con PoE)', fan: 'Ventiladores integrados fijos, flujo izquierda a derecha', ruido: '50 dB(A)'})),
+  'AR5710-S8T1XWE-NRGL': F_GEN(DOC_S, 'R25C10', REND_SE, HW_S({wan: '1 x 10GE SFP+/2.5GE combo · 5G SA/NSA con 2 SIM', lan: '8 x GE eléctricos', extra: [['Wi-Fi 7', 'Doble banda 2,4 y 5 GHz, 802.11a/b/g/n/ac/ax/be, hasta 256 usuarios, 3,57 Gbps de pico (690 Mbps a 2,4 GHz y 2,88 Gbps a 5 GHz)']], aps: '16 / 64', mem: '4 GB', peso: '2,382 kg'}), ELE_S({amp: '0,8 A', salida: '32 W', consumo: '24 W / 27 W'})),
+  'AR5710-S28T2S2XE4': F_GEN(DOC_S, 'R25C10', REND_SE, HW_S({wan: '2 x 10GE SFP+ + 2 x GE ópticos + 4 x GE eléctricos', lan: '24 x GE eléctricos', extra: [['Ranuras SIC', '4 x SIC'], ['MACsec', 'GE eléctricos 0–23, GE ópticos 24–25, 10GE ópticos 0']], aps: '16 / 64', mem: '4 GB', dim: '43,6 × 442 × 420 mm', peso: '5,175 kg', montaje: 'Rack (1U)'}), ELE_S({amp: '3 A', salida: '70 W', consumo: '29 W / 38 W', fan: 'Ventiladores integrados fijos, flujo izquierda a derecha', ruido: '47,2 dB(A)'})),
+  'AR5710-S52T2XE4': F_GEN(DOC_S, 'R25C10', REND_SE, HW_S({wan: '2 x 10GE SFP+ + 4 x GE eléctricos', lan: '48 x GE eléctricos', extra: [['Ranuras SIC', '4 x SIC'], ['MACsec', 'GE eléctricos 0–47, 10GE ópticos 0–1']], aps: '16 / 64', mem: '4 GB', dim: '43,6 × 442 × 420 mm', peso: '5,565 kg', montaje: 'Rack (1U)'}), ELE_S({amp: '3 A', salida: '150 W', consumo: '53 W / 65 W', fan: 'Ventiladores integrados fijos, flujo izquierda a derecha', ruido: '49,3 dB(A)'})),
+});
+// AR650, AR610, AR6710-L, AR6710-H y AR8000 (2026-10-12, segunda tanda), de sus fichas de serie.
+const DOC_650 = 'Huawei NetEngine AR650 Series Enterprise Routers Datasheet (20250810-v3)';
+const REND_650 = [['Reenvío (NAT + ACL + QoS), IMIX', '1 Gbps (2 Gbps con la licencia Boost)'], ['IPsec, IMIX / 1400 B', '2 / 3,7 Gbps'],
+  ['SD-WAN IPsec, IMIX / 1400 B', '1,5 / 3,5 Gbps'], ['SD-WAN (IPsec + QoS), IMIX / 1400 B', '800 Mbps / 1,85 Gbps'],
+  ['SD-WAN típico, IMIX / 1400 B', '600 Mbps / 1,8 Gbps']];
+const HW_650 = (o) => [['Puertos WAN fijos', '2 x GE combo'], ['Puertos LAN fijos', '8 x GE eléctricos (todos conmutables a WAN)'], ...(o.extra || []),
+  ['Ranura MIC', '1 x MIC'], ['Memoria', '2 GB'], ['Consola / USB', '1 x RJ45 / 1 x USB 2.0'],
+  ['Dimensiones (Al × An × Fo)', '44,0 × 300,0 × 220,3 mm'], ['Peso sin embalaje', o.peso], ['Montaje', 'Rack (1U), mesa o pared']];
+const ELE_650 = (o) => [['Tensión de entrada', '100–220 V, 50/60 Hz'], ['Corriente máxima', o.amp], ['Potencia de salida máxima', o.salida],
+  ['Consumo típico / máximo', o.consumo], ['Ventilación', 'Ventiladores integrados fijos, flujo izquierda a derecha'], ['Ruido', o.ruido],
+  ['Temperatura de operación', '0 °C a 45 °C'], ['Humedad', '5 % a 95 % sin condensación'], ['Altitud', '< 5000 m'], ['Temperatura de almacenamiento', '–40 °C a +70 °C']];
+const DOC_610 = 'Huawei NetEngine AR610 Series Enterprise Routers Datasheet-R26C00';
+const REND_610 = [['Reenvío (dúplex, NAT + ACL + QoS), IMIX', '300 Mbps'], ['Reenvío IPv4, IMIX', '800 Mbps'], ['IPsec, IMIX / 1400 B', '200 / 300 Mbps'],
+  ['SD-WAN IPsec, IMIX / 1400 B', '200 / 400 Mbps'], ['SD-WAN (IPsec + QoS), IMIX / 1400 B', '80 / 300 Mbps'], ['SD-WAN típico, IMIX / 1400 B', '50 / 250 Mbps']];
+const ELE_610 = (consumo) => [['Tensión de entrada', '110–220 V, 50/60 Hz'], ['Corriente máxima', '0,8 A'], ['Potencia de salida máxima', '24 W'],
+  ['Consumo típico / máximo', consumo], ['Ventilación', 'Sin ventilador: disipación natural'], ['Ruido', '0 dB(A)'], ['Temperatura de operación', '0 °C a 40 °C'], ['Humedad', '5 % a 95 % sin condensación'], ['Altitud', '< 5000 m'], ['Temperatura de almacenamiento', '–40 °C a +70 °C']];
+const DOC_6L = 'Huawei NetEngine AR6710-L Series Enterprise Router Data Sheet-R26C00';
+const REND_6L = (r) => [['Reenvío IPv4, 512 bytes', r.f512], ['IPsec, IMIX / 512 B / 1420 B', r.ip], ['SD-WAN IPsec, IMIX / 512 B / 1400 B', r.sdi],
+  ['SD-WAN (IPsec + QoS), IMIX / 512 B / 1400 B', r.sd], ['SD-WAN típico, IMIX / 512 B / 1400 B', r.ty]];
+const HW_6L = (o) => [['Puertos WAN fijos', o.wan], ['Puertos LAN fijos', o.lan], ['Ranuras SIC / WSIC (por defecto / máximo)', o.slots],
+  ['Gestión de APs (incluidos / máximo)', '32 / 128'], ['Memoria / flash', '4 GB / 2 GB'], ['Dimensiones (Al × An × Fo)', o.dim],
+  ['Peso sin embalaje', o.peso], ['Montaje', 'Rack (1U)']];
+const ELE_6L = (o) => [['Tensión de entrada', o.vin], ['Potencia de salida máxima', o.salida], ['Consumo típico / máximo', o.consumo],
+  ['Redundancia de alimentación', o.red], ['Ventilación', o.fan], ['Ruido', o.ruido], ['Temperatura de operación', '0 °C a 45 °C'],
+  ['Humedad', '5 % a 95 % sin condensación'], ['Altitud', '< 5000 m'], ['Temperatura de almacenamiento', '–40 °C a +70 °C']];
+const AC_DC = 'AC 100–240 V, 50/60 Hz; DC –48 a –60 V';
+const AC_ONLY = 'AC 100–240 V, 50/60 Hz';
+const DOC_8K = 'Huawei NetEngine AR8000 Series Enterprise Router Data Sheet-R25C10';
+const REND_8140 = [['Reenvío (NAT + ACL + QoS), IMIX', '25 Gbps'], ['IPsec, IMIX / 512 B', '20 / 25 Gbps'], ['SD-WAN IPsec, IMIX / 512 B', '22 / 26 Gbps'],
+  ['SD-WAN (IPsec + QoS), IMIX / 512 B', '20 / 21 Gbps'], ['SD-WAN típico, IMIX / 512 B', '15 / 17 Gbps']];
+const HW_8140 = (tpm) => [['Puertos WAN fijos', '10 x 10GE SFP+, 8 x GE combo, 4 x GE eléctricos (todos conmutables a LAN)'], ['Ranuras SIC / WSIC (por defecto / máximo)', '4 SIC; WSIC 0 / 2'],
+  ['TPM', tpm], ['Gestión de APs (incluidos / máximo)', '32 / 1024'], ['Memoria (SPU / MPU)', '16 GB / 16 GB'], ['Consola / USB', '1 x RJ45 / 1 x USB 3.0'],
+  ['Dimensiones (Al × An × Fo)', '44,4 × 442,0 × 420,0 mm (442,5 mm hasta el asa trasera)'], ['Montaje', 'Rack (1U)']];
+const ELE_8140 = [['Tensión de entrada', 'AC 100–240 V; HVDC 240 V; DC –48/–60/+48 V'], ['Potencia de salida máxima', 'AC 350 W · HVDC 350 W · DC 240 W'],
+  ['Consumo típico / máximo', '168 W / 191 W'], ['Redundancia de alimentación', 'Dos fuentes, intercambiables en caliente'],
+  ['Ventilación', 'Módulos de ventilador integrados, flujo izquierda a derecha'], ['Ruido', '57,6 dB(A)'], ['Temperatura de operación', '0 °C a 45 °C'],
+  ['Humedad', '5 % a 95 % sin condensación'], ['Altitud', '< 5000 m'], ['Temperatura de almacenamiento', '–40 °C a +70 °C']];
+Object.assign(FICHAS, {
+  'AR651': F_GEN(DOC_650, '20250810-v3', REND_650, HW_650({peso: '1,8 kg'}), ELE_650({amp: '3 A', salida: '36 W', consumo: '25,2 W / 29 W', ruido: '41,9 dB(A)'})),
+  'AR651W-8P': F_GEN(DOC_650, '20250810-v3', REND_650, HW_650({extra: [['Wi-Fi', 'Doble banda 2,4 y 5 GHz, 802.11a/b/g/n/ac'], ['PoE', 'PoE+ en GE0 a GE7, hasta 100 W en total: PoE 15,4 W en hasta 6 puertos o PoE+ 30 W en hasta 3']], peso: '1,92 kg'}),
+    ELE_650({amp: 'Adaptador 12 V: 1,5 A; adaptador 48 V: 2 A', salida: 'Adaptador 12 V: 60 W; adaptador 48 V: 100 W', consumo: 'Con 12 V: 40 W típicos / 46 W máx.; con 48 V: máx. 115 W', ruido: '50 dB(A)'})),
+  'AR611': F_GEN(DOC_610, 'R26C00', REND_610, [['Puertos WAN fijos', '1 x GE combo'], ['Puertos LAN fijos', '4 x GE eléctricos (todos conmutables a WAN)'],
+    ['Memoria / flash', '1 GB / 1 GB'], ['Consola / USB', '1 x RJ45 / 1 x USB 2.0'], ['Dimensiones (Al × An × Fo)', '38,0 × 240,0 × 161,5 mm'], ['Peso sin embalaje', '0,58 kg'], ['Montaje', 'Mesa o pared']], ELE_610('8 W / 12 W')),
+  'AR617VW-LTE4': F_GEN(DOC_610, 'R26C00', REND_610, [['Puertos WAN fijos', '1 x GE combo + 1 x VDSL2 + 1 x LTE CAT4'], ['Puertos LAN fijos', '4 x GE eléctricos (todos conmutables a WAN)'],
+    ['Voz', '2 x FXS (RTP, SIP, SIP AG, IP PBX/TDM PBX, VoIP, SBC)'], ['Wi-Fi 5', 'Doble banda 2,4 y 5 GHz, 802.11a/b/g/n/ac, 866 Mbps'], ['xDSL', 'ADSL Anexos A, M, B y J; VDSL2 con vectoring'],
+    ['Memoria / flash', '1 GB / 1 GB'], ['Consola / USB', '1 x RJ45 / 1 x USB 2.0'], ['Dimensiones (Al × An × Fo)', '38,0 × 240,0 × 161,5 mm'], ['Peso sin embalaje', '0,69 kg'], ['Montaje', 'Mesa o pared']], ELE_610('13,6 W / 17 W')),
+  'AR6710-L26T2X4': F_GEN(DOC_6L, 'R26C00', REND_6L({f512: '26 Gbps', ip: '1,6 / 2 / 5 Gbps', sdi: '2 / 2,6 / 6 Gbps', sd: '1,5 / 2,2 / 4,5 Gbps', ty: '1,2 / 1,6 / 4 Gbps'}),
+    HW_6L({wan: '2 x 10GE ópticos + 2 x GE eléctricos', lan: '24 x GE eléctricos', slots: '4 SIC; WSIC 0 / 2', dim: '44,4 × 442,0 × 420 mm', peso: '5,62 kg'}),
+    ELE_6L({vin: AC_DC, salida: 'AC 350 W · DC 240 W', consumo: '68 W / 98 W', red: 'Dos fuentes, intercambiables en caliente', fan: 'Ventiladores integrados fijos, flujo izquierda a derecha', ruido: '57,2 dB(A)'})),
+  'AR6710-L50T2X4': F_GEN(DOC_6L, 'R26C00', REND_6L({f512: '26 Gbps', ip: '1,6 / 2 / 5 Gbps', sdi: '2 / 2,6 / 6 Gbps', sd: '1,5 / 2,2 / 4,5 Gbps', ty: '1,2 / 1,6 / 4 Gbps'}),
+    HW_6L({wan: '2 x 10GE ópticos + 2 x GE eléctricos', lan: '48 x GE eléctricos', slots: '4 SIC; WSIC 0 / 2', dim: '44,4 × 442,0 × 420 mm', peso: '5,75 kg'}),
+    ELE_6L({vin: AC_DC, salida: 'AC 350 W · DC 240 W', consumo: '83 W / 115 W', red: 'Dos fuentes, intercambiables en caliente', fan: 'Ventiladores integrados fijos, flujo izquierda a derecha', ruido: '57,2 dB(A)'})),
+  'AR6710-L8T3TS1X2': F_GEN(DOC_6L, 'R26C00', REND_6L({f512: '10 Gbps', ip: '1,6 / 2 / 5 Gbps', sdi: '2 / 2,6 / 6 Gbps', sd: '1,5 / 2,2 / 4,5 Gbps', ty: '1,2 / 1,6 / 4 Gbps'}),
+    HW_6L({wan: '1 x 10GE óptico + 2 x GE combo', lan: '1 x GE combo + 8 x GE eléctricos', slots: '2 SIC; WSIC 0 / 1', dim: '44,4 × 442,0 × 220,4 mm', peso: '3,2 kg'}),
+    ELE_6L({vin: AC_ONLY, salida: 'AC 70 W', consumo: '27 W / 33 W', red: 'No aplica (una fuente)', fan: 'Ventiladores integrados fijos, flujo izquierda a derecha', ruido: '45,3 dB(A)'})),
+  'AR6710-L14T2X4': F_GEN(DOC_6L, 'R26C00', REND_6L({f512: '20 Gbps', ip: '2,5 / 2,8 / 6,5 Gbps', sdi: '3 / 4 / 10 Gbps', sd: '2,5 / 3,2 / 8 Gbps', ty: '1,8 / 2,5 / 6 Gbps'}),
+    HW_6L({wan: '2 x 10GE ópticos + 2 x GE eléctricos', lan: '4 x GE combo + 8 x GE eléctricos', slots: '4 SIC; WSIC 0 / 2', dim: '43,6 × 442,0 × 420 mm', peso: '5,612 kg'}),
+    ELE_6L({vin: AC_ONLY, salida: 'AC 150 W', consumo: '41 W / 52 W', red: 'Dos fuentes, no intercambiables en caliente', fan: 'Ventiladores integrados fijos, flujo izquierda a derecha', ruido: '57,2 dB(A)'})),
+  'AR6710-H4T4X2Y7': F_GEN('Huawei NetEngine AR6710-H Series Enterprise Router Data Sheet-R25C10', 'R25C10',
+    [['Reenvío (NAT + ACL + QoS), IMIX', '13 Gbps'], ['IPsec, IMIX / 512 B', '10 / 12 Gbps'], ['SD-WAN IPsec, IMIX / 512 B', '11 / 15 Gbps'],
+      ['SD-WAN (IPsec + QoS), IMIX / 512 B', '9 / 12 Gbps'], ['SD-WAN típico, IMIX / 512 B', '7 / 9 Gbps']],
+    [['Puertos WAN fijos', '2 x 25GE SFP28 + 4 x 10GE SFP+ + 4 x GE eléctricos (todos conmutables a LAN)'], ['Ranuras SIC / WSIC (por defecto / máximo)', '6 SIC; WSIC 1 / 4'],
+      ['Gestión de APs (incluidos / máximo)', '32 / 512'], ['Memoria', '8 GB'], ['Consola / USB', '1 x RJ45 / 1 x USB 2.0'],
+      ['Dimensiones (Al × An × Fo)', '43,6 × 442,0 × 420,0 mm (467,8 mm hasta el asa trasera)'], ['Montaje', 'Rack (1U)']],
+    [['Tensión de entrada', AC_DC], ['Potencia de salida máxima', 'AC 300 W · DC 260 W'], ['Consumo típico / máximo', 'Una SRU: 83 W / 92 W · dos SRU: 145 W / 160 W'],
+      ['Redundancia de alimentación', 'Dos fuentes, intercambiables en caliente'], ['Ventilación', 'Dos módulos de ventilador, intercambiables en caliente, flujo izquierda a derecha'],
+      ['Ruido', '54,3 dB(A)'], ['Temperatura de operación', '0 °C a 45 °C'], ['Humedad', '5 % a 95 % sin condensación'], ['Altitud', '< 5000 m'], ['Temperatura de almacenamiento', '–40 °C a +70 °C']]),
+  'AR8140-12G10XG': F_GEN(DOC_8K, 'R25C10', REND_8140, HW_8140('No soportado'), ELE_8140),
+  'AR8140-T-12G10XG': F_GEN(DOC_8K, 'R25C10', REND_8140, HW_8140('Soportado (solo el modelo -T)'), ELE_8140),
+  'AR8700-8': F_GEN(DOC_8K, 'R25C10',
+    [['Reenvío (NAT + ACL + QoS), IMIX', '30 Gbps'], ['IPsec, IMIX / 512 B', '20 / 25 Gbps'], ['SD-WAN IPsec, IMIX / 512 B', '24 / 28 Gbps'],
+      ['SD-WAN (IPsec + QoS), IMIX / 512 B', '20 / 22 Gbps'], ['SD-WAN típico, IMIX / 512 B', '15,5 / 18 Gbps']],
+    [['Puertos WAN fijos', '1 x 40GE QSFP+ + 8 x 10GE SFP+ + 8 x GE combo (todos conmutables a LAN)'], ['Ranuras SIC / WSIC (por defecto / máximo)', '8 SIC; WSIC 0 / 4'],
+      ['TPM', 'No soportado'], ['Gestión de APs (incluidos / máximo)', '32 / 1024'], ['Memoria (SPU / MPU)', '16 GB / 8 GB'], ['Consola / USB', '1 x RJ45 / 1 x USB 2.0'],
+      ['Dimensiones (Al × An × Fo)', '88,1 × 442,0 × 482,8 mm (525,1 mm hasta el asa trasera)'], ['Montaje', 'Rack (2U)']],
+    [['Tensión de entrada', 'AC 110/220 V, 50/60 Hz; HVDC 240 V; DC –48 a –60 V'], ['Potencia de salida máxima', 'Fuente de 600 W: AC 300 W a 100–130 V y 600 W a 200–240 V · fuente de 1000 W: AC 900/1000 W, HVDC y DC 1000 W'],
+      ['Consumo típico / máximo', '221 W / 288 W (SPU + 2 MPU + ventiladores)'], ['Redundancia de alimentación', 'Dos fuentes, intercambiables en caliente'],
+      ['Ventilación', 'Bandeja de ventiladores enchufable, flujo lateral trasero + frontal a trasero'], ['Ruido', '57,6 dB(A)'], ['Temperatura de operación', '0 °C a 45 °C'],
+      ['Humedad', '5 % a 95 % sin condensación'], ['Altitud', '< 5000 m'], ['Temperatura de almacenamiento', '–40 °C a +70 °C']]),
+});
+// NetEngine NE8000 y A800 E (2026-10-12, segunda tanda): las fichas publican una tabla corta por
+// plataforma. El CONSUMO TÍPICO no se repite aquí: ya está en «Alimentación eléctrica» con la
+// decisión de cada modelo (el M1A y el M1D, por ejemplo, difieren entre el resumen y la tabla de su
+// ficha), y mostrarlo dos veces con dos cifras sería peor que mostrarlo una.
+const NE = (doc, rend, hw, amb) => F_GEN(doc, null, rend, hw, amb);
+const VOLT_M = 'DC –40 a –72 V; AC 200–240 V / 100–127 V (dos fases vivas), compatible con 240 V HVDC';
+const IFZ_M = '400GE/100GE/50GE/40GE/25GE/10GE/GE/FE/E1/cPOS/POS/V.35/X.21/V.24/C37.94&CoDir64K/FXS/FXO/E&M/RS232/RS485';
+const NE_BOX = (cap, ifz, modos) => NE('NetEngine 8000 Universal Service Router Datasheet (serie M1)',
+  [['Capacidad de conmutación', cap]],
+  [['Tipos de interfaz', ifz], ['Tarjeta de control', 'Caja fija'], ['Dimensiones (An × Fo × Al)', '442 × 220 × 44,5 mm (1U)'], ...(modos ? [['Configuraciones de puertos', modos]] : [])],
+  [['Tensión', 'AC 200–240 V / 100–127 V (dos fases vivas), compatible con 240 V HVDC; DC –48/–60 V'], ['Temperatura de operación', '–40 °C a +65 °C']]);
+Object.assign(FICHAS, {
+  'NE8000 M6': NE('NetEngine 8000 M6 Universal Service Router Datasheet',
+    [['Capacidad de conmutación (CXP-160)', '320 Gbps'], ['Reenvío', '72 Mpps'], ['Capacidad máxima por tarjeta', '50GE']],
+    [['Tipos de interfaz', '50GE/40GE/25GE/10GE/GE/FE/E1/cPOS/POS/V.35/X.21/V.24/C37.94&CoDir64K/FXS/FXO/E&M/RS232/RS485'], ['Tarjeta de control', '2, en 1:1'], ['Ranuras de servicio', '6 (DC) · 4 (AC)'], ['Dimensiones (An × Fo × Al)', '442 × 220 × 88,9 mm (2U)']],
+    [['Tensión', 'DC –48/–60 V; AC 200–240 V / 100–127 V (dos fases vivas), compatible con 240 V HVDC'], ['Reloj', '1588v2 y Ethernet síncrono'], ['Temperatura de operación', 'DC –40 °C a +65 °C; AC –20 °C a +55 °C']]),
+  'NE8000 M8': NE('NetEngine 8000 M8 Universal Service Router Datasheet',
+    [['Capacidad de conmutación', 'IPU-480: 960 Gbps · IPU-1T2: 2,4 Tbps · IPU-2T4: 4,8 Tbps'], ['Capacidad máxima por tarjeta', 'IPU-480 y IPU-1T2: 100GE · IPU-2T4: 400GE']],
+    [['Tipos de interfaz', IFZ_M + ' (la IPU-480 y la IPU-1T2 no admiten 400GE)'], ['Tarjeta de control', '2, en 1:1'], ['Ranuras de servicio', '8 (DC) · 6 (4 AC)'], ['Dimensiones (An × Fo × Al)', '442 × 220 × 132,6 mm (3U)']],
+    [['Tensión', VOLT_M], ['Reloj', 'ITU-T G.8275.1, G.8265.1, G.8275.2, SyncE, ITU-T G.8273.2 Clase C'], ['Temperatura de operación', 'DC –40 °C a +65 °C; AC –5 °C a +55 °C']]),
+  'NE8000 M14': NE('NetEngine 8000 M14 Universal Service Router Datasheet',
+    [['Capacidad de conmutación', 'IPU-1T2: 2,4 Tbps · IPU-2T: 4 Tbps · IPU-3T6: 7,2 Tbps'], ['Capacidad máxima por tarjeta', 'IPU-1T2: 200GE · IPU-2T e IPU-3T6: 400GE']],
+    [['Tipos de interfaz', IFZ_M + ' (la IPU-1T2 no admite 400GE)'], ['Tarjeta de control', '2, en 1:1'], ['Ranuras de servicio', 'IPU-1T2 e IPU-2T: 14 (DC) · 10 (4 AC). IPU-3T6: 14 (DC) · 12 (2 AC) · 10 (4 AC)'], ['Dimensiones (An × Fo × Al)', '442 × 220 × 222 mm (5U)']],
+    [['Tensión', VOLT_M], ['Reloj', 'ITU-T G.8275.1, G.8265.1, G.8275.2, SyncE, ITU-T G.8273.2 Clase C'], ['Temperatura de operación', 'DC –20 °C a +55 °C; AC –20 °C a +55 °C']]),
+  'NE8000 F8': NE('NetEngine 8000 F8 Datasheet',
+    [['Capacidad de conmutación', 'Versión 2T: 4 Tbps · versión 6.4T: 12,8 Tbps'], ['Capacidad máxima por tarjeta', '2T: 400GE · 6.4T: 800GE']],
+    [['Tipos de interfaz', '400GE/100GE/50GE/40GE/25GE/10GE/GE/FE/E1/STM-1c/STM-4c/2.5GE POS'], ['Tarjeta de control', '2, en 1:1'], ['Ranuras de servicio', '8, con tarjetas hijas y unidades de procesamiento combinadas: hasta 32 PIC y 8 LPUC'], ['Dimensiones', '442 × 482,8 × 578,5 mm (13U)']],
+    [['Tensión', 'DC –40 a –72 V; AC 90–290 V; HVDC 190–290 V'], ['Reloj', 'Ethernet síncrono, 1588v2, G.8275.1, G.8275.2, SMPTE-2059'], ['Temperatura de operación (largo plazo)', '0 °C a 45 °C']]),
+  'NE8000 M4': NE('NetEngine 8000 M4 Universal Service Router Datasheet',
+    [['Capacidad de conmutación', '2,4 Tbps'], ['Reenvío', '405 Mpps'], ['Capacidad máxima por tarjeta', '400GE'], ['Rutas máximas (FIBv4 / FIBv6)', 'Hasta 8 M / 4 M'], ['Túneles IPsec máximos', '20.000']],
+    [['Tipos de interfaz', '400G/100GE/50GE/40GE/25GE/10GE/GE/FE/E1/cPOS/POS'], ['Tarjeta de control', 'Simple'], ['Almacenamiento M.2', '16 GB'], ['Ranuras de servicio', '4'], ['Dimensiones (An × Fo × Al)', '442 × 220 × 88,9 mm (2U)']],
+    [['Tensión', 'DC –48/–60 V; AC 200–240 V / 100–127 V (dos fases vivas), compatible con 240 V HVDC'], ['Reloj', '1588v2, 1588 ATR, 1588 ACR, G.8275.1, Ethernet síncrono'], ['Temperatura de operación', 'DC –20 °C a +60 °C; AC –20 °C a +55 °C']]),
+  'NE8000 M1A': NE_BOX('352 Gbps', '10GE/GE/FE(o)/FE(e)', '4 x 10G + 8 x GE(o) + 4 x GE(e); o 6 x 10G + 22 x GE(o) + 4 x GE(e)'),
+  'NE8000 M1C': NE_BOX('344 Gbps', '10GE/GE/FE(o)/FE(e)', 'Básica: 4 x 10G + 8 x GE(o) + 4 x GE(e); estándar: 6 x 10G + 18 x GE(o) + 4 x GE(e)'),
+  'NE8000 M1D': NE_BOX('1,76 Tbps', '100GE/50GE/40GE/25GE/10GE/GE/FE(o)/FE(e)', null),
+  'NE8000 M1D-B': NE_BOX('368 Gbps', '50GE/40GE/25GE/10GE/GE/FE(o)/FE(e)', null),
+  'NE8000 F1A': NE('NetEngine 8000 F1A Datasheet V800R024C10',
+    [['Capacidad de conmutación', '2,4 Tbps']],
+    [['Tipos de interfaz', '100GE/50GE/40GE/25GE/10GE/GE'], ['Dimensiones (Al × An × Fo)', '43,6 (1U) × 442 × 420 mm']],
+    [['Tensión', 'DC –40 a –72 V; AC 90–290 V; HVDC 190–290 V'], ['Reloj', 'Ethernet síncrono, 1588v2, G.8275.1, G.8275.2, SMPTE-2059'], ['Temperatura de operación (largo plazo)', '–5 °C a 45 °C']]),
+  'NetEngine A813 E': NE('NetEngine A813 E Datasheet V800R025C00',
+    [], [['Tipos de interfaz', '6 x GE/FE ópticos + 8 x GE/FE eléctricos'], ['Tarjeta de control y ranuras', 'Caja fija'], ['Alimentación', 'Una AC, dos AC, o una AC + una DC'], ['Dimensiones (An × Fo × Al)', '320 × 220 × 43,6 mm (1U)'], ['Disipación', 'Natural']],
+    [['Tensión', 'AC 100–240 V; DC ±48 V / +24 a 12 V'], ['Temperatura de operación (largo plazo)', '–5 °C a 55 °C']]),
+  'NetEngine A816 E': NE('NetEngine A816 E Datasheet V800R025C00',
+    [['IPsec', '300 Mbps @ 512 B'], ['NAT', '600 Mbps @ 512 B']],
+    [['Tipos de interfaz', '4 x GE/FE ópticos + 4 x GE/FE eléctricos'], ['Tarjeta de control y ranuras', 'Caja fija'], ['Alimentación', 'Una AC, dos AC, o una AC + una DC'], ['Dimensiones (An × Fo × Al)', '320 × 220 × 43,6 mm (1U)'], ['Disipación', 'Natural']],
+    [['Tensión', 'AC 100–240 V; DC ±48 V / +24 a 12 V'], ['Temperatura de operación (largo plazo)', '–5 °C a 50 °C']]),
+  'NetEngine A821 E': NE('NetEngine A821 E Datasheet (presentación)',
+    [['Capacidad', '72 Gbit/s']],
+    [['Tipos de interfaz', '6 x 10GE + 4 x GE/FE ópticos + 8 x GE/FE eléctricos'], ['Tarjeta de control y ranuras', 'Caja fija'], ['Alimentación', 'Una AC, dos AC, o una AC + una DC'], ['Dimensiones (An × Fo × Al)', '320 × 220 × 43,6 mm (1U)'], ['Disipación', 'Natural']],
+    [['Tensión', 'AC 100–240 V; DC ±48 V / +24 a 12 V'], ['Temperatura de operación (largo plazo)', '–40 °C a 65 °C']]),
+  'NetEngine A822 E': NE('NetEngine A822 E Datasheet V800R025C00 (presentación)',
+    [['Capacidad', '20 Gbit/s']],
+    [['Tipos de interfaz', '2 x 10GE + 4 x GE/FE ópticos + 8 x GE/FE eléctricos'], ['Tarjeta de control y ranuras', 'Caja fija'], ['Alimentación', 'Una AC, dos AC, o una AC + una DC'], ['Dimensiones (An × Fo × Al)', '320 × 220 × 43,6 mm (1U)'], ['Disipación', 'Natural']],
+    [['Tensión', 'AC 100–240 V; DC ±48 V / +24 a 12 V'], ['Temperatura de operación (largo plazo)', '–5 °C a 55 °C']]),
+  'NE8000 X4': NE('NetEngine 8000 X Series Brochure',
+    [['Capacidad por ranura', '1T/2T/4T/14,4T/19,2T']],
+    [['Ranuras de servicio', '4'], ['Dimensiones (An × Fo × Al)', '442 × 872 × 437,4 mm (9,8U)'], ['Peso sin embalaje', '72 kg']], []),
+  'NE8000 X8': NE('NetEngine 8000 X Series Brochure',
+    [['Capacidad por ranura', '1T/2T/4T/9,6T/14,4T/19,2T']],
+    [['Ranuras de servicio', '8'], ['Dimensiones (An × Fo × Al)', '442 × 872 × 703 mm (15,8U)'], ['Peso sin embalaje', '94 kg']], []),
+  'NE8000 X16': NE('NetEngine 8000 X Series Brochure',
+    [['Capacidad por ranura', '1T/2T/9,6T/14,4T']],
+    [['Ranuras de servicio', '16'], ['Dimensiones (An × Fo × Al)', '442 × 1033 × 1436 mm (32,3U)'], ['Peso sin embalaje', '244,8 kg']], []),
+});
 for (const m of MODELS) if (FICHAS[m.id]) m.ficha = FICHAS[m.id];
 
 module.exports = { OPTICS, OPTIC_LABEL, PARTS, MODELS, HICARE };
