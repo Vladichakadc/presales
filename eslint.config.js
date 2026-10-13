@@ -82,7 +82,9 @@ const reglas = {
 };
 
 module.exports = [
-  { ignores: ['node_modules/**', 'public/vendor/**', 'database.sqlite'] },
+  // `.claude/worktrees/` guarda copias completas del repositorio que crean las sesiones de Claude
+  // Code: lintearlas daba un error ajeno (otra rama) y ponia `npm run verificar` en rojo en local.
+  { ignores: ['node_modules/**', 'public/vendor/**', 'database.sqlite', '.claude/worktrees/**'] },
   {
     files: ['server/**/*.js', 'scripts/**/*.js', 'eslint.config.js'],
     languageOptions: { ecmaVersion: 2023, sourceType: 'commonjs', globals: globalsNode },
