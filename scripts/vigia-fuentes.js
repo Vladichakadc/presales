@@ -425,6 +425,16 @@ async function sondear(segundos) {
   return filas;
 }
 
+// Las fuentes declaradas estables cuya huella VIGILADA varia entre dos peticiones. Se juzga por
+// lo que el vigia compara de verdad —los datos de una ficha, el texto de un HTML, los bytes de un
+// PDF— y no por los bytes siempre: el sondeo del 2026-10-13 avisaba de que el boletin EOL de Cisco
+// y las fichas 9000/9100/9200 de Aruba «no son estables» cuando el vigia ya los vigila por texto,
+// que el mismo sondeo media estable. Una falsa alarma sobre falsas alarmas.
+function declaradasInestables(filas) {
+  return filas.filter((r) => r.estado === 'leido' && r.estable
+    && !(r.clase === 'datos' ? r.vigiladoIgual : r.hayTexto ? r.hashTextoIgual : r.hashIgual));
+}
+
 function imprimirSondeo(filas) {
   console.log('\n== SONDEO DE ESTABILIDAD ==');
   console.log('   Dos peticiones seguidas a la misma URL. Lo que cambie entre ellas NO puede ser');
@@ -453,7 +463,7 @@ function imprimirSondeo(filas) {
       console.log(`            B: …${r.difiereEn.b}…`);
     }
   }
-  const mal = filas.filter((r) => r.estado === 'leido' && r.estable && !(r.clase === 'datos' ? r.vigiladoIgual : r.hashIgual));
+  const mal = declaradasInestables(filas);
   if (mal.length) {
     console.log(`\n${mal.length} fuente(s) declaradas estables que NO lo son. Cada alarma suya puede ser falsa.`);
     for (const r of mal) {
@@ -567,7 +577,7 @@ if (require.main === module) {
 
 module.exports = {
   correr, revisar, claveDe, pendientes, normalizarEntrada, marcarRevisado, aplicarAlLock,
-  sondear, textoNormalizado, primeraDiferencia,
+  sondear, textoNormalizado, primeraDiferencia, declaradasInestables,
   clasificar,
   leerLock, LOCK,
 };

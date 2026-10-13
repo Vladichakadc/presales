@@ -737,7 +737,7 @@
     if (fotos.pie) pon(fotos.pie);
     // El origen lo declara cada pagina (`fotos.origen`): hasta el 2026-10-13 esta linea decia
     // «documentos oficiales de HPE» tambien en el Excel de Fortinet, Huawei y MikroTik.
-    pon(`${fotos.origen || 'Extraídas de los documentos oficiales del fabricante'} versionados en la herramienta — la misma fuente que la ficha en pantalla.`);
+    pon(`${fotos.origen || 'Extraídas de los documentos oficiales del fabricante'} — versionadas en la herramienta, la misma fuente que la ficha en pantalla.`);
     r++;
     let incrustadas = 0;
     for (const [cara, src] of [['frontal', fotos.front], ['trasera', fotos.rear]]) {

@@ -92,3 +92,17 @@ test('el job que publica acepta la clase «datos» y sigue sin dejar mover lo ve
   movido.documentos[clave].hashVerificado = 'f'.repeat(64);
   assert.match(validarLock(LOCK, movido) || '', /movió hashVerificado/);
 });
+
+test('el sondeo juzga la estabilidad por lo que se vigila, no por los bytes', () => {
+  const { declaradasInestables } = require('../scripts/vigia-fuentes');
+  const fila = (o) => ({ estado: 'leido', estable: true, hashIgual: false, hayTexto: true, hashTextoIgual: true, ...o });
+  // HTML con bytes volatiles y texto estable (el boletin EOL de Cisco, medido el 2026-10-13): no alarma.
+  assert.deepStrictEqual(declaradasInestables([fila({})]), []);
+  // HTML con el texto volatil: si alarma.
+  assert.strictEqual(declaradasInestables([fila({ hashTextoIgual: false })]).length, 1);
+  // Ficha vigilada por datos: manda la huella de datos.
+  assert.strictEqual(declaradasInestables([fila({ clase: 'datos', vigiladoIgual: true, hashTextoIgual: false })]).length, 0);
+  assert.strictEqual(declaradasInestables([fila({ clase: 'datos', vigiladoIgual: false })]).length, 1);
+  // PDF (sin texto): mandan los bytes.
+  assert.strictEqual(declaradasInestables([fila({ hayTexto: false, hashTextoIgual: false })]).length, 1);
+});

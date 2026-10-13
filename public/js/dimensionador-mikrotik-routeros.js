@@ -507,7 +507,7 @@ function renderBom(){
     ].filter(n=>n!==null),
   };
   const v=VISTAS&&VISTAS[m.id];
-  if(v&&v.front) meta.fotos={modelo:m.id, origen:'Galería oficial de la ficha de producto en mikrotik.com', front:v.front, rear:v.rear||null,
+  if(v&&v.front) meta.fotos={modelo:m.id, origen:'De la galería oficial de la ficha de producto en mikrotik.com', front:v.front, rear:v.rear||null,
     pie:[v.tamano,v.fuente].filter(Boolean).join(' · ')};
   const d=dtoActual();
   if(d>0){ meta.dto=d; meta.dtoEtq=DTO.etiqueta(); }

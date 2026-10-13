@@ -412,6 +412,9 @@ Módulos compartidos:
   precio se **derivan** de la ficha, nunca se escriben a mano. WireGuard no tiene cifra oficial y
   no se estima; la RAM por feed BGP es un supuesto declarado; PoE solo cuenta donde la ficha da
   vatios. Niveles de licencia de la tabla oficial (el 5 no limita OpenVPN; CHR no tiene niveles).
+  Figuras de la galería de cada ficha (`public/data/mikrotik-vistas-equipos.json`), sin pérdida y a
+  resolución nativa; la galería no rotula la cara: se decide mirándola, y sin trasera no se sirve la
+  de un hermano.
 - **Nokia**: dos dimensionadores — 7750 SR / 7250 IXR (equipo, por plataforma; chasis modulares
   apartados por densidad) y 7220 IXR (fabric). Capacidad en Gbps; `aMbps()` es el único que lo sabe.
 - **Starlink LEO**: módulo canónico integrado byte a byte (`starlink-leo-dimensionador/` es la línea
@@ -428,7 +431,9 @@ Módulos compartidos:
 - **Vigía** (`npm run vigia`, `vigia-fuentes.yml` los lunes en dos jobs: `medir` sin escritura,
   `publicar` sin instalar nada y validando el lock). **Tres estados en el lock**: `hashVerificado`
   (lo que una persona contrastó, no se mueve solo), `visto` y `pendienteDesde`; se limpia con
-  `npm run vigia -- --revisado <fabricante> <url>`. Vigila el texto en HTML y los bytes en PDF;
+  `npm run vigia -- --revisado <fabricante> <url>`. Vigila el texto en HTML, los bytes en PDF y,
+  en las 20 fichas de MikroTik, **los datos transcritos** (`vigilar: 'ficha-mikrotik'`: la huella de
+  lo que `npm run mikrotik` lee, que al transcribir deja el lock verificado);
   `--sondeo` mide qué varía entre dos peticiones. **Un documento inalcanzable no es uno sin
   cambios**, y un 403 no prueba quién bloquea (`npm run candidatas`). Pasadas 4 semanas sin
   contrastar, `verificar` frena (`SEMANAS_TOLERADAS`).
