@@ -372,6 +372,23 @@ jobs:
                 'https://manual.mikrotik.com/docs/getting-started/routeros-licensing/chr/chr-licensing/',
                 'https://help.mikrotik.com/docs/spaces/ROS/pages/18350234/Cloud+Hosted+Router+CHR',
               ] },
+              // 2026-10-13 (pendientes): el MANUAL de cada equipo. Cada ficha enlaza el suyo en
+              // manual.mikrotik.com/hardware/<modelo>/; de ahi salen la alimentacion (cuantas
+              // entradas y si son de respaldo) y la potencia PoE de salida que la ficha da en
+              // amperios. Se descubren en las fichas, sin adivinar rutas: van con mikrotik-routers
+              // (y su listado) y con mikrotik-l009-2haxd.html; las de las opticas, con mikrotik-sfp.
+              { archivo: 'mikrotik-manuales', tipo: 'paginas', para: 'MIKROTIK', urls: [],
+                descubrirPiezas: { de: ['mikrotik-routers', 'mikrotik-l009-2haxd.html'], base: 'https://mikrotik.com/',
+                  dominios: ['manual.mikrotik.com'], prefijo: ['hardware'], max: 45 } },
+              { archivo: 'mikrotik-manuales-sfp', tipo: 'paginas', para: 'MIKROTIK', urls: [],
+                descubrirPiezas: { de: ['mikrotik-sfp'], base: 'https://mikrotik.com/',
+                  dominios: ['manual.mikrotik.com'], prefijo: ['hardware'], max: 45 } },
+              // ARUBA: la «EdgeConnect US Spec Sheet» ya no esta en arubanetworks.com (404). La
+              // pagina de producto de HPE la lista en psnow como a00109847enw: se trae la pagina
+              // para leer que documento es y su enlace de descarga, que no se adivina.
+              { archivo: 'aruba-psnow-a00109847enw.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+                'https://www.hpe.com/psnow/doc/a00109847enw',
+              ] },
               // 2026-10-06 (octava): ARUBA, la pagina de IDS/IPS del Orchestrator. La auditoria A1
               // aparto el EC-XS de Dynamic Threat Defense con esta documentacion, y la spec sheet
               // vigente del EC-XS (a00110177ENW Rev. 3) publica capacidad IDS/IPS: se lee entera
