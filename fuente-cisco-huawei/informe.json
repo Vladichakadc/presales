@@ -1,0 +1,222 @@
+[
+  {
+    "archivo": "mikrotik-ccr2004-1g-12s-2xs.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://mikrotik.com/product/ccr2004_1g_12s_2xs",
+        "status": 200,
+        "bytes": 374482,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-ccr2116.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://mikrotik.com/product/ccr2116_12g_4splus",
+        "status": 200,
+        "bytes": 364707,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-ccr2216.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://mikrotik.com/product/ccr2216_1g_12xs_2xq",
+        "status": 200,
+        "bytes": 391513,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-hex-2024.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://mikrotik.com/product/hex_2024",
+        "status": 200,
+        "bytes": 335274,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-hex-s-2025.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://mikrotik.com/product/hex_s_2025",
+        "status": 200,
+        "bytes": 369976,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-routers-listado.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://mikrotik.com/products/group/ethernet-routers",
+        "status": 200,
+        "bytes": 448970,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-routers",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://mikrotik.com/product/hex",
+        "status": 404
+      },
+      {
+        "url": "https://mikrotik.com/product/rb5009ug",
+        "status": 404
+      },
+      {
+        "url": "https://mikrotik.com/product/rb5009upr",
+        "status": 404
+      },
+      {
+        "url": "https://mikrotik.com/product/rds2216",
+        "status": 200,
+        "bytes": 464604,
+        "guardado": true,
+        "como": "mikrotik-routers/rds2216.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/rb5009",
+        "status": 404
+      },
+      {
+        "url": "https://mikrotik.com/product/rb4011igs",
+        "status": 404
+      },
+      {
+        "url": "https://mikrotik.com/product/l009uigs",
+        "status": 404
+      },
+      {
+        "url": "https://mikrotik.com/product/ccr2216",
+        "status": 404
+      },
+      {
+        "url": "https://mikrotik.com/product/ccr2116",
+        "status": 404
+      },
+      {
+        "url": "https://mikrotik.com/product/RB750r2",
+        "status": 200,
+        "bytes": 325341,
+        "guardado": true,
+        "como": "mikrotik-routers/RB750r2.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/RB750Gr3",
+        "status": 200,
+        "bytes": 347869,
+        "guardado": true,
+        "como": "mikrotik-routers/RB750Gr3.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/RB750UPr2",
+        "status": 200,
+        "bytes": 340445,
+        "guardado": true,
+        "como": "mikrotik-routers/RB750UPr2.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/RB960PGS",
+        "status": 200,
+        "bytes": 359042,
+        "guardado": true,
+        "como": "mikrotik-routers/RB960PGS.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/RB960PGS-PB",
+        "status": 200,
+        "bytes": 369156,
+        "guardado": true,
+        "como": "mikrotik-routers/RB960PGS-PB.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/ccr2004",
+        "status": 404
+      },
+      {
+        "url": "https://mikrotik.com/product/rb1100ahx4",
+        "status": 200,
+        "bytes": 344301,
+        "guardado": true,
+        "como": "mikrotik-routers/rb1100ahx4.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/RB1100Dx4",
+        "status": 200,
+        "bytes": 373224,
+        "guardado": true,
+        "como": "mikrotik-routers/RB1100Dx4.html"
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-licencias.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://help.mikrotik.com/docs/spaces/ROS/pages/328149/RouterOS+license+keys",
+        "status": 200,
+        "bytes": 93564,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-chr.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://manual.mikrotik.com/docs/getting-started/routeros-licensing/chr/chr-licensing/",
+        "status": 200,
+        "bytes": 88025,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  }
+]
