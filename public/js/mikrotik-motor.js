@@ -130,23 +130,35 @@
   // Lo mismo, en minúscula para el medio de una frase (sin estropear «RJ45»).
   const MEDIOS_TXT = { indiferente: 'entrega sin definir', cobre: 'cobre RJ45', 'fibra-sm': 'fibra monomodo', 'fibra-mm': 'fibra multimodo' };
   const MAX_ENLACES = 4;
-  // Módulo por entrega y velocidad del enlace, y en qué jaulas va. El primero que la matriz
-  // marque para el equipo es el recomendado. 1G en fibra: el módulo de 1G (más barato) también
-  // va en una jaula SFP+/SFP28, como dice la tabla «1G SFP» de la matriz.
+  // Módulo por entrega, velocidad y ALCANCE, y en qué jaulas va. Dentro de cada velocidad van de
+  // menor a mayor alcance (el «Distance» de la ficha de cada módulo): se elige el primero que llega
+  // a la distancia del tramo y que la matriz marca para el equipo. 1G en fibra: el módulo de 1G
+  // también va en una jaula SFP+/SFP28, como dice la tabla «1G SFP» de la matriz. El cobre llega a
+  // 100 m (y el S+RJ10 a 30 m a 10 Gbps, según su tabla de la matriz).
   const MODULOS = [
-    { medio: 'cobre', hasta: 1000, sku: 'S-RJ01', jaulas: ['sfp', 'sfp10', 'sfp25'] },
-    { medio: 'cobre', hasta: 10000, sku: 'S+RJ10', jaulas: ['sfp2g5', 'sfp10', 'sfp25'] },
-    { medio: 'fibra-sm', hasta: 1000, sku: 'S-31DLC20D', jaulas: ['sfp', 'sfp10', 'sfp25'] },
-    { medio: 'fibra-sm', hasta: 2500, sku: 'S+31DLC10D', jaulas: ['sfp2g5'] },
-    { medio: 'fibra-sm', hasta: 10000, sku: 'S+31DLC10D', jaulas: ['sfp10', 'sfp25'] },
-    { medio: 'fibra-sm', hasta: 25000, sku: 'XS+31LC10D', jaulas: ['sfp25'] },
-    { medio: 'fibra-sm', hasta: 100000, sku: 'XQ+31LC10D', jaulas: ['qsfp100'] },
-    { medio: 'fibra-mm', hasta: 1000, sku: 'S+85DLC03D', jaulas: ['sfp', 'sfp10', 'sfp25'] },
-    { medio: 'fibra-mm', hasta: 2500, sku: 'S+85DLC03D', jaulas: ['sfp2g5'] },
-    { medio: 'fibra-mm', hasta: 10000, sku: 'S+85DLC03D', jaulas: ['sfp10', 'sfp25'] },
-    { medio: 'fibra-mm', hasta: 25000, sku: 'XS+85LC01D', jaulas: ['sfp25'] },
-    { medio: 'fibra-mm', hasta: 100000, sku: 'XQ+85MP01D', jaulas: ['qsfp100'] },
+    { medio: 'cobre', hasta: 1000, km: 0.1, sku: 'S-RJ01', jaulas: ['sfp', 'sfp10', 'sfp25'] },
+    { medio: 'cobre', hasta: 5000, km: 0.1, sku: 'S+RJ10', jaulas: ['sfp2g5', 'sfp10', 'sfp25'] },
+    { medio: 'cobre', hasta: 10000, km: 0.03, sku: 'S+RJ10', jaulas: ['sfp10', 'sfp25'] },
+    { medio: 'fibra-sm', hasta: 1000, km: 20, sku: 'S-31DLC20D', jaulas: ['sfp', 'sfp10', 'sfp25'] },
+    { medio: 'fibra-sm', hasta: 1000, km: 80, sku: 'S-55DLC80D', jaulas: ['sfp', 'sfp10', 'sfp25'] },
+    { medio: 'fibra-sm', hasta: 2500, km: 10, sku: 'S+31DLC10D', jaulas: ['sfp2g5'] },
+    { medio: 'fibra-sm', hasta: 2500, km: 15, sku: 'XS+2733LC15D', jaulas: ['sfp2g5'], kit: true },
+    { medio: 'fibra-sm', hasta: 10000, km: 10, sku: 'S+31DLC10D', jaulas: ['sfp10', 'sfp25'] },
+    { medio: 'fibra-sm', hasta: 10000, km: 15, sku: 'XS+2733LC15D', jaulas: ['sfp10', 'sfp25'], kit: true },
+    { medio: 'fibra-sm', hasta: 25000, km: 10, sku: 'XS+31LC10D', jaulas: ['sfp25'] },
+    { medio: 'fibra-sm', hasta: 25000, km: 15, sku: 'XS+2733LC15D', jaulas: ['sfp25'], kit: true },
+    { medio: 'fibra-sm', hasta: 100000, km: 2, sku: 'XQ+31LC02D', jaulas: ['qsfp100'] },
+    { medio: 'fibra-sm', hasta: 100000, km: 10, sku: 'XQ+31LC10D', jaulas: ['qsfp100'] },
+    { medio: 'fibra-mm', hasta: 1000, km: 0.3, sku: 'S+85DLC03D', jaulas: ['sfp', 'sfp10', 'sfp25'] },
+    { medio: 'fibra-mm', hasta: 2500, km: 0.3, sku: 'S+85DLC03D', jaulas: ['sfp2g5'] },
+    { medio: 'fibra-mm', hasta: 10000, km: 0.3, sku: 'S+85DLC03D', jaulas: ['sfp10', 'sfp25'] },
+    { medio: 'fibra-mm', hasta: 25000, km: 0.1, sku: 'XS+85LC01D', jaulas: ['sfp25'] },
+    { medio: 'fibra-mm', hasta: 100000, km: 0.1, sku: 'XQ+85MP01D', jaulas: ['qsfp100'] },
   ];
+  const ALCANCE_COBRE_KM = 0.1;
+  // El BiDi va por una sola fibra con dos longitudes de onda: el extremo del operador tiene que
+  // llevar la complementaria. Es física del enlace, no una cifra de MikroTik.
+  const NOTA_BIDI = 'BiDi por una sola fibra (1270/1330 nm): el extremo del operador lleva la longitud de onda complementaria; confirmarlo con él';
 
   /* Lista de enlaces saneada. `lista` puede llegar como texto JSON (el campo oculto de la página).
      Un enlace sin velocidad toma la del sitio (`porDefecto`); sin ningún principal, el primero lo
@@ -160,12 +172,21 @@
     const out = l.slice(0, MAX_ENLACES).map((e, i) => {
       const v = e && e.mbps !== '' && e.mbps != null ? Number(e.mbps) : NaN;
       const vale = Number.isFinite(v) && v > 0;
+      const mbps = vale ? v : defMbps;
+      // Subida: vacía es un enlace simétrico. El puerto se mide por el sentido mayor.
+      const su = e && e.subida !== '' && e.subida != null ? Number(e.subida) : NaN;
+      const subida = Number.isFinite(su) && su > 0 ? su : mbps;
+      const k = e && e.km !== '' && e.km != null ? Number(e.km) : NaN;
       return {
         n: i + 1,
         tipo: TIPOS_ENLACE[e && e.tipo] ? e.tipo : 'internet',
         rol: ROLES[e && e.rol] ? e.rol : (i === 0 ? 'principal' : 'respaldo'),
         medio: MEDIOS[e && e.medio] ? e.medio : 'indiferente',
-        mbps: vale ? v : defMbps,
+        mbps,
+        subida,
+        asimetrico: subida !== mbps,
+        vel: Math.max(mbps, subida),
+        km: Number.isFinite(k) && k > 0 ? k : null,
         porDefecto: !vale,
       };
     });
@@ -181,14 +202,21 @@
   function escenariosWan(enlaces) {
     const pr = enlaces.filter((e) => e.rol === 'principal');
     const re = enlaces.filter((e) => e.rol === 'respaldo');
-    const normal = pr.reduce((a, e) => a + e.mbps, 0);
-    const respaldo = re.length ? Math.max(...re.map((e) => e.mbps)) : 0;
-    const fallas = re.length ? pr.map((e) => ({ cae: e, entra: re.find((r) => r.mbps === respaldo), mbps: normal - e.mbps + respaldo })) : [];
-    const peor = fallas.reduce((a, f) => (f.mbps > a.mbps ? f : a), { mbps: normal, cae: null });
-    return { normal, fallas, caudal: Math.max(normal, peor.mbps), gobierna: peor.mbps > normal ? peor : null };
+    // Cada escenario suma bajada y subida por separado: el puerto ve el sentido mayor y la prueba
+    // «all port» la suma de los dos.
+    const suma = (l) => ({ baja: l.reduce((a, e) => a + e.mbps, 0), sube: l.reduce((a, e) => a + e.subida, 0) });
+    const esc = (l) => { const x = suma(l); return { ...x, mbps: Math.max(x.baja, x.sube), agregado: x.baja + x.sube }; };
+    const n = esc(pr);
+    const mejor = re.length ? re.reduce((a, e) => (e.vel > a.vel ? e : a)) : null;
+    const fallas = mejor ? pr.map((e) => ({ cae: e, entra: mejor, ...esc([...pr.filter((x) => x !== e), mejor]) })) : [];
+    const peor = fallas.reduce((a, f) => (f.mbps > a.mbps ? f : a), { mbps: n.mbps, cae: null });
+    return { normal: n.mbps, agregadoNormal: n.agregado, fallas,
+      caudal: Math.max(n.mbps, peor.mbps), agregado: Math.max(n.agregado, ...fallas.map((f) => f.agregado)),
+      gobierna: peor.mbps > n.mbps ? peor : null };
   }
 
-  const etiquetaEnlace = (e) => `Enlace ${e.n} · ${TIPOS_ENLACE[e.tipo]} ${e.rol === 'principal' ? 'principal' : 'de respaldo'} · ${MEDIOS_TXT[e.medio]} · ${fmt(e.mbps)}`;
+  const fmtKm = (k) => (k < 1 ? `${Math.round(k * 1000)} m` : `${String(k).replace('.', ',')} km`);
+  const etiquetaEnlace = (e) => `Enlace ${e.n} · ${TIPOS_ENLACE[e.tipo]} ${e.rol === 'principal' ? 'principal' : 'de respaldo'} · ${MEDIOS_TXT[e.medio]} · ${e.asimetrico ? `${fmt(e.mbps)} / ${fmt(e.subida)}` : fmt(e.mbps)}${e.km ? ` · ${fmtKm(e.km)}` : ''}`;
 
   /* Puertos del equipo como ranuras: cobre por velocidad y jaulas por clase. */
   function ranuras(p) {
@@ -206,14 +234,18 @@
 
   /* Que modulo lleva un enlace en una jaula, segun la matriz de ESTE equipo. */
   function moduloEn(e, jaula, fila) {
-    const clase = jaula.g25 && e.mbps > 1000 ? 'sfp2g5' : jaula.clase;
-    const opciones = MODULOS.filter((x) => x.medio === e.medio && e.mbps <= x.hasta && x.jaulas.includes(clase));
-    const top = opciones.length ? opciones[0] : null;
-    if (!top) return null;
-    if (!fila) return { sku: null, consultar: true };
-    const v = fila[top.sku];
-    if (v === true || typeof v === 'string') return { sku: top.sku, nota: typeof v === 'string' ? v : null };
-    return { sku: null, prohibido: top.sku };
+    const clase = jaula.g25 && e.vel > 1000 ? 'sfp2g5' : jaula.clase;
+    const porVel = MODULOS.filter((x) => x.medio === e.medio && e.vel <= x.hasta && x.jaulas.includes(clase));
+    if (!porVel.length) return null;
+    // La velocidad más baja que sirve fija la familia; dentro de ella, el primero que llega.
+    const tope = Math.min(...porVel.map((x) => x.hasta));
+    const familia = porVel.filter((x) => x.hasta === tope);
+    const llegan = e.km ? familia.filter((x) => x.km >= e.km) : familia;
+    if (!llegan.length) return { sku: null, sinAlcance: Math.max(...familia.map((x) => x.km)) };
+    if (!fila) return { sku: null, consultar: true, km: llegan[0].km };
+    const ok = llegan.find((x) => fila[x.sku] === true || typeof fila[x.sku] === 'string');
+    if (ok) return { sku: ok.sku, nota: typeof fila[ok.sku] === 'string' ? fila[ok.sku] : null, km: ok.km, kit: !!ok.kit };
+    return { sku: null, prohibido: llegan[0].sku };
   }
 
   /* Asigna cada enlace a un puerto del equipo y le pone modulo. Devuelve la asignacion, lo que
@@ -229,18 +261,21 @@
     const total = libres.length;
     const asig = []; const miss = []; const avisos = [];
     let rj10 = 0;
-    const orden = [...enlaces].sort((a, b) => b.mbps - a.mbps || a.n - b.n);
+    // Acepta enlaces sin sanear (llamada directa): sin `vel`, la velocidad es la del sentido mayor.
+    const lista = enlaces.map((e) => (e.vel != null ? e : { ...e, subida: e.subida || e.mbps, vel: Math.max(e.mbps, e.subida || 0), km: e.km || null }));
+    const orden = [...lista].sort((a, b) => b.vel - a.vel || a.n - b.n);
     for (const e of orden) {
       const cands = [];
       for (const r of libres) {
-        if (r.vel < e.mbps) continue;
+        if (r.vel < e.vel) continue;
         if (r.tipo === 'rj') {
-          if (e.medio === 'cobre' || e.medio === 'indiferente') cands.push({ r, mod: null, costo: 0 });
+          const llega = !e.km || e.km <= ALCANCE_COBRE_KM || e.medio === 'indiferente';
+          if ((e.medio === 'cobre' || e.medio === 'indiferente') && llega) cands.push({ r, mod: null, costo: 0 });
           continue;
         }
         if (e.medio === 'indiferente') { cands.push({ r, mod: null, costo: 0 }); continue; }
         const mod = moduloEn(e, r, fila);
-        if (!mod || mod.prohibido) continue;
+        if (!mod || mod.prohibido || mod.sinAlcance) continue;
         if (mod.sku === 'S+RJ10' && fila && fila['S+RJ10'] === '11' && rj10 >= 6) continue;
         cands.push({ r, mod, costo: mod.sku ? (precios[mod.sku] ? precios[mod.sku].price : 0) : 0 });
       }
@@ -248,7 +283,8 @@
       const c = cands[0];
       if (!c) { miss.push(motivoSinPuerto(e, ranuras(m.puertos), fila)); continue; }
       libres.splice(libres.indexOf(c.r), 1);
-      const fila0 = { enlace: e, puerto: c.r.n, velPuerto: c.r.vel, sku: c.mod ? c.mod.sku : null, consultar: !!(c.mod && c.mod.consultar) };
+      const fila0 = { enlace: e, puerto: c.r.n, velPuerto: c.r.vel, sku: c.mod ? c.mod.sku : null, consultar: !!(c.mod && c.mod.consultar),
+        alcance: c.mod ? c.mod.km || null : (c.r.tipo === 'rj' ? ALCANCE_COBRE_KM : null), kit: !!(c.mod && c.mod.kit) };
       if (c.mod && c.mod.sku) {
         const pm = precios[c.mod.sku];
         fila0.precio = pm ? pm.price : null;
@@ -258,6 +294,7 @@
           if (!/fan/i.test(m.refrigeracion || '')) avisos.push(`S+RJ10 en un equipo de refrigeración pasiva (${m.id}): «${notas.pasiva || 'MikroTik no lo recomienda sin ventilación adicional'}»`);
         }
         if (c.mod.nota === '14') avisos.push(`${c.mod.sku} en la jaula SFP de ${m.id}: «${notas['14'] || ''}» (enlace ${e.n}).`);
+        if (c.mod.kit) avisos.push(`Enlace ${e.n}, tramo de ${fmtKm(e.km)}: ningún módulo dúplex de esa velocidad llega y va con el ${c.mod.sku} (hasta ${fmtKm(c.mod.km)}). ${NOTA_BIDI}.`);
         if (c.mod.sku === 'S-RJ01' && m.compat === 'hEX S') avisos.push(`S-RJ01 en el hEX S: ${notas.rj01 || 'solo enlaza a 1 Gbps'}`);
       }
       if (c.mod && c.mod.consultar) avisos.push(`${m.id} no figura en la matriz oficial de compatibilidad: el módulo del enlace ${e.n} va «a consultar», no se elige por parecido con otro equipo.`);
@@ -270,20 +307,26 @@
 
   function motivoSinPuerto(e, todas, fila) {
     const rapida = todas.reduce((a, r) => Math.max(a, r.vel), 0);
-    const d = `enlace ${e.n} (${MEDIOS_TXT[e.medio]}, ${fmt(e.mbps)})`;
+    const d = `enlace ${e.n} (${MEDIOS_TXT[e.medio]}, ${fmt(e.vel)}${e.km ? `, ${fmtKm(e.km)}` : ''})`;
     // El enlace por defecto es el caso de un solo enlace de antes: se conserva su frase.
-    if (rapida < e.mbps) return e.porDefecto && e.medio === 'indiferente' ? `su puerto más rápido es de ${fmt(rapida)} por sentido` : `${d}: su puerto más rápido es de ${fmt(rapida)}`;
+    if (rapida < e.vel) return e.porDefecto && e.medio === 'indiferente' ? `su puerto más rápido es de ${fmt(rapida)} por sentido` : `${d}: su puerto más rápido es de ${fmt(rapida)}`;
+    if (e.km && e.medio !== 'indiferente') {
+      const mods = todas.filter((r) => r.tipo === 'jaula' && r.vel >= e.vel).map((r) => moduloEn(e, r, fila)).filter(Boolean);
+      const cortos = mods.filter((x) => x.sinAlcance != null);
+      if (e.medio === 'cobre' && (mods.length ? mods.every((x) => x.sinAlcance != null) : e.km > ALCANCE_COBRE_KM)) return `${d}: el cobre llega a ${fmtKm(cortos.length ? Math.max(...cortos.map((x) => x.sinAlcance)) : ALCANCE_COBRE_KM)}${e.vel > 5000 ? ' a esa velocidad' : ''}; a esa distancia hace falta fibra`;
+      if (mods.length && mods.every((x) => x.sinAlcance != null)) return `${d}: ningún módulo de la matriz llega a esa distancia a esa velocidad (el de más alcance, ${fmtKm(Math.max(...cortos.map((x) => x.sinAlcance)))})`;
+    }
     const jaulas = todas.filter((r) => r.tipo === 'jaula');
     if (e.medio !== 'cobre' && e.medio !== 'indiferente' && !jaulas.length) return `${d}: no tiene jaulas SFP`;
     if (e.medio === 'cobre') {
-      const rj = todas.filter((r) => r.tipo === 'rj' && r.vel >= e.mbps);
+      const rj = todas.filter((r) => r.tipo === 'rj' && r.vel >= e.vel);
       if (!rj.length) {
         const conMod = jaulas.map((r) => moduloEn(e, r, fila)).filter(Boolean);
         if (conMod.some((x) => x.prohibido)) return `${d}: no tiene puerto de cobre de ${fmt(e.mbps)} y la matriz oficial no admite el ${conMod.find((x) => x.prohibido).prohibido} en este equipo`;
         if (!conMod.length) return `${d}: no tiene puerto de cobre de esa velocidad ni jaula para un módulo RJ45`;
       }
     } else if (e.medio !== 'indiferente') {
-      const conMod = jaulas.filter((r) => r.vel >= e.mbps).map((r) => moduloEn(e, r, fila)).filter(Boolean);
+      const conMod = jaulas.filter((r) => r.vel >= e.vel).map((r) => moduloEn(e, r, fila)).filter(Boolean);
       if (conMod.length && conMod.every((x) => x.prohibido)) return `${d}: la matriz oficial no admite el ${conMod[0].prohibido} en este equipo`;
       if (!conMod.length) return `${d}: no tiene jaula de esa velocidad para fibra`;
     }
@@ -332,13 +375,15 @@
     const { enlaces, avisos: avisosEnlaces } = normalizarEnlaces(esc.enlaces, porSentidoSitio);
     const wan = escenariosWan(enlaces);
     const porSentido = Math.max(porSentidoSitio, wan.caudal); // contra el puerto WAN
-    const need = porSentido * dirMult;                        // contra la prueba «all port»
+    // Contra la prueba «all port»: los dos sentidos (×2 del sitio, o bajada + subida de los
+    // enlaces si son asimétricos); con «un solo sentido», el sentido mayor.
+    const need = dirMult === 2 ? Math.max(porSentidoSitio * 2, wan.agregado) : porSentido;
     // Respaldo cifrado: MPLS principal con respaldo de Internet. En la falla el tráfico corporativo
     // cruza Internet por IPsec, y esa celda también tiene que alcanzar.
     const respInternet = enlaces.filter((e) => e.rol === 'respaldo' && e.tipo === 'internet');
     const respaldoCifrado = enlaces.some((e) => e.rol === 'principal' && e.tipo === 'mpls') && respInternet.length > 0
       && esc.respaldoIpsec !== false && esc.respaldoIpsec !== 'false';
-    const needIpsecRespaldo = respaldoCifrado ? Math.max(...respInternet.map((e) => e.mbps)) * dirMult : 0;
+    const needIpsecRespaldo = respaldoCifrado ? Math.max(...respInternet.map((e) => (dirMult === 2 ? e.mbps + e.subida : e.vel))) : 0;
     const tuneles = modo === 'hub' && sedes > 1 ? 'multi' : 'uno';
     const bytesIpsec = TRAMAS[trama].ipsec;
 
@@ -495,19 +540,20 @@
     if (ev.enlaces && ev.enlaces.length) {
       L.push('### Enlaces WAN');
       L.push('');
-      L.push('| Enlace | Tipo | Rol | Entrega | Velocidad | Puerto del equipo | Módulo |');
-      L.push('|---|---|---|---|---|---|---|');
+      L.push('| Enlace | Tipo | Rol | Entrega | Bajada / subida | Tramo | Puerto del equipo | Módulo (alcance) |');
+      L.push('|---|---|---|---|---|---|---|---|');
       const asig = fila && fila.puertos ? fila.puertos.asig : [];
       ev.enlaces.forEach((e) => {
         const a = asig.find((x) => x.enlace.n === e.n);
-        const mod = !a ? '—' : a.sku ? a.sku : a.consultar ? 'a consultar (equipo fuera de la matriz)' : (e.medio === 'indiferente' && a.puerto.startsWith('jaula') ? 'según la entrega del operador' : 'no lleva');
-        L.push(`| ${e.n} | ${TIPOS_ENLACE[e.tipo]} | ${ROLES[e.rol]} | ${MEDIOS[e.medio]} | ${fmt(e.mbps)}${e.porDefecto ? ' (la del sitio)' : ''} | ${a ? a.puerto : '—'} | ${mod} |`);
+        const mod = !a ? '—' : a.sku ? `${a.sku}${a.alcance ? ` (hasta ${fmtKm(a.alcance)})` : ''}${a.kit ? ', BiDi' : ''}` : a.consultar ? 'a consultar (equipo fuera de la matriz)' : (e.medio === 'indiferente' && a.puerto.startsWith('jaula') ? 'según la entrega del operador' : 'no lleva');
+        L.push(`| ${e.n} | ${TIPOS_ENLACE[e.tipo]} | ${ROLES[e.rol]} | ${MEDIOS[e.medio]} | ${fmt(e.mbps)}${e.porDefecto ? ' (la del sitio)' : ''} / ${e.asimetrico ? fmt(e.subida) : 'igual'} | ${e.km ? fmtKm(e.km) : 'sin dato'} | ${a ? a.puerto : '—'} | ${mod} |`);
       });
       L.push('');
       if (ev.wan && ev.wan.fallas.length) {
         L.push(`Escenarios: normal ${fmt(ev.wan.normal)}; ${ev.wan.fallas.map((f) => `cae el enlace ${f.cae.n}: ${fmt(f.mbps)}`).join('; ')}. Se dimensiona con ${fmt(ev.wan.caudal)}.`);
         L.push('');
       }
+      if (fila && fila.puertos && fila.puertos.avisos.length) { fila.puertos.avisos.forEach((x) => L.push(`- ${x}`)); L.push(''); }
       L.push('_Módulos de la matriz oficial «MikroTik wired interface compatibility» (manual.mikrotik.com, RouterOS 7.25): solo se recomienda lo que la matriz marca como soportado en el equipo._');
       L.push('');
     }
@@ -535,7 +581,7 @@
   }
 
   return { TRAMAS, TRAMA_DEFECTO, CONFIGS, FIREWALL, CIFRADOS, PERFILES, TUNELES_MEDIDOS,
-    TIPOS_ENLACE, ROLES, MEDIOS, MAX_ENLACES, MODULOS,
+    TIPOS_ENLACE, ROLES, MEDIOS, MAX_ENLACES, MODULOS, NOTA_BIDI, ALCANCE_COBRE_KM,
     configuraciones, evaluar, memoria, maxFeeds, ramParaFeeds, fmt,
     normalizarEnlaces, escenariosWan, asignarPuertos, comportamiento, etiquetaEnlace };
 });

@@ -118,16 +118,16 @@ function evaluarEscenario(){
 }
 
 /* ── ENLACES WAN ─────────────────────────────────────────────────────────────────────────
-   Filas {tipo, rol, mbps, medio} en el campo oculto #enlacesData (JSON), que es lo que viaja en el
+   Filas {tipo, rol, mbps, subida, medio, km} en el campo oculto #enlacesData (JSON), que es lo que viaja en el
    enlace compartido y en los perfiles. Vacio es el caso de siempre: un principal con la velocidad
    del sitio. Las filas se repintan solo al añadir o quitar, para no perder el foco al escribir. */
-const ENLACE_DEF={tipo:'internet', rol:'principal', mbps:'', medio:'indiferente'};
+const ENLACE_DEF={tipo:'internet', rol:'principal', mbps:'', subida:'', medio:'indiferente', km:''};
 function leerEnlaces(){
   try{ const v=JSON.parse($('enlacesData').value||'[]'); return Array.isArray(v)&&v.length?v:[{...ENLACE_DEF}]; }
   catch{ return [{...ENLACE_DEF}]; }
 }
 function escribirEnlaces(l){
-  const def=l.length===1&&['tipo','rol','mbps','medio'].every(k=>String(l[0][k]??'')===String(ENLACE_DEF[k]));
+  const def=l.length===1&&Object.keys(ENLACE_DEF).every(k=>String(l[0][k]??'')===String(ENLACE_DEF[k]));
   $('enlacesData').value=def?'':JSON.stringify(l);
   // El evento despierta el volcado de ESTADO: el enlace compartible se actualiza solo (Aruba igual).
   $('enlacesData').dispatchEvent(new Event('input',{bubbles:true}));
@@ -139,8 +139,10 @@ function pintarEnlaces(){
     <span class="enl-n" aria-hidden="true">${i+1}</span>
     <select data-k="tipo" aria-label="Tipo del enlace ${i+1}">${opt(M.TIPOS_ENLACE,e.tipo)}</select>
     <select data-k="rol" aria-label="Rol del enlace ${i+1}">${opt({principal:'Principal', respaldo:'Respaldo'},e.rol)}</select>
-    <input type="number" data-k="mbps" min="1" step="any" value="${esc(e.mbps??'')}" placeholder="Mbps (vacío = sitio)" aria-label="Velocidad del enlace ${i+1} en Mbps" autocomplete="off">
+    <input type="number" data-k="mbps" min="1" step="any" value="${esc(e.mbps??'')}" placeholder="Bajada Mbps" aria-label="Velocidad de bajada del enlace ${i+1} en Mbps" autocomplete="off">
+    <input type="number" data-k="subida" min="1" step="any" value="${esc(e.subida??'')}" placeholder="Subida Mbps" aria-label="Velocidad de subida del enlace ${i+1} en Mbps" autocomplete="off">
     <select data-k="medio" aria-label="Entrega del enlace ${i+1}">${opt(M.MEDIOS,e.medio)}</select>
+    <input type="number" data-k="km" min="0" step="any" value="${esc(e.km??'')}" placeholder="Tramo km" aria-label="Distancia del tramo del enlace ${i+1} en km" autocomplete="off">
     ${i?`<button type="button" class="btn ghost enl-quitar" data-quitar="${i}" aria-label="Quitar el enlace ${i+1}">×</button>`:''}
   </div>`).join('');
   $('btnAddEnlace').disabled=l.length>=M.MAX_ENLACES;
@@ -158,7 +160,7 @@ $('enlacesBox').addEventListener('click',e=>{
 $('btnAddEnlace').addEventListener('click',()=>{
   const l=leerEnlaces(); if(l.length>=M.MAX_ENLACES) return;
   // El segundo enlace, por defecto, es el respaldo de lo que haya: el caso que pidió el dueño.
-  l.push({tipo:l.some(x=>x.tipo==='mpls')?'internet':'mpls', rol:'respaldo', mbps:'', medio:'indiferente'});
+  l.push({...ENLACE_DEF, tipo:l.some(x=>x.tipo==='mpls')?'internet':'mpls', rol:'respaldo'});
   escribirEnlaces(l); pintarEnlaces(); render();
   const ult=$('enlacesBox').querySelector('.enlace-fila:last-child select'); if(ult) ult.focus();
 });
@@ -303,14 +305,14 @@ function render(){
     const asig=r.puertos?r.puertos.asig:[];
     const filas=ev.enlaces.map(e=>{
       const a=asig.find(x=>x.enlace.n===e.n);
-      const mod=!a?'<span class="bad">no cabe</span>':a.sku?`${esc(a.sku)} — ${a.precio!=null?money(a.precio):'consultar'}${a.d?` · ${esc(a.d)}`:''}`
+      const mod=!a?'<span class="bad">no cabe</span>':a.sku?`${esc(a.sku)} — ${a.precio!=null?money(a.precio):'consultar'}${a.d?` · ${esc(a.d)}`:''}${a.kit?` · ${esc(M.NOTA_BIDI)}`:''}`
         :a.consultar?'<span class="warn">módulo a consultar: el equipo no figura en la matriz oficial</span>'
         :e.medio==='indiferente'&&/^jaula/.test(a.puerto)?'<span class="warn">según lo que entregue el operador</span>':'no lleva módulo';
       return [esc(M.etiquetaEnlace(e)), `${a?esc(a.puerto):'—'} · ${mod}`, true];
     });
     const libres=r.puertos?r.puertos.libres:null;
     return {titulo:'Enlaces WAN y puertos', filas,
-      nota:`${ev.wan.fallas.length?`Escenarios: normal ${fmt(ev.wan.normal)}; ${ev.wan.fallas.map(f=>`cae el enlace ${f.cae.n}: ${fmt(f.mbps)}`).join('; ')}. `:''}${libres!=null?`Quedan ${libres} puerto(s) libres para la LAN. `:''}Módulos de la matriz oficial «MikroTik wired interface compatibility» (RouterOS 7.25).`};
+      nota:`${ev.wan.fallas.length?`Escenarios: normal ${fmt(ev.wan.normal)}; ${ev.wan.fallas.map(f=>`cae el enlace ${f.cae.n}: ${fmt(f.mbps)}`).join('; ')}. `:''}${libres!=null?`Quedan ${libres} puerto(s) libres para la LAN. `:''}Módulos de la matriz oficial «MikroTik wired interface compatibility» (RouterOS 7.25).${r.puertos&&r.puertos.avisos.length?' '+r.puertos.avisos.map(esc).join(' '):''}`};
   };
   const seccionesDe=m=>{
     const sup=SUPPORT[$('supportTier')&&$('supportTier').value?$('supportTier').value:Object.keys(SUPPORT)[0]]||Object.values(SUPPORT)[0];
@@ -496,7 +498,7 @@ function enlacesBom(m){
   const grupos=new Map();
   ((res&&res.asig)||[]).filter(a=>a.sku||a.consultar).forEach(a=>{
     const k=a.sku||`consultar-${a.enlace.n}`;
-    if(!grupos.has(k)) grupos.set(k,{sku:a.sku, precio:a.precio, d:a.d, ns:[], puertos:[]});
+    if(!grupos.has(k)) grupos.set(k,{sku:a.sku, precio:a.precio, d:a.d, kit:a.kit, ns:[], puertos:[]});
     const g=grupos.get(k); g.ns.push(a.enlace.n); g.puertos.push(a.puerto);
   });
   return [...grupos.values()];
@@ -569,7 +571,7 @@ function renderBom(){
   // son los adicionales (LAN, uplinks).
   enlacesBom(m).forEach(x=>filas.push({cat:'Ópticas y cables', desc:x.sku||`Módulo del enlace ${x.ns.join(', ')}`, sku:x.sku||null,
     qty:x.ns.length*qty, unit:x.sku?x.precio:null,
-    nota:`${x.ns.length>1?'Enlaces':'Enlace'} WAN ${x.ns.join(', ')} → ${x.puertos.join(', ')}${x.d?' · '+x.d:''}${x.sku?'':' · el equipo no figura en la matriz oficial de compatibilidad: módulo a consultar'}`}));
+    nota:`${x.ns.length>1?'Enlaces':'Enlace'} WAN ${x.ns.join(', ')} → ${x.puertos.join(', ')}${x.d?' · '+x.d:''}${x.kit?' · '+M.NOTA_BIDI:''}${x.sku?'':' · el equipo no figura en la matriz oficial de compatibilidad: módulo a consultar'}`}));
   optics.forEach(o=>filas.push({cat:'Ópticas y cables', desc:o.optic.sku, sku:o.optic.sku,
     qty:o.qty*qty, unit:o.optic.price, nota:`Adicional · ${o.optic.d}`}));
   if(apQty&&ap) filas.push({cat:'Puntos de acceso', desc:ap.sku, sku:ap.hwModel||null,

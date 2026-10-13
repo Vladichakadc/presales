@@ -198,7 +198,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
       <input type="hidden" id="enlacesData">
       <div id="enlacesBox" role="group" aria-labelledby="enlacesLbl"></div>
       <button type="button" class="btn ghost" id="btnAddEnlace" style="margin-top:6px">+ Añadir enlace (segundo Internet o MPLS)</button>
-      <p class="hint">Un <b>respaldo</b> ocupa un puerto pero no suma caudal; dos <b>principales</b> balancean y suman. Se dimensiona con el peor escenario (normal o con un principal caído). La entrega (cobre o fibra) y la velocidad eligen el puerto y el módulo de la matriz oficial de MikroTik. Velocidad vacía: la del sitio.</p>
+      <p class="hint">Un <b>respaldo</b> ocupa un puerto pero no suma caudal; dos <b>principales</b> balancean y suman. Se dimensiona con el peor escenario (normal o con un principal caído). La entrega (cobre o fibra), la velocidad y la distancia del tramo eligen el puerto y el módulo de la matriz oficial de MikroTik (el primero que llega a esa distancia). Bajada vacía: la del sitio; subida vacía: simétrico; tramo vacío: no se comprueba el alcance.</p>
       <div class="sub-field hidden" id="respIpsecBox" data-inactivo>
         <label class="check"><input type="checkbox" id="chkRespaldoIpsec" checked> <span>Cifrar el respaldo por Internet (IPsec hacia la sede central)<span class="sku">Con la MPLS caída el tráfico corporativo cruza Internet: el equipo también se comprueba con su celda IPsec.</span></span></label>
       </div>

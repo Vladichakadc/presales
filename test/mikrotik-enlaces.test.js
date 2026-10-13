@@ -119,3 +119,62 @@ test('la matriz extraída dice lo que dice la página oficial en los casos que d
   for (const m of D.MODELS.filter((x) => x.compat)) assert.ok(D.COMPATIBILIDAD[m.compat], m.id);
   for (const x of M.MODULOS) assert.ok(MODULOS[x.sku], `${x.sku} sin precio en OPTICS`);
 });
+
+// DISTANCIA DEL TRAMO Y ENLACES ASIMÉTRICOS (2026-10-13). El módulo se elige por velocidad y por
+// alcance (el «Distance» de la ficha de cada módulo): dentro de la velocidad, el primero que llega.
+const Ek = (tipo, rol, mbps, medio, km, subida) => ({ tipo, rol, mbps, medio, km, subida });
+const rb5009 = D.MODELS.find((m) => m.id === 'RB5009UG+S+IN');
+
+test('fibra monomodo de 1G a 40 km: el S-31DLC20D (20 km) no llega y va el S-55DLC80D', () => {
+  const r = M.asignarPuertos(rb5009, M.normalizarEnlaces([Ek('internet', 'principal', 1000, 'fibra-sm', 40)], 0).enlaces, OPC);
+  assert.strictEqual(r.asig[0].sku, 'S-55DLC80D');
+  assert.strictEqual(r.asig[0].alcance, 80);
+  const corto = M.asignarPuertos(rb5009, M.normalizarEnlaces([Ek('internet', 'principal', 1000, 'fibra-sm', 5)], 0).enlaces, OPC);
+  assert.strictEqual(corto.asig[0].sku, 'S-31DLC20D', 'a 5 km basta el de 20 km, que es el primero de su velocidad');
+});
+
+test('10G monomodo a 12 km: pasa del S+31DLC10D y va el BiDi, con la nota del extremo complementario', () => {
+  const r = M.asignarPuertos(rb5009, M.normalizarEnlaces([Ek('internet', 'principal', 10000, 'fibra-sm', 12)], 0).enlaces, OPC);
+  assert.strictEqual(r.asig[0].sku, 'XS+2733LC15D');
+  assert.strictEqual(r.asig[0].kit, true);
+  assert.ok(r.avisos.some((x) => /longitud de onda complementaria/.test(x)));
+  // A 30 km ningún módulo de 10G de la matriz llega: el motivo lo dice, no se elige uno corto.
+  const lejos = M.asignarPuertos(rb5009, M.normalizarEnlaces([Ek('internet', 'principal', 10000, 'fibra-sm', 30)], 0).enlaces, OPC);
+  assert.match(lejos.miss[0], /ningún módulo de la matriz llega a esa distancia.*15 km/);
+});
+
+test('cobre: a más de 100 m hace falta fibra; el S+RJ10 a 10G llega a 30 m', () => {
+  const r = M.asignarPuertos(rb5009, M.normalizarEnlaces([Ek('internet', 'principal', 500, 'cobre', 0.2)], 0).enlaces, OPC);
+  assert.match(r.miss[0], /el cobre llega a 100 m; a esa distancia hace falta fibra/);
+  const r10 = M.asignarPuertos(rb5009, M.normalizarEnlaces([Ek('internet', 'principal', 10000, 'cobre', 0.05)], 0).enlaces, OPC);
+  assert.match(r10.miss[0], /el cobre llega a 30 m/);
+});
+
+test('100G monomodo a 1 km en el CCR2216: el XQ+31LC02D (2 km) antes que el de 10 km', () => {
+  const ccr = D.MODELS.find((m) => m.id === 'CCR2216-1G-12XS-2XQ');
+  const r = M.asignarPuertos(ccr, M.normalizarEnlaces([Ek('internet', 'principal', 100000, 'fibra-sm', 1)], 0).enlaces, OPC);
+  assert.strictEqual(r.asig[0].sku, 'XQ+31LC02D');
+  const r5 = M.asignarPuertos(ccr, M.normalizarEnlaces([Ek('internet', 'principal', 100000, 'fibra-sm', 5)], 0).enlaces, OPC);
+  assert.strictEqual(r5.asig[0].sku, 'XQ+31LC10D');
+});
+
+test('enlace asimétrico: el puerto se mide por el sentido mayor y la prueba «all port» por la suma', () => {
+  const ev = evaluar({ bw: 100, enlaces: [Ek('internet', 'principal', 1000, 'cobre', null, 100)] });
+  assert.strictEqual(ev.enlaces[0].asimetrico, true);
+  assert.strictEqual(ev.enlaces[0].vel, 1000);
+  assert.strictEqual(ev.wan.caudal, 1000);
+  assert.strictEqual(ev.wan.agregado, 1100, '1000 de bajada + 100 de subida, no 2 × 1000');
+  // Simétrico de 1000: la suma es 2000. El asimétrico pide menos al equipo.
+  const sim = evaluar({ bw: 100, enlaces: [Ek('internet', 'principal', 1000, 'cobre')] });
+  assert.strictEqual(sim.wan.agregado, 2000);
+  assert.match(M.etiquetaEnlace(ev.enlaces[0]), /1 Gbps \/ 100 Mbps|1000 Mbps \/ 100 Mbps/);
+});
+
+test('cada alcance de la tabla de módulos es el que dice la ficha del módulo', () => {
+  const fmtD = (km) => (km < 1 ? `${Math.round(km * 1000)} m` : `${km} km`);
+  for (const x of M.MODULOS.filter((y) => y.medio !== 'cobre')) {
+    assert.ok(MODULOS[x.sku].d.includes(fmtD(x.km)), `${x.sku}: ${x.km} km no figura en «${MODULOS[x.sku].d}»`);
+  }
+  assert.strictEqual(D.COMPATIBILIDAD.L009['XS+2733LC15D'], '14');
+  assert.strictEqual(D.COMPATIBILIDAD['CCR2216-1G-12XS-2XQ']['XQ+31LC02D'], true);
+});

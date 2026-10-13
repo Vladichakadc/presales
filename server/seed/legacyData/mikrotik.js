@@ -140,16 +140,16 @@ const MANO = [
 // un «compatible» de un «se pide». Un equipo que no figura (hEX lite, hEX PoE lite, hEX,
 // hEX refresh, RB1100, CCR2004-16G-2S+PC) no recibe modulo recomendado: va «consultar».
 const COMPATIBILIDAD = {
-  'hEX S':                { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': false, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true },
-  'hEX S (2025)':         { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': false, 'S+85DLC03D': '14', 'S+31DLC10D': '14', 'XS+31LC10D': '14', 'XS+85LC01D': '14' },
-  'hEX PoE/PowerBox Pro': { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': false, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true },
-  'L009':                 { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': false, 'S+85DLC03D': '14', 'S+31DLC10D': '14', 'XS+31LC10D': '14', 'XS+85LC01D': '14' },
-  'RB4011':               { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': true, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true },
-  'RB5009':               { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': true, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true },
-  'CCR2004-16G-2S+':      { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': true, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true },
-  'CCR2004-1G-12S+2XS':   { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': '11', 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true },
-  'CCR2116-12G-4S+':      { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': true, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true },
-  'CCR2216-1G-12XS-2XQ':  { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': true, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true, 'XQ+31LC10D': true, 'XQ+85MP01D': true },
+  'hEX S':                { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': false, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true, 'S-55DLC80D': true, 'XS+2733LC15D': true },
+  'hEX S (2025)':         { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': false, 'S+85DLC03D': '14', 'S+31DLC10D': '14', 'XS+31LC10D': '14', 'XS+85LC01D': '14', 'S-55DLC80D': true, 'XS+2733LC15D': '14' },
+  'hEX PoE/PowerBox Pro': { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': false, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true, 'S-55DLC80D': true, 'XS+2733LC15D': true },
+  'L009':                 { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': false, 'S+85DLC03D': '14', 'S+31DLC10D': '14', 'XS+31LC10D': '14', 'XS+85LC01D': '14', 'S-55DLC80D': true, 'XS+2733LC15D': '14' },
+  'RB4011':               { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': true, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true, 'S-55DLC80D': true, 'XS+2733LC15D': true },
+  'RB5009':               { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': true, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true, 'S-55DLC80D': true, 'XS+2733LC15D': true },
+  'CCR2004-16G-2S+':      { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': true, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true, 'S-55DLC80D': true, 'XS+2733LC15D': true },
+  'CCR2004-1G-12S+2XS':   { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': '11', 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true, 'S-55DLC80D': true, 'XS+2733LC15D': true },
+  'CCR2116-12G-4S+':      { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': true, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true, 'S-55DLC80D': true, 'XS+2733LC15D': true },
+  'CCR2216-1G-12XS-2XQ':  { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': true, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true, 'XQ+31LC10D': true, 'XQ+85MP01D': true, 'S-55DLC80D': true, 'XS+2733LC15D': true, 'XQ+31LC02D': true },
 };
 // Notas de la matriz que tocan a estos equipos, literales.
 const NOTAS_COMPAT = {

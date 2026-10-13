@@ -30,6 +30,11 @@ const BASE_LINEA = [
       { tipo: 'mpls', rol: 'principal', mbps: '300', medio: 'fibra-sm' },
       { tipo: 'internet', rol: 'respaldo', mbps: '200', medio: 'cobre' }] },
     recomendado: 'RB5009UG+S+IN', celda: 'Ruteo fast path (sin firewall ni colas) · 512 B' },
+  // Distancia del tramo (2026-10-13): servicio de 300 Mbps en fibra monomodo a 40 km. El S-31DLC20D no llega; el
+  // S-55DLC80D (80 km) va en cualquier jaula SFP de la matriz, y el más barato con jaula es el hEX S.
+  { n: 'Sitio 300 Mbps por fibra monomodo a 40 km', esc: { bw: '300', enlaces: [
+      { tipo: 'internet', rol: 'principal', mbps: '300', medio: 'fibra-sm', km: '40' }] },
+    recomendado: 'hEX S E60iUGS', celda: 'Ruteo fast path (sin firewall ni colas) · 512 B' },
 ];
 
 module.exports = {
