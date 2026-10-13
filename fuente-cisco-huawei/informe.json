@@ -1,0 +1,852 @@
+[
+  {
+    "archivo": "mikrotik-routers-listado.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://mikrotik.com/products/group/ethernet-routers",
+        "status": 200,
+        "bytes": 448970,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-routers",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://mikrotik.com/product/hex_s_2025",
+        "status": 200,
+        "bytes": 369976,
+        "guardado": true,
+        "como": "mikrotik-routers/hex_s_2025.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/rb5009ug_s_in",
+        "status": 200,
+        "bytes": 378040,
+        "guardado": true,
+        "como": "mikrotik-routers/rb5009ug_s_in.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/rb5009upr_s_in",
+        "status": 200,
+        "bytes": 385239,
+        "guardado": true,
+        "como": "mikrotik-routers/rb5009upr_s_in.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/rds2216",
+        "status": 200,
+        "bytes": 464604,
+        "guardado": true,
+        "como": "mikrotik-routers/rds2216.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/rb5009_out",
+        "status": 200,
+        "bytes": 393230,
+        "guardado": true,
+        "como": "mikrotik-routers/rb5009_out.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/rb4011igs_rm",
+        "status": 200,
+        "bytes": 375379,
+        "guardado": true,
+        "como": "mikrotik-routers/rb4011igs_rm.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/l009uigs_rm",
+        "status": 200,
+        "bytes": 370834,
+        "guardado": true,
+        "como": "mikrotik-routers/l009uigs_rm.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/hex_2024",
+        "status": 200,
+        "bytes": 335274,
+        "guardado": true,
+        "como": "mikrotik-routers/hex_2024.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/ccr2216_1g_12xs_2xq",
+        "status": 200,
+        "bytes": 391513,
+        "guardado": true,
+        "como": "mikrotik-routers/ccr2216_1g_12xs_2xq.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/ccr2116_12g_4splus",
+        "status": 200,
+        "bytes": 364707,
+        "guardado": true,
+        "como": "mikrotik-routers/ccr2116_12g_4splus.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/RB750r2",
+        "status": 200,
+        "bytes": 325341,
+        "guardado": true,
+        "como": "mikrotik-routers/RB750r2.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/RB750Gr3",
+        "status": 200,
+        "bytes": 347869,
+        "guardado": true,
+        "como": "mikrotik-routers/RB750Gr3.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/RB750UPr2",
+        "status": 200,
+        "bytes": 340445,
+        "guardado": true,
+        "como": "mikrotik-routers/RB750UPr2.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/hex_s",
+        "status": 200,
+        "bytes": 361572,
+        "guardado": true,
+        "como": "mikrotik-routers/hex_s.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/RB960PGS",
+        "status": 200,
+        "bytes": 359042,
+        "guardado": true,
+        "como": "mikrotik-routers/RB960PGS.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/RB960PGS-PB",
+        "status": 200,
+        "bytes": 369156,
+        "guardado": true,
+        "como": "mikrotik-routers/RB960PGS-PB.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/ccr2004_1g_2xs_pcie",
+        "status": 200,
+        "bytes": 352086,
+        "guardado": true,
+        "como": "mikrotik-routers/ccr2004_1g_2xs_pcie.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/rb1100ahx4",
+        "status": 200,
+        "bytes": 344301,
+        "guardado": true,
+        "como": "mikrotik-routers/rb1100ahx4.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/RB1100Dx4",
+        "status": 200,
+        "bytes": 373224,
+        "guardado": true,
+        "como": "mikrotik-routers/RB1100Dx4.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/ccr2004_16g_2splus",
+        "status": 200,
+        "bytes": 359516,
+        "guardado": true,
+        "como": "mikrotik-routers/ccr2004_16g_2splus.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/ccr2004_16g_2s_pc",
+        "status": 200,
+        "bytes": 356640,
+        "guardado": true,
+        "como": "mikrotik-routers/ccr2004_16g_2s_pc.html"
+      },
+      {
+        "url": "https://mikrotik.com/product/ccr2004_1g_12s_2xs",
+        "status": 200,
+        "bytes": 374482,
+        "guardado": true,
+        "como": "mikrotik-routers/ccr2004_1g_12s_2xs.html"
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-l009-2haxd.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://mikrotik.com/product/l009uigs_2haxd_in",
+        "status": 200,
+        "bytes": 374058,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-img",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1285_hi_res.png",
+        "status": 200,
+        "bytes": 1765955,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1285_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1286_hi_res.png",
+        "status": 200,
+        "bytes": 1469549,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1286_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1330_hi_res.png",
+        "error": "fetch failed"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1300_hi_res.png",
+        "status": 200,
+        "bytes": 8008456,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1300_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1405_hi_res.png",
+        "status": 200,
+        "bytes": 2293037,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1405_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1406_hi_res.png",
+        "status": 200,
+        "bytes": 1842171,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1406_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1216_hi_res.png",
+        "status": 200,
+        "bytes": 8090367,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1216_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1218_hi_res.png",
+        "status": 200,
+        "bytes": 6290239,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1218_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1412_hi_res.png",
+        "status": 200,
+        "bytes": 852716,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1412_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1085_hi_res.png",
+        "status": 200,
+        "bytes": 940334,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1085_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1040_hi_res.png",
+        "status": 200,
+        "bytes": 846294,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1040_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1041_hi_res.png",
+        "status": 200,
+        "bytes": 936300,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1041_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1298_hi_res.png",
+        "status": 200,
+        "bytes": 834087,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1298_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1296_hi_res.png",
+        "status": 200,
+        "bytes": 328993,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1296_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1297_hi_res.png",
+        "status": 200,
+        "bytes": 571923,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1297_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1299_hi_res.png",
+        "status": 200,
+        "bytes": 1318220,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1299_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1219_hi_res.png",
+        "status": 200,
+        "bytes": 581055,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1219_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1220_hi_res.png",
+        "status": 200,
+        "bytes": 1004464,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1220_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1221_hi_res.png",
+        "error": "fetch failed"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1222_hi_res.png",
+        "status": 200,
+        "bytes": 1624565,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1222_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2634_hi_res.png",
+        "status": 200,
+        "bytes": 1919044,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2634_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2639_hi_res.png",
+        "status": 200,
+        "bytes": 1828294,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2639_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2644_hi_res.png",
+        "status": 200,
+        "bytes": 2283419,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2644_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2651_hi_res.png",
+        "status": 200,
+        "bytes": 3648815,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2651_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2290_hi_res.png",
+        "status": 200,
+        "bytes": 845938,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2290_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2563_hi_res.png",
+        "status": 200,
+        "bytes": 1517299,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2563_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2565_hi_res.png",
+        "status": 200,
+        "bytes": 1995754,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2565_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2095_hi_res.png",
+        "status": 200,
+        "bytes": 1620950,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2095_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2096_hi_res.png",
+        "status": 200,
+        "bytes": 4789450,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2096_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2097_hi_res.png",
+        "error": "fetch failed"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2098_hi_res.png",
+        "status": 200,
+        "bytes": 234429,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2098_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1935_hi_res.png",
+        "status": 200,
+        "bytes": 2860090,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1935_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1936_hi_res.png",
+        "status": 200,
+        "bytes": 2011065,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1936_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1937_hi_res.png",
+        "status": 200,
+        "bytes": 1822904,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1937_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2128_hi_res.png",
+        "status": 200,
+        "bytes": 4353829,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2128_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2129_hi_res.png",
+        "status": 200,
+        "bytes": 5452023,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2129_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2130_hi_res.png",
+        "status": 200,
+        "bytes": 3137234,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2130_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2131_hi_res.png",
+        "status": 200,
+        "bytes": 5131426,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2131_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2132_hi_res.png",
+        "status": 200,
+        "bytes": 1067411,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2132_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2133_hi_res.png",
+        "status": 200,
+        "bytes": 528799,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2133_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2155_hi_res.png",
+        "status": 200,
+        "bytes": 1985451,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2155_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2625_hi_res.png",
+        "status": 200,
+        "bytes": 1282519,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2625_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2116_hi_res.png",
+        "status": 200,
+        "bytes": 1545170,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2116_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2629_hi_res.png",
+        "status": 200,
+        "bytes": 2179690,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2629_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2632_hi_res.png",
+        "status": 200,
+        "bytes": 2228164,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2632_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2122_hi_res.png",
+        "status": 200,
+        "bytes": 1999869,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2122_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2123_hi_res.png",
+        "status": 200,
+        "bytes": 1307705,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2123_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2124_hi_res.png",
+        "status": 200,
+        "bytes": 1687622,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2124_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2125_hi_res.png",
+        "status": 200,
+        "bytes": 1752016,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2125_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2126_hi_res.png",
+        "status": 200,
+        "bytes": 711145,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2126_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2127_hi_res.png",
+        "status": 200,
+        "bytes": 1039101,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2127_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2408_hi_res.png",
+        "status": 200,
+        "bytes": 5295962,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2408_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2409_hi_res.png",
+        "status": 200,
+        "bytes": 2633514,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2409_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1539_hi_res.png",
+        "status": 200,
+        "bytes": 986673,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1539_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1540_hi_res.png",
+        "status": 200,
+        "bytes": 704915,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1540_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1541_hi_res.png",
+        "status": 200,
+        "bytes": 983328,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1541_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1579_hi_res.png",
+        "status": 200,
+        "bytes": 1072454,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1579_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2458_hi_res.png",
+        "status": 200,
+        "bytes": 2535773,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2458_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2459_hi_res.png",
+        "error": "fetch failed"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2267_hi_res.png",
+        "status": 200,
+        "bytes": 2391134,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2267_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2268_hi_res.png",
+        "status": 200,
+        "bytes": 2081058,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2268_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2269_hi_res.png",
+        "status": 200,
+        "bytes": 2789649,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2269_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2270_hi_res.png",
+        "status": 200,
+        "bytes": 2210103,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2270_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2271_hi_res.png",
+        "status": 200,
+        "bytes": 5037764,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2271_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1344_hi_res.png",
+        "status": 200,
+        "bytes": 1764641,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1344_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1345_hi_res.png",
+        "status": 200,
+        "bytes": 1469549,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1345_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1346_hi_res.png",
+        "status": 200,
+        "bytes": 6056350,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1346_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1633_hi_res.png",
+        "status": 200,
+        "bytes": 903464,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1633_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1639_hi_res.png",
+        "status": 200,
+        "bytes": 403209,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1639_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1640_hi_res.png",
+        "status": 200,
+        "bytes": 318247,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1640_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1641_hi_res.png",
+        "status": 200,
+        "bytes": 194017,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1641_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1642_hi_res.png",
+        "status": 200,
+        "bytes": 183288,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1642_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/1652_hi_res.png",
+        "status": 200,
+        "bytes": 1487384,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__1652_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2250_hi_res.png",
+        "status": 200,
+        "bytes": 2025244,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2250_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2251_hi_res.png",
+        "status": 200,
+        "bytes": 4447866,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2251_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2252_hi_res.png",
+        "status": 200,
+        "bytes": 2813247,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2252_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2253_hi_res.png",
+        "status": 200,
+        "bytes": 5311375,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2253_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2254_hi_res.png",
+        "status": 200,
+        "bytes": 3507427,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2254_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2255_hi_res.png",
+        "status": 200,
+        "bytes": 3719617,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2255_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2256_hi_res.png",
+        "status": 200,
+        "bytes": 3105783,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2256_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2065_hi_res.png",
+        "status": 200,
+        "bytes": 3642584,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2065_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2066_hi_res.png",
+        "status": 200,
+        "bytes": 4208335,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2066_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2067_hi_res.png",
+        "status": 200,
+        "bytes": 119257,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2067_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2068_hi_res.png",
+        "status": 200,
+        "bytes": 4475613,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2068_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2190_hi_res.png",
+        "status": 200,
+        "bytes": 4719074,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2190_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2191_hi_res.png",
+        "status": 200,
+        "bytes": 3969940,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2191_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2192_hi_res.png",
+        "status": 200,
+        "bytes": 2623798,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2192_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2438_hi_res.png",
+        "status": 200,
+        "bytes": 1987403,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2438_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2439_hi_res.png",
+        "status": 200,
+        "bytes": 999653,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2439_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2441_hi_res.png",
+        "status": 200,
+        "bytes": 1124233,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2441_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2445_hi_res.png",
+        "error": "fetch failed"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2263_hi_res.png",
+        "status": 200,
+        "bytes": 2641196,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2263_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2264_hi_res.png",
+        "status": 200,
+        "bytes": 2949589,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2264_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2265_hi_res.png",
+        "status": 200,
+        "bytes": 3101579,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2265_hi_res.png"
+      },
+      {
+        "url": "https://cdn.mikrotik.com/web-assets/rb_images/2266_hi_res.png",
+        "status": 200,
+        "bytes": 2601468,
+        "guardado": true,
+        "como": "mikrotik-img/web-assets__rb_images__2266_hi_res.png"
+      }
+    ]
+  }
+]
