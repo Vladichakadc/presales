@@ -7,7 +7,7 @@ const helmet = require('helmet');
 const auth = require('./auth');
 const { sequelize, Vendor, Product } = require('./models');
 const seedCatalog = require('./seed/seedCatalog');
-const { fuentesQueAvisan, FUENTES } = require('./seed/legacyData/fuentes');
+const { fuentesQueAvisan, agruparAvisos, FUENTES } = require('./seed/legacyData/fuentes');
 
 const catalogRoutes = require('./routes/catalog');
 const cotizadorRoutes = require('./routes/cotizador');
@@ -366,11 +366,14 @@ app.use((err, req, res, next) => {
 function avisarDeFuentes() {
   const avisos = fuentesQueAvisan();
   if (!avisos.length) return;
-  for (const a of avisos) {
+  for (const a of agruparAvisos(avisos)) {
     const cuando = a.estado === 'sin fecha'
       ? 'sin fecha en el catálogo'
       : `${a.meses} meses`;
-    console.warn(`[fuentes] ${a.vendor}: "${a.documento}" — ${cuando}. ${a.nota || ''}`.trim());
+    const docs = a.documentos.length === 1
+      ? `"${a.documentos[0]}"`
+      : `${a.documentos.length} fuentes (${a.documentos.map((d) => `"${d}"`).join(', ')})`;
+    console.warn(`[fuentes] ${a.vendor}: ${docs} — ${cuando}. ${a.nota || ''}`.trim());
   }
   console.warn(`[fuentes] ${avisos.length} fuente(s) piden revisión. Detalle por fabricante en /api/fuentes.`);
 }

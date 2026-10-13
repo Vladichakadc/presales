@@ -1900,6 +1900,11 @@ que ya se comprobó y lo que cuesta cada opción.
   bytes aunque el vigía compare texto o datos, y daba por inestables el boletín EOL de Cisco y las
   fichas 9000/9100/9200 de Aruba (`declaradasInestables()`, con prueba); y el descubrimiento de
   imágenes falla a veces por red (3 de 93 la primera vez): se repite la corrida, no se rellena.
+- **Tras desplegar (despliegue fe45e266, SUCCESS)**: el arranque pasó de 27 a 47 avisos
+  `[fuentes]` porque las 20 fichas nuevas no tienen fecha (MikroTik no la publica), con 20 líneas
+  idénticas que enterraban a las que sí piden acción. El aviso es correcto (sin fecha nunca es
+  vigente); ahora `agruparAvisos()` junta los de mismo fabricante, estado y nota en una línea con sus
+  documentos: 29 líneas, el recuento sigue en 47 (prueba en `test/fuentes.test.js`).
 
 ### El dimensionador MikroTik, sobre la tabla de pruebas oficial de cada ficha (2026-10-13, duodécima entrega)
 

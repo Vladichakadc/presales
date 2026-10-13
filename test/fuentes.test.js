@@ -8,7 +8,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const {
-  FUENTES, ANTIGUEDAD_AVISO_MESES, mesesDesde, estadoFuente, fuentesDe, fuentesQueAvisan,
+  FUENTES, ANTIGUEDAD_AVISO_MESES, mesesDesde, estadoFuente, fuentesDe, fuentesQueAvisan, agruparAvisos,
 } = require('../server/seed/legacyData/fuentes');
 const vendors = require('../server/seed/legacyData/vendors');
 
@@ -84,4 +84,21 @@ test('ninguna URL registrada es inventada: o es http(s) o es null', () => {
       assert.ok(f.documento && f.cubre, `${vendor}: toda fuente dice qué es y qué cubre`);
     }
   }
+});
+
+test('agruparAvisos junta en una linea los avisos iguales sin perder ningun documento', () => {
+  const avisos = fuentesQueAvisan(AHORA);
+  const grupos = agruparAvisos(avisos);
+  // Ningun documento se pierde ni se duplica: el recuento del arranque sigue siendo el de antes.
+  assert.strictEqual(grupos.reduce((n, g) => n + g.documentos.length, 0), avisos.length);
+  // Las 20 fichas de MikroTik (mismo estado, misma nota) son una sola linea.
+  const fichas = grupos.filter((g) => g.vendor === 'mikrotik' && g.documentos.some((d) => /^Ficha de producto MikroTik /.test(d)));
+  assert.strictEqual(fichas.length, 1);
+  assert.strictEqual(fichas[0].documentos.length, FUENTES.mikrotik.filter((f) => f.vigilar === 'ficha-mikrotik').length);
+  // Dos avisos con nota distinta no se mezclan.
+  const sueltos = agruparAvisos([
+    { vendor: 'x', estado: 'sin fecha', meses: null, nota: 'a', documento: 'A' },
+    { vendor: 'x', estado: 'sin fecha', meses: null, nota: 'b', documento: 'B' },
+  ]);
+  assert.strictEqual(sueltos.length, 2);
 });

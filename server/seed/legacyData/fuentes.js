@@ -435,4 +435,18 @@ function fuentesQueAvisan(ahora = new Date()) {
   return avisos;
 }
 
-module.exports = { FUENTES, ANTIGUEDAD_AVISO_MESES, mesesDesde, estadoFuente, fuentesDe, fuentesQueAvisan, documentoFichaMikrotik };
+// Los avisos que dicen lo mismo van en una sola linea. Las 20 fichas de MikroTik comparten estado
+// («sin fecha»: MikroTik no fecha sus fichas) y nota, y como 20 lineas iguales enterraban en el
+// log del arranque a las fuentes que si piden accion. Se agrupa por fabricante, estado, meses y
+// nota; el grupo conserva cada documento y el recuento total no cambia.
+function agruparAvisos(avisos) {
+  const grupos = new Map();
+  for (const a of avisos) {
+    const clave = JSON.stringify([a.vendor, a.estado, a.meses, a.nota || '']);
+    if (!grupos.has(clave)) grupos.set(clave, { ...a, documentos: [] });
+    grupos.get(clave).documentos.push(a.documento);
+  }
+  return [...grupos.values()];
+}
+
+module.exports = { FUENTES, ANTIGUEDAD_AVISO_MESES, mesesDesde, estadoFuente, fuentesDe, fuentesQueAvisan, agruparAvisos, documentoFichaMikrotik };
