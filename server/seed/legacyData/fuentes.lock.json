@@ -3,30 +3,36 @@
     "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf": {
       "documento": "Fortinet Product Matrix",
       "hashVerificado": "242a6eba814f3583d658e267934447c6cb21481f03cdfab83d9e821708e72624",
-      "clase": "bytes",
       "bytes": 123387,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-02T04:24:40.380Z",
+      "clase": "bytes",
+      "visto": {
+        "hash": "235dad2f9b5d1df106c0deb5a077ac3aa7a9b224425653b1e9718abaf5d7d284",
+        "bytes": 123486,
+        "medido": "2026-10-13T19:08:29.846Z"
+      },
+      "pendienteDesde": "2026-10-13T19:07:48.856Z"
     },
     "cisco::https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html": {
       "documento": "Boletines oficiales de fin de venta (EOL)",
       "hashVerificado": "8b7d2e78821894b29222b5958987f45771a1cb620988c41ec5446a2db8f2e893",
       "clase": "texto",
-      "bytes": 173909,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "bytes": 173911,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "juniper::https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/security-products-comparison-chart.pdf": {
       "documento": "SRX Series and vSRX Performance and Features Matrix",
       "hashVerificado": "ac24c11aae0cf0ef594227b1ebfd4d4a335969f34f2e8a3c8da118af1bb9d5e0",
       "clase": "bytes",
       "bytes": 392019,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/products": {
       "documento": "Datasheets publicos y MSRP de mikrotik.com",
       "hashVerificado": "60297d782cae84b3ea2bbd73157ed988cfbf19b55c7c59aa568f268f17034d42",
       "clase": "texto",
       "bytes": 476385,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "aruba::https://www.hpe.com/us/en/networking.html": {
       "documento": "Paginas de producto y tienda oficiales de HPE/Aruba",
@@ -37,222 +43,521 @@
     },
     "nokia::https://www.nokia.com/networks/ip-networks/": {
       "documento": "Datasheets oficiales de producto",
-      "hashVerificado": "4131a1bf41760f439b6a6921d47fe9ed5aca202bdf3e75ae53d845ee2ab5e772",
+      "hashVerificado": "f452f71abf8ac8819fb85deb897b23d6817e3bfff45d72a892d96d0a0f739147",
       "clase": "texto",
-      "bytes": 306308,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "bytes": 301728,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "cisco::https://www.cisco.com/c/dam/en/us/products/collateral/routers/secure-routers/8300-series-secure-routers-ds.pdf": {
       "documento": "Cisco 8300 Series Secure Routers Data Sheet",
       "hashVerificado": "815494c6a4b7c876ff28b501a539424c5ec78c7995b8e471602837023359374e",
       "clase": "bytes",
       "bytes": 804120,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "juniper::https://support.juniper.net/support/eol/product/srx_series/": {
       "documento": "SRX Series Hardware Dates & Milestones",
       "hashVerificado": "c3b1c5da2877300ea66ffac68a84e566f903bc7c987cb5e321ea7b64a5ec1ae1",
       "clase": "texto",
       "bytes": 104777,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "nokia::https://www.nokia.com/asset/f/207599/": {
       "documento": "Fichas de serie de Nokia (7220 IXR-D, 7750 SR-1x, 7750 SR-s, 7250 IXR-e)",
       "hashVerificado": "8294ee4f52397023cd63c0a4912a4a12ac907f5cac05946f7c7ccb97645df71d",
       "clase": "bytes",
       "bytes": 818294,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/ko_kr/ds-fortigate-100f-series_ko.pdf": {
       "documento": "Fichas por serie de FortiGate 100F y 200F, edicion coreana oficial (FG-100F-DAT-R30-20230227, FG-200F-DAT-R17-20230125)",
       "hashVerificado": "5f833b82422b1cfa1eb910b2916fe4231f4ed5c1479d990161a0da4d1e5c039e",
       "clase": "bytes",
       "bytes": 28635034,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "fortinet::https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/42d64717-83f1-11e9-81a4-00505692583a/FG-100F-QSG.pdf": {
       "documento": "QuickStart Guide FortiGate 100F Series y FortiGate 200F Series",
       "hashVerificado": "1e28fd9d8a949830554e58a32b9563841a26ba1fbf2468cb002d612fe63ea1ff",
       "clase": "bytes",
       "bytes": 5942011,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-secure-sdwan.pdf": {
       "documento": "Secure SD-WAN Ordering Guide (SDWAN-OG-R31-20260804)",
       "hashVerificado": "b5c35f97d868b3555bb6dec73c224d32ecba743eb48c790d21d52f9141991e99",
       "clase": "bytes",
       "bytes": 1091677,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-fortiguard.pdf": {
       "documento": "FortiGate Subscriptions and FortiGuard Bundles Ordering Guide",
       "hashVerificado": "6956386f29998b926bceb43e3afdcd24f5d0696acea4ad9fa4f89489e2ff7718",
       "clase": "bytes",
       "bytes": 542393,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-forticlient.pdf": {
       "documento": "FortiClient Ordering Guide",
       "hashVerificado": "a743cbf6f808d0736a61411814d1acdf5afbee5214bd2c4abccb8f3c287a5503",
       "clase": "bytes",
       "bytes": 632760,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-fortisase.pdf": {
       "documento": "FortiSASE Ordering Guide",
       "hashVerificado": "7c93b656a7f191884b25e60cfdcedb60cfb480471e2cdeb344e3274861d65e8b",
       "clase": "bytes",
       "bytes": 627184,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "fortinet::https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/51fcbb4f-33ff-11ef-bfe5-fa163e15d75b/fortios-v7.6.0-release-notes.pdf": {
       "documento": "FortiOS 7.6 Release Notes (7.6.0 y 7.6.3)",
       "hashVerificado": "411229fc403b82bc173df77d1a600bbcd45462942445237879250e3505580bf8",
-      "clase": "bytes",
       "bytes": 1325974,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-02T04:24:40.380Z",
+      "clase": "bytes",
+      "visto": {
+        "hash": "57d385ea38e13f7786ea9b8ddea339a94a759a939caa254d90fcbe1463422a06",
+        "bytes": 1338345,
+        "medido": "2026-10-13T19:08:29.846Z"
+      },
+      "pendienteDesde": "2026-10-13T19:07:53.210Z"
     },
     "fortinet::https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/c7e69026-9283-11eb-b70b-00505692583a/fortigate-7121F-system-guide.pdf": {
       "documento": "FortiGate 7081F System Guide (7.0.5) y FortiGate-7121F System Guide (7.4.4)",
       "hashVerificado": "6ffc7a1a1c13e224f9d5f8137cbd8536b29950cdbfbef7cb68ac3dfd1d1939af",
       "clase": "bytes",
       "bytes": 10142578,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "juniper::https://www.juniper.net/documentation/us/en/hardware/srx1600/index.html": {
       "documento": "Hardware guides por modelo (SRX300/320/340/345/1500/1600/2300/4100/4200/4300/4700)",
       "hashVerificado": "217679ceb7a8f90c49a3f6e6116308a070836ad60853a3bd57d57d0d756212e8",
       "clase": "texto",
       "bytes": 9734,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "juniper::https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx1600-firewall-datasheet.pdf": {
       "documento": "Fichas por modelo de la generacion 2024 (SRX1600, SRX2300, SRX4300)",
       "hashVerificado": "2175d9142d15811c57eb9562163fb91a242b1cc87166ac705fe20e28f04474fb",
       "clase": "bytes",
       "bytes": 484008,
-      "medido": "2026-10-02T04:24:40.380Z"
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/RB750Gr3": {
       "documento": "Ficha de producto MikroTik RB750Gr3",
       "hashVerificado": "0b94606903a872123a1026dd3331334ea4e4990574f482bd70dc9812ccaa2ebc",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 347869,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/RB750UPr2": {
       "documento": "Ficha de producto MikroTik RB750UPr2",
       "hashVerificado": "e1500d24c81c234166081357ae6cbebb195ffd58b53212ad82c0d9f7d6e00398",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 340445,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/RB750r2": {
       "documento": "Ficha de producto MikroTik RB750r2",
       "hashVerificado": "f20a91f082c9363a6c0bde593e68bf697ad2ea797e5e791bb143e3683912a11f",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 325341,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/RB960PGS-PB": {
       "documento": "Ficha de producto MikroTik RB960PGS-PB",
       "hashVerificado": "8aa178d92405c7b7b32dd7c6b920ac5e0503d22bcb3d633599d7f2f422790120",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 369156,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/RB960PGS": {
       "documento": "Ficha de producto MikroTik RB960PGS",
       "hashVerificado": "3507ce46c309d79ea792b8dbbc6c4f9394fa603df7ff9e83d0a7ab1e62a95dab",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 359042,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/ccr2004_16g_2s_pc": {
       "documento": "Ficha de producto MikroTik CCR2004-16G-2S+PC",
       "hashVerificado": "1d4f2b329623563ebb4a763b545d29e9657f36a5d33ddf3cc76294dcf6d4b274",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 356640,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/ccr2004_16g_2splus": {
       "documento": "Ficha de producto MikroTik CCR2004-16G-2S+",
       "hashVerificado": "974d674b1d4e4a3943f3b0ea3cda1ef089853c1b5d81537d9b7cc14fa65648aa",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 359516,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/ccr2004_1g_12s_2xs": {
       "documento": "Ficha de producto MikroTik CCR2004-1G-12S+2XS",
       "hashVerificado": "611f62513d99ccbacf123b026dabba36c80fb9e05ea39c0adfb62273ecf15a71",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 374482,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/ccr2116_12g_4splus": {
       "documento": "Ficha de producto MikroTik CCR2116-12G-4S+",
       "hashVerificado": "0e31b2d32c5ab19eac0df49de757da9110b8036d460f3bc93264896778925566",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 364707,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/ccr2216_1g_12xs_2xq": {
       "documento": "Ficha de producto MikroTik CCR2216-1G-12XS-2XQ",
       "hashVerificado": "61666c0131d0c5997f3c847f140151799ca90ec701e50be152fc7d2eca43548b",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 391513,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/hex_2024": {
       "documento": "Ficha de producto MikroTik E50UG",
       "hashVerificado": "ca1cfd111efe40448f15c018b28a13c6d3e0bcf2a2109bb1d8bbf5d68588208c",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 335274,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/hex_s": {
       "documento": "Ficha de producto MikroTik RB760iGS",
       "hashVerificado": "e8ba39f6ab2a8229e0328a17ac01738eb1a4b2948a752f8ea4ba2f3a7ad3c4d7",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 361572,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/hex_s_2025": {
       "documento": "Ficha de producto MikroTik E60iUGS",
       "hashVerificado": "0e800edad530f8459e7b8d204f39fcf809cc8df76318078dde1099e7c0bb6566",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 369976,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/l009uigs_2haxd_in": {
       "documento": "Ficha de producto MikroTik L009UiGS-2HaxD-IN",
       "hashVerificado": "8b1aa038d1ff270d20ae4d97b2f31c8f9ae60e09e8ee0a4b505cee4af1d03a3c",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 374058,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/l009uigs_rm": {
       "documento": "Ficha de producto MikroTik L009UiGS-RM",
       "hashVerificado": "c72380d6bba24574d210786018272f5726b11587b32b0a05f0b91ef625ac41de",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 370834,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/rb1100ahx4": {
       "documento": "Ficha de producto MikroTik RB1100x4",
       "hashVerificado": "7e44d02bd9869428c1cdc266f999c2c38a49e6fc9b7491c30a9f27c6cf39e643",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 344301,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/rb4011igs_rm": {
       "documento": "Ficha de producto MikroTik RB4011iGS+RM",
       "hashVerificado": "e25ed6d5bc1114388c8648e1e0b9b62e198e468f755f080c8a18145ba340e47b",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 375379,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/rb5009_out": {
       "documento": "Ficha de producto MikroTik RB5009UPr+S+OUT",
       "hashVerificado": "d3691f607da19629185f90afb4f628ebd56b8b1b98350a187ab7c7404e9c8ca4",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 393230,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/rb5009ug_s_in": {
       "documento": "Ficha de producto MikroTik RB5009UG+S+IN",
       "hashVerificado": "d1beb685ea8c1af913663d5dcb9fdc68cd513a00db9924daacc223af6d250788",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 378040,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "mikrotik::https://mikrotik.com/product/rb5009upr_s_in": {
       "documento": "Ficha de producto MikroTik RB5009UPr+S+IN",
       "hashVerificado": "11a8678f523826e9645c1e9cd93fd1c85c707d4e8ea3554a3e8e0cb5ad49994c",
       "clase": "datos",
-      "medido": "2026-10-13T17:44:46.265Z"
+      "bytes": 385239,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "juniper::https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html": {
+      "documento": "SRX300 Line of Firewalls for the Branch Datasheet",
+      "hashVerificado": "7080f664dac5fb5db5af596bdb8a9d0f5f4fbe0d3e34334c4eefbd3dd5b37122",
+      "clase": "texto",
+      "bytes": 765790,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/e9dd06e260b64df683f6221fc8442cbf/M3T1A590N1140253824460255266/NetEngine%208000%20M8%20Universal%20Service%20Router%20Datasheet.pdf": {
+      "documento": "NetEngine 8000 M8 Universal Service Router Datasheet",
+      "hashVerificado": "002d48718689267fa7d4eb265746bc5919fb2dca9fd93e4a05da6f348993a9ee",
+      "clase": "bytes",
+      "bytes": 514517,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/49184bd3a3c54e4b90f6d73b55ba1558/M3T1A590N1101892422391505075/NetEngine%208000%20F8%20Datasheet.pdf": {
+      "documento": "NetEngine 8000 F8 Datasheet",
+      "hashVerificado": "107811c85e1d1a3c23de811ae41e022b5fc0a2331421f3f0718f49cfd094e232",
+      "clase": "bytes",
+      "bytes": 455262,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/f4f1a7b9424a44ff9770b75a19eb5d2e/M3T1A590N1267221252983996547/NetEngine%208000%20M14%20Universal%20Service%20Router%20Datasheet.pdf": {
+      "documento": "NetEngine 8000 M14 Universal Service Router Datasheet",
+      "hashVerificado": "16afc5d6081ac348b22100120a0d93aa8d7081fbddd6968bf1c8bafece5369be",
+      "clase": "bytes",
+      "bytes": 446839,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/eeda8c0f3659461cbe23ad0a36bc7d78/M3T1A590N1244677017247076576/Huawei%20NetEngine%20AR8000%20Series%20Enterprise%20Router%20Data%20Sheet-R25C10.pdf": {
+      "documento": "Huawei NetEngine AR8000 Series Enterprise Router Data Sheet-R25C10",
+      "hashVerificado": "35a30ab2b6b329757e30ad053c1bf7d9c87775ceeaf946b87f5e0ec8a91a3d47",
+      "clase": "bytes",
+      "bytes": 709373,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/c63ee1473b9147a4b6a50dc64c8f1bcd/M3T1A590N1244327824896741626/Huawei%20NetEngine%20AR6710-H%20Series%20Enterprise%20Router%20Data%20Sheet-R25C10.pdf": {
+      "documento": "Huawei NetEngine AR6710-H Series Enterprise Router Data Sheet-R25C10",
+      "hashVerificado": "7a2fb47e8664a2628cd2bf4b43b9846bb2d78199488bf9c7720a5ae43a3a9d7b",
+      "clase": "bytes",
+      "bytes": 511989,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3e859eec/ar6710-h4t4x2y7": {
+      "documento": "NetEngine AR5700, AR6700, and AR8000 Hardware Description (EDOC1100213474), pagina del AR6710-H4T4X2Y7",
+      "hashVerificado": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "clase": "texto",
+      "bytes": 3800,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/5ed29e82ccc645fb94689a1fbd26bee7/M3T1A590N1245441110459510930/Huawei%20NetEngine%20AR5710-S%20Series%20Enterprise%20Router%20Data%20Sheet-R25C10.pdf": {
+      "documento": "Huawei NetEngine AR5710-S Series Enterprise Router Data Sheet-R25C10",
+      "hashVerificado": "bf3ba1c4fb61eb3f5f613c6702c8597ca0a12ef6138f4b83ad0cb1905f8200b1",
+      "clase": "bytes",
+      "bytes": 646624,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/cf32710e9bd1417b9a9f16577d65257a/M3T1A590N1315338736208527473/Huawei%20NetEngine%20AR5710-H%20Series%20Enterprise%20Router%20Data%20Sheet-R26C00.pdf": {
+      "documento": "Huawei NetEngine AR5710-H Series Enterprise Router Data Sheet-R26C00",
+      "hashVerificado": "3afbd8ee2f6fc9f61d185bb9d633baa4848d81ae021301d1c4b79102b17edce8",
+      "clase": "bytes",
+      "bytes": 681004,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/16333c5bd2dc442ba180ef2fecc2d317/M3T1A590N1311286109356806258/Huawei%20NetEngine%20AR5710I-RU-NRGL%20Enterprise%20Router%20Data%20Sheet-R26C00.pdf": {
+      "documento": "Huawei NetEngine AR5710I-RU-NRGL Enterprise Router Data Sheet-R26C00",
+      "hashVerificado": "22fb6dfb8578fbc515a4f1ad7ff17aee6a9292eb62f7536e6b66b01756bd729f",
+      "clase": "bytes",
+      "bytes": 490288,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/b67ae821185b4ae68465a9494e6e3b81/M3T1A590N1311296491069919315/Huawei%20NetEngine%20AR6000%20Series%20Enterprise%20Routers%20Datasheet-R26C00.pdf": {
+      "documento": "Huawei NetEngine AR6000 Series Enterprise Routers Datasheet-R26C00",
+      "hashVerificado": "feab44e4b1526dd0d0b049522ccb1d3c4e185ed9ad724f4cbd1c34a5f764a7c7",
+      "clase": "bytes",
+      "bytes": 482563,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/b4d387a588a44b67b8a55e9c63847336/M3T1A590N1101968838491570407/NetEngine%208000%20F1A-C%20Datasheet.pdf": {
+      "documento": "NetEngine 8000 F1A-C Datasheet",
+      "hashVerificado": "c035361569231663502997da492a3792824f2187b50c075add787f52eb1a014c",
+      "clase": "bytes",
+      "bytes": 382394,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/c42dc1420bae4b5cb6188ae903e43fd0/M3T1A590N1161701582779183172/Huawei%20NetEngine%20AR650%20Series%20Enterprise%20Routers%20Datasheet_20250810-v3.pdf": {
+      "documento": "Huawei NetEngine AR650 Series Enterprise Routers Datasheet (20250810-v3)",
+      "hashVerificado": "775277d80657f6adc7e2bf1fdabd8736d22c877178720d6a6786b150466524ab",
+      "clase": "bytes",
+      "bytes": 462611,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/e1fc81f9c69d43eb96d1190f77711067/M3T1A590N1311347926431838457/Huawei%20NetEngine%20AR610%20Series%20Enterprise%20Routers%20Datasheet-R26C00.pdf": {
+      "documento": "Huawei NetEngine AR610 Series Enterprise Routers Datasheet-R26C00",
+      "hashVerificado": "e6ca0a87052035da06ea2e03ec8b9123b74f29e5cde84a1f44a8a8aec1fb86b0",
+      "clase": "bytes",
+      "bytes": 594411,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/06048a7a12954961b5017a6459145905/M3T1A590N1063508522362871854/NetEngine%20A800%20E%20Series%20Brochure.pdf": {
+      "documento": "NetEngine A800 E Series Brochure",
+      "hashVerificado": "1441c7452fdf23e81e84cb88088e0f2f24e6b7404f7679bae15b0e0e88f96d7c",
+      "clase": "bytes",
+      "bytes": 1617696,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/b50df453e4bf4ca4b99ef855437e8cc9/M3T1A590N1140254128116289674/NetEngine%208000%20M6%20Universal%20Service%20Router%20Datasheet.pdf": {
+      "documento": "NetEngine 8000 M6 Universal Service Router Datasheet",
+      "hashVerificado": "cdcca95e37670bb750a30cf41032465a5c4a1a5aa1a0a02d0afd51df669a419a",
+      "clase": "bytes",
+      "bytes": 340235,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/cf634dea810542f1b578ec2a48992ce5/M3T1A590N1228070746570178625/NetEngine%208000%20M1A%20Universal%20Service%20Router%20Datasheet.pdf": {
+      "documento": "NetEngine 8000 M1A Universal Service Router Datasheet",
+      "hashVerificado": "e2925c598b4f66ce09197447d4b6906250ac197016cfa76920def460fd0f5744",
+      "clase": "bytes",
+      "bytes": 464338,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/d90f145262704e7d98541b3fe592120d/M3T1A590N1140257116414410888/NetEngine%208000%20M1D-B%20Universal%20Service%20Router%20Datasheet.pdf": {
+      "documento": "NetEngine 8000 M1D-B Universal Service Router Datasheet",
+      "hashVerificado": "35369be5f2c909d0e812d426e876e6264b1aded9f3631e622b2df3ed839a8da6",
+      "clase": "bytes",
+      "bytes": 718562,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/02d9fbd0807243b5b37d66759665d25a/M3T1A590N1069280707103375400/NetEngine%208000%20X%20Series%20Brochure.pdf": {
+      "documento": "NetEngine 8000 X Series Brochure",
+      "hashVerificado": "1133195e6fd80aa981bde00868cf795ea3eff6343f6cc6740022dc8d346c442e",
+      "clase": "bytes",
+      "bytes": 284918,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/fd349b57d667437c99c0e8f1108aa246/M3T1A590N1142133084730556495/NetEngine%20A813%20E%20Datasheet%20V800R025C00.pdf": {
+      "documento": "NetEngine A813 E Datasheet V800R025C00",
+      "hashVerificado": "a6926d857c36605214d80289dbd65e69c82f85cf707808872dbb41aa45aeea90",
+      "clase": "bytes",
+      "bytes": 321950,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/b61bc5869a67495888e7b2e4210ebb37/M3T1A590N1144953970340237579/NetEngine%20A822%20E%20Datasheet%20V800R025C00.pptx": {
+      "documento": "NetEngine A822 E Datasheet V800R025C00 (presentacion .pptx)",
+      "hashVerificado": "c5f3dc7da674f3deb54e0e2e358a9707c1689a4a85f5e45006cca69ef20ad4ff",
+      "clase": "bytes",
+      "bytes": 767491,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/1ff4ee729369411ba9288d36e86e3474/M3T1A590N1149651611493585023/NetEngine%20A821%20E%20Datasheet%20V800R025C00.pptx": {
+      "documento": "NetEngine A821 E Datasheet V800R025C00 (presentacion .pptx)",
+      "hashVerificado": "f550447b04a3d246aa548e7495872dd49761fc90a2e27793479145f0a520379c",
+      "clase": "bytes",
+      "bytes": 1018639,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/4a59d6b44470458491311a5793c9ccb6/M3T1A590N1140256107802820723/NetEngine%208000%20M1C%20Universal%20Service%20Router%20Datasheet.pdf": {
+      "documento": "NetEngine 8000 M1C Universal Service Router Datasheet",
+      "hashVerificado": "4fd4109009d7d1f600bbaa3a44298f06f754a928eecb3a66eeeba9e3f2b47f92",
+      "clase": "bytes",
+      "bytes": 491866,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/fba94a0ac23f4dd883d0df9493eb0ed5/M3T1A590N1140256736524767245/NetEngine%208000%20M1D%20Universal%20Service%20Router%20Datasheet.pdf": {
+      "documento": "NetEngine 8000 M1D Universal Service Router Datasheet",
+      "hashVerificado": "383ef5a6d1ceab61a11f398621c3c444bbb094fc6bc08f2835af1268331c0962",
+      "clase": "bytes",
+      "bytes": 594605,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/4f9698f641b04f0da9a6ec7a5ddcf78b/M3T1A590N1279110148257448048/NetEngine%208000%20M4%20Universal%20Service%20Router%20Datasheet.pdf": {
+      "documento": "NetEngine 8000 M4 Universal Service Router Datasheet",
+      "hashVerificado": "ba47fddf7cd9fc7124bbb8526c2a84d529a8523de547df1d9728304c484a1595",
+      "clase": "bytes",
+      "bytes": 646637,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/9d1e5a135656419fb90354e8c68136eb/M3T1A590N1167033276639785031/NetEngine%208000%20F1A-8H20Q%20Datasheet%20V800R024C10.pdf": {
+      "documento": "NetEngine 8000 F1A Datasheet V800R024C10",
+      "hashVerificado": "3753d57022fbd98c4f53763d2148e7ce5ac0864b905ad8bf33bcfbe4c8478815",
+      "clase": "bytes",
+      "bytes": 381000,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/04c9821faf16492ea6cadb03722f97ce/M3T1A590N1311283223945314586/Huawei%20NetEngine%20AR6710-L%20Series%20Enterprise%20Router%20Data%20Sheet-R26C00.pdf": {
+      "documento": "Huawei NetEngine AR6710-L Series Enterprise Router Data Sheet-R26C00",
+      "hashVerificado": "25b9ff532e7e7b6d1a00bce067aa7fb016f2ed078a8f39c3a1993bad4bde767e",
+      "clase": "bytes",
+      "bytes": 789463,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e.huawei.com/en/products/routers/netengine-a800": {
+      "documento": "NetEngine A800 E Series Routers (pagina de producto, tabla «Specifications»)",
+      "hashVerificado": "62043ac92985476fc84af1f7c365cc77c47ca4ee6ea12c2af97eefb73d0f1616",
+      "clase": "texto",
+      "bytes": 263504,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "huawei::https://e.huawei.com/en/products/routers/ne8000": {
+      "documento": "NetEngine 8000 Series Routers (pagina de producto, tablas «Specifications»)",
+      "hashVerificado": "c858c7a463a6c31c3a72001f5520b250fe9bd9ed83efb4a893d987c8a3a50ac5",
+      "clase": "texto",
+      "bytes": 298206,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "mikrotik::https://help.mikrotik.com/docs/spaces/ROS/pages/328149/RouterOS+license+keys": {
+      "documento": "RouterOS license key levels y CHR licensing (documentacion oficial de MikroTik)",
+      "hashVerificado": "90b8f958cedc31255d379983b719746b0dba02388eb871ccf7ecd75a8de037d9",
+      "clase": "texto",
+      "bytes": 93563,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "mikrotik::https://manual.mikrotik.com/docs/7.25/wired-connections/mikrotik-wired-interface-compatibility": {
+      "documento": "MikroTik wired interface compatibility (manual.mikrotik.com, RouterOS 7.25)",
+      "hashVerificado": "7f844dd98f44940d3f091af9286a20352a29b8aad6379f7c5642bc0a8cd07f71",
+      "clase": "texto",
+      "bytes": 401574,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "mikrotik::https://manual.mikrotik.com/hardware/rb1100-series/": {
+      "documento": "Manuales de usuario de MikroTik (manual.mikrotik.com/hardware)",
+      "hashVerificado": "7f2c0c0ee99717eb8fdbbfeac00cc775b0bd55654d4bb2b07a85faa171249aa9",
+      "clase": "texto",
+      "bytes": 46702,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "aruba::https://www.hpe.com/psnow/doc/c05272677": {
+      "documento": "QuickSpecs de las series 7000 y 7200 de Mobility Controllers (HPE, retirados)",
+      "hashVerificado": "9d4c45ad6ff863f9b196dbbf0a6a649d2704e4dce2dc6a7ab44336c2a24e12a8",
+      "clase": "texto",
+      "bytes": 127222,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "aruba::https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/controller-top.htm": {
+      "documento": "Guias de instalacion de los controladores 7005, 7008, 7010, 7024, 7030 y 7205 (HPE Aruba Networking)",
+      "hashVerificado": "53bd016584dfbe657a8e5a5742e3b5c2b2ad3e6e7702b3700e04ebb12bb4776d",
+      "clase": "texto",
+      "bytes": 27933,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "aruba::https://www.hpe.com/us/en/collaterals/collateral.a50004289enw.html": {
+      "documento": "QuickSpecs EdgeConnect SD-WAN (v18) y spec sheet del EC-XS (a00110177ENW Rev. 3)",
+      "hashVerificado": "307332378baf63d723b0a55e827a3171f924f634e7198a56dd973e4bdc6bad27",
+      "clase": "texto",
+      "bytes": 617629,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "aruba::https://www.hpe.com/psnow/doc/a00109847enw": {
+      "documento": "Data sheet HPE Networking EdgeConnect (a00109847enw Rev. 8)",
+      "hashVerificado": "6b89e91c7d45af71e243e41ee5e7916a94baefbd76ac5ea9c7b1076f0f037b71",
+      "clase": "texto",
+      "bytes": 121210,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "aruba::https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/docs/eula/EC_LifecyclePolicy_latest.pdf": {
+      "documento": "Product Lifecycle Policy de EdgeConnect (HPE Aruba Networking, 12-feb-2026)",
+      "hashVerificado": "04b5b8d09f1e2a34306f15d9facc7acf3dfb6e86d29f6c7ad7fcaebd4049b042",
+      "clase": "bytes",
+      "bytes": 182041,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "aruba::https://arubanetworking.hpe.com/techdocs/sdwan/docs/orch/configuration/overlays/ids/": {
+      "documento": "Documentacion de IDS/IPS del SD-WAN Orchestrator (HPE Aruba Networking)",
+      "hashVerificado": "c52795d283402548f504ae3a73c7e8c59a23d7d29a28593fb86f1bb9ccb3b3d4",
+      "clase": "texto",
+      "bytes": 115672,
+      "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "aruba::https://www.arubanetworks.com/assets/ds/DS_9000Series.pdf": {
+      "documento": "Fichas de las series 9000, 9100 y 9200 de gateways (DS_9000Series y QuickSpecs 9100 y 9200)",
+      "hashVerificado": "0ef84c6a54e2014aa02397e9c8e3b2830ea4968fbf1f157964d9aab81eb1c302",
+      "clase": "texto",
+      "bytes": 119250,
+      "medido": "2026-10-13T19:08:29.846Z"
     }
   },
-  "revisado": "2026-10-02T04:24:40.380Z"
+  "revisado": "2026-10-13T19:08:29.846Z"
 }
