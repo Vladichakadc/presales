@@ -355,7 +355,7 @@ jobs:
                   dominios: ['mikrotik.com'], prefijo: ['product'], max: 90 } },
               // 2026-10-13 (segunda vuelta): las FIGURAS de los equipos. Cada ficha trae su galeria
               // oficial («Product images», sin rotulo de cara) en PNG de alta resolucion
-              // (`<id>_hi_res.png` en cdn.mikrotik.com). Se piden solo esas, de las fichas de los
+              // (<id>_hi_res.png en cdn.mikrotik.com). Se piden solo esas, de las fichas de los
               // routers y de la del L009UiGS-2HaxD-IN, que esta en el listado Wi-Fi. Que cara es
               // cada una se decide MIRANDOLAS, no por el orden de la galeria.
               { archivo: 'mikrotik-l009-2haxd.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'L009UiGS-2HaxD-IN', urls: [
