@@ -1,0 +1,32 @@
+[
+  {
+    "archivo": "fortinet-mvt.html",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://docs.fortinet.com/max-value-table",
+        "status": 200,
+        "bytes": 225362,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-mvt-js",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://docs.fortinet.com/dist/assets/app-NuuJIcek.js",
+        "status": 200,
+        "bytes": 86471,
+        "guardado": true,
+        "como": "fortinet-mvt-js/dist__assets__app-NuuJIcek.js"
+      }
+    ]
+  }
+]
