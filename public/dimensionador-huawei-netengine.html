@@ -62,6 +62,17 @@ input[type=range]{width:100%;accent-color:var(--red)}
 .check{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer}
 .check input{margin:3px 0 0;accent-color:var(--red)}
 .hidden{display:none!important}
+/* Distribucion de caudal y callout de plataforma (2026-10-12) */
+.dist{display:flex;height:16px;border-radius:2px;overflow:hidden;background:var(--paper);margin:8px 0}
+.dist i{display:block;height:100%}
+.dist .d-dia{background:#2e8b57}.dist .d-tun{background:#1f5fa8}.dist .d-over{background:#d9822b}
+.dist-leyenda{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px}
+.dist-leyenda span::before{content:"";display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:2px;vertical-align:-1px;background:currentColor}
+.dist-leyenda .l-dia{color:#2e8b57}.dist-leyenda .l-tun{color:#1f5fa8}.dist-leyenda .l-over{color:#d9822b}
+.dist-leyenda b{color:var(--ink)}
+.callout{border:1px solid var(--amber);border-left-width:4px;background:var(--paper);padding:12px 14px;margin:10px 0;border-radius:2px}
+.callout p{margin:0 0 8px}
+
 
 .verdict{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:22px;margin-bottom:16px}
 .tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red-txt);font-weight:600;margin:0}
@@ -207,6 +218,24 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
       </select>
       <p class="hint">Determina los Mpps exigidos. Es el límite real en nodos de núcleo.</p>
     </div>
+    <div class="field">
+      <label for="trafico">Perfil de tráfico</label>
+      <select id="trafico">
+        <option value="imix" selected>IMIX de la ficha (≈ 340 bytes) — sin factor</option>
+        <option value="voip">VoIP / fintech (≈ 250 bytes) — factor 0,55</option>
+        <option value="ent">Empresa estándar (≈ 570 bytes) — factor 0,70</option>
+        <option value="isp">Internet / ISP (≈ 700 bytes) — factor 0,85</option>
+        <option value="dci">DCI y respaldos (≈ 1.400 bytes) — factor 1,00</option>
+      </select>
+      <p class="hint" id="traficoHint"><b>Supuesto de diseño</b>, no una cifra de Huawei: las fichas ya publican sus cifras en IMIX, así que un factor menor que 1 sobredimensiona a propósito. «IMIX de la ficha» no aplica factor.</p>
+    </div>
+    <div class="field">
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="fec"><span>Mitigación de pérdida A-FEC (corrección de errores adaptativa)</span></label>
+      </div>
+      <div class="row" style="margin-top:6px"><label for="fecPct" style="flex:1;font-size:12px">Sobrecarga de paridad (%)</label><input type="number" id="fecPct" min="0" max="100" step="1" value="20" style="width:90px" autocomplete="off"></div>
+      <p class="hint">Supuesto editable (20 % por defecto): ninguna ficha publica el rendimiento con A-FEC encendido.</p>
+    </div>
   </section>
 
   <section class="panel">
@@ -229,7 +258,14 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
         <label class="check"><input type="checkbox" id="rPoe"><span>PoE/PoE++ integrado</span></label>
         <label class="check"><input type="checkbox" id="rWan"><span>4G/5G integrado como respaldo</span></label>
         <label class="check"><input type="checkbox" id="rWifi"><span>Wi-Fi integrado</span></label>
+        <label class="check"><input type="checkbox" id="sDia"><span>Local Internet Breakout (DIA): parte del tráfico sale a Internet en claro</span></label>
+        <label class="check"><input type="checkbox" id="sNgfw"><span>NGFW avanzado: inspección SSL/TLS profunda o zona desmilitarizada (DMZ)</span></label>
       </div>
+    </div>
+    <div class="field">
+      <div class="row"><label for="diaPct" style="flex:1;font-size:12px">Tráfico que sale directo a Internet (%)</label><input type="number" id="diaPct" min="0" max="100" step="5" value="70" style="width:90px" autocomplete="off"></div>
+      <div class="row" style="margin-top:6px"><label for="utmPct" style="flex:1;font-size:12px">Carga adicional por UTM (%)</label><input type="number" id="utmPct" min="0" max="200" step="5" value="45" style="width:90px" autocomplete="off"></div>
+      <p class="hint">Dos supuestos editables, no cifras de Huawei: el 70 % que sale en claro solo existe en una sucursal de enlace único, y el 45 % de UTM se aplica cuando está marcado. Por encima de 1 Gbps de inspección, o con NGFW avanzado, el motor recomienda un firewall HiSecEngine USG dedicado.</p>
     </div>
     <div class="field"><label for="lan">Puertos LAN mínimos</label><input type="number" id="lan" min="0" step="1" autocomplete="off"></div>
     <div class="field"><label for="aps">APs gestionados (WAC)</label><input type="number" id="aps" min="0" step="1" autocomplete="off"></div>
@@ -241,6 +277,20 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
         <label class="check"><input type="checkbox" id="sSlice"><span>SRv6 / slicing FlexE / EVPN de transporte</span></label>
       </div>
       <p class="hint">FlexE solo se da por confirmado donde el catálogo lo declara; el resto se muestra como «no consta» y no se aparta.</p>
+    </div>
+    <div class="field">
+      <label for="rutasBgp">Rutas BGP en la tabla de enrutamiento</label>
+      <select id="rutasBgp">
+        <option value="" selected>No declarado</option>
+        <option value="IGP interno">IGP interno (sin BGP de Internet)</option>
+        <option value="1 tabla completa">1 tabla completa de Internet</option>
+        <option value="Multihoming BGP">Multihoming BGP (varias tablas completas)</option>
+      </select>
+    </div>
+    <div class="field"><label for="cgnat">Sesiones concurrentes de CGNAT</label><input type="number" id="cgnat" min="0" step="1" autocomplete="off"></div>
+    <div class="field">
+      <label for="bng">Suscriptores BNG/BRAS (PPPoE/IPoE)</label><input type="number" id="bng" min="0" step="1" autocomplete="off">
+      <p class="hint">Se registran en la memoria de cálculo y <b>no filtran</b> el equipo: este catálogo no trae la FIB, el CGNAT ni el BNG de ningún modelo.</p>
     </div>
     </div>
   </section>
@@ -273,6 +323,7 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
 
 <div>
   <div id="avisosMotor"></div>
+  <section class="panel" id="distrib" hidden aria-live="polite"></section>
 <div class="verdict" id="verdict"></div>
   <section class="panel"><h2>Licencias a considerar</h2><ul class="clean" id="licList"></ul></section>
   <section class="panel"><h2>Soporte recomendado</h2><div id="supBox"></div></section>
@@ -291,7 +342,7 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
   </div>
 
   <section class="panel">
-    <h2>Selecciona el equipo <span class="bom-acciones"><button class="btn" id="xlsBtn" type="button" style="font-size:11px;padding:5px 11px">Exportar a Excel</button><button class="btn ghost" id="copyBtn" type="button" style="font-size:11px;padding:5px 11px">Copiar como texto</button></span></h2>
+    <h2>Selecciona el equipo <span class="bom-acciones"><button class="btn" id="xlsBtn" type="button" style="font-size:11px;padding:5px 11px">Exportar a Excel</button><button class="btn ghost" id="copyBtn" type="button" style="font-size:11px;padding:5px 11px">Copiar como texto</button><button class="btn ghost" id="memoriaBtn" type="button" style="font-size:11px;padding:5px 11px">Memoria técnica (.md)</button></span></h2>
     <div class="field">
       <label for="pickModel">Equipo</label>
       <select id="pickModel"></select>
@@ -323,6 +374,13 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
 <h2>Precio neto y TCO del sitio</h2>
 <div class="field"><div id="cajaDescuento"></div></div>
 <div id="tcoFin"></div>
+<h3 style="margin:18px 0 8px;font-size:14px">Cuota mensual de servicio gestionado (MRR y TCV)</h3>
+<div class="row" style="gap:12px;flex-wrap:wrap">
+  <label style="font-size:12px">Plazo del contrato<br><select id="plazoMrr"><option value="24">24 meses</option><option value="36" selected>36 meses</option><option value="60">60 meses</option></select></label>
+  <label style="font-size:12px">Margen de financiación (%)<br><input type="number" id="margenFin" min="0" max="100" step="1" value="0" style="width:110px" autocomplete="off"></label>
+  <label style="font-size:12px">Fee de gestión MSP (%)<br><input type="number" id="feeMsp" min="0" max="100" step="1" value="0" style="width:110px" autocomplete="off"></label>
+</div>
+<div id="mrrBox"></div>
 <p class="hint" style="margin-top:10px">Hoy solo el <b>equipo</b> trae un precio de referencia (el mismo del cotizador, una estimación sin descuentos ni impuestos, no una lista firmada de Huawei). Licencias, suscripciones y soporte salen «consultar», así que el TCO es <b>parcial</b>: cubre el equipo y dice cuántas líneas quedan fuera. El OPEX declarado es el soporte por término.</p>
 </section>
 <section class="panel">

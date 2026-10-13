@@ -374,3 +374,90 @@ test('H-03: el ×2 bidireccional cita la nota al pie de las fichas AR solo donde
   assert.strictEqual(sw.documento, false);
   assert.match(sw.texto, /convención del sector/);
 });
+
+/* ── Supuestos de diseño del 2026-10-12 (perfil de tráfico, A-FEC, UTM, breakout, NGFW, escalado) ── */
+const ESC_BASE = { bw: 300, unit: 1, mode: 'link', head: 30, dirMult: 2, frame: 340, profile: 'typ', svc: { sdwan: true } };
+const ev = (o) => M.evaluar({ ...ESC_BASE, ...o }, MODELS, { rango: () => 0 });
+
+test('2026-10-12 · con los valores por defecto el escenario no cambia', () => {
+  const r = ev({});
+  assert.strictEqual(r.need, 300 * 2 * 1.3);
+  assert.strictEqual(r.factorTrafico, 1);
+  assert.strictEqual(r.fecPct, 0);
+  assert.strictEqual(r.utmPct, 0);
+  assert.strictEqual(r.dia, false);
+  assert.strictEqual(r.escalada, null);
+});
+
+test('2026-10-12 · el perfil de tráfico divide la necesidad y fija los bytes de los Mpps', () => {
+  const r = ev({ trafico: 'voip' });
+  assert.ok(Math.abs(r.need - (300 * 2 * 1.3) / 0.55) < 1e-6);
+  assert.strictEqual(r.bytesMpps, 250);
+  assert.ok(Math.abs(r.needMpps - r.need / (250 * 8)) < 1e-9);
+  assert.ok(r.avisos.some((a) => /supuesto de diseño/.test(a)));
+});
+
+test('2026-10-12 · A-FEC suma su paridad y es editable', () => {
+  assert.ok(Math.abs(ev({ fec: true }).need - 780 * 1.2) < 1e-6);
+  assert.ok(Math.abs(ev({ fec: true, fecPct: 10 }).need - 780 * 1.1) < 1e-6);
+});
+
+test('2026-10-12 · UTM aplica el 45 % declarado, nunca como cifra de Huawei', () => {
+  const r = ev({ svc: { sdwan: true, utm: true } });
+  assert.ok(Math.abs(r.need - 780 * 1.45) < 1e-6);
+  assert.ok(r.avisos.some((a) => /SUPUESTO DE DISEÑO/.test(a) && /no una cifra de Huawei/.test(a)));
+  assert.ok(Math.abs(ev({ svc: { sdwan: true, utm: true }, utmPct: 20 }).need - 780 * 1.2) < 1e-6);
+});
+
+test('2026-10-12 · el breakout cifra solo la parte que cruza los túneles y reenvía todo', () => {
+  const r = ev({ dia: true });
+  assert.strictEqual(r.dia, true);
+  assert.ok(Math.abs(r.needTun - r.need * 0.3) < 1e-6);
+  assert.ok(Math.abs(r.distribucion.dia - 600 * 0.7) < 1e-6);
+  // Con sede agregada (hub) o en transporte el breakout no aplica.
+  assert.strictEqual(ev({ dia: true, mode: 'agg', sites: 10, conc: 40 }).dia, false);
+  assert.strictEqual(ev({ dia: true, plataforma: 'ne8000' }).dia, false);
+  // El equipo elegido reenvía el total y cifra solo la parte de túneles.
+  const p = r.pick.m;
+  assert.ok(p.typ >= r.needTun && p.fwd >= r.need);
+});
+
+test('2026-10-12 · NGFW: se recomienda un firewall dedicado por encima de 1 Gbps o con inspección profunda', () => {
+  assert.strictEqual(ev({ svc: { sdwan: true, utm: true } }).recomiendaNgfw, false);
+  const alto = ev({ bw: 800, svc: { sdwan: true, utm: true } });
+  assert.strictEqual(alto.recomiendaNgfw, true);
+  assert.ok(alto.avisos.some((a) => /HiSecEngine USG6000E\/USG6000F/.test(a)));
+  assert.strictEqual(ev({ ngfw: true }).recomiendaNgfw, true);
+  // En transporte la seguridad dedicada no se recomienda: el router no inspecciona.
+  assert.strictEqual(ev({ plataforma: 'ne8000', ngfw: true }).recomiendaNgfw, false);
+});
+
+test('2026-10-12 · escalado: la serie AR no cumple y se propone NE8000 con aviso, sin cambiarla en silencio', () => {
+  const r = ev({ bw: 40, unit: 1000 });
+  assert.strictEqual(r.plataforma, 'ar');
+  assert.strictEqual(r.pick, null);
+  assert.ok(r.escalada && r.escalada.plataforma === 'ne8000' && /^NE8000/.test(r.escalada.modelo));
+  assert.ok(r.avisos.some((a) => /Optimización de plataforma/.test(a)));
+  // Dentro de la envolvente no hay escalado.
+  assert.strictEqual(ev({ bw: 100 }).escalada, null);
+});
+
+test('2026-10-12 · las métricas de operador se registran y no filtran', () => {
+  const sin = ev({ plataforma: 'ne8000', bw: 2, unit: 1000 });
+  const con = ev({ plataforma: 'ne8000', bw: 2, unit: 1000, carrier: { bgp: '1 tabla completa', cgnat: 500000, bng: 8000 } });
+  assert.strictEqual(con.pick.m.id, sin.pick.m.id);
+  assert.ok(con.avisos.some((a) => /no trae la FIB, el CGNAT ni el BNG/.test(a)));
+  assert.strictEqual(con.carrier.cgnat, 500000);
+});
+
+test('2026-10-12 · la memoria técnica declara sus supuestos y trae las cuatro secciones', () => {
+  const r = ev({ trafico: 'ent', fec: true, dia: true, svc: { sdwan: true, utm: true } });
+  const md = M.memoria(r, { m: r.pick.m, anios: 3, fecha: '2026-10-12',
+    filas: [{ cat: 'Equipo', desc: r.pick.m.id, sku: null, qty: 1, unit: null }] });
+  for (const t of ['## 1. Resumen ejecutivo', '## 2. Memoria de cálculo', '## 3. Lista de materiales', '## 4. Cuadro de especificaciones físicas']) assert.ok(md.includes(t), t);
+  assert.match(md, /supuesto de diseño/);
+  assert.match(md, /no cifra de Huawei/);
+  assert.match(md, /36 meses/);
+  assert.match(md, /BTU\/h/);
+  assert.match(md, /consultar/);
+});

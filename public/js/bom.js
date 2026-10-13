@@ -395,6 +395,28 @@
     return { capex, opexTermino, opexAnual, tco: capex + opexAnual * anios, anios, sinPrecio };
   }
 
+  /* CUOTA MENSUAL DE SERVICIO GESTIONADO (2026-10-12, Huawei; sirve a cualquier fabricante).
+     MRR = CAPEX neto × (1 + margen de financiación) ÷ meses + OPEX mensual + fee MSP, donde el
+     fee es un porcentaje de lo anterior (cuota de hardware + OPEX). TCV = MRR × meses. Todos los
+     porcentajes son entradas del usuario, no cifras del fabricante, y sin precios no hay cuota:
+     devuelve `completo: false` y las lineas sin precio se cuentan, no se estiman. */
+  function mrr(entrada) {
+    const e = entrada || {};
+    const num = (v) => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? n : 0; };
+    const meses = Math.max(1, parseInt(e.meses, 10) || 36);
+    const capexNeto = num(e.capexNeto);
+    const opexMensual = num(e.opexMensual);
+    const margenFin = num(e.margenFin) / 100;
+    const feeMsp = num(e.feeMsp) / 100;
+    const cuotaHardware = capexNeto * (1 + margenFin) / meses;
+    const subtotal = cuotaHardware + opexMensual;
+    const fee = subtotal * feeMsp;
+    const mrrTotal = subtotal + fee;
+    return { meses, capexNeto, margenFin: margenFin * 100, feeMsp: feeMsp * 100, cuotaHardware, opexMensual, fee, mrr: mrrTotal,
+      tcv: mrrTotal * meses, financiado: capexNeto * margenFin, sinPrecio: parseInt(e.sinPrecio, 10) || 0,
+      completo: !(parseInt(e.sinPrecio, 10) > 0) && (capexNeto > 0 || opexMensual > 0) };
+  }
+
   function filasDeRefs() {
     return refsDeLaPagina().map((r) => ({
       cat: 'Referencias añadidas',
@@ -1129,5 +1151,5 @@
     sincronizar, soltarManual, avisoDesvio, fijarRepintado,
     agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor,
     perfiles, perfilesDe, guardarPerfil, quitarPerfil, consolidar,
-    simuladorDescuento, tco };
+    simuladorDescuento, tco, mrr };
 })(window);

@@ -72,9 +72,10 @@ $('dirSeg').addEventListener('click', e => {
   [...$('dirSeg').children].forEach(x => x.setAttribute('aria-pressed', x === b));
   dirMult = +b.dataset.v; render();
 });
-['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios']
+['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios',
+  'trafico','fec','fecPct','sDia','diaPct','sNgfw','utmPct','rutasBgp','cgnat','bng']
   .forEach(id => $(id).addEventListener('input', render));
-['pickModel','qty'].forEach(id => $(id).addEventListener('input', renderBom));
+['pickModel','qty','plazoMrr','margenFin','feeMsp'].forEach(id => $(id).addEventListener('input', renderBom));
 
 const fmt = HuaweiMotor.fmt;
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
@@ -119,24 +120,31 @@ function render(){
     svc:{sdwan:$('sSdwan').checked, utm:$('sUtm').checked, slice:$('sSlice').checked},
     want:{poe:$('rPoe').checked, wan:$('rWan').checked, wifi:$('rWifi').checked},
     ha:$('chkHa').checked, crit:$('crit').value, plataforma,
+    trafico:$('trafico').value, fec:$('fec').checked, fecPct:$('fecPct').value, dia:$('sDia').checked, diaPct:$('diaPct').value,
+    utmPct:$('utmPct').value, ngfw:$('sNgfw').checked,
+    carrier:{bgp:$('rutasBgp').value, cgnat:$('cgnat').value, bng:$('bng').value},
   }, MODELS, {rango:FICHA.rango, recomendable:FICHA.recomendable});
   ultimaEval = ev;
-  const {raw, base, need, needMpps, frame, pk, aps, svc, wanOk, rows, fit, pick, next} = ev;
+  const {raw, base, need, needMpps, pk, aps, svc, wanOk, rows, fit, pick, next} = ev;
   const sites = ev.sites;
-  $('avisosMotor').innerHTML = ev.avisos.map(a => `<p class="hint warn">${esc(a)}</p>`).join('');
+  // El aviso de escalado ya sale como tarjeta en el veredicto: no se repite en la lista.
+  $('avisosMotor').innerHTML = ev.avisos.filter(a => !(ev.escalada && /^Optimización de plataforma/.test(a))).map(a => `<p class="hint warn">${esc(a)}</p>`).join('');
+  pintarDistribucion(ev);
 
   drawLadder(need, pick, pk);
 
   // ── Presentacion ──────────────────────────────────────────────────────────
   // El veredicto pasa a ser un desplegable con todos los que cumplen; licencias, soporte
   // y BOM siguen al equipo ELEGIDO. Ver /js/ficha.js.
-  const ctx = {need, needMpps, raw, base, head, conc, sites, frame, pk, rows, wanOk, plataforma:ev.plataforma};
+  const ctx = {need, needMpps, raw, base, head, conc, sites, frame:ev.bytesMpps, pk, rows, wanOk, plataforma:ev.plataforma,
+    ev, dia:ev.dia, needTun:ev.needTun, necesidadPura:ev.necesidadPura};
   const licCtx = {need, aps, svc, pk, anios:aniosSel()};
   if(!raw || !fit.length || !pick){
     // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): ni veredicto
     // ni licencias ni soporte ni escalera se pintan con un equipo — todo queda en estado
     // vacío hasta que el usuario ingrese valores.
     drawVerdict(raw ? pick : null, next, ctx);
+    if(raw && ev.escalada) pintarEscalada(ev);
     drawLicenses(raw ? pick : null, licCtx);
     drawSupport(raw ? pick : null);
     if(!raw){
@@ -195,23 +203,28 @@ function llevarABom(id){
 /* ── Ficha del equipo elegido ───────────────────────────────────────────────
    Las tres funciones alimentan /js/ficha.js: medidores de holgura, el razonamiento del
    dimensionamiento y la ficha completa con licenciamiento, software y soporte. */
+// Con breakout local, la capa SD-WAN/IPsec solo carga la parte que cruza los tuneles.
+const necesidadCapa = (c, esWan, pk) => (c.dia && !esWan && pk !== 'fwd' ? c.needTun : c.need);
+
 function medidoresHuawei(m, c){
-  const cap = m.__cap, use = Math.min(100, c.need / cap * 100);
+  const cap = m.__cap, use = Math.min(100, necesidadCapa(c, m.__isWan, c.pk) / cap * 100);
   const metric = m.__isWan ? 'Capacidad de conmutación' : PROFILE[c.pk];
-  const out = [{etq:metric, val:c.need, tope:cap, txt:`${use.toFixed(0)} % de ${fmt(cap)}`}];
+  const out = [{etq:metric, val:necesidadCapa(c, m.__isWan, c.pk), tope:cap, txt:`${use.toFixed(0)} % de ${fmt(cap)}`}];
   if(m.mpps != null) out.push({etq:`Reenvío a ${c.frame} bytes`, val:c.needMpps, tope:m.mpps,
     txt:`${Math.min(100, c.needMpps / m.mpps * 100).toFixed(0)} % de ${m.mpps} Mpps`});
   return out;
 }
 
 function porQueHuawei(m, c, next){
-  const cap = m.__cap, use = Math.min(100, c.need / cap * 100);
+  const cap = m.__cap, use = Math.min(100, necesidadCapa(c, m.__isWan, c.pk) / cap * 100);
   const metric = m.__isWan ? 'Capacidad de conmutación' : PROFILE[c.pk];
   const usePps = (m.mpps != null) ? Math.min(100, c.needMpps / m.mpps * 100) : null;
   return `<b>Cómo se llegó a ${fmt(c.need)}</b><ul>
       ${mode === 'agg' ? `<li>${c.sites} sedes x ${fmt(c.raw)} x ${c.conc} % de simultaneidad = <b>${fmt(c.base)}</b> agregados.</li>` : `<li>Caudal base: <b>${fmt(c.raw)}</b>.</li>`}
       ${dirMult === 2 ? `<li>Medido por dirección, se dimensiona contra la suma bidireccional: <b>${fmt(c.base*2)}</b> — ${HuaweiMotor.respaldoBidireccional(c.pk, !!m.__isWan).texto}.</li>` : `<li>Tomado como total agregado, sin duplicar.</li>`}
-      <li>Más ${c.head} % de margen: <b>${fmt(c.need)}</b> · <b>${c.needMpps.toFixed(2)} Mpps</b>.</li>
+      <li>Más ${c.head} % de margen: <b>${fmt(c.necesidadPura)}</b>.</li>
+      ${factoresLi(c)}
+      <li>Necesidad de diseño: <b>${fmt(c.need)}</b> · <b>${c.needMpps.toFixed(2)} Mpps</b>.</li>
       <li>${m.id} publica <b>${fmt(cap)}</b> en ${metric.toLowerCase()}.</li>
       <li>${m.ports}</li>
       ${next ? `<li>Siguiente escalón: <b>${next.m.id}</b> con ${fmt(next.cap)}.</li>` : ''}
@@ -299,13 +312,14 @@ function drawVerdict(pick, next, c){
     const over = c.rows.every(r => r.cap == null || r.cap < c.need);
     const P = HuaweiMotor.PLATAFORMAS[c.plataforma] || {n:'la plataforma'};
     const mayor = c.rows.filter(r => r.cap != null).sort((a, b) => b.cap - a.cap)[0];
-    v.innerHTML = `<p class="tag">Sin coincidencias</p><div class="model">${over ? 'Fuera de la plataforma' : 'Ajusta los filtros'}</div>
+    const sube = !!(c.ev && c.ev.escalada);
+    v.innerHTML = `<p class="tag">${sube ? 'Optimización de plataforma' : 'Sin coincidencias'}</p><div class="model">${sube ? 'Plataforma superior recomendada' : over ? 'Fuera de la plataforma' : 'Ajusta los filtros'}</div>
       <p class="family">${over ? `El requerimiento de ${fmt(c.need)} supera al mayor equipo de ${esc(P.n)}${mayor ? ` (${esc(mayor.m.id)}, ${fmt(mayor.cap)})` : ''}. ${c.plataforma === 'ne8000' ? 'A este nivel se resuelve con varios chasis en paralelo.' : 'Revisa si corresponde otra plataforma o repartir el tráfico entre varios equipos.'}`
       : `Ningún modelo de ${esc(P.n)} cumple capacidad y requisitos a la vez.`}</p>
       <div class="why"><b>Requerimiento:</b> ${fmt(c.need)} · ${c.needMpps.toFixed(2)} Mpps a ${c.frame} bytes.</div>`;
     return;
   }
-  const m = pick.m, cap = pick.cap, use = Math.min(100, c.need / cap * 100);
+  const m = pick.m, cap = pick.cap, use = Math.min(100, necesidadCapa(c, pick.isWan, c.pk) / cap * 100);
   const cls = use > 85 ? 'tight' : (use < 55 ? 'good' : '');
   const usePps = (m.mpps != null) ? Math.min(100, c.needMpps / m.mpps * 100) : null;
   const ppsCls = usePps == null ? '' : (usePps > 85 ? 'tight' : (usePps < 55 ? 'good' : ''));
@@ -318,7 +332,9 @@ function drawVerdict(pick, next, c){
     <div class="why"><b>Cómo se llegó a ${fmt(c.need)}</b><ul>
       ${mode === 'agg' ? `<li>${c.sites} sedes x ${fmt(c.raw)} x ${c.conc} % de simultaneidad = <b>${fmt(c.base)}</b> agregados.</li>` : `<li>Caudal base: <b>${fmt(c.raw)}</b>.</li>`}
       ${dirMult === 2 ? `<li>Medido por dirección, se dimensiona contra la suma bidireccional: <b>${fmt(c.base*2)}</b> — ${HuaweiMotor.respaldoBidireccional(c.pk, !!pick.isWan).texto}.</li>` : `<li>Tomado como total agregado, sin duplicar.</li>`}
-      <li>Más ${c.head} % de margen: <b>${fmt(c.need)}</b> · <b>${c.needMpps.toFixed(2)} Mpps</b>.</li>
+      <li>Más ${c.head} % de margen: <b>${fmt(c.necesidadPura)}</b>.</li>
+      ${factoresLi(c)}
+      <li>Necesidad de diseño: <b>${fmt(c.need)}</b> · <b>${c.needMpps.toFixed(2)} Mpps</b>.</li>
       <li>${m.id} publica <b>${fmt(cap)}</b> en ${metric.toLowerCase()}.</li>
       <li>${m.ports}</li>
       ${next ? `<li>Siguiente escalón: <b>${next.m.id}</b> con ${fmt(next.cap)}.</li>` : ''}
@@ -326,6 +342,54 @@ function drawVerdict(pick, next, c){
       ${usePps != null && usePps > 85 ? `<li class="warn"><b>Atención:</b> el cuello de botella son los paquetes por segundo, no los bits.</li>` : ''}
       ${pick.isWan ? `<li class="warn">La capacidad de conmutación es del sistema completo. El techo real lo fija la tarjeta de línea y la densidad de puertos.</li>` : ''}
     </ul></div>`;
+}
+
+
+/* ── SUPUESTOS Y DISTRIBUCION DE CAUDAL (2026-10-12) ──────────────────────────────────────── */
+// Lineas del «como se llego» para cada supuesto de diseño ACTIVO; vacio si no hay ninguno.
+function factoresLi(c){
+  const e = c.ev; if(!e) return '';
+  const L = [];
+  if(e.factorTrafico !== 1) L.push(`<li>Perfil de tráfico «${esc(HuaweiMotor.TRAFICO[e.trafico].n)}»: ÷ ${e.factorTrafico.toFixed(2).replace('.', ',')} <i>(supuesto de diseño)</i>.</li>`);
+  if(e.fecPct) L.push(`<li>A-FEC: +${e.fecPct} % de paridad <i>(supuesto declarado)</i>.</li>`);
+  if(e.utmPct) L.push(`<li>UTM: +${e.utmPct} % de carga de inspección <i>(supuesto declarado, no una cifra de Huawei)</i>.</li>`);
+  if(e.dia) L.push(`<li>Local breakout: ${e.diaPct} % sale a Internet en claro; solo <b>${fmt(e.needTun)}</b> cruzan los túneles cifrados.</li>`);
+  return L.join('');
+}
+
+// Barra proporcional con tres tramos: DIA en claro, tuneles cifrados y sobrecarga (margen, FEC,
+// UTM y factor de perfil). Se oculta sin caudal o en plataformas de transporte.
+function pintarDistribucion(ev){
+  const box = $('distrib');
+  if(!ev.raw || ev.transporte){ box.hidden = true; box.innerHTML = ''; return; }
+  const d = ev.distribucion, total = d.dia + d.tuneles + d.sobrecarga;
+  if(!(total > 0)){ box.hidden = true; return; }
+  const p = v => (v / total * 100);
+  box.hidden = false;
+  box.innerHTML = `<h2>Distribución del caudal de diseño</h2>
+    <div class="dist" role="img" aria-label="Distribución del caudal: ${fmt(d.dia)} a Internet, ${fmt(d.tuneles)} por túneles, ${fmt(d.sobrecarga)} de sobrecarga">
+      ${d.dia > 0 ? `<i class="d-dia" style="width:${p(d.dia)}%"></i>` : ''}<i class="d-tun" style="width:${p(d.tuneles)}%"></i>${d.sobrecarga > 0 ? `<i class="d-over" style="width:${p(d.sobrecarga)}%"></i>` : ''}
+    </div>
+    <div class="dist-leyenda">
+      ${d.dia > 0 ? `<span class="l-dia">Internet en claro (DIA): <b>${fmt(d.dia)}</b></span>` : ''}
+      <span class="l-tun">${ev.dia ? 'Túneles IPsec cifrados' : 'Tráfico por el equipo'}: <b>${fmt(d.tuneles)}</b></span>
+      ${d.sobrecarga > 0 ? `<span class="l-over">Sobrecarga (margen, A-FEC, UTM y perfil): <b>${fmt(d.sobrecarga)}</b></span>` : ''}
+    </div>`;
+}
+
+// «Optimizacion de plataforma» en lugar de «fuera de la plataforma»: propone la siguiente.
+function pintarEscalada(ev){
+  const e = ev.escalada, v = $('verdict');
+  const html = `<div class="callout" role="note">
+    <p><b>Optimización de plataforma.</b> El caudal requerido (${fmt(ev.need)} / ${ev.needMpps.toFixed(2)} Mpps) excede la envolvente de ${esc(HuaweiMotor.PLATAFORMAS[ev.plataforma].n)}.
+    Se propone <b>${esc(e.modelo)}</b> de NetEngine 8000 (${fmt(e.capacidad)}${e.mpps != null ? ` · ${e.mpps} Mpps` : ''}) para conmutar por hardware a velocidad de línea.
+    SD-WAN, UTM y WAC no aplican en esa plataforma.</p>
+    <button class="btn" type="button" id="btnEscalar">Pasar a NetEngine 8000</button></div>`;
+  v.insertAdjacentHTML('beforeend', html);
+  $('btnEscalar').addEventListener('click', () => {
+    const b = [...$('platSeg').children].find(x => x.dataset.v === e.plataforma);
+    if(b) b.click();
+  });
 }
 
 function drawLicenses(pick, c){
@@ -411,6 +475,25 @@ function pintarTco(filas){
       + `<tr><td><b>TCO a ${anios} año${anios > 1 ? 's' : ''}</b> (parcial)</td><td><b>${BOM.money(fin.tco)}</b></td>${net(fin.tco)}</tr></tbody></table>`
       + `<p class="hint" style="margin-top:8px"><b>TCO parcial:</b> ${fin.sinPrecio} línea(s) sin precio no entran en la suma. El neto es un simulador genérico de tramos partner, no el descuento real del distribuidor Huawei.</p>`
     : '<p class="hint">Sin precios suficientes para calcular el TCO: este equipo no tiene precio de referencia en el cotizador.</p>';
+  pintarMrr(fin, dto);
+}
+
+// Cuota mensual de servicio gestionado. Los porcentajes son entradas del usuario; sin precios
+// no hay cuota: se dice cuantas lineas faltan en vez de mostrar una cifra que aparenta estar completa.
+function pintarMrr(fin, dto){
+  const r = BOM.mrr({capexNeto:fin.capex * (1 - dto), opexMensual:fin.opexAnual * (1 - dto) / 12,
+    meses:$('plazoMrr').value, margenFin:$('margenFin').value, feeMsp:$('feeMsp').value, sinPrecio:fin.sinPrecio});
+  const hay = fin.capex > 0 || fin.opexTermino > 0;
+  $('mrrBox').innerHTML = !hay
+    ? '<p class="hint">Sin precios no hay cuota: este equipo no tiene precio de referencia en el cotizador y Huawei no publica lista.</p>'
+    : `<table class="tco-tabla"><tbody>
+      <tr><td>CAPEX neto a financiar${dto > 0 ? ' (con el descuento del simulador)' : ''}</td><td>${BOM.money(r.capexNeto)}</td></tr>
+      <tr><td>Cuota de hardware (${r.meses} meses${r.margenFin ? `, +${r.margenFin} % de financiación` : ''})</td><td>${BOM.money(r.cuotaHardware)}</td></tr>
+      <tr><td>OPEX mensual (soporte)</td><td>${BOM.money(r.opexMensual)}</td></tr>
+      <tr><td>Fee de gestión MSP (${r.feeMsp} % de lo anterior)</td><td>${BOM.money(r.fee)}</td></tr>
+      <tr><td><b>Cuota mensual (MRR)${r.completo ? '' : ' — parcial'}</b></td><td><b>${BOM.money(r.mrr)}</b></td></tr>
+      <tr><td><b>Valor total del contrato (TCV)</b> a ${r.meses} meses</td><td><b>${BOM.money(r.tcv)}</b></td></tr></tbody></table>
+      <p class="hint" style="margin-top:8px">${r.sinPrecio ? `<b>Parcial:</b> ${r.sinPrecio} línea(s) sin precio no entran en la cuota. ` : ''}Los porcentajes de financiación, fee y descuento los pone quien cotiza: no son cifras de Huawei.</p>`;
 }
 
 
@@ -614,6 +697,18 @@ $('xlsBtn').addEventListener('click', async () => {
   b.disabled = false;
 });
 
+// Memoria tecnica: Markdown con el resumen, la memoria de calculo (supuestos declarados como tales),
+// el BOM y el cuadro fisico. Se descarga como archivo; el contenido lo arma el motor.
+$('memoriaBtn').addEventListener('click', () => {
+  if(!ultimaEval) return;
+  const m = MODELS.find(x => x.id === $('pickModel').value) || (ultimaEval.pick && ultimaEval.pick.m) || null;
+  const md = HuaweiMotor.memoria(ultimaEval, {m, filas:bomFilas, anios:aniosSel(), fecha:new Date().toISOString().slice(0, 10)});
+  const url = URL.createObjectURL(new Blob([md], {type:'text/markdown;charset=utf-8'}));
+  const a = document.createElement('a');
+  a.href = url; a.download = `Memoria_tecnica_${m ? m.id : 'huawei'}.md`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
 $('copyBtn').addEventListener('click', async () => {
   const t = $('bomOut'); t.select();
   try { await navigator.clipboard.writeText(t.value); $('copyBtn').textContent = 'Copiado'; }
@@ -626,7 +721,7 @@ $('copyBtn').addEventListener('click', async () => {
    Misma clave compartida que los demas fabricantes (`BOM.perfiles`): un despliegue real mezcla
    marcas. Cargar es de Huawei (los campos son ids de ESTA pagina); consolidar no. Aqui todo se
    multiplica por sedes: el modelo comercial de Huawei no declara pools ni lineas unicas. */
-const CAMPOS_PERFIL = ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','qty','opticasData'];
+const CAMPOS_PERFIL = ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','qty','opticasData','trafico','fec','fecPct','sDia','diaPct','sNgfw','utmPct','rutasBgp','cgnat','bng'];
 const SEGS_PERFIL = ['platSeg','modeSeg','dirSeg'];
 function capturarCampos(){
   const v = {};
@@ -773,7 +868,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // plataforma NE8000 con cálculo de enlace. Se traduce en vez de dejar el enlace mudo.
   const qs0 = new URLSearchParams(location.search);
   const veniaDeCore = qs0.get('modeSeg') === 'core' && !qs0.has('platSeg');
-  const st = ESTADO.vincular({ campos: ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','opticasData','selDescuento','dtoCustom','platSeg','dirSeg','modeSeg','verdict-sel'] });
+  const st = ESTADO.vincular({ campos: ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','opticasData','selDescuento','dtoCustom','platSeg','dirSeg','modeSeg','verdict-sel',
+    'trafico','fec','fecPct','sDia','diaPct','sNgfw','utmPct','rutasBgp','cgnat','bng','plazoMrr','margenFin','feeMsp'] });
   if (veniaDeCore) {
     $('platSeg').querySelector('[data-v="ne8000"]').click();
     $('modeSeg').querySelector('[data-v="link"]').click();
