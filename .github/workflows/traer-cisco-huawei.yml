@@ -311,6 +311,41 @@ jobs:
                   'huawei-carrier-ne8000-x.html'],
                   base: 'https://e.huawei.com/', dominios: ['huawei.com'],
                   contiene: ['/products/', '/productcontenthubdata/', '/productsandsolutions/'], max: 150 } },
+              // 2026-10-13: MIKROTIK. Las fichas de producto publican la matriz de pruebas RFC 2544
+              // (ruteo en fast path, con 25 colas simples y con 25 reglas de filtro, a 1518/512/64 B,
+              // e IPsec por tunel) con la que se redisena el dimensionador. Ocho ya estan en
+              // fuente/mikrotik-fichas y fuente/mikrotik-hex-aruba (2026-09-03); faltan los CCR que
+              // el catalogo vende y los relevos del hEX. Las URL de producto salieron de BUSCAR cada
+              // equipo; el listado de routers se guarda para DESCUBRIR los demas, no se adivinan.
+              { archivo: 'mikrotik-ccr2004-1g-12s-2xs.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'CCR2004-1G-12S+2XS', urls: [
+                'https://mikrotik.com/product/ccr2004_1g_12s_2xs',
+              ] },
+              { archivo: 'mikrotik-ccr2116.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'CCR2116-12G-4S+', urls: [
+                'https://mikrotik.com/product/ccr2116_12g_4splus',
+              ] },
+              { archivo: 'mikrotik-ccr2216.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'CCR2216-1G-12XS-2XQ', urls: [
+                'https://mikrotik.com/product/ccr2216_1g_12xs_2xq',
+              ] },
+              { archivo: 'mikrotik-hex-2024.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'E50UG', urls: [
+                'https://mikrotik.com/product/hex_2024',
+              ] },
+              { archivo: 'mikrotik-hex-s-2025.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'E60iUGS', urls: [
+                'https://mikrotik.com/product/hex_s_2025',
+              ] },
+              { archivo: 'mikrotik-routers-listado.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+                'https://mikrotik.com/products/group/ethernet-routers',
+              ] },
+              { archivo: 'mikrotik-routers', tipo: 'paginas', para: 'MIKROTIK', urls: [],
+                descubrirPiezas: { de: ['mikrotik-routers-listado.html'], base: 'https://mikrotik.com/products/group/ethernet-routers',
+                  dominios: ['mikrotik.com'], prefijo: ['product'], max: 45 } },
+              { archivo: 'mikrotik-licencias.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+                'https://help.mikrotik.com/docs/spaces/ROS/pages/328149/RouterOS+license+keys',
+                'https://help.mikrotik.com/docs/display/ROS/RouterOS+license+keys',
+              ] },
+              { archivo: 'mikrotik-chr.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+                'https://manual.mikrotik.com/docs/getting-started/routeros-licensing/chr/chr-licensing/',
+                'https://help.mikrotik.com/docs/spaces/ROS/pages/18350234/Cloud+Hosted+Router+CHR',
+              ] },
               // 2026-10-06 (octava): ARUBA, la pagina de IDS/IPS del Orchestrator. La auditoria A1
               // aparto el EC-XS de Dynamic Threat Defense con esta documentacion, y la spec sheet
               // vigente del EC-XS (a00110177ENW Rev. 3) publica capacidad IDS/IPS: se lee entera
