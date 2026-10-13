@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "76f1940",
+  "commit": "2be5c0c",
   "fecha": "2026-10-13"
  },
  "umbralRozado": 25,
@@ -139,13 +139,6 @@
    "pct": 74
   },
   {
-   "modulo": "mikrotik-motor.js",
-   "estado": "ejercitado",
-   "total": 20,
-   "usadas": 15,
-   "pct": 75
-  },
-  {
    "modulo": "ficha.js",
    "estado": "ejercitado",
    "total": 71,
@@ -162,15 +155,15 @@
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
-   "total": 281,
-   "usadas": 223,
+   "total": 280,
+   "usadas": 222,
    "pct": 79
   },
   {
    "modulo": "dimensionador-mikrotik-routeros.js",
    "estado": "ejercitado",
-   "total": 126,
-   "usadas": 99,
+   "total": 150,
+   "usadas": 119,
    "pct": 79
   },
   {
@@ -185,6 +178,13 @@
    "estado": "ejercitado",
    "total": 5,
    "usadas": 4,
+   "pct": 80
+  },
+  {
+   "modulo": "mikrotik-motor.js",
+   "estado": "ejercitado",
+   "total": 60,
+   "usadas": 48,
    "pct": 80
   },
   {
