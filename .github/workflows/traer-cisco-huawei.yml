@@ -392,6 +392,13 @@ jobs:
               { archivo: 'fortinet-mvt-js', tipo: 'scripts', para: 'FORTINET', urls: [],
                 descubrirPiezas: { de: ['fortinet-mvt.html'], base: 'https://docs.fortinet.com/max-value-table',
                   dominios: ['docs.fortinet.com', 'fortinet.com'], max: 20 } },
+              // 2026-10-13: el script de la pagina pide sus filas a /api/tools/max-values con familia,
+              // version y modelos (leido en dist/assets/app-*.js, corrida 38450065531). Se piden los
+              // 56 FortiGate vigentes del catalogo que la tabla lista (7081F y 7121F no figuran) en
+              // FortiOS 7.6.7, la ultima de la rama 7.6 que el catalogo da por vigente.
+              { archivo: 'fortinet-mvt-7.6.7.json', tipo: 'html', para: 'FORTINET', debeContener: '"rows"', urls: [
+                'https://docs.fortinet.com/api/tools/max-values?family=fortigate&version=7.6.7&models=30G%2C31G%2C50G%2C51G%2C70G%2C71G%2C90G%2C91G%2C120G%2C121G%2C200G%2C201G%2C400G%2C401G%2C700G%2C701G%2C900G%2C901G%2C3000G%2C3001G%2C3500G%2C3501G%2C3800G%2C3801G%2C40F%2C60F%2C61F%2C70F%2C71F%2C80F%2C81F%2C100F%2C200F%2C400F%2C401F%2C600F%2C1000F%2C1001F%2C1800F%2C1801F%2C2600F%2C2601F%2C3000F%2C3001F%2C3200F%2C3201F%2C3500F%2C3501F%2C3700F%2C3701F%2C4200F%2C4201F%2C4400F%2C4401F%2C4800F%2C4801F',
+              ] },
               // 2026-10-13 (segundo enlace WAN y opticas por equipo): la matriz OFICIAL de que
               // modulo va en que equipo. Sustituye a la vieja tabla del wiki, que ya solo remite aqui.
               { archivo: 'mikrotik-compatibilidad.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'S+RJ10', urls: [
