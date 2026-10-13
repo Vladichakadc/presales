@@ -403,6 +403,11 @@ jobs:
               { archivo: 'huawei-a800-producto.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
                 'https://e.huawei.com/en/products/routers/netengine-a800',
               ] },
+              // La pagina de documentos vieja ya sirve un 404 de Huawei con estado 200 (corrida
+              // 38423580897); la de producto enlaza esta otra pagina de documentos de la familia.
+              { archivo: 'huawei-a800-documentos.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/06048a7a12954961b5017a6459145905',
+              ] },
               // 2026-10-06 (octava): ARUBA, la pagina de IDS/IPS del Orchestrator. La auditoria A1
               // aparto el EC-XS de Dynamic Threat Defense con esta documentacion, y la spec sheet
               // vigente del EC-XS (a00110177ENW Rev. 3) publica capacidad IDS/IPS: se lee entera
