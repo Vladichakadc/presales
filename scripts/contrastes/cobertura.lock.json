@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "b86efa5",
+  "commit": "76f1940",
   "fecha": "2026-10-13"
  },
  "umbralRozado": 25,
@@ -79,8 +79,8 @@
    "modulo": "procedencia.js",
    "estado": "ejercitado",
    "total": 34,
-   "usadas": 18,
-   "pct": 53
+   "usadas": 19,
+   "pct": 56
   },
   {
    "modulo": "fortinet-reglas.js",
@@ -135,8 +135,8 @@
    "modulo": "index.js",
    "estado": "ejercitado",
    "total": 58,
-   "usadas": 42,
-   "pct": 72
+   "usadas": 43,
+   "pct": 74
   },
   {
    "modulo": "mikrotik-motor.js",
@@ -148,8 +148,8 @@
   {
    "modulo": "ficha.js",
    "estado": "ejercitado",
-   "total": 70,
-   "usadas": 53,
+   "total": 71,
+   "usadas": 54,
    "pct": 76
   },
   {
@@ -162,8 +162,15 @@
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
-   "total": 280,
-   "usadas": 222,
+   "total": 281,
+   "usadas": 223,
+   "pct": 79
+  },
+  {
+   "modulo": "dimensionador-mikrotik-routeros.js",
+   "estado": "ejercitado",
+   "total": 126,
+   "usadas": 99,
    "pct": 79
   },
   {
@@ -186,13 +193,6 @@
    "total": 109,
    "usadas": 89,
    "pct": 82
-  },
-  {
-   "modulo": "dimensionador-mikrotik-routeros.js",
-   "estado": "ejercitado",
-   "total": 116,
-   "usadas": 98,
-   "pct": 84
   },
   {
    "modulo": "estado.js",
