@@ -406,7 +406,9 @@ const MATRIX_LIMITES={
   '90G':    {ssl:  2600, tunGw:  200, tunCli:  2500, sslVpn: 1400, sslVpnUsers:  200, policies:  5000, vdomMax:  10},
   '120G':   {ssl:  3000, tunGw: 2000, tunCli: 16000, sslVpn: 1500, sslVpnUsers:  500, policies: 10000, vdomMax:  10},
   '200G':   {ssl:  7000, tunGw: 2000, tunCli: 16000, sslVpn: 3000, sslVpnUsers:  500, policies: 10000, vdomMax:  25},
-  '400G':   {ssl: 11500, tunGw: 2000, tunCli: 50000, sslVpn: 6100, sslVpnUsers: 5000, policies: 10000, vdomMax:  50},
+  // policies: 30.000 desde la edicion de OCTUBRE (PROMTX-2026-R177-OCT); la de septiembre daba
+  // 10.000. Es la unica cifra que cambio entre las dos ediciones (511 comparadas el 2026-10-13).
+  '400G':   {ssl: 11500, tunGw: 2000, tunCli: 50000, sslVpn: 6100, sslVpnUsers: 5000, policies: 30000, vdomMax:  50},
   '700G':   {ssl: 14000, tunGw: 2000, tunCli: 50000, sslVpn: 8000, sslVpnUsers:10000, policies: 30000, vdomMax:  50},
   '900G':   {ssl: 16700, tunGw: 2000, tunCli: 50000, sslVpn:10000, sslVpnUsers:10000, policies: 50000, vdomMax:  50},
   '1800F':  {ssl: 12000, tunGw:20000, tunCli:100000, sslVpn:11000, sslVpnUsers:10000, policies:100000, vdomMax: 250},

@@ -2,16 +2,9 @@
   "documentos": {
     "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf": {
       "documento": "Fortinet Product Matrix",
-      "hashVerificado": "242a6eba814f3583d658e267934447c6cb21481f03cdfab83d9e821708e72624",
-      "bytes": 123387,
-      "medido": "2026-10-02T04:24:40.380Z",
-      "clase": "bytes",
-      "visto": {
-        "hash": "235dad2f9b5d1df106c0deb5a077ac3aa7a9b224425653b1e9718abaf5d7d284",
-        "bytes": 123486,
-        "medido": "2026-10-13T19:08:29.846Z"
-      },
-      "pendienteDesde": "2026-10-13T19:07:48.856Z"
+      "hashVerificado": "235dad2f9b5d1df106c0deb5a077ac3aa7a9b224425653b1e9718abaf5d7d284",
+      "bytes": 123486,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "cisco::https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html": {
       "documento": "Boletines oficiales de fin de venta (EOL)",
@@ -113,16 +106,9 @@
     },
     "fortinet::https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/51fcbb4f-33ff-11ef-bfe5-fa163e15d75b/fortios-v7.6.0-release-notes.pdf": {
       "documento": "FortiOS 7.6 Release Notes (7.6.0 y 7.6.3)",
-      "hashVerificado": "411229fc403b82bc173df77d1a600bbcd45462942445237879250e3505580bf8",
-      "bytes": 1325974,
-      "medido": "2026-10-02T04:24:40.380Z",
-      "clase": "bytes",
-      "visto": {
-        "hash": "57d385ea38e13f7786ea9b8ddea339a94a759a939caa254d90fcbe1463422a06",
-        "bytes": 1338345,
-        "medido": "2026-10-13T19:08:29.846Z"
-      },
-      "pendienteDesde": "2026-10-13T19:07:53.210Z"
+      "hashVerificado": "57d385ea38e13f7786ea9b8ddea339a94a759a939caa254d90fcbe1463422a06",
+      "bytes": 1338345,
+      "medido": "2026-10-13T19:08:29.846Z"
     },
     "fortinet::https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/c7e69026-9283-11eb-b70b-00505692583a/fortigate-7121F-system-guide.pdf": {
       "documento": "FortiGate 7081F System Guide (7.0.5) y FortiGate-7121F System Guide (7.4.4)",
