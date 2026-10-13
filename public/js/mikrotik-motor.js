@@ -103,6 +103,207 @@
   }
   const fibra = (m) => Object.values(m.cages || {}).reduce((a, b) => a + b, 0);
 
+
+  /* ══ ENLACES WAN (2026-10-13, encargo del dueño: «qué pasa si se necesita un segundo enlace, de
+     Internet o MPLS, principal y backup; cómo se comporta el equipo; los módulos SFP recomendados
+     de acuerdo al ancho de banda»).
+     Lo que decide cada enlace:
+       - su ROL: un principal está activo y suma; un respaldo OCUPA PUERTO pero NO SUMA: solo lleva
+         tráfico cuando cae un principal (mismo criterio que el Multi-Underlay Builder de Aruba).
+         Dos principales son balanceo (PCC/ECMP) y suman.
+       - el caudal se dimensiona con el MÁXIMO ENTRE ESCENARIOS: normal (Σ principales) y, por cada
+         principal que cae, el resto más el respaldo más rápido. Un respaldo más rápido que el
+         principal gobierna el dimensionamiento, porque en la falla el router reenvía su velocidad.
+       - su VELOCIDAD y su ENTREGA (cobre, fibra monomodo o multimodo) eligen el PUERTO del equipo y
+         el MÓDULO. El módulo sale de la matriz oficial «MikroTik wired interface compatibility»
+         (`COMPATIBILIDAD` en legacyData/mikrotik.js): lo que la matriz no marca «+» para ese
+         equipo no se recomienda, y un equipo que la matriz no lista va con el módulo «a consultar».
+       - un equipo al que no le caben los enlaces (y un puerto para la LAN) se APARTA con su motivo. */
+  const TIPOS_ENLACE = { internet: 'Internet', mpls: 'MPLS' };
+  const ROLES = { principal: 'Principal (activo)', respaldo: 'Respaldo (failover)' };
+  const MEDIOS = {
+    indiferente: 'Sin definir (según el operador)',
+    cobre: 'Cobre RJ45',
+    'fibra-sm': 'Fibra monomodo',
+    'fibra-mm': 'Fibra multimodo',
+  };
+  // Lo mismo, en minúscula para el medio de una frase (sin estropear «RJ45»).
+  const MEDIOS_TXT = { indiferente: 'entrega sin definir', cobre: 'cobre RJ45', 'fibra-sm': 'fibra monomodo', 'fibra-mm': 'fibra multimodo' };
+  const MAX_ENLACES = 4;
+  // Módulo por entrega y velocidad del enlace, y en qué jaulas va. El primero que la matriz
+  // marque para el equipo es el recomendado. 1G en fibra: el módulo de 1G (más barato) también
+  // va en una jaula SFP+/SFP28, como dice la tabla «1G SFP» de la matriz.
+  const MODULOS = [
+    { medio: 'cobre', hasta: 1000, sku: 'S-RJ01', jaulas: ['sfp', 'sfp10', 'sfp25'] },
+    { medio: 'cobre', hasta: 10000, sku: 'S+RJ10', jaulas: ['sfp2g5', 'sfp10', 'sfp25'] },
+    { medio: 'fibra-sm', hasta: 1000, sku: 'S-31DLC20D', jaulas: ['sfp', 'sfp10', 'sfp25'] },
+    { medio: 'fibra-sm', hasta: 2500, sku: 'S+31DLC10D', jaulas: ['sfp2g5'] },
+    { medio: 'fibra-sm', hasta: 10000, sku: 'S+31DLC10D', jaulas: ['sfp10', 'sfp25'] },
+    { medio: 'fibra-sm', hasta: 25000, sku: 'XS+31LC10D', jaulas: ['sfp25'] },
+    { medio: 'fibra-sm', hasta: 100000, sku: 'XQ+31LC10D', jaulas: ['qsfp100'] },
+    { medio: 'fibra-mm', hasta: 1000, sku: 'S+85DLC03D', jaulas: ['sfp', 'sfp10', 'sfp25'] },
+    { medio: 'fibra-mm', hasta: 2500, sku: 'S+85DLC03D', jaulas: ['sfp2g5'] },
+    { medio: 'fibra-mm', hasta: 10000, sku: 'S+85DLC03D', jaulas: ['sfp10', 'sfp25'] },
+    { medio: 'fibra-mm', hasta: 25000, sku: 'XS+85LC01D', jaulas: ['sfp25'] },
+    { medio: 'fibra-mm', hasta: 100000, sku: 'XQ+85MP01D', jaulas: ['qsfp100'] },
+  ];
+
+  /* Lista de enlaces saneada. `lista` puede llegar como texto JSON (el campo oculto de la página).
+     Un enlace sin velocidad toma la del sitio (`porDefecto`); sin ningún principal, el primero lo
+     es. Sin lista, un único enlace principal de Internet con la velocidad del sitio y el medio sin
+     definir: exactamente lo que el dimensionador hacía antes de esta revisión. */
+  function normalizarEnlaces(lista, defMbps) {
+    let l = lista;
+    if (typeof l === 'string') { try { l = JSON.parse(l || '[]'); } catch { l = []; } }
+    if (!Array.isArray(l) || !l.length) l = [{}];
+    const avisos = [];
+    const out = l.slice(0, MAX_ENLACES).map((e, i) => {
+      const v = e && e.mbps !== '' && e.mbps != null ? Number(e.mbps) : NaN;
+      const vale = Number.isFinite(v) && v > 0;
+      return {
+        n: i + 1,
+        tipo: TIPOS_ENLACE[e && e.tipo] ? e.tipo : 'internet',
+        rol: ROLES[e && e.rol] ? e.rol : (i === 0 ? 'principal' : 'respaldo'),
+        medio: MEDIOS[e && e.medio] ? e.medio : 'indiferente',
+        mbps: vale ? v : defMbps,
+        porDefecto: !vale,
+      };
+    });
+    if (!out.some((e) => e.rol === 'principal')) {
+      out[0].rol = 'principal';
+      avisos.push('Ningún enlace estaba marcado como principal: el primero se toma como principal.');
+    }
+    if (Array.isArray(l) && l.length > MAX_ENLACES) avisos.push(`Se consideran ${MAX_ENLACES} enlaces como máximo; el resto no entra en el cálculo.`);
+    return { enlaces: out, avisos };
+  }
+
+  /* Escenarios de caudal WAN: normal y uno por cada principal que cae. */
+  function escenariosWan(enlaces) {
+    const pr = enlaces.filter((e) => e.rol === 'principal');
+    const re = enlaces.filter((e) => e.rol === 'respaldo');
+    const normal = pr.reduce((a, e) => a + e.mbps, 0);
+    const respaldo = re.length ? Math.max(...re.map((e) => e.mbps)) : 0;
+    const fallas = re.length ? pr.map((e) => ({ cae: e, entra: re.find((r) => r.mbps === respaldo), mbps: normal - e.mbps + respaldo })) : [];
+    const peor = fallas.reduce((a, f) => (f.mbps > a.mbps ? f : a), { mbps: normal, cae: null });
+    return { normal, fallas, caudal: Math.max(normal, peor.mbps), gobierna: peor.mbps > normal ? peor : null };
+  }
+
+  const etiquetaEnlace = (e) => `Enlace ${e.n} · ${TIPOS_ENLACE[e.tipo]} ${e.rol === 'principal' ? 'principal' : 'de respaldo'} · ${MEDIOS_TXT[e.medio]} · ${fmt(e.mbps)}`;
+
+  /* Puertos del equipo como ranuras: cobre por velocidad y jaulas por clase. */
+  function ranuras(p) {
+    const r = [];
+    const add = (n, base) => { for (let i = 0; i < (n || 0); i++) r.push({ ...base, id: `${base.clase}-${i}` }); };
+    add(p.fe, { tipo: 'rj', clase: 'fe', vel: 100, n: 'puerto Ethernet 10/100' });
+    add(p.ge, { tipo: 'rj', clase: 'ge', vel: 1000, n: 'puerto Ethernet 1G' });
+    add(p.ge25, { tipo: 'rj', clase: 'ge25', vel: 2500, n: 'puerto Ethernet 2,5G' });
+    add(p.sfp, p.sfp2g5 ? { tipo: 'jaula', clase: 'sfp', g25: true, vel: 2500, n: 'jaula SFP (admite 2,5G)' } : { tipo: 'jaula', clase: 'sfp', vel: 1000, n: 'jaula SFP' });
+    add(p.sfp10, { tipo: 'jaula', clase: 'sfp10', vel: 10000, n: 'jaula SFP+' });
+    add(p.sfp25, { tipo: 'jaula', clase: 'sfp25', vel: 25000, n: 'jaula SFP28' });
+    add(p.qsfp100, { tipo: 'jaula', clase: 'qsfp100', vel: 100000, n: 'jaula QSFP28' });
+    return r;
+  }
+
+  /* Que modulo lleva un enlace en una jaula, segun la matriz de ESTE equipo. */
+  function moduloEn(e, jaula, fila) {
+    const clase = jaula.g25 && e.mbps > 1000 ? 'sfp2g5' : jaula.clase;
+    const opciones = MODULOS.filter((x) => x.medio === e.medio && e.mbps <= x.hasta && x.jaulas.includes(clase));
+    const top = opciones.length ? opciones[0] : null;
+    if (!top) return null;
+    if (!fila) return { sku: null, consultar: true };
+    const v = fila[top.sku];
+    if (v === true || typeof v === 'string') return { sku: top.sku, nota: typeof v === 'string' ? v : null };
+    return { sku: null, prohibido: top.sku };
+  }
+
+  /* Asigna cada enlace a un puerto del equipo y le pone modulo. Devuelve la asignacion, lo que
+     falla (motivos para apartar el modelo) y los avisos de la matriz. */
+  function asignarPuertos(m, enlaces, o) {
+    const opc = o || {};
+    const compat = opc.compat || {};
+    const precios = opc.modulos || {};
+    const notas = opc.notas || {};
+    if (!m.puertos) return null;
+    const fila = m.compat ? compat[m.compat] || null : null;
+    const libres = ranuras(m.puertos);
+    const total = libres.length;
+    const asig = []; const miss = []; const avisos = [];
+    let rj10 = 0;
+    const orden = [...enlaces].sort((a, b) => b.mbps - a.mbps || a.n - b.n);
+    for (const e of orden) {
+      const cands = [];
+      for (const r of libres) {
+        if (r.vel < e.mbps) continue;
+        if (r.tipo === 'rj') {
+          if (e.medio === 'cobre' || e.medio === 'indiferente') cands.push({ r, mod: null, costo: 0 });
+          continue;
+        }
+        if (e.medio === 'indiferente') { cands.push({ r, mod: null, costo: 0 }); continue; }
+        const mod = moduloEn(e, r, fila);
+        if (!mod || mod.prohibido) continue;
+        if (mod.sku === 'S+RJ10' && fila && fila['S+RJ10'] === '11' && rj10 >= 6) continue;
+        cands.push({ r, mod, costo: mod.sku ? (precios[mod.sku] ? precios[mod.sku].price : 0) : 0 });
+      }
+      cands.sort((a, b) => (a.r.tipo === 'rj' ? 0 : 1) - (b.r.tipo === 'rj' ? 0 : 1) || a.r.vel - b.r.vel || a.costo - b.costo);
+      const c = cands[0];
+      if (!c) { miss.push(motivoSinPuerto(e, ranuras(m.puertos), fila)); continue; }
+      libres.splice(libres.indexOf(c.r), 1);
+      const fila0 = { enlace: e, puerto: c.r.n, velPuerto: c.r.vel, sku: c.mod ? c.mod.sku : null, consultar: !!(c.mod && c.mod.consultar) };
+      if (c.mod && c.mod.sku) {
+        const pm = precios[c.mod.sku];
+        fila0.precio = pm ? pm.price : null;
+        fila0.d = pm ? pm.d : null;
+        if (c.mod.sku === 'S+RJ10') {
+          rj10++;
+          if (!/fan/i.test(m.refrigeracion || '')) avisos.push(`S+RJ10 en un equipo de refrigeración pasiva (${m.id}): «${notas.pasiva || 'MikroTik no lo recomienda sin ventilación adicional'}»`);
+        }
+        if (c.mod.nota === '14') avisos.push(`${c.mod.sku} en la jaula SFP de ${m.id}: «${notas['14'] || ''}» (enlace ${e.n}).`);
+        if (c.mod.sku === 'S-RJ01' && m.compat === 'hEX S') avisos.push(`S-RJ01 en el hEX S: ${notas.rj01 || 'solo enlaza a 1 Gbps'}`);
+      }
+      if (c.mod && c.mod.consultar) avisos.push(`${m.id} no figura en la matriz oficial de compatibilidad: el módulo del enlace ${e.n} va «a consultar», no se elige por parecido con otro equipo.`);
+      asig.push(fila0);
+    }
+    if (!miss.length && asig.length >= total) miss.push(`sus ${total} puertos quedan ocupados por los enlaces WAN y no queda ninguno para la LAN`);
+    asig.sort((a, b) => a.enlace.n - b.enlace.n);
+    return { asig, miss, avisos, libres: libres.length };
+  }
+
+  function motivoSinPuerto(e, todas, fila) {
+    const rapida = todas.reduce((a, r) => Math.max(a, r.vel), 0);
+    const d = `enlace ${e.n} (${MEDIOS_TXT[e.medio]}, ${fmt(e.mbps)})`;
+    // El enlace por defecto es el caso de un solo enlace de antes: se conserva su frase.
+    if (rapida < e.mbps) return e.porDefecto && e.medio === 'indiferente' ? `su puerto más rápido es de ${fmt(rapida)} por sentido` : `${d}: su puerto más rápido es de ${fmt(rapida)}`;
+    const jaulas = todas.filter((r) => r.tipo === 'jaula');
+    if (e.medio !== 'cobre' && e.medio !== 'indiferente' && !jaulas.length) return `${d}: no tiene jaulas SFP`;
+    if (e.medio === 'cobre') {
+      const rj = todas.filter((r) => r.tipo === 'rj' && r.vel >= e.mbps);
+      if (!rj.length) {
+        const conMod = jaulas.map((r) => moduloEn(e, r, fila)).filter(Boolean);
+        if (conMod.some((x) => x.prohibido)) return `${d}: no tiene puerto de cobre de ${fmt(e.mbps)} y la matriz oficial no admite el ${conMod.find((x) => x.prohibido).prohibido} en este equipo`;
+        if (!conMod.length) return `${d}: no tiene puerto de cobre de esa velocidad ni jaula para un módulo RJ45`;
+      }
+    } else if (e.medio !== 'indiferente') {
+      const conMod = jaulas.filter((r) => r.vel >= e.mbps).map((r) => moduloEn(e, r, fila)).filter(Boolean);
+      if (conMod.length && conMod.every((x) => x.prohibido)) return `${d}: la matriz oficial no admite el ${conMod[0].prohibido} en este equipo`;
+      if (!conMod.length) return `${d}: no tiene jaula de esa velocidad para fibra`;
+    }
+    return `${d}: los puertos que le sirven ya llevan otros enlaces`;
+  }
+
+  /* Comportamiento del equipo con varios enlaces: lo que se configura en RouterOS. Son reglas de
+     diseño, no cifras. */
+  function comportamiento(enlaces) {
+    const pr = enlaces.filter((e) => e.rol === 'principal');
+    const re = enlaces.filter((e) => e.rol === 'respaldo');
+    const L = [];
+    if (pr.length > 1) L.push(`Balanceo: ${pr.length} enlaces principales activos a la vez (PCC o rutas ECMP en RouterOS). El caudal es la suma; si uno cae, el resto sigue y lleva lo que quepa en su velocidad.`);
+    if (re.length) L.push(`Failover: el respaldo entra solo si cae un principal (rutas por defecto con distinta «distance» y comprobación del gateway por ping o rutas recursivas). Ocupa un puerto todo el tiempo, pero no suma caudal.`);
+    if (pr.some((e) => e.tipo === 'mpls') && enlaces.some((e) => e.tipo === 'internet')) {
+      L.push('MPLS e Internet: el tráfico corporativo va por la MPLS y la salida a Internet por el enlace de Internet. Si la MPLS cae y el respaldo es Internet, el tráfico corporativo cruza Internet cifrado (túnel IPsec hacia la sede central).');
+    }
+    return L;
+  }
+
   function evaluar(esc, modelos, opciones) {
     const o = opciones || {};
     const rango = o.rango || (() => 0);
@@ -125,8 +326,19 @@
     const virtual = !!esc.virtual;
 
     const base = modo === 'hub' ? raw * sedes * conc / 100 : raw;
-    const porSentido = base * (1 + head / 100);          // contra el puerto WAN
-    const need = base * dirMult * (1 + head / 100);       // contra la prueba «all port»
+    // Enlaces WAN: sin lista, uno principal con la velocidad del sitio (lo de antes). Con varios,
+    // el caudal es el máximo entre el escenario normal y los de falla.
+    const porSentidoSitio = base * (1 + head / 100);
+    const { enlaces, avisos: avisosEnlaces } = normalizarEnlaces(esc.enlaces, porSentidoSitio);
+    const wan = escenariosWan(enlaces);
+    const porSentido = Math.max(porSentidoSitio, wan.caudal); // contra el puerto WAN
+    const need = porSentido * dirMult;                        // contra la prueba «all port»
+    // Respaldo cifrado: MPLS principal con respaldo de Internet. En la falla el tráfico corporativo
+    // cruza Internet por IPsec, y esa celda también tiene que alcanzar.
+    const respInternet = enlaces.filter((e) => e.rol === 'respaldo' && e.tipo === 'internet');
+    const respaldoCifrado = enlaces.some((e) => e.rol === 'principal' && e.tipo === 'mpls') && respInternet.length > 0
+      && esc.respaldoIpsec !== false && esc.respaldoIpsec !== 'false';
+    const needIpsecRespaldo = respaldoCifrado ? Math.max(...respInternet.map((e) => e.mbps)) * dirMult : 0;
     const tuneles = modo === 'hub' && sedes > 1 ? 'multi' : 'uno';
     const bytesIpsec = TRAMAS[trama].ipsec;
 
@@ -140,7 +352,7 @@
     const apDraw = num(esc.apDraw, 0);
     req.poeW = esc.apPoe && req.aps ? req.aps * apDraw : 0;
 
-    const avisos = [];
+    const avisos = [...avisosEnlaces];
     const c = perfil === 'ruteo' ? configuraciones(esc) : { cfg: [], firewall: null, l3hw: false, avisos: [] };
     avisos.push(...c.avisos);
 
@@ -178,7 +390,18 @@
       const r = capDe(m);
       if (r.cap == null) miss.push(r.motivo);
       else if (r.porSentido ? r.cap < porSentido : r.cap < need) miss.push('capacidad insuficiente');
-      if (m.ser !== 'CHR' && m.wanMax != null && porSentido > m.wanMax) miss.push(`su puerto más rápido es de ${fmt(m.wanMax)} por sentido`);
+      // Los enlaces, cada uno a su puerto con su módulo. Sin puertos transcritos (CHR), el tope
+      // por sentido de antes contra el puerto más rápido.
+      const puertos = m.ser !== 'CHR' ? asignarPuertos(m, enlaces, o) : null;
+      if (puertos) miss.push(...puertos.miss);
+      else if (m.ser !== 'CHR' && m.wanMax != null && porSentido > m.wanMax) miss.push(`su puerto más rápido es de ${fmt(m.wanMax)} por sentido`);
+      if (respaldoCifrado && perfil === 'ruteo') {
+        const t = tuneles;
+        const filaIp = m.pruebas && m.pruebas.ipsec && m.pruebas.ipsec[t] && m.pruebas.ipsec[t][cifrado];
+        const capIp = filaIp ? celda(filaIp, bytesIpsec) : null;
+        if (capIp == null) miss.push(`respaldo cifrado por Internet: la ficha no publica IPsec ${t === 'uno' ? 'con un túnel' : 'con 256 túneles'} y ${CIFRADOS[cifrado]}`);
+        else if (capIp < needIpsecRespaldo) miss.push(`respaldo cifrado por Internet: IPsec ${fmt(capIp)} por debajo de ${fmt(needIpsecRespaldo)}`);
+      }
       const feeds = maxFeeds(m, bgpRam);
       if (req.feeds && feeds < req.feeds) miss.push(`RAM para ${feeds} feed${feeds === 1 ? '' : 's'} BGP completo${feeds === 1 ? '' : 's'} (supuesto de diseño)`);
       const lic = niveles[m.lvl] || {};
@@ -190,7 +413,7 @@
         else if (m.poeA != null) miss.push(`la ficha da ${String(m.poeA).replace('.', ',')} A de PoE-out y no vatios: no se puede comprobar`);
         else miss.push('sin PoE-out');
       }
-      return { m, cap: r.cap, fila: r.fila || null, miss, feeds,
+      return { m, cap: r.cap, fila: r.fila || null, miss, feeds, puertos,
         ocupacion: r.cap ? (r.porSentido ? porSentido : need) / r.cap : null };
     }).filter(Boolean);
 
@@ -214,11 +437,19 @@
       if (req.feeds) avisos.push(`BGP full table: la RAM por feed (${bgpRam.firstFeedMb} MB el primero y ${bgpRam.extraFeedMb} MB cada uno adicional, más ${bgpRam.baseMb} MB de sistema) es un SUPUESTO DE DISEÑO, no una cifra de MikroTik: ninguna ficha publica cuánta memoria ocupa una tabla completa.`);
       if (req.poeW) avisos.push(`PoE para ${req.aps} AP: ${req.poeW} W con el consumo máximo sin accesorios de la ficha del AP. Solo el RB5009UPr publica vatios de PoE-out (130 W); el resto publica corriente, que depende de la tensión de entrada.`);
       if (esc.ha) avisos.push('Alta disponibilidad VRRP: se cotizan 2 equipos y cada uno se dimensiona al caudal completo, porque el par suma disponibilidad y no capacidad. Cada unidad lleva su propia licencia RouterOS embebida.');
+      if (enlaces.length > 1 || wan.gobierna) {
+        const esc0 = `Caudal WAN: ${fmt(wan.normal)} con todos los principales${wan.fallas.length ? '; ' + wan.fallas.map((f) => `si cae el enlace ${f.cae.n}, ${fmt(f.mbps)} con el respaldo`).join('; ') : ''}.`;
+        avisos.push(esc0 + (wan.gobierna ? ` Gobierna la falla del enlace ${wan.gobierna.cae.n}: el respaldo es más rápido que lo que sustituye y en ese escenario el equipo reenvía ${fmt(wan.gobierna.mbps)}.` : ''));
+        avisos.push(...comportamiento(enlaces));
+      }
+      if (respaldoCifrado && perfil === 'ruteo') avisos.push(`Respaldo cifrado: con la MPLS caída el tráfico corporativo cruza Internet por IPsec. Cada equipo se comprueba además con su celda IPsec (${tuneles === 'uno' ? 'un túnel' : '256 túneles'}, ${CIFRADOS[cifrado]}, ${bytesIpsec} B) contra ${fmt(needIpsecRespaldo)}. Si el respaldo no se cifra, desmárquelo.`);
+      if (enlaces.some((e) => e.medio === 'indiferente') && enlaces.length > 1) avisos.push('Hay enlaces sin entrega definida (cobre o fibra): se les busca un puerto de su velocidad, pero no se recomienda módulo hasta saber qué entrega el operador.');
       if (trama === 64) avisos.push('Paquetes de 64 B: es el peor caso que publica MikroTik (VoIP pura, juegos, DDoS). Un tráfico real mezcla tamaños: si el perfil no es ese, la columna de 512 B es la más cercana a un tráfico mixto.');
     }
 
     return { raw, base, porSentido, need, head, dirMult, trama, bytesIpsec, perfil, cifrado, tuneles, modo, sedes, conc,
       virtual, configs: c.cfg, firewall: c.firewall, l3hw: c.l3hw, req, rows, fit, pick,
+      enlaces, wan, respaldoCifrado, needIpsecRespaldo, porSentidoSitio,
       unidades: esc.ha ? 2 : 1, avisos };
   }
 
@@ -261,6 +492,25 @@
     if (r.hotspot) L.push(`| Usuarios HotSpot | tope por nivel de licencia | ${r.hotspot} |`);
     if (r.poeW) L.push(`| PoE para ${r.aps} AP | consumo máximo sin accesorios × AP | ${r.poeW} W |`);
     L.push('');
+    if (ev.enlaces && ev.enlaces.length) {
+      L.push('### Enlaces WAN');
+      L.push('');
+      L.push('| Enlace | Tipo | Rol | Entrega | Velocidad | Puerto del equipo | Módulo |');
+      L.push('|---|---|---|---|---|---|---|');
+      const asig = fila && fila.puertos ? fila.puertos.asig : [];
+      ev.enlaces.forEach((e) => {
+        const a = asig.find((x) => x.enlace.n === e.n);
+        const mod = !a ? '—' : a.sku ? a.sku : a.consultar ? 'a consultar (equipo fuera de la matriz)' : (e.medio === 'indiferente' && a.puerto.startsWith('jaula') ? 'según la entrega del operador' : 'no lleva');
+        L.push(`| ${e.n} | ${TIPOS_ENLACE[e.tipo]} | ${ROLES[e.rol]} | ${MEDIOS[e.medio]} | ${fmt(e.mbps)}${e.porDefecto ? ' (la del sitio)' : ''} | ${a ? a.puerto : '—'} | ${mod} |`);
+      });
+      L.push('');
+      if (ev.wan && ev.wan.fallas.length) {
+        L.push(`Escenarios: normal ${fmt(ev.wan.normal)}; ${ev.wan.fallas.map((f) => `cae el enlace ${f.cae.n}: ${fmt(f.mbps)}`).join('; ')}. Se dimensiona con ${fmt(ev.wan.caudal)}.`);
+        L.push('');
+      }
+      L.push('_Módulos de la matriz oficial «MikroTik wired interface compatibility» (manual.mikrotik.com, RouterOS 7.25): solo se recomienda lo que la matriz marca como soportado en el equipo._');
+      L.push('');
+    }
     if (ev.avisos.length) { L.push('### Avisos del motor'); L.push(''); ev.avisos.forEach((a) => L.push(`- ${a}`)); L.push(''); }
     L.push('## 3. Lista de materiales');
     L.push('');
@@ -285,5 +535,7 @@
   }
 
   return { TRAMAS, TRAMA_DEFECTO, CONFIGS, FIREWALL, CIFRADOS, PERFILES, TUNELES_MEDIDOS,
-    configuraciones, evaluar, memoria, maxFeeds, ramParaFeeds, fmt };
+    TIPOS_ENLACE, ROLES, MEDIOS, MAX_ENLACES, MODULOS,
+    configuraciones, evaluar, memoria, maxFeeds, ramParaFeeds, fmt,
+    normalizarEnlaces, escenariosWan, asignarPuertos, comportamiento, etiquetaEnlace };
 });

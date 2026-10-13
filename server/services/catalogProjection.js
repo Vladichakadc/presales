@@ -495,6 +495,9 @@ async function toDimensionadorMikrotik() {
     sizing: {
       licenseLevels: mikrotikData.LICENSE_LEVELS,
       bgpRam: mikrotikData.BGP_RAM,
+      // Matriz oficial de modulos: con ella el motor elige el modulo de cada enlace WAN.
+      compatibilidad: mikrotikData.COMPATIBILIDAD,
+      notasCompat: mikrotikData.NOTAS_COMPAT,
     },
   };
 }

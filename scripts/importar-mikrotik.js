@@ -44,7 +44,7 @@ const LOCK = path.join(__dirname, '..', 'server', 'seed', 'legacyData', 'fuentes
 // y la matriz de pruebas. Una sola funcion para los dos lados: si el vigia y el importador
 // hashearan cosas distintas, una relectura correcta seguiria dando la alarma por pendiente.
 // JSON canonico (claves ordenadas): el orden de construccion del objeto no puede mover el hash.
-const CAMPOS_HUELLA = ['codigo', 'url', 'precio', 'cpu', 'arq', 'nucleos', 'mhz', 'ram', 'lvl', 'ruteo', 'puente', 'ipsec'];
+const CAMPOS_HUELLA = ['codigo', 'url', 'precio', 'cpu', 'arq', 'nucleos', 'mhz', 'ram', 'lvl', 'puertos', 'refrigeracion', 'ruteo', 'puente', 'ipsec'];
 function canonico(x) {
   if (Array.isArray(x)) return `[${x.map(canonico).join(',')}]`;
   if (x && typeof x === 'object') return `{${Object.keys(x).sort().map((k) => `${JSON.stringify(k)}:${canonico(x[k])}`).join(',')}}`;
@@ -137,6 +137,16 @@ function leerFicha(html) {
   const ram = (ficha.spec['Size of RAM'] || '').match(/^([\d.]+)\s*(MB|GB)$/i);
   ficha.ram = ram ? Number(ram[1]) * (/GB/i.test(ram[2]) ? 1024 : 1) : null;
   ficha.lvl = ficha.spec['RouterOS license'] ? Number(ficha.spec['RouterOS license']) : null;
+  // Puertos y refrigeracion (2026-10-13, segundo enlace WAN): de la tabla de la ficha, no a
+  // mano. Deciden que enlace cabe en que puerto y si el S+RJ10 es recomendable (MikroTik no lo
+  // recomienda en equipos de refrigeracion pasiva sin ventilacion extra).
+  const cuenta = (k) => { const m = String(ficha.spec[k] || '').match(/^\d+/); return m ? Number(m[0]) : 0; };
+  ficha.puertos = {
+    fe: cuenta('10/100 Ethernet ports'), ge: cuenta('10/100/1000 Ethernet ports'), ge25: cuenta('Number of 2.5G Ethernet ports'),
+    sfp: cuenta('SFP ports'), sfp2g5: /2\.5G supported/i.test(ficha.spec['SFP ports'] || ''),
+    sfp10: cuenta('SFP+ ports'), sfp25: cuenta('Number of 25G SFP28 ports'), qsfp100: cuenta('Number of 100G QSFP28 ports'),
+  };
+  ficha.refrigeracion = ficha.spec['Cooling type'] || null;
 
   let tabla = null; let tamanos = null;
   ficha.ruteo = {}; ficha.puente = {}; ficha.ipsec = { uno: {}, multi: {} };
@@ -200,6 +210,7 @@ function serializar(fichas, leido) {
     const ipsec = f.ipsec == null ? 'null' : `{\n      uno: ${orden(f.ipsec.uno)},\n      multi: ${orden(f.ipsec.multi)},\n    }`;
     return `  ${JSON.stringify(codigo)}: {\n    url: ${JSON.stringify(f.url)}, precio: ${f.precio},\n`
       + `    cpu: ${JSON.stringify(f.cpu)}, arq: ${JSON.stringify(f.arq)}, nucleos: ${f.nucleos}, mhz: ${JSON.stringify(f.mhz)}, ram: ${f.ram}, lvl: ${f.lvl},\n`
+      + `    puertos: ${orden(f.puertos)}, refrigeracion: ${JSON.stringify(f.refrigeracion)},\n`
       + `    ruteo: {\n${Object.entries(f.ruteo).map(([k, v]) => `      ${k}: ${orden(v)},`).join('\n')}\n    },\n`
       + `    puente: {\n${Object.entries(f.puente).map(([k, v]) => `      ${k}: ${orden(v)},`).join('\n')}\n    },\n`
       + `    ipsec: ${ipsec},\n  },`;
@@ -217,6 +228,9 @@ function serializar(fichas, leido) {
 //   puente  fastpath y filtro (25 reglas de filtro de puente).
 //   ipsec   uno (un tunel) y multi (256 tuneles), por cifrado, a 1400/512/64 bytes. null: la
 //           ficha no publica IPsec (equipos sin motor criptografico medido).
+//   puertos cuantos de cada tipo publica la ficha: fe (10/100), ge (10/100/1000), ge25 (2,5G en
+//           cobre), sfp (jaula de 1G; sfp2g5 si admite 2,5G), sfp10 (SFP+), sfp25 (SFP28) y
+//           qsfp100 (QSFP28). refrigeracion: el «Cooling type» literal de la ficha.
 
 const LEIDO = ${JSON.stringify(leido)};
 

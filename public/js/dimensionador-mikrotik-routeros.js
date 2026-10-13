@@ -102,12 +102,67 @@ function escenario(){
     hotspot:$('chkPppoe').checked?$('hotspotUsers').value:0,
     aps:$('chkCapsman').checked?$('apCount').value:0,
     apPoe:$('chkCapsman').checked&&$('chkPoe').checked, apDraw:ap?ap.poeDraw:0,
+    enlaces:leerEnlaces(), respaldoIpsec:$('chkRespaldoIpsec').checked,
   };
 }
-function evaluarEscenario(){
-  return M.evaluar(escenario(), MODELS, {rango:FICHA.rango, recomendable:m=>FICHA.rango(m)<2,
-    licencias:SIZING.licenseLevels, bgpRam:SIZING.bgpRam});
+// Matriz oficial de modulos y precios de las opticas: con ellos el motor pone puerto y modulo
+// a cada enlace WAN. Los precios son los de OPTICS (la ficha de cada modulo).
+function opcionesMotor(){
+  const modulos={};
+  Object.values(OPTICS||{}).forEach(l=>(l||[]).forEach(o=>{ if(o&&o.sku) modulos[o.sku]={price:o.price, d:o.d}; }));
+  return {rango:FICHA.rango, recomendable:m=>FICHA.rango(m)<2, licencias:SIZING.licenseLevels, bgpRam:SIZING.bgpRam,
+    compat:SIZING.compatibilidad||{}, notas:SIZING.notasCompat||{}, modulos};
 }
+function evaluarEscenario(){
+  return M.evaluar(escenario(), MODELS, opcionesMotor());
+}
+
+/* ── ENLACES WAN ─────────────────────────────────────────────────────────────────────────
+   Filas {tipo, rol, mbps, medio} en el campo oculto #enlacesData (JSON), que es lo que viaja en el
+   enlace compartido y en los perfiles. Vacio es el caso de siempre: un principal con la velocidad
+   del sitio. Las filas se repintan solo al añadir o quitar, para no perder el foco al escribir. */
+const ENLACE_DEF={tipo:'internet', rol:'principal', mbps:'', medio:'indiferente'};
+function leerEnlaces(){
+  try{ const v=JSON.parse($('enlacesData').value||'[]'); return Array.isArray(v)&&v.length?v:[{...ENLACE_DEF}]; }
+  catch{ return [{...ENLACE_DEF}]; }
+}
+function escribirEnlaces(l){
+  const def=l.length===1&&['tipo','rol','mbps','medio'].every(k=>String(l[0][k]??'')===String(ENLACE_DEF[k]));
+  $('enlacesData').value=def?'':JSON.stringify(l);
+  // El evento despierta el volcado de ESTADO: el enlace compartible se actualiza solo (Aruba igual).
+  $('enlacesData').dispatchEvent(new Event('input',{bubbles:true}));
+}
+function pintarEnlaces(){
+  const l=leerEnlaces();
+  const opt=(mapa,v)=>Object.entries(mapa).map(([k,t])=>`<option value="${k}"${k===v?' selected':''}>${esc(t)}</option>`).join('');
+  $('enlacesBox').innerHTML=l.map((e,i)=>`<div class="enlace-fila" data-i="${i}">
+    <span class="enl-n" aria-hidden="true">${i+1}</span>
+    <select data-k="tipo" aria-label="Tipo del enlace ${i+1}">${opt(M.TIPOS_ENLACE,e.tipo)}</select>
+    <select data-k="rol" aria-label="Rol del enlace ${i+1}">${opt({principal:'Principal', respaldo:'Respaldo'},e.rol)}</select>
+    <input type="number" data-k="mbps" min="1" step="any" value="${esc(e.mbps??'')}" placeholder="Mbps (vacío = sitio)" aria-label="Velocidad del enlace ${i+1} en Mbps" autocomplete="off">
+    <select data-k="medio" aria-label="Entrega del enlace ${i+1}">${opt(M.MEDIOS,e.medio)}</select>
+    ${i?`<button type="button" class="btn ghost enl-quitar" data-quitar="${i}" aria-label="Quitar el enlace ${i+1}">×</button>`:''}
+  </div>`).join('');
+  $('btnAddEnlace').disabled=l.length>=M.MAX_ENLACES;
+}
+$('enlacesBox').addEventListener('input',e=>{
+  const f=e.target.closest('.enlace-fila'); const k=e.target.dataset.k;
+  if(!f||!k) return;
+  const l=leerEnlaces(); l[+f.dataset.i][k]=e.target.value; escribirEnlaces(l); render();
+});
+$('enlacesBox').addEventListener('click',e=>{
+  const b=e.target.closest('[data-quitar]'); if(!b) return;
+  const l=leerEnlaces(); l.splice(+b.dataset.quitar,1); escribirEnlaces(l); pintarEnlaces(); render();
+  $('btnAddEnlace').focus();
+});
+$('btnAddEnlace').addEventListener('click',()=>{
+  const l=leerEnlaces(); if(l.length>=M.MAX_ENLACES) return;
+  // El segundo enlace, por defecto, es el respaldo de lo que haya: el caso que pidió el dueño.
+  l.push({tipo:l.some(x=>x.tipo==='mpls')?'internet':'mpls', rol:'respaldo', mbps:'', medio:'indiferente'});
+  escribirEnlaces(l); pintarEnlaces(); render();
+  const ult=$('enlacesBox').querySelector('.enlace-fila:last-child select'); if(ult) ult.focus();
+});
+$('chkRespaldoIpsec').addEventListener('input',render);
 
 function pintarAvisos(ev){
   const l=ev?ev.avisos:[];
@@ -122,6 +177,10 @@ function render(){
   if(profile==='ipsec') $('cifradoBox').removeAttribute('data-inactivo'); else $('cifradoBox').setAttribute('data-inactivo','');
   $('cifradoBox').classList.toggle('hidden',profile!=='ipsec');
   if(modo==='hub') $('hubBox').removeAttribute('data-inactivo'); else $('hubBox').setAttribute('data-inactivo','');
+  const enl=leerEnlaces();
+  const hayRespCif=profile==='fwd'&&enl.some(e=>e.rol==='principal'&&e.tipo==='mpls')&&enl.some(e=>e.rol==='respaldo'&&e.tipo==='internet');
+  $('respIpsecBox').classList.toggle('hidden',!hayRespCif);
+  if(hayRespCif) $('respIpsecBox').removeAttribute('data-inactivo'); else $('respIpsecBox').setAttribute('data-inactivo','');
 
   const ev=evaluarEscenario();
   ultimaEval=ev;
@@ -204,7 +263,8 @@ function render(){
   const porQueDe=m=>{
     const r=filaDe(m)||{}, flags=[];
     if(m.ser!=='CHR'&&r.fila) flags.push(`Celda oficial: <b>${esc(r.fila)}</b> = ${fmt(r.cap)} (${Math.round((r.ocupacion||0)*100)} % de ocupación).`);
-    if(m.wanMax!=null&&m.ser!=='CHR') flags.push(`Puerto más rápido: ${fmt(m.wanMax)} por sentido; el escenario pide ${fmt(ev.porSentido)}.`);
+    if(r.puertos&&r.puertos.asig.length) flags.push('Enlaces WAN: '+r.puertos.asig.map(a=>`${a.enlace.n} → ${esc(a.puerto)}${a.sku?` + <b>${esc(a.sku)}</b>`:a.consultar?' + módulo a consultar':''}`).join(' · ')+'.');
+    else if(m.wanMax!=null&&m.ser!=='CHR') flags.push(`Puerto más rápido: ${fmt(m.wanMax)} por sentido; el escenario pide ${fmt(ev.porSentido)}.`);
     if(ev.req.feeds) flags.push(m.ram==null
       ? `CHR: dimensionar la instancia con ≥ <b>${(M.ramParaFeeds(ev.req.feeds,SIZING.bgpRam)/1024).toFixed(1)} GB</b> de RAM para ${ev.req.feeds} feed(s) (supuesto de diseño).`
       : `Sostiene hasta <b>${r.feeds}</b> feed(s) completos con ${ramTxt(m)} de RAM (supuesto de diseño).`);
@@ -236,6 +296,22 @@ function render(){
       nota:m.url?`Fuente: ${esc(m.url)}. Mbps agregados de todos los puertos.`:''};
   };
 
+  // Cada enlace WAN, su puerto en ESTE equipo y el modulo de la matriz oficial.
+  const enlacesDe=m=>{
+    const r=filaDe(m)||{};
+    if(m.ser==='CHR') return {titulo:'Enlaces WAN y puertos', filas:[['CHR','vNIC del hipervisor: sin puertos ni módulos físicos']]};
+    const asig=r.puertos?r.puertos.asig:[];
+    const filas=ev.enlaces.map(e=>{
+      const a=asig.find(x=>x.enlace.n===e.n);
+      const mod=!a?'<span class="bad">no cabe</span>':a.sku?`${esc(a.sku)} — ${a.precio!=null?money(a.precio):'consultar'}${a.d?` · ${esc(a.d)}`:''}`
+        :a.consultar?'<span class="warn">módulo a consultar: el equipo no figura en la matriz oficial</span>'
+        :e.medio==='indiferente'&&/^jaula/.test(a.puerto)?'<span class="warn">según lo que entregue el operador</span>':'no lleva módulo';
+      return [esc(M.etiquetaEnlace(e)), `${a?esc(a.puerto):'—'} · ${mod}`, true];
+    });
+    const libres=r.puertos?r.puertos.libres:null;
+    return {titulo:'Enlaces WAN y puertos', filas,
+      nota:`${ev.wan.fallas.length?`Escenarios: normal ${fmt(ev.wan.normal)}; ${ev.wan.fallas.map(f=>`cae el enlace ${f.cae.n}: ${fmt(f.mbps)}`).join('; ')}. `:''}${libres!=null?`Quedan ${libres} puerto(s) libres para la LAN. `:''}Módulos de la matriz oficial «MikroTik wired interface compatibility» (RouterOS 7.25).`};
+  };
   const seccionesDe=m=>{
     const sup=SUPPORT[$('supportTier')&&$('supportTier').value?$('supportTier').value:Object.keys(SUPPORT)[0]]||Object.values(SUPPORT)[0];
     const lic=SIZING.licenseLevels[m.lvl]||{};
@@ -252,6 +328,7 @@ function render(){
         ['Puertos', esc(m.ports), true],
         ['Precio sugerido', m.elp?esc(m.elp):'Consultar distribuidor'],
       ]},
+      enlacesDe(m),
       matrizDe(m),
       FICHA.seccionPuertos(m),
       FICHA.seccionAlimentacion(m),
@@ -287,7 +364,8 @@ function render(){
         ${filaTabla('Equipo evaluado', esc(m.id)+(m.id===pick.id?'':' (elegido a mano)'))}
         ${filaTabla('Perfil', esc(M.PERFILES[ev.perfil]))}
         ${filaTabla('Caudal base', ev.modo==='hub'?`${ev.sedes} sedes × ${fmt(ev.raw)} × ${ev.conc} %`:fmt(ev.raw))}
-        ${filaTabla('Con margen (+'+ev.head+' %)', fmt(ev.porSentido)+' por sentido')}
+        ${filaTabla('Con margen (+'+ev.head+' %)', fmt(ev.porSentidoSitio)+' por sentido')}
+        ${ev.enlaces.length>1||ev.wan.caudal>ev.porSentidoSitio?filaTabla('Caudal WAN (peor escenario de los enlaces)', fmt(ev.wan.caudal)+(ev.wan.caudal>ev.porSentidoSitio?' — gobierna':'')):''}
         ${filaTabla('Necesidad agregada (×'+ev.dirMult+')', '<b>'+fmt(ev.need)+'</b>')}
         ${filaTabla('Celda de la ficha', esc(r.fila||(m.ser==='CHR'?'tope de licencia por interfaz':'—')))}
         ${filaTabla('Capacidad oficial', fmt(r.cap))}
@@ -410,6 +488,19 @@ function pintarTco(filas){
       <p class="hint" style="margin-top:8px">${r.sinPrecio?`<b>Parcial:</b> ${r.sinPrecio} línea(s) sin precio no entran en la cuota. `:''}Los porcentajes de financiación, fee y descuento los pone quien cotiza: no son cifras de MikroTik.</p>`;
 }
 
+function enlacesBom(m){
+  const ev=ultimaEval;
+  if(!ev||!ev.enlaces||m.ser==='CHR') return [];
+  const row=ev.rows.find(r=>r.m.id===m.id);
+  const res=row&&row.puertos?row.puertos:M.asignarPuertos(m, ev.enlaces, opcionesMotor());
+  const grupos=new Map();
+  ((res&&res.asig)||[]).filter(a=>a.sku||a.consultar).forEach(a=>{
+    const k=a.sku||`consultar-${a.enlace.n}`;
+    if(!grupos.has(k)) grupos.set(k,{sku:a.sku, precio:a.precio, d:a.d, ns:[], puertos:[]});
+    const g=grupos.get(k); g.ns.push(a.enlace.n); g.puertos.push(a.puerto);
+  });
+  return [...grupos.values()];
+}
 function renderBom(){
   const m=MODELS.find(x=>x.id===$('pickModel').value)||MODELS[0];
   if(!m) return;
@@ -473,8 +564,14 @@ function renderBom(){
     {cat:'Equipo', desc:m.id, sku:null, qty, unit:m.elpN!=null?m.elpN:null,
      nota:`${m.seg} · ${m.ports}${m.eol?' · DESCONTINUADO':''}${m.legacy?' · línea anterior':''}`},
   ];
+  // Los modulos de los enlaces WAN salen solos, del puerto que el motor les asigno en ESTE equipo
+  // (el del BOM, que puede ser el elegido a mano). Se agrupan por SKU; los del selector de abajo
+  // son los adicionales (LAN, uplinks).
+  enlacesBom(m).forEach(x=>filas.push({cat:'Ópticas y cables', desc:x.sku||`Módulo del enlace ${x.ns.join(', ')}`, sku:x.sku||null,
+    qty:x.ns.length*qty, unit:x.sku?x.precio:null,
+    nota:`${x.ns.length>1?'Enlaces':'Enlace'} WAN ${x.ns.join(', ')} → ${x.puertos.join(', ')}${x.d?' · '+x.d:''}${x.sku?'':' · el equipo no figura en la matriz oficial de compatibilidad: módulo a consultar'}`}));
   optics.forEach(o=>filas.push({cat:'Ópticas y cables', desc:o.optic.sku, sku:o.optic.sku,
-    qty:o.qty*qty, unit:o.optic.price, nota:o.optic.d}));
+    qty:o.qty*qty, unit:o.optic.price, nota:`Adicional · ${o.optic.d}`}));
   if(apQty&&ap) filas.push({cat:'Puntos de acceso', desc:ap.sku, sku:ap.hwModel||null,
     qty:apQty, unit:ap.price, nota:ap.d});
   filas.push({cat:'Licencia', desc:isChr?`Licencia CHR ${m.id.replace('CHR ','')}`:`RouterOS ${lvlTxt(m)} — perpetua`,
@@ -553,7 +650,7 @@ $('xlsBtn').addEventListener('click',async()=>{
    Misma clave compartida que los demas fabricantes (`BOM.perfiles`): un despliegue real mezcla
    marcas. Cargar es de MikroTik (los campos son ids de ESTA pagina); consolidar no. Todo se
    multiplica por sedes: MikroTik vende por equipo, sin pools ni licencias por despliegue. */
-const CAMPOS_PERFIL=['bw','unit','head','dirMult','sedes','conc','firewall','cifrado','chkVirtual','chkQos','chkL3hw',
+const CAMPOS_PERFIL=['bw','unit','head','dirMult','sedes','conc','enlacesData','chkRespaldoIpsec','firewall','cifrado','chkVirtual','chkQos','chkL3hw',
   'chkBgp','bgpFeeds','chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','apModel','chkPoe','chkHa',
   'qty','supportTier','chkTraining','bomApModel','bomApQty'];
 const SEGS_PERFIL=['profileSeg','mediaSeg','modoSeg','tramaSeg'];
@@ -571,7 +668,7 @@ function aplicarCampos(v){
   });
   // Los grupos .seg guardan su valor en una variable de la pagina: solo su manejador la actualiza.
   SEGS_PERFIL.forEach(id=>{const b=v[id]!=null&&$(id).querySelector(`[data-v="${v[id]}"]`); if(b) b.click();});
-  render(); renderBom();
+  pintarEnlaces(); render(); renderBom();
 }
 function pintarPerfiles(){
   const l=BOM.perfilesDe(VENDOR);
@@ -669,6 +766,7 @@ $('memoriaBtn').addEventListener('click',()=>{
 
   populateSelects();
   renderLicTables();
+  pintarEnlaces();
   render();
   renderBom();
   renderCatalogo();
@@ -689,7 +787,7 @@ document.addEventListener('click', (e) => {
    El escenario viaja en la URL (ver /js/estado.js). Lo que va dentro de [data-inactivo] (el
    hub en un sitio, el cifrado fuera de IPsec) no viaja. */
 document.addEventListener('DOMContentLoaded', () => {
-  const st = ESTADO.vincular({ campos: ['bw','unit','head','dirMult','sedes','conc','firewall','cifrado','chkVirtual','chkQos','chkL3hw',
+  const st = ESTADO.vincular({ campos: ['bw','unit','head','dirMult','sedes','conc','enlacesData','chkRespaldoIpsec','firewall','cifrado','chkVirtual','chkQos','chkL3hw',
     'chkBgp','bgpFeeds','chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','chkPoe','chkHa',
     'mediaSeg','profileSeg','modoSeg','tramaSeg','verdict-sel','aniosTco','plazoMrr','margenFin','feeMsp'] });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');

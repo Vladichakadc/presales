@@ -418,6 +418,12 @@ Módulos compartidos:
   resolución nativa; la galería no rotula la cara: se decide mirándola, y sin trasera no se sirve la
   de un hermano. La tarjeta pinta una previa con pérdida (`frontPrev`/`rearPrev`, opt-in de
   `ficha.js`) y la lupa y el Excel el original. Perfiles multi-sede como Huawei (`BOM.perfiles`).
+  **Enlaces WAN** (`#enlacesData`): principal o respaldo, Internet o MPLS, velocidad y entrega; un
+  respaldo ocupa puerto y no suma, el caudal es el máximo entre el escenario normal y los de falla,
+  y cada enlace va a un puerto del equipo (los puertos salen de la ficha) con el módulo de la
+  matriz oficial «wired interface compatibility» (`COMPATIBILIDAD`): lo que marca «-» no se
+  recomienda y un equipo que no lista va «a consultar». MPLS principal con respaldo de Internet
+  comprueba además la celda IPsec del respaldo.
 - **Nokia**: dos dimensionadores — 7750 SR / 7250 IXR (equipo, por plataforma; chasis modulares
   apartados por densidad) y 7220 IXR (fabric). Capacidad en Gbps; `aMbps()` es el único que lo sabe.
 - **Starlink LEO**: módulo canónico integrado byte a byte (`starlink-leo-dimensionador/` es la línea

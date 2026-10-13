@@ -11,6 +11,9 @@
 //   puente  fastpath y filtro (25 reglas de filtro de puente).
 //   ipsec   uno (un tunel) y multi (256 tuneles), por cifrado, a 1400/512/64 bytes. null: la
 //           ficha no publica IPsec (equipos sin motor criptografico medido).
+//   puertos cuantos de cada tipo publica la ficha: fe (10/100), ge (10/100/1000), ge25 (2,5G en
+//           cobre), sfp (jaula de 1G; sfp2g5 si admite 2,5G), sfp10 (SFP+), sfp25 (SFP28) y
+//           qsfp100 (QSFP28). refrigeracion: el «Cooling type» literal de la ficha.
 
 const LEIDO = "2026-10-13";
 
@@ -18,6 +21,7 @@ const FICHAS = {
   "RB750r2": {
     url: "https://mikrotik.com/product/RB750r2", precio: 39.95,
     cpu: "QCA9533", arq: "MIPSBE", nucleos: 1, mhz: "850 MHz", ram: 64, lvl: 4,
+    puertos: {"fe":5,"ge":0,"ge25":0,"sfp":0,"sfp2g5":false,"sfp10":0,"sfp25":0,"qsfp100":0}, refrigeracion: "Passive",
     ruteo: {
       fastpath: {"64":[217.8,111.5],"512":[117.4,480.9],"1518":[40.6,493]},
       colas: {"64":[101.2,51.8],"512":[98.9,405.1],"1518":[40.6,493]},
@@ -32,6 +36,7 @@ const FICHAS = {
   "RB750UPr2": {
     url: "https://mikrotik.com/product/RB750UPr2", precio: 59.95,
     cpu: "QCA9531", arq: "MIPSBE", nucleos: 1, mhz: "650 MHz", ram: 64, lvl: 4,
+    puertos: {"fe":5,"ge":0,"ge25":0,"sfp":0,"sfp2g5":false,"sfp10":0,"sfp25":0,"qsfp100":0}, refrigeracion: "Passive",
     ruteo: {
       fastpath: {"64":[200.8,102.8],"512":[117.4,480.9],"1518":[40.6,493]},
       colas: {"64":[90.8,46.5],"512":[79.6,326],"1518":[40.6,493]},
@@ -46,6 +51,7 @@ const FICHAS = {
   "RB750Gr3": {
     url: "https://mikrotik.com/product/RB750Gr3", precio: 59.95,
     cpu: "MT7621A", arq: "MMIPS", nucleos: 2, mhz: "880 MHz", ram: 256, lvl: 4,
+    puertos: {"fe":0,"ge":5,"ge25":0,"sfp":0,"sfp2g5":false,"sfp10":0,"sfp25":0,"qsfp100":0}, refrigeracion: "Passive",
     ruteo: {
       fastpath: {"64":[601.2,327.1],"512":[450.1,1843.6],"1518":[148.4,1802.2]},
       colas: {"64":[119.3,64.9],"512":[119.3,488.5],"1518":[114.5,1391]},
@@ -63,6 +69,7 @@ const FICHAS = {
   "E50UG": {
     url: "https://mikrotik.com/product/hex_2024", precio: 59.95,
     cpu: "EN7562CT", arq: "ARM 32bit", nucleos: 2, mhz: "950 MHz", ram: 512, lvl: 4,
+    puertos: {"fe":0,"ge":5,"ge25":0,"sfp":0,"sfp2g5":false,"sfp10":0,"sfp25":0,"qsfp100":0}, refrigeracion: "Passive",
     ruteo: {
       fastpath: {"64":[342.2,186.1],"512":[340.5,1394.7],"1518":[300.3,3646.6]},
       colas: {"64":[171.9,93.5],"512":[174.3,713.8],"1518":[173.1,2102.6]},
@@ -80,6 +87,7 @@ const FICHAS = {
   "RB760iGS": {
     url: "https://mikrotik.com/product/hex_s", precio: 79,
     cpu: "MT7621A", arq: "MMIPS", nucleos: 2, mhz: "880 MHz", ram: 256, lvl: 4,
+    puertos: {"fe":0,"ge":5,"ge25":0,"sfp":1,"sfp2g5":false,"sfp10":0,"sfp25":0,"qsfp100":0}, refrigeracion: "Passive",
     ruteo: {
       fastpath: {"64":[601.2,327.1],"512":[450.1,1843.6],"1518":[148.4,1802.2]},
       colas: {"64":[119.3,64.9],"512":[119.3,488.5],"1518":[114.5,1391]},
@@ -97,6 +105,7 @@ const FICHAS = {
   "E60iUGS": {
     url: "https://mikrotik.com/product/hex_s_2025", precio: 69,
     cpu: "EN7562CT", arq: "ARM 32bit", nucleos: 2, mhz: "950 MHz", ram: 512, lvl: 4,
+    puertos: {"fe":0,"ge":5,"ge25":0,"sfp":1,"sfp2g5":true,"sfp10":0,"sfp25":0,"qsfp100":0}, refrigeracion: "Passive",
     ruteo: {
       fastpath: {"64":[342.2,186.1],"512":[340.5,1394.7],"1518":[300.3,3646.6]},
       colas: {"64":[171.9,93.5],"512":[174.3,713.8],"1518":[173.1,2102.6]},
@@ -114,6 +123,7 @@ const FICHAS = {
   "RB960PGS": {
     url: "https://mikrotik.com/product/RB960PGS", precio: 89,
     cpu: "QCA9557", arq: "MIPSBE", nucleos: 1, mhz: "800 MHz", ram: 128, lvl: 4,
+    puertos: {"fe":0,"ge":5,"ge25":0,"sfp":1,"sfp2g5":false,"sfp10":0,"sfp25":0,"qsfp100":0}, refrigeracion: "Passive",
     ruteo: {
       fastpath: {"64":[521.7,267.1],"512":[396.3,1623.2],"1518":[161.9,1966.1]},
       colas: {"64":[216,110.6],"512":[217.2,889.7],"1518":[161.9,1966.1]},
@@ -128,6 +138,7 @@ const FICHAS = {
   "RB960PGS-PB": {
     url: "https://mikrotik.com/product/RB960PGS-PB", precio: 109,
     cpu: "QCA9557", arq: "MIPSBE", nucleos: 1, mhz: "800 MHz", ram: 128, lvl: 4,
+    puertos: {"fe":0,"ge":5,"ge25":0,"sfp":1,"sfp2g5":false,"sfp10":0,"sfp25":0,"qsfp100":0}, refrigeracion: "Passive",
     ruteo: {
       fastpath: {"64":[521.7,267.1],"512":[396.3,1623.2],"1518":[161.9,1966.1]},
       colas: {"64":[216,110.6],"512":[217.2,889.7],"1518":[161.9,1966.1]},
@@ -142,6 +153,7 @@ const FICHAS = {
   "L009UiGS-2HaxD-IN": {
     url: "https://mikrotik.com/product/l009uigs_2haxd_in", precio: 129,
     cpu: "IPQ-5018", arq: "ARM 32bit", nucleos: 2, mhz: "800 MHz", ram: 512, lvl: 5,
+    puertos: {"fe":0,"ge":8,"ge25":0,"sfp":1,"sfp2g5":true,"sfp10":0,"sfp25":0,"qsfp100":0}, refrigeracion: "Passive",
     ruteo: {
       fastpath: {"64":[343.3,186.8],"512":[309.9,1269.4],"1518":[281.8,3422.18]},
       colas: {"64":[143.4,78],"512":[146.6,600.5],"1518":[143.2,1739]},
@@ -156,6 +168,7 @@ const FICHAS = {
   "L009UiGS-RM": {
     url: "https://mikrotik.com/product/l009uigs_rm", precio: 119,
     cpu: "IPQ-5018", arq: "ARM 32bit", nucleos: 2, mhz: "800 MHz", ram: 512, lvl: 5,
+    puertos: {"fe":0,"ge":8,"ge25":0,"sfp":1,"sfp2g5":true,"sfp10":0,"sfp25":0,"qsfp100":0}, refrigeracion: "Passive",
     ruteo: {
       fastpath: {"64":[343.3,186.8],"512":[309.9,1269.4],"1518":[281.8,3422.18]},
       colas: {"64":[143.4,78],"512":[146.6,600.5],"1518":[143.2,1739]},
@@ -170,6 +183,7 @@ const FICHAS = {
   "RB4011iGS+RM": {
     url: "https://mikrotik.com/product/rb4011igs_rm", precio: 219,
     cpu: "AL21400", arq: "ARM 32bit", nucleos: 4, mhz: "auto (533 - 1900) MHz", ram: 1024, lvl: 5,
+    puertos: {"fe":0,"ge":10,"ge25":0,"sfp":0,"sfp2g5":false,"sfp10":1,"sfp25":0,"qsfp100":0}, refrigeracion: "Passive",
     ruteo: {
       fastpath: {"64":[5092.3,2607.3],"512":[1923.3,7877.8],"1518":[806.4,9792.9]},
       colas: {"64":[960.3,491.7],"512":[1046.6,4286.9],"1518":[806.4,9792.9]},
@@ -187,6 +201,7 @@ const FICHAS = {
   "RB1100x4": {
     url: "https://mikrotik.com/product/rb1100ahx4", precio: 329,
     cpu: "AL21400", arq: "ARM 32bit", nucleos: 4, mhz: "1.4 GHz", ram: 1024, lvl: 6,
+    puertos: {"fe":0,"ge":13,"ge25":0,"sfp":0,"sfp2g5":false,"sfp10":0,"sfp25":0,"qsfp100":0}, refrigeracion: "Passive",
     ruteo: {
       fastpath: {"64":[5092.3,2607.3],"512":[1736.4,7112.3],"1518":[606.5,7365.3]},
       colas: {"64":[960.3,491.7],"512":[933.6,3824],"1518":[606.5,7365.3]},
@@ -204,6 +219,7 @@ const FICHAS = {
   "RB5009UG+S+IN": {
     url: "https://mikrotik.com/product/rb5009ug_s_in", precio: 219,
     cpu: "88F7040", arq: "ARM 64bit", nucleos: 4, mhz: "350-1400 (auto) MHz", ram: 1024, lvl: 5,
+    puertos: {"fe":0,"ge":7,"ge25":1,"sfp":0,"sfp2g5":false,"sfp10":1,"sfp25":0,"qsfp100":0}, refrigeracion: "Passive",
     ruteo: {
       fastpath: {"64":[4969.4,2703.3],"512":[2332,9551.9],"1518":[811.2,9851.4]},
       colas: {"64":[1095,595.7],"512":[1126,4612],"1518":[811.2,9851.4]},
@@ -221,6 +237,7 @@ const FICHAS = {
   "RB5009UPr+S+IN": {
     url: "https://mikrotik.com/product/rb5009upr_s_in", precio: 299,
     cpu: "88F7040", arq: "ARM 64bit", nucleos: 4, mhz: "350-1400 (auto) MHz", ram: 1024, lvl: 5,
+    puertos: {"fe":0,"ge":7,"ge25":1,"sfp":0,"sfp2g5":false,"sfp10":1,"sfp25":0,"qsfp100":0}, refrigeracion: "Passive",
     ruteo: {
       fastpath: {"64":[4969.4,2703.3],"512":[2332,9551.9],"1518":[811.2,9851.4]},
       colas: {"64":[1095,595.7],"512":[1126,4612],"1518":[811.2,9851.4]},
@@ -238,6 +255,7 @@ const FICHAS = {
   "RB5009UPr+S+OUT": {
     url: "https://mikrotik.com/product/rb5009_out", precio: 319,
     cpu: "88F7040", arq: "ARM 64bit", nucleos: 4, mhz: "350-1400 (auto) MHz", ram: 1024, lvl: 5,
+    puertos: {"fe":0,"ge":7,"ge25":1,"sfp":0,"sfp2g5":false,"sfp10":1,"sfp25":0,"qsfp100":0}, refrigeracion: "Passive",
     ruteo: {
       fastpath: {"64":[4969.4,2703.3],"512":[2332,9551.9],"1518":[811.2,9851.4]},
       colas: {"64":[1095,595.7],"512":[1126,4612],"1518":[811.2,9851.4]},
@@ -255,6 +273,7 @@ const FICHAS = {
   "CCR2004-16G-2S+": {
     url: "https://mikrotik.com/product/ccr2004_16g_2splus", precio: 465,
     cpu: "AL32400", arq: "ARM 64bit", nucleos: 4, mhz: "1700 MHz", ram: 4096, lvl: 6,
+    puertos: {"fe":0,"ge":16,"ge25":0,"sfp":0,"sfp2g5":false,"sfp10":2,"sfp25":0,"qsfp100":0}, refrigeracion: "2 fans",
     ruteo: {
       fastpath: {"64":[8260.6,4493.8],"512":[6749,27643.9],"1518":[2925.9,35532.1]},
       colas: {"64":[1196.9,651.1],"512":[1933,7917.6],"1518":[1186.3,14406.4]},
@@ -272,6 +291,7 @@ const FICHAS = {
   "CCR2004-16G-2S+PC": {
     url: "https://mikrotik.com/product/ccr2004_16g_2s_pc", precio: 465,
     cpu: "AL32400", arq: "ARM 64bit", nucleos: 4, mhz: "1200 MHz", ram: 4096, lvl: 6,
+    puertos: {"fe":0,"ge":16,"ge25":0,"sfp":0,"sfp2g5":false,"sfp10":2,"sfp25":0,"qsfp100":0}, refrigeracion: "Passive",
     ruteo: {
       fastpath: {"64":[7226,3930.9],"512":[5061.1,20730.4],"1518":[2573.6,31253.4]},
       colas: {"64":[1079.4,587.2],"512":[1106.1,4530.4],"1518":[1084.6,13171.6]},
@@ -289,6 +309,7 @@ const FICHAS = {
   "CCR2004-1G-12S+2XS": {
     url: "https://mikrotik.com/product/ccr2004_1g_12s_2xs", precio: 595,
     cpu: "AL32400", arq: "ARM 64bit", nucleos: 4, mhz: "1700 MHz", ram: 4096, lvl: 6,
+    puertos: {"fe":0,"ge":1,"ge25":0,"sfp":0,"sfp2g5":false,"sfp10":12,"sfp25":2,"qsfp100":0}, refrigeracion: "2 fans",
     ruteo: {
       fastpath: {"64":[11159.7,6070.9],"512":[5790.3,23717.1],"1518":[3138.7,38116]},
       colas: {"64":[1883.8,1024.8],"512":[1876.9,7688],"1518":[1849.3,22458]},
@@ -306,6 +327,7 @@ const FICHAS = {
   "CCR2116-12G-4S+": {
     url: "https://mikrotik.com/product/ccr2116_12g_4splus", precio: 995,
     cpu: "AL73400", arq: "ARM 64bit", nucleos: 16, mhz: "2000 MHz", ram: 16384, lvl: 6,
+    puertos: {"fe":0,"ge":13,"ge25":0,"sfp":0,"sfp2g5":false,"sfp10":4,"sfp25":0,"qsfp100":0}, refrigeracion: "4 fans",
     ruteo: {
       fastpath: {"64":[28095.6,15284],"512":[9125.3,37377.2],"1518":[3212.2,39009]},
       colas: {"64":[6300.9,3427.7],"512":[6322.6,25897.4],"1518":[3212.2,39009]},
@@ -324,6 +346,7 @@ const FICHAS = {
   "CCR2216-1G-12XS-2XQ": {
     url: "https://mikrotik.com/product/ccr2216_1g_12xs_2xq", precio: 2795,
     cpu: "AL73400", arq: "ARM 64bit", nucleos: 16, mhz: "2000 MHz", ram: 16384, lvl: 6,
+    puertos: {"fe":0,"ge":1,"ge25":0,"sfp":0,"sfp2g5":false,"sfp10":0,"sfp25":12,"qsfp100":2}, refrigeracion: "4 fans",
     ruteo: {
       fastpath: {"64":[33153,18035.2],"512":[9944.6,40733.1],"1518":[6168.5,74910.3]},
       colas: {"64":[4458.9,2425.6],"512":[4553.9,18652.8],"1518":[4554.2,55306.2]},

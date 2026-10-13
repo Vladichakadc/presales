@@ -23,6 +23,13 @@ const BASE_LINEA = [
     recomendado: 'CCR2116-12G-4S+', celda: '256 túneles · AES-128-CBC + SHA1 · 1400 B' },
   { n: 'Core 40 Gbps con L3HW y FastTrack', esc: { bw: '40', unit: '1000', l3hw: true },
     recomendado: 'CCR2216-1G-12XS-2XQ', celda: 'Ruteo con 25 reglas de filtro y FastTrack L3HW · 512 B' },
+  // Segundo enlace (2026-10-13): MPLS principal en fibra monomodo y respaldo de Internet en cobre.
+  // El hEX del primer caso no tiene jaula SFP y los que la tienen no cifran los 400 Mbps del
+  // respaldo (IPsec de un túnel a 512 B): sube al RB5009, con su jaula SFP+ para la MPLS.
+  { n: 'Sitio con MPLS en fibra y respaldo de Internet cifrado', esc: { bw: '300', enlaces: [
+      { tipo: 'mpls', rol: 'principal', mbps: '300', medio: 'fibra-sm' },
+      { tipo: 'internet', rol: 'respaldo', mbps: '200', medio: 'cobre' }] },
+    recomendado: 'RB5009UG+S+IN', celda: 'Ruteo fast path (sin firewall ni colas) · 512 B' },
 ];
 
 module.exports = {
@@ -41,6 +48,11 @@ module.exports = {
     if (x.firewall) await p.selectOption('#firewall', x.firewall);
     if (x.unit) await p.selectOption('#unit', x.unit);
     if (x.l3hw) await p.check('#chkL3hw');
+    if (x.enlaces) {
+      // El campo oculto es lo que viaja en el enlace compartido; la página repinta sus filas desde él.
+      await p.$eval('#enlacesData', (el, v) => { el.value = v; }, JSON.stringify(x.enlaces));
+      await p.evaluate('pintarEnlaces()');
+    }
     await p.fill('#bw', x.bw);
     await p.dispatchEvent('#bw', 'input');
     await pausa(p, 500);

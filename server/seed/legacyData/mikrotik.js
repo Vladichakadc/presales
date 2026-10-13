@@ -130,6 +130,44 @@ const MANO = [
    chrTope:999999, chrPrecio:250, ports:'vNIC ilimitadas · sin tope de throughput', cages:{}, redund:'no-aplica'},
 ];
 
+// MATRIZ OFICIAL DE COMPATIBILIDAD DE MODULOS (2026-10-13, segundo enlace WAN). Fuente:
+// «MikroTik wired interface compatibility», manual.mikrotik.com/docs/7.25/wired-connections/
+// (RouterOS 7.25), traida por traer-cisco-huawei.yml (rama fuente/mikrotik-compat-2026-10-13,
+// corrida 38440589580) y extraida de sus tablas «1G SFP», «10G SFP+/25G SFP28» y «100G QSFP28»
+// por programa, no a ojo. Solo las filas de los equipos de este catalogo y los modulos que el
+// dimensionador puede recomendar. true es «+», false es «-» (no funciona) y un texto es «+»
+// con la nota de ese numero. La matriz dice que modulo FUNCIONA en que equipo: es lo que separa
+// un «compatible» de un «se pide». Un equipo que no figura (hEX lite, hEX PoE lite, hEX,
+// hEX refresh, RB1100, CCR2004-16G-2S+PC) no recibe modulo recomendado: va «consultar».
+const COMPATIBILIDAD = {
+  'hEX S':                { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': false, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true },
+  'hEX S (2025)':         { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': false, 'S+85DLC03D': '14', 'S+31DLC10D': '14', 'XS+31LC10D': '14', 'XS+85LC01D': '14' },
+  'hEX PoE/PowerBox Pro': { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': false, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true },
+  'L009':                 { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': false, 'S+85DLC03D': '14', 'S+31DLC10D': '14', 'XS+31LC10D': '14', 'XS+85LC01D': '14' },
+  'RB4011':               { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': true, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true },
+  'RB5009':               { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': true, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true },
+  'CCR2004-16G-2S+':      { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': true, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true },
+  'CCR2004-1G-12S+2XS':   { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': '11', 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true },
+  'CCR2116-12G-4S+':      { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': true, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true },
+  'CCR2216-1G-12XS-2XQ':  { 'S-RJ01': true, 'S-85DLC05D': true, 'S-31DLC20D': true, 'S+RJ10': true, 'S+85DLC03D': true, 'S+31DLC10D': true, 'XS+31LC10D': true, 'XS+85LC01D': true, 'XQ+31LC10D': true, 'XQ+85MP01D': true },
+};
+// Notas de la matriz que tocan a estos equipos, literales.
+const NOTAS_COMPAT = {
+  '11': 'CCR2004-1G-12S+2XS - supports up to 6 simultaneous S+RJ10 modules.',
+  '14': '10G SFP+/25G SFP28 modules - device SFP supports up to 2.5G rate, manual speed setting is required to work.',
+  pasiva: 'We do not recommend using S+RJ10 in passive cooling devices without additional cooling, as they have relatively high power consumption and in turn high operating temperature.',
+  rj01: 'S-RJ01 en el hEX S: la tabla de velocidades marca 1000 «+» y 100 y 10 «-».',
+};
+// Fila de la matriz por «Product code». La matriz nombra familias (RB5009, L009): MikroTik
+// las usa para todos sus modelos, y asi se leen.
+const FILA_COMPAT = {
+  'RB760iGS': 'hEX S', 'E60iUGS': 'hEX S (2025)', 'RB960PGS': 'hEX PoE/PowerBox Pro', 'RB960PGS-PB': 'hEX PoE/PowerBox Pro',
+  'L009UiGS-2HaxD-IN': 'L009', 'L009UiGS-RM': 'L009', 'RB4011iGS+RM': 'RB4011',
+  'RB5009UG+S+IN': 'RB5009', 'RB5009UPr+S+IN': 'RB5009', 'RB5009UPr+S+OUT': 'RB5009',
+  'CCR2004-16G-2S+': 'CCR2004-16G-2S+', 'CCR2004-1G-12S+2XS': 'CCR2004-1G-12S+2XS',
+  'CCR2116-12G-4S+': 'CCR2116-12G-4S+', 'CCR2216-1G-12XS-2XQ': 'CCR2216-1G-12XS-2XQ',
+};
+
 const celda = (tabla, bytes) => (tabla && tabla[bytes] ? tabla[bytes][1] : null);
 const money = (n) => '~ $' + n.toLocaleString('en-US', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 });
 
@@ -148,6 +186,9 @@ const MODELS = MANO.map((m) => {
   const ipsec1 = f.ipsec && f.ipsec.uno['aes128-sha1'];
   return {
     ...out,
+    puertos: f.puertos || null,
+    refrigeracion: f.refrigeracion || null,
+    compat: FILA_COMPAT[m.codigo] || null,
     cpu: `${f.cpu} · ${f.mhz}`,
     arq: f.arq,
     fwd: celda(f.ruteo.fastpath, 1518),
@@ -164,7 +205,12 @@ const MODELS = MANO.map((m) => {
 // relee y cambia), el arranque lo dice en vez de servir cifras de un equipo que ya no casa.
 const DESANCLADOS = MANO.filter((m) => m.codigo && FICHAS[m.codigo]).flatMap((m) => {
   const f = FICHAS[m.codigo];
-  return [['cores', m.cores, f.nucleos], ['ram', m.ram, f.ram], ['lvl', m.lvl, f.lvl]]
+  const p = f.puertos || {};
+  const jaulas = m.cages || {};
+  return [['cores', m.cores, f.nucleos], ['ram', m.ram, f.ram], ['lvl', m.lvl, f.lvl],
+    // Las jaulas del BOM (escritas a mano) contra los puertos que transcribe la ficha.
+    ['jaulas SFP', jaulas.ge || 0, p.sfp || 0], ['jaulas SFP+', jaulas.sfp10 || 0, p.sfp10 || 0],
+    ['jaulas SFP28', jaulas.sfp25 || 0, p.sfp25 || 0], ['jaulas QSFP28', jaulas.qsfp100 || 0, p.qsfp100 || 0]]
     .filter(([, a, b]) => a !== b).map(([c, a, b]) => `${m.id}: ${c} ${a} en el catálogo, ${b} en la ficha`);
 });
 const SIN_FICHA = MANO.filter((m) => m.codigo && !FICHAS[m.codigo]).map((m) => m.id);
@@ -179,10 +225,12 @@ const OPTICS = {
     {sku:'S-55DLC80D',  price:39, d:'SFP 1,25G · 1550 nm · monomodo · LC dúplex · 80 km'},
     {sku:'S-3553LC20D', price:79, d:'SFP 1,25G BiDi · 1310/1550 nm · monomodo · LC simplex · 20 km (va en par con su complementario)'},
     {sku:'S-RJ01',      price:29, d:'SFP 1,25G cobre · RJ45 · 100 m'},
+    {sku:'HS-31DLC20D', price:29, d:'SFP 1G/2,5G · 1310 nm · monomodo · LC dúplex · 20 km (aún no figura en la matriz de compatibilidad)'},
+    {sku:'HS-85DLC05D', price:22, d:'SFP 1G/2,5G · 850 nm · multimodo · LC dúplex · 550 m (aún no figura en la matriz de compatibilidad)'},
   ],
   sfp10: [
     {sku:'S+85DLC03D', price:59, d:'SFP+ 1G/10G · 850 nm · multimodo · LC dúplex · 300 m'},
-    {sku:'S+31DLC10D', price:69, d:'SFP+ (la página de producto no detalla longitud de onda ni alcance)'},
+    {sku:'S+31DLC10D', price:69, d:'SFP+ 10G · 1310 nm · monomodo · LC dúplex · 10 km'},
     {sku:'S+RJ10',     price:65, d:'SFP+ cobre · RJ45 · 10M a 10G · hasta 30 m a 10 Gbps'},
     {sku:'S+AO0005',   price:49, d:'Cable óptico activo SFP+ a SFP+ · 1G/10G · 5 m'},
     {sku:'XS+DA0001',  price:29, d:'Cable directo SFP/SFP+/SFP28 · 1G/10G/25G · 1 m'},
@@ -226,6 +274,6 @@ const SUPPORT = {
 };
 
 module.exports = {
-  MODELS, OPTICS, ACCESS_POINTS, SUPPORT,
+  MODELS, OPTICS, ACCESS_POINTS, SUPPORT, COMPATIBILIDAD, NOTAS_COMPAT,
   LICENSE_LEVELS, BGP_RAM, DESANCLADOS, SIN_FICHA,
 };
