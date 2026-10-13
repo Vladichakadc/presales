@@ -295,6 +295,13 @@ const MODELS = [
 {id:'NE8000 F1A', cls:'WAN', ser:'NE8000 F', fam:'Agregación fija de alta densidad, 1U', cap:2400000, mpps:453, lan:0, poe:0, wan:0, wifi:0,
  ports:'1U · 1200 G/U, la mayor densidad por unidad de rack · fuentes 1+1 · 325 W típicos', optics:['qsfp100','sfp25','sfp10'], parts:['RACK','CONSOLE'],
  redund:true, psu:{watts:325, tipo:'AC/DC', texto:'Fuentes 1+1 · 325 W típicos.'}},
+// NE8000 F1A-C (2026-10-12): «NetEngine 8000 F1A-C Datasheet» (e.huawei.com, pagina de la familia NE8000,
+// traida por traer-cisco-huawei.yml). Misma conmutacion que el F1A (2,4 Tbps) en una caja de 1U de 420 mm
+// con hasta 56 puertos combinables. La ficha NO publica Mpps ni redundancia de fuentes: `mpps` en null y
+// `redund` sin declarar. El titulo del PDF es una plantilla («NetEngine 8000 M4»); el texto nombra el F1A-C.
+{id:'NE8000 F1A-C', cls:'WAN', ser:'NE8000 F', fam:'Agregación fija de alta densidad, 1U, hasta 56 puertos', cap:2400000, mpps:null, lan:0, poe:0, wan:0, wifi:0,
+ ports:'1U · 420 mm · 28 x 10GE/GE + 8 x 25GE/10GE/GE + 12 x 25GE/10GE + 8 x 100GE, hasta 56 puertos combinables · 325 W típicos', optics:['qsfp100','sfp25','sfp10'], parts:['RACK','CONSOLE'],
+ psu:{watts:325, tipo:'AC/DC', texto:'AC 90–290 V, DC –40 a –72 V o HVDC 190–290 V; 325 W típicos (ficha NE8000 F1A-C). La ficha no declara fuentes redundantes.'}},
 // NE8000 M8 y F8 (2026-10-02): capacidad leída de su ficha oficial en e.huawei.com (PDF generado
 // el 2025-06-12 el del M8 y el 2025-02-27 el del F8, los dos «© 2022»), traída por
 // `traer-cisco-huawei.yml` a la rama de transporte. La identidad se comprobó por el contenido y
@@ -614,6 +621,10 @@ Object.assign(FICHAS, {
     [['Capacidad por ranura', '1T/2T/9,6T/14,4T']],
     [['Ranuras de servicio', '16'], ['Dimensiones (An × Fo × Al)', '442 × 1033 × 1436 mm (32,3U)'], ['Peso sin embalaje', '244,8 kg']], []),
 });
+FICHAS['NE8000 F1A-C'] = NE('NetEngine 8000 F1A-C Datasheet',
+  [['Capacidad de conmutación', '2,4 Tbps'], ['Capacidad máxima de puertos', '1,2 Tbps']],
+  [['Tipos de interfaz', '100GE/50GE/40GE/25GE/10GE/GE'], ['Puertos', '28 x 10GE/GE, 8 x 25GE/10GE/GE, 12 x 25GE/10GE y 8 x 100GE (los 100GE admiten 4 x 25GE o 4 x 10GE por ruptura); hasta 56 puertos'], ['Dimensiones (Al × An × Fo)', '43,6 × 442 × 420 mm (1U)']],
+  [['Tensión', 'DC –40 a –72 V; AC 90–290 V; HVDC 190–290 V'], ['Reloj', 'Ethernet síncrono, 1588v2, G.8275.1, G.8275.2, SMPTE-2059'], ['Temperatura de operación (largo plazo)', '–5 °C a 45 °C']]);
 for (const m of MODELS) if (FICHAS[m.id]) m.ficha = FICHAS[m.id];
 
 module.exports = { OPTICS, OPTIC_LABEL, PARTS, MODELS, HICARE };
