@@ -1,0 +1,17 @@
+[
+  {
+    "archivo": "fortinet-rn-7.6.0.pdf",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/51fcbb4f-33ff-11ef-bfe5-fa163e15d75b/fortios-v7.6.0-release-notes.pdf",
+        "status": 200,
+        "bytes": 1338345,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
