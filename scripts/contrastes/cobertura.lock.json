@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "2be5c0c",
+  "commit": "b8e3084",
   "fecha": "2026-10-13"
  },
  "umbralRozado": 25,
@@ -146,6 +146,13 @@
    "pct": 76
   },
   {
+   "modulo": "mikrotik-motor.js",
+   "estado": "ejercitado",
+   "total": 78,
+   "usadas": 59,
+   "pct": 76
+  },
+  {
    "modulo": "huawei-motor.js",
    "estado": "ejercitado",
    "total": 32,
@@ -155,8 +162,8 @@
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
-   "total": 280,
-   "usadas": 222,
+   "total": 281,
+   "usadas": 223,
    "pct": 79
   },
   {
@@ -178,13 +185,6 @@
    "estado": "ejercitado",
    "total": 5,
    "usadas": 4,
-   "pct": 80
-  },
-  {
-   "modulo": "mikrotik-motor.js",
-   "estado": "ejercitado",
-   "total": 60,
-   "usadas": 48,
    "pct": 80
   },
   {
