@@ -389,6 +389,20 @@ jobs:
               { archivo: 'aruba-psnow-a00109847enw.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
                 'https://www.hpe.com/psnow/doc/a00109847enw',
               ] },
+              // La pagina (corrida 38422143556) es la data sheet «HPE Networking EdgeConnect» y enlaza
+              // esta descarga; la URL se copio de ahi.
+              { archivo: 'aruba-ec-data-sheet.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+                'https://www.hpe.com/psnow/downloadDoc/HPE%20Networking%20EdgeConnect-a00109847enw.pdf?id=a00109847enw&isFutureVersion=true&ver=&form=false&preview=false&print=&hf=regular&r=&section=&prelaunchSection=&softrollSection=&deepLink=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&originalObjectName=&isLinearized=false&contentDisposition=attachment',
+              ] },
+              // HUAWEI A816 E: su pagina de documentos responde 200 pero ya no enlaza el material de
+              // la ficha (corrida 38422143556); el PDF citado da 404. Se guarda para leer que
+              // enlaza ahora, sin exigir el identificador viejo.
+              { archivo: 'huawei-a816e-documento-hoy.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+                'https://e.huawei.com/en/documents/products/enterprise-network/56584a8272b44e61be416b1afc0eb241',
+              ] },
+              { archivo: 'huawei-a800-producto.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+                'https://e.huawei.com/en/products/routers/netengine-a800',
+              ] },
               // 2026-10-06 (octava): ARUBA, la pagina de IDS/IPS del Orchestrator. La auditoria A1
               // aparto el EC-XS de Dynamic Threat Defense con esta documentacion, y la spec sheet
               // vigente del EC-XS (a00110177ENW Rev. 3) publica capacidad IDS/IPS: se lee entera
