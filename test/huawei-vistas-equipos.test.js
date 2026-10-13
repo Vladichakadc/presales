@@ -173,5 +173,5 @@ test('la página de Huawei carga el mapa, lo pasa a la ficha y lo manda al Excel
   const pag = fs.readFileSync(path.join(RAIZ, 'public/js/dimensionador-huawei-netengine.js'), 'utf8');
   assert.ok(pag.includes("fetch('/data/huawei-vistas-equipos.json')"), 'la página no carga el mapa de figuras');
   assert.match(pag, /vistas: VISTAS/, 'la página no pasa las figuras a FICHA.render');
-  assert.match(pag, /fotos:\{modelo:m\.id, front:v\.front, rear:v\.rear \|\| null/, 'el Excel del BOM no lleva las fotos');
+  assert.match(pag, /fotos:\{modelo:m\.id, origen:'[^']*Huawei', front:v\.front, rear:v\.rear \|\| null/, 'el Excel del BOM no lleva las fotos (con su origen: Huawei, no HPE)');
 });
