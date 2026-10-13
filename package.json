@@ -17,6 +17,7 @@
     "cps": "node scripts/importar-cps.js",
     "huawei": "node scripts/importar-huawei.js",
     "juniper": "node scripts/importar-juniper.js",
+    "mikrotik": "node scripts/importar-mikrotik.js",
     "lista-aruba": "node scripts/importar-lista-aruba.js",
     "propuesta": "node scripts/importar-propuesta.js",
     "vigia": "node scripts/vigia-fuentes.js",

@@ -101,6 +101,7 @@ npm run contraste -- nokia-sr --base=http://127.0.0.1:4000          # un caso de
 # Importadores: anclan contra lo ya verificado antes de escribir en legacyData/
 npm run cps         # cps de Fortinet desde el Product Matrix (ancla contra sess)
 npm run juniper     # cifras de la línea SRX
+npm run mikrotik    # matriz de pruebas de las fichas de MikroTik (carpeta de HTML traída; --check, --dry)
 npm run huawei      # cifras y fin de venta de Huawei (--check, --plantilla, --eol, --force)
 npm run skus        # referencias de pedido de Fortinet desde la price list
 npm run lista-aruba # lista del distribuidor de Aruba: dry-run salvo --aplicar
@@ -402,6 +403,15 @@ Módulos compartidos:
   Meraki MX, ASR 1000); en SD-WAN un modelo sin cifra propia cae a IPsec y la lista lo marca.
 - **Juniper**: SRX y Session Smart Router no se comparan. `fw` (paquetes grandes) se muestra y no
   dimensiona; manda la capa de inspección (`CAPAS`).
+- **MikroTik** (`mikrotik-motor.js`, `legacyData/mikrotikPruebas.js` generado por `npm run
+  mikrotik`). Se dimensiona con la **celda** de la tabla de pruebas de cada ficha oficial: la fila
+  la fijan las funciones (firewall con FastTrack = fast path, que es un techo; sin FastTrack = 25
+  reglas de filtro; colas; L3HW solo en CCR2116/2216), la columna el perfil de tráfico (1518/512/64
+  B), IPsec 1 túnel en un sitio y 256 en un hub, por cifrado. La prueba es «all port» (suma de
+  puertos): la necesidad va ×2 y aparte el caudal por sentido contra `wanMax`. `fwd`/`fw`/`ipsec`/
+  precio se **derivan** de la ficha, nunca se escriben a mano. WireGuard no tiene cifra oficial y
+  no se estima; la RAM por feed BGP es un supuesto declarado; PoE solo cuenta donde la ficha da
+  vatios. Niveles de licencia de la tabla oficial (el 5 no limita OpenVPN; CHR no tiene niveles).
 - **Nokia**: dos dimensionadores — 7750 SR / 7250 IXR (equipo, por plataforma; chasis modulares
   apartados por densidad) y 7220 IXR (fabric). Capacidad en Gbps; `aMbps()` es el único que lo sabe.
 - **Starlink LEO**: módulo canónico integrado byte a byte (`starlink-leo-dimensionador/` es la línea

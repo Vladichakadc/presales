@@ -204,24 +204,31 @@ module.exports = [
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7250 IXR-R6dl',         seg:'Agregación modular',      spec:'{cap} · 6 slots · 4x400GE · interfaces TDM heredadas · 7U', elp:'Consultar',elpN:0},
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-1x-48D',        seg:'PE / Edge alta densidad', spec:'{cap} · 48x400GE QSFP-DD o 192x100GE · 2U',                  elp:'Consultar',elpN:0},
   {vendor:'Nokia',  color:'#124191', model:'Nokia 7750 SR-1x-92S',        seg:'PE / Edge multiservicio', spec:'{cap} · 12x400GE + 80x100GE SFP-DD · 2U',                    elp:'Consultar',elpN:0},
-  // MikroTik. Faltaba entero: era el unico de los ocho fabricantes del portal ausente del
-  // cotizador, pese a ser el que mejor dato tiene —los 15 modelos traen precio de lista y
-  // cifras de forwarding e IPsec verificadas en mikrotik.js— y precisamente el que mas se
-  // cotiza por precio. Las cifras salen de MODELS en legacyData/mikrotik.js: misma fuente,
-  // sin una segunda lista que se desincronice.
-  {vendor:'MikroTik',color:'#C8102E',model:'hEX lite RB750r2',            seg:'Hogar / Básico',                spec:'{fwd} FWD · IPsec {ipsec} · 5x FE · línea anterior', elp:'~ $29',    elpN:29},
-  {vendor:'MikroTik',color:'#C8102E',model:'hEX RB750Gr3',                seg:'SOHO / Home',                   spec:'{fwd} FWD · IPsec {ipsec} · 5x GE · PoE-out pasivo', elp:'~ $59',    elpN:59},
-  {vendor:'MikroTik',color:'#C8102E',model:'hEX S RB760iGS',              seg:'SOHO + SFP',                    spec:'{fwd} FWD · IPsec {ipsec} · 5x GE + 1x SFP',       elp:'~ $79',    elpN:79},
-  {vendor:'MikroTik',color:'#C8102E',model:'L009UiGS-2HaxD',              seg:'Sucursal peq + Wi-Fi 6',        spec:'{fwd} FWD · IPsec {ipsec} · 8x GE + 2.5G + SFP · Wi-Fi 6', elp:'~ $125',   elpN:125},
-  {vendor:'MikroTik',color:'#C8102E',model:'RB4011iGS+',                  seg:'Sucursal pequeña',              spec:'{fwd} FWD · IPsec {ipsec} · 10x GE + 1x SFP+',   elp:'~ $200',   elpN:200},
-  {vendor:'MikroTik',color:'#C8102E',model:'RB4011iGS+RM',                seg:'Sucursal pequeña rackmount',    spec:'{fwd} FWD · IPsec {ipsec} · 10x GE + SFP+ · 1U', elp:'~ $215',   elpN:215},
-  {vendor:'MikroTik',color:'#C8102E',model:'RB5009UG+S+IN',               seg:'Sucursal mediana',              spec:'{fwd} FWD · IPsec {ipsec} · 7x GE + 2.5G + SFP+', elp:'~ $190',   elpN:190},
-  {vendor:'MikroTik',color:'#C8102E',model:'RB5009UPr+S+IN',              seg:'Sucursal mediana + PoE-out',    spec:'{fwd} FWD · IPsec {ipsec} · 7x GE PoE-out 802.3af/at', elp:'~ $239',   elpN:239},
-  {vendor:'MikroTik',color:'#C8102E',model:'CCR2004-16G-2S+',             seg:'Hub campus',                    spec:'{fwd} FWD · IPsec {ipsec} · 16x GE + 2x SFP+ · 4 GB', elp:'~ $659',   elpN:659},
-  {vendor:'MikroTik',color:'#C8102E',model:'CCR2004-1G-12S+2XS',          seg:'Sucursal gde / Agregación',     spec:'{fwd} FWD · IPsec {ipsec} · 12x SFP+ + 2x 25G · fuente redundante', elp:'~ $699',   elpN:699},
-  {vendor:'MikroTik',color:'#C8102E',model:'CCR2116-12G-4S+',             seg:'Hub regional / DC Edge',        spec:'{fwd} FWD · IPsec {ipsec} · 12x GE + 4x SFP+ · 16 GB', elp:'~ $999',   elpN:999},
-  {vendor:'MikroTik',color:'#C8102E',model:'CCR2216-1G-12XS-2XQ',         seg:'Core WAN / ISP',                spec:'{fwd} FWD · IPsec {ipsec} · 12x 25G + 2x 100G · 16 GB', elp:'~ $5,999', elpN:5999},
-  {vendor:'MikroTik',color:'#C8102E',model:'CHR P1',                      seg:'Virtual — licencia 1 Gbps',     spec:'RouterOS CHR · tope 1 Gbps por interfaz · licencia perpetua', elp:'~ $45',    elpN:45},
-  {vendor:'MikroTik',color:'#C8102E',model:'CHR P10',                     seg:'Virtual — licencia 10 Gbps',    spec:'RouterOS CHR · tope 10 Gbps por interfaz · licencia perpetua', elp:'~ $95',    elpN:95},
-  {vendor:'MikroTik',color:'#C8102E',model:'CHR P-Unlimited',             seg:'Virtual — sin tope',            spec:'RouterOS CHR · sin límite de throughput · licencia perpetua', elp:'~ $250',   elpN:250},
+  // MikroTik. Las cifras ({fwd}, {ipsec}) salen de MODELS en legacyData/mikrotik.js, que las
+  // deriva de la matriz de pruebas de cada ficha oficial; el precio es el «Suggested price» de
+  // la misma ficha (2026-10-13). Un equipo cuya ficha no publica IPsec lo dice en vez de
+  // dejar un hueco sin cifra.
+  {vendor:'MikroTik',color:'#C8102E',model:'hEX lite RB750r2', seg:'Hogar / Básico', spec:'{fwd} FWD · sin IPsec publicado · 5x Fast Ethernet · línea anterior', elp:'~ $39.95', elpN:39.95},
+  {vendor:'MikroTik',color:'#C8102E',model:'hEX PoE lite RB750UPr2', seg:'Hogar / Básico + PoE-out', spec:'{fwd} FWD · sin IPsec publicado · 5x Fast Ethernet · PoE-out pasivo en ether2-ether5 (2 A en total)', elp:'~ $59.95', elpN:59.95},
+  {vendor:'MikroTik',color:'#C8102E',model:'hEX RB750Gr3', seg:'SOHO / Home', spec:'{fwd} FWD · IPsec {ipsec} · 5x GE · línea anterior', elp:'~ $59.95', elpN:59.95},
+  {vendor:'MikroTik',color:'#C8102E',model:'hEX E50UG', seg:'SOHO / Home (hEX refresh)', spec:'{fwd} FWD · IPsec {ipsec} · 5x GE', elp:'~ $59.95', elpN:59.95},
+  {vendor:'MikroTik',color:'#C8102E',model:'hEX S RB760iGS', seg:'SOHO + SFP', spec:'{fwd} FWD · IPsec {ipsec} · 5x GE + 1x SFP · PoE-out pasivo en ether5 (0,5 A)', elp:'~ $79', elpN:79},
+  {vendor:'MikroTik',color:'#C8102E',model:'hEX S E60iUGS', seg:'SOHO + SFP 2,5G (hEX S 2025)', spec:'{fwd} FWD · IPsec {ipsec} · 5x GE + 1x SFP (admite 2,5G) · PoE-out pasivo en ether5 (0,5 A)', elp:'~ $69', elpN:69},
+  {vendor:'MikroTik',color:'#C8102E',model:'hEX PoE RB960PGS', seg:'SOHO + PoE-out 802.3af/at', spec:'{fwd} FWD · sin IPsec publicado · 5x GE + 1x SFP · PoE-out 802.3af/at en ether2-ether5 (2 A en total)', elp:'~ $89', elpN:89},
+  {vendor:'MikroTik',color:'#C8102E',model:'PowerBox Pro RB960PGS-PB', seg:'Exterior + PoE-out 802.3af/at', spec:'{fwd} FWD · sin IPsec publicado · 5x GE + 1x SFP · PoE-out 802.3af/at en ether2-ether5 (2 A en total) · caja de exterior', elp:'~ $109', elpN:109},
+  {vendor:'MikroTik',color:'#C8102E',model:'L009UiGS-2HaxD', seg:'Sucursal pequeña + Wi-Fi 6', spec:'{fwd} FWD · sin IPsec publicado · 8x GE + 1x SFP (admite 2,5G) · Wi-Fi 6 a 2,4 GHz (AX600) · PoE-out pasivo en ether8 (1 A)', elp:'~ $129', elpN:129},
+  {vendor:'MikroTik',color:'#C8102E',model:'L009UiGS-RM', seg:'Sucursal pequeña rackmount', spec:'{fwd} FWD · sin IPsec publicado · 8x GE + 1x SFP (admite 2,5G) · PoE-out pasivo en ether8 (1 A) · rack', elp:'~ $119', elpN:119},
+  {vendor:'MikroTik',color:'#C8102E',model:'RB4011iGS+RM', seg:'Sucursal pequeña rackmount', spec:'{fwd} FWD · IPsec {ipsec} · 10x GE + 1x SFP+ · PoE-out pasivo en ether10 (0,6 A) · rack 1U', elp:'~ $219', elpN:219},
+  {vendor:'MikroTik',color:'#C8102E',model:'RB1100AHx4', seg:'Sucursal rackmount 13 GE', spec:'{fwd} FWD · IPsec {ipsec} · 13x GE · rack 1U', elp:'~ $329', elpN:329},
+  {vendor:'MikroTik',color:'#C8102E',model:'RB5009UG+S+IN', seg:'Sucursal mediana', spec:'{fwd} FWD · IPsec {ipsec} · 7x GE + 1x 2.5G + 1x SFP+', elp:'~ $219', elpN:219},
+  {vendor:'MikroTik',color:'#C8102E',model:'RB5009UPr+S+IN', seg:'Sucursal mediana + PoE-out', spec:'{fwd} FWD · IPsec {ipsec} · 7x GE + 1x 2.5G (PoE-out 802.3af/at en los 8) + 1x SFP+', elp:'~ $299', elpN:299},
+  {vendor:'MikroTik',color:'#C8102E',model:'RB5009UPr+S+OUT', seg:'Sucursal mediana exterior (IP66) + PoE-out', spec:'{fwd} FWD · IPsec {ipsec} · 7x GE + 1x 2.5G (PoE-out 802.3af/at en los 8) + 1x SFP+ · exterior IP66', elp:'~ $319', elpN:319},
+  {vendor:'MikroTik',color:'#C8102E',model:'CCR2004-16G-2S+', seg:'Hub campus', spec:'{fwd} FWD · IPsec {ipsec} · 16x GE + 2x SFP+ · 2 ranuras de fuente', elp:'~ $465', elpN:465},
+  {vendor:'MikroTik',color:'#C8102E',model:'CCR2004-16G-2S+PC', seg:'Hub campus sin ventiladores', spec:'{fwd} FWD · IPsec {ipsec} · 16x GE + 2x SFP+ · refrigeración pasiva', elp:'~ $465', elpN:465},
+  {vendor:'MikroTik',color:'#C8102E',model:'CCR2004-1G-12S+2XS', seg:'Sucursal grande / Agregación', spec:'{fwd} FWD · IPsec {ipsec} · 1x GE + 12x SFP+ + 2x SFP28 (25G)', elp:'~ $595', elpN:595},
+  {vendor:'MikroTik',color:'#C8102E',model:'CCR2116-12G-4S+', seg:'Hub regional / DC Edge', spec:'{fwd} FWD · IPsec {ipsec} · 13x GE + 4x SFP+ · 2 ranuras de fuente', elp:'~ $995', elpN:995},
+  {vendor:'MikroTik',color:'#C8102E',model:'CCR2216-1G-12XS-2XQ', seg:'Core WAN / ISP', spec:'{fwd} FWD · IPsec {ipsec} · 1x GE + 12x SFP28 (25G) + 2x QSFP28 (100G) · 2 ranuras de fuente', elp:'~ $2,795', elpN:2795},
+  {vendor:'MikroTik',color:'#C8102E',model:'CHR P1', seg:'Virtual — licencia perpetua 1 Gbps', spec:'RouterOS CHR · tope de licencia {fwd} por interfaz · licencia perpetua', elp:'~ $45', elpN:45},
+  {vendor:'MikroTik',color:'#C8102E',model:'CHR P10', seg:'Virtual — licencia perpetua 10 Gbps', spec:'RouterOS CHR · tope de licencia {fwd} por interfaz · licencia perpetua', elp:'~ $95', elpN:95},
+  {vendor:'MikroTik',color:'#C8102E',model:'CHR P-Unlimited', seg:'Virtual — sin límite de throughput', spec:'RouterOS CHR · sin tope de throughput · licencia perpetua', elp:'~ $250', elpN:250},
 ];

@@ -53,14 +53,14 @@ module.exports = {
     { v: 'Fortinet', model: 'FortiGate 90G', alt: 'FortiGate 120G ({cifra FW})' },
     { v: 'Juniper', model: 'SRX 345', alt: 'SRX 320 ({cifra FW})' },
     { v: 'Aruba', model: 'EC-M', alt: 'Gateway 9012 si la sucursal necesita LAN/WLAN integrados' },
-    { v: 'MikroTik', model: 'RB5009UG+S+IN', alt: 'RB4011iGS+ ({cifra}) o RB5009UPr+ con PoE-out' },
+    { v: 'MikroTik', model: 'RB5009UG+S+IN', alt: 'RB4011iGS+RM ({cifra}) o RB5009UPr+ con PoE-out' },
   ],
   branch_small: [
     { v: 'Huawei', model: 'NetEngine AR5710-S8T2X', alt: 'AR651W-8P ({cifra FWD})' },
     { v: 'Cisco', model: 'Catalyst 8200L', alt: 'ISR 1111-8P ({cifra})' },
     { v: 'Fortinet', model: 'FortiGate 60F', alt: 'FortiGate 80F' },
     { v: 'Juniper', model: 'SRX 320', alt: 'SRX 345 ({cifra})' },
-    { v: 'MikroTik', model: 'hEX RB750Gr3', alt: 'L009UiGS-2HaxD ({cifra} + Wi-Fi 6)' },
+    { v: 'MikroTik', model: 'hEX E50UG', alt: 'L009UiGS-2HaxD ({cifra} + Wi-Fi 6)' },
   ],
   core_router: [
     { v: 'Huawei', model: 'NetEngine NE8000 M8', alt: 'NE8000 M14 ({cifra})' },

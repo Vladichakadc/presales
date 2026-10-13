@@ -448,8 +448,9 @@ async function toDimensionadorFortinet() {
 }
 
 // MikroTik: ademas de modelos/opticas/soporte devuelve las constantes de dimensionamiento
-// (FastTrack, RAM por feed BGP, topes de licencia) para que la pagina no las duplique —
-// mikrotik.js es la unica fuente de verdad de la politica de sizing.
+// (RAM por feed BGP, topes de licencia) para que la pagina no las duplique — mikrotik.js es
+// la unica fuente de verdad de la politica de sizing. Desde el 2026-10-13 cada modelo trae su
+// matriz oficial de pruebas (`pruebas`) y el motor elige la celda; ya no hay factor FastTrack.
 async function toDimensionadorMikrotik() {
   const vendorIds = await vendorIdMap();
   const vendorId = vendorIds.mikrotik;
@@ -480,6 +481,7 @@ async function toDimensionadorMikrotik() {
       sku: p.model,
       hwModel: p.specs && p.specs.hwModel,
       poeDraw: p.specs && p.specs.poeDraw,
+      poeIn: p.specs && p.specs.poeIn,
       d: p.specSummary,
       price: p.priceNumeric,
     }));
@@ -491,7 +493,6 @@ async function toDimensionadorMikrotik() {
     accessPoints,
     support,
     sizing: {
-      fasttrack: mikrotikData.FASTTRACK_FACTOR,
       licenseLevels: mikrotikData.LICENSE_LEVELS,
       bgpRam: mikrotikData.BGP_RAM,
     },

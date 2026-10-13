@@ -377,6 +377,10 @@ async function seedCatalog() {
   // mikrotik.js manda sobre indexPR.mikrotik: aporta RAM, núcleos, nivel de licencia y
   // PoE, que es lo que realmente dimensiona en RouterOS. seedDimensionadorModels fusiona
   // por nombre exacto de modelo sobre las filas que ya creó seedIndexPR.
+  // El anclaje vivo de la matriz de pruebas (ver mikrotik.js): un modelo cuya ficha transcrita
+  // ya no casa con sus nucleos/RAM/nivel, o que no tiene ficha, se dice al arrancar.
+  for (const d of mikrotikData.DESANCLADOS) console.warn(`[seed] MikroTik desanclado de su ficha: ${d}`);
+  if (mikrotikData.SIN_FICHA.length) console.warn(`[seed] MikroTik sin ficha leida (cifras en null): ${mikrotikData.SIN_FICHA.join(', ')}`);
   const mt = await seedOpticsAndParts(vendorIds.mikrotik, mikrotikData.OPTICS, null, false);
   await seedDimensionadorModels(
     vendorIds.mikrotik,
@@ -396,7 +400,7 @@ async function seedCatalog() {
       where: { vendorId: vendorIds.mikrotik, model: ap.sku },
       defaults: {
         vendorId: vendorIds.mikrotik, model: ap.sku, category: 'ap',
-        specs: { hwModel: ap.model, poeDraw: ap.poeDraw },
+        specs: { hwModel: ap.model, poeDraw: ap.poeDraw, poeIn: ap.poeIn },
         specSummary: ap.d, priceDisplay: '~ $' + ap.price, priceNumeric: ap.price,
       },
     });

@@ -163,32 +163,43 @@ juniper:[
   {model:'SSR1400',ser:'SSR 1000',seg:'DC / Campus grande',ports:'10/25GE en NIC',use:'SD-WAN sin tuneles, hub regional'},
 ],
 // ── MikroTik ──────────────────────────────────────────────────────────────────
-// Las cifras (forwarding, IPsec) las trae `mikrotik.js`, verificadas contra los datasheets
-// oficiales de mikrotik.com (2024-2025). RouterOS v7.x en todos los equipos actuales. ELP
-// orientativo USD lista pública.
+// Las cifras (ruteo, IPsec) y el precio («Suggested price») salen de las fichas oficiales de
+// mikrotik.com, transcritas por `npm run mikrotik` y derivadas en `mikrotik.js` (2026-10-13).
+// Esta lista solo lleva la prosa del portal; se genero desde MODELS para no desincronizarse.
 mikrotik:[
-  // ── hEX / RB (SOHO / Home) ──
-  {model:'hEX RB750Gr3',ser:'hEX',seg:'SOHO / Home',sdwan:'CHR/OVPN',ports:'5x GE',elp:'~ $59'},
-  {model:'hEX S RB760iGS',ser:'hEX',seg:'SOHO + SFP',sdwan:'CHR/OVPN',ports:'5x GE + 1x SFP',elp:'~ $79'},
-  {model:'hEX lite RB750r2',ser:'hEX',seg:'Hogar / Básico',sdwan:'—',ports:'5x FE',elp:'~ $29'},
-  {model:'L009UiGS-2HaxD',ser:'L009',seg:'SOHO / Sucursal peq + Wi-Fi 6',sdwan:'WireGuard / OVPN',ports:'8x GE + 1x 2.5G + 1x SFP + Wi-Fi 6',elp:'~ $125'},
-  // ── RB4011 (Sucursal Pequeña) ──
-  {model:'RB4011iGS+',ser:'RB4011',seg:'Sucursal pequeña',sdwan:'CHR/OVPN',ports:'10x GE + 1x SFP+',elp:'~ $200'},
-  {model:'RB4011iGS+RM',ser:'RB4011',seg:'Sucursal pequeña rackmount',sdwan:'CHR/OVPN',ports:'10x GE + 1x SFP+',elp:'~ $215'},
-  // ── RB5009 (Sucursal Mediana) ──
-  {model:'RB5009UG+S+IN',ser:'RB5009',seg:'Sucursal mediana',sdwan:'WireGuard nativo',ports:'7x GE + 1x 2.5G + 1x SFP+',elp:'~ $190'},
-  {model:'RB5009UPr+S+IN',ser:'RB5009',seg:'Sucursal mediana + PoE-out',sdwan:'WireGuard nativo',ports:'7x GE PoE-out + 1x 2.5G + 1x SFP+',elp:'~ $239'},
-  // ── CCR2004 (Sucursal Grande / Hub) ──
-  {model:'CCR2004-1G-12S+2XS',ser:'CCR2004',seg:'Sucursal grande / Agregación',sdwan:'WireGuard / OVPN',ports:'1x GE + 12x SFP+ + 2x SFP28 (25G)',elp:'~ $699'},
-  {model:'CCR2004-16G-2S+',ser:'CCR2004',seg:'Hub campus',sdwan:'WireGuard / OVPN',ports:'16x GE + 2x SFP+',elp:'~ $659'},
-  // ── CCR2116 (Hub Regional) ──
-  {model:'CCR2116-12G-4S+',ser:'CCR2116',seg:'Hub regional / DC Edge',sdwan:'WireGuard / OVPN / CAPsMAN',ports:'12x GE + 4x SFP+',elp:'~ $999'},
-  // ── CCR2216 (Core WAN) ──
-  {model:'CCR2216-1G-12XS-2XQ',ser:'CCR2216',seg:'Core WAN / ISP',sdwan:'WireGuard / BGP ECMP',ports:'1x GE mgmt + 12x 25GE (SFP28) + 2x 100GE (QSFP28)',elp:'~ $5,999'},
-  // ── CHR (RouterOS Virtual) ──
-  {model:'CHR P1',ser:'CHR',seg:'Virtual — licencia perpetua 1 Gbps',sdwan:'WireGuard / OVPN / L2TP',ports:'ilimitadas vNIC (cap. 1 Gbps)',elp:'~ $45'},
-  {model:'CHR P10',ser:'CHR',seg:'Virtual — licencia perpetua 10 Gbps',sdwan:'WireGuard / OVPN / L2TP',ports:'ilimitadas vNIC (cap. 10 Gbps)',elp:'~ $95'},
-  {model:'CHR P-Unlimited',ser:'CHR',seg:'Virtual — sin límite de throughput',sdwan:'WireGuard / OVPN / L2TP',ports:'ilimitadas vNIC (sin cap.)',elp:'~ $250'},
+  // ── hEX ──
+  {model:'hEX lite RB750r2',ser:'hEX',seg:'Hogar / Básico',sdwan:'—',ports:'5x FE (100 Mbps)',elp:'~ $39.95'},
+  {model:'hEX PoE lite RB750UPr2',ser:'hEX',seg:'Hogar / Básico + PoE-out',sdwan:'—',ports:'5x FE (100 Mbps) · PoE-out pasivo en ether2-ether5 (2 A en total)',elp:'~ $59.95'},
+  {model:'hEX RB750Gr3',ser:'hEX',seg:'SOHO / Home',sdwan:'OVPN / WireGuard (software)',ports:'5x GE',elp:'~ $59.95'},
+  {model:'hEX E50UG',ser:'hEX',seg:'SOHO / Home (hEX refresh)',sdwan:'OVPN / WireGuard (software)',ports:'5x GE',elp:'~ $59.95'},
+  {model:'hEX S RB760iGS',ser:'hEX',seg:'SOHO + SFP',sdwan:'OVPN / WireGuard (software)',ports:'5x GE + 1x SFP · PoE-out pasivo en ether5 (0,5 A)',elp:'~ $79'},
+  {model:'hEX S E60iUGS',ser:'hEX',seg:'SOHO + SFP 2,5G (hEX S 2025)',sdwan:'OVPN / WireGuard (software)',ports:'5x GE + 1x SFP (admite 2,5G) · PoE-out pasivo en ether5 (0,5 A)',elp:'~ $69'},
+  {model:'hEX PoE RB960PGS',ser:'hEX',seg:'SOHO + PoE-out 802.3af/at',sdwan:'OVPN / WireGuard (software)',ports:'5x GE + 1x SFP · PoE-out 802.3af/at en ether2-ether5 (2 A en total)',elp:'~ $89'},
+  // ── PowerBox ──
+  {model:'PowerBox Pro RB960PGS-PB',ser:'PowerBox',seg:'Exterior + PoE-out 802.3af/at',sdwan:'OVPN / WireGuard (software)',ports:'5x GE + 1x SFP · PoE-out 802.3af/at en ether2-ether5 (2 A en total) · caja de exterior',elp:'~ $109'},
+  // ── L009 ──
+  {model:'L009UiGS-2HaxD',ser:'L009',seg:'Sucursal pequeña + Wi-Fi 6',sdwan:'OVPN / WireGuard (software)',ports:'8x GE + 1x SFP (admite 2,5G) · Wi-Fi 6 a 2,4 GHz (AX600) · PoE-out pasivo en ether8 (1 A)',elp:'~ $129'},
+  {model:'L009UiGS-RM',ser:'L009',seg:'Sucursal pequeña rackmount',sdwan:'OVPN / WireGuard (software)',ports:'8x GE + 1x SFP (admite 2,5G) · PoE-out pasivo en ether8 (1 A) · rack',elp:'~ $119'},
+  // ── RB4011 ──
+  {model:'RB4011iGS+RM',ser:'RB4011',seg:'Sucursal pequeña rackmount',sdwan:'IPsec acelerado / OVPN',ports:'10x GE + 1x SFP+ · PoE-out pasivo en ether10 (0,6 A) · rack 1U',elp:'~ $219'},
+  // ── RB1100 ──
+  {model:'RB1100AHx4',ser:'RB1100',seg:'Sucursal rackmount 13 GE',sdwan:'IPsec acelerado / OVPN',ports:'13x GE · rack 1U',elp:'~ $329'},
+  // ── RB5009 ──
+  {model:'RB5009UG+S+IN',ser:'RB5009',seg:'Sucursal mediana',sdwan:'IPsec acelerado / WireGuard',ports:'7x GE + 1x 2.5G + 1x SFP+',elp:'~ $219'},
+  {model:'RB5009UPr+S+IN',ser:'RB5009',seg:'Sucursal mediana + PoE-out',sdwan:'IPsec acelerado / WireGuard',ports:'7x GE + 1x 2.5G (PoE-out 802.3af/at en los 8) + 1x SFP+',elp:'~ $299'},
+  {model:'RB5009UPr+S+OUT',ser:'RB5009',seg:'Sucursal mediana exterior (IP66) + PoE-out',sdwan:'IPsec acelerado / WireGuard',ports:'7x GE + 1x 2.5G (PoE-out 802.3af/at en los 8) + 1x SFP+ · exterior IP66',elp:'~ $319'},
+  // ── CCR2004 ──
+  {model:'CCR2004-16G-2S+',ser:'CCR2004',seg:'Hub campus',sdwan:'IPsec acelerado / WireGuard',ports:'16x GE + 2x SFP+ · 2 ranuras de fuente',elp:'~ $465'},
+  {model:'CCR2004-16G-2S+PC',ser:'CCR2004',seg:'Hub campus sin ventiladores',sdwan:'IPsec acelerado / WireGuard',ports:'16x GE + 2x SFP+ · refrigeración pasiva',elp:'~ $465'},
+  {model:'CCR2004-1G-12S+2XS',ser:'CCR2004',seg:'Sucursal grande / Agregación',sdwan:'IPsec acelerado / WireGuard',ports:'1x GE + 12x SFP+ + 2x SFP28 (25G)',elp:'~ $595'},
+  // ── CCR2116 ──
+  {model:'CCR2116-12G-4S+',ser:'CCR2116',seg:'Hub regional / DC Edge',sdwan:'IPsec acelerado / L3HW',ports:'13x GE + 4x SFP+ · 2 ranuras de fuente',elp:'~ $995'},
+  // ── CCR2216 ──
+  {model:'CCR2216-1G-12XS-2XQ',ser:'CCR2216',seg:'Core WAN / ISP',sdwan:'IPsec acelerado / L3HW / BGP ECMP',ports:'1x GE + 12x SFP28 (25G) + 2x QSFP28 (100G) · 2 ranuras de fuente',elp:'~ $2,795'},
+  // ── CHR ──
+  {model:'CHR P1',ser:'CHR',seg:'Virtual — licencia perpetua 1 Gbps',sdwan:'WireGuard / OVPN / L2TP',ports:'vNIC ilimitadas · tope de 1 Gbps de subida por interfaz',elp:'~ $45'},
+  {model:'CHR P10',ser:'CHR',seg:'Virtual — licencia perpetua 10 Gbps',sdwan:'WireGuard / OVPN / L2TP',ports:'vNIC ilimitadas · tope de 10 Gbps de subida por interfaz',elp:'~ $95'},
+  {model:'CHR P-Unlimited',ser:'CHR',seg:'Virtual — sin límite de throughput',sdwan:'WireGuard / OVPN / L2TP',ports:'vNIC ilimitadas · sin tope de throughput',elp:'~ $250'},
 ],
 aruba:[
   {model:'EC-XS',ser:'EdgeConnect',seg:'Sucursal peq / Oficina remota',fwd:1000,ipsec:0,sdwan:'Foundation/Advanced + Boost',ports:'4x RJ45 10/100/1000 LAN/WAN + 2x RJ45 10/100/1000 gestión + serie RJ-45',elp:'Consultar'},

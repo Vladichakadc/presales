@@ -40,8 +40,12 @@ const BASE_LINEA = [
     recomendado: 'FortiGate 50G', capa: 'SSL Inspection', fabricantes: 1 },
   { n: 'TLS 20 Gbps — la gama alta responde sin caer a otra capa', bw: '20000', perfil: 'ssl',
     recomendado: 'FortiGate 3500F', capa: 'SSL Inspection', fabricantes: 1 },
+  // 2026-10-13: era el RB4011iGS+ con 5,6 Gbps. Ese equipo salio del catalogo (sin ficha
+  // oficial) y el RM paso a su cifra de la ficha (9,8 Gbps de fast path): el mas pequeno que
+  // cumple los 5,2 Gbps pedidos es ahora el Gateway 9012. Lo que esta fila controla —que con
+  // reenvio compiten los siete fabricantes— no cambio.
   { n: 'control · reenvío 2 Gbps — siguen compitiendo los siete', bw: '2000', perfil: 'fwd',
-    recomendado: 'RB4011iGS+', capa: 'Forwarding', fabricantes: 7 },
+    recomendado: 'Gateway 9012', capa: 'Firewall', fabricantes: 7 },
 ];
 
 module.exports = {

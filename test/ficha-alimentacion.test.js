@@ -184,7 +184,13 @@ test('el cuarto estado se pinta distinto de si, de no y de «no lo dice»', () =
 // existian.
 test('MikroTik: varias entradas de alimentacion no son doble fuente, y el CHR no tiene ninguna', () => {
   const { MODELS } = require('../server/seed/legacyData/mikrotik.js');
-  assert.strictEqual(MODELS.filter((m) => m.redund !== undefined).length, 14);
+  // 14 hasta el 2026-10-13; ese dia entraron ocho modelos del listado oficial y salio el
+  // RB4011iGS+ sin ficha. El CCR2004-1G-12S+2XS y el RB1100AHx4 declaran 2 entradas AC y no
+  // ranuras de fuente: su redundancia queda «no consta» (sin `redund`), no `true` a ojo.
+  assert.strictEqual(MODELS.filter((m) => m.redund !== undefined).length, 21);
+  for (const id of ['CCR2004-1G-12S+2XS', 'RB1100AHx4']) {
+    assert.strictEqual(MODELS.find((m) => m.id === id).redund, undefined, id);
+  }
 
   // El RB5009 tiene TRES entradas (jack, PoE-IN, terminal) sobre UNA fuente interna: eso
   // permite alimentar desde dos tomas, pero no es doble fuente y no puede marcarse `true`.

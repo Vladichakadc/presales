@@ -41,6 +41,7 @@ function copiaRepo() {
   fs.mkdirSync(path.join(dir, 'server/seed/legacyData'), { recursive: true });
   fs.copyFileSync(path.join(RAIZ, 'scripts/importar-propuesta.js'), path.join(dir, 'scripts/importar-propuesta.js'));
   fs.copyFileSync(path.join(RAIZ, 'server/seed/legacyData/mikrotik.js'), path.join(dir, 'server/seed/legacyData/mikrotik.js'));
+  fs.copyFileSync(path.join(RAIZ, 'server/seed/legacyData/mikrotikPruebas.js'), path.join(dir, 'server/seed/legacyData/mikrotikPruebas.js'));
   git(dir, 'init', '-q', '-b', 'main');
   git(dir, 'add', '.');
   git(dir, '-c', 'user.name=t', '-c', 'user.email=t@example.com', 'commit', '-q', '-m', 'inicio');
@@ -49,9 +50,11 @@ function copiaRepo() {
 const { MODELS: MIKROTIK } = require('../server/seed/legacyData/mikrotik.js');
 
 test('el importador es determinista: los dos jobs producen el mismo parche, byte a byte', () => {
-  const m = MIKROTIK.find((x) => typeof x.fwd === 'number');
+  // `wanMax` y no `fwd`: desde el 2026-10-13 el rendimiento de MikroTik se deriva de la ficha
+  // transcrita (`mikrotikPruebas.js`) y no hay literal que parchear; `wanMax` si es literal.
+  const m = MIKROTIK.find((x) => typeof x.wanMax === 'number');
   const propuesta = JSON.stringify({ vendor: 'mikrotik', cambios: [{
-    type: 'UPDATE', target: 'product', id: m.id, field: 'fwd', oldValue: m.fwd, newValue: m.fwd + 1,
+    type: 'UPDATE', target: 'product', id: m.id, field: 'wanMax', oldValue: m.wanMax, newValue: m.wanMax + 1,
     reason: 'prueba', sourceUrl: 'https://mikrotik.com/product/x',
   }] });
   const parche = () => {
@@ -67,9 +70,9 @@ test('el importador es determinista: los dos jobs producen el mismo parche, byte
   assert.strictEqual(segundo, primero, 'el job que publica reproduce exactamente lo verificado');
   const cambiadas = primero.split('\n').filter((l) => /^[-+](?![-+])/.test(l));
   assert.strictEqual(cambiadas.length, 2, 'una línea fuera y una dentro: solo el valor');
-  assert.match(cambiadas[1], new RegExp(`fwd:\\s*${m.fwd + 1}\\b`));
+  assert.match(cambiadas[1], new RegExp(`wanMax:\\s*${m.wanMax + 1}\\b`));
   // Y un parche distinto, el de un job que lo hubiera manipulado, no casa.
-  assert.notStrictEqual(primero.replace(String(m.fwd + 1), String(m.fwd + 2)), segundo);
+  assert.notStrictEqual(primero.replace(String(m.wanMax + 1), String(m.wanMax + 2)), segundo);
 });
 
 test('los datasheets: solo PDF del manifiesto, con su firma y de tamaño acotado', () => {

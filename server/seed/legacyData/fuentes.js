@@ -312,8 +312,16 @@ const FUENTES = {
   mikrotik: [
     { documento: 'Datasheets publicos y MSRP de mikrotik.com',
       url: 'https://mikrotik.com/products', estable: false, fecha: null, hash: null,
-      cubre: 'forwarding con FastTrack, IPsec, RAM, nucleos y nivel de licencia', campos: ['fwd', 'ipsec', 'ram', 'cores', 'lvl'],
-      nota: 'SIN FECHA en la cabecera del catalogo, y sin price list firmada a diferencia de Fortinet. Confirmar contra distribuidor autorizado antes de cotizar en firme.' },
+      cubre: 'la tabla de pruebas RFC 2544 de cada ficha (ruteo fast path, con 25 colas y con 25 reglas de filtro, L3HW, a 1518/512/64 B; IPsec con 1 y 256 tuneles por cifrado), CPU, nucleos, RAM, nivel de licencia, puertos, PoE, alimentacion y «Suggested price» de los 20 routers fisicos del listado oficial',
+      campos: ['fwd', 'fw', 'ipsec', 'pruebas', 'cpu', 'ram', 'cores', 'lvl', 'wanMax', 'poe', 'poeA', 'redund', 'psu'],
+      nota: 'RELEIDA ENTERA EL 2026-10-13. Las fichas de producto (mikrotik.com/product/<modelo>) se trajeron por traer-cisco-huawei.yml a las ramas de transporte fuente/mikrotik-fichas (2026-09-03), fuente/mikrotik-2026-10-13 y fuente/mikrotik-listados-2026-10-13 (corridas 38394703476 y 38394948689), descubriendo los modelos en el listado oficial «Ethernet routers» en vez de adivinar URL. `npm run mikrotik` transcribio su matriz a mikrotikPruebas.js con doble anclaje (codigo + nucleos/RAM/nivel) y con la coherencia kpps x bytes x 8 de cada celda: 20 de 20. '
+        + 'Lo que corrigio: el catalogo traia UNA cifra de reenvio y UNA de IPsec por modelo que no casaban con estas tablas (IPsec del RB5009 2.400 frente a 1.354; CCR2216 15.000 frente a 2.013 con un tunel y 4.108 con 256; hEX 470 frente a 232), CPU de otro equipo en el RB4011 y el RB5009, el L009 con 1 nucleo e IPsec (son 2 y no lo publica), el hEX con PoE-out (no tiene), el CCR2116 con 12 GE (13) y precios distintos de los de la ficha (CCR2216 $5.999 frente a $2.795). Salio el RB4011iGS+ sin RM: no tiene ficha ni figura en el listado. '
+        + 'SIN FECHA: las fichas no publican revision ni fecha, y la de lectura no es la del documento. Los precios son el «Suggested price» de cada ficha, no un price list firmado como el de Fortinet: confirmar con distribuidor antes de cotizar en firme. MikroTik no publica WireGuard en ninguna ficha, ni cuanta RAM ocupa una tabla BGP completa (la de mikrotik.js es un supuesto de diseno declarado).' },
+    { documento: 'RouterOS license key levels y CHR licensing (documentacion oficial de MikroTik)',
+      url: 'https://help.mikrotik.com/docs/spaces/ROS/pages/328149/RouterOS+license+keys', estable: false, fecha: null, hash: null,
+      campos: null, porQue: 'respalda LICENSE_LEVELS (topes de tuneles PPPoE/PPTP/L2TP/OpenVPN y usuarios HotSpot por nivel) y el tope y precio de las licencias CHR, que son tablas del dimensionador y no campos de MODELS',
+      cubre: 'topes por nivel 4/5/6 (nivel 4: 200 tuneles PPPoE/PPTP/L2TP/OpenVPN y 200 usuarios HotSpot; nivel 5: 500, OpenVPN sin tope y 500; nivel 6 sin tope), que los niveles no aplican a CHR, y las licencias CHR Free (1 Mbps), P1 (1 Gbps, $45), P10 (10 Gbps, $95) y P-Unlimited ($250), con prueba de 60 dias',
+      nota: 'Traidas el 2026-10-13 por traer-cisco-huawei.yml (rama fuente/mikrotik-2026-10-13; la de CHR desde manual.mikrotik.com/docs/getting-started/routeros-licensing/chr/chr-licensing/). Corrigieron dos textos de la pagina: «CHR Free sin tope, limitado a 60 dias» (es 1 Mbps por interfaz y sin caducidad; los 60 dias son la prueba de los niveles de pago) y «todas las CHR son nivel 6» (los niveles no aplican a CHR). Y el nivel 5, que el catalogo daba con 500 tuneles OpenVPN: no tiene tope.' },
   ],
 
   aruba: [

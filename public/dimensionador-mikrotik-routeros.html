@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dimensionador y BOM MikroTik — RouterOS · CCR/RB/CHR</title>
-<meta name="description" content="Herramienta de dimensionamiento MikroTik RouterOS. Sizing por forwarding con FastTrack, VPN cifrada IPsec/WireGuard, RAM para BGP full table, nivel de licencia y presupuesto PoE.">
+<meta name="description" content="Herramienta de dimensionamiento MikroTik RouterOS con la tabla de pruebas oficial de cada ficha: ruteo por configuración y tamaño de trama, IPsec por túneles y cifrado, RAM para BGP full table, nivel de licencia y presupuesto PoE.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" data-fuente>
@@ -65,6 +65,9 @@ input[type=range]{width:100%;accent-color:var(--red)}
 .check input{margin:3px 0 0;accent-color:var(--red)}
 .sub-field{margin:8px 0 0 22px;padding-left:10px;border-left:2px solid var(--rule)}
 .hidden{display:none!important}
+.tco-tabla{width:100%;border-collapse:collapse;margin-top:6px}
+.tco-tabla th,.tco-tabla td{font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--rule);text-align:right}
+.tco-tabla th:first-child,.tco-tabla td:first-child{text-align:left}
 
 /* VERDICT */
 .verdict{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:22px;margin-bottom:16px}
@@ -126,7 +129,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
 <header class="masthead">
   <p class="eyebrow">MikroTik &middot; Preventa RouterOS &middot; Dimensionamiento y lista de materiales</p>
   <h1>Dimensionador<br>y BOM MikroTik</h1>
-  <p class="sub">Sizing de RouterOS considerando lo que realmente limita: FastTrack vs. shaping, rendimiento cifrado IPsec frente a WireGuard, RAM disponible para BGP full table y el tope de sesiones del nivel de licencia embebido. Genera el BOM completo con ópticas, APs y soporte.</p>
+  <p class="sub">Sizing de RouterOS con la tabla de pruebas oficial de cada ficha: la fila la fijan las funciones (firewall, colas, L3HW), la columna el perfil de tráfico, y aparte el puerto WAN, la RAM para BGP y los topes del nivel de licencia. Genera el BOM con ópticas, AP, soporte, TCO y memoria técnica.</p>
 </header>
 
 <div class="tabs" role="tablist">
@@ -152,54 +155,107 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
 <div class="cols">
 <div>
   <section class="panel">
-    <h2>1 · Perfil de tráfico</h2>
+    <h2>1 · Escenario</h2>
     <div class="field">
-      <label>Tipo de tráfico a dimensionar</label>
+      <label>Qué se dimensiona</label>
       <div class="seg" id="profileSeg">
-        <button type="button" data-v="fwd"   aria-pressed="true">Forwarding<br>/ Routing</button>
+        <button type="button" data-v="fwd"   aria-pressed="true">Ruteo<br>/ NAT</button>
         <button type="button" data-v="ipsec" aria-pressed="false">IPsec<br>(acelerado)</button>
-        <button type="button" data-v="wg"    aria-pressed="false">WireGuard<br>(software)</button>
+        <button type="button" data-v="wg"    aria-pressed="false">WireGuard<br>(sin cifra oficial)</button>
       </div>
-      <p class="hint" id="profileHint">Throughput de NAT/ruteo. Las cifras publicadas por MikroTik asumen FastTrack activo y tramas de 1518 B.</p>
+      <p class="hint" id="profileHint">Ruteo con la fila de la ficha que piden las funciones activas (firewall, colas, L3HW).</p>
     </div>
     <div class="field">
-      <label for="bw">Ancho de banda a enrutar</label>
+      <label>Tipo de sitio</label>
+      <div class="seg" id="modoSeg">
+        <button type="button" data-v="sitio" aria-pressed="true">Sitio<br>(un enlace)</button>
+        <button type="button" data-v="hub"   aria-pressed="false">Hub / concentrador<br>(varias sedes)</button>
+      </div>
+    </div>
+    <div class="sub-field hidden" id="hubBox">
+      <div class="row">
+        <div style="flex:1"><label for="sedes">Sedes que llegan al hub</label><input type="number" id="sedes" min="1" step="1" placeholder="10" autocomplete="off"></div>
+        <div style="flex:1"><label for="conc">Simultaneidad (%)</label><input type="number" id="conc" min="1" max="100" step="1" placeholder="100" autocomplete="off"></div>
+      </div>
+      <p class="hint">Sin simultaneidad se toma el 100 % (todas las sedes llenas a la vez). En IPsec, un hub se dimensiona con la fila de 256 túneles de la ficha; un sitio, con la de un túnel.</p>
+    </div>
+    <div class="field">
+      <label for="bw" id="bwLbl">Caudal del enlace (por sentido)</label>
       <div class="row">
         <input type="number" id="bw" min="1" step="any" autocomplete="off">
         <select id="unit" style="width:105px" aria-label="Unidad del caudal"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
       </div>
-      <p class="hint">Tráfico total que atraviesa el router (WAN agregado o enlace troncal).</p>
+    </div>
+    <div class="field">
+      <label for="dirMult">Sentidos simultáneos</label>
+      <select id="dirMult"><option value="2" selected>Los dos sentidos a la vez (×2)</option><option value="1">Un solo sentido</option></select>
+      <p class="hint">MikroTik mide «all port»: la cifra suma lo que reenvían todos los puertos. Un enlace lleno en los dos sentidos ocupa el doble de esa cifra.</p>
     </div>
     <div class="field">
       <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
       <input type="range" id="head" min="0" max="100" step="5" value="30" autocomplete="off">
     </div>
     <div class="field">
-      <label><input type="checkbox" id="chkVirtual"> <span>Despliegue virtual — CHR (Cloud Hosted Router)<span class="sku" style="display:block;margin-top:2px">Cotiza licencias RouterOS virtuales (VMware, KVM, AWS, GCP, Azure) en lugar de hardware físico.</span></span></label>
+      <label>Perfil de tráfico (tamaño de trama de la ficha)</label>
+      <div class="seg" id="tramaSeg">
+        <button type="button" data-v="1518" aria-pressed="false">Grande<br>1518 B</button>
+        <button type="button" data-v="512"  aria-pressed="true">Mixto<br>512 B</button>
+        <button type="button" data-v="64"   aria-pressed="false">Pequeño<br>64 B</button>
+      </div>
+      <p class="hint">Son las tres columnas que publica MikroTik (en IPsec, 1400/512/64 B). 512 B es la más cercana a un tráfico de empresa; 64 B es VoIP pura, juegos o el peor caso ante un DDoS.</p>
+    </div>
+    <div class="field">
+      <label class="check"><input type="checkbox" id="chkVirtual"> <span>Despliegue virtual — CHR (Cloud Hosted Router)<span class="sku" style="display:block;margin-top:2px">Licencias RouterOS virtuales (VMware, KVM, AWS, GCP, Azure) en lugar de hardware físico.</span></span></label>
     </div>
   </section>
 
   <section class="panel">
     <h2>2 · Funcionalidades RouterOS</h2>
+    <div class="field">
+      <label for="firewall">Firewall</label>
+      <select id="firewall">
+        <option value="fasttrack" selected>Con FastTrack (configuración de fábrica)</option>
+        <option value="completo">Completo, sin FastTrack (25 reglas de filtro)</option>
+        <option value="ninguno">Sin firewall (tránsito / core)</option>
+      </select>
+      <p class="hint">Con FastTrack se usa la fila de fast path, que es un techo: las conexiones nuevas y lo que FastTrack no acelera pasan por el firewall completo.</p>
+    </div>
+    <div class="field" id="cifradoBox" data-inactivo>
+      <label for="cifrado">Cifrado IPsec</label>
+      <select id="cifrado">
+        <option value="aes128-sha1" selected>AES-128-CBC + SHA1</option>
+        <option value="aes128-sha256">AES-128-CBC + SHA256</option>
+        <option value="aes256-sha1">AES-256-CBC + SHA1</option>
+        <option value="aes256-sha256">AES-256-CBC + SHA256</option>
+      </select>
+      <p class="hint">Con un túnel, MikroTik solo publica AES-128-CBC + SHA1.</p>
+    </div>
     <div class="checks">
-      <label class="check"><input type="checkbox" id="chkQos"> <span><b>QoS / shaping por conexión</b> (Queue Tree, Simple Queue, PCQ)<span class="sku">Incompatible con FastTrack: el tráfico encolado no puede saltar el conntrack. Reduce la capacidad de forwarding entre un 55 % y un 65 % según arquitectura.</span></span></label>
-      <label class="check"><input type="checkbox" id="chkBgp"> <span><b>BGP full table</b> — feeds completos de upstream<span class="sku">Cada feed IPv4 completo consume ~1.5 GB de RAM en RouterOS 7. Limita por memoria, no por throughput.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkQos"> <span><b>Colas / shaping</b> (Simple Queue, Queue Tree, PCQ)<span class="sku">Se dimensiona con la fila «25 simple queues» de la ficha. Lo encolado no toma FastTrack ni el offload de hardware.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkL3hw"> <span><b>Offload L3 por hardware (L3HW)</b><span class="sku">Solo los CCR2116 y CCR2216 publican esta fila; el resto se aparta con su motivo.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkBgp"> <span><b>BGP full table</b> — feeds completos de upstream<span class="sku">Limita por memoria, no por caudal. La RAM por feed es un supuesto de diseño: MikroTik no la publica.</span></span></label>
       <div class="sub-field hidden" id="bgpBox">
         <label for="bgpFeeds">Cantidad de feeds full table</label>
         <input type="number" id="bgpFeeds" min="1" max="20" autocomplete="off">
       </div>
-      <label class="check"><input type="checkbox" id="chkPppoe"> <span><b>Concentrador PPPoE / Hotspot</b><span class="sku">El nivel de licencia embebido impone un tope duro de sesiones activas que ninguna cifra de throughput anticipa.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkPppoe"> <span><b>Concentrador de túneles / HotSpot</b><span class="sku">El nivel de licencia grabado en el equipo fija topes que ninguna cifra de caudal anticipa (tabla oficial de niveles).</span></span></label>
       <div class="sub-field hidden" id="pppoeBox">
-        <label for="pppoeSess">Sesiones concurrentes</label>
-        <input type="number" id="pppoeSess" min="1" step="1" autocomplete="off">
+        <label for="pppoeSess">Túneles PPPoE / PPTP / L2TP</label>
+        <input type="number" id="pppoeSess" min="0" step="1" autocomplete="off">
+        <label for="ovpnTun" style="margin-top:8px">Túneles OpenVPN</label>
+        <input type="number" id="ovpnTun" min="0" step="1" autocomplete="off">
+        <label for="hotspotUsers" style="margin-top:8px">Usuarios HotSpot activos</label>
+        <input type="number" id="hotspotUsers" min="0" step="1" autocomplete="off">
       </div>
-      <label class="check"><input type="checkbox" id="chkCapsman"> <span><b>CAPsMAN</b> — controlador WiFi centralizado<span class="sku">Incluido en RouterOS sin licencia adicional. Los APs se agregan al BOM.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkCapsman"> <span><b>CAPsMAN</b> — controlador Wi-Fi centralizado<span class="sku">Incluido en RouterOS sin licencia adicional. Los AP pasan a la lista de materiales.</span></span></label>
       <div class="sub-field hidden" id="capsBox">
-        <label for="apCount">Cantidad de APs a gestionar</label>
+        <label for="apCount">Cantidad de AP</label>
         <input type="number" id="apCount" min="1" step="1" autocomplete="off">
-        <label style="margin-top:8px"><input type="checkbox" id="chkPoe" style="accent-color:var(--red)"> Alimentar los APs por PoE desde el router</label>
+        <label for="apModel" style="margin-top:8px">Modelo de AP</label>
+        <select id="apModel"></select>
+        <label style="margin-top:8px"><input type="checkbox" id="chkPoe" style="accent-color:var(--red)"> Alimentar los AP por PoE desde el router</label>
       </div>
-      <label class="check"><input type="checkbox" id="chkHa"> <span><b>Alta disponibilidad</b> (VRRP — 2 unidades)<span class="sku">RouterOS no comparte licencia entre nodos: cada unidad se cotiza completa.</span></span></label>
+      <label class="check"><input type="checkbox" id="chkHa"> <span><b>Alta disponibilidad</b> (VRRP — 2 unidades)<span class="sku">Cada unidad se dimensiona al caudal completo y lleva su propia licencia.</span></span></label>
     </div>
     <div class="field" style="margin-top:16px">
       <label>Conectividad predominante del sitio</label>
@@ -208,22 +264,26 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
         <button type="button" data-v="copper" aria-pressed="false">Cobre GE</button>
         <button type="button" data-v="fiber"  aria-pressed="false">Fibra SFP+/SFP28</button>
       </div>
-      <p class="hint">La línea MikroTik se bifurca exactamente aquí: un CCR2004-16G-2S+ y un CCR2004-1G-12S+2XS cuestan casi lo mismo y sirven sitios opuestos.</p>
+      <p class="hint">La línea MikroTik se bifurca aquí: un CCR2004-16G-2S+ y un CCR2004-1G-12S+2XS sirven sitios opuestos.</p>
     </div>
   </section>
 </div>
 
 <div>
   <div class="verdict" id="verdict"></div>
-  </div>
 
   <section class="panel">
     <h2>Resumen de sizing</h2>
     <div id="sizingBox"><p style="font-size:13.5px;color:var(--steel)">Completa los parámetros para ver el resumen.</p></div>
   </section>
 
+  <section class="panel">
+    <h2>Avisos del dimensionamiento</h2>
+    <ul id="avisosBox" style="margin:0;padding-left:18px;font-size:13px"><li>Sin avisos.</li></ul>
+  </section>
+
   <div class="note">
-    <b>Nota metodológica.</b> Las cifras de forwarding publicadas por MikroTik se miden con <b>FastTrack activo, tramas de 1518 B y configuración mínima</b>. Dos condiciones las degradan de forma severa y esta herramienta modela la primera: (1) cualquier Queue Tree con <code>parent=global</code> o Simple Queue desactiva FastTrack para ese tráfico, forzando el paso por conntrack y firewall completo; (2) con paquetes de 64 B el rendimiento cae aproximadamente un orden de magnitud — relevante en VoIP y bajo DDoS, dimensionar contra la cifra de pps del datasheet en esos casos. El rendimiento de WireGuard se estima en el 45 % del IPsec del mismo equipo porque RouterOS 7 no lo acelera por hardware y lo procesa mayormente en un solo hilo por túnel; sustituir por la cifra publicada del modelo cuando esté disponible.
+    <b>Nota metodológica.</b> Las cifras son las de la tabla de pruebas de cada ficha oficial de mikrotik.com (RFC 2544 con equipo Xena, prueba «all port»): ruteo en <b>fast path</b>, con <b>25 colas simples</b> y con <b>25 reglas de filtro</b> (y <b>L3HW</b> en los CCR con offload), a 1518, 512 y 64 bytes; e IPsec con <b>un túnel</b> y con <b>256 túneles</b>, por cifrado, a 1400, 512 y 64 bytes. El escenario elige la celda: las funciones activas fijan la fila y el perfil de tráfico la columna. Un equipo sin esa celda se aparta con su motivo; nunca se le pone la cifra de otra fila. <b>WireGuard</b> no tiene cifra publicada en ninguna ficha y no se estima. Supuestos declarados: el ×2 de los dos sentidos y la RAM por feed BGP.
   </div>
 </div>
 </div>
@@ -270,7 +330,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
   </section>
 
   <div class="flag-ft">
-    <b>Aviso de preventa:</b> precios de lista MSRP público de mikrotik.com. No incluyen impuestos locales, aranceles de importación ni descuento de canal. MikroTik no publica un price list firmado por región — confirmar precio, disponibilidad y SKU exacto de óptica con el distribuidor autorizado antes de cotizar en firme.
+    <b>Aviso de preventa:</b> precios = «Suggested price» de la ficha oficial de cada producto en mikrotik.com (USD). No incluyen impuestos locales, aranceles de importación ni descuento de canal. MikroTik no publica un price list firmado por región — confirmar precio y disponibilidad con el distribuidor autorizado antes de cotizar en firme.
   </div>
 </div>
 
@@ -281,10 +341,28 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
       <span class="bom-acciones">
         <button class="btn" id="xlsBtn" style="font-size:11px;padding:5px 11px">Exportar a Excel</button>
         <button class="btn ghost" id="copyBtn" style="font-size:11px;padding:5px 11px">Copiar como texto</button>
+        <button class="btn ghost" id="memoriaBtn" type="button" style="font-size:11px;padding:5px 11px">Memoria técnica (.md)</button>
       </span>
     </h2>
     <div id="bomTabla"></div>
     <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
+  </section>
+  <section class="panel">
+    <h2>Precio neto y TCO del sitio</h2>
+    <div class="field"><div id="cajaDescuento"></div></div>
+    <div class="field">
+      <label for="aniosTco">Plazo del TCO</label>
+      <select id="aniosTco"><option value="1">1 año</option><option value="3" selected>3 años</option><option value="5">5 años</option></select>
+    </div>
+    <div id="tcoFin"></div>
+    <h3 style="margin:18px 0 8px;font-size:14px">Cuota mensual de servicio gestionado (MRR y TCV)</h3>
+    <div class="row" style="gap:12px;flex-wrap:wrap">
+      <label style="font-size:12px">Plazo del contrato<br><select id="plazoMrr"><option value="24">24 meses</option><option value="36" selected>36 meses</option><option value="60">60 meses</option></select></label>
+      <label style="font-size:12px">Margen de financiación (%)<br><input type="number" id="margenFin" min="0" max="100" step="1" value="0" style="width:110px" autocomplete="off"></label>
+      <label style="font-size:12px">Fee de gestión MSP (%)<br><input type="number" id="feeMsp" min="0" max="100" step="1" value="0" style="width:110px" autocomplete="off"></label>
+    </div>
+    <div id="mrrBox"></div>
+    <p class="hint" style="margin-top:10px">El equipo, las ópticas y los AP traen el «Suggested price» de su ficha; la licencia RouterOS viene incluida en el equipo y el soporte de comunidad es gratuito. El contrato con partner y la capacitación no tienen precio publicado: salen «sin cotizar» y el TCO se declara <b>parcial</b> si se eligen.</p>
   </section>
 </div>
 </div>
@@ -296,26 +374,26 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
   <h2>Licenciamiento RouterOS</h2>
 
   <div class="flag-amber">
-    <b>El nivel de licencia no se puede subir por software.</b> Viene grabado en el hardware que se compra. Un hEX es nivel 4 de por vida: si el diseño crece a más de 200 sesiones PPPoE, el camino es reemplazar el equipo, no comprar una licencia. Verificarlo <em>antes</em> de cerrar la arquitectura es la diferencia entre un proyecto y un retrabajo.
+    <b>El nivel de licencia no se puede subir por software.</b> Viene grabado en el hardware que se compra. Un hEX es nivel 4 de por vida: si el diseño crece a más de 200 túneles PPPoE, el camino es reemplazar el equipo, no comprar una licencia. Verificarlo <em>antes</em> de cerrar la arquitectura es la diferencia entre un proyecto y un retrabajo.
   </div>
 
   <div class="grp">
     <h3>Niveles de licencia y sus topes duros</h3>
-    <p class="gd">Todo equipo físico incluye su licencia perpetua embebida — no hay costo recurrente de software y las actualizaciones dentro de la rama v7.x son gratuitas. Lo que cambia entre niveles es el tope de sesiones y túneles, no las funciones de routing.</p>
+    <p class="gd">Todo equipo físico incluye su licencia perpetua embebida («preinstalled and licensed. No separate purchase is necessary», dice cada ficha). Lo que cambia entre niveles son los topes de túneles y de usuarios, no las funciones de routing. Tabla oficial «RouterOS license key levels» de help.mikrotik.com.</p>
     <div class="scroll"><table>
-      <thead><tr><th>Nivel</th><th>Tope de sesiones / túneles</th><th>Equipos de este nivel</th></tr></thead>
+      <thead><tr><th>Nivel</th><th>PPPoE / PPTP / L2TP</th><th>OpenVPN</th><th>HotSpot</th><th>Equipos de este nivel</th></tr></thead>
       <tbody id="lvlTable"></tbody>
     </table></div>
   </div>
 
   <div class="grp">
     <h3>CHR — Cloud Hosted Router (licencia virtual)</h3>
-    <p class="gd">En despliegues virtuales la licencia <em>es</em> el producto: se compra por tope de throughput <b>por interfaz</b>, y los recursos de cómputo (vCPU/RAM) los aporta el hipervisor y se dimensionan aparte. Todas las licencias CHR son nivel 6, sin tope de sesiones.</p>
+    <p class="gd">En despliegues virtuales la licencia <em>es</em> el producto: limita la <b>subida por interfaz</b>, y los recursos de cómputo (vCPU/RAM) los aporta el hipervisor y se dimensionan aparte. Los niveles 4/5/6 no aplican a CHR: el resto de funciones va sin restricciones.</p>
     <div class="scroll"><table>
       <thead><tr><th>Tier</th><th>Tope por interfaz</th><th>Precio ref.</th></tr></thead>
       <tbody id="chrTable"></tbody>
     </table></div>
-    <p class="gd" style="margin-top:8px">Existe además <b>CHR Free</b>, sin tope y sin costo, limitado a 60 días — apto para laboratorio y pruebas de concepto, no para producción.</p>
+    <p class="gd" style="margin-top:8px">Existe además <b>CHR Free</b>, sin costo y sin caducidad, limitado a 1 Mbps de subida por interfaz; y una <b>prueba de 60 días</b> de cualquiera de los niveles de pago, con cuenta en mikrotik.com. Aptos para laboratorio y pruebas de concepto.</p>
   </div>
 
   <div class="grp">
@@ -360,7 +438,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
     <div class="panel" style="padding:20px">
       <h3 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 12px">Seguridad / VPN</h3>
       <ul style="font-size:13px;color:var(--steel);margin:0;padding-left:18px">
-        <li>WireGuard nativo (kernel-level, ~3.1 Gbps en CCR2004)</li>
+        <li>WireGuard nativo (MikroTik no publica su rendimiento)</li>
         <li>IPsec IKEv2 / IKEv1 — site-to-site y road warrior</li>
         <li>OpenVPN (TLS), L2TP/IPsec, SSTP, PPPoE</li>
         <li>Firewall stateful con mangle, NAT, RAW</li>
@@ -373,7 +451,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
         <li>Queue Tree / Simple Queue (HTB)</li>
         <li>Mangle + DSCP marking</li>
         <li>PCQ (Per Connection Queue) — ISP fair-share</li>
-        <li>Fasttrack (hardware offload) para IPv4/IPv6</li>
+        <li>FastTrack (camino rápido por software) y L3HW (offload por hardware en CCR2116/CCR2216)</li>
         <li>Torch / Traffic Monitor en tiempo real</li>
       </ul>
     </div>
@@ -417,10 +495,10 @@ hEX           hEX  (CPE)</div>
 <section class="panel">
   <h2>Catálogo MikroTik — Throughput de referencia <span style="font-weight:400;color:var(--steel)">— Precio ref. USD incluido</span></h2>
   <div class="scroll"><table data-ordenable id="tbl-mikrotik-cat">
-    <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Forwarding</th><th>IPsec</th><th>Puertos</th><th>Precio ref. USD&#9432;</th></tr></thead>
+    <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Ruteo fast path 1518 B</th><th>Ruteo con filtro 512 B</th><th>IPsec 1 túnel 1400 B</th><th>Puertos</th><th>Precio ref. USD&#9432;</th></tr></thead>
     <tbody></tbody>
   </table></div>
-  <p style="font-size:11px;color:var(--steel);margin-top:10px">&#9432; Precio de lista orientativo (USD MSRP). No incluye impuestos locales ni soporte de canal. Verificar con distribuidor MikroTik autorizado. Los modelos fuera de venta o de línea anterior se muestran igual, marcados.</p>
+  <p style="font-size:11px;color:var(--steel);margin-top:10px">&#9432; «Suggested price» de la ficha oficial (USD). No incluye impuestos locales ni soporte de canal. Las cifras son las de la tabla de pruebas de cada ficha; «—» es que la ficha no publica esa fila. Verificar con distribuidor MikroTik autorizado. Los modelos fuera de venta o de línea anterior se muestran igual, marcados.</p>
 </section>
 </div>
 
@@ -435,12 +513,13 @@ hEX           hEX  (CPE)</div>
   <h2>Fuentes de Información y Precios</h2>
   <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Información técnica y precios verificados contra documentación oficial MikroTik:</p>
   <ul class="fuentes-list">
-    <li><b>Productos y Datasheets:</b> <a href="https://mikrotik.com/products" target="_blank">https://mikrotik.com/products</a><br>Catálogo oficial de hardware: CCR2216, CCR2116, CCR2004, RB5009, RB4011, hEX series.</li>
+    <li><b>Fichas de producto:</b> <a href="https://mikrotik.com/products/group/ethernet-routers" target="_blank" rel="noopener">mikrotik.com/products/group/ethernet-routers</a><br>Cada ficha publica la tabla de pruebas RFC 2544 (ruteo y IPsec) que usa este dimensionador, la CPU, la RAM, el nivel de licencia, la alimentación y el «Suggested price». Transcritas con <code>npm run mikrotik</code>.</li>
+    <li><b>Niveles de licencia:</b> <a href="https://help.mikrotik.com/docs/spaces/ROS/pages/328149/RouterOS+license+keys" target="_blank" rel="noopener">RouterOS license keys</a><br>Topes de túneles PPPoE/PPTP/L2TP/OpenVPN y usuarios HotSpot por nivel, y los niveles de CHR.</li>
     <li><b>Wiki RouterOS:</b> <a href="https://wiki.mikrotik.com/wiki/Main_Page" target="_blank">https://wiki.mikrotik.com/wiki/Main_Page</a><br>Documentación técnica oficial de RouterOS 7.x: routing, VPN, QoS, wireless, scripting.</li>
     <li><b>CHR (Cloud Hosted Router):</b> <a href="https://mikrotik.com/software" target="_blank">https://mikrotik.com/software</a><br>Licencias P1, P10, P-Unlimited para RouterOS virtual en VMware, KVM, AWS, GCP, Azure.</li>
     <li><b>Certificaciones MTCNA/MTCRE:</b> <a href="https://mikrotik.com/training" target="_blank">https://mikrotik.com/training</a><br>Programa de formación oficial MikroTik: MTCNA, MTCRE, MTCWE, MTCTCE, MTCINE.</li>
-    <li><b>Lista de Precios (ELP):</b><br>Precios MSRP en USD de lista pública. No incluyen impuestos de importación ni márgenes de distribuidor. Verificar disponibilidad con distribuidor autorizado local.</li>
-    <li><b>EOL / Productos descontinuados:</b><br>RouterBOARD legacy (RB2011, RB951) marcados EOL. Solo se muestran equipos con RouterOS 7.x activo y disponibilidad en canal.</li>
+    <li><b>Precios:</b><br>«Suggested price» de cada ficha, en USD. No incluyen impuestos de importación ni márgenes de distribuidor. Verificar disponibilidad con distribuidor autorizado local.</li>
+    <li><b>Ciclo de vida:</b><br>MikroTik no publica fechas de fin de venta. El catálogo marca como «línea anterior» solo lo que una ficha oficial declara relevado (el hEX RB750Gr3, por el hEX refresh E50UG).</li>
   </ul>
 </section>
 </div>
@@ -448,7 +527,7 @@ hEX           hEX  (CPE)</div>
 <p class="note">
 <b>Fuentes:</b>
 <a href="https://mikrotik.com/products" target="_blank" rel="noopener">mikrotik.com/products</a> — datasheets de hardware y catálogo de ópticas ·
-<a href="https://mikrotik.com/product/chr" target="_blank" rel="noopener">mikrotik.com/product/chr</a> — niveles y topes de licencia CHR ·
+<a href="https://manual.mikrotik.com/docs/getting-started/routeros-licensing/chr/chr-licensing/" target="_blank" rel="noopener">CHR licensing</a> — niveles, topes y precio de las licencias CHR ·
 <a href="https://help.mikrotik.com/docs/" target="_blank" rel="noopener">help.mikrotik.com</a> — documentación RouterOS 7.x (FastTrack, IPsec, WireGuard, CAPsMAN) ·
 <a href="https://mikrotik.com/training" target="_blank" rel="noopener">mikrotik.com/training</a> — programa de certificación.
 Precios de referencia MSRP público, sin price list regional firmado — <b>verificar con distribuidor autorizado</b>.
@@ -461,6 +540,7 @@ Precios de referencia MSRP público, sin price list regional firmado — <b>veri
 <script src="/js/tabla.js"></script>
 <script src="/js/contraste.js"></script>
 <script src="/js/procedencia.js"></script>
+<script src="/js/mikrotik-motor.js"></script>
 <script src="/js/dimensionador-mikrotik-routeros.js"></script>
 <script src="/js/navegacion.js"></script>
 </body>

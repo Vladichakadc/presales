@@ -113,6 +113,12 @@ function anclar(cambio, modelos) {
   if (['price', 'elp', 'elpN'].includes(cambio.field)) {
     return { ok: false, motivo: 'los precios viven en cotizadorCatalog.js, no en este archivo' };
   }
+  // MikroTik (2026-10-13): el rendimiento sale de la matriz de la ficha oficial, transcrita por
+  // `npm run mikrotik` con su propio doble anclaje. Un parche de una cifra suelta aqui se perderia
+  // en la siguiente relectura, y no hay literal que editar: se deriva al cargar.
+  if (modelo.pruebas !== undefined && ['fwd', 'fw', 'ipsec', 'cpu', 'pruebas'].includes(cambio.field)) {
+    return { ok: false, motivo: 'en MikroTik esa cifra sale de la ficha oficial: se relee con `npm run mikrotik`, no se parchea' };
+  }
   if (!(cambio.field in modelo)) {
     return { ok: false, motivo: `el campo "${cambio.field}" no existe en ese modelo` };
   }
