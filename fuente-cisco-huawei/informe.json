@@ -1,0 +1,62 @@
+[
+  {
+    "archivo": "huawei-a800-producto.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/products/routers/netengine-a800",
+        "status": 200,
+        "bytes": 263506,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-ec-data-sheet.pdf",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/downloadDoc/HPE%20Networking%20EdgeConnect-a00109847enw.pdf?id=a00109847enw&isFutureVersion=true&ver=&form=false&preview=false&print=&hf=regular&r=&section=&prelaunchSection=&softrollSection=&deepLink=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&originalObjectName=&isLinearized=false&contentDisposition=attachment",
+        "status": 200,
+        "bytes": 2168659,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-a816e-documento-hoy.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/56584a8272b44e61be416b1afc0eb241",
+        "status": 200,
+        "bytes": 254041,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-a800-producto.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/products/routers/netengine-a800",
+        "status": 200,
+        "bytes": 263506,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  }
+]
