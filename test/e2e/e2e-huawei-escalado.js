@@ -88,7 +88,7 @@ const PAGINA = `${BASE}/dimensionador-huawei-netengine.html`;
   for (const sec of ['## 1. Resumen ejecutivo', '## 2. Memoria de cálculo', '## 3. Lista de materiales', '## 4. Cuadro de especificaciones físicas']) {
     t.ok(md.includes(sec), `la memoria trae «${sec}»`);
   }
-  t.ok(/supuesto de diseño/.test(md) && /no cifra de Huawei/.test(md), 'y declara que los supuestos no son cifras de Huawei');
+  t.ok(/supuesto de diseño/.test(md) && /no cifras publicadas por Huawei/.test(md), 'y declara que los supuestos no son cifras de Huawei');
   t.ok(/\.md$/.test(descarga.suggestedFilename()), `y se descarga como Markdown (${descarga.suggestedFilename()})`);
 
   // 4 · Cuota mensual: con precio de referencia del equipo, hay MRR y TCV. Se elige el AR651, que
