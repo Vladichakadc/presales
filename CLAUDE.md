@@ -374,7 +374,10 @@ Módulos compartidos:
   `capaEfectiva()`); la inspección TLS es un eje propio; el overlay SD-WAN es un segundo techo
   (`min(capa, IPsec / fracción)` con un 6 % de ESP, supuesto declarado); sesiones y CPS derivados de
   los usuarios (30 s de vida media, supuesto editable); límites de plataforma sin techo de
-  utilización. El BOM sale solo del modelo validado; la puerta READY/WARNING/DRAFT/BLOCKED bloquea
+  utilización. Los vecinos BGP salen de la **Maximum Values Table** de FortiOS 7.6.7 (su API,
+  traída por Actions), anclada columna a columna con políticas y túneles del Product Matrix al
+  cargar; sus filas de vecinos OSPF (los declarados a mano) y de VRF no se usan, y no publica
+  rutas aprendidas. El BOM sale solo del modelo validado; la puerta READY/WARNING/DRAFT/BLOCKED bloquea
   Excel, copiar y enviar con un P0, un SKU sin casar o la lista vencida, y el override exige motivo.
   Un SKU nunca se busca con el marcador `-DD`. Figuras desde la página «Hardware» de cada ficha.
 - **Aruba** (`dimensionador-aruba-edgeconnect.js`, `aruba-reglas.js`, `motor-ingenieria.js`). El
@@ -422,8 +425,12 @@ Módulos compartidos:
   respaldo ocupa puerto y no suma, el caudal es el máximo entre el escenario normal y los de falla,
   y cada enlace va a un puerto del equipo (los puertos salen de la ficha) con el módulo de la
   matriz oficial «wired interface compatibility» (`COMPATIBILIDAD`): lo que marca «-» no se
-  recomienda y un equipo que no lista va «a consultar». MPLS principal con respaldo de Internet
-  comprueba además la celda IPsec del respaldo.
+  recomienda y un equipo que no lista va «a consultar». Cada enlace declara bajada, subida (vacía
+  = simétrico; la prueba «all port» suma las dos) y la distancia del tramo: dentro de su velocidad
+  va el primer módulo que llega según el «Distance» de su ficha (el cobre, 100 m; el S+RJ10 a 10G,
+  30 m; el BiDi avisa de que el otro extremo lleva la longitud de onda complementaria), y un tramo
+  al que nada llega aparta el equipo. MPLS principal con respaldo de Internet comprueba además la
+  celda IPsec del respaldo.
 - **Nokia**: dos dimensionadores — 7750 SR / 7250 IXR (equipo, por plataforma; chasis modulares
   apartados por densidad) y 7220 IXR (fabric). Capacidad en Gbps; `aMbps()` es el único que lo sabe.
 - **Starlink LEO**: módulo canónico integrado byte a byte (`starlink-leo-dimensionador/` es la línea

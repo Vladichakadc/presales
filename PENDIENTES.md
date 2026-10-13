@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-13, decimoquinta entrega (**Segundo enlace WAN en el dimensionador MikroTik y los módulos SFP de cada enlace.** Encargo del dueño: validar qué pasa con un segundo enlace de Internet o MPLS, principal y respaldo, cómo se comporta el equipo, y traer los módulos SFP recomendados según el ancho de banda. El dimensionador gana un constructor de enlaces (hasta 4): el respaldo ocupa puerto y no suma, el caudal es el peor escenario (normal o con un principal caído), cada enlace va a un puerto del equipo (los puertos salen ahora de la ficha, con el importador) y el módulo, de la **matriz oficial de compatibilidad de MikroTik**, traída por Actions. MPLS principal con respaldo de Internet comprueba la celda IPsec del respaldo. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-13, decimosexta entrega (**«Ejecuta los pendientes como un arquitecto senior, con las mejoras propuestas, sin parar hasta cerrarlos».** Hechos: en MikroTik, la **distancia del tramo y la subida de cada enlace** eligen el módulo por alcance (S-55DLC80D a 80 km, BiDi XS+2733LC15D a 15 km, XQ+31LC02D a 2 km), con la matriz oficial ampliada a esos tres módulos. En Fortinet, **F4-resto**: los **vecinos BGP** por modelo salen de la *Maximum Values Table* de FortiOS 7.6.7, leída de su API por Actions y anclada columna a columna. OSPF, VRF y rutas siguen sin fuente que mida lo que pide un diseño. En el **vigía**, 39 fuentes que no tenían huella la tienen ya, y los dos documentos que cambiaron se contrastaron: el **Product Matrix de octubre** (510 de 511 cifras iguales; el 400G pasa a 30.000 políticas) y las **Release Notes 7.6.0** (sin cambios en lo que usa el catálogo). Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-13, decimoquinta entrega (**Segundo enlace WAN en el dimensionador MikroTik y los módulos SFP de cada enlace.** Encargo del dueño: validar qué pasa con un segundo enlace de Internet o MPLS, principal y respaldo, cómo se comporta el equipo, y traer los módulos SFP recomendados según el ancho de banda. El dimensionador gana un constructor de enlaces (hasta 4): el respaldo ocupa puerto y no suma, el caudal es el peor escenario (normal o con un principal caído), cada enlace va a un puerto del equipo (los puertos salen ahora de la ficha, con el importador) y el módulo, de la **matriz oficial de compatibilidad de MikroTik**, traída por Actions. MPLS principal con respaldo de Internet comprueba la celda IPsec del respaldo. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-13, decimocuarta entrega (**«Ejecuta todos los pendientes buscando en la web».** Lo que la web y el transporte de Actions podían cerrar se cerró con documento oficial: la **redundancia de fuente** del CCR2004-1G-12S+2XS y el RB1100AHx4 (sus fichas ya decían «dual redundant power supply» y sus manuales lo confirman), la **spec sheet muerta de EdgeConnect** (sustituida por la data sheet `a00109847enw` Rev. 8, jul-2026, que además da la **capacidad IDS/IPS de los ocho EdgeConnect** sin cifra: con DTD ya tienen techo) y la **ficha de la A816 E** (Huawei la retiró: queda declarado, las cifras siguen con su copia). Hechos en código: **perfiles multi-sede en MikroTik**, **vista previa ligera de las figuras** (33 MB → 0,67 MB en la tarjeta; la lupa y el Excel siguen con el original) y la **decisión de WireGuard**, opción A, la recomendada. Lo que no cierra la web, con su motivo, en cada sección. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-13, decimotercera entrega (**La mejora propuesta hecha —el vigía mira los datos de cada ficha de MikroTik— y las figuras de los 20 routers en alta definición.** Encargo del dueño: ejecutar la mejora propuesta, incluir las gráficas frontal y posterior de cada equipo en alta definición y ejecutar lo que salga por el camino. **Vigía**: las 20 fichas son fuentes propias, vigiladas por la huella de lo que `npm run mikrotik` transcribe (tabla de pruebas, CPU, RAM, nivel, precio), no por el HTML; el importador deja el lock verificado al transcribir y una prueba exige que lock y transcripción casen. El sondeo en Actions midió las 20 «DATOS ESTABLES» (corrida 38404551229). **Figuras**: 31 de la galería oficial de cada ficha (`_hi_res.png`, traídas por Actions, corridas 38403511548 y 38404641378), clasificadas mirándolas porque la galería no rotula la cara; frontal en los 20, trasera en 11 (la galería de los hEX y los RB5009 de interior no trae la cara opuesta); WebP sin pérdida a resolución nativa, con lupa y en el Excel. **Por el camino**: el Excel decía «documentos oficiales de HPE» también en Fortinet y Huawei; el sondeo avisaba en falso de dos fuentes que ya se vigilan por texto; y la ficha del NetEngine A816 E de Huawei responde 404. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-13, duodécima entrega (**El dimensionador MikroTik, rehecho sobre la tabla de pruebas oficial de cada ficha.** Encargo del dueño: revisar el dimensionador de MikroTik buscando los equipos en la web, con los parámetros de los otros fabricantes y como arquitecto senior. **Las cifras del catálogo no casaban con las fichas oficiales**: IPsec del RB5009 2.400 Mbps (ficha 1.354), del CCR2216 15.000 (2.013 con un túnel, 4.108 con 256), del hEX 470 (232); CPU de otro equipo en el RB4011 y el RB5009; el L009 con 1 núcleo e IPsec (son 2 y no publica IPsec); el hEX con PoE-out (no tiene); el CCR2116 con 12 GE (13); el CCR2216 a $5.999 (ficha: $2.795); el nivel 5 con 500 túneles OpenVPN (sin tope). Las fichas se trajeron por Actions descubriéndolas en el listado oficial (`fuente/mikrotik-2026-10-13`, `fuente/mikrotik-listados-2026-10-13`) y `npm run mikrotik` (nuevo) transcribe su matriz con doble anclaje y la coherencia kpps×bytes×8 de cada celda: 20 de 20. **El motor** (`public/js/mikrotik-motor.js`, como el de Huawei) elige la celda: la fila la fijan las funciones (firewall con/sin FastTrack, colas, L3HW), la columna el perfil de tráfico (1518/512/64 B), IPsec con 1 túnel en un sitio y 256 en un hub, por cifrado; aparte, el puerto WAN por sentido, la RAM para BGP (supuesto declarado), los topes oficiales por nivel y el PoE solo donde la ficha da vatios. Se retiraron el «factor FastTrack» 0,45/0,35 y WireGuard al 45 % del IPsec: no tenían fuente. **Catálogo**: 20 routers del listado oficial (entran hEX refresh E50UG, hEX S 2025, hEX PoE, hEX PoE lite, PowerBox Pro, L009UiGS-RM, RB1100AHx4, RB5009UPr+S+OUT y CCR2004-16G-2S+PC; sale el RB4011iGS+ sin RM, sin ficha), ópticas y AP con SKU y precio de sus fichas, y la página gana modo hub, memoria técnica, precio neto, TCO y MRR. Detalle en *Cerrado recientemente* y lo abierto en *Abierto: dimensionador MikroTik*.)
@@ -599,8 +600,12 @@ underlay.
   HS-85DLC05D (1G/2,5G) tampoco figuran y no se recomiendan solos aunque estén en el listado. El
   respaldo cifrado hereda el ×2 del IPsec (abierto arriba): si MikroTik confirma que su cifra es la
   suma de los dos sentidos, la exigencia del respaldo se queda; si es por sentido, baja a la mitad.
-  La velocidad del enlace es la contratada y simétrica: un enlace asimétrico se declara por su
-  sentido mayor.
+  ~~La velocidad del enlace es la contratada y simétrica~~ (cerrado el 2026-10-13: cada enlace
+  declara bajada y subida, y la distancia del tramo elige el módulo por alcance). **Lo que la
+  distancia no cubre**: el alcance es el nominal de la ficha de cada módulo, no un balance óptico
+  (atenuación de la fibra, empalmes, conectores); el del tramo real lo confirma el operador. Un
+  tramo de más de 15 km a 10G no tiene módulo en la matriz (los CWDM y DWDM se eligen por canal
+  con el operador, fuera de este dimensionador).
 - **Fichas sin fecha**: MikroTik no publica revisión ni fecha en la página; `fecha: null` en
   `fuentes.js`, y la columna Estado lo seguirá diciendo.
 
@@ -1295,7 +1300,15 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
 - **F3 · Elegibilidad de FortiGuard único en HA activo-pasivo**, por modelo y versión de
   FortiOS. La regla general —una licencia por nodo— está aplicada; la excepción se declara sin
   ofrecerse, porque este catálogo no trae de qué modelos y qué versiones se puede afirmar.
-- **F4-resto · Escala del plano de control que el Product Matrix NO publica**: rutas BGP/OSPF,
+- **F4-resto · cerrado en parte el 2026-10-13**: los **vecinos BGP** por modelo entran desde la
+  *Maximum Values Table* de FortiOS 7.6.7 (`router.bgp:neighbor`, eje duro de configuración;
+  ver *Cerrado recientemente*). **Sigue abierto, sin fuente**: rutas aprendidas (la tabla solo
+  publica rutas estáticas), adyacencias OSPF (su fila `router.ospf:neighbor` son los vecinos
+  declarados a mano en redes NBMA, 10 en todos) y número de VRF (`router.bgp:vrf` es otra cosa).
+  **El 3800G queda sin cifra de BGP**: la tabla da 200.000 políticas y el Product Matrix de
+  octubre 400.000, y un ancla que contradice no se aplica; se cierra cuando una edición de
+  cualquiera de los dos casen. 400G, 3000G y 3500G salen «-» en 7.6.7; 7081F y 7121F no figuran.
+  Texto anterior: **Escala del plano de control que el Product Matrix NO publica**: rutas BGP/OSPF,
   vecinos y VRF por modelo. Los túneles, los VDOM, las políticas de firewall y los usuarios
   SSL-VPN concurrentes **ya entraron** y son ejes duros; estos tres siguen solo en la
   *Maximum Values Table*, que este catálogo no trae. **No se piden en el formulario mientras
@@ -1903,6 +1916,40 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Distancia y subida por enlace en MikroTik, vecinos BGP en Fortinet y el vigía al día (2026-10-13, decimosexta entrega)
+
+- **MikroTik, distancia del tramo** (mejora propuesta en la entrega anterior): cada enlace declara
+  los km del tramo, y dentro de su velocidad el módulo es el primero que llega según el «Distance»
+  de su ficha y la matriz oficial: S-31DLC20D (20 km) o **S-55DLC80D (80 km)** a 1G; S+31DLC10D
+  (10 km) o el **BiDi XS+2733LC15D (15 km)** a 2,5/10/25G; **XQ+31LC02D (2 km)** o XQ+31LC10D a
+  100G. El cobre llega a 100 m y el S+RJ10 a 30 m a 10 Gbps (su tabla en la matriz). Un tramo al
+  que nada llega aparta el equipo con su motivo («el cobre llega a 100 m; a esa distancia hace
+  falta fibra»). El BiDi avisa de que el extremo del operador lleva la longitud de onda
+  complementaria. `COMPATIBILIDAD` suma esos tres módulos, leídos de las tablas extraídas (nota 14
+  para el BiDi en L009 y hEX S 2025). Una prueba exige que cada alcance del motor figure en la
+  ficha del módulo.
+- **MikroTik, enlaces asimétricos**: bajada y subida por enlace (vacía = simétrico). El puerto se
+  mide por el sentido mayor y la prueba «all port» por la suma de los dos, no por 2 × el mayor
+  (un 1000/100 pide 1,1 Gbps y no 2). Los avisos del puerto del equipo (BiDi, S+RJ10 en un equipo
+  pasivo, nota 14) llegan ahora a la ficha y a la memoria técnica; antes se calculaban y no se
+  pintaban. Caso de contraste nuevo: 300 Mbps por fibra a 40 km → hEX S 2025 con S-55DLC80D.
+- **Fortinet, vecinos BGP (F4-resto)**: la *Maximum Values Table* es una aplicación cuya API
+  (`/api/tools/max-values`) se leyó en su script (corrida 38450065531); su respuesta para los 56
+  FortiGate vigentes en FortiOS 7.6.7 la trajo Actions (corrida 38452268834). El orden de las
+  columnas se comprobó contra el catálogo (`vpn.ipsec.phase1` = túneles 27 de 27, `firewall.policy`
+  = políticas 26 de 27) y cada fila de `MVT_LIMITES` vuelve a anclar al cargar. 48 de 58 modelos
+  tienen cifra (1.000, 5.000 o 13.000 vecinos). Campo «Vecinos BGP del diseño», fila en la ficha,
+  fuente declarada y un par de contraste (1.000 vecinos → 30G; 1.001 → 1000F).
+- **Vigía**: corrido desde Actions (38452344121), **39 fuentes sin huella la tienen ya** (Huawei,
+  Aruba, MikroTik —incluida la matriz de compatibilidad— y Juniper). Quedan sin huella la A816 E
+  de Huawei (retirada, 404), la VSG de Aruba y la *Maximum Values Table* (nueva hoy; la medirá la
+  corrida del lunes).
+- **Product Matrix de octubre** (PROMTX-2026-R177-OCT, el vigía lo vio cambiar): contrastado por
+  programa contra el catálogo, 511 cifras de 27 modelos, seis leídas a mano. Coinciden 510; el
+  **400G pasa de 10.000 a 30.000 políticas** (manda la edición más reciente). Verificado en el lock.
+- **Release Notes 7.6.0** (también cambió): solo «Resolved issues» y «Known issues» desde el
+  2026-09-10; la lista de 2 GB sin SSL-VPN sigue igual. Verificado en el lock.
 
 ### Segundo enlace WAN y los módulos de cada enlace en el dimensionador MikroTik (2026-10-13, decimoquinta entrega)
 
