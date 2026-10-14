@@ -246,7 +246,7 @@ test('el desempate es determinista: el orden en que la API sirve el catálogo no
 test('H-11 · un hub declara los túneles que se piden y que el catálogo no trae el tope', () => {
   const r = M.evaluar(esc({ bw: 50, mode: 'agg', sites: 100 }), MODELS);
   assert.strictEqual(r.tuneles, 100);
-  assert.ok(r.avisos.some((a) => /100 túneles IPsec/.test(a) && /no trae el tope/.test(a)));
+  assert.ok(r.avisos.some((a) => /100 túneles IPsec/.test(a) && /no publica el tope de túneles/.test(a) && /Info-Finder/.test(a)));
   assert.strictEqual(r.pick.m.id, 'AR6710-H4T4X2Y7', 'declarar no cambia la recomendación: sin dato no se aparta a nadie');
 });
 
@@ -474,4 +474,68 @@ test('2026-10-12 · apsMax null (AR6000) no descarta por «0 APs»: se declara q
     MODELS.filter((m) => m.id === 'AR6121E'), { rango: () => 0 });
   assert.strictEqual(solo6121.pick.m.id, 'AR6121E');
   assert.ok(solo6121.avisos.some((a) => /no publica cuántos APs gestiona/.test(a)));
+});
+
+// ── Capacidades SD-WAN de las fichas (2026-10-14) ───────────────────────────────────────────
+test('2026-10-14 · cada AR trae sus capacidades SD-WAN de la ficha y el tope de túneles queda sin dato con su motivo', () => {
+  const ar = MODELS.filter((m) => m.cls === 'AR');
+  for (const m of ar) {
+    assert.ok(m.capSdwan, `${m.id} sin capacidades SD-WAN`);
+    assert.strictEqual(m.capSdwan.evpn, true, `${m.id}: todas las fichas AR listan SD-WAN EVPN`);
+    assert.strictEqual(m.capSdwan.tuneles, null, 'ninguna ficha publica el tope: null, nunca un número inventado');
+    assert.match(m.capSdwan.tunelesMotivo, /Info-Finder/);
+    assert.ok(m.capSdwan.n1 && /^N1-/.test(m.capSdwan.n1.f) && /^N1-/.test(m.capSdwan.n1.a), `${m.id}: paquete N1 de su ficha`);
+    // Las cifras SD-WAN que la ficha publica en IMIX van ordenadas: solo IPsec >= IPsec + QoS >= típico.
+    if (m.capSdwan.ipsecSdwan != null) {
+      assert.ok(m.capSdwan.ipsecSdwan >= m.capSdwan.qos && m.capSdwan.qos >= m.typ, `${m.id}: ${m.capSdwan.ipsecSdwan} / ${m.capSdwan.qos} / ${m.typ}`);
+    }
+  }
+  for (const m of MODELS.filter((x) => x.cls === 'WAN')) assert.strictEqual(m.capSdwan, undefined, `${m.id} es de transporte`);
+});
+
+test('2026-10-14 · la AR5710-S de 2 GB se aparta con UTM o A-FEC porque su ficha lo restringe a la SE de 4 GB', () => {
+  const s8 = MODELS.find((m) => m.id === 'AR5710-S8T2S');
+  assert.strictEqual(M.estadoRequisito(s8, 'utm'), 'no');
+  assert.strictEqual(M.estadoRequisito(s8, 'fec'), 'no');
+  assert.strictEqual(M.estadoRequisito(MODELS.find((m) => m.id === 'AR5710-S8T2XE'), 'utm'), 'si');
+  for (const o of [{ svc: { sdwan: true, utm: true } }, { fec: true }]) {
+    const r = M.evaluar(esc({ bw: 50, ...o }), MODELS);
+    const fila = r.rows.find((x) => x.m.id === 'AR5710-S8T2S');
+    assert.ok(fila.miss.some((x) => /la ficha no admite/.test(x) && /4 GB/.test(x)), JSON.stringify(fila.miss));
+    assert.notStrictEqual(r.pick.m.ser, 'AR5710-S');
+  }
+});
+
+test('2026-10-14 · lo que la ficha no lista no aparta: va detrás del confirmado y se declara', () => {
+  // AR610 no lista SRv6: con SRv6 pedido sigue en la lista, pero detrás de los que lo confirman.
+  const r = M.evaluar(esc({ bw: 15, req: { srv6: true } }), MODELS);
+  const ar611 = r.rows.find((x) => x.m.id === 'AR611');
+  assert.deepStrictEqual(ar611.miss, []);
+  assert.deepStrictEqual(ar611.sinConfirmar, ['SRv6']);
+  assert.deepStrictEqual(r.pick.sinConfirmar, [], `elegido ${r.pick.m.id}`);
+  assert.ok(r.avisos.some((a) => /Requisitos SD-WAN pedidos: SRv6/.test(a)));
+  // Sin requisitos, el AR611 sigue siendo el más pequeño que cumple: no cambia nada que no se pidió.
+  assert.strictEqual(pick({ bw: 15 }), 'AR611');
+});
+
+test('2026-10-14 · FEC sin la A adaptativa no aparta, pero no se da por A-FEC', () => {
+  const ar651 = MODELS.find((m) => m.id === 'AR651');
+  assert.strictEqual(M.estadoRequisito(ar651, 'fec'), 'parcial');
+  const r = M.evaluar(esc({ bw: 50, fec: true }), MODELS);
+  const f = r.rows.find((x) => x.m.id === 'AR651');
+  assert.ok(f.sinConfirmar.some((x) => /sin la corrección adaptativa/.test(x)));
+});
+
+test('2026-10-14 · las licencias citan los códigos de pedido de la ficha de la serie', () => {
+  const r = M.evaluar(esc({ bw: 300, svc: { sdwan: true, utm: true }, req: { dsvpn: true, compresion: true } }), MODELS);
+  const L = M.licencias(r.pick, { anios: 3, need: r.need, aps: 0, svc: r.svc, pk: r.pk, req: r.req });
+  const n1 = L.find((l) => /Paquete N1/.test(l.t));
+  assert.ok(n1 && n1.sku === undefined, 'el N1 es una elección entre Foundation y Advanced: sin código fijo');
+  assert.match(n1.d, new RegExp(r.pick.m.capSdwan.n1.f));
+  const tp = L.find((l) => /Suscripción de amenazas/.test(l.t));
+  assert.strictEqual(tp.sku, r.pick.m.capSdwan.amenazas[3]);
+  // AR650: la suscripción de 3 años es la LAR0TP1007 y la de 5, la LAR0TP1013 (ficha 20250810-v3).
+  const ar651 = { m: MODELS.find((m) => m.id === 'AR651'), isWan: false };
+  const tp5 = M.licencias(ar651, { anios: 5, need: 0, aps: 0, svc: { sdwan: true, utm: true }, pk: 'typ', req: ['utm'] }).find((l) => /amenazas/.test(l.t));
+  assert.strictEqual(tp5.sku, 'LAR0TP1013');
 });

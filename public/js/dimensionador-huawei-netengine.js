@@ -73,7 +73,7 @@ $('dirSeg').addEventListener('click', e => {
   dirMult = +b.dataset.v; render();
 });
 ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios',
-  'trafico','fec','fecPct','sDia','diaPct','sNgfw','utmPct','rutasBgp','cgnat','bng']
+  'trafico','fec','fecPct','sDia','diaPct','sNgfw','utmPct','rutasBgp','cgnat','bng','rSrv6','rMpls','rMcast','rDsvpn','rCompr']
   .forEach(id => $(id).addEventListener('input', render));
 ['pickModel','qty','plazoMrr','margenFin','feeMsp'].forEach(id => $(id).addEventListener('input', renderBom));
 
@@ -123,6 +123,7 @@ function render(){
     trafico:$('trafico').value, fec:$('fec').checked, fecPct:$('fecPct').value, dia:$('sDia').checked, diaPct:$('diaPct').value,
     utmPct:$('utmPct').value, ngfw:$('sNgfw').checked,
     carrier:{bgp:$('rutasBgp').value, cgnat:$('cgnat').value, bng:$('bng').value},
+    req:{srv6:$('rSrv6').checked, mpls:$('rMpls').checked, mcast:$('rMcast').checked, dsvpn:$('rDsvpn').checked, compresion:$('rCompr').checked},
   }, MODELS, {rango:FICHA.rango, recomendable:FICHA.recomendable});
   ultimaEval = ev;
   const {raw, base, need, needMpps, pk, aps, svc, wanOk, rows, fit, pick, next} = ev;
@@ -138,7 +139,7 @@ function render(){
   // y BOM siguen al equipo ELEGIDO. Ver /js/ficha.js.
   const ctx = {need, needMpps, raw, base, head, conc, sites, frame:ev.bytesMpps, pk, rows, wanOk, plataforma:ev.plataforma,
     ev, dia:ev.dia, needTun:ev.needTun, necesidadPura:ev.necesidadPura};
-  const licCtx = {need, aps, svc, pk, anios:aniosSel()};
+  const licCtx = {need, aps, svc, pk, anios:aniosSel(), req:ev.req};
   if(!raw || !fit.length || !pick){
     // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): ni veredicto
     // ni licencias ni soporte ni escalera se pintan con un equipo — todo queda en estado
@@ -264,6 +265,7 @@ function seccionesHuawei(m, c){
   })) : [];
   return [
     {titulo:'Características del equipo', filas:caract},
+    ...seccionSdwan(m),
     ...fichaTec,
     FICHA.seccionPuertos(m),
     FICHA.seccionAlimentacion(m),
@@ -276,6 +278,39 @@ function seccionesHuawei(m, c){
     ]},
     {titulo:'Soporte', filas:[[s.n, s.sla]], nota:s.d},
   ];
+}
+
+/* CAPACIDADES SD-WAN DE LA FICHA (2026-10-14). Lo que la ficha de la serie publica del overlay:
+   las dos cifras SD-WAN que no dimensionan, la tabla de funciones y el tope de túneles, que ninguna
+   ficha publica y se dice con su motivo. Tres estados: «Sí», «No (la ficha lo restringe)» y «No
+   consta», nunca un «No» deducido de que la tabla no lo nombre. */
+function seccionSdwan(m){
+  const fx = m.capSdwan;
+  if(!fx) return [];
+  const est = v => v === true ? 'Sí' : v === false ? '<b>No</b>: la ficha lo restringe' : 'No consta en la ficha';
+  const fec = fx.fec === 'A-FEC' ? 'A-FEC (corrección de errores adaptativa)' : fx.fec === 'FEC' ? 'FEC, multi-fed y balanceo por paquete (sin la variante adaptativa)' : est(fx.fec);
+  const seg = [fx.ips, fx.url, fx.av].every(v => v === true) ? 'Sí: IPS, filtrado URL y antivirus' : est([fx.ips, fx.url, fx.av].includes(false) ? false : null);
+  const filas = [
+    ['SD-WAN IPsec (solo IPsec, IMIX)', fx.ipsecSdwan != null ? fmt(fx.ipsecSdwan) : 'La ficha solo lo publica a 512 y 1400 bytes'],
+    ['SD-WAN (IPsec + QoS, IMIX)', fx.qos != null ? fmt(fx.qos) : 'La ficha solo lo publica a 512 y 1400 bytes'],
+    ['SD-WAN típico (IPsec + QoS + SA + AppFlow, IMIX)', m.typ != null ? fmt(m.typ) : 'sin dato'],
+    ['Túneles del overlay', esc(fx.vpn), true],
+    ['SD-WAN EVPN', est(fx.evpn)],
+    ['SRv6', est(fx.srv6)],
+    ['DSVPN', est(fx.dsvpn)],
+    ['MPLS L3VPN', est(fx.mpls)],
+    ['Multicast IP sobre SD-WAN', est(fx.mcast)],
+    ['Optimización WAN', fec],
+    ['Compresión de datos', est(fx.compresion)],
+    ['Seguridad integrada', seg],
+    ['MACsec', fx.macsec ? esc(fx.macsec) : 'No consta en la ficha'],
+    ['Memoria', esc(fx.mem)],
+  ];
+  if(fx.extra) filas.push(['Además', esc(fx.extra), true]);
+  filas.push(['Tope de túneles, sesiones y rutas', 'Sin dato: ' + esc(fx.tunelesMotivo), true]);
+  filas.push(['Paquetes N1 (iMaster NCE)', `<code>${esc(fx.n1.sin)}</code> sin SD-WAN · <code>${esc(fx.n1.f)}</code> Foundation · <code>${esc(fx.n1.a)}</code> Advanced`, true]);
+  return [{titulo:'Capacidades SD-WAN de la ficha', filas,
+    nota:'De la tabla «Software Features and Protocols», la de rendimiento y la «Ordering Information» de «' + esc(fx.doc) + '». Las cifras SD-WAN son la suma de los dos sentidos.' + (fx.nota ? ' ' + esc(fx.nota) : '')}];
 }
 
 const LO = 100, HI = 700000000;
@@ -571,7 +606,7 @@ function renderBom(){
   // rendimiento (Boost) que el calculo exigia desaparecia del BOM y del Excel.
   const ev = ultimaEval;
   const lics = licensesFor(pick, {anios:aniosSel(), need:ev ? ev.need : 0, aps:ev ? ev.aps : 0,
-    svc:ev ? ev.svc : {sdwan:false, utm:false, slice:false}, pk:ev ? ev.pk : $('profile').value});
+    svc:ev ? ev.svc : {sdwan:false, utm:false, slice:false}, pk:ev ? ev.pk : $('profile').value, req:ev ? ev.req : []});
   const {s} = supportFor();
 
   let html = `${BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato})}<section class="panel">
@@ -662,7 +697,7 @@ function filasBom(m, qty, opticas, piezas, lics, s){
     sku:(v.o.bom && v.o.bom.length) ? v.o.bom.join(' / ') : null, qty:v.qty*qty, unit:null,
     nota:`${v.o.d || ''} · cada extremo del enlace necesita el suyo`}));
   // SnS ya sale en Soporte: dejarlo tambien como licencia lo cotizaba dos veces.
-  lics.filter(l=>l.on && !/^SnS/.test(l.t)).forEach(l=>filas.push({cat:'Licencias', desc:l.t, sku:null, qty, unit:null, nota:l.d||''}));
+  lics.filter(l=>l.on && !/^SnS/.test(l.t)).forEach(l=>filas.push({cat:'Licencias', desc:l.t, sku:l.sku||null, qty, unit:null, nota:l.d||''}));
   filas.push({cat:'Soporte', desc:s.n, sku:null, qty, unit:null, nota:`${s.sla} · ${aniosSel() * 12} meses`});
   filas.push({cat:'Soporte', desc:'SnS — Software Subscription and Support', sku:null, qty, unit:null,
     nota:'Actualizaciones y parches de VRP. Va separada del paquete de hardware. '+(aniosSel() * 12)+' meses.'});
@@ -721,7 +756,7 @@ $('copyBtn').addEventListener('click', async () => {
    Misma clave compartida que los demas fabricantes (`BOM.perfiles`): un despliegue real mezcla
    marcas. Cargar es de Huawei (los campos son ids de ESTA pagina); consolidar no. Aqui todo se
    multiplica por sedes: el modelo comercial de Huawei no declara pools ni lineas unicas. */
-const CAMPOS_PERFIL = ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','qty','opticasData','trafico','fec','fecPct','sDia','diaPct','sNgfw','utmPct','rutasBgp','cgnat','bng'];
+const CAMPOS_PERFIL = ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','qty','opticasData','trafico','fec','fecPct','sDia','diaPct','sNgfw','utmPct','rutasBgp','cgnat','bng','rSrv6','rMpls','rMcast','rDsvpn','rCompr'];
 const SEGS_PERFIL = ['platSeg','modeSeg','dirSeg'];
 function capturarCampos(){
   const v = {};
@@ -878,7 +913,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const qs0 = new URLSearchParams(location.search);
   const veniaDeCore = qs0.get('modeSeg') === 'core' && !qs0.has('platSeg');
   const st = ESTADO.vincular({ campos: ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','opticasData','selDescuento','dtoCustom','platSeg','dirSeg','modeSeg','verdict-sel',
-    'trafico','fec','fecPct','sDia','diaPct','sNgfw','utmPct','rutasBgp','cgnat','bng','plazoMrr','margenFin','feeMsp'] });
+    'trafico','fec','fecPct','sDia','diaPct','sNgfw','utmPct','rutasBgp','cgnat','bng','rSrv6','rMpls','rMcast','rDsvpn','rCompr','plazoMrr','margenFin','feeMsp'] });
   if (veniaDeCore) {
     $('platSeg').querySelector('[data-v="ne8000"]').click();
     $('modeSeg').querySelector('[data-v="link"]').click();

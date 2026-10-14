@@ -267,6 +267,17 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
       <div class="row" style="margin-top:6px"><label for="utmPct" style="flex:1;font-size:12px">Carga adicional por UTM (%)</label><input type="number" id="utmPct" min="0" max="200" step="5" value="45" style="width:90px" autocomplete="off"></div>
       <p class="hint">Dos supuestos editables, no cifras de Huawei: el 70 % que sale en claro solo existe en una sucursal de enlace único, y el 45 % de UTM se aplica cuando está marcado. Por encima de 1 Gbps de inspección, o con NGFW avanzado, el motor recomienda un firewall HiSecEngine USG dedicado.</p>
     </div>
+    <div class="field">
+      <label>Requisitos del overlay SD-WAN</label>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="rSrv6"><span>SRv6 en el overlay o hacia la red del operador</span></label>
+        <label class="check"><input type="checkbox" id="rMpls"><span>MPLS L3VPN en el equipo (interconexión con la red MPLS)</span></label>
+        <label class="check"><input type="checkbox" id="rMcast"><span>Multicast IP sobre SD-WAN</span></label>
+        <label class="check"><input type="checkbox" id="rDsvpn"><span>DSVPN (túneles dinámicos entre sucursales)</span></label>
+        <label class="check"><input type="checkbox" id="rCompr"><span>Compresión de datos (optimización WAN)</span></label>
+      </div>
+      <p class="hint">Se contrastan con la tabla de funciones de la ficha de cada serie, como UTM y A-FEC: lo que la ficha restringe aparta el modelo; lo que no lista no se da por soportado, va detrás y se avisa. SD-WAN EVPN lo listan todas las series AR. El tope de túneles no lo publica ninguna ficha: está en Info-Finder, con cuenta Huawei.</p>
+    </div>
     <div class="field"><label for="lan">Puertos LAN mínimos</label><input type="number" id="lan" min="0" step="1" autocomplete="off"></div>
     <div class="field"><label for="aps">APs gestionados (WAC)</label><input type="number" id="aps" min="0" step="1" autocomplete="off"></div>
     </div>
