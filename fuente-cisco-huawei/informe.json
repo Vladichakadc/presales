@@ -1,0 +1,32 @@
+[
+  {
+    "archivo": "mikrotik-compatibilidad-vigente.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://manual.mikrotik.com/docs/wired-connections/mikrotik-wired-interface-compatibility",
+        "status": 200,
+        "bytes": 400877,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-manual-bandwidth-test.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://manual.mikrotik.com/docs/diagnostics-monitoring-and-troubleshooting/bandwidth-test",
+        "status": 200,
+        "bytes": 86938,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  }
+]
