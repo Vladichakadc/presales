@@ -178,3 +178,67 @@ test('cada alcance de la tabla de módulos es el que dice la ficha del módulo',
   assert.strictEqual(D.COMPATIBILIDAD.L009['XS+2733LC15D'], '14');
   assert.strictEqual(D.COMPATIBILIDAD['CCR2216-1G-12XS-2XQ']['XQ+31LC02D'], true);
 });
+
+// CAUDAL, ENLACES Y SENTIDOS UNIFICADOS (2026-10-14). Encargo del dueño: el caudal del sitio, los
+// enlaces WAN y «Sentidos simultáneos» se añadieron en momentos distintos y no estaban sincronizados.
+// Una sola cadena: demanda (sin margen) → velocidad de los enlaces sin la suya → peor escenario por
+// sentido → bajada + subida o el mayor → margen sobre lo que procesa el equipo, nunca sobre el puerto.
+test('la subida declarada manda también con el sitio lleno: 1000/100 pide 1,1 Gbps, no 2', () => {
+  const ev = evaluar({ bw: 1000, enlaces: [Ek('internet', 'principal', 1000, 'cobre', null, 100)] });
+  assert.strictEqual(ev.need, 1100, 'antes el ×2 del sitio (2000) pisaba la subida declarada');
+  assert.strictEqual(ev.wan.baja, 1000);
+  assert.strictEqual(ev.wan.sube, 100);
+  assert.strictEqual(evaluar({ bw: 1000, dirMult: 1, enlaces: [Ek('internet', 'principal', 1000, 'cobre', null, 100)] }).need, 1000);
+});
+
+test('el mismo enlace escrito o heredado del sitio da el mismo resultado', () => {
+  const heredado = evaluar({ bw: 1000, head: 30 });
+  const escrito = evaluar({ bw: 1000, head: 30, enlaces: [Ek('internet', 'principal', 1000, 'indiferente')] });
+  assert.strictEqual(heredado.enlaces[0].mbps, 1000, 'el enlace hereda la demanda sin margen');
+  for (const k of ['need', 'porSentido', 'velEnlace']) assert.strictEqual(heredado[k], escrito[k], k);
+  assert.strictEqual(heredado.need, 2600);
+  assert.strictEqual(heredado.porSentido, 1300);
+  // Los mismos equipos apartados por las mismas causas (la frase del enlace por defecto es la de antes).
+  assert.deepStrictEqual(heredado.rows.map((r) => r.miss.length), escrito.rows.map((r) => r.miss.length));
+  assert.strictEqual(heredado.pick && heredado.pick.m.id, escrito.pick && escrito.pick.m.id);
+});
+
+test('el margen no toca el puerto: un enlace de 1 Gbps cabe en un puerto de 1G con el 30 %', () => {
+  const ev = evaluar({ bw: 1000, head: 30, firewall: 'ninguno' });
+  const hex = fila(ev, 'hEX E50UG');
+  assert.ok(!hex.miss.some((x) => /puerto/.test(x)), hex.miss.join('; '));
+  assert.strictEqual(hex.puertos.asig[0].puerto, 'puerto Ethernet 1G');
+});
+
+test('el margen sí toca la celda IPsec del respaldo, igual que la de ruteo', () => {
+  const enlaces = [E('mpls', 'principal', 200, 'cobre'), E('internet', 'respaldo', 200, 'cobre')];
+  assert.strictEqual(evaluar({ bw: 200, enlaces }).needIpsecRespaldo, 400);
+  assert.strictEqual(evaluar({ bw: 200, head: 30, enlaces }).needIpsecRespaldo, 520);
+  assert.strictEqual(evaluar({ bw: 200, head: 30, dirMult: 1, enlaces }).needIpsecRespaldo, 260);
+});
+
+test('sin caudal del sitio pero con la velocidad de cada enlace hay recomendación', () => {
+  const ev = evaluar({ bw: '', enlaces: [E('internet', 'principal', 300, 'cobre'), E('mpls', 'respaldo', 100, 'cobre')] });
+  assert.strictEqual(ev.hayCaudal, true);
+  assert.ok(ev.pick, 'los enlaces bastan para dimensionar');
+  assert.strictEqual(ev.need, 600);
+  const vacio = evaluar({ bw: '' });
+  assert.strictEqual(vacio.hayCaudal, false);
+  assert.strictEqual(vacio.pick, null);
+});
+
+test('enlaces que no cubren la demanda: el cuello de botella y la falla degradada se dicen', () => {
+  const corto = evaluar({ bw: 500, enlaces: [E('internet', 'principal', 300, 'cobre')] });
+  assert.ok(corto.avisos.some((a) => /el enlace es el cuello de botella/.test(a)));
+  assert.strictEqual(corto.need, 600, 'el equipo se dimensiona con lo que entregan los enlaces');
+  const falla = evaluar({ bw: 500, enlaces: [E('internet', 'principal', 500, 'cobre'), E('internet', 'respaldo', 100, 'cobre')] });
+  assert.ok(falla.avisos.some((a) => /Si cae el enlace 1, el sitio queda con 100 Mbps de bajada, el 20 %/.test(a)));
+});
+
+test('bajada y subida del resumen salen del mismo escenario que la suma', () => {
+  // Principal 1000/100 y respaldo 600/600: normal suma 1100; con la falla, 1200 (600 + 600).
+  const ev = evaluar({ bw: '', enlaces: [Ek('internet', 'principal', 1000, 'cobre', null, 100), Ek('internet', 'respaldo', 600, 'cobre', null, 600)] });
+  assert.strictEqual(ev.wan.agregado, 1200);
+  assert.strictEqual(ev.wan.baja + ev.wan.sube, ev.wan.agregado);
+  assert.strictEqual(ev.wan.caudal, 1000, 'por sentido manda la bajada del principal');
+});

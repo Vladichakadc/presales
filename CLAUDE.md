@@ -430,7 +430,13 @@ Módulos compartidos:
   va el primer módulo que llega según el «Distance» de su ficha (el cobre, 100 m; el S+RJ10 a 10G,
   30 m; el BiDi avisa de que el otro extremo lleva la longitud de onda complementaria), y un tramo
   al que nada llega aparta el equipo. MPLS principal con respaldo de Internet comprueba además la
-  celda IPsec del respaldo.
+  celda IPsec del respaldo. **Caudal, enlaces y sentidos son una sola cadena**: el caudal del
+  sitio (sin margen) es la velocidad de cada enlace que no declare la suya (si todos la declaran,
+  puede ir vacío); los enlaces dan el peor escenario por sentido; «Sentidos simultáneos» compara
+  con la prueba bajada + subida o el sentido mayor (nunca un ×2 que pise la subida declarada); y el
+  margen multiplica lo que procesa el equipo (celda de ruteo, IPsec del respaldo, tope de CHR),
+  nunca el puerto, que lleva el enlace contratado. Las casillas de los enlaces van en la unidad del
+  sitio (el JSON guarda Mbps).
 - **Nokia**: dos dimensionadores — 7750 SR / 7250 IXR (equipo, por plataforma; chasis modulares
   apartados por densidad) y 7220 IXR (fabric). Capacidad en Gbps; `aMbps()` es el único que lo sabe.
 - **Starlink LEO**: módulo canónico integrado byte a byte (`starlink-leo-dimensionador/` es la línea

@@ -24,12 +24,20 @@ const BASE_LINEA = [
   { n: 'Core 40 Gbps con L3HW y FastTrack', esc: { bw: '40', unit: '1000', l3hw: true },
     recomendado: 'CCR2216-1G-12XS-2XQ', celda: 'Ruteo con 25 reglas de filtro y FastTrack L3HW · 512 B' },
   // Segundo enlace (2026-10-13): MPLS principal en fibra monomodo y respaldo de Internet en cobre.
-  // El hEX del primer caso no tiene jaula SFP y los que la tienen no cifran los 400 Mbps del
-  // respaldo (IPsec de un túnel a 512 B): sube al RB5009, con su jaula SFP+ para la MPLS.
+  // El hEX del primer caso no tiene jaula SFP. Caudal, enlaces y sentidos unificados (2026-10-14):
+  // el margen de crecimiento se aplica también a la celda IPsec del respaldo, como a la de ruteo.
+  // 200/200 cifrados en los dos sentidos con el 30 % son 520 Mbps; el RB5009 publica 489 con un
+  // túnel a 512 B (antes del cambio, sin margen, se exigían 400 y cabía). Sube al CCR2004-16G-2S+.
   { n: 'Sitio con MPLS en fibra y respaldo de Internet cifrado', esc: { bw: '300', enlaces: [
       { tipo: 'mpls', rol: 'principal', mbps: '300', medio: 'fibra-sm' },
       { tipo: 'internet', rol: 'respaldo', mbps: '200', medio: 'cobre' }] },
-    recomendado: 'RB5009UG+S+IN', celda: 'Ruteo fast path (sin firewall ni colas) · 512 B' },
+    recomendado: 'CCR2004-16G-2S+', celda: 'Ruteo fast path (sin firewall ni colas) · 512 B' },
+  // Enlace asimétrico con el sitio lleno (2026-10-14): 1000/100 Mbps y el sitio a 1 Gbps. Antes el
+  // ×2 del sitio (2,6 Gbps con el margen) pisaba la subida declarada y salía el RB5009; ahora la
+  // necesidad es (1000 + 100) × 1,3 = 1,43 Gbps.
+  { n: 'Sitio 1 Gbps con enlace asimétrico 1000/100 en cobre', esc: { bw: '1000', enlaces: [
+      { tipo: 'internet', rol: 'principal', mbps: '1000', subida: '100', medio: 'cobre' }] },
+    recomendado: 'hEX S RB760iGS', celda: 'Ruteo fast path (sin firewall ni colas) · 512 B' },
   // Distancia del tramo (2026-10-13): servicio de 300 Mbps en fibra monomodo a 40 km. El S-31DLC20D no llega; el
   // S-55DLC80D (80 km) va en cualquier jaula SFP de la matriz, y el más barato con jaula es el hEX S.
   { n: 'Sitio 300 Mbps por fibra monomodo a 40 km', esc: { bw: '300', enlaces: [
@@ -38,7 +46,7 @@ const BASE_LINEA = [
 ];
 
 module.exports = {
-  medidoEn: { commit: 'revision-mikrotik-2026-10-13', fecha: '2026-10-13' },
+  medidoEn: { commit: 'mikrotik-caudal-unificado-2026-10-14', fecha: '2026-10-14' },
   nombre: 'MikroTik — la celda de la ficha oficial que dimensiona',
   pagina: 'dimensionador-mikrotik-routeros.html',
   claves: ['recomendado', 'celda'],

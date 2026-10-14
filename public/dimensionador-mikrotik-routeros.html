@@ -187,30 +187,32 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
       <p class="hint">Sin simultaneidad se toma el 100 % (todas las sedes llenas a la vez). En IPsec, un hub se dimensiona con la fila de 256 túneles de la ficha; un sitio, con la de un túnel.</p>
     </div>
     <div class="field">
-      <label for="bw" id="bwLbl">Caudal del enlace (por sentido)</label>
+      <label for="bw" id="bwLbl">Caudal del sitio (por sentido)</label>
       <div class="row">
-        <input type="number" id="bw" min="1" step="any" autocomplete="off">
-        <select id="unit" style="width:105px" aria-label="Unidad del caudal"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
+        <input type="number" id="bw" min="1" step="any" autocomplete="off" aria-describedby="bwHint">
+        <select id="unit" style="width:105px" aria-label="Unidad del caudal y de los enlaces"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
       </div>
+      <p class="hint" id="bwHint">Lo que el sitio cursa hoy, sin margen. Es la velocidad de cada enlace WAN que no declare la suya; si todos la declaran, puede quedar vacío. La unidad vale también para los enlaces.</p>
     </div>
     <div class="field" id="enlacesField">
       <label id="enlacesLbl">Enlaces WAN</label>
       <input type="hidden" id="enlacesData">
       <div id="enlacesBox" role="group" aria-labelledby="enlacesLbl"></div>
       <button type="button" class="btn ghost" id="btnAddEnlace" style="margin-top:6px">+ Añadir enlace (segundo Internet o MPLS)</button>
-      <p class="hint">Un <b>respaldo</b> ocupa un puerto pero no suma caudal; dos <b>principales</b> balancean y suman. Se dimensiona con el peor escenario (normal o con un principal caído). La entrega (cobre o fibra), la velocidad y la distancia del tramo eligen el puerto y el módulo de la matriz oficial de MikroTik (el primero que llega a esa distancia). Bajada vacía: la del sitio; subida vacía: simétrico; tramo vacío: no se comprueba el alcance.</p>
+      <p class="hint">Un <b>respaldo</b> ocupa un puerto pero no suma caudal; dos <b>principales</b> balancean y suman. Se dimensiona con el peor escenario (normal o con un principal caído), sentido por sentido. La entrega (cobre o fibra), la velocidad contratada y la distancia del tramo eligen el puerto y el módulo de la matriz oficial de MikroTik (el primero que llega a esa distancia). Bajada vacía: el caudal del sitio; subida vacía: simétrico; tramo vacío: no se comprueba el alcance.</p>
       <div class="sub-field hidden" id="respIpsecBox" data-inactivo>
         <label class="check"><input type="checkbox" id="chkRespaldoIpsec" checked> <span>Cifrar el respaldo por Internet (IPsec hacia la sede central)<span class="sku">Con la MPLS caída el tráfico corporativo cruza Internet: el equipo también se comprueba con su celda IPsec.</span></span></label>
       </div>
     </div>
     <div class="field">
       <label for="dirMult">Sentidos simultáneos</label>
-      <select id="dirMult"><option value="2" selected>Los dos sentidos a la vez (×2)</option><option value="1">Un solo sentido</option></select>
-      <p class="hint">MikroTik mide «all port»: la cifra suma lo que reenvían todos los puertos. Un enlace lleno en los dos sentidos ocupa el doble de esa cifra.</p>
+      <select id="dirMult" aria-describedby="dirHint"><option value="2" selected>Los dos a la vez: bajada + subida de los enlaces</option><option value="1">Un solo sentido: el mayor</option></select>
+      <p class="hint" id="dirHint">MikroTik mide «all port»: la cifra suma lo que reenvían todos los puertos. Con los dos sentidos se suma la bajada y la subida del peor escenario de los enlaces: un enlace simétrico cuenta el doble y uno de 1000/100, 1,1 Gbps.</p>
     </div>
     <div class="field">
       <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
-      <input type="range" id="head" min="0" max="100" step="5" value="30" autocomplete="off">
+      <input type="range" id="head" min="0" max="100" step="5" value="30" autocomplete="off" aria-describedby="headHint">
+      <p class="hint" id="headHint">Se aplica a lo que procesa el equipo (la celda de la ficha, el IPsec del respaldo y el tope de CHR), no al puerto: el puerto lleva el enlace tal como se contrata.</p>
     </div>
     <div class="field">
       <label>Perfil de tráfico (tamaño de trama de la ficha)</label>
@@ -300,7 +302,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
   </section>
 
   <div class="note">
-    <b>Nota metodológica.</b> Las cifras son las de la tabla de pruebas de cada ficha oficial de mikrotik.com (RFC 2544 con equipo Xena, prueba «all port»): ruteo en <b>fast path</b>, con <b>25 colas simples</b> y con <b>25 reglas de filtro</b> (y <b>L3HW</b> en los CCR con offload), a 1518, 512 y 64 bytes; e IPsec con <b>un túnel</b> y con <b>256 túneles</b>, por cifrado, a 1400, 512 y 64 bytes. El escenario elige la celda: las funciones activas fijan la fila y el perfil de tráfico la columna. Un equipo sin esa celda se aparta con su motivo; nunca se le pone la cifra de otra fila. <b>WireGuard</b> no tiene cifra publicada en ninguna ficha y no se estima. Supuestos declarados: el ×2 de los dos sentidos y la RAM por feed BGP.
+    <b>Nota metodológica.</b> Las cifras son las de la tabla de pruebas de cada ficha oficial de mikrotik.com (RFC 2544 con equipo Xena, prueba «all port»): ruteo en <b>fast path</b>, con <b>25 colas simples</b> y con <b>25 reglas de filtro</b> (y <b>L3HW</b> en los CCR con offload), a 1518, 512 y 64 bytes; e IPsec con <b>un túnel</b> y con <b>256 túneles</b>, por cifrado, a 1400, 512 y 64 bytes. El escenario elige la celda: las funciones activas fijan la fila y el perfil de tráfico la columna. Un equipo sin esa celda se aparta con su motivo; nunca se le pone la cifra de otra fila. <b>WireGuard</b> no tiene cifra publicada en ninguna ficha y no se estima. Supuestos declarados: la suma de los dos sentidos, el margen de crecimiento y la RAM por feed BGP.
   </div>
 </div>
 </div>

@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-13, decimosexta entrega (**«Ejecuta los pendientes como un arquitecto senior, con las mejoras propuestas, sin parar hasta cerrarlos».** Hechos: en MikroTik, la **distancia del tramo y la subida de cada enlace** eligen el módulo por alcance (S-55DLC80D a 80 km, BiDi XS+2733LC15D a 15 km, XQ+31LC02D a 2 km), con la matriz oficial ampliada a esos tres módulos. En Fortinet, **F4-resto**: los **vecinos BGP** por modelo salen de la *Maximum Values Table* de FortiOS 7.6.7, leída de su API por Actions y anclada columna a columna. OSPF, VRF y rutas siguen sin fuente que mida lo que pide un diseño. En el **vigía**, 39 fuentes que no tenían huella la tienen ya, y los dos documentos que cambiaron se contrastaron: el **Product Matrix de octubre** (510 de 511 cifras iguales; el 400G pasa a 30.000 políticas) y las **Release Notes 7.6.0** (sin cambios en lo que usa el catálogo). Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-14, decimoséptima entrega (**Caudal del sitio, enlaces WAN y sentidos simultáneos unificados en el dimensionador MikroTik.** Encargo del dueño: revisarlos como arquitecto senior porque se añadieron en momentos distintos y no estaban sincronizados. Eran tres fuentes: el caudal con margen, cada enlace sin margen y un ×2 que pisaba la subida declarada. Ahora son una cadena (demanda → enlaces → sentidos → margen sobre lo que procesa el equipo, nunca sobre el puerto), las casillas de los enlaces van en la unidad del sitio y dicen lo que heredan. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-13, decimosexta entrega (**«Ejecuta los pendientes como un arquitecto senior, con las mejoras propuestas, sin parar hasta cerrarlos».** Hechos: en MikroTik, la **distancia del tramo y la subida de cada enlace** eligen el módulo por alcance (S-55DLC80D a 80 km, BiDi XS+2733LC15D a 15 km, XQ+31LC02D a 2 km), con la matriz oficial ampliada a esos tres módulos. En Fortinet, **F4-resto**: los **vecinos BGP** por modelo salen de la *Maximum Values Table* de FortiOS 7.6.7, leída de su API por Actions y anclada columna a columna. OSPF, VRF y rutas siguen sin fuente que mida lo que pide un diseño. En el **vigía**, 39 fuentes que no tenían huella la tienen ya, y los dos documentos que cambiaron se contrastaron: el **Product Matrix de octubre** (510 de 511 cifras iguales; el 400G pasa a 30.000 políticas) y las **Release Notes 7.6.0** (sin cambios en lo que usa el catálogo). Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-13, decimoquinta entrega (**Segundo enlace WAN en el dimensionador MikroTik y los módulos SFP de cada enlace.** Encargo del dueño: validar qué pasa con un segundo enlace de Internet o MPLS, principal y respaldo, cómo se comporta el equipo, y traer los módulos SFP recomendados según el ancho de banda. El dimensionador gana un constructor de enlaces (hasta 4): el respaldo ocupa puerto y no suma, el caudal es el peor escenario (normal o con un principal caído), cada enlace va a un puerto del equipo (los puertos salen ahora de la ficha, con el importador) y el módulo, de la **matriz oficial de compatibilidad de MikroTik**, traída por Actions. MPLS principal con respaldo de Internet comprueba la celda IPsec del respaldo. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-13, decimocuarta entrega (**«Ejecuta todos los pendientes buscando en la web».** Lo que la web y el transporte de Actions podían cerrar se cerró con documento oficial: la **redundancia de fuente** del CCR2004-1G-12S+2XS y el RB1100AHx4 (sus fichas ya decían «dual redundant power supply» y sus manuales lo confirman), la **spec sheet muerta de EdgeConnect** (sustituida por la data sheet `a00109847enw` Rev. 8, jul-2026, que además da la **capacidad IDS/IPS de los ocho EdgeConnect** sin cifra: con DTD ya tienen techo) y la **ficha de la A816 E** (Huawei la retiró: queda declarado, las cifras siguen con su copia). Hechos en código: **perfiles multi-sede en MikroTik**, **vista previa ligera de las figuras** (33 MB → 0,67 MB en la tarjeta; la lupa y el Excel siguen con el original) y la **decisión de WireGuard**, opción A, la recomendada. Lo que no cierra la web, con su motivo, en cada sección. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-13, decimotercera entrega (**La mejora propuesta hecha —el vigía mira los datos de cada ficha de MikroTik— y las figuras de los 20 routers en alta definición.** Encargo del dueño: ejecutar la mejora propuesta, incluir las gráficas frontal y posterior de cada equipo en alta definición y ejecutar lo que salga por el camino. **Vigía**: las 20 fichas son fuentes propias, vigiladas por la huella de lo que `npm run mikrotik` transcribe (tabla de pruebas, CPU, RAM, nivel, precio), no por el HTML; el importador deja el lock verificado al transcribir y una prueba exige que lock y transcripción casen. El sondeo en Actions midió las 20 «DATOS ESTABLES» (corrida 38404551229). **Figuras**: 31 de la galería oficial de cada ficha (`_hi_res.png`, traídas por Actions, corridas 38403511548 y 38404641378), clasificadas mirándolas porque la galería no rotula la cara; frontal en los 20, trasera en 11 (la galería de los hEX y los RB5009 de interior no trae la cara opuesta); WebP sin pérdida a resolución nativa, con lupa y en el Excel. **Por el camino**: el Excel decía «documentos oficiales de HPE» también en Fortinet y Huawei; el sondeo avisaba en falso de dos fuentes que ya se vigilan por texto; y la ficha del NetEngine A816 E de Huawei responde 404. Ver *Cerrado recientemente*.)
@@ -598,8 +599,10 @@ underlay.
 - **Enlaces WAN, lo que queda (2026-10-13)**: el CCR2004-16G-2S+PC no figura en la matriz oficial
   de compatibilidad y sus enlaces de fibra salen con el módulo «a consultar»; los HS-31DLC20D y
   HS-85DLC05D (1G/2,5G) tampoco figuran y no se recomiendan solos aunque estén en el listado. El
-  respaldo cifrado hereda el ×2 del IPsec (abierto arriba): si MikroTik confirma que su cifra es la
-  suma de los dos sentidos, la exigencia del respaldo se queda; si es por sentido, baja a la mitad.
+  respaldo cifrado sigue a «Sentidos simultáneos» (desde el 2026-10-14, bajada + subida o el
+  mayor, con el margen) y por eso hereda la duda del ×2 del IPsec (abierto arriba): si MikroTik
+  confirma que su cifra es la suma de los dos sentidos, la exigencia del respaldo se queda; si es
+  por sentido, baja a la mitad.
   ~~La velocidad del enlace es la contratada y simétrica~~ (cerrado el 2026-10-13: cada enlace
   declara bajada y subida, y la distancia del tramo elige el módulo por alcance). **Lo que la
   distancia no cubre**: el alcance es el nominal de la ficha de cada módulo, no un balance óptico
@@ -1916,6 +1919,33 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Caudal, enlaces WAN y sentidos simultáneos, unificados en el dimensionador MikroTik (2026-10-14, decimoséptima entrega)
+
+- **Lo que estaba desincronizado** (los enlaces y la subida se añadieron después del caudal y del
+  ×2): (1) con el sitio lleno, el ×2 del caudal pisaba la subida declarada: un enlace de 1000/100
+  con el sitio a 1 Gbps pedía 2,6 Gbps en vez de 1,43; (2) el mismo enlace de 1 Gbps daba otro
+  resultado escrito que heredado: heredado llevaba el margen hasta el puerto y lo mandaba a una
+  jaula de 2,5G, escrito no; (3) la celda IPsec del respaldo se comprobaba sin margen y la de
+  ruteo con él; (4) el sitio podía ir en Gbps y sus enlaces en Mbps; (5) sin caudal del sitio no
+  había recomendación aunque cada enlace dijera su velocidad; (6) el resumen rotulaba «×2» una cifra
+  que no lo era y el medidor comparaba la suma de los principales con un solo puerto.
+- **Regla única** (`mikrotik-motor.js`, `evaluar`): demanda del sitio sin margen → velocidad de los
+  enlaces que no declaran la suya → peor escenario por sentido (`wan.baja`, `wan.sube`) →
+  «Sentidos simultáneos» (bajada + subida, o el mayor) → margen sobre lo que procesa el equipo.
+  El puerto lleva el enlace contratado, sin margen. Avisos nuevos: los enlaces no cubren la demanda
+  (el cuello de botella es el enlace) y la falla degrada el servicio (qué porcentaje queda).
+- **Pantalla**: «Caudal del sitio (por sentido)» con su explicación; las casillas de bajada y
+  subida en la unidad del sitio (el JSON sigue en Mbps: los enlaces compartidos de antes valen) y
+  con lo que heredan («1 Gbps (sitio)», «= bajada»); el resumen muestra la cadena paso a paso;
+  el medidor compara el enlace más rápido con el puerto que le tocó. La memoria técnica, igual.
+- **Lo que cambia en una recomendación, medido**: MPLS en fibra de 300 Mbps con respaldo de
+  Internet de 200 cifrado pasa del RB5009 al **CCR2004-16G-2S+**: con el 30 % el respaldo pide 520
+  Mbps de IPsec y el RB5009 publica 489 con un túnel a 512 B. Caso de contraste nuevo: sitio de 1
+  Gbps con enlace 1000/100 → hEX S RB760iGS (antes RB5009).
+- **Verificado**: 7 pruebas nuevas en `test/mikrotik-enlaces.test.js`, `verificar` (922), 9 casos
+  de contraste, 17 pantallas, e2e completo y la puerta, contra el servidor en modo producción; la
+  pantalla conducida en Chromium (unidades, marcadores, enlace compartido que repone los enlaces).
 
 ### Distancia y subida por enlace en MikroTik, vecinos BGP en Fortinet y el vigía al día (2026-10-13, decimosexta entrega)
 

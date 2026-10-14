@@ -52,7 +52,7 @@ segClick('tramaSeg',v=>{trama=Number(v)||M.TRAMA_DEFECTO;});
 [['chkBgp','bgpBox'],['chkPppoe','pppoeBox'],['chkCapsman','capsBox']].forEach(([chk,box])=>{
   $(chk).addEventListener('change',()=>$(box).classList.toggle('hidden',!$(chk).checked));
 });
-['bw','unit','head','dirMult','sedes','conc','firewall','cifrado','chkVirtual','chkQos','chkL3hw','chkBgp','bgpFeeds',
+['bw','head','dirMult','sedes','conc','firewall','cifrado','chkVirtual','chkQos','chkL3hw','chkBgp','bgpFeeds',
  'chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','apModel','chkPoe','chkHa']
   .forEach(id=>$(id).addEventListener('input',render));
 ['pickModel','qty','supportTier','chkTraining','bomApModel','bomApQty','aniosTco','plazoMrr','margenFin','feeMsp']
@@ -120,7 +120,17 @@ function evaluarEscenario(){
 /* ── ENLACES WAN ─────────────────────────────────────────────────────────────────────────
    Filas {tipo, rol, mbps, subida, medio, km} en el campo oculto #enlacesData (JSON), que es lo que viaja en el
    enlace compartido y en los perfiles. Vacio es el caso de siempre: un principal con la velocidad
-   del sitio. Las filas se repintan solo al añadir o quitar, para no perder el foco al escribir. */
+   del sitio. Las filas se repintan solo al añadir, quitar o cambiar de unidad, para no perder el
+   foco al escribir.
+   UNA SOLA UNIDAD (2026-10-14): el JSON guarda siempre Mbps (los enlaces compartidos de antes
+   siguen valiendo), pero las casillas se escriben y se leen en la unidad del caudal del sitio; antes
+   el sitio podia ir en Gbps y sus enlaces en Mbps. Una casilla vacia dice lo que hereda. */
+const unidad=()=>Number($('unit').value)||1;
+const uTxt=()=>unidad()===1000?'Gbps':'Mbps';
+// Redondeo para que 1,1 Gbps no se guarde como 1100,0000000000002 Mbps.
+const redondo=v=>String(Math.round(v*1000)/1000);
+const aUnidad=v=>(v===''||v==null||!Number.isFinite(Number(v)))?'':redondo(Number(v)/unidad());
+const aMbps=v=>(v===''||v==null||!Number.isFinite(Number(v)))?'':redondo(Number(v)*unidad());
 const ENLACE_DEF={tipo:'internet', rol:'principal', mbps:'', subida:'', medio:'indiferente', km:''};
 function leerEnlaces(){
   try{ const v=JSON.parse($('enlacesData').value||'[]'); return Array.isArray(v)&&v.length?v:[{...ENLACE_DEF}]; }
@@ -139,8 +149,8 @@ function pintarEnlaces(){
     <span class="enl-n" aria-hidden="true">${i+1}</span>
     <select data-k="tipo" aria-label="Tipo del enlace ${i+1}">${opt(M.TIPOS_ENLACE,e.tipo)}</select>
     <select data-k="rol" aria-label="Rol del enlace ${i+1}">${opt({principal:'Principal', respaldo:'Respaldo'},e.rol)}</select>
-    <input type="number" data-k="mbps" min="1" step="any" value="${esc(e.mbps??'')}" placeholder="Bajada Mbps" aria-label="Velocidad de bajada del enlace ${i+1} en Mbps" autocomplete="off">
-    <input type="number" data-k="subida" min="1" step="any" value="${esc(e.subida??'')}" placeholder="Subida Mbps" aria-label="Velocidad de subida del enlace ${i+1} en Mbps" autocomplete="off">
+    <input type="number" data-k="mbps" min="0" step="any" value="${esc(aUnidad(e.mbps))}" placeholder="Bajada ${uTxt()}" aria-label="Velocidad de bajada del enlace ${i+1} en ${uTxt()}" autocomplete="off">
+    <input type="number" data-k="subida" min="0" step="any" value="${esc(aUnidad(e.subida))}" placeholder="Subida ${uTxt()}" aria-label="Velocidad de subida del enlace ${i+1} en ${uTxt()}" autocomplete="off">
     <select data-k="medio" aria-label="Entrega del enlace ${i+1}">${opt(M.MEDIOS,e.medio)}</select>
     <input type="number" data-k="km" min="0" step="any" value="${esc(e.km??'')}" placeholder="Tramo km" aria-label="Distancia del tramo del enlace ${i+1} en km" autocomplete="off">
     ${i?`<button type="button" class="btn ghost enl-quitar" data-quitar="${i}" aria-label="Quitar el enlace ${i+1}">×</button>`:''}
@@ -150,8 +160,23 @@ function pintarEnlaces(){
 $('enlacesBox').addEventListener('input',e=>{
   const f=e.target.closest('.enlace-fila'); const k=e.target.dataset.k;
   if(!f||!k) return;
-  const l=leerEnlaces(); l[+f.dataset.i][k]=e.target.value; escribirEnlaces(l); render();
+  const l=leerEnlaces(); l[+f.dataset.i][k]=(k==='mbps'||k==='subida')?aMbps(e.target.value):e.target.value; escribirEnlaces(l); render();
 });
+// La unidad es la del sitio y la de los enlaces: al cambiarla se repintan sus casillas convertidas.
+$('unit').addEventListener('input',()=>{ pintarEnlaces(); render(); });
+// Lo que hereda cada casilla vacia, dicho en ella: la bajada, el caudal del sitio; la subida, la bajada.
+function marcadoresEnlaces(ev){
+  const u=unidad(), v=x=>redondo(x/u)+' '+uTxt();
+  $('enlacesBox').querySelectorAll('.enlace-fila').forEach(f=>{
+    const e=ev&&ev.enlaces[+f.dataset.i]; if(!e) return;
+    const b=f.querySelector('[data-k="mbps"]'), su=f.querySelector('[data-k="subida"]');
+    b.placeholder=e.porDefecto&&e.mbps>0?`${v(e.mbps)} (sitio)`:`Bajada ${uTxt()}`;
+    su.placeholder=e.mbps>0?'= bajada':`Subida ${uTxt()}`;
+    // El marcador se corta en pantallas estrechas: lo que hereda va también en el título.
+    b.title=e.porDefecto&&e.mbps>0?`Bajada: hereda el caudal del sitio, ${v(e.mbps)}`:'';
+    su.title=e.mbps>0&&!f.querySelector('[data-k="subida"]').value?'Subida: igual a la bajada (simétrico)':'';
+  });
+}
 $('enlacesBox').addEventListener('click',e=>{
   const b=e.target.closest('[data-quitar]'); if(!b) return;
   const l=leerEnlaces(); l.splice(+b.dataset.quitar,1); escribirEnlaces(l); pintarEnlaces(); render();
@@ -174,7 +199,7 @@ function pintarAvisos(ev){
 function render(){
   $('headVal').textContent=Math.round((parseFloat($('head').value)||0))+' %';
   $('hubBox').classList.toggle('hidden',modo!=='hub');
-  $('bwLbl').textContent=modo==='hub'?'Caudal por sede (por sentido)':'Caudal del enlace (por sentido)';
+  $('bwLbl').textContent=modo==='hub'?'Caudal por sede (por sentido)':'Caudal del sitio (por sentido)';
   // Lo que no aplica al perfil se marca inactivo: no viaja en el enlace del escenario.
   if(profile==='ipsec') $('cifradoBox').removeAttribute('data-inactivo'); else $('cifradoBox').setAttribute('data-inactivo','');
   $('cifradoBox').classList.toggle('hidden',profile!=='ipsec');
@@ -187,16 +212,17 @@ function render(){
   const ev=evaluarEscenario();
   ultimaEval=ev;
   pintarAvisos(ev);
+  marcadoresEnlaces(ev);
   // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): es el dato
   // mínimo del dimensionamiento; sin él la página pide valores en vez de proponer un
-  // equipo a ciegas.
-  if(ev.raw<=0){
+  // equipo a ciegas. Vale el del sitio o el de los enlaces.
+  if(!ev.hayCaudal){
     lastPick=null; hayCandidato=false; sincronizarConBom(null);
     const need=$('need'); need.style.left='0%'; $('needLbl').textContent='—';
     $('track').querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
     FICHA.render({vendor:'mikrotik', contenedor:'verdict', candidatos:[], recomendado:null,
       vacioTitulo:'Ingrese valores para recomendar un equipo',
-      vacioDetalle:'<p style="margin:0;font-size:13.5px">Escriba el <b>caudal</b> del sitio (y si aplica, los servicios BGP, túneles o CAPsMAN) para que el dimensionador proponga los modelos que cumplen.</p>'});
+      vacioDetalle:'<p style="margin:0;font-size:13.5px">Escriba el <b>caudal</b> del sitio o la velocidad de sus enlaces WAN (y si aplica, los servicios BGP, túneles o CAPsMAN) para que el dimensionador proponga los modelos que cumplen.</p>'});
     $('verdict').style.borderLeftColor='var(--steel)';
     $('sizingBox').innerHTML='<p style="font-size:13.5px;color:var(--steel)">Ingrese valores para recomendar un equipo.</p>';
     return;
@@ -254,7 +280,10 @@ function render(){
       {etq:r.fila?`Capacidad oficial — ${r.fila}`:'Capacidad (tope de licencia por interfaz)', val:ev.need, tope:r.cap||0,
        txt:`${fmt(m.ser==='CHR'?ev.porSentido:ev.need)} / ${fmt(r.cap)}`},
     ];
-    if(m.wanMax!=null&&m.ser!=='CHR') md.push({etq:'Puerto más rápido (por sentido)', val:ev.porSentido, tope:m.wanMax, txt:`${fmt(ev.porSentido)} / ${fmt(m.wanMax)}`});
+    // El puerto lleva el enlace contratado (sin margen): el enlace más rápido contra el puerto que le tocó.
+    const aMax=r.puertos&&r.puertos.asig.length?r.puertos.asig.reduce((a,x)=>x.enlace.vel>a.enlace.vel?x:a):null;
+    if(aMax) md.push({etq:`Enlace ${aMax.enlace.n} contra su puerto (${aMax.puerto})`, val:aMax.enlace.vel, tope:aMax.velPuerto, txt:`${fmt(aMax.enlace.vel)} / ${fmt(aMax.velPuerto)}`});
+    else if(m.wanMax!=null&&m.ser!=='CHR') md.push({etq:'Puerto más rápido (por sentido)', val:ev.velEnlace, tope:m.wanMax, txt:`${fmt(ev.velEnlace)} / ${fmt(m.wanMax)}`});
     if(ev.req.feeds) md.push({etq:'RAM — feeds BGP full table (supuesto)', val:ev.req.feeds, tope:r.feeds===Infinity?0:r.feeds,
       txt:m.ram==null?'Según hipervisor':`${ev.req.feeds} / ${r.feeds} feeds · ${ramTxt(m)}`});
     if(ev.req.ppp) md.push({etq:'Túneles PPPoE / PPTP / L2TP', val:ev.req.ppp, tope:lic.ppp||0, txt:`${ev.req.ppp} / ${tope(lic.ppp)}`});
@@ -266,7 +295,7 @@ function render(){
     const r=filaDe(m)||{}, flags=[];
     if(m.ser!=='CHR'&&r.fila) flags.push(`Celda oficial: <b>${esc(r.fila)}</b> = ${fmt(r.cap)} (${Math.round((r.ocupacion||0)*100)} % de ocupación).`);
     if(r.puertos&&r.puertos.asig.length) flags.push('Enlaces WAN: '+r.puertos.asig.map(a=>`${a.enlace.n} → ${esc(a.puerto)}${a.sku?` + <b>${esc(a.sku)}</b>`:a.consultar?' + módulo a consultar':''}`).join(' · ')+'.');
-    else if(m.wanMax!=null&&m.ser!=='CHR') flags.push(`Puerto más rápido: ${fmt(m.wanMax)} por sentido; el escenario pide ${fmt(ev.porSentido)}.`);
+    else if(m.wanMax!=null&&m.ser!=='CHR') flags.push(`Puerto más rápido: ${fmt(m.wanMax)} por sentido; el enlace más rápido es de ${fmt(ev.velEnlace)}.`);
     if(ev.req.feeds) flags.push(m.ram==null
       ? `CHR: dimensionar la instancia con ≥ <b>${(M.ramParaFeeds(ev.req.feeds,SIZING.bgpRam)/1024).toFixed(1)} GB</b> de RAM para ${ev.req.feeds} feed(s) (supuesto de diseño).`
       : `Sostiene hasta <b>${r.feeds}</b> feed(s) completos con ${ramTxt(m)} de RAM (supuesto de diseño).`);
@@ -365,10 +394,10 @@ function render(){
       <table><tbody>
         ${filaTabla('Equipo evaluado', esc(m.id)+(m.id===pick.id?'':' (elegido a mano)'))}
         ${filaTabla('Perfil', esc(M.PERFILES[ev.perfil]))}
-        ${filaTabla('Caudal base', ev.modo==='hub'?`${ev.sedes} sedes × ${fmt(ev.raw)} × ${ev.conc} %`:fmt(ev.raw))}
-        ${filaTabla('Con margen (+'+ev.head+' %)', fmt(ev.porSentidoSitio)+' por sentido')}
-        ${ev.enlaces.length>1||ev.wan.caudal>ev.porSentidoSitio?filaTabla('Caudal WAN (peor escenario de los enlaces)', fmt(ev.wan.caudal)+(ev.wan.caudal>ev.porSentidoSitio?' — gobierna':'')):''}
-        ${filaTabla('Necesidad agregada (×'+ev.dirMult+')', '<b>'+fmt(ev.need)+'</b>')}
+        ${filaTabla('Demanda del sitio', ev.demanda>0?(ev.modo==='hub'?`${ev.sedes} sedes × ${fmt(ev.raw)} × ${ev.conc} % = ${fmt(ev.demanda)}`:fmt(ev.demanda))+' por sentido':'sin dato: mandan los enlaces')}
+        ${filaTabla('Enlaces WAN, peor escenario'+(ev.wan.gobierna?` (cae el enlace ${ev.wan.gobierna.cae.n})`:''), `${fmt(ev.wan.baja)} bajada / ${fmt(ev.wan.sube)} subida`)}
+        ${filaTabla(ev.dirMult===2?'Sentidos: bajada + subida':'Sentidos: el mayor', fmt(ev.dirMult===2?ev.wan.agregado:ev.wan.caudal))}
+        ${filaTabla('Necesidad con margen (+'+ev.head+' %)', '<b>'+fmt(ev.need)+'</b> ('+fmt(ev.porSentido)+' por sentido)')}
         ${filaTabla('Celda de la ficha', esc(r.fila||(m.ser==='CHR'?'tope de licencia por interfaz':'—')))}
         ${filaTabla('Capacidad oficial', fmt(r.cap))}
         ${filaTabla('Ocupación', r.ocupacion!=null&&r.cap<999999?Math.round(r.ocupacion*100)+' %':'—')}

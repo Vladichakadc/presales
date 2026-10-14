@@ -161,9 +161,10 @@
   const NOTA_BIDI = 'BiDi por una sola fibra (1270/1330 nm): el extremo del operador lleva la longitud de onda complementaria; confirmarlo con él';
 
   /* Lista de enlaces saneada. `lista` puede llegar como texto JSON (el campo oculto de la página).
-     Un enlace sin velocidad toma la del sitio (`porDefecto`); sin ningún principal, el primero lo
-     es. Sin lista, un único enlace principal de Internet con la velocidad del sitio y el medio sin
-     definir: exactamente lo que el dimensionador hacía antes de esta revisión. */
+     Un enlace sin velocidad toma la DEMANDA DEL SITIO, sin el margen de crecimiento (`porDefecto`):
+     es lo que se contrata, y el margen se aplica después, sobre lo que procesa el equipo. Sin
+     ningún principal, el primero lo es. Sin lista, un único enlace principal de Internet con la
+     velocidad del sitio y el medio sin definir. */
   function normalizarEnlaces(lista, defMbps) {
     let l = lista;
     if (typeof l === 'string') { try { l = JSON.parse(l || '[]'); } catch { l = []; } }
@@ -210,8 +211,11 @@
     const mejor = re.length ? re.reduce((a, e) => (e.vel > a.vel ? e : a)) : null;
     const fallas = mejor ? pr.map((e) => ({ cae: e, entra: mejor, ...esc([...pr.filter((x) => x !== e), mejor]) })) : [];
     const peor = fallas.reduce((a, f) => (f.mbps > a.mbps ? f : a), { mbps: n.mbps, cae: null });
-    return { normal: n.mbps, agregadoNormal: n.agregado, fallas,
-      caudal: Math.max(n.mbps, peor.mbps), agregado: Math.max(n.agregado, ...fallas.map((f) => f.agregado)),
+    // Bajada y subida del MISMO escenario: el que más suma (a igualdad, el normal). Es lo que la
+    // página y la memoria muestran junto a la suma, y tienen que cuadrar con ella.
+    const peorAg = fallas.reduce((a, f) => (f.agregado > a.agregado ? f : a), n);
+    return { normal: n.mbps, normalBaja: n.baja, normalSube: n.sube, agregadoNormal: n.agregado, fallas,
+      caudal: Math.max(n.mbps, peor.mbps), agregado: peorAg.agregado, baja: peorAg.baja, sube: peorAg.sube,
       gobierna: peor.mbps > n.mbps ? peor : null };
   }
 
@@ -368,22 +372,36 @@
     const cifrado = CIFRADOS[esc.cifrado] ? esc.cifrado : 'aes128-sha1';
     const virtual = !!esc.virtual;
 
-    const base = modo === 'hub' ? raw * sedes * conc / 100 : raw;
-    // Enlaces WAN: sin lista, uno principal con la velocidad del sitio (lo de antes). Con varios,
-    // el caudal es el máximo entre el escenario normal y los de falla.
-    const porSentidoSitio = base * (1 + head / 100);
-    const { enlaces, avisos: avisosEnlaces } = normalizarEnlaces(esc.enlaces, porSentidoSitio);
+    /* CAUDAL, ENLACES Y SENTIDOS: UNA SOLA CADENA (2026-10-14, encargo del dueño: «todo debe estar
+       sincronizado y unificado»). Antes eran tres fuentes que no se hablaban: el caudal del sitio
+       con su margen, la velocidad de cada enlace sin margen y un ×2 que pisaba la subida declarada
+       (un 1000/100 con el sitio a 1000 pedía 2 Gbps, no 1,1). Ahora:
+         1. la demanda del sitio (por sentido, sin margen) es la velocidad de cada enlace que no
+            declare la suya;
+         2. los enlaces dan, por sentido, el peor escenario (normal o con un principal caído);
+         3. «Sentidos simultáneos» decide qué se compara con la prueba «all port»: bajada + subida
+            de ese escenario, o el sentido mayor;
+         4. el margen de crecimiento multiplica lo que PROCESA el equipo (la celda de ruteo, la celda
+            IPsec del respaldo y el tope de CHR), nunca el puerto: el puerto lleva el enlace tal
+            como se contrata. */
+    const demanda = modo === 'hub' ? raw * sedes * conc / 100 : raw;
+    const base = demanda;
+    const margen = 1 + head / 100;
+    const { enlaces, avisos: avisosEnlaces } = normalizarEnlaces(esc.enlaces, demanda);
     const wan = escenariosWan(enlaces);
-    const porSentido = Math.max(porSentidoSitio, wan.caudal); // contra el puerto WAN
-    // Contra la prueba «all port»: los dos sentidos (×2 del sitio, o bajada + subida de los
-    // enlaces si son asimétricos); con «un solo sentido», el sentido mayor.
-    const need = dirMult === 2 ? Math.max(porSentidoSitio * 2, wan.agregado) : porSentido;
+    const porSentido = wan.caudal * margen;
+    const need = (dirMult === 2 ? wan.agregado : wan.caudal) * margen;
+    // Sin caudal en el sitio ni en los enlaces no hay recomendación: es el dato mínimo.
+    const hayCaudal = need > 0;
     // Respaldo cifrado: MPLS principal con respaldo de Internet. En la falla el tráfico corporativo
-    // cruza Internet por IPsec, y esa celda también tiene que alcanzar.
+    // cruza Internet por IPsec, y esa celda también tiene que alcanzar, con los mismos sentidos y
+    // el mismo margen que el resto.
     const respInternet = enlaces.filter((e) => e.rol === 'respaldo' && e.tipo === 'internet');
     const respaldoCifrado = enlaces.some((e) => e.rol === 'principal' && e.tipo === 'mpls') && respInternet.length > 0
       && esc.respaldoIpsec !== false && esc.respaldoIpsec !== 'false';
-    const needIpsecRespaldo = respaldoCifrado ? Math.max(...respInternet.map((e) => (dirMult === 2 ? e.mbps + e.subida : e.vel))) : 0;
+    const needIpsecRespaldo = respaldoCifrado ? Math.max(...respInternet.map((e) => (dirMult === 2 ? e.mbps + e.subida : e.vel))) * margen : 0;
+    // El enlace más rápido es el que manda en el puerto (sin margen: es la velocidad contratada).
+    const velEnlace = Math.max(0, ...enlaces.map((e) => e.vel));
     const tuneles = modo === 'hub' && sedes > 1 ? 'multi' : 'uno';
     const bytesIpsec = TRAMAS[trama].ipsec;
 
@@ -398,6 +416,7 @@
     req.poeW = esc.apPoe && req.aps ? req.aps * apDraw : 0;
 
     const avisos = [...avisosEnlaces];
+    if (!(demanda > 0)) enlaces.filter((e) => e.porDefecto).forEach((e) => { if (enlaces.some((x) => !x.porDefecto)) avisos.push(`El enlace ${e.n} no declara velocidad y el sitio no tiene caudal: cuenta como 0 Mbps hasta que se escriba uno de los dos.`); });
     const c = perfil === 'ruteo' ? configuraciones(esc) : { cfg: [], firewall: null, l3hw: false, avisos: [] };
     avisos.push(...c.avisos);
 
@@ -439,7 +458,7 @@
       // por sentido de antes contra el puerto más rápido.
       const puertos = m.ser !== 'CHR' ? asignarPuertos(m, enlaces, o) : null;
       if (puertos) miss.push(...puertos.miss);
-      else if (m.ser !== 'CHR' && m.wanMax != null && porSentido > m.wanMax) miss.push(`su puerto más rápido es de ${fmt(m.wanMax)} por sentido`);
+      else if (m.ser !== 'CHR' && m.wanMax != null && velEnlace > m.wanMax) miss.push(`su puerto más rápido es de ${fmt(m.wanMax)} por sentido`);
       if (respaldoCifrado && perfil === 'ruteo') {
         const t = tuneles;
         const filaIp = m.pruebas && m.pruebas.ipsec && m.pruebas.ipsec[t] && m.pruebas.ipsec[t][cifrado];
@@ -469,11 +488,17 @@
     const porMedio = (a, b) => media === 'fiber' ? fibra(b.m) - fibra(a.m) : media === 'copper' ? fibra(a.m) - fibra(b.m) : 0;
     const fit = rows.filter((r) => !r.miss.length).sort((a, b) => rango(a.m) - rango(b.m) || porMedio(a, b)
       || (a.m.elpN ?? Infinity) - (b.m.elpN ?? Infinity) || b.cap - a.cap || a.m.id.localeCompare(b.m.id, 'en', { numeric: true }));
-    const pick = raw > 0 ? (fit.find((r) => recomendable(r.m)) || null) : null;
+    const pick = hayCaudal ? (fit.find((r) => recomendable(r.m)) || null) : null;
 
     // ── Avisos del escenario ──
-    if (raw > 0) {
-      if (dirMult === 2 && perfil !== 'ipsec') avisos.push(`MikroTik publica la prueba «all port», que suma lo que reenvían todos los puertos: un enlace de ${fmt(porSentido)} lleno en los dos sentidos ocupa ${fmt(need)} de esa cifra. «Un solo sentido» quita el ×2.`);
+    if (hayCaudal) {
+      if (dirMult === 2 && perfil !== 'ipsec') avisos.push(`MikroTik publica la prueba «all port», que suma lo que reenvían todos los puertos: ${fmt(wan.baja)} de bajada y ${fmt(wan.sube)} de subida a la vez${head ? `, con el ${head} % de margen,` : ''} ocupan ${fmt(need)} de esa cifra. «Un solo sentido» compara solo el mayor.`);
+      // Lo que el sitio pide frente a lo que entregan los enlaces: si no llegan, el cuello de
+      // botella es el enlace y el equipo se dimensiona con lo que entregan, no con la demanda.
+      if (demanda > 0 && enlaces.some((e) => !e.porDefecto)) {
+        if (wan.normalBaja < demanda) avisos.push(`Los enlaces principales entregan ${fmt(wan.normalBaja)} de bajada y el sitio pide ${fmt(demanda)}: el enlace es el cuello de botella. El equipo se dimensiona con lo que entregan los enlaces (más el margen), no con la demanda.`);
+        wan.fallas.filter((f) => f.baja < demanda && wan.normalBaja >= demanda).forEach((f) => avisos.push(`Si cae el enlace ${f.cae.n}, el sitio queda con ${fmt(f.baja)} de bajada, el ${Math.round(f.baja / demanda * 100)} % de lo que pide: servicio degradado mientras dure la falla.`));
+      }
       if (dirMult === 2 && perfil === 'ipsec') avisos.push(`La ficha no dice si su cifra IPsec es por sentido o la suma de los dos: el ×2 (${fmt(need)}) es la lectura conservadora de esta página, y «Un solo sentido» la quita.`);
       if (perfil === 'ipsec' && tuneles === 'multi' && sedes > TUNELES_MEDIDOS) avisos.push(`Hub con ${sedes} sedes: MikroTik mide IPsec con ${TUNELES_MEDIDOS} túneles; por encima de esa cifra el rendimiento no está medido.`);
       if (perfil === 'ipsec' && tuneles === 'multi') avisos.push(`Hub IPsec: se dimensiona con la fila de 256 túneles, que en los CCR2116/CCR2216 duplica la de un túnel. Un solo túnel no se reparte entre núcleos: si el diseño concentra el tráfico en un túnel, vale la cifra de un túnel.`);
@@ -494,7 +519,7 @@
 
     return { raw, base, porSentido, need, head, dirMult, trama, bytesIpsec, perfil, cifrado, tuneles, modo, sedes, conc,
       virtual, configs: c.cfg, firewall: c.firewall, l3hw: c.l3hw, req, rows, fit, pick,
-      enlaces, wan, respaldoCifrado, needIpsecRespaldo, porSentidoSitio,
+      enlaces, wan, respaldoCifrado, needIpsecRespaldo, demanda, margen, velEnlace, hayCaudal,
       unidades: esc.ha ? 2 : 1, avisos };
   }
 
@@ -525,9 +550,10 @@
     L.push('');
     L.push('| Paso | Operación | Resultado |');
     L.push('|---|---|---|');
-    L.push(`| Caudal base | ${ev.modo === 'hub' ? `${ev.sedes} sedes × ${fmt(ev.raw)} × ${ev.conc} % de simultaneidad` : 'caudal del enlace'} | ${fmt(ev.base)} |`);
-    L.push(`| Margen | +${ev.head} % | ${fmt(ev.porSentido)} por sentido |`);
-    L.push(`| Sentidos | ×${ev.dirMult} (la prueba «all port» suma todos los puertos) | **${fmt(ev.need)}** |`);
+    L.push(`| Demanda del sitio | ${ev.modo === 'hub' ? `${ev.sedes} sedes × ${fmt(ev.raw)} × ${ev.conc} % de simultaneidad` : 'caudal del sitio, por sentido'} | ${ev.demanda > 0 ? fmt(ev.demanda) : 'sin dato: mandan los enlaces'} |`);
+    L.push(`| Enlaces WAN | peor escenario (normal o con un principal caído); un enlace sin velocidad toma la demanda | ${fmt(ev.wan.baja)} de bajada / ${fmt(ev.wan.sube)} de subida |`);
+    L.push(`| Sentidos | ${ev.dirMult === 2 ? 'los dos a la vez: bajada + subida (la prueba «all port» suma todos los puertos)' : 'uno solo: el sentido mayor'} | ${fmt(ev.dirMult === 2 ? ev.wan.agregado : ev.wan.caudal)} |`);
+    L.push(`| Margen de crecimiento | +${ev.head} % sobre lo que procesa el equipo (no sobre el puerto) | **${fmt(ev.need)}** (${fmt(ev.porSentido)} por sentido) |`);
     if (ev.perfil === 'ruteo') L.push(`| Fila de la tabla | ${ev.configs.map((k) => CONFIGS[k]).join(' y ')} | ${TRAMAS[ev.trama].n} |`);
     if (ev.perfil === 'ipsec') L.push(`| Fila de la tabla | IPsec ${ev.tuneles === 'uno' ? 'un túnel' : '256 túneles'}, ${CIFRADOS[ev.cifrado]} | ${ev.bytesIpsec} B |`);
     const r = ev.req;
@@ -569,7 +595,7 @@
       L.push('Sin equipo elegido: no hay lista de materiales.');
     }
     L.push('');
-    L.push('_Cifras de las fichas oficiales de mikrotik.com (pruebas RFC 2544 con equipo Xena, «all port test»). Precios: «Suggested price» de la ficha (USD), sin impuestos ni descuento de canal. La RAM por feed BGP y el ×2 de los dos sentidos son supuestos de diseño declarados, no cifras de MikroTik._');
+    L.push('_Cifras de las fichas oficiales de mikrotik.com (pruebas RFC 2544 con equipo Xena, «all port test»). Precios: «Suggested price» de la ficha (USD), sin impuestos ni descuento de canal. La RAM por feed BGP, la suma de los dos sentidos y el margen de crecimiento son supuestos de diseño declarados, no cifras de MikroTik._');
     return L.join('\n');
   }
 
