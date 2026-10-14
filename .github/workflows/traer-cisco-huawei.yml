@@ -416,6 +416,7 @@ jobs:
               // tamanos de paquete (su URL se descubre ahi, no se adivina), y la pagina IPsec del
               // manual, por si dice si la cifra IPsec de las pruebas es por sentido o la suma.
               { archivo: 'mikrotik-compatibilidad-vigente.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'S+RJ10', urls: [
+                'https://manual.mikrotik.com/docs/wired-connections/mikrotik-wired-interface-compatibility',
                 'https://manual.mikrotik.com/docs/wired-connections/mikrotik-wired-interface-compatibility/',
               ] },
               { archivo: 'mikrotik-manual-cambios.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
