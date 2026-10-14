@@ -410,6 +410,20 @@ jobs:
                 'https://manual.mikrotik.com/docs/7.25/wired-connections/mikrotik-wired-interface-compatibility',
                 'https://help.mikrotik.com/docs/spaces/ROS/pages/220233794/MikroTik+wired+interface+compatibility',
               ] },
+              // 2026-10-14 (pendientes de MikroTik): la matriz de compatibilidad en su version vigente
+              // (sin fijar la 7.25), por si ya lista el CCR2004-16G-2S+PC; el registro de cambios del
+              // manual nuevo, que anuncia una pagina sobre como medir la capacidad de reenvio con
+              // tamanos de paquete (su URL se descubre ahi, no se adivina), y la pagina IPsec del
+              // manual, por si dice si la cifra IPsec de las pruebas es por sentido o la suma.
+              { archivo: 'mikrotik-compatibilidad-vigente.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'S+RJ10', urls: [
+                'https://manual.mikrotik.com/docs/wired-connections/mikrotik-wired-interface-compatibility/',
+              ] },
+              { archivo: 'mikrotik-manual-cambios.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+                'https://manual.mikrotik.com/changelog/',
+              ] },
+              { archivo: 'mikrotik-manual-ipsec.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+                'https://manual.mikrotik.com/docs/virtual-private-networks/ipsec/',
+              ] },
               // ARUBA: la «EdgeConnect US Spec Sheet» ya no esta en arubanetworks.com (404). La
               // pagina de producto de HPE la lista en psnow como a00109847enw: se trae la pagina
               // para leer que documento es y su enlace de descarga, que no se adivina.
