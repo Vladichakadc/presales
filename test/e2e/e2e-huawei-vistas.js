@@ -130,6 +130,25 @@ async function mirarFigura(page) {
   const m1a = await pintada();
   t.ok(!m1a.alta && m1a.alto <= 150, `un panel apaisado (M1A) sigue en su tope de 150 px (${m1a.alto} px)`);
 
+  // Frontal y trasera siempre (petición del dueño, 2026-10-14): el M1A no tiene trasera
+  // oficial en su ficha, y la pestaña existe y dice por qué en vez de desaparecer.
+  const tabsM1a = await page.$$eval('#verdict .ficha-vista-tab', (b) => b.map((x) => x.dataset.vista));
+  t.ok(tabsM1a.join(',') === 'front,rear', `sin trasera oficial hay igualmente pestañas Frontal y Trasera (${tabsM1a.join(',')})`);
+  await page.click('#verdict .ficha-vista-tab[data-vista=rear]');
+  const sinRear = await page.evaluate(() => {
+    const f = globalThis.document.querySelector('#verdict .ficha-vista');
+    const n = f.querySelector('.ficha-vista-sinrear');
+    return { nota: n && !n.hidden ? n.textContent : '', img: !f.querySelector('img').hidden, zoom: !f.querySelector('.ficha-vista-zoom').hidden };
+  });
+  t.ok(/no publica la vista trasera/.test(sinRear.nota) && !sinRear.img && !sinRear.zoom,
+    'la pestaña Trasera enseña el motivo, sin foto ni lupa: no se sustituye por una de terceros');
+  await page.click('#verdict .ficha-vista-tab[data-vista=front]');
+  const deVuelta = await page.evaluate(() => {
+    const f = globalThis.document.querySelector('#verdict .ficha-vista');
+    return { img: !f.querySelector('img').hidden, nota: f.querySelector('.ficha-vista-sinrear').hidden };
+  });
+  t.ok(deVuelta.img && deVuelta.nota, 'y Frontal vuelve a la figura');
+
   await browser.close();
   process.exit(t.resumen('e2e-huawei-vistas'));
 })().catch((e) => { console.error('ERROR E2E:', e.message); process.exit(2); });
