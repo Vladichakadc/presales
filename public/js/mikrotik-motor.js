@@ -103,6 +103,20 @@
   }
   const fibra = (m) => Object.values(m.cages || {}).reduce((a, b) => a + b, 0);
 
+  /* PRESUPUESTO DE PoE-OUT CON EL ADAPTADOR DE LA CAJA (2026-10-14). La ficha da corriente, no
+     vatios, y el manual dice que la salida va a la misma tension que la entrada: con el adaptador
+     incluido (tension conocida) los vatios son aritmetica sobre cifras oficiales. Por puerto,
+     tension x corriente por puerto; en total, lo menor entre tension x corriente total y lo que
+     da el adaptador menos lo que gasta el equipo sin accesorios. Sin adaptador en la caja, o con
+     una tension fuera del tramo en que la ficha da esos limites, devuelve null: no se calcula. */
+  function presupuestoPoe(m) {
+    const s = m && m.poeSalida; const ad = m && m.adaptador;
+    if (!s || !ad || !(ad.v > 0) || ad.v > s.hastaV) return null;
+    const total = Math.min(ad.v * s.aTotal, ad.v * ad.a - (m.consumoSinAcc || 0));
+    return { v: ad.v, puertos: s.puertos, porPuertoW: ad.v * s.aPuerto, totalW: Math.round(total * 10) / 10,
+      nota: s.nota || null };
+  }
+
 
   /* ══ ENLACES WAN (2026-10-13, encargo del dueño: «qué pasa si se necesita un segundo enlace, de
      Internet o MPLS, principal y backup; cómo se comporta el equipo; los módulos SFP recomendados
@@ -402,6 +416,15 @@
     const needIpsecRespaldo = respaldoCifrado ? Math.max(...respInternet.map((e) => (dirMult === 2 ? e.mbps + e.subida : e.vel))) * margen : 0;
     // El enlace más rápido es el que manda en el puerto (sin margen: es la velocidad contratada).
     const velEnlace = Math.max(0, ...enlaces.map((e) => e.vel));
+    /* ESCENARIOS DE FALLA (2026-10-14, mejora aprobada por el dueño): uno por cada principal que
+       cae, con la misma cadena que el normal (sentidos y margen) y qué parte de la demanda del sitio
+       cubre lo que queda. Solo existen si hay un respaldo: dos principales sin respaldo balancean,
+       y pintar ahí una «falla cubierta» sugeriría una redundancia que no se ha diseñado. */
+    const fallas = wan.fallas.map((f) => ({
+      cae: f.cae.n, entra: f.entra.n, baja: f.baja, sube: f.sube,
+      need: (dirMult === 2 ? f.agregado : f.mbps) * margen,
+      cobertura: demanda > 0 ? Math.min(1, f.baja / demanda) : null,
+    }));
     const tuneles = modo === 'hub' && sedes > 1 ? 'multi' : 'uno';
     const bytesIpsec = TRAMAS[trama].ipsec;
 
@@ -413,6 +436,8 @@
       aps: Math.max(0, parseInt(esc.aps, 10) || 0),
     };
     const apDraw = num(esc.apDraw, 0);
+    // Rango de tensión que admite el AP por PoE (de su ficha): la salida va a la de entrada.
+    const apV = Array.isArray(esc.apV) && esc.apV.length === 2 ? esc.apV.map(Number) : null;
     req.poeW = esc.apPoe && req.aps ? req.aps * apDraw : 0;
 
     const avisos = [...avisosEnlaces];
@@ -459,10 +484,11 @@
       const puertos = m.ser !== 'CHR' ? asignarPuertos(m, enlaces, o) : null;
       if (puertos) miss.push(...puertos.miss);
       else if (m.ser !== 'CHR' && m.wanMax != null && velEnlace > m.wanMax) miss.push(`su puerto más rápido es de ${fmt(m.wanMax)} por sentido`);
+      let capIp = null;
       if (respaldoCifrado && perfil === 'ruteo') {
         const t = tuneles;
         const filaIp = m.pruebas && m.pruebas.ipsec && m.pruebas.ipsec[t] && m.pruebas.ipsec[t][cifrado];
-        const capIp = filaIp ? celda(filaIp, bytesIpsec) : null;
+        capIp = filaIp ? celda(filaIp, bytesIpsec) : null;
         if (capIp == null) miss.push(`respaldo cifrado por Internet: la ficha no publica IPsec ${t === 'uno' ? 'con un túnel' : 'con 256 túneles'} y ${CIFRADOS[cifrado]}`);
         else if (capIp < needIpsecRespaldo) miss.push(`respaldo cifrado por Internet: IPsec ${fmt(capIp)} por debajo de ${fmt(needIpsecRespaldo)}`);
       }
@@ -472,12 +498,20 @@
       if (req.ppp && lic.ppp != null && req.ppp > lic.ppp) miss.push(`licencia nivel ${m.lvl}: ${lic.ppp} túneles PPPoE/PPTP/L2TP`);
       if (req.ovpn && lic.ovpn != null && req.ovpn > lic.ovpn) miss.push(`licencia nivel ${m.lvl}: ${lic.ovpn} túneles OpenVPN`);
       if (req.hotspot && lic.hotspot != null && req.hotspot > lic.hotspot) miss.push(`licencia nivel ${m.lvl}: ${lic.hotspot} usuarios HotSpot`);
+      const pp = presupuestoPoe(m);
       if (req.poeW) {
         if (m.poe != null) { if (m.poe < req.poeW) miss.push(`${m.poe} W de PoE-out`); }
-        else if (m.poeA != null) miss.push(`la ficha da ${String(m.poeA).replace('.', ',')} A de PoE-out y no vatios: no se puede comprobar`);
+        else if (pp) {
+          const W = (x) => `${String(x).replace('.', ',')} W`;
+          if (req.aps > pp.puertos) miss.push(`${pp.puertos} puerto${pp.puertos === 1 ? '' : 's'} con PoE-out para ${req.aps} AP`);
+          if (apDraw > pp.porPuertoW) miss.push(`PoE-out de ${W(pp.porPuertoW)} por puerto con el adaptador de ${pp.v} V de la caja: el AP pide ${W(apDraw)}`);
+          else if (req.poeW > pp.totalW) miss.push(`PoE-out de ${W(pp.totalW)} en total con el adaptador de ${pp.v} V de la caja: los AP piden ${W(req.poeW)}`);
+          if (apV && (pp.v < apV[0] || pp.v > apV[1])) miss.push(`el AP admite ${apV[0]}-${apV[1]} V y la salida PoE va a ${pp.v} V (la del adaptador de la caja)`);
+        }
+        else if (m.poeA != null) miss.push(`la ficha da ${String(m.poeA).replace('.', ',')} A de PoE-out y no vatios, y la caja no trae adaptador que fije la tensión: no se puede comprobar`);
         else miss.push('sin PoE-out');
       }
-      return { m, cap: r.cap, fila: r.fila || null, miss, feeds, puertos,
+      return { m, cap: r.cap, fila: r.fila || null, miss, feeds, puertos, capIpsecRespaldo: capIp, poe: pp,
         ocupacion: r.cap ? (r.porSentido ? porSentido : need) / r.cap : null };
     }).filter(Boolean);
 
@@ -505,7 +539,7 @@
       if (perfil === 'wg') avisos.push('WireGuard: MikroTik no publica su rendimiento en ninguna ficha, así que no se recomienda equipo. Antes se estimaba en el 45 % del IPsec, un supuesto sin fuente que este dimensionador ya no aplica: validar con una prueba de concepto o dimensionar por IPsec.');
       if (virtual && perfil === 'ruteo') avisos.push('CHR: la licencia solo limita la subida por interfaz. El caudal real lo deciden los vCPU y la RAM que dé el hipervisor, y MikroTik no publica cifras de CHR: se compara el caudal por sentido con el tope de la licencia.');
       if (req.feeds) avisos.push(`BGP full table: la RAM por feed (${bgpRam.firstFeedMb} MB el primero y ${bgpRam.extraFeedMb} MB cada uno adicional, más ${bgpRam.baseMb} MB de sistema) es un SUPUESTO DE DISEÑO, no una cifra de MikroTik: ninguna ficha publica cuánta memoria ocupa una tabla completa.`);
-      if (req.poeW) avisos.push(`PoE para ${req.aps} AP: ${req.poeW} W con el consumo máximo sin accesorios de la ficha del AP. Solo el RB5009UPr publica vatios de PoE-out (130 W); el resto publica corriente, que depende de la tensión de entrada.`);
+      if (req.poeW) avisos.push(`PoE para ${req.aps} AP: ${req.poeW} W con el consumo máximo sin accesorios de la ficha del AP. Solo el RB5009UPr publica vatios de PoE-out (130 W). En el hEX PoE, el hEX PoE lite, la PowerBox Pro y el hEX S 2025 los vatios se calculan con el adaptador de la caja (24 V): la salida va a la tensión de entrada, así que es PoE pasivo a 24 V y no 802.3af/at, que el manual solo da con 48-57 V. El resto publica corriente sin adaptador en la caja: no se puede comprobar.`);
       if (esc.ha) avisos.push('Alta disponibilidad VRRP: se cotizan 2 equipos y cada uno se dimensiona al caudal completo, porque el par suma disponibilidad y no capacidad. Cada unidad lleva su propia licencia RouterOS embebida.');
       if (enlaces.length > 1 || wan.gobierna) {
         const esc0 = `Caudal WAN: ${fmt(wan.normal)} con todos los principales${wan.fallas.length ? '; ' + wan.fallas.map((f) => `si cae el enlace ${f.cae.n}, ${fmt(f.mbps)} con el respaldo`).join('; ') : ''}.`;
@@ -519,7 +553,7 @@
 
     return { raw, base, porSentido, need, head, dirMult, trama, bytesIpsec, perfil, cifrado, tuneles, modo, sedes, conc,
       virtual, configs: c.cfg, firewall: c.firewall, l3hw: c.l3hw, req, rows, fit, pick,
-      enlaces, wan, respaldoCifrado, needIpsecRespaldo, demanda, margen, velEnlace, hayCaudal,
+      enlaces, wan, fallas, respaldoCifrado, needIpsecRespaldo, demanda, margen, velEnlace, hayCaudal,
       unidades: esc.ha ? 2 : 1, avisos };
   }
 
@@ -579,8 +613,14 @@
         L.push(`Escenarios: normal ${fmt(ev.wan.normal)}; ${ev.wan.fallas.map((f) => `cae el enlace ${f.cae.n}: ${fmt(f.mbps)}`).join('; ')}. Se dimensiona con ${fmt(ev.wan.caudal)}.`);
         L.push('');
       }
+      if (ev.fallas && ev.fallas.length && fila && fila.cap != null) {
+        L.push('| Escenario | Necesidad del equipo | Ocupación de la celda | Demanda cubierta |');
+        L.push('|---|---|---|---|');
+        ev.fallas.forEach((f) => L.push(`| Cae el enlace ${f.cae}, entra el ${f.entra} | ${fmt(f.need)} | ${Math.round(f.need / fila.cap * 100)} % | ${f.cobertura == null ? 'sin demanda declarada' : `${Math.round(f.cobertura * 100)} %`} |`));
+        L.push('');
+      }
       if (fila && fila.puertos && fila.puertos.avisos.length) { fila.puertos.avisos.forEach((x) => L.push(`- ${x}`)); L.push(''); }
-      L.push('_Módulos de la matriz oficial «MikroTik wired interface compatibility» (manual.mikrotik.com, RouterOS 7.25): solo se recomienda lo que la matriz marca como soportado en el equipo._');
+      L.push('_Módulos de la matriz oficial «MikroTik wired interface compatibility» (manual.mikrotik.com, RouterOS 7.26): solo se recomienda lo que la matriz marca como soportado en el equipo._');
       L.push('');
     }
     if (ev.avisos.length) { L.push('### Avisos del motor'); L.push(''); ev.avisos.forEach((a) => L.push(`- ${a}`)); L.push(''); }
@@ -608,6 +648,6 @@
 
   return { TRAMAS, TRAMA_DEFECTO, CONFIGS, FIREWALL, CIFRADOS, PERFILES, TUNELES_MEDIDOS,
     TIPOS_ENLACE, ROLES, MEDIOS, MAX_ENLACES, MODULOS, NOTA_BIDI, ALCANCE_COBRE_KM,
-    configuraciones, evaluar, memoria, maxFeeds, ramParaFeeds, fmt,
+    configuraciones, evaluar, memoria, maxFeeds, ramParaFeeds, fmt, presupuestoPoe,
     normalizarEnlaces, escenariosWan, asignarPuertos, comportamiento, etiquetaEnlace };
 });

@@ -416,8 +416,11 @@ Módulos compartidos:
   B), IPsec 1 túnel en un sitio y 256 en un hub, por cifrado. La prueba es «all port» (suma de
   puertos): la necesidad va ×2 y aparte el caudal por sentido contra `wanMax`. `fwd`/`fw`/`ipsec`/
   precio se **derivan** de la ficha, nunca se escriben a mano. WireGuard no tiene cifra oficial y
-  no se estima; la RAM por feed BGP es un supuesto declarado; PoE solo cuenta donde la ficha da
-  vatios. Niveles de licencia de la tabla oficial (el 5 no limita OpenVPN; CHR no tiene niveles).
+  no se estima; la RAM por feed BGP es un supuesto declarado; el PoE cuenta en vatios donde la
+  ficha los da (RB5009UPr) y, si la caja trae adaptador, con su tensión × la corriente de la ficha
+  (`presupuestoPoe`: el manual dice que la salida va a la tensión de entrada; a 24 V es pasivo, no
+  802.3af/at); sin adaptador, no se comprueba. La ficha pinta una barra por escenario de falla
+  (solo con respaldo) y la del IPsec del respaldo cifrado. Niveles de licencia de la tabla oficial (el 5 no limita OpenVPN; CHR no tiene niveles).
   Figuras de la galería de cada ficha (`public/data/mikrotik-vistas-equipos.json`), sin pérdida y a
   resolución nativa; la galería no rotula la cara: se decide mirándola, y sin trasera no se sirve la
   de un hermano. La tarjeta pinta una previa con pérdida (`frontPrev`/`rearPrev`, opt-in de

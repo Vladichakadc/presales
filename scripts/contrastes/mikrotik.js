@@ -38,6 +38,12 @@ const BASE_LINEA = [
   { n: 'Sitio 1 Gbps con enlace asimétrico 1000/100 en cobre', esc: { bw: '1000', enlaces: [
       { tipo: 'internet', rol: 'principal', mbps: '1000', subida: '100', medio: 'cobre' }] },
     recomendado: 'hEX S RB760iGS', celda: 'Ruteo fast path (sin firewall ni colas) · 512 B' },
+  // PoE en vatios con el adaptador de la caja (2026-10-14): cuatro cAP ax de 11 W por PoE. La ficha
+  // del hEX PoE da 1 A por puerto y 2 A en total, y su manual dice que la salida va a la tensión
+  // de entrada: con el adaptador de 24 V, 48 W, y 44 caben. Antes, sin vatios publicados, solo
+  // cabía el RB5009UPr.
+  { n: 'Sitio 200 Mbps con 4 cAP ax por PoE', esc: { bw: '200', aps: '4', ap: 'cAP ax' },
+    recomendado: 'hEX PoE RB960PGS', celda: 'Ruteo fast path (sin firewall ni colas) · 512 B' },
   // Distancia del tramo (2026-10-13): servicio de 300 Mbps en fibra monomodo a 40 km. El S-31DLC20D no llega; el
   // S-55DLC80D (80 km) va en cualquier jaula SFP de la matriz, y el más barato con jaula es el hEX S.
   { n: 'Sitio 300 Mbps por fibra monomodo a 40 km', esc: { bw: '300', enlaces: [
@@ -46,7 +52,7 @@ const BASE_LINEA = [
 ];
 
 module.exports = {
-  medidoEn: { commit: 'mikrotik-caudal-unificado-2026-10-14', fecha: '2026-10-14' },
+  medidoEn: { commit: 'mikrotik-poe-y-fallas-2026-10-14', fecha: '2026-10-14' },
   nombre: 'MikroTik — la celda de la ficha oficial que dimensiona',
   pagina: 'dimensionador-mikrotik-routeros.html',
   claves: ['recomendado', 'celda'],
@@ -61,6 +67,11 @@ module.exports = {
     if (x.firewall) await p.selectOption('#firewall', x.firewall);
     if (x.unit) await p.selectOption('#unit', x.unit);
     if (x.l3hw) await p.check('#chkL3hw');
+    if (x.aps) {
+      await p.check('#chkCapsman'); await p.dispatchEvent('#chkCapsman', 'change');
+      await p.fill('#apCount', x.aps); await p.dispatchEvent('#apCount', 'input');
+      await p.selectOption('#apModel', x.ap); await p.check('#chkPoe');
+    }
     if (x.enlaces) {
       // El campo oculto es lo que viaja en el enlace compartido; la página repinta sus filas desde él.
       await p.$eval('#enlacesData', (el, v) => { el.value = v; }, JSON.stringify(x.enlaces));

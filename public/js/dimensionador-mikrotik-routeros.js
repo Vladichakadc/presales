@@ -65,6 +65,14 @@ const ramTxt=m=>m.ram==null?'según hipervisor':m.ram<1024?`${m.ram} MB`:`${(m.r
 const lvlTxt=m=>m.lvl==='chr'?'CHR':`nivel ${m.lvl}`;
 const celda=(t,b)=>t&&t[b]?t[b][1]:null;
 const tope=v=>v==null?'sin tope':String(v);
+// PoE-out en vatios: los publicados (RB5009UPr) o los calculados con el adaptador de la caja.
+const poeTxt=(m,corto)=>{
+  if(m.poe!=null) return `${m.poe} W`;
+  const p=M.presupuestoPoe(m), n=x=>String(x).replace('.',',');
+  if(p) return `${n(p.totalW)} W en total y ${n(p.porPuertoW)} W por puerto (${p.puertos} puerto${p.puertos>1?'s':''})`
+    +(corto?'':` con el adaptador de ${p.v} V de la caja: cálculo con la corriente de la ficha, salida pasiva a ${p.v} V${p.nota?` (${p.nota})`:''}`);
+  return m.poeA!=null?`${n(m.poeA)} A (${corto?'sin vatios publicados':'la ficha no da vatios y la caja no trae adaptador'})`:null;
+};
 
 // Catalogo MikroTik con tres celdas de la matriz: el techo (fast path), la fila de firewall a
 // trama mixta, que es la que mas se acerca a un sitio real, e IPsec con un tunel.
@@ -101,7 +109,7 @@ function escenario(){
     ovpn:$('chkPppoe').checked?$('ovpnTun').value:0,
     hotspot:$('chkPppoe').checked?$('hotspotUsers').value:0,
     aps:$('chkCapsman').checked?$('apCount').value:0,
-    apPoe:$('chkCapsman').checked&&$('chkPoe').checked, apDraw:ap?ap.poeDraw:0,
+    apPoe:$('chkCapsman').checked&&$('chkPoe').checked, apDraw:ap?ap.poeDraw:0, apV:ap?ap.poeV:null,
     enlaces:leerEnlaces(), respaldoIpsec:$('chkRespaldoIpsec').checked,
   };
 }
@@ -284,6 +292,17 @@ function render(){
     const aMax=r.puertos&&r.puertos.asig.length?r.puertos.asig.reduce((a,x)=>x.enlace.vel>a.enlace.vel?x:a):null;
     if(aMax) md.push({etq:`Enlace ${aMax.enlace.n} contra su puerto (${aMax.puerto})`, val:aMax.enlace.vel, tope:aMax.velPuerto, txt:`${fmt(aMax.enlace.vel)} / ${fmt(aMax.velPuerto)}`});
     else if(m.wanMax!=null&&m.ser!=='CHR') md.push({etq:'Puerto más rápido (por sentido)', val:ev.velEnlace, tope:m.wanMax, txt:`${fmt(ev.velEnlace)} / ${fmt(m.wanMax)}`});
+    // Escenario de falla (2026-10-14): una barra por principal que cae, con lo que el equipo
+    // procesa entonces y qué parte de la demanda cubre lo que queda. Solo hay escenarios si hay un
+    // respaldo (lo decide el motor): sin él, la barra sugeriría una redundancia que no existe.
+    if(m.ser!=='CHR'&&r.cap) ev.fallas.forEach(f=>md.push({etq:`Si cae el enlace ${f.cae} (entra el ${f.entra})`, val:f.need, tope:r.cap,
+      txt:`${fmt(f.need)} / ${fmt(r.cap)}${f.cobertura!=null?` · cubre el ${Math.round(f.cobertura*100)} % de la demanda`:''}`}));
+    if(ev.respaldoCifrado&&ev.perfil==='ruteo'&&r.capIpsecRespaldo) md.push({etq:'IPsec del respaldo cifrado', val:ev.needIpsecRespaldo, tope:r.capIpsecRespaldo,
+      txt:`${fmt(ev.needIpsecRespaldo)} / ${fmt(r.capIpsecRespaldo)}`});
+    // PoE de los AP contra lo que da el equipo: los vatios publicados o los calculados con el adaptador.
+    const poeTope=m.poe!=null?m.poe:r.poe?r.poe.totalW:null;
+    if(ev.req.poeW&&poeTope!=null) md.push({etq:`PoE-out para ${ev.req.aps} AP${m.poe!=null?'':` (adaptador de ${r.poe.v} V de la caja)`}`, val:ev.req.poeW, tope:poeTope,
+      txt:`${String(ev.req.poeW).replace('.',',')} / ${String(poeTope).replace('.',',')} W`});
     if(ev.req.feeds) md.push({etq:'RAM — feeds BGP full table (supuesto)', val:ev.req.feeds, tope:r.feeds===Infinity?0:r.feeds,
       txt:m.ram==null?'Según hipervisor':`${ev.req.feeds} / ${r.feeds} feeds · ${ramTxt(m)}`});
     if(ev.req.ppp) md.push({etq:'Túneles PPPoE / PPTP / L2TP', val:ev.req.ppp, tope:lic.ppp||0, txt:`${ev.req.ppp} / ${tope(lic.ppp)}`});
@@ -341,7 +360,7 @@ function render(){
     });
     const libres=r.puertos?r.puertos.libres:null;
     return {titulo:'Enlaces WAN y puertos', filas,
-      nota:`${ev.wan.fallas.length?`Escenarios: normal ${fmt(ev.wan.normal)}; ${ev.wan.fallas.map(f=>`cae el enlace ${f.cae.n}: ${fmt(f.mbps)}`).join('; ')}. `:''}${libres!=null?`Quedan ${libres} puerto(s) libres para la LAN. `:''}Módulos de la matriz oficial «MikroTik wired interface compatibility» (RouterOS 7.25).${r.puertos&&r.puertos.avisos.length?' '+r.puertos.avisos.map(esc).join(' '):''}`};
+      nota:`${ev.wan.fallas.length?`Escenarios: normal ${fmt(ev.wan.normal)}; ${ev.wan.fallas.map(f=>`cae el enlace ${f.cae.n}: ${fmt(f.mbps)}`).join('; ')}. `:''}${libres!=null?`Quedan ${libres} puerto(s) libres para la LAN. `:''}Módulos de la matriz oficial «MikroTik wired interface compatibility» (RouterOS 7.26).${r.puertos&&r.puertos.avisos.length?' '+r.puertos.avisos.map(esc).join(' '):''}`};
   };
   const seccionesDe=m=>{
     const sup=SUPPORT[$('supportTier')&&$('supportTier').value?$('supportTier').value:Object.keys(SUPPORT)[0]]||Object.values(SUPPORT)[0];
@@ -355,7 +374,7 @@ function render(){
         ['CPU', esc(m.cpu||'—')+(m.cores?` · ${m.cores} núcleos`:'')],
         ['RAM', ramTxt(m)],
         ['Puerto más rápido', m.wanMax!=null?fmt(m.wanMax):'según hipervisor'],
-        ['PoE-out', m.poe!=null?`${m.poe} W`:m.poeA!=null?`${String(m.poeA).replace('.',',')} A (la ficha no da vatios)`:'—'],
+        ['PoE-out', poeTxt(m)||'—'],
         ['Puertos', esc(m.ports), true],
         ['Precio sugerido', m.elp?esc(m.elp):'Consultar distribuidor'],
       ]},
@@ -568,7 +587,7 @@ function renderBom(){
       :M.maxFeeds(m,SIZING.bgpRam)?`hasta ${M.maxFeeds(m,SIZING.bgpRam)} feed(s) completos`
       :'<span class="warn">No sostiene una tabla completa — ruta por defecto o feed parcial filtrado</span>'}</td></tr>
     <tr><td>Licencia</td><td class="n">${esc(lvlTxt(m))} — PPPoE/L2TP ${tope(lic.ppp)} · OpenVPN ${tope(lic.ovpn)} · HotSpot ${tope(lic.hotspot)}</td></tr>
-    <tr><td>PoE-out</td><td class="n">${m.poe!=null?m.poe+' W':m.poeA!=null?String(m.poeA).replace('.',',')+' A (sin vatios publicados)':'No entrega PoE'}</td></tr>
+    <tr><td>PoE-out</td><td class="n">${esc(poeTxt(m,true)||'No entrega PoE')}</td></tr>
     <tr><td>Puertos</td><td>${esc(m.ports)}</td></tr>
     </tbody></table></div>
     ${m.note?`<p class="hint warn" style="margin-top:10px">${esc(m.note)}</p>`:''}

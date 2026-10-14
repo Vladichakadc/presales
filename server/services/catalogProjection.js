@@ -482,6 +482,7 @@ async function toDimensionadorMikrotik() {
       hwModel: p.specs && p.specs.hwModel,
       poeDraw: p.specs && p.specs.poeDraw,
       poeIn: p.specs && p.specs.poeIn,
+      poeV: p.specs && p.specs.poeV,
       d: p.specSummary,
       price: p.priceNumeric,
     }));

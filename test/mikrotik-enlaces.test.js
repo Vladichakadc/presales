@@ -242,3 +242,30 @@ test('bajada y subida del resumen salen del mismo escenario que la suma', () => 
   assert.strictEqual(ev.wan.baja + ev.wan.sube, ev.wan.agregado);
   assert.strictEqual(ev.wan.caudal, 1000, 'por sentido manda la bajada del principal');
 });
+
+// ESCENARIO DE FALLA EN LA FICHA (2026-10-14, mejora aprobada por el dueño): lo que procesa el
+// equipo y lo que cubre el sitio cuando cae un principal, con la misma cadena que el normal.
+test('escenarios de falla: necesidad con sentidos y margen, y la demanda que cubre el respaldo', () => {
+  const ev = evaluar({ bw: 500, head: 30, enlaces: [E('internet', 'principal', 500, 'cobre'), E('mpls', 'respaldo', 200, 'cobre')] });
+  assert.strictEqual(ev.fallas.length, 1);
+  const f = ev.fallas[0];
+  assert.deepStrictEqual([f.cae, f.entra], [1, 2]);
+  assert.strictEqual(f.need, 520, '(200 + 200) × 1,3');
+  assert.strictEqual(f.cobertura, 0.4, 'el respaldo de 200 cubre el 40 % de los 500 del sitio');
+  // Sin demanda declarada no hay cobertura que calcular, pero sí la necesidad.
+  const sinBw = evaluar({ bw: '', enlaces: [E('internet', 'principal', 500, 'cobre'), E('mpls', 'respaldo', 200, 'cobre')] });
+  assert.strictEqual(sinBw.fallas[0].cobertura, null);
+});
+
+test('sin respaldo no hay escenario de falla: dos principales balancean, no se cubren', () => {
+  const ev = evaluar({ bw: 500, enlaces: [E('internet', 'principal', 500, 'cobre'), E('internet', 'principal', 500, 'cobre')] });
+  assert.deepStrictEqual(ev.fallas, []);
+  assert.deepStrictEqual(evaluar({ bw: 500 }).fallas, []);
+});
+
+test('respaldo cifrado: cada fila guarda la celda IPsec con la que se comprueba', () => {
+  const ev = evaluar({ bw: 200, enlaces: [E('mpls', 'principal', 200, 'cobre'), E('internet', 'respaldo', 200, 'cobre')] });
+  assert.strictEqual(fila(ev, 'RB5009UG+S+IN').capIpsecRespaldo, 489.1);
+  assert.strictEqual(fila(ev, 'hEX lite RB750r2').capIpsecRespaldo, null);
+  assert.strictEqual(fila(evaluar({ bw: 200 }), 'RB5009UG+S+IN').capIpsecRespaldo, null, 'sin respaldo cifrado no se guarda');
+});

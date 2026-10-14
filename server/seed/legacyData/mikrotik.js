@@ -25,6 +25,16 @@
 //   poe     vatios de PoE-out SOLO donde la ficha publica «Total output power» (RB5009UPr). En
 //           el resto la ficha da corriente (`poeA`, amperios) y no vatios: los vatios dependen
 //           de la tension de entrada, y ponerlos a ojo seria inventar el dato.
+//   poeSalida  (2026-10-14) los limites de corriente de PoE-out, transcritos de la ficha y del
+//           manual: `puertos` con PoE-out, `aPuerto` y `aTotal` hasta `hastaV` voltios de entrada
+//           («low voltage» en la ficha; 12-30 V en los manuales del hEX PoE y la PowerBox Pro).
+//           El manual dice que la salida va a la MISMA tension que la entrada («The output
+//           voltage will be the same as the input voltage»), asi que con `adaptador` (el que
+//           viene en la caja, de la ficha) el motor puede calcular vatios: tension del adaptador
+//           x corriente de la ficha, sin pasar de lo que da el adaptador menos el consumo del
+//           equipo sin accesorios (`consumoSinAcc`). Es aritmetica sobre cifras oficiales, y la
+//           pantalla la declara como calculo. Sin adaptador en la caja la tension no se conoce y
+//           el PoE sigue sin poder comprobarse.
 //
 // LO QUE ANTES ESTABA MAL Y POR QUE (todas contra la ficha oficial): IPsec del RB5009 2.400
 // Mbps (ficha 1.354), del CCR2216 15.000 (ficha 2.013 con un tunel, 4.108 con 256) y del hEX 470
@@ -67,7 +77,7 @@ const MANO = [
   {id:'hEX lite RB750r2', codigo:'RB750r2', ser:'hEX', seg:'Hogar / Básico', cores:1, ram:64, lvl:4, wanMax:100, poe:null,
    ports:'5x FE (100 Mbps)', cages:{}, legacy:true,
    note:'Puertos Fast Ethernet y 64 MB de RAM — solo para reemplazo de equipos instalados, no para diseños nuevos.', redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN pasivo)', volts:'6-30 V DC', texto:'Consumo máximo 2 W — MikroTik publica el máximo, no un consumo típico, y para este modelo no publica la cifra sin accesorios. Dos entradas independientes, pero la fuente interna es única.'}},
-  {id:'hEX PoE lite RB750UPr2', codigo:'RB750UPr2', ser:'hEX', seg:'Hogar / Básico + PoE-out', cores:1, ram:64, lvl:4, wanMax:100, poe:null, poeA:2,
+  {id:'hEX PoE lite RB750UPr2', codigo:'RB750UPr2', ser:'hEX', seg:'Hogar / Básico + PoE-out', cores:1, ram:64, lvl:4, wanMax:100, poe:null, poeA:2, poeSalida:{puertos:4, aPuerto:0.5, aTotal:2, hastaV:30, nota:'la ficha da 1 A por puerto y el manual 500 mA: se toma el menor'}, adaptador:{v:24, a:2.5}, consumoSinAcc:3,
    ports:'5x FE (100 Mbps) · PoE-out pasivo en ether2-ether5 (2 A en total)', cages:{},
    note:'Puertos Fast Ethernet y 64 MB de RAM: el caudal de un enlace no pasa de 100 Mbps.', redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN pasivo)', volts:'8-30 V DC', texto:'Consumo máximo 51 W, y 3 W sin accesorios ni PoE de salida — MikroTik publica máximos, no un consumo típico. Incluye adaptador de 24 V 2,5 A.'}},
   {id:'hEX RB750Gr3', codigo:'RB750Gr3', ser:'hEX', seg:'SOHO / Home', cores:2, ram:256, lvl:4, wanMax:1000, poe:null,
@@ -77,11 +87,11 @@ const MANO = [
    ports:'5x GE', cages:{}, redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN pasivo)', volts:'12-28 V DC', texto:'Consumo máximo 10 W, y 4 W sin accesorios — MikroTik publica máximos, no un consumo típico. Dos entradas independientes, pero la fuente interna es única.'}},
   {id:'hEX S RB760iGS', codigo:'RB760iGS', ser:'hEX', seg:'SOHO + SFP', cores:2, ram:256, lvl:4, wanMax:1000, poe:null, poeA:0.5,
    ports:'5x GE + 1x SFP · PoE-out pasivo en ether5 (0,5 A)', cages:{ge:1}, redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN 802.3af/at)', volts:'12-57 V DC', texto:'Consumo máximo 24 W, y 6 W sin accesorios ni PoE de salida — MikroTik publica máximos, no un consumo típico. Tiene 2 entradas independientes, así que se puede alimentar desde dos tomas distintas, aunque la fuente interna es única.'}},
-  {id:'hEX S E60iUGS', codigo:'E60iUGS', ser:'hEX', seg:'SOHO + SFP 2,5G (hEX S 2025)', cores:2, ram:512, lvl:4, wanMax:2500, poe:null, poeA:0.5,
+  {id:'hEX S E60iUGS', codigo:'E60iUGS', ser:'hEX', seg:'SOHO + SFP 2,5G (hEX S 2025)', cores:2, ram:512, lvl:4, wanMax:2500, poe:null, poeA:0.5, poeSalida:{puertos:1, aPuerto:0.5, aTotal:0.5, hastaV:57}, adaptador:{v:24, a:1.2}, consumoSinAcc:5,
    ports:'5x GE + 1x SFP (admite 2,5G) · PoE-out pasivo en ether5 (0,5 A)', cages:{ge:1}, redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN 802.3af/at)', volts:'12-57 V DC', texto:'Consumo máximo 23 W, y 5 W sin accesorios ni PoE de salida — MikroTik publica máximos, no un consumo típico. Incluye adaptador de 24 V 1,2 A.'}},
-  {id:'hEX PoE RB960PGS', codigo:'RB960PGS', ser:'hEX', seg:'SOHO + PoE-out 802.3af/at', cores:1, ram:128, lvl:4, wanMax:1000, poe:null, poeA:2,
+  {id:'hEX PoE RB960PGS', codigo:'RB960PGS', ser:'hEX', seg:'SOHO + PoE-out 802.3af/at', cores:1, ram:128, lvl:4, wanMax:1000, poe:null, poeA:2, poeSalida:{puertos:4, aPuerto:1, aTotal:2, hastaV:30}, adaptador:{v:24, a:2.5}, consumoSinAcc:6,
    ports:'5x GE + 1x SFP · PoE-out 802.3af/at en ether2-ether5 (2 A en total)', cages:{ge:1}, redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN pasivo)', volts:'12-57 V DC', texto:'Consumo máximo 54 W, y 6 W sin accesorios ni PoE de salida — MikroTik publica máximos, no un consumo típico. Incluye adaptador de 24 V 2,5 A.'}},
-  {id:'PowerBox Pro RB960PGS-PB', codigo:'RB960PGS-PB', ser:'PowerBox', seg:'Exterior + PoE-out 802.3af/at', cores:1, ram:128, lvl:4, wanMax:1000, poe:null, poeA:2,
+  {id:'PowerBox Pro RB960PGS-PB', codigo:'RB960PGS-PB', ser:'PowerBox', seg:'Exterior + PoE-out 802.3af/at', cores:1, ram:128, lvl:4, wanMax:1000, poe:null, poeA:2, poeSalida:{puertos:4, aPuerto:1, aTotal:2, hastaV:30}, adaptador:{v:24, a:2.5}, consumoSinAcc:6,
    ports:'5x GE + 1x SFP · PoE-out 802.3af/at en ether2-ether5 (2 A en total) · caja de exterior', cages:{ge:1}, redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN pasivo)', volts:'12-57 V DC', texto:'Consumo máximo 54 W, y 6 W sin accesorios ni PoE de salida — MikroTik publica máximos, no un consumo típico. Incluye adaptador de 24 V 2,5 A e inyector PoE gigabit.'}},
 
   // ── L009 / RB4011 / RB1100 / RB5009 — sucursal ─────────────────────────────
@@ -261,10 +271,10 @@ const OPTICS = {
 // ficha (un maximo, no un consumo tipico); `poeIn` dice que PoE acepta: los hAP solo aceptan
 // PoE pasivo de 18-28 V, asi que un router con PoE-out 802.3af/at no los alimenta.
 const ACCESS_POINTS = [
-  {sku:'cAP ax',  model:'cAPGi-5HaxD2HaxD',    price:129, poeDraw:11, poeIn:'802.3af/at', d:'AP de techo Wi-Fi 6 · doble banda AX · 2x GE · PoE-in 802.3af/at (18-57 V)'},
-  {sku:'wAP ax',  model:'wAPG-5HaxD2HaxD',     price:89,  poeDraw:9,  poeIn:'802.3af/at', d:'AP de pared/exterior Wi-Fi 6 · doble banda AX · 2x GE · PoE-in 802.3af/at (18-57 V)'},
-  {sku:'hAP ax²', model:'C52iG-5HaxD2HaxD-TC', price:99,  poeDraw:12, poeIn:'pasivo',     d:'AP/router de escritorio Wi-Fi 6 · doble banda AX · 5x GE · PoE-in pasivo (18-28 V)'},
-  {sku:'hAP ax³', model:'C53UiG+5HPaxD2HPaxD', price:139, poeDraw:15, poeIn:'pasivo',     d:'AP/router Wi-Fi 6 de alta potencia · 4x GE + 1x 2.5G · PoE-in pasivo (18-28 V)'},
+  {sku:'cAP ax',  model:'cAPGi-5HaxD2HaxD',    price:129, poeDraw:11, poeIn:'802.3af/at', poeV:[18, 57], d:'AP de techo Wi-Fi 6 · doble banda AX · 2x GE · PoE-in 802.3af/at (18-57 V)'},
+  {sku:'wAP ax',  model:'wAPG-5HaxD2HaxD',     price:89,  poeDraw:9,  poeIn:'802.3af/at', poeV:[18, 57], d:'AP de pared/exterior Wi-Fi 6 · doble banda AX · 2x GE · PoE-in 802.3af/at (18-57 V)'},
+  {sku:'hAP ax²', model:'C52iG-5HaxD2HaxD-TC', price:99,  poeDraw:12, poeIn:'pasivo', poeV:[18, 28],     d:'AP/router de escritorio Wi-Fi 6 · doble banda AX · 5x GE · PoE-in pasivo (18-28 V)'},
+  {sku:'hAP ax³', model:'C53UiG+5HPaxD2HPaxD', price:139, poeDraw:15, poeIn:'pasivo', poeV:[18, 28],     d:'AP/router Wi-Fi 6 de alta potencia · 4x GE + 1x 2.5G · PoE-in pasivo (18-28 V)'},
 ];
 
 const SUPPORT = {

@@ -400,7 +400,7 @@ async function seedCatalog() {
       where: { vendorId: vendorIds.mikrotik, model: ap.sku },
       defaults: {
         vendorId: vendorIds.mikrotik, model: ap.sku, category: 'ap',
-        specs: { hwModel: ap.model, poeDraw: ap.poeDraw, poeIn: ap.poeIn },
+        specs: { hwModel: ap.model, poeDraw: ap.poeDraw, poeIn: ap.poeIn, poeV: ap.poeV },
         specSummary: ap.d, priceDisplay: '~ $' + ap.price, priceNumeric: ap.price,
       },
     });

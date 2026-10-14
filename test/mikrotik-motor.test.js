@@ -88,10 +88,21 @@ test('licencia: PPPoE/L2TP, OpenVPN y HotSpot con los topes de la tabla oficial'
   assert.strictEqual(fila(ovpn, 'L009UiGS-RM').miss.length, 0);
 });
 
-test('PoE para AP: solo cuenta quien publica vatios; la corriente sola no se convierte a ojo', () => {
-  const ev = evaluar({ bw: 100, aps: 4, apPoe: true, apDraw: 11 });
-  assert.match(ev.pick.m.id, /^RB5009UPr/);
-  assert.match(fila(ev, 'hEX PoE RB960PGS').miss[0], /2 A de PoE-out y no vatios/);
+test('PoE para AP: vatios publicados, o calculados con el adaptador de la caja; sin él, no se convierte a ojo', () => {
+  // hEX PoE: 24 V del adaptador × 1 A por puerto = 24 W; × 2 A en total = 48 W (el adaptador da
+  // 60 W y el equipo gasta 6 sin accesorios). Cuatro AP de 11 W caben; cuatro de 15 W, no.
+  assert.deepStrictEqual(M.presupuestoPoe(D.MODELS.find((m) => m.id === 'hEX PoE RB960PGS')),
+    { v: 24, puertos: 4, porPuertoW: 24, totalW: 48, nota: null });
+  const ev = evaluar({ bw: 100, aps: 4, apPoe: true, apDraw: 11, apV: [18, 57] });
+  assert.deepStrictEqual(fila(ev, 'hEX PoE RB960PGS').miss, []);
+  assert.match(fila(evaluar({ bw: 100, aps: 4, apPoe: true, apDraw: 15, apV: [18, 57] }), 'hEX PoE RB960PGS').miss[0], /48 W en total/);
+  // hEX PoE lite: ficha 1 A y manual 500 mA por puerto; se toma el menor (12 W a 24 V).
+  assert.match(fila(evaluar({ bw: 50, aps: 1, apPoe: true, apDraw: 15, apV: [18, 28] }), 'hEX PoE lite RB750UPr2').miss[0], /12 W por puerto/);
+  // Más AP que puertos con PoE-out, y un AP que no admite la tensión de salida.
+  assert.ok(fila(evaluar({ bw: 100, aps: 2, apPoe: true, apDraw: 9, apV: [18, 57] }), 'hEX S E60iUGS').miss.some((x) => /1 puerto con PoE-out para 2 AP/.test(x)));
+  assert.ok(fila(evaluar({ bw: 100, aps: 1, apPoe: true, apDraw: 9, apV: [44, 57] }), 'hEX PoE RB960PGS').miss.some((x) => /admite 44-57 V/.test(x)));
+  // Sin adaptador en la caja (L009, RB4011, hEX S RB760iGS) la tensión no se conoce: no se calcula.
+  assert.match(fila(ev, 'L009UiGS-RM').miss[0], /no trae adaptador que fije la tensión/);
 });
 
 test('CHR: la licencia limita la subida por interfaz; IPsec de un CHR no tiene cifra', () => {
