@@ -41,7 +41,7 @@ function fuentesPorClave(fuentes = FUENTES) {
   const m = new Map();
   for (const [vendor, lista] of Object.entries(fuentes)) {
     for (const f of lista) {
-      if (f.url) m.set(claveDe(vendor, f), { vendor, documento: f.documento, url: f.url, estable: f.estable !== false });
+      if (f.url) m.set(claveDe(vendor, f), { vendor, documento: f.documento, url: f.url, estable: f.estable !== false, retirada: !!f.retirada });
     }
   }
   return m;
@@ -142,7 +142,15 @@ function informeDe(d, fuentes = fuentesPorClave()) {
     const detalle = String(r.detalle == null ? '' : r.detalle).replace(/\s+/g, ' ').replace(/`/g, "'").trim().slice(0, 200) || 'sin detalle';
     inalcanzables.push({ ...f, detalle });
   }
-  return { informe: { cambiados, inalcanzables } };
+  // Una fuente declarada retirada que vuelve a leerse: el fabricante la republico. Es opcional
+  // (las corridas anteriores no la traen) y solo se acepta si FUENTES la declara retirada.
+  const reaparecidas = [];
+  for (const r of Array.isArray(d.reaparecidas) ? d.reaparecidas : []) {
+    const f = fuente(r);
+    if (!f || !f.retirada) return { error: 'una fuente reaparecida no está declarada retirada en FUENTES' };
+    reaparecidas.push(f);
+  }
+  return { informe: { cambiados, inalcanzables, reaparecidas } };
 }
 
 function tituloIssue(inf, matrix) {
@@ -157,6 +165,7 @@ function tituloIssue(inf, matrix) {
 // una corrida en rojo que no deja rastro donde se mira es como la vigía pasó tres semanas sin
 // avisar (2026-09-21 y 2026-09-28).
 const hayQueAvisar = (inf, lock, matrix) => inf.cambiados.length > 0 || inf.inalcanzables.length > 0 || (lock && lock.estado === 'fallida')
+  || (inf.reaparecidas || []).length > 0
   || !!(matrix && (matrix.error || !matrix.limpio));
 
 // EL CONTRASTE DEL PRODUCT MATRIX (2026-10-14). Lo deja el job `contrastar`, que corrio
@@ -168,7 +177,7 @@ const CAMPO = /^[a-zA-Z]{2,12}$/;
 const corto = (x) => String(x == null ? '—' : typeof x === 'object' ? JSON.stringify(x) : x)
   .replace(/\s+/g, ' ').replace(/[`<>]/g, "'").trim().slice(0, 80);
 const MAX_FILAS = 40;
-function resumenMatrix(d) {
+function resumenMatrix(d, { aDemanda = false } = {}) {
   if (!esObjeto(d)) return { error: 'matrix.json no es un objeto' };
   const enteros = ['coinciden'];
   for (const k of enteros) if (!esEntero(d[k])) return { error: `matrix.json sin ${k}` };
@@ -192,7 +201,7 @@ function resumenMatrix(d) {
   // La URL sale de fuentes.js, no del artefacto.
   const fuente = (FUENTES.fortinet || []).find((f) => /Product Matrix/i.test(f.documento) && f.url);
   return { matrix: {
-    url: fuente ? fuente.url : null, edicion: d.edicion || null, hash: d.hash || null, mismoDocumento: d.mismoDocumento ?? null, coinciden: d.coinciden,
+    url: fuente ? fuente.url : null, aDemanda: aDemanda === true, edicion: d.edicion || null, hash: d.hash || null, mismoDocumento: d.mismoDocumento ?? null, coinciden: d.coinciden,
     nDifieren: d.difieren.length, nSinLeer: d.sinLeer.length, difieren, sinLeer, nuevos: d.nuevos, faltan: d.faltan, limpio,
   } };
 }
@@ -216,7 +225,9 @@ function seccionMatrix(m, url) {
     l.push('', 'Celdas que no se pudieron leer (mirarlas a mano):');
     for (const s of m.sinLeer) l.push(`- ${s.id} ${s.campo}: «${s.texto}»`);
   }
-  l.push('', m.limpio
+  l.push('', m.limpio && m.aDemanda
+    ? 'Contraste pedido a mano sobre la edición ya verificada: sigue casando con el catálogo. No hay nada que marcar.'
+    : m.limpio
     ? `Todo casa: la edición no cambia ninguna cifra del catálogo. Se puede marcar revisada con \`npm run vigia -- --revisado fortinet ${url}\` y citar la edición en \`fuentes.js\`.`
     : 'Nada se ha escrito en el catálogo: cada diferencia se corrige a mano en `legacyData/fortinet.js` citando la edición, y después se marca revisada con `npm run vigia -- --revisado`.', '');
   return l;
@@ -253,6 +264,13 @@ function cuerpoIssue(inf, lock, matrix) {
       l.push(`  - medido antes: \`${r.antes}\` el ${r.medidoAntes || 'desconocido'}`);
       l.push(`  - ahora: \`${r.ahora}\` (${r.bytes} bytes)`);
     }
+    l.push('');
+  }
+  if ((inf.reaparecidas || []).length) {
+    l.push('## Fuentes retiradas que vuelven a publicarse', '');
+    l.push('`fuentes.js` las declara retiradas por el fabricante, y esta semana se leyeron: hay que abrirlas,');
+    l.push('contrastarlas con lo que el catálogo tomó de la copia y, si siguen, quitar `retirada`.', '');
+    for (const r of inf.reaparecidas) l.push(`- **${r.vendor}** — ${r.documento}`, `  - ${r.url}`);
     l.push('');
   }
   if (inf.inalcanzables.length) {

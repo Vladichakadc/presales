@@ -183,7 +183,7 @@ test('principal: valida, copia el lock y deja el informe; si algo no pasa, no es
   fs.writeFileSync(artefacto, JSON.stringify(nuevo));
   fs.writeFileSync(path.join(dir, 'vigia.json'), JSON.stringify({ cambiados: [], inalcanzables: [] }));
   const inf = V.principal(dir, lockRepo);
-  assert.deepStrictEqual(inf, { cambiados: [], inalcanzables: [] });
+  assert.deepStrictEqual(inf, { cambiados: [], inalcanzables: [], reaparecidas: [] });
   assert.strictEqual(JSON.parse(fs.readFileSync(lockRepo, 'utf8')).revisado, '2026-10-05T06:00:00.000Z', 'el lock se copió');
   assert.ok(fs.existsSync(path.join(dir, 'informe.json')));
   // Manipulado: no escribe nada.
@@ -244,6 +244,10 @@ test('el contraste del Product Matrix se valida antes de escribirlo y el issue d
   assert.strictEqual(limpio.limpio, true);
   assert.ok(!V.hayQueAvisar({ cambiados: [], inalcanzables: [] }, { estado: 'sin-cambios' }, limpio));
   assert.match(V.cuerpoIssue({ cambiados: [], inalcanzables: [] }, null, limpio), /--revisado fortinet https:\/\/www\.fortinet\.com/);
+  // Pedido a mano sobre la edición ya verificada: no se invita a marcar revisado lo que ya lo está.
+  const aMano = V.resumenMatrix({ ...copia(MATRIX_OK), difieren: [] }, { aDemanda: true }).matrix;
+  assert.match(V.cuerpoIssue({ cambiados: [], inalcanzables: [] }, null, aMano), /sigue casando con el catálogo/);
+  assert.ok(!/--revisado/.test(V.cuerpoIssue({ cambiados: [], inalcanzables: [] }, null, aMano)));
   // Un PDF que cambió entre las dos descargas se avisa.
   assert.match(V.cuerpoIssue({ cambiados: [], inalcanzables: [] }, null, V.resumenMatrix({ ...copia(MATRIX_OK), mismoDocumento: false }).matrix), /no es el que midió el vigía/);
 });
@@ -262,4 +266,31 @@ test('rechaza un contraste que solo produciría un artefacto manipulado, y un fa
   const fallo = { error: 'el job contrastar no terminó (descarga o lectura del PDF)' };
   assert.ok(V.hayQueAvisar({ cambiados: [], inalcanzables: [] }, null, fallo));
   assert.match(V.cuerpoIssue({ cambiados: [], inalcanzables: [] }, null, fallo), /no se pudo usar/);
+});
+
+// FUENTES RETIRADAS (2026-10-14). Una fuente que fuentes.js declara `retirada` y sigue sin leerse
+// no vuelve cada lunes al issue; si un día se lee, se avisa: el fabricante la republicó.
+test('una fuente retirada que sigue caída no avisa; si reaparece, sí', () => {
+  const { conRetirada } = require('../scripts/vigia-fuentes.js');
+  const f = { documento: 'Ficha vieja', url: 'https://acme.example/vieja.pdf', retirada: { fecha: '2026-10-13', motivo: '404' } };
+  const caida = conRetirada({ vendor: 'acme', documento: f.documento, url: f.url, estado: 'inalcanzable', detalle: 'HTTP 404' }, f);
+  assert.strictEqual(caida.estado, 'retirada');
+  assert.match(caida.detalle, /retirada el 2026-10-13: HTTP 404/);
+  const vuelve = conRetirada({ vendor: 'acme', url: f.url, estado: 'leido' }, f);
+  assert.strictEqual(vuelve.reaparecio, true);
+  assert.strictEqual(conRetirada({ estado: 'inalcanzable' }, { documento: 'x' }).estado, 'inalcanzable', 'sin retirada nada cambia');
+  // En el issue: solo si FUENTES la declara retirada.
+  const fuentes = V.fuentesPorClave({ acme: [f, { documento: 'Viva', url: 'https://acme.example/viva.pdf' }] });
+  const ok = V.informeDe({ cambiados: [], inalcanzables: [], reaparecidas: [{ vendor: 'acme', url: f.url }] }, fuentes);
+  assert.strictEqual(ok.informe.reaparecidas.length, 1);
+  assert.ok(V.hayQueAvisar(ok.informe, null));
+  assert.match(V.cuerpoIssue(ok.informe, null), /Fuentes retiradas que vuelven a publicarse/);
+  assert.ok(V.informeDe({ cambiados: [], inalcanzables: [], reaparecidas: [{ vendor: 'acme', url: 'https://acme.example/viva.pdf' }] }, fuentes).error);
+  // La del A816 E está declarada así en el catálogo de fuentes real.
+  const { FUENTES } = require('../server/seed/legacyData/fuentes');
+  const a816 = FUENTES.huawei.find((x) => /A816 E Datasheet/.test(x.documento));
+  assert.match(a816.retirada.fecha, /^\d{4}-\d{2}-\d{2}$/);
+  for (const lista of Object.values(FUENTES)) {
+    for (const x of lista) if (x.retirada) assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(x.retirada.fecha) && x.retirada.motivo, x.documento);
+  }
 });

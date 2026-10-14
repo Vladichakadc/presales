@@ -107,6 +107,7 @@ jobs:
     timeout-minutes: 15
     outputs:
       pendiente: ${{ steps.pendiente.outputs.pendiente }}
+      ademanda: ${{ steps.pendiente.outputs.ademanda }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -153,6 +154,8 @@ jobs:
           codigo=$?
           set -e
           node scripts/contrastar-matrix.js --url "$URL_MATRIX" --hash-esperado "$HASH_MEDIDO" > "$RUNNER_TEMP/matrix/matrix.txt" || true
+          # Tambien al log: se lee por la API aunque el almacen de artefactos no sea alcanzable.
+          cat "$RUNNER_TEMP/matrix/matrix.txt"
           {
             echo '## Contraste del Product Matrix'
             echo '```'
@@ -253,6 +256,7 @@ jobs:
           ESTADO_LOCK: ${{ steps.guardar.outputs.estado }}
           CONTRASTAR: ${{ needs.contrastar.result }}
           MATRIX_PENDIENTE: ${{ needs.contrastar.outputs.pendiente }}
+          MATRIX_A_DEMANDA: ${{ needs.contrastar.outputs.ademanda }}
         with:
           script: |
             const fs = require('fs');
@@ -288,7 +292,8 @@ jobs:
             if (process.env.CONTRASTAR === 'failure') matrix = { error: 'el job contrastar no terminó (descarga o lectura del PDF)' };
             else if (process.env.MATRIX_PENDIENTE === 'true') {
               try {
-                const r = V.resumenMatrix(JSON.parse(fs.readFileSync(`${process.env.RUNNER_TEMP}/matrix/matrix.json`, 'utf8')));
+                const r = V.resumenMatrix(JSON.parse(fs.readFileSync(`${process.env.RUNNER_TEMP}/matrix/matrix.json`, 'utf8')),
+                  { aDemanda: process.env.MATRIX_A_DEMANDA === 'true' });
                 matrix = r.error ? { error: r.error } : r.matrix;
               } catch (e) { matrix = { error: `no se pudo leer matrix.json: ${e.message}` }; }
             }

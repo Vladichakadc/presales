@@ -106,12 +106,12 @@ test('pendiente segun el lock: la URL sale de fuentes.js y del lock solo un hash
   assert.strictEqual(C.pendienteDelLock({ documentos: {} }), null);
   assert.strictEqual(C.pendienteDelLock({ documentos: { [f.clave]: { hashVerificado: 'a'.repeat(64) } } }), null, 'verificado y sin visto: nada pendiente');
   const p = C.pendienteDelLock({ documentos: { [f.clave]: { visto: { hash: 'b'.repeat(64) }, pendienteDesde: '2026-10-13T19:07:48.856Z' } } });
-  assert.deepStrictEqual(p, { url: f.url, hash: 'b'.repeat(64), desde: '2026-10-13T19:07:48.856Z' });
+  assert.deepStrictEqual(p, { url: f.url, hash: 'b'.repeat(64), desde: '2026-10-13T19:07:48.856Z', aDemanda: false });
   const raro = C.pendienteDelLock({ documentos: { [f.clave]: { visto: { hash: 'x\nurl=https://otra' }, pendienteDesde: 'ayer' } } });
-  assert.deepStrictEqual(raro, { url: f.url, hash: null, desde: null }, 'un hash con otra forma no llega a $GITHUB_OUTPUT');
+  assert.deepStrictEqual(raro, { url: f.url, hash: null, desde: null, aDemanda: false }, 'un hash con otra forma no llega a $GITHUB_OUTPUT');
   // A demanda: sin cambio pendiente, se espera el PDF verificado.
   const aDemanda = C.pendienteDelLock({ documentos: { [f.clave]: { hashVerificado: 'c'.repeat(64) } } }, f, true);
-  assert.deepStrictEqual(aDemanda, { url: f.url, hash: 'c'.repeat(64), desde: null });
+  assert.deepStrictEqual(aDemanda, { url: f.url, hash: 'c'.repeat(64), desde: null, aDemanda: true });
 });
 
 test('descargar comprueba la firma del PDF y devuelve su SHA-256', async () => {

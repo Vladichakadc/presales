@@ -238,7 +238,7 @@ function pendienteDelLock(lock, fuente = fuenteMatrix(), forzar = false) {
   const crudo = e.visto ? e.visto.hash : e.hashVerificado;
   const hash = typeof crudo === 'string' && HEX64.test(crudo) ? crudo : null;
   const desde = typeof e.pendienteDesde === 'string' && /^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/.test(e.pendienteDesde) ? e.pendienteDesde : null;
-  return { url: fuente.url, hash, desde };
+  return { url: fuente.url, hash, desde, aDemanda: !e.visto };
 }
 
 /* Baja el PDF y comprueba la firma. `traer` se inyecta en las pruebas. */
@@ -263,7 +263,7 @@ async function main() {
   if (args.includes('--pendiente')) {
     // Salida para $GITHUB_OUTPUT: pendiente=false, o pendiente=true con url= y hash=.
     const p = pendienteDelLock(JSON.parse(fs.readFileSync(valor('--pendiente'), 'utf8')), fuenteMatrix(), args.includes('--forzar'));
-    console.log(p ? `pendiente=true\nurl=${p.url}\nhash=${p.hash || ''}` : 'pendiente=false');
+    console.log(p ? `pendiente=true\nurl=${p.url}\nhash=${p.hash || ''}\nademanda=${p.aDemanda}` : 'pendiente=false');
     return 0;
   }
   let buf;
