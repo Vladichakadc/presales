@@ -273,6 +273,12 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
         <label for="apModel" style="margin-top:8px">Modelo de AP</label>
         <select id="apModel"></select>
         <label style="margin-top:8px"><input type="checkbox" id="chkPoe" style="accent-color:var(--red)"> Alimentar los AP por PoE desde el router</label>
+        <label for="poeFuente" style="margin-top:8px">Alimentación del router para el PoE</label>
+        <select id="poeFuente" aria-describedby="poeFuenteHint">
+          <option value="caja" selected>Adaptador de la caja (24 V: PoE pasivo)</option>
+          <option value="48">Fuente de 48 V aparte (802.3af/at donde el equipo lo da)</option>
+        </select>
+        <p class="hint" id="poeFuenteHint">El PoE sale a la tensión con que se alimenta el router (manual de MikroTik). A 24 V es pasivo; el 802.3af/at necesita 48-57 V, y la fuente de 48 V va al BOM sin precio publicado.</p>
       </div>
       <label class="check"><input type="checkbox" id="chkHa"> <span><b>Alta disponibilidad</b> (VRRP — 2 unidades)<span class="sku">Cada unidad se dimensiona al caudal completo y lleva su propia licencia.</span></span></label>
     </div>

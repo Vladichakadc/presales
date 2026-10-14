@@ -92,7 +92,7 @@ test('PoE para AP: vatios publicados, o calculados con el adaptador de la caja; 
   // hEX PoE: 24 V del adaptador × 1 A por puerto = 24 W; × 2 A en total = 48 W (el adaptador da
   // 60 W y el equipo gasta 6 sin accesorios). Cuatro AP de 11 W caben; cuatro de 15 W, no.
   assert.deepStrictEqual(M.presupuestoPoe(D.MODELS.find((m) => m.id === 'hEX PoE RB960PGS')),
-    { v: 24, puertos: 4, porPuertoW: 24, totalW: 48, nota: null });
+    { v: 24, fuente: 'caja', puertos: 4, porPuertoW: 24, totalW: 48, af: false, nota: null });
   const ev = evaluar({ bw: 100, aps: 4, apPoe: true, apDraw: 11, apV: [18, 57] });
   assert.deepStrictEqual(fila(ev, 'hEX PoE RB960PGS').miss, []);
   assert.match(fila(evaluar({ bw: 100, aps: 4, apPoe: true, apDraw: 15, apV: [18, 57] }), 'hEX PoE RB960PGS').miss[0], /48 W en total/);
@@ -124,4 +124,24 @@ test('un campo vacio es «sin dato», no cero: el hub vacio va al 100 % de simul
   const ev = evaluar({ bw: 50, modo: 'hub', sedes: '40', conc: '', head: '' });
   assert.strictEqual(ev.conc, 100);
   assert.strictEqual(ev.base, 2000);
+});
+
+// FUENTE DE 48 V PARA EL PoE (2026-10-14, la mejora propuesta en la entrega anterior): mandan los
+// límites de alta tensión de la ficha y la entrada máxima del equipo; 802.3af/at solo donde el
+// manual lo dice (hEX PoE y PowerBox Pro, «if 48-57 V input voltage is used»).
+test('PoE con fuente de 48 V: límites de alta tensión, 802.3af/at donde lo dice el manual', () => {
+  const hex = D.MODELS.find((m) => m.id === 'hEX PoE RB960PGS');
+  assert.deepStrictEqual(M.presupuestoPoe(hex, '48'),
+    { v: 48, fuente: '48', puertos: 4, porPuertoW: 21.6, totalW: 86.4, af: true, consumoSinAcc: 6, nota: null });
+  // Cuatro AP de 15 W: con el adaptador de 24 V no caben (60 > 48 W); con 48 V, sí (60 ≤ 86,4).
+  const esc = { bw: 200, aps: 4, apPoe: true, apDraw: 15, apV: [18, 57] };
+  assert.match(fila(evaluar(esc), 'hEX PoE RB960PGS').miss[0], /48 W en total con el adaptador de 24 V/);
+  assert.deepStrictEqual(fila(evaluar({ ...esc, fuentePoe: '48' }), 'hEX PoE RB960PGS').miss, []);
+  // El hEX PoE lite no admite 48 V; el RB4011 da 420 mA a alta tensión (20,2 W) en un puerto.
+  assert.match(fila(evaluar({ ...esc, aps: 1, fuentePoe: '48' }), 'hEX PoE lite RB750UPr2').miss.join(';'), /como mucho 30 V/);
+  assert.strictEqual(M.presupuestoPoe(D.MODELS.find((m) => m.id === 'RB4011iGS+RM'), '48').porPuertoW, 20.2);
+  // Un hAP (PoE pasivo de 18-28 V) no se alimenta a 48 V.
+  assert.ok(fila(evaluar({ ...esc, aps: 1, apDraw: 12, apV: [18, 28], fuentePoe: '48' }), 'hEX PoE RB960PGS').miss.some((x) => /admite 18-28 V/.test(x)));
+  // El L009 no rotula con claridad su límite de alta tensión: no se calcula.
+  assert.match(fila(evaluar({ ...esc, aps: 1, fuentePoe: '48' }), 'L009UiGS-RM').miss.join(';'), /no da con claridad/);
 });

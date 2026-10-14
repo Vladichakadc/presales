@@ -109,12 +109,26 @@
      tension x corriente por puerto; en total, lo menor entre tension x corriente total y lo que
      da el adaptador menos lo que gasta el equipo sin accesorios. Sin adaptador en la caja, o con
      una tension fuera del tramo en que la ficha da esos limites, devuelve null: no se calcula. */
-  function presupuestoPoe(m) {
-    const s = m && m.poeSalida; const ad = m && m.adaptador;
-    if (!s || !ad || !(ad.v > 0) || ad.v > s.hastaV) return null;
+  /* Con `fuente === '48'` (una fuente de 48 V aparte, que se presupuesta como linea del BOM) mandan
+     los limites de alta tension de la ficha y la entrada maxima del equipo; la potencia de esa
+     fuente no la limita aqui: la dice `fuenteW` (lo que tiene que dar como minimo). */
+  const FUENTE_48 = 48;
+  function presupuestoPoe(m, fuente) {
+    const s = m && m.poeSalida;
+    if (!s) return null;
+    const r1 = (x) => Math.round(x * 10) / 10;
+    if (fuente === '48') {
+      if (!s.alta || !(s.vMax >= FUENTE_48)) return null;
+      const porPuerto = FUENTE_48 * s.alta.aPuerto;
+      const total = Math.min(FUENTE_48 * s.alta.aTotal, s.puertos * porPuerto);
+      return { v: FUENTE_48, fuente: '48', puertos: s.puertos, porPuertoW: r1(porPuerto), totalW: r1(total),
+        af: !!s.af48, consumoSinAcc: m.consumoSinAcc == null ? null : m.consumoSinAcc, nota: null };
+    }
+    const ad = m.adaptador;
+    if (!ad || !(ad.v > 0) || !(s.hastaV >= ad.v) || s.aPuerto == null) return null;
     const total = Math.min(ad.v * s.aTotal, ad.v * ad.a - (m.consumoSinAcc || 0));
-    return { v: ad.v, puertos: s.puertos, porPuertoW: ad.v * s.aPuerto, totalW: Math.round(total * 10) / 10,
-      nota: s.nota || null };
+    return { v: ad.v, fuente: 'caja', puertos: s.puertos, porPuertoW: r1(ad.v * s.aPuerto), totalW: r1(total),
+      af: false, nota: s.nota || null };
   }
 
 
@@ -438,6 +452,8 @@
     const apDraw = num(esc.apDraw, 0);
     // Rango de tensión que admite el AP por PoE (de su ficha): la salida va a la de entrada.
     const apV = Array.isArray(esc.apV) && esc.apV.length === 2 ? esc.apV.map(Number) : null;
+    // De dónde sale la tensión del PoE: el adaptador de la caja (por defecto) o una fuente de 48 V aparte.
+    const fuentePoe = esc.fuentePoe === '48' ? '48' : 'caja';
     req.poeW = esc.apPoe && req.aps ? req.aps * apDraw : 0;
 
     const avisos = [...avisosEnlaces];
@@ -498,17 +514,20 @@
       if (req.ppp && lic.ppp != null && req.ppp > lic.ppp) miss.push(`licencia nivel ${m.lvl}: ${lic.ppp} túneles PPPoE/PPTP/L2TP`);
       if (req.ovpn && lic.ovpn != null && req.ovpn > lic.ovpn) miss.push(`licencia nivel ${m.lvl}: ${lic.ovpn} túneles OpenVPN`);
       if (req.hotspot && lic.hotspot != null && req.hotspot > lic.hotspot) miss.push(`licencia nivel ${m.lvl}: ${lic.hotspot} usuarios HotSpot`);
-      const pp = presupuestoPoe(m);
+      const pp = presupuestoPoe(m, fuentePoe);
       if (req.poeW) {
         if (m.poe != null) { if (m.poe < req.poeW) miss.push(`${m.poe} W de PoE-out`); }
         else if (pp) {
           const W = (x) => `${String(x).replace('.', ',')} W`;
           if (req.aps > pp.puertos) miss.push(`${pp.puertos} puerto${pp.puertos === 1 ? '' : 's'} con PoE-out para ${req.aps} AP`);
-          if (apDraw > pp.porPuertoW) miss.push(`PoE-out de ${W(pp.porPuertoW)} por puerto con el adaptador de ${pp.v} V de la caja: el AP pide ${W(apDraw)}`);
-          else if (req.poeW > pp.totalW) miss.push(`PoE-out de ${W(pp.totalW)} en total con el adaptador de ${pp.v} V de la caja: los AP piden ${W(req.poeW)}`);
-          if (apV && (pp.v < apV[0] || pp.v > apV[1])) miss.push(`el AP admite ${apV[0]}-${apV[1]} V y la salida PoE va a ${pp.v} V (la del adaptador de la caja)`);
+          const conQue = pp.fuente === '48' ? 'con la fuente de 48 V' : `con el adaptador de ${pp.v} V de la caja`;
+          if (apDraw > pp.porPuertoW) miss.push(`PoE-out de ${W(pp.porPuertoW)} por puerto ${conQue}: el AP pide ${W(apDraw)}`);
+          else if (req.poeW > pp.totalW) miss.push(`PoE-out de ${W(pp.totalW)} en total ${conQue}: los AP piden ${W(req.poeW)}`);
+          if (apV && (pp.v < apV[0] || pp.v > apV[1])) miss.push(`el AP admite ${apV[0]}-${apV[1]} V y la salida PoE va a ${pp.v} V (${pp.fuente === '48' ? 'la de la fuente de 48 V' : 'la del adaptador de la caja'})`);
         }
-        else if (m.poeA != null) miss.push(`la ficha da ${String(m.poeA).replace('.', ',')} A de PoE-out y no vatios, y la caja no trae adaptador que fije la tensión: no se puede comprobar`);
+        else if (m.poeA != null) miss.push(fuentePoe === '48'
+          ? (m.poeSalida && m.poeSalida.vMax < FUENTE_48 ? `admite como mucho ${m.poeSalida.vMax} V de entrada: no se alimenta a 48 V` : `la ficha no da con claridad su límite de PoE-out a 48 V: no se puede comprobar`)
+          : `la ficha da ${String(m.poeA).replace('.', ',')} A de PoE-out y no vatios, y la caja no trae adaptador que fije la tensión: no se puede comprobar`);
         else miss.push('sin PoE-out');
       }
       return { m, cap: r.cap, fila: r.fila || null, miss, feeds, puertos, capIpsecRespaldo: capIp, poe: pp,
@@ -539,7 +558,9 @@
       if (perfil === 'wg') avisos.push('WireGuard: MikroTik no publica su rendimiento en ninguna ficha, así que no se recomienda equipo. Antes se estimaba en el 45 % del IPsec, un supuesto sin fuente que este dimensionador ya no aplica: validar con una prueba de concepto o dimensionar por IPsec.');
       if (virtual && perfil === 'ruteo') avisos.push('CHR: la licencia solo limita la subida por interfaz. El caudal real lo deciden los vCPU y la RAM que dé el hipervisor, y MikroTik no publica cifras de CHR: se compara el caudal por sentido con el tope de la licencia.');
       if (req.feeds) avisos.push(`BGP full table: la RAM por feed (${bgpRam.firstFeedMb} MB el primero y ${bgpRam.extraFeedMb} MB cada uno adicional, más ${bgpRam.baseMb} MB de sistema) es un SUPUESTO DE DISEÑO, no una cifra de MikroTik: ninguna ficha publica cuánta memoria ocupa una tabla completa.`);
-      if (req.poeW) avisos.push(`PoE para ${req.aps} AP: ${req.poeW} W con el consumo máximo sin accesorios de la ficha del AP. Solo el RB5009UPr publica vatios de PoE-out (130 W). En el hEX PoE, el hEX PoE lite, la PowerBox Pro y el hEX S 2025 los vatios se calculan con el adaptador de la caja (24 V): la salida va a la tensión de entrada, así que es PoE pasivo a 24 V y no 802.3af/at, que el manual solo da con 48-57 V. El resto publica corriente sin adaptador en la caja: no se puede comprobar.`);
+      if (req.poeW) avisos.push(`PoE para ${req.aps} AP: ${req.poeW} W con el consumo máximo sin accesorios de la ficha del AP. Solo el RB5009UPr publica vatios de PoE-out (130 W). ${fuentePoe === '48'
+        ? 'Con la fuente de 48 V aparte mandan los límites de alta tensión de cada ficha (hEX PoE y PowerBox Pro, 450 mA por puerto y salida 802.3af/at; hEX S, 500 mA; RB4011, 420 mA) y la fuente va como línea del BOM, sin precio publicado. El hEX PoE lite no admite 48 V.'
+        : 'En el hEX PoE, el hEX PoE lite, la PowerBox Pro y el hEX S 2025 los vatios se calculan con el adaptador de la caja (24 V): la salida va a la tensión de entrada, así que es PoE pasivo a 24 V y no 802.3af/at, que el manual solo da con 48-57 V; si los AP lo necesitan, elegir la fuente de 48 V. El resto publica corriente sin adaptador en la caja: no se puede comprobar.'}`);
       if (esc.ha) avisos.push('Alta disponibilidad VRRP: se cotizan 2 equipos y cada uno se dimensiona al caudal completo, porque el par suma disponibilidad y no capacidad. Cada unidad lleva su propia licencia RouterOS embebida.');
       if (enlaces.length > 1 || wan.gobierna) {
         const esc0 = `Caudal WAN: ${fmt(wan.normal)} con todos los principales${wan.fallas.length ? '; ' + wan.fallas.map((f) => `si cae el enlace ${f.cae.n}, ${fmt(f.mbps)} con el respaldo`).join('; ') : ''}.`;
@@ -554,7 +575,7 @@
     return { raw, base, porSentido, need, head, dirMult, trama, bytesIpsec, perfil, cifrado, tuneles, modo, sedes, conc,
       virtual, configs: c.cfg, firewall: c.firewall, l3hw: c.l3hw, req, rows, fit, pick,
       enlaces, wan, fallas, respaldoCifrado, needIpsecRespaldo, demanda, margen, velEnlace, hayCaudal,
-      unidades: esc.ha ? 2 : 1, avisos };
+      fuentePoe, unidades: esc.ha ? 2 : 1, avisos };
   }
 
   /* MEMORIA TECNICA (Markdown). Igual que la de Huawei: resumen, memoria de calculo con la celda
@@ -596,6 +617,7 @@
     if (r.ovpn) L.push(`| Túneles OpenVPN | tope por nivel de licencia | ${r.ovpn} |`);
     if (r.hotspot) L.push(`| Usuarios HotSpot | tope por nivel de licencia | ${r.hotspot} |`);
     if (r.poeW) L.push(`| PoE para ${r.aps} AP | consumo máximo sin accesorios × AP | ${r.poeW} W |`);
+    if (r.poeW) L.push(`| Alimentación del PoE | ${ev.fuentePoe === '48' ? 'fuente de 48 V aparte (límites de alta tensión de la ficha; línea del BOM sin precio)' : 'adaptador de la caja (PoE pasivo a su tensión)'} | ${ev.fuentePoe === '48' ? '48 V' : 'según el equipo'} |`);
     L.push('');
     if (ev.enlaces && ev.enlaces.length) {
       L.push('### Enlaces WAN');
@@ -648,6 +670,6 @@
 
   return { TRAMAS, TRAMA_DEFECTO, CONFIGS, FIREWALL, CIFRADOS, PERFILES, TUNELES_MEDIDOS,
     TIPOS_ENLACE, ROLES, MEDIOS, MAX_ENLACES, MODULOS, NOTA_BIDI, ALCANCE_COBRE_KM,
-    configuraciones, evaluar, memoria, maxFeeds, ramParaFeeds, fmt, presupuestoPoe,
+    configuraciones, evaluar, memoria, maxFeeds, ramParaFeeds, fmt, presupuestoPoe, FUENTE_48,
     normalizarEnlaces, escenariosWan, asignarPuertos, comportamiento, etiquetaEnlace };
 });

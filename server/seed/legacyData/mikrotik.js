@@ -34,7 +34,12 @@
 //           x corriente de la ficha, sin pasar de lo que da el adaptador menos el consumo del
 //           equipo sin accesorios (`consumoSinAcc`). Es aritmetica sobre cifras oficiales, y la
 //           pantalla la declara como calculo. Sin adaptador en la caja la tension no se conoce y
-//           el PoE sigue sin poder comprobarse.
+//           el PoE sigue sin poder comprobarse... salvo que se elija una FUENTE DE 48 V aparte
+//           (2026-10-14): entonces mandan los limites de alta tension de la ficha (`alta`), la
+//           entrada maxima del equipo (`vMax`, «DC jack input Voltage») y, donde el manual lo dice
+//           («It can power af/at mode B compatible devices, if 48-57 V input voltage is used»),
+//           la salida es 802.3af/at (`af48`). El L009 no entra: su ficha no rotula con claridad
+//           cual de sus dos limites es el de alta tension.
 //
 // LO QUE ANTES ESTABA MAL Y POR QUE (todas contra la ficha oficial): IPsec del RB5009 2.400
 // Mbps (ficha 1.354), del CCR2216 15.000 (ficha 2.013 con un tunel, 4.108 con 256) y del hEX 470
@@ -77,7 +82,7 @@ const MANO = [
   {id:'hEX lite RB750r2', codigo:'RB750r2', ser:'hEX', seg:'Hogar / Básico', cores:1, ram:64, lvl:4, wanMax:100, poe:null,
    ports:'5x FE (100 Mbps)', cages:{}, legacy:true,
    note:'Puertos Fast Ethernet y 64 MB de RAM — solo para reemplazo de equipos instalados, no para diseños nuevos.', redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN pasivo)', volts:'6-30 V DC', texto:'Consumo máximo 2 W — MikroTik publica el máximo, no un consumo típico, y para este modelo no publica la cifra sin accesorios. Dos entradas independientes, pero la fuente interna es única.'}},
-  {id:'hEX PoE lite RB750UPr2', codigo:'RB750UPr2', ser:'hEX', seg:'Hogar / Básico + PoE-out', cores:1, ram:64, lvl:4, wanMax:100, poe:null, poeA:2, poeSalida:{puertos:4, aPuerto:0.5, aTotal:2, hastaV:30, nota:'la ficha da 1 A por puerto y el manual 500 mA: se toma el menor'}, adaptador:{v:24, a:2.5}, consumoSinAcc:3,
+  {id:'hEX PoE lite RB750UPr2', codigo:'RB750UPr2', ser:'hEX', seg:'Hogar / Básico + PoE-out', cores:1, ram:64, lvl:4, wanMax:100, poe:null, poeA:2, poeSalida:{puertos:4, aPuerto:0.5, aTotal:2, hastaV:30, vMax:30, nota:'la ficha da 1 A por puerto y el manual 500 mA: se toma el menor'}, adaptador:{v:24, a:2.5}, consumoSinAcc:3,
    ports:'5x FE (100 Mbps) · PoE-out pasivo en ether2-ether5 (2 A en total)', cages:{},
    note:'Puertos Fast Ethernet y 64 MB de RAM: el caudal de un enlace no pasa de 100 Mbps.', redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN pasivo)', volts:'8-30 V DC', texto:'Consumo máximo 51 W, y 3 W sin accesorios ni PoE de salida — MikroTik publica máximos, no un consumo típico. Incluye adaptador de 24 V 2,5 A.'}},
   {id:'hEX RB750Gr3', codigo:'RB750Gr3', ser:'hEX', seg:'SOHO / Home', cores:2, ram:256, lvl:4, wanMax:1000, poe:null,
@@ -85,13 +90,13 @@ const MANO = [
    note:'Relevado por el hEX refresh (E50UG): «same price, twice the performance», según la ficha del E50UG.', redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN pasivo)', volts:'8-30 V DC', texto:'Consumo máximo 10 W, y 5 W sin accesorios — MikroTik publica máximos, no un consumo típico. Dos entradas independientes, pero la fuente interna es única.'}},
   {id:'hEX E50UG', codigo:'E50UG', ser:'hEX', seg:'SOHO / Home (hEX refresh)', cores:2, ram:512, lvl:4, wanMax:1000, poe:null,
    ports:'5x GE', cages:{}, redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN pasivo)', volts:'12-28 V DC', texto:'Consumo máximo 10 W, y 4 W sin accesorios — MikroTik publica máximos, no un consumo típico. Dos entradas independientes, pero la fuente interna es única.'}},
-  {id:'hEX S RB760iGS', codigo:'RB760iGS', ser:'hEX', seg:'SOHO + SFP', cores:2, ram:256, lvl:4, wanMax:1000, poe:null, poeA:0.5,
+  {id:'hEX S RB760iGS', codigo:'RB760iGS', ser:'hEX', seg:'SOHO + SFP', cores:2, ram:256, lvl:4, wanMax:1000, poe:null, poeA:0.5, poeSalida:{puertos:1, alta:{aPuerto:0.5, aTotal:0.5}, vMax:57}, consumoSinAcc:6,
    ports:'5x GE + 1x SFP · PoE-out pasivo en ether5 (0,5 A)', cages:{ge:1}, redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN 802.3af/at)', volts:'12-57 V DC', texto:'Consumo máximo 24 W, y 6 W sin accesorios ni PoE de salida — MikroTik publica máximos, no un consumo típico. Tiene 2 entradas independientes, así que se puede alimentar desde dos tomas distintas, aunque la fuente interna es única.'}},
-  {id:'hEX S E60iUGS', codigo:'E60iUGS', ser:'hEX', seg:'SOHO + SFP 2,5G (hEX S 2025)', cores:2, ram:512, lvl:4, wanMax:2500, poe:null, poeA:0.5, poeSalida:{puertos:1, aPuerto:0.5, aTotal:0.5, hastaV:57}, adaptador:{v:24, a:1.2}, consumoSinAcc:5,
+  {id:'hEX S E60iUGS', codigo:'E60iUGS', ser:'hEX', seg:'SOHO + SFP 2,5G (hEX S 2025)', cores:2, ram:512, lvl:4, wanMax:2500, poe:null, poeA:0.5, poeSalida:{puertos:1, aPuerto:0.5, aTotal:0.5, hastaV:57, alta:{aPuerto:0.5, aTotal:0.5}, vMax:57}, adaptador:{v:24, a:1.2}, consumoSinAcc:5,
    ports:'5x GE + 1x SFP (admite 2,5G) · PoE-out pasivo en ether5 (0,5 A)', cages:{ge:1}, redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN 802.3af/at)', volts:'12-57 V DC', texto:'Consumo máximo 23 W, y 5 W sin accesorios ni PoE de salida — MikroTik publica máximos, no un consumo típico. Incluye adaptador de 24 V 1,2 A.'}},
-  {id:'hEX PoE RB960PGS', codigo:'RB960PGS', ser:'hEX', seg:'SOHO + PoE-out 802.3af/at', cores:1, ram:128, lvl:4, wanMax:1000, poe:null, poeA:2, poeSalida:{puertos:4, aPuerto:1, aTotal:2, hastaV:30}, adaptador:{v:24, a:2.5}, consumoSinAcc:6,
+  {id:'hEX PoE RB960PGS', codigo:'RB960PGS', ser:'hEX', seg:'SOHO + PoE-out 802.3af/at', cores:1, ram:128, lvl:4, wanMax:1000, poe:null, poeA:2, poeSalida:{puertos:4, aPuerto:1, aTotal:2, hastaV:30, alta:{aPuerto:0.45, aTotal:2}, vMax:57, af48:true}, adaptador:{v:24, a:2.5}, consumoSinAcc:6,
    ports:'5x GE + 1x SFP · PoE-out 802.3af/at en ether2-ether5 (2 A en total)', cages:{ge:1}, redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN pasivo)', volts:'12-57 V DC', texto:'Consumo máximo 54 W, y 6 W sin accesorios ni PoE de salida — MikroTik publica máximos, no un consumo típico. Incluye adaptador de 24 V 2,5 A.'}},
-  {id:'PowerBox Pro RB960PGS-PB', codigo:'RB960PGS-PB', ser:'PowerBox', seg:'Exterior + PoE-out 802.3af/at', cores:1, ram:128, lvl:4, wanMax:1000, poe:null, poeA:2, poeSalida:{puertos:4, aPuerto:1, aTotal:2, hastaV:30}, adaptador:{v:24, a:2.5}, consumoSinAcc:6,
+  {id:'PowerBox Pro RB960PGS-PB', codigo:'RB960PGS-PB', ser:'PowerBox', seg:'Exterior + PoE-out 802.3af/at', cores:1, ram:128, lvl:4, wanMax:1000, poe:null, poeA:2, poeSalida:{puertos:4, aPuerto:1, aTotal:2, hastaV:30, alta:{aPuerto:0.45, aTotal:2}, vMax:57, af48:true}, adaptador:{v:24, a:2.5}, consumoSinAcc:6,
    ports:'5x GE + 1x SFP · PoE-out 802.3af/at en ether2-ether5 (2 A en total) · caja de exterior', cages:{ge:1}, redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN pasivo)', volts:'12-57 V DC', texto:'Consumo máximo 54 W, y 6 W sin accesorios ni PoE de salida — MikroTik publica máximos, no un consumo típico. Incluye adaptador de 24 V 2,5 A e inyector PoE gigabit.'}},
 
   // ── L009 / RB4011 / RB1100 / RB5009 — sucursal ─────────────────────────────
@@ -99,7 +104,7 @@ const MANO = [
    ports:'8x GE + 1x SFP (admite 2,5G) · Wi-Fi 6 a 2,4 GHz (AX600) · PoE-out pasivo en ether8 (1 A)', cages:{ge:1}, redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN 802.3af/at)', volts:'24-56 V DC', texto:'Consumo máximo 47 W, y 14 W sin accesorios ni PoE de salida — MikroTik publica máximos, no un consumo típico. Tiene 2 entradas independientes, así que se puede alimentar desde dos tomas distintas, aunque la fuente interna es única.'}},
   {id:'L009UiGS-RM', codigo:'L009UiGS-RM', ser:'L009', seg:'Sucursal pequeña rackmount', cores:2, ram:512, lvl:5, wanMax:2500, poe:null, poeA:1,
    ports:'8x GE + 1x SFP (admite 2,5G) · PoE-out pasivo en ether8 (1 A) · rack', cages:{ge:1}, redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN 802.3af/at)', volts:'24-56 V DC', texto:'Consumo máximo 40 W, y 8 W sin accesorios ni PoE de salida — MikroTik publica máximos, no un consumo típico.'}},
-  {id:'RB4011iGS+RM', codigo:'RB4011iGS+RM', ser:'RB4011', seg:'Sucursal pequeña rackmount', cores:4, ram:1024, lvl:5, wanMax:10000, poe:null, poeA:0.6,
+  {id:'RB4011iGS+RM', codigo:'RB4011iGS+RM', ser:'RB4011', seg:'Sucursal pequeña rackmount', cores:4, ram:1024, lvl:5, wanMax:10000, poe:null, poeA:0.6, poeSalida:{puertos:1, alta:{aPuerto:0.42, aTotal:0.6}, vMax:57}, consumoSinAcc:18,
    ports:'10x GE + 1x SFP+ · PoE-out pasivo en ether10 (0,6 A) · rack 1U', cages:{sfp10:1}, redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN pasivo)', volts:'12-57 V DC', texto:'Consumo máximo 33 W, y 18 W sin accesorios ni PoE de salida — MikroTik publica máximos, no un consumo típico. Tiene 2 entradas independientes, así que se puede alimentar desde dos tomas distintas, aunque la fuente interna es única.'}},
   {id:'RB1100AHx4', codigo:'RB1100x4', ser:'RB1100', seg:'Sucursal rackmount 13 GE', cores:4, ram:1024, lvl:6, wanMax:1000, poe:null,
    ports:'13x GE · rack 1U', cages:{}, redund:true, psu:{tipo:'2 entradas AC en respaldo (failover), más PoE-IN 802.3af/at y terminal de 2 pines', volts:'100-240 V AC; -48 y 12-57 V DC', texto:'Consumo máximo 20 W — MikroTik publica el máximo, no un consumo típico. Redundante: la ficha habla de «dual redundant power supplies» y el manual (RB1100 series) dice que los dos conectores IEC se usan por separado o a la vez «for failover purposes». No declara ranuras de fuente: no son extraíbles.'}},

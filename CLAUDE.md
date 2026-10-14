@@ -419,7 +419,9 @@ Módulos compartidos:
   no se estima; la RAM por feed BGP es un supuesto declarado; el PoE cuenta en vatios donde la
   ficha los da (RB5009UPr) y, si la caja trae adaptador, con su tensión × la corriente de la ficha
   (`presupuestoPoe`: el manual dice que la salida va a la tensión de entrada; a 24 V es pasivo, no
-  802.3af/at); sin adaptador, no se comprueba. La ficha pinta una barra por escenario de falla
+  802.3af/at); con «Fuente de 48 V aparte» (`#poeFuente`) mandan los límites de alta tensión de
+  la ficha y su entrada máxima, el 802.3af/at solo donde el manual lo dice (hEX PoE, PowerBox Pro)
+  y la fuente va al BOM sin precio; sin tensión conocida, no se comprueba. La ficha pinta una barra por escenario de falla
   (solo con respaldo) y la del IPsec del respaldo cifrado. Niveles de licencia de la tabla oficial (el 5 no limita OpenVPN; CHR no tiene niveles).
   Figuras de la galería de cada ficha (`public/data/mikrotik-vistas-equipos.json`), sin pérdida y a
   resolución nativa; la galería no rotula la cara: se decide mirándola, y sin trasera no se sirve la

@@ -53,7 +53,7 @@ segClick('tramaSeg',v=>{trama=Number(v)||M.TRAMA_DEFECTO;});
   $(chk).addEventListener('change',()=>$(box).classList.toggle('hidden',!$(chk).checked));
 });
 ['bw','head','dirMult','sedes','conc','firewall','cifrado','chkVirtual','chkQos','chkL3hw','chkBgp','bgpFeeds',
- 'chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','apModel','chkPoe','chkHa']
+ 'chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','apModel','chkPoe','poeFuente','chkHa']
   .forEach(id=>$(id).addEventListener('input',render));
 ['pickModel','qty','supportTier','chkTraining','bomApModel','bomApQty','aniosTco','plazoMrr','margenFin','feeMsp']
   .forEach(id=>$(id).addEventListener('input',renderBom));
@@ -65,13 +65,15 @@ const ramTxt=m=>m.ram==null?'según hipervisor':m.ram<1024?`${m.ram} MB`:`${(m.r
 const lvlTxt=m=>m.lvl==='chr'?'CHR':`nivel ${m.lvl}`;
 const celda=(t,b)=>t&&t[b]?t[b][1]:null;
 const tope=v=>v==null?'sin tope':String(v);
-// PoE-out en vatios: los publicados (RB5009UPr) o los calculados con el adaptador de la caja.
+// PoE-out en vatios: los publicados (RB5009UPr) o los calculados con la tensión de la alimentación
+// elegida (el adaptador de la caja o una fuente de 48 V aparte).
+const fuentePoe=()=>($('poeFuente')&&$('poeFuente').value==='48')?'48':'caja';
 const poeTxt=(m,corto)=>{
   if(m.poe!=null) return `${m.poe} W`;
-  const p=M.presupuestoPoe(m), n=x=>String(x).replace('.',',');
+  const p=M.presupuestoPoe(m,fuentePoe()), n=x=>String(x).replace('.',',');
   if(p) return `${n(p.totalW)} W en total y ${n(p.porPuertoW)} W por puerto (${p.puertos} puerto${p.puertos>1?'s':''})`
-    +(corto?'':` con el adaptador de ${p.v} V de la caja: cálculo con la corriente de la ficha, salida pasiva a ${p.v} V${p.nota?` (${p.nota})`:''}`);
-  return m.poeA!=null?`${n(m.poeA)} A (${corto?'sin vatios publicados':'la ficha no da vatios y la caja no trae adaptador'})`:null;
+    +(corto?'':` con ${p.fuente==='48'?'la fuente de 48 V':`el adaptador de ${p.v} V de la caja`}: cálculo con la corriente de la ficha, salida ${p.af?'802.3af/at':'pasiva'} a ${p.v} V${p.nota?` (${p.nota})`:''}`);
+  return m.poeA!=null?`${n(m.poeA)} A (${corto?'sin vatios publicados':fuentePoe()==='48'?'sin límite claro a 48 V en la ficha':'la ficha no da vatios y la caja no trae adaptador'})`:null;
 };
 
 // Catalogo MikroTik con tres celdas de la matriz: el techo (fast path), la fila de firewall a
@@ -109,7 +111,7 @@ function escenario(){
     ovpn:$('chkPppoe').checked?$('ovpnTun').value:0,
     hotspot:$('chkPppoe').checked?$('hotspotUsers').value:0,
     aps:$('chkCapsman').checked?$('apCount').value:0,
-    apPoe:$('chkCapsman').checked&&$('chkPoe').checked, apDraw:ap?ap.poeDraw:0, apV:ap?ap.poeV:null,
+    apPoe:$('chkCapsman').checked&&$('chkPoe').checked, apDraw:ap?ap.poeDraw:0, apV:ap?ap.poeV:null, fuentePoe:fuentePoe(),
     enlaces:leerEnlaces(), respaldoIpsec:$('chkRespaldoIpsec').checked,
   };
 }
@@ -301,7 +303,7 @@ function render(){
       txt:`${fmt(ev.needIpsecRespaldo)} / ${fmt(r.capIpsecRespaldo)}`});
     // PoE de los AP contra lo que da el equipo: los vatios publicados o los calculados con el adaptador.
     const poeTope=m.poe!=null?m.poe:r.poe?r.poe.totalW:null;
-    if(ev.req.poeW&&poeTope!=null) md.push({etq:`PoE-out para ${ev.req.aps} AP${m.poe!=null?'':` (adaptador de ${r.poe.v} V de la caja)`}`, val:ev.req.poeW, tope:poeTope,
+    if(ev.req.poeW&&poeTope!=null) md.push({etq:`PoE-out para ${ev.req.aps} AP${m.poe!=null?'':r.poe.fuente==='48'?' (fuente de 48 V)':` (adaptador de ${r.poe.v} V de la caja)`}`, val:ev.req.poeW, tope:poeTope,
       txt:`${String(ev.req.poeW).replace('.',',')} / ${String(poeTope).replace('.',',')} W`});
     if(ev.req.feeds) md.push({etq:'RAM — feeds BGP full table (supuesto)', val:ev.req.feeds, tope:r.feeds===Infinity?0:r.feeds,
       txt:m.ram==null?'Según hipervisor':`${ev.req.feeds} / ${r.feeds} feeds · ${ramTxt(m)}`});
@@ -624,6 +626,14 @@ function renderBom(){
     qty:o.qty*qty, unit:o.optic.price, nota:`Adicional · ${o.optic.d}`}));
   if(apQty&&ap) filas.push({cat:'Puntos de acceso', desc:ap.sku, sku:ap.hwModel||null,
     qty:apQty, unit:ap.price, nota:ap.d});
+  // Fuente de 48 V para el PoE (2026-10-14): si se eligió, es una línea más de la propuesta. MikroTik
+  // no publica su precio aquí: sale «sin cotizar», con la potencia mínima que tiene que dar.
+  if(fuentePoe()==='48'&&$('chkCapsman').checked&&$('chkPoe').checked&&!isChr){
+    const pAp=(APS.find(a=>a.sku===$('apModel').value)||{}).poeDraw||0, nAp=Math.max(0,parseInt($('apCount').value)||0);
+    const base=m.consumoSinAcc;
+    filas.push({cat:'Alimentación', desc:'Fuente de 48 V para PoE (no incluida en la caja)', sku:null, qty, unit:null,
+      nota:`Al menos ${nAp*pAp}${base!=null?` + ${base}`:''} W (PoE de ${nAp} AP${base!=null?' + consumo del equipo sin accesorios':''}). MikroTik no publica aquí su precio: confirmar con el distribuidor.`});
+  }
   filas.push({cat:'Licencia', desc:isChr?`Licencia CHR ${m.id.replace('CHR ','')}`:`RouterOS ${lvlTxt(m)} — perpetua`,
     sku:null, qty, unit:0,
     nota:isChr?`Incluida en la línea del equipo. Tope de ${fmt(m.fwd)} de subida por interfaz.`
@@ -701,7 +711,7 @@ $('xlsBtn').addEventListener('click',async()=>{
    marcas. Cargar es de MikroTik (los campos son ids de ESTA pagina); consolidar no. Todo se
    multiplica por sedes: MikroTik vende por equipo, sin pools ni licencias por despliegue. */
 const CAMPOS_PERFIL=['bw','unit','head','dirMult','sedes','conc','enlacesData','chkRespaldoIpsec','firewall','cifrado','chkVirtual','chkQos','chkL3hw',
-  'chkBgp','bgpFeeds','chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','apModel','chkPoe','chkHa',
+  'chkBgp','bgpFeeds','chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','apModel','chkPoe','poeFuente','chkHa',
   'qty','supportTier','chkTraining','bomApModel','bomApQty'];
 const SEGS_PERFIL=['profileSeg','mediaSeg','modoSeg','tramaSeg'];
 function capturarCampos(){
@@ -838,7 +848,7 @@ document.addEventListener('click', (e) => {
    hub en un sitio, el cifrado fuera de IPsec) no viaja. */
 document.addEventListener('DOMContentLoaded', () => {
   const st = ESTADO.vincular({ campos: ['bw','unit','head','dirMult','sedes','conc','enlacesData','chkRespaldoIpsec','firewall','cifrado','chkVirtual','chkQos','chkL3hw',
-    'chkBgp','bgpFeeds','chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','chkPoe','chkHa',
+    'chkBgp','bgpFeeds','chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','chkPoe','poeFuente','chkHa',
     'mediaSeg','profileSeg','modoSeg','tramaSeg','verdict-sel','aniosTco','plazoMrr','margenFin','feeMsp'] });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {

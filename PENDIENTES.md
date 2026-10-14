@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-14, vigesimoprimera entrega (**MikroTik: la mejora propuesta —el escenario de falla en la ficha— y los pendientes contra las fuentes oficiales.** Encargo del dueño: avanzar con los pendientes buscando en las fuentes oficiales y en la web, y ejecutar la mejora. Hecho: barras de falla y de IPsec del respaldo en la ficha; **PoE en vatios con el adaptador de la caja** en hEX PoE, hEX PoE lite, PowerBox Pro y hEX S 2025 (límites por puerto de la ficha y el manual); la matriz de compatibilidad pasa a la URL vigente (7.26, idéntica a la 7.25). Sigue abierto, sin fuente pública: el ×2 del IPsec y el CCR2004-16G-2S+PC fuera de la matriz. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-14, vigesimosegunda entrega (**«Ejecuta pendientes como un arquitecto senior».** Hecha la mejora propuesta: **fuente de 48 V para el PoE** en MikroTik, con los límites de alta tensión de cada ficha y la fuente como línea del BOM. Lo demás abierto de MikroTik necesita una fuente que la web no da (ticket de soporte para el ×2 del IPsec, el CCR2004-16G-2S+PC en la matriz, las traseras) o una persona (el `--revisado` de la matriz vigente). Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-14, vigesimoprimera entrega (**MikroTik: la mejora propuesta —el escenario de falla en la ficha— y los pendientes contra las fuentes oficiales.** Encargo del dueño: avanzar con los pendientes buscando en las fuentes oficiales y en la web, y ejecutar la mejora. Hecho: barras de falla y de IPsec del respaldo en la ficha; **PoE en vatios con el adaptador de la caja** en hEX PoE, hEX PoE lite, PowerBox Pro y hEX S 2025 (límites por puerto de la ficha y el manual); la matriz de compatibilidad pasa a la URL vigente (7.26, idéntica a la 7.25). Sigue abierto, sin fuente pública: el ×2 del IPsec y el CCR2004-16G-2S+PC fuera de la matriz. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-14, vigésima entrega (**Capacidades SD-WAN de las fichas AR en el dimensionador Huawei.** Encargo del dueño: validar como arquitecto senior porque el dimensionador no traía de la ficha las capacidades SD-WAN (túneles, EVPN). Cada AR trae ahora overlay (SD-WAN EVPN, SRv6, DSVPN, MPLS L3VPN, multicast), A-FEC/FEC, compresión, IPS/URL/AV, MACsec, memoria y las cifras SD-WAN IPsec e IPsec + QoS de su ficha; cinco requisitos nuevos en pantalla; el BOM cita el paquete N1, la suscripción de amenazas por plazo y los paquetes DSVPN y de compresión. **Corrección**: con UTM o A-FEC se proponía la AR5710-S de 2 GB, que su ficha excluye. **Túneles y sesiones: sin dato**, ver *Abierto: dimensionador Huawei*. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-14, decimonovena entrega (**Caudal del sitio, enlaces WAN y sentidos simultáneos unificados en el dimensionador MikroTik.** Encargo del dueño: revisarlos como arquitecto senior porque se añadieron en momentos distintos y no estaban sincronizados. Eran tres fuentes: el caudal con margen, cada enlace sin margen y un ×2 que pisaba la subida declarada. Ahora son una cadena (demanda → enlaces → sentidos → margen sobre lo que procesa el equipo, nunca sobre el puerto), las casillas de los enlaces van en la unidad del sitio y dicen lo que heredan. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-14, decimoctava entrega (**El vigía contrasta solo el Product Matrix, y las ramas de transporte dejan de pisarse.** Mejora propuesta en la entrega anterior: cuando el vigía deja el Product Matrix de Fortinet pendiente, un job nuevo sin escritura corre `npm run matrix` sobre él y el issue dice qué cifras cambiaron; también a demanda, sin una máquina con salida a fortinet.com. Por el camino: tres workflows de transporte empujaban con `--force` a una rama fija y borraban la descarga anterior. Ver *Cerrado recientemente*.)
@@ -579,7 +580,10 @@ underlay.
 - ~~**PoE en vatios** en los equipos con adaptador en la caja~~ **Cerrado el 2026-10-14** para el hEX
   PoE, el hEX PoE lite, la PowerBox Pro y el hEX S 2025 (ver *Cerrado recientemente*). **Sigue
   abierto** para el hEX S RB760iGS, los L009 y el RB4011: la caja no trae adaptador declarado y la
-  tensión de salida es la de entrada, que no se conoce. Lo que había:
+  tensión de salida es la de entrada, que no se conoce. **2026-10-14: con la fuente de 48 V ya se
+  comprueban el hEX S y el RB4011**; los L009 siguen fuera porque su ficha no rotula con claridad
+  cuál de sus dos límites (1 A y 450 mA) es el de alta tensión: se cierra leyendo su manual o
+  preguntando a MikroTik. Lo que había:
   Solo el RB5009UPr (IN y OUT) publica «Total output power» (130 W); hEX S,
   hEX PoE, PowerBox, L009 y RB4011 dan amperios, y el motor los aparta del cálculo de PoE para AP
   diciendo por qué. Los hAP ax² y ax³ solo aceptan PoE pasivo de 18-28 V. **2026-10-13: los
@@ -1975,6 +1979,21 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### MikroTik: fuente de 48 V para el PoE (2026-10-14, vigesimosegunda entrega)
+
+- **La mejora propuesta en la entrega anterior, hecha** con el encargo «ejecuta pendientes como un
+  arquitecto senior». Selector «Alimentación del router para el PoE»: el adaptador de la caja
+  (24 V, PoE pasivo, como hasta ahora) o una **fuente de 48 V aparte**. Con 48 V mandan los
+  límites de alta tensión de cada ficha (hEX PoE y PowerBox Pro, 450 mA por puerto: 21,6 W y 86,4 W
+  en total, con salida **802.3af/at** porque su manual lo dice; hEX S y hEX S 2025, 500 mA; RB4011,
+  420 mA) y la entrada máxima del equipo (el hEX PoE lite admite 30 V y se aparta con su motivo).
+  La fuente entra al BOM como línea «sin cotizar» con la potencia mínima que tiene que dar (PoE de
+  los AP + consumo del equipo sin accesorios), viaja en el enlace del escenario y en los perfiles,
+  y la memoria técnica dice qué alimentación se eligió. Medido: cuatro AP de 15 W no caben en el hEX
+  PoE con su adaptador (60 > 48 W) y sí con 48 V; un hAP (pasivo de 18-28 V) no se alimenta a 48 V.
+- **Verificado**: una prueba nueva en `test/mikrotik-motor.test.js` (944 en total), la pantalla
+  conducida en Chromium con las dos alimentaciones y la línea del BOM.
 
 ### MikroTik: el escenario de falla en la ficha, el PoE en vatios y la matriz vigente (2026-10-14, vigesimoprimera entrega)
 
