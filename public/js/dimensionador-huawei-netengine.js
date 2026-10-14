@@ -827,6 +827,15 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape' && !$('modalCo
   try {
     const rv = await fetch('/data/huawei-vistas-equipos.json');
     if (rv.ok) VISTAS = await rv.json();
+    // Frontal y trasera siempre (petición del dueño, 2026-10-14). Las fichas de Huawei solo
+    // publican el panel de los puertos, salvo en el AR611, el AR617VW-LTE4 y el NE8000 F1A;
+    // la trasera de los demás está en la descripción de hardware de support.huawei.com, que
+    // niega la descarga automatizada. La pestaña lo dice en vez de desaparecer.
+    if (VISTAS) for (const [id, v] of Object.entries(VISTAS)) {
+      if (id[0] !== '_' && v && v.front && !v.rear) {
+        v.rearNota = 'Huawei no publica la vista trasera de este equipo en su ficha técnica. La trae su descripción de hardware (support.huawei.com), que no se puede descargar de forma automatizada; no se sustituye por una foto de terceros.';
+      }
+    }
   } catch { VISTAS = null; }
 
   await cargarPreciosRef();
