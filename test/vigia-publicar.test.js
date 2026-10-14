@@ -219,3 +219,47 @@ test('--resumen cuenta la misma corrida que el JSON, sin volver a la red', () =>
   assert.strictEqual(r.status, 0, r.stderr);
   assert.match(r.stdout, /0 cambio\(s\), 2 primera\(s\) medición\(es\), 0 inalcanzable\(s\)\./);
 });
+
+// EL CONTRASTE DEL PRODUCT MATRIX EN EL ISSUE (2026-10-14). Lo deja el job `contrastar` tras leer
+// un PDF de fortinet.com: se valida campo a campo como vigia.json, y el issue dice qué cifras
+// cambiaron en vez de solo «el documento cambió».
+const MATRIX_OK = {
+  edicion: 'PROMTX-2026-R178-NOV', hash: h('a'), mismoDocumento: true, coinciden: 620,
+  difieren: [{ id: '400G', campo: 'policies', catalogo: 30000, documento: 50000, texto: '50 000' }],
+  sinLeer: [], nuevos: [], faltan: [], noEnCatalogo: [],
+};
+
+test('el contraste del Product Matrix se valida antes de escribirlo y el issue dice qué cambió', () => {
+  const { matrix } = V.resumenMatrix(copia(MATRIX_OK));
+  assert.strictEqual(matrix.limpio, false);
+  assert.match(matrix.url, /Fortinet_Product_Matrix\.pdf$/, 'la URL sale de fuentes.js');
+  assert.ok(V.hayQueAvisar({ cambiados: [], inalcanzables: [] }, { estado: 'sin-cambios' }, matrix));
+  assert.match(V.tituloIssue({ cambiados: [], inalcanzables: [] }, matrix), /Product Matrix de Fortinet: 1 cifra/);
+  const cuerpo = V.cuerpoIssue({ cambiados: [], inalcanzables: [] }, null, matrix);
+  assert.match(cuerpo, /PROMTX-2026-R178-NOV/);
+  assert.match(cuerpo, /\| 400G \| policies \| 30000 \| 50000 \|/);
+  assert.match(cuerpo, /Nada se ha escrito en el catálogo/);
+  // Todo casa: se dice cómo marcarlo revisado, y no hace falta escribir en el issue por él.
+  const limpio = V.resumenMatrix({ ...copia(MATRIX_OK), difieren: [] }).matrix;
+  assert.strictEqual(limpio.limpio, true);
+  assert.ok(!V.hayQueAvisar({ cambiados: [], inalcanzables: [] }, { estado: 'sin-cambios' }, limpio));
+  assert.match(V.cuerpoIssue({ cambiados: [], inalcanzables: [] }, null, limpio), /--revisado fortinet https:\/\/www\.fortinet\.com/);
+  // Un PDF que cambió entre las dos descargas se avisa.
+  assert.match(V.cuerpoIssue({ cambiados: [], inalcanzables: [] }, null, V.resumenMatrix({ ...copia(MATRIX_OK), mismoDocumento: false }).matrix), /no es el que midió el vigía/);
+});
+
+test('rechaza un contraste que solo produciría un artefacto manipulado, y un fallo también llega al issue', () => {
+  const malos = [
+    null, [], { ...MATRIX_OK, coinciden: -1 }, { ...MATRIX_OK, difieren: 'x' },
+    { ...MATRIX_OK, edicion: '<script>' }, { ...MATRIX_OK, hash: 'abc' },
+    { ...MATRIX_OK, difieren: [{ id: '../x', campo: 'policies' }] },
+    { ...MATRIX_OK, nuevos: ['FG-<b>'] }, { ...MATRIX_OK, mismoDocumento: 'si' },
+  ];
+  for (const m of malos) assert.ok(V.resumenMatrix(m).error, JSON.stringify(m));
+  // Lo que se copia al issue va acortado y sin caracteres de marcado.
+  const largo = V.resumenMatrix({ ...copia(MATRIX_OK), difieren: [{ id: '90G', campo: 'tp', catalogo: 1, documento: `<img src=x>${'z'.repeat(500)}` }] }).matrix;
+  assert.ok(!/[<>]/.test(largo.difieren[0].documento) && largo.difieren[0].documento.length <= 80);
+  const fallo = { error: 'el job contrastar no terminó (descarga o lectura del PDF)' };
+  assert.ok(V.hayQueAvisar({ cambiados: [], inalcanzables: [] }, null, fallo));
+  assert.match(V.cuerpoIssue({ cambiados: [], inalcanzables: [] }, null, fallo), /no se pudo usar/);
+});

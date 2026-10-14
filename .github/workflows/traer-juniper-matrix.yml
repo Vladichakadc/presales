@@ -10,6 +10,10 @@ name: traer-juniper-matrix
 #
 # POR QUE UNA RAMA Y NO main NI UN PR. El PDF no es un activo de la aplicacion: es material de
 # trabajo para completar juniper.js, y una vez transcrito no hace falta conservarlo commiteado.
+#
+# UNA RAMA POR CORRIDA, SIN --force (2026-10-14): empujar con --force a una rama fija borraba la
+# descarga anterior, y con ella la edicion contra la que comparar la nueva (paso con el Product
+# Matrix de Fortinet el 2026-10-13). Cada corrida deja ahora su propia rama.
 
 on:
   workflow_dispatch:
@@ -54,21 +58,26 @@ jobs:
           "
 
       - name: Publicar en la rama de transporte
+        id: rama
         run: |
+          rama="fuente/juniper-srx-matrix-$(date -u +%Y-%m-%d)-$GITHUB_RUN_ID"
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git checkout -B fuente/juniper-srx-matrix
+          git checkout -b "$rama"
           git add fuente-juniper/SRX_Performance_Matrix.pdf
           git commit -m "SRX Performance Matrix descargado $(date -u +%Y-%m-%d)"
-          git push --force origin fuente/juniper-srx-matrix
+          git push origin "$rama"
+          echo "rama=$rama" >> "$GITHUB_OUTPUT"
 
       - name: Resumen
+        env:
+          RAMA: ${{ steps.rama.outputs.rama }}
         run: |
           {
             echo '## SRX Performance Matrix descargado'
             echo ''
-            echo "Rama \`fuente/juniper-srx-matrix\`. Traerlo con:"
+            echo "Rama \`$RAMA\`. Traerlo con:"
             echo '```'
-            echo 'git fetch origin fuente/juniper-srx-matrix'
+            echo "git fetch origin $RAMA"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"

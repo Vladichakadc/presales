@@ -33,11 +33,26 @@ name: vigia-fuentes
 # creada, `--force-with-lease` sin valor esperado no tiene contra que comparar en un checkout
 # que solo trae main). Como el job se cortaba ahi, el issue no se actualizaba. Ahora el PR no
 # se crea desde aqui: el issue y el resumen de la corrida llevan el enlace para abrirlo.
+#
+# TERCER JOB, `contrastar` (2026-10-14). Cuando el lock que acaba de medir deja el Fortinet
+# Product Matrix pendiente de revisar, baja el PDF y corre `npm run matrix`, que lo compara
+# celda a celda con el catalogo SIN ESCRIBIR NADA. El issue ya no dice solo «cambio»: dice que
+# cifras cambiaron. Es el unico job que instala dependencias (pdf-parse), y por eso:
+#   - no tiene escritura ni guarda el token, igual que `medir`;
+#   - instala con `npm ci --ignore-scripts`: el lock y su integridad se respetan, pero ninguna
+#     dependencia ejecuta codigo al instalarse (sqlite3 no hace falta para leer un PDF);
+#   - su resultado es un artefacto que `publicar` valida campo a campo antes de escribirlo.
+# Si falla o no hay nada pendiente, `publicar` sigue igual que antes.
 
 on:
   schedule:
     - cron: '0 6 * * 1'
   workflow_dispatch:
+    inputs:
+      contrastar_matrix:
+        description: 'Contrastar el Fortinet Product Matrix con el catalogo aunque no este pendiente'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -85,11 +100,80 @@ jobs:
             server/seed/legacyData/fuentes.lock.json
           if-no-files-found: error
 
+  contrastar:
+    needs: medir
+    if: ${{ needs.medir.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      pendiente: ${{ steps.pendiente.outputs.pendiente }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: package.json
+
+      - name: Bajar lo medido
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: vigia
+          path: ${{ runner.temp }}/vigia
+
+      # La URL sale de fuentes.js; del lock medido solo se toma si esta pendiente y su hash.
+      # A demanda (`contrastar_matrix` al lanzarlo a mano) se contrasta aunque no este pendiente:
+      # es la forma de comparar el documento sin una maquina con salida a fortinet.com.
+      - name: Ver si el Product Matrix quedo pendiente
+        id: pendiente
+        env:
+          FORZAR: ${{ inputs.contrastar_matrix }}
+        run: |
+          forzar=''
+          if [ "$FORZAR" = 'true' ]; then forzar='--forzar'; fi
+          node scripts/contrastar-matrix.js --pendiente "$RUNNER_TEMP/vigia/server/seed/legacyData/fuentes.lock.json" $forzar >> "$GITHUB_OUTPUT"
+
+      - name: Instalar sin ejecutar scripts de instalacion
+        if: ${{ steps.pendiente.outputs.pendiente == 'true' }}
+        run: npm ci --ignore-scripts
+
+      # Salida 1 es «hay diferencias», que es justo lo que se quiere contar; solo 2 (no se pudo
+      # leer el documento) deja el paso en rojo, y `publicar` lo dice en el issue.
+      - name: Contrastar el Product Matrix con el catalogo
+        if: ${{ steps.pendiente.outputs.pendiente == 'true' }}
+        env:
+          URL_MATRIX: ${{ steps.pendiente.outputs.url }}
+          HASH_MEDIDO: ${{ steps.pendiente.outputs.hash }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/matrix"
+          set +e
+          node scripts/contrastar-matrix.js --url "$URL_MATRIX" --hash-esperado "$HASH_MEDIDO" --json > "$RUNNER_TEMP/matrix/matrix.json"
+          codigo=$?
+          set -e
+          node scripts/contrastar-matrix.js --url "$URL_MATRIX" --hash-esperado "$HASH_MEDIDO" > "$RUNNER_TEMP/matrix/matrix.txt" || true
+          {
+            echo '## Contraste del Product Matrix'
+            echo '```'
+            cat "$RUNNER_TEMP/matrix/matrix.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$codigo" -gt 1 ]; then exit "$codigo"; fi
+
+      - name: Guardar el contraste para el job que publica
+        if: ${{ steps.pendiente.outputs.pendiente == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: matrix
+          path: ${{ runner.temp }}/matrix/matrix.json
+          if-no-files-found: error
+
   # Corre aunque `medir` falle: una corrida que no termina tiene que decirlo en el issue, que es
   # donde se mira. Un rojo que solo se ve entrando en Actions es como la vigia paso tres
   # semanas sin avisar.
   publicar:
-    needs: medir
+    needs: [medir, contrastar]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -116,6 +200,14 @@ jobs:
         with:
           name: vigia
           path: ${{ runner.temp }}/vigia
+
+      - name: Bajar el contraste del Product Matrix
+        id: bajar-matrix
+        if: ${{ needs.contrastar.result == 'success' && needs.contrastar.outputs.pendiente == 'true' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: matrix
+          path: ${{ runner.temp }}/matrix
 
       - name: Validar lo medido y traer el lock
         id: validar
@@ -159,6 +251,8 @@ jobs:
           VALIDAR: ${{ steps.validar.outcome }}
           GUARDAR: ${{ steps.guardar.outcome }}
           ESTADO_LOCK: ${{ steps.guardar.outputs.estado }}
+          CONTRASTAR: ${{ needs.contrastar.result }}
+          MATRIX_PENDIENTE: ${{ needs.contrastar.outputs.pendiente }}
         with:
           script: |
             const fs = require('fs');
@@ -189,6 +283,15 @@ jobs:
               return;
             }
             const inf = JSON.parse(fs.readFileSync(`${dir}/informe.json`, 'utf8'));
+            // El contraste del Product Matrix, si estaba pendiente: validado antes de usarlo.
+            let matrix = null;
+            if (process.env.CONTRASTAR === 'failure') matrix = { error: 'el job contrastar no terminó (descarga o lectura del PDF)' };
+            else if (process.env.MATRIX_PENDIENTE === 'true') {
+              try {
+                const r = V.resumenMatrix(JSON.parse(fs.readFileSync(`${process.env.RUNNER_TEMP}/matrix/matrix.json`, 'utf8')));
+                matrix = r.error ? { error: r.error } : r.matrix;
+              } catch (e) { matrix = { error: `no se pudo leer matrix.json: ${e.message}` }; }
+            }
             // Un paso que falla puede no dejar su salida: el resultado del paso manda.
             const estado = process.env.GUARDAR === 'failure' ? 'fallida' : (process.env.ESTADO_LOCK || 'sin-cambios');
             let enlace = null;
@@ -204,8 +307,8 @@ jobs:
               fallida: `No se pudo empujar la rama ${V.RAMA}: lo medido está en el artefacto de la corrida.`,
             };
             await core.summary.addHeading('Lock de esta corrida', 3).addRaw(resumen[estado] || 'El lock no cambió.').write();
-            if (!V.hayQueAvisar(inf, { estado })) {
+            if (!V.hayQueAvisar(inf, { estado }, matrix)) {
               core.info('Ninguna fuente cambió ni quedó sin leer: no hace falta escribir en el issue.');
               return;
             }
-            await escribir(V.tituloIssue(inf), V.cuerpoIssue(inf, { estado, enlace }));
+            await escribir(V.tituloIssue(inf, matrix), V.cuerpoIssue(inf, { estado, enlace }, matrix));

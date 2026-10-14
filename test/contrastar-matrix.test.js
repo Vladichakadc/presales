@@ -97,3 +97,33 @@ test('el comando solo compara: no abre legacyData/ para escribir', () => {
   const fuente = require('fs').readFileSync(require.resolve('../scripts/contrastar-matrix.js'), 'utf8');
   assert.ok(!/writeFileSync|appendFileSync|createWriteStream/.test(fuente));
 });
+
+// DESDE EL VIGIA (2026-10-14): el job `contrastar` pregunta al lock si el Product Matrix quedó
+// pendiente y baja el PDF de la URL de fuentes.js, nunca de otra.
+test('pendiente segun el lock: la URL sale de fuentes.js y del lock solo un hash valido', () => {
+  const f = C.fuenteMatrix();
+  assert.match(f.url, /Fortinet_Product_Matrix\.pdf$/);
+  assert.strictEqual(C.pendienteDelLock({ documentos: {} }), null);
+  assert.strictEqual(C.pendienteDelLock({ documentos: { [f.clave]: { hashVerificado: 'a'.repeat(64) } } }), null, 'verificado y sin visto: nada pendiente');
+  const p = C.pendienteDelLock({ documentos: { [f.clave]: { visto: { hash: 'b'.repeat(64) }, pendienteDesde: '2026-10-13T19:07:48.856Z' } } });
+  assert.deepStrictEqual(p, { url: f.url, hash: 'b'.repeat(64), desde: '2026-10-13T19:07:48.856Z' });
+  const raro = C.pendienteDelLock({ documentos: { [f.clave]: { visto: { hash: 'x\nurl=https://otra' }, pendienteDesde: 'ayer' } } });
+  assert.deepStrictEqual(raro, { url: f.url, hash: null, desde: null }, 'un hash con otra forma no llega a $GITHUB_OUTPUT');
+  // A demanda: sin cambio pendiente, se espera el PDF verificado.
+  const aDemanda = C.pendienteDelLock({ documentos: { [f.clave]: { hashVerificado: 'c'.repeat(64) } } }, f, true);
+  assert.deepStrictEqual(aDemanda, { url: f.url, hash: 'c'.repeat(64), desde: null });
+});
+
+test('descargar comprueba la firma del PDF y devuelve su SHA-256', async () => {
+  const resp = (cuerpo, ok = true, status = 200) => async () => ({ ok, status, arrayBuffer: async () => Buffer.from(cuerpo) });
+  const { hash } = await C.descargar('https://x', resp('%PDF-1.7 hola'));
+  assert.strictEqual(hash, require('crypto').createHash('sha256').update('%PDF-1.7 hola').digest('hex'));
+  await assert.rejects(C.descargar('https://x', resp('<html>login</html>')), /no es un PDF/);
+  await assert.rejects(C.descargar('https://x', resp('', false, 403)), /HTTP 403/);
+});
+
+test('--url solo acepta la del Product Matrix y sale con 2', () => {
+  const r = require('child_process').spawnSync(process.execPath, [require.resolve('../scripts/contrastar-matrix.js'), '--url', 'https://example.com/otro.pdf'], { encoding: 'utf8' });
+  assert.strictEqual(r.status, 2);
+  assert.match(r.stderr, /solo acepta la del Product Matrix/);
+});

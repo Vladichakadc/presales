@@ -32,6 +32,7 @@ const INSTALA = /npm (?:ci|install)|npx /;
 // [workflow, job sin permisos que ejecuta código de fuera, job con permisos, permiso que lleva]
 const SEPARADOS = [
   ['vigia-fuentes.yml', 'medir', 'publicar', /contents: write/],
+  ['vigia-fuentes.yml', 'contrastar', 'publicar', /contents: write/],
   ['limites.yml', 'recorrer', 'informar', /issues: write/],
   ['aplicar-propuesta.yml', 'aplicar', 'publicar', /contents: write/],
   ['datasheets-aruba.yml', 'descargar', 'publicar', /contents: write/],
@@ -46,7 +47,7 @@ test('el job que ejecuta código de fuera no tiene escritura; el que la tiene no
     assert.match(j[abierto], /persist-credentials: false/, `${yml} · ${abierto}: no guarda el token`);
     assert.ok(j[privilegiado] && permiso.test(j[privilegiado]), `${yml} · ${privilegiado}: lleva su permiso`);
     assert.ok(!INSTALA.test(j[privilegiado]), `${yml} · ${privilegiado}: no instala nada`);
-    assert.match(j[privilegiado], new RegExp(`needs: ${abierto}`), `${yml} · ${privilegiado}: va después de ${abierto}`);
+    assert.match(j[privilegiado], new RegExp(`needs: (?:\\[[^\\]\\n]*\\b)?${abierto}\\b`), `${yml} · ${privilegiado}: va después de ${abierto}`);
   }
   // Los artefactos se bajan fuera del repositorio, para que no caigan sobre el checkout.
   for (const yml of ['vigia-fuentes.yml', 'aplicar-propuesta.yml', 'datasheets-aruba.yml']) {
@@ -54,6 +55,19 @@ test('el job que ejecuta código de fuera no tiene escritura; el que la tiene no
   }
   // Y la vigía escribe en el issue aunque algo falle: un rojo que no llega al issue no avisa.
   assert.ok((jobs('vigia-fuentes.yml').publicar.match(/if: \$\{\{ !cancelled\(\) \}\}/g) || []).length >= 2);
+});
+
+// EL JOB QUE INSTALA PARA LEER UN PDF DE FUERA (2026-10-14). `contrastar` de la vigía es el
+// único de esa familia que necesita un paquete (pdf-parse): instala del lock, pero sin dejar que
+// ninguna dependencia ejecute código al instalarse, y solo cuando hay algo que contrastar.
+test('el contraste del Product Matrix instala sin scripts y solo cuando está pendiente', () => {
+  const c = jobs('vigia-fuentes.yml').contrastar;
+  const instala = c.match(/npm (?:ci|install)[^\n]*/g) || [];
+  assert.deepStrictEqual(instala, ['npm ci --ignore-scripts']);
+  assert.match(c, /if: \$\{\{ steps\.pendiente\.outputs\.pendiente == 'true' \}\}\n\s+run: npm ci --ignore-scripts/);
+  assert.match(c, /path: \$\{\{ runner\.temp \}\}\/vigia/, 'lo medido va a runner.temp');
+  // Y publicar no se cae si contrastar falla o no corre.
+  assert.match(jobs('vigia-fuentes.yml').publicar, /needs: \[medir, contrastar\]\n\s+if: \$\{\{ !cancelled\(\) \}\}/);
 });
 
 test('ningún workflow intenta crear un PR desde Actions, y las ramas se empujan con el script compartido', () => {
@@ -110,5 +124,20 @@ test('ningún run: de una sola línea lleva «: », que YAML leería como un map
     const malas = fs.readFileSync(path.join(DIR, yml), 'utf8').split('\n')
       .filter((l) => /^\s+run: (?![|>])/.test(l) && /: /.test(l.replace(/^\s+run: /, '')));
     assert.deepStrictEqual(malas, [], `${yml}: ${malas.join(' | ')}`);
+  }
+});
+
+// LAS RAMAS DE TRANSPORTE NO SE PISAN (2026-10-14). Un `git push --force` a una rama de nombre
+// fijo borraba la descarga anterior: el 2026-10-13 la edición de octubre del Product Matrix
+// pisó a la de septiembre y ya no hubo con qué compararla. Cada corrida deja su propia rama.
+// `traer-cisco-huawei.yml` empuja a la rama que se le pasa (`rama`), que es la de la corrida.
+test('ningún workflow empuja con --force a una rama de transporte de nombre fijo', () => {
+  for (const yml of fs.readdirSync(DIR).filter((f) => f.endsWith('.yml'))) {
+    const texto = fs.readFileSync(path.join(DIR, yml), 'utf8').replace(/^\s*#.*\n/gm, '');
+    const fijas = texto.match(/git push --force[^\n]*\sfuente\/[\w-]+/g) || [];
+    assert.deepStrictEqual(fijas, [], `${yml} pisa una rama fija`);
+  }
+  for (const yml of ['traer-fortinet-matrix.yml', 'traer-juniper-matrix.yml', 'traer-fortinet-pendientes.yml']) {
+    assert.match(fs.readFileSync(path.join(DIR, yml), 'utf8'), /rama="fuente\/[\w-]+-\$\(date -u \+%Y-%m-%d\)-\$GITHUB_RUN_ID"/, `${yml}: rama por corrida`);
   }
 });
