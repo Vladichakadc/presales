@@ -1938,9 +1938,19 @@ que ya se comprobó y lo que cuesta cada opción.
   septiembre y ya no hubo con qué compararla. Ahora cada corrida deja su rama
   (`<base>-<fecha>-<corrida>`), con un push normal; una prueba impide volver a empujar con
   `--force` a un nombre fijo en cualquier workflow.
-- **Probado**: 927 pruebas (8 nuevas: validación del informe, sección del issue, pendiente según el
-  lock, firma del PDF, URL ajena rechazada, reglas del job y de las ramas) y los cuatro workflows
-  cargados como YAML.
+- **Probado en Actions** (corrida 38500470053, a demanda): `contrastar` instaló sin scripts, bajó
+  el PDF de fortinet.com y el issue #12 recibió «Edición `PROMTX-2026-R177-OCT` · coinciden 621 ·
+  difieren 0 · sin leer 0», lo mismo que el contraste local del día anterior. El artefacto no se
+  pudo bajar desde aquí (el proxy deniega `productionresultssa10.blob.core.windows.net`): por eso
+  el resultado va ahora también al log del job, que sí se lee por la API.
+- **Por el camino, en el vigía**:
+  - `fuentes.js` puede declarar una fuente `retirada: {fecha, motivo}`. Si sigue sin leerse se
+    cuenta aparte y deja de repetirse cada lunes en el issue; si vuelve a leerse, el issue la
+    trae como republicada. El A816 E de Huawei queda declarado así (404 desde el 2026-10-13).
+  - Un contraste pedido a mano sobre la edición ya verificada no invita a marcarla revisada.
+- **Verificado**: 928 pruebas (nuevas: validación del informe, sección del issue, pendiente según
+  el lock y a demanda, firma del PDF, URL ajena rechazada, reglas del job y de las ramas, fuentes
+  retiradas), los cuatro workflows cargados como YAML, pantallas, e2e y puerta.
 
 ### `npm run matrix` y el catálogo de Fortinet en la edición de octubre (2026-10-13, decimoséptima entrega)
 
