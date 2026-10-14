@@ -16,6 +16,14 @@ name: traer-fortinet-matrix
 # GitHub no pasan por ese proxy -confirmado el 2026-09-02 por npm run vigia, que leyo este
 # mismo documento sin bloqueo-, asi que este workflow reutiliza esa misma via ya aprobada
 # para este repositorio en vez de pedir que alguien lo baje de una maquina propia.
+#
+# UNA RAMA POR CORRIDA, SIN --force (2026-10-14). Hasta hoy empujaba con --force a una rama fija,
+# `fuente/fortinet-product-matrix`, y cada descarga borraba la anterior: el 2026-10-13 la edicion
+# de octubre piso a la de septiembre y ya no se pudo comparar una con otra. Ahora cada corrida
+# deja su rama (`fuente/fortinet-product-matrix-<fecha>-<corrida>`), que nunca existe antes, asi
+# que el push es normal. La rama fija vieja queda con la edicion de octubre y no se toca mas.
+# Contrastarlo con el catalogo ya no hace falta traerlo: lo hace el vigia (job `contrastar`) o
+# `npm run matrix -- <pdf>` sobre la copia de esta rama.
 
 on:
   workflow_dispatch:
@@ -60,21 +68,28 @@ jobs:
           "
 
       - name: Publicar en la rama de transporte
+        id: rama
         run: |
+          rama="fuente/fortinet-product-matrix-$(date -u +%Y-%m-%d)-$GITHUB_RUN_ID"
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git checkout -B fuente/fortinet-product-matrix
+          git checkout -b "$rama"
           git add fuente-fortinet/Fortinet_Product_Matrix.pdf
           git commit -m "Fortinet Product Matrix descargado $(date -u +%Y-%m-%d)"
-          git push --force origin fuente/fortinet-product-matrix
+          git push origin "$rama"
+          echo "rama=$rama" >> "$GITHUB_OUTPUT"
 
       - name: Resumen
+        env:
+          RAMA: ${{ steps.rama.outputs.rama }}
         run: |
           {
             echo '## Fortinet Product Matrix descargado'
             echo ''
-            echo "Rama \`fuente/fortinet-product-matrix\`. Traerlo con:"
+            echo "Rama \`$RAMA\`. Traerlo y contrastarlo con:"
             echo '```'
-            echo 'git fetch origin fuente/fortinet-product-matrix'
+            echo "git fetch origin $RAMA"
+            echo "git show FETCH_HEAD:fuente-fortinet/Fortinet_Product_Matrix.pdf > matrix.pdf"
+            echo 'npm run matrix -- matrix.pdf'
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"

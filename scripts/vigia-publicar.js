@@ -41,7 +41,7 @@ function fuentesPorClave(fuentes = FUENTES) {
   const m = new Map();
   for (const [vendor, lista] of Object.entries(fuentes)) {
     for (const f of lista) {
-      if (f.url) m.set(claveDe(vendor, f), { vendor, documento: f.documento, url: f.url, estable: f.estable !== false });
+      if (f.url) m.set(claveDe(vendor, f), { vendor, documento: f.documento, url: f.url, estable: f.estable !== false, retirada: !!f.retirada });
     }
   }
   return m;
@@ -142,11 +142,21 @@ function informeDe(d, fuentes = fuentesPorClave()) {
     const detalle = String(r.detalle == null ? '' : r.detalle).replace(/\s+/g, ' ').replace(/`/g, "'").trim().slice(0, 200) || 'sin detalle';
     inalcanzables.push({ ...f, detalle });
   }
-  return { informe: { cambiados, inalcanzables } };
+  // Una fuente declarada retirada que vuelve a leerse: el fabricante la republico. Es opcional
+  // (las corridas anteriores no la traen) y solo se acepta si FUENTES la declara retirada.
+  const reaparecidas = [];
+  for (const r of Array.isArray(d.reaparecidas) ? d.reaparecidas : []) {
+    const f = fuente(r);
+    if (!f || !f.retirada) return { error: 'una fuente reaparecida no está declarada retirada en FUENTES' };
+    reaparecidas.push(f);
+  }
+  return { informe: { cambiados, inalcanzables, reaparecidas } };
 }
 
-function tituloIssue(inf) {
+function tituloIssue(inf, matrix) {
   if (inf.cambiados.length) return `Fuentes del catálogo: ${inf.cambiados.length} cambiaron`;
+  if (matrix && !matrix.error && !matrix.limpio) return `Product Matrix de Fortinet: ${matrix.nDifieren} cifra(s) distintas del catálogo`;
+  if (matrix && matrix.error) return 'Product Matrix de Fortinet: el contraste no se pudo usar';
   if (inf.inalcanzables.length) return `Fuentes del catálogo: ${inf.inalcanzables.length} no se pudieron leer`;
   return 'Vigía de fuentes: no se pudo guardar lo medido';
 }
@@ -154,7 +164,74 @@ function tituloIssue(inf) {
 // Si hay que escribir en el issue. Además de un cambio o una fuente sin leer, un push que falló:
 // una corrida en rojo que no deja rastro donde se mira es como la vigía pasó tres semanas sin
 // avisar (2026-09-21 y 2026-09-28).
-const hayQueAvisar = (inf, lock) => inf.cambiados.length > 0 || inf.inalcanzables.length > 0 || (lock && lock.estado === 'fallida');
+const hayQueAvisar = (inf, lock, matrix) => inf.cambiados.length > 0 || inf.inalcanzables.length > 0 || (lock && lock.estado === 'fallida')
+  || (inf.reaparecidas || []).length > 0
+  || !!(matrix && (matrix.error || !matrix.limpio));
+
+// EL CONTRASTE DEL PRODUCT MATRIX (2026-10-14). Lo deja el job `contrastar`, que corrio
+// `npm run matrix` sobre un PDF de fortinet.com: es contenido de fuera y se valida aqui campo a
+// campo antes de escribirlo en el issue, igual que vigia.json. Este archivo corre en un job sin
+// `npm ci`, asi que la validacion es propia y no carga scripts/contrastar-matrix.js.
+const ID_FG = /^\d{2,4}[A-Z]$/;
+const CAMPO = /^[a-zA-Z]{2,12}$/;
+const corto = (x) => String(x == null ? '—' : typeof x === 'object' ? JSON.stringify(x) : x)
+  .replace(/\s+/g, ' ').replace(/[`<>]/g, "'").trim().slice(0, 80);
+const MAX_FILAS = 40;
+function resumenMatrix(d, { aDemanda = false } = {}) {
+  if (!esObjeto(d)) return { error: 'matrix.json no es un objeto' };
+  const enteros = ['coinciden'];
+  for (const k of enteros) if (!esEntero(d[k])) return { error: `matrix.json sin ${k}` };
+  for (const k of ['difieren', 'sinLeer', 'nuevos', 'faltan']) if (!Array.isArray(d[k])) return { error: `matrix.json sin la lista ${k}` };
+  if (d.edicion != null && !/^PROMTX-\d{4}-R\d{1,4}-[A-Z]{3}$/.test(d.edicion)) return { error: 'edicion con forma desconocida' };
+  if (d.hash != null && !HEX64.test(d.hash)) return { error: 'hash del PDF con forma desconocida' };
+  if (d.mismoDocumento != null && typeof d.mismoDocumento !== 'boolean') return { error: 'mismoDocumento no es booleano' };
+  const filas = (lista, campos) => {
+    const out = [];
+    for (const x of lista.slice(0, MAX_FILAS)) {
+      if (!esObjeto(x) || !ID_FG.test(x.id || '') || !CAMPO.test(x.campo || '')) return null;
+      out.push(Object.fromEntries([['id', x.id], ['campo', x.campo], ...campos.map((c) => [c, corto(x[c])])]));
+    }
+    return out;
+  };
+  const difieren = filas(d.difieren, ['catalogo', 'documento']);
+  const sinLeer = filas(d.sinLeer, ['texto']);
+  if (!difieren || !sinLeer) return { error: 'una fila del contraste no tiene modelo o campo válidos' };
+  if (![...d.nuevos, ...d.faltan].every((x) => ID_FG.test(x))) return { error: 'un modelo nuevo o que falta no tiene forma de FortiGate' };
+  const limpio = !d.difieren.length && !d.sinLeer.length && !d.nuevos.length && !d.faltan.length;
+  // La URL sale de fuentes.js, no del artefacto.
+  const fuente = (FUENTES.fortinet || []).find((f) => /Product Matrix/i.test(f.documento) && f.url);
+  return { matrix: {
+    url: fuente ? fuente.url : null, aDemanda: aDemanda === true, edicion: d.edicion || null, hash: d.hash || null, mismoDocumento: d.mismoDocumento ?? null, coinciden: d.coinciden,
+    nDifieren: d.difieren.length, nSinLeer: d.sinLeer.length, difieren, sinLeer, nuevos: d.nuevos, faltan: d.faltan, limpio,
+  } };
+}
+
+function seccionMatrix(m, url) {
+  const l = ['## Contraste del Product Matrix (`npm run matrix`)', ''];
+  if (m.error) {
+    l.push(`El contraste no se pudo usar: \`${corto(m.error)}\`. Hay que correrlo a mano: \`npm run matrix -- <pdf>\`.`, '');
+    return l;
+  }
+  l.push(`Edición ${m.edicion ? `\`${m.edicion}\`` : 'sin código en el pie'} · coinciden ${m.coinciden} · difieren ${m.nDifieren} · sin leer ${m.nSinLeer}`);
+  if (m.mismoDocumento === false) l.push('', '**Aviso**: el PDF contrastado no es el que midió el vigía (Fortinet lo cambió entre las dos descargas).');
+  if (m.nuevos.length) l.push('', `Modelos que la edición añade: ${m.nuevos.join(', ')}`);
+  if (m.faltan.length) l.push('', `Modelos que la edición ya no lista: ${m.faltan.join(', ')}`);
+  if (m.difieren.length) {
+    l.push('', '| Modelo | Campo | Catálogo | Documento |', '|---|---|---|---|');
+    for (const d of m.difieren) l.push(`| ${d.id} | ${d.campo} | ${d.catalogo} | ${d.documento} |`);
+    if (m.nDifieren > m.difieren.length) l.push(`| … | | | ${m.nDifieren - m.difieren.length} más en el artefacto |`);
+  }
+  if (m.sinLeer.length) {
+    l.push('', 'Celdas que no se pudieron leer (mirarlas a mano):');
+    for (const s of m.sinLeer) l.push(`- ${s.id} ${s.campo}: «${s.texto}»`);
+  }
+  l.push('', m.limpio && m.aDemanda
+    ? 'Contraste pedido a mano sobre la edición ya verificada: sigue casando con el catálogo. No hay nada que marcar.'
+    : m.limpio
+    ? `Todo casa: la edición no cambia ninguna cifra del catálogo. Se puede marcar revisada con \`npm run vigia -- --revisado fortinet ${url}\` y citar la edición en \`fuentes.js\`.`
+    : 'Nada se ha escrito en el catálogo: cada diferencia se corrige a mano en `legacyData/fortinet.js` citando la edición, y después se marca revisada con `npm run vigia -- --revisado`.', '');
+  return l;
+}
 
 // Cuando la corrida no llega a publicarse: la medición no terminó, no se pudo bajar o no pasó la
 // validación. El motivo puede citar una clave del artefacto, así que va en código en línea.
@@ -173,8 +250,9 @@ function cuerpoFallo(motivo, corrida) {
 // `lock` dice qué pasó con la medición de esta semana: {estado, enlace}. `estado` es el que
 // deja el paso de la rama (empujada, sin-cambios, retenida o fallida) y `enlace`, el PR
 // abierto o el enlace para abrirlo.
-function cuerpoIssue(inf, lock) {
+function cuerpoIssue(inf, lock, matrix) {
   const l = [];
+  if (matrix) l.push(...seccionMatrix(matrix, matrix.url || 'la URL del Product Matrix'));
   if (inf.cambiados.length) {
     l.push('## Fuentes que cambiaron', '');
     l.push('El documento oficial ya no es el mismo que se usó para verificar el catálogo.');
@@ -186,6 +264,13 @@ function cuerpoIssue(inf, lock) {
       l.push(`  - medido antes: \`${r.antes}\` el ${r.medidoAntes || 'desconocido'}`);
       l.push(`  - ahora: \`${r.ahora}\` (${r.bytes} bytes)`);
     }
+    l.push('');
+  }
+  if ((inf.reaparecidas || []).length) {
+    l.push('## Fuentes retiradas que vuelven a publicarse', '');
+    l.push('`fuentes.js` las declara retiradas por el fabricante, y esta semana se leyeron: hay que abrirlas,');
+    l.push('contrastarlas con lo que el catálogo tomó de la copia y, si siguen, quitar `retirada`.', '');
+    for (const r of inf.reaparecidas) l.push(`- **${r.vendor}** — ${r.documento}`, `  - ${r.url}`);
     l.push('');
   }
   if (inf.inalcanzables.length) {
@@ -249,4 +334,5 @@ if (require.main === module) {
 
 module.exports = {
   RAMA, TITULO_FALLO, fuentesPorClave, validarLock, informeDe, tituloIssue, hayQueAvisar, cuerpoIssue, cuerpoFallo, principal,
+  resumenMatrix,
 };

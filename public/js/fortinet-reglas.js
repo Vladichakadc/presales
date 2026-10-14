@@ -86,7 +86,7 @@
       unidad: 'sesiones', metodo: 'Concurrent Sessions (valor base, sin licencia Hyperscale)' },
     { k: 'cps', n: 'Sesiones nuevas / s', frase: 'las sesiones nuevas por segundo', campo: 'cps', dureza: 'blanda',
       unidad: 'cps', metodo: 'New Sessions/Sec (TCP, modo flow)' },
-    // ── LIMITES DE CONFIGURACION (Product Matrix, sept-2026) ───────────────────────────
+    // ── LIMITES DE CONFIGURACION (Product Matrix, sept-2026; contrastados con oct-2026) ───────────────────────────
     // Entraron el 2026-09-23 y cierran el hueco que este mismo modulo declaraba en pantalla:
     // la pagina pedia tuneles y usuarios de acceso remoto y despues decia que el tope por
     // modelo «no esta en este catalogo». Un control que no se puede contrastar invita a creer

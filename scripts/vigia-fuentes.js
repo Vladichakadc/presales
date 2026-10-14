@@ -205,6 +205,19 @@ async function revisar(vendor, f, opts) {
   }
 }
 
+// FUENTES RETIRADAS POR SU FABRICANTE (2026-10-14). Una fuente que `fuentes.js` declara
+// `retirada: {fecha, motivo}` (el documento ya no se publica; las cifras siguen con la copia que
+// se leyo) y que sigue sin poder leerse NO es «inalcanzable»: es lo que ya se sabe, y repetirlo
+// cada lunes en el issue entierra lo que si es nuevo. Se cuenta aparte. Pero si un dia VUELVE a
+// leerse, se mide como cualquier otra y se marca `reaparecio`: el fabricante lo republico y hay
+// que mirarlo.
+function conRetirada(r, f) {
+  if (!f || !f.retirada) return r;
+  if (r.estado === 'inalcanzable') return { ...r, estado: 'retirada', detalle: `retirada el ${f.retirada.fecha}: ${r.detalle}` };
+  if (r.estado === 'leido') return { ...r, reaparecio: true };
+  return r;
+}
+
 // Decide en que estado queda una medicion frente a lo ya verificado. Extraida de `correr()`
 // por lo mismo que `aplicarAlLock`: es pura, asi que la prueba puede encadenar varias semanas
 // sin red y sin copiar la regla -- dos copias de la misma regla se desincronizan, que es el
@@ -300,7 +313,7 @@ async function correr() {
       resultados.push({ vendor: p.vendor, documento: p.f.documento, url: null, estado: 'sin url' });
       continue;
     }
-    const r = await revisar(p.vendor, p.f);
+    const r = conRetirada(await revisar(p.vendor, p.f), p.f);
     const clave = claveDe(p.vendor, p.f);
     r.clave = clave;
     const previo = normalizarEntrada(lock.documentos[clave]);
@@ -312,12 +325,14 @@ async function correr() {
   const cambiados = resultados.filter((r) => r.cambio === 'CAMBIÓ');
   const nuevos = resultados.filter((r) => r.cambio === 'primera medición');
   const inalcanzables = resultados.filter((r) => r.estado === 'inalcanzable');
+  const retiradas = resultados.filter((r) => r.estado === 'retirada');
+  const reaparecidas = resultados.filter((r) => r.reaparecio);
 
   if (ESCRIBIR) {
     guardarLock(aplicarAlLock(lock, resultados, new Date().toISOString()));
   }
 
-  return { resultados, cambiados, nuevos, inalcanzables, pendientes: pendientes(lock) };
+  return { resultados, cambiados, nuevos, inalcanzables, retiradas, reaparecidas, pendientes: pendientes(lock) };
 }
 
 // `--revisado <vendor> <url>`: una persona ya abrio el documento y contrasto el dato, asi que
@@ -483,7 +498,8 @@ function imprimir(d) {
           : (r.rebase ? '[ base ]' : '[  ok  ]')));
     let cola;
     if (r.estado !== 'leido') {
-      cola = r.estado === 'sin url' ? 'sin URL que vigilar' : `inalcanzable: ${r.detalle}`;
+      cola = r.estado === 'sin url' ? 'sin URL que vigilar'
+        : r.estado === 'retirada' ? `retirada por el fabricante (ya declarada): ${r.detalle}` : `inalcanzable: ${r.detalle}`;
     } else if (r.cambio === 'CAMBIÓ') {
       // Distinguir lo nuevo de la cola que envejece es lo que impide que una alarma repetida
       // cada semana se lea como ruido.
@@ -493,10 +509,11 @@ function imprimir(d) {
       cola = `${r.cambio}${r.bytes ? ` · ${r.bytes} bytes` : ''}`;
     }
     console.log(`${marca} ${r.vendor.padEnd(9)} ${r.documento}`);
-    console.log(`          ${cola}`);
+    console.log(`          ${cola}${r.reaparecio ? ' · REAPARECIÓ: estaba declarada retirada' : ''}`);
   }
 
-  console.log(`\n${d.cambiados.length} cambio(s), ${d.nuevos.length} primera(s) medición(es), ${d.inalcanzables.length} inalcanzable(s).`);
+  const nRet = (d.retiradas || []).length;
+  console.log(`\n${d.cambiados.length} cambio(s), ${d.nuevos.length} primera(s) medición(es), ${d.inalcanzables.length} inalcanzable(s)${nRet ? `, ${nRet} retirada(s) ya declarada(s)` : ''}.`);
   if (d.pendientes.length) {
     console.log(`\n${d.pendientes.length} documento(s) esperando revisión humana:`);
     for (const p of d.pendientes) {
@@ -576,7 +593,7 @@ if (require.main === module) {
 }
 
 module.exports = {
-  correr, revisar, claveDe, pendientes, normalizarEntrada, marcarRevisado, aplicarAlLock,
+  correr, revisar, claveDe, pendientes, normalizarEntrada, marcarRevisado, aplicarAlLock, conRetirada,
   sondear, textoNormalizado, primeraDiferencia, declaradasInestables,
   clasificar,
   leerLock, LOCK,
