@@ -39,9 +39,25 @@
 // latencia ni Application Control (el catalogo no los usa). Avisa tambien de los modelos que
 // la edicion anade o quita respecto de `MATRIX_LIMITES`.
 //
-// CODIGO DE SALIDA: 0 si todo casa; 1 si hay diferencias, celdas sin leer o cambios de modelos.
+// DESDE EL VIGIA (2026-10-14). El job `contrastar` de vigia-fuentes.yml lo corre solo cuando el
+// lock que acaba de medir deja el Product Matrix pendiente de revisar:
+//
+//     node scripts/contrastar-matrix.js --pendiente <fuentes.lock.json>   url= y hash= si esta pendiente
+//     node scripts/contrastar-matrix.js --pendiente <lock> --forzar     tambien si no lo esta (a demanda)
+//     node scripts/contrastar-matrix.js --url <url> --hash-esperado <hex> --json
+//
+// `--url` solo acepta la URL que `fuentes.js` declara para el Product Matrix (no un documento
+// cualquiera) y dice si el PDF bajado es el mismo que midio el vigia: si Fortinet lo cambio entre
+// las dos descargas, el informe lo avisa en vez de atribuir el contraste a otra edicion.
+//
+// CODIGO DE SALIDA: 0 si todo casa; 1 si hay diferencias, celdas sin leer o cambios de modelos;
+// 2 si no se pudo leer el documento (descarga, firma, URL).
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+
+const HEX64 = /^[0-9a-f]{64}$/;
+const TIEMPO_LIMITE = 60000;
 
 const FILAS = [
   ['fw', /^Firewall Throughput/], ['vpn', /^IPsec VPN Throughput/], ['ips', /^IPS Throughput/],
@@ -205,24 +221,87 @@ function informe(r, edicion) {
   return { texto: L.join('\n'), limpio };
 }
 
+/* La fuente del Product Matrix en `fuentes.js` y su clave en el lock del vigia. */
+function fuenteMatrix() {
+  const { FUENTES } = require('../server/seed/legacyData/fuentes');
+  const f = (FUENTES.fortinet || []).find((x) => /Product Matrix/i.test(x.documento) && x.url);
+  if (!f) throw new Error('fuentes.js no declara la URL del Fortinet Product Matrix');
+  return { url: f.url, clave: `fortinet::${f.url}` };
+}
+
+/* Si el lock deja el Product Matrix pendiente de revisar: {url, hash, desde} o null. La URL sale
+   de fuentes.js, no del lock; del lock solo se toma el hash, y solo si es un SHA-256. */
+function pendienteDelLock(lock, fuente = fuenteMatrix(), forzar = false) {
+  const e = lock && lock.documentos ? lock.documentos[fuente.clave] : null;
+  if (!e || (!e.visto && !forzar)) return null;
+  // A demanda y sin cambio pendiente, el PDF que se espera es el verificado.
+  const crudo = e.visto ? e.visto.hash : e.hashVerificado;
+  const hash = typeof crudo === 'string' && HEX64.test(crudo) ? crudo : null;
+  const desde = typeof e.pendienteDesde === 'string' && /^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/.test(e.pendienteDesde) ? e.pendienteDesde : null;
+  return { url: fuente.url, hash, desde, aDemanda: !e.visto };
+}
+
+/* Baja el PDF y comprueba la firma. `traer` se inyecta en las pruebas. */
+async function descargar(url, traer = fetch) {
+  const control = new AbortController();
+  const reloj = setTimeout(() => control.abort(), TIEMPO_LIMITE);
+  try {
+    const res = await traer(url, { redirect: 'follow', signal: control.signal,
+      headers: { 'User-Agent': 'presales-contrastar-matrix/1.0 (+catalogo interno)' } });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const buf = Buffer.from(await res.arrayBuffer());
+    if (buf.subarray(0, 4).toString() !== '%PDF') throw new Error(`no es un PDF (firma ${buf.subarray(0, 4).toString('hex')})`);
+    return { buf, hash: crypto.createHash('sha256').update(buf).digest('hex') };
+  } finally {
+    clearTimeout(reloj);
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2);
-  const archivo = args.find((a) => !a.startsWith('--'));
-  if (!archivo) {
-    console.error('Uso: npm run matrix -- <Fortinet_Product_Matrix.pdf> [--json]');
-    process.exit(1);
+  const valor = (k) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : undefined; };
+  if (args.includes('--pendiente')) {
+    // Salida para $GITHUB_OUTPUT: pendiente=false, o pendiente=true con url= y hash=.
+    const p = pendienteDelLock(JSON.parse(fs.readFileSync(valor('--pendiente'), 'utf8')), fuenteMatrix(), args.includes('--forzar'));
+    console.log(p ? `pendiente=true\nurl=${p.url}\nhash=${p.hash || ''}\nademanda=${p.aDemanda}` : 'pendiente=false');
+    return 0;
   }
-  const buf = fs.readFileSync(path.resolve(archivo));
-  if (buf.subarray(0, 4).toString() !== '%PDF') { console.error(`${archivo} no es un PDF (firma ${buf.subarray(0, 4).toString('hex')}).`); process.exit(1); }
+  let buf;
+  let origen = {};
+  const url = valor('--url');
+  if (url) {
+    if (url !== fuenteMatrix().url) { console.error(`--url solo acepta la del Product Matrix de fuentes.js, no ${url}`); return 2; }
+    try {
+      const d = await descargar(url);
+      buf = d.buf;
+      const esperado = valor('--hash-esperado');
+      origen = { url, hash: d.hash, hashEsperado: HEX64.test(esperado || '') ? esperado : null };
+      origen.mismoDocumento = origen.hashEsperado ? origen.hashEsperado === d.hash : null;
+    } catch (e) {
+      console.error(`No se pudo bajar el Product Matrix: ${e.message}`);
+      return 2;
+    }
+  } else {
+    const archivo = args.find((a) => !a.startsWith('--'));
+    if (!archivo) {
+      console.error('Uso: npm run matrix -- <Fortinet_Product_Matrix.pdf> [--json]');
+      return 2;
+    }
+    buf = fs.readFileSync(path.resolve(archivo));
+    if (buf.subarray(0, 4).toString() !== '%PDF') { console.error(`${archivo} no es un PDF (firma ${buf.subarray(0, 4).toString('hex')}).`); return 2; }
+  }
   const catalogo = require('../server/seed/legacyData/fortinet');
   const { celdas, edicion } = celdasDe(await leerPaginas(buf));
   const r = contrastar(celdas, catalogo);
   const { texto, limpio } = informe(r, edicion);
-  if (args.includes('--json')) console.log(JSON.stringify({ edicion, ...r }, null, 2));
-  else console.log(texto);
-  process.exit(limpio ? 0 : 1);
+  if (args.includes('--json')) console.log(JSON.stringify({ edicion, ...origen, ...r, limpio }, null, 2));
+  else {
+    console.log(texto);
+    if (origen.mismoDocumento === false) console.log('\nAVISO: el PDF bajado no es el que midio el vigia (Fortinet lo cambio entre las dos descargas).');
+  }
+  return limpio ? 0 : 1;
 }
 
-if (require.main === module) main().catch((e) => { console.error(e); process.exit(1); });
+if (require.main === module) main().then((c) => process.exit(c)).catch((e) => { console.error(e); process.exit(2); });
 
-module.exports = { leerPaginas, celdasDe, valorDe, contrastar, informe, FILAS };
+module.exports = { leerPaginas, celdasDe, valorDe, contrastar, informe, pendienteDelLock, descargar, fuenteMatrix, FILAS };

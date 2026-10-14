@@ -207,7 +207,7 @@ dominios de HPE, Huawei, Fortinet, Juniper y otros fabricantes: **un 403 del pro
 la organización y se reporta, no se rodea**. Los ejecutores de GitHub Actions sí llegan, y los
 documentos se traen con workflows de transporte (`traer-cisco-huawei.yml` —con `solo` y `rama`—,
 `traer-fortinet-pendientes.yml`, `candidatas-fuentes.yml`…) a ramas `fuente/*` que se leen y se
-descartan; el workflow no da por guardada una pantalla de inicio de sesión (`test/traer-pantalla-login.test.js`),
+descartan, **una por corrida y nunca con `--force` a un nombre fijo** (pisaba la edición anterior); el workflow no da por guardada una pantalla de inicio de sesión (`test/traer-pantalla-login.test.js`),
 y cada entrada HTML declara `debeContener` o `exploracion: true`: lo explorado sale EXPL, no OK
 (`test/traer-exploracion.test.js`).
 Huawei (`support.huawei.com`) y HPE (`buy.hpe.com`) niegan además el navegador
@@ -451,9 +451,12 @@ Módulos compartidos:
   `npm run vigia -- --revisado <fabricante> <url>`. Vigila el texto en HTML, los bytes en PDF y,
   en las 20 fichas de MikroTik, **los datos transcritos** (`vigilar: 'ficha-mikrotik'`: la huella de
   lo que `npm run mikrotik` lee, que al transcribir deja el lock verificado);
-  `--sondeo` mide qué varía entre dos peticiones. Cuando cambia el Product Matrix de Fortinet,
-  `npm run matrix -- <pdf>` lo compara con el catálogo por coordenadas (no escribe nada) antes del
-  `--revisado`. **Un documento inalcanzable no es uno sin
+  `--sondeo` mide qué varía entre dos peticiones. Cuando el Product Matrix de Fortinet queda
+  pendiente, el job **`contrastar`** del vigía corre `npm run matrix` sobre él (sin escritura ni
+  token, `npm ci --ignore-scripts`) y el issue dice qué cifras cambiaron; `publicar` valida ese
+  informe antes de escribirlo. A demanda, `contrastar_matrix` al lanzarlo a mano; en local,
+  `npm run matrix -- <pdf>`. Nada de eso escribe en `legacyData/`: el `--revisado` sigue siendo
+  humano. **Un documento inalcanzable no es uno sin
   cambios**, y un 403 no prueba quién bloquea (`npm run candidatas`). Pasadas 4 semanas sin
   contrastar, `verificar` frena (`SEMANAS_TOLERADAS`).
 - **Contraste** (`npm run contraste`, dentro del job de `pantallas`): cada caso de

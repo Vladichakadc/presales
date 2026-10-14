@@ -29,6 +29,10 @@ name: traer-fortinet-pendientes
 # workflow prueba las rutas conocidas de cada documento, publica lo que SI responde y deja en
 # el resumen, documento a documento, que codigo dio cada intento: un informe que dice «no se
 # pudo» con su codigo vale, y uno que se calla los fallos para salir en verde no.
+#
+# UNA RAMA POR CORRIDA, SIN --force (2026-10-14): empujar con --force a una rama fija borraba la
+# descarga anterior, y con ella la edicion contra la que comparar la nueva (paso con el Product
+# Matrix de Fortinet el 2026-10-13). Cada corrida deja ahora su propia rama.
 
 on:
   workflow_dispatch:
@@ -166,22 +170,27 @@ jobs:
           "
 
       - name: Publicar en la rama de transporte
+        id: rama
         run: |
+          rama="fuente/fortinet-pendientes-$(date -u +%Y-%m-%d)-$GITHUB_RUN_ID"
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git checkout -B fuente/fortinet-pendientes
+          git checkout -b "$rama"
           git add fuente-fortinet/
           git commit -m "Documentos pendientes de Fortinet (F6, F2) descargados $(date -u +%Y-%m-%d)"
-          git push --force origin fuente/fortinet-pendientes
+          git push origin "$rama"
+          echo "rama=$rama" >> "$GITHUB_OUTPUT"
 
       - name: Resumen
+        env:
+          RAMA: ${{ steps.rama.outputs.rama }}
         run: |
           {
             echo '## Documentos pendientes de Fortinet'
             echo ''
-            echo 'Rama `fuente/fortinet-pendientes`. Traerla con:'
+            echo "Rama \`$RAMA\`. Traerla con:"
             echo '```'
-            echo 'git fetch origin fuente/fortinet-pendientes'
+            echo "git fetch origin $RAMA"
             echo '```'
             echo ''
             echo 'Qué respondió cada intento (un 404 se reporta, no se da por bueno):'

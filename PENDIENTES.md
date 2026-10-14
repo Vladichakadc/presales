@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-13, decimoséptima entrega (**La mejora propuesta —`npm run matrix`— y el catálogo de Fortinet a la edición de octubre del Product Matrix.** El contraste de una edición nueva deja de ser lectura a ojo: el comando lee el PDF por coordenadas y compara 621 cifras de 27 modelos con el catálogo, sin escribir nada; probado con un dato revertido y con una columna desplazada, que salen como diferencia. Con él, la edición de octubre (PROMTX-2026-R177-OCT) casa entera y los rótulos de procedencia que ve el usuario la citan. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-14, decimoctava entrega (**El vigía contrasta solo el Product Matrix, y las ramas de transporte dejan de pisarse.** Mejora propuesta en la entrega anterior: cuando el vigía deja el Product Matrix de Fortinet pendiente, un job nuevo sin escritura corre `npm run matrix` sobre él y el issue dice qué cifras cambiaron; también a demanda, sin una máquina con salida a fortinet.com. Por el camino: tres workflows de transporte empujaban con `--force` a una rama fija y borraban la descarga anterior. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-13, decimoséptima entrega (**La mejora propuesta —`npm run matrix`— y el catálogo de Fortinet a la edición de octubre del Product Matrix.** El contraste de una edición nueva deja de ser lectura a ojo: el comando lee el PDF por coordenadas y compara 621 cifras de 27 modelos con el catálogo, sin escribir nada; probado con un dato revertido y con una columna desplazada, que salen como diferencia. Con él, la edición de octubre (PROMTX-2026-R177-OCT) casa entera y los rótulos de procedencia que ve el usuario la citan. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-13, decimosexta entrega (**«Ejecuta los pendientes como un arquitecto senior, con las mejoras propuestas, sin parar hasta cerrarlos».** Hechos: en MikroTik, la **distancia del tramo y la subida de cada enlace** eligen el módulo por alcance (S-55DLC80D a 80 km, BiDi XS+2733LC15D a 15 km, XQ+31LC02D a 2 km), con la matriz oficial ampliada a esos tres módulos. En Fortinet, **F4-resto**: los **vecinos BGP** por modelo salen de la *Maximum Values Table* de FortiOS 7.6.7, leída de su API por Actions y anclada columna a columna. OSPF, VRF y rutas siguen sin fuente que mida lo que pide un diseño. En el **vigía**, 39 fuentes que no tenían huella la tienen ya, y los dos documentos que cambiaron se contrastaron: el **Product Matrix de octubre** (510 de 511 cifras iguales; el 400G pasa a 30.000 políticas) y las **Release Notes 7.6.0** (sin cambios en lo que usa el catálogo). Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-13, decimoquinta entrega (**Segundo enlace WAN en el dimensionador MikroTik y los módulos SFP de cada enlace.** Encargo del dueño: validar qué pasa con un segundo enlace de Internet o MPLS, principal y respaldo, cómo se comporta el equipo, y traer los módulos SFP recomendados según el ancho de banda. El dimensionador gana un constructor de enlaces (hasta 4): el respaldo ocupa puerto y no suma, el caudal es el peor escenario (normal o con un principal caído), cada enlace va a un puerto del equipo (los puertos salen ahora de la ficha, con el importador) y el módulo, de la **matriz oficial de compatibilidad de MikroTik**, traída por Actions. MPLS principal con respaldo de Internet comprueba la celda IPsec del respaldo. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-13, decimocuarta entrega (**«Ejecuta todos los pendientes buscando en la web».** Lo que la web y el transporte de Actions podían cerrar se cerró con documento oficial: la **redundancia de fuente** del CCR2004-1G-12S+2XS y el RB1100AHx4 (sus fichas ya decían «dual redundant power supply» y sus manuales lo confirman), la **spec sheet muerta de EdgeConnect** (sustituida por la data sheet `a00109847enw` Rev. 8, jul-2026, que además da la **capacidad IDS/IPS de los ocho EdgeConnect** sin cifra: con DTD ya tienen techo) y la **ficha de la A816 E** (Huawei la retiró: queda declarado, las cifras siguen con su copia). Hechos en código: **perfiles multi-sede en MikroTik**, **vista previa ligera de las figuras** (33 MB → 0,67 MB en la tarjeta; la lupa y el Excel siguen con el original) y la **decisión de WireGuard**, opción A, la recomendada. Lo que no cierra la web, con su motivo, en cada sección. Ver *Cerrado recientemente*.)
@@ -1940,6 +1941,39 @@ en la web, y mostrar frontal y trasera de todos los equipos al seleccionarlos.
   de e.huawei.com da 404. **Cómo se cierra**: desde un navegador con acceso, guardar las figuras de
   «Appearance» de cada modelo en la descripción de hardware (EDOC1100213474 para AR5700/6700/8000;
   EDOC1100410973 para NE8000 M6/M1D/M1C) y pasarlas; se extraen sin pérdida como las actuales.
+
+### El vigía contrasta solo el Product Matrix; ramas de transporte sin `--force` (2026-10-14, decimoctava entrega)
+
+- **Job `contrastar` en `vigia-fuentes.yml`**, entre `medir` y `publicar`. Si el lock que acaba de
+  medir deja el Product Matrix pendiente, baja el PDF de la URL de `fuentes.js` (`--url` no acepta
+  otra) y corre `npm run matrix`. Lo mismo a demanda con `contrastar_matrix` al lanzarlo a mano,
+  que es la forma de contrastarlo sin una máquina con salida a fortinet.com.
+  - Es el único job de la vigía que instala algo: sin escritura, sin token y con
+    `npm ci --ignore-scripts`, para que ninguna dependencia ejecute código al instalarse.
+  - `publicar` valida el informe campo a campo (`resumenMatrix`, solo módulos de Node, con modelo
+    y campo con forma de FortiGate, textos acortados y sin marcado). El issue dice qué cifras
+    difieren, si el PDF contrastado es el mismo que midió el vigía y cómo marcarlo revisado.
+  - Si el contraste falla, el issue lo dice. Si todo casa, no se escribe en el issue por él.
+  - Nada escribe en `legacyData/`: el `--revisado` sigue siendo humano.
+- **Ramas de transporte**: `traer-fortinet-matrix`, `traer-juniper-matrix` y
+  `traer-fortinet-pendientes` empujaban con `--force` a una rama de nombre fijo, y cada descarga
+  borraba la anterior: el 2026-10-13 la edición de octubre del Product Matrix pisó a la de
+  septiembre y ya no hubo con qué compararla. Ahora cada corrida deja su rama
+  (`<base>-<fecha>-<corrida>`), con un push normal; una prueba impide volver a empujar con
+  `--force` a un nombre fijo en cualquier workflow.
+- **Probado en Actions** (corrida 38500470053, a demanda): `contrastar` instaló sin scripts, bajó
+  el PDF de fortinet.com y el issue #12 recibió «Edición `PROMTX-2026-R177-OCT` · coinciden 621 ·
+  difieren 0 · sin leer 0», lo mismo que el contraste local del día anterior. El artefacto no se
+  pudo bajar desde aquí (el proxy deniega `productionresultssa10.blob.core.windows.net`): por eso
+  el resultado va ahora también al log del job, que sí se lee por la API.
+- **Por el camino, en el vigía**:
+  - `fuentes.js` puede declarar una fuente `retirada: {fecha, motivo}`. Si sigue sin leerse se
+    cuenta aparte y deja de repetirse cada lunes en el issue; si vuelve a leerse, el issue la
+    trae como republicada. El A816 E de Huawei queda declarado así (404 desde el 2026-10-13).
+  - Un contraste pedido a mano sobre la edición ya verificada no invita a marcarla revisada.
+- **Verificado**: 928 pruebas (nuevas: validación del informe, sección del issue, pendiente según
+  el lock y a demanda, firma del PDF, URL ajena rechazada, reglas del job y de las ramas, fuentes
+  retiradas), los cuatro workflows cargados como YAML, pantallas, e2e y puerta.
 
 ### `npm run matrix` y el catálogo de Fortinet en la edición de octubre (2026-10-13, decimoséptima entrega)
 
