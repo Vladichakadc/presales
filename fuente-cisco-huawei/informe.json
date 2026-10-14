@@ -1,0 +1,44 @@
+[
+  {
+    "archivo": "mikrotik-compatibilidad-vigente.html",
+    "para": "MIKROTIK",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://manual.mikrotik.com/docs/wired-connections/mikrotik-wired-interface-compatibility/",
+        "error": "fetch failed"
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-manual-cambios.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://manual.mikrotik.com/changelog/",
+        "status": 200,
+        "bytes": 110430,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-manual-ipsec.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://manual.mikrotik.com/docs/virtual-private-networks/ipsec/",
+        "status": 200,
+        "bytes": 407828,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  }
+]
