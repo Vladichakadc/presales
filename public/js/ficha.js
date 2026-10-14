@@ -133,6 +133,8 @@
 .ficha-vista-tab{padding:3px 10px;border:1px solid var(--rule);border-radius:2px;background:var(--card);color:var(--steel);font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
 .ficha-vista-tab.on{background:var(--ink);border-color:var(--ink);color:var(--card)}
 .ficha-vista figcaption{flex:1;min-width:180px;font-size:11px;line-height:1.45;color:var(--steel)}
+.ficha-vista-sinrear{margin:0;padding:18px 14px;max-width:560px;text-align:center;font-size:12px;line-height:1.5;color:var(--steel);border:1px dashed var(--rule);border-radius:4px}
+.ficha-vista-zoom[hidden],.ficha-vista-img img[hidden]{display:none}
 .ficha-vista-vacia{margin:0 0 12px;border:1px dashed var(--rule);border-radius:4px;padding:14px 12px;color:var(--steel);font-size:12px;line-height:1.5}
 .ficha-cands-mas{margin:-6px 0 12px;padding:0 2px;font-size:11px;color:var(--steel)}
 /* Semaforo de ciclo de vida (pendiente 34). Cinco estados; el gris usa --steel, que es el
@@ -570,7 +572,11 @@
       // oficial, o habría invitado a servirle la del 80F-DSL, que es otro producto.
       if (v && (v.front || v.rear)) {
         const cara0 = v.front ? 'front' : 'rear';
-        const tabs = (v.front && v.rear)
+        // Frontal y trasera siempre que la página lo pida (`rearNota`, Huawei 2026-10-14,
+        // petición del dueño): sin foto trasera oficial la pestaña existe y dice por qué,
+        // en vez de desaparecer y dejar creer que el equipo no tiene trasera.
+        const sinRear = !!(v.front && !v.rear && v.rearNota);
+        const tabs = (v.front && (v.rear || sinRear))
           ? `<div class="ficha-vista-tabs" role="tablist" aria-label="Vistas del equipo">`
             + `<button type="button" class="ficha-vista-tab on" data-vista="front" role="tab" aria-selected="true">Frontal</button>`
             + `<button type="button" class="ficha-vista-tab" data-vista="rear" role="tab" aria-selected="false">Trasera</button></div>`
@@ -582,6 +588,7 @@
         // una referencia guardada quedaría huérfana.
         vistaHtml = `<figure class="ficha-vista" id="${cid}-vista"${v.front ? ` data-front="${esc(v.front)}"` : ''}${v.rear ? ` data-rear="${esc(v.rear)}"` : ''} data-modelo="${esc(sel.id)}" data-pie="${esc(pie)}">`
           + `<div class="ficha-vista-img"><img src="${esc(v[cara0])}" alt="Vista ${cara0 === 'rear' ? 'trasera' : 'frontal'} del ${esc(sel.id)} — pulsa la lupa para ampliar" loading="lazy">`
+          + (sinRear ? `<p class="ficha-vista-sinrear" hidden>${esc(v.rearNota)}</p>` : '')
           + `<button type="button" class="ficha-vista-zoom" aria-label="Ampliar la foto del ${esc(sel.id)} a tamaño completo" title="Ampliar a tamaño completo">${SVG_LUPA}</button></div>`
           + `<div class="ficha-vista-bar">${tabs}<figcaption>${pie}</figcaption></div>`
           + `</figure>`;
@@ -698,8 +705,14 @@
         tb.addEventListener('click', () => {
           const cual = tb.dataset.vista;
           const src = cual === 'rear' ? vistaNodo.dataset.rear : vistaNodo.dataset.front;
-          if (!src || !imgNodo) return;
-          imgNodo.src = src;
+          const nota = vistaNodo.querySelector('.ficha-vista-sinrear');
+          const zoom = vistaNodo.querySelector('.ficha-vista-zoom');
+          if (!imgNodo) return;
+          // Sin trasera oficial: la pestaña enseña el motivo en el sitio de la foto.
+          if (nota) nota.hidden = !!src;
+          imgNodo.hidden = !src;
+          if (zoom) zoom.hidden = !src;
+          if (src) imgNodo.src = src;
           imgNodo.alt = (cual === 'rear' ? 'Vista trasera del ' : 'Vista frontal del ') + sel.id;
           vistaNodo.querySelectorAll('.ficha-vista-tab').forEach((x) => {
             const on = x === tb;

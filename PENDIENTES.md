@@ -1827,6 +1827,29 @@ que ya se comprobó y lo que cuesta cada opción.
 
 ## Cerrado recientemente
 
+### Huawei: frontal y trasera en todos los equipos, y lo que limita la nitidez (2026-10-14)
+
+Encargo del dueño: mejorar las figuras de Huawei, que se ven borrosas, buscándolas en las fichas y
+en la web, y mostrar frontal y trasera de todos los equipos al seleccionarlos.
+
+- **Frontal y trasera siempre.** La ficha muestra las dos pestañas en los 40 modelos. Solo el
+  AR611, el AR617VW-LTE4 y el NE8000 F1A tienen trasera oficial; en los demás la pestaña «Trasera»
+  dice que Huawei no la publica en su ficha técnica, sin foto ni lupa (`rearNota`, opt-in de
+  `ficha.js`: los demás fabricantes no cambian). Lo vigila `e2e-huawei-vistas.js`.
+- **La nitidez no se puede mejorar con fuentes oficiales alcanzables.** Se revisaron imagen por
+  imagen las 25 fichas y folletos traídos: las figuras ya están a su resolución nativa (se pegan
+  rasterizadas a 220 dpi, no en vectorial), las «segundas» figuras son variantes AC/DC u otros
+  modelos de la serie (no traseras), las más anchas (A816 E, 888 px) solo añaden la oreja y una
+  fuente extraída, y las de 1.100-1.470 px del M1A, M1C y M1D-B llevan recuadros y rótulos de
+  grupos de puertos encima. Las fotos de producto de e.huawei.com son de presentación (650 px, en
+  perspectiva). **Bloqueado**: las vistas frontal y trasera de cada modelo están en las
+  descripciones de hardware (`support.huawei.com`, Akamai), la biblioteca de imágenes de Huawei
+  (`info.support.huawei.com/network/imagelib/`, 504 y cascarón, corrida de la rama
+  `fuente/huawei-imagenes`) e Info-Finder (sesión); la «NetEngine 8000 Product Picture Collection»
+  de e.huawei.com da 404. **Cómo se cierra**: desde un navegador con acceso, guardar las figuras de
+  «Appearance» de cada modelo en la descripción de hardware (EDOC1100213474 para AR5700/6700/8000;
+  EDOC1100410973 para NE8000 M6/M1D/M1C) y pasarlas; se extraen sin pérdida como las actuales.
+
 ### Lo que va «consultar» a propósito, inventariado; y el transporte que no confunde un login con un documento (2026-10-07, décima entrega)
 
 Encargo del dueño: buscar otras fuentes para las fuentes de alimentación de cinco AR, buscar en la
