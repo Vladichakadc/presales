@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "2608ea7",
+  "commit": "51642ac",
   "fecha": "2026-10-14"
  },
  "umbralRozado": 25,
@@ -155,23 +155,16 @@
   {
    "modulo": "mikrotik-motor.js",
    "estado": "ejercitado",
-   "total": 85,
-   "usadas": 66,
+   "total": 88,
+   "usadas": 69,
    "pct": 78
   },
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
-   "total": 280,
-   "usadas": 222,
+   "total": 281,
+   "usadas": 223,
    "pct": 79
-  },
-  {
-   "modulo": "dimensionador-mikrotik-routeros.js",
-   "estado": "ejercitado",
-   "total": 160,
-   "usadas": 128,
-   "pct": 80
   },
   {
    "modulo": "dimensionador-nokia-7750sr.js",
@@ -186,6 +179,13 @@
    "total": 5,
    "usadas": 4,
    "pct": 80
+  },
+  {
+   "modulo": "dimensionador-mikrotik-routeros.js",
+   "estado": "ejercitado",
+   "total": 163,
+   "usadas": 132,
+   "pct": 81
   },
   {
    "modulo": "fortinet-motor.js",
