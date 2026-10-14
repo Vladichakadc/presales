@@ -631,6 +631,34 @@ decisión del dueño o el datasheet de Huawei (pendiente 14).
 
 ### Capacidades SD-WAN: lo que queda abierto (2026-10-14)
 
+**Lista para ejecutar con un PC** (Chrome de escritorio con la extensión Claude in Chrome y la
+sesión de Huawei abierta, o la app de GitHub para lanzar Actions). En orden de valor:
+
+1. **Tope de túneles IPsec y SD-WAN EVPN, sesiones y rutas por serie AR** — Info-Finder,
+   «Specification Query» de cada serie (AR610, AR650, AR6000, AR5700, AR6700, AR8000). Anotar en
+   `capSdwan.tuneles` y `capSdwan.sesiones` con la URL y la versión de VRP en `fuentes.js`; el aviso
+   del hub pasa a filtrar solo. Necesita la sesión del dueño.
+2. **Ciclo de vida (EOM/EOS) de los 52 modelos Huawei** — la herramienta de ciclo de vida de
+   Info-Finder (el 2026-10-12 no abrió desde el navegador automatizado: probar a mano y exportar).
+   Cierra el semáforo gris de Huawei. Necesita la sesión.
+3. **Paquetes N1: qué exige Advanced frente a Foundation** — traer la ficha de la solución SD-WAN
+   R25C00 (e-file.huawei.com, `...c39e035b25f14a1897536864b6b928b3...Datasheet_R25C00.pdf`) con
+   `traer-cisco-huawei.yml` (Run workflow, rama `fuente/huawei-sdwan-2026-10-14`) y leer la tabla con
+   pdfplumber. El 2026-10-14 dio 403 desde Firecrawl y WebFetch la resume sin columnas fiables.
+4. **Ficha de iMaster NCE-Campus R24C00** (e.huawei.com, «iMaster NCE-Campus Product Datasheet
+   R24C00») — por el mismo workflow. Para integrar al dimensionador: escala por despliegue
+   (dispositivos, sitios y APs gestionados), modelo de licencia por equipo y si NCE-WAN va en la
+   nube de Huawei o en sitio. Hoy la línea «Suscripción iMaster NCE-WAN» no tiene código ni tope.
+   El 2026-10-14 WebFetch dio ROBOTS_DISALLOWED.
+5. **Fuentes de serie de cinco AR** (AR6710-L26/L50/L14, AR6710-H, AR8700-8) — capítulo «Power
+   Supplies» de EDOC1100213474 en support.huawei.com, con la sesión (ya listado abajo).
+6. **vCPE AR6700V-L para sitios en la nube** — no necesita PC: su ficha ya está en
+   `fuente/huawei-familias-2026-10-12`. Pendiente de la decisión del dueño (propuesta del
+   2026-10-14: cuarta plataforma o tipo de sitio «nube», 2/4/8/16 vCPU, IPS solo desde 4 vCPU).
+7. **AR502H-V2 (industrial 4G/5G)** — ficha guardada, falta leer si publica cifras SD-WAN; no
+   necesita PC.
+
+
 - **Tope de túneles (IPsec y SD-WAN EVPN), sesiones y rutas por modelo AR.** Ninguna ficha AR lo
   publica, ni la ficha de la solución SD-WAN (R25C00). Está en la consulta de especificaciones de
   Info-Finder, que pide sesión. **Bloqueado por la cuenta Huawei**: el 2026-10-14 el dueño solo tenía
