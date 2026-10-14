@@ -627,4 +627,110 @@ FICHAS['NE8000 F1A-C'] = NE('NetEngine 8000 F1A-C Datasheet',
   [['Tensión', 'DC –40 a –72 V; AC 90–290 V; HVDC 190–290 V'], ['Reloj', 'Ethernet síncrono, 1588v2, G.8275.1, G.8275.2, SMPTE-2059'], ['Temperatura de operación (largo plazo)', '–5 °C a 45 °C']]);
 for (const m of MODELS) if (FICHAS[m.id]) m.ficha = FICHAS[m.id];
 
+// CAPACIDADES SD-WAN DE LA LINEA AR (2026-10-14, encargo del dueño: «el dimensionador no trae de la
+// ficha las capacidades de SD-WAN, como la cantidad de tuneles o EVPN»). Todo sale de las mismas
+// fichas de serie que ya respaldan `fwd`/`ipsec`/`typ` (`fuentes.js`), releidas enteras con
+// pdftotext desde sus copias de Actions (ramas fuente/cisco-huawei y fuente/huawei-familias-2026-10-12):
+//   · las dos filas SD-WAN que el motor no usaba: «SD-WAN IPsec performance» (solo IPsec) y «SD-WAN
+//     performance» (IPsec + QoS), IMIX, suma de los dos sentidos como `typ`;
+//   · la tabla «Software Features and Protocols» (filas VPN, WAN optimization, Multicast, MPLS y
+//     Security) y la memoria;
+//   · la «Ordering Information» de licencias: el paquete N1 de cada serie, la suscripcion de
+//     amenazas por años y los paquetes de valor añadido (DSVPN, compresion).
+// TRES ESTADOS, como FlexE: `true` lo lista la ficha; `false` la ficha lo RESTRINGE con nota al pie
+// («Supported only by the NetEngine AR5710-SE series routers with 4 GB memory»); `null` la tabla no
+// lo lista, que es «no consta» y no «no lo soporta». El motor aparta solo por `false`.
+// TUNELES Y SESIONES: NINGUNA FICHA AR LOS PUBLICA, ni la ficha de la solucion SD-WAN (R25C00, leida
+// el 2026-10-14: no da topes de tuneles, sedes, rutas ni VPN por modelo). Viven en la consulta de
+// especificaciones de Info-Finder, que pide la sesion de una cuenta Huawei: quedan en null.
+const TUNELES_MOTIVO = 'Huawei no publica el tope de túneles (IPsec ni SD-WAN EVPN), de sesiones ni de rutas en la ficha de ningún AR ni en la ficha de su solución SD-WAN (R25C00); está en la consulta de especificaciones de Info-Finder, que exige iniciar sesión con una cuenta Huawei.';
+// Suscripcion de amenazas por años, como la lista la ficha: {años: codigo}. Datos planos (viajan por
+// SQLite como JSON): ni funciones ni patrones.
+const anualTP = (base, paso) => Object.fromEntries([1, 2, 3, 4, 5].map((a) => [a, 'LAR0TP' + (base + paso * (a - 1))]));
+const TP = (prefijo) => Object.fromEntries([1, 2, 3, 4, 5].map((a) => [a, prefijo + a]));
+const SDWAN_SERIE = {
+  AR610: {doc: 'Huawei NetEngine AR610 Series Enterprise Routers Datasheet-R26C00', mem: '1 GB',
+    vpn: 'IPsec VPN, GRE, Ethernet over GRE, DSVPN, A2A VPN, L2TP, L2TPv3, VXLAN, SD-WAN EVPN',
+    evpn: true, dsvpn: true, srv6: null, mpls: null, mcast: null, fec: null, compresion: null, ips: null, url: null, av: null, macsec: null,
+    n1: {sin: 'N1-Campus-F-610/630', f: 'N1-LANWAN-F-610/630', a: 'N1-LANWAN-A-610/630'}, amenazas: null, paquetes: []},
+  AR650: {doc: 'Huawei NetEngine AR650 Series Enterprise Routers Datasheet_20250810-v3', mem: '2 GB',
+    vpn: 'IPsec VPN, GRE, DSVPN, A2A VPN, L2TP, L2TPv3, Ethernet over GRE, VXLAN, SD-WAN EVPN; MPLS L3VPN',
+    evpn: true, dsvpn: true, srv6: null, mpls: true, mcast: null, fec: 'FEC', compresion: null, ips: true, url: true, av: true, macsec: null,
+    n1: {sin: 'N1-Campus-F-AR650', f: 'N1-LANWAN-F-AR650', a: 'N1-LANWAN-A-AR650'}, amenazas: anualTP(1001, 3),
+    paquetes: [{sku: 'LAR0SECE08', d: 'AR650 Value-Added Security Package: SAC, DSVPN, Efficient VPN, IPS, antivirus y filtrado URL', para: 'utm'}]},
+  AR6000: {doc: 'Huawei NetEngine AR6000 Series Enterprise Routers Datasheet-R26C00', mem: '4 GB',
+    vpn: 'IPsec VPN, GRE, Ethernet over GRE, DSVPN, A2A VPN, L2TP, L2TPv3, VXLAN, SD-WAN EVPN; MPLS L3VPN',
+    evpn: true, dsvpn: true, srv6: null, mpls: true, mcast: null, fec: 'FEC', compresion: null, ips: true, url: true, av: true, macsec: null,
+    nota: 'La optimización WAN (FEC, multi-fed y balanceo por paquete) exige V300R019C13 o posterior (nota de la ficha).',
+    n1: {sin: 'N1-Campus-F-AR6100', f: 'N1-LANWAN-F-AR6100', a: 'N1-LANWAN-A-AR6100'}, amenazas: anualTP(1003, 3),
+    paquetes: [{sku: 'LAR0SECE10', d: 'AR6100 Value-Added Security Package: SAC, DSVPN, Efficient VPN, A2A VPN, IPS, antivirus y filtrado URL', para: 'utm'}]},
+  'AR5710-S': {doc: 'Huawei NetEngine AR5710-S Series Enterprise Router Data Sheet-R25C10', mem: '2 GB',
+    vpn: 'GRE, GRE over IPsec, Ethernet over GRE, IPsec v4/v6, IKEv1/v2, SRv6, L2TP client, DSVPN, SD-WAN EVPN; MPLS L3VPN',
+    evpn: true, dsvpn: true, srv6: true, mpls: true, mcast: true, fec: false, compresion: null, ips: false, url: false, av: false,
+    macsec: 'Solo el AR5710-S10 con la tarjeta SIC-2X2S-V2',
+    nota: 'A-FEC, IPS, filtrado URL y antivirus: «Supported only by the NetEngine AR5710-SE series routers with 4 GB memory» (nota de la ficha). Esta variante tiene 2 GB.',
+    n1: {sin: 'N1-AR57-B', f: 'N1-AR57-F', a: 'N1-AR57-A'}, amenazas: null,
+    paquetes: [{sku: 'AR57-LIC-NETCONN', d: 'AR5700 Value-added Network Connection Package: DSVPN', para: 'dsvpn'}]},
+  'AR5710-SE': {doc: 'Huawei NetEngine AR5710-S Series Enterprise Router Data Sheet-R25C10', mem: '4 GB',
+    vpn: 'GRE, GRE over IPsec, Ethernet over GRE, IPsec v4/v6, IKEv1/v2, SRv6, L2TP client, DSVPN, SD-WAN EVPN; MPLS L3VPN',
+    evpn: true, dsvpn: true, srv6: true, mpls: true, mcast: true, fec: 'A-FEC', compresion: null, ips: true, url: true, av: true,
+    macsec: 'AR5710-S28 y S52 en parte de los puertos del panel, o con la tarjeta SIC-2X2S-V2',
+    n1: {sin: 'N1-AR57-B', f: 'N1-AR57-F', a: 'N1-AR57-A'}, amenazas: TP('LAR0TP140'),
+    paquetes: [{sku: 'AR57-LIC-NETCONN', d: 'AR5700 Value-added Network Connection Package: DSVPN', para: 'dsvpn'}]},
+  'AR5710-H': {doc: 'Huawei NetEngine AR5710-H Series Enterprise Router Data Sheet-R26C00', mem: '4 GB',
+    vpn: 'GRE, GRE over IPsec, Ethernet over GRE, IPsec v4/v6, SRv6, L2TP client y LNS, DSVPN, SD-WAN EVPN; MPLS L3VPN y L2VPN (VPWS)',
+    evpn: true, dsvpn: true, srv6: true, mpls: true, mcast: true, fec: 'A-FEC', compresion: true, ips: true, url: true, av: true, macsec: null,
+    n1: {sin: 'N1-AR57-B', f: 'N1-AR57-F', a: 'N1-AR57-A'}, amenazas: TP('LAR0TP140'),
+    paquetes: [{sku: 'AR57-LIC-NETCONN', d: 'AR5700 Value-added Network Connection Package: DSVPN', para: 'dsvpn'},
+      {sku: 'AR57-LIC-Enh-WANOP', d: 'AR5700 Value-added Enhanced WAN-Optimize Package: compresión de datos', para: 'compresion'}]},
+  'AR5710-I': {doc: 'Huawei NetEngine AR5710I-RU-NRGL Enterprise Router Data Sheet-R26C00', mem: '4 GB',
+    vpn: 'GRE, IPsec v4/v6, SRv6, L2TP client y LNS, DSVPN, SD-WAN EVPN; MPLS L3VPN',
+    evpn: true, dsvpn: true, srv6: true, mpls: true, mcast: true, fec: 'A-FEC', compresion: null, ips: true, url: true, av: true, macsec: null,
+    n1: {sin: 'N1-AR57-B', f: 'N1-AR57-F', a: 'N1-AR57-A'}, amenazas: TP('LAR0TP140'),
+    paquetes: [{sku: 'AR57-LIC-NETCONN', d: 'AR5700 Value-added Network Connection Package: DSVPN', para: 'dsvpn'}]},
+  'AR6700-L': {doc: 'Huawei NetEngine AR6710-L Series Enterprise Router Data Sheet-R26C00', mem: '4 GB',
+    vpn: 'GRE, Ethernet over GRE, IPsec v4/v6, SRv6, L2TP client y LNS, DSVPN, SD-WAN EVPN; MPLS L3VPN y L2VPN',
+    evpn: true, dsvpn: true, srv6: true, mpls: true, mcast: true, fec: 'A-FEC', compresion: true, ips: true, url: true, av: true,
+    macsec: 'Con la tarjeta SIC-2X2S-V2',
+    n1: {sin: 'N1-AR67-L-B', f: 'N1-AR67-L-F', a: 'N1-AR67-L-A'}, amenazas: TP('LAR0TP130'),
+    paquetes: [{sku: 'AR67-L-LIC-NETCONN', d: 'AR6700-L Value-added Network Connection Package: DSVPN y MPLS L2VPN (solo VPWS)', para: 'dsvpn'},
+      {sku: 'AR67-L-LIC-Enh-WANOP', d: 'AR6700-L Value-added Enhanced WAN-Optimize Package: compresión de datos', para: 'compresion'}]},
+  'AR6700-H': {doc: 'Huawei NetEngine AR6710-H Series Enterprise Router Data Sheet-R25C10', mem: '8 GB',
+    vpn: 'GRE, Ethernet over GRE, IPsec v4/v6, SRv6, L2TP client, DSVPN, SD-WAN EVPN; MPLS L3VPN',
+    evpn: true, dsvpn: true, srv6: true, mpls: true, mcast: true, fec: 'A-FEC', compresion: true, ips: true, url: true, av: true,
+    macsec: 'Con la tarjeta SIC-2X2S-V2', extra: 'Duplicación de paquetes por varias rutas e ITP (Intelligent Traffic Policing)',
+    n1: {sin: 'N1-AR67-H-B', f: 'N1-AR67-H-F', a: 'N1-AR67-H-A'}, amenazas: TP('LAR0TP130'),
+    paquetes: [{sku: 'AR67-H-LIC-NETCONN', d: 'AR6700-H Value-added Network Connection Package: DSVPN', para: 'dsvpn'},
+      {sku: 'AR67-H-LIC-Enh-WANOP', d: 'AR6700-H Value-added Enhanced WAN-Optimize Package: compresión de datos', para: 'compresion'}]},
+  AR8000: {doc: 'Huawei NetEngine AR8000 Series Enterprise Router Data Sheet-R25C10', mem: '16 GB (SPU) / 16 GB (MPU)',
+    vpn: 'GRE, Ethernet over GRE, IPsec v4/v6, SRv6, L2TP client, DSVPN, SD-WAN EVPN; MPLS L3VPN',
+    evpn: true, dsvpn: true, srv6: true, mpls: true, mcast: true, fec: 'A-FEC', compresion: true, ips: true, url: true, av: true,
+    macsec: 'Con la tarjeta SIC-2X2S-V2', extra: 'Red con doble hub («dual-hub flexible networking»)',
+    n1: {sin: 'N1-AR81-B', f: 'N1-AR81-F', a: 'N1-AR81-A'}, amenazas: TP('LAR0TP120'),
+    paquetes: [{sku: 'AR81-LIC-NETCONN', d: 'AR8100 Value-added Network Connection Package: DSVPN', para: 'dsvpn'},
+      {sku: 'AR81-LIC-Enh-WANOP', d: 'AR8100 Value-added Enhanced WAN-Optimize Package: compresión de datos', para: 'compresion'}]},
+  AR8700: {doc: 'Huawei NetEngine AR8000 Series Enterprise Router Data Sheet-R25C10', mem: '16 GB (SPU) / 8 GB (MPU)',
+    vpn: 'GRE, Ethernet over GRE, IPsec v4/v6, SRv6, L2TP client, DSVPN, SD-WAN EVPN; MPLS L3VPN',
+    evpn: true, dsvpn: true, srv6: true, mpls: true, mcast: true, fec: 'A-FEC', compresion: true, ips: true, url: true, av: true,
+    macsec: 'Con la tarjeta SIC-2X2S-V2', extra: 'Red con doble hub; con dos placas de control, SD-WAN exige la versión 25.1 o posterior',
+    n1: {sin: 'N1-AR87-B', f: 'N1-AR87-F', a: 'N1-AR87-A'}, amenazas: TP('LAR0TP150'),
+    paquetes: [{sku: 'AR87-LIC-NETCONN', d: 'AR8700 Value-added Network Connection Package: DSVPN', para: 'dsvpn'},
+      {sku: 'AR87-LIC-Enh-WANOP', d: 'AR8700 Value-added Enhanced WAN-Optimize Package: compresión de datos', para: 'compresion'}]},
+};
+// «SD-WAN IPsec performance» y «SD-WAN performance» (IPsec + QoS), IMIX, en Mbps. El AR5710I solo
+// publica estas dos filas a 512 y 1400 bytes: queda en null, con su texto en la ficha ampliada.
+const SDWAN_CIFRAS = {
+  AR610: [200, 80], AR650: [1500, 800], AR6000: [1500, 1200], 'AR5710-S': [1000, 800], 'AR5710-SE': [1200, 1000],
+  'AR5710-H': [2000, 1500], 'AR5710-I': [null, null], 'AR6700-L': [2000, 1500], 'AR6710-L14T2X4': [3000, 2500],
+  'AR6700-H': [11000, 9000], 'AR8140-12G10XG': [22000, 20000], 'AR8140-T-12G10XG': [22000, 20000], 'AR8700-8': [24000, 20000],
+};
+const SERIE_SDWAN = (m) => (m.ser === 'AR8000' ? 'AR8000' : m.ser);
+for (const m of MODELS) {
+  const s = SDWAN_SERIE[SERIE_SDWAN(m)];
+  if (!s) continue;
+  const [ipsecSdwan, qos] = SDWAN_CIFRAS[m.id] || SDWAN_CIFRAS[SERIE_SDWAN(m)] || [null, null];
+  m.capSdwan = {...s, ipsecSdwan, qos, tuneles: null, sesiones: null, tunelesMotivo: TUNELES_MOTIVO};
+}
+
+
 module.exports = { OPTICS, OPTIC_LABEL, PARTS, MODELS, HICARE };

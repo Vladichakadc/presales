@@ -50,6 +50,31 @@
   const SUPUESTOS = { dia: 70, fec: 20, utm: 45 };
   const UMBRAL_NGFW_MBPS = 1000;
 
+  /* REQUISITOS SD-WAN (2026-10-14, encargo del dueño). Lo que la ficha de cada serie AR publica en
+     su tabla «Software Features and Protocols» (`m.capSdwan`, en legacyData/huawei.js). Tres estados,
+     como FlexE: `true` lo lista la ficha; `false` la ficha lo RESTRINGE con nota al pie (el
+     AR5710-S de 2 GB no tiene A-FEC, IPS, URL ni antivirus) y APARTA; `null` no consta: no aparta,
+     va detras de los que si lo confirman y se declara. SD-WAN EVPN lo listan las once series, asi
+     que no es un filtro: se muestra en la ficha. */
+  const REQUISITOS = {
+    srv6: { n: 'SRv6', campos: ['srv6'] },
+    mpls: { n: 'MPLS L3VPN', campos: ['mpls'] },
+    mcast: { n: 'multicast IP sobre SD-WAN', campos: ['mcast'] },
+    dsvpn: { n: 'DSVPN', campos: ['dsvpn'] },
+    compresion: { n: 'compresión de datos', campos: ['compresion'] },
+    fec: { n: 'A-FEC', campos: ['fec'] },
+    utm: { n: 'IPS, filtrado URL y antivirus', campos: ['ips', 'url', 'av'] },
+  };
+  // Estado de un requisito en un modelo: 'si' | 'no' | 'parcial' (FEC sin la A de adaptativa) | 'nc'.
+  function estadoRequisito(m, clave) {
+    const fx = m && m.capSdwan;
+    if (!fx) return 'nc';
+    if (clave === 'fec') return fx.fec === 'A-FEC' ? 'si' : fx.fec === false ? 'no' : fx.fec === 'FEC' ? 'parcial' : 'nc';
+    const vals = REQUISITOS[clave].campos.map((k) => fx[k]);
+    if (vals.some((v) => v === false)) return 'no';
+    return vals.every((v) => v === true) ? 'si' : 'nc';
+  }
+
   const CAPAS = ['fwd', 'ipsec', 'typ'];
   const PROFUNDIDAD = { fwd: 0, ipsec: 1, typ: 2 };
   const PROFILE = { fwd: 'Forwarding (NAT+ACL+QoS, IMIX)', ipsec: 'IPsec (IMIX)', typ: 'SD-WAN típico (IPsec+QoS+SA+AppFlow, IMIX)' };
@@ -102,6 +127,15 @@
     // el slicing FlexE es de la red de transporte.
     if (!legado && transporte) { svc.sdwan = false; svc.utm = false; want.poe = false; want.wan = false; want.wifi = false; }
     if (!legado && !transporte) svc.slice = false;
+    // Requisitos SD-WAN pedidos: los marcados en pantalla mas los que ya implican otras casillas
+    // (A-FEC con su supuesto y UTM). Solo en la serie AR y fuera de la linea base.
+    const req = [];
+    if (!legado && !transporte) {
+      const r = esc.req || {};
+      ['srv6', 'mpls', 'mcast', 'dsvpn', 'compresion'].forEach((k) => { if (r[k]) req.push(k); });
+      if (esc.fec) req.push('fec');
+      if (svc.utm) req.push('utm');
+    }
     // ── SUPUESTOS DE DISEÑO (opcionales, editables; con los valores por defecto no cambian nada) ──
     const pct = (v, def) => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? n : def; };
     const trafico = !legado && TRAFICO[esc.trafico] ? esc.trafico : 'imix';
@@ -136,7 +170,7 @@
     if (tuneles) {
       avisos.push(`Hub con ${tuneles} sede${tuneles === 1 ? '' : 's'}: se piden ${tuneles} túneles IPsec terminando en el equipo. `
         + (modelosConTope ? `${modelosConTope} modelos publican su tope de túneles y se comprueba; el resto no lo trae este catálogo.`
-          : 'Este catálogo no trae el tope de túneles (ni el de sesiones) de ningún modelo: el equipo propuesto cumple por caudal y hay que confirmar el tope con su datasheet o el configurador de Huawei antes de cotizar.'));
+          : 'Huawei no publica el tope de túneles (IPsec ni SD-WAN EVPN) ni de sesiones en la ficha de ningún AR ni en la de su solución SD-WAN: está en la consulta de especificaciones de Info-Finder, con cuenta Huawei. El equipo propuesto cumple por caudal; confirma el tope ahí antes de cotizar.'));
     }
     // ALTA DISPONIBILIDAD 1+1 (H-12). Regla de Aruba, aqui igual: el par suma DISPONIBILIDAD,
     // no caudal. Un equipo lleva el trafico y el otro toma el relevo en fallo, asi que CADA
@@ -171,7 +205,16 @@
       if (!isWan && aps > 0 && m.apsMax != null && aps > m.apsMax) miss.push(`gestiona ${m.apsMax} APs`);
       if (!isWan && aps > 0 && m.apsMax === null) sinDatoAps.add(m.id);
       if (tuneles && !isWan && m.tuneles != null && m.tuneles < tuneles) miss.push(`soporta ${m.tuneles} túneles`);
-      return { m, cap, miss, isWan };
+      const sinConfirmar = [];
+      if (!isWan) {
+        for (const k of req) {
+          const e = estadoRequisito(m, k);
+          if (e === 'no') miss.push(`la ficha no admite ${REQUISITOS[k].n}${m.capSdwan && m.capSdwan.nota ? ' (' + m.capSdwan.nota + ')' : ''}`);
+          else if (e === 'parcial') sinConfirmar.push('A-FEC (la ficha lista FEC, sin la corrección adaptativa)');
+          else if (e === 'nc') sinConfirmar.push(REQUISITOS[k].n);
+        }
+      }
+      return { m, cap, miss, isWan, sinConfirmar };
     });
     // Se ordena por el rango del MODELO (no de la fila) y despues por capacidad.
     // Empate de capacidad (la serie AR5710-S publica la misma cifra en ocho variantes): sin un
@@ -181,10 +224,19 @@
     // Con slicing pedido, lo CONFIRMADO va antes que lo que no consta: no se aparta a nadie, pero
     // no se recomienda un equipo sin FlexE declarado habiendo uno que si lo declara.
     const flexeAntes = (a, b) => (!legado && transporte && svc.slice ? (b.m.flexe === true) - (a.m.flexe === true) : 0);
-    const fit = rows.filter((r) => !r.miss.length).sort((a, b) => rango(a.m) - rango(b.m) || flexeAntes(a, b) || a.cap - b.cap
+    // Igual con los requisitos SD-WAN: va antes el que la ficha confirma en todos.
+    const confirmadoAntes = (a, b) => (req.length ? (a.sinConfirmar || []).length - (b.sinConfirmar || []).length : 0);
+    const fit = rows.filter((r) => !r.miss.length).sort((a, b) => rango(a.m) - rango(b.m) || flexeAntes(a, b) || confirmadoAntes(a, b) || a.cap - b.cap
       || extras(a.m) - extras(b.m) || a.m.id.localeCompare(b.m.id, 'en', { numeric: true }));
     const pick = fit.find((r) => recomendable(r.m)) || null;
     const next = fit.filter((r) => recomendable(r.m))[1] || null;
+    if (req.length) {
+      const apartados = rows.filter((r) => r.miss.some((x) => x.startsWith('la ficha no admite'))).map((r) => r.m.id);
+      avisos.push(`Requisitos SD-WAN pedidos: ${req.map((k) => REQUISITOS[k].n).join(', ')}. Se contrastan con la tabla de funciones de la ficha de cada serie; `
+        + (apartados.length ? `se apartan ${apartados.length} modelos cuya ficha lo restringe` : 'ninguna ficha de la plataforma lo restringe')
+        + '. Lo que una ficha no lista no se da por soportado ni se aparta: va detrás de los que lo confirman.');
+      if (pick && pick.sinConfirmar.length) avisos.push(`El ${pick.m.id} cumple por caudal, pero su ficha no lista: ${pick.sinConfirmar.join(', ')}. Confírmalo con Huawei antes de proponerlo.`);
+    }
     if (!legado && aps > 0 && pick && sinDatoAps.has(pick.m.id)) {
       avisos.push(`El ${pick.m.id} no publica cuántos APs gestiona su WAC: no se descarta por eso, pero confírmalo con su ficha antes de proponer ${aps} APs.`);
     }
@@ -218,7 +270,7 @@
     const carrierPedido = !legado && (carrier.bgp || carrier.cgnat || carrier.bng);
     if (carrierPedido) avisos.push('Rutas BGP, sesiones CGNAT y suscriptores BNG: el catálogo no trae la FIB, el CGNAT ni el BNG de ningún modelo, así que estas cifras se registran en la memoria de cálculo y no filtran el equipo. Confírmalas con el datasheet o el configurador de Huawei.');
 
-    const resultado = { raw, base, fisico, necesidadPura, need, needTun, needMpps, bytesMpps, mode, sites, conc, head, dirMult, frame, perfil, pk, ef, svc, want, aps, minLan, wanOk, plataforma, transporte, tuneles, ha, unidades, trafico, factorTrafico, fecPct, utmPct, dia, diaPct, distribucion, recomiendaNgfw, carrier, avisos, rows, fit, pick, next, escalada: null };
+    const resultado = { req, raw, base, fisico, necesidadPura, need, needTun, needMpps, bytesMpps, mode, sites, conc, head, dirMult, frame, perfil, pk, ef, svc, want, aps, minLan, wanOk, plataforma, transporte, tuneles, ha, unidades, trafico, factorTrafico, fecPct, utmPct, dia, diaPct, distribucion, recomiendaNgfw, carrier, avisos, rows, fit, pick, next, escalada: null };
 
     // ── ESCALADO ENTRE PLATAFORMAS (2026-10-12). En vez de «fuera de la plataforma», si ningun
     // modelo de la serie cumple por capacidad y la siguiente plataforma si, se PROPONE la
@@ -244,14 +296,35 @@
     const T = `${12 * (parseInt(c.anios, 10) || 1)} meses`;
     if (m.boost && c.need > m.boost) L.push({ on: 1, t: 'Licencia de rendimiento (Boost)', d: `Sin ella el ${m.id} entrega ${fmt(m.boost)}. La licencia lo lleva a ${fmt(m.fwd)}.` });
     if (!pick.isWan) {
+      // CODIGOS DE PEDIDO (2026-10-14): los de la «Ordering Information» de la ficha de cada serie
+      // (`m.capSdwan`). Una linea con alternativas no lleva codigo: dice las opciones en el texto.
+      const fx = m.capSdwan || null;
+      const doc = fx ? ` (ficha ${fx.doc})` : '';
+      const anios = parseInt(c.anios, 10) || 1;
+      const req = c.req || [];
       if (c.pk !== 'fwd' || c.svc.sdwan) {
-        L.push({ on: 1, t: 'Licencia de función SD-WAN por equipo', d: 'Habilita identificación de aplicaciones, selección inteligente de ruta y túneles gestionados.' });
+        L.push(fx && fx.n1
+          ? { on: 1, t: 'Paquete N1 CloudCampus con SD-WAN, por equipo — elegir uno', d: `${fx.n1.f} (Foundation, incluye SD-WAN) o ${fx.n1.a} (Advanced, incluye SD-WAN)${doc}. Habilita identificación de aplicaciones, selección inteligente de ruta y túneles gestionados por iMaster NCE.` }
+          : { on: 1, t: 'Licencia de función SD-WAN por equipo', d: 'Habilita identificación de aplicaciones, selección inteligente de ruta y túneles gestionados. La ficha de este modelo no se ha leído: código por confirmar.' });
         L.push({ on: 1, t: `Suscripción iMaster NCE-WAN — ${T}`, d: 'Controlador y gestión del overlay. Se licencia por nodo administrado.' });
+      } else if (fx && fx.n1) {
+        L.push({ on: 0, t: 'Paquete N1 sin SD-WAN', d: `${fx.n1.sin}: CloudCampus sin SD-WAN, para gestionar el equipo desde iMaster NCE sin overlay${doc}.` });
       }
       if (c.svc.utm) {
-        L.push({ on: 1, t: 'Licencia de seguridad: IPS, filtrado URL y antivirus', d: 'Funciones licenciadas aparte en la serie AR, no vienen activas.' });
-        L.push({ on: 1, t: `Suscripción de bases de firmas — ${T}`, d: 'Sin firmas vigentes el IPS y el antivirus quedan sin actualizar.' });
+        const pq = fx ? (fx.paquetes || []).filter((p) => p.para === 'utm') : [];
+        pq.forEach((p) => L.push({ on: 1, t: `Paquete de seguridad ${p.sku}`, sku: p.sku, d: `${p.d}${doc}.` }));
+        if (!pq.length) L.push({ on: 1, t: 'Licencia de seguridad: IPS, filtrado URL y antivirus', d: 'Funciones licenciadas aparte en la serie AR, no vienen activas.' });
+        const tp = fx && fx.amenazas ? fx.amenazas[Math.min(5, Math.max(1, anios))] : null;
+        L.push(tp
+          ? { on: 1, t: `Suscripción de amenazas ${tp} — ${T}`, sku: tp, d: `Actualiza las firmas de IPS y antivirus y la consulta remota de URL${doc}.` }
+          : { on: 1, t: `Suscripción de bases de firmas — ${T}`, d: 'Sin firmas vigentes el IPS y el antivirus quedan sin actualizar. La ficha de este modelo no lista su código.' });
       }
+      ['dsvpn', 'compresion'].forEach((k) => {
+        if (!req.includes(k) || !fx) return;
+        const pq = (fx.paquetes || []).filter((p) => p.para === k);
+        pq.forEach((p) => L.push({ on: 1, t: `Paquete de valor añadido ${p.sku}`, sku: p.sku, d: `${p.d}${doc}.` }));
+        if (!pq.length) L.push({ on: 0, t: `${k === 'dsvpn' ? 'DSVPN' : 'Compresión de datos'}: sin paquete en la ficha`, d: `La ficha de la serie ${m.ser} no lista un paquete aparte para esta función: confirma con Huawei si va incluida.` });
+      });
       if (c.aps > 0) {
         const extra = Math.max(0, c.aps - (m.apsFree || 0));
         L.push({ on: extra > 0 ? 1 : 0, t: extra > 0 ? `Licencia de recursos AP — ${extra} APs adicionales` : 'Licencia de recursos AP no requerida',
@@ -391,7 +464,7 @@
     if (ev.dia) L.push(`| Local breakout | ${ev.diaPct} % a Internet en claro; ${100 - ev.diaPct} % por túneles | túneles: ${f(ev.needTun)} |`);
     L.push(`| **Necesidad de diseño** | | **${f(ev.need)}** |`);
     L.push(`| Paquetes por segundo | necesidad ÷ (${ev.bytesMpps} B × 8) | ${ev.needMpps.toFixed(2)} Mpps |`);
-    if (ev.tuneles) L.push(`| Túneles IPsec | ${ev.sites} sedes terminando en el equipo | ${ev.tuneles} (el catálogo no trae el tope por modelo) |`);
+    if (ev.tuneles) L.push(`| Túneles IPsec | ${ev.sites} sedes terminando en el equipo | ${ev.tuneles} (Huawei no publica el tope por modelo en sus fichas; está en Info-Finder, con cuenta) |`);
     L.push('');
     if (ev.carrier && (ev.carrier.bgp || ev.carrier.cgnat || ev.carrier.bng)) {
       L.push('Métricas de operador declaradas (no filtran el equipo: el catálogo no trae FIB, CGNAT ni BNG por modelo): '
@@ -437,5 +510,5 @@
     return Math.round(m) + ' Mbps';
   }
 
-  return { PLATAFORMAS, TRAFICO, SUPUESTOS, UMBRAL_NGFW_MBPS, CAPAS, PROFILE, PISO_POR_FUNCION, capaEfectiva, evaluar, licencias, piezasBom, opticasBom, ROL_PIEZA, respaldoBidireccional, memoria, fmt };
+  return { REQUISITOS, estadoRequisito, PLATAFORMAS, TRAFICO, SUPUESTOS, UMBRAL_NGFW_MBPS, CAPAS, PROFILE, PISO_POR_FUNCION, capaEfectiva, evaluar, licencias, piezasBom, opticasBom, ROL_PIEZA, respaldoBidireccional, memoria, fmt };
 });

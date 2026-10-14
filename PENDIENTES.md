@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-14, vigésima entrega (**MikroTik: la mejora propuesta —el escenario de falla en la ficha— y los pendientes contra las fuentes oficiales.** Encargo del dueño: avanzar con los pendientes buscando en las fuentes oficiales y en la web, y ejecutar la mejora. Hecho: barras de falla y de IPsec del respaldo en la ficha; **PoE en vatios con el adaptador de la caja** en hEX PoE, hEX PoE lite, PowerBox Pro y hEX S 2025 (límites por puerto de la ficha y el manual); la matriz de compatibilidad pasa a la URL vigente (7.26, idéntica a la 7.25). Sigue abierto, sin fuente pública: el ×2 del IPsec y el CCR2004-16G-2S+PC fuera de la matriz. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-14, vigesimoprimera entrega (**MikroTik: la mejora propuesta —el escenario de falla en la ficha— y los pendientes contra las fuentes oficiales.** Encargo del dueño: avanzar con los pendientes buscando en las fuentes oficiales y en la web, y ejecutar la mejora. Hecho: barras de falla y de IPsec del respaldo en la ficha; **PoE en vatios con el adaptador de la caja** en hEX PoE, hEX PoE lite, PowerBox Pro y hEX S 2025 (límites por puerto de la ficha y el manual); la matriz de compatibilidad pasa a la URL vigente (7.26, idéntica a la 7.25). Sigue abierto, sin fuente pública: el ×2 del IPsec y el CCR2004-16G-2S+PC fuera de la matriz. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-14, vigésima entrega (**Capacidades SD-WAN de las fichas AR en el dimensionador Huawei.** Encargo del dueño: validar como arquitecto senior porque el dimensionador no traía de la ficha las capacidades SD-WAN (túneles, EVPN). Cada AR trae ahora overlay (SD-WAN EVPN, SRv6, DSVPN, MPLS L3VPN, multicast), A-FEC/FEC, compresión, IPS/URL/AV, MACsec, memoria y las cifras SD-WAN IPsec e IPsec + QoS de su ficha; cinco requisitos nuevos en pantalla; el BOM cita el paquete N1, la suscripción de amenazas por plazo y los paquetes DSVPN y de compresión. **Corrección**: con UTM o A-FEC se proponía la AR5710-S de 2 GB, que su ficha excluye. **Túneles y sesiones: sin dato**, ver *Abierto: dimensionador Huawei*. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-14, decimonovena entrega (**Caudal del sitio, enlaces WAN y sentidos simultáneos unificados en el dimensionador MikroTik.** Encargo del dueño: revisarlos como arquitecto senior porque se añadieron en momentos distintos y no estaban sincronizados. Eran tres fuentes: el caudal con margen, cada enlace sin margen y un ×2 que pisaba la subida declarada. Ahora son una cadena (demanda → enlaces → sentidos → margen sobre lo que procesa el equipo, nunca sobre el puerto), las casillas de los enlaces van en la unidad del sitio y dicen lo que heredan. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-14, decimoctava entrega (**El vigía contrasta solo el Product Matrix, y las ramas de transporte dejan de pisarse.** Mejora propuesta en la entrega anterior: cuando el vigía deja el Product Matrix de Fortinet pendiente, un job nuevo sin escritura corre `npm run matrix` sobre él y el issue dice qué cifras cambiaron; también a demanda, sin una máquina con salida a fortinet.com. Por el camino: tres workflows de transporte empujaban con `--force` a una rama fija y borraban la descarga anterior. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-13, decimoséptima entrega (**La mejora propuesta —`npm run matrix`— y el catálogo de Fortinet a la edición de octubre del Product Matrix.** El contraste de una edición nueva deja de ser lectura a ojo: el comando lee el PDF por coordenadas y compara 621 cifras de 27 modelos con el catálogo, sin escribir nada; probado con un dato revertido y con una columna desplazada, que salen como diferencia. Con él, la edición de octubre (PROMTX-2026-R177-OCT) casa entera y los rótulos de procedencia que ve el usuario la citan. Ver *Cerrado recientemente*.)
@@ -638,6 +639,48 @@ decisión del dueño o el datasheet de Huawei (pendiente 14).
 | H3 | **Hecha (2026-09-30).** Selector de plataforma `#platSeg` (NetEngine AR · A800 E · NE8000) elegido antes que el caudal: solo compiten los modelos de esa línea, y lo que no aplica (SD-WAN, UTM, WAC, PoE, 4G/5G, Wi-Fi, LAN en transporte; FlexE en AR) se oculta con `data-inactivo`, conserva su valor y sale del cálculo y del enlace. FlexE pasa a dato del modelo (`flexe: true` solo en el A821 E, que lo publica); el resto es «no consta», no se aparta y va detrás del confirmado. El modo «Nodo de núcleo» se retiró y los enlaces y perfiles viejos con `modeSeg=core` se traducen a NE8000. Dos escenarios de la línea base del contraste (2 y 6 Gbps de reenvío) salieron de ella a propósito y quedan como afirmaciones del cambio. TPM queda fuera: la pantalla no lo pide como requisito | hecha |
 | H4 | **Hecha en parte.** BOM con papel por pieza: alternativas de MPU y fuente en una línea «elegir una», 5G y WSIC fuera si no se piden, doble fuente x2, ópticas en una línea a elegir (H-06, H-07 sin inventar código). **HA 1+1 hecha (H-12, 2026-09-29)**: `#chkHa` (repone desde el enlace compartido y viaja como dos equipos al cotizador, conducido en el contraste `huawei`) cotiza dos equipos por sitio, cada uno al caudal completo (suma disponibilidad, no capacidad), y «misión crítica» sin HA lo advierte. **Salió de paso** que SnS se cotizaba dos veces (licencia y soporte). **Capa comercial hecha (H-13, 2026-09-29):** plazo de 1/3/5 años (`#anios`, el texto de cada suscripción dice el término real), precio de referencia del equipo tomado del cotizador (13 de los 40 modelos; el resto sale «consultar»), simulador de precio neto, TCO **declarado parcial** (solo el equipo tiene precio; licencias, suscripciones y soporte van «consultar») y perfiles multi-sede con consolidado. **Ópticas por enlace hechas (H-07, 2026-09-29):** cada módulo se declara (familia, modelo, cantidad por equipo), viaja en el enlace compartido (`#opticasData`) y entra al BOM con su código; una fila que ya no encaja tras cambiar de equipo sale como inválida, no se descarta. **Sigue sin existir la matriz de compatibilidad por chasis y versión de VRP** (el catálogo solo respalda la familia), y la pantalla lo dice | **hecha salvo datos** |
 | H5 | Datos: 27 de 40 modelos no casan con el cotizador, M14 incoherente (cerrado el 2026-10-02 con su ficha oficial, como las del NE8000 M8/F8: 7,2 Tbps con IPU-3T6), el tope de túneles y sesiones por modelo (H-10, H-14; **H-11 declarado en pantalla el 2026-09-29**: el hub muestra cuántos túneles pide y que el catálogo no trae el tope, sin apartar a nadie; el filtro ya existe y se activa solo cuando un modelo traiga `tuneles`; las sesiones no se piden porque exigirían usuarios por sede) | bloqueado en parte por la cuenta Huawei (pendiente 14) |
+
+### Capacidades SD-WAN: lo que queda abierto (2026-10-14)
+
+**Lista para ejecutar con un PC** (Chrome de escritorio con la extensión Claude in Chrome y la
+sesión de Huawei abierta, o la app de GitHub para lanzar Actions). En orden de valor:
+
+1. **Tope de túneles IPsec y SD-WAN EVPN, sesiones y rutas por serie AR** — Info-Finder,
+   «Specification Query» de cada serie (AR610, AR650, AR6000, AR5700, AR6700, AR8000). Anotar en
+   `capSdwan.tuneles` y `capSdwan.sesiones` con la URL y la versión de VRP en `fuentes.js`; el aviso
+   del hub pasa a filtrar solo. Necesita la sesión del dueño.
+2. **Ciclo de vida (EOM/EOS) de los 52 modelos Huawei** — la herramienta de ciclo de vida de
+   Info-Finder (el 2026-10-12 no abrió desde el navegador automatizado: probar a mano y exportar).
+   Cierra el semáforo gris de Huawei. Necesita la sesión.
+3. **Paquetes N1: qué exige Advanced frente a Foundation** — traer la ficha de la solución SD-WAN
+   R25C00 (e-file.huawei.com, `...c39e035b25f14a1897536864b6b928b3...Datasheet_R25C00.pdf`) con
+   `traer-cisco-huawei.yml` (Run workflow, rama `fuente/huawei-sdwan-2026-10-14`) y leer la tabla con
+   pdfplumber. El 2026-10-14 dio 403 desde Firecrawl y WebFetch la resume sin columnas fiables.
+4. **Ficha de iMaster NCE-Campus R24C00** (e.huawei.com, «iMaster NCE-Campus Product Datasheet
+   R24C00») — por el mismo workflow. Para integrar al dimensionador: escala por despliegue
+   (dispositivos, sitios y APs gestionados), modelo de licencia por equipo y si NCE-WAN va en la
+   nube de Huawei o en sitio. Hoy la línea «Suscripción iMaster NCE-WAN» no tiene código ni tope.
+   El 2026-10-14 WebFetch dio ROBOTS_DISALLOWED.
+5. **Fuentes de serie de cinco AR** (AR6710-L26/L50/L14, AR6710-H, AR8700-8) — capítulo «Power
+   Supplies» de EDOC1100213474 en support.huawei.com, con la sesión (ya listado abajo).
+6. **vCPE AR6700V-L para sitios en la nube** — no necesita PC: su ficha ya está en
+   `fuente/huawei-familias-2026-10-12`. Pendiente de la decisión del dueño (propuesta del
+   2026-10-14: cuarta plataforma o tipo de sitio «nube», 2/4/8/16 vCPU, IPS solo desde 4 vCPU).
+7. **AR502H-V2 (industrial 4G/5G)** — ficha guardada, falta leer si publica cifras SD-WAN; no
+   necesita PC.
+
+
+- **Tope de túneles (IPsec y SD-WAN EVPN), sesiones y rutas por modelo AR.** Ninguna ficha AR lo
+  publica, ni la ficha de la solución SD-WAN (R25C00). Está en la consulta de especificaciones de
+  Info-Finder, que pide sesión. **Bloqueado por la cuenta Huawei**: el 2026-10-14 el dueño solo tenía
+  el iPhone, y el Chrome del Mac registrado en la extensión no respondía. **Cómo se cierra**: con el
+  Mac encendido y Chrome con la extensión, leer la especificación de cada serie y anotar
+  `capSdwan.tuneles` (y `sesiones`) en `legacyData/huawei.js`; el filtro del hub ya lo aplica solo
+  (`m.tuneles`/`capSdwan`, a unificar entonces).
+- **Qué funciones exige el paquete N1 Advanced frente al Foundation.** El BOM deja elegir uno sin
+  decirlo. La tabla está en la ficha de la solución SD-WAN R25C00 (e-file.huawei.com); hay que
+  traerla por `traer-cisco-huawei.yml` y leerla con pdfplumber. No se transcribió de un resumen.
+  Desde aquí no se pudo despachar el workflow: el `GH_TOKEN` del entorno no es válido.
 
 ### Lo que queda abierto de las fichas Huawei (2026-10-06, cuarta entrega)
 
@@ -1933,7 +1976,7 @@ que ya se comprobó y lo que cuesta cada opción.
 
 ## Cerrado recientemente
 
-### MikroTik: el escenario de falla en la ficha, el PoE en vatios y la matriz vigente (2026-10-14, vigésima entrega)
+### MikroTik: el escenario de falla en la ficha, el PoE en vatios y la matriz vigente (2026-10-14, vigesimoprimera entrega)
 
 - **La mejora propuesta, hecha.** El motor devuelve `fallas`: por cada principal que cae, lo que
   procesa el equipo (misma cadena: sentidos y margen) y qué parte de la demanda cubre lo que queda.
@@ -1958,6 +2001,19 @@ que ya se comprobó y lo que cuesta cada opción.
   persona (escribir el `hashVerificado` a mano se frenó, con razón).
 - **Lo que la web no cierra:** el ×2 del IPsec (ni el manual ni la web lo dicen; foros
   contradictorios) y el CCR2004-16G-2S+PC fuera de la matriz.
+
+### Capacidades SD-WAN de las fichas AR en el dimensionador Huawei (2026-10-14, vigésima entrega)
+
+- **Capacidades SD-WAN de las fichas AR (2026-10-14).** `capSdwan` por modelo en
+  `legacyData/huawei.js`, de la tabla «Software Features and Protocols», las filas SD-WAN IPsec e
+  IPsec + QoS (IMIX) y la «Ordering Information» de las nueve fichas de serie ya guardadas (releídas
+  con pdftotext desde `fuente/cisco-huawei` y `fuente/huawei-familias-2026-10-12`). Tres estados:
+  `true`, `false` solo donde la ficha restringe con nota al pie, `null` no consta. El motor aparta
+  por `false` y pone detrás lo que no consta (`HuaweiMotor.REQUISITOS`, `estadoRequisito`);
+  la pantalla gana «Requisitos del overlay SD-WAN» y la tarjeta «Capacidades SD-WAN de la ficha».
+  **Corrección**: la AR5710-S de 2 GB salía con UTM o A-FEC; su ficha los limita a la SE de 4 GB.
+  Las licencias citan N1 (Foundation o Advanced, a elegir), amenazas por plazo (LAR0TP…) y los
+  paquetes DSVPN y de compresión. 940/940 pruebas, contraste `huawei`, pantallas, puerta y e2e en verde.
 
 ### Caudal, enlaces WAN y sentidos simultáneos, unificados en el dimensionador MikroTik (2026-10-14, decimonovena entrega)
 
