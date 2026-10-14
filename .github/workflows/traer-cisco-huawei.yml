@@ -425,6 +425,11 @@ jobs:
               { archivo: 'mikrotik-manual-ipsec.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
                 'https://manual.mikrotik.com/docs/virtual-private-networks/ipsec/',
               ] },
+              // La pagina «Bandwidth test» (7.26) explica como medir la capacidad de reenvio con una
+              // cadena de tres routers y tamanos de paquete: por si dice en que sentido cuenta.
+              { archivo: 'mikrotik-manual-bandwidth-test.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+                'https://manual.mikrotik.com/docs/diagnostics-monitoring-and-troubleshooting/bandwidth-test',
+              ] },
               // ARUBA: la «EdgeConnect US Spec Sheet» ya no esta en arubanetworks.com (404). La
               // pagina de producto de HPE la lista en psnow como a00109847enw: se trae la pagina
               // para leer que documento es y su enlace de descarga, que no se adivina.
