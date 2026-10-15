@@ -151,6 +151,16 @@ function textoNormalizado(buf, tipo) {
 
 const sha = (x) => crypto.createHash('sha256').update(x).digest('hex');
 
+// UNA PAGINA SIN TEXTO NO ES UNA PAGINA SIN CAMBIOS (2026-10-15). Hay sitios que son una
+// aplicacion de JavaScript: el HTML que llega es un cascaron («enable JavaScript to run this
+// app») y el contenido lo pinta el navegador. Medido en starlink.com el 2026-09-24: sus fichas
+// respondieron 200 sin una sola cifra. Quitados los scripts, ese cascaron deja unas decenas de
+// caracteres que no cambian nunca, y el vigia diria «sin cambios» cada lunes de una pagina que
+// no ha leido. Por debajo de este umbral la pagina se reporta como ilegible, con su largo. Una
+// pagina de producto o un boletin real deja miles de caracteres; 200 es holgura de sobra para no
+// confundir un documento corto con un cascaron.
+const TEXTO_MINIMO = 200;
+
 async function revisar(vendor, f, opts) {
   const base = { vendor, documento: f.documento, url: f.url };
   const control = new AbortController();
@@ -167,6 +177,9 @@ async function revisar(vendor, f, opts) {
     const cuerpo = Buffer.from(await res.arrayBuffer());
     const tipo = res.headers.get('content-type') || null;
     const texto = textoNormalizado(cuerpo, tipo);
+    if (texto !== null && !f.vigilar && texto.length < TEXTO_MINIMO) {
+      return { ...base, estado: 'inalcanzable', detalle: `la página llega sin contenido legible (${texto.length} caracteres de texto en ${cuerpo.length} bytes): probablemente una aplicación de JavaScript que solo pinta un navegador` };
+    }
     // LA TERCERA CLASE: DATOS (2026-10-13). Una ficha de MikroTik se vigila por lo que el
     // catalogo transcribe de ella (tabla de pruebas, CPU, RAM, nivel, precio), no por su texto,
     // que trae carruseles de otros productos. Si la pagina ya no se puede leer como la ficha de
@@ -594,7 +607,7 @@ if (require.main === module) {
 
 module.exports = {
   correr, revisar, claveDe, pendientes, normalizarEntrada, marcarRevisado, aplicarAlLock, conRetirada,
-  sondear, textoNormalizado, primeraDiferencia, declaradasInestables,
+  sondear, textoNormalizado, primeraDiferencia, declaradasInestables, TEXTO_MINIMO,
   clasificar,
   leerLock, LOCK,
 };

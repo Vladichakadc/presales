@@ -439,6 +439,56 @@ const FUENTES = {
       cubre: 'lineas 7220 IXR, 7250 IXR y 7750 SR', campos: null, porQue: 'nombra lineas, no campos: lo que respalda de cada una no esta acotado en esta entrada',
       nota: 'Cifras tecnicas verificadas; el PRECIO no, porque no hay lista de precios de Nokia en el material disponible. Van como Consultar y el BOM los cuenta sin cotizar.' },
   ],
+
+  // STARLINK (2026-10-15). No es uno de los siete fabricantes de `vendors.js`: su dimensionador
+  // es el motor canonico integrado byte a byte, que trae sus cifras dentro (DEFAULT_CATALOGS con
+  // la tarifa en COP, los kits, los perfiles de video y streaming). Por eso no sale en la pestana
+  // de fuentes ni en el inventario por fabricante, y `campos` va en null: no hay MODELS contra
+  // los que declararlos. Lo que si gana es VIGILANCIA: hasta hoy un cambio de tarifa de Starlink
+  // no lo avisaba nadie. Las ocho URLs son las SOURCE_LINKS del motor, en su orden;
+  // `test/starlink-fuentes.test.js` las casa con el archivo del motor para que no haya dos listas
+  // que se desincronicen. `fecha` es la de la investigacion del modulo (`researchDate`), no la de
+  // publicacion de cada documento, que el modulo no registra.
+  //
+  // `estable`: los tres PDF se vigilan por bytes, como el resto de PDF del catalogo; las paginas
+  // HTML quedan en false hasta que `sondeo-fuentes.yml` las mida. starlink.com es una aplicacion
+  // de JavaScript (medido el 2026-09-24: sus fichas respondieron 200 sin una cifra), asi que es
+  // probable que el vigia las reporte ilegibles (TEXTO_MINIMO), que es lo honesto.
+  starlink: [
+    { documento: 'Starlink Business Colombia',
+      url: 'https://starlink.com/co/business', estable: false, fecha: '2026-09-23', hash: null,
+      cubre: 'oferta empresarial en Colombia: planes Local y Global Priority y kits', campos: null,
+      porQue: 'Starlink no tiene catalogo en legacyData: la oferta la lleva el motor canonico' },
+    { documento: 'Priority Plan Transition (PDF)',
+      url: 'https://starlink.com/public-files/Priority_Plan_Transition.pdf', estable: true, fecha: '2026-09-23', hash: null,
+      dominio: 'precio', campos: null,
+      cubre: 'bloques de datos prioritarios y precio publico de referencia en COP de los planes Local Priority (50 GB, 1, 2 y 6 TB) y Global Priority (50 GB a 25 TB)',
+      nota: 'Es la fuente de DEFAULT_CATALOGS del motor: el precio que el dimensionador muestra y lleva al BOM. Precio de lista, sin impuestos ni descuento negociado (por eso `pricesVerified` sigue desmarcado por defecto en la pantalla).' },
+    { documento: 'Service Plan Descriptions',
+      url: 'https://starlink.com/legal/documents/DOC-1728-44881-79', estable: false, fecha: '2026-09-23', hash: null,
+      cubre: 'precedencia de los datos prioritarios sobre los estandar', campos: null,
+      porQue: 'respalda una regla del motor (como se consumen los datos prioritarios), no un campo de catalogo' },
+    { documento: 'Fair Use Policy',
+      url: 'https://starlink.com/legal/documents/DOC-1722-29027-68', estable: false, fecha: '2026-09-23', hash: null,
+      cubre: 'gestion del consumo y top-ups', campos: null,
+      porQue: 'respalda una regla del motor (que pasa al agotar el bloque), no un campo de catalogo' },
+    { documento: 'Performance Kit Specifications (PDF)',
+      url: 'https://starlink.com/public-files/specification_sheet_performance.pdf', estable: true, fecha: '2026-09-23', hash: null,
+      cubre: 'ambiente, energia y capacidad del kit Performance', campos: null,
+      porQue: 'Starlink no tiene catalogo en legacyData: el kit lo lleva el motor canonico' },
+    { documento: 'Standard 4 X Specifications (PDF)',
+      url: 'https://starlink.com/public-files/specification_sheet_standard.pdf', estable: true, fecha: '2026-09-23', hash: null,
+      cubre: 'antena y router del kit Standard', campos: null,
+      porQue: 'Starlink no tiene catalogo en legacyData: el kit lo lleva el motor canonico' },
+    { documento: 'Zoom: requisitos de ancho de banda',
+      url: 'https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0060748', estable: false, fecha: '2026-09-23', hash: null,
+      cubre: 'perfiles de videoconferencia (SD, 720p y 1080p) del motor', campos: null,
+      porQue: 'respalda los supuestos de trafico del motor (VIDEO_PROFILES), no un campo de catalogo' },
+    { documento: 'YouTube: velocidades recomendadas',
+      url: 'https://support.google.com/youtube/answer/78358?hl=es', estable: false, fecha: '2026-09-23', hash: null,
+      cubre: 'perfiles de streaming (720p, 1080p y 4K) del motor', campos: null,
+      porQue: 'respalda los supuestos de trafico del motor (STREAM_PROFILES), no un campo de catalogo' },
+  ],
 };
 
 // Meses transcurridos desde `fecha` hasta `ahora`. Devuelve null si no hay fecha: no se

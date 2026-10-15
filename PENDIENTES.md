@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-15, trigesimoprimera entrega (**La mejora propuesta: Starlink entra en la batería de axe.** `npm run e2e` audita ya la pantalla de Starlink tal como carga y con todas las cargas desplegadas y el diálogo de metodología abierto, a 1440 px y en reflujo a 640 px. Saboteada: el texto del diálogo sin contraste la pone en rojo. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-15, trigesimosegunda entrega (**La mejora propuesta: el vigía mira las fuentes de Starlink.** Las ocho fuentes del motor canónico entran en `legacyData/fuentes.js` (el PDF del Priority Plan como fuente de precio) y una prueba las casa con el motor. **Mejora encontrada por el camino**: el vigía daba por «leída» una página que llega como cascarón de JavaScript —starlink.com lo es— y la habría declarado «sin cambios» cada lunes; ahora sale ilegible. Falta medirlas desde Actions: el proxy de aquí da 403. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-15, trigesimoprimera entrega (**La mejora propuesta: Starlink entra en la batería de axe.** `npm run e2e` audita ya la pantalla de Starlink tal como carga y con todas las cargas desplegadas y el diálogo de metodología abierto, a 1440 px y en reflujo a 640 px. Saboteada: el texto del diálogo sin contraste la pone en rojo. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigésima entrega (**Starlink con la apariencia del portal.** Encargo del dueño: cambiar solo la apariencia del dimensionador de Starlink para que siga el formato y los colores de los demás dimensionadores. Hoja clara de papel, tarjetas blancas con filete, Barlow / Barlow Condensed / IBM Plex Mono, masthead con «Volver al Portal Presales» y el acento de Starlink del portal (#1B2433). El motor no se toca. Ver *Cerrado recientemente*; el abierto que dejó, Starlink fuera de la batería de axe, se cerró en la trigesimoprimera.)
 Revisión anterior: 2026-10-15, vigesimonovena entrega (**Aruba, panel 2: cada enlace en un puerto real del chasis.** Encargo del dueño: revisar «Tráfico y capacidad» como arquitecto de Aruba — la barra decía «cabe» sin mirar si el equipo tiene puertos de ese medio, y al cambiar el medio no volvía al equipo inferior; quitar «Segmento de instalación»; campos sincronizados y fuera los que no aportan. Medido en Chromium: la barra iba un render por detrás, un RJ-45 «cabía» en el EC-L (sin cobre) y 3 Gbps por RJ-45 de 1 GbE también. Ahora cada modelo trae su inventario de puertos y el dimensionador asigna cada enlace; el medio sube solo con el caudal; Breakout, perfil de Boost, FEC e IMIX se desactivan con su motivo cuando no aplican. Ver *Cerrado recientemente* y *Abierto: puertos de Aruba*.)
 Revisión anterior: 2026-10-15, vigesimoctava entrega (**La mejora propuesta: los accesos del portal, con el color de su tarjeta.** Los nueve botones bajo el título dejan el `style=` repetido por una clase `acceso-<id>`, y una prueba casa cada color con el de la tarjeta del fabricante en `index.js`. Se ven igual, píxel a píxel. Ver *Cerrado recientemente*.)
@@ -1023,8 +1024,12 @@ desmarcado por defecto porque ese precio de lista no incluye impuestos ni el des
 negociado del sitio, no porque el número sea inventado.
 
 Mejoras futuras no implementadas (declaradas, no aplicadas, por mandato del prompt maestro):
-- **Vigilancia**: las ocho `SOURCE_LINKS` del motor no están en `npm run vigia`
-  (`legacyData/fuentes.js`), así que un cambio de tarifa de Starlink no generaría aviso.
+- ~~**Vigilancia**~~ **Declarada el 2026-10-15** (trigesimosegunda entrega): las ocho
+  `SOURCE_LINKS` están en `legacyData/fuentes.js` y entran en `npm run vigia`. **Falta medirlas**:
+  el proxy de este entorno responde 403 a `starlink.com` (y a `example.com`: es la política de
+  egreso, no Starlink). Se miden con `sondeo-fuentes.yml` y la primera corrida de
+  `vigia-fuentes.yml` desde Actions; desde una máquina con salida, `npm run vigia -- --sondeo`.
+  Con lo medido se decide el `estable` de las cinco páginas HTML.
 - **Persistencia de escenarios**: no hay auditoría server-side de qué se cotizó (sección 15.3
   del prompt); ningún otro dimensionador de este portal la tiene tampoco, así que no se creó
   solo para este.
@@ -2018,6 +2023,36 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### El vigía mira las fuentes de Starlink, y no da por leída una página vacía (2026-10-15, trigesimosegunda entrega)
+
+La mejora propuesta al cerrar la entrega anterior, aprobada por el dueño («si encuentras alguna
+mejora por el camino, ejecútala»).
+
+- **Las ocho fuentes de Starlink en `FUENTES.starlink`**, en el orden de `SOURCE_LINKS` del motor:
+  la página Business de Colombia, el **Priority Plan Transition (PDF), marcado `dominio: 'precio'`**
+  —es la fuente de `DEFAULT_CATALOGS`, la tarifa en COP que la pantalla lleva al BOM—, las dos
+  condiciones legales (Service Plan Descriptions y Fair Use), las dos fichas en PDF de los kits y
+  las dos páginas de ayuda de Zoom y YouTube que respaldan los perfiles de tráfico. `fecha` es la
+  `researchDate` del motor (2026-09-23); `campos: null` con su `porQue`, porque Starlink no tiene
+  `MODELS`. Starlink no se suma a `vendors.js`: no sale en la pestaña de fuentes ni cambia los
+  recuentos de fabricantes.
+- **`test/starlink-fuentes.test.js`** casa esas URLs con las del archivo del motor (que no exporta
+  la lista y no se toca), la fecha con `researchDate`, el precio marcado y `estable` solo en los
+  PDF. Saboteada: cambiar `/co/` por `/us/` en una URL la pone en rojo.
+- **Mejora encontrada por el camino: una página sin texto ya no es una página sin cambios.**
+  `starlink.com` es una aplicación de JavaScript (medido el 2026-09-24): el HTML llega como
+  cascarón y su texto, sin scripts, son unas decenas de caracteres que no cambian nunca. El vigía
+  lo habría leído como «sin cambios» cada lunes sin haber mirado nada. Ahora `revisar()` da por
+  ilegible un HTML con menos de `TEXTO_MINIMO` (200) caracteres de texto, con su largo en el
+  detalle; no afecta a las fichas de MikroTik, que se vigilan por datos. Prueba nueva en
+  `vigia-fuentes.test.js` (un cascarón sale ilegible; una página corta real sigue leyéndose);
+  saboteada con el umbral a 0, se pone en rojo.
+- **No medido desde aquí**: el proxy de egreso responde 403 a `starlink.com` y también a
+  `example.com`, así que es la política del entorno y no se rodea. La medición va por
+  `sondeo-fuentes.yml` (solo lectura) desde Actions.
+- **Comprobado**: `verificar` 979/979, `catalogo` sin novedad, arranque en producción con los
+  mismos 52 avisos de fuentes de antes (las de Starlink están vigentes) y `puerta` cerrada.
 
 ### Starlink en la batería de accesibilidad (2026-10-15, trigesimoprimera entrega)
 

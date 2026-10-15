@@ -9,7 +9,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const http = require('http');
 const crypto = require('crypto');
-const { revisar, claveDe } = require('../scripts/vigia-fuentes');
+const { revisar, claveDe, TEXTO_MINIMO } = require('../scripts/vigia-fuentes');
 
 let servidor;
 let base;
@@ -19,6 +19,17 @@ test.before(async () => {
   servidor = http.createServer((req, res) => {
     if (req.url === '/ok') { res.writeHead(200, { 'Content-Type': 'application/pdf' }); res.end(CUERPO); return; }
     if (req.url === '/otro') { res.writeHead(200); res.end('el fabricante lo cambio'); return; }
+    if (req.url === '/cascaron') {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end('<!doctype html><html><head><title>Starlink</title><script src="/app.js"></script></head>'
+        + '<body><noscript>You need to enable JavaScript to run this app.</noscript><div id="root"></div></body></html>');
+      return;
+    }
+    if (req.url === '/pagina') {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(`<html><body><h1>Boletin de fin de venta</h1><p>${'El modelo deja de venderse en la fecha indicada. '.repeat(10)}</p></body></html>`);
+      return;
+    }
     res.writeHead(403); res.end('denegado por politica');
   });
   await new Promise((r) => servidor.listen(0, '127.0.0.1', r));
@@ -45,6 +56,22 @@ test('un 403 se reporta como inalcanzable con su codigo, nunca como sin cambios'
   assert.strictEqual(r.estado, 'inalcanzable');
   assert.match(r.detalle, /403/);
   assert.strictEqual(r.hash, undefined, 'sin hash: no se leyo nada que resumir');
+});
+
+test('una página que llega como cascarón de JavaScript no se da por leída', async () => {
+  // starlink.com, medido el 2026-09-24: el HTML es una aplicación que pinta el navegador. Su
+  // texto, sin scripts, son unas decenas de caracteres que no cambian nunca: leerla como
+  // «sin cambios» seria vigilar nada.
+  const r = await revisar('starlink', { documento: 'Business', url: `${base}/cascaron` });
+  assert.strictEqual(r.estado, 'inalcanzable');
+  assert.match(r.detalle, /sin contenido legible/);
+  assert.strictEqual(r.hashVigilado, undefined, 'sin huella: no hay nada que comparar');
+  // Y una página con contenido de verdad sigue leyéndose por su texto: el umbral no se come
+  // documentos cortos legítimos.
+  const ok = await revisar('cisco', { documento: 'EOL', url: `${base}/pagina` });
+  assert.strictEqual(ok.estado, 'leido');
+  assert.strictEqual(ok.clase, 'texto');
+  assert.ok(ok.largoTexto >= TEXTO_MINIMO, `la página de prueba tiene ${ok.largoTexto} caracteres`);
 });
 
 test('un host que no responde tampoco se da por bueno', async () => {
