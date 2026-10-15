@@ -46,6 +46,15 @@ const PANTALLAS = [
   { n: 'Aruba con escenario · lista de materiales', ruta: '/dimensionador-aruba-edgeconnect.html?users=120&perUser=2&wanLinksData='
     + encodeURIComponent(JSON.stringify({ v: 2, wanLinks: [{ id: 1, tipo: 'DIA', medio: 'RJ45', down: 500, up: 500, simetrico: true }] })), pestana: 'bom' },
   { n: 'Cisco con escenario', ruta: '/dimensionador-cisco-catalyst8k.html?bw=800' },
+  // Starlink no tiene pestañas: el cálculo, la arquitectura y la lista de materiales se ven a la
+  // vez. Lo que la vista inicial no enseña son las tarjetas de carga desplegadas (cada una abre
+  // sus campos al activarla) y el diálogo de metodología, así que la segunda entrada los abre.
+  { n: 'Dimensionador Starlink', ruta: '/dimensionador-starlink-leo.html' },
+  { n: 'Starlink con todas las cargas y la metodología', ruta: '/dimensionador-starlink-leo.html',
+    async preparar(page) {
+      await page.$$eval('.switch input', (els) => els.forEach((e) => { if (!e.checked) e.click(); }));
+      await page.click('#btnMethod');
+    } },
 ];
 
 const GRAVES = new Set(['critical', 'serious']);
@@ -63,6 +72,7 @@ const GRAVES = new Set(['critical', 'serious']);
     await page.goto(BASE + p.ruta, { waitUntil: 'domcontentloaded' });
     await asentar(page);
     if (p.pestana) { await page.click(`[data-tab="${p.pestana}"]`); await asentar(page); }
+    if (p.preparar) { await p.preparar(page); await asentar(page); }
     await page.evaluate(AXE);
     const r = await page.evaluate(() => axe.run(document, {
       runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
@@ -86,6 +96,7 @@ const GRAVES = new Set(['critical', 'serious']);
     await zoom.goto(BASE + p.ruta, { waitUntil: 'domcontentloaded' });
     await asentar(zoom);
     if (p.pestana) { await zoom.click(`[data-tab="${p.pestana}"]`); await asentar(zoom); }
+    if (p.preparar) { await p.preparar(zoom); await asentar(zoom); }
     const m = await zoom.evaluate(() => ({ ancho: document.documentElement.scrollWidth, vista: window.innerWidth }));
     t.ok(m.ancho <= m.vista + 1, `zoom 200 % · ${p.n}: sin desplazamiento horizontal (${m.ancho} px de contenido en ${m.vista} px)`);
   }

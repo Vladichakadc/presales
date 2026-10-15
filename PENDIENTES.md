@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-15, trigésima entrega (**Starlink con la apariencia del portal.** Encargo del dueño: cambiar solo la apariencia del dimensionador de Starlink para que siga el formato y los colores de los demás dimensionadores. Hoja clara de papel, tarjetas blancas con filete, Barlow / Barlow Condensed / IBM Plex Mono, masthead con «Volver al Portal Presales» y el acento de Starlink del portal (#1B2433). El motor no se toca. Ver *Cerrado recientemente* y *Abierto: Starlink fuera de la batería de axe*.)
+Última revisión: 2026-10-15, trigesimoprimera entrega (**La mejora propuesta: Starlink entra en la batería de axe.** `npm run e2e` audita ya la pantalla de Starlink tal como carga y con todas las cargas desplegadas y el diálogo de metodología abierto, a 1440 px y en reflujo a 640 px. Saboteada: el texto del diálogo sin contraste la pone en rojo. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-15, trigésima entrega (**Starlink con la apariencia del portal.** Encargo del dueño: cambiar solo la apariencia del dimensionador de Starlink para que siga el formato y los colores de los demás dimensionadores. Hoja clara de papel, tarjetas blancas con filete, Barlow / Barlow Condensed / IBM Plex Mono, masthead con «Volver al Portal Presales» y el acento de Starlink del portal (#1B2433). El motor no se toca. Ver *Cerrado recientemente*; el abierto que dejó, Starlink fuera de la batería de axe, se cerró en la trigesimoprimera.)
 Revisión anterior: 2026-10-15, vigesimonovena entrega (**Aruba, panel 2: cada enlace en un puerto real del chasis.** Encargo del dueño: revisar «Tráfico y capacidad» como arquitecto de Aruba — la barra decía «cabe» sin mirar si el equipo tiene puertos de ese medio, y al cambiar el medio no volvía al equipo inferior; quitar «Segmento de instalación»; campos sincronizados y fuera los que no aportan. Medido en Chromium: la barra iba un render por detrás, un RJ-45 «cabía» en el EC-L (sin cobre) y 3 Gbps por RJ-45 de 1 GbE también. Ahora cada modelo trae su inventario de puertos y el dimensionador asigna cada enlace; el medio sube solo con el caudal; Breakout, perfil de Boost, FEC e IMIX se desactivan con su motivo cuando no aplican. Ver *Cerrado recientemente* y *Abierto: puertos de Aruba*.)
 Revisión anterior: 2026-10-15, vigesimoctava entrega (**La mejora propuesta: los accesos del portal, con el color de su tarjeta.** Los nueve botones bajo el título dejan el `style=` repetido por una clase `acceso-<id>`, y una prueba casa cada color con el de la tarjeta del fabricante en `index.js`. Se ven igual, píxel a píxel. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, vigesimoséptima entrega (**Botones del dashboard sin «BOM».** Encargo del dueño: los siete botones de fabricante del portal dicen solo el nombre (FortiGate, Cisco, Huawei, Juniper, MikroTik, Aruba, Starlink); «Cotizador BOM» no es de un fabricante y se queda. Ver *Cerrado recientemente*.)
@@ -1902,14 +1903,6 @@ Lo que la auditoría de puertos del panel 2 todavía no cuenta, declarado para n
 - **EC-XL**: se cuenta como 6x SFP+ (la variante del SKU base S0B67A); la S3N77A de 6x SFP28 existe
   pero está fuera de venta igual que la base y su matriz no trae ópticas de 25G.
 
-## Abierto: Starlink fuera de la batería de axe (2026-10-15)
-
-La entrega del 2026-09-24 dejó escrito que la auditoría de accesibilidad cubría ya la pantalla de
-Starlink, pero `PANTALLAS` de `test/e2e/e2e-accesibilidad.js` no la lista hoy: `npm run e2e` no
-pasa axe ni el reflujo a 640 px sobre ella. Con el cambio de apariencia se pasó a mano (axe WCAG
-2.1 A/AA a 1400 y 640 px, también el diálogo de metodología: cero violaciones, sin desborde
-horizontal). Cerrarlo es añadir la entrada (cálculo y lista de materiales) a esa lista.
-
 ## Decisiones que necesitan al dueño del producto
 
 - ~~**WireGuard en el dimensionador MikroTik (2026-10-13).**~~ **Decidido el 2026-10-13: opción A**,
@@ -2025,6 +2018,18 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Starlink en la batería de accesibilidad (2026-10-15, trigesimoprimera entrega)
+
+La mejora propuesta al cerrar la entrega anterior, aprobada por el dueño. La nota del 2026-09-24
+decía que axe cubría ya Starlink, pero `PANTALLAS` de `test/e2e/e2e-accesibilidad.js` no la
+listaba. Ahora lleva dos entradas: la pantalla tal como carga (cálculo, arquitectura y lista de
+materiales están en la misma vista, sin pestañas) y otra con todas las tarjetas de carga
+activadas —cada una despliega sus campos— y el diálogo de metodología abierto. Para esa segunda
+las entradas aceptan un paso `preparar(page)`, que corre también en el reflujo a 640 px.
+**Saboteada**: con el texto del diálogo a #D0D6DE, falla solo la segunda entrada
+(`color-contrast` ×17), lo que prueba que el diálogo se abre de verdad; la primera sigue en verde.
+Restaurada la hoja, 19 + 2 estados de pantalla en verde.
 
 ### Starlink con la apariencia de los demás dimensionadores (2026-10-15, trigésima entrega)
 
