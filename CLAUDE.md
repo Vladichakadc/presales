@@ -480,8 +480,11 @@ Módulos compartidos:
   lo que `npm run mikrotik` lee, que al transcribir deja el lock verificado);
   `--sondeo` mide qué varía entre dos peticiones. Un HTML que, sin scripts, deja menos de
   `TEXTO_MINIMO` (200) caracteres es el cascarón de una aplicación de JavaScript y sale ilegible,
-  nunca «sin cambios». Starlink no está en `vendors.js` pero sí en `FUENTES` (sus ocho
-  `SOURCE_LINKS`, casadas con el motor por `test/starlink-fuentes.test.js`). Cuando el Product
+  nunca «sin cambios». Lo que el sondeo midió como no legible sin navegador lleva
+  `sinVigilancia: '<lo medido>'` (nunca en una fuente estable): el vigía no lo pide cada lunes y
+  el sondeo lo sigue midiendo, en una sola pasada (`--resumen-sondeo` saca el texto del JSON).
+  Starlink no está en `vendors.js` pero sí en `FUENTES` (sus ocho `SOURCE_LINKS`, casadas con el
+  motor por `test/starlink-fuentes.test.js`); se vigilan sus tres PDF. Cuando el Product
   Matrix de Fortinet queda pendiente, el job **`contrastar`** del vigía corre `npm run matrix` sobre él (sin escritura ni
   token, `npm ci --ignore-scripts`) y el issue dice qué cifras cambiaron; `publicar` valida ese
   informe antes de escribirlo. A demanda, `contrastar_matrix` al lanzarlo a mano; en local,

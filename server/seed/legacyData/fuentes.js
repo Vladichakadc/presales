@@ -450,13 +450,16 @@ const FUENTES = {
   // que se desincronicen. `fecha` es la de la investigacion del modulo (`researchDate`), no la de
   // publicacion de cada documento, que el modulo no registra.
   //
-  // `estable`: los tres PDF se vigilan por bytes, como el resto de PDF del catalogo; las paginas
-  // HTML quedan en false hasta que `sondeo-fuentes.yml` las mida. starlink.com es una aplicacion
-  // de JavaScript (medido el 2026-09-24: sus fichas respondieron 200 sin una cifra), asi que es
-  // probable que el vigia las reporte ilegibles (TEXTO_MINIMO), que es lo honesto.
+  // MEDIDO EL 2026-10-15 (sondeo-fuentes.yml, corrida 38774517394): los tres PDF —la tarifa y
+  // las dos fichas de kit, que son los que llevan cifras— son estables en bytes y se vigilan. Las
+  // cinco paginas HTML no se pueden vigilar sin navegador: cuatro llegan como cascaron de
+  // JavaScript (113-118 caracteres de texto) y la de YouTube cambia de texto en cada peticion.
+  // Llevan `sinVigilancia` con lo medido: siguen declaradas como procedencia, el vigia no las
+  // pide cada lunes y el sondeo las sigue midiendo.
   starlink: [
     { documento: 'Starlink Business Colombia',
       url: 'https://starlink.com/co/business', estable: false, fecha: '2026-09-23', hash: null,
+      sinVigilancia: 'la pagina es una aplicacion de JavaScript: el HTML llega como cascaron (118 caracteres de texto) y solo un navegador pinta el contenido. Medido con sondeo-fuentes.yml el 2026-10-15 (corrida 38774517394).',
       cubre: 'oferta empresarial en Colombia: planes Local y Global Priority y kits', campos: null,
       porQue: 'Starlink no tiene catalogo en legacyData: la oferta la lleva el motor canonico' },
     { documento: 'Priority Plan Transition (PDF)',
@@ -466,10 +469,12 @@ const FUENTES = {
       nota: 'Es la fuente de DEFAULT_CATALOGS del motor: el precio que el dimensionador muestra y lleva al BOM. Precio de lista, sin impuestos ni descuento negociado (por eso `pricesVerified` sigue desmarcado por defecto en la pantalla).' },
     { documento: 'Service Plan Descriptions',
       url: 'https://starlink.com/legal/documents/DOC-1728-44881-79', estable: false, fecha: '2026-09-23', hash: null,
+      sinVigilancia: 'la pagina es una aplicacion de JavaScript: el HTML llega como cascaron (118 caracteres de texto) y solo un navegador pinta el contenido. Medido con sondeo-fuentes.yml el 2026-10-15 (corrida 38774517394).',
       cubre: 'precedencia de los datos prioritarios sobre los estandar', campos: null,
       porQue: 'respalda una regla del motor (como se consumen los datos prioritarios), no un campo de catalogo' },
     { documento: 'Fair Use Policy',
       url: 'https://starlink.com/legal/documents/DOC-1722-29027-68', estable: false, fecha: '2026-09-23', hash: null,
+      sinVigilancia: 'la pagina es una aplicacion de JavaScript: el HTML llega como cascaron (118 caracteres de texto) y solo un navegador pinta el contenido. Medido con sondeo-fuentes.yml el 2026-10-15 (corrida 38774517394).',
       cubre: 'gestion del consumo y top-ups', campos: null,
       porQue: 'respalda una regla del motor (que pasa al agotar el bloque), no un campo de catalogo' },
     { documento: 'Performance Kit Specifications (PDF)',
@@ -482,10 +487,12 @@ const FUENTES = {
       porQue: 'Starlink no tiene catalogo en legacyData: el kit lo lleva el motor canonico' },
     { documento: 'Zoom: requisitos de ancho de banda',
       url: 'https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0060748', estable: false, fecha: '2026-09-23', hash: null,
+      sinVigilancia: 'la pagina es una aplicacion de JavaScript: el HTML llega como cascaron (113 caracteres de texto) y solo un navegador pinta el contenido. Medido con sondeo-fuentes.yml el 2026-10-15 (corrida 38774517394).',
       cubre: 'perfiles de videoconferencia (SD, 720p y 1080p) del motor', campos: null,
       porQue: 'respalda los supuestos de trafico del motor (VIDEO_PROFILES), no un campo de catalogo' },
     { documento: 'YouTube: velocidades recomendadas',
       url: 'https://support.google.com/youtube/answer/78358?hl=es', estable: false, fecha: '2026-09-23', hash: null,
+      sinVigilancia: 'el texto cambia en cada peticion (un identificador aleatorio en el menu del Centro de ayuda): su huella no diria nada. Medido con sondeo-fuentes.yml el 2026-10-15 (corrida 38774517394).',
       cubre: 'perfiles de streaming (720p, 1080p y 4K) del motor', campos: null,
       porQue: 'respalda los supuestos de trafico del motor (STREAM_PROFILES), no un campo de catalogo' },
   ],

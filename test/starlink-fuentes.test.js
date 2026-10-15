@@ -57,3 +57,14 @@ test('las fuentes de Starlink no ensucian el aviso del arranque mientras esten v
   const despues = new Date(Date.UTC(2027, 3, 1));
   assert.strictEqual(fuentesQueAvisan(despues).filter((a) => a.vendor === 'starlink').length, FUENTES.starlink.length);
 });
+
+test('lo medido manda: los PDF se vigilan y las cinco paginas HTML declaran por que no', () => {
+  // Medido con sondeo-fuentes.yml el 2026-10-15: los PDF, estables en bytes; las paginas, un
+  // cascaron de JavaScript o un texto que cambia en cada peticion.
+  for (const f of FUENTES.starlink) {
+    const pdf = /\.pdf$/.test(f.url);
+    assert.strictEqual(Boolean(f.sinVigilancia), !pdf, `${f.documento}: sinVigilancia=${f.sinVigilancia}`);
+  }
+  const precio = FUENTES.starlink.find((f) => f.dominio === 'precio');
+  assert.ok(!precio.sinVigilancia, 'la tarifa es justo lo que no puede quedar sin vigilar');
+});

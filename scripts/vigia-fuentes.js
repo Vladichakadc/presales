@@ -19,6 +19,7 @@
 //     npm run vigia -- --json                la misma salida como JSON, para el workflow
 //     npm run vigia -- --revisado <v> <url>  declara que una persona ya contrasto el cambio
 //     npm run vigia -- --sondeo             mide que fuentes son estables de verdad
+//     npm run vigia -- --resumen-sondeo s.json el resumen legible de un sondeo ya hecho
 //     npm run vigia -- --resumen vigia.json el resumen legible de una corrida ya hecha
 //
 // EL TERCER ESTADO, Y POR QUE HIZO FALTA (2026-09-14)
@@ -309,21 +310,35 @@ function aplicarAlLock(lock, resultados, ahora) {
   return lock;
 }
 
-async function correr() {
-  const lock = leerLock();
-  const pendientesRed = [];
-  for (const [vendor, lista] of Object.entries(FUENTES)) {
-    // Una fuente sin URL no se puede vigilar: se declara y no cuenta como revisada.
+// QUE SE PIDE A LA RED Y QUE NO. Una fuente sin URL no se puede vigilar: se declara y no cuenta
+// como revisada. Una con `sinVigilancia` (2026-10-15) tampoco se pide: es una pagina que solo
+// pinta un navegador, MEDIDA asi por el sondeo, y pedirla cada lunes solo anadiria al issue un
+// «ilegible» que nadie puede arreglar y que entierra los que si piden accion. El sondeo la sigue
+// midiendo, que es como se sabria si un dia pasa a leerse. Pura, para probarla sin red.
+function aMedir(fuentes) {
+  const out = [];
+  for (const [vendor, lista] of Object.entries(fuentes)) {
     for (const f of lista) {
-      if (f.url) pendientesRed.push({ vendor, f });
-      else pendientesRed.push({ vendor, f, sinUrl: true });
+      if (!f.url) out.push({ vendor, f, sinUrl: true });
+      else if (f.sinVigilancia) out.push({ vendor, f, sinVigilancia: true });
+      else out.push({ vendor, f });
     }
   }
+  return out;
+}
+
+async function correr() {
+  const lock = leerLock();
+  const pendientesRed = aMedir(FUENTES);
 
   const resultados = [];
   for (const p of pendientesRed) {
     if (p.sinUrl) {
       resultados.push({ vendor: p.vendor, documento: p.f.documento, url: null, estado: 'sin url' });
+      continue;
+    }
+    if (p.sinVigilancia) {
+      resultados.push({ vendor: p.vendor, documento: p.f.documento, url: p.f.url, estado: 'sin vigilancia', detalle: p.f.sinVigilancia });
       continue;
     }
     const r = conRetirada(await revisar(p.vendor, p.f), p.f);
@@ -512,6 +527,7 @@ function imprimir(d) {
     let cola;
     if (r.estado !== 'leido') {
       cola = r.estado === 'sin url' ? 'sin URL que vigilar'
+        : r.estado === 'sin vigilancia' ? `no se vigila (declarado): ${r.detalle}`
         : r.estado === 'retirada' ? `retirada por el fabricante (ya declarada): ${r.detalle}` : `inalcanzable: ${r.detalle}`;
     } else if (r.cambio === 'CAMBIÓ') {
       // Distinguir lo nuevo de la cola que envejece es lo que impide que una alarma repetida
@@ -547,6 +563,18 @@ function imprimir(d) {
 }
 
 if (require.main === module) {
+  // El resumen legible de un sondeo ya hecho, sin volver a la red: el workflow pedia cada URL
+  // dos veces (texto y JSON) y con 70 fuentes ya no cabia en su limite de tiempo (2026-10-15).
+  const r = args.indexOf('--resumen-sondeo');
+  if (r >= 0) {
+    try {
+      imprimirSondeo(JSON.parse(fs.readFileSync(args[r + 1], 'utf8')));
+      process.exit(0);
+    } catch (err) {
+      console.error(`[vigia] no se pudo leer el sondeo ${args[r + 1] || '(falta la ruta)'}: ${err.message}`);
+      process.exit(1);
+    }
+  }
   if (args.includes('--sondeo')) {
     const seg = parseInt((args.find((a) => a.startsWith('--espera=')) || '').split('=')[1], 10);
     sondear(Number.isFinite(seg) ? seg : 10).then((filas) => {
@@ -607,7 +635,7 @@ if (require.main === module) {
 
 module.exports = {
   correr, revisar, claveDe, pendientes, normalizarEntrada, marcarRevisado, aplicarAlLock, conRetirada,
-  sondear, textoNormalizado, primeraDiferencia, declaradasInestables, TEXTO_MINIMO,
+  sondear, textoNormalizado, primeraDiferencia, declaradasInestables, TEXTO_MINIMO, aMedir, imprimirSondeo,
   clasificar,
   leerLock, LOCK,
 };

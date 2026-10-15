@@ -9,7 +9,12 @@ const test = require('node:test');
 const assert = require('node:assert');
 const http = require('http');
 const crypto = require('crypto');
-const { revisar, claveDe, TEXTO_MINIMO } = require('../scripts/vigia-fuentes');
+const { revisar, claveDe, TEXTO_MINIMO, aMedir } = require('../scripts/vigia-fuentes');
+const { FUENTES } = require('../server/seed/legacyData/fuentes');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { spawnSync } = require('child_process');
 
 let servidor;
 let base;
@@ -103,4 +108,48 @@ test('la clave identifica al documento y no a su posicion en la lista', () => {
     claveDe('fortinet', { url: 'https://x/y.pdf' }),
     claveDe('juniper', { url: 'https://x/y.pdf' }),
   );
+});
+
+test('una fuente sinVigilancia no se pide a la red, pero no desaparece del informe', () => {
+  const lista = aMedir({
+    x: [
+      { documento: 'PDF', url: 'https://ejemplo.test/a.pdf' },
+      { documento: 'Cascaron', url: 'https://ejemplo.test/app', sinVigilancia: 'aplicacion de JavaScript, medido' },
+      { documento: 'Interna', url: null },
+    ],
+  });
+  assert.deepStrictEqual(lista.map((p) => [p.f.documento, Boolean(p.sinVigilancia), Boolean(p.sinUrl)]),
+    [['PDF', false, false], ['Cascaron', true, false], ['Interna', false, true]]);
+});
+
+test('sinVigilancia es un hecho medido: nunca en una fuente estable y siempre con su medicion', () => {
+  // Es la salida para lo que el vigia no puede leer sin navegador, no un interruptor para callar
+  // una alarma: una fuente declarada estable que se apaga asi dejaria de avisar de un cambio real.
+  let vistas = 0;
+  for (const [vendor, lista] of Object.entries(FUENTES)) {
+    for (const f of lista) {
+      if (!f.sinVigilancia) continue;
+      vistas += 1;
+      assert.strictEqual(f.estable, false, `${vendor} · ${f.documento}: sinVigilancia en una fuente estable`);
+      assert.match(f.sinVigilancia, /Medido .*20\d\d-\d\d-\d\d/, `${vendor} · ${f.documento}: no dice cuando se midio`);
+    }
+  }
+  assert.ok(vistas >= 5, `solo ${vistas} fuentes sinVigilancia: la comprobacion no esta mirando`);
+});
+
+test('el resumen del sondeo sale de un JSON ya medido, sin volver a la red', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'sondeo-'));
+  const ruta = path.join(dir, 'sondeo.json');
+  fs.writeFileSync(ruta, JSON.stringify([
+    { vendor: 'starlink', documento: 'Priority Plan', url: 'https://x/a.pdf', estable: true, estado: 'leido',
+      bytesIguales: true, bytesA: 10, bytesB: 10, hashIgual: true, hashTextoIgual: false, clase: 'bytes',
+      vigiladoIgual: true, hayTexto: false, difiereEn: null },
+    { vendor: 'starlink', documento: 'Business', url: 'https://x/b', estable: false, estado: 'inalcanzable', detalle: 'cascaron' },
+  ]));
+  const r = spawnSync(process.execPath, [path.join(__dirname, '..', 'scripts', 'vigia-fuentes.js'), '--resumen-sondeo', ruta], { encoding: 'utf8' });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /\[  ok  \] starlink\s+Priority Plan/);
+  assert.match(r.stdout, /inalcanzable: cascaron/);
+  const mal = spawnSync(process.execPath, [path.join(__dirname, '..', 'scripts', 'vigia-fuentes.js'), '--resumen-sondeo', path.join(dir, 'no-existe.json')], { encoding: 'utf8' });
+  assert.notStrictEqual(mal.status, 0, 'un JSON que no existe no se da por resumido');
 });

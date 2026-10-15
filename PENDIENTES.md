@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-15, trigesimosegunda entrega (**La mejora propuesta: el vigía mira las fuentes de Starlink.** Las ocho fuentes del motor canónico entran en `legacyData/fuentes.js` (el PDF del Priority Plan como fuente de precio) y una prueba las casa con el motor. **Mejora encontrada por el camino**: el vigía daba por «leída» una página que llega como cascarón de JavaScript —starlink.com lo es— y la habría declarado «sin cambios» cada lunes; ahora sale ilegible. Falta medirlas desde Actions: el proxy de aquí da 403. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-15, trigesimotercera entrega (**Lo que midió el sondeo de las fuentes de Starlink, y tres arreglos que salieron de él.** Se vigilan los tres PDF de Starlink (tarifa y fichas, estables en bytes); las cinco páginas HTML llevan `sinVigilancia` con lo medido (cascarón de JavaScript o texto que cambia en cada petición). El workflow del sondeo pedía cada URL dos veces y ya no cabía en 20 min: ahora una sola pasada. **Hallazgo**: dos fuentes de Aruba eran un cascarón que el vigía daba por leído. Ver *Cerrado recientemente* y *Abierto: dos fuentes de Aruba eran un cascarón*.)
+Revisión anterior: 2026-10-15, trigesimosegunda entrega (**La mejora propuesta: el vigía mira las fuentes de Starlink.** Las ocho fuentes del motor canónico entran en `legacyData/fuentes.js` (el PDF del Priority Plan como fuente de precio) y una prueba las casa con el motor. **Mejora encontrada por el camino**: el vigía daba por «leída» una página que llega como cascarón de JavaScript —starlink.com lo es— y la habría declarado «sin cambios» cada lunes; ahora sale ilegible. Falta medirlas desde Actions: el proxy de aquí da 403. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimoprimera entrega (**La mejora propuesta: Starlink entra en la batería de axe.** `npm run e2e` audita ya la pantalla de Starlink tal como carga y con todas las cargas desplegadas y el diálogo de metodología abierto, a 1440 px y en reflujo a 640 px. Saboteada: el texto del diálogo sin contraste la pone en rojo. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigésima entrega (**Starlink con la apariencia del portal.** Encargo del dueño: cambiar solo la apariencia del dimensionador de Starlink para que siga el formato y los colores de los demás dimensionadores. Hoja clara de papel, tarjetas blancas con filete, Barlow / Barlow Condensed / IBM Plex Mono, masthead con «Volver al Portal Presales» y el acento de Starlink del portal (#1B2433). El motor no se toca. Ver *Cerrado recientemente*; el abierto que dejó, Starlink fuera de la batería de axe, se cerró en la trigesimoprimera.)
 Revisión anterior: 2026-10-15, vigesimonovena entrega (**Aruba, panel 2: cada enlace en un puerto real del chasis.** Encargo del dueño: revisar «Tráfico y capacidad» como arquitecto de Aruba — la barra decía «cabe» sin mirar si el equipo tiene puertos de ese medio, y al cambiar el medio no volvía al equipo inferior; quitar «Segmento de instalación»; campos sincronizados y fuera los que no aportan. Medido en Chromium: la barra iba un render por detrás, un RJ-45 «cabía» en el EC-L (sin cobre) y 3 Gbps por RJ-45 de 1 GbE también. Ahora cada modelo trae su inventario de puertos y el dimensionador asigna cada enlace; el medio sube solo con el caudal; Breakout, perfil de Boost, FEC e IMIX se desactivan con su motivo cuando no aplican. Ver *Cerrado recientemente* y *Abierto: puertos de Aruba*.)
@@ -1024,12 +1025,11 @@ desmarcado por defecto porque ese precio de lista no incluye impuestos ni el des
 negociado del sitio, no porque el número sea inventado.
 
 Mejoras futuras no implementadas (declaradas, no aplicadas, por mandato del prompt maestro):
-- ~~**Vigilancia**~~ **Declarada el 2026-10-15** (trigesimosegunda entrega): las ocho
-  `SOURCE_LINKS` están en `legacyData/fuentes.js` y entran en `npm run vigia`. **Falta medirlas**:
-  el proxy de este entorno responde 403 a `starlink.com` (y a `example.com`: es la política de
-  egreso, no Starlink). Se miden con `sondeo-fuentes.yml` y la primera corrida de
-  `vigia-fuentes.yml` desde Actions; desde una máquina con salida, `npm run vigia -- --sondeo`.
-  Con lo medido se decide el `estable` de las cinco páginas HTML.
+- ~~**Vigilancia**~~ **Cerrado el 2026-10-15** (trigesimosegunda y trigesimotercera entregas):
+  las ocho `SOURCE_LINKS` están en `legacyData/fuentes.js`, medidas desde Actions
+  (`sondeo-fuentes.yml`, corrida 38774517394). Se vigilan los **tres PDF** (tarifa y fichas de
+  kit), estables en bytes; las cinco páginas HTML llevan `sinVigilancia` con lo medido. La primera
+  línea base del lock la pone el `vigia-fuentes.yml` del próximo lunes («primera medición»).
 - **Persistencia de escenarios**: no hay auditoría server-side de qué se cotizó (sección 15.3
   del prompt); ningún otro dimensionador de este portal la tiene tampoco, así que no se creó
   solo para este.
@@ -1908,6 +1908,25 @@ Lo que la auditoría de puertos del panel 2 todavía no cuenta, declarado para n
 - **EC-XL**: se cuenta como 6x SFP+ (la variante del SKU base S0B67A); la S3N77A de 6x SFP28 existe
   pero está fuera de venta igual que la base y su matriz no trae ópticas de 25G.
 
+## Abierto: dos fuentes de Aruba eran un cascarón y el vigía las daba por leídas (2026-10-15)
+
+El sondeo del 2026-10-15 (corrida 38774517394), con la regla nueva de `TEXTO_MINIMO`, encontró
+que dos fuentes de Aruba **no se han leído nunca**: su URL devuelve el cascarón de una aplicación
+de JavaScript y el vigía comparaba cada lunes la huella de ese cascarón, que no cambia.
+
+- «Data sheet HPE Networking EdgeConnect (a00109847enw Rev. 8)» —
+  `https://www.hpe.com/psnow/doc/a00109847enw`: 164 caracteres de texto en 121.347 bytes.
+- «Fichas de las series 9000, 9100 y 9200» — `https://www.arubanetworks.com/assets/ds/DS_9000Series.pdf`
+  (declarada `estable: true`): ya no sirve un PDF, devuelve 141 caracteres de texto en 119.387 bytes.
+
+**Desde el próximo lunes salen «ilegible» en el issue del vigía**, y está bien que salgan: piden
+una acción. No llevan `sinVigilancia` a propósito. **Lo que lo cierra**: encontrar la URL del PDF
+oficial de cada una (HPE las sirve desde `psnow/doc/<id>` tras una aplicación; probar
+`https://www.hpe.com/psnow/resources/ebooks/a00109847enw/a00109847enw.pdf` y la ficha 9000 en
+`hpe.com`) con `npm run candidatas` o `candidatas-fuentes.yml` desde Actions, y cambiar la URL en
+`fuentes.js` en un commit, después de abrir el documento. Las cifras no cambian: las copias que se
+leyeron siguen en `public/datasheets/`. Este entorno no llega a `hpe.com` (403 del proxy).
+
 ## Decisiones que necesitan al dueño del producto
 
 - ~~**WireGuard en el dimensionador MikroTik (2026-10-13).**~~ **Decidido el 2026-10-13: opción A**,
@@ -2023,6 +2042,26 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Lo que midió el sondeo de las fuentes de Starlink (2026-10-15, trigesimotercera entrega)
+
+Continuación de la anterior, con la medición desde Actions (`sondeo-fuentes.yml`, corrida
+38774517394, lanzada a mano sobre `a1986b9`).
+
+- **Starlink, medido**: los tres PDF (Priority Plan Transition, fichas Performance y Standard 4X)
+  dan los mismos bytes en dos peticiones (475.426, 785.639 y 1.680.317) y se vigilan. Business,
+  Service Plan Descriptions, Fair Use y Zoom llegan como cascarón (113-118 caracteres de texto);
+  la de YouTube cambia de texto en cada petición (un identificador aleatorio en el menú).
+- **`sinVigilancia: '<lo medido>'`, tercer estado de una fuente con URL.** El vigía no la pide
+  cada lunes (`aMedir()`, pura) y la lista como «no se vigila (declarado)»; el sondeo la sigue
+  midiendo. Una prueba exige que nunca vaya en una fuente estable y que diga cuándo se midió, para
+  que no sirva de interruptor que calla una alarma. Saboteadas las dos pruebas nuevas.
+- **El sondeo, en una sola pasada.** Pedía cada URL dos veces (texto y JSON); con unas 70 fuentes la
+  primera pasada ya tardó 18 minutos y la segunda se cortó en el límite de 20. Ahora corre una vez
+  con `--json` y el texto sale del mismo archivo (`--resumen-sondeo`, con su prueba); el límite
+  sube a 35 minutos.
+- **Hallazgo, abierto aparte**: dos fuentes de Aruba eran un cascarón que el vigía daba por
+  «sin cambios». Ver *Abierto: dos fuentes de Aruba eran un cascarón*.
 
 ### El vigía mira las fuentes de Starlink, y no da por leída una página vacía (2026-10-15, trigesimosegunda entrega)
 

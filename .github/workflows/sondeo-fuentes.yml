@@ -36,7 +36,7 @@ permissions:
 jobs:
   sondear:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -49,10 +49,15 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      # UNA sola pasada por la red (2026-10-15). Antes se sondeaba dos veces, una para el texto y
+      # otra para el JSON: con ~70 fuentes la primera ya tardaba 18 min y la segunda se cortaba
+      # en el limite. El texto sale ahora del mismo JSON, como `--resumen` en el vigia.
       - name: Sondear las fuentes
+        env:
+          ESPERA: ${{ inputs.espera || '10' }}
         run: |
-          node scripts/vigia-fuentes.js --sondeo --espera=${{ inputs.espera || '10' }} | tee sondeo.txt
-          node scripts/vigia-fuentes.js --sondeo --json --espera=1 > sondeo.json
+          node scripts/vigia-fuentes.js --sondeo --json --espera="$ESPERA" > sondeo.json
+          node scripts/vigia-fuentes.js --resumen-sondeo sondeo.json | tee sondeo.txt
 
       - name: Publicar el informe en la corrida
         run: |
