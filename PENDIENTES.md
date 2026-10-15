@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-15, trigesimoctava entrega (**El pendiente de Limpieza 12, cerrado, y la comprobación del aviso al subir graphify.** Si la instalación de graphify falla, el arranque dice por qué (comprobado con un `uv` sin salida a PyPI: «Caused by: Connection refused»). El LEEME de la skill pide, al subir de versión, comprobar que el aviso de grafo viejo calla. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-15, trigesimonovena entrega (**La pasada semántica de graphify, decidida y ejecutada.** El dueño eligió ejecutarla: tres subagentes leyeron los 56 archivos que el análisis del código no lee (15 páginas HTML, 13 workflows, Dependabot, las instrucciones de Copilot, `docs/`, `CLAUDE.md` y el manual). El grafo queda en 2983 nodos, 5275 aristas y 194 comunidades, con 197 conceptos nuevos; costó ~433 000 tokens. No se versiona. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-15, trigesimoctava entrega (**El pendiente de Limpieza 12, cerrado, y la comprobación del aviso al subir graphify.** Si la instalación de graphify falla, el arranque dice por qué (comprobado con un `uv` sin salida a PyPI: «Caused by: Connection refused»). El LEEME de la skill pide, al subir de versión, comprobar que el aviso de grafo viejo calla. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimoséptima entrega (**La mejora propuesta: el aviso de grafo viejo, sin falsas alarmas.** Contaba archivos que el grafo no lee y, peor, `graphify update .` no lo apagaba: graphify no reescribe el commit del grafo cuando la estructura no cambia. Ahora el arranque le pregunta a la propia graphify (`detect_incremental` contra el md5 de su manifiesto, 0,25 s) y solo avisa de lo que lee; sin CLI, compara el commit como antes. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimosexta entrega (**La mejora propuesta: graphify lee los PDF.** El arranque instala `graphifyy[pdf]==0.9.77` (trae `pypdf` y `markdownify`) y el aviso de PDF saltados desaparece. **Medido, menos de lo que se prometió**: el único PDF que entra es el manual de usuario (4672 palabras, derivado de `manual.html`), y su texto solo cuenta en la pasada semántica, que sigue siendo decisión del dueño: el grafo del código no cambia. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimoquinta entrega (**La mejora propuesta: la historia sale del grafo de graphify.** `PENDIENTES.md` era el nodo más conectado del grafo («Cerrado recientemente», 160 aristas) y hacía de puente en cualquier consulta; ahora `.graphifyignore` deja fuera este archivo y `docs/claude-md-cronica.md`. Medido: de 3283 a 3081 nodos, y los diez más conectados ya son código. Ver *Cerrado recientemente*.)
@@ -2049,6 +2050,32 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### La pasada semántica de graphify (2026-10-15, trigesimonovena entrega)
+
+Encargo del dueño: «Ejecuta la mejora propuesta»; preguntado, eligió «Ejecutar la pasada
+semántica», la decisión que llevaba abierta desde el 2026-10-06 por su coste.
+
+- **Qué leyó.** Los 56 archivos que el análisis del código no ve: las 15 páginas de `public/`,
+  los 13 workflows y Dependabot, las 7 instrucciones de Copilot, `docs/`, `CLAUDE.md`,
+  `IMPORTAR-CATALOGO.md`, `test/e2e/LEEME.md` y el manual (HTML y PDF). Tres subagentes con el
+  prompt literal de la skill (`references/extraction-spec.md`), en paralelo. ~433 000 tokens en
+  total (el informe de graphify dice 0 porque `update` lo reescribe: el gasto queda en
+  `graphify-out/cost.json`).
+- **Resultado.** 197 conceptos (páginas, decisiones de diseño, ADR, reglas de CLAUDE.md, hallazgos
+  de las auditorías) y 451 aristas; 0 identificadores repetidos y 0 que choquen con el código.
+  Se descartó una arista que apuntaba a `starlink-leo-dimensionador/` (excluido del grafo). Una
+  queda marcada AMBIGUOUS a propósito («compatibles tratados como obligatorios» frente a la
+  regla de la capa). Grafo: 2983 nodos, 5275 aristas, 194 comunidades, con nombre a mano en las
+  40 mayores.
+- **Encogió a propósito.** Con capa semántica, graphify deja de añadir los 295 títulos de los
+  `.md` (su diseño, para no duplicar un documento): de 3081 a 2983 nodos, con `force=True` en la
+  escritura. Los avisos de salud (aristas sueltas, bucles) salen todos del análisis del código
+  (importaciones de `fs`, `child_process`) y ninguno de la pasada.
+- **Persiste**: `graphify update .` conserva la capa (sigue en 2983 nodos), y el aviso de
+  arranque calla. Hay que repetir la pasada cuando cambien esos documentos; el grafo no se
+  versiona.
+- **El PDF no aporta**: su subagente lo dejó como un nodo enlazado a `manual.html`, del que sale.
 
 ### El arranque dice por qué no instaló graphify (2026-10-15, trigesimoctava entrega)
 
