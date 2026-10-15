@@ -10,7 +10,7 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { planificar, dimensiones, problemasDelPie } = require('../scripts/importar-figuras-huawei');
+const { planificar, dimensiones, problemasDelPie, ramaDeCapturas } = require('../scripts/importar-figuras-huawei');
 
 // Una cabecera PNG basta: el plan solo lee el tamaño.
 function png(ancho, alto) {
@@ -26,9 +26,13 @@ const FUENTE = fuente('AR5710-S8T2S');
 const modelos = [{ id: 'AR5710-S8T2S' }, { id: 'AR8140-12G10XG' }, { id: 'AR8140-T-12G10XG' }];
 const vistas = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'public/data/huawei-vistas-equipos.json'), 'utf8'));
 
+// Cada modelo lleva su captura de la galería salvo que la prueba diga `captura: null`.
 function carpeta(archivos, proc) {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'figuras-'));
   for (const [n, b] of Object.entries(archivos)) fs.writeFileSync(path.join(d, n), b);
+  fs.writeFileSync(path.join(d, 'captura.png'), png(1400, 900));
+  for (const e of Object.values(proc)) if (!('captura' in e)) e.captura = 'captura.png';
+  for (const e of Object.values(proc)) if (e.captura === null) delete e.captura;
   fs.writeFileSync(path.join(d, 'procedencia.json'), JSON.stringify(proc));
   return d;
 }
@@ -109,4 +113,32 @@ test('un modelo sin figura previa trae el tamaño del equipo en la carpeta', () 
     { 'AR9998': { front: 'f.png', fuente: fuente('AR9998'), tamano: '43,6 × 442 × 420 mm (Al × An × Fo)' } }), { modelos: sinFigura, vistas });
   assert.deepStrictEqual(conTamano.errores, []);
   assert.strictEqual(conTamano.cambios[0].destino, '/img/equipos/hw-ar9998-front.webp');
+});
+
+test('sin la captura de la galería no entra: es la prueba de que el pie dice lo que decía la página', () => {
+  const p = planificar(carpeta({ 'f.png': png(4000, 600) }, { 'AR5710-S8T2S': { front: 'f.png', fuente: FUENTE, captura: null } }), { modelos, vistas });
+  assert.match(p.errores.join(), /AR5710-S8T2S: falta «captura»/);
+  assert.deepStrictEqual(p.cambios, []);
+});
+
+test('las capturas van a una rama fuente/ nueva, sin tocar el árbol de trabajo ni la rama en curso', () => {
+  const { execFileSync } = require('node:child_process');
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-'));
+  const git = (...a) => execFileSync('git', a, { cwd: repo, encoding: 'utf8' }).trim();
+  git('init', '-q', '-b', 'main');
+  git('-c', 'user.name=p', '-c', 'user.email=p@p', 'commit', '-q', '--allow-empty', '-m', 'base');
+  const d = carpeta({ 'f.png': png(4000, 600) }, { 'AR5710-S8T2S': { front: 'f.png', fuente: FUENTE } });
+  const p = planificar(d, { modelos, vistas });
+  const ahora = new Date('2026-10-15T12:34:00Z');
+  const entorno = { ...process.env, GIT_AUTHOR_NAME: 'p', GIT_AUTHOR_EMAIL: 'p@p', GIT_COMMITTER_NAME: 'p', GIT_COMMITTER_EMAIL: 'p@p' };
+  const antes = process.env; process.env = entorno;
+  let rama;
+  try { rama = ramaDeCapturas(p, d, { cwd: repo, ahora }); } finally { process.env = antes; }
+  assert.strictEqual(rama, 'fuente/figuras-huawei-20261015-1234');
+  assert.deepStrictEqual(git('ls-tree', '-r', '--name-only', rama).split('\n'), ['capturas/ar5710-s8t2s.png', 'procedencia.json']);
+  assert.strictEqual(git('rev-parse', '--abbrev-ref', 'HEAD'), 'main');
+  assert.strictEqual(git('status', '--porcelain'), '');
+  // Una por corrida: la misma hora no pisa la rama anterior.
+  process.env = entorno;
+  try { assert.throws(() => ramaDeCapturas(p, d, { cwd: repo, ahora }), /ya existe/); } finally { process.env = antes; }
 });

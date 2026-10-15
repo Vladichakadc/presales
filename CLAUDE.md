@@ -409,7 +409,9 @@ Módulos compartidos:
   modelo del catálogo, cara, el pie que exige la prueba de figuras (documento o galería, rótulo del
   propio modelo, variante de alimentación), no ser menor que la actual y WebP sin pérdida, y no pisa
   un archivo que comparten dos modelos. **No se edita el JSON a mano**: el importador escribe
-  `scripts/figuras-huawei.lock.json` y la prueba frena una figura que encoge o que no está en él. Sin trasera oficial, la pestaña «Trasera» dice por qué
+  `scripts/figuras-huawei.lock.json` y la prueba frena una figura que encoge o que no está en él. Cada
+  figura trae la `captura` de su ficha en la galería, que va a una rama `fuente/figuras-huawei-<fecha>`
+  (nunca a `main`) para revisar el pie contra la página. Sin trasera oficial, la pestaña «Trasera» dice por qué
   (`rearNota`). **El ciclo de vida sigue sin respaldo**: pide una cuenta
   Huawei (Info-Finder exige sesión).
 - **Cisco**: la plataforma se elige antes que el caudal (`PLATAFORMAS`: IOS XE SD-WAN, ISR 1000,

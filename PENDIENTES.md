@@ -2127,6 +2127,21 @@ que ya se comprobó y lo que cuesta cada opción.
   de contraste, 17 pantallas, e2e completo y la puerta, contra el servidor en modo producción; la
   pantalla conducida en Chromium (unidades, marcadores, enlace compartido que repone los enlaces).
 
+### La captura de la galería acompaña a cada figura de Huawei (2026-10-15, aprobada por el dueño)
+
+- `procedencia.json` exige `captura` por modelo: la ficha de la Galería de imágenes de Info-Finder
+  tal como se ve en el navegador, con su rótulo y su código. Sin ella, la figura se rechaza.
+- Con `--aplicar`, el importador arma (con `hash-object`/`mktree`/`commit-tree`, sin tocar el árbol
+  de trabajo ni la rama en curso) un commit huérfano con `capturas/<modelo>.<ext>` y el
+  `procedencia.json`, en una rama nueva `fuente/figuras-huawei-<AAAAMMDD-HHMM>`: una por corrida,
+  y si el nombre existe no la pisa. La rama se crea antes de escribir nada. Dice el `git push` que
+  la sube; se revisa el pie contra la captura y se borra, como las demás `fuente/*`.
+- Probado: dos pruebas nuevas (captura que falta; la rama en un repositorio de usar y tirar, con
+  su contenido, la rama en curso intacta y la segunda corrida rechazada) y un recorrido con
+  `--aplicar` sobre el repositorio, revertido.
+- **Para la sesión del Mac**, además de lo de abajo: guardar con cada figura la captura de su ficha
+  en la galería y lanzar el `git push origin fuente/figuras-huawei-…` que imprime el comando.
+
 ### La mejora propuesta: ninguna figura de Huawei encoge ni entra sin el importador (2026-10-15, tarde)
 
 Encargo del dueño, repetido: ejecutar pendientes y la mejora propuesta, y revisar la página

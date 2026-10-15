@@ -22,6 +22,11 @@
 //   { "AR5710-S8T2S": { "front": "s8t2s-front.png", "rear": "s8t2s-rear.png",
 //       "fuente": "Galería de imágenes de productos de Info-Finder (50010720) — «NetEngine AR5710-S8T2S». …" } }
 // «tamano» ("43,6 × 442 × 420 mm (Al × An × Fo)") solo hace falta en un modelo sin figura previa.
+// «captura» es obligatoria (decisión del dueño, 2026-10-15): la ficha de la galería tal como se
+// ve en el navegador, con el rótulo y el código. Es la prueba de que el pie dice lo que la página
+// decía: con --aplicar, las capturas y el procedencia.json van a una rama nueva
+// fuente/figuras-huawei-<fecha> (una por corrida, como los transportes), que se revisa y se borra.
+// Nunca entran en main.
 // «fuente» sustituye a la del modelo: tiene que describir las caras que quedan publicadas.
 
 const fs = require('fs');
@@ -95,10 +100,10 @@ function planificar(carpeta, { modelos, vistas, aunqueMenor = false }) {
   if (!fs.existsSync(ruta)) return { errores: [`falta ${ruta}`], cambios: [] };
   const proc = JSON.parse(fs.readFileSync(ruta, 'utf8'));
   const ids = new Set(modelos.map((m) => m.id));
-  const errores = []; const cambios = [];
+  const errores = []; const cambios = []; const capturas = [];
   for (const [modelo, e] of Object.entries(proc)) {
     if (!ids.has(modelo)) { errores.push(`${modelo}: no está en el catálogo de Huawei`); continue; }
-    const extra = Object.keys(e).filter((k) => !CARAS.includes(k) && k !== 'fuente' && k !== 'tamano');
+    const extra = Object.keys(e).filter((k) => !CARAS.includes(k) && k !== 'fuente' && k !== 'tamano' && k !== 'captura');
     if (extra.length) errores.push(`${modelo}: claves desconocidas (${extra.join(', ')}); las caras son front y rear`);
     if (typeof e.fuente !== 'string' || e.fuente.trim().length < 30) {
       errores.push(`${modelo}: sin procedencia escrita (documento o galería, código y rótulo)`); continue;
@@ -110,6 +115,10 @@ function planificar(carpeta, { modelos, vistas, aunqueMenor = false }) {
     if (!/\d+(,\d+)? × \d+(,\d+)? × \d+(,\d+)? mm/.test(tamano || '')) {
       errores.push(`${modelo}: falta «tamano» («Al × An × Fo mm», de su ficha)`); continue;
     }
+    const captura = typeof e.captura === 'string' ? path.join(carpeta, e.captura) : null;
+    const dc = captura && fs.existsSync(captura) ? dimensiones(fs.readFileSync(captura)) : null;
+    if (!dc) { errores.push(`${modelo}: falta «captura», la ficha de la galería como se ve en el navegador (PNG, JPEG o WebP)`); continue; }
+    capturas.push({ modelo, origen: captura });
     const caras = CARAS.filter((c) => e[c]);
     if (!caras.length) { errores.push(`${modelo}: no trae ni front ni rear`); continue; }
     for (const cara of caras) {
@@ -135,7 +144,7 @@ function planificar(carpeta, { modelos, vistas, aunqueMenor = false }) {
         destino, fuente: e.fuente.trim(), tamano });
     }
   }
-  return { errores, cambios };
+  return { errores, cambios, capturas };
 }
 
 function aWebpSinPerdida(origen, destino, tipo) {
@@ -143,6 +152,25 @@ function aWebpSinPerdida(origen, destino, tipo) {
   execFileSync('cwebp', ['-quiet', '-lossless', '-exact', '-metadata', 'none', origen, '-o', destino]);
   const d = dimensiones(fs.readFileSync(destino));
   if (!d || !d.sinPerdida) throw new Error(`${destino}: cwebp no produjo un WebP sin pérdida`);
+}
+
+// La rama de capturas se arma con la fontanería de git (hash-object, mktree, commit-tree): un
+// commit huérfano con capturas/<modelo>.<ext> y procedencia.json, sin tocar el árbol de trabajo
+// ni la rama en curso. Si la rama ya existe no se pisa: el nombre lleva la fecha y la hora.
+function ramaDeCapturas(plan, carpeta, { cwd = RAIZ, ahora = new Date() } = {}) {
+  const git = (args, input) => execFileSync('git', args, { cwd, input, encoding: 'utf8' }).trim();
+  const sello = ahora.toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 13);
+  const rama = `fuente/figuras-huawei-${sello}`;
+  try { git(['rev-parse', '--verify', '--quiet', `refs/heads/${rama}`]); throw new Error(`la rama ${rama} ya existe`); } catch (e) {
+    if (/ya existe/.test(e.message)) throw e;
+  }
+  const blob = (archivo) => git(['hash-object', '-w', '--', archivo]);
+  const filas = plan.capturas.map((c) => `100644 blob ${blob(c.origen)}	${slug(c.modelo)}${path.extname(c.origen).toLowerCase()}`);
+  const sub = git(['mktree'], filas.join('\n') + '\n');
+  const raiz = git(['mktree'], `040000 tree ${sub}\tcapturas\n100644 blob ${blob(path.join(carpeta, 'procedencia.json'))}\tprocedencia.json\n`);
+  const commit = git(['commit-tree', raiz, '-m', `Capturas de la galería de Info-Finder de ${plan.capturas.length} figura(s) de Huawei`]);
+  git(['update-ref', `refs/heads/${rama}`, commit]);
+  return rama;
 }
 
 function escribirLock(lock) {
@@ -182,13 +210,16 @@ function main(argv) {
     }
   }
   fs.mkdirSync(IMG_DIR, { recursive: true });
+  // La rama primero: si git falla, no queda nada escrito a medias.
+  const rama = ramaDeCapturas(plan, carpeta);
   const lock = JSON.parse(fs.readFileSync(LOCK_RUTA, 'utf8'));
   fs.writeFileSync(JSON_RUTA, JSON.stringify(aplicar(plan, vistas, lock), null, 2) + '\n');
   escribirLock(lock);
   console.log(`\n${plan.cambios.length} figura(s) escritas sin pérdida y ${path.relative(RAIZ, JSON_RUTA)} y ${path.relative(RAIZ, LOCK_RUTA)} actualizados.`);
+  console.log(`Capturas en la rama ${rama} (fuera de main). Súbela para revisarla: git push origin ${rama}`);
   return 0;
 }
 
 if (require.main === module) process.exit(main(process.argv));
 
-module.exports = { dimensiones, planificar, problemasDelPie, slug };
+module.exports = { dimensiones, planificar, problemasDelPie, ramaDeCapturas, slug };
