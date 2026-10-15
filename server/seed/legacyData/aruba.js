@@ -665,6 +665,49 @@ for (const m of MODELS) {
   m.eolAnnounced = EOL_ANNOUNCED[m.id] || null;
 }
 
+// PUERTOS DE DATOS POR CHASIS (2026-10-15). El mismo dato que `ifaces` de cada modelo, que es
+// la transcripción de su documento oficial (ver la cabecera de MODELS), pero contado por tipo
+// para que el dimensionador asigne cada enlace WAN a un puerto real (ArubaReglas.asignarPuertos).
+// No añade ninguna cifra: test/aruba-puertos.test.js exige que cada número salga del `ifaces`
+// del propio modelo. Fuera, a propósito: los puertos de gestión (EC-XS, EC-10150) y las
+// ranuras de expansión (9114, 9240), cuyo módulo no se cotiza aquí.
+//   rj45 cobre 10/100/1000 · combo RJ-45 o SFP de 1G · sfp jaula de 1G · sfpPlus 1/10G ·
+//   sfp28 1/10/25G · celular módem integrado.
+// Todos los RJ-45 del catálogo son de 1 GbE: ninguno trae 2,5/10GBASE-T (el Hardware Reference
+// Rev V lo niega expresamente en el 10108 y el 10150). EC-V es virtual: sin chasis, `null`.
+// EC-XL: el SKU base S0B67A es la variante «EC-XL-H-10G · 6x SFP+ 1/10G» y su matriz de ópticas
+// no trae ninguna de 25G; la variante de 6x SFP28 (S3N77A) es fuera de venta igual que la base.
+const PUERTOS = {
+  'EC-XS': { rj45: 4 },
+  'EC-10104': { rj45: 4 },
+  'EC-10106': { sfpPlus: 2, combo: 2, rj45: 2 },
+  'EC-10108': { sfpPlus: 2, combo: 2, rj45: 2 },
+  'EC-S': { rj45: 8, sfpPlus: 4 },
+  'EC-M': { rj45: 8, sfpPlus: 4 },
+  'EC-L': { sfpPlus: 6 },
+  'EC-XL': { sfpPlus: 6 },
+  'EC-10150': { sfp28: 8 },
+  'EC-V': null,
+  'Gateway 9004': { rj45: 4 },
+  'Gateway 9004-LTE': { rj45: 4, celular: 1 },
+  'Gateway 9012': { rj45: 12 },
+  'Gateway 9106': { sfpPlus: 2, combo: 2, rj45: 2 },
+  'Gateway 9114': { sfpPlus: 4, combo: 4 },
+  'Gateway 9240': { sfp28: 4 },
+  7005: { rj45: 4 },
+  7008: { rj45: 8 },
+  7010: { rj45: 16, sfp: 2 },
+  7024: { rj45: 24, sfpPlus: 2 },
+  7030: { combo: 8 },
+  7205: { sfpPlus: 2, combo: 4 },
+  7210: { sfpPlus: 4 },
+  7220: { sfpPlus: 4 },
+  '7240XM': { sfpPlus: 4 },
+};
+for (const m of MODELS) {
+  m.puertos = Object.prototype.hasOwnProperty.call(PUERTOS, m.id) ? PUERTOS[m.id] : undefined;
+}
+
 // FUERA DE VENTA SIN FECHA (2026-10-06). HPE los da por retirados sin publicar el último día
 // de pedido, así que no son un `eolAnnounced` (que exige `lastOrder`) sino un `eol` binario, el
 // que `FICHA.rango()` lee como «fuera de venta, el catálogo no trae la fecha». La siembra lo
@@ -1445,6 +1488,6 @@ const ACCESSORY_COMPAT = {
 
 module.exports = {
   MODELS, BUNDLES, CARE, CARE_SKU, LICENSES, LICENSES_HA, BW_TIERS, BOOST, FEC_OVERHEAD,
-  SOFTWARE, CENTRAL_TIERS, CENTRAL_POR_SERIE, DATASHEETS, EOL_ANNOUNCED, RETIRADOS_SIN_FECHA, OS_MATRIX,
+  SOFTWARE, CENTRAL_TIERS, CENTRAL_POR_SERIE, DATASHEETS, EOL_ANNOUNCED, RETIRADOS_SIN_FECHA, PUERTOS, OS_MATRIX,
   ARUBA_ACCESSORY_CATALOG, ACCESSORY_COMPAT, ARUBA_SSE, MICROBRANCH_UMBRALES, DTD_LICENSES,
 };

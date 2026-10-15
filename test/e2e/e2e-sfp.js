@@ -78,11 +78,20 @@ const { cargarPlaywright, abrirDimensionador, asentar, contador } = require('./a
   t.ok(!/Densidad de ópticas/.test(ficha), 'EC-10108 con cuatro enlaces de 1G: caben, sin aviso de densidad');
   for (let i = 0; i < 3; i++) await filas.nth(i).locator('select[data-campo=medio]').selectOption('SFP+ 10G');
   await asentar(page);
+  // Desde el 2026-10-15 no es un aviso: el tercer enlace de 10G no tiene jaula en el 10108, así
+  // que la elección (hecha con otros enlaces) se suelta y el selector pasa a uno donde caben,
+  // diciendo cuál y por qué. Elegirlo otra vez con estos enlaces es deliberado y se respeta.
+  const pick10g = await page.inputValue('#pickModel');
+  const alerta = (await page.textContent('#alertaEscalado')) || '';
+  t.ok(pick10g !== 'EC-10108' && /EC-10108 estaba elegido/.test(alerta) && /enlace 3 por SFP\+ 10G sin jaula libre/.test(alerta),
+    `EC-10108 con tres enlaces de 10G: no caben, el selector pasa al ${pick10g} y dice por qué`);
   await page.selectOption('#pickModel', 'EC-10108');
   await asentar(page);
   ficha = (await page.textContent('#pane-calc')) || '';
-  t.ok(/3 enlaces de 10G sobre 2 jaulas SFP\+ del EC-10108/.test(ficha),
-    'EC-10108 con tres enlaces de 10G: avisa que solo hay dos jaulas SFP+');
+  t.ok(await page.inputValue('#pickModel') === 'EC-10108' && /Puertos:.*enlace 3 por SFP\+ 10G/.test(ficha),
+    'elegido a mano con esos enlaces, se respeta y la ficha lo marca en rojo');
+  const sem = (await page.textContent('#wanResumen')) || '';
+  t.ok(/no cabe en EC-10108/.test(sem), 'y la barra del underlay dice «no cabe en EC-10108»');
 
   await browser.close();
   process.exit(t.resumen('e2e-sfp'));

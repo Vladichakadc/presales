@@ -28,7 +28,9 @@
                            normal: un 4G de backup inflaba el caudal, el tier y a veces el
                            appliance. Misma regla que Fortinet (etapa 7).
         escenarioBoost   — el Boost toma el escenario que mas tunel pide: una falla no suma
-                           caudal, pero puede dejar el sitio sin breakout. */
+                           caudal, pero puede dejar el sitio sin breakout.
+   Puertos · asignarPuertos (2026-10-15) — cada enlace a un puerto real del chasis, por su
+                           medio; medioMinimo y enlacesSobreMedio, el medio que lleva un caudal. */
 (function(root, factory){
   const api = factory();
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -164,5 +166,77 @@
     return mejor;
   }
 
-  return { BOOST_CUOTA, tierParaCaudal, capacidadSo, boostMbpsSitio, boostRecMbps, admiteDtd, escenariosUnderlay, escenarioBoost };
+  /* ══ PUERTOS DEL CHASIS (2026-10-15, revisión del panel 2 pedida por el dueño) ══
+     Hasta este día la auditoría de puertos solo sabía dos cosas: contar los del EC-10104 y
+     preguntar si la ficha decía «SFP» en algún sitio. Así un enlace RJ-45 «cabía» en un EC-L
+     (6x SFP+, ningún cobre), cinco enlaces cabían en un EC-XS de 4 puertos y tres de 10G en
+     un 10108 eran un aviso, no un «no cabe». Ahora cada modelo declara su inventario
+     (`puertos` en aruba.js, leído de su `ifaces`) y cada enlace se asigna a un puerto real.
+
+     Tipos: rj45 (cobre 10/100/1000), combo (RJ-45 o SFP de 1G, uno u otro), sfp (jaula de
+     1G), sfpPlus (1/10G), sfp28 (1/10/25G) y celular (módem integrado: solo 4G/5G).
+     Orden de asignación, del enlace más exigente al menos (greedy óptimo para esta jerarquía:
+     cada tipo de enlace prueba primero el puerto que nadie más puede usar):
+       25G → sfp28 · 10G → sfpPlus, sfp28 · RJ-45 → rj45, combo · 1G → sfp, combo, sfpPlus,
+       sfp28 · y por último los LAN que el appliance necesita, en cualquier puerto libre.
+     Un enlace RJ-45 NO va a una jaula SFP: eso es declarar «SFP 1G» y elegir el transceptor
+     de cobre 1000BASE-T, que es lo que la lista de materiales cotiza. */
+  const MEDIO_MBPS = { RJ45: 1000, 'SFP 1G': 1000, 'SFP+ 10G': 10000, 'SFP28 25G': 25000 };
+  // El medio más pequeño que lleva un caudal; null si ninguno (más de 25 Gbps por enlace).
+  function medioMinimo(mbps, base) {
+    const orden = ['RJ45', 'SFP 1G', 'SFP+ 10G', 'SFP28 25G'];
+    const desde = Math.max(0, orden.indexOf(base || 'RJ45'));
+    return orden.slice(desde).find((m) => MEDIO_MBPS[m] >= mbps) || null;
+  }
+  const RUTAS = {
+    'SFP28 25G': ['sfp28'],
+    'SFP+ 10G': ['sfpPlus', 'sfp28'],
+    RJ45: ['rj45', 'combo'],
+    'SFP 1G': ['sfp', 'combo', 'sfpPlus', 'sfp28'],
+  };
+  const ORDEN_MEDIOS = ['SFP28 25G', 'SFP+ 10G', 'RJ45', 'SFP 1G'];
+  const TIPOS_PUERTO = ['rj45', 'combo', 'sfp', 'sfpPlus', 'sfp28'];
+  // `puertos` null = equipo virtual (EC-V): no hay chasis que auditar. `lan` = puertos LAN que
+  // se reservan además de los enlaces. Devuelve {cabe, sinAsignar:[{enlace, medio}], lanFaltan,
+  // usados:{tipo:n}, celular:n}. Solo cuentan los enlaces con caudal; los de respaldo, sí: ocupan
+  // puerto aunque no sumen caudal.
+  function asignarPuertos(puertos, enlaces, lan) {
+    if (!puertos) return { cabe: true, virtual: true, sinAsignar: [], lanFaltan: 0, usados: {}, celular: 0 };
+    const libre = {};
+    TIPOS_PUERTO.forEach((t) => { libre[t] = puertos[t] || 0; });
+    let celularLibre = puertos.celular || 0;
+    const usados = {};
+    const tomar = (t) => { libre[t] -= 1; usados[t] = (usados[t] || 0) + 1; };
+    const activos = (enlaces || []).map((l, i) => ({ ...l, n: i + 1 })).filter((l) => l.down > 0 || l.up > 0);
+    const sinAsignar = [];
+    let celular = 0;
+    // El módem integrado lo usa un 4G/5G antes que cualquier puerto.
+    const pendientes = activos.filter((l) => {
+      if (/^4G\/5G/.test(l.tipo || '') && celularLibre > 0) { celularLibre -= 1; celular += 1; return false; }
+      return true;
+    });
+    for (const medio of ORDEN_MEDIOS) {
+      for (const l of pendientes.filter((x) => x.medio === medio)) {
+        const t = RUTAS[medio].find((r) => libre[r] > 0);
+        if (t) tomar(t); else sinAsignar.push({ enlace: l.n, medio, tipo: l.tipo });
+      }
+    }
+    // Un medio desconocido no se asigna a ciegas.
+    pendientes.filter((l) => !RUTAS[l.medio]).forEach((l) => sinAsignar.push({ enlace: l.n, medio: l.medio, tipo: l.tipo }));
+    let lanFaltan = 0;
+    for (let i = 0; i < (lan || 0); i++) {
+      const t = TIPOS_PUERTO.find((r) => libre[r] > 0);
+      if (t) tomar(t); else lanFaltan += 1;
+    }
+    return { cabe: !sinAsignar.length && !lanFaltan, sinAsignar, lanFaltan, usados, celular };
+  }
+  // Enlaces cuyo caudal pasa de lo que lleva su medio (un DIA de 3 Gbps por RJ-45 de 1 GbE). No
+  // depende del modelo: es una declaración imposible, y se dice en la fila.
+  function enlacesSobreMedio(enlaces) {
+    return (enlaces || []).map((l, i) => ({ ...l, n: i + 1 }))
+      .filter((l) => MEDIO_MBPS[l.medio] != null && Math.max(l.down || 0, l.up || 0) > MEDIO_MBPS[l.medio]);
+  }
+
+  return { BOOST_CUOTA, tierParaCaudal, capacidadSo, boostMbpsSitio, boostRecMbps, admiteDtd, escenariosUnderlay, escenarioBoost,
+    MEDIO_MBPS, medioMinimo, asignarPuertos, enlacesSobreMedio };
 });

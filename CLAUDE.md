@@ -384,7 +384,12 @@ Módulos compartidos:
   Un SKU nunca se busca con el marcador `-DD`. Figuras desde la página «Hardware» de cada ficha.
 - **Aruba** (`dimensionador-aruba-edgeconnect.js`, `aruba-reglas.js`, `motor-ingenieria.js`). El
   caudal es el **Multi-Underlay Builder** (filas `{tipo, medio, down, up, rol}`; un respaldo ocupa
-  puerto pero no suma); `migrarEstadoV1()` traduce los enlaces viejos. EdgeConnect se dimensiona
+  puerto pero no suma); `migrarEstadoV1()` traduce los enlaces viejos. **Cada enlace va a un puerto
+  real** (`PUERTOS` en `aruba.js`, contado de su `ifaces`; `ArubaReglas.asignarPuertos`, más 2 LAN):
+  un RJ-45 solo va a cobre nativo (en una jaula es «SFP 1G» con el transceptor 1000BASE-T), y el
+  modelo sin puerto para algún enlace sale con su motivo. El medio no elegido a mano sigue al
+  caudal (todo RJ-45 del catálogo es de 1 GbE). Una elección manual que no cabe se respeta hasta
+  que cambien los enlaces. Sin selector de segmento: el tamaño de sitio lo fija el arquetipo. EdgeConnect se dimensiona
   contra su rango WAN publicado; los gateways 9000/9100/9200, contra firewall, clientes y APs, con la
   capacidad del 9200 ligada a la licencia. Boost en bloques de 100 Mbps, un pool por fabric, máximo
   entre escenarios de falla; el breakout no descarga más de lo que cabe por Internet (M4). Central

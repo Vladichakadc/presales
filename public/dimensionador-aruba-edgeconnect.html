@@ -281,6 +281,8 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
 .sfp-auto code{font-family:'IBM Plex Mono',monospace;font-weight:600}
 .wan-resumen b{font-family:'IBM Plex Mono',monospace;font-size:12px}
 .wan-res-sep{color:var(--rule)}
+/* El porqué del semáforo, a la vista (2026-10-15): lo que hay que cambiar para que quepa. */
+.wan-res-motivo{flex-basis:100%;font-size:11.5px;line-height:1.45;color:var(--steel)}
 .wan-sem{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600}
 .wan-sem i{display:inline-block;width:8px;height:8px;border-radius:50%}
 .wan-sem.verde{color:var(--green)}.wan-sem.verde i{background:#5e8a68}
@@ -436,7 +438,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
       <div id="sfpChooser" class="sfp-chooser" aria-live="polite" hidden></div>
       <input type="hidden" id="wanLinksData">
       <input type="hidden" id="sfpPickData">
-      <p class="hint">Cada enlace declara su transporte, el <b>medio del puerto</b> (RJ-45 u óptica SFP — alimenta la auditoría de puertos del chasis) y su caudal. La suscripción EdgeConnect se licencia por el <b>caudal WAN agregado del sitio</b> (MPLS + Internet — VSG oficial) y el appliance se dimensiona por ese agregado. Sin enlaces declarados, el tier se deriva del tráfico estimado (usuarios × Mbps/usuario).</p>
+      <p class="hint">Cada enlace declara su transporte, el <b>medio del puerto</b> y su caudal. Cada enlace ocupa un puerto de su medio en el chasis, más 2 LAN: <b>RJ-45</b> es un puerto de cobre nativo (de 1 GbE en todo el catálogo); <b>SFP 1G</b>, <b>SFP+ 10G</b> y <b>SFP28 25G</b>, una jaula con su transceptor (también el de cobre 1000BASE-T, si el chasis no tiene RJ-45 libre). Un modelo sin puerto para algún enlace sale de la lista y el dimensionador pasa al siguiente; si nadie eligió el medio, sube solo al que lleva el caudal del enlace y vuelve si el caudal baja. La suscripción EdgeConnect se licencia por el <b>caudal WAN agregado del sitio</b> (MPLS + Internet — VSG oficial) y el appliance se dimensiona por ese agregado. Sin enlaces declarados, el tier se deriva del tráfico estimado (usuarios × Mbps/usuario).</p>
     </div>
     <div id="bannerMicrobranch" class="banner-micro" hidden>
       <b>Perfil Microbranch:</b> considera Aruba Central + AP/9004 en vez de EdgeConnect dedicado — el túnel IPsec corre en el propio AP AOS-10 (persona Microbranch), sin appliance en el sitio.
@@ -522,21 +524,12 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
       <p class="hint" id="haAutoHint" hidden><b>HA pre-marcado por la regla de preventa de la casa</b> (≥2 enlaces de ≥5 Gbps ⇒ el sitio concentra ≥10 Gbps y un chasis único sería un punto único de fallo): es EdgeHA, el diseño oficial de sucursal — cada transporte aterriza en un chasis del par y el enlace EdgeHA lleva los túneles de cada underlay a AMBOS appliances, sin switches WAN (VSG SD-Branch, fig. «EC HA»). Ojo: HA suma <b>disponibilidad, no caudal</b> — el VRRP manda todo el tráfico al activo y el standby solo toma el relevo en fallo, así que cada chasis del par se dimensiona al agregado completo. Puedes desmarcarlo; la revisión del diseño lo registrará.</p>
     </div>
     <p class="hint" style="margin-top:10px">El steering dinámico por SLA de aplicación (Dynamic Path Control) y las funciones NGFW ya los incluye <b>Foundation</b> — no obligan a subir de nivel (QuickSpecs v18, p.31).</p>
-    <div class="field" style="margin-top:16px">
-      <label>Segmento de instalación</label>
-      <div class="seg" id="segSeg">
-        <button type="button" data-v="branch" aria-pressed="true">Sucursal</button>
-        <button type="button" data-v="campus" aria-pressed="false">Campus / Hub</button>
-        <button type="button" data-v="dc"     aria-pressed="false">Datacenter / Virtual</button>
-      </div>
-    </div>
   </section>
 
   <section class="panel">
     <h2>4 · Equipo y cotización</h2>
-    <div id="alertaEscalado" class="alerta-escalado" hidden>
-      <b>Hardware escalado</b> debido a requerimiento de densidad de puertos o interfaces ópticas SFP — el EC-10104 (4 puertos RJ-45, sin SFP) no cubre los enlaces declarados y el dimensionador propone el escalón superior.
-    </div>
+    <!-- Lo rellena render() con el modelo que no cabe y su motivo (2026-10-15: para todo chasis). -->
+    <div id="alertaEscalado" class="alerta-escalado" role="status" hidden></div>
     <div class="field">
       <label for="pickModel">Modelo</label>
       <select id="pickModel"></select>
