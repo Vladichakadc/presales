@@ -160,8 +160,9 @@ async function enlazar5000mas5000(page) {
   t.ok((fichaHa.match(/Interfaces/g) || []).length === 1,
     '«Interfaces» aparece UNA sola vez en la ficha (solo en «Configuración de puertos»)');
   // ── 3c · Interconexión EdgeHA en la lista de materiales (pendiente #7, 2026-09-17) ──
-  // Los dos enlaces del escenario son RJ45 (sin óptica WAN que elegir): el chooser se
-  // abre SOLO por la interconexión del par. Agregado 10 Gbps ⇒ velocidad recomendada
+  // Los dos enlaces de 5 Gbps suben solos a SFP+ 10G desde el 2026-10-15 (un RJ-45 del catálogo
+  // es de 1 GbE), así que el chooser trae su óptica WAN y, además, la de la interconexión del par;
+  // aquí se mira solo esta última. Agregado 10 Gbps ⇒ velocidad recomendada
   // 10G; el EC-10150 tiene varias compatibles ⇒ PENDIENTE hasta que el usuario elija.
   const selHA = page.locator('#sfpChooser select[data-sfp-medio="EdgeHA"]');
   t.ok(await selHA.count() === 1, 'el builder ofrece la óptica de la interconexión EdgeHA');
@@ -185,8 +186,9 @@ async function enlazar5000mas5000(page) {
   await page.click('[data-tab=bom]');
   await asentar(page);
   bomHA = (await page.textContent('#pane-bom')) || '';
-  t.ok(bomHA.includes(optHA) && !/PENDIENTE DE SELECCIÓN/.test(bomHA),
-    'tras elegir, el BOM cotiza la interconexión y el PENDIENTE desaparece');
+  const filasHA = await page.$$eval('#bomTabla tbody tr', (rs) => rs.map((r) => r.textContent).filter((x) => /EdgeHA/.test(x)));
+  t.ok(bomHA.includes(optHA) && filasHA.length > 0 && !filasHA.some((x) => /PENDIENTE DE SELECCIÓN/.test(x)),
+    'tras elegir, el BOM cotiza la interconexión y su PENDIENTE desaparece');
   await page.click('[data-tab=calc]');
   await asentar(page);
   // Y al apagar HA no queda nada que elegir: el chooser se oculta entero.
@@ -194,7 +196,8 @@ async function enlazar5000mas5000(page) {
   await asentar(page);
   const fichaSinHA = (await page.textContent('#verdict')) || '';
   t.ok(!/Cableado del par EdgeHA/.test(fichaSinHA), 'al desmarcar HA con la ficha pintada, la sección EdgeHA desaparece');
-  t.ok(await page.isHidden('#sfpChooser'), 'sin HA ni enlaces SFP, el chooser se oculta entero');
+  t.ok(await selHA.count() === 0 && !/Interconexión EdgeHA/.test((await page.textContent('#sfpChooser')) || ''),
+    'sin HA, la fila de la interconexión sale del chooser (quedan solo las ópticas de los enlaces)');
   await page.click('#chkHa');
   await asentar(page);
   await page.click('[data-tab=bom]');

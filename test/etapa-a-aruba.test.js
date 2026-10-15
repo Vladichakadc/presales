@@ -55,8 +55,8 @@ test('el semáforo de #wanResumen y el escalado usan la MISMA regla (evaluarPuer
   // La regla de densidad de puertos se extrae a una sola función: si vuelve a haber dos
   // copias, la barra avisará una cosa y el dimensionador escalará por otra.
   assert.ok(js.includes('function evaluarPuertos('), 'falta evaluarPuertos (regla única de densidad)');
-  assert.ok(js.includes('evaluarPuertos(m,D.wanLinks).nivel'),
-    'el escalado del EC-10104 ya no usa evaluarPuertos — regla duplicada otra vez');
+  assert.ok(js.includes('const ev=evaluarPuertos(m,D.wanLinks)'),
+    'el descarte por puertos ya no usa evaluarPuertos — regla duplicada otra vez');
   assert.ok(js.includes('const ev=evaluarPuertos(m,links)'),
     '#wanResumen ya no usa evaluarPuertos — regla duplicada otra vez');
 });

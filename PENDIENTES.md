@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-15, vigesimoctava entrega (**La mejora propuesta: los accesos del portal, con el color de su tarjeta.** Los nueve botones bajo el título dejan el `style=` repetido por una clase `acceso-<id>`, y una prueba casa cada color con el de la tarjeta del fabricante en `index.js`. Se ven igual, píxel a píxel. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-15, vigesimonovena entrega (**Aruba, panel 2: cada enlace en un puerto real del chasis.** Encargo del dueño: revisar «Tráfico y capacidad» como arquitecto de Aruba — la barra decía «cabe» sin mirar si el equipo tiene puertos de ese medio, y al cambiar el medio no volvía al equipo inferior; quitar «Segmento de instalación»; campos sincronizados y fuera los que no aportan. Medido en Chromium: la barra iba un render por detrás, un RJ-45 «cabía» en el EC-L (sin cobre) y 3 Gbps por RJ-45 de 1 GbE también. Ahora cada modelo trae su inventario de puertos y el dimensionador asigna cada enlace; el medio sube solo con el caudal; Breakout, perfil de Boost, FEC e IMIX se desactivan con su motivo cuando no aplican. Ver *Cerrado recientemente* y *Abierto: puertos de Aruba*.)
+Revisión anterior: 2026-10-15, vigesimoctava entrega (**La mejora propuesta: los accesos del portal, con el color de su tarjeta.** Los nueve botones bajo el título dejan el `style=` repetido por una clase `acceso-<id>`, y una prueba casa cada color con el de la tarjeta del fabricante en `index.js`. Se ven igual, píxel a píxel. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, vigesimoséptima entrega (**Botones del dashboard sin «BOM».** Encargo del dueño: los siete botones de fabricante del portal dicen solo el nombre (FortiGate, Cisco, Huawei, Juniper, MikroTik, Aruba, Starlink); «Cotizador BOM» no es de un fabricante y se queda. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, vigesimosexta entrega (**Con el PC otra vez: el vCPE completo.** En el Chrome del dueño: la ficha R25C00 del AR6700V-L da el SD-WAN IPsec IMIX (400 Mbps, 3, 5 y 11 Gbps; ancla con la R26C00 en dos filas) y su «License Usage Guide» los 32 códigos N1 (Foundation y Advanced por tamaño, con SnS de 1, 3 y 5 años). El BOM del vCPE ya cita su paquete y su SnS. Info-Finder no publica para esta cuenta las instancias de nube del vCPE. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-14, vigesimoquinta entrega (**La mejora propuesta —figuras del AR502H-V2— y los pendientes que se podían cerrar sin el PC.** Los tres AR502H-V2 llevan la figura de la p. 1 de su ficha, sin pérdida y con su transparencia (el LTE4AU-V2 comparte dibujo con el LTE4EA-V2, como en la ficha). El paquete N1 del vCPE sigue sin código: ni su ficha R26C00 ni la R25C00 lo listan. **Hallazgo**: la ficha R25C00 del AR6700V-L publica el SD-WAN IPsec en IMIX (que la R26C00 quitó); no entra hasta leer el documento, no su resumen. Ver *Cerrado recientemente* y *Capacidades SD-WAN: lo que queda abierto*.)
@@ -1889,6 +1890,17 @@ cierto. Lo que decía:
   página de documentos (`e.huawei.com/en/documents/...56584a8272b44e61be416b1afc0eb241`) con
   `traer-cisco-huawei.yml` (entradas `huawei-a816e-*`), no a ojo.
 
+## Abierto: puertos de Aruba (2026-10-15)
+
+Lo que la auditoría de puertos del panel 2 todavía no cuenta, declarado para no darlo por cubierto:
+- **El puerto de la interconexión EdgeHA** no entra en `asignarPuertos`: con HA, cada chasis gasta
+  uno más y los enlaces se reparten entre los dos (fig. «EC HA» del VSG). Hoy se declara en la ficha
+  y en el BOM, pero no descarta un chasis justo de puertos.
+- **Las ranuras de expansión del 9114 y el 9240** no se modelan: un enlace que solo cabría con un
+  módulo sale «no cabe». Haría falta la lista de módulos de su QuickSpecs con SKU y precio.
+- **EC-XL**: se cuenta como 6x SFP+ (la variante del SKU base S0B67A); la S3N77A de 6x SFP28 existe
+  pero está fuera de venta igual que la base y su matriz no trae ópticas de 25G.
+
 ## Decisiones que necesitan al dueño del producto
 
 - ~~**WireGuard en el dimensionador MikroTik (2026-10-13).**~~ **Decidido el 2026-10-13: opción A**,
@@ -2004,6 +2016,39 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Aruba, panel 2: puertos reales, medio sincronizado y fuera «Segmento de instalación» (2026-10-15, vigesimonovena entrega)
+
+Encargo del dueño, como arquitecto senior de Aruba. **Lo que se midió en Chromium antes de tocar
+nada** (sobre 2fd2a59): (1) la barra «cabe en …» de `#wanResumen` se pintaba al principio del
+render, con el modelo del render anterior: con SFP+ decía «no cabe en EC-10104» cuando ya estaba el
+EC-10106, y al volver a RJ-45 «cabe en EC-10106» con el selector ya en el EC-10104 — de ahí que
+pareciera que no bajaba; (2) la auditoría solo contaba puertos del EC-10104 y en el resto miraba si
+la ficha decía «SFP»: un RJ-45 «cabía en EC-L» (6x SFP+), cinco enlaces cabían en el EC-XS de cuatro
+puertos y 3.000 Mbps por un RJ-45 de 1 GbE también; (3) soltar una elección manual que no cabía lo
+deshacía el oyente de `bom.js`, que corre después del de la página.
+
+Lo hecho:
+- **Inventario de puertos por modelo** (`PUERTOS` en `aruba.js`, de su `ifaces` oficial; la prueba
+  exige que cada número salga de ahí) y `ArubaReglas.asignarPuertos`: cada enlace a un puerto de su
+  medio (RJ-45 nativo, combo, SFP, SFP+, SFP28, módem LTE del 9004-LTE) más 2 LAN. Un modelo sin
+  puerto para algún enlace sale de la lista con su motivo; la alerta de escalado nombra el modelo y
+  el enlace, y si es un RJ-45 en un chasis sin cobre, el transceptor 1000BASE-T certificado.
+- **Barra y semáforo** con el modelo de este render; el motivo, a la vista y no solo en el `title`.
+- **Elección manual**: se respeta aunque no quepa (parque instalado, selección deliberada) y la
+  ficha y la revisión del diseño lo marcan en rojo; si después cambian los enlaces, se suelta y el
+  selector vuelve a seguir al dimensionamiento.
+- **Medio ↔ caudal**: si nadie eligió el medio, sube al primero que lleva el caudal (todo RJ-45 del
+  catálogo es de 1 GbE) y vuelve si el caudal baja; elegido a mano no se toca, y la fila lo dice.
+- **Fuera «Segmento de instalación»**: solo reordenaba la recomendación por el texto del campo `seg`
+  (con «Sucursal» saltaba a un equipo mayor cuyo rótulo dijera «Sucursal»). El tamaño de sitio lo
+  fija el arquetipo de sede. Un enlace viejo con `segSeg` se abre sin aviso.
+- **Campos inactivos con su motivo** (fuera del enlace compartible): Local Breakout sin ningún
+  enlace de Internet, perfil de Boost sin Boost, FEC e IMIX con la familia en gateways.
+- Pruebas: `test/aruba-puertos.test.js` (10) y la batería `e2e-aruba-puertos.js` (21); `e2e-sfp` y
+  `e2e-desbordamiento-ec` ajustadas (tres de 10G en un 10108 ya no son un aviso; dos enlaces de 5 Gbps
+  ya no se declaran por RJ-45). `verificar` 971/971, `e2e` 20/20, `pantallas` 17/17, `contraste` 9/9
+  sin discrepancias (la línea base de `aruba-underlay` no se movió), `puerta` cerrada, `auditar` limpio.
 
 ### Accesos del portal con el color de su tarjeta (2026-10-15, vigesimoctava entrega)
 

@@ -71,7 +71,7 @@ const $=id=>document.getElementById(id);
 // inetType/bwInet) salen del flujo y los sustituye el Multi-Underlay Builder — los enlaces
 // viajan serializados como JSON {v:2, wanLinks:[...]} en el input oculto #wanLinksData.
 // La migración v1→v2 de enlaces antiguos vive en migrarEstadoV1().
-const CAMPOS_ESCENARIO=['wanLinksData','users','aps','perUser','head','fecMode','selTrafico','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','famSeg','segSeg','destSeg','soSeg','pickModel','personaSeg','selSeguridad','selTier','chkBreakout','selDescuento','dtoCustom',
+const CAMPOS_ESCENARIO=['wanLinksData','users','aps','perUser','head','fecMode','selTrafico','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','famSeg','destSeg','soSeg','pickModel','personaSeg','selSeguridad','selTier','chkBreakout','selDescuento','dtoCustom',
   // Contexto MSP del escenario (etapa A / #39, 2026-09-14): viajan en la URL y en los
   // perfiles multi-sede como un campo más, y encabezan la lista de materiales y el Excel.
   'nombreCliente','refProyecto',
@@ -91,7 +91,7 @@ const CAMPOS_ESCENARIO=['wanLinksData','users','aps','perUser','head','fecMode',
   // OJO: misma trampa que arriba — nada de literales entrecomillados aquí.
   'bomAjustes'];
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let famMode='any', segMode='branch', destMode='hibrido', lastPick=null;
+let famMode='any', destMode='hibrido', lastPick=null;
 // Arquetipo de sede y estrategia de seguridad como variables de estado del dimensionador
 // — restringen el catalogo y alimentan el BOM. La estrategia pasa a ser un <select>
 // (#selSeguridad, SPEC parte B) con valores none/dtd/sse.
@@ -124,6 +124,9 @@ const TIPOS_WAN=['MPLS L3','MPLS L2','DIA','Banda Ancha','4G/5G'];
 // el EC-10108 las perdió el 2026-10-07: el Hardware Reference Rev V dice «No» y su ficha no
 // tiene SFP28): faltaba poder declarar el enlace.
 const MEDIOS_WAN=['RJ45','SFP 1G','SFP+ 10G','SFP28 25G'];
+// Puertos LAN que el appliance necesita además de los enlaces WAN (regla de la auditoría de
+// puertos, SPEC B.3): los cuenta la barra del underlay y los reserva ArubaReglas.asignarPuertos.
+const LAN_RESERVADOS=2;
 let wanSeq=0; // ids únicos de fila dentro de la sesión
 // Familia del transporte para el badge de la tarjeta (MPLS / Internet / celular).
 function familiaTipoWan(tipo){
@@ -138,6 +141,30 @@ function familiaTipoWan(tipo){
 function medioSugerido(tipo, down){
   if(tipo==='DIA'&&down>=1000) return 'SFP 1G';
   return 'RJ45';
+}
+// El medio que la página pone cuando nadie lo eligió (2026-10-15): el típico del transporte,
+// subido al primero que lleve el caudal del enlace — todos los RJ-45 del catálogo son de 1 GbE,
+// así que un DIA de 3 Gbps no puede ir por cobre. Un medio elegido a mano no se toca: si no
+// lleva el caudal, la fila lo dice y la barra del underlay avisa.
+function medioPorCaudal(tipo, down, up){
+  const base=medioSugerido(tipo, down);
+  return ArubaReglas.medioMinimo(Math.max(down||0, up||0), base)||'SFP28 25G';
+}
+// Aplica la regla a una fila cuyo medio no se eligió a mano. `velAuto` marca que la página lo
+// subió por caudal: así, si el caudal vuelve a bajar, el medio vuelve al típico del transporte
+// (y el equipo, al menor que vuelva a caber) en vez de quedarse en la óptica.
+function sincronizarMedioFila(fila, porTipo){
+  const med=fila.querySelector('[data-campo=medio]');
+  if(med.dataset.manual==='1') return;
+  const tipo=fila.querySelector('[data-campo=tipo]').value;
+  const down=parseFloat(fila.querySelector('[data-campo=down]').value)||0;
+  const up=parseFloat(fila.querySelector('[data-campo=up]').value)||0;
+  const vel=Math.max(down, up);
+  const cabe=(ArubaReglas.MEDIO_MBPS[med.value]||0)>=vel;
+  if(!porTipo&&cabe&&med.dataset.velAuto!=='1') return;
+  const nuevo=medioPorCaudal(tipo, down, up);
+  med.value=nuevo;
+  if(nuevo!==medioSugerido(tipo, down)) med.dataset.velAuto='1'; else delete med.dataset.velAuto;
 }
 // Lee las filas del builder tal como están pintadas: es la única fuente de wanLinks,
 // así el motor, la serialización y los perfiles ven exactamente lo mismo.
@@ -155,6 +182,7 @@ function leerWanLinks(){
       down, up,
       simetrico:sim?!!sim.checked:down===up,
       medioManual:med.dataset.manual==='1',
+      medioVelAuto:med.dataset.velAuto==='1',
       // R11/M9 (2026-09-24): activo o respaldo. Un respaldo ocupa puerto y óptica —los
       // lleva el chasis— pero no suma caudal en operación normal (ArubaReglas.escenariosUnderlay).
       rol:rol&&rol.value==='respaldo'?'respaldo':'activo',
@@ -174,7 +202,7 @@ function wanFilaHtml(l,idx){
     +`</span></div>`
     +`<div class="wan-grid">`
     +`<div class="wan-campo"><label>Transporte</label><select data-campo="tipo" aria-label="Tipo de transporte WAN del enlace ${n}">${ops(TIPOS_WAN,l.tipo)}</select></div>`
-    +`<div class="wan-campo"><label>Medio del puerto</label><select data-campo="medio" aria-label="Medio del puerto del enlace ${n}"${l.medioManual?' data-manual="1"':''}>${ops(MEDIOS_WAN,l.medio)}</select></div>`
+    +`<div class="wan-campo"><label>Medio del puerto</label><select data-campo="medio" aria-label="Medio del puerto del enlace ${n}"${l.medioManual?' data-manual="1"':''}${!l.medioManual&&l.medio!==medioSugerido(l.tipo,l.down||0)?' data-vel-auto="1"':''}>${ops(MEDIOS_WAN,l.medio)}</select></div>`
     +`<div class="wan-campo"><label>Bajada</label><span class="wan-bw"><input type="number" data-campo="down" min="0" step="any" placeholder="100" value="${l.down||''}" aria-label="Caudal de bajada en Mbps del enlace ${n}" autocomplete="off"><span class="wan-sufijo">Mbps</span></span></div>`
     +`<div class="wan-campo"><label>Subida</label><span class="wan-bw"><input type="number" data-campo="up" min="0" step="any" placeholder="100" value="${(sim?l.down:l.up)||''}" aria-label="Caudal de subida en Mbps del enlace ${n}" autocomplete="off"${sim?' disabled':''}><span class="wan-sufijo">Mbps</span></span></div>`
     +`<div class="wan-campo"><label>Rol</label><select data-campo="rol" aria-label="Rol del enlace ${n}">`
@@ -218,7 +246,9 @@ function reconstruirWanDesdeHidden(){
     // comparación down===up. Y si el medio no es el típico de su transporte, se marca
     // como elegido a mano para que la sugerencia por tipo no lo pise después.
     if(l.simetrico==null) l.simetrico=l.down===l.up;
-    l.medioManual=!!l.medio&&l.medio!==medioSugerido(l.tipo,l.down||0);
+    // El que la página habría puesto es el típico subido por caudal (medioPorCaudal): un DIA de
+    // 5 Gbps por SFP+ 10G no es una elección a mano, es la regla.
+    l.medioManual=!!l.medio&&l.medio!==medioPorCaudal(l.tipo,l.down||0,l.up||0);
   });
   pintarWanFilas(links);
 }
@@ -241,6 +271,10 @@ function validarWanFila(f){
   let txt='', cls='';
   if(downMalo){ txt='Declara el caudal de bajada (Mbps): sin él, este enlace no cuenta en el agregado del sitio.'; cls='err'; }
   else if(respaldo&&!hayActivo){ txt='Ningún enlace está marcado como activo: un respaldo solo lleva tráfico cuando cae un activo. Marca al menos uno como activo.'; cls='warn'; }
+  else if(Math.max(down||0,up||0)>(ArubaReglas.MEDIO_MBPS[medio]||Infinity)){
+    const sube=ArubaReglas.medioMinimo(Math.max(down||0,up||0), medio);
+    txt=`Un puerto ${medio==='RJ45'?'RJ-45 (todos los del catálogo son de 1 GbE)':medio} lleva hasta ${fmt(ArubaReglas.MEDIO_MBPS[medio])}: este enlace declara ${fmt(Math.max(down||0,up||0))}. ${sube?`Cambia el medio a ${sube}.`:'Ningún medio del catálogo lleva ese caudal en un solo enlace: repártelo en varios.'}`; cls='err';
+  }
   else if(up>down){ txt='Bajada < subida declarada: verifica el contrato (hay enlaces asíncronos al revés, pero es raro).'; cls='warn'; }
   else if(/^SFP/.test(medio)&&/^4G\/5G/.test(tipo)){ txt='Un enlace celular 4G/5G no va por fibra: el medio típico es RJ-45 (módem integrado o externo). Revisa el medio declarado.'; cls='warn'; }
   else if(respaldo){ txt='Respaldo: no suma al caudal ni al tier de la suscripción en operación normal; entra, hasta su caudal, si cae un enlace activo. Ocupa su puerto igual que los demás.'; }
@@ -248,9 +282,12 @@ function validarWanFila(f){
 }
 function validarWanFilas(){ document.querySelectorAll('#wanBuilderFilas .wan-fila').forEach(validarWanFila); }
 // Barra agregada viva bajo el builder (#wanResumen, etapa A): Σ de caudales, desglose
-// por familia, puertos WAN ocupados y semáforo de densidad contra el modelo
+// por familia, puertos WAN ocupados y semáforo de puertos contra el modelo
 // seleccionado. La regla del semáforo NO se duplica aquí: es evaluarPuertos(), la
-// misma que gobierna el descarte/escalado del EC-10104 y el aviso de ópticas.
+// misma que gobierna el descarte y el escalado. Se pinta con el modelo YA resuelto del
+// render actual (final de poblarPickModel y tras el escalado): hasta el 2026-10-15 se pintaba
+// al principio del render y decía «cabe en» el equipo del render anterior — al volver de SFP
+// a RJ-45 seguía nombrando el escalón superior aunque el selector ya hubiera bajado.
 function pintarWanResumen(){
   const box=$('wanResumen'); if(!box) return;
   const links=leerWanLinks();
@@ -272,12 +309,15 @@ function pintarWanResumen(){
     if(nI) fam.push(`${nI} Internet`);
     if(nC) fam.push(`${nC} celular`);
     html+=`<span>${act.length} enlace${act.length===1?'':'s'} (${fam.join(', ')})</span><span class="wan-res-sep">·</span>`
-      +`<span>Puertos WAN: ${act.length} (+2 LAN) = ${act.length+2}</span>`;
-    const m=typeof modeloActual==='function'&&MODELS.length?modeloActual():null;
+      +`<span>Puertos WAN: ${act.length} (+${LAN_RESERVADOS} LAN) = ${act.length+LAN_RESERVADOS}</span>`;
+    const m=typeof modeloActual==='function'&&MODELS.length&&personaMode!=='micro'?modeloActual():null;
     if(m){
       const ev=evaluarPuertos(m,links);
-      const etq={verde:`cabe en ${m.id}`, ambar:`aviso de densidad en ${m.id}`, rojo:`no cabe en ${m.id}`}[ev.nivel];
-      html+=` <span class="wan-sem ${ev.nivel}" title="${esc(ev.motivo||'La densidad de puertos del escenario entra en el chasis')}"><i></i>${etq}</span>`;
+      const etq={verde:`cabe en ${m.id}`, ambar:`cabe en ${m.id}, con aviso`, rojo:`no cabe en ${m.id}`}[ev.nivel];
+      const titulo=ev.motivo||(m.puertos?`Cada enlace tiene puerto en ${inventarioTxt(m.puertos)}`:'Equipo virtual: sin puertos físicos que auditar');
+      html+=` <span class="wan-sem ${ev.nivel}" title="${esc(titulo)}"><i></i>${esc(etq)}</span>`;
+      // El porqué, a la vista y no solo en el title: es lo que hay que cambiar.
+      if(ev.motivo) html+=`<span class="wan-res-motivo">${esc(ev.motivo)}</span>`;
     }
   }else{
     html+='<span>sin enlaces activos — declara el caudal de cada fila</span>';
@@ -291,6 +331,9 @@ function pintarWanResumen(){
 // entiende. Dos listas iguales en dos sitios es como se desincronizan — el mismo error que
 // `llevarABom` tuvo en seis copias.
 const PARAMS_V1=['bw','unit','mplsType','bwMpls','inetType','bwInet'];
+// `segSeg` («Segmento de instalación», retirado el 2026-10-15) no se migra a nada: solo
+// reordenaba la recomendación. Un enlace viejo que lo traiga se abre sin avisar de él.
+const PARAMS_RETIRADOS=[...PARAMS_V1,'segSeg'];
 // Migración v1→v2 (SPEC B.1): un enlace antiguo (?bw=…&mplsType=…&bwMpls=…&inetType=…&
 // bwInet=…) se convierte en 1-2 filas equivalentes del builder y se avisa por consola.
 // Devuelve true si migró algo.
@@ -345,17 +388,23 @@ $('wanBuilder').addEventListener('input',e=>{
   if(t.dataset.campo==='down'&&fila&&fila.querySelector('[data-campo=simetrico]').checked){
     fila.querySelector('[data-campo=up]').value=t.value;
   }
-  // El medio elegido a mano queda marcado: las sugerencias por tipo ya no lo tocan.
-  if(t.dataset.campo==='medio') t.dataset.manual='1';
+  // El medio elegido a mano queda marcado: las sugerencias por tipo y por caudal ya no lo
+  // tocan. Elegir justo el que la página habría puesto lo devuelve a automático.
+  if(t.dataset.campo==='medio'&&fila){
+    const down=parseFloat(fila.querySelector('[data-campo=down]').value)||0, up=parseFloat(fila.querySelector('[data-campo=up]').value)||0;
+    if(t.value===medioPorCaudal(fila.querySelector('[data-campo=tipo]').value, down, up)) delete t.dataset.manual; else t.dataset.manual='1';
+    delete t.dataset.velAuto;
+  }
   // Cambio de transporte: badge de familia al momento + medio típico como default
   // inteligente SOLO si nadie eligió el medio a mano (no se impone).
   if(t.dataset.campo==='tipo'&&fila){
     const badge=fila.querySelector('[data-wan-badge]');
     const fam=familiaTipoWan(t.value);
     badge.className='wan-badge '+fam.cls; badge.textContent=fam.n;
-    const med=fila.querySelector('[data-campo=medio]');
-    if(med.dataset.manual!=='1') med.value=medioSugerido(t.value,parseFloat(fila.querySelector('[data-campo=down]').value)||0);
+    sincronizarMedioFila(fila, true);
   }
+  // Cambio de caudal: el medio automático sube al que lo lleva, y baja si el caudal vuelve.
+  if((t.dataset.campo==='down'||t.dataset.campo==='up'||t.dataset.campo==='simetrico')&&fila) sincronizarMedioFila(fila, false);
   // Cambiar el rol de una fila cambia si las DEMÁS tienen un activo al que respaldar: se
   // revalidan todas. El resto de cambios solo tocan su propia tarjeta.
   if(t.dataset.campo==='rol') validarWanFilas();
@@ -1062,7 +1111,6 @@ $('famSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!
   // Elegir familia a mano es una decisión: el salto automático deja de tener nada que deshacer.
   if(e.isTrusted){ famAntesDeForzar=null; avisoFamilia(''); }
   render();});
-$('segSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('segSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));segMode=b.dataset.v;render();});
 $('destSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('destSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));destMode=b.dataset.v;$('destHint').textContent=DEST_HINT[destMode]||'';render();});
 $('soSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('soSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));soMode=b.dataset.v;$('soHint').innerHTML=SO_HINT[soMode]||'';render();});
 ['users','aps','perUser','head','fecMode','selTrafico','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','chkBreakout','selTier',
@@ -1124,7 +1172,19 @@ $('chkHa').addEventListener('change',()=>{
 // El modelo es el selector UNICO de la pagina: cambiarlo a mano mueve ficha, resumen,
 // escalera y BOM, no solo la lista. La marca de eleccion manual se fija ANTES de render,
 // porque render podria reponer el recomendado si la tomara por heredada.
-$('pickModel').addEventListener('change',()=>{ $('pickModel').dataset.bomManual='1'; render(); });
+// Si el render suelta la elección (un modelo en el que los enlaces no caben, ver el escalado por
+// puertos), el oyente de bom.js —que se registra después y marca «manual» en cada change— no
+// debe volver a marcarla: se corta aquí. Sin esto el selector se quedaba en el equipo soltado.
+$('pickModel').addEventListener('change',e=>{
+  const sel=$('pickModel');
+  sel.dataset.bomManual='1';
+  // Se anota con qué enlaces se eligió: una elección deliberada se respeta aunque los enlaces
+  // no quepan (parque instalado, selección deliberada), pero si DESPUÉS cambian los enlaces,
+  // el escenario ya no es el que se eligió y el selector vuelve a seguir al dimensionamiento.
+  sel.dataset.firmaPuertos=firmaPuertos(leerWanLinks());
+  render();
+  if(sel.dataset.bomManual!=='1') e.stopImmediatePropagation();
+});
 
 // Selector de óptica SFP por medio (SPEC B.1, 2026-09-15): cuando hay varias ópticas
 // compatibles con el modelo, la elección es del USUARIO (alcance/medio del enlace — el
@@ -1258,7 +1318,6 @@ function renderCatalogo(){
 // La etiqueta de familia sale de la serie comercial, que es como el cliente nombra el
 // equipo; `rol` es lo que de verdad filtra en preventa.
 const famLabel=m=>m.serie+(m.fam==='ec'?' SD-WAN':' · gateway');
-const SEG_MATCH={branch:/Sucursal|remota|peq|med/i,campus:/Campus|Hub/i,dc:/Datacenter|Head-end|Virtual/i};
 
 /* ══ SISTEMA OPERATIVO DE LOS GATEWAYS (C2/C3 de la auditoria 2026-09-17) ══
    Las cifras de APs, clientes y licencia de capacidad de un gateway dependen de su
@@ -1445,80 +1504,82 @@ function porqueNivelEC(nivel){
 // de ingenieria — la MISMA cifra que el hint del breakout declara como «el tunel al DC
 // sostiene ≈N» — y se valida contra el Boost recomendado por HPE de cada appliance.
 
-/* ══ M2 · AUDITORÍA DE PUERTOS (SPEC B.3) ══
-   Cada enlace WAN declarado ocupa un puerto del chasis y el appliance necesita además
-   2 puertos LAN. El EC-10104 tiene 4 puertos RJ-45 y NINGÚN SFP (VSG oficial): si los
-   enlaces no caben o alguno es óptico, el modelo queda descartado y el dimensionador
-   escala al escalón superior (#alertaEscalado). Para el resto de chasis la densidad de
-   ópticas tiene límite de jaulas: aviso si se supera (no descarte — hay DAC y RJ-45). */
-// ¿El chasis no declara ninguna jaula SFP? Se lee del texto de interfaces del catálogo
-// (`ifaces`), que es donde HPE lo publica; sin ese texto no se afirma nada (null ≠ sin SFP).
+/* ══ M2 · AUDITORÍA DE PUERTOS (SPEC B.3; reescrita el 2026-10-15) ══
+   Cada enlace WAN declarado ocupa un puerto del chasis por su MEDIO, y el appliance necesita
+   además 2 puertos LAN. Hasta el 2026-10-15 solo se contaban los puertos del EC-10104 y, en el
+   resto, se preguntaba si la ficha decía «SFP» en algún sitio: un enlace RJ-45 «cabía» en un
+   EC-L (6x SFP+, ningún cobre), cinco enlaces cabían en un EC-XS de cuatro puertos y tres de
+   10G en un 10108 eran solo un aviso. Ahora cada modelo trae su inventario (`puertos`, de su
+   `ifaces` oficial) y ArubaReglas.asignarPuertos pone cada enlace en un puerto real: lo que no
+   tiene puerto descarta el modelo y el dimensionador pasa al siguiente que sí lo tenga. */
+// ¿El chasis no tiene ninguna jaula SFP? Del inventario; sin él no se afirma nada.
 function sinJaulasSfp(modelo){
-  if(!modelo||!modelo.ifaces||modelo.fam==='ec'&&modelo.wanMax==null) return false; // EC-V: virtual
-  return !/SFP/i.test(modelo.ifaces);
+  const p=modelo&&modelo.puertos;
+  if(!p) return false; // EC-V (virtual) o sin inventario
+  return !(p.sfp||p.combo||p.sfpPlus||p.sfp28);
 }
-// ¿Termina 25G? Por la ficha (SFP28/25G en `ifaces`) o por la matriz oficial de ópticas.
-function admite25g(modelo){
-  if(!modelo) return false;
-  return /SFP28|25G/i.test(modelo.ifaces||'')||opticasPorVelocidad(modelo.id,'25G').length>0;
+// Texto del inventario para los motivos: «4x RJ-45 · 2x SFP+».
+const NOMBRE_PUERTO={rj45:'RJ-45', combo:'combo RJ-45/SFP 1G', sfp:'SFP 1G', sfpPlus:'SFP+ 1/10G', sfp28:'SFP28 1/10/25G', celular:'módem 4G/5G integrado'};
+function inventarioTxt(p){
+  if(!p) return 'sin chasis (virtual)';
+  return Object.keys(NOMBRE_PUERTO).filter(k=>p[k]).map(k=>`${p[k]}x ${NOMBRE_PUERTO[k]}`).join(' + ');
+}
+// ¿Tiene el modelo un transceptor 1000BASE-T certificado? Es la salida para un enlace de cobre
+// en un chasis sin RJ-45 libre: declarar «SFP 1G» y elegir ese transceptor.
+function cobreSfp(modelo){
+  return opticasPorVelocidad(modelo.id,'1G').filter(o=>o.a.media==='COPPER').map(o=>o.sku);
 }
 function auditarPuertos(modelo, wanLinks){
   const enlaces=(wanLinks||[]).filter(l=>l.down>0||l.up>0);
-  const sfp=enlaces.filter(l=>/^SFP/.test(l.medio)).length;
-  const sfp28=enlaces.filter(l=>l.medio==='SFP28 25G').length;
   return {
-    puertosNecesarios:enlaces.length+2, // +2 puertos LAN
-    hayFibra:sfp>0,
-    sfp,
-    sfp28,
+    puertosNecesarios:enlaces.length+LAN_RESERVADOS,
+    hayFibra:enlaces.some(l=>/^SFP/.test(l.medio)),
+    asignacion:ArubaReglas.asignarPuertos(modelo?modelo.puertos:null, wanLinks, LAN_RESERVADOS),
   };
 }
-// Jaulas SFP por chasis para el aviso de densidad (SPEC B.3): EC-10150 (8 jaulas SFP+/SFP28)
-// y Gateway 9240 (4 jaulas SFP28). El EC-10106/10108 tiene CUATRO, no dos (corregido el
-// 2026-10-07 con el Hardware Reference Rev V, p. 31): dos SFP+ de 1/10G en wan0/wan1 y dos
-// combo de 1G en lan2/wan2. Hasta ese día el 1G no se ofertaba en el 10108 y contar dos no
-// se notaba; con el 1G cotizable, cuatro enlaces de 1G en un 10108 caben y avisarlos era falso,
-// y un tercer enlace de 10G no cabe aunque el total sí.
-const SFP_JAULAS={'EC-10106':{total:4,de10g:2},'EC-10108':{total:4,de10g:2},'EC-10150':{total:8},'Gateway 9240':{total:4}};
-// Una sola regla para los tres sitios que la pintan (auditoría, ficha y revisión del diseño):
-// el texto del exceso, o null si los enlaces SFP declarados caben.
-function excesoJaulas(modelo, wanLinks){
-  const j=modelo&&SFP_JAULAS[modelo.id]; if(!j) return null;
-  const sfp=(wanLinks||[]).filter(l=>(l.down>0||l.up>0)&&/^SFP/.test(l.medio));
-  if(sfp.length>j.total) return `${sfp.length} enlaces SFP sobre ${j.total} jaulas del ${modelo.id}`;
-  const rapidos=sfp.filter(l=>l.medio!=='SFP 1G').length;
-  if(j.de10g!=null&&rapidos>j.de10g) return `${rapidos} enlaces de 10G sobre ${j.de10g} jaulas SFP+ del ${modelo.id} (wan0/wan1; las otras ${j.total-j.de10g} son combo de 1G)`;
-  return null;
+// El porqué de un «no cabe», con el número de enlace y lo que hay que cambiar.
+function motivoPuertos(modelo, asig){
+  const inv=inventarioTxt(modelo.puertos);
+  const partes=[];
+  const porMedio={};
+  asig.sinAsignar.forEach(x=>{ (porMedio[x.medio]=porMedio[x.medio]||[]).push(x.enlace); });
+  Object.entries(porMedio).forEach(([medio,ns])=>{
+    const cuales=`enlace${ns.length>1?'s':''} ${ns.join(', ')}`;
+    if(medio==='RJ45'){
+      const cu=cobreSfp(modelo);
+      partes.push(`${cuales} por RJ-45 sin puerto de cobre libre${cu.length?` — si va a una jaula SFP, declara el medio «SFP 1G» y elige el transceptor 1000BASE-T (${cu.join(', ')})`:''}`);
+    }else{
+      partes.push(`${cuales} por ${medio} sin jaula libre que lo admita`);
+    }
+  });
+  if(asig.lanFaltan) partes.push(`${asig.lanFaltan===1?'falta 1':`faltan ${asig.lanFaltan}`} de los ${LAN_RESERVADOS} puertos LAN`);
+  return `El ${modelo.id} tiene ${inv}: ${partes.join('; ')}.`;
 }
-// Semáforo de densidad de puertos (etapa A, 2026-09-14): UNA SOLA regla con tres
-// niveles, usada tanto por el escalado del dimensionador (rojo = el modelo queda
-// descartado y se escala) como por la barra agregada #wanResumen. Así el aviso que ve
-// el ingeniero mientras teclea es exactamente el que luego manda en el cálculo.
-//   rojo  → no cabe: el EC-10104 (4× RJ-45, sin SFP) no cubre los enlaces declarados.
-//   ámbar → cabe, pero la densidad de ópticas supera las jaulas del chasis.
+// Semáforo de puertos (etapa A, 2026-09-14): UNA SOLA regla con tres niveles, usada por el
+// descarte del dimensionador (rojo = el modelo sale y se escala), por la barra #wanResumen,
+// la ficha y la revisión del diseño. El aviso que ve el ingeniero mientras teclea es el que
+// luego manda en el cálculo.
+//   rojo  → algún enlace (o los LAN) no tiene puerto en el chasis.
+//   ámbar → cabe, pero algún enlace declara más caudal del que lleva su medio.
 //   verde → cabe sin condiciones.
 function evaluarPuertos(modelo, wanLinks){
   const a=auditarPuertos(modelo,wanLinks);
   let nivel='verde', motivo='';
-  if(modelo&&modelo.id==='EC-10104'&&(a.puertosNecesarios>4||a.hayFibra)){
+  const sobre=ArubaReglas.enlacesSobreMedio((wanLinks||[]).filter(l=>l.down>0||l.up>0));
+  if(modelo&&!a.asignacion.cabe){
     nivel='rojo';
-    motivo='El EC-10104 tiene 4 puertos RJ-45 y ningún SFP (VSG oficial): los enlaces declarados no caben — el dimensionador escala al escalón superior.';
-  }else if(a.hayFibra&&sinJaulasSfp(modelo)){
-    // A7 (2026-09-24): la misma regla para todo chasis cuyo catálogo no declara ninguna
-    // jaula SFP (Gateway 9004/9012, EC-XS…). Se recomendaba un 9012 para enlaces de fibra
-    // y el selector de ópticas contestaba «no admite ópticas SFP» debajo de la recomendación.
-    nivel='rojo';
-    motivo=`El ${modelo.id} no tiene jaulas SFP (${modelo.ifaces}): los enlaces de fibra declarados no caben — el dimensionador pasa a un modelo que las tenga.`;
-  }else if(a.sfp28>0&&!admite25g(modelo)){
-    // Un enlace de 25G no entra en una jaula SFP+: hace falta SFP28, declarada en la ficha o
-    // certificada por la matriz oficial de ópticas del modelo.
-    nivel='rojo';
-    motivo=`El ${modelo.id} no tiene jaulas SFP28 (${modelo.ifaces}) ni ópticas de 25G en su matriz oficial: los enlaces de 25G declarados no caben.`;
-  }else if(excesoJaulas(modelo,wanLinks)){
+    motivo=motivoPuertos(modelo,a.asignacion);
+  }else if(sobre.length){
     nivel='ambar';
-    motivo=`Densidad de ópticas: ${excesoJaulas(modelo,wanLinks)} — recablea algún enlace a RJ-45/DAC o revisa el medio declarado.`;
+    motivo=sobre.map(l=>`El enlace ${l.n} declara ${fmt(Math.max(l.down,l.up))} por ${l.medio}, que lleva ${fmt(ArubaReglas.MEDIO_MBPS[l.medio])}`).join('; ')+' — cambia el medio.';
   }
   return {...a, nivel, motivo};
+}
+
+// Lo que de los enlaces decide los puertos: medio, transporte y si lleva caudal. Una elección
+// manual se suelta solo si esto cambia después de hacerla (ver el oyente de #pickModel).
+function firmaPuertos(links){
+  return JSON.stringify((links||[]).filter(l=>l.down>0||l.up>0).map(l=>[l.medio,l.tipo]));
 }
 
 // Estado derivado del escenario (refactor SPEC parte B, 2026-09-13): el caudal de
@@ -1559,7 +1620,9 @@ function estadoDerivado(){
   const mplsMbps=normal.mpls;
   const inetMbps=normal.inet;
   const respaldoMbps=normal.respaldo;
-  const breakout=$('chkBreakout').checked;
+  // Deshabilitada (todo MPLS, ver sincronizarCampos) cuenta como apagada: no hay Internet a la
+  // que sacar nada, y así la ficha y la exportación no dicen «breakout activo».
+  const breakout=$('chkBreakout').checked&&!$('chkBreakout').disabled;
   const caudalEfectivo=breakout?mplsMbps+inetMbps*0.70:caudalTotal;
   const fec=SIZING.fec[$('fecMode').value]||SIZING.fec.auto;
   const perfil=SIZING.boost.reduccion[$('boostProfile').value]||SIZING.boost.reduccion.generico;
@@ -1753,11 +1816,13 @@ const REGLAS_DISENO=[
      const peor=D.escenarios.filter(e=>e.perdida>0).sort((a,b)=>b.perdida-a.perdida)[0];
      return `Continuidad parcial: si cae el enlace ${peor.enlace} (${fmt(peor.caidoMbps)}), los respaldos declarados recogen ${fmt(peor.caidoMbps-peor.perdida)} y quedan ${fmt(peor.perdida)} sin cursar hasta que vuelva. Es lo habitual con un 4G de respaldo; si el sitio necesita continuidad completa, amplía el respaldo o márcalo como activo.`;
    }},
-  // M2 · Avisos de densidad de ópticas (SPEC B.3): superar las jaulas SFP del chasis no
-  // descarta el modelo (siempre se puede recablear un enlace a RJ-45 o DAC), pero hay que
-  // verlo antes de cotizar las ópticas.
-  {nivel:'aviso', cuando:(D,m)=>!!excesoJaulas(m,D.wanLinks),
-   texto:(D,m)=>`Densidad de ópticas: el escenario declara ${excesoJaulas(m,D.wanLinks)} — recablea algún enlace a RJ-45/DAC o revisa el medio declarado en el builder.`},
+  // M2 · Puertos del chasis (2026-10-15): el dimensionador nunca recomienda un modelo en el
+  // que no caben los enlaces, pero una elección deliberada sin candidatos o un enlace por
+  // encima de su medio sí llegan aquí: la revisión lo dice con el mismo texto que la barra.
+  {nivel:'rojo', cuando:(D,m)=>evaluarPuertos(m,D.wanLinks).nivel==='rojo',
+   texto:(D,m)=>`Puertos: ${evaluarPuertos(m,D.wanLinks).motivo}`},
+  {nivel:'aviso', cuando:(D,m)=>evaluarPuertos(m,D.wanLinks).nivel==='ambar',
+   texto:(D,m)=>`Medio del enlace: ${evaluarPuertos(m,D.wanLinks).motivo}`},
   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&D.bundle==='onprem',
    texto:()=>'Modalidad On-Premises: el software de Orchestrator va incluido en la suscripcion, pero el ALOJAMIENTO (VM, uptime, backup y upgrades) corre por cuenta del cliente — dimensionarlo en la propuesta.'},
   {nivel:'ok', cuando:(D,m)=>m.fam==='ec'&&D.onprem&&$('chkHa').checked&&D.qty===2,
@@ -1843,8 +1908,40 @@ function pintarWidgetPerf(D){
   fld.hidden=false;
 }
 
+/* ══ CAMPOS QUE EL ESCENARIO NO USA (2026-10-15, revisión del panel 2) ══
+   Un campo que no mueve nada del escenario no se esconde: se deshabilita, dice por qué y se
+   marca `data-inactivo`, que estado.js deja fuera del enlace compartible (conserva su valor por
+   si vuelve a aplicar). Cada regla nombra el único sitio donde el campo entra en la cuenta:
+     · chkBreakout — reparte el caudal de Internet entre salida local y túnel; sin ningún enlace
+       de Internet (todo MPLS) no hay nada que sacar en local, ni en operación normal ni en falla.
+     · boostProfile — solo actúa con Boost marcado (widget, caudal sin enlaces, justificación).
+     · fecMode y selTrafico — entran en el motor de ingeniería de EdgeConnect (Path Conditioning
+       e IMIX del requerimiento); los gateways se dimensionan por firewall, clientes y APs, así
+       que con la familia en gateways no cambian ni el equipo ni la lista. */
+function marcarInactivo(id, inactivo, motivo){
+  const el=$(id); if(!el) return;
+  const caja=el.closest('.field'); if(!caja) return;
+  el.disabled=inactivo;
+  caja.toggleAttribute('data-inactivo', inactivo);
+  let nota=caja.querySelector(':scope > .motivo-inactivo');
+  if(inactivo){
+    if(!nota){ nota=document.createElement('p'); nota.className='hint motivo-inactivo'; caja.appendChild(nota); }
+    nota.textContent=motivo;
+  }else if(nota) nota.remove();
+}
+function sincronizarCampos(){
+  const links=leerWanLinks();
+  const hayInternet=links.some(l=>!/^MPLS/.test(l.tipo));
+  marcarInactivo('chkBreakout', !hayInternet, 'Sin efecto: todos los enlaces declarados son MPLS, así que no hay Internet por la que sacar tráfico en local. Se activa al declarar un enlace de Internet o celular.');
+  marcarInactivo('boostProfile', !$('chkBoost').checked, 'Sin efecto: el perfil de datos solo cuenta con Boost marcado.');
+  const soloGw=famMode==='sucursal'||famMode==='campus';
+  marcarInactivo('fecMode', soloGw, 'Sin efecto con gateways: Path Conditioning (FEC) es de EdgeConnect y solo entra en su requerimiento.');
+  marcarInactivo('selTrafico', soloGw, 'Sin efecto con gateways: la mezcla IMIX solo entra en el requerimiento de EdgeConnect; los gateways se comparan con el 70 % de su firewall.');
+}
+
 function render(){
   if(!datosListos) return; // M5: sin catálogo no hay nada que dimensionar (ver datosListos)
+  sincronizarCampos();
   // HA pre-marcado PRIMERO (regla del dueño, 2026-09-17): las unidades, la revisión del
   // diseño y el BOM se derivan de la casilla ya ajustada — si se aplicara después del
   // estado derivado, el primer repintado cotizaría 1 unidad con la casilla marcada.
@@ -1857,8 +1954,7 @@ function render(){
   const D=estadoDerivado();
   const {users,aps,head,boost,fec,perfil,needProc,wanNeed,tasaFlujos,flujosReq,tier}=D;
   // Barra agregada del underlay (etapa A): viva en cada cambio, aunque no haya
-  // recomendación todavía — es el espejo de lo que el builder está declarando.
-  pintarWanResumen();
+  // recomendación todavía. Se pinta al final de poblarPickModel, con el modelo de ESTE render.
   // El chooser de ópticas NO se pinta aquí: lee el modelo de #pickModel y el combo se
   // repuebla al final de cada rama del render (poblarPickModel) — pintarlo antes lo
   // dejaba un render ATRÁS (con el modelo del render anterior; lo pescó la fila de la
@@ -1953,18 +2049,16 @@ function render(){
     track.appendChild(dot);
   });
 
-  let outByBoost=0,outByClients=0,outByAps=0,outBySinDato=0,outByFlujos=0,outByPersona=0,outByPuertos=0,sobrado=[];
+  let outByBoost=0,outByClients=0,outByAps=0,outBySinDato=0,outByFlujos=0,outByPersona=0,sobrado=[];
   // Fase 1 de la auditoria 2026-09-17: tres descartes nuevos, cada uno con su porque.
   const outBySo=[], outByDtd=[], outByBoostRec=[];
-  // A7 (2026-09-24): chasis sin jaulas SFP ante enlaces de fibra (fuera del caso EC-10104).
-  const outBySinSfp=[];
   // gwsec (2026-09-24): gateways sin nivel «+ Security» en el documento oficial (7000/7200),
   // y los que no llegan (o no publican) el throughput de IDS/IPS del VSG.
   const outBySinSec=[], outByIds=[], outByIdsEc=[];
-  // M2 · Auditoría de puertos (SPEC B.3): el EC-10104 (4× RJ-45, sin SFP) queda descartado
-  // si los enlaces declarados no caben en sus puertos o alguno es óptico. Se anota si el
-  // modelo habría sido candidato sin esta regla: es lo que dispara #alertaEscalado.
-  let ec10104Descartado=false;
+  // M2 · Auditoría de puertos (SPEC B.3, para todo chasis desde el 2026-10-15): un modelo en
+  // el que algún enlace no tiene puerto queda fuera. Se anota con su motivo y solo si habría
+  // cumplido todo lo demás: es lo que dispara #alertaEscalado y el porqué del veredicto.
+  const outByPuertos=[];
   const candidates=MODELS.filter(m=>{
     if(!coincideFiltro(m,famMode)) return false;
     // Arquetipo de sede (fase 11): restringe el catalogo a los modelos que el VSG
@@ -2021,13 +2115,11 @@ function render(){
       const rec=ArubaReglas.boostRecMbps(m);
       if(rec!=null&&D.boostMbps>rec){ outByBoostRec.push(m.id); return false; }
     }
-    // Auditoría de puertos EC-10104: la regla se evalúa AL FINAL para saber si el modelo
-    // habría cumplido todo lo demás (y por tanto el dimensionador está escalando por
-    // densidad de puertos u ópticas, no por capacidad).
-    if(m.id==='EC-10104'){
-      // La MISMA regla del semáforo de #wanResumen (evaluarPuertos), no una copia.
-      if(evaluarPuertos(m,D.wanLinks).nivel==='rojo'){ outByPuertos++; ec10104Descartado=true; return false; }
-    }else if(evaluarPuertos(m,D.wanLinks).nivel==='rojo'){ outBySinSfp.push(m.id); return false; }
+    // Auditoría de puertos: la regla se evalúa AL FINAL para saber si el modelo habría
+    // cumplido todo lo demás (y por tanto el dimensionador está escalando por los puertos o
+    // el medio de los enlaces, no por capacidad). La MISMA regla del semáforo de #wanResumen.
+    const ev=evaluarPuertos(m,D.wanLinks);
+    if(ev.nivel==='rojo'){ outByPuertos.push({m, motivo:ev.motivo}); return false; }
     return true;
   });
   // Generacion actual primero: entre dos que cumplen, la linea AOS 8 (series 7000/7200)
@@ -2043,8 +2135,11 @@ function render(){
   // tan util como el techo.
   candidates.forEach(m=>{ if(m.fam==='ec'&&m.wanMin!=null&&wanNeed<m.wanMin) sobrado.push(m.id); });
 
-  const rx=SEG_MATCH[segMode];
-  const pick=FICHA.recomendar(candidates, rx?(m=>rx.test(m.seg)):null);
+  // Sin preferencia de segmento (retirada el 2026-10-15): el selector «Segmento de instalación»
+  // solo reordenaba la recomendación por el texto del campo `seg`, y con «Sucursal» por defecto
+  // saltaba al primer equipo cuyo rótulo dijera «Sucursal» aunque uno menor cumpliera. El
+  // tamaño de sitio ya lo fija el arquetipo de sede (PERSONA_MODELOS), con modelos del VSG.
+  const pick=FICHA.recomendar(candidates, null);
   lastPick=pick;
 
   sincronizarConBom(pick);
@@ -2114,12 +2209,11 @@ function render(){
     if(outByClients) why.push(`<li><b>${outByClients}</b> gateway(s) descartado(s) por capacidad de clientes: hacen falta ${miles(users)}.</li>`);
     if(outByAps) why.push(`<li><b>${outByAps}</b> gateway(s) descartado(s) por número de APs: hacen falta ${miles(aps)}.</li>`);
     if(outByFlujos) why.push(`<li><b>${outByFlujos}</b> modelo(s) descartado(s) por flujos simultáneos: el perfil de entorno estima ${miles(flujosReq)} flujos activos (${miles(users)} usuarios × ${tasaFlujos}/usuario). Bajar el perfil o repartir la carga entre dos sitios son las salidas.</li>`);
-    if(outByPuertos) why.push(`<li><b>EC-10104</b> descartado por la auditoría de puertos: los enlaces declarados necesitan más de 4 puertos o alguno es óptico (SFP) y el 10104 solo trae 4× RJ-45. El escalón superior (EC-10106) ya añade jaulas SFP+.</li>`);
+    if(outByPuertos.length) why.push(`<li>Por los puertos del chasis (cada enlace en un puerto de su medio, más ${LAN_RESERVADOS} LAN): ${outByPuertos.map(x=>esc(x.motivo)).join(' ')}</li>`);
     if(outBySinSec.length) why.push(`<li><b>${outBySinSec.map(esc).join(', ')}</b> descartado${outBySinSec.length>1?'s':''} para IDS/IPS en el gateway: su serie no tiene nivel «+ Security» de Central en el documento oficial de HPE (solo 9000, 9100 y 9200).</li>`);
     if(outByIds.length) why.push(`<li>Por el eje de IDS/IPS (cifra oficial del VSG SD-Branch): ${outByIds.map(x=>`<b>${esc(x.id)}</b> — ${esc(x.motivo)}`).join('; ')}.</li>`);
     if(outByIdsEc.length) why.push(`<li>Por la capacidad de IDS/IPS de Dynamic Threat Defense (cifra oficial de su spec sheet): ${outByIdsEc.map(x=>`<b>${esc(x.id)}</b> — ${esc(x.motivo)}`).join('; ')}.</li>`);
     if(secMode==='gwsec'&&famMode==='ec') why.push('<li>IDS/IPS en el gateway no aplica a EdgeConnect (allí la vía es Dynamic Threat Defense): con la familia en EdgeConnect no queda ningún candidato.</li>');
-    if(outBySinSfp.length) why.push(`<li><b>${outBySinSfp.map(esc).join(', ')}</b> descartado${outBySinSfp.length>1?'s':''} por la auditoría de puertos: los enlaces de fibra declarados no caben en sus jaulas — sin SFP, o sin SFP28 para los de 25G — según su ficha y su matriz oficial de ópticas.</li>`);
     if(outBySinDato) why.push(`<li><b>${outBySinDato}</b> modelo(s) sin cifra de throughput publicada en las fuentes consultadas (serie 9100). Aparecen en la pestaña "Equipo y BOM" y su capacidad hay que confirmarla en las QuickSpecs.</li>`);
     // La salida genérica «por encima del catálogo» queda absorbida por el bloque de
     // desbordamiento cuando es ese el caso — repetirla sería ruido debajo de la versión
@@ -2187,11 +2281,14 @@ function render(){
     if(m.fam==='gw'&&m.rol==='sucursal'&&!m.legacy) flags.push(`<b>Sucursal:</b> el mismo equipo termina la WAN y hace de controladora de APs (hasta ${miles(m.aps)}), aplicando Dynamic Segmentation con el rol que traen el switch CX o el AP. No hace optimización WAN.`);
     if(m.fam==='gw') flags.push(`<b>Central ${nivelAutoCentral()==='advanced'?'Advanced':'Foundation'}:</b> ${nivelAutoCentral()==='advanced'?'deducido de las funciones marcadas (segmentación de extremo a extremo o AIOps ampliada)':'gestión SD-Branch completa — firewall, VPN y políticas por aplicación ya son Foundation, sin funciones que fuercen el nivel superior'}.`);
     if(m.licCap&&nivel) flags.push(`<b>Capacidad por licencia (${esc(SO_NOMBRE[soMode]||soMode)}):</b> escala sin cambiar de hardware. Para ${fmt(req)} hace falta el nivel <b>${esc(nivel.n)}</b> (${fmt(nivel.fw)}, ${miles(nivel.aps)} APs, ${miles(nivel.clients)} dispositivos).${soMode==='aos10'&&nivel.code!=='hw'?' En AOS 10 las licencias Silver y Gold no admiten IDPS (HPE, «AOS 10 Capacity Licenses»).':''}`);
-    // M2 · Aviso de densidad de ópticas (SPEC B.3), visible en la ficha — la misma regla
-    // va además a la «revisión del diseño» de la exportación (REGLAS_DISENO).
-    const exceso=excesoJaulas(m,D.wanLinks);
-    if(exceso)
-      flags.push(`<b class="warn">Densidad de ópticas:</b> el escenario declara ${esc(exceso)} — recablea algún enlace a RJ-45/DAC o revisa el medio declarado en el builder.`);
+    // M2 · Puertos del chasis (2026-10-15): dónde va cada enlace, con la misma regla que el
+    // descarte, la barra del underlay y la «revisión del diseño» (REGLAS_DISENO).
+    if(m.puertos){
+      const evP=evaluarPuertos(m,D.wanLinks), us=evP.asignacion.usados||{};
+      const nEnl=D.wanLinks.filter(l=>l.down>0||l.up>0).length;
+      if(evP.nivel==='rojo') flags.push(`<b class="warn">Puertos:</b> ${esc(evP.motivo)}`);
+      else if(nEnl) flags.push(`<b>Puertos:</b> ${nEnl} enlace${nEnl===1?'':'s'} WAN y ${LAN_RESERVADOS} LAN sobre ${esc(inventarioTxt(m.puertos))} — ocupa ${esc(Object.keys(NOMBRE_PUERTO).filter(k=>us[k]).map(k=>`${us[k]}x ${NOMBRE_PUERTO[k]}`).concat(evP.asignacion.celular?[`el ${NOMBRE_PUERTO.celular}`]:[]).join(', '))}.${evP.nivel==='ambar'?` <span class="warn">${esc(evP.motivo)}</span>`:''}`);
+    }
     // M4 · EC-10150: doble PSU de fábrica (texto informativo, SPEC B.5) — no hay segunda
     // fuente que cotizar, a diferencia del Gateway 9240, que sí la ofrece (#chkDualPsu).
     if(m.id==='EC-10150') flags.push('<b>Alimentación:</b> el EC-10150 lleva <b>doble PSU redundante de fábrica</b> — no hay segunda fuente que cotizar. Lo que sí puede necesitar es el kit Network Memory S2N67A si se licencia Boost por encima de 1 Gbps (el motor lo añade solo).');
@@ -2409,24 +2506,35 @@ function render(){
   poblarPickModel(candidates, pick.id);
   let mManual=$('pickModel').dataset.bomManual==='1'
     ?(MODELS.find(x=>x.id===$('pickModel').value)||null):null;
-  // M2 · Escalado por auditoría de puertos (SPEC B.3): si el EC-10104 habría cumplido por
-  // capacidad pero los enlaces no le caben, el dimensionador escala al escalón superior.
-  // La alerta solo se muestra cuando el escalado es real: el 10104 era la elección manual
-  // o habría sido el recomendado (no hay candidato de menor capacidad que cumpla). Si era
-  // la elección manual, se suelta y el selector sigue al nuevo recomendado.
-  const cap10104=(()=>{ const x=MODELS.find(m=>m.id==='EC-10104'); return x?capacidadMax(x):null; })();
-  const hayMenorQueCumple=cap10104!=null&&candidates.some(m=>capacidadMax(m)<cap10104);
-  if(ec10104Descartado&&((mManual&&mManual.id==='EC-10104')||!hayMenorQueCumple)){
+  // M2 · Escalado por los puertos (SPEC B.3; para todo chasis desde el 2026-10-15): si un
+  // modelo menor que el recomendado habría cumplido por capacidad pero los enlaces no le
+  // caben, la alerta lo dice con su motivo. Una elección manual en la que los enlaces ya no
+  // caben se suelta y el selector sigue al recomendado: cambiar el medio de un enlace mueve
+  // el equipo en los dos sentidos, también de vuelta al menor cuando vuelve a caber.
+  const capPick=capacidadMax(pick);
+  const menores=outByPuertos.filter(x=>(!FICHA.recomendable||FICHA.recomendable(x.m))&&capacidadMax(x.m)<capPick)
+    .sort((a,b)=>capacidadMax(a.m)-capacidadMax(b.m));
+  const sinPuertosManual=mManual?outByPuertos.find(x=>x.m.id===mManual.id):null;
+  // La excepción de «elegido a mano aunque no quepa» vale para los enlaces con los que se eligió;
+  // si el elegido vuelve a caber, se borra: volver luego al medio de antes ya es otro cambio.
+  if(mManual&&!sinPuertosManual) delete $('pickModel').dataset.firmaPuertos;
+  const manualSinPuertos=sinPuertosManual&&$('pickModel').dataset.firmaPuertos!==firmaPuertos(D.wanLinks)?sinPuertosManual:null;
+  const escalado=manualSinPuertos||(sinPuertosManual?null:menores[0])||null;
+  if(manualSinPuertos){
+    BOM.soltarManual('pickModel');
+    delete $('pickModel').dataset.bomManual;
+    $('pickModel').value=pick.id;
+    mManual=null;
+  }
+  if(escalado){
+    $('alertaEscalado').innerHTML=`<b>Equipo escalado por los puertos:</b> el ${esc(escalado.m.id)} ${manualSinPuertos?'estaba elegido':'cumpliría por capacidad'}, pero ${esc(escalado.motivo.slice(('El '+escalado.m.id+' ').length))} Se propone el <b>${esc(pick.id)}</b>, que sí tiene dónde conectar cada enlace.`;
     $('alertaEscalado').hidden=false;
-    if(mManual&&mManual.id==='EC-10104'){
-      BOM.soltarManual('pickModel');
-      delete $('pickModel').dataset.bomManual;
-      $('pickModel').value=pick.id;
-      mManual=null;
-    }
   }else{
     $('alertaEscalado').hidden=true;
   }
+  // La barra del underlay se repinta con el modelo YA resuelto de este render (ver
+  // pintarWanResumen): pintada antes, decía «cabe en» el equipo del render anterior.
+  pintarWanResumen();
   const elegidoId=FICHA.render({...FICHA_CFG,
     contenedor:'verdict',
     candidatos:candidates,
@@ -2449,6 +2557,7 @@ function render(){
       if(origen==='candidato'){
         if($('pickModel').value!==id) $('pickModel').value=id;
         $('pickModel').dataset.bomManual='1';
+        $('pickModel').dataset.firmaPuertos=firmaPuertos(leerWanLinks());
         render();
         return;
       }
@@ -2504,6 +2613,7 @@ function poblarPickModel(cumplen, recomendado){
   // principio del render y quedaba un ciclo atrás (la fila de interconexión EdgeHA no
   // aparecía hasta el siguiente cambio de cualquier campo).
   pintarSfpChooser();
+  pintarWanResumen();
 }
 
 function populateSelects(){
@@ -3418,6 +3528,7 @@ async function compararListaPrecios(archivo){
   if(QMODEL_URL&&[...$('pickModel').options].some(o=>o.value===QMODEL_URL)){
     $('pickModel').value=QMODEL_URL;
     $('pickModel').dataset.bomManual='1';
+    $('pickModel').dataset.firmaPuertos=firmaPuertos(leerWanLinks());
   }
   render();
   // Deep-link: ?ficha=abierta abre las características al cargar. El clic pasa por el
@@ -3463,7 +3574,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // se migra a filas equivalentes con aviso por consola; y al final se reconstruyen las
   // filas desde la serialización que haya quedado.
   reconstruirWanDesdeHidden();
-  const st = ESTADO.vincular({ campos: CAMPOS_ESCENARIO, migrados: PARAMS_V1 });
+  const st = ESTADO.vincular({ campos: CAMPOS_ESCENARIO, migrados: PARAMS_RETIRADOS });
   // Migración v1→v2: migrarEstadoV1 escribe la serialización en el input oculto; hay que
   // reconstruir las filas DESPUÉS y entonces avisar a ESTADO (sincronizarWanHidden leería
   // las filas viejas y pisaría lo migrado — orden importa).
