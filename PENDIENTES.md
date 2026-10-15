@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-15, vigesimoséptima entrega (**Botones del dashboard sin «BOM».** Encargo del dueño: los siete botones de fabricante del portal dicen solo el nombre (FortiGate, Cisco, Huawei, Juniper, MikroTik, Aruba, Starlink); «Cotizador BOM» no es de un fabricante y se queda. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-15, vigesimoctava entrega (**La mejora propuesta: los accesos del portal, con el color de su tarjeta.** Los nueve botones bajo el título dejan el `style=` repetido por una clase `acceso-<id>`, y una prueba casa cada color con el de la tarjeta del fabricante en `index.js`. Se ven igual, píxel a píxel. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-15, vigesimoséptima entrega (**Botones del dashboard sin «BOM».** Encargo del dueño: los siete botones de fabricante del portal dicen solo el nombre (FortiGate, Cisco, Huawei, Juniper, MikroTik, Aruba, Starlink); «Cotizador BOM» no es de un fabricante y se queda. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, vigesimosexta entrega (**Con el PC otra vez: el vCPE completo.** En el Chrome del dueño: la ficha R25C00 del AR6700V-L da el SD-WAN IPsec IMIX (400 Mbps, 3, 5 y 11 Gbps; ancla con la R26C00 en dos filas) y su «License Usage Guide» los 32 códigos N1 (Foundation y Advanced por tamaño, con SnS de 1, 3 y 5 años). El BOM del vCPE ya cita su paquete y su SnS. Info-Finder no publica para esta cuenta las instancias de nube del vCPE. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-14, vigesimoquinta entrega (**La mejora propuesta —figuras del AR502H-V2— y los pendientes que se podían cerrar sin el PC.** Los tres AR502H-V2 llevan la figura de la p. 1 de su ficha, sin pérdida y con su transparencia (el LTE4AU-V2 comparte dibujo con el LTE4EA-V2, como en la ficha). El paquete N1 del vCPE sigue sin código: ni su ficha R26C00 ni la R25C00 lo listan. **Hallazgo**: la ficha R25C00 del AR6700V-L publica el SD-WAN IPsec en IMIX (que la R26C00 quitó); no entra hasta leer el documento, no su resumen. Ver *Cerrado recientemente* y *Capacidades SD-WAN: lo que queda abierto*.)
 Revisión anterior: 2026-10-14, vigesimocuarta entrega (**vCPE AR6700V-L como cuarta plataforma y AR502H-V2 en la serie AR.** Encargo del dueño: «avanzar» sobre los pendientes que no necesitan PC. Las dos fichas ya estaban en `fuente/huawei-familias-2026-10-12`. El vCPE se dimensiona por SD-WAN típico IMIX según los vCPU (2/4/7 Gbps con 4/8/16; con 2 no hay cifra y se aparta), oculta PoE, 4G/5G, Wi-Fi, LAN y APs, y declara el servidor con que Huawei midió. Los tres AR502H-V2 (industriales de carril DIN, 1,3 Gbps / 800 Mbps / 620 Mbps) van detrás en un empate, para no proponer un equipo industrial a una oficina. Ver *Cerrado recientemente*.)
@@ -2003,6 +2004,21 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Accesos del portal con el color de su tarjeta (2026-10-15, vigesimoctava entrega)
+
+La mejora propuesta al cerrar la entrega anterior. Los nueve botones bajo el título del portal
+repetían en `style=` unos 120 caracteres cada uno, y el color de cada fabricante estaba escrito a
+mano aparte del de su tarjeta (`VENDORS` en `public/js/index.js`). Ahora van en `.accesos`,
+`.btn.acceso` y una clase `acceso-<id>` por botón en el `<style>` de `index.html`, y
+`test/portal-accesos.test.js` casa cada color con el de la tarjeta (`accentTxt || accent`), exige
+que no vuelva el `style=` y que cada clase usada esté declarada (Starlink y la guía no tienen
+tarjeta y se declaran en `PROPIOS`). Saboteada: un Cisco con `#049FD9` la pone en rojo.
+**Comprobado en Chromium contra el commit anterior**: fondo, borde, color, tamaño, posición y
+color al pasar el ratón idénticos en los nueve botones (una primera medida dio 2 px de diferencia
+que eran la carga de tipografías; con `document.fonts.ready`, idénticos). `pantallas` 17/17,
+`e2e` en verde (axe incluido sobre el portal), `puerta` cerrada. **No hay caso de `contraste`
+para el portal**: lo que vigila el contraste de color de estos botones es la batería de axe.
 
 ### Botones de fabricante del dashboard sin «BOM» (2026-10-15, vigesimoséptima entrega)
 
