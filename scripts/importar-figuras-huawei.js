@@ -21,6 +21,7 @@
 // La carpeta lleva las imágenes y un procedencia.json:
 //   { "AR5710-S8T2S": { "front": "s8t2s-front.png", "rear": "s8t2s-rear.png",
 //       "fuente": "Galería de imágenes de productos de Info-Finder (50010720) — «NetEngine AR5710-S8T2S». …" } }
+// «tamano» ("43,6 × 442 × 420 mm (Al × An × Fo)") solo hace falta en un modelo sin figura previa.
 // «fuente» sustituye a la del modelo: tiene que describir las caras que quedan publicadas.
 
 const fs = require('fs');
@@ -30,6 +31,10 @@ const { execFileSync } = require('child_process');
 const RAIZ = path.join(__dirname, '..');
 const JSON_RUTA = path.join(RAIZ, 'public', 'data', 'huawei-vistas-equipos.json');
 const IMG_DIR = path.join(RAIZ, 'public', 'img', 'equipos');
+// El tamaño de cada figura publicada. Lo escribe este comando y lo vigila
+// test/huawei-vistas-equipos.test.js: una figura que encoge o que entra sin pasar por aquí
+// pone la prueba en rojo, también si alguien edita el JSON a mano.
+const LOCK_RUTA = path.join(RAIZ, 'scripts', 'figuras-huawei.lock.json');
 const CARAS = ['front', 'rear'];
 
 // Dimensiones de una imagen PNG, JPEG o WebP, leyendo su cabecera (sin dependencias).
@@ -60,6 +65,29 @@ function dimensiones(buf) {
   return null;
 }
 
+// Las reglas del pie que test/huawei-vistas-equipos.test.js exige a cada figura publicada, para
+// rechazar al planificar lo que verificar rechazaría después: documento con página (o la
+// galería con su código) y rótulo literal; un rótulo que nombra a este modelo y no a un hermano;
+// y la variante de alimentación que dibuja en las NetEngine 8000 y las A800 E.
+const PIE = /^((Data ?[Ss]heet|NetEngine) .+, (p\.|diapositiva) \d+|Galería de imágenes de productos de Info-Finder \([^)]{3,}\)) — «[^»]{6,}»\. \S/;
+const claveRotulo = (s) => s.replace(/\(.*?\)|（.*?）/g, '').replace(/\s*service router/i, '').replace(/NetEngine|NE|Router/g, '').replace(/[\s*]/g, '').toLowerCase();
+
+function problemasDelPie(modelo, fuente) {
+  const out = [];
+  if (!PIE.test(fuente)) out.push('el pie no sigue «<documento>, p. N — «<rótulo>». …» ni «Galería de imágenes de productos de Info-Finder (<código>) — «<rótulo>». …»');
+  const rotulo = (fuente.match(/«([^»]+)»/) || [])[1] || '';
+  if (!rotulo.split(' / ').map(claveRotulo).includes(claveRotulo(modelo))) out.push(`el rótulo citado («${rotulo}») no nombra este modelo`);
+  if (/^NE8000 [MF]/.test(modelo)) {
+    const m = /variante (DC|AC)/.exec(fuente);
+    if (!m) out.push('no dice qué variante de alimentación dibuja («variante DC»)');
+    else if (!new RegExp('(también la|no publica por separado la) ' + (m[1] === 'DC' ? 'AC' : 'DC')).test(fuente)) out.push('no dice que el documento trae también la otra variante');
+  }
+  if (/^NetEngine A8\d\d E$/.test(modelo) && !(/una fuente AC/.test(fuente) && /doble AC/.test(fuente))) {
+    out.push('no dice que dibuja la variante de una fuente AC y que hay doble AC');
+  }
+  return out;
+}
+
 const slug = (modelo) => modelo.toLowerCase().replace(/^netengine\s+/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 function planificar(carpeta, { modelos, vistas, aunqueMenor = false }) {
@@ -70,10 +98,17 @@ function planificar(carpeta, { modelos, vistas, aunqueMenor = false }) {
   const errores = []; const cambios = [];
   for (const [modelo, e] of Object.entries(proc)) {
     if (!ids.has(modelo)) { errores.push(`${modelo}: no está en el catálogo de Huawei`); continue; }
-    const extra = Object.keys(e).filter((k) => !CARAS.includes(k) && k !== 'fuente');
+    const extra = Object.keys(e).filter((k) => !CARAS.includes(k) && k !== 'fuente' && k !== 'tamano');
     if (extra.length) errores.push(`${modelo}: claves desconocidas (${extra.join(', ')}); las caras son front y rear`);
     if (typeof e.fuente !== 'string' || e.fuente.trim().length < 30) {
       errores.push(`${modelo}: sin procedencia escrita (documento o galería, código y rótulo)`); continue;
+    }
+    const pie = problemasDelPie(modelo, e.fuente.trim());
+    if (pie.length) { for (const p of pie) errores.push(`${modelo}: ${p}`); continue; }
+    // El tamaño del equipo lo pinta el pie: un modelo sin figura previa lo trae en la carpeta.
+    const tamano = e.tamano || (vistas[modelo] && vistas[modelo].tamano);
+    if (!/\d+(,\d+)? × \d+(,\d+)? × \d+(,\d+)? mm/.test(tamano || '')) {
+      errores.push(`${modelo}: falta «tamano» («Al × An × Fo mm», de su ficha)`); continue;
     }
     const caras = CARAS.filter((c) => e[c]);
     if (!caras.length) { errores.push(`${modelo}: no trae ni front ni rear`); continue; }
@@ -97,7 +132,7 @@ function planificar(carpeta, { modelos, vistas, aunqueMenor = false }) {
       const destino = actual && !compartida ? actual : `/img/equipos/hw-${slug(modelo)}-${cara}.webp`;
       cambios.push({ modelo, cara, origen: archivo, tipo: d.tipo, ancho: d.ancho, alto: d.alto,
         antes: antes ? `${antes.ancho} × ${antes.alto}` : null, compartida: !!compartida,
-        destino, fuente: e.fuente.trim() });
+        destino, fuente: e.fuente.trim(), tamano });
     }
   }
   return { errores, cambios };
@@ -110,12 +145,21 @@ function aWebpSinPerdida(origen, destino, tipo) {
   if (!d || !d.sinPerdida) throw new Error(`${destino}: cwebp no produjo un WebP sin pérdida`);
 }
 
-function aplicar(plan, vistas) {
+function escribirLock(lock) {
+  const orden = {};
+  for (const k of Object.keys(lock).sort()) orden[k] = lock[k];
+  const texto = JSON.stringify(orden, null, 1).replace(/\[\n\s+(\d+),\n\s+(\d+)\n\s+\]/g, '[$1, $2]');
+  fs.writeFileSync(LOCK_RUTA, texto + '\n');
+}
+
+function aplicar(plan, vistas, lock) {
   for (const c of plan.cambios) {
+    lock[c.destino] = [c.ancho, c.alto];
     aWebpSinPerdida(c.origen, path.join(RAIZ, 'public', c.destino), c.tipo);
     vistas[c.modelo] = vistas[c.modelo] || {};
     vistas[c.modelo][c.cara] = c.destino;
     vistas[c.modelo].fuente = c.fuente;
+    vistas[c.modelo].tamano = c.tamano;
   }
   return vistas;
 }
@@ -138,11 +182,13 @@ function main(argv) {
     }
   }
   fs.mkdirSync(IMG_DIR, { recursive: true });
-  fs.writeFileSync(JSON_RUTA, JSON.stringify(aplicar(plan, vistas), null, 2) + '\n');
-  console.log(`\n${plan.cambios.length} figura(s) escritas sin pérdida y ${path.relative(RAIZ, JSON_RUTA)} actualizado.`);
+  const lock = JSON.parse(fs.readFileSync(LOCK_RUTA, 'utf8'));
+  fs.writeFileSync(JSON_RUTA, JSON.stringify(aplicar(plan, vistas, lock), null, 2) + '\n');
+  escribirLock(lock);
+  console.log(`\n${plan.cambios.length} figura(s) escritas sin pérdida y ${path.relative(RAIZ, JSON_RUTA)} y ${path.relative(RAIZ, LOCK_RUTA)} actualizados.`);
   return 0;
 }
 
 if (require.main === module) process.exit(main(process.argv));
 
-module.exports = { dimensiones, planificar, slug };
+module.exports = { dimensiones, planificar, problemasDelPie, slug };

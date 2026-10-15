@@ -10,7 +10,7 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { planificar, dimensiones } = require('../scripts/importar-figuras-huawei');
+const { planificar, dimensiones, problemasDelPie } = require('../scripts/importar-figuras-huawei');
 
 // Una cabecera PNG basta: el plan solo lee el tamaño.
 function png(ancho, alto) {
@@ -21,7 +21,8 @@ function png(ancho, alto) {
   return b;
 }
 
-const FUENTE = 'Galería de imágenes de productos de Info-Finder (50010720) — «NetEngine AR5710-S8T2S». Render oficial.';
+const fuente = (rotulo) => `Galería de imágenes de productos de Info-Finder (50010720) — «NetEngine ${rotulo}». Render oficial.`;
+const FUENTE = fuente('AR5710-S8T2S');
 const modelos = [{ id: 'AR5710-S8T2S' }, { id: 'AR8140-12G10XG' }, { id: 'AR8140-T-12G10XG' }];
 const vistas = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'public/data/huawei-vistas-equipos.json'), 'utf8'));
 
@@ -43,7 +44,7 @@ test('una figura mayor, con su procedencia, entra con la ruta que ya tenía', ()
 
 test('se rechaza lo que entraría mal: modelo ajeno, cara mal escrita, sin procedencia, más pequeña', () => {
   const d = carpeta({ 'f.png': png(4000, 600), 'chica.png': png(100, 20) }, {
-    'AR9999': { front: 'f.png', fuente: FUENTE },
+    'AR9999': { front: 'f.png', fuente: fuente('AR9999') },
     'AR5710-S8T2S': { trasera: 'f.png', front: 'chica.png', fuente: FUENTE },
     'AR8140-12G10XG': { front: 'f.png', fuente: 'corta' },
   });
@@ -70,7 +71,7 @@ test('un WebP con pérdida no entra: hace falta el original', () => {
 test('una figura que comparten dos modelos no se pisa: la nueva va a su propio archivo', () => {
   // El AR8140 y el AR8140-T publican la misma figura (hw-ar8140-front.webp).
   assert.strictEqual(vistas['AR8140-12G10XG'].front, vistas['AR8140-T-12G10XG'].front);
-  const p = planificar(carpeta({ 'f.png': png(5000, 900) }, { 'AR8140-T-12G10XG': { front: 'f.png', fuente: FUENTE } }), { modelos, vistas });
+  const p = planificar(carpeta({ 'f.png': png(5000, 900) }, { 'AR8140-T-12G10XG': { front: 'f.png', fuente: fuente('AR8140-T-12G10XG') } }), { modelos, vistas });
   assert.deepStrictEqual(p.errores, []);
   assert.strictEqual(p.cambios[0].destino, '/img/equipos/hw-ar8140-t-12g10xg-front.webp');
   assert.strictEqual(p.cambios[0].compartida, true);
@@ -79,4 +80,33 @@ test('una figura que comparten dos modelos no se pisa: la nueva va a su propio a
 test('las figuras que ya hay se leen bien: WebP sin pérdida con su tamaño', () => {
   const buf = fs.readFileSync(path.join(__dirname, '..', 'public', vistas['NE8000 F8'].front));
   assert.deepStrictEqual(dimensiones(buf), { tipo: 'webp', sinPerdida: true, ancho: 1028, alto: 1230 });
+});
+
+test('el pie se comprueba al planificar con las reglas de la prueba de figuras', () => {
+  // Lo que verificar rechazaría después: un rótulo de un hermano, un pie sin documento ni
+  // galería, una NE8000 que no dice qué variante dibuja.
+  assert.deepStrictEqual(problemasDelPie('AR5710-S8T2S', FUENTE), []);
+  assert.match(problemasDelPie('AR5710-S8T2X', fuente('AR5710-S8T2XE')).join(), /no nombra este modelo/);
+  assert.match(problemasDelPie('AR5710-S8T2S', 'Una foto que encontré en la web del fabricante, bonita.').join(), /el pie no sigue/);
+  assert.match(problemasDelPie('NE8000 M1A', fuente('8000 M1A')).join(), /variante/);
+  const p = planificar(carpeta({ 'f.png': png(4000, 600) }, { 'AR5710-S8T2S': { front: 'f.png', fuente: fuente('AR5710-S8T2SE') } }), { modelos, vistas });
+  assert.match(p.errores.join(), /no nombra este modelo/);
+  assert.deepStrictEqual(p.cambios, []);
+});
+
+test('todas las figuras publicadas pasarían hoy por el importador', () => {
+  for (const [modelo, v] of Object.entries(vistas)) {
+    if (modelo.startsWith('_')) continue;
+    assert.deepStrictEqual(problemasDelPie(modelo, v.fuente), [], modelo);
+  }
+});
+
+test('un modelo sin figura previa trae el tamaño del equipo en la carpeta', () => {
+  const sinFigura = [...modelos, { id: 'AR9998' }];
+  const sinTamano = planificar(carpeta({ 'f.png': png(900, 200) }, { 'AR9998': { front: 'f.png', fuente: fuente('AR9998') } }), { modelos: sinFigura, vistas });
+  assert.match(sinTamano.errores.join(), /AR9998: falta «tamano»/);
+  const conTamano = planificar(carpeta({ 'f.png': png(900, 200) },
+    { 'AR9998': { front: 'f.png', fuente: fuente('AR9998'), tamano: '43,6 × 442 × 420 mm (Al × An × Fo)' } }), { modelos: sinFigura, vistas });
+  assert.deepStrictEqual(conTamano.errores, []);
+  assert.strictEqual(conTamano.cambios[0].destino, '/img/equipos/hw-ar9998-front.webp');
 });

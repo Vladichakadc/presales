@@ -406,8 +406,10 @@ Módulos compartidos:
   del documento) en `public/data/huawei-vistas-equipos.json`; una figura solo se cambia por la de
   otro documento si es el mismo dibujo. Los renders de la Galería de imágenes de Info-Finder solo se
   bajan con la sesión del dueño (desde su Mac); entran con `npm run figuras-huawei`, que exige
-  modelo del catálogo, cara, procedencia, no ser menor que la actual y WebP sin pérdida, y no pisa
-  un archivo que comparten dos modelos. Sin trasera oficial, la pestaña «Trasera» dice por qué
+  modelo del catálogo, cara, el pie que exige la prueba de figuras (documento o galería, rótulo del
+  propio modelo, variante de alimentación), no ser menor que la actual y WebP sin pérdida, y no pisa
+  un archivo que comparten dos modelos. **No se edita el JSON a mano**: el importador escribe
+  `scripts/figuras-huawei.lock.json` y la prueba frena una figura que encoge o que no está en él. Sin trasera oficial, la pestaña «Trasera» dice por qué
   (`rearNota`). **El ciclo de vida sigue sin respaldo**: pide una cuenta
   Huawei (Info-Finder exige sesión).
 - **Cisco**: la plataforma se elige antes que el caudal (`PLATAFORMAS`: IOS XE SD-WAN, ISR 1000,

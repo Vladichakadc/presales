@@ -2127,6 +2127,26 @@ que ya se comprobó y lo que cuesta cada opción.
   de contraste, 17 pantallas, e2e completo y la puerta, contra el servidor en modo producción; la
   pantalla conducida en Chromium (unidades, marcadores, enlace compartido que repone los enlaces).
 
+### La mejora propuesta: ninguna figura de Huawei encoge ni entra sin el importador (2026-10-15, tarde)
+
+Encargo del dueño, repetido: ejecutar pendientes y la mejora propuesta, y revisar la página
+oficial de Huawei abierta en el Mac. **Esta sesión sigue sin llegar al Mac** (en la nube, sin
+herramientas de navegador remoto, ninguna sesión a la que escribir). Lo que sí se ve: otra sesión
+ya lee Huawei con el Chrome del dueño (ficha y License Usage Guide del AR6700V-L, commit 2e65750);
+lo de abajo es para ella. **PDF4me** vuelve a listar sus herramientas y falla con `example.com`.
+
+- **Registro de tamaños** `scripts/figuras-huawei.lock.json` (60 figuras): lo escribe
+  `npm run figuras-huawei -- … --aplicar`, y `test/huawei-vistas-equipos.test.js` frena una figura
+  que mide menos que lo registrado, una que no está en el registro (entró editando el JSON a mano)
+  y una entrada del registro que ya no usa nadie. Saboteado (el registro del A813 E a 5.650 px):
+  rojo con el modelo y las dos medidas.
+- **El importador comprueba el pie al planificar** con las reglas de la prueba de figuras
+  (`problemasDelPie`: documento con página o galería con código, rótulo del propio modelo con la
+  misma igualdad exacta, variante de alimentación de NE8000 y A800 E), y pide `tamano` a un modelo
+  sin figura previa. Antes aceptaba un pie que `verificar` rechazaba después (medido: un recorrido
+  con `--aplicar` dejó tres pruebas en rojo). Una prueba confirma que las 56 figuras publicadas
+  pasarían hoy por él.
+
 ### El importador de figuras de Huawei, y lo que queda para la sesión del Mac (2026-10-15)
 
 Encargo del dueño: ejecutar pendientes y la mejora propuesta, y revisar la página oficial de

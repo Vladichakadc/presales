@@ -57,6 +57,27 @@ test('cada figura es WebP SIN pérdida: los píxeles del documento, sin segunda 
   }
 });
 
+test('ninguna figura encoge ni entra sin pasar por npm run figuras-huawei (2026-10-15)', () => {
+  // Las figuras buenas llegan desde la sesión del dueño, en tandas. Una figura peor que pisa a
+  // una mejor no se ve en ninguna otra prueba: sigue siendo un WebP sin pérdida con su pie. El
+  // registro de tamaños lo escribe el importador; esta prueba compara cada figura con él.
+  const { dimensiones } = require('../scripts/importar-figuras-huawei');
+  const lock = JSON.parse(fs.readFileSync(path.join(RAIZ, 'scripts/figuras-huawei.lock.json'), 'utf8'));
+  const usadas = new Set();
+  for (const [modelo, v] of entradas) {
+    for (const cara of ['front', 'rear']) {
+      if (!v[cara]) continue;
+      usadas.add(v[cara]);
+      const registrado = lock[v[cara]];
+      assert.ok(registrado, `${modelo}: ${v[cara]} no está en scripts/figuras-huawei.lock.json — una figura nueva entra con npm run figuras-huawei`);
+      const d = dimensiones(fs.readFileSync(path.join(RAIZ, 'public', v[cara])));
+      assert.ok(d.ancho * d.alto >= registrado[0] * registrado[1],
+        `${modelo}: ${v[cara]} mide ${d.ancho} × ${d.alto} y el registro dice ${registrado.join(' × ')} — una figura no encoge (--aunque-menor si es a propósito)`);
+    }
+  }
+  for (const ruta of Object.keys(lock)) assert.ok(usadas.has(ruta), `${ruta} está en el registro y ya no lo usa ningún modelo`);
+});
+
 test('el F8 sirve el render de la galería de Info-Finder, a más resolución que el dibujo de sus fichas', () => {
   // Las fichas de 2023 (620 px) y 2025 (296 px) publican el mismo dibujo de la variante AC; la galería
   // de Info-Finder trae el chasis completo con tarjetas de ejemplo a 1.028 × 1.230 px (2026-10-12).
