@@ -315,7 +315,7 @@ function seccionSdwan(m){
   if(fx.extra) filas.push(['Además', esc(fx.extra), true]);
   filas.push(['Tope de túneles, sesiones y rutas', 'Sin dato: ' + esc(fx.tunelesMotivo), true]);
   filas.push(['Paquetes N1 (iMaster NCE)', fx.n1
-    ? `<code>${esc(fx.n1.sin)}</code> sin SD-WAN · <code>${esc(fx.n1.f)}</code> Foundation · <code>${esc(fx.n1.a)}</code> Advanced`
+    ? (fx.n1.sin ? `<code>${esc(fx.n1.sin)}</code> sin SD-WAN · ` : '') + `<code>${esc(fx.n1.f)}</code> Foundation · <code>${esc(fx.n1.a)}</code> Advanced`
     : 'La ficha de este equipo no lista el paquete N1: código por confirmar con Huawei', true]);
   return [{titulo:'Capacidades SD-WAN de la ficha', filas,
     nota:'De la tabla «Software Features and Protocols», la de rendimiento y la «Ordering Information» de «' + esc(fx.doc) + '». Las cifras SD-WAN son la suma de los dos sentidos.' + (fx.nota ? ' ' + esc(fx.nota) : '')}];

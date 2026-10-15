@@ -328,8 +328,18 @@
           ? { on: 1, t: 'Paquete N1 CloudCampus con SD-WAN, por equipo — elegir uno', d: `${fx.n1.f} (Foundation) o ${fx.n1.a} (Advanced)${doc}. Los dos traen topologías hub-spoke, full-mesh y partial-mesh, multi-hub y multi-VPN, IWG, A-FEC y duplicación de paquetes; Advanced añade multicast sobre SD-WAN, compresión, QoS adaptativo, ITP, NetStream, IFIT estático y orquestación de vCPE (ficha de la solución SD-WAN R25C00).` }
           : { on: 1, t: 'Licencia de función SD-WAN por equipo', d: 'Habilita identificación de aplicaciones, selección inteligente de ruta y túneles gestionados. La ficha de este modelo no se ha leído: código por confirmar.' });
         L.push({ on: 1, t: `Suscripción iMaster NCE-WAN — ${T}`, d: 'Controlador y gestión del overlay. Se licencia por nodo administrado.' });
-      } else if (fx && fx.n1) {
+      } else if (fx && fx.n1 && fx.n1.sin) {
         L.push({ on: 0, t: 'Paquete N1 sin SD-WAN', d: `${fx.n1.sin}: CloudCampus sin SD-WAN, para gestionar el equipo desde iMaster NCE sin overlay${doc}.` });
+      }
+      // El SnS del N1 del vCPE tiene código por plazo (1, 3 o 5 años) y es obligatorio con el paquete.
+      if (fx && fx.n1 && fx.n1.sns && (c.pk !== 'fwd' || c.svc.sdwan)) {
+        const plazo = [1, 3, 5].includes(anios) ? anios : null;
+        const cod = (k) => fx.n1.sns[k].replace('{años}', plazo);
+        L.push(plazo
+          ? soloAdv.length
+            ? { on: 1, t: `SnS del paquete N1 ${cod('a')} — ${T}`, sku: cod('a'), d: `Obligatorio con el paquete N1 (License Usage Guide del AR6700V-L).` }
+            : { on: 1, t: `SnS del paquete N1 — ${T}, elegir el del paquete`, d: `${cod('f')} con Foundation o ${cod('a')} con Advanced: obligatorio con el paquete N1 (License Usage Guide del AR6700V-L).` }
+          : { on: 1, t: `SnS del paquete N1 — ${T}`, d: 'Huawei lo vende a 1, 3 o 5 años: elige uno de esos plazos para ver su código.' });
       }
       if (c.svc.utm) {
         const pq = fx ? (fx.paquetes || []).filter((p) => p.para === 'utm') : [];

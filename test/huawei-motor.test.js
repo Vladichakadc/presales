@@ -495,12 +495,12 @@ test('2026-10-14 · cada AR trae sus capacidades SD-WAN de la ficha y el tope de
     assert.strictEqual(m.capSdwan.tuneles, null, 'ninguna ficha publica el tope: null, nunca un número inventado');
     assert.match(m.capSdwan.tunelesMotivo, /Info-Finder/);
     // El AR502H-V2 y el vCPE no listan paquete N1 en su ficha: null declarado, nunca un código prestado.
-    if (['AR502H-V2', 'AR6700V-L'].includes(m.ser)) assert.strictEqual(m.capSdwan.n1, null, m.id);
+    if (m.ser === 'AR502H-V2') assert.strictEqual(m.capSdwan.n1, null, m.id);
     else assert.ok(m.capSdwan.n1 && /^N1-/.test(m.capSdwan.n1.f) && /^N1-/.test(m.capSdwan.n1.a), `${m.id}: paquete N1 de su ficha`);
     // Las cifras SD-WAN que la ficha publica en IMIX van ordenadas: solo IPsec >= IPsec + QoS >= típico.
-    if (m.capSdwan.ipsecSdwan != null) {
-      assert.ok(m.capSdwan.ipsecSdwan >= m.capSdwan.qos && m.capSdwan.qos >= m.typ, `${m.id}: ${m.capSdwan.ipsecSdwan} / ${m.capSdwan.qos} / ${m.typ}`);
-    }
+    // Las que no publica (null) no se comparan: el vCPE no da la de IPsec + QoS.
+    const escalera = [m.capSdwan.ipsecSdwan, m.capSdwan.qos, m.typ].filter((x) => x != null);
+    assert.ok(escalera.every((x, i) => i === 0 || escalera[i - 1] >= x), `${m.id}: ${m.capSdwan.ipsecSdwan} / ${m.capSdwan.qos} / ${m.typ}`);
   }
   for (const m of MODELS.filter((x) => x.cls === 'WAN')) assert.strictEqual(m.capSdwan, undefined, `${m.id} es de transporte`);
 });
@@ -605,4 +605,20 @@ test('2026-10-14 · un gateway industrial empatado va detrás en el desempate, p
   assert.strictEqual(pick({ bw: 300, profile: 'fwd', svc: { sdwan: false }, want: { wan: true } }), 'AR5710-S8T2X-LTE4EA');
   const solo = M.evaluar(esc({ bw: 300, profile: 'fwd', svc: { sdwan: false }, want: { wan: true } }), MODELS.filter((m) => m.industrial || m.cls === 'WAN'));
   assert.ok(solo.pick && solo.pick.m.industrial, 'sin otro candidato, el industrial sí se recomienda');
+});
+
+test('2026-10-15 · el vCPE trae su SD-WAN IPsec IMIX (ficha R25C00) y sus paquetes N1 por tamaño', () => {
+  const v = (n) => MODELS.find((m) => m.id === `AR6700V-L (${n} vCPU)`);
+  assert.deepStrictEqual([2, 4, 8, 16].map((n) => v(n).capSdwan.ipsecSdwan), [400, 3000, 5000, 11000]);
+  assert.deepStrictEqual([v(8).capSdwan.n1.f, v(8).capSdwan.n1.a, v(8).capSdwan.n1.sin], ['N1-AR6700V-L-F-8V', 'N1-AR6700V-L-A-8V', null]);
+  // Con compresión pedida va Advanced con su SnS del plazo elegido; sin ella se elige y no hay «sin SD-WAN».
+  const r = M.evaluar(esc({ bw: 500, plataforma: 'vcpe', req: { compresion: true } }), MODELS);
+  const L = M.licencias(r.pick, { anios: 3, need: r.need, aps: 0, svc: r.svc, pk: r.pk, req: r.req });
+  assert.ok(L.some((l) => l.sku === 'N1-AR6700V-L-A-4V'));
+  assert.ok(L.some((l) => l.sku === 'N1-AR6700V-L-A-4V-3SNS'));
+  const r2 = M.evaluar(esc({ bw: 500, plataforma: 'vcpe', profile: 'fwd', svc: { sdwan: false } }), MODELS.map((m) => (m.virtual ? { ...m, fwd: 9e9 } : m)));
+  assert.ok(!M.licencias(r2.pick, { anios: 1, need: r2.need, aps: 0, svc: r2.svc, pk: r2.pk, req: [] }).some((l) => /sin SD-WAN/.test(l.t)));
+  // A 2 años no hay SnS: se dice, no se inventa un código.
+  const L2 = M.licencias(r.pick, { anios: 2, need: r.need, aps: 0, svc: r.svc, pk: r.pk, req: r.req });
+  assert.ok(L2.some((l) => /1, 3 o 5 años/.test(l.d) && !l.sku));
 });
