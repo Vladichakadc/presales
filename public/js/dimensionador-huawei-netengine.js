@@ -36,9 +36,10 @@ const PLAT_HINT = {
   ar:'Router empresarial y SD-WAN: se dimensiona por throughput de servicio IMIX de la capa que pida el tráfico.',
   a800:'Acceso de operador (CPE y cell site): se dimensiona por capacidad de conmutación y Mpps. SD-WAN, UTM y WAC no aplican.',
   ne8000:'Agregación y núcleo IP/MPLS: se dimensiona por capacidad de conmutación y Mpps. El techo real lo fijan las tarjetas de línea.',
+  vcpe:'Router virtual para una sucursal en la nube o en un servidor: se dimensiona por SD-WAN típico IMIX según los vCPU. PoE, 4G/5G, Wi-Fi, puertos LAN y APs no aplican.',
 };
 function rotular(){
-  const transporte = plataforma !== 'ar';
+  const transporte = plataforma === 'a800' || plataforma === 'ne8000';
   $('aggBlock').classList.toggle('hidden', mode !== 'agg');
   $('bwLabel').textContent = mode === 'agg' ? 'Ancho de banda por sede' : transporte ? 'Tráfico que debe conmutar el nodo' : 'Ancho de banda contratado';
   $('modeHint').textContent = mode === 'agg'
@@ -52,6 +53,11 @@ function rotular(){
   if(transporte){ ar.setAttribute('data-inactivo', '1'); tr.removeAttribute('data-inactivo'); }
   else { tr.setAttribute('data-inactivo', '1'); ar.removeAttribute('data-inactivo'); }
   $('serviciosHint').hidden = !transporte;
+  // vCPE: un router virtual no tiene PoE, radio, Wi-Fi, puertos LAN ni WAC. Se ocultan y salen del
+  // enlace (`data-inactivo`), conservando su valor por si se vuelve a un equipo físico.
+  const virtual = plataforma === 'vcpe';
+  ['rPoe', 'rWan', 'rWifi'].forEach(id => { const c = $(id).closest('.check'); c.hidden = virtual; c.toggleAttribute('data-inactivo', virtual); });
+  ['lan', 'aps'].forEach(id => { const f = $(id).closest('.field'); f.hidden = virtual; f.toggleAttribute('data-inactivo', virtual); });
 }
 $('platSeg').addEventListener('click', e => {
   const b = e.target.closest('button'); if(!b) return;
@@ -308,7 +314,9 @@ function seccionSdwan(m){
   ];
   if(fx.extra) filas.push(['Además', esc(fx.extra), true]);
   filas.push(['Tope de túneles, sesiones y rutas', 'Sin dato: ' + esc(fx.tunelesMotivo), true]);
-  filas.push(['Paquetes N1 (iMaster NCE)', `<code>${esc(fx.n1.sin)}</code> sin SD-WAN · <code>${esc(fx.n1.f)}</code> Foundation · <code>${esc(fx.n1.a)}</code> Advanced`, true]);
+  filas.push(['Paquetes N1 (iMaster NCE)', fx.n1
+    ? `<code>${esc(fx.n1.sin)}</code> sin SD-WAN · <code>${esc(fx.n1.f)}</code> Foundation · <code>${esc(fx.n1.a)}</code> Advanced`
+    : 'La ficha de este equipo no lista el paquete N1: código por confirmar con Huawei', true]);
   return [{titulo:'Capacidades SD-WAN de la ficha', filas,
     nota:'De la tabla «Software Features and Protocols», la de rendimiento y la «Ordering Information» de «' + esc(fx.doc) + '». Las cifras SD-WAN son la suma de los dos sentidos.' + (fx.nota ? ' ' + esc(fx.nota) : '')}];
 }

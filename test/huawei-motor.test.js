@@ -123,7 +123,7 @@ test('H3 · los túneles del hub solo se piden en la serie AR', () => {
 });
 
 test('H-05 · lan:null es «el catálogo no lo dice» y no descarta a los hubs', () => {
-  const hubs = MODELS.filter((m) => m.cls === 'AR' && m.lan == null).map((m) => m.id);
+  const hubs = MODELS.filter((m) => m.cls === 'AR' && !m.virtual && m.lan == null).map((m) => m.id);
   assert.deepStrictEqual(hubs.sort(), ['AR6710-H4T4X2Y7', 'AR8140-12G10XG', 'AR8140-T-12G10XG', 'AR8700-8'].sort());
   const r = M.evaluar(esc({ bw: 2000, dirMult: 1, lan: 8 }), MODELS);
   assert.ok(r.pick, 'a 2 Gbps con 8 LAN ya hay candidato');
@@ -494,7 +494,9 @@ test('2026-10-14 · cada AR trae sus capacidades SD-WAN de la ficha y el tope de
     assert.strictEqual(m.capSdwan.evpn, true, `${m.id}: todas las fichas AR listan SD-WAN EVPN`);
     assert.strictEqual(m.capSdwan.tuneles, null, 'ninguna ficha publica el tope: null, nunca un número inventado');
     assert.match(m.capSdwan.tunelesMotivo, /Info-Finder/);
-    assert.ok(m.capSdwan.n1 && /^N1-/.test(m.capSdwan.n1.f) && /^N1-/.test(m.capSdwan.n1.a), `${m.id}: paquete N1 de su ficha`);
+    // El AR502H-V2 y el vCPE no listan paquete N1 en su ficha: null declarado, nunca un código prestado.
+    if (['AR502H-V2', 'AR6700V-L'].includes(m.ser)) assert.strictEqual(m.capSdwan.n1, null, m.id);
+    else assert.ok(m.capSdwan.n1 && /^N1-/.test(m.capSdwan.n1.f) && /^N1-/.test(m.capSdwan.n1.a), `${m.id}: paquete N1 de su ficha`);
     // Las cifras SD-WAN que la ficha publica en IMIX van ordenadas: solo IPsec >= IPsec + QoS >= típico.
     if (m.capSdwan.ipsecSdwan != null) {
       assert.ok(m.capSdwan.ipsecSdwan >= m.capSdwan.qos && m.capSdwan.qos >= m.typ, `${m.id}: ${m.capSdwan.ipsecSdwan} / ${m.capSdwan.qos} / ${m.typ}`);
@@ -563,4 +565,44 @@ test('2026-10-14 · multicast o compresión fijan el paquete N1 Advanced; sin el
     assert.strictEqual(n1.sku, r.pick.m.capSdwan.n1.a, `${k}: ${n1.t}`);
     assert.match(n1.d, /Foundation no incluye/);
   }
+});
+
+// ── vCPE AR6700V-L y AR502H-V2 (2026-10-14) ─────────────────────────────────────────────────
+test('2026-10-14 · el vCPE va en su propia plataforma y no compite con los equipos físicos', () => {
+  const ar = M.evaluar(esc({ bw: 500 }), MODELS);
+  assert.ok(ar.rows.every((r) => !r.m.virtual), 'un AR6700V-L se colaba entre los AR físicos');
+  const v = M.evaluar(esc({ bw: 500, plataforma: 'vcpe', want: { poe: true, wifi: true }, lan: 24, aps: 50 }), MODELS);
+  assert.ok(v.rows.length && v.rows.every((r) => r.m.virtual));
+  // 500 Mbps × 2 × 1,3 = 1,3 Gbps de SD-WAN típico: el de 4 vCPU (2 Gbps) basta; PoE, Wi-Fi, LAN y APs no aplican.
+  assert.strictEqual(v.pick.m.id, 'AR6700V-L (4 vCPU)');
+  assert.ok(v.avisos.some((a) => /RH2288X V5/.test(a)), 'el vCPE declara el servidor con que se midió');
+  // Sin cifra típica (2 vCPU) se aparta con su motivo, nunca con la de otra capa.
+  assert.ok(v.rows.find((r) => r.m.id === 'AR6700V-L (2 vCPU)').miss.includes('sin cifra publicada para este perfil'));
+  // Y el perfil de reenvío no tiene cifra en ningún vCPE: se apartan todos, no se escala a NE8000.
+  const fwd = M.evaluar(esc({ bw: 500, plataforma: 'vcpe', profile: 'fwd', svc: { sdwan: false } }), MODELS);
+  assert.strictEqual(fwd.pick, null);
+  assert.strictEqual(fwd.escalada, null);
+});
+
+test('2026-10-14 · el vCPE de 2 vCPU no admite UTM, y desde 4 vCPU sí', () => {
+  const dos = MODELS.find((m) => m.id === 'AR6700V-L (2 vCPU)');
+  const cuatro = MODELS.find((m) => m.id === 'AR6700V-L (4 vCPU)');
+  assert.strictEqual(M.estadoRequisito(dos, 'utm'), 'no');
+  assert.strictEqual(M.estadoRequisito(cuatro, 'utm'), 'si');
+});
+
+test('2026-10-14 · el AR502H-V2 entra con su ficha y su adaptador AC es opcional, no se pide', () => {
+  const m = MODELS.find((x) => x.id === 'AR502H-NRGL-V2');
+  assert.deepStrictEqual([m.fwd, m.ipsec, m.typ, m.capSdwan.ipsecSdwan, m.capSdwan.qos], [1300, 800, 620, 1000, 800]);
+  const p = M.piezasBom(m, require('../server/seed/legacyData/huawei.js').PARTS, { want: {} });
+  assert.ok(p.opcionales.some((x) => x.codigo === 'PAC36'));
+  assert.ok(!p.pedir.some((x) => x.codigo === 'PAC36'));
+});
+
+test('2026-10-14 · un gateway industrial empatado va detrás en el desempate, pero se recomienda si es el único', () => {
+  // 300 Mbps de reenvío con 4G/5G: el AR502H-LTE4AU-V2 empata en 1,3 Gbps con el AR5710-S8T2X-LTE4EA y
+  // trae menos puertos; sin la marca `industrial` ganaba una sucursal de oficina.
+  assert.strictEqual(pick({ bw: 300, profile: 'fwd', svc: { sdwan: false }, want: { wan: true } }), 'AR5710-S8T2X-LTE4EA');
+  const solo = M.evaluar(esc({ bw: 300, profile: 'fwd', svc: { sdwan: false }, want: { wan: true } }), MODELS.filter((m) => m.industrial || m.cls === 'WAN'));
+  assert.ok(solo.pick && solo.pick.m.industrial, 'sin otro candidato, el industrial sí se recomienda');
 });

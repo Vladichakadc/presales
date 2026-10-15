@@ -31,7 +31,10 @@
      ordenada por cifras que no se miden igual. Es la regla que Cisco (`PLATAFORMAS`) y Nokia (dos
      paginas) ya aplican. */
   const PLATAFORMAS = {
-    ar: { n: 'NetEngine AR', d: 'SD-WAN y router de sucursal o hub', de: (m) => m.cls === 'AR' },
+    ar: { n: 'NetEngine AR', d: 'SD-WAN y router de sucursal o hub', de: (m) => m.cls === 'AR' && !m.virtual },
+    // vCPE (2026-10-14): el AR6700V-L virtual, para sitios en la nube o en un servidor. No compite con
+    // los equipos físicos: su cifra depende del servidor con que Huawei la midió.
+    vcpe: { n: 'vCPE AR6700V-L', d: 'router virtual en nube pública o hipervisor', de: (m) => m.cls === 'AR' && !!m.virtual },
     a800: { n: 'NetEngine A800 E', d: 'acceso de operador (CPE y cell site)', de: (m) => m.ser === 'A800 E' },
     ne8000: { n: 'NetEngine 8000', d: 'agregación y núcleo IP/MPLS', de: (m) => /^NE8000/.test(m.ser || '') },
   };
@@ -120,13 +123,16 @@
     // Sin plataforma declarada: el modo «core» de los enlaces viejos era el nodo de nucleo.
     const plataforma = legado ? null : (PLATAFORMAS[esc.plataforma] ? esc.plataforma : (mode === 'core' ? 'ne8000' : 'ar'));
     const transporte = plataforma === 'a800' || plataforma === 'ne8000';
-    const minLan = transporte ? 0 : (parseInt(esc.lan, 10) || 0);
-    const aps = transporte ? 0 : (parseInt(esc.aps, 10) || 0);
+    const virtual = plataforma === 'vcpe';
+    const minLan = transporte || virtual ? 0 : (parseInt(esc.lan, 10) || 0);
+    const aps = transporte || virtual ? 0 : (parseInt(esc.aps, 10) || 0);
     // Lo que no aplica a la plataforma sale del calculo (la pagina lo marca `data-inactivo` y
     // conserva el valor): SD-WAN, UTM, WAC, PoE, 4G/5G, Wi-Fi, LAN y perfil son de la serie AR;
     // el slicing FlexE es de la red de transporte.
     if (!legado && transporte) { svc.sdwan = false; svc.utm = false; want.poe = false; want.wan = false; want.wifi = false; }
     if (!legado && !transporte) svc.slice = false;
+    // Un router virtual no tiene PoE, radio móvil ni Wi-Fi: no se piden (la página los oculta).
+    if (virtual) { want.poe = false; want.wan = false; want.wifi = false; }
     // Requisitos SD-WAN pedidos: los marcados en pantalla mas los que ya implican otras casillas
     // (A-FEC con su supuesto y UTM). Solo en la serie AR y fuera de la linea base.
     const req = [];
@@ -165,7 +171,7 @@
     // `null` es «el catalogo no lo dice», nunca «sin limite». Las sesiones concurrentes y las
     // nuevas por segundo no se piden aqui: exigirian usuarios por sede, que esta pantalla no
     // pregunta, y derivarlas seria inventar un dato.
-    const tuneles = !legado && mode === 'agg' && plataforma === 'ar' ? sites : 0;
+    const tuneles = !legado && mode === 'agg' && (plataforma === 'ar' || plataforma === 'vcpe') ? sites : 0;
     const modelosConTope = tuneles ? modelos.filter((m) => m.cls !== 'WAN' && m.tuneles != null).length : 0;
     if (tuneles) {
       avisos.push(`Hub con ${tuneles} sede${tuneles === 1 ? '' : 's'}: se piden ${tuneles} túneles IPsec terminando en el equipo. `
@@ -181,12 +187,14 @@
     const crit = parseInt(esc.crit, 10) || 0;
     if (ha) avisos.push('Alta disponibilidad 1+1: se cotizan 2 equipos por sitio y cada uno se dimensiona al caudal completo, porque el par suma disponibilidad y no capacidad. Reserva un puerto para el enlace entre los dos equipos. No sustituye a la fuente de alimentación doble del chasis: son dos niveles de redundancia distintos.');
     else if (!legado && crit >= 4) avisos.push('Criticidad «misión crítica» sin alta disponibilidad: con un solo equipo por sitio, una falla del chasis deja el sitio sin servicio hasta que llegue el repuesto. Marca «Alta disponibilidad 1+1» para cotizar el par.');
+    if (virtual) avisos.push('vCPE AR6700V-L: las cifras son las que Huawei midió en un RH2288X V5 con Xeon Gold 6238R a 2,2 GHz y tarjeta Intel X710 con SR-IOV. En otra nube, otro tipo de instancia o con VirtIO el rendimiento cambia: confírmalo con una prueba en la instancia real antes de cotizar.');
     if (svc.utm && !legado) avisos.push(`UTM (IPS, filtrado URL, antivirus): este catálogo no trae cifra de inspección para ningún modelo AR. Se dimensiona contra SD-WAN típico con un +${utmPct} % de carga, que es un SUPUESTO DE DISEÑO declarado y editable (no una cifra de Huawei); confírmalo con una prueba de concepto antes de cotizar.`);
     if (trafico !== 'imix') avisos.push(`Perfil de tráfico «${TRAFICO[trafico].n}»: la necesidad se divide entre ${factorTrafico.toFixed(2)} y los Mpps se calculan a ${bytesMpps} bytes. Es un supuesto de diseño: las fichas de Huawei ya publican sus cifras en IMIX, así que un perfil de factor menor que 1 sobredimensiona a propósito.`);
     if (fecPct) avisos.push(`A-FEC activo: +${fecPct} % de paridad sobre el caudal. Es el sobrecoste de la corrección de errores que declaras; ninguna ficha publica la cifra de rendimiento con A-FEC encendido.`);
     if (dia) avisos.push(`Local Internet Breakout: el ${diaPct} % del tráfico sale a Internet en claro y solo el ${100 - diaPct} % cruza los túneles cifrados. El equipo debe reenviar todo el tráfico (reenvío) y cifrar solo esa parte (capa SD-WAN/IPsec). El reparto es un supuesto declarado.`);
 
-    const enPlataforma = legado ? modelos : modelos.filter(PLATAFORMAS[plataforma].de);
+    // La línea base legada no conocía el vCPE (2026-10-14): fuera, para que reproduzca lo de entonces.
+    const enPlataforma = legado ? modelos.filter((m) => !m.virtual) : modelos.filter(PLATAFORMAS[plataforma].de);
     const sinDatoAps = new Set();
     const rows = enPlataforma.map((m) => {
       const isWan = m.cls === 'WAN', cap = isWan ? m.cap : m[pk], miss = [];
@@ -220,7 +228,10 @@
     // Empate de capacidad (la serie AR5710-S publica la misma cifra en ocho variantes): sin un
     // desempate el elegido dependia del ORDEN en que la API sirve el catalogo. Gana el que trae
     // menos extras que nadie pidio (PoE, 4G/5G, Wi-Fi, puertos) y despues el id en orden natural (S8… antes que S10…).
-    const extras = (m) => (m.poe ? 1 : 0) + (m.wan ? 1 : 0) + (m.wifi ? 1 : 0) + (m.lan || 0) / 100;
+    // Un gateway industrial (carril DIN, IP40/IP65, –40 °C) empata en cifras con equipos de oficina y
+    // gana por traer menos puertos: en el desempate va detrás, para no proponer un AR502H a una
+    // sucursal de oficina (2026-10-14). Solo desempata: si es el único que cumple, se recomienda.
+    const extras = (m) => (m.poe ? 1 : 0) + (m.wan ? 1 : 0) + (m.wifi ? 1 : 0) + (m.lan || 0) / 100 + (m.industrial ? 0.5 : 0);
     // Con slicing pedido, lo CONFIRMADO va antes que lo que no consta: no se aparta a nadie, pero
     // no se recomienda un equipo sin FlexE declarado habiendo uno que si lo declara.
     const flexeAntes = (a, b) => (!legado && transporte && svc.slice ? (b.m.flexe === true) - (a.m.flexe === true) : 0);
@@ -275,7 +286,7 @@
     // ── ESCALADO ENTRE PLATAFORMAS (2026-10-12). En vez de «fuera de la plataforma», si ningun
     // modelo de la serie cumple por capacidad y la siguiente plataforma si, se PROPONE la
     // siguiente con el aviso, sin cambiarla en silencio. AR → NE8000 y A800 E → NE8000.
-    if (!legado && !o.escalando && raw > 0 && !pick && plataforma !== 'ne8000') {
+    if (!legado && !o.escalando && raw > 0 && !pick && plataforma !== 'ne8000' && plataforma !== 'vcpe') {
       const porCapacidad = rows.length && rows.every((r) => r.cap == null || r.cap < (dia && !r.isWan && pk !== 'fwd' ? needTun : need));
       if (porCapacidad) {
         const alt = evaluar({ ...esc, plataforma: 'ne8000', mode: mode === 'core' ? 'link' : mode, svc: {}, want: {} }, modelos, { ...o, escalando: true });
@@ -372,6 +383,7 @@
     FAN240: { incluida: true }, RACK: { incluida: true }, CONSOLE: { incluida: true },
     WSIC4GE: { opcional: 'ampliación WAN por tarjeta WSIC' }, WSIC8GE: { opcional: 'ampliación WAN por tarjeta WSIC' },
     SICNR: { condicional: 'wan', motivo: 'solo si se pide 4G/5G integrado' },
+    PAC36: { opcional: 'adaptador AC para un sitio sin alimentación DC' },
     RU5G: { condicional: 'wan', motivo: 'solo si se pide 4G/5G (unidad remota externa)' },
   };
   const NOMBRE_GRUPO = { fuente: 'Fuente de alimentación', mpu: 'Unidad de procesamiento (MPU)' };

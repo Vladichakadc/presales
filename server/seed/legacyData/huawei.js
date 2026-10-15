@@ -50,6 +50,7 @@ const PARTS = {
   // L50T2X4 en la descripcion de hardware (EDOC1100213474, 2026-07-23), leidas en el Chrome del dueño.
   PAC180:{sku:'PAC180S12-CN', bom:null, d:'Fuente AC de 180 W · la admite el AR6710-L26/L50 junto a la PAC350S12-CR (descripción de hardware de Huawei)'},
   PDC240:{sku:'PDC240S12-CN', bom:null, d:'Fuente DC de 240 W · la del AR6710-L26/L50 en DC (descripción de hardware de Huawei)'},
+  PAC36:{sku:'PAC36S24-CN', bom:null, d:'Adaptador AC-DC de 36 W · 90–290 V · salida 24 V / 1,5 A · –40 a +70 °C · para el AR502H-V2 donde no hay DC («Ordering Information» de su ficha)'},
   PAC1000:{sku:'PAC1000S56-EB', bom:null, d:'Fuente AC y 240 V DC de 1000 W · chasis 66 mm · flujo trasero-frontal'},
   PAC600:{sku:'PAC600S56-EB', bom:null, d:'Fuente AC y 240 V DC de 600 W · chasis 66 mm · flujo trasero-frontal'},
   PDC1000:{sku:'PDC1000S56-EB', bom:null, d:'Fuente DC PoE de 1000 W · chasis 66 mm · flujo trasero-frontal'},
@@ -229,7 +230,7 @@ const MODELS = [
 // traer-cisco-huawei.yml (rama fuente/huawei-familias-2026-10-12). `mpps` en null: no publican
 // paquetes por segundo. En el AR6000 la ficha no dice cuantos APs gestiona su WAC, asi que
 // `apsFree`/`apsMax` quedan en null (sin dato) y no en 0 («no gestiona APs»).
-{id:'AR5710I-RU-NRGL', cls:'AR', ser:'AR5710-I', fam:'Industrial IP65 con 5G, para poste o pared', fwd:1500, ipsec:800, typ:720, mpps:null, lan:2, poe:0, wan:1, wifi:0, apsFree:16, apsMax:64, boost:0,
+{id:'AR5710I-RU-NRGL', cls:'AR', industrial:true, ser:'AR5710-I', fam:'Industrial IP65 con 5G, para poste o pared', fwd:1500, ipsec:800, typ:720, mpps:null, lan:2, poe:0, wan:1, wifi:0, apsFree:16, apsMax:64, boost:0,
  ports:'1 x 2.5GE eléctrico + 1 x 10GE SFP+ (WAN o LAN), 5G SA/NSA con 2 SIM, antenas 5G/LTE integradas · IP65, –40 a +65 °C', optics:['sfp10','ge'], parts:[],
  redund:false, psu:{watts:15, tipo:'PoE (–48 V DC) o adaptador AC externo', texto:'Una entrada: PoE (–42,5 a –57 V DC) o adaptador AC (90–270 V); 15 W típicos y 18,5 W de máximo, sin ventilador (ficha AR5710I-RU-NRGL R26C00).'}},
 {id:'AR6121E', cls:'AR', ser:'AR6000', fam:'Sucursal modular con ranuras SIC y WSIC', fwd:2000, ipsec:2000, typ:800, mpps:null, lan:9, poe:0, wan:0, wifi:0, apsFree:null, apsMax:null, boost:0,
@@ -264,6 +265,40 @@ const MODELS = [
 {id:'AR8700-8', cls:'AR', ser:'AR8700', fam:'Hub SD-WAN de alta disponibilidad', fwd:30000, ipsec:20000, typ:15500, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:32, apsMax:1024, boost:0,
  ports:'Doble MPU, sin interrupción de servicio en conmutación · 24 Gbps SD-WAN IPsec IMIX', optics:['sfp25','sfp10','ge'], parts:['SPU700H','MPU100','MPU100T','PAC1000','PAC600','PDC1000','FAN240','RACK','CONSOLE'],
  psu:{watts:221, salida:[{w:600, tipo:'AC'}, {w:600, tipo:'HVDC'}, {w:1000, tipo:'AC'}, {w:1000, tipo:'HVDC'}, {w:1000, tipo:'DC'}], tipo:'AC, HVDC o DC', texto:'«Dual power supplies, hot-swappable», con módulos de 600 o 1000 W: admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. 221 W típicos con SPU, dos MPU y ventiladores (ficha AR8000 R25C10).'}},
+
+// AR502H-V2 (2026-10-14): «Huawei AR502H-V2 Data Sheet» (rama fuente/huawei-familias-2026-10-12),
+// gateway industrial IP40 de carril DIN con 4G o 5G. Una sola columna de rendimiento para la serie:
+// 1,3 Gbps de reenvío (NAT+ACL+QoS, IMIX), 800 Mbps de IPsec y 620 de SD-WAN típico (IMIX). Se dejan
+// fuera el AR502H-ELTE-V2 (eLTE, red privada que no aplica a la región) y las variantes sin ficha.
+// La entrada es DC doble (9,6–60 V) integrada; el adaptador PAC36S24-CN es opcional para sitios sin DC.
+{id:'AR502H-LTE4EA-V2', cls:'AR', industrial:true, ser:'AR502H-V2', fam:'Gateway industrial con LTE, carril DIN', fwd:1300, ipsec:800, typ:620, mpps:null, lan:4, poe:0, wan:1, wifi:0, apsFree:null, apsMax:null, boost:0,
+ ports:'4 x GE eléctricos + 2 x 10GE SFP+, LTE con 2 SIM, 2 x RS485/RS232, DI/DO, GNSS · IP40, –40 a +75 °C', optics:['sfp10','ge'], parts:['PAC36'],
+ redund:true, psu:{watts:12, salida:[{w:36, tipo:'AC por adaptador opcional'}], tipo:'DC doble integrada (9,6–60 V)', texto:'Dos entradas DC integradas de bornera industrial («Dual DC power supplies», 9,6–60 V, 12–48 V nominal); menos de 12 W típicos y 16 W de máximo sin ópticas (ficha AR502H-V2). Sin DC en el sitio se pide el adaptador AC PAC36S24-CN.'}},
+{id:'AR502H-LTE4AU-V2', cls:'AR', industrial:true, ser:'AR502H-V2', fam:'Gateway industrial con LTE (bandas Australia/América), carril DIN', fwd:1300, ipsec:800, typ:620, mpps:null, lan:4, poe:0, wan:1, wifi:0, apsFree:null, apsMax:null, boost:0,
+ ports:'4 x GE eléctricos + 2 x 10GE SFP+, LTE con 2 SIM, 2 x RS485/RS232, DI/DO, GNSS, ranura M.2 · IP40, –40 a +75 °C', optics:['sfp10','ge'], parts:['PAC36'],
+ redund:true, psu:{watts:12, salida:[{w:36, tipo:'AC por adaptador opcional'}], tipo:'DC doble integrada (9,6–60 V)', texto:'Dos entradas DC integradas («Dual DC power supplies», 9,6–60 V); menos de 12 W típicos y 16 W de máximo sin ópticas (ficha AR502H-V2). Sin DC se pide el adaptador AC PAC36S24-CN.'}},
+{id:'AR502H-NRGL-V2', cls:'AR', industrial:true, ser:'AR502H-V2', fam:'Gateway industrial con 5G, carril DIN', fwd:1300, ipsec:800, typ:620, mpps:null, lan:4, poe:0, wan:1, wifi:0, apsFree:null, apsMax:null, boost:0,
+ ports:'4 x GE eléctricos + 2 x 10GE SFP+, 5G con 2 SIM, 2 x RS485/RS232, DI/DO, GNSS · IP40, –40 a +75 °C', optics:['sfp10','ge'], parts:['PAC36'],
+ redund:true, psu:{watts:11.3, salida:[{w:36, tipo:'AC por adaptador opcional'}], tipo:'DC doble integrada (9,6–60 V)', texto:'Dos entradas DC integradas («Dual DC power supplies», 9,6–60 V); 11,3 W típicos y 18,3 W de máximo sin ópticas (ficha AR502H-V2). Sin DC se pide el adaptador AC PAC36S24-CN.'}},
+
+// AR6700V-L (2026-10-14): router VIRTUAL, «Huawei NetEngine AR6700V-L Virtual Router Data Sheet» (rama
+// fuente/huawei-familias-2026-10-12). Va en su propia plataforma (`vcpe`): sus cifras dependen del
+// servidor con que Huawei las midió (RH2288X V5, Xeon Gold 6238R a 2,2 GHz, Intel X710 con SR-IOV) y
+// no compite con un equipo físico. Publica SD-WAN típico IMIX (IPsec + QoS + SA + AppFlow, suma de los
+// dos sentidos) y SD-WAN IPsec solo a 1400 bytes; no publica reenvío ni IPsec IMIX: esas capas quedan
+// en null y el modelo se aparta con su motivo si el perfil las pide. Con 2 vCPU no publica SD-WAN típico.
+{id:'AR6700V-L (2 vCPU)', cls:'AR', ser:'AR6700V-L', virtual:true, vcpu:2, fam:'Router virtual (vCPE) en nube o hipervisor, 2 vCPU · 4 GB', fwd:null, ipsec:null, typ:null, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:null, apsMax:null, boost:0,
+ ports:'Interfaces virtuales (SR-IOV, VirtIO o PCI-Passthrough) · KVM, VMware ESXi, OpenStack, ZStack, HUAWEI Cloud, AWS, Azure, Google Cloud y otras · 4 GB de RAM, 38 GB de disco · SD-WAN IPsec 700 Mbps a 1400 B', optics:[], parts:[],
+ redund:'no-aplica', psu:{watts:null, tipo:'No aplica: router virtual', texto:'Corre como máquina virtual: la alimentación y su redundancia son las del servidor o la nube que lo aloja.'}},
+{id:'AR6700V-L (4 vCPU)', cls:'AR', ser:'AR6700V-L', virtual:true, vcpu:4, fam:'Router virtual (vCPE) en nube o hipervisor, 4 vCPU · 8 GB', fwd:null, ipsec:null, typ:2000, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:null, apsMax:null, boost:0,
+ ports:'Interfaces virtuales (SR-IOV, VirtIO o PCI-Passthrough) · 8 GB de RAM, 38 GB de disco · SD-WAN IPsec 7 Gbps a 1400 B', optics:[], parts:[],
+ redund:'no-aplica', psu:{watts:null, tipo:'No aplica: router virtual', texto:'Corre como máquina virtual: la alimentación y su redundancia son las del servidor o la nube que lo aloja.'}},
+{id:'AR6700V-L (8 vCPU)', cls:'AR', ser:'AR6700V-L', virtual:true, vcpu:8, fam:'Router virtual (vCPE) en nube o hipervisor, 8 vCPU · 8 GB', fwd:null, ipsec:null, typ:4000, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:null, apsMax:null, boost:0,
+ ports:'Interfaces virtuales (SR-IOV, VirtIO o PCI-Passthrough) · 8 GB de RAM, 38 GB de disco · SD-WAN IPsec 14 Gbps a 1400 B', optics:[], parts:[],
+ redund:'no-aplica', psu:{watts:null, tipo:'No aplica: router virtual', texto:'Corre como máquina virtual: la alimentación y su redundancia son las del servidor o la nube que lo aloja.'}},
+{id:'AR6700V-L (16 vCPU)', cls:'AR', ser:'AR6700V-L', virtual:true, vcpu:16, fam:'Router virtual (vCPE) en nube o hipervisor, 16 vCPU · 16 GB', fwd:null, ipsec:null, typ:7000, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:null, apsMax:null, boost:0,
+ ports:'Interfaces virtuales (SR-IOV, VirtIO o PCI-Passthrough) · 16 GB de RAM, 38 GB de disco · SD-WAN IPsec 29 Gbps a 1400 B', optics:[], parts:[],
+ redund:'no-aplica', psu:{watts:null, tipo:'No aplica: router virtual', texto:'Corre como máquina virtual: la alimentación y su redundancia son las del servidor o la nube que lo aloja.'}},
 
 {id:'NetEngine A816 E', cls:'WAN', ser:'A800 E', fam:'CPE de acceso, 1U, consumo mínimo', cap:20000, mpps:4.4, lan:0, poe:0, wan:0, wifi:0,
  ports:'1U · 24 W típicos · SRv6, L2VPN/L3VPN, EVPN, IFIT · fuente AC 120 W integrada', optics:['ge','sfp10'], parts:['RACK','CONSOLE'],
@@ -713,6 +748,17 @@ const SDWAN_SERIE = {
     n1: {sin: 'N1-AR81-B', f: 'N1-AR81-F', a: 'N1-AR81-A'}, amenazas: TP('LAR0TP120'),
     paquetes: [{sku: 'AR81-LIC-NETCONN', d: 'AR8100 Value-added Network Connection Package: DSVPN', para: 'dsvpn'},
       {sku: 'AR81-LIC-Enh-WANOP', d: 'AR8100 Value-added Enhanced WAN-Optimize Package: compresión de datos', para: 'compresion'}]},
+  'AR502H-V2': {doc: 'Huawei AR502H-V2 Data Sheet', mem: '4 GB DDR4',
+    vpn: 'GRE, IPsec, L2TP client, Ethernet over GRE, DSVPN, SD-WAN EVPN; MPLS L3VPN',
+    evpn: true, dsvpn: true, srv6: null, mpls: true, mcast: null, fec: 'A-FEC', compresion: null, ips: true, url: true, av: true, macsec: null,
+    extra: 'Modo de cómputo en el borde (contenedores) con un interruptor DIP; GNSS (BeiDou, GPS, Galileo, GLONASS)',
+    n1: null, amenazas: null, paquetes: []},
+  'AR6700V-L': {doc: 'Huawei NetEngine AR6700V-L Virtual Router Data Sheet', mem: '4 GB (2 vCPU) · 8 GB (4 y 8 vCPU) · 16 GB (16 vCPU)',
+    vpn: 'L3VPN, SD-WAN EVPN, GRE VPN; SRv6; IPsec e IKEv2 con AES-CBC, AES-GCM y SM',
+    evpn: true, dsvpn: null, srv6: true, mpls: null, mcast: true, fec: 'A-FEC', compresion: true, ips: true, url: true, av: true, macsec: null,
+    nota: 'IPS, filtrado URL y antivirus: «Only the AR6700V-L with 4vCPU/8vCPU/16vCPU supports this function» (nota de la ficha).',
+    extra: 'Pasarela IWG hacia redes MPLS tradicionales y varias pasarelas SD-WAN; nube: host VPC, transit VPC y cloud router; HA con VRRP y HRP',
+    n1: null, amenazas: null, paquetes: []},
   AR8700: {doc: 'Huawei NetEngine AR8000 Series Enterprise Router Data Sheet-R25C10', mem: '16 GB (SPU) / 8 GB (MPU)',
     vpn: 'GRE, Ethernet over GRE, IPsec v4/v6, SRv6, L2TP client, DSVPN, SD-WAN EVPN; MPLS L3VPN',
     evpn: true, dsvpn: true, srv6: true, mpls: true, mcast: true, fec: 'A-FEC', compresion: true, ips: true, url: true, av: true,
@@ -726,7 +772,7 @@ const SDWAN_SERIE = {
 const SDWAN_CIFRAS = {
   AR610: [200, 80], AR650: [1500, 800], AR6000: [1500, 1200], 'AR5710-S': [1000, 800], 'AR5710-SE': [1200, 1000],
   'AR5710-H': [2000, 1500], 'AR5710-I': [null, null], 'AR6700-L': [2000, 1500], 'AR6710-L14T2X4': [3000, 2500],
-  'AR6700-H': [11000, 9000], 'AR8140-12G10XG': [22000, 20000], 'AR8140-T-12G10XG': [22000, 20000], 'AR8700-8': [24000, 20000],
+  'AR6700-H': [11000, 9000], 'AR502H-V2': [1000, 800], 'AR6700V-L': [null, null], 'AR8140-12G10XG': [22000, 20000], 'AR8140-T-12G10XG': [22000, 20000], 'AR8700-8': [24000, 20000],
 };
 const SERIE_SDWAN = (m) => (m.ser === 'AR8000' ? 'AR8000' : m.ser);
 for (const m of MODELS) {
@@ -734,6 +780,8 @@ for (const m of MODELS) {
   if (!s) continue;
   const [ipsecSdwan, qos] = SDWAN_CIFRAS[m.id] || SDWAN_CIFRAS[SERIE_SDWAN(m)] || [null, null];
   m.capSdwan = {...s, ipsecSdwan, qos, tuneles: null, sesiones: null, tunelesMotivo: TUNELES_MOTIVO};
+  // El AR6700V-L de 2 vCPU no admite IPS, URL ni antivirus (nota de su ficha): `false`, que aparta con UTM.
+  if (m.virtual && m.vcpu < 4) Object.assign(m.capSdwan, {ips: false, url: false, av: false});
 }
 
 

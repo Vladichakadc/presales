@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-14, vigesimotercera entrega (**Huawei con el PC del dueño: paquetes N1, fuentes de los AR y lo que Info-Finder no publica.** Con Chrome y la sesión de Huawei (cuenta «Common Registered User»): la tabla N1 de la ficha de la solución SD-WAN R25C00 fija el paquete Advanced cuando se pide multicast o compresión; la descripción de hardware da las tres fuentes admitidas del AR6710-L26/L50 y las dos integradas del L14. **Info-Finder no publica el tope de túneles ni de sesiones de los AR** (su consulta de especificaciones solo trae WLAN y hardware) y el ciclo de vida sale con candado para esta cuenta. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-14, vigesimocuarta entrega (**vCPE AR6700V-L como cuarta plataforma y AR502H-V2 en la serie AR.** Encargo del dueño: «avanzar» sobre los pendientes que no necesitan PC. Las dos fichas ya estaban en `fuente/huawei-familias-2026-10-12`. El vCPE se dimensiona por SD-WAN típico IMIX según los vCPU (2/4/7 Gbps con 4/8/16; con 2 no hay cifra y se aparta), oculta PoE, 4G/5G, Wi-Fi, LAN y APs, y declara el servidor con que Huawei midió. Los tres AR502H-V2 (industriales de carril DIN, 1,3 Gbps / 800 Mbps / 620 Mbps) van detrás en un empate, para no proponer un equipo industrial a una oficina. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-14, vigesimotercera entrega (**Huawei con el PC del dueño: paquetes N1, fuentes de los AR y lo que Info-Finder no publica.** Con Chrome y la sesión de Huawei (cuenta «Common Registered User»): la tabla N1 de la ficha de la solución SD-WAN R25C00 fija el paquete Advanced cuando se pide multicast o compresión; la descripción de hardware da las tres fuentes admitidas del AR6710-L26/L50 y las dos integradas del L14. **Info-Finder no publica el tope de túneles ni de sesiones de los AR** (su consulta de especificaciones solo trae WLAN y hardware) y el ciclo de vida sale con candado para esta cuenta. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-14, vigesimosegunda entrega (**«Ejecuta pendientes como un arquitecto senior».** Hecha la mejora propuesta: **fuente de 48 V para el PoE** en MikroTik, con los límites de alta tensión de cada ficha y la fuente como línea del BOM. Lo demás abierto de MikroTik necesita una fuente que la web no da (ticket de soporte para el ×2 del IPsec, el CCR2004-16G-2S+PC en la matriz, las traseras) o una persona (el `--revisado` de la matriz vigente). Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-14, vigesimoprimera entrega (**MikroTik: la mejora propuesta —el escenario de falla en la ficha— y los pendientes contra las fuentes oficiales.** Encargo del dueño: avanzar con los pendientes buscando en las fuentes oficiales y en la web, y ejecutar la mejora. Hecho: barras de falla y de IPsec del respaldo en la ficha; **PoE en vatios con el adaptador de la caja** en hEX PoE, hEX PoE lite, PowerBox Pro y hEX S 2025 (límites por puerto de la ficha y el manual); la matriz de compatibilidad pasa a la URL vigente (7.26, idéntica a la 7.25). Sigue abierto, sin fuente pública: el ×2 del IPsec y el CCR2004-16G-2S+PC fuera de la matriz. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-14, vigésima entrega (**Capacidades SD-WAN de las fichas AR en el dimensionador Huawei.** Encargo del dueño: validar como arquitecto senior porque el dimensionador no traía de la ficha las capacidades SD-WAN (túneles, EVPN). Cada AR trae ahora overlay (SD-WAN EVPN, SRv6, DSVPN, MPLS L3VPN, multicast), A-FEC/FEC, compresión, IPS/URL/AV, MACsec, memoria y las cifras SD-WAN IPsec e IPsec + QoS de su ficha; cinco requisitos nuevos en pantalla; el BOM cita el paquete N1, la suscripción de amenazas por plazo y los paquetes DSVPN y de compresión. **Corrección**: con UTM o A-FEC se proponía la AR5710-S de 2 GB, que su ficha excluye. **Túneles y sesiones: sin dato**, ver *Abierto: dimensionador Huawei*. Ver *Cerrado recientemente*.)
@@ -672,11 +673,10 @@ sesión de Huawei abierta, o la app de GitHub para lanzar Actions). En orden de 
    integradas; el L26 y el L50 admiten PAC350S12-CR, PAC180S12-CN o PDC240S12-CN. El L26, el L50, el
    AR6710-H y el AR8700-8 siguen sin decir cuántas vienen: la descripción de hardware solo da dos
    ranuras y 1:1, y la guía de instalación tampoco. Lo decide el pedido (eDeal).
-6. **vCPE AR6700V-L para sitios en la nube** — no necesita PC: su ficha ya está en
-   `fuente/huawei-familias-2026-10-12`. Pendiente de la decisión del dueño (propuesta del
-   2026-10-14: cuarta plataforma o tipo de sitio «nube», 2/4/8/16 vCPU, IPS solo desde 4 vCPU).
-7. **AR502H-V2 (industrial 4G/5G)** — ficha guardada, falta leer si publica cifras SD-WAN; no
-   necesita PC.
+6. ~~**vCPE AR6700V-L para sitios en la nube**~~ **Hecho el 2026-10-14** (cuarta plataforma).
+   Falta el paquete N1 del vCPE: su ficha no lo lista.
+7. ~~**AR502H-V2 (industrial 4G/5G)**~~ **Hecho el 2026-10-14**. Sin figura todavía: recortarla de su
+   ficha (págs. 1-2) como las demás.
 
 
 - **Tope de túneles (IPsec y SD-WAN EVPN), sesiones y rutas por modelo AR.** Ninguna ficha AR lo
@@ -2027,6 +2027,20 @@ que ya se comprobó y lo que cuesta cada opción.
   contradictorios) y el CCR2004-16G-2S+PC fuera de la matriz.
 
 ### Capacidades SD-WAN de las fichas AR en el dimensionador Huawei (2026-10-14, vigésima entrega)
+
+### vCPE AR6700V-L y AR502H-V2 (2026-10-14, vigesimocuarta entrega)
+
+- **vCPE** (`PLATAFORMAS.vcpe`, `virtual: true`): cuatro filas de la ficha AR6700V-L R26C00 (2, 4, 8 y
+  16 vCPU). Solo publica SD-WAN típico IMIX y SD-WAN IPsec a 1400 B: `fwd` e `ipsec` en null, así que
+  con el perfil de reenvío o IPsec se apartan todos y no se escala a NE8000. IPS, URL y antivirus solo
+  desde 4 vCPU (la de 2 vCPU lleva `false` y se aparta con UTM). La pantalla gana el botón «vCPE
+  AR6700V-L» y oculta PoE, 4G/5G, Wi-Fi, LAN y APs con `data-inactivo`. Sin código N1 en su ficha.
+- **AR502H-V2** (LTE4EA, LTE4AU, NRGL): 1,3 Gbps / 800 Mbps / 620 Mbps IMIX, SD-WAN IPsec 1 Gbps e
+  IPsec + QoS 800 Mbps, DC doble integrada y el adaptador AC PAC36S24-CN como opcional. **Marca
+  `industrial`** (también el AR5710I-RU-NRGL): en un empate va detrás; sin ella, el AR502H-LTE4AU-V2
+  ganaba «300 Mbps con 4G/5G» a la AR5710-S8T2X-LTE4EA por traer menos puertos. El contraste `huawei`
+  sube sus recuentos de candidatos (33→36 y 9→12) por dato, con el mismo recomendado.
+- 949/949, contraste `huawei`, pantallas, puerta, auditar y e2e en verde; conducido en Chromium.
 
 ### Huawei con el PC del dueño (2026-10-14, vigesimotercera entrega)
 
