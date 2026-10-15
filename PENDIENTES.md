@@ -748,7 +748,10 @@ de `e.huawei.com` (ver *Cerrado recientemente*). Lo que queda:
   reconectado y con sus herramientas cargadas en la sesión, pero **todas sus operaciones fallan**:
   `convert_url_to_pdf` con `example.com`, `wikipedia.org` y la página del L26, y
   `extract_text_by_expression` sobre un PDF público de `e.huawei.com`. Es el servicio, no Huawei ni
-  la autorización; queda reintentar otro día. La guía de hardware **no se puede traer desde aquí
+  la autorización; queda reintentar otro día. **2026-10-15**: vuelve a listar sus herramientas y
+  `convert_url_to_pdf` con `example.com` sigue fallando: el servicio, no Huawei. La vía que sí
+  funciona es la sesión del Mac con el Chrome del dueño (otra sesión ya leyó así la ficha del
+  AR6700V-L, commit 2e65750): las páginas de la descripción de hardware se leen desde allí. La guía de hardware **no se puede traer desde aquí
   ni desde Actions** (medido el 2026-10-06, noche:
   a `fetch` le llega un 200 con el cascarón de la aplicación, corrida 37453468795, y a Chromium
   sin cabeza un 403 «Access Denied» de Akamai en las catorce páginas, corrida 37454219168). Hace
