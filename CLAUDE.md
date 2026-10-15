@@ -104,6 +104,7 @@ npm run matrix      # contrasta una edición del Product Matrix (PDF) celda a ce
 npm run juniper     # cifras de la línea SRX
 npm run mikrotik    # matriz de pruebas de las fichas de MikroTik (carpeta de HTML traída; --check, --dry)
 npm run huawei      # cifras y fin de venta de Huawei (--check, --plantilla, --eol, --force)
+npm run figuras-huawei # figuras de Huawei bajadas con la sesión del dueño (procedencia.json; dry-run salvo --aplicar)
 npm run skus        # referencias de pedido de Fortinet desde la price list
 npm run lista-aruba # lista del distribuidor de Aruba: dry-run salvo --aplicar
 npm run propuesta   # aplica una propuesta de la sincronización sobre legacyData/, con anclaje
@@ -403,7 +404,11 @@ Módulos compartidos:
   sale de la «Ordering Information» (el AR8700-8 pide su SPU-700H; el AR6710-H su SRU-700S y una
   fuente PAC300S12-CL o PDC260S12-CL/-DL). Figuras **sin pérdida** (WebP `VP8L`, los píxeles exactos
   del documento) en `public/data/huawei-vistas-equipos.json`; una figura solo se cambia por la de
-  otro documento si es el mismo dibujo. **El ciclo de vida sigue sin respaldo**: pide una cuenta
+  otro documento si es el mismo dibujo. Los renders de la Galería de imágenes de Info-Finder solo se
+  bajan con la sesión del dueño (desde su Mac); entran con `npm run figuras-huawei`, que exige
+  modelo del catálogo, cara, procedencia, no ser menor que la actual y WebP sin pérdida, y no pisa
+  un archivo que comparten dos modelos. Sin trasera oficial, la pestaña «Trasera» dice por qué
+  (`rearNota`). **El ciclo de vida sigue sin respaldo**: pide una cuenta
   Huawei (Info-Finder exige sesión).
 - **Cisco**: la plataforma se elige antes que el caudal (`PLATAFORMAS`: IOS XE SD-WAN, ISR 1000,
   Meraki MX, ASR 1000); en SD-WAN un modelo sin cifra propia cae a IPsec y la lista lo marca.

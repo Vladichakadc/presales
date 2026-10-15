@@ -17,6 +17,7 @@
     "cps": "node scripts/importar-cps.js",
     "matrix": "node scripts/contrastar-matrix.js",
     "huawei": "node scripts/importar-huawei.js",
+    "figuras-huawei": "node scripts/importar-figuras-huawei.js",
     "juniper": "node scripts/importar-juniper.js",
     "mikrotik": "node scripts/importar-mikrotik.js",
     "lista-aruba": "node scripts/importar-lista-aruba.js",

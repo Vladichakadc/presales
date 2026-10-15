@@ -2111,6 +2111,33 @@ que ya se comprobó y lo que cuesta cada opción.
   de contraste, 17 pantallas, e2e completo y la puerta, contra el servidor en modo producción; la
   pantalla conducida en Chromium (unidades, marcadores, enlace compartido que repone los enlaces).
 
+### El importador de figuras de Huawei, y lo que queda para la sesión del Mac (2026-10-15)
+
+Encargo del dueño: ejecutar pendientes y la mejora propuesta, y revisar la página oficial de
+Huawei abierta en la sesión del Mac. **Esta sesión corre en la nube y no llega al Mac** (sin
+herramientas de navegador remoto ni sesión local a la que escribir): lo que pide la sesión de Huawei
+se hace desde una sesión que corra allí (Claude Desktop o `claude remote-control`).
+
+- **La mejora propuesta, hecha**: `npm run figuras-huawei -- <carpeta> [--aplicar]` importa figuras
+  bajadas a mano con un `procedencia.json` (modelo → front/rear/fuente). Rechaza un modelo fuera del
+  catálogo, una cara mal escrita, una figura sin procedencia, una menor que la actual (salvo
+  `--aunque-menor`) y un WebP con pérdida; convierte PNG/JPEG con `cwebp -lossless -exact` y
+  comprueba `VP8L`; conserva la ruta de cada modelo y no pisa un archivo compartido (AR8140/-T,
+  AR502H). Dry-run por defecto. `test/importar-figuras-huawei.test.js` (imágenes sintéticas) y una
+  prueba de extremo a extremo con `cwebp`, revertida.
+- **Corrección de la entrega anterior**: la Galería de imágenes de Info-Finder **sí** sirve desde el
+  navegador del dueño con su sesión (la undécima entrega trajo de ahí 35 figuras de hasta 4.762 px,
+  y traseras del AR5710I y el AR6140E); lo bloqueado es solo desde la nube.
+- **Lo que queda para la sesión del Mac**, con la Galería abierta (`info.support.huawei.com/
+  info-finder/tool/en/enterprise/product-image-gallery`):
+  - **Frontales pequeñas (menos de 1.000 px)**: NetEngine A816 E, A813 E, A822 E y A821 E; NE8000
+    M1A, M1C, M1D, M1D-B, M4, F1A y F1A-C, X4, X8 y X16; AR611 y AR617VW-LTE4; AR502H-NRGL-V2. Las
+    NetEngine están en la galería por pieza (chasis, tarjetas, variantes AC/DC/E): elegir el chasis
+    con la variante que dice el pie actual.
+  - **Traseras**: 50 de 56 modelos no la tienen; bajar la de cada uno que la galería traiga.
+  - Con las imágenes en una carpeta y su `procedencia.json`: `npm run figuras-huawei -- <carpeta>`,
+    revisar el plan y `--aplicar`; luego `npm run verificar` y `E2E_SOLO=e2e-huawei-vistas npm run e2e`.
+
 ### Huawei: frontal y trasera en todos los equipos, y lo que limita la nitidez (2026-10-14)
 
 Encargo del dueño: mejorar las figuras de Huawei, que se ven borrosas, buscándolas en las fichas y
