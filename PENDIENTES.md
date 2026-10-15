@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-14, vigesimosegunda entrega (**«Ejecuta pendientes como un arquitecto senior».** Hecha la mejora propuesta: **fuente de 48 V para el PoE** en MikroTik, con los límites de alta tensión de cada ficha y la fuente como línea del BOM. Lo demás abierto de MikroTik necesita una fuente que la web no da (ticket de soporte para el ×2 del IPsec, el CCR2004-16G-2S+PC en la matriz, las traseras) o una persona (el `--revisado` de la matriz vigente). Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-14, vigesimotercera entrega (**Huawei con el PC del dueño: paquetes N1, fuentes de los AR y lo que Info-Finder no publica.** Con Chrome y la sesión de Huawei (cuenta «Common Registered User»): la tabla N1 de la ficha de la solución SD-WAN R25C00 fija el paquete Advanced cuando se pide multicast o compresión; la descripción de hardware da las tres fuentes admitidas del AR6710-L26/L50 y las dos integradas del L14. **Info-Finder no publica el tope de túneles ni de sesiones de los AR** (su consulta de especificaciones solo trae WLAN y hardware) y el ciclo de vida sale con candado para esta cuenta. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-14, vigesimosegunda entrega (**«Ejecuta pendientes como un arquitecto senior».** Hecha la mejora propuesta: **fuente de 48 V para el PoE** en MikroTik, con los límites de alta tensión de cada ficha y la fuente como línea del BOM. Lo demás abierto de MikroTik necesita una fuente que la web no da (ticket de soporte para el ×2 del IPsec, el CCR2004-16G-2S+PC en la matriz, las traseras) o una persona (el `--revisado` de la matriz vigente). Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-14, vigesimoprimera entrega (**MikroTik: la mejora propuesta —el escenario de falla en la ficha— y los pendientes contra las fuentes oficiales.** Encargo del dueño: avanzar con los pendientes buscando en las fuentes oficiales y en la web, y ejecutar la mejora. Hecho: barras de falla y de IPsec del respaldo en la ficha; **PoE en vatios con el adaptador de la caja** en hEX PoE, hEX PoE lite, PowerBox Pro y hEX S 2025 (límites por puerto de la ficha y el manual); la matriz de compatibilidad pasa a la URL vigente (7.26, idéntica a la 7.25). Sigue abierto, sin fuente pública: el ×2 del IPsec y el CCR2004-16G-2S+PC fuera de la matriz. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-14, vigésima entrega (**Capacidades SD-WAN de las fichas AR en el dimensionador Huawei.** Encargo del dueño: validar como arquitecto senior porque el dimensionador no traía de la ficha las capacidades SD-WAN (túneles, EVPN). Cada AR trae ahora overlay (SD-WAN EVPN, SRv6, DSVPN, MPLS L3VPN, multicast), A-FEC/FEC, compresión, IPS/URL/AV, MACsec, memoria y las cifras SD-WAN IPsec e IPsec + QoS de su ficha; cinco requisitos nuevos en pantalla; el BOM cita el paquete N1, la suscripción de amenazas por plazo y los paquetes DSVPN y de compresión. **Corrección**: con UTM o A-FEC se proponía la AR5710-S de 2 GB, que su ficha excluye. **Túneles y sesiones: sin dato**, ver *Abierto: dimensionador Huawei*. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-14, decimonovena entrega (**Caudal del sitio, enlaces WAN y sentidos simultáneos unificados en el dimensionador MikroTik.** Encargo del dueño: revisarlos como arquitecto senior porque se añadieron en momentos distintos y no estaban sincronizados. Eran tres fuentes: el caudal con margen, cada enlace sin margen y un ×2 que pisaba la subida declarada. Ahora son una cadena (demanda → enlaces → sentidos → margen sobre lo que procesa el equipo, nunca sobre el puerto), las casillas de los enlaces van en la unidad del sitio y dicen lo que heredan. Ver *Cerrado recientemente*.)
@@ -649,14 +650,16 @@ decisión del dueño o el datasheet de Huawei (pendiente 14).
 **Lista para ejecutar con un PC** (Chrome de escritorio con la extensión Claude in Chrome y la
 sesión de Huawei abierta, o la app de GitHub para lanzar Actions). En orden de valor:
 
-1. **Tope de túneles IPsec y SD-WAN EVPN, sesiones y rutas por serie AR** — Info-Finder,
-   «Specification Query» de cada serie (AR610, AR650, AR6000, AR5700, AR6700, AR8000). Anotar en
-   `capSdwan.tuneles` y `capSdwan.sesiones` con la URL y la versión de VRP en `fuentes.js`; el aviso
-   del hub pasa a filtrar solo. Necesita la sesión del dueño.
+1. **Tope de túneles IPsec y SD-WAN EVPN, sesiones y rutas por serie AR** — ~~Info-Finder~~
+   **Medido el 2026-10-14 con la sesión del dueño: Info-Finder NO lo publica.** Su consulta de
+   especificaciones (AR8140-12G10XG en V600R025C10 y V600R026C00, AR6710-H4T4X2Y7 en la última)
+   trae un árbol de ~1.500 nodos casi todo WLAN y hardware, sin VPN/IPsec/SD-WAN; en inglés, vacío.
+   Queda: pedirlo a Huawei (cuenta de partner o el gerente de canal) o el configurador eDeal.
 2. **Ciclo de vida (EOM/EOS) de los 52 modelos Huawei** — la herramienta de ciclo de vida de
-   Info-Finder (el 2026-10-12 no abrió desde el navegador automatizado: probar a mano y exportar).
-   Cierra el semáforo gris de Huawei. Necesita la sesión.
-3. **Paquetes N1: qué exige Advanced frente a Foundation** — traer la ficha de la solución SD-WAN
+   Info-Finder sale **con candado** para la cuenta del dueño («Common Registered User»; el portal
+   ofrece «Upgrade Account» a cliente o partner). Bloqueado por permisos de cuenta, no por el navegador.
+3. ~~**Paquetes N1: qué exige Advanced frente a Foundation**~~ **Cerrado el 2026-10-14** (ver
+   *Cerrado recientemente*). Era: traer la ficha de la solución SD-WAN
    R25C00 (e-file.huawei.com, `...c39e035b25f14a1897536864b6b928b3...Datasheet_R25C00.pdf`) con
    `traer-cisco-huawei.yml` (Run workflow, rama `fuente/huawei-sdwan-2026-10-14`) y leer la tabla con
    pdfplumber. El 2026-10-14 dio 403 desde Firecrawl y WebFetch la resume sin columnas fiables.
@@ -665,8 +668,10 @@ sesión de Huawei abierta, o la app de GitHub para lanzar Actions). En orden de 
    (dispositivos, sitios y APs gestionados), modelo de licencia por equipo y si NCE-WAN va en la
    nube de Huawei o en sitio. Hoy la línea «Suscripción iMaster NCE-WAN» no tiene código ni tope.
    El 2026-10-14 WebFetch dio ROBOTS_DISALLOWED.
-5. **Fuentes de serie de cinco AR** (AR6710-L26/L50/L14, AR6710-H, AR8700-8) — capítulo «Power
-   Supplies» de EDOC1100213474 en support.huawei.com, con la sesión (ya listado abajo).
+5. **Fuentes de serie de cinco AR** — **en parte cerrado el 2026-10-14**: el L14 trae dos fuentes AC
+   integradas; el L26 y el L50 admiten PAC350S12-CR, PAC180S12-CN o PDC240S12-CN. El L26, el L50, el
+   AR6710-H y el AR8700-8 siguen sin decir cuántas vienen: la descripción de hardware solo da dos
+   ranuras y 1:1, y la guía de instalación tampoco. Lo decide el pedido (eDeal).
 6. **vCPE AR6700V-L para sitios en la nube** — no necesita PC: su ficha ya está en
    `fuente/huawei-familias-2026-10-12`. Pendiente de la decisión del dueño (propuesta del
    2026-10-14: cuarta plataforma o tipo de sitio «nube», 2/4/8/16 vCPU, IPS solo desde 4 vCPU).
@@ -2022,6 +2027,19 @@ que ya se comprobó y lo que cuesta cada opción.
   contradictorios) y el CCR2004-16G-2S+PC fuera de la matriz.
 
 ### Capacidades SD-WAN de las fichas AR en el dimensionador Huawei (2026-10-14, vigésima entrega)
+
+### Huawei con el PC del dueño (2026-10-14, vigesimotercera entrega)
+
+- **Huawei con el PC del dueño (2026-10-14, noche).** (1) **Paquetes N1**: tabla «Software Package
+  Functions» de la ficha de la solución SD-WAN R25C00, leída en su Chrome (a este entorno le da 403):
+  multicast sobre SD-WAN y compresión solo están en Advanced, así que el BOM fija
+  `N1-…-A` con su código cuando se piden (`HuaweiMotor.N1_SOLO_ADVANCED`); sin ellas se deja elegir y
+  la línea dice qué añade Advanced. IPS/URL/antivirus son el add-on «Security Threat Prevention».
+  (2) **Fuentes**: el AR6710-L14 pasa a `redund: true` (dos AC integradas, «AC built-in», 1:1) y el
+  L26/L50 piden su fuente en una línea «elegir una» con PAC350S12-CR, PAC180S12-CN o PDC240S12-CN
+  (descripción de hardware EDOC1100213474). (3) **Medido y anotado**: Info-Finder no publica túneles
+  ni sesiones de los AR y su ciclo de vida exige otra categoría de cuenta. 941/941, contraste
+  `huawei`, pantallas, puerta, auditar y e2e en verde.
 
 - **Capacidades SD-WAN de las fichas AR (2026-10-14).** `capSdwan` por modelo en
   `legacyData/huawei.js`, de la tabla «Software Features and Protocols», las filas SD-WAN IPsec e

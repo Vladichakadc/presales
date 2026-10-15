@@ -46,6 +46,10 @@ const OPTIC_LABEL = {ge:'GE — SFP / eSFP', sfp10:'10GE — SFP+', sfp25:'25GE 
 
 const PARTS = {
   PAC350:{sku:'PAC350S12-CR', bom:null, d:'Fuente AC-DC 350 W · 90–290 V · salida 12 V / 29.2 A · rango –25 a 55 °C'},
+  // PAC180 y PDC240 (2026-10-14): «Applicable power modules» de las paginas del AR6710-L26T2X4 y el
+  // L50T2X4 en la descripcion de hardware (EDOC1100213474, 2026-07-23), leidas en el Chrome del dueño.
+  PAC180:{sku:'PAC180S12-CN', bom:null, d:'Fuente AC de 180 W · la admite el AR6710-L26/L50 junto a la PAC350S12-CR (descripción de hardware de Huawei)'},
+  PDC240:{sku:'PDC240S12-CN', bom:null, d:'Fuente DC de 240 W · la del AR6710-L26/L50 en DC (descripción de hardware de Huawei)'},
   PAC1000:{sku:'PAC1000S56-EB', bom:null, d:'Fuente AC y 240 V DC de 1000 W · chasis 66 mm · flujo trasero-frontal'},
   PAC600:{sku:'PAC600S56-EB', bom:null, d:'Fuente AC y 240 V DC de 600 W · chasis 66 mm · flujo trasero-frontal'},
   PDC1000:{sku:'PDC1000S56-EB', bom:null, d:'Fuente DC PoE de 1000 W · chasis 66 mm · flujo trasero-frontal'},
@@ -238,14 +242,14 @@ const MODELS = [
  ports:'1 x 10GE óptico + 2 x GE combo WAN, 1 x GE combo + 8 x GE LAN, 2 x SIC, 0/1 WSIC', optics:['sfp10','ge'], parts:['WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
  redund:false, psu:{watts:27, salida:[{w:70, tipo:'AC'}], tipo:'AC integrada', texto:'Sin redundancia de fuente («Power supply redundancy: N/A»), 70 W de salida máxima en AC; 27 W típicos (ficha AR6710-L R26C00). El BOM no pide fuente: la PAC180S12-CN que listaba el catálogo es de 180 W.'}},
 {id:'AR6710-L26T2X4', cls:'AR', ser:'AR6700-L', fam:'Campus mediano, 24 puertos', fwd:3200, ipsec:1600, typ:1200, mpps:null, lan:24, poe:0, wan:0, wifi:0, apsFree:32, apsMax:128, boost:0,
- ports:'2 x 10GE óptico + 2 x GE WAN, 24 x GE LAN, 4 x SIC, 0/2 WSIC', optics:['sfp10','ge'], parts:['PAC350','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
- psu:{watts:68, salida:[{w:350, tipo:'AC'}, {w:240, tipo:'DC'}], tipo:'AC o DC', texto:'«Dual power supplies, hot-swappable» (350 W AC / 240 W DC de salida): admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. 68 W típicos (ficha AR6710-L R26C00).'}},
+ ports:'2 x 10GE óptico + 2 x GE WAN, 24 x GE LAN, 4 x SIC, 0/2 WSIC', optics:['sfp10','ge'], parts:['PAC350','PAC180','PDC240','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
+ psu:{watts:68, salida:[{w:350, tipo:'AC'}, {w:180, tipo:'AC'}, {w:240, tipo:'DC'}], tipo:'AC o DC', texto:'«Dual power supplies, hot-swappable» (350 W AC / 240 W DC de salida): admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. Su página en la descripción de hardware (EDOC1100213474, 2026-07-23) admite la PAC350S12-CR o la PAC180S12-CN en AC y la PDC240S12-CN en DC, con dos ranuras y respaldo 1:1, y tampoco dice cuántas vienen. 68 W típicos (ficha AR6710-L R26C00).'}},
 {id:'AR6710-L50T2X4', cls:'AR', ser:'AR6700-L', fam:'Campus mediano, 48 puertos', fwd:3200, ipsec:1600, typ:1200, mpps:null, lan:48, poe:0, wan:0, wifi:0, apsFree:32, apsMax:128, boost:0,
- ports:'2 x 10GE óptico + 2 x GE WAN, 48 x GE LAN, 4 x SIC, 0/2 WSIC', optics:['sfp10','ge'], parts:['PAC350','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
- psu:{watts:83, salida:[{w:350, tipo:'AC'}, {w:240, tipo:'DC'}], tipo:'AC o DC', texto:'«Dual power supplies, hot-swappable» (350 W AC / 240 W DC de salida): admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. 83 W típicos (ficha AR6710-L R26C00).'}},
+ ports:'2 x 10GE óptico + 2 x GE WAN, 48 x GE LAN, 4 x SIC, 0/2 WSIC', optics:['sfp10','ge'], parts:['PAC350','PAC180','PDC240','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
+ psu:{watts:83, salida:[{w:350, tipo:'AC'}, {w:180, tipo:'AC'}, {w:240, tipo:'DC'}], tipo:'AC o DC', texto:'«Dual power supplies, hot-swappable» (350 W AC / 240 W DC de salida): admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. Su página en la descripción de hardware (EDOC1100213474, 2026-07-23) admite la PAC350S12-CR o la PAC180S12-CN en AC y la PDC240S12-CN en DC, con dos ranuras y respaldo 1:1, y tampoco dice cuántas vienen. 83 W típicos (ficha AR6710-L R26C00).'}},
 {id:'AR6710-L14T2X4', cls:'AR', ser:'AR6700-L', fam:'Campus mediano de alto caudal', fwd:4000, ipsec:2500, typ:1800, mpps:null, lan:12, poe:0, wan:0, wifi:0, apsFree:32, apsMax:128, boost:0,
  ports:'2 x 10GE óptico + 2 x GE WAN, 4 x GE combo + 8 x GE LAN, 4 x SIC, 0/2 WSIC', optics:['sfp10','ge'], parts:['WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
- psu:{watts:41, salida:[{w:150, tipo:'AC'}], tipo:'AC', texto:'«Dual power supplies, not hot-swappable», 150 W de salida máxima en AC; 41 W típicos (ficha AR6710-L R26C00). El BOM no pide fuente: la PAC350S12-CR que listaba el catálogo es un módulo de 350 W extraíble en caliente, y la ficha publica 150 W y fuentes que no lo son. No se marca la redundancia: la ficha no dice si las dos vienen montadas.'}},
+ redund:true, psu:{watts:41, salida:[{w:150, tipo:'AC'}], tipo:'AC integrada, doble', texto:'Dos fuentes AC integradas en respaldo 1:1: su página en la descripción de hardware (EDOC1100213474, 02355PSD, 2026-07-23) dice «Power supply mode: AC built-in», «Number of power modules: 2» y «Dual power supplies in 1:1 backup mode»; la ficha AR6710-L R26C00, «Dual power supplies, not hot-swappable», 150 W de salida máxima. 41 W típicos. El BOM no pide fuente: vienen dentro del equipo.'}},
 {id:'AR6710-H4T4X2Y7', cls:'AR', ser:'AR6700-H', fam:'Casa matriz / campus grande', fwd:13000, ipsec:10000, typ:7000, mpps:null, lan:null, poe:0, wan:0, wifi:0, apsFree:32, apsMax:512, boost:0,
  ports:'2 x 25GE SFP28 + 4 x 10GE SFP+ + 4 x GE · 6 x SIC, 1/4 WSIC · reemplaza AR6280/AR6300', optics:['sfp25','sfp10','ge'], parts:['SRU700S','PAC300','PDC260','PDC260DL','WSIC4GE','WSIC8GE','SICNR','RACK','CONSOLE'],
  psu:{watts:83, salida:[{w:300, tipo:'AC'}, {w:260, tipo:'DC'}], tipo:'AC o DC', texto:'«Dual power supplies, hot-swappable» (300 W AC / 260 W DC de salida): admite dos fuentes extraíbles en caliente; la ficha no dice si vienen las dos de serie, y por eso no se marca. 83 W típicos con una SRU y 145 W con dos (ficha AR6710-H R25C10). La PAC350S12-CR que listaba el catálogo es de 350 W y no es la suya: su descripción de hardware (EDOC1100213474, 2026-07-23) da la PAC300S12-CL en AC y la PDC260S12-CL o la PDC260S12-DL en DC, con dos ranuras de fuente («Number of power modules 2», «Double AC power modules (1+1)»), sin decir cuántas vienen.'}},
@@ -643,7 +647,7 @@ for (const m of MODELS) if (FICHAS[m.id]) m.ficha = FICHAS[m.id];
 // TUNELES Y SESIONES: NINGUNA FICHA AR LOS PUBLICA, ni la ficha de la solucion SD-WAN (R25C00, leida
 // el 2026-10-14: no da topes de tuneles, sedes, rutas ni VPN por modelo). Viven en la consulta de
 // especificaciones de Info-Finder, que pide la sesion de una cuenta Huawei: quedan en null.
-const TUNELES_MOTIVO = 'Huawei no publica el tope de túneles (IPsec ni SD-WAN EVPN), de sesiones ni de rutas en la ficha de ningún AR ni en la ficha de su solución SD-WAN (R25C00); está en la consulta de especificaciones de Info-Finder, que exige iniciar sesión con una cuenta Huawei.';
+const TUNELES_MOTIVO = 'Huawei no publica el tope de túneles (IPsec ni SD-WAN EVPN), de sesiones ni de rutas: ni en la ficha de ningún AR, ni en la de su solución SD-WAN (R25C00), ni en la consulta de especificaciones de Info-Finder (comprobado el 2026-10-14 con sesión). Hay que pedirlo a Huawei o al configurador eDeal.';
 // Suscripcion de amenazas por años, como la lista la ficha: {años: codigo}. Datos planos (viajan por
 // SQLite como JSON): ni funciones ni patrones.
 const anualTP = (base, paso) => Object.fromEntries([1, 2, 3, 4, 5].map((a) => [a, 'LAR0TP' + (base + paso * (a - 1))]));

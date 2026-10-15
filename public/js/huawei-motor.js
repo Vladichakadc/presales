@@ -170,7 +170,7 @@
     if (tuneles) {
       avisos.push(`Hub con ${tuneles} sede${tuneles === 1 ? '' : 's'}: se piden ${tuneles} túneles IPsec terminando en el equipo. `
         + (modelosConTope ? `${modelosConTope} modelos publican su tope de túneles y se comprueba; el resto no lo trae este catálogo.`
-          : 'Huawei no publica el tope de túneles (IPsec ni SD-WAN EVPN) ni de sesiones en la ficha de ningún AR ni en la de su solución SD-WAN: está en la consulta de especificaciones de Info-Finder, con cuenta Huawei. El equipo propuesto cumple por caudal; confirma el tope ahí antes de cotizar.'));
+          : 'Huawei no publica el tope de túneles (IPsec ni SD-WAN EVPN) ni de sesiones: ni en la ficha de ningún AR, ni en la de su solución SD-WAN, ni en la consulta de especificaciones de Info-Finder. El equipo propuesto cumple por caudal; pide el tope a Huawei (o al configurador eDeal) antes de cotizar.'));
     }
     // ALTA DISPONIBILIDAD 1+1 (H-12). Regla de Aruba, aqui igual: el par suma DISPONIBILIDAD,
     // no caudal. Un equipo lleva el trafico y el otro toma el relevo en fallo, asi que CADA
@@ -290,6 +290,10 @@
 
   /* LICENCIAS. Una sola funcion para el calculo y el BOM: recibe la NECESIDAD del escenario,
      porque la de rendimiento depende de ella (H-08: el BOM la pasaba en 0 y la perdia). */
+  // Funciones que solo trae el paquete N1 Advanced (ficha «Huawei SD-WAN Solution Datasheet» R25C00,
+  // tabla «Software Package Functions»), por la clave de requisito del motor.
+  const N1_SOLO_ADVANCED = { mcast: 'multicast IP sobre SD-WAN', compresion: 'compresión de datos' };
+
   function licencias(pick, c) {
     const m = pick.m, L = [];
     // Plazo de las suscripciones (1, 3 o 5 anos): el texto de cada linea dice el termino real.
@@ -302,9 +306,15 @@
       const doc = fx ? ` (ficha ${fx.doc})` : '';
       const anios = parseInt(c.anios, 10) || 1;
       const req = c.req || [];
+      // FOUNDATION O ADVANCED (2026-10-14): la tabla «Software Package Functions» de la ficha de la
+      // solución SD-WAN R25C00 (págs. 13-14) marca qué funciones solo trae Advanced. Si se pide una,
+      // el paquete deja de ser una elección: va Advanced con su código. Si no, se deja elegir.
+      const soloAdv = req.filter((k) => N1_SOLO_ADVANCED[k]);
       if (c.pk !== 'fwd' || c.svc.sdwan) {
-        L.push(fx && fx.n1
-          ? { on: 1, t: 'Paquete N1 CloudCampus con SD-WAN, por equipo — elegir uno', d: `${fx.n1.f} (Foundation, incluye SD-WAN) o ${fx.n1.a} (Advanced, incluye SD-WAN)${doc}. Habilita identificación de aplicaciones, selección inteligente de ruta y túneles gestionados por iMaster NCE.` }
+        L.push(fx && fx.n1 && soloAdv.length
+          ? { on: 1, t: `Paquete N1 CloudCampus Advanced ${fx.n1.a}`, sku: fx.n1.a, d: `Advanced porque se pide ${soloAdv.map((k) => N1_SOLO_ADVANCED[k]).join(' y ')}, que el paquete Foundation no incluye (ficha de la solución SD-WAN R25C00, «Software Package Functions»)${doc ? '; código de la ficha ' + fx.doc : ''}.` }
+          : fx && fx.n1
+          ? { on: 1, t: 'Paquete N1 CloudCampus con SD-WAN, por equipo — elegir uno', d: `${fx.n1.f} (Foundation) o ${fx.n1.a} (Advanced)${doc}. Los dos traen topologías hub-spoke, full-mesh y partial-mesh, multi-hub y multi-VPN, IWG, A-FEC y duplicación de paquetes; Advanced añade multicast sobre SD-WAN, compresión, QoS adaptativo, ITP, NetStream, IFIT estático y orquestación de vCPE (ficha de la solución SD-WAN R25C00).` }
           : { on: 1, t: 'Licencia de función SD-WAN por equipo', d: 'Habilita identificación de aplicaciones, selección inteligente de ruta y túneles gestionados. La ficha de este modelo no se ha leído: código por confirmar.' });
         L.push({ on: 1, t: `Suscripción iMaster NCE-WAN — ${T}`, d: 'Controlador y gestión del overlay. Se licencia por nodo administrado.' });
       } else if (fx && fx.n1) {
@@ -316,7 +326,7 @@
         if (!pq.length) L.push({ on: 1, t: 'Licencia de seguridad: IPS, filtrado URL y antivirus', d: 'Funciones licenciadas aparte en la serie AR, no vienen activas.' });
         const tp = fx && fx.amenazas ? fx.amenazas[Math.min(5, Math.max(1, anios))] : null;
         L.push(tp
-          ? { on: 1, t: `Suscripción de amenazas ${tp} — ${T}`, sku: tp, d: `Actualiza las firmas de IPS y antivirus y la consulta remota de URL${doc}.` }
+          ? { on: 1, t: `Suscripción de amenazas ${tp} — ${T}`, sku: tp, d: `Actualiza las firmas de IPS y antivirus y la consulta remota de URL${doc}. Va aparte del paquete N1: ni Foundation ni Advanced traen IPS, URL ni antivirus, que son el add-on «Security Threat Prevention» (ficha de la solución SD-WAN R25C00).` }
           : { on: 1, t: `Suscripción de bases de firmas — ${T}`, d: 'Sin firmas vigentes el IPS y el antivirus quedan sin actualizar. La ficha de este modelo no lista su código.' });
       }
       ['dsvpn', 'compresion'].forEach((k) => {
@@ -353,7 +363,7 @@
      pedido aparte, y el BOM no la pedia. Y las dos fichas dejan elegir UNA o DOS placas de
      control: se dice en la linea, con lo que cambia (`nota`), en vez de fijarlo sin explicarlo. */
   const ROL_PIEZA = {
-    PAC350: { grupo: 'fuente' }, PAC1000: { grupo: 'fuente' },
+    PAC350: { grupo: 'fuente' }, PAC180: { grupo: 'fuente' }, PDC240: { grupo: 'fuente' }, PAC1000: { grupo: 'fuente' },
     PAC600: { grupo: 'fuente' }, PDC1000: { grupo: 'fuente' },
     PAC300: { grupo: 'fuente' }, PDC260: { grupo: 'fuente' }, PDC260DL: { grupo: 'fuente' },
     MPU100: { grupo: 'mpu' }, MPU100T: { grupo: 'mpu' },
@@ -464,7 +474,7 @@
     if (ev.dia) L.push(`| Local breakout | ${ev.diaPct} % a Internet en claro; ${100 - ev.diaPct} % por túneles | túneles: ${f(ev.needTun)} |`);
     L.push(`| **Necesidad de diseño** | | **${f(ev.need)}** |`);
     L.push(`| Paquetes por segundo | necesidad ÷ (${ev.bytesMpps} B × 8) | ${ev.needMpps.toFixed(2)} Mpps |`);
-    if (ev.tuneles) L.push(`| Túneles IPsec | ${ev.sites} sedes terminando en el equipo | ${ev.tuneles} (Huawei no publica el tope por modelo en sus fichas; está en Info-Finder, con cuenta) |`);
+    if (ev.tuneles) L.push(`| Túneles IPsec | ${ev.sites} sedes terminando en el equipo | ${ev.tuneles} (Huawei no publica el tope por modelo: ni fichas ni Info-Finder; pedirlo a Huawei) |`);
     L.push('');
     if (ev.carrier && (ev.carrier.bgp || ev.carrier.cgnat || ev.carrier.bng)) {
       L.push('Métricas de operador declaradas (no filtran el equipo: el catálogo no trae FIB, CGNAT ni BNG por modelo): '
@@ -510,5 +520,5 @@
     return Math.round(m) + ' Mbps';
   }
 
-  return { REQUISITOS, estadoRequisito, PLATAFORMAS, TRAFICO, SUPUESTOS, UMBRAL_NGFW_MBPS, CAPAS, PROFILE, PISO_POR_FUNCION, capaEfectiva, evaluar, licencias, piezasBom, opticasBom, ROL_PIEZA, respaldoBidireccional, memoria, fmt };
+  return { N1_SOLO_ADVANCED, REQUISITOS, estadoRequisito, PLATAFORMAS, TRAFICO, SUPUESTOS, UMBRAL_NGFW_MBPS, CAPAS, PROFILE, PISO_POR_FUNCION, capaEfectiva, evaluar, licencias, piezasBom, opticasBom, ROL_PIEZA, respaldoBidireccional, memoria, fmt };
 });

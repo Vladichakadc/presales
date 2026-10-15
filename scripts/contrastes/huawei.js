@@ -122,7 +122,7 @@ module.exports = {
     const hub = await p.$eval('#avisosMotor', (e) => e.textContent).catch(() => '');
     const recHub = await p.$eval('#verdict-sel', (e) => e.value).catch(() => null);
     out.push({ n: 'H-11 · un hub de 100 sedes declara los 100 túneles y que falta el tope, sin apartar a nadie',
-      ok: /100 túneles IPsec/.test(hub) && /no publica el tope de túneles/.test(hub) && /Info-Finder/.test(hub) && recHub === 'AR6710-H4T4X2Y7',
+      ok: /100 túneles IPsec/.test(hub) && /no publica el tope de túneles/.test(hub) && /Info-Finder/.test(hub) && /pide el tope a Huawei/.test(hub) && recHub === 'AR6710-H4T4X2Y7',
       detalle: `recomendado ${recHub}; aviso ${/100 túneles/.test(hub) ? 'presente' : 'AUSENTE'}` });
 
     await p.goto(`${base}/dimensionador-huawei-netengine.html`, { waitUntil: 'domcontentloaded' });

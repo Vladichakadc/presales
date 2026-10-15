@@ -165,7 +165,11 @@ test('H-06 · la tarjeta 5G solo se pide si se pide 4G/5G; las WSIC son ampliaci
 
 test('H-06 · doble fuente declarada (redund:true) pide dos; una sola fuente pide una', () => {
   assert.strictEqual(piezas('AR8140-12G10XG').pedir.find((x) => x.codigo === 'PAC350').qty, 2);
-  assert.strictEqual(piezas('AR6710-L26T2X4').pedir.find((x) => x.codigo === 'PAC350').qty, 1);
+  // AR6710-L26 (2026-10-14): su descripción de hardware admite tres fuentes; sin redundancia
+  // declarada se elige UNA, en una sola línea, y ninguna se pide sola.
+  const f = piezas('AR6710-L26T2X4').elegir.find((g) => g.grupo === 'fuente');
+  assert.deepStrictEqual([f.opciones, f.qty], [['PAC350', 'PAC180', 'PDC240'], 1]);
+  assert.ok(!piezas('AR6710-L26T2X4').pedir.some((x) => /^P[AD]C/.test(x.codigo)));
 });
 
 // LA SECCION «ORDERING INFORMATION» DE LAS FICHAS (2026-10-06): el BOM cotizaba un AR8700-8 sin
@@ -246,7 +250,7 @@ test('el desempate es determinista: el orden en que la API sirve el catálogo no
 test('H-11 · un hub declara los túneles que se piden y que el catálogo no trae el tope', () => {
   const r = M.evaluar(esc({ bw: 50, mode: 'agg', sites: 100 }), MODELS);
   assert.strictEqual(r.tuneles, 100);
-  assert.ok(r.avisos.some((a) => /100 túneles IPsec/.test(a) && /no publica el tope de túneles/.test(a) && /Info-Finder/.test(a)));
+  assert.ok(r.avisos.some((a) => /100 túneles IPsec/.test(a) && /no publica el tope de túneles/.test(a) && /Info-Finder/.test(a) && /pide el tope a Huawei/.test(a)));
   assert.strictEqual(r.pick.m.id, 'AR6710-H4T4X2Y7', 'declarar no cambia la recomendación: sin dato no se aparta a nadie');
 });
 
@@ -295,7 +299,13 @@ test('H-12 · el aviso de fuentes redundantes solo sale si el catálogo lo decla
   const hub = M.evaluar(esc({ bw: 6000, profile: 'fwd', svc: { sdwan: false }, ha: true }), MODELS);
   assert.strictEqual(hub.pick.m.id, 'AR8140-12G10XG');
   assert.ok(hub.avisos.some((a) => /ya declara fuentes redundantes/.test(a)));
-  const ar = M.evaluar(esc({ bw: 500, ha: true }), MODELS);
+  // El AR6710-L14 declara desde el 2026-10-14 sus dos fuentes integradas (descripción de hardware):
+  // con HA sale el aviso. Uno sin el dato (el L26, `redund` ausente) no lo dice.
+  const l14 = M.evaluar(esc({ bw: 500, ha: true }), MODELS);
+  assert.strictEqual(l14.pick.m.id, 'AR6710-L14T2X4');
+  assert.ok(l14.avisos.some((a) => /ya declara fuentes redundantes/.test(a)));
+  const ar = M.evaluar(esc({ bw: 500, ha: true }), MODELS.filter((m) => m.id !== 'AR6710-L14T2X4'));
+  assert.strictEqual(ar.pick.m.redund, undefined, ar.pick.m.id);
   assert.ok(!ar.avisos.some((a) => /ya declara fuentes redundantes/.test(a)), 'redund ausente no se lee como false ni como true');
 });
 
@@ -530,12 +540,27 @@ test('2026-10-14 · las licencias citan los códigos de pedido de la ficha de la
   const r = M.evaluar(esc({ bw: 300, svc: { sdwan: true, utm: true }, req: { dsvpn: true, compresion: true } }), MODELS);
   const L = M.licencias(r.pick, { anios: 3, need: r.need, aps: 0, svc: r.svc, pk: r.pk, req: r.req });
   const n1 = L.find((l) => /Paquete N1/.test(l.t));
-  assert.ok(n1 && n1.sku === undefined, 'el N1 es una elección entre Foundation y Advanced: sin código fijo');
-  assert.match(n1.d, new RegExp(r.pick.m.capSdwan.n1.f));
+  // Con compresión pedida el N1 deja de ser una elección: va Advanced, con su código.
+  assert.strictEqual(n1.sku, r.pick.m.capSdwan.n1.a);
   const tp = L.find((l) => /Suscripción de amenazas/.test(l.t));
   assert.strictEqual(tp.sku, r.pick.m.capSdwan.amenazas[3]);
   // AR650: la suscripción de 3 años es la LAR0TP1007 y la de 5, la LAR0TP1013 (ficha 20250810-v3).
   const ar651 = { m: MODELS.find((m) => m.id === 'AR651'), isWan: false };
   const tp5 = M.licencias(ar651, { anios: 5, need: 0, aps: 0, svc: { sdwan: true, utm: true }, pk: 'typ', req: ['utm'] }).find((l) => /amenazas/.test(l.t));
   assert.strictEqual(tp5.sku, 'LAR0TP1013');
+});
+
+test('2026-10-14 · multicast o compresión fijan el paquete N1 Advanced; sin ellas se deja elegir', () => {
+  const lic = (req) => {
+    const r = M.evaluar(esc({ bw: 300, req }), MODELS);
+    return { r, L: M.licencias(r.pick, { anios: 1, need: r.need, aps: 0, svc: r.svc, pk: r.pk, req: r.req }) };
+  };
+  const base = lic({});
+  assert.ok(base.L.some((l) => /elegir uno/.test(l.t) && !l.sku));
+  for (const k of ['mcast', 'compresion']) {
+    const { r, L } = lic({ [k]: true });
+    const n1 = L.find((l) => /Paquete N1/.test(l.t));
+    assert.strictEqual(n1.sku, r.pick.m.capSdwan.n1.a, `${k}: ${n1.t}`);
+    assert.match(n1.d, /Foundation no incluye/);
+  }
 });
