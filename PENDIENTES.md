@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-15, trigesimocuarta entrega (**La mejora propuesta: el arranque instala la CLI de graphify fijada.** Cada sesión en la nube empezaba sin la CLI y la skill no se usaba. Ahora `.claude/hooks/graphify-cli.sh` instala `graphifyy==0.9.77` con `uv` si falta (9 s en frío), sin tocar otra versión ya instalada ni construir el grafo; si falla, dice el comando y sigue. **Queda una línea**: el motivo del fallo no se imprime, porque el filtro de permisos negó esa edición del hook. Ver *Cerrado recientemente* y *Limpieza*.)
+Última revisión: 2026-10-15, trigesimoquinta entrega (**La mejora propuesta: la historia sale del grafo de graphify.** `PENDIENTES.md` era el nodo más conectado del grafo («Cerrado recientemente», 160 aristas) y hacía de puente en cualquier consulta; ahora `.graphifyignore` deja fuera este archivo y `docs/claude-md-cronica.md`. Medido: de 3283 a 3081 nodos, y los diez más conectados ya son código. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-15, trigesimocuarta entrega (**La mejora propuesta: el arranque instala la CLI de graphify fijada.** Cada sesión en la nube empezaba sin la CLI y la skill no se usaba. Ahora `.claude/hooks/graphify-cli.sh` instala `graphifyy==0.9.77` con `uv` si falta (9 s en frío), sin tocar otra versión ya instalada ni construir el grafo; si falla, dice el comando y sigue. **Queda una línea**: el motivo del fallo no se imprime, porque el filtro de permisos negó esa edición del hook. Ver *Cerrado recientemente* y *Limpieza*.)
 Revisión anterior: 2026-10-15, trigesimotercera entrega (**Lo que midió el sondeo de las fuentes de Starlink, y tres arreglos que salieron de él.** Se vigilan los tres PDF de Starlink (tarifa y fichas, estables en bytes); las cinco páginas HTML llevan `sinVigilancia` con lo medido (cascarón de JavaScript o texto que cambia en cada petición). El workflow del sondeo pedía cada URL dos veces y ya no cabía en 20 min: ahora una sola pasada. **Hallazgo**: dos fuentes de Aruba eran un cascarón que el vigía daba por leído. Ver *Cerrado recientemente* y *Abierto: dos fuentes de Aruba eran un cascarón*.)
 Revisión anterior: 2026-10-15, trigesimosegunda entrega (**La mejora propuesta: el vigía mira las fuentes de Starlink.** Las ocho fuentes del motor canónico entran en `legacyData/fuentes.js` (el PDF del Priority Plan como fuente de precio) y una prueba las casa con el motor. **Mejora encontrada por el camino**: el vigía daba por «leída» una página que llega como cascarón de JavaScript —starlink.com lo es— y la habría declarado «sin cambios» cada lunes; ahora sale ilegible. Falta medirlas desde Actions: el proxy de aquí da 403. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimoprimera entrega (**La mejora propuesta: Starlink entra en la batería de axe.** `npm run e2e` audita ya la pantalla de Starlink tal como carga y con todas las cargas desplegadas y el diálogo de metodología abierto, a 1440 px y en reflujo a 640 px. Saboteada: el texto del diálogo sin contraste la pone en rojo. Ver *Cerrado recientemente*.)
@@ -2053,6 +2054,19 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### La historia sale del grafo de graphify (2026-10-15, trigesimoquinta entrega)
+
+Encargo del dueño: «Ejecuta la mejora propuesta y muéstrame después el grafo».
+
+- **El problema.** Medido sobre `27c97f6`: el nodo más conectado del grafo era `Cerrado
+  recientemente` (160 aristas, la sección de este archivo) y `Pendientes` el sexto; los dos salían
+  como puentes en las preguntas sugeridas y tapaban las relaciones reales del código.
+- **Ahora** `.graphifyignore` deja fuera `PENDIENTES.md` y `docs/claude-md-cronica.md` (historia, no
+  código; lo cerrado se busca en el propio archivo). `graphify update .` poda solo sus 202 nodos:
+  de 3283 nodos y 5576 aristas a 3081 y 5181, y los diez más conectados son funciones
+  (`render`, `renderBom`, `asentar`, `cargar`…).
+- **Prueba**: `test/graphify-instalacion.test.js` frena que los dos vuelvan a entrar.
 
 ### El arranque instala la CLI de graphify fijada (2026-10-15, trigesimocuarta entrega)
 

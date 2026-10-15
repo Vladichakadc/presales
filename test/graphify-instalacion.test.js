@@ -46,7 +46,7 @@ test('el grafo no se versiona, y el ignore quita lo que no es de este proyecto',
   const gitignore = fs.readFileSync(path.join(RAIZ, '.gitignore'), 'utf8');
   assert.match(gitignore, /^graphify-out\/$/m);
   const ignore = fs.readFileSync(path.join(RAIZ, '.graphifyignore'), 'utf8');
-  for (const ruta of ['.claude/skills/', 'starlink-leo-dimensionador/']) {
+  for (const ruta of ['.claude/skills/', 'starlink-leo-dimensionador/', 'PENDIENTES.md', 'docs/claude-md-cronica.md']) {
     assert.match(ignore, new RegExp(`^${ruta.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')}$`, 'm'), `${ruta} vuelve a entrar en el grafo`);
   }
 });

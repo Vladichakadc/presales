@@ -8,3 +8,8 @@ starlink-leo-dimensionador/
 public/datasheets/
 public/img/
 docs/manual-usuario/fonts/
+# Historia, no codigo: PENDIENTES.md salia como el nodo mas conectado del grafo
+# («Cerrado recientemente», 160 aristas) y la cronica de CLAUDE.md hacia de puente en cualquier
+# consulta, tapando las relaciones reales. Lo cerrado se busca en el propio archivo.
+PENDIENTES.md
+docs/claude-md-cronica.md
