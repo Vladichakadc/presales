@@ -479,10 +479,10 @@ Módulos compartidos:
   en las 20 fichas de MikroTik, **los datos transcritos** (`vigilar: 'ficha-mikrotik'`: la huella de
   lo que `npm run mikrotik` lee, que al transcribir deja el lock verificado);
   `--sondeo` mide qué varía entre dos peticiones. Un HTML que, sin scripts, deja menos de
-`TEXTO_MINIMO` (200) caracteres es el cascarón de una aplicación de JavaScript y sale ilegible,
-nunca «sin cambios». Starlink no está en `vendors.js` pero sí en `FUENTES` (sus ocho
-`SOURCE_LINKS`, casadas con el motor por `test/starlink-fuentes.test.js`). Cuando el Product Matrix de Fortinet queda
-  pendiente, el job **`contrastar`** del vigía corre `npm run matrix` sobre él (sin escritura ni
+  `TEXTO_MINIMO` (200) caracteres es el cascarón de una aplicación de JavaScript y sale ilegible,
+  nunca «sin cambios». Starlink no está en `vendors.js` pero sí en `FUENTES` (sus ocho
+  `SOURCE_LINKS`, casadas con el motor por `test/starlink-fuentes.test.js`). Cuando el Product
+  Matrix de Fortinet queda pendiente, el job **`contrastar`** del vigía corre `npm run matrix` sobre él (sin escritura ni
   token, `npm ci --ignore-scripts`) y el issue dice qué cifras cambiaron; `publicar` valida ese
   informe antes de escribirlo. A demanda, `contrastar_matrix` al lanzarlo a mano; en local,
   `npm run matrix -- <pdf>`. Nada de eso escribe en `legacyData/`: el `--revisado` sigue siendo
