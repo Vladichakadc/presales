@@ -16,8 +16,13 @@
 # commits contesta igual de seguro que uno de hoy. Se compara con HEAD y, si difieren, se dice
 # cuantos archivos cambiaron y el comando para rehacerlo. Lo que no ve: cambios sin commitear.
 #
-# NO INSTALA NI CONSTRUYE NADA, por lo mismo que no instala Playwright: el arranque comprueba y
-# dice que falta. Y avisa, no bloquea.
+# SI FALTA, INSTALA LA FIJADA (desde el 2026-10-15, a peticion del dueno). Antes solo decia el
+# comando, y cada sesion en la nube empezaba sin CLI y sin grafo: la skill no se usaba o, peor,
+# se instalaba sola sin version. Instala solo con `uv` y solo `graphifyy==<sello>`, nunca
+# `--upgrade`; tarda unos 10 s. Si `uv` no esta o la instalacion falla (el proxy de egreso puede
+# cortar PyPI), dice el comando y sigue. Con OTRA version instalada no la toca: alguien la puso,
+# y solo se avisa. NO CONSTRUYE EL GRAFO (`graphify update .` sigue siendo a mano) y nunca
+# bloquea el arranque.
 #
 # LA VERSION SALE DEL SELLO que deja la propia instalacion (.claude/skills/graphify/
 # .graphify_version), y test/graphify-instalacion.test.js exige que el LEEME de la skill de la
@@ -29,6 +34,21 @@ fijada=$(tr -d '[:space:]' < "$raiz/.claude/skills/graphify/.graphify_version" 2
 [ -n "$fijada" ] || exit 0   # sin skill instalada no hay nada que comprobar
 
 instalada=$(graphify --version 2>/dev/null | awk 'NR==1{print $2}')
+
+# Sin CLI: se instala la fijada. Un PyPI que no responde no puede colgar el arranque.
+fallo=""
+if [ -z "$instalada" ] && command -v uv >/dev/null 2>&1; then
+  echo "[arranque] graphify no esta instalado: instalando la version revisada ($fijada)..."
+  limite=""
+  command -v timeout >/dev/null 2>&1 && limite="timeout 180"
+  if salida=$($limite uv tool install "graphifyy==$fijada" 2>&1); then
+    instalada=$(graphify --version 2>/dev/null | awk 'NR==1{print $2}')
+    [ -n "$instalada" ] || fallo="se instalo, pero graphify no esta en el PATH (ver: uv tool dir --bin)."
+  else
+    fallo=$(printf '%s\n' "$salida" | tail -n 1)
+    [ -n "$fallo" ] || fallo="uv termino con error y sin mensaje."
+  fi
+fi
 
 if [ "$instalada" = "$fijada" ]; then
   echo "[arranque] graphify: $instalada (la version revisada de la skill)."

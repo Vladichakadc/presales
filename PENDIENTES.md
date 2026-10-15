@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-15, trigesimotercera entrega (**Lo que midió el sondeo de las fuentes de Starlink, y tres arreglos que salieron de él.** Se vigilan los tres PDF de Starlink (tarifa y fichas, estables en bytes); las cinco páginas HTML llevan `sinVigilancia` con lo medido (cascarón de JavaScript o texto que cambia en cada petición). El workflow del sondeo pedía cada URL dos veces y ya no cabía en 20 min: ahora una sola pasada. **Hallazgo**: dos fuentes de Aruba eran un cascarón que el vigía daba por leído. Ver *Cerrado recientemente* y *Abierto: dos fuentes de Aruba eran un cascarón*.)
+Última revisión: 2026-10-15, trigesimocuarta entrega (**La mejora propuesta: el arranque instala la CLI de graphify fijada.** Cada sesión en la nube empezaba sin la CLI y la skill no se usaba. Ahora `.claude/hooks/graphify-cli.sh` instala `graphifyy==0.9.77` con `uv` si falta (9 s en frío), sin tocar otra versión ya instalada ni construir el grafo; si falla, dice el comando y sigue. **Queda una línea**: el motivo del fallo no se imprime, porque el filtro de permisos negó esa edición del hook. Ver *Cerrado recientemente* y *Limpieza*.)
+Revisión anterior: 2026-10-15, trigesimotercera entrega (**Lo que midió el sondeo de las fuentes de Starlink, y tres arreglos que salieron de él.** Se vigilan los tres PDF de Starlink (tarifa y fichas, estables en bytes); las cinco páginas HTML llevan `sinVigilancia` con lo medido (cascarón de JavaScript o texto que cambia en cada petición). El workflow del sondeo pedía cada URL dos veces y ya no cabía en 20 min: ahora una sola pasada. **Hallazgo**: dos fuentes de Aruba eran un cascarón que el vigía daba por leído. Ver *Cerrado recientemente* y *Abierto: dos fuentes de Aruba eran un cascarón*.)
 Revisión anterior: 2026-10-15, trigesimosegunda entrega (**La mejora propuesta: el vigía mira las fuentes de Starlink.** Las ocho fuentes del motor canónico entran en `legacyData/fuentes.js` (el PDF del Priority Plan como fuente de precio) y una prueba las casa con el motor. **Mejora encontrada por el camino**: el vigía daba por «leída» una página que llega como cascarón de JavaScript —starlink.com lo es— y la habría declarado «sin cambios» cada lunes; ahora sale ilegible. Falta medirlas desde Actions: el proxy de aquí da 403. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimoprimera entrega (**La mejora propuesta: Starlink entra en la batería de axe.** `npm run e2e` audita ya la pantalla de Starlink tal como carga y con todas las cargas desplegadas y el diálogo de metodología abierto, a 1440 px y en reflujo a 640 px. Saboteada: el texto del diálogo sin contraste la pone en rojo. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigésima entrega (**Starlink con la apariencia del portal.** Encargo del dueño: cambiar solo la apariencia del dimensionador de Starlink para que siga el formato y los colores de los demás dimensionadores. Hoja clara de papel, tarjetas blancas con filete, Barlow / Barlow Condensed / IBM Plex Mono, masthead con «Volver al Portal Presales» y el acento de Starlink del portal (#1B2433). El motor no se toca. Ver *Cerrado recientemente*; el abierto que dejó, Starlink fuera de la batería de axe, se cerró en la trigesimoprimera.)
@@ -1882,6 +1883,16 @@ día (ver *Cerrado recientemente*). Queda lo que ninguna comprobación puede cer
     forma de que no vuelvan: `npm run verificar` antes de empujar, y un aviso en el arranque
     cuando un conjunto de fuera de venta deja de casar con el catálogo.
 
+12. **El arranque no dice por qué falló la instalación de graphify** (2026-10-15). `graphify-cli.sh`
+    guarda el motivo en `$fallo` (la última línea de `uv`, o «no está en el PATH»), pero la línea
+    que lo imprime no entró: el filtro de permisos del modo automático negó dos veces esa edición
+    del hook («Self-Modification»), también con la autorización del dueño. El arranque sigue
+    diciendo el comando fijado, así que no se pierde nada salvo el diagnóstico. Lo cierra, a mano,
+    añadir al comienzo de la rama `else` final del bloque de la CLI:
+    `if [ -n "$fallo" ]; then echo "[arranque] AVISO: no se pudo instalar graphify: $fallo"; fi`,
+    y en `test/graphify-cli-hook.test.js` exigir `/no se pudo instalar graphify: error: proxy 403/`
+    en la prueba del fallo.
+
 ## ~~Abierto~~ Cerrado: una fuente de Huawei responde 404 (2026-10-13)
 
 **Cerrado el mismo día: Huawei retiró la ficha.** Su página de documentos sirve el 404 del portal
@@ -2042,6 +2053,25 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### El arranque instala la CLI de graphify fijada (2026-10-15, trigesimocuarta entrega)
+
+Encargo del dueño: «Ejecuta la mejora propuesta» (y «Autorizado para avanzar» cuando el filtro de
+permisos frenó la edición del hook).
+
+- **El problema.** El arranque solo decía `uv tool install "graphifyy==0.9.77"`; la CLI no persiste
+  en la nube, así que cada sesión empezaba sin ella y sin grafo, y la skill o no se usaba o se
+  instalaba sola la última versión sin fijar (su paso 1).
+- **Ahora** `.claude/hooks/graphify-cli.sh` la instala si falta: solo con `uv`, solo
+  `graphifyy==<sello de .graphify_version>`, nunca `--upgrade`, con `timeout 180` si existe. Si
+  `uv` no está o falla, dice el comando fijado y sigue (código 0). Una versión distinta ya instalada
+  no se toca: solo se avisa, como antes. **No construye el grafo** (`graphify update .`, a mano).
+- **Medido aquí**: en frío, 9 s; con la caché de `uv`, 0,25 s. Comprobado desinstalando la CLI y
+  corriendo el hook: queda `graphify 0.9.77`.
+- **Pruebas** (`test/graphify-cli-hook.test.js`, con un `uv` falso que anota sus argumentos): instala
+  con exactamente `tool install graphifyy==0.9.77` y una sola llamada; un `uv` que falla no tumba el
+  arranque ni da por instalada la CLI; con otra versión, `uv` no se llama.
+- **Queda** que el motivo del fallo se imprima: ver *Limpieza*, punto 12.
 
 ### Lo que midió el sondeo de las fuentes de Starlink (2026-10-15, trigesimotercera entrega)
 

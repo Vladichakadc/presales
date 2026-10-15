@@ -49,7 +49,7 @@ Tailwind…) se retira: empuja el trabajo hacia una arquitectura que aquí no ex
 | `frontend-design` · `feature-planning` · `project-kickoff` · `database-designer` | Interfaz (HTML y JS a mano, sin build), planes por archivo, arranque, modelo Sequelize. |
 | `agent-browser` | Explorar una pantalla por su árbol de accesibilidad. **Explorar con agent-browser, comprobar con Playwright**: `pantallas`, `contraste`, `e2e` y `manual` siguen en Playwright porque son lo que CI mira. Pide `--executable-path` al Chromium de `/opt/pw-browsers`. |
 | `agent-reach` | Router a 16 plataformas sociales. **Desde este contenedor no trae nada** (el proxy de egreso corta las 16); sirve desde una máquina con salida. Lo que traiga es lectura humana, nunca vía de escritura a `legacyData/`. Credenciales: ver su `LEEME.md`. |
-| `graphify` | Grafo de conocimiento del código (`graphify update .`, `query`, `path`). Solo la skill: el modo «siempre activo» se dejó fuera a propósito. CLI fijada a 0.9.77. **El grafo orienta, no es fuente**: enlaza bien el servidor (`require`) y no los módulos de `public/js/` (globales del navegador). |
+| `graphify` | Grafo de conocimiento del código (`graphify update .`, `query`, `path`). Solo la skill: el modo «siempre activo» se dejó fuera a propósito. CLI fijada a 0.9.77, que el arranque instala si falta (el grafo no lo construye). **El grafo orienta, no es fuente**: enlaza bien el servidor (`require`) y no los módulos de `public/js/` (globales del navegador). |
 | `skill-creator` · `skill-usage-insights` · `skill-feedback-adaptation` · `skill-official-updater` · `self-learning` | Sobre las propias skills y el registro de corridas (`.claude/learning/`, ignorado por git). |
 
 Siete skills tienen copia para Copilot en `.github/instructions/*.instructions.md`: se regeneran
@@ -135,9 +135,11 @@ que existe.
 
 **Hooks de `.claude/`** (registrados en `.claude/settings.json`, versionado; `settings.local.json`
 sigue ignorado):
-- `session-start.sh` (solo en remoto): `npm install`, comprueba Playwright, Chromium y la CLI de
-  graphify contra la versión revisada, avisa si el grafo local es de otro commit y si `npm install`
-  reescribió el lock. No instala Playwright, no inventa `AUTH_PASSWORD`, no siembra la base.
+- `session-start.sh` (solo en remoto): `npm install`, comprueba Playwright y Chromium, **instala
+  la CLI de graphify fijada al sello de la skill si falta** (con `uv`, nunca `--upgrade`; si falla,
+  dice el comando y sigue; otra versión ya instalada no la toca), avisa si el grafo local es de otro
+  commit y si `npm install` reescribió el lock. No instala Playwright, no construye el grafo, no
+  inventa `AUTH_PASSWORD`, no siembra la base.
 - `aprendizaje.sh`: anota cada `npm run …` en `.claude/learning/runs.jsonl` con tres estados
   (`PreToolUse` abre, `PostToolUse` cierra, lo que queda abierto lo salda el arranque como fallo),
   porque `PostToolUse` no se dispara cuando el comando falla.

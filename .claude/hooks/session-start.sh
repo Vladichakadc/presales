@@ -105,7 +105,7 @@ elif [ "$falta" -eq 0 ]; then
   echo "[arranque] Chromium de /opt no encontrado; se usara el que traiga Playwright."
 fi
 
-# La CLI de la skill graphify: se comprueba contra la version revisada, no se instala.
+# La CLI de la skill graphify: si falta, se instala la version revisada (fijada, nunca la ultima).
 bash .claude/hooks/graphify-cli.sh . || true
 
 echo "[arranque] Listo. Antes de empujar: npm run verificar (lint + pruebas)."

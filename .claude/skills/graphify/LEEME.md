@@ -69,7 +69,9 @@ anotar aquí la versión y las huellas nuevas.
   --break-system-packages`): es lo que trae su paso 1 y no se tocó. Instalarla fijada antes evita
   que una sesión traiga sin querer una versión que nadie ha leído.
 - **En una sesión en la nube la CLI no persiste**: el contenedor se rehace. `pypi.org` sí pasa
-  por el proxy de egreso, así que la instalación funciona desde aquí.
+  por el proxy de egreso, así que la instalación funciona desde aquí, y **desde el 2026-10-15 el
+  arranque la instala sola, fijada** (`.claude/hooks/graphify-cli.sh`): la sesión llega con la
+  CLI antes de que la skill busque la suya. El grafo no: `graphify update .` sigue siendo a mano.
 - **Construir el grafo del código**: `graphify update .`, solo AST, sin LLM y sin coste. Medido el
   2026-10-06 sobre este repositorio: 15 s, 2.827 nodos, 4.772 aristas y 171 comunidades con el
   `.graphifyignore` (4.490 nodos sin él, la mitad ruido del markdown de otras skills).

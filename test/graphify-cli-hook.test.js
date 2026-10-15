@@ -2,9 +2,10 @@
 // LA COMPROBACION DE GRAPHIFY AL ARRANCAR (`.claude/hooks/graphify-cli.sh`), conducida con un
 // `graphify` falso delante en el PATH, como el `npm` falso de auditar-dependencias.test.js, y
 // sobre un repositorio git temporal: el de verdad puede tener un `graphify-out/` de cualquier dia.
-// La CLI: sin ella dice el comando FIJADO (si no, la skill se instala sola sin version), con otra
-// version avisa y con la revisada calla salvo para decirlo. El grafo: si se hizo sobre otro commit
-// que HEAD, avisa con el comando para rehacerlo. Y nunca instala ni construye nada.
+// La CLI: sin ella y con `uv`, instala la FIJADA (desde el 2026-10-15; si no, la skill se
+// instalaria sola sin version); sin `uv`, o si la instalacion falla, dice el comando fijado y
+// sigue. Con otra version avisa y no la toca; con la revisada calla salvo para decirlo. El grafo:
+// si se hizo sobre otro commit que HEAD, avisa con el comando para rehacerlo, y nunca lo construye.
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -46,8 +47,9 @@ function grafo(dir, commit) {
 }
 
 // Un PATH con solo lo imprescindible para el script y, si se pide, un `graphify` que responde
-// la version dada. Nada de la maquina: si el script intentara instalar, no encontraria `uv`.
-function correr(version, dir) {
+// la version dada. Nada de la maquina: sin `uv` falso, el script no encuentra con que instalar.
+// `uv` es el cuerpo de un `uv` falso: cada llamada deja sus argumentos en `uv.log`, junto a el.
+function correr(version, dir, { uv } = {}) {
   const bin = fs.mkdtempSync(path.join(os.tmpdir(), 'graphify-bin-'));
   for (const util of ['awk', 'tr', 'cat', 'grep', 'tail', 'git']) {
     const real = cp.execSync(`command -v ${util}`, { shell: '/bin/bash' }).toString().trim();
@@ -56,15 +58,47 @@ function correr(version, dir) {
   if (version) {
     fs.writeFileSync(path.join(bin, 'graphify'), `#!/bin/bash\necho "graphify ${version}"\n`, { mode: 0o755 });
   }
+  if (uv) {
+    fs.writeFileSync(path.join(bin, 'uv'), `#!/bin/bash\necho "$*" >> "\${0%/*}/uv.log"\n${uv}\n`, { mode: 0o755 });
+  }
   const r = cp.spawnSync('/bin/bash', [SCRIPT, dir || repo().dir], { env: { PATH: bin }, encoding: 'utf8' });
-  return { rc: r.status, out: r.stdout + r.stderr };
+  const log = path.join(bin, 'uv.log');
+  return { rc: r.status, out: r.stdout + r.stderr, uv: fs.existsSync(log) ? fs.readFileSync(log, 'utf8') : '' };
 }
 
-test('sin la CLI, dice el comando con la versión revisada y no instala nada', () => {
+// Un `uv` que instala de verdad, en falso: deja junto a el un `graphify` con la version pedida.
+// `chmod` va por su ruta: el PATH de la prueba no lo trae, y no tiene por que traerlo.
+const CHMOD = cp.execSync('command -v chmod', { shell: '/bin/bash' }).toString().trim();
+const UV_INSTALA = 'v="${@: -1}"; v="${v#graphifyy==}"\n' +
+  `printf '#!/bin/bash\\necho "graphify %s"\\n' "$v" > "\${0%/*}/graphify"; ${CHMOD} +x "\${0%/*}/graphify"`;
+
+test('sin la CLI y sin uv, dice el comando con la versión revisada', () => {
   const r = correr(null);
   assert.strictEqual(r.rc, 0, 'avisa, no bloquea el arranque');
   assert.ok(r.out.includes(`uv tool install "graphifyy==${FIJADA}"`), r.out);
   assert.match(r.out, /sin fijar/);
+});
+
+test('sin la CLI y con uv, instala exactamente la versión revisada, sin --upgrade', () => {
+  const r = correr(null, null, { uv: UV_INSTALA });
+  assert.strictEqual(r.rc, 0);
+  assert.strictEqual(r.uv, `tool install graphifyy==${FIJADA}\n`, 'una sola llamada, fijada');
+  assert.match(r.out, /instalando la version revisada/);
+  assert.ok(r.out.includes(`graphify: ${FIJADA} (la version revisada`), r.out);
+  assert.doesNotMatch(r.out, /no esta instalado\. Antes/);
+});
+
+test('si la instalación falla, no bloquea el arranque y deja el comando fijado', () => {
+  const r = correr(null, null, { uv: 'echo "error: proxy 403" >&2; exit 2' });
+  assert.strictEqual(r.rc, 0, 'un PyPI cortado no tumba el arranque');
+  assert.ok(r.out.includes(`uv tool install "graphifyy==${FIJADA}"`), r.out);
+  assert.doesNotMatch(r.out, /graphify: \d/, 'no da por instalado lo que no se instaló');
+});
+
+test('con otra versión instalada no llama a uv: solo avisa', () => {
+  const r = correr('0.0.1', null, { uv: UV_INSTALA });
+  assert.strictEqual(r.uv, '', 'una versión que alguien puso no se pisa sola');
+  assert.match(r.out, /AVISO: graphify 0\.0\.1 instalado/);
 });
 
 test('con otra versión, avisa y da el comando para volver a la revisada', () => {

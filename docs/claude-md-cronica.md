@@ -197,7 +197,12 @@ remoto (`$CLAUDE_CODE_REMOTE`): en una máquina propia las dependencias ya está
 (`.claude/hooks/graphify-cli.sh`, probado con un `graphify` falso en `test/graphify-cli-hook.test.js`):
 sin ella, la skill se instalaría sola la última versión sin fijar. Y avisa cuando el grafo local
 (`graphify-out/graph.json`) se hizo sobre otro commit que `HEAD`, porque el aviso propio de graphify
-vive en su modo siempre activo, que aquí no se instaló. **Y avisa
+vive en su modo siempre activo, que aquí no se instaló. **Desde el 2026-10-15 la instala si
+falta** (mejora propuesta y aprobada por el dueño): avisar no bastaba, porque cada sesión en la nube
+empezaba sin CLI y la skill no se usaba —o se instalaba sola sin fijar—. Instala solo
+`graphifyy==<sello>` con `uv` (9 s en frío; `pypi.org` pasa por el proxy), con un límite de 180 s, y
+si falla dice el comando y sigue; una versión distinta ya instalada no la toca. Playwright sigue sin
+instalarse: es otra decisión, por otro motivo. **Y avisa
 cuando `npm install` reescribe `package-lock.json`**, porque eso significa que no cuadraba con
 `package.json` — el fallo que tumbó el despliegue del 1 de septiembre y del que solo se entera
 `npm ci` en CI, cuando ya empujaste. **Avisa y sigue**: abortar el arranque ante un cambio
