@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-15, trigesimoquinta entrega (**La mejora propuesta: la historia sale del grafo de graphify.** `PENDIENTES.md` era el nodo más conectado del grafo («Cerrado recientemente», 160 aristas) y hacía de puente en cualquier consulta; ahora `.graphifyignore` deja fuera este archivo y `docs/claude-md-cronica.md`. Medido: de 3283 a 3081 nodos, y los diez más conectados ya son código. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-15, trigesimosexta entrega (**La mejora propuesta: graphify lee los PDF.** El arranque instala `graphifyy[pdf]==0.9.77` (trae `pypdf` y `markdownify`) y el aviso de PDF saltados desaparece. **Medido, menos de lo que se prometió**: el único PDF que entra es el manual de usuario (4672 palabras, derivado de `manual.html`), y su texto solo cuenta en la pasada semántica, que sigue siendo decisión del dueño: el grafo del código no cambia. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-15, trigesimoquinta entrega (**La mejora propuesta: la historia sale del grafo de graphify.** `PENDIENTES.md` era el nodo más conectado del grafo («Cerrado recientemente», 160 aristas) y hacía de puente en cualquier consulta; ahora `.graphifyignore` deja fuera este archivo y `docs/claude-md-cronica.md`. Medido: de 3283 a 3081 nodos, y los diez más conectados ya son código. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimocuarta entrega (**La mejora propuesta: el arranque instala la CLI de graphify fijada.** Cada sesión en la nube empezaba sin la CLI y la skill no se usaba. Ahora `.claude/hooks/graphify-cli.sh` instala `graphifyy==0.9.77` con `uv` si falta (9 s en frío), sin tocar otra versión ya instalada ni construir el grafo; si falla, dice el comando y sigue. **Queda una línea**: el motivo del fallo no se imprime, porque el filtro de permisos negó esa edición del hook. Ver *Cerrado recientemente* y *Limpieza*.)
 Revisión anterior: 2026-10-15, trigesimotercera entrega (**Lo que midió el sondeo de las fuentes de Starlink, y tres arreglos que salieron de él.** Se vigilan los tres PDF de Starlink (tarifa y fichas, estables en bytes); las cinco páginas HTML llevan `sinVigilancia` con lo medido (cascarón de JavaScript o texto que cambia en cada petición). El workflow del sondeo pedía cada URL dos veces y ya no cabía en 20 min: ahora una sola pasada. **Hallazgo**: dos fuentes de Aruba eran un cascarón que el vigía daba por leído. Ver *Cerrado recientemente* y *Abierto: dos fuentes de Aruba eran un cascarón*.)
 Revisión anterior: 2026-10-15, trigesimosegunda entrega (**La mejora propuesta: el vigía mira las fuentes de Starlink.** Las ocho fuentes del motor canónico entran en `legacyData/fuentes.js` (el PDF del Priority Plan como fuente de precio) y una prueba las casa con el motor. **Mejora encontrada por el camino**: el vigía daba por «leída» una página que llega como cascarón de JavaScript —starlink.com lo es— y la habría declarado «sin cambios» cada lunes; ahora sale ilegible. Falta medirlas desde Actions: el proxy de aquí da 403. Ver *Cerrado recientemente*.)
@@ -2054,6 +2055,26 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### graphify lee los PDF (2026-10-15, trigesimosexta entrega)
+
+Encargo del dueño: «Ejecuta la mejora propuesta».
+
+- **El problema.** Cada `graphify update .` avisaba «PDF text extraction skipped: 'pypdf' is not
+  installed»: la CLI se instalaba sin su extensión `pdf`.
+- **Ahora** `.claude/hooks/graphify-cli.sh` instala `graphifyy[pdf]==<sello>` y da ese comando
+  cuando falta o difiere. La extensión trae `pypdf>=6.16.1` (aquí resolvió 6.20.1) y
+  `markdownify`, **sin fijar**, como el resto de dependencias de graphifyy. `uv tool install`
+  con la extensión sobre una CLI ya instalada sin ella la reinstala (comprobado).
+- **Medido**: el aviso desaparece y `extract_pdf_text` saca 4672 palabras del manual. **Pero el
+  grafo del código no cambia** (`graphify update .` es solo AST: «No code-graph topology
+  changes»). El único PDF que no excluye `.graphifyignore` es
+  `docs/manual-usuario/Manual de uso - Dimensionadores y BOM.pdf`, que sale de `manual.html`:
+  solo aportaría en la pasada semántica, que sigue en *Decisiones que necesitan al dueño*.
+- **Pruebas** (`test/graphify-cli-hook.test.js`): la instalación es exactamente
+  `tool install graphifyy[pdf]==0.9.77` y los comandos que se imprimen llevan la extensión.
+- **No cubre** una CLI 0.9.77 ya instalada sin la extensión (en local): el arranque la da por
+  buena. En la nube no pasa, porque cada sesión la instala desde cero.
 
 ### La historia sale del grafo de graphify (2026-10-15, trigesimoquinta entrega)
 

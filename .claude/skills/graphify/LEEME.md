@@ -63,8 +63,10 @@ anotar aquí la versión y las huellas nuevas.
 
 ## Lo que hay que saber antes de usarla
 
-- **La CLI se instala fijada**: `uv tool install "graphifyy==0.9.77"` (o
-  `pipx install "graphifyy==0.9.77"`). Si la skill no la encuentra, **se instala sola sin fijar
+- **La CLI se instala fijada**: `uv tool install "graphifyy[pdf]==0.9.77"` (o
+  `pipx install "graphifyy[pdf]==0.9.77"`). La extensión `pdf` (desde el 2026-10-15) trae `pypdf`
+  y `markdownify`: sin ella, `graphifyy==0.9.77` a secas avisa en cada corrida de que se salta los
+  PDF. Su texto solo cuenta en la pasada semántica; el grafo del código es el mismo. Si la skill no la encuentra, **se instala sola sin fijar
   versión** (`uv tool install --upgrade graphifyy`, o `pip install graphifyy
   --break-system-packages`): es lo que trae su paso 1 y no se tocó. Instalarla fijada antes evita
   que una sesión traiga sin querer una versión que nadie ha leído.

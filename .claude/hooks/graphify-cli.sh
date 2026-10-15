@@ -24,6 +24,10 @@
 # y solo se avisa. NO CONSTRUYE EL GRAFO (`graphify update .` sigue siendo a mano) y nunca
 # bloquea el arranque.
 #
+# CON LA EXTENSION `pdf` (desde el 2026-10-15): sin ella, cada `graphify update .` avisaba de que
+# se saltaba los PDF. Trae `pypdf` y `markdownify`, sin fijar (como el resto de dependencias de
+# graphifyy). El texto del PDF solo cuenta en la pasada semantica: el grafo del codigo no cambia.
+#
 # LA VERSION SALE DEL SELLO que deja la propia instalacion (.claude/skills/graphify/
 # .graphify_version), y test/graphify-instalacion.test.js exige que el LEEME de la skill de la
 # orden con esa misma version: una sola fuente, no un numero escrito en tres sitios.
@@ -41,7 +45,7 @@ if [ -z "$instalada" ] && command -v uv >/dev/null 2>&1; then
   echo "[arranque] graphify no esta instalado: instalando la version revisada ($fijada)..."
   limite=""
   command -v timeout >/dev/null 2>&1 && limite="timeout 180"
-  if salida=$($limite uv tool install "graphifyy==$fijada" 2>&1); then
+  if salida=$($limite uv tool install "graphifyy[pdf]==$fijada" 2>&1); then
     instalada=$(graphify --version 2>/dev/null | awk 'NR==1{print $2}')
     [ -n "$instalada" ] || fallo="se instalo, pero graphify no esta en el PATH (ver: uv tool dir --bin)."
   else
@@ -54,10 +58,10 @@ if [ "$instalada" = "$fijada" ]; then
   echo "[arranque] graphify: $instalada (la version revisada de la skill)."
 elif [ -n "$instalada" ]; then
   echo "[arranque] AVISO: graphify $instalada instalado, y la skill revisada es la $fijada."
-  echo "[arranque]         uv tool install --reinstall \"graphifyy==$fijada\""
+  echo "[arranque]         uv tool install --reinstall \"graphifyy[pdf]==$fijada\""
 else
   echo "[arranque] graphify no esta instalado. Antes de usar /graphify, con la version revisada:"
-  echo "[arranque]   uv tool install \"graphifyy==$fijada\""
+  echo "[arranque]   uv tool install \"graphifyy[pdf]==$fijada\""
   echo "[arranque] (si no, la skill se instala sola la ultima version, sin fijar)."
 fi
 
