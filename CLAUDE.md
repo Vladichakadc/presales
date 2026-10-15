@@ -459,8 +459,10 @@ Módulos compartidos:
   sitio (el JSON guarda Mbps).
 - **Nokia**: dos dimensionadores — 7750 SR / 7250 IXR (equipo, por plataforma; chasis modulares
   apartados por densidad) y 7220 IXR (fabric). Capacidad en Gbps; `aMbps()` es el único que lo sabe.
-- **Starlink LEO**: módulo canónico integrado byte a byte (`starlink-leo-dimensionador/` es la línea
-  base para verificar su SHA-256). Fuera de `navegacion.js` y de `/api/catalog` a propósito.
+- **Starlink LEO**: motor canónico integrado byte a byte (`starlink-leo-dimensionador/` es la línea
+  base para verificar su SHA-256). La hoja servida no es la de la línea base: lleva la piel del
+  portal y conserva las variables que el motor escribe en línea (`--red`, `--amber`, `--green`,
+  `--ink-muted`). Fuera de `navegacion.js` y de `/api/catalog` a propósito.
 
 ## Comprobaciones que vigilan el catálogo
 

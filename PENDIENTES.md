@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-15, vigesimonovena entrega (**Aruba, panel 2: cada enlace en un puerto real del chasis.** Encargo del dueño: revisar «Tráfico y capacidad» como arquitecto de Aruba — la barra decía «cabe» sin mirar si el equipo tiene puertos de ese medio, y al cambiar el medio no volvía al equipo inferior; quitar «Segmento de instalación»; campos sincronizados y fuera los que no aportan. Medido en Chromium: la barra iba un render por detrás, un RJ-45 «cabía» en el EC-L (sin cobre) y 3 Gbps por RJ-45 de 1 GbE también. Ahora cada modelo trae su inventario de puertos y el dimensionador asigna cada enlace; el medio sube solo con el caudal; Breakout, perfil de Boost, FEC e IMIX se desactivan con su motivo cuando no aplican. Ver *Cerrado recientemente* y *Abierto: puertos de Aruba*.)
+Última revisión: 2026-10-15, trigésima entrega (**Starlink con la apariencia del portal.** Encargo del dueño: cambiar solo la apariencia del dimensionador de Starlink para que siga el formato y los colores de los demás dimensionadores. Hoja clara de papel, tarjetas blancas con filete, Barlow / Barlow Condensed / IBM Plex Mono, masthead con «Volver al Portal Presales» y el acento de Starlink del portal (#1B2433). El motor no se toca. Ver *Cerrado recientemente* y *Abierto: Starlink fuera de la batería de axe*.)
+Revisión anterior: 2026-10-15, vigesimonovena entrega (**Aruba, panel 2: cada enlace en un puerto real del chasis.** Encargo del dueño: revisar «Tráfico y capacidad» como arquitecto de Aruba — la barra decía «cabe» sin mirar si el equipo tiene puertos de ese medio, y al cambiar el medio no volvía al equipo inferior; quitar «Segmento de instalación»; campos sincronizados y fuera los que no aportan. Medido en Chromium: la barra iba un render por detrás, un RJ-45 «cabía» en el EC-L (sin cobre) y 3 Gbps por RJ-45 de 1 GbE también. Ahora cada modelo trae su inventario de puertos y el dimensionador asigna cada enlace; el medio sube solo con el caudal; Breakout, perfil de Boost, FEC e IMIX se desactivan con su motivo cuando no aplican. Ver *Cerrado recientemente* y *Abierto: puertos de Aruba*.)
 Revisión anterior: 2026-10-15, vigesimoctava entrega (**La mejora propuesta: los accesos del portal, con el color de su tarjeta.** Los nueve botones bajo el título dejan el `style=` repetido por una clase `acceso-<id>`, y una prueba casa cada color con el de la tarjeta del fabricante en `index.js`. Se ven igual, píxel a píxel. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, vigesimoséptima entrega (**Botones del dashboard sin «BOM».** Encargo del dueño: los siete botones de fabricante del portal dicen solo el nombre (FortiGate, Cisco, Huawei, Juniper, MikroTik, Aruba, Starlink); «Cotizador BOM» no es de un fabricante y se queda. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, vigesimosexta entrega (**Con el PC otra vez: el vCPE completo.** En el Chrome del dueño: la ficha R25C00 del AR6700V-L da el SD-WAN IPsec IMIX (400 Mbps, 3, 5 y 11 Gbps; ancla con la R26C00 en dos filas) y su «License Usage Guide» los 32 códigos N1 (Foundation y Advanced por tamaño, con SnS de 1, 3 y 5 años). El BOM del vCPE ya cita su paquete y su SnS. Info-Finder no publica para esta cuenta las instancias de nube del vCPE. Ver *Cerrado recientemente*.)
@@ -1901,6 +1902,14 @@ Lo que la auditoría de puertos del panel 2 todavía no cuenta, declarado para n
 - **EC-XL**: se cuenta como 6x SFP+ (la variante del SKU base S0B67A); la S3N77A de 6x SFP28 existe
   pero está fuera de venta igual que la base y su matriz no trae ópticas de 25G.
 
+## Abierto: Starlink fuera de la batería de axe (2026-10-15)
+
+La entrega del 2026-09-24 dejó escrito que la auditoría de accesibilidad cubría ya la pantalla de
+Starlink, pero `PANTALLAS` de `test/e2e/e2e-accesibilidad.js` no la lista hoy: `npm run e2e` no
+pasa axe ni el reflujo a 640 px sobre ella. Con el cambio de apariencia se pasó a mano (axe WCAG
+2.1 A/AA a 1400 y 640 px, también el diálogo de metodología: cero violaciones, sin desborde
+horizontal). Cerrarlo es añadir la entrada (cálculo y lista de materiales) a esa lista.
+
 ## Decisiones que necesitan al dueño del producto
 
 - ~~**WireGuard en el dimensionador MikroTik (2026-10-13).**~~ **Decidido el 2026-10-13: opción A**,
@@ -2016,6 +2025,33 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Starlink con la apariencia de los demás dimensionadores (2026-10-15, trigésima entrega)
+
+Encargo del dueño: «cambiar solo la apariencia» del dimensionador de Starlink, con el formato y
+los colores de los demás. Era la única pantalla oscura del portal (azul noche, cian, Inter,
+dos paneles con scroll propio a pantalla completa).
+
+- **Solo la piel.** `public/dimensionador-starlink-leo.css` reescrita con la paleta común
+  (`--paper`, `--ink`, `--steel`, `--rule`, tarjetas blancas de 3 px de radio), las tres
+  tipografías del portal, el masthead (eyebrow en mono, título en Barlow Condensed en
+  mayúsculas, filete de 2 px), paneles con su encabezado numerado, `verdict` con borde izquierdo,
+  medidores planos, tablas como las del BOM y avisos con su color. Acento: #1B2433, el del
+  botón de Starlink del portal (`.acceso-starlink`). La página se desplaza entera, como las
+  demás, en vez de dos paneles con scroll propio; la barra de «Escenario de ejemplo» sigue fija
+  abajo mientras se ve la columna de variables.
+- **El HTML cambia en tres puntos**: el enlace de vuelta pasa del `style=` en línea a la clase
+  `back-link` («Volver al Portal Presales», como los demás), y se cargan las tipografías con
+  `media="print"` + `/js/fuentes.js`. Ningún `id` ni clase que use el motor se movió.
+- **El motor no se toca**: `public/js/dimensionador-starlink-leo.js` sigue siendo copia byte a
+  byte de `starlink-leo-dimensionador/app.js`. Las variables que escribe en línea (`--red`,
+  `--amber`, `--green`, `--ink-muted`) siguen existiendo con el mismo significado. La línea base
+  `starlink-leo-dimensionador/styles.css` queda como estaba: la hoja servida ya no es idéntica a
+  ella, igual que el HTML servido no lo era.
+- **Comprobado**: `verificar` 973/973, `pantallas` 17/17 (Starlink repinta al mover usuarios),
+  `e2e` en verde, `puerta` cerrada; axe a mano sobre Starlink a 1400 y 640 px y en el diálogo,
+  sin violaciones, sin desborde y sin errores de JS. Capturas antes/después en Chromium a 1400 y
+  390 px. No hay caso de `contraste` para Starlink.
 
 ### Aruba, panel 2: puertos reales, medio sincronizado y fuera «Segmento de instalación» (2026-10-15, vigesimonovena entrega)
 
