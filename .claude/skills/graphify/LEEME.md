@@ -59,7 +59,11 @@ pondrá en rojo para que esa decisión quede escrita en vez de colarse con una a
 **Para actualizar sin que se cuele**: `uv tool install "graphifyy==<versión>"`, después
 `graphify install --project`, después `git checkout -- .claude/settings.json CLAUDE.md` (no hay
 opción para instalar solo la skill en Claude Code), leer el diff de `.claude/skills/graphify/` y
-anotar aquí la versión y las huellas nuevas.
+anotar aquí la versión y las huellas nuevas. **Y comprobar el aviso de grafo viejo**: `graphify
+update .` y después `bash .claude/hooks/graphify-cli.sh .` tiene que callar. El hook le pregunta
+a una función interna de graphify (`graphify.detect.detect_incremental`) y CI no tiene la CLI
+para notarlo: si una versión la cambia, el hook vuelve a comparar commits y avisa siempre de
+algo («es del commit … y HEAD es …»), que es la señal de que hay que adaptarlo.
 
 ## Lo que hay que saber antes de usarla
 

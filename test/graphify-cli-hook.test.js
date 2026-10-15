@@ -80,6 +80,7 @@ function correr(version, dir, { uv, python } = {}) {
 // Un `uv` que instala de verdad, en falso: deja junto a el un `graphify` con la version pedida.
 // `chmod` va por su ruta: el PATH de la prueba no lo trae, y no tiene por que traerlo.
 const CHMOD = cp.execSync('command -v chmod', { shell: '/bin/bash' }).toString().trim();
+// eslint-disable-next-line no-template-curly-in-string -- es bash, no una plantilla de JS
 const UV_INSTALA = 'v="${@: -1}"; v="${v##*==}"\n' +
   `printf '#!/bin/bash\\necho "graphify %s"\\n' "$v" > "\${0%/*}/graphify"; ${CHMOD} +x "\${0%/*}/graphify"`;
 
@@ -100,10 +101,11 @@ test('sin la CLI y con uv, instala exactamente la versión revisada, con su exte
 });
 
 test('si la instalación falla, no bloquea el arranque y deja el comando fijado', () => {
-  const r = correr(null, null, { uv: 'echo "error: proxy 403" >&2; exit 2' });
+  const r = correr(null, null, { uv: 'echo "    error: proxy 403" >&2; exit 2' });
   assert.strictEqual(r.rc, 0, 'un PyPI cortado no tumba el arranque');
   assert.ok(r.out.includes(`uv tool install "graphifyy[pdf]==${FIJADA}"`), r.out);
   assert.doesNotMatch(r.out, /graphify: \d/, 'no da por instalado lo que no se instaló');
+  assert.match(r.out, /no se pudo instalar graphify: error: proxy 403/, 'dice por qué, sin la sangría de uv');
 });
 
 test('con otra versión instalada no llama a uv: solo avisa', () => {

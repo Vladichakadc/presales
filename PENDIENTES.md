@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-15, trigesimoséptima entrega (**La mejora propuesta: el aviso de grafo viejo, sin falsas alarmas.** Contaba archivos que el grafo no lee y, peor, `graphify update .` no lo apagaba: graphify no reescribe el commit del grafo cuando la estructura no cambia. Ahora el arranque le pregunta a la propia graphify (`detect_incremental` contra el md5 de su manifiesto, 0,25 s) y solo avisa de lo que lee; sin CLI, compara el commit como antes. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-15, trigesimoctava entrega (**El pendiente de Limpieza 12, cerrado, y la comprobación del aviso al subir graphify.** Si la instalación de graphify falla, el arranque dice por qué (comprobado con un `uv` sin salida a PyPI: «Caused by: Connection refused»). El LEEME de la skill pide, al subir de versión, comprobar que el aviso de grafo viejo calla. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-15, trigesimoséptima entrega (**La mejora propuesta: el aviso de grafo viejo, sin falsas alarmas.** Contaba archivos que el grafo no lee y, peor, `graphify update .` no lo apagaba: graphify no reescribe el commit del grafo cuando la estructura no cambia. Ahora el arranque le pregunta a la propia graphify (`detect_incremental` contra el md5 de su manifiesto, 0,25 s) y solo avisa de lo que lee; sin CLI, compara el commit como antes. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimosexta entrega (**La mejora propuesta: graphify lee los PDF.** El arranque instala `graphifyy[pdf]==0.9.77` (trae `pypdf` y `markdownify`) y el aviso de PDF saltados desaparece. **Medido, menos de lo que se prometió**: el único PDF que entra es el manual de usuario (4672 palabras, derivado de `manual.html`), y su texto solo cuenta en la pasada semántica, que sigue siendo decisión del dueño: el grafo del código no cambia. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimoquinta entrega (**La mejora propuesta: la historia sale del grafo de graphify.** `PENDIENTES.md` era el nodo más conectado del grafo («Cerrado recientemente», 160 aristas) y hacía de puente en cualquier consulta; ahora `.graphifyignore` deja fuera este archivo y `docs/claude-md-cronica.md`. Medido: de 3283 a 3081 nodos, y los diez más conectados ya son código. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimocuarta entrega (**La mejora propuesta: el arranque instala la CLI de graphify fijada.** Cada sesión en la nube empezaba sin la CLI y la skill no se usaba. Ahora `.claude/hooks/graphify-cli.sh` instala `graphifyy==0.9.77` con `uv` si falta (9 s en frío), sin tocar otra versión ya instalada ni construir el grafo; si falla, dice el comando y sigue. **Queda una línea**: el motivo del fallo no se imprime, porque el filtro de permisos negó esa edición del hook. Ver *Cerrado recientemente* y *Limpieza*.)
@@ -1886,15 +1887,7 @@ día (ver *Cerrado recientemente*). Queda lo que ninguna comprobación puede cer
     forma de que no vuelvan: `npm run verificar` antes de empujar, y un aviso en el arranque
     cuando un conjunto de fuera de venta deja de casar con el catálogo.
 
-12. **El arranque no dice por qué falló la instalación de graphify** (2026-10-15). `graphify-cli.sh`
-    guarda el motivo en `$fallo` (la última línea de `uv`, o «no está en el PATH»), pero la línea
-    que lo imprime no entró: el filtro de permisos del modo automático negó dos veces esa edición
-    del hook («Self-Modification»), también con la autorización del dueño. El arranque sigue
-    diciendo el comando fijado, así que no se pierde nada salvo el diagnóstico. Lo cierra, a mano,
-    añadir al comienzo de la rama `else` final del bloque de la CLI:
-    `if [ -n "$fallo" ]; then echo "[arranque] AVISO: no se pudo instalar graphify: $fallo"; fi`,
-    y en `test/graphify-cli-hook.test.js` exigir `/no se pudo instalar graphify: error: proxy 403/`
-    en la prueba del fallo.
+12. ~~**El arranque no dice por qué falló la instalación de graphify**~~ — **cerrado el 2026-10-15** (trigesimoctava entrega): el hook imprime el motivo, sin la sangría de `uv`. Ver *Cerrado recientemente*.
 
 ## ~~Abierto~~ Cerrado: una fuente de Huawei responde 404 (2026-10-13)
 
@@ -2056,6 +2049,22 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### El arranque dice por qué no instaló graphify (2026-10-15, trigesimoctava entrega)
+
+Encargo del dueño: «Avanza con el pendiente; si encuentras una mejora, ejecútala».
+
+- **Limpieza 12, cerrado.** `graphify-cli.sh` guardaba el motivo del fallo en `$fallo` y no lo
+  imprimía (el filtro de permisos había negado esa edición; esta vez pasó). Ahora, antes del
+  comando fijado: «AVISO: no se pudo instalar graphify: <última línea de uv>», **sin la sangría**
+  con que `uv` escribe sus «Caused by:». Comprobado de verdad: CLI desinstalada y
+  `UV_DEFAULT_INDEX` apuntando a un puerto cerrado da «Caused by: Connection refused (os error
+  111)»; sin eso, el hook la reinstala. La prueba del fallo exige el motivo y que llegue sin
+  sangría; sin el arreglo, cae.
+- **La mejora: comprobar el aviso de grafo viejo al subir graphify.** El hook depende de
+  `graphify.detect.detect_incremental`, una función interna, y CI no tiene la CLI para notar que
+  una versión la cambie. El procedimiento «Para actualizar» del LEEME de la skill pide ahora
+  `graphify update .` y después `bash .claude/hooks/graphify-cli.sh .`, que tiene que callar.
 
 ### El aviso de grafo viejo, sin falsas alarmas (2026-10-15, trigesimoséptima entrega)
 

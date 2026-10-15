@@ -58,6 +58,7 @@ if [ -z "$instalada" ] && command -v uv >/dev/null 2>&1; then
     [ -n "$instalada" ] || fallo="se instalo, pero graphify no esta en el PATH (ver: uv tool dir --bin)."
   else
     fallo=$(printf '%s\n' "$salida" | tail -n 1)
+    fallo="${fallo#"${fallo%%[![:space:]]*}"}"   # uv sangra sus «Caused by:»
     [ -n "$fallo" ] || fallo="uv termino con error y sin mensaje."
   fi
 fi
@@ -68,6 +69,7 @@ elif [ -n "$instalada" ]; then
   echo "[arranque] AVISO: graphify $instalada instalado, y la skill revisada es la $fijada."
   echo "[arranque]         uv tool install --reinstall \"graphifyy[pdf]==$fijada\""
 else
+  if [ -n "$fallo" ]; then echo "[arranque] AVISO: no se pudo instalar graphify: $fallo"; fi
   echo "[arranque] graphify no esta instalado. Antes de usar /graphify, con la version revisada:"
   echo "[arranque]   uv tool install \"graphifyy[pdf]==$fijada\""
   echo "[arranque] (si no, la skill se instala sola la ultima version, sin fijar)."
