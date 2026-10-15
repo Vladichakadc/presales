@@ -137,8 +137,9 @@ que existe.
 sigue ignorado):
 - `session-start.sh` (solo en remoto): `npm install`, comprueba Playwright y Chromium, **instala
   la CLI de graphify fijada al sello de la skill si falta** (con `uv`, nunca `--upgrade`; si falla,
-  dice el comando y sigue; otra versión ya instalada no la toca), avisa si el grafo local es de otro
-  commit y si `npm install` reescribió el lock. No instala Playwright, no construye el grafo, no
+  dice el comando y sigue; otra versión ya instalada no la toca), avisa si el grafo local no refleja
+  algún archivo que lee (se lo pregunta a graphify contra su manifiesto; sin CLI, compara el commit)
+  y si `npm install` reescribió el lock. No instala Playwright, no construye el grafo, no
   inventa `AUTH_PASSWORD`, no siembra la base.
 - `aprendizaje.sh`: anota cada `npm run …` en `.claude/learning/runs.jsonl` con tres estados
   (`PreToolUse` abre, `PostToolUse` cierra, lo que queda abierto lo salda el arranque como fallo),

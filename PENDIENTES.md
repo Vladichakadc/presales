@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-15, trigesimosexta entrega (**La mejora propuesta: graphify lee los PDF.** El arranque instala `graphifyy[pdf]==0.9.77` (trae `pypdf` y `markdownify`) y el aviso de PDF saltados desaparece. **Medido, menos de lo que se prometió**: el único PDF que entra es el manual de usuario (4672 palabras, derivado de `manual.html`), y su texto solo cuenta en la pasada semántica, que sigue siendo decisión del dueño: el grafo del código no cambia. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-15, trigesimoséptima entrega (**La mejora propuesta: el aviso de grafo viejo, sin falsas alarmas.** Contaba archivos que el grafo no lee y, peor, `graphify update .` no lo apagaba: graphify no reescribe el commit del grafo cuando la estructura no cambia. Ahora el arranque le pregunta a la propia graphify (`detect_incremental` contra el md5 de su manifiesto, 0,25 s) y solo avisa de lo que lee; sin CLI, compara el commit como antes. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-15, trigesimosexta entrega (**La mejora propuesta: graphify lee los PDF.** El arranque instala `graphifyy[pdf]==0.9.77` (trae `pypdf` y `markdownify`) y el aviso de PDF saltados desaparece. **Medido, menos de lo que se prometió**: el único PDF que entra es el manual de usuario (4672 palabras, derivado de `manual.html`), y su texto solo cuenta en la pasada semántica, que sigue siendo decisión del dueño: el grafo del código no cambia. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimoquinta entrega (**La mejora propuesta: la historia sale del grafo de graphify.** `PENDIENTES.md` era el nodo más conectado del grafo («Cerrado recientemente», 160 aristas) y hacía de puente en cualquier consulta; ahora `.graphifyignore` deja fuera este archivo y `docs/claude-md-cronica.md`. Medido: de 3283 a 3081 nodos, y los diez más conectados ya son código. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimocuarta entrega (**La mejora propuesta: el arranque instala la CLI de graphify fijada.** Cada sesión en la nube empezaba sin la CLI y la skill no se usaba. Ahora `.claude/hooks/graphify-cli.sh` instala `graphifyy==0.9.77` con `uv` si falta (9 s en frío), sin tocar otra versión ya instalada ni construir el grafo; si falla, dice el comando y sigue. **Queda una línea**: el motivo del fallo no se imprime, porque el filtro de permisos negó esa edición del hook. Ver *Cerrado recientemente* y *Limpieza*.)
 Revisión anterior: 2026-10-15, trigesimotercera entrega (**Lo que midió el sondeo de las fuentes de Starlink, y tres arreglos que salieron de él.** Se vigilan los tres PDF de Starlink (tarifa y fichas, estables en bytes); las cinco páginas HTML llevan `sinVigilancia` con lo medido (cascarón de JavaScript o texto que cambia en cada petición). El workflow del sondeo pedía cada URL dos veces y ya no cabía en 20 min: ahora una sola pasada. **Hallazgo**: dos fuentes de Aruba eran un cascarón que el vigía daba por leído. Ver *Cerrado recientemente* y *Abierto: dos fuentes de Aruba eran un cascarón*.)
@@ -2055,6 +2056,37 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### El aviso de grafo viejo, sin falsas alarmas (2026-10-15, trigesimoséptima entrega)
+
+Encargo del dueño: «Sí, ejecuta la mejora propuesta».
+
+- **El problema, medido.** El arranque comparaba `built_at_commit` con `HEAD` y contaba cualquier
+  archivo del diff: tras las dos entregas anteriores decía «5 archivo(s) cambiaron», dos de ellos
+  excluidos del grafo (`PENDIENTES.md`, el LEEME de la skill). Y lo peor, que no se había visto:
+  `graphify update .` **no reescribe `built_at_commit` cuando la estructura no cambia** («No
+  code-graph topology changes detected; outputs left untouched»), así que el comando que daba el
+  aviso no lo apagaba nunca.
+- **Ahora** `.claude/hooks/graphify-cli.sh`, con la CLI instalada y `graphify-out/manifest.json`
+  presente, se lo pregunta a la propia graphify: `detect_incremental(kind="ast")`, la misma
+  detección de `update`, contra el md5 de cada archivo que guarda el manifiesto (que `update` sí
+  refresca). Cuenta solo lo que el grafo lee (respeta `.graphifyignore` y las extensiones que
+  graphify reconoce), ve también lo no commiteado y los borrados, y nombra hasta tres. Tarda
+  ~0,25 s, con `timeout 30`. El intérprete sale del shebang de la CLI y solo se acepta un
+  `python*` con ruta sin caracteres raros; la raíz va como argumento, nunca dentro del código.
+  Sin CLI, sin manifiesto, o si la consulta falla o no responde un número, compara el commit como
+  antes.
+- **Medido aquí**: con el hook editado y sin commitear, avisa de ese archivo y no de
+  `PENDIENTES.md` (también modificado para probarlo); detecta un archivo `.js` nuevo e ignora un
+  `.patch`; tras `graphify update .`, aunque responda «No code-graph topology changes», el aviso
+  desaparece.
+- **Pruebas** (`test/graphify-cli-hook.test.js`, con un `python3` falso de shebang de la CLI):
+  calla si graphify no ve cambios aunque el commit sea otro; avisa con cuántos y cuáles; vuelve al
+  commit si la consulta falla o responde basura; sin manifiesto o con un shebang que no es python,
+  no consulta.
+- **Depende de una función interna de graphify** (`graphify.detect.detect_incremental`): si una
+  versión futura la cambia, la consulta falla y el hook vuelve a comparar el commit; nada se rompe
+  en silencio, pero las falsas alarmas volverían. Se revisa al subir la versión fijada.
 
 ### graphify lee los PDF (2026-10-15, trigesimosexta entrega)
 

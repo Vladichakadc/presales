@@ -13,8 +13,16 @@
 # POR QUE EL COMMIT. graphify guarda en graph.json el commit sobre el que se hizo
 # (`built_at_commit`), y su propio aviso de grafo viejo vive en el modo «siempre activo», que
 # aqui no se instalo a proposito (ver el LEEME de la skill). Sin esto, un grafo de hace diez
-# commits contesta igual de seguro que uno de hoy. Se compara con HEAD y, si difieren, se dice
-# cuantos archivos cambiaron y el comando para rehacerlo. Lo que no ve: cambios sin commitear.
+# commits contesta igual de seguro que uno de hoy.
+#
+# PRIMERO, LO QUE EL GRAFO LEE (desde el 2026-10-15). Comparar commits avisaba en falso: contaba
+# archivos que el grafo no lee (PENDIENTES.md, excluido; un .patch, sin extension conocida) y,
+# como `graphify update .` no reescribe `built_at_commit` cuando la estructura no cambia, el
+# comando que daba no apagaba el aviso. Ahora, si la CLI esta, se pregunta a la propia graphify
+# (`detect_incremental`, la misma deteccion de `update`, contra el md5 de cada archivo en
+# `graphify-out/manifest.json`): cuenta solo lo que lee, ve tambien lo no commiteado y tarda
+# ~0,25 s. Sin CLI, sin manifiesto, o si esa consulta falla, se compara el commit con HEAD
+# como antes.
 #
 # SI FALTA, INSTALA LA FIJADA (desde el 2026-10-15, a peticion del dueno). Antes solo decia el
 # comando, y cada sesion en la nube empezaba sin CLI y sin grafo: la skill no se usaba o, peor,
@@ -65,10 +73,47 @@ else
   echo "[arranque] (si no, la skill se instala sola la ultima version, sin fijar)."
 fi
 
-# El grafo, frente a HEAD. La clave de primer nivel la escribe graphify la ultima; una cadena
-# dentro de un nodo llevaria las comillas escapadas y no casa con este patron.
+# El grafo, frente a lo que graphify leeria hoy. El interprete sale del shebang de la CLI (como
+# el paso 1 de la skill) y solo se acepta si es un python con una ruta sin caracteres raros; la
+# raiz va como argumento, nunca dentro del codigo. Imprime cuantos cambiaron y hasta tres.
 grafo="$raiz/graphify-out/graph.json"
-if [ -f "$grafo" ]; then
+manifiesto="$raiz/graphify-out/manifest.json"
+consultado=""
+if [ -f "$grafo" ] && [ -f "$manifiesto" ] && [ -n "$instalada" ]; then
+  py=$(head -n 1 "$(command -v graphify)" 2>/dev/null | tr -d '#!')
+  case "$py" in
+    *[!a-zA-Z0-9/_.@-]*|"") py="" ;;
+  esac
+  case "${py##*/}" in python*) ;; *) py="" ;; esac
+  if [ -n "$py" ]; then
+    limite=""
+    command -v timeout >/dev/null 2>&1 && limite="timeout 30"
+    if salida=$($limite "$py" -I -c '
+import sys
+from pathlib import Path
+from graphify.detect import detect_incremental
+raiz = Path(sys.argv[1]).resolve()
+r = detect_incremental(raiz, manifest_path=str(raiz / "graphify-out" / "manifest.json"), kind="ast")
+cambiados = sorted({f for fl in r["new_files"].values() for f in fl} | set(r.get("deleted_files") or []))
+print(len(cambiados))
+for f in cambiados[:3]:
+    p = Path(f)
+    print(p.relative_to(raiz) if p.is_absolute() and p.is_relative_to(raiz) else f)
+' "$raiz" 2>/dev/null) && n=$(printf '%s\n' "$salida" | head -n 1) && [[ "$n" =~ ^[0-9]+$ ]]; then
+      consultado=1
+      if [ "$n" -gt 0 ]; then
+        ejemplos=$(printf '%s\n' "$salida" | tail -n +2 | tr '\n' ' ')
+        echo "[arranque] AVISO: el grafo de graphify no refleja $n archivo(s) que lee y cambiaron (${ejemplos% })."
+        echo "[arranque]         Para rehacerlo (solo AST, sin LLM): graphify update ."
+      fi
+    fi
+  fi
+fi
+
+# Sin la consulta: el commit del grafo frente a HEAD. La clave de primer nivel la escribe
+# graphify la ultima; una cadena dentro de un nodo llevaria las comillas escapadas y no casa con
+# este patron. Lo que no ve: cambios sin commitear, y cuenta tambien lo que el grafo no lee.
+if [ -f "$grafo" ] && [ -z "$consultado" ]; then
   hecho=$(grep -o '"built_at_commit": *"[0-9a-f]\{40\}"' "$grafo" 2>/dev/null | tail -n1 | grep -o '[0-9a-f]\{40\}')
   cabeza=$(git -C "$raiz" rev-parse HEAD 2>/dev/null || true)
   if [ -n "$hecho" ] && [ -n "$cabeza" ] && [ "$hecho" != "$cabeza" ]; then
