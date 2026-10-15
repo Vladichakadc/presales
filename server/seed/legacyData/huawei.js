@@ -756,7 +756,7 @@ const SDWAN_SERIE = {
   'AR6700V-L': {doc: 'Huawei NetEngine AR6700V-L Virtual Router Data Sheet', mem: '4 GB (2 vCPU) · 8 GB (4 y 8 vCPU) · 16 GB (16 vCPU)',
     vpn: 'L3VPN, SD-WAN EVPN, GRE VPN; SRv6; IPsec e IKEv2 con AES-CBC, AES-GCM y SM',
     evpn: true, dsvpn: null, srv6: true, mpls: null, mcast: true, fec: 'A-FEC', compresion: true, ips: true, url: true, av: true, macsec: null,
-    nota: 'IPS, filtrado URL y antivirus: «Only the AR6700V-L with 4vCPU/8vCPU/16vCPU supports this function» (nota de la ficha).',
+    nota: 'IPS, filtrado URL y antivirus: «Only the AR6700V-L with 4vCPU/8vCPU/16vCPU supports this function» (nota de la ficha). Su SD-WAN IPsec es EVPN + IPsec (AES-256-CBC); el IMIX sale de la ficha R25C00.',
     extra: 'Pasarela IWG hacia redes MPLS tradicionales y varias pasarelas SD-WAN; nube: host VPC, transit VPC y cloud router; HA con VRRP y HRP',
     n1: null, amenazas: null, paquetes: []},
   AR8700: {doc: 'Huawei NetEngine AR8000 Series Enterprise Router Data Sheet-R25C10', mem: '16 GB (SPU) / 8 GB (MPU)',
@@ -782,6 +782,17 @@ for (const m of MODELS) {
   m.capSdwan = {...s, ipsecSdwan, qos, tuneles: null, sesiones: null, tunelesMotivo: TUNELES_MOTIVO};
   // El AR6700V-L de 2 vCPU no admite IPS, URL ni antivirus (nota de su ficha): `false`, que aparta con UTM.
   if (m.virtual && m.vcpu < 4) Object.assign(m.capSdwan, {ips: false, url: false, av: false});
+  // vCPE (2026-10-15, leídos en el Chrome del dueño): el SD-WAN IPsec IMIX de la ficha R25C00, que la
+  // R26C00 quitó (casa con ella en el SD-WAN IPsec a 1400 B y en el típico IMIX: doble ancla), y los
+  // paquetes N1 por tamaño de la «License Usage Guide» V600R025C00 (EDOC1100516044). El vCPE no tiene
+  // paquete sin SD-WAN: Foundation, Advanced o la actualización de uno a otro.
+  if (m.virtual) {
+    m.capSdwan.ipsecSdwan = {2: 400, 4: 3000, 8: 5000, 16: 11000}[m.vcpu];
+    const v = `${m.vcpu}V`;
+    m.capSdwan.n1 = {sin: null, f: `N1-AR6700V-L-F-${v}`, a: `N1-AR6700V-L-A-${v}`,
+      sns: {f: `N1-AR6700V-L-F-${v}-{años}SNS`, a: `N1-AR6700V-L-A-${v}-{años}SNS`}};
+    m.capSdwan.doc = 'Huawei NetEngine AR6700V-L Virtual Router Data Sheet-R26C00; códigos N1 de la NetEngine AR6700V-L V600R025C00 License Usage Guide';
+  }
 }
 
 
