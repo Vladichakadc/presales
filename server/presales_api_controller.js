@@ -11,6 +11,8 @@
 
 const sizingEngine = require('../public/js/sizing_engine');
 
+const FABRICANTES_IMPORTABLES = ['HUAWEI', 'ARUBA'];
+
 function createPresalesHandlers(dependencies = {}) {
   const { ProductModel = null, ExcelJS = null, vendorIds = {} } = dependencies;
 
@@ -283,8 +285,6 @@ function createPresalesHandlers(dependencies = {}) {
     buildBomExcelWorkbook
   };
 }
-
-const FABRICANTES_IMPORTABLES = ['HUAWEI', 'ARUBA'];
 
 function createPresalesRouter(express, dependencies = {}) {
   const { requireAdmin = null, ProductModel = null } = dependencies;

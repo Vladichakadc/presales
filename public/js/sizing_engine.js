@@ -7,6 +7,7 @@
  * Sincronizado para flujo colaborativo Gemini <-> Claude Code.
  */
 
+/* global module, self */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) {
     module.exports = factory();
