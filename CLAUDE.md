@@ -591,3 +591,7 @@ Para garantizar que tanto **Gemini** (que lee `GEMINI.md`, el cual importa este 
    * Todo nuevo SKU agregado a `HUAWEI_HARDWARE_CATALOG`, `ARUBA_HARDWARE_CATALOG` o `OPTICAL_TRANSCEIVERS_CATALOG` debe incluir `sku`, `modelo`, capacidades nominales, `list_price_usd` y `lifecycle_status`.
 4. **Registro en `CLAUDE.md` y `PENDIENTES.md`:**
    * Cuando Gemini genere nuevos módulos o refactorizaciones, entregará el bloque de actualización correspondiente para `CLAUDE.md` de modo que Claude Code tenga contexto inmediato al abrir el repositorio local.
+5. **Grafo de código siempre al día (`graphify`):**
+   * Un hook de git (`graphify hook install`, local a cada clon) reconstruye el grafo tras cada commit y cada cambio de rama, lo haga Claude o Gemini. Los `.md` no entran en esa pasada: tras cambiar documentos, `/graphify --update`.
+   * Antes de leer varios archivos para ubicarse, preguntar al grafo: `graphify query "<pregunta>"`, `graphify path A B`, `graphify explain X`. Si el grafo falta o está viejo (`graphify update .`), no bloquea: se lee el código.
+   * **El grafo orienta, no es fuente**: el dato lo dan `server/seed/legacyData/` y las pruebas; no se cita el grafo como prueba.
