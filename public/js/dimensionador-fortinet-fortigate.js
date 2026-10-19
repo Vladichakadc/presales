@@ -963,6 +963,9 @@ function pintarFicha(r) {
     refsEn: 'fortiRefs',
     refsTitulo: null,
     etiqueta: (m) => `${m.id} — ${m.seg} · soporta ${fmt(porId[m.id] ? porId[m.id].soporta : null)}`,
+    // Escalón N+1 (ficha.js): el caudal que el motor dice que soporta cada equipo en ESTE escenario
+    // (el mínimo entre sus ejes), y el precio de la lista firmada. Solo informa: no toca la selección.
+    escalon: { metrica: (m) => (porId[m.id] ? porId[m.id].soporta : null), fmt, nombre: 'caudal que soporta en el escenario', precio: (m) => m.elpN ?? null },
     titulo: (m) => m.id,
     subtitulo: (m) => `${m.seg} · FortiOS Security Fabric`,
     medidores: null,
@@ -1471,6 +1474,14 @@ function documentoMeta(r, confirmacion) {
   const ref = $('refProyecto').value.trim();
   const meta = {
     titulo: `${borrador ? 'BORRADOR TÉCNICO — ' : ''}Lista de materiales — ${m.id}`,
+    // Hoja «Supuestos» del Excel (bom.js): la puerta, el cuello y los supuestos que el motor declara.
+    supuestos: { vendor: VENDOR, fabricante: 'Fortinet', modelo: m.id, resumen: [
+      ['Puerta de cotización', `${r.quoteGate} (${GATE[r.quoteGate].n}) · confianza ${r.confianza}`],
+      ['Cuello de botella', r.seleccion.eval.manda ? `${r.seleccion.eval.manda.n} al ${R.pct(r.seleccion.eval.manda.u)}` : 'sin dato'],
+      ['Huella del escenario', r.scenarioHash],
+      ...r.supuestos.map((x) => ['Supuesto declarado', x]),
+      ['Multiplicador', r.multiplicador.texto],
+    ] },
     subtitulo: `${m.seg} · FortiOS · ${r.bom.nodos} nodo(s) · término ${anios} año${anios > 1 ? 's' : ''}`,
     archivo: `${borrador ? 'BORRADOR_' : ''}BOM_${m.id}`,
     ...(v && v.front ? { fotos: { modelo: m.id, origen: 'Extraídas de los documentos oficiales de Fortinet', front: v.front, rear: v.rear || null, pie: [v.tamano, v.fuente].filter(Boolean).join(' · ') } } : {}),

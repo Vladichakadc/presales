@@ -434,6 +434,8 @@ function render(){
     candidatos:ev.fit.map(r=>r.m),
     recomendado:pick.id,
     etiqueta:m=>{const r=filaDe(m)||{};return `${m.id} — ${m.seg} · ${fmt(r.cap)}${m.elp?' · '+m.elp:''}`;},
+    // Escalón N+1 (ficha.js): la celda de la tabla de pruebas que dimensiona y el «Suggested price».
+    escalon:{metrica:m=>(filaDe(m)||{}).cap??null, fmt, nombre:'celda de la tabla de pruebas', precio:m=>m.elpN??null},
     titulo:m=>m.id,
     subtitulo:m=>`${m.seg} · RouterOS v7 · licencia ${lvlTxt(m)}${m.elp?' · '+m.elp:''}`,
     medidores:medidoresDe,
@@ -645,6 +647,7 @@ function renderBom(){
 
   const meta={
     titulo:`Lista de materiales — ${m.id}`,
+    supuestos:{vendor:'mikrotik', fabricante:'MikroTik', modelo:m.id, serie:m.ser},
     subtitulo:`${m.seg} · RouterOS v7 · licencia ${lvlTxt(m)}`,
     archivo:`BOM_${m.id}`,
     notas:[

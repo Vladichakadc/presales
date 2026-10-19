@@ -1,7 +1,7 @@
 {
  "medidoEn": {
-  "commit": "2fd2a59",
-  "fecha": "2026-10-15"
+  "commit": "fe28736",
+  "fecha": "2026-10-19"
  },
  "umbralRozado": 25,
  "modulos": [
@@ -69,17 +69,17 @@
    "pct": 18
   },
   {
+   "modulo": "procedencia.js",
+   "estado": "ejercitado",
+   "total": 36,
+   "usadas": 18,
+   "pct": 50
+  },
+  {
    "modulo": "navegacion.js",
    "estado": "ejercitado",
    "total": 17,
    "usadas": 9,
-   "pct": 53
-  },
-  {
-   "modulo": "procedencia.js",
-   "estado": "ejercitado",
-   "total": 34,
-   "usadas": 18,
    "pct": 53
   },
   {
@@ -113,15 +113,15 @@
   {
    "modulo": "bom.js",
    "estado": "ejercitado",
-   "total": 82,
+   "total": 85,
    "usadas": 56,
-   "pct": 68
+   "pct": 66
   },
   {
    "modulo": "dimensionador-aruba-edgeconnect.js",
    "estado": "ejercitado",
-   "total": 387,
-   "usadas": 263,
+   "total": 390,
+   "usadas": 266,
    "pct": 68
   },
   {
@@ -132,32 +132,25 @@
    "pct": 72
   },
   {
-   "modulo": "index.js",
+   "modulo": "estado.js",
    "estado": "ejercitado",
-   "total": 58,
-   "usadas": 42,
+   "total": 29,
+   "usadas": 21,
    "pct": 72
   },
   {
-   "modulo": "huawei-motor.js",
+   "modulo": "index.js",
    "estado": "ejercitado",
-   "total": 52,
-   "usadas": 38,
-   "pct": 73
+   "total": 58,
+   "usadas": 43,
+   "pct": 74
   },
   {
    "modulo": "ficha.js",
    "estado": "ejercitado",
-   "total": 71,
-   "usadas": 54,
-   "pct": 76
-  },
-  {
-   "modulo": "dimensionador-fortinet-fortigate.js",
-   "estado": "ejercitado",
-   "total": 280,
-   "usadas": 222,
-   "pct": 79
+   "total": 75,
+   "usadas": 56,
+   "pct": 75
   },
   {
    "modulo": "mikrotik-motor.js",
@@ -167,10 +160,10 @@
    "pct": 79
   },
   {
-   "modulo": "dimensionador-nokia-7750sr.js",
+   "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
-   "total": 50,
-   "usadas": 40,
+   "total": 283,
+   "usadas": 225,
    "pct": 80
   },
   {
@@ -181,10 +174,24 @@
    "pct": 80
   },
   {
+   "modulo": "huawei-motor.js",
+   "estado": "ejercitado",
+   "total": 61,
+   "usadas": 49,
+   "pct": 80
+  },
+  {
    "modulo": "dimensionador-mikrotik-routeros.js",
    "estado": "ejercitado",
-   "total": 165,
-   "usadas": 133,
+   "total": 167,
+   "usadas": 135,
+   "pct": 81
+  },
+  {
+   "modulo": "dimensionador-nokia-7750sr.js",
+   "estado": "ejercitado",
+   "total": 52,
+   "usadas": 42,
    "pct": 81
   },
   {
@@ -195,18 +202,11 @@
    "pct": 82
   },
   {
-   "modulo": "estado.js",
-   "estado": "ejercitado",
-   "total": 25,
-   "usadas": 21,
-   "pct": 84
-  },
-  {
    "modulo": "dimensionador-huawei-netengine.js",
    "estado": "ejercitado",
-   "total": 149,
-   "usadas": 129,
-   "pct": 87
+   "total": 161,
+   "usadas": 141,
+   "pct": 88
   },
   {
    "modulo": "aruba-reglas.js",

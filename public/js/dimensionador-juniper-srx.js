@@ -222,6 +222,8 @@ function render() {
     candidatos: ordenados,
     recomendado: pick.id,
     etiqueta: (m) => `${m.id} — ${m.seg} · ${fmt(m[ef.k])}`,
+    // Escalón N+1 (ficha.js): la cifra de la capa que dimensiona. Juniper no tiene lista de precios.
+    escalon: { metrica: (m) => m[ef.k] ?? null, fmt, nombre: CAPA_INFO[ef.k].n, precio: () => null },
     titulo: (m) => m.id,
     subtitulo: (m) => `${m.ser} · ${m.seg}`,
     medidores: (m) => medidoresDe(m, ef.k, need, sessNeed),
@@ -357,6 +359,7 @@ function renderSsr(need) {
   FICHA.render({vendor:'juniper', 
     contenedor: 'verdict', candidatos: ordenados, recomendado: pick.id,
     etiqueta: (m) => `${m.id} — ${m.seg} · ${fmt(m.cap)}`,
+    escalon: { metrica: (m) => m.cap ?? null, fmt, nombre: 'caudal', precio: () => null },
     titulo: (m) => m.id,
     subtitulo: (m) => `${m.ser} · ${m.seg}`,
     medidores: (m) => [{ etq: 'Caudal del sitio', val: need, tope: m.cap, txt: `${fmt(need)} / ${fmt(m.cap)}` }],
@@ -413,6 +416,7 @@ function renderBom() {
 
   const meta = {
     titulo: `Lista de materiales — ${m.id}`,
+    supuestos: { vendor: 'juniper', fabricante: 'Juniper', modelo: m.id, serie: m.ser },
     subtitulo: `${m.ser} · término ${term} año(s)`,
     archivo: `BOM_${m.id}`,
     notas: ['', 'NOTAS DE PREVENTA',

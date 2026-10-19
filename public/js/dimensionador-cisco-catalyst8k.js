@@ -314,6 +314,10 @@ function render(){
     // eso, un equipo cuya cifra SD-WAN nadie publico puede aparecer por delante de otro que
     // si la publica, y en la lista los dos numeros parecen lo mismo.
     etiqueta:m=>`${m.id} — ${m.ser} · ${fmt(capDe(m))}${profile==='sdwan'&&!m.sdwan&&m.ipsec?' (cifra IPsec)':''}`,
+    // Escalón N+1 (ficha.js): la cifra del desplegable. En SD-WAN solo se comparan equipos medidos
+    // igual: uno sin cifra SD-WAN propia (cae a IPsec) no es el escalón de uno que la publica.
+    escalon:{metrica:capDe, fmt, nombre:{fwd:'reenvío', ipsec:'IPsec', sdwan:'SD-WAN'}[profile]||'capacidad',
+      precio:m=>m.elpN??null, comparable:(a,b)=>profile!=='sdwan'||!!a.sdwan===!!b.sdwan},
     titulo:m=>m.id,
     subtitulo:m=>m.fam+' · Serie '+m.ser,
     medidores:medidoresDe,
@@ -475,6 +479,7 @@ function renderBom(){
 
   const meta={
     titulo:`Lista de materiales — ${m.id}`,
+    supuestos:{vendor:'cisco', fabricante:'Cisco', modelo:m.id, serie:m.ser},
     subtitulo:`${m.fam} · Serie ${m.ser} · término ${termYrs} años`,
     archivo:`BOM_${m.id}`,
     notas:[

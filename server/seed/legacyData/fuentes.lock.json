@@ -543,6 +543,13 @@
       "clase": "texto",
       "bytes": 119250,
       "medido": "2026-10-13T19:08:29.846Z"
+    },
+    "aruba::https://arubanetworking.hpe.com/techdocs/VSG/docs/070-sd-branch-design/Media/PDF/Aruba_VSG_SD-Branch-Design.pdf": {
+      "documento": "Validated Solution Guide SD-Branch y data sheet de suscripciones EdgeConnect (HPE, oficiales)",
+      "hashVerificado": "c215a2d431a97e8a754ce1f4edf41445f39963fc9d0730fe3c523fa2bb05aef1",
+      "clase": "bytes",
+      "bytes": 17596233,
+      "medido": "2026-09-13T00:00:00.000Z"
     }
   },
   "revisado": "2026-10-13T19:08:29.846Z"

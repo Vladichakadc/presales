@@ -21,6 +21,7 @@
 
 const crypto = require('crypto');
 const fs = require('fs');
+const { escribirAtomico } = require('./escrituraAtomica');
 const path = require('path');
 
 const STATE_DIR = process.env.AUTH_STATE_DIR || path.join(__dirname, '..', '.auth');
@@ -102,9 +103,9 @@ function leerArchivo(archivo) {
 }
 
 function guardar(estado) {
-  fs.mkdirSync(STATE_DIR, { recursive: true });
-  // mode 0600: el archivo guarda hashes de contraseña, no debe ser legible por otros.
-  fs.writeFileSync(USERS_FILE, JSON.stringify(estado, null, 2), { mode: 0o600 });
+  // mode 0600: el archivo guarda hashes de contraseña, no debe ser legible por otros. Atómica:
+  // un JSON cortado por un SIGTERM se leería como «no existe» y reharía el administrador.
+  escribirAtomico(USERS_FILE, JSON.stringify(estado, null, 2), { mode: 0o600 });
 }
 
 // Construye el almacén inicial a partir de lo que hubiera antes. Devuelve null cuando no hay

@@ -43,6 +43,9 @@
     }[c]));
   }
 
+  // Campos y valores por defecto de la pantalla vinculada: los lee `escenario()` (más abajo).
+  let vinculado = null;
+
   // Lee el valor de un control, sea del tipo que sea. Los grupos .seg no son controles de
   // formulario: son botones con aria-pressed, y el "valor" es el data-v del que está activo.
   function leer(nodo) {
@@ -83,6 +86,8 @@
     // de por qué se eligió un querystring en vez de un blob codificado.
     const defectos = {};
     for (const id of campos) defectos[id] = leer(document.getElementById(id));
+    // Lo que `escenario()` necesita para describir la pantalla en el Excel (hoja «Supuestos»).
+    vinculado = { campos, defectos };
 
     // ── Restaurar ───────────────────────────────────────────────────────────
     // Solo se repone lo que trae la URL (un enlace que alguien compartió). Ya no se guarda
@@ -307,5 +312,57 @@
     host.appendChild(av);
   }
 
-  global.ESTADO = { vincular, botonEnlace, avisoOrigen };
+  // ESCENARIO LEGIBLE (2026-10-19, hoja «Supuestos» del Excel de bom.js). Lo mismo que viaja en el
+  // enlace, pero ENTERO y con nombre: cada campo activo de la pantalla con su etiqueta visible y su
+  // valor tal como se lee (la opción elegida, «Sí»/«No», el botón pulsado), y si difiere del valor
+  // por defecto. Lo que va dentro de `[data-inactivo]` no cuenta en el cálculo y tampoco sale aquí,
+  // la misma regla que el enlace. Sin `vincular()` previo devuelve [].
+  // Texto que se lee de un nodo: un <br> separa palabras («Enlace<br>único») y los controles que
+  // una etiqueta envuelve (un <select> con sus opciones) no son parte de su nombre.
+  function textoVisible(n) {
+    if (!n) return '';
+    if (n.nodeType === 3) return n.textContent;
+    if (n.nodeType !== 1) return '';
+    if (n.tagName === 'BR') return ' ';
+    if (/^(SELECT|INPUT|TEXTAREA|OPTION|BUTTON)$/.test(n.tagName) && n.closest('label')) return '';
+    return [...n.childNodes].map(textoVisible).join('');
+  }
+  function etiquetaDe(nodo, id) {
+    const porFor = document.querySelector(`label[for="${CSS.escape(id)}"]`);
+    const envolvente = nodo.closest ? nodo.closest('label') : null;
+    const campo = nodo.closest ? nodo.closest('.field') : null;
+    const delCampo = campo ? campo.querySelector('label') : null;
+    const txt = (porFor && textoVisible(porFor).trim()) || (envolvente && textoVisible(envolvente).trim())
+      || (nodo.getAttribute && nodo.getAttribute('aria-label')) || (delCampo && textoVisible(delCampo).trim()) || id;
+    return String(txt).replace(/\s+/g, ' ').trim();
+  }
+  function valorLegible(nodo) {
+    if (nodo.classList && nodo.classList.contains('seg')) {
+      const activo = nodo.querySelector('[aria-pressed="true"]');
+      return activo ? [...activo.childNodes].map(textoVisible).join('').replace(/\s+/g, ' ').trim() : '';
+    }
+    if (nodo.type === 'checkbox') return nodo.checked ? 'Sí' : 'No';
+    if (nodo.tagName === 'SELECT') {
+      const o = nodo.options[nodo.selectedIndex];
+      return o ? o.textContent.replace(/\s+/g, ' ').trim() : '';
+    }
+    return nodo.value;
+  }
+  function escenario() {
+    if (!vinculado) return [];
+    const out = [];
+    for (const id of vinculado.campos) {
+      const nodo = document.getElementById(id);
+      if (!nodo || (nodo.closest && nodo.closest('[data-inactivo]'))) continue;
+      // Un campo oculto de datos (JSON de ópticas, enlaces) no es un parámetro que se lea: viaja en
+      // la URL, que la hoja también lleva.
+      if (nodo.type === 'hidden') continue;
+      const v = valorLegible(nodo);
+      if (v == null || v === '') continue;
+      out.push({ id, etiqueta: etiquetaDe(nodo, id), valor: String(v), cambiado: leer(nodo) !== vinculado.defectos[id] });
+    }
+    return out;
+  }
+
+  global.ESTADO = { vincular, botonEnlace, avisoOrigen, escenario };
 }(window));
