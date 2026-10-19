@@ -581,7 +581,7 @@ Provee los endpoints REST listos para montarse en Express (`app.use('/api/presal
 
 ## Protocolo de Integración y Sincronización Gemini <-> Claude Code
 
-Para garantizar que tanto **Gemini** (con la skill `presales-claude-bridge` activa) como **Claude Code** (con las skills locales en `.claude/`) operen como un único equipo de ingeniería sobre este repositorio:
+Para garantizar que tanto **Gemini** (que lee `GEMINI.md`, el cual importa este archivo) como **Claude Code** (con las skills locales en `.claude/`) operen como un único equipo de ingeniería sobre este repositorio:
 
 1. **Preservación de Contratos Isomórficos:**
    * Ningún cambio en `sizing_engine.js` debe romper la exportación UMD (`window.PresalesEngine` en navegador y `module.exports` en Node.js).
