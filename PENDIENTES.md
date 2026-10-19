@@ -1943,6 +1943,23 @@ oficial de cada una (HPE las sirve desde `psnow/doc/<id>` tras una aplicación; 
 `fuentes.js` en un commit, después de abrir el documento. Las cifras no cambian: las copias que se
 leyeron siguen en `public/datasheets/`. Este entorno no llega a `hpe.com` (403 del proxy).
 
+**Medido el 2026-10-19 desde Actions** (`candidatas-fuentes.yml` con dos casos nuevos, corrida
+39253322918): la ruta `psnow/resources/ebooks/<id>/<id>.pdf` **da 404** para los dos ids
+(a00109847enw y a00067607enw, la copia psnow de la serie 9000): esa candidata queda descartada. Y el
+control del mismo dominio (`www.hpe.com/us/en/aruba-networking.html`) **agota el tiempo también
+desde el ejecutor**, como ya medía `public/datasheets/LEEME.md`: `www.hpe.com` solo responde a un
+navegador real. **Cómo se cierra**: desde el Chrome del dueño, abrir cada `psnow/doc/<id>`, copiar
+la URL del PDF que sirve (la de «Descargar») y probarla con `npm run candidatas` desde Actions antes
+de cambiarla en `fuentes.js`.
+
+**La VSG de SD-Branch tiene una edición nueva sin leer** (2026-10-19). Su fuente vigilaba la
+CARPETA del VSG (403 a un listado, nunca leída); pasa al PDF de la misma guía, que desde Actions da
+200. La copia leída (04-sep-2026, 17.596.233 B) va como `hashVerificado` en el lock, y la de hoy
+pesa 17.594.529 B: el lunes el vigía la marcará «cambió» y la llevará al issue. **Cómo se cierra**:
+traerla (`npm run datasheets -- --force` desde una máquina con salida, o el transporte de Actions),
+contrastar las reglas de diseño que `cubre` lista contra la edición nueva y marcarla con
+`npm run vigia -- --revisado aruba <url>`.
+
 ## Decisiones que necesitan al dueño del producto
 
 - ~~**WireGuard en el dimensionador MikroTik (2026-10-13).**~~ **Decidido el 2026-10-13: opción A**,
@@ -2098,6 +2115,11 @@ por el camino, ejecútala».
   recomendado (Secure Router C8355-G2, +6,9 Gbps) cuesta 5.734 $ **menos** de lista. El motor
   recomienda el menor que cumple, no el más barato, y el indicador lo hace visible. Si el criterio
   debiera ser otro es decisión del dueño.
+- **Por el camino, con el conector de GitHub** (que ahora deja lanzar workflows): se midieron desde
+  Actions las dos fuentes de Aruba que eran un cascarón (la candidata da 404 y `www.hpe.com` no
+  responde a un ejecutor: sigue haciendo falta el Chrome del dueño), y salió que la fuente de la VSG
+  de SD-Branch vigilaba una carpeta que nunca se pudo leer: pasa al PDF de la guía, con la copia
+  leída como hash verificado, y el vigía avisará de la edición nueva (sección de Aruba).
 - **Sigue abierto**: el puerto de la interconexión EdgeHA de Aruba (cambiaría recomendaciones y el
   reparto de enlaces entre los dos chasis no está modelado), la marca `incluida` de las piezas
   Huawei (sin fuente que diga si vienen con el chasis) y lo bloqueado por la cuenta y el egreso de
