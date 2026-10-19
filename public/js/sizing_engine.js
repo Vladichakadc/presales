@@ -627,6 +627,9 @@
     };
   }
 
+  const ADVERTENCIA_DATOS =
+    'Catálogo, SKUs derivados y precios de este motor NO tienen fuente verificada (no provienen de server/seed/legacyData). Uso de pruebas de concepto: no cotizar.';
+
   function dimensionarHuaweiNetEngine(params = {}) {
     const req = calcularRequerimientosHuawei(params);
     const sdwanActivo = params.sdwan_activo !== undefined ? Boolean(params.sdwan_activo) : true;
@@ -655,7 +658,7 @@
     const equipoSeleccionado = candidatos[0] || HUAWEI_HARDWARE_CATALOG[HUAWEI_HARDWARE_CATALOG.length - 1];
     const equipoUpsell = candidatos[1] || null;
 
-    const alertasIngenieria = [];
+    const alertasIngenieria = [ADVERTENCIA_DATOS];
     if (equipoSeleccionado.serie !== 'NetEngine AR' && (params.rol || 'BRANCH') === 'BRANCH') {
       alertasIngenieria.push(
         `Escalado automático de arquitectura: la demanda (${req.throughputDisenoMbps} Mbps diseño / ${req.mppsRequeridos} Mpps) supera la familia NetEngine AR; se asigna ${equipoSeleccionado.modelo} (${equipoSeleccionado.serie}).`
@@ -718,9 +721,13 @@
 
     let ngfwRecomendado = null;
     if (req.requiereDesacoplarNGFW) {
-      ngfwRecomendado =
-        HUAWEI_NGFW_CATALOG.find((fw) => fw.max_dpi_mbps >= req.throughputDisenoMbps) ||
-        HUAWEI_NGFW_CATALOG[HUAWEI_NGFW_CATALOG.length - 1];
+      const ngfwQueCumple = HUAWEI_NGFW_CATALOG.find((fw) => fw.max_dpi_mbps >= req.throughputDisenoMbps);
+      ngfwRecomendado = ngfwQueCumple || HUAWEI_NGFW_CATALOG[HUAWEI_NGFW_CATALOG.length - 1];
+      if (!ngfwQueCumple) {
+        alertasIngenieria.push(
+          `Ningún NGFW del catálogo inspecciona ${req.throughputDisenoMbps} Mbps: ${ngfwRecomendado.modelo} queda sub-dimensionado. Usar varios equipos en clúster.`
+        );
+      }
 
       alertasIngenieria.push(
         `Umbral NGFW Dedicado activado: por caudal > 1 Gbps o descifrado SSL/TLS, se desacopla la inspección profunda incorporando ${ngfwRecomendado.modelo} (${ngfwRecomendado.sku}).`
@@ -904,6 +911,13 @@
     const equipoSeleccionado = candidatos[0] || catalogoElegible[catalogoElegible.length - 1];
     const equipoUpsell = candidatos[1] || null;
 
+    const alertasIngenieria = [ADVERTENCIA_DATOS];
+    if (!candidatos.length) {
+      alertasIngenieria.push(
+        `Ningún EdgeConnect cubre ${req.throughputDisenoMbps} Mbps / ${req.flujosRequeridos} flujos: ${equipoSeleccionado.modelo} queda sub-dimensionado. Dividir en varios equipos o cambiar de familia.`
+      );
+    }
+
     const sufijoTAA = req.cumplimientoEspecial.variante_taa_nal ? '-TAA' : '';
     const bom = [];
 
@@ -1008,6 +1022,7 @@
       bom,
       auditoriaOpticas,
       catalogoMigracionLegacy: ARUBA_LEGACY_MIGRATION_MAP,
+      alertasIngenieria,
       resumenCostosLista: {
         totalCapexUsd,
         totalOpexUsd,
@@ -1099,7 +1114,10 @@
     let totalSedes = 0;
 
     perfilesSede.forEach((perfil, idx) => {
-      const cantidadSedes = Math.max(1, Number(perfil.cantidad_sedes) || 1);
+      const cantidadSedes = perfil.cantidad_sedes === undefined ? 1 : Number(perfil.cantidad_sedes);
+      if (!Number.isInteger(cantidadSedes) || cantidadSedes < 1) {
+        throw new Error(`perfiles_sede[${idx}].cantidad_sedes debe ser un entero >= 1`);
+      }
       const factorHA = Boolean(perfil.alta_disponibilidad_ha) ? 2 : 1;
       const multiplicadorEquipos = cantidadSedes * factorHA;
       totalSedes += cantidadSedes;
@@ -1175,7 +1193,7 @@
   }
 
   function calcularSimuladorFinancieroTelco(totalesLista, paramsFinancieros = {}) {
-    const mesesContrato = [24, 36, 60].includes(Number(paramsFinancieros.meses_contrato))
+    const mesesContrato = [12, 24, 36, 60].includes(Number(paramsFinancieros.meses_contrato))
       ? Number(paramsFinancieros.meses_contrato)
       : 36;
 

@@ -32,3 +32,20 @@ test('los motores Huawei y Aruba responden por la API', async () => {
   assert.equal((await llamar(h.handleHuaweiSizing, { bw_enlace_mbps: 500 })).b.ok, true);
   assert.equal((await llamar(h.handleArubaSizing, { bw_mpls_mbps: 100, bw_internet_mbps: 200 })).b.ok, true);
 });
+
+test('entradas inválidas dan 400 y el precio ausente queda null', async () => {
+  const h = createPresalesHandlers();
+  assert.equal((await llamar(h.handleCatalogImport, { fabricante: 5, items: [{ sku: 'a', modelo: 'b' }] })).c, 400);
+  const r = await llamar(h.handleCatalogImport, { fabricante: 'ARUBA', items: [null, { sku: 'a', modelo: 'b' }] });
+  assert.deepEqual([r.b.resumen.validados, r.b.resumen.rechazados], [1, 1]);
+  const rol = await llamar(h.handleRolloutConsolidation, { perfiles_sede: [{ cantidad_sedes: -5 }] });
+  assert.equal(rol.c, 400);
+});
+
+test('plazo de 1 año se respeta (12 meses) y Aruba avisa sub-dimensionado', async () => {
+  const h = createPresalesHandlers();
+  const a = await llamar(h.handleHuaweiSizing, { bw_enlace_mbps: 500, plazo_anios: 1 });
+  assert.equal(a.b.data.simulacionFinanciera.mesesContrato, 12);
+  const g = await llamar(h.handleArubaSizing, { bw_mpls_mbps: 30000, bw_internet_mbps: 30000 });
+  assert.ok(g.b.data.alertasIngenieria.some((t) => /sub-dimensionado/.test(t)));
+});

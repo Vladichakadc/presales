@@ -12,7 +12,7 @@
 const sizingEngine = require('../public/js/sizing_engine');
 
 function createPresalesHandlers(dependencies = {}) {
-  const { ProductModel = null, ExcelJS = null } = dependencies;
+  const { ProductModel = null, ExcelJS = null, vendorIds = {} } = dependencies;
 
   async function handleHuaweiSizing(req, res) {
     try {
@@ -23,7 +23,7 @@ function createPresalesHandlers(dependencies = {}) {
           capexListaTotalUsd: resultado.resumenCostosLista.totalCapexUsd,
           opexListaTotalUsd: resultado.resumenCostosLista.totalOpexUsd
         },
-        params.finanzas || { meses_contrato: (params.plazo_anios || 3) * 12, nivel_partner: 'GOLD', total_sedes: 1 }
+        params.finanzas || { meses_contrato: (Number(params.plazo_anios) || 3) * 12, nivel_partner: 'GOLD', total_sedes: 1 }
       );
 
       return res.status(200).json({
@@ -52,7 +52,7 @@ function createPresalesHandlers(dependencies = {}) {
           capexListaTotalUsd: resultado.resumenCostosLista.totalCapexUsd,
           opexListaTotalUsd: resultado.resumenCostosLista.totalOpexUsd
         },
-        params.finanzas || { meses_contrato: (params.plazo_anios || 3) * 12, nivel_partner: 'GOLD', total_sedes: 1 }
+        params.finanzas || { meses_contrato: (Number(params.plazo_anios) || 3) * 12, nivel_partner: 'GOLD', total_sedes: 1 }
       );
 
       return res.status(200).json({
@@ -100,7 +100,7 @@ function createPresalesHandlers(dependencies = {}) {
         }
       });
     } catch (error) {
-      return res.status(500).json({
+      return res.status(400).json({
         ok: false,
         error: 'Error al consolidar rollout multi-sede',
         details: error.message
@@ -111,7 +111,7 @@ function createPresalesHandlers(dependencies = {}) {
   async function handleCatalogImport(req, res) {
     try {
       const { fabricante, items = [] } = req.body || {};
-      if (!FABRICANTES_IMPORTABLES.includes(String(fabricante).toUpperCase())) {
+      if (typeof fabricante !== 'string' || !FABRICANTES_IMPORTABLES.includes(fabricante.toUpperCase())) {
         return res.status(400).json({ ok: false, error: 'fabricante no permitido: ' + FABRICANTES_IMPORTABLES.join(', ') });
       }
       if (!fabricante || !Array.isArray(items) || items.length === 0) {
@@ -125,25 +125,25 @@ function createPresalesHandlers(dependencies = {}) {
       const rechazados = [];
 
       items.forEach((item, index) => {
-        if (!item.sku || !item.modelo || Number(item.list_price_usd) < 0) {
-          rechazados.push({ index, sku: item.sku || null, motivo: 'SKU, modelo o precio inválido' });
+        const precio = item && item.list_price_usd != null ? Number(item.list_price_usd) : null;
+        if (!item || !item.sku || !item.modelo || (precio !== null && !(precio >= 0))) {
+          rechazados.push({ index, sku: (item && item.sku) || null, motivo: 'SKU, modelo o precio inválido' });
         } else {
           validados.push({
-            fabricante: fabricante.toUpperCase(),
-            sku: String(item.sku).trim(),
-            modelo: String(item.modelo).trim(),
-            segmento: item.segmento || 'General',
-            especificaciones_json: JSON.stringify(item),
-            list_price_usd: Number(item.list_price_usd) || 0,
-            lifecycle_status: item.lifecycle_status || 'VIGENTE / CARRIER-GRADE'
+            vendorId: vendorIds[fabricante.toUpperCase()],
+            category: item.segmento || 'General',
+            model: String(item.modelo).trim(),
+            specs: item,
+            priceNumeric: precio // null = sin dato (no se inventa)
           });
         }
       });
 
       let persistidosEnDb = 0;
-      if (ProductModel && typeof ProductModel.bulkCreate === 'function' && validados.length > 0) {
+      // Solo persiste si se conoce el vendorId real del fabricante (Product.vendorId es obligatorio).
+      if (ProductModel && vendorIds[fabricante.toUpperCase()] && validados.length > 0) {
         const result = await ProductModel.bulkCreate(validados, {
-          updateOnDuplicate: ['modelo', 'segmento', 'especificaciones_json', 'list_price_usd', 'lifecycle_status']
+          updateOnDuplicate: ['category', 'specs', 'priceNumeric']
         });
         persistidosEnDb = result.length;
       }
