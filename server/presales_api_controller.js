@@ -9,7 +9,7 @@
 
 'use strict';
 
-const sizingEngine = require('./sizing_engine');
+const sizingEngine = require('../public/js/sizing_engine');
 
 function createPresalesHandlers(dependencies = {}) {
   const { ProductModel = null, ExcelJS = null } = dependencies;
@@ -111,6 +111,9 @@ function createPresalesHandlers(dependencies = {}) {
   async function handleCatalogImport(req, res) {
     try {
       const { fabricante, items = [] } = req.body || {};
+      if (!FABRICANTES_IMPORTABLES.includes(String(fabricante).toUpperCase())) {
+        return res.status(400).json({ ok: false, error: 'fabricante no permitido: ' + FABRICANTES_IMPORTABLES.join(', ') });
+      }
       if (!fabricante || !Array.isArray(items) || items.length === 0) {
         return res.status(400).json({
           ok: false,
@@ -281,14 +284,21 @@ function createPresalesHandlers(dependencies = {}) {
   };
 }
 
+const FABRICANTES_IMPORTABLES = ['HUAWEI', 'ARUBA'];
+
 function createPresalesRouter(express, dependencies = {}) {
+  const { requireAdmin = null, ProductModel = null } = dependencies;
+  // Escribe en la base: sin middleware de admin, no se monta con un modelo real.
+  if (ProductModel && typeof requireAdmin !== 'function') {
+    throw new Error('createPresalesRouter: con ProductModel se requiere dependencies.requireAdmin (middleware)');
+  }
   const router = express.Router();
   const handlers = createPresalesHandlers(dependencies);
 
   router.post('/sizing/huawei', handlers.handleHuaweiSizing);
   router.post('/sizing/aruba', handlers.handleArubaSizing);
   router.post('/rollout/consolidate', handlers.handleRolloutConsolidation);
-  router.post('/catalog/import', handlers.handleCatalogImport);
+  router.post('/catalog/import', ...(requireAdmin ? [requireAdmin] : []), handlers.handleCatalogImport);
   router.post('/export/memoria-tecnica', handlers.handleMemoriaTecnicaExport);
 
   return router;
