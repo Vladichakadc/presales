@@ -85,6 +85,34 @@ const CASOS = [
     control: { url: 'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/hardware/reference/EdgeConnect-Hardware-Reference_latest.pdf',
       porQue: 'ARCHIVO del mismo dominio que `npm run datasheets` ya descarga (Hardware Reference)' },
   },
+  // DOS FUENTES DE ARUBA QUE ERAN UN CASCARON (sondeo del 2026-10-15, corrida 38774517394): la
+  // pagina `psnow/doc/<id>` es una aplicacion de JavaScript y el vigia comparaba su cascaron.
+  // La candidata es la ruta del PDF que psnow sirve tras la aplicacion, la que anoto ese
+  // pendiente; el control es una pagina del mismo dominio que el script de datasheets ya usa
+  // como Referer. Si el control tampoco responde, el dominio no atiende a un ejecutor sin
+  // navegador (como mide `public/datasheets/LEEME.md`) y la via es el Chrome del dueño.
+  {
+    fabricante: 'aruba',
+    bloqueada: 'https://www.hpe.com/psnow/doc/a00109847enw',
+    respalda: 'IDS/IPS de los ocho EdgeConnect fisicos (data sheet a00109847enw Rev. 8)',
+    candidatas: [
+      { url: 'https://www.hpe.com/psnow/resources/ebooks/a00109847enw/a00109847enw.pdf',
+        porQue: 'ruta del PDF de psnow para ese mismo id, anotada en PENDIENTES (2026-10-15) como la que cierra el cascaron' },
+    ],
+    control: { url: 'https://www.hpe.com/us/en/aruba-networking.html',
+      porQue: 'pagina del mismo dominio que scripts/descargar-datasheets.js usa como Referer' },
+  },
+  {
+    fabricante: 'aruba',
+    bloqueada: 'https://www.arubanetworks.com/assets/ds/DS_9000Series.pdf',
+    respalda: 'firewall, clientes, APs, sesiones y tuneles de los gateways 9004/9012 (DS_9000Series)',
+    candidatas: [
+      { url: 'https://www.hpe.com/psnow/resources/ebooks/a00067607enw/a00067607enw.pdf',
+        porQue: 'la misma serie en psnow (a00067607enw, `gw9000Psnow` en legacyData/aruba.js), por la ruta del PDF' },
+    ],
+    control: { url: 'https://www.hpe.com/us/en/aruba-networking.html',
+      porQue: 'pagina del mismo dominio de la candidata' },
+  },
 ];
 
 // UNA LISTA QUE NO CASA CON NADA SE PUDRE EN SILENCIO. Es el modo de fallo de
