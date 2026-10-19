@@ -400,5 +400,10 @@
     .then((d) => { if (d && d.puedeSync) { puedeSync = true; renderProcedencia(); } })
     .catch(() => {});
 
-  global.PROCEDENCIA = { registrarModelos };
+  // Las etiquetas de Estado y Vigilancia, para que la hoja «Supuestos» del Excel (bom.js) diga lo
+  // mismo que esta pestaña en vez de copiar los nombres.
+  function etiquetaEstado(e) { return (ESTADO_FUENTE[e] || ESTADO_FUENTE['sin fecha']).etiqueta; }
+  function etiquetaVigilancia(v) { return (VIGILANCIA[(v && v.estado) || 'no comprobada'] || VIGILANCIA['no comprobada']).etiqueta; }
+
+  global.PROCEDENCIA = { registrarModelos, etiquetaEstado, etiquetaVigilancia };
 })(window);

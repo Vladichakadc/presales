@@ -15,6 +15,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { escribirAtomico } = require('./escrituraAtomica');
 
 const STATE_DIR = process.env.AUTH_STATE_DIR || path.join(__dirname, '..', '.auth');
 const FUENTES_DIR = path.join(STATE_DIR, 'fuentes');
@@ -31,9 +32,10 @@ function esVendor(v) { return typeof v === 'string' && VENDORS.has(v.toLowerCase
 function leerManifiesto() {
   try { return JSON.parse(fs.readFileSync(MANIFIESTO, 'utf8')); } catch { return {}; }
 }
+// Atómica (2026-10-19): un manifiesto cortado se lee como vacío y borraría toda la procedencia
+// cargada a mano de la pestaña de fuentes.
 function escribirManifiesto(m) {
-  fs.mkdirSync(FUENTES_DIR, { recursive: true });
-  fs.writeFileSync(MANIFIESTO, JSON.stringify(m, null, 2), { mode: 0o600 });
+  escribirAtomico(MANIFIESTO, JSON.stringify(m, null, 2), { mode: 0o600 });
 }
 
 function listar(vendor) {
@@ -54,8 +56,7 @@ function registrar(vendor, { originalname, buffer, tipo, usuario } = {}) {
   // El nombre en disco lo generamos NOSOTROS: nunca el originalname, que lo controla quien
   // sube el archivo y es la vía clásica de path traversal.
   const archivo = `${v}-${id}.${ext}`;
-  fs.mkdirSync(FUENTES_DIR, { recursive: true });
-  fs.writeFileSync(path.join(FUENTES_DIR, archivo), buffer, { mode: 0o600 });
+  escribirAtomico(path.join(FUENTES_DIR, archivo), buffer, { mode: 0o600 });
 
   const entrada = {
     id,

@@ -44,8 +44,24 @@ async function mirarFigura(page) {
   await abrirSesion(page);
   await trasNavegar(page, () => page.goto(PAGINA, { waitUntil: 'domcontentloaded' }), { selector: '#verdict-sel' });
   await asentar(page);
+  // Explicabilidad (2026-10-19): con el recomendado a la vista, la ficha da el escalón N+1, y la
+  // tabla de evaluados dice por qué se apartó cada modelo y cuántos son de otra plataforma.
+  const expl = await page.evaluate(() => ({
+    escalon: (globalThis.document.querySelector('#verdict .ficha-escalon') || {}).textContent || '',
+    apartados: (globalThis.document.querySelector('#apartados') || {}).textContent || '',
+  }));
+  t.ok(/Escalón superior \(N\+1\): \S+/.test(expl.escalon) && /la selección no cambia/.test(expl.escalon),
+    `la ficha del recomendado muestra el escalón N+1 sin cambiar la selección (${expl.escalon.slice(0, 90)})`);
+  t.ok(/cumplen \d+ de \d+ modelos/.test(expl.apartados) && /No compiten por ser de otra plataforma/.test(expl.apartados),
+    'el resumen de evaluados cuenta los que cumplen y los de otra plataforma');
   await page.selectOption('#verdict-sel', 'AR611');
   await asentar(page);
+  const tras = await page.evaluate(() => ({
+    recomendado: !!globalThis.document.querySelector('#verdict .ficha-rec'),
+    escalon: !!globalThis.document.querySelector('#verdict .ficha-escalon'),
+  }));
+  t.ok(tras.recomendado || !tras.escalon,
+    'el escalón solo acompaña al recomendado');
 
   const f = await mirarFigura(page);
   t.ok(f.hay, 'la ficha corona con la figura oficial del equipo, como en Aruba y Fortinet');
@@ -87,6 +103,16 @@ async function mirarFigura(page) {
   const plano = libro.SheetNames.includes('Fotos del equipo')
     ? XLSX.utils.sheet_to_json(libro.Sheets['Fotos del equipo'], { header: 1 }).map((r) => r.join(' | ')).join('\n') : '';
   t.ok(plano.includes('Modelo: AR611') && /R26C00/.test(plano), 'la hoja declara el modelo cotizado y la procedencia');
+  // Hoja «Supuestos» (2026-10-19): segunda, detrás del BOM, que sigue en el índice 0.
+  t.ok(libro.SheetNames[0] === 'BOM' && libro.SheetNames[1] === 'Supuestos',
+    `la hoja BOM sigue primera y «Supuestos» va segunda (${libro.SheetNames.join(', ')})`);
+  const sup = libro.SheetNames.includes('Supuestos')
+    ? XLSX.utils.sheet_to_json(libro.Sheets.Supuestos, { header: 1 }).map((r) => r.join(' | ')).join('\n') : '';
+  t.ok(/Enlace que reproduce el escenario \| https?:\/\/\S+dimensionador-huawei-netengine\.html/.test(sup)
+    && /Plataforma evaluada \| NetEngine AR/.test(sup) && /Equipo del BOM \| AR611/.test(sup),
+  'la hoja «Supuestos» trae el enlace del escenario, la plataforma y el equipo');
+  t.ok(/bajada .* \+ subida .* = /.test(sup) && /FUENTES DOCUMENTALES DEL EQUIPO/.test(sup) && /Vigilancia/.test(sup),
+    'y la fórmula bajada + subida y las fuentes del equipo con su vigilancia');
 
   // EL HUECO HONESTO, con un sujeto que no depende del catálogo del día: se sirve el mapa de
   // figuras SIN la entrada del AR611. `quitado` prueba que la intercepción se aplicó y que la

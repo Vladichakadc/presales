@@ -13,6 +13,8 @@ const PROFILE = HuaweiMotor.PROFILE;
 let ultimaEval = null;
 const licensesFor = (pick, c) => HuaweiMotor.licencias(pick, c);
 let HICARE = {};
+// Precio de referencia del equipo, del cotizador (ver «CAPA COMERCIAL» más abajo).
+let PRECIO_REF = {};
 
 const $ = id => document.getElementById(id);
 // Plazo de suscripciones y soporte (1, 3 o 5 anos), del selector #anios.
@@ -162,6 +164,14 @@ function render(){
     // Se adjunta la capacidad calculada al modelo para que la ficha no recalcule nada.
     const candidatos = fit.map(r => Object.assign({}, r.m, {__cap:r.cap, __isWan:r.isWan}));
     const filaDe = id => fit.find(r => r.m.id === id) || pick;
+    // Escalon superior (N+1) en la ficha del recomendado: la metrica es la capacidad de la capa que
+    // dimensiona (la misma de los medidores) y el precio, el de referencia del cotizador si consta.
+    const escalon = {
+      metrica: m => m.__cap,
+      fmt,
+      nombre: m => (m.__isWan ? 'capacidad de conmutación' : PROFILE[pk]),
+      precio: m => PRECIO_REF[BOM.normalizar(m.id)] ?? null,
+    };
     const pintarDependientes = m => {
       const r = filaDe(m.id);
       drawLicenses(r, licCtx);
@@ -176,9 +186,10 @@ function render(){
       titulo: m => m.id,
       subtitulo: m => `${m.fam} · serie ${m.ser}`,
       medidores: m => medidoresHuawei(m, ctx),
-      porQue: m => porQueHuawei(m, ctx, next),
+      porQue: m => porQueHuawei(m, ctx, m.id === pick.m.id ? null : FICHA.escalonSuperior(candidatos, m, escalon)),
       secciones: m => seccionesHuawei(m, licCtx),
       vistas: VISTAS,
+      escalon,
       alCambiar: id => {
         const m = candidatos.find(x => x.id === id);
         if(!m) return;
@@ -193,8 +204,9 @@ function render(){
     const sel = raw > 0 && pick && pick.m.id === r.m.id;
     return `<tr class="${sel ? 'sel' : ''}"><td>${r.m.id}</td><td><span class="pillc">${r.m.ser}</span></td>
       <td class="n">${fmt(r.isWan ? r.m.cap : r.m[pk])}</td><td class="n">${r.m.mpps != null ? r.m.mpps + ' Mpps' : '—'}</td>
-      <td class="n">${r.m.lan || '—'}</td><td>${r.miss.length ? `<span style="color:var(--steel)">${r.miss[0]}</span>` : `<span style="color:var(--green);font-weight:600">Cumple</span>`}</td></tr>`;
+      <td class="n">${r.m.lan || '—'}</td><td>${r.miss.length ? celdaMotivos(r) : `<span style="color:var(--green);font-weight:600">Cumple</span>`}</td></tr>`;
   }).join('');
+  pintarApartados(ev);
 
   hayCandidato = !!pick;
   llevarABom(pick ? pick.m.id : null);
@@ -228,13 +240,13 @@ function porQueHuawei(m, c, next){
   const usePps = (m.mpps != null) ? Math.min(100, c.needMpps / m.mpps * 100) : null;
   return `<b>Cómo se llegó a ${fmt(c.need)}</b><ul>
       ${mode === 'agg' ? `<li>${c.sites} sedes x ${fmt(c.raw)} x ${c.conc} % de simultaneidad = <b>${fmt(c.base)}</b> agregados.</li>` : `<li>Caudal base: <b>${fmt(c.raw)}</b>.</li>`}
-      ${dirMult === 2 ? `<li>Medido por dirección, se dimensiona contra la suma bidireccional: <b>${fmt(c.base*2)}</b> — ${HuaweiMotor.respaldoBidireccional(c.pk, !!m.__isWan).texto}.</li>` : `<li>Tomado como total agregado, sin duplicar.</li>`}
+      <li>${esc(HuaweiMotor.formulaBidireccional(c.ev, !!m.__isWan).texto)}</li>
       <li>Más ${c.head} % de margen: <b>${fmt(c.necesidadPura)}</b>.</li>
       ${factoresLi(c)}
       <li>Necesidad de diseño: <b>${fmt(c.need)}</b> · <b>${c.needMpps.toFixed(2)} Mpps</b>.</li>
       <li>${m.id} publica <b>${fmt(cap)}</b> en ${metric.toLowerCase()}.</li>
       <li>${m.ports}</li>
-      ${next ? `<li>Siguiente escalón: <b>${next.m.id}</b> con ${fmt(next.cap)}.</li>` : ''}
+      ${next ? `<li>Escalón superior: <b>${esc(next.modelo.id)}</b> con ${fmt(next.hasta)}.</li>` : ''}
       ${use > 85 ? `<li class="warn"><b>Atención:</b> sobre el 85 % de ocupación. Sube el margen o pasa al siguiente modelo.</li>` : ''}
       ${usePps != null && usePps > 85 ? `<li class="warn"><b>Atención:</b> el cuello de botella son los paquetes por segundo, no los bits.</li>` : ''}
       ${m.__isWan ? `<li class="warn">La capacidad de conmutación es del sistema completo. El techo real lo fija la tarjeta de línea y la densidad de puertos.</li>` : ''}
@@ -374,7 +386,7 @@ function drawVerdict(pick, next, c){
     ${usePps != null ? `<div class="meter"><b><span>Reenvío a ${c.frame} bytes</span><em>${usePps.toFixed(0)} % de ${m.mpps} Mpps</em></b><div class="bar"><i class="${ppsCls}" style="width:${usePps}%"></i></div></div>` : ''}
     <div class="why"><b>Cómo se llegó a ${fmt(c.need)}</b><ul>
       ${mode === 'agg' ? `<li>${c.sites} sedes x ${fmt(c.raw)} x ${c.conc} % de simultaneidad = <b>${fmt(c.base)}</b> agregados.</li>` : `<li>Caudal base: <b>${fmt(c.raw)}</b>.</li>`}
-      ${dirMult === 2 ? `<li>Medido por dirección, se dimensiona contra la suma bidireccional: <b>${fmt(c.base*2)}</b> — ${HuaweiMotor.respaldoBidireccional(c.pk, !!pick.isWan).texto}.</li>` : `<li>Tomado como total agregado, sin duplicar.</li>`}
+      <li>${esc(HuaweiMotor.formulaBidireccional(c.ev, !!pick.isWan).texto)}</li>
       <li>Más ${c.head} % de margen: <b>${fmt(c.necesidadPura)}</b>.</li>
       ${factoresLi(c)}
       <li>Necesidad de diseño: <b>${fmt(c.need)}</b> · <b>${c.needMpps.toFixed(2)} Mpps</b>.</li>
@@ -387,6 +399,31 @@ function drawVerdict(pick, next, c){
     </ul></div>`;
 }
 
+
+/* ── POR QUE SE APARTO CADA MODELO (2026-10-19) ─────────────────────────────────────────────
+   La tabla decia solo el primer motivo corto («capacidad insuficiente»). Ahora la celda dice el
+   cuello de botella con sus cifras y cuantas restricciones mas falla; y sobre la tabla, un resumen
+   por categoria con la formula de lo exigido y los modelos de otras plataformas que ni compiten. */
+function celdaMotivos(r){
+  const m0 = (r.motivos && r.motivos[0]) ? r.motivos[0].texto : r.miss[0];
+  const resto = r.miss.slice(1);
+  return `<span style="color:var(--steel)">${esc(m0)}</span>`
+    + (resto.length ? `<span class="motivo-mas">Además: ${esc(resto.join(' · '))}</span>` : '');
+}
+function pintarApartados(ev){
+  const box = $('apartados');
+  if(!box) return;
+  if(!ev.raw){ box.innerHTML = ''; return; }
+  const res = HuaweiMotor.resumenApartados(ev);
+  const P = HuaweiMotor.PLATAFORMAS[ev.plataforma];
+  const capa = ev.transporte ? 'capacidad de conmutación' : PROFILE[ev.pk];
+  const exig = ev.dia && !ev.transporte && ev.pk !== 'fwd' ? ev.needTun : ev.need;
+  const apartados = res.grupos.reduce((t, g) => t + g.modelos.length, 0);
+  box.innerHTML = `<p>En <b>${esc(P ? P.n : 'la plataforma')}</b> cumplen <b>${ev.fit.length}</b> de ${ev.rows.length} modelos. `
+    + `Se exigen <b>${fmt(exig)}</b> en «${esc(capa)}»: ${esc(HuaweiMotor.formulaBidireccional(ev, ev.transporte).texto)}</p>`
+    + (apartados ? `<ul>${res.grupos.map(g => `<li><details><summary><b>${g.modelos.length}</b> ${esc(g.etiqueta)}</summary><div>${g.modelos.map(esc).join(' · ')}</div></details></li>`).join('')}</ul>` : '')
+    + (res.fuera.length ? `<p class="hint">No compiten por ser de otra plataforma (elige otra en «Plataforma» para evaluarlos): ${res.fuera.map(f => `${esc(f.nombre)} (${f.n})`).join(', ')}.</p>` : '');
+}
 
 /* ── SUPUESTOS Y DISTRIBUCION DE CAUDAL (2026-10-12) ──────────────────────────────────────── */
 // Lineas del «como se llego» para cada supuesto de diseño ACTIVO; vacio si no hay ninguno.
@@ -490,7 +527,6 @@ function populatePickModel(){
    casado por nombre normalizado; no se copia a este catalogo. Es una estimacion de referencia
    sin descuentos ni impuestos, y lo dice cada fila. Licencias, suscripciones y soporte no
    tienen precio publicado: salen «consultar» y el TCO se declara parcial. */
-let PRECIO_REF = {};
 async function cargarPreciosRef(){
   try {
     const r = await fetch('/api/cotizador/catalog');
@@ -634,11 +670,13 @@ function renderBom(){
   </section>`;
 
   // Componentes de hardware: compatibles frente a lo que se pide (H-06)
+  const notaPieza = p => [p.base ? 'Base del chasis: ' + p.base : '', p.nota || ''].filter(Boolean)
+    .map(t => `<br><span style="color:var(--steel);font-size:11.5px">${esc(t)}</span>`).join('');
   const piezas = HuaweiMotor.piezasBom(m, PARTS, ultimaEval || {want:{}});
   const fila = (p, estado) => `<tr><td><code>${esc(PARTS[p.codigo||p].sku)}</code></td><td>${bomTag(PARTS[p.codigo||p].bom)}</td><td>${esc(PARTS[p.codigo||p].d)}</td><td>${estado}</td></tr>`;
   const compat = [
-    ...piezas.pedir.map(p => fila(p, 'Se pide' + ((p.qty||1) > 1 ? ` (x${p.qty})` : '') + (p.nota ? `<br><span style="color:var(--steel);font-size:11.5px">${esc(p.nota)}</span>` : ''))),
-    ...piezas.elegir.flatMap(g => g.opciones.map(k => fila(k, `Elegir una — ${g.nombre.toLowerCase()}` + (g.qty > 1 ? ` (x${g.qty})` : '') + (g.nota ? `<br><span style="color:var(--steel);font-size:11.5px">${esc(g.nota)}</span>` : '')))),
+    ...piezas.pedir.map(p => fila(p, (p.base ? '<b>Se pide · base del chasis</b>' : 'Se pide') + ((p.qty||1) > 1 ? ` (x${p.qty})` : '') + notaPieza(p))),
+    ...piezas.elegir.flatMap(g => g.opciones.map(k => fila(k, (g.base ? '<b>Base del chasis</b> · elegir una' : 'Elegir una') + ` — ${g.nombre.toLowerCase()}` + (g.qty > 1 ? ` (x${g.qty})` : '') + notaPieza(g)))),
     ...piezas.opcionales.map(p => fila(p, `Opcional: ${esc(p.motivo)}`)),
     ...piezas.noAplican.map(p => fila(p, `No aplica: ${esc(p.motivo)}`)),
   ];
@@ -647,7 +685,7 @@ function renderBom(){
       <thead><tr><th>Designación</th><th>Código BOM</th><th>Descripción</th><th>En el BOM</th></tr></thead><tbody>
       ${compat.join('')}
     </tbody></table></div>
-    <p class="hint">La lista es lo <b>compatible</b> con el chasis; el BOM solo pide lo marcado «Se pide» y deja una línea por cada alternativa a elegir. En equipos con esquema 1+1 o N+1 cotiza siempre el módulo de respaldo: es el componente que más falla en campo.</p></section>`;
+    <p class="hint">La lista es lo <b>compatible</b> con el chasis; el BOM solo pide lo marcado «Se pide» y deja una línea por cada alternativa a elegir. Lo marcado <b>base del chasis</b> hace falta para encenderlo tal como se pide; lo opcional y lo condicional no. En equipos con esquema 1+1 o N+1 cotiza siempre el módulo de respaldo: es el componente que más falla en campo.</p></section>`;
   }
 
   // Ópticas
@@ -696,16 +734,22 @@ function filasBom(m, qty, opticas, piezas, lics, s){
   ];
   // H-06: solo lo que se PIDE; lo que es una alternativa va en una sola linea «elegir una»
   // (sin codigo, marcada por confirmar) y lo condicional o de ampliacion no se cotiza solo.
+  // Lo que hace falta para encender el chasis abre su nota con «Base del chasis» (2026-10-19), para
+  // que el Excel y el texto distingan la configuracion minima de lo que se anade por eleccion.
+  const base = p => (p.base ? `Base del chasis: ${p.base}` : null);
   piezas.pedir.forEach(p=>{ const c=PARTS[p.codigo];
-    filas.push({cat:'Componentes de hardware', desc:c.sku, sku:c.bom||null, qty:qty*(p.qty||1), unit:null, nota:[c.d, p.nota].filter(Boolean).join(' · ')}); });
+    filas.push({cat:'Componentes de hardware', desc:c.sku, sku:c.bom||null, qty:qty*(p.qty||1), unit:null, nota:[base(p), c.d, p.nota].filter(Boolean).join(' · ')}); });
   piezas.elegir.forEach(g=>filas.push({cat:'Componentes de hardware', desc:`${g.nombre} — elegir una`, sku:null,
-    qty:qty*g.qty, unit:null, nota:'Opciones: '+g.opciones.map(k=>PARTS[k].sku).join(' · ')+(g.nota ? ' · '+g.nota : '')}));
+    qty:qty*g.qty, unit:null, nota:[base(g), 'Opciones: '+g.opciones.map(k=>PARTS[k].sku).join(' · '), g.nota].filter(Boolean).join(' · ')}));
   // H-07: una linea por optica DECLARADA (familia, modelo, cantidad por equipo), con su codigo.
   opticas.forEach(v => filas.push({cat:'Ópticas', desc:`${OPTIC_LABEL[v.fam] || v.fam} — ${v.o.sku}`,
     sku:(v.o.bom && v.o.bom.length) ? v.o.bom.join(' / ') : null, qty:v.qty*qty, unit:null,
     nota:`${v.o.d || ''} · cada extremo del enlace necesita el suyo`}));
   // SnS ya sale en Soporte: dejarlo tambien como licencia lo cotizaba dos veces.
-  lics.filter(l=>l.on && !/^SnS/.test(l.t)).forEach(l=>filas.push({cat:'Licencias', desc:l.t, sku:l.sku||null, qty, unit:null, nota:l.d||''}));
+  // Huawei no publica lista: ninguna licencia tiene precio, y las que la ficha no codifica (RTU de
+  // capacidad, NCE, la de funcion sin ficha leida) tampoco tienen codigo. Se dice en la linea.
+  lics.filter(l=>l.on && !/^SnS/.test(l.t)).forEach(l=>filas.push({cat:'Licencias', desc:l.t, sku:l.sku||null, qty, unit:null,
+    nota:[l.d, l.sku ? 'Precio: consultar (Huawei no publica lista)' : 'Sin código en la ficha ni precio de lista: consultar con Huawei o su configurador'].filter(Boolean).join(' · ')}));
   filas.push({cat:'Soporte', desc:s.n, sku:null, qty, unit:null, nota:`${s.sla} · ${aniosSel() * 12} meses`});
   filas.push({cat:'Soporte', desc:'SnS — Software Subscription and Support', sku:null, qty, unit:null,
     nota:'Actualizaciones y parches de VRP. Va separada del paquete de hardware. '+(aniosSel() * 12)+' meses.'});
@@ -720,6 +764,7 @@ function metaBom(m){
     titulo:`Lista de materiales — ${m.id}`,
     subtitulo:`Serie ${m.ser} · ${m.fam}`,
     archivo:`BOM_${m.id}`,
+    supuestos:supuestosHuawei(m),
     ...(v && v.front ? {fotos:{modelo:m.id, origen:'Extraídas de los documentos oficiales de Huawei', front:v.front, rear:v.rear || null, pie:[v.tamano, v.fuente].filter(Boolean).join(' · ')}} : {}),
     notas:[
       '',
@@ -730,6 +775,29 @@ function metaBom(m){
       '  Todas las licencias se emiten contra el ESN del equipo y se descargan del portal ESDP.',
     ],
   };
+}
+
+// Hoja «Supuestos» del Excel (bom.js): plataforma, equipo y el resultado del dimensionamiento con
+// la fórmula del ×2 escrita entera. Los parámetros de pantalla y las fuentes los añade bom.js.
+function supuestosHuawei(m){
+  const ev = ultimaEval;
+  const P = ev ? HuaweiMotor.PLATAFORMAS[ev.plataforma] : null;
+  const resumen = [];
+  if(ev && ev.raw){
+    const capa = ev.transporte ? 'capacidad de conmutación' : PROFILE[ev.pk];
+    resumen.push(['Capa que dimensiona', capa + (ev.ef && ev.ef.subida ? ' (subida por una función activa)' : '')]);
+    resumen.push(['Cómo se mide el caudal', HuaweiMotor.formulaBidireccional(ev, ev.transporte).texto]);
+    resumen.push(['Margen', `+${ev.head} %`]);
+    if(ev.factorTrafico !== 1) resumen.push(['Perfil de tráfico (supuesto de diseño)', `${HuaweiMotor.TRAFICO[ev.trafico].n}: ÷ ${String(ev.factorTrafico.toFixed(2)).replace('.', ',')}`]);
+    if(ev.fecPct) resumen.push(['A-FEC (supuesto declarado)', `+${ev.fecPct} %`]);
+    if(ev.utmPct) resumen.push(['Carga UTM (supuesto declarado)', `+${ev.utmPct} %`]);
+    if(ev.dia) resumen.push(['Local breakout (supuesto declarado)', `${ev.diaPct} % a Internet en claro; por túneles ${fmt(ev.needTun)}`]);
+    resumen.push(['Necesidad de diseño', `${fmt(ev.need)} · ${ev.needMpps.toFixed(2)} Mpps a ${ev.bytesMpps} bytes`]);
+    resumen.push(['Recomendado por el dimensionador', ev.pick ? `${ev.pick.m.id} (${fmt(ev.pick.cap)})` : 'ninguno cumple']);
+    if(ev.pick && ev.pick.m.id !== m.id) resumen.push(['Equipo del BOM', `${m.id}: elegido a mano, distinto del recomendado`]);
+    if(ev.unidades > 1) resumen.push(['Alta disponibilidad', `1+1: ${ev.unidades} equipos por sitio`]);
+  } else resumen.push(['Dimensionamiento', 'sin caudal: el BOM no sale de un escenario calculado']);
+  return {vendor:VENDOR, fabricante:'Huawei', plataforma:P ? P.n : null, modelo:m.id, serie:m.ser, resumen};
 }
 
 $('xlsBtn').addEventListener('click', async () => {

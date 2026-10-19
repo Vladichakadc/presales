@@ -243,7 +243,9 @@ contra lo verificado, queda como diff de `legacyData/` y llega a producción con
   (`herramientas`, `usuarios`, `sync`) se declaran por rol en `ROLES`. El nombre de usuario se
   compara normalizado (`normalizarUsuario`). Nadie cambia la contraseña de otro; reponer un acceso
   es borrar `usuarios.json` del volumen. El alta (`POST /api/usuarios`) genera una contraseña de 24
-  caracteres que se muestra una vez y obliga a cambiarla (`debeCambiar`).
+  caracteres que se muestra una vez y obliga a cambiarla (`debeCambiar`). **Todo lo que se escribe en
+  el volumen pasa por `server/escrituraAtomica.js`** (temporal, `fsync` y `rename`): un
+  `usuarios.json` cortado se lee como «no existe» y rehace el administrador.
 - `server/auth.js` — sesión `expiración.id.firma` firmada con una clave derivada de la credencial
   de cada usuario (cambiar una contraseña invalida solo sus sesiones); freno a la fuerza bruta por
   IP más retardo global (rotar `X-Forwarded-For` daba cuota nueva).
@@ -324,12 +326,17 @@ Módulos compartidos:
   `'no-aplica'` y «no consta», nunca `undefined` leído como `false`), puertos (configuraciones
   alternativas, no acumulables; un chasis modular no publica densidad), licenciamiento, software,
   soporte, referencias de pedido (bajo demanda por modelo) y figuras con su página y rótulo literal.
+  Opt-in `escalon`: junto al recomendado, el N+1 (menor métrica estrictamente mayor, nunca fuera de
+  venta) y el diferencial de precio solo con precio en los dos; no toca la selección.
 - `bom.js` — tabla del BOM, totales con las líneas sin precio contadas («sin cotizar») y Excel.
   `BOM.sincronizar()` repinta siempre (también sin candidato). Referencias añadidas a mano en una
   sola clave para los siete, `fabricante|sku`. Simulador de precio neto, TCO sobre las filas (qué
   es OPEX lo declara la página), perfiles multi-sede de todos los fabricantes en una clave, y el
   traspaso al cotizador: el equipo viaja como nombre (su precio lo pone `CATALOG`) y el resto del
-  BOM como referencias; falla cerrado si la fila del equipo no casa.
+  BOM como referencias; falla cerrado si la fila del equipo no casa. El Excel (ExcelJS) lleva
+  «BOM» en el índice 0 y detrás **«Supuestos»** (`matrizSupuestos`: fecha, enlace, plataforma,
+  resultado que declare `meta.supuestos`, parámetros de `ESTADO.escenario()` y fuentes del equipo);
+  el consolidado multi-sede no la lleva.
 - `estado.js` — el escenario en la URL (manda si trae parámetros) y en el almacenamiento local;
   solo se serializa lo que difiere del valor por defecto; lo que va dentro de `[data-inactivo]` no
   viaja; un enlace con parámetros que la pantalla ya no entiende lo dice (`avisoOrigen`), salvo lo
@@ -410,7 +417,10 @@ Módulos compartidos:
   dimensiona SD-WAN (`typ`); las cifras SD-WAN e IPsec de los AR son de los dos sentidos
   (`respaldoBidireccional`). En Huawei **EOS no es fin de venta**: EOM es el último pedido. El BOM
   sale de la «Ordering Information» (el AR8700-8 pide su SPU-700H; el AR6710-H su SRU-700S y una
-  fuente PAC300S12-CL o PDC260S12-CL/-DL). Figuras **sin pérdida** (WebP `VP8L`, los píxeles exactos
+  fuente PAC300S12-CL o PDC260S12-CL/-DL) y marca `base` lo que hace falta para encender el chasis,
+  con su motivo y sin afirmar cuántas fuentes vienen de serie. Cada modelo apartado trae `motivos`
+  con cifras (`miss` conserva el texto corto) y `resumenApartados()` los agrupa por cuello; el ×2 lo
+  escribe entero `formulaBidireccional()`. Figuras **sin pérdida** (WebP `VP8L`, los píxeles exactos
   del documento) en `public/data/huawei-vistas-equipos.json`; una figura solo se cambia por la de
   otro documento si es el mismo dibujo. Los renders de la Galería de imágenes de Info-Finder solo se
   bajan con la sesión del dueño (desde su Mac); entran con `npm run figuras-huawei`, que exige

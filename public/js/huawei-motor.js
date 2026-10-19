@@ -80,6 +80,8 @@
 
   const CAPAS = ['fwd', 'ipsec', 'typ'];
   const PROFUNDIDAD = { fwd: 0, ipsec: 1, typ: 2 };
+  // Nombre corto de cada capa para los motivos por fila (la traza usa el largo, `PROFILE`).
+  const CAPA_CORTA = { fwd: 'reenvío', ipsec: 'IPsec', typ: 'SD-WAN típico' };
   const PROFILE = { fwd: 'Forwarding (NAT+ACL+QoS, IMIX)', ipsec: 'IPsec (IMIX)', typ: 'SD-WAN típico (IPsec+QoS+SA+AppFlow, IMIX)' };
 
   /* PISO DE CAPA POR FUNCION (H-01). Una funcion activa fija la capa MINIMA contra la que se
@@ -196,33 +198,46 @@
     // La línea base legada no conocía el vCPE (2026-10-14): fuera, para que reproduzca lo de entonces.
     const enPlataforma = legado ? modelos.filter((m) => !m.virtual) : modelos.filter(PLATAFORMAS[plataforma].de);
     const sinDatoAps = new Set();
+    // EXPLICABILIDAD DE LO APARTADO (2026-10-19). `miss` conserva el texto corto de siempre (la
+    // tabla, las pruebas y el contraste lo leen); `motivos` dice lo mismo con sus cifras y su
+    // categoria, para que el ingeniero vea el cuello de botella exacto sin rehacer la cuenta.
+    // Mismo orden en los dos: `motivos[0]` es el cuello que la tabla pinta primero.
+    const exigidoCapa = (isWan) => (dia && !isWan && pk !== 'fwd' ? needTun : need);
     const rows = enPlataforma.map((m) => {
-      const isWan = m.cls === 'WAN', cap = isWan ? m.cap : m[pk], miss = [];
-      if (isWan && !wanOk) miss.push('serie de transporte: no hace SD-WAN, UTM ni WAC');
-      if (cap == null) miss.push('sin cifra publicada para este perfil');
-      else if (cap < (dia && !isWan && pk !== 'fwd' ? needTun : need)) miss.push('capacidad insuficiente');
-      if (dia && !isWan && pk !== 'fwd' && m.fwd != null && m.fwd < need) miss.push('reenvío insuficiente para el tráfico a Internet');
-      if (isWan && m.mpps != null && m.mpps < needMpps) miss.push(`límite de paquetes: ${m.mpps} Mpps`);
-      if (want.poe && !m.poe) miss.push('sin PoE');
-      if (want.wan && !m.wan) miss.push('sin 4G/5G integrado');
-      if (want.wifi && !m.wifi) miss.push('sin Wi-Fi');
+      const isWan = m.cls === 'WAN', cap = isWan ? m.cap : m[pk], miss = [], motivos = [];
+      const apartar = (tipo, corto, largo) => { miss.push(corto); motivos.push({ tipo, texto: largo || corto }); };
+      const capaTxt = isWan ? 'capacidad de conmutación' : CAPA_CORTA[pk];
+      if (isWan && !wanOk) apartar('plataforma', 'serie de transporte: no hace SD-WAN, UTM ni WAC');
+      if (cap == null) apartar('sinCifra', 'sin cifra publicada para este perfil', `el catálogo no trae su cifra en «${capaTxt}» y no se sustituye por la de otra capa`);
+      else if (cap < exigidoCapa(isWan)) {
+        const exig = exigidoCapa(isWan);
+        // La nota bidireccional es comun a todas las filas: la dice el resumen (`formulaBidireccional`),
+        // y aqui solo va el techo frente a lo exigido, para que la tabla siga siendo compacta.
+        apartar('capacidad', 'capacidad insuficiente',
+          `techo de ${fmt(cap)} en «${capaTxt}» frente a ${fmt(exig)} exigidos${dia && !isWan && pk !== 'fwd' ? ' por los túneles' : ''}: faltan ${fmt(exig - cap)}`);
+      }
+      if (dia && !isWan && pk !== 'fwd' && m.fwd != null && m.fwd < need) apartar('capacidad', 'reenvío insuficiente para el tráfico a Internet', `reenvía ${fmt(m.fwd)} frente a ${fmt(need)} que debe reenviar en total (túneles más Internet en claro)`);
+      if (isWan && m.mpps != null && m.mpps < needMpps) apartar('mpps', `límite de paquetes: ${m.mpps} Mpps`, `reenvía ${m.mpps} Mpps frente a ${needMpps.toFixed(2)} Mpps exigidos a ${bytesMpps} bytes`);
+      if (want.poe && !m.poe) apartar('hardware', 'sin PoE');
+      if (want.wan && !m.wan) apartar('hardware', 'sin 4G/5G integrado');
+      if (want.wifi && !m.wifi) apartar('hardware', 'sin Wi-Fi');
       // `lan: null` es «el catalogo no lo dice» (puertos configurables en los hubs): no descarta.
-      if (legado || m.lan != null) { if ((m.lan || 0) < minLan) miss.push(`${m.lan || 0} puertos LAN`); }
+      if (legado || m.lan != null) { if ((m.lan || 0) < minLan) apartar('hardware', `${m.lan || 0} puertos LAN`, `${m.lan || 0} puertos LAN frente a ${minLan} pedidos`); }
       // `apsMax: null` es «la ficha no dice cuantos APs gestiona» (AR6000): no descarta, se declara.
       // Antes se leia como 0 y un modelo sin dato salia «gestiona 0 APs», que es falso.
-      if (!isWan && aps > 0 && m.apsMax != null && aps > m.apsMax) miss.push(`gestiona ${m.apsMax} APs`);
+      if (!isWan && aps > 0 && m.apsMax != null && aps > m.apsMax) apartar('hardware', `gestiona ${m.apsMax} APs`, `gestiona ${m.apsMax} APs frente a ${aps} pedidos`);
       if (!isWan && aps > 0 && m.apsMax === null) sinDatoAps.add(m.id);
-      if (tuneles && !isWan && m.tuneles != null && m.tuneles < tuneles) miss.push(`soporta ${m.tuneles} túneles`);
+      if (tuneles && !isWan && m.tuneles != null && m.tuneles < tuneles) apartar('tuneles', `soporta ${m.tuneles} túneles`, `soporta ${m.tuneles} túneles frente a ${tuneles} sedes`);
       const sinConfirmar = [];
       if (!isWan) {
         for (const k of req) {
           const e = estadoRequisito(m, k);
-          if (e === 'no') miss.push(`la ficha no admite ${REQUISITOS[k].n}${m.capSdwan && m.capSdwan.nota ? ' (' + m.capSdwan.nota + ')' : ''}`);
+          if (e === 'no') apartar('requisito', `la ficha no admite ${REQUISITOS[k].n}${m.capSdwan && m.capSdwan.nota ? ' (' + m.capSdwan.nota + ')' : ''}`);
           else if (e === 'parcial') sinConfirmar.push('A-FEC (la ficha lista FEC, sin la corrección adaptativa)');
           else if (e === 'nc') sinConfirmar.push(REQUISITOS[k].n);
         }
       }
-      return { m, cap, miss, isWan, sinConfirmar };
+      return { m, cap, miss, motivos, isWan, sinConfirmar };
     });
     // Se ordena por el rango del MODELO (no de la fila) y despues por capacidad.
     // Empate de capacidad (la serie AR5710-S publica la misma cifra en ocho variantes): sin un
@@ -281,7 +296,9 @@
     const carrierPedido = !legado && (carrier.bgp || carrier.cgnat || carrier.bng);
     if (carrierPedido) avisos.push('Rutas BGP, sesiones CGNAT y suscriptores BNG: el catálogo no trae la FIB, el CGNAT ni el BNG de ningún modelo, así que estas cifras se registran en la memoria de cálculo y no filtran el equipo. Confírmalas con el datasheet o el configurador de Huawei.');
 
-    const resultado = { req, raw, base, fisico, necesidadPura, need, needTun, needMpps, bytesMpps, mode, sites, conc, head, dirMult, frame, perfil, pk, ef, svc, want, aps, minLan, wanOk, plataforma, transporte, tuneles, ha, unidades, trafico, factorTrafico, fecPct, utmPct, dia, diaPct, distribucion, recomiendaNgfw, carrier, avisos, rows, fit, pick, next, escalada: null };
+    // Los que ni compiten: son de otra plataforma (#platSeg). Se cuentan para decirlo, no se evaluan.
+    const fueraDePlataforma = legado ? [] : modelos.filter((m) => !PLATAFORMAS[plataforma].de(m));
+    const resultado = { fueraDePlataforma, req, raw, base, fisico, necesidadPura, need, needTun, needMpps, bytesMpps, mode, sites, conc, head, dirMult, frame, perfil, pk, ef, svc, want, aps, minLan, wanOk, plataforma, transporte, tuneles, ha, unidades, trafico, factorTrafico, fecPct, utmPct, dia, diaPct, distribucion, recomiendaNgfw, carrier, avisos, rows, fit, pick, next, escalada: null };
 
     // ── ESCALADO ENTRE PLATAFORMAS (2026-10-12). En vez de «fuera de la plataforma», si ningun
     // modelo de la serie cumple por capacidad y la siguiente plataforma si, se PROPONE la
@@ -388,13 +405,22 @@
     PAC600: { grupo: 'fuente' }, PDC1000: { grupo: 'fuente' },
     PAC300: { grupo: 'fuente' }, PDC260: { grupo: 'fuente' }, PDC260DL: { grupo: 'fuente' },
     MPU100: { grupo: 'mpu' }, MPU100T: { grupo: 'mpu' },
-    SPU700H: { nota: 'obligatoria: el AR8700-8 se pide como chasis sin puertos («assembly chassis») y la SPU lleva todos los de servicio (ficha AR8000 R25C10)' },
-    SRU700S: { nota: 'la ficha hace de la placa de control un paso de pedido aparte y deja elegir una o dos («Select a single or dual main control boards»); con dos, 145 W típicos en vez de 83 (ficha AR6710-H R25C10), y las dos del mismo modelo desde la V600R024C00 (descripción de hardware)' },
+    SPU700H: { base: 'sin ella el AR8700-8 no tiene puertos de servicio', nota: 'obligatoria: el AR8700-8 se pide como chasis sin puertos («assembly chassis») y la SPU lleva todos los de servicio (ficha AR8000 R25C10)' },
+    SRU700S: { base: 'la ficha la pide como paso aparte; si el configurador la trae dentro del equipo, esta línea sobra', nota: 'la ficha hace de la placa de control un paso de pedido aparte y deja elegir una o dos («Select a single or dual main control boards»); con dos, 145 W típicos en vez de 83 (ficha AR6710-H R25C10), y las dos del mismo modelo desde la V600R024C00 (descripción de hardware)' },
     FAN240: { incluida: true }, RACK: { incluida: true }, CONSOLE: { incluida: true },
     WSIC4GE: { opcional: 'ampliación WAN por tarjeta WSIC' }, WSIC8GE: { opcional: 'ampliación WAN por tarjeta WSIC' },
     SICNR: { condicional: 'wan', motivo: 'solo si se pide 4G/5G integrado' },
     PAC36: { opcional: 'adaptador AC para un sitio sin alimentación DC' },
     RU5G: { condicional: 'wan', motivo: 'solo si se pide 4G/5G (unidad remota externa)' },
+  };
+  /* BASE DEL CHASIS FRENTE A LO OPCIONAL (2026-10-19). Lo que hace falta para encender el chasis
+     que se pide (la placa de servicio y la de control que la «Ordering Information» pide aparte, la
+     MPU y la fuente de un chasis modular) se marca `base` con su motivo; lo demas es opcional,
+     condicional o accesorio. El motivo dice lo que consta: nunca afirma cuantas fuentes vienen de
+     serie, que ninguna ficha de estos cinco AR publica (ver PENDIENTES, «fuentes de serie»). */
+  const BASE_GRUPO = {
+    fuente: 'sin fuente el chasis no enciende; se cotiza aunque la ficha no diga si alguna viene de serie',
+    mpu: 'el AR8700-8 se pide sin unidad de procesamiento («Ordering Information» de la ficha AR8000)',
   };
   const NOMBRE_GRUPO = { fuente: 'Fuente de alimentación', mpu: 'Unidad de procesamiento (MPU)' };
   const NOTA_GRUPO = {
@@ -410,12 +436,12 @@
       if (r.grupo) (grupos[r.grupo] = grupos[r.grupo] || []).push(k);
       else if (r.condicional) (ev.want[r.condicional] ? pedir : noAplican).push({ codigo: k, motivo: r.motivo });
       else if (r.opcional) opcionales.push({ codigo: k, motivo: r.opcional });
-      else pedir.push(r.nota ? { codigo: k, qty: 1, nota: r.nota } : { codigo: k, qty: 1 });
+      else pedir.push({ codigo: k, qty: 1, ...(r.nota ? { nota: r.nota } : {}), ...(r.base ? { base: r.base } : {}) });
     }
     for (const [g, ks] of Object.entries(grupos)) {
       // Un solo codigo en el grupo: no hay nada que elegir. Doble fuente declarada: se piden 2.
       const qty = g === 'mpu' ? 2 : (m.redund === true ? 2 : 1);
-      const nota = NOTA_GRUPO[g] ? { nota: NOTA_GRUPO[g] } : {};
+      const nota = { ...(NOTA_GRUPO[g] ? { nota: NOTA_GRUPO[g] } : {}), ...(BASE_GRUPO[g] ? { base: BASE_GRUPO[g] } : {}) };
       if (ks.length === 1) pedir.push({ codigo: ks[0], qty, ...nota });
       else elegir.push({ grupo: g, nombre: NOMBRE_GRUPO[g] || g, opciones: ks, qty, ...nota });
     }
@@ -454,6 +480,55 @@
       return { documento: true, texto: 'las fichas de la línea AR lo dicen de esta cifra: «combined total of traffic in inbound and outbound directions» (nota al pie de su tabla de rendimiento)' };
     }
     return { documento: false, texto: 'la ficha no dice si el reenvío (NAT + ACL + QoS) se mide por dirección o sumado: el ×2 es la convención de la página, y «Total agregado» lo quita' };
+  }
+
+  /* FORMULA BIDIRECCIONAL EXPLICITA (2026-10-19). Lo que la traza dice del ×2, con las cifras del
+     escenario: «bajada + subida» frente al techo que la ficha publica sumado. No cambia ninguna
+     cifra del calculo (`fisico` ya era base × dirMult): solo la escribe entera para el ingeniero.
+     `capa` es la capa que dimensiona y `esConmutacion` si el techo es de una NE8000/A800 E. */
+  function formulaBidireccional(ev, esConmutacion) {
+    const bid = respaldoBidireccional(ev.pk, !!esConmutacion);
+    if (ev.dirMult !== 2) {
+      return { suma: false, documento: bid.documento,
+        texto: `Tomado como total agregado (bajada y subida ya sumadas): ${fmt(ev.fisico)}, sin duplicar.` };
+    }
+    const techo = esConmutacion ? 'la capacidad de conmutación publicada' : `el techo publicado en «${PROFILE[ev.pk]}»`;
+    return { suma: true, documento: bid.documento,
+      texto: `Medido por dirección: bajada ${fmt(ev.base)} + subida ${fmt(ev.base)} = ${fmt(ev.fisico)}, que se contrasta con ${techo}`
+        + (bid.documento ? ', que Huawei publica como suma de los dos sentidos' : '') + ` — ${bid.texto}.` };
+  }
+
+  /* RESUMEN DE LO APARTADO (2026-10-19). Cuenta por cuello de botella los modelos de la plataforma
+     activa que no cumplen, y los que ni compiten por ser de otra plataforma. Cada fila lleva su
+     primer motivo (`motivos[0]`), que es el que decide la categoria: un modelo que falla por caudal
+     y por PoE cuenta en caudal. Devuelve [] sin caudal: sin escenario no hay nada que explicar. */
+  const ETIQUETA_CUELLO = {
+    capacidad: 'superan su techo en la capa que se pide',
+    sinCifra: 'no publican cifra en esa capa (no se sustituye por otra)',
+    mpps: 'superan su límite de paquetes por segundo',
+    hardware: 'les falta hardware pedido (puertos LAN, PoE, 4G/5G, Wi-Fi o WAC)',
+    requisito: 'su ficha restringe un requisito SD-WAN pedido',
+    tuneles: 'no llegan a los túneles del hub',
+    plataforma: 'son de una serie de transporte',
+  };
+  function resumenApartados(ev) {
+    if (!ev || !ev.raw) return { grupos: [], fuera: [] };
+    const grupos = {};
+    for (const r of ev.rows) {
+      if (!r.miss.length) continue;
+      const tipo = (r.motivos && r.motivos[0] && r.motivos[0].tipo) || 'capacidad';
+      (grupos[tipo] = grupos[tipo] || []).push(r.m.id);
+    }
+    const orden = Object.keys(ETIQUETA_CUELLO);
+    const fuera = {};
+    for (const m of ev.fueraDePlataforma || []) {
+      const p = Object.keys(PLATAFORMAS).find((k) => PLATAFORMAS[k].de(m));
+      if (p) fuera[p] = (fuera[p] || 0) + 1;
+    }
+    return {
+      grupos: orden.filter((t) => grupos[t]).map((t) => ({ tipo: t, etiqueta: ETIQUETA_CUELLO[t], modelos: grupos[t] })),
+      fuera: Object.entries(fuera).map(([p, n]) => ({ plataforma: p, nombre: PLATAFORMAS[p].n, n })),
+    };
   }
 
   /* MEMORIA TECNICA (2026-10-12). Informe descargable del escenario: resumen, memoria de calculo
@@ -542,5 +617,5 @@
     return Math.round(m) + ' Mbps';
   }
 
-  return { N1_SOLO_ADVANCED, REQUISITOS, estadoRequisito, PLATAFORMAS, TRAFICO, SUPUESTOS, UMBRAL_NGFW_MBPS, CAPAS, PROFILE, PISO_POR_FUNCION, capaEfectiva, evaluar, licencias, piezasBom, opticasBom, ROL_PIEZA, respaldoBidireccional, memoria, fmt };
+  return { N1_SOLO_ADVANCED, REQUISITOS, estadoRequisito, PLATAFORMAS, TRAFICO, SUPUESTOS, UMBRAL_NGFW_MBPS, CAPAS, PROFILE, PISO_POR_FUNCION, capaEfectiva, evaluar, licencias, piezasBom, opticasBom, ROL_PIEZA, respaldoBidireccional, formulaBidireccional, resumenApartados, ETIQUETA_CUELLO, memoria, fmt };
 });

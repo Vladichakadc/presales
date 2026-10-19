@@ -31,6 +31,13 @@
 //     panelFijo: true,              // (opt-in) tarjeta compacta: lista sin scroll
 //     detalleExpandible: true,      //   interno; porQue+secciones se despliegan
 //                                   //   DENTRO de la tarjeta con un conmutador
+//     escalon: {                    // (opt-in) referencia al escalon superior (N+1)
+//       metrica: m => numero,       //   cifra rectora que ya calculo la pagina
+//       fmt: v => 'texto',          //   como se escribe esa cifra
+//       nombre: 'SD-WAN típico',    //   como se llama
+//       precio: m => numero|null,   //   precio de lista confirmado, o null
+//       mismaFamilia: (a, b) => bool, // opcional: limita el N+1 a la misma familia
+//     },
 //   })
 //
 // La pagina conserva el motor de dimensionamiento; este modulo solo presenta. Ninguna
@@ -151,6 +158,9 @@
 .ficha-ciclo-det{display:block;font-size:11.5px;line-height:1.45;color:var(--steel);margin-top:3px}
 .ficha-ciclo-caja{margin:9px 0 0}
 .ficha-salto{margin:10px 0 0;text-align:center}
+/* Escalon superior (N+1), opt-in escalon (2026-10-19): informativo, no elige nada. */
+.ficha-escalon{font-size:12px;color:var(--steel);border:1px dashed var(--rule);border-radius:3px;padding:6px 9px;margin:9px 0 0;line-height:1.45}
+.ficha-escalon b{color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:11.5px}
 .ficha-det{margin-top:14px;padding-top:4px;border-top:1px solid var(--rule)}
 .ficha-salto a{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);text-decoration:none;border-bottom:1px dashed var(--rule);padding-bottom:1px}
 .ficha-salto a:hover{color:var(--red-txt,var(--red));border-bottom-color:var(--red)}
@@ -485,6 +495,47 @@
       : (cfg.candidatos || [])
   );
 
+  /* ESCALON SUPERIOR (N+1), opt-in `escalon` (2026-10-19, peticion del dueño). En preventa se
+     compara el que cumple justo con el siguiente: este indicador dice cual es y cuanto mas da y
+     cuesta, SIN tocar la seleccion (ni heredada ni elegida a mano). Ninguna cifra se calcula
+     aqui: la metrica y el precio los pone la pagina, y el diferencial es una resta de los dos.
+     El N+1 es el candidato recomendable con la menor metrica ESTRICTAMENTE mayor que la del
+     equipo de referencia: ocho variantes con la misma cifra no son un escalon. Sin metrica en
+     alguno de los dos no hay escalon; sin precio confirmado en los dos, no hay diferencial de
+     precio y se dice. */
+  function escalonSuperior(candidatos, ref, cfgEsc) {
+    if (!cfgEsc || !ref || typeof cfgEsc.metrica !== 'function') return null;
+    const v0 = cfgEsc.metrica(ref);
+    if (typeof v0 !== 'number' || !Number.isFinite(v0)) return null;
+    let mejor = null;
+    let vMejor = null;
+    for (const m of candidatos || []) {
+      if (!m || m.id === ref.id || !recomendable(m)) continue;
+      if (cfgEsc.mismaFamilia && !cfgEsc.mismaFamilia(ref, m)) continue;
+      const v = cfgEsc.metrica(m);
+      if (typeof v !== 'number' || !Number.isFinite(v) || v <= v0) continue;
+      if (vMejor == null || v < vMejor) { mejor = m; vMejor = v; }
+    }
+    if (!mejor) return null;
+    const precio = typeof cfgEsc.precio === 'function' ? cfgEsc.precio : () => null;
+    const p0 = precio(ref);
+    const p1 = precio(mejor);
+    const conPrecio = typeof p0 === 'number' && typeof p1 === 'number' && p0 > 0 && p1 > 0;
+    return { modelo: mejor, desde: v0, hasta: vMejor, delta: vMejor - v0, deltaPrecio: conPrecio ? p1 - p0 : null };
+  }
+
+  function escalonHtml(e, cfgEsc, ref) {
+    if (!e) return '';
+    const f = typeof cfgEsc.fmt === 'function' ? cfgEsc.fmt : (v) => String(v);
+    const nombre = typeof cfgEsc.nombre === 'function' ? cfgEsc.nombre(ref) : (cfgEsc.nombre || 'capacidad');
+    const precio = e.deltaPrecio == null
+      ? 'diferencia de precio: sin precio de lista confirmado en los dos'
+      : `precio de lista ${e.deltaPrecio >= 0 ? '+' : '−'}${fmtPrecio(Math.abs(e.deltaPrecio))}`;
+    return `<p class="ficha-escalon" role="note">Escalón superior (N+1): <b>${esc(e.modelo.id)}</b> · `
+      + `${esc(nombre)} +${esc(f(e.delta))} (${esc(f(e.desde))} → ${esc(f(e.hasta))}) · ${esc(precio)}. `
+      + 'Solo informativo: la selección no cambia.</p>';
+  }
+
   function pintar(cid) {
     const cfg = estado[cid];
     const cont = document.getElementById(cid);
@@ -640,6 +691,8 @@
       + (cicloVidaVendor || cfg.cicloVida ? `<p class="ficha-ciclo-caja">${cicloHtml(sel, cfg.cicloVida)}</p>` : '')
       + (mkSel ? `<p class="ficha-aviso">${avisoDe(sel)}</p>` : '')
       + medidores
+      // N+1 solo junto al recomendado: con otro elegido a mano, la comparacion ya la hizo quien eligio.
+      + (cfg.escalon && sel.id === recomendado ? escalonHtml(escalonSuperior(candidatos, sel, cfg.escalon), cfg.escalon, sel) : '')
       // Conmutador del detalle (2026-09-16): la compacta se paga en no encontrar la
       // información si el detalle no está donde se mira. El enlace declara QUÉ hay y
       // lo despliega en el mismo cuadro; el estado vive en estadoDet para sobrevivir
@@ -1036,6 +1089,7 @@
     // linea en gris sin que nadie haya decidido mostrarla seria ruido.
     fijarCicloVida(datos) { cicloVidaVendor = datos || null; },
     seccionAlimentacion,
+    escalonSuperior,
     // Ordena dejando primero lo vigente y al final lo que esta fuera de venta, conservando
     // el criterio propio de cada pagina (capacidad, precio, medio) como desempate.
     ordenar(lista, desempate) {

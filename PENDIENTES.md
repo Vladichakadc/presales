@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-15, trigesimonovena entrega (**La pasada semántica de graphify, decidida y ejecutada.** El dueño eligió ejecutarla: tres subagentes leyeron los 56 archivos que el análisis del código no lee (15 páginas HTML, 13 workflows, Dependabot, las instrucciones de Copilot, `docs/`, `CLAUDE.md` y el manual). El grafo queda en 2983 nodos, 5275 aristas y 194 comunidades, con 197 conceptos nuevos; costó ~433 000 tokens. No se versiona. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-19, cuadragésima entrega (**Explicabilidad de Huawei, escalón N+1, hoja «Supuestos» del Excel y escritura atómica del volumen.** Encargo del dueño en cuatro fases. **Huawei**: la traza escribe el ×2 entero («bajada X + subida X = 2X» frente al techo que la ficha publica sumado), cada modelo apartado dice su cuello de botella con cifras y la tabla abre con un resumen por categoría y los modelos de otras plataformas; el BOM marca lo que es **base del chasis** y las licencias sin código ni precio dicen «consultar». **`ficha.js`**: escalón superior N+1 (opt-in, hoy en Huawei). **`bom.js`**: hoja «Supuestos» detrás de «BOM». **Servidor**: `usuarios.json` y el manifiesto de fuentes se escriben de forma atómica. Ninguna cifra del cálculo cambia. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-15, trigesimonovena entrega (**La pasada semántica de graphify, decidida y ejecutada.** El dueño eligió ejecutarla: tres subagentes leyeron los 56 archivos que el análisis del código no lee (15 páginas HTML, 13 workflows, Dependabot, las instrucciones de Copilot, `docs/`, `CLAUDE.md` y el manual). El grafo queda en 2983 nodos, 5275 aristas y 194 comunidades, con 197 conceptos nuevos; costó ~433 000 tokens. No se versiona. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimoctava entrega (**El pendiente de Limpieza 12, cerrado, y la comprobación del aviso al subir graphify.** Si la instalación de graphify falla, el arranque dice por qué (comprobado con un `uv` sin salida a PyPI: «Caused by: Connection refused»). El LEEME de la skill pide, al subir de versión, comprobar que el aviso de grafo viejo calla. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimoséptima entrega (**La mejora propuesta: el aviso de grafo viejo, sin falsas alarmas.** Contaba archivos que el grafo no lee y, peor, `graphify update .` no lo apagaba: graphify no reescribe el commit del grafo cuando la estructura no cambia. Ahora el arranque le pregunta a la propia graphify (`detect_incremental` contra el md5 de su manifiesto, 0,25 s) y solo avisa de lo que lee; sin CLI, compara el commit como antes. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimosexta entrega (**La mejora propuesta: graphify lee los PDF.** El arranque instala `graphifyy[pdf]==0.9.77` (trae `pypdf` y `markdownify`) y el aviso de PDF saltados desaparece. **Medido, menos de lo que se prometió**: el único PDF que entra es el manual de usuario (4672 palabras, derivado de `manual.html`), y su texto solo cuenta en la pasada semántica, que sigue siendo decisión del dueño: el grafo del código no cambia. Ver *Cerrado recientemente*.)
@@ -720,6 +721,12 @@ sesión de Huawei abierta, o la app de GitHub para lanzar Actions). En orden de 
   Desde aquí no se pudo despachar el workflow: el `GH_TOKEN` del entorno no es válido.
 
 ### Lo que queda abierto de las fichas Huawei (2026-10-06, cuarta entrega)
+
+- **`incluida: true` de `ROL_PIEZA` no hace nada** (visto el 2026-10-19). El ventilador FAN-240SN-B
+  del AR8700-8, el kit de rack y el cable de consola llevan esa marca, pero `piezasBom` no la lee y
+  salen «Se pide» (una prueba fija el ventilador en `pedir`). No se tocó: ninguna fuente del
+  catálogo dice si vienen con el chasis. **Cómo se cierra**: con la «Ordering Information» o el
+  configurador, decidir pieza a pieza si se pide o viene dentro, y quitar la marca muerta.
 
 La capacidad de la A800 E y el consumo del M1A y el M1D se cerraron con las páginas de producto
 de `e.huawei.com` (ver *Cerrado recientemente*). Lo que queda:
@@ -2050,6 +2057,61 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+### Explicabilidad de Huawei, escalón N+1, hoja «Supuestos» y escritura atómica (2026-10-19, cuadragésima entrega)
+
+Encargo del dueño en cuatro fases, con la batería completa antes de fusionar. **Ninguna cifra del
+cálculo cambia**: el contraste da los 9 casos sin discrepancias y `miss` (lo que leen la tabla,
+las pruebas y el contraste) conserva su texto.
+
+- **Fórmula bidireccional.** `HuaweiMotor.formulaBidireccional()` escribe «bajada X + subida X =
+  2X, que se contrasta con el techo publicado en «capa», que Huawei publica como suma de los dos
+  sentidos» donde la ficha lo respalda (IPsec y SD-WAN típico); en reenvío dice que la ficha no lo
+  aclara, y en «Total agregado», que no duplica. Va en el porqué de la ficha, en el resumen de
+  evaluados y en la hoja «Supuestos».
+- **Por qué se apartó cada modelo.** Cada fila trae `motivos` (categoría y texto con cifras:
+  «techo de 600 Mbps en «SD-WAN típico» frente a 2.3 Gbps exigidos: faltan 1.7 Gbps»), y
+  `resumenApartados()` los agrupa por cuello (capa, sin cifra, Mpps, hardware, requisito SD-WAN,
+  túneles) y cuenta los modelos de otras plataformas que no compiten. La tabla de evaluados abre
+  con ese resumen (desplegable por categoría) y cada celda dice el cuello y «Además: …» lo demás.
+  Una primera versión repetía la nota bidireccional en cada fila y la tabla crecía a 3.600 px: la
+  nota quedó en el resumen.
+- **BOM: base del chasis frente a lo opcional.** `piezasBom` marca `base` con su motivo: la
+  SPU-700H («sin ella el AR8700-8 no tiene puertos»), la SRU-700S del AR6710-H («si el
+  configurador la trae dentro, esta línea sobra»), la MPU del AR8700-8 y la fuente («sin fuente el
+  chasis no enciende; se cotiza aunque la ficha no diga si alguna viene de serie»: no se afirma
+  cuántas vienen). La nota de la línea abre con «Base del chasis» en la tabla, el Excel y el texto.
+  Las licencias dicen en su nota «Precio: consultar» (con código de la ficha) o «Sin código en la
+  ficha ni precio de lista: consultar» (RTU de capacidad, NCE, la de función sin ficha leída). No
+  se inventó ningún SKU.
+- **Escalón N+1 en `ficha.js`** (opt-in `escalon`, declarado en Huawei): junto al recomendado, el
+  candidato recomendable con la menor métrica **estrictamente** mayor (las ocho AR5710-S con la
+  misma cifra no son un escalón; uno fuera de venta nunca lo es), con el diferencial de capacidad y
+  el de precio de lista solo si los dos tienen precio confirmado. No toca la selección. El «Siguiente
+  escalón» del porqué tomaba `fit[1]`, que podía empatar en cifra: ahora usa la misma regla.
+- **Hoja «Supuestos» en el Excel de `bom.js`**, segunda (la «BOM» sigue en el índice 0; «Fotos del
+  equipo» pasa a tercera): fecha, enlace que reproduce el escenario, fabricante, plataforma,
+  equipo, el resultado que declare la página (Huawei: capa, fórmula del ×2, margen, supuestos de
+  diseño activos, necesidad, recomendado y si el del BOM se eligió a mano), **todos** los
+  parámetros activos con su etiqueta visible y si difieren del valor por defecto
+  (`ESTADO.escenario()`, nuevo; lo de `[data-inactivo]` no sale, como en el enlace) y las fuentes
+  del equipo con Estado y Vigilancia (las etiquetas de `procedencia.js`). Vale para los siete
+  dimensionadores; el BOM global consolidado no la lleva (mezcla escenarios). Un fallo al leer
+  `/api/fuentes` se escribe en la hoja. **Nota**: el Excel se escribe con ExcelJS
+  (`/vendor/exceljs.js`), no con `/vendor/xlsx.js`, que solo lee.
+- **Escritura atómica del volumen** (`server/escrituraAtomica.js`): temporal en el mismo
+  directorio, `fsync`, `rename` y `fsync` del directorio; si falla, el temporal se borra y el
+  destino queda como estaba. La usan `usuarios.json`, el manifiesto de fuentes subidas y el propio
+  documento subido. El riesgo era real: un `usuarios.json` cortado se lee como «no existe» y el
+  arranque rehace el administrador desde `AUTH_PASSWORD`, perdiendo las altas.
+- **Pruebas**: `huawei-explicabilidad` (10), `ficha-escalon` (5), `bom-supuestos` (5) y
+  `escritura-atomica` (6); `e2e-huawei-vistas` afirma el orden de hojas, el contenido de
+  «Supuestos», el escalón junto al recomendado y el resumen de evaluados.
+- **Queda abierto**: el escalón N+1 solo lo declara Huawei (los otros seis dimensionadores lo
+  pueden declarar con una línea); y la hoja casa las fuentes con el equipo por texto (`cubre`
+  nombra el modelo o la serie), porque `fuentes.js` no tiene un campo de modelos: ver la mejora
+  propuesta al cerrar.
+
 
 ### La pasada semántica de graphify (2026-10-15, trigesimonovena entrega)
 
