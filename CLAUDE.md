@@ -526,3 +526,68 @@ Módulos compartidos:
 comercial, gobierno del dato) · `docs/revision-huawei-2026-09-29.md` · `docs/manual-usuario/`
 (manual a PDF con `npm run manual`; Playwright fuera de `package.json` a propósito) ·
 `docs/claude-md-cronica.md` (la historia de cada regla de este archivo).
+
+
+---
+
+## Arquitectura de Módulos Actualizados (Refactorización Carrier-Grade)
+
+### Motor Unificado de Cálculo y Estado Reactivo (`public/js/sizing_engine.js`)
+Módulo isomórfico (compatible con navegador vía `window.PresalesEngine` y con Node.js vía `require('./sizing_engine')`) que centraliza:
+
+1. **Dimensionador Huawei NetEngine (`calcularRequerimientosHuawei` y `dimensionarHuaweiNetEngine`):**
+   * **Perfiles IMIX reales (elimina el paquete fijo heredado de 340B):**
+     * `VOIP_FINTECH`: 250 Bytes (factor `0.55`)
+     * `ENTERPRISE_STANDARD`: 570 Bytes (factor `0.70`)
+     * `ISP_INTERNET`: 700 Bytes (factor `0.85`)
+     * `DCI_JUMBO`: 1400 Bytes (factor `1.00`)
+   * **Segregación DIA vs IPsec:** Local Breakout (`70%` salida directa a Internet DIA + `30%` túneles IPsec hacia Data Center) frente a Full Backhaul (`100%` IPsec).
+   * **Factores Carrier-Grade:** Sobrecarga A-FEC (`+20%`), penalización por inspección UTM en router AR (`+45%`) y Headroom configurable (`30%` por defecto).
+   * **Desacoplamiento NGFW Dedicado:** Si el caudal con inspección profunda supera `1000 Mbps` o se activa descifrado SSL/TLS, el motor desacopla la seguridad recomendando automáticamente un firewall dedicado **Huawei HiSecEngine USG6530E / USG6605E / USG6680E** y libera el CPU del router WAN.
+   * **Escalado Fluido entre Familias:** Elimina el bloqueo `"FUERA DE LA PLATAFORMA"` escalando automáticamente desde **NetEngine AR** (`AR651`, `AR6121`, `AR6140-16G4XG`, `AR6280`, `AR6300`) hacia **NetEngine A800** (`A812 E`, `A821 E`) y **NetEngine 8000** (`M1A`, `M6`, `F1A-1H24HF`) evaluando simultáneamente `forwarding_capacity_mbps`, `ipsec_capacity_mbps`, `max_ipsec_tunnels`, `mpps`, `fib_routes` y `cgnat_sessions`.
+   * **Reglas de Licenciamiento:** Selección automática `N1 Foundation` vs `N1 Advanced`, suscripción `LIC-NCE-WAN-DEV` (1Y/3Y/5Y), licencias `LIC-NE8K-100G-RTU` y soporte `Hi-Care Standard (9x5xNBD)` o `Hi-Care Premier (24x7x4)`.
+
+2. **Dimensionador HPE Aruba EdgeConnect (`calcularRequerimientosIngenieria` y `dimensionarArubaEdgeConnect`):**
+   * **Depuración de entradas heredadas:** Se eliminan las entradas manuales de "Throughput de Firewall (Mbps)" y "Túneles IPsec Activos"; el dimensionamiento se rige por ancho de banda de diseño y **flujos simultáneos activos (`max_flows`)**.
+   * **Fórmula de Throughput de Diseño:** Integra First-packet iQ (`70%` SaaS / `30%` túneles privados), factor IMIX (`0.55` VoIP, `0.70` Enterprise, `1.00` Bulk), FEC (`5%` fibra limpia, `15%` estándar, `25%` LTE alta pérdida), seguridad (`35%` NGFW local DPI vs `5%` túnel ligero Cloud SASE) y sesiones concurrentes por usuario (`80` estándar vs `150` intensivo SaaS).
+   * **Widget de 3 Barras Horizontales:** Retorna `widgetRendimiento3Barras` con Caudal Físico Contratado, Caudal Neto pos-FEC y Caudal Virtual Equivalente con **Aruba Boost** (deduplicación 3x a 5x).
+   * **Reglas Co-Terming y SASE:** Sincroniza el plazo (1, 3 o 5 años) en suscripciones `Foundation` / `Advanced` (`100M`, `1G`, `Unlimited`), bloques de 100 Mbps de `Aruba Boost`, soporte `Foundational Care 24x7` y suscripciones por usuario de **HPE Aruba Networking SSE (Axis Security)** en paquetes `ESSENTIAL`, `ADVANCED` o `COMPLETE`.
+   * **Semáforo de Ciclo de Vida:** Incluye el mapa oficial de migración de las series legacy `7000/7200` (Naranja) hacia `Gateway 9004/9012/9240` y `EdgeConnect 10104/10106/10108/10150` (Verde).
+
+3. **Auditoría de Accesorios (`auditarAccesoriosBOM` — BOM Health Check):**
+   * Verifica automáticamente si el chasis cuenta con puertos ópticos (`1G SFP`, `10G SFP+`, `25G SFP28`, `100G QSFP28`) y asigna o valida transceptores oficiales (`J4858D`, `J4859D`, `J9150D`, `J9151E`, DACs `J9281D`/`J9283D` en Aruba; `eSFP-GE`, `OSX040N01`, `OSX010000`, `QSFP-100G-LR4` en Huawei), además de cables `C13/NEMA 5-15P` y fuentes redundantes en equipos Dual PSU.
+
+4. **Rollout Multi-Sede y Simulador Financiero Telco (`consolidarRolloutMultiSede` y `calcularSimuladorFinancieroTelco`):**
+   * Unifica múltiples perfiles de sede (ej. 50 Tiendas Retail + 10 Sucursales Regionales + 2 Data Center Hubs en HA) en un BOM maestro consolidado.
+   * Calcula CAPEX Neto, OPEX Neto, Tarifa de Gestión MSP, Canon Mensual por Sede (MRR) y Total Contract Value (TCV) a 24, 36 o 60 meses según el nivel de Partner (`List 0%`, `Business 35%`, `Silver 45%`, `Gold 50%`, `Platinum 55%` o descuento especial).
+
+5. **Estado Reactivo (`PresalesState`):**
+   * Store centralizado con patrón pub/sub (`subscribe`, `updateParametros`, `agregarPerfilSede`, `getSnapshot`) que recalcula en tiempo real el dimensionamiento, el BOM y las métricas financieras ante cualquier cambio en la interfaz.
+
+---
+
+### Controlador Backend y Rutas API (`server/presales_api_controller.js`)
+Provee los endpoints REST listos para montarse en Express (`app.use('/api/presales', createPresalesRouter(express, deps))`):
+
+| Método y Ruta | Descripción Funcional |
+| :--- | :--- |
+| `POST /api/presales/sizing/huawei` | Ejecuta el motor Huawei NetEngine Carrier-Grade + BOM + Simulador MRR |
+| `POST /api/presales/sizing/aruba` | Ejecuta el motor HPE Aruba EdgeConnect + SSE + Widget 3 Barras + MRR |
+| `POST /api/presales/rollout/consolidate` | Consolida perfiles multi-sede y calcula MRR/TCV del proyecto completo |
+| `POST /api/presales/catalog/import` | Valida e importa catálogos de hardware en SQLite/Sequelize (`bulkCreate`) |
+| `POST /api/presales/export/memoria-tecnica` | Genera la Memoria Técnica justificativa en Markdown estructurado |
+
+---
+
+## Protocolo de Integración y Sincronización Gemini <-> Claude Code
+
+Para garantizar que tanto **Gemini** (con la skill `presales-claude-bridge` activa) como **Claude Code** (con las skills locales en `.claude/`) operen como un único equipo de ingeniería sobre este repositorio:
+
+1. **Preservación de Contratos Isomórficos:**
+   * Ningún cambio en `sizing_engine.js` debe romper la exportación UMD (`window.PresalesEngine` en navegador y `module.exports` en Node.js).
+2. **Validación Determinista Obligatoria (`node --test`):**
+   * Antes de dar por cerrada cualquier tarea o commit, tanto Claude como Gemini deben verificar que los cálculos de IMIX, flujos, BOM Health Check y MRR pasen el 100% de las pruebas en `test/`.
+3. **Sincronización de Catálogos y SKUs:**
+   * Todo nuevo SKU agregado a `HUAWEI_HARDWARE_CATALOG`, `ARUBA_HARDWARE_CATALOG` o `OPTICAL_TRANSCEIVERS_CATALOG` debe incluir `sku`, `modelo`, capacidades nominales, `list_price_usd` y `lifecycle_status`.
+4. **Registro en `CLAUDE.md` y `PENDIENTES.md`:**
+   * Cuando Gemini genere nuevos módulos o refactorizaciones, entregará el bloque de actualización correspondiente para `CLAUDE.md` de modo que Claude Code tenga contexto inmediato al abrir el repositorio local.
