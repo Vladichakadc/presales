@@ -2542,6 +2542,9 @@ function render(){
     seleccionado:mManual?mManual.id:undefined,
     incluir:mManual||undefined,
     etiqueta:m=>`${m.id} — ${m.serie} · ${fmt(capacidadMax(m))}`,
+    // Escalón N+1 (ficha.js): la cifra del desplegable. Un EdgeConnect (rango WAN) y un gateway
+    // (firewall) no se miden igual: el escalón se busca en la misma familia.
+    escalon:{metrica:capacidadMax, fmt, nombre:m=>m.fam==='ec'?'rango WAN publicado':'capacidad publicada', precio:m=>m.elpN??null, comparable:(a,b)=>a.fam===b.fam},
     // Detalle de cada fila de la lista de candidatos: segmento y capacidad ya sin el id
     // (la fila lo pone en negrita ella misma).
     etiquetaCand:m=>`${m.seg} · ${fmt(capacidadMax(m))}`,
@@ -3081,6 +3084,7 @@ function renderBom(){
     :null;
   const meta={
     titulo:`Lista de materiales — ${m.id}`,
+    supuestos:{vendor:'aruba', fabricante:'Aruba (HPE)', modelo:m.id, serie:m.serie},
     subtitulo:`${m.seg} · ${famLabel(m)} · ${termino}`,
     archivo:`BOM_${m.id}`,
     ...(fotosBom?{fotos:fotosBom}:{}),

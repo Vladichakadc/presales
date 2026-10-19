@@ -151,6 +151,8 @@
       candidatos: ordenados,
       recomendado: pick.id,
       etiqueta: (m) => `${m.id} — ${m.ser} · ${fmt(m.cap)}`,
+      // Escalón N+1 (ficha.js): capacidad de conmutación. Nokia no tiene lista de precios.
+      escalon: { metrica: (m) => m.cap ?? null, fmt, nombre: 'capacidad de conmutación', precio: (m) => m.elpN ?? null },
       titulo: (m) => m.id,
       subtitulo: (m) => `${m.ser} · ${m.seg}`,
       medidores: (m) => [{ etq: 'Caudal del enlace', val: need, tope: m.cap, txt: `${fmt(need)} / ${fmt(m.cap)}` }],
@@ -284,6 +286,7 @@
     });
     $('xlsBtn').onclick = () => BOM.exportarExcel(filas, {
       titulo: `Nokia ${m.id}`, subtitulo: `${m.ser} · ${m.seg}`, archivo: 'nokia-agregacion-core',
+      supuestos: { vendor: 'nokia', fabricante: 'Nokia', modelo: m.id, serie: m.ser },
     });
     $('copyBtn').onclick = () => {
       const out = $('bomOut');

@@ -702,6 +702,97 @@
     return { aoa, cols, dto: dtoX, filaCabecera, filaTotal };
   }
 
+  /* HOJA «SUPUESTOS» (2026-10-19, peticion del dueño): la trazabilidad de ingenieria que el BOM no
+     cuenta. Fecha de exportacion, enlace que reproduce el escenario (el mismo de «Copiar enlace»),
+     fabricante, plataforma y equipo, el resultado del dimensionamiento que la pagina declare, los
+     parametros activos de la pantalla (`ESTADO.escenario()`) y el estado y la vigilancia de las
+     fuentes que respaldan al equipo. Va DESPUES de la hoja «BOM», que sigue siendo la primera: quien
+     la lee por indice no nota nada. Nucleo puro, como `matrizExcel`: las pruebas lo afirman sin
+     navegador. `entorno` = { fecha, url, parametros: [{etiqueta, valor, cambiado}],
+     fuentes: { error?, lista: [...], todas? } }. Nada se rellena: lo que no consta lo dice. */
+  function matrizSupuestos(meta, entorno) {
+    const m = meta || {};
+    const s = m.supuestos || {};
+    const e = entorno || {};
+    const aoa = [];
+    aoa.push(['SUPUESTOS Y TRAZABILIDAD DEL ESCENARIO']);
+    aoa.push(['Fecha de exportación', e.fecha || '—']);
+    aoa.push(['Enlace que reproduce el escenario', e.url || 'no disponible']);
+    aoa.push(['Fabricante', s.fabricante || (vendorPagina ? vendorPagina : 'no lo declara la página')]);
+    aoa.push(['Plataforma evaluada', s.plataforma || 'la página no distingue plataformas']);
+    aoa.push(['Equipo del BOM', s.modelo || (m.fotos && m.fotos.modelo) || m.titulo || '—']);
+    const resumen = (s.resumen || []).filter((r) => r && r.length);
+    if (resumen.length) {
+      aoa.push([]);
+      aoa.push(['RESULTADO DEL DIMENSIONAMIENTO']);
+      for (const [k, v] of resumen) aoa.push([k, v == null || v === '' ? 'sin dato' : String(v)]);
+    }
+    aoa.push([]);
+    aoa.push(['PARÁMETROS ACTIVOS DE LA PANTALLA', 'Valor', 'Cambiado respecto al valor por defecto']);
+    const params = e.parametros || [];
+    if (params.length) for (const p of params) aoa.push([p.etiqueta, p.valor, p.cambiado ? 'Sí' : '']);
+    else aoa.push(['', 'La página no expuso sus parámetros: el enlace de arriba reproduce el escenario.']);
+    aoa.push([]);
+    aoa.push(['FUENTES DOCUMENTALES DEL EQUIPO']);
+    const f = e.fuentes || {};
+    if (f.error) {
+      aoa.push(['', `No se pudo leer la procedencia (${f.error}): consúltala en la pestaña de fuentes de la herramienta.`]);
+    } else if (!(f.lista || []).length) {
+      aoa.push(['', 'El catálogo no registra fuentes para este fabricante.']);
+    } else {
+      if (f.todas) aoa.push(['', 'Ninguna fuente declara este equipo ni lo nombra: se listan todas las del fabricante.']);
+      aoa.push(['Documento', 'Fecha', 'Estado (antigüedad)', 'Vigilancia', 'Qué cubre', 'URL', 'Asociación con el equipo']);
+      for (const x of f.lista) aoa.push([x.documento || '', x.fecha || 'sin fecha', x.estado || '', x.vigilancia || '', x.cubre || '', x.url || '', x.asociacion || '']);
+    }
+    aoa.push([]);
+    aoa.push(['', 'Los parámetros son los de la pantalla en el momento de exportar. Los supuestos de diseño son entradas editables, no cifras del fabricante.']);
+    return { aoa, cols: [{ wch: 38 }, { wch: 60 }, { wch: 22 }, { wch: 24 }, { wch: 60 }, { wch: 50 }, { wch: 26 }] };
+  }
+
+  // Las fuentes que respaldan al equipo, con las etiquetas de la pestaña de procedencia. Puro:
+  // recibe lo que devuelve /api/fuentes para ese fabricante. Manda lo DECLARADO (`modelosResueltos`,
+  // de `modelos` en legacyData/fuentes.js): una fuente que lo declara y no incluye al equipo no
+  // entra, aunque su texto lo cite. Solo las que no declaran nada se casan por texto (el modelo en
+  // el título o en lo que cubre; la serie, solo en lo que cubre), y la columna «Asociación» lo dice.
+  function fuentesDelEquipo(datosVendor, terminos) {
+    const activas = ((datosVendor && datosVendor.fuentes) || []).filter((x) => x.estado !== 'historico');
+    const norm = (t) => String(t || '').toLowerCase().replace(/\s+/g, '');
+    const [modelo, ...resto] = (terminos || []).filter(Boolean);
+    const P = global.PROCEDENCIA || {};
+    const fila = (x, asociacion) => ({
+      documento: x.documento, fecha: x.fecha, url: x.url, cubre: x.cubre, asociacion,
+      estado: P.etiquetaEstado ? P.etiquetaEstado(x.estado) : x.estado,
+      vigilancia: P.etiquetaVigilancia ? P.etiquetaVigilancia(x.vigilancia) : ((x.vigilancia && x.vigilancia.estado) || 'no comprobada'),
+    });
+    const declaradas = modelo ? activas.filter((x) => Array.isArray(x.modelosResueltos) && x.modelosResueltos.includes(modelo)) : [];
+    const porTexto = modelo ? activas.filter((x) => !Array.isArray(x.modelosResueltos)
+      && (norm(`${x.cubre} ${x.documento}`).includes(norm(modelo)) || resto.some((t) => norm(x.cubre).includes(norm(t))))) : [];
+    const lista = [...declaradas.map((x) => fila(x, 'declarada en el catálogo')), ...porTexto.map((x) => fila(x, 'su texto nombra el equipo'))];
+    return lista.length ? { lista } : { lista: activas.map((x) => fila(x, 'del fabricante')), todas: activas.length > 0 };
+  }
+
+  async function entornoSupuestos(meta) {
+    const s = (meta && meta.supuestos) || {};
+    const vendor = String(s.vendor || vendorPagina || '').toLowerCase();
+    let fuentes = { lista: [] };
+    if (vendor) {
+      try {
+        const r = await fetch('/api/fuentes');
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const datos = await r.json();
+        fuentes = fuentesDelEquipo(datos[vendor], [s.modelo || (meta && meta.fotos && meta.fotos.modelo), s.serie]);
+      } catch (err) {
+        fuentes = { error: err.message || 'error de red' };
+      }
+    }
+    return {
+      fecha: new Date().toLocaleString('es'),
+      url: global.location ? global.location.href : '',
+      parametros: global.ESTADO && global.ESTADO.escenario ? global.ESTADO.escenario() : [],
+      fuentes,
+    };
+  }
+
   // webp → PNG sin pérdida (plan 20): los webp del repo son los ORIGINALES extraídos de
   // los documentos oficiales de HPE y Excel no admite webp, así que se re-codifican a PNG
   // a su resolución natural vía canvas — la propuesta lleva la máxima calidad disponible.
@@ -789,6 +880,19 @@
         if (typeof cel.value === 'number') cel.numFmt = '#,##0.00';
       }
     });
+
+    // Hoja «Supuestos» (2026-10-19), segunda: el escenario de UNA pantalla. El BOM global
+    // consolidado (`sinRefs`) mezcla perfiles de varias, así que no la lleva.
+    if (!m.sinRefs) {
+      const sup = matrizSupuestos(m, await entornoSupuestos(m));
+      const hs = libro.addWorksheet('Supuestos');
+      hs.columns = sup.cols.map((c) => ({ width: c.wch }));
+      for (const fila of sup.aoa) hs.addRow(fila);
+      hs.getRow(1).font = { bold: true, size: 13 };
+      // Los rótulos de sección van en mayúsculas: esos se destacan, como el título.
+      hs.eachRow((row) => { const v = row.getCell(1).value; if (typeof v === 'string' && /[A-Z]/.test(v) && v === v.toUpperCase()) row.font = { bold: true }; });
+      hoja.addRow(['', 'Los supuestos, los parámetros y las fuentes de este escenario viajan en la hoja «Supuestos».']);
+    }
 
     // Fotos oficiales del equipo (plan 20): solo viajan cuando la página las declara en
     // meta.fotos: Aruba, Fortinet y Huawei.
@@ -1148,7 +1252,7 @@
     });
   }
 
-  global.BOM = { renderTabla, exportarExcel, comoTexto, matrizExcel, money, esc, claveFila,
+  global.BOM = { renderTabla, exportarExcel, comoTexto, matrizExcel, matrizSupuestos, fuentesDelEquipo, money, esc, claveFila,
     enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar,
     sincronizar, soltarManual, avisoDesvio, fijarRepintado,
     agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor,

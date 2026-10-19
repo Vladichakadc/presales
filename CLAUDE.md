@@ -243,7 +243,9 @@ contra lo verificado, queda como diff de `legacyData/` y llega a producción con
   (`herramientas`, `usuarios`, `sync`) se declaran por rol en `ROLES`. El nombre de usuario se
   compara normalizado (`normalizarUsuario`). Nadie cambia la contraseña de otro; reponer un acceso
   es borrar `usuarios.json` del volumen. El alta (`POST /api/usuarios`) genera una contraseña de 24
-  caracteres que se muestra una vez y obliga a cambiarla (`debeCambiar`).
+  caracteres que se muestra una vez y obliga a cambiarla (`debeCambiar`). **Todo lo que se escribe en
+  el volumen pasa por `server/escrituraAtomica.js`** (temporal, `fsync` y `rename`): un
+  `usuarios.json` cortado se lee como «no existe» y rehace el administrador.
 - `server/auth.js` — sesión `expiración.id.firma` firmada con una clave derivada de la credencial
   de cada usuario (cambiar una contraseña invalida solo sus sesiones); freno a la fuerza bruta por
   IP más retardo global (rotar `X-Forwarded-For` daba cuota nueva).
@@ -285,7 +287,10 @@ contra lo verificado, queda como diff de `legacyData/` y llega a producción con
 - `server/seed/legacyData/fuentes.js` — la procedencia como datos: documento, URL, fecha (`null` si
   no consta, que nunca es «reciente»), `hash`, `estable`, `cubre` y `campos` (qué campos respalda,
   contrastados contra las claves reales de `MODELS`; `campos: null` es «no consta» y exige
-  `dominio: 'precio'` o `porQue`). La pestaña «Fuentes y Referencias» la pinta con dos columnas
+  `dominio: 'precio'` o `porQue`) y **`modelos`** (qué equipos respalda: ids, series, códigos de
+  ficha o `'*'`; `[]` es «ninguno» y la ausencia, «no declarado»; cada elemento existe en el
+  catálogo, el texto de la entrada lo nombra y ningún equipo queda sin fuente:
+  `test/fuentes-modelos.test.js`). La pestaña «Fuentes y Referencias» la pinta con dos columnas
   distintas: **Estado** (antigüedad) y **Vigilancia** (si el documento sigue siendo el mismo).
 
 ## Páginas y módulos del navegador (`public/`)
@@ -324,12 +329,20 @@ Módulos compartidos:
   `'no-aplica'` y «no consta», nunca `undefined` leído como `false`), puertos (configuraciones
   alternativas, no acumulables; un chasis modular no publica densidad), licenciamiento, software,
   soporte, referencias de pedido (bajo demanda por modelo) y figuras con su página y rótulo literal.
+  `escalon` (los siete lo declaran): junto al recomendado, el N+1 (menor métrica estrictamente mayor
+  en la cifra del desplegable, nunca fuera de venta; `comparable` lo limita a la misma familia o base
+  de medida) y el diferencial de precio solo con precio en los dos; no toca la selección. En la
+  tarjeta clavada (`panelFijo`, Aruba) va dentro del detalle: la compacta tiene que caber entera.
 - `bom.js` — tabla del BOM, totales con las líneas sin precio contadas («sin cotizar») y Excel.
   `BOM.sincronizar()` repinta siempre (también sin candidato). Referencias añadidas a mano en una
   sola clave para los siete, `fabricante|sku`. Simulador de precio neto, TCO sobre las filas (qué
   es OPEX lo declara la página), perfiles multi-sede de todos los fabricantes en una clave, y el
   traspaso al cotizador: el equipo viaja como nombre (su precio lo pone `CATALOG`) y el resto del
-  BOM como referencias; falla cerrado si la fila del equipo no casa.
+  BOM como referencias; falla cerrado si la fila del equipo no casa. El Excel (ExcelJS) lleva
+  «BOM» en el índice 0 y detrás **«Supuestos»** (`matrizSupuestos`: fecha, enlace, plataforma,
+  resultado que declare `meta.supuestos`, parámetros de `ESTADO.escenario()` y las fuentes que
+  **declaran** al equipo en `modelos`, o las que lo nombran si no declaran, con su «Asociación»); el
+  consolidado multi-sede no la lleva.
 - `estado.js` — el escenario en la URL (manda si trae parámetros) y en el almacenamiento local;
   solo se serializa lo que difiere del valor por defecto; lo que va dentro de `[data-inactivo]` no
   viaja; un enlace con parámetros que la pantalla ya no entiende lo dice (`avisoOrigen`), salvo lo
@@ -410,7 +423,10 @@ Módulos compartidos:
   dimensiona SD-WAN (`typ`); las cifras SD-WAN e IPsec de los AR son de los dos sentidos
   (`respaldoBidireccional`). En Huawei **EOS no es fin de venta**: EOM es el último pedido. El BOM
   sale de la «Ordering Information» (el AR8700-8 pide su SPU-700H; el AR6710-H su SRU-700S y una
-  fuente PAC300S12-CL o PDC260S12-CL/-DL). Figuras **sin pérdida** (WebP `VP8L`, los píxeles exactos
+  fuente PAC300S12-CL o PDC260S12-CL/-DL) y marca `base` lo que hace falta para encender el chasis,
+  con su motivo y sin afirmar cuántas fuentes vienen de serie. Cada modelo apartado trae `motivos`
+  con cifras (`miss` conserva el texto corto) y `resumenApartados()` los agrupa por cuello; el ×2 lo
+  escribe entero `formulaBidireccional()`. Figuras **sin pérdida** (WebP `VP8L`, los píxeles exactos
   del documento) en `public/data/huawei-vistas-equipos.json`; una figura solo se cambia por la de
   otro documento si es el mismo dibujo. Los renders de la Galería de imágenes de Info-Finder solo se
   bajan con la sesión del dueño (desde su Mac); entran con `npm run figuras-huawei`, que exige
@@ -510,3 +526,68 @@ Módulos compartidos:
 comercial, gobierno del dato) · `docs/revision-huawei-2026-09-29.md` · `docs/manual-usuario/`
 (manual a PDF con `npm run manual`; Playwright fuera de `package.json` a propósito) ·
 `docs/claude-md-cronica.md` (la historia de cada regla de este archivo).
+
+
+---
+
+## Arquitectura de Módulos Actualizados (Refactorización Carrier-Grade)
+
+### Motor Unificado de Cálculo y Estado Reactivo (`public/js/sizing_engine.js`)
+Módulo isomórfico (compatible con navegador vía `window.PresalesEngine` y con Node.js vía `require('./sizing_engine')`) que centraliza:
+
+1. **Dimensionador Huawei NetEngine (`calcularRequerimientosHuawei` y `dimensionarHuaweiNetEngine`):**
+   * **Perfiles IMIX reales (elimina el paquete fijo heredado de 340B):**
+     * `VOIP_FINTECH`: 250 Bytes (factor `0.55`)
+     * `ENTERPRISE_STANDARD`: 570 Bytes (factor `0.70`)
+     * `ISP_INTERNET`: 700 Bytes (factor `0.85`)
+     * `DCI_JUMBO`: 1400 Bytes (factor `1.00`)
+   * **Segregación DIA vs IPsec:** Local Breakout (`70%` salida directa a Internet DIA + `30%` túneles IPsec hacia Data Center) frente a Full Backhaul (`100%` IPsec).
+   * **Factores Carrier-Grade:** Sobrecarga A-FEC (`+20%`), penalización por inspección UTM en router AR (`+45%`) y Headroom configurable (`30%` por defecto).
+   * **Desacoplamiento NGFW Dedicado:** Si el caudal con inspección profunda supera `1000 Mbps` o se activa descifrado SSL/TLS, el motor desacopla la seguridad recomendando automáticamente un firewall dedicado **Huawei HiSecEngine USG6530E / USG6605E / USG6680E** y libera el CPU del router WAN.
+   * **Escalado Fluido entre Familias:** Elimina el bloqueo `"FUERA DE LA PLATAFORMA"` escalando automáticamente desde **NetEngine AR** (`AR651`, `AR6121`, `AR6140-16G4XG`, `AR6280`, `AR6300`) hacia **NetEngine A800** (`A812 E`, `A821 E`) y **NetEngine 8000** (`M1A`, `M6`, `F1A-1H24HF`) evaluando simultáneamente `forwarding_capacity_mbps`, `ipsec_capacity_mbps`, `max_ipsec_tunnels`, `mpps`, `fib_routes` y `cgnat_sessions`.
+   * **Reglas de Licenciamiento:** Selección automática `N1 Foundation` vs `N1 Advanced`, suscripción `LIC-NCE-WAN-DEV` (1Y/3Y/5Y), licencias `LIC-NE8K-100G-RTU` y soporte `Hi-Care Standard (9x5xNBD)` o `Hi-Care Premier (24x7x4)`.
+
+2. **Dimensionador HPE Aruba EdgeConnect (`calcularRequerimientosIngenieria` y `dimensionarArubaEdgeConnect`):**
+   * **Depuración de entradas heredadas:** Se eliminan las entradas manuales de "Throughput de Firewall (Mbps)" y "Túneles IPsec Activos"; el dimensionamiento se rige por ancho de banda de diseño y **flujos simultáneos activos (`max_flows`)**.
+   * **Fórmula de Throughput de Diseño:** Integra First-packet iQ (`70%` SaaS / `30%` túneles privados), factor IMIX (`0.55` VoIP, `0.70` Enterprise, `1.00` Bulk), FEC (`5%` fibra limpia, `15%` estándar, `25%` LTE alta pérdida), seguridad (`35%` NGFW local DPI vs `5%` túnel ligero Cloud SASE) y sesiones concurrentes por usuario (`80` estándar vs `150` intensivo SaaS).
+   * **Widget de 3 Barras Horizontales:** Retorna `widgetRendimiento3Barras` con Caudal Físico Contratado, Caudal Neto pos-FEC y Caudal Virtual Equivalente con **Aruba Boost** (deduplicación 3x a 5x).
+   * **Reglas Co-Terming y SASE:** Sincroniza el plazo (1, 3 o 5 años) en suscripciones `Foundation` / `Advanced` (`100M`, `1G`, `Unlimited`), bloques de 100 Mbps de `Aruba Boost`, soporte `Foundational Care 24x7` y suscripciones por usuario de **HPE Aruba Networking SSE (Axis Security)** en paquetes `ESSENTIAL`, `ADVANCED` o `COMPLETE`.
+   * **Semáforo de Ciclo de Vida:** Incluye el mapa oficial de migración de las series legacy `7000/7200` (Naranja) hacia `Gateway 9004/9012/9240` y `EdgeConnect 10104/10106/10108/10150` (Verde).
+
+3. **Auditoría de Accesorios (`auditarAccesoriosBOM` — BOM Health Check):**
+   * Verifica automáticamente si el chasis cuenta con puertos ópticos (`1G SFP`, `10G SFP+`, `25G SFP28`, `100G QSFP28`) y asigna o valida transceptores oficiales (`J4858D`, `J4859D`, `J9150D`, `J9151E`, DACs `J9281D`/`J9283D` en Aruba; `eSFP-GE`, `OSX040N01`, `OSX010000`, `QSFP-100G-LR4` en Huawei), además de cables `C13/NEMA 5-15P` y fuentes redundantes en equipos Dual PSU.
+
+4. **Rollout Multi-Sede y Simulador Financiero Telco (`consolidarRolloutMultiSede` y `calcularSimuladorFinancieroTelco`):**
+   * Unifica múltiples perfiles de sede (ej. 50 Tiendas Retail + 10 Sucursales Regionales + 2 Data Center Hubs en HA) en un BOM maestro consolidado.
+   * Calcula CAPEX Neto, OPEX Neto, Tarifa de Gestión MSP, Canon Mensual por Sede (MRR) y Total Contract Value (TCV) a 24, 36 o 60 meses según el nivel de Partner (`List 0%`, `Business 35%`, `Silver 45%`, `Gold 50%`, `Platinum 55%` o descuento especial).
+
+5. **Estado Reactivo (`PresalesState`):**
+   * Store centralizado con patrón pub/sub (`subscribe`, `updateParametros`, `agregarPerfilSede`, `getSnapshot`) que recalcula en tiempo real el dimensionamiento, el BOM y las métricas financieras ante cualquier cambio en la interfaz.
+
+---
+
+### Controlador Backend y Rutas API (`server/presales_api_controller.js`)
+Provee los endpoints REST listos para montarse en Express (`app.use('/api/presales', createPresalesRouter(express, deps))`):
+
+| Método y Ruta | Descripción Funcional |
+| :--- | :--- |
+| `POST /api/presales/sizing/huawei` | Ejecuta el motor Huawei NetEngine Carrier-Grade + BOM + Simulador MRR |
+| `POST /api/presales/sizing/aruba` | Ejecuta el motor HPE Aruba EdgeConnect + SSE + Widget 3 Barras + MRR |
+| `POST /api/presales/rollout/consolidate` | Consolida perfiles multi-sede y calcula MRR/TCV del proyecto completo |
+| `POST /api/presales/catalog/import` | Valida e importa catálogos de hardware en SQLite/Sequelize (`bulkCreate`) |
+| `POST /api/presales/export/memoria-tecnica` | Genera la Memoria Técnica justificativa en Markdown estructurado |
+
+---
+
+## Protocolo de Integración y Sincronización Gemini <-> Claude Code
+
+Para garantizar que tanto **Gemini** (que lee `GEMINI.md`, el cual importa este archivo) como **Claude Code** (con las skills locales en `.claude/`) operen como un único equipo de ingeniería sobre este repositorio:
+
+1. **Preservación de Contratos Isomórficos:**
+   * Ningún cambio en `sizing_engine.js` debe romper la exportación UMD (`window.PresalesEngine` en navegador y `module.exports` en Node.js).
+2. **Validación Determinista Obligatoria (`node --test`):**
+   * Antes de dar por cerrada cualquier tarea o commit, tanto Claude como Gemini deben verificar que los cálculos de IMIX, flujos, BOM Health Check y MRR pasen el 100% de las pruebas en `test/`.
+3. **Sincronización de Catálogos y SKUs:**
+   * Todo nuevo SKU agregado a `HUAWEI_HARDWARE_CATALOG`, `ARUBA_HARDWARE_CATALOG` o `OPTICAL_TRANSCEIVERS_CATALOG` debe incluir `sku`, `modelo`, capacidades nominales, `list_price_usd` y `lifecycle_status`.
+4. **Registro en `CLAUDE.md` y `PENDIENTES.md`:**
+   * Cuando Gemini genere nuevos módulos o refactorizaciones, entregará el bloque de actualización correspondiente para `CLAUDE.md` de modo que Claude Code tenga contexto inmediato al abrir el repositorio local.
