@@ -1,7 +1,7 @@
 {
  "medidoEn": {
-  "commit": "2fd2a59",
-  "fecha": "2026-10-15"
+  "commit": "ddeb5ae",
+  "fecha": "2026-10-19"
  },
  "umbralRozado": 25,
  "modulos": [
@@ -69,17 +69,17 @@
    "pct": 18
   },
   {
+   "modulo": "procedencia.js",
+   "estado": "ejercitado",
+   "total": 36,
+   "usadas": 18,
+   "pct": 50
+  },
+  {
    "modulo": "navegacion.js",
    "estado": "ejercitado",
    "total": 17,
    "usadas": 9,
-   "pct": 53
-  },
-  {
-   "modulo": "procedencia.js",
-   "estado": "ejercitado",
-   "total": 34,
-   "usadas": 18,
    "pct": 53
   },
   {
@@ -113,9 +113,9 @@
   {
    "modulo": "bom.js",
    "estado": "ejercitado",
-   "total": 82,
+   "total": 85,
    "usadas": 56,
-   "pct": 68
+   "pct": 66
   },
   {
    "modulo": "dimensionador-aruba-edgeconnect.js",
@@ -132,6 +132,13 @@
    "pct": 72
   },
   {
+   "modulo": "estado.js",
+   "estado": "ejercitado",
+   "total": 29,
+   "usadas": 21,
+   "pct": 72
+  },
+  {
    "modulo": "index.js",
    "estado": "ejercitado",
    "total": 58,
@@ -139,18 +146,11 @@
    "pct": 72
   },
   {
-   "modulo": "huawei-motor.js",
-   "estado": "ejercitado",
-   "total": 52,
-   "usadas": 38,
-   "pct": 73
-  },
-  {
    "modulo": "ficha.js",
    "estado": "ejercitado",
-   "total": 71,
-   "usadas": 54,
-   "pct": 76
+   "total": 75,
+   "usadas": 56,
+   "pct": 75
   },
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
@@ -181,6 +181,13 @@
    "pct": 80
   },
   {
+   "modulo": "huawei-motor.js",
+   "estado": "ejercitado",
+   "total": 61,
+   "usadas": 49,
+   "pct": 80
+  },
+  {
    "modulo": "dimensionador-mikrotik-routeros.js",
    "estado": "ejercitado",
    "total": 165,
@@ -195,18 +202,11 @@
    "pct": 82
   },
   {
-   "modulo": "estado.js",
-   "estado": "ejercitado",
-   "total": 25,
-   "usadas": 21,
-   "pct": 84
-  },
-  {
    "modulo": "dimensionador-huawei-netengine.js",
    "estado": "ejercitado",
-   "total": 149,
-   "usadas": 129,
-   "pct": 87
+   "total": 161,
+   "usadas": 141,
+   "pct": 88
   },
   {
    "modulo": "aruba-reglas.js",
