@@ -47,16 +47,27 @@ test('sin parámetros ni plataforma declarados, lo dice', () => {
   assert.match(t, /no registra fuentes/);
 });
 
-test('fuentesDelEquipo: las que nombran al modelo o su serie; si ninguna, todas con el aviso', () => {
+test('fuentesDelEquipo: manda lo declarado; el texto solo casa las que no declaran; si nada, todas con el aviso', () => {
   const datos = { fuentes: [
-    { documento: 'Ficha AR650', cubre: 'reenvío del AR651 y el AR651W-8P', estado: 'vigente', vigilancia: { estado: 'verificada' } },
-    { documento: 'Ficha AR8000', cubre: 'AR8140', estado: 'vieja' },
-    { documento: 'Vieja', cubre: 'AR651', estado: 'historico' },
+    { documento: 'Ficha AR650', cubre: 'reenvío del AR651 y el AR651W-8P', estado: 'vigente', vigilancia: { estado: 'verificada' }, modelosResueltos: ['AR651', 'AR651W-8P'] },
+    { documento: 'Folleto', cubre: 'contexto del AR651', estado: 'vigente', modelosResueltos: [] },
+    { documento: 'Hardware Description', cubre: 'fuentes del AR651', estado: 'vigente', modelosResueltos: null },
+    { documento: 'Ficha AR8000', cubre: 'AR8140', estado: 'vieja', modelosResueltos: ['AR8140-12G10XG'] },
+    { documento: 'Vieja', cubre: 'AR651', estado: 'historico', modelosResueltos: ['AR651'] },
   ] };
   const r = BOM.fuentesDelEquipo(datos, ['AR651', 'AR650']);
-  assert.deepStrictEqual([...r.lista.map((x) => x.documento)], ['Ficha AR650'], 'la sustituida no cuenta');
+  assert.deepStrictEqual([...r.lista.map((x) => `${x.documento} · ${x.asociacion}`)],
+    ['Ficha AR650 · declarada en el catálogo', 'Hardware Description · su texto nombra el equipo'],
+    'el folleto declara que no respalda nada aunque lo cite, y la sustituida no cuenta');
   assert.ok(!r.todas);
   const r2 = BOM.fuentesDelEquipo(datos, ['NE8000 M8']);
   assert.strictEqual(r2.todas, true);
-  assert.strictEqual(r2.lista.length, 2);
+  assert.strictEqual(r2.lista.length, 4);
+  assert.strictEqual(BOM.fuentesDelEquipo(datos, [undefined]).todas, true, 'sin equipo no se inventa una asociación');
+});
+
+test('la tabla de fuentes de la hoja dice cómo se asoció cada una', () => {
+  const t = texto(BOM.matrizSupuestos(META, { ...ENTORNO, fuentes: { lista: [{ documento: 'Ficha AR650', estado: 'Vigente', vigilancia: 'Sin cambios', asociacion: 'declarada en el catálogo' }] } }).aoa);
+  assert.match(t, /Asociación con el equipo/);
+  assert.match(t, /Ficha AR650 \| sin fecha \| Vigente \| Sin cambios \|  \|  \| declarada en el catálogo/);
 });

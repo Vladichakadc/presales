@@ -36,7 +36,7 @@
 //       fmt: v => 'texto',          //   como se escribe esa cifra
 //       nombre: 'SD-WAN típico',    //   como se llama
 //       precio: m => numero|null,   //   precio de lista confirmado, o null
-//       mismaFamilia: (a, b) => bool, // opcional: limita el N+1 a la misma familia
+//       comparable: (a, b) => bool, // opcional: solo equipos de la misma familia o base de medida
 //     },
 //   })
 //
@@ -511,7 +511,7 @@
     let vMejor = null;
     for (const m of candidatos || []) {
       if (!m || m.id === ref.id || !recomendable(m)) continue;
-      if (cfgEsc.mismaFamilia && !cfgEsc.mismaFamilia(ref, m)) continue;
+      if (cfgEsc.comparable && !cfgEsc.comparable(ref, m)) continue;
       const v = cfgEsc.metrica(m);
       if (typeof v !== 'number' || !Number.isFinite(v) || v <= v0) continue;
       if (vMejor == null || v < vMejor) { mejor = m; vMejor = v; }
@@ -530,7 +530,8 @@
     const nombre = typeof cfgEsc.nombre === 'function' ? cfgEsc.nombre(ref) : (cfgEsc.nombre || 'capacidad');
     const precio = e.deltaPrecio == null
       ? 'diferencia de precio: sin precio de lista confirmado en los dos'
-      : `precio de lista ${e.deltaPrecio >= 0 ? '+' : '−'}${fmtPrecio(Math.abs(e.deltaPrecio))}`;
+      : e.deltaPrecio === 0 ? 'mismo precio de lista'
+        : `cuesta ${fmtPrecio(Math.abs(e.deltaPrecio))} ${e.deltaPrecio > 0 ? 'más' : 'menos'} de lista`;
     return `<p class="ficha-escalon" role="note">Escalón superior (N+1): <b>${esc(e.modelo.id)}</b> · `
       + `${esc(nombre)} +${esc(f(e.delta))} (${esc(f(e.desde))} → ${esc(f(e.hasta))}) · ${esc(precio)}. `
       + 'Solo informativo: la selección no cambia.</p>';
@@ -661,8 +662,10 @@
     // detalle va en línea como siempre (el resto de dimensionadores no cambia).
     const detExp = !!(cfg.panelFijo && cfg.detalleExpandible);
     const detAbierto = detExp && !!estadoDet[cid];
+    const escalonVisible = cfg.escalon && sel.id === recomendado
+      ? escalonHtml(escalonSuperior(candidatos, sel, cfg.escalon), cfg.escalon, sel) : '';
     const detalleHtml = (detExp
-        ? `<h2 class="ficha-det-tit">Características del equipo seleccionado — <b>${esc(sel.id)}</b></h2>` : '')
+        ? `<h2 class="ficha-det-tit">Características del equipo seleccionado — <b>${esc(sel.id)}</b></h2>` + escalonVisible : '')
       + (cfg.porQue ? `<div class="why">${cfg.porQue(sel)}</div>` : '')
       + secciones
       + (cfg.refsEn ? '' : `<div class="ficha-refs" id="${cid}-refs"></div>`);
@@ -692,7 +695,9 @@
       + (mkSel ? `<p class="ficha-aviso">${avisoDe(sel)}</p>` : '')
       + medidores
       // N+1 solo junto al recomendado: con otro elegido a mano, la comparacion ya la hizo quien eligio.
-      + (cfg.escalon && sel.id === recomendado ? escalonHtml(escalonSuperior(candidatos, sel, cfg.escalon), cfg.escalon, sel) : '')
+      // En la tarjeta clavada (`panelFijo` + detalle) va dentro del detalle: la compacta tiene que
+      // caber entera en el viewport, y un parrafo mas la soltaba al llegar al fondo (e2e-sticky).
+      + (detExp ? '' : escalonVisible)
       // Conmutador del detalle (2026-09-16): la compacta se paga en no encontrar la
       // información si el detalle no está donde se mira. El enlace declara QUÉ hay y
       // lo despliega en el mismo cuadro; el estado vive en estadoDet para sobrevivir

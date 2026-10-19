@@ -113,6 +113,9 @@ async function mirarFigura(page) {
   'la hoja «Supuestos» trae el enlace del escenario, la plataforma y el equipo');
   t.ok(/bajada .* \+ subida .* = /.test(sup) && /FUENTES DOCUMENTALES DEL EQUIPO/.test(sup) && /Vigilancia/.test(sup),
     'y la fórmula bajada + subida y las fuentes del equipo con su vigilancia');
+  // `modelos` de fuentes.js (2026-10-19): la ficha de la serie AR610 respalda al AR611 por declaración.
+  t.ok(/AR610 Series[^\n]*\| declarada en el catálogo/.test(sup) && !/\| del fabricante/.test(sup),
+    'la fuente del AR611 se asocia por lo declarado en el catálogo, no por la lista entera del fabricante');
 
   // EL HUECO HONESTO, con un sujeto que no depende del catálogo del día: se sirve el mapa de
   // figuras SIN la entrada del AR611. `quitado` prueba que la intercepción se aplicó y que la

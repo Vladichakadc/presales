@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-19, cuadragésima entrega (**Explicabilidad de Huawei, escalón N+1, hoja «Supuestos» del Excel y escritura atómica del volumen.** Encargo del dueño en cuatro fases. **Huawei**: la traza escribe el ×2 entero («bajada X + subida X = 2X» frente al techo que la ficha publica sumado), cada modelo apartado dice su cuello de botella con cifras y la tabla abre con un resumen por categoría y los modelos de otras plataformas; el BOM marca lo que es **base del chasis** y las licencias sin código ni precio dicen «consultar». **`ficha.js`**: escalón superior N+1 (opt-in, hoy en Huawei). **`bom.js`**: hoja «Supuestos» detrás de «BOM». **Servidor**: `usuarios.json` y el manifiesto de fuentes se escriben de forma atómica. Ninguna cifra del cálculo cambia. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-19, cuadragesimoprimera entrega (**La mejora propuesta —qué equipos respalda cada fuente— y el escalón N+1 en los siete dimensionadores.** `fuentes.js` declara `modelos` en 78 de sus 100 fuentes, con guarda: cada elemento existe, el texto de la fuente lo nombra y **los 217 equipos de los siete catálogos tienen fuente declarada**. La hoja «Supuestos» lista las fuentes que declaran al equipo y dice cómo se asoció cada una. El escalón N+1 pasa de Huawei a los siete. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-19, cuadragésima entrega (**Explicabilidad de Huawei, escalón N+1, hoja «Supuestos» del Excel y escritura atómica del volumen.** Encargo del dueño en cuatro fases. **Huawei**: la traza escribe el ×2 entero («bajada X + subida X = 2X» frente al techo que la ficha publica sumado), cada modelo apartado dice su cuello de botella con cifras y la tabla abre con un resumen por categoría y los modelos de otras plataformas; el BOM marca lo que es **base del chasis** y las licencias sin código ni precio dicen «consultar». **`ficha.js`**: escalón superior N+1 (opt-in, hoy en Huawei). **`bom.js`**: hoja «Supuestos» detrás de «BOM». **Servidor**: `usuarios.json` y el manifiesto de fuentes se escriben de forma atómica. Ninguna cifra del cálculo cambia. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimonovena entrega (**La pasada semántica de graphify, decidida y ejecutada.** El dueño eligió ejecutarla: tres subagentes leyeron los 56 archivos que el análisis del código no lee (15 páginas HTML, 13 workflows, Dependabot, las instrucciones de Copilot, `docs/`, `CLAUDE.md` y el manual). El grafo queda en 2983 nodos, 5275 aristas y 194 comunidades, con 197 conceptos nuevos; costó ~433 000 tokens. No se versiona. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimoctava entrega (**El pendiente de Limpieza 12, cerrado, y la comprobación del aviso al subir graphify.** Si la instalación de graphify falla, el arranque dice por qué (comprobado con un `uv` sin salida a PyPI: «Caused by: Connection refused»). El LEEME de la skill pide, al subir de versión, comprobar que el aviso de grafo viejo calla. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimoséptima entrega (**La mejora propuesta: el aviso de grafo viejo, sin falsas alarmas.** Contaba archivos que el grafo no lee y, peor, `graphify update .` no lo apagaba: graphify no reescribe el commit del grafo cuando la estructura no cambia. Ahora el arranque le pregunta a la propia graphify (`detect_incremental` contra el md5 de su manifiesto, 0,25 s) y solo avisa de lo que lee; sin CLI, compara el commit como antes. Ver *Cerrado recientemente*.)
@@ -2058,6 +2059,51 @@ que ya se comprobó y lo que cuesta cada opción.
 
 ## Cerrado recientemente
 
+### Qué equipos respalda cada fuente, y el escalón N+1 en los siete (2026-10-19, cuadragesimoprimera entrega)
+
+Encargo del dueño: «avanza con los pendientes y con la mejora propuesta; si encuentras una mejora
+por el camino, ejecútala».
+
+- **La mejora propuesta: `modelos` en `legacyData/fuentes.js`.** Cada fuente declara qué equipos
+  respalda (ids exactos, series, códigos de ficha de MikroTik o `'*'`); `[]` es «ninguno» (el
+  folleto de la A800 E, que ya no respalda cifra) y la ausencia, «no declarado» (las guías de
+  pedido y las listas de precios, que no son de un equipo). `resolverModelos()` lo resuelve contra
+  el catálogo **por igualdad, no por subcadena** (el NE8000 M1D no arrastra al M1D-B) y
+  `fuentesDe()` lo lleva a `/api/fuentes` como `modelosResueltos`. 78 de 100 fuentes lo declaran.
+- **La guarda que se prometió**, en `test/fuentes-modelos.test.js`: todo elemento existe en el
+  catálogo; el texto de la fuente (documento, cubre, nota o URL) lo nombra, a él, a la serie de
+  cada equipo o a la última palabra de su id; y **ningún equipo de los siete catálogos queda sin
+  fuente** (217 de 217: un modelo nuevo no entra sin la suya). Al estrenarla cazó tres
+  declaraciones que el texto no sostenía: el boletín EOL de Cisco decía «Catalyst 8300/8200» sin
+  nombrar los dos 8300, la ficha de la serie AR6710-L decía «los cuatro AR6710-L» y la página de
+  producto de NE8000 nombra equipos de dos caracteres («X4», «M8») que la guarda no leía. Se precisó la prosa de `cubre` (los
+  equipos, por su id) y la guarda acepta dos caracteres. Nokia tenía tres equipos (7250 IXR-X1b,
+  X3b y R6dl) sin fuente que los nombrara: la de sus datasheets cubre «la línea 7250 IXR», que los
+  incluye, y ahora lo dice.
+- **La hoja «Supuestos» manda con lo declarado**: una fuente que declara sus equipos y no incluye
+  al cotizado no entra aunque su texto lo cite; solo las que no declaran se casan por texto; y la
+  tabla gana la columna «Asociación con el equipo» (declarada en el catálogo · su texto nombra el
+  equipo · del fabricante). Cisco, Juniper, Nokia, Aruba, MikroTik y Fortinet pasan su equipo en
+  `meta.supuestos` (sin él, la hoja listaba todas las fuentes del fabricante), y Fortinet añade al
+  resultado su puerta de cotización, el cuello, la huella del escenario y sus supuestos declarados.
+- **Pendiente cerrado: el escalón N+1 en los siete.** Cisco, Fortinet, MikroTik, Aruba, Juniper
+  (SRX y SSR) y Nokia 7750 lo declaran con la cifra de su desplegable y el precio que ya usa su
+  BOM (`elpN`). `comparable` (antes `mismaFamilia`) lo limita a lo que se mide igual: en Cisco
+  SD-WAN, un equipo sin cifra SD-WAN propia no es el escalón de uno que la publica; en Aruba, un
+  EdgeConnect no lo es de un gateway. El precio se dice «cuesta $X más/menos de lista».
+  **La e2e cazó un efecto propio**: en Aruba, la tarjeta clavada crecía un párrafo y al llegar al
+  fondo se soltaba (`e2e-sticky`, top = −20); en la tarjeta clavada el escalón va dentro del
+  detalle desplegable, y la compacta vuelve a caber entera.
+- **Hallazgo por el camino (no es un defecto)**: en Cisco con SD-WAN a 500 Mbps, el N+1 del
+  recomendado (Secure Router C8355-G2, +6,9 Gbps) cuesta 5.734 $ **menos** de lista. El motor
+  recomienda el menor que cumple, no el más barato, y el indicador lo hace visible. Si el criterio
+  debiera ser otro es decisión del dueño.
+- **Sigue abierto**: el puerto de la interconexión EdgeHA de Aruba (cambiaría recomendaciones y el
+  reparto de enlaces entre los dos chasis no está modelado), la marca `incluida` de las piezas
+  Huawei (sin fuente que diga si vienen con el chasis) y lo bloqueado por la cuenta y el egreso de
+  Huawei, en sus secciones.
+
+
 ### Explicabilidad de Huawei, escalón N+1, hoja «Supuestos» y escritura atómica (2026-10-19, cuadragésima entrega)
 
 Encargo del dueño en cuatro fases, con la batería completa antes de fusionar. **Ninguna cifra del
@@ -2107,10 +2153,9 @@ las pruebas y el contraste) conserva su texto.
 - **Pruebas**: `huawei-explicabilidad` (10), `ficha-escalon` (5), `bom-supuestos` (5) y
   `escritura-atomica` (6); `e2e-huawei-vistas` afirma el orden de hojas, el contenido de
   «Supuestos», el escalón junto al recomendado y el resumen de evaluados.
-- **Queda abierto**: el escalón N+1 solo lo declara Huawei (los otros seis dimensionadores lo
-  pueden declarar con una línea); y la hoja casa las fuentes con el equipo por texto (`cubre`
-  nombra el modelo o la serie), porque `fuentes.js` no tiene un campo de modelos: ver la mejora
-  propuesta al cerrar.
+- ~~**Queda abierto**: el escalón N+1 solo en Huawei, y la hoja casa las fuentes por texto~~
+  **Cerrado en la cuadragesimoprimera entrega**: los siete declaran el escalón y `fuentes.js`
+  declara `modelos`.
 
 
 ### La pasada semántica de graphify (2026-10-15, trigesimonovena entrega)

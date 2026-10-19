@@ -31,8 +31,8 @@ test('diferencial de precio solo con precio en los dos', () => {
   assert.strictEqual(FICHA.escalonSuperior([A, C], A, cfg()).deltaPrecio, null, 'C no tiene precio: no se inventa la diferencia');
 });
 
-test('la familia limita cuando la página la declara', () => {
-  const e = FICHA.escalonSuperior([A, B, C], A, cfg({ mismaFamilia: (a, b) => a.fam === b.fam }));
+test('«comparable» limita a la misma familia o base de medida cuando la página lo declara', () => {
+  const e = FICHA.escalonSuperior([A, B, C], A, cfg({ comparable: (a, b) => a.fam === b.fam }));
   assert.strictEqual(e.modelo.id, 'B');
 });
 

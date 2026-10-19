@@ -287,7 +287,10 @@ contra lo verificado, queda como diff de `legacyData/` y llega a producción con
 - `server/seed/legacyData/fuentes.js` — la procedencia como datos: documento, URL, fecha (`null` si
   no consta, que nunca es «reciente»), `hash`, `estable`, `cubre` y `campos` (qué campos respalda,
   contrastados contra las claves reales de `MODELS`; `campos: null` es «no consta» y exige
-  `dominio: 'precio'` o `porQue`). La pestaña «Fuentes y Referencias» la pinta con dos columnas
+  `dominio: 'precio'` o `porQue`) y **`modelos`** (qué equipos respalda: ids, series, códigos de
+  ficha o `'*'`; `[]` es «ninguno» y la ausencia, «no declarado»; cada elemento existe en el
+  catálogo, el texto de la entrada lo nombra y ningún equipo queda sin fuente:
+  `test/fuentes-modelos.test.js`). La pestaña «Fuentes y Referencias» la pinta con dos columnas
   distintas: **Estado** (antigüedad) y **Vigilancia** (si el documento sigue siendo el mismo).
 
 ## Páginas y módulos del navegador (`public/`)
@@ -326,8 +329,10 @@ Módulos compartidos:
   `'no-aplica'` y «no consta», nunca `undefined` leído como `false`), puertos (configuraciones
   alternativas, no acumulables; un chasis modular no publica densidad), licenciamiento, software,
   soporte, referencias de pedido (bajo demanda por modelo) y figuras con su página y rótulo literal.
-  Opt-in `escalon`: junto al recomendado, el N+1 (menor métrica estrictamente mayor, nunca fuera de
-  venta) y el diferencial de precio solo con precio en los dos; no toca la selección.
+  `escalon` (los siete lo declaran): junto al recomendado, el N+1 (menor métrica estrictamente mayor
+  en la cifra del desplegable, nunca fuera de venta; `comparable` lo limita a la misma familia o base
+  de medida) y el diferencial de precio solo con precio en los dos; no toca la selección. En la
+  tarjeta clavada (`panelFijo`, Aruba) va dentro del detalle: la compacta tiene que caber entera.
 - `bom.js` — tabla del BOM, totales con las líneas sin precio contadas («sin cotizar») y Excel.
   `BOM.sincronizar()` repinta siempre (también sin candidato). Referencias añadidas a mano en una
   sola clave para los siete, `fabricante|sku`. Simulador de precio neto, TCO sobre las filas (qué
@@ -335,8 +340,9 @@ Módulos compartidos:
   traspaso al cotizador: el equipo viaja como nombre (su precio lo pone `CATALOG`) y el resto del
   BOM como referencias; falla cerrado si la fila del equipo no casa. El Excel (ExcelJS) lleva
   «BOM» en el índice 0 y detrás **«Supuestos»** (`matrizSupuestos`: fecha, enlace, plataforma,
-  resultado que declare `meta.supuestos`, parámetros de `ESTADO.escenario()` y fuentes del equipo);
-  el consolidado multi-sede no la lleva.
+  resultado que declare `meta.supuestos`, parámetros de `ESTADO.escenario()` y las fuentes que
+  **declaran** al equipo en `modelos`, o las que lo nombran si no declaran, con su «Asociación»); el
+  consolidado multi-sede no la lleva.
 - `estado.js` — el escenario en la URL (manda si trae parámetros) y en el almacenamiento local;
   solo se serializa lo que difiere del valor por defecto; lo que va dentro de `[data-inactivo]` no
   viaja; un enlace con parámetros que la pantalla ya no entiende lo dice (`avisoOrigen`), salvo lo

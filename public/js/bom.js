@@ -740,33 +740,35 @@
     } else if (!(f.lista || []).length) {
       aoa.push(['', 'El catálogo no registra fuentes para este fabricante.']);
     } else {
-      if (f.todas) aoa.push(['', 'Ninguna fuente nombra este equipo ni su serie: se listan todas las del fabricante.']);
-      aoa.push(['Documento', 'Fecha', 'Estado (antigüedad)', 'Vigilancia', 'Qué cubre', 'URL']);
-      for (const x of f.lista) aoa.push([x.documento || '', x.fecha || 'sin fecha', x.estado || '', x.vigilancia || '', x.cubre || '', x.url || '']);
+      if (f.todas) aoa.push(['', 'Ninguna fuente declara este equipo ni lo nombra: se listan todas las del fabricante.']);
+      aoa.push(['Documento', 'Fecha', 'Estado (antigüedad)', 'Vigilancia', 'Qué cubre', 'URL', 'Asociación con el equipo']);
+      for (const x of f.lista) aoa.push([x.documento || '', x.fecha || 'sin fecha', x.estado || '', x.vigilancia || '', x.cubre || '', x.url || '', x.asociacion || '']);
     }
     aoa.push([]);
     aoa.push(['', 'Los parámetros son los de la pantalla en el momento de exportar. Los supuestos de diseño son entradas editables, no cifras del fabricante.']);
-    return { aoa, cols: [{ wch: 38 }, { wch: 60 }, { wch: 22 }, { wch: 24 }, { wch: 60 }, { wch: 50 }] };
+    return { aoa, cols: [{ wch: 38 }, { wch: 60 }, { wch: 22 }, { wch: 24 }, { wch: 60 }, { wch: 50 }, { wch: 26 }] };
   }
 
-  // Las fuentes del fabricante que nombran al equipo o a su serie, con las etiquetas de la pestaña
-  // de procedencia. Puro: recibe lo que devuelve /api/fuentes para ese fabricante.
+  // Las fuentes que respaldan al equipo, con las etiquetas de la pestaña de procedencia. Puro:
+  // recibe lo que devuelve /api/fuentes para ese fabricante. Manda lo DECLARADO (`modelosResueltos`,
+  // de `modelos` en legacyData/fuentes.js): una fuente que lo declara y no incluye al equipo no
+  // entra, aunque su texto lo cite. Solo las que no declaran nada se casan por texto (el modelo en
+  // el título o en lo que cubre; la serie, solo en lo que cubre), y la columna «Asociación» lo dice.
   function fuentesDelEquipo(datosVendor, terminos) {
     const activas = ((datosVendor && datosVendor.fuentes) || []).filter((x) => x.estado !== 'historico');
     const norm = (t) => String(t || '').toLowerCase().replace(/\s+/g, '');
-    const ts = (terminos || []).map(norm).filter(Boolean);
-    // El modelo puede salir en el título o en lo que cubre; la serie, solo en lo que cubre: un título
-    // de serie («Hardware Description» de tres series) no dice que respalde a ESTE equipo.
-    const [modelo, ...resto] = ts;
-    const nombran = activas.filter((x) => (modelo && norm(`${x.cubre} ${x.documento}`).includes(modelo))
-      || resto.some((t) => norm(x.cubre).includes(t)));
+    const [modelo, ...resto] = (terminos || []).filter(Boolean);
     const P = global.PROCEDENCIA || {};
-    const fila = (x) => ({
-      documento: x.documento, fecha: x.fecha, url: x.url, cubre: x.cubre,
+    const fila = (x, asociacion) => ({
+      documento: x.documento, fecha: x.fecha, url: x.url, cubre: x.cubre, asociacion,
       estado: P.etiquetaEstado ? P.etiquetaEstado(x.estado) : x.estado,
       vigilancia: P.etiquetaVigilancia ? P.etiquetaVigilancia(x.vigilancia) : ((x.vigilancia && x.vigilancia.estado) || 'no comprobada'),
     });
-    return nombran.length ? { lista: nombran.map(fila) } : { lista: activas.map(fila), todas: activas.length > 0 };
+    const declaradas = modelo ? activas.filter((x) => Array.isArray(x.modelosResueltos) && x.modelosResueltos.includes(modelo)) : [];
+    const porTexto = modelo ? activas.filter((x) => !Array.isArray(x.modelosResueltos)
+      && (norm(`${x.cubre} ${x.documento}`).includes(norm(modelo)) || resto.some((t) => norm(x.cubre).includes(norm(t))))) : [];
+    const lista = [...declaradas.map((x) => fila(x, 'declarada en el catálogo')), ...porTexto.map((x) => fila(x, 'su texto nombra el equipo'))];
+    return lista.length ? { lista } : { lista: activas.map((x) => fila(x, 'del fabricante')), todas: activas.length > 0 };
   }
 
   async function entornoSupuestos(meta) {
@@ -778,7 +780,7 @@
         const r = await fetch('/api/fuentes');
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const datos = await r.json();
-        fuentes = fuentesDelEquipo(datos[vendor], [s.modelo, s.serie]);
+        fuentes = fuentesDelEquipo(datos[vendor], [s.modelo || (meta && meta.fotos && meta.fotos.modelo), s.serie]);
       } catch (err) {
         fuentes = { error: err.message || 'error de red' };
       }
