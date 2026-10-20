@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "624516a",
+  "commit": "1f34d4c",
   "fecha": "2026-10-20"
  },
  "umbralRozado": 25,
@@ -76,17 +76,17 @@
    "pct": 18
   },
   {
-   "modulo": "procedencia.js",
-   "estado": "ejercitado",
-   "total": 36,
-   "usadas": 18,
-   "pct": 50
-  },
-  {
    "modulo": "navegacion.js",
    "estado": "ejercitado",
    "total": 17,
    "usadas": 9,
+   "pct": 53
+  },
+  {
+   "modulo": "procedencia.js",
+   "estado": "ejercitado",
+   "total": 36,
+   "usadas": 19,
    "pct": 53
   },
   {
@@ -149,8 +149,8 @@
    "modulo": "index.js",
    "estado": "ejercitado",
    "total": 58,
-   "usadas": 42,
-   "pct": 72
+   "usadas": 43,
+   "pct": 74
   },
   {
    "modulo": "ficha.js",
@@ -176,8 +176,8 @@
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
-   "total": 283,
-   "usadas": 225,
+   "total": 284,
+   "usadas": 226,
    "pct": 80
   },
   {
