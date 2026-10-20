@@ -777,6 +777,154 @@ jobs:
               ] },
               { archivo: 'huawei-ne8000-f1a-c-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
                 descubrir: { de: 'huawei-ne8000-f1a-c-documento.html', material: 'Material/b4d387a588a44b67b8a55e9c63847336/' } },
+              // 2026-10-20: CISCO, la linea Secure Router (G2) entera y Meraki MX, para el rediseno
+              // del dimensionador con las vistas frontal y trasera de cada equipo. Un HTML adjunto
+              // por el dueno traia 35 equipos con cifras, precios y dibujos SVG sin documento; aqui
+              // se traen los documentos que deciden cada cifra y cada figura. Las URL salieron de
+              // BUSCAR cada documento ese dia. Las guias de instalacion (HIG) se piden en PDF porque
+              // traen las caras rotuladas («front panel», «rear panel»); donde el buscador solo dio
+              // la edicion en espanol, se pide antes la inglesa de la misma ruta y la espanola queda
+              // de respaldo: las figuras son las mismas y el PDF se valida por su firma.
+              { archivo: 'cisco-sr8100-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8161-G2', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8100-series-secure-routers-ds.html',
+                'https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8100-series-secure-routers-ds.html',
+              ] },
+              { archivo: 'cisco-sr8200-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8235-G2', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8200-series-secure-routers-ds.html',
+                'https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8200-series-secure-routers-ds.html',
+              ] },
+              { archivo: 'cisco-sr8300-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8375-E-G2', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8300-series-secure-routers-ds.html',
+                'https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8300-series-secure-routers-ds.html',
+              ] },
+              { archivo: 'cisco-sr8400-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8475-G2', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8400-series-secure-routers-ds.html',
+                'https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8400-series-secure-routers-ds.html',
+              ] },
+              { archivo: 'cisco-sr8500-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8570-G2', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8500-series-secure-routers-ds.html',
+                'https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8500-series-secure-routers-ds.html',
+              ] },
+              { archivo: 'cisco-sr8600-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8650-G2', urls: [
+                'https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8600-series-secure-routers-ds.html',
+                'https://cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8600-series-secure-routers-ds.html',
+              ] },
+              { archivo: 'cisco-sr8500-ds.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+                'https://www.cisco.com/c/dam/en/us/products/collateral/routers/secure-routers/8500-series-secure-routers-ds.pdf',
+              ] },
+              { archivo: 'cisco-sr8600-ds.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+                'https://www.cisco.com/c/dam/en/us/products/collateral/routers/secure-routers/8600-series-secure-routers-ds.pdf',
+              ] },
+              { archivo: 'cisco-sr8000-og.html', tipo: 'html', para: 'CISCO', debeContener: 'C8375-E-G2', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/8000-secure-routers/8000-secure-router-og.html',
+              ] },
+              { archivo: 'cisco-sr8000-og.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/8000-secure-routers/8000-secure-router-og.pdf',
+              ] },
+              { archivo: 'cisco-sr8100-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8100-series/hardware-installation-guide-for-the-cisco-8100-series-secure-routers.pdf',
+              ] },
+              { archivo: 'cisco-sr8200-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8200-series/hardware-installation-guide/secure-8200-series-hig.pdf',
+                'https://www.cisco.com/c/es_es/td/docs/routers/secure-routers/sec-8200-series/hardware-installation-guide/secure-8200-series-hig.pdf',
+              ] },
+              { archivo: 'cisco-sr8300-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8300-series/hardware_installation-guide/secure-8300-series-hig.pdf',
+                'https://www.cisco.com/c/es_es/td/docs/routers/secure-routers/sec-8300-series/hardware_installation-guide/secure-8300-series-hig.pdf',
+              ] },
+              { archivo: 'cisco-sr8400-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/c84xx/c8400-g2-hardware-installation-guide.pdf',
+              ] },
+              { archivo: 'cisco-sr8500-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/secure_8500/cisco-8500-series-secure-router-HIG.pdf',
+              ] },
+              { archivo: 'cisco-sr8600-soporte.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://www.cisco.com/c/en/us/support/routers/8600-series-secure-routers/series.html',
+              ] },
+              { archivo: 'cisco-c8500l-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8500l/b-catalyst-8500L-8S4X-edge-platform-hig.pdf',
+                'https://bxin.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8500l/b-catalyst-8500L-8S4X-edge-platform-hig.pdf',
+              ] },
+              { archivo: 'cisco-c8200-guias.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://www.cisco.com/c/en/us/support/routers/catalyst-8200-series-edge-platforms/products-installation-guides-list.html',
+              ] },
+              { archivo: 'cisco-c8300-guias.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://www.cisco.com/c/en/us/support/routers/catalyst-8300-series-edge-platforms/products-installation-guides-list.html',
+              ] },
+              { archivo: 'cisco-c8500-guias.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://www.cisco.com/c/en/us/support/routers/catalyst-8500-series-edge-platforms/products-installation-guides-list.html',
+              ] },
+              { archivo: 'meraki-mx67-68-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'MX68', urls: [
+                'https://documentation.meraki.com/MX/MX_Overviews_and_Specifications/MX67_and_MX68_Overview_and_Specifications',
+              ] },
+              { archivo: 'meraki-mx75-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'MX75', urls: [
+                'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX75_Datasheet',
+              ] },
+              { archivo: 'meraki-mx85-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'MX85', urls: [
+                'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX85_Datasheet',
+              ] },
+              { archivo: 'meraki-mx95-105-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'MX105', urls: [
+                'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX95%2F%2F105_Datasheet',
+                'https://documentation.meraki.com/MX/MX_Overviews_and_Specifications/MX95%2F%2F105_Datasheet',
+              ] },
+              { archivo: 'meraki-mx250-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'MX250', urls: [
+                'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX250_Datasheet',
+                'https://documentation.meraki.com/MX/MX_Overviews_and_Specifications/MX250_Datasheet',
+              ] },
+              { archivo: 'meraki-mx450-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'MX450', urls: [
+                'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX450_Datasheet',
+              ] },
+              { archivo: 'meraki-c8111-c8121-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8121-G2', urls: [
+                'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/C8111-G2-MX_and_C8121-G2-MX_Data_Sheet',
+                'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/C8111-G2-MX_and_C8121-G2-MX_Datasheet',
+              ] },
+              { archivo: 'meraki-mx67-68-ig.html', tipo: 'html', para: 'CISCO', debeContener: 'MX68', urls: [
+                'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67%2F%2FMX68_Installation_Guide',
+              ] },
+              { archivo: 'meraki-mx75-ig.html', tipo: 'html', para: 'CISCO', debeContener: 'MX75', urls: [
+                'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX75_Hardware_Installation_Guide',
+                'https://documentation.meraki.com/MX/MX_Installation_Guides/MX75_Hardware_Installation_Guide',
+              ] },
+              { archivo: 'meraki-mx85-ig.html', tipo: 'html', para: 'CISCO', debeContener: 'MX85', urls: [
+                'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX85_Series_Hardware_Installation_Guide',
+                'https://documentation.meraki.com/MX/MX_Installation_Guides/MX85_Series_Hardware_Installation_Guide',
+              ] },
+              { archivo: 'meraki-mx95-105-ig.html', tipo: 'html', para: 'CISCO', debeContener: 'MX105', urls: [
+                'https://documentation.meraki.com/MX/MX_Installation_Guides/MX95%2F%2FMX105_Series_Hardware_Installation_Guide',
+              ] },
+              { archivo: 'meraki-mx250-ig.html', tipo: 'html', para: 'CISCO', debeContener: 'MX250', urls: [
+                'https://documentation.meraki.com/MX/MX_Installation_Guides/MX250_Installation_Guide',
+                'https://documentation.meraki.com/MX/Installation_Guides/MX250_Installation_Guide',
+              ] },
+              { archivo: 'meraki-mx450-ig.html', tipo: 'html', para: 'CISCO', debeContener: 'MX450', urls: [
+                'https://documentation.meraki.com/MX/MX_Installation_Guides/MX450_Installation_Guide',
+                'https://documentation.meraki.com/MX/Installation_Guides/MX450_Installation_Guide',
+              ] },
+              { archivo: 'meraki-c8111-c8121-ig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8121-G2', urls: [
+                'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/C8111-G2-MX_and_C8121-G2-MX_Installation_Guide',
+              ] },
+              { archivo: 'meraki-c8355-ig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8355-G2', urls: [
+                'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/C8355-G2-MX_Installation_Guide',
+              ] },
+              { archivo: 'meraki-mx-sizing.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+                'https://meraki.cisco.com/lib/pdf/meraki_whitepaper_mx_sizing_guide.pdf',
+              ] },
+              // Las figuras de las fichas y de las guias de Meraki: las paginas de Cisco las enlazan
+              // con ruta relativa a la raiz («/c/dam/...»), por eso `relativas`. Que modelo y que
+              // cara es cada una se decide MIRANDOLA y leyendo su pie, no por el orden en la pagina.
+              { archivo: 'cisco-img', tipo: 'imagenes', para: 'CISCO', urls: [],
+                descubrirPiezas: { de: ['cisco-sr8100-ds.html', 'cisco-sr8200-ds.html', 'cisco-sr8300-ds.html',
+                  'cisco-sr8400-ds.html', 'cisco-sr8500-ds.html', 'cisco-sr8600-ds.html', 'cisco-sr8000-og.html',
+                  'cisco-isr1000-ds.html', 'cisco-c8200-ds.html', 'cisco-c8300-ds.html', 'cisco-c8500-ds.html'],
+                  base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
+                  contiene: ['/c/dam/', '/content/dam/'], max: 200 } },
+              { archivo: 'meraki-img', tipo: 'imagenes', para: 'CISCO', urls: [],
+                descubrirPiezas: { de: ['meraki-mx67-68-ds.html', 'meraki-mx75-ds.html', 'meraki-mx85-ds.html',
+                  'meraki-mx95-105-ds.html', 'meraki-mx250-ds.html', 'meraki-mx450-ds.html', 'meraki-c8111-c8121-ds.html',
+                  'meraki-mx67-68-ig.html', 'meraki-mx75-ig.html', 'meraki-mx85-ig.html', 'meraki-mx95-105-ig.html',
+                  'meraki-mx250-ig.html', 'meraki-mx450-ig.html', 'meraki-c8111-c8121-ig.html', 'meraki-c8355-ig.html'],
+                  base: 'https://documentation.meraki.com/', dominios: ['meraki.com', 'cisco.com'], relativas: true,
+                  contiene: ['/@api/deki/files/', '/c/dam/', '/content/dam/'], max: 250 } },
             ];
             // Una pagina HTML se valida por un texto que solo puede estar en el documento correcto
             // (debeContener). La que se pide para ver que hay —un indice del archivo, una pagina de
@@ -878,9 +1026,15 @@ jobs:
                     const re = esJs ? /src=[\x22']([^\x22'<>\s]+?[.]js(?:[?][^\x22'<>\s]*)?)[\x22']/gi
                       : esImg ? /(?:https?:)?[/][/][^\x22'\s()<>]+?[.](?:png|jpe?g|webp)/gi
                       : new RegExp('(?:https?:[/][/][A-Za-z0-9.-]+)?[/]' + cfg.prefijo.join('[/]') + '[/][A-Za-z0-9][A-Za-z0-9_/-]*', 'g');
-                    for (const m of texto.matchAll(re)) {
+                    const halladas = [...texto.matchAll(re)].map((m) => (esJs ? m[1] : m[0]));
+                    // Opt-in (Cisco, 2026-10-20): imagenes con ruta relativa a la raiz del sitio, que
+                    // la expresion de arriba no ve porque exige el doble barra de una URL completa.
+                    if (esImg && cfg.relativas) {
+                      for (const m of texto.matchAll(/(?:src|href|data-src)=[\x22']([/][^/\x22'<>\s][^\x22'<>\s]*?[.](?:png|jpe?g|webp))/gi)) halladas.push(m[1]);
+                    }
+                    for (const hallada of halladas) {
                       let u;
-                      try { u = new URL(esJs ? m[1] : m[0], cfg.base); } catch (e) { continue; }
+                      try { u = new URL(hallada, cfg.base); } catch (e) { continue; }
                       if (u.protocol !== 'https:' && u.protocol !== 'http:') continue;
                       u.protocol = 'https:';
                       if (!cfg.dominios.some((d) => u.hostname === d || u.hostname.endsWith('.' + d))) continue;
