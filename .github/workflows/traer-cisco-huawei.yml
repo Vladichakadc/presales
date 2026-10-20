@@ -978,6 +978,84 @@ jobs:
               { archivo: 'meraki-mx-sizing.pdf', tipo: 'pdf', para: 'CISCO', urls: [
                 'https://meraki.cisco.com/lib/pdf/meraki_whitepaper_mx_sizing_guide.pdf',
               ] },
+              // Tercera vuelta (2026-10-20, cierre de pendientes). La guia de la 8400 cambio de ruta
+              // (sec-8400-series/...): la vieja redirige a la de software (corrida 39410454052). La de
+              // la 8600 la enlaza su pagina de soporte desde el 12-oct-2026. La HTML de la 8200, por si
+              // es una edicion posterior al PDF del 10-sep-2025, que no dibuja C8211/C8221L/C8225.
+              { archivo: 'cisco-sr8400-hig2.html', tipo: 'html', para: 'CISCO', debeContener: 'C8455-G2', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/m-overview.html',
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide.html',
+              ] },
+              { archivo: 'cisco-sr8400-hig2.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide.pdf',
+              ], descubrirEnlace: { de: 'cisco-sr8400-hig2.html', contiene: 'hardware-installation-guide', base: 'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/m-overview.html',
+                dominios: ['cisco.com'] } },
+              { archivo: 'cisco-sr8600-hig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8650-G2', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8600-series/hardware-installation-guide/secure-8600-series-hig.html',
+              ] },
+              { archivo: 'cisco-sr8600-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8600-series/hardware-installation-guide/secure-8600-series-hig.pdf',
+              ], descubrirEnlace: { de: 'cisco-sr8600-hig.html', contiene: 'hig', base: 'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8600-series/hardware-installation-guide/secure-8600-series-hig.html',
+                dominios: ['cisco.com'] } },
+              { archivo: 'cisco-sr8200-hig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8235-G2', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8200-series/hardware-installation-guide/secure-8200-series-hig.html',
+              ] },
+              { archivo: 'cisco-sr8200-guias.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://www.cisco.com/c/en/us/support/routers/8200-series-secure-routers/products-installation-guides-list.html',
+              ] },
+              // La guia de instalacion de la serie ISR 1100 (figuras de los C1111/C1116/C1121/C1161): la
+              // ficha solo dibuja otras variantes. La italiana de la misma ruta es el respaldo.
+              { archivo: 'cisco-isr1100-hig.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/access/1100/hardware/installation/guide/b-cisco-1100-series-hig.html',
+                'https://www.cisco.com/c/en/us/td/docs/routers/access/1100/hardware/installation/guide/1100-hig.html',
+              ] },
+              { archivo: 'cisco-isr1100-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/access/1100/hardware/installation/guide/b-cisco-1100-series-hig.pdf',
+                'https://www.cisco.com/c/dam/en/us/td/docs/routers/access/1100/hardware/installation/guide/b-cisco-1100-series-hig.pdf',
+                'https://www.cisco.com/c/dam/en/us/td/docs/routers/access/1100/hardware/installation/guide/Localization/b-cisco-1100-series-hig_it_IT.pdf',
+              ], descubrirEnlace: { de: 'cisco-isr1100-hig.html', contiene: 'hig', base: 'https://www.cisco.com/c/en/us/td/docs/routers/access/1100/hardware/installation/guide/b-cisco-1100-series-hig.html',
+                dominios: ['cisco.com'] } },
+              { archivo: 'cisco-isr1000-guias.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://www.cisco.com/c/en/us/support/routers/1000-series-integrated-services-routers-isr/products-installation-guides-list.html',
+              ] },
+              // Modulos NIM, SM y PIM de los Catalyst 8200/8300: su guia de pedido (la de la G2 es otra).
+              { archivo: 'cisco-c8000-og.html', tipo: 'html', para: 'CISCO', debeContener: 'NIM', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8300-series-edge-platforms/cat-8300-8200-series-edge-plat-og.html',
+              ] },
+              // Fin de venta del Catalyst 8500-20X6C: ningun boletin traido lo nombra; la lista de avisos
+              // de la serie y su pagina de soporte dicen si hay uno.
+              { archivo: 'cisco-c8500-eol-lista.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://www.cisco.com/c/en/us/products/routers/catalyst-8500-series-edge-platforms/eos-eol-notice-listing.html',
+              ] },
+              { archivo: 'cisco-c8500-soporte.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://www.cisco.com/c/en/us/support/routers/catalyst-8500-series-edge-platforms/series.html',
+              ] },
+              { archivo: 'meraki-c8355-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8355-G2', urls: [
+                'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/C8355-G2-MX_Datasheet',
+              ] },
+              { archivo: 'meraki-c8455-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8455-G2', urls: [
+                'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/C8455-G2-MX_Datasheet',
+                'https://documentation.meraki.com/MX/MX_Overviews_and_Specifications/C8455-G2-MX_Data_Sheet',
+              ] },
+              { archivo: 'meraki-c8455-ig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8455-G2', urls: [
+                'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/C8455-G2-MX_Installation_Guide',
+              ] },
+              { archivo: 'meraki-licencias.html', tipo: 'html', para: 'CISCO', debeContener: 'Advanced Security', urls: [
+                'https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing/Co-Termination_Licensing/Meraki_MX%2F%2FZ_Security_and_SD-WAN_Licensing',
+                'https://documentation.meraki.com/Platform_Management/Product_Information/Licensing/Meraki_MX_Security_and_SD-WAN_Licensing',
+                'https://documentation.meraki.com/General_Administration/Product_Information/Licensing/Meraki_MX_Security_and_SD-WAN_Licensing',
+              ] },
+              { archivo: 'meraki-mx-sizing.html', tipo: 'html', para: 'CISCO', debeContener: 'MX95', urls: [
+                'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_%26_Principles',
+              ] },
+              { archivo: 'cisco-hig2-img', tipo: 'imagenes', para: 'CISCO', urls: [],
+                descubrirPiezas: { de: ['cisco-sr8400-hig2.html', 'cisco-sr8600-hig.html', 'cisco-sr8200-hig.html', 'cisco-isr1100-hig.html'],
+                  base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
+                  contiene: ['/c/dam/', '/content/dam/'], max: 200 } },
+              { archivo: 'meraki2-img', tipo: 'imagenes', para: 'CISCO', urls: [],
+                descubrirPiezas: { de: ['meraki-c8355-ds.html', 'meraki-c8455-ds.html', 'meraki-c8455-ig.html', 'meraki-c8355-ig.html'],
+                  base: 'https://documentation.meraki.com/', dominios: ['meraki.com', 'cisco.com'], relativas: true,
+                  contiene: ['/@api/deki/files/', '/c/dam/', '/content/dam/'], max: 120 } },
               // Las figuras de las fichas y de las guias de Meraki: las paginas de Cisco las enlazan
               // con ruta relativa a la raiz («/c/dam/...»), por eso `relativas`. Que modelo y que
               // cara es cada una se decide MIRANDOLA y leyendo su pie, no por el orden en la pagina.
