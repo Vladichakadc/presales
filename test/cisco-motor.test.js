@@ -149,10 +149,19 @@ test('licencias de la G2 por la clase de la plataforma, y sin LIC-SEC en la 2XL'
   assert.ok(dna.avisos.some((a) => /no admite DNA Essentials/.test(a)));
 });
 
+test('Meraki: la licencia por suscripción lleva la referencia de su clase', () => {
+  // «Subscription - MX Licensing»: LIC-MX-S/M/L/XL y LIC-CSR-S/L/XL, con -E o -A.
+  assert.strictEqual(M.licencias(id('Meraki MX67C'), { nivel: 'E', anios: 3 }, LICENCIAS_G2).filas[0].sku, 'LIC-MX-S-E');
+  assert.strictEqual(M.licencias(id('Meraki MX250'), { nivel: 'A', anios: 1 }, LICENCIAS_G2).filas[0].sku, 'LIC-MX-XL-A');
+  assert.strictEqual(M.licencias(SR('C8455-G2-MX'), { nivel: 'A', anios: 5 }, LICENCIAS_G2).filas[0].sku, 'LIC-CSR-XL-A');
+  // Cada Meraki del catálogo tiene su clase: ninguno se queda sin referencia.
+  for (const m of MODELS.filter((x) => x.lic === 'meraki')) assert.match(m.licClase || '', /^LIC-(MX|CSR)-(S|M|L|XL)$/, m.id);
+});
+
 test('Meraki: SD-WAN+ cita la ampliación de su grupo solo donde la página de licencias lo nombra', () => {
   // La página da LIC-MX-SDW-<grupo>-<1|3|5>Y por grupo de plataformas; el MX95 va en «L».
   const l = M.licencias(id('Meraki MX95'), { nivel: 'P', anios: 3 }, LICENCIAS_G2);
-  assert.strictEqual(l.filas[0].sku, null);
+  assert.strictEqual(l.filas[0].sku, 'LIC-MX-L-A');
   assert.ok(l.avisos.some((a) => /LIC-MX-SDW-L-3Y/.test(a)));
   // Un término que la página no ofrece, o un modelo que no nombra (los G2-MX), no inventa la referencia.
   const dos = M.licencias(id('Meraki MX95'), { nivel: 'P', anios: 2 }, LICENCIAS_G2);
@@ -172,6 +181,23 @@ test('módulos de los Catalyst 8300/8200: los de su guía de pedido, con los lí
   assert.deepStrictEqual([sku('C-SM-40P8M2X').ranuras, sku('SM-X-72FXS').familia], [2, 'Catalyst 8300-2N2S']);
   assert.strictEqual(sku('C-NIM-1X').familia, 'Catalyst 8300');
   assert.deepStrictEqual(MODULOS_C8K.filter((x) => x.en === 'pim').map((x) => x.sku), ['P-LTEA-LA', 'P-LTEA-EA', 'P-LTEAP18-GL']);
+});
+
+test('ópticas: los Meraki llevan las MA-SFP de su guía, nunca las de Catalyst, y cada familia las suyas', () => {
+  const { OPTICS } = require('../server/seed/legacyData/cisco.js');
+  const skus = (m) => m.optics.flatMap((k) => (OPTICS[k] || []).map((o) => o.sku));
+  for (const m of MODELS.filter((x) => x.ser === 'Meraki MX')) {
+    assert.ok(m.optics.every((k) => OPTICS[k]), `${m.id}: categoría de óptica sin lista`);
+    assert.ok(!skus(m).some((s) => /^(GLC-|SFP-10G-|QSFP-)/.test(s)), `${m.id}: ópticas de Catalyst en un Meraki`);
+  }
+  // La guía de accesorios SFP no da la SX ni la ZR a los G2-MX.
+  for (const n of ['C8355-G2-MX', 'C8455-G2-MX']) {
+    const l = skus(SR(n));
+    assert.ok(!l.includes('MA-SFP-1GB-SX') && !l.includes('MA-SFP-10GB-ZR') && l.includes('MA-SFP-10GB-LR'), n);
+  }
+  assert.ok(skus(id('Meraki MX450')).includes('MA-SFP-10GB-ZR'));
+  assert.ok(skus(SR('C8455-G2-MX')).includes('SFP-25G-SR-S') && !skus(SR('C8355-G2-MX')).includes('SFP-25G-SR-S'));
+  assert.deepStrictEqual(id('Meraki MX75').optics, ['mxsfp1g']);
 });
 
 test('pool de NAT por bloques de puertos: aritmética, sin cifras del fabricante', () => {

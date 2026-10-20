@@ -34,9 +34,8 @@ function lienzoConPerdida(buf) {
 
 // Lo que se declara a propósito sin figura, y por qué (ver `_procedencia`).
 const SIN_FIGURA = new Set([
-  'Cisco Secure Router C8221-G2', 'Cisco Secure Router C8231-E-G2', // ni su ficha ni la guía de la serie
-  'ISR 1116-4P',  // la guía del ISR 1000 no tiene vista de puertos de los C111x-4P
-  'ISR 1161X-8P', // la edición de la guía (2021-10-18) es anterior a él
+  'ISR 1116-4P',  // la guía del ISR 1000 (29-oct-2025) no tiene vista de los C111x-4P
+  'ISR 1161X-8P', // la guía no dibuja ningún C1161
   'ASR 1001-X', 'ASR 1002-HX', 'ASR 1006-X',                         // fuera de venta
 ]);
 

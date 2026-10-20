@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-20, cuadragesimoséptima entrega (**Cerrado lo que dejó abierto la entrega de Cisco, y hecha la mejora propuesta.** Encargo del dueño: «cierra lo que está abierto y ejecuta la mejora propuesta». Entran el C8355-G2-MX y el C8455-G2-MX con sus fichas y figuras, la trasera del C8650-G2, las figuras de tres ISR, el fin de venta del 8500-20X6C, los dispositivos del MX95/105, los módulos de los Catalyst 8300/8200 y la referencia SD-WAN+ de Meraki; lo que ningún documento publica queda dicho en su pestaña. Las dos decisiones abiertas se ejecutan con su opción recomendada (precios «~» a «Consultar», bloque de Gemini bajo la regla de datos). Y `npm run cisco` contrasta las fichas traídas celda a celda: 268 de 268 casan. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-20, cuadragesimoctava entrega (**Cerrado también lo que había quedado «sin documento» en Cisco.** Cuatro vueltas más de transporte: la guía HTML de la 8200 dibuja el C8221-G2 y el C8231-E-G2 y dos traseras más; la licencia Meraki por suscripción tiene referencia oficial por clase y el BOM la lleva; los MX llevan sus ópticas MA-SFP en vez de las de Catalyst. Lo que Cisco no publica en ninguna edición queda dicho en su pestaña y fuera de los pendientes. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-20, cuadragesimoséptima entrega (**Cerrado lo que dejó abierto la entrega de Cisco, y hecha la mejora propuesta.** Encargo del dueño: «cierra lo que está abierto y ejecuta la mejora propuesta». Entran el C8355-G2-MX y el C8455-G2-MX con sus fichas y figuras, la trasera del C8650-G2, las figuras de tres ISR, el fin de venta del 8500-20X6C, los dispositivos del MX95/105, los módulos de los Catalyst 8300/8200 y la referencia SD-WAN+ de Meraki; lo que ningún documento publica queda dicho en su pestaña. Las dos decisiones abiertas se ejecutan con su opción recomendada (precios «~» a «Consultar», bloque de Gemini bajo la regla de datos). Y `npm run cisco` contrasta las fichas traídas celda a celda: 268 de 268 casan. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-20, cuadragesimosexta entrega (**Dimensionador Cisco rehecho con la herramienta externa del dueño, contrastada contra las fichas oficiales, y con las figuras frontal y trasera de cada equipo.** El catálogo pasa a 50 modelos: los 20 Secure Router (G2), los Catalyst 8000 con su fin de venta por boletín, los ISR 1000 releídos y los Meraki MX con sus fichas vigentes; cada cifra declara su base de medida. 58 figuras oficiales sin pérdida con el pie literal de cada cara. Motor puro (`cisco-motor.js`): overlay y salida local, cada uno contra la cifra de su capa, licencias G2 por clase, escala y requisitos que apartan con su motivo. Del adjunto entra el método, corregido; ningún precio ni referencia sin documento. Ver *Cerrado recientemente* y `docs/herramienta-externa-cisco-2026-10-20.md`.)
 Revisión anterior: 2026-10-20, cuadragesimoquinta entrega (**La mejora propuesta: la foto de producto a color como tercera vista, y de paso el tamaño y el peso.** La tarjeta común (`ficha.js`) admite una pestaña «Foto» opcional con su propio pie de procedencia; la lupa y las flechas recorren las tres caras. Juniper la estrena en 16 de sus 18 equipos: los SRX300-380 de la imagen de su ficha de línea, que rotula cada modelo; SRX1600/2300/4300/4700 de la imagen de familia de juniper.net, casadas con la foto de cada ficha de un solo modelo; SRX1500 y los SSR de sus fichas. SRX4100/4200 sin foto: su ficha en inglés devuelve HTML. **Mejora encontrada por el camino**: el pendiente de tamaño y peso se cierra con la tabla «Physical Specifications» de cada guía. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-19, cuadragesimocuarta entrega (**Juniper con las figuras oficiales de los 18 equipos y la distribución de Aruba.** Encargo del dueño: fotos frontal y trasera en alta calidad y la pantalla como la de Aruba. Las figuras salen de la guía de hardware de cada modelo —se trajeron por Actions las que faltaban: SRX380 y SSR120/1200/1300/1400— a su resolución nativa (1.400-3.000 px) y sin pérdida; SSR130 y SSR1500, sin guía descargable, de su ficha de línea. Variables a la izquierda, tarjeta del equipo clavada a la derecha con foto, lista de candidatos y características desplegables, escala de capacidad arriba y resultados debajo. **Hallazgo por el camino**: los SSR salían «vigentes» con una fuente que solo cubre los SRX; ahora dicen que no hay respaldo. Ver *Cerrado recientemente*.)
@@ -2007,30 +2008,26 @@ Lo que el HTML adjunto traía y **no** entró, con el motivo y lo que lo cerrar�
   un dato». ~~Decisión del dueño: retirarlos o integrarlos con la regla de datos.~~ **Decidido el
   2026-10-20** (ver *Decisiones que necesitan al dueño del producto*).
 
-## Abierto: herramienta externa Cisco (2026-10-20)
+## ~~Abierto~~ Cerrado: herramienta externa Cisco (2026-10-20)
 
-Lo que la entrega del dimensionador Cisco dejó abierto se cerró el mismo día (ver *Cerrado
-recientemente*, cuadragesimoséptima entrega). Queda lo que ningún documento traído publica y lo
-que salió al cerrarlo (`docs/herramienta-externa-cisco-2026-10-20.md`, sección 5):
+Todo lo que la entrega del dimensionador Cisco dejó abierto se cerró el mismo día, en dos tandas
+(ver *Cerrado recientemente*, cuadragesimoséptima y cuadragesimoctava entregas;
+`docs/herramienta-externa-cisco-2026-10-20.md`, sección 5). No queda nada por hacer en código.
 
-- **Sin documento que lo publique** (cada pestaña lo dice; se cierra si Cisco publica una edición
-  nueva, por `traer-cisco-huawei.yml` y `npm run cisco`): las traseras de los C8455-G2 y C8475-G2
-  (su guía, del 25-jul-2025, solo dibuja la cara de E/S), del Catalyst 8500-20X6C y de los
-  C8211-G2, C8221L-G2 y C8225-G2 (la única guía de la serie 8200 es del 10-sep-2025); y las figuras
-  del C8221-G2, el C8231-E-G2, el ISR 1116-4P (la guía no tiene vista de puertos de los C111x-4P) y
-  el ISR 1161X-8P (la edición de la guía es anterior a él). No se sirve la de un hermano.
-- **Referencia de la licencia Meraki por modelo**: la página oficial de licencias no la publica; el
-  BOM la deja «confirmar» con el patrón de CCW (LIC-MX67-SEC-3YR). Se cierra con un export de CCW
-  que traiga las de cada modelo. La ampliación SD-WAN+ no se asigna al MX68 ni al MX68CW porque su
-  tabla escribe «MX68C/W»; tampoco a los G2-MX, que la tabla no nombra.
-- **Nuevo: ópticas de Meraki.** El BOM propone a los MX las ópticas del catálogo de Catalyst
-  (GLC-…, SFP-10G-…), pero las fichas de Meraki listan sus propias referencias (MA-SFP-1GB-TX,
-  MA-SFP-10GB-SR/LR/LRM/ER y, en el C8455-G2-MX, SFP-25G-SR-S y SFP-10/25G-CSR/LR-S). Se cierra
-  con un catálogo de ópticas por plataforma, desde la tabla «Compatible Fiber Transceiver Modules»
-  de cada ficha de Meraki (ya traídas).
-- **Dos cifras de túneles del C8355-G2-MX**: su ficha da 1.500 «Maximum Recommended Tunnels» y la MX
-  Sizing Guide 1.250 recomendados y 3.500 como máximo. Manda la ficha (la nota del modelo lo dice);
-  si Meraki corrige una de las dos, `npm run cisco` lo verá.
+**Lo que Cisco no publica, verificado en cada edición** (cerrado: la pestaña lo dice con el
+documento que se miró; si Cisco publica una edición nueva, `traer-cisco-huawei.yml` y
+`npm run cisco` lo verán):
+- Trasera del C8455-G2 y del C8475-G2: su guía, en PDF (25-jul-2025) y en HTML («Chassis
+  views»), dibuja solo la cara de E/S.
+- Trasera del Catalyst 8500-20X6C: su guía, en PDF y en HTML (2-jul-2024), solo dibuja la cara
+  frontal (de los 8500 de 1RU sí da la trasera).
+- Trasera del C8211-G2: ni la ficha ni la guía de la serie 8200, tampoco su edición HTML del
+  30-sep-2026, lo dibujan.
+- Figuras del ISR 1116-4P y del ISR 1161X-8P: ninguna de las 33 figuras de la guía del ISR 1000
+  (29-oct-2025) dibuja los C111x-4P ni un C1161, y no se sirve la de un hermano.
+- Referencia de la licencia Meraki **por modelo en co-terminación**: la página de licencias no la
+  publica. El BOM ya lleva la referencia oficial de **suscripción** (LIC-MX-*/LIC-CSR-* por clase,
+  -E o -A) y dice que, en co-terminación, la de cada modelo se confirma en CCW.
 
 ## Decisiones que necesitan al dueño del producto
 
@@ -2170,6 +2167,26 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+- **2026-10-20 · Lo que quedaba «sin documento» en Cisco: cerrado con cuatro vueltas más de
+  transporte.** Mismo encargo («cierra lo que está abierto»); la entrega anterior lo había dejado
+  como pendiente. Corridas 39504840701, 39505171120 y 39506107464 (ramas `fuente/cisco-cuarta-…`,
+  `fuente/meraki-sfp-…`, `fuente/cisco-quinta-…`). **Figuras**: la edición HTML de la guía de la
+  serie 8200 (30-sep-2026, posterior a su PDF) dibuja el C8221-G2 y el C8231-E-G2, que no tenían
+  figura, y las traseras del C8225-G2 y el C8221L-G2. La guía del ISR 1000 en inglés (29-oct-2025)
+  sustituye a la italiana de 2021 (mismos dibujos; entre dos documentos oficiales manda el más
+  reciente). **Licencias Meraki**: la página «Subscription - MX Licensing» publica una referencia
+  por clase de equipo, y el BOM la lleva: LIC-MX-S/M/L/XL y LIC-CSR-S/L/XL, -E (Essential) o -A
+  (Advantage). Confirma las LIC-MX-S-E/A de la herramienta externa del dueño, que en co-terminación
+  no existen. **Ópticas Meraki**: los MX llevaban en el BOM las GLC/SFP-10G de Catalyst; ahora sus
+  MA-SFP, con estándar, longitud de onda y alcance de la guía de accesorios SFP de Meraki
+  (2-oct-2026), por familia, porque los G2-MX no admiten la MA-SFP-1GB-SX ni la -10GB-ZR. El
+  C8455-G2-MX añade los módulos y cables de 25 Gbps de su ficha. **Sin documento**: las ediciones
+  HTML de las guías de la 8400 y del Catalyst 8500 confirman que Cisco no publica la trasera del
+  C8455-G2, el C8475-G2 ni el 8500-20X6C; la del C8211-G2 y las figuras del ISR 1116-4P y el
+  1161X-8P tampoco están en ninguna edición. Quedan dichas en su pestaña y fuera de los pendientes.
+  Pruebas: licencia por clase en los 14 Meraki, ópticas por familia, figuras (dos modelos dejan de
+  estar declarados «sin figura»).
 
 - **2026-10-20 · Cerrado lo que dejó abierto la entrega de Cisco, y la mejora propuesta hecha.**
   Encargo del dueño: «cierra lo que está abierto y ejecuta la mejora propuesta». **Fuentes**: dos

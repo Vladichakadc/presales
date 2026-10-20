@@ -109,6 +109,14 @@ const OPTIC_LABEL = {
   sfp10g: '10GE — SFP+',
   qsfp40g: '40GE — QSFP+',
   qsfp100g: '100GE — QSFP28',
+  // Meraki (cisco.js): sus MA-SFP, por familia.
+  mxsfp1g: '1GE — SFP Meraki',
+  mxg2sfp1g: '1GE — SFP Meraki (G2-MX)',
+  mxsfp10g: '10GE — SFP+ Meraki',
+  mxg2sfp10g: '10GE — SFP+ Meraki (G2-MX)',
+  mxdac10g: '10GE — twinax Meraki',
+  mxsfp25g: '25GE — SFP28 (C8455-G2-MX)',
+  mxdac25g: '25GE — cable (C8455-G2-MX)',
 };
 
 async function vendorIdMap() {

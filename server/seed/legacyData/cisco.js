@@ -274,50 +274,53 @@ const MODELS = [
   // `sdwPlus` es el grupo de la ampliación SD-WAN+ por dispositivo de la página de licencias de
   // Meraki (LIC-MX-SDW-<grupo>-<n>Y, solo en co-terminación): solo donde la tabla nombra el modelo
   // sin ambigüedad. Escribe «MX68C/W» y no nombra los G2-MX: en esos no se pone.
+  // `licClase` es la clase de licencia por SUSCRIPCIÓN («Subscription - MX Licensing»): una
+  // referencia por clase de equipo, LIC-MX-S/M/L/XL o LIC-CSR-S/L/XL, con -E (Essential) o -A
+  // (Advantage). La de co-terminación va por modelo y esa página no la publica.
   // El C8111-G2-MX y el C8121-G2-MX son el hardware G2 con MX OS: se gestionan desde el dashboard y se
   // licencian como un MX, así que van en esta plataforma aunque su nombre sea de Secure Router.
   {id:'Meraki MX67',  ser:'Meraki MX', fam:'Sucursal pequeña (hasta 50 dispositivos)', fwd:700, ipsec:400, sdwan:400, amenazas:400, aps:null, clientes:50, redund:false, lte:false, bases:B_MX,
    psu:{tipo:'adaptador externo (MA-PWR-30WAC)', texto:'Carga de 5 W en reposo y 14 W como máximo (ficha).'},
-   ports:'1 GE WAN + 1 GE LAN/WAN convertible + 3 GE LAN', nim:0, sm:0, optics:[], parts:MX_LIC, lic:'meraki', sdwPlus:'S', hwSku:'MX67-HW', datasheet:DS.mx6768},
+   ports:'1 GE WAN + 1 GE LAN/WAN convertible + 3 GE LAN', nim:0, sm:0, optics:[], parts:MX_LIC, lic:'meraki', licClase:'LIC-MX-S', sdwPlus:'S', hwSku:'MX67-HW', datasheet:DS.mx6768},
   {id:'Meraki MX67C', ser:'Meraki MX', fam:'Sucursal pequeña con LTE CAT 6 integrado', fwd:700, ipsec:400, sdwan:400, amenazas:400, aps:null, clientes:50, redund:false, lte:true, bases:B_MX,
    psu:{tipo:'adaptador externo (MA-PWR-30WAC)', texto:'Carga de 15 W en reposo y 23 W como máximo (ficha).'},
-   ports:'1 GE WAN + 1 GE LAN/WAN convertible + 3 GE LAN + celular integrado', nim:0, sm:0, optics:[], parts:MX_LIC, lic:'meraki', sdwPlus:'S', hwSku:null, datasheet:DS.mx6768},
+   ports:'1 GE WAN + 1 GE LAN/WAN convertible + 3 GE LAN + celular integrado', nim:0, sm:0, optics:[], parts:MX_LIC, lic:'meraki', licClase:'LIC-MX-S', sdwPlus:'S', hwSku:null, datasheet:DS.mx6768},
   {id:'Meraki MX68',  ser:'Meraki MX', fam:'Sucursal pequeña con PoE+ (hasta 50 dispositivos)', fwd:700, ipsec:400, sdwan:400, amenazas:400, aps:null, clientes:50, redund:false, lte:false, bases:B_MX,
    poeNota:'2 puertos LAN PoE+',
    psu:{tipo:'adaptador externo (MA-PWR-100WAC)', texto:'Carga de 11 W en reposo y 79 W como máximo (ficha).'},
-   ports:'2 GE WAN + 10 GE LAN (2 PoE+)', nim:0, sm:0, optics:[], parts:MX_LIC, lic:'meraki', hwSku:'MX68-HW', datasheet:DS.mx6768},
+   ports:'2 GE WAN + 10 GE LAN (2 PoE+)', nim:0, sm:0, optics:[], parts:MX_LIC, lic:'meraki', licClase:'LIC-MX-S', hwSku:'MX68-HW', datasheet:DS.mx6768},
   {id:'Meraki MX68CW', ser:'Meraki MX', fam:'Sucursal pequeña con PoE+, LTE y Wi-Fi integrados', fwd:700, ipsec:400, sdwan:400, amenazas:400, aps:null, clientes:50, redund:false, lte:true, bases:B_MX,
    poeNota:'2 puertos LAN PoE+',
    psu:{tipo:'adaptador externo (MA-PWR-100WAC)', texto:'Carga de 19 W en reposo y 89 W como máximo (ficha).'},
-   ports:'2 GE WAN + 10 GE LAN (2 PoE+) + celular y 802.11ac integrados', nim:0, sm:0, optics:[], parts:MX_LIC, lic:'meraki', hwSku:null, datasheet:DS.mx6768},
+   ports:'2 GE WAN + 10 GE LAN (2 PoE+) + celular y 802.11ac integrados', nim:0, sm:0, optics:[], parts:MX_LIC, lic:'meraki', licClase:'LIC-MX-S', hwSku:null, datasheet:DS.mx6768},
   {id:'Meraki MX75',  ser:'Meraki MX', fam:'Sucursal pequeña / mediana (hasta 200 dispositivos)', fwd:1000, ipsec:1000, sdwan:1000, amenazas:1000, aps:null, clientes:200, redund:false, lte:false, bases:B_MX,
    tuneles:75, poeNota:'2 puertos LAN PoE+',
    psu:{tipo:'adaptador externo de 100 W DC (incluido)', texto:'Carga de 12 W en reposo y 96 W como máximo (ficha).'},
-   ports:'1 GE SFP + 2 GE WAN · 10 GE LAN', nim:0, sm:0, optics:['sfp1g'], parts:MX_LIC, lic:'meraki', sdwPlus:'M', hwSku:'MX75-HW', datasheet:DS.mx75},
+   ports:'1 GE SFP + 2 GE WAN · 10 GE LAN', nim:0, sm:0, optics:['mxsfp1g'], parts:MX_LIC, lic:'meraki', licClase:'LIC-MX-M', sdwPlus:'M', hwSku:'MX75-HW', datasheet:DS.mx75},
   {id:'Meraki MX85',  ser:'Meraki MX', fam:'Sucursal mediana (hasta 250 dispositivos)', fwd:1000, ipsec:1000, sdwan:1000, amenazas:1000, aps:null, clientes:250, redund:false, lte:false, bases:B_MX,
    tuneles:200,
    psu:{tipo:'fuente interna', texto:'Carga de 12 W en reposo y 55 W como máximo (ficha).'},
-   ports:'2 GE SFP + 2 GE WAN · 8 GE + 2 GE SFP LAN · rack', nim:0, sm:0, optics:['sfp1g'], parts:MX_LIC, lic:'meraki', sdwPlus:'M', hwSku:'MX85-HW', datasheet:DS.mx85},
+   ports:'2 GE SFP + 2 GE WAN · 8 GE + 2 GE SFP LAN · rack', nim:0, sm:0, optics:['mxsfp1g'], parts:MX_LIC, lic:'meraki', licClase:'LIC-MX-M', sdwPlus:'M', hwSku:'MX85-HW', datasheet:DS.mx85},
   {id:'Meraki MX95',  ser:'Meraki MX', fam:'Campus / hub regional (hasta 500 dispositivos)', fwd:3000, ipsec:2500, sdwan:2500, amenazas:2000, aps:null, clientes:500, redund:false, lte:false, bases:B_MX,
    psu:{tipo:'fuente interna', texto:'Carga de 42 W en reposo y 109 W como máximo (ficha). Un puerto WAN de 2,5G con PoE+.'},
-   ports:'2x 10G SFP+ + 2x 2,5G WAN · 4 GE + 2x 10G SFP+ LAN · rack', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:MX_LIC, lic:'meraki', sdwPlus:'L', hwSku:'MX95-HW', datasheet:DS.mx95},
+   ports:'2x 10G SFP+ + 2x 2,5G WAN · 4 GE + 2x 10G SFP+ LAN · rack', nim:0, sm:0, optics:['mxsfp1g','mxsfp10g','mxdac10g'], parts:MX_LIC, lic:'meraki', licClase:'LIC-MX-L', sdwPlus:'L', hwSku:'MX95-HW', datasheet:DS.mx95},
   {id:'Meraki MX105', ser:'Meraki MX', fam:'Campus / hub grande con fuentes modulares (hasta 750 dispositivos)', fwd:5000, ipsec:3500, sdwan:3500, amenazas:2500, aps:null, clientes:750, redund:true, lte:false, bases:B_MX,
    psu:{tipo:'modulares, 2 x 150 W AC (MA-PWR-150WAC)', texto:'Carga de 53 W en reposo y 123 W como máximo (ficha); el peso se da «con 2 ventiladores y 2 fuentes».'},
-   ports:'2x 10G SFP+ + 2x 2,5G WAN · 4 GE + 2x 10G SFP+ LAN · rack', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:MX_LIC, lic:'meraki', sdwPlus:'L', hwSku:'MX105-HW', datasheet:DS.mx95},
+   ports:'2x 10G SFP+ + 2x 2,5G WAN · 4 GE + 2x 10G SFP+ LAN · rack', nim:0, sm:0, optics:['mxsfp1g','mxsfp10g','mxdac10g'], parts:MX_LIC, lic:'meraki', licClase:'LIC-MX-L', sdwPlus:'L', hwSku:'MX105-HW', datasheet:DS.mx95},
   {id:'Meraki MX250', ser:'Meraki MX', fam:'Concentrador VPN / campus grande (2.000 dispositivos)', fwd:7500, ipsec:4000, sdwan:4000, amenazas:2000, amenazasDet:3000, aps:null, clientes:2000, redund:true, lte:false, bases:B_MXP,
    psu:{tipo:'modulares, 2 x 250 W AC (MA-PWR-250WAC)', texto:'Carga de 105 W en reposo y 190 W como máximo (ficha).'},
-   ports:'2x 10G SFP+ WAN · 8x 10G SFP+ + 8x 1G SFP + 8 GE LAN · 1RU', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:MX_LIC, lic:'meraki', sdwPlus:'XL', hwSku:'MX250-HW', datasheet:DS.mx250},
+   ports:'2x 10G SFP+ WAN · 8x 10G SFP+ + 8x 1G SFP + 8 GE LAN · 1RU', nim:0, sm:0, optics:['mxsfp1g','mxsfp10g','mxdac10g'], parts:MX_LIC, lic:'meraki', licClase:'LIC-MX-XL', sdwPlus:'XL', hwSku:'MX250-HW', datasheet:DS.mx250},
   {id:'Meraki MX450', ser:'Meraki MX', fam:'Concentrador VPN / campus grande (10.000 dispositivos)', fwd:10000, ipsec:6500, sdwan:6500, amenazas:5000, amenazasDet:7000, aps:null, clientes:10000, redund:true, lte:false, bases:B_MXP,
    psu:{tipo:'modulares, 2 x 250 W AC (MA-PWR-250WAC)', texto:'Carga de 105 W en reposo y 190 W como máximo (ficha).'},
-   ports:'2x 10G SFP+ WAN · 8x 10G SFP+ + 8x 1G SFP + 8 GE LAN · 1RU', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:MX_LIC, lic:'meraki', sdwPlus:'XL', hwSku:'MX450-HW', datasheet:DS.mx450},
+   ports:'2x 10G SFP+ WAN · 8x 10G SFP+ + 8x 1G SFP + 8 GE LAN · 1RU', nim:0, sm:0, optics:['mxsfp1g','mxsfp10g','mxdac10g'], parts:MX_LIC, lic:'meraki', licClase:'LIC-MX-XL', sdwPlus:'XL', hwSku:'MX450-HW', datasheet:DS.mx450},
   {id:'Cisco Secure Router C8111-G2-MX', ser:'Meraki MX', fam:'Sucursal G2 gestionada en la nube (hasta 200 dispositivos)', fwd:2000, ipsec:1200, sdwan:1200, amenazas:1200, aps:null, clientes:200, redund:false, lte:false, bases:{...B_MX, amenazas:'Advanced Security'},
    poe:75, poeNota:'30 W en un WAN mGig (802.3at) y 45 W en un LAN (802.3bt)',
    psu:{tipo:'adaptador externo de 150 W DC (MA-PWR-150WAC-ADP)', texto:'Sistema: 16 W en reposo y 22 W como máximo; con PoE, hasta 97 W (ficha).'},
-   ports:'2 WAN mGig RJ45 · LAN GE (1 PoE)', nim:0, sm:0, optics:[], parts:MX_LIC, lic:'meraki', hwSku:'C8111-G2-MX', datasheet:DS.c81mx},
+   ports:'2 WAN mGig RJ45 · LAN GE (1 PoE)', nim:0, sm:0, optics:[], parts:MX_LIC, lic:'meraki', licClase:'LIC-CSR-S', hwSku:'C8111-G2-MX', datasheet:DS.c81mx},
   {id:'Cisco Secure Router C8121-G2-MX', ser:'Meraki MX', fam:'Sucursal G2 gestionada en la nube, más PoE (hasta 200 dispositivos)', fwd:2000, ipsec:1200, sdwan:1200, amenazas:1200, aps:null, clientes:200, redund:false, lte:false, bases:{...B_MX, amenazas:'Advanced Security'},
    poe:165, poeNota:'30 W en un WAN mGig (802.3at) y 135 W en tres LAN (802.3bt)',
    psu:{tipo:'adaptador externo de 250 W DC (MA-PWR-250WAC-ADP)', texto:'Sistema: 18 W en reposo y 26 W como máximo; con PoE, hasta 176 W (ficha).'},
-   ports:'2 WAN mGig RJ45 · hasta 10 GE LAN (3 PoE)', nim:0, sm:0, optics:[], parts:MX_LIC, lic:'meraki', hwSku:'C8121-G2-MX', datasheet:DS.c81mx},
+   ports:'2 WAN mGig RJ45 · hasta 10 GE LAN (3 PoE)', nim:0, sm:0, optics:[], parts:MX_LIC, lic:'meraki', licClase:'LIC-CSR-S', hwSku:'C8121-G2-MX', datasheet:DS.c81mx},
   // El C8355-G2-MX y el C8455-G2-MX (2026-10-20): el chasis G2 de las series 8300 y 8400 con MX OS.
   // Sus fichas de Meraki dan «Maximum NGFW Throughput», VPN sitio a sitio, Advanced Security,
   // dispositivos recomendados y túneles; sin tamaño de paquete, como el resto de Meraki. El PoE
@@ -325,11 +328,11 @@ const MODELS = [
   {id:'Cisco Secure Router C8355-G2-MX', ser:'Meraki MX', fam:'Sucursal grande G2 gestionada en la nube (hasta 5.000 dispositivos)', fwd:10000, ipsec:5000, sdwan:5000, amenazas:4000, aps:null, clientes:5000, redund:true, lte:false, bases:B_MXG2,
    tuneles:1500, tunelesNota:'«Maximum Recommended Tunnels» de su ficha; la MX Sizing Guide da 1.250 recomendados y 3.500 como máximo', poeNota:'UPoE+ en los cuatro mGig a partir de una versión 26.2 posterior (ficha); opción de fuente de 230 W AC con 120 W de PoE',
    psu:{watts:45, tipo:'dos fuentes de 110 W AC de serie', texto:'Ficha de Meraki: «Power supplies included by default: 2x 110W AC»; consumo típico 45 W sin PoE.'},
-   ports:'2x 10G SFP+ WAN · 2x 10G SFP+ LAN/WAN · 4x 5G mGig LAN · 2 GE LAN · 1RU', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:MX_LIC, lic:'meraki', hwSku:'C8355-G2-MX', datasheet:DS.c8355mx},
+   ports:'2x 10G SFP+ WAN · 2x 10G SFP+ LAN/WAN · 4x 5G mGig LAN · 2 GE LAN · 1RU', nim:0, sm:0, optics:['mxg2sfp1g','mxg2sfp10g','mxdac10g'], parts:MX_LIC, lic:'meraki', licClase:'LIC-CSR-L', hwSku:'C8355-G2-MX', datasheet:DS.c8355mx},
   {id:'Cisco Secure Router C8455-G2-MX', ser:'Meraki MX', fam:'Campus grande y concentrador VPN G2 en la nube (hasta 15.000 dispositivos)', fwd:20000, ipsec:10000, sdwan:10000, amenazas:8000, aps:null, clientes:15000, redund:true, lte:false, bases:B_MXG2,
    tuneles:3500,
    psu:{tipo:'dos fuentes de 250 W AC de serie', texto:'Ficha de Meraki: «2 x 250W AC are included by default».'},
-   ports:'2x 25G SFP28 WAN · 2x 10G SFP+ LAN/WAN · 8x 1G SFP LAN · 1RU', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:MX_LIC, lic:'meraki', hwSku:'C8455-G2-MX', datasheet:DS.c8455mx},
+   ports:'2x 25G SFP28 WAN · 2x 10G SFP+ LAN/WAN · 8x 1G SFP LAN · 1RU', nim:0, sm:0, optics:['mxg2sfp1g','mxg2sfp10g','mxdac10g','mxsfp25g','mxdac25g'], parts:MX_LIC, lic:'meraki', licClase:'LIC-CSR-XL', hwSku:'C8455-G2-MX', datasheet:DS.c8455mx},
 ];
 
 // Segunda fuente para la redundancia, de la guía de pedido de la G2 (tabla 3, «Configurable options
@@ -442,7 +445,47 @@ const OPTICS = {
   ]
 };
 
-const OPTIC_LABEL = {sfp1g:'1GE — SFP / GLC', sfp10g:'10GE — SFP+', qsfp40g:'40GE — QSFP+', qsfp100g:'100GE — QSFP28'};
+// Ópticas de Meraki (2026-10-20). Los MX no llevan las GLC/SFP-10G de Catalyst: sus fichas y la
+// guía «Small-Form Factor Pluggable (SFP) and Stacking Accessories» de documentation.meraki.com
+// (revisada el 2-oct-2026) dan las MA-SFP, con su estándar, su alcance y con qué equipo van. Las
+// categorías van por familia porque la compatibilidad no es la misma: los G2-MX no admiten la
+// MA-SFP-1GB-SX ni la MA-SFP-10GB-ZR. Las de 25 Gbps solo las publica la ficha del C8455-G2-MX,
+// sin alcance: la descripción no lo pone.
+const MX_1G = [
+  {sku:'MA-SFP-1GB-SX',   bom:'MA-SFP-1GB-SX',   d:'1000BASE-SX · multimodo · 850 nm · 220 m (OM1) a 1 km (OM4)'},
+  {sku:'MA-SFP-1GB-LX10', bom:'MA-SFP-1GB-LX10', d:'1000BASE-LX10 · monomodo · 1310 nm · 10 km (550 m en multimodo con cable de acondicionamiento)'},
+  {sku:'MA-SFP-1GB-TX',   bom:'MA-SFP-1GB-TX',   d:'1000BASE-T · cobre RJ45 · 100 m'},
+];
+const MX_10G = [
+  {sku:'MA-SFP-10GB-SR',  bom:'MA-SFP-10GB-SR',  d:'10GBASE-SR · multimodo · 850 nm · 26 m (OM1) a 400 m (OM4)'},
+  {sku:'MA-SFP-10GB-LR',  bom:'MA-SFP-10GB-LR',  d:'10GBASE-LR · monomodo · 1310 nm · 10 km'},
+  {sku:'MA-SFP-10GB-LRM', bom:'MA-SFP-10GB-LRM', d:'10GBASE-LRM · 1310 nm · 220 m en multimodo, 300 m en monomodo'},
+  {sku:'MA-SFP-10GB-ER',  bom:'MA-SFP-10GB-ER',  d:'10GBASE-ER · monomodo · 1550 nm · 40 km'},
+  {sku:'MA-SFP-10GB-ZR',  bom:'MA-SFP-10GB-ZR',  d:'10GBASE-ZR · monomodo · 1550 nm · 80 km'},
+];
+Object.assign(OPTICS, {
+  mxsfp1g: MX_1G,
+  mxg2sfp1g: MX_1G.filter((o) => o.sku !== 'MA-SFP-1GB-SX'),
+  mxsfp10g: MX_10G,
+  mxg2sfp10g: MX_10G.filter((o) => o.sku !== 'MA-SFP-10GB-ZR'),
+  mxdac10g: [
+    {sku:'MA-CBL-TA-1M', bom:'MA-CBL-TA-1M', d:'10GSFP+Cu · twinax pasivo · 1 m'},
+    {sku:'MA-CBL-TA-3M', bom:'MA-CBL-TA-3M', d:'10GSFP+Cu · twinax pasivo · 3 m'},
+  ],
+  mxsfp25g: [
+    {sku:'SFP-25G-SR-S',     bom:'SFP-25G-SR-S',     d:'Módulo para los puertos SFP28 de 25 Gbps (ficha del C8455-G2-MX)'},
+    {sku:'SFP-10/25G-CSR-S', bom:'SFP-10/25G-CSR-S', d:'Módulo para los puertos SFP28 de 25 Gbps (ficha del C8455-G2-MX)'},
+    {sku:'SFP-10/25G-LR-S',  bom:'SFP-10/25G-LR-S',  d:'Módulo para los puertos SFP28 de 25 Gbps (ficha del C8455-G2-MX)'},
+  ],
+  mxdac25g: ['1M', '3M', '5M'].flatMap((l) => [
+    {sku:`SFP-H25G-CU${l}`, bom:`SFP-H25G-CU${l}`, d:`Cable de cobre de 25 Gbps, ${l.replace('M', ' m')} (ficha del C8455-G2-MX, «SFP-H25G-CU1M/3M/5M»)`},
+    {sku:`SFP-25G-AOC${l}`, bom:`SFP-25G-AOC${l}`, d:`Cable óptico activo de 25 Gbps, ${l.replace('M', ' m')} (ficha del C8455-G2-MX, «SFP-25G-AOC1M/3M/5M»)`},
+  ]),
+});
+
+const OPTIC_LABEL = {sfp1g:'1GE — SFP / GLC', sfp10g:'10GE — SFP+', qsfp40g:'40GE — QSFP+', qsfp100g:'100GE — QSFP28',
+  mxsfp1g:'1GE — SFP Meraki', mxg2sfp1g:'1GE — SFP Meraki (G2-MX)', mxsfp10g:'10GE — SFP+ Meraki', mxg2sfp10g:'10GE — SFP+ Meraki (G2-MX)',
+  mxdac10g:'10GE — twinax Meraki', mxsfp25g:'25GE — SFP28 (C8455-G2-MX)', mxdac25g:'25GE — cable (C8455-G2-MX)'};
 
 const PARTS_DESC = {
   'LIC-HSEC':'Licencia HSEC (High Security) — activa criptografía fuerte (AES-256, SHA-2) en exportaciones restringidas',

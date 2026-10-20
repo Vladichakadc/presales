@@ -272,7 +272,7 @@
   }
 
   // Licencias del equipo elegido. G2: por la clase (S, M, L, XL, 2XL) de la guía de pedido;
-  // Catalyst 8000, ISR y ASR: DNA por tier; Meraki: por modelo y término.
+  // Catalyst 8000, ISR y ASR: DNA por tier; Meraki: por clase de equipo (suscripción).
   //   o = { gestion: 'sdwan'|'autonomo', nivel: 'E'|'A'|'P', seguridad, url, malware, anios }
   function licencias(m, o, LIC) {
     const anios = Math.max(1, Math.floor(num(o.anios, 1)) || 1);
@@ -300,19 +300,23 @@
         }
       }
     } else if (m.lic === 'meraki') {
-      const nom = { E: 'Enterprise', A: 'Advanced Security', P: 'Secure SD-WAN Plus' }[nivel];
-      filas.push({ cat: 'Licencias', desc: `Licencia Meraki MX ${nom}`, sku: null, qty: 1, unit: null,
-        nota: `Una por equipo, por modelo y término (${anios} año(s)); la página de licencias de Meraki no publica la referencia por modelo: sigue el patrón de LIC-MX67-SEC-3YR, confirmado en CCW, y se confirma la del modelo.` });
-      // SD-WAN+ en co-terminación: Advanced Security más la ampliación por dispositivo de su grupo
-      // (página de licencias de Meraki: términos de 1, 3 y 5 años; no existe en la suscripción por
-      // dispositivo). Sin grupo o con otro término, la referencia no consta.
+      // Suscripción («Subscription - MX Licensing»): una referencia por clase de equipo, Essential
+      // o Advantage, publicada. En co-terminación la licencia va por modelo y la página de
+      // licencias no la publica: se dice, no se inventa.
+      const t = nivel === 'E' ? 'E' : 'A';
+      filas.push({ cat: 'Licencias', desc: `Licencia Meraki por suscripción — ${t === 'E' ? 'Essential' : 'Advantage'}`,
+        sku: m.licClase ? `${m.licClase}-${t}` : null, qty: 1, unit: null,
+        nota: `Una por equipo, de la clase ${m.licClase || '(no consta)'}; término ${anios} año(s): precio en CCW. Si la organización está en co-terminación, la licencia va por modelo (patrón LIC-MX67-SEC-3YR, de CCW) y se confirma la del modelo.` });
       if (nivel === 'P') {
+        avisos.push('En suscripción no hay nivel por encima de Advantage: se propone Advantage.');
+        // SD-WAN+ en co-terminación: Advanced Security más la ampliación por dispositivo de su
+        // grupo (términos de 1, 3 y 5 años). Sin grupo o con otro término, la referencia no consta.
         const ref = m.sdwPlus && [1, 3, 5].includes(anios) ? `LIC-MX-SDW-${m.sdwPlus}-${anios}Y` : null;
         avisos.push(ref
           ? `En co-terminación, SD-WAN+ es Advanced Security más la ampliación por dispositivo ${ref}; en la suscripción por dispositivo esa ampliación no existe.`
-          : 'La página de licencias de Meraki no da la ampliación SD-WAN+ por dispositivo de este modelo con este término: confirmar en CCW.');
+          : 'En co-terminación, la página de licencias de Meraki no da la ampliación SD-WAN+ por dispositivo de este modelo con este término: confirmar en CCW.');
       }
-      if (o.seguridad === 'onbox' && nivel === 'E') avisos.push('Inspeccionar en el MX (IDS/IPS, filtrado, malware) pide Advanced Security o superior: Enterprise no lo incluye.');
+      if (o.seguridad === 'onbox' && nivel === 'E') avisos.push('En suscripción, Essential ya trae IDS/IPS, filtrado y AMP; en co-terminación, inspeccionar en el MX pide Advanced Security (Enterprise no lo incluye).');
     } else {
       const letra = nivel;
       const nom = { E: 'Essentials', A: 'Advantage', P: 'Premier' }[letra];

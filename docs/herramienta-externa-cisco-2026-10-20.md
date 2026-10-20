@@ -101,12 +101,14 @@ vueltas más de `traer-cisco-huawei.yml` (corridas 39475725083 y 39478497217) lo
 |---|---|
 | C8355-G2-MX y C8455-G2-MX | Entran con sus fichas y guías de Meraki (10/5/4 y 20/10/8 Gbps; 5.000 y 15.000 dispositivos), con frontal y trasera |
 | Trasera del C8650-G2 | Guía de la serie 8600 (12-oct-2026), figura 8 «Rear View» |
-| Traseras de la serie 8400, del 8500-20X6C y de los C8211/C8221L/C8225-G2 | Ningún documento la publica: la guía 8400 (25-jul-2025) solo dibuja la cara de E/S y la 8200 no tiene edición posterior a ellos. La pestaña lo dice |
-| ISR 1111-8P, 1111X-8P y 1121X-8P | Figuras de la guía de instalación del ISR 1000 (solo se sirve en italiano). El 1116-4P y el 1161X-8P siguen sin figura: la guía no los dibuja |
-| C8221-G2 y C8231-E-G2 | Ni su ficha ni la guía de la serie los dibujan: siguen sin figura |
+| Traseras de los C8225-G2 y C8221L-G2 | Edición HTML de la guía de la serie 8200 (30-sep-2026), posterior a su PDF |
+| Traseras de la serie 8400, del 8500-20X6C y del C8211-G2 | Ninguna edición la publica (PDF y HTML de cada guía, releídos): la pestaña lo dice |
+| ISR 1111-8P, 1111X-8P y 1121X-8P | Figuras de la guía de instalación del ISR 1000 (edición inglesa del 29-oct-2025). El 1116-4P y el 1161X-8P no están en ninguna de sus 33 figuras |
+| C8221-G2 y C8231-E-G2 | Frontal y trasera de la edición HTML de la guía de la serie 8200 |
 | Catalyst 8500-20X6C | Boletín EOL15954: último pedido el 31-jul-2027, sucesor C8650-G2 |
 | MX95 y MX105 | 500 y 750 dispositivos recomendados (MX Sizing Guide) |
-| Licencias de Meraki | La página oficial no publica la referencia por modelo (sigue «confirmar»); SD-WAN+ cita la ampliación por dispositivo de su grupo donde la página nombra el modelo |
+| Licencias de Meraki | Suscripción: referencia oficial por clase (LIC-MX-S/M/L/XL y LIC-CSR-S/L/XL, -E/-A), en el BOM; confirma las LIC-MX-S-E/A del adjunto. En co-terminación la de cada modelo no se publica y se confirma en CCW; SD-WAN+ cita su ampliación por dispositivo |
+| Ópticas de los Meraki | Sus MA-SFP (guía de accesorios SFP de Meraki, 2-oct-2026), por familia, en vez de las de Catalyst |
 | Módulos de los Catalyst 8300/8200 | Tabla 5 de su guía de pedido (`MODULOS_C8K`), con los SM de doble ancho solo en el 2N2S |
 | Precios «~» | Decisión del dueño ejecutada: el cotizador pasa a «Consultar» (y al precio de CCW donde el export lo trae) |
 

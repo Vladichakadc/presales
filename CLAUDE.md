@@ -453,9 +453,11 @@ Módulos compartidos:
   entero. El descifrado TLS en el router no tiene cifra: sin candidato. Escala publicada que no llega
   y requisito que no consta apartan con su motivo; lo no publicado, avisa. En SD-WAN un modelo sin
   cifra propia cae a IPsec y la lista lo marca. Licencias G2 por `clase` (S…2XL, guía de pedido) y
-  segunda fuente `psu2`; en Meraki la referencia por modelo no la publica la página de licencias
-  (va «confirmar») y SD-WAN+ cita la ampliación `LIC-MX-SDW-<sdwPlus>` solo donde esa página nombra
-  el modelo. Módulos de la guía de pedido de cada familia: G2 (`MODULOS_G2`) y Catalyst 8300/8200
+  segunda fuente `psu2`; en Meraki, la licencia por suscripción por clase de equipo (`licClase`:
+  LIC-MX-S…XL o LIC-CSR-S/L/XL, -E o -A; la de co-terminación va por modelo y no se publica) y
+  SD-WAN+ cita la ampliación `LIC-MX-SDW-<sdwPlus>` solo donde su página nombra el modelo. Los
+  Meraki llevan sus ópticas MA-SFP (guía de accesorios SFP), por familia: los G2-MX no admiten la
+  SX ni la ZR. Módulos de la guía de pedido de cada familia: G2 (`MODULOS_G2`) y Catalyst 8300/8200
   (`MODULOS_C8K`, con sus límites de ranura). Figuras en `public/data/cisco-vistas-equipos.json`
   (sin pérdida, pie literal, `rearNota` donde no hay trasera). **`npm run cisco`** lee las fichas
   HTML traídas (la carpeta de una rama `fuente/*`) y las contrasta con el catálogo celda a celda, en
