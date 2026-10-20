@@ -1,0 +1,2482 @@
+<!DOCTYPE html>
+<html  lang="en">
+<head prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article#">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <meta name="google-site-verification" content="mW_9DEI0m-ICeSJnaiaIKGJltJgFh4edDWNJb1m9l3U"/>
+        <meta name="generator" content="MindTouch"/>
+        <meta name="robots" content="index,follow"/>
+        <meta property="og:title" content="Meraki MX/Z Security and SD-WAN Licensing"/>
+        <meta property="og:site_name" content="Cisco Meraki Documentation"/>
+        <meta property="og:type" content="article"/>
+        <meta property="og:locale" content="en_US"/>
+        <meta property="og:url" content="https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing/Co-Termination_Licensing/Meraki_MX%2F%2FZ_Security_and_SD-WAN_Licensing"/>
+        <meta property="og:image" content="https://documentation.meraki.com/@public/production/site_13505/1603418441-social-share.png"/>
+        <meta property="og:description" content="The Meraki MX is a multi-functional security &amp;amp; SD-WAN enterprise appliance with a wide set of capabilities to address multiple use cases for organizations of all sizes, in all industries."/>
+        <meta property="article:published_time" content="2020-10-05T18:11:39Z"/>
+        <meta property="article:modified_time" content="2026-10-20T16:26:34Z"/>
+        <meta name="twitter:card" content="summary"/>
+        <meta name="twitter:title" content="Meraki MX/Z Security and SD-WAN Licensing"/>
+        <meta name="twitter:description" content="The Meraki MX is a multi-functional security &amp;amp; SD-WAN enterprise appliance with a wide set of capabilities to address multiple use cases for organizations of all sizes, in all industries."/>
+        <meta name="twitter:image" content="https://documentation.meraki.com/@public/production/site_13505/1603418441-social-share.png"/>
+        <meta name="description" content="The Meraki MX is a multi-functional security &amp;amp; SD-WAN enterprise appliance with a wide set of capabilities to address multiple use cases for organizations of all sizes, in all industries."/>
+        <link rel="canonical" href="https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing/Co-Termination_Licensing/Meraki_MX%2F%2FZ_Security_and_SD-WAN_Licensing"/>
+        <link rel="search" type="application/opensearchdescription+xml" title="Cisco Meraki Documentation Search" href="https://documentation.meraki.com/@api/deki/site/opensearch/description"/>
+        <link rel="apple-touch-icon" href="https://documentation.meraki.com/@public/production/site_13505/1749845950-apple-touch-icon.png"/>
+        <link rel="shortcut icon" href="https://documentation.meraki.com/@public/production/site_13505/1756406766-favicon.ico"/>
+
+        <script type="application/ld+json" nonce="58bdba5210e34efdc9c5de5fa290a852fdbf540ed0866c746c6bd33c0a53686f">{"@context":"http:\/\/schema.org","@type":"TechArticle","name":"Meraki MX\/Z Security and SD-WAN Licensing","url":"https:\/\/documentation.meraki.com\/Platform_Management\/Product_Information\/Meraki_Licensing\/Co-Termination_Licensing\/Meraki_MX%2F%2FZ_Security_and_SD-WAN_Licensing","image":{"@type":"ImageObject","url":"https:\/\/documentation.meraki.com\/@public\/production\/site_13505\/1603418441-social-share.png","height":{"@type":"QuantitativeValue","maxValue":315},"width":{"@type":"QuantitativeValue","maxValue":600}},"datePublished":"2020-10-05T18:11:39Z","dateModified":"2026-10-20T16:26:34Z","description":"The Meraki MX is a multi-functional security &amp; SD-WAN enterprise appliance with a wide set of capabilities to address multiple use cases for organizations of all sizes, in all industries.","thumbnailUrl":"https:\/\/documentation.meraki.com\/@api\/deki\/pages\/471\/thumbnail?default=https%3A%2F%2Fdocumentation.meraki.com%2F%40style%2Fcommon%2Fimages%2Fimage-placeholder.png","mainEntityofPage":{"@type":"WebPage","@id":"https:\/\/documentation.meraki.com\/Platform_Management\/Product_Information\/Meraki_Licensing\/Co-Termination_Licensing\/Meraki_MX%2F%2FZ_Security_and_SD-WAN_Licensing"},"headline":"Meraki MX\/Z Security and SD-WAN Licensing"}</script>
+        <script type="application/ld+json" nonce="58bdba5210e34efdc9c5de5fa290a852fdbf540ed0866c746c6bd33c0a53686f">{"@context":"http:\/\/schema.org","@type":"WebPage","name":"Meraki MX\/Z Security and SD-WAN Licensing","url":"https:\/\/documentation.meraki.com\/Platform_Management\/Product_Information\/Meraki_Licensing\/Co-Termination_Licensing\/Meraki_MX%2F%2FZ_Security_and_SD-WAN_Licensing","relatedLink":["https:\/\/documentation.meraki.com\/Platform_Management\/Product_Information\/Meraki_Licensing\/General_Licensing_Information\/General_Licensing_FAQs","https:\/\/documentation.meraki.com\/Platform_Management\/Product_Information\/End-of-Life_Notices\/Meraki_End-of-Life_(EOL)_Products_and_Dates","https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/Cisco_Secure_Connect\/Operate_and_Maintain\/Cisco_Secure_Connect_-_Connecting_Sites\/Meraki_SD-WAN_Hub_Integration_with_Secure_Connect","https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Design_and_Configure\/Configuration_Guides\/Site-to-site_VPN\/BGP_routing_over_IPsec_VPN"]}</script>
+        <script type="application/ld+json" nonce="58bdba5210e34efdc9c5de5fa290a852fdbf540ed0866c746c6bd33c0a53686f">{"@context":"http:\/\/schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"item":{"@id":"https:\/\/documentation.meraki.com\/Platform_Management","name":"Platform Management"}},{"@type":"ListItem","position":2,"item":{"@id":"https:\/\/documentation.meraki.com\/Platform_Management\/Product_Information","name":"Product Information"}},{"@type":"ListItem","position":3,"item":{"@id":"https:\/\/documentation.meraki.com\/Platform_Management\/Product_Information\/Meraki_Licensing","name":"Licensing"}},{"@type":"ListItem","position":4,"item":{"@id":"https:\/\/documentation.meraki.com\/Platform_Management\/Product_Information\/Meraki_Licensing\/Co-Termination_Licensing","name":"Co-Termination Licensing"}}]}</script>
+
+        <title>Meraki MX/Z Security and SD-WAN Licensing - Cisco Meraki Documentation</title>
+
+
+    <style type="text/css">/*<![CDATA[*/
+/*.mt-foot {
+    display: none;
+}
+
+#contact-support{
+    width: 350px;
+    /*background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wIGERkfe/tlTAAAFbhJREFUeNrtXXt4VNW1/611JgkJj/AU0JCZyUygRKUPrO0nFS4gVvBV9VZqfVRbSyUTrNeqvcV+Wu01xbbig0xAqx99WBXvpwIW0Ko89NKHymdbNQhkXiHWWnkYAsQkM2vdPyYIyuvsmUnmTDLrz2TOOXvv32+vvdbae69F6G1SC6osLffGYVUx1KuAF9AxgJ6g4GEMDIVKCcBFIBQCABQdgLSDeL8AuwiyA6APAGoiICqQsAvYvK2lKYL50N40XJTrHfAv8pepFZ8E1TNE6YsgPZVBA7rjW6LSCvBbTPoqlP7EiG/cVtP8bp4APQn4En+RJDqnEXAOgJkAVWa3RbIVoDUgWkPsWt94XWN7ngAZlolLJxa07Nt1jpLOFpXzmXiQIxuq0qJEKxW6bGjJiD9uumZTZ54AaUjFoopK4sR3ofotEJ+QU6pK5X0Q/RrqejhUE2rME8BAvEHvWYTETQT+ai+wsxSK55TknnCg6aU8AY5hvVeUui8i1dtA/Fn0QhHFG0x6ZygQW54nwKGqPuiepUr/w4TPo0+Ivg6iH4eqo8/3aQL4g+VVAtxL4LPRF0WxJk56YywQe6dPEWD0A6NLiq2inyr0ega50IdFVDqZ6L52TdzeXNPc1usJ4K3zziDSBwnwIi8HiQCECDInHGha2ysJUFZXVlxIrl8SUN2zdhdiCmwBdBsDuwFqVUKrqray0l4AENIBRDSQFAMBHajAUEArSXkcCOUAuMcWBegisgpu6amAUo8QwFvvnUCiTxBhfDcP3tsCrLPAr4jS5gQlGmOB2EfpvNQddPdj5UqGjlfSMxU0lYGTu5kHb0LlslDN9rdzngD+oPcKhT4EoLgb1OZOgj5NRC8p8brw3PC/e4jQI0llKoDpBLoYwNBuYPM+InwnVB1dlpsEqIXlK3UvBOj6DBtNHQxeBdLfDi4Zvirb4daqh6oKP+rcd66CroLKLCYuzCgRFPeE90RvwXxIzhCg6r6qAe2u/ctAmJXBKREFYWG7xn/fXNO8y4mG3GcWnTisgwsvJ5UbQezOXNd1ZVui47L3rn9vv+MJ4A66R7HS6owFdVS2KPPPxnzo/v2G+RviuWDRT1w6sWD3/h1XEPCjDO5WblLmWZle5jJKAN9i3xhI/KWMdFrxDhHd1tgSeaq71F+3Sy24otR9KUHvAHhsJiYDQ6Zn8gxCxghQGSyvEMXaDKi+/Qr96ZCS4ffkwnaqXTuhvXPfzQDdmq4xrEDEBZm+NdAUcQwBfIt9Y5DofCVd8AVYTszfD88NN/XGYI876Pa4gEUAnZcuCSyNn5kJTUAZ6NQoF/Bymmp/F6DfcdIuWbe6kcHyS1j5YRAGp2UbWa7J6doEaUW4qu6rGsBKq9MBXxR/Bluf6yvgA0Ak0PRUnPTzgLya+tTlcSSJVaMfGF2SHQLUwmp37V+WhrWvgP6ifI97cmhuaDv6mMQCsejgkhFfUeDeNBT4acVW4eOoTR3HlJcAX9B9fxpBnjYQLgtVR1cgLweWhEdB6JfSTFLcE66J3tRjBOgK7/4uxf7uBuS8UKDpT3noD/Gi6j2TRWQliEtTnMrfSCVsbEwAb713Aqv+JRV3RoB3WRNf7YlNjpzUBMmxfQ7A6BTW032kiS+Zjq3R2lFWV1ZMok+k5svqNmI+Iw/+MYzD6sg/LMgkAUIpzOT+IH7cv8Rf1G0EKCTXL1PZ0hXgXWXrrN7q32dStgaaIgWQGVD8K4V14FRNdN7dLUuAt847g0n/mNKar4kz8zPfTDz1ns9aIhtSsAlUIWfZPVlkiwAT7h/Zf6+r+M0UjnG1KWRGONC0MQ9pCsZ2vWdKQuR5JjZS6wJtFOBUO4dhbC0Be13Fd6YAvoJwWR781KWxOrrBIutK0+cY5HcBP8mIBvAHy6sSoL+bn97VX4QCsVvyMKYvqcRcRKUTbJ0SqY5sTUsDCHCvKfii+HNZi2d+HrrMSFFB/5sBfd1ICxAXsOrCtDRARdA9i0CrDNu7C2x9ri+Gd7tTxgbLvQnFG6ZGoSidHamJvGBOgFqQd5Bnk3msXy9y8sZOWV1ZcQEXVJJKmQKDiahAVeKWWnsSwL860Rly6pEzX53nUhAMo336WigQO92YABVB98UEesrQ318eCUQvct4aWn6GKl9MkLNAfAoA6zhWdDOgG1l5tVq8Ijw33OIgEqwGYaaRr690QWNN5Nkj/c919If0NpBRpHg/MX/fKQPVdVr326R6A8Djkl2xF/diUBlAs0GYTSJtFUHPY6TWAifc8yck5qlab5lsHCnp7QCeta0BvEHvWQx9wczn0x+FA7EFjpgl9Z4LIbgPBE+m3inQOIEWtSXaf9wdp3NNpCLouZ1sunmHIDQ1FIitt+kF6A8MPf53hpQMvyfrgZMl/kG+oOcxKJZnEvwureAi4L9KrII3fHVjTs5mP9lyLRCooTaim2xpgGRaFtlqppbo0sZA5H+zOisWVVQSxZ8F8bju/pao7HExn7+tOvpy1shuviWvpInKxprtoWNqAOLEd01nf2NL5Kmszvyg+8vK8ueeAL/Lxx4UV13lD7qzltCisSXyuABhM1vQuvaYS8DEpRMLoPotI/wZC7J5bt8XLD8jAbzAwLAeVcOgAar0tH+JPzsZy+YjwcACw8l69ZTaKa6jEqBl365zjLJxKaJjPnT/PptqH+A/dFdiSBtrn0cT8awZvkUFJb9Juqy22ztqe2l0xlEJoKSzDQdgYbaua02pneJSlicADMmy7TnHV+fzZ+PDDXMaOtjwUCnhkxjzIRZ0kahcYGAIdbRrPGuzv7m06ToGvpDCowmFPK/AD6GYrdBLAHwPkAeh8n4K77OE4tdnaxyUrUcFGjd44MKqh6oKD/MCKoLumQRabaD+nwnVRC/ORqeTly93Rgk40cyXlxUu4MZtgabw0YJH7Z375onqXSZ78ALdEWmJjcJ8JLJjB3n+AOBc+5P34P4AH8KEc8zUv/42W6z/cN/OmYbgK6A3RQJNXzsa+AdUaigQu4eJZkJhO7MIg4ZXDvaclrVFiGB0QptIzzmSDTDTPuOxc3DJ8FVZ7PDXDJ/4XigQsx2oCgVi60A0z2hdEXw5W8MRV10BlRaD6TDzEwTwL/KXmVzvIujT2by5q8B/GPx8aSgQ/ZXpN0KByMOieMMgylKVrfGIBWIfCdEK+xoA491B96iPCaBWfJKZCqGs5bwtqysbanI8TYV/lnrARx6x/Vulsmy6IkRklF6OoZMOLgGqZ5hMQCVelzXfl/gzBktVODwvvC3VbwlZr9j/bRo3fTNCAMuIAAQ+SABR+qIB/m/3VDauI4NKHgOWN6TzrYQmtht8qyCbBAjNDW032SAi4HQAcKEWBNJT7V4REGBdNjvKSntBsGWAqtKL6dmaZLs+kELbkH1ZC8BeUErlFABwVZaWe8UglGqBX8kq02uiKwGs7IlvuVROAll26fLvbKNvgV9R6Bx7zeVST73HzXFYRtarKG1GHxEh/pKBvtia7fYqEkbYWKrjmaEmFz4kQYnGvkIABl1uG37FX7PdXper2IiEAnhZTVwqIJZu7t1cEV+956sAptn8eVtRvGRtttu85XtbWhX4p32Cw8vJooq2CbClL4BfsbiiHIqlBnPpyYYbGvY6oe0EvGOAp5sBNajGpdv6BPgi62EzSYNA4wy62zk9ENsYqdIIVvAwA5WxuzeD76n3uCGy3iTSyMC92wIxxxjGCrZ9qYVJhzMbpTqn1t4MPivWmd2ClleLCvr/2En9IGirfbLQME4WUrb5AKG1t4JvCdYbXoF/j1UubpjT0OEw38U2RqQoYcD+wQdV7XUEcAfdHkuw3uQegQL7VPkCJxaOVjLAiFDIH5dQt8Otrho7vQl8l6oR+KLSToRLwjXh1x3ZKbNJWsToo+Jb7BuTBN9+gmuB7iXCuU4o+Hh07aRGFzoZCttrmJAO6A3gj35gdAkkvtoMfOyE8jQn1v/9pFangQY/b2dAbJcnIzJ6uWOlmIvuBOgU++DLdhf0zEhN5DWn982cAMS2b7om6+rltlTWlZ2kEIPzfvqWJYVnOMnXP057bWOkQBsLsKs7Xu5UEXLV2K/spa91Qic3zmtszp0e2tcABN3JBNlhwJihOU8AyHdsGlPP9o9/NLUp0JRj0U+xfVNKlHa4APrAQANU5jL4E5dOLPhw/84RNvr5YrgldlG2LnqkBb/yWLbpBxDpBwyQ7fy9pD1z/bq7pOsoe9tx/PxWl8q3chH8JKiwjREBMSYgamBilruD7n65TAIojnn/j4nu31Kz/Z+52LVxD44baHJjSoAIC8QkyQBbavlzmgCEncf6dxx4JFe7Fo+3GdUmZCDCLmCz2fhJFXJbjn6iSSUWC8SiucttyyiVv7LVwNtamiKiYjt+LKRfQW8V4uZcbr5AJhsshR+G54abGPOhAL9lMErTeiv+ConndvsNsCF9q2sZAJjUdv06Bk6uWFxxAvLiKKlYXFHOgM+ALK9+TAAomVXwksS0/JA7Tf+bYqIbga5UsYz4RoFRRvjpAJ7IxXFq1/iMQfFBR7zus8e1J5HDFJhuBD/xxq5YQFJ8wfItdkucC7CzuKDkROcdh+qbUlZXVlwA/hcTD7KJX0MkED354BKQtArWGNgBwz7q3HdufuidIYVkXWgX/KT9hzWHYHngr/YJ0GVEXJUfeod4r0pmdYVI1hyMHXSJf4m/SOMd79utSCEqHUUaP/Gdef/cmVOjVQurotR9NgFTFRiF5KmYBoYu3xpoiuQa+N5670ioNBuU9dk9uGTYyAMpfj7WAI3XNbYrke1r10xc2MGFl+fSYFUEyyf5Sssbkunw6GYCXUmgaxW0MAFu9NV5Hhn34LicOvPAqlca1nRafmh+p09mCoUuM1M9cuPEpRMLcmGgfPWeC1Wx7hiGLoPw7Xi87f8+s+jEYbnQJ/8Sf5EANxi6f09+yp47KENLRvzRKFsmsXv3/h1XOH2gPPWecVA8zsQ2yMoTOrlwWS4QQCR+NQMnGTzyXlmL58WjEmDTNZs6QfRrIy0A/W/UwtHHyy3FXTAreD3dV+e5wMl9mlI7xQXFD80Mdyz9dG7nw4FT18PJ39pehcZWlLovdepATbh/ZH+THMiHyGwnE2D74NjlhlfZ1MLhae8OI0CoJtQIxXOGWuCOQxMQO0naXP0q7an+w2aLY7e93UF3P1XcZtijVUdKk3tE1a0khvV/eGx7576bnThYceWUjFQitZxKABcwn4EKs/7QL49s+R5BwoGml0zSpHZ94lZ30O1xXJDEolhKBhYo5EhXdlFFpaga1mTW1xqroxtsEyDp5+udhm0rtoAHnDZgXUktN5k/qc860/GP16VQTv6Oo77uaP9Iln81K1hMoPO9wfJLHOcuQW43fGJrcUH/R53WD2/Q/U0Cn21EY8VfIoGmVcYE6Fo4jLNfMPhXTlsKugbAXm0flRYh6+tO2+n01fn8UF1svgbKrcfG6xgSqo4+j0N2jmzKEBd0mdMihKFA9EequAHHuBegis0K11ci1ZF/OKntyYhf4kmTHb+kJ6Mrw4GmtSkTAADipDca1aRJvvb03ft33g2HSbgmej9rvFKBn4hivUAbVbEZimcAXDWk/7DPhmvCbzmt3ZKILzSt4i4qHaSu41aAtXWJyBd0/xwgYzdPIP8ZCTQ9hbykbvUH3ZcR6LEU4hh3hQPR4y7htkK47Zq4XQBjt4iVH62s90zOw5gq+OXTVfXXKeiMrWy5fmrPZrMhzTXNbQSZA6MQMQBCPxFZ6a33TsjDabjuB92fV8Uz9q+yH5z8RDyn8brG9owRAACSxoQuMrdCuZRVnxsbLPfmYbUJft0Yn6quYWLjswmqWHi0oE9aBAAAsgpuAfTNFPo0uhP8Qp4E9sAXsl4A8cgUwP9bv8KS+WZK2tgfHXOykvVXAvqn0L/3EoSZ0ero3/NQH8nYLv8CFGuM6jcftPpbhej0WCD2jslzxvv4oZrtbwN6bYp9HG2JbPDXe6bk4T7c4BPF+lTA75rK15iCnxIBkvZA7AkFFqbWUC5VwXP+oPfredgPunqqWJ3Kmt+l/O9O1d2mlFtdC64odT9DoDROzugDRQX9b+6rF0z8S/xFkogvJKA69SHE06E90a9jPqRnCYDkaZt9ruINACamQYLXLeiluXgkO631vs7nT4Z3zSJ8n8Re/tqhMrW5pjnlimVpneX7x/ff36fMs6CSRiUROi2heMNX57m0r4DvDbq/KejclA74AjS4Ev3OSwf8tDXAAamsKzspQa5XDM+oHYnSq5lk3rEqfOf0Wr+oohIcrzPd0j0C+OFCTZyZiVxGlKnOjQ2We+PglzJAgo+UsIAt1wK70Synizvo7ucC5ovqLaaHOY4EvhKmRaujsUy0jTLZUf8if5lSx4ug9NPJCbTRAt/R2BJ5PFdTtk2pneLaPjh2uSpuMz3Dd5RAz+YCJM7KZBYzynSnKxZXnECSWAXQaZl4nwAhBu4uKij5Ta54C0nrvvMagG5JWyMeYvC5Ev3O23r91h2ZbCt1xwBMuH9k/72ufo+l5yIephGaGbhX2Xo0m8Wrj2nc1XtHsuqVAtxgeGPnuK5eO+JXpGvw9RgBPo4TDPL8nAg/yORru8q0PQ/C7+KqK7JdyLKsrqy4kKwLSekqIZ1heFHTVpAn1BKbn6qfnz0CHPB36z2zVfFIinsHxxkbaRGiFUS0lhOul3oqq7dvsW+MSnw6gOmqeoHpUS1bRFdpJaKrw4HY093ZF+qRAasbczKIHwfo1O78jkAbAaxNVtFObC7qHLAl3YqeVfdVDWgv2DuOYI0XyGQFTTPJxpWisfc3YXwjWh3t9kqtPUKAQ1yhuwGa15PfFeBdBrYAsk3Bu5J19bhVSVuh2qpQItDAZKUNHZjMty9DRHksEcaZ5N7NCPaKhf0KS+b3lMFL6GGpCJZPU/BD3T2Lck9kKxHPMTnMkQnp8ftvu1e3RAbMGvArF5FLVL9ERFafhl2lA0QLEsA3I4FYj19Ho2x23lvvHcuqCwH0yYxjAlnBWnBTqCbUmK02kBMGwlvnncEkdwH0xb4AvCr+ApJbj3dpo88Q4ID467znK+ntSGt72dHQvybQO451V69PE+BjtzHongrQDwDMcmobTVAHdBUT/WJbdfRlpzXO0YPrrxvjU7KuheJqEEblGPDvKbDUgjzi5O3tnJhdU2qnuLaXRmcQdDaULwRhsEObuhvAckCfLGvxvPjphEx5AmRAqh6qKmzraJtCpOdAMZMI47PZHgEaSLEGJGuGlIx4+dAkjLkgub6+wh10j2LoJAJPIuB0UTm1O2LzydVcWkD0ZrLYgm5U4o2R6sj7uTx+OU+AI4mn3uO2VMcL4GXAq4BblUYw6XAFDSNFCQiFAA6czmkH0K5AG0F3itIOIv2AgJgAEQYiylZDeG64qbeN1f8DCsTZ1gYpGlcAAAAASUVORK5CYII=');
+    background-repeat: no-repeat;
+    background-position: left center;
+    background-size: 5em;*/
+    /*padding-left: 6em;
+    margin-left: 35px;
+    margin-top: -15px;
+}
+#wishFrame{
+    margin-top: 25px;
+    margin-left: 35px;
+    width: 350px;
+}
+
+/* /begin Added 10/20/17 
+#contact-sales{
+    width: 350px;
+    margin-left: 80px;
+    margin-top: -15px;
+}
+#contact-sales h2{
+    color: #999;
+}
+#contact-sales a{
+    font-size: larger;
+    color: #999;
+}
+
+/* /end Added 10/20/17 */
+
+/* /begin Added for testing 8/16/17 
+#ask-community{
+    margin-left: 35px;
+    margin-top: -15px;
+    width: 350px;
+}
+/* /end Added for testing 8/16/17 */
+/*.clearFix{
+   content: " "; /* Older browser do not support empty content 
+   visibility: hidden;
+   display: block;
+   height: 0;
+   clear: both;
+}
+.float-right{
+   display:inline-block;
+   float:right;
+}
+.float-left{
+   display:inline-block;
+   float:left;
+}
+#internal-suggestion {
+    margin: auto;
+    width: 572px;
+    clear: both;
+    margin-top: 2em;
+    border-top: 1px solid rgba(0,0,0,0.2);
+    text-align: center;
+    padding-top: 2em;
+}
+/* Changes for Docs+KB UI */
+/*#footerContent{
+    background: #484848; /* grey background color */
+   /* border-top: 6px solid #282828; /* small black border at the top */
+   /* margin: auto;
+    width: 1280px;
+    color: #999;
+    clear: both;
+    overflow: auto;
+    box-shadow: 0 0 3px rgba(0,0,0,0.4);
+}
+#contact-support a {
+    font-size: larger;
+    color: #999;
+}
+#contact-support a:hover {
+    color: #0097c8;
+}
+
+#contact-support h2{
+    color: #999; /* makes "contact support" a better grey */
+}
+
+/* /begin Added 8/16/17 */
+/*#ask-community a {
+    font-size: larger;
+    color: #999;
+}
+#ask-community a:hover {
+    color: #0097c8;
+}
+
+#ask-community h2{
+    color: #999; /* makes "contact support" a better grey */
+}
+/* /end Added 8/16/17 */
+
+/*#copyright {
+    margin: auto;
+    padding-right: 90px;
+    color: grey;
+    float: right;
+}
+#crfoot {
+    background: #505050;
+    margin: auto;
+    width: 1280px;
+    clear: both;
+    overflow: auto;
+    box-shadow: 0 3px 3px rgba(0,0,0,0.4);
+    height: 20px;
+    padding-top: 10px;
+    padding-bottom: 5px;
+}/*]]>*/</style>
+
+        <link media="screen" type="text/css" rel="stylesheet" href="https://a.mtstatic.com/@cache/layout/anonymous.css?_=725c870038c749936922c6d0da3d2240_ZG9jdW1lbnRhdGlvbi5tZXJha2kuY29t:site_13505" id="mt-screen-css" />
+
+    
+        <link media="print" type="text/css" rel="stylesheet" href="https://a.mtstatic.com/@cache/layout/print.css?_=c97c72380f455f30fbdfffed3c1a10b9:site_13505" id="mt-print-css" />
+
+
+    <script type="application/json" nonce="58bdba5210e34efdc9c5de5fa290a852fdbf540ed0866c746c6bd33c0a53686f" id="mt-localizations-draft">
+{"Draft.JS.alert.cancel.button":"OK","Draft.JS.alert.cancel.message":"You can not cancel a draft when the live page is unpublished.","Draft.JS.alert.cancel.title":"This draft cannot be canceled","Draft.JS.alert.publish.button":"OK","Draft.JS.alert.publish.message":"You can not publish a draft of a page with an unpublished parent","Draft.JS.alert.publish.title":"This draft cannot be published","Draft.JS.alert.unpublish.button":"OK","Draft.JS.alert.unpublish.message":"You can not unpublish a page when published subpages are present.","Draft.JS.alert.unpublish.title":"This page cannot be unpublished","Draft.JS.success.cancel":"The draft was successfully deleted.","Draft.JS.success.schedule.publish":"Publication schedule successfully created.","Draft.JS.success.publish":"The draft was successfully published.","Draft.JS.success.unpublish":"The page was successfully unpublished.","Draft.JS.success.unpublish.inherits-schedule\n        Draft.JS.success.unpublish.scheduled-to-publish":"[MISSING: draft.js.success.unpublish.inherits-schedule\n        draft.js.success.unpublish.scheduled-to-publish]","Draft.JS.success.update.schedule.publish":"Publication schedule successfully updated.","Draft.JS.success.update.schedule.unpublish":"[MISSING: draft.js.success.update.schedule.unpublish]","Draft.JS.success.delete.schedule\n        Draft.JS.success.delete.schedule.with.subpages\n        Draft.error.cancel":"[MISSING: draft.js.success.delete.schedule\n        draft.js.success.delete.schedule.with.subpages\n        draft.error.cancel]","Draft.error.publish":"There was an error publishing the draft.","Draft.error.unpublish":"There was an error unpublishing the page.","Draft.message.at":"at","Dialog.ConfirmSave.StrictIdf.title":"Oops!","Dialog.ConfirmSave.StrictIdf.error.missing-template-reference":"This article type requires a template reference widget. Not having one may negatively impact your site and SEO. Please contact NiCE Knowledge Management support.","Dialog.ConfirmSave.StrictIdf.label.continue":"Proceed anyway","Dialog.ConfirmSave.StrictIdf.label.cancel":"Cancel","Dialog.ConfirmSave.StrictIdf.label.missing-template-reference-help-link":"Learn more about required references","Dialog.ConfirmSave.StrictIdf.error.invalid-idf":"This type of article should not exist at the requested location in the site hierarchy. Proceeding with the requested move may negatively impact site navigation and SEO.","Dialog.ConfirmSave.StrictIdf.label.invalid-idf-help-link":"Learn more about IDF structure","Dialog.EditDraft.page-title":"Create draft","Dialog.Scheduler.Common.label.am":"{0} AM","Dialog.Scheduler.Common.label.pm":"{0} PM","Dialog.Scheduler.Publish.alert-create-draft":"Create","Dialog.Scheduler.Publish.alert-existing-publication-scheduled":"This location has an existing publication schedule applied.  The new page will inherit this new schedule.","Dialog.Scheduler.Publish.alert-modify-message":"This draft is scheduled to be published {0} at {1}. A schedule cannot be modified or deleted less than 15 minutes from its start time.","Dialog.Scheduler.Publish.alert-modify-title":"This schedule cannot be modified","Dialog.Scheduler.Publish.button-close":"Close","Dialog.Scheduler.Publish.button-save":"Save publish schedule","Dialog.Scheduler.Publish.button-go-to-parent":"Go to parent","Dialog.Scheduler.Publish.do-not-have-permission-message":"This page will be published {0} with another page scheduled by {1}. You do not have permission to view this page. Please see {1} to resolve scheduling conflicts.","Dialog.Scheduler.Publish.go-to-parent-message":"This draft will be published {0}, scheduled by {1}. A schedule can only be modified where it was created.","Dialog.Scheduler.Publish.label.f1-link":"Learn about scheduled publishing","Dialog.Scheduler.Publish.page-title":"Publish","Dialog.Scheduler.Unpublish.button-save":"Save unpublish schedule","Dialog.Scheduler.Unpublish.alert-modify-message":"This page is scheduled to be unpublished {0} at {1}. A schedule cannot be modified or deleted less than 15 minutes from its start time.","Dialog.Scheduler.Unpublish.do-not-have-permission-message":"This page will be unpublished {0} with another page scheduled by {1}. You do not have permission to view this page. Please see {1} to resolve scheduling conflicts.","Dialog.Scheduler.Unpublish.go-to-parent-message":"This page will be unpublished {0}, scheduled by {1}. A schedule can only be modified where it was created.","Dialog.Scheduler.Unpublish.page-title":"Unpublish","Page.Dashboard.page-title":"Dashboard"}    </script>    <script type="application/json" nonce="58bdba5210e34efdc9c5de5fa290a852fdbf540ed0866c746c6bd33c0a53686f" id="mt-localizations-editor">
+{"Article.Attach.file.upload.toobig":"The file \"{1}\" is too large.  The maximum allowed file size is {0}.","Article.Attach.file.upload.notAllowed":"The selected file can not be uploaded because you do not have permission to upload files of that type.","Article.Attach.file.upload.fileExtension":"You picked a file with an unsupported extension.  Please try again with a valid file.","Article.Common.page-is-restricted-login":"You do not have permission to view this page - please try signing in.","Article.Common.page-save-conflict":"You may have overwritten a concurrent editor's changes. Use this page's <a title=\"Revision History\" target=\"_blank\" href=\"{0}\" >Revision History<\/a> to review.","Article.Error.page-couldnt-be-loaded":"The requested page's contents could not be loaded.","Article.Error.page-save-conflict":"A page already exists at {0}. Navigate to the existing page and edit the page if you wish to modify its contents.","Article.Error.page-save-forbidden":"Your session has expired or you do not have permission to edit this page.","Article.Error.page-title-required":"A page title is required.","Article.edit.summary":"Edit summary","Article.edit.summary-reason":"Why are you making this edit?","Article.edit.enter-reason":"Enter reason (viewable in Site History Report)","Component.YoutubeSearch.error.key-invalid":"Your YouTube API Key was improperly configured. Please review the article at the","Component.YoutubeSearch.error.key-missing":"Your NiCE Knowledge Management deployment needs to update your YouTube API Key. Details on how to update can be found at the","Component.YoutubeSearch.error.search-failed":"Search failed","Component.YoutubeSearch.info.not-found":"No videos found","Component.YoutubeSearch.label.video-url":"Video URL","Component.YoutubeSearch.placeholder.query":"Video URL or YouTube search query","Dialog.ConfirmCancel.button.continue-editing":"Continue editing","Dialog.ConfirmCancel.button.discard-changes":"Discard changes","Dialog.ConfirmCancel.message.changes-not-saved":"Your changes have not been saved to MindTouch.","Dialog.ConfirmCancel.title":"Discard changes?","Dialog.ConfirmDeleteRedirects.label.delete-redirects-help-link":"Learn more about deleting redirects","Dialog.ConfirmSave.error.redirect":"A redirect exists at this location and will be deleted if you continue. This may negatively impact your site and SEO. Please contact NiCE Knowledge Management support.","Dialog.ConfirmSave.label.cancel":"Cancel","Dialog.ConfirmSave.label.continue":"Continue","Dialog.ConfirmSave.title":"Delete redirect?","Dialog.ConfirmSave.StrictIdf.error.invalid-idf":"This type of article should not exist at the requested location in the site hierarchy. Proceeding with the requested move may negatively impact site navigation and SEO.","Dialog.ConfirmSave.StrictIdf.error.missing-template-reference-insert":"You've removed the template reference, which is required for this page. Click Insert to reinsert the template reference.","Dialog.ConfirmSave.StrictIdf.label.cancel":"Cancel","Dialog.ConfirmSave.StrictIdf.label.continue":"Proceed anyway","Dialog.ConfirmSave.StrictIdf.label.insert":"Insert","Dialog.ConfirmSave.StrictIdf.label.missing-template-reference-help-link":"Learn more about required references","Dialog.ConfirmSave.StrictIdf.label.invalid-idf-help-link":"Learn more about IDF structure","Dialog.ConfirmSave.StrictIdf.title":"Oops!","Dialog.JS.wikibits-edit-section":"Edit section","Dialog.SaveRequired.button.cancel":"Cancel","Dialog.SaveRequired.button.save":"Save and continue","Dialog.SaveRequired.label.change-title-start":"This page needs a different title than","Dialog.SaveRequired.label.change-title-end":"Please make the correction and try again.","Dialog.SaveRequired.label.new-page-alert":"This operation can not be performed on a page that has not yet been created. In order to do that, we need to quickly save what you have.","Dialog.SaveRequired.title":"Save required","Draft.error.save-unpublished":"You cannot save an unpublished draft at {0}. A published page already exists at that location.","GUI.Editor.alert-changes-made-without-saving":"You have made changes to the content without saving your changes. Are you sure you want to exit this page?","GUI.Editor.error.copy-hint":"To avoid losing your work, copy the page contents to a new file and retry saving again.","GUI.Editor.error.server-error":"A server error has occurred.","GUI.Editor.error.unable-to-save":"We are unable to save this page","Redist.CKE.mt-save.save-to-file-link":"Save the page content to a file","Redist.CKE.mt-autosave.contents-autosaved":"The page contents were autosaved to the browser's local storage {0}","System.API.Error.invalid-redirect":"Cannot create a redirect on a page with sub-pages.","System.API.Error.invalid-redirect-target":"The redirect does not point at a valid page."}    </script>    <script type="application/json" nonce="58bdba5210e34efdc9c5de5fa290a852fdbf540ed0866c746c6bd33c0a53686f" id="mt-localizations-file-uploader">
+{"Dialog.Attach.allowed-types":"Allowed file types:","Dialog.Attach.button.upload":"Upload","Dialog.Attach.choose-files-dad":"Choose files to upload or drag and drop files into this window.","Dialog.Attach.max-size":"Maximum upload file size: {0}"}    </script>    <script type="application/json" nonce="58bdba5210e34efdc9c5de5fa290a852fdbf540ed0866c746c6bd33c0a53686f" id="mt-localizations-grid-widget">
+{"Article.Common.page-is-restricted-login":"You do not have permission to view this page - please try signing in.","MindTouch.Help.Page.search-unavailable":"Sorry, search is currently unavailable.","MindTouch.Reports.data.empty-grid-text":"No Data Available.","Page.StructuredTags.error-update":"An unknown error occurred."}    </script>    <script type="application/json" nonce="58bdba5210e34efdc9c5de5fa290a852fdbf540ed0866c746c6bd33c0a53686f" id="mt-localizations-tree-widget">
+{"Skin.Common.home":"Home","Dialog.Common.error.path-not-found":"The requested page or section could not be loaded. Please update the link.","Dialog.JS.loading":"Loading...","Dialog.JS.loading.copy":"Copying page(s)...","Dialog.JS.loading.insertImage":"Inserting image...","Dialog.JS.loading.move":"Moving page(s)...","Dialog.JS.loading.moveFile":"Moving file...","Dialog.JS.loading.search":"Searching...","MindTouch.Help.Page.in":"in","MindTouch.Help.Page.no-search-results":"Sorry, we can't find what you are looking for.","MindTouch.Help.Page.no-search-try":"Try searching for something else, selecting a category, or try creating a ticket.","MindTouch.Help.Page.retrysearch":"Click here to search the whole site.","MindTouch.Help.Page.search-error-try":"Please try again later.","MindTouch.Help.Page.search-unavailable":"Sorry, search is currently unavailable."}    </script>    <script type="application/json" nonce="58bdba5210e34efdc9c5de5fa290a852fdbf540ed0866c746c6bd33c0a53686f" id="mt-localizations-dialog">
+{"Dialog.Common.button.cancel":"Cancel","Dialog.Common.button.ok":"OK","Dialog.Common.label.home":"Home"}    </script>
+    <script type="text/javascript" data-mindtouch-module="true" nonce="58bdba5210e34efdc9c5de5fa290a852fdbf540ed0866c746c6bd33c0a53686f" src="https://a.mtstatic.com/deki/javascript/out/globals.jqueryv2.2.4.polyfill.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script><script type="application/json" id="mt-global-settings" nonce="58bdba5210e34efdc9c5de5fa290a852fdbf540ed0866c746c6bd33c0a53686f">{"articleType":"reference","attachFileMax":1000,"baseHref":"https:\/\/documentation.meraki.com","cacheFingerprint":"bb22f6537faa4d675dae44139962bf20b5796761:site_13505","canFileBeAttached":false,"cdnHostname":"a.mtstatic.com","clientSideWarnings":false,"dntEditorConfig":false,"draftEditable":false,"followRedirects":1,"idfHideTemplateTags":true,"idfVersion":"IDF3","isAiOptimizationTemplateEnabled":false,"isArticleReviewCommunityMembersEnabled":false,"isDraftAllowed":false,"isDraftManagerReportDownloadEnabled":false,"isDraftRequest":false,"isFindAndReplaceUndoEnabled":false,"isGenerativeSearchEnabled":false,"isGenerativeSearchDisclaimerEnabled":true,"isGenerativeSearchStreamResponseToggleEnabled":false,"isGenerativeSearchSearchIconEnabled":false,"isContentAdequacyEnabled":true,"isGenerativeSearchOnDemandEvaluationEnabled":true,"isEditorAiAssistantShortcutsEnabled":false,"isFileDescriptionCaptionableByLlmEnabled":false,"isGoogleAnalyticsEnabled":true,"isGuideTabMultipleClassificationsEnabled":false,"isHawthornThemeEnabled":false,"isIframeSandboxEnabled":false,"isImportExportEnhancementsEnabled":true,"isImportExportMediaEnabled":true,"isExternalImportEnabled":false,"isInteractionAnalyticsDebugEnabled":false,"isDevelopmentModeEnabled":false,"isInteractionAnalyticsEnabled":true,"isKcsEnabledOnPage":false,"isMediaManagerEnabled":false,"isPinnedPagesEnabled":true,"isPinnedPagesEnhancementsEnabled":true,"isReportDownloadEnabled":false,"isSchedulePublishEnabled":true,"isSearchAsYouTypeEnabled":false,"isTinymceAiAssistantEnabled":false,"isSearchInsightsDownloadEnabled":true,"isSentimentAnalysisEnabled":true,"isShowMoreChildrenNodesEnabled":false,"isShowTerminalNodesEnabled":false,"isSkinResponsive":true,"isSmoothScrollEnabled":true,"isTinyMceEnabled":false,"isTreeArticleIconsEnabled":false,"isXhrF1WebWidgetEnabled":true,"isXhrIEMode":false,"kcsEnabled":false,"kcsV2Enabled":false,"kcsV2GuidePrivacySetting":"Semi-Public","learningPathsEnabled":true,"maxFileSize":268435456,"moduleMode":"global","pageEditable":false,"pageId":471,"pageIsRedirect":false,"pageLanguageCode":"en-US","pageName":"Meraki MX\/Z Security and SD-WAN Licensing","pageNamespace":"","pageOrderLimit":1000,"pagePermissions":["LOGIN","BROWSE","READ","SUBSCRIBE"],"pageRevision":"111","pageSectionEditable":false,"pageTitle":"Platform Management\/Product Information\/Meraki Licensing\/Co-Termination Licensing\/Meraki MX\/\/Z Security and SD-WAN Licensing","pageViewId":"9f1211c7-ca64-42a8-998c-206563f4da81","siteId":"site_13505","pathCommon":"\/@style\/common","pathSkin":"\/@style\/elm","relatedArticlesDetailed":true,"removeBlankTemplate":true,"removeDeleteCheckbox":true,"cidWarningOnDelete":true,"scriptParser":2,"sessionId":"MDdkN2M5ZTEtMzlhOC00MDYxLWE1ODEtYWQ2OGNmNmVjM2VjfDIwMjYtMTAtMjBUMTg6MzE6MTQ=","showAllTemplates":false,"siteAuthoringPageThumbnailManagementEnabled":true,"skinStyle":"columbia.elm","spaceballs2Enabled":false,"strictIdfEnabled":true,"uiLanguage":"en-us","userId":2,"isPageRedirectPermanent":false,"userIsAdmin":false,"userIsAnonymous":true,"userIsSeated":false,"userName":"Anonymous User","userPermissions":["LOGIN","BROWSE","READ","SUBSCRIBE"],"userSystemName":"Anonymous","userTimezone":"GMT","webFontConfig":{"google":{"families":null}},"apiToken":"xhr_2_1792521205_af9562046cf59967e1e4a0e7a7704048d89d1a882379b8e57331484301982d42","displayGenerativeSearchDisclaimer":true,"cognigyFlowsEnabled":false}</script><script type="text/javascript" data-mindtouch-module="true" nonce="58bdba5210e34efdc9c5de5fa290a852fdbf540ed0866c746c6bd33c0a53686f" src="https://a.mtstatic.com/deki/javascript/out/community.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script><script type="text/javascript" data-mindtouch-module="true" nonce="58bdba5210e34efdc9c5de5fa290a852fdbf540ed0866c746c6bd33c0a53686f" src="https://a.mtstatic.com/deki/javascript/out/standalone/skin_elm.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script><script type="text/javascript" data-mindtouch-module="true" nonce="58bdba5210e34efdc9c5de5fa290a852fdbf540ed0866c746c6bd33c0a53686f" src="https://a.mtstatic.com/deki/javascript/out/standalone/pageBootstrap.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script>
+
+    
+        
+<script type="text/javascript" src="https://www.cisco.com/c/dam/cdc/t/ctm-core.js"></script>
+    
+<script type="text/javascript" nonce="58bdba5210e34efdc9c5de5fa290a852fdbf540ed0866c746c6bd33c0a53686f">(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-51174192-2','documentation.meraki.com',{allowLinker:true});ga('send','pageview');ga('create','UA-65721316-2','documentation.meraki.com',{name:'mtTracker',allowLinker:true});ga('mtTracker.require','linker');ga('mtTracker.set', 'anonymizeIp', true);ga('mtTracker.send','pageview');document.addEventListener('mindtouch-web-widget:f1:loaded',function(e){var t=e.data||{},d=t.widget;d&&''!==t.embedId&&document.addEventListener('mindtouch-web-widget:f1:clicked',function(e){var t=(e.data||{}).href;if(t){var n=document.createElement('a');n.setAttribute('href',t),'expert-help.nice.com'===n.hostname&&(e.preventDefault(),ga('linker:decorate',n),d.open(n.href))}})});</script>
+</head>
+<body class="elm-user-anonymous columbia-page-main columbia-article-reference columbia-browser- columbia-platform- columbia-breadcrumb-home-platformmanagement-productinformation-merakilicensing-co-terminationlicensing-merakimx--zsecurityandsd-wanlicensing columbia-live no-touch columbia-lang-en-us columbia-skin-elm">
+<a class="elm-skip-link" href="#elm-main-content" title="Press enter to skip to the main content">Skip to main content</a><main class="elm-skin-container" data-ga-category="Anonymous | page">
+    <header class="elm-header">
+        <div class="elm-header-custom">
+<script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-NHZZG7QL8R"></script><script>/*<![CDATA[*/
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-NHZZG7QL8R');
+/*]]>*/</script><script src="//use.typekit.net/hum1oye.js"></script><script>/*<![CDATA[*/try{Typekit.load();}catch(e){}/*]]>*/</script>
+
+<div class="mt-header-help"><div class="mt-header-help-container"><div class="mt-logo-container"><div class="mt-logo"><a class="internal" href="https://documentation.meraki.com/" rel="internal"><img class="mt-cdn" src="https://documentation.meraki.com/@api/deki/site/logo?default=https%3A%2F%2Fdocumentation.meraki.com%2F%40cdn%2F%40style%2Fcommon-legacy%2Fimages%2Flogo.png" alt="" /></a></div></div><div id="navcontainer"><ul id="navlist"><li><a href="https://account.meraki.com/secure/login/dashboard_login" target="_blank" rel="external noopener nofollow" class="link-https">Dashboard</a></li><li><a href="https://community.cisco.com/t5/meraki/ct-p/meraki-home" target="_blank" rel="external noopener nofollow" class="link-https">Community</a></li><li><a href="https://meraki.cisco.com/support" target="_blank" rel="external noopener nofollow" class="link-https">Support</a></li><li><a id="current" href="https://meraki.cisco.com/form/contact" target="_blank" rel="external noopener nofollow" class="link-https">Contact Sales</a></li></ul></div></div><div class="mt-header-search"><div class="mt-help-search mt-lsf-search" id="mt-portfolio-search"><script type="application/json" id="mt-localizations-help-widget">/*<![CDATA[*/{"Help.Widget.button.text":"Search","Help.Widget.label.text":"Query","Help.Widget.placeholder.text":"Search Meraki MX\/Z Security and SD-WAN Licensing"}/*]]>*/</script><div class="mt-inputredirect" data-query-key="q" data-path="Platform_Management/Product_Information/Meraki_Licensing/Co-Termination_Licensing/Meraki_MX//Z_Security_and_SD-WAN_Licensing"></div></div></div></div>
+
+<p>&nbsp;</p>
+</div>
+        <div class="elm-nav mt-translate-module" hidden="true">
+            <div class="elm-nav-container mt-translate-container"></div>
+        </div>
+        <div class="elm-header-logo-container">
+            <a href="https://documentation.meraki.com" title="Cisco Meraki Documentation" aria-label='Link to home'><img src="https://documentation.meraki.com/@public/production/site_13505/1749845593-logo.png" alt="Cisco Meraki Documentation" /></a>
+        </div>
+        
+        <nav class="elm-header-user-nav elm-nav" role="navigation">
+            <div class="elm-nav-container">
+                <ol>
+                    <li class="elm-global-search" data-ga-action="Header search"><a class="mt-icon-site-search mt-toggle-form" href="#" title="Search site">Search site</a>
+<div class="mt-quick-search-container mt-toggle-form-container">
+    <form action="/Special:Search">
+        <input name="qid" id="mt-qid-skin" type="hidden" value="" />
+        <input name="fpid" id="mt-search-filter-id" type="hidden" value="230" />
+        <input name="fpth" id="mt-search-filter-path" type="hidden" />
+        <input name="path" id="mt-search-path" type="hidden" value="" />
+
+        <label class="mt-label" for="mt-site-search-input">
+            Search
+        </label>
+        <input class="mt-text mt-search search-field" name="q" id="mt-site-search-input" placeholder="How can we help you?" type="search" />
+        <button class="mt-button ui-button-icon mt-icon-site-search-button search-button" type="submit">
+            Search
+        </button>
+    </form>
+</div>
+<div class="elm-search-back"><a class="mt-icon-browser-back" data-ga-label="Browse back" href="#" id="mt-browser-back" title="Go back to previous article">Go back to previous article</a></div>
+</li>
+                    <li class="elm-user-menu"><ol class="mt-user-menu">
+
+
+    <li class="mt-user-menu-user">
+        <a class="mt-icon-quick-sign-in "
+           href="https://documentation.meraki.com/@app/auth/4/login?returnto=https%3A%2F%2Fdocumentation.meraki.com%2FPlatform_Management%2FProduct_Information%2FMeraki_Licensing%2FCo-Termination_Licensing%2FMeraki_MX%252F%2FZ_Security_and_SD-WAN_Licensing"
+           title="Sign in">Sign in</a>
+
+    </li>
+</ol>
+</li>
+                </ol>
+            </div>
+        </nav>
+        <nav class="elm-header-global-nav elm-nav" data-ga-action="Elm Navigation">
+            <div class="elm-nav-container">
+                <button class="elm-hierarchy-trigger mt-hierarchy-trigger ui-button-icon mt-icon-hierarchy-trigger-closed" title="Expand/collapse global hierarchy" data-ga-label="Hierarchy Toggle - Tree View">
+                    Expand/collapse global hierarchy
+                </button>
+                <ol class="mt-breadcrumbs" data-ga-action="Breadcrumbs">
+                        <li>
+                            <a href="https://documentation.meraki.com/" data-ga-label="Breadcrumb category">
+                                <span class="mt-icon-article-category mt-icon-article-home"></span>
+                                    Home
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://documentation.meraki.com/Platform_Management" data-ga-label="Breadcrumb category">
+                                <span class="mt-icon-article-category"></span>
+                                    Platform Management
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://documentation.meraki.com/Platform_Management/Product_Information" data-ga-label="Breadcrumb category">
+                                <span class="mt-icon-article-category"></span>
+                                    Product Information
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing" data-ga-label="Breadcrumb category">
+                                <span class="mt-icon-article-category"></span>
+                                    Licensing
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing/Co-Termination_Licensing" data-ga-label="Breadcrumb guide">
+                                <span class="mt-icon-article-guide"></span>
+                                    Co-Termination Licensing
+                            </a>
+                        </li>
+                        <li class="mt-breadcrumbs-current-page">
+                            <span class="mt-icon-article-reference"></span>
+                            Meraki MX/Z Security and SD-WAN Licensing
+                        </li>
+                </ol>
+                <button class="mt-icon-hierarchy-mobile-view-trigger ui-button-icon mt-icon-hierarchy-mobile-trigger-closed" title="Expand/collapse global location" data-ga-label="Hierarchy Toggle - Breadcrumb Expand/Collapse">
+                    Expand/collapse global location
+                </button>
+            </div>
+        </nav>
+        <nav class="elm-nav elm-header-hierarchy">
+            <div class="elm-nav-container">
+                <div class="elm-hierarchy mt-hierarchy"></div>
+            </div>
+        </nav>    </header>
+    <article class="elm-content-container" id="elm-main-content" tabindex="-1">
+        <header>
+            <div id="flash-messages"><div class="dekiFlash"></div></div>
+            
+                
+<h1 id="title" data-title-editor-available="false">
+        Meraki MX/Z Security and SD-WAN Licensing
+</h1>
+
+                
+
+                
+                    <ol class="elm-meta-data elm-meta-top" data-ga-action="Page actions">
+                        <li class="elm-last-modified"><dl class="mt-last-updated-container">
+    <dt class="mt-last-updated-label">Last updated</dt>
+    <dd>
+        <span class="mt-last-updated" data-timestamp="2026-10-20T16:26:34Z"></span>
+    </dd>
+</dl>
+</li>
+                        <li class="elm-pdf-export"><a data-ga-label="PDF" href="https://documentation.meraki.com/@api/deki/pages/471/pdf/Meraki%2bMX%252FZ%2bSecurity%2band%2bSD-WAN%2bLicensing.pdf?stylesheet=default" rel="nofollow" target="_blank" title="Export page as a PDF">
+    <span class="mt-icon-article-pdf"></span>Save as PDF
+</a></li>
+                        <li class="elm-social-share"></li>
+                    </ol>
+                
+            
+        </header>
+                <header class="mt-content-header"></header>
+                <aside class="mt-content-side"></aside>
+            <aside id="mt-toc-container" data-title="Table of contents" data-collapsed="true">
+                <nav class="mt-toc-content mt-collapsible-section">
+                    <ol><li><a href="#Overview" rel="internal">Overview&nbsp;</a></li><li><a href="#Features_by_License_Option" rel="internal">Features by License Option&nbsp;</a></li><li><a href="#Teleworker_Gateway_License_Breakdown" rel="internal">Teleworker Gateway License Breakdown</a><ol><li><a href="#Teleworker_Features_by_License_Options" rel="internal">Teleworker Features by License Options&nbsp; &nbsp;</a></li></ol></li><li><a href="#Virtual_MX_(vMX)_License_Breakdown" rel="internal">Virtual MX (vMX) License Breakdown</a><ol><li><a href="#vMX_Features_by_License_Options" rel="internal">vMX Features by License Options&nbsp; &nbsp;</a></li></ol></li><li><a href="#Per_Device_SD-WAN.2B_License" rel="internal">Per Device SD-WAN+ License</a></li><li><a href="#FAQs" rel="internal">FAQs</a></li></ol>
+                </nav>
+            </aside>
+            <section class="mt-content-container">
+                <div mt-section-origin="Platform_Management/Product_Information/Meraki_Licensing/Co-Termination_Licensing/Meraki_MX//Z_Security_and_SD-WAN_Licensing" class="mt-section" id="section_1"><span id="Overview"></span><h2 dir="ltr" class="editable">Overview&nbsp;</h2>
+
+<p dir="ltr">The Meraki MX security appliance&nbsp;is a multi-functional security &amp; SD-WAN enterprise appliance with a wide set of capabilities to address multiple use cases for organizations of all sizes, in all industries.</p>
+
+<p>Given the range of use cases that can be solved, there are three license options for the MX security appliance that provides customers the flexibility to select the license most appropriate for their intended use.</p>
+
+<table class="mt-responsive-table">
+    <thead>
+        <tr>
+            <th class="mt-align-center" scope="col">
+            <p><strong>Enterprise</strong></p>
+            </th>
+            <th class="mt-align-center" scope="col">
+            <p><strong>Advanced Security</strong></p>
+            </th>
+            <th class="mt-align-center" scope="col">
+            <p><strong>Secure SD-WAN Plus</strong></p>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="mt-align-center" data-th="Enterprise"><em>&ldquo;All I require is Auto VPN and a firewall&rdquo;</em></td>
+            <td class="mt-align-center" data-th="Advanced Security"><em>&ldquo;I connect directly to the Internet so need a UTM too&rdquo;</em></td>
+            <td class="mt-align-center" data-th="Secure SD-WAN Plus"><em>&ldquo;My business is reliant on SaaS/IaaS/DC served apps&rdquo;</em></td>
+        </tr>
+        <tr>
+            <td data-th="Enterprise">
+            <ul>
+                <li dir="ltr">
+                <p class="mt-align-justify" dir="ltr" role="presentation">Essential SD-WAN&nbsp;</p>
+                </li>
+                <li dir="ltr">
+                <p class="mt-align-justify" dir="ltr" role="presentation">Secure connectivity &amp; basic security</p>
+                </li>
+            </ul>
+            </td>
+            <td data-th="Advanced Security">
+            <ul>
+                <li dir="ltr">
+                <p class="mt-align-justify" dir="ltr" role="presentation">All enterprise features</p>
+                </li>
+                <li dir="ltr">
+                <p class="mt-align-justify" dir="ltr" role="presentation">Fully featured unified threat management</p>
+                </li>
+            </ul>
+            </td>
+            <td data-th="Secure SD-WAN Plus">
+            <ul>
+                <li dir="ltr">
+                <p class="mt-align-justify" dir="ltr" role="presentation">All advanced security features</p>
+                </li>
+                <li dir="ltr">
+                <p dir="ltr" role="presentation">Advanced analytics with machine learning powered by Meraki Insight</p>
+                </li>
+                <li dir="ltr">
+                <p class="mt-align-justify" dir="ltr" role="presentation">Smart&nbsp;SaaS QoE</p>
+                </li>
+                <li aria-level="1" dir="ltr">
+                <p dir="ltr" role="presentation">Internet intelligence from ThousandEyes&nbsp;</p>
+                </li>
+                <li aria-level="1" dir="ltr">
+                <p dir="ltr" role="presentation">Internet outages from ThousandEyes</p>
+                </li>
+            </ul>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p>The licensing structure for MX security&nbsp;appliances is the same as that of any other Meraki device &ndash; 1:1 ratio of devices to licenses. Pair your chosen MX appliance(s) with the relevant license for your use case:</p>
+
+<ul>
+    <li dir="ltr">
+    <p dir="ltr" role="presentation">Enterprise license</p>
+    </li>
+</ul>
+
+<p class="mt-indent-2" dir="ltr"><strong>OR</strong></p>
+
+<ul>
+    <li dir="ltr">
+    <p dir="ltr" role="presentation">Advanced security license</p>
+    </li>
+</ul>
+
+<p class="mt-indent-2" dir="ltr"><strong>OR</strong></p>
+
+<ul>
+    <li dir="ltr">
+    <p dir="ltr" role="presentation">Secure SD-WAN Plus license (Org-Wide and Per Device)</p>
+    </li>
+</ul>
+
+<p dir="ltr" role="presentation">&nbsp;</p>
+
+<div class="note-info style-wrap">
+<p dir="ltr" role="presentation">For subscription licensing,&nbsp;refer to the <a target="_blank" title="Meraki MX Subscription Licensing" href="https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing/Subscription_Licensing/Subscription_-_MX_Licensing" rel="internal">MX</a> and <a target="_blank" title="Meraki Z Subscription Licensing" href="https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing/Subscription_Licensing/Subscription_-_Z_Licensing" rel="internal">Z</a> subscription&nbsp;articles for all the details. At this time, subscription and co-termination licenses&nbsp;can not be mixed in the same dashboard organization.&nbsp;</p>
+
+<p>A subscription order can be created with a mix of essentials and advantage licenses.&nbsp;You may have one or more subscription in the same org and each network must be bound to one subscription to consume licenses from that subscription.</p>
+
+<p dir="ltr" role="presentation">The vMX only supports Essentials and does not support the Advantage tier. Essentials tier will support all the Advanced Security features noted <a target="_blank" title="Meraki MX/Z Security and SD-WAN Licensing" class="mt-self-link" href="#vMX_Features_by_License_Options" rel="internal">here</a>.</p>
+</div>
+
+</div><div mt-section-origin="Platform_Management/Product_Information/Meraki_Licensing/Co-Termination_Licensing/Meraki_MX//Z_Security_and_SD-WAN_Licensing" class="mt-section" id="section_2"><span id="Features_by_License_Option"></span><h2 dir="ltr" role="presentation" class="editable">Features by License Option&nbsp;</h2>
+
+<div class="note-info style-wrap">
+<p dir="ltr" role="presentation">The following feature breakdown is from the latest stable release. For the latest firmware release and its features, please refer to the <a target="_blank" title="Security and SD-WAN (MX,Z) Features Directory" href="https://documentation.meraki.com/Platform_Management/Product_Information/Compatibility_and_Firmware/Security_and_SD-WAN_(MX%2CZ)_Features_Directory" rel="internal">features directory documentation</a>.&nbsp;&nbsp;</p>
+
+<p dir="ltr" role="presentation">For API support, please refer to the <a target="_blank" title="https://developer.cisco.com/meraki/api/" href="https://developer.cisco.com/meraki/api/" rel="external noopener nofollow" class="link-https">API documentation</a>.&nbsp;</p>
+</div>
+
+<p dir="ltr">&nbsp;</p>
+
+<table class="mt-responsive-table">
+    <colgroup>
+        <col width="196" />
+        <col width="138" />
+        <col width="145" />
+        <col width="137" />
+    </colgroup>
+    <thead>
+        <tr>
+            <th class="mt-column-width-20" scope="col">
+            <p class="mt-align-center" dir="ltr"><strong>Feature</strong></p>
+            </th>
+            <th class="mt-column-width-10" scope="col">
+            <p class="mt-align-center" dir="ltr"><strong>Enterprise&nbsp;</strong></p>
+            </th>
+            <th scope="col">
+            <p class="mt-align-center" dir="ltr"><strong>Advanced Security</strong></p>
+            </th>
+            <th scope="col">
+            <p class="mt-align-center" dir="ltr"><strong>Secure SD-WAN Plus&nbsp;</strong></p>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Meraki Cloud Architecture" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Design_and_Configure/Architectures_and_Best_Practices/Cisco_Meraki_Best_Practice_Design/Meraki_Cloud_Architecture" rel="internal">Centralized management</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Managing Firmware Upgrades" href="https://documentation.meraki.com/Platform_Management/Product_Information/Compatibility_and_Firmware/Firmware_Upgrades/Managing_Firmware_Upgrades" rel="internal">Zero-touch firmware updates (including security patches)</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Building a Scalable Meraki Solution" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Design_and_Configure/Architectures_and_Best_Practices/Cisco_Meraki_Best_Practice_Design/Building_a_Scalable_Meraki_Solution" rel="internal">True zero-touch provisioning</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="https://meraki.cisco.com/meraki-support/overview/" href="https://meraki.cisco.com/meraki-support/overview/" rel="external noopener nofollow" class="link-https">24x7 enterprise support</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Cisco Meraki Dashboard API" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Operate_and_Maintain/How-Tos/How_to_Use_the_Cisco_Meraki_Dashboard_API" rel="internal">Open APIs</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="SD-WAN and Traffic Shaping" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Configuration_Guides/Firewall_and_Traffic_Shaping/SD-WAN_and_Traffic_Shaping" rel="internal">Automatic WAN failover</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Connection Monitoring for WAN Failover" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Configuration_Guides/Firewall_and_Traffic_Shaping/Connection_Monitoring_for_WAN_Failover" rel="internal">Uplink Load Balancing/Failover conditions</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Meraki SD-WAN" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Design_and_Configure/Architectures_and_Best_Practices/Cisco_Meraki_Best_Practice_Design/Meraki_SD-WAN#SD-WAN_Technologies" rel="internal">Sub-second dynamic path selection</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="3G/4G Cellular Failover with USB Modems" href="https://documentation.meraki.com/SASE_and_SD-WAN/Cellular/Design_and_Configure/Configuration_Guides/3G%2F%2F4G_Cellular_Failover_with_USB_Modems" rel="internal">3G / 4G cellular failover</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="MX Warm Spare - High-Availability Pair" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Deployment_Guides/MX_Warm_Spare_-_High_Availability_Pair" rel="internal">High Availability</a>&nbsp;</p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Meraki SD-WAN" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Design_and_Configure/Architectures_and_Best_Practices/Cisco_Meraki_Best_Practice_Design/Meraki_SD-WAN" rel="internal">Essential SD-WAN</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature"><u><a target="_blank" title="Meraki SD-WAN" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Design_and_Configure/Architectures_and_Best_Practices/Cisco_Meraki_Best_Practice_Design/Meraki_SD-WAN#SD-WAN_over_Cellular_Active_Uplink" rel="internal">SD-WAN Over Cellular</a></u></td>
+            <td class="mt-column-width-10 mt-align-center" data-th="Enterprise&nbsp;"><span class="mt-color-339933"><strong>&#10004;</strong></span></td>
+            <td class="mt-align-center" data-th="Advanced Security"><span class="mt-color-339933"><strong>&#10004;</strong></span></td>
+            <td class="mt-align-center" data-th="Secure SD-WAN Plus&nbsp;"><span class="mt-color-339933"><strong>&#10004;</strong></span></td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Meraki SD-WAN" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Design_and_Configure/Architectures_and_Best_Practices/Cisco_Meraki_Best_Practice_Design/Meraki_SD-WAN" rel="internal">Sub-second Site-to-Site VPN failover</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Meraki SD-WAN" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Design_and_Configure/Architectures_and_Best_Practices/Cisco_Meraki_Best_Practice_Design/Meraki_SD-WAN" rel="internal">Site-to-site VPN (Auto VPN and 3rd party peering)</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature"><u><a target="_blank" title="Home" href="https://documentation.meraki.com/?title=SASE_and_SD-WAN/MX/Product_Information/Compatibility_and_Firmware/IPv6_Support_on_MX_Security_%26_SD-WAN_Platforms_-_Core_Fundamentals" rel="internal">IPv6 Support</a></u></td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="MPLS Failover to Meraki Auto VPN" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Deployment_Guides/MPLS_Failover_to_Meraki_Auto_VPN" rel="internal">MPLS to VPN Failover</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Meraki SD-WAN" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Design_and_Configure/Architectures_and_Best_Practices/Cisco_Meraki_Best_Practice_Design/Meraki_SD-WAN" rel="internal">SD-WAN Steering and Policies</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="SD-WAN and Traffic Shaping" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Configuration_Guides/Firewall_and_Traffic_Shaping/SD-WAN_and_Traffic_Shaping" rel="internal">Traffic shaping/prioritization</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Client VPN Overview" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Configuration_Guides/Client_VPN/Client_VPN_Overview" rel="internal">Client VPN</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Meraki SD-WAN" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Design_and_Configure/Architectures_and_Best_Practices/Cisco_Meraki_Best_Practice_Design/Meraki_SD-WAN#Policy-Based_Routing_(PbR)" rel="internal">Policy-Based Routing</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="MX Routing Behavior" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Configuration_Guides/Networks_and_Routing/MX_Routing_Behavior" rel="internal">VLAN to VLAN routing</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Source Based Default Routing" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Configuration_Guides/Networks_and_Routing/Source_Based_Default_Routing" rel="internal">Source-Based Routing</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="VPN Full-Tunnel Exclusion (Application and IP/URL Based Local Internet Breakout)" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Configuration_Guides/Site-to-site_VPN/VPN_Full-Tunnel_Exclusion_(Application_and_IP%2F%2FURL_Based_Local_Internet_Breakout)" rel="internal">Local Breakout (IP and Port based)</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="MX Routing Behavior" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Configuration_Guides/Networks_and_Routing/MX_Routing_Behavior" rel="internal">Advanced Routing</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Alerts and Notifications" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Operate_and_Maintain/Monitoring_and_Reporting/Network_Alerts_and_Notifications" rel="internal">Client connectivity alerts</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Alerts and Notifications" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Operate_and_Maintain/Monitoring_and_Reporting/Network_Alerts_and_Notifications#Security_appliance_Alerts" rel="internal">Security Appliance alerts</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Splash Page" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Design_and_Configure/Configuration_Guides/Splash_Page_Configuration/Splash_Page_Overview#MX_Splash_Page_Options" rel="internal">Splash pages</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><u><a target="_blank" title="MultiWAN Backup Uplink" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Operate_and_Maintain/How-Tos/How_to_Configure_MultiWAN_Uplinks_on_Supported_MX_Appliances" rel="internal">Multi-WAN (2 Active + 1 Backup)</a></u></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="MX and Z-Series Wireless Settings" href="https://documentation.meraki.com/SASE_and_SD-WAN/Z-Series_Teleworker_Gateways/Design_and_Configure/MX_and_Z-Series_Wireless_Settings" rel="internal">Wireless and/or Cellular functionality&nbsp;</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="vMX Cloud Integrations" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Configuration_Guides/Virtual_MX_Appliances/vMX_Cloud_Integrations" rel="internal">Cloud Integrations</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Creating and Applying Group Policies" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Operate_and_Maintain/How-Tos/Creating_and_Applying_Group_Policies" rel="internal">Group Policies</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="MX Templates Best Practices" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Design_and_Configure/Architectures_and_Best_Practices/Cisco_Meraki_Best_Practice_Design/MX_Templates_Best_Practices" rel="internal">Configuration templates</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Using Layer 3 Firewall Rules" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Design_and_Configure/Configuration_Guides/Routing_and_Firewall/Using_Layer_3_Firewall_Rules" rel="internal">Stateful firewall</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Next-gen Traffic Analytics - Network-Based Application Recognition (NBAR) Integration" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Operate_and_Maintain/Monitoring_and_Reporting/How_to_Configure_Next-Gen_Traffic_Analytics_With_NBAR_Integration" rel="internal">Next-gen Traffic Analytics Engine - Network-Based Application Recognition (NBAR) Integration</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature"><u><a target="_blank" title="Next-gen Traffic Analytics - Network-Based Application Recognition (NBAR) Integration" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Operate_and_Maintain/Monitoring_and_Reporting/How_to_Configure_Next-Gen_Traffic_Analytics_With_NBAR_Integration#Firewall_rules" rel="internal">Layer 7 (Application) Enforcement powered by NBAR</a></u></td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Firewall Logging" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Configuration_Guides/Firewall_and_Traffic_Shaping/Firewall_Logging" rel="internal">Enhanced Live Firewall Logging and Troubleshooting</a>&nbsp;</p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature"><u><a target="_blank" title="Next-gen Traffic Analytics - Network-Based Application Recognition (NBAR) Integration" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Operate_and_Maintain/Monitoring_and_Reporting/How_to_Configure_Next-Gen_Traffic_Analytics_With_NBAR_Integration#Traffic_shaping_rules" rel="internal">Traffic Shaping Enforcement powered by NBAR</a></u></td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature"><u><a target="_blank" title="Cisco SD-WAN Interconnects" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Configuration_Guides/Networks_and_Routing/Cisco_SD-WAN_Interconnects" rel="internal">Catalyst + Meraki SD-WAN Interconnect&nbsp; (eBGP over IPsec)</a></u></td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature"><u><a target="_blank" title="Primary and Secondary IPsec VPN Tunnels" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Configuration_Guides/Site-to-site_VPN/Primary_and_Secondary_IPsec_VPN_Tunnels" rel="internal">IPsec SSE tunnel monitoring, redundancy, and DIA</a></u></td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature"><u><a target="_blank" title="XDR" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Integrations/XDR" rel="internal">Cisco XDR Integration**</a></u></td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr">&nbsp;</p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature"><u><a target="_blank" title="Next-gen Traffic Analytics - Network-Based Application Recognition (NBAR) Integration" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Operate_and_Maintain/Monitoring_and_Reporting/How_to_Configure_Next-Gen_Traffic_Analytics_With_NBAR_Integration#SD-AVC_Integration_-_Smart_Application_Updates_Delivered_via_the_Cloud" rel="internal">SD-AVC Integration - Smart Application Updates Delivered via the Cloud</a></u></td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature"><u><a target="_blank" title="Site-to-Site VPN Settings" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Configuration_Guides/Site-to-site_VPN/Site-to-Site_VPN_Settings?mt-draft=true#IPsec_Policies" rel="internal">DH15 and DH21 support in IPsec</a></u></td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="MX Firewall Settings" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Configuration_Guides/Firewall_and_Traffic_Shaping/MX_Firewall_Settings#Geo-IP_Based_Firewalling" rel="internal">Geography based firewall rules</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr">&nbsp;</p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature"><u><a target="_blank" title="Trusted Traffic Exclusions" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Operate_and_Maintain/Content_Filtering_and_Threat_Protection/Trusted_Traffic_Exclusions" rel="internal">Trusted Traffic Exclusions powered by NBAR</a></u></td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">&nbsp;</td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Threat Protection" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Operate_and_Maintain/Content_Filtering_and_Threat_Protection/Threat_Protection" rel="internal">Intrusion Detection and Prevention System (IDS/IPS)</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr">&nbsp;</p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Content Filtering Powered By Cisco Talos" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Operate_and_Maintain/Content_Filtering_and_Threat_Protection/Content_Filtering" rel="internal">Content Filtering powered by Talos Intelligence</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr">&nbsp;</p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Content Filtering" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Operate_and_Maintain/Content_Filtering_and_Threat_Protection/Content_Filtering" rel="internal">YouTube&nbsp;Content Restriction</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr">&nbsp;</p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Web Search Filtering and its Effect on Google Apps and Google Search" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Operate_and_Maintain/Content_Filtering_and_Threat_Protection/Web_Search_Filtering_and_its_Effect_on_Google_Apps_and_Google_Search" rel="internal">Web Search Filtering</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr">&nbsp;</p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Advanced Malware Protection (AMP)" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Operate_and_Maintain/Content_Filtering_and_Threat_Protection/Advanced_Malware_Protection_(AMP)" rel="internal">Cisco Advanced Malware Protection (AMP)</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr">&nbsp;</p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Manually Integrating Cisco Umbrella with Meraki Networks" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Operate_and_Maintain/How-Tos/Manually_Integrating_Cisco_Umbrella_and_Secure_Access_with_Meraki_Networks" rel="internal">Umbrella DNS Integration**</a></p>
+            </td>
+            <td class="mt-column-width-10" data-th="Enterprise&nbsp;">
+            <p class="mt-align-center" dir="ltr">&nbsp;</p>
+            </td>
+            <td data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Threat Grid Integration" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Operate_and_Maintain/Content_Filtering_and_Threat_Protection/Threat_Grid_Integration" rel="internal">Cisco Secure Malware Analytics Integration (formerly known as Threat Grid)**</a></p>
+            </td>
+            <td class="mt-align-center mt-column-width-10" data-th="Enterprise&nbsp;">&nbsp;</td>
+            <td class="mt-align-center" data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="BETA: Meraki MX ThousandEyes Configuration Guide" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Integrations/MI_-_Meraki_Insight/Product_Information_and_Configuration/Meraki_MX_ThousandEyes_Configuration_Guide" rel="internal">ThousandEyes Agent Integration</a>**</p>
+            </td>
+            <td class="mt-align-center mt-column-width-10" data-th="Enterprise&nbsp;">&nbsp;</td>
+            <td class="mt-align-center" data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Adaptive Policy for MX/Z Platforms" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Design_and_Configure/Configuration_Guides/Adaptive_Policy/Adaptive_Policy_for_MX%2F%2FZ_Platforms" rel="internal">Adaptive Policy (SGT Transport)</a></p>
+            </td>
+            <td class="mt-align-center mt-column-width-10" data-th="Enterprise&nbsp;">&nbsp;</td>
+            <td class="mt-align-center" data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Adaptive Policy for MX/Z Platforms" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Design_and_Configure/Configuration_Guides/Adaptive_Policy/Adaptive_Policy_for_MX%2F%2FZ_Platforms" rel="internal">Adaptive Policy (SGT Assignment)</a></p>
+            </td>
+            <td class="mt-align-center mt-column-width-10" data-th="Enterprise&nbsp;">&nbsp;</td>
+            <td class="mt-align-center" data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr">&nbsp;</p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Internet Outages" class="mt-disabled" rel="broken">Internet Outages</a>&nbsp;***</p>
+            </td>
+            <td class="mt-align-center mt-column-width-10" data-th="Enterprise&nbsp;">&nbsp;</td>
+            <td class="mt-align-center" data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr">&nbsp;</p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="BETA: Meraki MX ThousandEyes Configuration Guide" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Integrations/MI_-_Meraki_Insight/Product_Information_and_Configuration/Meraki_MX_ThousandEyes_Configuration_Guide" rel="internal">ThousandEyes Support with Meraki Dashboard</a>**</p>
+            </td>
+            <td class="mt-align-center mt-column-width-10" data-th="Enterprise&nbsp;">&nbsp;</td>
+            <td class="mt-align-center" data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr">&nbsp;</p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="SD-WAN Internet Policies (SD-Internet)" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Design_and_Configure/Architectures_and_Best_Practices/Cisco_Meraki_Best_Practice_Design/SD-WAN_Internet_Policies_(SD-Internet)" rel="internal">SD-Internet Steering and Policies</a></p>
+            </td>
+            <td class="mt-align-center mt-column-width-10" data-th="Enterprise&nbsp;">&nbsp;</td>
+            <td class="mt-align-center" data-th="Advanced Security">
+            <p class="mt-align-center" dir="ltr">&nbsp;</p>
+            </td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="Overview" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Integrations/MI_-_Meraki_Insight/User_Guides/MI_Web_App_Health_Overview" rel="internal">Web App Health</a>&nbsp;***</p>
+            </td>
+            <td class="mt-align-center mt-column-width-10" data-th="Enterprise&nbsp;">&nbsp;</td>
+            <td class="mt-align-center" data-th="Advanced Security">&nbsp;</td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="MI WAN Health" class="mt-disabled" rel="broken">WAN Health</a>&nbsp;***</p>
+            </td>
+            <td class="mt-align-center mt-column-width-10" data-th="Enterprise&nbsp;">&nbsp;</td>
+            <td class="mt-align-center" data-th="Advanced Security">&nbsp;</td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="MI VoIP Health" class="mt-disabled" rel="broken">VoIP Health&nbsp;</a>&nbsp;***</p>
+            </td>
+            <td class="mt-align-center mt-column-width-10" data-th="Enterprise&nbsp;">&nbsp;</td>
+            <td class="mt-align-center" data-th="Advanced Security">&nbsp;</td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="mt-column-width-20" data-th="Feature">
+            <p dir="ltr"><a target="_blank" title="VPN Full-Tunnel Exclusion (Application and IP/URL Based Local Internet Breakout)" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Configuration_Guides/Site-to-site_VPN/VPN_Full-Tunnel_Exclusion_(Application_and_IP%2F%2FURL_Based_Local_Internet_Breakout)#Configuring_Application_Based_VPN_Exclusion_Rules" rel="internal">Smart breakout</a></p>
+            </td>
+            <td class="mt-align-center mt-column-width-10" data-th="Enterprise&nbsp;">&nbsp;</td>
+            <td class="mt-align-center" data-th="Advanced Security">&nbsp;</td>
+            <td data-th="Secure SD-WAN Plus&nbsp;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p dir="ltr"><span class="mt-font-size-10">**Requires a separate&nbsp;license<br />
+*** MI features supported on&nbsp;C8000-series devices with&nbsp;MX OS 26.2+.</span></p>
+
+<p>&nbsp;</p>
+
+<div class="note-info style-wrap">
+<p>For licenses and their respective features available in mainland China, please refer to the following article for the details.</p>
+
+<p><a title="&#35768;&#21487;&#35777;&#20934;&#21017;&#21644;&#38480;&#21046;" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Translated_Documents/Product_Information/%E8%AE%B8%E5%8F%AF%E8%AF%81%E5%87%86%E5%88%99%E5%92%8C%E9%99%90%E5%88%B6" rel="internal">Meraki Licensing Guidelines and Limitations for China</a></p>
+</div>
+
+</div><div mt-section-origin="Platform_Management/Product_Information/Meraki_Licensing/Co-Termination_Licensing/Meraki_MX//Z_Security_and_SD-WAN_Licensing" class="mt-section" id="section_3"><span id="Teleworker_Gateway_License_Breakdown"></span><h2 dir="ltr" class="editable">Teleworker Gateway License Breakdown</h2>
+
+<p dir="ltr">The Meraki Teleworker Gateway is a type of a security appliance&nbsp;intended for use in small remote offices and homes of remote workers. Allowing them to securely connect back to their head offices while also offering the same security as our MX security appliance Platform.&nbsp;</p>
+
+<div class="note-info style-wrap">
+<p dir="ltr">Refer to <a title="Meraki Licensing FAQs" href="https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing/General_Licensing_Information/General_Licensing_FAQs" rel="internal">Meraki Licensing FAQs</a> for more information.</p>
+</div>
+
+
+
+<p dir="ltr">With the introduction of the Z4/C, we are also introducing two new types of licenses for the Teleworker series.</p>
+
+<div class="note-info style-wrap">
+<p>These licenses are&nbsp;not&nbsp;supported by the Z1 and Z3 teleworker gateways</p>
+</div>
+
+<table style="width: 1088px; table-layout: fixed;">
+    <colgroup>
+        <col />
+        <col />
+    </colgroup>
+    <thead>
+        <tr>
+            <th scope="col" style="width:558px;">
+            <p class="mt-align-center" dir="ltr"><strong>Z-Enterprise</strong></p>
+            </th>
+            <th scope="col" style="width:522px;">
+            <p class="mt-align-center" dir="ltr"><strong>Secure Teleworker</strong></p>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="width:558px;">
+            <ul>
+                <li aria-level="1" dir="ltr">
+                <p dir="ltr" role="presentation">Essential Auto-VPN Features</p>
+                </li>
+                <li aria-level="1" dir="ltr">
+                <p dir="ltr" role="presentation">Secure connectivity &amp; basic security</p>
+                </li>
+            </ul>
+            </td>
+            <td style="width:522px;">
+            <ul>
+                <li aria-level="1" dir="ltr">
+                <p dir="ltr" role="presentation">Advanced Security Features</p>
+                </li>
+                <li aria-level="1" dir="ltr">
+                <p dir="ltr" role="presentation">Advanced&nbsp;Analytics&nbsp;</p>
+                </li>
+            </ul>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<div mt-section-origin="Platform_Management/Product_Information/Meraki_Licensing/Co-Termination_Licensing/Meraki_MX//Z_Security_and_SD-WAN_Licensing" class="mt-section" id="section_4"><span id="Teleworker_Features_by_License_Options"></span><h3 dir="ltr" class="editable">Teleworker Features by License Options&nbsp; &nbsp;</h3>
+
+<table style="width: 1066px; table-layout: fixed;">
+    <colgroup>
+        <col width="203" />
+        <col width="122" />
+        <col width="155" />
+    </colgroup>
+    <thead>
+        <tr>
+            <th scope="col" style="width:334px;">
+            <p class="mt-align-center" dir="ltr"><strong>Feature</strong></p>
+            </th>
+            <th scope="col" style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><strong>Z-Enterprise</strong></p>
+            </th>
+            <th scope="col" style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><strong>Secure Teleworker</strong></p>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Centralized management</strong></p>
+            </td>
+            <td class="mt-align-center" style="width:336px;">
+            <p><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Zero-touch firmware updates</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>True zero-touch provisioning</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>24x7 enterprise support</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Open APIs</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Automatic WAN failover</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Sub-second site-to-site VPN failover</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Sub-second dynamic path selection</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;"><strong>Cellular failover</strong></td>
+            <td class="mt-align-center" style="width:336px;"><span class="mt-color-339933"><strong>&#10004;</strong></span></td>
+            <td class="mt-align-center" style="width:388px;"><span class="mt-color-339933"><strong>&#10004;</strong></span></td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Stateful firewall</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>VLAN to VLAN routing</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Advanced Routing</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Traffic shaping/prioritization</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Site-to-site VPN</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Client VPN</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Splash pages</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Configuration templates</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Group Policies</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Client connectivity alerts</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Source-Based Routing</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Local Breakout (IP based)</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Umbrella DNS Integration**</strong></p>
+            </td>
+            <td style="width:336px;">
+            <p class="mt-align-center" dir="ltr">&nbsp;</p>
+            </td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Geography based firewall rules</strong></p>
+            </td>
+            <td style="width:336px;">&nbsp;</td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Content filtering</strong></p>
+            </td>
+            <td style="width:336px;">&nbsp;</td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>YouTube Content Restriction</strong></p>
+            </td>
+            <td style="width:336px;">&nbsp;</td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Web Search Filtering</strong></p>
+            </td>
+            <td style="width:336px;">&nbsp;</td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Cisco Advanced Malware Protection (AMP)</strong></p>
+            </td>
+            <td style="width:336px;">&nbsp;</td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Threat Grid Integration**</strong></p>
+            </td>
+            <td style="width:336px;">&nbsp;</td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>WAN Health Analytics (MI)</strong></p>
+            </td>
+            <td style="width:336px;">&nbsp;</td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>VoIP Health Analytics (MI)</strong></p>
+            </td>
+            <td style="width:336px;">&nbsp;</td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:334px;">
+            <p dir="ltr"><strong>Smart breakout</strong></p>
+            </td>
+            <td style="width:336px;">&nbsp;</td>
+            <td style="width:388px;">
+            <p class="mt-align-center" dir="ltr"><span class="mt-color-339933"><strong>&#10004;</strong></span></p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="note-info style-wrap">
+<p>Z4 Licenses are as follows:&nbsp;</p>
+<style type="text/css"></style>
+<style class="darkreader darkreader--sync" media="screen" type="text/css"></style>
+<ul>
+    <li>Z-Enterprise:&nbsp;LIC-Z4-ENT-[X]Y</li>
+    <li>Secure Teleworker:&nbsp;LIC-Z4-SEC-[X]Y</li>
+</ul>
+
+<p>X= Number of Years</p>
+</div>
+
+</div></div><div mt-section-origin="Platform_Management/Product_Information/Meraki_Licensing/Co-Termination_Licensing/Meraki_MX//Z_Security_and_SD-WAN_Licensing" class="mt-section" id="section_5"><span id="Virtual_MX_(vMX)_License_Breakdown"></span><h2 dir="ltr" class="editable">Virtual MX (vMX) License Breakdown</h2>
+
+<p lang="EN-US" paraeid="{ce6e4983-b003-4c5b-84d9-89c3d208fbea}{24}" paraid="2009530116">Meraki vMX is a virtual security and SD-WAN appliance that creates a fast, secure, and persistent connection between networks across different physical and virtual mediums, different cloud hyperscalers, and different public cloud regions.&nbsp;</p>
+
+<p lang="EN-US" paraeid="{ce6e4983-b003-4c5b-84d9-89c3d208fbea}{24}" paraid="2009530116">Any vMX running firmware 19.1 and above supports two licensing options in Co-Termination licensing model.</p>
+
+<table style="width: 1088px;">
+    <tbody>
+        <tr>
+            <td style="width:558px;">
+            <p class="mt-align-center" dir="ltr"><strong>Enterprise</strong></p>
+            </td>
+            <td style="width:522px;">
+            <p class="mt-align-center" dir="ltr"><strong>Advanced Security</strong></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:558px;">
+            <ul>
+                <li aria-level="1" dir="ltr">
+                <p dir="ltr" role="presentation">Essential SD-WAN Features</p>
+                </li>
+                <li aria-level="1" dir="ltr">
+                <p dir="ltr" role="presentation">Secure connectivity&nbsp;</p>
+                </li>
+            </ul>
+            </td>
+            <td style="width:522px;">
+            <ul>
+                <li aria-level="1" dir="ltr">
+                <p dir="ltr" role="presentation">All enterprise features&nbsp;</p>
+                </li>
+                <li aria-level="1" dir="ltr">
+                <p dir="ltr" role="presentation">Advanced Security Features</p>
+                </li>
+            </ul>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p dir="ltr" role="presentation">The vMX Enterprise and vMX Advanced Security have a similar feature set as the MX.&nbsp;&nbsp;</p>
+
+
+
+<div mt-section-origin="Platform_Management/Product_Information/Meraki_Licensing/Co-Termination_Licensing/Meraki_MX//Z_Security_and_SD-WAN_Licensing" class="mt-section" id="section_6"><span id="vMX_Features_by_License_Options"></span><h3 dir="ltr" class="editable"><strong>vMX Features by License Options&nbsp;</strong> &nbsp;</h3>
+
+<table aria-rowcount="34" data-tablelook="1696" data-tablestyle="MsoNormalTable" style="width: 1077px; table-layout: fixed;">
+    <thead>
+        <tr aria-rowindex="1" role="row">
+            <th data-celllook="0" role="rowheader" scope="col">
+            <p lang="EN-US" paraeid="{efb1c9b4-407c-4e9a-a0e9-9393015f503d}{217}" paraid="978455879"><strong>Feature</strong>&nbsp;</p>
+            </th>
+            <th data-celllook="0" role="columnheader" scope="col" style="width:270px;">
+            <p lang="EN-US" paraeid="{efb1c9b4-407c-4e9a-a0e9-9393015f503d}{222}" paraid="403752446"><strong>Enterprise&nbsp;</strong>&nbsp;</p>
+            </th>
+            <th data-celllook="0" role="columnheader" scope="col" style="width:283px;">
+            <p lang="EN-US" paraeid="{efb1c9b4-407c-4e9a-a0e9-9393015f503d}{227}" paraid="2143874098"><strong>Advanced Security *</strong>&nbsp;</p>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr aria-rowindex="2" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{efb1c9b4-407c-4e9a-a0e9-9393015f503d}{232}" paraid="302071314"><strong>Centralized management&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{efb1c9b4-407c-4e9a-a0e9-9393015f503d}{237}" paraid="1982383935"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{efb1c9b4-407c-4e9a-a0e9-9393015f503d}{242}" paraid="646049455"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="3" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{efb1c9b4-407c-4e9a-a0e9-9393015f503d}{247}" paraid="1653571821"><strong>Zero-touch firmware updates (including security patches)&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{efb1c9b4-407c-4e9a-a0e9-9393015f503d}{252}" paraid="1740718599"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{2}" paraid="257175627"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="4" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{7}" paraid="2042737155"><strong>True zero-touch provisioning&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{12}" paraid="228338481"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{17}" paraid="1571140823"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="5" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{22}" paraid="1829293351"><strong><a href="https://meraki.cisco.com/meraki-support/overview/" rel="noreferrer noopener" target="_blank">24x7 enterprise support</a>&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{27}" paraid="482629921"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{32}" paraid="1835507692"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="6" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{37}" paraid="1533349112"><strong>Open APIs&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{42}" paraid="584790477"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{47}" paraid="146574158"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="7" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{52}" paraid="1665170164"><strong>High Availability&nbsp;&nbsp;</strong></p>
+
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{58}" paraid="398362242"><strong>(Act- Act model, via eBGP to Cloud routers)&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{63}" paraid="1564344580"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{68}" paraid="117138278"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="8" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{73}" paraid="2131479534"><strong>Sub-second Site-to-Site VPN failover&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{78}" paraid="1226740677"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{83}" paraid="511806410"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="9" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{88}" paraid="1534129931"><strong>Site-to-site VPN (Auto VPN and 3rd party peering)&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{93}" paraid="392573611"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{98}" paraid="1500072378"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="10" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{103}" paraid="800260027"><strong><u>IPv6 Support</u>&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{108}" paraid="927810979"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{113}" paraid="1622770896"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="11" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{118}" paraid="407047276"><strong>Client VPN&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{123}" paraid="1212520283"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{128}" paraid="123745366"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="12" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{133}" paraid="6869723"><strong>Policy-Based Routing&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{138}" paraid="1332506049"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{143}" paraid="744660790"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="13" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{148}" paraid="1394713471"><strong>VLAN to VLAN routing&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{153}" paraid="1763234739"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{158}" paraid="1177166496"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="14" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{163}" paraid="1827039640"><strong>Source-Based Routing&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{168}" paraid="787753548"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{173}" paraid="343177119"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="15" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{178}" paraid="775051792"><strong>Local Breakout (IP and Port based)&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{183}" paraid="1590906890"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{188}" paraid="1187135006"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="16" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{193}" paraid="327771258"><strong>Advanced Routing&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{198}" paraid="2090569255"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{203}" paraid="1114251699"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="17" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{208}" paraid="1310379266"><strong>Client connectivity alerts&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{213}" paraid="593855193"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{218}" paraid="1914631343"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="18" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{223}" paraid="1408682197"><strong>Security Appliance alerts&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{228}" paraid="486018595"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{233}" paraid="852938924"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="19" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{238}" paraid="363030053"><strong>Splash pages&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{243}" paraid="1866478347"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{248}" paraid="2036000006"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="20" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{e02f2773-7002-4afe-b746-27c377c7bae5}{253}" paraid="702581522"><strong>Cloud Integrations&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{3}" paraid="430823270"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{8}" paraid="476042555"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="21" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{13}" paraid="928852736"><strong>Group Policies&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{18}" paraid="992576355"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{23}" paraid="1248869263"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="22" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{28}" paraid="443758403"><strong>Configuration templates&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{33}" paraid="1328048792"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{38}" paraid="1461375152"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="23" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{43}" paraid="2080879335"><strong>Stateful firewall&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{48}" paraid="2138618323"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{53}" paraid="1094585586"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="24" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{58}" paraid="2142328059"><strong>Next-gen Traffic Analytics Engine - Network-Based Application Recognition (NBAR) Integration&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{63}" paraid="912649813"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{68}" paraid="955725714"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="25" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{73}" paraid="1560442973"><strong><u>Layer 7 (Application) Enforcement powered by NBAR</u>&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{78}" paraid="2113624919"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{83}" paraid="1373378193"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="26" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{88}" paraid="1618761787"><strong>Enhanced Live Firewall Logging and Troubleshooting&nbsp;&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{93}" paraid="971013636"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{98}" paraid="369706538"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="27" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{103}" paraid="1865752513"><strong><u>Traffic Shaping Enforcement powered by NBAR</u>&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{108}" paraid="1928611080"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{113}" paraid="2100324214"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="29" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{133}" paraid="933399170"><strong>Intrusion Detection and Prevention System (IDS/IPS)&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{138}" paraid="705331781">&nbsp;</p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{143}" paraid="1820773868"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="30" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{148}" paraid="1202535979"><strong>Content Filtering powered by Talos Intelligence&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{153}" paraid="643419460">&nbsp;</p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{158}" paraid="1863091409"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="31" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{163}" paraid="1042855383"><strong>YouTube Content Restriction&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{168}" paraid="1427990848">&nbsp;</p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{173}" paraid="291058211"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr aria-rowindex="32" role="row">
+            <td data-celllook="0" role="rowheader">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{178}" paraid="936229417"><strong>Web Search Filtering&nbsp;</strong></p>
+            </td>
+            <td data-celllook="0" style="width:270px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{183}" paraid="815792699">&nbsp;</p>
+            </td>
+            <td data-celllook="0" style="width:283px;">
+            <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{188}" paraid="390227656"><span class="mt-color-16a085"><strong>&#10004;</strong>&nbsp;</span></p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{224}" paraid="132786526">* Advanced Security supported on MX19.1+ for the vMX&nbsp;</p>
+
+<div class="note-info style-wrap">
+<p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{236}" paraid="1237930899">vMX Licenses are as follows:&nbsp;</p>
+
+<ul role="list">
+    <li aria-setsize="-1" data-aria-level="1" data-aria-posinset="1" data-font="Symbol" data-leveltext="&#61623;" data-list-defn-props="{&quot;335552541&quot;:1,&quot;335559683&quot;:0,&quot;335559684&quot;:-2,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769226&quot;:&quot;Symbol&quot;,&quot;469769242&quot;:[8226],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;&#61623;&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" data-listid="3" role="listitem">
+    <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{242}" paraid="1348087387">vMX-Enterprise: LIC-VMX-S/M/L-ENT-[X]Y&nbsp;</p>
+    </li>
+    <li aria-setsize="-1" data-aria-level="1" data-aria-posinset="1" data-font="Symbol" data-leveltext="&#61623;" data-list-defn-props="{&quot;335552541&quot;:1,&quot;335559683&quot;:0,&quot;335559684&quot;:-2,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769226&quot;:&quot;Symbol&quot;,&quot;469769242&quot;:[8226],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;&#61623;&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" data-listid="3" role="listitem">
+    <p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{242}" paraid="1348087387">vMX-Advanced-Security: LIC-VMX-S/M/L-SEC-[X]Y&nbsp;</p>
+    </li>
+</ul>
+
+<p lang="EN-US" paraeid="{3d30056e-fea5-44fc-842f-135e82b42e34}{242}" paraid="1348087387">X= Number of Years&nbsp;</p>
+</div>
+
+</div></div><div mt-section-origin="Platform_Management/Product_Information/Meraki_Licensing/Co-Termination_Licensing/Meraki_MX//Z_Security_and_SD-WAN_Licensing" class="mt-section" id="section_7"><span id="Per_Device_SD-WAN.2B_License"></span><h2 class="editable">Per Device SD-WAN+ License</h2>
+
+<ul dir="ltr">
+</ul>
+
+<p dir="ltr">This new license type will bring SD-WAN+&nbsp;licenses&nbsp;for a&nbsp;per-network basis for organizations on the Co-termination Licensing model with Advanced Security Licensing. Customers can now purchase the appropriate license type&nbsp;and assign them to the respective network to get all SD-WAN features on a per-network basis.&nbsp;&nbsp;The terms available are 1, 3 and 5 years only. Please see the table below to have the MX platforms mapped to their respective SKUs.&nbsp;</p>
+
+<ul class="mt-indent-1" dir="ltr">
+    <li>Per Device SD-WAN+ Licenses are <strong>NOT&nbsp;</strong>available with Per&nbsp;Device for Subscription models.&nbsp;</li>
+    <li>Per Device SD-WAN+ Licenses&nbsp;are&nbsp;a per network license used to upgrade a network from Advance Security to SD-WAN+.</li>
+</ul>
+
+<p dir="ltr">Once the licenses are claimed under <em>Organization&rarr; License info</em>, you will need to go to <em>Insight&rarr; Configure&rarr; Licensing</em> to assign the licenses to the respective compatible networks.</p>
+
+<ol>
+    <li aria-level="1" dir="ltr">
+    <p dir="ltr" role="presentation">You can assign the licenses using the <em>&lsquo;Add licenses to network</em>&rsquo; or remove licenses using the &lsquo;<em>Remove Licenses from network</em>&rsquo;&nbsp;</p>
+    </li>
+    <li aria-level="1" dir="ltr">
+    <p dir="ltr" role="presentation">You can assign a higher license-tiered SKU to a lower licensed-tiered network. Example: You can assign&nbsp; LIC-MX-SDW-M-1YR to a MX64</p>
+    </li>
+    <li>
+    <p>Assigning the Per Device SD-WAN+ SKU to a network will give that network access to all of the below SD-WAN features, <strong>except when the network is bound to configuration template</strong>.</p>
+    </li>
+</ol>
+
+<table class="mt-responsive-table">
+    <thead>
+        <tr>
+            <th class="mt-align-center" scope="col"><strong>MX Platform</strong></th>
+            <th class="mt-align-center" scope="col"><strong>SKU</strong></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="mt-align-center" data-th="MX Platform">MX64/W, MX65/W</td>
+            <td class="mt-align-center" data-th="SKU">LIC-MX-SDW-XS-1Y</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center" data-th="MX Platform">MX64/W, MX65/W</td>
+            <td class="mt-align-center" data-th="SKU">LIC-MX-SDW-XS-3Y</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center" data-th="MX Platform">MX64/W, MX65/W</td>
+            <td class="mt-align-center" data-th="SKU">LIC-MX-SDW-XS-5Y</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center" data-th="MX Platform">&nbsp;</td>
+            <td class="mt-align-center" data-th="SKU">&nbsp;</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center" data-th="MX Platform">MX67/C/W, MX68C/W</td>
+            <td class="mt-align-center" data-th="SKU">LIC-MX-SDW-S-1Y</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center" data-th="MX Platform">MX67/C/W, MX68C/W</td>
+            <td class="mt-align-center" data-th="SKU">LIC-MX-SDW-S-3Y</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center" data-th="MX Platform">MX67/C/W, MX68C/W</td>
+            <td class="mt-align-center" data-th="SKU">LIC-MX-SDW-S-5Y</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center" data-th="MX Platform">&nbsp;</td>
+            <td class="mt-align-center" data-th="SKU">&nbsp;</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center" data-th="MX Platform">MX75, MX84, MX85</td>
+            <td class="mt-align-center" data-th="SKU">LIC-MX-SDW-M-1Y</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center" data-th="MX Platform">MX75, MX84, MX85</td>
+            <td class="mt-align-center" data-th="SKU">LIC-MX-SDW-M-3Y</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center" data-th="MX Platform">MX75, MX84, MX85</td>
+            <td class="mt-align-center" data-th="SKU">LIC-MX-SDW-M-5Y</td>
+        </tr>
+        <tr>
+            <td data-th="MX Platform">&nbsp;</td>
+            <td data-th="SKU">&nbsp;</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center" data-th="MX Platform">MX95, MX100, MX105</td>
+            <td class="mt-align-center" data-th="SKU">LIC-MX-SDW-L-1Y</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center" data-th="MX Platform">MX95, MX100, MX105</td>
+            <td class="mt-align-center" data-th="SKU">LIC-MX-SDW-L-3Y</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center" data-th="MX Platform">MX95, MX100, MX105</td>
+            <td class="mt-align-center" data-th="SKU">LIC-MX-SDW-L-5Y</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center" data-th="MX Platform">&nbsp;</td>
+            <td class="mt-align-center" data-th="SKU">&nbsp;</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center" data-th="MX Platform">MX250, MX450</td>
+            <td class="mt-align-center" data-th="SKU">LIC-MX-SDW-XL-1Y</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center" data-th="MX Platform">MX250, MX450</td>
+            <td class="mt-align-center" data-th="SKU">LIC-MX-SDW-XL-3Y</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center" data-th="MX Platform">MX250, MX450</td>
+            <td class="mt-align-center" data-th="SKU">LIC-MX-SDW-XL-5Y</td>
+        </tr>
+    </tbody>
+</table>
+
+<p dir="ltr">For Enterprise Agreement Customers, contact&nbsp;your respective&nbsp;Meraki seller to add Per Device SD-WAN+ Licensing to a Meraki EA Dashboard.&nbsp;Please note the following key points about this licensing:</p>
+
+<ul class="mt-indent-1" dir="ltr">
+    <li>Legacy Enterprise Agreement Dashboard&nbsp;customers will be able to utilize&nbsp;Per Device SD-WAN+ (Per Dev SDW+) as they would&nbsp;in an a-la-carte co-term dashboard.</li>
+    <li>EA terms including True Forward and Value Shift will apply to per-device SDW as well.</li>
+</ul>
+
+<div class="note-info style-wrap">
+<p dir="ltr" role="presentation"><strong>Note:</strong> Enterprise licensed customers cannot be in a&nbsp;mixed license environment.&nbsp;Advance Security License&nbsp;is required to support a mixed license environment on the Co-termination Licensing model. Please refer to the FAQ section below for mode details.</p>
+
+<p dir="ltr" role="presentation">Please refer to <a title="Meraki Licensing FAQs" href="https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing/General_Licensing_Information/General_Licensing_FAQs" rel="internal">Meraki&nbsp;Licensing FAQs</a> for more licensing&nbsp;information.&nbsp;</p>
+</div>
+
+
+
+</div><div mt-section-origin="Platform_Management/Product_Information/Meraki_Licensing/Co-Termination_Licensing/Meraki_MX//Z_Security_and_SD-WAN_Licensing" class="mt-section" id="section_8"><span id="FAQs"></span><h2 class="editable">FAQs</h2>
+
+<p paraeid="{7d670d8f-715c-451e-b39b-a188853dc2f1}{174}" paraid="528509361"><strong>How are licenses enforced on MX security appliance?</strong>&nbsp;</p>
+
+<p paraeid="{7d670d8f-715c-451e-b39b-a188853dc2f1}{180}" paraid="476276984">The licenses are on a per-model basis. Every MX model has a corresponding license. They are non-transferable between appliance models. For instance, an MX64 license will not be covered by an MX84 license.&nbsp;</p>
+
+<p paraeid="{7d670d8f-715c-451e-b39b-a188853dc2f1}{180}" paraid="476276984">&nbsp;</p>
+
+<p dir="ltr" role="presentation"><strong><strong><strong><strong>Can we mix two license types in a single organization?</strong></strong></strong></strong></p>
+
+<p dir="ltr">Yes, but it depends on the Organization's use-case. The following use-cases are&nbsp;possible:</p>
+
+<p><u>1. Organization is licensed in Co-termination&nbsp;Enterprise license: this Org can add Per device Z-Series</u></p>
+
+<div class="note-info style-wrap">
+<p>Z-Series can be added to organizations regardless of current&nbsp;MX license type.&nbsp;In general,&nbsp;<u>Enterprise licensed customers&nbsp;<em><em><strong><strong>cannot</strong></strong></em></em></u>&nbsp;be in a&nbsp;mixed license environment. However, this does not apply to Z-Series devices (including the new Z-Series&nbsp;Secure Teleworker licenses).&nbsp;</p>
+
+<p>In-addition, with the Jan 14 2025 launch of the Advanced Security License for the vMX,&nbsp;the vMX now also has to be at Advanced Security if the MX Org license tier is Advanced Security or SDWAN+.&nbsp; ENT vMX cannot be used with a Adv Sec or SD-WAN+ MX Org. SDWAN+ is not available for vMX devices but an Adv Sec vMX license can be used with SDWAN+ MX Orgs.&nbsp;</p>
+
+<p>The&nbsp;Z4 enterprise and Z4 teleworker licenses cannot be mixed on the same org.</p>
+
+
+</div>
+
+<p><u>2. Organization is licensed in Co-termination Advanced Security license: this Org can add Per Device SD-WAN+ licenses.</u></p>
+
+<p>Check section&nbsp;<u><a title="Meraki MX/Z Security and SD-WAN Licensing" class="mt-self-link" href="#Per_Device_SD-WAN.2B_License" rel="internal"><strong><strong>Per Device SD-WAN+ licenses</strong></strong></a></u>&nbsp;for more details. Example:&nbsp;if you have 25 MX networks in your organization, you can have 20 MX devices with&nbsp;Advance Security features and upgrade 5 MX devices with Per Device SD-WAN Plus licenses to get SD-WAN features.</p>
+
+<div class="note-info style-wrap">
+<p>This&nbsp;is&nbsp;<strong><strong>not supported</strong></strong>&nbsp;<u>with Enterprise licenses</u>.</p>
+</div>
+
+<p dir="ltr" role="presentation">&nbsp;</p>
+
+<p dir="ltr" role="presentation"><strong><strong>Is there a separate license to cover support or device warranty or software upgrades?</strong></strong><br />
+Each license is inclusive of device RMA, 24x7 enterprise support, and software upgrades.&nbsp;</p>
+
+<p dir="ltr" role="presentation">&nbsp;</p>
+
+<p><strong><strong><strong><strong>Will there be a requirement to pay extra for new features?</strong></strong></strong></strong></p>
+
+<p>New features are added by license type.</p>
+
+<ul>
+    <li>Features added to the enterprise license option will be available free-of-charge to all existing MX customers.</li>
+    <li>Features added to the advanced security license option will be available free-of-charge to all existing MX customers with an advanced security or SD-WAN Plus license.</li>
+    <li>Features added to the Secure SD-WAN Plus license option will be available free-of-charge to all existing MX customers with an SD-WAN Plus license.</li>
+</ul>
+
+<p dir="ltr" role="presentation">&nbsp;</p>
+
+<p dir="ltr" role="presentation"><strong><strong><strong><strong>Are MX licenses available on both Co-Term and PDL versions?</strong></strong></strong></strong></p>
+
+<p dir="ltr">All of the MX licenses are available under Co-Term as well as Per-Device Licensing (PDL), with the exception of the&nbsp;<u><a title="Meraki MX/Z Security and SD-WAN Licensing" class="mt-self-link" href="#Per_Device_SD-WAN.2B_License" rel="internal">Per Dev SDW+</a></u>&nbsp;license, which is&nbsp;<em><em>not</em></em>&nbsp;supported in PDL. For More information and general differences between the two, please see the documentation on&nbsp;<u><a title="Meraki Licensing" href="https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing" rel="internal">Meraki Licensing</a></u>.</p>
+
+<p dir="ltr">&nbsp;</p>
+
+<p dir="ltr"><strong><strong><strong><strong>Can you move from one MX license edition to another, for example, Enterprise to Advanced Security or SD-WAN Plus?</strong></strong></strong></strong></p>
+
+<p>Currently, there are two ways to move to a different MX license edition:</p>
+
+<ul>
+    <li>Purchase the desired MX license type (one license for all compatible MXs&nbsp;in the organization) and apply them to the organization which will convert the entire organization to the desired license type.&nbsp;<strong><strong>Note</strong></strong>: This will adjust your remaining licensing term depending on the license type (duration, MX model, license type)
+
+    <ul>
+        <li aria-level="1" dir="ltr">
+        <p dir="ltr" role="presentation">If you are claiming the key using the &ldquo;<strong><strong>Renew my dashboard</strong></strong>&rdquo; option (in the co-termination licensing model), it will automatically upgrade the entire organization to reflect the product edition of the new key.&nbsp;Note: There is no such thing as a &ldquo;partial&rdquo; renewal in the co-termination model, so if you wish to convert using this option, you must ensure you have new licenses for all other devices&nbsp;as well.</p>
+        </li>
+        <li aria-level="1" dir="ltr">
+        <p dir="ltr" role="presentation">If you are claiming the license using the &ldquo;<strong><strong>License more devices</strong></strong>&rdquo; option, you will need to reach out to Meraki Support for assistance, as the organization (all existing MX licenses) will first need to be upgraded to the desired security edition before the dashboard allows you to claim the new security edition to your organization.&nbsp; In order for Support to fulfill the request, it must come from a write&nbsp;privilege organizational-level administrator.</p>
+        </li>
+    </ul>
+    </li>
+    <li>Contact&nbsp;Meraki support and convert the organization to the desired license option.&nbsp;<strong><strong>Note</strong></strong>: You will have a new co-termination date for your organization with this method.
+    <ul>
+        <li>If upgrading moving from Enterprise to Advanced Security, the remaining credit for the MXs&nbsp;will be cut in half&nbsp;due to the increased feature set.</li>
+        <li>If upgrading from Enterprise to SD-WAN+, the remaining credit for the MXs&nbsp;will be cut by 60 to 75%&nbsp;depending on the MX model being converted.</li>
+        <li>If upgrading from Advanced Security to SD-WAN+, the remaining credit for the MXs&nbsp;will be cut by 25% to 50% depending on the MX model being converted.</li>
+        <li>The following MXs&nbsp;are eligible for SD-WAN+ Upgrades:&nbsp;MX64/W, MX65/W, MX67/W/C, MX68/W/CW, MX75, MX84, MX85, MX95, MX100, MX105, MX250, MX450</li>
+        <li>If you are choosing to downgrade your organization's security edition, there will be no additional credit given back.</li>
+    </ul>
+    </li>
+</ul>
+
+<div class="note-info style-wrap">
+<p paraeid="{7d670d8f-715c-451e-b39b-a188853dc2f1}{196}" paraid="779731078">Upgrading to SD-WAN+ is only available in Co-Term through the above-mentioned ways.&nbsp; To upgrade to SD-WAN+ in a Per-Device-Licensing organization, you must purchase the corresponding SD-WAN+ device licenses and claim them to the organization, which will force the organization into SD-WAN+.</p>
+</div>
+
+<p paraeid="{7d670d8f-715c-451e-b39b-a188853dc2f1}{196}" paraid="779731078">&nbsp;</p>
+
+<p><strong><strong>Are free trials available for each of the MX license types?</strong></strong><br />
+Yes. Please contact your Meraki Sales representative for more information.</p>
+
+<p>&nbsp;</p>
+
+<p><strong><strong>How does Warm-Spare MX set up work with the license?</strong></strong><br />
+In a network where two MXs are configured in Warm-Spare mode will only require one MX license.</p>
+
+<p>&nbsp;</p>
+
+<p><strong><strong>Will Meraki Insight be available as a separate license?</strong></strong><br />
+No. The separate Meraki&nbsp;Insight license has been deprecated. If you need the Meraki Insight current and future feature sets, please use the Secure SD-WAN Plus license.&nbsp;</p>
+
+
+
+<p>&nbsp;</p>
+
+<p><strong><strong>Is Per Dev SDW+ going to be available on PDL or subscriptions?</strong></strong></p>
+
+<p dir="ltr">No, Per Dev SDW+&nbsp;is only available in Co-term and won&rsquo;t be available in PDL or subscriptions.</p>
+
+<p dir="ltr">&nbsp;</p>
+
+<p dir="ltr"><strong><strong>Can Per Dev SDW+&nbsp;be assigned to networks with Enterprise License?</strong></strong></p>
+
+<p dir="ltr">No, the minimum requirement to have Per Dev SDW+&nbsp;assignment is for the org to have Advance Security licenses.</p>
+
+<p dir="ltr">&nbsp;</p>
+
+<p dir="ltr"><strong><strong>Will Per Dev SDW+ &nbsp;affect my co-term date?</strong></strong></p>
+
+<p dir="ltr">Yes, it will follow the same logic as the other licenses and will affect the co-term end date.</p>
+
+<p dir="ltr">&nbsp;</p>
+
+<p><strong><strong>Where can I find information on Licensing and Free Tests for the ThousandEyes integration with the Meraki MX?</strong></strong></p>
+
+<p>The licensing and free tests information for the ThousandEyes integration can be found in the&nbsp;<u><a title="Meraki MX ThousandEyes Configuration Guide" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Integrations/MI_-_Meraki_Insight/Product_Information_and_Configuration/Meraki_MX_ThousandEyes_Configuration_Guide" rel="internal">Meraki MX ThousandEyes Configuration Guide</a>.</u></p>
+
+<p>&nbsp;</p>
+
+<p><strong><strong>Can I upgrade my organization from Enterprise to Advanced Security or Secure SD-WAN Plus (MX only)?</strong></strong></p>
+
+<p>Yes, this can be done one of two ways:</p>
+
+<ul>
+    <li>You can opt for Advanced Security or Secure SD-WAN Plus licensing when you&nbsp;<u><u><a title="Meraki Per-Device Licensing Overview" href="https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing/General_Licensing_Information/Meraki_Per-Device_Licensing_Overview#Extend_Device_Expiration_Dates_(Renewals)" rel="internal">Extend Device Expiration Dates</a></u></u>&nbsp;or renew your organization&nbsp;as per&nbsp;<u><a title="Meraki Licensing - License More Devices vs Renewal" href="https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing/Co-Termination_Licensing/Meraki_Licensing_-_License_More_Devices_vs_Renewal" rel="internal">Meraki Licensing - License More Devices vs Renewal</a></u>&nbsp;article.</li>
+    <li>
+    <p data-renderer-start-pos="47">You can also contact the Cisco Meraki Licensing Support team via phone (see Contacting Support) or open a case from the Support home page, requesting that they assess if your organization can be upgraded to Advanced Security or Secure SD-WAN Plus without purchasing additional licensing.</p>
+    </li>
+    <li>
+    <ul>
+        <li>Any MX security appliance keys will be adjusted to account for cost weight between Enterprise and Advanced Security or Secure SD-WAN Plus.</li>
+        <li>Please note that if going through Cisco Meraki Support, the process is irreversible.</li>
+    </ul>
+    </li>
+</ul>
+
+<div class="note-info style-wrap">
+<p>If the incorrect license key edition was purchased within the past 30 days, the Cisco Meraki team will not upgrade/downgrade the key. The key must be&nbsp;<u><u><a title="Returns (RMAs), Warranties and End-of-Life Information" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Troubleshooting_and_Support/Support/Returns_(RMAs)%2C_Warranties_and_End-of-Life_Information#Refund_Requests" rel="internal">returned</a></u></u>&nbsp;and the correct key reordered.</p>
+
+<p>MX licenses under the per-device licensing model cannot be upgraded to SD-WAN+ by Meraki Support at this time.</p>
+</div>
+
+<p>&nbsp;</p>
+
+<p><strong><strong>Can my organization be downgraded from Secure SD-WAN Plus or Advanced Security to Enterprise (MX only)?</strong></strong></p>
+
+<p>Yes, you can purchase and apply an Enterprise renewal key that covers all devices in your organization, which&nbsp;will revert your organization to an Enterprise state. You can also contact&nbsp;<u><a title="Contacting Support" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Troubleshooting_and_Support/Support/Ways_to_Contact_Meraki_Support" rel="internal">Cisco Meraki&nbsp;Licensing Support</a></u>&nbsp;via phone or email and have your organization downgraded. Please note that if the organization is downgraded, you will not receive any additional time from the downgraded license keys.&nbsp;<strong><strong>This process is irreversible.</strong></strong></p>
+</div>
+
+                    <footer class="mt-content-footer"></footer>
+            </section>
+
+        
+            <footer class="elm-content-footer">
+                <ol class="elm-meta-data elm-meta-article-navigation">
+                    <li class="elm-back-to-top"><a class="mt-icon-back-to-top" href="#title" id="mt-back-to-top" title="Jump back to top of this article">Back to top</a></li>
+                    <li class="elm-article-pagination"><ul class="mt-article-pagination" data-ga-action="Article pagination bottom">
+    <li class="mt-pagination-previous">
+
+            <a class="mt-icon-previous-article" data-ga-label="Previous page" href="https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing/Co-Termination_Licensing/Meraki_MR_License_Guide" title="Meraki MR License Guide"><span>Meraki MR License Guide</span></a>
+    </li>
+        <li class="mt-pagination-next">
+                <a class="mt-icon-next-article" data-ga-label="Next page" href="https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing/Co-Termination_Licensing/Removing_and_Undoing_License_Claims_-_Co-Termination_Licensing" title="Removing and Undoing License Claims - Co-Termination Licensing"><span>Removing and Undoing License Claims - Co-Termination Licensing</span></a>
+        </li>
+</ul>
+</li>
+                </ol>
+                    <div class="elm-article-feedback"><div class="mt-feedback-rating-container" data-ga-action="Page rating" data-page-revision="111" data-use-local-storage="true"><ul class="mt-feedback-rating-controls"><li class="mt-feedback-rating-message mt-feedback-rating-item">Was this article helpful?</li><li class="mt-rating-yes mt-feedback-rating-item"><button class="mt-rating-button-yes mt-feedback-rating-button ui-button-icon mt-icon-rating-yes" data-ga-label="Rate">Yes</button></li><li class="mt-rating-no mt-feedback-rating-item"><button class="mt-rating-button-no mt-feedback-rating-button ui-button-icon mt-icon-rating-no" data-ga-label="Rate">No</button></li><li class="mt-last-rating-date mt-feedback-rating-item"></li></ul><div id="mt-feedback-flash-message"></div></div><script type="application/json" id="mt-localizations-feedback-rating">/*<![CDATA[*/{"Page.FeedbackRating.label.last-rated":"-- You last rated this article on {0}","Page.FeedbackRating.message.contact.no":"No","Page.FeedbackRating.message.contact.yes":"Yes","Page.FeedbackRating.message.submit.error":"An error occurred while attempting to send your feedback.  Please try again at a later time.","Page.FeedbackRating.message.submit.success":"Your feedback has been successfully submitted.  You can submit more feedback at any time."}/*]]>*/</script></div>
+                <div class="elm-related-articles-container"><h2 class="mt-related-articles-header">Recommended articles</h2>
+<ol class="mt-related-listings-container"
+    data-ga-action="related"
+    >
+</ol>
+<script type="application/json" nonce="58bdba5210e34efdc9c5de5fa290a852fdbf540ed0866c746c6bd33c0a53686f" id="mt-localizations-related-pages">
+{"Skin.Columbia.label.no-recommended-articles":"There are no recommended articles."}</script></div>
+                <ol class="elm-meta-data elm-meta-bottom">
+                    <li class="elm-classifications">        <dl class="mt-classification mt-classification-article-reference" data-ga-action="Tag navigation">
+            <dt class="mt-classification-label">Article type</dt>
+            <dd class="mt-classification-value"><a href="https://documentation.meraki.com/Special:Search?tags=article%3Areference" data-ga-label="Classification">Reference</a></dd>
+        </dl>
+        <dl class="mt-classification mt-classification-product-category-cloud and systems management" data-ga-action="Tag navigation">
+            <dt class="mt-classification-label">Product Category</dt>
+            <dd class="mt-classification-value"><a href="https://documentation.meraki.com/Special:Search?tags=product-category%3Acloud-and-systems-management" data-ga-label="Classification">Cloud and Systems Management</a></dd>
+        </dl>
+        <dl class="mt-classification mt-classification-stage-final" data-ga-action="Tag navigation">
+            <dt class="mt-classification-label">Stage</dt>
+            <dd class="mt-classification-value"><a href="https://documentation.meraki.com/Special:Search?tags=stage%3Afinal" data-ga-label="Classification">Final</a></dd>
+        </dl>
+</li>
+                    <li class="elm-tags"><dl class="mt-tags">
+    <dt class="mt-tag-label">Tags</dt>
+    <dd class="mt-tag-value">
+        <ol class="mt-tags-list" data-ga-action="Tag navigation">
+                <li class="mt-tag-link mt-tag-cisco-meraki-dashboard" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=Cisco+Meraki+Dashboard" data-ga-label="Free tag"> Cisco Meraki Dashboard</a></li>
+                <li class="mt-tag-link mt-tag-cisco-meraki-mx" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=Cisco+Meraki+MX" data-ga-label="Free tag"> Cisco Meraki MX</a></li>
+                <li class="mt-tag-link mt-tag-cisco-meraki-vmx" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=Cisco+Meraki+vMX" data-ga-label="Free tag"> Cisco Meraki vMX</a></li>
+                <li class="mt-tag-link mt-tag-cisco-meraki-z" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=Cisco+Meraki+Z" data-ga-label="Free tag"> Cisco Meraki Z</a></li>
+        </ol>
+    </dd>
+</dl></li>
+                </ol>
+            </footer>
+        
+    </article>
+    <footer class="elm-footer">
+        <nav class="elm-footer-siteinfo-nav elm-nav">
+            <div class="elm-nav-container">
+                <ol>
+                    <li class="elm-footer-copyright">&copy; Copyright 2026 Cisco Meraki Documentation</li>
+                    <li class="elm-footer-powered-by"><a href="https://mindtouch.com/demo" class="mt-poweredby product " title="MindTouch" target="_blank">
+   Powered by NiCE Knowledge Management
+   <span class="mt-registered">&reg;</span>
+</a></li>
+                </ol>
+            </div>
+        </nav>
+        <div class="elm-footer-custom">
+
+<div class="mt-custom-footer-container"><div class="mt-top-footer"><div class="mt-top-logo"><a href="http://meraki.cisco.com/" target="_blank" rel="external noopener nofollow" class="external"><img class="mt-cdn" src="https://documentation.meraki.com/@api/deki/site/logo?default=https%3A%2F%2Fdocumentation.meraki.com%2F%40cdn%2F%40style%2Fcommon-legacy%2Fimages%2Flogo.png" alt="Cisco-Meraki" /></a></div><div class="mt-top-external-links"><div class="mt-top-ul-container" id="top-Company"><h6 class="mt-top-ul-title">Company</h6><ul class="mt-top-ul"><li class="mt-top-li"><a href="https://meraki.cisco.com/about/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">About Meraki</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/jobs" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Careers</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/support/#policies:privacy" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Privacy</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/trust" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Trust</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/gdpr" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">GDPR</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/support/#policies:tou" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Terms of Use</a></li></ul></div><div class="mt-top-ul-container" id="top-Partners"><h6 class="mt-top-ul-title">Partners</h6><ul class="mt-top-ul"><li class="mt-top-li"><a href="https://www.merakipartners.com/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Partner Portal Login</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/partner/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Become a Partner</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/managedserviceproviders" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Manage Service Providers</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/solutions/serviceprovider" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Service Providers</a></li></ul></div><div class="mt-top-ul-container" id="top-getStarted"><h6 class="mt-top-ul-title">Get Started</h6><ul class="mt-top-ul"><li class="mt-top-li"><a href="https://meraki.cisco.com/form/contact/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Contact Us</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/form/demo/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Get a Demo</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/form/trial/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Start Your Trial</a></li></ul></div><div class="mt-top-ul-container" id="top-Resources"><h6 class="mt-top-ul-title">Resources</h6><ul class="mt-top-ul"><li class="mt-top-li"><a href="https://meraki.cisco.com/webinars/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Webinars</a></li><li class="mt-top-li"><a class="mt-top-a internal" href="https://documentation.meraki.com/" rel="internal">Documentation</a></li><li class="mt-top-li"><a href="https://community.cisco.com/t5/meraki/ct-p/meraki-home" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Community</a></li><li class="mt-top-li"><a href="https://community.cisco.com/t5/networking-learning-hub/ct-p/learninghub-networking" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Learning Hub</a></li></ul></div></div></div><div class="mt-bottom-footer"><div class="mt-social-container"><ul class="mt-social-ul"><li class="mt-social-li"><a href="https://twitter.com/meraki" target="_blank" rel="external noopener nofollow" class="mt-social-a mt-icon-twitter link-https"></a></li><li class="mt-social-li"><a href="https://www.instagram.com/ciscomeraki/?hl=en" target="_blank" rel="external noopener nofollow" class="mt-social-a mt-icon-instagram link-https"></a></li><li class="mt-social-li"><a href="https://www.facebook.com/CiscoMeraki/" target="_blank" rel="external noopener nofollow" class="mt-social-a mt-icon-facebook link-https"></a></li><li class="mt-social-li"><a href="https://www.youtube.com/channel/UCimwNLMzVRMp7SUPVRNaqew" target="_blank" rel="external noopener nofollow" class="mt-social-a mt-icon-youtube link-https"></a></li></ul></div><div class="mt-copyright-container"><p>&copy; 2026 Cisco Systems, Inc.</p></div></div></div>
+
+
+
+<script type="text/javascript">/*<![CDATA[*/
+var feedback_btn = document.querySelector(".mt-feedback-button"); 
+feedback_btn.innerText = "Request Update"/*]]>*/</script>
+
+
+
+<script type="text/javascript">/*<![CDATA[*/
+var feedback_label = document.querySelector(".mt-feedback-improve-label");
+feedback_label.innerText = "What would you like to change on this page? Your request will be sent to the Knowledge and Content team at Cisco Meraki. We are NOT product experts! Include all relevant details: section or exact text to update, new draft language, or related cases/mules.";/*]]>*/</script>
+
+
+</div>
+    </footer>
+</main>
+<div id="mt-modal-container"></div>
+
+    <script type="text/javascript" async="async" nonce="58bdba5210e34efdc9c5de5fa290a852fdbf540ed0866c746c6bd33c0a53686f" src="https://documentation.meraki.com/@embed/f1.js"></script>
+
+<script type="text/javascript" data-mindtouch-module="true" src="https://a.mtstatic.com/deki/javascript/out/standalone/ui.widget.helpWidget.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script><script type="text/javascript" data-mindtouch-module="true" nonce="58bdba5210e34efdc9c5de5fa290a852fdbf540ed0866c746c6bd33c0a53686f" src="https://a.mtstatic.com/deki/javascript/out/standalone/serviceworker-unregister.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script><script type="text/javascript" data-mindtouch-module="true" nonce="58bdba5210e34efdc9c5de5fa290a852fdbf540ed0866c746c6bd33c0a53686f" src="https://a.mtstatic.com/deki/javascript/out/standalone/pageLoaded.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script>
+
+
+</body>
+</html>

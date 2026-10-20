@@ -1,0 +1,357 @@
+[
+  {
+    "archivo": "meraki-c8355-ig.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/C8355-G2-MX_Installation_Guide",
+        "status": 200,
+        "bytes": 544793,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8400-hig2.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/m-overview.html",
+        "status": 200,
+        "bytes": 61316,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8400-hig2.pdf",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide.pdf",
+        "status": 200,
+        "bytes": 6644577,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8600-hig.html",
+    "para": "CISCO",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8600-series/hardware-installation-guide/secure-8600-series-hig.html",
+        "status": 200,
+        "bytes": 60879,
+        "nota": "no contiene el texto esperado"
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8600-hig.pdf",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "cisco-sr8600-hig.html",
+        "error": "la pagina donde descubrir la URL no se guardo"
+      },
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8600-series/hardware-installation-guide/secure-8600-series-hig.pdf",
+        "status": 200,
+        "bytes": 5323677,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8200-hig.html",
+    "para": "CISCO",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8200-series/hardware-installation-guide/secure-8200-series-hig.html",
+        "status": 200,
+        "bytes": 38061,
+        "nota": "no contiene el texto esperado"
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8200-guias.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/support/routers/8200-series-secure-routers/products-installation-guides-list.html",
+        "status": 200,
+        "bytes": 25858,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-isr1100-hig.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/access/1100/hardware/installation/guide/b-cisco-1100-series-hig.html",
+        "status": 200,
+        "bytes": 45599,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-isr1100-hig.pdf",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/access/1100/hardware/installation/guide/b-cisco-1100-series-hig.pdf",
+        "status": 200,
+        "firma": "0a0a0a0a0a0a0a0a",
+        "nota": "no es un PDF"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/td/docs/routers/access/1100/hardware/installation/guide/b-cisco-1100-series-hig.pdf",
+        "status": 404
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/td/docs/routers/access/1100/hardware/installation/guide/Localization/b-cisco-1100-series-hig_it_IT.pdf",
+        "status": 200,
+        "bytes": 11458866,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-isr1000-guias.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/support/routers/1000-series-integrated-services-routers-isr/products-installation-guides-list.html",
+        "status": 200,
+        "bytes": 28674,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-c8000-og.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8300-series-edge-platforms/cat-8300-8200-series-edge-plat-og.html",
+        "status": 200,
+        "bytes": 189835,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-c8500-eol-lista.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/routers/catalyst-8500-series-edge-platforms/eos-eol-notice-listing.html",
+        "status": 200,
+        "bytes": 33860,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-c8500-soporte.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/support/routers/catalyst-8500-series-edge-platforms/series.html",
+        "status": 200,
+        "bytes": 123950,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-c8355-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/C8355-G2-MX_Datasheet",
+        "status": 200,
+        "bytes": 76520,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-c8455-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/C8455-G2-MX_Datasheet",
+        "status": 200,
+        "bytes": 86105,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-c8455-ig.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/C8455-G2-MX_Installation_Guide",
+        "status": 200,
+        "bytes": 77775,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-licencias.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing/Co-Termination_Licensing/Meraki_MX%2F%2FZ_Security_and_SD-WAN_Licensing",
+        "status": 200,
+        "bytes": 189842,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-mx-sizing.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_%26_Principles",
+        "status": 200,
+        "bytes": 148137,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-hig2-img",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "cisco-sr8600-hig.html",
+        "error": "no se guardo, no se lee"
+      },
+      {
+        "url": "cisco-sr8200-hig.html",
+        "error": "no se guardo, no se lee"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/cdc/i/Feedback_OceanBlue.png",
+        "status": 200,
+        "bytes": 191,
+        "guardado": true,
+        "como": "cisco-hig2-img/cdc__i__Feedback_OceanBlue.png"
+      }
+    ]
+  },
+  {
+    "archivo": "meraki2-img",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/37551/C8355_Front_Panel.png",
+        "status": 200,
+        "bytes": 149927,
+        "guardado": true,
+        "como": "meraki2-img/files__37551__C8355_Front_Panel.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/35090/MX_650_DSC03158_Straight_On_Right_Shadow1.png",
+        "status": 200,
+        "bytes": 212822,
+        "guardado": true,
+        "como": "meraki2-img/files__35090__MX_650_DSC03158_Straight_On_Right_Shadow1.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/35125/C8455_G2_MX_HighRes_Front.png",
+        "status": 200,
+        "bytes": 722071,
+        "guardado": true,
+        "como": "meraki2-img/files__35125__C8455_G2_MX_HighRes_Front.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/35126/C8455_G2_MX_HighRes_Back.png",
+        "status": 200,
+        "bytes": 675584,
+        "guardado": true,
+        "como": "meraki2-img/files__35126__C8455_G2_MX_HighRes_Back.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/4363/Triangular_danger_sign_warning_of_electrical_shock.png",
+        "status": 200,
+        "bytes": 3202,
+        "guardado": true,
+        "como": "meraki2-img/files__4363__Triangular_danger_sign_warning_of_electrical_shock.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/5027/Triangular_warning_or_caution_sign_with_exclamation_mark.png",
+        "status": 200,
+        "bytes": 2525,
+        "guardado": true,
+        "como": "meraki2-img/files__5027__Triangular_warning_or_caution_sign_with_exclamation_mark.png"
+      }
+    ]
+  }
+]

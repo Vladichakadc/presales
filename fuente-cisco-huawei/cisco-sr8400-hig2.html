@@ -1,0 +1,1152 @@
+
+<!DOCTYPE HTML>
+<html lang="en-US" dir="ltr">
+    <head>
+    <meta charset="UTF-8"/>
+    <meta name="HandheldFriendly" content="True"/>
+    <meta name="MobileOptimized" content="320"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+        <title>Hardware Installation Guide for Cisco 8400 Series Secure Routers - Cisco</title>
+    
+
+    
+
+<script>
+    if (window.cdcext === undefined) { window.cdcext = {}; }
+    cdcext.customEnvironment = 'prod';
+    cdcext.host = 'WEM';
+    cdcext.locale = '';
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8"  />
+    <meta name="description" content="Hardware Installation Guide for Cisco 8400 Series Secure Routers"  />
+    <meta name="title" content="Hardware Installation Guide for Cisco 8400 Series Secure Routers"  />
+    <meta name="documentId" content="1779275508345486"  />
+    <meta name="templateName" content="books-and-chapters-template"  />
+    <meta property="fb:app_id" content="156494687694418"  />
+    <meta name="ioContentSource" content="WEM"  />
+    <meta name="concept" content="Cisco 8400 Series Secure Routers"  />
+    <meta name="docType" content="TSD Products Installation Guide Book"  />
+    <meta name="iaPath" content="cisco.com#Products#Cisco Products#Routers#Secure Routers#Cisco 8400 Series Secure Routers"  />
+    <meta name="contentType" content="cisco.com#US#postSales"  />
+    <meta name="locale" content="US"  />
+    <meta name="language" content="en"  />
+    <meta name="country" content="US"  />
+    <meta name="hub" content="Enterprise Networks"  />
+    <meta name="CCID_Page" content="cc001772"  />
+    <meta name="date" content="Thu Aug 06 22:25:49 PDT 2026"  />
+    <meta name="accessLevel" content="Customer"  />
+    <meta name="accessLevel" content="Guest"  />
+    <meta name="accessLevel" content="Partner"  />
+    <meta name="entitlementExpression" content="contains( &quot;0,1,2,3,4,7&quot; , $profileField[3] )"  />
+    <meta property="og:site_name" content="Cisco"  />
+    <meta property="og:type" content="website"  />
+    <meta property="og:title" content="Hardware Installation Guide for Cisco 8400 Series Secure Routers"  />
+    <meta property="og:description" content="Hardware Installation Guide for Cisco 8400 Series Secure Routers"  />
+    <meta property="og:url" content="https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide.html"  />
+    <link rel="canonical" href="https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide.html"/>
+	
+
+    <script>
+    window['adrum-start-time'] = new Date().getTime();
+    window['environ'] = "prod";
+
+    ((config) => {
+        config.appKey = "AD-AAB-ABZ-DKA";
+        config.adrumExtUrlHttp = "http://cdn.appdynamics.com";
+        config.adrumExtUrlHttps = "https://cdn.appdynamics.com";
+        config.beaconUrlHttp = "http://pdx-col.eum-appdynamics.com";
+        config.beaconUrlHttps = "https://pdx-col.eum-appdynamics.com";
+        config.fetch = true;
+        config.isZonePromise = true;
+        config.maxUrlLength = 512;
+        config.resTiming = {
+            "bufSize": 200,
+            "clearResTimingOnBeaconSend": true
+        };
+    })(window["adrum-config"] || (window["adrum-config"] = {}));
+</script>
+
+<script src="/c/dam/cdc/t/ctm-core.js"></script>
+
+
+    
+    
+<link rel="stylesheet" href="/etc/designs/cdc/fw/b/responsive/css/books-and-chapters.min.css" type="text/css">
+
+
+
+
+    
+    
+    
+    
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+                                <script>!function(e){var n="https://s.go-mpulse.net/boomerang/";if("False"=="True")e.BOOMR_config=e.BOOMR_config||{},e.BOOMR_config.PageParams=e.BOOMR_config.PageParams||{},e.BOOMR_config.PageParams.pci=!0,n="https://s2.go-mpulse.net/boomerang/";if(window.BOOMR_API_key="GKZXC-NS3SU-A7VFH-HKBHM-U7LKH",function(){function e(){if(!i){var e=document.createElement("script");e.id="boomr-scr-as",e.src=window.BOOMR.url,e.async=!0,o.parentNode.appendChild(e),i=!0}}function t(e){i=!0;var n,t,a,r,d=document,O=window;if(window.BOOMR.snippetMethod=e?"if":"i",t=function(e,n){var t=d.createElement("script");t.id=n||"boomr-if-as",t.src=window.BOOMR.url,BOOMR_lstart=(new Date).getTime(),e=e||d.body,e.appendChild(t)},!window.addEventListener&&window.attachEvent&&navigator.userAgent.match(/MSIE [67]\./))return window.BOOMR.snippetMethod="s",void t(o.parentNode,"boomr-async");a=document.createElement("IFRAME"),a.src="about:blank",a.title="",a.role="presentation",a.loading="eager",r=(a.frameElement||a).style,r.width=0,r.height=0,r.border=0,r.display="none",o.parentNode.appendChild(a);try{O=a.contentWindow,d=O.document.open()}catch(_){n=document.domain,a.src="javascript:var d=document.open();d.domain='"+n+"';void(0);",O=a.contentWindow,d=O.document.open()}if(n)d._boomrl=function(){this.domain=n,t()},d.write("<bo"+"dy onload='document._boomrl();'>");else if(O._boomrl=function(){t()},O.addEventListener)O.addEventListener("load",O._boomrl,!1);else if(O.attachEvent)O.attachEvent("onload",O._boomrl);d.close()}function a(e){window.BOOMR_onload=e&&e.timeStamp||(new Date).getTime()}if(!window.BOOMR||!window.BOOMR.version&&!window.BOOMR.snippetExecuted){window.BOOMR=window.BOOMR||{},window.BOOMR.snippetStart=(new Date).getTime(),window.BOOMR.snippetExecuted=!0,window.BOOMR.snippetVersion=12,window.BOOMR.url=n+"GKZXC-NS3SU-A7VFH-HKBHM-U7LKH";var o=document.currentScript||document.getElementsByTagName("script")[0],i=!1,r=document.createElement("link");if(r.relList&&"function"==typeof r.relList.supports&&r.relList.supports("preload")&&"as"in r)window.BOOMR.snippetMethod="p",r.href=window.BOOMR.url,r.rel="preload",r.as="script",r.addEventListener("load",e),r.addEventListener("error",function(){t(!0)}),setTimeout(function(){if(!i)t(!0)},3e3),BOOMR_lstart=(new Date).getTime(),o.parentNode.appendChild(r);else t(!1);if(window.addEventListener)window.addEventListener("load",a,!1);else if(window.attachEvent)window.attachEvent("onload",a)}}(),"".length>0)if(e&&"performance"in e&&e.performance&&"function"==typeof e.performance.setResourceTimingBufferSize)e.performance.setResourceTimingBufferSize();!function(){if(BOOMR=e.BOOMR||{},BOOMR.plugins=BOOMR.plugins||{},!BOOMR.plugins.AK){var n=""=="true"?1:0,t="",a="vsvwnkqxadahg2wxwpxa-f-314cb55c7-clientnsv4-s.akamaihd.net",o="false"=="true"?2:1,i={"ak.v":"41","ak.cp":"117370","ak.ai":parseInt("271834",10),"ak.ol":"0","ak.cr":5,"ak.ipv":4,"ak.proto":"http/1.1","ak.rid":"8d5b7b46","ak.r":51426,"ak.a2":n,"ak.m":"dsca","ak.n":"essl","ak.cport":3137,"ak.gh":"23.205.114.200","ak.quicv":"","ak.tlsv":"tls1.3","ak.0rtt":"","ak.0rtt.ed":"","ak.csrc":"-","ak.acc":"bbr","ak.t":"1792521198","ak.ak":"hOBiQwZUYzCg5VSAfCLimQ==Gv9ZrD768zhefZoebyzgbzH3QVnOT4a7rVRmTgypRx3LqtldNKtAypD5CJ+e2YRJd8uT4huT3qHVupcCCDjUDqbHN0xufKK+xWFIyqPH17NTep+27EzishIL6Ph8fQnmNNaB2XYArXc+fKYzburhvPCDs7vxoNUQ/20sqjMcnkFm765s/FY+1mNNFZT4zmsdKlk1Qzgz+EGl6Gkv72Yj48s+lrZwR3juAtIwQuJyq1V2S/iOL56Q9qiJQhIN8LVlN/1D6KAPbqJ0optdwtnwb9x30/rValk878xY/0MzQe0yT57ffPgrY1+g6RDdtaHH2h9ehJdp9jKF5gvMhaw5+msjKqJoMPbcm/PF8kkaojxTV1t3FQ0r1hHyV5BN+yEpcunAiHXqXoYOdm72H5JPbJtQn5nnJtPpO9USTm3YSI8=","ak.pv":"553","ak.dpoabenc":"","ak.tf":o};if(""!==t)i["ak.ruds"]=t;var r={i:!1,av:function(n){var t="http.initiator";if(n&&(!n[t]||"spa_hard"===n[t]))i["ak.feo"]=void 0!==e.aFeoApplied?1:0,BOOMR.addVar(i)},rv:function(){var e=["ak.cport","ak.cr","ak.csrc","ak.gh","ak.ipv","ak.m","ak.n","ak.ol","ak.proto","ak.quicv","ak.tlsv","ak.0rtt","ak.0rtt.ed","ak.r","ak.acc","ak.t","ak.tf"];BOOMR.removeVar(e)}};BOOMR.plugins.AK={akVars:i,akDNSPreFetchDomain:a,init:function(){if(!r.i){var e=BOOMR.subscribe;e("before_beacon",r.av,null,null),e("onbeacon",r.rv,null,null),r.i=!0}return this},is_complete:function(){return!0}}}}()}(window);</script></head>
+    <body class="books-and-chapters page basicpage publish" id="books-and-chapters-4ed9c7df1a">
+        
+        
+            
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" style="display:none;"><defs><path id="svg-x" fill="none" fill-rule="evenodd" stroke="inherit" stroke-linecap="round" stroke-width="inherit" d="M30.26 6.495L5.505 31.25M5.495 6.495L30.25 31.25"/></defs></svg>
+
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="fw-skiplinks">
+    <ul class="container">
+        <li><a id="skiplink-content" href="#fw-content">Skip to content</a></li>
+        <li><a id="skiplink-search" href="#">Skip to search</a></li>
+        <li><a id="skiplink-footer" href="#fw-footer-v2" class="last">Skip to footer</a></li>
+    </ul>
+</div>
+
+            
+<script type="module" src="/site/web-components/us/en/cdc-header.js"></script>
+
+    <cdc-header full-width></cdc-header>
+
+<nav class="fw-c-header__seo-links" aria-hidden="true" style="display:none">
+    <ul>
+        <li><a tabindex="-1" href="https://www.cisco.com/site/us/en/index.html">Cisco.com Worldwide></a></li>
+        <li><a tabindex="-1" href="/site/us/en/products/index.html">Products and Services</a></li>
+        <li><a tabindex="-1" href="https://www.cisco.com/site/us/en/solutions/index.html">Solutions</a></li>
+        <li><a tabindex="-1" href="/c/en/us/support/index.html">Support</a></li>
+        <li><a tabindex="-1" href="/site/us/en/learn/index.html">Learn</a></li>
+        <li><a tabindex="-1" href="/site/us/en/about/sitemap.html">Explore Cisco</a></li>
+        <li><a tabindex="-1" href="/site/us/en/buy/index.html">How to Buy</a></li>
+        <li><a tabindex="-1" href="https://www.cisco.com/site/us/en/partners/index.html">Partners Home</a></li>                
+        <li><a tabindex="-1" href="/site/us/en/partners/360-partner-program/partner-program/index.html">Partner Program</a></li>
+        <li><a tabindex="-1" href="https://www.cisco.com/site/us/en/partners/support-help/index.html">Support</a></li>
+        <li><a tabindex="-1" href="/site/us/en/partners/360-partner-program/tools-training/index.html">Tools</a></li>
+        <li><a tabindex="-1" href="https://locatr.cloudapps.cisco.com/WWChannels/LOCATR/pf/index.jsp#/">Find a Cisco Partner</a></li>
+        <li><a tabindex="-1" href="https://www.cisco.com/site/us/en/partners/connect-with-a-partner/index.html">Meet our Partners</a></li>
+        <li><a tabindex="-1" href="https://www.cisco.com/site/us/en/partners/index.html">Become a Cisco Partner</a></li>
+    </ul>
+</nav>
+
+            
+
+
+
+            <div id="fw-content" class="fw-l-wrapper --main">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="fw-c-breadcrumb  --data-driven" data-config-metrics-group="breadcrumb" data-config-metrics-title="books and chapters" is="muse-breadcrumb" id="breadcrumb-data-driven-yooht" aria-label="Breadcrumb">
+    <ol class="fw-c-breadcrumb__list" itemscope itemtype="http://schema.org/BreadcrumbList">
+        <li class="fw-c-breadcrumb__item">
+            <button class="fw-c-breadcrumb__item-link --ellipsis fw-c-button --inline" aria-label="Show all breadcrumbs">
+                <span class="fw-c-button__icon --chevron-left"></span>
+                <span class="fw-c-button__text">...</span>
+            </button>
+        </li>
+        
+        <li class="fw-c-breadcrumb__item" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+            <a href="/c/en/us/support/index.html" class="fw-c-breadcrumb__item-link --nav-item fw-c-button --inline" itemprop="item" data-config-metrics-item="support">
+                <span class="fw-c-button__icon --chevron-left"></span>
+                <span class="fw-c-button__text" itemprop="name">Support</span>
+            </a>
+            <meta itemprop="position" content="1"/>
+        </li>
+        
+        <li class="fw-c-breadcrumb__item" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+            <a href="/c/en/us/support/all-products.html" class="fw-c-breadcrumb__item-link --nav-item fw-c-button --inline" itemprop="item" data-config-metrics-item="product support">
+                <span class="fw-c-button__icon --chevron-left"></span>
+                <span class="fw-c-button__text" itemprop="name">Product Support</span>
+            </a>
+            <meta itemprop="position" content="2"/>
+        </li>
+        
+        <li class="fw-c-breadcrumb__item" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+            <a href="/c/en/us/support/routers/category.html" class="fw-c-breadcrumb__item-link --nav-item fw-c-button --inline" itemprop="item" data-config-metrics-item="routers">
+                <span class="fw-c-button__icon --chevron-left"></span>
+                <span class="fw-c-button__text" itemprop="name">Routers</span>
+            </a>
+            <meta itemprop="position" content="3"/>
+        </li>
+        
+        <li class="fw-c-breadcrumb__item" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+            <a href="/c/en/us/support/routers/8400-series-secure-routers/series.html" class="fw-c-breadcrumb__item-link --nav-item fw-c-button --inline" itemprop="item" data-config-metrics-item="cisco 8400 series secure routers">
+                <span class="fw-c-button__icon --chevron-left"></span>
+                <span class="fw-c-button__text" itemprop="name">Cisco 8400 Series Secure Routers</span>
+            </a>
+            <meta itemprop="position" content="4"/>
+        </li>
+        
+        <li class="fw-c-breadcrumb__item" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+            <a href="/c/en/us/support/routers/8400-series-secure-routers/products-installation-guides-list.html" class="fw-c-breadcrumb__item-link --nav-item fw-c-button --inline" itemprop="item" data-config-metrics-item="install and upgrade guides">
+                <span class="fw-c-button__icon --chevron-left"></span>
+                <span class="fw-c-button__text" itemprop="name">Install and Upgrade Guides</span>
+            </a>
+            <meta itemprop="position" content="5"/>
+        </li>
+        
+    </ol>
+</nav>
+
+
+    
+
+
+<div class="fw-l-grid --full fw-l-theme --emphasis doc-c-title-container">
+    <div class="fw-l-grid__col --1">
+        <p class="fw-c-headline --display-reduced">Hardware Installation Guide for Cisco 8400 Series Secure Routers</p>
+    </div>
+</div>
+
+
+<div class="doc-c-toolbar --document fw-t-theme --neutral --dark " is="cisco-document-toolbar" data-book-url="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide" data-drawer-heading="Hardware Installation Guide for Cisco 8400 Series Secure Routers" data-sibling-id="document-toolbar-sibling" data-config-metrics-group="toolbar actions metrics group" data-config-metrics-title="toolbar actions metrics title" id="document-toolbar-wr2rn">
+    <div class="doc-c-toolbar__container fw-l-document --sticky">
+        <div class="doc-c-toolbar__metadata fw-l-document__column --start">
+    
+    
+</div>
+        
+    <div id="document-toolbar-wr2rn-input" class="doc-c-toolbar__input fw-l-document__column --center fw-c-select --editable" is="muse-editable-select" data-autocomplete="false" data-config-metrics-group="utility bar-ask using ai" data-config-metrics-title="ask using ai about this document">
+        <div class="fw-c-select__input fw-c-input --has-icon" is="muse-input" id="document-toolbar-document-toolbar-wr2rn-input__control">
+            <div class="fw-c-input__container">
+                <div class="fw-c-input__inputs">
+                    <input aria-activedescendant="" aria-autocomplete="none" aria-expanded="false" aria-haspopup="listbox" aria-controls="document-toolbar-document-toolbar-wr2rn-input__popup" autocapitalize="off" autocomplete="off" autocorrect="off" class="fw-c-input__field fw-c-select__input-field" id="document-toolbar-document-toolbar-wr2rn-input__control-field" maxlength="275" name="document-toolbar-document-toolbar-wr2rn-input-name" placeholder="Ask using AI about this content" role="combobox"/>
+                </div>
+                <div class="fw-c-input__buttons">
+                    <button type="button" id="document-toolbar-document-toolbar-wr2rn-input__button--clear" class="fw-c-input__button --clear --hidden fw-c-button" aria-label="Clear">
+                        <span class="fw-c-button__icon --fail-fill"></span>
+                        <span class="fw-c-button__text"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="fw-c-select__popup" role="listbox" id="document-toolbar-document-toolbar-wr2rn-input__popup" aria-hidden="true">
+            <div class="fw-c-select__popup-divider"></div>
+            
+        </div>
+    </div>
+
+        <div class="doc-c-toolbar__actions fw-l-document__column --end" data-config-metrics-group="utility bar-button icons" data-config-metrics-title="button icon">
+    
+
+    
+    
+    <button class="fw-c-button doc-c-toolbar__action --focus --cta --text --small" data-config-metrics-item="focus" id="document-toolbar-sibling-enter-focus-mode" type="button" aria-pressed="false">
+        <span class="fw-c-button__icon --enlarge"></span>
+        <span class="fw-c-button__text">Enter focus</span>
+    </button>
+
+
+    <div class="doc-c-toolbar__action-item --save" id="document-toolbar-wr2rn__action--save-item-1">
+        
+        
+    <button class="fw-c-button doc-c-toolbar__action --save --cta --text --small" data-config-metrics-item="save" aria-controls="document-toolbar-wr2rn__action--save-item-1-panel" data-save-text="Save" id="document-toolbar-wr2rn__action--save-item-1-button" type="button" data-remove-text="Saved">
+        <span class="fw-c-button__icon --bookmark"></span>
+        <span class="fw-c-button__text">Save</span>
+    </button>
+
+
+        <div id="document-toolbar-wr2rn__action--save-item-1-panel" class="doc-c-toolbar__panel --hidden" role="region" aria-labelledby="document-toolbar-wr2rn__action--save-item-1-button" aria-hidden="true">
+            <div class="doc-c-toolbar__entitled-content --anonymous">
+            
+                <p>
+                    
+                    
+    <a class="fw-c-button  --no-gap --inline" data-message="$LOGINLINK$ to save content." href="#">
+        <span class="fw-c-button__icon"></span>
+        <span class="fw-c-button__text">Log in</span>
+    </a>
+ to save content.
+                </p>
+                
+                
+    <button class="fw-c-button  --no-gap" aria-controls="document-toolbar-wr2rn__action--save-item-1-panel" type="button">
+        <span class="fw-c-button__icon --close"></span>
+        <span class="fw-c-button__text"></span>
+    </button>
+
+
+                
+            </div>
+
+            <div class="doc-c-toolbar__entitled-content --authenticated">
+                
+                
+    <a class="fw-c-button  --cta --text --no-gap" href="/c/en/us/support/saved/index.html">
+        <span class="fw-c-button__icon"></span>
+        <span class="fw-c-button__text">View all Saved Content</span>
+    </a>
+
+
+                
+                
+    <button class="fw-c-button  --cta --text --no-gap" type="button">
+        <span class="fw-c-button__icon"></span>
+        <span class="fw-c-button__text">Remove from Saved Content</span>
+    </button>
+
+            </div>
+        </div>
+    </div>
+
+    
+    
+    <a class="fw-c-button doc-c-toolbar__action --pdf --cta --text --small" data-config-metrics-item="pdf" rel="noopener" href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide.pdf" target="_blank">
+        <span class="fw-c-button__icon --pdf"></span>
+        <span class="fw-c-button__text">PDF</span>
+    </a>
+
+
+    
+    
+    <button class="fw-c-button doc-c-toolbar__action --feedback --cta --text --small" data-config-metrics-item="feedback" aria-controls="document-toolbar-wr2rn-panel--feedback" aria-expanded="false" id="document-toolbar-wr2rn__action--feedback" type="button">
+        <span class="fw-c-button__icon --chat"></span>
+        <span class="fw-c-button__text">Feedback</span>
+    </button>
+
+
+</div>
+    </div>
+    
+    
+    <div class="doc-c-toolbar__panel --hidden" id="document-toolbar-wr2rn-panel--feedback" role="region" aria-labelledby="document-toolbar-wr2rn__action--feedback" aria-hidden="true">
+        
+<div class="fw-c-experience-fragment" id="experience-fragment-un6urgg">
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="document-feedback aem-GridColumn aem-GridColumn--default--12">
+
+<div class="doc-c-feedback " is="cisco-document-feedback" id="document-feedback-7w0cy6">
+    <div class="doc-c-feedback__container">
+        <div class="doc-c-feedback__rating">
+            <p class="doc-c-feedback__heading">Is this content helpful?</p>
+            <div class="doc-c-feedback__inputs">
+                <span is="muse-tooltip" class="fw-c-tooltip --min-width-auto --bottom --center">
+                    
+                    
+    <button class="fw-c-button fw-c-tooltip__control doc-c-feedback__input --no-gap --no-gap" data-config-metrics-item="helpful" aria-describedby="document-feedback-7w0cy6__popover--helpful" id="document-feedback-7w0cy6__input--helpful" type="button">
+        <span class="fw-c-button__icon --thumbs-up"></span>
+        <span class="fw-c-button__text"></span>
+    </button>
+
+                    <span class="fw-c-tooltip__popover-container">
+                        <span id="document-feedback-7w0cy6__popover--helpful" class="fw-c-tooltip__popover" role="tooltip">
+                            Helpful
+                        </span>
+                    </span>
+                </span>
+                <span is="muse-tooltip" class="fw-c-tooltip --min-width-auto --bottom --center">
+                    
+                    
+    <button class="fw-c-button fw-c-tooltip__control doc-c-feedback__input --no-gap --no-gap" data-config-metrics-item="unhelpful" aria-describedby="document-feedback-7w0cy6__popover--unhelpful" id="document-feedback-7w0cy6__input--unhelpful" type="button">
+        <span class="fw-c-button__icon --thumbs-down"></span>
+        <span class="fw-c-button__text"></span>
+    </button>
+
+                    <span class="fw-c-tooltip__popover-container">
+                        <span id="document-feedback-7w0cy6__popover--unhelpful" class="fw-c-tooltip__popover" role="tooltip">
+                            Unhelpful
+                        </span>
+                    </span>
+                </span>
+            </div>
+        </div>
+        
+        
+    <a class="fw-c-button doc-c-feedback__comment --cta --text" rel="noopener noreferrer" href="https://ciscocx.qualtrics.com/jfe/form/SV_be0fHnqDoKM7sto?Ref=https%3A%2F%2Fwww.cisco.com%2Fc%2Fen%2Fus%2Ftd%2Fdocs%2Frouters%2Fsecure-routers%2Fsec-8400-series%2Fhardware-installation-guide%2Fc8400-g2-hardware-installation-guide.html&resize=false" target="_blank">
+        <span class="fw-c-button__icon --chat-discussion"></span>
+        <span class="fw-c-button__text">Suggestions for Improvement</span>
+    </a>
+
+        <p class="doc-c-feedback__success-message">Thank you for your feedback. Your response has been recorded.</p>
+    </div>
+</div>
+
+    
+</div>
+
+    
+</div>
+</div>
+
+    
+
+    </div>
+
+    
+	<template class="doc-c-toolbar__template --chat">
+		
+<div class="fw-c-chat --document" data-config-metrics-group="ask using ai takeover" data-config-metrics-title="ai response" is="cisco-document-chat" id="multi-turn-ai-books-chapters-pfz3r0f">
+    
+    <div class="fw-c-chat__entitled-content --anonymous">
+        <p>
+            <i class="fw-c-button__icon --ai-sparks"></i>
+            AI responses are currently only available to logged in users.
+            <a class="fw-c-button --text --inline --reverse" href="#" data-config-metrics-title="ai responses are currently only available to logged in users">
+                <span class="fw-c-button__icon --chevron-right"></span>
+                <span class="fw-c-button__text">Log in</span>
+            </a>
+        </p>
+    </div>
+
+    
+    
+    
+    <div class="fw-c-chat__entitled-content --authenticated">
+    <div class="fw-c-chat__header">
+        
+    <div class="fw-c-chat__header-content">
+        <button class="fw-c-button">
+            <span class="fw-c-button__icon --ai"></span>
+            <span class="fw-c-button__text">AI Response</span>
+        </button>
+        <a class="fw-c-chat__header-faq" href="/site/us/en/about/help/ai-faq.html" aria-label="FAQ">FAQ</a>
+    </div>
+
+        
+
+    <div class="fw-c-section-message  --information" id="section-message-sm4ce">
+        <i class="fw-c-section-message__icon"></i>
+        
+        <div class="fw-c-section-message__body">
+            
+            
+                <div class="fw-c-section-message__text">
+                    <strong>Important.</strong>
+                    Results generated by AI. Before using results, verify accuracy and completeness.
+                </div>
+            
+            
+        </div>
+        
+    </div>
+
+
+    
+
+    </div>
+
+    <div class="fw-c-chat__conversation" aria-live="polite">
+        <div class="fw-c-chat__message-list">
+        </div>
+        <div class="fw-c-chat__loading --hidden fw-c-button --no-gap">
+            <span class="fw-c-button__icon --ellipsis-pulse"></span>
+            <span class="fw-c-button__text"></span>
+        </div>
+    </div>
+
+    <form class="fw-c-chat__form fw-c-input --has-icon">
+        <div class="fw-c-input__container">
+            <div class="fw-c-input__inputs">
+                <div class="fw-c-input__label"></div>
+                <input class="fw-c-chat__form-field fw-c-input__field" placeholder="Ask using AI about this document" data-follow-up-placeholder="Ask a follow-up..." aria-autocomplete="none" autocapitalize="off" autocomplete="off" autocorrect="off" maxlength="275" name="chat-input" spellcheck="false"/>
+            </div>
+            <div class="fw-c-input__buttons">
+                <button type="button" aria-label="Clear" class="fw-c-chat__form-button fw-c-input__button --clear --hidden fw-c-button --no-gap" title="Clear">
+                    <span class="fw-c-button__icon --fail-fill"></span>
+                    <span class="fw-c-button__text"></span>
+                </button>
+                <button type="submit" aria-label="Submit" class="fw-c-chat__form-button fw-c-input__button --submit fw-c-button --no-gap" title="Submit" disabled="">
+                    <span class="fw-c-button__icon --send"></span>
+                    <span class="fw-c-button__text"></span>
+                </button>
+            </div>
+        </div>
+    </form>
+
+    
+    <div class="fw-c-chat__footer">
+        <div class="fw-c-chat__footer-content">
+            <p>Only ask questions about this document. To ask questions about this product as a whole, go to <a href="https://techdocs.cisco.com" class="fw-c-button --inline --no-gap">
+                <span class="fw-c-button__icon"></span>
+                <span class="fw-c-button__text">Technical Documentation</span>
+            </a>.</p>
+        </div>
+        <button type="button" class="fw-c-button --text --reverse --small fw-c-scroll-to-top fw-c-chat__scroll" is="cisco-scroll-to-top" aria-label="Scroll to top" data-target=".doc-c-toolbar__drawer-header">
+            <span class="fw-c-button__icon --arrow-up"></span>
+            <span class="fw-c-button__text">Scroll to top</span>
+        </button>
+    </div>
+
+
+    <div class="fw-c-chat__templates">
+    <template class="fw-c-chat__template --message">
+        <div class="fw-c-chat__message">
+            <div class="fw-c-chat__message-body fw-s-markdown">
+                <div class="fw-c-chat__message-text"></div>
+                <div class="fw-c-chat__message-attachments"></div>
+            </div>
+            <div class="fw-c-chat__message-timestamp"></div>
+            <div class="fw-c-chat__message-actions --hidden">
+                <button class="fw-c-chat__message-action --copy fw-c-button --no-gap" title="Copy">
+                    <span class="fw-c-button__icon --copy"></span>
+                    <span class="fw-c-button__text"></span>
+                </button>
+            </div>
+        </div>
+    </template>
+    
+    <template class="fw-c-chat__template --copy-button-success">
+        <div class="fw-c-chat__message-popup fw-c-button --tag">
+            <span class="fw-c-button__icon --checkmark"></span>
+            <span class="fw-c-button__text">Copied</span>
+        </div>
+    </template>
+
+    <template class="fw-c-chat__template --suggestions ">
+        <div class="fw-c-chat__suggestions"><p>Suggestions</p>
+<ul>
+<li>Try different spellings or keywords</li>
+<li>Make sure your question relates specifically to the product featured on this page</li>
+</ul>
+</div>
+    </template>
+
+    <template class="fw-c-chat__template --error-response">
+        <p class="fw-c-chat__error-text">Sorry, we couldn&#39;t generate a response for this query.</p>
+        
+
+    <div class="fw-c-section-message  --error" id="section-message-m8qc2h">
+        <i class="fw-c-section-message__icon"></i>
+        
+        <div class="fw-c-section-message__body">
+            
+            
+                <div class="fw-c-section-message__text">
+                    <strong>Launch error.</strong>
+                    Something went wrong. Please try again.
+                </div>
+            
+            
+        </div>
+        
+    </div>
+
+
+    
+
+    </template>
+
+    <template class="fw-c-chat__template --product-button">
+        <button type="button" class="fw-c-chat__product-button fw-c-button --text --inline --no-gap">
+            <span class="fw-c-button__icon"></span>
+            <span class="fw-c-button__text">Technical Documentation</span>
+        </button>
+    </template>
+    
+    
+
+<template class="fw-c-chat__template  --feedback" is="cisco-build-documentation-chat-feedback" data-button-metrics="{&#34;group&#34;:&#34;Feedback Actions Metrics Group Authorable Content Tab&#34;,&#34;title&#34;:&#34;Feedback Actions Metrics Title Authorable Content Tab&#34;}" data-chat-static-parameters="{&#34;anstype&#34;:&#34;books_chapters_display_type&#34;,&#34;source&#34;:&#34;books_chapters_topics&#34;}" data-checkbox-items="[{&#34;value&#34;:&#34;Offensive or unsafe&#34;},{&#34;value&#34;:&#34;Not factually correct&#34;},{&#34;value&#34;:&#34;Other&#34;}]" data-checkbox-metrics="{&#34;group&#34;:&#34;&#34;,&#34;title&#34;:&#34;&#34;}" data-content="{&#34;helpful-text&#34;:&#34;Helpful Response&#34;,&#34;unhelpful-text&#34;:&#34;Unhelpful Response&#34;,&#34;heading&#34;:&#34;Why this rating?&#34;,&#34;submit-text&#34;:&#34;Submit&#34;,&#34;success-message&#34;:&#34;Thanks for your feedback.&#34;,&#34;textarea-label&#34;:&#34;Comments&#34;}" data-endpoint-name="bookchapquery" data-id="fw-c-chat-documentation" data-config-metrics-group="ask using ai takeover" data-config-metrics-title="ai response" id="documentation-chat-feedback-ljb8">
+</template>
+
+
+    
+
+</div>
+</div>
+    
+    <!-- Show component only in author mode for preview purposes -->
+    
+    
+    
+
+</div>
+
+    
+
+	</template>
+
+    <template class="doc-c-toolbar__template --stand-in"></template>
+    <dialog id="document-toolbar-wr2rn-drawer" class="doc-c-toolbar__drawer fw-c-dialog --drawer --hidden --width-full" is="muse-drawer" aria-hidden="true" aria-modal="true" aria-labelledby="document-toolbar-wr2rn__title" aria-describedby="document-toolbar-wr2rn__description" role="dialog">
+        <div class="fw-c-dialog__container">
+            <div class="doc-c-toolbar__drawer-header">
+                <h3 class="fw-c-headline --title-reduced" id="document-toolbar-wr2rn__title">Ask about this content</h3>
+                <h4 class="fw-c-headline --heading doc-c-toolbar__drawer-heading" id="document-toolbar-wr2rn__description">Hardware Installation Guide for Cisco 8400 Series Secure Routers</h4>
+            </div>
+            <div class="doc-c-toolbar__drawer-input fw-c-select --editable" is="muse-editable-select" id="editable-select-drawer-document-toolbar-wr2rn" data-autocomplete="false" data-config-metrics-group="utility bar-ask using ai" data-config-metrics-title="ask using ai about this document">
+                <div class="fw-c-select__input fw-c-input --has-icon" is="muse-input" id="editable-select-drawer-document-toolbar-wr2rn__control">
+                    <div class="fw-c-input__container">
+                        <div class="fw-c-input__inputs">
+                            <input aria-activedescendant="" aria-autocomplete="none" aria-expanded="false" aria-haspopup="listbox" aria-controls="editable-select-drawer-document-toolbar-wr2rn__popup" autocapitalize="off" autocomplete="off" autocorrect="off" class="fw-c-input__field fw-c-select__input-field" id="document-toolbar-document-toolbar-wr2rn-drawer__control-field" maxlength="275" name="document-toolbar-document-toolbar-wr2rn-drawer-input-option-name" role="combobox"/>
+                        </div>
+                        <div class="fw-c-input__buttons">
+                            <button type="button" id="document-toolbar-document-toolbar-wr2rn-drawer-input__control-button-0" class="fw-c-input__button --clear --hidden fw-c-button" aria-label="Clear">
+                                <span class="fw-c-button__icon --fail-fill"></span>
+                                <span class="fw-c-button__text"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="fw-c-select__popup" role="listbox" id="document-toolbar-document-toolbar-wr2rn-drawer__popup" aria-hidden="true">
+                    <div class="fw-c-select__popup-divider"></div>
+                    
+                </div>
+            </div>
+            <div class="doc-c-toolbar__drawer-container"></div>
+        </div>
+        <div class="fw-c-dialog__controls">
+            <button class="fw-c-dialog__control --back fw-c-button">
+                <span class="fw-c-button__icon --chevron-left"></span>
+                <span class="fw-c-button__text">Back</span>
+            </button>
+            <button class="fw-c-dialog__control --close fw-c-button --no-gap" aria-label="Close">
+                <span class="fw-c-button__icon --close"></span>
+                <span class="fw-c-button__text"></span>
+            </button>
+        </div>
+    </dialog>    
+
+</div>
+
+
+
+    
+
+
+<div id="document-toolbar-sibling" class="fw-l-document --subgrid --sticky-flanks fw-t-theme --neutral --dark" is="cisco-document-layout">
+
+    <div class="fw-l-document__column --start" id="document-toolbar-sibling-column--start" aria-hidden="false" aria-labelledby="document-toolbar-sibling-column-control">
+<div id="document-table-of-contents-7k1bf2n-accordion" class="fw-c-accordion fw-l-document__accordion" is="muse-accordion" role="region">
+    <div class="fw-c-accordion__item" id="document-table-of-contents-7k1bf2n-accordion-item">
+        <p class="fw-c-accordion__header fw-c-headline">
+            <button id="document-table-of-contents-7k1bf2n-accordion-button" class="fw-c-accordion__button fw-c-button --reverse" aria-controls="document-table-of-contents-7k1bf2n-accordion-panel" aria-expanded="false">
+                <span class="fw-c-button__icon --chevron-down"></span>
+                <span class="fw-c-button__text">Topics included</span>
+            </button>
+        </p>
+        <div id="document-table-of-contents-7k1bf2n-accordion-panel" class="fw-c-accordion__panel --hidden" role="region" aria-labelledby="document-table-of-contents-7k1bf2n-accordion-button" aria-hidden="true">
+            <div class="doc-c-table-of-contents  --document" data-config-metrics-group="book toc panel" data-config-metrics-title="book table of contents" is="cisco-document-table-of-contents" id="document-table-of-contents-7k1bf2n" aria-multiselectable="true">
+                
+    <div class="doc-c-table-of-contents__heading">
+    
+        <div id="document-table-of-contents-7k1bf2n-checkbox" class="fw-c-checkbox --reduced --vertical doc-c-table-of-contents__checkbox-control" is="muse-checkbox" data-config-metrics-title="Expand all sections">
+            <ul class="fw-c-checkbox__group">
+                <li id="document-table-of-contents-7k1bf2n-checkbox__item-1" class="fw-c-checkbox__item" aria-checked="false" role="checkbox">
+                    <label for="document-table-of-contents-7k1bf2n-checkbox__item-1-input" id="document-table-of-contents-7k1bf2n-checkbox__item-1-label" class="fw-c-checkbox__label">
+                        <span>Expand all sections</span>
+                        <input type="checkbox" id="document-table-of-contents-7k1bf2n-checkbox__item-1-input" class="fw-c-checkbox__input doc-c-table-of-contents__checkbox-control-input" name="document-table-of-contents-7k1bf2n-checkbox__value" value="select-Expand all sections"/>
+                    </label>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+
+                
+                    
+    
+
+    <div class="doc-c-table-of-contents__item" id="document-table-of-contents-7k1bf2n-item-1">
+        <div class="doc-c-table-of-contents__header --active">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide.html" class="doc-c-table-of-contents__link">About this content</a>
+
+            
+        </div>
+
+        
+    </div>
+
+                
+                    
+    
+
+    <div class="doc-c-table-of-contents__item" id="document-table-of-contents-7k1bf2n-item-2">
+        <div class="doc-c-table-of-contents__header ">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/intro-cisco-8400-series-secure-routers.html" class="doc-c-table-of-contents__link">Introduction to Cisco 8400 Series Secure Routers</a>
+
+            
+    <button class="fw-c-button doc-c-table-of-contents__button --no-gap --inline" data-config-metrics-item="expand-Introduction to Cisco 8400 Series Secure Routers" aria-controls="document-table-of-contents-7k1bf2n-item-2-panel" data-config-metrics-title="Introduction to Cisco 8400 Series Secure Routers" id="document-table-of-contents-7k1bf2n-item-2-button" type="button">
+        <span class="fw-c-button__icon --plus"></span>
+        <span class="fw-c-button__text"></span>
+    </button>
+
+        </div>
+
+        <div id="document-table-of-contents-7k1bf2n-item-2-panel" class="doc-c-table-of-contents__panel --hidden" role="region" aria-labelledby="document-table-of-contents-7k1bf2n-item-2-button" aria-hidden>
+            
+            
+    <ul class="fw-c-list" data-config-metrics-title="Introduction to Cisco 8400 Series Secure Routers">
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/intro-cisco-8400-series-secure-routers/overview-c84xx.html" class="doc-c-table-of-contents__list-link ">Cisco 8400 Series Secure Routers</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/intro-cisco-8400-series-secure-routers/ethernet-ports-c8475-g2.html" class="doc-c-table-of-contents__list-link ">Ethernet ports on C8475-G2 Secure Router</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/intro-cisco-8400-series-secure-routers/ethernet-ports-c8455-g2.html" class="doc-c-table-of-contents__list-link ">Ethernet ports on C8455-G2 Secure Router</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/intro-cisco-8400-series-secure-routers/chassis-views-c4875-g2.html" class="doc-c-table-of-contents__list-link ">Chassis views for C8475-G2 Secure Router</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/intro-cisco-8400-series-secure-routers/chassis-views-c8455-g2.html" class="doc-c-table-of-contents__list-link ">Chassis views for C8455-G2 Secure Router</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/intro-cisco-8400-series-secure-routers/chassis-ventilation.html" class="doc-c-table-of-contents__list-link ">Chassis ventilation</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/intro-cisco-8400-series-secure-routers/additional-help-locate-labels.html" class="doc-c-table-of-contents__list-link ">Locate labels</a>
+        </li>
+    </ul>
+
+        </div>
+    </div>
+
+                
+                    
+    
+
+    <div class="doc-c-table-of-contents__item" id="document-table-of-contents-7k1bf2n-item-3">
+        <div class="doc-c-table-of-contents__header ">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/prepare-installation.html" class="doc-c-table-of-contents__link">Prepare for Installation</a>
+
+            
+    <button class="fw-c-button doc-c-table-of-contents__button --no-gap --inline" data-config-metrics-item="expand-Prepare for Installation" aria-controls="document-table-of-contents-7k1bf2n-item-3-panel" data-config-metrics-title="Prepare for Installation" id="document-table-of-contents-7k1bf2n-item-3-button" type="button">
+        <span class="fw-c-button__icon --plus"></span>
+        <span class="fw-c-button__text"></span>
+    </button>
+
+        </div>
+
+        <div id="document-table-of-contents-7k1bf2n-item-3-panel" class="doc-c-table-of-contents__panel --hidden" role="region" aria-labelledby="document-table-of-contents-7k1bf2n-item-3-button" aria-hidden>
+            
+            
+    <ul class="fw-c-list" data-config-metrics-title="Prepare for Installation">
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/prepare-installation/standard-warning-statements.html" class="doc-c-table-of-contents__list-link ">Standard warning statements</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/prepare-installation/safety-recommendations.html" class="doc-c-table-of-contents__list-link ">Safety recommendations</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/prepare-installation/rack-requirements.html" class="doc-c-table-of-contents__list-link ">Rack requirements</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/prepare-installation/router-environment-requirements.html" class="doc-c-table-of-contents__list-link ">Router environmental requirements</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/prepare-installation/power-guidelines-requirements.html" class="doc-c-table-of-contents__list-link ">Power guidelines and requirements</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/prepare-installation/console-port-considerations.html" class="doc-c-table-of-contents__list-link ">Console port considerations</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/prepare-installation/ethernet-connection.html" class="doc-c-table-of-contents__list-link ">Ethernet connections</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/prepare-installation/tools-equipment-installation-maintenance.html" class="doc-c-table-of-contents__list-link ">Required tools and equipment for installation and maintenance</a>
+        </li>
+    </ul>
+
+        </div>
+    </div>
+
+                
+                    
+    
+
+    <div class="doc-c-table-of-contents__item" id="document-table-of-contents-7k1bf2n-item-4">
+        <div class="doc-c-table-of-contents__header ">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/install-and-connect.html" class="doc-c-table-of-contents__link">Install and Connect</a>
+
+            
+    <button class="fw-c-button doc-c-table-of-contents__button --no-gap --inline" data-config-metrics-item="expand-Install and Connect" aria-controls="document-table-of-contents-7k1bf2n-item-4-panel" data-config-metrics-title="Install and Connect" id="document-table-of-contents-7k1bf2n-item-4-button" type="button">
+        <span class="fw-c-button__icon --plus"></span>
+        <span class="fw-c-button__text"></span>
+    </button>
+
+        </div>
+
+        <div id="document-table-of-contents-7k1bf2n-item-4-panel" class="doc-c-table-of-contents__panel --hidden" role="region" aria-labelledby="document-table-of-contents-7k1bf2n-item-4-button" aria-hidden>
+            
+            
+    <ul class="fw-c-list" data-config-metrics-title="Install and Connect">
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/install-and-connect/install-connect-router.html" class="doc-c-table-of-contents__list-link ">Install and connect</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/install-and-connect/install-84xx.html" class="doc-c-table-of-contents__list-link ">Install the routers</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/install-and-connect/connect-console-terminal-modem.html" class="doc-c-table-of-contents__list-link ">Connect to a console terminal or modem</a>
+        </li>
+    </ul>
+
+        </div>
+    </div>
+
+                
+                    
+    
+
+    <div class="doc-c-table-of-contents__item" id="document-table-of-contents-7k1bf2n-item-5">
+        <div class="doc-c-table-of-contents__header ">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/install-and-upgrade.html" class="doc-c-table-of-contents__link">Install and Upgrade Internal Modules and Field Replaceable Units</a>
+
+            
+    <button class="fw-c-button doc-c-table-of-contents__button --no-gap --inline" data-config-metrics-item="expand-Install and Upgrade Internal Modules and Field Replaceable Units" aria-controls="document-table-of-contents-7k1bf2n-item-5-panel" data-config-metrics-title="Install and Upgrade Internal Modules and Field Replaceable Units" id="document-table-of-contents-7k1bf2n-item-5-button" type="button">
+        <span class="fw-c-button__icon --plus"></span>
+        <span class="fw-c-button__text"></span>
+    </button>
+
+        </div>
+
+        <div id="document-table-of-contents-7k1bf2n-item-5-panel" class="doc-c-table-of-contents__panel --hidden" role="region" aria-labelledby="document-table-of-contents-7k1bf2n-item-5-button" aria-hidden>
+            
+            
+    <ul class="fw-c-list" data-config-metrics-title="Install and Upgrade Internal Modules and Field Replaceable Units">
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/install-and-upgrade/c-access-internal-modules.html" class="doc-c-table-of-contents__list-link ">Internal modules</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/install-and-upgrade/remove-and-replace-the-chassis-cover.html" class="doc-c-table-of-contents__list-link ">Remove and replace the chassis cover</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/install-and-upgrade/remove-replace-ddr-dimm.html" class="doc-c-table-of-contents__list-link ">Remove and replace DDR DIMMs</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/install-and-upgrade/overview-ac-power-supply.html" class="doc-c-table-of-contents__list-link ">AC power supply</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/install-and-upgrade/overview-dc-power-supply.html" class="doc-c-table-of-contents__list-link ">DC power supply</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/install-and-upgrade/remove-replace-power-supplies.html" class="doc-c-table-of-contents__list-link ">Remove and replace the power supplies</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/install-and-upgrade/overview-hvac-power-supply.html" class="doc-c-table-of-contents__list-link ">AC/DC/HVDC power supply</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/install-and-upgrade/overview-replace-fan-tray.html" class="doc-c-table-of-contents__list-link ">Fan tray</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/install-and-upgrade/install-sfp-modules-8300.html" class="doc-c-table-of-contents__list-link ">SFP modules</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/install-and-upgrade/remove-install-m2-module.html" class="doc-c-table-of-contents__list-link ">M.2 storage device</a>
+        </li>
+    
+        <li class="fw-c-list__item">
+            <a href="/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/install-and-upgrade/remove-and-replace-the-battery.html" class="doc-c-table-of-contents__list-link ">Remove and replace the battery</a>
+        </li>
+    </ul>
+
+        </div>
+    </div>
+
+                
+
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+</div>
+
+    <div class="fw-l-document__column --center">
+        
+        
+        
+    <button class="fw-c-button fw-l-document__column-control --no-gap" data-config-metrics-group="book toc panel" data-config-metrics-item="hide-book toc" aria-controls="document-toolbar-sibling-column--start" aria-expanded="true" data-config-metrics-title="book table of contents" id="document-toolbar-sibling-column-control" type="button">
+        <span class="fw-c-button__icon --chevron-left"></span>
+        <span class="fw-c-button__text"></span>
+    </button>
+
+
+        <div class="fw-l-document__focus-mode-container">
+            
+            
+            
+    <button class="fw-c-button  --cta --secondary --small" id="document-toolbar-sibling-exit-focus-mode" type="button" aria-label="Exit Focus" aria-pressed="false">
+        <span class="fw-c-button__icon --reduce"></span>
+        <span class="fw-c-button__text">Exit Focus</span>
+    </button>
+
+        </div>
+
+        <div class="fw-l-document__column-heading">
+            <p class="fw-l-document__focus-mode-title fw-c-headline --display-reduced fw-u-spacing --margin-bottom --margin-20">Hardware Installation Guide for Cisco 8400 Series Secure Routers</p>
+            <h1 class="fw-c-headline --heading" id="document-content-heading">About this content</h1>
+
+            <div class="fw-l-grid --full --no-gutter --valign-center">
+                <div class="fw-l-grid__col --1">
+                    
+<section class="doc-c-document-summarization " data-config-metrics-group="main content" data-config-metrics-title="doc summarization metrics title" id="document-summarization-xik6k6" data-content-last-modified="July 25, 2025">
+    <p class="doc-c-document-summarization__metadata"><strong>Updated</strong>: July 25, 2025</p>
+
+</section>
+
+    
+
+                </div>
+            </div>
+        </div>
+
+        <div class="fw-l-document__column-separator --no-metadata">
+            
+        </div>
+
+        <div id="document-toolbar-sibling-metadata" class="fw-l-document__column-metadata">
+
+
+    
+</div>
+
+        <div class="fw-l-document__column-content" data-config-metrics-group="main content">
+            <div class="doc-s-markdown" id="document-content-body">
+                
+<div>
+ <p></p>
+ <p>Provides step-by-step instructions for installing and setting up Cisco 8400 Series Secure Routers in enterprise environments. It covers pre-installation preparation, physical installation, connection procedures, and guidance for installing and upgrading internal modules and field-replaceable units.</p>
+ <hr />
+ <p></p>
+</div>
+<p></p>
+<h3><a href="c8400-g2-hardware-installation-guide/intro-cisco-8400-series-secure-routers.html">Introduction to Cisco 8400 Series Secure Routers</a></h3>
+<p>Outlines hardware features, port configurations, chassis views, ventilation, and product labeling for Cisco 8400 Series Secure Routers, guiding users through platform overviews, supported transceivers, and identification details for secure and efficient operation.</p>
+<h3><a href="c8400-g2-hardware-installation-guide/prepare-installation.html">Prepare for Installation</a></h3>
+<p>Outlines essential steps and requirements for preparing hardware installation, including safety recommendations, regulatory statements, environmental and rack conditions, power guidelines, console and Ethernet connections, and necessary tools for reliable system setup.</p>
+<h3><a href="c8400-g2-hardware-installation-guide/install-and-connect.html">Install and Connect</a></h3>
+<p>Outlines the complete process for installing and connecting the router, including unpacking, pre-installation requirements, physical mounting procedures, chassis grounding, and methods for establishing CLI console access on various operating systems.</p>
+<h3><a href="c8400-g2-hardware-installation-guide/install-and-upgrade.html">Install and Upgrade Internal Modules and Field Replaceable Units</a></h3>
+<p>Outlines procedures and best practices for installing, removing, and upgrading internal modules and field replaceable units, including memory, power supplies, fan trays, SFPs, and batteries, with safety guidelines and step-by-step instructions for ensuring optimal hardware maintenance and replacement.</p>
+            </div>
+
+            <div class="fw-l-document__scroll-to-top">
+                
+                
+                
+    <button class="fw-c-button fw-c-scroll-to-top --hidden --cta --secondary --small --reverse" data-target="cdc-header, #document-content-heading" aria-hidden="true" is="cisco-scroll-to-top" type="button" aria-label="Scroll to top">
+        <span class="fw-c-button__icon --arrow-up"></span>
+        <span class="fw-c-button__text">Scroll to top</span>
+    </button>
+
+            </div>
+            
+<section class="doc-c-content-footer " data-config-metrics-group="content footer metrics group" data-config-metrics-title="content footer metrics title" id="document-content-footer-u0umr">
+    <div class="doc-c-content-footer__column --number-1" data-config-metrics-group="resources section" data-config-metrics-title="need help?">
+    
+<div class="fw-c-experience-fragment" id="experience-fragment-iqfol9">
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="headline title aem-GridColumn aem-GridColumn--default--12">
+
+    <p class="fw-c-headline --title" data-config-metrics-title="Need help?" id="headline-koqhhb">
+        Need help?
+    </p>
+
+
+    
+</div>
+<div class="text aem-GridColumn aem-GridColumn--default--12">
+<div id="text-98351d5bd7" class="cmp-text">
+    <p><a href="https://mycase.cloudapps.cisco.com/start?prodDocUrl=" target="_blank">Open a support case</a></p>
+<p>(Requires a <a href="https://www.cisco.com/c/en/us/services/order-services.html" target="_blank">Cisco Service Contract</a>)</p>
+
+</div>
+
+    
+
+</div>
+
+    
+</div>
+</div>
+
+    
+
+</div>
+    
+    <div class="doc-c-content-footer__column --number-3" data-config-metrics-group="resources section" data-config-metrics-title="resource">
+    
+<div class="fw-c-experience-fragment" id="experience-fragment-qe1jes">
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="accordion aem-GridColumn aem-GridColumn--default--12">
+<div class="fw-c-accordion  --minimal" is="muse-accordion" data-placeholder-text="false" id="accordion-6f1qry" aria-multiselectable="true">
+    
+        
+        
+        
+    <div class="fw-c-accordion__item" id="accordion-6f1qry-item-1">
+        <div class="fw-c-accordion__header">
+            <button id="accordion-6f1qry-item-1-button" class="fw-c-accordion__button fw-c-button --reverse" type="button" aria-controls="accordion-6f1qry-item-1-panel" aria-expanded="false">
+                <span class="fw-c-button__icon --chevron-down"></span>
+                <span class="fw-c-button__text">Bias-free language</span>
+            </button>
+        </div>
+        <div id="accordion-6f1qry-item-1-panel" class="fw-c-accordion__panel --hidden" role="region" aria-labelledby="accordion-6f1qry-item-1-button" aria-hidden="true">
+<div id="text-73671c156f" class="cmp-text">
+    <p>The documentation set for this product strives to use bias-free language. For the purposes of this documentation set, bias-free is defined as language that does not imply discrimination based on age, disability, gender, racial identity, ethnic identity, sexual orientation, socioeconomic status, and intersectionality. Exceptions may be present in the documentation due to language that is hardcoded in the user interfaces of the product software, language used based on RFP documentation, or language that is used by a referenced third-party product. Learn more about how Cisco is using Inclusive Language.</p>
+
+</div>
+
+    
+
+</div>
+    </div>
+
+    
+    
+</div></div>
+
+    
+</div>
+</div>
+
+    
+
+</div>
+</section>
+
+    
+
+
+            <template class="doc-u-code-block__template --build-document-code-block" data-show-more-text="Show more" data-show-less-text="Show less" data-copy-button-text="Copy code block" is="cisco-build-document-code-block"></template>
+            <template class="doc-u-code-block__template --copy-button-success">
+                <div class="doc-c-code-block__copy-button-success fw-c-button --tag">
+                    <span class="fw-c-button__icon --checkmark"></span>
+                    <span class="fw-c-button__text">Copied Successfully!</span>
+                </div>
+            </template>
+        </div>
+    </div>
+</div></div>
+            
+<script type="module" src="https://www.cisco.com/site/web-components/us/en/cdc-footer.js"></script>
+
+    <cdc-footer full-width></cdc-footer>
+
+
+            
+    
+    
+    
+<script src="/etc/designs/cdc/fw/b/responsive/js/books-and-chapters.min.js"></script>
+
+
+
+
+
+
+<script src="/c/dam/cdc/t/ctm.js"></script>
+
+    
+
+    
+
+    
+    
+
+            
+
+        
+    </body>
+</html>

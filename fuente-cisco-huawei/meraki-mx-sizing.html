@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html  lang="en">
+<head prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article#">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <meta name="google-site-verification" content="mW_9DEI0m-ICeSJnaiaIKGJltJgFh4edDWNJb1m9l3U"/>
+        <meta name="generator" content="MindTouch"/>
+        <meta name="robots" content="index,follow"/>
+        <meta property="og:title" content="MX Sizing Guide and Principles"/>
+        <meta property="og:site_name" content="Cisco Meraki Documentation"/>
+        <meta property="og:type" content="article"/>
+        <meta property="og:locale" content="en_US"/>
+        <meta property="og:url" content="https://documentation.meraki.com?title=SASE_and_SD-WAN%2FMX%2FDesign_and_Configure%2FArchitectures_and_Best_Practices%2FMX_Sizing_Guide_%26_Principles"/>
+        <meta property="og:image" content="https://documentation.meraki.com/@public/production/site_13505/1603418441-social-share.png"/>
+        <meta property="og:description" content="This document serves as a guide for the architecture and design of networks incorporating MX firewall appliances. This document aims to help determine the appropriate MX model to evaluate, understand &hellip;"/>
+        <meta property="article:published_time" content="2024-01-10T17:59:48Z"/>
+        <meta property="article:modified_time" content="2026-10-15T13:35:47Z"/>
+        <meta name="twitter:card" content="summary"/>
+        <meta name="twitter:title" content="MX Sizing Guide and Principles"/>
+        <meta name="twitter:description" content="This document serves as a guide for the architecture and design of networks incorporating MX firewall appliances. This document aims to help determine the appropriate MX model to evaluate, understand &hellip;"/>
+        <meta name="twitter:image" content="https://documentation.meraki.com/@public/production/site_13505/1603418441-social-share.png"/>
+        <meta name="description" content="This document serves as a guide for the architecture and design of networks incorporating MX firewall appliances. This document aims to help determine the appropriate MX model to evaluate, understand &hellip;"/>
+        <link rel="canonical" href="https://documentation.meraki.com?title=SASE_and_SD-WAN%2FMX%2FDesign_and_Configure%2FArchitectures_and_Best_Practices%2FMX_Sizing_Guide_%26_Principles"/>
+        <link rel="search" type="application/opensearchdescription+xml" title="Cisco Meraki Documentation Search" href="https://documentation.meraki.com/@api/deki/site/opensearch/description"/>
+        <link rel="apple-touch-icon" href="https://documentation.meraki.com/@public/production/site_13505/1749845950-apple-touch-icon.png"/>
+        <link rel="shortcut icon" href="https://documentation.meraki.com/@public/production/site_13505/1756406766-favicon.ico"/>
+
+        <script type="application/ld+json" nonce="e2a0b2818d9650114b8092ee98d7683f9b1184ca7fc5098450fd7998aa913c8f">{"@context":"http:\/\/schema.org","@type":"TechArticle","name":"MX Sizing Guide and Principles","url":"https:\/\/documentation.meraki.com?title=SASE_and_SD-WAN%2FMX%2FDesign_and_Configure%2FArchitectures_and_Best_Practices%2FMX_Sizing_Guide_%26_Principles","image":{"@type":"ImageObject","url":"https:\/\/documentation.meraki.com\/@public\/production\/site_13505\/1603418441-social-share.png","height":{"@type":"QuantitativeValue","maxValue":315},"width":{"@type":"QuantitativeValue","maxValue":600}},"datePublished":"2024-01-10T17:59:48Z","dateModified":"2026-10-15T13:35:47Z","description":"This document serves as a guide for the architecture and design of networks incorporating MX firewall appliances. This document aims to help determine the appropriate MX model to evaluate, understand how the performance of devices can vary with different features enabled, and compare MX models with those from other vendors.","thumbnailUrl":"https:\/\/documentation.meraki.com\/@api\/deki\/pages\/9505\/thumbnail?default=https%3A%2F%2Fdocumentation.meraki.com%2F%40style%2Fcommon%2Fimages%2Fimage-placeholder.png","mainEntityofPage":{"@type":"WebPage","@id":"https:\/\/documentation.meraki.com?title=SASE_and_SD-WAN%2FMX%2FDesign_and_Configure%2FArchitectures_and_Best_Practices%2FMX_Sizing_Guide_%26_Principles"},"headline":"MX Sizing Guide and Principles"}</script>
+        <script type="application/ld+json" nonce="e2a0b2818d9650114b8092ee98d7683f9b1184ca7fc5098450fd7998aa913c8f">{"@context":"http:\/\/schema.org","@type":"WebPage","name":"MX Sizing Guide and Principles","url":"https:\/\/documentation.meraki.com?title=SASE_and_SD-WAN%2FMX%2FDesign_and_Configure%2FArchitectures_and_Best_Practices%2FMX_Sizing_Guide_%26_Principles","relatedLink":["https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Translated_Documents\/MX_%E3%82%B5%E3%82%A4%E3%82%B8%E3%83%B3%E3%82%B0%E3%82%AC%E3%82%A4%E3%83%89_(MX19.1%E4%BB%A5%E9%99%8D)","https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Product_Information\/Overviews_and_Datasheets\/Cisco_8000_Series_Secure_Routers_Frequently_Asked_Questions_(FAQ)","https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Design_and_Configure\/Architectures_and_Best_Practices\/Auto_VPN_Static_Routing_Principles_and_Scaling_Techniques","https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Design_and_Configure\/Architectures_and_Best_Practices\/Deploying_Highly_Available_vMX_in_Azure"]}</script>
+        <script type="application/ld+json" nonce="e2a0b2818d9650114b8092ee98d7683f9b1184ca7fc5098450fd7998aa913c8f">{"@context":"http:\/\/schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"item":{"@id":"https:\/\/documentation.meraki.com\/SASE_and_SD-WAN","name":"SASE and SD-WAN"}},{"@type":"ListItem","position":2,"item":{"@id":"https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX","name":"MX - Security & SD-WAN"}},{"@type":"ListItem","position":3,"item":{"@id":"https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Design_and_Configure","name":"Design and Configure"}},{"@type":"ListItem","position":4,"item":{"@id":"https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Design_and_Configure\/Architectures_and_Best_Practices","name":"Architectures and Best Practices"}}]}</script>
+
+        <title>MX Sizing Guide and Principles - Cisco Meraki Documentation</title>
+
+
+    <style type="text/css">/*<![CDATA[*/
+/*.mt-foot {
+    display: none;
+}
+
+#contact-support{
+    width: 350px;
+    /*background-image: url('data:image/png;base64,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');
+    background-repeat: no-repeat;
+    background-position: left center;
+    background-size: 5em;*/
+    /*padding-left: 6em;
+    margin-left: 35px;
+    margin-top: -15px;
+}
+#wishFrame{
+    margin-top: 25px;
+    margin-left: 35px;
+    width: 350px;
+}
+
+/* /begin Added 10/20/17 
+#contact-sales{
+    width: 350px;
+    margin-left: 80px;
+    margin-top: -15px;
+}
+#contact-sales h2{
+    color: #999;
+}
+#contact-sales a{
+    font-size: larger;
+    color: #999;
+}
+
+/* /end Added 10/20/17 */
+
+/* /begin Added for testing 8/16/17 
+#ask-community{
+    margin-left: 35px;
+    margin-top: -15px;
+    width: 350px;
+}
+/* /end Added for testing 8/16/17 */
+/*.clearFix{
+   content: " "; /* Older browser do not support empty content 
+   visibility: hidden;
+   display: block;
+   height: 0;
+   clear: both;
+}
+.float-right{
+   display:inline-block;
+   float:right;
+}
+.float-left{
+   display:inline-block;
+   float:left;
+}
+#internal-suggestion {
+    margin: auto;
+    width: 572px;
+    clear: both;
+    margin-top: 2em;
+    border-top: 1px solid rgba(0,0,0,0.2);
+    text-align: center;
+    padding-top: 2em;
+}
+/* Changes for Docs+KB UI */
+/*#footerContent{
+    background: #484848; /* grey background color */
+   /* border-top: 6px solid #282828; /* small black border at the top */
+   /* margin: auto;
+    width: 1280px;
+    color: #999;
+    clear: both;
+    overflow: auto;
+    box-shadow: 0 0 3px rgba(0,0,0,0.4);
+}
+#contact-support a {
+    font-size: larger;
+    color: #999;
+}
+#contact-support a:hover {
+    color: #0097c8;
+}
+
+#contact-support h2{
+    color: #999; /* makes "contact support" a better grey */
+}
+
+/* /begin Added 8/16/17 */
+/*#ask-community a {
+    font-size: larger;
+    color: #999;
+}
+#ask-community a:hover {
+    color: #0097c8;
+}
+
+#ask-community h2{
+    color: #999; /* makes "contact support" a better grey */
+}
+/* /end Added 8/16/17 */
+
+/*#copyright {
+    margin: auto;
+    padding-right: 90px;
+    color: grey;
+    float: right;
+}
+#crfoot {
+    background: #505050;
+    margin: auto;
+    width: 1280px;
+    clear: both;
+    overflow: auto;
+    box-shadow: 0 3px 3px rgba(0,0,0,0.4);
+    height: 20px;
+    padding-top: 10px;
+    padding-bottom: 5px;
+}/*]]>*/</style>
+
+        <link media="screen" type="text/css" rel="stylesheet" href="https://a.mtstatic.com/@cache/layout/anonymous.css?_=725c870038c749936922c6d0da3d2240_ZG9jdW1lbnRhdGlvbi5tZXJha2kuY29t:site_13505" id="mt-screen-css" />
+
+    
+        <link media="print" type="text/css" rel="stylesheet" href="https://a.mtstatic.com/@cache/layout/print.css?_=c97c72380f455f30fbdfffed3c1a10b9:site_13505" id="mt-print-css" />
+
+
+    <script type="application/json" nonce="e2a0b2818d9650114b8092ee98d7683f9b1184ca7fc5098450fd7998aa913c8f" id="mt-localizations-draft">
+{"Draft.JS.alert.cancel.button":"OK","Draft.JS.alert.cancel.message":"You can not cancel a draft when the live page is unpublished.","Draft.JS.alert.cancel.title":"This draft cannot be canceled","Draft.JS.alert.publish.button":"OK","Draft.JS.alert.publish.message":"You can not publish a draft of a page with an unpublished parent","Draft.JS.alert.publish.title":"This draft cannot be published","Draft.JS.alert.unpublish.button":"OK","Draft.JS.alert.unpublish.message":"You can not unpublish a page when published subpages are present.","Draft.JS.alert.unpublish.title":"This page cannot be unpublished","Draft.JS.success.cancel":"The draft was successfully deleted.","Draft.JS.success.schedule.publish":"Publication schedule successfully created.","Draft.JS.success.publish":"The draft was successfully published.","Draft.JS.success.unpublish":"The page was successfully unpublished.","Draft.JS.success.unpublish.inherits-schedule\n        Draft.JS.success.unpublish.scheduled-to-publish":"[MISSING: draft.js.success.unpublish.inherits-schedule\n        draft.js.success.unpublish.scheduled-to-publish]","Draft.JS.success.update.schedule.publish":"Publication schedule successfully updated.","Draft.JS.success.update.schedule.unpublish":"[MISSING: draft.js.success.update.schedule.unpublish]","Draft.JS.success.delete.schedule\n        Draft.JS.success.delete.schedule.with.subpages\n        Draft.error.cancel":"[MISSING: draft.js.success.delete.schedule\n        draft.js.success.delete.schedule.with.subpages\n        draft.error.cancel]","Draft.error.publish":"There was an error publishing the draft.","Draft.error.unpublish":"There was an error unpublishing the page.","Draft.message.at":"at","Dialog.ConfirmSave.StrictIdf.title":"Oops!","Dialog.ConfirmSave.StrictIdf.error.missing-template-reference":"This article type requires a template reference widget. Not having one may negatively impact your site and SEO. Please contact NiCE Knowledge Management support.","Dialog.ConfirmSave.StrictIdf.label.continue":"Proceed anyway","Dialog.ConfirmSave.StrictIdf.label.cancel":"Cancel","Dialog.ConfirmSave.StrictIdf.label.missing-template-reference-help-link":"Learn more about required references","Dialog.ConfirmSave.StrictIdf.error.invalid-idf":"This type of article should not exist at the requested location in the site hierarchy. Proceeding with the requested move may negatively impact site navigation and SEO.","Dialog.ConfirmSave.StrictIdf.label.invalid-idf-help-link":"Learn more about IDF structure","Dialog.EditDraft.page-title":"Create draft","Dialog.Scheduler.Common.label.am":"{0} AM","Dialog.Scheduler.Common.label.pm":"{0} PM","Dialog.Scheduler.Publish.alert-create-draft":"Create","Dialog.Scheduler.Publish.alert-existing-publication-scheduled":"This location has an existing publication schedule applied.  The new page will inherit this new schedule.","Dialog.Scheduler.Publish.alert-modify-message":"This draft is scheduled to be published {0} at {1}. A schedule cannot be modified or deleted less than 15 minutes from its start time.","Dialog.Scheduler.Publish.alert-modify-title":"This schedule cannot be modified","Dialog.Scheduler.Publish.button-close":"Close","Dialog.Scheduler.Publish.button-save":"Save publish schedule","Dialog.Scheduler.Publish.button-go-to-parent":"Go to parent","Dialog.Scheduler.Publish.do-not-have-permission-message":"This page will be published {0} with another page scheduled by {1}. You do not have permission to view this page. Please see {1} to resolve scheduling conflicts.","Dialog.Scheduler.Publish.go-to-parent-message":"This draft will be published {0}, scheduled by {1}. A schedule can only be modified where it was created.","Dialog.Scheduler.Publish.label.f1-link":"Learn about scheduled publishing","Dialog.Scheduler.Publish.page-title":"Publish","Dialog.Scheduler.Unpublish.button-save":"Save unpublish schedule","Dialog.Scheduler.Unpublish.alert-modify-message":"This page is scheduled to be unpublished {0} at {1}. A schedule cannot be modified or deleted less than 15 minutes from its start time.","Dialog.Scheduler.Unpublish.do-not-have-permission-message":"This page will be unpublished {0} with another page scheduled by {1}. You do not have permission to view this page. Please see {1} to resolve scheduling conflicts.","Dialog.Scheduler.Unpublish.go-to-parent-message":"This page will be unpublished {0}, scheduled by {1}. A schedule can only be modified where it was created.","Dialog.Scheduler.Unpublish.page-title":"Unpublish","Page.Dashboard.page-title":"Dashboard"}    </script>    <script type="application/json" nonce="e2a0b2818d9650114b8092ee98d7683f9b1184ca7fc5098450fd7998aa913c8f" id="mt-localizations-editor">
+{"Article.Attach.file.upload.toobig":"The file \"{1}\" is too large.  The maximum allowed file size is {0}.","Article.Attach.file.upload.notAllowed":"The selected file can not be uploaded because you do not have permission to upload files of that type.","Article.Attach.file.upload.fileExtension":"You picked a file with an unsupported extension.  Please try again with a valid file.","Article.Common.page-is-restricted-login":"You do not have permission to view this page - please try signing in.","Article.Common.page-save-conflict":"You may have overwritten a concurrent editor's changes. Use this page's <a title=\"Revision History\" target=\"_blank\" href=\"{0}\" >Revision History<\/a> to review.","Article.Error.page-couldnt-be-loaded":"The requested page's contents could not be loaded.","Article.Error.page-save-conflict":"A page already exists at {0}. Navigate to the existing page and edit the page if you wish to modify its contents.","Article.Error.page-save-forbidden":"Your session has expired or you do not have permission to edit this page.","Article.Error.page-title-required":"A page title is required.","Article.edit.summary":"Edit summary","Article.edit.summary-reason":"Why are you making this edit?","Article.edit.enter-reason":"Enter reason (viewable in Site History Report)","Component.YoutubeSearch.error.key-invalid":"Your YouTube API Key was improperly configured. Please review the article at the","Component.YoutubeSearch.error.key-missing":"Your NiCE Knowledge Management deployment needs to update your YouTube API Key. Details on how to update can be found at the","Component.YoutubeSearch.error.search-failed":"Search failed","Component.YoutubeSearch.info.not-found":"No videos found","Component.YoutubeSearch.label.video-url":"Video URL","Component.YoutubeSearch.placeholder.query":"Video URL or YouTube search query","Dialog.ConfirmCancel.button.continue-editing":"Continue editing","Dialog.ConfirmCancel.button.discard-changes":"Discard changes","Dialog.ConfirmCancel.message.changes-not-saved":"Your changes have not been saved to MindTouch.","Dialog.ConfirmCancel.title":"Discard changes?","Dialog.ConfirmDeleteRedirects.label.delete-redirects-help-link":"Learn more about deleting redirects","Dialog.ConfirmSave.error.redirect":"A redirect exists at this location and will be deleted if you continue. This may negatively impact your site and SEO. Please contact NiCE Knowledge Management support.","Dialog.ConfirmSave.label.cancel":"Cancel","Dialog.ConfirmSave.label.continue":"Continue","Dialog.ConfirmSave.title":"Delete redirect?","Dialog.ConfirmSave.StrictIdf.error.invalid-idf":"This type of article should not exist at the requested location in the site hierarchy. Proceeding with the requested move may negatively impact site navigation and SEO.","Dialog.ConfirmSave.StrictIdf.error.missing-template-reference-insert":"You've removed the template reference, which is required for this page. Click Insert to reinsert the template reference.","Dialog.ConfirmSave.StrictIdf.label.cancel":"Cancel","Dialog.ConfirmSave.StrictIdf.label.continue":"Proceed anyway","Dialog.ConfirmSave.StrictIdf.label.insert":"Insert","Dialog.ConfirmSave.StrictIdf.label.missing-template-reference-help-link":"Learn more about required references","Dialog.ConfirmSave.StrictIdf.label.invalid-idf-help-link":"Learn more about IDF structure","Dialog.ConfirmSave.StrictIdf.title":"Oops!","Dialog.JS.wikibits-edit-section":"Edit section","Dialog.SaveRequired.button.cancel":"Cancel","Dialog.SaveRequired.button.save":"Save and continue","Dialog.SaveRequired.label.change-title-start":"This page needs a different title than","Dialog.SaveRequired.label.change-title-end":"Please make the correction and try again.","Dialog.SaveRequired.label.new-page-alert":"This operation can not be performed on a page that has not yet been created. In order to do that, we need to quickly save what you have.","Dialog.SaveRequired.title":"Save required","Draft.error.save-unpublished":"You cannot save an unpublished draft at {0}. A published page already exists at that location.","GUI.Editor.alert-changes-made-without-saving":"You have made changes to the content without saving your changes. Are you sure you want to exit this page?","GUI.Editor.error.copy-hint":"To avoid losing your work, copy the page contents to a new file and retry saving again.","GUI.Editor.error.server-error":"A server error has occurred.","GUI.Editor.error.unable-to-save":"We are unable to save this page","Redist.CKE.mt-save.save-to-file-link":"Save the page content to a file","Redist.CKE.mt-autosave.contents-autosaved":"The page contents were autosaved to the browser's local storage {0}","System.API.Error.invalid-redirect":"Cannot create a redirect on a page with sub-pages.","System.API.Error.invalid-redirect-target":"The redirect does not point at a valid page."}    </script>    <script type="application/json" nonce="e2a0b2818d9650114b8092ee98d7683f9b1184ca7fc5098450fd7998aa913c8f" id="mt-localizations-file-uploader">
+{"Dialog.Attach.allowed-types":"Allowed file types:","Dialog.Attach.button.upload":"Upload","Dialog.Attach.choose-files-dad":"Choose files to upload or drag and drop files into this window.","Dialog.Attach.max-size":"Maximum upload file size: {0}"}    </script>    <script type="application/json" nonce="e2a0b2818d9650114b8092ee98d7683f9b1184ca7fc5098450fd7998aa913c8f" id="mt-localizations-grid-widget">
+{"Article.Common.page-is-restricted-login":"You do not have permission to view this page - please try signing in.","MindTouch.Help.Page.search-unavailable":"Sorry, search is currently unavailable.","MindTouch.Reports.data.empty-grid-text":"No Data Available.","Page.StructuredTags.error-update":"An unknown error occurred."}    </script>    <script type="application/json" nonce="e2a0b2818d9650114b8092ee98d7683f9b1184ca7fc5098450fd7998aa913c8f" id="mt-localizations-tree-widget">
+{"Skin.Common.home":"Home","Dialog.Common.error.path-not-found":"The requested page or section could not be loaded. Please update the link.","Dialog.JS.loading":"Loading...","Dialog.JS.loading.copy":"Copying page(s)...","Dialog.JS.loading.insertImage":"Inserting image...","Dialog.JS.loading.move":"Moving page(s)...","Dialog.JS.loading.moveFile":"Moving file...","Dialog.JS.loading.search":"Searching...","MindTouch.Help.Page.in":"in","MindTouch.Help.Page.no-search-results":"Sorry, we can't find what you are looking for.","MindTouch.Help.Page.no-search-try":"Try searching for something else, selecting a category, or try creating a ticket.","MindTouch.Help.Page.retrysearch":"Click here to search the whole site.","MindTouch.Help.Page.search-error-try":"Please try again later.","MindTouch.Help.Page.search-unavailable":"Sorry, search is currently unavailable."}    </script>    <script type="application/json" nonce="e2a0b2818d9650114b8092ee98d7683f9b1184ca7fc5098450fd7998aa913c8f" id="mt-localizations-dialog">
+{"Dialog.Common.button.cancel":"Cancel","Dialog.Common.button.ok":"OK","Dialog.Common.label.home":"Home"}    </script>
+    <script type="text/javascript" data-mindtouch-module="true" nonce="e2a0b2818d9650114b8092ee98d7683f9b1184ca7fc5098450fd7998aa913c8f" src="https://a.mtstatic.com/deki/javascript/out/globals.jqueryv2.2.4.polyfill.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script><script type="application/json" id="mt-global-settings" nonce="e2a0b2818d9650114b8092ee98d7683f9b1184ca7fc5098450fd7998aa913c8f">{"articleType":"reference","attachFileMax":1000,"baseHref":"https:\/\/documentation.meraki.com","cacheFingerprint":"bb22f6537faa4d675dae44139962bf20b5796761:site_13505","canFileBeAttached":false,"cdnHostname":"a.mtstatic.com","clientSideWarnings":false,"dntEditorConfig":false,"draftEditable":false,"followRedirects":1,"idfHideTemplateTags":true,"idfVersion":"IDF3","isAiOptimizationTemplateEnabled":false,"isArticleReviewCommunityMembersEnabled":false,"isDraftAllowed":false,"isDraftManagerReportDownloadEnabled":false,"isDraftRequest":false,"isFindAndReplaceUndoEnabled":false,"isGenerativeSearchEnabled":false,"isGenerativeSearchDisclaimerEnabled":true,"isGenerativeSearchStreamResponseToggleEnabled":false,"isGenerativeSearchSearchIconEnabled":false,"isContentAdequacyEnabled":true,"isGenerativeSearchOnDemandEvaluationEnabled":true,"isEditorAiAssistantShortcutsEnabled":false,"isFileDescriptionCaptionableByLlmEnabled":false,"isGoogleAnalyticsEnabled":true,"isGuideTabMultipleClassificationsEnabled":false,"isHawthornThemeEnabled":false,"isIframeSandboxEnabled":false,"isImportExportEnhancementsEnabled":true,"isImportExportMediaEnabled":true,"isExternalImportEnabled":false,"isInteractionAnalyticsDebugEnabled":false,"isDevelopmentModeEnabled":false,"isInteractionAnalyticsEnabled":true,"isKcsEnabledOnPage":false,"isMediaManagerEnabled":false,"isPinnedPagesEnabled":true,"isPinnedPagesEnhancementsEnabled":true,"isReportDownloadEnabled":false,"isSchedulePublishEnabled":true,"isSearchAsYouTypeEnabled":false,"isTinymceAiAssistantEnabled":false,"isSearchInsightsDownloadEnabled":true,"isSentimentAnalysisEnabled":true,"isShowMoreChildrenNodesEnabled":false,"isShowTerminalNodesEnabled":false,"isSkinResponsive":true,"isSmoothScrollEnabled":true,"isTinyMceEnabled":false,"isTreeArticleIconsEnabled":false,"isXhrF1WebWidgetEnabled":true,"isXhrIEMode":false,"kcsEnabled":false,"kcsV2Enabled":false,"kcsV2GuidePrivacySetting":"Semi-Public","learningPathsEnabled":true,"maxFileSize":268435456,"moduleMode":"global","pageEditable":false,"pageId":9505,"pageIsRedirect":false,"pageLanguageCode":"en-US","pageName":"MX Sizing Guide and Principles","pageNamespace":"","pageOrderLimit":1000,"pagePermissions":["LOGIN","BROWSE","READ","SUBSCRIBE"],"pageRevision":"32","pageSectionEditable":false,"pageTitle":"SASE and SD-WAN\/MX\/Design and Configure\/Architectures and Best Practices\/MX Sizing Guide & Principles","pageViewId":"d2155358-8113-4d12-85fd-2f7368333f81","siteId":"site_13505","pathCommon":"\/@style\/common","pathSkin":"\/@style\/elm","relatedArticlesDetailed":true,"removeBlankTemplate":true,"removeDeleteCheckbox":true,"cidWarningOnDelete":true,"scriptParser":2,"sessionId":"NDUyMTMzMmQtZDE2Mi00ZjFlLTllZGItNzlkZjUyOTI3MDZkfDIwMjYtMTAtMjBUMTg6MzA6MDY=","showAllTemplates":false,"siteAuthoringPageThumbnailManagementEnabled":true,"skinStyle":"columbia.elm","spaceballs2Enabled":false,"strictIdfEnabled":true,"uiLanguage":"en-us","userId":2,"isPageRedirectPermanent":false,"userIsAdmin":false,"userIsAnonymous":true,"userIsSeated":false,"userName":"Anonymous User","userPermissions":["LOGIN","BROWSE","READ","SUBSCRIBE"],"userSystemName":"Anonymous","userTimezone":"GMT","webFontConfig":{"google":{"families":null}},"apiToken":"xhr_2_1792521205_af9562046cf59967e1e4a0e7a7704048d89d1a882379b8e57331484301982d42","displayGenerativeSearchDisclaimer":true,"cognigyFlowsEnabled":false}</script><script type="text/javascript" data-mindtouch-module="true" nonce="e2a0b2818d9650114b8092ee98d7683f9b1184ca7fc5098450fd7998aa913c8f" src="https://a.mtstatic.com/deki/javascript/out/community.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script><script type="text/javascript" data-mindtouch-module="true" nonce="e2a0b2818d9650114b8092ee98d7683f9b1184ca7fc5098450fd7998aa913c8f" src="https://a.mtstatic.com/deki/javascript/out/standalone/skin_elm.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script><script type="text/javascript" data-mindtouch-module="true" nonce="e2a0b2818d9650114b8092ee98d7683f9b1184ca7fc5098450fd7998aa913c8f" src="https://a.mtstatic.com/deki/javascript/out/standalone/pageBootstrap.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script>
+
+    
+        
+<script type="text/javascript" src="https://www.cisco.com/c/dam/cdc/t/ctm-core.js"></script>
+    
+<script type="text/javascript" nonce="e2a0b2818d9650114b8092ee98d7683f9b1184ca7fc5098450fd7998aa913c8f">(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-51174192-2','documentation.meraki.com',{allowLinker:true});ga('send','pageview');ga('create','UA-65721316-2','documentation.meraki.com',{name:'mtTracker',allowLinker:true});ga('mtTracker.require','linker');ga('mtTracker.set', 'anonymizeIp', true);ga('mtTracker.send','pageview');document.addEventListener('mindtouch-web-widget:f1:loaded',function(e){var t=e.data||{},d=t.widget;d&&''!==t.embedId&&document.addEventListener('mindtouch-web-widget:f1:clicked',function(e){var t=(e.data||{}).href;if(t){var n=document.createElement('a');n.setAttribute('href',t),'expert-help.nice.com'===n.hostname&&(e.preventDefault(),ga('linker:decorate',n),d.open(n.href))}})});</script>
+</head>
+<body class="elm-user-anonymous columbia-page-main columbia-article-reference columbia-browser- columbia-platform- columbia-breadcrumb-home-saseandsd-wan-mx-designandconfigure-architecturesandbestpractices-mxsizingguide%26principles columbia-live no-touch columbia-lang-en-us columbia-skin-elm">
+<a class="elm-skip-link" href="#elm-main-content" title="Press enter to skip to the main content">Skip to main content</a><main class="elm-skin-container" data-ga-category="Anonymous | page">
+    <header class="elm-header">
+        <div class="elm-header-custom">
+<script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-NHZZG7QL8R"></script><script>/*<![CDATA[*/
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-NHZZG7QL8R');
+/*]]>*/</script><script src="//use.typekit.net/hum1oye.js"></script><script>/*<![CDATA[*/try{Typekit.load();}catch(e){}/*]]>*/</script>
+
+<div class="mt-header-help"><div class="mt-header-help-container"><div class="mt-logo-container"><div class="mt-logo"><a class="internal" href="https://documentation.meraki.com/" rel="internal"><img class="mt-cdn" src="https://documentation.meraki.com/@api/deki/site/logo?default=https%3A%2F%2Fdocumentation.meraki.com%2F%40cdn%2F%40style%2Fcommon-legacy%2Fimages%2Flogo.png" alt="" /></a></div></div><div id="navcontainer"><ul id="navlist"><li><a href="https://account.meraki.com/secure/login/dashboard_login" target="_blank" rel="external noopener nofollow" class="link-https">Dashboard</a></li><li><a href="https://community.cisco.com/t5/meraki/ct-p/meraki-home" target="_blank" rel="external noopener nofollow" class="link-https">Community</a></li><li><a href="https://meraki.cisco.com/support" target="_blank" rel="external noopener nofollow" class="link-https">Support</a></li><li><a id="current" href="https://meraki.cisco.com/form/contact" target="_blank" rel="external noopener nofollow" class="link-https">Contact Sales</a></li></ul></div></div><div class="mt-header-search"><div class="mt-help-search mt-lsf-search" id="mt-portfolio-search"><script type="application/json" id="mt-localizations-help-widget">/*<![CDATA[*/{"Help.Widget.button.text":"Search","Help.Widget.label.text":"Query","Help.Widget.placeholder.text":"Search MX Sizing Guide and Principles"}/*]]>*/</script><div class="mt-inputredirect" data-query-key="q" data-path="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles"></div></div></div></div>
+
+<p>&nbsp;</p>
+</div>
+        <div class="elm-nav mt-translate-module" hidden="true">
+            <div class="elm-nav-container mt-translate-container"></div>
+        </div>
+        <div class="elm-header-logo-container">
+            <a href="https://documentation.meraki.com" title="Cisco Meraki Documentation" aria-label='Link to home'><img src="https://documentation.meraki.com/@public/production/site_13505/1749845593-logo.png" alt="Cisco Meraki Documentation" /></a>
+        </div>
+        
+        <nav class="elm-header-user-nav elm-nav" role="navigation">
+            <div class="elm-nav-container">
+                <ol>
+                    <li class="elm-global-search" data-ga-action="Header search"><a class="mt-icon-site-search mt-toggle-form" href="#" title="Search site">Search site</a>
+<div class="mt-quick-search-container mt-toggle-form-container">
+    <form action="/Special:Search">
+        <input name="qid" id="mt-qid-skin" type="hidden" value="" />
+        <input name="fpid" id="mt-search-filter-id" type="hidden" value="230" />
+        <input name="fpth" id="mt-search-filter-path" type="hidden" />
+        <input name="path" id="mt-search-path" type="hidden" value="" />
+
+        <label class="mt-label" for="mt-site-search-input">
+            Search
+        </label>
+        <input class="mt-text mt-search search-field" name="q" id="mt-site-search-input" placeholder="How can we help you?" type="search" />
+        <button class="mt-button ui-button-icon mt-icon-site-search-button search-button" type="submit">
+            Search
+        </button>
+    </form>
+</div>
+<div class="elm-search-back"><a class="mt-icon-browser-back" data-ga-label="Browse back" href="#" id="mt-browser-back" title="Go back to previous article">Go back to previous article</a></div>
+</li>
+                    <li class="elm-user-menu"><ol class="mt-user-menu">
+
+
+    <li class="mt-user-menu-user">
+        <a class="mt-icon-quick-sign-in "
+           href="https://documentation.meraki.com/@app/auth/4/login?returnto=https%3A%2F%2Fdocumentation.meraki.com%2F%3Ftitle%3DSASE_and_SD-WAN%252FMX%252FDesign_and_Configure%252FArchitectures_and_Best_Practices%252FMX_Sizing_Guide_%252526_Principles%26amp%3B_Principles%3D"
+           title="Sign in">Sign in</a>
+
+    </li>
+</ol>
+</li>
+                </ol>
+            </div>
+        </nav>
+        <nav class="elm-header-global-nav elm-nav" data-ga-action="Elm Navigation">
+            <div class="elm-nav-container">
+                <button class="elm-hierarchy-trigger mt-hierarchy-trigger ui-button-icon mt-icon-hierarchy-trigger-closed" title="Expand/collapse global hierarchy" data-ga-label="Hierarchy Toggle - Tree View">
+                    Expand/collapse global hierarchy
+                </button>
+                <ol class="mt-breadcrumbs" data-ga-action="Breadcrumbs">
+                        <li>
+                            <a href="https://documentation.meraki.com/" data-ga-label="Breadcrumb category">
+                                <span class="mt-icon-article-category mt-icon-article-home"></span>
+                                    Home
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://documentation.meraki.com/SASE_and_SD-WAN" data-ga-label="Breadcrumb category">
+                                <span class="mt-icon-article-category"></span>
+                                    SASE and SD-WAN
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://documentation.meraki.com/SASE_and_SD-WAN/MX" data-ga-label="Breadcrumb category">
+                                <span class="mt-icon-article-category"></span>
+                                    MX - Security &amp; SD-WAN
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure" data-ga-label="Breadcrumb category">
+                                <span class="mt-icon-article-category"></span>
+                                    Design and Configure
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices" data-ga-label="Breadcrumb guide">
+                                <span class="mt-icon-article-guide"></span>
+                                    Architectures and Best Practices
+                            </a>
+                        </li>
+                        <li class="mt-breadcrumbs-current-page">
+                            <span class="mt-icon-article-reference"></span>
+                            MX Sizing Guide and Principles
+                        </li>
+                </ol>
+                <button class="mt-icon-hierarchy-mobile-view-trigger ui-button-icon mt-icon-hierarchy-mobile-trigger-closed" title="Expand/collapse global location" data-ga-label="Hierarchy Toggle - Breadcrumb Expand/Collapse">
+                    Expand/collapse global location
+                </button>
+            </div>
+        </nav>
+        <nav class="elm-nav elm-header-hierarchy">
+            <div class="elm-nav-container">
+                <div class="elm-hierarchy mt-hierarchy"></div>
+            </div>
+        </nav>    </header>
+    <article class="elm-content-container" id="elm-main-content" tabindex="-1">
+        <header>
+            <div id="flash-messages"><div class="dekiFlash"></div></div>
+            
+                
+<h1 id="title" data-title-editor-available="false">
+        MX Sizing Guide and Principles
+</h1>
+
+                
+
+                
+                    <ol class="elm-meta-data elm-meta-top" data-ga-action="Page actions">
+                        <li class="elm-last-modified"><dl class="mt-last-updated-container">
+    <dt class="mt-last-updated-label">Last updated</dt>
+    <dd>
+        <span class="mt-last-updated" data-timestamp="2026-10-15T13:35:47Z"></span>
+    </dd>
+</dl>
+</li>
+                        <li class="elm-pdf-export"><a data-ga-label="PDF" href="https://documentation.meraki.com/@api/deki/pages/9505/pdf/MX%2bSizing%2bGuide%2band%2bPrinciples.pdf?stylesheet=default" rel="nofollow" target="_blank" title="Export page as a PDF">
+    <span class="mt-icon-article-pdf"></span>Save as PDF
+</a></li>
+                        <li class="elm-social-share"></li>
+                    </ol>
+                
+            
+        </header>
+                <header class="mt-content-header"></header>
+                <aside class="mt-content-side"></aside>
+            <aside id="mt-toc-container" data-title="Table of contents" data-collapsed="true">
+                <nav class="mt-toc-content mt-collapsible-section">
+                    <ol><li><a href="#Use_of_This_Document" rel="internal">Use of This Document</a></li><li><a href="#Portfolio_Capabilities" rel="internal">Portfolio Capabilities</a><ol><li><a href="#Cisco_Secure_Router_8000-Series" rel="internal">Cisco Secure Router 8000-Series&nbsp;</a></li><li><a href="#MX-Series" rel="internal">MX-Series&nbsp;</a></li><li><a href="#Z-Series" rel="internal">Z-Series</a></li><li><a href="#vMX-Series" rel="internal">vMX-Series</a></li></ol></li><li><a href="#Use_Case_Recommendations" rel="internal">Use Case Recommendations</a><ol><li><a href="#Cisco_Secure_Router_8000-Series_2" rel="internal">Cisco Secure Router 8000-Series</a></li><li><a href="#MX-Series_2" rel="internal">MX-Series</a></li><li><a href="#Z-Series_2" rel="internal">Z-Series</a></li><li><a href="#vMX-Series_2" rel="internal">vMX-Series</a></li></ol></li><li><a href="#Feature_Specific_Data" rel="internal">Feature Specific Data</a><ol><li><a href="#Cisco_Secure_Router_8000-Series_3" rel="internal">Cisco Secure Router 8000-Series</a></li><li><a href="#MX-Series_3" rel="internal">MX-Series</a></li><li><a href="#Z-Series_3" rel="internal">Z-Series</a></li><li><a href="#vMX-Series_3" rel="internal">vMX-Series</a></li></ol></li><li><a href="#Flow_and_Session_Data" rel="internal">Flow and Session Data</a><ol><li><a href="#Cisco_Secure_Router_8000-Series_4" rel="internal">Cisco Secure Router 8000-Series</a></li><li><a href="#MX-Series_4" rel="internal">MX-Series</a></li><li><a href="#Z-Series_4" rel="internal">Z-Series</a></li><li><a href="#vMX-Series_4" rel="internal">vMX-Series</a></li></ol></li><li><a href="#Performance_Data" rel="internal">Performance Data</a><ol><li><a href="#Cisco_Secure_Router_8000-Series_5" rel="internal">Cisco Secure Router 8000-Series&nbsp;</a></li><li><a href="#MX-Series_5" rel="internal">MX-Series&nbsp;</a></li><li><a href="#Z-Series_5" rel="internal">Z-Series&nbsp;</a></li><li><a href="#vMX-Series_5" rel="internal">vMX-Series</a></li></ol></li><li><a href="#Features.2C_benefits.2C_and_performance_impact" rel="internal">Features, benefits, and performance impact</a><ol><li><a href="#Features_and_Benefits" rel="internal">Features and Benefits</a><ol><li><a href="#Cisco_Advanced_Malware_Protection_(AMP)" rel="internal">Cisco Advanced Malware Protection (AMP)</a></li><li><a href="#Content_Filtering" rel="internal">Content Filtering</a></li><li><a href="#Web-Safe_Search" rel="internal">Web-Safe Search</a></li><li><a href="#Cisco_IPS.2FIDS_(SNORT)" rel="internal">Cisco IPS/IDS (SNORT)</a></li><li><a href="#HTTPS_Inspection" rel="internal">HTTPS Inspection</a></li><li><a href="#Number_of_VPN_Tunnels" rel="internal">Number of VPN Tunnels</a></li><li><a href="#FIPS_Mode" rel="internal">FIPS Mode</a></li></ol></li><li><a href="#Performance_Impact_Breakdown" rel="internal">Performance Impact Breakdown</a></li></ol></li></ol>
+                </nav>
+            </aside>
+            <section class="mt-content-container">
+                
+
+<div class="mt-page-summary"><div class="mt-page-overview">This document serves as a guide for the architecture and design of networks incorporating MX firewall appliances. This document aims to help determine the appropriate MX model to evaluate, understand how the performance of devices can vary with different features enabled, and compare MX models with those from other vendors.</div></div>
+
+<p>Click <a target="_blank" title="MX &#12469;&#12452;&#12472;&#12531;&#12464;&#12460;&#12452;&#12489; (MX18.2&#20197;&#38477;)" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Translated_Documents/MX_%E3%82%B5%E3%82%A4%E3%82%B8%E3%83%B3%E3%82%B0%E3%82%AC%E3%82%A4%E3%83%89_(MX19.1%E4%BB%A5%E9%99%8D)" rel="internal">&#26085;&#26412;&#35486;</a> for Japanese</p>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_1"><span id="Use_of_This_Document"></span><h2 class="editable">Use of This Document</h2>
+
+<p><strong>Current Firmware Version: MX 26.1.x</strong></p>
+
+<p>This document is to be used to assist in&nbsp;the architecture&nbsp;and design of networks in which MX firewall appliances will be present. Key questions which this document is designed to help answer are:</p>
+
+<ul>
+    <li>How do I decide which MX model(s) I should evaluate?</li>
+    <li>How does device performance vary by features enabled?</li>
+    <li>How do MX models compare against other vendors?&nbsp;</li>
+</ul>
+
+<p>It is highly recommended to leverage this document with a proof of concept for further validation of design and implementation as each network environment is unique.&nbsp;</p>
+
+<p>With the release of each major MX firmware version throughput; feature specific data, or flow and session specific data may change. This document will provide guidance on these MX performance metrics in a variety of scenarios and environments.</p>
+
+<div class="note-warning style-wrap">
+<p>Note that each network environment and traffic profile is unique. It should be taken into account that the numbers presented in this document are obtained during testing in a vacuum where no detrimental network or traffic profile behavior is present.&nbsp;&nbsp;</p>
+</div>
+
+<div class="note-warning style-wrap">
+<p>The Performance metrics detailed in this document are based on the <strong>Current Firmware Version</strong> listed above, with the exception of the C8235-G2-MX which are based off MX 26.2.x.&nbsp;<br />
+<br />
+Its important to understand that not all platforms can support the most recent stable firmware, more details surrounding&nbsp;this can be found <a title="Security and SD-WAN (MX,Z) Features Directory" href="https://documentation.meraki.com/Platform_Management/Product_Information/Compatibility_and_Firmware/Security_and_SD-WAN_(MX%2CZ)_Features_Directory" rel="internal">here</a>.</p>
+</div>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_2"><span id="Portfolio_Capabilities"></span><h2 class="editable">Portfolio Capabilities</h2>
+
+<p>Cisco Meraki MX Security and SD-WAN&nbsp;Appliances provide unified threat management (UTM) and SD-WAN in a powerful all-in-one device.&nbsp;</p>
+
+<p>Choosing the right MX depends on the use case and deployment characteristics.&nbsp;<br />
+For detailed sizing and capabilities&nbsp;of vMX devices please review the <a title="vMX Comparison Datasheet" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/vMX_Comparison_Datasheet" rel="internal">vMX specific data sheet.&nbsp;</a></p>
+
+<p>Below is a breakdown of the MX; Z-Series, and vMX&nbsp;Portfolio's hardware capabilities.&nbsp;</p>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_3"><span id="Cisco_Secure_Router_8000-Series"></span><h3 class="editable">Cisco Secure Router 8000-Series&nbsp;</h3>
+
+<div class="note-info style-wrap">
+<p>For models without integrated cellular, cellular failover is available when leveraging a MG cellular gateway.</p>
+
+<p>Dual power supply models have an active/standby&nbsp;redundant power supply&nbsp;and do not provide combined power.</p>
+
+<p>HTTPS Inspection is available natively on indicated platforms via Cisco Umbrella SD-WAN extension, or via a third-party provider reachable via VPN.&nbsp;</p>
+</div>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center">&nbsp;</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15"><strong>C8111-G2-MX (C)<br />
+            C8121-G2-MX (W/CW)</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15"><strong>C8235-G2-MX</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15"><strong>C8355-G2-MX</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15"><strong>C8455-G2-MX</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15">
+            <p class="mt-align-center"><strong>Multi-Active WAN</strong></p>
+            </td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">3/4*</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">4</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">4</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">4</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Cellular Failover&nbsp;</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">
+            <p>Yes</p>
+            </td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Built-in&nbsp;Cellular Modem**</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">No</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Built-in Wi-Fi***</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">No</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Built-in PoE+</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">No</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Built-in UPoE</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes****</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">No</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Built-in UPoE+</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">No</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>WAN Fiber Connectivity</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">SFP+</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">SFP+</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">SFP28</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Dual Power Supply</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Form Factor</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Desktop</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Desktop</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">1U</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">1U</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>HTTPS Inspection</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Advanced Malware Protection (AMP)</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Intrusion Detection and Prevention (SNORT IPS/IDS)</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Yes</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="note-info style-wrap">
+<p>* - 3 Active WANs for C8111-G2s and C8121-G2s without integrated cellular and 4 Active WANs for C8111-G2s and C8121-G2s with integrated cellular</p>
+
+<p>** -&nbsp;Only if the model has a C. Ex: C8111-C-G2 or C8121-CW</p>
+
+<p>*** -&nbsp;Only if the&nbsp;model has a W. Ex: C8121-W-G2 or C8121-CW-G2</p>
+
+<p>**** - C8111-G2 / C8121-G2s&nbsp;LAN ports can supply a per port maximum of 45Ws</p>
+</div>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_4"><span id="MX-Series"></span><h3 class="editable">MX-Series&nbsp;</h3>
+
+<div class="note-info style-wrap">
+<p>For MX67(C/W) devices, dual WAN is available via a convertible LAN interface.</p>
+
+<p>For models without integrated cellular, cellular failover is available when leveraging a MG cellular gateway.</p>
+
+<p>Dual power supply models have an active/standby&nbsp;redundant power supply&nbsp;and do not provide combined power.</p>
+
+<p>MX68 and MX75 PoE+ capabilities are available for LAN ports. MX85,&nbsp;MX95, and MX105 PoE+ capabilities are available for WAN ports. PoE/PoE+ is provided to an MG via these ports is supported.&nbsp;Please refer to product-specific data sheets for additional details.&nbsp;</p>
+
+<p>HTTPS Inspection is available natively on indicated platforms via Cisco Umbrella SD-WAN extension, or via a third-party provider reachable via VPN.&nbsp;</p>
+</div>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center">&nbsp;</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5"><strong>MX67&nbsp;<br />
+            (C/W)</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-5"><strong>MX68 (W/CW)</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-5"><strong>MX75</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-5"><strong>MX85</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-5"><strong>MX95</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-5"><strong>MX105</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-5"><strong>MX250</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-10"><strong>MX450</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15">
+            <p class="mt-align-center"><strong>Dual Active WAN</strong></p>
+            </td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">Yes</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>3G/4G&nbsp;Failover&nbsp;</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">Yes</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Built-in LTE Modem*</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">No</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Built-in Wi-Fi**</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">No</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Built-in PoE+</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">No</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>WAN Fiber Connectivity</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">SFP</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">SFP</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">SFP+</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">SFP+</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">SFP, SFP+</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">SFP, SFP+</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Dual Power Supply</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">Yes</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Form Factor</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Desktop</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Desktop</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Desktop</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">1U</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">1U</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">1U</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">1U</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">1U</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>HTTPS Inspection</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">Yes</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Advanced Malware Protection (AMP)</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">Yes</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Intrusion Detection and Prevention (SNORT IPS/IDS)</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-5">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">Yes</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="note-info style-wrap">
+<p>* - Only if the MX model has a C. Ex: MX67C, MX68C</p>
+
+<p>** -&nbsp;Only if the MX model has a W. Ex: MX67W, MX68W</p>
+</div>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_5"><span id="Z-Series"></span><h3 class="editable">Z-Series</h3>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25">&nbsp;</td>
+            <td class="mt-noheading mt-align-center mt-column-width-30"><b>Z3 (C)</b></td>
+            <td class="mt-noheading mt-align-center mt-column-width-40"><strong>Z4 (C)&nbsp;</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Dual Active WAN</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-40">No</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>3G/4G&nbsp;Failover Model Available</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-40">Yes</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Built-in LTE Modem Model Available</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-40">Yes</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Built-in Wi-Fi&nbsp; Available</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">Yes</td>
+            <td class="mt-noheading mt-align-center mt-column-width-40">Yes</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Built-in PoE&nbsp;(LAN Port) Model Available</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">Yes (802.3af, PoE)</td>
+            <td class="mt-noheading mt-align-center mt-column-width-40">Yes (802.3at, PoE+)</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>WAN Fiber Connectivity</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-40">No</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Dual Power Supply</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-40">No</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Form Factor</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">Desktop</td>
+            <td class="mt-noheading mt-align-center mt-column-width-40">Desktop</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>HTTPS Inspection</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-40">No</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Advanced Malware Protection (AMP)</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">No</td>
+            <td class="mt-noheading mt-align-center mt-column-width-40">Yes</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Intrusion Detection and Prevention (SNORT IPS/IDS)</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">
+            <p>No</p>
+            </td>
+            <td class="mt-noheading mt-column-width-40">
+            <p class="mt-align-center">No</p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_6"><span id="vMX-Series"></span><h3 class="editable">vMX-Series</h3>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25">&nbsp;</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20"><strong>vMX-Small</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>vMX-Medium</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>vMX-Large</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-25">
+            <p class="mt-align-center"><strong>Dual WAN</strong></p>
+            </td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">N/A</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>3G/4G/5G Failover</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">N/A</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Built-in LTE Modem Model Available</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">N/A</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Built-in Wireless Available</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">N/A</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Built-in PoE+ Model Available</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">N/A</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>WAN Fiber Connectivity</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">N/A</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Dual Power Supply</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">N/A</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Form Factor</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">Virtual</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">Virtual</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">Virtual</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>HTTPS Inspection</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">N/A</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Advanced Malware Protection (AMP)</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">N/A</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Intrusion Detection and Prevention (SNORT IPS/IDS)</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">Yes (MX 19.1+, 4+ vCPU core instances only)</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">Yes (MX 19.1+, 4+ vCPU core instances only)</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">Yes (MX 19.1+, 4+ vCPU core instances only)</td>
+        </tr>
+    </tbody>
+</table>
+
+</div></div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_7"><span id="Use_Case_Recommendations"></span><h2 class="editable">Use Case Recommendations</h2>
+
+<p>A use case recommendation is based off of the device throughput; available feature set, and maximum flow table capacity.&nbsp;In this calculation, each client is considered to consume up to 50 flows.&nbsp;</p>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_8"><span id="Cisco_Secure_Router_8000-Series_2"></span><h3 class="editable">Cisco Secure Router 8000-Series</h3>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-35">&nbsp;</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20"><strong>C8111-G2-MX (C)<br />
+            C8121-G2-MX (W/CW)</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15"><strong>C8235-G2-MX</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20"><strong>C8355-G2-MX</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20"><strong>C8455-G2-MX</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-35"><strong>Recommended Maximum Device&nbsp;Count</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">200</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">1,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">5,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">15,000</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-35"><strong>Maximum Routes</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">10,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">15,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">20,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">50,000</td>
+        </tr>
+    </tbody>
+</table>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_9"><span id="MX-Series_2"></span><h3 class="editable">MX-Series</h3>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-30">&nbsp;</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15"><strong>MX67&nbsp;/ MX68</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-10"><strong>MX75</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-10"><strong>MX85</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-10"><strong>MX95</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-10"><strong>MX105</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-10"><strong>MX250</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-10"><strong>MX450</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-30"><strong>Recommended Maximum Device&nbsp;Count</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">50</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">200</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">250</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">500</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">750</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">2,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">10,000</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-30"><strong>Maximum Routes</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">10,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">10,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">10,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">10,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">10,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">17,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">17,000</td>
+        </tr>
+    </tbody>
+</table>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_10"><span id="Z-Series_2"></span><h3 class="editable">Z-Series</h3>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-20">&nbsp;</td>
+            <td class="mt-noheading mt-align-center mt-column-width-40"><b>Z3 (C)</b></td>
+            <td class="mt-noheading mt-align-center mt-column-width-40"><strong>Z4 (C)</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-20"><strong>Recommended Maximum Device Count</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-40">5</td>
+            <td class="mt-noheading mt-align-center mt-column-width-40">15</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-20"><strong>Maximum Routes</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-40">5,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-40">5,000</td>
+        </tr>
+    </tbody>
+</table>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_11"><span id="vMX-Series_2"></span><h3 class="editable">vMX-Series</h3>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-20">&nbsp;</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>vMX-Small</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>vMX-Medium</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-30"><strong>vMX-Large</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-20"><strong>Recommended Maximum Device Count</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">500</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">2,500</td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">10,000</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-20"><strong>Maximum Routes</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">10,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">10,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">10,000</td>
+        </tr>
+    </tbody>
+</table>
+
+</div></div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_12"><span id="Feature_Specific_Data"></span><h2 class="editable">Feature Specific Data</h2>
+
+<div class="note-info style-wrap">
+<p>The following items should be noted:</p>
+
+<ul>
+    <li>Max site-to-site VPN tunnels are based on lab-testing scenarios where no client traffic is transferring over the VPN tunnels.</li>
+    <li>Recommended max site-to-site VPN tunnels are based on lab-testing scenarios with client traffic transferring over VPN tunnels.</li>
+    <li>Load balancing for client VPN can be utilized if more than 500 connections are required.</li>
+    <li>Criteria must be met prior to WAN; dynamic path selection, or tunnel failover times occurring.&nbsp;</li>
+</ul>
+</div>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_13"><span id="Cisco_Secure_Router_8000-Series_3"></span><h3 class="editable">Cisco Secure Router 8000-Series</h3>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25">&nbsp;</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20"><strong>C8111-G2-MX (C)<br />
+            C8121-G2-MX (W/CW)</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20"><strong>C8235-G2-MX</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20"><strong>C8355-G2-MX</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20"><strong>C8455-G2-MX</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Maximum Site to Site VPN Tunnel Count</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">150</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">1,250</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">3,500</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">5,000</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Recommended Maximum Site to Site VPN Tunnel Count</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">150</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">750</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">1,250</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">3,500</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Maximum Number of Client VPN Tunnels&nbsp;</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">100</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">500</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">1,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">1,500</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Maximum Number of Secure Client (AnyConnect) Sessions</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">250</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">1,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">1,500</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">1500</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>WAN Failover</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">&lt; 5 Sec</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">&lt; 5 Sec</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">&lt; 5 Sec</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">&lt; 5 Sec</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Auto VPN Tunnel Failover</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">Sub-second</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Dynamic Path Selection</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-20">Sub-second</td>
+        </tr>
+    </tbody>
+</table>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_14"><span id="MX-Series_3"></span><h3 class="editable">MX-Series</h3>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-20">&nbsp;</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15"><strong>MX67&nbsp;/ MX68</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-10"><strong>MX75</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-10"><strong>MX85</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-10"><strong>MX95</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-10"><strong>MX105</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-10"><strong>MX250</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-10"><strong>MX450</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-20"><strong>Maximum Site to Site VPN Tunnel Count</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">50</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">75</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">200</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">500</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">1,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">3,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">5,000</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-20"><strong>Recommended Maximum Site to Site VPN Tunnel Count</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">50</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">75</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">100</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">250</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">500</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">1,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">1,500</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-20"><strong>Maximum Number of Client VPN Tunnels&nbsp;</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">50</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">75</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">100</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">250</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">250</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">500</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">500</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-20"><strong>Maximum Number of Secure Client&nbsp;<br />
+            (AnyConnect) Sessions</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">100</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">250</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">250</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">500</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">750</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">1000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">1500</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-20"><strong>WAN Failover</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">&lt; 5 Sec</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">&lt; 5 Sec</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">&lt; 5 Sec</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">&lt; 5 Sec</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">&lt; 5 Sec</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">&lt; 5 Sec</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">&lt; 5 Sec</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-20"><strong>Auto VPN Tunnel Failover</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">Sub-second</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-20"><strong>Dynamic Path Selection</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">Sub-second</td>
+        </tr>
+    </tbody>
+</table>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_15"><span id="Z-Series_3"></span><h3 class="editable"><span style="font-size:32px;">Z-Series</span></h3>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center">&nbsp;</td>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Z3 (C)</strong></td>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Z4 (C)</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Maximum Site to Site VPN Tunnel Count</strong></td>
+            <td class="mt-noheading mt-column-width-15 mt-align-center">10</td>
+            <td class="mt-noheading mt-column-width-15 mt-align-center">10</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Recommended Maximum Site to Site VPN Tunnel Count</strong></td>
+            <td class="mt-noheading mt-column-width-15 mt-align-center">4</td>
+            <td class="mt-noheading mt-column-width-15 mt-align-center">8</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Maximum Number of Client VPN Tunnels&nbsp;</strong></td>
+            <td class="mt-noheading mt-column-width-15 mt-align-center">1</td>
+            <td class="mt-noheading mt-column-width-15 mt-align-center">2</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>WAN Failover</strong></td>
+            <td class="mt-noheading mt-column-width-15 mt-align-center">&lt; 5 Sec</td>
+            <td class="mt-noheading mt-column-width-15 mt-align-center">&lt; 5 Sec</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Auto VPN Tunnel Failover</strong></td>
+            <td class="mt-noheading mt-column-width-15 mt-align-center">Sub-second</td>
+            <td class="mt-noheading mt-column-width-15 mt-align-center">Sub-second</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-15 mt-align-center"><strong>Dynamic Path Selection</strong></td>
+            <td class="mt-noheading mt-column-width-15 mt-align-center">Sub-second</td>
+            <td class="mt-noheading mt-column-width-15 mt-align-center">Sub-second</td>
+        </tr>
+    </tbody>
+</table>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_16"><span id="vMX-Series_3"></span><h3 class="editable">vMX-Series</h3>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-15">&nbsp;</td>
+            <td class="mt-noheading mt-align-center mt-column-width-30"><strong>vMX-Small</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>vMX-Medium</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-30"><strong>vMX-Large</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-15"><strong>Maximum Site to Site VPN Tunnel Count</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">50</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">250</td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">1,000</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-15"><strong>Recommended Maximum Site to Site VPN Tunnel Count</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">50</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">250</td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">1,000</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-15"><strong>Maximum Number of Client VPN Tunnels&nbsp;</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">50</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">250</td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">500</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-15"><strong>WAN Failover</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">N/A</td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">N/A</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-15"><strong>Auto VPN Tunnel Failover</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">Sub-second</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-15"><strong>Dynamic Path Selection</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-30">Sub-second</td>
+            <td class="mt-noheading mt-align-center mt-column-width-25">Sub-second</td>
+            <td class="mt-noheading mt-column-width-30 mt-align-center">Sub-second</td>
+        </tr>
+    </tbody>
+</table>
+
+</div></div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_17"><span id="Flow_and_Session_Data"></span><h2 class="editable">Flow and Session Data</h2>
+
+<p>It is important to understand the number of flows, or open sessions, supported by each appliance. For purposes of sizing, a flow is any transmission on an open socket within the last&nbsp;5 minutes.&nbsp;&nbsp;Note that this is not a recommended flow capacity number, but instead these values are to be maximums.&nbsp;</p>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_18"><span id="Cisco_Secure_Router_8000-Series_4"></span><h3 class="editable">Cisco Secure Router 8000-Series</h3>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-30">&nbsp;</td>
+            <td class="mt-noheading mt-align-center mt-column-width-35"><strong>C8111-G2-MX (C)<br />
+            C8121-G2-MX (W/CW)</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-35"><strong><strong>C8235-G2-MX</strong></strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-35"><strong>C8355-G2-MX</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-35"><strong>C8455-G2-MX</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-30"><strong>Maximum Concurrent Sessions</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-35">100,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-35">300,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-35">500,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-35">1,500,000</td>
+        </tr>
+    </tbody>
+</table>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_19"><span id="MX-Series_4"></span><h3 class="editable">MX-Series</h3>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25">&nbsp;</td>
+            <td class="mt-noheading mt-align-center mt-column-width-15"><strong>MX67&nbsp;/ MX68</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-10"><strong>MX75</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-10"><strong>MX85</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-10"><strong>MX95</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-10"><strong>MX105</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-10"><strong>MX250</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-10"><strong>MX450</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-align-center mt-column-width-25"><strong>Maximum Concurrent Sessions</strong></td>
+            <td class="mt-noheading mt-align-center mt-column-width-15">25,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">50,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">125,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">200,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">250,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">500,000</td>
+            <td class="mt-noheading mt-align-center mt-column-width-10">1,000,000</td>
+        </tr>
+    </tbody>
+</table>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_20"><span id="Z-Series_4"></span><h3 class="editable">Z-Series</h3>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-noheading mt-column-width-20 mt-align-center">&nbsp;</td>
+            <td class="mt-noheading mt-column-width-35 mt-align-center"><b>Z3 (C)</b></td>
+            <td class="mt-noheading mt-column-width-45 mt-align-center"><strong>Z4 (C)</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-20 mt-align-center"><strong>Maximum Concurrent Sessions</strong></td>
+            <td class="mt-noheading mt-column-width-35 mt-align-center">5,000</td>
+            <td class="mt-noheading mt-column-width-45 mt-align-center">10,000</td>
+        </tr>
+    </tbody>
+</table>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_21"><span id="vMX-Series_4"></span><h3 class="editable">vMX-Series</h3>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-noheading mt-column-width-20 mt-align-center">&nbsp;</td>
+            <td class="mt-noheading mt-column-width-25 mt-align-center"><b>vMX-Small</b></td>
+            <td class="mt-noheading mt-column-width-25 mt-align-center"><strong>vMX-Medium</strong></td>
+            <td class="mt-noheading mt-column-width-30 mt-align-center"><strong>vMX-Large</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-20 mt-align-center"><strong>Maximum Concurrent Sessions</strong></td>
+            <td class="mt-noheading mt-column-width-25 mt-align-center">25,000</td>
+            <td class="mt-noheading mt-column-width-25 mt-align-center">125,000</td>
+            <td class="mt-noheading mt-column-width-30 mt-align-center">1,000,000</td>
+        </tr>
+    </tbody>
+</table>
+
+</div></div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_22"><span id="Performance_Data"></span><h2 class="editable">Performance Data</h2>
+
+<p>Industry-standard benchmarks are designed to help you compare MX appliances to those from other vendors. These tests assume perfect network conditions with ideal traffic patterns. When measuring maximum throughput for a certain feature, all features unless otherwise noted below are disabled. Actual results will vary.&nbsp;</p>
+
+<div class="note-info style-wrap">
+<p>The following items should be noted during review:</p>
+
+<ul>
+    <li>Firewall Throughput tests&nbsp;have the following configuration applied:
+    <ul>
+        <li>Layer 3 Firewall enabled</li>
+        <li>QoS</li>
+        <li>DPI (NBAR)</li>
+    </ul>
+    </li>
+    <li>Advanced Security Throughput&nbsp;Tests are performed for MX-Series devices with the following configuration:
+    <ul>
+        <li>QoS</li>
+        <li>DPI (NBAR)</li>
+        <li>IPS Ruleset: 'Connectivity'</li>
+        <li>AMP enabled</li>
+        <li>Content Filtering enabled</li>
+        <li>IPS Mode in Detection or Prevention configuration</li>
+    </ul>
+    </li>
+    <li>Single &amp; Multi-Tunnel VPN Throughput tests have the following configuration applied:
+    <ul>
+        <li>QoS</li>
+        <li>DPI (NBAR)</li>
+        <li>Layer 3 Firewall enabled</li>
+    </ul>
+    </li>
+    <li>Secure Teleworker Throughput Tests are performed for Z-Series devices with the following configuration:
+    <ul>
+        <li>QoS</li>
+        <li>DPI (NBAR)</li>
+        <li>AMP Enabled</li>
+    </ul>
+    </li>
+</ul>
+
+<p>Note: Testing performed leverages multiple clients (sources) and multiple servers (destinations). Multi-flow and single-source testing methodologies may provide results lower than those present in this guide.&nbsp;</p>
+</div>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_23"><span id="Cisco_Secure_Router_8000-Series_5"></span><h3 class="editable">Cisco Secure Router 8000-Series&nbsp;</h3>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-35">&nbsp;</td>
+            <td class="mt-align-center mt-noheading mt-column-width-20"><strong>C8111-G2-MX (C)<br />
+            C8121-G2-MX (W/CW)</strong></td>
+            <td class="mt-align-center mt-noheading mt-column-width-20"><strong>C8235-G2-MX</strong></td>
+            <td class="mt-align-center mt-noheading mt-column-width-35"><strong>C8355-G2-MX</strong></td>
+            <td class="mt-align-center mt-noheading mt-column-width-35"><strong>C8455-G2-MX</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-35">
+            <p><strong>Firewall Throughput<br />
+            <br />
+            RFC2544 - 1518 Byte</strong></p>
+            </td>
+            <td class="mt-align-center mt-noheading mt-column-width-20">2 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-20">6 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-35">10 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-35">20 Gbps</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-35">
+            <p><strong>Firewall Throughput </strong></p>
+
+            <p><strong>EMIX</strong></p>
+            </td>
+            <td class="mt-align-center mt-noheading mt-column-width-20">2 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-20">6 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-35">10 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-35">20 Gbps</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-35">
+            <p><strong>NGFW Throughput<br />
+            (Advanced Security - Prevention)</strong></p>
+
+            <p><strong>EMIX</strong></p>
+            </td>
+            <td class="mt-align-center mt-noheading mt-column-width-20">1 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-20">3 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-35">4 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-35">8 Gbps</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-35">
+            <p><strong>NGFW Throughput<br />
+            (Advanced Security - Detection)</strong></p>
+
+            <p><strong>EMIX</strong></p>
+            </td>
+            <td class="mt-align-center mt-noheading mt-column-width-20">1.2 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-20">4 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-35">7 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-35">8 Gbps</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-35">
+            <p><strong>VPN Throughput </strong></p>
+
+            <p><strong>RFC2544 1400 Byte</strong></p>
+            </td>
+            <td class="mt-align-center mt-noheading mt-column-width-20">1.2 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-20">4 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-35">5 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-35">10 Gbps</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-35"><strong>VPN Throughput EMIX</strong></td>
+            <td class="mt-align-center mt-noheading mt-column-width-20">1.1 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-20">3.5 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-35">5 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-35">10 Gbps</td>
+        </tr>
+    </tbody>
+</table>
+
+<p><strong>Note:&nbsp;</strong>NGFW = next generation firewall, EMIX = enterprise mix</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_24"><span id="MX-Series_5"></span><h3 class="editable">MX-Series&nbsp;</h3>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-20">&nbsp;</td>
+            <td class="mt-align-center mt-noheading mt-column-width-15"><strong>MX67&nbsp;/ MX68</strong></td>
+            <td class="mt-align-center mt-noheading mt-column-width-10"><strong>MX75</strong></td>
+            <td class="mt-align-center mt-noheading mt-column-width-10"><strong>MX85</strong></td>
+            <td class="mt-align-center mt-noheading mt-column-width-10"><strong>MX95</strong></td>
+            <td class="mt-align-center mt-noheading mt-column-width-10"><strong>MX105</strong></td>
+            <td class="mt-align-center mt-noheading mt-column-width-10"><strong>MX250</strong></td>
+            <td class="mt-align-center mt-noheading mt-column-width-10"><strong>MX450</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-20">
+            <p><strong>Firewall Throughput<br />
+            <br />
+            RFC2544 - 1518 Byte</strong></p>
+            </td>
+            <td class="mt-align-center mt-noheading mt-column-width-15">700 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">1 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">1&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">3&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">5&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">7.5&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">10 Gbps</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-20">
+            <p><strong>Firewall Throughput </strong></p>
+
+            <p><strong>EMIX</strong></p>
+            </td>
+            <td class="mt-align-center mt-noheading mt-column-width-15">700 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">1&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">1&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">3&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">5&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">7&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">10 Gbps</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-20">
+            <p><strong>NGFW Throughput<br />
+            (Advanced Security - Prevention)</strong></p>
+
+            <p><strong>EMIX</strong></p>
+            </td>
+            <td class="mt-align-center mt-noheading mt-column-width-15">300 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">500 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">500 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">1.5 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">2&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">2&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">5&nbsp;Gbps</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-20">
+            <p><strong>NGFW Throughput<br />
+            (Advanced Security - Detection)</strong></p>
+
+            <p><strong>EMIX</strong></p>
+            </td>
+            <td class="mt-align-center mt-noheading mt-column-width-15">400 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">1 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">1&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">2&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">2.5&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">3&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">7 Gbps</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-20">
+            <p><strong>VPN Throughput </strong></p>
+
+            <p><strong>RFC2544 1400 Byte&nbsp;</strong></p>
+            </td>
+            <td class="mt-align-center mt-noheading mt-column-width-15">400 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">1 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">1 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">2.5&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">3.5&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">4&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">6.5&nbsp;Gbps</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-20"><strong>VPN Throughput EMIX</strong></td>
+            <td class="mt-align-center mt-noheading mt-column-width-15">300 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">1 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">1 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">2.5 Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">3.5&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">3.5&nbsp;Gbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">6.5&nbsp;Gbps</td>
+        </tr>
+    </tbody>
+</table>
+
+<p><strong>Note:&nbsp;</strong>NGFW = next generation firewall, EMIX = enterprise mix</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_25"><span id="Z-Series_5"></span><h3 class="editable">Z-Series&nbsp;</h3>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-10">&nbsp;</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10"><b>Z3 (C)</b></td>
+            <td class="mt-align-center mt-noheading mt-column-width-10"><strong>Z4 (C)</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-10"><strong>Secure Teleworker Throughput</strong></td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">NA</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">500 Mbps</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-10">
+            <p><strong>Firewall<br />
+            Throughput<br />
+            <br />
+            RFC2544 - 1518 Byte</strong></p>
+            </td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">200 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">500 Mbps</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-10">
+            <p><strong>Firewall Throughput </strong></p>
+
+            <p><strong>EMIX</strong></p>
+            </td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">200 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">500 Mbps</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-10">
+            <p><strong>VPN Throughput </strong><strong>RFC2544 1400 Byte&nbsp;</strong></p>
+            </td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">75 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">250 Mbps</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-10"><strong>VPN Throughput EMIX</strong></td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">50 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">250 Mbps</td>
+        </tr>
+    </tbody>
+</table>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_26"><span id="vMX-Series_5"></span><h3 class="editable">vMX-Series</h3>
+
+<table class="mt-responsive-table mt-table-big">
+    <tbody>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-10">
+            <p>&nbsp;</p>
+            </td>
+            <td class="mt-align-center mt-noheading mt-column-width-10"><strong>vMX-Small</strong></td>
+            <td class="mt-align-center mt-noheading mt-column-width-10"><strong>vMX-Medium</strong></td>
+            <td class="mt-align-center mt-noheading mt-column-width-10"><strong>vMX-Large</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-10">
+            <p><strong>NGFW Throughput<br />
+            (Advanced Security - Prevention)</strong></p>
+
+            <p><strong>EMIX</strong></p>
+            </td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">200 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">500 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">1 Gbps</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-10"><strong>Firewall<br />
+            Throughput<br />
+            <br />
+            RFC2544 - 1518 Byte</strong></td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">250 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">500 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">1 Gbps</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-10">
+            <p><strong>Firewall Throughput </strong></p>
+
+            <p><strong>EMIX</strong></p>
+            </td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">250 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">500 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">1 Gbps</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-10">
+            <p><strong>VPN Throughput </strong></p>
+
+            <p><strong>RFC2544&nbsp;- 1400 Byte</strong></p>
+            </td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">250 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">500 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">1 Gbps</td>
+        </tr>
+        <tr>
+            <td class="mt-align-center mt-noheading mt-column-width-10"><strong>VPN Throughput EMIX</strong></td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">250 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">500 Mbps</td>
+            <td class="mt-align-center mt-noheading mt-column-width-10">1 Gbps</td>
+        </tr>
+    </tbody>
+</table>
+
+</div></div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_27"><span id="Features.2C_benefits.2C_and_performance_impact"></span><h2 class="editable">Features, benefits, and performance impact</h2>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_28"><span id="Features_and_Benefits"></span><h3 class="editable">Features and Benefits</h3>
+
+<p>Each feature provides advanced benefits tailored to specific use cases. Below is an elaboration on a feature; its use case, and a recommendation for sizing appropriately for deployment or implementation.</p>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_29"><span id="Cisco_Advanced_Malware_Protection_(AMP)"></span><h4 class="editable">Cisco Advanced Malware Protection (AMP)</h4>
+
+<p>Cisco Advanced Malware Protection (AMP) is an industry-leading anti-malware technology, integrated into MX Security Appliances.&nbsp;<br />
+Consider disabling this feature for guest VLANs and leveraging firewall rules to isolate guest VLANs. Also consider disabling if clients within the network are secured via a full malware client, such as AMP for endpoints.&nbsp;</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_30"><span id="Content_Filtering"></span><h4 class="editable">Content Filtering</h4>
+
+<p>Content filtering, powered by Cisco TALOS,&nbsp;allows you to block certain categories of websites based on your organizational policies.<br />
+Consider blocking only necessary categories while aligning with your organization's security guidelines.</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_31"><span id="Web-Safe_Search"></span><h4 class="editable">Web-Safe Search</h4>
+
+<p>MX Security Appliances have the option to force all web searches to use Web search filtering.<br />
+Must be deployed in tandem with &quot;disable encrypted search&quot; option to be effective.</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_32"><span id="Cisco_IPS.2FIDS_(SNORT)"></span><h4 class="editable">Cisco IPS/IDS (SNORT)</h4>
+
+<p>Intrusion Detection and Prevention, powered by Snort, monitors and protects your network from malicious activity.&nbsp;<br />
+Rulesets other than 'Connecitvity' have a larger performance impact. Additionally, consider not sending IDS/IPS syslog data over VPN in low-bandwidth environments.&nbsp;</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_33"><span id="HTTPS_Inspection"></span><h4 class="editable">HTTPS Inspection</h4>
+
+<p>HTTPS Inspection enhances Advanced Security features by enabling them to inspect and act on HTTPS traffic.&nbsp;<br />
+Use of Cisco Umbrella SD-WAN extensions to offload processing from edge or concetrator devices will reduce performance impacts to MX devices.&nbsp;</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_34"><span id="Number_of_VPN_Tunnels"></span><h4 class="editable">Number of VPN Tunnels</h4>
+
+<p>Auto VPN creates VPN tunnels between sites in an automated, seamless fashion.&nbsp;<br />
+Consider using split tunnel VPN while deplyoying security services at the edge of your network environments.</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_35"><span id="FIPS_Mode"></span><h4 class="editable">FIPS Mode</h4>
+
+<p>FIPS Mode enables the use of only FIPS compliant mechanisms for MX devices.<br />
+Consider engaging your account specialist for appropriate sizing and network architecture when planning to leverage this feature.&nbsp;</p>
+
+</div></div><div mt-section-origin="SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_&amp;_Principles" class="mt-section" id="section_36"><span id="Performance_Impact_Breakdown"></span><h3 class="editable">Performance Impact Breakdown</h3>
+
+<table class="mt-responsive-table">
+    <tbody>
+        <tr>
+            <td class="mt-noheading"><strong>Feature Name</strong></td>
+            <td class="mt-noheading"><strong>Performance Impact</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-noheading">Cisco Advanced Malware Protection (AMP)</td>
+            <td class="mt-noheading">Low</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading">Content Filtering</td>
+            <td class="mt-noheading">Low</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading">Web-Safe Search</td>
+            <td class="mt-noheading">Low</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading">FIPS Mode (Non-VPN Services)</td>
+            <td class="mt-noheading">Low</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading">Cisco IDS/IPS (SNORT)</td>
+            <td class="mt-noheading">Medium</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading">HTTPS Inspection (On device, not offloaded)</td>
+            <td class="mt-noheading">High</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading">Number of VPN Tunnels</td>
+            <td class="mt-noheading">High</td>
+        </tr>
+        <tr>
+            <td class="mt-noheading">FIPS Mode (VPN Services)</td>
+            <td class="mt-noheading">High</td>
+        </tr>
+    </tbody>
+</table>
+</div></div>
+
+                    <footer class="mt-content-footer"></footer>
+            </section>
+
+        
+            <footer class="elm-content-footer">
+                <ol class="elm-meta-data elm-meta-article-navigation">
+                    <li class="elm-back-to-top"><a class="mt-icon-back-to-top" href="#title" id="mt-back-to-top" title="Jump back to top of this article">Back to top</a></li>
+                    <li class="elm-article-pagination"><ul class="mt-article-pagination" data-ga-action="Article pagination bottom">
+    <li class="mt-pagination-previous">
+
+            <a class="mt-icon-previous-article" data-ga-label="Previous page" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/Deploying_Highly_Available_vMX_in_Azure" title="Deploying Highly Available vMX in Azure"><span>Deploying Highly Available vMX in Azure</span></a>
+    </li>
+        <li class="mt-pagination-next">
+                <a class="mt-icon-next-article" data-ga-label="Next page" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Configuration_Guides" title="Configuration Guides"><span>Configuration Guides</span></a>
+        </li>
+</ul>
+</li>
+                </ol>
+                    <div class="elm-article-feedback"><div class="mt-feedback-rating-container" data-ga-action="Page rating" data-page-revision="32" data-use-local-storage="true"><ul class="mt-feedback-rating-controls"><li class="mt-feedback-rating-message mt-feedback-rating-item">Was this article helpful?</li><li class="mt-rating-yes mt-feedback-rating-item"><button class="mt-rating-button-yes mt-feedback-rating-button ui-button-icon mt-icon-rating-yes" data-ga-label="Rate">Yes</button></li><li class="mt-rating-no mt-feedback-rating-item"><button class="mt-rating-button-no mt-feedback-rating-button ui-button-icon mt-icon-rating-no" data-ga-label="Rate">No</button></li><li class="mt-last-rating-date mt-feedback-rating-item"></li></ul><div id="mt-feedback-flash-message"></div></div><script type="application/json" id="mt-localizations-feedback-rating">/*<![CDATA[*/{"Page.FeedbackRating.label.last-rated":"-- You last rated this article on {0}","Page.FeedbackRating.message.contact.no":"No","Page.FeedbackRating.message.contact.yes":"Yes","Page.FeedbackRating.message.submit.error":"An error occurred while attempting to send your feedback.  Please try again at a later time.","Page.FeedbackRating.message.submit.success":"Your feedback has been successfully submitted.  You can submit more feedback at any time."}/*]]>*/</script></div>
+                <div class="elm-related-articles-container"><h2 class="mt-related-articles-header">Recommended articles</h2>
+<ol class="mt-related-listings-container"
+    data-ga-action="related"
+    >
+</ol>
+<script type="application/json" nonce="e2a0b2818d9650114b8092ee98d7683f9b1184ca7fc5098450fd7998aa913c8f" id="mt-localizations-related-pages">
+{"Skin.Columbia.label.no-recommended-articles":"There are no recommended articles."}</script></div>
+                <ol class="elm-meta-data elm-meta-bottom">
+                    <li class="elm-classifications">        <dl class="mt-classification mt-classification-article-reference" data-ga-action="Tag navigation">
+            <dt class="mt-classification-label">Article type</dt>
+            <dd class="mt-classification-value"><a href="https://documentation.meraki.com/Special:Search?tags=article%3Areference" data-ga-label="Classification">Reference</a></dd>
+        </dl>
+        <dl class="mt-classification mt-classification-product-category-routers" data-ga-action="Tag navigation">
+            <dt class="mt-classification-label">Product Category</dt>
+            <dd class="mt-classification-value"><a href="https://documentation.meraki.com/Special:Search?tags=product-category%3Arouters" data-ga-label="Classification">Routers</a></dd>
+        </dl>
+        <dl class="mt-classification mt-classification-template-architecture and best practice" data-ga-action="Tag navigation">
+            <dt class="mt-classification-label">Template Type</dt>
+            <dd class="mt-classification-value"><a href="https://documentation.meraki.com/Special:Search?tags=template%3Aarchitecture-best-practice" data-ga-label="Classification">Architecture and Best Practice</a></dd>
+        </dl>
+</li>
+                    <li class="elm-tags"><dl class="mt-tags">
+    <dt class="mt-tag-label">Tags</dt>
+    <dd class="mt-tag-value">
+        <ol class="mt-tags-list" data-ga-action="Tag navigation">
+                <li class="mt-tag-link mt-tag-cisco-meraki-mx" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=Cisco+Meraki+MX" data-ga-label="Free tag"> Cisco Meraki MX</a></li>
+                <li class="mt-tag-link mt-tag-client-count-maximum" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=client+count+maximum" data-ga-label="Free tag"> client count maximum</a></li>
+                <li class="mt-tag-link mt-tag-device-capabilities" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=device+capabilities" data-ga-label="Free tag"> device capabilities</a></li>
+                <li class="mt-tag-link mt-tag-device-maximums" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=device+maximums" data-ga-label="Free tag"> device maximums</a></li>
+                <li class="mt-tag-link mt-tag-device-sizing" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=Device+Sizing" data-ga-label="Free tag"> Device Sizing</a></li>
+                <li class="mt-tag-link mt-tag-flow-table-maximum" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=flow+table+maximum" data-ga-label="Free tag"> flow table maximum</a></li>
+                <li class="mt-tag-link mt-tag-mx-scaling" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=MX+Scaling" data-ga-label="Free tag"> MX Scaling</a></li>
+                <li class="mt-tag-link mt-tag-mx-sizing-guide" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=MX+Sizing+Guide" data-ga-label="Free tag"> MX Sizing Guide</a></li>
+                <li class="mt-tag-link mt-tag-mx-sizing-guide-&amp;-principles" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=MX+Sizing+Guide+%26+Principles" data-ga-label="Free tag"> MX Sizing Guide &amp; Principles</a></li>
+                <li class="mt-tag-link mt-tag-mx-sizing-guide-and-principles" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=MX+Sizing+Guide+and+Principles" data-ga-label="Free tag"> MX Sizing Guide and Principles</a></li>
+        </ol>
+    </dd>
+</dl></li>
+                </ol>
+            </footer>
+        
+    </article>
+    <footer class="elm-footer">
+        <nav class="elm-footer-siteinfo-nav elm-nav">
+            <div class="elm-nav-container">
+                <ol>
+                    <li class="elm-footer-copyright">&copy; Copyright 2026 Cisco Meraki Documentation</li>
+                    <li class="elm-footer-powered-by"><a href="https://mindtouch.com/demo" class="mt-poweredby product " title="MindTouch" target="_blank">
+   Powered by NiCE Knowledge Management
+   <span class="mt-registered">&reg;</span>
+</a></li>
+                </ol>
+            </div>
+        </nav>
+        <div class="elm-footer-custom">
+
+<div class="mt-custom-footer-container"><div class="mt-top-footer"><div class="mt-top-logo"><a href="http://meraki.cisco.com/" target="_blank" rel="external noopener nofollow" class="external"><img class="mt-cdn" src="https://documentation.meraki.com/@api/deki/site/logo?default=https%3A%2F%2Fdocumentation.meraki.com%2F%40cdn%2F%40style%2Fcommon-legacy%2Fimages%2Flogo.png" alt="Cisco-Meraki" /></a></div><div class="mt-top-external-links"><div class="mt-top-ul-container" id="top-Company"><h6 class="mt-top-ul-title">Company</h6><ul class="mt-top-ul"><li class="mt-top-li"><a href="https://meraki.cisco.com/about/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">About Meraki</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/jobs" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Careers</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/support/#policies:privacy" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Privacy</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/trust" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Trust</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/gdpr" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">GDPR</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/support/#policies:tou" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Terms of Use</a></li></ul></div><div class="mt-top-ul-container" id="top-Partners"><h6 class="mt-top-ul-title">Partners</h6><ul class="mt-top-ul"><li class="mt-top-li"><a href="https://www.merakipartners.com/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Partner Portal Login</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/partner/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Become a Partner</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/managedserviceproviders" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Manage Service Providers</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/solutions/serviceprovider" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Service Providers</a></li></ul></div><div class="mt-top-ul-container" id="top-getStarted"><h6 class="mt-top-ul-title">Get Started</h6><ul class="mt-top-ul"><li class="mt-top-li"><a href="https://meraki.cisco.com/form/contact/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Contact Us</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/form/demo/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Get a Demo</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/form/trial/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Start Your Trial</a></li></ul></div><div class="mt-top-ul-container" id="top-Resources"><h6 class="mt-top-ul-title">Resources</h6><ul class="mt-top-ul"><li class="mt-top-li"><a href="https://meraki.cisco.com/webinars/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Webinars</a></li><li class="mt-top-li"><a class="mt-top-a internal" href="https://documentation.meraki.com/" rel="internal">Documentation</a></li><li class="mt-top-li"><a href="https://community.cisco.com/t5/meraki/ct-p/meraki-home" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Community</a></li><li class="mt-top-li"><a href="https://community.cisco.com/t5/networking-learning-hub/ct-p/learninghub-networking" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Learning Hub</a></li></ul></div></div></div><div class="mt-bottom-footer"><div class="mt-social-container"><ul class="mt-social-ul"><li class="mt-social-li"><a href="https://twitter.com/meraki" target="_blank" rel="external noopener nofollow" class="mt-social-a mt-icon-twitter link-https"></a></li><li class="mt-social-li"><a href="https://www.instagram.com/ciscomeraki/?hl=en" target="_blank" rel="external noopener nofollow" class="mt-social-a mt-icon-instagram link-https"></a></li><li class="mt-social-li"><a href="https://www.facebook.com/CiscoMeraki/" target="_blank" rel="external noopener nofollow" class="mt-social-a mt-icon-facebook link-https"></a></li><li class="mt-social-li"><a href="https://www.youtube.com/channel/UCimwNLMzVRMp7SUPVRNaqew" target="_blank" rel="external noopener nofollow" class="mt-social-a mt-icon-youtube link-https"></a></li></ul></div><div class="mt-copyright-container"><p>&copy; 2026 Cisco Systems, Inc.</p></div></div></div>
+
+
+
+<script type="text/javascript">/*<![CDATA[*/
+var feedback_btn = document.querySelector(".mt-feedback-button"); 
+feedback_btn.innerText = "Request Update"/*]]>*/</script>
+
+
+
+<script type="text/javascript">/*<![CDATA[*/
+var feedback_label = document.querySelector(".mt-feedback-improve-label");
+feedback_label.innerText = "What would you like to change on this page? Your request will be sent to the Knowledge and Content team at Cisco Meraki. We are NOT product experts! Include all relevant details: section or exact text to update, new draft language, or related cases/mules.";/*]]>*/</script>
+
+
+</div>
+    </footer>
+</main>
+<div id="mt-modal-container"></div>
+
+    <script type="text/javascript" async="async" nonce="e2a0b2818d9650114b8092ee98d7683f9b1184ca7fc5098450fd7998aa913c8f" src="https://documentation.meraki.com/@embed/f1.js"></script>
+
+<script type="text/javascript" data-mindtouch-module="true" src="https://a.mtstatic.com/deki/javascript/out/standalone/ui.widget.helpWidget.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script><script type="text/javascript" data-mindtouch-module="true" nonce="e2a0b2818d9650114b8092ee98d7683f9b1184ca7fc5098450fd7998aa913c8f" src="https://a.mtstatic.com/deki/javascript/out/standalone/serviceworker-unregister.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script><script type="text/javascript" data-mindtouch-module="true" nonce="e2a0b2818d9650114b8092ee98d7683f9b1184ca7fc5098450fd7998aa913c8f" src="https://a.mtstatic.com/deki/javascript/out/standalone/pageLoaded.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script>
+
+
+</body>
+</html>
