@@ -1,0 +1,17 @@
+[
+  {
+    "archivo": "meraki-sfp.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/Platform_Management/Product_Information/Overviews_and_Datasheets/Small-Form_Factor_Pluggable_(SFP)_and_Stacking_Accessories",
+        "status": 200,
+        "bytes": 138375,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
