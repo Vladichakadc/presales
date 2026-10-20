@@ -563,6 +563,23 @@ jobs:
               { archivo: 'juniper-mx480-producto.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
                 'https://www.juniper.net/mx/es/products/routers/mx-series/mx480-universal-routing-platform.html',
               ] },
+              // 2026-10-19: el `cap` de los Session Smart Router no tiene fuente declarada. URL
+              // buscadas; si la pagina es un visor de HPE, el PDF de psnow se lee de ella.
+              { archivo: 'juniper-ssr100-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+                'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/routers/ssr100-line-of-routers-datasheet.pdf',
+                'https://www.juniper.net/content/dam/www/assets/datasheets/jp/ja/routers/ssr100-line-of-routers-datasheet.pdf',
+              ] },
+              { archivo: 'juniper-ssr100-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SSR130', urls: [
+                'https://www.juniper.net/us/en/products/routers/session-smart-router/ssr100-line-of-routers-datasheet.html',
+                'https://www.juniper.net/gb/en/products/routers/session-smart-router/ssr100-line-of-routers-datasheet.html',
+              ] },
+              { archivo: 'juniper-ssr1000-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+                'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/routers/ssr1000-line-of-routers-datasheet.pdf',
+                'https://www.juniper.net/content/dam/www/assets/datasheets/jp/ja/routers/ssr1000-line-of-routers-datasheet.pdf',
+              ] },
+              { archivo: 'juniper-ssr1000-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SSR1200', urls: [
+                'https://www.juniper.net/gb/en/products/routers/session-smart-router/ssr1000-line-of-routers-datasheet.html',
+              ] },
               // La ficha del MX304 en juniper.net ya es un visor de HPE: el PDF vive en psnow
               // (a00150831enw). URL leida de la propia pagina traida el 2026-10-19, no adivinada.
               { archivo: 'juniper-mx304-ds-hpe.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
