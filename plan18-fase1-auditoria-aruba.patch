@@ -1,0 +1,1337 @@
+From 3a3e373af52d1ae444e7351e2856cf1b03d8aa77 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Thu, 17 Sep 2026 21:58:48 -0500
+Subject: [PATCH] Plan 18: fase 1 de la auditoria tecnica del dimensionador
+ Aruba + despliegue desbloqueado
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Despliegue: package-lock.json resolvia pdf-parse, node-ensure y debug@3.2.7
+  contra npm.mirrors.msh.team (ENOTFOUND en Railway): 8 despliegues en FAILED
+  desde b4e8c4e. Reescritos a registry.npmjs.org; npm ci valida las integrity.
+- C1: el tier automatico solo elige tiers que existen para el nivel deducido
+  (Foundation = 100M / 1G / ilimitado). Antes proponia «Foundation 200 Mbps»
+  en «consultar» y fuera del total.
+- C2/C3: selector «Sistema operativo de los gateways» (AOS 10 por defecto /
+  AOS 8, viaja en la URL como soSeg). porSo en aruba.js: serie 9000 128/256 APs
+  en AOS 10 y 32 en AOS 8; 9240 con tabla y SKU por SO (R8R41/42AAE AOS 10,
+  R8R13/14AAE AOS 8). 9114 sin AOS 8, 9106 solo tabla AOS 10, 7000/7200 solo
+  AOS 8: cada descarte con su motivo. La propuesta declara el SO.
+- C4: Boost = 30 % de bwTunelesPrivados del motor (antes needProc con margen y
+  cuota de breakout invertida: 10 bloques donde tocan 2), validado contra el
+  Boost recomendado por HPE; la barra de la ficha muestra ese recomendado.
+- C5: boletines oficiales de fin de venta para 7005/7008 (31-oct-2022) y
+  7210/7220 (31-ene-2025); sucesor del 7008 corregido a 9012.
+- A1: dtd:false en el EC-XS y filtro duro con Dynamic Threat Defense.
+- Reglas puras en public/js/aruba-reglas.js (UMD) + test/aruba-auditoria-
+  fase1.test.js (12) y test/e2e/e2e-auditoria-fase1.js (19 comprobaciones).
+- 404 unitarios, 9/9 e2e, 16/16 pantallas, arranque NODE_ENV=production ok.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01LvtjnzmqEaK2ob6UBdJDA9
+---
+ CLAUDE.md                                    |   1 +
+ PENDIENTES.md                                | 118 ++++++++++-
+ eslint.config.js                             |   3 +
+ package-lock.json                            |   8 +-
+ public/dimensionador-aruba-edgeconnect.html  |  15 +-
+ public/js/aruba-reglas.js                    | 105 ++++++++++
+ public/js/dimensionador-aruba-edgeconnect.js | 128 +++++++++---
+ scripts/importar-lista-aruba.js              |   4 +
+ server/seed/legacyData/aruba.js              | 120 +++++++++--
+ server/seed/legacyData/cotizadorCatalog.js   |   8 +-
+ server/seed/legacyData/indexPR.js            |   8 +-
+ test/aruba-auditoria-fase1.test.js           | 201 +++++++++++++++++++
+ test/e2e/LEEME.md                            |   1 +
+ test/e2e/e2e-auditoria-fase1.js              | 108 ++++++++++
+ test/e2e/e2e-ciclo-vida.js                   |  11 +-
+ 15 files changed, 771 insertions(+), 68 deletions(-)
+ create mode 100644 public/js/aruba-reglas.js
+ create mode 100644 test/aruba-auditoria-fase1.test.js
+ create mode 100644 test/e2e/e2e-auditoria-fase1.js
+
+diff --git a/CLAUDE.md b/CLAUDE.md
+index da2ab50..eeaec4d 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -196,6 +196,7 @@ Each page is an HTML file plus a same-named script in `public/js/` — the marku
+ - The Aruba page borrows the Fortinet page's layout but not its sizing model, because HPE doesn't publish the same kind of figures. EdgeConnect is sized against the **published WAN bandwidth range** per model (a range, not a single throughput — falling below its floor flags oversizing just as exceeding its ceiling flags undersizing); the 9000/9200 gateways are sized against firewall throughput plus client and AP capacity. The page also separates what the appliance **processes** from what the WAN links **carry**, because Path Conditioning's FEC parity adds to the second while Boost subtracts from it and raises the first. Two Aruba-specific quirks the engine models: Boost is licensed in 100 Mbps blocks pooled fabric-wide (so it appears once in the BOM regardless of unit count), and the 9200's capacity — throughput, APs *and* clients — is gated by a perpetual licence tier on identical hardware, so candidate filtering must compare against the top tier and then report which licence is required. **Y desde el refactor del 2026-09-13 el caudal ya no es un número suelto: es el Multi-Underlay Builder.** La página declara los enlaces WAN del sitio como filas `{tipo, medio, down, up}` dentro de `#wanBuilderFilas` —MPLS L3/L2, DIA, banda ancha, 4G/5G sobre RJ45, SFP 1G o SFP+ 10G— y de ahí salen `caudalTotal`, `mplsMbps`, `inetMbps` y la auditoría de puertos del chasis. **El campo `#bw` que las otras seis páginas siguen teniendo aquí ya no existe** (Fortinet dejó de tenerlo visible el 2026-09-16, con su propio builder), y eso es justo lo que dejó `pantallas.yml` en rojo cuatro días sin que nadie lo notara: el verificador rellenaba `#bw` en las ocho. El escenario viaja ahora como `wanLinksData` v2 (`{v:2, wanLinks:[…]}`) y `migrarEstadoV1()` convierte los enlaces compartidos de antes (`?bw=…&unit=…&mplsType=…&bwMpls=…`) en filas equivalentes, avisando por consola — **porque un enlace viejo que aterriza con los valores por defecto es peor que un 404: no se nota**. `npm run pantallas` conduce ese caso como una pantalla propia.
+ - **Fortinet: la escalera de 4 pasos y su propio Multi-Underlay Builder (2026-09-16).** El rediseño del módulo tomó la *arquitectura* de la página de Aruba —no su modelo de dimensionamiento, que no viaja— y está documentado entero en `docs/rediseno-fortinet.md`. Dos cosas que conviene saber antes de tocarlo. **La escalera**: el formulario son cuatro pasos —*plataforma y rol*, *capa de inspección*, *tráfico y capacidad*, *equipo y cotización*— y el panel de selección de equipo vive en la calculadora, no en la pestaña de BOM; cambian los agrupamientos, **no los `id` de los controles**, así que los enlaces ya pegados en chats siguen valiendo. **El builder**: `pctOverlay` era un deslizador con el que alguien *estimaba a ojo* justo el número que fija el segundo techo del motor (`min(capa, IPsec / fracción)`); ahora los enlaces se declaran como filas `{tipo, down, overlay}` y la fracción se calcula. **La fila es más corta que la de Aruba a propósito**: sin `medio` —este catálogo no trae ópticas de Fortinet y una auditoría de puertos sería un dato inventado— y sin `up` —el motor consume un solo caudal, y un campo que nadie lee es peor que uno ausente—, pero **con `overlay`**, que en EdgeConnect no hace falta porque allí el appliance se dimensiona por el agregado del sitio. **El motor no cambió**: `#bw`, `#unit` y `#pctOverlay` siguen siendo lo que `render()` lee y el builder solo los calcula, como espejos ocultos — y eso se **demostró**, no se declaró, con `scripts/contraste-fortinet.js`, que conduce en Chromium los ocho escenarios medidos sobre el commit anterior (los dos techos posibles por los tres roles) y exige la misma recomendación, el mismo requerimiento y el mismo número de candidatos; los ocho dieron idéntico, y las seis migraciones de enlace v1 también. La línea base va **embebida en el script** y no en un archivo aparte: es un hecho histórico medido sobre otro commit, y un fichero regenerable se regeneraría justo cuando el contraste fallara. Se comprobó que detecta saboteando el cálculo del caudal. **Y el gancho `caudal(page)` de `verificar-pantallas.js` entró en el MISMO commit**, que es la lección del 2026-09-13 aplicada: no hay uno compartido con Aruba porque las filas no tienen los mismos campos, y uno común tendría que rellenar controles que en una de las dos páginas no existen.
+ - `public/datasheets/` — official HPE datasheet PDFs, fetched by `npm run datasheets` (`scripts/descargar-datasheets.js`) from the `DATASHEETS` manifest in `aruba.js`, so there is no second list to drift. The directory ships empty on purpose: the environment this catalog was built in has HPE's domains blocked by egress policy, so the download has to run from a machine with internet. When a PDF is present the Aruba page links the local copy (served behind the auth wall); when it isn't, it links HPE's URL — the tool works either way, and `catalogProjection.js` decides per request by reading the directory once. Committing the PDFs is what makes production serve them, since the Railway container is rebuilt from git on every deploy; `public/datasheets/LEEME.md` covers the trade-offs (repo weight, and a stale local copy being worse than a live link in a quoting tool).
++- `js/aruba-reglas.js` — **las reglas puras del dimensionador Aruba que la auditoría del 2026-09-17 encontró rotas**, fuera de la página para poder probarlas en Node (UMD, mismo patrón que `motor-ingenieria.js`; global `ArubaReglas`): el tier de suscripción solo entre los que existen para el nivel (Foundation = 100 Mbps / 1 Gbps / ilimitado), la capacidad del gateway por sistema operativo (`porSo` en `aruba.js`: AOS 10 por defecto, AOS 8 en el selector `#soSeg`), el Boost como 30 % del tráfico de los túneles validado contra el Boost recomendado por HPE, y Dynamic Threat Defense como filtro duro (`dtd:false` en el EC-XS). Pruebas: `test/aruba-auditoria-fase1.test.js` y `test/e2e/e2e-auditoria-fase1.js`.
+ - `js/ficha.js` — the candidate picker and full spec sheet, shared by the five dimensionadores. The "Modelo recomendado" block is no longer a single fixed model: it is a `<select>` listing **every** model that meets the constraints, and choosing one re-renders the meters, the reasoning, the sizing summary, the licensing/support panels and the BOM tab for that model. Each page supplies a descriptor (`medidores`, `porQue`, `secciones`, `alCambiar`) built from its own vendor data — the module never computes a figure, it only presents. Sections are consistent across vendors: características, alimentación eléctrica, licenciamiento propuesto, software y soporte. **Elegido a mano y heredado no son lo mismo, y confundirlos convertía la selección en un trinquete.** La regla era «conservar la selección mientras ese equipo siga cumpliendo», y como cumplir es capacidad ≥ requerimiento, un equipo grande cumple para **todo** requerimiento menor: medido en el navegador, se elegía un 7121F a 20 Gbps, se bajaba a 50 Mbps y seguía en pantalla el 7121F con el 30G como recomendado. La selección solo subía. Y lo grave no era la elección manual sino que la **heredada** —la que el propio módulo había dejado en el render anterior— se reciclaba con ese mismo criterio, así que el recomendado solo aparecía en el primer render de la página. Ahora solo persiste lo que alguien eligió de verdad: el desplegable, o una reposición desde la URL o el almacenamiento, que también es la elección de alguien. Lo heredado sigue siempre al recomendado. La elección deliberada se marca en pantalla, se suelta cuando ese equipo deja de cumplir, y tiene salida explícita — el botón «Volver al recomendado», porque apartarse era una puerta de un solo sentido en una lista de 58 equipos.
+ - **Semáforo de ciclo de vida: el verde se gana, no se hereda (pendiente 34, 2026-09-16).** `FICHA.cicloHtml` es la única implementación y la usan los siete. **Cinco estados**: fuera de venta (fecha de último pedido vencida, o `eol` binario —que declara que el catálogo *no trae* la fecha—), fin de venta **anunciado y todavía pedible**, línea anterior, vigente, y el tercer estado. Vivía dentro de `dimensionador-aruba-edgeconnect.js` con el **verde como rama por defecto**, así que no era que portarlo *fuera* a pintar verde falso sobre 131 modelos: ya lo estaba haciendo sobre los 25 de Aruba. **La ausencia de un boletín no es prueba de vigencia**, solo lo es si alguien mira los boletines de ese fabricante — y eso ya estaba declarado en `legacyData/fuentes.js`: una fuente cuyo `campos` incluya `eolAnnounced` es exactamente «hay un documento de fin de venta contrastado, de esta fecha». Se reutiliza esa declaración (`respaldoCicloVida()`, proyectada en `/api/dimensionador/:vendor`) en vez de escribir una segunda lista de fabricantes, que es como se desincronizan dos sitios con el mismo dato: hoy **Cisco y Juniper** pueden pintar verde, y la ficha dice contra qué documento y de qué fecha; los otros cinco declaran «el catálogo no trae el ciclo de vida». La página lo informa **una vez** con `FICHA.fijarCicloVida(data.cicloVida)` tras su fetch, y no en cada `FICHA.render`: hay veinte puntos de llamada entre los siete contando los estados vacíos, y pasarlo en todos es como `llevarABom` acabó en seis copias. De paso corrigió un defecto que la copia de Aruba tenía y `FICHA.rango()` no: pintaba de **rojo** un fin de venta anunciado que aún no había vencido, cuando hasta esa fecha el equipo se pide con normalidad.
+ - **Configuración de puertos: la regla la aporta Nokia, no Aruba (pendiente 35, 2026-09-16).** `FICHA.seccionPuertos` en los siete. `legacyData/nokia.js` es el único catálogo de los ocho que modela los puertos como **dato** y no como texto, con dos reglas que ningún otro tenía resueltas: las configuraciones son **alternativas y no acumulables** («36x100GE o 12x400GE» nunca son 48 interfaces) y **un chasis modular no publica densidad** («7 slots IOM» dice cuántas tarjetas caben, no cuántos puertos salen), así que se aparta con su motivo. El flujo de `docs/portabilidad-aruba.md` no es «Aruba enseña a los siete»: la capa común es algo **a lo que cada fabricante aporta lo que ya resolvió**. **Los otros seis no reciben un panel vacío**: traen los puertos como texto libre (`ports` en Cisco/Huawei/MikroTik, `ifaces` en Fortinet/Juniper/Aruba), se muestran y la ficha **declara** que no están estructurados y que por eso no se puede contrastar densidad contra un requerimiento — la diferencia entre «este equipo no tiene puertos» y «el catálogo no sabe contarlos». **Una `notaPuertos` explícita gana al texto libre**: el 7250 IXR-e publica velocidades pero no densidad, y pintar su `ifaces` al lado de esa nota lo haría leer como una densidad. **No audita nada contra un escenario**: la de Aruba (cuántos enlaces caben en el chasis) responde otra pregunta y se queda en su página.
+diff --git a/PENDIENTES.md b/PENDIENTES.md
+index 995accf..c5db6fd 100644
+--- a/PENDIENTES.md
++++ b/PENDIENTES.md
+@@ -4,7 +4,19 @@ Registro vivo de lo que falta. **Se lee al empezar y se actualiza al terminar cu
+ tarea**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
+ permanente que lo justifica (ver `CLAUDE.md`, sección *Pendientes*).
+ 
+-Última revisión: 2026-09-17 (plan 17: **la traza viaja con la propuesta exportada** —
++Última revisión: 2026-09-17 (plan 18: **fase 1 de la auditoría técnica del
++dimensionador Aruba** — pedida por el dueño («avanza con la fase 1») sobre el documento
++«Auditoría técnica — Dimensionador Aruba»
++(<https://claude.ai/code/artifact/73f4cc17-eb40-494c-9127-ac3eea6849a0>). Cinco
++críticos que cambiaban equipo o precio (C1 tiers Foundation inexistentes, C2 licencias
++9240 AOS 8 vs AOS 10, C3 serie 9000 a 32 APs, C4 Boost ~5x, C5 7005/7008/7210/7220
++cotizables) más el A1 (DTD en EC-XS), y el **bloqueo de despliegue**: 8 despliegues
++seguidos en FAILED desde `b4e8c4e` porque `package-lock.json` resolvía 4 paquetes
++(pdf-parse y dependencias) contra `npm.mirrors.msh.team`, inalcanzable desde Railway.
++Producción seguía en `00ccc4b` (16-sep) y no tenía los planes 13 a 17. Ver *Cerrado
++recientemente*. 404 unitarios y 9/9 e2e en verde; 16/16 pantallas.)
++
++Revisión anterior: 2026-09-17 (plan 17: **la traza viaja con la propuesta exportada** —
+ mejora propuesta al cerrar el plan 16 y aprobada por el dueño («Si»). La cuenta del
+ dimensionado vivía solo en pantalla; quien recibía la lista de materiales no podía
+ auditar de dónde sale el requerimiento. Implementación: (1) el núcleo de cada traza
+@@ -550,9 +562,61 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
+ | 7205 | `fw` | 15 Gbps | **12 Gbps** (DS serie 7200) |
+ | 7030 | `ifaces` | «8x combo + puertos 10G» | **8x combo 1G, sin 10G** (DS serie 7000) |
+ | EC-L | `psu.texto` watts | 401 W | **404 W** (QuickSpecs) / **440 W** (Hardware Ref., EC-L-P) |
+-| Gateway 9004/9012 | `aps` | 32 (AOS 8) | **128 / 256 "devices" (AOS 10)** — arquitecturas distintas |
+ | Gateway 9004/9012 | `fwSess` | 128.000 (datasheet AOS 10) | **64.000 en modo SD-WAN** (doc oficial a00099294en_us, validado 2026-09-13) — expuesto en `spec.fwSessSdwan` sin pisar el dato; si el dueño decide que el filtro de flujos use la cifra SD-WAN conservadora, se cambia `fwSess` y se ajusta el test de flujos |
+ 
++**~~Gateway 9004/9012 `aps` 32 (AOS 8) vs 128/256 (AOS 10)~~ Resuelto (2026-09-17, fase 1
++de la auditoría, C3).** Las dos cifras eran ciertas, cada una en su arquitectura: el
++selector «Sistema operativo de los gateways» elige cuál aplica (`porSo` en `aruba.js`).
++La base del catálogo pasa a AOS 10, la que gestiona Central.
++
++## Fases 2 y 3 de la auditoría técnica del 2026-09-17 (pendientes)
++
++Documento: «Auditoría técnica — Dimensionador Aruba»
++(<https://claude.ai/code/artifact/73f4cc17-eb40-494c-9127-ac3eea6849a0>). La fase 1 está
++cerrada (ver *Cerrado recientemente*). Lo que queda, en el orden del plan:
++
++**Fase 2 · sincronización**
++- **A2** — elegir DTD o SSE con «Gateways sucursal» cambia la familia a EdgeConnect sin
++  avisar y no vuelve al quitarlo. Para 9004/9012 existe Central Foundation/Advanced *with
++  Security* (IDS/IPS): R4D98AAE… ya documentados en `CENTRAL_TIERS`, sin cablear.
++- **A6** — «Enviar al cotizador» solo manda modelo y cantidad: se pierden suscripción, HA,
++  Boost, DTD/SSE, Central, licencia de capacidad, ópticas y soporte.
++- **A7** — selector de ópticas desfasado del modelo al cambiar de arquetipo (medido en
++  producción, que corría `00ccc4b`). El plan 14 ya movió el pintado al final de
++  `poblarPickModel`: verificar si queda algo. Y la matriz: EC-S/M/L/XL solo tienen 1G TAA
++  (excluida), EC-10108 sin 1G, 9106/9114 sin ninguna óptica, sin medio SFP28 25G.
++- **M1** — aviso falso «el underlay no sostiene la demanda» en todo escenario con margen
++  (`caudalTotal < needProc`, y needProc ya lleva el margen).
++- **M3** — FEC: catálogo 10 % automático / 0 % desactivado; motor 15 % / 5 %.
++- **M4** — el breakout manda a Internet el 70 % del caudal TOTAL, MPLS incluido (regla del
++  brief: decisión del dueño). Boost ya usa `bwTunelesPrivados` del motor, así que un
++  cambio aquí se propaga solo.
++- **M5** — error JS `reading 'auto'` al abrir un enlace de escenario: los `.seg` se
++  restauran con click() antes de que llegue la API (SIZING vacío).
++- **M6** — con la página vacía el BOM muestra EC-XS con precio y «[OK] Diseño coherente»
++  mientras Dimensionar dice «SIN CANDIDATO» (`renderBom` cae a `MODELS[0]`).
++- ~~M2 (margen 0 % = 20 %)~~ ya corregido en `4965bea`; no había llegado a producción.
++
++**Fase 3 · licenciamiento fino**
++- **A3** — Central de gateways usa siempre SKU «7/90xx» (JZ118–JZ123AAE), también para
++  9106/9114/9240. 72xx/92xx: JZ195AAE… (documentado en `CENTRAL_TIERS`); campus en modo
++  WLAN: «Gateway WLAN Advanced». Validar el SKU de la serie 91xx con HPE.
++- **A4** — Foundation Base (≤75 clientes, JZ124AAE…) para 9004/9012 no se ofrece.
++- **A5** — los APs solo limitan el modelo: ni hardware ni suscripción Central por AP en el BOM.
++- **M7** — el BOM exportable lleva textos internos («CARE_SKU en aruba.js», «brief del
++  dueño», rutas /datasheets/).
++- **M8** — sin headend VPNC de SD-Branch ni clúster N+1 de campus.
++- **M9** — un enlace 4G de respaldo suma al tier.
++- **B1** — EC-XL fuera de venta sin sucesor declarado.
++
++**Datos abiertos por la fase 1**
++- Estado de venta de **7010, 7024, 7030, 7205 y 7240XM**: no se localizó boletín oficial;
++  siguen como línea anterior (y fuera del dimensionado en AOS 10).
++- **9106 en AOS 8**: la sección AOS-8 de las QuickSpecs 9100 no está transcrita; en AOS 8
++  el modelo se descarta con su motivo.
++- **R8R13AAE / R8R14AAE** (Silver/Gold AOS 8 del 9240): sin List Price en la lista del
++  distribuidor — «consultar» en el BOM.
++
+ ## Datos por confirmar
+ 
+ 7. **Precio de los modelos Juniper y Nokia añadidos en agosto 2026.** Las cifras técnicas
+@@ -941,6 +1005,56 @@ tanto, el dato nuevo del datasheet se muestra en el campo `spec` sin pisar el ex
+ 
+ ## Cerrado recientemente
+ 
++### Fase 1 de la auditoría técnica del dimensionador Aruba + despliegue desbloqueado (2026-09-17)
++
++El dueño pidió una auditoría como arquitecto Aruba del dimensionador en producción y,
++sobre el documento resultante, «avanza con la fase 1». Cada hallazgo se reprodujo en
++producción con un escenario y quedó fijado como prueba.
++
++**Despliegue.** Los 8 despliegues desde `b4e8c4e` (16-sep) fallaban en `npm install`:
++`package-lock.json` resolvía `pdf-parse`, `node-ensure` y `debug@3.2.7` contra
++`npm.mirrors.msh.team` (un espejo del entorno donde se añadió la dependencia), que
++Railway no resuelve (`ENOTFOUND`). Se reescriben a `registry.npmjs.org` — mismos
++tarballs, las `integrity` validan con `npm ci`.
++
++**C1 · tiers Foundation.** `tierParaCaudal` recorría los 8 tiers sin mirar el nivel y
++proponía «Foundation 200 Mbps» (o 20/50/500 Mbps, 2 Gbps), que no existe: la suscripción
++quedaba en «consultar» y fuera del total. Ahora elige solo entre los tiers del nivel
++deducido (150 Mbps → Foundation 1 Gbps S1A24AAS, US$5.040 a 3 años, más barato que
++Advanced 200 Mbps).
++
++**C2/C3 · sistema operativo de los gateways.** Selector nuevo «Sistema operativo de los
++gateways» (AOS 10 por defecto / AOS 8), en la URL como `soSeg`. `porSo` en `aruba.js`
++superpone por SO: serie 9000 128/256 APs en AOS 10 y 32 en AOS 8; 9240 con su tabla y sus
++SKU por SO (AOS 10: 4K/8K/16K APs, 32K/48K/64K clientes, R8R41/R8R42AAE; AOS 8:
++512/1K/2K, 16K/24K/32K, R8R13/R8R14AAE sin List Price). 9114 no corre AOS 8; del 9106 solo
++está la tabla AOS 10; las series 7000/7200 solo tienen cifras AOS 8 — cada descarte lleva
++su motivo en el veredicto y en la revisión del diseño. La propuesta exportada declara el SO.
++Escenario de la auditoría: 12.000 clientes / 1.200 APs ya no añade una Gold de US$19.995;
++300 usuarios / 40 APs vuelve a la serie 9000 en vez de un 9106.
++
++**C4 · Boost.** Se calculaba sobre `needProc` (margen + penalización + usuarios) con una
++cuota de breakout invertida (MPLS + 0,70 × Internet): un hub MPLS 1G + DIA 1G pedía 10
++bloques (US$196.560). Ahora es el 30 % de `bwTunelesPrivados` del motor (la cifra que el
++propio hint del breakout muestra) → 2 bloques. Se descarta el appliance cuyo Boost
++recomendado por HPE (`spec.boostRec`) no alcanza, y la barra de la ficha muestra ese
++recomendado en vez del techo WAN.
++
++**C5 · fin de venta.** Boletines oficiales en `EOL_ANNOUNCED`: 7005/7008 (último pedido
++31-oct-2022, soporte hasta 31-oct-2027; 7008 → 9012, no 9004) y 7210/7220 (31-ene-2025 /
++31-ene-2030; → 9240, el 7220 con Silver R8R13AAE). `FICHA.rango` ya los saca de la
++recomendación; siguen en el catálogo y en el selector para parque instalado.
++
++**A1 · DTD en EC-XS.** `dtd:false` en el EC-XS y filtro duro: con Dynamic Threat Defense
++ya no sale recomendado ni cotiza una licencia que no corre.
++
++**Dónde vive.** Las reglas puras salen a `public/js/aruba-reglas.js` (UMD, mismo patrón
++que `motor-ingenieria.js`) para probarlas en Node: `test/aruba-auditoria-fase1.test.js`
++(12 pruebas con los escenarios de la auditoría) y `test/e2e/e2e-auditoria-fase1.js` (19
++comprobaciones en Chromium, entrando por el enlace del escenario). `e2e-ciclo-vida.js`
++pasa a esperar el 7005 en rojo y el 7010 en ámbar. `npm run verificar` 404/404, e2e 9/9,
++`npm run pantallas` 16/16, arranque con `NODE_ENV=production` con `[seed]` y `/salud` ok.
++
+ ### Interconexión EdgeHA en la lista de materiales — pendiente #7 (2026-09-17)
+ 
+ El asistente de cableado del plan 13 dejaba claro que el enlace EdgeHA necesita un
+diff --git a/eslint.config.js b/eslint.config.js
+index f8aa4b0..a316a38 100644
+--- a/eslint.config.js
++++ b/eslint.config.js
+@@ -45,6 +45,9 @@ const globalsNavegador = {
+   // Motor de ingeniería carrier-grade (brief del dueño 2026-09-13): módulo UMD, global
+   // en el navegador y requireable desde Node en los tests.
+   MotorIngenieria: 'readonly',
++  // Reglas puras del dimensionador Aruba (fase 1 de la auditoria 2026-09-17), mismo
++  // patron UMD que MotorIngenieria: /js/aruba-reglas.js.
++  ArubaReglas: 'readonly',
+ };
+ 
+ const reglas = {
+diff --git a/package-lock.json b/package-lock.json
+index 1353cfb..976f5a7 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -2230,7 +2230,7 @@
+     },
+     "node_modules/node-ensure": {
+       "version": "0.0.0",
+-      "resolved": "https://npm.mirrors.msh.team/node-ensure/-/node-ensure-0.0.0.tgz",
++      "resolved": "https://registry.npmjs.org/node-ensure/-/node-ensure-0.0.0.tgz",
+       "integrity": "sha512-DRI60hzo2oKN1ma0ckc6nQWlHU69RH6xN0sjQTjMpChPfTYvKZdcQFfdYK2RWbJcKyUizSIy/l8OTGxMAM1QDw==",
+       "dev": true,
+       "license": "MIT"
+@@ -2499,7 +2499,7 @@
+     },
+     "node_modules/pdf-parse": {
+       "version": "1.1.1",
+-      "resolved": "https://npm.mirrors.msh.team/pdf-parse/-/pdf-parse-1.1.1.tgz",
++      "resolved": "https://registry.npmjs.org/pdf-parse/-/pdf-parse-1.1.1.tgz",
+       "integrity": "sha512-v6ZJ/efsBpGrGGknjtq9J/oC8tZWq0KWL5vQrk2GlzLEQPUDB1ex+13Rmidl1neNN358Jn9EHZw5y07FFtaC7A==",
+       "dev": true,
+       "license": "MIT",
+@@ -2513,7 +2513,7 @@
+     },
+     "node_modules/pdf-parse/node_modules/debug": {
+       "version": "3.2.7",
+-      "resolved": "https://npm.mirrors.msh.team/debug/-/debug-3.2.7.tgz",
++      "resolved": "https://registry.npmjs.org/debug/-/debug-3.2.7.tgz",
+       "integrity": "sha512-CFjzYYAi4ThfiQvizrFQevTTXHtnCqWfe7x1AhgEscTz6ZbLbfoLRLPugTQyBth6f8ZERVUSyWHFD/7Wu4t1XQ==",
+       "dev": true,
+       "license": "MIT",
+@@ -2523,7 +2523,7 @@
+     },
+     "node_modules/pdf-parse/node_modules/ms": {
+       "version": "2.1.3",
+-      "resolved": "https://npm.mirrors.msh.team/ms/-/ms-2.1.3.tgz",
++      "resolved": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
+       "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==",
+       "dev": true,
+       "license": "MIT"
+diff --git a/public/dimensionador-aruba-edgeconnect.html b/public/dimensionador-aruba-edgeconnect.html
+index 0f9a87b..180a17d 100644
+--- a/public/dimensionador-aruba-edgeconnect.html
++++ b/public/dimensionador-aruba-edgeconnect.html
+@@ -376,6 +376,14 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
+       </div>
+       <p class="hint">Cada familia se dimensiona con lo que HPE publica para ella: EdgeConnect por <b>rango de caudal WAN</b>, los gateways por <b>throughput de firewall</b> y capacidad de clientes y APs. Solo EdgeConnect hace optimización WAN. Los gateways agrupan las series 9000, 9100 Hybrid, 9200 y las 7000/7200 de la línea anterior.</p>
+     </div>
++    <div class="field">
++      <label>Sistema operativo de los gateways</label>
++      <div class="seg" id="soSeg">
++        <button type="button" data-v="aos10" aria-pressed="true">AOS 10<br>(Central)</button>
++        <button type="button" data-v="aos8" aria-pressed="false">AOS 8<br>(Mobility Conductor)</button>
++      </div>
++      <p class="hint" id="soHint"><b>AOS 10</b>: gateways gestionados por HPE Aruba Networking Central. Serie 9000 hasta 128 APs (9004) / 256 (9012); 9240 Base 4.000 APs y 32.000 clientes, con licencias Silver/Gold AOS 10 (R8R41AAE/R8R42AAE). Las series 7000/7200 no se dimensionan aquí: sus cifras son de AOS 8. Solo afecta a los gateways; EdgeConnect corre ECOS.</p>
++    </div>
+     <div class="field">
+       <label>Destino del tráfico</label>
+       <div class="seg" id="destSeg">
+@@ -439,7 +447,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
+     <div class="field">
+       <label for="users">Usuarios / dispositivos concurrentes <span class="req-sse-tag" id="usersReqTag" hidden>— define el nº de licencias SSE</span></label>
+       <input type="number" id="users" min="1" step="1" autocomplete="off">
+-      <p class="hint" id="usersHint">Influye en tres cálculos: (1) los <b>flujos simultáneos</b> que debe sostener el appliance (regla 80/150 por usuario del VSG, vía el perfil de entorno); (2) sin enlaces declarados, el <b>tráfico estimado</b> del sitio (usuarios × Mbps/usuario) del que sale el tier; (3) en los gateways es una <b>restricción dura de capacidad</b>: la serie 9000 soporta 2.048 clientes y la 9200 hasta 32.000 con licencia Gold. Además, con estrategia de seguridad <b>HPE Aruba SSE</b> esta cifra ES la cantidad de licencias: SSE se suscribe por usuario (QuickSpecs SSE) y la línea del BOM no se puede cotizar sin ella.</p>
++      <p class="hint" id="usersHint">Influye en tres cálculos: (1) los <b>flujos simultáneos</b> que debe sostener el appliance (regla 80/150 por usuario del VSG, vía el perfil de entorno); (2) sin enlaces declarados, el <b>tráfico estimado</b> del sitio (usuarios × Mbps/usuario) del que sale el tier; (3) en los gateways es una <b>restricción dura de capacidad</b>: la serie 9000 soporta 2.048 clientes y el 9240 32.000 sin licencia en AOS 10 (64.000 con Gold) o 16.000 en AOS 8 (32.000 con Gold) — según el sistema operativo del panel 1. Además, con estrategia de seguridad <b>HPE Aruba SSE</b> esta cifra ES la cantidad de licencias: SSE se suscribe por usuario (QuickSpecs SSE) y la línea del BOM no se puede cotizar sin ella.</p>
+     </div>
+     <div class="field">
+       <label for="perfilEntorno">Perfil de entorno — flujos simultáneos</label>
+@@ -457,7 +465,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
+     <div class="field">
+       <label for="aps">Puntos de acceso a gestionar</label>
+       <input type="number" id="aps" min="0" step="1" autocomplete="off">
+-      <p class="hint">Deja 0 para omitirlo. Solo aplica a los gateways, que hacen de controladora: la serie 9000 soporta hasta 32 APs y la 9200 hasta 2.000 con licencia Gold.</p>
++      <p class="hint">Deja 0 para omitirlo. Solo aplica a los gateways, que hacen de controladora. En AOS 10: 128 APs el 9004, 256 el 9012 y 4.000 el 9240 sin licencia (16.000 con Gold). En AOS 8: 32 en la serie 9000 y 512 el 9240 (2.000 con Gold).</p>
+     </div>
+     <div class="field">
+       <label for="fecMode">Path Conditioning (FEC)</label>
+@@ -726,7 +734,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
+           <td>Identifica la aplicación en el primer paquete, antes de decidir camino</td>
+           <td>La decisión de breakout local o reenvío al SSE no espera a que la sesión se establezca</td></tr>
+       <tr><td><b>Convergencia SD-Branch</b></td>
+-          <td>Los gateways de la serie 9000 terminan la WAN y actúan de controladora de hasta 32 APs desde el mismo equipo, gestionados por Central</td>
++          <td>Los gateways de la serie 9000 terminan la WAN y actúan de controladora de hasta 128 APs (9004) o 256 (9012) desde el mismo equipo, gestionados por Central en AOS 10 (32 en AOS 8)</td>
+           <td>En sucursales pequeñas elimina una caja y un contrato. La contrapartida, que hay que decir: no hacen optimización WAN — si hace falta Boost, la respuesta es EdgeConnect</td></tr>
+       <tr><td><b>Capacidad por licencia (serie 9200)</b></td>
+           <td>El mismo chasis entrega 20 Gbps solo con hardware, 30 con licencia Silver y 40 con Gold, escalando también APs y dispositivos</td>
+@@ -843,6 +851,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
+ </div>
+ 
+ <script src="/js/motor-ingenieria.js"></script>
++<script src="/js/aruba-reglas.js"></script>
+ <script src="/js/bom.js"></script>
+ <script src="/js/ficha.js"></script>
+ <script src="/js/estado.js"></script>
+diff --git a/public/js/aruba-reglas.js b/public/js/aruba-reglas.js
+new file mode 100644
+index 0000000..493ff45
+--- /dev/null
++++ b/public/js/aruba-reglas.js
+@@ -0,0 +1,105 @@
++'use strict';
++/* global module */
++/* ══ REGLAS PURAS DEL DIMENSIONADOR ARUBA (fase 1 de la auditoria 2026-09-17) ══
++   La auditoria tecnica del 2026-09-17 (documento «Auditoria tecnica — Dimensionador
++   Aruba») encontro cinco fallos criticos que cambiaban el equipo o el precio de la
++   propuesta. Cuatro de ellos eran reglas de calculo enterradas en la pagina, sin prueba
++   posible porque la pagina necesita DOM. Se extraen aqui, sin DOM ni estado, con el mismo
++   patron UMD que motor-ingenieria.js: global `ArubaReglas` en el navegador y require()
++   en los tests de Node (test/aruba-auditoria-fase1.test.js).
++
++   C1 · tierParaCaudal   — el tier automatico solo elige entre los tiers que EXISTEN para
++                           el nivel deducido. Foundation se vende en 100 Mbps, 1 Gbps e
++                           ilimitado; proponer «Foundation 200 Mbps» dejaba la suscripcion
++                           en «consultar» y fuera del total.
++   C2/C3 · capacidadSo   — gateways: las cifras de APs, clientes y licencia de capacidad
++                           dependen del sistema operativo (AOS 10 / AOS 8). El catalogo
++                           mezclaba cifras AOS 8 con SKU de licencia AOS 10.
++   C4 · boostMbpsSitio   — Boost = 30 % del trafico WAN PRIVADO que viaja por el tunel
++                           (regla de preventa declarada), no del requerimiento inflado con
++                           margen, penalizaciones y una cuota de breakout invertida.
++        boostRecMbps     — el Boost recomendado por HPE de cada appliance, como numero,
++                           para descartar el modelo que no lo sostiene.
++   A1 · admiteDtd        — Dynamic Threat Defense no corre en EC-XS (doc oficial): filtro
++                           duro, no solo un aviso rojo debajo de la recomendacion. */
++(function(root, factory){
++  const api = factory();
++  if (typeof module !== 'undefined' && module.exports) module.exports = api;
++  if (root) root.ArubaReglas = api;
++})(typeof window !== 'undefined' ? window : globalThis, function(){
++
++  // Porcentaje del trafico WAN privado que se licencia como Boost. Regla de preventa del
++  // dueño (2026-09-13), SIN FUENTE oficial: HPE no publica porcentaje guia; la unica regla
++  // de campo localizada sugiere 40 % (discrepancia documentada en aruba.js/fuentes.js).
++  const BOOST_CUOTA = 0.30;
++
++  // C1. `tiers` = SIZING.bwTiers (ordenados de menor a mayor, el ilimitado con mbps null al
++  // final); `licenses` = LICENSES del API ({bw100:{foundation:{…},advanced:{…}}, …}).
++  // Un tier sin datos de licencia en absoluto se conserva (misma semantica que el filtro
++  // del selector manual: `!lic || lic[nivel]`); uno que tiene datos pero no para el nivel
++  // pedido NO existe para ese nivel y se salta.
++  function tierParaCaudal(tiers, licenses, mbps, nivel) {
++    const lista = (tiers || []).filter((t) => {
++      if (!nivel) return true;
++      const lic = licenses && licenses[t.code];
++      return !lic || !!lic[nivel];
++    });
++    for (const t of lista) {
++      if (t.mbps != null && t.mbps >= mbps) return t;
++    }
++    // Por encima del ultimo tier con cifra: el ilimitado, si existe para el nivel.
++    const ilimitado = lista.find((t) => t.mbps == null);
++    return ilimitado || lista[lista.length - 1] || null;
++  }
++
++  // C2/C3. Capacidad del gateway para el sistema operativo elegido.
++  //   `m.porSo` ausente           → las cifras base del modelo valen para ambos SO.
++  //   `m.porSo[so]` es un objeto  → se superpone a las cifras base (aps, clients, licCap…).
++  //   `m.porSo[so] === null`      → el catalogo NO tiene cifras de ese modelo para ese SO
++  //                                  (o el modelo no lo soporta): no se puede afirmar que
++  //                                  cumpla, y el dimensionador lo descarta explicandolo.
++  // Devuelve {sinCifra:true, motivo} o el objeto a superponer ({} si no hay cambio).
++  function capacidadSo(m, so) {
++    if (!m || !m.porSo || !so) return {};
++    if (!(so in m.porSo)) return {};
++    const ov = m.porSo[so];
++    if (ov === null) {
++      const motivo = (m.porSoMotivo && m.porSoMotivo[so]) || 'sin cifras de capacidad para este sistema operativo en el catalogo';
++      return { sinCifra: true, motivo };
++    }
++    return ov;
++  }
++
++  // C4. Mbps de Boost que necesita la sede.
++  //   · Con enlaces declarados: el 30 % del trafico que el motor de ingenieria deja en los
++  //     tuneles privados (`bwTunelesPrivados`: todo el underlay sin breakout; con breakout,
++  //     la cuota interna de la regla 70/30 del brief). Es trafico ACTUAL: Boost se reasigna
++  //     del pool en minutos sin tocar hardware, asi que no se le aplica margen de
++  //     crecimiento, penalizacion de funcion ni paridad FEC (que se añade DESPUES de
++  //     optimizar, en el lado WAN).
++  //   · Sin enlaces: el 30 % de la demanda estimada actual (usuarios × Mbps/usuario).
++  function boostMbpsSitio({ bwTunelesPrivados = 0, caudalTotal = 0, users = 0, perUser = 0 } = {}) {
++    const privado = caudalTotal > 0 ? bwTunelesPrivados : users * perUser;
++    return Math.round(BOOST_CUOTA * Math.max(0, privado || 0));
++  }
++
++  // Boost recomendado por HPE (spec.boostRec: «200 Mbps», «1 Gbps», «8 Gbps»), en Mbps.
++  // null = el catalogo no lo publica para ese modelo (EC-V): no descarta, se declara.
++  function boostRecMbps(m) {
++    const s = m && m.spec && m.spec.boostRec;
++    if (!s) return null;
++    const x = /([\d.,]+)\s*(G|M)bps/i.exec(String(s));
++    if (!x) return null;
++    const n = parseFloat(x[1].replace(',', '.'));
++    if (!Number.isFinite(n)) return null;
++    return /g/i.test(x[2]) ? Math.round(n * 1000) : Math.round(n);
++  }
++
++  // A1. ¿Admite Dynamic Threat Defense (IDS/IPS en el chasis)? Solo EdgeConnect, y no el
++  // modelo que el catalogo marca `dtd:false` (EC-XS, doc oficial de IDS/IPS).
++  function admiteDtd(m) {
++    return !!m && m.fam === 'ec' && m.dtd !== false;
++  }
++
++  return { BOOST_CUOTA, tierParaCaudal, capacidadSo, boostMbpsSitio, boostRecMbps, admiteDtd };
++});
+diff --git a/public/js/dimensionador-aruba-edgeconnect.js b/public/js/dimensionador-aruba-edgeconnect.js
+index 5bcf9d7..b8030cf 100644
+--- a/public/js/dimensionador-aruba-edgeconnect.js
++++ b/public/js/dimensionador-aruba-edgeconnect.js
+@@ -63,7 +63,7 @@ const $=id=>document.getElementById(id);
+ // inetType/bwInet) salen del flujo y los sustituye el Multi-Underlay Builder — los enlaces
+ // viajan serializados como JSON {v:2, wanLinks:[...]} en el input oculto #wanLinksData.
+ // La migración v1→v2 de enlaces antiguos vive en migrarEstadoV1().
+-const CAMPOS_ESCENARIO=['wanLinksData','users','aps','perUser','head','fecMode','selTrafico','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','famSeg','segSeg','destSeg','pickModel','personaSeg','selSeguridad','selTier','chkBreakout','selDescuento','dtoCustom',
++const CAMPOS_ESCENARIO=['wanLinksData','users','aps','perUser','head','fecMode','selTrafico','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','famSeg','segSeg','destSeg','soSeg','pickModel','personaSeg','selSeguridad','selTier','chkBreakout','selDescuento','dtoCustom',
+   // Contexto MSP del escenario (etapa A / #39, 2026-09-14): viajan en la URL y en los
+   // perfiles multi-sede como un campo más, y encabezan la lista de materiales y el Excel.
+   'nombreCliente','refProyecto',
+@@ -88,6 +88,16 @@ let famMode='any', segMode='branch', destMode='hibrido', lastPick=null;
+ // — restringen el catalogo y alimentan el BOM. La estrategia pasa a ser un <select>
+ // (#selSeguridad, SPEC parte B) con valores none/dtd/sse.
+ let personaMode='auto', secMode='none';
++// Sistema operativo de los gateways (C2/C3 de la auditoria 2026-09-17): AOS 10 por
++// defecto — la arquitectura que gestiona Central y la que usa este catalogo. Cambia las
++// cifras de APs, clientes y licencia de capacidad (ver aplicarSo).
++let soMode='aos10';
++// Hint del selector y nombre legible de cada SO (lo usan la ficha, el BOM y el veredicto).
++const SO_HINT={
++  aos10:'<b>AOS 10</b>: gateways gestionados por HPE Aruba Networking Central. Serie 9000 hasta 128 APs (9004) / 256 (9012); 9240 Base 4.000 APs y 32.000 clientes, con licencias Silver/Gold AOS 10 (R8R41AAE/R8R42AAE). Las series 7000/7200 no se dimensionan aquí: sus cifras son de AOS 8. Solo afecta a los gateways; EdgeConnect corre ECOS.',
++  aos8:'<b>AOS 8</b>: Mobility Conductor / controladoras. Serie 9000 hasta 32 APs; 9240 Base 512 APs y 16.000 clientes, con licencias Silver/Gold AOS 8 (R8R13AAE/R8R14AAE, sin List Price en la lista: van en «consultar»). El 9114 no corre AOS 8 y del 9106 el catálogo solo trae la tabla AOS 10. Solo afecta a los gateways; EdgeConnect corre ECOS.',
++};
++const SO_NOMBRE={aos10:'AOS 10 (Central)', aos8:'AOS 8 (Mobility Conductor)'};
+ let bomFilas=[], bomMeta={};
+ 
+ /* ══ M1 · MULTI-UNDERLAY BUILDER (SPEC parte B, 2026-09-13; rediseño carrier-grade de
+@@ -915,6 +925,7 @@ document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',
+ $('famSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('famSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));famMode=b.dataset.v;render();});
+ $('segSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('segSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));segMode=b.dataset.v;render();});
+ $('destSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('destSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));destMode=b.dataset.v;$('destHint').textContent=DEST_HINT[destMode]||'';render();});
++$('soSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('soSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));soMode=b.dataset.v;$('soHint').innerHTML=SO_HINT[soMode]||'';render();});
+ ['users','aps','perUser','head','fecMode','selTrafico','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','chkBreakout','selTier',
+   // Cliente/referencia (etapa A / #39): también repintan — la cabecera MSP del BOM se
+   // escribe en el render y sin este binding no aparecía hasta que cambiara otro campo.
+@@ -1113,6 +1124,29 @@ function renderCatalogo(){
+ const famLabel=m=>m.serie+(m.fam==='ec'?' SD-WAN':' · gateway');
+ const SEG_MATCH={branch:/Sucursal|remota|peq|med/i,campus:/Campus|Hub/i,dc:/Datacenter|Head-end|Virtual/i};
+ 
++/* ══ SISTEMA OPERATIVO DE LOS GATEWAYS (C2/C3 de la auditoria 2026-09-17) ══
++   Las cifras de APs, clientes y licencia de capacidad de un gateway dependen de su
++   sistema operativo: el 9004 gestiona 128 APs en AOS 10 y 32 en AOS 8; el 9240 Base
++   4.000 APs / 32.000 clientes en AOS 10 y 512 / 16.000 en AOS 8, con SKU de licencia
++   distintos. El catalogo trae la cifra base y `porSo` con lo que cambia por SO
++   (legacyData/aruba.js); aplicarSo() la superpone sobre MODELS antes de cada render, asi
++   que el filtro, la ficha, la escalera de la 9200 y el BOM leen la MISMA cifra. La regla
++   pura vive en aruba-reglas.js (capacidadSo), probada en Node. */
++
++function aplicarSo(){
++  for(const m of MODELS){
++    if(!m.porSo) continue;
++    if(!m._base) m._base={aps:m.aps, clients:m.clients, fw:m.fw, licCap:m.licCap};
++    const ov=ArubaReglas.capacidadSo(m,soMode);
++    Object.assign(m,m._base);
++    m.sinCifraSo=!!ov.sinCifra;
++    m.motivoSo=ov.sinCifra?ov.motivo:null;
++    if(!ov.sinCifra){
++      for(const k of ['aps','clients','fw','licCap']) if(k in ov) m[k]=ov[k];
++    }
++  }
++}
++
+ // El filtro de plataforma combina familia y rol: 'ec' es EdgeConnect, y 'sucursal'/'campus'
+ // agrupan los gateways por para que sirven, no por su numero de serie.
+ function coincideFiltro(m,modo){
+@@ -1163,10 +1197,13 @@ function nivelLicenciaNecesario(m,need,users,aps){
+     ||m.licCap[m.licCap.length-1];
+ }
+ 
+-function tierParaCaudal(mbps){
+-  const tiers=SIZING.bwTiers||[];
+-  for(const t of tiers){ if(t.mbps!=null&&t.mbps>=mbps) return t; }
+-  return tiers[tiers.length-1]||null;
++// C1 de la auditoria 2026-09-17: el tier se elige SOLO entre los que existen para el
++// nivel deducido. Antes recorria los 8 tiers de SIZING.bwTiers sin mirar el nivel y
++// proponia «Foundation 200 Mbps» (o 20/50/500 Mbps, 2 Gbps), que HPE no vende: la
++// suscripcion quedaba en «consultar» y fuera del total. La regla vive en aruba-reglas.js
++// (probada en Node); aqui solo se le pasan los datos del API.
++function tierParaCaudal(mbps,nivel){
++  return ArubaReglas.tierParaCaudal(SIZING.bwTiers,LICENSES,mbps,nivel);
+ }
+ // Ficha técnica de datasheet (campo `spec` del catálogo, 2026-09-13): pares clave →
+ // etiqueta en el orden en que deben aparecer. Claves ausentes = HPE no publica el dato
+@@ -1263,17 +1300,14 @@ function porqueNivelEC(nivel){
+     :'sin funciones avanzadas marcadas: gestión centralizada, monitorización e interconexión SD-WAN con SLA — Foundation basta';
+ }
+ 
+-// Mbps de Boost necesarios: el 30 % del tráfico WAN PRIVADO (regla de preventa declarada
+-// por la arquitectura, 2026-09-13 — HPE no publica porcentaje guía; la única regla de
+-// campo localizada, no oficial, sugiere 40 %: queda documentada la discrepancia y manda
+-// la regla declarada del dueño). Como tráfico WAN privado se toma el caudal que los
+-// enlaces transportan ANTES de la reducción de Boost —que es el tráfico que el motor de
+-// optimización procesa—: needProc con la paridad FEC. Con Local Breakout se multiplica
+-// por la cuota que sigue en el overlay (share = caudalEfectivo/caudalTotal — regla 70/30
+-// del brief del duenyo, SIN FUENTE oficial; queda documentado).
+-function boostMbpsAuto(needProc,fec,share){
+-  return Math.round(0.30*needProc*(1+(fec?fec.pct:0))*(share!=null?share:1));
+-}
++// Mbps de Boost necesarios (C4 de la auditoria 2026-09-17): el 30 % del trafico WAN
++// PRIVADO que viaja por los tuneles — ArubaReglas.boostMbpsSitio. Antes se calculaba sobre
++// needProc (con margen de crecimiento, penalizacion de funcion y demanda por usuario) y
++// una cuota de breakout invertida (MPLS + 0,70 x Internet, cuando la regla que muestra la
++// pagina es que el 70 % sale local): en un hub MPLS 1G + DIA 1G pedia 10 bloques
++// (US$196.560 a 3 anos) donde su propia regla da 2. Ahora usa bwTunelesPrivados del motor
++// de ingenieria — la MISMA cifra que el hint del breakout declara como «el tunel al DC
++// sostiene ≈N» — y se valida contra el Boost recomendado por HPE de cada appliance.
+ 
+ /* ══ M2 · AUDITORÍA DE PUERTOS (SPEC B.3) ══
+    Cada enlace WAN declarado ocupa un puerto del chasis y el appliance necesita además
+@@ -1406,7 +1440,10 @@ function estadoDerivado(){
+   // no existen en la lista oficial (restricción declarada en el propio select, que los
+   // bloquea con title explicativo). Se lee DINÁMICAMENTE de LICENSES: cuando DATOS
+   // amplíe la lista a 8 tiers, el filtro se actualiza solo.
+-  const tierAuto=tierParaCaudal(tierCaudal);
++  // El nivel se deduce ANTES que el tier (C1): el tier automatico solo puede elegir entre
++  // los que existen para ese nivel — con Foundation, 100 Mbps / 1 Gbps / ilimitado.
++  const nivelTier=bundle==='onprem'?'onprem':nivelAutoEC();
++  const tierAuto=tierParaCaudal(tierCaudal,nivelTier);
+   // Sincronización visible con el módulo 2 (petición del dueño, 2026-09-15): la opción
+   // «Automático» declara QUÉ tier está deduciendo del agregado WAN en este momento —
+   // antes el usuario veía que variaba pero no cómo se calculaba.
+@@ -1414,7 +1451,6 @@ function estadoDerivado(){
+   if(opAuto) opAuto.textContent=tierAuto
+     ?`Automático — ${tierAuto.n} (Σ enlaces WAN del módulo 2)`
+     :'Automático — deducido del caudal del sitio';
+-  const nivelTier=bundle==='onprem'?'onprem':nivelAutoEC();
+   const tManual=(SIZING.bwTiers||[]).find(t=>t.code===$('selTier').value);
+   const tier=(tManual&&(!LICENSES[tManual.code]||LICENSES[tManual.code][nivelTier]))?tManual:tierAuto;
+   const termYrs=parseInt($('termYears').value)||3;
+@@ -1426,10 +1462,12 @@ function estadoDerivado(){
+   // Boost auto-dimensionado: 30 % del tráfico WAN privado, en bloques de 100 Mbps.
+   // Sin suscripción no hay Boost (es un add-on suyo, no un producto independiente).
+   const share=(caudalTotal>0&&breakout)?caudalEfectivo/caudalTotal:1;
+-  const bloques=(boost&&bundle)?bloquesBoost(boostMbpsAuto(needProc,fec,share)):0;
++  const boostMbps=(boost&&bundle)?ArubaReglas.boostMbpsSitio({
++    bwTunelesPrivados:ing.distribucion.bwTunelesPrivados, caudalTotal, users, perUser}):0;
++  const bloques=(boost&&bundle)?bloquesBoost(boostMbps):0;
+   return {users,aps,perUser,head,boost,fec,perfil,needProc,wanNeed,tierCaudal,
+     tasaFlujos,flujosReq,tier,tierAuto,onprem,bundle,central,termYrs,care,qty,bloques,
+-    wanLinks,caudalTotal,mplsMbps,inetMbps,breakout,caudalEfectivo,share,
++    wanLinks,caudalTotal,mplsMbps,inetMbps,breakout,caudalEfectivo,share,boostMbps,
+     ing,featurePenalty,haRegla};
+ }
+ 
+@@ -1445,6 +1483,12 @@ const REGLAS_DISENO=[
+    texto:(D,m)=>`Flujos insuficientes: ${m.id} publica ${miles(flujosDe(m))} flujos simultaneos y el escenario estima ${miles(D.flujosReq)} (${miles(D.users)} usuarios x ${D.tasaFlujos}/usuario). El recomendado del dimensionador si los cumple.`},
+   {nivel:'rojo', cuando:(D,m)=>m.fam==='ec'&&m.wanMax!=null&&D.wanNeed>m.wanMax,
+    texto:(D,m)=>`Caudal WAN insuficiente: ${m.id} publica hasta ${fmt(m.wanMax)} y el requerimiento de diseño del motor de ingeniería es ${fmt(D.wanNeed)} (ya con IMIX, FEC, seguridad y margen).`},
++  // Fase 1 de la auditoria 2026-09-17 — un equipo elegido A MANO fuera de lo que el
++  // dimensionador descarta se sigue cotizando, pero la revision lo dice en rojo.
++  {nivel:'rojo', cuando:(D,m)=>m.fam==='ec'&&D.boost&&D.boostMbps>0&&ArubaReglas.boostRecMbps(m)!=null&&D.boostMbps>ArubaReglas.boostRecMbps(m),
++   texto:(D,m)=>`Boost insuficiente: HPE recomienda optimizar hasta ${fmt(ArubaReglas.boostRecMbps(m))} en ${m.id} y la sede necesita ${fmt(D.boostMbps)} (30 % del tráfico por los túneles).`},
++  {nivel:'rojo', cuando:(D,m)=>m.fam==='gw'&&!!m.sinCifraSo,
++   texto:(D,m)=>`Sistema operativo: el diseño está en ${SO_NOMBRE[soMode]||soMode} y ${m.id} no tiene cifras para él — ${m.motivoSo}.`},
+   {nivel:'rojo', cuando:(D,m)=>m.fam!=='ec'&&m.fw!=null&&D.needProc>m.fw,
+    texto:(D,m)=>`Proceso insuficiente: ${m.id} publica ${fmt(m.fw)} de firewall y el escenario necesita ${fmt(D.needProc)}.`},
+   // (La antigua alerta «HA exige exactamente 2 unidades y la cantidad es N» desapareció
+@@ -1453,7 +1497,7 @@ const REGLAS_DISENO=[
+   // IDS/IPS no corre en EC-XS (doc oficial Orchestrator/IDS: PN 200889/200900 sin soporte;
+   // en EC-V exige min. 4 vCPU y 16 GB RAM). Marcar DTD con un EC-XS seleccionado es un
+   // diseno imposible — hay que subir de modelo o quitar la funcion.
+-  {nivel:'rojo', cuando:(D,m)=>m.id==='EC-XS'&&secMode==='dtd',
++  {nivel:'rojo', cuando:(D,m)=>m.fam==='ec'&&secMode==='dtd'&&!ArubaReglas.admiteDtd(m),
+    texto:()=>'Dynamic Threat Defense (IDS/IPS) NO corre en EC-XS segun la documentacion oficial de HPE: sube de modelo (EC-10104 en adelante) o cambia la estrategia de seguridad.'},
+   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&D.boost&&!D.bundle,
+    texto:()=>'Boost marcado pero EXCLUIDO: es un add-on de la suscripcion EdgeConnect — sin ella no hay fabric que optimizar.'},
+@@ -1566,6 +1610,9 @@ function render(){
+   // diseño y el BOM se derivan de la casilla ya ajustada — si se aplicara después del
+   // estado derivado, el primer repintado cotizaría 1 unidad con la casilla marcada.
+   sincronizarHaAuto();
++  // Sistema operativo de los gateways (C2/C3): se superpone ANTES de derivar nada — la
++  // capacidad que ven el filtro, la ficha y el BOM es la del SO elegido.
++  aplicarSo();
+   // Todo lo calculable sale del estado derivado: una sola fuente para el dimensionador,
+   // la ficha y el BOM (2026-09-13, refactor arquitectónico).
+   const D=estadoDerivado();
+@@ -1667,6 +1714,8 @@ function render(){
+   });
+ 
+   let outByBoost=0,outByClients=0,outByAps=0,outBySinDato=0,outByFlujos=0,outByPersona=0,outByPuertos=0,sobrado=[];
++  // Fase 1 de la auditoria 2026-09-17: tres descartes nuevos, cada uno con su porque.
++  const outBySo=[], outByDtd=[], outByBoostRec=[];
+   // M2 · Auditoría de puertos (SPEC B.3): el EC-10104 (4× RJ-45, sin SFP) queda descartado
+   // si los enlaces declarados no caben en sus puertos o alguno es óptico. Se anota si el
+   // modelo habría sido candidato sin esta regla: es lo que dispara #alertaEscalado.
+@@ -1678,6 +1727,13 @@ function render(){
+     if(personaMode!=='auto'&&personaMode!=='micro'&&PERSONA_MODELOS[personaMode]
+       &&!PERSONA_MODELOS[personaMode].includes(m.id)){ outByPersona++; return false; }
+     if(boost&&m.boostMax==null){ outByBoost++; return false; }
++    // A1: Dynamic Threat Defense solo corre en EdgeConnect y NO en EC-XS (`dtd:false`, doc
++    // oficial de IDS/IPS). Antes era un aviso rojo debajo de un EC-XS que seguía saliendo
++    // RECOMENDADO y cotizaba la licencia DTD.
++    if(secMode==='dtd'&&!ArubaReglas.admiteDtd(m)){ if(m.fam==='ec') outByDtd.push(m.id); return false; }
++    // C2/C3: un gateway sin cifras para el SO elegido (9114 en AOS 8, series 7000/7200 en
++    // AOS 10) no puede afirmarse que cumpla — se descarta y se dice por qué.
++    if(m.sinCifraSo){ outBySo.push(m); return false; }
+     // EC-V no publica rango: se dimensiona por licencia y vCPU, no por hardware.
+     if(m.fam==='ec'&&m.wanMax==null) return false;
+     const cap=capacidadMax(m);
+@@ -1697,6 +1753,13 @@ function render(){
+     // null (EC-V, 9240) = la fuente no publica el dato: no descarta, se declara.
+     const fl=flujosDe(m);
+     if(flujosReq>0&&fl!=null&&fl<flujosReq){ outByFlujos++; return false; }
++    // C4: el Boost que necesita la sede no puede superar el que HPE recomienda optimizar
++    // en ese appliance (EC-10104 200 Mbps, EC-S 500 Mbps, EC-M 1 Gbps…). null = sin dato
++    // publicado: no descarta, se declara.
++    if(boost&&m.fam==='ec'&&D.boostMbps>0){
++      const rec=ArubaReglas.boostRecMbps(m);
++      if(rec!=null&&D.boostMbps>rec){ outByBoostRec.push(m.id); return false; }
++    }
+     // Auditoría de puertos EC-10104: la regla se evalúa AL FINAL para saber si el modelo
+     // habría cumplido todo lo demás (y por tanto el dimensionador está escalando por
+     // densidad de puertos u ópticas, no por capacidad).
+@@ -1783,6 +1846,9 @@ function render(){
+     const eolQueCumplen=candidates.filter(m=>FICHA.recomendable&&!FICHA.recomendable(m));
+     if(eolQueCumplen.length) why.push(`<li><b>${eolQueCumplen.map(m=>m.id).join(', ')}</b> cumple${eolQueCumplen.length>1?'n':''} por capacidad pero está${eolQueCumplen.length>1?'n':''} <b>fuera de venta</b> (último pedido ${eolQueCumplen.map(m=>m.eolAnnounced&&m.eolAnnounced.lastOrder?m.eolAnnounced.lastOrder:'declarado').join(', ')}). Queda en el selector como referencia para parque instalado; la notificación oficial de fin de venta nombra el reemplazo — confirmarlo con el distribuidor.</li>`);
+     if(outByPersona) why.push(`<li><b>${outByPersona}</b> modelo(s) fuera del arquetipo de sede elegido: el VSG posiciona otros modelos para este tamaño de sitio. Cambia el arquetipo a «Libre» para recorrer todo el catálogo.</li>`);
++    if(outByDtd.length) why.push(`<li><b>${outByDtd.join(', ')}</b> descartado(s): Dynamic Threat Defense (IDS/IPS en el chasis) no corre en ese modelo según la documentación oficial de HPE.</li>`);
++    if(outByBoostRec.length) why.push(`<li><b>${outByBoostRec.join(', ')}</b> descartado(s) por Boost: la sede necesita optimizar <b>${fmt(D.boostMbps)}</b> y HPE recomienda menos en ese appliance.</li>`);
++    if(outBySo.length) why.push(`<li><b>${outBySo.length}</b> gateway(s) sin cifras para ${esc(SO_NOMBRE[soMode]||soMode)}: ${outBySo.map(m=>`<b>${esc(m.id)}</b> (${esc(m.motivoSo)})`).join('; ')}. Cambia el sistema operativo en el panel 1 si el diseño es para la otra arquitectura.</li>`);
+     if(outByBoost) why.push(`<li><b>${outByBoost}</b> modelo(s) descartado(s) por pedir Boost: la optimización WAN es exclusiva de EdgeConnect, los gateways de las series 9000, 9100 y 9200 no la hacen.</li>`);
+     if(outByClients) why.push(`<li><b>${outByClients}</b> gateway(s) descartado(s) por capacidad de clientes: hacen falta ${miles(users)}.</li>`);
+     if(outByAps) why.push(`<li><b>${outByAps}</b> gateway(s) descartado(s) por número de APs: hacen falta ${miles(aps)}.</li>`);
+@@ -1828,7 +1894,10 @@ function render(){
+       // veredicto de desbordamiento. Sin enlaces se conserva la prosa (la fórmula
+       // histórica no tiene traza del motor que mostrar).
+       flags.push(`<b>Caudal WAN a contratar:</b> ${fmt(D.ing.tierLicenciaBwRequerido||wanNeed)} — el tier de la suscripción se tasa por el ancho de banda físico agregado (brief carrier-grade). El requerimiento de diseño del appliance es ${fmt(wanNeed)}.${trazaMotorHtml(D,wanNeed)||' El motor de ingeniería aplica el IMIX del perfil de tráfico, la paridad FEC del modo elegido, la estrategia de seguridad y el margen de crecimiento.'}${boost?` Con la reducción ${perfil.factor}:1 de Boost sobre ${esc(perfil.n.toLowerCase())} en el caudal derivado.`:''} Tier de suscripción: <b>${tier?esc(tier.n):'—'}</b>.`);
+-      if(boost&&D.bloques) flags.push(`<b>Boost auto-dimensionado:</b> el enlace transporta ${fmt(wanNeed)} en vez de ${fmt(needProc*(1+fec.pct))}. Se licencia el 30 % del tráfico WAN privado estimado (${fmt(boostMbpsAuto(needProc,fec,D.share))}${D.share<1?' — ya descontada la descarga del breakout (regla 70/30: el 30 % del tráfico de Internet sale local)':''}) en bloques de ${SIZING.boost.bloque} Mbps que forman un pool del fabric — para esta sede, <b>${D.bloques} bloque(s)</b>.`);
++      if(boost&&D.bloques){
++        const rec=ArubaReglas.boostRecMbps(m);
++        flags.push(`<b>Boost auto-dimensionado:</b> se licencia el 30 % del tráfico WAN privado que viaja por los túneles (${D.caudalTotal>0?`${fmt(D.ing.distribucion.bwTunelesPrivados)}${D.breakout&&D.inetMbps>0?' tras la descarga del breakout — regla 70/30 del brief':''}`:`${fmt(D.users*D.perUser)} de demanda estimada`}) = <b>${fmt(D.boostMbps)}</b>, en bloques de ${SIZING.boost.bloque} Mbps que forman un pool del fabric — para esta sede, <b>${D.bloques} bloque(s)</b>. Es tráfico actual: el pool se reasigna en minutos, así que no lleva margen de crecimiento.${rec!=null?` HPE recomienda Boost hasta <b>${fmt(rec)}</b> en el ${esc(m.id)}.`:''}`);
++      }
+       else if(!boost) flags.push('Admite Boost. Merece evaluarse si el tráfico es repetitivo (réplicas, backups, VDI, CIFS/SMB): reduce el caudal contratado, que a 3–5 años suele pesar más en el TCO que el propio equipo.');
+       if(sobrado.includes(m.id)) flags.push(`<b class="warn">Sobredimensionado:</b> el requerimiento (${fmt(wanNeed)}) queda por debajo del suelo del rango publicado (${fmt(m.wanMin)}). Revisar el escalón inferior antes de cotizar.`);
+       // Nivel deducido de las funciones marcadas (matriz oficial QuickSpecs p.31): se
+@@ -1850,7 +1919,7 @@ function render(){
+     if(m.legacy) flags.push('<b class="warn">Línea anterior (AOS 8):</b> las series 7000 y 7200 siguen en canal y son la respuesta natural para <b>ampliar un parque ya instalado</b>, pero para un despliegue nuevo conviene contrastar con la generación actual (series 9000/9100/9200 sobre AOS 10).');
+     if(m.fam==='gw'&&m.rol==='sucursal'&&!m.legacy) flags.push(`<b>Sucursal:</b> el mismo equipo termina la WAN y hace de controladora de APs (hasta ${miles(m.aps)}), aplicando Dynamic Segmentation con el rol que traen el switch CX o el AP. No hace optimización WAN.`);
+     if(m.fam==='gw') flags.push(`<b>Central ${nivelAutoCentral()==='advanced'?'Advanced':'Foundation'}:</b> ${nivelAutoCentral()==='advanced'?'deducido de las funciones marcadas (segmentación de extremo a extremo o AIOps ampliada)':'gestión SD-Branch completa — firewall, VPN y políticas por aplicación ya son Foundation, sin funciones que fuercen el nivel superior'}.`);
+-    if(m.licCap&&nivel) flags.push(`<b>Capacidad por licencia:</b> escala sin cambiar de hardware. Para ${fmt(req)} hace falta el nivel <b>${esc(nivel.n)}</b> (${fmt(nivel.fw)}, ${miles(nivel.aps)} APs, ${miles(nivel.clients)} dispositivos).`);
++    if(m.licCap&&nivel) flags.push(`<b>Capacidad por licencia (${esc(SO_NOMBRE[soMode]||soMode)}):</b> escala sin cambiar de hardware. Para ${fmt(req)} hace falta el nivel <b>${esc(nivel.n)}</b> (${fmt(nivel.fw)}, ${miles(nivel.aps)} APs, ${miles(nivel.clients)} dispositivos).${soMode==='aos10'&&nivel.code!=='hw'?' En AOS 10 las licencias Silver y Gold no admiten IDPS (HPE, «AOS 10 Capacity Licenses»).':''}`);
+     // M2 · Aviso de densidad de ópticas (SPEC B.3), visible en la ficha — la misma regla
+     // va además a la «revisión del diseño» de la exportación (REGLAS_DISENO).
+     const sfpN=auditarPuertos(m,D.wanLinks).sfp;
+@@ -1883,7 +1952,10 @@ function render(){
+       const tope=m.wanMax||1;
+       html+=barra('Suelo del rango',m.wanMin,tope,false);
+       html+=barra('Techo del rango',m.wanMax,tope,true);
+-      if(m.boostMax!=null) html+=barra('Con Boost (máx.)',m.boostMax,tope,boost);
++      // C4: la barra de Boost muestra el Boost RECOMENDADO por HPE (spec.boostRec), no el
++      // techo WAN que guardaba boostMax — el EC-S decía «3 Gbps con Boost» cuando HPE
++      // recomienda optimizar hasta 500 Mbps.
++      {const rec=ArubaReglas.boostRecMbps(m); if(rec!=null) html+=barra('Boost recomendado por HPE',rec,tope,boost);}
+       nota='HPE publica para EdgeConnect un <b>rango de caudal WAN</b>, no un throughput único: por eso el dimensionamiento usa ese rango. '
+         + 'Quedar por debajo del suelo indica sobredimensionamiento, y es tan accionable como pasarse del techo.';
+     }else if(m.licCap){
+@@ -2286,7 +2358,7 @@ function renderBom(){
+         +`<br><span class="lic-auto-porque">${bundle==='onprem'
+             ?'modalidad On-Premises (E-STU) elegida en opciones avanzadas: el Orchestrator vive en la infraestructura del cliente'
+             :esc(porqueNivelEC(nivelAutoEC()))}</span>`
+-        +(bloques?`<br>Boost: <b>${bloques} bloque(s) de ${SIZING.boost.bloque} Mbps</b> = 30 % del tráfico WAN privado estimado (${fmt(boostMbpsAuto(D.needProc,D.fec,D.share))})`:'')
++        +(bloques?`<br>Boost: <b>${bloques} bloque(s) de ${SIZING.boost.bloque} Mbps</b> = 30 % del tráfico WAN privado por los túneles (${fmt(D.boostMbps)})`:'')
+       :'<b>Suscripción excluida</b><br><span class="lic-auto-porque">El equipo queda standalone, sin fabric gestionado ni ZTP — y tampoco se licencia Boost, que es un add-on de la suscripción.</span>';
+   }else{
+     $('centralAutoTxt').innerHTML=central
+@@ -2298,8 +2370,8 @@ function renderBom(){
+   }
+   if(esGwc){
+     $('capAutoTxt').innerHTML=capTier&&capTier.code!=='hw'
+-      ?`<b>${esc(capTier.n)}</b><br><span class="lic-auto-porque">deducido del dimensionamiento: ${fmt(D.needProc)} de proceso, ${miles(D.users)} dispositivos y ${miles(D.aps)} APs — el nivel ${esc(capTier.n)} es el primero que cubre las tres cifras</span>`
+-      :'<b>Solo hardware (20 Gbps)</b><br><span class="lic-auto-porque">sin licencia de capacidad: la serie 9200 entrega 20 Gbps, 512 APs y 16.000 dispositivos sin ella</span>';
++      ?`<b>${esc(capTier.n)}</b><br><span class="lic-auto-porque">deducido del dimensionamiento en ${esc(SO_NOMBRE[soMode]||soMode)}: ${fmt(D.needProc)} de proceso, ${miles(D.users)} dispositivos y ${miles(D.aps)} APs — el nivel ${esc(capTier.n)} es el primero que cubre las tres cifras${soMode==='aos10'?' · en AOS 10 las licencias Silver y Gold no admiten IDPS (HPE, «AOS 10 Capacity Licenses»)':''}</span>`
++      :(()=>{ const b=m.licCap&&m.licCap[0]; return `<b>Solo hardware (${b?fmt(b.fw):'—'})</b><br><span class="lic-auto-porque">sin licencia de capacidad en ${esc(SO_NOMBRE[soMode]||soMode)}: la serie 9200 entrega ${b?fmt(b.fw):'—'}, ${b?miles(b.aps):'—'} APs y ${b?miles(b.clients):'—'} dispositivos sin ella</span>`; })();
+   }
+ 
+   const lic=LICENSES[bwCode]||null;
+@@ -2561,6 +2633,8 @@ function renderBom(){
+       esEC?`  Rango de caudal WAN:  ${m.wanMin!=null?fmt(m.wanMin)+' - '+fmt(m.wanMax):'sin minimo publicado'}`
+           :`  Throughput firewall:  ${m.fw!=null?fmt(m.fw):'no publicado en las fuentes consultadas'}`,
+       m.clients!=null?`  Clientes / APs:       ${miles(m.clients)} / ${miles(m.aps)}`:null,
++      // C2/C3: las cifras de un gateway dependen del SO — la propuesta lo declara.
++      m.fam==='gw'?`  Sistema operativo:    ${SO_NOMBRE[soMode]||soMode}`:null,
+       // Sesiones IPsec y tuneles GRE salen de la exportacion (2026-09-13, refactor
+       // arquitectonico): el orquestador gestiona los tuneles dinamicamente y no son
+       // metrica de dimensionamiento. Los flujos simultaneos si lo son.
+diff --git a/scripts/importar-lista-aruba.js b/scripts/importar-lista-aruba.js
+index 2fbd8c7..4882c4c 100644
+--- a/scripts/importar-lista-aruba.js
++++ b/scripts/importar-lista-aruba.js
+@@ -186,6 +186,10 @@ function construirRoster(arubaData) {
+     for (const y of ['y1', 'y3', 'y5']) push(tier.sku[y], 'Central (gateways 70xx/90xx)', tier[y], 'central');
+   }
+   // 2.7 · Licencias perpetuas de capacidad (9240 Silver/Gold)
++  // Solo la tabla base (AOS 10: R8R41AAE/R8R42AAE, las que tienen fila en la lista). Las
++  // de AOS 8 que trae `porSo.aos8` (R8R13AAE/R8R14AAE, C2 de la auditoria 2026-09-17) NO
++  // estan en la lista del distribuidor: el BOM las declara en «consultar» y el roster no
++  // las reclama — el roster es exactamente lo que la lista tarifa.
+   for (const m of arubaData.MODELS) {
+     for (const c of m.licCap || []) push(c.sku, m.id, c.elp ?? null, 'capacidad');
+   }
+diff --git a/server/seed/legacyData/aruba.js b/server/seed/legacyData/aruba.js
+index 66033e2..309e161 100644
+--- a/server/seed/legacyData/aruba.js
++++ b/server/seed/legacyData/aruba.js
+@@ -162,8 +162,13 @@ const MODELS = [
+   //   Reference 440 W para la variante EC-L-P — se muestran ambos en spec.watts.
+   {id:'EC-XS', redund:false, psu:{tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 23 W en la primera revisión de hardware y 34 W en las posteriores — HPE publica el requerimiento, no un consumo típico. Fuente única mediante adaptador externo, sin opción de segunda.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Sucursal peq / Oficina remota',
+    wanMin:2, wanMax:200, boostMax:200,
++   // A1 de la auditoría 2026-09-17: Dynamic Threat Defense (IDS/IPS en el chasis) NO corre
++   // en EC-XS — doc oficial de IDS/IPS de Orchestrator y QuickSpecs («Advanced Security not
++   // supported on JM962A»). La página ya lo avisaba en rojo pero lo seguía RECOMENDANDO y
++   // cotizaba la licencia DTD; `dtd:false` lo convierte en filtro duro.
++   dtd:false,
+    ifaces:'4x RJ45 10/100/1000 LAN/WAN + 2x RJ45 10/100/1000 gestión + serie RJ-45',
+-   spec:{conexiones:'256.000', boostRec:'250 Mbps', idsips:'Sí', fru:'Ninguna',
++   spec:{conexiones:'256.000', boostRec:'250 Mbps', idsips:'No — Dynamic Threat Defense (IDS/IPS) no corre en EC-XS', fru:'Ninguna',
+      mtbf:'162.171 h (18,5 años)', watts:'23 W (primera revisión HW) / 34 W (posteriores) — requerimiento de alimentación', btu:'116 BTU/h',
+      ruido:'40 dBA', peso:'1,59 kg (3,5 lb)'},
+    // hwSku de la variante base completado el 2026-09-10 desde DATASHEETS.priceList (el
+@@ -295,11 +300,18 @@ const MODELS = [
+   // hwSku completado el 2026-09-10 desde el QuickSpecs de la serie (SKU (US) base; el
+   // documento trae ademas variantes RW/JP/IL/EG y TAA, no listadas por brevedad).
+   // fwSess completado el 2026-09-13 desde el DS de la serie 9000 (tabla AOS 10: 128K
+-  // sesiones de firewall). El `aps:32` del catálogo es la cifra AOS 8 (campus APs); la
+-  // tabla AOS 10 declara 128/256 "devices" por gateway — distinta arquitectura de gestión,
+-  // se muestra en spec.aps10 sin tocar el campo existente (ver PENDIENTES.md).
++  // sesiones de firewall).
++  // SISTEMA OPERATIVO (C3 de la auditoría 2026-09-17, resuelve el conflicto «aps 32 vs
++  // 128/256» que PENDIENTES.md dejaba al dueño): las dos cifras son ciertas, cada una en su
++  // arquitectura. El campo base `aps` pasa a la de AOS 10 (128 en 9004/9004-LTE, 256 en
++  // 9012 — tabla AOS 10 del DS de la serie 9000, la arquitectura que gestiona Central y
++  // la que usa este catálogo) y `porSo.aos8` superpone la de AOS 8 (32 APs en modo
++  // controladora). El selector «Sistema operativo de los gateways» de la página elige cuál
++  // aplica. Antes el dimensionador filtraba con 32 y mandaba a un 9106 (US$9.228) una
++  // sede de 40 APs que un 9012 (US$4.441) cubre en AOS 10.
+   {id:'Gateway 9004', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal peq',
+-   fw:4000, clients:2048, aps:32, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
++   fw:4000, clients:2048, aps:128, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
++   porSo:{aos10:{aps:128}, aos8:{aps:32}},
+    ifaces:'4x GbE RJ45', hwSku:'R1B20A', skus:[{sku:'R1B20A',d:'9004 (US) · 4x GbE RJ45'}],
+    spec:{aps10:'128', cps:'130.000 sesiones nuevas/s', cluster:'Hasta 4 gateways por cluster · 8.192 clientes por cluster (AOS 10)',
+      vlanMax:'4.094', ospf:'8.000 rutas', acls:'2.678 entradas', dhcp:'4.000 clientes', bridge:'64.000 entradas',
+@@ -308,7 +320,8 @@ const MODELS = [
+    ds:'https://www.hpe.com/psnow/doc/a00091602enw', dsFile:'gateway-9004.pdf'},
+ 
+   {id:'Gateway 9004-LTE', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal peq + LTE',
+-   fw:4000, clients:2048, aps:32, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
++   fw:4000, clients:2048, aps:128, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
++   porSo:{aos10:{aps:128}, aos8:{aps:32}},
+    ifaces:'4x GbE RJ45 + LTE integrado (uplink dedicado o redundante)', hwSku:'R3V91A',
+    skus:[{sku:'R3V91A',d:'9004-LTE (US) · 4x GbE RJ45 + LTE'}],
+    spec:{aps10:'128', cps:'130.000 sesiones nuevas/s', cluster:'Hasta 4 gateways por cluster · 8.192 clientes por cluster (AOS 10)',
+@@ -318,7 +331,8 @@ const MODELS = [
+    ds:'https://www.hpe.com/psnow/doc/a00091602enw', dsFile:'gateway-9004.pdf'},
+ 
+   {id:'Gateway 9012', fam:'gw', rol:'sucursal', serie:'Serie 9000', seg:'Sucursal med / gde',
+-   fw:6000, clients:2048, aps:32, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
++   fw:6000, clients:2048, aps:256, fwSess:128000, ipsecSess:2048, greTuns:544, boostMax:null,
++   porSo:{aos10:{aps:256}, aos8:{aps:32}},
+    ifaces:'12x GbE RJ45 (6x PoE+)', hwSku:'R1B31A',
+    skus:[{sku:'R1B31A',d:'9012 (US) · 12x GbE · 6x PoE+'},{sku:'R1B37A',d:'9012 (RW) TAA · 12x GbE · 6x PoE+'}],
+    spec:{aps10:'256', cps:'130.000 sesiones nuevas/s', cluster:'Hasta 4 gateways por cluster · 8.192 clientes por cluster (AOS 10)',
+@@ -339,6 +353,11 @@ const MODELS = [
+   // AOS-10, solo lo hace la sección AOS-8 (8K, solo 9106) que es otra arquitectura de gestión.
+   {id:'Gateway 9106', fam:'gw', rol:'sucursal', serie:'Serie 9100 Hybrid', seg:'Sucursal gde / Campus peq',
+    fw:10000, clients:8000, aps:2000, fwSess:2000000, ipsecSess:16000, greTuns:null, boostMax:null,
++   // C3 (2026-09-17): las cifras son de la tabla AOS 10. La sección AOS-8 de la misma
++   // QuickSpecs no está transcrita: en AOS 8 el modelo se descarta y se dice por qué, en
++   // vez de afirmar con cifras de otra arquitectura que cumple.
++   porSo:{aos8:null},
++   porSoMotivo:{aos8:'el catálogo solo trae la tabla AOS 10 de las QuickSpecs 9100 — la capacidad en AOS 8 se confirma en su sección AOS-8 antes de cotizarlo'},
+    ifaces:'2x SFP+ 10GbE + 2x combo SFP/RJ45 1GbE + 2x RJ45 1GbE con PoE hasta 60W',
+    spec:{cluster:'Hasta 6 gateways por cluster (AOS 10)', tuneles:'20.000 túneles totales (AOS 10)',
+      encTput:'GRE / AES-CBC-128/256 / AES-GCM-128/256: 10 Gbps (a velocidad de línea)',
+@@ -349,6 +368,8 @@ const MODELS = [
+ 
+   {id:'Gateway 9114', fam:'gw', rol:'campus', serie:'Serie 9100 Hybrid', seg:'Campus peq / Sucursal grande',
+    fw:20000, clients:10000, aps:4000, fwSess:2000000, ipsecSess:32000, greTuns:null, boostMax:null,
++   porSo:{aos8:null},
++   porSoMotivo:{aos8:'no corre AOS 8: la matriz de sistema operativo lo lista solo en AOS 10 (10.5.0.1+)'},
+    ifaces:'4x SFP+ 10GbE + 4x combo SFP/RJ45 1GbE + 1 slot de expansión',
+    spec:{cluster:'Hasta 6 gateways por cluster (AOS 10)', tuneles:'40.000 túneles totales (AOS 10)',
+      encTput:'GRE / AES-CBC-128/256 / AES-GCM-128/256: 20 Gbps (a velocidad de línea)',
+@@ -359,20 +380,39 @@ const MODELS = [
+ 
+   // ─── Serie 9200 · Campus Gateways ──────────────────────────────────────────
+   {id:'Gateway 9240', fam:'gw', rol:'campus', serie:'Serie 9200', seg:'Campus / Hub regional',
+-   fw:20000, clients:16000, aps:512, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
+-   // SKU y List Price de las licencias perpetuas (2026-09-13, lista del distribuidor):
+-   // variante AOS-10, la arquitectura que gestiona Central y la que usa este catálogo.
+-   // Existen las equivalentes AOS-8 (R8R13AAE/R8R14AAE) — no aplican aquí.
++   fw:20000, clients:32000, aps:4000, fwSess:null, ipsecSess:null, greTuns:null, boostMax:null,
++   // C2 de la auditoría 2026-09-17: el catálogo cotizaba los SKU de licencia de AOS 10
++   // (R8R41AAE/R8R42AAE, «9240 AOS10 Silver/Gold Capacity License» en la propia lista del
++   // distribuidor) con las capacidades de AOS 8 (512/1K/2K APs, 16K/24K/32K clientes). Con
++   // 12.000 clientes y 1.200 APs añadía una licencia Gold de US$19.995 que en AOS 10 no
++   // hace falta. Ahora cada sistema operativo trae SU tabla y SUS SKU:
++   //   · AOS 10 (base): DS serie 9200 + «AOS 10 Capacity Licenses» (techdocs HPE) —
++   //     Base 4K APs / 32K clientes / 20 Gbps; Silver 8K / 48K / 30 Gbps; Gold 16K / 64K /
++   //     40 Gbps. SKU R8R41AAE / R8R42AAE con su List Price. Silver y Gold NO admiten IDPS
++   //     (misma página oficial).
++   //   · AOS 8 (porSo.aos8): DS serie 9200, tabla AOS 8 — 512/1K/2K APs, 16K/24K/32K
++   //     clientes; reemplaza a 7210/7220/7240XM. SKU R8R13AAE / R8R14AAE (el boletín de fin
++   //     de venta del 7220 lo nombra: «9240 + Silver R8R13AAE»). Sin List Price en la lista
++   //     del distribuidor: van en «consultar», nunca con un precio inventado.
+    licCap:[
+-     {code:'hw',     n:'Solo hardware',             fw:20000, aps:512,  clients:16000},
+-     {code:'silver', n:'+ licencia Silver (perp.)', fw:30000, aps:1000, clients:24000, sku:'R8R41AAE', elp:9995},
+-     {code:'gold',   n:'+ licencia Gold (perp.)',   fw:40000, aps:2000, clients:32000, sku:'R8R42AAE', elp:19995},
++     {code:'hw',     n:'Solo hardware',             fw:20000, aps:4000,  clients:32000},
++     {code:'silver', n:'+ licencia Silver (perp.)', fw:30000, aps:8000,  clients:48000, sku:'R8R41AAE', elp:9995},
++     {code:'gold',   n:'+ licencia Gold (perp.)',   fw:40000, aps:16000, clients:64000, sku:'R8R42AAE', elp:19995},
+    ],
++   porSo:{
++     aos10:{aps:4000, clients:32000, licCap:[
++       {code:'hw',     n:'Solo hardware',             fw:20000, aps:4000,  clients:32000},
++       {code:'silver', n:'+ licencia Silver (perp.)', fw:30000, aps:8000,  clients:48000, sku:'R8R41AAE', elp:9995},
++       {code:'gold',   n:'+ licencia Gold (perp.)',   fw:40000, aps:16000, clients:64000, sku:'R8R42AAE', elp:19995},
++     ]},
++     aos8:{aps:512, clients:16000, licCap:[
++       {code:'hw',     n:'Solo hardware',             fw:20000, aps:512,  clients:16000},
++       {code:'silver', n:'+ licencia Silver (perp.)', fw:30000, aps:1000, clients:24000, sku:'R8R13AAE', elp:null},
++       {code:'gold',   n:'+ licencia Gold (perp.)',   fw:40000, aps:2000, clients:32000, sku:'R8R14AAE', elp:null},
++     ]},
++   },
+    ifaces:'4x SFP28 + 1 slot de expansión · 1U rack', hwSku:'R7H95A',
+    skus:[{sku:'R7H95A',d:'9240 (US) · 4x SFP28 · 1 slot de expansión'}],
+-   // clients/aps de licCap son las cifras AOS 8; la tabla AOS 10 del QuickSpecs declara
+-   // otras (32K/48K/64K clientes, 4K/8K/16K APs) — se muestran en spec.extra sin tocar
+-   // los campos existentes (misma regla que la serie 9000, ver PENDIENTES.md).
+    spec:{encTput:'AES-CCM: 20 / 28 / 30 Gbps según licencia Base / Silver / Gold',
+      ospf:'57.000 rutas', mtbf:'185.301 h', watts:'190 W máx. · PSU 550 W (ranuras 1+1)',
+      btu:'648 BTU/h', ruido:'65,2 dBA', peso:'8,2 kg (18,08 lb)',
+@@ -525,23 +565,47 @@ const MODELS = [
+ // EC-L-H (JZ878A): misma señal de terceros (EoS 31-dic-2025) y mismo veredicto el
+ // 2026-09-16 — ordenable en las QuickSpecs V18 (líneas "EC-L-H 6x SFP+ 1/10G SD-WAN
+ // Gateway JZ878A" y su NoLoc). SIN confirmar por fuente oficial: no se marca.
++//
++// SERIES 7000 Y 7200 (C5 de la auditoría 2026-09-17). Se ofrecían como «línea anterior»
++// pedible, con List Price, cuando HPE ya las retiró de la venta. Boletines OFICIALES de fin
++// de venta (asp-documents.arubanetworks.com), leídos el 2026-09-17:
++//   · «End of Sale (EOS) External Announcement 7005/7008 Branch Controllers»: fin de venta
++//     31-oct-2022, fin de soporte 31-oct-2027. Reemplazos: 7005 → 9004; 7008 → 9012 (el
++//     mapa SUCESORES de abajo decía 9004 para el 7008 por inferencia: el boletín manda).
++//   · «End of Sale (EOS) External Announcement 7210/7220 Campus Controllers» (Rev4): último
++//     pedido 31-ene-2025, fin de soporte 31-ene-2030. Reemplazo: 9240; para el 7220, 9240 +
++//     licencia de capacidad Silver R8R13AAE (AOS 8).
++// 7010, 7024, 7030, 7205 y 7240XM NO se marcan: no se localizó boletín oficial para ellos
++// (el de «7240» de 2017 es la serie 7240 original, que el 7240XM reemplazó). Siguen como
++// línea anterior hasta que un documento del fabricante diga otra cosa (PENDIENTES.md).
++const EOS_7000_URL = 'https://asp-documents.arubanetworks.com/portals/0/el/EOS_Notice_7005-7008-Branch-Controllers.pdf';
++const EOS_7200_URL = 'https://asp-documents.arubanetworks.com/portals/0/7210%207220%20External%20EoS%20Updated%20Announcement%20Rev4.pdf';
+ const EOL_ANNOUNCED = {
+   'EC-XL': {pid:'S0B67A', lastOrder:'2026-03-31', sucesor:null,
+             endOfSupport:'2033-03-31',
+             url:'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/docs/eula/EC_LifecyclePolicy_latest.pdf'},
++  '7005':  {pid:'JW633A-JW640A, JY849A', lastOrder:'2022-10-31', sucesor:'Gateway 9004',
++            endOfSupport:'2027-10-31', url:EOS_7000_URL},
++  '7008':  {pid:'JX925A-JX932A', lastOrder:'2022-10-31', sucesor:'Gateway 9012',
++            endOfSupport:'2027-10-31', url:EOS_7000_URL},
++  '7210':  {pid:'JW645A-JW648A, JW743A-JW750A, JW779A-JW782A, JY853A', lastOrder:'2025-01-31', sucesor:'Gateway 9240',
++            endOfSupport:'2030-01-31', url:EOS_7200_URL},
++  '7220':  {pid:'JW649A-JW652A, JW751A-JW757A', lastOrder:'2025-01-31', sucesor:'Gateway 9240 + licencia Silver R8R13AAE (AOS 8)',
++            endOfSupport:'2030-01-31', url:EOS_7200_URL},
+ };
+ for (const m of MODELS) {
+   m.eolAnnounced = EOL_ANNOUNCED[m.id] || null;
+ }
+ 
+ // Sucesor natural de cada gateway legacy (series 7000/7200) para el semáforo de ciclo de
+-// vida del catálogo (fase 11, E5). INFERENCIA POR CAPACIDAD — no existe documento oficial
+-// de tech-refresh que nombre el reemplazo de cada modelo; la página lo etiqueta como
+-// «inferencia por capacidad, sin doc oficial» junto al dato. Decisión del dueño
+-// (2026-09-13): mostrar la inferencia marcada vale más que no mostrar nada.
++// vida del catálogo (fase 11, E5). INFERENCIA POR CAPACIDAD donde no hay documento — la
++// página lo etiqueta como «inferencia por capacidad, sin doc oficial» junto al dato.
++// Decisión del dueño (2026-09-13): mostrar la inferencia marcada vale más que no mostrar
++// nada. 7005/7008/7210/7220 ya tienen sucesor OFICIAL en su boletín (EOL_ANNOUNCED, arriba):
++// el 7008 se corrige a 9012 el 2026-09-17 (antes 9004, por inferencia).
+ const SUCESORES = {
+   '7005': 'Gateway 9004',
+-  '7008': 'Gateway 9004',
++  '7008': 'Gateway 9012',
+   '7030': 'Gateway 9012',
+   '7210': 'Gateway 9240',
+   '7220': 'Gateway 9240',
+@@ -550,6 +614,18 @@ for (const m of MODELS) {
+   m.sucesor = SUCESORES[m.id] || null;
+ }
+ 
++// Sistema operativo de las series 7000/7200 (C3 de la auditoría 2026-09-17): todas sus
++// cifras de APs, clientes y firewall salen de los datasheets de Mobility Controller AOS 8.
++// Con el selector en AOS 10 no se puede afirmar que cumplan con cifras de otra
++// arquitectura — se descartan del dimensionado y se dice por qué (siguen en el catálogo y
++// en el selector de equipo para ampliar parque instalado).
++for (const m of MODELS) {
++  if (m.legacy && !m.porSo) {
++    m.porSo = {aos10:null};
++    m.porSoMotivo = {aos10:'sus cifras de capacidad son de AOS 8 (Mobility Controller); en AOS 10 el catálogo no las trae'};
++  }
++}
++
+ // ── Matriz de versiones mínimas de sistema operativo (fase 11, E5) ───────────
+ // Versión mínima de ECOS / AOS que soporta cada plataforma. Fuentes oficiales
+ // (2026-09-13): release notes de ECOS 8.3/9.x y matriz de compatibilidad AOS 10
+diff --git a/server/seed/legacyData/cotizadorCatalog.js b/server/seed/legacyData/cotizadorCatalog.js
+index 9aaced4..13398a4 100644
+--- a/server/seed/legacyData/cotizadorCatalog.js
++++ b/server/seed/legacyData/cotizadorCatalog.js
+@@ -127,12 +127,12 @@ module.exports = [
+   {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-10106',              seg:'Sucursal pequeña',              spec:'EdgeConnect SD-WAN · WAN 2 Mbps - 1 Gbps · SKU S0E22A',  elp:'~ $4,318', elpN:4318},
+   {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-10108',              seg:'Sucursal mediana',              spec:'EdgeConnect SD-WAN · WAN 2 Mbps - 2 Gbps · SKU S0E23A',  elp:'~ $5,588', elpN:5588},
+   {vendor:'Aruba',   color:'#01A982',model:'Aruba EC-10150',              seg:'Datacenter / Hub grande',       spec:'EdgeConnect SD-WAN · WAN hasta 12 Gbps · SKU S2N65A',  elp:'~ $47,304',elpN:47304},
+-  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9004',          seg:'Sucursal peq',                  spec:'Serie 9000 · FW 4 Gbps · 2.048 clientes · 32 APs · SKU R1B20A',  elp:'~ $2,505', elpN:2505},
+-  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9004-LTE',      seg:'Sucursal peq + LTE',            spec:'Serie 9000 · FW 4 Gbps · 2.048 clientes · 32 APs · SKU R3V91A',  elp:'~ $3,247', elpN:3247},
+-  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9012',          seg:'Sucursal med / gde',            spec:'Serie 9000 · FW 6 Gbps · 2.048 clientes · 32 APs · SKU R1B31A',  elp:'~ $4,441', elpN:4441},
++  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9004',          seg:'Sucursal peq',                  spec:'Serie 9000 · FW 4 Gbps · 2.048 clientes · 128 APs (AOS 10) · SKU R1B20A',  elp:'~ $2,505', elpN:2505},
++  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9004-LTE',      seg:'Sucursal peq + LTE',            spec:'Serie 9000 · FW 4 Gbps · 2.048 clientes · 128 APs (AOS 10) · SKU R3V91A',  elp:'~ $3,247', elpN:3247},
++  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9012',          seg:'Sucursal med / gde',            spec:'Serie 9000 · FW 6 Gbps · 2.048 clientes · 256 APs (AOS 10) · SKU R1B31A',  elp:'~ $4,441', elpN:4441},
+   {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9106',          seg:'Sucursal gde / Campus peq',     spec:'Serie 9100 Hybrid · FW 10 Gbps · 8.000 clientes · 2.000 APs · SKU S5H02A',  elp:'~ $9,228', elpN:9228},
+   {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9114',          seg:'Campus peq / Sucursal grande',  spec:'Serie 9100 Hybrid · FW 20 Gbps · 10.000 clientes · 4.000 APs · SKU R9M45A',  elp:'~ $19,944',elpN:19944},
+-  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9240',          seg:'Campus / Hub regional',         spec:'Serie 9200 · FW 20 Gbps · 16.000 clientes · 512 APs · SKU R7H95A',  elp:'~ $37,614',elpN:37614},
++  {vendor:'Aruba',   color:'#01A982',model:'Aruba Gateway 9240',          seg:'Campus / Hub regional',         spec:'Serie 9200 · FW 20 Gbps · 32.000 clientes · 4.000 APs sin licencia (AOS 10) · SKU R7H95A',  elp:'~ $37,614',elpN:37614},
+   // Serie 7000/7200 (2026-09-13): la unidad NUEVA no esta en la lista del distribuidor;
+   // lo que tiene List Price es la unidad remanufacturada HPE (sufijo AR). Se cotiza esa y
+   // se declara "(Reman)" en la fila — ver aruba.js, skus de cada modelo. 7024 y 7240XM no
+diff --git a/server/seed/legacyData/indexPR.js b/server/seed/legacyData/indexPR.js
+index 19212d1..91bd095 100644
+--- a/server/seed/legacyData/indexPR.js
++++ b/server/seed/legacyData/indexPR.js
+@@ -195,12 +195,12 @@ aruba:[
+   {model:'EC-L',ser:'EdgeConnect',seg:'Datacenter / Hub grande',fwd:10000,ipsec:0,sdwan:'Foundation/Advanced + Boost',ports:'6x SFP+ 10G (SR o LR)',elp:'Consultar'},
+   {model:'EC-XL',ser:'EdgeConnect',seg:'Datacenter / Head-end de fabric',fwd:10000,ipsec:0,sdwan:'Foundation/Advanced + Boost',ports:'hasta 6x SFP+ 10G y/o SFP28 25G · network memory en flash PCIe · PSU y almacenamiento redundantes',elp:'Consultar'},
+   {model:'EC-V',ser:'EdgeConnect',seg:'Virtual / Cloud (VMware, KVM, Hyper-V, AWS, Azure)',fwd:0,ipsec:0,sdwan:'Foundation/Advanced + Boost',ports:'vNIC según hipervisor · dimensionado por vCPU y por el tier de licencia contratado',elp:'Consultar'},
+-  {model:'Gateway 9004',ser:'Serie 9000',seg:'Sucursal peq',fwd:4000,ipsec:0,sdwan:'Gateway · Serie 9000',ports:'4x GbE RJ45 · 2.048 clientes · 32 APs',elp:'Consultar'},
+-  {model:'Gateway 9004-LTE',ser:'Serie 9000',seg:'Sucursal peq + LTE',fwd:4000,ipsec:0,sdwan:'Gateway · Serie 9000',ports:'4x GbE RJ45 + LTE integrado (uplink dedicado o redundante) · 2.048 clientes · 32 APs',elp:'Consultar'},
+-  {model:'Gateway 9012',ser:'Serie 9000',seg:'Sucursal med / gde',fwd:6000,ipsec:0,sdwan:'Gateway · Serie 9000',ports:'12x GbE RJ45 (6x PoE+) · 2.048 clientes · 32 APs',elp:'Consultar'},
++  {model:'Gateway 9004',ser:'Serie 9000',seg:'Sucursal peq',fwd:4000,ipsec:0,sdwan:'Gateway · Serie 9000',ports:'4x GbE RJ45 · 2.048 clientes · 128 APs (AOS 10; 32 en AOS 8)',elp:'Consultar'},
++  {model:'Gateway 9004-LTE',ser:'Serie 9000',seg:'Sucursal peq + LTE',fwd:4000,ipsec:0,sdwan:'Gateway · Serie 9000',ports:'4x GbE RJ45 + LTE integrado (uplink dedicado o redundante) · 2.048 clientes · 128 APs (AOS 10; 32 en AOS 8)',elp:'Consultar'},
++  {model:'Gateway 9012',ser:'Serie 9000',seg:'Sucursal med / gde',fwd:6000,ipsec:0,sdwan:'Gateway · Serie 9000',ports:'12x GbE RJ45 (6x PoE+) · 2.048 clientes · 256 APs (AOS 10; 32 en AOS 8)',elp:'Consultar'},
+   {model:'Gateway 9106',ser:'Serie 9100 Hybrid',seg:'Sucursal gde / Campus peq',fwd:0,ipsec:0,sdwan:'Gateway · Serie 9100 Hybrid',ports:'2x SFP+ 10GbE + 2x combo SFP/RJ45 1GbE + 2x RJ45 1GbE con PoE hasta 60W · 8.000 clientes · 2.000 APs',elp:'Consultar'},
+   {model:'Gateway 9114',ser:'Serie 9100 Hybrid',seg:'Campus peq / Sucursal grande',fwd:0,ipsec:0,sdwan:'Gateway · Serie 9100 Hybrid',ports:'4x SFP+ 10GbE + 4x combo SFP/RJ45 1GbE + 1 slot de expansión · 10.000 clientes · 4.000 APs',elp:'Consultar'},
+-  {model:'Gateway 9240',ser:'Serie 9200',seg:'Campus / Hub regional',fwd:20000,ipsec:0,sdwan:'Gateway · Serie 9200',ports:'4x SFP28 + 1 slot de expansión · 1U rack · 16.000 clientes · 512 APs',elp:'Consultar'},
++  {model:'Gateway 9240',ser:'Serie 9200',seg:'Campus / Hub regional',fwd:20000,ipsec:0,sdwan:'Gateway · Serie 9200',ports:'4x SFP28 + 1 slot de expansión · 1U rack · 32.000 clientes · 4.000 APs sin licencia (AOS 10; 16.000 / 512 en AOS 8)',elp:'Consultar'},
+   {model:'7005',ser:'Serie 7000',seg:'Sucursal peq (fanless)',fwd:2000,ipsec:0,sdwan:'Gateway · Serie 7000',ports:'4x RJ45 10/100/1000 · sin ventilador · alimentable por PoE · 1.024 clientes · 16 APs',elp:'Consultar'},
+   {model:'7008',ser:'Serie 7000',seg:'Sucursal peq + PoE',fwd:2000,ipsec:0,sdwan:'Gateway · Serie 7000',ports:'8x RJ45 10/100/1000 con PoE y PoE+ integrados · sin ventilador · 1.024 clientes · 16 APs',elp:'Consultar'},
+   {model:'7010',ser:'Serie 7000',seg:'Sucursal med',fwd:4000,ipsec:0,sdwan:'Gateway · Serie 7000',ports:'16x RJ45 10/100/1000 + 2x SFP · 2.048 clientes · 32 APs',elp:'Consultar'},
+diff --git a/test/aruba-auditoria-fase1.test.js b/test/aruba-auditoria-fase1.test.js
+new file mode 100644
+index 0000000..37d1789
+--- /dev/null
++++ b/test/aruba-auditoria-fase1.test.js
+@@ -0,0 +1,201 @@
++'use strict';
++// FASE 1 DE LA AUDITORIA TECNICA DEL 2026-09-17 («Auditoria tecnica — Dimensionador
++// Aruba»): los cinco hallazgos criticos que cambiaban el equipo o el precio de la
++// propuesta, mas el A1 (DTD en EC-XS). Cada prueba reproduce el escenario con el que se
++// encontro el fallo en produccion y fija la cifra correcta, para que un refactor no los
++// devuelva en silencio.
++//
++//   C1  tier Foundation inexistente («Foundation 200 Mbps» en «consultar»)
++//   C2  9240: capacidades AOS 8 con SKU de licencia AOS 10 (Gold de US$19.995 de mas)
++//   C3  serie 9000 limitada a 32 APs (cifra AOS 8): 9106 donde basta un 9012
++//   C4  Boost ~5x: 10 bloques (US$196.560) donde la regla de la propia pagina da 2
++//   C5  7005/7008/7210/7220 cotizables pese a su boletin oficial de fin de venta
++//   A1  EC-XS recomendado con Dynamic Threat Defense, que no corre en el
++
++const test = require('node:test');
++const assert = require('node:assert');
++const fs = require('fs');
++const path = require('path');
++const { cargar } = require('./ayuda/navegador.js');
++
++const aruba = require('../server/seed/legacyData/aruba.js');
++const R = require('../public/js/aruba-reglas.js');
++const { calcularRequerimientosIngenieria } = require('../public/js/motor-ingenieria.js');
++const { FICHA } = cargar('public/js/ficha.js');
++
++const porId = (id) => aruba.MODELS.find((m) => m.id === id);
++const TIERS = aruba.BW_TIERS;
++const LIC = aruba.LICENSES;
++
++// ── C1 ───────────────────────────────────────────────────────────────────────
++test('C1: el tier automatico nunca propone un tier que no existe para el nivel', () => {
++  for (const nivel of ['foundation', 'advanced', 'onprem']) {
++    for (let mbps = 1; mbps <= 5000; mbps += 7) {
++      const t = R.tierParaCaudal(TIERS, LIC, mbps, nivel);
++      assert.ok(t, `${nivel} ${mbps} Mbps: hay tier`);
++      assert.ok(LIC[t.code] && LIC[t.code][nivel],
++        `${nivel} ${mbps} Mbps: el tier ${t.code} no existe para ese nivel — la suscripción quedaría en «consultar»`);
++      assert.ok(t.mbps == null || t.mbps >= mbps, `${nivel} ${mbps} Mbps: el tier ${t.code} no cubre el caudal`);
++    }
++  }
++});
++
++test('C1: los escenarios de la auditoria eligen el tier Foundation que SI se vende', () => {
++  // Escenario A: DIA 100 + 4G 50 = 150 Mbps → Foundation 1 Gbps (antes «Foundation 200 Mbps»).
++  assert.strictEqual(R.tierParaCaudal(TIERS, LIC, 150, 'foundation').code, 'bw1g');
++  // Escenario D: 40 Mbps → Foundation 100 Mbps (antes «Foundation 50 Mbps»).
++  assert.strictEqual(R.tierParaCaudal(TIERS, LIC, 40, 'foundation').code, 'bw100');
++  // Escenario G: 2 Gbps → Foundation ilimitado (antes «Foundation 2 Gbps»).
++  assert.strictEqual(R.tierParaCaudal(TIERS, LIC, 2000, 'foundation').code, 'bwunl');
++  // Advanced conserva su escalera fina.
++  assert.strictEqual(R.tierParaCaudal(TIERS, LIC, 150, 'advanced').code, 'bw200');
++  assert.strictEqual(R.tierParaCaudal(TIERS, LIC, 2000, 'advanced').code, 'bw2g');
++});
++
++test('C1: con Foundation, el tier elegido es mas barato que el Advanced equivalente (a 3 anos)', () => {
++  // Documenta la premisa de no «subir» a Advanced por precio: con la lista vigente,
++  // Foundation en su tier valido siempre cuesta menos. Si la lista cambia y deja de ser
++  // cierto, esta prueba avisa de que hay que comparar los dos niveles.
++  for (const mbps of [10, 40, 150, 450, 900, 1500, 2000, 4000]) {
++    const f = R.tierParaCaudal(TIERS, LIC, mbps, 'foundation');
++    const a = R.tierParaCaudal(TIERS, LIC, mbps, 'advanced');
++    assert.ok(LIC[f.code].foundation.y3 <= LIC[a.code].advanced.y3,
++      `${mbps} Mbps: Foundation ${f.code} (${LIC[f.code].foundation.y3}) vs Advanced ${a.code} (${LIC[a.code].advanced.y3})`);
++  }
++});
++
++// ── C2 ───────────────────────────────────────────────────────────────────────
++test('C2: el 9240 cotiza los SKU AOS 10 con la capacidad AOS 10, y los AOS 8 con la AOS 8', () => {
++  const m = porId('Gateway 9240');
++  const csv = fs.readFileSync(path.join(__dirname, '..', 'public/datasheets/aruba-lista-precios-hpe.csv'), 'utf8');
++  const a10 = R.capacidadSo(m, 'aos10').licCap;
++  const a8 = R.capacidadSo(m, 'aos8').licCap;
++  // AOS 10 — «AOS 10 Capacity Licenses» (techdocs HPE) + DS serie 9200.
++  assert.deepStrictEqual(a10.map((t) => [t.fw, t.aps, t.clients]),
++    [[20000, 4000, 32000], [30000, 8000, 48000], [40000, 16000, 64000]]);
++  assert.deepStrictEqual(a10.map((t) => t.sku || null), [null, 'R8R41AAE', 'R8R42AAE']);
++  for (const sku of ['R8R41AAE', 'R8R42AAE']) {
++    const fila = csv.split('\n').find((l) => l.startsWith(sku + ','));
++    assert.ok(fila && /AOS10/.test(fila), `${sku} es la licencia AOS 10 en la lista del distribuidor`);
++  }
++  // AOS 8 — tabla AOS 8 del DS serie 9200 (reemplazo de 7210/7220/7240XM).
++  assert.deepStrictEqual(a8.map((t) => [t.fw, t.aps, t.clients]),
++    [[20000, 512, 16000], [30000, 1000, 24000], [40000, 2000, 32000]]);
++  assert.deepStrictEqual(a8.map((t) => t.sku || null), [null, 'R8R13AAE', 'R8R14AAE']);
++  assert.ok(a8.every((t) => t.elp == null), 'AOS 8 sin List Price en la lista: «consultar», nunca inventado');
++  // La base del catálogo es AOS 10 y coincide con porSo.aos10: SKU y cifra de la misma arquitectura.
++  assert.deepStrictEqual(m.licCap, a10);
++});
++
++test('C2: escenario C (12.000 clientes, 1.200 APs) ya no pide licencia Gold en AOS 10', () => {
++  const nivel = (licCap, need, users, aps) => licCap.find((t) => t.fw >= need && t.clients >= users && t.aps >= aps);
++  const m = porId('Gateway 9240');
++  assert.strictEqual(nivel(R.capacidadSo(m, 'aos10').licCap, 4700, 12000, 1200).code, 'hw',
++    'AOS 10: el 9240 sin licencia cubre 12.000 clientes y 1.200 APs');
++  assert.strictEqual(nivel(R.capacidadSo(m, 'aos8').licCap, 4700, 12000, 1200).code, 'gold',
++    'AOS 8: sí hace falta Gold (2.000 APs)');
++});
++
++// ── C3 ───────────────────────────────────────────────────────────────────────
++test('C3: la serie 9000 gestiona 128/256 APs en AOS 10 y 32 en AOS 8', () => {
++  assert.strictEqual(R.capacidadSo(porId('Gateway 9004'), 'aos10').aps, 128);
++  assert.strictEqual(R.capacidadSo(porId('Gateway 9004-LTE'), 'aos10').aps, 128);
++  assert.strictEqual(R.capacidadSo(porId('Gateway 9012'), 'aos10').aps, 256);
++  for (const id of ['Gateway 9004', 'Gateway 9004-LTE', 'Gateway 9012']) {
++    assert.strictEqual(R.capacidadSo(porId(id), 'aos8').aps, 32, `${id} en AOS 8`);
++  }
++  // Escenario H: 40 APs caben en un 9012 (y un 9004) en AOS 10 — antes se escalaba a 9106.
++  assert.ok(R.capacidadSo(porId('Gateway 9012'), 'aos10').aps >= 40);
++  assert.ok(R.capacidadSo(porId('Gateway 9012'), 'aos8').aps < 40);
++});
++
++test('C3: un gateway sin cifras para el SO elegido se declara, no se afirma', () => {
++  const s8 = R.capacidadSo(porId('Gateway 9114'), 'aos8');
++  assert.ok(s8.sinCifra && /AOS 8/.test(s8.motivo), 'el 9114 no corre AOS 8');
++  assert.ok(R.capacidadSo(porId('Gateway 9106'), 'aos8').sinCifra, '9106: el catálogo solo trae la tabla AOS 10');
++  for (const m of aruba.MODELS.filter((x) => x.legacy)) {
++    assert.ok(R.capacidadSo(m, 'aos10').sinCifra, `${m.id}: sus cifras son AOS 8`);
++    assert.deepStrictEqual(R.capacidadSo(m, 'aos8'), {}, `${m.id}: en AOS 8 valen las cifras base`);
++  }
++  // EdgeConnect no depende del SO de los gateways.
++  for (const m of aruba.MODELS.filter((x) => x.fam === 'ec')) {
++    assert.deepStrictEqual(R.capacidadSo(m, 'aos8'), {}, `${m.id} corre ECOS`);
++  }
++});
++
++// ── C4 ───────────────────────────────────────────────────────────────────────
++test('C4: Boost sobre el trafico de los tuneles — escenario E pasa de 10 bloques a 2', () => {
++  // Escenario E de la auditoría: MPLS 1G + DIA 1G, breakout activo, 800 usuarios x 3 Mbps.
++  const ing = calcularRequerimientosIngenieria({
++    bw_mpls_mbps: 1000, bw_internet_mbps: 1000, local_breakout_activo: true,
++    perfil_trafico: 'ENTERPRISE_MIX', fec_activo: true, enlace_calidad: 'NORMAL',
++    modelo_seguridad: 'NINGUNO', headroom_pct: 30, total_usuarios: 800, densidad_usuarios: 'ESTANDAR',
++  });
++  const mbps = R.boostMbpsSitio({ bwTunelesPrivados: ing.distribucion.bwTunelesPrivados,
++    caudalTotal: 2000, users: 800, perUser: 3 });
++  assert.strictEqual(ing.distribucion.bwTunelesPrivados, 600, 'la misma cifra que el hint del breakout');
++  assert.strictEqual(mbps, 180, '30 % de 600 Mbps');
++  assert.strictEqual(Math.max(1, Math.ceil(mbps / aruba.BOOST.bloque)), 2, '2 bloques de 100 Mbps, no 10');
++  // Sin enlaces declarados: 30 % de la demanda actual, sin margen.
++  assert.strictEqual(R.boostMbpsSitio({ caudalTotal: 0, users: 100, perUser: 2 }), 60);
++});
++
++test('C4: el Boost recomendado por HPE se lee como numero y deja fuera a quien no llega', () => {
++  assert.strictEqual(R.boostRecMbps(porId('EC-10104')), 200);
++  assert.strictEqual(R.boostRecMbps(porId('EC-S')), 500);
++  assert.strictEqual(R.boostRecMbps(porId('EC-M')), 1000);
++  assert.strictEqual(R.boostRecMbps(porId('EC-10150')), 8000);
++  assert.strictEqual(R.boostRecMbps(porId('EC-V')), null, 'sin dato publicado: no descarta, se declara');
++  // Todo EdgeConnect físico que admite Boost publica su recomendado.
++  for (const m of aruba.MODELS.filter((x) => x.fam === 'ec' && x.boostMax != null)) {
++    assert.ok(R.boostRecMbps(m) > 0, `${m.id}: boostRec legible`);
++  }
++});
++
++// ── C5 ───────────────────────────────────────────────────────────────────────
++test('C5: 7005/7008/7210/7220 llevan su boletin oficial y ya no se recomiendan', () => {
++  const esperado = {
++    7005: ['2022-10-31', '2027-10-31', 'Gateway 9004'],
++    7008: ['2022-10-31', '2027-10-31', 'Gateway 9012'],
++    7210: ['2025-01-31', '2030-01-31', 'Gateway 9240'],
++    7220: ['2025-01-31', '2030-01-31', 'Gateway 9240'],
++  };
++  for (const [id, [lastOrder, eos, sucesor]] of Object.entries(esperado)) {
++    const m = porId(id);
++    assert.ok(m.eolAnnounced, `${id}: boletín de fin de venta`);
++    assert.strictEqual(m.eolAnnounced.lastOrder, lastOrder);
++    assert.strictEqual(m.eolAnnounced.endOfSupport, eos);
++    assert.ok(m.eolAnnounced.sucesor.startsWith(sucesor), `${id}: sucesor oficial ${sucesor}`);
++    assert.ok(/^https:\/\/asp-documents\.arubanetworks\.com\//.test(m.eolAnnounced.url), `${id}: URL del boletín oficial`);
++    assert.strictEqual(FICHA.recomendable(m), false, `${id}: fuera de venta nunca se recomienda`);
++  }
++  assert.strictEqual(porId('7008').sucesor, 'Gateway 9012', 'el boletín reemplaza el 7008 por el 9012, no por el 9004');
++  // Sin boletín localizado: siguen como línea anterior, sin marca inventada.
++  for (const id of ['7010', '7024', '7030', '7205', '7240XM']) {
++    assert.strictEqual(porId(id).eolAnnounced, null, `${id}: sin boletín oficial, sin marca`);
++  }
++});
++
++// ── A1 ───────────────────────────────────────────────────────────────────────
++test('A1: Dynamic Threat Defense es filtro duro — ni EC-XS ni gateways', () => {
++  assert.strictEqual(R.admiteDtd(porId('EC-XS')), false);
++  assert.ok(!/^S/.test(porId('EC-XS').spec.idsips), 'la ficha del EC-XS ya no afirma IDS/IPS');
++  for (const id of ['EC-10104', 'EC-10106', 'EC-S', 'EC-M', 'EC-10150', 'EC-V']) {
++    assert.strictEqual(R.admiteDtd(porId(id)), true, id);
++  }
++  assert.strictEqual(R.admiteDtd(porId('Gateway 9004')), false, 'DTD es licencia EdgeConnect');
++});
++
++// ── Contrato de la pagina ────────────────────────────────────────────────────
++test('la pagina carga las reglas y las usa en vez de copias propias', () => {
++  const html = fs.readFileSync(path.join(__dirname, '..', 'public/dimensionador-aruba-edgeconnect.html'), 'utf8');
++  const js = fs.readFileSync(path.join(__dirname, '..', 'public/js/dimensionador-aruba-edgeconnect.js'), 'utf8');
++  assert.ok(html.indexOf('/js/aruba-reglas.js') > -1 && html.indexOf('/js/aruba-reglas.js') < html.indexOf('/js/dimensionador-aruba-edgeconnect.js'),
++    'aruba-reglas.js se carga antes que el script de la página');
++  assert.ok(html.includes('id="soSeg"'), 'el selector de sistema operativo existe');
++  assert.ok(js.includes("'soSeg'"), 'el SO viaja en el enlace del escenario');
++  assert.ok(js.includes('ArubaReglas.tierParaCaudal('), 'C1 usa la regla probada');
++  assert.ok(js.includes('ArubaReglas.boostMbpsSitio('), 'C4 usa la regla probada');
++  assert.ok(js.includes('ArubaReglas.admiteDtd('), 'A1 usa la regla probada');
++  assert.ok(!js.includes('function boostMbpsAuto'), 'la fórmula de Boost anterior no sobrevive como copia');
++});
+diff --git a/test/e2e/LEEME.md b/test/e2e/LEEME.md
+index 9b9aa3d..e48cdd2 100644
+--- a/test/e2e/LEEME.md
++++ b/test/e2e/LEEME.md
+@@ -27,6 +27,7 @@ Variables: `E2E_PORT` (puerto), `E2E_SOLO=filtro` (correr un solo script, p. ej.
+ | `e2e-sticky.js` | El panel «Equipos que cumplen» queda clavado (top:16) de arriba abajo de la página — la regresión v29. |
+ | `e2e-sfp.js` | Ópticas SFP de los enlaces WAN: chooser con mensaje cuando hay varias, select sin opción por defecto, línea PENDIENTE DE SELECCIÓN hasta elegir, cotización tras elegir, RJ45 no pide nada. |
+ | `e2e-candidatos.js` | Lista clicable de «Equipos que cumplen · N»: N filas, insignia de recomendado, clic que elige otro equipo (selector único + ficha + BOM + aviso de desvío), «Volver al recomendado». |
++| `e2e-auditoria-fase1.js` | Fase 1 de la auditoría del 2026-09-17, por enlace de escenario: tier Foundation que sí existe (C1), 9240 sin Gold en AOS 10 y con SKU AOS 8 en AOS 8 (C2), 40 APs en la serie 9000 en AOS 10 (C3), Boost de 2 bloques en el hub MPLS+DIA (C4), 7005 fuera de venta (C5) y EC-XS fuera con DTD (A1). |
+ | `e2e-ux.js` | Mejoras UX del 2026-09-15: destino de tráfico con su cálculo declarado, tier «Automático» sincronizado con el módulo 2, unidades por HA sin campo cantidad, orden de la pestaña BOM, BOM editable (retirar/restaurar, omisión en la URL), SSE por usuario con línea PENDIENTE sin usuarios. |
+ 
+ ## Por qué NO está en `npm run verificar`
+diff --git a/test/e2e/e2e-auditoria-fase1.js b/test/e2e/e2e-auditoria-fase1.js
+new file mode 100644
+index 0000000..7d489be
+--- /dev/null
++++ b/test/e2e/e2e-auditoria-fase1.js
+@@ -0,0 +1,108 @@
++'use strict';
++/* E2E de la fase 1 de la auditoría técnica del 2026-09-17 («Auditoría técnica —
++   Dimensionador Aruba»). Reproduce en el navegador real los escenarios con los que se
++   encontraron los cinco hallazgos críticos y el A1, y fija el resultado corregido en la
++   pantalla y en la lista de materiales. Cada escenario entra por el ENLACE del escenario
++   (querystring), que es como un preventa se lo pasa a otro: así se prueba también que el
++   selector de sistema operativo viaja en la URL. */
++const { cargarPlaywright, abrirDimensionador, BASE, contador } = require('./ayuda');
++
++const URL_DIM = BASE + '/dimensionador-aruba-edgeconnect.html';
++function enlace(p) {
++  const q = new URLSearchParams();
++  for (const [k, v] of Object.entries(p)) q.set(k, typeof v === 'object' ? JSON.stringify(v) : String(v));
++  return URL_DIM + '?' + q.toString();
++}
++const wan = (...links) => ({ v: 2, wanLinks: links.map((l, i) => ({ id: i + 1, medio: 'RJ45', up: l.down, simetrico: true, ...l })) });
++
++(async () => {
++  const { chromium } = cargarPlaywright();
++  const browser = await chromium.launch();
++  const page = await browser.newPage();
++  page.on('dialog', (d) => d.accept());
++  const errores = [];
++  page.on('pageerror', (e) => errores.push(e.message));
++  const t = contador();
++  await abrirDimensionador(page);
++
++  const cargar = async (p) => {
++    await page.goto(enlace(p), { waitUntil: 'domcontentloaded' });
++    await page.waitForSelector('#users', { timeout: 20000 });
++    await page.waitForTimeout(1500);
++    return {
++      pick: await page.inputValue('#pickModel'),
++      bom: await page.inputValue('#bomOut'),
++      verdict: (await page.textContent('#verdict')) || '',
++    };
++  };
++
++  // ── C1 · Escenario A: DIA 100 + 4G 50/20, 30 usuarios ───────────────────────
++  {
++    const r = await cargar({ famSeg: 'ec', users: 30, perUser: 2,
++      wanLinksData: wan({ tipo: 'DIA', down: 100 }, { tipo: '4G/5G', down: 50, up: 20, simetrico: false }) });
++    t.ok(r.pick === 'EC-10104', `A: recomienda EC-10104 (${r.pick})`);
++    t.ok(/EdgeConnect Foundation — 1 Gbps\s+S1A\d{2}AAS/.test(r.bom),
++      'A: la suscripción es Foundation 1 Gbps con SKU y precio (antes «Foundation 200 Mbps» en consultar)');
++    t.ok(!/Foundation — (20|50|200|500) Mbps|Foundation — 2 Gbps/.test(r.bom),
++      'A: ningún tier Foundation inexistente en la lista de materiales');
++    t.ok(/TOTAL DE REFERENCIA/.test(r.bom), 'A: el total ya incluye la suscripción (sin líneas pendientes)');
++  }
++
++  // ── C1 + A1 · Escenario D: banda ancha 40/10, 8 usuarios, DTD ──────────────
++  {
++    const r = await cargar({ famSeg: 'ec', users: 8, perUser: 2, selSeguridad: 'dtd',
++      wanLinksData: wan({ tipo: 'Banda Ancha', down: 40, up: 10, simetrico: false }) });
++    t.ok(r.pick && r.pick !== 'EC-XS', `D: con DTD ya no recomienda EC-XS (${r.pick})`);
++    t.ok(/EdgeConnect Foundation — 100 Mbps\s+S1C\d{2}AAS/.test(r.bom), 'D: Foundation 100 Mbps con SKU (antes «Foundation 50 Mbps»)');
++    t.ok(/Dynamic Threat Defense/.test(r.bom) && !/\[ROJO\] Dynamic Threat Defense/.test(r.bom),
++      'D: DTD cotizado sobre un modelo que sí lo corre, sin alerta roja');
++  }
++
++  // ── C4 · Escenario E: hub MPLS 1G + DIA 1G, Boost, segmentación, HA ────────
++  {
++    const r = await cargar({ famSeg: 'ec', users: 800, perUser: 3, chkBoost: 1, boostProfile: 'repetido',
++      chkSeg: 1, chkHa: 1,
++      wanLinksData: wan({ tipo: 'MPLS L3', medio: 'SFP 1G', down: 1000 }, { tipo: 'DIA', medio: 'SFP 1G', down: 1000 }) });
++    const m = /(\d+) x\s+EdgeConnect Boost/.exec(r.bom);
++    t.ok(m && m[1] === '2', `E: Boost = 2 bloques (30 % de los 600 Mbps del túnel), antes 10 (${m ? m[1] : 'sin línea'})`);
++    t.ok(r.pick === 'EC-M', `E: el EC-M sigue cubriendo el hub (${r.pick})`);
++  }
++
++  // ── C2 · Escenario C: campus 12.000 clientes / 1.200 APs ────────────────────
++  {
++    const base = { famSeg: 'campus', users: 12000, perUser: 0.3, aps: 1200,
++      wanLinksData: wan({ tipo: 'DIA', medio: 'SFP+ 10G', down: 2000 }) };
++    const r10 = await cargar(base);
++    t.ok(r10.pick === 'Gateway 9240', `C/AOS 10: recomienda el 9240 (${r10.pick})`);
++    t.ok(!/R8R4[12]AAE|R8R1[34]AAE/.test(r10.bom), 'C/AOS 10: sin licencia de capacidad (Base cubre 32.000 clientes / 4.000 APs)');
++    t.ok(/Sistema operativo:\s+AOS 10/.test(r10.bom), 'C/AOS 10: la propuesta declara el sistema operativo');
++    const r8 = await cargar({ ...base, soSeg: 'aos8' });
++    t.ok(/R8R14AAE/.test(r8.bom), 'C/AOS 8: pide la licencia Gold AOS 8 (R8R14AAE), no la de AOS 10');
++    t.ok(!/R8R42AAE/.test(r8.bom), 'C/AOS 8: el SKU de AOS 10 ya no se cuela');
++    t.ok(/Sistema operativo:\s+AOS 8/.test(r8.bom), 'C/AOS 8: el enlace restaura el SO elegido');
++  }
++
++  // ── C3 · Escenario H: 300 usuarios, 40 APs, HA ──────────────────────────────
++  {
++    const base = { famSeg: 'sucursal', users: 300, perUser: 1, aps: 40, chkHa: 1,
++      wanLinksData: wan({ tipo: 'DIA', down: 300 }) };
++    const r10 = await cargar(base);
++    t.ok(/^Gateway 90(04|12)$/.test(r10.pick), `H/AOS 10: 40 APs caben en la serie 9000 (${r10.pick}), antes 9106`);
++    const r8 = await cargar({ ...base, soSeg: 'aos8' });
++    t.ok(!/^Gateway 90/.test(r8.pick), `H/AOS 8: la serie 9000 (32 APs) ya no cumple (${r8.pick || 'sin candidato'})`);
++    t.ok(r8.pick !== 'Gateway 9114' && r8.pick !== 'Gateway 9106', 'H/AOS 8: 9106/9114 sin cifras AOS 8 no se proponen');
++  }
++
++  // ── C5 · Un 7005 elegido a mano declara su fin de venta ─────────────────────
++  {
++    await cargar({ famSeg: 'sucursal', users: 20, perUser: 1, soSeg: 'aos8', wanLinksData: wan({ tipo: 'DIA', down: 50 }) });
++    await page.selectOption('#pickModel', '7005');
++    await page.waitForTimeout(900);
++    const v = (await page.textContent('#verdict')) || '';
++    t.ok(/2022-10-31/.test(v) && /ya pas/.test(v), 'C5: el 7005 elegido a mano declara su último pedido (2022-10-31) ya vencido');
++  }
++
++  if (errores.length) console.log('[e2e-auditoria-fase1] errores de página observados:', [...new Set(errores)].join(' | '));
++  await browser.close();
++  process.exit(t.resumen('e2e-auditoria-fase1'));
++})().catch((e) => { console.error('ERROR E2E:', e.message); process.exit(2); });
+diff --git a/test/e2e/e2e-ciclo-vida.js b/test/e2e/e2e-ciclo-vida.js
+index db23b8e..3467540 100644
+--- a/test/e2e/e2e-ciclo-vida.js
++++ b/test/e2e/e2e-ciclo-vida.js
+@@ -50,8 +50,15 @@ const { cargarPlaywright, abrirDimensionador, contador } = require('./ayuda');
+   t.ok(xs && xs.includes('Sin dato de ciclo de vida'),
+     'EC-XS: tercer estado honesto (sin boletín respaldado a nivel fabricante) — nunca verde por omisión');
+ 
+-  const leg = await filaDe('7005');
+-  t.ok(leg && /L.nea anterior/.test(leg), 'la serie 7000 conserva su semáforo ámbar de línea anterior');
++  // C5 de la auditoría 2026-09-17: el 7005 tiene boletín oficial de fin de venta
++  // (31-oct-2022, soporte hasta 31-oct-2027) — rojo con sus fechas. El 7010, sin boletín
++  // localizado, conserva el ámbar de línea anterior.
++  const l7005 = await filaDe('7005');
++  t.ok(l7005 && l7005.includes('Fuera de venta') && l7005.includes('2022-10-31'),
++    '7005: fuera de venta con la fecha de su boletín oficial (2022-10-31)');
++  t.ok(l7005 && l7005.includes('2027-10-31'), '7005: el semáforo suma el fin de soporte (2027-10-31)');
++  const leg = await filaDe('7010');
++  t.ok(leg && /L.nea anterior/.test(leg), 'el 7010 (sin boletín localizado) conserva su semáforo ámbar de línea anterior');
+ 
+   // El selector de equipo nombra la condición con la fecha ya vencida.
+   await page.click('[data-tab=calc]');
+-- 
+2.43.0
+
