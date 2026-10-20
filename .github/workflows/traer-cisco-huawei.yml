@@ -580,6 +580,11 @@ jobs:
               { archivo: 'juniper-ssr1000-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SSR1200', urls: [
                 'https://www.juniper.net/gb/en/products/routers/session-smart-router/ssr1000-line-of-routers-datasheet.html',
               ] },
+              // 2026-10-19: la guia de hardware del SRX380, la unica de los doce SRX que no se habia
+              // traido; sus vistas frontal y trasera van a la tarjeta grafica del dimensionador.
+              { archivo: 'juniper-hw-srx380.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+                'https://www.juniper.net/documentation/us/en/hardware/srx380/srx380.pdf',
+              ] },
               // La ficha del MX304 en juniper.net ya es un visor de HPE: el PDF vive en psnow
               // (a00150831enw). URL leida de la propia pagina traida el 2026-10-19, no adivinada.
               { archivo: 'juniper-mx304-ds-hpe.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
