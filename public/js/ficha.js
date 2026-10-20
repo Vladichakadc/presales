@@ -27,7 +27,10 @@
 //     listaCandidatos: true,        // (opt-in) lista clicable de TODOS los que cumplen
 //     etiquetaCand: (m,i) => '',    // (opt-in) detalle de cada fila de esa lista
 //     vistas: {ID:{front,rear?}},   // (opt-in) foto oficial del equipo arriba, con
-//                                   //   conmutador frontal/trasera si hay ambas caras
+//                                   //   conmutador frontal/trasera si hay ambas caras;
+//                                   //   `foto` + `fotoFuente` (opt-in, Juniper 2026-10-20)
+//                                   //   suman una tercera pestaña «Foto»: la de producto a
+//                                   //   color, con su propio pie de procedencia
 //     panelFijo: true,              // (opt-in) tarjeta compacta: lista sin scroll
 //     detalleExpandible: true,      //   interno; porQue+secciones se despliegan
 //                                   //   DENTRO de la tarjeta con un conmutador
@@ -204,27 +207,34 @@
     lupaN = n;
     return n;
   }
+  // Las caras que puede tener una figura, en el orden en que se ofrecen. `foto` es la foto de
+  // producto a color (opt-in): los dibujos de la guía de hardware son las caras, la foto es lo
+  // que el cliente reconoce, y cada una lleva su propio pie de procedencia.
+  const CARAS = { front: 'Frontal', rear: 'Trasera', foto: 'Foto' };
+  const ALT_CARA = { front: 'Vista frontal del ', rear: 'Vista trasera del ', foto: 'Foto de producto del ' };
+  const carasDe = (d) => Object.keys(CARAS).filter((c) => d[c]);
   function pintarLupa() {
     const n = nodoLupa(), d = lupaDatos, img = n.querySelector('img');
-    const src = d.cual === 'rear' ? d.rear : d.front;
+    const src = d[d.cual];
     if (!src) return;
     img.src = src;
-    img.alt = (d.cual === 'rear' ? 'Vista trasera del ' : 'Vista frontal del ') + d.modelo + ' — ampliada a tamaño completo';
+    img.alt = (ALT_CARA[d.cual] || ALT_CARA.front) + d.modelo + ' — ampliada a tamaño completo';
     n.querySelector('.ficha-lupa-modelo').textContent = d.modelo;
-    n.querySelector('figcaption').textContent = d.pie;
+    n.querySelector('figcaption').textContent = d.cual === 'foto' && d.pieFoto ? d.pieFoto : d.pie;
     const tabs = n.querySelector('.ficha-vista-tabs');
-    if (d.front && d.rear) {
+    const caras = carasDe(d);
+    if (caras.length > 1) {
       tabs.style.display = '';
-      tabs.innerHTML = ['front', 'rear'].map((c) =>
-        `<button type="button" class="ficha-vista-tab${c === d.cual ? ' on' : ''}" data-vista="${c}" role="tab" aria-selected="${c === d.cual}">${c === 'front' ? 'Frontal' : 'Trasera'}</button>`).join('');
+      tabs.innerHTML = caras.map((c) =>
+        `<button type="button" class="ficha-vista-tab${c === d.cual ? ' on' : ''}" data-vista="${c}" role="tab" aria-selected="${c === d.cual}">${CARAS[c]}</button>`).join('');
       tabs.querySelectorAll('.ficha-vista-tab').forEach((tb) =>
         tb.addEventListener('click', () => { lupaDatos.cual = tb.dataset.vista; pintarLupa(); }));
     } else { tabs.innerHTML = ''; tabs.style.display = 'none'; }
   }
   function abrirLupa(fig) {
     const tabOn = fig.querySelector('.ficha-vista-tab.on');
-    lupaDatos = { front: fig.dataset.front || null, rear: fig.dataset.rear || null,
-      modelo: fig.dataset.modelo || '', pie: fig.dataset.pie || '',
+    lupaDatos = { front: fig.dataset.front || null, rear: fig.dataset.rear || null, foto: fig.dataset.foto || null,
+      modelo: fig.dataset.modelo || '', pie: fig.dataset.pie || '', pieFoto: fig.dataset.pieFoto || '',
       // Sin pestañas (una sola cara) la lupa abre la que HAY, no `front` a ciegas.
       cual: tabOn ? tabOn.dataset.vista : (fig.dataset.front ? 'front' : 'rear') };
     lupaOrigen = fig.querySelector('.ficha-vista-zoom');
@@ -243,8 +253,10 @@
   document.addEventListener('keydown', (e) => {
     if (!lupaN || lupaN.hidden || !lupaDatos) return;
     if (e.key === 'Escape') cerrarLupa();
-    if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && lupaDatos.rear) {
-      lupaDatos.cual = lupaDatos.cual === 'front' ? 'rear' : 'front';
+    const caras = carasDe(lupaDatos);
+    if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && caras.length > 1) {
+      const i = caras.indexOf(lupaDatos.cual);
+      lupaDatos.cual = caras[(i + (e.key === 'ArrowRight' ? 1 : caras.length - 1)) % caras.length];
       pintarLupa();
     }
   });
@@ -628,10 +640,11 @@
         // petición del dueño): sin foto trasera oficial la pestaña existe y dice por qué,
         // en vez de desaparecer y dejar creer que el equipo no tiene trasera.
         const sinRear = !!(v.front && !v.rear && v.rearNota);
-        const tabs = (v.front && (v.rear || sinRear))
+        const carasTab = [v.front && 'front', (v.rear || sinRear) && 'rear', v.foto && 'foto'].filter(Boolean);
+        const tabs = carasTab.length > 1
           ? `<div class="ficha-vista-tabs" role="tablist" aria-label="Vistas del equipo">`
-            + `<button type="button" class="ficha-vista-tab on" data-vista="front" role="tab" aria-selected="true">Frontal</button>`
-            + `<button type="button" class="ficha-vista-tab" data-vista="rear" role="tab" aria-selected="false">Trasera</button></div>`
+            + carasTab.map((c) => `<button type="button" class="ficha-vista-tab${c === cara0 ? ' on' : ''}" data-vista="${c}" role="tab" aria-selected="${c === cara0}">${CARAS[c]}</button>`).join('')
+            + '</div>'
           : '';
         const pie = [v.tamano, v.fuente].filter(Boolean).map(esc).join(' · ');
         // La lupa lee lo que necesita del dataset de la figura (frente, reverso, modelo
@@ -642,7 +655,8 @@
         // una copia ligera con pérdida y la lupa abre el original sin pérdida, que es el que
         // conserva los píxeles del documento. Sin previa, la tarjeta pinta el original.
         const prev = (cara) => v[cara + 'Prev'] || v[cara];
-        vistaHtml = `<figure class="ficha-vista" id="${cid}-vista"${v.front ? ` data-front="${esc(v.front)}" data-front-prev="${esc(prev('front'))}"` : ''}${v.rear ? ` data-rear="${esc(v.rear)}" data-rear-prev="${esc(prev('rear'))}"` : ''} data-modelo="${esc(sel.id)}" data-pie="${esc(pie)}">`
+        const pieFoto = v.foto ? [v.tamano, v.fotoFuente].filter(Boolean).join(' · ') : '';
+        vistaHtml = `<figure class="ficha-vista" id="${cid}-vista"${v.front ? ` data-front="${esc(v.front)}" data-front-prev="${esc(prev('front'))}"` : ''}${v.rear ? ` data-rear="${esc(v.rear)}" data-rear-prev="${esc(prev('rear'))}"` : ''}${v.foto ? ` data-foto="${esc(v.foto)}" data-foto-prev="${esc(prev('foto'))}" data-pie-foto="${esc(pieFoto)}"` : ''} data-modelo="${esc(sel.id)}" data-pie="${esc(pie)}">`
           + `<div class="ficha-vista-img"><img src="${esc(prev(cara0))}" alt="Vista ${cara0 === 'rear' ? 'trasera' : 'frontal'} del ${esc(sel.id)} — pulsa la lupa para ampliar" loading="lazy">`
           + (sinRear ? `<p class="ficha-vista-sinrear" hidden>${esc(v.rearNota)}</p>` : '')
           + `<button type="button" class="ficha-vista-zoom" aria-label="Ampliar la foto del ${esc(sel.id)} a tamaño completo" title="Ampliar a tamaño completo">${SVG_LUPA}</button></div>`
@@ -766,7 +780,7 @@
       vistaNodo.querySelectorAll('.ficha-vista-tab').forEach((tb) => {
         tb.addEventListener('click', () => {
           const cual = tb.dataset.vista;
-          const src = cual === 'rear' ? vistaNodo.dataset.rearPrev : vistaNodo.dataset.frontPrev;
+          const src = vistaNodo.dataset[cual + 'Prev'];
           const nota = vistaNodo.querySelector('.ficha-vista-sinrear');
           const zoom = vistaNodo.querySelector('.ficha-vista-zoom');
           if (!imgNodo) return;
@@ -775,7 +789,10 @@
           imgNodo.hidden = !src;
           if (zoom) zoom.hidden = !src;
           if (src) imgNodo.src = src;
-          imgNodo.alt = (cual === 'rear' ? 'Vista trasera del ' : 'Vista frontal del ') + sel.id;
+          imgNodo.alt = (ALT_CARA[cual] || ALT_CARA.front) + sel.id;
+          // La foto de producto sale de otro documento que los dibujos: su pie lo dice.
+          const cap = vistaNodo.querySelector('figcaption');
+          if (cap) cap.textContent = cual === 'foto' && vistaNodo.dataset.pieFoto ? vistaNodo.dataset.pieFoto : vistaNodo.dataset.pie;
           vistaNodo.querySelectorAll('.ficha-vista-tab').forEach((x) => {
             const on = x === tb;
             x.classList.toggle('on', on);

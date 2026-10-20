@@ -328,7 +328,9 @@ Módulos compartidos:
   Secciones comunes: características, alimentación (cinco estados: `true`, `false`, `'opcional'`,
   `'no-aplica'` y «no consta», nunca `undefined` leído como `false`), puertos (configuraciones
   alternativas, no acumulables; un chasis modular no publica densidad), licenciamiento, software,
-  soporte, referencias de pedido (bajo demanda por modelo) y figuras con su página y rótulo literal.
+  soporte, referencias de pedido (bajo demanda por modelo) y figuras con su página y rótulo literal
+  (frontal, trasera y, opt-in `foto` + `fotoFuente`, una tercera pestaña con la foto de producto a
+  color y su propio pie; hoy solo Juniper).
   `escalon` (los siete lo declaran): junto al recomendado, el N+1 (menor métrica estrictamente mayor
   en la cifra del desplegable, nunca fuera de venta; `comparable` lo limita a la misma familia o base
   de medida) y el diferencial de precio solo con precio en los dos; no toca la selección. En la
@@ -445,7 +447,8 @@ Módulos compartidos:
   por capa de cifrado en IMIX (`cap`/`capCif`/`capHmac`, de sus fichas; la de 1.500 B es portada),
   como sucursal o hub, y su inspección va desacoplada en un SRX elegido por capa o en la nube.
   Distribución de Aruba (tarjeta clavada con figuras de la guía de hardware de cada modelo,
-  `public/data/juniper-vistas-equipos.json`, sin pérdida). El ciclo de vida respaldado es solo el
+  `public/data/juniper-vistas-equipos.json`, sin pérdida, con foto de producto en 16 de 18 y tamaño y
+  peso de la tabla física de cada guía). El ciclo de vida respaldado es solo el
   de los SRX: en un SSR la ficha dice que no hay fuente.
 - **MikroTik** (`mikrotik-motor.js`, `legacyData/mikrotikPruebas.js` generado por `npm run
   mikrotik`). Se dimensiona con la **celda** de la tabla de pruebas de cada ficha oficial: la fila

@@ -38,6 +38,30 @@ test('cada figura declarada existe, no es un stub y es WebP sin pérdida', () =>
   }
 });
 
+test('la foto de producto (tercera vista) es opcional, sin pérdida y con su propia procedencia', () => {
+  const conFoto = entradas.filter(([, v]) => v.foto);
+  assert.ok(conFoto.length >= 16, `solo ${conFoto.length} equipos con foto: se perdió alguna`);
+  for (const [modelo, v] of conFoto) {
+    assert.ok(v.foto.startsWith('/img/equipos/jn-') && v.foto.endsWith('-foto.webp'), `${modelo}: ruta de foto inesperada`);
+    const b = fs.readFileSync(path.join(RAIZ, 'public', v.foto));
+    assert.strictEqual(b.toString('ascii', 12, 16), 'VP8L', `${modelo}: la foto no es sin pérdida`);
+    assert.match(v.fotoFuente || '', /^Foto de producto de la (ficha|página) /, `${modelo}: la foto no dice de qué documento sale`);
+    assert.notStrictEqual(v.foto, v.front, `${modelo}: la foto no puede ser la misma figura que la frontal`);
+  }
+  // El SSR120 de la ficha es la variante con LTE: el pie lo tiene que decir.
+  assert.match(VISTAS.SSR120.fotoFuente, /LTE/);
+  // Sin foto oficial no se traslada la de un hermano.
+  for (const id of ['SRX4100', 'SRX4200']) assert.ok(!VISTAS[id].foto, `${id} no tiene foto oficial traída: no puede llevar la de otro`);
+});
+
+test('cada figura declara tamaño y peso con la tabla de la que salen', () => {
+  for (const [modelo, v] of entradas) {
+    assert.match(v.tamano || '', /^\d[\d,]* × \d[\d,]* × \d[\d,]* mm \(Al × An × Fo/, `${modelo}: el tamaño no va en mm y en orden Al × An × Fo`);
+    assert.match(v.tamano, /\d[\d,]* kg/, `${modelo}: falta el peso en kg`);
+    assert.match(v.tamano, /— (guía, tabla \d+|ficha SSR1?00+)/, `${modelo}: no dice de qué tabla sale`);
+  }
+});
+
 test('los 18 equipos del catálogo Juniper tienen figura, y ninguna es de un modelo que no existe', () => {
   const ids = [...MODELS, ...SDWAN].map((m) => m.id);
   for (const [modelo] of entradas) assert.ok(ids.includes(modelo), `${modelo} tiene figura y no está en el catálogo`);
