@@ -31,6 +31,17 @@ const miles = (n) => (n == null ? 'sin dato' : n.toLocaleString('en-US'));
 
 let MODELS = [], SDWAN = [], BUNDLES = {}, CARE = {};
 
+// Config común de la ficha, la misma distribución que Aruba (petición del dueño, 2026-10-19):
+// tarjeta clavada y compacta con la foto oficial del equipo (frontal y trasera, de su guía de
+// hardware), la lista clicable de los que cumplen y las características desplegables dentro de
+// la propia tarjeta. ficha.js REEMPLAZA la config en cada render, así que va en todas las
+// llamadas. `vistas` se rellena al cargar desde /data/juniper-vistas-equipos.json.
+const FICHA_CFG = { vendor: 'juniper', listaCandidatos: true, panelFijo: true, detalleExpandible: true, vistas: null };
+// El respaldo de ciclo de vida de Juniper es la tabla «SRX Series Hardware Dates & Milestones»:
+// cubre los SRX y no dice nada de los Session Smart Router. Pintar «vigente» en un SSR por no
+// salir en una tabla de SRX era afirmar vigencia por omisión (encontrado el 2026-10-19).
+const CICLO_SSR = { respaldado: false, motivo: 'la fuente de ciclo de vida de Juniper (tabla de hitos de la serie SRX) no cubre los Session Smart Router' };
+
 // Catálogo Juniper, con la misma tabla que antes vivía en la vista de Juniper del portal
 // (ver CLAUDE.md, 2026-09-10): SRX y SD-WAN son dos productos que no se comparan entre sí
 // (misma regla que el resto de la página), así que se listan en tablas separadas.
@@ -104,6 +115,12 @@ function capaEfectiva() {
     // ciclo de vida» en vez de afirmar vigencia por omision.
     FICHA.fijarCicloVida(d.cicloVida);
     MODELS = d.models || []; SDWAN = d.sdwan || [];
+    // Las figuras son un adorno de la tarjeta: si el mapa no llega, la ficha declara el hueco
+    // («sin foto oficial») y el dimensionamiento sigue igual.
+    try {
+      const rv = await fetch('/data/juniper-vistas-equipos.json');
+      if (rv.ok) FICHA_CFG.vistas = await rv.json();
+    } catch { /* sin figuras: la ficha lo dice */ }
     BUNDLES = d.bundles || {}; CARE = d.care || {};
   } catch {
     $('verdict').innerHTML = '<p class="warn">No se pudo cargar el catálogo Juniper.</p>';
@@ -117,6 +134,17 @@ function capaEfectiva() {
 }());
 
 /* ══ Controles ══ */
+// Conmutador «Ver características del equipo» de la tarjeta clavada (como Aruba): al desplegar,
+// la columna suelta el sticky —una tarjeta más alta que la pantalla dejaría su final
+// inalcanzable— y vuelve a clavarse al plegar.
+document.addEventListener('click', (e) => {
+  if (!e.target || e.target.id !== 'verdict-salto') return;
+  const col = document.querySelector('.cols>.col-fijo');
+  const det = document.getElementById('verdict-det');
+  if (!col || !det) return;
+  col.classList.toggle('expandida', !det.hidden);
+  if (!det.hidden) window.scrollTo(0, Math.max(0, col.getBoundingClientRect().top + window.scrollY - 16));
+});
 document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => {
   document.querySelectorAll('.tabs button').forEach((x) => x.setAttribute('aria-selected', x === b));
   document.querySelectorAll('.tabpane').forEach((p) => { p.hidden = p.id !== `pane-${b.dataset.tab}`; });
@@ -202,10 +230,10 @@ function render() {
   // equipo a ciegas. Aplica a las dos plataformas (SRX y Session Smart).
   if (need <= 0) {
     lastPick = null; hayCandidato = false; companero = { modo: 'ninguna' };
+    limpiarEscala();
     $('companero').innerHTML = '';
     sincronizarConBom(null);
-    FICHA.render({vendor:'juniper',
-      contenedor: 'verdict', candidatos: [], recomendado: null,
+    FICHA.render({ ...FICHA_CFG, contenedor: 'verdict', candidatos: [], recomendado: null,
       vacioTitulo: 'Ingrese valores para recomendar un equipo',
       vacioDetalle: '<p style="margin:0;font-size:13.5px">Escriba el <b>ancho de banda</b> del sitio (y si aplica, usuarios y sesiones) para que el dimensionador proponga los modelos que cumplen.</p>',
     });
@@ -235,6 +263,7 @@ function render() {
   lastPick = pick;
   hayCandidato = !!pick;
   sincronizarConBom(pick);
+  pintarEscala(MODELS, ef.k, need, pick, CAPA_INFO[ef.k].n);
 
   if (!pick) {
     const why = [];
@@ -243,8 +272,7 @@ function render() {
     if (sinCifra) why.push(`<li><b>${sinCifra}</b> modelo(s) quedaron fuera porque <b>el catálogo no publica su cifra en esta capa</b>. No se sustituye por la de otra capa: son mediciones distintas y hacerlo es lo que produce propuestas que se quedan cortas por un orden de magnitud. Se pueden consultar en la pestaña de BOM.</li>`);
     if (outBySess) why.push(`<li><b>${outBySess}</b> modelo(s) descartado(s) por sesiones concurrentes: hacen falta ${miles(sessNeed)}.</li>`);
     why.push('<li>Si el diseño no exige inspección avanzada sobre todo el tráfico, evaluar una capa menos profunda o segmentar qué tráfico se inspecciona — es la palanca que más capacidad libera.</li>');
-    FICHA.render({vendor:'juniper', 
-      contenedor: 'verdict', candidatos: [], recomendado: null,
+    FICHA.render({ ...FICHA_CFG, contenedor: 'verdict', candidatos: [], recomendado: null,
       vacioTitulo: 'Ningún modelo del catálogo cumple en esta capa',
       vacioDetalle: `<ul style="margin:0;padding-left:18px;font-size:13.5px">${why.join('')}</ul>`,
     });
@@ -253,11 +281,11 @@ function render() {
     return;
   }
 
-  FICHA.render({vendor:'juniper', 
-    contenedor: 'verdict',
+  FICHA.render({ ...FICHA_CFG, contenedor: 'verdict',
     candidatos: ordenados,
     recomendado: pick.id,
     etiqueta: (m) => `${m.id} — ${m.seg} · ${fmt(m[ef.k])}`,
+    etiquetaCand: (m) => `${m.seg} · ${fmt(m[ef.k])}`,
     // Escalón N+1 (ficha.js): la cifra de la capa que dimensiona. Juniper no tiene lista de precios.
     escalon: { metrica: (m) => m[ef.k] ?? null, fmt, nombre: CAPA_INFO[ef.k].n, precio: () => null },
     titulo: (m) => m.id,
@@ -269,10 +297,12 @@ function render() {
       const m = MODELS.find((x) => x.id === id);
       if (!m) return;
       pintarPerf(m, ef.k); pintarResumen(m, ef, need, sessNeed);
+      pintarEscala(MODELS, ef.k, need, m, CAPA_INFO[ef.k].n);
       $('pickModel').value = id; renderBom();
     },
   });
   const elegido = MODELS.find((m) => m.id === FICHA.elegido('verdict')) || pick;
+  if (elegido !== pick) pintarEscala(MODELS, ef.k, need, elegido, CAPA_INFO[ef.k].n);
   pintarPerf(elegido, ef.k);
   pintarResumen(elegido, ef, need, sessNeed);
 }
@@ -411,8 +441,8 @@ function renderSsr(bwMbps, head) {
   renderCompanero(esc0);
 
   if (need <= 0) {
-    lastPick = null; hayCandidato = false; sincronizarConBom(null);
-    FICHA.render({ vendor: 'juniper', contenedor: 'verdict', candidatos: [], recomendado: null,
+    lastPick = null; hayCandidato = false; sincronizarConBom(null); limpiarEscala();
+    FICHA.render({ ...FICHA_CFG, cicloVida: CICLO_SSR, contenedor: 'verdict', candidatos: [], recomendado: null,
       vacioTitulo: hub ? 'Ingrese las sucursales que llegan al hub' : 'Ingrese valores para recomendar un equipo',
       vacioDetalle: hub
         ? '<p style="margin:0;font-size:13.5px">El hub se dimensiona con el overlay de sus sucursales: hace falta cuántas son, su caudal y qué parte sale en local. Con un breakout del 100 % no llega nada al hub.</p>'
@@ -429,17 +459,18 @@ function renderSsr(bwMbps, head) {
   lastPick = pick;
   hayCandidato = !!pick;
   sincronizarConBom(pick);
+  pintarEscala(SDWAN, k, need, pick, `${d.capa.n} (IMIX)`);
   if (!pick) {
     const tope = SDWAN.reduce((t, m) => (m[k] != null && m[k] > (t ? t[k] : -1) ? m : t), null);
-    FICHA.render({ vendor: 'juniper', contenedor: 'verdict', candidatos: [], recomendado: null,
+    FICHA.render({ ...FICHA_CFG, cicloVida: CICLO_SSR, contenedor: 'verdict', candidatos: [], recomendado: null,
       vacioTitulo: `Ningún Session Smart Router del catálogo llega a ${fmt(need)} ${d.capa.n.toLowerCase()}`,
       vacioDetalle: `<p class="warn">${tope ? `El mayor del catálogo en esta capa es el ${esc(tope.id)} con ${fmt(tope[k])}. ` : ''}Opciones: otra capa de cifrado si el diseño lo admite, repartir la carga en varias unidades o evaluar la versión virtual sobre servidor.${sinCifra ? ` ${sinCifra} modelo(s) no publican cifra en esta capa y se apartan.` : ''}</p>${desgloseSsr(d)}` });
     $('sizingBox').innerHTML = desgloseSsr(d);
     return;
   }
-  FICHA.render({ vendor: 'juniper',
-    contenedor: 'verdict', candidatos: ordenados, recomendado: pick.id,
+  FICHA.render({ ...FICHA_CFG, cicloVida: CICLO_SSR, contenedor: 'verdict', candidatos: ordenados, recomendado: pick.id,
     etiqueta: (m) => `${m.id} — ${m.seg} · ${fmt(m[k])}`,
+    etiquetaCand: (m) => `${m.seg} · ${fmt(m[k])}`,
     escalon: { metrica: (m) => m[k] ?? null, fmt, nombre: d.capa.n, precio: () => null },
     titulo: (m) => m.id,
     subtitulo: (m) => `${m.ser} · ${m.seg}`,
@@ -454,9 +485,54 @@ function renderSsr(bwMbps, head) {
         ['Interfaces', esc(m.ifaces), true],
         ['Precio de lista ref.', '<span class="warn">sin lista de precios Juniper</span>']] },
     FICHA.seccionPuertos(m), FICHA.seccionAlimentacion(m)],
-    alCambiar: (id) => { $('pickModel').value = id; renderBom(); },
+    alCambiar: (id) => {
+      pintarEscala(SDWAN, k, need, SDWAN.find((x) => x.id === id) || pick, `${d.capa.n} (IMIX)`);
+      $('pickModel').value = id; renderBom();
+    },
   });
+  const elegidoSsr = SDWAN.find((m) => m.id === FICHA.elegido('verdict'));
+  if (elegidoSsr && elegidoSsr !== pick) pintarEscala(SDWAN, k, need, elegidoSsr, `${d.capa.n} (IMIX)`);
   $('sizingBox').innerHTML = desgloseSsr(d);
+}
+
+/* ══ ESCALA DE CAPACIDAD ══
+   La misma escala logarítmica que Aruba y Cisco, con la cifra que DIMENSIONA (capa de
+   inspección del SRX o capa de cifrado del SSR, nunca la portada). Un modelo sin esa cifra no
+   se pinta: no hay dónde ponerlo sin inventarla. */
+function limpiarEscala() {
+  const need = $('need'); if (!need) return;
+  need.style.left = '0%'; $('needLbl').textContent = '—';
+  $('track').querySelectorAll('.dot,.tick,.pickLabel').forEach((e) => e.remove());
+}
+function pintarEscala(lista, k, needMbps, elegido, nombre) {
+  const track = $('track'); if (!track) return;
+  limpiarEscala();
+  const caps = lista.map((m) => m[k]).filter((v) => typeof v === 'number' && v > 0);
+  if (!caps.length || !(needMbps > 0)) return;
+  $('ladderLbl').textContent = `Escala de capacidad — ${nombre} de cada modelo vs. requerimiento (logarítmica)`;
+  const lo = Math.log10(Math.max(10, Math.min(...caps, needMbps) / 2));
+  const hi = Math.log10(Math.max(...caps, needMbps) * 1.3);
+  const x = (v) => ((Math.log10(Math.max(v, 1)) - lo) / (hi - lo)) * 100;
+  const need = $('need');
+  need.style.left = `${Math.min(Math.max(x(needMbps), 0), 99)}%`;
+  $('needLbl').textContent = fmt(needMbps);
+  need.classList.toggle('flip', x(needMbps) > 60);
+  [10, 100, 1000, 10000, 100000, 1000000].forEach((v) => {
+    const pct = x(v); if (pct < 0 || pct > 100) return;
+    const t = document.createElement('div'); t.className = 'tick'; t.style.left = `${pct}%`;
+    t.innerHTML = `<i></i><b>${v >= 1e6 ? `${v / 1e6}T` : v >= 1000 ? `${v / 1000}G` : `${v}M`}</b>`;
+    track.appendChild(t);
+  });
+  const lbl = document.createElement('div'); lbl.className = 'pickLabel'; lbl.id = 'pickLbl'; lbl.style.display = 'none';
+  track.appendChild(lbl);
+  for (const m of lista) {
+    if (typeof m[k] !== 'number') continue;
+    const d = document.createElement('div');
+    d.className = `dot${m[k] >= needMbps ? ' ok' : ''}${elegido && m.id === elegido.id ? ' pick' : ''}`;
+    d.style.left = `${x(m[k])}%`; d.title = `${m.id}: ${fmt(m[k])}`;
+    track.appendChild(d);
+    if (elegido && m.id === elegido.id) { lbl.textContent = m.id; lbl.style.left = `${x(m[k])}%`; lbl.style.display = 'block'; }
+  }
 }
 
 function porQueSsr(m, d, e) {
@@ -518,7 +594,9 @@ function renderCompanero(e) {
       <li>Opciones: inspeccionar solo la salida local, bajar de capa o repartir en un clúster.</li></ul>`;
     return;
   }
-  caja.innerHTML = `<p class="model" style="font-size:26px;margin:0 0 2px">${esc(pick.id)}</p>
+  const foto = FICHA_CFG.vistas && FICHA_CFG.vistas[pick.id] && FICHA_CFG.vistas[pick.id].front;
+  caja.innerHTML = (foto ? `<figure class="comp-foto"><img src="${esc(foto)}" alt="Vista frontal del ${esc(pick.id)}, de su guía de hardware" loading="lazy"></figure>` : '')
+    + `<p class="model" style="font-size:26px;margin:0 0 2px">${esc(pick.id)}</p>
     <p class="family" style="margin-bottom:10px">${esc(pick.ser)} · ${esc(pick.seg)}</p>
     <div class="meter"><b>${esc(CAPA_INFO[k].n)} <em>${fmt(insp.need)} / ${fmt(pick[k])}</em></b>
       <div class="bar"><i class="${insp.need / pick[k] > 0.8 ? 'tight' : 'good'}" style="width:${Math.min(100, (insp.need / pick[k]) * 100)}%"></i></div></div>

@@ -440,8 +440,13 @@ Módulos compartidos:
   Huawei (Info-Finder exige sesión).
 - **Cisco**: la plataforma se elige antes que el caudal (`PLATAFORMAS`: IOS XE SD-WAN, ISR 1000,
   Meraki MX, ASR 1000); en SD-WAN un modelo sin cifra propia cae a IPsec y la lista lo marca.
-- **Juniper**: SRX y Session Smart Router no se comparan. `fw` (paquetes grandes) se muestra y no
-  dimensiona; manda la capa de inspección (`CAPAS`).
+- **Juniper** (`juniper-motor.js`): SRX y Session Smart Router no se comparan. `fw` (paquetes
+  grandes) se muestra y no dimensiona; manda la capa de inspección (`CAPAS`). El SSR se dimensiona
+  por capa de cifrado en IMIX (`cap`/`capCif`/`capHmac`, de sus fichas; la de 1.500 B es portada),
+  como sucursal o hub, y su inspección va desacoplada en un SRX elegido por capa o en la nube.
+  Distribución de Aruba (tarjeta clavada con figuras de la guía de hardware de cada modelo,
+  `public/data/juniper-vistas-equipos.json`, sin pérdida). El ciclo de vida respaldado es solo el
+  de los SRX: en un SSR la ficha dice que no hay fuente.
 - **MikroTik** (`mikrotik-motor.js`, `legacyData/mikrotikPruebas.js` generado por `npm run
   mikrotik`). Se dimensiona con la **celda** de la tabla de pruebas de cada ficha oficial: la fila
   la fijan las funciones (firewall con FastTrack = fast path, que es un techo; sin FastTrack = 25

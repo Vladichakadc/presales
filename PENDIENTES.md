@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-19, cuadragesimotercera entrega (**Juniper: los MX contrastados con su ficha y el SSR dimensionado por capa de cifrado.** La mejora propuesta se ejecutó: las fichas oficiales de MX204/240/480/960 y del MX304 (ya publicada por HPE) se trajeron por Actions y corrigieron el cotizador, el portal y la guía, que daban al MX480 7,7 Tbps (son 7,5) y al MX960 19,2 Tbps y 12 ranuras (son 12 Tbps y 11). **Hallazgo por el camino**: los Session Smart Router no tenían fuente; sus fichas dicen que `cap` es «sin cifrar, IMIX» y publican además «solo cifrado» y «cifrado + HMAC». El motor de la entrega anterior dividía por IMIX una cifra que ya era IMIX; ahora el SSR se dimensiona por capa de cifrado (el SSR1200 da 10 Gbps sin cifrar y 2,5 con HMAC) y entra el SSR1500. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
+Última revisión: 2026-10-19, cuadragesimocuarta entrega (**Juniper con las figuras oficiales de los 18 equipos y la distribución de Aruba.** Encargo del dueño: fotos frontal y trasera en alta calidad y la pantalla como la de Aruba. Las figuras salen de la guía de hardware de cada modelo —se trajeron por Actions las que faltaban: SRX380 y SSR120/1200/1300/1400— a su resolución nativa (1.400-3.000 px) y sin pérdida; SSR130 y SSR1500, sin guía descargable, de su ficha de línea. Variables a la izquierda, tarjeta del equipo clavada a la derecha con foto, lista de candidatos y características desplegables, escala de capacidad arriba y resultados debajo. **Hallazgo por el camino**: los SSR salían «vigentes» con una fuente que solo cubre los SRX; ahora dicen que no hay respaldo. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-19, cuadragesimotercera entrega (**Juniper: los MX contrastados con su ficha y el SSR dimensionado por capa de cifrado.** La mejora propuesta se ejecutó: las fichas oficiales de MX204/240/480/960 y del MX304 (ya publicada por HPE) se trajeron por Actions y corrigieron el cotizador, el portal y la guía, que daban al MX480 7,7 Tbps (son 7,5) y al MX960 19,2 Tbps y 12 ranuras (son 12 Tbps y 11). **Hallazgo por el camino**: los Session Smart Router no tenían fuente; sus fichas dicen que `cap` es «sin cifrar, IMIX» y publican además «solo cifrado» y «cifrado + HMAC». El motor de la entrega anterior dividía por IMIX una cifra que ya era IMIX; ahora el SSR se dimensiona por capa de cifrado (el SSR1200 da 10 Gbps sin cifrar y 2,5 con HMAC) y entra el SSR1500. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
 Revisión anterior: 2026-10-19, cuadragesimosegunda entrega (**Dimensionador Juniper: se integra el método de la herramienta externa «Carrier-Grade Juniper Networks», no sus datos.** Encargo del dueño: actualizar el dimensionador con el HTML adjunto «como un arquitecto senior». Contrastado cifra a cifra contra `legacyData/juniper.js`, el adjunto sobredimensionaba la inspección del SRX hasta 4,7x (SRX1600 21 Gbps de IPS por TPS frente a 4,5 verificados por CPS; SRX4300 45 Gbps de NGFW frente a 11 de ATP), inventaba IDP/NGFW para los SSR, precios, SKU y 16 equipos ACX/MX/PTX sin fuente. Entra su método en `public/js/juniper-motor.js` (puro, 12 pruebas): SSR como sucursal o hub (el breakout descarga el hub, no la sucursal), IMIX homologado con EdgeConnect, túnel IPsec en bytes por paquete, duplicación de paquetes, seguridad desacoplada en un SRX elegido por capa o en la nube, y pool de NAT por bloques. Ver *Cerrado recientemente* y *Abierto: herramienta externa Juniper*.)
 Revisión anterior: 2026-10-19, cuadragesimoprimera entrega (**La mejora propuesta —qué equipos respalda cada fuente— y el escalón N+1 en los siete dimensionadores.** `fuentes.js` declara `modelos` en 78 de sus 100 fuentes, con guarda: cada elemento existe, el texto de la fuente lo nombra y **los 217 equipos de los siete catálogos tienen fuente declarada**. La hoja «Supuestos» lista las fuentes que declaran al equipo y dice cómo se asoció cada una. El escalón N+1 pasa de Huawei a los siete. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-19, cuadragésima entrega (**Explicabilidad de Huawei, escalón N+1, hoja «Supuestos» del Excel y escritura atómica del volumen.** Encargo del dueño en cuatro fases. **Huawei**: la traza escribe el ×2 entero («bajada X + subida X = 2X» frente al techo que la ficha publica sumado), cada modelo apartado dice su cuello de botella con cifras y la tabla abre con un resumen por categoría y los modelos de otras plataformas; el BOM marca lo que es **base del chasis** y las licencias sin código ni precio dicen «consultar». **`ficha.js`**: escalón superior N+1 (opt-in, hoy en Huawei). **`bom.js`**: hoja «Supuestos» detrás de «BOM». **Servidor**: `usuarios.json` y el manifiesto de fuentes se escriben de forma atómica. Ninguna cifra del cálculo cambia. Ver *Cerrado recientemente*.)
@@ -1973,6 +1974,8 @@ Lo que el HTML adjunto traía y **no** entró, con el motivo y lo que lo cerrar�
 - ~~**SSR1500**~~ cerrado el 2026-10-19: su ficha lo confirma y entra al catálogo.
 - **Cifra de inspección del SSR** (IDP/URL): confirmado el 2026-10-19 que las fichas SSR100 y
   SSR1000 no la publican. Sigue desacoplada en SRX o en la nube.
+- **Tamaño y peso en el pie de las figuras de Juniper**: las guías los publican, pero en formatos
+  distintos por modelo; Aruba lo muestra («44 × 295 × 201 mm · 1,59 kg»). Falta transcribirlos.
 - **La ficha de la serie MX 204/240/480/960 solo apareció en japonés** (1000597-042-JP, sep-2024);
   la URL inglesa encontrada (`1000597-en.pdf`) devuelve HTML. Igual con la de SSR100. Las cifras de
   las tablas no dependen del idioma, pero conviene la edición inglesa si aparece.
@@ -2120,6 +2123,20 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+- **2026-10-19 · Juniper: figuras oficiales y distribución de Aruba (encargo del dueño).**
+  `public/data/juniper-vistas-equipos.json` + 36 WebP sin pérdida en `public/img/equipos/jn-*`:
+  los 12 SRX y 4 SSR desde su guía de hardware (figuras «Front Panel» y «Rear/Back Panel», con
+  página y rótulo en el pie y la guía en `url`), SSR130 y SSR1500 desde las fichas SSR100/SSR1000
+  (sus índices de documentación no enlazan el PDF). Tres traseras son el mismo dibujo en el
+  documento oficial (SRX340/345, SRX4100/4200, SSR1300/1400). Corridas 39359374306 (SRX380) y
+  39359448021 (guías SSR). La pantalla pasa a la rejilla de Aruba (`.cols` + `.col-fijo` clavada,
+  `panelFijo`, `detalleExpandible`, `listaCandidatos`), con escala logarítmica de la cifra que
+  dimensiona, aviso «Estado de los datos», nota metodológica, foto del SRX desacoplado y la lista
+  de materiales centrada. **Arreglado por el camino**: un SSR se pintaba «vigente» porque no
+  aparecía en la tabla de hitos de la serie SRX (`CICLO_SSR`). `test/juniper-vistas-equipos.test.js`
+  guarda ficheros, VP8L, cobertura de los 18 y el pie con página y rótulo. Verificado: `verificar`
+  (1.045), `e2e` entero, Chromium (tarjeta de 665-763 px en una pantalla de 900, trasera, desplegar).
 
 - **2026-10-19 · Juniper: los MX contrastados y el SSR por capa de cifrado (mejora propuesta).**
   `traer-cisco-huawei.yml` gana las fichas de MX, MX304 (que juniper.net sirve ya como visor de HPE
