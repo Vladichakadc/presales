@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-19, cuadragesimotercera entrega (**Juniper: los MX contrastados con su ficha y el SSR dimensionado por capa de cifrado.** La mejora propuesta se ejecutó: las fichas oficiales de MX204/240/480/960 y del MX304 (ya publicada por HPE) se trajeron por Actions y corrigieron el cotizador, el portal y la guía, que daban al MX480 7,7 Tbps (son 7,5) y al MX960 19,2 Tbps y 12 ranuras (son 12 Tbps y 11). **Hallazgo por el camino**: los Session Smart Router no tenían fuente; sus fichas dicen que `cap` es «sin cifrar, IMIX» y publican además «solo cifrado» y «cifrado + HMAC». El motor de la entrega anterior dividía por IMIX una cifra que ya era IMIX; ahora el SSR se dimensiona por capa de cifrado (el SSR1200 da 10 Gbps sin cifrar y 2,5 con HMAC) y entra el SSR1500. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
+Última revisión: 2026-10-20, cuadragesimocuarta entrega (**Dimensionador Cisco rehecho con la herramienta externa del dueño, contrastada contra las fichas oficiales, y con las figuras frontal y trasera de cada equipo.** El catálogo pasa a 50 modelos: los 20 Secure Router (G2), los Catalyst 8000 con su fin de venta por boletín, los ISR 1000 releídos y los Meraki MX con sus fichas vigentes; cada cifra declara su base de medida. 58 figuras oficiales sin pérdida con el pie literal de cada cara. Motor puro (`cisco-motor.js`): overlay y salida local, cada uno contra la cifra de su capa, licencias G2 por clase, escala y requisitos que apartan con su motivo. Del adjunto entra el método, corregido; ningún precio ni referencia sin documento. Ver *Cerrado recientemente* y `docs/herramienta-externa-cisco-2026-10-20.md`.)
+Revisión anterior: 2026-10-19, cuadragesimotercera entrega (**Juniper: los MX contrastados con su ficha y el SSR dimensionado por capa de cifrado.** La mejora propuesta se ejecutó: las fichas oficiales de MX204/240/480/960 y del MX304 (ya publicada por HPE) se trajeron por Actions y corrigieron el cotizador, el portal y la guía, que daban al MX480 7,7 Tbps (son 7,5) y al MX960 19,2 Tbps y 12 ranuras (son 12 Tbps y 11). **Hallazgo por el camino**: los Session Smart Router no tenían fuente; sus fichas dicen que `cap` es «sin cifrar, IMIX» y publican además «solo cifrado» y «cifrado + HMAC». El motor de la entrega anterior dividía por IMIX una cifra que ya era IMIX; ahora el SSR se dimensiona por capa de cifrado (el SSR1200 da 10 Gbps sin cifrar y 2,5 con HMAC) y entra el SSR1500. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
 Revisión anterior: 2026-10-19, cuadragesimosegunda entrega (**Dimensionador Juniper: se integra el método de la herramienta externa «Carrier-Grade Juniper Networks», no sus datos.** Encargo del dueño: actualizar el dimensionador con el HTML adjunto «como un arquitecto senior». Contrastado cifra a cifra contra `legacyData/juniper.js`, el adjunto sobredimensionaba la inspección del SRX hasta 4,7x (SRX1600 21 Gbps de IPS por TPS frente a 4,5 verificados por CPS; SRX4300 45 Gbps de NGFW frente a 11 de ATP), inventaba IDP/NGFW para los SSR, precios, SKU y 16 equipos ACX/MX/PTX sin fuente. Entra su método en `public/js/juniper-motor.js` (puro, 12 pruebas): SSR como sucursal o hub (el breakout descarga el hub, no la sucursal), IMIX homologado con EdgeConnect, túnel IPsec en bytes por paquete, duplicación de paquetes, seguridad desacoplada en un SRX elegido por capa o en la nube, y pool de NAT por bloques. Ver *Cerrado recientemente* y *Abierto: herramienta externa Juniper*.)
 Revisión anterior: 2026-10-19, cuadragesimoprimera entrega (**La mejora propuesta —qué equipos respalda cada fuente— y el escalón N+1 en los siete dimensionadores.** `fuentes.js` declara `modelos` en 78 de sus 100 fuentes, con guarda: cada elemento existe, el texto de la fuente lo nombra y **los 217 equipos de los siete catálogos tienen fuente declarada**. La hoja «Supuestos» lista las fuentes que declaran al equipo y dice cómo se asoció cada una. El escalón N+1 pasa de Huawei a los siete. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-19, cuadragésima entrega (**Explicabilidad de Huawei, escalón N+1, hoja «Supuestos» del Excel y escritura atómica del volumen.** Encargo del dueño en cuatro fases. **Huawei**: la traza escribe el ×2 entero («bajada X + subida X = 2X» frente al techo que la ficha publica sumado), cada modelo apartado dice su cuello de botella con cifras y la tabla abre con un resumen por categoría y los modelos de otras plataformas; el BOM marca lo que es **base del chasis** y las licencias sin código ni precio dicen «consultar». **`ficha.js`**: escalón superior N+1 (opt-in, hoy en Huawei). **`bom.js`**: hoja «Supuestos» detrás de «BOM». **Servidor**: `usuarios.json` y el manifiesto de fuentes se escriben de forma atómica. Ninguna cifra del cálculo cambia. Ver *Cerrado recientemente*.)
@@ -820,7 +821,13 @@ campos como IMIX. Donde la ficha publica IMIX, el campo lleva esa cifra; donde s
 
 Subirlas cambia qué equipo se recomienda en el perfil de reenvío (más pequeño), así que es una
 decisión, no una corrección: si se quiere, se añade un campo a 1.400 B y la página dice con cuál
-dimensiona. **El ASR 1006-X coincide con la ficha** (ESP200: 200 Gbps sin cifrar, 78 IPsec).
+dimensiona.
+
+**Decidido el 2026-10-20** con el encargo del dueño de actualizar el dimensionador con su
+herramienta, que trae esas cifras: el catálogo guarda la cifra publicada y **su base** en `bases`
+(un campo por cifra), la pantalla la enseña junto a cada número y el motor avisa cuando la que
+dimensiona es de 1.400 B. Los ISR 1111/1116 pasan a sus cifras de 512 B (1,8 y 1,6 Gbps de reenvío) y
+pierden la ranura NIM que no tienen; el C1116-4P, además, el LTE (es 1 GE WAN + DSL). **El ASR 1006-X coincide con la ficha** (ESP200: 200 Gbps sin cifrar, 78 IPsec).
 
 ### Fin de venta: qué marca cada pantalla (validado el 2026-10-01)
 
@@ -1991,6 +1998,34 @@ Lo que el HTML adjunto traía y **no** entró, con el motivo y lo que lo cerrar�
   servidor cargan**, y pide `list_price_usd` en cada SKU nuevo, en conflicto con «nunca se inventa
   un dato». Decisión del dueño: retirarlos o integrarlos con la regla de datos.
 
+## Abierto: herramienta externa Cisco (2026-10-20)
+
+Lo que la entrega del dimensionador Cisco deja abierto, con lo que lo cerraría
+(`docs/herramienta-externa-cisco-2026-10-20.md` tiene el contraste entero):
+
+- **Traseras que ningún documento traído publica**: C8455-G2 y C8475-G2 (la URL de la guía de
+  instalación de la 8400 sirve la guía de configuración de software), C8650-G2 y Catalyst
+  8500-20X6C (su guía solo dibuja el frontal), y C8211-G2, C8221L-G2 y C8225-G2 (la guía de la
+  serie 8200, del 10-sep-2025, es anterior a ellos). La pestaña «Trasera» dice por qué en cada uno.
+  Se cierra con la guía de instalación de la 8400 y una edición nueva de la de la 8200, por
+  `traer-cisco-huawei.yml`.
+- **Sin figura**: C8221-G2 y C8231-E-G2 (su ficha no publica la suya) y los ISR 1111-8P, 1116-4P,
+  1121X-8P y 1161X-8P (la ficha dibuja otras variantes). No se sirve la de un hermano.
+- **C8355-G2-MX y C8455-G2-MX**: solo constan en el export de CCW; sin ficha de Meraki traída no
+  entran. Se cierra trayendo sus fichas de documentation.meraki.com.
+- **Catalyst 8500-20X6C**: no se encontró boletín de fin de venta, a diferencia de sus hermanos.
+- **Meraki MX95 y MX105**: su ficha no publica dispositivos recomendados (`clientes: null`).
+- **Licencias de Meraki**: la referencia por modelo y término solo está confirmada en el patrón de
+  LIC-MX67-SEC-3YR (CCW); el BOM la deja «confirmar». Las `LIC-MX-S-E/A` del adjunto no aparecen en
+  ningún documento.
+- **Módulos de los Catalyst 8000**: el catálogo trae sus ranuras pero no la lista de NIM/SM/PIM de
+  su guía de pedido; el BOM dice «consultar». La de la G2 (tablas 7 y 8) sí está.
+- **Precios «~» del cotizador de Cisco** (ISR 1111-8P ~$1,800, Catalyst 8200 ~$4,500, 8300-1N1S-6T
+  ~$9,800, 8300-2N2S-6T ~$16,500, 8500-12X4QC ~$58,000, ASR 1006-X ~$145,000): no tienen documento, y
+  donde el export de CCW trae el precio la diferencia es grande (8200: ~$4,500 frente a $6,967.76;
+  8300-1N1S-6T: ~$9,800 frente a $21,286.41). El dimensionador ya enseña el de CCW; el cotizador y el
+  portal, el «~». Decisión del dueño: pasar el cotizador al de CCW y el resto a «Consultar».
+
 ## Decisiones que necesitan al dueño del producto
 
 - **Precios «~ $» sin lista en el cotizador (2026-10-19).** Nueve líneas de Juniper (SRX 320, 345,
@@ -2120,6 +2155,34 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+- **2026-10-20 · Dimensionador Cisco: herramienta externa contrastada, catálogo releído y figuras
+  oficiales.** Encargo del dueño: «analiza en detalle el dimensionador adjunto y actualiza en
+  detalle el de Cisco y demás pestañas… con el formato de los demás fabricantes… y los gráficos de
+  los equipos en alta calidad con la parte frontal y posterior». **Fuentes**: fichas de las seis
+  series Secure Router, de los Catalyst 8200/8300/8500, del ISR 1000 y de los Meraki MX, la guía de
+  pedido de la G2, guías de instalación y tres boletines EOL, traídos por `traer-cisco-huawei.yml`
+  (corridas 39360888778 y 39410454052; el proxy da 403 a cisco.com y meraki.com). **Catálogo**: 50
+  modelos (20 G2, 10 Catalyst, 5 ISR, 3 ASR, 12 Meraki), cada cifra con su base (`bases`), Threat
+  Protection (`amenazas`), túneles, rutas, NAT, clase, PIM, PoE, MACsec y segunda fuente de la guía de
+  pedido. Corregidos con la ficha: MX68 sin LTE, MX95 sin doble fuente, puertos y caudales de Meraki,
+  SD-WAN de los Catalyst en IQDF, C8455-G2 sin redundancia afirmada, ISR 1100 sin NIM y C1116-4P sin
+  LTE. **Figuras**: 58 WebP sin pérdida a la resolución del documento, con previa, en 41 modelos; el
+  pie cita documento, figura y rótulo literal de cada cara (`test/cisco-vistas-equipos.test.js`).
+  **Motor** (`public/js/cisco-motor.js`, `test/cisco-motor.test.js`): overlay y salida local cada uno
+  contra su capa (reenvío, Threat Protection o IPsec hacia un SSE), utilización como suma de
+  fracciones, FEC y duplicación como supuestos, TLS en el router sin candidato, escala y requisitos
+  con motivo, licencias G2 por clase, pool de NAT y memoria técnica. **Pantalla**: el formato de los
+  demás (entradas a la izquierda, ficha con figuras al centro), barra de distribución, modelos
+  evaluados, BOM con módulos y segunda fuente, TCO/MRR y perfiles multi-sede; los enlaces viejos
+  migran ZBF, Umbrella y el nivel DNA. **Fuera**: los recargos inventados (+15 % ZBF, +10 % voz, +8 %
+  NBAR, +12 % Umbrella) y el campo de APs (sin dato en ningún modelo). **Portal, cotizador,
+  calculadora y comparador**: sin cifras duplicadas, los G2 y Meraki en el cotizador a «Consultar»,
+  y Cisco en Threat Protection y Meraki en NGFW (rotulado por modo). Del adjunto: 157 cifras
+  comparadas, 25 corregidas por la ficha y **ningún precio** (daba la mitad que CCW). Verificado:
+  `verificar` (1.067), contraste de los 10 casos (nuevo `cisco`; `calculadora-ssl` actualizado con su
+  porqué), `pantallas` 17/17, `e2e` entero tras corregir un contraste de color que axe encontró en
+  la leyenda nueva, y la pantalla conducida en Chromium en diez escenarios.
 
 - **2026-10-19 · Juniper: los MX contrastados y el SSR por capa de cifrado (mejora propuesta).**
   `traer-cisco-huawei.yml` gana las fichas de MX, MX304 (que juniper.net sirve ya como visor de HPE

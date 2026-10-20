@@ -438,8 +438,20 @@ Módulos compartidos:
   (nunca a `main`) para revisar el pie contra la página. Sin trasera oficial, la pestaña «Trasera» dice por qué
   (`rearNota`). **El ciclo de vida sigue sin respaldo**: pide una cuenta
   Huawei (Info-Finder exige sesión).
-- **Cisco**: la plataforma se elige antes que el caudal (`PLATAFORMAS`: IOS XE SD-WAN, ISR 1000,
-  Meraki MX, ASR 1000); en SD-WAN un modelo sin cifra propia cae a IPsec y la lista lo marca.
+- **Cisco** (`cisco-motor.js`; contraste del adjunto del dueño en
+  `docs/herramienta-externa-cisco-2026-10-20.md`). La plataforma se elige antes que el caudal
+  (`PLATAFORMAS`: IOS XE SD-WAN —Secure Router G2 y Catalyst 8000—, Meraki MX —con los C81x1-G2-MX—,
+  ISR 1000, ASR 1000). **Cada cifra lleva su base en `bases`** y la pantalla la enseña: G2 e ISR a
+  512 B, reenvío de Catalyst a 1.400 B (el motor avisa), SD-WAN con IQDF, Threat Protection
+  (`amenazas`) en EMIX y Meraki sin tamaño de paquete (su `amenazas` es NGFW en detección o
+  prevención). En una sede el overlay va contra la capa del perfil y la salida local contra la de su
+  seguridad (reenvío, Threat Protection o IPsec hacia un SSE); la utilización es la **suma de las dos
+  fracciones** (supuesto declarado). FEC y duplicación son supuestos; duplicar cuenta el flujo
+  entero. El descifrado TLS en el router no tiene cifra: sin candidato. Escala publicada que no llega
+  y requisito que no consta apartan con su motivo; lo no publicado, avisa. En SD-WAN un modelo sin
+  cifra propia cae a IPsec y la lista lo marca. Licencias G2 por `clase` (S…2XL, guía de pedido) y
+  segunda fuente `psu2`. Figuras en `public/data/cisco-vistas-equipos.json` (sin pérdida, pie literal,
+  `rearNota` donde no hay trasera).
 - **Juniper**: SRX y Session Smart Router no se comparan. `fw` (paquetes grandes) se muestra y no
   dimensiona; manda la capa de inspección (`CAPAS`).
 - **MikroTik** (`mikrotik-motor.js`, `legacyData/mikrotikPruebas.js` generado por `npm run
@@ -522,7 +534,7 @@ Módulos compartidos:
 ## Documentos de referencia
 
 `IMPORTAR-CATALOGO.md` (procedimiento de importación) · `docs/sincronizacion.md` ·
-`docs/decisiones-del-dueno-2026-09-24.md` · `docs/portabilidad-aruba.md` (tres capas: escenario,
+`docs/decisiones-del-dueno-2026-09-24.md` · `docs/herramienta-externa-cisco-2026-10-20.md` · `docs/portabilidad-aruba.md` (tres capas: escenario,
 comercial, gobierno del dato) · `docs/revision-huawei-2026-09-29.md` · `docs/manual-usuario/`
 (manual a PDF con `npm run manual`; Playwright fuera de `package.json` a propósito) ·
 `docs/claude-md-cronica.md` (la historia de cada regla de este archivo).
