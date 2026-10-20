@@ -1061,6 +1061,36 @@ jobs:
                 descubrirPiezas: { de: ['meraki-c8355-ds.html', 'meraki-c8455-ds.html', 'meraki-c8455-ig.html', 'meraki-c8355-ig.html'],
                   base: 'https://documentation.meraki.com/', dominios: ['meraki.com', 'cisco.com'], relativas: true,
                   contiene: ['/@api/deki/files/', '/c/dam/', '/content/dam/'], max: 120 } },
+              // Cuarta vuelta (2026-10-20): lo que la tercera dejo sin documento. La guia del ISR 1000
+              // en ingles se actualizo el 29-oct-2025 (la italiana es de 2021): su capitulo de
+              // presentacion dibuja las vistas de cada variante. La guia HTML de la serie 8200 puede
+              // ser posterior a su PDF (10-sep-2025). Y la licencia por suscripcion de Meraki publica
+              // referencias por clase de equipo.
+              { archivo: 'cisco-isr1100-hig-overview.html', tipo: 'html', para: 'CISCO', debeContener: 'C11', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/access/1100/hardware/installation/guide/b-cisco-1100-series-hig/isr1k-hig-overview.html',
+              ] },
+              { archivo: 'cisco-sr8200-hig-libro.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8200-series/hardware-installation-guide/secure-8200-series-hig.html',
+              ] },
+              { archivo: 'cisco-sr8200-hig-overview.html', tipo: 'html', para: 'CISCO', debeContener: 'C82', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8200-series/hardware-installation-guide/secure-8200-series-hig/m-overview.html',
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8200-series/hardware-installation-guide/secure-8200-series-hig/m-product-overview.html',
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8200-series/hardware-installation-guide/secure-8200-series-hig/overview.html',
+              ] },
+              { archivo: 'meraki-sub-mx.html', tipo: 'html', para: 'CISCO', debeContener: 'LIC-MX', urls: [
+                'https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing/Subscription_Licensing/Subscription_-_MX_Licensing',
+                'https://documentation.meraki.com/Platform_Management/Product_Information/Licensing/Subscription_-_MX_Licensing',
+                'https://documentation.meraki.com/General_Administration/Licensing/Subscription_-_MX_Licensing',
+              ] },
+              { archivo: 'meraki-sub-skus.html', tipo: 'html', para: 'CISCO', debeContener: 'LIC-', urls: [
+                'https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing/Subscription_Licensing/Subscription_-_Licensing_SKUs',
+                'https://documentation.meraki.com/Platform_Management/Product_Information/Licensing/Subscription_-_Licensing_SKUs',
+                'https://documentation.meraki.com/General_Administration/Licensing/Subscription_-_Licensing_SKUs',
+              ] },
+              { archivo: 'cisco-hig3-img', tipo: 'imagenes', para: 'CISCO', urls: [],
+                descubrirPiezas: { de: ['cisco-isr1100-hig-overview.html', 'cisco-sr8200-hig-overview.html'],
+                  base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
+                  contiene: ['/c/dam/', '/content/dam/'], max: 200 } },
               // Las figuras de las fichas y de las guias de Meraki: las paginas de Cisco las enlazan
               // con ruta relativa a la raiz («/c/dam/...»), por eso `relativas`. Que modelo y que
               // cara es cada una se decide MIRANDOLA y leyendo su pie, no por el orden en la pagina.
