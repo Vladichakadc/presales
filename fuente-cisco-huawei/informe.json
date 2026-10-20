@@ -1,0 +1,17 @@
+[
+  {
+    "archivo": "juniper-hw-srx380.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/documentation/us/en/hardware/srx380/srx380.pdf",
+        "status": 200,
+        "bytes": 2368286,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
