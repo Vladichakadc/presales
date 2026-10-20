@@ -101,6 +101,7 @@ npm run contraste -- nokia-sr --base=http://127.0.0.1:4000          # un caso de
 # Importadores: anclan contra lo ya verificado antes de escribir en legacyData/
 npm run cps         # cps de Fortinet desde el Product Matrix (ancla contra sess)
 npm run matrix      # contrasta una edición del Product Matrix (PDF) celda a celda; solo compara
+npm run cisco       # contrasta las fichas HTML de Cisco y Meraki (carpeta traída) celda a celda; solo compara
 npm run juniper     # cifras de la línea SRX
 npm run mikrotik    # matriz de pruebas de las fichas de MikroTik (carpeta de HTML traída; --check, --dry)
 npm run huawei      # cifras y fin de venta de Huawei (--check, --plantilla, --eol, --force)
@@ -452,8 +453,14 @@ Módulos compartidos:
   entero. El descifrado TLS en el router no tiene cifra: sin candidato. Escala publicada que no llega
   y requisito que no consta apartan con su motivo; lo no publicado, avisa. En SD-WAN un modelo sin
   cifra propia cae a IPsec y la lista lo marca. Licencias G2 por `clase` (S…2XL, guía de pedido) y
-  segunda fuente `psu2`. Figuras en `public/data/cisco-vistas-equipos.json` (sin pérdida, pie literal,
-  `rearNota` donde no hay trasera).
+  segunda fuente `psu2`; en Meraki la referencia por modelo no la publica la página de licencias
+  (va «confirmar») y SD-WAN+ cita la ampliación `LIC-MX-SDW-<sdwPlus>` solo donde esa página nombra
+  el modelo. Módulos de la guía de pedido de cada familia: G2 (`MODULOS_G2`) y Catalyst 8300/8200
+  (`MODULOS_C8K`, con sus límites de ranura). Figuras en `public/data/cisco-vistas-equipos.json`
+  (sin pérdida, pie literal, `rearNota` donde no hay trasera). **`npm run cisco`** lee las fichas
+  HTML traídas (la carpeta de una rama `fuente/*`) y las contrasta con el catálogo celda a celda, en
+  la base que cada modelo declara; solo compara y falla cerrado (una ficha de la que no sale ninguna
+  celda es un 2, no un «todo casa»).
 - **Juniper** (`juniper-motor.js`): SRX y Session Smart Router no se comparan. `fw` (paquetes
   grandes) se muestra y no dimensiona; manda la capa de inspección (`CAPAS`). El SSR se dimensiona
   por capa de cifrado en IMIX (`cap`/`capCif`/`capHmac`, de sus fichas; la de 1.500 B es portada),

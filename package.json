@@ -16,6 +16,7 @@
     "datasheets": "node scripts/descargar-datasheets.js",
     "cps": "node scripts/importar-cps.js",
     "matrix": "node scripts/contrastar-matrix.js",
+    "cisco": "node scripts/contrastar-cisco.js",
     "huawei": "node scripts/importar-huawei.js",
     "figuras-huawei": "node scripts/importar-figuras-huawei.js",
     "juniper": "node scripts/importar-juniper.js",
