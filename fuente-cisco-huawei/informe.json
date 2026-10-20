@@ -1,0 +1,38 @@
+[
+  {
+    "archivo": "cisco-sr8400-hig.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/c84xx/c8400-g2-hardware-installation-guide.html",
+        "status": 200,
+        "bytes": 36501,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8400-hig.pdf",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/c84xx/c8400-g2-hardware-installation-guide.pdf",
+        "status": 200,
+        "firma": "0a0a0a0a0a0a0a0a",
+        "nota": "no es un PDF"
+      },
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/c8400/c8400-software-config-guide.pdf",
+        "status": 200,
+        "bytes": 2735036,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
