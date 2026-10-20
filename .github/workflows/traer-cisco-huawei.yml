@@ -540,6 +540,29 @@ jobs:
                 'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
                 'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
               ] },
+              // 2026-10-19: los MX que el cotizador cita sin pareja (MX204, MX304, MX480, MX960). URL de
+              // buscar cada documento, no por patron. La serie 204/240/480/960 solo aparecio en japones
+              // y en el 1000597-en; se traen los dos y manda el mas reciente que traiga la tabla.
+              { archivo: 'juniper-mx304-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+                'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/routers/mx304-universal-routing-platform-datasheet.pdf',
+              ] },
+              { archivo: 'juniper-mx304-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'MX304', urls: [
+                'https://www.juniper.net/us/en/products/routers/mx-series/mx304-universal-routing-platform-datasheet.html',
+                'https://www.juniper.net/gb/en/products/routers/mx-series/mx304-universal-routing-platform-datasheet.html',
+              ] },
+              { archivo: 'juniper-mx-serie-ds-ja.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+                'https://juniper.net/content/dam/www/assets/datasheets/jp/ja/routers/mx-204-240-480-960-series-universal-routing-platforms-datasheet.pdf',
+              ] },
+              { archivo: 'juniper-mx-1000597-en.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+                'https://www.juniper.net/assets/es/es/local/pdf/datasheets/1000597-en.pdf',
+              ] },
+              { archivo: 'juniper-mx204-producto.html', tipo: 'html', para: 'JUNIPER', debeContener: 'MX204', urls: [
+                'https://www.juniper.net/us/en/products/routers/mx-series/mx204.html',
+                'https://www.juniper.net/gb/en/products/routers/mx-series/mx204-universal-routing-platform.html',
+              ] },
+              { archivo: 'juniper-mx480-producto.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+                'https://www.juniper.net/mx/es/products/routers/mx-series/mx480-universal-routing-platform.html',
+              ] },
               // HUAWEI, OTRAS VIAS (2026-10-07, encargo del dueno: lo que Akamai bloquea, buscarlo por
               // otro camino legitimo). Nada de esto rodea la defensa de Huawei: el Wayback Machine
               // sirve la copia que el archivo de Internet guardo de la pagina publica, desde sus
