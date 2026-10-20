@@ -50,7 +50,10 @@ module.exports = {
     if (x.modo) await p.click(`#modeSeg button[data-v="${x.modo}"]`);
     if (x.plataforma) await p.selectOption('#plataforma', x.plataforma);
     if (x.unit) await p.selectOption('#unit', x.unit);
-    if (x.dia) await p.$eval('#diaPct', (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); }, x.dia);
+    if (x.dia) {
+      await p.$eval('#diaPct', (el, v) => { el.value = v; }, x.dia);
+      await p.dispatchEvent('#diaPct', 'input');
+    }
     if (x.seguridad) await p.selectOption('#seguridad', x.seguridad);
     if (x.tls) await p.check('#chkTls');
     if (x.dual) await p.check('#chkRedund');
