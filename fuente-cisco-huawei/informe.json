@@ -1,0 +1,116 @@
+[
+  {
+    "archivo": "juniper-hw-ssr120.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://juniper.net/documentation/us/en/hardware/ssr120/ssr120.pdf",
+        "status": 200,
+        "bytes": 3465128,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-hw-ssr1200.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://juniper.net/documentation/us/en/hardware/ssr1200/ssr1200.pdf",
+        "status": 200,
+        "bytes": 3120886,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-hw-ssr1300.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://juniper.net/documentation/us/en/hardware/ssr1300/ssr1300.pdf",
+        "status": 200,
+        "bytes": 4400319,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-hw-ssr1400.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://juniper.net/documentation/us/en/hardware/ssr1400/ssr1400.pdf",
+        "status": 200,
+        "bytes": 4344603,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-hw-ssr130-indice.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/documentation/us/en/hardware/ssr130/index.html",
+        "status": 200,
+        "bytes": 9266,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-hw-ssr130.pdf",
+    "para": "JUNIPER",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "juniper-hw-ssr130-indice.html",
+        "error": "la pagina no enlaza ningun PDF con ssr130"
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-hw-ssr1500-indice.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://juniper.net/documentation/us/en/hardware/ssr1500/index.html",
+        "status": 200,
+        "bytes": 9277,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-hw-ssr1500.pdf",
+    "para": "JUNIPER",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "juniper-hw-ssr1500-indice.html",
+        "error": "la pagina no enlaza ningun PDF con ssr1500"
+      }
+    ]
+  }
+]
