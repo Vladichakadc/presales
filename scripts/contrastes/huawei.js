@@ -165,16 +165,20 @@ module.exports = {
     out.push({ n: 'H-12 · al enviar al cotizador con HA viajan dos equipos',
       ok: fila.length > 0 && /−\s*2\s*\+/.test(fila[0]), detalle: fila.length ? fila[0].slice(0, 110) : 'la fila del equipo no llegó al cotizador' });
 
-    // H-13: capa comercial de bom.js. El equipo trae precio de referencia del cotizador, el
-    // plazo cambia el texto de las suscripciones y el perfil multi-sede multiplica por sedes.
+    // H-13: capa comercial de bom.js. El plazo cambia el texto de las suscripciones y el perfil
+    // multi-sede multiplica por sedes. Desde el 2026-10-20 (decisión del dueño: los «~ $» sin
+    // documento pasan a «Consultar») ningún Huawei trae precio de referencia, así que el TCO
+    // dice que no puede calcularse en vez de dar una cifra, y el consolidado multiplica la
+    // cantidad y deja el precio «consultar». Hasta entonces el caso medía el TCO parcial con el
+    // «~ $1,200» del AR651W-8P.
     await p.goto(`${base}/dimensionador-huawei-netengine.html?bw=450&profile=fwd&sSdwan=0&rPoe=1&rWifi=1&anios=3`, { waitUntil: 'domcontentloaded' });
     await pausa(p, 1800);
     await p.click('.tabs button[data-tab="bom"]');
     await pausa(p, 400);
     const tco = await p.$eval('#tcoFin', (e) => e.innerText.replace(/\s+/g, ' ')).catch(() => '');
     const bomTxt = await p.$eval('#bomOut', (e) => e.value);
-    out.push({ n: 'H-13 · el TCO declara que es parcial y cuenta las líneas sin precio',
-      ok: /TCO a 3 años \(parcial\)/.test(tco) && /\d+ línea\(s\) sin precio/.test(tco), detalle: tco.slice(0, 120) });
+    out.push({ n: 'H-13 · sin precio de referencia el TCO no se calcula: lo dice, no lo inventa',
+      ok: /Sin precios suficientes para calcular el TCO/.test(tco) && !/\$\s?\d/.test(tco), detalle: tco.slice(0, 120) });
     out.push({ n: 'H-13 · un plazo de 3 años se ve como 36 meses en las suscripciones y el soporte',
       ok: /36 meses/.test(bomTxt) && !/12 meses/.test(bomTxt), detalle: /36 meses/.test(bomTxt) ? '36 meses presente' : 'sigue en 12 meses' });
     await p.fill('#nombrePerfil', 'Sucursal');
@@ -184,11 +188,10 @@ module.exports = {
     await p.click('#btnConsolidar');
     await pausa(p, 400);
     const cons = await p.$eval('#consolidadoTabla', (e) => e.innerText.replace(/\s+/g, ' ')).catch(() => '');
-    // Sin cifras del catalogo: la relacion es subtotal = 5 x precio unitario, sea cual sea el precio.
-    const mc = cons.match(/AR651W-8P[^$]*— 5 \$([\d,]+) \$([\d,]+)/);
-    const num = (x) => Number(String(x).replace(/,/g, ''));
+    // Sin cifras del catalogo: el equipo sale 5 veces (una por sede) y sin precio inventado.
+    const mc = cons.match(/AR651W-8P[^—$]*— 5 consultar/);
     out.push({ n: 'H-13 · el perfil multi-sede multiplica el equipo por sus sedes en el consolidado',
-      ok: !!mc && num(mc[2]) === 5 * num(mc[1]), detalle: mc ? `5 x $${mc[1]} = $${mc[2]}` : cons.slice(0, 140) });
+      ok: !!mc && !/AR651W-8P[^—]*— 5 \$/.test(cons), detalle: mc ? '5 x consultar' : cons.slice(0, 140) });
 
     // H-07: las opticas se declaran por enlace; el BOM ya no inventa una por familia.
     await p.goto(`${base}/dimensionador-huawei-netengine.html?bw=450&profile=fwd&sSdwan=0&rPoe=1&rWifi=1`, { waitUntil: 'domcontentloaded' });
