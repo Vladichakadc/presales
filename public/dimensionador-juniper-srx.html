@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dimensionador y BOM Juniper SRX — Presales</title>
-<meta name="description" content="Dimensionador Juniper: SRX por capa de inspección (IMIX, IPS, Threat Prevention) y Session Smart Router para SD-WAN, con lista de materiales.">
+<meta name="description" content="Dimensionador Juniper: SRX por capa de inspección (IMIX, IPS, Threat Prevention) y Session Smart Router para SD-WAN como sucursal o concentrador, con seguridad desacoplada en SRX o en la nube y lista de materiales.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" data-fuente>
@@ -128,7 +128,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <header class="masthead">
   <p class="eyebrow">Juniper &middot; Preventa SRX &amp; Session Smart Router &middot; Dimensionamiento y lista de materiales</p>
   <h1>Dimensionador<br>y BOM Juniper</h1>
-  <p class="sub">Sizing de SRX por <b>capa de inspección</b> —la cifra de portada no sirve para dimensionar— y de Session Smart Router para SD-WAN sin túneles. Genera la lista de materiales con el nivel de suscripción propuesto.</p>
+  <p class="sub">Sizing de SRX por <b>capa de inspección</b> —la cifra de portada no sirve para dimensionar— y de Session Smart Router para SD-WAN, como sucursal o como concentrador, con la seguridad desacoplada en un SRX o en la nube. Genera la lista de materiales con el nivel de suscripción propuesto.</p>
 </header>
 
 <div class="tabs" role="tablist">
@@ -154,7 +154,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     </div>
 
     <div class="field">
-      <label for="bw">Ancho de banda a proteger</label>
+      <label for="bw" id="bwLbl">Ancho de banda a proteger</label>
       <div class="row">
         <input type="number" id="bw" min="1" step="any" autocomplete="off">
         <select id="unit" style="width:105px" aria-label="Unidad del caudal"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
@@ -195,18 +195,101 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       <input type="number" id="sesUser" min="0" step="1" style="margin-top:8px" autocomplete="off" aria-label="Sesiones concurrentes por usuario">
       <p class="hint">El segundo campo son las sesiones concurrentes por usuario (15&ndash;30 en un puesto corporativo). El eje solo se comprueba en los modelos cuyo catálogo trae la cifra de sesiones; en el resto se declara sin comprobar.</p>
     </div>
+    <div class="field">
+      <label for="natUsers">NAT de origen por bloques de puertos (PBA) <span class="sku" style="text-transform:none;letter-spacing:0;font-weight:400">— opcional</span></label>
+      <div class="row">
+        <input type="number" id="natUsers" min="0" step="100" autocomplete="off" aria-label="Usuarios detrás del NAT">
+        <select id="natBloque" style="width:150px" aria-label="Puertos por usuario">
+          <option value="512">512 puertos</option>
+          <option value="1024" selected>1.024 puertos</option>
+          <option value="2048">2.048 puertos</option>
+          <option value="4096">4.096 puertos</option>
+        </select>
+      </div>
+      <p class="hint">Usuarios detrás del NAT y puertos reservados a cada uno. Calcula el pool de IPv4 públicas sobre los 64.512 puertos útiles de una dirección; no elige equipo: el catálogo no publica una cifra de NAT por modelo.</p>
+    </div>
   </section>
 
   <section class="panel" id="panelSsr" style="display:none">
     <h2>2 &middot; Session Smart Router</h2>
-    <p class="hint">El SSR se dimensiona por caudal agregado del sitio. No aplica capa de inspección: el enrutado por sesión no inspecciona contenido, y si el diseño necesita IPS o antivirus, eso va en un SRX aparte o en el servicio cloud. La gestión es desde Mist.</p>
+    <div class="field">
+      <label for="ssrRol">Papel del equipo</label>
+      <select id="ssrRol">
+        <option value="sucursal" selected>Sucursal (todo el tráfico del sitio)</option>
+        <option value="hub">Concentrador / hub (overlay de las sucursales)</option>
+      </select>
+      <p class="hint">En una sucursal el breakout local <b>no descarga</b> el equipo: todo el tráfico del sitio pasa por él. Donde sí descarga es en el hub, que solo recibe lo que viaja por el overlay.</p>
+    </div>
+    <div class="field" id="campoSpokes">
+      <label for="ssrSpokes">Sucursales que llegan al hub</label>
+      <input type="number" id="ssrSpokes" min="0" step="1" placeholder="p. ej. 20" autocomplete="off">
+      <label for="ssrSimult" style="margin-top:8px">Simultaneidad del overlay (%)</label>
+      <input type="number" id="ssrSimult" min="0" max="100" step="5" placeholder="100" autocomplete="off">
+      <p class="hint">Qué parte de las sucursales usa su caudal a la vez. Vacío es el 100 %, el caso peor; bajarlo es una decisión de diseño que se declara en la propuesta.</p>
+    </div>
+    <div class="field">
+      <label for="ssrBreakout">Salida local a Internet (breakout, %)</label>
+      <input type="number" id="ssrBreakout" min="0" max="100" step="5" placeholder="70" autocomplete="off">
+      <p class="hint">Parte del tráfico de cada sucursal que sale directo a Internet (SaaS, navegación). Vacío es el 70 %, la misma regla de trabajo que usa el dimensionador de EdgeConnect.</p>
+    </div>
+    <div class="field">
+      <label for="ssrPerfil">Perfil de tráfico</label>
+      <select id="ssrPerfil">
+        <option value="ENTERPRISE_MIX" selected>Mezcla empresarial (÷ 0,70)</option>
+        <option value="VOIP_INTENSIVE">Voz intensiva, paquete pequeño (÷ 0,55)</option>
+        <option value="BULK_BACKUP">Réplica o backup masivo (÷ 1,00)</option>
+      </select>
+      <p class="hint">Factor IMIX homologado con el motor de EdgeConnect. La cifra del SSR no declara su base de medida: si ya fuera IMIX, el factor deja margen de más, que es el lado bueno de equivocarse.</p>
+    </div>
+    <div class="field">
+      <label for="ssrTransporte">Transporte del overlay</label>
+      <select id="ssrTransporte">
+        <option value="svr" selected>SVR (Secure Vector Routing, sin túnel)</option>
+        <option value="ipsec">Túnel IPsec (ESP AES-GCM + NAT-T)</option>
+      </select>
+      <p class="hint">El túnel cuesta ~62 bytes por paquete, así que pesa según el tamaño del paquete: un 11 % en la mezcla empresarial y un 25 % en voz. SVR lleva metadatos solo en el primer paquete de cada sesión.</p>
+    </div>
+    <div class="field">
+      <label for="ssrDup">Tráfico protegido con duplicación de paquetes (%)</label>
+      <input type="number" id="ssrDup" min="0" max="100" step="5" placeholder="0" autocomplete="off">
+      <p class="hint">Resiliencia de sesión del SSR: cada paquete de ese tráfico sale por dos caminos, así que esa parte cuenta doble. Suele ser solo la voz o las transacciones críticas.</p>
+    </div>
+    <div class="field">
+      <label for="ssrSeg">Inspección de contenido (IPS, antimalware, URL)</label>
+      <select id="ssrSeg">
+        <option value="ninguna" selected>Ninguna: zero-trust por sesión y firewall de estado del SSR</option>
+        <option value="srx">Desacoplada en un SRX dimensionado por capa</option>
+        <option value="sse">En la nube (Juniper Secure Edge)</option>
+      </select>
+      <p class="hint">El catálogo no publica cifra de inspección para el SSR, así que no se dimensiona dentro de la caja: o va en un SRX con su cifra por capa, o en el servicio cloud.</p>
+    </div>
+    <div class="field" id="campoSrxComp">
+      <label for="ssrCapa">Capa del SRX desacoplado</label>
+      <select id="ssrCapa">
+        <option value="fwImix">Firewall (IMIX)</option>
+        <option value="ips" selected>IPS</option>
+        <option value="atp">Threat Prevention</option>
+      </select>
+      <div id="campoAlcance">
+        <label for="ssrAlcance" style="margin-top:8px">Qué tráfico inspecciona</label>
+        <select id="ssrAlcance">
+          <option value="todo" selected>Todo el tráfico del sitio</option>
+          <option value="dia">Solo la salida local a Internet</option>
+        </select>
+      </div>
+    </div>
   </section>
 </div>
 
 <div>
   <div class="verdict" id="verdict"></div>
 
-  <section class="panel">
+  <section class="panel" id="companeroPanel" hidden>
+    <h2>Seguridad desacoplada</h2>
+    <div id="companero"></div>
+  </section>
+
+  <section class="panel" id="perfPanel">
     <h2>Rendimiento por capa <span id="perfModel" style="font-weight:400;text-transform:none;letter-spacing:0"></span></h2>
     <div id="perfTiers"></div>
     <p class="hint" id="perfNote" style="margin-top:12px"></p>
@@ -288,10 +371,11 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 </section>
 <section class="panel">
   <h2>Fuentes de Información y Precios</h2>
-  <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Toda la información técnica y los modelos mostrados en esta plataforma han sido filtrados para excluir equipos EOL/EOS (End of Life), basándonos en los siguientes canales oficiales:</p>
+  <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Las cifras salen de la procedencia de arriba. Los equipos con fin de venta anunciado <b>se muestran</b> para el parque instalado, pero no se recomiendan cuando su último pedido ya venció.</p>
   <ul class="fuentes-list">
-    <li><b>Routing &amp; Security:</b> <a href="https://www.juniper.net/us/en/products/routers.html" target="_blank">https://www.juniper.net/us/en/products/routers.html</a><br>Documentación oficial de las familias MX, SRX y QFX.</li>
-    <li><b>Precios de Referencia (ELP):</b><br>Basado en el GPL (Global Price List) estándar de Juniper. Estimación orientativa.</li>
+    <li><b>Routing &amp; Security:</b> <a href="https://www.juniper.net/us/en/products/routers.html" target="_blank" rel="noopener">https://www.juniper.net/us/en/products/routers.html</a><br>Portal oficial de las familias. Este dimensionador cubre SRX y Session Smart Router; MX, ACX y PTX no están en el catálogo porque no hay ficha oficial contrastada.</li>
+    <li><b>Precios de Referencia (ELP):</b><br>No hay lista de precios de Juniper en el material disponible: todas las líneas van sin cotizar y el BOM lo cuenta.</li>
+    <li><b>Supuestos del modo SD-WAN:</b><br>Factor IMIX (homologado con EdgeConnect), 62 bytes de túnel IPsec, breakout del 70 % y simultaneidad: son reglas de trabajo declaradas, sin fuente del fabricante, y el desglose del resultado las muestra.</li>
   </ul>
 </section>
 </div>
@@ -304,6 +388,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <script src="/js/tabla.js"></script>
 <script src="/js/contraste.js"></script>
 <script src="/js/procedencia.js"></script>
+<script src="/js/juniper-motor.js"></script>
 <script src="/js/dimensionador-juniper-srx.js"></script>
 <script src="/js/navegacion.js"></script>
 </body>

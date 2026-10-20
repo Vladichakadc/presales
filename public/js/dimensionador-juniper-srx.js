@@ -15,6 +15,13 @@
 // no hace inspección de contenido; el SRX es un cortafuegos. Compararlos por Mbps invitaría
 // a proponer uno donde hace falta el otro — el mismo error que se corrigió en el
 // dimensionador de Cisco acotando la plataforma antes que el caudal.
+//
+// SD-WAN COMO SUCURSAL O COMO HUB, Y SEGURIDAD DESACOPLADA (2026-10-19). La cuenta del SSR y
+// el filtro del SRX viven en `juniper-motor.js` (puro, con pruebas): de ahí sale la demanda
+// del SSR (factor IMIX homologado con EdgeConnect, túnel en bytes, duplicación, breakout que
+// descarga el hub y no la sucursal) y el SRX que inspecciona lo que el SSR no puede, elegido
+// por capa con el mismo filtro que la plataforma SRX. Es lo que se integró de la herramienta
+// externa que trajo el dueño; sus cifras no entraron (ver la cabecera del motor).
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? '' : s)
@@ -45,6 +52,16 @@ let plat = 'srx', capa = 'ips', lastPick = null;
 // mostrando el ultimo equipo que si cumplia.
 let hayCandidato = true;
 let bomFilas = [], bomMeta = {};
+// Seguridad desacoplada del modo SSR: `{ modo: 'srx'|'sse'|'ninguna', pick, need, k }`.
+// La lee el BOM para añadir el SRX o la línea del servicio cloud.
+let companero = { modo: 'ninguna' };
+const JM = window.JuniperMotor;
+// Un número vacío vale su valor por defecto (el que enseña su placeholder): estado.js vacía
+// los campos tecleables al arrancar sin enlace, así que un `value=` en el HTML no sobrevive.
+const numOr = (id, def) => {
+  const v = $(id) ? $(id).value : '';
+  return v === '' || v == null ? def : (parseFloat(v) || 0);
+};
 
 // Orden de profundidad creciente de inspección y throughput decreciente. `fw` (paquetes
 // grandes) queda deliberadamente FUERA de esta escala: no es una capa de inspección, es la
@@ -109,8 +126,6 @@ $('platSeg').addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b) return;
   [...$('platSeg').children].forEach((x) => x.setAttribute('aria-pressed', x === b));
   plat = b.dataset.v;
-  $('panelSrx').style.display = plat === 'srx' ? '' : 'none';
-  $('panelSsr').style.display = plat === 'ssr' ? '' : 'none';
   render();
 });
 $('capaSeg').addEventListener('click', (e) => {
@@ -118,8 +133,31 @@ $('capaSeg').addEventListener('click', (e) => {
   [...$('capaSeg').children].forEach((x) => x.setAttribute('aria-pressed', x === b));
   capa = b.dataset.v; render();
 });
-['bw', 'unit', 'head', 'users', 'sesUser', 'chkIps', 'chkAtp', 'chkVpn']
+['bw', 'unit', 'head', 'users', 'sesUser', 'chkIps', 'chkAtp', 'chkVpn', 'natUsers', 'natBloque',
+  'ssrRol', 'ssrSpokes', 'ssrSimult', 'ssrBreakout', 'ssrPerfil', 'ssrTransporte', 'ssrDup', 'ssrSeg', 'ssrCapa', 'ssrAlcance']
   .forEach((id) => $(id).addEventListener('input', render));
+
+// Lo que no aplica se oculta Y se marca `data-inactivo`: estado.js no lo manda en el enlace,
+// porque un parámetro que no cuenta no puede viajar como si contara.
+function marcar(id, activo) {
+  const n = $(id); if (!n) return;
+  n.style.display = activo ? '' : 'none';
+  n.toggleAttribute('data-inactivo', !activo);
+}
+function aplicarDependencias() {
+  const ssr = plat === 'ssr';
+  const hub = $('ssrRol').value === 'hub';
+  const srxComp = $('ssrSeg').value === 'srx';
+  marcar('panelSrx', !ssr);
+  marcar('panelSsr', ssr);
+  marcar('campoSpokes', ssr && hub);
+  marcar('campoSrxComp', ssr && srxComp);
+  marcar('campoAlcance', ssr && srxComp && !hub);
+  $('bwLbl').textContent = !ssr ? 'Ancho de banda a proteger' : (hub ? 'Caudal de cada sucursal' : 'Caudal del sitio');
+  $('companeroPanel').hidden = !ssr;
+  // La escalera de capas es del SRX: en el SSR no hay capas que pintar.
+  $('perfPanel').hidden = ssr;
+}
 ['pickModel', 'qty', 'licTier', 'termYears', 'chkHa'].forEach((id) => $(id).addEventListener('input', renderBom));
 
 // La lista SI se reconstruye aqui, y solo aqui: cambia con la plataforma (los SRX y los
@@ -153,15 +191,19 @@ function sincronizarConBom(m) {
 
 /* ══ Motor ══ */
 function render() {
+  aplicarDependencias();
   const head = (parseFloat($('head').value) || 0) / 100;
   $('headVal').textContent = `${Math.round(head * 100)} %`;
-  const need = Math.round((parseFloat($('bw').value) || 0) * (parseFloat($('unit').value) || 1) * (1 + head));
+  const bwMbps = (parseFloat($('bw').value) || 0) * (parseFloat($('unit').value) || 1);
+  const need = Math.round(bwMbps * (1 + head));
 
   // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): es el dato
   // mínimo del dimensionamiento; sin él la página pide valores en vez de proponer un
   // equipo a ciegas. Aplica a las dos plataformas (SRX y Session Smart).
   if (need <= 0) {
-    lastPick = null; hayCandidato = false; sincronizarConBom(null);
+    lastPick = null; hayCandidato = false; companero = { modo: 'ninguna' };
+    $('companero').innerHTML = '';
+    sincronizarConBom(null);
     FICHA.render({vendor:'juniper',
       contenedor: 'verdict', candidatos: [], recomendado: null,
       vacioTitulo: 'Ingrese valores para recomendar un equipo',
@@ -173,7 +215,7 @@ function render() {
     return;
   }
 
-  if (plat === 'ssr') return renderSsr(need);
+  if (plat === 'ssr') return renderSsr(bwMbps, head);
 
   const ef = capaEfectiva();
   $('capaHint').innerHTML = `<b>${esc(CAPA_INFO[capa].n)}:</b> ${CAPA_INFO[capa].d}`;
@@ -187,13 +229,7 @@ function render() {
   // Un modelo sin cifra en la capa efectiva NO se cuela con la de otra capa: se descarta y
   // se explica. Sustituir una medición por otra es exactamente lo que produce el error de
   // factor 10 que esta herramienta existe para evitar.
-  let sinCifra = 0, outBySess = 0;
-  const candidatos = MODELS.filter((m) => {
-    if (m[ef.k] == null) { sinCifra++; return false; }
-    if (m[ef.k] < need) return false;
-    if (sessNeed && m.sess != null && m.sess < sessNeed) { outBySess++; return false; }
-    return true;
-  });
+  const { candidatos, sinCifra, outBySess } = JM.candidatosSrx(MODELS, ef.k, need, sessNeed);
   const ordenados = FICHA.ordenar(candidatos, (a, b) => a[ef.k] - b[ef.k]);
   const pick = FICHA.recomendar(ordenados);
   lastPick = pick;
@@ -337,51 +373,153 @@ function pintarResumen(m, ef, need, sessNeed) {
     <tr><td>Holgura</td><td class="n">${Math.round((1 - need / m[ef.k]) * 100)} %</td></tr>
     <tr><td>Sesiones concurrentes</td><td class="n">${sessNeed ? `${miles(sessNeed)} / ` : ''}${m.sess != null ? miles(m.sess) : '<span class="warn">sin dato</span>'}</td></tr>
     <tr><td>Unidades a cotizar</td><td class="n">${$('chkHa').checked ? '2 (HA)' : '1'}</td></tr>
+    ${filaNat()}
   </tbody></table>`;
 }
 
+// Pool de NAT por bloques de puertos: aritmética, no un eje del equipo (el catálogo no publica
+// una cifra de NAT por modelo, así que no elige ni descarta nada).
+function filaNat() {
+  const r = JM.poolCgnat({ usuarios: numOr('natUsers', 0), bloque: parseInt($('natBloque').value, 10) || 1024 });
+  if (!r) return '';
+  return `<tr><td>Pool NAT (PBA)</td><td class="n"><b>${miles(r.ips)}</b> IPv4 públicas · /${r.prefijo} (${miles(r.enPrefijo)})</td></tr>
+    <tr><td>Usuarios por IPv4</td><td class="n">${miles(r.porIp)} con ${miles(r.bloque)} puertos cada uno</td></tr>`;
+}
+
 /* ══ SSR ══ */
-function renderSsr(need) {
+function escenarioSsr(bwMbps, head) {
+  return {
+    rol: $('ssrRol').value,
+    bwMbps,
+    spokes: numOr('ssrSpokes', 0),
+    simultPct: numOr('ssrSimult', 100),
+    breakoutPct: numOr('ssrBreakout', 70),
+    perfil: $('ssrPerfil').value,
+    transporte: $('ssrTransporte').value,
+    dupPct: numOr('ssrDup', 0),
+    headroomPct: head * 100,
+    alcance: $('ssrAlcance').value,
+  };
+}
+
+function renderSsr(bwMbps, head) {
+  const esc0 = escenarioSsr(bwMbps, head);
+  const d = JM.demandaSsr(esc0);
+  const need = d.need;
+  const hub = esc0.rol === 'hub';
+  $('perfTiers').innerHTML = '';
+  $('perfModel').textContent = '';
+  renderCompanero(esc0);
+
+  if (need <= 0) {
+    lastPick = null; hayCandidato = false; sincronizarConBom(null);
+    FICHA.render({ vendor: 'juniper', contenedor: 'verdict', candidatos: [], recomendado: null,
+      vacioTitulo: hub ? 'Ingrese las sucursales que llegan al hub' : 'Ingrese valores para recomendar un equipo',
+      vacioDetalle: hub
+        ? '<p style="margin:0;font-size:13.5px">El hub se dimensiona con el overlay de sus sucursales: hace falta cuántas son, su caudal y qué parte sale en local. Con un breakout del 100 % no llega nada al hub.</p>'
+        : '<p style="margin:0;font-size:13.5px">Escriba el <b>caudal del sitio</b> para que el dimensionador proponga los modelos que cumplen.</p>' });
+    $('sizingBox').innerHTML = '<p style="font-size:13.5px;color:var(--steel)">Sin demanda que dimensionar.</p>';
+    return;
+  }
+
   const ordenados = FICHA.ordenar(SDWAN.filter((m) => m.cap >= need), (a, b) => a.cap - b.cap);
   const pick = FICHA.recomendar(ordenados);
   lastPick = pick;
   hayCandidato = !!pick;
   sincronizarConBom(pick);
-  $('perfTiers').innerHTML = '';
-  $('perfModel').textContent = '';
   if (!pick) {
-    FICHA.render({vendor:'juniper',  contenedor: 'verdict', candidatos: [], recomendado: null,
+    FICHA.render({ vendor: 'juniper', contenedor: 'verdict', candidatos: [], recomendado: null,
       vacioTitulo: `Ningún Session Smart Router del catálogo llega a ${fmt(need)}`,
-      vacioDetalle: '<p class="warn">Por encima del SSR1400 (40 Gbps) hay que evaluar varias unidades o la versión virtual sobre servidor.</p>' });
-    $('sizingBox').innerHTML = '<p style="font-size:13.5px;color:var(--steel)">Sin candidato.</p>';
+      vacioDetalle: `<p class="warn">Por encima del SSR1400 (40 Gbps) hay que repartir la carga en varias unidades o evaluar la versión virtual sobre servidor.</p>${desgloseSsr(d)}` });
+    $('sizingBox').innerHTML = desgloseSsr(d);
     return;
   }
-  FICHA.render({vendor:'juniper', 
+  FICHA.render({ vendor: 'juniper',
     contenedor: 'verdict', candidatos: ordenados, recomendado: pick.id,
     etiqueta: (m) => `${m.id} — ${m.seg} · ${fmt(m.cap)}`,
     escalon: { metrica: (m) => m.cap ?? null, fmt, nombre: 'caudal', precio: () => null },
     titulo: (m) => m.id,
     subtitulo: (m) => `${m.ser} · ${m.seg}`,
-    medidores: (m) => [{ etq: 'Caudal del sitio', val: need, tope: m.cap, txt: `${fmt(need)} / ${fmt(m.cap)}` }],
-    porQue: (m) => `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
-      <li>Requerimiento <b>${fmt(need)}</b> contra <b>${fmt(m.cap)}</b> — holgura ${Math.round((1 - need / m.cap) * 100)} %</li>
-      <li>Interfaces: ${esc(m.ifaces)}</li>
-      <li><b>SD-WAN sin túneles:</b> el enrutado por sesión evita el encapsulado, así que no hay que descontar overhead de ESP como en un overlay IPsec. La contrapartida es que <b>no inspecciona contenido</b>: si el diseño necesita IPS o antivirus, va en un SRX o en el servicio cloud.</li>
-      <li><b>Gestión desde Mist.</b> La suscripción es por dispositivo y no está en este catálogo: confirmarla con el distribuidor.</li>
-    </ul>`,
+    medidores: (m) => [{ etq: hub ? 'Overlay de diseño' : 'Caudal de diseño', val: need, tope: m.cap, txt: `${fmt(need)} / ${fmt(m.cap)}` }],
+    porQue: (m) => porQueSsr(m, d, esc0),
     secciones: (m) => [{ titulo: 'Características',
       filas: [['Serie', esc(m.ser)], ['Segmento', esc(m.seg)], ['Caudal', fmt(m.cap)],
+        ['Inspección de contenido', '<span class="warn">sin cifra en el catálogo: va desacoplada</span>'],
         ['Interfaces', esc(m.ifaces), true],
         ['Precio de lista ref.', '<span class="warn">sin lista de precios Juniper</span>']] },
-      FICHA.seccionPuertos(m), FICHA.seccionAlimentacion(m)],
+    FICHA.seccionPuertos(m), FICHA.seccionAlimentacion(m)],
     alCambiar: (id) => { $('pickModel').value = id; renderBom(); },
   });
-  const m = SDWAN.find((x) => x.id === FICHA.elegido('verdict')) || pick;
-  $('sizingBox').innerHTML = `<table class="ficha-tabla"><tbody>
-    <tr><td>Caudal del sitio</td><td class="n"><b>${fmt(need)}</b></td></tr>
-    <tr><td>Capacidad del modelo</td><td class="n">${fmt(m.cap)}</td></tr>
-    <tr><td>Holgura</td><td class="n">${Math.round((1 - need / m.cap) * 100)} %</td></tr>
-  </tbody></table>`;
+  $('sizingBox').innerHTML = desgloseSsr(d);
+}
+
+function porQueSsr(m, d, e) {
+  const hub = e.rol === 'hub';
+  const f = [];
+  f.push(`Demanda de diseño <b>${fmt(d.need)}</b> contra <b>${fmt(m.cap)}</b> — holgura ${Math.round((1 - d.need / m.cap) * 100)} %.`);
+  f.push(hub
+    ? `<b>Hub:</b> ${miles(Math.floor(e.spokes))} sucursales de ${fmt(e.bwMbps)}, con un ${Math.round(e.breakoutPct)} % de salida local y un ${Math.round(e.simultPct)} % de simultaneidad: al hub llegan <b>${fmt(Math.round(d.base))}</b> de overlay.`
+    : `<b>Sucursal:</b> la salida local (${Math.round(e.breakoutPct)} %) no descarga el equipo, porque ese tráfico también lo enruta el SSR. Lo que cambia es qué parte viaja por el overlay.`);
+  if (e.transporte === 'ipsec') f.push(`<b class="warn">Túnel IPsec:</b> +${(d.overheadTransporte * 100).toFixed(1)} % con paquetes de ${d.perfil.bytes} B de media. Con SVR ese coste no existe: el enrutado por sesión no encapsula.`);
+  if (d.duplicacion > 0) f.push(`<b>Duplicación de paquetes</b> sobre el ${Math.round(d.duplicacion * 100)} % del tráfico: esa parte sale dos veces y cuenta doble.`);
+  f.push(`Interfaces: ${esc(m.ifaces)}.`);
+  f.push('<b>Gestión desde Mist.</b> La suscripción es por dispositivo y no está en este catálogo: confirmarla con el distribuidor.');
+  f.push('<b>Supuestos sin fuente del fabricante</b> (reglas de trabajo declaradas): el factor IMIX, los 62 B del túnel, el breakout y la simultaneidad. El desglose de la derecha enseña cada paso.');
+  return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">${f.map((x) => `<li>${x}</li>`).join('')}</ul>`;
+}
+
+function desgloseSsr(d) {
+  return `<table class="ficha-tabla"><tbody>
+    ${d.pasos.map((p, i) => `<tr><td>${esc(p.n)}</td><td class="n">${i === d.pasos.length - 1 ? `<b>${fmt(Math.round(p.v))}</b>` : fmt(Math.round(p.v))}</td></tr>`).join('')}
+  </tbody></table>
+  <p class="hint" style="margin-top:8px">need = ⌈ base ÷ IMIX × (1 + túnel) × (1 + duplicación) × (1 + margen) ⌉. Sin recargo por seguridad: la inspección no va en el SSR.</p>`;
+}
+
+// Seguridad desacoplada. El SRX se elige con el MISMO filtro que la plataforma SRX: un modelo
+// sin cifra en la capa se aparta con su motivo y el fin de venta lo decide FICHA.recomendar.
+function renderCompanero(e) {
+  const modo = $('ssrSeg').value;
+  const caja = $('companero');
+  if (modo === 'ninguna') {
+    companero = { modo };
+    caja.innerHTML = '<p style="font-size:13.5px;margin:0">Sin inspección de contenido. El SSR aplica <b>zero-trust por sesión</b> (solo pasa lo que una política de servicio permite) y firewall de estado; no hay IPS, antimalware ni filtrado de URL en este diseño.</p>';
+    return;
+  }
+  if (modo === 'sse') {
+    companero = { modo };
+    caja.innerHTML = `<p style="font-size:13.5px;margin:0"><b>Inspección en la nube (Juniper Secure Edge).</b> El tráfico de salida local se encamina al servicio, que se contrata por usuario: no hay cifra de equipo que dimensionar y el SSR no carga inspección. El BOM añade la línea <b>sin SKU ni precio</b>, porque ninguno de los dos está en el material disponible.</p>`;
+    return;
+  }
+  const insp = JM.inspeccionSrx(e);
+  const k = $('ssrCapa').value;
+  if (insp.need <= 0) {
+    companero = { modo, pick: null, need: 0, k };
+    caja.innerHTML = '<p style="font-size:13.5px;margin:0;color:var(--steel)">Sin tráfico que inspeccionar con los parámetros actuales.</p>';
+    return;
+  }
+  const { candidatos, sinCifra } = JM.candidatosSrx(MODELS, k, insp.need, 0);
+  const ordenados = FICHA.ordenar(candidatos, (a, b) => a[k] - b[k]);
+  const pick = FICHA.recomendar(ordenados);
+  companero = { modo, pick, need: insp.need, k };
+  const que = insp.soloDia ? 'la salida local a Internet' : (e.rol === 'hub' ? 'todo el overlay que llega al hub' : 'todo el tráfico del sitio');
+  const apartados = sinCifra ? `<li><b>${sinCifra}</b> modelo(s) no publican cifra de <b>${esc(CAPA_INFO[k].n)}</b> y se apartan: no se rellena con la de otra capa.</li>` : '';
+  if (!pick) {
+    caja.innerHTML = `<p class="warn" style="margin:0 0 6px"><b>Ningún SRX del catálogo inspecciona ${fmt(insp.need)} en ${esc(CAPA_INFO[k].n)}.</b></p>
+      <ul style="margin:0;padding-left:18px;font-size:13.5px"><li>Se inspecciona ${que}.</li>${apartados}
+      <li>Opciones: inspeccionar solo la salida local, bajar de capa o repartir en un clúster.</li></ul>`;
+    return;
+  }
+  caja.innerHTML = `<p class="model" style="font-size:26px;margin:0 0 2px">${esc(pick.id)}</p>
+    <p class="family" style="margin-bottom:10px">${esc(pick.ser)} · ${esc(pick.seg)}</p>
+    <div class="meter"><b>${esc(CAPA_INFO[k].n)} <em>${fmt(insp.need)} / ${fmt(pick[k])}</em></b>
+      <div class="bar"><i class="${insp.need / pick[k] > 0.8 ? 'tight' : 'good'}" style="width:${Math.min(100, (insp.need / pick[k]) * 100)}%"></i></div></div>
+    <ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
+      <li>Inspecciona ${que}: <b>${fmt(Math.round(insp.mbps))}</b> más el margen, contra la cifra de <b>${esc(CAPA_INFO[k].n)}</b>. Sin factor IMIX ni recargo: la cifra de la capa ya es la medida que aplica.</li>
+      ${pick.fw != null && pick[k] && pick.fw / pick[k] >= 2 ? `<li><b class="warn">Cifra de portada:</b> ${fmt(pick.fw)} con paquetes grandes, ${Math.round(pick.fw / pick[k])}x lo que aplica aquí.</li>` : ''}
+      ${apartados}
+      ${ordenados.length > 1 ? `<li>Otros que cumplen: ${ordenados.filter((m) => m !== pick).slice(0, 4).map((m) => `${esc(m.id)} (${fmt(m[k])})`).join(', ')}.</li>` : ''}
+      <li>Va en el BOM como «Firewall desacoplado», con su suscripción.</li>
+    </ul>`;
 }
 
 /* ══ BOM ══ */
@@ -413,6 +551,20 @@ function renderBom() {
   }
   filas.push({ cat: 'Soporte', desc: `${(CARE[Object.keys(CARE)[0]] || {}).n || 'Soporte'} — ${term} año(s)`, sku: null, qty, unit: null,
     nota: 'Niveles y SLA sin verificar: confirmar con el distribuidor.' });
+  // Seguridad desacoplada del modo SSR. No es `cat: 'Equipo'` a propósito: el traspaso al
+  // cotizador manda el equipo principal por su nombre y el resto como referencias; con esa
+  // categoría el SRX se perdería en el camino (bom.js excluye las filas de equipo).
+  if (plat === 'ssr' && companero.modo === 'srx' && companero.pick) {
+    const c = companero.pick;
+    filas.push({ cat: 'Firewall desacoplado', desc: c.id, sku: null, qty, unit: null,
+      nota: `${c.ser} · inspección ${CAPA_INFO[companero.k].n} de ${fmt(companero.need)} contra ${fmt(c[companero.k])}` });
+    filas.push({ cat: 'Firewall desacoplado', desc: `${(BUNDLES[tier] || {}).n || tier} para ${c.id} — ${term} año(s)`, sku: null, qty, unit: null,
+      nota: 'Suscripción de seguridad del SRX, una por unidad.' });
+  }
+  if (plat === 'ssr' && companero.modo === 'sse') {
+    filas.push({ cat: 'Seguridad cloud', desc: `Juniper Secure Edge (SSE) — ${term} año(s)`, sku: null, qty: 1, unit: null,
+      nota: 'Se contrata por usuario: confirmar cantidad, SKU y precio con el distribuidor.' });
+  }
 
   const meta = {
     titulo: `Lista de materiales — ${m.id}`,
@@ -423,7 +575,9 @@ function renderBom() {
       '  Ninguna linea lleva precio: no hay lista de precios de Juniper en el material',
       '  disponible. Confirmar SKU, nivel de suscripcion y precio con el distribuidor.',
       '  Las cifras de rendimiento son por capa de inspeccion: la de portada (paquetes',
-      '  grandes) no sirve para dimensionar.'],
+      '  grandes) no sirve para dimensionar.',
+      ...(plat === 'ssr' ? ['  SD-WAN: factor IMIX, 62 B de tunel IPsec, breakout y simultaneidad son',
+        '  reglas de trabajo declaradas, sin fuente del fabricante.'] : [])],
   };
   $('bomTabla').innerHTML = BOM.avisoDesvio({ elegido: FICHA.elegido('verdict'), enBom: m.id, hayCandidato })
     + BOM.renderTabla(filas, {
@@ -456,7 +610,9 @@ $('xlsBtn').addEventListener('click', async () => {
    otra recomendacion. Ahora el escenario viaja en la URL; ya no se guarda entre sesiones
    (ver /js/estado.js). */
 document.addEventListener('DOMContentLoaded', () => {
-  const st = ESTADO.vincular({ campos: ['bw','unit','head','users','sesUser','chkIps','chkAtp','chkVpn','platSeg','capaSeg','verdict-sel'] });
+  const st = ESTADO.vincular({ campos: ['bw','unit','head','users','sesUser','chkIps','chkAtp','chkVpn','natUsers','natBloque',
+    'ssrRol','ssrSpokes','ssrSimult','ssrBreakout','ssrPerfil','ssrTransporte','ssrDup','ssrSeg','ssrCapa','ssrAlcance',
+    'platSeg','capaSeg','verdict-sel'] });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');

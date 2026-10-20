@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-19, cuadragesimoprimera entrega (**La mejora propuesta —qué equipos respalda cada fuente— y el escalón N+1 en los siete dimensionadores.** `fuentes.js` declara `modelos` en 78 de sus 100 fuentes, con guarda: cada elemento existe, el texto de la fuente lo nombra y **los 217 equipos de los siete catálogos tienen fuente declarada**. La hoja «Supuestos» lista las fuentes que declaran al equipo y dice cómo se asoció cada una. El escalón N+1 pasa de Huawei a los siete. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-19, cuadragesimosegunda entrega (**Dimensionador Juniper: se integra el método de la herramienta externa «Carrier-Grade Juniper Networks», no sus datos.** Encargo del dueño: actualizar el dimensionador con el HTML adjunto «como un arquitecto senior». Contrastado cifra a cifra contra `legacyData/juniper.js`, el adjunto sobredimensionaba la inspección del SRX hasta 4,7x (SRX1600 21 Gbps de IPS por TPS frente a 4,5 verificados por CPS; SRX4300 45 Gbps de NGFW frente a 11 de ATP), inventaba IDP/NGFW para los SSR, precios, SKU y 16 equipos ACX/MX/PTX sin fuente. Entra su método en `public/js/juniper-motor.js` (puro, 12 pruebas): SSR como sucursal o hub (el breakout descarga el hub, no la sucursal), IMIX homologado con EdgeConnect, túnel IPsec en bytes por paquete, duplicación de paquetes, seguridad desacoplada en un SRX elegido por capa o en la nube, y pool de NAT por bloques. Ver *Cerrado recientemente* y *Abierto: herramienta externa Juniper*.)
+Revisión anterior: 2026-10-19, cuadragesimoprimera entrega (**La mejora propuesta —qué equipos respalda cada fuente— y el escalón N+1 en los siete dimensionadores.** `fuentes.js` declara `modelos` en 78 de sus 100 fuentes, con guarda: cada elemento existe, el texto de la fuente lo nombra y **los 217 equipos de los siete catálogos tienen fuente declarada**. La hoja «Supuestos» lista las fuentes que declaran al equipo y dice cómo se asoció cada una. El escalón N+1 pasa de Huawei a los siete. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-19, cuadragésima entrega (**Explicabilidad de Huawei, escalón N+1, hoja «Supuestos» del Excel y escritura atómica del volumen.** Encargo del dueño en cuatro fases. **Huawei**: la traza escribe el ×2 entero («bajada X + subida X = 2X» frente al techo que la ficha publica sumado), cada modelo apartado dice su cuello de botella con cifras y la tabla abre con un resumen por categoría y los modelos de otras plataformas; el BOM marca lo que es **base del chasis** y las licencias sin código ni precio dicen «consultar». **`ficha.js`**: escalón superior N+1 (opt-in, hoy en Huawei). **`bom.js`**: hoja «Supuestos» detrás de «BOM». **Servidor**: `usuarios.json` y el manifiesto de fuentes se escriben de forma atómica. Ninguna cifra del cálculo cambia. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimonovena entrega (**La pasada semántica de graphify, decidida y ejecutada.** El dueño eligió ejecutarla: tres subagentes leyeron los 56 archivos que el análisis del código no lee (15 páginas HTML, 13 workflows, Dependabot, las instrucciones de Copilot, `docs/`, `CLAUDE.md` y el manual). El grafo queda en 2983 nodos, 5275 aristas y 194 comunidades, con 197 conceptos nuevos; costó ~433 000 tokens. No se versiona. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimoctava entrega (**El pendiente de Limpieza 12, cerrado, y la comprobación del aviso al subir graphify.** Si la instalación de graphify falla, el arranque dice por qué (comprobado con un `uv` sin salida a PyPI: «Caused by: Connection refused»). El LEEME de la skill pide, al subir de versión, comprobar que el aviso de grafo viejo calla. Ver *Cerrado recientemente*.)
@@ -1960,6 +1961,32 @@ traerla (`npm run datasheets -- --force` desde una máquina con salida, o el tra
 contrastar las reglas de diseño que `cubre` lista contra la edición nueva y marcarla con
 `npm run vigia -- --revisado aruba <url>`.
 
+## Abierto: herramienta externa Juniper (2026-10-19)
+
+Lo que el HTML adjunto traía y **no** entró, con el motivo y lo que lo cerraría:
+
+- **Familias ACX7000, MX y PTX** (16 equipos, con cifras de reenvío, BNG y CGNAT): ninguna tiene
+  ficha oficial contrastada. juniper.net da 403 desde aquí; se traen con un workflow de transporte
+  (`traer-cisco-huawei.yml` con `solo` y `rama`) a una rama `fuente/juniper-mx-acx-<fecha>` y entran
+  por un importador con anclaje. El MX204/MX304/MX480 ya están en el cotizador sin pareja.
+- **SSR1500**: el adjunto lo da con 50 Gbps; no está en el catálogo ni en ninguna fuente leída.
+- **Cifra de inspección del SSR** (IDP/URL): el adjunto la inventa. Si Juniper la publica, se
+  dimensionaría dentro de la caja; hasta entonces va desacoplada en SRX o en la nube.
+- **Precios, SKU de chasis, fuentes, ventiladores (`JNP-FAN-*`) y ópticas**: no hay lista de
+  precios ni «Ordering Information» de Juniper en el material disponible.
+- **Vistas frontal/trasera dibujadas**: las figuras de la ficha salen de documentos oficiales con su
+  página y rótulo; un dibujo inventado no es una figura.
+- **Plantilla de CLI**: mezclaba PCLI del conductor SSR con Junos; generar configuración no es un
+  dato del catálogo y no tiene prueba. Se descarta, no se aplaza.
+- **Rollout y MRR/TCV**: `bom.js` ya tiene perfiles multi-sede y MRR; sin precio de Juniper el
+  resultado sería cero o inventado.
+- **FEC adaptativo en el SSR**: no está confirmado en el material disponible (la resiliencia de
+  sesión del SSR que sí se modela es la duplicación de paquetes).
+- **Aparte, de la lectura**: la sección final de `CLAUDE.md` que escribió Gemini describe
+  `public/js/sizing_engine.js` y `server/presales_api_controller.js`, que **ninguna página ni el
+  servidor cargan**, y pide `list_price_usd` en cada SKU nuevo, en conflicto con «nunca se inventa
+  un dato». Decisión del dueño: retirarlos o integrarlos con la regla de datos.
+
 ## Decisiones que necesitan al dueño del producto
 
 - ~~**WireGuard en el dimensionador MikroTik (2026-10-13).**~~ **Decidido el 2026-10-13: opción A**,
@@ -2075,6 +2102,21 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+- **2026-10-19 · Dimensionador Juniper: método de la herramienta externa integrado.** `public/js/juniper-motor.js`
+  (UMD puro, `test/juniper-motor.test.js`): `demandaSsr` (sucursal o hub con sucursales,
+  breakout y simultaneidad; IMIX 0,70/0,55/1,00 casado con `motor-ingenieria.js` por prueba; túnel
+  de 62 B sobre el paquete medio del perfil; duplicación sobre la fracción protegida; margen al
+  final), `inspeccionSrx` + `candidatosSrx` (el SRX desacoplado se elige por capa con el mismo
+  filtro que la plataforma SRX, que ahora también lo usa) y `poolCgnat` (PBA sobre 64.512 puertos).
+  La pantalla gana el panel SSR completo, el panel «Seguridad desacoplada», el desglose paso a
+  paso, el NAT en el resumen del SRX y las líneas «Firewall desacoplado» / «Seguridad cloud» en el
+  BOM (no `cat:'Equipo'`, para que viajen al cotizador). Los campos que no aplican van
+  `data-inactivo`. Se corrigió el texto falso de la pestaña de fuentes («basado en el GPL de
+  Juniper», «filtrados para excluir EOL»). Errores del adjunto fijados en pruebas: breakout que no
+  entraba en la cuenta, duplicación como +35 %, IPsec como +32 % fijo, inspección como recargo.
+  Verificado: `verificar` (1.039 pruebas), `auditar`, servidor en producción, la pantalla conducida en
+  Chromium en cuatro escenarios, `e2e` entero y `puerta`.
 
 ### Qué equipos respalda cada fuente, y el escalón N+1 en los siete (2026-10-19, cuadragesimoprimera entrega)
 
