@@ -190,7 +190,7 @@ const FUENTES = {
       nota: '2026-09-02: traido via GitHub Actions (mismo patron que Fortinet). El documento en si es de agosto de 2020 (pie de pagina "1000265-021-EN Aug 2020") — la fecha "2026-08" que llevaba este registro era una suposicion de cuando no se podia leer el documento, no una medicion; corregida. Sigue siendo el que sirve la URL oficial de Juniper hoy. El propio documento enlaza fichas individuales por modelo (p.3) que se intentaron traer para contrastar, pero sus URL de 2020 ya no resuelven a un PDF (devuelven una pagina HTML) — no se agregan como fuente hasta tener una URL vigente confirmada. 2026-10-02: PARA LA LINEA SRX300 ES UNA EDICION ANTERIOR. Su datasheet vigente (arriba) publica cifras mas altas, y las que esta matriz habia hecho «corregir» el 2026-09-02 —el fwImix de la linea y la disputa del SRX380— eran las de la edicion nueva. El doble anclaje caza una fila desplazada, no una edicion vieja: eso lo decide la fecha del documento.' },
     { documento: 'Hardware guides por modelo (SRX300/320/340/345/1500/1600/2300/4100/4200/4300/4700)',
       url: 'https://www.juniper.net/documentation/us/en/hardware/srx1600/index.html', estable: true,
-      fecha: '2026-09-03', hash: null, modelos: '*', cubre: 'alimentacion, redundancia de fuente y consumo medio de los 12 modelos SRX (vigilado: el SRX1600)', campos: ['redund', 'psu'],
+      fecha: '2026-09-03', hash: null, modelos: ['SRX 300', 'SRX 1500', 'SRX 1600', 'SRX 2300', 'SRX 4000'], cubre: 'alimentacion, redundancia de fuente y consumo medio de los 12 modelos SRX, de las series SRX 300, SRX 1500, SRX 1600, SRX 2300 y SRX 4000 (vigilado: el SRX1600); desde el 2026-10-19 declara sus series y no `*`, porque el catalogo Juniper incluye ya los Session Smart Router', campos: ['redund', 'psu'],
       nota: 'Una guia por modelo, traidas via GitHub Actions y leidas a mano. El material comercial de Juniper publica rendimiento pero NO alimentacion: esto es lo unico que la trae. Se comprobo que cada guia hable solo de su equipo antes de aplicar nada. URL CORREGIDA EL 2026-09-16, MIDIENDOLO (pendiente 38): antes apuntaba al INDICE `/documentation/us/en/hardware/`, que no es un documento sino un directorio y devuelve 403 SIEMPRE — el vigia llevaba desde el 2026-09-14 sin poder leer nada, y esa fuente se quedaba «no comprobada» para siempre. Que no era un bloqueo lo probo un grupo de control: la matriz SRX del mismo dominio respondio 200 en la misma corrida. Ahora se vigila la pagina del SRX1600, que responde 200. NO CUBRE LOS OTROS ONCE: el vigia sigue mirando una URL por fuente, asi que esta alarma avisa de que Juniper toco la guia de UN modelo, no de los doce. Es menos de lo que la entrada prometia antes, y mas de lo que de verdad hacia, que era nada.' },
     { documento: 'Fichas por modelo de la generacion 2024 (SRX1600, SRX2300, SRX4300)',
       url: 'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx1600-firewall-datasheet.pdf', estable: true,
@@ -200,6 +200,31 @@ const FUENTES = {
       url: 'https://support.juniper.net/support/eol/product/srx_series/', estable: true,
       fecha: '2026-09-03', hash: null, modelos: ['SRX1500', 'SRX4100'], cubre: 'fin de venta del SRX1500 (TSB101240) y el SRX4100 (TSB101895), ambos con ultimo pedido 2026-04-15', campos: ['eolAnnounced'],
       nota: 'La tabla mezcla en las mismas filas el fin de vida de paquetes de software con el del hardware, asi que solo se aceptan las filas cuyo SKU es el chasis o el sistema del propio modelo. Con ese filtro, de los 12 modelos del catalogo exactamente 2 tienen fin de venta del equipo. CORREGIDO EL 2026-09-14 A `estable: true`, MIDIENDOLO: `npm run vigia -- --sondeo` desde Actions pidio esta URL dos veces con 15 s de diferencia y devolvio los mismos 104.377 bytes y el mismo hash. Estaba declarada inestable por suposicion -"es una pagina viva que crece con cada boletin"- y eso la dejaba SIN ALARMA: un boletin nuevo de fin de venta se habria reportado como "vario (pagina dinamica)" y nadie se habria enterado. Es el fallo contrario al de Cisco y sale del mismo sitio: un campo puesto a ojo.' },
+    { documento: 'SSR100 Line of Routers Datasheet (1000728-005-JP)',
+      url: 'https://www.juniper.net/content/dam/www/assets/datasheets/jp/ja/routers/ssr100-line-of-routers-datasheet.pdf', estable: true,
+      fecha: '2023-03', hash: null, modelos: ['SSR 100'], campos: ['cap', 'capCif', 'capHmac', 'cap1500', 'capCif1500', 'capHmac1500', 'redund', 'psu', 'ifaces'],
+      cubre: 'rendimiento agregado del SSR120 y el SSR130 en tres capas de cifrado (sin cifrar, solo cifrado, cifrado + HMAC), en IMIX y con 1.500 B; puertos y alimentacion',
+      nota: 'Traido el 2026-10-19 por traer-cisco-huawei.yml (corrida 39357025445, rama fuente/juniper-ssr-2026-10-19). La URL en ingles devolvio HTML; la japonesa, el PDF. Medido con Session Smart v5.4.4. `cap` ya casaba en los dos (1,5 y 2 Gbps): era la capa «sin cifrar» en IMIX. La entrada de fuente redundante del chasis la ficha la marca como no soportada. No publica IDP ni filtrado URL.' },
+    { documento: 'SSR1000 Line of Routers Datasheet (1000757-002-EN)',
+      url: 'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/routers/ssr1000-line-of-routers-datasheet.pdf', estable: true,
+      fecha: '2023-03', hash: null, modelos: ['SSR 1000'], campos: ['cap', 'capCif', 'capHmac', 'cap1500', 'capCif1500', 'capHmac1500', 'redund', 'psu', 'ifaces'],
+      cubre: 'rendimiento agregado de SSR1200, SSR1300, SSR1400 y SSR1500 en tres capas de cifrado, en IMIX y con 1.500 B; puertos, fuentes 1+1 y consumo maximo',
+      nota: 'Traido el 2026-10-19 por traer-cisco-huawei.yml (corrida 39357025445). Medido con Session Smart v5.4.4 (v5.4.9 en el SSR1500). `cap` casaba en los tres que ya estaban (10, 20 y 40 Gbps = «Unencrypted IMIX»); el SSR1500 entra de alta con sus seis cifras. Varias celdas llevan la nota «Max throughput on single NIC»: tope del puerto, transcrito igual. Corrigio el motor, que dividia por un factor IMIX una cifra que ya era IMIX. No publica IDP ni filtrado URL.' },
+    // 2026-10-19: los MX que el cotizador, el portal y la guia citan sin pareja en un
+    // dimensionador. No son equipos de MODELS (el dimensionador Juniper es SRX y SSR), asi que
+    // `modelos: []` y `campos: null`: la procedencia es la del texto escrito de esas tres listas.
+    { documento: 'MX 204/240/480/960 Series Universal Routing Platforms Datasheet (1000597-042-JP)',
+      url: 'https://juniper.net/content/dam/www/assets/datasheets/jp/ja/routers/mx-204-240-480-960-series-universal-routing-platforms-datasheet.pdf', estable: true,
+      fecha: '2024-09', hash: null, modelos: [], campos: null,
+      porQue: 'respalda texto escrito del cotizador, del portal y de la guia (MX204, MX480, MX960), equipos que no estan en MODELS',
+      cubre: 'capacidad maxima (full duplex), ranuras y puertos de MX204, MX240, MX480 y MX960: tabla 1 del documento',
+      nota: 'Traido el 2026-10-19 por traer-cisco-huawei.yml (corrida 39356629214, rama fuente/juniper-mx-2026-10-19). Solo se encontro en japones; las cifras de la tabla 1 no dependen del idioma: MX960 12 Tbps y 11 MPC, MX480 7,5 Tbps y 6 MPC, MX240 3 Tbps, MX204 400 Gbps con 8x10GbE + 4x100GbE. La nota 1 dice que son cifras full duplex. Corrigio el cotizador, el portal y la guia, que daban al MX480 7,7 Tbps y al MX960 19,2 Tbps y 12 ranuras. La URL en ingles (1000597-en.pdf) devolvio HTML, no el PDF.' },
+    { documento: 'MX304 Universal Routing Platform (a00150831ENW, Rev. 1)',
+      url: 'https://www.hpe.com/psnow/doc/a00150831enw', estable: false,
+      fecha: '2025-10-12', hash: null, modelos: [], campos: null,
+      porQue: 'respalda texto escrito del cotizador, del portal y de la guia (MX304), equipo que no esta en MODELS',
+      cubre: 'capacidad (4,8 Tbps en 2 RU), densidad por chasis (48x100GbE / 12x400GbE en tres MIC) y referencias de pedido del MX304',
+      nota: 'La ficha de juniper.net es ya un visor de HPE; el PDF se trajo de psnow el 2026-10-19 (corrida 39356819148, rama fuente/juniper-mx304-2026-10-19), con la URL leida de esa misma pagina. Confirma los 4,8 Tbps que ya citaba el cotizador y corrige «MPC slots»: el MX304 lleva MIC (MX304-LMIC16-BASE, 16x100GbE / 4x400GbE). Fecha: la de creacion del PDF. `estable: false` hasta medirlo con el sondeo.' },
   ],
 
   huawei: [
@@ -510,7 +535,7 @@ const FUENTES = {
 // documento ni menciona.
 const CATALOGOS_MODELOS = {
   huawei: ['MODELS'], cisco: ['MODELS'], fortinet: ['MODELS'], mikrotik: ['MODELS'],
-  aruba: ['MODELS'], juniper: ['MODELS'], nokia: ['MODELS', 'MODELS_ROUTER'],
+  aruba: ['MODELS'], juniper: ['MODELS', 'SDWAN'], nokia: ['MODELS', 'MODELS_ROUTER'],
 };
 const catalogoDe = (vendor) => {
   const listas = CATALOGOS_MODELOS[vendor];

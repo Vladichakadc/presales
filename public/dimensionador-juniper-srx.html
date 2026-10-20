@@ -233,21 +233,13 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       <p class="hint">Parte del tráfico de cada sucursal que sale directo a Internet (SaaS, navegación). Vacío es el 70 %, la misma regla de trabajo que usa el dimensionador de EdgeConnect.</p>
     </div>
     <div class="field">
-      <label for="ssrPerfil">Perfil de tráfico</label>
-      <select id="ssrPerfil">
-        <option value="ENTERPRISE_MIX" selected>Mezcla empresarial (÷ 0,70)</option>
-        <option value="VOIP_INTENSIVE">Voz intensiva, paquete pequeño (÷ 0,55)</option>
-        <option value="BULK_BACKUP">Réplica o backup masivo (÷ 1,00)</option>
+      <label for="ssrCifrado">Cifrado del overlay SVR</label>
+      <select id="ssrCifrado">
+        <option value="hmac" selected>Cifrado + HMAC</option>
+        <option value="cif">Solo cifrado</option>
+        <option value="plano">Sin cifrar</option>
       </select>
-      <p class="hint">Factor IMIX homologado con el motor de EdgeConnect. La cifra del SSR no declara su base de medida: si ya fuera IMIX, el factor deja margen de más, que es el lado bueno de equivocarse.</p>
-    </div>
-    <div class="field">
-      <label for="ssrTransporte">Transporte del overlay</label>
-      <select id="ssrTransporte">
-        <option value="svr" selected>SVR (Secure Vector Routing, sin túnel)</option>
-        <option value="ipsec">Túnel IPsec (ESP AES-GCM + NAT-T)</option>
-      </select>
-      <p class="hint">El túnel cuesta ~62 bytes por paquete, así que pesa según el tamaño del paquete: un 11 % en la mezcla empresarial y un 25 % en voz. SVR lleva metadatos solo en el primer paquete de cada sesión.</p>
+      <p class="hint">Las fichas del SSR publican el rendimiento en estas tres capas, medido en IMIX: <b>es la cifra que dimensiona</b>, como la capa de inspección en el SRX. En el SSR1200 son 10 Gbps sin cifrar y 2,5 con HMAC. La cifra con paquetes de 1.500 B es la de portada y solo se muestra. El SSR no vuelve a cifrar lo que ya va en HTTPS o IPsec.</p>
     </div>
     <div class="field">
       <label for="ssrDup">Tráfico protegido con duplicación de paquetes (%)</label>
@@ -355,7 +347,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <section class="panel">
   <h2>Catálogo Juniper Session Smart Router — Capacidad de referencia</h2>
   <div class="scroll"><table data-ordenable id="tbl-juniper-sdwan-cat">
-    <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Capacidad</th><th>Interfaces</th></tr></thead>
+    <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Sin cifrar (IMIX)</th><th>Cifrado + HMAC (IMIX)</th><th>Interfaces</th></tr></thead>
     <tbody></tbody>
   </table></div>
   <p style="font-size:11px;color:var(--steel);margin-top:10px">SRX y Session Smart Router no se comparan entre sí: son plataformas distintas, la misma regla que aplica en el resto de esta página.</p>
@@ -375,7 +367,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   <ul class="fuentes-list">
     <li><b>Routing &amp; Security:</b> <a href="https://www.juniper.net/us/en/products/routers.html" target="_blank" rel="noopener">https://www.juniper.net/us/en/products/routers.html</a><br>Portal oficial de las familias. Este dimensionador cubre SRX y Session Smart Router; MX, ACX y PTX no están en el catálogo porque no hay ficha oficial contrastada.</li>
     <li><b>Precios de Referencia (ELP):</b><br>No hay lista de precios de Juniper en el material disponible: todas las líneas van sin cotizar y el BOM lo cuenta.</li>
-    <li><b>Supuestos del modo SD-WAN:</b><br>Factor IMIX (homologado con EdgeConnect), 62 bytes de túnel IPsec, breakout del 70 % y simultaneidad: son reglas de trabajo declaradas, sin fuente del fabricante, y el desglose del resultado las muestra.</li>
+    <li><b>Session Smart Router:</b><br>Las capacidades por capa de cifrado salen de las fichas de las líneas SSR100 y SSR1000 (marzo de 2023, Session Smart v5.4). El breakout, la simultaneidad y la duplicación son decisiones de diseño que declara quien dimensiona; el desglose del resultado las muestra.</li>
   </ul>
 </section>
 </div>

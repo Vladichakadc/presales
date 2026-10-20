@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-19, cuadragesimosegunda entrega (**Dimensionador Juniper: se integra el método de la herramienta externa «Carrier-Grade Juniper Networks», no sus datos.** Encargo del dueño: actualizar el dimensionador con el HTML adjunto «como un arquitecto senior». Contrastado cifra a cifra contra `legacyData/juniper.js`, el adjunto sobredimensionaba la inspección del SRX hasta 4,7x (SRX1600 21 Gbps de IPS por TPS frente a 4,5 verificados por CPS; SRX4300 45 Gbps de NGFW frente a 11 de ATP), inventaba IDP/NGFW para los SSR, precios, SKU y 16 equipos ACX/MX/PTX sin fuente. Entra su método en `public/js/juniper-motor.js` (puro, 12 pruebas): SSR como sucursal o hub (el breakout descarga el hub, no la sucursal), IMIX homologado con EdgeConnect, túnel IPsec en bytes por paquete, duplicación de paquetes, seguridad desacoplada en un SRX elegido por capa o en la nube, y pool de NAT por bloques. Ver *Cerrado recientemente* y *Abierto: herramienta externa Juniper*.)
+Última revisión: 2026-10-19, cuadragesimotercera entrega (**Juniper: los MX contrastados con su ficha y el SSR dimensionado por capa de cifrado.** La mejora propuesta se ejecutó: las fichas oficiales de MX204/240/480/960 y del MX304 (ya publicada por HPE) se trajeron por Actions y corrigieron el cotizador, el portal y la guía, que daban al MX480 7,7 Tbps (son 7,5) y al MX960 19,2 Tbps y 12 ranuras (son 12 Tbps y 11). **Hallazgo por el camino**: los Session Smart Router no tenían fuente; sus fichas dicen que `cap` es «sin cifrar, IMIX» y publican además «solo cifrado» y «cifrado + HMAC». El motor de la entrega anterior dividía por IMIX una cifra que ya era IMIX; ahora el SSR se dimensiona por capa de cifrado (el SSR1200 da 10 Gbps sin cifrar y 2,5 con HMAC) y entra el SSR1500. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
+Revisión anterior: 2026-10-19, cuadragesimosegunda entrega (**Dimensionador Juniper: se integra el método de la herramienta externa «Carrier-Grade Juniper Networks», no sus datos.** Encargo del dueño: actualizar el dimensionador con el HTML adjunto «como un arquitecto senior». Contrastado cifra a cifra contra `legacyData/juniper.js`, el adjunto sobredimensionaba la inspección del SRX hasta 4,7x (SRX1600 21 Gbps de IPS por TPS frente a 4,5 verificados por CPS; SRX4300 45 Gbps de NGFW frente a 11 de ATP), inventaba IDP/NGFW para los SSR, precios, SKU y 16 equipos ACX/MX/PTX sin fuente. Entra su método en `public/js/juniper-motor.js` (puro, 12 pruebas): SSR como sucursal o hub (el breakout descarga el hub, no la sucursal), IMIX homologado con EdgeConnect, túnel IPsec en bytes por paquete, duplicación de paquetes, seguridad desacoplada en un SRX elegido por capa o en la nube, y pool de NAT por bloques. Ver *Cerrado recientemente* y *Abierto: herramienta externa Juniper*.)
 Revisión anterior: 2026-10-19, cuadragesimoprimera entrega (**La mejora propuesta —qué equipos respalda cada fuente— y el escalón N+1 en los siete dimensionadores.** `fuentes.js` declara `modelos` en 78 de sus 100 fuentes, con guarda: cada elemento existe, el texto de la fuente lo nombra y **los 217 equipos de los siete catálogos tienen fuente declarada**. La hoja «Supuestos» lista las fuentes que declaran al equipo y dice cómo se asoció cada una. El escalón N+1 pasa de Huawei a los siete. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-19, cuadragésima entrega (**Explicabilidad de Huawei, escalón N+1, hoja «Supuestos» del Excel y escritura atómica del volumen.** Encargo del dueño en cuatro fases. **Huawei**: la traza escribe el ×2 entero («bajada X + subida X = 2X» frente al techo que la ficha publica sumado), cada modelo apartado dice su cuello de botella con cifras y la tabla abre con un resumen por categoría y los modelos de otras plataformas; el BOM marca lo que es **base del chasis** y las licencias sin código ni precio dicen «consultar». **`ficha.js`**: escalón superior N+1 (opt-in, hoy en Huawei). **`bom.js`**: hoja «Supuestos» detrás de «BOM». **Servidor**: `usuarios.json` y el manifiesto de fuentes se escriben de forma atómica. Ninguna cifra del cálculo cambia. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-15, trigesimonovena entrega (**La pasada semántica de graphify, decidida y ejecutada.** El dueño eligió ejecutarla: tres subagentes leyeron los 56 archivos que el análisis del código no lee (15 páginas HTML, 13 workflows, Dependabot, las instrucciones de Copilot, `docs/`, `CLAUDE.md` y el manual). El grafo queda en 2983 nodos, 5275 aristas y 194 comunidades, con 197 conceptos nuevos; costó ~433 000 tokens. No se versiona. Ver *Cerrado recientemente*.)
@@ -1965,13 +1966,16 @@ contrastar las reglas de diseño que `cubre` lista contra la edición nueva y ma
 
 Lo que el HTML adjunto traía y **no** entró, con el motivo y lo que lo cerraría:
 
-- **Familias ACX7000, MX y PTX** (16 equipos, con cifras de reenvío, BNG y CGNAT): ninguna tiene
-  ficha oficial contrastada. juniper.net da 403 desde aquí; se traen con un workflow de transporte
-  (`traer-cisco-huawei.yml` con `solo` y `rama`) a una rama `fuente/juniper-mx-acx-<fecha>` y entran
-  por un importador con anclaje. El MX204/MX304/MX480 ya están en el cotizador sin pareja.
-- **SSR1500**: el adjunto lo da con 50 Gbps; no está en el catálogo ni en ninguna fuente leída.
-- **Cifra de inspección del SSR** (IDP/URL): el adjunto la inventa. Si Juniper la publica, se
-  dimensionaría dentro de la caja; hasta entonces va desacoplada en SRX o en la nube.
+- **Familias ACX7000 y PTX**: sin ficha oficial contrastada y sin ninguna línea en el cotizador, el
+  portal ni la guía, así que nada las cita. Entrarían solo si el dueño quiere esas familias en un
+  dimensionador. ~~MX~~ cerrado el 2026-10-19 (ver *Cerrado recientemente*): MX204/304/480/960 ya
+  citan su ficha, aunque siguen sin dimensionador propio (`modelos: []` en `fuentes.js`).
+- ~~**SSR1500**~~ cerrado el 2026-10-19: su ficha lo confirma y entra al catálogo.
+- **Cifra de inspección del SSR** (IDP/URL): confirmado el 2026-10-19 que las fichas SSR100 y
+  SSR1000 no la publican. Sigue desacoplada en SRX o en la nube.
+- **La ficha de la serie MX 204/240/480/960 solo apareció en japonés** (1000597-042-JP, sep-2024);
+  la URL inglesa encontrada (`1000597-en.pdf`) devuelve HTML. Igual con la de SSR100. Las cifras de
+  las tablas no dependen del idioma, pero conviene la edición inglesa si aparece.
 - **Precios, SKU de chasis, fuentes, ventiladores (`JNP-FAN-*`) y ópticas**: no hay lista de
   precios ni «Ordering Information» de Juniper en el material disponible.
 - **Vistas frontal/trasera dibujadas**: las figuras de la ficha salen de documentos oficiales con su
@@ -1988,6 +1992,20 @@ Lo que el HTML adjunto traía y **no** entró, con el motivo y lo que lo cerrar�
   un dato». Decisión del dueño: retirarlos o integrarlos con la regla de datos.
 
 ## Decisiones que necesitan al dueño del producto
+
+- **Precios «~ $» sin lista en el cotizador (2026-10-19).** Nueve líneas de Juniper (SRX 320, 345,
+  1500, 4100, 4200 y MX204/304/480/960), ocho de Nokia y varias de Huawei llevan un precio
+  aproximado («~ $32,000») heredado del `cotizador.html` original, aunque este archivo y `CLAUDE.md`
+  dicen que Juniper y Nokia no tienen lista. **Recomendado**: pasarlas a «Consultar» (`elpN: 0`),
+  como las líneas de agosto, para que el total no parezca completo con cifras sin documento.
+  Coste: los totales del cotizador bajan y salen «sin cotizar»; quien usaba esas cifras como
+  orientación las pierde. No se hizo por silencio.
+- **El bloque de Gemini al final de `CLAUDE.md` (2026-10-19).** Describe `public/js/sizing_engine.js`
+  y `server/presales_api_controller.js`, que ninguna página ni el servidor cargan, y pide
+  `list_price_usd` en cada SKU nuevo, en conflicto con «nunca se inventa un dato». **Recomendado**:
+  retirar el bloque y los dos archivos, o integrarlos bajo la regla de datos. Coste: si se retiran,
+  se pierde lo que Gemini preparó; si se dejan, la próxima sesión puede seguir una instrucción que
+  contradice la regla del dueño.
 
 - ~~**WireGuard en el dimensionador MikroTik (2026-10-13).**~~ **Decidido el 2026-10-13: opción A**,
   con el encargo del dueño de ejecutar los pendientes. Lo que decía: Opción A (recomendada, la vigente):
@@ -2102,6 +2120,23 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+- **2026-10-19 · Juniper: los MX contrastados y el SSR por capa de cifrado (mejora propuesta).**
+  `traer-cisco-huawei.yml` gana las fichas de MX, MX304 (que juniper.net sirve ya como visor de HPE
+  psnow; la URL del PDF se leyó de la propia página) y de las líneas SSR100 y SSR1000; tres corridas
+  (39356629214, 39356819148, 39357025445) a ramas `fuente/juniper-*-2026-10-19`.
+  **MX**: cotizador, portal y guía decían MX480 7,7 Tbps y MX960 19,2 Tbps con 12 ranuras; la tabla 1
+  de la ficha (full duplex) da 7,5 Tbps, 12 Tbps y 11 MPC. El MX304 «MPC slots» pasa a sus tres MIC
+  (48x100GE / 12x400GE, 2U) y el MX204 suma sus 8x10GE. Dos fuentes nuevas con `modelos: []`.
+  **SSR**: sus cinco modelos no tenían fuente (`CATALOGOS_MODELOS` no miraba `SDWAN`, y la guía de
+  hardware SRX declaraba `'*'`). Las fichas publican tres capas en IMIX y 1.500 B; `cap` casó en los
+  cinco como «sin cifrar IMIX». `SDWAN` gana `capCif`, `capHmac` y sus parejas de 1.500 B, puertos y
+  alimentación, y entra el SSR1500. El motor deja de dividir por IMIX y de sumar 62 B de túnel: el
+  SSR se dimensiona contra la capa de cifrado (por defecto cifrado + HMAC) y la cifra de 1.500 B se
+  muestra como portada. Efecto medido: un sitio de 1 Gbps con 20 % duplicado sigue en el SSR1200,
+  ahora contra 2,5 Gbps y no contra 10; 8 Gbps sin cifrar ya no caben en el SSR1200 (10,4 con margen).
+  El cotizador cita «{cap} sin cifrar · HMAC {capHmac}». Revisión diferencial sin hallazgos de
+  seguridad. Verificado: `verificar` (1.041), `e2e` entero, la pantalla en Chromium en seis escenarios.
 
 - **2026-10-19 · Dimensionador Juniper: método de la herramienta externa integrado.** `public/js/juniper-motor.js`
   (UMD puro, `test/juniper-motor.test.js`): `demandaSsr` (sucursal o hub con sucursales,

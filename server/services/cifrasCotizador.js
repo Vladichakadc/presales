@@ -42,7 +42,9 @@ const CONTRASTE_COTIZADOR = {
   // Los Session Smart Router (lista SDWAN) se citan sin etiqueta («1.5 Gbps · SD-WAN sin
   // túneles»): esa cifra es su `cap`, el caudal SD-WAN con el que se dimensionan. Hasta el
   // 2026-10-02 la lista no estaba aquí y sus cinco líneas salían «sin pareja».
-  juniper: { mod: 'juniper', listas: ['MODELS', 'SDWAN'], campos: { FW: 'fw', IPsec: 'vpn', BASE: 'cap' } },
+  // Desde el 2026-10-19 `cap` es, por sus fichas, la capa «sin cifrar» en IMIX; la línea cita
+  // también la de «cifrado + HMAC», que es la que dimensiona por defecto.
+  juniper: { mod: 'juniper', listas: ['MODELS', 'SDWAN'], campos: { FW: 'fw', IPsec: 'vpn', BASE: 'cap', HMAC: 'capHmac' } },
   aruba: { mod: 'aruba', listas: ['MODELS'], campos: { WAN_MIN: 'wanMin', WAN_MAX: 'wanMax', FW: 'fw' } },
   // Nokia guarda la capacidad en Gbps (ver `legacyData/nokia.js`), no en Mbps.
   nokia: { mod: 'nokia', listas: ['MODELS', 'MODELS_ROUTER'], campos: { BASE: 'cap' }, escala: { cap: 1000 } },
@@ -51,7 +53,7 @@ const UNIDAD_MBPS = { Mbps: 1, Gbps: 1000, Tbps: 1e6 };
 
 // Como se rotula en pantalla un segmento retirado. `BASE` es la cifra sin etiqueta («2.4 Tbps»),
 // que en Huawei y Nokia es la capacidad del chasis.
-const ROTULO = { FWD: 'FWD', BASE: 'Capacidad', Mpps: 'Mpps', FW: 'FW', NGFW: 'NGFW', IPsec: 'IPsec', 'SD-WAN': 'SD-WAN', WAN_MIN: 'WAN', WAN_MAX: 'WAN' };
+const ROTULO = { FWD: 'FWD', BASE: 'Capacidad', Mpps: 'Mpps', FW: 'FW', NGFW: 'NGFW', IPsec: 'IPsec', 'SD-WAN': 'SD-WAN', WAN_MIN: 'WAN', WAN_MAX: 'WAN', HMAC: 'HMAC' };
 
 function cargarDefecto(nombre) {
   try {

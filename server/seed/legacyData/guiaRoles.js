@@ -65,7 +65,7 @@ module.exports = {
   core_router: [
     { v: 'Huawei', model: 'NetEngine NE8000 M8', alt: 'NE8000 M14 ({cifra})' },
     { v: 'Nokia', model: '7750 SR-7s', alt: '7750 SR-14s ({cifra})' },
-    { v: 'Juniper', model: 'MX480', alt: 'MX960 (19.2 Tbps)' },
+    { v: 'Juniper', model: 'MX480', alt: 'MX960 (12 Tbps)' },
     { v: 'Cisco', model: 'Catalyst 8500-12X4QC', alt: 'Cisco Secure Router C8455-G2 ({cifra FWD})' },
   ],
   pe_router: [
@@ -93,7 +93,7 @@ module.exports = {
   aggregation: [
     { v: 'Huawei', model: 'NetEngine NE8000 M4', alt: 'NE8000 M6 ({cifra} compacto)' },
     { v: 'Nokia', model: '7750 SR-2s', alt: '7750 SR-1s ({cifra})' },
-    { v: 'Juniper', model: 'MX304', alt: 'MX480 (7.7 Tbps)' },
+    { v: 'Juniper', model: 'MX304', alt: 'MX480 (7.5 Tbps)' },
     { v: 'MikroTik', model: 'CCR2216-1G-12XS-2XQ', alt: 'CCR2004-1G-12S+2XS ({cifra}, 12x SFP+)' },
   ],
   internet_gw: [

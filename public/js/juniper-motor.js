@@ -24,29 +24,31 @@
    - Contaba el «Local Breakout 70/30» en la etiqueta y nunca en la cuenta, y modelaba la
      duplicación de paquetes como +35 %: duplicar un flujo lo duplica entero.
 
-   LO QUE SÍ ENTRA, CON SUS SUPUESTOS A LA VISTA:
+   LO QUE SÍ ENTRA:
 
    1. Demanda del Session Smart Router como sucursal o como concentrador (hub). En una sucursal
       el breakout local NO descarga el equipo —todo el tráfico del sitio pasa por él—; donde sí
       descarga es en el hub, que solo recibe la parte que viaja por el overlay. Es la cuenta que
       la herramienta externa no hacía.
-   2. Factor IMIX homologado con el motor de EdgeConnect (`motor-ingenieria.js`, regla del dueño
-      del 2026-09-13): 0,70 mezcla empresarial, 0,55 voz intensiva, 1,00 réplica masiva. La
-      cifra `cap` del SSR no declara su base de medida; si ya fuera IMIX, el factor es
-      conservador, que es el lado bueno de equivocarse.
-   3. Sobrecoste del transporte calculado en bytes y no con un porcentaje fijo: un túnel ESP con
-      AES-GCM y NAT-T añade ~62 B por paquete, y eso pesa un 11 % en paquetes de 570 B y un 25 %
-      en los de 250 B de la voz. SVR solo lleva metadatos en el primer paquete de la sesión.
-   4. Duplicación de paquetes (resiliencia de sesión del SSR) sobre la fracción de tráfico que
+   2. EL SSR SE DIMENSIONA POR CAPA DE CIFRADO, COMO EL SRX POR CAPA DE INSPECCIÓN (corregido el
+      mismo 2026-10-19, al leer las fichas de las líneas SSR100 y SSR1000). La primera versión
+      dividía la demanda por un factor IMIX «homologado con EdgeConnect» y sumaba ~62 B de túnel
+      IPsec, porque el `cap` del catálogo no declaraba su base. Las fichas la declaran: `cap` es
+      «Unencrypted (IMIX)», y publican además «Encrypted only» y «Encrypted + HMAC», en IMIX y
+      con paquetes de 1.500 B. Dividir otra vez por IMIX contaba la mezcla dos veces, y el túnel
+      no aplica: el overlay del SSR es SVR, y su coste es justo la capa de cifrado. Ahora la
+      demanda se compara con la cifra IMIX de la capa elegida y la de 1.500 B se enseña como
+      portada, igual que el `fw` del SRX. Un SSR1200 pasa de 10 Gbps sin cifrar a 2,5 con HMAC.
+   3. Duplicación de paquetes (resiliencia de sesión del SSR) sobre la fracción de tráfico que
       el usuario declara protegida.
-   5. Seguridad desacoplada: el SSR no publica cifra de inspección en este catálogo, así que si
-      el diseño la necesita va en un SRX dimensionado por CAPA, con el mismo filtro que la
-      plataforma SRX (`candidatosSrx`), o en el servicio cloud (sin cifra que dimensionar).
-   6. Pool de IPv4 públicas para NAT por bloques de puertos (PBA): aritmética pura sobre los
+   4. Seguridad desacoplada: las fichas del SSR no publican cifra de IDP ni de filtrado URL, así
+      que si el diseño necesita inspección va en un SRX dimensionado por CAPA, con el mismo
+      filtro que la plataforma SRX (`candidatosSrx`), o en el servicio cloud.
+   5. Pool de IPv4 públicas para NAT por bloques de puertos (PBA): aritmética pura sobre los
       64.512 puertos útiles de una dirección.
 
-   NINGÚN COEFICIENTE DE AQUÍ TIENE FUENTE DEL FABRICANTE: son reglas de trabajo declaradas, con
-   su porqué, y la pantalla las enseña en el desglose. Si alguien «afina» uno, rompe
+   LAS CIFRAS SON DEL FABRICANTE; LOS COEFICIENTES (breakout, simultaneidad, duplicación) LOS
+   DECLARA QUIEN DIMENSIONA, y la pantalla los enseña en el desglose. Si alguien «afina» uno, rompe
    `test/juniper-motor.test.js` y no la propuesta de un cliente. */
 (function (root, factory) {
   const api = factory();
@@ -54,21 +56,12 @@
   if (root) root.JuniperMotor = api;
 })(typeof window !== 'undefined' ? window : globalThis, function () {
 
-  // Perfiles de tráfico. `factor` homologado con motor-ingenieria.js (mismas claves y valores);
-  // `bytes` es el tamaño medio de paquete que se usa SOLO para el sobrecoste del túnel.
-  const PERFILES = {
-    ENTERPRISE_MIX: { n: 'Mezcla empresarial', factor: 0.70, bytes: 570 },
-    VOIP_INTENSIVE: { n: 'Voz intensiva (paquete pequeño)', factor: 0.55, bytes: 250 },
-    BULK_BACKUP: { n: 'Réplica o backup masivo (paquete grande)', factor: 1.00, bytes: 1400 },
-  };
-
-  // ESP en modo túnel con AES-GCM y NAT-T: IP externo 20 + ESP 8 + IV 8 + ICV 16 +
-  // relleno y trailer 2 + UDP 8. Supuesto declarado; sin NAT-T serían 54.
-  const IPSEC_BYTES = 62;
-
-  const TRANSPORTES = {
-    svr: { n: 'SVR (Secure Vector Routing, sin túnel)' },
-    ipsec: { n: 'Túnel IPsec (ESP AES-GCM + NAT-T)' },
+  // Capas de cifrado del SVR, con el campo del catálogo que trae cada una (IMIX, la que
+  // dimensiona) y su pareja con paquetes de 1.500 B (portada, que se muestra y no dimensiona).
+  const CIFRADOS = {
+    plano: { n: 'Sin cifrar', k: 'cap', k1500: 'cap1500' },
+    cif: { n: 'Solo cifrado', k: 'capCif', k1500: 'capCif1500' },
+    hmac: { n: 'Cifrado + HMAC', k: 'capHmac', k1500: 'capHmac1500' },
   };
 
   // Puertos útiles de una IPv4 para NAT de origen: 1.024-65.535.
@@ -92,32 +85,33 @@
     return spokes * bw * (1 - pct(p.breakoutPct)) * pct(p.simultPct == null ? 100 : p.simultPct);
   }
 
-  function overheadTransporte(transporte, perfil) {
-    if (transporte !== 'ipsec') return 0;
-    return IPSEC_BYTES / perfil.bytes;
-  }
-
-  // Demanda de diseño del Session Smart Router.
-  //   need = ⌈ base / IMIX × (1 + túnel) × (1 + duplicación) × (1 + margen) ⌉
+  // Demanda de diseño del Session Smart Router, que se compara con la cifra IMIX de la capa
+  // de cifrado (`capa.k`). Sin factor IMIX: la cifra ya está medida en IMIX.
+  //   need = ⌈ base × (1 + duplicación) × (1 + margen) ⌉
   function demandaSsr(p) {
-    const perfil = PERFILES[p.perfil] || PERFILES.ENTERPRISE_MIX;
+    const capa = CIFRADOS[p.cifrado] || CIFRADOS.hmac;
     const base = cargaBase(p);
-    const ovT = overheadTransporte(p.transporte, perfil);
     const dup = pct(p.dupPct);
     const head = pct(p.headroomPct);
-    const bruto = (base / perfil.factor) * (1 + ovT) * (1 + dup) * (1 + head);
-    const need = base > 0 ? techo(bruto) : 0;
+    const need = base > 0 ? techo(base * (1 + dup) * (1 + head)) : 0;
     return {
-      base, need, perfil, factorImix: perfil.factor,
-      overheadTransporte: ovT, duplicacion: dup, headroom: head,
+      base, need, capa, duplicacion: dup, headroom: head,
       pasos: [
         { n: p.rol === 'hub' ? 'Overlay recibido de las sucursales' : 'Caudal del sitio', v: base },
-        { n: `Perfil ${perfil.n} (÷ ${perfil.factor.toFixed(2)})`, v: base / perfil.factor },
-        { n: p.transporte === 'ipsec' ? `Túnel IPsec (+${(ovT * 100).toFixed(1)} %: ${IPSEC_BYTES} B sobre ${perfil.bytes} B)` : 'SVR sin túnel (+0 %)', v: (base / perfil.factor) * (1 + ovT) },
-        { n: `Duplicación de paquetes (+${Math.round(dup * 100)} %)`, v: (base / perfil.factor) * (1 + ovT) * (1 + dup) },
+        { n: `Duplicación de paquetes (+${Math.round(dup * 100)} %)`, v: base * (1 + dup) },
         { n: `Margen de crecimiento (+${Math.round(head * 100)} %)`, v: need },
       ],
     };
+  }
+
+  // El filtro del SSR: la cifra de la capa de cifrado; un modelo sin ella se aparta y se cuenta.
+  function candidatosSsr(models, k, need) {
+    let sinCifra = 0;
+    const candidatos = (models || []).filter((m) => {
+      if (m[k] == null) { sinCifra++; return false; }
+      return m[k] >= need;
+    });
+    return { candidatos, sinCifra };
   }
 
   // Caudal que un SRX desacoplado tiene que inspeccionar. En una sucursal puede ser todo el
@@ -156,7 +150,7 @@
   }
 
   return {
-    PERFILES, TRANSPORTES, IPSEC_BYTES, PUERTOS_UTILES,
-    cargaBase, demandaSsr, inspeccionSrx, candidatosSrx, poolCgnat,
+    CIFRADOS, PUERTOS_UTILES,
+    cargaBase, demandaSsr, candidatosSsr, inspeccionSrx, candidatosSrx, poolCgnat,
   };
 });

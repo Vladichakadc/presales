@@ -18,7 +18,7 @@
 //
 // SD-WAN COMO SUCURSAL O COMO HUB, Y SEGURIDAD DESACOPLADA (2026-10-19). La cuenta del SSR y
 // el filtro del SRX viven en `juniper-motor.js` (puro, con pruebas): de ahí sale la demanda
-// del SSR (factor IMIX homologado con EdgeConnect, túnel en bytes, duplicación, breakout que
+// del SSR (por capa de cifrado, con las cifras IMIX de sus fichas; duplicación; breakout que
 // descarga el hub y no la sucursal) y el SRX que inspecciona lo que el SSR no puede, elegido
 // por capa con el mismo filtro que la plataforma SRX. Es lo que se integró de la herramienta
 // externa que trajo el dueño; sus cifras no entraron (ver la cabecera del motor).
@@ -44,7 +44,7 @@ function renderCatalogo() {
   </tr>`).join('');
   tbodySdwan.innerHTML = SDWAN.map((m) => `<tr>
     <td><code>${esc(m.id)}</code></td><td>${esc(m.ser)}</td><td>${esc(m.seg)}</td>
-    <td class="n">${fmt(m.cap)}</td><td>${esc(m.ifaces)}</td>
+    <td class="n">${fmt(m.cap)}</td><td class="n">${fmt(m.capHmac)}</td><td>${esc(m.ifaces)}</td>
   </tr>`).join('');
 }
 let plat = 'srx', capa = 'ips', lastPick = null;
@@ -134,7 +134,7 @@ $('capaSeg').addEventListener('click', (e) => {
   capa = b.dataset.v; render();
 });
 ['bw', 'unit', 'head', 'users', 'sesUser', 'chkIps', 'chkAtp', 'chkVpn', 'natUsers', 'natBloque',
-  'ssrRol', 'ssrSpokes', 'ssrSimult', 'ssrBreakout', 'ssrPerfil', 'ssrTransporte', 'ssrDup', 'ssrSeg', 'ssrCapa', 'ssrAlcance']
+  'ssrRol', 'ssrSpokes', 'ssrSimult', 'ssrBreakout', 'ssrCifrado', 'ssrDup', 'ssrSeg', 'ssrCapa', 'ssrAlcance']
   .forEach((id) => $(id).addEventListener('input', render));
 
 // Lo que no aplica se oculta Y se marca `data-inactivo`: estado.js no lo manda en el enlace,
@@ -394,8 +394,7 @@ function escenarioSsr(bwMbps, head) {
     spokes: numOr('ssrSpokes', 0),
     simultPct: numOr('ssrSimult', 100),
     breakoutPct: numOr('ssrBreakout', 70),
-    perfil: $('ssrPerfil').value,
-    transporte: $('ssrTransporte').value,
+    cifrado: $('ssrCifrado').value,
     dupPct: numOr('ssrDup', 0),
     headroomPct: head * 100,
     alcance: $('ssrAlcance').value,
@@ -422,29 +421,36 @@ function renderSsr(bwMbps, head) {
     return;
   }
 
-  const ordenados = FICHA.ordenar(SDWAN.filter((m) => m.cap >= need), (a, b) => a.cap - b.cap);
+  // Se dimensiona con la cifra IMIX de la capa de cifrado; un modelo sin ella se aparta.
+  const k = d.capa.k;
+  const { candidatos, sinCifra } = JM.candidatosSsr(SDWAN, k, need);
+  const ordenados = FICHA.ordenar(candidatos, (a, b) => a[k] - b[k]);
   const pick = FICHA.recomendar(ordenados);
   lastPick = pick;
   hayCandidato = !!pick;
   sincronizarConBom(pick);
   if (!pick) {
+    const tope = SDWAN.reduce((t, m) => (m[k] != null && m[k] > (t ? t[k] : -1) ? m : t), null);
     FICHA.render({ vendor: 'juniper', contenedor: 'verdict', candidatos: [], recomendado: null,
-      vacioTitulo: `Ningún Session Smart Router del catálogo llega a ${fmt(need)}`,
-      vacioDetalle: `<p class="warn">Por encima del SSR1400 (40 Gbps) hay que repartir la carga en varias unidades o evaluar la versión virtual sobre servidor.</p>${desgloseSsr(d)}` });
+      vacioTitulo: `Ningún Session Smart Router del catálogo llega a ${fmt(need)} ${d.capa.n.toLowerCase()}`,
+      vacioDetalle: `<p class="warn">${tope ? `El mayor del catálogo en esta capa es el ${esc(tope.id)} con ${fmt(tope[k])}. ` : ''}Opciones: otra capa de cifrado si el diseño lo admite, repartir la carga en varias unidades o evaluar la versión virtual sobre servidor.${sinCifra ? ` ${sinCifra} modelo(s) no publican cifra en esta capa y se apartan.` : ''}</p>${desgloseSsr(d)}` });
     $('sizingBox').innerHTML = desgloseSsr(d);
     return;
   }
   FICHA.render({ vendor: 'juniper',
     contenedor: 'verdict', candidatos: ordenados, recomendado: pick.id,
-    etiqueta: (m) => `${m.id} — ${m.seg} · ${fmt(m.cap)}`,
-    escalon: { metrica: (m) => m.cap ?? null, fmt, nombre: 'caudal', precio: () => null },
+    etiqueta: (m) => `${m.id} — ${m.seg} · ${fmt(m[k])}`,
+    escalon: { metrica: (m) => m[k] ?? null, fmt, nombre: d.capa.n, precio: () => null },
     titulo: (m) => m.id,
     subtitulo: (m) => `${m.ser} · ${m.seg}`,
-    medidores: (m) => [{ etq: hub ? 'Overlay de diseño' : 'Caudal de diseño', val: need, tope: m.cap, txt: `${fmt(need)} / ${fmt(m.cap)}` }],
+    medidores: (m) => [{ etq: `${hub ? 'Overlay' : 'Caudal'} · ${d.capa.n} (IMIX)`, val: need, tope: m[k], txt: `${fmt(need)} / ${fmt(m[k])}` }],
     porQue: (m) => porQueSsr(m, d, esc0),
     secciones: (m) => [{ titulo: 'Características',
-      filas: [['Serie', esc(m.ser)], ['Segmento', esc(m.seg)], ['Caudal', fmt(m.cap)],
-        ['Inspección de contenido', '<span class="warn">sin cifra en el catálogo: va desacoplada</span>'],
+      filas: [['Serie', esc(m.ser)], ['Segmento', esc(m.seg)],
+        ['Sin cifrar (IMIX)', `${fmt(m.cap)} · ${fmt(m.cap1500)} con 1.500 B`],
+        ['Solo cifrado (IMIX)', `${fmt(m.capCif)} · ${fmt(m.capCif1500)} con 1.500 B`],
+        ['Cifrado + HMAC (IMIX)', `${fmt(m.capHmac)} · ${fmt(m.capHmac1500)} con 1.500 B`],
+        ['Inspección de contenido', '<span class="warn">la ficha no publica IDP ni filtrado URL: va desacoplada</span>'],
         ['Interfaces', esc(m.ifaces), true],
         ['Precio de lista ref.', '<span class="warn">sin lista de precios Juniper</span>']] },
     FICHA.seccionPuertos(m), FICHA.seccionAlimentacion(m)],
@@ -456,15 +462,18 @@ function renderSsr(bwMbps, head) {
 function porQueSsr(m, d, e) {
   const hub = e.rol === 'hub';
   const f = [];
-  f.push(`Demanda de diseño <b>${fmt(d.need)}</b> contra <b>${fmt(m.cap)}</b> — holgura ${Math.round((1 - d.need / m.cap) * 100)} %.`);
+  const k = d.capa.k;
+  f.push(`Demanda de diseño <b>${fmt(d.need)}</b> contra <b>${fmt(m[k])}</b> de <b>${esc(d.capa.n)}</b> en IMIX — holgura ${Math.round((1 - d.need / m[k]) * 100)} %.`);
+  const portada = m[d.capa.k1500];
+  if (portada != null && portada / m[k] >= 1.5) f.push(`<b class="warn">Cifra de portada:</b> con paquetes de 1.500 B la ficha da <b>${fmt(portada)}</b> en esta capa, ${(portada / m[k]).toFixed(1)}x lo que aplica con tráfico mezclado. No dimensiona.`);
+  if (k !== 'cap' && m.cap != null) f.push(`Sin cifrar, el mismo equipo daría ${fmt(m.cap)}: el cifrado es la capa que más capacidad consume en el SSR. Lo que ya viaja en HTTPS o IPsec no se vuelve a cifrar.`);
   f.push(hub
     ? `<b>Hub:</b> ${miles(Math.floor(e.spokes))} sucursales de ${fmt(e.bwMbps)}, con un ${Math.round(e.breakoutPct)} % de salida local y un ${Math.round(e.simultPct)} % de simultaneidad: al hub llegan <b>${fmt(Math.round(d.base))}</b> de overlay.`
     : `<b>Sucursal:</b> la salida local (${Math.round(e.breakoutPct)} %) no descarga el equipo, porque ese tráfico también lo enruta el SSR. Lo que cambia es qué parte viaja por el overlay.`);
-  if (e.transporte === 'ipsec') f.push(`<b class="warn">Túnel IPsec:</b> +${(d.overheadTransporte * 100).toFixed(1)} % con paquetes de ${d.perfil.bytes} B de media. Con SVR ese coste no existe: el enrutado por sesión no encapsula.`);
   if (d.duplicacion > 0) f.push(`<b>Duplicación de paquetes</b> sobre el ${Math.round(d.duplicacion * 100)} % del tráfico: esa parte sale dos veces y cuenta doble.`);
   f.push(`Interfaces: ${esc(m.ifaces)}.`);
   f.push('<b>Gestión desde Mist.</b> La suscripción es por dispositivo y no está en este catálogo: confirmarla con el distribuidor.');
-  f.push('<b>Supuestos sin fuente del fabricante</b> (reglas de trabajo declaradas): el factor IMIX, los 62 B del túnel, el breakout y la simultaneidad. El desglose de la derecha enseña cada paso.');
+  f.push('Cifras de las fichas de las líneas SSR100 y SSR1000 (Session Smart v5.4). <b>Breakout, simultaneidad y duplicación</b> son decisiones de diseño declaradas; el desglose enseña cada paso.');
   return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">${f.map((x) => `<li>${x}</li>`).join('')}</ul>`;
 }
 
@@ -472,7 +481,7 @@ function desgloseSsr(d) {
   return `<table class="ficha-tabla"><tbody>
     ${d.pasos.map((p, i) => `<tr><td>${esc(p.n)}</td><td class="n">${i === d.pasos.length - 1 ? `<b>${fmt(Math.round(p.v))}</b>` : fmt(Math.round(p.v))}</td></tr>`).join('')}
   </tbody></table>
-  <p class="hint" style="margin-top:8px">need = ⌈ base ÷ IMIX × (1 + túnel) × (1 + duplicación) × (1 + margen) ⌉. Sin recargo por seguridad: la inspección no va en el SSR.</p>`;
+  <p class="hint" style="margin-top:8px">need = ⌈ base × (1 + duplicación) × (1 + margen) ⌉, contra la cifra IMIX de «${esc(d.capa.n)}». Sin factor IMIX ni recargo por seguridad: la cifra ya es IMIX y la inspección no va en el SSR.</p>`;
 }
 
 // Seguridad desacoplada. El SRX se elige con el MISMO filtro que la plataforma SRX: un modelo
@@ -576,8 +585,8 @@ function renderBom() {
       '  disponible. Confirmar SKU, nivel de suscripcion y precio con el distribuidor.',
       '  Las cifras de rendimiento son por capa de inspeccion: la de portada (paquetes',
       '  grandes) no sirve para dimensionar.',
-      ...(plat === 'ssr' ? ['  SD-WAN: factor IMIX, 62 B de tunel IPsec, breakout y simultaneidad son',
-        '  reglas de trabajo declaradas, sin fuente del fabricante.'] : [])],
+      ...(plat === 'ssr' ? ['  SD-WAN: capacidades por capa de cifrado de las fichas SSR100/SSR1000;',
+        '  breakout, simultaneidad y duplicacion son decisiones de diseno declaradas.'] : [])],
   };
   $('bomTabla').innerHTML = BOM.avisoDesvio({ elegido: FICHA.elegido('verdict'), enBom: m.id, hayCandidato })
     + BOM.renderTabla(filas, {
@@ -611,7 +620,7 @@ $('xlsBtn').addEventListener('click', async () => {
    (ver /js/estado.js). */
 document.addEventListener('DOMContentLoaded', () => {
   const st = ESTADO.vincular({ campos: ['bw','unit','head','users','sesUser','chkIps','chkAtp','chkVpn','natUsers','natBloque',
-    'ssrRol','ssrSpokes','ssrSimult','ssrBreakout','ssrPerfil','ssrTransporte','ssrDup','ssrSeg','ssrCapa','ssrAlcance',
+    'ssrRol','ssrSpokes','ssrSimult','ssrBreakout','ssrCifrado','ssrDup','ssrSeg','ssrCapa','ssrAlcance',
     'platSeg','capaSeg','verdict-sel'] });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {

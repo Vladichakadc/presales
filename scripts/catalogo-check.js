@@ -306,7 +306,7 @@ function procedencia() {
 // `psu` o `skus`, que no estan ahi. Nokia va con sus dos listas porque son dos catalogos.
 const CATALOGOS = {
   huawei: ['MODELS'], cisco: ['MODELS'], fortinet: ['MODELS'], mikrotik: ['MODELS'],
-  aruba: ['MODELS'], juniper: ['MODELS'], nokia: ['MODELS', 'MODELS_ROUTER'],
+  aruba: ['MODELS'], juniper: ['MODELS', 'SDWAN'], nokia: ['MODELS', 'MODELS_ROUTER'],
 };
 
 function clavesDe(vendor) {

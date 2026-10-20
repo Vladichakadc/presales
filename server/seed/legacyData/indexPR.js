@@ -133,10 +133,10 @@ juniper:[
   {model:'SRX 1500',ser:'SRX 1500',seg:'Sucursal grande',cap:'9 Gbps FW',ports:'16 GE + 4x10GE SFP+',use:'NGFW, campus edge'},
   {model:'SRX 4100',ser:'SRX 4000',seg:'DC Edge',cap:'40 Gbps FW',ports:'8x10GE + 2x40GE',use:'NGFW, IPsec concentrador'},
   {model:'SRX 4200',ser:'SRX 4000',seg:'DC Edge grande',cap:'80 Gbps FW',ports:'16x10GE + 4x40GE',use:'NGFW, seguridad DC'},
-  {model:'MX204',ser:'MX',seg:'PE compacto / Edge',cap:'400 Gbps',ports:'4x100GE · 1U',use:'Edge routing, peering, DCI'},
-  {model:'MX304',ser:'MX',seg:'Edge / Agregación',cap:'4.8 Tbps',ports:'MPC slots · 100/400GE',use:'MPLS PE, broadband, 5G'},
-  {model:'MX480',ser:'MX',seg:'Core / Edge',cap:'7.7 Tbps',ports:'6 MPC slots',use:'Core IP, LSR, peering, BNG'},
-  {model:'MX960',ser:'MX',seg:'Core grande',cap:'19.2 Tbps',ports:'12 MPC slots',use:'ISP peering, backbone'},
+  {model:'MX204',ser:'MX',seg:'PE compacto / Edge',cap:'400 Gbps',ports:'4x100GE + 8x10GE · 1U',use:'Edge routing, peering, DCI'},
+  {model:'MX304',ser:'MX',seg:'Edge / Agregación',cap:'4.8 Tbps',ports:'3 ranuras MIC · 48x100GE / 12x400GE · 2U',use:'MPLS PE, broadband, 5G'},
+  {model:'MX480',ser:'MX',seg:'Core / Edge',cap:'7.5 Tbps',ports:'6 MPC slots',use:'Core IP, LSR, peering, BNG'},
+  {model:'MX960',ser:'MX',seg:'Core grande',cap:'12 Tbps',ports:'11 MPC slots',use:'ISP peering, backbone'},
   {model:'MX10008',ser:'MX',seg:'Core máxima capacidad',cap:'115 Tbps',ports:'8 LCC slots',use:'Hyperscale core, 400GE'},
   // ── Linea SRX de sucursal (SRX300) ────────────────────────────────────────
   // Cifras de firewall e IPsec del datasheet oficial "SRX300 Line of Firewalls for the
@@ -161,6 +161,7 @@ juniper:[
   {model:'SSR1200',ser:'SSR 1000',seg:'Sucursal grande / DC pequeno',ports:'GE / 10GE',use:'SD-WAN sin tuneles, hub de sucursales'},
   {model:'SSR1300',ser:'SSR 1000',seg:'DC / Campus mediano',ports:'10GE en NIC',use:'SD-WAN sin tuneles, concentrador'},
   {model:'SSR1400',ser:'SSR 1000',seg:'DC / Campus grande',ports:'10/25GE en NIC',use:'SD-WAN sin tuneles, hub regional'},
+  {model:'SSR1500',ser:'SSR 1000',seg:'DC / Campus extra grande',ports:'12x 1/10/25GE SFP28',use:'SD-WAN sin tuneles, hub nacional'},
 ],
 // ── MikroTik ──────────────────────────────────────────────────────────────────
 // Las cifras (ruteo, IPsec) y el precio («Suggested price») salen de las fichas oficiales de

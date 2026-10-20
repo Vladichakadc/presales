@@ -243,17 +243,48 @@ const MODELS = [
    ifaces:'8x 10GE + 2x 10GE (HA)'},
 ];
 
-// Session Smart Router: la respuesta SD-WAN vigente de Juniper. Se dimensiona por una sola
-// cifra de throughput, no por capas de inspección, porque NO es un firewall: enruta por
-// sesión sin túneles y la seguridad avanzada, si hace falta, va en un SRX aparte. Por eso
-// vive en su propia lista y el motor lo trata como un modo distinto en vez de mezclarlo en
-// la misma comparación — que es justo el error que se corrigió en el dimensionador de Cisco.
+// Session Smart Router: la respuesta SD-WAN vigente de Juniper. NO es un firewall: enruta por
+// sesión sin túneles y sus fichas no publican cifra de IDP ni de filtrado URL, así que la
+// seguridad avanzada va en un SRX aparte o en la nube. Por eso vive en su propia lista y el
+// motor lo trata como un modo distinto — el error que se corrigió en el dimensionador de Cisco.
+//
+// TRES CAPAS DE CIFRADO, IGUAL QUE EL SRX TIENE CAPAS DE INSPECCIÓN (2026-10-19). Las fichas de
+// las líneas SSR100 (1000728-005, mar-2023, solo se encontró en japonés) y SSR1000
+// (1000757-002-EN, mar-2023) publican el rendimiento agregado en tres capas y dos tamaños:
+//   cap      «Unencrypted (IMIX)»            — la que el catálogo ya traía como única cifra
+//   capCif   «Encrypted only (IMIX)»
+//   capHmac  «Encrypted + HMAC (IMIX)»       — SVR cifrado y autenticado
+// y las mismas con paquetes de 1.500 B (`cap1500`, `capCif1500`, `capHmac1500`), que son la
+// portada: se enseñan y no dimensionan. El salto es del orden del SRX: el SSR1200 da 10 Gbps
+// sin cifrar y 2,5 con HMAC; el SSR120, 1,5 Gbps y 250 Mbps (6x).
+// Medido con Session Smart v5.4.4 (v5.4.9 en el SSR1500). Traídas por traer-cisco-huawei.yml
+// (corrida 39357025445, rama fuente/juniper-ssr-2026-10-19). Las cifras con la nota «Max
+// throughput on single NIC» son el tope del puerto, no del procesador: se transcriben igual.
+// `cap` casó en los cinco modelos que ya estaban (ancla): es la misma cifra «Unencrypted IMIX».
+//
+// ALIMENTACIÓN. La línea SSR1000 trae «Redundant AC PSUs (1+1) included»; su «Maximum power
+// draw» es un máximo, no un consumo típico, así que va al texto y no a `watts` (misma regla que
+// el SRX4100). Los SSR120/130 van con adaptador externo, y su entrada de fuente redundante está
+// marcada en la ficha como «no soportada, no utilizable».
+const PSU_SSR100 = { tipo: 'adaptador de corriente externo, único', volts: '100-240 V AC, 50-60 Hz, 2 A (salida 12 V DC, 5 A)',
+  texto: 'Se alimenta con un adaptador externo. La ficha marca la entrada de fuente redundante del chasis como no soportada y no utilizable.' };
+const psuSsr1000 = (max) => ({ tipo: 'dos fuentes AC incluidas (1+1)', volts: '100-240 V AC, 50-60 Hz',
+  texto: `Fuentes AC redundantes 1+1 incluidas. La ficha publica un consumo máximo de ${max} W: es un máximo, no un consumo típico.` });
 const SDWAN = [
-  {id:'SSR120',  ser:'SSR 100',  seg:'Sucursal pequeña',        cap:1500,  ifaces:'GE'},
-  {id:'SSR130',  ser:'SSR 100',  seg:'Sucursal mediana',        cap:2000,  ifaces:'GE a velocidad de línea'},
-  {id:'SSR1200', ser:'SSR 1000', seg:'Sucursal grande / DC peq', cap:10000, ifaces:'GE / 10GE'},
-  {id:'SSR1300', ser:'SSR 1000', seg:'DC / Campus mediano',     cap:20000, ifaces:'10GE en NIC'},
-  {id:'SSR1400', ser:'SSR 1000', seg:'DC / Campus grande',      cap:40000, ifaces:'10/25GE en NIC'},
+  {id:'SSR120',  ser:'SSR 100',  seg:'Sucursal pequeña',         cap:1500,  capCif:750,   capHmac:250,   cap1500:2000,  capCif1500:2000,  capHmac1500:500,
+   redund:false, psu:PSU_SSR100, ifaces:'4x GE RJ-45 + 2x GE RJ-45/SFP combo'},
+  {id:'SSR130',  ser:'SSR 100',  seg:'Sucursal mediana',         cap:2000,  capCif:1800,  capHmac:1000,  cap1500:2000,  capCif1500:2000,  capHmac1500:1800,
+   redund:false, psu:PSU_SSR100, ifaces:'6x GE RJ-45 + 2x GE RJ-45/SFP combo'},
+  {id:'SSR1200', ser:'SSR 1000', seg:'Sucursal grande / DC peq', cap:10000, capCif:7000,  capHmac:2500,  cap1500:20000, capCif1500:17000, capHmac1500:5000,
+   redund:true, psu:psuSsr1000('232,26'), ifaces:'7x GE RJ-45 + 4x 1/10GE SFP+'},
+  {id:'SSR1300', ser:'SSR 1000', seg:'DC / Campus mediano',      cap:20000, capCif:18000, capHmac:5000,  cap1500:20000, capCif1500:20000, capHmac1500:12000,
+   redund:true, psu:psuSsr1000('411,75'), ifaces:'4x GE RJ-45 + 4x 10GE SFP+ + 4x 1/10GE SFP+'},
+  {id:'SSR1400', ser:'SSR 1000', seg:'DC / Campus grande',       cap:40000, capCif:25000, capHmac:10000, cap1500:50000, capCif1500:50000, capHmac1500:15000,
+   redund:true, psu:psuSsr1000('472,80'), ifaces:'4x GE RJ-45 + 4x 10GE SFP+ + 4x 1/10/25GE SFP28'},
+  // Alta del 2026-10-19 desde la misma ficha: la herramienta externa lo traía con 50 Gbps y
+  // ninguna fuente; la ficha confirma esa cifra como «Unencrypted (IMIX)».
+  {id:'SSR1500', ser:'SSR 1000', seg:'DC / Campus extra grande', cap:50000, capCif:45000, capHmac:30000, cap1500:50000, capCif1500:50000, capHmac1500:50000,
+   redund:true, psu:psuSsr1000('545,62'), ifaces:'4x GE RJ-45 + 12x 1/10/25GE SFP28'},
 ];
 
 // Suscripciones de seguridad. Los nombres de los niveles están verificados; el contenido

@@ -6,7 +6,8 @@
 // regla para que nadie los reintroduzca al «homologar» de nuevo:
 //   1. El breakout local se anunciaba y no se contaba. Aquí descarga el HUB, no la sucursal.
 //   2. La duplicación de paquetes era un +35 % fijo. Duplicar un flujo lo duplica entero.
-//   3. El túnel IPsec era un +32 % fijo. Su coste es en bytes por paquete y depende del perfil.
+//   3. El túnel IPsec era un +32 % fijo. El overlay del SSR es SVR y su coste es la capa de
+//      cifrado que publica la ficha, no un porcentaje.
 //   4. La inspección se sumaba como recargo al caudal del SRX. En un SRX cambia la CAPA.
 // Y una regla de datos: el filtro del SRX desacoplado es el mismo de la plataforma SRX, así
 // que un modelo sin cifra en la capa se aparta en los dos sitios, nunca se cuela.
@@ -15,45 +16,57 @@ const test = require('node:test');
 const assert = require('node:assert');
 const M = require('../public/js/juniper-motor.js');
 const { MODELS } = require('../server/seed/legacyData/juniper.js');
-const Aruba = require('../public/js/motor-ingenieria.js');
 
-const BASE = { rol: 'sucursal', bwMbps: 1000, perfil: 'ENTERPRISE_MIX', transporte: 'svr', dupPct: 0, headroomPct: 0 };
+const { SDWAN } = require('../server/seed/legacyData/juniper.js');
 
-test('sucursal con SVR: solo el factor IMIX homologado (1000 / 0,70 = 1429)', () => {
+const BASE = { rol: 'sucursal', bwMbps: 1000, cifrado: 'hmac', dupPct: 0, headroomPct: 0 };
+
+test('el SSR no divide por IMIX: su cifra ya es IMIX (las fichas lo dicen)', () => {
+  // La primera versión dividía por 0,70 «homologado con EdgeConnect» porque `cap` no declaraba
+  // su base. Las fichas SSR100/SSR1000 la declaran: «Unencrypted (IMIX)». Contarla dos veces
+  // pedía un 43 % de equipo de más.
   const r = M.demandaSsr(BASE);
-  assert.strictEqual(r.base, 1000);
-  assert.strictEqual(r.need, 1429);
-  assert.strictEqual(r.overheadTransporte, 0);
+  assert.strictEqual(r.need, 1000);
+  assert.deepStrictEqual(r.pasos.map((p) => Math.round(p.v)), [1000, 1000, 1000]);
 });
 
-test('el factor IMIX es el mismo que el motor de EdgeConnect (homologación con Aruba)', () => {
-  // Mismo escenario en los dos motores, con todo lo que no es IMIX neutralizado. El de Aruba
-  // aplica siempre un 5 % de FEC base; se descuenta para comparar solo el IMIX.
-  const comunes = { bw_mpls_mbps: 1000, bw_internet_mbps: 0, local_breakout_activo: false, fec_activo: false,
-    enlace_calidad: 'NORMAL', modelo_seguridad: 'NINGUNO', headroom_pct: 0, total_usuarios: 1, densidad_usuarios: 'ESTANDAR' };
-  for (const perfil of Object.keys(M.PERFILES)) {
-    const aruba = Aruba.calcularRequerimientosIngenieria({ ...comunes, perfil_trafico: perfil });
-    const juniper = M.demandaSsr({ ...BASE, perfil });
-    const arubaSinFec = Math.round(aruba.throughputDisenoMbps / 1.05);
-    assert.ok(Math.abs(arubaSinFec - juniper.need) <= 1, `${perfil}: Aruba ${arubaSinFec} frente a Juniper ${juniper.need}`);
+test('la capa de cifrado elige la cifra, por defecto la más exigente', () => {
+  assert.strictEqual(M.demandaSsr(BASE).capa.k, 'capHmac');
+  assert.strictEqual(M.demandaSsr({ ...BASE, cifrado: 'cif' }).capa.k, 'capCif');
+  assert.strictEqual(M.demandaSsr({ ...BASE, cifrado: 'plano' }).capa.k, 'cap');
+  assert.strictEqual(M.demandaSsr({ ...BASE, cifrado: 'otra' }).capa.k, 'capHmac', 'lo desconocido cae a la capa segura');
+});
+
+test('cada SSR del catálogo trae las tres capas, monótonas como en la ficha', () => {
+  for (const m of SDWAN) {
+    for (const c of Object.values(M.CIFRADOS)) {
+      assert.ok(Number.isFinite(m[c.k]) && Number.isFinite(m[c.k1500]), `${m.id}: falta ${c.k} o ${c.k1500}`);
+      assert.ok(m[c.k1500] >= m[c.k], `${m.id}: con 1.500 B no puede dar menos que en IMIX (${c.k})`);
+    }
+    assert.ok(m.cap >= m.capCif && m.capCif >= m.capHmac, `${m.id}: cifrar no puede dar más que sin cifrar`);
   }
 });
 
-test('el túnel IPsec cuesta bytes por paquete: pesa más en voz que en réplica', () => {
-  const mix = M.demandaSsr({ ...BASE, transporte: 'ipsec' }).overheadTransporte;
-  const voz = M.demandaSsr({ ...BASE, transporte: 'ipsec', perfil: 'VOIP_INTENSIVE' }).overheadTransporte;
-  const bulk = M.demandaSsr({ ...BASE, transporte: 'ipsec', perfil: 'BULK_BACKUP' }).overheadTransporte;
-  assert.ok(Math.abs(mix - 62 / 570) < 1e-9);
-  assert.ok(voz > mix && mix > bulk, 'el sobrecoste relativo tiene que caer al crecer el paquete');
-  assert.ok(voz < 0.32 && bulk < 0.32, 'el +32 % fijo de la herramienta externa no sale de ningún perfil');
+test('con HMAC el SSR1200 da 2,5 Gbps: cumple 2 y no 3, aunque sin cifrar dé 10', () => {
+  const k = M.demandaSsr(BASE).capa.k;
+  const dos = M.candidatosSsr(SDWAN, k, 2000).candidatos.map((m) => m.id);
+  assert.ok(dos.includes('SSR1200'));
+  const tres = M.candidatosSsr(SDWAN, k, 3000).candidatos.map((m) => m.id);
+  assert.ok(!tres.includes('SSR1200'), 'con la cifra sin cifrar (10 Gbps) habría salido: es el error que la capa evita');
+  assert.ok(tres.includes('SSR1300'));
+});
+
+test('candidatosSsr aparta el modelo sin cifra en la capa', () => {
+  const r = M.candidatosSsr([{ id: 'A', cap: 5000 }, { id: 'B', cap: 5000, capHmac: 4000 }], 'capHmac', 1000);
+  assert.deepStrictEqual(r.candidatos.map((m) => m.id), ['B']);
+  assert.strictEqual(r.sinCifra, 1);
 });
 
 test('duplicar el 100 % del tráfico lo duplica entero, no +35 %', () => {
   const sin = M.demandaSsr(BASE).need;
   const todo = M.demandaSsr({ ...BASE, dupPct: 100 }).need;
   assert.ok(Math.abs(todo - 2 * sin) <= 1);
-  const voz = M.demandaSsr({ ...BASE, dupPct: 20 }).need;
-  assert.ok(Math.abs(voz - Math.ceil(1000 / 0.7 * 1.2)) <= 1);
+  assert.strictEqual(M.demandaSsr({ ...BASE, dupPct: 20 }).need, 1200);
 });
 
 test('el breakout local no descarga la sucursal y sí el hub', () => {
@@ -67,7 +80,7 @@ test('el breakout local no descarga la sucursal y sí el hub', () => {
 
 test('el margen se aplica una vez y al final', () => {
   const r = M.demandaSsr({ ...BASE, headroomPct: 30 });
-  assert.strictEqual(r.need, Math.ceil(1000 / 0.7 * 1.3));
+  assert.strictEqual(r.need, 1300);
   assert.strictEqual(r.pasos[r.pasos.length - 1].v, r.need);
 });
 
@@ -76,7 +89,6 @@ test('entradas vacías, negativas o absurdas no dan una demanda falsa', () => {
   assert.strictEqual(M.demandaSsr({ ...BASE, bwMbps: -50 }).need, 0);
   assert.strictEqual(M.demandaSsr({ ...BASE, rol: 'hub', spokes: 0 }).need, 0);
   assert.strictEqual(M.demandaSsr({ ...BASE, rol: 'hub', spokes: 5, breakoutPct: 100 }).need, 0);
-  assert.strictEqual(M.demandaSsr({ ...BASE, perfil: 'NO_EXISTE' }).factorImix, 0.70);
   assert.strictEqual(M.demandaSsr({ ...BASE, dupPct: 400 }).duplicacion, 1, 'la fracción duplicada no pasa del 100 %');
 });
 
