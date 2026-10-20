@@ -1087,6 +1087,21 @@ jobs:
                 'https://documentation.meraki.com/Platform_Management/Product_Information/Licensing/Subscription_-_Licensing_SKUs',
                 'https://documentation.meraki.com/General_Administration/Licensing/Subscription_-_Licensing_SKUs',
               ] },
+              // Quinta vuelta: las vistas del chasis de la 8400 y del Catalyst 8500 en su edicion HTML,
+              // por si dibujan una cara que el PDF no trae.
+              { archivo: 'cisco-sr8400-vistas-c8455.html', tipo: 'html', para: 'CISCO', debeContener: 'C8455', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/intro-cisco-8400-series-secure-routers/chassis-views-c8455-g2.html',
+              ] },
+              { archivo: 'cisco-sr8400-vistas-c8475.html', tipo: 'html', para: 'CISCO', debeContener: 'C8475', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/intro-cisco-8400-series-secure-routers/chassis-views-c4875-g2.html',
+              ] },
+              { archivo: 'cisco-c8500-hig-overview.html', tipo: 'html', para: 'CISCO', debeContener: '20X6C', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8500/hardware-installation-guide/b_C8500_HIG/m_Router_Overview.html',
+              ] },
+              { archivo: 'cisco-hig4-img', tipo: 'imagenes', para: 'CISCO', urls: [],
+                descubrirPiezas: { de: ['cisco-sr8400-vistas-c8455.html', 'cisco-sr8400-vistas-c8475.html', 'cisco-c8500-hig-overview.html'],
+                  base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
+                  contiene: ['/c/dam/', '/content/dam/'], max: 120 } },
               // Las fichas del MX250 y el MX450 no listan opticas: remiten a esta guia.
               { archivo: 'meraki-sfp.html', tipo: 'html', para: 'CISCO', debeContener: 'MA-SFP', urls: [
                 'https://documentation.meraki.com/Platform_Management/Product_Information/Overviews_and_Datasheets/Small-Form_Factor_Pluggable_(SFP)_and_Stacking_Accessories',
