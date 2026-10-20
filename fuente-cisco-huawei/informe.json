@@ -1,0 +1,94 @@
+[
+  {
+    "archivo": "juniper-mx304-ds.pdf",
+    "para": "JUNIPER",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/routers/mx304-universal-routing-platform-datasheet.pdf",
+        "status": 200,
+        "firma": "3c212d2d5b696620",
+        "nota": "no es un PDF"
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-mx304-ds.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/us/en/products/routers/mx-series/mx304-universal-routing-platform-datasheet.html",
+        "status": 200,
+        "bytes": 121008,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-mx-serie-ds-ja.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://juniper.net/content/dam/www/assets/datasheets/jp/ja/routers/mx-204-240-480-960-series-universal-routing-platforms-datasheet.pdf",
+        "status": 200,
+        "bytes": 996014,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-mx-1000597-en.pdf",
+    "para": "JUNIPER",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/assets/es/es/local/pdf/datasheets/1000597-en.pdf",
+        "status": 200,
+        "firma": "3c212d2d5b696620",
+        "nota": "no es un PDF"
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-mx204-producto.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/us/en/products/routers/mx-series/mx204.html",
+        "status": 403
+      },
+      {
+        "url": "https://www.juniper.net/gb/en/products/routers/mx-series/mx204-universal-routing-platform.html",
+        "status": 200,
+        "bytes": 753173,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-mx480-producto.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/mx/es/products/routers/mx-series/mx480-universal-routing-platform.html",
+        "status": 200,
+        "bytes": 775937,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  }
+]
