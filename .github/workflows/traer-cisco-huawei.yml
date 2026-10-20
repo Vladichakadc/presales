@@ -1087,6 +1087,10 @@ jobs:
                 'https://documentation.meraki.com/Platform_Management/Product_Information/Licensing/Subscription_-_Licensing_SKUs',
                 'https://documentation.meraki.com/General_Administration/Licensing/Subscription_-_Licensing_SKUs',
               ] },
+              // Las fichas del MX250 y el MX450 no listan opticas: remiten a esta guia.
+              { archivo: 'meraki-sfp.html', tipo: 'html', para: 'CISCO', debeContener: 'MA-SFP', urls: [
+                'https://documentation.meraki.com/Platform_Management/Product_Information/Overviews_and_Datasheets/Small-Form_Factor_Pluggable_(SFP)_and_Stacking_Accessories',
+              ] },
               { archivo: 'cisco-hig3-img', tipo: 'imagenes', para: 'CISCO', urls: [],
                 descubrirPiezas: { de: ['cisco-isr1100-hig-overview.html', 'cisco-sr8200-hig-overview.html'],
                   base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
