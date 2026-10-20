@@ -613,6 +613,11 @@ jobs:
               { archivo: 'juniper-srx4700-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
                 'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx4700-firewall-datasheet.pdf',
               ] },
+              // La ficha en ingles del SRX4100/SRX4200 devolvio HTML (corrida 39409681340): la japonesa,
+              // encontrada por busqueda, es la siguiente via para su foto de producto.
+              { archivo: 'juniper-srx4100-4200-ds-ja.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+                'https://www.juniper.net/content/dam/www/assets/datasheets/jp/ja/security/srx4100-srx4200-firewall-datasheet.pdf',
+              ] },
               { archivo: 'juniper-srx-serie.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
                 'https://www.juniper.net/gb/en/products/security/srx-series.html',
               ] },
