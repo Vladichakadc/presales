@@ -1,0 +1,216 @@
+[
+  {
+    "archivo": "cisco-sr8400-vistas-c8455.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/intro-cisco-8400-series-secure-routers/chassis-views-c8455-g2.html",
+        "status": 200,
+        "bytes": 81436,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8400-vistas-c8475.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/intro-cisco-8400-series-secure-routers/chassis-views-c4875-g2.html",
+        "status": 200,
+        "bytes": 81501,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-c8500-hig-overview.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8500/hardware-installation-guide/b_C8500_HIG/m_Router_Overview.html",
+        "status": 200,
+        "bytes": 173590,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-hig4-img",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/content/dam/en/us/td/i/300001-400000/350001-360000/358001-359000/358401.jpg",
+        "status": 200,
+        "bytes": 43979,
+        "guardado": true,
+        "como": "cisco-hig4-img/350001-360000__358001-359000__358401.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/en/us/td/i/300001-400000/350001-360000/358001-359000/358455.jpg",
+        "status": 200,
+        "bytes": 111713,
+        "guardado": true,
+        "como": "cisco-hig4-img/350001-360000__358001-359000__358455.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/en/us/td/i/300001-400000/350001-360000/357001-358000/357045.jpg",
+        "status": 200,
+        "bytes": 90550,
+        "guardado": true,
+        "como": "cisco-hig4-img/350001-360000__357001-358000__357045.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/en/us/td/i/300001-400000/350001-360000/358001-359000/358400.jpg",
+        "status": 200,
+        "bytes": 42664,
+        "guardado": true,
+        "como": "cisco-hig4-img/350001-360000__358001-359000__358400.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/en/us/td/i/300001-400000/350001-360000/358001-359000/358399.jpg",
+        "status": 200,
+        "bytes": 134843,
+        "guardado": true,
+        "como": "cisco-hig4-img/350001-360000__358001-359000__358399.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/en/us/td/i/300001-400000/350001-360000/358001-359000/358381.jpg",
+        "status": 200,
+        "bytes": 80051,
+        "guardado": true,
+        "como": "cisco-hig4-img/350001-360000__358001-359000__358381.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/cdc/i/Feedback_OceanBlue.png",
+        "status": 200,
+        "bytes": 191,
+        "guardado": true,
+        "como": "cisco-hig4-img/cdc__i__Feedback_OceanBlue.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/td/i/500001-600000/520001-530000/520001-521000/520218.jpg",
+        "status": 200,
+        "bytes": 30446,
+        "guardado": true,
+        "como": "cisco-hig4-img/520001-530000__520001-521000__520218.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/td/i/500001-600000/520001-530000/520001-521000/520219.jpg",
+        "status": 200,
+        "bytes": 35132,
+        "guardado": true,
+        "como": "cisco-hig4-img/520001-530000__520001-521000__520219.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/td/i/300001-400000/360001-370000/369001-370000/369957.jpg",
+        "status": 200,
+        "bytes": 46015,
+        "guardado": true,
+        "como": "cisco-hig4-img/360001-370000__369001-370000__369957.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/td/i/500001-600000/520001-530000/520001-521000/520227.jpg",
+        "status": 200,
+        "bytes": 28742,
+        "guardado": true,
+        "como": "cisco-hig4-img/520001-530000__520001-521000__520227.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/td/i/300001-400000/350001-360000/357001-358000/357898.jpg",
+        "status": 200,
+        "bytes": 188779,
+        "guardado": true,
+        "como": "cisco-hig4-img/350001-360000__357001-358000__357898.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/td/i/400001-500000/460001-470000/469001-470000/469324.jpg",
+        "status": 200,
+        "bytes": 132823,
+        "guardado": true,
+        "como": "cisco-hig4-img/460001-470000__469001-470000__469324.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/td/i/400001-500000/460001-470000/469001-470000/469362.jpg",
+        "status": 200,
+        "bytes": 64736,
+        "guardado": true,
+        "como": "cisco-hig4-img/460001-470000__469001-470000__469362.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/td/i/400001-500000/460001-470000/469001-470000/469325.jpg",
+        "status": 200,
+        "bytes": 40680,
+        "guardado": true,
+        "como": "cisco-hig4-img/460001-470000__469001-470000__469325.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/td/i/300001-400000/350001-360000/356001-357000/356986.jpg",
+        "status": 200,
+        "bytes": 59129,
+        "guardado": true,
+        "como": "cisco-hig4-img/350001-360000__356001-357000__356986.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/td/i/300001-400000/350001-360000/356001-357000/356987.jpg",
+        "status": 200,
+        "bytes": 47272,
+        "guardado": true,
+        "como": "cisco-hig4-img/350001-360000__356001-357000__356987.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/td/i/400001-500000/460001-470000/469001-470000/469908.jpg",
+        "status": 200,
+        "bytes": 139320,
+        "guardado": true,
+        "como": "cisco-hig4-img/460001-470000__469001-470000__469908.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/td/i/300001-400000/360001-370000/369001-370000/369962.jpg",
+        "status": 200,
+        "bytes": 34913,
+        "guardado": true,
+        "como": "cisco-hig4-img/360001-370000__369001-370000__369962.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/td/i/400001-500000/460001-470000/469001-470000/469343.jpg",
+        "status": 200,
+        "bytes": 102800,
+        "guardado": true,
+        "como": "cisco-hig4-img/460001-470000__469001-470000__469343.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/td/i/300001-400000/350001-360000/357001-358000/357012.jpg",
+        "status": 200,
+        "bytes": 76177,
+        "guardado": true,
+        "como": "cisco-hig4-img/350001-360000__357001-358000__357012.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/td/i/400001-500000/460001-470000/469001-470000/469344.jpg",
+        "status": 200,
+        "bytes": 101949,
+        "guardado": true,
+        "como": "cisco-hig4-img/460001-470000__469001-470000__469344.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/td/i/500001-600000/520001-530000/520001-521000/520224.jpg",
+        "status": 200,
+        "bytes": 19162,
+        "guardado": true,
+        "como": "cisco-hig4-img/520001-530000__520001-521000__520224.jpg"
+      }
+    ]
+  }
+]
