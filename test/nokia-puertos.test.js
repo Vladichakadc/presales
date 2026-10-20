@@ -93,7 +93,7 @@ test('los otros seis fabricantes no reciben un panel vacío: el texto libre se m
   const cisco = require('../server/seed/legacyData/cisco.js').MODELS[0];
   const sec = FICHA.seccionPuertos(cisco);
   assert.ok(sec.filas.length === 1 && sec.filas[0][0] === 'Interfaces');
-  assert.ok(sec.filas[0][1].includes('NIM slot'), 'el texto del catálogo, tal cual');
+  assert.ok(sec.filas[0][1].includes(cisco.ports), 'el texto del catálogo, tal cual');
   assert.match(sec.nota, /<b>como texto<\/b>/, 'y se declara que no es dato estructurado');
   assert.match(sec.nota, /no se puede contrastar la densidad/);
 

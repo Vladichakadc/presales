@@ -55,7 +55,7 @@ cisco:[
   // quedaba aqui citaba 600 Mbps para un MX67 de 700 y 5 Gbps para un MX450 de 10).
   {model:'ISR 1111-8P',ser:'ISR 1000',seg:'Sucursal pequeña',elp:'~ $1,800'},
   {model:'ISR 1111X-8P',ser:'ISR 1000',seg:'Sucursal pequeña',elp:'~ $2,800'},
-  {model:'ISR 1116-4P',ser:'ISR 1000',seg:'Sucursal + LTE',elp:'~ $2,200'},
+  {model:'ISR 1116-4P',ser:'ISR 1000',seg:'Sucursal + DSL',elp:'~ $2,200'},
   {model:'ISR 1121X-8P',ser:'ISR 1000',seg:'Sucursal pequeña, 8 GB',protos:'SD-WAN, IPSec'},
   {model:'ISR 1161X-8P',ser:'ISR 1000',seg:'Sucursal pequeña de alto reenvío',protos:'SD-WAN, IPSec'},
   // Catalyst 8000 (fin de venta anunciado: ver `eolAnnounced`)

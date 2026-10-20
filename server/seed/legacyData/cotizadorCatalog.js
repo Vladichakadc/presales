@@ -46,9 +46,9 @@ module.exports = [
   // legacyData/cisco.js): las de aqui venian de la copia estatica de antes de la Fase 2 y no
   // coincidian en 14 de 17. El cotizador comprueba en cada peticion que sigan coincidiendo y
   // retira la que no (`server/services/cifrasCotizador.js`).
-  {vendor:'Cisco',  color:'#049FD9', model:'ISR 1111-8P',               seg:'Sucursal SOHO',           spec:'{fwd} FWD · IPsec {ipsec} · 8 GE + 1 NIM',               elp:'~ $1,800', elpN:1800},
+  {vendor:'Cisco',  color:'#049FD9', model:'ISR 1111-8P',               seg:'Sucursal SOHO',           spec:'{fwd} FWD · IPsec {ipsec} · 2 GE WAN + 8 GE LAN',               elp:'~ $1,800', elpN:1800},
   {vendor:'Cisco',  color:'#049FD9', model:'ISR 1111X-8P',              seg:'Sucursal pequeña',        spec:'{fwd} FWD · IPsec {ipsec} · HSEC habilitado',             elp:'~ $2,800', elpN:2800},
-  {vendor:'Cisco',  color:'#049FD9', model:'ISR 1116-4P',               seg:'Sucursal + LTE',          spec:'{fwd} FWD · 4 GE + LTE integrado · 1 NIM',                 elp:'~ $2,200', elpN:2200},
+  {vendor:'Cisco',  color:'#049FD9', model:'ISR 1116-4P',               seg:'Sucursal + DSL',          spec:'{fwd} FWD · IPsec {ipsec} · 1 GE WAN + DSL · 4 GE LAN',                 elp:'~ $2,200', elpN:2200},
   {vendor:'Cisco',  color:'#049FD9', model:'Catalyst 8200L',            seg:'Sucursal SD-WAN compacta',spec:'{fwd} FWD · IPsec {ipsec} · 4 GE + 1 NIM + 1 PIM',               elp:'~ $2,200', elpN:2200},
   {vendor:'Cisco',  color:'#049FD9', model:'Catalyst 8200',             seg:'Sucursal SD-WAN estándar',spec:'{fwd} FWD · IPsec {ipsec} · SD-WAN nativo · 1 NIM + 1 PIM',         elp:'~ $4,500', elpN:4500},
   {vendor:'Cisco',  color:'#049FD9', model:'Catalyst 8300-1N1S-6T',     seg:'Hub regional SD-WAN',     spec:'{fwd} FWD · IPsec {ipsec} · 6 GE + 1 NIM + 1 SM',          elp:'~ $9,800', elpN:9800},

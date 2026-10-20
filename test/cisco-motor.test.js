@@ -95,7 +95,10 @@ test('la plataforma se elige antes que el caudal: un Meraki no se cuela en IOS X
 });
 
 test('en SD-WAN, un modelo sin cifra propia cae a IPsec y lo dice; la de 1.400 B también avisa', () => {
-  const isr = M.evaluar(MODELS, { ...base, plataforma: 'isr', bwMbps: 50 }).filas.find((x) => x.m.id === 'ISR 1111-8P');
+  // Desde la relectura de la ficha del ISR 1000 todos los modelos publican su SD-WAN: la regla se
+  // prueba con una copia sin ella.
+  const sinSdwan = { ...id('ISR 1111-8P'), sdwan: null };
+  const isr = M.evaluar([sinSdwan], { ...base, plataforma: 'isr', bwMbps: 50 }).filas[0];
   assert.ok(isr.co.cae);
   assert.strictEqual(isr.co.k, 'ipsec');
   assert.ok(isr.avisos.some((a) => /Sin cifra SD-WAN propia/.test(a)));

@@ -71,10 +71,10 @@ const EOL_ANNOUNCED = {
 const B_G2 = {fwd:'512 B', ipsec:'512 B', sdwan:'512 B, IPsec + QoS + DPI + FNF', amenazas:'EMIX, DIA-NAT + NGFW + IPS + URLF + AMP'};
 const B_C8K = {fwd:'1.400 B', ipsec:'IMIX', sdwan:'IMIX, con IQDF', amenazas:'EMIX, DIA-NAT + NGFW + IPS + URLF + AMP'};
 const B_C85 = {fwd:'1.400 B', ipsec:'1.400 B', sdwan:'IMIX, IPsec SD-WAN sin IQDF publicado', amenazas:'EMIX, DIA-NAT + NGFW + IPS + URLF + AMP'};
-const B_ISR = {fwd:'512 B', ipsec:'512 B', sdwan:'512 B, IPsec + QoS + DPI + FNF', amenazas:null};
+const B_ISR = {fwd:'512 B', ipsec:'512 B, con licencia HSEC (sin ella, 250 Mbps en los -8P y 150 en los -4P con FL-VPERF)', sdwan:'512 B, IPsec + QoS + DPI + FNF', amenazas:null};
 const B_MX = {fwd:'firewall de estado; Meraki no publica tamaño de paquete', ipsec:'VPN sitio a sitio (AutoVPN)', sdwan:'VPN sitio a sitio (AutoVPN)', amenazas:'NGFW en modo detección (IDS)'};
 const B_MXP = {...B_MX, amenazas:'NGFW (prevención)'};
-// Lo heredado de la revisión del 2026-10-01 que esta no relee: ISR 1000 y ASR 1000.
+// Lo heredado de la revisión del 2026-10-01 que esta no relee: los ASR 1000 (fuera de venta).
 const B_ANT = {fwd:'contrastada el 2026-10-01 (ver la cabecera)', ipsec:'contrastada el 2026-10-01', sdwan:'contrastada el 2026-10-01', amenazas:null};
 
 const DS = {
@@ -102,15 +102,20 @@ const PIM = ['P-5GS6-R16SA-GL', 'P-LTEA7-NA', 'P-LTEA7-EAL', 'P-LTEA7-JP'];
 const MX_LIC = ['LIC-MX-ENT', 'LIC-MX-SEC', 'LIC-MX-SDW'];
 
 const MODELS = [
-  // ── ISR 1000 ── Los tres primeros son los de la revisión del 2026-10-01 (cifras bajadas contra la
-  // ficha; ver PENDIENTES.md). El 1121X-8P y el 1161X-8P entran el 2026-10-20 con las tablas 17-19 y
-  // 4-6 de la misma ficha (c78-739512): reenvío e IPsec en modo autónomo, SD-WAN con IQDF, 512 B.
-  {id:'ISR 1111-8P',      ser:'ISR 1000', fam:'Sucursal muy pequeña / SOHO',           fwd:300,  ipsec:200, sdwan:null, aps:null, redund:false, lte:false, bases:B_ANT,
-   ports:'1 GE WAN combo + 8 GE LAN · 1 NIM slot', nim:1, sm:0, optics:['sfp1g'], parts:['LIC-HSEC','NIM-4G-LTE'], lic:'dna'},
-  {id:'ISR 1111X-8P',     ser:'ISR 1000', fam:'Sucursal pequeña con HSEC',              fwd:800,  ipsec:600, sdwan:null, aps:null, redund:false, lte:false, bases:B_ANT,
-   ports:'2 GE WAN combo + 8 GE LAN · 1 NIM slot', nim:1, sm:0, optics:['sfp1g'], parts:['LIC-HSEC','NIM-4G-LTE'], lic:'dna'},
-  {id:'ISR 1116-4P',      ser:'ISR 1000', fam:'Sucursal + LTE integrado',               fwd:300,  ipsec:200, sdwan:null, aps:null, redund:false, lte:true, bases:B_ANT,
-   ports:'4 GE WAN + LTE integrado · 1 NIM slot', nim:1, sm:0, optics:['sfp1g'], parts:['LIC-HSEC'], lic:'dna'},
+  // ── ISR 1000 ── Ficha c78-739512, releída entera el 2026-10-20: reenvío e IPsec en modo autónomo
+  // y SD-WAN con IQDF, todo a 512 B (tablas 4-6 del 116x, 17-19 del 112x y 25-27 del 111x). Los
+  // 1111/1116 traían cifras de antes sin base (300 Mbps de reenvío frente a los 1.800 publicados),
+  // una ranura NIM que la serie 1100 no tiene (la ficha lista cada variante con sus puertos fijos)
+  // y el C1116-4P con LTE: es 1 GE WAN + DSL; el LTE va en las variantes -LTEEA (tabla 22).
+  {id:'ISR 1111-8P',      ser:'ISR 1000', fam:'Sucursal pequeña, 8 GE',                 fwd:1800, ipsec:600, sdwan:250, amenazas:null, aps:null, redund:false, lte:false, bases:B_ISR,
+   tuneles:200, tunelesNota:'túneles del overlay SD-WAN; 100 SVTI en modo autónomo', rutas:280000,
+   ports:'2 GE WAN + 8 GE LAN', nim:0, sm:0, pim:false, optics:['sfp1g'], parts:['LIC-HSEC'], lic:'dna', datasheet:DS.isr},
+  {id:'ISR 1111X-8P',     ser:'ISR 1000', fam:'Sucursal pequeña, 8 GB de memoria',      fwd:1800, ipsec:600, sdwan:250, amenazas:null, aps:null, redund:false, lte:false, bases:B_ISR,
+   tuneles:200, tunelesNota:'túneles del overlay SD-WAN; 100 SVTI en modo autónomo', rutas:800000,
+   ports:'2 GE WAN + 8 GE LAN', nim:0, sm:0, pim:false, optics:['sfp1g'], parts:['LIC-HSEC'], lic:'dna', datasheet:DS.isr},
+  {id:'ISR 1116-4P',      ser:'ISR 1000', fam:'Sucursal pequeña con VDSL2/ADSL2+',      fwd:1600, ipsec:500, sdwan:200, amenazas:null, aps:null, redund:false, lte:false, bases:B_ISR,
+   tuneles:200, tunelesNota:'túneles del overlay SD-WAN; 100 SVTI en modo autónomo', rutas:280000,
+   ports:'1 GE WAN + DSL · 4 GE LAN', nim:0, sm:0, pim:false, optics:['sfp1g'], parts:['LIC-HSEC'], lic:'dna', datasheet:DS.isr},
   {id:'ISR 1121X-8P',     ser:'ISR 1000', fam:'Sucursal pequeña, 8 GB de memoria',      fwd:1600, ipsec:600, sdwan:250, amenazas:null, aps:null, redund:false, lte:false, bases:B_ISR,
    tuneles:200, tunelesNota:'túneles del overlay SD-WAN; 100 SVTI en modo autónomo', rutas:280000, nat:100000,
    ports:'2 GE WAN + 8 GE LAN', nim:0, sm:0, pim:false, optics:['sfp1g'], parts:['LIC-HSEC'], lic:'dna', datasheet:DS.isr},

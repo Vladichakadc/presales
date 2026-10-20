@@ -164,7 +164,7 @@ const FUENTES = {
 
   cisco: [
     { documento: 'Datasheets oficiales de producto',
-      url: null, fecha: '2026-08', hash: null, modelos: ['ISR 1000', 'ASR 1000'], cubre: 'cifras tecnicas de ISR 1000 y ASR 1000 (Fase 2); desde el 2026-10-20 los Catalyst 8000, la linea Secure Router (G2) y los Meraki MX tienen su ficha propia en las entradas siguientes', campos: null, porQue: 'la entrada dice "cifras tecnicas" sin decir cuales; declararlas exige abrir los datasheets, y adivinarlas mandaria a revisar los campos equivocados',
+      url: null, fecha: '2026-08', hash: null, modelos: ['ASR 1000'], cubre: 'cifras tecnicas de ASR 1000 (Fase 2); desde el 2026-10-20 los ISR 1000, los Catalyst 8000, la linea Secure Router (G2) y los Meraki MX tienen su ficha propia en las entradas siguientes', campos: null, porQue: 'la entrada dice "cifras tecnicas" sin decir cuales; declararlas exige abrir los datasheets, y adivinarlas mandaria a revisar los campos equivocados',
       nota: 'Verificacion de la Fase 2.' },
     { documento: 'Boletines oficiales de fin de venta (EOL)',
       url: 'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html', estable: true,
@@ -224,7 +224,7 @@ const FUENTES = {
       nota: 'Traida el 2026-10-01 y otra vez el 2026-10-20 (corrida 39360888778). Tablas 5a a 5c, 9 y 10. No publica SD-WAN con IQDF ni Threat Protection salvo en el 8500L. La pagina no fecha su revision.' },
     { documento: 'Cisco 1000 Series Integrated Services Routers Data Sheet',
       url: 'https://www.cisco.com/c/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.html', estable: false,
-      fecha: null, hash: null, modelos: ['ISR 1121X-8P', 'ISR 1161X-8P', 'ISR 1111X-8P'], cubre: 'reenvio, IPsec y SD-WAN con IQDF (512 B), tuneles y escala del ISR 1121X-8P (C1121X-8P) y el ISR 1161X-8P (C1161X-8P), y la figura frontal del ISR 1111X-8P (C1111X-8P)', campos: ['fwd', 'ipsec', 'sdwan', 'tuneles', 'rutas', 'nat'],
+      fecha: null, hash: null, modelos: ['ISR 1000'], cubre: 'reenvio, IPsec y SD-WAN con IQDF (512 B), tuneles, rutas y puertos de la serie ISR 1000 del catalogo: ISR 1111-8P y 1111X-8P (C111x-8P, tablas 24-27), ISR 1116-4P (C111x-4P, tabla 22: 1 GE WAN + DSL, sin LTE), ISR 1121X-8P (C1121X-8P) e ISR 1161X-8P (C1161X-8P); y la figura frontal del ISR 1111X-8P (C1111X-8P)', campos: ['fwd', 'ipsec', 'sdwan', 'tuneles', 'rutas', 'nat'],
       nota: 'Traida el 2026-10-01 y otra vez el 2026-10-20 (corrida 39360888778). Tablas 4 a 6 (116x) y 17 a 19 (112x). La pagina no fecha su revision.' },
     { documento: 'Guias de instalacion de hardware de la linea Secure Router (G2)',
       url: 'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8100-series/hardware-installation-guide-for-the-cisco-8100-series-secure-routers.pdf', estable: true,
