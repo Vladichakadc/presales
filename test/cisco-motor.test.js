@@ -149,6 +149,31 @@ test('licencias de la G2 por la clase de la plataforma, y sin LIC-SEC en la 2XL'
   assert.ok(dna.avisos.some((a) => /no admite DNA Essentials/.test(a)));
 });
 
+test('Meraki: SD-WAN+ cita la ampliación de su grupo solo donde la página de licencias lo nombra', () => {
+  // La página da LIC-MX-SDW-<grupo>-<1|3|5>Y por grupo de plataformas; el MX95 va en «L».
+  const l = M.licencias(id('Meraki MX95'), { nivel: 'P', anios: 3 }, LICENCIAS_G2);
+  assert.strictEqual(l.filas[0].sku, null);
+  assert.ok(l.avisos.some((a) => /LIC-MX-SDW-L-3Y/.test(a)));
+  // Un término que la página no ofrece, o un modelo que no nombra (los G2-MX), no inventa la referencia.
+  const dos = M.licencias(id('Meraki MX95'), { nivel: 'P', anios: 2 }, LICENCIAS_G2);
+  assert.ok(!dos.avisos.some((a) => /LIC-MX-SDW/.test(a)));
+  const g2mx = M.licencias(SR('C8355-G2-MX'), { nivel: 'P', anios: 3 }, LICENCIAS_G2);
+  assert.ok(g2mx.avisos.some((a) => /confirmar en CCW/.test(a)));
+  assert.ok(!M.licencias(id('Meraki MX95'), { nivel: 'A', anios: 3 }, LICENCIAS_G2).avisos.some((a) => /SD-WAN\+/.test(a)));
+});
+
+test('módulos de los Catalyst 8300/8200: los de su guía de pedido, con los límites de la tabla 5', () => {
+  const { MODULOS_C8K } = require('../server/seed/legacyData/cisco.js');
+  const sku = (s) => MODULOS_C8K.find((x) => x.sku === s);
+  assert.strictEqual(new Set(MODULOS_C8K.map((x) => x.sku)).size, MODULOS_C8K.length, 'un módulo repetido');
+  // Las T1/E1 están en las columnas de datos y de voz: van una vez, con las dos.
+  assert.strictEqual(sku('NIM-1MFT-T1/E1').d, 'NIM de datos y de voz');
+  // Los SM de doble ancho solo en el 2N2S; los marcados con asterisco, solo en el 8300.
+  assert.deepStrictEqual([sku('C-SM-40P8M2X').ranuras, sku('SM-X-72FXS').familia], [2, 'Catalyst 8300-2N2S']);
+  assert.strictEqual(sku('C-NIM-1X').familia, 'Catalyst 8300');
+  assert.deepStrictEqual(MODULOS_C8K.filter((x) => x.en === 'pim').map((x) => x.sku), ['P-LTEA-LA', 'P-LTEA-EA', 'P-LTEAP18-GL']);
+});
+
 test('pool de NAT por bloques de puertos: aritmética, sin cifras del fabricante', () => {
   const r = M.poolCgnat({ usuarios: 10000, bloque: 512 });
   assert.deepStrictEqual([r.porIp, r.ips, r.prefijo], [126, 80, 25]);

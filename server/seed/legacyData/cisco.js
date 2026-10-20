@@ -49,6 +49,7 @@
 const BOLETIN_8300_8200 = 'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html';
 const BOLETIN_8500L_8300 = 'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500l-8s4x-4t2x-c8300-1n1s-6t-eol.html';
 const BOLETIN_8500 = 'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500-12x-c8500-12x4qc-eol.html';
+const BOLETIN_8500_20X6C = 'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500-20x6c-eol.html';
 const EOL_ANNOUNCED = {
   'Catalyst 8200L':          {pid:'C8200L-1N-4T',    lastOrder:'2027-07-31', sucesor:'Cisco Secure Router C8231-E-G2', url:BOLETIN_8300_8200},
   'Catalyst 8200':           {pid:'C8200-1N-4T',     lastOrder:'2027-07-31', sucesor:'Cisco Secure Router C8235-E-G2', url:BOLETIN_8300_8200},
@@ -59,6 +60,7 @@ const EOL_ANNOUNCED = {
   'Catalyst 8500L-8S4X':     {pid:'C8500L-8S4X',     lastOrder:'2027-01-31', sucesor:'Cisco Secure Router C8475-G2', url:BOLETIN_8500L_8300},
   'Catalyst 8500-12X':       {pid:'C8500-12X',       lastOrder:'2027-01-31', sucesor:'Cisco Secure Router C8550-G2', url:BOLETIN_8500},
   'Catalyst 8500-12X4QC':    {pid:'C8500-12X4QC',    lastOrder:'2027-01-31', sucesor:'Cisco Secure Router C8570-G2', url:BOLETIN_8500},
+  'Catalyst 8500-20X6C':     {pid:'C8500-20X6C',     lastOrder:'2027-07-31', sucesor:'Cisco Secure Router C8650-G2', url:BOLETIN_8500_20X6C},
   'ASR 1001-X':              {pid:'ASR1001-X',       lastOrder:'2022-08-01', sucesor:null,
                               url:'https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/asr1001-x-1002-x-eol.html'},
   'ASR 1002-HX':             {pid:'ASR1002-HX',      lastOrder:'2025-03-31', sucesor:null,
@@ -74,6 +76,7 @@ const B_C85 = {fwd:'1.400 B', ipsec:'1.400 B', sdwan:'IMIX, IPsec SD-WAN sin IQD
 const B_ISR = {fwd:'512 B', ipsec:'512 B, con licencia HSEC (sin ella, 250 Mbps en los -8P y 150 en los -4P con FL-VPERF)', sdwan:'512 B, IPsec + QoS + DPI + FNF', amenazas:null};
 const B_MX = {fwd:'firewall de estado; Meraki no publica tamaño de paquete', ipsec:'VPN sitio a sitio (AutoVPN)', sdwan:'VPN sitio a sitio (AutoVPN)', amenazas:'NGFW en modo detección (IDS)'};
 const B_MXP = {...B_MX, amenazas:'NGFW (prevención)'};
+const B_MXG2 = {...B_MX, fwd:'«Maximum NGFW Throughput»; Meraki no publica tamaño de paquete', amenazas:'Advanced Security'};
 // Lo heredado de la revisión del 2026-10-01 que esta no relee: los ASR 1000 (fuera de venta).
 const B_ANT = {fwd:'contrastada el 2026-10-01 (ver la cabecera)', ipsec:'contrastada el 2026-10-01', sdwan:'contrastada el 2026-10-01', amenazas:null};
 
@@ -95,6 +98,8 @@ const DS = {
   mx250:'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX250_Datasheet',
   mx450:'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX450_Datasheet',
   c81mx:'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/C8111-G2-MX_and_C8121-G2-MX_Data_Sheet',
+  c8355mx:'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/C8355-G2-MX_Datasheet',
+  c8455mx:'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/C8455-G2-MX_Datasheet',
 };
 
 // Módulos de celular (PIM) de la guía de pedido de la G2 (tabla 8), los mismos en 8100, 8200 y 8300.
@@ -123,7 +128,8 @@ const MODELS = [
    tuneles:200, tunelesNota:'túneles del overlay SD-WAN; 100 SVTI en modo autónomo', rutas:800000, nat:100000,
    ports:'2 GE WAN + 8 GE LAN', nim:0, sm:0, pim:false, optics:['sfp1g'], parts:['LIC-HSEC'], lic:'dna', datasheet:DS.isr},
 
-  // ── Catalyst 8000 Edge ── Fin de venta anunciado en todos salvo el 8500-20X6C (ver EOL_ANNOUNCED).
+  // ── Catalyst 8000 Edge ── Fin de venta anunciado en todos (ver EOL_ANNOUNCED); el del 8500-20X6C
+  // apareció en la lista de avisos de la serie el 2026-10-20 (EOL15954, anunciado el 27-jul-2026).
   // Precios de lista del export de CCW del 17-ago-2026 en los tres que los traían.
   {id:'Catalyst 8200L',   ser:'Catalyst 8000', fam:'Sucursal SD-WAN compacta',          fwd:3800, ipsec:400, sdwan:300, amenazas:null, aps:null, redund:false, lte:false, bases:B_C8K,
    tuneles:1500, pim:true, clase:null,
@@ -263,14 +269,19 @@ const MODELS = [
 
   // ── Meraki MX ── Fichas vigentes de documentation.meraki.com (2026-10-20). `clientes` es el
   // «Recommended Device Count» de la ficha; las cifras del 2026-08 se quedaron cortas frente a ellas.
+  // La ficha del MX95/MX105 no lo publica: sale de la «MX Sizing Guide and Principles» (tabla «Use
+  // Case Recommendations», que casa con las fichas en los demás modelos).
+  // `sdwPlus` es el grupo de la ampliación SD-WAN+ por dispositivo de la página de licencias de
+  // Meraki (LIC-MX-SDW-<grupo>-<n>Y, solo en co-terminación): solo donde la tabla nombra el modelo
+  // sin ambigüedad. Escribe «MX68C/W» y no nombra los G2-MX: en esos no se pone.
   // El C8111-G2-MX y el C8121-G2-MX son el hardware G2 con MX OS: se gestionan desde el dashboard y se
   // licencian como un MX, así que van en esta plataforma aunque su nombre sea de Secure Router.
   {id:'Meraki MX67',  ser:'Meraki MX', fam:'Sucursal pequeña (hasta 50 dispositivos)', fwd:700, ipsec:400, sdwan:400, amenazas:400, aps:null, clientes:50, redund:false, lte:false, bases:B_MX,
    psu:{tipo:'adaptador externo (MA-PWR-30WAC)', texto:'Carga de 5 W en reposo y 14 W como máximo (ficha).'},
-   ports:'1 GE WAN + 1 GE LAN/WAN convertible + 3 GE LAN', nim:0, sm:0, optics:[], parts:MX_LIC, lic:'meraki', hwSku:'MX67-HW', datasheet:DS.mx6768},
+   ports:'1 GE WAN + 1 GE LAN/WAN convertible + 3 GE LAN', nim:0, sm:0, optics:[], parts:MX_LIC, lic:'meraki', sdwPlus:'S', hwSku:'MX67-HW', datasheet:DS.mx6768},
   {id:'Meraki MX67C', ser:'Meraki MX', fam:'Sucursal pequeña con LTE CAT 6 integrado', fwd:700, ipsec:400, sdwan:400, amenazas:400, aps:null, clientes:50, redund:false, lte:true, bases:B_MX,
    psu:{tipo:'adaptador externo (MA-PWR-30WAC)', texto:'Carga de 15 W en reposo y 23 W como máximo (ficha).'},
-   ports:'1 GE WAN + 1 GE LAN/WAN convertible + 3 GE LAN + celular integrado', nim:0, sm:0, optics:[], parts:MX_LIC, lic:'meraki', hwSku:null, datasheet:DS.mx6768},
+   ports:'1 GE WAN + 1 GE LAN/WAN convertible + 3 GE LAN + celular integrado', nim:0, sm:0, optics:[], parts:MX_LIC, lic:'meraki', sdwPlus:'S', hwSku:null, datasheet:DS.mx6768},
   {id:'Meraki MX68',  ser:'Meraki MX', fam:'Sucursal pequeña con PoE+ (hasta 50 dispositivos)', fwd:700, ipsec:400, sdwan:400, amenazas:400, aps:null, clientes:50, redund:false, lte:false, bases:B_MX,
    poeNota:'2 puertos LAN PoE+',
    psu:{tipo:'adaptador externo (MA-PWR-100WAC)', texto:'Carga de 11 W en reposo y 79 W como máximo (ficha).'},
@@ -282,23 +293,23 @@ const MODELS = [
   {id:'Meraki MX75',  ser:'Meraki MX', fam:'Sucursal pequeña / mediana (hasta 200 dispositivos)', fwd:1000, ipsec:1000, sdwan:1000, amenazas:1000, aps:null, clientes:200, redund:false, lte:false, bases:B_MX,
    tuneles:75, poeNota:'2 puertos LAN PoE+',
    psu:{tipo:'adaptador externo de 100 W DC (incluido)', texto:'Carga de 12 W en reposo y 96 W como máximo (ficha).'},
-   ports:'1 GE SFP + 2 GE WAN · 10 GE LAN', nim:0, sm:0, optics:['sfp1g'], parts:MX_LIC, lic:'meraki', hwSku:'MX75-HW', datasheet:DS.mx75},
+   ports:'1 GE SFP + 2 GE WAN · 10 GE LAN', nim:0, sm:0, optics:['sfp1g'], parts:MX_LIC, lic:'meraki', sdwPlus:'M', hwSku:'MX75-HW', datasheet:DS.mx75},
   {id:'Meraki MX85',  ser:'Meraki MX', fam:'Sucursal mediana (hasta 250 dispositivos)', fwd:1000, ipsec:1000, sdwan:1000, amenazas:1000, aps:null, clientes:250, redund:false, lte:false, bases:B_MX,
    tuneles:200,
    psu:{tipo:'fuente interna', texto:'Carga de 12 W en reposo y 55 W como máximo (ficha).'},
-   ports:'2 GE SFP + 2 GE WAN · 8 GE + 2 GE SFP LAN · rack', nim:0, sm:0, optics:['sfp1g'], parts:MX_LIC, lic:'meraki', hwSku:'MX85-HW', datasheet:DS.mx85},
-  {id:'Meraki MX95',  ser:'Meraki MX', fam:'Campus / hub regional', fwd:3000, ipsec:2500, sdwan:2500, amenazas:2000, aps:null, clientes:null, redund:false, lte:false, bases:B_MX,
+   ports:'2 GE SFP + 2 GE WAN · 8 GE + 2 GE SFP LAN · rack', nim:0, sm:0, optics:['sfp1g'], parts:MX_LIC, lic:'meraki', sdwPlus:'M', hwSku:'MX85-HW', datasheet:DS.mx85},
+  {id:'Meraki MX95',  ser:'Meraki MX', fam:'Campus / hub regional (hasta 500 dispositivos)', fwd:3000, ipsec:2500, sdwan:2500, amenazas:2000, aps:null, clientes:500, redund:false, lte:false, bases:B_MX,
    psu:{tipo:'fuente interna', texto:'Carga de 42 W en reposo y 109 W como máximo (ficha). Un puerto WAN de 2,5G con PoE+.'},
-   ports:'2x 10G SFP+ + 2x 2,5G WAN · 4 GE + 2x 10G SFP+ LAN · rack', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:MX_LIC, lic:'meraki', hwSku:'MX95-HW', datasheet:DS.mx95},
-  {id:'Meraki MX105', ser:'Meraki MX', fam:'Campus / hub grande con fuentes modulares', fwd:5000, ipsec:3500, sdwan:3500, amenazas:2500, aps:null, clientes:null, redund:true, lte:false, bases:B_MX,
+   ports:'2x 10G SFP+ + 2x 2,5G WAN · 4 GE + 2x 10G SFP+ LAN · rack', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:MX_LIC, lic:'meraki', sdwPlus:'L', hwSku:'MX95-HW', datasheet:DS.mx95},
+  {id:'Meraki MX105', ser:'Meraki MX', fam:'Campus / hub grande con fuentes modulares (hasta 750 dispositivos)', fwd:5000, ipsec:3500, sdwan:3500, amenazas:2500, aps:null, clientes:750, redund:true, lte:false, bases:B_MX,
    psu:{tipo:'modulares, 2 x 150 W AC (MA-PWR-150WAC)', texto:'Carga de 53 W en reposo y 123 W como máximo (ficha); el peso se da «con 2 ventiladores y 2 fuentes».'},
-   ports:'2x 10G SFP+ + 2x 2,5G WAN · 4 GE + 2x 10G SFP+ LAN · rack', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:MX_LIC, lic:'meraki', hwSku:'MX105-HW', datasheet:DS.mx95},
+   ports:'2x 10G SFP+ + 2x 2,5G WAN · 4 GE + 2x 10G SFP+ LAN · rack', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:MX_LIC, lic:'meraki', sdwPlus:'L', hwSku:'MX105-HW', datasheet:DS.mx95},
   {id:'Meraki MX250', ser:'Meraki MX', fam:'Concentrador VPN / campus grande (2.000 dispositivos)', fwd:7500, ipsec:4000, sdwan:4000, amenazas:2000, amenazasDet:3000, aps:null, clientes:2000, redund:true, lte:false, bases:B_MXP,
    psu:{tipo:'modulares, 2 x 250 W AC (MA-PWR-250WAC)', texto:'Carga de 105 W en reposo y 190 W como máximo (ficha).'},
-   ports:'2x 10G SFP+ WAN · 8x 10G SFP+ + 8x 1G SFP + 8 GE LAN · 1RU', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:MX_LIC, lic:'meraki', hwSku:'MX250-HW', datasheet:DS.mx250},
+   ports:'2x 10G SFP+ WAN · 8x 10G SFP+ + 8x 1G SFP + 8 GE LAN · 1RU', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:MX_LIC, lic:'meraki', sdwPlus:'XL', hwSku:'MX250-HW', datasheet:DS.mx250},
   {id:'Meraki MX450', ser:'Meraki MX', fam:'Concentrador VPN / campus grande (10.000 dispositivos)', fwd:10000, ipsec:6500, sdwan:6500, amenazas:5000, amenazasDet:7000, aps:null, clientes:10000, redund:true, lte:false, bases:B_MXP,
    psu:{tipo:'modulares, 2 x 250 W AC (MA-PWR-250WAC)', texto:'Carga de 105 W en reposo y 190 W como máximo (ficha).'},
-   ports:'2x 10G SFP+ WAN · 8x 10G SFP+ + 8x 1G SFP + 8 GE LAN · 1RU', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:MX_LIC, lic:'meraki', hwSku:'MX450-HW', datasheet:DS.mx450},
+   ports:'2x 10G SFP+ WAN · 8x 10G SFP+ + 8x 1G SFP + 8 GE LAN · 1RU', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:MX_LIC, lic:'meraki', sdwPlus:'XL', hwSku:'MX450-HW', datasheet:DS.mx450},
   {id:'Cisco Secure Router C8111-G2-MX', ser:'Meraki MX', fam:'Sucursal G2 gestionada en la nube (hasta 200 dispositivos)', fwd:2000, ipsec:1200, sdwan:1200, amenazas:1200, aps:null, clientes:200, redund:false, lte:false, bases:{...B_MX, amenazas:'Advanced Security'},
    poe:75, poeNota:'30 W en un WAN mGig (802.3at) y 45 W en un LAN (802.3bt)',
    psu:{tipo:'adaptador externo de 150 W DC (MA-PWR-150WAC-ADP)', texto:'Sistema: 16 W en reposo y 22 W como máximo; con PoE, hasta 97 W (ficha).'},
@@ -307,6 +318,18 @@ const MODELS = [
    poe:165, poeNota:'30 W en un WAN mGig (802.3at) y 135 W en tres LAN (802.3bt)',
    psu:{tipo:'adaptador externo de 250 W DC (MA-PWR-250WAC-ADP)', texto:'Sistema: 18 W en reposo y 26 W como máximo; con PoE, hasta 176 W (ficha).'},
    ports:'2 WAN mGig RJ45 · hasta 10 GE LAN (3 PoE)', nim:0, sm:0, optics:[], parts:MX_LIC, lic:'meraki', hwSku:'C8121-G2-MX', datasheet:DS.c81mx},
+  // El C8355-G2-MX y el C8455-G2-MX (2026-10-20): el chasis G2 de las series 8300 y 8400 con MX OS.
+  // Sus fichas de Meraki dan «Maximum NGFW Throughput», VPN sitio a sitio, Advanced Security,
+  // dispositivos recomendados y túneles; sin tamaño de paquete, como el resto de Meraki. El PoE
+  // del C8355 aún no está activo: la ficha lo anuncia para una versión 26.2 posterior.
+  {id:'Cisco Secure Router C8355-G2-MX', ser:'Meraki MX', fam:'Sucursal grande G2 gestionada en la nube (hasta 5.000 dispositivos)', fwd:10000, ipsec:5000, sdwan:5000, amenazas:4000, aps:null, clientes:5000, redund:true, lte:false, bases:B_MXG2,
+   tuneles:1500, tunelesNota:'«Maximum Recommended Tunnels» de su ficha; la MX Sizing Guide da 1.250 recomendados y 3.500 como máximo', poeNota:'UPoE+ en los cuatro mGig a partir de una versión 26.2 posterior (ficha); opción de fuente de 230 W AC con 120 W de PoE',
+   psu:{watts:45, tipo:'dos fuentes de 110 W AC de serie', texto:'Ficha de Meraki: «Power supplies included by default: 2x 110W AC»; consumo típico 45 W sin PoE.'},
+   ports:'2x 10G SFP+ WAN · 2x 10G SFP+ LAN/WAN · 4x 5G mGig LAN · 2 GE LAN · 1RU', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:MX_LIC, lic:'meraki', hwSku:'C8355-G2-MX', datasheet:DS.c8355mx},
+  {id:'Cisco Secure Router C8455-G2-MX', ser:'Meraki MX', fam:'Campus grande y concentrador VPN G2 en la nube (hasta 15.000 dispositivos)', fwd:20000, ipsec:10000, sdwan:10000, amenazas:8000, aps:null, clientes:15000, redund:true, lte:false, bases:B_MXG2,
+   tuneles:3500,
+   psu:{tipo:'dos fuentes de 250 W AC de serie', texto:'Ficha de Meraki: «2 x 250W AC are included by default».'},
+   ports:'2x 25G SFP28 WAN · 2x 10G SFP+ LAN/WAN · 8x 1G SFP LAN · 1RU', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:MX_LIC, lic:'meraki', hwSku:'C8455-G2-MX', datasheet:DS.c8455mx},
 ];
 
 // Segunda fuente para la redundancia, de la guía de pedido de la G2 (tabla 3, «Configurable options
@@ -355,6 +378,44 @@ const MODULOS_G2 = [
   {sku:'P-LTEA7-EAL',  en:'pim', d:'CAT7 LTE Advanced Pluggable — EMEA, APAC y LATAM'},
   {sku:'P-LTEA7-JP',   en:'pim', d:'CAT7 LTE Advanced Pluggable — Japón'},
 ];
+
+// Módulos de los Catalyst 8300 y 8200 (guía de pedido de la serie, actualizada el 17-jun-2026,
+// tabla 5 «NIM, PIM, and SM modules supported on all Catalyst 8300 and 8200 edge platforms»).
+// La tabla solo da la referencia, agrupada por columna: `d` es esa columna, no una descripción
+// inventada. `familia` limita el módulo a los equipos cuyo id empieza así: la guía marca con un
+// asterisco los «specific to Catalyst 8300 edge platforms», y sus SM de doble ancho (`ranuras: 2`)
+// van solo en los C8300-2N2S. El 8200 no admite SM (tabla 4: 0 ranuras). Un módulo que la tabla
+// pone en dos columnas (las T1/E1 y PRI, en datos y en voz) va una vez, con las dos.
+const MODULOS_C8K = (() => {
+  const columnas = [
+    {en:'pim', d:'Celular LTE (PIM)', skus:['P-LTEA-LA', 'P-LTEA-EA', 'P-LTEAP18-GL']},
+    {en:'nim', d:'Celular LTE (NIM)', skus:['NIM-LTEA-LA', 'NIM-LTEA-EA']},
+    {en:'nim', d:'NIM de datos y switching LAN', skus:['C-NIM-1X', 'NIM-ES2-4', 'NIM-ES2-8', 'NIM-ES2-8-P', 'NIM-1T', 'NIM-2T', 'NIM-4T',
+      'NIM-16A', 'NIM-24A', 'NIM-VA-B', 'NIM-VAB-A', 'NIM-VAB-M', 'NIM-4SHDSL-EA', 'NIM-1MFT-T1/E1', 'NIM-2MFT-T1/E1', 'NIM-4MFT-T1/E1',
+      'NIM-8MFT-T1/E1', 'NIM-1CE1T1-PRI', 'NIM-2CE1T1-PRI', 'NIM-8CE1T1-PRI', 'NIM-2BRI-S/T', 'NIM-4BRI-S/T', 'C-NIM-4X', 'C-NIM-8T',
+      'C-NIM-8M', 'C-NIM-2T', 'C-NIM-1M']},
+    {en:'nim', d:'NIM de voz', skus:['NIM-2FXO', 'NIM-4FXO', 'NIM-2FXSP', 'NIM-4FXSP', 'NIM-4E/M', 'NIM-2BRI-NT/TE', 'NIM-4BRI-NT/TE',
+      'NIM-2FXS/4FXOP', 'NIM-1MFT-T1/E1', 'NIM-2MFT-T1/E1', 'NIM-4MFT-T1/E1', 'NIM-8MFT-T1/E1', 'NIM-1CE1T1-PRI', 'NIM-2CE1T1-PRI',
+      'NIM-8CE1T1-PRI', 'NIM-PVDM-32', 'NIM-PVDM-64', 'NIM-PVDM-128', 'NIM-PVDM-256']},
+    {en:'sm', d:'Módulo de servicio SM-X', skus:['C-SM-NIM-ADPTR', 'C-SM-16P4M2X', 'C-SM-40P8M2X', 'SM-X-1T3/E3', 'SM-X-64A', 'SM-X-8FXS/12FXO',
+      'SM-X-16FXS/2FXO', 'SM-X-24FXS/4FXO', 'SM-X-72FXS', 'SM-X-PVDM-500', 'SM-X-PVDM-1000', 'SM-X-PVDM-2000', 'SM-X-PVDM-3000',
+      'UCS-E160S-M3/K9', 'UCS-E180D-M3/K9', 'UCS-E1120D-M3/K9']},
+  ];
+  const solo8300 = new Set(['C-NIM-1X', 'C-SM-NIM-ADPTR', 'C-SM-16P4M2X', 'C-SM-40P8M2X']);
+  const dobleAncho = new Set(['C-SM-40P8M2X', 'SM-X-72FXS']);
+  const lista = [];
+  for (const c of columnas) {
+    for (const sku of c.skus) {
+      const ya = lista.find(x => x.sku === sku);
+      if (ya) { ya.d = 'NIM de datos y de voz'; continue; }
+      const x = {sku, en:c.en, d:c.d};
+      if (solo8300.has(sku)) x.familia = 'Catalyst 8300';
+      if (dobleAncho.has(sku)) { x.familia = 'Catalyst 8300-2N2S'; x.ranuras = 2; }
+      lista.push(x);
+    }
+  }
+  return lista;
+})();
 
 const OPTICS = {
   sfp1g: [
@@ -437,4 +498,4 @@ const CLOUD_UNIFICATION_NOTE = 'Cisco unificó Meraki y Catalyst bajo "Cisco Net
 // la página del dimensionador.
 const SDWAN_COMPARISON_NOTE = 'Catalyst SD-WAN es un router con funciones de seguridad añadidas; Fortinet y Palo Alto son firewalls con routing añadido — por eso la visibilidad nativa de tráfico/aplicaciones y el enrutamiento consciente de aplicaciones de Cisco suelen calificar por debajo de Fortinet en reportes de usuarios, y la licencia/configuración es más compleja y costosa. A favor de Cisco: soporte nativo de Segment Routing sobre IPv6 (SRv6) para ingeniería de tráfico determinística en WANs multi-MPLS complejas, algo que Fortinet, Palo Alto y Aruba no igualan — ventaja real en entornos grandes con múltiples proveedores de transporte.';
 
-module.exports = { MODELS, OPTICS, OPTIC_LABEL, PARTS_DESC, SMARTNET, DNA_DESC, LICENCIAS_G2, MODULOS_G2, CLOUD_UNIFICATION_NOTE, SDWAN_COMPARISON_NOTE };
+module.exports = { MODELS, OPTICS, OPTIC_LABEL, PARTS_DESC, SMARTNET, DNA_DESC, LICENCIAS_G2, MODULOS_G2, MODULOS_C8K, CLOUD_UNIFICATION_NOTE, SDWAN_COMPARISON_NOTE };

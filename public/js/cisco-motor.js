@@ -302,7 +302,16 @@
     } else if (m.lic === 'meraki') {
       const nom = { E: 'Enterprise', A: 'Advanced Security', P: 'Secure SD-WAN Plus' }[nivel];
       filas.push({ cat: 'Licencias', desc: `Licencia Meraki MX ${nom}`, sku: null, qty: 1, unit: null,
-        nota: `Una por equipo, por modelo y término (${anios} año(s)); la referencia sigue el patrón de LIC-MX67-SEC-3YR, confirmado en CCW: confirmar la del modelo.` });
+        nota: `Una por equipo, por modelo y término (${anios} año(s)); la página de licencias de Meraki no publica la referencia por modelo: sigue el patrón de LIC-MX67-SEC-3YR, confirmado en CCW, y se confirma la del modelo.` });
+      // SD-WAN+ en co-terminación: Advanced Security más la ampliación por dispositivo de su grupo
+      // (página de licencias de Meraki: términos de 1, 3 y 5 años; no existe en la suscripción por
+      // dispositivo). Sin grupo o con otro término, la referencia no consta.
+      if (nivel === 'P') {
+        const ref = m.sdwPlus && [1, 3, 5].includes(anios) ? `LIC-MX-SDW-${m.sdwPlus}-${anios}Y` : null;
+        avisos.push(ref
+          ? `En co-terminación, SD-WAN+ es Advanced Security más la ampliación por dispositivo ${ref}; en la suscripción por dispositivo esa ampliación no existe.`
+          : 'La página de licencias de Meraki no da la ampliación SD-WAN+ por dispositivo de este modelo con este término: confirmar en CCW.');
+      }
       if (o.seguridad === 'onbox' && nivel === 'E') avisos.push('Inspeccionar en el MX (IDS/IPS, filtrado, malware) pide Advanced Security o superior: Enterprise no lo incluye.');
     } else {
       const letra = nivel;

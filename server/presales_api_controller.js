@@ -5,6 +5,10 @@
  * Expone endpoints REST para cálculo de dimensionamiento Carrier-Grade, consolidación de BOM
  * multi-sede, importación validada de catálogos, exportación profesional a Excel (.xlsx) y
  * generación de Memoria Técnica.
+ *
+ * ESTADO (2026-10-20, decisión del dueño): ninguna página ni server.js carga este módulo. Sus
+ * catálogos, códigos y precios (list_price_usd) no son fuente de nada que se muestre: un dato
+ * entra a una pantalla por server/seed/legacyData/ con su documento, o en null (ver CLAUDE.md).
  */
 
 'use strict';

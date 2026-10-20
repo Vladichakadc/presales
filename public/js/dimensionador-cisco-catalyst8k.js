@@ -20,6 +20,7 @@ let PARTS_DESC = {};
 let SMARTNET = {};
 let LIC_G2 = {};
 let MOD_G2 = [];
+let MOD_C8K = [];
 let VISTAS = null;
 
 let dirMult = 2, mode = 'link', crit = 'low', lastPick = null, ultimaEval = null;
@@ -426,7 +427,19 @@ function opciones(id, lista, vacio){
   sel.innerHTML = `<option value="">${esc(vacio)}</option>` + lista.map(o => `<option value="${esc(o.v)}">${esc(o.t)}</option>`).join('');
   if(lista.some(o => o.v === antes)) sel.value = antes;
 }
-const PIM_SKUS = () => new Set(MOD_G2.filter(x => x.en === 'pim').map(x => x.sku));
+const PIM_SKUS = () => new Set([...MOD_G2, ...MOD_C8K].filter(x => x.en === 'pim').map(x => x.sku));
+
+// Módulos que admite el equipo, de la guía de pedido de su familia: la de la G2 (tablas 7 y 8) o
+// la de los Catalyst 8300/8200 (tabla 5), filtrada por lo que la tabla limita (solo 8300, SM de
+// doble ancho solo en el 2N2S). El ISR, el 8500 y el ASR no traen lista: «consultar».
+function modulosDe(m){
+  if(m.lic === 'cswan') return {lista:MOD_G2, fuente:'la guía de pedido de la G2 (tablas 7 y 8)', pim:'tabla 8'};
+  if(/^Catalyst 8[23]00/.test(m.id)){
+    const cabe = x => (!x.familia || m.id.startsWith(x.familia)) && (!x.ranuras || (m.sm || 0) >= x.ranuras);
+    return {lista:MOD_C8K.filter(cabe), fuente:'la guía de pedido de los Catalyst 8300/8200 (tabla 5)', pim:'tabla 5'};
+  }
+  return {lista:[], fuente:null, pim:null};
+}
 
 function renderBom(){
   const m = MODELS.find(x => x.id === $('pickModel').value) || MODELS[0];
@@ -439,16 +452,18 @@ function renderBom(){
   const optQty = Math.max(0, parseInt($('optQty').value, 10) || 0);
   const g2 = m.lic === 'cswan';
 
-  // Módulos: solo los de la guía de pedido de la G2, y solo en el equipo que tiene la ranura.
-  const deTipo = en => MOD_G2.filter(x => x.en === en).map(x => ({v:x.sku, t:`${x.sku} — ${x.d}`}));
-  opciones('modNim', g2 && m.nim ? deTipo('nim') : [], '— ninguno —');
-  opciones('modSm', g2 && m.sm ? deTipo('sm') : [], '— ninguno —');
-  opciones('modPim', g2 && m.pim ? deTipo('pim') : [], '— ninguno —');
-  $('modNimBlock').classList.toggle('hidden', !(g2 && m.nim));
-  $('modSmBlock').classList.toggle('hidden', !(g2 && m.sm));
-  $('modPimBlock').classList.toggle('hidden', !(g2 && m.pim));
-  $('modHint').textContent = g2 ? ((m.nim || m.sm || m.pim) ? 'De la guía de pedido de la G2 (tablas 7 y 8): uno por ranura.' : 'Este equipo no tiene ranuras de expansión.')
-    : ((m.nim || m.sm || m.pim) ? 'Los módulos de esta familia salen de su propia guía de pedido: consultar en CCW.' : 'Este equipo no tiene ranuras de expansión.');
+  // Módulos: solo los de la guía de pedido de su familia, y solo en el equipo que tiene la ranura.
+  const mods = modulosDe(m);
+  const conLista = mods.lista.length > 0;
+  const deTipo = en => mods.lista.filter(x => x.en === en).map(x => ({v:x.sku, t:`${x.sku} — ${x.d}`}));
+  opciones('modNim', conLista && m.nim ? deTipo('nim') : [], '— ninguno —');
+  opciones('modSm', conLista && m.sm ? deTipo('sm') : [], '— ninguno —');
+  opciones('modPim', conLista && m.pim ? deTipo('pim') : [], '— ninguno —');
+  $('modNimBlock').classList.toggle('hidden', !(conLista && m.nim));
+  $('modSmBlock').classList.toggle('hidden', !(conLista && m.sm));
+  $('modPimBlock').classList.toggle('hidden', !(conLista && m.pim));
+  $('modHint').textContent = !(m.nim || m.sm || m.pim) ? 'Este equipo no tiene ranuras de expansión.'
+    : conLista ? `De ${mods.fuente}: uno por ranura.` : 'Los módulos de esta familia salen de su propia guía de pedido: consultar en CCW.';
   const optLista = (m.optics || []).flatMap(k => (OPTICS[k] || []).map(o => ({v:`${k}|${o.sku}`, t:`${OPTIC_LABEL[k] || k} — ${o.sku} · ${o.d}`})));
   opciones('optSel', optLista, optLista.length ? '— elegir óptica —' : 'Este equipo no lista ópticas');
 
@@ -460,9 +475,9 @@ function renderBom(){
   for(const pz of rq.piezas){
     if(pz.pim){
       if($('modPim').value) continue;
-      const lista = g2 ? MOD_G2.filter(x => x.en === 'pim').map(x => x.sku).join(', ') : null;
+      const lista = mods.lista.filter(x => x.en === 'pim').map(x => x.sku).join(', ');
       filas.push({cat:'Módulos', desc:'Módulo celular (PIM) — elegir uno', sku:null, qty, unit:null,
-        nota:lista ? `Según la región y el operador: ${lista} (guía de pedido, tabla 8).` : 'Referencia en la guía de pedido de esta familia: consultar en CCW.'});
+        nota:lista ? `Según la región y el operador: ${lista} (guía de pedido, ${mods.pim}).` : 'Referencia en la guía de pedido de esta familia: consultar en CCW.'});
     } else if(pz.macsec){
       if(/^C-NIM-WAN/.test($('modNim').value)) continue;
       filas.push({cat:'Módulos', desc:'NIM WAN con MACsec — elegir una', sku:null, qty, unit:null,
@@ -473,8 +488,8 @@ function renderBom(){
   }
   for(const id of ['modNim', 'modSm', 'modPim']){
     const sku = $(id).value;
-    const x = sku && MOD_G2.find(y => y.sku === sku);
-    if(x) filas.push({cat:'Módulos', desc:x.d, sku:x.sku, qty, unit:null, nota:'Guía de pedido de la G2; precio en CCW.'});
+    const x = sku && mods.lista.find(y => y.sku === sku);
+    if(x) filas.push({cat:'Módulos', desc:x.d, sku:x.sku, qty, unit:null, nota:`Guía de pedido ${g2 ? 'de la G2' : 'de los Catalyst 8300/8200'}; precio en CCW.`});
   }
   // Piezas de hardware del catálogo que no son licencias ni celulares (los bundles HA del ASR).
   const pims = PIM_SKUS();
@@ -691,6 +706,7 @@ $('consolidadoCerrar').addEventListener('click', () => { $('modalConsolidado').h
   SMARTNET = data.smartnet;
   LIC_G2 = data.licenciasG2 || {};
   MOD_G2 = data.modulosG2 || [];
+  MOD_C8K = data.modulosC8k || [];
   // Sin el mapa la página funciona igual: la ficha no pinta la tarjeta gráfica.
   try {
     const rv = await fetch('/data/cisco-vistas-equipos.json');

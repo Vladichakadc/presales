@@ -552,6 +552,14 @@ comercial, gobierno del dato) · `docs/revision-huawei-2026-09-29.md` · `docs/m
 
 ## Arquitectura de Módulos Actualizados (Refactorización Carrier-Grade)
 
+> **Estado (decisión del dueño, 2026-10-20, con el encargo «cierra lo que está abierto»):** los dos
+> módulos de esta sección (`public/js/sizing_engine.js` y `server/presales_api_controller.js`)
+> **no los carga ninguna página ni `server.js`**; los dimensionadores en producción son los de la
+> sección *Fabricantes*. Se conservan, con su prueba (`test/presales-api-controller.test.js`), como
+> propuesta de Gemini, bajo la regla de datos del dueño: **sus catálogos, códigos y precios
+> (`list_price_usd`) no son fuente de nada que se muestre**, y si alguno entra a una pantalla lo
+> hace por `server/seed/legacyData/` con su documento en `fuentes.js`, o en `null`.
+
 ### Motor Unificado de Cálculo y Estado Reactivo (`public/js/sizing_engine.js`)
 Módulo isomórfico (compatible con navegador vía `window.PresalesEngine` y con Node.js vía `require('./sizing_engine')`) que centraliza:
 
@@ -608,7 +616,7 @@ Para garantizar que tanto **Gemini** (que lee `GEMINI.md`, el cual importa este 
 2. **Validación Determinista Obligatoria (`node --test`):**
    * Antes de dar por cerrada cualquier tarea o commit, tanto Claude como Gemini deben verificar que los cálculos de IMIX, flujos, BOM Health Check y MRR pasen el 100% de las pruebas en `test/`.
 3. **Sincronización de Catálogos y SKUs:**
-   * Todo nuevo SKU agregado a `HUAWEI_HARDWARE_CATALOG`, `ARUBA_HARDWARE_CATALOG` o `OPTICAL_TRANSCEIVERS_CATALOG` debe incluir `sku`, `modelo`, capacidades nominales, `list_price_usd` y `lifecycle_status`.
+   * Todo nuevo SKU agregado a `HUAWEI_HARDWARE_CATALOG`, `ARUBA_HARDWARE_CATALOG` o `OPTICAL_TRANSCEIVERS_CATALOG` lleva `sku`, `modelo`, capacidades nominales, `list_price_usd` y `lifecycle_status` **solo con documento oficial**; sin él, `null` («nunca se inventa un dato», que manda sobre este protocolo).
 4. **Registro en `CLAUDE.md` y `PENDIENTES.md`:**
    * Cuando Gemini genere nuevos módulos o refactorizaciones, entregará el bloque de actualización correspondiente para `CLAUDE.md` de modo que Claude Code tenga contexto inmediato al abrir el repositorio local.
 5. **Grafo de código siempre al día (`graphify`):**

@@ -524,9 +524,10 @@ function populatePickModel(){
 
 /* ── CAPA COMERCIAL (bom.js) ──────────────────────────────────────────────────────────────
    El precio del EQUIPO sale del cotizador (`/api/cotizador/catalog`, fuente unica de precios),
-   casado por nombre normalizado; no se copia a este catalogo. Es una estimacion de referencia
-   sin descuentos ni impuestos, y lo dice cada fila. Licencias, suscripciones y soporte no
-   tienen precio publicado: salen «consultar» y el TCO se declara parcial. */
+   casado por nombre normalizado; no se copia a este catalogo. Desde el 2026-10-20 el cotizador
+   no lleva las estimaciones «~» de Huawei, que no tenian documento (decision del dueno): Huawei
+   no publica lista y todo sale «consultar». Si algun dia una fila trae precio con fuente, entra
+   aqui sola; hasta entonces el TCO y la cuota dicen que no hay precios. */
 async function cargarPreciosRef(){
   try {
     const r = await fetch('/api/cotizador/catalog');

@@ -53,21 +53,23 @@ cisco:[
   // Desde el 2026-10-20 las filas de Cisco no traen cifras ni puertos: los dos los pone la
   // siembra desde `legacyData/cisco.js`, que es el que dimensiona (el `cap` de texto que
   // quedaba aqui citaba 600 Mbps para un MX67 de 700 y 5 Gbps para un MX450 de 10).
-  {model:'ISR 1111-8P',ser:'ISR 1000',seg:'Sucursal pequeña',elp:'~ $1,800'},
-  {model:'ISR 1111X-8P',ser:'ISR 1000',seg:'Sucursal pequeña',elp:'~ $2,800'},
-  {model:'ISR 1116-4P',ser:'ISR 1000',seg:'Sucursal + DSL',elp:'~ $2,200'},
+  // Tampoco precio: el «~» heredado no tenia documento (decision del dueno del 2026-10-20); el
+  // precio lo pone el cotizador, del export de CCW donde consta y «Consultar» donde no.
+  {model:'ISR 1111-8P',ser:'ISR 1000',seg:'Sucursal pequeña'},
+  {model:'ISR 1111X-8P',ser:'ISR 1000',seg:'Sucursal pequeña'},
+  {model:'ISR 1116-4P',ser:'ISR 1000',seg:'Sucursal + DSL'},
   {model:'ISR 1121X-8P',ser:'ISR 1000',seg:'Sucursal pequeña, 8 GB',protos:'SD-WAN, IPSec'},
   {model:'ISR 1161X-8P',ser:'ISR 1000',seg:'Sucursal pequeña de alto reenvío',protos:'SD-WAN, IPSec'},
   // Catalyst 8000 (fin de venta anunciado: ver `eolAnnounced`)
   {model:'Catalyst 8200L',ser:'Catalyst 8000',seg:'Sucursal SD-WAN compacta',protos:'SD-WAN, IPSec'},
-  {model:'Catalyst 8200',ser:'Catalyst 8000',seg:'Sucursal mediana',elp:'~ $4,500'},
-  {model:'Catalyst 8300-1N1S-6T',ser:'Catalyst 8000',seg:'Sucursal grande',elp:'~ $9,800'},
+  {model:'Catalyst 8200',ser:'Catalyst 8000',seg:'Sucursal mediana'},
+  {model:'Catalyst 8300-1N1S-6T',ser:'Catalyst 8000',seg:'Sucursal grande'},
   {model:'Catalyst 8300-1N1S-4T2X',ser:'Catalyst 8000',seg:'Hub regional, WAN 10G',protos:'SD-WAN, IPSec'},
-  {model:'Catalyst 8300-2N2S-6T',ser:'Catalyst 8000',seg:'Hub regional',elp:'~ $16,500'},
+  {model:'Catalyst 8300-2N2S-6T',ser:'Catalyst 8000',seg:'Hub regional'},
   {model:'Catalyst 8300-2N2S-4T2X',ser:'Catalyst 8000',seg:'Hub regional doble NIM, WAN 10G',protos:'SD-WAN, IPSec'},
   {model:'Catalyst 8500L-8S4X',ser:'Catalyst 8000',seg:'Agregación / hub DC compacto',protos:'SD-WAN, IPSec'},
   {model:'Catalyst 8500-12X',ser:'Catalyst 8000',seg:'Hub DC / agregación 10G',protos:'SD-WAN, IPSec'},
-  {model:'Catalyst 8500-12X4QC',ser:'Catalyst 8000',seg:'Hub datacenter / Agregación',elp:'~ $58,000'},
+  {model:'Catalyst 8500-12X4QC',ser:'Catalyst 8000',seg:'Hub datacenter / Agregación'},
   {model:'Catalyst 8500-20X6C',ser:'Catalyst 8000',seg:'Núcleo SD-WAN / DC',protos:'SD-WAN, IPSec'},
   // Secure Router (G2): la línea vigente, sucesora de los Catalyst 8000
   {model:'Cisco Secure Router C8130-G2',ser:'Secure Router (G2)',seg:'Sucursal pequeña',protos:'SD-WAN, IPSec'},
@@ -93,7 +95,7 @@ cisco:[
   // ASR 1000 (fuera de venta: el portal no los muestra; siguen en el dimensionador)
   {model:'ASR 1001-X',ser:'ASR 1000',seg:'WAN Edge compacto',protos:'IPSec'},
   {model:'ASR 1002-HX',ser:'ASR 1000',seg:'WAN Edge',protos:'IPSec'},
-  {model:'ASR 1006-X',ser:'ASR 1000',seg:'DC Core',elp:'~ $145,000'},
+  {model:'ASR 1006-X',ser:'ASR 1000',seg:'DC Core'},
   // Meraki MX y Secure Router gestionados en la nube
   {model:'Meraki MX67',ser:'Meraki MX',seg:'Sucursal pequeña',protos:'Auto VPN, SD-WAN'},
   {model:'Meraki MX67C',ser:'Meraki MX',seg:'Sucursal pequeña + LTE',protos:'Auto VPN, SD-WAN'},
@@ -107,6 +109,8 @@ cisco:[
   {model:'Meraki MX450',ser:'Meraki MX',seg:'Concentrador VPN / Hub',protos:'Auto VPN, SD-WAN'},
   {model:'Cisco Secure Router C8111-G2-MX',ser:'Meraki MX',seg:'Sucursal G2 en la nube',protos:'Auto VPN, SD-WAN'},
   {model:'Cisco Secure Router C8121-G2-MX',ser:'Meraki MX',seg:'Sucursal G2 en la nube + PoE',protos:'Auto VPN, SD-WAN'},
+  {model:'Cisco Secure Router C8355-G2-MX',ser:'Meraki MX',seg:'Sucursal grande G2 en la nube',protos:'Auto VPN, SD-WAN'},
+  {model:'Cisco Secure Router C8455-G2-MX',ser:'Meraki MX',seg:'Campus y concentrador VPN G2 en la nube',protos:'Auto VPN, SD-WAN'},
 ],
 
 nokia:[

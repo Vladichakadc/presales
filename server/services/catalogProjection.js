@@ -386,10 +386,11 @@ async function toDimensionadorCisco() {
       parts: p.Parts.map((pt) => pt.code),
     }));
 
-  // Licencias y módulos de la G2: datos planos de la guía de pedido, que no viven en tablas (la
-  // referencia de cada licencia sale de la clase del equipo, `clase` en sus specs).
+  // Licencias y módulos de la G2, y módulos de los Catalyst 8300/8200: datos planos de sus guías de
+  // pedido, que no viven en tablas (la referencia de cada licencia G2 sale de la clase del equipo,
+  // `clase` en sus specs).
   return { optics, opticLabel, partsDesc, smartnet, dnaDesc, models,
-    licenciasG2: ciscoData.LICENCIAS_G2, modulosG2: ciscoData.MODULOS_G2 };
+    licenciasG2: ciscoData.LICENCIAS_G2, modulosG2: ciscoData.MODULOS_G2, modulosC8k: ciscoData.MODULOS_C8K };
 }
 
 async function toDimensionadorFortinet() {

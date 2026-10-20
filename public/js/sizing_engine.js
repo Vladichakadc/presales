@@ -5,6 +5,10 @@
  * Compatible con Navegador (window.PresalesEngine) y Node.js / CommonJS (server/ & node --test).
  * Proyecto: https://github.com/Vladichakadc/presales (presales.up.railway.app)
  * Sincronizado para flujo colaborativo Gemini <-> Claude Code.
+ *
+ * ESTADO (2026-10-20, decisión del dueño): ninguna página ni server.js carga este módulo. Sus
+ * catálogos, códigos y precios (list_price_usd) no son fuente de nada que se muestre: un dato
+ * entra a una pantalla por server/seed/legacyData/ con su documento, o en null (ver CLAUDE.md).
  */
 
 /* global module, self */
