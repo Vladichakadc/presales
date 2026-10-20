@@ -666,7 +666,7 @@ test('el cotizador no cita una cifra de rendimiento que el dimensionador contrad
   }
   // Lo que coincide se cita intacto: Cisco quedo alineado con sus fichas el 2026-10-01.
   const c8200 = cot.find((c) => c.model === 'Catalyst 8200');
-  assert.strictEqual(c8200.spec, '1 Gbps FWD · IPsec 900 Mbps · SD-WAN nativo · 2 NIM');
+  assert.strictEqual(c8200.spec, '3.8 Gbps FWD · IPsec 900 Mbps · SD-WAN nativo · 1 NIM + 1 PIM');
   assert.strictEqual(c8200.enRevision, undefined);
   // Y desde el 2026-10-03 la cifra de una linea con pareja la pone el dimensionador, asi que lo
   // servido no puede quedar en revision salvo que el relleno la escriba mal: una escala de Nokia

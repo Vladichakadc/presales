@@ -85,6 +85,10 @@
   // preferible, `mismaBase` si esa cifra SOLO es comparable entre equipos del mismo
   // fabricante, `sd` el texto del hueco cuando «sin dato» a secas se leeria mal, y `nota` la
   // letra pequenya que evita que la fila se interprete torcida.
+  // Cisco trae una sola cifra de seguridad, `amenazas`: en Meraki es su NGFW y en los Secure
+  // Router y los Catalyst 8000, Threat Protection (su base lo dice en `bases.amenazas`).
+  const esMeraki = (d) => d.ser === 'Meraki MX';
+
   const SECCIONES = [
     { titulo: 'Identidad', filas: [
       { k: 'ser', n: 'Serie / familia', v: (d) => d.ser || d.fam || d.serie || null },
@@ -104,10 +108,11 @@
       { k: 'ipsec', n: 'IPsec VPN', mejor: true, mismaBase: true,
         v: (d) => capacidad(d.vpn != null ? d.vpn : d.ipsec) },
       { k: 'ips', n: 'IPS', mejor: true, mismaBase: true, v: (d) => capacidad(d.ips) },
-      { k: 'ngfw', n: 'NGFW', mejor: true, mismaBase: true, v: (d) => capacidad(d.ngfw) },
+      { k: 'ngfw', n: 'NGFW', mejor: true, mismaBase: true,
+        v: (d) => capacidad(d.ngfw != null ? d.ngfw : (esMeraki(d) ? d.amenazas : null)) },
       { k: 'inspeccion', n: 'Inspección completa', mejor: true, mismaBase: true,
-        nota: 'Threat Protection en Fortinet, ATP en Juniper: el stack completo. Es la cifra realista de una sede con seguridad avanzada.',
-        v: (d) => capacidad(d.tp != null ? d.tp : d.atp) },
+        nota: 'Threat Protection en Fortinet y en Cisco (Secure Router y Catalyst 8000), ATP en Juniper: el stack completo. Es la cifra realista de una sede con seguridad avanzada.',
+        v: (d) => capacidad(d.tp != null ? d.tp : (d.atp != null ? d.atp : (esMeraki(d) ? null : d.amenazas))) },
       { k: 'sdwan', n: 'SD-WAN', mejor: true, mismaBase: true,
         v: (d) => (typeof d.sdwan === 'string' ? d.sdwan : capacidad(d.sdwan)) },
       { k: 'mpps', n: 'Reenvío en paquetes', mejor: true, mismaBase: true,
@@ -121,7 +126,7 @@
         nota: 'Mide CPU, no memoria. Es el eje que aprieta antes de lo que parece en perfiles con muchas conexiones cortas.',
         v: (d) => miles(d.cps) },
       { k: 'tuns', n: 'Túneles', mejor: true,
-        v: (d) => miles(d.greTuns != null ? d.greTuns : d.ipsecSess) },
+        v: (d) => miles(d.greTuns != null ? d.greTuns : (d.ipsecSess != null ? d.ipsecSess : d.tuneles)) },
       { k: 'aps', n: 'Puntos de acceso gestionados', mejor: true,
         v: (d) => miles(d.aps != null ? d.aps : d.apsMax) },
       { k: 'clients', n: 'Clientes concurrentes', mejor: true, v: (d) => miles(d.clients) },

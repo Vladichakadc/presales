@@ -278,3 +278,27 @@ test('el desplegable de la pagina y los perfiles del modulo no se pueden desincr
   const opciones = Array.from(bloque.slice(0, bloque.indexOf('</select>')).matchAll(/value="([^"]+)"/g)).map((m) => m[1]);
   assert.deepStrictEqual(opciones.sort(), Object.keys(CALC.PERFILES).sort());
 });
+
+test('Cisco entra en las capas de seguridad con su cifra de amenazas, y su base decide cuál', () => {
+  // 2026-10-20: el catálogo Cisco trae `amenazas` con su base. En los Secure Router y los
+  // Catalyst es Threat Protection (EMIX, NGFW + IPS + URLF + AMP); en Meraki es su NGFW, en
+  // modo detección o prevención. Antes Cisco se apartaba entero de las dos capas.
+  const G2 = dev('cisco', 'Cisco', { model: 'Cisco Secure Router C8231-G2', ser: 'Secure Router (G2)', fwd: 19000, ipsec: 5000, sdwan: 4000, amenazas: 1000,
+    bases: { amenazas: 'EMIX, DIA-NAT + NGFW + IPS + URLF + AMP' } });
+  const MX95 = dev('cisco', 'Cisco', { model: 'Meraki MX95', ser: 'Meraki MX', fwd: 3000, ipsec: 2500, sdwan: 2500, amenazas: 2000,
+    bases: { amenazas: 'NGFW en modo detección (IDS)' } });
+  const MX450 = dev('cisco', 'Cisco', { model: 'Meraki MX450', ser: 'Meraki MX', fwd: 10000, amenazas: 5000, bases: { amenazas: 'NGFW (prevención)' } });
+  const lista = [G2, MX95, MX450, ISR];
+
+  const tp = CALC.evaluar(lista, 'tp', 800);
+  const enTp = Array.from(tp.candidatos);
+  assert.deepStrictEqual(enTp.map((f) => [f.d.model, f.capa, f.mbps]), [['Cisco Secure Router C8231-G2', 'Threat Protection', 1000]]);
+  // El ISR no publica Threat Protection y Meraki no la mide así: se apartan, no valen cero.
+  const apartadosTp = Array.from(tp.apartados).map((a) => a.d.model);
+  for (const m of ['ISR 1111-8P', 'Meraki MX95', 'Meraki MX450']) assert.ok(apartadosTp.includes(m), `${m} se aparta de Threat Protection`);
+
+  const ngfw = CALC.evaluar(lista, 'ngfw', 800);
+  const enNgfw = Array.from(ngfw.candidatos).map((f) => [f.d.model, f.capa]);
+  assert.deepStrictEqual(enNgfw, [['Meraki MX95', 'NGFW Meraki (detección, IDS)'], ['Meraki MX450', 'NGFW Meraki (prevención)']]);
+  assert.ok(Array.from(ngfw.apartados).some((a) => a.d.model === 'Cisco Secure Router C8231-G2'), 'el G2 no se cuela en NGFW con su Threat Protection');
+});

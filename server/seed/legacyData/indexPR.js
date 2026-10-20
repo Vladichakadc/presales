@@ -12,8 +12,8 @@
 //
 // LO QUE QUEDA AQUI ES LO QUE EL DIMENSIONADOR NO TRAE: el texto descriptivo, el precio de
 // referencia, las cifras de los equipos que no tienen pareja (AR6300, AR8700-10, NetEngine A811 E,
-// la linea MX de Juniper) y las que el portal escribe con otro nombre (el `cap` de texto de Cisco y
-// de los SRX, el `sdwan` de los AR, el `fwd` de Aruba). Esas se contrastan con el dimensionador en
+// la linea MX de Juniper) y las que el portal escribe con otro nombre (el `cap` de texto de los
+// SRX, el `sdwan` de los AR, el `fwd` de Aruba; el de Cisco se quito el 2026-10-20). Esas se contrastan con el dimensionador en
 // `npm run catalogo` (seccion «PORTAL Y GUIA FRENTE AL DIMENSIONADOR»), y
 // `test/catalogo-contraste-pantallas.test.js` exige que coincidan y que no vuelva a repetirse
 // ninguna. Las ocho filas duplicadas de Cisco, que la siembra ignoraba enteras, se quitaron.
@@ -50,29 +50,65 @@ hw_wan:[
   {model:'NE8000 X16',ser:'NE8000 X',seg:'Core máxima capacidad 32.3U',ports:'16 tarjetas 14.4T · hasta 42x400GE'},
 ],
 cisco:[
-  {model:'ISR 1111-8P',ser:'ISR 1000',seg:'Sucursal pequeña',ports:'8 GE + 2 SFP',elp:'~ $1,800'},
-  {model:'ISR 1111X-8P',ser:'ISR 1000',seg:'Sucursal pequeña',ports:'8 GE + 2 SFP',elp:'~ $2,800'},
-  {model:'ISR 1116-4P',ser:'ISR 1000',seg:'Sucursal + LTE',ports:'4 GE + LTE',elp:'~ $2,200'},
-  {model:'Catalyst 8200',ser:'Catalyst 8000',seg:'Sucursal mediana',ports:'4 GE + 2 NIM',elp:'~ $4,500'},
-  {model:'Catalyst 8300-1N1S-6T',ser:'Catalyst 8000',seg:'Sucursal grande',ports:'6 GE + 2 NIM + SM',elp:'~ $9,800'},
-  {model:'Catalyst 8300-2N2S-6T',ser:'Catalyst 8000',seg:'Hub regional',ports:'6 GE + 2 NIM + 2 SM',elp:'~ $16,500'},
-  {model:'Catalyst 8500-12X4QC',ser:'Catalyst 8000',seg:'Hub datacenter / Agregación',ports:'12x10GE + 4x40GE',elp:'~ $58,000'},
-  {model:'ASR 1006-X',ser:'ASR 1000',seg:'DC Core',ports:'6 slots modular · hasta 100GE',elp:'~ $145,000'},
-  // Catalyst 8000
-  {model:'Catalyst 8200L',ser:'Catalyst 8000',seg:'Sucursal SD-WAN compacta',cap:'500 Mbps',ports:'4 GE WAN',protos:'SD-WAN, IPSec'},
-  // ASR 1000
-  {model:'ASR 1001-X',ser:'ASR 1000',seg:'WAN Edge compacto',cap:'20 Gbps',ports:'6 GE',protos:'IPSec'},
-  {model:'ASR 1002-HX',ser:'ASR 1000',seg:'WAN Edge',cap:'35 Gbps',ports:'4x10GE',protos:'IPSec'},
-  // Meraki
-  {model:'Meraki MX67',ser:'Meraki MX',seg:'Sucursal pequeña',cap:'600 Mbps',ports:'4 GE LAN',protos:'Auto VPN, SD-WAN'},
-  {model:'Meraki MX68',ser:'Meraki MX',seg:'Sucursal pequeña + LTE',cap:'600 Mbps',ports:'10 GE LAN',protos:'Auto VPN, SD-WAN'},
-  {model:'Meraki MX75',ser:'Meraki MX',seg:'Sucursal mediana',cap:'1 Gbps',ports:'12 GE LAN',protos:'Auto VPN, SD-WAN'},
-  {model:'Meraki MX85',ser:'Meraki MX',seg:'Sucursal mediana-grande',cap:'1 Gbps',ports:'8 GE LAN',protos:'Auto VPN, SD-WAN'},
-  {model:'Meraki MX95',ser:'Meraki MX',seg:'Campus',cap:'2 Gbps',ports:'6 GE LAN',protos:'Auto VPN, SD-WAN'},
-  {model:'Meraki MX105',ser:'Meraki MX',seg:'Campus / Hub',cap:'3 Gbps',ports:'8 GE LAN',protos:'Auto VPN, SD-WAN'},
-  {model:'Meraki MX250',ser:'Meraki MX',seg:'Datacenter',cap:'4 Gbps',ports:'8 GE LAN',protos:'Auto VPN, SD-WAN'},
-  {model:'Meraki MX450',ser:'Meraki MX',seg:'Datacenter / Hub',cap:'5 Gbps',ports:'8 GE LAN',protos:'Auto VPN, SD-WAN'},
+  // Desde el 2026-10-20 las filas de Cisco no traen cifras ni puertos: los dos los pone la
+  // siembra desde `legacyData/cisco.js`, que es el que dimensiona (el `cap` de texto que
+  // quedaba aqui citaba 600 Mbps para un MX67 de 700 y 5 Gbps para un MX450 de 10).
+  {model:'ISR 1111-8P',ser:'ISR 1000',seg:'Sucursal pequeña',elp:'~ $1,800'},
+  {model:'ISR 1111X-8P',ser:'ISR 1000',seg:'Sucursal pequeña',elp:'~ $2,800'},
+  {model:'ISR 1116-4P',ser:'ISR 1000',seg:'Sucursal + LTE',elp:'~ $2,200'},
+  {model:'ISR 1121X-8P',ser:'ISR 1000',seg:'Sucursal pequeña, 8 GB',protos:'SD-WAN, IPSec'},
+  {model:'ISR 1161X-8P',ser:'ISR 1000',seg:'Sucursal pequeña de alto reenvío',protos:'SD-WAN, IPSec'},
+  // Catalyst 8000 (fin de venta anunciado: ver `eolAnnounced`)
+  {model:'Catalyst 8200L',ser:'Catalyst 8000',seg:'Sucursal SD-WAN compacta',protos:'SD-WAN, IPSec'},
+  {model:'Catalyst 8200',ser:'Catalyst 8000',seg:'Sucursal mediana',elp:'~ $4,500'},
+  {model:'Catalyst 8300-1N1S-6T',ser:'Catalyst 8000',seg:'Sucursal grande',elp:'~ $9,800'},
+  {model:'Catalyst 8300-1N1S-4T2X',ser:'Catalyst 8000',seg:'Hub regional, WAN 10G',protos:'SD-WAN, IPSec'},
+  {model:'Catalyst 8300-2N2S-6T',ser:'Catalyst 8000',seg:'Hub regional',elp:'~ $16,500'},
+  {model:'Catalyst 8300-2N2S-4T2X',ser:'Catalyst 8000',seg:'Hub regional doble NIM, WAN 10G',protos:'SD-WAN, IPSec'},
+  {model:'Catalyst 8500L-8S4X',ser:'Catalyst 8000',seg:'Agregación / hub DC compacto',protos:'SD-WAN, IPSec'},
+  {model:'Catalyst 8500-12X',ser:'Catalyst 8000',seg:'Hub DC / agregación 10G',protos:'SD-WAN, IPSec'},
+  {model:'Catalyst 8500-12X4QC',ser:'Catalyst 8000',seg:'Hub datacenter / Agregación',elp:'~ $58,000'},
+  {model:'Catalyst 8500-20X6C',ser:'Catalyst 8000',seg:'Núcleo SD-WAN / DC',protos:'SD-WAN, IPSec'},
+  // Secure Router (G2): la línea vigente, sucesora de los Catalyst 8000
+  {model:'Cisco Secure Router C8130-G2',ser:'Secure Router (G2)',seg:'Sucursal pequeña',protos:'SD-WAN, IPSec'},
+  {model:'Cisco Secure Router C8131-G2',ser:'Secure Router (G2)',seg:'Sucursal pequeña con Threat Protection',protos:'SD-WAN, IPSec, NGFW'},
+  {model:'Cisco Secure Router C8140-G2',ser:'Secure Router (G2)',seg:'Sucursal pequeña, 10 GE',protos:'SD-WAN, IPSec'},
+  {model:'Cisco Secure Router C8151-G2',ser:'Secure Router (G2)',seg:'Sucursal pequeña + 5G/LTE',protos:'SD-WAN, IPSec'},
+  {model:'Cisco Secure Router C8161-G2',ser:'Secure Router (G2)',seg:'Sucursal pequeña + PoE + 5G/LTE',protos:'SD-WAN, IPSec'},
+  {model:'Cisco Secure Router C8211-G2',ser:'Secure Router (G2)',seg:'Sucursal mediana de entrada',protos:'SD-WAN, IPSec'},
+  {model:'Cisco Secure Router C8221-G2',ser:'Secure Router (G2)',seg:'Sucursal mediana, WAN 10G',protos:'SD-WAN, IPSec'},
+  {model:'Cisco Secure Router C8221L-G2',ser:'Secure Router (G2)',seg:'Sucursal mediana, WAN 10GBASE-T',protos:'SD-WAN, IPSec'},
+  {model:'Cisco Secure Router C8225-G2',ser:'Secure Router (G2)',seg:'Sucursal mediana, WAN 10G',protos:'SD-WAN, IPSec'},
+  {model:'Cisco Secure Router C8231-G2',ser:'Secure Router (G2)',seg:'Sucursal mediana, mGig',protos:'SD-WAN, IPSec'},
+  {model:'Cisco Secure Router C8231-E-G2',ser:'Secure Router (G2)',seg:'Sucursal mediana modular',protos:'SD-WAN, IPSec'},
+  {model:'Cisco Secure Router C8235-G2',ser:'Secure Router (G2)',seg:'Sucursal mediana, 8x mGig',protos:'SD-WAN, IPSec'},
+  {model:'Cisco Secure Router C8235-E-G2',ser:'Secure Router (G2)',seg:'Sucursal mediana modular, 16 GB',protos:'SD-WAN, IPSec'},
+  {model:'Cisco Secure Router C8355-G2',ser:'Secure Router (G2)',seg:'Hub regional',protos:'SD-WAN, IPSec'},
+  {model:'Cisco Secure Router C8375-E-G2',ser:'Secure Router (G2)',seg:'Hub regional modular',protos:'SD-WAN, IPSec'},
+  {model:'Cisco Secure Router C8455-G2',ser:'Secure Router (G2)',seg:'Internet edge / campus',protos:'SD-WAN, IPSec'},
+  {model:'Cisco Secure Router C8475-G2',ser:'Secure Router (G2)',seg:'Internet edge / campus de alta densidad',protos:'SD-WAN, IPSec'},
+  {model:'Cisco Secure Router C8550-G2',ser:'Secure Router (G2)',seg:'Agregación / headend DC',protos:'SD-WAN, IPSec'},
+  {model:'Cisco Secure Router C8570-G2',ser:'Secure Router (G2)',seg:'Agregación / headend DC 40/100G',protos:'SD-WAN, IPSec'},
+  {model:'Cisco Secure Router C8650-G2',ser:'Secure Router (G2)',seg:'Núcleo SD-WAN / headend',protos:'SD-WAN, IPSec'},
+  // ASR 1000 (fuera de venta: el portal no los muestra; siguen en el dimensionador)
+  {model:'ASR 1001-X',ser:'ASR 1000',seg:'WAN Edge compacto',protos:'IPSec'},
+  {model:'ASR 1002-HX',ser:'ASR 1000',seg:'WAN Edge',protos:'IPSec'},
+  {model:'ASR 1006-X',ser:'ASR 1000',seg:'DC Core',elp:'~ $145,000'},
+  // Meraki MX y Secure Router gestionados en la nube
+  {model:'Meraki MX67',ser:'Meraki MX',seg:'Sucursal pequeña',protos:'Auto VPN, SD-WAN'},
+  {model:'Meraki MX67C',ser:'Meraki MX',seg:'Sucursal pequeña + LTE',protos:'Auto VPN, SD-WAN'},
+  {model:'Meraki MX68',ser:'Meraki MX',seg:'Sucursal pequeña + PoE+',protos:'Auto VPN, SD-WAN'},
+  {model:'Meraki MX68CW',ser:'Meraki MX',seg:'Sucursal pequeña + PoE+, LTE y Wi-Fi',protos:'Auto VPN, SD-WAN'},
+  {model:'Meraki MX75',ser:'Meraki MX',seg:'Sucursal mediana',protos:'Auto VPN, SD-WAN'},
+  {model:'Meraki MX85',ser:'Meraki MX',seg:'Sucursal mediana-grande',protos:'Auto VPN, SD-WAN'},
+  {model:'Meraki MX95',ser:'Meraki MX',seg:'Campus',protos:'Auto VPN, SD-WAN'},
+  {model:'Meraki MX105',ser:'Meraki MX',seg:'Campus / Hub',protos:'Auto VPN, SD-WAN'},
+  {model:'Meraki MX250',ser:'Meraki MX',seg:'Concentrador VPN / campus grande',protos:'Auto VPN, SD-WAN'},
+  {model:'Meraki MX450',ser:'Meraki MX',seg:'Concentrador VPN / Hub',protos:'Auto VPN, SD-WAN'},
+  {model:'Cisco Secure Router C8111-G2-MX',ser:'Meraki MX',seg:'Sucursal G2 en la nube',protos:'Auto VPN, SD-WAN'},
+  {model:'Cisco Secure Router C8121-G2-MX',ser:'Meraki MX',seg:'Sucursal G2 en la nube + PoE',protos:'Auto VPN, SD-WAN'},
 ],
+
 nokia:[
   {model:'7250 IXR-e',ser:'7250 IXR',seg:'Cell Site / Edge compacto',ports:'GE / 10GE',protos:'SR-MPLS, EVPN'},
   {model:'7250 IXR-6e',ser:'7250 IXR',seg:'Leaf datacenter',ports:'36x100GE o 12x400GE · 1U',protos:'SR Linux, EVPN-VXLAN, ECMP'},

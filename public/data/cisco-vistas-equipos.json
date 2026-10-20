@@ -1,0 +1,283 @@
+{
+ "_procedencia": "Figuras oficiales de los equipos Cisco y Meraki del catálogo, extraídas el 2026-10-20 de documentos traídos por traer-cisco-huawei.yml a las ramas de transporte fuente/cisco-secure-2026-10-20 y fuente/cisco-secure-2-2026-10-20 (corridas 39360888778 y 39410454052): el proxy de egreso de este entorno responde 403 a cisco.com y a documentation.meraki.com. LA CARA LA DICE EL PIE DEL DOCUMENTO, no el orden en la página: cada figura cita su documento, su número de figura y su rótulo literal. De dónde sale cada cara: la de puertos de la línea Secure Router (G2), de las tablas «Front view» de su ficha técnica (fotografías a 2x, de 775 a 3.080 px); la otra cara, de la «Rear view» de la ficha cuando la publica (C8235-E-G2, C8355-G2, C8375-E-G2) o de la guía de instalación de la serie (8100, 8200 y 8500: dibujos de línea de 850 a 1.150 px). OJO con la serie 8200: su guía llama «Front View» a la cara del logotipo y «I/O View» a la de puertos, al revés que su ficha; aquí la frontal es la de puertos, como en la ficha, y el pie de la trasera lo dice. Los Catalyst 8000 Edge salen de su guía de instalación («I/O Side» y «PSU/Fan Tray Side» o «Power-input Side») y de la ficha c78-744089 en los 8500; los Meraki, de las guías de instalación de documentation.meraki.com («Front Panel» y «Back Panel»; en los MX de sobremesa la frontal es la de los LED y la trasera la de puertos, como las rotula Meraki). Las del C8111-G2-MX y el C8121-G2-MX van incrustadas en su guía como imágenes en base64 y se extrajeron de la página guardada. SIN PÉRDIDA: WebP VP8L con los píxeles del documento; solo se recorta el margen blanco uniforme, nunca se reescala. Una figura que el documento publica para varios modelos («C8130-G2/Cisco 8131-G2», «C8300-1N1S-4T2X|6T», «MX67/67C/67W») es un solo archivo; dos figuras distintas con los mismos bytes (la trasera de los 8500 de 1RU, la del MX250 y el MX450) también. SIN TRASERA, la pestaña lo dice (`rearNota`): el C8211-G2, el C8221L-G2 y el C8225-G2 (la guía de la serie 8200 es anterior a ellos), la serie 8400 (su guía no se pudo traer: la URL oficial sirve la guía de software), el 8650-G2 y el C8500-20X6C (sus documentos solo publican la cara frontal, donde llevan puertos y fuentes) y el ISR 1111X-8P. SIN FIGURA: el C8221-G2 y el C8231-E-G2 (la ficha no publica la suya y no se sirve la de un hermano), los ISR 1111-8P, 1116-4P, 1121X-8P y 1161X-8P (la ficha del ISR 1000 dibuja otras variantes) y los ASR 1000 (fuera de venta).",
+ "_previa": "frontPrev y rearPrev: vista previa con pérdida (WebP calidad 82, ancho máximo 1.200 px) generada del original sin pérdida. La tarjeta pinta la previa; la lupa y el Excel usan el original, que es el que conserva los píxeles del documento.",
+ "Cisco Secure Router C8130-G2": {
+  "front": "/img/equipos/cs-c8130-c8131-g2-front.webp",
+  "rear": "/img/equipos/cs-c8130-c8131-g2-rear.webp",
+  "fuente": "Frontal — «Cisco 8100 Series Secure Routers Data Sheet» (actualizada el 30-sep-2026), figura 1 «Front panel of Cisco C8130-G2/Cisco 8131-G2 Secure Router» (1540 × 323 px, servida a 1444 × 216). Trasera — guía «Hardware Installation Guide for the Cisco 8100 Series Secure Routers» (24-abr-2026), figura 1 «C8130-G2 - Rear view» (1000 × 215 px, servida a 990 × 205).",
+  "frontPrev": "/img/equipos/cs-c8130-c8131-g2-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8130-c8131-g2-rear.prev.webp"
+ },
+ "Cisco Secure Router C8131-G2": {
+  "front": "/img/equipos/cs-c8130-c8131-g2-front.webp",
+  "rear": "/img/equipos/cs-c8130-c8131-g2-rear.webp",
+  "fuente": "Frontal — «Cisco 8100 Series Secure Routers Data Sheet» (actualizada el 30-sep-2026), figura 1 «Front panel of Cisco C8130-G2/Cisco 8131-G2 Secure Router» (1540 × 323 px, servida a 1444 × 216). Trasera — guía «Hardware Installation Guide for the Cisco 8100 Series Secure Routers» (24-abr-2026), figura 3 «C8131-G2 - Rear view» (1000 × 215 px, servida a 990 × 205).",
+  "frontPrev": "/img/equipos/cs-c8130-c8131-g2-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8130-c8131-g2-rear.prev.webp"
+ },
+ "Cisco Secure Router C8140-G2": {
+  "front": "/img/equipos/cs-c8140-g2-front.webp",
+  "rear": "/img/equipos/cs-c8140-g2-rear.webp",
+  "fuente": "Frontal — «Cisco 8100 Series Secure Routers Data Sheet» (actualizada el 30-sep-2026), figura 4 «Front View of a Cisco C8140-G2 Secure Router» (1540 × 311 px, servida a 1458 × 198). Trasera — guía «Hardware Installation Guide for the Cisco 8100 Series Secure Routers» (24-abr-2026), figura 5 «C8140-G2 - Rear view» (1000 × 209 px, servida a 989 × 196).",
+  "frontPrev": "/img/equipos/cs-c8140-g2-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8140-g2-rear.prev.webp"
+ },
+ "Cisco Secure Router C8151-G2": {
+  "front": "/img/equipos/cs-c8151-g2-front.webp",
+  "rear": "/img/equipos/cs-c8151-c8161-g2-rear.webp",
+  "fuente": "Frontal — «Cisco 8100 Series Secure Routers Data Sheet» (actualizada el 30-sep-2026), figura 5 «Front View of a Cisco C8151-G2 Secure Router» (1540 × 371 px, servida a 1468 × 254). Trasera — guía «Hardware Installation Guide for the Cisco 8100 Series Secure Routers» (24-abr-2026), figura 7 «C8151-G2 - Rear view» (1150 × 279 px, servida a 1132 × 261).",
+  "frontPrev": "/img/equipos/cs-c8151-g2-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8151-c8161-g2-rear.prev.webp"
+ },
+ "Cisco Secure Router C8161-G2": {
+  "front": "/img/equipos/cs-c8161-g2-front.webp",
+  "rear": "/img/equipos/cs-c8151-c8161-g2-rear.webp",
+  "fuente": "Frontal — «Cisco 8100 Series Secure Routers Data Sheet» (actualizada el 30-sep-2026), figura 8 «Front View of a Cisco C8161-G2 Secure Router» (1540 × 338 px, servida a 1486 × 251). Trasera — guía «Hardware Installation Guide for the Cisco 8100 Series Secure Routers» (24-abr-2026), figura 9 «C8161-G2 - Rear view» (1150 × 279 px, servida a 1132 × 261).",
+  "frontPrev": "/img/equipos/cs-c8161-g2-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8151-c8161-g2-rear.prev.webp"
+ },
+ "Cisco Secure Router C8211-G2": {
+  "front": "/img/equipos/cs-c8211-g2-front.webp",
+  "fuente": "Frontal — «Cisco 8200 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 7 «Front view of a Cisco C8211-G2 Secure Router» (788 × 240 px, sin recortar).",
+  "rearNota": "La ficha publica solo la cara de puertos, y la guía de instalación de la serie 8200 (10-sep-2025) es anterior a este modelo: solo dibuja el C8231-G2 y el C8235-G2.",
+  "frontPrev": "/img/equipos/cs-c8211-g2-front.prev.webp"
+ },
+ "Cisco Secure Router C8221L-G2": {
+  "front": "/img/equipos/cs-c8221l-g2-front.webp",
+  "fuente": "Frontal — «Cisco 8200 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 6 «Front view of a Cisco C8221L-G2 Secure Router» (775 × 240 px, sin recortar).",
+  "rearNota": "La ficha publica solo la cara de puertos, y la guía de instalación de la serie 8200 (10-sep-2025) es anterior a este modelo: solo dibuja el C8231-G2 y el C8235-G2.",
+  "frontPrev": "/img/equipos/cs-c8221l-g2-front.prev.webp"
+ },
+ "Cisco Secure Router C8225-G2": {
+  "front": "/img/equipos/cs-c8225-g2-front.webp",
+  "fuente": "Frontal — «Cisco 8200 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 5 «Front view of a Cisco C8225-G2 Secure Router» (775 × 240 px, sin recortar).",
+  "rearNota": "La ficha publica solo la cara de puertos, y la guía de instalación de la serie 8200 (10-sep-2025) es anterior a este modelo: solo dibuja el C8231-G2 y el C8235-G2.",
+  "frontPrev": "/img/equipos/cs-c8225-g2-front.prev.webp"
+ },
+ "Cisco Secure Router C8231-G2": {
+  "front": "/img/equipos/cs-c8231-g2-front.webp",
+  "rear": "/img/equipos/cs-c8231-g2-rear.webp",
+  "fuente": "Frontal — «Cisco 8200 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 4 «Front view of a Cisco C8231-G2 Secure Router» (1272 × 298 px, servida a 1269 × 296). Trasera — guía «Hardware Installation Guide for the Cisco 8200 Series Secure Routers» (10-sep-2025), figura 1 «C8231-G2 - Front View» (la guía llama así a la cara del logotipo y «I/O View» a la de puertos) (1000 × 256 px, servida a 977 × 239).",
+  "frontPrev": "/img/equipos/cs-c8231-g2-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8231-g2-rear.prev.webp"
+ },
+ "Cisco Secure Router C8235-G2": {
+  "front": "/img/equipos/cs-c8235-g2-front.webp",
+  "rear": "/img/equipos/cs-c8235-g2-rear.webp",
+  "fuente": "Frontal — «Cisco 8200 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 3 «Front view of a Cisco C8235-G2 Secure Router» (1306 × 344 px, servida a 1306 × 342). Trasera — guía «Hardware Installation Guide for the Cisco 8200 Series Secure Routers» (10-sep-2025), figura 3 «C8235-G2 - Front View» (la guía llama así a la cara del logotipo y «I/O View» a la de puertos) (1000 × 282 px, servida a 981 × 272).",
+  "frontPrev": "/img/equipos/cs-c8235-g2-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8235-g2-rear.prev.webp"
+ },
+ "Cisco Secure Router C8235-E-G2": {
+  "front": "/img/equipos/cs-c8235-e-g2-front.webp",
+  "rear": "/img/equipos/cs-c8235-e-g2-rear.webp",
+  "fuente": "Frontal — «Cisco 8200 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 1 «Front view of a Cisco C8235-E-G2 Secure Router» (1043 × 347 px, sin recortar). Trasera — «Cisco 8200 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 2 «Rear view of a Cisco C8235-E-G2 Secure Router» (859 × 322 px, sin recortar).",
+  "frontPrev": "/img/equipos/cs-c8235-e-g2-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8235-e-g2-rear.prev.webp"
+ },
+ "Cisco Secure Router C8355-G2": {
+  "front": "/img/equipos/cs-c8355-g2-front.webp",
+  "rear": "/img/equipos/cs-c8355-g2-rear.webp",
+  "fuente": "Frontal — «Cisco 8300 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 3 «Front view of a Cisco C8355-G2 Secure Router» (1860 × 452 px, servida a 1833 × 412). Trasera — «Cisco 8300 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 4 «Rear view of a Cisco C8355-G2 Secure Router» (1860 × 345 px, servida a 1845 × 312).",
+  "frontPrev": "/img/equipos/cs-c8355-g2-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8355-g2-rear.prev.webp"
+ },
+ "Cisco Secure Router C8375-E-G2": {
+  "front": "/img/equipos/cs-c8375-e-g2-front.webp",
+  "rear": "/img/equipos/cs-c8375-e-g2-rear.webp",
+  "fuente": "Frontal — «Cisco 8300 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 1 «Front view of a Cisco C8375-E-G2 Secure Router» (1860 × 460 px, servida a 1811 × 411). Trasera — «Cisco 8300 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 2 «Rear view of a Cisco C8375-E-G2 Secure Router» (1860 × 469 px, servida a 1839 × 428).",
+  "frontPrev": "/img/equipos/cs-c8375-e-g2-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8375-e-g2-rear.prev.webp"
+ },
+ "Cisco Secure Router C8455-G2": {
+  "front": "/img/equipos/cs-c8455-g2-front.webp",
+  "fuente": "Frontal — «Cisco 8400 Series Secure Routers Data Sheet» (actualizada el 13-oct-2026), figura 1 «Front view of a Cisco C8455-G2 Secure Router» (1860 × 321 px, servida a 1850 × 303).",
+  "rearNota": "La ficha publica solo la vista frontal. La guía de instalación de la serie 8400 no se pudo traer: su URL oficial sirve hoy la guía de configuración de software (corrida 39411316318).",
+  "frontPrev": "/img/equipos/cs-c8455-g2-front.prev.webp"
+ },
+ "Cisco Secure Router C8475-G2": {
+  "front": "/img/equipos/cs-c8475-g2-front.webp",
+  "fuente": "Frontal — «Cisco 8400 Series Secure Routers Data Sheet» (actualizada el 13-oct-2026), figura 2 «Front view of a Cisco C8475-G2 Secure Router» (1860 × 325 px, servida a 1852 × 314).",
+  "rearNota": "La ficha publica solo la vista frontal. La guía de instalación de la serie 8400 no se pudo traer: su URL oficial sirve hoy la guía de configuración de software (corrida 39411316318).",
+  "frontPrev": "/img/equipos/cs-c8475-g2-front.prev.webp"
+ },
+ "Cisco Secure Router C8550-G2": {
+  "front": "/img/equipos/cs-c8550-g2-front.webp",
+  "rear": "/img/equipos/cs-c8500-1ru-rear.webp",
+  "fuente": "Frontal — «Cisco 8500 Series Secure Routers Data Sheet» (actualizada el 6-oct-2025), figura 1 «Front View of a Cisco C8550-G2 Secure Router» (3080 × 654 px, servida a 2948 × 443). Trasera — guía «Cisco 8500 Series Secure Routers Hardware Installation Guide» (9-sep-2025), figura 5 «Cisco C8550-G2 Rear View» (850 × 224 px, servida a 847 × 224).",
+  "frontPrev": "/img/equipos/cs-c8550-g2-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8500-1ru-rear.prev.webp"
+ },
+ "Cisco Secure Router C8570-G2": {
+  "front": "/img/equipos/cs-c8570-g2-front.webp",
+  "rear": "/img/equipos/cs-c8500-1ru-rear.webp",
+  "fuente": "Frontal — «Cisco 8500 Series Secure Routers Data Sheet» (actualizada el 6-oct-2025), figura 2 «Front View of a Cisco C8570-G2 Secure Router» (3080 × 636 px, servida a 2770 × 465). Trasera — guía «Cisco 8500 Series Secure Routers Hardware Installation Guide» (9-sep-2025), figura 2 «Cisco C8570-G2 Rear View» (850 × 224 px, servida a 847 × 224).",
+  "frontPrev": "/img/equipos/cs-c8570-g2-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8500-1ru-rear.prev.webp"
+ },
+ "Cisco Secure Router C8650-G2": {
+  "front": "/img/equipos/cs-c8650-g2-front.webp",
+  "fuente": "Frontal — «Cisco 8600 Series Secure Routers Data Sheet» (2-jun-2026), figura 1 «Front view of a Cisco 8650-G2 Secure Router» (1887 × 856 px, sin recortar).",
+  "rearNota": "La ficha publica solo la vista frontal, que es donde el 8650-G2 lleva puertos y fuentes («AC or DC power supplies (N+2 redundancy)», llamada 4). Cisco no lista todavía una guía de instalación de la serie 8600.",
+  "frontPrev": "/img/equipos/cs-c8650-g2-front.prev.webp"
+ },
+ "Cisco Secure Router C8111-G2-MX": {
+  "front": "/img/equipos/cs-c8111-g2-mx-front.webp",
+  "rear": "/img/equipos/cs-c8111-g2-mx-rear.webp",
+  "fuente": "Frontal — guía «C8111-G2-MX and C8121-G2-MX Installation Guide» de documentation.meraki.com, «Front Panel» — «C8111-G2» (figura incrustada en la página) (688 × 232 px, sin recortar). Trasera — guía «C8111-G2-MX and C8121-G2-MX Installation Guide» de documentation.meraki.com, «Back Panel» — «C8111-G2» (909 × 189 px, sin recortar).",
+  "frontPrev": "/img/equipos/cs-c8111-g2-mx-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8111-g2-mx-rear.prev.webp"
+ },
+ "Cisco Secure Router C8121-G2-MX": {
+  "front": "/img/equipos/cs-c8121-g2-mx-front.webp",
+  "rear": "/img/equipos/cs-c8121-g2-mx-rear.webp",
+  "fuente": "Frontal — guía «C8111-G2-MX and C8121-G2-MX Installation Guide» de documentation.meraki.com, «Front Panel» — «C8121-G2» (figura incrustada en la página) (624 × 202 px, sin recortar). Trasera — guía «C8111-G2-MX and C8121-G2-MX Installation Guide» de documentation.meraki.com, «Back Panel» — «C8121-G2» (852 × 171 px, sin recortar).",
+  "frontPrev": "/img/equipos/cs-c8121-g2-mx-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8121-g2-mx-rear.prev.webp"
+ },
+ "Meraki MX67": {
+  "front": "/img/equipos/cs-mx67-front.webp",
+  "rear": "/img/equipos/cs-mx67-rear.webp",
+  "fuente": "Frontal — guía «MX67/MX68 Installation Guide» de documentation.meraki.com, «Front Panels — MX67/67C/67W» (918 × 121 px, servida a 914 × 113). Trasera — guía «MX67/MX68 Installation Guide» de documentation.meraki.com, «Back Panels — MX67» (917 × 116 px, servida a 914 × 113).",
+  "frontPrev": "/img/equipos/cs-mx67-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-mx67-rear.prev.webp"
+ },
+ "Meraki MX67C": {
+  "front": "/img/equipos/cs-mx67-front.webp",
+  "rear": "/img/equipos/cs-mx67c-rear.webp",
+  "fuente": "Frontal — guía «MX67/MX68 Installation Guide» de documentation.meraki.com, «Front Panels — MX67/67C/67W» (918 × 121 px, servida a 914 × 113). Trasera — guía «MX67/MX68 Installation Guide» de documentation.meraki.com, «Back Panels — MX67C» (860 × 524 px, servida a 858 × 519).",
+  "frontPrev": "/img/equipos/cs-mx67-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-mx67c-rear.prev.webp"
+ },
+ "Meraki MX68": {
+  "front": "/img/equipos/cs-mx68-front.webp",
+  "rear": "/img/equipos/cs-mx68-rear.webp",
+  "fuente": "Frontal — guía «MX67/MX68 Installation Guide» de documentation.meraki.com, «Front Panels — MX68/68W/68CW» (1017 × 111 px, servida a 1015 × 107). Trasera — guía «MX67/MX68 Installation Guide» de documentation.meraki.com, «Back Panels — MX68» (1016 × 108 px, servida a 1015 × 108).",
+  "frontPrev": "/img/equipos/cs-mx68-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-mx68-rear.prev.webp"
+ },
+ "Meraki MX68CW": {
+  "front": "/img/equipos/cs-mx68-front.webp",
+  "rear": "/img/equipos/cs-mx68cw-rear.webp",
+  "fuente": "Frontal — guía «MX67/MX68 Installation Guide» de documentation.meraki.com, «Front Panels — MX68/68W/68CW» (1017 × 111 px, servida a 1015 × 107). Trasera — guía «MX67/MX68 Installation Guide» de documentation.meraki.com, «Back Panels — MX68CW» (947 × 503 px, servida a 947 × 502).",
+  "frontPrev": "/img/equipos/cs-mx68-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-mx68cw-rear.prev.webp"
+ },
+ "Meraki MX75": {
+  "front": "/img/equipos/cs-mx75-front.webp",
+  "rear": "/img/equipos/cs-mx75-rear.webp",
+  "fuente": "Frontal — guía «MX75 Hardware Installation Guide» de documentation.meraki.com, «Front Panels — MX75» (2452 × 211 px, sin recortar). Trasera — guía «MX75 Hardware Installation Guide» de documentation.meraki.com, «Back Panels — MX75» (2452 × 209 px, sin recortar).",
+  "frontPrev": "/img/equipos/cs-mx75-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-mx75-rear.prev.webp"
+ },
+ "Meraki MX85": {
+  "front": "/img/equipos/cs-mx85-front.webp",
+  "rear": "/img/equipos/cs-mx85-rear.webp",
+  "fuente": "Frontal — guía «MX85 Series Hardware Installation Guide» de documentation.meraki.com, «Front Panel» (2672 × 250 px, sin recortar). Trasera — guía «MX85 Series Hardware Installation Guide» de documentation.meraki.com, «Back Panel» (2415 × 245 px, sin recortar).",
+  "frontPrev": "/img/equipos/cs-mx85-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-mx85-rear.prev.webp"
+ },
+ "Meraki MX95": {
+  "front": "/img/equipos/cs-mx95-mx105-front.webp",
+  "rear": "/img/equipos/cs-mx95-rear.webp",
+  "fuente": "Frontal — guía «MX95/MX105 Series Hardware Installation Guide» de documentation.meraki.com, «Front Panel» (texto alternativo: «Image of the front panel of an MX95/105») (2542 × 240 px, sin recortar). Trasera — guía «MX95/MX105 Series Hardware Installation Guide» de documentation.meraki.com, «Back Panel — MX95» (2345 × 241 px, sin recortar).",
+  "frontPrev": "/img/equipos/cs-mx95-mx105-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-mx95-rear.prev.webp"
+ },
+ "Meraki MX105": {
+  "front": "/img/equipos/cs-mx95-mx105-front.webp",
+  "rear": "/img/equipos/cs-mx105-rear.webp",
+  "fuente": "Frontal — guía «MX95/MX105 Series Hardware Installation Guide» de documentation.meraki.com, «Front Panel» (texto alternativo: «Image of the front panel of an MX95/105») (2542 × 240 px, sin recortar). Trasera — guía «MX95/MX105 Series Hardware Installation Guide» de documentation.meraki.com, «Back Panel — MX105» (2345 × 241 px, sin recortar).",
+  "frontPrev": "/img/equipos/cs-mx95-mx105-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-mx105-rear.prev.webp"
+ },
+ "Meraki MX250": {
+  "front": "/img/equipos/cs-mx250-front.webp",
+  "rear": "/img/equipos/cs-mx250-mx450-rear.webp",
+  "fuente": "Frontal — guía «MX250 Installation Guide» de documentation.meraki.com, «MX250_product_image_front_view» (1004 × 129 px, sin recortar). Trasera — guía «MX250 Installation Guide» de documentation.meraki.com, «MX250 Back Panel» (900 × 83 px, sin recortar).",
+  "frontPrev": "/img/equipos/cs-mx250-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-mx250-mx450-rear.prev.webp"
+ },
+ "Meraki MX450": {
+  "front": "/img/equipos/cs-mx450-front.webp",
+  "rear": "/img/equipos/cs-mx250-mx450-rear.webp",
+  "fuente": "Frontal — guía «MX450 Installation Guide» de documentation.meraki.com, «MX450 Front Panel» (1003 × 132 px, sin recortar). Trasera — guía «MX450 Installation Guide» de documentation.meraki.com, «MX450 Back Panel» (900 × 83 px, sin recortar).",
+  "frontPrev": "/img/equipos/cs-mx450-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-mx250-mx450-rear.prev.webp"
+ },
+ "Catalyst 8200": {
+  "front": "/img/equipos/cs-c8200-front.webp",
+  "rear": "/img/equipos/cs-c8200-rear.webp",
+  "fuente": "Frontal — guía «Hardware Installation Guide for Cisco Catalyst 8200 Series Edge Platforms», figura 1 «Cisco 8200 Series Chassis - I/O Side» (la guía aplica a C8200-1N-4T y C8200L-1N-4T) (800 × 266 px, servida a 789 × 255). Trasera — guía «Hardware Installation Guide for Cisco Catalyst 8200 Series Edge Platforms», figura 2 «Cisco 8200 Series Chassis - Power-input Side» (789 × 182 px, servida a 778 × 165).",
+  "frontPrev": "/img/equipos/cs-c8200-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8200-rear.prev.webp"
+ },
+ "Catalyst 8200L": {
+  "front": "/img/equipos/cs-c8200-front.webp",
+  "rear": "/img/equipos/cs-c8200-rear.webp",
+  "fuente": "Frontal — guía «Hardware Installation Guide for Cisco Catalyst 8200 Series Edge Platforms», figura 1 «Cisco 8200 Series Chassis - I/O Side» (la guía aplica a C8200-1N-4T y C8200L-1N-4T) (800 × 266 px, servida a 789 × 255). Trasera — guía «Hardware Installation Guide for Cisco Catalyst 8200 Series Edge Platforms», figura 2 «Cisco 8200 Series Chassis - Power-input Side» (789 × 182 px, servida a 778 × 165).",
+  "frontPrev": "/img/equipos/cs-c8200-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8200-rear.prev.webp"
+ },
+ "Catalyst 8300-1N1S-6T": {
+  "front": "/img/equipos/cs-c8300-1n1s-front.webp",
+  "rear": "/img/equipos/cs-c8300-1n1s-rear.webp",
+  "fuente": "Frontal — guía «Hardware Installation Guide for Cisco Catalyst 8300 Series Edge Platforms», figura 1 «C8300-1N1S-4T2X|6T Chassis - I/O Side» (750 × 224 px, servida a 749 × 219). Trasera — guía «Hardware Installation Guide for Cisco Catalyst 8300 Series Edge Platforms», figura 2 «C8300-1N1S-4T2X|6T Chassis - PSU/Fan Tray Side» (700 × 115 px, sin recortar).",
+  "frontPrev": "/img/equipos/cs-c8300-1n1s-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8300-1n1s-rear.prev.webp"
+ },
+ "Catalyst 8300-1N1S-4T2X": {
+  "front": "/img/equipos/cs-c8300-1n1s-front.webp",
+  "rear": "/img/equipos/cs-c8300-1n1s-rear.webp",
+  "fuente": "Frontal — guía «Hardware Installation Guide for Cisco Catalyst 8300 Series Edge Platforms», figura 1 «C8300-1N1S-4T2X|6T Chassis - I/O Side» (750 × 224 px, servida a 749 × 219). Trasera — guía «Hardware Installation Guide for Cisco Catalyst 8300 Series Edge Platforms», figura 2 «C8300-1N1S-4T2X|6T Chassis - PSU/Fan Tray Side» (700 × 115 px, sin recortar).",
+  "frontPrev": "/img/equipos/cs-c8300-1n1s-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8300-1n1s-rear.prev.webp"
+ },
+ "Catalyst 8300-2N2S-6T": {
+  "front": "/img/equipos/cs-c8300-2n2s-front.webp",
+  "rear": "/img/equipos/cs-c8300-2n2s-rear.webp",
+  "fuente": "Frontal — guía «Hardware Installation Guide for Cisco Catalyst 8300 Series Edge Platforms», figura 3 «C8300-2N2S-4T2X|6T Chassis - I/O Side» (725 × 300 px, sin recortar). Trasera — guía «Hardware Installation Guide for Cisco Catalyst 8300 Series Edge Platforms», figura 4 «C8300-2N2S-4T2X|6T Chassis - PSU/Fan Tray Side» (650 × 240 px, sin recortar).",
+  "frontPrev": "/img/equipos/cs-c8300-2n2s-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8300-2n2s-rear.prev.webp"
+ },
+ "Catalyst 8300-2N2S-4T2X": {
+  "front": "/img/equipos/cs-c8300-2n2s-front.webp",
+  "rear": "/img/equipos/cs-c8300-2n2s-rear.webp",
+  "fuente": "Frontal — guía «Hardware Installation Guide for Cisco Catalyst 8300 Series Edge Platforms», figura 3 «C8300-2N2S-4T2X|6T Chassis - I/O Side» (725 × 300 px, sin recortar). Trasera — guía «Hardware Installation Guide for Cisco Catalyst 8300 Series Edge Platforms», figura 4 «C8300-2N2S-4T2X|6T Chassis - PSU/Fan Tray Side» (650 × 240 px, sin recortar).",
+  "frontPrev": "/img/equipos/cs-c8300-2n2s-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8300-2n2s-rear.prev.webp"
+ },
+ "Catalyst 8500-12X4QC": {
+  "front": "/img/equipos/cs-c8500-12x4qc-front.webp",
+  "rear": "/img/equipos/cs-c8500-1ru-rear.webp",
+  "fuente": "Frontal — ficha «Cisco Catalyst 8500 Series Edge Platforms Data Sheet» (c78-744089), figura 2 «C8500-12X4QC» (1800 × 183 px, sin recortar). Trasera — guía «Cisco Catalyst 8500 Series Edge Platforms Hardware Installation Guide» (2-jul-2024), figura 2 «Cisco C8500-12X4QC Rear View» (850 × 224 px, servida a 847 × 224).",
+  "frontPrev": "/img/equipos/cs-c8500-12x4qc-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8500-1ru-rear.prev.webp"
+ },
+ "Catalyst 8500-12X": {
+  "front": "/img/equipos/cs-c8500-12x-front.webp",
+  "rear": "/img/equipos/cs-c8500-1ru-rear.webp",
+  "fuente": "Frontal — ficha «Cisco Catalyst 8500 Series Edge Platforms Data Sheet» (c78-744089), figura 3 «C8500-12X with 12x 1/10GE ports» (1800 × 191 px, sin recortar). Trasera — guía «Cisco Catalyst 8500 Series Edge Platforms Hardware Installation Guide» (2-jul-2024), figura 5 «Cisco C8500-12X Rear View» (850 × 224 px, servida a 847 × 224).",
+  "frontPrev": "/img/equipos/cs-c8500-12x-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8500-1ru-rear.prev.webp"
+ },
+ "Catalyst 8500-20X6C": {
+  "front": "/img/equipos/cs-c8500-20x6c-front.webp",
+  "fuente": "Frontal — ficha «Cisco Catalyst 8500 Series Edge Platforms Data Sheet» (c78-744089), figura 1 «C8500-20X6C» (2431 × 875 px, sin recortar).",
+  "rearNota": "La guía de instalación solo publica la cara frontal del C8500-20X6C, que es donde lleva puertos y fuentes (figuras 6 a 8, «Front View»).",
+  "frontPrev": "/img/equipos/cs-c8500-20x6c-front.prev.webp"
+ },
+ "Catalyst 8500L-8S4X": {
+  "front": "/img/equipos/cs-c8500l-8s4x-front.webp",
+  "rear": "/img/equipos/cs-c8500l-8s4x-rear.webp",
+  "fuente": "Frontal — ficha «Cisco Catalyst 8500 Series Edge Platforms Data Sheet» (c78-744089), figura 4 «C8500L-8S4X with 4x 1/10GE and 8x 1GE ports» (1800 × 180 px, sin recortar). Trasera — guía «Hardware Installation Guide for Cisco Catalyst 8500L-8S4X Edge Platform» (10-feb-2022), figura 5 «C8500L-8S4X Chassis - PSU/Fan Tray Side» (750 × 237 px, sin recortar).",
+  "frontPrev": "/img/equipos/cs-c8500l-8s4x-front.prev.webp",
+  "rearPrev": "/img/equipos/cs-c8500l-8s4x-rear.prev.webp"
+ },
+ "ISR 1111X-8P": {
+  "front": "/img/equipos/cs-isr1111x-8p-front.webp",
+  "fuente": "Frontal — ficha «Cisco 1000 Series Integrated Services Routers Data Sheet» (c78-739512), figura 10 «C1111X-8P» (900 × 131 px, sin recortar).",
+  "rearNota": "La ficha del ISR 1000 publica solo la cara de puertos.",
+  "frontPrev": "/img/equipos/cs-isr1111x-8p-front.prev.webp"
+ }
+}

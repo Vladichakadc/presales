@@ -75,6 +75,16 @@
     return { n: 'Capacidad de conmutación', v: d.cap };
   }
 
+  // Cisco trae una sola cifra de seguridad, `amenazas`, y su base dice qué prueba es:
+  // en los Secure Router y los Catalyst es Threat Protection; en Meraki, su NGFW.
+  const esMeraki = (d) => d.ser === 'Meraki MX';
+  function rotuloMeraki(d) {
+    const base = d.bases && d.bases.amenazas;
+    if (/detección/.test(base || '')) return 'NGFW Meraki (detección, IDS)';
+    if (/prevención/.test(base || '')) return 'NGFW Meraki (prevención)';
+    return 'NGFW Meraki';
+  }
+
   // Dónde dimensionar de verdad cada fabricante: el catálogo del portal es un
   // resumen, y los dimensionadores trabajan con las capas completas.
   const HERRAMIENTA = {
@@ -151,20 +161,26 @@
     },
     ngfw: {
       etq: 'Con inspección (NGFW / IPS)',
-      mide: 'La capa que aguanta el equipo con el motor de aplicación e inspección activo. En gama de sucursal es hasta un orden de magnitud menor que la cifra de firewall, y es la que hay que usar para dimensionar una sede con seguridad. Fortinet la publica como NGFW y Juniper como IPS: no son la misma prueba y la tabla lo dice en cada fila.',
+      mide: 'La capa que aguanta el equipo con el motor de aplicación e inspección activo. En gama de sucursal es hasta un orden de magnitud menor que la cifra de firewall, y es la que hay que usar para dimensionar una sede con seguridad. Fortinet la publica como NGFW, Juniper como IPS y Meraki como NGFW en modo detección o prevención: no son la misma prueba y la tabla lo dice en cada fila.',
       falta: 'el catálogo no publica su cifra con inspección activa',
       capa: {
         fortinet: (d) => ({ n: 'NGFW', v: d.ngfw }),
         juniper: (d) => ({ n: 'IPS', v: d.ips }),
+        // Meraki publica su NGFW en modo detección (MX67 a MX105) o prevención (MX250,
+        // MX450); el rótulo lo dice, porque no es la misma carga.
+        cisco: (d) => (esMeraki(d) ? { n: rotuloMeraki(d), v: d.amenazas } : { n: null, v: null }),
       },
     },
     tp: {
       etq: 'Inspección completa (Threat Protection / ATP)',
-      mide: 'El stack completo de seguridad: antivirus, control de aplicación e IPS a la vez. Es la cifra realista de una sede con seguridad avanzada y la más baja que publica cada fabricante — Threat Protection en Fortinet, Advanced Threat Prevention en Juniper.',
+      mide: 'El stack completo de seguridad: antivirus, control de aplicación e IPS a la vez. Es la cifra realista de una sede con seguridad avanzada y la más baja que publica cada fabricante — Threat Protection en Fortinet y en Cisco (Secure Router y Catalyst 8000), Advanced Threat Prevention en Juniper.',
       falta: 'el catálogo no publica su cifra de inspección completa',
       capa: {
         fortinet: (d) => ({ n: 'Threat Protection', v: d.tp }),
         juniper: (d) => ({ n: 'ATP', v: d.atp }),
+        // Secure Router (G2) y Catalyst 8000: Threat Protection en EMIX con DIA-NAT, NGFW,
+        // IPS, URLF y AMP a la vez. Los ISR 1000 no la publican y se apartan.
+        cisco: (d) => (esMeraki(d) ? { n: null, v: null } : { n: 'Threat Protection', v: d.amenazas }),
       },
     },
     // INSPECCIÓN TLS — VA AL FINAL, PERO NO ES EL ÚLTIMO PELDAÑO DE LA ESCALERA.
