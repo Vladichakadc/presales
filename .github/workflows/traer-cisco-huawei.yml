@@ -835,7 +835,8 @@ jobs:
               // Segunda corrida (misma fecha): el PDF de la 8400 llego como HTML y el de la 8500 dio
               // 404 (corrida 39360888778). Se guarda la pagina de cada guia y el PDF se DESCUBRE en
               // ella, como las guias de los controladores de Aruba.
-              { archivo: 'cisco-sr8400-hig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8455-G2', urls: [
+              // La de la 8400 es un indice sin el nombre del modelo (corrida 39410454052): se explora.
+              { archivo: 'cisco-sr8400-hig.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
                 'https://www.cisco.com/c/en/us/td/docs/routers/c84xx/c8400-g2-hardware-installation-guide.html',
               ] },
               { archivo: 'cisco-sr8500-hig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8550-G2', urls: [
