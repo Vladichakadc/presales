@@ -91,13 +91,15 @@ const PAGINA = `${BASE}/dimensionador-huawei-netengine.html`;
   t.ok(/supuesto de diseño/.test(md) && /no cifras publicadas por Huawei/.test(md), 'y declara que los supuestos no son cifras de Huawei');
   t.ok(/\.md$/.test(descarga.suggestedFilename()), `y se descarga como Markdown (${descarga.suggestedFilename()})`);
 
-  // 4 · Cuota mensual: con precio de referencia del equipo, hay MRR y TCV. Se elige el AR651, que
-  // tiene precio de referencia en el cotizador, para no depender de lo que recomiende el motor.
+  // 4 · Cuota mensual: sin precio no hay cuota, y la pantalla lo dice en vez de calcularla. Desde
+  // el 2026-10-20 (decisión del dueño: los «~ $» sin documento pasan a «Consultar») ningún Huawei
+  // trae precio de referencia; hasta entonces este paso medía el MRR con el «~ $950» del AR651. La
+  // aritmética de la cuota la sigue fijando test/bom-mrr.test.js.
   await page.selectOption('#pickModel', 'AR651');
   await asentar(page);
   const mrr = await page.evaluate(() => (globalThis.document.getElementById('mrrBox') || {}).textContent || '');
-  t.ok(/Cuota mensual \(MRR\)/.test(mrr) && /Valor total del contrato \(TCV\)/.test(mrr), 'el simulador da la cuota mensual y el valor del contrato');
-  t.ok(/no son cifras de Huawei/.test(mrr), 'y dice que los porcentajes los pone quien cotiza');
+  t.ok(/Sin precios no hay cuota/.test(mrr) && !/Cuota mensual \(MRR\)/.test(mrr), 'sin precio de referencia el simulador no da una cuota');
+  t.ok(/Huawei no publica lista/.test(mrr) && !/\$\s?\d/.test(mrr), 'y dice por qué, sin una cifra inventada');
 
   t.ok(errores.length === 0, `sin errores de JavaScript en la página${errores.length ? ': ' + errores[0] : ''}`);
   await browser.close();

@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-20, cuadragesimosexta entrega (**Dimensionador Cisco rehecho con la herramienta externa del dueño, contrastada contra las fichas oficiales, y con las figuras frontal y trasera de cada equipo.** El catálogo pasa a 50 modelos: los 20 Secure Router (G2), los Catalyst 8000 con su fin de venta por boletín, los ISR 1000 releídos y los Meraki MX con sus fichas vigentes; cada cifra declara su base de medida. 58 figuras oficiales sin pérdida con el pie literal de cada cara. Motor puro (`cisco-motor.js`): overlay y salida local, cada uno contra la cifra de su capa, licencias G2 por clase, escala y requisitos que apartan con su motivo. Del adjunto entra el método, corregido; ningún precio ni referencia sin documento. Ver *Cerrado recientemente* y `docs/herramienta-externa-cisco-2026-10-20.md`.)
+Última revisión: 2026-10-20, cuadragesimoséptima entrega (**Cerrado lo que dejó abierto la entrega de Cisco, y hecha la mejora propuesta.** Encargo del dueño: «cierra lo que está abierto y ejecuta la mejora propuesta». Entran el C8355-G2-MX y el C8455-G2-MX con sus fichas y figuras, la trasera del C8650-G2, las figuras de tres ISR, el fin de venta del 8500-20X6C, los dispositivos del MX95/105, los módulos de los Catalyst 8300/8200 y la referencia SD-WAN+ de Meraki; lo que ningún documento publica queda dicho en su pestaña. Las dos decisiones abiertas se ejecutan con su opción recomendada (precios «~» a «Consultar», bloque de Gemini bajo la regla de datos). Y `npm run cisco` contrasta las fichas traídas celda a celda: 268 de 268 casan. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-20, cuadragesimosexta entrega (**Dimensionador Cisco rehecho con la herramienta externa del dueño, contrastada contra las fichas oficiales, y con las figuras frontal y trasera de cada equipo.** El catálogo pasa a 50 modelos: los 20 Secure Router (G2), los Catalyst 8000 con su fin de venta por boletín, los ISR 1000 releídos y los Meraki MX con sus fichas vigentes; cada cifra declara su base de medida. 58 figuras oficiales sin pérdida con el pie literal de cada cara. Motor puro (`cisco-motor.js`): overlay y salida local, cada uno contra la cifra de su capa, licencias G2 por clase, escala y requisitos que apartan con su motivo. Del adjunto entra el método, corregido; ningún precio ni referencia sin documento. Ver *Cerrado recientemente* y `docs/herramienta-externa-cisco-2026-10-20.md`.)
 Revisión anterior: 2026-10-20, cuadragesimoquinta entrega (**La mejora propuesta: la foto de producto a color como tercera vista, y de paso el tamaño y el peso.** La tarjeta común (`ficha.js`) admite una pestaña «Foto» opcional con su propio pie de procedencia; la lupa y las flechas recorren las tres caras. Juniper la estrena en 16 de sus 18 equipos: los SRX300-380 de la imagen de su ficha de línea, que rotula cada modelo; SRX1600/2300/4300/4700 de la imagen de familia de juniper.net, casadas con la foto de cada ficha de un solo modelo; SRX1500 y los SSR de sus fichas. SRX4100/4200 sin foto: su ficha en inglés devuelve HTML. **Mejora encontrada por el camino**: el pendiente de tamaño y peso se cierra con la tabla «Physical Specifications» de cada guía. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-19, cuadragesimocuarta entrega (**Juniper con las figuras oficiales de los 18 equipos y la distribución de Aruba.** Encargo del dueño: fotos frontal y trasera en alta calidad y la pantalla como la de Aruba. Las figuras salen de la guía de hardware de cada modelo —se trajeron por Actions las que faltaban: SRX380 y SSR120/1200/1300/1400— a su resolución nativa (1.400-3.000 px) y sin pérdida; SSR130 y SSR1500, sin guía descargable, de su ficha de línea. Variables a la izquierda, tarjeta del equipo clavada a la derecha con foto, lista de candidatos y características desplegables, escala de capacidad arriba y resultados debajo. **Hallazgo por el camino**: los SSR salían «vigentes» con una fuente que solo cubre los SRX; ahora dicen que no hay respaldo. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-19, cuadragesimotercera entrega (**Juniper: los MX contrastados con su ficha y el SSR dimensionado por capa de cifrado.** La mejora propuesta se ejecutó: las fichas oficiales de MX204/240/480/960 y del MX304 (ya publicada por HPE) se trajeron por Actions y corrigieron el cotizador, el portal y la guía, que daban al MX480 7,7 Tbps (son 7,5) y al MX960 19,2 Tbps y 12 ranuras (son 12 Tbps y 11). **Hallazgo por el camino**: los Session Smart Router no tenían fuente; sus fichas dicen que `cap` es «sin cifrar, IMIX» y publican además «solo cifrado» y «cifrado + HMAC». El motor de la entrega anterior dividía por IMIX una cifra que ya era IMIX; ahora el SSR se dimensiona por capa de cifrado (el SSR1200 da 10 Gbps sin cifrar y 2,5 con HMAC) y entra el SSR1500. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
@@ -2003,46 +2004,53 @@ Lo que el HTML adjunto traía y **no** entró, con el motivo y lo que lo cerrar�
 - **Aparte, de la lectura**: la sección final de `CLAUDE.md` que escribió Gemini describe
   `public/js/sizing_engine.js` y `server/presales_api_controller.js`, que **ninguna página ni el
   servidor cargan**, y pide `list_price_usd` en cada SKU nuevo, en conflicto con «nunca se inventa
-  un dato». Decisión del dueño: retirarlos o integrarlos con la regla de datos.
+  un dato». ~~Decisión del dueño: retirarlos o integrarlos con la regla de datos.~~ **Decidido el
+  2026-10-20** (ver *Decisiones que necesitan al dueño del producto*).
 
 ## Abierto: herramienta externa Cisco (2026-10-20)
 
-Lo que la entrega del dimensionador Cisco deja abierto, con lo que lo cerraría
-(`docs/herramienta-externa-cisco-2026-10-20.md` tiene el contraste entero):
+Lo que la entrega del dimensionador Cisco dejó abierto se cerró el mismo día (ver *Cerrado
+recientemente*, cuadragesimoséptima entrega). Queda lo que ningún documento traído publica y lo
+que salió al cerrarlo (`docs/herramienta-externa-cisco-2026-10-20.md`, sección 5):
 
-- **Traseras que ningún documento traído publica**: C8455-G2 y C8475-G2 (la URL de la guía de
-  instalación de la 8400 sirve la guía de configuración de software), C8650-G2 y Catalyst
-  8500-20X6C (su guía solo dibuja el frontal), y C8211-G2, C8221L-G2 y C8225-G2 (la guía de la
-  serie 8200, del 10-sep-2025, es anterior a ellos). La pestaña «Trasera» dice por qué en cada uno.
-  Se cierra con la guía de instalación de la 8400 y una edición nueva de la de la 8200, por
-  `traer-cisco-huawei.yml`.
-- **Sin figura**: C8221-G2 y C8231-E-G2 (su ficha no publica la suya) y los ISR 1111-8P, 1116-4P,
-  1121X-8P y 1161X-8P (la ficha dibuja otras variantes). No se sirve la de un hermano.
-- **C8355-G2-MX y C8455-G2-MX**: solo constan en el export de CCW; sin ficha de Meraki traída no
-  entran. Se cierra trayendo sus fichas de documentation.meraki.com.
-- **Catalyst 8500-20X6C**: no se encontró boletín de fin de venta, a diferencia de sus hermanos.
-- **Meraki MX95 y MX105**: su ficha no publica dispositivos recomendados (`clientes: null`).
-- **Licencias de Meraki**: la referencia por modelo y término solo está confirmada en el patrón de
-  LIC-MX67-SEC-3YR (CCW); el BOM la deja «confirmar». Las `LIC-MX-S-E/A` del adjunto no aparecen en
-  ningún documento.
-- **Módulos de los Catalyst 8000**: el catálogo trae sus ranuras pero no la lista de NIM/SM/PIM de
-  su guía de pedido; el BOM dice «consultar». La de la G2 (tablas 7 y 8) sí está.
-- **Precios «~» del cotizador de Cisco** (ISR 1111-8P ~$1,800, Catalyst 8200 ~$4,500, 8300-1N1S-6T
-  ~$9,800, 8300-2N2S-6T ~$16,500, 8500-12X4QC ~$58,000, ASR 1006-X ~$145,000): no tienen documento, y
-  donde el export de CCW trae el precio la diferencia es grande (8200: ~$4,500 frente a $6,967.76;
-  8300-1N1S-6T: ~$9,800 frente a $21,286.41). El dimensionador ya enseña el de CCW; el cotizador y el
-  portal, el «~». Decisión del dueño: pasar el cotizador al de CCW y el resto a «Consultar».
+- **Sin documento que lo publique** (cada pestaña lo dice; se cierra si Cisco publica una edición
+  nueva, por `traer-cisco-huawei.yml` y `npm run cisco`): las traseras de los C8455-G2 y C8475-G2
+  (su guía, del 25-jul-2025, solo dibuja la cara de E/S), del Catalyst 8500-20X6C y de los
+  C8211-G2, C8221L-G2 y C8225-G2 (la única guía de la serie 8200 es del 10-sep-2025); y las figuras
+  del C8221-G2, el C8231-E-G2, el ISR 1116-4P (la guía no tiene vista de puertos de los C111x-4P) y
+  el ISR 1161X-8P (la edición de la guía es anterior a él). No se sirve la de un hermano.
+- **Referencia de la licencia Meraki por modelo**: la página oficial de licencias no la publica; el
+  BOM la deja «confirmar» con el patrón de CCW (LIC-MX67-SEC-3YR). Se cierra con un export de CCW
+  que traiga las de cada modelo. La ampliación SD-WAN+ no se asigna al MX68 ni al MX68CW porque su
+  tabla escribe «MX68C/W»; tampoco a los G2-MX, que la tabla no nombra.
+- **Nuevo: ópticas de Meraki.** El BOM propone a los MX las ópticas del catálogo de Catalyst
+  (GLC-…, SFP-10G-…), pero las fichas de Meraki listan sus propias referencias (MA-SFP-1GB-TX,
+  MA-SFP-10GB-SR/LR/LRM/ER y, en el C8455-G2-MX, SFP-25G-SR-S y SFP-10/25G-CSR/LR-S). Se cierra
+  con un catálogo de ópticas por plataforma, desde la tabla «Compatible Fiber Transceiver Modules»
+  de cada ficha de Meraki (ya traídas).
+- **Dos cifras de túneles del C8355-G2-MX**: su ficha da 1.500 «Maximum Recommended Tunnels» y la MX
+  Sizing Guide 1.250 recomendados y 3.500 como máximo. Manda la ficha (la nota del modelo lo dice);
+  si Meraki corrige una de las dos, `npm run cisco` lo verá.
 
 ## Decisiones que necesitan al dueño del producto
 
-- **Precios «~ $» sin lista en el cotizador (2026-10-19).** Nueve líneas de Juniper (SRX 320, 345,
+- ~~**Precios «~ $» sin lista en el cotizador (2026-10-19).**~~ **Decidido el 2026-10-20: la opción
+  recomendada**, con el encargo del dueño «cierra lo que está abierto». Las líneas de Huawei,
+  Juniper, Nokia y Cisco pasan a «Consultar» (`elpN: 0`); las tres de Cisco con fila en el export de
+  CCW (Catalyst 8200 y los dos 8300) llevan ese precio, y el portal deja de citar el «~» de Cisco. El
+  TCO y la cuota de Huawei dicen ahora que no pueden calcularse sin precio. Lo que decía: Nueve líneas de Juniper (SRX 320, 345,
   1500, 4100, 4200 y MX204/304/480/960), ocho de Nokia y varias de Huawei llevan un precio
   aproximado («~ $32,000») heredado del `cotizador.html` original, aunque este archivo y `CLAUDE.md`
   dicen que Juniper y Nokia no tienen lista. **Recomendado**: pasarlas a «Consultar» (`elpN: 0`),
   como las líneas de agosto, para que el total no parezca completo con cifras sin documento.
   Coste: los totales del cotizador bajan y salen «sin cotizar»; quien usaba esas cifras como
   orientación las pierde. No se hizo por silencio.
-- **El bloque de Gemini al final de `CLAUDE.md` (2026-10-19).** Describe `public/js/sizing_engine.js`
+- ~~**El bloque de Gemini al final de `CLAUDE.md` (2026-10-19).**~~ **Decidido el 2026-10-20: la
+  opción recomendada, en su segunda forma** (integrarlo con la regla de datos), con el mismo
+  encargo. El bloque sigue, con un aviso de estado: sus dos módulos no los carga ninguna página ni
+  el servidor, sus catálogos y precios no son fuente de nada que se muestre, y el punto 3 del
+  protocolo exige documento oficial para `list_price_usd` (sin él, `null`). Los dos archivos llevan
+  la misma advertencia en su cabecera. Lo que decía: Describe `public/js/sizing_engine.js`
   y `server/presales_api_controller.js`, que ninguna página ni el servidor cargan, y pide
   `list_price_usd` en cada SKU nuevo, en conflicto con «nunca se inventa un dato». **Recomendado**:
   retirar el bloque y los dos archivos, o integrarlos bajo la regla de datos. Coste: si se retiran,
@@ -2162,6 +2170,35 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+- **2026-10-20 · Cerrado lo que dejó abierto la entrega de Cisco, y la mejora propuesta hecha.**
+  Encargo del dueño: «cierra lo que está abierto y ejecuta la mejora propuesta». **Fuentes**: dos
+  vueltas más de `traer-cisco-huawei.yml` (corridas 39475725083 y 39478497217, ramas
+  `fuente/cisco-cierre-2026-10-20` y `fuente/cisco-eol-2026-10-20`): guías de instalación de la 8400
+  (ruta nueva), la 8600 y el ISR 1000 (solo en italiano), fichas y guías del C8355-G2-MX y el
+  C8455-G2-MX, guía de pedido de los Catalyst 8300/8200, página de licencias y MX Sizing Guide de
+  Meraki, lista de avisos de la serie 8500 y los cuatro boletines EOL. **Catálogo** (52 modelos):
+  entran el C8355-G2-MX y el C8455-G2-MX (portal y cotizador «Consultar»); el 8500-20X6C lleva su
+  fin de venta (EOL15954: último pedido el 31-jul-2027, sucesor C8650-G2; los otros tres boletines,
+  «enmendados» el 19-oct-2026, no cambian ni fechas ni sucesores); el MX95 y el MX105, 500 y 750
+  dispositivos. **Figuras**: nueve nuevas sin pérdida (trasera del C8650-G2, las dos caras del
+  C8355-G2-MX, el C8455-G2-MX y el ISR 1121X-8P, el ISR 1111-8P con el dibujo de la familia C111x-8P
+  —el pie dice que rotula opciones que ese modelo no lleva— y la trasera del ISR 1111X-8P); las
+  traseras que ningún documento publica lo dicen con el documento que se miró. **BOM**: los Catalyst
+  8300/8200 ofrecen los NIM, SM y PIM de la tabla 5 de su guía de pedido (los SM de doble ancho solo
+  en el 2N2S, los marcados solo en el 8300, ninguno en el 8200); Meraki con SD-WAN+ cita
+  LIC-MX-SDW-<grupo>-<n>Y donde la página de licencias nombra el modelo. **Decisiones** ejecutadas
+  con su opción recomendada (ver *Decisiones*). **La mejora propuesta**: `npm run cisco`
+  (`scripts/contrastar-cisco.js`) lee las fichas HTML traídas y las contrasta con el catálogo celda
+  a celda, en la base que cada modelo declara; solo compara, y falla cerrado (código 2 si una ficha
+  reconocida no da ninguna celda; «sin columna» si un modelo que la cita no aparece). Sobre las 19
+  fichas: 268 celdas, todas casan; con dos cifras viejas saboteadas en memoria (la VPN del MX450 de
+  agosto, el SD-WAN del 8300-2N2S-6T del 2026-10-01) salen las dos. Lo encontró la primera corrida:
+  la ficha de la 8600 llama al equipo «Cisco 8650-G2», sin la C, y salía «sin columna». **Pruebas**:
+  motor (SD-WAN+ y módulos), figuras, siete del comparador (con sabotaje de la base y del fallo
+  cerrado); contraste de Cisco (cumplen 10 con 100 dispositivos en Meraki) y Huawei H-13, y la e2e
+  de Huawei, al día con el comportamiento sin precio. `verificar`, `auditar`, `pantallas` 17/17,
+  `contraste --todos` 10/10, `e2e` entera y `puerta` en verde.
 
 - **2026-10-20 · Dimensionador Cisco: herramienta externa contrastada, catálogo releído y figuras
   oficiales.** Encargo del dueño: «analiza en detalle el dimensionador adjunto y actualiza en

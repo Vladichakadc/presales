@@ -89,9 +89,26 @@ Lo que sí entra tal cual es la estructura de la pantalla que pidió el dueño: 
 del overlay, salida local, seguridad, resiliencia, escala, requisitos, licencias por clase,
 TCO/MRR, perfiles multi-sede y memoria técnica.
 
-## 5. Qué queda abierto
+## 5. Qué quedó abierto, y cómo se cerró (2026-10-20, misma jornada)
 
-En PENDIENTES.md («Abierto: herramienta externa Cisco»): la guía de instalación de la 8400 (su URL
-sirve la guía de software), los C8355-G2-MX y C8455-G2-MX que solo constan en CCW, los NIM que el
-catálogo atribuye a los ISR 1100, el boletín del Catalyst 8500-20X6C, los clientes de los MX95/105
-y el contraste de los precios aproximados («~») del cotizador con el export de CCW.
+La entrega dejó abiertos en PENDIENTES.md la guía de instalación de la 8400, los C8355-G2-MX y
+C8455-G2-MX que solo constaban en CCW, el boletín del Catalyst 8500-20X6C, los clientes de los
+MX95/105, las licencias de Meraki, los módulos de los Catalyst 8000, varias traseras y figuras, y
+los precios aproximados («~») del cotizador. Con el encargo «cierra lo que está abierto», dos
+vueltas más de `traer-cisco-huawei.yml` (corridas 39475725083 y 39478497217) los cerraron así:
+
+| Pendiente | Cierre |
+|---|---|
+| C8355-G2-MX y C8455-G2-MX | Entran con sus fichas y guías de Meraki (10/5/4 y 20/10/8 Gbps; 5.000 y 15.000 dispositivos), con frontal y trasera |
+| Trasera del C8650-G2 | Guía de la serie 8600 (12-oct-2026), figura 8 «Rear View» |
+| Traseras de la serie 8400, del 8500-20X6C y de los C8211/C8221L/C8225-G2 | Ningún documento la publica: la guía 8400 (25-jul-2025) solo dibuja la cara de E/S y la 8200 no tiene edición posterior a ellos. La pestaña lo dice |
+| ISR 1111-8P, 1111X-8P y 1121X-8P | Figuras de la guía de instalación del ISR 1000 (solo se sirve en italiano). El 1116-4P y el 1161X-8P siguen sin figura: la guía no los dibuja |
+| C8221-G2 y C8231-E-G2 | Ni su ficha ni la guía de la serie los dibujan: siguen sin figura |
+| Catalyst 8500-20X6C | Boletín EOL15954: último pedido el 31-jul-2027, sucesor C8650-G2 |
+| MX95 y MX105 | 500 y 750 dispositivos recomendados (MX Sizing Guide) |
+| Licencias de Meraki | La página oficial no publica la referencia por modelo (sigue «confirmar»); SD-WAN+ cita la ampliación por dispositivo de su grupo donde la página nombra el modelo |
+| Módulos de los Catalyst 8300/8200 | Tabla 5 de su guía de pedido (`MODULOS_C8K`), con los SM de doble ancho solo en el 2N2S |
+| Precios «~» | Decisión del dueño ejecutada: el cotizador pasa a «Consultar» (y al precio de CCW donde el export lo trae) |
+
+Y la mejora propuesta al cerrar la entrega quedó hecha: `npm run cisco` contrasta las fichas HTML
+traídas con el catálogo celda a celda (268 celdas en las 19 fichas, todas casan).
