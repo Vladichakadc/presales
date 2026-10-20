@@ -46,6 +46,25 @@ h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28p
 /* LAYOUT */
 .cols{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
 @media(max-width:880px){.cols{grid-template-columns:1fr}}
+/* Misma distribución que Aruba (petición del dueño, 2026-10-19): variables a la izquierda y la
+   tarjeta del equipo a la derecha, clavada mientras la columna de parámetros se desplaza y
+   suelta al desplegar sus características (ver el delegado de «verdict-salto» en el script).
+   Los resultados del cálculo van debajo a todo lo ancho, para que la tarjeta clavada quepa
+   entera en la pantalla. */
+@media(min-width:881px){
+  .cols>.col-fijo{position:sticky;top:16px}
+  .cols>.col-fijo.expandida{position:static}
+}
+.cols>.note,.cols>.resultados{grid-column:1/-1}
+.resultados{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:0 20px;align-items:start}
+.resultados>.panel[hidden]{display:none}
+/* Lista de materiales y catálogo: una columna centrada, como en Aruba. */
+.pane-centro{max-width:960px;margin:0 auto}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0 16px}
+.comp-foto{margin:0 0 12px;border:1px solid var(--rule);border-radius:4px;background:var(--card);padding:8px 10px;display:flex;justify-content:center}
+.comp-foto img{max-width:100%;max-height:110px;object-fit:contain}
+.ficha-det-tit{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:0 0 10px;font-weight:600}
+.ficha-det-tit b{color:var(--ink)}
 .panel{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px;margin-bottom:16px}
 .panel h2{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .field{margin-bottom:16px}.field:last-child{margin-bottom:0}
@@ -131,6 +150,8 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   <p class="sub">Sizing de SRX por <b>capa de inspección</b> —la cifra de portada no sirve para dimensionar— y de Session Smart Router para SD-WAN, como sucursal o como concentrador, con la seguridad desacoplada en un SRX o en la nube. Genera la lista de materiales con el nivel de suscripción propuesto.</p>
 </header>
 
+<div class="flag-ft"><b>Estado de los datos.</b> Las cifras salen de documentos oficiales de Juniper: el datasheet vigente de la línea SRX300, las fichas por modelo de la generación 2024 y la matriz SRX de 2020 para lo que esas no publican; las tres capas de cifrado del Session Smart Router, de las fichas de las líneas SSR100 y SSR1000; las fotos frontal y trasera, de la guía de hardware de cada modelo. <b>Juniper no tiene lista de precios en el material disponible</b>: todo el BOM va «sin cotizar». La procedencia de cada cifra está en la pestaña Fuentes.</div>
+
 <div class="tabs" role="tablist">
   <button role="tab" aria-selected="true" data-tab="calc">Dimensionar</button>
   <button role="tab" aria-selected="false" data-tab="bom">Equipo y BOM</button>
@@ -141,7 +162,18 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <!-- ════ TAB 1 · DIMENSIONAR ════ -->
 <div class="tabpane" id="pane-calc">
 
-<div class="grid">
+<section class="ladder">
+  <p class="mono-lbl" id="ladderLbl">Escala de capacidad — cifra que dimensiona de cada modelo vs. requerimiento (logarítmica)</p>
+  <div class="track" id="track"><div class="axis"></div><div class="need" id="need"><span id="needLbl">—</span></div><div class="pickLabel" id="pickLbl" style="display:none"></div></div>
+  <div class="legend">
+    <span><i></i>Modelo que cumple</span>
+    <span><i style="background:var(--rule)"></i>No llega o no publica la cifra</span>
+    <span style="color:var(--red-txt)"><i style="background:var(--red)"></i>Requerimiento y equipo elegido</span>
+  </div>
+</section>
+
+<div class="cols">
+<div>
   <section class="panel">
     <h2>1 &middot; Plataforma</h2>
     <div class="field">
@@ -273,9 +305,11 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   </section>
 </div>
 
-<div>
+<div class="col-fijo">
   <div class="verdict" id="verdict"></div>
+</div>
 
+<div class="resultados">
   <section class="panel" id="companeroPanel" hidden>
     <h2>Seguridad desacoplada</h2>
     <div id="companero"></div>
@@ -293,10 +327,16 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   </section>
 </div>
 
+<div class="note">
+  <b>Nota metodológica.</b> Juniper publica cada equipo en varias bases de medida y la de portada es siempre la mejor: el firewall del SRX con paquetes grandes y el caudal del SSR sin cifrar y con paquetes de 1.500 B. Esta herramienta <b>nunca dimensiona con la portada</b>: el SRX se mide contra la capa de inspección que exigen sus funciones (IMIX, IPsec, IPS o Threat Prevention) y el SSR contra la capa de cifrado del overlay (sin cifrar, cifrado, cifrado + HMAC), siempre en IMIX. Activar una función no encarece un porcentaje: cambia la cifra que aplica. SRX y SSR no se comparan entre sí; si un SSR necesita inspección de contenido, el SRX que la hace se dimensiona aparte, por capa, y entra al BOM como firewall desacoplado.
+</div>
+</div>
+
 </div>
 
 <!-- ════ TAB 2 · BOM ════ -->
 <div class="tabpane" id="pane-bom" hidden>
+<div class="pane-centro">
   <section class="panel">
     <h2>Equipo</h2>
     <div class="grid2">
@@ -333,6 +373,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <div id="bomTabla"></div>
     <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
   </section>
+</div>
 </div>
 
 <!-- ════ TAB · CATÁLOGO ════ -->

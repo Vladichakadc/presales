@@ -1,0 +1,165 @@
+{
+  "_procedencia": "Figuras oficiales de los 18 equipos del catalogo Juniper (12 SRX y 6 Session Smart Router), extraidas el 2026-10-19 sin pérdida (WebP VP8L con los pixeles exactos de la imagen incrustada en el PDF; nada redibujado ni reescalado). Fuente: la guia de hardware de cada modelo (juniper.net/documentation/us/en/hardware/<modelo>/<modelo>.pdf), seccion «Chassis», figuras rotuladas «Front Panel» y «Rear/Back Panel». Las guias de los SRX se trajeron por Actions en septiembre (ramas fuente/aruba-juniper y fuente/tres-pendientes); la del SRX380 y las de SSR120/1200/1300/1400, el 2026-10-19 (corridas 39359374306 y 39359448021). Son dibujos tecnicos con los componentes numerados: el pie de cada uno cita la figura, cuya leyenda esta en la guia. SSR130 y SSR1500 no tienen guia descargable (su indice no enlaza el PDF): sus figuras salen de las fichas de linea SSR100 (1000728-005, japones, figs. 4 y 6) y SSR1000 (1000757-002-EN, figs. 7 y 8), a la resolucion del documento (500 y 700 px). Tres traseras son el MISMO dibujo en el documento oficial, no una copia de un hermano: SRX340/SRX345 (fuente unica), SRX4100/SRX4200 y SSR1300/SSR1400 comparten chasis. Del SRX345 se sirve la variante de fuente unica, que es la de serie; la de doble AC esta en su guia (figs. 3 y 6). FOTOS DE PRODUCTO (2026-10-20, tercera pestaña «Foto»): 18 de 18, sin pérdida sobre los píxeles del documento. SRX300/320/340/345/380 de la imagen de su ficha de línea, que rotula cada modelo; SRX1600/2300/4300/4700 de la imagen de familia de la página de la serie, casadas con la foto de cada ficha de un solo modelo; SRX1500 de su ficha; los SSR de sus fichas de línea. Traídas el 2026-10-20 (corrida 39409681340, rama fuente/juniper-fotos-2026-10-20). SRX4100 y SRX4200, de su ficha japonesa (la inglesa devuelve HTML), corrida 39410983522; las 18 tienen foto. La del SSR120 es la variante con LTE y su pie lo dice. TAMAÑO Y PESO (2026-10-20): de la tabla «Physical Specifications» de cada guía de hardware (SSR130 y SSR1500, de su ficha de línea). Donde la guía da solo pulgadas o libras se convierte (1 in = 25,4 mm; 1 lb = 0,4536 kg) y la cifra original va en el texto.",
+  "SRX300": {
+    "front": "/img/equipos/jn-srx300-front.webp",
+    "rear": "/img/equipos/jn-srx300-rear.webp",
+    "fuente": "Guía de hardware SRX300, p. 17 «Figure 1: SRX300 Firewall Front Panel» · p. 21 «Figure 3: SRX300 Firewall Back Panel».",
+    "url": "https://www.juniper.net/documentation/us/en/hardware/srx300/srx300.pdf",
+    "foto": "/img/equipos/jn-srx300-foto.webp",
+    "fotoFuente": "Foto de producto de la ficha «SRX300 Line of Firewalls for the Branch» (juniper.net, imagen «SRX300, SRX320, SRX340, SRX345, SRX380 Image»), recortada de la composición donde la propia imagen rotula «SRX300».",
+    "tamano": "35 × 321 × 193 mm (Al × An × Fo) · 1,99 kg (4,38 lb) — guía, tabla 14"
+  },
+  "SRX320": {
+    "front": "/img/equipos/jn-srx320-front.webp",
+    "rear": "/img/equipos/jn-srx320-rear.webp",
+    "fuente": "Guía de hardware SRX320, p. 18 «Figure 1: SRX320 Firewall Front Panel» · p. 22 «Figure 3: SRX320 Firewall Back Panel».",
+    "url": "https://www.juniper.net/documentation/us/en/hardware/srx320/srx320.pdf",
+    "foto": "/img/equipos/jn-srx320-foto.webp",
+    "fotoFuente": "Foto de producto de la ficha «SRX300 Line of Firewalls for the Branch» (juniper.net, imagen «SRX300, SRX320, SRX340, SRX345, SRX380 Image»), recortada de la composición donde la propia imagen rotula «SRX320».",
+    "tamano": "44 × 300 × 191 mm (Al × An × Fo, de 1,73 × 11,81 × 7,52 in) · 1,49 kg (3,28 lb); 1,54 kg la variante PoE — guía, tabla 15"
+  },
+  "SRX340": {
+    "front": "/img/equipos/jn-srx340-front.webp",
+    "rear": "/img/equipos/jn-srx340-rear.webp",
+    "fuente": "Guía de hardware SRX340, p. 19 «Figure 1: SRX340 Firewall Front Panel» · p. 23 «Figure 3: SRX340 Firewall Back Panel».",
+    "url": "https://www.juniper.net/documentation/us/en/hardware/srx340/srx340.pdf",
+    "foto": "/img/equipos/jn-srx340-foto.webp",
+    "fotoFuente": "Foto de producto de la ficha «SRX300 Line of Firewalls for the Branch» (juniper.net, imagen «SRX300, SRX320, SRX340, SRX345, SRX380 Image»), recortada de la composición donde la propia imagen rotula «SRX340».",
+    "tamano": "43,7 × 440,9 × 370,1 mm (Al × An × Fo) · 4,89 kg — guía, tabla 15"
+  },
+  "SRX345": {
+    "front": "/img/equipos/jn-srx345-front.webp",
+    "rear": "/img/equipos/jn-srx345-rear.webp",
+    "fuente": "Guía de hardware SRX345, p. 19 «Figure 2: SRX345 Firewall (Single AC or DC Power Supply) Front Panel» · p. 25 «Figure 5: SRX345 Firewall Back Panel (Single AC Power Supply)».",
+    "url": "https://www.juniper.net/documentation/us/en/hardware/srx345/srx345.pdf",
+    "foto": "/img/equipos/jn-srx345-foto.webp",
+    "fotoFuente": "Foto de producto de la ficha «SRX300 Line of Firewalls for the Branch» (juniper.net, imagen «SRX300, SRX320, SRX340, SRX345, SRX380 Image»), recortada de la composición donde la propia imagen rotula «SRX345».",
+    "tamano": "43,7 × 440,9 × 370,1 mm (Al × An × Fo) · 4,90 kg con una fuente AC; con dos, 475 mm de fondo y 6,50 kg — guía, tabla 17"
+  },
+  "SRX380": {
+    "front": "/img/equipos/jn-srx380-front.webp",
+    "rear": "/img/equipos/jn-srx380-rear.webp",
+    "fuente": "Guía de hardware SRX380, p. 19 «Figure 2: SRX380 Firewall Front Panel» · p. 24 «Figure 5: SRX380 Firewall Back Panel».",
+    "url": "https://www.juniper.net/documentation/us/en/hardware/srx380/srx380.pdf",
+    "foto": "/img/equipos/jn-srx380-foto.webp",
+    "fotoFuente": "Foto de producto de la ficha «SRX300 Line of Firewalls for the Branch» (juniper.net, imagen «SRX300, SRX320, SRX340, SRX345, SRX380 Image»), recortada de la composición donde la propia imagen rotula «SRX380».",
+    "tamano": "43,7 × 440,9 × 475 mm (Al × An × Fo; 520 mm con asas) · 6,80 kg con una fuente — guía, tabla 16"
+  },
+  "SRX1500": {
+    "front": "/img/equipos/jn-srx1500-front.webp",
+    "rear": "/img/equipos/jn-srx1500-rear.webp",
+    "fuente": "Guía de hardware SRX1500, p. 20 «Figure 1: SRX1500 Firewall Front Panel» · p. 25 «Figure 3: SRX1500 Firewall Back Panel».",
+    "url": "https://www.juniper.net/documentation/us/en/hardware/srx1500/srx1500.pdf",
+    "foto": "/img/equipos/jn-srx1500-foto.webp",
+    "fotoFuente": "Foto de producto de la ficha SRX1500 Firewall, p. 3, rotulada «SRX1500».",
+    "tamano": "44,5 × 438,9 × 462,3 mm (Al × An × Fo, de 1,75 × 17,28 × 18,2 in) · 6,80 kg (15 lb) — guía, tabla 20"
+  },
+  "SRX1600": {
+    "front": "/img/equipos/jn-srx1600-front.webp",
+    "rear": "/img/equipos/jn-srx1600-rear.webp",
+    "fuente": "Guía de hardware SRX1600, p. 19 «Figure 1: Front Panel Components of the SRX1600» · p. 21 «Figure 2: Rear Panel Components of the AC Variant of the SRX1600».",
+    "url": "https://www.juniper.net/documentation/us/en/hardware/srx1600/srx1600.pdf",
+    "foto": "/img/equipos/jn-srx1600-foto.webp",
+    "fotoFuente": "Foto de producto de la página «SRX Series Firewalls» (juniper.net, imagen srx-series-product-family.png), recortada; identificada con la foto de su ficha de un solo modelo (correlación 0,98).",
+    "tamano": "44,2 × 438,9 × 462,3 mm (Al × An × Fo) · 7,2 kg con una fuente, 8,1 kg con dos — guía, tabla 4"
+  },
+  "SRX2300": {
+    "front": "/img/equipos/jn-srx2300-front.webp",
+    "rear": "/img/equipos/jn-srx2300-rear.webp",
+    "fuente": "Guía de hardware SRX2300, p. 20 «Figure 1: Front Panel Components of SRX2300» · p. 22 «Figure 2: Rear Panel Components of the AC Variant of SRX2300».",
+    "url": "https://www.juniper.net/documentation/us/en/hardware/srx2300/srx2300.pdf",
+    "foto": "/img/equipos/jn-srx2300-foto.webp",
+    "fotoFuente": "Foto de producto de la página «SRX Series Firewalls» (juniper.net, imagen srx-series-product-family.png), recortada; identificada con la foto de su ficha de un solo modelo (correlación 0,98).",
+    "tamano": "44,2 × 438,9 × 462,3 mm (Al × An × Fo) · 7,6 kg con una fuente, 8,5 kg con dos — guía, tabla 4"
+  },
+  "SRX4100": {
+    "front": "/img/equipos/jn-srx4100-front.webp",
+    "rear": "/img/equipos/jn-srx4100-rear.webp",
+    "fuente": "Guía de hardware SRX4100, p. 18 «Figure 1: SRX4100 Firewall Front Panel» · p. 23 «Figure 5: SRX4100 Firewall Back Panel».",
+    "url": "https://www.juniper.net/documentation/us/en/hardware/srx4100/srx4100.pdf",
+    "tamano": "44,5 × 444,0 × 635,0 mm (Al × An × Fo) · 13,15 kg con dos fuentes AC — guía, tabla 19",
+    "foto": "/img/equipos/jn-srx4100-foto.webp",
+    "fotoFuente": "Foto de producto de la ficha SRX4100 および SRX4200 ファイアウォール (1000600-021-JP), p. 3, recortada de la imagen donde la ficha rotula «SRX4100»."
+  },
+  "SRX4200": {
+    "front": "/img/equipos/jn-srx4200-front.webp",
+    "rear": "/img/equipos/jn-srx4200-rear.webp",
+    "fuente": "Guía de hardware SRX4200, p. 18 «Figure 1: SRX4200 Firewall Front Panel» · p. 23 «Figure 5: SRX4200 Firewall Back Panel».",
+    "url": "https://www.juniper.net/documentation/us/en/hardware/srx4200/srx4200.pdf",
+    "tamano": "44,5 × 444,0 × 635,0 mm (Al × An × Fo) · 13,15 kg con dos fuentes AC — guía, tabla 19",
+    "foto": "/img/equipos/jn-srx4200-foto.webp",
+    "fotoFuente": "Foto de producto de la ficha SRX4100 および SRX4200 ファイアウォール (1000600-021-JP), p. 3, recortada de la imagen donde la ficha rotula «SRX4200»."
+  },
+  "SRX4300": {
+    "front": "/img/equipos/jn-srx4300-front.webp",
+    "rear": "/img/equipos/jn-srx4300-rear.webp",
+    "fuente": "Guía de hardware SRX4300, p. 20 «Figure 1: Front Panel Components of SRX4300» · p. 22 «Figure 2: Rear Panel Components of the AC Variant of SRX4300».",
+    "url": "https://www.juniper.net/documentation/us/en/hardware/srx4300/srx4300.pdf",
+    "foto": "/img/equipos/jn-srx4300-foto.webp",
+    "fotoFuente": "Foto de producto de la página «SRX Series Firewalls» (juniper.net, imagen srx-series-product-family.png), recortada; identificada con la foto de su ficha de un solo modelo (correlación 0,99).",
+    "tamano": "44,2 × 438,9 × 462,3 mm (Al × An × Fo) · 8,3 kg con una fuente, 9,3 kg con dos — guía, tabla 5"
+  },
+  "SRX4700": {
+    "front": "/img/equipos/jn-srx4700-front.webp",
+    "rear": "/img/equipos/jn-srx4700-rear.webp",
+    "fuente": "Guía de hardware SRX4700, p. 23 «Figure 1: Front Panel Components of an SRX4700» · p. 29 «Figure 2: Rear Panel Components of the AC Variant of SRX4700».",
+    "url": "https://www.juniper.net/documentation/us/en/hardware/srx4700/srx4700.pdf",
+    "foto": "/img/equipos/jn-srx4700-foto.webp",
+    "fotoFuente": "Foto de producto de la página «SRX Series Firewalls» (juniper.net, imagen srx-series-product-family.png), recortada; la cuarta de la composición, sin rótulo: el SRX4700 por descarte y por casar con la distribución de puertos de su guía de hardware (dos mitades simétricas).",
+    "tamano": "43,7 × 439 × 683,1 mm (Al × An × Fo) · 14,9 kg el chasis, 18,2 kg con las fuentes AC — guía, tabla 6"
+  },
+  "SSR120": {
+    "front": "/img/equipos/jn-ssr120-front.webp",
+    "rear": "/img/equipos/jn-ssr120-rear.webp",
+    "fuente": "Guía de hardware SSR120, p. 11 «Figure 1: Front Panel Components of SSR120» · p. 12 «Figure 3: SSR120 Rear Panel».",
+    "url": "https://www.juniper.net/documentation/us/en/hardware/ssr120/ssr120.pdf",
+    "foto": "/img/equipos/jn-ssr120-foto.webp",
+    "fotoFuente": "Foto de producto de la ficha SSR100 Line of Routers (1000728-005-JP), p. 2, sección «SSR120：小規模な支社/拠点向けルーター». Es la variante con LTE (antenas SMA en los extremos): el SSR120 base no las lleva.",
+    "tamano": "44 × 222 × 241 mm (Al × An × Fo) · 1,69 kg — guía, tabla 10"
+  },
+  "SSR1200": {
+    "front": "/img/equipos/jn-ssr1200-front.webp",
+    "rear": "/img/equipos/jn-ssr1200-rear.webp",
+    "fuente": "Guía de hardware SSR1200, p. 10 «Figure 1: Front Panel Components of SSR1200» · p. 10 «Figure 2: Rear Panel Components of SSR1200».",
+    "url": "https://www.juniper.net/documentation/us/en/hardware/ssr1200/ssr1200.pdf",
+    "foto": "/img/equipos/jn-ssr1200-foto.webp",
+    "fotoFuente": "Foto de producto de la ficha SSR1000 Line of Routers (1000757-002-EN), p. 2, sección «SSR1200: Small Campus, Hub, and Data Center».",
+    "tamano": "44 × 438 × 431 mm (Al × An × Fo) · 16,5 kg — guía, tabla 1"
+  },
+  "SSR1300": {
+    "front": "/img/equipos/jn-ssr1300-front.webp",
+    "rear": "/img/equipos/jn-ssr1300-rear.webp",
+    "fuente": "Guía de hardware SSR1300, p. 10 «Figure 1: Front Panel Components of SSR1300» · p. 10 «Figure 2: Rear Panel Components of SSR1300».",
+    "url": "https://www.juniper.net/documentation/us/en/hardware/ssr1300/ssr1300.pdf",
+    "foto": "/img/equipos/jn-ssr1300-foto.webp",
+    "fotoFuente": "Foto de producto de la ficha SSR1000 Line of Routers (1000757-002-EN), p. 2, sección «SSR1300: Medium Campus, Hub, and Data Center».",
+    "tamano": "44 × 438 × 650 mm (Al × An × Fo) · 19,2 kg — guía, tabla 1"
+  },
+  "SSR1400": {
+    "front": "/img/equipos/jn-ssr1400-front.webp",
+    "rear": "/img/equipos/jn-ssr1400-rear.webp",
+    "fuente": "Guía de hardware SSR1400, p. 10 «Figure 1: Front Panel Components of SSR1400» · p. 10 «Figure 2: Rear Panel Components of SSR1400».",
+    "url": "https://www.juniper.net/documentation/us/en/hardware/ssr1400/ssr1400.pdf",
+    "foto": "/img/equipos/jn-ssr1400-foto.webp",
+    "fotoFuente": "Foto de producto de la ficha SSR1000 Line of Routers (1000757-002-EN), p. 3, sección «SSR1400: Large Campus, Hub, and Data Center».",
+    "tamano": "44 × 438 × 650 mm (Al × An × Fo) · 19,2 kg — guía, tabla 1"
+  },
+  "SSR130": {
+    "front": "/img/equipos/jn-ssr130-front.webp",
+    "rear": "/img/equipos/jn-ssr130-rear.webp",
+    "fuente": "Ficha SSR100 Line of Routers (1000728-005-JP), p. 3 «図 4：SSR130 のフロントパネルコンポーネント» (panel frontal) · «図 6：SSR130 のリアパネルコンポーネント» (panel trasero).",
+    "url": "https://www.juniper.net/content/dam/www/assets/datasheets/jp/ja/routers/ssr100-line-of-routers-datasheet.pdf",
+    "foto": "/img/equipos/jn-ssr130-foto.webp",
+    "fotoFuente": "Foto de producto de la ficha SSR100 Line of Routers (1000728-005-JP), p. 3, sección «SSR130：中規模支社/拠点向けルーター».",
+    "tamano": "44 × 222 × 241 mm (Al × An × Fo) · 1,67 kg — ficha SSR100: una sola celda para SSR120 y SSR130, sin guía propia que la separe"
+  },
+  "SSR1500": {
+    "front": "/img/equipos/jn-ssr1500-front.webp",
+    "rear": "/img/equipos/jn-ssr1500-rear.webp",
+    "fuente": "Ficha SSR1000 Line of Routers (1000757-002-EN), p. 3 «Figure 7: Front panel components of an SSR1500» · p. 4 «Figure 8: Rear panel components of an SSR1500».",
+    "url": "https://www.juniper.net/content/dam/www/assets/datasheets/jp/ja/routers/ssr100-line-of-routers-datasheet.pdf",
+    "foto": "/img/equipos/jn-ssr1500-foto.webp",
+    "fotoFuente": "Foto de producto de la ficha SSR1000 Line of Routers (1000757-002-EN), p. 3, sección «SSR1500: Extra Large Campus, Hub, and Data Center».",
+    "tamano": "44 × 438 × 610 mm (Al × An × Fo) · 22 kg — ficha SSR1000, «System size» y «System weight»"
+  }
+}
