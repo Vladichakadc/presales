@@ -832,11 +832,53 @@ jobs:
                 'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8300-series/hardware_installation-guide/secure-8300-series-hig.pdf',
                 'https://www.cisco.com/c/es_es/td/docs/routers/secure-routers/sec-8300-series/hardware_installation-guide/secure-8300-series-hig.pdf',
               ] },
+              // Segunda corrida (misma fecha): el PDF de la 8400 llego como HTML y el de la 8500 dio
+              // 404 (corrida 39360888778). Se guarda la pagina de cada guia y el PDF se DESCUBRE en
+              // ella, como las guias de los controladores de Aruba.
+              { archivo: 'cisco-sr8400-hig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8455-G2', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/c84xx/c8400-g2-hardware-installation-guide.html',
+              ] },
+              { archivo: 'cisco-sr8500-hig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8550-G2', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8500-series/cisco-8500-series-secure-router-HIG.html',
+              ] },
               { archivo: 'cisco-sr8400-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [
                 'https://www.cisco.com/c/en/us/td/docs/routers/c84xx/c8400-g2-hardware-installation-guide.pdf',
-              ] },
+              ], descubrirEnlace: { de: 'cisco-sr8400-hig.html', contiene: 'c8400', base: 'https://www.cisco.com/c/en/us/td/docs/routers/c84xx/c8400-g2-hardware-installation-guide.html',
+                dominios: ['cisco.com'] } },
               { archivo: 'cisco-sr8500-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [
                 'https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/secure_8500/cisco-8500-series-secure-router-HIG.pdf',
+              ], descubrirEnlace: { de: 'cisco-sr8500-hig.html', contiene: 'HIG', base: 'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8500-series/cisco-8500-series-secure-router-HIG.html',
+                dominios: ['cisco.com'] } },
+              // Las guias de los Catalyst 8200/8300/8500 Edge: sus paginas las enlazan las listas de
+              // guias de instalacion que trajo la primera corrida (exploracion).
+              { archivo: 'cisco-c8200-hig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8200', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8200/hardware_install/b-cat-8200-series-edge-platforms-hig.html',
+              ] },
+              { archivo: 'cisco-c8300-hig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8300', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8300/hardware_installation/b-catalyst-8300-series-edge-platforms-hig.html',
+              ] },
+              { archivo: 'cisco-c8500-hig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8500', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8500/hardware-installation-guide/b_C8500_HIG.html',
+              ] },
+              { archivo: 'cisco-c8200-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [],
+                descubrirEnlace: { de: 'cisco-c8200-hig.html', contiene: 'hig', base: 'https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8200/hardware_install/b-cat-8200-series-edge-platforms-hig.html',
+                  dominios: ['cisco.com'] } },
+              { archivo: 'cisco-c8300-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [],
+                descubrirEnlace: { de: 'cisco-c8300-hig.html', contiene: 'hig', base: 'https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8300/hardware_installation/b-catalyst-8300-series-edge-platforms-hig.html',
+                  dominios: ['cisco.com'] } },
+              { archivo: 'cisco-c8500-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [],
+                descubrirEnlace: { de: 'cisco-c8500-hig.html', contiene: 'HIG', base: 'https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8500/hardware-installation-guide/b_C8500_HIG.html',
+                  dominios: ['cisco.com'] } },
+              // Los boletines de fin de venta que el catalogo ya cita, por las fechas de los PID que
+              // aun no lleva (C8300-1N1S-4T2X, C8300-2N2S-4T2X, C8500L-8S4X y C8500-12X).
+              { archivo: 'cisco-eol-c8300-c8200.html', tipo: 'html', para: 'CISCO', debeContener: 'C8300-2N2S-4T2X', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html',
+              ] },
+              { archivo: 'cisco-eol-c8500l-c8300.html', tipo: 'html', para: 'CISCO', debeContener: 'C8500L-8S4X', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500l-8s4x-4t2x-c8300-1n1s-6t-eol.html',
+              ] },
+              { archivo: 'cisco-eol-c8500.html', tipo: 'html', para: 'CISCO', debeContener: 'C8500-12X', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500-12x-c8500-12x4qc-eol.html',
               ] },
               { archivo: 'cisco-sr8600-soporte.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
                 'https://www.cisco.com/c/en/us/support/routers/8600-series-secure-routers/series.html',
@@ -916,6 +958,11 @@ jobs:
                 descubrirPiezas: { de: ['cisco-sr8100-ds.html', 'cisco-sr8200-ds.html', 'cisco-sr8300-ds.html',
                   'cisco-sr8400-ds.html', 'cisco-sr8500-ds.html', 'cisco-sr8600-ds.html', 'cisco-sr8000-og.html',
                   'cisco-isr1000-ds.html', 'cisco-c8200-ds.html', 'cisco-c8300-ds.html', 'cisco-c8500-ds.html'],
+                  base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
+                  contiene: ['/c/dam/', '/content/dam/'], max: 200 } },
+              { archivo: 'cisco-hig-img', tipo: 'imagenes', para: 'CISCO', urls: [],
+                descubrirPiezas: { de: ['cisco-sr8400-hig.html', 'cisco-sr8500-hig.html', 'cisco-c8200-hig.html',
+                  'cisco-c8300-hig.html', 'cisco-c8500-hig.html'],
                   base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
                   contiene: ['/c/dam/', '/content/dam/'], max: 200 } },
               { archivo: 'meraki-img', tipo: 'imagenes', para: 'CISCO', urls: [],
