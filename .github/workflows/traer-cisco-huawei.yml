@@ -563,6 +563,12 @@ jobs:
               { archivo: 'juniper-mx480-producto.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
                 'https://www.juniper.net/mx/es/products/routers/mx-series/mx480-universal-routing-platform.html',
               ] },
+              // La ficha del MX304 en juniper.net ya es un visor de HPE: el PDF vive en psnow
+              // (a00150831enw). URL leida de la propia pagina traida el 2026-10-19, no adivinada.
+              { archivo: 'juniper-mx304-ds-hpe.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+                'https://www.hpe.com/psnow/downloadDoc/MX304%20Universal%20Routing%20Platform-a00150831enw.pdf?id=a00150831enw&isFutureVersion=true&contentDisposition=attachment',
+                'https://www.hpe.com/psnow/doc/a00150831enw',
+              ] },
               // HUAWEI, OTRAS VIAS (2026-10-07, encargo del dueno: lo que Akamai bloquea, buscarlo por
               // otro camino legitimo). Nada de esto rodea la defensa de Huawei: el Wayback Machine
               // sirve la copia que el archivo de Internet guardo de la pagina publica, desde sus
