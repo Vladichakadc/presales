@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html  lang="en">
+<head prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article#">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <meta name="google-site-verification" content="mW_9DEI0m-ICeSJnaiaIKGJltJgFh4edDWNJb1m9l3U"/>
+        <meta name="generator" content="MindTouch"/>
+        <meta name="robots" content="index,follow"/>
+        <meta property="og:title" content="MX67/MX68 Installation Guide"/>
+        <meta property="og:site_name" content="Cisco Meraki Documentation"/>
+        <meta property="og:type" content="article"/>
+        <meta property="og:locale" content="en_US"/>
+        <meta property="og:url" content="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67%2F%2FMX68_Installation_Guide"/>
+        <meta property="og:image" content="https://documentation.meraki.com/@public/production/site_13505/1603418441-social-share.png"/>
+        <meta property="og:description" content="This document describes how to install and set up the MX67/MX68 security appliance. Additional reference documents are available online at: www.meraki.com/library/products."/>
+        <meta property="article:published_time" content="2020-10-05T18:13:18Z"/>
+        <meta property="article:modified_time" content="2026-09-10T09:33:33Z"/>
+        <meta name="twitter:card" content="summary"/>
+        <meta name="twitter:title" content="MX67/MX68 Installation Guide"/>
+        <meta name="twitter:description" content="This document describes how to install and set up the MX67/MX68 security appliance. Additional reference documents are available online at: www.meraki.com/library/products."/>
+        <meta name="twitter:image" content="https://documentation.meraki.com/@public/production/site_13505/1603418441-social-share.png"/>
+        <meta name="description" content="This document describes how to install and set up the MX67/MX68 security appliance. Additional reference documents are available online at: www.meraki.com/library/products."/>
+        <link rel="canonical" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67%2F%2FMX68_Installation_Guide"/>
+        <link rel="search" type="application/opensearchdescription+xml" title="Cisco Meraki Documentation Search" href="https://documentation.meraki.com/@api/deki/site/opensearch/description"/>
+        <link rel="apple-touch-icon" href="https://documentation.meraki.com/@public/production/site_13505/1749845950-apple-touch-icon.png"/>
+        <link rel="shortcut icon" href="https://documentation.meraki.com/@public/production/site_13505/1756406766-favicon.ico"/>
+
+        <script type="application/ld+json" nonce="f3d82652bf864a47344d56381d2aa67168673ab493acd6c9ee5bf90ff58299b2">{"@context":"http:\/\/schema.org","@type":"TechArticle","name":"MX67\/MX68 Installation Guide","url":"https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Install_and_Get_Started\/Installation_Guides\/MX67%2F%2FMX68_Installation_Guide","image":{"@type":"ImageObject","url":"https:\/\/documentation.meraki.com\/@public\/production\/site_13505\/1603418441-social-share.png","height":{"@type":"QuantitativeValue","maxValue":315},"width":{"@type":"QuantitativeValue","maxValue":600}},"datePublished":"2020-10-05T18:13:18Z","dateModified":"2026-09-10T09:33:33Z","description":"This document describes how to install and set up the MX67\/MX68 security appliance. Additional reference documents are available online at: www.meraki.com\/library\/products.","thumbnailUrl":"https:\/\/documentation.meraki.com\/@api\/deki\/pages\/1579\/thumbnail?default=https%3A%2F%2Fdocumentation.meraki.com%2F%40style%2Fcommon%2Fimages%2Fimage-placeholder.png","mainEntityofPage":{"@type":"WebPage","@id":"https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Install_and_Get_Started\/Installation_Guides\/MX67%2F%2FMX68_Installation_Guide"},"headline":"MX67\/MX68 Installation Guide"}</script>
+        <script type="application/ld+json" nonce="f3d82652bf864a47344d56381d2aa67168673ab493acd6c9ee5bf90ff58299b2">{"@context":"http:\/\/schema.org","@type":"WebPage","name":"MX67\/MX68 Installation Guide","url":"https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Install_and_Get_Started\/Installation_Guides\/MX67%2F%2FMX68_Installation_Guide","relatedLink":["https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Operate_and_Maintain\/How-Tos\/Onboarding_IOS_XE_Based_Secure_Routers_into_Dashboard","https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Operate_and_Maintain\/How-Tos\/MX_Cold_Swap_-_Replacing_an_Existing_MX_with_a_Different_MX","https:\/\/documentation.meraki.com\/Platform_Management\/Dashboard_Administration\/Troubleshooting_and_Support\/Troubleshooting\/Using_the_Cisco_Meraki_Device_Local_Status_Page","https:\/\/documentation.meraki.com\/Platform_Management\/Dashboard_Administration\/Design_and_Configure\/Architectures_and_Best_Practices\/Cisco_Meraki_Best_Practice_Design\/Meraki_SD-WAN"]}</script>
+        <script type="application/ld+json" nonce="f3d82652bf864a47344d56381d2aa67168673ab493acd6c9ee5bf90ff58299b2">{"@context":"http:\/\/schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"item":{"@id":"https:\/\/documentation.meraki.com\/SASE_and_SD-WAN","name":"SASE and SD-WAN"}},{"@type":"ListItem","position":2,"item":{"@id":"https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX","name":"MX - Security & SD-WAN"}},{"@type":"ListItem","position":3,"item":{"@id":"https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Install_and_Get_Started","name":"Install and Get Started"}},{"@type":"ListItem","position":4,"item":{"@id":"https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Install_and_Get_Started\/Installation_Guides","name":"Installation Guides"}}]}</script>
+
+        <title>MX67/MX68 Installation Guide - Cisco Meraki Documentation</title>
+
+
+    <style type="text/css">/*<![CDATA[*/
+/*.mt-foot {
+    display: none;
+}
+
+#contact-support{
+    width: 350px;
+    /*background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wIGERkfe/tlTAAAFbhJREFUeNrtXXt4VNW1/611JgkJj/AU0JCZyUygRKUPrO0nFS4gVvBV9VZqfVRbSyUTrNeqvcV+Wu01xbbig0xAqx99WBXvpwIW0Ko89NKHymdbNQhkXiHWWnkYAsQkM2vdPyYIyuvsmUnmTDLrz2TOOXvv32+vvdbae69F6G1SC6osLffGYVUx1KuAF9AxgJ6g4GEMDIVKCcBFIBQCABQdgLSDeL8AuwiyA6APAGoiICqQsAvYvK2lKYL50N40XJTrHfAv8pepFZ8E1TNE6YsgPZVBA7rjW6LSCvBbTPoqlP7EiG/cVtP8bp4APQn4En+RJDqnEXAOgJkAVWa3RbIVoDUgWkPsWt94XWN7ngAZlolLJxa07Nt1jpLOFpXzmXiQIxuq0qJEKxW6bGjJiD9uumZTZ54AaUjFoopK4sR3ofotEJ+QU6pK5X0Q/RrqejhUE2rME8BAvEHvWYTETQT+ai+wsxSK55TknnCg6aU8AY5hvVeUui8i1dtA/Fn0QhHFG0x6ZygQW54nwKGqPuiepUr/w4TPo0+Ivg6iH4eqo8/3aQL4g+VVAtxL4LPRF0WxJk56YywQe6dPEWD0A6NLiq2inyr0ega50IdFVDqZ6L52TdzeXNPc1usJ4K3zziDSBwnwIi8HiQCECDInHGha2ysJUFZXVlxIrl8SUN2zdhdiCmwBdBsDuwFqVUKrqray0l4AENIBRDSQFAMBHajAUEArSXkcCOUAuMcWBegisgpu6amAUo8QwFvvnUCiTxBhfDcP3tsCrLPAr4jS5gQlGmOB2EfpvNQddPdj5UqGjlfSMxU0lYGTu5kHb0LlslDN9rdzngD+oPcKhT4EoLgb1OZOgj5NRC8p8brw3PC/e4jQI0llKoDpBLoYwNBuYPM+InwnVB1dlpsEqIXlK3UvBOj6DBtNHQxeBdLfDi4Zvirb4daqh6oKP+rcd66CroLKLCYuzCgRFPeE90RvwXxIzhCg6r6qAe2u/ctAmJXBKREFYWG7xn/fXNO8y4mG3GcWnTisgwsvJ5UbQezOXNd1ZVui47L3rn9vv+MJ4A66R7HS6owFdVS2KPPPxnzo/v2G+RviuWDRT1w6sWD3/h1XEPCjDO5WblLmWZle5jJKAN9i3xhI/KWMdFrxDhHd1tgSeaq71F+3Sy24otR9KUHvAHhsJiYDQ6Zn8gxCxghQGSyvEMXaDKi+/Qr96ZCS4ffkwnaqXTuhvXPfzQDdmq4xrEDEBZm+NdAUcQwBfIt9Y5DofCVd8AVYTszfD88NN/XGYI876Pa4gEUAnZcuCSyNn5kJTUAZ6NQoF/Bymmp/F6DfcdIuWbe6kcHyS1j5YRAGp2UbWa7J6doEaUW4qu6rGsBKq9MBXxR/Bluf6yvgA0Ak0PRUnPTzgLya+tTlcSSJVaMfGF2SHQLUwmp37V+WhrWvgP6ifI97cmhuaDv6mMQCsejgkhFfUeDeNBT4acVW4eOoTR3HlJcAX9B9fxpBnjYQLgtVR1cgLweWhEdB6JfSTFLcE66J3tRjBOgK7/4uxf7uBuS8UKDpT3noD/Gi6j2TRWQliEtTnMrfSCVsbEwAb713Aqv+JRV3RoB3WRNf7YlNjpzUBMmxfQ7A6BTW032kiS+Zjq3R2lFWV1ZMok+k5svqNmI+Iw/+MYzD6sg/LMgkAUIpzOT+IH7cv8Rf1G0EKCTXL1PZ0hXgXWXrrN7q32dStgaaIgWQGVD8K4V14FRNdN7dLUuAt847g0n/mNKar4kz8zPfTDz1ns9aIhtSsAlUIWfZPVlkiwAT7h/Zf6+r+M0UjnG1KWRGONC0MQ9pCsZ2vWdKQuR5JjZS6wJtFOBUO4dhbC0Be13Fd6YAvoJwWR781KWxOrrBIutK0+cY5HcBP8mIBvAHy6sSoL+bn97VX4QCsVvyMKYvqcRcRKUTbJ0SqY5sTUsDCHCvKfii+HNZi2d+HrrMSFFB/5sBfd1ICxAXsOrCtDRARdA9i0CrDNu7C2x9ri+Gd7tTxgbLvQnFG6ZGoSidHamJvGBOgFqQd5Bnk3msXy9y8sZOWV1ZcQEXVJJKmQKDiahAVeKWWnsSwL860Rly6pEzX53nUhAMo336WigQO92YABVB98UEesrQ318eCUQvct4aWn6GKl9MkLNAfAoA6zhWdDOgG1l5tVq8Ijw33OIgEqwGYaaRr690QWNN5Nkj/c919If0NpBRpHg/MX/fKQPVdVr326R6A8Djkl2xF/diUBlAs0GYTSJtFUHPY6TWAifc8yck5qlab5lsHCnp7QCeta0BvEHvWQx9wczn0x+FA7EFjpgl9Z4LIbgPBE+m3inQOIEWtSXaf9wdp3NNpCLouZ1sunmHIDQ1FIitt+kF6A8MPf53hpQMvyfrgZMl/kG+oOcxKJZnEvwureAi4L9KrII3fHVjTs5mP9lyLRCooTaim2xpgGRaFtlqppbo0sZA5H+zOisWVVQSxZ8F8bju/pao7HExn7+tOvpy1shuviWvpInKxprtoWNqAOLEd01nf2NL5Kmszvyg+8vK8ueeAL/Lxx4UV13lD7qzltCisSXyuABhM1vQuvaYS8DEpRMLoPotI/wZC7J5bt8XLD8jAbzAwLAeVcOgAar0tH+JPzsZy+YjwcACw8l69ZTaKa6jEqBl365zjLJxKaJjPnT/PptqH+A/dFdiSBtrn0cT8awZvkUFJb9Juqy22ztqe2l0xlEJoKSzDQdgYbaua02pneJSlicADMmy7TnHV+fzZ+PDDXMaOtjwUCnhkxjzIRZ0kahcYGAIdbRrPGuzv7m06ToGvpDCowmFPK/AD6GYrdBLAHwPkAeh8n4K77OE4tdnaxyUrUcFGjd44MKqh6oKD/MCKoLumQRabaD+nwnVRC/ORqeTly93Rgk40cyXlxUu4MZtgabw0YJH7Z375onqXSZ78ALdEWmJjcJ8JLJjB3n+AOBc+5P34P4AH8KEc8zUv/42W6z/cN/OmYbgK6A3RQJNXzsa+AdUaigQu4eJZkJhO7MIg4ZXDvaclrVFiGB0QptIzzmSDTDTPuOxc3DJ8FVZ7PDXDJ/4XigQsx2oCgVi60A0z2hdEXw5W8MRV10BlRaD6TDzEwTwL/KXmVzvIujT2by5q8B/GPx8aSgQ/ZXpN0KByMOieMMgylKVrfGIBWIfCdEK+xoA491B96iPCaBWfJKZCqGs5bwtqysbanI8TYV/lnrARx6x/Vulsmy6IkRklF6OoZMOLgGqZ5hMQCVelzXfl/gzBktVODwvvC3VbwlZr9j/bRo3fTNCAMuIAAQ+SABR+qIB/m/3VDauI4NKHgOWN6TzrYQmtht8qyCbBAjNDW032SAi4HQAcKEWBNJT7V4REGBdNjvKSntBsGWAqtKL6dmaZLs+kELbkH1ZC8BeUErlFABwVZaWe8UglGqBX8kq02uiKwGs7IlvuVROAll26fLvbKNvgV9R6Bx7zeVST73HzXFYRtarKG1GHxEh/pKBvtia7fYqEkbYWKrjmaEmFz4kQYnGvkIABl1uG37FX7PdXper2IiEAnhZTVwqIJZu7t1cEV+956sAptn8eVtRvGRtttu85XtbWhX4p32Cw8vJooq2CbClL4BfsbiiHIqlBnPpyYYbGvY6oe0EvGOAp5sBNajGpdv6BPgi62EzSYNA4wy62zk9ENsYqdIIVvAwA5WxuzeD76n3uCGy3iTSyMC92wIxxxjGCrZ9qYVJhzMbpTqn1t4MPivWmd2ClleLCvr/2En9IGirfbLQME4WUrb5AKG1t4JvCdYbXoF/j1UubpjT0OEw38U2RqQoYcD+wQdV7XUEcAfdHkuw3uQegQL7VPkCJxaOVjLAiFDIH5dQt8Otrho7vQl8l6oR+KLSToRLwjXh1x3ZKbNJWsToo+Jb7BuTBN9+gmuB7iXCuU4o+Hh07aRGFzoZCttrmJAO6A3gj35gdAkkvtoMfOyE8jQn1v/9pFangQY/b2dAbJcnIzJ6uWOlmIvuBOgU++DLdhf0zEhN5DWn982cAMS2b7om6+rltlTWlZ2kEIPzfvqWJYVnOMnXP057bWOkQBsLsKs7Xu5UEXLV2K/spa91Qic3zmtszp0e2tcABN3JBNlhwJihOU8AyHdsGlPP9o9/NLUp0JRj0U+xfVNKlHa4APrAQANU5jL4E5dOLPhw/84RNvr5YrgldlG2LnqkBb/yWLbpBxDpBwyQ7fy9pD1z/bq7pOsoe9tx/PxWl8q3chH8JKiwjREBMSYgamBilruD7n65TAIojnn/j4nu31Kz/Z+52LVxD44baHJjSoAIC8QkyQBbavlzmgCEncf6dxx4JFe7Fo+3GdUmZCDCLmCz2fhJFXJbjn6iSSUWC8SiucttyyiVv7LVwNtamiKiYjt+LKRfQW8V4uZcbr5AJhsshR+G54abGPOhAL9lMErTeiv+ConndvsNsCF9q2sZAJjUdv06Bk6uWFxxAvLiKKlYXFHOgM+ALK9+TAAomVXwksS0/JA7Tf+bYqIbga5UsYz4RoFRRvjpAJ7IxXFq1/iMQfFBR7zus8e1J5HDFJhuBD/xxq5YQFJ8wfItdkucC7CzuKDkROcdh+qbUlZXVlwA/hcTD7KJX0MkED354BKQtArWGNgBwz7q3HdufuidIYVkXWgX/KT9hzWHYHngr/YJ0GVEXJUfeod4r0pmdYVI1hyMHXSJf4m/SOMd79utSCEqHUUaP/Gdef/cmVOjVQurotR9NgFTFRiF5KmYBoYu3xpoiuQa+N5670ioNBuU9dk9uGTYyAMpfj7WAI3XNbYrke1r10xc2MGFl+fSYFUEyyf5Sssbkunw6GYCXUmgaxW0MAFu9NV5Hhn34LicOvPAqlca1nRafmh+p09mCoUuM1M9cuPEpRMLcmGgfPWeC1Wx7hiGLoPw7Xi87f8+s+jEYbnQJ/8Sf5EANxi6f09+yp47KENLRvzRKFsmsXv3/h1XOH2gPPWecVA8zsQ2yMoTOrlwWS4QQCR+NQMnGTzyXlmL58WjEmDTNZs6QfRrIy0A/W/UwtHHyy3FXTAreD3dV+e5wMl9mlI7xQXFD80Mdyz9dG7nw4FT18PJ39pehcZWlLovdepATbh/ZH+THMiHyGwnE2D74NjlhlfZ1MLhae8OI0CoJtQIxXOGWuCOQxMQO0naXP0q7an+w2aLY7e93UF3P1XcZtijVUdKk3tE1a0khvV/eGx7576bnThYceWUjFQitZxKABcwn4EKs/7QL49s+R5BwoGml0zSpHZ94lZ30O1xXJDEolhKBhYo5EhXdlFFpaga1mTW1xqroxtsEyDp5+udhm0rtoAHnDZgXUktN5k/qc860/GP16VQTv6Oo77uaP9Iln81K1hMoPO9wfJLHOcuQW43fGJrcUH/R53WD2/Q/U0Cn21EY8VfIoGmVcYE6Fo4jLNfMPhXTlsKugbAXm0flRYh6+tO2+n01fn8UF1svgbKrcfG6xgSqo4+j0N2jmzKEBd0mdMihKFA9EequAHHuBegis0K11ci1ZF/OKntyYhf4kmTHb+kJ6Mrw4GmtSkTAADipDca1aRJvvb03ft33g2HSbgmej9rvFKBn4hivUAbVbEZimcAXDWk/7DPhmvCbzmt3ZKILzSt4i4qHaSu41aAtXWJyBd0/xwgYzdPIP8ZCTQ9hbykbvUH3ZcR6LEU4hh3hQPR4y7htkK47Zq4XQBjt4iVH62s90zOw5gq+OXTVfXXKeiMrWy5fmrPZrMhzTXNbQSZA6MQMQBCPxFZ6a33TsjDabjuB92fV8Uz9q+yH5z8RDyn8brG9owRAACSxoQuMrdCuZRVnxsbLPfmYbUJft0Yn6quYWLjswmqWHi0oE9aBAAAsgpuAfTNFPo0uhP8Qp4E9sAXsl4A8cgUwP9bv8KS+WZK2tgfHXOykvVXAvqn0L/3EoSZ0ero3/NQH8nYLv8CFGuM6jcftPpbhej0WCD2jslzxvv4oZrtbwN6bYp9HG2JbPDXe6bk4T7c4BPF+lTA75rK15iCnxIBkvZA7AkFFqbWUC5VwXP+oPfredgPunqqWJ3Kmt+l/O9O1d2mlFtdC64odT9DoDROzugDRQX9b+6rF0z8S/xFkogvJKA69SHE06E90a9jPqRnCYDkaZt9ruINACamQYLXLeiluXgkO631vs7nT4Z3zSJ8n8Re/tqhMrW5pjnlimVpneX7x/ff36fMs6CSRiUROi2heMNX57m0r4DvDbq/KejclA74AjS4Ev3OSwf8tDXAAamsKzspQa5XDM+oHYnSq5lk3rEqfOf0Wr+oohIcrzPd0j0C+OFCTZyZiVxGlKnOjQ2We+PglzJAgo+UsIAt1wK70Synizvo7ucC5ovqLaaHOY4EvhKmRaujsUy0jTLZUf8if5lSx4ug9NPJCbTRAt/R2BJ5PFdTtk2pneLaPjh2uSpuMz3Dd5RAz+YCJM7KZBYzynSnKxZXnECSWAXQaZl4nwAhBu4uKij5Ta54C0nrvvMagG5JWyMeYvC5Ev3O23r91h2ZbCt1xwBMuH9k/72ufo+l5yIephGaGbhX2Xo0m8Wrj2nc1XtHsuqVAtxgeGPnuK5eO+JXpGvw9RgBPo4TDPL8nAg/yORru8q0PQ/C7+KqK7JdyLKsrqy4kKwLSekqIZ1heFHTVpAn1BKbn6qfnz0CHPB36z2zVfFIinsHxxkbaRGiFUS0lhOul3oqq7dvsW+MSnw6gOmqeoHpUS1bRFdpJaKrw4HY093ZF+qRAasbczKIHwfo1O78jkAbAaxNVtFObC7qHLAl3YqeVfdVDWgv2DuOYI0XyGQFTTPJxpWisfc3YXwjWh3t9kqtPUKAQ1yhuwGa15PfFeBdBrYAsk3Bu5J19bhVSVuh2qpQItDAZKUNHZjMty9DRHksEcaZ5N7NCPaKhf0KS+b3lMFL6GGpCJZPU/BD3T2Lck9kKxHPMTnMkQnp8ftvu1e3RAbMGvArF5FLVL9ERFafhl2lA0QLEsA3I4FYj19Ho2x23lvvHcuqCwH0yYxjAlnBWnBTqCbUmK02kBMGwlvnncEkdwH0xb4AvCr+ApJbj3dpo88Q4ID467znK+ntSGt72dHQvybQO451V69PE+BjtzHongrQDwDMcmobTVAHdBUT/WJbdfRlpzXO0YPrrxvjU7KuheJqEEblGPDvKbDUgjzi5O3tnJhdU2qnuLaXRmcQdDaULwRhsEObuhvAckCfLGvxvPjphEx5AmRAqh6qKmzraJtCpOdAMZMI47PZHgEaSLEGJGuGlIx4+dAkjLkgub6+wh10j2LoJAJPIuB0UTm1O2LzydVcWkD0ZrLYgm5U4o2R6sj7uTx+OU+AI4mn3uO2VMcL4GXAq4BblUYw6XAFDSNFCQiFAA6czmkH0K5AG0F3itIOIv2AgJgAEQYiylZDeG64qbeN1f8DCsTZ1gYpGlcAAAAASUVORK5CYII=');
+    background-repeat: no-repeat;
+    background-position: left center;
+    background-size: 5em;*/
+    /*padding-left: 6em;
+    margin-left: 35px;
+    margin-top: -15px;
+}
+#wishFrame{
+    margin-top: 25px;
+    margin-left: 35px;
+    width: 350px;
+}
+
+/* /begin Added 10/20/17 
+#contact-sales{
+    width: 350px;
+    margin-left: 80px;
+    margin-top: -15px;
+}
+#contact-sales h2{
+    color: #999;
+}
+#contact-sales a{
+    font-size: larger;
+    color: #999;
+}
+
+/* /end Added 10/20/17 */
+
+/* /begin Added for testing 8/16/17 
+#ask-community{
+    margin-left: 35px;
+    margin-top: -15px;
+    width: 350px;
+}
+/* /end Added for testing 8/16/17 */
+/*.clearFix{
+   content: " "; /* Older browser do not support empty content 
+   visibility: hidden;
+   display: block;
+   height: 0;
+   clear: both;
+}
+.float-right{
+   display:inline-block;
+   float:right;
+}
+.float-left{
+   display:inline-block;
+   float:left;
+}
+#internal-suggestion {
+    margin: auto;
+    width: 572px;
+    clear: both;
+    margin-top: 2em;
+    border-top: 1px solid rgba(0,0,0,0.2);
+    text-align: center;
+    padding-top: 2em;
+}
+/* Changes for Docs+KB UI */
+/*#footerContent{
+    background: #484848; /* grey background color */
+   /* border-top: 6px solid #282828; /* small black border at the top */
+   /* margin: auto;
+    width: 1280px;
+    color: #999;
+    clear: both;
+    overflow: auto;
+    box-shadow: 0 0 3px rgba(0,0,0,0.4);
+}
+#contact-support a {
+    font-size: larger;
+    color: #999;
+}
+#contact-support a:hover {
+    color: #0097c8;
+}
+
+#contact-support h2{
+    color: #999; /* makes "contact support" a better grey */
+}
+
+/* /begin Added 8/16/17 */
+/*#ask-community a {
+    font-size: larger;
+    color: #999;
+}
+#ask-community a:hover {
+    color: #0097c8;
+}
+
+#ask-community h2{
+    color: #999; /* makes "contact support" a better grey */
+}
+/* /end Added 8/16/17 */
+
+/*#copyright {
+    margin: auto;
+    padding-right: 90px;
+    color: grey;
+    float: right;
+}
+#crfoot {
+    background: #505050;
+    margin: auto;
+    width: 1280px;
+    clear: both;
+    overflow: auto;
+    box-shadow: 0 3px 3px rgba(0,0,0,0.4);
+    height: 20px;
+    padding-top: 10px;
+    padding-bottom: 5px;
+}/*]]>*/</style>
+
+        <link media="screen" type="text/css" rel="stylesheet" href="https://a.mtstatic.com/@cache/layout/anonymous.css?_=725c870038c749936922c6d0da3d2240_ZG9jdW1lbnRhdGlvbi5tZXJha2kuY29t:site_13505" id="mt-screen-css" />
+
+    
+        <link media="print" type="text/css" rel="stylesheet" href="https://a.mtstatic.com/@cache/layout/print.css?_=c97c72380f455f30fbdfffed3c1a10b9:site_13505" id="mt-print-css" />
+
+
+    <script type="application/json" nonce="f3d82652bf864a47344d56381d2aa67168673ab493acd6c9ee5bf90ff58299b2" id="mt-localizations-draft">
+{"Draft.JS.alert.cancel.button":"OK","Draft.JS.alert.cancel.message":"You can not cancel a draft when the live page is unpublished.","Draft.JS.alert.cancel.title":"This draft cannot be canceled","Draft.JS.alert.publish.button":"OK","Draft.JS.alert.publish.message":"You can not publish a draft of a page with an unpublished parent","Draft.JS.alert.publish.title":"This draft cannot be published","Draft.JS.alert.unpublish.button":"OK","Draft.JS.alert.unpublish.message":"You can not unpublish a page when published subpages are present.","Draft.JS.alert.unpublish.title":"This page cannot be unpublished","Draft.JS.success.cancel":"The draft was successfully deleted.","Draft.JS.success.schedule.publish":"Publication schedule successfully created.","Draft.JS.success.publish":"The draft was successfully published.","Draft.JS.success.unpublish":"The page was successfully unpublished.","Draft.JS.success.unpublish.inherits-schedule\n        Draft.JS.success.unpublish.scheduled-to-publish":"[MISSING: draft.js.success.unpublish.inherits-schedule\n        draft.js.success.unpublish.scheduled-to-publish]","Draft.JS.success.update.schedule.publish":"Publication schedule successfully updated.","Draft.JS.success.update.schedule.unpublish":"[MISSING: draft.js.success.update.schedule.unpublish]","Draft.JS.success.delete.schedule\n        Draft.JS.success.delete.schedule.with.subpages\n        Draft.error.cancel":"[MISSING: draft.js.success.delete.schedule\n        draft.js.success.delete.schedule.with.subpages\n        draft.error.cancel]","Draft.error.publish":"There was an error publishing the draft.","Draft.error.unpublish":"There was an error unpublishing the page.","Draft.message.at":"at","Dialog.ConfirmSave.StrictIdf.title":"Oops!","Dialog.ConfirmSave.StrictIdf.error.missing-template-reference":"This article type requires a template reference widget. Not having one may negatively impact your site and SEO. Please contact NiCE Knowledge Management support.","Dialog.ConfirmSave.StrictIdf.label.continue":"Proceed anyway","Dialog.ConfirmSave.StrictIdf.label.cancel":"Cancel","Dialog.ConfirmSave.StrictIdf.label.missing-template-reference-help-link":"Learn more about required references","Dialog.ConfirmSave.StrictIdf.error.invalid-idf":"This type of article should not exist at the requested location in the site hierarchy. Proceeding with the requested move may negatively impact site navigation and SEO.","Dialog.ConfirmSave.StrictIdf.label.invalid-idf-help-link":"Learn more about IDF structure","Dialog.EditDraft.page-title":"Create draft","Dialog.Scheduler.Common.label.am":"{0} AM","Dialog.Scheduler.Common.label.pm":"{0} PM","Dialog.Scheduler.Publish.alert-create-draft":"Create","Dialog.Scheduler.Publish.alert-existing-publication-scheduled":"This location has an existing publication schedule applied.  The new page will inherit this new schedule.","Dialog.Scheduler.Publish.alert-modify-message":"This draft is scheduled to be published {0} at {1}. A schedule cannot be modified or deleted less than 15 minutes from its start time.","Dialog.Scheduler.Publish.alert-modify-title":"This schedule cannot be modified","Dialog.Scheduler.Publish.button-close":"Close","Dialog.Scheduler.Publish.button-save":"Save publish schedule","Dialog.Scheduler.Publish.button-go-to-parent":"Go to parent","Dialog.Scheduler.Publish.do-not-have-permission-message":"This page will be published {0} with another page scheduled by {1}. You do not have permission to view this page. Please see {1} to resolve scheduling conflicts.","Dialog.Scheduler.Publish.go-to-parent-message":"This draft will be published {0}, scheduled by {1}. A schedule can only be modified where it was created.","Dialog.Scheduler.Publish.label.f1-link":"Learn about scheduled publishing","Dialog.Scheduler.Publish.page-title":"Publish","Dialog.Scheduler.Unpublish.button-save":"Save unpublish schedule","Dialog.Scheduler.Unpublish.alert-modify-message":"This page is scheduled to be unpublished {0} at {1}. A schedule cannot be modified or deleted less than 15 minutes from its start time.","Dialog.Scheduler.Unpublish.do-not-have-permission-message":"This page will be unpublished {0} with another page scheduled by {1}. You do not have permission to view this page. Please see {1} to resolve scheduling conflicts.","Dialog.Scheduler.Unpublish.go-to-parent-message":"This page will be unpublished {0}, scheduled by {1}. A schedule can only be modified where it was created.","Dialog.Scheduler.Unpublish.page-title":"Unpublish","Page.Dashboard.page-title":"Dashboard"}    </script>    <script type="application/json" nonce="f3d82652bf864a47344d56381d2aa67168673ab493acd6c9ee5bf90ff58299b2" id="mt-localizations-editor">
+{"Article.Attach.file.upload.toobig":"The file \"{1}\" is too large.  The maximum allowed file size is {0}.","Article.Attach.file.upload.notAllowed":"The selected file can not be uploaded because you do not have permission to upload files of that type.","Article.Attach.file.upload.fileExtension":"You picked a file with an unsupported extension.  Please try again with a valid file.","Article.Common.page-is-restricted-login":"You do not have permission to view this page - please try signing in.","Article.Common.page-save-conflict":"You may have overwritten a concurrent editor's changes. Use this page's <a title=\"Revision History\" target=\"_blank\" href=\"{0}\" >Revision History<\/a> to review.","Article.Error.page-couldnt-be-loaded":"The requested page's contents could not be loaded.","Article.Error.page-save-conflict":"A page already exists at {0}. Navigate to the existing page and edit the page if you wish to modify its contents.","Article.Error.page-save-forbidden":"Your session has expired or you do not have permission to edit this page.","Article.Error.page-title-required":"A page title is required.","Article.edit.summary":"Edit summary","Article.edit.summary-reason":"Why are you making this edit?","Article.edit.enter-reason":"Enter reason (viewable in Site History Report)","Component.YoutubeSearch.error.key-invalid":"Your YouTube API Key was improperly configured. Please review the article at the","Component.YoutubeSearch.error.key-missing":"Your NiCE Knowledge Management deployment needs to update your YouTube API Key. Details on how to update can be found at the","Component.YoutubeSearch.error.search-failed":"Search failed","Component.YoutubeSearch.info.not-found":"No videos found","Component.YoutubeSearch.label.video-url":"Video URL","Component.YoutubeSearch.placeholder.query":"Video URL or YouTube search query","Dialog.ConfirmCancel.button.continue-editing":"Continue editing","Dialog.ConfirmCancel.button.discard-changes":"Discard changes","Dialog.ConfirmCancel.message.changes-not-saved":"Your changes have not been saved to MindTouch.","Dialog.ConfirmCancel.title":"Discard changes?","Dialog.ConfirmDeleteRedirects.label.delete-redirects-help-link":"Learn more about deleting redirects","Dialog.ConfirmSave.error.redirect":"A redirect exists at this location and will be deleted if you continue. This may negatively impact your site and SEO. Please contact NiCE Knowledge Management support.","Dialog.ConfirmSave.label.cancel":"Cancel","Dialog.ConfirmSave.label.continue":"Continue","Dialog.ConfirmSave.title":"Delete redirect?","Dialog.ConfirmSave.StrictIdf.error.invalid-idf":"This type of article should not exist at the requested location in the site hierarchy. Proceeding with the requested move may negatively impact site navigation and SEO.","Dialog.ConfirmSave.StrictIdf.error.missing-template-reference-insert":"You've removed the template reference, which is required for this page. Click Insert to reinsert the template reference.","Dialog.ConfirmSave.StrictIdf.label.cancel":"Cancel","Dialog.ConfirmSave.StrictIdf.label.continue":"Proceed anyway","Dialog.ConfirmSave.StrictIdf.label.insert":"Insert","Dialog.ConfirmSave.StrictIdf.label.missing-template-reference-help-link":"Learn more about required references","Dialog.ConfirmSave.StrictIdf.label.invalid-idf-help-link":"Learn more about IDF structure","Dialog.ConfirmSave.StrictIdf.title":"Oops!","Dialog.JS.wikibits-edit-section":"Edit section","Dialog.SaveRequired.button.cancel":"Cancel","Dialog.SaveRequired.button.save":"Save and continue","Dialog.SaveRequired.label.change-title-start":"This page needs a different title than","Dialog.SaveRequired.label.change-title-end":"Please make the correction and try again.","Dialog.SaveRequired.label.new-page-alert":"This operation can not be performed on a page that has not yet been created. In order to do that, we need to quickly save what you have.","Dialog.SaveRequired.title":"Save required","Draft.error.save-unpublished":"You cannot save an unpublished draft at {0}. A published page already exists at that location.","GUI.Editor.alert-changes-made-without-saving":"You have made changes to the content without saving your changes. Are you sure you want to exit this page?","GUI.Editor.error.copy-hint":"To avoid losing your work, copy the page contents to a new file and retry saving again.","GUI.Editor.error.server-error":"A server error has occurred.","GUI.Editor.error.unable-to-save":"We are unable to save this page","Redist.CKE.mt-save.save-to-file-link":"Save the page content to a file","Redist.CKE.mt-autosave.contents-autosaved":"The page contents were autosaved to the browser's local storage {0}","System.API.Error.invalid-redirect":"Cannot create a redirect on a page with sub-pages.","System.API.Error.invalid-redirect-target":"The redirect does not point at a valid page."}    </script>    <script type="application/json" nonce="f3d82652bf864a47344d56381d2aa67168673ab493acd6c9ee5bf90ff58299b2" id="mt-localizations-file-uploader">
+{"Dialog.Attach.allowed-types":"Allowed file types:","Dialog.Attach.button.upload":"Upload","Dialog.Attach.choose-files-dad":"Choose files to upload or drag and drop files into this window.","Dialog.Attach.max-size":"Maximum upload file size: {0}"}    </script>    <script type="application/json" nonce="f3d82652bf864a47344d56381d2aa67168673ab493acd6c9ee5bf90ff58299b2" id="mt-localizations-grid-widget">
+{"Article.Common.page-is-restricted-login":"You do not have permission to view this page - please try signing in.","MindTouch.Help.Page.search-unavailable":"Sorry, search is currently unavailable.","MindTouch.Reports.data.empty-grid-text":"No Data Available.","Page.StructuredTags.error-update":"An unknown error occurred."}    </script>    <script type="application/json" nonce="f3d82652bf864a47344d56381d2aa67168673ab493acd6c9ee5bf90ff58299b2" id="mt-localizations-tree-widget">
+{"Skin.Common.home":"Home","Dialog.Common.error.path-not-found":"The requested page or section could not be loaded. Please update the link.","Dialog.JS.loading":"Loading...","Dialog.JS.loading.copy":"Copying page(s)...","Dialog.JS.loading.insertImage":"Inserting image...","Dialog.JS.loading.move":"Moving page(s)...","Dialog.JS.loading.moveFile":"Moving file...","Dialog.JS.loading.search":"Searching...","MindTouch.Help.Page.in":"in","MindTouch.Help.Page.no-search-results":"Sorry, we can't find what you are looking for.","MindTouch.Help.Page.no-search-try":"Try searching for something else, selecting a category, or try creating a ticket.","MindTouch.Help.Page.retrysearch":"Click here to search the whole site.","MindTouch.Help.Page.search-error-try":"Please try again later.","MindTouch.Help.Page.search-unavailable":"Sorry, search is currently unavailable."}    </script>    <script type="application/json" nonce="f3d82652bf864a47344d56381d2aa67168673ab493acd6c9ee5bf90ff58299b2" id="mt-localizations-dialog">
+{"Dialog.Common.button.cancel":"Cancel","Dialog.Common.button.ok":"OK","Dialog.Common.label.home":"Home"}    </script>
+    <script type="text/javascript" data-mindtouch-module="true" nonce="f3d82652bf864a47344d56381d2aa67168673ab493acd6c9ee5bf90ff58299b2" src="https://a.mtstatic.com/deki/javascript/out/globals.jqueryv2.2.4.polyfill.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script><script type="application/json" id="mt-global-settings" nonce="f3d82652bf864a47344d56381d2aa67168673ab493acd6c9ee5bf90ff58299b2">{"articleType":"reference","attachFileMax":1000,"baseHref":"https:\/\/documentation.meraki.com","cacheFingerprint":"bb22f6537faa4d675dae44139962bf20b5796761:site_13505","canFileBeAttached":false,"cdnHostname":"a.mtstatic.com","clientSideWarnings":false,"dntEditorConfig":false,"draftEditable":false,"followRedirects":1,"idfHideTemplateTags":true,"idfVersion":"IDF3","isAiOptimizationTemplateEnabled":false,"isArticleReviewCommunityMembersEnabled":false,"isDraftAllowed":false,"isDraftManagerReportDownloadEnabled":false,"isDraftRequest":false,"isFindAndReplaceUndoEnabled":false,"isGenerativeSearchEnabled":false,"isGenerativeSearchDisclaimerEnabled":true,"isGenerativeSearchStreamResponseToggleEnabled":false,"isGenerativeSearchSearchIconEnabled":false,"isContentAdequacyEnabled":true,"isGenerativeSearchOnDemandEvaluationEnabled":true,"isEditorAiAssistantShortcutsEnabled":false,"isFileDescriptionCaptionableByLlmEnabled":false,"isGoogleAnalyticsEnabled":true,"isGuideTabMultipleClassificationsEnabled":false,"isHawthornThemeEnabled":false,"isIframeSandboxEnabled":false,"isImportExportEnhancementsEnabled":true,"isImportExportMediaEnabled":true,"isExternalImportEnabled":false,"isInteractionAnalyticsDebugEnabled":false,"isDevelopmentModeEnabled":false,"isInteractionAnalyticsEnabled":true,"isKcsEnabledOnPage":false,"isMediaManagerEnabled":false,"isPinnedPagesEnabled":true,"isPinnedPagesEnhancementsEnabled":true,"isReportDownloadEnabled":false,"isSchedulePublishEnabled":true,"isSearchAsYouTypeEnabled":false,"isTinymceAiAssistantEnabled":false,"isSearchInsightsDownloadEnabled":true,"isSentimentAnalysisEnabled":true,"isShowMoreChildrenNodesEnabled":false,"isShowTerminalNodesEnabled":false,"isSkinResponsive":true,"isSmoothScrollEnabled":true,"isTinyMceEnabled":false,"isTreeArticleIconsEnabled":false,"isXhrF1WebWidgetEnabled":true,"isXhrIEMode":false,"kcsEnabled":false,"kcsV2Enabled":false,"kcsV2GuidePrivacySetting":"Semi-Public","learningPathsEnabled":true,"maxFileSize":268435456,"moduleMode":"global","pageEditable":false,"pageId":1579,"pageIsRedirect":false,"pageLanguageCode":"en-US","pageName":"MX67\/MX68 Installation Guide","pageNamespace":"","pageOrderLimit":1000,"pagePermissions":["LOGIN","BROWSE","READ","SUBSCRIBE"],"pageRevision":"16","pageSectionEditable":false,"pageTitle":"SASE and SD-WAN\/MX\/Install and Get Started\/Installation Guides\/MX67\/\/MX68 Installation Guide","pageViewId":"0df0f7cc-a15f-4110-9d27-9033a8206eff","siteId":"site_13505","pathCommon":"\/@style\/common","pathSkin":"\/@style\/elm","relatedArticlesDetailed":true,"removeBlankTemplate":true,"removeDeleteCheckbox":true,"cidWarningOnDelete":true,"scriptParser":2,"sessionId":"MWMxMjU5YjUtZDU2Yi00YzEyLWEwZTAtYjY1OGMyOGMzOTU2fDIwMjYtMTAtMjBUMDE6MjM6MTI=","showAllTemplates":false,"siteAuthoringPageThumbnailManagementEnabled":true,"skinStyle":"columbia.elm","spaceballs2Enabled":false,"strictIdfEnabled":true,"uiLanguage":"en-us","userId":2,"isPageRedirectPermanent":false,"userIsAdmin":false,"userIsAnonymous":true,"userIsSeated":false,"userName":"Anonymous User","userPermissions":["LOGIN","BROWSE","READ","SUBSCRIBE"],"userSystemName":"Anonymous","userTimezone":"GMT","webFontConfig":{"google":{"families":null}},"apiToken":"xhr_2_1792464515_74b643eece717eff8395f38fe68cf48e2a55e899e1528bb79610fec8deccd293","displayGenerativeSearchDisclaimer":true,"cognigyFlowsEnabled":false}</script><script type="text/javascript" data-mindtouch-module="true" nonce="f3d82652bf864a47344d56381d2aa67168673ab493acd6c9ee5bf90ff58299b2" src="https://a.mtstatic.com/deki/javascript/out/community.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script><script type="text/javascript" data-mindtouch-module="true" nonce="f3d82652bf864a47344d56381d2aa67168673ab493acd6c9ee5bf90ff58299b2" src="https://a.mtstatic.com/deki/javascript/out/standalone/skin_elm.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script><script type="text/javascript" data-mindtouch-module="true" nonce="f3d82652bf864a47344d56381d2aa67168673ab493acd6c9ee5bf90ff58299b2" src="https://a.mtstatic.com/deki/javascript/out/standalone/pageBootstrap.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script>
+
+    
+        
+<script type="text/javascript" src="https://www.cisco.com/c/dam/cdc/t/ctm-core.js"></script>
+    
+<script type="text/javascript" nonce="f3d82652bf864a47344d56381d2aa67168673ab493acd6c9ee5bf90ff58299b2">(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-51174192-2','documentation.meraki.com',{allowLinker:true});ga('send','pageview');ga('create','UA-65721316-2','documentation.meraki.com',{name:'mtTracker',allowLinker:true});ga('mtTracker.require','linker');ga('mtTracker.set', 'anonymizeIp', true);ga('mtTracker.send','pageview');document.addEventListener('mindtouch-web-widget:f1:loaded',function(e){var t=e.data||{},d=t.widget;d&&''!==t.embedId&&document.addEventListener('mindtouch-web-widget:f1:clicked',function(e){var t=(e.data||{}).href;if(t){var n=document.createElement('a');n.setAttribute('href',t),'expert-help.nice.com'===n.hostname&&(e.preventDefault(),ga('linker:decorate',n),d.open(n.href))}})});</script>
+</head>
+<body class="elm-user-anonymous columbia-page-main columbia-article-reference columbia-browser- columbia-platform- columbia-breadcrumb-home-saseandsd-wan-mx-installandgetstarted-installationguides-mx67--mx68installationguide columbia-live no-touch columbia-lang-en-us columbia-skin-elm">
+<a class="elm-skip-link" href="#elm-main-content" title="Press enter to skip to the main content">Skip to main content</a><main class="elm-skin-container" data-ga-category="Anonymous | page">
+    <header class="elm-header">
+        <div class="elm-header-custom">
+<script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-NHZZG7QL8R"></script><script>/*<![CDATA[*/
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-NHZZG7QL8R');
+/*]]>*/</script><script src="//use.typekit.net/hum1oye.js"></script><script>/*<![CDATA[*/try{Typekit.load();}catch(e){}/*]]>*/</script>
+
+<div class="mt-header-help"><div class="mt-header-help-container"><div class="mt-logo-container"><div class="mt-logo"><a class="internal" href="https://documentation.meraki.com/" rel="internal"><img class="mt-cdn" src="https://documentation.meraki.com/@api/deki/site/logo?default=https%3A%2F%2Fdocumentation.meraki.com%2F%40cdn%2F%40style%2Fcommon-legacy%2Fimages%2Flogo.png" alt="" /></a></div></div><div id="navcontainer"><ul id="navlist"><li><a href="https://account.meraki.com/secure/login/dashboard_login" target="_blank" rel="external noopener nofollow" class="link-https">Dashboard</a></li><li><a href="https://community.cisco.com/t5/meraki/ct-p/meraki-home" target="_blank" rel="external noopener nofollow" class="link-https">Community</a></li><li><a href="https://meraki.cisco.com/support" target="_blank" rel="external noopener nofollow" class="link-https">Support</a></li><li><a id="current" href="https://meraki.cisco.com/form/contact" target="_blank" rel="external noopener nofollow" class="link-https">Contact Sales</a></li></ul></div></div><div class="mt-header-search"><div class="mt-help-search mt-lsf-search" id="mt-portfolio-search"><script type="application/json" id="mt-localizations-help-widget">/*<![CDATA[*/{"Help.Widget.button.text":"Search","Help.Widget.label.text":"Query","Help.Widget.placeholder.text":"Search MX67\/MX68 Installation Guide"}/*]]>*/</script><div class="mt-inputredirect" data-query-key="q" data-path="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide"></div></div></div></div>
+
+<p>&nbsp;</p>
+</div>
+        <div class="elm-nav mt-translate-module" hidden="true">
+            <div class="elm-nav-container mt-translate-container"></div>
+        </div>
+        <div class="elm-header-logo-container">
+            <a href="https://documentation.meraki.com" title="Cisco Meraki Documentation" aria-label='Link to home'><img src="https://documentation.meraki.com/@public/production/site_13505/1749845593-logo.png" alt="Cisco Meraki Documentation" /></a>
+        </div>
+        
+        <nav class="elm-header-user-nav elm-nav" role="navigation">
+            <div class="elm-nav-container">
+                <ol>
+                    <li class="elm-global-search" data-ga-action="Header search"><a class="mt-icon-site-search mt-toggle-form" href="#" title="Search site">Search site</a>
+<div class="mt-quick-search-container mt-toggle-form-container">
+    <form action="/Special:Search">
+        <input name="qid" id="mt-qid-skin" type="hidden" value="" />
+        <input name="fpid" id="mt-search-filter-id" type="hidden" value="230" />
+        <input name="fpth" id="mt-search-filter-path" type="hidden" />
+        <input name="path" id="mt-search-path" type="hidden" value="" />
+
+        <label class="mt-label" for="mt-site-search-input">
+            Search
+        </label>
+        <input class="mt-text mt-search search-field" name="q" id="mt-site-search-input" placeholder="How can we help you?" type="search" />
+        <button class="mt-button ui-button-icon mt-icon-site-search-button search-button" type="submit">
+            Search
+        </button>
+    </form>
+</div>
+<div class="elm-search-back"><a class="mt-icon-browser-back" data-ga-label="Browse back" href="#" id="mt-browser-back" title="Go back to previous article">Go back to previous article</a></div>
+</li>
+                    <li class="elm-user-menu"><ol class="mt-user-menu">
+
+
+    <li class="mt-user-menu-user">
+        <a class="mt-icon-quick-sign-in "
+           href="https://documentation.meraki.com/@app/auth/4/login?returnto=https%3A%2F%2Fdocumentation.meraki.com%2FSASE_and_SD-WAN%2FMX%2FInstall_and_Get_Started%2FInstallation_Guides%2FMX67%252F%2FMX68_Installation_Guide"
+           title="Sign in">Sign in</a>
+
+    </li>
+</ol>
+</li>
+                </ol>
+            </div>
+        </nav>
+        <nav class="elm-header-global-nav elm-nav" data-ga-action="Elm Navigation">
+            <div class="elm-nav-container">
+                <button class="elm-hierarchy-trigger mt-hierarchy-trigger ui-button-icon mt-icon-hierarchy-trigger-closed" title="Expand/collapse global hierarchy" data-ga-label="Hierarchy Toggle - Tree View">
+                    Expand/collapse global hierarchy
+                </button>
+                <ol class="mt-breadcrumbs" data-ga-action="Breadcrumbs">
+                        <li>
+                            <a href="https://documentation.meraki.com/" data-ga-label="Breadcrumb category">
+                                <span class="mt-icon-article-category mt-icon-article-home"></span>
+                                    Home
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://documentation.meraki.com/SASE_and_SD-WAN" data-ga-label="Breadcrumb category">
+                                <span class="mt-icon-article-category"></span>
+                                    SASE and SD-WAN
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://documentation.meraki.com/SASE_and_SD-WAN/MX" data-ga-label="Breadcrumb category">
+                                <span class="mt-icon-article-category"></span>
+                                    MX - Security &amp; SD-WAN
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started" data-ga-label="Breadcrumb category">
+                                <span class="mt-icon-article-category"></span>
+                                    Install and Get Started
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides" data-ga-label="Breadcrumb guide">
+                                <span class="mt-icon-article-guide"></span>
+                                    Installation Guides
+                            </a>
+                        </li>
+                        <li class="mt-breadcrumbs-current-page">
+                            <span class="mt-icon-article-reference"></span>
+                            MX67/MX68 Installation Guide
+                        </li>
+                </ol>
+                <button class="mt-icon-hierarchy-mobile-view-trigger ui-button-icon mt-icon-hierarchy-mobile-trigger-closed" title="Expand/collapse global location" data-ga-label="Hierarchy Toggle - Breadcrumb Expand/Collapse">
+                    Expand/collapse global location
+                </button>
+            </div>
+        </nav>
+        <nav class="elm-nav elm-header-hierarchy">
+            <div class="elm-nav-container">
+                <div class="elm-hierarchy mt-hierarchy"></div>
+            </div>
+        </nav>    </header>
+    <article class="elm-content-container" id="elm-main-content" tabindex="-1">
+        <header>
+            <div id="flash-messages"><div class="dekiFlash"></div></div>
+            
+                
+<h1 id="title" data-title-editor-available="false">
+        MX67/MX68 Installation Guide
+</h1>
+
+                
+
+                
+                    <ol class="elm-meta-data elm-meta-top" data-ga-action="Page actions">
+                        <li class="elm-last-modified"><dl class="mt-last-updated-container">
+    <dt class="mt-last-updated-label">Last updated</dt>
+    <dd>
+        <span class="mt-last-updated" data-timestamp="2024-11-19T20:24:32Z"></span>
+    </dd>
+</dl>
+</li>
+                        <li class="elm-pdf-export"><a data-ga-label="PDF" href="https://documentation.meraki.com/@api/deki/pages/1579/pdf/MX67%252FMX68%2bInstallation%2bGuide.pdf?stylesheet=default" rel="nofollow" target="_blank" title="Export page as a PDF">
+    <span class="mt-icon-article-pdf"></span>Save as PDF
+</a></li>
+                        <li class="elm-social-share"></li>
+                    </ol>
+                
+            
+        </header>
+                <header class="mt-content-header"></header>
+                <aside class="mt-content-side"></aside>
+            <aside id="mt-toc-container" data-title="Table of contents" data-collapsed="true">
+                <nav class="mt-toc-content mt-collapsible-section">
+                    <ol><li><a href="#MX67.2FMX68_Overview" rel="internal">MX67/MX68&nbsp;Overview</a></li><li><a href="#Package_Contents" rel="internal">Package Contents</a><ol><li><a href="#Front_Panels" rel="internal">Front Panels</a><ol><li><a href="#MX67.2F67C.2F67W" rel="internal">MX67/67C/67W</a></li><li><a href="#MX68.2F68W.2F68CW" rel="internal">MX68/68W/68CW</a></li><li><a href="#Status_Indicator" rel="internal">Status Indicator</a></li></ol></li><li><a href="#Back_Panels" rel="internal">Back Panels</a><ol><li><a href="#MX67" rel="internal">MX67</a></li><li><a href="#MX67C" rel="internal">MX67C</a></li><li><a href="#MX67W" rel="internal">MX67W</a></li><li><a href="#MX67.2FMX67W.2FMX67C_Back_Panel_Functions" rel="internal">MX67/MX67W/MX67C&nbsp;Back Panel Functions</a></li><li><a href="#MX68" rel="internal">MX68</a></li><li><a href="#MX68W" rel="internal">MX68W</a></li><li><a href="#MX68CW" rel="internal">MX68CW</a></li><li><a href="#MX68.2FMX68W.2FMX68CW__Back_Panel_Functions" rel="internal">MX68/MX68W/MX68CW&nbsp; Back Panel Functions</a></li></ol></li><li><a href="#Side_Panels" rel="internal">Side Panels</a><ol><li><a href="#MX68_2" rel="internal">MX68</a></li><li><a href="#MX68W_2" rel="internal">MX68W</a></li><li><a href="#MX68CW_2" rel="internal">MX68CW</a></li><li><a href="#MX68.2FMX68W.2FMX68CW_Side_Panel_Functions" rel="internal">MX68/MX68W/MX68CW&nbsp;Side&nbsp;Panel Functions</a></li></ol></li><li><a href="#Bottom_Panel" rel="internal">Bottom Panel</a></li></ol></li><li><a href="#Pre-install_Preparation" rel="internal">Pre-install Preparation&nbsp;</a><ol><li><a href="#Configure_your_Dashboard_Network" rel="internal">Configure your Dashboard Network&nbsp;</a></li><li><a href="#Check_and_Set_Firmware" rel="internal">Check and Set Firmware&nbsp;</a></li><li><a href="#Check_and_Configure_Upstream_Firewall_Settings" rel="internal">Check and Configure Upstream Firewall Settings&nbsp;</a><ol><li><a href="#Mounting_Hardware" rel="internal">Mounting Hardware</a></li></ol></li></ol></li><li><a href="#Connecting_to_WAN" rel="internal">Connecting to WAN</a><ol><li><a href="#Setting_up_a_Static_IP_Address" rel="internal">Setting up a Static IP Address</a></li><li><a href="#Setting_up_a_DHCP_IP_Address" rel="internal">Setting up a DHCP IP Address</a></li></ol></li><li><a href="#Setting_up_Cellular_Failover" rel="internal">Setting up Cellular Failover&nbsp;</a></li><li><a href="#Additional_Settings" rel="internal">Additional Settings</a><ol><li><a href="#Setting_VLANs" rel="internal">Setting VLANs</a></li><li><a href="#Setting_up_a_Secondary_WAN_interface_on_the_MX67" rel="internal">Setting up a Secondary WAN interface on the MX67&nbsp;</a></li><li><a href="#Setting_up_a_Secondary_WAN_Interface_on_the_MX68" rel="internal">Setting up a Secondary WAN Interface on the MX68&nbsp;</a></li><li><a href="#Setting_PPPoE" rel="internal">Setting PPPoE</a></li><li><a href="#Web_Proxy_Settings" rel="internal">Web Proxy Settings</a></li><li><a href="#Configuring_Physical_Link_Settings" rel="internal">Configuring Physical Link Settings</a></li></ol></li><li><a href="#Warranty" rel="internal">Warranty</a></li></ol>
+                </nav>
+            </aside>
+            <section class="mt-content-container">
+                <div class="sectionColumnWrapper">
+<div class="sectionMacro">
+<div class="sectionMacroRow">
+<div class="columnMacro" style="width:60%;min-width:60%;max-width:60%;">
+<p>This document describes how to install and set up the MX67 and MX68&nbsp;security appliance. Additional reference documents are available online at: <a class="external-link" href="http://www.meraki.com/library/products" rel="nofollow">www.meraki.com/library/products</a>.</p>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="MX67.2FMX68_Overview"></span><h2 id="MerakiMX60InstallationGuide-MX60Overview" class="editable">MX67/MX68&nbsp;Overview</h2>
+
+<p>The Meraki MX67 and MX68&nbsp;are&nbsp;enterprise security appliances designed for distributed deployments that require remote administration. It is ideal for network administrators who demand both ease of deployment and a state-of-the-art feature set. A full overview of the appliances' features can be found in the <a title="https://documentation.meraki.com/MX/MX_Overviews_and_Specifications/MX67_and_MX68_Overview_and_Specifications" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX67_and_MX68_Datasheet" rel="internal">MX67 and MX68 Overview and Specifications</a>.</p>
+</div></div>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Package_Contents"></span><h2 id="MerakiMX60InstallationGuide-Packagecontents" class="editable">Package Contents</h2>
+
+<p>In addition to the MX device, the following are provided:</p>
+
+<table border="1" style="table-layout: fixed; width: 572px;">
+    <thead>
+        <tr>
+            <th scope="col" style="width:278px;">MX67/MX68</th>
+            <th scope="col" style="width:271px;">MX67W/MX68W</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="width:278px;">Power Adapter (No Power Cable)</td>
+            <td style="width:271px;">Power Adapter (No Power Cable)</td>
+        </tr>
+        <tr>
+            <td style="width:278px;">2x CAT5e Ethernet Cables</td>
+            <td style="width:271px;">2x CAT5e Ethernet Cables</td>
+        </tr>
+        <tr>
+            <td style="width:278px;">&nbsp;</td>
+            <td style="width:271px;">2x WiFi Antennae</td>
+        </tr>
+        <tr>
+            <th scope="col" style="width:278px;">&nbsp;</th>
+            <th scope="col" style="width:271px;">&nbsp;</th>
+        </tr>
+        <tr>
+            <th scope="col" style="width:278px;">MX67C</th>
+            <th scope="col" style="width:271px;">MX68CW</th>
+        </tr>
+        <tr>
+            <td style="width:278px;">Power Adapter (No Power Cable)</td>
+            <td style="width:271px;">Power Adapter (No Power Cable)</td>
+        </tr>
+        <tr>
+            <td style="width:278px;">2x CAT5e Ethernet Cables</td>
+            <td style="width:271px;">2x CAT5e Ethernet Cables</td>
+        </tr>
+        <tr>
+            <td style="width:278px;">2x LTE Antennae</td>
+            <td style="width:271px;">2x Attached (Non-Removeable) Hybrid WiFi+LTE Antennae</td>
+        </tr>
+    </tbody>
+</table>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Front_Panels"></span><h3 id="MerakiMX60InstallationGuide-TheMX60frontpanel" class="editable">Front Panels</h3>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="MX67.2F67C.2F67W"></span><h4 class="editable">MX67/67C/67W</h4>
+
+<p>&nbsp;</p>
+
+<p><img alt="MX67 C W front panel illustration.png" class="internal" loading="lazy" src="https://documentation.meraki.com/@api/deki/files/2821/MX67_C_W_front_panel_illustration.png?revision=3" /></p>
+
+<p>&nbsp;</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="MX68.2F68W.2F68CW"></span><h4 class="editable">MX68/68W/68CW</h4>
+
+<p>&nbsp;</p>
+
+<p><img alt="MX68 C W front panel illustration.png" class="internal" loading="lazy" src="https://documentation.meraki.com/@api/deki/files/4361/MX68_C_W_front_panel_illustration.png?revision=2" /></p>
+
+<p>&nbsp;</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Status_Indicator"></span><h4 id="MerakiMX60InstallationGuide-PortsandStatusIndicators" class="editable">Status Indicator</h4>
+
+<p><span>The MX67/MX68 series devices&nbsp;uses an LED to inform the user of the device's status. LED patterns and their meanings are described below.</span></p>
+
+<table border="1" cellpadding="1" cellspacing="1" style="width: 100%; table-layout: fixed;">
+    <tbody>
+        <tr>
+            <td class="confluenceTd">
+            <p><strong>LED Status</strong></p>
+            </td>
+            <td class="confluenceTd">
+            <p><strong>Meaning</strong></p>
+            </td>
+        </tr>
+        <tr>
+            <td class="confluenceTd">
+            <p>Solid orange</p>
+            </td>
+            <td class="confluenceTd">
+            <p>Power is applied but the appliance is not connected to the Meraki Dashboard</p>
+            </td>
+        </tr>
+        <tr>
+            <td class="confluenceTd" colspan="1">Rainbow Colors</td>
+            <td class="confluenceTd" colspan="1">The appliance is attempting to connect to Meraki Dashboard</td>
+        </tr>
+        <tr>
+            <td class="confluenceTd">
+            <p>Flashing White</p>
+            </td>
+            <td class="confluenceTd">
+            <p>Firmware upgrade in progress</p>
+            </td>
+        </tr>
+        <tr>
+            <td class="confluenceTd">
+            <p>Solid White</p>
+            </td>
+            <td class="confluenceTd">Fully operational/connected, uplink actively using wired WAN</td>
+        </tr>
+        <tr>
+            <td class="confluenceTd">Solid Purple</td>
+            <td class="confluenceTd">Fully operational/connected, uplink actively using integrated cellular failover</td>
+        </tr>
+    </tbody>
+</table>
+
+</div></div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Back_Panels"></span><h3 id="MerakiMX60InstallationGuide-TheMX60backpanel" class="editable">Back Panels</h3>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="MX67"></span><h4 class="editable">MX67</h4>
+
+<p>&nbsp;</p>
+
+<p><img alt="MX67 rear panel illustration" class="internal default" style="width: 793px; height: 100px;" width="793px" height="100px" loading="lazy" src="https://documentation.meraki.com/@api/deki/files/957/MX67_rear_panel_illustration.png?revision=2&amp;size=bestfit&amp;width=793&amp;height=100" /></p>
+
+<p>&nbsp;</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="MX67C"></span><h4 class="editable">MX67C</h4>
+
+<p>&nbsp;</p>
+
+<p><img alt="MX67C rear panel illustration" class="internal default" style="width: 793px; height: 483px;" width="793px" height="483px" loading="lazy" src="https://documentation.meraki.com/@api/deki/files/6630/MX67C_rear_panel_illustration.png?revision=2&amp;size=bestfit&amp;width=793&amp;height=483" /></p>
+
+<p>&nbsp;</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="MX67W"></span><h4 class="editable">MX67W</h4>
+
+<p>&nbsp;</p>
+
+<p><img alt="MX67W rear panel illustration" class="internal default" style="width: 793px; height: 380px;" width="793px" height="380px" loading="lazy" src="https://documentation.meraki.com/@api/deki/files/7057/MX67W_rear_panel_illustration.png?revision=2&amp;size=bestfit&amp;width=793&amp;height=380" /></p>
+
+<p>&nbsp;</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="MX67.2FMX67W.2FMX67C_Back_Panel_Functions"></span><h4 class="editable">MX67/MX67W/MX67C&nbsp;Back Panel Functions</h4>
+
+<p>Additional functions on the back panel are described below, from left to right.</p>
+
+<table border="1" cellpadding="1" cellspacing="1" style="width: 100%; table-layout: fixed;">
+    <tbody>
+        <tr>
+            <th scope="row">SIM Card Slot (MX67C)</th>
+            <td>Active,&nbsp;<a title="https://documentation.meraki.com/MX/MX_Overviews_and_Specifications/Z3_and_Z3C_Overview_and_Specifications#Cellular_Interface" href="https://documentation.meraki.com/SASE_and_SD-WAN/Z-Series_Teleworker_Gateways/Product_Information/Z3_and_Z3C_Datasheet#Cellular_Interface" rel="internal">supported</a>&nbsp;SIM cards can be inserted into this slot to enable cellular capabilities.</td>
+        </tr>
+        <tr>
+            <th scope="row">
+            <p>USB port</p>
+            </th>
+            <td>
+            <p>USB 3.0 for external 3G/4G wireless modems. Traffic status is indicated by the USB LED.</p>
+            </td>
+        </tr>
+        <tr>
+            <th class="confluenceTd" colspan="1" scope="row">WAN / Internet port</th>
+            <td class="confluenceTd" colspan="1">This port&nbsp;provides connectivity to the WAN.</td>
+        </tr>
+        <tr>
+            <th class="confluenceTd" colspan="1" scope="row">LAN ports</th>
+            <td class="confluenceTd" colspan="1">
+            <p>These 4&nbsp;ports provide connectivity to computers, printers, access points, or Ethernet switches.</p>
+
+            <p>A steady green LED indicates bidirectional connectivity, and flashing green indicates traffic.</p>
+
+            <p>The LAN2&nbsp;port can either be a LAN port or a second Internet port.</p>
+            </td>
+        </tr>
+        <tr>
+            <th class="confluenceTd" colspan="1" scope="row">Power input</th>
+            <td class="confluenceTd" colspan="1">Designed for use only with the unit&rsquo;s power supply.</td>
+        </tr>
+        <tr>
+            <th class="confluenceTd" colspan="1" scope="row">
+            <p>Reset button</p>
+            </th>
+            <td class="confluenceTd" colspan="1">
+            <p>Insert a paper clip if a reset is required.</p>
+
+            <p>Press for 1 second to delete a downloaded configuration and reboot.<br />
+            Press and hold for more than 10 seconds to force a full factory reset.</p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="MX68"></span><h4 class="editable">MX68</h4>
+
+<p>&nbsp;</p>
+
+<p><img alt="MX68 rear panel illustration" class="internal default" style="width: 945px; height: 100px;" width="945px" height="100px" loading="lazy" src="https://documentation.meraki.com/@api/deki/files/3633/MX68_rear_panel_illustration.png?revision=2&amp;size=bestfit&amp;width=945&amp;height=100" /></p>
+
+<p>&nbsp;</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="MX68W"></span><h4 class="editable">MX68W</h4>
+
+<p>&nbsp;</p>
+
+<p><img alt="MX68W rear panel illustration" class="internal default" style="width: 945px; height: 384px;" width="945px" height="384px" loading="lazy" src="https://documentation.meraki.com/@api/deki/files/7452/MX68W_rear_panel_illustration.png?revision=2&amp;size=bestfit&amp;width=945&amp;height=384" /></p>
+
+<p>&nbsp;</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="MX68CW"></span><h4 class="editable">MX68CW</h4>
+
+<p>&nbsp;</p>
+
+<p><img alt="MX68CW rear panel illustration" class="internal default" style="width: 945px; height: 502px;" width="945px" height="502px" loading="lazy" src="https://documentation.meraki.com/@api/deki/files/5639/MX68CW_rear_panel_illustration.png?revision=2&amp;size=bestfit&amp;width=945&amp;height=502" /></p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="MX68.2FMX68W.2FMX68CW__Back_Panel_Functions"></span><h4 class="editable">MX68/MX68W/MX68CW&nbsp; Back Panel Functions</h4>
+
+<p>Additional functions on the back panel are described below, from left to right.</p>
+
+<table border="1" cellpadding="1" cellspacing="1" style="width: 100%; table-layout: fixed;">
+    <tbody>
+        <tr>
+            <th class="confluenceTd" colspan="1" scope="row">WAN / Internet ports</th>
+            <td class="confluenceTd" colspan="1">These two ports provide&nbsp;connectivity to the WAN.</td>
+        </tr>
+        <tr>
+            <th class="confluenceTd" colspan="1" scope="row">LAN ports</th>
+            <td class="confluenceTd" colspan="1">
+            <p>These 8&nbsp;ports provide connectivity to computers, printers, access points, or Ethernet switches.</p>
+
+            <p>A steady green LED indicates bidirectional connectivity, and flashing green indicates traffic.</p>
+            </td>
+        </tr>
+        <tr>
+            <th class="confluenceTd" colspan="1" scope="row">PoE+ Ports</th>
+            <td class="confluenceTd" colspan="1">
+            <p>These 2 LAN&nbsp;ports provide connectivity to computers, printers, access points, or Ethernet switches.</p>
+
+            <p>Each port outputs up to 30W of PoE&nbsp;power.</p>
+
+            <p>A steady green LED indicates bidirectional connectivity, and flashing green indicates traffic.</p>
+            </td>
+        </tr>
+        <tr>
+            <th class="confluenceTd" colspan="1" scope="row">Power input</th>
+            <td class="confluenceTd" colspan="1">Designed for use only with the unit&rsquo;s power supply.</td>
+        </tr>
+        <tr>
+            <th class="confluenceTd" colspan="1" scope="row">
+            <p>Reset button</p>
+            </th>
+            <td class="confluenceTd" colspan="1">
+            <p>Insert a paper clip if a reset is required.</p>
+
+            <p>Press for 1 second to delete a downloaded configuration and reboot.<br />
+            Press and hold for more than 10 seconds to force a full factory reset.</p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="table-wrap">
+<div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Side_Panels"></span><h3 class="editable">Side Panels</h3>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="MX68_2"></span><h4 class="editable">MX68</h4>
+
+<p>&nbsp;</p>
+
+<p><img alt="MX68 side panel illustration" class="internal default" style="width: 500px; height: 100px;" width="500px" height="100px" loading="lazy" src="https://documentation.meraki.com/@api/deki/files/5048/MX68_side_panel_illustration.png?revision=2&amp;size=bestfit&amp;width=500&amp;height=100" /></p>
+
+<p>&nbsp;</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="MX68W_2"></span><h4 class="editable">MX68W</h4>
+
+<p>&nbsp;</p>
+
+<p><img alt="MX68W side panel illustration" class="internal default" style="width: 500px; height: 314px;" width="500px" height="314px" loading="lazy" src="https://documentation.meraki.com/@api/deki/files/7816/MX68W_side_panel_illustration.png?revision=2&amp;size=bestfit&amp;width=500&amp;height=314" /></p>
+
+<p>&nbsp;</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="MX68CW_2"></span><h4 class="editable">MX68CW</h4>
+
+<p>&nbsp;</p>
+
+<p><img alt="MX68CW side panel illustration" class="internal default" style="width: 500px; height: 421px;" width="500px" height="421px" loading="lazy" src="https://documentation.meraki.com/@api/deki/files/6155/MX68CW_side_panel_illustration.png?revision=2&amp;size=bestfit&amp;width=500&amp;height=421" /></p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="MX68.2FMX68W.2FMX68CW_Side_Panel_Functions"></span><h4 class="editable">MX68/MX68W/MX68CW&nbsp;Side&nbsp;Panel Functions</h4>
+
+<p>Additional functions on the side panel are described below, from left to right.</p>
+
+<table border="1" cellpadding="1" cellspacing="1" style="width: 100%; table-layout: fixed;">
+    <tbody>
+        <tr>
+            <th scope="row">SIM Card Slot (MX68CW)</th>
+            <td>Active,&nbsp;<a title="https://documentation.meraki.com/MX/MX_Overviews_and_Specifications/Z3_and_Z3C_Overview_and_Specifications#Cellular_Interface" href="https://documentation.meraki.com/SASE_and_SD-WAN/Z-Series_Teleworker_Gateways/Product_Information/Z3_and_Z3C_Datasheet#Cellular_Interface" rel="internal">supported</a>&nbsp;SIM cards can be inserted into this slot to enable cellular capabilities.</td>
+        </tr>
+        <tr>
+            <th class="confluenceTd" scope="row">
+            <p>USB port</p>
+            </th>
+            <td class="confluenceTd">
+            <p>USB 2.0 for 3G/4G wireless cards. Traffic status is indicated by the USB LED.</p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+</div></div></div>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Bottom_Panel"></span><h3 id="MerakiMX60InstallationGuide-TheMX60bottompanel" class="editable">Bottom Panel</h3>
+
+<p>&nbsp;</p>
+
+<p><img alt="MX67/C/W and MX68/C/W bottom panel illustration" class="internal default" style="width: 800px; height: 443px;" width="800px" height="443px" loading="lazy" src="https://documentation.meraki.com/@api/deki/files/1917/MX67_C_W_and_MX68_C_W_bottom_panel_illustration.png?revision=2&amp;size=bestfit&amp;width=800&amp;height=443" /></p>
+
+<p>&nbsp;</p>
+
+<p>Please note that the serial number is located on the product label at the bottom panel of MX67/MX68 devices</p>
+
+</div></div></div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Pre-install_Preparation"></span><h2 class="editable">Pre-install Preparation&nbsp;</h2>
+
+<p>You should complete the following steps before going on-site to perform an installation.</p>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Configure_your_Dashboard_Network"></span><h3 class="editable">Configure your Dashboard Network&nbsp;</h3>
+
+<p>The following is a brief overview only of the steps required to add an MX&nbsp;to your network. For detailed instructions about creating, configuring and managing Meraki networks, refer to the online documentation (<u><a title="https://documentation.meraki.com" href="https://documentation.meraki.com/" rel="internal">documentation.meraki.com</a></u>).</p>
+
+<ol>
+    <li>Login to&nbsp;<u><a href="http://dashboard.meraki.com/" rel="nofollow">http://dashboard.meraki.com</a></u>. If this is your &#64257;rst time, create a new account.</li>
+    <li>Find the network to which you plan to add your MX&nbsp;or create a new network.</li>
+    <li>Add your MX to your network. You will need your Meraki order number (found on your invoice) or the serial number of each MX, which looks like Qxxx-xxxx-xxxx, and is found on the bottom of the unit. You will also need your Enterprise license key, which you should have received via email.</li>
+    <li>Go to the map / &#64258;oor plan view and place each MX&nbsp;on the map by clicking and dragging it to the location where you plan to mount it.</li>
+</ol>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Check_and_Set_Firmware"></span><h3 class="editable">Check and Set Firmware&nbsp;</h3>
+
+<p>To ensure your MX performs optimally immediately following installation, it is recommended that you facilitate a &#64257;rmware upgrade prior to mounting your MX.</p>
+
+<ol>
+    <li>Attach your MX to power and a wired Internet connection.</li>
+    <li>The MX will turn on and the power LED will glow solid orange.&nbsp;</li>
+    <li>If the unit requires an upgrade, the power LED will begin blinking white until the upgrade is complete, at which point the LED will turn solid white. You should allow at least a few minutes for the &#64257;rmware upgrade to complete, depending on the speed of your internet connection.</li>
+</ol>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Check_and_Configure_Upstream_Firewall_Settings"></span><h3 class="editable">Check and Configure Upstream Firewall Settings&nbsp;</h3>
+
+<p>If an upstream &#64257;rewall is already in place, it must allow outgoing connections on particular ports to particular IP addresses. The most current list of outbound ports and IP addresses for your particular organization can be found&nbsp;<u><a href="https://dashboard.meraki.com/manage/support/firewall_configuration" rel="nofollow">on the firewall configuration page in your dashboard</a></u>.&nbsp;</p>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Mounting_Hardware"></span><h4 id="MerakiMX60InstallationGuide-Mountinghardware" class="editable">Mounting Hardware</h4>
+
+<p>The supplied wall screws and anchors allow you to mount the appliance on a drywall surface, either vertically or horizontally. The distance between the holes you drill should be 6-1/2 inches (16.5&nbsp;cm).</p>
+
+<ul>
+    <li>For mounting on drywall, use a &frac14;-in drill bit, then insert the plastic and screw assemblies.</li>
+    <li>For mounting on wood or a similar surface, use only the screws.</li>
+    <li>Allow the heads of the screws to stick out far enough to be inserted securely into the back of the appliance.</li>
+</ul>
+
+</div></div></div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Connecting_to_WAN"></span><h2 id="MerakiMX60InstallationGuide-ConnectingtoWAN" class="editable">Connecting to WAN</h2>
+
+<p>All Meraki MX devices must have an IP address. This section describes how to configure your local area network before you deploy it. A local management web service, running on the appliance, is accessed through a browser running on a client PC. This web service is used for configuring and monitoring basic ISP/WAN connectivity.</p>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Setting_up_a_Static_IP_Address"></span><h3 id="MerakiMX60InstallationGuide-SettingupastaticIPaddress" class="editable">Setting up a Static IP Address</h3>
+
+<div class="aui-message problem shadowed information-macro">
+<div class="message-content">
+<div class="note-warning style-wrap">
+<p>To ensure that the client PC is redirected to the local web service in the following step, you must disable all other network services (ex: wi-fi) on your client machine.</p>
+</div>
+</div>
+</div>
+
+<p>Do the following to configure basic connectivity and other networking parameters:</p>
+
+<ol>
+    <li>Using a client machine such as a laptop, connect to one of the&nbsp;<u><strong>LAN</strong></u> ports of the MX.</li>
+    <li>Using a browser on the client machine, access the appliance's built-in web service by browsing to <a class="external-link" href="http://setup.meraki.com" rel="nofollow">http://setup.meraki.com</a>. (You do not have to be connected to the Internet to reach this address)</li>
+    <li>Click <strong>Uplink configuration</strong> under the <strong>Local status </strong>tab.&nbsp;<span>The default credentials use the device serial number as the username, with a blank password field.</span></li>
+    <li>Choose <strong>Static </strong>for the <strong>IP Assignment </strong><strong>option</strong>.</li>
+    <li>Enter the IP address, subnet mask, default gateway IP and DNS server information.</li>
+</ol>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Setting_up_a_DHCP_IP_Address"></span><h3 id="MerakiMX60InstallationGuide-SettingupaDHCPIPaddress" class="editable">Setting up a DHCP IP Address</h3>
+
+<p>By default all MX devices are configured to DHCP from upstream WAN / ISP servers. Simply plug the MX's WAN / Internet port to your upstream circuit and wait a few minutes for the unit to negotiate a DHCP address.</p>
+
+<div class="aui-message hint shadowed information-macro">
+<div class="message-content">
+<div class="note-info style-wrap">
+<p>When the WAN connection is fully enabled, Internet LED 1 will turn green.</p>
+</div>
+</div>
+</div>
+
+</div></div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Setting_up_Cellular_Failover"></span><h2 class="editable"><strong>Setting up Cellular Failover&nbsp;</strong></h2>
+
+<p dir="ltr">The MX67C and MX68CW have an embedded LTE module for cellular failover connections. The following section will walk through first-time set-up of an MX with an internet connection as a primary connection and cellular as failover.</p>
+
+<p dir="ltr">&nbsp;</p>
+
+<div class="note-info style-wrap">
+<p dir="ltr"><strong>Note:&nbsp;</strong>The IMEI cannot yet be found on the Meraki dashboard, only on the physical label of the device. The IMEI of the MXs with embedded LTE, as well as the serial number and MAC address, can be found on the product label at the bottom of cellular-embedded MX devices.</p>
+</div>
+
+<div class="note-warning style-wrap">
+<p>Having an MX&nbsp;appliance use a cellular modem to attempt to make its first connection to the Meraki Cloud is not a supported configuration. <em>Please have a MX (with a cellular modem) come up for the first time via its WAN interface (and a working wired connection).</em></p>
+</div>
+
+
+
+<p>To set up the cellular failover connection, follow the steps below:</p>
+
+<p>&nbsp;</p>
+
+<ol>
+    <li dir="ltr">
+    <p dir="ltr">Power off the MX.&nbsp;Swapping/installing&nbsp;SIM cards while the MX is powered on may cause unexpected behavior or errors</p>
+    </li>
+    <li dir="ltr">
+    <p dir="ltr">For the MX67C, connect the antennas for cellular reception. Antennae are pre-attached for the MX68CW</p>
+    </li>
+    <li dir="ltr">
+    <p dir="ltr">Open the SIM tray using&nbsp;the SIM card removal tool included in the box</p>
+    </li>
+    <li dir="ltr">
+    <p dir="ltr">Insert a nano SIM card (4FF size) and close the SIM tray</p>
+    </li>
+    <li dir="ltr">
+    <p dir="ltr">Connect the uplink for the MX device via a wired connection to connect to the Meraki cloud</p>
+    </li>
+    <li dir="ltr">
+    <p dir="ltr">Power on the MX and wait for the MX to show as online in the Meraki dashboard</p>
+    </li>
+    <li dir="ltr">
+    <p dir="ltr">Check with the carrier of choice if an APN needs to be configured. If so, do that from the Meraki Dashboard under <strong>Security &amp; SD-WAN&nbsp;&gt; Monitor &gt; Appliance Status &gt; Uplink </strong>tab</p>
+    </li>
+    <li dir="ltr">
+    <p dir="ltr">Navigate to&nbsp;<strong>Security &amp; SD-WAN &gt; Monitor &gt; Appliance Status &gt; Uplink </strong>tab and next to <strong>Status</strong>, select the edit (pencil) button and then select <strong>Enabled</strong>. When the cellular uplink is successfully connected, you will be able to see the status on the left hand side of the <strong>Appliance Status</strong> page and in the <strong>Uplink</strong> tab. The connection will say <strong>Ready</strong> when it is successfully connected</p>
+    </li>
+    <li dir="ltr">
+    <p dir="ltr">Test the cellular failover connection&nbsp;by unplugging the wired connection or by using the traceroute tool under <strong>Security &amp; SD-WAN &gt; Monitor &gt; Appliance Status </strong>in the Tools tab</p>
+    </li>
+    <li dir="ltr">
+    <p dir="ltr">If, after following the steps above, the SIM card is not detected, please confirm with your carrier that the SIM card is active and has data. You will need the ICCID of the SIM card and IMEI of the device to get troubleshooting help from the carrier</p>
+
+    <ul>
+        <li>
+        <p dir="ltr">A list of certified carriers can be found in our&nbsp;<a href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX67_and_MX68_Datasheet#Cellular_Interface" rel="internal"><u>MX67 and MX68 Overview and Specifications document</u></a></p>
+        </li>
+    </ul>
+    </li>
+    <li dir="ltr">
+    <p dir="ltr">Please contact the Meraki Support team if the cellular connection is still not being recognized after following the steps above</p>
+    </li>
+</ol>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Additional_Settings"></span><h2 id="MerakiMX60InstallationGuide-Additionalsettings" class="editable">Additional Settings</h2>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Setting_VLANs"></span><h4 class="editable">Setting VLANs</h4>
+
+<p>If your WAN uplink is on a trunk port, choose <strong>VLAN tagging &gt; Use VLAN tagging</strong> and enter the appropriate value for <strong>VLAN ID</strong> for your network.</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Setting_up_a_Secondary_WAN_interface_on_the_MX67"></span><h4 id="MerakiMX60InstallationGuide-SettingupsecondaryWANinterface(dualWAN)" class="editable">Setting up a Secondary WAN interface on the MX67&nbsp;</h4>
+
+<p>You can toggle the LAN2 port between&nbsp;<strong><strong>LAN</strong></strong>&nbsp;and&nbsp;<strong><strong>Internet/WAN</strong></strong>&nbsp;through the&nbsp;<a target="_blank" title="Using the Cisco Meraki Device Local Status Page" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Troubleshooting_and_Support/Troubleshooting/Using_the_Cisco_Meraki_Device_Local_Status_Page#MX_Series_with_Single_Dedicated_WAN_Link" rel="internal">Local Status Page</a>&nbsp;or in dashboard under <strong>Security &amp; SD-WAN &gt; Monitor &gt; Appliance Status &gt; Uplink</strong> tab &quot;Add another WAN port...&quot;</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Setting_up_a_Secondary_WAN_Interface_on_the_MX68"></span><h4 id="MerakiMX80InstallationGuide-SettingupsecondaryWANinterface(dualWAN)" class="editable"><span>Setting up a Secondary WAN Interface on the MX68</span>&nbsp;</h4>
+
+<p>MX68&nbsp;devices come&nbsp;with two dedicated&nbsp;<span>Internet&nbsp;</span>ports, which are both configured under&nbsp;<strong>Security &amp; SD-WAN &gt; Monitor &gt; Appliance Status</strong> in the Uplink tab.</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Setting_PPPoE"></span><h4 id="MerakiMX60InstallationGuide-SettingPPPoE" class="editable">Setting PPPoE</h4>
+
+<p>PPPoE authentication may be required if you are connecting MX device to a DSL circuit. You need to know your authentication option and credentials (supplied by your ISP) in order to complete these steps.</p>
+
+<ul>
+    <li>Choose <strong>Connection Type &gt; PPPoE. </strong></li>
+    <li>Select your <strong>Authentication </strong>option.</li>
+    <li>If you select <strong>Use authentication</strong>, enter appropriate values for <strong>Username</strong> and <strong>Password</strong>.</li>
+</ul>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Web_Proxy_Settings"></span><h4 id="MerakiMX60InstallationGuide-Webproxysettings" class="editable">Web Proxy Settings</h4>
+
+<p>These settings take effect if the MX device has to fall back to using HTTP to contact the Cloud Controller. By default, web proxy is disabled. To enable web proxy, do the following:</p>
+
+<ul>
+    <li>Choose <strong>Web proxy &gt; Yes</strong>.</li>
+    <li>Enter values as appropriate for <strong>Hostname or IP</strong> and <strong>Port</strong>.</li>
+    <li>If you require authentication, choose <strong>Authentication &gt; Use authentication</strong>, and enter appropriate values for <strong>Username</strong> and <strong>Password</strong>.</li>
+</ul>
+
+<div>
+<div class="aui-message hint shadowed information-macro">
+<div class="message-content">
+<div class="note-info style-wrap">
+<p><span>To apply all configuration settings to the appliance, be sure to click </span><strong>Save Settings</strong><span> at the bottom of the page.</span></p>
+</div>
+</div>
+</div>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Configuring_Physical_Link_Settings"></span><h4 id="MerakiMX60InstallationGuide-Configuringphysicallinksettings" class="editable">Configuring Physical Link Settings</h4>
+</div></div>
+
+<p><span>To configure physical link settings on the Ethernet ports</span>, click <strong>Local status &gt; Ethernet configuration</strong>. You can enable half duplex, full duplex, and autonegotiation, as well as set 10- or 100-Mbps data rates.</p>
+
+<p>&nbsp;</p>
+
+</div></div><div mt-section-origin="SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67//MX68_Installation_Guide" class="mt-section"><span id="Warranty"></span><h2 data-renderer-start-pos="221" class="editable">Warranty</h2>
+
+<p data-renderer-start-pos="231">MX Warranty coverage periods are as follows:</p>
+
+<table class="mt-responsive-table" data-number-column="false" data-table-width="760" data-testid="renderer-table">
+    <thead>
+        <tr>
+            <th colorname="" colspan="1" rowspan="1" scope="col">
+            <p data-renderer-start-pos="280"><strong data-renderer-mark="true">Product</strong></p>
+            </th>
+            <th colorname="" colspan="1" rowspan="1" scope="col">
+            <p data-renderer-start-pos="291"><strong data-renderer-mark="true">Warranty Period</strong></p>
+            </th>
+            <th colorname="" colspan="1" rowspan="1" scope="col">
+            <p data-renderer-start-pos="310"><strong data-renderer-mark="true">Warranty Information</strong></p>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colorname="" colspan="1" data-th="Product" rowspan="1">
+            <p data-renderer-start-pos="336">MX67/68</p>
+            </td>
+            <td colorname="" colspan="1" data-th="Warranty Period" rowspan="1">
+            <p data-renderer-start-pos="356">Lifetime</p>
+            </td>
+            <td colorname="" colspan="1" data-th="Warranty Information" rowspan="1">
+            <p data-renderer-start-pos="368">Full lifetime hardware warranty with next-day advanced replacement included.</p>
+            </td>
+        </tr>
+        <tr>
+            <td colorname="" colspan="1" data-th="Product" rowspan="1">
+            <p data-renderer-start-pos="450">MX67/68 Accessories</p>
+            </td>
+            <td colorname="" colspan="1" data-th="Warranty Period" rowspan="1">
+            <p data-renderer-start-pos="468">1 Year</p>
+            </td>
+            <td colorname="" colspan="1" data-th="Warranty Information" rowspan="1">
+            <p data-renderer-start-pos="478">The following are considered accessories:</p>
+
+            <p data-renderer-start-pos="521">SFP Modules,&nbsp;all mounting kits and stands, interface modules, additional power cords</p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p data-renderer-start-pos="610">Additional warranty information can be found on the <a data-renderer-mark="true" data-testid="link-with-safety" title="https://meraki.cisco.com/meraki-support/policies/#return-policy-and-requesting-a-rma" href="https://meraki.cisco.com/meraki-support/policies/#return-policy-and-requesting-a-rma" target="_blank" rel="external noopener nofollow" class="link-https">Return Policy and Requesting an RMA</a>&nbsp;page of the Cisco Meraki website.&nbsp;</p>
+
+<p data-renderer-start-pos="733">If your Cisco Meraki device fails and the problem cannot be resolved by troubleshooting, contact support to address the issue. Once support determines that the device is in a failed state, they can process an RMA and send out a replacement device free of charge. In most circumstances, the RMA will include a pre-paid shipping label so the faulty equipment can be returned.&nbsp;</p>
+
+<div class="note-info style-wrap">
+<p data-renderer-start-pos="733">In order to initiate a&nbsp;hardware replacement for non-functioning hardware that is under warranty, you must have access to the original packaging the hardware was shipped in. The original hardware packaging includes device&nbsp;serial number and order&nbsp;information, and may be required for return shipping.</p>
+</div>
+</div></div>
+</div>
+</div>
+
+<p>&nbsp;</p>
+
+
+                    <footer class="mt-content-footer"></footer>
+            </section>
+
+        
+            <footer class="elm-content-footer">
+                <ol class="elm-meta-data elm-meta-article-navigation">
+                    <li class="elm-back-to-top"><a class="mt-icon-back-to-top" href="#title" id="mt-back-to-top" title="Jump back to top of this article">Back to top</a></li>
+                    <li class="elm-article-pagination"><ul class="mt-article-pagination" data-ga-action="Article pagination bottom">
+    <li class="mt-pagination-previous">
+
+            <a class="mt-icon-previous-article" data-ga-label="Previous page" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX65_Installation_Guide" title="MX65 Installation Guide"><span>MX65 Installation Guide</span></a>
+    </li>
+        <li class="mt-pagination-next">
+                <a class="mt-icon-next-article" data-ga-label="Next page" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX75_Hardware_Installation_Guide" title="MX75 Hardware Installation Guide"><span>MX75 Hardware Installation Guide</span></a>
+        </li>
+</ul>
+</li>
+                </ol>
+                    <div class="elm-article-feedback"><div class="mt-feedback-rating-container" data-ga-action="Page rating" data-page-revision="16" data-use-local-storage="true"><ul class="mt-feedback-rating-controls"><li class="mt-feedback-rating-message mt-feedback-rating-item">Was this article helpful?</li><li class="mt-rating-yes mt-feedback-rating-item"><button class="mt-rating-button-yes mt-feedback-rating-button ui-button-icon mt-icon-rating-yes" data-ga-label="Rate">Yes</button></li><li class="mt-rating-no mt-feedback-rating-item"><button class="mt-rating-button-no mt-feedback-rating-button ui-button-icon mt-icon-rating-no" data-ga-label="Rate">No</button></li><li class="mt-last-rating-date mt-feedback-rating-item"></li></ul><div id="mt-feedback-flash-message"></div></div><script type="application/json" id="mt-localizations-feedback-rating">/*<![CDATA[*/{"Page.FeedbackRating.label.last-rated":"-- You last rated this article on {0}","Page.FeedbackRating.message.contact.no":"No","Page.FeedbackRating.message.contact.yes":"Yes","Page.FeedbackRating.message.submit.error":"An error occurred while attempting to send your feedback.  Please try again at a later time.","Page.FeedbackRating.message.submit.success":"Your feedback has been successfully submitted.  You can submit more feedback at any time."}/*]]>*/</script></div>
+                <div class="elm-related-articles-container"><h2 class="mt-related-articles-header">Recommended articles</h2>
+<ol class="mt-related-listings-container"
+    data-ga-action="related"
+    >
+</ol>
+<script type="application/json" nonce="f3d82652bf864a47344d56381d2aa67168673ab493acd6c9ee5bf90ff58299b2" id="mt-localizations-related-pages">
+{"Skin.Columbia.label.no-recommended-articles":"There are no recommended articles."}</script></div>
+                <ol class="elm-meta-data elm-meta-bottom">
+                    <li class="elm-classifications">        <dl class="mt-classification mt-classification-article-reference" data-ga-action="Tag navigation">
+            <dt class="mt-classification-label">Article type</dt>
+            <dd class="mt-classification-value"><a href="https://documentation.meraki.com/Special:Search?tags=article%3Areference" data-ga-label="Classification">Reference</a></dd>
+        </dl>
+        <dl class="mt-classification mt-classification-product-category-routers" data-ga-action="Tag navigation">
+            <dt class="mt-classification-label">Product Category</dt>
+            <dd class="mt-classification-value"><a href="https://documentation.meraki.com/Special:Search?tags=product-category%3Arouters" data-ga-label="Classification">Routers</a></dd>
+        </dl>
+        <dl class="mt-classification mt-classification-stage-final" data-ga-action="Tag navigation">
+            <dt class="mt-classification-label">Stage</dt>
+            <dd class="mt-classification-value"><a href="https://documentation.meraki.com/Special:Search?tags=stage%3Afinal" data-ga-label="Classification">Final</a></dd>
+        </dl>
+        <dl class="mt-classification mt-classification-template-installation guide" data-ga-action="Tag navigation">
+            <dt class="mt-classification-label">Template Type</dt>
+            <dd class="mt-classification-value"><a href="https://documentation.meraki.com/Special:Search?tags=template%3Ainstallation" data-ga-label="Classification">Installation Guide</a></dd>
+        </dl>
+</li>
+                    <li class="elm-tags"><dl class="mt-tags">
+    <dt class="mt-tag-label">Tags</dt>
+    <dd class="mt-tag-value">
+        <ol class="mt-tags-list" data-ga-action="Tag navigation">
+                <li class="mt-tag-link mt-tag-cisco-meraki-dashboard" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=Cisco+Meraki+Dashboard" data-ga-label="Free tag"> Cisco Meraki Dashboard</a></li>
+                <li class="mt-tag-link mt-tag-cisco-meraki-mx" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=Cisco+Meraki+MX" data-ga-label="Free tag"> Cisco Meraki MX</a></li>
+                <li class="mt-tag-link mt-tag-dhcp" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=DHCP" data-ga-label="Free tag"> DHCP</a></li>
+                <li class="mt-tag-link mt-tag-local-status-page" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=local+status+page" data-ga-label="Free tag"> local status page</a></li>
+        </ol>
+    </dd>
+</dl></li>
+                </ol>
+            </footer>
+        
+    </article>
+    <footer class="elm-footer">
+        <nav class="elm-footer-siteinfo-nav elm-nav">
+            <div class="elm-nav-container">
+                <ol>
+                    <li class="elm-footer-copyright">&copy; Copyright 2026 Cisco Meraki Documentation</li>
+                    <li class="elm-footer-powered-by"><a href="https://mindtouch.com/demo" class="mt-poweredby product " title="MindTouch" target="_blank">
+   Powered by NiCE Knowledge Management
+   <span class="mt-registered">&reg;</span>
+</a></li>
+                </ol>
+            </div>
+        </nav>
+        <div class="elm-footer-custom">
+
+<div class="mt-custom-footer-container"><div class="mt-top-footer"><div class="mt-top-logo"><a href="http://meraki.cisco.com/" target="_blank" rel="external noopener nofollow" class="external"><img class="mt-cdn" src="https://documentation.meraki.com/@api/deki/site/logo?default=https%3A%2F%2Fdocumentation.meraki.com%2F%40cdn%2F%40style%2Fcommon-legacy%2Fimages%2Flogo.png" alt="Cisco-Meraki" /></a></div><div class="mt-top-external-links"><div class="mt-top-ul-container" id="top-Company"><h6 class="mt-top-ul-title">Company</h6><ul class="mt-top-ul"><li class="mt-top-li"><a href="https://meraki.cisco.com/about/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">About Meraki</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/jobs" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Careers</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/support/#policies:privacy" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Privacy</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/trust" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Trust</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/gdpr" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">GDPR</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/support/#policies:tou" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Terms of Use</a></li></ul></div><div class="mt-top-ul-container" id="top-Partners"><h6 class="mt-top-ul-title">Partners</h6><ul class="mt-top-ul"><li class="mt-top-li"><a href="https://www.merakipartners.com/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Partner Portal Login</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/partner/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Become a Partner</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/managedserviceproviders" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Manage Service Providers</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/solutions/serviceprovider" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Service Providers</a></li></ul></div><div class="mt-top-ul-container" id="top-getStarted"><h6 class="mt-top-ul-title">Get Started</h6><ul class="mt-top-ul"><li class="mt-top-li"><a href="https://meraki.cisco.com/form/contact/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Contact Us</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/form/demo/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Get a Demo</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/form/trial/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Start Your Trial</a></li></ul></div><div class="mt-top-ul-container" id="top-Resources"><h6 class="mt-top-ul-title">Resources</h6><ul class="mt-top-ul"><li class="mt-top-li"><a href="https://meraki.cisco.com/webinars/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Webinars</a></li><li class="mt-top-li"><a class="mt-top-a internal" href="https://documentation.meraki.com/" rel="internal">Documentation</a></li><li class="mt-top-li"><a href="https://community.cisco.com/t5/meraki/ct-p/meraki-home" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Community</a></li><li class="mt-top-li"><a href="https://community.cisco.com/t5/networking-learning-hub/ct-p/learninghub-networking" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Learning Hub</a></li></ul></div></div></div><div class="mt-bottom-footer"><div class="mt-social-container"><ul class="mt-social-ul"><li class="mt-social-li"><a href="https://twitter.com/meraki" target="_blank" rel="external noopener nofollow" class="mt-social-a mt-icon-twitter link-https"></a></li><li class="mt-social-li"><a href="https://www.instagram.com/ciscomeraki/?hl=en" target="_blank" rel="external noopener nofollow" class="mt-social-a mt-icon-instagram link-https"></a></li><li class="mt-social-li"><a href="https://www.facebook.com/CiscoMeraki/" target="_blank" rel="external noopener nofollow" class="mt-social-a mt-icon-facebook link-https"></a></li><li class="mt-social-li"><a href="https://www.youtube.com/channel/UCimwNLMzVRMp7SUPVRNaqew" target="_blank" rel="external noopener nofollow" class="mt-social-a mt-icon-youtube link-https"></a></li></ul></div><div class="mt-copyright-container"><p>&copy; 2026 Cisco Systems, Inc.</p></div></div></div>
+
+
+
+<script type="text/javascript">/*<![CDATA[*/
+var feedback_btn = document.querySelector(".mt-feedback-button"); 
+feedback_btn.innerText = "Request Update"/*]]>*/</script>
+
+
+
+<script type="text/javascript">/*<![CDATA[*/
+var feedback_label = document.querySelector(".mt-feedback-improve-label");
+feedback_label.innerText = "What would you like to change on this page? Your request will be sent to the Knowledge and Content team at Cisco Meraki. We are NOT product experts! Include all relevant details: section or exact text to update, new draft language, or related cases/mules.";/*]]>*/</script>
+
+
+</div>
+    </footer>
+</main>
+<div id="mt-modal-container"></div>
+
+    <script type="text/javascript" async="async" nonce="f3d82652bf864a47344d56381d2aa67168673ab493acd6c9ee5bf90ff58299b2" src="https://documentation.meraki.com/@embed/f1.js"></script>
+
+<script type="text/javascript" data-mindtouch-module="true" src="https://a.mtstatic.com/deki/javascript/out/standalone/ui.widget.helpWidget.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script><script type="text/javascript" data-mindtouch-module="true" nonce="f3d82652bf864a47344d56381d2aa67168673ab493acd6c9ee5bf90ff58299b2" src="https://a.mtstatic.com/deki/javascript/out/standalone/serviceworker-unregister.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script><script type="text/javascript" data-mindtouch-module="true" nonce="f3d82652bf864a47344d56381d2aa67168673ab493acd6c9ee5bf90ff58299b2" src="https://a.mtstatic.com/deki/javascript/out/standalone/pageLoaded.js?_=bb22f6537faa4d675dae44139962bf20b5796761:site_13505"></script>
+
+
+</body>
+</html>

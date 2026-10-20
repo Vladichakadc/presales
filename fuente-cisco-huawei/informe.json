@@ -1,0 +1,1467 @@
+[
+  {
+    "archivo": "cisco-isr1000-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.html",
+        "status": 200,
+        "bytes": 736011,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-c8200-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8200-series-edge-platforms/nb-06-cat8200-series-edge-plat-ds-cte-en.html",
+        "status": 200,
+        "bytes": 277887,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-c8300-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8300-series-edge-platforms/datasheet-c78-744088.html",
+        "status": 200,
+        "bytes": 337957,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-c8500-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8500-series-edge-platforms/datasheet-c78-744089.html",
+        "status": 200,
+        "bytes": 347148,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8100-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8100-series-secure-routers-ds.html",
+        "status": 200,
+        "bytes": 172118,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8200-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8200-series-secure-routers-ds.html",
+        "status": 200,
+        "bytes": 177315,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8300-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8300-series-secure-routers-ds.html",
+        "status": 200,
+        "bytes": 161571,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8400-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8400-series-secure-routers-ds.html",
+        "status": 200,
+        "bytes": 152606,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8500-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8500-series-secure-routers-ds.html",
+        "status": 200,
+        "bytes": 146110,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8600-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8600-series-secure-routers-ds.html",
+        "status": 200,
+        "bytes": 142184,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8500-ds.pdf",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/secure-routers/8500-series-secure-routers-ds.pdf",
+        "status": 200,
+        "bytes": 636233,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8600-ds.pdf",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/secure-routers/8600-series-secure-routers-ds.pdf",
+        "status": 200,
+        "bytes": 719388,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8000-og.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/8000-secure-routers/8000-secure-router-og.html",
+        "status": 200,
+        "bytes": 273835,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8000-og.pdf",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/8000-secure-routers/8000-secure-router-og.pdf",
+        "status": 200,
+        "bytes": 5451925,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8100-hig.pdf",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8100-series/hardware-installation-guide-for-the-cisco-8100-series-secure-routers.pdf",
+        "status": 200,
+        "bytes": 10857518,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8200-hig.pdf",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8200-series/hardware-installation-guide/secure-8200-series-hig.pdf",
+        "status": 200,
+        "bytes": 7122651,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8300-hig.pdf",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8300-series/hardware_installation-guide/secure-8300-series-hig.pdf",
+        "status": 200,
+        "bytes": 8900580,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8400-hig.pdf",
+    "para": "CISCO",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/c84xx/c8400-g2-hardware-installation-guide.pdf",
+        "status": 200,
+        "firma": "0a0a0a0a0a0a0a0a",
+        "nota": "no es un PDF"
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8500-hig.pdf",
+    "para": "CISCO",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/secure_8500/cisco-8500-series-secure-router-HIG.pdf",
+        "status": 404
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8600-soporte.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/support/routers/8600-series-secure-routers/series.html",
+        "status": 200,
+        "bytes": 75799,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-c8500l-hig.pdf",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8500l/b-catalyst-8500L-8S4X-edge-platform-hig.pdf",
+        "status": 200,
+        "bytes": 5436909,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-c8200-guias.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/support/routers/catalyst-8200-series-edge-platforms/products-installation-guides-list.html",
+        "status": 200,
+        "bytes": 27820,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-c8300-guias.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/support/routers/catalyst-8300-series-edge-platforms/products-installation-guides-list.html",
+        "status": 200,
+        "bytes": 28301,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-c8500-guias.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/support/routers/catalyst-8500-series-edge-platforms/products-installation-guides-list.html",
+        "status": 200,
+        "bytes": 26319,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-mx67-68-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/MX/MX_Overviews_and_Specifications/MX67_and_MX68_Overview_and_Specifications",
+        "status": 200,
+        "bytes": 100675,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-mx75-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX75_Datasheet",
+        "status": 200,
+        "bytes": 79052,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-mx85-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX85_Datasheet",
+        "status": 200,
+        "bytes": 79168,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-mx95-105-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX95%2F%2F105_Datasheet",
+        "status": 200,
+        "bytes": 83132,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-mx250-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX250_Datasheet",
+        "status": 200,
+        "bytes": 66560,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-mx450-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX450_Datasheet",
+        "status": 200,
+        "bytes": 66805,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-c8111-c8121-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/C8111-G2-MX_and_C8121-G2-MX_Data_Sheet",
+        "status": 200,
+        "bytes": 430677,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-mx67-68-ig.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67%2F%2FMX68_Installation_Guide",
+        "status": 200,
+        "bytes": 97527,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-mx75-ig.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX75_Hardware_Installation_Guide",
+        "status": 200,
+        "bytes": 105323,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-mx85-ig.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX85_Series_Hardware_Installation_Guide",
+        "status": 200,
+        "bytes": 105873,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-mx95-105-ig.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/MX/MX_Installation_Guides/MX95%2F%2FMX105_Series_Hardware_Installation_Guide",
+        "status": 200,
+        "bytes": 107226,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-mx250-ig.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/MX/MX_Installation_Guides/MX250_Installation_Guide",
+        "status": 200,
+        "bytes": 74410,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-mx450-ig.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/MX/MX_Installation_Guides/MX450_Installation_Guide",
+        "status": 200,
+        "bytes": 74095,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-c8111-c8121-ig.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/C8111-G2-MX_and_C8121-G2-MX_Installation_Guide",
+        "status": 200,
+        "bytes": 2463360,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-c8355-ig.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/C8355-G2-MX_Installation_Guide",
+        "status": 200,
+        "bytes": 544793,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-mx-sizing.pdf",
+    "para": "CISCO",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://meraki.cisco.com/lib/pdf/meraki_whitepaper_mx_sizing_guide.pdf",
+        "status": 200,
+        "firma": "0a3c21444f435459",
+        "nota": "no es un PDF"
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-img",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/c8130-g2-1600x900.jpg",
+        "status": 200,
+        "bytes": 66479,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__c8130-g2-1600x900.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-1-c8130-g2-2x.jpg",
+        "status": 200,
+        "bytes": 35721,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__ds-table-1-c8130-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-1-front-panel-c8130H-g2.png",
+        "status": 200,
+        "bytes": 64389,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__ds-table-1-front-panel-c8130H-g2.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-1-c8130-vai-g2-2x.png",
+        "status": 200,
+        "bytes": 24879,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__ds-table-1-c8130-vai-g2-2x.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table%202-c8140-g2-2x.jpg",
+        "status": 200,
+        "bytes": 32566,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__ds-table_202-c8140-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table%203-c8151-g2-2x.jpg",
+        "status": 200,
+        "bytes": 43648,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__ds-table_203-c8151-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-6-front-view-c8151h-c-g2.png",
+        "status": 200,
+        "bytes": 102985,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__ds-table-6-front-view-c8151h-c-g2.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-c8151-cvap-g2.png",
+        "status": 200,
+        "bytes": 21941,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__ds-c8151-cvap-g2.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table%204-c8161-g2-2x.jpg",
+        "status": 200,
+        "bytes": 42233,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__ds-table_204-c8161-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/8200-series-c8235-g2-1600x900.jpg",
+        "status": 200,
+        "bytes": 57109,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__8200-series-c8235-g2-1600x900.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-1-c8235-e-g2-2x.jpg",
+        "status": 200,
+        "bytes": 40498,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__ds-table-1-c8235-e-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-2-c8235-e-g2-2x.jpg",
+        "status": 200,
+        "bytes": 25328,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__ds-table-2-c8235-e-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-3-c8235-e-g2-2x.jpg",
+        "status": 200,
+        "bytes": 47082,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__ds-table-3-c8235-e-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-4-c8231-e-g2-2x.jpg",
+        "status": 200,
+        "bytes": 39622,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__ds-table-4-c8231-e-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/8200-series-c8225-g2-front-view.png",
+        "status": 200,
+        "bytes": 23198,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__8200-series-c8225-g2-front-view.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/8200-series-c8221L-g2-front-view.png",
+        "status": 200,
+        "bytes": 23968,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__8200-series-c8221L-g2-front-view.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/8200-series-c8211L-g2-front-view.png",
+        "status": 200,
+        "bytes": 24555,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__8200-series-c8211L-g2-front-view.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/8200-series-c8255-g2-ucsxe-front-panel.png",
+        "status": 200,
+        "bytes": 47283,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__8200-series-c8255-g2-ucsxe-front-panel.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/8300-series-c8375-g2-1600x900.jpg",
+        "status": 200,
+        "bytes": 80473,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__8300-series-c8375-g2-1600x900.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-1-c8375-e-g2-2x.jpg",
+        "status": 200,
+        "bytes": 337548,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__ds-table-1-c8375-e-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-2-c8375-e-2x.jpg",
+        "status": 200,
+        "bytes": 368417,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__ds-table-2-c8375-e-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-3-c8355-g2-2x.jpg",
+        "status": 200,
+        "bytes": 86970,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__ds-table-3-c8355-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-4-c8355-g2-2x.jpg",
+        "status": 200,
+        "bytes": 301448,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__ds-table-4-c8355-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/8400-series-c8455-g2-1600x900.jpg",
+        "status": 200,
+        "bytes": 81584,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__8400-series-c8455-g2-1600x900.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/product-photography/collateral/networking/ds-table1-8400-c8455-e-g2-1540x866.jpg",
+        "status": 200,
+        "bytes": 483550,
+        "guardado": true,
+        "como": "cisco-img/collateral__networking__ds-table1-8400-c8455-e-g2-1540x866.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table2-c8475-e-g2-2x-1540x866.jpg",
+        "status": 200,
+        "bytes": 439527,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__ds-table2-c8475-e-g2-2x-1540x866.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/c8550-g2-1600x900.jpg",
+        "status": 200,
+        "bytes": 143723,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__c8550-g2-1600x900.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-1-c8550-g2-2x.jpg",
+        "status": 200,
+        "bytes": 179191,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__ds-table-1-c8550-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-2-c8570-g2-2x.jpg",
+        "status": 200,
+        "bytes": 159715,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__ds-table-2-c8570-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/hero-img-front-view-c8650.jpg",
+        "status": 200,
+        "bytes": 316611,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__hero-img-front-view-c8650.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/front-view-c8650-g2.png",
+        "status": 200,
+        "bytes": 1601605,
+        "guardado": true,
+        "como": "cisco-img/sdwan-routers__8000-secure-routers__front-view-c8650-g2.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/networking/sdwan-routers/8000-secure-routers/8000-secure-router-og.docx/_jcr_content/renditions/8000-secure-router-og_0.png",
+        "status": 200,
+        "bytes": 94597,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__8000-secure-router-og_0.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/networking/sdwan-routers/8000-secure-routers/8000-secure-router-og.docx/_jcr_content/renditions/8000-secure-router-og_1.png",
+        "status": 200,
+        "bytes": 42922,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__8000-secure-router-og_1.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/networking/sdwan-routers/8000-secure-routers/8000-secure-router-og.docx/_jcr_content/renditions/8000-secure-router-og_2.png",
+        "status": 200,
+        "bytes": 34921,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__8000-secure-router-og_2.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/networking/sdwan-routers/8000-secure-routers/8000-secure-router-og.docx/_jcr_content/renditions/8000-secure-router-og_3.png",
+        "status": 200,
+        "bytes": 119702,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__8000-secure-router-og_3.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/networking/sdwan-routers/8000-secure-routers/8000-secure-router-og.docx/_jcr_content/renditions/8000-secure-router-og_4.png",
+        "status": 200,
+        "bytes": 92935,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__8000-secure-router-og_4.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/networking/sdwan-routers/8000-secure-routers/8000-secure-router-og.docx/_jcr_content/renditions/8000-secure-router-og_5.png",
+        "status": 200,
+        "bytes": 68820,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__8000-secure-router-og_5.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/networking/sdwan-routers/8000-secure-routers/8000-secure-router-og.docx/_jcr_content/renditions/8000-secure-router-og_6.png",
+        "status": 200,
+        "bytes": 84644,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__8000-secure-router-og_6.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/networking/sdwan-routers/8000-secure-routers/8000-secure-router-og.docx/_jcr_content/renditions/8000-secure-router-og_7.png",
+        "status": 200,
+        "bytes": 54110,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__8000-secure-router-og_7.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/networking/sdwan-routers/8000-secure-routers/8000-secure-router-og.docx/_jcr_content/renditions/8000-secure-router-og_8.png",
+        "status": 200,
+        "bytes": 120822,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__8000-secure-router-og_8.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/networking/sdwan-routers/8000-secure-routers/8000-secure-router-og.docx/_jcr_content/renditions/8000-secure-router-og_9.png",
+        "status": 200,
+        "bytes": 54494,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__8000-secure-router-og_9.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/networking/sdwan-routers/8000-secure-routers/8000-secure-router-og.docx/_jcr_content/renditions/8000-secure-router-og_10.png",
+        "status": 200,
+        "bytes": 83967,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__8000-secure-router-og_10.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/networking/sdwan-routers/8000-secure-routers/8000-secure-router-og.docx/_jcr_content/renditions/8000-secure-router-og_11.png",
+        "status": 200,
+        "bytes": 41825,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__8000-secure-router-og_11.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_0.png",
+        "status": 200,
+        "bytes": 156062,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_0.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_1.png",
+        "status": 200,
+        "bytes": 66849,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_1.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_2.png",
+        "status": 200,
+        "bytes": 264635,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_2.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_3.png",
+        "status": 200,
+        "bytes": 315865,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_3.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_4.png",
+        "status": 200,
+        "bytes": 98628,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_4.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_5.png",
+        "status": 200,
+        "bytes": 172025,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_5.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_6.png",
+        "status": 200,
+        "bytes": 36578,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_6.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_7.png",
+        "status": 200,
+        "bytes": 153019,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_7.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_8.png",
+        "status": 200,
+        "bytes": 42783,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_8.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_9.png",
+        "status": 200,
+        "bytes": 131025,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_9.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_10.png",
+        "status": 200,
+        "bytes": 40112,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_10.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_11.png",
+        "status": 200,
+        "bytes": 130905,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_11.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_12.png",
+        "status": 200,
+        "bytes": 140468,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_12.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_13.png",
+        "status": 200,
+        "bytes": 41688,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_13.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_14.png",
+        "status": 200,
+        "bytes": 15715,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_14.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_15.png",
+        "status": 200,
+        "bytes": 104094,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_15.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_16.png",
+        "status": 200,
+        "bytes": 37444,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_16.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_17.png",
+        "status": 200,
+        "bytes": 24336,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_17.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_18.png",
+        "status": 200,
+        "bytes": 18842,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_18.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_19.png",
+        "status": 200,
+        "bytes": 27821,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_19.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_20.png",
+        "status": 200,
+        "bytes": 113689,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_20.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.docx/_jcr_content/renditions/datasheet-c78-739512_21.png",
+        "status": 200,
+        "bytes": 33845,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-739512_21.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/catalyst-8200-series-edge-platforms/nb-06-cat8200-series-edge-plat-ds-cte-en.docx/_jcr_content/renditions/nb-06-cat8200-series-edge-plat-ds-cte-en_0.png",
+        "status": 200,
+        "bytes": 159528,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__nb-06-cat8200-series-edge-plat-ds-cte-en_0.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/catalyst-8200-series-edge-platforms/nb-06-cat8200-series-edge-plat-ds-cte-en.docx/_jcr_content/renditions/nb-06-cat8200-series-edge-plat-ds-cte-en_1.png",
+        "status": 200,
+        "bytes": 184591,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__nb-06-cat8200-series-edge-plat-ds-cte-en_1.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/catalyst-8300-series-edge-platforms/datasheet-c78-744088.docx/_jcr_content/renditions/datasheet-c78-744088_0.png",
+        "status": 200,
+        "bytes": 69474,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-744088_0.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/catalyst-8300-series-edge-platforms/datasheet-c78-744088.docx/_jcr_content/renditions/datasheet-c78-744088_1.png",
+        "status": 200,
+        "bytes": 213645,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-744088_1.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/catalyst-8300-series-edge-platforms/datasheet-c78-744088.docx/_jcr_content/renditions/datasheet-c78-744088_2.png",
+        "status": 200,
+        "bytes": 213645,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-744088_2.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/catalyst-8300-series-edge-platforms/datasheet-c78-744088.docx/_jcr_content/renditions/datasheet-c78-744088_3.png",
+        "status": 200,
+        "bytes": 115440,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-744088_3.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/catalyst-8300-series-edge-platforms/datasheet-c78-744088.docx/_jcr_content/renditions/datasheet-c78-744088_4.png",
+        "status": 200,
+        "bytes": 124321,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-744088_4.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/catalyst-8500-series-edge-platforms/datasheet-c78-744089.docx/_jcr_content/renditions/datasheet-c78-744089_0.png",
+        "status": 200,
+        "bytes": 235204,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-744089_0.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/catalyst-8500-series-edge-platforms/datasheet-c78-744089.docx/_jcr_content/renditions/datasheet-c78-744089_1.png",
+        "status": 200,
+        "bytes": 2116077,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-744089_1.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/catalyst-8500-series-edge-platforms/datasheet-c78-744089.docx/_jcr_content/renditions/datasheet-c78-744089_2.png",
+        "status": 200,
+        "bytes": 621882,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-744089_2.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/catalyst-8500-series-edge-platforms/datasheet-c78-744089.docx/_jcr_content/renditions/datasheet-c78-744089_3.png",
+        "status": 200,
+        "bytes": 699257,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-744089_3.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/catalyst-8500-series-edge-platforms/datasheet-c78-744089.docx/_jcr_content/renditions/datasheet-c78-744089_4.png",
+        "status": 200,
+        "bytes": 721146,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-744089_4.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/catalyst-8500-series-edge-platforms/datasheet-c78-744089.docx/_jcr_content/renditions/datasheet-c78-744089_5.png",
+        "status": 200,
+        "bytes": 2128242,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-744089_5.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/catalyst-8500-series-edge-platforms/datasheet-c78-744089.docx/_jcr_content/renditions/datasheet-c78-744089_6.png",
+        "status": 200,
+        "bytes": 1256792,
+        "guardado": true,
+        "como": "cisco-img/_jcr_content__renditions__datasheet-c78-744089_6.png"
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-img",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/7077/MX67_68_front_and_top_view.png",
+        "status": 200,
+        "bytes": 114526,
+        "guardado": true,
+        "como": "meraki-img/files__7077__MX67_68_front_and_top_view.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/15267/Image_MX75.jpg",
+        "status": 200,
+        "bytes": 899250,
+        "guardado": true,
+        "como": "meraki-img/files__15267__Image_MX75.jpg"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/15579/Image_MX85_Front.png",
+        "status": 200,
+        "bytes": 419314,
+        "guardado": true,
+        "como": "meraki-img/files__15579__Image_MX85_Front.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/15371/MX95_MX105_Fairies_Front_Ports_Shadow.png",
+        "status": 200,
+        "bytes": 1001599,
+        "guardado": true,
+        "como": "meraki-img/files__15371__MX95_MX105_Fairies_Front_Ports_Shadow.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/28498/mx450-product-image-front-shadow.png",
+        "status": 200,
+        "bytes": 180187,
+        "guardado": true,
+        "como": "meraki-img/files__28498__mx450-product-image-front-shadow.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/28496/mx450-product-image-front-shadow.png",
+        "status": 200,
+        "bytes": 180187,
+        "guardado": true,
+        "como": "meraki-img/files__28496__mx450-product-image-front-shadow.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/2821/MX67_C_W_front_panel_illustration.png",
+        "status": 200,
+        "bytes": 3452,
+        "guardado": true,
+        "como": "meraki-img/files__2821__MX67_C_W_front_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/4361/MX68_C_W_front_panel_illustration.png",
+        "status": 200,
+        "bytes": 5007,
+        "guardado": true,
+        "como": "meraki-img/files__4361__MX68_C_W_front_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/957/MX67_rear_panel_illustration.png",
+        "status": 200,
+        "bytes": 11495,
+        "guardado": true,
+        "como": "meraki-img/files__957__MX67_rear_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/6630/MX67C_rear_panel_illustration.png",
+        "status": 200,
+        "bytes": 30672,
+        "guardado": true,
+        "como": "meraki-img/files__6630__MX67C_rear_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/7057/MX67W_rear_panel_illustration.png",
+        "status": 200,
+        "bytes": 23220,
+        "guardado": true,
+        "como": "meraki-img/files__7057__MX67W_rear_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/3633/MX68_rear_panel_illustration.png",
+        "status": 200,
+        "bytes": 18540,
+        "guardado": true,
+        "como": "meraki-img/files__3633__MX68_rear_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/7452/MX68W_rear_panel_illustration.png",
+        "status": 200,
+        "bytes": 30515,
+        "guardado": true,
+        "como": "meraki-img/files__7452__MX68W_rear_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/5639/MX68CW_rear_panel_illustration.png",
+        "status": 200,
+        "bytes": 35909,
+        "guardado": true,
+        "como": "meraki-img/files__5639__MX68CW_rear_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/5048/MX68_side_panel_illustration.png",
+        "status": 200,
+        "bytes": 6159,
+        "guardado": true,
+        "como": "meraki-img/files__5048__MX68_side_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/7816/MX68W_side_panel_illustration.png",
+        "status": 200,
+        "bytes": 12277,
+        "guardado": true,
+        "como": "meraki-img/files__7816__MX68W_side_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/6155/MX68CW_side_panel_illustration.png",
+        "status": 200,
+        "bytes": 14078,
+        "guardado": true,
+        "como": "meraki-img/files__6155__MX68CW_side_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/1917/MX67_C_W_and_MX68_C_W_bottom_panel_illustration.png",
+        "status": 200,
+        "bytes": 15636,
+        "guardado": true,
+        "como": "meraki-img/files__1917__MX67_C_W_and_MX68_C_W_bottom_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/15365/MX75_top_and_front_view.jpg",
+        "status": 200,
+        "bytes": 685909,
+        "guardado": true,
+        "como": "meraki-img/files__15365__MX75_top_and_front_view.jpg"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/15363/MX75_front_panel_illustration.png",
+        "status": 200,
+        "bytes": 3533,
+        "guardado": true,
+        "como": "meraki-img/files__15363__MX75_front_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/15362/MX75_rear_panel_illustration.png",
+        "status": 200,
+        "bytes": 45826,
+        "guardado": true,
+        "como": "meraki-img/files__15362__MX75_rear_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/15745/MX75_side_panel_illustration.png",
+        "status": 200,
+        "bytes": 10578,
+        "guardado": true,
+        "como": "meraki-img/files__15745__MX75_side_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/15364/MX75_bottom_panel_illustration.png",
+        "status": 200,
+        "bytes": 35689,
+        "guardado": true,
+        "como": "meraki-img/files__15364__MX75_bottom_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/15753/MX85_top_and_front_view.png",
+        "status": 200,
+        "bytes": 133435,
+        "guardado": true,
+        "como": "meraki-img/files__15753__MX85_top_and_front_view.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/15360/MX85_front_panel_illustration.png",
+        "status": 200,
+        "bytes": 18123,
+        "guardado": true,
+        "como": "meraki-img/files__15360__MX85_front_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/15361/MX85_rear_panel_illustration.png",
+        "status": 200,
+        "bytes": 11744,
+        "guardado": true,
+        "como": "meraki-img/files__15361__MX85_rear_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/29471/Triangular_danger_sign_warning_of_electrical_shock.png",
+        "status": 200,
+        "bytes": 3202,
+        "guardado": true,
+        "como": "meraki-img/files__29471__Triangular_danger_sign_warning_of_electrical_shock.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/29472/Triangular_warning_or_caution_sign_with_exclamation_mark.png",
+        "status": 200,
+        "bytes": 2525,
+        "guardado": true,
+        "como": "meraki-img/files__29472__Triangular_warning_or_caution_sign_with_exclamation_mark.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/14682/Image_MX95-105.png",
+        "status": 200,
+        "bytes": 36600,
+        "guardado": true,
+        "como": "meraki-img/files__14682__Image_MX95-105.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/15368/Image_MX105_FrontView.png",
+        "status": 200,
+        "bytes": 20748,
+        "guardado": true,
+        "como": "meraki-img/files__15368__Image_MX105_FrontView.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/15370/Image_MX95_Back_Panel.png",
+        "status": 200,
+        "bytes": 31853,
+        "guardado": true,
+        "como": "meraki-img/files__15370__Image_MX95_Back_Panel.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/15369/Image_MX105_Back_Panel.png",
+        "status": 200,
+        "bytes": 48474,
+        "guardado": true,
+        "como": "meraki-img/files__15369__Image_MX105_Back_Panel.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/4410/Triangular_danger_sign_warning_of_electrical_shock.png",
+        "status": 200,
+        "bytes": 3202,
+        "guardado": true,
+        "como": "meraki-img/files__4410__Triangular_danger_sign_warning_of_electrical_shock.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/5077/Triangular_warning_or_caution_sign_with_exclamation_mark.png",
+        "status": 200,
+        "bytes": 2525,
+        "guardado": true,
+        "como": "meraki-img/files__5077__Triangular_warning_or_caution_sign_with_exclamation_mark.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/20688/MX250_product_image_front_view.png",
+        "status": 200,
+        "bytes": 178571,
+        "guardado": true,
+        "como": "meraki-img/files__20688__MX250_product_image_front_view.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/3653/Package_contents_detailing_ethernet_cables_and_a_rack_mounting_kit.png",
+        "status": 200,
+        "bytes": 56859,
+        "guardado": true,
+        "como": "meraki-img/files__3653__Package_contents_detailing_ethernet_cables_and_a_rack_mounting_kit.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/1943/MX250_front_panel_illustration.png",
+        "status": 200,
+        "bytes": 11337,
+        "guardado": true,
+        "como": "meraki-img/files__1943__MX250_front_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/2844/MX250_rear_panel_illustration.png",
+        "status": 200,
+        "bytes": 37099,
+        "guardado": true,
+        "como": "meraki-img/files__2844__MX250_rear_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/3631/Package_contents_detailing_ethernet_cables_and_a_rack_mounting_kit.png",
+        "status": 200,
+        "bytes": 56859,
+        "guardado": true,
+        "como": "meraki-img/files__3631__Package_contents_detailing_ethernet_cables_and_a_rack_mounting_kit.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/20687/MX450_product_image_front_view.png",
+        "status": 200,
+        "bytes": 180187,
+        "guardado": true,
+        "como": "meraki-img/files__20687__MX450_product_image_front_view.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/2820/MX450_rear_panel_illustration.png",
+        "status": 200,
+        "bytes": 37099,
+        "guardado": true,
+        "como": "meraki-img/files__2820__MX450_rear_panel_illustration.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/4363/Triangular_danger_sign_warning_of_electrical_shock.png",
+        "status": 200,
+        "bytes": 3202,
+        "guardado": true,
+        "como": "meraki-img/files__4363__Triangular_danger_sign_warning_of_electrical_shock.png"
+      },
+      {
+        "url": "https://documentation.meraki.com/@api/deki/files/5027/Triangular_warning_or_caution_sign_with_exclamation_mark.png",
+        "status": 200,
+        "bytes": 2525,
+        "guardado": true,
+        "como": "meraki-img/files__5027__Triangular_warning_or_caution_sign_with_exclamation_mark.png"
+      }
+    ]
+  }
+]

@@ -1,0 +1,3483 @@
+
+<!DOCTYPE HTML>
+
+<html lang="en-US" dir="ltr">
+    <head>
+    <meta charset="UTF-8"/>
+    <meta name="HandheldFriendly" content="True"/>
+    <meta name="MobileOptimized" content="320"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <title>Cisco 8200 Series Secure Routers Data Sheet - Cisco</title>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Cisco 8200 Series Secure Routers offer simplified secure networking with advanced SoC technology, SD-WAN, robust security, and flexible on-prem or cloud management."/>
+
+
+
+
+
+<meta name="title" content="Cisco 8200 Series Secure Routers Data Sheet"/>
+
+
+
+
+
+<meta name="templateName" content="v2---product-generic-template"/>
+
+
+
+
+
+<meta name="locale" content="English (United States)"/>
+
+
+
+
+
+<meta name="language" content="en"/>
+
+
+
+
+
+<meta name="country" content="US"/>
+
+
+
+
+
+<meta name="CCID_Page" content="cc001772"/>
+
+
+
+
+
+<meta name="date" content="Wed Oct 14 18:05:57 UTC 2026"/>
+
+
+
+
+<meta name="accessLevel" content="Customer"/><meta name="accessLevel" content="Guest"/><meta name="accessLevel" content="Partner"/>
+
+
+
+
+
+
+<meta name="entitlementExpression" content="contains( &amp;quot;0,1,2,3,4,7&amp;quot; , $profileField[3] )"/>
+
+
+
+
+
+
+<meta property="og:site_name" content="Cisco"/>
+
+
+
+
+
+<meta property="og:type" content="website"/>
+
+
+
+
+
+<meta property="og:title" content="Cisco 8200 Series Secure Routers Data Sheet"/>
+
+
+
+
+
+<meta property="og:description" content="Cisco 8200 Series Secure Routers offer simplified secure networking with advanced SoC technology, SD-WAN, robust security, and flexible on-prem or cloud management."/>
+
+
+
+
+
+<meta property="og:image" content="https://www.cisco.com/web/fw/i/logo-open-graph.gif"/>
+
+
+
+
+
+<meta property="og:url" content="https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8200-series-secure-routers-ds.html"/>
+
+
+
+
+
+
+<meta name="content-page-ref" content="kSFSzzPO0T7RFOCyAKd5GPDLgOm0aOiKNDW5mXZX29upfsoemq3l6IxZTJouAvZAAf1ITyMvQxvIZDc-dVb4s15jUFacjrPp7qzb8OckZmQKCuNSykkEosdq1eYPcPTHv0bT6VB9ZwRRVsZnJdSrnX_-BXGV4iGdWTr6dIDFB0PTCqUlB0gtvaVNMNIKe8uj"/>
+<script defer="defer" type="text/javascript" src="https://rum.hlx.page/.rum/@adobe/helix-rum-js@%5E2/dist/micro.js" data-routing="program=24859,environment=93037,tier=publish"></script>
+<link rel="canonical" href="https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8200-series-secure-routers-ds.html"/>
+
+
+
+
+
+
+<meta http-equiv="content-language" content="en-us"/>
+
+
+<link rel="alternate" hreflang="x-default" href="https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8200-series-secure-routers-ds.html"/>
+<link rel="alternate" hreflang="en-us" href="https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8200-series-secure-routers-ds.html"/>
+
+
+
+
+
+
+
+<script>
+    if (window.cdcext === undefined) { window.cdcext = {}; }
+    cdcext.customEnvironment = 'prod';
+
+    if (window.cdclocale === undefined) { window.cdclocale = {}; }
+    cdclocale.locale = 'en_us';
+</script>
+
+    
+<script>
+    window['adrum-start-time'] = new Date().getTime();
+    window['environ'] = "prod";
+
+    ((config) => {
+        config.appKey = "AD-AAB-ABZ-DKA";
+        config.adrumExtUrlHttp = "http://cdn.appdynamics.com";
+        config.adrumExtUrlHttps = "https://cdn.appdynamics.com";
+        config.beaconUrlHttp = "http://pdx-col.eum-appdynamics.com";
+        config.beaconUrlHttps = "https://pdx-col.eum-appdynamics.com";
+        config.fetch = true;
+        config.isZonePromise = true;
+        config.maxUrlLength = 512;
+        config.resTiming = {
+            "bufSize": 200,
+            "clearResTimingOnBeaconSend": true
+        };
+    })(window["adrum-config"] || (window["adrum-config"] = {}));
+</script>
+
+<script src="/c/dam/cdc/t/ctm-core.js"></script>
+
+<link rel="preconnect" href="https://target.cisco.com"/>
+<link rel="preconnect" href="https://smetrics.cisco.com"/>
+<link rel="preconnect" href="https://ciscosystemsinc.tt.omtrdc.net"/>
+<link rel="dns-prefetch" href="https://target.cisco.com"/>
+<link rel="dns-prefetch" href="https://smetrics.cisco.com"/>
+<link rel="dns-prefetch" href="https://ciscosystemsinc.tt.omtrdc.net"/>
+
+<script>
+    if (window.cpe === undefined) {
+        window.cpe = {};
+    }
+    
+    cpe.config = ["cinf","customer"];
+    cpe.hideMethod = "elements";
+    cpe.version = 1;
+
+    window.targetGlobalSettings = JSON.parse('{\x22clientCode\x22:\x22ciscosystemsinc\x22,\x22imsOrgId\x22:\x22B8D07FF4520E94C10A490D4C@AdobeOrg\x22,\x22serverDomain\x22:\x22target.cisco.com\x22,\x22crossDomain\x22:\x22enabled\x22,\x22bodyHidingEnabled\x22:false,\x22enabled\x22:true,\x22globalMboxAutoCreate\x22:false,\x22pageLoadEnabled\x22:false,\x22urlSizeLimit\x22:4500,\x22viewsEnabled\x22:false,\x22overrideMboxEdgeServer\x22:false,\x22timeout\x22:\x224000\x22}');
+    window.targetPageParamsAll = () => JSON.parse('{\x22entity\x22:\x22{ \\\x22id\\\x22:\\\x221747692918509103\\\x22, \\\x22categoryId\\\x22:\\\x22\\\x22}\x22}');
+</script>
+
+
+    
+<script src="/etc.clientlibs/cisco-cdc/clientlibs/clientlib-bullseye.lc-7373142b500f0ea724217278ade377ad-lc.min.js"></script>
+
+
+
+
+    
+
+    
+<link rel="stylesheet" href="/etc.clientlibs/cisco-cdc/clientlibs/clientlib-dependencies.lc-2be5daf0f0285b651461f9ebc9d0033e-lc.min.css" type="text/css">
+<script src="/etc.clientlibs/cisco-cdc/clientlibs/clientlib-dependencies.lc-219fb475046a4d800e41b54782bbfe35-lc.min.js"></script>
+
+
+
+
+
+    
+<link rel="stylesheet" href="/etc.clientlibs/cisco-cdc/clientlibs/clientlib-base.lc-08379cd967f4591e03a81725e4f3c9df-lc.min.css" type="text/css">
+<link rel="stylesheet" href="/etc.clientlibs/cisco-cdc/clientlibs/clientlib-site.lc-de2dce2fdc5b05a8d0c16a0edf1852fc-lc.min.css" type="text/css">
+
+
+
+
+
+<script type="text/javascript">
+            (function() {
+                window.ContextHub = window.ContextHub || {};
+
+                /* setting paths */
+                ContextHub.Paths = ContextHub.Paths || {};
+                ContextHub.Paths.CONTEXTHUB_PATH = "/conf/ciscoreimagine/settings/cloudsettings/default/contexthub";
+                ContextHub.Paths.RESOURCE_PATH = "\/content\/cdc\/site\/us\/en\/products\/collateral\/networking\/sdwan\u002Drouters\/8000\u002Dsecure\u002Drouters\/8200\u002Dseries\u002Dsecure\u002Drouters\u002Dds\/_jcr_content\/contexthub";
+                ContextHub.Paths.SEGMENTATION_PATH = "\/conf\/ciscoreimagine\/settings\/wcm\/segments";
+                ContextHub.Paths.CQ_CONTEXT_PATH = "";
+
+                /* setting initial constants */
+                ContextHub.Constants = ContextHub.Constants || {};
+                ContextHub.Constants.ANONYMOUS_HOME = "/home/users/x/xizukGtbl4ABRP2M12ux";
+                ContextHub.Constants.MODE = "no-ui";
+            }());
+        </script><script src="/etc/cloudsettings.kernel.js/conf/ciscoreimagine/settings/cloudsettings/default/contexthub" type="text/javascript"></script>
+
+
+
+    
+<script src="/etc.clientlibs/clientlibs/granite/jquery.lc-7842899024219bcbdb5e72c946870b79-lc.min.js"></script>
+<script src="/etc.clientlibs/clientlibs/granite/utils.lc-e7bf340a353e643d198b25d0c8ccce47-lc.min.js"></script>
+<script src="/etc.clientlibs/clientlibs/granite/jquery/granite.lc-543d214c88dfa6f4a3233b630c82d875-lc.min.js"></script>
+<script src="/etc.clientlibs/foundation/clientlibs/jquery.lc-dd9b395c741ce2784096e26619e14910-lc.min.js"></script>
+<script src="/etc.clientlibs/foundation/clientlibs/shared.lc-41f79c8a45bb1766981ec4ca82d7e0e6-lc.min.js"></script>
+
+
+
+
+    
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+
+    
+
+    
+
+                                <script>!function(e){var n="https://s.go-mpulse.net/boomerang/";if("False"=="True")e.BOOMR_config=e.BOOMR_config||{},e.BOOMR_config.PageParams=e.BOOMR_config.PageParams||{},e.BOOMR_config.PageParams.pci=!0,n="https://s2.go-mpulse.net/boomerang/";if(window.BOOMR_API_key="GKZXC-NS3SU-A7VFH-HKBHM-U7LKH",function(){function e(){if(!i){var e=document.createElement("script");e.id="boomr-scr-as",e.src=window.BOOMR.url,e.async=!0,o.parentNode.appendChild(e),i=!0}}function t(e){i=!0;var n,t,a,r,d=document,O=window;if(window.BOOMR.snippetMethod=e?"if":"i",t=function(e,n){var t=d.createElement("script");t.id=n||"boomr-if-as",t.src=window.BOOMR.url,BOOMR_lstart=(new Date).getTime(),e=e||d.body,e.appendChild(t)},!window.addEventListener&&window.attachEvent&&navigator.userAgent.match(/MSIE [67]\./))return window.BOOMR.snippetMethod="s",void t(o.parentNode,"boomr-async");a=document.createElement("IFRAME"),a.src="about:blank",a.title="",a.role="presentation",a.loading="eager",r=(a.frameElement||a).style,r.width=0,r.height=0,r.border=0,r.display="none",o.parentNode.appendChild(a);try{O=a.contentWindow,d=O.document.open()}catch(_){n=document.domain,a.src="javascript:var d=document.open();d.domain='"+n+"';void(0);",O=a.contentWindow,d=O.document.open()}if(n)d._boomrl=function(){this.domain=n,t()},d.write("<bo"+"dy onload='document._boomrl();'>");else if(O._boomrl=function(){t()},O.addEventListener)O.addEventListener("load",O._boomrl,!1);else if(O.attachEvent)O.attachEvent("onload",O._boomrl);d.close()}function a(e){window.BOOMR_onload=e&&e.timeStamp||(new Date).getTime()}if(!window.BOOMR||!window.BOOMR.version&&!window.BOOMR.snippetExecuted){window.BOOMR=window.BOOMR||{},window.BOOMR.snippetStart=(new Date).getTime(),window.BOOMR.snippetExecuted=!0,window.BOOMR.snippetVersion=12,window.BOOMR.url=n+"GKZXC-NS3SU-A7VFH-HKBHM-U7LKH";var o=document.currentScript||document.getElementsByTagName("script")[0],i=!1,r=document.createElement("link");if(r.relList&&"function"==typeof r.relList.supports&&r.relList.supports("preload")&&"as"in r)window.BOOMR.snippetMethod="p",r.href=window.BOOMR.url,r.rel="preload",r.as="script",r.addEventListener("load",e),r.addEventListener("error",function(){t(!0)}),setTimeout(function(){if(!i)t(!0)},3e3),BOOMR_lstart=(new Date).getTime(),o.parentNode.appendChild(r);else t(!1);if(window.addEventListener)window.addEventListener("load",a,!1);else if(window.attachEvent)window.attachEvent("onload",a)}}(),"".length>0)if(e&&"performance"in e&&e.performance&&"function"==typeof e.performance.setResourceTimingBufferSize)e.performance.setResourceTimingBufferSize();!function(){if(BOOMR=e.BOOMR||{},BOOMR.plugins=BOOMR.plugins||{},!BOOMR.plugins.AK){var n=""=="true"?1:0,t="",a="q536ymaxej6g42ww2z5q-f-16cf636dc-clientnsv4-s.akamaihd.net",o="false"=="true"?2:1,i={"ak.v":"41","ak.cp":"117370","ak.ai":parseInt("271834",10),"ak.ol":"0","ak.cr":6,"ak.ipv":4,"ak.proto":"http/1.1","ak.rid":"56cd343c","ak.r":52470,"ak.a2":n,"ak.m":"dsca","ak.n":"essl","ak.cport":58369,"ak.gh":"23.55.171.207","ak.quicv":"","ak.tlsv":"tls1.3","ak.0rtt":"","ak.0rtt.ed":"","ak.csrc":"-","ak.acc":"bbr","ak.t":"1792464507","ak.ak":"hOBiQwZUYzCg5VSAfCLimQ==heOi9ENOLT7uS/kH/uwXk2MeScu4lJ29yq8GorR3NC3grTTU9aN19mDCJVGYV5tpNGiryvzHr0E0VZLUUtgRZsoNR9ooTyNJGlfRtUBJA0WAjClak+wex4JyktwSV/Hh6zHghv4Vc2t31GSw7U3Bo0UrB1qHlL0oXCOmXWKhc63RSj1fVeXsVb1nZesAMgvQWx+qV9adk3dAloSCgkfg/nqQdVFYbNekK4D91eblhESyzkSgLOTEKKmrltei0YRggWmSKS+nXNu7pL+ZJmSjxaVvb3dZ5QlznLkDAiOCAuRnna8TNytyPFgwTyR5+Fs6Co4Bohxy9fr1FDKBDKkKSV42pKt0hF4esoWbZPnQRIe7+9bhgE2+rVBd2M11Xs11jrxOkXftuLpgneg/2gmicX85MdZOmA6kioVEZ5f2cJw=","ak.pv":"553","ak.dpoabenc":"","ak.tf":o};if(""!==t)i["ak.ruds"]=t;var r={i:!1,av:function(n){var t="http.initiator";if(n&&(!n[t]||"spa_hard"===n[t]))i["ak.feo"]=void 0!==e.aFeoApplied?1:0,BOOMR.addVar(i)},rv:function(){var e=["ak.cport","ak.cr","ak.csrc","ak.gh","ak.ipv","ak.m","ak.n","ak.ol","ak.proto","ak.quicv","ak.tlsv","ak.0rtt","ak.0rtt.ed","ak.r","ak.acc","ak.t","ak.tf"];BOOMR.removeVar(e)}};BOOMR.plugins.AK={akVars:i,akDNSPreFetchDomain:a,init:function(){if(!r.i){var e=BOOMR.subscribe;e("before_beacon",r.av,null,null),e("onbeacon",r.rv,null,null),r.i=!0}return this},is_complete:function(){return!0}}}}()}(window);</script></head>
+    <body class="product page basicpage" id="product-6e434cb643">
+        
+        
+        
+            <div id="fw-c-skiplinks">
+      <ul class="fw-c-skiplinks__container">
+          <li><a id="fw-c-skiplinks__skiplink--content" href="#fw-c-content">Skip to main content</a></li>
+          <li><a id="fw-c-skiplinks__skiplink--search" href="#fw-c-header__button--search">Skip to search</a></li>
+          <li><a id="fw-c-skiplinks__skiplink--footer" href="#fw-c-footer">Skip to footer</a></li>
+      </ul>
+  </div>
+
+            
+<div class="root responsivegrid">
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="experiencefragment aem-GridColumn aem-GridColumn--default--12">
+<div id="experiencefragment-58e0fb8cf0" class="cmp-experiencefragment cmp-experiencefragment--header">
+
+
+    
+    <div data-c-version="REI:Container (TO BE DEPRECATED):V0.0.0" id="container-fa3b79cd3f" class="cmp-container   " data-config-metrics-group="global nav">
+        
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="responsivegrid aem-GridColumn aem-GridColumn--default--12">
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="header global panelcontainer aem-GridColumn aem-GridColumn--default--12">
+<header class="fw-c-header __theme--light" is="fw-c-header">
+    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" style="display:none;"><defs><path id="svg-x" fill="none" fill-rule="evenodd" stroke="inherit" stroke-linecap="round" stroke-width="inherit" d="M30.26 6.495L5.505 31.25M5.495 6.495L30.25 31.25"/></defs></svg>
+    <div class="fw-c-header__masthead"><a class="fw-c-header__logo" id="fw-c-header__logo" title="Cisco.com Worldwide" href="https://www.cisco.com" aria-labelledby="fw-c-header__logo-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="108" height="57" viewBox="0 0 108 57" role="img">
+        <title id="fw-c-header__logo-title">Cisco.com Worldwide</title>
+        <defs>
+            <path d="M0 22.769a2.348 2.348 0 0 0 3.935 1.545c.434-.403.7-.955.744-1.545v-5.2a2.34 2.34 0 0 0-4.679 0v5.2" id="bar_short" class="bar"/>
+            <path d="M12.95 22.769a2.349 2.349 0 0 0 2.34 2.171 2.346 2.346 0 0 0 2.339-2.171V11.112a2.341 2.341 0 0 0-4.679 0V22.77" id="bar_tall" class="bar"/>
+            <path d="M25.832 27.464a2.345 2.345 0 0 0 4.678 0V2.249a2.342 2.342 0 0 0-4.678 0v25.215" id="bar_grande" class="bar"/>
+            <path d="M24.026 56.277v-5.002l-.098.043a9.253 9.253 0 0 1-3.605.915 5.303 5.303 0 0 1-3.63-1.07 4.644 4.644 0 0 1-1.58-2.244 5.395 5.395 0 0 1-.106-3 4.6 4.6 0 0 1 1.609-2.566 4.823 4.823 0 0 1 2.528-1.09 8.332 8.332 0 0 1 4.774.895l.108.056v-5.03l-.228-.061a12.78 12.78 0 0 0-4.552-.596 10.534 10.534 0 0 0-4.065.93 9.29 9.29 0 0 0-3.329 2.572 10.014 10.014 0 0 0-.182 12.18 9.546 9.546 0 0 0 5.292 3.403c2.211.538 4.528.456 6.697-.234l.367-.101" id="cisco_c"/>
+        </defs>
+        <g fill="#02C8FF" fill-rule="evenodd">
+            <use href="#cisco_c"/>
+            <use href="#cisco_c" x="49.5"/>
+            <path d="M41.69 52.125l-.019 4.308.315.054c.989.185 1.987.313 2.99.385a18.1 18.1 0 0 0 2.642.051c.842-.06 1.675-.218 2.48-.468a6.862 6.862 0 0 0 2.573-1.371 5.19 5.19 0 0 0 1.498-2.148 5.912 5.912 0 0 0-.03-4.324 4.852 4.852 0 0 0-1.343-1.862 5.568 5.568 0 0 0-1.97-1.147l-3.25-1.206a1.742 1.742 0 0 1-.887-.845 1.107 1.107 0 0 1 .036-.986 1.29 1.29 0 0 1 .217-.291 1.75 1.75 0 0 1 .48-.347c.363-.18.755-.293 1.158-.337a6.76 6.76 0 0 1 2.072.022c.81.088 1.613.231 2.402.43l.168.037v-3.974l-.31-.067a21.14 21.14 0 0 0-2.444-.435 12.545 12.545 0 0 0-3.213-.014 6.945 6.945 0 0 0-3.699 1.488 4.908 4.908 0 0 0-1.58 2.178 5.984 5.984 0 0 0-.003 4.05c.242.65.63 1.237 1.136 1.714.437.422.932.78 1.47 1.065.708.38 1.458.675 2.235.878.257.077.512.158.766.243l.385.141.11.045c.38.136.726.35 1.018.628.202.19.358.423.455.683.06.237.061.485.003.723a1.536 1.536 0 0 1-.744.892 3.691 3.691 0 0 1-1.239.387 9 9 0 0 1-1.92.097 21.973 21.973 0 0 1-2.507-.334c-.433-.09-.864-.19-1.291-.303l-.16-.04zM30.546 56.607h4.73V37.846h-4.73zM85.305 43.386a4.934 4.934 0 1 1 6.157 7.711 4.934 4.934 0 0 1-6.157-7.71m-6.867 3.848A9.87 9.87 0 0 0 90.44 56.72a9.629 9.629 0 0 0 3.157-17.729 9.934 9.934 0 0 0-15.16 8.244"/>
+            <use href="#bar_short" x="0"/>
+            <use href="#bar_tall" x="0"/>
+            <use href="#bar_grande" x="0"/>
+            <use href="#bar_tall" x="25.875"/>
+            <use href="#bar_short" x="51.75"/>
+            <use href="#bar_tall" x="51.75"/>
+            <use href="#bar_grande" x="51.75"/>
+            <use href="#bar_tall" x="77.625"/>
+            <use href="#bar_short" x="103.375"/>
+        </g>
+    </svg>
+</a>
+<div class="fw-c-header__nav" role="navigation">
+    
+<div data-c-version="DM:Core-Accordion:V0.0.0" id="accordion-5dd9235457" class="cmp-accordion" data-cmp-is="accordion" data-placeholder-text="false">
+    <div class="cmp-accordion__item" data-cmp-hook-accordion="item" id="accordion-5dd9235457-item-80272c0e79">
+        <h3 class="cmp-accordion__header">
+            <button id="accordion-5dd9235457-item-80272c0e79-button" class="cmp-accordion__button" aria-controls="accordion-5dd9235457-item-80272c0e79-panel" data-cmp-hook-accordion="button" aria-label="Products and Services">
+                <span class="cmp-accordion__title">Products and Services</span>
+                <span class="cmp-accordion__icon"></span>
+            </button>
+        </h3>
+        <div data-cmp-hook-accordion="panel" id="accordion-5dd9235457-item-80272c0e79-panel" class="cmp-accordion__panel cmp-accordion__panel--hidden" role="region" aria-labelledby="accordion-5dd9235457-item-80272c0e79-button"><div class="container responsivegrid">
+
+    
+    <div data-c-version="REI:Container (TO BE DEPRECATED):V0.0.0" id="container-94c066a12a" class="cmp-container   ">
+        
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="headerdrop header-dropdown aem-GridColumn aem-GridColumn--default--12"><div class="fw-c-header__dropdown-content" data-async-url="/content/experience-fragments/cdc/site/us/en/header/header---products/jcr:content/root"></div>
+
+<button type="button" class="fw-c-header__dropdown-close-button cmp-button" aria-label="Close">
+    <span class="cmp-button__icon"><svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><use href="#svg-x" stroke="#1b1c1d" stroke-width="2px"/></svg></span>
+    <span class="cmp-button__text">Close</span>
+</button>
+
+    
+
+</div>
+
+    
+</div>
+
+    </div>
+
+    
+</div>
+</div>
+    </div>
+<div class="cmp-accordion__item" data-cmp-hook-accordion="item" id="accordion-5dd9235457-item-f57cb5a340">
+        <h3 class="cmp-accordion__header">
+            <button id="accordion-5dd9235457-item-f57cb5a340-button" class="cmp-accordion__button" aria-controls="accordion-5dd9235457-item-f57cb5a340-panel" data-cmp-hook-accordion="button" aria-label="Solutions">
+                <span class="cmp-accordion__title">Solutions</span>
+                <span class="cmp-accordion__icon"></span>
+            </button>
+        </h3>
+        <div data-cmp-hook-accordion="panel" id="accordion-5dd9235457-item-f57cb5a340-panel" class="cmp-accordion__panel cmp-accordion__panel--hidden" role="region" aria-labelledby="accordion-5dd9235457-item-f57cb5a340-button"><div class="container responsivegrid">
+
+    
+    <div data-c-version="REI:Container (TO BE DEPRECATED):V0.0.0" id="container-9ea052ae24" class="cmp-container   ">
+        
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="headerdrop header-dropdown aem-GridColumn aem-GridColumn--default--12"><div class="fw-c-header__dropdown-content" data-async-url="/content/experience-fragments/cdc/site/us/en/header/header---solutions/jcr:content/root"></div>
+
+<button type="button" class="fw-c-header__dropdown-close-button cmp-button" aria-label="Close">
+    <span class="cmp-button__icon"><svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><use href="#svg-x" stroke="#1b1c1d" stroke-width="2px"/></svg></span>
+    <span class="cmp-button__text">Close</span>
+</button>
+
+    
+
+</div>
+
+    
+</div>
+
+    </div>
+
+    
+</div>
+</div>
+    </div>
+<div class="cmp-accordion__item" data-cmp-hook-accordion="item" id="accordion-5dd9235457-item-803d0a291a">
+        <h3 class="cmp-accordion__header">
+            <button id="accordion-5dd9235457-item-803d0a291a-button" class="cmp-accordion__button" aria-controls="accordion-5dd9235457-item-803d0a291a-panel" data-cmp-hook-accordion="button" aria-label="Support">
+                <span class="cmp-accordion__title">Support</span>
+                <span class="cmp-accordion__icon"></span>
+            </button>
+        </h3>
+        <div data-cmp-hook-accordion="panel" id="accordion-5dd9235457-item-803d0a291a-panel" class="cmp-accordion__panel cmp-accordion__panel--hidden" role="region" aria-labelledby="accordion-5dd9235457-item-803d0a291a-button"><div class="container responsivegrid">
+
+    
+    
+    
+    <div data-c-version="REI:Container (TO BE DEPRECATED):V0.0.0" id="container-de07938c94" class="cmp-container  ">
+        
+        <div class="headerdrop header-dropdown"><div class="fw-c-header__dropdown-content" data-async-url="/content/experience-fragments/cdc/site/us/en/header/header---support/jcr:content/root"></div>
+
+<button type="button" class="fw-c-header__dropdown-close-button cmp-button" aria-label="Close">
+    <span class="cmp-button__icon"><svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><use href="#svg-x" stroke="#1b1c1d" stroke-width="2px"/></svg></span>
+    <span class="cmp-button__text">Close</span>
+</button>
+
+    
+
+</div>
+
+        
+    </div>
+
+</div>
+</div>
+    </div>
+<div class="cmp-accordion__item" data-cmp-hook-accordion="item" id="accordion-5dd9235457-item-3265282a49">
+        <h3 class="cmp-accordion__header">
+            <button id="accordion-5dd9235457-item-3265282a49-button" class="cmp-accordion__button" aria-controls="accordion-5dd9235457-item-3265282a49-panel" data-cmp-hook-accordion="button" aria-label="Learn">
+                <span class="cmp-accordion__title">Learn</span>
+                <span class="cmp-accordion__icon"></span>
+            </button>
+        </h3>
+        <div data-cmp-hook-accordion="panel" id="accordion-5dd9235457-item-3265282a49-panel" class="cmp-accordion__panel cmp-accordion__panel--hidden" role="region" aria-labelledby="accordion-5dd9235457-item-3265282a49-button"><div class="container responsivegrid">
+
+    
+    
+    
+    <div data-c-version="REI:Container (TO BE DEPRECATED):V0.0.0" id="container-347486ef9a" class="cmp-container  ">
+        
+        <div class="headerdrop header-dropdown"><div class="fw-c-header__dropdown-content" data-async-url="/content/experience-fragments/cdc/site/us/en/header/header---learn/jcr:content/root"></div>
+
+<button type="button" class="fw-c-header__dropdown-close-button cmp-button" aria-label="Close">
+    <span class="cmp-button__icon"><svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><use href="#svg-x" stroke="#1b1c1d" stroke-width="2px"/></svg></span>
+    <span class="cmp-button__text">Close</span>
+</button>
+
+    
+
+</div>
+
+        
+    </div>
+
+</div>
+</div>
+    </div>
+<div class="cmp-accordion__item" data-cmp-hook-accordion="item" id="accordion-5dd9235457-item-6a02659bbc">
+        <h3 class="cmp-accordion__header">
+            <button id="accordion-5dd9235457-item-6a02659bbc-button" class="cmp-accordion__button" aria-controls="accordion-5dd9235457-item-6a02659bbc-panel" data-cmp-hook-accordion="button" aria-label="Why Cisco">
+                <span class="cmp-accordion__title">Why Cisco</span>
+                <span class="cmp-accordion__icon"></span>
+            </button>
+        </h3>
+        <div data-cmp-hook-accordion="panel" id="accordion-5dd9235457-item-6a02659bbc-panel" class="cmp-accordion__panel cmp-accordion__panel--hidden" role="region" aria-labelledby="accordion-5dd9235457-item-6a02659bbc-button"><div class="container responsivegrid">
+
+    
+    
+    
+    <div data-c-version="DM:Container:V1.0.1" id="container-56a8dcffc4" class="cmp-container  ">
+        
+        <div class="header-dropdown"><div class="fw-c-header__dropdown-content" data-async-url="/content/experience-fragments/cdc/site/us/en/header/header-why-cisco/jcr:content/root"></div>
+
+<button type="button" class="fw-c-header__dropdown-close-button cmp-button" aria-label="Close">
+    <span class="cmp-button__icon"><svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><use href="#svg-x" stroke="#1b1c1d" stroke-width="2px"/></svg></span>
+    <span class="cmp-button__text">Close</span>
+</button>
+
+    
+
+</div>
+
+        
+    </div>
+
+</div>
+</div>
+    </div>
+
+    
+</div>
+
+    <div id="fw-c-header__nav-accordion--partner">
+        
+<div data-c-version="DM:Core-Accordion:V0.0.0" id="partnerdropdown" class="cmp-accordion" data-cmp-is="accordion" data-placeholder-text="false">
+    <div class="cmp-accordion__item" data-cmp-hook-accordion="item" id="partnerdropdown-item-2d6591fff1">
+        <h3 class="cmp-accordion__header">
+            <button id="partnerdropdown-item-2d6591fff1-button" class="cmp-accordion__button" aria-controls="partnerdropdown-item-2d6591fff1-panel" data-cmp-hook-accordion="button" aria-label="Partners">
+                <span class="cmp-accordion__title">Partners</span>
+                <span class="cmp-accordion__icon"></span>
+            </button>
+        </h3>
+        <div data-cmp-hook-accordion="panel" id="partnerdropdown-item-2d6591fff1-panel" class="cmp-accordion__panel cmp-accordion__panel--hidden" role="region" aria-labelledby="partnerdropdown-item-2d6591fff1-button"><div class="container responsivegrid">
+
+    
+    
+    
+    <div data-c-version="REI:Container (TO BE DEPRECATED):V0.0.0" id="container-d4c4988f81" class="cmp-container  ">
+        
+        <div class="headerdrop header-dropdown"><div class="fw-c-header__dropdown-content" data-async-url="/content/experience-fragments/cdc/site/us/en/header/header---partners/jcr:content/root"></div>
+
+<button type="button" class="fw-c-header__dropdown-close-button cmp-button" aria-label="Close">
+    <span class="cmp-button__icon"><svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><use href="#svg-x" stroke="#1b1c1d" stroke-width="2px"/></svg></span>
+    <span class="cmp-button__text">Close</span>
+</button>
+
+    
+
+</div>
+
+        
+    </div>
+
+</div>
+</div>
+    </div>
+
+    
+</div>
+
+    </div>
+
+    <div class="fw-c-header__tophat --mobile">
+        
+    <div id="fw-c-header__button--explore--mobile" class="fw-c-header__button --explore --mobile">
+        <span class="cds-c-cta__wrapper">
+    <a data-c-version="DM:Button (V2):V2.4.1" id="button-47c6bf6ca4" class="cds-c-cta cds-c-cta--secondary cds-c-cta--small" href="/site/us/en/products/trials-demos.html?linkclickid=hdr-mainnav-trialsdemos" aria-label="Trials and demos" target="_self">
+    
+<span class="cmp-button__text">Trials and demos</span></a>
+</span>
+    </div>
+
+    <div id="fw-c-header__button--buy--mobile" class="fw-c-header__button --buy --mobile">
+        <span class="cds-c-cta__wrapper">
+    <a data-c-version="DM:Button (V2):V2.4.1" id="button-3a8243cd92" href="/site/us/en/buy/index.html?linkclickid=hdr-utilnav-howtobuy" aria-label="How to buy" target="_self">
+    
+<span class="cmp-button__text">How to buy</span></a>
+</span>
+    </div>
+
+    <div id="fw-c-header__button--partner--mobile" class="fw-c-header__button --partner --mobile">
+        <span class="cds-c-cta__wrapper">
+    <button data-c-version="DM:Button (V2):V2.4.1" type="button" id="button-91330903ea" aria-label="Partners">
+    
+<span class="cmp-button__text">Partners</span></button>
+</span>
+    </div>
+
+    <div id="fw-c-header__button--language--mobile" class="fw-c-header__button --language --mobile">
+        <span class="cds-c-cta__wrapper">
+    <button data-c-version="DM:Button (V2):V2.4.1" type="button" id="button-8d23ebc448" aria-label="Language selection: United States – English">
+    <span class="cmp-button__icon cmp-button__icon--icon" aria-hidden="true"></span>
+<span class="cmp-button__text">EN US</span></button>
+</span>
+    </div>
+
+    </div>
+</div>
+<div class="fw-c-header__utilities">
+    
+        
+            
+                
+    <div id="fw-c-header__button--profile--mobile" class="fw-c-header__button --profile --mobile">
+        <span class="cds-c-cta__wrapper">
+    <button data-c-version="DM:Button (V2):V2.4.1" type="button" id="button-44be77f1e6">
+    
+<span class="cmp-button__text">Profile</span></button>
+</span>
+    </div>
+
+            
+        
+    
+        
+            
+                
+    <div id="fw-c-header__button--login--mobile" class="fw-c-header__button --login --mobile">
+        <span class="cds-c-cta__wrapper">
+    <a data-c-version="DM:Button (V2):V2.4.1" id="button-1b06c0f7fd" href="/content/cdc/login.html?referer=" aria-label="Log in" data-init-button="true" data-isloginurl="true" rel="nofollow" target="_self">
+    <span class="cmp-button__icon cmp-button__icon--icon" aria-hidden="true"></span>
+<span class="cmp-button__text">Log in</span></a>
+</span>
+    </div>
+
+            
+        
+    
+        
+            <section id="container-header-button" class="fw-u-bullseye__targetable --hidden">
+                
+    <div id="fw-c-header__button--explore--desktop" class="fw-c-header__button --explore --desktop">
+        <span class="cds-c-cta__wrapper">
+    <a data-c-version="DM:Button (V2):V2.4.1" id="button-47c6bf6ca4" class="cds-c-cta cds-c-cta--secondary cds-c-cta--small" href="/site/us/en/products/trials-demos.html?linkclickid=hdr-mainnav-trialsdemos" aria-label="Trials and demos" target="_self">
+    
+<span class="cmp-button__text">Trials and demos</span></a>
+</span>
+    </div>
+
+            </section>
+        
+    
+        
+            
+                
+    <div id="fw-c-header__button--search--mobile" class="fw-c-header__button --search --mobile">
+        <span class="cds-c-cta__wrapper">
+    <button data-c-version="DM:Button (V2):V2.4.1" type="button" id="button-a49ce4dc20" aria-label="Search" data-config-metrics-item="Open search">
+    <span class="cmp-button__icon cmp-button__icon--icon" aria-hidden="true"></span>
+</button>
+</span>
+    </div>
+
+            
+        
+    
+</div>
+<button class="fw-c-header__nav-button cmp-button" id="fw-c-header__nav-button" aria-haspopup="true" aria-expanded="false" aria-labelledby="fw-c-header__nav-button-label">
+    <div>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <div class="fw-c-header__nav-button-label --active" id="fw-c-header__nav-button-label">MENU</div>
+    <div class="fw-c-header__nav-button-label" id="fw-c-header__nav-button-label--close">CLOSE</div>
+</button></div>
+    <div class="fw-c-header__tophat">
+
+    <div id="fw-c-header__button--buy--desktop" class="fw-c-header__button --buy --desktop">
+        <span class="cds-c-cta__wrapper">
+    <a data-c-version="DM:Button (V2):V2.4.1" id="button-3a8243cd92" href="/site/us/en/buy/index.html?linkclickid=hdr-utilnav-howtobuy" aria-label="How to buy" target="_self">
+    
+<span class="cmp-button__text">How to buy</span></a>
+</span>
+    </div>
+
+    <div id="fw-c-header__button--partner--desktop" class="fw-c-header__button --partner --desktop">
+        <span class="cds-c-cta__wrapper">
+    <button data-c-version="DM:Button (V2):V2.4.1" type="button" id="button-91330903ea" aria-label="Partners">
+    
+<span class="cmp-button__text">Partners</span></button>
+</span>
+    </div>
+
+    <div id="fw-c-header__button--profile--desktop" class="fw-c-header__button --profile --desktop">
+        <span class="cds-c-cta__wrapper">
+    <button data-c-version="DM:Button (V2):V2.4.1" type="button" id="button-44be77f1e6">
+    
+<span class="cmp-button__text">Profile</span></button>
+</span>
+    </div>
+
+    <div id="fw-c-header__button--login--desktop" class="fw-c-header__button --login --desktop">
+        <span class="cds-c-cta__wrapper">
+    <a data-c-version="DM:Button (V2):V2.4.1" id="button-1b06c0f7fd" href="/content/cdc/login.html?referer=" aria-label="Log in" data-init-button="true" data-isloginurl="true" rel="nofollow" target="_self">
+    <span class="cmp-button__icon cmp-button__icon--icon" aria-hidden="true"></span>
+<span class="cmp-button__text">Log in</span></a>
+</span>
+    </div>
+
+    <div id="fw-c-header__button--language--desktop" class="fw-c-header__button --language --desktop">
+        <span class="cds-c-cta__wrapper">
+    <button data-c-version="DM:Button (V2):V2.4.1" type="button" id="button-8d23ebc448" aria-label="Language selection: United States – English">
+    <span class="cmp-button__icon cmp-button__icon--icon" aria-hidden="true"></span>
+<span class="cmp-button__text">EN US</span></button>
+</span>
+    </div>
+</div>
+    <div class="fw-c-header__overlay">
+
+    <div id="fw-c-header__dropdown--search" class="fw-c-header__dropdown --search">
+        <div class="fw-c-header__dropdown-content" data-async-url="/content/experience-fragments/cdc/site/us/en/header/header---search-dropdown/jcr:content/root"></div>
+
+<button type="button" class="fw-c-header__dropdown-close-button cmp-button" aria-label="Close">
+    <span class="cmp-button__icon"><svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><use href="#svg-x" stroke="#1b1c1d" stroke-width="2px"/></svg></span>
+    <span class="cmp-button__text">Close</span>
+</button>
+
+    
+
+
+    </div>
+
+    <div id="fw-c-header__dropdown--partner" class="fw-c-header__dropdown --partner">
+        <div class="fw-c-header__dropdown-content" data-async-url="/content/experience-fragments/cdc/site/us/en/header/header---partners-dropdown/jcr:content/root"></div>
+
+<button type="button" class="fw-c-header__dropdown-close-button cmp-button" aria-label="Close">
+    <span class="cmp-button__icon"><svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><use href="#svg-x" stroke="#1b1c1d" stroke-width="2px"/></svg></span>
+    <span class="cmp-button__text">Close</span>
+</button>
+
+    
+
+
+    </div>
+
+    <div id="fw-c-header__dropdown--profile" class="fw-c-header__dropdown --profile">
+        <div class="fw-c-header__dropdown-content" data-async-url="/content/experience-fragments/cdc/site/us/en/header/header---login-dropdown/jcr:content/root"></div>
+
+<button type="button" class="fw-c-header__dropdown-close-button cmp-button" aria-label="Close">
+    <span class="cmp-button__icon"><svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><use href="#svg-x" stroke="#1b1c1d" stroke-width="2px"/></svg></span>
+    <span class="cmp-button__text">Close</span>
+</button>
+
+    
+
+
+    </div>
+
+    <div id="fw-c-header__dropdown--language" class="fw-c-header__dropdown --language">
+        <div class="fw-c-header__dropdown-content" data-async-url="/content/experience-fragments/cdc/site/us/en/header/header---lang-dropdown/jcr:content/root"></div>
+
+<button type="button" class="fw-c-header__dropdown-close-button cmp-button" aria-label="Close">
+    <span class="cmp-button__icon"><svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><use href="#svg-x" stroke="#1b1c1d" stroke-width="2px"/></svg></span>
+    <span class="cmp-button__text">Close</span>
+</button>
+
+    
+
+
+    </div>
+
+    <div id="fw-c-header__dropdown--buy" class="fw-c-header__dropdown --buy">
+        <div class="fw-c-header__dropdown-content"></div>
+
+<button type="button" class="fw-c-header__dropdown-close-button cmp-button" aria-label="Close">
+    <span class="cmp-button__icon"><svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><use href="#svg-x" stroke="#1b1c1d" stroke-width="2px"/></svg></span>
+    <span class="cmp-button__text">Close</span>
+</button>
+
+    
+
+
+    </div>
+</div>
+</header>
+</div>
+<div class="htmlpassthrough aem-GridColumn aem-GridColumn--default--12"><cds-html id="htmlpassthrough-a0e1ebeacf" class="cds-c-html " data-c-version="DM:HTML Passthrough:V2.0.1">
+     
+	 <template id="fw-c-header__cta--template">
+</template>
+
+<!-- This HTML passthrough is placed here so that Trials and Demos button does not appear for Partner entitlement only -->
+
+<style id="fw-c-header__cta--hidden">
+    #fw-c-header__button--explore--desktop {
+        display: none;
+    }
+</style>
+	 
+</cds-html>
+
+    
+</div>
+<div class="experiencefragment aem-GridColumn aem-GridColumn--default--12">
+
+
+    
+</div>
+
+    
+</div>
+</div>
+
+    
+</div>
+
+    </div>
+
+    
+</div>
+
+    
+</div>
+<div class="responsivegrid aem-GridColumn aem-GridColumn--default--12">
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="experiencefragment aem-GridColumn aem-GridColumn--default--12">
+
+
+    
+</div>
+<div class="experiencefragment aem-GridColumn aem-GridColumn--default--12">
+<div data-c-version="DM:Experience Fragment V2:V0.0.0" id="let-us-help-guest-enabled" class="cmp-experiencefragment cmp-experiencefragment--let-us-help-">
+
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="experiencefragment aem-GridColumn aem-GridColumn--default--12">
+<div data-c-version="DM:Experience Fragment V2:V0.0.0" id="experiencefragment-ce649417b8" class="cmp-experiencefragment cmp-experiencefragment--chat-selector">
+
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="chatwidgetselector aem-GridColumn aem-GridColumn--default--12">
+
+
+
+<cds-html id="htmlpassthrough-0aee1a81d5" class="cds-c-html " data-c-version="DM:HTML Passthrough:V2.0.1">
+     
+	 <!-- Version 4.0.0 | 2026-10-15 -->
+<link rel="stylesheet" crossorigin href="/c/dam/cdc/framework/modal-chat/4.0.0/chat.lgc-nA9u2E0k-lgc.css">
+<script type="module" crossorigin src="/c/dam/cdc/framework/modal-chat/4.0.0/chat.lgc-l8wH1Jb0-lgc.js"></script>
+<span id="fw-c-modal-chat-launcher-tooltip" class="fw-u-modal-chat-container fw-c-modal-chat-launcher-tooltip fw-c-tooltip --flex-left" is="muse-tooltip">
+                    <button id="fw-c-modal-chat-launcher-tooltip__control" class="fw-c-modal-chat-launcher fw-c-tooltip__control fw-c-button --no-gap" aria-label="Open chat" title="Open chat" aria-controls="fw-c-modal-chat" is="muse-modal-chat-launcher" data-config-metrics-group="uber assistant" data-config-metrics-title="close view" aria-describedby="fw-c-modal-chat-launcher-tooltip-popover" data-config-metrics-item="open uber assistant">
+                        <span class="fw-c-button__icon --cisco-smiley"></span>
+                        <span class="fw-c-button__text"></span>
+                    </button>
+                    <span class="fw-c-tooltip__popover-container">
+                        <span id="fw-c-modal-chat-launcher-tooltip-popover" class="fw-c-tooltip__popover fw-c-flex-container --horizontal" role="tooltip">
+                            <span class="fw-c-button__icon --ai"></span>Hello, how can I help?
+                        </span>
+                    </span>
+                </span>
+
+                <dialog id="fw-c-modal-chat" class="fw-u-modal-chat-container fw-c-chat --modal" is="muse-modal-chat" data-config-metrics-group="uber assistant" data-config-metrics-title="narrow view">
+                    <div class="fw-c-chat__header">
+                        <button class="fw-c-chat__control --menu fw-c-chat__menu-control fw-c-button --no-gap" aria-label="Open chat menu" aria-controls="fw-c-modal-chat__menu" aria-expanded="false" title="Open chat menu" data-config-metrics-item="open menu">
+                            <span class="fw-c-button__icon --menu"></span>
+                            <span class="fw-c-button__text"></span>
+                        </button>
+                        <h6 class="fw-c-headline --title-reduced">Ask Cisco</h6>
+                        <div class="fw-c-chat__controls">
+                            <span class="fw-c-chat__wide-content-hint-tooltip fw-c-tooltip --bottom --right --min-width-auto" is="muse-tooltip">
+                                <button id="fw-c-modal-chat__wide-content-hint-tooltip-control" class="fw-c-chat__control fw-c-chat__wide-content-hint-tooltip-control fw-c-tooltip__control --maximize fw-c-button --no-gap" aria-describedby="fw-c-modal-chat__wide-content-hint-tooltip-popover" aria-label="Maximize" data-config-metrics-item="maximize uber assistant"  title="Maximize">
+                                    <span class="fw-c-button__icon --enlarge"></span>
+                                    <span class="fw-c-button__text"></span>
+                                </button>
+                                <span class="fw-c-tooltip__popover-container">
+                                    <span id="fw-c-modal-chat__wide-content-hint-tooltip-popover" class="fw-c-chat__wide-content-hint-tooltip-popover fw-c-tooltip__popover" role="tooltip">
+                                        <span class="fw-c-chat__wide-content-hint-tooltip-content">
+                                            <span class="fw-c-chat__wide-content-hint-tooltip-text">Expand the window to see more details and enjoy a clearer chat!</span>
+                                        </span>
+                                    </span>
+                                </span>
+                            </span>
+                            <button class="fw-c-chat__control --minimize fw-c-button --no-gap" aria-label="Minimize" data-config-metrics-item="narrow uber assistant" title="Minimize">
+                                <span class="fw-c-button__icon --reduce"></span>
+                                <span class="fw-c-button__text"></span>
+                            </button>
+                            <button class="fw-c-chat__control --collapse fw-c-button --no-gap" aria-label="Collapse chat" title="Collapse chat" data-config-metrics-item="close uber assistant">
+                                <span class="fw-c-button__icon --minus"></span>
+                                <span class="fw-c-button__text"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="fw-c-modal-chat__menu" class="fw-c-chat__menu --hidden" aria-hidden="true">
+                        <ul class="fw-c-chat__menu-list">
+                            <li class="fw-c-chat__menu-list-item">
+                                <button type="button" class="fw-c-chat__menu-item --reset-chat fw-c-button --text --small --no-gap" data-config-metrics-item="reset chat" disabled>
+                                    <span class="fw-c-button__icon --reset"></span>
+                                    <span class="fw-c-button__text">Reset chat</span>
+                                </button>
+                            </li>
+                            <li class="fw-c-chat__menu-list-item">
+                                <button type="button" class="fw-c-chat__menu-item --download-transcript fw-c-button --text --small --no-gap" data-config-metrics-item="download transcript">
+                                    <span class="fw-c-button__icon --download"></span>
+                                    <span class="fw-c-button__text">
+                                        <span>Download transcript</span>
+                                    </span>
+                                </button>
+                            </li>
+                            <li class="fw-c-chat__menu-list-item">
+                                <a class="fw-c-chat__menu-item fw-c-button --ai-faq --text --small --no-gap" href="https://www.cisco.com/site/us/en/about/help/ai-faq.html" target="_blank" rel="noopener noreferrer" data-config-metrics-item="ai faq">
+                                    <span class="fw-c-button__icon --jump-out"></span>
+                                    <span class="fw-c-button__text">AI FAQ</span>
+                                </a>
+                            </li>
+                            <li class="fw-c-chat__menu-list-item --push-end">
+                                <div class="fw-c-chat__menu-item --login">
+                                    <a class="fw-c-chat__control --login fw-c-button --text --small --no-gap" href="#" data-config-metrics-item="log in">
+                                        <span class="fw-c-button__icon --user"></span>
+                                        <span class="fw-c-button__text">Log in</span>
+                                    </a>
+                                    <a class="fw-c-chat__control --profile fw-c-button --no-gap --hidden" href="#" data-config-metrics-item="log out">
+                                        <span class="fw-c-button__text">UN</span>
+                                        <span>Log out</span>
+                                    </a>
+                                </div>
+                            </li>
+                            <li class="fw-c-chat__menu-list-item">
+                                <div class="fw-c-chat__feedback">
+                                    <p>Rate your experience:</p>
+                                    <span is="muse-tooltip" class="fw-c-tooltip --min-width-auto --bottom --center">
+                                        <a class="fw-c-chat__feedback-item fw-c-tooltip__control fw-c-button --no-gap" href="https://ciscocx.qualtrics.com/jfe/form/SV_8Bu9KmzrohUSltc" target="_blank" rel="noopener noreferrer" aria-label="Helpful" data-config-metrics-item="helpful">
+                                            <span class="fw-c-button__icon --thumbs-up"></span>
+                                            <span class="fw-c-button__text"></span>
+                                        </a>
+                                        <span class="fw-c-tooltip__popover-container">
+                                            <span class="fw-c-tooltip__popover" role="tooltip">
+                                                Helpful
+                                            </span>
+                                        </span>
+                                    </span>
+                                    <span is="muse-tooltip" class="fw-c-tooltip --min-width-auto --bottom --center">
+                                        <a class="fw-c-chat__feedback-item fw-c-tooltip__control fw-c-button --no-gap" href="https://ciscocx.qualtrics.com/jfe/form/SV_8rmfXKDd6pISWbk" target="_blank" rel="noopener noreferrer" aria-label="Unhelpful" data-config-metrics-item="unhelpful">
+                                            <span class="fw-c-button__icon --thumbs-down"></span>
+                                            <span class="fw-c-button__text"></span>
+                                        </a>
+                                        <span class="fw-c-tooltip__popover-container">
+                                            <span class="fw-c-tooltip__popover" role="tooltip">
+                                                Unhelpful
+                                            </span>
+                                        </span>
+                                    </span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="fw-c-chat__conversation" aria-live="polite">
+                        <div class="fw-c-chat__message-list">
+                            <div class="fw-c-chat__conversation-bottom"></div>
+                        </div>
+                        <button class="fw-c-chat__jump-to-bottom fw-c-button --no-gap --hidden" aria-hidden="true" aria-label="Jump to bottom" title="Jump to bottom">
+                            <span class="fw-c-button__icon --arrow-down"></span>
+                            <span class="fw-c-button__text"></span>
+                        </button>
+                        <div class="fw-c-chat__loading fw-c-button --hidden">
+                            <span class="fw-c-button__icon --loading"></span>
+                            <span class="fw-c-button__text"></span>
+                        </div>
+                    </div>
+                    <form class="fw-c-chat__form fw-c-input --has-icon --reduced">
+                        <div class="fw-c-input__container">
+                            <div class="fw-c-input__inputs">
+                                <label class="fw-c-input__label" for="fw-c-modal-chat__form-field">Label</label>
+                                <input aria-autocomplete="none"
+                                    autocapitalize="off"
+                                    autocomplete="off"
+                                    autocorrect="off"
+                                    class="fw-c-chat__form-field fw-c-input__field"
+                                    id="fw-c-modal-chat__form-field"
+                                    maxlength="2000"
+                                    name="chat-input"
+                                    placeholder="Type your message"
+                                    spellcheck="false"
+                                    type="text"/>
+                            </div>
+                            <div class="fw-c-input__buttons">
+                                <button type="button" aria-label="Clear" class="fw-c-chat__form-button fw-c-input__button --clear --hidden fw-c-button --no-gap" title="Clear">
+                                    <span class="fw-c-button__icon --fail-fill"></span>
+                                    <span class="fw-c-button__text"></span>
+                                </button>
+                                <button type="submit" aria-label="Send message" class="fw-c-chat__form-button fw-c-input__button --submit fw-c-button --no-gap" disabled title="Send message" data-config-metrics-item="send chat message">
+                                    <span class="fw-c-button__icon --send"></span>
+                                    <span class="fw-c-button__text"></span>
+                                </button>
+                                <button type="button" aria-label="Stop download" class="fw-c-chat__form-button fw-c-input__button --stop --hidden fw-c-button --no-gap" title="Stop download" data-config-metrics-item="stop transcript download">
+                                    <span class="fw-c-button__icon --stop"></span>
+                                    <span class="fw-c-button__text"></span>
+                                </button>
+                            </div>
+                            <div class="fw-c-chat__form-attachment-chip --hidden">
+                                <span class="fw-c-chat__form-attachment-chip-name"></span>
+                                <button type="button" class="fw-c-chat__form-attachment-chip-remove fw-c-button --no-gap" aria-label="Remove attachment" title="Remove attachment">
+                                    <span class="fw-c-button__icon --close"></span>
+                                    <span class="fw-c-button__text"></span>
+                                </button>
+                            </div>
+                        </div>
+                        <input type="file"
+                            class="fw-c-chat__form-file-input"
+                            aria-hidden="true"
+                            tabindex="-1" />
+                    </form>
+                    <div class="fw-c-chat__footer">
+                        <div class="fw-c-chat__action-bar">
+                            <button type="button" class="fw-c-chat__upload-button fw-c-button --text --small --hidden" data-config-metrics-item="attach file">
+                                <span class="fw-c-button__icon --attachment"></span>
+                                <span class="fw-c-button__text">Attach</span>
+                            </button>
+                            <button type="button" class="fw-c-chat__end-live-chat-button fw-c-button --text --small --hidden" data-config-metrics-item="end live chat">
+                                <span class="fw-c-button__icon --fail-fill"></span>
+                                <span class="fw-c-button__text">End live chat</span>
+                            </button>
+                        </div>
+                        <p class="fw-c-chat__disclosure">Results generated by AI. Before using results, verify accuracy and completeness.</p>
+                    </div>
+                    <dialog class="fw-c-chat__dialog" role="alertdialog"></dialog>
+                    <div class="fw-c-chat__dialog-overlay"></div>
+                    <div class="fw-c-chat__templates">
+                        <template class="fw-c-chat__template --message">
+                            <div class="fw-c-chat__message">
+                                <div class="fw-c-chat__message-body">
+                                    <div class="fw-c-chat__message-text fw-s-markdown"></div>
+                                    <div class="fw-c-chat__message-attachments"></div>
+                                </div>
+                                <div class="fw-c-chat__message-metadata">
+                                    <div class="fw-c-chat__message-author"></div>
+                                    <div class="fw-c-chat__message-timestamp">00:00</div>
+                                </div>
+                                <div class="fw-c-chat__message-actions --hidden">
+                                    <span is="muse-tooltip" class="fw-c-chat__copy-tooltip fw-c-tooltip --min-width-auto --bottom --center">
+                                        <button class="fw-c-chat__message-action --copy fw-c-tooltip__control fw-c-button --no-gap" data-action="copy" data-config-metrics-item="Copy" aria-label="Copy">
+                                            <span class="fw-c-button__icon --copy"></span>
+                                            <span class="fw-c-button__text"></span>
+                                        </button>
+                                        <span class="fw-c-tooltip__popover-container">
+                                            <span class="fw-c-tooltip__popover" role="tooltip">Copy</span>
+                                        </span>
+                                    </span>
+                                    <div class="fw-c-modal-chat-feedback --hidden" is="muse-modal-chat-feedback">
+                                        <div class="fw-c-modal-chat-feedback__item --helpful" data-rating-item="helpful" id="feedback-3-helpful">
+                                            <div class="fw-c-modal-chat-feedback__header">
+                                                <span is="muse-tooltip" class="fw-c-modal-chat-feedback__tooltip fw-c-tooltip --min-width-auto --bottom --center">
+                                                    <button type="button" class="fw-c-modal-chat-feedback__button fw-c-chat__message-action --thumbs-up fw-c-tooltip__control fw-c-button --no-gap" id="feedback-3-helpful-button" data-rating-value="helpful" data-config-metrics-item="Helpful" aria-controls="feedback-3-helpful-panel" aria-expanded="false" aria-label="Helpful">
+                                                        <span class="fw-c-button__icon --thumbs-up"></span>
+                                                        <span class="fw-c-button__text"></span>
+                                                    </button>
+                                                    <span class="fw-c-tooltip__popover-container">
+                                                        <span class="fw-c-tooltip__popover" role="tooltip">Helpful</span>
+                                                    </span>
+                                                </span>
+                                            </div>
+                                            <div class="fw-c-modal-chat-feedback__panel --hidden" id="feedback-3-helpful-panel" role="region" aria-hidden="true" aria-labelledby="feedback-3-helpful-button">
+                                                <p class="fw-c-modal-chat-feedback__status" aria-live="polite"></p>
+                                                <form class="fw-c-modal-chat-feedback__form">
+                                                    <div class="fw-c-modal-chat-feedback__comment-input fw-c-input --textarea" is="muse-input">
+                                                        <div class="fw-c-input__container">
+                                                            <div class="fw-c-input__inputs">
+                                                                <textarea class="fw-c-modal-chat-feedback__comment fw-c-input__field" id="feedback-3-helpful-comment" name="comment" placeholder="Tell us more about your experience..." maxlength="1000" rows="3"></textarea>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <button class="fw-c-modal-chat-feedback__submit fw-c-button --input --small --no-gap" type="submit" disabled>
+                                                        <span class="fw-c-button__icon"></span>
+                                                        <span class="fw-c-button__text">Submit</span>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                        <div class="fw-c-modal-chat-feedback__item --unhelpful" data-rating-item="unhelpful" id="feedback-3-unhelpful">
+                                            <div class="fw-c-modal-chat-feedback__header">
+                                                <span is="muse-tooltip" class="fw-c-modal-chat-feedback__tooltip fw-c-tooltip --min-width-auto --bottom --center">
+                                                    <button type="button" class="fw-c-modal-chat-feedback__button fw-c-chat__message-action --thumbs-down fw-c-tooltip__control fw-c-button --no-gap" id="feedback-3-unhelpful-button" data-rating-value="unhelpful" data-config-metrics-item="Unhelpful" aria-controls="feedback-3-unhelpful-panel" aria-expanded="false" aria-label="Unhelpful">
+                                                        <span class="fw-c-button__icon --thumbs-down"></span>
+                                                        <span class="fw-c-button__text"></span>
+                                                    </button>
+                                                    <span class="fw-c-tooltip__popover-container">
+                                                        <span class="fw-c-tooltip__popover" role="tooltip">Unhelpful</span>
+                                                    </span>
+                                                </span>
+                                            </div>
+                                            <div class="fw-c-modal-chat-feedback__panel --hidden" id="feedback-3-unhelpful-panel" role="region" aria-hidden="true" aria-labelledby="feedback-3-unhelpful-button">
+                                                <p class="fw-c-modal-chat-feedback__status" aria-live="polite"></p>
+                                                <form class="fw-c-modal-chat-feedback__form">
+                                                    <div class="fw-c-modal-chat-feedback__prompt" id="feedback-3-unhelpful-prompt">Please select the option that best represents your experience today:</div>
+                                                    <div class="fw-c-checkbox --radio-group --vertical" is="muse-checkbox" id="feedback-3-reasons" data-single-selection="true" aria-labelledby="feedback-3-unhelpful-prompt">
+                                                        <fieldset class="fw-c-checkbox__fieldset" role="radiogroup" aria-labelledby="feedback-3-unhelpful-prompt">
+                                                            <ul class="fw-c-checkbox__group">
+                                                                <li class="fw-c-checkbox__item" aria-checked="false" id="feedback-3-reasons__item-1" role="radio">
+                                                                    <label class="fw-c-checkbox__label" for="feedback-3-reasons__item-1-input" id="feedback-3-reasons__item-1-label">
+                                                                        <span>Inaccurate</span>
+                                                                        <input class="fw-c-checkbox__input" value="Inaccurate" id="feedback-3-reasons__item-1-input" name="reason" type="radio">
+                                                                    </label>
+                                                                </li>
+                                                                <li class="fw-c-checkbox__item" aria-checked="false" id="feedback-3-reasons__item-2" role="radio">
+                                                                    <label class="fw-c-checkbox__label" for="feedback-3-reasons__item-2-input" id="feedback-3-reasons__item-2-label">
+                                                                        <span>Outdated</span>
+                                                                        <input class="fw-c-checkbox__input" value="Outdated" id="feedback-3-reasons__item-2-input" name="reason" type="radio">
+                                                                    </label>
+                                                                </li>
+                                                                <li class="fw-c-checkbox__item" aria-checked="false" id="feedback-3-reasons__item-3" role="radio">
+                                                                    <label class="fw-c-checkbox__label" for="feedback-3-reasons__item-3-input" id="feedback-3-reasons__item-3-label">
+                                                                        <span>Confusing</span>
+                                                                        <input class="fw-c-checkbox__input" value="Confusing" id="feedback-3-reasons__item-3-input" name="reason" type="radio">
+                                                                    </label>
+                                                                </li>
+                                                                <li class="fw-c-checkbox__item" aria-checked="false" id="feedback-3-reasons__item-4" role="radio">
+                                                                    <label class="fw-c-checkbox__label" for="feedback-3-reasons__item-4-input" id="feedback-3-reasons__item-4-label">
+                                                                        <span>Incomplete</span>
+                                                                        <input class="fw-c-checkbox__input" value="Incomplete" id="feedback-3-reasons__item-4-input" name="reason" type="radio">
+                                                                    </label>
+                                                                </li>
+                                                                <li class="fw-c-checkbox__item" aria-checked="false" id="feedback-3-reasons__item-5" role="radio">
+                                                                    <label class="fw-c-checkbox__label" for="feedback-3-reasons__item-5-input" id="feedback-3-reasons__item-5-label">
+                                                                        <span>Formatting issue</span>
+                                                                        <input class="fw-c-checkbox__input" value="Formatting issue" id="feedback-3-reasons__item-5-input" name="reason" type="radio">
+                                                                    </label>
+                                                                </li>
+                                                                <li class="fw-c-checkbox__item" aria-checked="false" id="feedback-3-reasons__item-6" role="radio">
+                                                                    <label class="fw-c-checkbox__label" for="feedback-3-reasons__item-6-input" id="feedback-3-reasons__item-6-label">
+                                                                        <span>Unsafe/Inappropriate</span>
+                                                                        <input class="fw-c-checkbox__input" value="Unsafe/Inappropriate" id="feedback-3-reasons__item-6-input" name="reason" type="radio">
+                                                                    </label>
+                                                                </li>
+                                                                <li class="fw-c-checkbox__item" aria-checked="false" id="feedback-3-reasons__item-7" role="radio">
+                                                                    <label class="fw-c-checkbox__label" for="feedback-3-reasons__item-7-input" id="feedback-3-reasons__item-7-label">
+                                                                        <span>Other</span>
+                                                                        <input class="fw-c-checkbox__input" value="Other" id="feedback-3-reasons__item-7-input" name="reason" type="radio">
+                                                                    </label>
+                                                                </li>
+                                                            </ul>
+                                                        </fieldset>
+                                                    </div>
+                                                    <div class="fw-c-modal-chat-feedback__comment-input fw-c-input --textarea" is="muse-input">
+                                                        <div class="fw-c-input__container">
+                                                            <div class="fw-c-input__inputs">
+                                                                <textarea class="fw-c-modal-chat-feedback__comment fw-c-input__field" id="feedback-3-unhelpful-comment" name="comment" placeholder="Tell us more about your experience..." maxlength="1000" rows="3"></textarea>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <button class="fw-c-modal-chat-feedback__submit fw-c-button --input --small --no-gap" type="submit" disabled>
+                                                        <span class="fw-c-button__icon"></span>
+                                                        <span class="fw-c-button__text">Submit</span>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                        <template class="fw-c-modal-chat-feedback__template --liveagent">
+                                            <form class="fw-c-modal-chat-feedback__form fw-c-modal-chat-feedback__scale-form">
+                                                <p class="fw-c-modal-chat-feedback__prompt" id="feedback-scale-prompt">How would you rate the assistance you received?</p>
+                                                <p class="fw-c-modal-chat-feedback__helper" id="feedback-scale-helper">0 is extremely dissatisfied and 10 is extremely satisfied</p>
+                                                <div id="feedback-scale-select" class="fw-c-modal-chat-feedback__scale-select fw-c-select" is="muse-select">
+                                                    <button id="feedback-scale-control" type="button" class="fw-c-select__control fw-c-button" role="combobox" aria-labelledby="feedback-scale-prompt" aria-describedby="feedback-scale-helper" aria-haspopup="listbox" aria-expanded="false" aria-controls="feedback-scale-popup">
+                                                        <span class="fw-c-button__icon --chevron-down"></span>
+                                                        <span class="fw-c-button__text">Select 0-10</span>
+                                                    </button>
+                                                    <div class="fw-c-select__popup" role="listbox" id="feedback-scale-popup" aria-hidden="true">
+                                                        <ul>
+                                                            <li id="feedback-scale-option-0" class="fw-c-select__option" role="option"><input type="radio" id="feedback-scale-radio-0" name="feedback-scale-rating" value="0" /><label>0</label></li>
+                                                            <li id="feedback-scale-option-1" class="fw-c-select__option" role="option"><input type="radio" id="feedback-scale-radio-1" name="feedback-scale-rating" value="1" /><label>1</label></li>
+                                                            <li id="feedback-scale-option-2" class="fw-c-select__option" role="option"><input type="radio" id="feedback-scale-radio-2" name="feedback-scale-rating" value="2" /><label>2</label></li>
+                                                            <li id="feedback-scale-option-3" class="fw-c-select__option" role="option"><input type="radio" id="feedback-scale-radio-3" name="feedback-scale-rating" value="3" /><label>3</label></li>
+                                                            <li id="feedback-scale-option-4" class="fw-c-select__option" role="option"><input type="radio" id="feedback-scale-radio-4" name="feedback-scale-rating" value="4" /><label>4</label></li>
+                                                            <li id="feedback-scale-option-5" class="fw-c-select__option" role="option"><input type="radio" id="feedback-scale-radio-5" name="feedback-scale-rating" value="5" /><label>5</label></li>
+                                                            <li id="feedback-scale-option-6" class="fw-c-select__option" role="option"><input type="radio" id="feedback-scale-radio-6" name="feedback-scale-rating" value="6" /><label>6</label></li>
+                                                            <li id="feedback-scale-option-7" class="fw-c-select__option" role="option"><input type="radio" id="feedback-scale-radio-7" name="feedback-scale-rating" value="7" /><label>7</label></li>
+                                                            <li id="feedback-scale-option-8" class="fw-c-select__option" role="option"><input type="radio" id="feedback-scale-radio-8" name="feedback-scale-rating" value="8" /><label>8</label></li>
+                                                            <li id="feedback-scale-option-9" class="fw-c-select__option" role="option"><input type="radio" id="feedback-scale-radio-9" name="feedback-scale-rating" value="9" /><label>9</label></li>
+                                                            <li id="feedback-scale-option-10" class="fw-c-select__option" role="option"><input type="radio" id="feedback-scale-radio-10" name="feedback-scale-rating" value="10" /><label>10</label></li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <button class="fw-c-modal-chat-feedback__submit fw-c-button --input --small --no-gap" type="submit" disabled>
+                                                    <span class="fw-c-button__icon"></span>
+                                                    <span class="fw-c-button__text">Submit</span>
+                                                </button>
+                                            </form>
+                                        </template>
+                                        <template class="fw-c-modal-chat-feedback__template --task">
+                                            <div class="fw-c-modal-chat-feedback__task-form">
+                                                <p class="fw-c-modal-chat-feedback__prompt" id="feedback-task-prompt">Did you get what you needed?</p>
+                                                <div class="fw-c-modal-chat-feedback__task-buttons" role="group" aria-labelledby="feedback-task-prompt">
+                                                    <button type="button" class="fw-c-modal-chat-feedback__task-button fw-c-button --input --secondary --small --no-gap" data-task-value="Yes" data-config-metrics-item="Task feedback yes" aria-describedby="feedback-task-prompt">
+                                                        <span class="fw-c-button__icon"></span>
+                                                        <span class="fw-c-button__text">Yes</span>
+                                                    </button>
+                                                    <button type="button" class="fw-c-modal-chat-feedback__task-button fw-c-button --input --secondary --small --no-gap" data-task-value="No" data-config-metrics-item="Task feedback no" aria-describedby="feedback-task-prompt">
+                                                        <span class="fw-c-button__icon"></span>
+                                                        <span class="fw-c-button__text">No</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                        <template class="fw-c-chat__template --copy-button-success">
+                            <div class="fw-c-chat__message-popup" role="status" aria-live="polite">Copied successfully</div>
+                        </template>
+                        <template class="fw-c-chat__template --download-requested">
+                            <div class="fw-c-chat__menu-popup" role="status" aria-live="polite">Download requested</div>
+                        </template>
+                        <template class="fw-c-chat__template --pseudo-anchor">
+                            <a href="" class="--hidden" aria-hidden="true" download></a>
+                        </template>
+                        <template class="fw-c-chat__template --error-message --establish-fail">
+                            <div class="fw-c-section-message --error">
+                                <i class="fw-c-section-message__icon"></i>
+                                <div class="fw-c-section-message__body">
+                                    <p class="fw-c-section-message__text">Sorry, something went wrong. Please try again later.</p>
+                                </div>
+                            </div>
+                        </template>
+                        <template class="fw-c-chat__template --error-message">
+                            <p><strong>Sorry, we couldn't generate a response for this query.</strong></p>
+                            <div class="fw-c-section-message --error">
+                                <i class="fw-c-section-message__icon"></i>
+                                <div class="fw-c-section-message__body">
+                                    <p class="fw-c-section-message__text"><strong>Error</strong> Something went wrong. Please try again.</p>
+                                </div>
+                            </div>
+                        </template>
+                        <template class="fw-c-chat__template --session-expiration">
+                            <p class="fw-c-headline --title-reduced-bold --margin-40">Chat expiring soon</p>
+                            <p>Your conversation will be cleared in 5 minutes due to inactivity, would you like to extend this chat?</p>
+                            <div class="fw-c-chat__dialog-controls">
+                                <button type="button" class="fw-c-dialog__control fw-c-button --input --small --no-gap" data-chat-dialog-control="extend" data-config-metrics-item="extend chat">
+                                    <span class="fw-c-button__icon"></span>
+                                    <span class="fw-c-button__text">Extend chat</span>
+                                </button>
+                                <button type="button" class="fw-c-dialog__control fw-c-button --input --secondary --small --no-gap" data-chat-dialog-control="reset" data-config-metrics-item="reset chat">
+                                    <span class="fw-c-button__icon"></span>
+                                    <span class="fw-c-button__text">Reset chat</span>
+                                </button>
+                            </div>
+                        </template>
+                        <template class="fw-c-chat__template --max-session-expiration">
+                            <p class="fw-c-headline --title-reduced-bold --margin-40">Session expiring soon</p>
+                            <p>Your session is reaching the maximum time limit. This conversation will be reset in 15 minutes.</p>
+                            <div class="fw-c-chat__dialog-controls">
+                                <button type="button" class="fw-c-dialog__control fw-c-button --input --small --no-gap" data-chat-dialog-control="cancel">
+                                    <span class="fw-c-button__icon"></span>
+                                    <span class="fw-c-button__text">I understand</span>
+                                </button>
+                            </div>
+                        </template>
+                        <template class="fw-c-chat__template --reset-chat">
+                            <p class="fw-c-headline --title-reduced-bold --margin-40">Are you sure you want to reset?</p>
+                            <p>This will clear the current conversation.</p>
+                            <div class="fw-c-chat__dialog-controls">
+                                <button type="button" class="fw-c-dialog__control fw-c-button --input --small --no-gap" data-chat-dialog-control="reset" data-config-metrics-item="yes, reset">
+                                    <span class="fw-c-button__icon"></span>
+                                    <span class="fw-c-button__text">Yes, reset</span>
+                                </button>
+                                <button type="button" class="fw-c-dialog__control fw-c-button --input --secondary --small --no-gap" data-chat-dialog-control="cancel"  data-config-metrics-item="no, keep">
+                                    <span class="fw-c-button__icon"></span>
+                                    <span class="fw-c-button__text">No, keep</span>
+                                </button>
+                            </div>
+                        </template>
+                        <template class="fw-c-chat__template --rag-feedback">
+                            <p class="fw-c-headline --title-reduced-bold --margin-40">Share feedback</p>
+                            <form class="fw-c-chat__feedback-form">
+                                <div class="fw-c-chat__feedback-fields">
+                                    <div class="fw-c-chat__feedback-reason fw-c-select" is="muse-select" id="feedback-reason">
+                                        <p class="fw-c-chat__feedback-reason-label" id="feedback-reason-label">What wasn't addressed?</p>
+                                        <button type="button" class="fw-c-select__control fw-c-button" role="combobox" aria-labelledby="feedback-reason-label" aria-haspopup="listbox" aria-expanded="false" aria-controls="feedback-reason-popup">
+                                            <span class="fw-c-button__icon --chevron-down"></span>
+                                            <span class="fw-c-button__text">Select one</span>
+                                        </button>
+                                        <div class="fw-c-select__popup" role="listbox" id="feedback-reason-popup" aria-hidden="true">
+                                            <ul>
+                                                <li class="fw-c-select__option" role="option"><input type="radio" id="feedback-reason-inaccurate" name="feedback-reason" value="Inaccurate" /><label>Inaccurate</label></li>
+                                                <li class="fw-c-select__option" role="option"><input type="radio" id="feedback-reason-outdated" name="feedback-reason" value="Outdated" /><label>Outdated</label></li>
+                                                <li class="fw-c-select__option" role="option"><input type="radio" id="feedback-reason-confusing" name="feedback-reason" value="Confusing" /><label>Confusing</label></li>
+                                                <li class="fw-c-select__option" role="option"><input type="radio" id="feedback-reason-incomplete" name="feedback-reason" value="Incomplete" /><label>Incomplete</label></li>
+                                                <li class="fw-c-select__option" role="option"><input type="radio" id="feedback-reason-formatting" name="feedback-reason" value="Formatting issue" /><label>Formatting issue</label></li>
+                                                <li class="fw-c-select__option" role="option"><input type="radio" id="feedback-reason-unsafe" name="feedback-reason" value="Unsafe/Inappropriate" /><label>Unsafe/Inappropriate</label></li>
+                                                <li class="fw-c-select__option" role="option"><input type="radio" id="feedback-reason-other" name="feedback-reason" value="Other" /><label>Other</label></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="fw-c-chat__feedback-comment-input fw-c-input --textarea" is="muse-input">
+                                        <div class="fw-c-input__container">
+                                            <div class="fw-c-input__inputs">
+                                                <textarea class="fw-c-chat__feedback-comment fw-c-input__field" id="feedback-comment" name="comment" placeholder="Anything else you'd like to share?" maxlength="1000" rows="3"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="fw-c-chat__feedback-contact">
+                                        <p class="fw-c-chat__feedback-contact-note">By providing these details, a team member may contact you regarding your experience.</p>
+                                        <div class="fw-c-chat__feedback-names">
+                                            <div class="fw-c-chat__feedback-field">
+                                                <label class="fw-c-chat__feedback-field-label" for="feedback-firstname">First name</label>
+                                                <div class="fw-c-input" is="muse-input">
+                                                    <div class="fw-c-input__container">
+                                                        <div class="fw-c-input__inputs">
+                                                            <input class="fw-c-chat__feedback-firstname fw-c-input__field" id="feedback-firstname" name="firstName" type="text" autocomplete="given-name" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="fw-c-chat__feedback-field">
+                                                <label class="fw-c-chat__feedback-field-label" for="feedback-lastname">Last name</label>
+                                                <div class="fw-c-input" is="muse-input">
+                                                    <div class="fw-c-input__container">
+                                                        <div class="fw-c-input__inputs">
+                                                            <input class="fw-c-chat__feedback-lastname fw-c-input__field" id="feedback-lastname" name="lastName" type="text" autocomplete="family-name" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="fw-c-chat__feedback-field">
+                                            <label class="fw-c-chat__feedback-field-label" for="feedback-email">Email address</label>
+                                            <div class="fw-c-input" is="muse-input">
+                                                <div class="fw-c-input__container">
+                                                    <div class="fw-c-input__inputs">
+                                                        <input class="fw-c-chat__feedback-email fw-c-input__field" id="feedback-email" name="email" type="email" autocomplete="email" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p class="fw-c-chat__feedback-email-error" id="feedback-email-error" hidden>Please enter a valid email address</p>
+                                    </div>
+                                </div>
+                                <div class="fw-c-chat__dialog-controls">
+                                    <button type="button" class="fw-c-chat__feedback-submit fw-c-dialog__control fw-c-button --input --small --no-gap" data-config-metrics-item="submit feedback" disabled>
+                                        <span class="fw-c-button__icon"></span>
+                                        <span class="fw-c-button__text">Submit</span>
+                                    </button>
+                                    <button type="button" class="fw-c-chat__feedback-skip fw-c-dialog__control fw-c-button --input --secondary --small --no-gap" data-config-metrics-item="skip feedback">
+                                        <span class="fw-c-button__icon"></span>
+                                        <span class="fw-c-button__text">Skip</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </template>
+                        <template class="fw-c-chat__template --agent-joined">
+                            <div class="fw-c-chat__message --agent-status">
+                                <p class="fw-c-chat__message-agent-status-text"><span class="fw-c-chat__message-live-agent-name"></span> has joined</p>
+                            </div>
+                        </template>
+                        <template class="fw-c-chat__template --agent-left">
+                            <div class="fw-c-chat__message --agent-status">
+                                <p class="fw-c-chat__message-agent-status-text"><span class="fw-c-chat__message-live-agent-name"></span> has left</p>
+                            </div>
+                        </template>
+                        <template class="fw-c-chat__template --end-live-chat">
+                            <p class="fw-c-headline --title-reduced-bold --margin-40">Are you sure you want to end this live chat?</p>
+                            <p>You will be disconnected from this agent.</p>
+                            <div class="fw-c-chat__dialog-controls">
+                                <button type="button" class="fw-c-chat__end-live-chat-confirm fw-c-dialog__control fw-c-button --input --small --no-gap" data-chat-dialog-control="end-live-chat" data-config-metrics-item="">
+                                    <span class="fw-c-button__icon"></span>
+                                    <span class="fw-c-button__text">End live chat</span>
+                                </button>
+                                <button type="button" class="fw-c-chat__end-live-chat-cancel fw-c-dialog__control fw-c-button --input --secondary --small --no-gap" data-chat-dialog-control="cancel-end-live-chat"  data-config-metrics-item="">
+                                    <span class="fw-c-button__icon"></span>
+                                    <span class="fw-c-button__text">Cancel</span>
+                                </button>
+                            </div>
+                         </template>
+                        <template class="fw-c-chat__template --file-too-large">
+                            <p class="fw-c-headline --title-reduced-bold --margin-40">Unable to attach</p>
+                            <p>Maximum file size is <span class="fw-c-chat__file-card-max-size"></span>. Reduce the size and retry.</p>
+                            <div class="fw-c-chat__dialog-controls">
+                                <button type="button" class="fw-c-dialog__control fw-c-button --input --small --no-gap" data-chat-dialog-control="cancel">
+                                    <span class="fw-c-button__icon"></span>
+                                    <span class="fw-c-button__text">OK</span>
+                                </button>
+                            </div>
+                        </template>
+                        <template class="fw-c-chat__template --file-card">
+                            <div class="fw-c-chat__file-card">
+                                <span class="fw-c-chat__file-card-label">File:<span class="fw-c-chat__file-card-name"></span></span>
+                                <span class="fw-c-chat__file-card-label --maximized">File:<span class="fw-c-chat__file-card-name"></span></span>
+                                <a target="_blank" class="fw-c-chat__file-card-link" aria-label="Download attachment" title="Download attachment"></a>
+                            </div>
+                        </template>
+                        <template class="fw-c-chat__template --alert-banner">
+                            <div class="fw-c-chat__alert-banner">
+                                <div class="fw-c-chat__alert-banner-icon" aria-hidden="true"></div>
+                                <div class="fw-c-chat__alert-banner-message">
+                                    <span class="fw-c-chat__alert-banner-title"></span>
+                                </div>
+                            </div>
+                        </template>
+                        <template class="fw-c-chat__template --alert-banner-dismiss">
+                            <button class="fw-c-chat__control fw-c-button fw-c-chat__alert-banner-dismiss" aria-label="Dismiss alert" data-config-metrics-item="dismiss alert uber assistant" title="Dismiss alert">
+                                <span class="fw-c-button__icon --close"></span>
+                            </button>
+                        </template>
+                        <template class="fw-c-chat__template --alert-banner-wrapper">
+                            <div class="fw-c-chat__alert-banner-wrapper"></div>
+                        </template>
+                    </div>
+                </dialog>
+	 
+</cds-html>
+
+    
+
+</div>
+
+    
+</div>
+</div>
+
+    
+</div>
+
+    
+</div>
+</div>
+
+    
+</div>
+<div class="breadcrumb aem-GridColumn aem-GridColumn--default--12">
+<nav id="breadcrumb-c633c20ce5" class="cmp-breadcrumb muse-l-grid" aria-label="Breadcrumb" data-init-breadcrumb="true">
+    <ol class="cmp-breadcrumb__list" itemscope itemtype="http://schema.org/BreadcrumbList">
+		
+		<li class="cmp-breadcrumb__item" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+            <a class="cmp-breadcrumb__item-link" itemprop="item" href="/site/us/en/products/index.html">
+                <span itemprop="name">Products</span>
+            </a>
+            <meta itemprop="position" content="1"/>
+        </li>
+    
+		
+		<li class="cmp-breadcrumb__item" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+            <a class="cmp-breadcrumb__item-link" itemprop="item" href="/site/us/en/products/networking/index.html">
+                <span itemprop="name">Networking Products and Solutions</span>
+            </a>
+            <meta itemprop="position" content="2"/>
+        </li>
+    
+		
+		<li class="cmp-breadcrumb__item" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+            <a class="cmp-breadcrumb__item-link" itemprop="item" href="/site/us/en/products/networking/sdwan-routers/index.html?dtid=osscdc000283&linkclickid=srch">
+                <span itemprop="name"> Routers and SD-WAN appliances</span>
+            </a>
+            <meta itemprop="position" content="3"/>
+        </li>
+    
+		
+		<li class="cmp-breadcrumb__item" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+            <a class="cmp-breadcrumb__item-link" itemprop="item" href="/site/us/en/products/networking/sdwan-routers/8000-secure-routers/index.html">
+                <span itemprop="name">Cisco 8000 Series Secure Routers </span>
+            </a>
+            <meta itemprop="position" content="4"/>
+        </li>
+    
+		
+		
+    </ol>
+</nav>
+
+    
+
+</div>
+<div class="container responsivegrid aem-GridColumn aem-GridColumn--default--12">
+
+    
+    
+    
+    <div data-c-version="DM:Container:V1.0.1" id="container-alert" class="cmp-container  ">
+        
+        
+        
+    </div>
+
+</div>
+<div class="container responsivegrid aem-GridColumn aem-GridColumn--default--12">
+
+    
+    
+    
+    <div data-c-version="DM:Container:V1.0.1" id="section-hero" class="cmp-container  ">
+        
+        <cds-styles data-config-metrics-group="Media Split" class="media-split teaser"> 
+  <div id="media-split-b077cba2fe" class="cds-c-media-split cmp-teaser      " media="image" data-config-metrics-title="Cisco 8200 Series Secure Routers Data Sheet" data-c-version="DM:Media Split:V2.1.0">
+    <div class="muse-l-grid">
+      
+        
+    <div class="cmp-teaser__image cds-c-media-split__media-wrapper">
+<div data-c-version="DM:Image (V2):V2.2.0" data-asset-id="a6d76c2f-dd09-429d-910b-104c5ac4c0e6" id="media-split-b077cba2fe-image" class="cmp-image  " itemscope itemtype="http://schema.org/ImageObject">
+    
+        <img src="/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/8200-series-c8235-g2-1600x900.jpg" loading="lazy" class="cmp-image__image" itemprop="contentUrl" width="1600" height="900" alt="Cisco 8200 Series Secure Router"/>
+    
+    
+    
+</div>
+
+    
+
+</div>
+
+      
+      
+      
+      <div class="cmp-teaser__content">
+          
+		<h1 class="cmp-teaser__pretitle">Data sheet</h1>
+  
+          
+    <h2 class="cmp-teaser__title">
+        Cisco 8200 Series Secure Routers Data Sheet
+    </h2>
+
+          
+    <div class="cmp-teaser__description muse-prose"><p>A Part of the Cisco 8000 Series Secure Routers Family.<br />
+Last updated: October 14, 2026.</p>
+</div>
+
+          
+    
+      
+        <div class="cmp-teaser__action-container">
+                  
+    
+    
+    
+	
+	<span class="cds-c-cta__wrapper">
+        <a class="cds-c-cta cds-c-cta--primary " href="https://www.cisco.com/c/dam/en/us/products/collateral/routers/secure-routers/8200-series-secure-routers-ds.pdf" target="_self"><span class="cmp-button__text">Download data sheet (PDF)</span></a>
+	</span> 
+
+              
+                  
+    
+    
+    
+	
+	<span class="cds-c-cta__wrapper">
+        <a class="cds-c-cta cds-c-cta--secondary " href="https://www.cisco.com/c/en/us/solutions/enterprise-networks/promotions-free-trials/sd-wan-demo-request.html" target="_self"><span class="cmp-button__text">Watch SD-WAN demo</span></a>
+	</span> 
+
+              </div>
+      
+    
+  
+      </div>
+    </div>
+</div>
+
+    
+</cds-styles>
+
+        
+    </div>
+
+</div>
+<cds-styles class="containergrid container responsivegrid cds-l-grid--awareness aem-GridColumn aem-GridColumn--default--12">
+  
+       <div id="containergrid-dbd2aee462" class="cmp-containergrid  muse-py-default" data-c-version="DM:Container-Grid:V1.5.3" data-placeholder-text="false">
+          
+  <div class="cds-l-grid cds-l-grid--third-twothirds gridhalves false">
+    <div class="cmp-containergrid__col1 cds-component-area">
+
+
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Jump Links (V2)" class="cds-c-jumplinks__wrapper"><div data-c-version="DM:Table of Contents (V2):V2.1.1" id="jumplinks-d854ad28e5" class="cds-c-jumplinks__wrapper-interior" data-sublevel="true">
+	
+	
+	<hr class="cds-c-jumplinks__seprator"/>
+	<div class="cds-c-jumplinks__mobile-header">
+        <span class="cds-c-jumplinks__mobile-header-text"></span>
+        <div class="cds-c-jumplinks__mobile-header-icon"></div>
+    </div>
+	<hr class="cds-c-jumplinks__seprator"/>
+	<div class="cds-c-jumplinks__title-link-wrap">
+		
+		<ul class="cds-c-jumplinks" data-init-jumplinks="true" data-sublevel="true" data-header-types="h2, h3"></ul>
+	</div>
+</div>
+
+    
+</cds-styles>
+
+
+</div>
+    <div class="cmp-containergrid__col2 cds-component-area">
+
+
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-4fafe56391" class="cmp-text muse-prose ">
+    <h2>Overview</h2>
+<p>The Cisco®  8200 Series Secure Routers deliver secure networking simplified. Powered by the all-new secure networking processor and the unified Cisco secure networking platform, the Cisco 8200 Series delivers robust platform-level security, advanced performance engineering via routing and SD-WAN, and on-premises, infrastructure-as-code, or cloud management flexibility that enables businesses to seamlessly scale and grow. Each class of secure routers is designed to deliver risk reduction, enhanced reliability, and future readiness.</p>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-4516aff724" class="cmp-text muse-prose ">
+    <h3>Platform highlights</h3>
+<p>Designed for medium-sized branch deployments, the Cisco 8200 Series Secure Routers combine robust security, advanced performance engineering, and flexible management options. These routers offer seamless connectivity, dynamic path selection, and unified security enforcement, helping ensure resilient operations and simplified IT overhead as your network grows. With integrated security and support for high-speed 10Gigabit Ethernet (GE) interfaces, these platforms deliver scalable and reliable performance for modern WAN edge deployments. Whether used for traditional routing or SDWAN applications, the Cisco 8200 Series supports AI-driven growth to meet digital branch demands</p>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <div class="title">
+<div data-c-version="DM:Title (V2):V2.1.0" id="title-73e59d1d8f" class="cmp-title muse-prose  ">
+    <h4 class="cmp-title__text ">Key features</h4>
+</div>
+
+    
+
+</div>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Accordion" class="accordion-styled accordion panelcontainer">
+<div data-c-version="DM:Accordion:V2.0.0" id="accordion-styled-2673c0adf6" class="cmp-accordion cds-c-accordion-styled" data-cmp-is="accordion" data-placeholder-text="false">
+    <div class="cmp-accordion__item" data-cmp-hook-accordion="item" id="accordion-styled-2673c0adf6-item-4342aaa96d">
+
+        <h3 class="cmp-accordion__header">
+            <button id="accordion-styled-2673c0adf6-item-4342aaa96d-button" class="cmp-accordion__button" aria-controls="accordion-styled-2673c0adf6-item-4342aaa96d-panel" data-cmp-hook-accordion="button" aria-label="Hardware-accelerated security and networking">
+                <span class="cmp-accordion__title">Hardware-accelerated security and networking</span>
+                <span class="cmp-accordion__icon"></span>
+            </button>
+        </h3>
+
+        <div data-cmp-hook-accordion="panel" id="accordion-styled-2673c0adf6-item-4342aaa96d-panel" class="cmp-accordion__panel cmp-accordion__panel--hidden" role="region" aria-labelledby="accordion-styled-2673c0adf6-item-4342aaa96d-button"><div class="muse-card__wrapper">
+  <div id="card-4342aaa96d" data-config-actions-enabled="true" class="muse-card muse-card--unstyled  " data-c-version="DM:Card (legacy):V2.0.4">
+
+	
+    
+
+	
+    
+
+	
+    
+
+    <div class="muse-card__content" id="a11y-card-4342aaa96d">
+        
+        
+        
+    
+        
+    
+
+       	
+    
+
+        
+    <div class="muse-card__desc muse-prose"><ul><li>Dedicated secure networking processor for fast cryptography and deep packet inspection</li><li>Hardware acceleration that helps ensure high throughput with robust threat protection</li></ul>
+</div>
+
+     	
+    
+  
+     </div>             
+</div>
+
+    
+</div>
+</div>
+    </div>
+<div class="cmp-accordion__item" data-cmp-hook-accordion="item" id="accordion-styled-2673c0adf6-item-28a7f02bff">
+
+        <h3 class="cmp-accordion__header">
+            <button id="accordion-styled-2673c0adf6-item-28a7f02bff-button" class="cmp-accordion__button" aria-controls="accordion-styled-2673c0adf6-item-28a7f02bff-panel" data-cmp-hook-accordion="button" aria-label="Fanless model for medium sized branches">
+                <span class="cmp-accordion__title">Fanless model for medium sized branches</span>
+                <span class="cmp-accordion__icon"></span>
+            </button>
+        </h3>
+
+        <div data-cmp-hook-accordion="panel" id="accordion-styled-2673c0adf6-item-28a7f02bff-panel" class="cmp-accordion__panel cmp-accordion__panel--hidden" role="region" aria-labelledby="accordion-styled-2673c0adf6-item-28a7f02bff-button"><div class="muse-card__wrapper">
+  <div id="card-28a7f02bff" data-config-actions-enabled="true" class="muse-card muse-card--unstyled  " data-c-version="DM:Card (legacy):V2.0.4">
+
+	
+    
+
+	
+    
+
+	
+    
+
+    <div class="muse-card__content" id="a11y-card-28a7f02bff">
+        
+        
+        
+    
+        
+    
+
+       	
+    
+
+        
+    <div class="muse-card__desc muse-prose"><ul><li>Quiet, reliable fanless SKU ideal for noise-sensitive or space-constrained sites</li><li>Fewer moving parts for lower maintenance and enhanced durability</li></ul>
+</div>
+
+     	
+    
+  
+     </div>             
+</div>
+
+    
+</div>
+</div>
+    </div>
+<div class="cmp-accordion__item" data-cmp-hook-accordion="item" id="accordion-styled-2673c0adf6-item-7894574d98">
+
+        <h3 class="cmp-accordion__header">
+            <button id="accordion-styled-2673c0adf6-item-7894574d98-button" class="cmp-accordion__button" aria-controls="accordion-styled-2673c0adf6-item-7894574d98-panel" data-cmp-hook-accordion="button" aria-label="Integrated branch connectivity">
+                <span class="cmp-accordion__title">Integrated branch connectivity</span>
+                <span class="cmp-accordion__icon"></span>
+            </button>
+        </h3>
+
+        <div data-cmp-hook-accordion="panel" id="accordion-styled-2673c0adf6-item-7894574d98-panel" class="cmp-accordion__panel cmp-accordion__panel--hidden" role="region" aria-labelledby="accordion-styled-2673c0adf6-item-7894574d98-button"><div class="muse-card__wrapper">
+  <div id="card-7894574d98" data-config-actions-enabled="true" class="muse-card muse-card--unstyled  " data-c-version="DM:Card (legacy):V2.0.4">
+
+	
+    
+
+	
+    
+
+	
+    
+
+    <div class="muse-card__content" id="a11y-card-7894574d98">
+        
+        
+        
+    
+        
+    
+
+       	
+    
+
+        
+    <div class="muse-card__desc muse-prose"><ul><li>Combines Next-Generation Firewall (NGFW) security, routing, and SD-WAN in one unified platform</li><li>Simplifies branch infrastructure and management with all-in-one secure access</li></ul>
+</div>
+
+     	
+    
+  
+     </div>             
+</div>
+
+    
+</div>
+</div>
+    </div>
+<div class="cmp-accordion__item" data-cmp-hook-accordion="item" id="accordion-styled-2673c0adf6-item-6970677bba">
+
+        <h3 class="cmp-accordion__header">
+            <button id="accordion-styled-2673c0adf6-item-6970677bba-button" class="cmp-accordion__button" aria-controls="accordion-styled-2673c0adf6-item-6970677bba-panel" data-cmp-hook-accordion="button" aria-label="Secure networking with PQC readiness">
+                <span class="cmp-accordion__title">Secure networking with PQC readiness</span>
+                <span class="cmp-accordion__icon"></span>
+            </button>
+        </h3>
+
+        <div data-cmp-hook-accordion="panel" id="accordion-styled-2673c0adf6-item-6970677bba-panel" class="cmp-accordion__panel cmp-accordion__panel--hidden" role="region" aria-labelledby="accordion-styled-2673c0adf6-item-6970677bba-button"><div class="muse-card__wrapper">
+  <div id="card-6970677bba" data-config-actions-enabled="true" class="muse-card muse-card--unstyled  " data-c-version="DM:Card (legacy):V2.0.4">
+
+	
+    
+
+	
+    
+
+	
+    
+
+    <div class="muse-card__content" id="a11y-card-6970677bba">
+        
+        
+        
+    
+        
+    
+
+       	
+    
+
+        
+    <div class="muse-card__desc muse-prose"><ul><li>Future-ready branch security with advanced, quantum-resistant encryption</li></ul>
+</div>
+
+     	
+    
+  
+     </div>             
+</div>
+
+    
+</div>
+</div>
+    </div>
+
+    
+</div>
+
+
+</cds-styles>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-a6f39f298d" class="cmp-text muse-prose ">
+    <h2>Models and specifications</h2>
+<p>The Cisco 8200 Series Secure Routers offer a range of configurations to meet diverse networking needs and include the following models:</p>
+<ul><li><b>Cisco C8235-E-G2</b> and <b>C8231-E-G2</b> with one NIM slot plus two 10 GE SFP/SFP&#43; and two 2.5 GE Multigigabit RJ-45 ports</li><li><b>Cisco C8235-G2</b> with two 1/10 GE SFP&#43; and eight 2.5 GE Multigigabit RJ-45 ports</li><li><b>Cisco C8231-G2</b> with two 1/10 GE SFP&#43;, four 2.5 GE Multigigabit RJ-45, and four 1 GE RJ-45 ports</li><li><b>Cisco C8225-G2</b> and <b>C8221-G2</b> with two 1/10 GE SFP&#43; and eight 1 GE RJ-45 ports</li><li><b>Cisco C8221L-G2</b> with two 10 GE RJ-45 and eight 1 GE RJ-45 ports</li><li><b>Cisco C8211-G2</b> with two 1 GE RJ-45/SFP combo and four 1 GE RJ-45 ports</li><li><b>Cisco C8255-G2-UCSXE</b> (secure router node for <a></a><a href="https://www.cisco.com/site/us/en/products/collateral/computing/unified-edge/cisco-ucs-xe9305-chassis-ds.html">Cisco UCS® XE9305<b> </b>Chassis</a>) with two 1/10 GE SFP&#43;, four 2.5 GE Multigigabit<b> </b>RJ-45, and fourteen 1 GE RJ-45 ports </li></ul>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <div class="image">
+<div data-c-version="DM:Image (V2):V2.2.0" data-asset-id="936d32fb-13b1-4a76-957a-aa9484192e17" id="image-80eb275abf" class="cmp-image  " itemscope itemtype="http://schema.org/ImageObject">
+    
+        <img src="/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-1-c8235-e-g2-2x.jpg" loading="lazy" class="cmp-image__image" itemprop="contentUrl" width="1043" height="347" alt="Front View of a Cisco C8235-G2 Secure Router"/>
+    
+    
+    
+</div>
+
+    
+
+</div>
+
+
+    
+    
+    <div class="title">
+<div data-c-version="DM:Title (V2):V2.1.0" id="title-bf079af101" class="cmp-title muse-prose  ">
+    <h6 class="cmp-title__text ">Figure 1. Front view of a Cisco C8235-E-G2 Secure Router</h6>
+</div>
+
+    
+
+</div>
+
+
+    
+    
+    <div class="title">
+<div data-c-version="DM:Title (V2):V2.1.0" id="title-3d5e83e45d" class="cmp-title muse-prose  ">
+    <h6 class="cmp-title__text ">Table 1. Descriptions of front panel of Cisco C8235-E-G2 Secure Router</h6>
+</div>
+
+    
+
+</div>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Table" class="table text">
+   
+  
+
+  <!-- Before Authoring -->
+  
+
+  <!--After Authoring -->
+  <div data-c-version="DM:Table:V2.1.1" data-enable-search="false" data-no-search-result-text="No results found" data-init-table="true" id="table-1889813177" class="muse-prose cds-c-table cds-c-table--zebra cds-c-table--dense  cds-c-table--col-width-auto ">
+    
+    <table cellpadding="1" cellspacing="0" border="1"><thead><tr><th scope="col"><b>Label</b></th><th scope="col">Description</th></tr></thead><tbody><tr><td><b>1</b></td><td>USB 3.0 Type C storage</td></tr><tr><td><b>2</b></td><td>Management RJ-45 port</td></tr><tr><td><b>3</b></td><td>Console RJ-45 /Micro-USB port</td></tr><tr><td><b>4</b></td><td>2x 2.5 GE Multigigabit RJ-45 ports</td></tr><tr><td><b>5</b></td><td>2x 1/10 GE SFP&#43; ports</td></tr><tr><td><b>6</b></td><td>Label tray</td></tr><tr><td><b>7</b></td><td>PIM slot</td></tr><tr><td><b>8</b></td><td>E1.S storage slot</td></tr><tr><td><b>9</b></td><td>NIM slot</td></tr><tr><td><b>10</b></td><td>RFID</td></tr></tbody></table>
+
+  </div>
+
+
+
+    
+
+</cds-styles>
+
+
+    
+    
+    <div class="image">
+<div data-c-version="DM:Image (V2):V2.2.0" data-asset-id="48df4a99-27e2-4094-a050-a4dd9f57c595" id="image-8dcc9c0b9f" class="cmp-image  " itemscope itemtype="http://schema.org/ImageObject">
+    
+        <img src="/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-2-c8235-e-g2-2x.jpg" loading="lazy" class="cmp-image__image" itemprop="contentUrl" width="859" height="322" alt="Front View of a Cisco C8231-G2 Secure Router"/>
+    
+    
+    
+</div>
+
+    
+
+</div>
+
+
+    
+    
+    <div class="title">
+<div data-c-version="DM:Title (V2):V2.1.0" id="title-e6471c90ef" class="cmp-title muse-prose  ">
+    <h6 class="cmp-title__text ">Figure 2. Rear view of a Cisco C8235-E-G2 Secure Router</h6>
+</div>
+
+    
+
+</div>
+
+
+    
+    
+    <div class="title">
+<div data-c-version="DM:Title (V2):V2.1.0" id="title-f602bb4086" class="cmp-title muse-prose  ">
+    <h6 class="cmp-title__text ">Table 2. Descriptions of rear panel
+of a Cisco C8235-E-G2 Secure Router</h6>
+</div>
+
+    
+
+</div>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Table" class="table text">
+   
+  
+
+  <!-- Before Authoring -->
+  
+
+  <!--After Authoring -->
+  <div data-c-version="DM:Table:V2.1.1" data-enable-search="false" data-no-search-result-text="No results found" data-init-table="true" id="table-381ac330cc" class="muse-prose cds-c-table cds-c-table--zebra cds-c-table--dense  cds-c-table--col-width-auto ">
+    
+    <table border="1" cellspacing="0" cellpadding="1"><thead><tr><th scope="col"><b>Label</b></th><th scope="col">Description</th></tr></thead><tbody><tr><td><b>1</b></td><td>Kensington lock, ground screw</td></tr><tr><td><b>2</b></td><td><p>2x fan assemblies — default</p>
+<p>(optional third fan assembly for NEBS temperature support)</p>
+</td></tr><tr><td><b>3</b></td><td>Power over Ethernet (PoE) adapter input</td></tr><tr><td><b>4</b></td><td>12V DC – secondary PSU input</td></tr><tr><td><b>5</b></td><td>AC – primary power socket</td></tr><tr><td><b>6</b></td><td>Power switch</td></tr></tbody></table>
+
+  </div>
+
+
+
+    
+
+</cds-styles>
+
+
+    
+    
+    <div class="image">
+<div data-c-version="DM:Image (V2):V2.2.0" data-asset-id="7358b13b-91d8-43e0-baa5-14ee239e618c" id="image-34bfa297d4" class="cmp-image  " itemscope itemtype="http://schema.org/ImageObject">
+    
+        <img src="/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-3-c8235-e-g2-2x.jpg" loading="lazy" class="cmp-image__image" itemprop="contentUrl" width="1306" height="344" alt="Front View of a Cisco C8235-G2 Secure Router"/>
+    
+    
+    
+</div>
+
+    
+
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-bd88200ed4" class="cmp-text muse-prose ">
+    <h6>Figure 3. Front view of a Cisco C8235-G2 Secure Router</h6>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-6d25d52aaf" class="cmp-text muse-prose ">
+    <h6>Table 3. Descriptions of front panel of Cisco C8235-G2 Secure Router</h6>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Table" class="table text">
+   
+  
+
+  <!-- Before Authoring -->
+  
+
+  <!--After Authoring -->
+  <div data-c-version="DM:Table:V2.1.1" data-enable-search="false" data-no-search-result-text="No results found" data-init-table="true" id="table-4c4ac72958" class="muse-prose cds-c-table cds-c-table--zebra cds-c-table--dense  cds-c-table--col-width-auto ">
+    
+    <table cellpadding="1" cellspacing="0" border="1"><thead><tr><th scope="col"><b>Label</b></th><th scope="col">Description</th></tr></thead><tbody><tr><td><b>1</b></td><td>Status LEDs, blue beacon LED</td></tr><tr><td><b>2</b></td><td>Reset button</td></tr><tr><td><b>3</b></td><td>Power button</td></tr><tr><td><b>4</b></td><td>Power supply input (AC/AC &#43; PoE)</td></tr><tr><td><b>5</b></td><td>8x 2.5 GE Multigigabit RJ-45 ports</td></tr><tr><td><b>6</b></td><td>2x 10 GE SFP/SFP&#43; ports</td></tr><tr><td><b>7</b></td><td>RFID</td></tr><tr><td><b>8</b></td><td>Management RJ-45 port</td></tr><tr><td><b>9</b></td><td>Console RJ-45 port/Micro-USB cConsole port</td></tr><tr><td><b>10</b></td><td>USB 3.0 Type C storage</td></tr><tr><td><b>11</b></td><td>PIM slot</td></tr><tr><td><b>12</b></td><td>Kensington lock, ground screw</td></tr></tbody></table>
+
+  </div>
+
+
+
+    
+
+</cds-styles>
+
+
+    
+    
+    <div class="image">
+<div data-c-version="DM:Image (V2):V2.2.0" data-asset-id="d70d7b37-e4d9-4357-b9c7-5f22202ad3a9" id="image-8cea54aac3" class="cmp-image  " itemscope itemtype="http://schema.org/ImageObject">
+    
+        <img src="/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-4-c8231-e-g2-2x.jpg" loading="lazy" class="cmp-image__image" itemprop="contentUrl" width="1272" height="298" alt="Front View of a Cisco C8231-G2 Secure Router"/>
+    
+    
+    
+</div>
+
+    
+
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-8ca3249af3" class="cmp-text muse-prose ">
+    <h6>Figure 4. Front view of a Cisco C8231-G2 Secure Router</h6>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-6e9d38384b" class="cmp-text muse-prose ">
+    <h6>Table 4. Descriptions of front panel of a Cisco C8231-G2 Secure Router</h6>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Table" class="table text">
+   
+  
+
+  <!-- Before Authoring -->
+  
+
+  <!--After Authoring -->
+  <div data-c-version="DM:Table:V2.1.1" data-enable-search="false" data-no-search-result-text="No results found" data-init-table="true" id="table-f65f6bcb79" class="muse-prose cds-c-table cds-c-table--zebra cds-c-table--dense  cds-c-table--col-width-auto ">
+    
+    <table border="1" cellspacing="0" cellpadding="1"><thead><tr><th scope="col"><b>Label</b></th><th scope="col">Description</th></tr></thead><tbody><tr><td><b>1</b></td><td>Status LEDs, blue beacon LED</td></tr><tr><td><b>2</b></td><td>Reset button</td></tr><tr><td><b>3</b></td><td>Power button</td></tr><tr><td><b>4</b></td><td>Power supply input (AC/AC&#43;PoE)</td></tr><tr><td><b>5</b></td><td>4x 1 GE RJ-45 ports</td></tr><tr><td><b>6</b></td><td>4x 2.5 GE Multigigabit RJ-45 ports</td></tr><tr><td><b>7</b></td><td>2x 1/10 GE SFP&#43; ports</td></tr><tr><td><b>8</b></td><td>Management RJ-45 port</td></tr><tr><td><b>9</b></td><td>Console RJ-45 port </td></tr><tr><td><b>10</b></td><td>USB 3.0 Type C storage</td></tr><tr><td><b>11</b></td><td>Kensington lock, ground screw</td></tr></tbody></table>
+
+  </div>
+
+
+
+    
+
+</cds-styles>
+
+
+    
+    
+    <div class="image">
+<div data-c-version="DM:Image (V2):V2.2.0" data-asset-id="a901ac96-ff63-4a8b-a5dc-5a4113553b6c" id="image-ccdfdebf47" class="cmp-image  " itemscope itemtype="http://schema.org/ImageObject">
+    
+        <img src="/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/8200-series-c8225-g2-front-view.png" loading="lazy" class="cmp-image__image" itemprop="contentUrl" width="775" height="240" alt/>
+    
+    
+    
+</div>
+
+    
+
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-631fe5ed7c" class="cmp-text muse-prose ">
+    <h6>Figure 5. Front view of a Cisco C8225-G2 Secure Router</h6>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-e53b4fbcd9" class="cmp-text muse-prose ">
+    <h6>Table 5. Descriptions of front panel of a Cisco C8225-G2 Secure Router</h6>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Table" class="table text">
+   
+  
+
+  <!-- Before Authoring -->
+  
+
+  <!--After Authoring -->
+  <div data-c-version="DM:Table:V2.1.1" data-enable-search="false" data-no-search-result-text="No results found" data-init-table="true" id="table-cf7ab5d038" class="muse-prose cds-c-table cds-c-table--zebra cds-c-table--dense  cds-c-table--col-width-auto ">
+    
+    <table border="1" cellspacing="0" cellpadding="1"><thead><tr><th scope="col"><b>Label</b></th><th scope="col">Description</th></tr></thead><tbody><tr><td><b>1</b></td><td>Status LEDs, blue beacon LED</td></tr><tr><td><b>2</b></td><td>Reset button</td></tr><tr><td><b>3</b></td><td>Power button</td></tr><tr><td><b>4</b></td><td>Dual power supply Input</td></tr><tr><td><b>5</b></td><td>8x 1 GE RJ-45 ports</td></tr><tr><td><b>6</b></td><td>2x 1/10 GE SFP&#43; ports </td></tr><tr><td><b>7</b></td><td>Management RJ-45 port</td></tr><tr><td><b>8</b></td><td>Console RJ-45 port</td></tr><tr><td><b>9</b></td><td>USB 3.0 Type C storage</td></tr><tr><td><b>10</b></td><td>Kensington lock, ground screw</td></tr></tbody></table>
+
+  </div>
+
+
+
+    
+
+</cds-styles>
+
+
+    
+    
+    <div class="image">
+<div data-c-version="DM:Image (V2):V2.2.0" data-asset-id="d1b5bd75-0990-4d74-b50c-1fd83cb60339" id="image-17b9627856" class="cmp-image  " itemscope itemtype="http://schema.org/ImageObject">
+    
+        <img src="/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/8200-series-c8221L-g2-front-view.png" loading="lazy" class="cmp-image__image" itemprop="contentUrl" width="775" height="240" alt/>
+    
+    
+    
+</div>
+
+    
+
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-673b43dd48" class="cmp-text muse-prose ">
+    <h6>Figure 6. Front view of a Cisco C8221L-G2 Secure Router</h6>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-af05792ffa" class="cmp-text muse-prose ">
+    <h6>Table 6. Descriptions of front panel of a Cisco C8221L-G2 Secure Router</h6>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Table" class="table text">
+   
+  
+
+  <!-- Before Authoring -->
+  
+
+  <!--After Authoring -->
+  <div data-c-version="DM:Table:V2.1.1" data-enable-search="false" data-no-search-result-text="No results found" data-init-table="true" id="table-b75e905938" class="muse-prose cds-c-table cds-c-table--zebra cds-c-table--dense  cds-c-table--col-width-auto ">
+    
+    <table cellpadding="1" cellspacing="0" border="1"><thead><tr><th scope="col"><b>Label</b></th><th scope="col">Description</th></tr><tr><td><b>1</b></td><td>Status LEDs, blue beacon LED</td></tr><tr><td><b>2</b></td><td>Reset button</td></tr></thead><tbody><tr><td><b>3</b></td><td>Power button</td></tr><tr><td><b>4</b></td><td>Dual power supply Input</td></tr><tr><td><b>5</b></td><td>8x 1 GE RJ-45 ports</td></tr><tr><td><b>6</b></td><td>2x 10 GE RJ-45 ports</td></tr><tr><td><b>7</b></td><td>Management RJ-45 port</td></tr><tr><td><b>8</b></td><td>Console RJ-45 port</td></tr><tr><td><b>9</b></td><td>USB 3.0 Type C storage</td></tr><tr><td><b>10</b></td><td>Kensington lock, ground screw</td></tr></tbody></table>
+
+  </div>
+
+
+
+    
+
+</cds-styles>
+
+
+    
+    
+    <div class="image">
+<div data-c-version="DM:Image (V2):V2.2.0" data-asset-id="9e5cc973-c9fc-41d4-b08f-38ed493bb066" id="image-046c3e8ca8" class="cmp-image  " itemscope itemtype="http://schema.org/ImageObject">
+    
+        <img src="/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/8200-series-c8211L-g2-front-view.png" loading="lazy" class="cmp-image__image" itemprop="contentUrl" width="788" height="240" alt/>
+    
+    
+    
+</div>
+
+    
+
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-457fc8427a" class="cmp-text muse-prose ">
+    <h6>Figure 7. Front view of a Cisco C8211-G2 Secure Router</h6>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-7c1c988db0" class="cmp-text muse-prose ">
+    <h6>Table 7. Descriptions of front panel of a Cisco C8211-G2 Secure Router</h6>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Table" class="table text">
+   
+  
+
+  <!-- Before Authoring -->
+  
+
+  <!--After Authoring -->
+  <div data-c-version="DM:Table:V2.1.1" data-enable-search="false" data-no-search-result-text="No results found" data-init-table="true" id="table-ce08c39685" class="muse-prose cds-c-table cds-c-table--zebra cds-c-table--dense  cds-c-table--col-width-auto ">
+    
+    <table cellpadding="1" cellspacing="0" border="1"><thead><tr><th scope="col"><b>Label</b></th><th scope="col">Description</th></tr></thead><tbody><tr><td><b>1</b></td><td>Status LEDs, blue beacon LED</td></tr><tr><td><b>2</b></td><td>Reset button</td></tr><tr><td><b>3</b></td><td>Power button</td></tr><tr><td><b>4</b></td><td>Dual power supply input</td></tr><tr><td><b>5</b></td><td>4x 1 GE RJ-45 ports</td></tr><tr><td><b>6</b></td><td>2x 1 GE RJ-45/SFP combo ports</td></tr><tr><td><b>7</b></td><td>Console RJ-45 port</td></tr><tr><td><b>8</b></td><td>USB 3.0 Type C storage</td></tr><tr><td><b>9</b></td><td>Ground screw</td></tr></tbody></table>
+
+  </div>
+
+
+
+    
+
+</cds-styles>
+
+
+    
+    
+    <div class="image">
+<div data-c-version="DM:Image (V2):V2.2.0" data-asset-id="d15f260c-306e-4354-bebc-0d6aad3bdd41" id="image-ccb5bebc1a" class="cmp-image  " itemscope itemtype="http://schema.org/ImageObject">
+    
+        <img src="/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/8200-series-c8255-g2-ucsxe-front-panel.png" loading="lazy" class="cmp-image__image" itemprop="contentUrl" width="714" height="309" alt/>
+    
+    
+    
+</div>
+
+    
+
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-4f041e712f" class="cmp-text muse-prose ">
+    <h6>Figure 8. Front view of a Cisco C8255-G2-UCSXE Secure Router Node</h6>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-6445e572fe" class="cmp-text muse-prose ">
+    <h6>Table 8. Descriptions of front panel of a Cisco C8255-G2-UCSXE Secure Router Node</h6>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Table" class="table text">
+   
+  
+
+  <!-- Before Authoring -->
+  
+
+  <!--After Authoring -->
+  <div data-c-version="DM:Table:V2.1.1" data-enable-search="false" data-no-search-result-text="No results found" data-init-table="true" id="table-68e6550dcb" class="muse-prose cds-c-table cds-c-table--zebra cds-c-table--dense  cds-c-table--col-width-auto ">
+    
+    <table cellpadding="1" cellspacing="0" border="1"><thead><tr><th scope="col"><b>Label</b></th><th scope="col">Description</th></tr></thead><tbody><tr><td><b>1</b></td><td>Reset button</td></tr><tr><td><b>2</b></td><td>Status, power, and locator LEDs</td></tr><tr><td><b>3</b></td><td>14x 1 GE RJ-45 ports</td></tr><tr><td><b>4</b></td><td>4x 2.5 GE Multigigabit RJ-45 ports</td></tr><tr><td><b>5</b></td><td>2x 1/10 GE SFP&#43; ports</td></tr><tr><td><b>6</b></td><td>Console RJ-45 port</td></tr><tr><td><b>7</b></td><td>Management RJ-45 port</td></tr></tbody></table>
+
+  </div>
+
+
+
+    
+
+</cds-styles>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-da5ed47bcf" class="cmp-text muse-prose ">
+    <h6>Table 9. Technical specifications</h6>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Table" class="table text">
+   
+  
+
+  <!-- Before Authoring -->
+  
+
+  <!--After Authoring -->
+  <div data-c-version="DM:Table:V2.1.1" data-enable-search="false" data-no-search-result-text="No results found" data-init-table="true" id="table-00e0b9e9ef" class="muse-prose cds-c-table cds-c-table--zebra cds-c-table--dense  cds-c-table--col-width-auto ">
+    
+    <table cellpadding="1" cellspacing="0" border="1"><thead></thead><tbody><tr><th><b> </b></th><th><p>C8235-E-G2</p>
+<p>and C8231-E-G2</p>
+</th><th>C8235-G2</th><th>C8231-G2</th></tr><tr><td colspan="4"><b>Interfaces and slots</b></td></tr><tr><td><b>WAN Ports</b></td><td><p>2x 1/10 GE SFP&#43;,</p>
+<p>2x 2.5 GE mGig</p>
+<p>RJ-45 (2x UPOE&#43;)</p>
+</td><td><p>2x 1/10 GE SFP&#43;,</p>
+<p>2x 2.5 GE mGig</p>
+<p>RJ-45 (2x UPOE&#43;)</p>
+</td><td><p>2x 1/10 GE SFP&#43;,</p>
+<p>2x 2.5 GE mGig</p>
+<p>RJ-45 (1x PoE&#43;)</p>
+</td></tr><tr><td><b>Flex Ports</b></td><td>-</td><td><p>2x 2.5 GE mGig</p>
+<p>RJ-45 (2x PoE&#43;)</p>
+</td><td><p>2x 2.5 GE mGig</p>
+<p>RJ-45</p>
+</td></tr><tr><td><b>LAN Ports</b></td><td>-</td><td>4x 2.5 GE mGig RJ-45</td><td>4x 1 GE RJ-45</td></tr><tr><td><b>Expansion Slots</b></td><td>1 x NIM</td><td>-</td><td>-</td></tr><tr><td><b>Cellular Slot</b></td><td>1 x PIM</td><td>1 x PIM</td><td>-</td></tr><tr><td><b>Management/console port</b></td><td><p>1x RJ-45 Out-of-Band (OOB) mgmt</p>
+<p>1x RJ-45, 1x micro-USB console</p>
+</td><td><p>1x RJ-45 OOB mgmt</p>
+<p><br />
+1x RJ-45, 1x micro-USB console</p>
+</td><td>1x RJ-45 OOB mgmt<br />
+<br />
+1x RJ-45 console</td></tr><tr><td colspan="4"><b>Memory and storage</b></td></tr><tr><td><b>DRAM</b></td><td>16 GB (for C8235-E-G2)<br />
+8 GB (for C8231-E-G2)</td><td>16 GB</td><td>8 GB</td></tr><tr><td><b>Storage</b></td><td>16 GB<br />
+Upgradeable to 600 GB</td><td>16 GB</td><td>16 GB</td></tr><tr><td><b>Power supply (default)</b></td><td>140 W AC (internal default)</td><td>66 W AC (default – external adapter) </td><td>66 W AC (default – external adapter) </td></tr><tr><td><b>Power supply (upgrade options)</b></td><td><p>150 W AC for PoE <br />
+(external adapter)</p>
+<p><br />
+PoE budget: 120W</p>
+<p><br />
+Secondary PSU <br />
+option – external adapter</p>
+<p><br />
+150 W AC-DC </p>
+<p><br />
+150 W DC-DC  </p>
+</td><td>230 W AC for PoE<br />
+(external adapter)<br />
+<br />
+PoE budget – 120 W</td><td>115 W AC for PoE<br />
+(external adapter)<br />
+<br />
+PoE budget – 30 W</td></tr><tr><td><b>Typical power<br />
+ consumption </b></td><td>34.20W</td><td>27.11 W</td><td>26.70 W</td></tr></tbody></table>
+
+  </div>
+
+
+
+    
+
+</cds-styles>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Table" class="table text">
+   
+  
+
+  <!-- Before Authoring -->
+  
+
+  <!--After Authoring -->
+  <div data-c-version="DM:Table:V2.1.1" data-enable-search="false" data-no-search-result-text="No results found" data-init-table="true" id="table-4ec2a243c5" class="muse-prose cds-c-table cds-c-table--zebra cds-c-table--dense  cds-c-table--col-width-auto ">
+    
+    <table border="1" cellspacing="0" cellpadding="1"><thead></thead><tbody><tr><th><b> </b></th><th><p>C8225-G2,</p>
+<p>C8221-G2, and</p>
+<p>C8221L-G2</p>
+</th><th>C8211-G2</th><th><p>C8255-G2-UCSXE</p>
+<p>(secure router node for</p>
+<p>Cisco UCS XE9305 Chassis)</p>
+</th></tr><tr><td colspan="4"><b>Interfaces and slots</b></td></tr><tr><td><b>WAN ports</b></td><td><p>For C8225-G2 and C8221-G2</p>
+<p>2x 1/10 GE SFP&#43;, 2x 1 GE RJ-45</p>
+<p>For C8221L-G2</p>
+<p>2x 10 GE RJ-45, 2x 1 GE RJ-45</p>
+</td><td>2x 1 GE RJ-45/SFP combo</td><td>-</td></tr><tr><td><b>Flex ports</b></td><td>2x 1 GE RJ-45</td><td>2x 1 GE RJ-45</td><td><p>2x 1/10 GE SFP&#43;,</p>
+<p>2x 2.5 GE mGig (UPOE&#43;)</p>
+</td></tr><tr><td><b>LAN ports</b></td><td>4x 1 GE RJ-45</td><td>2x 1 GE RJ-45</td><td><p>2x 2.5 GE mGig (UPOE&#43;)</p>
+<p>14x 1 GE RJ-45 (PoE&#43;)</p>
+</td></tr><tr><td><b>Cellular slot</b></td><td>-</td><td>-</td><td>-</td></tr><tr><td><b>Management/<br />
+ console port</b></td><td><p>1x RJ-45 OOB mgmt</p>
+<p>1x RJ-45 console</p>
+</td><td>1x RJ-45 console</td><td><p>1x RJ-45 OOB mgmt</p>
+<p>1x RJ-45 console</p>
+</td></tr><tr><td colspan="4"><b>Memory and storage</b></td></tr><tr><td><b>DRAM</b></td><td><p>16 GB (for C8225-G2)</p>
+<p>8 GB (for C8221-G2 and C8221L-G2)</p>
+</td><td>8 GB</td><td>16 GB</td></tr><tr><td><b>Storage</b></td><td>16 GB</td><td>16 GB</td><td><p>16 GB (default)</p>
+<p>600 GB</p>
+</td></tr><tr><td><b>Power supply (default)</b></td><td>66W AC (default – external adapter)</td><td>30W AC (default – external adapter)</td><td><p>Powered within the Cisco UCS XE9305 Chassis</p>
+<p>PoE budget – 360W</p>
+</td></tr><tr><td><b>Power supply (spare options)</b></td><td><p>Secondary PSU option – external adapter</p>
+<p>66W AC</p>
+</td><td><p>Secondary PSU option – external adapter</p>
+<p>30W AC</p>
+</td><td> </td></tr><tr><td><b>Typical power consumption </b></td><td>21W</td><td>15.4W</td><td>-</td></tr></tbody></table>
+
+  </div>
+
+
+
+    
+
+</cds-styles>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-9460f128f5" class="cmp-text muse-prose ">
+    <h6><b>Table 10. Throughput and scale</b></h6>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Table" class="table text">
+   
+  
+
+  <!-- Before Authoring -->
+  
+
+  <!--After Authoring -->
+  <div data-c-version="DM:Table:V2.1.1" data-enable-search="false" data-no-search-result-text="No results found" data-init-table="true" id="table-490d247f54" class="muse-prose cds-c-table cds-c-table--zebra cds-c-table--dense  cds-c-table--col-width-auto ">
+    
+    <table cellpadding="1" cellspacing="0" border="1"><thead><tr><th scope="col"><b> </b></th><th scope="col" style="	text-align: left;
+"><p>C8235-E-G2,</p>
+<p>C8235-G2, </p>
+<p>C8225-G2, and</p>
+<p>C8255-G2-UCSXE</p>
+</th><th scope="col"><p>C8231-E-G2,</p>
+<p>C8231-G2,  </p>
+<p>C8221-G2, and</p>
+<p>C8221L-G2</p>
+</th><th>C8211-G2        </th></tr></thead><tbody><tr><td colspan="4"><b>Throughput</b></td></tr><tr><td><b>Forwarding (512B)</b></td><td>19 Gbps</td><td>19 Gbps</td><td>5.6 Gbps</td></tr><tr><td><b>IPsec (512B)</b></td><td>5 Gbps</td><td>5 Gbps</td><td>3 Gbps</td></tr><tr><td><b>SD-WAN* (512B)</b></td><td>4 Gbps</td><td>4 Gbps</td><td>2 Gbps</td></tr><tr><td><b>Threat protection**<br />
+ (EMIX)</b></td><td style="	text-align: left;
+">2.4 Gbps</td><td>1 Gbps</td><td>1 Gbps</td></tr><tr><td colspan="4"><b>Scale</b></td></tr><tr><td><b>IPv4/IPv6 routes</b></td><td>1.5M</td><td>1.5M</td><td>1.5M</td></tr><tr><td><b>IPsec tunnels</b></td><td><p>Up to 2500 (Starting at IOS XE 26.2.1)</p>
+<p>Up to 700 (Prior to IOS XE 26.2.1)</p>
+</td><td><p>Up to 1500 (Starting at IOS XE 26.2.1)</p>
+<p>Up to 700 (Prior to IOS XE 26.2.1)</p>
+</td><td><p>Up to 1500 (Starting at IOS XE 26.2.1)</p>
+<p>Up to 700 (Prior to IOS XE 26.2.1)</p>
+</td></tr><tr><td><b>IPv4 Access Control Lists (ACLs) </b></td><td>3000</td><td>3000</td><td>3000</td></tr><tr><td><b>IPv4 Access Control Entries (ACEs) </b></td><td>15,000</td><td>15,000</td><td>15,000</td></tr><tr><td><b>Network Address Translation (NAT) sessions</b></td><td>1.5M</td><td>1.5M</td><td>1.5M</td></tr><tr><td><b>Virtual Route Forwarding (VRF) instances</b></td><td>4000</td><td>4000</td><td>4000</td></tr></tbody></table>
+
+  </div>
+
+
+
+    
+
+</cds-styles>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-25b0c733b8" class="cmp-text muse-prose ">
+    <p><sup>*SD-WAN feature combination: IPsec &#43; Quality of Service (QoS) &#43; deep packet inspection &#43; Flexible NetFlow</sup></p>
+<p><sup>**Threat protection: 100% Direct Internet Access (DIA)-NAT &#43; NGFW &#43; Intrusion Prevention System (IPS) &#43; URL Filtering &#43; Advanced Malware Protection (AMP)</sup></p>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-5c4cf4ace7" class="cmp-text muse-prose ">
+    <h6>Table 11. Physical specifications</h6>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Table" class="table text">
+   
+  
+
+  <!-- Before Authoring -->
+  
+
+  <!--After Authoring -->
+  <div data-c-version="DM:Table:V2.1.1" data-enable-search="false" data-no-search-result-text="No results found" data-init-table="true" id="table-e449bb5008" class="muse-prose cds-c-table cds-c-table--zebra cds-c-table--dense  cds-c-table--col-width-auto ">
+    
+    <table border="1" cellspacing="0" cellpadding="1"><thead><tr><th scope="col"><b>Description</b></th><th>C8235-E-G2 and<br />
+C8231-E-G2</th><th scope="col">C8235-G2</th><th scope="col">C8231-G2</th></tr></thead><tbody><tr><td><b>Dimensions<br />
+ <br />
+ (H x D x W)</b></td><td><p>1.73 x 17.25 x 11.81 in.</p>
+<p>(4.39 x 43.82 x 30.00 cm)</p>
+</td><td><p>1.65 x 8.9 x 12.7 in.</p>
+<p>(4.19 x 22.60 x 32.26 cm)</p>
+<p>2.835 x 12 x 17.56 in.</p>
+<p>(7.20 x 30.48 x 44.60 cm) with rack-mount tray holding power supply</p>
+</td><td><p>1.14 x 8.1 x 12.23 in.</p>
+<p>(2.89 x 20.57 x 31.06 cm)</p>
+<p>2.835 x 12 x 17.56 in.</p>
+<p>(7.20 x 30.48 x 44.60 cm) with rack-mount tray holding power supply</p>
+</td></tr><tr><td><b>Rack units (RU)</b></td><td>1 RU</td><td>Desktop (2RU when Rack-mounted)</td><td>Desktop (2RU when Rack-mounted)</td></tr><tr><td><b>Chassis weight</b></td><td><p>8.36lbs</p>
+<p>(3.79 kg)</p>
+</td><td><p>7 lbs</p>
+<p>(3.17 kg)</p>
+</td><td><p>5 lbs</p>
+<p>(2.27 kg)</p>
+</td></tr><tr><td><b>Input voltage</b></td><td>AC: 85 to 264 VAC<br />
+DC: -40 to 72V; 48V nominal</td><td>AC: 85 to 264 VAC</td><td>AC: 85 to 264 VAC</td></tr><tr><td><b>Operating temperature</b></td><td><p>0° to 40°C (32° to 104°F) up to 10,000 feet</p>
+<p>0 to 45°C (32° to 113°F) up to 6000 feet</p>
+<p>For NEBS, -5° to 55°C (23° to 131°F) up to 6000 feet (additional third fan assembly required)</p>
+</td><td>0° to 40°C (32° to 104°F) at sea level</td><td>0° to 45°C (32° to 113°F) at sea level</td></tr><tr><td><b>Storage temperature</b></td><td><p>-40° to 70°C</p>
+<p>(-40° to 158°F)</p>
+</td><td><p>-40° to 70°C</p>
+<p>(-40° to 158°F)</p>
+</td><td><p>-40° to 70°C</p>
+<p>(-40° to 158°F)</p>
+</td></tr><tr><td><b>Relative humidity<br />
+ (noncondensing)</b></td><td colspan="3">Operating: 5% to 85%<br />
+Nonoperating and storage: 5% to 95%</td></tr></tbody></table>
+
+  </div>
+
+
+
+    
+
+</cds-styles>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Table" class="table text">
+   
+  
+
+  <!-- Before Authoring -->
+  
+
+  <!--After Authoring -->
+  <div data-c-version="DM:Table:V2.1.1" data-enable-search="false" data-no-search-result-text="No results found" data-init-table="true" id="table-0ac4a4045f" class="muse-prose cds-c-table cds-c-table--zebra cds-c-table--dense  cds-c-table--col-width-auto ">
+    
+    <table cellpadding="1" cellspacing="0" border="1"><thead><tr><th scope="col"><b>Description</b></th><th>C8225-G2, C8221-G2, and C8221L-G2</th><th scope="col">C8211-G2</th></tr></thead><tbody><tr><td><b>Dimensions<br />
+ <br />
+ (H x D x W)</b></td><td><p>1.61 x 8.5 x 12.7 in. (4.09 x 21.59 x 32.26 cm)</p>
+<p>(2.835 x 12 x 17.56 in. [7.20 x 30.48 x 44.60 cm] with rack-mount tray holding power supply)</p>
+</td><td><p>1.10 in x 7.2 in x 10.8 in (2.79 x 18.29 x 27.43 cm)</p>
+<p>(2.835 x 12 x 17.56 in [7.20 x 30.48 x 44.60 cm] with rack-mount tray holding power supply)</p>
+</td></tr><tr><td><b>Rack units (RU)</b></td><td>Desktop (2RU when Rack-mounted)</td><td>Desktop (2RU when Rack-mounted)</td></tr><tr><td><b>Chassis weight</b></td><td><p>5 lb (2.27 kg)</p>
+</td><td><p>3.38 lb (1.53 kg)</p>
+</td></tr><tr><td><b>Input voltage</b></td><td>AC: 85 to 264 VAC</td><td>AC: 85 to 264 VAC</td></tr><tr><td><b>Operating temperature</b></td><td><p>0° to 45°C (32° to 113°F) at sea level</p>
+<p>(0° to 40°C [32° to 104°F] at sea level with dust/liquid cover)</p>
+</td><td><p>0° to 40°C (32° to 104°F) at sea level</p>
+<p>(0° to 35°C [32° to 95°F] at sea level with dust/liquid cover</p>
+</td></tr><tr><td><b>Storage temperature</b></td><td><p>-40° to 70°C</p>
+<p>(-40° to 158°F)</p>
+</td><td><p>-40° to 70°C</p>
+<p>(-40° to 158°F)</p>
+</td></tr><tr><td><b>Relative humidity<br />
+ (noncondensing)</b></td><td colspan="2">Operating: 5% to 85%<br />
+Nonoperating and storage: 5% to 95%</td></tr></tbody></table>
+
+  </div>
+
+
+
+    
+
+</cds-styles>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-5a0c36a5e6" class="cmp-text muse-prose ">
+    <h3>Modules</h3>
+<p> </p>
+<h6>Table 12. Modules</h6>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Table" class="table text">
+   
+  
+
+  <!-- Before Authoring -->
+  
+
+  <!--After Authoring -->
+  <div data-c-version="DM:Table:V2.1.1" data-enable-search="false" data-no-search-result-text="No results found" data-init-table="true" id="table-506938d460" class="muse-prose cds-c-table cds-c-table--zebra cds-c-table--dense  cds-c-table--col-width-auto ">
+    
+    <table cellpadding="1" cellspacing="0" border="1"><thead><tr><th scope="col"><b>Product number</b></th><th scope="col">Description</th></tr></thead><tbody><tr><td colspan="2"><b>WAN modules</b></td></tr><tr><td><b>C-NIM-WAN-2X </b></td><td>2-port 1/10 Gbps SFP/SFP&#43; WAN Module, NIM with WAN MACsec</td></tr><tr><td><b>C-NIM-WAN-4S </b></td><td>4-port 1 Gbps SFP WAN Module, NIM with WAN MACsec</td></tr><tr><td colspan="2"><b>LAN modules </b></td></tr><tr><td><b>C-NIM-4X </b></td><td>4-port 1/10 Gbps SFP/SFP&#43; switch NIM, LAN/WAN MACsec and optional L3 </td></tr><tr><td><b>C-NIM-8T </b></td><td>8-port 100 Mbps/1 Gbps switch NIM, LAN/WAN MACsec and optional L3 </td></tr><tr><td><b>C-NIM-8M </b></td><td>8-port 100 Mbps/1/2.5 Gbps switch NIM, UPOE&#43;, LAN/WAN MACsec and optional L3 </td></tr><tr><td colspan="2"><b>Serial WAN interface </b></td></tr><tr><td><b>NIM-1T</b></td><td>1-port serial high-speed WAN interface card </td></tr><tr><td><b>NIM-2T  </b></td><td>2-port serial high-speed WAN interface card </td></tr><tr><td><b>NIM-4T </b></td><td>4-port serial high-speed WAN interface card </td></tr><tr><td colspan="2"><b>Async WAN interface </b></td></tr><tr><td><b>NIM-16A </b></td><td>16-port Asynchronous Module </td></tr><tr><td><b>NIM-24A </b></td><td>24-port Asynchronous Module  </td></tr><tr><td colspan="2"><b>Cellular modules </b></td></tr><tr><td><b>P-5GS6-R16SA-GL </b></td><td>5G Sub-6 GHz Pluggable – 5G SA Global </td></tr><tr><td><b>P-LTEA7-NA  </b></td><td>CAT7 LTE Advanced Pluggable - North America</td></tr><tr><td><b>P-LTEA7-EAL</b></td><td>CAT7 LTE Advanced Pluggable - EMEA, APAC, and LATAM </td></tr><tr><td><b>P-LTEA7-JP</b></td><td>CAT7 LTE Advanced Pluggable - Japan</td></tr></tbody></table>
+
+  </div>
+
+
+
+    
+
+</cds-styles>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-9f01f6c078" class="cmp-text muse-prose ">
+    <p>**Analog Voice Modules</p>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Table" class="table text">
+   
+  
+
+  <!-- Before Authoring -->
+  
+
+  <!--After Authoring -->
+  <div data-c-version="DM:Table:V2.1.1" data-enable-search="false" data-no-search-result-text="No results found" data-init-table="true" id="table-70f5828a1b" class="muse-prose cds-c-table cds-c-table--zebra cds-c-table--dense  cds-c-table--col-width-auto ">
+    
+    <table border="1" cellspacing="0" cellpadding="1"><tbody><tr><th>Product number </th><th>Description</th></tr><tr><td><b>NIM-2FXS/4FXOP</b></td><td>2-Port FXS/FXS-E/DID and 4-Port FXO Network Interface Module</td></tr><tr><td><b>NIM-2FXSP</b></td><td>2-Port Network Interface Module - FXS, FXS-E and DID</td></tr><tr><td><b>NIM-4FXSP</b></td><td>4-Port Network Interface Module - FXS, FXS-E and DID</td></tr><tr><td><b>NIM-2FXO</b></td><td>2-port FXO Network Interface Module</td></tr><tr><td><b>NIM-4FXO</b></td><td>4-port FXO Network Interface Module</td></tr><tr><td><b>NIM-4E/M</b></td><td>4-Port Network Interface Module - Ear and Mouth</td></tr><tr><td><b>NIM-4BRI-NT/TE</b></td><td>4-port Network Interface Module - BRI (NT and TE)</td></tr><tr><td><b>NIM-2BRI-NT/TE</b></td><td>2-port Network Interface Module - BRI (NT and TE)</td></tr></tbody></table>
+
+  </div>
+
+
+
+    
+
+</cds-styles>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-c0144de87a" class="cmp-text muse-prose ">
+    <p>**FXO/FXS modules supported starting IOS XE 26.1 in Routing (CLI) mode.</p>
+<p>    BRI and E/M modules supported starting IOS XE 26.2 in Routing (CLI) mode</p>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-06dfb4b5a3" class="cmp-text muse-prose ">
+    <h2>Software management</h2>
+<p>The minimum Cisco IOS® XE release versions for the Cisco 8200 Series Secure Routers are listed in the table below.</p>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-7147aa99c7" class="cmp-text muse-prose ">
+    <h6>Table 13. Minimum software releases</h6>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Table" class="table text">
+   
+  
+
+  <!-- Before Authoring -->
+  
+
+  <!--After Authoring -->
+  <div data-c-version="DM:Table:V2.1.1" data-enable-search="false" data-no-search-result-text="No results found" data-init-table="true" id="table-e09678ea65" class="muse-prose cds-c-table cds-c-table--zebra cds-c-table--dense  cds-c-table--col-width-auto ">
+    
+    <table border="1" cellspacing="0" cellpadding="1"><thead><tr><th scope="col"> </th><th scope="col">Device OS</th><th scope="col">Cisco Catalyst™ SD-WAN Manager</th></tr></thead><tbody><tr><td><b>C8235-E-G2, C8231-E-G2<br />
+ C8235-G2, C8231-G2    </b></td><td>IOS XE Release 17.18.1 and later</td><td>SD-WAN Release 20.18.1 and later</td></tr><tr><td><b>C8225-G2, C8221-G2,<br />
+ C8221L-G2     </b></td><td>IOS XE Release 26.1.2 and later </td><td>SD-WAN Release 26.1.2 and later</td></tr><tr><td><b>C8255-G2-UCSXE, C8211-G2</b></td><td>IOS XE Release 26.2.1 and later</td><td>SD-WAN Release 26.2.1 and later</td></tr></tbody></table>
+
+  </div>
+
+
+
+    
+
+</cds-styles>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-297951a40e" class="cmp-text muse-prose ">
+    <h2>Ordering information</h2>
+<p>For a detailed overview of the ordering process, please visit the <b><a href="https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/8000-secure-routers/8000-secure-router-og.html">Cisco 8000 Series Secure Routers Ordering Guide</a></b>.</p>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-39aef94f86" class="cmp-text muse-prose ">
+    <h2>Warranty</h2>
+<p>Cisco 8200 Series Secure Routers come standard with a Cisco Limited 2-Year Return To Factory Hardware Warranty. For more information, refer to:</p>
+<p><a href="https://www.cisco.com/c/en/us/products/warranties/warr-2yr-ltd-hw.html">https://www.cisco.com/c/en/us/products/warranties/warr-2yr-ltd-hw.html</a></p>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-5bf775738b" class="cmp-text muse-prose ">
+    <h2>Sustainability profile</h2>
+<p>Cisco is embedding sustainability into the product lifecycle—from manufacturing to end of use. Designed with consideration for Cisco&#39;s <a href="https://www.cisco.com/c/m/en_us/about/csr/esg-hub/environment/product-sustainability.html">Circular Design Principles</a>, our products feature both individual and portfolio-wide programs and innovations, including those that address efficient architecture design, power consumption, energy management, packaging sustainability, and takeback. These elements are pivotal in reducing operational costs and advancing net-zero greenhouse gas (GHG) emissions targets, and other sustainability-related ambitions.</p>
+<p>Information about Cisco&#39;s environmental, social, and governance (ESG) initiatives and performance is available in <a href="https://www.cisco.com/c/m/en_us/about/csr/esg-hub.html">Cisco&#39;s Purpose Reporting Hub</a>.</p>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-3f9ea1eb44" class="cmp-text muse-prose ">
+    <h6>Table 14. Sustainability references</h6>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Table" class="table text">
+   
+  
+
+  <!-- Before Authoring -->
+  
+
+  <!--After Authoring -->
+  <div data-c-version="DM:Table:V2.1.1" data-enable-search="false" data-no-search-result-text="No results found" data-init-table="true" id="table-7644c66eb0" class="muse-prose cds-c-table cds-c-table--zebra cds-c-table--dense  cds-c-table--col-width-auto ">
+    
+    <table cellpadding="1" cellspacing="0" border="1"><thead><tr><th colspan="2" scope="col"><b>Sustainability topic</b></th><th scope="col">Description</th></tr></thead><tbody><tr><td rowspan="3"><b>Power</b></td><td>Power management configuration</td><td><p>The power management chapter in the <a href="https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8200-series/software-config-guide/secure-8200-series-scg/isr9000swcfg-xe-16-12-book_chapter_01100.html">System Management Configuration Guide</a> provides detailed information on power management features and configurations available for the Cisco 8200 Series Secure Routers. The features discussed include power-supply modes and power-budgeting considerations.</p>
+</td></tr><tr><td>Auto-off ports without Small Form-Factor Pluggable (SFP)</td><td><p>Once enabled, the system checks for the presence of SFPs in fiber ports on a regular basis and turns on the Serializer/Deserializer (SerDes) when an SFP is detected. If no SFP is detected, the system will keep SerDes off to save energy..</p>
+</td></tr><tr><td>Auto-off port LEDs</td><td><p>Once enabled, port LEDs will stay depowered, saving energy, until a link event is triggered or manually enabled by the command-line interface or Mode button..</p>
+</td></tr><tr><td rowspan="2"><b>Energy management</b></td><td>Energy Management dashboard</td><td><p>The Energy Management dashboard on the Cisco Catalyst SD-WAN Manager offers comprehensive energy management capabilities, allowing users to monitor energy usage, energy mix, costs, and greenhouse gas emissions in real time.</p>
+<p><a href="https://www.cisco.com/c/en/us/td/docs/routers/sdwan/configuration/Monitor-And-Maintain/monitor-maintain-book/vmanage-monitor-overview.html#energy-management">Energy Management</a></p>
+</td></tr><tr><td>Environmental monitoring configuration</td><td><p>The environmental monitoring chapter in the <a href="https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8200-series/software-config-guide/secure-8200-series-scg/isr9000swcfg-xe-16-12-book_chapter_01100.html">System Management Configuration Guide</a> provides guidelines for configuring monitoring of environmental conditions of chassis components.</p>
+</td></tr><tr><td rowspan="5"><b>Materials, modularity, and reuse</b></td><td>Hardware standardization and modularity</td><td><p>Cisco 8200 Series Secure Routers use standard subassemblies and common components across products to streamline production and enhance repairability and upgradability.</p>
+</td></tr><tr><td>Simplified architecture</td><td><p>Cisco 8200 Series Secure Routers offer a simplified architecture by consolidating multiple discrete ASIC/NPU components into a central System-on-Chip (SoC) architecture, providing multiple discrete functions in a more integrated design.</p>
+</td></tr><tr><td>Powder-coat finish</td><td><p>Cisco 8200 Series Secure Routers use a powder-coating finish instead of oil-based wet paint. This finish reduces the amount of harmful solvents used and Volatile Organic Compounds (VOCs) emitted during the painting process.</p>
+</td></tr><tr><td>Bezel-free design</td><td><p>Cisco 8200 Series Secure Routers use a bezel-free design, reducing plastic usage.</p>
+</td></tr><tr><td>Cisco Takeback and Reuse</td><td><p>This program allows customers to return used equipment for responsible recycling and reuse.</p>
+<p><a href="https://www.cisco.com/c/en/us/about/takeback-and-reuse.html">Takeback and Reuse Program</a></p>
+</td></tr><tr><td><b>Cisco Refresh</b></td><td colspan="2"><p>This program offers certified remanufactured products, providing cost-effective alternatives to new equipment.</p>
+<p><a href="https://www.cisco.com/c/en/us/products/remanufactured.html">Cisco Refresh</a></p>
+</td></tr><tr><td><b>Foam reduction</b></td><td colspan="2"><p>Cisco 8000 Series Secure Routers are packaged with corrugated and fiber flute materials, containing minimum 25% post-consumer recycled content.</p>
+<p><a href="https://www.cisco.com/c/en/us/about/circular-economy/sustainable-packaging.html">Circular economy and packaging sustainability</a></p>
+</td></tr><tr><td><b>Accessory opt-in</b></td><td colspan="2">Accessory opt-in allows customers to select whether to include the accessory kit. Not including the kit results in using fewer materials and reducing waste. The default is to omit the kit unless it is required.</td></tr><tr><td rowspan="5"><b>Regulatory compliance</b></td><td>Environmental compliance</td><td><p>Information regarding Cisco compliance with applicable environmental laws and regulations is available at the Environmental Compliance section of Cisco’s Purpose Reporting Hub.</p>
+<p><a href="https://www.cisco.com/c/m/en_us/about/csr/esg-hub/environment/compliance.html">Environmental compliance</a></p>
+</td></tr><tr><td>Product Approvals Status (PAS)</td><td><p>Information regarding the certification status for given Cisco products in certain countries is available at Cisco’s self-service PAS database.</p>
+<p><a href="https://www.cisco.com/c/en/us/products/product-approvals.html">PAS database</a></p>
+</td></tr><tr><td>Product-related materials compliance</td><td><p>This page addresses Cisco’s position regarding relevant productrelated materials legislation, such as Restriction of Hazardous Substances (RoHS) and Registration, Evaluation, Authorization, and Restriction of Chemicals (REACH).</p>
+<p><a href="https://www.cisco.com/c/en/us/about/product-innovation-stewardship/materials.html">RoHS and REACH</a></p>
+</td></tr><tr><td>Waste Electrical and Electronic Equipment (WEEE), battery, and packaging compliance</td><td><p>This page discusses Cisco’s position regarding relevant productrelated legislation on recycling, battery, and packaging.</p>
+<p><a href="https://www.cisco.com/c/en/us/about/takeback-and-reuse/product-recycling/weee-compliance.html">WEEE, battery and packaging</a></p>
+</td></tr><tr><td>Cisco packaging materials and codes</td><td><p>This table provides material identification for packaging used for Cisco products.</p>
+<p><a href="https://www.cisco.com/c/en/us/about/takeback-and-reuse/product-recycling/packaging-materials-and-codes.html">Packaging materials and codes</a></p>
+</td></tr><tr><td rowspan="3"><b>General</b></td><td>Sustainability inquiries</td><td>For ESG or CSR inquiries, please contact your Cisco account team. </td></tr><tr><td>Cisco policies, positions, and guides</td><td><p>Links to select Cisco environmental sustainability policies, positions, and guides are provided in the “Policies, positions, and guides” section of Cisco’s Purpose Reporting Hub.</p>
+<p><a href="https://www.cisco.com/c/m/en_us/about/csr/esg-hub/governance/policies.html">Policies, positions, and guides</a></p>
+</td></tr><tr><td>Cisco Green Pay</td><td><p>This page provides an overview of Cisco Green Pay, a financing program aimed at promoting more sustainable technology adoption by providing flexible payment options.</p>
+<p><a href="/site/us/en/buy/payment-solutions/green-pay.html">Green Pay</a></p>
+</td></tr></tbody></table>
+
+  </div>
+
+
+
+    
+
+</cds-styles>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-f5aea241eb" class="cmp-text muse-prose ">
+    <h2>Appendix</h2>
+<h3>Safety and compliance</h3>
+<h4>Chassis</h4>
+<p>The table below lists the safety and compliance information for the Cisco 8200 Series Secure Routers chassis.</p>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-377bdd5c79" class="cmp-text muse-prose ">
+    <h6>Table 15. Chassis safety and compliance information</h6>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Table" class="table text">
+   
+  
+
+  <!-- Before Authoring -->
+  
+
+  <!--After Authoring -->
+  <div data-c-version="DM:Table:V2.1.1" data-no-search-result-text="No results found" data-init-table="true" id="table-8e9d14d886" class="muse-prose cds-c-table  cds-c-table--dense  cds-c-table--col-width-auto ">
+    
+    <table cellpadding="1" cellspacing="0" border="1"><thead><tr><th scope="col">Safety and certifications</th><th scope="col">EMC and EMI compliance</th></tr></thead><tbody><tr><td><ul><li>UL 60950-1</li><li>CAN/CSA-C22.2 No. 60950-1</li><li>UL 62368-1</li><li>CAN/CSA-C22.2 No. 62368-1</li><li>EN 60950-1</li><li>IEC 60950-1</li><li>IEC 62368-1</li><li>EN 62368-1</li><li>AS/NZS 60950.1</li><li>AS/NZS 62368.1</li><li>IEC/EN 60825 Laser Safety</li><li>FDA: Code of Federal Regulations Laser Safety</li></ul>
+</td><td><ul><li>47 CFR Part 15 Class A</li><li>ICES 003 Class A</li><li>AS/NZS CISPR 32 Class A</li><li>CISPR 32 Class A</li><li>EN55032 Class A</li><li>VCCI-CISPR 32 Class A</li><li>CNS 13438 Class A</li><li>KS32 Class A</li><li>IEC/EN 61000-3-2: Power Line Harmonics</li><li>IEC/EN 61000-3-3: Voltage Fluctuations and Flicker</li><li>IEC/EN-61000-4-2: Electrostatic Discharge Immunity</li><li>IEC/EN-61000-4-3: Radiated Immunity</li><li>IEC/EN-61000-4-4: Electrical Fast Transient Immunity</li><li>IEC/EN-61000-4-5: Surge AC, DC, and Signal Ports</li><li>IEC/EN-61000-4-6: Immunity to Conducted Disturbances</li><li>IEC/EN-61000-4-8: Power Frequency Magnetic Field Immunity</li><li>IEC/EN-61000-4-11: Voltage DIPS, Short Interruptions, and Voltage Variations</li><li>KS C 9835</li><li>EN300 386: Telecommunications Network Equipment (EMC)</li><li>EN55032: Multimedia Equipment (Emissions)</li><li>EN55024: Information Technology Equipment (Immunity)</li><li>EN55035: Multimedia Equipment (Immunity)</li><li>EN61000-6-1: Generic Immunity Standard</li></ul>
+</td></tr></tbody></table>
+
+  </div>
+
+
+
+    
+
+</cds-styles>
+
+
+    
+    
+    <div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-3f6006c64d" class="cmp-text muse-prose ">
+    <h3>Document history</h3>
+
+</div>
+
+    
+</div>
+
+
+    
+    
+    <cds-styles data-config-metrics-group="Table" class="table text">
+   
+  
+
+  <!-- Before Authoring -->
+  
+
+  <!--After Authoring -->
+  <div data-c-version="DM:Table:V2.1.1" data-enable-search="false" data-no-search-result-text="No results found" data-init-table="true" id="table-dfc4034a16" class="muse-prose cds-c-table  cds-c-table--dense  cds-c-table--col-width-auto ">
+    
+    <table cellpadding="1" cellspacing="0" border="1"><thead><tr><th scope="col"><b>Document history</b></th><th scope="col">Described in</th><th scope="col">Date</th></tr></thead><tbody><tr><td><b>Document created</b></td><td>Datasheet</td><td>June 10, 2025</td></tr><tr><td><b>Added new modular variant</b></td><td>Across document</td><td>Nov 10, 2025</td></tr><tr><td><b>Added scale numbers and removed unsupported modules</b></td><td>Table #6 and Table #8</td><td>Dec 5, 2025</td></tr><tr><td><b>Added new 8200 Series Secure Routers</b></td><td valign="top" width="143"><p>Across document</p>
+</td><td valign="top" width="165"><p>June 2, 2026</p>
+</td></tr></tbody></table>
+
+  </div>
+
+
+
+    
+
+</cds-styles>
+
+
+</div>
+</div>
+  
+       </div>
+  </cds-styles>
+<div class="experiencefragment aem-GridColumn aem-GridColumn--default--12">
+<div data-c-version="DM:Experience Fragment V2:V0.0.0" id="experiencefragment-e530631c23" class="cmp-experiencefragment cmp-experiencefragment--ds-endcap">
+
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <cds-styles data-config-metrics-group="Category Listing Additional Offering (V2)" class="additionaloffering cds-c-additional-offering__theme--dark aem-GridColumn aem-GridColumn--default--12"><div id="additionaloffering-a660fd2f56" class="cds-c-additional-offering cds-c-additional-offering--thirds-div-icon" data-config-metrics-title="Next steps" data-c-version="DM:ZZZ - [-DO NOT USE-] - Category Listing Additional Offering (V2):V2.2.1">
+   <div class="muse-l-grid">
+      
+    
+        <hr class="cds-c-additional-offering__separator-hr"/>    
+       
+
+      <div class="cds-c-additional-offering__head">
+         
+         <div class="title cds-c-additional-offering__title">
+<div data-c-version="DM:Title (V2):V2.1.0" id="title-bd2ba7974a" class="cmp-title muse-prose  ">
+    <h2 class="cmp-title__text ">Next steps</h2>
+</div>
+
+    
+
+</div>
+
+         
+      </div>   
+      <div class="cds-c-additional-offering__grid-wrapper">
+         
+         
+         
+         
+
+    
+    
+    
+    <div data-c-version="DM:Container:V1.0.1" id="container-3c18f023e2" class="cmp-container  ">
+        
+        <cds-styles class="muse-card__wrapper">
+  <div id="card-eefe534241" data-config-actions-enabled="true" class="muse-card muse-card--unstyled  " data-config-metrics-title="Cisco Capital" data-c-version="DM:Card (legacy):V2.0.4">
+
+	
+    
+
+	
+    
+
+	
+    
+
+    <div class="muse-card__content" id="a11y-card-eefe534241">
+        
+        
+        
+    
+        
+    
+
+       	
+    <h3 class="muse-card__title">
+        Cisco Capital
+    </h3>
+
+        
+    <div class="muse-card__desc muse-prose"><p>Cisco<sup>®</sup> Capital flexible payment solutions offer choices so you get the tech you need and the business outcomes you want.</p>
+</div>
+
+     	
+    
+      
+        <div class="cmp-teaser__action-container">
+                  
+    
+    
+    
+	
+	<span class="cds-c-cta__wrapper">
+        <a class="cds-c-cta-text cds-c-cta-text--primary " href="/site/us/en/buy/payment-solutions/index.html" target="_self"><span class="cmp-button__text">Explore Cisco Capital</span></a>
+	</span> 
+
+              </div>
+      
+    
+  
+     </div>             
+</div>
+
+    
+</cds-styles>
+<cds-styles class="muse-card__wrapper">
+  <div id="card-03114fb126" data-config-actions-enabled="true" class="muse-card muse-card--unstyled  " data-config-metrics-title="Connect with our partner ecosystem" data-c-version="DM:Card (legacy):V2.0.4">
+
+	
+    
+
+	
+    
+
+	
+    
+
+    <div class="muse-card__content" id="a11y-card-03114fb126">
+        
+        
+        
+    
+        
+    
+
+       	
+    <h3 class="muse-card__title">
+        Connect with our partner ecosystem
+    </h3>
+
+        
+    <div class="muse-card__desc muse-prose"><p>Cisco partners have the proven expertise and portfolio breadth to drive your business outcomes and deliver value across your technology journey.</p>
+</div>
+
+     	
+    
+      
+        <div class="cmp-teaser__action-container">
+                  
+    
+    
+    
+	
+	<span class="cds-c-cta__wrapper">
+        <a class="cds-c-cta-text cds-c-cta-text--primary " href="https://locatr.cloudapps.cisco.com/WWChannels/LOCATR/pf/index.jsp#/" target="_self"><span class="cmp-button__text">Work with our partners</span></a>
+	</span> 
+
+              </div>
+      
+    
+  
+     </div>             
+</div>
+
+    
+</cds-styles>
+<cds-styles class="muse-card__wrapper">
+  <div id="card-eee5a211ba" data-config-actions-enabled="true" class="muse-card muse-card--unstyled  " data-config-metrics-title="Community" data-c-version="DM:Card (legacy):V2.0.4">
+
+	
+    
+
+	
+    
+
+	
+    
+
+    <div class="muse-card__content" id="a11y-card-eee5a211ba">
+        
+        
+        
+    
+        
+    
+
+       	
+    <h3 class="muse-card__title">
+        Community
+    </h3>
+
+        
+    <div class="muse-card__desc muse-prose"><p>The Cisco Community is an active and collaborative place to learn more about our products and ask questions of peers and Cisco experts.</p>
+</div>
+
+     	
+    
+      
+        <div class="cmp-teaser__action-container">
+                  
+    
+    
+    
+	
+	<span class="cds-c-cta__wrapper">
+        <a class="cds-c-cta-text cds-c-cta-text--primary " href="https://community.cisco.com/" target="_self"><span class="cmp-button__text">Join the community</span></a>
+	</span> 
+
+              </div>
+      
+    
+  
+     </div>             
+</div>
+
+    
+</cds-styles>
+<cds-styles class="muse-card__wrapper">
+  <div id="card-5a362cba16" data-config-actions-enabled="true" class="muse-card muse-card--unstyled  " data-config-metrics-title="Cisco Services" data-c-version="DM:Card (legacy):V2.0.4">
+
+	
+    
+
+	
+    
+
+	
+    
+
+    <div class="muse-card__content" id="a11y-card-5a362cba16">
+        
+        
+        
+    
+        
+    
+
+       	
+    <h3 class="muse-card__title">
+        Cisco Services
+    </h3>
+
+        
+    <div class="muse-card__desc muse-prose"><p>Transform with more ease and less risk while making sure your technology delivers tangible business value.</p>
+</div>
+
+     	
+    
+      
+        <div class="cmp-teaser__action-container">
+                  
+    
+    
+    
+	
+	<span class="cds-c-cta__wrapper">
+        <a class="cds-c-cta-text cds-c-cta-text--primary " href="/site/us/en/services/index.html" target="_self"><span class="cmp-button__text">Browse Cisco Services</span></a>
+	</span> 
+
+              </div>
+      
+    
+  
+     </div>             
+</div>
+
+    
+</cds-styles>
+
+        
+    </div>
+
+
+      </div>
+      
+   </div>
+</div></cds-styles>
+
+    
+</div>
+</div>
+
+    
+</div>
+<div class="experiencefragment aem-GridColumn aem-GridColumn--default--12">
+<div data-c-version="DM:Experience Fragment V2:V0.0.0" id="experiencefragment-2096f9e3dc" class="cmp-experiencefragment cmp-experiencefragment--experience-fragment">
+
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <cds-styles data-config-metrics-group="Container-Content" class="containercontent container responsivegrid aem-GridColumn aem-GridColumn--default--12"><div data-c-version="DM:Container-Content:V2.2.0" class="cds-c-container-content cds-c-container-content--content-center  muse-py-default  automatic" id="containercontent-2541f804c2" data-placeholder-text="false">
+    <div class="muse-l-grid">
+        <div class="cds-c-container-content--parsys-below cds-c-container-content--inset-zero">
+            
+            <div class="cds-c-container-content__container-wrapper">
+                
+    
+    <div class="cds-component-area cmp-container">
+        
+        <div class="text">
+
+
+    
+</div>
+<div class="text">
+<div data-c-version="DM:Text:V1.1.2" id="text-bd65819ec4" class="cmp-text muse-prose ">
+    <h4>Bias-free language</h4>
+<p>The documentation set for this product strives to use bias-free language. For the purposes of this documentation set, bias-free is defined as language that does not imply discrimination based on age, disability, gender, racial identity, ethnic identity, sexual orientation, socioeconomic status, and intersectionality. Exceptions may be present in the documentation due to language that is hardcoded in the user interfaces of the product software, language used based on RFP documentation, or language that is used by a referenced third-party product. <a href="https://www.cisco.com/site/us/en/about/purpose/social-impact/inclusive-language-policy.html">Learn more</a> about how Cisco is using inclusive language.</p>
+
+</div>
+
+    
+</div>
+
+        
+    </div>
+
+            </div>
+            
+        </div>
+    </div> 
+</div>
+
+    
+</cds-styles>
+
+    
+</div>
+</div>
+
+    
+</div>
+
+    
+</div>
+</div>
+<div class="experiencefragment aem-GridColumn aem-GridColumn--default--12">
+<div id="experiencefragment-fda2b68a0f" class="cmp-experiencefragment cmp-experiencefragment--footer">
+
+
+    
+    <div data-c-version="REI:Container (TO BE DEPRECATED):V0.0.0" id="container-21275f3d31" class="cmp-container   ">
+        
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="responsivegrid aem-GridColumn aem-GridColumn--default--12">
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="footer aem-GridColumn aem-GridColumn--default--12"><footer id="fw-c-footer" class="fw-c-footer muse-theme-light" tabindex="-1">
+    <div class="fw-c-footer__content-bed" data-config-metrics-group="Footer">
+        <div class="fw-c-footer__links --primary">
+            <h3 class="fw-c-footer__links-title">
+                <button id="fw-c-footer__links-button--primary" class="fw-c-footer__links-button --open" aria-controls="fw-c-footer__links-list--primary">Quick Links</button>
+            </h3>
+            <div id="fw-c-footer__links-list--primary" class="fw-c-footer__links-list" aria-labelledby="fw-c-footer__links-button--primary" aria-hidden="false">
+<div data-c-version="REI:Text (TO BE DEPRECATED):V0.0.0" id="text-fd3d4a67d1" class="cmp-text muse-prose ">
+    <ul><li><a href="/site/us/en/about/index.html">About Cisco</a></li><li><a href="/site/us/en/about/contact-cisco/index.html?linkclickid&#61;ftr-contactus">Contact Us</a></li><li><a href="https://careers.cisco.com/global/en/home">Careers</a></li><li><a href="https://locatr.cloudapps.cisco.com/WWChannels/LOCATR/pf/index.jsp#/">Connect with a partner</a></li></ul>
+
+</div>
+
+    
+</div>
+        </div>
+
+        <div class="fw-c-footer__separator --primary">
+<div id="separator-a133850bf5" class="cmp-separator">
+    <hr class="cmp-separator__horizontal-rule"/>
+</div></div>
+
+        <div class="fw-c-footer__links --secondary">
+            <h3 class="fw-c-footer__links-title">
+                <button id="fw-c-footer__links-button--secondary" class="fw-c-footer__links-button --open" aria-controls="fw-c-footer__links-list--secondary">Resources and Legal</button>
+            </h3>
+            <div id="fw-c-footer__links-list--secondary" class="fw-c-footer__links-list" aria-labelledby="fw-c-footer__links-button--secondary" aria-hidden="false">
+<div data-c-version="REI:Text (TO BE DEPRECATED):V0.0.0" id="text-036220898d" class="cmp-text muse-prose ">
+    <ul><li><a id="feedback-us-en" href="https://ciscocx.qualtrics.com/jfe/form/SV_bwrmeoKrBHYxOyW?Ref&#61;/c/en/us/index.html">Feedback</a></li><li><a href="https://www.cisco.com/c/en/us/about/help.html">Help</a></li><li><a href="https://www.cisco.com/c/en/us/about/legal/terms-conditions.html">Terms &amp; Conditions</a></li><li><a href="/site/us/en/about/legal/privacy.html">Privacy</a></li><li><a id="privacy-manager" href="#cookies" data-config-metrics-group="Footer">Cookies / Do not sell or share my personal data<br />
+ </a></li><li><a href="https://www.cisco.com/c/en/us/about/accessibility.html">Accessibility</a></li><li><a href="https://www.cisco.com/c/en/us/about/legal/trademarks.html">Trademarks</a></li><li><a href="https://www.cisco.com/c/dam/en_us/about/supply-chain/cisco-modern-slavery-statement.pdf">Supply Chain Transparency</a></li><li><a href="https://newsroom.cisco.com/c/r/newsroom/en/us/index.html">Newsroom</a></li><li><a href="/site/us/en/about/sitemap.html">Sitemap</a></li></ul>
+
+</div>
+
+    
+</div>
+        </div>
+
+        <div class="fw-c-footer__separator --secondary">
+<div id="separator-92c3bdeb8e" class="cmp-separator">
+    <hr class="cmp-separator__horizontal-rule"/>
+</div></div>
+
+        <ul class="fw-c-footer__links --social">
+            <li>
+                <a class="fw-c-footer__social-channel --channel-facebook" href="https://www.facebook.com/cisco/" title="Facebook" data-config-metrics-item="Facebook" aria-label="Facebook">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="20px" width="20px" viewBox="0 0 20 20">
+                        <circle fill="#8e8e8e" r="10" cy="10" cx="10"/><path fill="#fff" d="M 13.9 12.9 l 0.4 -2.9 l -2.8 0 l 0 -1.9 c 0 -0.8 0.4 -1.6 1.6 -1.6 l 1.3 0 l 0 -2.5 c 0 0 -1.1 -0.2 -2.2 -0.2 c -2.3 0 -3.8 1.4 -3.8 3.9 l 0 2.2 l -2.5 0 l 0 2.9 l 2.5 0 l 0 7 c 0.5 0.1 1 0.1 1.6 0.1 c 0.5 0 1.1 0 1.6 -0.1 l 0 -7 l 2.3 0 z"/>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                  
+                    </svg>
+                </a>
+            </li>
+        
+            <li>
+                <a class="fw-c-footer__social-channel --channel-twitter" href="https://x.com/Cisco/" title="X" data-config-metrics-item="X" aria-label="X">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="20px" width="20px" viewBox="0 0 20 20">
+                        
+                        
+                        
+                        <path fill="#8e8e8e" d="M 15.751 0.961 L 18.818 0.961 L 12.118 8.619 L 20 19.039 L 13.828 19.039 L 8.995 12.719 L 3.464 19.039 L 0.395 19.039 L 7.561 10.848 L 0 0.961 L 6.328 0.961 L 10.698 6.738 L 15.751 0.961 Z M 14.675 17.203 L 16.374 17.203 L 5.405 2.7 L 3.581 2.7 L 14.675 17.203 Z"/>
+                        
+                        
+                        
+                        
+                        
+                        
+                  
+                    </svg>
+                </a>
+            </li>
+        
+            <li>
+                <a class="fw-c-footer__social-channel --channel-linkedin" href="https://www.linkedin.com/company/cisco" title="LinkedIn" data-config-metrics-item="LinkedIn" aria-label="LinkedIn">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="20px" width="20px" viewBox="0 0 20 20">
+                        
+                        
+                        <path fill="#8e8e8e" d="M2,0h16c1.1,0,2,0.9,2,2v16c0,1.1-0.9,2-2,2H2c-1.1,0-2-0.9-2-2V2C0,0.9,0.9,0,2,0z"/><path fill="#fff" d="M6.7,15.8H4.2V6.7h2.5V15.8z M16.7,15.8h-2.5v-4.7c0-2.8-3.3-2.6-3.3,0v4.7H8.3V6.7h2.5v1.5c1.2-2.2,5.8-2.3,5.8,2.1V15.8z"/><circle fill="#fff" cx="5.5" cy="4.13" r="1.5"/>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                  
+                    </svg>
+                </a>
+            </li>
+        
+            <li>
+                <a class="fw-c-footer__social-channel --channel-youtube" href="https://www.youtube.com/user/cisco" title="YouTube" data-config-metrics-item="YouTube" aria-label="YouTube">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="20px" width="20px" viewBox="0 0 20 20">
+                        
+                        
+                        
+                        
+                        <path fill="#8e8e8e" d="M 19.6 5.2 c -0.1 -0.4 -0.3 -0.8 -0.6 -1.1 c -0.3 -0.3 -0.7 -0.5 -1.1 -0.7 C 16.2 3 10 3 10 3 S 3.8 3 2.2 3.4 C 1.8 3.5 1.4 3.8 1.1 4.1 C 0.8 4.4 0.5 4.8 0.4 5.2 C 0 6.8 0 10 0 10 s 0 3.3 0.4 4.8 c 0.1 0.4 0.3 0.8 0.6 1.1 c 0.3 0.3 0.7 0.5 1.1 0.7 c 1.6 0.4 7.8 0.4 7.8 0.4 s 6.2 0 7.8 -0.4 c 0.4 -0.1 0.8 -0.3 1.1 -0.7 c 0.3 -0.3 0.5 -0.7 0.6 -1.1 C 20 13.3 20 10 20 10 S 20 6.8 19.6 5.2 z"/>
+                        <path fill="#fff" d="M 8 13 l 5.2 -3 L 8 7.1 V 13 z"/>
+                        
+                        
+                        
+                        
+                        
+                  
+                    </svg>
+                </a>
+            </li>
+        
+            <li>
+                <a class="fw-c-footer__social-channel --channel-instagram" href="https://www.instagram.com/cisco/" title="Instagram" data-config-metrics-item="Instagram" aria-label="Instagram">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="20px" width="20px" viewBox="0 0 20 20">
+                        
+                        <defs><linearGradient id="b"><stop offset="0" stop-color="#3771c8"></stop><stop stop-color="#3771c8" offset="0.1"></stop><stop offset="1" stop-color="#6600ff" stop-opacity="0"></stop></linearGradient><linearGradient id="a"><stop offset="0" stop-color="#ffdd55"></stop><stop offset="0.1" stop-color="#ffdd55"></stop><stop offset="0.5" stop-color="#ff543e"></stop><stop offset="1" stop-color="#c837ab"></stop></linearGradient><radialGradient id="c" cx="158.429" cy="578.088" r="65" gradientUnits="userSpaceOnUse" gradientTransform="matrix(0, -0.304863, 0.283624, 0, -158.646866, 69.833641)" xlink:href="#a"/><radialGradient id="d" cx="147.694" cy="473.455" r="65" gradientUnits="userSpaceOnUse" gradientTransform="matrix(0.026755, 0.133624, -0.550943, 0.110315, 253.544876, -70.524132)" xlink:href="#b"/><path id="logo" d="M 10 0 C 7.3 0 6.9 0 5.9 0.1 C 4.8 0.1 4.1 0.3 3.5 0.5 C 2.8 0.8 2.2 1.1 1.7 1.7 C 1.1 2.2 0.8 2.8 0.5 3.4 C 0.3 4.1 0.1 4.8 0.1 5.9 C 0 6.9 0 7.3 0 10 C 0 12.7 0 13.1 0.1 14.1 C 0.1 15.2 0.3 15.9 0.5 16.6 C 0.8 17.2 1.1 17.8 1.7 18.3 C 2.2 18.9 2.8 19.2 3.4 19.5 C 4.1 19.7 4.8 19.9 5.9 19.9 C 6.9 20 7.3 20 10 20 C 12.7 20 13.1 20 14.1 19.9 C 15.2 19.9 15.9 19.7 16.6 19.5 C 17.2 19.2 17.8 18.9 18.3 18.3 C 18.9 17.8 19.2 17.2 19.5 16.6 C 19.7 15.9 19.9 15.2 19.9 14.1 C 20 13.1 20 12.7 20 10 C 20 7.3 20 6.9 19.9 5.9 C 19.9 4.8 19.7 4.1 19.5 3.5 C 19.2 2.8 18.9 2.2 18.3 1.7 C 17.8 1.1 17.2 0.8 16.6 0.5 C 15.9 0.3 15.2 0.1 14.1 0.1 C 13.1 0 12.7 0 10 0 Z M 9.1 1.8 C 9.4 1.8 9.7 1.8 10 1.8 C 12.7 1.8 13 1.8 14 1.9 C 15 1.9 15.5 2.1 15.9 2.2 C 16.4 2.4 16.7 2.6 17 3 C 17.4 3.3 17.6 3.6 17.8 4.1 C 17.9 4.5 18.1 5 18.1 6 C 18.2 7 18.2 7.3 18.2 10 C 18.2 12.7 18.2 13 18.1 14 C 18.1 15 17.9 15.5 17.8 15.9 C 17.6 16.4 17.4 16.7 17 17 C 16.7 17.4 16.4 17.6 15.9 17.8 C 15.5 17.9 15 18.1 14 18.1 C 13 18.2 12.7 18.2 10 18.2 C 7.3 18.2 7 18.2 6 18.1 C 5 18.1 4.5 17.9 4.1 17.8 C 3.6 17.6 3.3 17.4 3 17 C 2.6 16.7 2.4 16.4 2.2 15.9 C 2.1 15.5 1.9 15 1.9 14 C 1.8 13 1.8 12.7 1.8 10 C 1.8 7.3 1.8 7 1.9 6 C 1.9 5 2.1 4.5 2.2 4.1 C 2.4 3.6 2.6 3.3 3 2.9 C 3.3 2.6 3.6 2.4 4.1 2.2 C 4.5 2.1 5 1.9 6 1.9 C 6.9 1.8 7.2 1.8 9.1 1.8 Z M 15.3 3.5 C 14.7 3.5 14.1 4 14.1 4.7 C 14.1 5.3 14.7 5.9 15.3 5.9 C 16 5.9 16.5 5.3 16.5 4.7 C 16.5 4 16 3.5 15.3 3.5 Z M 10 4.9 C 7.2 4.9 4.9 7.2 4.9 10 C 4.9 12.8 7.2 15.1 10 15.1 C 12.8 15.1 15.1 12.8 15.1 10 C 15.1 7.2 12.8 4.9 10 4.9 Z M 10 6.7 C 11.8 6.7 13.3 8.2 13.3 10 C 13.3 11.8 11.8 13.3 10 13.3 C 8.2 13.3 6.7 11.8 6.7 10 C 6.7 8.2 8.2 6.7 10 6.7 Z"/></defs><use class="primary" fill="#8e8e8e" href="#logo"/><use class="secondary" fill="url(#d)" href="#logo"/>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                  
+                    </svg>
+                </a>
+            </li>
+        </ul>
+
+        <div class="fw-c-footer__copyright">&copy;&nbsp;<span class="fw-c-footer__copyright-year"></span> Cisco Systems, Inc.</div>
+    </div>
+</footer>
+
+    
+</div>
+
+    
+</div>
+</div>
+
+    
+</div>
+
+    </div>
+
+    
+</div>
+
+    
+</div>
+
+    
+</div>
+</div>
+
+
+            
+    
+    
+
+
+    
+    
+<script src="/etc.clientlibs/cisco-cdc/clientlibs/clientlib-base.lc-d5824568a1fdb9fa8d8b7682d6d72ca5-lc.min.js"></script>
+<script src="/etc.clientlibs/cisco-cdc/clientlibs/clientlib-site.lc-4f93a4195eb80477d50b267ba9c0a9c2-lc.min.js"></script>
+
+
+
+
+
+
+
+<script src="/c/dam/cdc/t/ctm.js"></script>
+
+    
+
+    
+
+    
+    
+
+        
+    </body>
+</html>
