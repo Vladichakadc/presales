@@ -1,0 +1,68 @@
+[
+  {
+    "archivo": "juniper-ssr100-ds.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/routers/ssr100-line-of-routers-datasheet.pdf",
+        "status": 200,
+        "firma": "3c212d2d5b696620",
+        "nota": "no es un PDF"
+      },
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/datasheets/jp/ja/routers/ssr100-line-of-routers-datasheet.pdf",
+        "status": 200,
+        "bytes": 787344,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-ssr100-ds.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/us/en/products/routers/session-smart-router/ssr100-line-of-routers-datasheet.html",
+        "status": 200,
+        "bytes": 749222,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-ssr1000-ds.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/routers/ssr1000-line-of-routers-datasheet.pdf",
+        "status": 200,
+        "bytes": 697450,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-ssr1000-ds.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/gb/en/products/routers/session-smart-router/ssr1000-line-of-routers-datasheet.html",
+        "status": 200,
+        "bytes": 759042,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
