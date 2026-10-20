@@ -1,0 +1,17 @@
+[
+  {
+    "archivo": "juniper-mx304-ds-hpe.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/downloadDoc/MX304%20Universal%20Routing%20Platform-a00150831enw.pdf?id=a00150831enw&isFutureVersion=true&contentDisposition=attachment",
+        "status": 200,
+        "bytes": 785591,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
