@@ -1,19 +1,12 @@
 {
  "medidoEn": {
-  "commit": "fe28736",
-  "fecha": "2026-10-19"
+  "commit": "41ab64a",
+  "fecha": "2026-10-20"
  },
  "umbralRozado": 25,
  "modulos": [
   {
    "modulo": "cuenta.js",
-   "estado": "sin conducir",
-   "total": null,
-   "usadas": null,
-   "pct": null
-  },
-  {
-   "modulo": "dimensionador-cisco-catalyst8k.js",
    "estado": "sin conducir",
    "total": null,
    "usadas": null,
@@ -48,6 +41,20 @@
    "pct": null
   },
   {
+   "modulo": "juniper-motor.js",
+   "estado": "sin conducir",
+   "total": null,
+   "usadas": null,
+   "pct": null
+  },
+  {
+   "modulo": "sizing_engine.js",
+   "estado": "sin conducir",
+   "total": null,
+   "usadas": null,
+   "pct": null
+  },
+  {
    "modulo": "usuarios.js",
    "estado": "sin conducir",
    "total": null,
@@ -57,7 +64,7 @@
   {
    "modulo": "comparador.js",
    "estado": "rozado",
-   "total": 46,
+   "total": 47,
    "usadas": 2,
    "pct": 4
   },
@@ -127,9 +134,9 @@
   {
    "modulo": "calculadora.js",
    "estado": "ejercitado",
-   "total": 47,
-   "usadas": 34,
-   "pct": 72
+   "total": 51,
+   "usadas": 36,
+   "pct": 71
   },
   {
    "modulo": "estado.js",
@@ -142,15 +149,22 @@
    "modulo": "index.js",
    "estado": "ejercitado",
    "total": 58,
-   "usadas": 43,
-   "pct": 74
+   "usadas": 42,
+   "pct": 72
+  },
+  {
+   "modulo": "dimensionador-cisco-catalyst8k.js",
+   "estado": "ejercitado",
+   "total": 127,
+   "usadas": 97,
+   "pct": 76
   },
   {
    "modulo": "ficha.js",
    "estado": "ejercitado",
    "total": 75,
-   "usadas": 56,
-   "pct": 75
+   "usadas": 57,
+   "pct": 76
   },
   {
    "modulo": "mikrotik-motor.js",
@@ -207,6 +221,13 @@
    "total": 161,
    "usadas": 141,
    "pct": 88
+  },
+  {
+   "modulo": "cisco-motor.js",
+   "estado": "ejercitado",
+   "total": 33,
+   "usadas": 30,
+   "pct": 91
   },
   {
    "modulo": "aruba-reglas.js",
