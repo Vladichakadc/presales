@@ -1,0 +1,124 @@
+[
+  {
+    "archivo": "juniper-srx300-ds.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html",
+        "status": 200,
+        "bytes": 121109,
+        "nota": "no contiene el texto esperado"
+      },
+      {
+        "url": "https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html",
+        "status": 200,
+        "bytes": 765790,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-srx300-ds.pdf",
+    "para": "JUNIPER",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx300-line-firewalls-branch-datasheet.pdf",
+        "status": 200,
+        "firma": "3c212d2d5b696620",
+        "nota": "no es un PDF"
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-srx1500-ds.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx1500-firewall-datasheet.pdf",
+        "status": 200,
+        "bytes": 417008,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-srx4100-4200-ds.pdf",
+    "para": "JUNIPER",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx4100-srx4200-firewall-datasheet.pdf",
+        "status": 200,
+        "firma": "3c212d2d5b696620",
+        "nota": "no es un PDF"
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-srx4700-ds.pdf",
+    "para": "JUNIPER",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx4700-firewall-datasheet.pdf",
+        "status": 200,
+        "firma": "3c212d2d5b696620",
+        "nota": "no es un PDF"
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-srx-serie.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/gb/en/products/security/srx-series.html",
+        "status": 200,
+        "bytes": 840744,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-srx-img",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/images/us/en/products/security/srx-series/srx-series-product-family.png",
+        "status": 200,
+        "bytes": 1241654,
+        "guardado": true,
+        "como": "juniper-srx-img/security__srx-series__srx-series-product-family.png"
+      },
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/images/us/en/products/security/srx-series/srx300/srx300-frontwtop-low.png",
+        "status": 200,
+        "bytes": 72347,
+        "guardado": true,
+        "como": "juniper-srx-img/srx-series__srx300__srx300-frontwtop-low.png"
+      },
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/images/us/en/products/security/srx-series/datasheets/srx300.png",
+        "status": 200,
+        "bytes": 476074,
+        "guardado": true,
+        "como": "juniper-srx-img/srx-series__datasheets__srx300.png"
+      }
+    ]
+  }
+]
