@@ -1030,6 +1030,11 @@ jobs:
               { archivo: 'cisco-c8500-soporte.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
                 'https://www.cisco.com/c/en/us/support/routers/catalyst-8500-series-edge-platforms/series.html',
               ] },
+              // La lista de avisos (19-oct-2026) trae el boletin del 20X6C y marca los otros dos como
+              // actualizados: los tres se vuelven a traer con `solo`.
+              { archivo: 'cisco-eol-c8500-20x6c.html', tipo: 'html', para: 'CISCO', debeContener: 'C8500-20X6C', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500-20x6c-eol.html',
+              ] },
               { archivo: 'meraki-c8355-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8355-G2', urls: [
                 'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/C8355-G2-MX_Datasheet',
               ] },
