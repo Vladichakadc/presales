@@ -7,6 +7,7 @@ const mikrotikData = require('../seed/legacyData/mikrotik');
 const arubaData = require('../seed/legacyData/aruba');
 const nokiaData = require('../seed/legacyData/nokia');
 const fortinetData = require('../seed/legacyData/fortinet');
+const ciscoData = require('../seed/legacyData/cisco');
 // El motor del dimensionador FortiGate se usa aqui solo por su SHA-256 canonico: la version
 // del catalogo tiene que calcularse con la MISMA funcion que la huella del escenario.
 const MOTOR_FORTINET = require('../../public/js/fortinet-motor.js');
@@ -385,7 +386,10 @@ async function toDimensionadorCisco() {
       parts: p.Parts.map((pt) => pt.code),
     }));
 
-  return { optics, opticLabel, partsDesc, smartnet, dnaDesc, models };
+  // Licencias y módulos de la G2: datos planos de la guía de pedido, que no viven en tablas (la
+  // referencia de cada licencia sale de la clase del equipo, `clase` en sus specs).
+  return { optics, opticLabel, partsDesc, smartnet, dnaDesc, models,
+    licenciasG2: ciscoData.LICENCIAS_G2, modulosG2: ciscoData.MODULOS_G2 };
 }
 
 async function toDimensionadorFortinet() {

@@ -2,577 +2,752 @@
 // El atajo del DOM, arriba del todo: lo usan funciones declaradas antes de donde estaba.
 const $ = id => document.getElementById(id);
 /* ═══════════════════════════════════════
-   DATA
-   ═══════════════════════════════════════ */
-let bomFilas=[], bomMeta={};
+   DIMENSIONADOR CISCO (rediseño 2026-10-20)
 
-// El equipo del dimensionamiento se lleva solo al BOM. La regla vive en js/bom.js —
-// `BOM.sincronizar` distingue lo heredado de lo elegido a mano y repinta siempre, para
-// que un cambio de escenario no deje el BOM cotizando el equipo anterior.
-function sincronizarConBom(elegido){
-  BOM.sincronizar({elegido:elegido?elegido.id:null, render:renderBom});
-}
-// Eleccion explicita en el desplegable de equipos: se lleva al BOM siempre.
-function llevarABom(id){
-  BOM.sincronizar({elegido:id||null, render:renderBom});
-}
+   Todo cálculo vive en /js/cisco-motor.js (puro, probado en test/cisco-motor.test.js); esta
+   página lee el formulario, le pasa el escenario y pinta. Las figuras oficiales de cada equipo
+   (frontal y trasera, sin pérdida, con su pie) están en /data/cisco-vistas-equipos.json y las
+   pinta FICHA con el opt-in `vistas`, como en Aruba, Fortinet, Huawei y MikroTik.
+   ═══════════════════════════════════════ */
+const M = window.CiscoMotor;
+const VENDOR = 'cisco';
+let bomFilas = [], bomMeta = {};
 
 let MODELS = [];
 let OPTICS = {};
 let OPTIC_LABEL = {};
 let PARTS_DESC = {};
 let SMARTNET = {};
-let DNA_DESC = {};
+let LIC_G2 = {};
+let MOD_G2 = [];
+let VISTAS = null;
 
-// Que familia del catalogo pertenece a cada plataforma. Se decide por `ser`, que es el campo
-// que ya trae cada modelo, en vez de anadir una marca nueva al catalogo.
-const PLATAFORMAS = {
-  xe:     m => /Catalyst 8000|Secure Router/.test(m.ser),
-  isr:    m => /ISR 1000/.test(m.ser),
-  meraki: m => /Meraki/.test(m.ser),
-  asr:    m => /ASR 1000/.test(m.ser),
-  all:    () => true,
-};
-// Fin de venta VENCIDO frente a ANUNCIADO lo decide la misma regla que ordena y filtra los
-// candidatos (ficha.js), para que la ficha, el BOM y la exportacion no puedan discrepar de
-// lo que muestra la lista.
-const vencido = m => !!(m && FICHA.rango(m) === 2);
-let dirMult=2, mode='link', crit='low', lastPick=null;
-// Si el dimensionamiento se quedo sin candidato, el BOM tiene que DECIRLO: hasta ahora
+let dirMult = 2, mode = 'link', crit = 'low', lastPick = null, ultimaEval = null;
+// Si el dimensionamiento se quedo sin candidato, el BOM tiene que DECIRLO: hasta el 2026-09
 // seguia cotizando el ultimo equipo que si cumplia, en silencio.
-let hayCandidato=true;
+let hayCandidato = true;
 
-/* ── Tabs ── */
+// Fin de venta VENCIDO frente a ANUNCIADO lo decide la misma regla que ordena y filtra los
+// candidatos (ficha.js), para que la ficha, el BOM y la exportacion no puedan discrepar.
+const vencido = m => !!(m && FICHA.rango(m) === 2);
+
+// El equipo del dimensionamiento se lleva solo al BOM. La regla vive en js/bom.js.
+function sincronizarConBom(elegido){
+  BOM.sincronizar({elegido:elegido ? elegido.id : null, render:renderBom});
+}
+function llevarABom(id){
+  BOM.sincronizar({elegido:id || null, render:renderBom});
+}
+
+/* ── Pestañas y grupos ── */
 document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
-  document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x===b));
-  ['calc','bom','optics','cat','src'].forEach(t => $('pane-'+t).hidden = (t !== b.dataset.tab));
+  document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+  ['calc', 'bom', 'optics', 'cat', 'src'].forEach(t => $('pane-' + t).hidden = (t !== b.dataset.tab));
 }));
-
-/* ── Mode ── */
-$('modeSeg').addEventListener('click', e => {
-  const b=e.target.closest('button'); if(!b) return;
-  [...$('modeSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
-  mode=b.dataset.v;
-  $('aggBlock').classList.toggle('hidden', mode!=='agg');
-  $('bwLabel').textContent = mode==='agg' ? 'Ancho de banda por sucursal' : mode==='hub' ? 'Tráfico agregado del hub' : 'Ancho de banda contratado';
-  $('modeHint').textContent = mode==='agg' ? 'Suma los enlaces de todas las sucursales con su factor de simultaneidad.' : mode==='hub' ? 'Capacidad total que debe procesar el hub o DC edge.' : 'Un solo enlace WAN terminando en el equipo.';
-  render();
-});
-$('dirSeg').addEventListener('click', e => {
-  const b=e.target.closest('button'); if(!b) return;
-  [...$('dirSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
-  dirMult=+b.dataset.v; render();
-});
-$('critSeg').addEventListener('click', e => {
-  const b=e.target.closest('button'); if(!b) return;
-  [...$('critSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));
-  crit=b.dataset.v; render();
-});
-['bw','unit','sites','conc','head','profile','plataforma','aps','sNgfw','sVoice','sAppx','sUmbrella','chkRedund','chk4g']
-  .forEach(id => $(id).addEventListener('input', render));
-['pickModel','qty','nimQty','optQty','termYears','dnaTier'].forEach(id => $(id).addEventListener('input', renderBom));
-
-/* ── Helpers ── */
-function fmt(m){
-  if(m==null||m===0) return '—';
-  if(m>=1000000) return (m/1e6).toFixed(1).replace(/\.0$/,'')+' Tbps';
-  if(m>=1000) return (m/1000).toFixed(m%1000?1:0)+' Gbps';
-  return Math.round(m)+' Mbps';
+function grupo(id, alElegir){
+  $(id).addEventListener('click', e => {
+    const b = e.target.closest('button'); if(!b) return;
+    [...$(id).children].forEach(x => x.setAttribute('aria-pressed', x === b));
+    alElegir(b.dataset.v);
+    render();
+  });
 }
-const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+grupo('modeSeg', v => { mode = v; });
+grupo('dirSeg', v => { dirMult = +v; });
+grupo('critSeg', v => { crit = v; });
 
-// Catálogo Cisco, con la misma tabla que antes vivía en la vista de Cisco del portal (ver
-// CLAUDE.md, 2026-09-10): se pinta desde MODELS, ya cargado para el propio dimensionador.
-// Se incluyen los modelos fuera de venta o de línea anterior (con su marca, misma regla de
-// FICHA.rango que ya usa esta página para vencido()), a diferencia del portal, que los ocultaba.
-function renderCatalogo(){
-  const tbody=document.querySelector('#tbl-cisco-cat tbody');
-  if(!tbody) return;
-  tbody.innerHTML=MODELS.map(m=>{
-    const r=FICHA.rango(m);
-    const marca=r===2?' <span class="pillc" style="color:var(--red-txt,var(--red))">Fuera de venta</span>'
-      :r===1?' <span class="pillc">Línea anterior</span>':'';
-    return `<tr>
-    <td><code>${esc(m.id)}</code>${marca}</td><td>${esc(m.ser)}</td><td>${esc(m.fam)}</td>
-    <td class="n">${fmt(m.fwd)}</td><td class="n">${fmt(m.ipsec)}</td><td>${esc(m.ports)}</td>
-    <td>${m.sdwan?fmt(m.sdwan):'—'}</td>
-    <td class="n" style="color:var(--amber);white-space:nowrap">${m.elp?esc(m.elp):'Consultar CCW'}</td>
-  </tr>`;
-  }).join('');
+const ENTRADAS = ['bw', 'unit', 'sites', 'conc', 'head', 'profile', 'plataforma', 'diaPct', 'seguridad', 'chkTls',
+  'chkFec', 'fecPct', 'dupPct', 'tuneles', 'rutas', 'sesiones', 'dispositivos', 'cgnatUsuarios', 'cgnatBloque',
+  'chkRedund', 'chk4g', 'chkNim', 'chkSm', 'chkMacsec', 'chkPoe', 'poeW'];
+ENTRADAS.forEach(id => $(id).addEventListener('input', render));
+// Las licencias se pintan en las dos pestañas: el centro del dimensionamiento y el BOM.
+['licGestion', 'licNivel', 'secUrl', 'secMalware', 'termYears'].forEach(id => $(id).addEventListener('input', () => { render(); }));
+['pickModel', 'qty', 'modNim', 'modSm', 'modPim', 'optSel', 'optQty'].forEach(id => $(id).addEventListener('input', renderBom));
+
+/* ── Ayudas de presentación ── */
+const fmt = M.fmt;
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]));
+const miles = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const base = b => `<span class="base">${b ? esc(b) : 'base no consta'}</span>`;
+function cifraHtml(m, k){
+  const c = M.cifra(m, k);
+  return c.v == null ? 'sin dato' : `${fmt(c.v)}${base(c.base)}`;
+}
+const numDe = id => { const v = parseFloat($(id).value); return Number.isFinite(v) && v > 0 ? v : 0; };
+// La referencia de pedido: la del catálogo, el nombre del modelo en la G2 (la guía de pedido los
+// pide así) o el PID que cita el boletín de fin de venta. Si no consta, se consulta en CCW.
+const pidDe = m => m.hwSku || (/Secure Router \(G2\)/.test(m.ser) ? m.id.replace(/^Cisco Secure Router /, '') : null)
+  || (m.eolAnnounced && m.eolAnnounced.pid) || null;
+
+function parametros(){
+  return {
+    modo:mode, bwMbps:(parseFloat($('bw').value) || 0) * parseFloat($('unit').value), dirMult,
+    sedes:Math.max(1, parseInt($('sites').value, 10) || 1), concPct:+$('conc').value,
+    headPct:+$('head').value, diaPct:mode === 'hub' ? 0 : +$('diaPct').value,
+    fecPct:$('chkFec').checked ? numDe('fecPct') : 0, dupPct:numDe('dupPct'),
+    perfil:$('profile').value, plataforma:$('plataforma').value,
+    seguridad:mode === 'link' ? $('seguridad').value : 'ninguna', tls:mode === 'link' && $('chkTls').checked,
+    escala:{tuneles:numDe('tuneles'), rutas:numDe('rutas'), sesiones:numDe('sesiones'), dispositivos:numDe('dispositivos')},
+    requisitos:{dualPsu:$('chkRedund').checked, celular:$('chk4g').checked, nim:$('chkNim').checked, sm:$('chkSm').checked,
+      macsec:$('chkMacsec').checked, poe:$('chkPoe').checked, poeW:numDe('poeW')},
+  };
+}
+function opcionesLicencia(p){
+  return {gestion:$('licGestion').value, nivel:$('licNivel').value, seguridad:p.seguridad,
+    url:$('secUrl').checked, malware:$('secMalware').checked, anios:+$('termYears').value || 1};
+}
+const filaDe = id => (ultimaEval ? ultimaEval.filas.find(f => f.m.id === id) : null) || null;
+
+// Precio neto: el simulador de tramos partner es de bom.js, compartido por los siete fabricantes.
+const OPEX_CISCO = ['Licencias', 'Soporte'];
+const DTO = BOM.simuladorDescuento('cajaDescuento', () => renderBom());
+const dtoActual = () => (DTO ? DTO.valor() : 0);
+const dtoEtiqueta = () => (DTO ? DTO.etiqueta() : null);
+
+// Lo que cambia de forma según el modo: la salida local solo existe en una sede; en un agregado
+// es lo que NO llega al hub, y en un hub no aplica. Su seguridad, solo donde se procesa.
+function pintarControles(){
+  $('headVal').textContent = $('head').value + ' %';
+  $('concVal').textContent = $('conc').value + ' %';
+  $('diaVal').textContent = $('diaPct').value + ' %';
+  $('aggBlock').classList.toggle('hidden', mode !== 'agg');
+  $('diaBlock').classList.toggle('hidden', mode === 'hub');
+  $('segBlock').classList.toggle('hidden', mode !== 'link');
+  $('bwLabel').textContent = mode === 'agg' ? 'Ancho de banda por sucursal' : mode === 'hub' ? 'Tráfico agregado del hub' : 'Ancho de banda contratado';
+  $('modeHint').textContent = mode === 'agg'
+    ? 'Suma lo que las sucursales mandan por el overlay con su simultaneidad; la salida local de cada una no llega aquí.'
+    : mode === 'hub' ? 'Capacidad total que procesa el hub o el borde del datacenter: todo llega por el overlay.'
+    : 'Todo el tráfico de la sede pasa por el router: el que viaja por el overlay y el que sale en local a Internet.';
+  $('diaHint').textContent = mode === 'agg'
+    ? 'Parte del tráfico de cada sucursal que sale en local y no llega al hub.'
+    : 'Parte del tráfico de la sede que sale directo a Internet y no viaja por el overlay.';
+  $('segHint').textContent = (M.SEGURIDAD[$('seguridad').value] || M.SEGURIDAD.ninguna).d;
+  $('fecPct').disabled = !$('chkFec').checked;
+  $('poeW').disabled = !$('chkPoe').checked;
 }
 
-/* ── RENDER CALC ── */
+/* ── RENDER DEL DIMENSIONAMIENTO ── */
 function render(){
-  const bw=parseFloat($('bw').value)||0;
-  const unit=parseFloat($('unit').value);
-  const head=(parseFloat($('head').value)||0)/100;
-  const conc=(parseFloat($('conc').value)||40)/100;
-  // Menos de una sede no es un agregado: con -5 el requerimiento salía en -13000 Mbps y recomendaba.
-  const sites=Math.max(1,parseInt($('sites').value)||1);
-  const profile=$('profile').value;
-
-  $('headVal').textContent=Math.round(head*100)+' %';
-  $('concVal').textContent=Math.round(conc*100)+' %';
-
-  // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): es el dato
-  // mínimo del dimensionamiento; sin él la página pide valores en vez de proponer un
-  // equipo a ciegas.
-  if(bw<=0){
-    lastPick=null; hayCandidato=false; sincronizarConBom(null);
-    const need=$('need'); need.style.left='0%'; $('needLbl').textContent='—';
-    $('track').querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
-    FICHA.render({vendor:'cisco', contenedor:'verdict', candidatos:[], recomendado:null,
+  pintarControles();
+  const p = parametros();
+  // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): es el dato mínimo
+  // del dimensionamiento; sin él la página pide valores en vez de proponer un equipo a ciegas.
+  if(!(p.bwMbps > 0) || !MODELS.length){
+    lastPick = null; hayCandidato = false; ultimaEval = null; sincronizarConBom(null);
+    $('need').style.left = '0%'; $('needLbl').textContent = '—';
+    $('track').querySelectorAll('.dot,.tick,.pickLabel').forEach(e => e.remove());
+    ['avisosMotor', 'apartados', 'tbody'].forEach(id => { $(id).innerHTML = ''; });
+    $('distrib').hidden = true; $('cgnatBox').hidden = true;
+    FICHA.render({vendor:VENDOR, contenedor:'verdict', candidatos:[], recomendado:null,
       vacioTitulo:'Ingrese valores para recomendar un equipo',
       vacioDetalle:'<p style="margin:0;font-size:13.5px">Escriba el <b>ancho de banda</b> del sitio para que el dimensionador proponga los modelos que cumplen.</p>'});
-    $('verdict').style.borderLeftColor='var(--steel)';
+    $('verdict').style.borderLeftColor = 'var(--steel)';
     return;
   }
 
-  // base throughput
-  let baseMbps = bw * unit;
-  if(mode==='agg') baseMbps = bw * unit * sites * conc;
-  let needMbps = baseMbps * dirMult * (1+head);
-
-  // service penalties
-  let penalty = 1.0;
-  if($('sNgfw').checked) penalty += 0.15;
-  if($('sVoice').checked) penalty += 0.10;
-  if($('sAppx').checked) penalty += 0.08;
-  if($('sUmbrella').checked) penalty += 0.12;
-  needMbps *= penalty;
-
-  // update needle
-  // La escala se calcula sobre la plataforma elegida: con todo el catalogo dentro, el chasis
-  // mas grande aplastaba la aguja contra el extremo izquierdo en cuanto se miraba sucursal.
-  const platEscala = $('plataforma').value;
-  const enPlatEscala = m => PLATAFORMAS[platEscala] ? PLATAFORMAS[platEscala](m) : true;
-  const modelosEscala = MODELS.filter(enPlatEscala).length ? MODELS.filter(enPlatEscala) : MODELS;
-  const allCaps = modelosEscala.map(m => profile==='ipsec' ? m.ipsec : profile==='sdwan' ? (m.sdwan||m.ipsec) : m.fwd);
-  const maxCap = Math.max(...allCaps);
-  const logP = v => Math.log10(Math.max(v,10));
-  const logMin=Math.log10(10), logMax=logP(maxCap*1.2);
-  const xPct = v => (logP(v)-logMin)/(logMax-logMin)*100;
-  const needPct = Math.min(xPct(needMbps),99);
-  const need=$('need');
-  need.style.left=needPct+'%';
-  $('needLbl').textContent=fmt(needMbps);
-  need.classList.toggle('flip', needPct>60);
-
-  // build track
-  renderTrack(profile, needMbps, xPct, needPct);
-
-  // pick model
-  // La capacidad depende del perfil elegido (forwarding, IPsec o SD-WAN), asi que se define
-  // una sola vez aqui y la usan tanto el filtro de candidatos como los medidores.
-  const capDe=m=>profile==='ipsec'?m.ipsec:profile==='sdwan'?(m.sdwan||m.ipsec):m.fwd;
-  // Esta pagina dejaba competir de igual a igual a los equipos descontinuados, asi que
-  // podia recomendar para un diseno nuevo un equipo que ya no se vende. La regla comun
-  // (ficha.js) los deja visibles pero fuera de la recomendacion. Un fin de venta ANUNCIADO
-  // no cuenta como fuera de venta hasta que pasa su fecha de ultimo pedido: hasta entonces
-  // se pide con normalidad y solo se marca.
-  // DOS COSAS QUE ESTABAN MAL Y SE ARREGLAN JUNTAS, PORQUE POR SEPARADO CADA UNA EMPEORA
-  // LO QUE ARREGLA LA OTRA.
-  //
-  // 1. Esta pagina no elegia el mas pequeno que cumple sino el PRIMERO DEL CATALOGO que
-  //    cumple, y el catalogo esta ordenado por familia, no por tamano. Para una sede de
-  //    3 Gbps proponia el chasis 8500-12X4QC de 31,9 Gbps.
-  // 2. El catalogo mezcla cinco plataformas que NO son intercambiables aunque coincida el
-  //    caudal: IOS XE SD-WAN (Catalyst 8000 y Secure Router G2), ISR 1000, Meraki MX y
-  //    ASR 1000. Cambia el plano de gestion, el licenciamiento y el equipo que opera la
-  //    red. Ordenar por capacidad sin filtrar hacia saltar de un Catalyst a un Meraki por
-  //    unos Mbps, que como propuesta de preventa es peor que el defecto original.
-  //
-  // Asi que primero se acota la plataforma —el criterio que un preventa de Cisco fija ANTES
-  // de mirar caudal— y dentro de ella si se aplica el mas pequeno que cumple, igual que en
-  // los otros cuatro dimensionadores. Por defecto IOS XE, que es de lo que trata la pagina.
-  const plat = $('plataforma').value;
-  const enPlataforma = m => PLATAFORMAS[plat] ? PLATAFORMAS[plat](m) : true;
-  const candidates = FICHA.ordenar(MODELS.filter(m => enPlataforma(m) && capDe(m) >= needMbps),
-    (a, b) => capDe(a) - capDe(b));
-  const pick = FICHA.recomendar(candidates);
+  const ev = M.evaluar(MODELS, p);
+  ultimaEval = ev;
+  const d = ev.demanda;
+  const capEq = m => { const f = filaDe(m.id); return f && f.capEq != null ? f.capEq : Infinity; };
+  const candidatos = FICHA.ordenar(ev.candidatos.map(f => f.m), (a, b) => capEq(a) - capEq(b));
+  const pick = FICHA.recomendar(candidatos);
   lastPick = pick;
   hayCandidato = !!pick;
-  sincronizarConBom(pick);
 
-  // ── Presentacion ──────────────────────────────────────────────────────────
-  // Desplegable con todos los que cumplen; medidores, soporte, licencias y BOM siguen al
-  // equipo ELEGIDO. Ver /js/ficha.js.
-  const verdict=$('verdict');
+  pintarAvisos(ev, p);
+  pintarDistribucion(ev);
+  pintarCgnat();
+
   if(!pick){
-    // Se distingue "no hay equipo" de "no hay equipo EN ESTA PLATAFORMA", que es una
-    // conclusion muy distinta: la segunda se resuelve cambiando un desplegable.
-    const hayEnOtras = MODELS.some(m => !enPlataforma(m) && capDe(m) >= needMbps && FICHA.recomendable(m));
-    const fueraDeVenta = MODELS.filter(m => enPlataforma(m) && capDe(m) >= needMbps);
-    FICHA.render({vendor:'cisco', contenedor:'verdict', candidatos:[], recomendado:null,
-      vacioTitulo: hayEnOtras
-        ? `Ningún equipo vigente de la plataforma elegida llega a ${fmt(needMbps)}`
-        : 'El requerimiento supera la capacidad del catálogo',
-      vacioDetalle: hayEnOtras
-        ? `<p class="warn">Sí hay equipos vigentes que cumplen en <b>otra plataforma</b>. Cambia «Plataforma / modelo operativo» para verlos — pero es una decisión de arquitectura, no de caudal: cambia el plano de gestión, el licenciamiento y quién opera la red.</p>${fueraDeVenta.length?`<p class="warn">Dentro de esta plataforma cumplen ${fueraDeVenta.map(m=>m.id).join(', ')}, pero están fuera de venta: solo sirven como referencia de parque instalado.</p>`:''}`
-        : '<p class="warn">El requerimiento supera la capacidad máxima del catálogo configurado. Escalar a ASR 9000 o Catalyst 9800, o consultar solución personalizada.</p>'});
-    verdict.style.borderLeftColor='var(--amber)';
+    sincronizarConBom(null);
+    pintarEscala(ev, null);
+    pintarEvaluados(ev, null);
+    // «No hay equipo» y «no hay equipo EN ESTA PLATAFORMA» son conclusiones distintas: la
+    // segunda se resuelve cambiando un desplegable.
+    const otras = M.evaluar(MODELS, {...p, plataforma:'all'}).candidatos
+      .filter(f => !ev.plataforma.es(f.m) && FICHA.recomendable(f.m)).map(f => f.m.id);
+    const fuera = ev.candidatos.map(f => f.m.id);
+    FICHA.render({vendor:VENDOR, contenedor:'verdict', candidatos:[], recomendado:null,
+      vacioTitulo:otras.length ? `Ningún equipo vigente de ${ev.plataforma.n} cumple el escenario` : 'Ningún equipo del catálogo cumple el escenario',
+      vacioDetalle:(fuera.length ? `<p class="warn">Cumplen ${fuera.map(esc).join(', ')}, pero están fuera de venta: solo sirven como referencia de parque instalado.</p>` : '')
+        + (otras.length ? `<p class="warn">Sí cumplen equipos vigentes de <b>otra plataforma</b> (${otras.slice(0, 4).map(esc).join(', ')}${otras.length > 4 ? '…' : ''}). Cambiar de plataforma es una decisión de arquitectura, no de caudal: cambia el plano de gestión, el licenciamiento y quién opera la red.</p>` : '')
+        + '<p style="font-size:13px">La tabla «Modelos evaluados» dice por qué se aparta cada uno.</p>'});
+    $('verdict').style.borderLeftColor = 'var(--amber)';
+    pintarLicencias(null, p);
     return;
   }
-  verdict.style.borderLeftColor='var(--red)';
+  $('verdict').style.borderLeftColor = 'var(--red)';
 
-  const medidoresDe=m=>[
-    {etq:'Forwarding (bidireccional)', val:needMbps, tope:m.fwd, txt:fmt(needMbps)+' / '+fmt(m.fwd)},
-    {etq:'IPsec VPN', val:profile==='ipsec'?needMbps:0, tope:m.ipsec,
-     txt:fmt(profile==='ipsec'?needMbps:0)+' / '+fmt(m.ipsec)},
-    {etq:'SD-WAN (IPsec + AppFlow)', val:profile==='sdwan'?needMbps:0, tope:m.sdwan||m.ipsec,
-     txt:fmt(profile==='sdwan'?needMbps:0)+' / '+fmt(m.sdwan||m.ipsec)},
-  ];
-
-  const porQueDe=m=>{
-    const flags=[];
-    if($('sNgfw').checked) flags.push('Zona-Based Firewall añade ~15% de carga de procesamiento.');
-    if($('sVoice').checked) flags.push('CUBE/SIP añade ~10% por procesamiento de señalización de voz.');
-    if($('sAppx').checked) flags.push('NBAR/AppX añade ~8% por clasificación de tráfico.');
-    if($('sUmbrella').checked) flags.push('Umbrella SIG añade ~12% por encapsulación de túneles.');
-    // Los dos avisos distinguen si el equipo ADMITE la ampliacion o no. Antes daban por hecho
-    // que si -uno hablaba de «kit de expansion» y el otro mandaba pedir una NIM LTE- incluso
-    // para los Meraki MX, que tienen `nim: 0` y son de sobremesa: una referencia de pedido
-    // para un equipo que no la acepta es dato inventado, igual que un SKU que no existe.
-    if($('chkRedund').checked && !m.redund) flags.push(m.nim>0
-      ? '<span class="warn">Este modelo no trae doble fuente de serie — confirmar en el datasheet si admite una segunda.</span>'
-      : '<span class="warn">Este modelo no trae doble fuente de serie y es de fuente fija: si la redundancia es un requisito, hay que subir de gama.</span>');
-    if($('chk4g').checked && !m.lte) flags.push(m.nim>0
-      ? 'Se requiere una NIM de LTE adicional — confirmar el PID vigente en CCW.'
-      : 'Este modelo no lleva LTE integrado y no admite NIM: la conectividad celular tendría que ser externa.');
-    return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">
-      <li>Requerimiento con margen: <b>${fmt(needMbps)}</b> | Capacidad del equipo: <b>${fmt(capDe(m))}</b></li>
-      <li>Puertos: ${esc(m.ports)}</li>
-      ${flags.map(f=>`<li>${f}</li>`).join('')}
-    </ul>`;
+  const medidoresDe = m => {
+    const f = filaDe(m.id);
+    if(!f) return [];
+    const L = [];
+    if(d.overlayNeed > 0 && f.co.v != null) L.push({etq:`Overlay — ${f.co.n}${f.co.cae ? ' (cifra IPsec)' : ''}`, val:d.overlayNeed, tope:f.co.v, txt:`${fmt(d.overlayNeed)} / ${fmt(f.co.v)}`});
+    if(d.diaNeed > 0 && f.cd && f.cd.v != null) L.push({etq:`Salida local — ${f.cd.n}`, val:d.diaNeed, tope:f.cd.v, txt:`${fmt(d.diaNeed)} / ${fmt(f.cd.v)}`});
+    if(f.u != null && d.overlayNeed > 0 && d.diaNeed > 0) L.push({etq:'Utilización combinada (suma de las dos fracciones)', val:Math.round(f.u * 100), tope:100, txt:`${Math.round(f.u * 100)} %`});
+    const esc_ = p.escala;
+    if(esc_.tuneles && typeof m.tuneles === 'number') L.push({etq:'Túneles', val:esc_.tuneles, tope:m.tuneles, txt:`${miles(esc_.tuneles)} / ${miles(m.tuneles)}`});
+    if(esc_.rutas && typeof m.rutas === 'number') L.push({etq:'Rutas', val:esc_.rutas, tope:m.rutas, txt:`${miles(esc_.rutas)} / ${miles(m.rutas)}`});
+    if(esc_.sesiones && typeof m.nat === 'number') L.push({etq:'Sesiones de NAT', val:esc_.sesiones, tope:m.nat, txt:`${miles(esc_.sesiones)} / ${miles(m.nat)}`});
+    return L;
   };
 
-  const seccionesDe=m=>{
-    const dnaSel=$('dnaTier').value||'adv';
-    const dnaNom={ess:'DNA Essentials',adv:'DNA Advantage',pre:'DNA Premier'}[dnaSel];
-    const s=SMARTNET[crit];
+  const porQueDe = m => {
+    const f = filaDe(m.id);
+    if(!f) return '';
+    const L = [];
+    L.push(`Demanda de diseño: overlay <b>${fmt(d.overlayNeed)}</b>${d.diaNeed ? ` + salida local <b>${fmt(d.diaNeed)}</b>` : ''}. Para esta mezcla el equipo equivale a <b>${fmt(f.capEq)}</b>${f.u != null ? ` (utilización del ${Math.round(f.u * 100)} %)` : ''}.`);
+    L.push(`Puertos: ${esc(m.ports || 'no consta')}`);
+    for(const pz of f.piezas) L.push(`Se añade al BOM: <b>${esc(pz.desc)}</b>${pz.sku ? ` <code>${esc(pz.sku)}</code>` : ''}.`);
+    for(const a of f.avisos) L.push(`<span class="warn">${esc(a)}</span>`);
+    return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">${L.map(x => `<li>${x}</li>`).join('')}</ul>`;
+  };
+
+  const seccionesDe = m => {
+    const s = SMARTNET[crit] || {};
+    const amen = M.cifra(m, 'amenazas');
+    const filasRend = [
+      ['Reenvío', cifraHtml(m, 'fwd')],
+      ['IPsec', cifraHtml(m, 'ipsec')],
+      ['SD-WAN', m.sdwan != null ? cifraHtml(m, 'sdwan') : `sin cifra propia: se dimensiona con su IPsec${m.sdwanDesde ? '' : ''}`],
+      [amen.n === 'Threat Protection' ? 'Threat Protection' : `${amen.n} (Meraki)`, cifraHtml(m, 'amenazas')],
+    ];
+    if(typeof m.amenazasDet === 'number') filasRend.push(['NGFW en modo detección', `${fmt(m.amenazasDet)}${base('IDS, sin bloquear')}`]);
+    if(m.sdwanDesde) filasRend.push(['SD-WAN disponible desde', esc(m.sdwanDesde)]);
+    const filasEscala = [
+      ['Túneles', typeof m.tuneles === 'number' ? miles(m.tuneles) + (m.tunelesNota ? ` <span class="sku">${esc(m.tunelesNota)}</span>` : '') : 'no lo publica'],
+      ['Rutas', typeof m.rutas === 'number' ? miles(m.rutas) : 'no lo publica'],
+      ['Sesiones de NAT', typeof m.nat === 'number' ? miles(m.nat) : 'no lo publica'],
+    ];
+    if(m.ser === 'Meraki MX') filasEscala.push(['Dispositivos recomendados', typeof m.clientes === 'number' ? miles(m.clientes) : 'no lo publica']);
+    if(m.clase) filasEscala.push(['Clase de plataforma (licencias)', `<code>${esc(m.clase)}</code>`]);
+    const ranuras = [m.nim ? `${m.nim} NIM` : null, m.sm ? `${m.sm} SM` : null, m.pim ? '1 PIM (celular)' : null].filter(Boolean).join(' · ');
+    const lic = M.licencias(m, opcionesLicencia(p), LIC_G2);
     return [
+      {titulo:'Rendimiento publicado', filas:filasRend,
+        nota:'Cada cifra con su base de medida: no se comparan cifras de bases distintas entre sí.'},
+      {titulo:'Escala publicada', filas:filasEscala},
       {titulo:'Características del equipo', filas:[
         ['Familia / Serie', `${esc(m.fam)} · ${esc(m.ser)}`],
-        ['Forwarding (bidireccional)', fmt(m.fwd)],
-        ['IPsec VPN', fmt(m.ipsec)],
-        ['SD-WAN (IPsec + AppFlow)', m.sdwan?fmt(m.sdwan):`${fmt(m.ipsec)} (cifra IPsec — sin throughput SD-WAN diferenciado publicado)`],
-        // Tercera aparicion del mismo error: «Requiere NIM LTE» tambien se lo decia a los
-        // Meraki MX, que tienen `nim: 0`. Un equipo sin ranuras no admite ese modulo, y
-        // ofrecerlo igualmente manda a alguien a cotizar una pieza que no encaja.
-        ['LTE integrado', m.lte?'Sí':(m.nim>0?'No — requiere una NIM de LTE':'No — y no admite NIM')],
+        ['Referencia de pedido', pidDe(m) ? `<code>${esc(pidDe(m))}</code>` : 'consultar en CCW'],
+        ['Celular', m.lte ? 'Integrado' : (m.pim ? 'Por módulo PIM (se pide aparte)' : 'No')],
+        ['Ranuras', ranuras || 'Ninguna'],
+        ['MACsec', m.macsec === 'integrado' ? 'En todos sus puertos' : (m.macsec === 'nim' ? 'Con una NIM WAN con MACsec' : 'No consta')],
+        ['PoE', typeof m.poe === 'number' ? `${m.poe} W${m.poeNota ? ` <span class="sku">${esc(m.poeNota)}</span>` : ''}` : 'No consta'],
         ['Puertos', esc(m.ports), true],
-        ['Precio de lista ref.', m.elp?esc(m.elp):'Consultar CCW'],
+        ['Precio de lista ref.', m.elp ? `${esc(m.elp)} (CCW, 17-ago-2026)` : 'Consultar CCW'],
+        ...(m.datasheet ? [['Ficha oficial', `<a href="${esc(m.datasheet)}" target="_blank" rel="noopener">abrir la ficha de Cisco</a>`, true]] : []),
       ]},
       FICHA.seccionPuertos(m),
       FICHA.seccionAlimentacion(m),
-      {titulo:'Licenciamiento propuesto', filas:[
-        ['Suscripción DNA', esc(dnaNom)],
-        ['Alcance', esc(DNA_DESC[dnaSel]), true],
-        ['SKU de referencia', `<code>DNA-C-T&lt;n&gt;-${{ess:'E',adv:'A',pre:'P'}[dnaSel]}-${$('termYears')?$('termYears').value:3}Y</code> — n = tier de ancho de banda, confirmar en CCW`, true],
-        ['HSEC (High Security)', 'Requerida para exportación de criptografía fuerte en países restringidos. Verificar con Cisco GSSO.', true],
-        ['Unidades a licenciar', $('chkRedund').checked?'2 — la licencia no se comparte':'1'],
-      ], nota:(dnaSel==='ess'&&m.id.includes('8500'))?'<span class="warn">Catalyst 8500 no soporta DNA Essentials — requiere Advantage como mínimo.</span>':'En Cisco la suscripción DNA va por tier de ancho de banda y término, y es la que habilita SD-WAN.'},
-      {titulo:'Software y gestión', filas:[
-        ['Catalyst SD-WAN Manager (vManage)', 'Controlador SD-WAN, cloud u on-prem', true],
-        ['Cisco DNA Center', 'Automatización y garantía de campus, licenciado por dispositivo', true],
-        ['ThousandEyes', 'Visibilidad de camino y experiencia de aplicación, suscripción aparte', true],
-        ['Umbrella SIG', 'Seguridad DNS y SWG en la nube, licenciada por usuario', true],
-      ]},
-      {titulo:'Soporte', filas:[
-        [esc(s.n), esc(s.sla)],
-        ['Alcance', esc(s.d), true],
-      ], nota:'Término de 12 meses sobre el equipo seleccionado.'},
+      {titulo:'Licenciamiento propuesto', filas:lic.filas.map(x => [esc(x.desc), x.sku ? `<code>${esc(x.sku)}</code>` : 'referencia en CCW', true]),
+        nota:lic.avisos.length ? `<span class="warn">${lic.avisos.map(esc).join(' ')}</span>` : (m.lic === 'cswan' ? 'En la G2 la referencia sale de la clase de la plataforma; el término y el precio, de CCW.' : null)},
+      {titulo:'Software y gestión', filas:m.lic === 'meraki'
+        ? [['Meraki Dashboard', 'Gestión en la nube, incluida en la licencia del equipo', true]]
+        : [['Catalyst SD-WAN Manager', 'Controlador SD-WAN, en la nube o local', true], ['ThousandEyes', 'Visibilidad de camino y experiencia de aplicación, suscripción aparte', true]]},
+      {titulo:'Soporte', filas:[[esc(s.n || 'SMARTnet'), esc(s.sla || '')], ['Alcance', esc(s.d || ''), true]],
+        nota:'Nivel según la criticidad del sitio; término en la pestaña de BOM.'},
     ];
   };
 
-  const pintarDependientes=m=>{
-    $('pickLbl').textContent=m.id; $('pickLbl').style.display='block';
-    $('pickLbl').style.left=xPct(capDe(m))+'%';
-    const s=SMARTNET[crit];
-    $('suppBox').innerHTML=`
+  const pintarDependientes = m => {
+    pintarEscala(ev, m);
+    pintarEvaluados(ev, m);
+    pintarLicencias(m, p);
+    const s = SMARTNET[crit] || {};
+    $('suppBox').innerHTML = `
       <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;text-transform:uppercase;margin-bottom:4px">${esc(s.n)}</div>
-      <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;margin-bottom:10px"><span class="pillc">${esc(s.sla)}</span> · término 12 meses · ${esc(m.id)}</p>
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;margin-bottom:10px"><span class="pillc">${esc(s.sla)}</span> · ${esc(m.id)}</p>
       <p style="font-size:13.5px;margin:0">${esc(s.d)}</p>`;
-    const dnaSel=$('dnaTier').value||'adv';
-    const dnaLetter={ess:'E',adv:'A',pre:'P'}[dnaSel];
-    const dnaWarn=(dnaSel==='ess'&&m.id.includes('8500'))?'<li><span class="warn">Catalyst 8500 no soporta DNA Essentials — requiere Advantage como mínimo.</span></li>':'';
-    $('licBox').innerHTML=`
-      <ul class="clean">
-        <li class="on"><b>${{'ess':'DNA Essentials','adv':'DNA Advantage','pre':'DNA Premier'}[dnaSel]}</b><span class="req">Requerida</span><span class="sku">${DNA_DESC[dnaSel]}<br>SKU real: <code>DNA-C-T&lt;n&gt;-${dnaLetter}-${$('termYears')?$('termYears').value:3}Y</code> (n = tier de ancho de banda, confirmar en CCW)</span></li>
-        ${dnaWarn}
-        <li><b>HSEC (High Security)</b><span class="req opt">Según país</span><span class="sku">Requerida para exportación de criptografía fuerte en países restringidos. Verificar con Cisco GSSO.</span></li>
-        <li><b>IP Base → IP Services (IOS XE)</b><span class="req opt">Nota</span><span class="sku">En ISR 4000 el throughput máximo se alcanza solo con licencia IP Services o AppX habilitada.</span></li>
-      </ul>`;
   };
 
-  const elegidoId=FICHA.render({vendor:'cisco', 
+  const elegidoId = FICHA.render({vendor:VENDOR,
     contenedor:'verdict',
-    candidatos:candidates,
+    candidatos,
     recomendado:pick.id,
-    // En perfil SD-WAN, un modelo sin cifra propia cae a su numero de IPsec. Son dos
-    // mediciones distintas, asi que la sustitucion se marca aqui y no solo en la ficha: sin
-    // eso, un equipo cuya cifra SD-WAN nadie publico puede aparecer por delante de otro que
-    // si la publica, y en la lista los dos numeros parecen lo mismo.
-    etiqueta:m=>`${m.id} — ${m.ser} · ${fmt(capDe(m))}${profile==='sdwan'&&!m.sdwan&&m.ipsec?' (cifra IPsec)':''}`,
-    // Escalón N+1 (ficha.js): la cifra del desplegable. En SD-WAN solo se comparan equipos medidos
-    // igual: uno sin cifra SD-WAN propia (cae a IPsec) no es el escalón de uno que la publica.
-    escalon:{metrica:capDe, fmt, nombre:{fwd:'reenvío', ipsec:'IPsec', sdwan:'SD-WAN'}[profile]||'capacidad',
-      precio:m=>m.elpN??null, comparable:(a,b)=>profile!=='sdwan'||!!a.sdwan===!!b.sdwan},
-    titulo:m=>m.id,
-    subtitulo:m=>m.fam+' · Serie '+m.ser,
+    vistas:VISTAS || {},
+    // En SD-WAN, un modelo sin cifra propia cae a IPsec: la lista lo marca para que dos cifras
+    // de mediciones distintas no parezcan la misma.
+    etiqueta:m => { const f = filaDe(m.id); return `${m.id} — ${m.ser} · ${fmt(capEq(m))}${f && f.co.cae ? ' (cifra IPsec)' : ''}`; },
+    // Escalón N+1 (ficha.js) con la capacidad equivalente para esta mezcla. Solo se comparan
+    // equipos medidos igual: misma base en la capa del overlay.
+    escalon:{metrica:capEq, fmt, nombre:'capacidad para esta mezcla',
+      precio:m => m.elpN ?? null,
+      comparable:(a, b) => { const fa = filaDe(a.id), fb = filaDe(b.id); return !!(fa && fb && fa.co.base === fb.co.base && fa.co.cae === fb.co.cae); }},
+    titulo:m => m.id,
+    subtitulo:m => `${m.fam} · Serie ${m.ser}`,
     medidores:medidoresDe,
     porQue:porQueDe,
     secciones:seccionesDe,
-    alCambiar:id=>{
-      const m=candidates.find(x=>x.id===id);
+    alCambiar:id => {
+      const m = candidatos.find(x => x.id === id);
       if(!m) return;
       pintarDependientes(m);
       llevarABom(m.id);
     },
   });
-  const elegido=candidates.find(m=>m.id===elegidoId)||pick;
+  const elegido = candidatos.find(m => m.id === elegidoId) || pick;
   pintarDependientes(elegido);
   sincronizarConBom(elegido);
 }
 
-function renderTrack(profile, needMbps, xPct, needPct){
-  const track=$('track');
-  // clear old dots
-  track.querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
-  const pickLbl=document.createElement('div');
-  pickLbl.className='pickLabel'; pickLbl.id='pickLbl'; pickLbl.style.display='none';
-  track.appendChild(pickLbl);
-
-  const ticks=[10,100,1000,2000,5000,10000,20000,50000,100000];
-  ticks.forEach(v=>{
-    const pct=xPct(v); if(pct<0||pct>100) return;
-    const tick=document.createElement('div'); tick.className='tick';
-    tick.style.left=pct+'%';
-    tick.innerHTML=`<i></i><b>${v>=1000?v/1000+'G':v+'M'}</b>`;
-    track.appendChild(tick);
-  });
-
-  MODELS.forEach(m=>{
-    const cap=profile==='ipsec'?m.ipsec:profile==='sdwan'?(m.sdwan||m.ipsec):m.fwd;
-    const pct=xPct(cap); if(pct<0||pct>100) return;
-    const dot=document.createElement('div');
-    const isWan=m.ser.includes('ASR');
-    dot.className='dot'+(isWan?' wan':'')+(cap>=needMbps?' ok':'');
-    if(lastPick&&m.id===lastPick.id) dot.className='dot pick';
-    dot.style.left=pct+'%';
-    dot.title=m.id+': '+fmt(cap);
-    track.appendChild(dot);
-  });
+// Avisos que no son de un equipo sino del escenario.
+function pintarAvisos(ev, p){
+  const L = [];
+  if(ev.tlsEnRouter) L.push('<div class="callout" role="note"><p><b>Descifrado TLS en el router: ninguna ficha lo publica.</b> Ningún Secure Router, Catalyst ni Meraki de este catálogo publica caudal con inspección TLS, así que no se deriva de otra cifra. Si la salida a Internet necesita descifrado, va en un <b>firewall dedicado</b> o en un servicio <b>SSE en la nube</b>: cambia «Seguridad de la salida a Internet».</p></div>');
+  if(p.seguridad === 'desacoplada' && ev.demanda.diaNeed > 0) L.push(`<div class="callout info" role="note"><p><b>Firewall dedicado.</b> El router solo enruta la salida local (${fmt(ev.demanda.diaNeed)} con margen); el firewall que la inspecciona se dimensiona aparte, por su capa de inspección — por ejemplo en el <a href="/dimensionador-fortinet-fortigate.html">dimensionador Fortinet</a>. Cisco Secure Firewall no está en este catálogo.</p></div>`);
+  if(p.seguridad === 'sse' && ev.demanda.diaNeed > 0) L.push('<div class="callout info" role="note"><p><b>Seguridad en la nube.</b> La salida a Internet viaja cifrada hasta el servicio SSE, así que el router la cuenta en su capa IPsec. La suscripción del servicio (Cisco Secure Access) va por usuario y no está en este catálogo: confirmarla con el distribuidor.</p></div>');
+  if(p.plataforma === 'asr') L.push('<div class="callout" role="note"><p><b>ASR 1000: fuera de venta.</b> Los tres modelos pasaron su último día de pedido; se evalúan como referencia de parque instalado y nunca se recomiendan.</p></div>');
+  $('avisosMotor').innerHTML = L.join('');
 }
 
-/* ── RENDER BOM ── */
-function renderBom(){
-  const m=MODELS.find(x=>x.id===$('pickModel').value)||MODELS[0];
-  // Sin catálogo todavía no hay nada que pintar (MikroTik y Aruba ya lo guardaban): un enlace
-  // compartido repone los .seg con un click que llega antes que el fetch, y aquí reventaba.
-  if(!m) return;
-  const qty=Math.max(1,parseInt($('qty').value)||1);
-  const nimQty=Math.max(0,parseInt($('nimQty').value)||0);
-  const optQty=Math.max(0,parseInt($('optQty').value)||0);
-  const termYrs=parseInt($('termYears').value)||3;
-  const dnaTier=$('dnaTier').value||'adv';
+// Barra proporcional: overlay, salida local y sobrecarga (FEC, duplicación y margen).
+function pintarDistribucion(ev){
+  const box = $('distrib');
+  const t = ev.demanda.distribucion, total = t.overlay + t.dia + t.sobrecarga;
+  if(!(total > 0)){ box.hidden = true; box.innerHTML = ''; return; }
+  const pc = v => (v / total * 100);
+  box.hidden = false;
+  box.innerHTML = `<h2>Distribución del caudal de diseño</h2>
+    <div class="dist" role="img" aria-label="Distribución del caudal: ${fmt(t.overlay)} por el overlay, ${fmt(t.dia)} de salida local, ${fmt(t.sobrecarga)} de sobrecarga">
+      <i class="d-tun" style="width:${pc(t.overlay)}%"></i>${t.dia > 0 ? `<i class="d-dia" style="width:${pc(t.dia)}%"></i>` : ''}${t.sobrecarga > 0 ? `<i class="d-over" style="width:${pc(t.sobrecarga)}%"></i>` : ''}
+    </div>
+    <div class="dist-leyenda">
+      <span class="l-tun">Overlay · ${esc((M.PERFILES[$('profile').value] || M.PERFILES.sdwan).n)}: <b>${fmt(t.overlay)}</b></span>
+      ${t.dia > 0 ? `<span class="l-dia">Salida local a Internet: <b>${fmt(t.dia)}</b></span>` : ''}
+      ${t.sobrecarga > 0 ? `<span class="l-over">Sobrecarga (margen${ev.demanda.fec ? ', FEC' : ''}${ev.demanda.dup ? ', duplicación' : ''}): <b>${fmt(t.sobrecarga)}</b></span>` : ''}
+    </div>
+    <ul style="margin:10px 0 0;padding-left:18px;font-size:12.5px">${ev.demanda.pasos.map(x => `<li>${esc(x.n)}: <b>${fmt(x.v)}</b></li>`).join('')}</ul>`;
+}
 
-  let html=`${BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato})}<section class="panel"><h2>Ficha del equipo</h2>
-    <div class="model" style="font-size:28px">${m.id}</div>
-    <p class="family">${m.fam} · Serie ${m.ser}</p>
+function pintarCgnat(){
+  const r = M.poolCgnat({usuarios:numDe('cgnatUsuarios'), bloque:numDe('cgnatBloque') || 512});
+  const box = $('cgnatBox');
+  if(!r){ box.hidden = true; box.innerHTML = ''; return; }
+  box.hidden = false;
+  box.innerHTML = `<h2>Pool de NAT por bloques de puertos</h2>
+    <p style="font-size:13.5px;margin:0">${miles(r.usuarios)} usuarios con bloques de ${miles(r.bloque)} puertos: <b>${miles(r.porIp)}</b> usuarios por dirección y <b>${miles(r.ips)}</b> IPv4 públicas, un <b>/${r.prefijo}</b> (${miles(r.enPrefijo)} direcciones).</p>
+    <p class="hint">Aritmética sobre los ${miles(M.PUERTOS_UTILES)} puertos útiles de una dirección (1.024-65.535); no depende del equipo.</p>`;
+}
+
+function pintarLicencias(m, p){
+  if(!m){ $('licBox').innerHTML = '<p style="font-size:13.5px;color:var(--steel)">Sin equipo elegido no hay licencias que proponer.</p>'; return; }
+  const lic = M.licencias(m, opcionesLicencia(p), LIC_G2);
+  $('licBox').innerHTML = `<ul class="clean">${lic.filas.map(x => `<li class="on"><b>${esc(x.desc)}</b>${x.incluida ? '<span class="req opt">Incluida</span>' : '<span class="req">Requerida</span>'}<span class="sku">${x.sku ? `<code>${esc(x.sku)}</code> · ` : ''}${esc(x.nota || '')}</span></li>`).join('')}
+    ${lic.avisos.map(a => `<li><span class="warn">${esc(a)}</span></li>`).join('')}
+    <li><b>HSEC (cifrado fuerte)</b><span class="req opt">Según país</span><span class="sku">Requerida para exportar criptografía fuerte a países con control. Verificar con Cisco.</span></li></ul>
+    <p class="hint">Gestión y nivel se eligen en la pestaña «Equipo y BOM».</p>`;
+  $('licHint').textContent = m.lic === 'cswan' ? `${m.id}: clase ${m.clase || 'no consta'}; la referencia sale de la clase.`
+    : m.lic === 'meraki' ? 'Meraki: una licencia por equipo, por modelo y término.' : 'Catalyst 8000, ISR y ASR: suscripción DNA por tier de ancho de banda.';
+  $('secExtras').classList.toggle('hidden', !(m.lic === 'cswan' && p.seguridad === 'onbox'));
+}
+
+// Escala logarítmica: la capacidad equivalente de cada equipo de la plataforma para esta mezcla
+// de tráfico frente a la demanda total.
+function pintarEscala(ev, elegido){
+  const track = $('track');
+  track.querySelectorAll('.dot,.tick,.pickLabel').forEach(e => e.remove());
+  const total = ev.demanda.total;
+  const caps = ev.filas.map(f => f.capEq).filter(v => v != null && Number.isFinite(v));
+  const maxCap = Math.max(total, ...caps);
+  const logP = v => Math.log10(Math.max(v, 10));
+  const logMin = Math.log10(10), logMax = logP(maxCap * 1.2);
+  const xPct = v => (logP(v) - logMin) / (logMax - logMin) * 100;
+  const needPct = Math.min(xPct(total), 99);
+  $('need').style.left = needPct + '%';
+  $('needLbl').textContent = fmt(total);
+  $('need').classList.toggle('flip', needPct > 60);
+  [10, 100, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 500000].forEach(v => {
+    const pct = xPct(v); if(pct < 0 || pct > 100) return;
+    const tick = document.createElement('div'); tick.className = 'tick';
+    tick.style.left = pct + '%';
+    tick.innerHTML = `<i></i><b>${v >= 1000 ? v / 1000 + 'G' : v + 'M'}</b>`;
+    track.appendChild(tick);
+  });
+  for(const f of ev.filas){
+    if(f.capEq == null || !Number.isFinite(f.capEq)) continue;
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (f.ok ? ' ok' : '') + (elegido && f.m.id === elegido.id ? ' pick' : '');
+    dot.style.left = xPct(f.capEq) + '%';
+    dot.title = `${f.m.id}: ${fmt(f.capEq)}`;
+    track.appendChild(dot);
+  }
+  if(elegido){
+    const f = ev.filas.find(x => x.m.id === elegido.id);
+    const lbl = document.createElement('div');
+    lbl.className = 'pickLabel'; lbl.id = 'pickLbl';
+    lbl.textContent = elegido.id.replace(/^Cisco Secure Router /, '');
+    lbl.style.left = (f && f.capEq ? xPct(f.capEq) : 0) + '%';
+    track.appendChild(lbl);
+  }
+}
+
+// Todos los modelos de la plataforma, con su cifra en cada capa y por qué se aparta el que se aparta.
+function pintarEvaluados(ev, elegido){
+  const d = ev.demanda;
+  const capa = (M.PERFILES[$('profile').value] || M.PERFILES.sdwan).n;
+  const res = M.resumenApartados(ev.apartados);
+  $('apartados').innerHTML = `<p>En <b>${esc(ev.plataforma.n)}</b> cumplen <b>${ev.candidatos.length}</b> de ${ev.filas.length} modelos. Se exigen <b>${fmt(d.overlayNeed)}</b> en «${esc(capa)}»${d.diaNeed ? ` y <b>${fmt(d.diaNeed)}</b> de salida local en «${esc(ev.seguridad.n)}»` : ''}.</p>`
+    + (res.length ? `<ul>${res.map(g => `<li><details><summary><b>${g.ids.length}</b> ${esc(g.motivo)}</summary><div>${g.ids.map(esc).join(' · ')}</div></details></li>`).join('')}</ul>` : '');
+  const filas = [...ev.candidatos, ...ev.apartados];
+  $('tbody').innerHTML = filas.map(f => {
+    const r = FICHA.rango(f.m);
+    const estado = f.ok ? (r === 2 ? '<span class="warn">Cumple, fuera de venta</span>' : 'Cumple') : `<span class="warn">${f.motivos.map(esc).join('; ')}</span>`;
+    return `<tr${elegido && f.m.id === elegido.id ? ' class="sel"' : ''}><td><code>${esc(f.m.id.replace(/^Cisco Secure Router /, ''))}</code></td>`
+      + `<td class="n">${f.co.v == null ? '—' : fmt(f.co.v)}${f.co.cae ? ' <span class="pillc">IPsec</span>' : ''}</td>`
+      + `<td class="n">${f.cd ? (f.cd.v == null ? '—' : fmt(f.cd.v)) : '—'}</td>`
+      + `<td class="n">${f.u == null ? '—' : Math.round(f.u * 100) + ' %'}</td><td>${estado}</td></tr>`;
+  }).join('');
+}
+
+// Catálogo completo, con la base de cada cifra debajo de ella. Incluye los fuera de venta,
+// marcados, porque ampliar un parque instalado es justo cuando hace falta consultarlos.
+function renderCatalogo(){
+  const tbody = document.querySelector('#tbl-cisco-cat tbody');
+  if(!tbody) return;
+  const celda = (m, k) => { const c = M.cifra(m, k); return c.v == null ? '—' : `${fmt(c.v)}<span class="sku">${esc(c.base || 'base no consta')}</span>`; };
+  tbody.innerHTML = MODELS.map(m => {
+    const r = FICHA.rango(m);
+    const marca = r === 2 ? ' <span class="pillc" style="color:var(--red-txt)">Fuera de venta</span>'
+      : r === 1 ? ' <span class="pillc">Línea anterior</span>' : (m.eolAnnounced ? ' <span class="pillc">Fin de venta anunciado</span>' : '');
+    return `<tr>
+    <td><code>${esc(m.id.replace(/^Cisco Secure Router /, ''))}</code>${marca}</td><td>${esc(m.ser)}</td><td>${esc(m.fam)}</td>
+    <td class="n">${celda(m, 'fwd')}</td><td class="n">${celda(m, 'ipsec')}</td><td class="n">${celda(m, 'sdwan')}</td><td class="n">${celda(m, 'amenazas')}</td>
+    <td class="n">${typeof m.tuneles === 'number' ? miles(m.tuneles) : '—'}</td><td>${esc(m.ports)}</td>
+    <td class="n" style="color:var(--amber);white-space:nowrap">${m.elp ? esc(m.elp) : 'Consultar CCW'}</td>
+  </tr>`;
+  }).join('');
+}
+
+/* ── RENDER DEL BOM ── */
+// Opciones de un desplegable, conservando lo elegido si sigue siendo válido.
+function opciones(id, lista, vacio){
+  const sel = $(id), antes = sel.value;
+  sel.innerHTML = `<option value="">${esc(vacio)}</option>` + lista.map(o => `<option value="${esc(o.v)}">${esc(o.t)}</option>`).join('');
+  if(lista.some(o => o.v === antes)) sel.value = antes;
+}
+const PIM_SKUS = () => new Set(MOD_G2.filter(x => x.en === 'pim').map(x => x.sku));
+
+function renderBom(){
+  const m = MODELS.find(x => x.id === $('pickModel').value) || MODELS[0];
+  // Sin catálogo todavía no hay nada que pintar: un enlace compartido repone los .seg con un
+  // click que llega antes que el fetch, y aquí reventaba.
+  if(!m) return;
+  const p = parametros();
+  const qty = Math.max(1, parseInt($('qty').value, 10) || 1);
+  const anios = +$('termYears').value || 3;
+  const optQty = Math.max(0, parseInt($('optQty').value, 10) || 0);
+  const g2 = m.lic === 'cswan';
+
+  // Módulos: solo los de la guía de pedido de la G2, y solo en el equipo que tiene la ranura.
+  const deTipo = en => MOD_G2.filter(x => x.en === en).map(x => ({v:x.sku, t:`${x.sku} — ${x.d}`}));
+  opciones('modNim', g2 && m.nim ? deTipo('nim') : [], '— ninguno —');
+  opciones('modSm', g2 && m.sm ? deTipo('sm') : [], '— ninguno —');
+  opciones('modPim', g2 && m.pim ? deTipo('pim') : [], '— ninguno —');
+  $('modNimBlock').classList.toggle('hidden', !(g2 && m.nim));
+  $('modSmBlock').classList.toggle('hidden', !(g2 && m.sm));
+  $('modPimBlock').classList.toggle('hidden', !(g2 && m.pim));
+  $('modHint').textContent = g2 ? ((m.nim || m.sm || m.pim) ? 'De la guía de pedido de la G2 (tablas 7 y 8): uno por ranura.' : 'Este equipo no tiene ranuras de expansión.')
+    : ((m.nim || m.sm || m.pim) ? 'Los módulos de esta familia salen de su propia guía de pedido: consultar en CCW.' : 'Este equipo no tiene ranuras de expansión.');
+  const optLista = (m.optics || []).flatMap(k => (OPTICS[k] || []).map(o => ({v:`${k}|${o.sku}`, t:`${OPTIC_LABEL[k] || k} — ${o.sku} · ${o.d}`})));
+  opciones('optSel', optLista, optLista.length ? '— elegir óptica —' : 'Este equipo no lista ópticas');
+
+  const filas = [
+    {cat:'Equipo', desc:m.id, sku:pidDe(m), qty, unit:m.elpN != null ? m.elpN : null,
+     nota:`${m.fam} · Serie ${m.ser} · ${m.ports}${m.eolAnnounced ? (vencido(m) ? ' · FIN DE VENTA VENCIDO' : ' · FIN DE VENTA ANUNCIADO') : ''}`},
+  ];
+  const rq = M.requisitos(m, p.requisitos);
+  for(const pz of rq.piezas){
+    if(pz.pim){
+      if($('modPim').value) continue;
+      const lista = g2 ? MOD_G2.filter(x => x.en === 'pim').map(x => x.sku).join(', ') : null;
+      filas.push({cat:'Módulos', desc:'Módulo celular (PIM) — elegir uno', sku:null, qty, unit:null,
+        nota:lista ? `Según la región y el operador: ${lista} (guía de pedido, tabla 8).` : 'Referencia en la guía de pedido de esta familia: consultar en CCW.'});
+    } else if(pz.macsec){
+      if(/^C-NIM-WAN/.test($('modNim').value)) continue;
+      filas.push({cat:'Módulos', desc:'NIM WAN con MACsec — elegir una', sku:null, qty, unit:null,
+        nota:g2 ? 'C-NIM-WAN-2X (2 × 1/10G SFP+) o C-NIM-WAN-4S (4 × 1G SFP), guía de pedido, tabla 7.' : 'Referencia en la guía de pedido de esta familia.'});
+    } else {
+      filas.push({cat:pz.cat, desc:pz.desc, sku:pz.sku, qty, unit:null, nota:pz.nota || ''});
+    }
+  }
+  for(const id of ['modNim', 'modSm', 'modPim']){
+    const sku = $(id).value;
+    const x = sku && MOD_G2.find(y => y.sku === sku);
+    if(x) filas.push({cat:'Módulos', desc:x.d, sku:x.sku, qty, unit:null, nota:'Guía de pedido de la G2; precio en CCW.'});
+  }
+  // Piezas de hardware del catálogo que no son licencias ni celulares (los bundles HA del ASR).
+  const pims = PIM_SKUS();
+  (m.parts || []).filter(x => !/^(LIC|DNA)/.test(x) && !pims.has(x))
+    .forEach(x => filas.push({cat:'Módulos', desc:x, sku:x, qty, unit:null, nota:PARTS_DESC[x] || ''}));
+  if(optQty > 0){
+    const [k, sku] = ($('optSel').value || '|').split('|');
+    const o = k && (OPTICS[k] || []).find(y => y.sku === sku);
+    filas.push(o
+      ? {cat:'Ópticas', desc:`${OPTIC_LABEL[k] || k} — ${o.sku}`, sku:o.bom || o.sku, qty:optQty * qty, unit:null, nota:o.d}
+      : {cat:'Ópticas', desc:'Óptica — elegir el modelo', sku:null, qty:optQty * qty, unit:null, nota:'Elige la óptica en «Módulos y ópticas».'});
+  }
+  const lic = M.licencias(m, opcionesLicencia(p), LIC_G2);
+  lic.filas.forEach(x => filas.push({...x, qty:x.qty * qty, nota:x.incluida ? `${x.nota} Incluida con el equipo.` : x.nota}));
+  const sn = SMARTNET[crit];
+  if(sn) filas.push({cat:'Soporte', desc:sn.n, sku:null, qty, unit:null, nota:`${sn.sla || ''} · término ${anios} año(s)`});
+
+  // Ficha resumida del equipo en el BOM.
+  $('bomBody').innerHTML = `${BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato})}<section class="panel"><h2>Ficha del equipo</h2>
+    <div class="model" style="font-size:28px">${esc(m.id)}</div>
+    <p class="family">${esc(m.fam)} · Serie ${esc(m.ser)}</p>
     <div class="scroll"><table><thead><tr><th>Concepto</th><th>Valor</th></tr></thead><tbody>
-    <tr><td>Designación de pedido</td><td><code>${esc(m.id)}</code>${m.hwSku?` <code>${esc(m.hwSku)}</code>`:''}</td></tr>
-    <tr><td>Precio de lista ref. (equipo)</td><td class="n">${m.elp?esc(m.elp)+' (CCW)':'Consultar CCW'}</td></tr>
-    <tr><td>Forwarding (bidireccional IMIX)</td><td class="n">${fmt(m.fwd)}</td></tr>
-    <tr><td>IPsec VPN (IMIX)</td><td class="n">${fmt(m.ipsec)}</td></tr>
-    <tr><td>SD-WAN (IPsec + AppFlow, IMIX)</td><td class="n">${m.sdwan?fmt(m.sdwan):(m.ser.includes('ISR')?'N/A — usar ISR+DNA Advantage':fmt(m.ipsec)+' (cifra IPsec — sin throughput SD-WAN diferenciado publicado)')}</td></tr>
-    <tr><td>Puertos y slots</td><td>${m.ports}</td></tr>
-    <tr><td>Slots NIM disponibles</td><td class="n">${m.nim}</td></tr>
-    <tr><td>Slots SM disponibles</td><td class="n">${m.sm||0}</td></tr>
-    <!-- La fila de redundancia de fuente se quito el 2026-09-03: decia dos cosas distintas
-         sobre el mismo campo en la MISMA pantalla. Aqui afirmaba que existia un kit de redundancia y la
-         seccion «Alimentacion electrica» de FICHA.seccionAlimentacion -que esta pagina ya
-         pinta, mas abajo- decia «No — fuente unica». Ademas lo afirmaba
-         como un hecho, para los ONCE modelos con redund:false,
-         entre ellos los Meraki MX67/68/75/85, que son de sobremesa. Inventar una opcion de
-         pedido es el mismo fallo que el FortiGate 2000F y el EC-2XL de Aruba. La regla vive
-         en un solo sitio: ficha.js. -->
-    <tr><td>LTE integrado</td><td>${m.lte?'Sí':(m.nim>0?'No — se añade con una NIM de LTE (confirmar el PID vigente en CCW)':'No')}</td></tr>
+    <tr><td>Referencia de pedido</td><td>${pidDe(m) ? `<code>${esc(pidDe(m))}</code>` : 'consultar en CCW'}</td></tr>
+    <tr><td>Precio de lista ref. (equipo)</td><td class="n">${m.elp ? esc(m.elp) + ' (CCW)' : 'Consultar CCW'}</td></tr>
+    <tr><td>Reenvío</td><td class="n">${cifraHtml(m, 'fwd')}</td></tr>
+    <tr><td>IPsec</td><td class="n">${cifraHtml(m, 'ipsec')}</td></tr>
+    <tr><td>SD-WAN</td><td class="n">${cifraHtml(m, 'sdwan')}</td></tr>
+    <tr><td>${esc(M.cifra(m, 'amenazas').n)}</td><td class="n">${cifraHtml(m, 'amenazas')}</td></tr>
+    <tr><td>Puertos y ranuras</td><td>${esc(m.ports)}</td></tr>
     </tbody></table></div>
-    ${m.eolAnnounced?`<p class="hint warn" style="margin-top:10px">${vencido(m)?'<b>Fin de venta VENCIDO</b>':'Fin de venta anunciado'} (PID <code>${esc(m.eolAnnounced.pid)}</code>) — último día de pedido: <b>${esc(m.eolAnnounced.lastOrder)}</b>${vencido(m)?', ya pasado: solo referencia para parque instalado':''}.${m.eolAnnounced.sucesor?` Sucesor confirmado: <b>${esc(m.eolAnnounced.sucesor)}</b> — mismo IOS XE SD-WAN, ver esa familia en el selector de equipo.`:' El boletín no nombra un PID de reemplazo directo.'}${m.eolAnnounced.url?` <a href="${esc(m.eolAnnounced.url)}" target="_blank" rel="noopener">Boletín oficial</a>.`:''}</p>`:''}
+    ${m.eolAnnounced ? `<p class="hint warn" style="margin-top:10px">${vencido(m) ? '<b>Fin de venta VENCIDO</b>' : 'Fin de venta anunciado'} (PID <code>${esc(m.eolAnnounced.pid)}</code>) — último día de pedido: <b>${esc(m.eolAnnounced.lastOrder)}</b>${vencido(m) ? ', ya pasado: solo referencia para parque instalado' : ''}.${m.eolAnnounced.sucesor ? ` Sucesor según el boletín: <b>${esc(m.eolAnnounced.sucesor)}</b>.` : ' El boletín no nombra un PID de reemplazo directo.'}${m.eolAnnounced.url ? ` <a href="${esc(m.eolAnnounced.url)}" target="_blank" rel="noopener">Boletín oficial</a>.` : ''}</p>` : ''}
     </section>`;
 
-  // Parts
-  const parts=(m.parts||[]);
-  if(parts.length){
-    html+=`<section class="panel"><h2>Componentes y módulos</h2><div class="scroll"><table>
-    <thead><tr><th>PID / Descripción</th><th>Tipo</th></tr></thead><tbody>
-    ${parts.map(p=>`<tr><td><code>${esc(p)}</code><span class="sku">${PARTS_DESC[p]||''}</span></td>
-    <td>${p.startsWith('LIC')||p.startsWith('DNA')?'Licencia':'Módulo hardware'}</td></tr>`).join('')}
-    </tbody></table></div></section>`;
-  }
-
-  // Optics
-  html+=`<section class="panel"><h2>Módulos ópticos compatibles</h2>`;
-  (m.optics||[]).forEach(k=>{
-    html+=`<div class="grp"><h3>${OPTIC_LABEL[k]}</h3>
-    <p class="gd">Cantidad estimada: <b>${optQty*qty}</b> módulos (${optQty} por equipo × ${qty}).</p>
-    <div class="scroll"><table><thead><tr><th>PID Cisco</th><th>SKU legacy</th><th>Descripción</th></tr></thead><tbody>
-    ${OPTICS[k].map(o=>`<tr><td><code>${esc(o.bom)}</code></td><td><code>${esc(o.sku)}</code></td><td>${esc(o.d)}</td></tr>`).join('')}
-    </tbody></table></div></div>`;
-  });
-  html+=`<p class="hint">Para entornos con SD-WAN y vManage, se recomienda usar únicamente ópticas genuinas Cisco para evitar alertas en inventario y soporte TAC sin restricciones.</p></section>`;
-
-  // Licenses
-  const dnaLetterBom={ess:'E',adv:'A',pre:'P'}[dnaTier];
-  html+=`<section class="panel"><h2>Licencias DNA y suscripciones</h2><ul class="clean">
-    <li class="on"><b>Cisco DNA ${{'ess':'Essentials','adv':'Advantage','pre':'Premier'}[dnaTier]}</b><span class="req">Requerida</span><span class="sku">${DNA_DESC[dnaTier]} · término ${termYrs} años<br>SKU real: <code>DNA-C-T&lt;n&gt;-${dnaLetterBom}-${termYrs}Y</code> (n = tier de ancho de banda T0–T3+ según throughput del modelo, confirmar en CCW/ordering guide)</span></li>
-    ${(dnaTier==='ess' && m.id.includes('8500'))?'<li><span class="warn">Catalyst 8500 no soporta DNA Essentials — requiere Advantage como mínimo.</span></li>':''}
-    <li class="on"><b>IOS XE SD-WAN</b><span class="req">Requerida</span><span class="sku">Sistema operativo base incluido con DNA license. Validar versión mínima para Catalyst 8000: IOS XE 17.x SD-WAN mode.</span></li>
-    <li><b>HSEC — High Security</b><span class="req opt">Según país</span><span class="sku">Requerida para exportaciones a países con control criptográfico. Verificar con Cisco Global Security Sales Operations.</span></li>
-    <li><b>AppX / Application Experience</b><span class="req opt">Opcional</span><span class="sku">Para ISR 4000: habilita NBAR2, PfR, AppFlow y Performance Routing. Incluida en DNA Advantage.</span></li>
-  </ul></section>`;
-
-  // Support
-  const s=SMARTNET['med'];
-  html+=`<section class="panel"><h2>Soporte — SMARTnet</h2><div class="scroll"><table>
-    <thead><tr><th>Servicio</th><th>SLA</th><th>Término</th><th>Cantidad</th></tr></thead><tbody>
-    <tr><td>${s.n}</td><td class="n">${s.sla}</td><td class="n">${termYrs} años</td><td class="n">${qty}</td></tr>
-    <tr><td>SW Support (SWSS)</td><td class="n">Actualizaciones IOS XE</td><td class="n">${termYrs} años</td><td class="n">${qty}</td></tr>
-    </tbody></table></div></section>`;
-
-  $('bomBody').innerHTML=html;
-
-  // Plain BOM
-  // Filas del BOM en el formato compartido de /js/bom.js. Cisco publica PID pero el precio
-  // definitivo vive en CCW, asi que muchas lineas salen deliberadamente sin cotizar.
-  const filas=[
-    {cat:'Equipo', desc:m.id, sku:m.hwSku||null, qty, unit:m.elpN!=null?m.elpN:null,
-     nota:`${m.fam} · Serie ${m.ser} · ${m.ports}${m.eolAnnounced?(vencido(m)?' · FIN DE VENTA VENCIDO':' · FIN DE VENTA ANUNCIADO'):''}`},
-  ];
-  (m.parts||[]).forEach(p=>filas.push({cat:'Módulos', desc:p, sku:p, qty, unit:null,
-    nota:PARTS_DESC[p]||''}));
-  // "Módulos NIM adicionales a cotizar" se leia del formulario y no llegaba a ninguna parte:
-  // el usuario escribia 3 y el BOM salia sin ellos. Lo encontro el linter al marcar la
-  // variable como no usada. No se inventa una referencia —el catalogo trae el numero de
-  // slots, no una lista de NIM por modelo—, asi que la linea sale sin SKU y sin precio, que
-  // es como este BOM declara lo que no tiene confirmado: bom.js las cuenta y avisa.
-  if(nimQty>0){
-    filas.push({cat:'Módulos', desc:'Módulos NIM adicionales', sku:null, qty:nimQty*qty, unit:null,
-      nota:`${nimQty} por equipo × ${qty}. El equipo tiene ${m.nim} slot(s) NIM. `
-        +'Referencia y precio a confirmar en CCW segun la interfaz que se necesite.'});
-  }
-  if(optQty>0){
-    (m.optics||[]).forEach(k=>(OPTICS[k]||[]).slice(0,1).forEach(o=>filas.push({
-      cat:'Ópticas', desc:`${OPTIC_LABEL[k]||k} — ${o.sku}`, sku:o.bom||null,
-      qty:optQty*qty, unit:null, nota:o.d})));
-  }
-  filas.push({cat:'Licencias', desc:`Cisco DNA ${{'ess':'Essentials','adv':'Advantage','pre':'Premier'}[dnaTier]}`,
-    sku:`DNA-C-T<n>-${{'ess':'E','adv':'A','pre':'P'}[dnaTier]}-${termYrs}Y`, qty, unit:null,
-    nota:`Término ${termYrs} años. El tier de ancho de banda (T0-T3+) se confirma en CCW segun throughput.`});
-  filas.push({cat:'Licencias', desc:'IOS XE SD-WAN Mode', sku:null, qty, unit:null,
-    nota:'Modo de operación del router. Alternativa: IOS XE autónomo.'});
-  // La pagina no expone selector de SmartNet: usa el nivel medio como referencia, igual
-  // que la ficha del equipo mas arriba.
-  const sn=SMARTNET['med'];
-  if(sn) filas.push({cat:'Soporte', desc:sn.n, sku:null, qty, unit:null, nota:sn.sla||''});
-
-  const meta={
+  const f = filaDe(m.id);
+  const meta = {
     titulo:`Lista de materiales — ${m.id}`,
-    supuestos:{vendor:'cisco', fabricante:'Cisco', modelo:m.id, serie:m.ser},
-    subtitulo:`${m.fam} · Serie ${m.ser} · término ${termYrs} años`,
+    supuestos:{vendor:VENDOR, fabricante:'Cisco', plataforma:ultimaEval ? ultimaEval.plataforma.n : null, modelo:m.id, serie:m.ser,
+      resumen:ultimaEval ? `Overlay ${fmt(ultimaEval.demanda.overlayNeed)}${ultimaEval.demanda.diaNeed ? ` + salida local ${fmt(ultimaEval.demanda.diaNeed)}` : ''}${f && f.u != null ? `; utilización del ${Math.round(f.u * 100)} %` : ''}` : null},
+    subtitulo:`${m.fam} · Serie ${m.ser} · término ${anios} años`,
     archivo:`BOM_${m.id}`,
     notas:[
       '',
       'NOTAS DE PREVENTA',
-      '  Precios de referencia tomados de exports de CCW. Verificar PID, tier y precio final',
-      '  en Cisco Commerce Workspace antes de cotizar en firme.',
-      m.eolAnnounced?`  AVISO: fin de venta ${vencido(m)?'VENCIDO':'anunciado'} (${m.eolAnnounced.pid}), ultimo dia de pedido ${m.eolAnnounced.lastOrder}.`:null,
-      m.eolAnnounced&&vencido(m)?'  Ya pasado: este equipo solo sirve como referencia de parque instalado.':null,
-      m.eolAnnounced&&m.eolAnnounced.sucesor?`  Sucesor confirmado: ${m.eolAnnounced.sucesor}, mismo IOS XE SD-WAN.`:null,
-    ].filter((n)=>n!==null),
+      '  Referencias de la guia de pedido oficial; precios de lista del export de CCW donde constan.',
+      '  Verificar referencia, termino y precio final en Cisco Commerce Workspace antes de cotizar.',
+      m.eolAnnounced ? `  AVISO: fin de venta ${vencido(m) ? 'VENCIDO' : 'anunciado'} (${m.eolAnnounced.pid}), ultimo dia de pedido ${m.eolAnnounced.lastOrder}.` : null,
+      m.eolAnnounced && m.eolAnnounced.sucesor ? `  Sucesor segun el boletin: ${m.eolAnnounced.sucesor}.` : null,
+    ].filter(n => n !== null),
   };
-
-  $('bomTabla').innerHTML=BOM.renderTabla(filas,{});
-  $('bomOut').value=BOM.comoTexto(filas,meta);
-  bomFilas=filas; bomMeta=meta;
+  const d = dtoActual();
+  if(d > 0){ meta.dto = d; meta.dtoEtq = dtoEtiqueta(); }
+  $('bomTabla').innerHTML = BOM.renderTabla(filas, {dto:d});
+  $('bomOut').value = BOM.comoTexto(filas, meta);
+  bomFilas = filas; bomMeta = meta;
+  pintarTco(filas);
 }
 
-// Copy BOM
-$('copyBtn').addEventListener('click', async()=>{
-  const t=$('bomOut');
-  try{ await navigator.clipboard.writeText(t.value); $('copyBtn').textContent='Copiado'; }
-  catch{ t.classList.remove('hidden'); t.select(); document.execCommand('copy'); t.classList.add('hidden'); $('copyBtn').textContent='Copiado'; }
-  setTimeout(()=>$('copyBtn').textContent='Copiar como texto',1600);
+/* ── PRECIO NETO, TCO Y CUOTA MENSUAL ── */
+['plazoMrr', 'margenFin', 'feeMsp'].forEach(id => $(id).addEventListener('input', () => pintarTco(bomFilas)));
+
+function pintarTco(filas){
+  const anios = +$('termYears').value || 3, dto = dtoActual();
+  const fin = BOM.tco(filas, {opex:OPEX_CISCO, anios});
+  const hayPrecios = fin.capex > 0 || fin.opexTermino > 0;
+  const net = v => (dto > 0 ? `<td><b>${BOM.money(v * (1 - dto))}</b></td>` : '');
+  $('tcoFin').innerHTML = hayPrecios
+    ? `<table class="tco-tabla"><thead><tr><th>Pie de la lista de materiales</th><th>Subtotal Lista</th>${dto > 0 ? '<th>Subtotal Neto</th>' : ''}</tr></thead><tbody>`
+      + `<tr><td><b>CAPEX</b> — equipo, módulos y ópticas</td><td>${BOM.money(fin.capex)}</td>${net(fin.capex)}</tr>`
+      + `<tr><td><b>OPEX anual</b> — licencias y soporte ÷ ${anios} año${anios > 1 ? 's' : ''}</td><td>${BOM.money(fin.opexAnual)}</td>${net(fin.opexAnual)}</tr>`
+      + `<tr><td><b>TCO a ${anios} año${anios > 1 ? 's' : ''}</b>${fin.sinPrecio ? ' (parcial)' : ''}</td><td><b>${BOM.money(fin.tco)}</b></td>${net(fin.tco)}</tr></tbody></table>`
+      + `<p class="hint" style="margin-top:8px">${fin.sinPrecio ? `<b>TCO parcial:</b> ${fin.sinPrecio} línea(s) sin precio no entran en la suma. ` : ''}El neto es un simulador genérico de tramos partner, no el descuento real del distribuidor.</p>`
+    : '<p class="hint">Sin precios suficientes para calcular el TCO: este equipo no trae precio de lista del export de CCW.</p>';
+  pintarMrr(fin, dto);
+}
+// Cuota mensual de servicio gestionado. Los porcentajes son entradas del usuario; sin precios no
+// hay cuota: se dice cuántas líneas faltan en vez de mostrar una cifra que aparenta estar completa.
+function pintarMrr(fin, dto){
+  const r = BOM.mrr({capexNeto:fin.capex * (1 - dto), opexMensual:fin.opexAnual * (1 - dto) / 12,
+    meses:$('plazoMrr').value, margenFin:$('margenFin').value, feeMsp:$('feeMsp').value, sinPrecio:fin.sinPrecio});
+  const hay = fin.capex > 0 || fin.opexTermino > 0;
+  $('mrrBox').innerHTML = !hay
+    ? '<p class="hint">Sin precios no hay cuota: este equipo no trae precio de lista del export de CCW.</p>'
+    : `<table class="tco-tabla"><tbody>
+      <tr><td>CAPEX neto a financiar${dto > 0 ? ' (con el descuento del simulador)' : ''}</td><td>${BOM.money(r.capexNeto)}</td></tr>
+      <tr><td>Cuota de hardware (${r.meses} meses${r.margenFin ? `, +${r.margenFin} % de financiación` : ''})</td><td>${BOM.money(r.cuotaHardware)}</td></tr>
+      <tr><td>OPEX mensual (licencias y soporte)</td><td>${BOM.money(r.opexMensual)}</td></tr>
+      <tr><td>Fee de gestión MSP (${r.feeMsp} % de lo anterior)</td><td>${BOM.money(r.fee)}</td></tr>
+      <tr><td><b>Cuota mensual (MRR)${r.completo ? '' : ' — parcial'}</b></td><td><b>${BOM.money(r.mrr)}</b></td></tr>
+      <tr><td><b>Valor total del contrato (TCV)</b> a ${r.meses} meses</td><td><b>${BOM.money(r.tcv)}</b></td></tr></tbody></table>
+      <p class="hint" style="margin-top:8px">${r.sinPrecio ? `<b>Parcial:</b> ${r.sinPrecio} línea(s) sin precio no entran en la cuota. ` : ''}Los porcentajes de financiación, fee y descuento los pone quien cotiza: no son cifras de Cisco.</p>`;
+}
+
+/* ── Acciones del BOM ── */
+$('copyBtn').addEventListener('click', async () => {
+  const t = $('bomOut');
+  try { await navigator.clipboard.writeText(t.value); $('copyBtn').textContent = 'Copiado'; }
+  catch { t.classList.remove('hidden'); t.select(); document.execCommand('copy'); t.classList.add('hidden'); $('copyBtn').textContent = 'Copiado'; }
+  setTimeout(() => $('copyBtn').textContent = 'Copiar como texto', 1600);
+});
+$('xlsBtn').addEventListener('click', async () => {
+  const b = $('xlsBtn'); b.disabled = true; b.textContent = 'Generando…';
+  try { await BOM.exportarExcel(bomFilas, bomMeta); b.textContent = 'Exportar a Excel'; }
+  catch(e){ b.textContent = 'Error al exportar'; console.error(e);
+    setTimeout(() => b.textContent = 'Exportar a Excel', 2200); }
+  b.disabled = false;
+});
+// Memoria técnica: Markdown con el escenario, la memoria de cálculo (supuestos rotulados), el
+// equipo con sus cifras y bases, lo apartado y el BOM. El contenido lo arma el motor.
+$('memoriaBtn').addEventListener('click', () => {
+  if(!ultimaEval) return;
+  const m = MODELS.find(x => x.id === $('pickModel').value);
+  const md = M.memoria(ultimaEval, {fila:m ? filaDe(m.id) : null, perfil:$('profile').value, filas:bomFilas, fecha:new Date().toISOString().slice(0, 10)});
+  const url = URL.createObjectURL(new Blob([md], {type:'text/markdown;charset=utf-8'}));
+  const a = document.createElement('a');
+  a.href = url; a.download = `Memoria_tecnica_${m ? m.id.replace(/\s+/g, '_') : 'cisco'}.md`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
 
-$('xlsBtn').addEventListener('click', async()=>{
-  const b=$('xlsBtn'); b.disabled=true; b.textContent='Generando…';
-  try{ await BOM.exportarExcel(bomFilas,bomMeta); b.textContent='Exportar a Excel'; }
-  catch(e){ b.textContent='Error al exportar'; console.error(e);
-    setTimeout(()=>b.textContent='Exportar a Excel',2200); }
-  b.disabled=false;
+/* ── PERFILES MULTI-SEDE ──
+   Misma clave compartida que los demás fabricantes (`BOM.perfiles`): un despliegue real mezcla
+   marcas. Cargar es de Cisco (los campos son ids de ESTA página); consolidar no. */
+const CAMPOS_PERFIL = [...ENTRADAS, 'qty', 'termYears', 'licGestion', 'licNivel', 'secUrl', 'secMalware', 'optQty'];
+const SEGS_PERFIL = ['modeSeg', 'dirSeg', 'critSeg'];
+function capturarCampos(){
+  const v = {};
+  CAMPOS_PERFIL.forEach(id => { const n = $(id); if(n) v[id] = n.type === 'checkbox' ? n.checked : n.value; });
+  SEGS_PERFIL.forEach(id => { const a = $(id).querySelector('[aria-pressed="true"]'); v[id] = a ? a.dataset.v : null; });
+  return v;
+}
+function aplicarCampos(v){
+  CAMPOS_PERFIL.forEach(id => {
+    const n = $(id);
+    if(!n || v[id] == null) return;
+    if(n.type === 'checkbox') n.checked = !!v[id]; else n.value = v[id];
+  });
+  // Los grupos .seg guardan su valor en una variable de la página: solo su manejador la actualiza.
+  SEGS_PERFIL.forEach(id => { const b = v[id] != null && $(id).querySelector(`[data-v="${v[id]}"]`); if(b) b.click(); });
+  render();
+}
+function pintarPerfiles(){
+  const caja = $('listaPerfiles');
+  const l = BOM.perfilesDe(VENDOR);
+  caja.innerHTML = l.length
+    ? '<table class="tco-tabla"><thead><tr><th>Perfil</th><th>Sedes</th><th>Modelo</th><th>Guardado</th><th></th></tr></thead><tbody>'
+      + l.map(x => `<tr><td><b>${esc(x.nombre)}</b></td><td>${x.sedes}</td><td>${esc(x.modelo)}</td><td>${esc(x.fecha || '—')}</td>`
+        + `<td><button type="button" class="btn ghost" data-perfil-cargar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Cargar</button> `
+        + `<button type="button" class="btn ghost" data-perfil-borrar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Eliminar</button></td></tr>`).join('')
+      + '</tbody></table>'
+    : '<p class="hint">Sin perfiles guardados todavía.</p>';
+  const hay = BOM.perfiles().length > 0;
+  $('btnConsolidar').disabled = !hay;
+  $('btnConsolidar').title = hay ? '' : 'Guarda al menos un perfil de sede para consolidar el BOM global.';
+}
+$('btnGuardarPerfil').addEventListener('click', () => {
+  const nombre = $('nombrePerfil').value.trim();
+  const sedes = Math.max(0, parseInt($('perfilSedes').value, 10) || 0);
+  if(!nombre || !sedes){ $('perfilMsg').textContent = 'Pon un nombre y el número de sedes idénticas.'; $('nombrePerfil').focus(); return; }
+  if(!bomFilas.length || !hayCandidato){ $('perfilMsg').textContent = 'No hay un equipo dimensionado que guardar: ajusta el escenario primero.'; return; }
+  BOM.guardarPerfil({nombre, sedes, modelo:$('pickModel').value, vendor:VENDOR, fecha:new Date().toISOString().slice(0, 10),
+    version:1, campos:capturarCampos(), filas:JSON.parse(JSON.stringify(bomFilas))});
+  $('nombrePerfil').value = ''; $('perfilSedes').value = '';
+  $('perfilMsg').textContent = `Perfil «${nombre}» guardado con ${sedes} sede(s).`;
+  pintarPerfiles();
 });
+$('listaPerfiles').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if(!b) return;
+  if(b.dataset.perfilCargar != null){
+    const x = BOM.perfilesDe(VENDOR).find(y => y.id === b.dataset.perfilCargar);
+    if(x && x.campos) aplicarCampos(x.campos);
+  } else if(b.dataset.perfilBorrar != null){
+    BOM.quitarPerfil(b.dataset.perfilBorrar);
+    pintarPerfiles();
+  }
+});
+$('btnConsolidar').addEventListener('click', () => {
+  const l = BOM.perfiles();
+  const {filas, totalSedes, fabricantes} = BOM.consolidar(l, {agregadas:[], unicas:[]});
+  if(!totalSedes) return;
+  const multi = fabricantes.length > 1;
+  const meta = {
+    titulo:`BOM global consolidado — ${l.length} perfil(es), ${totalSedes} sedes`,
+    subtitulo:l.map(x => `${x.nombre} ×${x.sedes} (${x.modelo})`).join(' · '),
+    archivo:multi ? 'BOM_global_multifabricante' : 'BOM_global_cisco',
+    sinRefs:true,
+    notas:['REGLAS DE CONSOLIDACION (Cisco):',
+      '  Equipo, modulos, licencias y soporte: cantidad del perfil x sedes del perfil.',
+      '  Precios de lista solo donde los trajo el export de CCW; el resto, consultar.'],
+  };
+  if(multi) meta.notas.push(`  MULTI-FABRICANTE: ${fabricantes.join(', ')}.`);
+  const d = dtoActual();
+  if(d > 0){ meta.dto = d; meta.dtoEtq = dtoEtiqueta(); }
+  $('consolidadoSub').textContent = `${meta.subtitulo} — ${totalSedes} sedes en total`;
+  $('consolidadoTabla').innerHTML = (multi ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${esc(fabricantes.join(', '))}).</p>` : '')
+    + BOM.renderTabla(filas, {dto:d, sinRefs:true});
+  $('modalConsolidado').hidden = false;
+  $('xlsConsolidadoBtn').onclick = () => BOM.exportarExcel(filas, meta);
+  $('consolidadoCerrar').focus();
+});
+$('consolidadoCerrar').addEventListener('click', () => { $('modalConsolidado').hidden = true; $('btnConsolidar').focus(); });
 
+/* ── ARRANQUE ── */
 (async function initApp(){
   const res = await fetch('/api/dimensionador/cisco');
   const data = await res.json();
   // Pendiente 34: el respaldo de ciclo de vida de ESTE fabricante, tal como lo declara
-  // `legacyData/fuentes.js` con sus `campos`. Sin el, la ficha dice «el catalogo no trae el
-  // ciclo de vida» en vez de afirmar vigencia por omision.
+  // `legacyData/fuentes.js` con sus `campos`.
   FICHA.fijarCicloVida(data.cicloVida);
   MODELS = data.models;
   OPTICS = data.optics;
   OPTIC_LABEL = data.opticLabel;
   PARTS_DESC = data.partsDesc;
   SMARTNET = data.smartnet;
-  DNA_DESC = data.dnaDesc;
+  LIC_G2 = data.licenciasG2 || {};
+  MOD_G2 = data.modulosG2 || [];
+  // Sin el mapa la página funciona igual: la ficha no pinta la tarjeta gráfica.
+  try {
+    const rv = await fetch('/data/cisco-vistas-equipos.json');
+    if(rv.ok) VISTAS = await rv.json();
+  } catch { VISTAS = null; }
 
-  // Populate BOM model selector — orden determinista por capacidad (fwd): la API puede
-  // servir el catalogo en cualquier orden y el combo no puede depender de eso. Series por
-  // su modelo de entrada; dentro de cada serie, de menor a mayor.
+  // Selector del BOM: series por su modelo de entrada y, dentro de cada una, de menor a mayor
+  // reenvío. La API puede servir el catálogo en cualquier orden y el combo no depende de eso.
   $('pickModel').innerHTML = (() => {
-    const capDe=m=>m.fwd||m.ipsec||0;
-    const groups={};
-    MODELS.forEach(m=>{ (groups[m.ser]=groups[m.ser]||[]).push(m); });
-    const ordenadas=Object.entries(groups);
-    for(const [,arr] of ordenadas) arr.sort((a,b)=>capDe(a)-capDe(b));
-    ordenadas.sort((a,b)=>Math.min(...a[1].map(capDe))-Math.min(...b[1].map(capDe)));
-    return ordenadas.map(([g,arr])=>
-      `<optgroup label="${g}">${arr.map(m=>`<option value="${m.id}">${m.id} — ${m.fam}</option>`).join('')}</optgroup>`).join('');
+    const capDe = m => m.fwd || m.ipsec || 0;
+    const groups = {};
+    MODELS.forEach(m => { (groups[m.ser] = groups[m.ser] || []).push(m); });
+    const ordenadas = Object.entries(groups);
+    for(const [, arr] of ordenadas) arr.sort((a, b) => capDe(a) - capDe(b));
+    ordenadas.sort((a, b) => Math.min(...a[1].map(capDe)) - Math.min(...b[1].map(capDe)));
+    return ordenadas.map(([g, arr]) =>
+      `<optgroup label="${esc(g)}">${arr.map(m => `<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.fam)}</option>`).join('')}</optgroup>`).join('');
   })();
 
-  // Optics catalog
-  $('opticsAll').innerHTML=Object.keys(OPTICS).map(k=>`
-    <div class="grp"><h3>${OPTIC_LABEL[k]}</h3>
+  $('opticsAll').innerHTML = Object.keys(OPTICS).map(k => `
+    <div class="grp"><h3>${esc(OPTIC_LABEL[k])}</h3>
     <div class="scroll"><table><thead><tr><th>PID Cisco</th><th>SKU legacy</th><th>Descripción</th></tr></thead><tbody>
-    ${OPTICS[k].map(o=>`<tr><td><code>${esc(o.bom)}</code></td><td><code>${esc(o.sku)}</code></td><td>${esc(o.d)}</td></tr>`).join('')}
+    ${OPTICS[k].map(o => `<tr><td><code>${esc(o.bom)}</code></td><td><code>${esc(o.sku)}</code></td><td>${esc(o.d)}</td></tr>`).join('')}
     </tbody></table></div></div>`).join('');
 
   render();
   renderBom();
   renderCatalogo();
-  PROCEDENCIA.registrarModelos('cisco', () => MODELS.map(m => ({ model: m.id, ...m })));
+  pintarPerfiles();
+  PROCEDENCIA.registrarModelos('cisco', () => MODELS.map(m => ({ model:m.id, ...m })));
 })();
 
 /* Enlace de eventos movido desde onclick= en el HTML, para permitir una CSP con
-   script-src 'self' que bloquea todo codigo en linea. */
+   script-src 'self' que bloquea todo código en línea. */
 document.addEventListener('click', (e) => {
   const abrir = e.target.closest('[data-abrir]');
   if (abrir) { window.open(abrir.dataset.abrir, '_blank'); return; }
   const id = e.target.closest('button,[id]')?.id;
-  // El boton #btnCsv desaparecio cuando js/bom.js centralizo la exportacion a Excel; la
-  // rama que lo atendia sobrevivio detras de un `typeof ... === 'function'` que jamas era
-  // cierto. La encontro el linter, no la vista: una rama muerta no se nota mirando.
   if (id === 'btnImprimir') window.print();
 });
 
-/* ══ ESTADO ENLAZABLE Y PERSISTENTE ══
-   Antes, poner 2.500 Mbps y copiar la URL no servia de nada: quien la abria veia 500 Mbps y
-   otra recomendacion. Ahora el escenario viaja en la URL; ya no se guarda entre sesiones
-   (ver /js/estado.js). */
+/* ══ ESTADO ENLAZABLE ══
+   El escenario viaja en la URL (ver /js/estado.js). Los enlaces de antes del rediseño traían
+   tres casillas de recargo que ya no existen: dos se traducen a la seguridad de la salida a
+   Internet (ZBF → inspección en el router, Umbrella → SSE) y el nivel DNA pasa a «Nivel»; las
+   demás (voz, AppX, APs) no tienen equivalente y el aviso del enlace lo dice. */
 document.addEventListener('DOMContentLoaded', () => {
-  const st = ESTADO.vincular({ campos: ['bw','unit','sites','conc','head','profile','plataforma','aps','sNgfw','sVoice','sAppx','sUmbrella','chkRedund','chk4g','critSeg','dirSeg','modeSeg','verdict-sel'] });
+  const MIGRADOS = ['sNgfw', 'sUmbrella', 'dnaTier'];
+  const st = ESTADO.vincular({ campos:[...ENTRADAS, 'critSeg', 'dirSeg', 'modeSeg', 'qty', 'termYears', 'licGestion', 'licNivel', 'secUrl', 'secMalware', 'optQty', 'verdict-sel'],
+    migrados:MIGRADOS });
+  const q = new URLSearchParams(location.search);
+  const si = k => ['1', 'true', 'on'].includes(String(q.get(k)).toLowerCase());
+  if(!q.has('seguridad') && (si('sNgfw') || si('sUmbrella'))) $('seguridad').value = si('sUmbrella') ? 'sse' : 'onbox';
+  if(!q.has('licNivel') && q.has('dnaTier')) {
+    const n = {ess:'E', adv:'A', pre:'P'}[q.get('dnaTier')];
+    if(n) $('licNivel').value = n;
+  }
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');
@@ -582,18 +757,19 @@ document.addEventListener('DOMContentLoaded', () => {
     ESTADO.botonEnlace(caja);
     ESTADO.avisoOrigen(caja, st);
   }
+  render();
 });
 
 /* ══ ENVIAR AL COTIZADOR ══
-   Solo esta pagina sabe que equipo esta elegido ahora mismo; el cotizador pone el precio y
-   el resto de la linea desde su propio catalogo. Ver bom.js. */
+   Solo esta página sabe qué equipo está elegido ahora mismo; el cotizador pone el precio y el
+   resto de la línea desde su propio catálogo. Ver bom.js. */
 document.addEventListener('DOMContentLoaded', () => {
   BOM.montarBotonCotizador(() => {
     const sel = document.getElementById('verdict-sel');
     const elegido = (sel && sel.value) || (lastPick && lastPick.id) || null;
     if (!elegido) return null;
     const cant = document.getElementById('qty');
-    return { modelo: elegido, qty: Math.max(1, parseInt(cant && cant.value, 10) || 1),
-             de: document.title.split('—')[0].trim() };
+    return { modelo:elegido, qty:Math.max(1, parseInt(cant && cant.value, 10) || 1),
+             de:document.title.split('—')[0].trim() };
   });
 });

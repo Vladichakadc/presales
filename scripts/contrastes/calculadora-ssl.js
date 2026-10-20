@@ -30,12 +30,15 @@
  * salta primero y dice dónde mirar.
  */
 const BASE_LINEA = [
+  // 2026-10-20: `fabricantes` pasa de 2 a 3 en las dos filas de Threat Protection. Cisco entra
+  // con la suya (EMIX, NGFW + IPS + URLF + AMP) desde la revisión de sus fichas; el equipo
+  // recomendado no cambia, que es lo que estas filas controlan.
   { n: 'TP 175 Mbps — la respuesta que se quedaba corta', bw: '175', perfil: 'tp',
-    recomendado: 'FortiGate 30G', capa: 'Threat Protection', fabricantes: 2 },
+    recomendado: 'FortiGate 30G', capa: 'Threat Protection', fabricantes: 3 },
   { n: 'TLS 175 Mbps — con su cifra propia sube al 60F', bw: '175', perfil: 'ssl',
     recomendado: 'FortiGate 60F', capa: 'SSL Inspection', fabricantes: 1 },
   { n: 'TP 500 Mbps — la respuesta que sobredimensionaba', bw: '500', perfil: 'tp',
-    recomendado: 'FortiGate 70G', capa: 'Threat Protection', fabricantes: 2 },
+    recomendado: 'FortiGate 70G', capa: 'Threat Protection', fabricantes: 3 },
   { n: 'TLS 500 Mbps — el 50G aguanta MÁS TLS que TP y cumple', bw: '500', perfil: 'ssl',
     recomendado: 'FortiGate 50G', capa: 'SSL Inspection', fabricantes: 1 },
   { n: 'TLS 20 Gbps — la gama alta responde sin caer a otra capa', bw: '20000', perfil: 'ssl',
@@ -44,8 +47,11 @@ const BASE_LINEA = [
   // oficial) y el RM paso a su cifra de la ficha (9,8 Gbps de fast path): el mas pequeno que
   // cumple los 5,2 Gbps pedidos es ahora el Gateway 9012. Lo que esta fila controla —que con
   // reenvio compiten los siete fabricantes— no cambio.
+  // 2026-10-20: era el Gateway 9012. El portal lista desde hoy los Secure Router (G2) y el más
+  // pequeño que cumple los 5,2 Gbps es el C8140-G2 (5,6 Gbps de reenvío, a 512 B). Lo que la
+  // fila controla —que con reenvío compiten los siete— no cambió.
   { n: 'control · reenvío 2 Gbps — siguen compitiendo los siete', bw: '2000', perfil: 'fwd',
-    recomendado: 'Gateway 9012', capa: 'Firewall', fabricantes: 7 },
+    recomendado: 'Cisco Secure Router C8140-G2', capa: 'Forwarding', fabricantes: 7 },
 ];
 
 module.exports = {

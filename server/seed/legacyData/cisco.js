@@ -304,8 +304,23 @@ const MODELS = [
    ports:'2 WAN mGig RJ45 · hasta 10 GE LAN (3 PoE)', nim:0, sm:0, optics:[], parts:MX_LIC, lic:'meraki', hwSku:'C8121-G2-MX', datasheet:DS.c81mx},
 ];
 
+// Segunda fuente para la redundancia, de la guía de pedido de la G2 (tabla 3, «Configurable options
+// for the Cisco 8200 Series»): el chasis trae entrada doble y la segunda fuente se pide aparte. En el
+// C8211, C8221, C8221L y C8225 «Secondary PSU available only as a spare, with power cords to
+// purchased separately»: va con «=» y el cable se pide aparte.
+const REPUESTO = 'solo se pide como repuesto («=»), con el cable aparte (guía de pedido, tabla 3)';
+const PSU_SEGUNDA = {
+  'Cisco Secure Router C8211-G2':   {sku:'PWR-CC1-30WAC=', d:`Segunda fuente externa de 30 W AC; ${REPUESTO}.`},
+  'Cisco Secure Router C8221-G2':   {sku:'PWR-CC1-66WAC=', d:`Segunda fuente externa de 66 W AC; ${REPUESTO}.`},
+  'Cisco Secure Router C8221L-G2':  {sku:'PWR-CC1-66WAC=', d:`Segunda fuente externa de 66 W AC; ${REPUESTO}.`},
+  'Cisco Secure Router C8225-G2':   {sku:'PWR-CC1-66WAC=', d:`Segunda fuente externa de 66 W AC; ${REPUESTO}.`},
+  'Cisco Secure Router C8231-E-G2': {sku:'PWR-ADPT-150WAC', d:'Segunda fuente, adaptador externo de 150 W AC (PWR-ADPT-150WDC en continua), guía de pedido, tabla 3.'},
+  'Cisco Secure Router C8235-E-G2': {sku:'PWR-ADPT-150WAC', d:'Segunda fuente, adaptador externo de 150 W AC (PWR-ADPT-150WDC en continua), guía de pedido, tabla 3.'},
+};
+
 for (const m of MODELS) {
   m.eolAnnounced = EOL_ANNOUNCED[m.id] || null;
+  if (PSU_SEGUNDA[m.id]) m.psu2 = PSU_SEGUNDA[m.id];
 }
 
 // Licencias de la línea G2 (guía de pedido, tablas 9 y 10). La referencia completa sale de la clase

@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dimensionador y BOM Cisco — ISR · Catalyst 8000 · ASR 1000</title>
-<meta name="description" content="Herramienta de dimensionamiento y lista de materiales para routers Cisco ISR, Catalyst 8000 y ASR 1000. SD-WAN Viptela, licencias DNA, soporte SmartNet.">
+<title>Dimensionador y BOM Cisco — Secure Router (G2) · Catalyst 8000 · Meraki MX</title>
+<meta name="description" content="Dimensionamiento y lista de materiales de routers Cisco Secure Router (G2), Catalyst 8000, Meraki MX, ISR 1000 y ASR 1000, con las cifras de sus fichas oficiales y su base de medida.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" data-fuente>
@@ -13,11 +13,11 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
-.wrap{max-width:1140px;margin:0 auto;padding:26px 18px 80px}
+.wrap{max-width:1180px;margin:0 auto;padding:26px 18px 80px}
 .masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px}
 .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red-txt);font-weight:600;margin:0 0 6px}
 h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28px,5.5vw,48px);line-height:.98;text-transform:uppercase;margin:0}
-.sub{color:var(--steel);max-width:64ch;margin:8px 0 0;font-size:14.5px}
+.sub{color:var(--steel);max-width:70ch;margin:8px 0 0;font-size:14.5px}
 .back-link{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);text-decoration:none;margin-bottom:18px;transition:color .15s}
 .back-link:hover{color:var(--red-txt)}
 
@@ -26,7 +26,7 @@ h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28p
 .tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--red)}
 .tabpane[hidden]{display:none}
 
-/* ── LADDER ── */
+/* ── ESCALA ── */
 .ladder{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px 18px 12px;margin-bottom:20px;overflow:hidden}
 .mono-lbl{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:0 0 18px;font-weight:600}
 .track{position:relative;height:110px;margin:0 4px}
@@ -45,28 +45,52 @@ h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28p
 .legend i{display:inline-block;width:7px;height:7px;background:var(--ink);margin-right:5px;border-radius:50%;vertical-align:middle}
 
 /* ── LAYOUT ── */
-.cols{display:grid;grid-template-columns:minmax(0,330px) minmax(0,1fr);gap:20px;align-items:start}
+.cols{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
 @media(max-width:880px){.cols{grid-template-columns:1fr}}
 .panel{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px;margin-bottom:16px}
-.panel h2{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.panel h2{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
 .field{margin-bottom:16px}.field:last-child{margin-bottom:0}
 label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px}
 .hint{font-size:11.5px;color:var(--steel);margin-top:5px;line-height:1.4}
 .row{display:flex;gap:8px}
-input[type=number],select{width:100%;padding:9px 10px;border:1px solid var(--rule);border-radius:2px;background:#fff;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500}
+input[type=number],input[type=text],select{width:100%;padding:9px 10px;border:1px solid var(--rule);border-radius:2px;background:#fff;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500}
+input[type=text]{font-family:'Barlow',sans-serif}
 select{font-family:'Barlow',sans-serif;font-size:13.5px}
 input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset:1px}
 input[type=range]{width:100%;accent-color:var(--red)}
+input:disabled{background:var(--paper);color:var(--steel)}
 .seg{display:flex;border:1px solid var(--rule);border-radius:2px;overflow:hidden}
 .seg button{flex:1;padding:8px 4px;border:0;background:#fff;cursor:pointer;font-family:'Barlow',sans-serif;font-size:12px;font-weight:500;color:var(--steel);line-height:1.25}
 .seg button+button{border-left:1px solid var(--rule)}
 .seg button[aria-pressed=true]{background:var(--ink);color:#fff;font-weight:600}
 .checks{display:grid;gap:7px}
-.check{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer;font-weight:400;margin:0}
 .check input{margin:3px 0 0;accent-color:var(--red)}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dos label{font-size:12px}
 .hidden{display:none!important}
 
-/* ── VERDICT ── */
+/* Distribución del caudal y avisos del motor */
+.dist{display:flex;height:16px;border-radius:2px;overflow:hidden;background:var(--paper);margin:8px 0}
+.dist i{display:block;height:100%}
+.dist .d-tun{background:#1f5fa8}.dist .d-dia{background:#2e8b57}.dist .d-over{background:#d9822b}
+.dist-leyenda{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px}
+/* El texto va en tinta y solo la muestra lleva el color del tramo: el naranja sobre blanco no
+   llega al contraste 4,5:1 de WCAG (axe, 2026-10-20). */
+.dist-leyenda span{color:var(--ink)}
+.dist-leyenda span::before{content:"";display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:2px;vertical-align:-1px}
+.dist-leyenda .l-tun::before{background:#1f5fa8}.dist-leyenda .l-dia::before{background:#2e8b57}.dist-leyenda .l-over::before{background:#d9822b}
+.callout{border:1px solid var(--amber);border-left-width:4px;background:var(--card);padding:12px 14px;margin:0 0 16px;border-radius:2px;font-size:13px;line-height:1.5}
+.callout p{margin:0 0 6px}.callout p:last-child{margin:0}
+.callout.info{border-color:var(--red)}
+.apartados{font-size:12.5px;line-height:1.45;margin:0 0 10px}
+.apartados p{margin:0 0 6px}
+.apartados ul{margin:0 0 6px;padding-left:18px}
+.apartados details summary{cursor:pointer}
+.apartados details div{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--steel);padding:2px 0 4px}
+.base{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--steel);background:var(--paper);border-radius:2px;padding:0 5px;margin-left:6px;white-space:normal}
+
+/* ── VEREDICTO ── */
 .verdict{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:22px;margin-bottom:16px}
 .tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red-txt);font-weight:600;margin:0}
 .model{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(22px,4vw,36px);line-height:1;text-transform:uppercase;margin:6px 0 2px}
@@ -93,6 +117,7 @@ th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-
 td{padding:8px 8px 8px 0;border-bottom:1px solid var(--paper);vertical-align:top}
 td.n,code{font-family:'IBM Plex Mono',monospace;font-size:12px}
 code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowrap}
+tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
 .scroll{overflow-x:auto}
 .grp{margin-bottom:22px}.grp:last-child{margin-bottom:0}
 .grp h3{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin:0 0 4px}
@@ -104,11 +129,19 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 #bomOut{width:100%;height:200px;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:10px;border:1px solid var(--rule);border-radius:2px;margin-top:10px}
 .btn{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px;cursor:pointer;white-space:nowrap}
 .btn.ghost{background:#fff;color:var(--ink)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.bom-acciones{display:flex;gap:6px;flex-wrap:wrap}
 .pillc{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 4px;border-radius:2px;background:var(--paper);color:var(--steel)}
 .fuentes-list{font-size:13.5px;color:var(--steel);padding:0;margin:0 0 0 20px}
 .fuentes-list li{margin-bottom:8px}
 .fuentes-list a{color:var(--ink);text-decoration:none;font-weight:600}
 .fuentes-list a:hover{text-decoration:underline;color:var(--red-txt)}
+.tco-tabla{width:100%;border-collapse:collapse;margin-top:6px}
+.tco-tabla th,.tco-tabla td{font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--rule);text-align:right}
+.tco-tabla th:first-child,.tco-tabla td:first-child{text-align:left}
+.acc-caja{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:20px;max-height:86vh;overflow:auto}
+#modalConsolidado{position:fixed;inset:0;background:rgba(14,26,43,.45);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
+#modalConsolidado[hidden]{display:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <script src="/js/fuentes.js" defer></script>
@@ -120,8 +153,8 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 
 <header class="masthead">
   <p class="eyebrow">Cisco &middot; Preventa SD-WAN &middot; Dimensionamiento y lista de materiales</p>
-  <h1>Dimensionador<br>y BOM Catalyst 8000 / ISR</h1>
-  <p class="sub">Calcula el throughput requerido, selecciona la plataforma Cisco correcta y obtén la lista completa de componentes: módulos NIM/SM, licencias DNA, ópticas SFP y soporte SmartNet.</p>
+  <h1>Dimensionador<br>y BOM Cisco Secure Router</h1>
+  <p class="sub">Secure Router (G2), Catalyst 8000, Meraki MX, ISR 1000 y ASR 1000. Cada cifra sale de la ficha oficial con su base de medida (512 B, 1.400 B, IMIX o EMIX), y el tráfico se reparte entre el overlay y la salida local a Internet, cada uno contra la cifra de su capa.</p>
 </header>
 
 <div class="tabs" role="tablist">
@@ -132,15 +165,14 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   <button role="tab" aria-selected="false" data-tab="src">Fuentes</button>
 </div>
 
-<!-- ════ TAB 1 · CALCULADORA ════ -->
+<!-- ════ TAB 1 · DIMENSIONAR ════ -->
 <div class="tabpane" id="pane-calc">
 <section class="ladder">
-  <p class="mono-lbl">Escala de capacidad — forwarding publicado vs. requerimiento (logarítmica)</p>
+  <p class="mono-lbl">Escala de capacidad — capacidad equivalente de cada equipo para esta mezcla de tráfico frente a la demanda (logarítmica)</p>
   <div class="track" id="track"><div class="axis"></div><div class="need" id="need"><span id="needLbl">—</span></div><div class="pickLabel" id="pickLbl" style="display:none"></div></div>
   <div class="legend">
-    <span><i></i>ISR 1000 / 4000 — forwarding</span>
-    <span><i style="border-radius:1px;transform:rotate(45deg)"></i>Catalyst 8000 — SD-WAN</span>
-    <span><i style="border-radius:1px"></i>ASR 1000 — WAN edge</span>
+    <span><i></i>Cumple</span>
+    <span><i style="background:var(--rule)"></i>No llega o se aparta</span>
     <span style="color:var(--red-txt)"><i style="background:var(--red)"></i>Elegido</span>
   </div>
 </section>
@@ -152,11 +184,11 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <div class="field">
       <label>Base de cálculo</label>
       <div class="seg" id="modeSeg">
-        <button type="button" data-v="link" aria-pressed="true">Enlace único</button>
+        <button type="button" data-v="link" aria-pressed="true">Sede</button>
         <button type="button" data-v="agg" aria-pressed="false">Agregado<br>multi-sede</button>
         <button type="button" data-v="hub" aria-pressed="false">Hub<br>datacenter</button>
       </div>
-      <p class="hint" id="modeHint">Un solo enlace WAN terminando en el equipo.</p>
+      <p class="hint" id="modeHint">Todo el tráfico de la sede pasa por el router: el que viaja por el overlay y el que sale en local a Internet.</p>
     </div>
     <div class="field">
       <label for="bw" id="bwLabel">Ancho de banda contratado</label>
@@ -176,10 +208,10 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <div class="field">
       <label>Medición del ancho de banda</label>
       <div class="seg" id="dirSeg">
-        <button type="button" data-v="2" aria-pressed="true">Por dirección</button>
+        <button type="button" data-v="2" aria-pressed="true">Por sentido</button>
         <button type="button" data-v="1" aria-pressed="false">Total agregado</button>
       </div>
-      <p class="hint">Cisco publica throughput como <b>suma bidireccional</b>. 500 Mbps simétricos = 1 Gbps bidireccional.</p>
+      <p class="hint">Cisco publica el caudal como <b>suma de los dos sentidos</b>: 500 Mbps simétricos son 1 Gbps.</p>
     </div>
     <div class="field">
       <label for="head">Margen de crecimiento: <span id="headVal" style="font-family:'IBM Plex Mono',monospace">30 %</span></label>
@@ -188,44 +220,88 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   </section>
 
   <section class="panel">
-    <h2>2 · Perfil de servicios</h2>
+    <h2>2 · Plataforma, overlay y seguridad</h2>
     <div class="field">
       <label for="plataforma">Plataforma / modelo operativo</label>
       <select id="plataforma">
-        <option value="xe" selected>IOS XE SD-WAN — Catalyst 8000 y Secure Router (G2)</option>
-        <option value="isr">ISR 1000 — sucursal pequeña, sin SD-WAN diferenciado</option>
-        <option value="meraki">Meraki MX — gestión cloud (dashboard)</option>
-        <option value="asr">ASR 1000 — agregación clásica (parque instalado)</option>
+        <option value="xe" selected>IOS XE SD-WAN — Secure Router (G2) y Catalyst 8000</option>
+        <option value="meraki">Meraki MX — gestión desde el dashboard</option>
+        <option value="isr">ISR 1000 — sucursal pequeña</option>
+        <option value="asr">ASR 1000 — parque instalado (fuera de venta)</option>
         <option value="all">Todas — comparar entre plataformas</option>
       </select>
-      <p class="hint" id="plataformaHint">Un Catalyst 8000 y un Meraki MX del mismo caudal <b>no son intercambiables</b>: cambian el plano de gestión (Catalyst SD-WAN Manager frente a dashboard cloud), el licenciamiento y el equipo que opera la red. Por eso el dimensionamiento se hace <b>dentro</b> de la plataforma elegida y no saltando entre familias por unos Mbps de diferencia.</p>
+      <p class="hint">Un Secure Router y un Meraki MX del mismo caudal <b>no son intercambiables</b>: cambian el plano de gestión (SD-WAN Manager frente al dashboard), el licenciamiento y quién opera la red. Se dimensiona <b>dentro</b> de la plataforma elegida.</p>
     </div>
     <div class="field">
-      <label for="profile">Perfil de tráfico</label>
+      <label for="profile">Capa del overlay</label>
       <select id="profile">
-        <option value="fwd">Routing + NAT + ACL + QoS (sin cifrado)</option>
+        <option value="fwd">Reenvío — routing + NAT + ACL + QoS, sin cifrar</option>
         <option value="ipsec">IPsec VPN</option>
-        <option value="sdwan" selected>SD-WAN típico — IPsec + AppFlow + QoS</option>
+        <option value="sdwan" selected>SD-WAN — IPsec + QoS + DPI + FNF</option>
       </select>
+      <p class="hint">La cifra SD-WAN de Cisco ya incluye cifrado, QoS, reconocimiento de aplicaciones (DPI) y telemetría (FNF): no se le suma nada por AppFlow ni por NBAR.</p>
+    </div>
+    <div class="field" id="diaBlock">
+      <label for="diaPct">Salida local a Internet (DIA): <span id="diaVal" style="font-family:'IBM Plex Mono',monospace">0 %</span></label>
+      <input type="range" id="diaPct" min="0" max="100" step="5" value="0" autocomplete="off">
+      <p class="hint" id="diaHint">Parte del tráfico de la sede que sale directo a Internet y no viaja por el overlay.</p>
+    </div>
+    <div class="field" id="segBlock">
+      <label for="seguridad">Seguridad de la salida a Internet</label>
+      <select id="seguridad">
+        <option value="ninguna" selected>Sin inspección local — se enruta con NAT</option>
+        <option value="onbox">Inspección en el router — Threat Protection / NGFW</option>
+        <option value="desacoplada">Firewall dedicado aparte</option>
+        <option value="sse">Seguridad en la nube (SSE) por túnel</option>
+      </select>
+      <p class="hint" id="segHint"></p>
+      <label class="check" style="margin-top:8px"><input type="checkbox" id="chkTls"> <span>Descifrado TLS de la salida a Internet</span></label>
     </div>
     <div class="field">
-      <label>Funciones adicionales</label>
+      <label>Supuestos del overlay</label>
       <div class="checks">
-        <label class="check"><input type="checkbox" id="sNgfw"> <span>NGFW / Zone-Based Firewall (ZBF)<span class="sku">Agrega carga de inspección de estado. Para NGFW avanzado considerar Firepower.</span></span></label>
-        <label class="check"><input type="checkbox" id="sVoice"> <span>CUBE — SIP Trunk / Voz IP<span class="sku">Concentrador de sesiones SIP. Incrementa uso de CPU en procesamiento de señalización.</span></span></label>
-        <label class="check"><input type="checkbox" id="sAppx"> <span>Application Visibility (AppX/NBAR)<span class="sku">Clasificación de tráfico en profundidad para QoS y visibilidad SD-WAN.</span></span></label>
-        <label class="check"><input type="checkbox" id="sUmbrella"> <span>Umbrella SIG Connector<span class="sku">Tunneling al cloud de seguridad Umbrella. Sobrecarga de procesamiento de túneles adicional.</span></span></label>
+        <label class="check"><input type="checkbox" id="chkFec"> <span>Corrección de errores (FEC) en enlaces con pérdida</span></label>
       </div>
-    </div>
-    <div class="field">
-      <label for="aps">Puntos de acceso Wi-Fi a gestionar (WLC integrado)</label>
-      <input type="number" id="aps" min="0" step="1" autocomplete="off">
-      <p class="hint">ISR 4000 y Catalyst 8000 pueden actuar como Wireless LAN Controller. Capacidad máxima varía por modelo.</p>
+      <div class="dos" style="margin-top:8px">
+        <div><label for="fecPct">Sobrecarga de FEC (%)</label><input type="number" id="fecPct" min="0" max="100" step="1" value="25" autocomplete="off" disabled></div>
+        <div><label for="dupPct">Tráfico duplicado (%)</label><input type="number" id="dupPct" min="0" max="100" step="1" value="0" autocomplete="off"></div>
+      </div>
+      <p class="hint">Son coeficientes de diseño, no cifras de Cisco: la memoria técnica los rotula así. Duplicar un flujo lo manda dos veces entero.</p>
     </div>
   </section>
 
   <section class="panel">
-    <h2>3 · Criterios de soporte</h2>
+    <h2>3 · Escala</h2>
+    <div class="dos">
+      <div class="field"><label for="tuneles">Túneles simultáneos</label><input type="number" id="tuneles" min="0" step="1" autocomplete="off"></div>
+      <div class="field"><label for="rutas">Rutas (OMP / BGP)</label><input type="number" id="rutas" min="0" step="1" autocomplete="off"></div>
+      <div class="field"><label for="sesiones">Sesiones de NAT</label><input type="number" id="sesiones" min="0" step="1" autocomplete="off"></div>
+      <div class="field"><label for="dispositivos">Dispositivos en la sede</label><input type="number" id="dispositivos" min="0" step="1" autocomplete="off"></div>
+    </div>
+    <p class="hint">Vacío no comprueba. Una cifra publicada que no llega aparta el equipo; una que su ficha no publica no lo aparta, pero se avisa. «Dispositivos» se compara con el recomendado de Meraki.</p>
+    <div class="field" style="margin-top:12px">
+      <label>Pool de NAT por bloques de puertos (opcional)</label>
+      <div class="dos">
+        <div><label for="cgnatUsuarios">Usuarios</label><input type="number" id="cgnatUsuarios" min="0" step="1" autocomplete="off"></div>
+        <div><label for="cgnatBloque">Puertos por bloque</label><input type="number" id="cgnatBloque" min="1" step="1" value="512" autocomplete="off"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>4 · Requisitos y soporte</h2>
+    <div class="field">
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="chkRedund"> <span>Doble fuente de alimentación</span></label>
+        <label class="check"><input type="checkbox" id="chk4g"> <span>Respaldo celular 4G/5G (integrado o módulo PIM)</span></label>
+        <label class="check"><input type="checkbox" id="chkNim"> <span>Ranura NIM libre</span></label>
+        <label class="check"><input type="checkbox" id="chkSm"> <span>Ranura SM (módulo de servicio)</span></label>
+        <label class="check"><input type="checkbox" id="chkMacsec"> <span>MACsec en la WAN</span></label>
+        <label class="check"><input type="checkbox" id="chkPoe"> <span>PoE para teléfonos o APs</span></label>
+      </div>
+      <div class="field" style="margin-top:8px"><label for="poeW">Potencia PoE necesaria (W)</label><input type="number" id="poeW" min="0" step="1" autocomplete="off" disabled></div>
+      <p class="hint">Un equipo que no confirma el requisito se aparta, diciendo si no lo tiene o si su ficha no lo dice.</p>
+    </div>
     <div class="field">
       <label>Criticidad del sitio</label>
       <div class="seg" id="critSeg">
@@ -234,35 +310,33 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
         <button type="button" data-v="high" aria-pressed="false">Alta<br>(hub / DC)</button>
       </div>
     </div>
-    <div class="field">
-      <label><input type="checkbox" id="chkRedund"> Fuente de alimentación redundante requerida</label>
-    </div>
-    <div class="field">
-      <label><input type="checkbox" id="chk4g"> Enlace de respaldo 4G/LTE requerido</label>
-    </div>
   </section>
 </div>
 
 <div>
+  <div id="avisosMotor"></div>
+  <section class="panel" id="distrib" hidden aria-live="polite"></section>
   <div class="verdict" id="verdict"></div>
-  </div>
-
+  <section class="panel" id="cgnatBox" hidden></section>
+  <section class="panel">
+    <h2>Licencias a considerar</h2>
+    <div id="licBox"><p style="font-size:13.5px;color:var(--steel)">Selecciona un escenario para ver las licencias.</p></div>
+  </section>
   <section class="panel" id="suppPanel">
-    <h2>Soporte recomendado (SmartNet)</h2>
+    <h2>Soporte recomendado (SMARTnet)</h2>
     <div id="suppBox"><p style="font-size:13.5px;color:var(--steel)">Selecciona un escenario válido.</p></div>
   </section>
-
   <section class="panel">
-    <h2>Licencias DNA</h2>
-    <div id="licBox"><p style="font-size:13.5px;color:var(--steel)">Selecciona un modelo para ver licencias.</p></div>
+    <h2>Modelos evaluados</h2>
+    <div id="apartados" class="apartados" aria-live="polite"></div>
+    <div class="scroll"><table id="tbl-evaluados"><thead><tr><th>Modelo</th><th>Overlay</th><th>Salida local</th><th>Utilización</th><th>Estado</th></tr></thead><tbody id="tbody"></tbody></table></div>
   </section>
 
   <div class="note">
-    <b>Nota metodológica.</b> El throughput publicado por Cisco corresponde a tráfico enterprise IMIX bidireccional con IOS XE. Los valores de SD-WAN corresponden a Catalyst 8000 con Cisco vManage y IPsec IMIX. Los ISR 4000 con licencia AppX pueden alcanzar el valor máximo publicado en condiciones controladas. <a href="https://www.cisco.com/c/en/us/products/routers/index.html" target="_blank">Cisco Routers Datasheet</a>
+    <b>Nota metodológica.</b> Cada cifra lleva la base con la que Cisco la mide, y no se mezclan: los Secure Router (G2) publican reenvío, IPsec y SD-WAN con paquetes de 512 B; los Catalyst 8000, el reenvío con 1.400 B (más alto que con tráfico real, y la ficha lo avisa) y el SD-WAN en IMIX; Threat Protection va en EMIX con NGFW, IPS, filtrado URL y AMP a la vez; Meraki no publica el tamaño de paquete. La utilización suma las fracciones del overlay y de la salida local, cada una contra su cifra: es un supuesto de diseño, no una medida de Cisco.
   </div>
-
   <div class="note">
-    <b>Catalyst SD-WAN vs. otros fabricantes (Fortinet, Palo Alto).</b> Catalyst SD-WAN es, en el fondo, un <b>router con funciones de seguridad añadidas</b>; Fortinet y Palo Alto son <b>firewalls con routing añadido</b>. Esa diferencia de arquitectura es la raíz de las quejas más consistentes en reportes de usuarios (PeerSpot, Info-Tech SoftwareReviews): visibilidad de tráfico/aplicaciones más débil que Fortinet, sin base de datos de aplicaciones nativa (requiere más whitelisting manual de IPs), dificultad para entender el balanceo de carga entre enlaces, licenciamiento y configuración más complejos, y un costo percibido más alto — por eso Cisco es visto como la opción "premium" y Fortinet como la más costo-efectiva para desplegar. A favor de Cisco: soporte nativo de <b>Segment Routing sobre IPv6 (SRv6)</b> para ingeniería de tráfico determinística en WANs con múltiples proveedores MPLS — algo que Fortinet, Palo Alto y Aruba no igualan hoy — y una base instalada mucho mayor (+48.000 despliegues, 70% del Fortune 100), lo que pesa en cuentas que ya operan infraestructura Cisco.
+    <b>Catalyst SD-WAN frente a otros fabricantes (Fortinet, Palo Alto).</b> Catalyst SD-WAN es, en el fondo, un <b>router con funciones de seguridad añadidas</b>; Fortinet y Palo Alto son <b>firewalls con routing añadido</b>. Esa diferencia de arquitectura es la raíz de las quejas más consistentes en reportes de usuarios (PeerSpot, Info-Tech SoftwareReviews): visibilidad de tráfico y aplicaciones más débil que Fortinet, licenciamiento y configuración más complejos y un costo percibido más alto. A favor de Cisco: <b>Segment Routing sobre IPv6 (SRv6)</b> para ingeniería de tráfico en WANs con varios proveedores MPLS y una base instalada mucho mayor, que pesa en cuentas que ya operan infraestructura Cisco. Es opinión de terceros, no una cifra: no interviene en el dimensionamiento.
   </div>
 </div>
 </div>
@@ -270,6 +344,9 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 
 <!-- ════ TAB 2 · BOM ════ -->
 <div class="tabpane" id="pane-bom" hidden>
+<div class="flag">
+  <b>Aviso de preventa:</b> las referencias de equipo, licencia, módulo y fuente salen de la guía de pedido oficial; el precio de lista solo consta donde lo trajo un export de CCW. Lo demás sale «consultar». Valida siempre en CCW (Cisco Commerce Workspace) o con el distribuidor antes de cotizar.
+</div>
 <div class="cols">
 <div>
   <section class="panel">
@@ -283,34 +360,58 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       <input type="number" id="qty" min="1" autocomplete="off">
     </div>
     <div class="field">
-      <label for="nimQty">Módulos NIM adicionales a cotizar</label>
-      <input type="number" id="nimQty" min="0" autocomplete="off">
-    </div>
-    <div class="field">
-      <label for="optQty">Módulos ópticos SFP por equipo</label>
-      <input type="number" id="optQty" min="0" autocomplete="off">
-    </div>
-    <div class="field">
-      <label for="termYears">Término de soporte</label>
+      <label for="termYears">Término de licencias y soporte</label>
       <select id="termYears">
         <option value="1">1 año</option>
         <option value="3" selected>3 años</option>
         <option value="5">5 años</option>
       </select>
     </div>
+  </section>
+
+  <section class="panel">
+    <h2>Licenciamiento</h2>
     <div class="field">
-      <label for="dnaTier">Nivel de licencia DNA</label>
-      <select id="dnaTier">
-        <option value="ess">DNA Essentials</option>
-        <option value="adv" selected>DNA Advantage</option>
-        <option value="pre">DNA Premier</option>
+      <label for="licGestion">Gestión</label>
+      <select id="licGestion">
+        <option value="sdwan" selected>SD-WAN gestionado (SD-WAN Manager)</option>
+        <option value="autonomo">Router autónomo (sin SD-WAN gestionado)</option>
       </select>
+    </div>
+    <div class="field">
+      <label for="licNivel">Nivel</label>
+      <select id="licNivel">
+        <option value="E">Essentials</option>
+        <option value="A" selected>Advantage</option>
+        <option value="P">Premier (DNA) / SD-WAN Plus (Meraki)</option>
+      </select>
+      <p class="hint" id="licHint">En la G2 la referencia sale de la clase de la plataforma (S, M, L, XL, 2XL).</p>
+    </div>
+    <div class="field" id="secExtras">
+      <label>Seguridad en el router (G2)</label>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="secUrl"> <span>Filtrado URL (LIC-SEC-…-C)</span></label>
+        <label class="check"><input type="checkbox" id="secMalware"> <span>Malware Defense (LIC-SEC-…-M)</span></label>
+      </div>
+      <p class="hint">Solo con «Inspección en el router»: los dos piden además el complemento Threat.</p>
     </div>
   </section>
 
-  <div class="flag">
-    <b>Aviso de preventa:</b> Los códigos PID de Cisco pueden variar por región y canal. Siempre validar con el configurador CCW (Cisco Commerce Workspace) o con el distribuidor autorizado antes de cotizar.
-  </div>
+  <section class="panel">
+    <h2>Módulos y ópticas</h2>
+    <div class="field" id="modNimBlock"><label for="modNim">Módulo NIM</label><select id="modNim"></select></div>
+    <div class="field" id="modSmBlock"><label for="modSm">Módulo SM</label><select id="modSm"></select></div>
+    <div class="field" id="modPimBlock"><label for="modPim">Módulo celular (PIM)</label><select id="modPim"></select></div>
+    <p class="hint" id="modHint"></p>
+    <div class="field">
+      <label for="optSel">Óptica</label>
+      <select id="optSel"></select>
+    </div>
+    <div class="field">
+      <label for="optQty">Ópticas por equipo</label>
+      <input type="number" id="optQty" min="0" autocomplete="off">
+    </div>
+  </section>
 </div>
 
 <div>
@@ -318,12 +419,41 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   <section class="panel" style="margin-top:0">
     <h2>Lista de materiales
       <span class="bom-acciones">
-        <button class="btn" id="xlsBtn" style="font-size:11px;padding:5px 11px">Exportar a Excel</button>
-        <button class="btn ghost" id="copyBtn" style="font-size:11px;padding:5px 11px">Copiar como texto</button>
+        <button class="btn" id="xlsBtn" type="button" style="font-size:11px;padding:5px 11px">Exportar a Excel</button>
+        <button class="btn ghost" id="copyBtn" type="button" style="font-size:11px;padding:5px 11px">Copiar como texto</button>
+        <button class="btn ghost" id="memoriaBtn" type="button" style="font-size:11px;padding:5px 11px">Memoria técnica (.md)</button>
       </span>
     </h2>
     <div id="bomTabla"></div>
     <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
+  </section>
+  <section class="panel">
+    <h2>Precio neto y TCO</h2>
+    <div class="field"><div id="cajaDescuento"></div></div>
+    <div id="tcoFin"></div>
+    <h3 style="margin:18px 0 8px;font-size:14px">Cuota mensual de servicio gestionado (MRR y TCV)</h3>
+    <div class="row" style="gap:12px;flex-wrap:wrap">
+      <label style="font-size:12px">Plazo del contrato<br><select id="plazoMrr"><option value="24">24 meses</option><option value="36" selected>36 meses</option><option value="60">60 meses</option></select></label>
+      <label style="font-size:12px">Margen de financiación (%)<br><input type="number" id="margenFin" min="0" max="100" step="1" value="0" style="width:110px" autocomplete="off"></label>
+      <label style="font-size:12px">Fee de gestión MSP (%)<br><input type="number" id="feeMsp" min="0" max="100" step="1" value="0" style="width:110px" autocomplete="off"></label>
+    </div>
+    <div id="mrrBox"></div>
+    <p class="hint" style="margin-top:10px">Solo tienen precio los equipos que trajo el export de CCW; licencias, módulos y soporte salen «consultar», así que el TCO es <b>parcial</b> y dice cuántas líneas quedan fuera. El OPEX declarado son las licencias y el soporte por término.</p>
+  </section>
+  <section class="panel">
+    <h2>Perfiles multi-sede</h2>
+    <p class="hint" style="margin:0 0 10px">Guarda el escenario actual como perfil («Sucursal», «Hub regional»…) con su número de sedes idénticas. El <b>BOM global consolidado</b> suma las líneas de todos los perfiles —de cualquier fabricante— y se exporta aparte.</p>
+    <div class="row" style="margin-bottom:10px">
+      <input type="text" id="nombrePerfil" placeholder="Nombre del perfil — p. ej. Sucursal" autocomplete="off" aria-label="Nombre del perfil">
+      <input type="number" id="perfilSedes" min="1" step="1" placeholder="Nº sedes" style="width:100px" autocomplete="off" aria-label="Número de sedes">
+      <button type="button" class="btn" id="btnGuardarPerfil" style="font-size:11px;padding:6px 12px;white-space:nowrap">Guardar perfil</button>
+    </div>
+    <p class="hint" id="perfilMsg" aria-live="polite"></p>
+    <div id="listaPerfiles"></div>
+    <div style="margin-top:10px">
+      <button type="button" class="btn" id="btnConsolidar" style="font-size:11px;padding:6px 12px" disabled>Consolidar BOM global</button>
+      <p class="hint" style="margin-top:6px">Abre el BOM agregado Σ(BOM del perfil × sedes) en una ventana aparte, con su exportación a Excel.</p>
+    </div>
   </section>
 </div>
 </div>
@@ -334,19 +464,19 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <section class="panel">
   <h2>Catálogo de módulos ópticos SFP/QSFP compatibles</h2>
   <div id="opticsAll"></div>
-  <p class="note"><b>Nota:</b> Los módulos Cisco Genuine SFP son recomendados. Módulos de terceros pueden funcionar con el comando <code>service unsupported-transceiver</code> en IOS XE. Para SD-WAN con vManage, Cisco recomienda ópticas certificadas para evitar alertas en inventario.</p>
+  <p class="note"><b>Nota:</b> Cisco recomienda ópticas genuinas. Las de terceros pueden funcionar con el comando <code>service unsupported-transceiver</code> en IOS XE; con SD-WAN Manager, las ópticas certificadas evitan alertas en el inventario.</p>
 </section>
 </div>
 
 <!-- ════ TAB · CATÁLOGO ════ -->
 <div class="tabpane" id="pane-cat" hidden>
 <section class="panel">
-  <h2>Catálogo Cisco — Throughput de referencia <span style="font-weight:400;color:var(--steel)">— Precio ref. USD incluido</span></h2>
+  <h2>Catálogo Cisco — cifras publicadas y su base <span style="font-weight:400;color:var(--steel)">— precio de lista donde consta</span></h2>
   <div class="scroll"><table data-ordenable id="tbl-cisco-cat">
-    <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Forwarding</th><th>IPsec</th><th>Puertos</th><th>SD-WAN</th><th>Precio ref. USD&#9432;</th></tr></thead>
+    <thead><tr><th>Modelo</th><th>Serie</th><th>Segmento</th><th>Reenvío</th><th>IPsec</th><th>SD-WAN</th><th>Threat Protection / NGFW</th><th>Túneles</th><th>Puertos</th><th>Precio ref. USD&#9432;</th></tr></thead>
     <tbody></tbody>
   </table></div>
-  <p style="font-size:11px;color:var(--steel);margin-top:10px">&#9432; Precio de lista estimado (ELP p&#250;blico). No incluye descuentos de canal, licencias DNA ni soporte. Verificar en CCW con distribuidor autorizado. Los modelos fuera de venta se muestran igual, marcados, porque ampliar un parque instalado es justo cuando hace falta consultarlos.</p>
+  <p style="font-size:11px;color:var(--steel);margin-top:10px">&#9432; Precio de lista del export de CCW del 17-ago-2026 donde lo trae; sin descuentos de canal, licencias ni soporte. La base de cada cifra va debajo de ella. Los modelos fuera de venta se muestran igual, marcados, porque ampliar un parque instalado es justo cuando hace falta consultarlos.</p>
 </section>
 </div>
 
@@ -358,35 +488,36 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
   <div data-procedencia="cisco">Cargando…</div>
 </section>
 <section class="panel">
-  <h2>Fuentes de Información y Precios</h2>
-  <p style="font-size:13px;color:var(--steel);margin-bottom:12px">Toda la información técnica y los modelos mostrados en esta plataforma han sido filtrados para excluir equipos EOL/EOS (End of Life), basándonos en los siguientes canales oficiales:</p>
+  <h2>Fuentes de información y precios</h2>
   <ul class="fuentes-list">
-    <li><b>Datasheets y Especificaciones:</b> <a href="https://www.cisco.com/c/en/us/products/routers/index.html" target="_blank">https://www.cisco.com/c/en/us/products/routers/index.html</a><br>Documentación técnica oficial de Cisco para Catalyst 8000, ISR y ASR 1000 series.</li>
-    <li><b>Notificaciones EOL/EOS:</b> <a href="https://www.cisco.com/c/en/us/products/eos-eol-listing.html" target="_blank">https://www.cisco.com/c/en/us/products/eos-eol-listing.html</a><br>Fechas de EoS confirmadas para ISR 4000 (Nov 2023) y modelos antiguos ASR 1000.</li>
-    <li><b>Precios de Referencia (ELP):</b><br>Información extraída del CCW (Cisco Commerce Workspace) y catálogos públicos GPL (Global Price List). No incluye licencias obligatorias DNA ni soporte SmartNet.</li>
+    <li><b>Fichas técnicas:</b> las series <a href="https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8100-series-secure-routers-ds.html" target="_blank" rel="noopener">8100</a>, <a href="https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8200-series-secure-routers-ds.html" target="_blank" rel="noopener">8200</a>, <a href="https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8300-series-secure-routers-ds.html" target="_blank" rel="noopener">8300</a>, <a href="https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8400-series-secure-routers-ds.html" target="_blank" rel="noopener">8400</a>, <a href="https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8500-series-secure-routers-ds.html" target="_blank" rel="noopener">8500</a> y <a href="https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8600-series-secure-routers-ds.html" target="_blank" rel="noopener">8600</a> Secure Router; los Catalyst <a href="https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8200-series-edge-platforms/nb-06-cat8200-series-edge-plat-ds-cte-en.html" target="_blank" rel="noopener">8200</a>, <a href="https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8300-series-edge-platforms/datasheet-c78-744088.html" target="_blank" rel="noopener">8300</a> y <a href="https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8500-series-edge-platforms/datasheet-c78-744089.html" target="_blank" rel="noopener">8500</a>, y las de Meraki MX en documentation.meraki.com (cada una enlazada en la ficha de su equipo). Rendimiento, escala, puertos y alimentación, cada cifra con su base.</li>
+    <li><b>Guía de pedido de la G2:</b> clase de la plataforma, licencias (tablas 9 y 10), módulos NIM, SM y PIM (tablas 7 y 8) y fuentes (tabla 3).</li>
+    <li><b>Guías de instalación:</b> las figuras frontal y trasera de cada equipo, con su rótulo literal.</li>
+    <li><b>Fin de venta:</b> los tres boletines EOL de los Catalyst 8000 y el de los ASR 1000, con su sucesor.</li>
+    <li><b>Precios de referencia:</b> export de CCW del 17-ago-2026, solo donde lo trae; sin descuentos de canal, licencias ni soporte.</li>
   </ul>
 </section>
 </div>
 
 <p class="note">
-<b>Cisco Networking Cloud — unificación Meraki/Catalyst.</b> Dos frentes confirmados. <b>Switching:</b> desde IOS XE 17.15+, el Meraki Dashboard también gestiona switches Catalyst 9200/9300/9500 elegibles, reutilizando la licencia DNA ya comprada sin costo Meraki adicional hasta el 1-feb-2029 ("Cloud Entitlement for DNA") — no aplica a los routers de este dimensionador. <b>Routing/SD-WAN (hallazgo confirmado en export real de CCW):</b> el chasis "Secure Router (G2)" que reemplaza al Catalyst 8300/8200 se vende en dos SKUs sobre el mismo hardware — sin sufijo "-MX" corre IOS XE clásico (CCW + DNA), con sufijo "-MX" (<code>C8355-G2-MX</code>, <code>C8455-G2-MX</code>, <code>C8111-G2-MX</code>, <code>C8121-G2-MX</code>) corre Meraki OS gestionado 100% desde el dashboard. La elección IOS XE vs. Meraki ya es una decisión de SKU sobre el mismo fierro, no de plataformas distintas — esto sí es directamente relevante para este dimensionador. Familia 8400 (C8455-G2, sucesor de gama alta): 67 Gbps forwarding, 31 Gbps IPsec, 15.5 Gbps SD-WAN.
-</p>
-
-<p class="note">
-<b>Fuentes oficiales:</b>
-<a href="https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8300-series-edge-platforms/cat-8300-8200-series-edge-plat-og.html" target="_blank" rel="noopener">Catalyst 8300/8200 Series Edge Platforms Ordering Guide</a> ·
-<a href="https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html" target="_blank" rel="noopener">EOL C8300-2N2S-4T2X/6T, C8200-1N-4T/C8200L-1N-4T</a> ·
-<a href="https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500l-8s4x-4t2x-c8300-1n1s-6t-eol.html" target="_blank" rel="noopener">EOL C8500L-8S4X, C8300-1N1S-4T2X/6T</a> ·
-<a href="https://www.cisco.com/c/en/us/products/collateral/software/dna-subscription-routing/guide-c07-740642.html" target="_blank" rel="noopener">Cisco DNA Software for SD-WAN and Routing Ordering Guide</a> ·
-<a href="https://documentation.meraki.com/Platform_Management/Product_Information/Licensing/Meraki_MX_Security_and_SD-WAN_Licensing" target="_blank" rel="noopener">Meraki MX Security and SD-WAN Licensing</a> ·
-<a href="https://documentation.meraki.com/Switching/Cloud_Management_with_IOS_XE/Product_Information/Overviews_and_Datasheets/Cloud_Management_with_IOS_XE_Overview" target="_blank" rel="noopener">Cloud Management with IOS XE</a> ·
-<a href="https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8300-series-secure-routers-ds.html" target="_blank" rel="noopener">Cisco 8300 Series Secure Routers Data Sheet</a> ·
-export de catálogo CCW del usuario (17-ago-2026, precios de lista C8200/C8300/Secure Router G2/Meraki) ·
-comparativa SD-WAN sintetizada de <a href="https://www.peerspot.com/products/comparisons/cisco-catalyst-sd-wan_vs_fortinet-fortigate" target="_blank" rel="noopener">PeerSpot</a> e Info-Tech SoftwareReviews (ago-2026).
+<b>Cisco Networking Cloud — unificación Meraki/Catalyst.</b> En routing y SD-WAN, el chasis Secure Router (G2) que sucede a los Catalyst 8300/8200 se vende en dos referencias sobre el mismo hardware: sin sufijo «-MX» corre IOS XE (SD-WAN Manager y licencias de la G2) y con sufijo «-MX» (<code>C8111-G2-MX</code>, <code>C8121-G2-MX</code>, y en CCW <code>C8355-G2-MX</code> y <code>C8455-G2-MX</code>) corre el sistema de Meraki y se gestiona desde el dashboard. Por eso los C81x1-G2-MX están en la plataforma Meraki MX: elegir entre IOS XE y Meraki es una decisión de referencia sobre el mismo equipo.
 </p>
 
 </div><!-- /wrap -->
 
+<div id="modalConsolidado" hidden>
+<div class="acc-caja" style="max-width:860px">
+<h3>BOM global consolidado — perfiles multi-sede</h3>
+<p class="hint" id="consolidadoSub"></p>
+<div id="consolidadoTabla"></div>
+<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+<button type="button" class="btn" id="xlsConsolidadoBtn" style="font-size:11px;padding:6px 12px">Exportar consolidado a Excel</button>
+<button type="button" class="btn ghost" id="consolidadoCerrar" style="font-size:11px;padding:6px 12px">Cerrar</button>
+</div>
+</div>
+</div>
+
+<script src="/js/cisco-motor.js"></script>
 <script src="/js/bom.js"></script>
 <script src="/js/ficha.js"></script>
 <script src="/js/estado.js"></script>
