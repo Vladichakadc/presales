@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "41ab64a",
+  "commit": "25e9caa",
   "fecha": "2026-10-20"
  },
  "umbralRozado": 25,
@@ -156,7 +156,7 @@
    "modulo": "dimensionador-cisco-catalyst8k.js",
    "estado": "ejercitado",
    "total": 127,
-   "usadas": 97,
+   "usadas": 96,
    "pct": 76
   },
   {
