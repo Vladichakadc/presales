@@ -40,7 +40,7 @@ test('cada figura declarada existe, no es un stub y es WebP sin pérdida', () =>
 
 test('la foto de producto (tercera vista) es opcional, sin pérdida y con su propia procedencia', () => {
   const conFoto = entradas.filter(([, v]) => v.foto);
-  assert.ok(conFoto.length >= 16, `solo ${conFoto.length} equipos con foto: se perdió alguna`);
+  assert.ok(conFoto.length >= 18, `solo ${conFoto.length} equipos con foto: se perdió alguna`);
   for (const [modelo, v] of conFoto) {
     assert.ok(v.foto.startsWith('/img/equipos/jn-') && v.foto.endsWith('-foto.webp'), `${modelo}: ruta de foto inesperada`);
     const b = fs.readFileSync(path.join(RAIZ, 'public', v.foto));
@@ -50,8 +50,10 @@ test('la foto de producto (tercera vista) es opcional, sin pérdida y con su pro
   }
   // El SSR120 de la ficha es la variante con LTE: el pie lo tiene que decir.
   assert.match(VISTAS.SSR120.fotoFuente, /LTE/);
-  // Sin foto oficial no se traslada la de un hermano.
-  for (const id of ['SRX4100', 'SRX4200']) assert.ok(!VISTAS[id].foto, `${id} no tiene foto oficial traída: no puede llevar la de otro`);
+  // Dos modelos que comparten chasis no comparten foto: cada uno lleva la que su ficha rotula.
+  for (const [a, b] of [['SRX4100', 'SRX4200'], ['SRX340', 'SRX345'], ['SSR1300', 'SSR1400']]) {
+    assert.notStrictEqual(VISTAS[a].foto, VISTAS[b].foto, `${a} y ${b} no pueden servir el mismo archivo de foto`);
+  }
 });
 
 test('cada figura declara tamaño y peso con la tabla de la que salen', () => {

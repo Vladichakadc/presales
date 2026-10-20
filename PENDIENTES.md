@@ -1976,10 +1976,8 @@ Lo que el HTML adjunto traía y **no** entró, con el motivo y lo que lo cerrar�
 - **Cifra de inspección del SSR** (IDP/URL): confirmado el 2026-10-19 que las fichas SSR100 y
   SSR1000 no la publican. Sigue desacoplada en SRX o en la nube.
 - ~~**Tamaño y peso en el pie de las figuras de Juniper**~~ cerrado el 2026-10-20.
-- **Foto de producto del SRX4100 y el SRX4200**: su ficha (`srx4100-srx4200-firewall-datasheet.pdf`)
-  en inglés devuelve HTML desde Actions; la japonesa (`.../jp/ja/security/srx4100-srx4200-firewall-datasheet.pdf`)
-  es la siguiente a probar con `traer-cisco-huawei.yml`. Mientras, esos dos llevan frontal y trasera
-  de la guía y no la foto de otro modelo.
+- ~~**Foto de producto del SRX4100 y el SRX4200**~~ cerrado el 2026-10-20 con su ficha japonesa
+  (1000600-021-JP, corrida 39410983522): la inglesa devuelve HTML.
 - **La foto del SSR120 es la variante con LTE** (antenas SMA): la ficha no publica la del modelo
   base y el pie lo dice.
 - **La ficha de la serie MX 204/240/480/960 solo apareció en japonés** (1000597-042-JP, sep-2024);

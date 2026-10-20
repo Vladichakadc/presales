@@ -447,7 +447,7 @@ Módulos compartidos:
   por capa de cifrado en IMIX (`cap`/`capCif`/`capHmac`, de sus fichas; la de 1.500 B es portada),
   como sucursal o hub, y su inspección va desacoplada en un SRX elegido por capa o en la nube.
   Distribución de Aruba (tarjeta clavada con figuras de la guía de hardware de cada modelo,
-  `public/data/juniper-vistas-equipos.json`, sin pérdida, con foto de producto en 16 de 18 y tamaño y
+  `public/data/juniper-vistas-equipos.json`, sin pérdida, con foto de producto en los 18 y tamaño y
   peso de la tabla física de cada guía). El ciclo de vida respaldado es solo el
   de los SRX: en un SSR la ficha dice que no hay fuente.
 - **MikroTik** (`mikrotik-motor.js`, `legacyData/mikrotikPruebas.js` generado por `npm run
