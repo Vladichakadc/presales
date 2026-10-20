@@ -598,6 +598,27 @@ jobs:
               { archivo: 'juniper-hw-ssr1500-indice.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SSR1500', urls: [ 'https://juniper.net/documentation/us/en/hardware/ssr1500/index.html' ] },
               { archivo: 'juniper-hw-ssr1500.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [],
                 descubrirEnlace: { de: 'juniper-hw-ssr1500-indice.html', contiene: 'ssr1500', dominios: ['juniper.net'], base: 'https://juniper.net/documentation/us/en/hardware/ssr1500/index.html' } },
+              // 2026-10-20: las fotos de producto a color de los SRX, para la tercera vista de la tarjeta
+              // («Foto»). Las fichas de la generacion 2024 ya la traen; estas son las del resto de la
+              // linea, y la pagina de la serie, cuyas imagenes de producto se descubren en ella.
+              { archivo: 'juniper-srx300-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+                'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx300-line-firewalls-branch-datasheet.pdf',
+              ] },
+              { archivo: 'juniper-srx1500-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+                'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx1500-firewall-datasheet.pdf',
+              ] },
+              { archivo: 'juniper-srx4100-4200-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+                'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx4100-srx4200-firewall-datasheet.pdf',
+              ] },
+              { archivo: 'juniper-srx4700-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+                'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx4700-firewall-datasheet.pdf',
+              ] },
+              { archivo: 'juniper-srx-serie.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+                'https://www.juniper.net/gb/en/products/security/srx-series.html',
+              ] },
+              { archivo: 'juniper-srx-img', tipo: 'imagenes', para: 'JUNIPER', urls: [],
+                descubrirPiezas: { de: ['juniper-srx-serie.html', 'juniper-srx300-ds.html'], base: 'https://www.juniper.net/',
+                  dominios: ['juniper.net'], contiene: ['/products/security/srx-series/'], max: 40 } },
               // La ficha del MX304 en juniper.net ya es un visor de HPE: el PDF vive en psnow
               // (a00150831enw). URL leida de la propia pagina traida el 2026-10-19, no adivinada.
               { archivo: 'juniper-mx304-ds-hpe.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
