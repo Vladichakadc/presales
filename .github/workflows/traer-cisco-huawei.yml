@@ -585,6 +585,19 @@ jobs:
               { archivo: 'juniper-hw-srx380.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
                 'https://www.juniper.net/documentation/us/en/hardware/srx380/srx380.pdf',
               ] },
+              // 2026-10-19: guias de hardware de los Session Smart Router, por sus vistas frontal y
+              // trasera a mas resolucion que las de la ficha comercial. Las del SSR130 y SSR1500 solo
+              // aparecieron como indice: el PDF se descubre en el, no se adivina.
+              { archivo: 'juniper-hw-ssr120.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [ 'https://juniper.net/documentation/us/en/hardware/ssr120/ssr120.pdf' ] },
+              { archivo: 'juniper-hw-ssr1200.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [ 'https://juniper.net/documentation/us/en/hardware/ssr1200/ssr1200.pdf' ] },
+              { archivo: 'juniper-hw-ssr1300.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [ 'https://juniper.net/documentation/us/en/hardware/ssr1300/ssr1300.pdf' ] },
+              { archivo: 'juniper-hw-ssr1400.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [ 'https://juniper.net/documentation/us/en/hardware/ssr1400/ssr1400.pdf' ] },
+              { archivo: 'juniper-hw-ssr130-indice.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SSR130', urls: [ 'https://www.juniper.net/documentation/us/en/hardware/ssr130/index.html' ] },
+              { archivo: 'juniper-hw-ssr130.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [],
+                descubrirEnlace: { de: 'juniper-hw-ssr130-indice.html', contiene: 'ssr130', dominios: ['juniper.net'], base: 'https://www.juniper.net/documentation/us/en/hardware/ssr130/index.html' } },
+              { archivo: 'juniper-hw-ssr1500-indice.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SSR1500', urls: [ 'https://juniper.net/documentation/us/en/hardware/ssr1500/index.html' ] },
+              { archivo: 'juniper-hw-ssr1500.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [],
+                descubrirEnlace: { de: 'juniper-hw-ssr1500-indice.html', contiene: 'ssr1500', dominios: ['juniper.net'], base: 'https://juniper.net/documentation/us/en/hardware/ssr1500/index.html' } },
               // La ficha del MX304 en juniper.net ya es un visor de HPE: el PDF vive en psnow
               // (a00150831enw). URL leida de la propia pagina traida el 2026-10-19, no adivinada.
               { archivo: 'juniper-mx304-ds-hpe.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
