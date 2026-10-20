@@ -1,0 +1,62 @@
+[
+  {
+    "archivo": "cisco-eol-c8300-c8200.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html",
+        "status": 200,
+        "bytes": 173938,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-eol-c8500l-c8300.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500l-8s4x-4t2x-c8300-1n1s-6t-eol.html",
+        "status": 200,
+        "bytes": 110986,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-eol-c8500.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500-12x-c8500-12x4qc-eol.html",
+        "status": 200,
+        "bytes": 99999,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-eol-c8500-20x6c.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500-20x6c-eol.html",
+        "status": 200,
+        "bytes": 69433,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
