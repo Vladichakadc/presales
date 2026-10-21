@@ -1111,6 +1111,23 @@ jobs:
               { archivo: 'meraki-sfp.html', tipo: 'html', para: 'CISCO', debeContener: 'MA-SFP', urls: [
                 'https://documentation.meraki.com/Platform_Management/Product_Information/Overviews_and_Datasheets/Small-Form_Factor_Pluggable_(SFP)_and_Stacking_Accessories',
               ] },
+              // Opticas por distancia (2026-10-21, mejora aprobada): el alcance de cada optica del
+              // catalogo, por tipo de fibra, sale de la ficha de su familia, no del texto `d`.
+              { archivo: 'cisco-opt-1g.html', tipo: 'html', para: 'CISCO', debeContener: 'GLC-LH-SMD', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/gigabit-ethernet-gbic-sfp-modules/datasheet-c78-366584.html',
+              ] },
+              { archivo: 'cisco-opt-10g.html', tipo: 'html', para: 'CISCO', debeContener: 'SFP-10G-LR', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/transceiver-modules/data_sheet_c78-455693.html',
+              ] },
+              { archivo: 'cisco-opt-25g.html', tipo: 'html', para: 'CISCO', debeContener: 'SFP-10/25G-CSR-S', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/transceiver-modules/datasheet-c78-736950.html',
+              ] },
+              { archivo: 'cisco-opt-40g.html', tipo: 'html', para: 'CISCO', debeContener: 'QSFP-40G-LR4', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/transceiver-modules/data_sheet_c78-660083.html',
+              ] },
+              { archivo: 'cisco-opt-100g.html', tipo: 'html', para: 'CISCO', debeContener: 'QSFP-100G-LR4', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/transceiver-modules/datasheet-c78-736282.html',
+              ] },
               { archivo: 'cisco-hig3-img', tipo: 'imagenes', para: 'CISCO', urls: [],
                 descubrirPiezas: { de: ['cisco-isr1100-hig-overview.html', 'cisco-sr8200-hig-overview.html'],
                   base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
